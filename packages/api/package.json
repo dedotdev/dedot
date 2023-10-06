@@ -1,0 +1,15 @@
+{
+  "name": "delightfuldot",
+  "version": "0.0.1",
+  "description": "A fast & lightweight JS/TS client for Polkadot & Substrate",
+  "author": "Thang X. Vu <thang@coongcrafts.io>",
+  "main": "src/index.ts",
+  "type": "module",
+  "dependencies": {
+    "@delightfuldot/utils": "workspace:*"
+  },
+  "scripts": {
+    "start": "ts-node ./src/index.ts"
+  },
+  "license": "Apache-2.0"
+}
