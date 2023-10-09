@@ -45,11 +45,11 @@ type EnumMembers<V extends AnyShape> = {
 };
 
 type InputEnumShape<V extends AnyShape, A extends EnumMembers<V>> = Expand<
-  { [K in keyof A]: { type: K; value: A[K] extends AnyShape ? Input<A[K]> : never } }[keyof A]
+  { [K in keyof A]: { tag: K; value: A[K] extends AnyShape ? Input<A[K]> : never } }[keyof A]
 >;
 
 type OutputEnumShape<V extends AnyShape, A extends EnumMembers<V>> = Expand<
-  { [K in keyof A]: { type: K; value: A[K] extends AnyShape ? Output<A[K]> : never } }[keyof A]
+  { [K in keyof A]: { tag: K; value: A[K] extends AnyShape ? Output<A[K]> : never } }[keyof A]
 >;
 
 export const Enum = <T extends AnyShape, A extends EnumMembers<T>>(
@@ -71,7 +71,7 @@ export const Enum = <T extends AnyShape, A extends EnumMembers<T>>(
   });
 
   // @ts-ignore
-  return taggedUnion('type', fields);
+  return taggedUnion('tag', fields);
 };
 
 export const Option = option;
