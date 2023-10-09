@@ -22,7 +22,11 @@
     "composite": true,
     "paths": {
       "@delightfuldot/utils": ["../utils/src"],
-      "@delightfuldot/utils/*": ["../utils/src/*"]
+      "@delightfuldot/utils/*": ["../utils/src/*"],
+      "@delightfuldot/shape": ["../shape/src"],
+      "@delightfuldot/shape/*": ["../shape/src/*"],
+      "@delightfuldot/types": ["../types/src"],
+      "@delightfuldot/types/*": ["../types/src/*"]
     }
   }
 }
