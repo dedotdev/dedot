@@ -19,5 +19,3 @@ export function array<I, O = I>($el: Shape<I, O>): Shape<readonly I[], O[]> {
 
   return shaped;
 }
-
-export const vec = array;

@@ -1,23 +1,13 @@
 import { hexToU8a, u8aToHex } from '@polkadot/util';
 import { HexString } from '@polkadot/util/types';
-import {
-  AssertState,
-  compact,
-  createShape,
-  DecodeBuffer,
-  EncodeBuffer,
-  hex as originalHex,
-  metadata, Shape,
-  sizedUint8Array,
-  u32,
-} from 'subshape';
+import * as $ from 'subshape';
+import { AssertState, createShape, DecodeBuffer, EncodeBuffer, metadata, Shape } from 'subshape';
+import { compactU32 } from './compact';
 
 const HEX_PREFIX = '0x';
 
-const compactU32 = compact(u32);
-
-export function hex(lengthInBytes: number): Shape<HexString> {
-  const shaped = originalHex(sizedUint8Array(lengthInBytes));
+export function FixedHex(lengthInBytes: number): Shape<HexString> {
+  const shaped = $.hex($.sizedUint8Array(lengthInBytes));
 
   const originalSubDecode = shaped.subDecode.bind(shaped);
   shaped.subDecode = function (buffer: DecodeBuffer): string {
@@ -29,8 +19,8 @@ export function hex(lengthInBytes: number): Shape<HexString> {
   return shaped as Shape<HexString>;
 }
 
-export const Hex = createShape<HexString>({
-  metadata: metadata('$.Hex'),
+export const PrefixedHex = createShape<HexString>({
+  metadata: metadata('$.PrefixedHex'),
   staticSize: 0,
   subEncode(buffer: EncodeBuffer, value): void {
     const u8a = hexToU8a(value);

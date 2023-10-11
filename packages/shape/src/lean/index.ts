@@ -2,27 +2,30 @@ import {
   AnyShape,
   Expand,
   field,
-  Input,
-  literalUnion,
+  Input, literalUnion,
+  option,
   optionalField,
   Output,
+  result,
   Shape,
+  sizedArray,
+  sizedUint8Array,
   taggedUnion,
   tuple,
-  variant,
-  result,
-  option,
   uint8Array,
-  sizedUint8Array
+  variant,
 } from 'subshape';
+import * as $ from '../extension';
 import { array, object } from '../extension';
 
-type StructMembers<T extends AnyShape> = {
+export type StructMembers<T extends AnyShape> = {
   [prop: string]: T;
 };
 
-type InputStructShape<T extends AnyShape, A extends StructMembers<T>> = Expand<{ [K in keyof A]: Input<A[K]> }>;
-type OutputStructShape<T extends AnyShape, A extends StructMembers<T>> = Expand<{ [K in keyof A]: Output<A[K]> }>;
+export type InputStructShape<T extends AnyShape, A extends StructMembers<T>> = Expand<{ [K in keyof A]: Input<A[K]> }>;
+export type OutputStructShape<T extends AnyShape, A extends StructMembers<T>> = Expand<{
+  [K in keyof A]: Output<A[K]>;
+}>;
 
 export const Struct = <T extends AnyShape, A extends StructMembers<T>>(
   members: A,
@@ -40,44 +43,49 @@ export const Struct = <T extends AnyShape, A extends StructMembers<T>>(
   return object(...fields);
 };
 
-type EnumMembers<V extends AnyShape> = {
-  [prop: string]: V | null;
+export type IndexedEnumMember<V extends AnyShape> = { value?: V | null; index: number };
+
+export type EnumMembers<V extends AnyShape> = {
+  [prop: string]: V | null | IndexedEnumMember<V>;
 };
 
-type InputEnumShape<V extends AnyShape, A extends EnumMembers<V>> = Expand<
-  { [K in keyof A]: { tag: K; value: A[K] extends AnyShape ? Input<A[K]> : never } }[keyof A]
+export type InputEnumShape<V extends AnyShape, A extends EnumMembers<V>> = Expand<
+  { [K in keyof A]: { tag: K; value: A[K] extends AnyShape ? Input<A[K]> : A[K] extends IndexedEnumMember<V> ? Input<A[K]['value'] extends AnyShape ? A[K]['value'] : Shape<never>> : never } }[keyof A]
 >;
 
-type OutputEnumShape<V extends AnyShape, A extends EnumMembers<V>> = Expand<
-  { [K in keyof A]: { tag: K; value: A[K] extends AnyShape ? Output<A[K]> : never } }[keyof A]
+export type OutputEnumShape<V extends AnyShape, A extends EnumMembers<V>> = Expand<
+  { [K in keyof A]: { tag: K; value: A[K] extends AnyShape ? Output<A[K]> : A[K] extends IndexedEnumMember<V> ? Output<A[K]['value'] extends AnyShape ? A[K]['value'] : Shape<never>>: never } }[keyof A]
 >;
 
 export const Enum = <T extends AnyShape, A extends EnumMembers<T>>(
   members: A,
 ): Shape<InputEnumShape<T, A>, OutputEnumShape<T, A>> => {
-  const valueEmptied = Object.values(members).every((one) => !one);
+  const enumMembers: Record<number, $.AnyVariant> = {};
 
-  if (valueEmptied) {
-    // @ts-ignore
-    return literalUnion(Object.keys(members));
-  }
-
-  const fields = Object.keys(members).map((keyName) => {
+  Object.keys(members).forEach((keyName, keyIndex) => {
     if (members[keyName]) {
-      return variant(keyName, field('value', members[keyName] as any));
+      const { index, value} = members[keyName] as IndexedEnumMember<T>;
+      if (Number.isInteger(index) && value) {
+        enumMembers[index] = variant(keyName, field('value', value as any));
+      } else {
+        enumMembers[keyIndex] = variant(keyName, field('value', members[keyName] as any));
+      }
     } else {
-      return variant(keyName);
+      enumMembers[keyIndex] = variant(keyName);
     }
   });
 
   // @ts-ignore
-  return taggedUnion('tag', fields);
+  return taggedUnion('tag', enumMembers);
 };
+
+export const FlatEnum = literalUnion;
 
 export const Option = option;
 export const Tuple = tuple;
 export const Vec = array;
-export const Result = result;
+export const SizedVec = sizedArray;
+export const U8a = uint8Array;
+export const SizedU8a = sizedUint8Array;
 
-export const u8a = uint8Array;
-export const sizedU8a = sizedUint8Array;
+export const Result = result;

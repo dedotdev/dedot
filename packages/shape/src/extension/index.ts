@@ -1,4 +1,6 @@
+export * from 'subshape';
 export * from './shape';
-export * from './object';
-export * from './array';
+export { object } from './object';
+export { array } from './array';
 export * from './hex';
+export * from './raw';

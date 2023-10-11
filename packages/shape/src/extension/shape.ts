@@ -17,8 +17,8 @@ declare module 'subshape' {
     decoders: [Predicate, Decoder][];
     registerEncoder: (predicate: Predicate, encoder: Encoder) => void;
     registerDecoder: (predicate: Predicate, decoder: Decoder) => void;
-    tryEncode: (input: any) => any;
-    tryDecode: (input: any) => any;
+    tryEncode: (input: any) => Uint8Array;
+    tryDecode: (input: any) => O;
   }
 }
 
