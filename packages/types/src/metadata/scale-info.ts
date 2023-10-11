@@ -4,11 +4,11 @@ export type TypeId = number;
 export const $TypeId: $.Shape<TypeId> = $.compact($.u32);
 
 export type Field = {
-  name: string | undefined,
-  typeId: TypeId,
+  name: string | undefined;
+  typeId: TypeId;
   typeName: string | undefined;
-  docs: string[]
-}
+  docs: string[];
+};
 export const $Field: $.Shape<Field> = $.Struct({
   name: $.Option($.str),
   typeId: $TypeId,
@@ -16,23 +16,23 @@ export const $Field: $.Shape<Field> = $.Struct({
   docs: $.Vec($.str),
 });
 
-export const $PrimitiveKind = $.Enum({
-  bool: null,
-  char: null,
-  str: null,
-  u8: null,
-  u16: null,
-  u32: null,
-  u64: null,
-  u128: null,
-  u256: null,
-  i8: null,
-  i16: null,
-  i32: null,
-  i64: null,
-  i128: null,
-  i256: null,
-});
+export const $PrimitiveKind = $.FlatEnum([
+  'bool',
+  'char',
+  'str',
+  'u8',
+  'u16',
+  'u32',
+  'u64',
+  'u128',
+  'u256',
+  'i8',
+  'i16',
+  'i32',
+  'i64',
+  'i128',
+  'i256',
+]);
 
 export const $EnumTypeDef = $.Struct({
   members: $.Vec(
@@ -48,7 +48,7 @@ export const $EnumTypeDef = $.Struct({
 export const $TypeDef = $.Enum({
   Struct: $.Struct({ fields: $.Vec($Field) }),
   Enum: $EnumTypeDef,
-  Vec: $.Struct({ typeParam: $TypeId }),
+  Sequence: $.Struct({ typeParam: $TypeId }),
   SizedVec: $.Struct({ len: $.u32, typeParam: $TypeId }),
   Tuple: $.Struct({ fields: $.Vec($TypeId) }),
   Primitive: $.Struct({ kind: $PrimitiveKind }),

@@ -6,7 +6,13 @@
   "main": "src/index.ts",
   "type": "module",
   "dependencies": {
-    "@delightfuldot/utils": "workspace:*"
+    "@delightfuldot/shape": "workspace:*",
+    "@delightfuldot/types": "workspace:*",
+    "@delightfuldot/utils": "workspace:*",
+    "@polkadot/rpc-provider": "^10.9.1",
+    "@polkadot/types": "^10.9.1",
+    "@polkadot/util": "^12.5.1",
+    "@polkadot/util-crypto": "^12.5.1"
   },
   "scripts": {
     "start": "ts-node ./src/index.ts"

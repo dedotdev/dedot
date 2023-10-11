@@ -9,6 +9,12 @@
   "references": [
     {
       "path": "../utils/tsconfig.json"
+    },
+    {
+      "path": "../shape/tsconfig.json"
+    },
+    {
+      "path": "../types/tsconfig.json"
     }
   ]
 }
