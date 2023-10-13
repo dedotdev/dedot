@@ -14,7 +14,7 @@
       "path": "../shape/tsconfig.json"
     },
     {
-      "path": "../types/tsconfig.json"
+      "path": "../codecs/tsconfig.json"
     }
   ]
 }

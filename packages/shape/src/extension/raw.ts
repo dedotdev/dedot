@@ -1,6 +1,15 @@
 import { isNumber, isString, numberToU8a, stringToU8a, u8aToHex, u8aToU8a } from '@polkadot/util';
 import { HexString } from '@polkadot/util/types';
-import { AssertState, createShape, DecodeBuffer, metadata, Shape, ShapeAssertError } from 'subshape';
+import {
+  AssertState,
+  constant,
+  createShape,
+  DecodeBuffer,
+  metadata,
+  Shape,
+  ShapeAssertError,
+  withMetadata
+} from 'subshape';
 
 type BytesInput = string | number | Uint8Array;
 const xToU8a = (input: BytesInput): Uint8Array => {
@@ -44,3 +53,5 @@ export const RawHex: Shape<BytesInput, HexString> = createShape({
     }
   },
 });
+
+export const Null = withMetadata(metadata('$.Null'), constant(null));

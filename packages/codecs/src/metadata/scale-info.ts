@@ -1,7 +1,7 @@
 import * as $ from '@delightfuldot/shape';
 
 export type TypeId = number;
-export const $TypeId: $.Shape<TypeId> = $.compact($.u32);
+export const $TypeId: $.Shape<TypeId> = $.compactU32;
 
 export type Field = {
   name: string | undefined;
@@ -9,6 +9,7 @@ export type Field = {
   typeName: string | undefined;
   docs: string[];
 };
+
 export const $Field: $.Shape<Field> = $.Struct({
   name: $.Option($.str),
   typeId: $TypeId,

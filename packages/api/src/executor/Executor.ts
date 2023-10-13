@@ -1,6 +1,6 @@
 import DelightfulApi from '../DelightfulApi';
 import { stringCamelCase } from "@polkadot/util";
-import { Pallet } from "@delightfuldot/types";
+import { Pallet } from "@delightfuldot/codecs";
 
 export abstract class Executor {
   readonly #api: DelightfulApi;
@@ -21,7 +21,7 @@ export abstract class Executor {
   }
 
   get metadata() {
-    return this.api.metadata;
+    return this.api.metadataLatest;
   }
 
   getPallet(name: string, throwErr = false): Pallet {

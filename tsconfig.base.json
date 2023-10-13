@@ -25,8 +25,10 @@
       "@delightfuldot/utils/*": ["../utils/src/*"],
       "@delightfuldot/shape": ["../shape/src"],
       "@delightfuldot/shape/*": ["../shape/src/*"],
-      "@delightfuldot/types": ["../types/src"],
-      "@delightfuldot/types/*": ["../types/src/*"]
+      "@delightfuldot/codecs": ["../types/src"],
+      "@delightfuldot/codecs/*": ["../types/src/*"],
+      "delightfuldot": ["../api/src"],
+      "delightfuldot/*": ["../api/src/*"]
     }
   }
 }

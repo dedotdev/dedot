@@ -1,15 +1,15 @@
 import * as $ from '@delightfuldot/shape';
-import { $Type, $TypeId } from './scale-info';
+import { $Type, $TypeId, Type, TypeId } from './scale-info';
 
-export const $Hasher = $.Enum({
-  blake2_128: null,
-  blake2_256: null,
-  blake2_128Concat: null,
-  twox128: null,
-  twox256: null,
-  twox64Concat: null,
-  identity: null,
-});
+export const $Hasher = $.FlatEnum([
+  'blake2_128',
+  'blake2_256',
+  'blake2_128Concat',
+  'twox128',
+  'twox256',
+  'twox64Concat',
+  'identity',
+]);
 
 export const $StorageEntry = $.Struct({
   name: $.str,
@@ -62,15 +62,13 @@ export const $ExtrinsicDef = $.Struct({
   ),
 });
 
-const MAGIC_NUMBER = 1635018093;
+export type ExtrinsicDef = $.Output<typeof $ExtrinsicDef>;
 
-export const $Metadata = $.Struct({
-  magicNumber: $.constant<typeof MAGIC_NUMBER>(MAGIC_NUMBER, $.u32),
-  version: $.constant<14>(14, $.u8),
+export const $MetadataV14 = $.Struct({
   types: $.Vec($Type),
   pallets: $.Vec($Pallet),
   extrinsic: $ExtrinsicDef,
   runtimeType: $TypeId,
 });
 
-export type Metadata = $.Output<typeof $Metadata>;
+export type MetadataV14 = $.Output<typeof $MetadataV14>;

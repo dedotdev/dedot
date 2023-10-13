@@ -166,6 +166,28 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@delightfuldot/chaintypes@workspace:packages/chaintypes":
+  version: 0.0.0-use.local
+  resolution: "@delightfuldot/chaintypes@workspace:packages/chaintypes"
+  dependencies:
+    "@delightfuldot/codecs": "workspace:*"
+    "@delightfuldot/shape": "workspace:*"
+    "@delightfuldot/utils": "workspace:*"
+    "@polkadot/util": ^12.5.1
+  languageName: unknown
+  linkType: soft
+
+"@delightfuldot/codecs@workspace:*, @delightfuldot/codecs@workspace:packages/codecs":
+  version: 0.0.0-use.local
+  resolution: "@delightfuldot/codecs@workspace:packages/codecs"
+  dependencies:
+    "@delightfuldot/shape": "workspace:*"
+    "@delightfuldot/utils": "workspace:*"
+    "@polkadot/util": ^12.5.1
+    "@polkadot/util-crypto": ^12.5.1
+  languageName: unknown
+  linkType: soft
+
 "@delightfuldot/shape@workspace:*, @delightfuldot/shape@workspace:packages/shape":
   version: 0.0.0-use.local
   resolution: "@delightfuldot/shape@workspace:packages/shape"
@@ -177,14 +199,12 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@delightfuldot/types@workspace:*, @delightfuldot/types@workspace:packages/types":
+"@delightfuldot/typegen@workspace:packages/typegen":
   version: 0.0.0-use.local
-  resolution: "@delightfuldot/types@workspace:packages/types"
+  resolution: "@delightfuldot/typegen@workspace:packages/typegen"
   dependencies:
-    "@delightfuldot/shape": "workspace:*"
-    "@delightfuldot/utils": "workspace:*"
     "@polkadot/util": ^12.5.1
-    "@polkadot/util-crypto": ^12.5.1
+    delightfuldot: "workspace:*"
   languageName: unknown
   linkType: soft
 
@@ -2862,12 +2882,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"delightfuldot@workspace:packages/api":
+"delightfuldot@workspace:*, delightfuldot@workspace:packages/api":
   version: 0.0.0-use.local
   resolution: "delightfuldot@workspace:packages/api"
   dependencies:
+    "@delightfuldot/codecs": "workspace:*"
     "@delightfuldot/shape": "workspace:*"
-    "@delightfuldot/types": "workspace:*"
     "@delightfuldot/utils": "workspace:*"
     "@polkadot/rpc-provider": ^10.9.1
     "@polkadot/types": ^10.9.1
