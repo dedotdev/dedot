@@ -1,5 +1,5 @@
-import { isNumber, isString, numberToU8a, stringToU8a, u8aToHex, u8aToU8a } from '@polkadot/util';
-import { HexString } from '@polkadot/util/types';
+import { hexToU8a, isHex, isNumber, isString, numberToU8a, stringToU8a, u8aToHex, u8aToU8a } from '@polkadot/util';
+import { HexString } from '@delightfuldot/utils';
 import {
   AssertState,
   constant,
@@ -8,12 +8,14 @@ import {
   metadata,
   Shape,
   ShapeAssertError,
-  withMetadata
+  withMetadata,
 } from 'subshape';
 
-type BytesInput = string | number | Uint8Array;
+type BytesInput = HexString | string | number | Uint8Array;
 const xToU8a = (input: BytesInput): Uint8Array => {
-  if (isString(input)) {
+  if (isHex(input)) {
+    return hexToU8a(input);
+  } else if (isString(input)) {
     return stringToU8a(input);
   } else if (isNumber(input)) {
     return numberToU8a(input);
@@ -36,7 +38,7 @@ export const Bytes: Shape<BytesInput, Uint8Array> = createShape({
   },
 });
 
-const hexRegex = /^(?:0x)?[\da-f]*$/i
+const hexRegex = /^(?:0x)?[\da-f]*$/i;
 export const RawHex: Shape<BytesInput, HexString> = createShape({
   metadata: metadata('$.RawHex'),
   staticSize: 0,
@@ -47,9 +49,9 @@ export const RawHex: Shape<BytesInput, HexString> = createShape({
     return u8aToHex(buffer.array);
   },
   subAssert(assert: AssertState): void {
-    assert.typeof(this, "string");
+    assert.typeof(this, 'string');
     if (!hexRegex.test(assert.value as string)) {
-      throw new ShapeAssertError(this as any, assert.value, `${assert.path}: invalid hex`)
+      throw new ShapeAssertError(this as any, assert.value, `${assert.path}: invalid hex`);
     }
   },
 });

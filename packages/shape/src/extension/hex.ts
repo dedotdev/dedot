@@ -1,5 +1,5 @@
 import { hexToU8a, u8aToHex } from '@polkadot/util';
-import { HexString } from '@polkadot/util/types';
+import { HexString } from '@delightfuldot/utils';
 import * as $ from 'subshape';
 import { AssertState, createShape, DecodeBuffer, EncodeBuffer, metadata, Shape } from 'subshape';
 import { compactU32 } from './compact';

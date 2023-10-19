@@ -2,7 +2,8 @@ import {
   AnyShape,
   Expand,
   field,
-  Input, literalUnion,
+  Input,
+  literalUnion,
   option,
   optionalField,
   Output,
@@ -50,11 +51,29 @@ export type EnumMembers<V extends AnyShape> = {
 };
 
 export type InputEnumShape<V extends AnyShape, A extends EnumMembers<V>> = Expand<
-  { [K in keyof A]: { tag: K; value: A[K] extends AnyShape ? Input<A[K]> : A[K] extends IndexedEnumMember<V> ? Input<A[K]['value'] extends AnyShape ? A[K]['value'] : Shape<never>> : never } }[keyof A]
+  {
+    [K in keyof A]: {
+      tag: K;
+      value: A[K] extends AnyShape
+        ? Input<A[K]>
+        : A[K] extends IndexedEnumMember<V>
+        ? Input<A[K]['value'] extends AnyShape ? A[K]['value'] : Shape<never>>
+        : never;
+    };
+  }[keyof A]
 >;
 
 export type OutputEnumShape<V extends AnyShape, A extends EnumMembers<V>> = Expand<
-  { [K in keyof A]: { tag: K; value: A[K] extends AnyShape ? Output<A[K]> : A[K] extends IndexedEnumMember<V> ? Output<A[K]['value'] extends AnyShape ? A[K]['value'] : Shape<never>>: never } }[keyof A]
+  {
+    [K in keyof A]: {
+      tag: K;
+      value: A[K] extends AnyShape
+        ? Output<A[K]>
+        : A[K] extends IndexedEnumMember<V>
+        ? Output<A[K]['value'] extends AnyShape ? A[K]['value'] : Shape<never>>
+        : never;
+    };
+  }[keyof A]
 >;
 
 export const Enum = <T extends AnyShape, A extends EnumMembers<T>>(
@@ -64,9 +83,13 @@ export const Enum = <T extends AnyShape, A extends EnumMembers<T>>(
 
   Object.keys(members).forEach((keyName, keyIndex) => {
     if (members[keyName]) {
-      const { index, value} = members[keyName] as IndexedEnumMember<T>;
-      if (Number.isInteger(index) && value) {
-        enumMembers[index] = variant(keyName, field('value', value as any));
+      const { index, value } = members[keyName] as IndexedEnumMember<T>;
+      if (Number.isInteger(index)) {
+        if (value) {
+          enumMembers[index] = variant(keyName, field('value', value as any));
+        } else {
+          enumMembers[index] = variant(keyName);
+        }
       } else {
         enumMembers[keyIndex] = variant(keyName, field('value', members[keyName] as any));
       }

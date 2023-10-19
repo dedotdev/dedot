@@ -55,7 +55,7 @@ Shape.prototype.registerDecoder = function (predicate: Predicate, decoder: Decod
 
 Shape.prototype.tryEncode = function (input: any) {
   try {
-    console.log('this.encoders', this.encoders);
+    // console.log('this.encoders', this.encoders);
     if (this.encoders && this.encoders.length > 0) {
       for (const one of this.encoders.reverse()) {
         const [predicate, encoder] = one as [Predicate, Encoder];
