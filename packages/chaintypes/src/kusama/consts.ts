@@ -24,20 +24,10 @@ export interface ChainConsts extends GenericChainConsts {
     version: SpVersionRuntimeVersion;
     ss58Prefix: number;
   };
-  babe: {
-    epochDuration: bigint;
-    expectedBlockTime: bigint;
-    maxAuthorities: number;
-  };
+  babe: { epochDuration: bigint; expectedBlockTime: bigint; maxAuthorities: number };
   timestamp: { minimumPeriod: bigint };
   indices: { deposit: bigint };
-  balances: {
-    existentialDeposit: bigint;
-    maxLocks: number;
-    maxReserves: number;
-    maxHolds: number;
-    maxFreezes: number;
-  };
+  balances: { existentialDeposit: bigint; maxLocks: number; maxReserves: number; maxHolds: number; maxFreezes: number };
   transactionPayment: { operationalFeeMultiplier: number };
   authorship: {};
   staking: {
@@ -52,10 +42,7 @@ export interface ChainConsts extends GenericChainConsts {
   offences: {};
   historical: {};
   session: {};
-  grandpa: {
-    maxAuthorities: number;
-    maxSetIdSessionEntries: bigint;
-  };
+  grandpa: { maxAuthorities: number; maxSetIdSessionEntries: bigint };
   imOnline: { unsignedPriority: bigint };
   authorityDiscovery: {};
   treasury: {
@@ -67,10 +54,7 @@ export interface ChainConsts extends GenericChainConsts {
     palletId: FrameSupportPalletId;
     maxApprovals: number;
   };
-  convictionVoting: {
-    maxVotes: number;
-    voteLockingPeriod: number;
-  };
+  convictionVoting: { maxVotes: number; voteLockingPeriod: number };
   referenda: {
     submissionDeposit: bigint;
     maxQueued: number;
@@ -108,20 +92,9 @@ export interface ChainConsts extends GenericChainConsts {
     challengePeriod: number;
     maxCandidateIntake: number;
   };
-  recovery: {
-    configDepositBase: bigint;
-    friendDepositFactor: bigint;
-    maxFriends: number;
-    recoveryDeposit: bigint;
-  };
-  vesting: {
-    minVestedTransfer: bigint;
-    maxVestingSchedules: number;
-  };
-  scheduler: {
-    maximumWeight: SpWeightsWeightV2Weight;
-    maxScheduledPerBlock: number;
-  };
+  recovery: { configDepositBase: bigint; friendDepositFactor: bigint; maxFriends: number; recoveryDeposit: bigint };
+  vesting: { minVestedTransfer: bigint; maxVestingSchedules: number };
+  scheduler: { maximumWeight: SpWeightsWeightV2Weight; maxScheduledPerBlock: number };
   proxy: {
     proxyDepositBase: bigint;
     proxyDepositFactor: bigint;
@@ -130,11 +103,7 @@ export interface ChainConsts extends GenericChainConsts {
     announcementDepositBase: bigint;
     announcementDepositFactor: bigint;
   };
-  multisig: {
-    depositBase: bigint;
-    depositFactor: bigint;
-    maxSignatories: number;
-  };
+  multisig: { depositBase: bigint; depositFactor: bigint; maxSignatories: number };
   preimage: {};
   bounties: {
     bountyDepositBase: bigint;
@@ -147,10 +116,7 @@ export interface ChainConsts extends GenericChainConsts {
     dataDepositPerByte: bigint;
     maximumReasonLength: number;
   };
-  childBounties: {
-    maxActiveChildBountyCount: number;
-    childBountyValueMinimum: bigint;
-  };
+  childBounties: { maxActiveChildBountyCount: number; childBountyValueMinimum: bigint };
   electionProviderMultiPhase: {
     unsignedPhase: number;
     signedPhase: number;
@@ -194,10 +160,7 @@ export interface ChainConsts extends GenericChainConsts {
     maxFreezes: number;
   };
   voterList: { bagThresholds: Array<bigint> };
-  nominationPools: {
-    palletId: FrameSupportPalletId;
-    maxPointsToBalance: number;
-  };
+  nominationPools: { palletId: FrameSupportPalletId; maxPointsToBalance: number };
   fastUnstake: { deposit: bigint };
   parachainsOrigin: {};
   configuration: {};
@@ -212,29 +175,10 @@ export interface ChainConsts extends GenericChainConsts {
   paraSessionInfo: {};
   parasDisputes: {};
   parasSlashing: {};
-  registrar: {
-    paraDeposit: bigint;
-    dataDepositPerByte: bigint;
-  };
-  slots: {
-    leasePeriod: number;
-    leaseOffset: number;
-  };
-  auctions: {
-    endingPeriod: number;
-    sampleLength: number;
-    slotRangeCount: number;
-    leasePeriodsPerSlot: number;
-  };
-  crowdloan: {
-    palletId: FrameSupportPalletId;
-    minContribution: bigint;
-    removeKeysLimit: number;
-  };
+  registrar: { paraDeposit: bigint; dataDepositPerByte: bigint };
+  slots: { leasePeriod: number; leaseOffset: number };
+  auctions: { endingPeriod: number; sampleLength: number; slotRangeCount: number; leasePeriodsPerSlot: number };
+  crowdloan: { palletId: FrameSupportPalletId; minContribution: bigint; removeKeysLimit: number };
   xcmPallet: {};
-  messageQueue: {
-    heapSize: number;
-    maxStale: number;
-    serviceWeight: SpWeightsWeightV2Weight | undefined;
-  };
+  messageQueue: { heapSize: number; maxStale: number; serviceWeight: SpWeightsWeightV2Weight | undefined };
 }

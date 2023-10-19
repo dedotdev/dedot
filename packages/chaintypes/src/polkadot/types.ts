@@ -5,6 +5,8 @@ import type {
   Bytes,
   FixedArray,
   FixedBytes,
+  FixedI64,
+  FixedU128,
   H256,
   MultiAddress,
   Perbill,
@@ -24,7 +26,9 @@ export type {
   MultiAddress,
   Percent,
   PerU16,
+  FixedU128,
   Permill,
+  FixedI64,
 } from '@delightfuldot/codecs';
 
 export type FrameSystemAccountInfo = {
@@ -46,6 +50,7 @@ export type PalletBalancesExtraFlags = bigint;
 
 export type SpWeightsWeightV2Weight = {
   refTime: bigint;
+
   proofSize: bigint;
 };
 
@@ -5763,8 +5768,6 @@ export type PalletBalancesError =
   | 'tooManyHolds'
   | 'tooManyFreezes';
 
-export type SpArithmeticFixedPointFixedU128 = bigint;
-
 export type PalletTransactionPaymentReleases = 'v1Ancient' | 'v2';
 
 export type PalletStakingStakingLedger = {
@@ -6145,13 +6148,11 @@ export type PalletReferendaCurve =
   | {
       tag: 'Reciprocal';
       value: {
-        factor: SpArithmeticFixedPointFixedI64;
-        xOffset: SpArithmeticFixedPointFixedI64;
-        yOffset: SpArithmeticFixedPointFixedI64;
+        factor: FixedI64;
+        xOffset: FixedI64;
+        yOffset: FixedI64;
       };
     };
-
-export type SpArithmeticFixedPointFixedI64 = bigint;
 
 export type PalletReferendaError =
   | 'notOngoing'
@@ -6418,7 +6419,7 @@ export type PalletBagsListListListError = 'duplicate' | 'notHeavier' | 'notInSam
 export type PalletNominationPoolsPoolMember = {
   poolId: number;
   points: bigint;
-  lastRecordedRewardCounter: SpArithmeticFixedPointFixedU128;
+  lastRecordedRewardCounter: FixedU128;
   unbondingEras: Array<[number, bigint]>;
 };
 
@@ -6445,7 +6446,7 @@ export type PalletNominationPoolsPoolRoles = {
 };
 
 export type PalletNominationPoolsRewardPool = {
-  lastRecordedRewardCounter: SpArithmeticFixedPointFixedU128;
+  lastRecordedRewardCounter: FixedU128;
   lastRecordedTotalPayouts: bigint;
   totalRewardsClaimed: bigint;
   totalCommissionPending: bigint;

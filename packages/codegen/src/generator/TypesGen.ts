@@ -1,14 +1,15 @@
 import { stringPascalCase } from '@polkadot/util';
 import { Field, MetadataLatest, normalizeName, Type, TypeId } from '@delightfuldot/codecs';
 
-export function normalizeIdent(ident: string) {
-  if (ident.startsWith('r#')) ident = ident.slice(2);
-  return ident.replace(/(?:[^\p{ID_Continue}]|_)+(.)/gu, (_, $1: string) => $1.toUpperCase());
-}
 
-export function normalizeTypeName(name: string) {
-  return normalizeIdent(name).replace(/^./, (x) => x.toUpperCase());
-}
+// export function normalizeIdent(ident: string) {
+//   if (ident.startsWith('r#')) ident = ident.slice(2);
+//   return ident.replace(/(?:[^\p{ID_Continue}]|_)+(.)/gu, (_, $1: string) => $1.toUpperCase());
+// }
+
+// export function normalizeTypeName(name: string) {
+//   return normalizeIdent(name).replace(/^./, (x) => x.toUpperCase());
+// }
 
 interface NamedType extends Type {
   name: string;
@@ -33,6 +34,7 @@ const KNOWN_PATHS: KnownPath[] = [
 
   /^primitive_types::\w+$/,
   /^sp_arithmetic::per_things::\w+$/,
+  /^sp_arithmetic::fixed_point::\w+$/,
 ];
 
 export const BASE_KNOWN_TYPES = ['BitSequence', 'Bytes', 'FixedBytes', 'FixedArray'];

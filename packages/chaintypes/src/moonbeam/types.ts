@@ -3,6 +3,8 @@ import type {
   AccountId20,
   Bytes,
   FixedBytes,
+  FixedI64,
+  FixedU128,
   H160,
   H256,
   Perbill,
@@ -20,6 +22,8 @@ export type {
   Perbill,
   H160,
   U256,
+  FixedU128,
+  FixedI64,
   Permill,
 } from '@delightfuldot/codecs';
 
@@ -5203,8 +5207,6 @@ export type PalletBalancesError =
   | 'tooManyHolds'
   | 'tooManyFreezes';
 
-export type SpArithmeticFixedPointFixedU128 = bigint;
-
 export type PalletTransactionPaymentReleases = 'v1Ancient' | 'v2';
 
 export type PalletParachainStakingParachainBondConfig = {
@@ -5785,13 +5787,11 @@ export type PalletReferendaCurve =
   | {
       tag: 'Reciprocal';
       value: {
-        factor: SpArithmeticFixedPointFixedI64;
-        xOffset: SpArithmeticFixedPointFixedI64;
-        yOffset: SpArithmeticFixedPointFixedI64;
+        factor: FixedI64;
+        xOffset: FixedI64;
+        yOffset: FixedI64;
       };
     };
-
-export type SpArithmeticFixedPointFixedI64 = bigint;
 
 export type PalletReferendaError =
   | 'notOngoing'

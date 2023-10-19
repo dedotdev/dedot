@@ -3,6 +3,7 @@ import type {
   AccountId32,
   Bytes,
   FixedBytes,
+  FixedU128,
   H160,
   H256,
   MultiAddress,
@@ -21,6 +22,7 @@ export type {
   U256,
   Permill,
   MultiAddress,
+  FixedU128,
 } from '@delightfuldot/codecs';
 
 export type FrameSystemAccountInfo = {
@@ -3695,8 +3697,6 @@ export type CumulusPalletParachainSystemError =
   | 'notScheduled'
   | 'nothingAuthorized'
   | 'unauthorized';
-
-export type SpArithmeticFixedPointFixedU128 = bigint;
 
 export type PalletTransactionPaymentReleases = 'v1Ancient' | 'v2';
 
