@@ -166,7 +166,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@delightfuldot/chaintypes@workspace:packages/chaintypes":
+"@delightfuldot/chaintypes@workspace:*, @delightfuldot/chaintypes@workspace:packages/chaintypes":
   version: 0.0.0-use.local
   resolution: "@delightfuldot/chaintypes@workspace:packages/chaintypes"
   dependencies:
@@ -182,9 +182,22 @@ __metadata:
   resolution: "@delightfuldot/codecs@workspace:packages/codecs"
   dependencies:
     "@delightfuldot/shape": "workspace:*"
+    "@delightfuldot/types": "workspace:*"
     "@delightfuldot/utils": "workspace:*"
     "@polkadot/util": ^12.5.1
     "@polkadot/util-crypto": ^12.5.1
+  languageName: unknown
+  linkType: soft
+
+"@delightfuldot/codegen@workspace:packages/codegen":
+  version: 0.0.0-use.local
+  resolution: "@delightfuldot/codegen@workspace:packages/codegen"
+  dependencies:
+    "@delightfuldot/codecs": "workspace:*"
+    "@delightfuldot/shape": "workspace:*"
+    "@delightfuldot/utils": "workspace:*"
+    "@polkadot/util": ^12.5.1
+    delightfuldot: "workspace:*"
   languageName: unknown
   linkType: soft
 
@@ -199,12 +212,14 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@delightfuldot/typegen@workspace:packages/typegen":
+"@delightfuldot/types@workspace:*, @delightfuldot/types@workspace:packages/types":
   version: 0.0.0-use.local
-  resolution: "@delightfuldot/typegen@workspace:packages/typegen"
+  resolution: "@delightfuldot/types@workspace:packages/types"
   dependencies:
+    "@delightfuldot/codecs": "workspace:*"
+    "@delightfuldot/shape": "workspace:*"
+    "@delightfuldot/utils": "workspace:*"
     "@polkadot/util": ^12.5.1
-    delightfuldot: "workspace:*"
   languageName: unknown
   linkType: soft
 
@@ -2886,6 +2901,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "delightfuldot@workspace:packages/api"
   dependencies:
+    "@delightfuldot/chaintypes": "workspace:*"
     "@delightfuldot/codecs": "workspace:*"
     "@delightfuldot/shape": "workspace:*"
     "@delightfuldot/utils": "workspace:*"

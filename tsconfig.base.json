@@ -25,8 +25,14 @@
       "@delightfuldot/utils/*": ["../utils/src/*"],
       "@delightfuldot/shape": ["../shape/src"],
       "@delightfuldot/shape/*": ["../shape/src/*"],
-      "@delightfuldot/codecs": ["../types/src"],
-      "@delightfuldot/codecs/*": ["../types/src/*"],
+      "@delightfuldot/codecs": ["../codecs/src"],
+      "@delightfuldot/codecs/*": ["../codecs/src/*"],
+      "@delightfuldot/codegen": ["../codegen/src"],
+      "@delightfuldot/codegen/*": ["../codegen/src/*"],
+      "@delightfuldot/types": ["../types/src"],
+      "@delightfuldot/types/*": ["../types/src/*"],
+      "@delightfuldot/chaintypes": ["../chaintypes/src"],
+      "@delightfuldot/chaintypes/*": ["../chaintypes/src/*"],
       "delightfuldot": ["../api/src"],
       "delightfuldot/*": ["../api/src/*"]
     }

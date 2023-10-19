@@ -1,0 +1,21 @@
+{
+  "name": "@delightfuldot/codegen",
+  "version": "0.0.1",
+  "description": "Generate types",
+  "author": "Thang X. Vu <thang@coongcrafts.io>",
+  "main": "src/index.ts",
+  "type": "module",
+  "scripts": {
+    "build": "tsc --project tsconfig.build.json",
+    "clean": "rm -rf ./dist && rm -rf ./tsconfig.tsbuildinfo ./tsconfig.build.tsbuildinfo",
+    "test": "vitest --watch=false"
+  },
+  "dependencies": {
+    "@delightfuldot/codecs": "workspace:*",
+    "@delightfuldot/shape": "workspace:*",
+    "@delightfuldot/utils": "workspace:*",
+    "@polkadot/util": "^12.5.1",
+    "delightfuldot": "workspace:*"
+  },
+  "license": "Apache-2.0"
+}
