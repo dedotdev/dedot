@@ -1,15 +1,17 @@
 import { WsProvider } from '@polkadot/rpc-provider';
 import { ProviderInterface } from '@polkadot/rpc-provider/types';
-import { CodecRegistry, Metadata, MetadataLatest } from '@delightfuldot/codecs';
+import type { SubstrateApi } from '@delightfuldot/chaintypes';
+import { Metadata, MetadataLatest } from '@delightfuldot/codecs';
+import { GenericSubstrateApi } from '@delightfuldot/types';
 import { ConstantExecutor, RpcExecutor } from './executor';
 import { newProxyChain } from './proxychain';
-import { ChainConsts, RpcCalls } from './types';
+import { CodecRegistry } from "./registry";
 
 interface ApiOptions {
   provider: ProviderInterface;
 }
 
-export default class DelightfulApi {
+export default class DelightfulApi<ChainApi extends GenericSubstrateApi = SubstrateApi> {
   readonly #provider: ProviderInterface;
   readonly #registry: CodecRegistry;
   #metadata?: Metadata;
@@ -25,8 +27,10 @@ export default class DelightfulApi {
     this.setMetadata(metadata);
   }
 
-  static async create(options: ApiOptions): Promise<DelightfulApi> {
-    const api = new DelightfulApi(options);
+  static async create<ChainType extends GenericSubstrateApi = SubstrateApi>(
+    options: ApiOptions,
+  ): Promise<DelightfulApi<ChainType>> {
+    const api = new DelightfulApi<ChainType>(options);
 
     if (api.provider instanceof WsProvider) {
       await api.provider.isReady;
@@ -37,12 +41,12 @@ export default class DelightfulApi {
     return api;
   }
 
-  get rpc(): RpcCalls {
-    return newProxyChain({ executor: new RpcExecutor(this) }) as RpcCalls;
+  get rpc(): ChainApi['rpc'] {
+    return newProxyChain<ChainApi>({ executor: new RpcExecutor(this) }) as ChainApi['rpc'];
   }
 
-  get consts(): ChainConsts {
-    return newProxyChain({ executor: new ConstantExecutor(this) }) as ChainConsts;
+  get consts(): ChainApi['consts'] {
+    return newProxyChain<ChainApi>({ executor: new ConstantExecutor(this) }) as ChainApi['consts'];
   }
 
   get provider() {
@@ -62,7 +66,6 @@ export default class DelightfulApi {
     // TODO assert metadata!
     return this.#metadataLatest!;
   }
-
 
   setMetadata(metadata: Metadata) {
     this.#metadata = metadata;

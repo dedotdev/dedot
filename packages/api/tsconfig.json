@@ -15,6 +15,12 @@
     },
     {
       "path": "../codecs/tsconfig.json"
+    },
+    {
+      "path": "../types/tsconfig.json"
+    },
+    {
+      "path": "../chaintypes/tsconfig.json"
     }
   ]
 }

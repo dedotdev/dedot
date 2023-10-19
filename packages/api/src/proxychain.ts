@@ -1,18 +1,23 @@
-import { Executor } from "./executor";
+import { GenericSubstrateApi } from '@delightfuldot/types';
+import { Executor } from './executor';
 
-export interface Carrier {
-  executor: Executor;
+export interface Carrier<ChainApi extends GenericSubstrateApi> {
+  executor: Executor<ChainApi>;
   chain?: string[];
 }
 
-export const newProxyChain = (carrier: Carrier, currentLevel = 1, maxLevel = 3) => {
+export const newProxyChain = <ChainApi extends GenericSubstrateApi>(
+  carrier: Carrier<ChainApi>,
+  currentLevel = 1,
+  maxLevel = 3,
+) => {
   const { executor, chain = [] } = carrier;
   if (currentLevel === maxLevel) {
     return executor.execute(...chain);
   }
 
   return new Proxy(carrier, {
-    get(target: Carrier, property: string | symbol, receiver: any): any {
+    get(target: Carrier<ChainApi>, property: string | symbol, receiver: any): any {
       if (!target.chain) {
         target.chain = [];
       }
@@ -21,7 +26,7 @@ export const newProxyChain = (carrier: Carrier, currentLevel = 1, maxLevel = 3) 
 
       chain.push(property.toString());
 
-      return newProxyChain(target, currentLevel + 1);
+      return newProxyChain<ChainApi>(target, currentLevel + 1);
     },
   });
 };
