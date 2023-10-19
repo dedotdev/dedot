@@ -3,6 +3,8 @@ import type {
   AccountId32,
   BitSequence,
   Bytes,
+  FixedArray,
+  FixedBytes,
   H256,
   MultiAddress,
   Perbill,
@@ -14,6 +16,8 @@ import type {
 export type {
   BitSequence,
   Bytes,
+  FixedBytes,
+  FixedArray,
   AccountId32,
   H256,
   Perbill,
@@ -50,9 +54,9 @@ export type SpRuntimeDigest = {
 };
 
 export type SpRuntimeDigestDigestItem =
-  | { tag: 'PreRuntime'; value: [Bytes, Bytes] }
-  | { tag: 'Consensus'; value: [Bytes, Bytes] }
-  | { tag: 'Seal'; value: [Bytes, Bytes] }
+  | { tag: 'PreRuntime'; value: [FixedBytes<4>, Bytes] }
+  | { tag: 'Consensus'; value: [FixedBytes<4>, Bytes] }
+  | { tag: 'Seal'; value: [FixedBytes<4>, Bytes] }
   | { tag: 'Other'; value: Bytes }
   | { tag: 'RuntimeEnvironmentUpdated'; value: never };
 
@@ -170,7 +174,7 @@ export type SpRuntimeDispatchError =
 
 export type SpRuntimeModuleError = {
   index: number;
-  error: Bytes;
+  error: FixedBytes<4>;
 };
 
 export type SpRuntimeTokenError =
@@ -208,7 +212,7 @@ export type PalletSchedulerEvent =
       tag: 'Dispatched';
       value: {
         task: [number, number];
-        id?: Bytes | undefined;
+        id?: FixedBytes<32> | undefined;
         result: never | SpRuntimeDispatchError;
       };
     }
@@ -216,21 +220,21 @@ export type PalletSchedulerEvent =
       tag: 'CallUnavailable';
       value: {
         task: [number, number];
-        id?: Bytes | undefined;
+        id?: FixedBytes<32> | undefined;
       };
     }
   | {
       tag: 'PeriodicFailed';
       value: {
         task: [number, number];
-        id?: Bytes | undefined;
+        id?: FixedBytes<32> | undefined;
       };
     }
   | {
       tag: 'PermanentlyOverweight';
       value: {
         task: [number, number];
-        id?: Bytes | undefined;
+        id?: FixedBytes<32> | undefined;
       };
     };
 
@@ -540,7 +544,7 @@ export type PalletStakingForcing = 'notForcing' | 'forceNew' | 'forceNone' | 'fo
 export type PalletOffencesEvent = {
   tag: 'Offence';
   value: {
-    kind: Bytes;
+    kind: FixedBytes<16>;
     timeslot: Bytes;
   };
 };
@@ -564,7 +568,7 @@ export type PalletGrandpaEvent =
 
 export type SpConsensusGrandpaAppPublic = SpCoreEd25519Public;
 
-export type SpCoreEd25519Public = Bytes;
+export type SpCoreEd25519Public = FixedBytes<32>;
 
 export type PalletImOnlineEvent =
   | {
@@ -583,7 +587,7 @@ export type PalletImOnlineEvent =
 
 export type PalletImOnlineSr25519AppSr25519Public = SpCoreSr25519Public;
 
-export type SpCoreSr25519Public = Bytes;
+export type SpCoreSr25519Public = FixedBytes<32>;
 
 export type PalletStakingExposure = {
   total: bigint;
@@ -1152,7 +1156,7 @@ export type PalletSchedulerCall =
   | {
       tag: 'schedule_named';
       value: {
-        id: Bytes;
+        id: FixedBytes<32>;
         when: number;
         maybePeriodic?: [number, number] | undefined;
         priority: number;
@@ -1162,7 +1166,7 @@ export type PalletSchedulerCall =
   | {
       tag: 'cancel_named';
       value: {
-        id: Bytes;
+        id: FixedBytes<32>;
       };
     }
   | {
@@ -1177,7 +1181,7 @@ export type PalletSchedulerCall =
   | {
       tag: 'schedule_named_after';
       value: {
-        id: Bytes;
+        id: FixedBytes<32>;
         after: number;
         maybePeriodic?: [number, number] | undefined;
         priority: number;
@@ -1626,7 +1630,7 @@ export type FinalityGrandpaPrevote = {
 
 export type SpConsensusGrandpaAppSignature = SpCoreEd25519Signature;
 
-export type SpCoreEd25519Signature = Bytes;
+export type SpCoreEd25519Signature = FixedBytes<64>;
 
 export type FinalityGrandpaPrecommit = {
   targetHash: H256;
@@ -1660,7 +1664,7 @@ export type SpCoreOffchainOpaqueMultiaddr = Bytes;
 
 export type PalletImOnlineSr25519AppSr25519Signature = SpCoreSr25519Signature;
 
-export type SpCoreSr25519Signature = Bytes;
+export type SpCoreSr25519Signature = FixedBytes<64>;
 
 export type PalletDemocracyCall =
   | {
@@ -2170,7 +2174,7 @@ export type XcmV3Junction =
       tag: 'AccountId32';
       value: {
         network?: XcmV3JunctionNetworkId | undefined;
-        id: Bytes;
+        id: FixedBytes<32>;
       };
     }
   | {
@@ -2184,7 +2188,7 @@ export type XcmV3Junction =
       tag: 'AccountKey20';
       value: {
         network?: XcmV3JunctionNetworkId | undefined;
-        key: Bytes;
+        key: FixedBytes<20>;
       };
     }
   | { tag: 'PalletInstance'; value: number }
@@ -2193,7 +2197,7 @@ export type XcmV3Junction =
       tag: 'GeneralKey';
       value: {
         length: number;
-        data: Bytes;
+        data: FixedBytes<32>;
       };
     }
   | { tag: 'OnlyChild'; value: never }
@@ -2207,12 +2211,12 @@ export type XcmV3Junction =
   | { tag: 'GlobalConsensus'; value: XcmV3JunctionNetworkId };
 
 export type XcmV3JunctionNetworkId =
-  | { tag: 'ByGenesis'; value: Bytes }
+  | { tag: 'ByGenesis'; value: FixedBytes<32> }
   | {
       tag: 'ByFork';
       value: {
         blockNumber: bigint;
-        blockHash: Bytes;
+        blockHash: FixedBytes<32>;
       };
     }
   | { tag: 'Polkadot'; value: never }
@@ -2231,7 +2235,7 @@ export type XcmV3JunctionNetworkId =
 
 export type XcmV3JunctionBodyId =
   | { tag: 'Unit'; value: never }
-  | { tag: 'Moniker'; value: Bytes }
+  | { tag: 'Moniker'; value: FixedBytes<4> }
   | { tag: 'Index'; value: number }
   | { tag: 'Executive'; value: never }
   | { tag: 'Technical'; value: never }
@@ -2343,9 +2347,9 @@ export type PolkadotRuntimeCommonClaimsPalletCall =
       };
     };
 
-export type PolkadotRuntimeCommonClaimsEcdsaSignature = Bytes;
+export type PolkadotRuntimeCommonClaimsEcdsaSignature = FixedBytes<65>;
 
-export type PolkadotRuntimeCommonClaimsEthereumAddress = Bytes;
+export type PolkadotRuntimeCommonClaimsEthereumAddress = FixedBytes<20>;
 
 export type PolkadotRuntimeCommonClaimsStatementKind = 'regular' | 'saft';
 
@@ -2525,50 +2529,50 @@ export type PalletIdentityIdentityInfo = {
   web: PalletIdentityData;
   riot: PalletIdentityData;
   email: PalletIdentityData;
-  pgpFingerprint?: Bytes | undefined;
+  pgpFingerprint?: FixedBytes<20> | undefined;
   image: PalletIdentityData;
   twitter: PalletIdentityData;
 };
 
 export type PalletIdentityData =
   | { tag: 'None'; value: never }
-  | { tag: 'Raw0'; value: Bytes }
-  | { tag: 'Raw1'; value: Bytes }
-  | { tag: 'Raw2'; value: Bytes }
-  | { tag: 'Raw3'; value: Bytes }
-  | { tag: 'Raw4'; value: Bytes }
-  | { tag: 'Raw5'; value: Bytes }
-  | { tag: 'Raw6'; value: Bytes }
-  | { tag: 'Raw7'; value: Bytes }
-  | { tag: 'Raw8'; value: Bytes }
-  | { tag: 'Raw9'; value: Bytes }
-  | { tag: 'Raw10'; value: Bytes }
-  | { tag: 'Raw11'; value: Bytes }
-  | { tag: 'Raw12'; value: Bytes }
-  | { tag: 'Raw13'; value: Bytes }
-  | { tag: 'Raw14'; value: Bytes }
-  | { tag: 'Raw15'; value: Bytes }
-  | { tag: 'Raw16'; value: Bytes }
-  | { tag: 'Raw17'; value: Bytes }
-  | { tag: 'Raw18'; value: Bytes }
-  | { tag: 'Raw19'; value: Bytes }
-  | { tag: 'Raw20'; value: Bytes }
-  | { tag: 'Raw21'; value: Bytes }
-  | { tag: 'Raw22'; value: Bytes }
-  | { tag: 'Raw23'; value: Bytes }
-  | { tag: 'Raw24'; value: Bytes }
-  | { tag: 'Raw25'; value: Bytes }
-  | { tag: 'Raw26'; value: Bytes }
-  | { tag: 'Raw27'; value: Bytes }
-  | { tag: 'Raw28'; value: Bytes }
-  | { tag: 'Raw29'; value: Bytes }
-  | { tag: 'Raw30'; value: Bytes }
-  | { tag: 'Raw31'; value: Bytes }
-  | { tag: 'Raw32'; value: Bytes }
-  | { tag: 'BlakeTwo256'; value: Bytes }
-  | { tag: 'Sha256'; value: Bytes }
-  | { tag: 'Keccak256'; value: Bytes }
-  | { tag: 'ShaThree256'; value: Bytes };
+  | { tag: 'Raw0'; value: FixedBytes<0> }
+  | { tag: 'Raw1'; value: FixedBytes<1> }
+  | { tag: 'Raw2'; value: FixedBytes<2> }
+  | { tag: 'Raw3'; value: FixedBytes<3> }
+  | { tag: 'Raw4'; value: FixedBytes<4> }
+  | { tag: 'Raw5'; value: FixedBytes<5> }
+  | { tag: 'Raw6'; value: FixedBytes<6> }
+  | { tag: 'Raw7'; value: FixedBytes<7> }
+  | { tag: 'Raw8'; value: FixedBytes<8> }
+  | { tag: 'Raw9'; value: FixedBytes<9> }
+  | { tag: 'Raw10'; value: FixedBytes<10> }
+  | { tag: 'Raw11'; value: FixedBytes<11> }
+  | { tag: 'Raw12'; value: FixedBytes<12> }
+  | { tag: 'Raw13'; value: FixedBytes<13> }
+  | { tag: 'Raw14'; value: FixedBytes<14> }
+  | { tag: 'Raw15'; value: FixedBytes<15> }
+  | { tag: 'Raw16'; value: FixedBytes<16> }
+  | { tag: 'Raw17'; value: FixedBytes<17> }
+  | { tag: 'Raw18'; value: FixedBytes<18> }
+  | { tag: 'Raw19'; value: FixedBytes<19> }
+  | { tag: 'Raw20'; value: FixedBytes<20> }
+  | { tag: 'Raw21'; value: FixedBytes<21> }
+  | { tag: 'Raw22'; value: FixedBytes<22> }
+  | { tag: 'Raw23'; value: FixedBytes<23> }
+  | { tag: 'Raw24'; value: FixedBytes<24> }
+  | { tag: 'Raw25'; value: FixedBytes<25> }
+  | { tag: 'Raw26'; value: FixedBytes<26> }
+  | { tag: 'Raw27'; value: FixedBytes<27> }
+  | { tag: 'Raw28'; value: FixedBytes<28> }
+  | { tag: 'Raw29'; value: FixedBytes<29> }
+  | { tag: 'Raw30'; value: FixedBytes<30> }
+  | { tag: 'Raw31'; value: FixedBytes<31> }
+  | { tag: 'Raw32'; value: FixedBytes<32> }
+  | { tag: 'BlakeTwo256'; value: FixedBytes<32> }
+  | { tag: 'Sha256'; value: FixedBytes<32> }
+  | { tag: 'Keccak256'; value: FixedBytes<32> }
+  | { tag: 'ShaThree256'; value: FixedBytes<32> };
 
 export type PalletIdentityBitFlags = bigint;
 
@@ -2700,7 +2704,7 @@ export type PalletMultisigCall =
         threshold: number;
         otherSignatories: Array<AccountId32>;
         maybeTimepoint?: PalletMultisigTimepoint | undefined;
-        callHash: Bytes;
+        callHash: FixedBytes<32>;
         maxWeight: SpWeightsWeightV2Weight;
       };
     }
@@ -2710,7 +2714,7 @@ export type PalletMultisigCall =
         threshold: number;
         otherSignatories: Array<AccountId32>;
         timepoint: PalletMultisigTimepoint;
-        callHash: Bytes;
+        callHash: FixedBytes<32>;
       };
     };
 
@@ -2920,20 +2924,20 @@ export type PalletElectionProviderMultiPhaseRawSolution = {
 export type PolkadotRuntimeNposCompactSolution16 = {
   votes1: Array<[number, number]>;
   votes2: Array<[number, [number, PerU16], number]>;
-  votes3: Array<[number, Array<[number, PerU16]>, number]>;
-  votes4: Array<[number, Array<[number, PerU16]>, number]>;
-  votes5: Array<[number, Array<[number, PerU16]>, number]>;
-  votes6: Array<[number, Array<[number, PerU16]>, number]>;
-  votes7: Array<[number, Array<[number, PerU16]>, number]>;
-  votes8: Array<[number, Array<[number, PerU16]>, number]>;
-  votes9: Array<[number, Array<[number, PerU16]>, number]>;
-  votes10: Array<[number, Array<[number, PerU16]>, number]>;
-  votes11: Array<[number, Array<[number, PerU16]>, number]>;
-  votes12: Array<[number, Array<[number, PerU16]>, number]>;
-  votes13: Array<[number, Array<[number, PerU16]>, number]>;
-  votes14: Array<[number, Array<[number, PerU16]>, number]>;
-  votes15: Array<[number, Array<[number, PerU16]>, number]>;
-  votes16: Array<[number, Array<[number, PerU16]>, number]>;
+  votes3: Array<[number, FixedArray<[number, PerU16], 2>, number]>;
+  votes4: Array<[number, FixedArray<[number, PerU16], 3>, number]>;
+  votes5: Array<[number, FixedArray<[number, PerU16], 4>, number]>;
+  votes6: Array<[number, FixedArray<[number, PerU16], 5>, number]>;
+  votes7: Array<[number, FixedArray<[number, PerU16], 6>, number]>;
+  votes8: Array<[number, FixedArray<[number, PerU16], 7>, number]>;
+  votes9: Array<[number, FixedArray<[number, PerU16], 8>, number]>;
+  votes10: Array<[number, FixedArray<[number, PerU16], 9>, number]>;
+  votes11: Array<[number, FixedArray<[number, PerU16], 10>, number]>;
+  votes12: Array<[number, FixedArray<[number, PerU16], 11>, number]>;
+  votes13: Array<[number, FixedArray<[number, PerU16], 12>, number]>;
+  votes14: Array<[number, FixedArray<[number, PerU16], 13>, number]>;
+  votes15: Array<[number, FixedArray<[number, PerU16], 14>, number]>;
+  votes16: Array<[number, FixedArray<[number, PerU16], 15>, number]>;
 };
 
 export type SpNposElectionsElectionScore = {
@@ -3878,14 +3882,14 @@ export type SpRuntimeMultiSigner =
   | { tag: 'Sr25519'; value: SpCoreSr25519Public }
   | { tag: 'Ecdsa'; value: SpCoreEcdsaPublic };
 
-export type SpCoreEcdsaPublic = Bytes;
+export type SpCoreEcdsaPublic = FixedBytes<33>;
 
 export type SpRuntimeMultiSignature =
   | { tag: 'Ed25519'; value: SpCoreEd25519Signature }
   | { tag: 'Sr25519'; value: SpCoreSr25519Signature }
   | { tag: 'Ecdsa'; value: SpCoreEcdsaSignature };
 
-export type SpCoreEcdsaSignature = Bytes;
+export type SpCoreEcdsaSignature = FixedBytes<65>;
 
 export type PalletXcmCall =
   | {
@@ -4013,7 +4017,7 @@ export type XcmV2Junction =
       tag: 'AccountId32';
       value: {
         network: XcmV2NetworkId;
-        id: Bytes;
+        id: FixedBytes<32>;
       };
     }
   | {
@@ -4027,7 +4031,7 @@ export type XcmV2Junction =
       tag: 'AccountKey20';
       value: {
         network: XcmV2NetworkId;
-        key: Bytes;
+        key: FixedBytes<20>;
       };
     }
   | { tag: 'PalletInstance'; value: number }
@@ -4256,10 +4260,10 @@ export type XcmV2MultiassetFungibility =
 export type XcmV2MultiassetAssetInstance =
   | { tag: 'Undefined'; value: never }
   | { tag: 'Index'; value: bigint }
-  | { tag: 'Array4'; value: Bytes }
-  | { tag: 'Array8'; value: Bytes }
-  | { tag: 'Array16'; value: Bytes }
-  | { tag: 'Array32'; value: Bytes }
+  | { tag: 'Array4'; value: FixedBytes<4> }
+  | { tag: 'Array8'; value: FixedBytes<8> }
+  | { tag: 'Array16'; value: FixedBytes<16> }
+  | { tag: 'Array32'; value: FixedBytes<32> }
   | { tag: 'Blob'; value: Bytes };
 
 export type XcmV2Response =
@@ -4523,7 +4527,7 @@ export type XcmV3Instruction =
         jitWithdraw: boolean;
       };
     }
-  | { tag: 'SetTopic'; value: Bytes }
+  | { tag: 'SetTopic'; value: FixedBytes<32> }
   | { tag: 'ClearTopic'; value: never }
   | { tag: 'AliasOrigin'; value: XcmV3MultilocationMultiLocation }
   | {
@@ -4543,7 +4547,7 @@ export type XcmV3MultiassetMultiAsset = {
 
 export type XcmV3MultiassetAssetId =
   | { tag: 'Concrete'; value: XcmV3MultilocationMultiLocation }
-  | { tag: 'Abstract'; value: Bytes };
+  | { tag: 'Abstract'; value: FixedBytes<32> };
 
 export type XcmV3MultiassetFungibility =
   | { tag: 'Fungible'; value: bigint }
@@ -4552,10 +4556,10 @@ export type XcmV3MultiassetFungibility =
 export type XcmV3MultiassetAssetInstance =
   | { tag: 'Undefined'; value: never }
   | { tag: 'Index'; value: bigint }
-  | { tag: 'Array4'; value: Bytes }
-  | { tag: 'Array8'; value: Bytes }
-  | { tag: 'Array16'; value: Bytes }
-  | { tag: 'Array32'; value: Bytes };
+  | { tag: 'Array4'; value: FixedBytes<4> }
+  | { tag: 'Array8'; value: FixedBytes<8> }
+  | { tag: 'Array16'; value: FixedBytes<16> }
+  | { tag: 'Array32'; value: FixedBytes<32> };
 
 export type XcmV3Response =
   | { tag: 'Null'; value: never }
@@ -4890,7 +4894,7 @@ export type PalletMultisigEvent =
       value: {
         approving: AccountId32;
         multisig: AccountId32;
-        callHash: Bytes;
+        callHash: FixedBytes<32>;
       };
     }
   | {
@@ -4899,7 +4903,7 @@ export type PalletMultisigEvent =
         approving: AccountId32;
         timepoint: PalletMultisigTimepoint;
         multisig: AccountId32;
-        callHash: Bytes;
+        callHash: FixedBytes<32>;
       };
     }
   | {
@@ -4908,7 +4912,7 @@ export type PalletMultisigEvent =
         approving: AccountId32;
         timepoint: PalletMultisigTimepoint;
         multisig: AccountId32;
-        callHash: Bytes;
+        callHash: FixedBytes<32>;
         result: never | SpRuntimeDispatchError;
       };
     }
@@ -4918,7 +4922,7 @@ export type PalletMultisigEvent =
         cancelling: AccountId32;
         timepoint: PalletMultisigTimepoint;
         multisig: AccountId32;
-        callHash: Bytes;
+        callHash: FixedBytes<32>;
       };
     };
 
@@ -5550,7 +5554,7 @@ export type PalletMessageQueueEvent =
   | {
       tag: 'ProcessingFailed';
       value: {
-        id: Bytes;
+        id: FixedBytes<32>;
         origin: PolkadotRuntimeParachainsInclusionAggregateMessageOrigin;
         error: FrameSupportMessagesProcessMessageError;
       };
@@ -5558,7 +5562,7 @@ export type PalletMessageQueueEvent =
   | {
       tag: 'Processed';
       value: {
-        id: Bytes;
+        id: FixedBytes<32>;
         origin: PolkadotRuntimeParachainsInclusionAggregateMessageOrigin;
         weightUsed: SpWeightsWeightV2Weight;
         success: boolean;
@@ -5567,7 +5571,7 @@ export type PalletMessageQueueEvent =
   | {
       tag: 'OverweightEnqueued';
       value: {
-        id: Bytes;
+        id: FixedBytes<32>;
         origin: PolkadotRuntimeParachainsInclusionAggregateMessageOrigin;
         pageIndex: number;
         messageIndex: number;
@@ -5639,7 +5643,7 @@ export type SpVersionRuntimeVersion = {
   stateVersion: number;
 };
 
-export type Cow = Array<[Bytes, number]>;
+export type Cow = Array<[FixedBytes<8>, number]>;
 
 export type FrameSystemError =
   | 'invalidSpecName'
@@ -5650,7 +5654,7 @@ export type FrameSystemError =
   | 'callFiltered';
 
 export type PalletSchedulerScheduled = {
-  maybeId?: Bytes | undefined;
+  maybeId?: FixedBytes<32> | undefined;
   priority: number;
   call: FrameSupportPreimagesBounded;
   maybePeriodic?: [number, number] | undefined;
@@ -5701,8 +5705,8 @@ export type SpConsensusBabeDigestsPrimaryPreDigest = {
 };
 
 export type SpCoreSr25519VrfVrfSignature = {
-  output: Bytes;
-  proof: Bytes;
+  output: FixedBytes<32>;
+  proof: FixedBytes<64>;
 };
 
 export type SpConsensusBabeDigestsSecondaryPlainPreDigest = {
@@ -5730,7 +5734,7 @@ export type PalletBabeError =
 export type PalletIndicesError = 'notAssigned' | 'notOwner' | 'inUse' | 'notTransfer' | 'permanent';
 
 export type PalletBalancesBalanceLock = {
-  id: Bytes;
+  id: FixedBytes<8>;
   amount: bigint;
   reasons: PalletBalancesReasons;
 };
@@ -5738,7 +5742,7 @@ export type PalletBalancesBalanceLock = {
 export type PalletBalancesReasons = 'fee' | 'misc' | 'all';
 
 export type PalletBalancesReserveData = {
-  id: Bytes;
+  id: FixedBytes<8>;
   amount: bigint;
 };
 
@@ -5844,7 +5848,7 @@ export type SpStakingOffenceOffenceDetails = {
   reporters: Array<AccountId32>;
 };
 
-export type SpCoreCryptoKeyTypeId = Bytes;
+export type SpCoreCryptoKeyTypeId = FixedBytes<4>;
 
 export type PalletSessionError = 'invalidProof' | 'noAssociatedValidatorId' | 'duplicatedKey' | 'noKeys' | 'noAccount';
 
@@ -6028,7 +6032,7 @@ export type PalletTreasuryProposal = {
   bond: bigint;
 };
 
-export type FrameSupportPalletId = Bytes;
+export type FrameSupportPalletId = FixedBytes<8>;
 
 export type PalletTreasuryError =
   | 'insufficientProposersBalance'
@@ -6777,7 +6781,7 @@ export type PolkadotRuntimeParachainsHrmpPalletError =
 
 export type PolkadotPrimitivesV4SessionInfo = {
   activeValidatorIndices: Array<PolkadotPrimitivesV4ValidatorIndex>;
-  randomSeed: Bytes;
+  randomSeed: FixedBytes<32>;
   disputePeriod: number;
   validators: Array<PolkadotPrimitivesV4ValidatorAppPublic>;
   discoveryKeys: Array<SpAuthorityDiscoveryAppPublic>;

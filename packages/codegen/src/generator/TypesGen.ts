@@ -35,7 +35,8 @@ const KNOWN_PATHS: KnownPath[] = [
   /^sp_arithmetic::per_things::\w+$/,
 ];
 
-export const BASE_KNOWN_TYPES = ['BitSequence', 'Bytes'];
+export const BASE_KNOWN_TYPES = ['BitSequence', 'Bytes', 'FixedBytes', 'FixedArray'];
+const WRAPPER_TYPE_REGEX = /^(\w+)(<.*>)$/g
 
 export class TypesGen {
   metadata: MetadataLatest;
@@ -64,8 +65,7 @@ export class TypesGen {
         defTypeOut += `export type ${name} = ${this.generateType(id)};\n\n`;
       });
 
-    const cacheTypes = Object.values(this.typeCache);
-    const importBaseTypes = BASE_KNOWN_TYPES.filter((one) => cacheTypes.includes(one));
+    const importBaseTypes = BASE_KNOWN_TYPES.filter((one) => this.usedNameTypes.has(one));
 
     const typesToImport = [...importBaseTypes, ...knownTypes];
 
@@ -104,8 +104,9 @@ ${defTypeOut}
     const type = this.#generateType(typeId, nestedLevel);
     this.typeCache[typeId] = type;
 
-    if (BASE_KNOWN_TYPES.includes(type)) {
-      this.usedNameTypes.add(type);
+    const baseType = this.#removeGenericPart(type);
+    if (BASE_KNOWN_TYPES.includes(baseType)) {
+      this.usedNameTypes.add(baseType);
     }
 
     return type;
@@ -164,10 +165,10 @@ ${defTypeOut}
           const ok = members.find((one) => one.name === 'Ok');
           const err = members.find((one) => one.name === 'Err');
           if (ok && err) {
-            return `${this.generateType(ok.fields[0].typeId, nestedLevel + 1)} | ${this.generateType(
-              err.fields[0].typeId,
-              nestedLevel + 1,
-            )}`;
+            const OkType = this.generateType(ok.fields[0].typeId, nestedLevel + 1);
+            const ErrType = this.generateType(err.fields[0].typeId, nestedLevel + 1);
+
+            return `${OkType} | ${ErrType}`;
           }
         }
 
@@ -219,16 +220,15 @@ ${defTypeOut}
         return this.generateType(value.typeParam, nestedLevel + 1);
       case 'Sequence':
       case 'SizedVec': {
+        const fixedSize = tag === 'SizedVec' ? `${value.len}` : null;
         const $innerType = this.metadata.types[value.typeParam].type;
         if ($innerType.tag === 'Primitive' && $innerType.value.kind === 'u8') {
-          return 'Bytes';
+          return fixedSize ? `FixedBytes<${fixedSize}>` : 'Bytes';
         } else {
-          // TODO resolve stack size exceeded issue
           const innerType = this.generateType(value.typeParam, nestedLevel + 1);
-          return `Array<${innerType}>`;
+          return fixedSize ? `FixedArray<${innerType}, ${fixedSize}>` : `Array<${innerType}>`;
         }
       }
-
       default:
         throw new Error(`Invalid type! ${tag}`);
     }
@@ -280,6 +280,14 @@ ${defTypeOut}
 
       return o;
     }, {} as Record<TypeId, NamedType>);
+  }
+
+  #removeGenericPart(typeName: string) {
+    if (typeName.match(WRAPPER_TYPE_REGEX)) {
+      return typeName.replace(WRAPPER_TYPE_REGEX, (_, $1) => $1);
+    } else {
+      return typeName;
+    }
   }
 
   #cleanPath(path: string[]) {

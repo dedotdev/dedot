@@ -16,9 +16,9 @@ export class ConstsGen {
   generate() {
     const { pallets } = this.metadata;
 
-    let defTypeOut = '';
-
     this.typesGen.clearCache();
+
+    let defTypeOut = '';
     for (let pallet of pallets) {
       const typedConstants = pallet.constants.map((one) => [
         normalizeName(one.name),

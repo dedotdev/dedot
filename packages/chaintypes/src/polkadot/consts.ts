@@ -2,6 +2,7 @@
 import { GenericChainConsts } from '@delightfuldot/types';
 import {
   Bytes,
+  FixedBytes,
   FrameSupportPalletId,
   FrameSystemLimitsBlockLength,
   FrameSystemLimitsBlockWeights,
@@ -79,7 +80,7 @@ export interface ChainConsts extends GenericChainConsts {
   council: { maxProposalWeight: SpWeightsWeightV2Weight };
   technicalCommittee: { maxProposalWeight: SpWeightsWeightV2Weight };
   phragmenElection: {
-    palletId: Bytes;
+    palletId: FixedBytes<8>;
     candidacyBond: bigint;
     votingBondBase: bigint;
     votingBondFactor: bigint;
