@@ -24,13 +24,12 @@ export class RpcExecutor<ChainApi extends GenericSubstrateApi> extends Executor<
       //
       const result = await this.provider.send<any>(rpcName, formattedInputs);
 
-      //TODO format with outputType
-      const $outputType = this.registry.findCodec(def.type);
-      if (!$outputType) {
-        return result; // TODO should we throw an error here!?!
+      if (result === null) {
+        return null;
       }
 
-      return $outputType.tryDecode(result);
+      //TODO format with outputType
+      return this.registry.findCodec(def.type).tryDecode(result);
     };
 
     return fnRpc;
