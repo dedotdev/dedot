@@ -11,12 +11,16 @@ export class StorageQueryExecutor<ChainApi extends GenericSubstrateApi = Substra
       const storageKeyFn = this.storageKey(pallet, storage);
       const key = storageKeyFn(...args);
       const valueTypeId = storageKeyFn.valueTypeId;
+      const entry = storageKeyFn.targetEntry;
 
       const result = await this.api.rpc.state.getStorage(hexToU8a(key));
 
-      if (result === null || result.length === 0) {
-        // TODO return default value based on the modifier
-        return null;
+      if (result === null) {
+        if (entry.modifier === 'Optional') {
+          return undefined;
+        } else if (entry.modifier === 'Default') {
+          return this.registry.findPortableCodec(valueTypeId).tryDecode(hexToU8a(entry.default));
+        }
       } else {
         return this.registry.findPortableCodec(valueTypeId).tryDecode(hexToU8a(result));
       }
