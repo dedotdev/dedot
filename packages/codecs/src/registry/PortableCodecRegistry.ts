@@ -3,7 +3,7 @@ import * as $ from '@delightfuldot/shape';
 import { normalizeName } from '@delightfuldot/utils';
 import { CodecRegistry } from './CodecRegistry';
 
-const KNOWN_CODECS = ['AccountId32'];
+const KNOWN_CODECS = ['AccountId32', 'Header', 'Digest', 'DigestItem', 'Data'];
 
 export class PortableCodecRegistry {
   readonly types: Record<TypeId, Type>;

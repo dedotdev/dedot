@@ -13,6 +13,8 @@ const KNOWN_PATHS: KnownPath[] = [
   'fp_account::AccountId20',
   'account::AccountId20',
 
+  'pallet_identity::types::Data',
+
   /^primitive_types::\w+$/,
   /^sp_arithmetic::per_things::\w+$/,
   /^sp_arithmetic::fixed_point::\w+$/,

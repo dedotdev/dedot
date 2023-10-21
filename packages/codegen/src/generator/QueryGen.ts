@@ -40,7 +40,7 @@ export interface ChainStorage extends GenericChainStorage {
   }
 
   #generateEntry(entry: StorageEntry) {
-    const { name, type, docs } = entry;
+    const { name, type, docs, modifier } = entry;
 
     let valueType, keyType;
     if (type.tag === 'Plain') {
@@ -52,9 +52,11 @@ export interface ChainStorage extends GenericChainStorage {
       throw Error('Invalid entry type!');
     }
 
+    const isOptional = modifier === 'Optional';
+
     return {
       name: normalizeName(name),
-      valueType,
+      valueType: `${valueType}${isOptional ? ' | undefined' : ''}`,
       keyType: keyType ? `arg: ${keyType}` : '',
       docs,
     };

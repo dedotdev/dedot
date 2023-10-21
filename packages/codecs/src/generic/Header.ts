@@ -47,7 +47,7 @@ export const $DigestItem = $.Enum({
   PreRuntime: { index: 6, value: $.Tuple($ConsensusEngineId, $.PrefixedHex) },
   RuntimeEnvironmentUpdated: { index: 8 },
 });
-export type DigestItem = $.Output<typeof $DigestItem>;
+export type DigestItem = $.Input<typeof $DigestItem>;
 
 export const $Digest = $.Struct({
   logs: $.Vec($DigestItem),

@@ -13,7 +13,7 @@ export const $Hasher = $.FlatEnum([
 
 export const $StorageEntry = $.Struct({
   name: $.str,
-  modifier: $.Enum({ Optional: null, Default: null }),
+  modifier: $.FlatEnum(['Optional', 'Default']),
   type: $.Enum({
     Plain: $.Struct({ valueTypeId: $TypeId }),
     Map: $.Struct({

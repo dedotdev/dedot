@@ -5,4 +5,5 @@ export { array } from './array';
 export * from './hex';
 export * from './raw';
 export * from './compact';
+export * from './str';
 

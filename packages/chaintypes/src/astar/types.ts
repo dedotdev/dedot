@@ -2,6 +2,7 @@
 import type {
   AccountId32Like,
   Bytes,
+  Data,
   FixedBytes,
   FixedU128,
   H160,
@@ -22,6 +23,7 @@ export type {
   U256,
   Permill,
   MultiAddress,
+  Data,
   FixedU128,
 } from '@delightfuldot/codecs';
 
@@ -1864,7 +1866,7 @@ export type AstarRuntimeRuntimeCall =
 export type PalletIdentityCall =
   | { tag: 'add_registrar'; value: { account: MultiAddress } }
   | { tag: 'set_identity'; value: { info: PalletIdentityIdentityInfo } }
-  | { tag: 'set_subs'; value: { subs: Array<[AccountId32Like, PalletIdentityData]> } }
+  | { tag: 'set_subs'; value: { subs: Array<[AccountId32Like, Data]> } }
   | { tag: 'clear_identity' }
   | {
       tag: 'request_judgement';
@@ -1909,70 +1911,30 @@ export type PalletIdentityCall =
       tag: 'add_sub';
       value: {
         sub: MultiAddress;
-        data: PalletIdentityData;
+        data: Data;
       };
     }
   | {
       tag: 'rename_sub';
       value: {
         sub: MultiAddress;
-        data: PalletIdentityData;
+        data: Data;
       };
     }
   | { tag: 'remove_sub'; value: { sub: MultiAddress } }
   | { tag: 'quit_sub' };
 
 export type PalletIdentityIdentityInfo = {
-  additional: Array<[PalletIdentityData, PalletIdentityData]>;
-  display: PalletIdentityData;
-  legal: PalletIdentityData;
-  web: PalletIdentityData;
-  riot: PalletIdentityData;
-  email: PalletIdentityData;
+  additional: Array<[Data, Data]>;
+  display: Data;
+  legal: Data;
+  web: Data;
+  riot: Data;
+  email: Data;
   pgpFingerprint?: FixedBytes<20> | undefined;
-  image: PalletIdentityData;
-  twitter: PalletIdentityData;
+  image: Data;
+  twitter: Data;
 };
-
-export type PalletIdentityData =
-  | { tag: 'None' }
-  | { tag: 'Raw0'; value: FixedBytes<0> }
-  | { tag: 'Raw1'; value: FixedBytes<1> }
-  | { tag: 'Raw2'; value: FixedBytes<2> }
-  | { tag: 'Raw3'; value: FixedBytes<3> }
-  | { tag: 'Raw4'; value: FixedBytes<4> }
-  | { tag: 'Raw5'; value: FixedBytes<5> }
-  | { tag: 'Raw6'; value: FixedBytes<6> }
-  | { tag: 'Raw7'; value: FixedBytes<7> }
-  | { tag: 'Raw8'; value: FixedBytes<8> }
-  | { tag: 'Raw9'; value: FixedBytes<9> }
-  | { tag: 'Raw10'; value: FixedBytes<10> }
-  | { tag: 'Raw11'; value: FixedBytes<11> }
-  | { tag: 'Raw12'; value: FixedBytes<12> }
-  | { tag: 'Raw13'; value: FixedBytes<13> }
-  | { tag: 'Raw14'; value: FixedBytes<14> }
-  | { tag: 'Raw15'; value: FixedBytes<15> }
-  | { tag: 'Raw16'; value: FixedBytes<16> }
-  | { tag: 'Raw17'; value: FixedBytes<17> }
-  | { tag: 'Raw18'; value: FixedBytes<18> }
-  | { tag: 'Raw19'; value: FixedBytes<19> }
-  | { tag: 'Raw20'; value: FixedBytes<20> }
-  | { tag: 'Raw21'; value: FixedBytes<21> }
-  | { tag: 'Raw22'; value: FixedBytes<22> }
-  | { tag: 'Raw23'; value: FixedBytes<23> }
-  | { tag: 'Raw24'; value: FixedBytes<24> }
-  | { tag: 'Raw25'; value: FixedBytes<25> }
-  | { tag: 'Raw26'; value: FixedBytes<26> }
-  | { tag: 'Raw27'; value: FixedBytes<27> }
-  | { tag: 'Raw28'; value: FixedBytes<28> }
-  | { tag: 'Raw29'; value: FixedBytes<29> }
-  | { tag: 'Raw30'; value: FixedBytes<30> }
-  | { tag: 'Raw31'; value: FixedBytes<31> }
-  | { tag: 'Raw32'; value: FixedBytes<32> }
-  | { tag: 'BlakeTwo256'; value: FixedBytes<32> }
-  | { tag: 'Sha256'; value: FixedBytes<32> }
-  | { tag: 'Keccak256'; value: FixedBytes<32> }
-  | { tag: 'ShaThree256'; value: FixedBytes<32> };
 
 export type PalletIdentityBitFlags = bigint;
 

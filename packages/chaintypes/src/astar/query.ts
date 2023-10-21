@@ -13,6 +13,7 @@ import {
   CumulusPalletXcmpQueueOutboundChannelDetails,
   CumulusPalletXcmpQueueQueueConfigData,
   CumulusPrimitivesParachainInherentMessageQueueChain,
+  Data,
   EthereumBlock,
   EthereumReceiptReceiptV3,
   EthereumTransactionTransactionV2,
@@ -49,7 +50,6 @@ import {
   PalletDappsStakingStakerInfo,
   PalletDappsStakingVersion,
   PalletEvmCodeMetadata,
-  PalletIdentityData,
   PalletIdentityRegistrarInfo,
   PalletIdentityRegistration,
   PalletMultisigMultisig,
@@ -88,7 +88,7 @@ export interface ChainStorage extends GenericChainStorage {
     /**
      * Total extrinsics count for the current block.
      **/
-    extrinsicCount(): Promise<number>;
+    extrinsicCount(): Promise<number | undefined>;
 
     /**
      * The current weight for the block.
@@ -98,7 +98,7 @@ export interface ChainStorage extends GenericChainStorage {
     /**
      * Total length (in bytes) for all extrinsics put together, for the current block.
      **/
-    allExtrinsicsLen(): Promise<number>;
+    allExtrinsicsLen(): Promise<number | undefined>;
 
     /**
      * Map of block numbers to block hashes.
@@ -158,7 +158,7 @@ export interface ChainStorage extends GenericChainStorage {
     /**
      * Stores the `spec_version` and `spec_name` of when the last runtime upgrade happened.
      **/
-    lastRuntimeUpgrade(): Promise<FrameSystemLastRuntimeUpgradeInfo>;
+    lastRuntimeUpgrade(): Promise<FrameSystemLastRuntimeUpgradeInfo | undefined>;
 
     /**
      * True if we have upgraded so that `type RefCount` is `u32`. False (default) if not.
@@ -174,7 +174,7 @@ export interface ChainStorage extends GenericChainStorage {
     /**
      * The execution phase of the block.
      **/
-    executionPhase(): Promise<FrameSystemPhase>;
+    executionPhase(): Promise<FrameSystemPhase | undefined>;
   };
   identity: {
     /**
@@ -182,13 +182,13 @@ export interface ChainStorage extends GenericChainStorage {
      *
      * TWOX-NOTE: OK ― `AccountId` is a secure hash.
      **/
-    identityOf(arg: AccountId32Like): Promise<PalletIdentityRegistration>;
+    identityOf(arg: AccountId32Like): Promise<PalletIdentityRegistration | undefined>;
 
     /**
      * The super-identity of an alternative "sub" identity together with its name, within that
      * context. If the account is not some other account's sub-identity, then just `None`.
      **/
-    superOf(arg: AccountId32Like): Promise<[AccountId32Like, PalletIdentityData]>;
+    superOf(arg: AccountId32Like): Promise<[AccountId32Like, Data] | undefined>;
 
     /**
      * Alternative "sub" identities of this account.
@@ -222,7 +222,7 @@ export interface ChainStorage extends GenericChainStorage {
     /**
      * The set of open multisig operations.
      **/
-    multisigs(arg: [AccountId32Like, FixedBytes<32>]): Promise<PalletMultisigMultisig>;
+    multisigs(arg: [AccountId32Like, FixedBytes<32>]): Promise<PalletMultisigMultisig | undefined>;
   };
   proxy: {
     /**
@@ -254,14 +254,14 @@ export interface ChainStorage extends GenericChainStorage {
      * This will be cleared in `on_initialize` of each new block if no other pallet already set
      * the value.
      **/
-    newValidationCode(): Promise<Bytes>;
+    newValidationCode(): Promise<Bytes | undefined>;
 
     /**
      * The [`PersistedValidationData`] set for this block.
      * This value is expected to be set only once per block and it's never stored
      * in the trie.
      **/
-    validationData(): Promise<PolkadotPrimitivesV4PersistedValidationData>;
+    validationData(): Promise<PolkadotPrimitivesV4PersistedValidationData | undefined>;
 
     /**
      * Were the validation data set to notify the relay chain?
@@ -292,7 +292,7 @@ export interface ChainStorage extends GenericChainStorage {
      *
      * This data is also absent from the genesis.
      **/
-    relayStateProof(): Promise<SpTrieStorageProof>;
+    relayStateProof(): Promise<SpTrieStorageProof | undefined>;
 
     /**
      * The snapshot of some state related to messaging relevant to the current parachain as per
@@ -303,7 +303,7 @@ export interface ChainStorage extends GenericChainStorage {
      *
      * This data is also absent from the genesis.
      **/
-    relevantMessagingState(): Promise<CumulusPalletParachainSystemRelayStateSnapshotMessagingStateSnapshot>;
+    relevantMessagingState(): Promise<CumulusPalletParachainSystemRelayStateSnapshotMessagingStateSnapshot | undefined>;
 
     /**
      * The parachain host configuration that was obtained from the relay parent.
@@ -313,7 +313,7 @@ export interface ChainStorage extends GenericChainStorage {
      *
      * This data is also absent from the genesis.
      **/
-    hostConfiguration(): Promise<PolkadotPrimitivesV4AbridgedHostConfiguration>;
+    hostConfiguration(): Promise<PolkadotPrimitivesV4AbridgedHostConfiguration | undefined>;
 
     /**
      * The last downward message queue chain head we have observed.
@@ -376,25 +376,25 @@ export interface ChainStorage extends GenericChainStorage {
      * The weight we reserve at the beginning of the block for processing XCMP messages. This
      * overrides the amount set in the Config trait.
      **/
-    reservedXcmpWeightOverride(): Promise<SpWeightsWeightV2Weight>;
+    reservedXcmpWeightOverride(): Promise<SpWeightsWeightV2Weight | undefined>;
 
     /**
      * The weight we reserve at the beginning of the block for processing DMP messages. This
      * overrides the amount set in the Config trait.
      **/
-    reservedDmpWeightOverride(): Promise<SpWeightsWeightV2Weight>;
+    reservedDmpWeightOverride(): Promise<SpWeightsWeightV2Weight | undefined>;
 
     /**
      * The next authorized upgrade, if there is one.
      **/
-    authorizedUpgrade(): Promise<CumulusPalletParachainSystemCodeUpgradeAuthorization>;
+    authorizedUpgrade(): Promise<CumulusPalletParachainSystemCodeUpgradeAuthorization | undefined>;
 
     /**
      * A custom head data that should be returned as result of `validate_block`.
      *
      * See [`Pallet::set_custom_validation_head_data`] for more information.
      **/
-    customValidationHeadData(): Promise<Bytes>;
+    customValidationHeadData(): Promise<Bytes | undefined>;
   };
   parachainInfo: { parachainId(): Promise<PolkadotParachainPrimitivesId> };
   transactionPayment: {
@@ -465,7 +465,7 @@ export interface ChainStorage extends GenericChainStorage {
     /**
      * Information regarding the vesting of a given account.
      **/
-    vesting(arg: AccountId32Like): Promise<Array<PalletVestingVestingInfo>>;
+    vesting(arg: AccountId32Like): Promise<Array<PalletVestingVestingInfo> | undefined>;
 
     /**
      * Storage version of the pallet.
@@ -508,22 +508,24 @@ export interface ChainStorage extends GenericChainStorage {
     /**
      * Simple map where developer account points to their smart contract
      **/
-    registeredDevelopers(arg: AccountId32Like): Promise<AstarRuntimeSmartContract>;
+    registeredDevelopers(arg: AccountId32Like): Promise<AstarRuntimeSmartContract | undefined>;
 
     /**
      * Simple map where smart contract points to basic info about it (e.g. developer address, state)
      **/
-    registeredDapps(arg: AstarRuntimeSmartContract): Promise<PalletDappsStakingDAppInfo>;
+    registeredDapps(arg: AstarRuntimeSmartContract): Promise<PalletDappsStakingDAppInfo | undefined>;
 
     /**
      * General information about an era like TVL, total staked value, rewards.
      **/
-    generalEraInfo(arg: number): Promise<PalletDappsStakingEraInfo>;
+    generalEraInfo(arg: number): Promise<PalletDappsStakingEraInfo | undefined>;
 
     /**
      * Staking information about contract in a particular era.
      **/
-    contractEraStake(arg: [AstarRuntimeSmartContract, number]): Promise<PalletDappsStakingContractStakeInfo>;
+    contractEraStake(
+      arg: [AstarRuntimeSmartContract, number],
+    ): Promise<PalletDappsStakingContractStakeInfo | undefined>;
 
     /**
      * Info about stakers stakes on particular contracts.
@@ -540,19 +542,19 @@ export interface ChainStorage extends GenericChainStorage {
     /**
      * Details of an asset.
      **/
-    asset(arg: bigint): Promise<PalletAssetsAssetDetails>;
+    asset(arg: bigint): Promise<PalletAssetsAssetDetails | undefined>;
 
     /**
      * The holdings of a specific account for a specific asset.
      **/
-    account(arg: [bigint, AccountId32Like]): Promise<PalletAssetsAssetAccount>;
+    account(arg: [bigint, AccountId32Like]): Promise<PalletAssetsAssetAccount | undefined>;
 
     /**
      * Approved balance transfers. First balance is the amount approved for transfer. Second
      * is the amount of `T::Currency` reserved for storing this.
      * First key is the asset ID, second key is the owner and third key is the delegate.
      **/
-    approvals(arg: [bigint, AccountId32Like, AccountId32Like]): Promise<PalletAssetsApproval>;
+    approvals(arg: [bigint, AccountId32Like, AccountId32Like]): Promise<PalletAssetsApproval | undefined>;
 
     /**
      * Metadata of an asset.
@@ -563,7 +565,7 @@ export interface ChainStorage extends GenericChainStorage {
     /**
      * Author of current block.
      **/
-    author(): Promise<AccountId32Like>;
+    author(): Promise<AccountId32Like | undefined>;
   };
   collatorSelection: {
     /**
@@ -598,7 +600,7 @@ export interface ChainStorage extends GenericChainStorage {
     /**
      * Destination account for slashed amount.
      **/
-    slashDestination(): Promise<AccountId32Like>;
+    slashDestination(): Promise<AccountId32Like | undefined>;
   };
   session: {
     /**
@@ -635,12 +637,12 @@ export interface ChainStorage extends GenericChainStorage {
     /**
      * The next session keys for a validator.
      **/
-    nextKeys(arg: AccountId32Like): Promise<AstarRuntimeSessionKeys>;
+    nextKeys(arg: AccountId32Like): Promise<AstarRuntimeSessionKeys | undefined>;
 
     /**
      * The owner of a key. The key is the `KeyTypeId` + the encoded key.
      **/
-    keyOwner(arg: [SpCoreCryptoKeyTypeId, Bytes]): Promise<AccountId32Like>;
+    keyOwner(arg: [SpCoreCryptoKeyTypeId, Bytes]): Promise<AccountId32Like | undefined>;
   };
   aura: {
     /**
@@ -707,7 +709,7 @@ export interface ChainStorage extends GenericChainStorage {
      * These message stay in this storage map until they are manually dispatched via
      * `service_overweight`.
      **/
-    overweight(arg: bigint): Promise<[PolkadotParachainPrimitivesId, number, Bytes]>;
+    overweight(arg: bigint): Promise<[PolkadotParachainPrimitivesId, number, Bytes] | undefined>;
 
     /**
      * Counter for the related counted storage map
@@ -734,7 +736,7 @@ export interface ChainStorage extends GenericChainStorage {
     /**
      * The ongoing queries.
      **/
-    queries(arg: bigint): Promise<PalletXcmQueryStatus>;
+    queries(arg: bigint): Promise<PalletXcmQueryStatus | undefined>;
 
     /**
      * The existing asset traps.
@@ -748,23 +750,25 @@ export interface ChainStorage extends GenericChainStorage {
      * Default version to encode XCM when latest version of destination is unknown. If `None`,
      * then the destinations whose XCM version is unknown are considered unreachable.
      **/
-    safeXcmVersion(): Promise<number>;
+    safeXcmVersion(): Promise<number | undefined>;
 
     /**
      * The Latest versions that we know various locations support.
      **/
-    supportedVersion(arg: [number, XcmVersionedMultiLocation]): Promise<number>;
+    supportedVersion(arg: [number, XcmVersionedMultiLocation]): Promise<number | undefined>;
 
     /**
      * All locations that we have requested version notifications from.
      **/
-    versionNotifiers(arg: [number, XcmVersionedMultiLocation]): Promise<bigint>;
+    versionNotifiers(arg: [number, XcmVersionedMultiLocation]): Promise<bigint | undefined>;
 
     /**
      * The target locations that are subscribed to our version changes, as well as the most recent
      * of our versions we informed them of.
      **/
-    versionNotifyTargets(arg: [number, XcmVersionedMultiLocation]): Promise<[bigint, SpWeightsWeightV2Weight, number]>;
+    versionNotifyTargets(
+      arg: [number, XcmVersionedMultiLocation],
+    ): Promise<[bigint, SpWeightsWeightV2Weight, number] | undefined>;
 
     /**
      * Destinations whose latest XCM version we would like to know. Duplicates not allowed, and
@@ -776,19 +780,19 @@ export interface ChainStorage extends GenericChainStorage {
     /**
      * The current migration's stage, if any.
      **/
-    currentMigration(): Promise<PalletXcmVersionMigrationStage>;
+    currentMigration(): Promise<PalletXcmVersionMigrationStage | undefined>;
 
     /**
      * Fungible assets which we know are locked on a remote chain.
      **/
     remoteLockedFungibles(
       arg: [number, AccountId32Like, XcmVersionedAssetId],
-    ): Promise<PalletXcmRemoteLockedFungibleRecord>;
+    ): Promise<PalletXcmRemoteLockedFungibleRecord | undefined>;
 
     /**
      * Fungible assets which we know are locked on this chain.
      **/
-    lockedFungibles(arg: AccountId32Like): Promise<Array<[bigint, XcmVersionedMultiLocation]>>;
+    lockedFungibles(arg: AccountId32Like): Promise<Array<[bigint, XcmVersionedMultiLocation]> | undefined>;
 
     /**
      * Global suspension state of the XCM executor.
@@ -814,7 +818,7 @@ export interface ChainStorage extends GenericChainStorage {
     /**
      * The overweight messages.
      **/
-    overweight(arg: bigint): Promise<[number, Bytes]>;
+    overweight(arg: bigint): Promise<[number, Bytes] | undefined>;
 
     /**
      * Counter for the related counted storage map
@@ -827,14 +831,14 @@ export interface ChainStorage extends GenericChainStorage {
      * Can be used when receiving transaction specifying an asset directly,
      * like transferring an asset from this chain to another.
      **/
-    assetIdToLocation(arg: bigint): Promise<XcmVersionedMultiLocation>;
+    assetIdToLocation(arg: bigint): Promise<XcmVersionedMultiLocation | undefined>;
 
     /**
      * Mapping from an asset type to an asset id.
      * Can be used when receiving a multilocation XCM message to retrieve
      * the corresponding asset in which tokens should me minted.
      **/
-    assetLocationToId(arg: XcmVersionedMultiLocation): Promise<bigint>;
+    assetLocationToId(arg: XcmVersionedMultiLocation): Promise<bigint | undefined>;
 
     /**
      * Stores the units per second for local execution for a AssetLocation.
@@ -842,11 +846,11 @@ export interface ChainStorage extends GenericChainStorage {
      *
      * Not all asset types are supported for payment. If value exists here, it means it is supported.
      **/
-    assetLocationUnitsPerSecond(arg: XcmVersionedMultiLocation): Promise<bigint>;
+    assetLocationUnitsPerSecond(arg: XcmVersionedMultiLocation): Promise<bigint | undefined>;
   };
   eVM: {
     accountCodes(arg: H160): Promise<Bytes>;
-    accountCodesMetadata(arg: H160): Promise<PalletEvmCodeMetadata>;
+    accountCodesMetadata(arg: H160): Promise<PalletEvmCodeMetadata | undefined>;
     accountStorages(arg: [H160, H256]): Promise<H256>;
   };
   ethereum: {
@@ -858,17 +862,17 @@ export interface ChainStorage extends GenericChainStorage {
     /**
      * The current Ethereum block.
      **/
-    currentBlock(): Promise<EthereumBlock>;
+    currentBlock(): Promise<EthereumBlock | undefined>;
 
     /**
      * The current Ethereum receipts.
      **/
-    currentReceipts(): Promise<Array<EthereumReceiptReceiptV3>>;
+    currentReceipts(): Promise<Array<EthereumReceiptReceiptV3> | undefined>;
 
     /**
      * The current transaction statuses.
      **/
-    currentTransactionStatuses(): Promise<Array<FpRpcTransactionStatus>>;
+    currentTransactionStatuses(): Promise<Array<FpRpcTransactionStatus> | undefined>;
     blockHash(arg: U256): Promise<H256>;
   };
   baseFee: {
@@ -879,17 +883,17 @@ export interface ChainStorage extends GenericChainStorage {
     /**
      * A mapping from an original code hash to the original code, untouched by instrumentation.
      **/
-    pristineCode(arg: H256): Promise<Bytes>;
+    pristineCode(arg: H256): Promise<Bytes | undefined>;
 
     /**
      * A mapping between an original code hash and instrumented wasm code, ready for execution.
      **/
-    codeStorage(arg: H256): Promise<PalletContractsWasmPrefabWasmModule>;
+    codeStorage(arg: H256): Promise<PalletContractsWasmPrefabWasmModule | undefined>;
 
     /**
      * A mapping between an original code hash and its owner information.
      **/
-    ownerInfoOf(arg: H256): Promise<PalletContractsWasmOwnerInfo>;
+    ownerInfoOf(arg: H256): Promise<PalletContractsWasmOwnerInfo | undefined>;
 
     /**
      * This is a **monotonic** counter incremented on contract instantiation.
@@ -922,7 +926,7 @@ export interface ChainStorage extends GenericChainStorage {
      *
      * TWOX-NOTE: SAFE since `AccountId` is a secure hash.
      **/
-    contractInfoOf(arg: AccountId32Like): Promise<PalletContractsStorageContractInfo>;
+    contractInfoOf(arg: AccountId32Like): Promise<PalletContractsStorageContractInfo | undefined>;
 
     /**
      * Evicted contracts that await child trie deletion.
@@ -930,19 +934,19 @@ export interface ChainStorage extends GenericChainStorage {
      * Child trie deletion is a heavy operation depending on the amount of storage items
      * stored in said trie. Therefore this operation is performed lazily in `on_idle`.
      **/
-    deletionQueue(arg: number): Promise<Bytes>;
+    deletionQueue(arg: number): Promise<Bytes | undefined>;
 
     /**
      * A pair of monotonic counters used to track the latest contract marked for deletion
      * and the latest deleted contract in queue.
      **/
     deletionQueueCounter(): Promise<PalletContractsStorageDeletionQueueManager>;
-    migrationInProgress(): Promise<Bytes>;
+    migrationInProgress(): Promise<Bytes | undefined>;
   };
   sudo: {
     /**
      * The `AccountId` of the sudo key.
      **/
-    key(): Promise<AccountId32Like>;
+    key(): Promise<AccountId32Like | undefined>;
   };
 }

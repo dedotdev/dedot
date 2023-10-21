@@ -3,6 +3,7 @@ import { GenericChainStorage } from '@delightfuldot/types';
 import {
   AccountId32Like,
   Bytes,
+  Data,
   FixedArray,
   FixedBytes,
   FixedU128,
@@ -31,7 +32,6 @@ import {
   PalletFastUnstakeUnstakeRequest,
   PalletGrandpaStoredPendingChange,
   PalletGrandpaStoredState,
-  PalletIdentityData,
   PalletIdentityRegistrarInfo,
   PalletIdentityRegistration,
   PalletImOnlineBoundedOpaqueNetworkState,
@@ -142,7 +142,7 @@ export interface ChainStorage extends GenericChainStorage {
     /**
      * Total extrinsics count for the current block.
      **/
-    extrinsicCount(): Promise<number>;
+    extrinsicCount(): Promise<number | undefined>;
 
     /**
      * The current weight for the block.
@@ -152,7 +152,7 @@ export interface ChainStorage extends GenericChainStorage {
     /**
      * Total length (in bytes) for all extrinsics put together, for the current block.
      **/
-    allExtrinsicsLen(): Promise<number>;
+    allExtrinsicsLen(): Promise<number | undefined>;
 
     /**
      * Map of block numbers to block hashes.
@@ -212,7 +212,7 @@ export interface ChainStorage extends GenericChainStorage {
     /**
      * Stores the `spec_version` and `spec_name` of when the last runtime upgrade happened.
      **/
-    lastRuntimeUpgrade(): Promise<FrameSystemLastRuntimeUpgradeInfo>;
+    lastRuntimeUpgrade(): Promise<FrameSystemLastRuntimeUpgradeInfo | undefined>;
 
     /**
      * True if we have upgraded so that `type RefCount` is `u32`. False (default) if not.
@@ -228,7 +228,7 @@ export interface ChainStorage extends GenericChainStorage {
     /**
      * The execution phase of the block.
      **/
-    executionPhase(): Promise<FrameSystemPhase>;
+    executionPhase(): Promise<FrameSystemPhase | undefined>;
   };
   babe: {
     /**
@@ -269,7 +269,7 @@ export interface ChainStorage extends GenericChainStorage {
     /**
      * Pending epoch configuration change that will be applied when the next epoch is enacted.
      **/
-    pendingEpochConfigChange(): Promise<SpConsensusBabeDigestsNextConfigDescriptor>;
+    pendingEpochConfigChange(): Promise<SpConsensusBabeDigestsNextConfigDescriptor | undefined>;
 
     /**
      * Next epoch randomness.
@@ -303,7 +303,7 @@ export interface ChainStorage extends GenericChainStorage {
      * Temporary value (cleared at block finalization) which is `Some`
      * if per-block initialization has already been called for current block.
      **/
-    initialized(): Promise<SpConsensusBabeDigestsPreDigest | undefined>;
+    initialized(): Promise<SpConsensusBabeDigestsPreDigest | undefined | undefined>;
 
     /**
      * This field should always be populated during block processing unless
@@ -335,13 +335,13 @@ export interface ChainStorage extends GenericChainStorage {
      * The configuration for the current epoch. Should never be `None` as it is initialized in
      * genesis.
      **/
-    epochConfig(): Promise<SpConsensusBabeBabeEpochConfiguration>;
+    epochConfig(): Promise<SpConsensusBabeBabeEpochConfiguration | undefined>;
 
     /**
      * The configuration for the next epoch, `None` if the config will not change
      * (you can fallback to `EpochConfig` instead in that case).
      **/
-    nextEpochConfig(): Promise<SpConsensusBabeBabeEpochConfiguration>;
+    nextEpochConfig(): Promise<SpConsensusBabeBabeEpochConfiguration | undefined>;
 
     /**
      * A list of the last 100 skipped epochs and the corresponding session index
@@ -370,7 +370,7 @@ export interface ChainStorage extends GenericChainStorage {
     /**
      * The lookup from index to account.
      **/
-    accounts(arg: number): Promise<[AccountId32Like, bigint, boolean]>;
+    accounts(arg: number): Promise<[AccountId32Like, bigint, boolean] | undefined>;
   };
   balances: {
     /**
@@ -440,7 +440,7 @@ export interface ChainStorage extends GenericChainStorage {
     /**
      * Author of current block.
      **/
-    author(): Promise<AccountId32Like>;
+    author(): Promise<AccountId32Like | undefined>;
   };
   staking: {
     /**
@@ -465,7 +465,7 @@ export interface ChainStorage extends GenericChainStorage {
      *
      * TWOX-NOTE: SAFE since `AccountId` is a secure hash.
      **/
-    bonded(arg: AccountId32Like): Promise<AccountId32Like>;
+    bonded(arg: AccountId32Like): Promise<AccountId32Like | undefined>;
 
     /**
      * The minimum active bond to become and maintain the role of a nominator.
@@ -492,7 +492,7 @@ export interface ChainStorage extends GenericChainStorage {
     /**
      * Map from all (unlocked) "controller" accounts to the info regarding the staking.
      **/
-    ledger(arg: AccountId32Like): Promise<PalletStakingStakingLedger>;
+    ledger(arg: AccountId32Like): Promise<PalletStakingStakingLedger | undefined>;
 
     /**
      * Where the reward payment should be made. Keyed by stash.
@@ -518,7 +518,7 @@ export interface ChainStorage extends GenericChainStorage {
      *
      * When this value is not set, no limits are enforced.
      **/
-    maxValidatorsCount(): Promise<number>;
+    maxValidatorsCount(): Promise<number | undefined>;
 
     /**
      * The map from nominator stash key to their nomination preferences, namely the validators that
@@ -540,7 +540,7 @@ export interface ChainStorage extends GenericChainStorage {
      *
      * TWOX-NOTE: SAFE since `AccountId` is a secure hash.
      **/
-    nominators(arg: AccountId32Like): Promise<PalletStakingNominations>;
+    nominators(arg: AccountId32Like): Promise<PalletStakingNominations | undefined>;
 
     /**
      * Counter for the related counted storage map
@@ -552,7 +552,7 @@ export interface ChainStorage extends GenericChainStorage {
      *
      * When this value is not set, no limits are enforced.
      **/
-    maxNominatorsCount(): Promise<number>;
+    maxNominatorsCount(): Promise<number | undefined>;
 
     /**
      * The current era index.
@@ -560,7 +560,7 @@ export interface ChainStorage extends GenericChainStorage {
      * This is the latest planned era, depending on how the Session pallet queues the validator
      * set, it might be active or not.
      **/
-    currentEra(): Promise<number>;
+    currentEra(): Promise<number | undefined>;
 
     /**
      * The active era information, it holds index and start.
@@ -568,7 +568,7 @@ export interface ChainStorage extends GenericChainStorage {
      * The active era is the era being currently rewarded. Validator set of this era must be
      * equal to [`SessionInterface::validators`].
      **/
-    activeEra(): Promise<PalletStakingActiveEraInfo>;
+    activeEra(): Promise<PalletStakingActiveEraInfo | undefined>;
 
     /**
      * The session index at which the era start for the last `HISTORY_DEPTH` eras.
@@ -576,7 +576,7 @@ export interface ChainStorage extends GenericChainStorage {
      * Note: This tracks the starting session (i.e. session index when era start being active)
      * for the eras in `[CurrentEra - HISTORY_DEPTH, CurrentEra]`.
      **/
-    erasStartSessionIndex(arg: number): Promise<number>;
+    erasStartSessionIndex(arg: number): Promise<number | undefined>;
 
     /**
      * Exposure of validator at era.
@@ -617,7 +617,7 @@ export interface ChainStorage extends GenericChainStorage {
      *
      * Eras that haven't finished yet or has been removed doesn't have reward.
      **/
-    erasValidatorReward(arg: number): Promise<bigint>;
+    erasValidatorReward(arg: number): Promise<bigint | undefined>;
 
     /**
      * Rewards for the last `HISTORY_DEPTH` eras.
@@ -666,17 +666,17 @@ export interface ChainStorage extends GenericChainStorage {
      * All slashing events on validators, mapped by era to the highest slash proportion
      * and slash value of the era.
      **/
-    validatorSlashInEra(arg: [number, AccountId32Like]): Promise<[Perbill, bigint]>;
+    validatorSlashInEra(arg: [number, AccountId32Like]): Promise<[Perbill, bigint] | undefined>;
 
     /**
      * All slashing events on nominators, mapped by era to the highest slash value of the era.
      **/
-    nominatorSlashInEra(arg: [number, AccountId32Like]): Promise<bigint>;
+    nominatorSlashInEra(arg: [number, AccountId32Like]): Promise<bigint | undefined>;
 
     /**
      * Slashing spans for stash accounts.
      **/
-    slashingSpans(arg: AccountId32Like): Promise<PalletStakingSlashingSlashingSpans>;
+    slashingSpans(arg: AccountId32Like): Promise<PalletStakingSlashingSlashingSpans | undefined>;
 
     /**
      * Records information about the maximum slash of a stash within a slashing span,
@@ -709,13 +709,13 @@ export interface ChainStorage extends GenericChainStorage {
      * nominators. The threshold is compared to the actual number of validators / nominators
      * (`CountFor*`) in the system compared to the configured max (`Max*Count`).
      **/
-    chillThreshold(): Promise<Percent>;
+    chillThreshold(): Promise<Percent | undefined>;
   };
   offences: {
     /**
      * The primary structure that holds all offence records keyed by report identifiers.
      **/
-    reports(arg: H256): Promise<SpStakingOffenceOffenceDetails>;
+    reports(arg: H256): Promise<SpStakingOffenceOffenceDetails | undefined>;
 
     /**
      * A vector of reports of the same kind that happened at the same time slot.
@@ -757,12 +757,12 @@ export interface ChainStorage extends GenericChainStorage {
     /**
      * The next session keys for a validator.
      **/
-    nextKeys(arg: AccountId32Like): Promise<KusamaRuntimeSessionKeys>;
+    nextKeys(arg: AccountId32Like): Promise<KusamaRuntimeSessionKeys | undefined>;
 
     /**
      * The owner of a key. The key is the `KeyTypeId` + the encoded key.
      **/
-    keyOwner(arg: [SpCoreCryptoKeyTypeId, Bytes]): Promise<AccountId32Like>;
+    keyOwner(arg: [SpCoreCryptoKeyTypeId, Bytes]): Promise<AccountId32Like | undefined>;
   };
   grandpa: {
     /**
@@ -773,17 +773,17 @@ export interface ChainStorage extends GenericChainStorage {
     /**
      * Pending change: (signaled at, scheduled change).
      **/
-    pendingChange(): Promise<PalletGrandpaStoredPendingChange>;
+    pendingChange(): Promise<PalletGrandpaStoredPendingChange | undefined>;
 
     /**
      * next block number where we can force a change.
      **/
-    nextForced(): Promise<number>;
+    nextForced(): Promise<number | undefined>;
 
     /**
      * `true` if we are currently stalled.
      **/
-    stalled(): Promise<[number, number]>;
+    stalled(): Promise<[number, number] | undefined>;
 
     /**
      * The number of changes (both in terms of keys and underlying economic responsibilities)
@@ -803,7 +803,7 @@ export interface ChainStorage extends GenericChainStorage {
      *
      * TWOX-NOTE: `SetId` is not under user control.
      **/
-    setIdSession(arg: bigint): Promise<number>;
+    setIdSession(arg: bigint): Promise<number | undefined>;
   };
   imOnline: {
     /**
@@ -830,7 +830,7 @@ export interface ChainStorage extends GenericChainStorage {
      * For each session index, we keep a mapping of `SessionIndex` and `AuthIndex` to
      * `WrapperOpaque<BoundedOpaqueNetworkState>`.
      **/
-    receivedHeartbeats(arg: [number, number]): Promise<[number, PalletImOnlineBoundedOpaqueNetworkState]>;
+    receivedHeartbeats(arg: [number, number]): Promise<[number, PalletImOnlineBoundedOpaqueNetworkState] | undefined>;
 
     /**
      * For each session index, we keep a mapping of `ValidatorId<T>` to the
@@ -847,7 +847,7 @@ export interface ChainStorage extends GenericChainStorage {
     /**
      * Proposals that have been made.
      **/
-    proposals(arg: number): Promise<PalletTreasuryProposal>;
+    proposals(arg: number): Promise<PalletTreasuryProposal | undefined>;
 
     /**
      * The amount which has been reported as inactive to Currency.
@@ -882,7 +882,7 @@ export interface ChainStorage extends GenericChainStorage {
     /**
      * Information concerning any given referendum.
      **/
-    referendumInfoFor(arg: number): Promise<PalletReferendaReferendumInfo>;
+    referendumInfoFor(arg: number): Promise<PalletReferendaReferendumInfo | undefined>;
 
     /**
      * The sorted list of referenda ready to be decided but not yet being decided, ordered by
@@ -905,7 +905,7 @@ export interface ChainStorage extends GenericChainStorage {
      * Consider a garbage collection for a metadata of finished referendums to `unrequest` (remove)
      * large preimages.
      **/
-    metadataOf(arg: number): Promise<H256>;
+    metadataOf(arg: number): Promise<H256 | undefined>;
   };
   fellowshipCollective: {
     /**
@@ -917,24 +917,24 @@ export interface ChainStorage extends GenericChainStorage {
     /**
      * The current members of the collective.
      **/
-    members(arg: AccountId32Like): Promise<PalletRankedCollectiveMemberRecord>;
+    members(arg: AccountId32Like): Promise<PalletRankedCollectiveMemberRecord | undefined>;
 
     /**
      * The index of each ranks's member into the group of members who have at least that rank.
      **/
-    idToIndex(arg: [number, AccountId32Like]): Promise<number>;
+    idToIndex(arg: [number, AccountId32Like]): Promise<number | undefined>;
 
     /**
      * The members in the collective by index. All indices in the range `0..MemberCount` will
      * return `Some`, however a member's index is not guaranteed to remain unchanged over time.
      **/
-    indexToId(arg: [number, number]): Promise<AccountId32Like>;
+    indexToId(arg: [number, number]): Promise<AccountId32Like | undefined>;
 
     /**
      * Votes on a given proposal, if it is ongoing.
      **/
-    voting(arg: [number, AccountId32Like]): Promise<PalletRankedCollectiveVoteRecord>;
-    votingCleanup(arg: number): Promise<Bytes>;
+    voting(arg: [number, AccountId32Like]): Promise<PalletRankedCollectiveVoteRecord | undefined>;
+    votingCleanup(arg: number): Promise<Bytes | undefined>;
   };
   fellowshipReferenda: {
     /**
@@ -945,7 +945,7 @@ export interface ChainStorage extends GenericChainStorage {
     /**
      * Information concerning any given referendum.
      **/
-    referendumInfoFor(arg: number): Promise<PalletReferendaReferendumInfoTally>;
+    referendumInfoFor(arg: number): Promise<PalletReferendaReferendumInfoTally | undefined>;
 
     /**
      * The sorted list of referenda ready to be decided but not yet being decided, ordered by
@@ -968,11 +968,11 @@ export interface ChainStorage extends GenericChainStorage {
      * Consider a garbage collection for a metadata of finished referendums to `unrequest` (remove)
      * large preimages.
      **/
-    metadataOf(arg: number): Promise<H256>;
+    metadataOf(arg: number): Promise<H256 | undefined>;
   };
-  whitelist: { whitelistedCall(arg: H256): Promise<[]> };
+  whitelist: { whitelistedCall(arg: H256): Promise<[] | undefined> };
   claims: {
-    claims(arg: PolkadotRuntimeCommonClaimsEthereumAddress): Promise<bigint>;
+    claims(arg: PolkadotRuntimeCommonClaimsEthereumAddress): Promise<bigint | undefined>;
     total(): Promise<bigint>;
 
     /**
@@ -981,17 +981,19 @@ export interface ChainStorage extends GenericChainStorage {
      * Second balance is how much should be unlocked per block.
      * The block number is when the vesting should start.
      **/
-    vesting(arg: PolkadotRuntimeCommonClaimsEthereumAddress): Promise<[bigint, bigint, number]>;
+    vesting(arg: PolkadotRuntimeCommonClaimsEthereumAddress): Promise<[bigint, bigint, number] | undefined>;
 
     /**
      * The statement kind that must be signed, if any.
      **/
-    signing(arg: PolkadotRuntimeCommonClaimsEthereumAddress): Promise<PolkadotRuntimeCommonClaimsStatementKind>;
+    signing(
+      arg: PolkadotRuntimeCommonClaimsEthereumAddress,
+    ): Promise<PolkadotRuntimeCommonClaimsStatementKind | undefined>;
 
     /**
      * Pre-claimed Ethereum accounts, by the Account ID that they are claimed to.
      **/
-    preclaims(arg: AccountId32Like): Promise<PolkadotRuntimeCommonClaimsEthereumAddress>;
+    preclaims(arg: AccountId32Like): Promise<PolkadotRuntimeCommonClaimsEthereumAddress | undefined>;
   };
   identity: {
     /**
@@ -999,13 +1001,13 @@ export interface ChainStorage extends GenericChainStorage {
      *
      * TWOX-NOTE: OK ― `AccountId` is a secure hash.
      **/
-    identityOf(arg: AccountId32Like): Promise<PalletIdentityRegistration>;
+    identityOf(arg: AccountId32Like): Promise<PalletIdentityRegistration | undefined>;
 
     /**
      * The super-identity of an alternative "sub" identity together with its name, within that
      * context. If the account is not some other account's sub-identity, then just `None`.
      **/
-    superOf(arg: AccountId32Like): Promise<[AccountId32Like, PalletIdentityData]>;
+    superOf(arg: AccountId32Like): Promise<[AccountId32Like, Data] | undefined>;
 
     /**
      * Alternative "sub" identities of this account.
@@ -1028,13 +1030,13 @@ export interface ChainStorage extends GenericChainStorage {
     /**
      * The first member.
      **/
-    founder(): Promise<AccountId32Like>;
+    founder(): Promise<AccountId32Like | undefined>;
 
     /**
      * A hash of the rules of this society concerning membership. Can only be set once and
      * only by the founder.
      **/
-    rules(): Promise<H256>;
+    rules(): Promise<H256 | undefined>;
 
     /**
      * The current set of candidates; bidders that are attempting to become members.
@@ -1044,7 +1046,7 @@ export interface ChainStorage extends GenericChainStorage {
     /**
      * The set of suspended candidates.
      **/
-    suspendedCandidates(arg: AccountId32Like): Promise<[bigint, PalletSocietyBidKind]>;
+    suspendedCandidates(arg: AccountId32Like): Promise<[bigint, PalletSocietyBidKind] | undefined>;
 
     /**
      * Amount of our account balance that is specifically for the next round's bid(s).
@@ -1054,7 +1056,7 @@ export interface ChainStorage extends GenericChainStorage {
     /**
      * The most primary from the most recently approved members.
      **/
-    head(): Promise<AccountId32Like>;
+    head(): Promise<AccountId32Like | undefined>;
 
     /**
      * The current set of members, ordered.
@@ -1074,7 +1076,7 @@ export interface ChainStorage extends GenericChainStorage {
     /**
      * Members currently vouching or banned from vouching again
      **/
-    vouching(arg: AccountId32Like): Promise<PalletSocietyVouchingStatus>;
+    vouching(arg: AccountId32Like): Promise<PalletSocietyVouchingStatus | undefined>;
 
     /**
      * Pending payouts; ordered by block number, with the amount that should be paid out.
@@ -1089,17 +1091,17 @@ export interface ChainStorage extends GenericChainStorage {
     /**
      * Double map from Candidate -> Voter -> (Maybe) Vote.
      **/
-    votes(arg: [AccountId32Like, AccountId32Like]): Promise<PalletSocietyVote>;
+    votes(arg: [AccountId32Like, AccountId32Like]): Promise<PalletSocietyVote | undefined>;
 
     /**
      * The defending member currently being challenged.
      **/
-    defender(): Promise<AccountId32Like>;
+    defender(): Promise<AccountId32Like | undefined>;
 
     /**
      * Votes for the defender.
      **/
-    defenderVotes(arg: AccountId32Like): Promise<PalletSocietyVote>;
+    defenderVotes(arg: AccountId32Like): Promise<PalletSocietyVote | undefined>;
 
     /**
      * The max number of members for the society at one time.
@@ -1110,7 +1112,7 @@ export interface ChainStorage extends GenericChainStorage {
     /**
      * The set of recoverable accounts and their recovery configuration.
      **/
-    recoverable(arg: AccountId32Like): Promise<PalletRecoveryRecoveryConfig>;
+    recoverable(arg: AccountId32Like): Promise<PalletRecoveryRecoveryConfig | undefined>;
 
     /**
      * Active recovery attempts.
@@ -1118,20 +1120,20 @@ export interface ChainStorage extends GenericChainStorage {
      * First account is the account to be recovered, and the second account
      * is the user trying to recover the account.
      **/
-    activeRecoveries(arg: [AccountId32Like, AccountId32Like]): Promise<PalletRecoveryActiveRecovery>;
+    activeRecoveries(arg: [AccountId32Like, AccountId32Like]): Promise<PalletRecoveryActiveRecovery | undefined>;
 
     /**
      * The list of allowed proxy accounts.
      *
      * Map from the user who can access it to the recovered account.
      **/
-    proxy(arg: AccountId32Like): Promise<AccountId32Like>;
+    proxy(arg: AccountId32Like): Promise<AccountId32Like | undefined>;
   };
   vesting: {
     /**
      * Information regarding the vesting of a given account.
      **/
-    vesting(arg: AccountId32Like): Promise<Array<PalletVestingVestingInfo>>;
+    vesting(arg: AccountId32Like): Promise<Array<PalletVestingVestingInfo> | undefined>;
 
     /**
      * Storage version of the pallet.
@@ -1141,7 +1143,7 @@ export interface ChainStorage extends GenericChainStorage {
     storageVersion(): Promise<PalletVestingReleases>;
   };
   scheduler: {
-    incompleteSince(): Promise<number>;
+    incompleteSince(): Promise<number | undefined>;
 
     /**
      * Items to be executed, indexed by the block number that they should be executed on.
@@ -1154,7 +1156,7 @@ export interface ChainStorage extends GenericChainStorage {
      * For v3 -> v4 the previously unbounded identities are Blake2-256 hashed to form the v4
      * identities.
      **/
-    lookup(arg: FixedBytes<32>): Promise<[number, number]>;
+    lookup(arg: FixedBytes<32>): Promise<[number, number] | undefined>;
   };
   proxy: {
     /**
@@ -1172,14 +1174,14 @@ export interface ChainStorage extends GenericChainStorage {
     /**
      * The set of open multisig operations.
      **/
-    multisigs(arg: [AccountId32Like, FixedBytes<32>]): Promise<PalletMultisigMultisig>;
+    multisigs(arg: [AccountId32Like, FixedBytes<32>]): Promise<PalletMultisigMultisig | undefined>;
   };
   preimage: {
     /**
      * The request status of a given hash.
      **/
-    statusFor(arg: H256): Promise<PalletPreimageRequestStatus>;
-    preimageFor(arg: [H256, number]): Promise<Bytes>;
+    statusFor(arg: H256): Promise<PalletPreimageRequestStatus | undefined>;
+    preimageFor(arg: [H256, number]): Promise<Bytes | undefined>;
   };
   bounties: {
     /**
@@ -1190,12 +1192,12 @@ export interface ChainStorage extends GenericChainStorage {
     /**
      * Bounties that have been made.
      **/
-    bounties(arg: number): Promise<PalletBountiesBounty>;
+    bounties(arg: number): Promise<PalletBountiesBounty | undefined>;
 
     /**
      * The description of each bounty.
      **/
-    bountyDescriptions(arg: number): Promise<Bytes>;
+    bountyDescriptions(arg: number): Promise<Bytes | undefined>;
 
     /**
      * Bounty indices that have been approved but not yet funded.
@@ -1217,12 +1219,12 @@ export interface ChainStorage extends GenericChainStorage {
     /**
      * Child bounties that have been added.
      **/
-    childBounties(arg: [number, number]): Promise<PalletChildBountiesChildBounty>;
+    childBounties(arg: [number, number]): Promise<PalletChildBountiesChildBounty | undefined>;
 
     /**
      * The description of each child-bounty.
      **/
-    childBountyDescriptions(arg: number): Promise<Bytes>;
+    childBountyDescriptions(arg: number): Promise<Bytes | undefined>;
 
     /**
      * The cumulative child-bounty curator fee for each parent bounty.
@@ -1250,28 +1252,28 @@ export interface ChainStorage extends GenericChainStorage {
      *
      * Always sorted by score.
      **/
-    queuedSolution(): Promise<PalletElectionProviderMultiPhaseReadySolution>;
+    queuedSolution(): Promise<PalletElectionProviderMultiPhaseReadySolution | undefined>;
 
     /**
      * Snapshot data of the round.
      *
      * This is created at the beginning of the signed phase and cleared upon calling `elect`.
      **/
-    snapshot(): Promise<PalletElectionProviderMultiPhaseRoundSnapshot>;
+    snapshot(): Promise<PalletElectionProviderMultiPhaseRoundSnapshot | undefined>;
 
     /**
      * Desired number of targets to elect for this round.
      *
      * Only exists when [`Snapshot`] is present.
      **/
-    desiredTargets(): Promise<number>;
+    desiredTargets(): Promise<number | undefined>;
 
     /**
      * The metadata of the [`RoundSnapshot`]
      *
      * Only exists when [`Snapshot`] is present.
      **/
-    snapshotMetadata(): Promise<PalletElectionProviderMultiPhaseSolutionOrSnapshotSize>;
+    snapshotMetadata(): Promise<PalletElectionProviderMultiPhaseSolutionOrSnapshotSize | undefined>;
 
     /**
      * The next index to be assigned to an incoming signed submission.
@@ -1305,7 +1307,7 @@ export interface ChainStorage extends GenericChainStorage {
      * Twox note: the key of the map is an auto-incrementing index which users cannot inspect or
      * affect; we shouldn't need a cryptographically secure hasher.
      **/
-    signedSubmissionsMap(arg: number): Promise<PalletElectionProviderMultiPhaseSignedSignedSubmission>;
+    signedSubmissionsMap(arg: number): Promise<PalletElectionProviderMultiPhaseSignedSignedSubmission | undefined>;
 
     /**
      * The minimum score that each 'untrusted' solution must attain in order to be considered
@@ -1313,7 +1315,7 @@ export interface ChainStorage extends GenericChainStorage {
      *
      * Can be set via `set_minimum_untrusted_score`.
      **/
-    minimumUntrustedScore(): Promise<SpNposElectionsElectionScore>;
+    minimumUntrustedScore(): Promise<SpNposElectionsElectionScore | undefined>;
   };
   nis: {
     /**
@@ -1338,7 +1340,7 @@ export interface ChainStorage extends GenericChainStorage {
     /**
      * The currently outstanding receipts, indexed according to the order of creation.
      **/
-    receipts(arg: number): Promise<PalletNisReceiptRecord>;
+    receipts(arg: number): Promise<PalletNisReceiptRecord | undefined>;
   };
   nisCounterpartBalances: {
     /**
@@ -1406,7 +1408,7 @@ export interface ChainStorage extends GenericChainStorage {
      *
      * Nodes store links forward and back within their respective bags.
      **/
-    listNodes(arg: AccountId32Like): Promise<PalletBagsListListNode>;
+    listNodes(arg: AccountId32Like): Promise<PalletBagsListListNode | undefined>;
 
     /**
      * Counter for the related counted storage map
@@ -1418,7 +1420,7 @@ export interface ChainStorage extends GenericChainStorage {
      *
      * Stores a `Bag` struct, which stores head and tail pointers to itself.
      **/
-    listBags(arg: bigint): Promise<PalletBagsListListBag>;
+    listBags(arg: bigint): Promise<PalletBagsListListBag | undefined>;
   };
   nominationPools: {
     /**
@@ -1441,33 +1443,33 @@ export interface ChainStorage extends GenericChainStorage {
      * Maximum number of nomination pools that can exist. If `None`, then an unbounded number of
      * pools can exist.
      **/
-    maxPools(): Promise<number>;
+    maxPools(): Promise<number | undefined>;
 
     /**
      * Maximum number of members that can exist in the system. If `None`, then the count
      * members are not bound on a system wide basis.
      **/
-    maxPoolMembers(): Promise<number>;
+    maxPoolMembers(): Promise<number | undefined>;
 
     /**
      * Maximum number of members that may belong to pool. If `None`, then the count of
      * members is not bound on a per pool basis.
      **/
-    maxPoolMembersPerPool(): Promise<number>;
+    maxPoolMembersPerPool(): Promise<number | undefined>;
 
     /**
      * The maximum commission that can be charged by a pool. Used on commission payouts to bound
      * pool commissions that are > `GlobalMaxCommission`, necessary if a future
      * `GlobalMaxCommission` is lower than some current pool commissions.
      **/
-    globalMaxCommission(): Promise<Perbill>;
+    globalMaxCommission(): Promise<Perbill | undefined>;
 
     /**
      * Active members.
      *
      * TWOX-NOTE: SAFE since `AccountId` is a secure hash.
      **/
-    poolMembers(arg: AccountId32Like): Promise<PalletNominationPoolsPoolMember>;
+    poolMembers(arg: AccountId32Like): Promise<PalletNominationPoolsPoolMember | undefined>;
 
     /**
      * Counter for the related counted storage map
@@ -1477,7 +1479,7 @@ export interface ChainStorage extends GenericChainStorage {
     /**
      * Storage for bonded pools.
      **/
-    bondedPools(arg: number): Promise<PalletNominationPoolsBondedPoolInner>;
+    bondedPools(arg: number): Promise<PalletNominationPoolsBondedPoolInner | undefined>;
 
     /**
      * Counter for the related counted storage map
@@ -1488,7 +1490,7 @@ export interface ChainStorage extends GenericChainStorage {
      * Reward pools. This is where there rewards for each pool accumulate. When a members payout is
      * claimed, the balance comes out fo the reward pool. Keyed by the bonded pools account.
      **/
-    rewardPools(arg: number): Promise<PalletNominationPoolsRewardPool>;
+    rewardPools(arg: number): Promise<PalletNominationPoolsRewardPool | undefined>;
 
     /**
      * Counter for the related counted storage map
@@ -1499,7 +1501,7 @@ export interface ChainStorage extends GenericChainStorage {
      * Groups of unbonding pools. Each group of unbonding pools belongs to a
      * bonded pool, hence the name sub-pools. Keyed by the bonded pools account.
      **/
-    subPoolsStorage(arg: number): Promise<PalletNominationPoolsSubPools>;
+    subPoolsStorage(arg: number): Promise<PalletNominationPoolsSubPools | undefined>;
 
     /**
      * Counter for the related counted storage map
@@ -1527,7 +1529,7 @@ export interface ChainStorage extends GenericChainStorage {
      * This is only used for slashing. In all other instances, the pool id is used, and the
      * accounts are deterministically derived from it.
      **/
-    reversePoolIdLookup(arg: AccountId32Like): Promise<number>;
+    reversePoolIdLookup(arg: AccountId32Like): Promise<number | undefined>;
 
     /**
      * Counter for the related counted storage map
@@ -1543,7 +1545,7 @@ export interface ChainStorage extends GenericChainStorage {
     /**
      * The current "head of the queue" being unstaked.
      **/
-    head(): Promise<PalletFastUnstakeUnstakeRequest>;
+    head(): Promise<PalletFastUnstakeUnstakeRequest | undefined>;
 
     /**
      * The map of all accounts wishing to be unstaked.
@@ -1552,7 +1554,7 @@ export interface ChainStorage extends GenericChainStorage {
      *
      * TWOX-NOTE: SAFE since `AccountId` is a secure hash.
      **/
-    queue(arg: AccountId32Like): Promise<bigint>;
+    queue(arg: AccountId32Like): Promise<bigint | undefined>;
 
     /**
      * Counter for the related counted storage map
@@ -1616,21 +1618,21 @@ export interface ChainStorage extends GenericChainStorage {
      **/
     availabilityBitfields(
       arg: PolkadotPrimitivesV4ValidatorIndex,
-    ): Promise<PolkadotRuntimeParachainsInclusionAvailabilityBitfieldRecord>;
+    ): Promise<PolkadotRuntimeParachainsInclusionAvailabilityBitfieldRecord | undefined>;
 
     /**
      * Candidates pending availability by `ParaId`.
      **/
     pendingAvailability(
       arg: PolkadotParachainPrimitivesId,
-    ): Promise<PolkadotRuntimeParachainsInclusionCandidatePendingAvailability>;
+    ): Promise<PolkadotRuntimeParachainsInclusionCandidatePendingAvailability | undefined>;
 
     /**
      * The commitments of candidates pending availability, by `ParaId`.
      **/
     pendingAvailabilityCommitments(
       arg: PolkadotParachainPrimitivesId,
-    ): Promise<PolkadotPrimitivesV4CandidateCommitments>;
+    ): Promise<PolkadotPrimitivesV4CandidateCommitments | undefined>;
   };
   paraInherent: {
     /**
@@ -1641,12 +1643,12 @@ export interface ChainStorage extends GenericChainStorage {
      *
      * If this is `None` at the end of the block, we panic and render the block invalid.
      **/
-    included(): Promise<[]>;
+    included(): Promise<[] | undefined>;
 
     /**
      * Scraped on chain data for extracting resolved disputes as well as backing votes.
      **/
-    onChainVotes(): Promise<PolkadotPrimitivesV4ScrapedOnChainVotes>;
+    onChainVotes(): Promise<PolkadotPrimitivesV4ScrapedOnChainVotes | undefined>;
   };
   paraScheduler: {
     /**
@@ -1716,7 +1718,7 @@ export interface ChainStorage extends GenericChainStorage {
      **/
     pvfActiveVoteMap(
       arg: PolkadotParachainPrimitivesValidationCodeHash,
-    ): Promise<PolkadotRuntimeParachainsParasPvfCheckActiveVoteState>;
+    ): Promise<PolkadotRuntimeParachainsParasPvfCheckActiveVoteState | undefined>;
 
     /**
      * The list of all currently active PVF votes. Auxiliary to `PvfActiveVoteMap`.
@@ -1733,19 +1735,23 @@ export interface ChainStorage extends GenericChainStorage {
     /**
      * The current lifecycle of a all known Para IDs.
      **/
-    paraLifecycles(arg: PolkadotParachainPrimitivesId): Promise<PolkadotRuntimeParachainsParasParaLifecycle>;
+    paraLifecycles(
+      arg: PolkadotParachainPrimitivesId,
+    ): Promise<PolkadotRuntimeParachainsParasParaLifecycle | undefined>;
 
     /**
      * The head-data of every registered para.
      **/
-    heads(arg: PolkadotParachainPrimitivesId): Promise<PolkadotParachainPrimitivesHeadData>;
+    heads(arg: PolkadotParachainPrimitivesId): Promise<PolkadotParachainPrimitivesHeadData | undefined>;
 
     /**
      * The validation code hash of every live para.
      *
      * Corresponding code can be retrieved with [`CodeByHash`].
      **/
-    currentCodeHash(arg: PolkadotParachainPrimitivesId): Promise<PolkadotParachainPrimitivesValidationCodeHash>;
+    currentCodeHash(
+      arg: PolkadotParachainPrimitivesId,
+    ): Promise<PolkadotParachainPrimitivesValidationCodeHash | undefined>;
 
     /**
      * Actual past code hash, indicated by the para id as well as the block number at which it
@@ -1753,7 +1759,9 @@ export interface ChainStorage extends GenericChainStorage {
      *
      * Corresponding code can be retrieved with [`CodeByHash`].
      **/
-    pastCodeHash(arg: [PolkadotParachainPrimitivesId, number]): Promise<PolkadotParachainPrimitivesValidationCodeHash>;
+    pastCodeHash(
+      arg: [PolkadotParachainPrimitivesId, number],
+    ): Promise<PolkadotParachainPrimitivesValidationCodeHash | undefined>;
 
     /**
      * Past code of parachains. The parachains themselves may not be registered anymore,
@@ -1777,14 +1785,16 @@ export interface ChainStorage extends GenericChainStorage {
      * The change will be applied after the first parablock for this ID included which executes
      * in the context of a relay chain block with a number >= `expected_at`.
      **/
-    futureCodeUpgrades(arg: PolkadotParachainPrimitivesId): Promise<number>;
+    futureCodeUpgrades(arg: PolkadotParachainPrimitivesId): Promise<number | undefined>;
 
     /**
      * The actual future code hash of a para.
      *
      * Corresponding code can be retrieved with [`CodeByHash`].
      **/
-    futureCodeHash(arg: PolkadotParachainPrimitivesId): Promise<PolkadotParachainPrimitivesValidationCodeHash>;
+    futureCodeHash(
+      arg: PolkadotParachainPrimitivesId,
+    ): Promise<PolkadotParachainPrimitivesValidationCodeHash | undefined>;
 
     /**
      * This is used by the relay-chain to communicate to a parachain a go-ahead with in the upgrade procedure.
@@ -1797,7 +1807,7 @@ export interface ChainStorage extends GenericChainStorage {
      * NOTE that this field is used by parachains via merkle storage proofs, therefore changing
      * the format will require migration of parachains.
      **/
-    upgradeGoAheadSignal(arg: PolkadotParachainPrimitivesId): Promise<PolkadotPrimitivesV4UpgradeGoAhead>;
+    upgradeGoAheadSignal(arg: PolkadotParachainPrimitivesId): Promise<PolkadotPrimitivesV4UpgradeGoAhead | undefined>;
 
     /**
      * This is used by the relay-chain to communicate that there are restrictions for performing
@@ -1810,7 +1820,9 @@ export interface ChainStorage extends GenericChainStorage {
      * NOTE that this field is used by parachains via merkle storage proofs, therefore changing
      * the format will require migration of parachains.
      **/
-    upgradeRestrictionSignal(arg: PolkadotParachainPrimitivesId): Promise<PolkadotPrimitivesV4UpgradeRestriction>;
+    upgradeRestrictionSignal(
+      arg: PolkadotParachainPrimitivesId,
+    ): Promise<PolkadotPrimitivesV4UpgradeRestriction | undefined>;
 
     /**
      * The list of parachains that are awaiting for their upgrade restriction to cooldown.
@@ -1838,7 +1850,9 @@ export interface ChainStorage extends GenericChainStorage {
      * NOTE that after PVF pre-checking is enabled the para genesis arg will have it's code set
      * to empty. Instead, the code will be saved into the storage right away via `CodeByHash`.
      **/
-    upcomingParasGenesis(arg: PolkadotParachainPrimitivesId): Promise<PolkadotRuntimeParachainsParasParaGenesisArgs>;
+    upcomingParasGenesis(
+      arg: PolkadotParachainPrimitivesId,
+    ): Promise<PolkadotRuntimeParachainsParasParaGenesisArgs | undefined>;
 
     /**
      * The number of reference on the validation code in [`CodeByHash`] storage.
@@ -1851,7 +1865,9 @@ export interface ChainStorage extends GenericChainStorage {
      * This storage is consistent with [`FutureCodeHash`], [`CurrentCodeHash`] and
      * [`PastCodeHash`].
      **/
-    codeByHash(arg: PolkadotParachainPrimitivesValidationCodeHash): Promise<PolkadotParachainPrimitivesValidationCode>;
+    codeByHash(
+      arg: PolkadotParachainPrimitivesValidationCodeHash,
+    ): Promise<PolkadotParachainPrimitivesValidationCode | undefined>;
   };
   initializer: {
     /**
@@ -1864,7 +1880,7 @@ export interface ChainStorage extends GenericChainStorage {
      * them writes to the trie and one does not. This confusion makes `Option<()>` more suitable for
      * the semantics of this variable.
      **/
-    hasInitialized(): Promise<[]>;
+    hasInitialized(): Promise<[] | undefined>;
 
     /**
      * Buffered session changes along with the block number at which they should be applied.
@@ -1912,7 +1928,7 @@ export interface ChainStorage extends GenericChainStorage {
      **/
     hrmpOpenChannelRequests(
       arg: PolkadotParachainPrimitivesHrmpChannelId,
-    ): Promise<PolkadotRuntimeParachainsHrmpHrmpOpenChannelRequest>;
+    ): Promise<PolkadotRuntimeParachainsHrmpHrmpOpenChannelRequest | undefined>;
     hrmpOpenChannelRequestsList(): Promise<Array<PolkadotParachainPrimitivesHrmpChannelId>>;
 
     /**
@@ -1938,7 +1954,7 @@ export interface ChainStorage extends GenericChainStorage {
      * Invariant:
      * - There are no channels that exists in list but not in the set and vice versa.
      **/
-    hrmpCloseChannelRequests(arg: PolkadotParachainPrimitivesHrmpChannelId): Promise<[]>;
+    hrmpCloseChannelRequests(arg: PolkadotParachainPrimitivesHrmpChannelId): Promise<[] | undefined>;
     hrmpCloseChannelRequestsList(): Promise<Array<PolkadotParachainPrimitivesHrmpChannelId>>;
 
     /**
@@ -1946,14 +1962,16 @@ export interface ChainStorage extends GenericChainStorage {
      * Invariant:
      * - each para `P` used here as a key should satisfy `Paras::is_valid_para(P)` within a session.
      **/
-    hrmpWatermarks(arg: PolkadotParachainPrimitivesId): Promise<number>;
+    hrmpWatermarks(arg: PolkadotParachainPrimitivesId): Promise<number | undefined>;
 
     /**
      * HRMP channel data associated with each para.
      * Invariant:
      * - each participant in the channel should satisfy `Paras::is_valid_para(P)` within a session.
      **/
-    hrmpChannels(arg: PolkadotParachainPrimitivesHrmpChannelId): Promise<PolkadotRuntimeParachainsHrmpHrmpChannel>;
+    hrmpChannels(
+      arg: PolkadotParachainPrimitivesHrmpChannelId,
+    ): Promise<PolkadotRuntimeParachainsHrmpHrmpChannel | undefined>;
 
     /**
      * Ingress/egress indexes allow to find all the senders and receivers given the opposite side.
@@ -2011,29 +2029,29 @@ export interface ChainStorage extends GenericChainStorage {
      * Should have an entry in range `EarliestStoredSession..=CurrentSessionIndex`.
      * Does not have any entries before the session index in the first session change notification.
      **/
-    sessions(arg: number): Promise<PolkadotPrimitivesV4SessionInfo>;
+    sessions(arg: number): Promise<PolkadotPrimitivesV4SessionInfo | undefined>;
 
     /**
      * The validator account keys of the validators actively participating in parachain consensus.
      **/
-    accountKeys(arg: number): Promise<Array<AccountId32Like>>;
+    accountKeys(arg: number): Promise<Array<AccountId32Like> | undefined>;
 
     /**
      * Executor parameter set for a given session index
      **/
-    sessionExecutorParams(arg: number): Promise<PolkadotPrimitivesV4ExecutorParams>;
+    sessionExecutorParams(arg: number): Promise<PolkadotPrimitivesV4ExecutorParams | undefined>;
   };
   parasDisputes: {
     /**
      * The last pruned session, if any. All data stored by this module
      * references sessions.
      **/
-    lastPrunedSession(): Promise<number>;
+    lastPrunedSession(): Promise<number | undefined>;
 
     /**
      * All ongoing or concluded disputes for the last several sessions.
      **/
-    disputes(arg: [number, PolkadotCorePrimitivesCandidateHash]): Promise<PolkadotPrimitivesV4DisputeState>;
+    disputes(arg: [number, PolkadotCorePrimitivesCandidateHash]): Promise<PolkadotPrimitivesV4DisputeState | undefined>;
 
     /**
      * Backing votes stored for each dispute.
@@ -2041,13 +2059,13 @@ export interface ChainStorage extends GenericChainStorage {
      **/
     backersOnDisputes(
       arg: [number, PolkadotCorePrimitivesCandidateHash],
-    ): Promise<Array<PolkadotPrimitivesV4ValidatorIndex>>;
+    ): Promise<Array<PolkadotPrimitivesV4ValidatorIndex> | undefined>;
 
     /**
      * All included blocks on the chain, as well as the block number in this chain that
      * should be reverted back to if the candidate is disputed and determined to be invalid.
      **/
-    included(arg: [number, PolkadotCorePrimitivesCandidateHash]): Promise<number>;
+    included(arg: [number, PolkadotCorePrimitivesCandidateHash]): Promise<number | undefined>;
 
     /**
      * Whether the chain is frozen. Starts as `None`. When this is `Some`,
@@ -2063,18 +2081,18 @@ export interface ChainStorage extends GenericChainStorage {
      **/
     unappliedSlashes(
       arg: [number, PolkadotCorePrimitivesCandidateHash],
-    ): Promise<PolkadotRuntimeParachainsDisputesSlashingPendingSlashes>;
+    ): Promise<PolkadotRuntimeParachainsDisputesSlashingPendingSlashes | undefined>;
 
     /**
      * `ValidatorSetCount` per session.
      **/
-    validatorSetCounts(arg: number): Promise<number>;
+    validatorSetCounts(arg: number): Promise<number | undefined>;
   };
   registrar: {
     /**
      * Pending swap operations.
      **/
-    pendingSwap(arg: PolkadotParachainPrimitivesId): Promise<PolkadotParachainPrimitivesId>;
+    pendingSwap(arg: PolkadotParachainPrimitivesId): Promise<PolkadotParachainPrimitivesId | undefined>;
 
     /**
      * Amount held on deposit for each para and the original depositor.
@@ -2082,7 +2100,7 @@ export interface ChainStorage extends GenericChainStorage {
      * The given account ID is responsible for registering the code and initial head data, but may only do
      * so if it isn't yet registered. (After that, it's up to governance to do so.)
      **/
-    paras(arg: PolkadotParachainPrimitivesId): Promise<PolkadotRuntimeCommonParasRegistrarParaInfo>;
+    paras(arg: PolkadotParachainPrimitivesId): Promise<PolkadotRuntimeCommonParasRegistrarParaInfo | undefined>;
 
     /**
      * The next free `ParaId`.
@@ -2123,26 +2141,28 @@ export interface ChainStorage extends GenericChainStorage {
      * contiguous lease periods on auction is for. The second is the block number when the
      * auction will "begin to end", i.e. the first block of the Ending Period of the auction.
      **/
-    auctionInfo(): Promise<[number, number]>;
+    auctionInfo(): Promise<[number, number] | undefined>;
 
     /**
      * Amounts currently reserved in the accounts of the bidders currently winning
      * (sub-)ranges.
      **/
-    reservedAmounts(arg: [AccountId32Like, PolkadotParachainPrimitivesId]): Promise<bigint>;
+    reservedAmounts(arg: [AccountId32Like, PolkadotParachainPrimitivesId]): Promise<bigint | undefined>;
 
     /**
      * The winning bids for each of the 10 ranges at each sample in the final Ending Period of
      * the current auction. The map's key is the 0-based index into the Sample Size. The
      * first sample of the ending period is 0; the last is `Sample Size - 1`.
      **/
-    winning(arg: number): Promise<FixedArray<[AccountId32Like, PolkadotParachainPrimitivesId, bigint] | undefined, 36>>;
+    winning(
+      arg: number,
+    ): Promise<FixedArray<[AccountId32Like, PolkadotParachainPrimitivesId, bigint] | undefined, 36> | undefined>;
   };
   crowdloan: {
     /**
      * Info on all of the funds.
      **/
-    funds(arg: PolkadotParachainPrimitivesId): Promise<PolkadotRuntimeCommonCrowdloanFundInfo>;
+    funds(arg: PolkadotParachainPrimitivesId): Promise<PolkadotRuntimeCommonCrowdloanFundInfo | undefined>;
 
     /**
      * The funds that have had additional contributions during the last block. This is used
@@ -2169,7 +2189,7 @@ export interface ChainStorage extends GenericChainStorage {
     /**
      * The ongoing queries.
      **/
-    queries(arg: bigint): Promise<PalletXcmQueryStatus>;
+    queries(arg: bigint): Promise<PalletXcmQueryStatus | undefined>;
 
     /**
      * The existing asset traps.
@@ -2183,23 +2203,25 @@ export interface ChainStorage extends GenericChainStorage {
      * Default version to encode XCM when latest version of destination is unknown. If `None`,
      * then the destinations whose XCM version is unknown are considered unreachable.
      **/
-    safeXcmVersion(): Promise<number>;
+    safeXcmVersion(): Promise<number | undefined>;
 
     /**
      * The Latest versions that we know various locations support.
      **/
-    supportedVersion(arg: [number, XcmVersionedMultiLocation]): Promise<number>;
+    supportedVersion(arg: [number, XcmVersionedMultiLocation]): Promise<number | undefined>;
 
     /**
      * All locations that we have requested version notifications from.
      **/
-    versionNotifiers(arg: [number, XcmVersionedMultiLocation]): Promise<bigint>;
+    versionNotifiers(arg: [number, XcmVersionedMultiLocation]): Promise<bigint | undefined>;
 
     /**
      * The target locations that are subscribed to our version changes, as well as the most recent
      * of our versions we informed them of.
      **/
-    versionNotifyTargets(arg: [number, XcmVersionedMultiLocation]): Promise<[bigint, SpWeightsWeightV2Weight, number]>;
+    versionNotifyTargets(
+      arg: [number, XcmVersionedMultiLocation],
+    ): Promise<[bigint, SpWeightsWeightV2Weight, number] | undefined>;
 
     /**
      * Destinations whose latest XCM version we would like to know. Duplicates not allowed, and
@@ -2211,19 +2233,19 @@ export interface ChainStorage extends GenericChainStorage {
     /**
      * The current migration's stage, if any.
      **/
-    currentMigration(): Promise<PalletXcmVersionMigrationStage>;
+    currentMigration(): Promise<PalletXcmVersionMigrationStage | undefined>;
 
     /**
      * Fungible assets which we know are locked on a remote chain.
      **/
     remoteLockedFungibles(
       arg: [number, AccountId32Like, XcmVersionedAssetId],
-    ): Promise<PalletXcmRemoteLockedFungibleRecord>;
+    ): Promise<PalletXcmRemoteLockedFungibleRecord | undefined>;
 
     /**
      * Fungible assets which we know are locked on this chain.
      **/
-    lockedFungibles(arg: AccountId32Like): Promise<Array<[bigint, XcmVersionedMultiLocation]>>;
+    lockedFungibles(arg: AccountId32Like): Promise<Array<[bigint, XcmVersionedMultiLocation]> | undefined>;
 
     /**
      * Global suspension state of the XCM executor.
@@ -2239,11 +2261,13 @@ export interface ChainStorage extends GenericChainStorage {
     /**
      * The origin at which we should begin servicing.
      **/
-    serviceHead(): Promise<PolkadotRuntimeParachainsInclusionAggregateMessageOrigin>;
+    serviceHead(): Promise<PolkadotRuntimeParachainsInclusionAggregateMessageOrigin | undefined>;
 
     /**
      * The map of page indices to pages.
      **/
-    pages(arg: [PolkadotRuntimeParachainsInclusionAggregateMessageOrigin, number]): Promise<PalletMessageQueuePage>;
+    pages(
+      arg: [PolkadotRuntimeParachainsInclusionAggregateMessageOrigin, number],
+    ): Promise<PalletMessageQueuePage | undefined>;
   };
 }
