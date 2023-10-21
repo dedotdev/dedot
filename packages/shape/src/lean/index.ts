@@ -52,27 +52,25 @@ export type EnumMembers<V extends AnyShape> = {
 
 export type InputEnumShape<V extends AnyShape, A extends EnumMembers<V>> = Expand<
   {
-    [K in keyof A]: {
-      tag: K;
-      value: A[K] extends AnyShape
-        ? Input<A[K]>
-        : A[K] extends IndexedEnumMember<V>
-        ? Input<A[K]['value'] extends AnyShape ? A[K]['value'] : Shape<never>>
-        : never;
-    };
+    [K in keyof A]: A[K] extends AnyShape
+      ? { tag: K; value: Input<A[K]> }
+      : A[K] extends IndexedEnumMember<V>
+      ? A[K]['value'] extends AnyShape
+        ? { tag: K; value: Input<A[K]['value']> }
+        : { tag: K }
+      : { tag: K };
   }[keyof A]
 >;
 
 export type OutputEnumShape<V extends AnyShape, A extends EnumMembers<V>> = Expand<
   {
-    [K in keyof A]: {
-      tag: K;
-      value: A[K] extends AnyShape
-        ? Output<A[K]>
-        : A[K] extends IndexedEnumMember<V>
-        ? Output<A[K]['value'] extends AnyShape ? A[K]['value'] : Shape<never>>
-        : never;
-    };
+    [K in keyof A]: A[K] extends AnyShape
+      ? { tag: K; value: Output<A[K]> }
+      : A[K] extends IndexedEnumMember<V>
+      ? A[K]['value'] extends AnyShape
+        ? { tag: K; value: Output<A[K]['value']> }
+        : { tag: K }
+      : { tag: K };
   }[keyof A]
 >;
 
