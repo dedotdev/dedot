@@ -768,27 +768,27 @@ export type PalletElectionsPhragmenEvent =
  **/
 export type PalletMembershipEvent =
   /**
-   * The [event](https://docs.substrate.io/main-docs/build/events-errors/) emitted by this pallet.
+   * The given member was added; see the transaction for who.
    **/
   | 'MemberAdded'
   /**
-   * The [event](https://docs.substrate.io/main-docs/build/events-errors/) emitted by this pallet.
+   * The given member was removed; see the transaction for who.
    **/
   | 'MemberRemoved'
   /**
-   * The [event](https://docs.substrate.io/main-docs/build/events-errors/) emitted by this pallet.
+   * Two members were swapped; see the transaction for who.
    **/
   | 'MembersSwapped'
   /**
-   * The [event](https://docs.substrate.io/main-docs/build/events-errors/) emitted by this pallet.
+   * The membership was reset; see the transaction for who the new set is.
    **/
   | 'MembersReset'
   /**
-   * The [event](https://docs.substrate.io/main-docs/build/events-errors/) emitted by this pallet.
+   * One of the members' keys changed.
    **/
   | 'KeyChanged'
   /**
-   * The [event](https://docs.substrate.io/main-docs/build/events-errors/) emitted by this pallet.
+   * Phantom member, never used.
    **/
   | 'Dummy';
 
@@ -3105,11 +3105,7 @@ export type PolkadotParachainPrimitivesHrmpChannelId = {
 /**
  * Contains one variant per dispatchable that can be called by an extrinsic.
  **/
-export type PolkadotRuntimeParachainsDisputesPalletCall =
-  /**
-   * Contains one variant per dispatchable that can be called by an extrinsic.
-   **/
-  'force_unfreeze';
+export type PolkadotRuntimeParachainsDisputesPalletCall = 'force_unfreeze';
 
 /**
  * Contains one variant per dispatchable that can be called by an extrinsic.
@@ -4953,27 +4949,31 @@ export type SpVersionRuntimeVersion = {
  **/
 export type FrameSystemError =
   /**
-   * Error for the System pallet
+   * The name of specification does not match between the current runtime
+   * and the new runtime.
    **/
   | 'InvalidSpecName'
   /**
-   * Error for the System pallet
+   * The specification version is not allowed to decrease between the current runtime
+   * and the new runtime.
    **/
   | 'SpecVersionNeedsToIncrease'
   /**
-   * Error for the System pallet
+   * Failed to extract the runtime version from the new runtime.
+   *
+   * Either calling `Core_version` or decoding `RuntimeVersion` failed.
    **/
   | 'FailedToExtractRuntimeVersion'
   /**
-   * Error for the System pallet
+   * Suicide called when the account has non-default composite data.
    **/
   | 'NonDefaultComposite'
   /**
-   * Error for the System pallet
+   * There is a non-zero reference count preventing the account from being purged.
    **/
   | 'NonZeroRefCount'
   /**
-   * Error for the System pallet
+   * The origin filter prevent the call to be dispatched.
    **/
   | 'CallFiltered';
 
@@ -4990,23 +4990,23 @@ export type PalletSchedulerScheduled = {
  **/
 export type PalletSchedulerError =
   /**
-   * Custom [dispatch errors](https://docs.substrate.io/main-docs/build/events-errors/) of this pallet.
+   * Failed to schedule a call
    **/
   | 'FailedToSchedule'
   /**
-   * Custom [dispatch errors](https://docs.substrate.io/main-docs/build/events-errors/) of this pallet.
+   * Cannot find the scheduled call.
    **/
   | 'NotFound'
   /**
-   * Custom [dispatch errors](https://docs.substrate.io/main-docs/build/events-errors/) of this pallet.
+   * Given target block number is in the past.
    **/
   | 'TargetBlockNumberInPast'
   /**
-   * Custom [dispatch errors](https://docs.substrate.io/main-docs/build/events-errors/) of this pallet.
+   * Reschedule failed because it does not change scheduled time.
    **/
   | 'RescheduleNoChange'
   /**
-   * Custom [dispatch errors](https://docs.substrate.io/main-docs/build/events-errors/) of this pallet.
+   * Attempt to use a non-named function on a named task.
    **/
   | 'Named';
 
@@ -5032,27 +5032,27 @@ export type PalletPreimageRequestStatus =
  **/
 export type PalletPreimageError =
   /**
-   * Custom [dispatch errors](https://docs.substrate.io/main-docs/build/events-errors/) of this pallet.
+   * Preimage is too large to store on-chain.
    **/
   | 'TooBig'
   /**
-   * Custom [dispatch errors](https://docs.substrate.io/main-docs/build/events-errors/) of this pallet.
+   * Preimage has already been noted on-chain.
    **/
   | 'AlreadyNoted'
   /**
-   * Custom [dispatch errors](https://docs.substrate.io/main-docs/build/events-errors/) of this pallet.
+   * The user is not authorized to perform this action.
    **/
   | 'NotAuthorized'
   /**
-   * Custom [dispatch errors](https://docs.substrate.io/main-docs/build/events-errors/) of this pallet.
+   * The preimage cannot be removed since it has not yet been noted.
    **/
   | 'NotNoted'
   /**
-   * Custom [dispatch errors](https://docs.substrate.io/main-docs/build/events-errors/) of this pallet.
+   * A preimage may not be removed when there are outstanding requests.
    **/
   | 'Requested'
   /**
-   * Custom [dispatch errors](https://docs.substrate.io/main-docs/build/events-errors/) of this pallet.
+   * The preimage request cannot be removed since no outstanding requests exist.
    **/
   | 'NotRequested';
 
@@ -5093,19 +5093,19 @@ export type SpConsensusBabeBabeEpochConfiguration = {
  **/
 export type PalletBabeError =
   /**
-   * Custom [dispatch errors](https://docs.substrate.io/main-docs/build/events-errors/) of this pallet.
+   * An equivocation proof provided as part of an equivocation report is invalid.
    **/
   | 'InvalidEquivocationProof'
   /**
-   * Custom [dispatch errors](https://docs.substrate.io/main-docs/build/events-errors/) of this pallet.
+   * A key ownership proof provided as part of an equivocation report is invalid.
    **/
   | 'InvalidKeyOwnershipProof'
   /**
-   * Custom [dispatch errors](https://docs.substrate.io/main-docs/build/events-errors/) of this pallet.
+   * A given equivocation report is valid but already previously reported.
    **/
   | 'DuplicateOffenceReport'
   /**
-   * Custom [dispatch errors](https://docs.substrate.io/main-docs/build/events-errors/) of this pallet.
+   * Submitted configuration is invalid.
    **/
   | 'InvalidConfiguration';
 
@@ -5114,23 +5114,23 @@ export type PalletBabeError =
  **/
 export type PalletIndicesError =
   /**
-   * Custom [dispatch errors](https://docs.substrate.io/main-docs/build/events-errors/) of this pallet.
+   * The index was not already assigned.
    **/
   | 'NotAssigned'
   /**
-   * Custom [dispatch errors](https://docs.substrate.io/main-docs/build/events-errors/) of this pallet.
+   * The index is assigned to another account.
    **/
   | 'NotOwner'
   /**
-   * Custom [dispatch errors](https://docs.substrate.io/main-docs/build/events-errors/) of this pallet.
+   * The index was not available.
    **/
   | 'InUse'
   /**
-   * Custom [dispatch errors](https://docs.substrate.io/main-docs/build/events-errors/) of this pallet.
+   * The source and destination accounts are identical.
    **/
   | 'NotTransfer'
   /**
-   * Custom [dispatch errors](https://docs.substrate.io/main-docs/build/events-errors/) of this pallet.
+   * The index is permanent and may not be freed/changed.
    **/
   | 'Permanent';
 
@@ -5157,43 +5157,43 @@ export type PalletBalancesIdAmount = {
  **/
 export type PalletBalancesError =
   /**
-   * Custom [dispatch errors](https://docs.substrate.io/main-docs/build/events-errors/) of this pallet.
+   * Vesting balance too high to send value.
    **/
   | 'VestingBalance'
   /**
-   * Custom [dispatch errors](https://docs.substrate.io/main-docs/build/events-errors/) of this pallet.
+   * Account liquidity restrictions prevent withdrawal.
    **/
   | 'LiquidityRestrictions'
   /**
-   * Custom [dispatch errors](https://docs.substrate.io/main-docs/build/events-errors/) of this pallet.
+   * Balance too low to send value.
    **/
   | 'InsufficientBalance'
   /**
-   * Custom [dispatch errors](https://docs.substrate.io/main-docs/build/events-errors/) of this pallet.
+   * Value too low to create account due to existential deposit.
    **/
   | 'ExistentialDeposit'
   /**
-   * Custom [dispatch errors](https://docs.substrate.io/main-docs/build/events-errors/) of this pallet.
+   * Transfer/payment would kill account.
    **/
   | 'Expendability'
   /**
-   * Custom [dispatch errors](https://docs.substrate.io/main-docs/build/events-errors/) of this pallet.
+   * A vesting schedule already exists for this account.
    **/
   | 'ExistingVestingSchedule'
   /**
-   * Custom [dispatch errors](https://docs.substrate.io/main-docs/build/events-errors/) of this pallet.
+   * Beneficiary account must pre-exist.
    **/
   | 'DeadAccount'
   /**
-   * Custom [dispatch errors](https://docs.substrate.io/main-docs/build/events-errors/) of this pallet.
+   * Number of named reserves exceed `MaxReserves`.
    **/
   | 'TooManyReserves'
   /**
-   * Custom [dispatch errors](https://docs.substrate.io/main-docs/build/events-errors/) of this pallet.
+   * Number of holds exceed `MaxHolds`.
    **/
   | 'TooManyHolds'
   /**
-   * Custom [dispatch errors](https://docs.substrate.io/main-docs/build/events-errors/) of this pallet.
+   * Number of freezes exceed `MaxFreezes`.
    **/
   | 'TooManyFreezes';
 
@@ -5253,103 +5253,107 @@ export type PalletStakingSlashingSpanRecord = {
  **/
 export type PalletStakingPalletError =
   /**
-   * Custom [dispatch errors](https://docs.substrate.io/main-docs/build/events-errors/) of this pallet.
+   * Not a controller account.
    **/
   | 'NotController'
   /**
-   * Custom [dispatch errors](https://docs.substrate.io/main-docs/build/events-errors/) of this pallet.
+   * Not a stash account.
    **/
   | 'NotStash'
   /**
-   * Custom [dispatch errors](https://docs.substrate.io/main-docs/build/events-errors/) of this pallet.
+   * Stash is already bonded.
    **/
   | 'AlreadyBonded'
   /**
-   * Custom [dispatch errors](https://docs.substrate.io/main-docs/build/events-errors/) of this pallet.
+   * Controller is already paired.
    **/
   | 'AlreadyPaired'
   /**
-   * Custom [dispatch errors](https://docs.substrate.io/main-docs/build/events-errors/) of this pallet.
+   * Targets cannot be empty.
    **/
   | 'EmptyTargets'
   /**
-   * Custom [dispatch errors](https://docs.substrate.io/main-docs/build/events-errors/) of this pallet.
+   * Duplicate index.
    **/
   | 'DuplicateIndex'
   /**
-   * Custom [dispatch errors](https://docs.substrate.io/main-docs/build/events-errors/) of this pallet.
+   * Slash record index out of bounds.
    **/
   | 'InvalidSlashIndex'
   /**
-   * Custom [dispatch errors](https://docs.substrate.io/main-docs/build/events-errors/) of this pallet.
+   * Cannot have a validator or nominator role, with value less than the minimum defined by
+   * governance (see `MinValidatorBond` and `MinNominatorBond`). If unbonding is the
+   * intention, `chill` first to remove one's role as validator/nominator.
    **/
   | 'InsufficientBond'
   /**
-   * Custom [dispatch errors](https://docs.substrate.io/main-docs/build/events-errors/) of this pallet.
+   * Can not schedule more unlock chunks.
    **/
   | 'NoMoreChunks'
   /**
-   * Custom [dispatch errors](https://docs.substrate.io/main-docs/build/events-errors/) of this pallet.
+   * Can not rebond without unlocking chunks.
    **/
   | 'NoUnlockChunk'
   /**
-   * Custom [dispatch errors](https://docs.substrate.io/main-docs/build/events-errors/) of this pallet.
+   * Attempting to target a stash that still has funds.
    **/
   | 'FundedTarget'
   /**
-   * Custom [dispatch errors](https://docs.substrate.io/main-docs/build/events-errors/) of this pallet.
+   * Invalid era to reward.
    **/
   | 'InvalidEraToReward'
   /**
-   * Custom [dispatch errors](https://docs.substrate.io/main-docs/build/events-errors/) of this pallet.
+   * Invalid number of nominations.
    **/
   | 'InvalidNumberOfNominations'
   /**
-   * Custom [dispatch errors](https://docs.substrate.io/main-docs/build/events-errors/) of this pallet.
+   * Items are not sorted and unique.
    **/
   | 'NotSortedAndUnique'
   /**
-   * Custom [dispatch errors](https://docs.substrate.io/main-docs/build/events-errors/) of this pallet.
+   * Rewards for this era have already been claimed for this validator.
    **/
   | 'AlreadyClaimed'
   /**
-   * Custom [dispatch errors](https://docs.substrate.io/main-docs/build/events-errors/) of this pallet.
+   * Incorrect previous history depth input provided.
    **/
   | 'IncorrectHistoryDepth'
   /**
-   * Custom [dispatch errors](https://docs.substrate.io/main-docs/build/events-errors/) of this pallet.
+   * Incorrect number of slashing spans provided.
    **/
   | 'IncorrectSlashingSpans'
   /**
-   * Custom [dispatch errors](https://docs.substrate.io/main-docs/build/events-errors/) of this pallet.
+   * Internal state has become somehow corrupted and the operation cannot continue.
    **/
   | 'BadState'
   /**
-   * Custom [dispatch errors](https://docs.substrate.io/main-docs/build/events-errors/) of this pallet.
+   * Too many nomination targets supplied.
    **/
   | 'TooManyTargets'
   /**
-   * Custom [dispatch errors](https://docs.substrate.io/main-docs/build/events-errors/) of this pallet.
+   * A nomination target was supplied that was blocked or otherwise not a validator.
    **/
   | 'BadTarget'
   /**
-   * Custom [dispatch errors](https://docs.substrate.io/main-docs/build/events-errors/) of this pallet.
+   * The user has enough bond and thus cannot be chilled forcefully by an external person.
    **/
   | 'CannotChillOther'
   /**
-   * Custom [dispatch errors](https://docs.substrate.io/main-docs/build/events-errors/) of this pallet.
+   * There are too many nominators in the system. Governance needs to adjust the staking
+   * settings to keep things safe for the runtime.
    **/
   | 'TooManyNominators'
   /**
-   * Custom [dispatch errors](https://docs.substrate.io/main-docs/build/events-errors/) of this pallet.
+   * There are too many validator candidates in the system. Governance needs to adjust the
+   * staking settings to keep things safe for the runtime.
    **/
   | 'TooManyValidators'
   /**
-   * Custom [dispatch errors](https://docs.substrate.io/main-docs/build/events-errors/) of this pallet.
+   * Commission is too low. Must be at least `MinCommission`.
    **/
   | 'CommissionTooLow'
   /**
-   * Custom [dispatch errors](https://docs.substrate.io/main-docs/build/events-errors/) of this pallet.
+   * Some bound is not met.
    **/
   | 'BoundNotMet';
 
@@ -5365,23 +5369,23 @@ export type SpCoreCryptoKeyTypeId = FixedBytes<4>;
  **/
 export type PalletSessionError =
   /**
-   * Error for the session pallet.
+   * Invalid ownership proof.
    **/
   | 'InvalidProof'
   /**
-   * Error for the session pallet.
+   * No associated validator ID for account.
    **/
   | 'NoAssociatedValidatorId'
   /**
-   * Error for the session pallet.
+   * Registered duplicate key.
    **/
   | 'DuplicatedKey'
   /**
-   * Error for the session pallet.
+   * No keys are associated with this account.
    **/
   | 'NoKeys'
   /**
-   * Error for the session pallet.
+   * Key setting account is not live, so it's impossible to associate keys.
    **/
   | 'NoAccount';
 
@@ -5415,31 +5419,33 @@ export type PalletGrandpaStoredPendingChange = {
  **/
 export type PalletGrandpaError =
   /**
-   * Custom [dispatch errors](https://docs.substrate.io/main-docs/build/events-errors/) of this pallet.
+   * Attempt to signal GRANDPA pause when the authority set isn't live
+   * (either paused or already pending pause).
    **/
   | 'PauseFailed'
   /**
-   * Custom [dispatch errors](https://docs.substrate.io/main-docs/build/events-errors/) of this pallet.
+   * Attempt to signal GRANDPA resume when the authority set isn't paused
+   * (either live or already pending resume).
    **/
   | 'ResumeFailed'
   /**
-   * Custom [dispatch errors](https://docs.substrate.io/main-docs/build/events-errors/) of this pallet.
+   * Attempt to signal GRANDPA change with one already pending.
    **/
   | 'ChangePending'
   /**
-   * Custom [dispatch errors](https://docs.substrate.io/main-docs/build/events-errors/) of this pallet.
+   * Cannot signal forced change so soon after last.
    **/
   | 'TooSoon'
   /**
-   * Custom [dispatch errors](https://docs.substrate.io/main-docs/build/events-errors/) of this pallet.
+   * A key ownership proof provided as part of an equivocation report is invalid.
    **/
   | 'InvalidKeyOwnershipProof'
   /**
-   * Custom [dispatch errors](https://docs.substrate.io/main-docs/build/events-errors/) of this pallet.
+   * An equivocation proof provided as part of an equivocation report is invalid.
    **/
   | 'InvalidEquivocationProof'
   /**
-   * Custom [dispatch errors](https://docs.substrate.io/main-docs/build/events-errors/) of this pallet.
+   * A given equivocation report is valid but already previously reported.
    **/
   | 'DuplicateOffenceReport';
 
@@ -5453,11 +5459,11 @@ export type PalletImOnlineBoundedOpaqueNetworkState = {
  **/
 export type PalletImOnlineError =
   /**
-   * Custom [dispatch errors](https://docs.substrate.io/main-docs/build/events-errors/) of this pallet.
+   * Non existent public key.
    **/
   | 'InvalidKey'
   /**
-   * Custom [dispatch errors](https://docs.substrate.io/main-docs/build/events-errors/) of this pallet.
+   * Duplicated heartbeat.
    **/
   | 'DuplicatedHeartbeat';
 
@@ -5517,99 +5523,100 @@ export type PalletDemocracyVotePriorLock = [number, bigint];
  **/
 export type PalletDemocracyError =
   /**
-   * Custom [dispatch errors](https://docs.substrate.io/main-docs/build/events-errors/) of this pallet.
+   * Value too low
    **/
   | 'ValueLow'
   /**
-   * Custom [dispatch errors](https://docs.substrate.io/main-docs/build/events-errors/) of this pallet.
+   * Proposal does not exist
    **/
   | 'ProposalMissing'
   /**
-   * Custom [dispatch errors](https://docs.substrate.io/main-docs/build/events-errors/) of this pallet.
+   * Cannot cancel the same proposal twice
    **/
   | 'AlreadyCanceled'
   /**
-   * Custom [dispatch errors](https://docs.substrate.io/main-docs/build/events-errors/) of this pallet.
+   * Proposal already made
    **/
   | 'DuplicateProposal'
   /**
-   * Custom [dispatch errors](https://docs.substrate.io/main-docs/build/events-errors/) of this pallet.
+   * Proposal still blacklisted
    **/
   | 'ProposalBlacklisted'
   /**
-   * Custom [dispatch errors](https://docs.substrate.io/main-docs/build/events-errors/) of this pallet.
+   * Next external proposal not simple majority
    **/
   | 'NotSimpleMajority'
   /**
-   * Custom [dispatch errors](https://docs.substrate.io/main-docs/build/events-errors/) of this pallet.
+   * Invalid hash
    **/
   | 'InvalidHash'
   /**
-   * Custom [dispatch errors](https://docs.substrate.io/main-docs/build/events-errors/) of this pallet.
+   * No external proposal
    **/
   | 'NoProposal'
   /**
-   * Custom [dispatch errors](https://docs.substrate.io/main-docs/build/events-errors/) of this pallet.
+   * Identity may not veto a proposal twice
    **/
   | 'AlreadyVetoed'
   /**
-   * Custom [dispatch errors](https://docs.substrate.io/main-docs/build/events-errors/) of this pallet.
+   * Vote given for invalid referendum
    **/
   | 'ReferendumInvalid'
   /**
-   * Custom [dispatch errors](https://docs.substrate.io/main-docs/build/events-errors/) of this pallet.
+   * No proposals waiting
    **/
   | 'NoneWaiting'
   /**
-   * Custom [dispatch errors](https://docs.substrate.io/main-docs/build/events-errors/) of this pallet.
+   * The given account did not vote on the referendum.
    **/
   | 'NotVoter'
   /**
-   * Custom [dispatch errors](https://docs.substrate.io/main-docs/build/events-errors/) of this pallet.
+   * The actor has no permission to conduct the action.
    **/
   | 'NoPermission'
   /**
-   * Custom [dispatch errors](https://docs.substrate.io/main-docs/build/events-errors/) of this pallet.
+   * The account is already delegating.
    **/
   | 'AlreadyDelegating'
   /**
-   * Custom [dispatch errors](https://docs.substrate.io/main-docs/build/events-errors/) of this pallet.
+   * Too high a balance was provided that the account cannot afford.
    **/
   | 'InsufficientFunds'
   /**
-   * Custom [dispatch errors](https://docs.substrate.io/main-docs/build/events-errors/) of this pallet.
+   * The account is not currently delegating.
    **/
   | 'NotDelegating'
   /**
-   * Custom [dispatch errors](https://docs.substrate.io/main-docs/build/events-errors/) of this pallet.
+   * The account currently has votes attached to it and the operation cannot succeed until
+   * these are removed, either through `unvote` or `reap_vote`.
    **/
   | 'VotesExist'
   /**
-   * Custom [dispatch errors](https://docs.substrate.io/main-docs/build/events-errors/) of this pallet.
+   * The instant referendum origin is currently disallowed.
    **/
   | 'InstantNotAllowed'
   /**
-   * Custom [dispatch errors](https://docs.substrate.io/main-docs/build/events-errors/) of this pallet.
+   * Delegation to oneself makes no sense.
    **/
   | 'Nonsense'
   /**
-   * Custom [dispatch errors](https://docs.substrate.io/main-docs/build/events-errors/) of this pallet.
+   * Invalid upper bound.
    **/
   | 'WrongUpperBound'
   /**
-   * Custom [dispatch errors](https://docs.substrate.io/main-docs/build/events-errors/) of this pallet.
+   * Maximum number of votes reached.
    **/
   | 'MaxVotesReached'
   /**
-   * Custom [dispatch errors](https://docs.substrate.io/main-docs/build/events-errors/) of this pallet.
+   * Maximum number of items reached.
    **/
   | 'TooMany'
   /**
-   * Custom [dispatch errors](https://docs.substrate.io/main-docs/build/events-errors/) of this pallet.
+   * Voting period too low
    **/
   | 'VotingPeriodLow'
   /**
-   * Custom [dispatch errors](https://docs.substrate.io/main-docs/build/events-errors/) of this pallet.
+   * The preimage does not exist.
    **/
   | 'PreimageNotExist';
 
@@ -5626,43 +5633,43 @@ export type PalletCollectiveVotes = {
  **/
 export type PalletCollectiveError =
   /**
-   * Custom [dispatch errors](https://docs.substrate.io/main-docs/build/events-errors/) of this pallet.
+   * Account is not a member
    **/
   | 'NotMember'
   /**
-   * Custom [dispatch errors](https://docs.substrate.io/main-docs/build/events-errors/) of this pallet.
+   * Duplicate proposals not allowed
    **/
   | 'DuplicateProposal'
   /**
-   * Custom [dispatch errors](https://docs.substrate.io/main-docs/build/events-errors/) of this pallet.
+   * Proposal must exist
    **/
   | 'ProposalMissing'
   /**
-   * Custom [dispatch errors](https://docs.substrate.io/main-docs/build/events-errors/) of this pallet.
+   * Mismatched index
    **/
   | 'WrongIndex'
   /**
-   * Custom [dispatch errors](https://docs.substrate.io/main-docs/build/events-errors/) of this pallet.
+   * Duplicate vote ignored
    **/
   | 'DuplicateVote'
   /**
-   * Custom [dispatch errors](https://docs.substrate.io/main-docs/build/events-errors/) of this pallet.
+   * Members are already initialized!
    **/
   | 'AlreadyInitialized'
   /**
-   * Custom [dispatch errors](https://docs.substrate.io/main-docs/build/events-errors/) of this pallet.
+   * The close call was made too early, before the end of the voting.
    **/
   | 'TooEarly'
   /**
-   * Custom [dispatch errors](https://docs.substrate.io/main-docs/build/events-errors/) of this pallet.
+   * There can only be a maximum of `MaxProposals` active proposals.
    **/
   | 'TooManyProposals'
   /**
-   * Custom [dispatch errors](https://docs.substrate.io/main-docs/build/events-errors/) of this pallet.
+   * The given weight bound for the proposal was too low.
    **/
   | 'WrongProposalWeight'
   /**
-   * Custom [dispatch errors](https://docs.substrate.io/main-docs/build/events-errors/) of this pallet.
+   * The given length bound for the proposal was too low.
    **/
   | 'WrongProposalLength';
 
@@ -5683,71 +5690,71 @@ export type PalletElectionsPhragmenVoter = {
  **/
 export type PalletElectionsPhragmenError =
   /**
-   * Custom [dispatch errors](https://docs.substrate.io/main-docs/build/events-errors/) of this pallet.
+   * Cannot vote when no candidates or members exist.
    **/
   | 'UnableToVote'
   /**
-   * Custom [dispatch errors](https://docs.substrate.io/main-docs/build/events-errors/) of this pallet.
+   * Must vote for at least one candidate.
    **/
   | 'NoVotes'
   /**
-   * Custom [dispatch errors](https://docs.substrate.io/main-docs/build/events-errors/) of this pallet.
+   * Cannot vote more than candidates.
    **/
   | 'TooManyVotes'
   /**
-   * Custom [dispatch errors](https://docs.substrate.io/main-docs/build/events-errors/) of this pallet.
+   * Cannot vote more than maximum allowed.
    **/
   | 'MaximumVotesExceeded'
   /**
-   * Custom [dispatch errors](https://docs.substrate.io/main-docs/build/events-errors/) of this pallet.
+   * Cannot vote with stake less than minimum balance.
    **/
   | 'LowBalance'
   /**
-   * Custom [dispatch errors](https://docs.substrate.io/main-docs/build/events-errors/) of this pallet.
+   * Voter can not pay voting bond.
    **/
   | 'UnableToPayBond'
   /**
-   * Custom [dispatch errors](https://docs.substrate.io/main-docs/build/events-errors/) of this pallet.
+   * Must be a voter.
    **/
   | 'MustBeVoter'
   /**
-   * Custom [dispatch errors](https://docs.substrate.io/main-docs/build/events-errors/) of this pallet.
+   * Duplicated candidate submission.
    **/
   | 'DuplicatedCandidate'
   /**
-   * Custom [dispatch errors](https://docs.substrate.io/main-docs/build/events-errors/) of this pallet.
+   * Too many candidates have been created.
    **/
   | 'TooManyCandidates'
   /**
-   * Custom [dispatch errors](https://docs.substrate.io/main-docs/build/events-errors/) of this pallet.
+   * Member cannot re-submit candidacy.
    **/
   | 'MemberSubmit'
   /**
-   * Custom [dispatch errors](https://docs.substrate.io/main-docs/build/events-errors/) of this pallet.
+   * Runner cannot re-submit candidacy.
    **/
   | 'RunnerUpSubmit'
   /**
-   * Custom [dispatch errors](https://docs.substrate.io/main-docs/build/events-errors/) of this pallet.
+   * Candidate does not have enough funds.
    **/
   | 'InsufficientCandidateFunds'
   /**
-   * Custom [dispatch errors](https://docs.substrate.io/main-docs/build/events-errors/) of this pallet.
+   * Not a member.
    **/
   | 'NotMember'
   /**
-   * Custom [dispatch errors](https://docs.substrate.io/main-docs/build/events-errors/) of this pallet.
+   * The provided count of number of candidates is incorrect.
    **/
   | 'InvalidWitnessData'
   /**
-   * Custom [dispatch errors](https://docs.substrate.io/main-docs/build/events-errors/) of this pallet.
+   * The provided count of number of votes is incorrect.
    **/
   | 'InvalidVoteCount'
   /**
-   * Custom [dispatch errors](https://docs.substrate.io/main-docs/build/events-errors/) of this pallet.
+   * The renouncing origin presented a wrong `Renouncing` parameter.
    **/
   | 'InvalidRenouncing'
   /**
-   * Custom [dispatch errors](https://docs.substrate.io/main-docs/build/events-errors/) of this pallet.
+   * Prediction regarding replacement after member removal is wrong.
    **/
   | 'InvalidReplacement';
 
@@ -5756,15 +5763,15 @@ export type PalletElectionsPhragmenError =
  **/
 export type PalletMembershipError =
   /**
-   * Custom [dispatch errors](https://docs.substrate.io/main-docs/build/events-errors/) of this pallet.
+   * Already a member.
    **/
   | 'AlreadyMember'
   /**
-   * Custom [dispatch errors](https://docs.substrate.io/main-docs/build/events-errors/) of this pallet.
+   * Not a member.
    **/
   | 'NotMember'
   /**
-   * Custom [dispatch errors](https://docs.substrate.io/main-docs/build/events-errors/) of this pallet.
+   * Too many members.
    **/
   | 'TooManyMembers';
 
@@ -5782,23 +5789,24 @@ export type FrameSupportPalletId = FixedBytes<8>;
  **/
 export type PalletTreasuryError =
   /**
-   * Error for the treasury pallet.
+   * Proposer's balance is too low.
    **/
   | 'InsufficientProposersBalance'
   /**
-   * Error for the treasury pallet.
+   * No proposal or bounty at that index.
    **/
   | 'InvalidIndex'
   /**
-   * Error for the treasury pallet.
+   * Too many approvals in the queue.
    **/
   | 'TooManyApprovals'
   /**
-   * Error for the treasury pallet.
+   * The spend origin is valid but the amount it is allowed to spend is lower than the
+   * amount to be spent.
    **/
   | 'InsufficientPermission'
   /**
-   * Error for the treasury pallet.
+   * Proposal has not been approved.
    **/
   | 'ProposalNotApproved';
 
@@ -5832,51 +5840,52 @@ export type PalletConvictionVotingVoteDelegating = {
  **/
 export type PalletConvictionVotingError =
   /**
-   * Custom [dispatch errors](https://docs.substrate.io/main-docs/build/events-errors/) of this pallet.
+   * Poll is not ongoing.
    **/
   | 'NotOngoing'
   /**
-   * Custom [dispatch errors](https://docs.substrate.io/main-docs/build/events-errors/) of this pallet.
+   * The given account did not vote on the poll.
    **/
   | 'NotVoter'
   /**
-   * Custom [dispatch errors](https://docs.substrate.io/main-docs/build/events-errors/) of this pallet.
+   * The actor has no permission to conduct the action.
    **/
   | 'NoPermission'
   /**
-   * Custom [dispatch errors](https://docs.substrate.io/main-docs/build/events-errors/) of this pallet.
+   * The actor has no permission to conduct the action right now but will do in the future.
    **/
   | 'NoPermissionYet'
   /**
-   * Custom [dispatch errors](https://docs.substrate.io/main-docs/build/events-errors/) of this pallet.
+   * The account is already delegating.
    **/
   | 'AlreadyDelegating'
   /**
-   * Custom [dispatch errors](https://docs.substrate.io/main-docs/build/events-errors/) of this pallet.
+   * The account currently has votes attached to it and the operation cannot succeed until
+   * these are removed, either through `unvote` or `reap_vote`.
    **/
   | 'AlreadyVoting'
   /**
-   * Custom [dispatch errors](https://docs.substrate.io/main-docs/build/events-errors/) of this pallet.
+   * Too high a balance was provided that the account cannot afford.
    **/
   | 'InsufficientFunds'
   /**
-   * Custom [dispatch errors](https://docs.substrate.io/main-docs/build/events-errors/) of this pallet.
+   * The account is not currently delegating.
    **/
   | 'NotDelegating'
   /**
-   * Custom [dispatch errors](https://docs.substrate.io/main-docs/build/events-errors/) of this pallet.
+   * Delegation to oneself makes no sense.
    **/
   | 'Nonsense'
   /**
-   * Custom [dispatch errors](https://docs.substrate.io/main-docs/build/events-errors/) of this pallet.
+   * Maximum number of votes reached.
    **/
   | 'MaxVotesReached'
   /**
-   * Custom [dispatch errors](https://docs.substrate.io/main-docs/build/events-errors/) of this pallet.
+   * The class must be supplied since it is not easily determinable from the state.
    **/
   | 'ClassNeeded'
   /**
-   * Custom [dispatch errors](https://docs.substrate.io/main-docs/build/events-errors/) of this pallet.
+   * The class ID supplied is invalid.
    **/
   | 'BadClass';
 
@@ -5956,55 +5965,55 @@ export type PalletReferendaCurve =
  **/
 export type PalletReferendaError =
   /**
-   * Custom [dispatch errors](https://docs.substrate.io/main-docs/build/events-errors/) of this pallet.
+   * Referendum is not ongoing.
    **/
   | 'NotOngoing'
   /**
-   * Custom [dispatch errors](https://docs.substrate.io/main-docs/build/events-errors/) of this pallet.
+   * Referendum's decision deposit is already paid.
    **/
   | 'HasDeposit'
   /**
-   * Custom [dispatch errors](https://docs.substrate.io/main-docs/build/events-errors/) of this pallet.
+   * The track identifier given was invalid.
    **/
   | 'BadTrack'
   /**
-   * Custom [dispatch errors](https://docs.substrate.io/main-docs/build/events-errors/) of this pallet.
+   * There are already a full complement of referenda in progress for this track.
    **/
   | 'Full'
   /**
-   * Custom [dispatch errors](https://docs.substrate.io/main-docs/build/events-errors/) of this pallet.
+   * The queue of the track is empty.
    **/
   | 'QueueEmpty'
   /**
-   * Custom [dispatch errors](https://docs.substrate.io/main-docs/build/events-errors/) of this pallet.
+   * The referendum index provided is invalid in this context.
    **/
   | 'BadReferendum'
   /**
-   * Custom [dispatch errors](https://docs.substrate.io/main-docs/build/events-errors/) of this pallet.
+   * There was nothing to do in the advancement.
    **/
   | 'NothingToDo'
   /**
-   * Custom [dispatch errors](https://docs.substrate.io/main-docs/build/events-errors/) of this pallet.
+   * No track exists for the proposal origin.
    **/
   | 'NoTrack'
   /**
-   * Custom [dispatch errors](https://docs.substrate.io/main-docs/build/events-errors/) of this pallet.
+   * Any deposit cannot be refunded until after the decision is over.
    **/
   | 'Unfinished'
   /**
-   * Custom [dispatch errors](https://docs.substrate.io/main-docs/build/events-errors/) of this pallet.
+   * The deposit refunder is not the depositor.
    **/
   | 'NoPermission'
   /**
-   * Custom [dispatch errors](https://docs.substrate.io/main-docs/build/events-errors/) of this pallet.
+   * The deposit cannot be refunded since none was made.
    **/
   | 'NoDeposit'
   /**
-   * Custom [dispatch errors](https://docs.substrate.io/main-docs/build/events-errors/) of this pallet.
+   * The referendum status is invalid for this operation.
    **/
   | 'BadStatus'
   /**
-   * Custom [dispatch errors](https://docs.substrate.io/main-docs/build/events-errors/) of this pallet.
+   * The preimage does not exist.
    **/
   | 'PreimageNotExist';
 
@@ -6013,23 +6022,23 @@ export type PalletReferendaError =
  **/
 export type PalletWhitelistError =
   /**
-   * Custom [dispatch errors](https://docs.substrate.io/main-docs/build/events-errors/) of this pallet.
+   * The preimage of the call hash could not be loaded.
    **/
   | 'UnavailablePreImage'
   /**
-   * Custom [dispatch errors](https://docs.substrate.io/main-docs/build/events-errors/) of this pallet.
+   * The call could not be decoded.
    **/
   | 'UndecodableCall'
   /**
-   * Custom [dispatch errors](https://docs.substrate.io/main-docs/build/events-errors/) of this pallet.
+   * The weight of the decoded call was higher than the witness.
    **/
   | 'InvalidCallWeightWitness'
   /**
-   * Custom [dispatch errors](https://docs.substrate.io/main-docs/build/events-errors/) of this pallet.
+   * The call was not whitelisted.
    **/
   | 'CallIsNotWhitelisted'
   /**
-   * Custom [dispatch errors](https://docs.substrate.io/main-docs/build/events-errors/) of this pallet.
+   * The call was already whitelisted; No-Op.
    **/
   | 'CallAlreadyWhitelisted';
 
@@ -6038,27 +6047,28 @@ export type PalletWhitelistError =
  **/
 export type PolkadotRuntimeCommonClaimsPalletError =
   /**
-   * Custom [dispatch errors](https://docs.substrate.io/main-docs/build/events-errors/) of this pallet.
+   * Invalid Ethereum signature.
    **/
   | 'InvalidEthereumSignature'
   /**
-   * Custom [dispatch errors](https://docs.substrate.io/main-docs/build/events-errors/) of this pallet.
+   * Ethereum address has no claim.
    **/
   | 'SignerHasNoClaim'
   /**
-   * Custom [dispatch errors](https://docs.substrate.io/main-docs/build/events-errors/) of this pallet.
+   * Account ID sending transaction has no claim.
    **/
   | 'SenderHasNoClaim'
   /**
-   * Custom [dispatch errors](https://docs.substrate.io/main-docs/build/events-errors/) of this pallet.
+   * There's not enough in the pot to pay out some unvested amount. Generally implies a logic
+   * error.
    **/
   | 'PotUnderflow'
   /**
-   * Custom [dispatch errors](https://docs.substrate.io/main-docs/build/events-errors/) of this pallet.
+   * A needed statement was not included.
    **/
   | 'InvalidStatement'
   /**
-   * Custom [dispatch errors](https://docs.substrate.io/main-docs/build/events-errors/) of this pallet.
+   * The account already has a vested balance.
    **/
   | 'VestedBalanceExists';
 
@@ -6069,23 +6079,24 @@ export type PalletVestingReleases = 'V0' | 'V1';
  **/
 export type PalletVestingError =
   /**
-   * Error for the vesting pallet.
+   * The account given is not vesting.
    **/
   | 'NotVesting'
   /**
-   * Error for the vesting pallet.
+   * The account already has `MaxVestingSchedules` count of schedules and thus
+   * cannot add another one. Consider merging existing schedules in order to add another.
    **/
   | 'AtMaxVestingSchedules'
   /**
-   * Error for the vesting pallet.
+   * Amount being transferred is too low to create a vesting schedule.
    **/
   | 'AmountLow'
   /**
-   * Error for the vesting pallet.
+   * An index was out of bounds of the vesting schedules.
    **/
   | 'ScheduleIndexOutOfBounds'
   /**
-   * Error for the vesting pallet.
+   * Failed to create a new schedule because some parameter was invalid.
    **/
   | 'InvalidScheduleParams';
 
@@ -6094,7 +6105,7 @@ export type PalletVestingError =
  **/
 export type PalletUtilityError =
   /**
-   * Custom [dispatch errors](https://docs.substrate.io/main-docs/build/events-errors/) of this pallet.
+   * Too many calls batched.
    **/
   'TooManyCalls';
 
@@ -6115,75 +6126,75 @@ export type PalletIdentityRegistrarInfo = {
  **/
 export type PalletIdentityError =
   /**
-   * Custom [dispatch errors](https://docs.substrate.io/main-docs/build/events-errors/) of this pallet.
+   * Too many subs-accounts.
    **/
   | 'TooManySubAccounts'
   /**
-   * Custom [dispatch errors](https://docs.substrate.io/main-docs/build/events-errors/) of this pallet.
+   * Account isn't found.
    **/
   | 'NotFound'
   /**
-   * Custom [dispatch errors](https://docs.substrate.io/main-docs/build/events-errors/) of this pallet.
+   * Account isn't named.
    **/
   | 'NotNamed'
   /**
-   * Custom [dispatch errors](https://docs.substrate.io/main-docs/build/events-errors/) of this pallet.
+   * Empty index.
    **/
   | 'EmptyIndex'
   /**
-   * Custom [dispatch errors](https://docs.substrate.io/main-docs/build/events-errors/) of this pallet.
+   * Fee is changed.
    **/
   | 'FeeChanged'
   /**
-   * Custom [dispatch errors](https://docs.substrate.io/main-docs/build/events-errors/) of this pallet.
+   * No identity found.
    **/
   | 'NoIdentity'
   /**
-   * Custom [dispatch errors](https://docs.substrate.io/main-docs/build/events-errors/) of this pallet.
+   * Sticky judgement.
    **/
   | 'StickyJudgement'
   /**
-   * Custom [dispatch errors](https://docs.substrate.io/main-docs/build/events-errors/) of this pallet.
+   * Judgement given.
    **/
   | 'JudgementGiven'
   /**
-   * Custom [dispatch errors](https://docs.substrate.io/main-docs/build/events-errors/) of this pallet.
+   * Invalid judgement.
    **/
   | 'InvalidJudgement'
   /**
-   * Custom [dispatch errors](https://docs.substrate.io/main-docs/build/events-errors/) of this pallet.
+   * The index is invalid.
    **/
   | 'InvalidIndex'
   /**
-   * Custom [dispatch errors](https://docs.substrate.io/main-docs/build/events-errors/) of this pallet.
+   * The target is invalid.
    **/
   | 'InvalidTarget'
   /**
-   * Custom [dispatch errors](https://docs.substrate.io/main-docs/build/events-errors/) of this pallet.
+   * Too many additional fields.
    **/
   | 'TooManyFields'
   /**
-   * Custom [dispatch errors](https://docs.substrate.io/main-docs/build/events-errors/) of this pallet.
+   * Maximum amount of registrars reached. Cannot add any more.
    **/
   | 'TooManyRegistrars'
   /**
-   * Custom [dispatch errors](https://docs.substrate.io/main-docs/build/events-errors/) of this pallet.
+   * Account ID is already named.
    **/
   | 'AlreadyClaimed'
   /**
-   * Custom [dispatch errors](https://docs.substrate.io/main-docs/build/events-errors/) of this pallet.
+   * Sender is not a sub-account.
    **/
   | 'NotSub'
   /**
-   * Custom [dispatch errors](https://docs.substrate.io/main-docs/build/events-errors/) of this pallet.
+   * Sub-account isn't owned by sender.
    **/
   | 'NotOwned'
   /**
-   * Custom [dispatch errors](https://docs.substrate.io/main-docs/build/events-errors/) of this pallet.
+   * The provided judgement was for a different identity.
    **/
   | 'JudgementForDifferentIdentity'
   /**
-   * Custom [dispatch errors](https://docs.substrate.io/main-docs/build/events-errors/) of this pallet.
+   * Error that occurs when there is an issue paying for judgement.
    **/
   | 'JudgementPaymentFailed';
 
@@ -6204,35 +6215,35 @@ export type PalletProxyAnnouncement = {
  **/
 export type PalletProxyError =
   /**
-   * Custom [dispatch errors](https://docs.substrate.io/main-docs/build/events-errors/) of this pallet.
+   * There are too many proxies registered or too many announcements pending.
    **/
   | 'TooMany'
   /**
-   * Custom [dispatch errors](https://docs.substrate.io/main-docs/build/events-errors/) of this pallet.
+   * Proxy registration not found.
    **/
   | 'NotFound'
   /**
-   * Custom [dispatch errors](https://docs.substrate.io/main-docs/build/events-errors/) of this pallet.
+   * Sender is not a proxy of the account to be proxied.
    **/
   | 'NotProxy'
   /**
-   * Custom [dispatch errors](https://docs.substrate.io/main-docs/build/events-errors/) of this pallet.
+   * A call which is incompatible with the proxy type's filter was attempted.
    **/
   | 'Unproxyable'
   /**
-   * Custom [dispatch errors](https://docs.substrate.io/main-docs/build/events-errors/) of this pallet.
+   * Account is already a proxy.
    **/
   | 'Duplicate'
   /**
-   * Custom [dispatch errors](https://docs.substrate.io/main-docs/build/events-errors/) of this pallet.
+   * Call may not be made by proxy because it may escalate its privileges.
    **/
   | 'NoPermission'
   /**
-   * Custom [dispatch errors](https://docs.substrate.io/main-docs/build/events-errors/) of this pallet.
+   * Announcement, if made at all, was made too recently.
    **/
   | 'Unannounced'
   /**
-   * Custom [dispatch errors](https://docs.substrate.io/main-docs/build/events-errors/) of this pallet.
+   * Cannot add self as proxy.
    **/
   | 'NoSelfProxy';
 
@@ -6248,59 +6259,59 @@ export type PalletMultisigMultisig = {
  **/
 export type PalletMultisigError =
   /**
-   * Custom [dispatch errors](https://docs.substrate.io/main-docs/build/events-errors/) of this pallet.
+   * Threshold must be 2 or greater.
    **/
   | 'MinimumThreshold'
   /**
-   * Custom [dispatch errors](https://docs.substrate.io/main-docs/build/events-errors/) of this pallet.
+   * Call is already approved by this signatory.
    **/
   | 'AlreadyApproved'
   /**
-   * Custom [dispatch errors](https://docs.substrate.io/main-docs/build/events-errors/) of this pallet.
+   * Call doesn't need any (more) approvals.
    **/
   | 'NoApprovalsNeeded'
   /**
-   * Custom [dispatch errors](https://docs.substrate.io/main-docs/build/events-errors/) of this pallet.
+   * There are too few signatories in the list.
    **/
   | 'TooFewSignatories'
   /**
-   * Custom [dispatch errors](https://docs.substrate.io/main-docs/build/events-errors/) of this pallet.
+   * There are too many signatories in the list.
    **/
   | 'TooManySignatories'
   /**
-   * Custom [dispatch errors](https://docs.substrate.io/main-docs/build/events-errors/) of this pallet.
+   * The signatories were provided out of order; they should be ordered.
    **/
   | 'SignatoriesOutOfOrder'
   /**
-   * Custom [dispatch errors](https://docs.substrate.io/main-docs/build/events-errors/) of this pallet.
+   * The sender was contained in the other signatories; it shouldn't be.
    **/
   | 'SenderInSignatories'
   /**
-   * Custom [dispatch errors](https://docs.substrate.io/main-docs/build/events-errors/) of this pallet.
+   * Multisig operation not found when attempting to cancel.
    **/
   | 'NotFound'
   /**
-   * Custom [dispatch errors](https://docs.substrate.io/main-docs/build/events-errors/) of this pallet.
+   * Only the account that originally created the multisig is able to cancel it.
    **/
   | 'NotOwner'
   /**
-   * Custom [dispatch errors](https://docs.substrate.io/main-docs/build/events-errors/) of this pallet.
+   * No timepoint was given, yet the multisig operation is already underway.
    **/
   | 'NoTimepoint'
   /**
-   * Custom [dispatch errors](https://docs.substrate.io/main-docs/build/events-errors/) of this pallet.
+   * A different timepoint was given to the multisig operation that is underway.
    **/
   | 'WrongTimepoint'
   /**
-   * Custom [dispatch errors](https://docs.substrate.io/main-docs/build/events-errors/) of this pallet.
+   * A timepoint was given, yet no multisig operation is underway.
    **/
   | 'UnexpectedTimepoint'
   /**
-   * Custom [dispatch errors](https://docs.substrate.io/main-docs/build/events-errors/) of this pallet.
+   * The maximum weight information provided was too low.
    **/
   | 'MaxWeightTooLow'
   /**
-   * Custom [dispatch errors](https://docs.substrate.io/main-docs/build/events-errors/) of this pallet.
+   * The data to be stored is already stored.
    **/
   | 'AlreadyStored';
 
@@ -6339,47 +6350,48 @@ export type PalletBountiesBountyStatus =
  **/
 export type PalletBountiesError =
   /**
-   * Custom [dispatch errors](https://docs.substrate.io/main-docs/build/events-errors/) of this pallet.
+   * Proposer's balance is too low.
    **/
   | 'InsufficientProposersBalance'
   /**
-   * Custom [dispatch errors](https://docs.substrate.io/main-docs/build/events-errors/) of this pallet.
+   * No proposal or bounty at that index.
    **/
   | 'InvalidIndex'
   /**
-   * Custom [dispatch errors](https://docs.substrate.io/main-docs/build/events-errors/) of this pallet.
+   * The reason given is just too big.
    **/
   | 'ReasonTooBig'
   /**
-   * Custom [dispatch errors](https://docs.substrate.io/main-docs/build/events-errors/) of this pallet.
+   * The bounty status is unexpected.
    **/
   | 'UnexpectedStatus'
   /**
-   * Custom [dispatch errors](https://docs.substrate.io/main-docs/build/events-errors/) of this pallet.
+   * Require bounty curator.
    **/
   | 'RequireCurator'
   /**
-   * Custom [dispatch errors](https://docs.substrate.io/main-docs/build/events-errors/) of this pallet.
+   * Invalid bounty value.
    **/
   | 'InvalidValue'
   /**
-   * Custom [dispatch errors](https://docs.substrate.io/main-docs/build/events-errors/) of this pallet.
+   * Invalid bounty fee.
    **/
   | 'InvalidFee'
   /**
-   * Custom [dispatch errors](https://docs.substrate.io/main-docs/build/events-errors/) of this pallet.
+   * A bounty payout is pending.
+   * To cancel the bounty, you must unassign and slash the curator.
    **/
   | 'PendingPayout'
   /**
-   * Custom [dispatch errors](https://docs.substrate.io/main-docs/build/events-errors/) of this pallet.
+   * The bounties cannot be claimed/closed because it's still in the countdown period.
    **/
   | 'Premature'
   /**
-   * Custom [dispatch errors](https://docs.substrate.io/main-docs/build/events-errors/) of this pallet.
+   * The bounty cannot be closed because it has active child bounties.
    **/
   | 'HasActiveChildBounty'
   /**
-   * Custom [dispatch errors](https://docs.substrate.io/main-docs/build/events-errors/) of this pallet.
+   * Too many approvals are already queued.
    **/
   | 'TooManyQueued';
 
@@ -6409,15 +6421,15 @@ export type PalletChildBountiesChildBountyStatus =
  **/
 export type PalletChildBountiesError =
   /**
-   * Custom [dispatch errors](https://docs.substrate.io/main-docs/build/events-errors/) of this pallet.
+   * The parent bounty is not in active state.
    **/
   | 'ParentBountyNotActive'
   /**
-   * Custom [dispatch errors](https://docs.substrate.io/main-docs/build/events-errors/) of this pallet.
+   * The bounty balance is not enough to add new child-bounty.
    **/
   | 'InsufficientBountyBalance'
   /**
-   * Custom [dispatch errors](https://docs.substrate.io/main-docs/build/events-errors/) of this pallet.
+   * Number of child bounties exceeds limit `MaxActiveChildBountyCount`.
    **/
   | 'TooManyChildBounties';
 
@@ -6436,27 +6448,27 @@ export type PalletTipsOpenTip = {
  **/
 export type PalletTipsError =
   /**
-   * Custom [dispatch errors](https://docs.substrate.io/main-docs/build/events-errors/) of this pallet.
+   * The reason given is just too big.
    **/
   | 'ReasonTooBig'
   /**
-   * Custom [dispatch errors](https://docs.substrate.io/main-docs/build/events-errors/) of this pallet.
+   * The tip was already found/started.
    **/
   | 'AlreadyKnown'
   /**
-   * Custom [dispatch errors](https://docs.substrate.io/main-docs/build/events-errors/) of this pallet.
+   * The tip hash is unknown.
    **/
   | 'UnknownTip'
   /**
-   * Custom [dispatch errors](https://docs.substrate.io/main-docs/build/events-errors/) of this pallet.
+   * The account attempting to retract the tip is not the finder of the tip.
    **/
   | 'NotFinder'
   /**
-   * Custom [dispatch errors](https://docs.substrate.io/main-docs/build/events-errors/) of this pallet.
+   * The tip cannot be claimed/closed because there are not enough tippers yet.
    **/
   | 'StillOpen'
   /**
-   * Custom [dispatch errors](https://docs.substrate.io/main-docs/build/events-errors/) of this pallet.
+   * The tip cannot be claimed/closed because it's still in the countdown period.
    **/
   | 'Premature';
 
@@ -6483,59 +6495,59 @@ export type PalletElectionProviderMultiPhaseSignedSignedSubmission = {
  **/
 export type PalletElectionProviderMultiPhaseError =
   /**
-   * Error of the pallet that can be returned in response to dispatches.
+   * Submission was too early.
    **/
   | 'PreDispatchEarlySubmission'
   /**
-   * Error of the pallet that can be returned in response to dispatches.
+   * Wrong number of winners presented.
    **/
   | 'PreDispatchWrongWinnerCount'
   /**
-   * Error of the pallet that can be returned in response to dispatches.
+   * Submission was too weak, score-wise.
    **/
   | 'PreDispatchWeakSubmission'
   /**
-   * Error of the pallet that can be returned in response to dispatches.
+   * The queue was full, and the solution was not better than any of the existing ones.
    **/
   | 'SignedQueueFull'
   /**
-   * Error of the pallet that can be returned in response to dispatches.
+   * The origin failed to pay the deposit.
    **/
   | 'SignedCannotPayDeposit'
   /**
-   * Error of the pallet that can be returned in response to dispatches.
+   * Witness data to dispatchable is invalid.
    **/
   | 'SignedInvalidWitness'
   /**
-   * Error of the pallet that can be returned in response to dispatches.
+   * The signed submission consumes too much weight
    **/
   | 'SignedTooMuchWeight'
   /**
-   * Error of the pallet that can be returned in response to dispatches.
+   * OCW submitted solution for wrong round
    **/
   | 'OcwCallWrongEra'
   /**
-   * Error of the pallet that can be returned in response to dispatches.
+   * Snapshot metadata should exist but didn't.
    **/
   | 'MissingSnapshotMetadata'
   /**
-   * Error of the pallet that can be returned in response to dispatches.
+   * `Self::insert_submission` returned an invalid index.
    **/
   | 'InvalidSubmissionIndex'
   /**
-   * Error of the pallet that can be returned in response to dispatches.
+   * The call is not allowed at this point.
    **/
   | 'CallNotAllowed'
   /**
-   * Error of the pallet that can be returned in response to dispatches.
+   * The fallback failed
    **/
   | 'FallbackFailed'
   /**
-   * Error of the pallet that can be returned in response to dispatches.
+   * Some bound not met
    **/
   | 'BoundNotMet'
   /**
-   * Error of the pallet that can be returned in response to dispatches.
+   * Submitted solution has too many winners
    **/
   | 'TooManyWinners';
 
@@ -6658,27 +6670,29 @@ export type PalletFastUnstakeUnstakeRequest = {
  **/
 export type PalletFastUnstakeError =
   /**
-   * Custom [dispatch errors](https://docs.substrate.io/main-docs/build/events-errors/) of this pallet.
+   * The provided Controller account was not found.
+   *
+   * This means that the given account is not bonded.
    **/
   | 'NotController'
   /**
-   * Custom [dispatch errors](https://docs.substrate.io/main-docs/build/events-errors/) of this pallet.
+   * The bonded account has already been queued.
    **/
   | 'AlreadyQueued'
   /**
-   * Custom [dispatch errors](https://docs.substrate.io/main-docs/build/events-errors/) of this pallet.
+   * The bonded account has active unlocking chunks.
    **/
   | 'NotFullyBonded'
   /**
-   * Custom [dispatch errors](https://docs.substrate.io/main-docs/build/events-errors/) of this pallet.
+   * The provided un-staker is not in the `Queue`.
    **/
   | 'NotQueued'
   /**
-   * Custom [dispatch errors](https://docs.substrate.io/main-docs/build/events-errors/) of this pallet.
+   * The provided un-staker is already in Head, and cannot deregister.
    **/
   | 'AlreadyHead'
   /**
-   * Custom [dispatch errors](https://docs.substrate.io/main-docs/build/events-errors/) of this pallet.
+   * The call is not allowed at this point because the pallet is not active.
    **/
   | 'CallNotAllowed';
 
@@ -6731,7 +6745,7 @@ export type PolkadotRuntimeParachainsConfigurationHostConfiguration = {
  **/
 export type PolkadotRuntimeParachainsConfigurationPalletError =
   /**
-   * Custom [dispatch errors](https://docs.substrate.io/main-docs/build/events-errors/) of this pallet.
+   * The new value for a configuration parameter is invalid.
    **/
   'InvalidNewValue';
 
@@ -6756,119 +6770,122 @@ export type PolkadotRuntimeParachainsInclusionCandidatePendingAvailability = {
  **/
 export type PolkadotRuntimeParachainsInclusionPalletError =
   /**
-   * Custom [dispatch errors](https://docs.substrate.io/main-docs/build/events-errors/) of this pallet.
+   * Validator indices are out of order or contains duplicates.
    **/
   | 'UnsortedOrDuplicateValidatorIndices'
   /**
-   * Custom [dispatch errors](https://docs.substrate.io/main-docs/build/events-errors/) of this pallet.
+   * Dispute statement sets are out of order or contain duplicates.
    **/
   | 'UnsortedOrDuplicateDisputeStatementSet'
   /**
-   * Custom [dispatch errors](https://docs.substrate.io/main-docs/build/events-errors/) of this pallet.
+   * Backed candidates are out of order (core index) or contain duplicates.
    **/
   | 'UnsortedOrDuplicateBackedCandidates'
   /**
-   * Custom [dispatch errors](https://docs.substrate.io/main-docs/build/events-errors/) of this pallet.
+   * A different relay parent was provided compared to the on-chain stored one.
    **/
   | 'UnexpectedRelayParent'
   /**
-   * Custom [dispatch errors](https://docs.substrate.io/main-docs/build/events-errors/) of this pallet.
+   * Availability bitfield has unexpected size.
    **/
   | 'WrongBitfieldSize'
   /**
-   * Custom [dispatch errors](https://docs.substrate.io/main-docs/build/events-errors/) of this pallet.
+   * Bitfield consists of zeros only.
    **/
   | 'BitfieldAllZeros'
   /**
-   * Custom [dispatch errors](https://docs.substrate.io/main-docs/build/events-errors/) of this pallet.
+   * Multiple bitfields submitted by same validator or validators out of order by index.
    **/
   | 'BitfieldDuplicateOrUnordered'
   /**
-   * Custom [dispatch errors](https://docs.substrate.io/main-docs/build/events-errors/) of this pallet.
+   * Validator index out of bounds.
    **/
   | 'ValidatorIndexOutOfBounds'
   /**
-   * Custom [dispatch errors](https://docs.substrate.io/main-docs/build/events-errors/) of this pallet.
+   * Invalid signature
    **/
   | 'InvalidBitfieldSignature'
   /**
-   * Custom [dispatch errors](https://docs.substrate.io/main-docs/build/events-errors/) of this pallet.
+   * Candidate submitted but para not scheduled.
    **/
   | 'UnscheduledCandidate'
   /**
-   * Custom [dispatch errors](https://docs.substrate.io/main-docs/build/events-errors/) of this pallet.
+   * Candidate scheduled despite pending candidate already existing for the para.
    **/
   | 'CandidateScheduledBeforeParaFree'
   /**
-   * Custom [dispatch errors](https://docs.substrate.io/main-docs/build/events-errors/) of this pallet.
+   * Candidate included with the wrong collator.
    **/
   | 'WrongCollator'
   /**
-   * Custom [dispatch errors](https://docs.substrate.io/main-docs/build/events-errors/) of this pallet.
+   * Scheduled cores out of order.
    **/
   | 'ScheduledOutOfOrder'
   /**
-   * Custom [dispatch errors](https://docs.substrate.io/main-docs/build/events-errors/) of this pallet.
+   * Head data exceeds the configured maximum.
    **/
   | 'HeadDataTooLarge'
   /**
-   * Custom [dispatch errors](https://docs.substrate.io/main-docs/build/events-errors/) of this pallet.
+   * Code upgrade prematurely.
    **/
   | 'PrematureCodeUpgrade'
   /**
-   * Custom [dispatch errors](https://docs.substrate.io/main-docs/build/events-errors/) of this pallet.
+   * Output code is too large
    **/
   | 'NewCodeTooLarge'
   /**
-   * Custom [dispatch errors](https://docs.substrate.io/main-docs/build/events-errors/) of this pallet.
+   * Candidate not in parent context.
    **/
   | 'CandidateNotInParentContext'
   /**
-   * Custom [dispatch errors](https://docs.substrate.io/main-docs/build/events-errors/) of this pallet.
+   * Invalid group index in core assignment.
    **/
   | 'InvalidGroupIndex'
   /**
-   * Custom [dispatch errors](https://docs.substrate.io/main-docs/build/events-errors/) of this pallet.
+   * Insufficient (non-majority) backing.
    **/
   | 'InsufficientBacking'
   /**
-   * Custom [dispatch errors](https://docs.substrate.io/main-docs/build/events-errors/) of this pallet.
+   * Invalid (bad signature, unknown validator, etc.) backing.
    **/
   | 'InvalidBacking'
   /**
-   * Custom [dispatch errors](https://docs.substrate.io/main-docs/build/events-errors/) of this pallet.
+   * Collator did not sign PoV.
    **/
   | 'NotCollatorSigned'
   /**
-   * Custom [dispatch errors](https://docs.substrate.io/main-docs/build/events-errors/) of this pallet.
+   * The validation data hash does not match expected.
    **/
   | 'ValidationDataHashMismatch'
   /**
-   * Custom [dispatch errors](https://docs.substrate.io/main-docs/build/events-errors/) of this pallet.
+   * The downward message queue is not processed correctly.
    **/
   | 'IncorrectDownwardMessageHandling'
   /**
-   * Custom [dispatch errors](https://docs.substrate.io/main-docs/build/events-errors/) of this pallet.
+   * At least one upward message sent does not pass the acceptance criteria.
    **/
   | 'InvalidUpwardMessages'
   /**
-   * Custom [dispatch errors](https://docs.substrate.io/main-docs/build/events-errors/) of this pallet.
+   * The candidate didn't follow the rules of HRMP watermark advancement.
    **/
   | 'HrmpWatermarkMishandling'
   /**
-   * Custom [dispatch errors](https://docs.substrate.io/main-docs/build/events-errors/) of this pallet.
+   * The HRMP messages sent by the candidate is not valid.
    **/
   | 'InvalidOutboundHrmp'
   /**
-   * Custom [dispatch errors](https://docs.substrate.io/main-docs/build/events-errors/) of this pallet.
+   * The validation code hash of the candidate is not valid.
    **/
   | 'InvalidValidationCodeHash'
   /**
-   * Custom [dispatch errors](https://docs.substrate.io/main-docs/build/events-errors/) of this pallet.
+   * The `para_head` hash in the candidate descriptor doesn't match the hash of the actual para head in the
+   * commitments.
    **/
   | 'ParaHeadMismatch'
   /**
-   * Custom [dispatch errors](https://docs.substrate.io/main-docs/build/events-errors/) of this pallet.
+   * A bitfield that references a freed core,
+   * either intentionally or as part of a concluded
+   * invalid dispute.
    **/
   | 'BitfieldReferencesFreedCore';
 
@@ -6888,27 +6905,28 @@ export type PolkadotPrimitivesV4ScrapedOnChainVotes = {
  **/
 export type PolkadotRuntimeParachainsParasInherentPalletError =
   /**
-   * Custom [dispatch errors](https://docs.substrate.io/main-docs/build/events-errors/) of this pallet.
+   * Inclusion inherent called more than once per block.
    **/
   | 'TooManyInclusionInherents'
   /**
-   * Custom [dispatch errors](https://docs.substrate.io/main-docs/build/events-errors/) of this pallet.
+   * The hash of the submitted parent header doesn't correspond to the saved block hash of
+   * the parent.
    **/
   | 'InvalidParentHeader'
   /**
-   * Custom [dispatch errors](https://docs.substrate.io/main-docs/build/events-errors/) of this pallet.
+   * Disputed candidate that was concluded invalid.
    **/
   | 'CandidateConcludedInvalid'
   /**
-   * Custom [dispatch errors](https://docs.substrate.io/main-docs/build/events-errors/) of this pallet.
+   * The data given to the inherent will result in an overweight block.
    **/
   | 'InherentOverweight'
   /**
-   * Custom [dispatch errors](https://docs.substrate.io/main-docs/build/events-errors/) of this pallet.
+   * The ordering of dispute statements was invalid.
    **/
   | 'DisputeStatementsUnsortedOrDuplicates'
   /**
-   * Custom [dispatch errors](https://docs.substrate.io/main-docs/build/events-errors/) of this pallet.
+   * A dispute statement was invalid.
    **/
   | 'DisputeInvalid';
 
@@ -6999,51 +7017,51 @@ export type PolkadotRuntimeParachainsParasParaGenesisArgs = {
  **/
 export type PolkadotRuntimeParachainsParasPalletError =
   /**
-   * Custom [dispatch errors](https://docs.substrate.io/main-docs/build/events-errors/) of this pallet.
+   * Para is not registered in our system.
    **/
   | 'NotRegistered'
   /**
-   * Custom [dispatch errors](https://docs.substrate.io/main-docs/build/events-errors/) of this pallet.
+   * Para cannot be onboarded because it is already tracked by our system.
    **/
   | 'CannotOnboard'
   /**
-   * Custom [dispatch errors](https://docs.substrate.io/main-docs/build/events-errors/) of this pallet.
+   * Para cannot be offboarded at this time.
    **/
   | 'CannotOffboard'
   /**
-   * Custom [dispatch errors](https://docs.substrate.io/main-docs/build/events-errors/) of this pallet.
+   * Para cannot be upgraded to a parachain.
    **/
   | 'CannotUpgrade'
   /**
-   * Custom [dispatch errors](https://docs.substrate.io/main-docs/build/events-errors/) of this pallet.
+   * Para cannot be downgraded to a parathread.
    **/
   | 'CannotDowngrade'
   /**
-   * Custom [dispatch errors](https://docs.substrate.io/main-docs/build/events-errors/) of this pallet.
+   * The statement for PVF pre-checking is stale.
    **/
   | 'PvfCheckStatementStale'
   /**
-   * Custom [dispatch errors](https://docs.substrate.io/main-docs/build/events-errors/) of this pallet.
+   * The statement for PVF pre-checking is for a future session.
    **/
   | 'PvfCheckStatementFuture'
   /**
-   * Custom [dispatch errors](https://docs.substrate.io/main-docs/build/events-errors/) of this pallet.
+   * Claimed validator index is out of bounds.
    **/
   | 'PvfCheckValidatorIndexOutOfBounds'
   /**
-   * Custom [dispatch errors](https://docs.substrate.io/main-docs/build/events-errors/) of this pallet.
+   * The signature for the PVF pre-checking is invalid.
    **/
   | 'PvfCheckInvalidSignature'
   /**
-   * Custom [dispatch errors](https://docs.substrate.io/main-docs/build/events-errors/) of this pallet.
+   * The given validator already has cast a vote.
    **/
   | 'PvfCheckDoubleVote'
   /**
-   * Custom [dispatch errors](https://docs.substrate.io/main-docs/build/events-errors/) of this pallet.
+   * The given PVF does not exist at the moment of process a vote.
    **/
   | 'PvfCheckSubjectInvalid'
   /**
-   * Custom [dispatch errors](https://docs.substrate.io/main-docs/build/events-errors/) of this pallet.
+   * Parachain cannot currently schedule a code upgrade.
    **/
   | 'CannotUpgradeCode';
 
@@ -7088,79 +7106,79 @@ export type PolkadotCorePrimitivesInboundHrmpMessage = {
  **/
 export type PolkadotRuntimeParachainsHrmpPalletError =
   /**
-   * Custom [dispatch errors](https://docs.substrate.io/main-docs/build/events-errors/) of this pallet.
+   * The sender tried to open a channel to themselves.
    **/
   | 'OpenHrmpChannelToSelf'
   /**
-   * Custom [dispatch errors](https://docs.substrate.io/main-docs/build/events-errors/) of this pallet.
+   * The recipient is not a valid para.
    **/
   | 'OpenHrmpChannelInvalidRecipient'
   /**
-   * Custom [dispatch errors](https://docs.substrate.io/main-docs/build/events-errors/) of this pallet.
+   * The requested capacity is zero.
    **/
   | 'OpenHrmpChannelZeroCapacity'
   /**
-   * Custom [dispatch errors](https://docs.substrate.io/main-docs/build/events-errors/) of this pallet.
+   * The requested capacity exceeds the global limit.
    **/
   | 'OpenHrmpChannelCapacityExceedsLimit'
   /**
-   * Custom [dispatch errors](https://docs.substrate.io/main-docs/build/events-errors/) of this pallet.
+   * The requested maximum message size is 0.
    **/
   | 'OpenHrmpChannelZeroMessageSize'
   /**
-   * Custom [dispatch errors](https://docs.substrate.io/main-docs/build/events-errors/) of this pallet.
+   * The open request requested the message size that exceeds the global limit.
    **/
   | 'OpenHrmpChannelMessageSizeExceedsLimit'
   /**
-   * Custom [dispatch errors](https://docs.substrate.io/main-docs/build/events-errors/) of this pallet.
+   * The channel already exists
    **/
   | 'OpenHrmpChannelAlreadyExists'
   /**
-   * Custom [dispatch errors](https://docs.substrate.io/main-docs/build/events-errors/) of this pallet.
+   * There is already a request to open the same channel.
    **/
   | 'OpenHrmpChannelAlreadyRequested'
   /**
-   * Custom [dispatch errors](https://docs.substrate.io/main-docs/build/events-errors/) of this pallet.
+   * The sender already has the maximum number of allowed outbound channels.
    **/
   | 'OpenHrmpChannelLimitExceeded'
   /**
-   * Custom [dispatch errors](https://docs.substrate.io/main-docs/build/events-errors/) of this pallet.
+   * The channel from the sender to the origin doesn't exist.
    **/
   | 'AcceptHrmpChannelDoesntExist'
   /**
-   * Custom [dispatch errors](https://docs.substrate.io/main-docs/build/events-errors/) of this pallet.
+   * The channel is already confirmed.
    **/
   | 'AcceptHrmpChannelAlreadyConfirmed'
   /**
-   * Custom [dispatch errors](https://docs.substrate.io/main-docs/build/events-errors/) of this pallet.
+   * The recipient already has the maximum number of allowed inbound channels.
    **/
   | 'AcceptHrmpChannelLimitExceeded'
   /**
-   * Custom [dispatch errors](https://docs.substrate.io/main-docs/build/events-errors/) of this pallet.
+   * The origin tries to close a channel where it is neither the sender nor the recipient.
    **/
   | 'CloseHrmpChannelUnauthorized'
   /**
-   * Custom [dispatch errors](https://docs.substrate.io/main-docs/build/events-errors/) of this pallet.
+   * The channel to be closed doesn't exist.
    **/
   | 'CloseHrmpChannelDoesntExist'
   /**
-   * Custom [dispatch errors](https://docs.substrate.io/main-docs/build/events-errors/) of this pallet.
+   * The channel close request is already requested.
    **/
   | 'CloseHrmpChannelAlreadyUnderway'
   /**
-   * Custom [dispatch errors](https://docs.substrate.io/main-docs/build/events-errors/) of this pallet.
+   * Canceling is requested by neither the sender nor recipient of the open channel request.
    **/
   | 'CancelHrmpOpenChannelUnauthorized'
   /**
-   * Custom [dispatch errors](https://docs.substrate.io/main-docs/build/events-errors/) of this pallet.
+   * The open request doesn't exist.
    **/
   | 'OpenHrmpChannelDoesntExist'
   /**
-   * Custom [dispatch errors](https://docs.substrate.io/main-docs/build/events-errors/) of this pallet.
+   * Cannot cancel an HRMP open channel request because it is already confirmed.
    **/
   | 'OpenHrmpChannelAlreadyConfirmed'
   /**
-   * Custom [dispatch errors](https://docs.substrate.io/main-docs/build/events-errors/) of this pallet.
+   * The provided witness data is wrong.
    **/
   | 'WrongWitness';
 
@@ -7196,39 +7214,39 @@ export type PolkadotPrimitivesV4DisputeState = {
  **/
 export type PolkadotRuntimeParachainsDisputesPalletError =
   /**
-   * Custom [dispatch errors](https://docs.substrate.io/main-docs/build/events-errors/) of this pallet.
+   * Duplicate dispute statement sets provided.
    **/
   | 'DuplicateDisputeStatementSets'
   /**
-   * Custom [dispatch errors](https://docs.substrate.io/main-docs/build/events-errors/) of this pallet.
+   * Ancient dispute statement provided.
    **/
   | 'AncientDisputeStatement'
   /**
-   * Custom [dispatch errors](https://docs.substrate.io/main-docs/build/events-errors/) of this pallet.
+   * Validator index on statement is out of bounds for session.
    **/
   | 'ValidatorIndexOutOfBounds'
   /**
-   * Custom [dispatch errors](https://docs.substrate.io/main-docs/build/events-errors/) of this pallet.
+   * Invalid signature on statement.
    **/
   | 'InvalidSignature'
   /**
-   * Custom [dispatch errors](https://docs.substrate.io/main-docs/build/events-errors/) of this pallet.
+   * Validator vote submitted more than once to dispute.
    **/
   | 'DuplicateStatement'
   /**
-   * Custom [dispatch errors](https://docs.substrate.io/main-docs/build/events-errors/) of this pallet.
+   * A dispute where there are only votes on one side.
    **/
   | 'SingleSidedDispute'
   /**
-   * Custom [dispatch errors](https://docs.substrate.io/main-docs/build/events-errors/) of this pallet.
+   * A dispute vote from a malicious backer.
    **/
   | 'MaliciousBacker'
   /**
-   * Custom [dispatch errors](https://docs.substrate.io/main-docs/build/events-errors/) of this pallet.
+   * No backing votes were provides along dispute statements.
    **/
   | 'MissingBackingVotes'
   /**
-   * Custom [dispatch errors](https://docs.substrate.io/main-docs/build/events-errors/) of this pallet.
+   * Unconfirmed dispute statement sets provided.
    **/
   | 'UnconfirmedDispute';
 
@@ -7242,27 +7260,28 @@ export type PolkadotRuntimeParachainsDisputesSlashingPendingSlashes = {
  **/
 export type PolkadotRuntimeParachainsDisputesSlashingPalletError =
   /**
-   * Custom [dispatch errors](https://docs.substrate.io/main-docs/build/events-errors/) of this pallet.
+   * The key ownership proof is invalid.
    **/
   | 'InvalidKeyOwnershipProof'
   /**
-   * Custom [dispatch errors](https://docs.substrate.io/main-docs/build/events-errors/) of this pallet.
+   * The session index is too old or invalid.
    **/
   | 'InvalidSessionIndex'
   /**
-   * Custom [dispatch errors](https://docs.substrate.io/main-docs/build/events-errors/) of this pallet.
+   * The candidate hash is invalid.
    **/
   | 'InvalidCandidateHash'
   /**
-   * Custom [dispatch errors](https://docs.substrate.io/main-docs/build/events-errors/) of this pallet.
+   * There is no pending slash for the given validator index and time
+   * slot.
    **/
   | 'InvalidValidatorIndex'
   /**
-   * Custom [dispatch errors](https://docs.substrate.io/main-docs/build/events-errors/) of this pallet.
+   * The validator index does not match the validator id.
    **/
   | 'ValidatorIndexIdMismatch'
   /**
-   * Custom [dispatch errors](https://docs.substrate.io/main-docs/build/events-errors/) of this pallet.
+   * The given slashing report is valid but already previously reported.
    **/
   | 'DuplicateSlashingReport';
 
@@ -7277,59 +7296,60 @@ export type PolkadotRuntimeCommonParasRegistrarParaInfo = {
  **/
 export type PolkadotRuntimeCommonParasRegistrarPalletError =
   /**
-   * Custom [dispatch errors](https://docs.substrate.io/main-docs/build/events-errors/) of this pallet.
+   * The ID is not registered.
    **/
   | 'NotRegistered'
   /**
-   * Custom [dispatch errors](https://docs.substrate.io/main-docs/build/events-errors/) of this pallet.
+   * The ID is already registered.
    **/
   | 'AlreadyRegistered'
   /**
-   * Custom [dispatch errors](https://docs.substrate.io/main-docs/build/events-errors/) of this pallet.
+   * The caller is not the owner of this Id.
    **/
   | 'NotOwner'
   /**
-   * Custom [dispatch errors](https://docs.substrate.io/main-docs/build/events-errors/) of this pallet.
+   * Invalid para code size.
    **/
   | 'CodeTooLarge'
   /**
-   * Custom [dispatch errors](https://docs.substrate.io/main-docs/build/events-errors/) of this pallet.
+   * Invalid para head data size.
    **/
   | 'HeadDataTooLarge'
   /**
-   * Custom [dispatch errors](https://docs.substrate.io/main-docs/build/events-errors/) of this pallet.
+   * Para is not a Parachain.
    **/
   | 'NotParachain'
   /**
-   * Custom [dispatch errors](https://docs.substrate.io/main-docs/build/events-errors/) of this pallet.
+   * Para is not a Parathread.
    **/
   | 'NotParathread'
   /**
-   * Custom [dispatch errors](https://docs.substrate.io/main-docs/build/events-errors/) of this pallet.
+   * Cannot deregister para
    **/
   | 'CannotDeregister'
   /**
-   * Custom [dispatch errors](https://docs.substrate.io/main-docs/build/events-errors/) of this pallet.
+   * Cannot schedule downgrade of parachain to parathread
    **/
   | 'CannotDowngrade'
   /**
-   * Custom [dispatch errors](https://docs.substrate.io/main-docs/build/events-errors/) of this pallet.
+   * Cannot schedule upgrade of parathread to parachain
    **/
   | 'CannotUpgrade'
   /**
-   * Custom [dispatch errors](https://docs.substrate.io/main-docs/build/events-errors/) of this pallet.
+   * Para is locked from manipulation by the manager. Must use parachain or relay chain governance.
    **/
   | 'ParaLocked'
   /**
-   * Custom [dispatch errors](https://docs.substrate.io/main-docs/build/events-errors/) of this pallet.
+   * The ID given for registration has not been reserved.
    **/
   | 'NotReserved'
   /**
-   * Custom [dispatch errors](https://docs.substrate.io/main-docs/build/events-errors/) of this pallet.
+   * Registering parachain with empty code is not allowed.
    **/
   | 'EmptyCode'
   /**
-   * Custom [dispatch errors](https://docs.substrate.io/main-docs/build/events-errors/) of this pallet.
+   * Cannot perform a parachain slot / lifecycle swap. Check that the state of both paras are
+   * correct for the swap to work.
    **/
   | 'CannotSwap';
 
@@ -7338,11 +7358,11 @@ export type PolkadotRuntimeCommonParasRegistrarPalletError =
  **/
 export type PolkadotRuntimeCommonSlotsPalletError =
   /**
-   * Custom [dispatch errors](https://docs.substrate.io/main-docs/build/events-errors/) of this pallet.
+   * The parachain ID is not onboarding.
    **/
   | 'ParaNotOnboarding'
   /**
-   * Custom [dispatch errors](https://docs.substrate.io/main-docs/build/events-errors/) of this pallet.
+   * There was an error with the lease.
    **/
   | 'LeaseError';
 
@@ -7351,31 +7371,31 @@ export type PolkadotRuntimeCommonSlotsPalletError =
  **/
 export type PolkadotRuntimeCommonAuctionsPalletError =
   /**
-   * Custom [dispatch errors](https://docs.substrate.io/main-docs/build/events-errors/) of this pallet.
+   * This auction is already in progress.
    **/
   | 'AuctionInProgress'
   /**
-   * Custom [dispatch errors](https://docs.substrate.io/main-docs/build/events-errors/) of this pallet.
+   * The lease period is in the past.
    **/
   | 'LeasePeriodInPast'
   /**
-   * Custom [dispatch errors](https://docs.substrate.io/main-docs/build/events-errors/) of this pallet.
+   * Para is not registered
    **/
   | 'ParaNotRegistered'
   /**
-   * Custom [dispatch errors](https://docs.substrate.io/main-docs/build/events-errors/) of this pallet.
+   * Not a current auction.
    **/
   | 'NotCurrentAuction'
   /**
-   * Custom [dispatch errors](https://docs.substrate.io/main-docs/build/events-errors/) of this pallet.
+   * Not an auction.
    **/
   | 'NotAuction'
   /**
-   * Custom [dispatch errors](https://docs.substrate.io/main-docs/build/events-errors/) of this pallet.
+   * Auction has already ended.
    **/
   | 'AuctionEnded'
   /**
-   * Custom [dispatch errors](https://docs.substrate.io/main-docs/build/events-errors/) of this pallet.
+   * The para is already leased out for part of this range.
    **/
   | 'AlreadyLeasedOut';
 
@@ -7402,95 +7422,95 @@ export type PolkadotRuntimeCommonCrowdloanLastContribution =
  **/
 export type PolkadotRuntimeCommonCrowdloanPalletError =
   /**
-   * Custom [dispatch errors](https://docs.substrate.io/main-docs/build/events-errors/) of this pallet.
+   * The current lease period is more than the first lease period.
    **/
   | 'FirstPeriodInPast'
   /**
-   * Custom [dispatch errors](https://docs.substrate.io/main-docs/build/events-errors/) of this pallet.
+   * The first lease period needs to at least be less than 3 `max_value`.
    **/
   | 'FirstPeriodTooFarInFuture'
   /**
-   * Custom [dispatch errors](https://docs.substrate.io/main-docs/build/events-errors/) of this pallet.
+   * Last lease period must be greater than first lease period.
    **/
   | 'LastPeriodBeforeFirstPeriod'
   /**
-   * Custom [dispatch errors](https://docs.substrate.io/main-docs/build/events-errors/) of this pallet.
+   * The last lease period cannot be more than 3 periods after the first period.
    **/
   | 'LastPeriodTooFarInFuture'
   /**
-   * Custom [dispatch errors](https://docs.substrate.io/main-docs/build/events-errors/) of this pallet.
+   * The campaign ends before the current block number. The end must be in the future.
    **/
   | 'CannotEndInPast'
   /**
-   * Custom [dispatch errors](https://docs.substrate.io/main-docs/build/events-errors/) of this pallet.
+   * The end date for this crowdloan is not sensible.
    **/
   | 'EndTooFarInFuture'
   /**
-   * Custom [dispatch errors](https://docs.substrate.io/main-docs/build/events-errors/) of this pallet.
+   * There was an overflow.
    **/
   | 'Overflow'
   /**
-   * Custom [dispatch errors](https://docs.substrate.io/main-docs/build/events-errors/) of this pallet.
+   * The contribution was below the minimum, `MinContribution`.
    **/
   | 'ContributionTooSmall'
   /**
-   * Custom [dispatch errors](https://docs.substrate.io/main-docs/build/events-errors/) of this pallet.
+   * Invalid fund index.
    **/
   | 'InvalidParaId'
   /**
-   * Custom [dispatch errors](https://docs.substrate.io/main-docs/build/events-errors/) of this pallet.
+   * Contributions exceed maximum amount.
    **/
   | 'CapExceeded'
   /**
-   * Custom [dispatch errors](https://docs.substrate.io/main-docs/build/events-errors/) of this pallet.
+   * The contribution period has already ended.
    **/
   | 'ContributionPeriodOver'
   /**
-   * Custom [dispatch errors](https://docs.substrate.io/main-docs/build/events-errors/) of this pallet.
+   * The origin of this call is invalid.
    **/
   | 'InvalidOrigin'
   /**
-   * Custom [dispatch errors](https://docs.substrate.io/main-docs/build/events-errors/) of this pallet.
+   * This crowdloan does not correspond to a parachain.
    **/
   | 'NotParachain'
   /**
-   * Custom [dispatch errors](https://docs.substrate.io/main-docs/build/events-errors/) of this pallet.
+   * This parachain lease is still active and retirement cannot yet begin.
    **/
   | 'LeaseActive'
   /**
-   * Custom [dispatch errors](https://docs.substrate.io/main-docs/build/events-errors/) of this pallet.
+   * This parachain's bid or lease is still active and withdraw cannot yet begin.
    **/
   | 'BidOrLeaseActive'
   /**
-   * Custom [dispatch errors](https://docs.substrate.io/main-docs/build/events-errors/) of this pallet.
+   * The crowdloan has not yet ended.
    **/
   | 'FundNotEnded'
   /**
-   * Custom [dispatch errors](https://docs.substrate.io/main-docs/build/events-errors/) of this pallet.
+   * There are no contributions stored in this crowdloan.
    **/
   | 'NoContributions'
   /**
-   * Custom [dispatch errors](https://docs.substrate.io/main-docs/build/events-errors/) of this pallet.
+   * The crowdloan is not ready to dissolve. Potentially still has a slot or in retirement period.
    **/
   | 'NotReadyToDissolve'
   /**
-   * Custom [dispatch errors](https://docs.substrate.io/main-docs/build/events-errors/) of this pallet.
+   * Invalid signature.
    **/
   | 'InvalidSignature'
   /**
-   * Custom [dispatch errors](https://docs.substrate.io/main-docs/build/events-errors/) of this pallet.
+   * The provided memo is too large.
    **/
   | 'MemoTooLarge'
   /**
-   * Custom [dispatch errors](https://docs.substrate.io/main-docs/build/events-errors/) of this pallet.
+   * The fund is already in `NewRaise`
    **/
   | 'AlreadyInNewRaise'
   /**
-   * Custom [dispatch errors](https://docs.substrate.io/main-docs/build/events-errors/) of this pallet.
+   * No contributions allowed during the VRF delay
    **/
   | 'VrfDelayInProgress'
   /**
-   * Custom [dispatch errors](https://docs.substrate.io/main-docs/build/events-errors/) of this pallet.
+   * A lease period has not started yet, due to an offset in the starting block.
    **/
   | 'NoLeasePeriod';
 
@@ -7541,83 +7561,86 @@ export type PalletXcmRemoteLockedFungibleRecord = {
  **/
 export type PalletXcmError =
   /**
-   * Custom [dispatch errors](https://docs.substrate.io/main-docs/build/events-errors/) of this pallet.
+   * The desired destination was unreachable, generally because there is a no way of routing
+   * to it.
    **/
   | 'Unreachable'
   /**
-   * Custom [dispatch errors](https://docs.substrate.io/main-docs/build/events-errors/) of this pallet.
+   * There was some other issue (i.e. not to do with routing) in sending the message. Perhaps
+   * a lack of space for buffering the message.
    **/
   | 'SendFailure'
   /**
-   * Custom [dispatch errors](https://docs.substrate.io/main-docs/build/events-errors/) of this pallet.
+   * The message execution fails the filter.
    **/
   | 'Filtered'
   /**
-   * Custom [dispatch errors](https://docs.substrate.io/main-docs/build/events-errors/) of this pallet.
+   * The message's weight could not be determined.
    **/
   | 'UnweighableMessage'
   /**
-   * Custom [dispatch errors](https://docs.substrate.io/main-docs/build/events-errors/) of this pallet.
+   * The destination `MultiLocation` provided cannot be inverted.
    **/
   | 'DestinationNotInvertible'
   /**
-   * Custom [dispatch errors](https://docs.substrate.io/main-docs/build/events-errors/) of this pallet.
+   * The assets to be sent are empty.
    **/
   | 'Empty'
   /**
-   * Custom [dispatch errors](https://docs.substrate.io/main-docs/build/events-errors/) of this pallet.
+   * Could not re-anchor the assets to declare the fees for the destination chain.
    **/
   | 'CannotReanchor'
   /**
-   * Custom [dispatch errors](https://docs.substrate.io/main-docs/build/events-errors/) of this pallet.
+   * Too many assets have been attempted for transfer.
    **/
   | 'TooManyAssets'
   /**
-   * Custom [dispatch errors](https://docs.substrate.io/main-docs/build/events-errors/) of this pallet.
+   * Origin is invalid for sending.
    **/
   | 'InvalidOrigin'
   /**
-   * Custom [dispatch errors](https://docs.substrate.io/main-docs/build/events-errors/) of this pallet.
+   * The version of the `Versioned` value used is not able to be interpreted.
    **/
   | 'BadVersion'
   /**
-   * Custom [dispatch errors](https://docs.substrate.io/main-docs/build/events-errors/) of this pallet.
+   * The given location could not be used (e.g. because it cannot be expressed in the
+   * desired version of XCM).
    **/
   | 'BadLocation'
   /**
-   * Custom [dispatch errors](https://docs.substrate.io/main-docs/build/events-errors/) of this pallet.
+   * The referenced subscription could not be found.
    **/
   | 'NoSubscription'
   /**
-   * Custom [dispatch errors](https://docs.substrate.io/main-docs/build/events-errors/) of this pallet.
+   * The location is invalid since it already has a subscription from us.
    **/
   | 'AlreadySubscribed'
   /**
-   * Custom [dispatch errors](https://docs.substrate.io/main-docs/build/events-errors/) of this pallet.
+   * Invalid asset for the operation.
    **/
   | 'InvalidAsset'
   /**
-   * Custom [dispatch errors](https://docs.substrate.io/main-docs/build/events-errors/) of this pallet.
+   * The owner does not own (all) of the asset that they wish to do the operation on.
    **/
   | 'LowBalance'
   /**
-   * Custom [dispatch errors](https://docs.substrate.io/main-docs/build/events-errors/) of this pallet.
+   * The asset owner has too many locks on the asset.
    **/
   | 'TooManyLocks'
   /**
-   * Custom [dispatch errors](https://docs.substrate.io/main-docs/build/events-errors/) of this pallet.
+   * The given account is not an identifiable sovereign account for any location.
    **/
   | 'AccountNotSovereign'
   /**
-   * Custom [dispatch errors](https://docs.substrate.io/main-docs/build/events-errors/) of this pallet.
+   * The operation required fees to be paid which the initiator could not meet.
    **/
   | 'FeesNotMet'
   /**
-   * Custom [dispatch errors](https://docs.substrate.io/main-docs/build/events-errors/) of this pallet.
+   * A remote lock with the corresponding data could not be found.
    **/
   | 'LockNotFound'
   /**
-   * Custom [dispatch errors](https://docs.substrate.io/main-docs/build/events-errors/) of this pallet.
+   * The unlock operation cannot succeed because there are still consumers of the lock.
    **/
   | 'InUse';
 
@@ -7649,31 +7672,35 @@ export type PalletMessageQueuePage = {
  **/
 export type PalletMessageQueueError =
   /**
-   * Custom [dispatch errors](https://docs.substrate.io/main-docs/build/events-errors/) of this pallet.
+   * Page is not reapable because it has items remaining to be processed and is not old
+   * enough.
    **/
   | 'NotReapable'
   /**
-   * Custom [dispatch errors](https://docs.substrate.io/main-docs/build/events-errors/) of this pallet.
+   * Page to be reaped does not exist.
    **/
   | 'NoPage'
   /**
-   * Custom [dispatch errors](https://docs.substrate.io/main-docs/build/events-errors/) of this pallet.
+   * The referenced message could not be found.
    **/
   | 'NoMessage'
   /**
-   * Custom [dispatch errors](https://docs.substrate.io/main-docs/build/events-errors/) of this pallet.
+   * The message was already processed and cannot be processed again.
    **/
   | 'AlreadyProcessed'
   /**
-   * Custom [dispatch errors](https://docs.substrate.io/main-docs/build/events-errors/) of this pallet.
+   * The message is queued for future execution.
    **/
   | 'Queued'
   /**
-   * Custom [dispatch errors](https://docs.substrate.io/main-docs/build/events-errors/) of this pallet.
+   * There is temporarily not enough weight to continue servicing messages.
    **/
   | 'InsufficientWeight'
   /**
-   * Custom [dispatch errors](https://docs.substrate.io/main-docs/build/events-errors/) of this pallet.
+   * This message is temporarily unprocessable.
+   *
+   * Such errors are expected, but not guaranteed, to resolve themselves eventually through
+   * retrying.
    **/
   | 'TemporarilyUnprocessable';
 

@@ -163,7 +163,7 @@ ${defTypeOut}
         if (members.length === 0) {
           return 'null';
         } else if (members.every((x) => x.fields.length === 0)) {
-          return members.map(({ name }) => `${commentBlock(docs)}'${name}'`).join(' | ');
+          return members.map(({ name, docs }) => `${commentBlock(docs)}'${name}'`).join(' | ');
         } else {
           const membersType: Record<string, string | null> = {};
           for (const { fields, name } of members) {
@@ -174,7 +174,7 @@ ${defTypeOut}
               const valueType =
                 fields.length === 1
                   ? this.generateType(fields[0].typeId, nestedLevel + 1)
-                  : `[${fields.map((f) => this.generateType(f.typeId, nestedLevel + 1)).join(', ')}]`;
+                  : `[${fields.map(({typeId, docs}) => `${commentBlock(docs)}${this.generateType(typeId, nestedLevel + 1)}`).join(', ')}]`;
               membersType[keyName] = valueType;
             } else {
               membersType[keyName] = this.#generateObjectType(fields, nestedLevel + 1);
