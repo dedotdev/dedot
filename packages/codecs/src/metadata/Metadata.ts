@@ -35,12 +35,11 @@ export const $MetadataVersioned = $.Enum({
   V14: $MetadataV14,
 });
 
-export type MetadataVersioned = $.Output<typeof $MetadataVersioned>;
+export type MetadataVersioned = $.Input<typeof $MetadataVersioned>;
 
 const MAGIC_NUMBER = 1635018093; // 0x6174656d
 
 export class Metadata {
-
   magicNumber: number;
   metadataVersioned: MetadataVersioned;
 
@@ -66,4 +65,4 @@ export const $Metadata: $.Shape<Metadata> = $.instance(
 
 export const $MetadataLatest = $MetadataV14;
 
-export type MetadataLatest = $.Output<typeof $MetadataLatest>;
+export type MetadataLatest = $.Input<typeof $MetadataLatest>;

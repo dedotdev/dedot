@@ -1,58 +1,48 @@
 import { stringPascalCase } from '@polkadot/util';
-import { Field, MetadataLatest, normalizeName, Type, TypeId } from '@delightfuldot/codecs';
-
-
-// export function normalizeIdent(ident: string) {
-//   if (ident.startsWith('r#')) ident = ident.slice(2);
-//   return ident.replace(/(?:[^\p{ID_Continue}]|_)+(.)/gu, (_, $1: string) => $1.toUpperCase());
-// }
-
-// export function normalizeTypeName(name: string) {
-//   return normalizeIdent(name).replace(/^./, (x) => x.toUpperCase());
-// }
+import { CodecRegistry, Field, MetadataLatest, Type, TypeId, TypeParam } from '@delightfuldot/codecs';
+import { normalizeName } from '@delightfuldot/utils';
+import { commentBlock } from './utils';
 
 interface NamedType extends Type {
-  name: string;
+  name: string; // Final type name to print out
   skip?: boolean;
   knownType?: boolean;
+  suffix?: string;
 }
 
-const SKIP_TYPES = ['Option', 'Result'];
+// TODO docs!
+const SKIP_TYPES = [
+  'BoundedBTreeMap',
+  'BoundedBTreeSet',
+  'BoundedVec',
+  'Box',
+  'BTreeMap',
+  'BTreeSet',
+  'Cow',
+  'Option',
+  'Range',
+  'RangeInclusive',
+  'Result',
+  'WeakBoundedVec',
+  'WrapperKeepOpaque',
+  'WrapperOpaque',
+];
 // Remove these from all paths at index 1
 // TODO docs: include ref
 const PATH_RM_INDEX_1 = ['generic', 'misc', 'pallet', 'traits', 'types'];
 
-type KnownPath = string | RegExp;
-
-const KNOWN_PATHS: KnownPath[] = [
-  'sp_core::crypto::AccountId32',
-  // 'sp_runtime::generic::era::Era',
-  'sp_runtime::multiaddress::MultiAddress',
-
-  'fp_account::AccountId20',
-  'account::AccountId20',
-
-  /^primitive_types::\w+$/,
-  /^sp_arithmetic::per_things::\w+$/,
-  /^sp_arithmetic::fixed_point::\w+$/,
-];
-
-export const BASE_KNOWN_TYPES = ['BitSequence', 'Bytes', 'FixedBytes', 'FixedArray'];
-const WRAPPER_TYPE_REGEX = /^(\w+)(<.*>)$/g
+export const BASIC_KNOWN_TYPES = ['BitSequence', 'Bytes', 'FixedBytes', 'FixedArray'];
+const WRAPPER_TYPE_REGEX = /^(\w+)(<.*>)$/g;
 
 export class TypesGen {
   metadata: MetadataLatest;
   includedTypes: Record<TypeId, NamedType>;
+  registry: CodecRegistry;
 
   constructor(metadata: MetadataLatest) {
     this.metadata = metadata;
+    this.registry = new CodecRegistry(this.metadata);
     this.includedTypes = this.#includedTypes();
-  }
-
-  get includedTypeNames() {
-    return Object.values(this.includedTypes)
-      .filter(({ skip }) => !skip)
-      .map(({ name }) => name);
   }
 
   generate() {
@@ -63,11 +53,11 @@ export class TypesGen {
 
     Object.values(this.includedTypes)
       .filter(({ skip, knownType }) => !(skip || knownType))
-      .forEach(({ name, id }) => {
-        defTypeOut += `export type ${name} = ${this.generateType(id)};\n\n`;
+      .forEach(({ name, id, docs }) => {
+        defTypeOut += `${commentBlock(docs)}export type ${name} = ${this.generateType(id)};\n\n`;
       });
 
-    const importBaseTypes = BASE_KNOWN_TYPES.filter((one) => this.usedNameTypes.has(one));
+    const importBaseTypes = BASIC_KNOWN_TYPES.filter((one) => this.usedNameTypes.has(one));
 
     const typesToImport = [...importBaseTypes, ...knownTypes];
 
@@ -90,8 +80,8 @@ ${defTypeOut}
   }
 
   generateType(typeId: TypeId, nestedLevel = 0): string {
-    const includedDef = this.includedTypes[typeId];
     if (nestedLevel > 0) {
+      const includedDef = this.includedTypes[typeId];
       // TODO docs this!
       if (includedDef) {
         this.usedNameTypes.add(includedDef.name);
@@ -107,7 +97,7 @@ ${defTypeOut}
     this.typeCache[typeId] = type;
 
     const baseType = this.#removeGenericPart(type);
-    if (BASE_KNOWN_TYPES.includes(baseType)) {
+    if (BASIC_KNOWN_TYPES.includes(baseType)) {
       this.usedNameTypes.add(baseType);
     }
 
@@ -120,7 +110,7 @@ ${defTypeOut}
       throw new Error(`Type def not found ${JSON.stringify(def)}`);
     }
 
-    const { type, path } = def;
+    const { type, path, docs } = def;
     const { tag, value } = type;
 
     switch (tag) {
@@ -140,7 +130,7 @@ ${defTypeOut}
         const { fields } = value;
 
         if (fields.length === 0) {
-          return 'never';
+          return '{}';
         } else if (!fields[0].name) {
           if (fields.length === 1) {
             return this.generateType(fields[0]!.typeId, nestedLevel + 1);
@@ -148,11 +138,7 @@ ${defTypeOut}
             return `[${fields.map((f) => this.generateType(f.typeId, nestedLevel + 1)).join(', ')}]`;
           }
         } else {
-          const props = fields.map((f) => [normalizeName(f.name!), this.generateType(f.typeId, nestedLevel + 1)]);
-
-          return `{\n${props
-            .map(([name, value]) => `${name}${value.includes('| undefined') ? '?' : ''}: ${value}`)
-            .join(',\n')}}`;
+          return this.#generateObjectType(fields);
         }
       }
 
@@ -175,9 +161,9 @@ ${defTypeOut}
         }
 
         if (members.length === 0) {
-          return 'never';
+          return 'null';
         } else if (members.every((x) => x.fields.length === 0)) {
-          return members.map(({ name }) => `'${normalizeName(name)}'`).join(' | ');
+          return members.map(({ name }) => `${commentBlock(docs)}'${name}'`).join(' | ');
         } else {
           const membersType: Record<string, string | null> = {};
           for (const { fields, name } of members) {
@@ -191,16 +177,16 @@ ${defTypeOut}
                   : `[${fields.map((f) => this.generateType(f.typeId, nestedLevel + 1)).join(', ')}]`;
               membersType[keyName] = valueType;
             } else {
-              const props = fields.map((f) => [normalizeName(f.name!), this.generateType(f.typeId, nestedLevel + 1)]);
-
-              membersType[keyName] = `{\n${props
-                .map(([key, value]) => `${key}${value.includes('| undefined') ? '?' : ''}: ${value}`)
-                .join(',\n')}}`;
+              membersType[keyName] = this.#generateObjectType(fields, nestedLevel + 1);
             }
           }
 
           return Object.entries(membersType)
-            .map(([keyName, valueType]) => `{ tag: '${keyName}', value: ${valueType || 'never'} }`)
+            .map(([keyName, valueType]) => ({
+              tag: `tag: '${keyName}'`,
+              value: valueType ? `, value${this.#isOptionalType(valueType) ? '?' : ''}: ${valueType} ` : '',
+            }))
+            .map(({ tag, value }) => `{ ${tag}${value} }`)
             .join(' | ');
         }
       }
@@ -209,7 +195,7 @@ ${defTypeOut}
         const { fields } = value;
 
         if (fields.length === 0) {
-          return 'never';
+          return '[]';
         } else if (fields.length === 1) {
           return this.generateType(fields[0], nestedLevel + 1);
         } else {
@@ -236,21 +222,49 @@ ${defTypeOut}
     }
   }
 
+  #generateObjectType(fields: Field[], nestedLevel = 0) {
+    const props = fields.map(({ typeId, name, docs }) => {
+      const type = this.generateType(typeId, nestedLevel + 1);
+      return {
+        name: normalizeName(name!),
+        type,
+        optional: this.#isOptionalType(type),
+        docs,
+      };
+    });
+
+    return `{${props
+      .map(({ name, type, optional, docs }) => `${commentBlock(docs)}${name}${optional ? '?' : ''}: ${type}`)
+      .join(',\n')}}`;
+  }
+
+  #isOptionalType(type: string) {
+    return type.endsWith('| undefined');
+  }
+
   #includedTypes(): Record<TypeId, NamedType> {
     const { types } = this.metadata;
     const pathsCount = new Map<string, Array<number>>();
     const typesWithPath = types.filter((one) => one.path.length > 0);
     const skipIds: TypeId[] = [];
+    const typeSuffixes = new Map<TypeId, string>();
 
     typesWithPath.forEach(({ path, id }) => {
       const joinedPath = path.join('::');
       if (pathsCount.has(joinedPath)) {
-        // docs: this is a bit tricky !=!
-        const sameType = this.typeEql(pathsCount.get(joinedPath)![0], id);
+        // TODO we compare 2 types with the same path here,
+        //  if they are the same type -> skip the current one, keep the first occurrence
+        //  if they are not the same type but has the same path -> we'll try to calculate & add a suffix for the current type name
+        const firstOccurrenceTypeId = pathsCount.get(joinedPath)![0];
+        const sameType = this.typeEql(firstOccurrenceTypeId, id);
         if (sameType) {
           skipIds.push(id);
         } else {
           pathsCount.get(joinedPath)!.push(id);
+          typeSuffixes.set(
+            id,
+            this.#extractDupTypeSuffix(id, firstOccurrenceTypeId, pathsCount.get(joinedPath)!.length),
+          );
         }
       } else {
         pathsCount.set(joinedPath, [id]);
@@ -261,14 +275,24 @@ ${defTypeOut}
       const { path, id } = type;
       const joinedPath = path.join('::');
 
-      if (SKIP_TYPES.includes(joinedPath) || pathsCount.get(joinedPath)!.length > 1) {
+      if (SKIP_TYPES.includes(joinedPath) || SKIP_TYPES.includes(path.at(-1)!)) {
         return o;
       }
 
-      let name,
-        knownType = false;
-      if (this.#isKnownType(joinedPath)) {
+      const suffix = typeSuffixes.get(id) || '';
+
+      let knownType = false;
+      let name;
+
+      if (this.registry.isKnownType(joinedPath)) {
         name = path.at(-1)!;
+
+        // TODO docs! this behavior
+        const $knownCodec = this.registry.findCodec(name);
+        if ($knownCodec.metadata[0].name === '$.instance') {
+          name = `${name}Like`;
+        }
+
         knownType = true;
       } else if (PATH_RM_INDEX_1.includes(path[1])) {
         const newPath = path.slice();
@@ -278,7 +302,12 @@ ${defTypeOut}
         name = this.#cleanPath(path);
       }
 
-      o[id] = { name, knownType, skip: skipIds.includes(id), ...type };
+      o[id] = {
+        name: `${name}${suffix}`,
+        knownType,
+        skip: skipIds.includes(id),
+        ...type,
+      };
 
       return o;
     }, {} as Record<TypeId, NamedType>);
@@ -292,15 +321,12 @@ ${defTypeOut}
     }
   }
 
+  // TODO docs! remove duplicated part of the path
   #cleanPath(path: string[]) {
     return path
       .map((one) => stringPascalCase(one))
       .filter((one, idx, currentPath) => idx === 0 || one !== currentPath[idx - 1])
       .join('');
-  }
-
-  #isKnownType(joinedPath: string) {
-    return KNOWN_PATHS.some((one) => joinedPath.match(one));
   }
 
   eqlCache = new Map<string, boolean>();
@@ -327,8 +353,9 @@ ${defTypeOut}
     const { type: defA, params: paramsA } = typeA;
     const { type: defB, params: paramsB } = typeB;
 
-    // TODO check paramsA, paramsB
-    if (paramsA.length !== paramsB.length) return false;
+    if (!this.#eqlArray(paramsA, paramsB, (valA, valB) => this.#eqlTypeParam(valA, valB))) {
+      return false;
+    }
 
     if (defA.tag !== defB.tag) return false;
     if (defA.tag === 'BitSequence') return true;
@@ -376,5 +403,33 @@ ${defTypeOut}
       (val1, val2) =>
         val1.name === val2.name && val1.typeName === val2.typeName && this.#typeEql(val1.typeId, val2.typeId),
     );
+  }
+
+  #eqlTypeParam(param1: TypeParam, param2: TypeParam) {
+    return (
+      param1.name === param2.name &&
+      (param1.typeId === undefined) === (param2.typeId === undefined) &&
+      (param1.typeId === undefined || this.#typeEql(param1.typeId!, param2.typeId!))
+    );
+  }
+
+  #extractDupTypeSuffix(dupTypeId: TypeId, originalTypeId: TypeId, dupCount: number) {
+    const { types } = this.metadata;
+    const originalTypeParams = types[originalTypeId].params;
+    const dupTypeParams = types[dupTypeId].params;
+    const diffParam = dupTypeParams.find((one, idx) => !this.#eqlTypeParam(one, originalTypeParams[idx]));
+
+    // TODO make sure these suffix is unique if a type is duplicated more than 2 times
+    if (diffParam?.typeId) {
+      const diffType = types[diffParam.typeId];
+      if (diffType.path.length > 0) {
+        return stringPascalCase(diffType.path.at(-1)!);
+      } else if (diffType.type.tag === 'Primitive') {
+        return stringPascalCase(diffType.type.value.kind);
+      }
+    }
+
+    // Last resort!
+    return dupCount.toString().padStart(3, '0');
   }
 }

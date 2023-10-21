@@ -57,12 +57,16 @@ export const $TypeDef = $.Enum({
   BitSequence: $.Struct({ bitOrderType: $TypeId, bitStoreType: $TypeId }),
 });
 
+export const $TypeParam = $.Struct({ name: $.str, typeId: $.Option($TypeId) });
+export type TypeParam = $.Input<typeof $TypeParam>;
+
 export const $Type = $.Struct({
   id: $.compact($.u32),
   path: $.Vec($.str),
-  params: $.Vec($.Struct({ name: $.str, typeId: $.Option($TypeId) })),
+  params: $.Vec($TypeParam),
   type: $TypeDef,
   docs: $.Vec($.str),
 });
 
-export type Type = $.Output<typeof $Type>;
+export type Type = $.Input<typeof $Type>;
+export type TypeParams = Type['params'];

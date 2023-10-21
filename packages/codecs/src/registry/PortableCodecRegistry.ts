@@ -1,17 +1,18 @@
-import { stringCamelCase } from '@polkadot/util';
+import { Type, TypeId } from '@delightfuldot/codecs';
 import * as $ from '@delightfuldot/shape';
-import { Type, TypeId } from './scale-info';
+import { normalizeName } from '@delightfuldot/utils';
+import { CodecRegistry } from './CodecRegistry';
 
-// TODO docs: Remove special characters
-export function normalizeName(ident: string) {
-  return stringCamelCase(ident.replace('#', '_'));
-}
+const KNOWN_CODECS = ['AccountId32'];
 
 export class PortableCodecRegistry {
   readonly types: Record<TypeId, Type>;
   readonly #cache: Map<TypeId, $.AnyShape>;
+  readonly #registry: CodecRegistry;
 
-  constructor(types: Type[] | Record<TypeId, Type>) {
+  constructor(types: Type[] | Record<TypeId, Type>, registry: CodecRegistry) {
+    this.#registry = registry;
+
     if (Array.isArray(types)) {
       this.types = types.reduce((o, one) => {
         o[one.id] = one;
@@ -25,11 +26,30 @@ export class PortableCodecRegistry {
   }
 
   findCodec(typeId: TypeId): $.AnyShape {
+    const typeDef = this.types[typeId];
+    if (typeDef && typeDef.path.length > 0) {
+      try {
+        const codecName = typeDef.path.at(-1)!;
+        if (KNOWN_CODECS.includes(codecName)) {
+          const $knownCodec = this.#registry.findCodec(codecName);
+          return $knownCodec;
+        }
+      } catch (e) {
+        // ignore
+      }
+    }
+
     if (this.#cache.has(typeId)) {
       return this.#cache.get(typeId)!;
     }
 
-    return this.#createCodec(typeId);
+    // TODO check this recursion issue again, add docs!
+    this.#cache.set(typeId, $.Bytes);
+
+    const $codec = this.#createCodec(typeId);
+    this.#cache.set(typeId, $codec);
+
+    return $codec;
   }
 
   // TODO refactor this!
@@ -98,14 +118,14 @@ export class PortableCodecRegistry {
       } else if (members.every((x) => x.fields.length === 0)) {
         const enumMembers: Record<number, string> = {};
         for (const { index, name } of members) {
-          enumMembers[index] = normalizeName(name);
+          enumMembers[index] = name;
         }
 
         return $.FlatEnum(enumMembers);
       } else {
         const enumMembers: $.EnumMembers<$.AnyShape> = {};
         for (const { fields, name, index } of members) {
-          const keyName = normalizeName(name);
+          const keyName = name;
           if (fields.length === 0) {
             enumMembers[keyName] = { index };
           } else if (fields[0]!.name === undefined) {

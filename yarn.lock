@@ -182,7 +182,6 @@ __metadata:
   resolution: "@delightfuldot/codecs@workspace:packages/codecs"
   dependencies:
     "@delightfuldot/shape": "workspace:*"
-    "@delightfuldot/types": "workspace:*"
     "@delightfuldot/utils": "workspace:*"
     "@polkadot/util": ^12.5.1
     "@polkadot/util-crypto": ^12.5.1
@@ -212,7 +211,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@delightfuldot/types@workspace:*, @delightfuldot/types@workspace:packages/types":
+"@delightfuldot/types@workspace:packages/types":
   version: 0.0.0-use.local
   resolution: "@delightfuldot/types@workspace:packages/types"
   dependencies:

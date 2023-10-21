@@ -1,3 +1,5 @@
+import { stringCamelCase } from "@polkadot/util";
+
 export const shortenAddress = (address: string): string => {
   if (!address) {
     return '';
@@ -18,3 +20,8 @@ export const trimOffUrlProtocol = (url: string): string => {
 export const trimTrailingSlash = (input: string): string => {
   return input.endsWith('/') ? trimTrailingSlash(input.slice(0, -1)) : input;
 };
+
+// TODO docs: Remove special characters
+export function normalizeName(ident: string) {
+  return stringCamelCase(ident.replace('#', '_'));
+}

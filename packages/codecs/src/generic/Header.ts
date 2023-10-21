@@ -18,13 +18,25 @@ export class ConsensusEngineId {
   toString() {
     return this.name;
   }
+
+  toJSON() {
+    return this.name;
+  }
   // TODO inspect!?!
 }
 
-export const $ConsensusEngineId: $.Shape<ConsensusEngineId> = $.instance(
+type ConsensusEngineIdLike = ConsensusEngineId | HexString;
+
+export const $ConsensusEngineId: $.Shape<ConsensusEngineIdLike, ConsensusEngineId> = $.instance(
   ConsensusEngineId,
   $.Tuple($.FixedHex(4)),
-  (value) => [value.id],
+  (value) => {
+    if (value instanceof ConsensusEngineId) {
+      return [value.id];
+    } else {
+      return [value];
+    }
+  },
 );
 
 // TODO docs!
@@ -40,7 +52,7 @@ export type DigestItem = $.Output<typeof $DigestItem>;
 export const $Digest = $.Struct({
   logs: $.Vec($DigestItem),
 });
-export type Digest = $.Output<typeof $Digest>;
+export type Digest = $.Input<typeof $Digest>;
 
 export const $Header = $.Struct({
   parentHash: $Hash,
@@ -49,4 +61,4 @@ export const $Header = $.Struct({
   extrinsicsRoot: $Hash,
   digest: $Digest,
 });
-export type Header = $.Output<typeof $Header>;
+export type Header = $.Input<typeof $Header>;

@@ -15,16 +15,18 @@ export const $StorageEntry = $.Struct({
   name: $.str,
   modifier: $.Enum({ Optional: null, Default: null }),
   type: $.Enum({
-    Plain: $.Struct({ value: $TypeId }),
+    Plain: $.Struct({ valueTypeId: $TypeId }),
     Map: $.Struct({
       hashers: $.Vec($Hasher),
-      key: $TypeId,
-      value: $TypeId,
+      keyTypeId: $TypeId,
+      valueTypeId: $TypeId,
     }),
   }),
   default: $.PrefixedHex,
   docs: $.Vec($.str),
 });
+
+export type StorageEntry = $.Input<typeof $StorageEntry>;
 
 export const $Constants = $.Struct({
   name: $.str,
@@ -48,7 +50,7 @@ export const $Pallet = $.Struct({
   index: $.u8,
 });
 
-export type Pallet = $.Output<typeof $Pallet>;
+export type Pallet = $.Input<typeof $Pallet>;
 
 export const $ExtrinsicDef = $.Struct({
   typeId: $TypeId,
@@ -62,7 +64,7 @@ export const $ExtrinsicDef = $.Struct({
   ),
 });
 
-export type ExtrinsicDef = $.Output<typeof $ExtrinsicDef>;
+export type ExtrinsicDef = $.Input<typeof $ExtrinsicDef>;
 
 export const $MetadataV14 = $.Struct({
   types: $.Vec($Type),
@@ -71,4 +73,4 @@ export const $MetadataV14 = $.Struct({
   runtimeType: $TypeId,
 });
 
-export type MetadataV14 = $.Output<typeof $MetadataV14>;
+export type MetadataV14 = $.Input<typeof $MetadataV14>;

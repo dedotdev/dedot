@@ -1,18 +1,9 @@
 import { stringLowerFirst } from '@polkadot/util';
-import { normalizeName } from '@delightfuldot/codecs';
-import { BASE_KNOWN_TYPES, TypesGen } from './TypesGen';
+import { normalizeName } from '@delightfuldot/utils';
+import { ApiGen } from '../generator';
+import { commentBlock } from './utils';
 
-export class ConstsGen {
-  typesGen: TypesGen;
-
-  constructor(typesGen: TypesGen) {
-    this.typesGen = typesGen;
-  }
-
-  get metadata() {
-    return this.typesGen.metadata;
-  }
-
+export class ConstsGen extends ApiGen {
   generate() {
     const { pallets } = this.metadata;
 
@@ -20,13 +11,14 @@ export class ConstsGen {
 
     let defTypeOut = '';
     for (let pallet of pallets) {
-      const typedConstants = pallet.constants.map((one) => [
-        normalizeName(one.name),
-        this.typesGen.generateType(one.typeId, 1),
-      ]);
+      const typedConstants = pallet.constants.map((one) => ({
+        name: normalizeName(one.name),
+        type: this.typesGen.generateType(one.typeId, 1),
+        docs: one.docs,
+      }));
 
       defTypeOut += `${stringLowerFirst(pallet.name)}: {${typedConstants
-        .map(([name, type]) => `${name}: ${type}`)
+        .map(({ name, type, docs }) => `${commentBlock(docs)}${name}: ${type}`)
         .join(',\n')}},`;
     }
 
