@@ -5,14 +5,14 @@ function shouldDecodeArray(input: any) {
 }
 
 function decodeArray($shape: Shape<any>, input: Array<any>) {
-  const {args} = $shape.metadata[0];
+  const { args } = $shape.metadata[0];
 
   const $innerShape = args![0];
 
-  return input.map(inner => $innerShape.tryDecode(inner));
+  return input.map((inner) => $innerShape.tryDecode(inner));
 }
 
-export function array<I, O = I>($el: Shape<I, O>): Shape<readonly I[], O[]> {
+export function array<I, O = I>($el: Shape<I, O>): Shape<I[], O[]> {
   const shaped = originalArray($el);
 
   shaped.registerDecoder(shouldDecodeArray, decodeArray);

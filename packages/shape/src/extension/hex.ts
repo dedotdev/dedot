@@ -21,7 +21,7 @@ export function FixedHex(lengthInBytes: number): Shape<HexString> {
 
 export const PrefixedHex = createShape<HexString>({
   metadata: metadata('$.PrefixedHex'),
-  staticSize: 0,
+  staticSize: compactU32.staticSize,
   subEncode(buffer: EncodeBuffer, value): void {
     const u8a = hexToU8a(value);
     compactU32.subEncode(buffer, u8a.length);
