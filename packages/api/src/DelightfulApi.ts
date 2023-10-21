@@ -1,11 +1,10 @@
 import { WsProvider } from '@polkadot/rpc-provider';
 import { ProviderInterface } from '@polkadot/rpc-provider/types';
 import type { SubstrateApi } from '@delightfuldot/chaintypes';
-import { Metadata, MetadataLatest } from '@delightfuldot/codecs';
+import { Metadata, MetadataLatest, CodecRegistry } from '@delightfuldot/codecs';
 import { GenericSubstrateApi } from '@delightfuldot/types';
-import { ConstantExecutor, RpcExecutor } from './executor';
+import { ConstantExecutor, RpcExecutor, StorageQueryExecutor } from './executor';
 import { newProxyChain } from './proxychain';
-import { CodecRegistry } from "./registry";
 
 interface ApiOptions {
   provider: ProviderInterface;
@@ -49,6 +48,10 @@ export default class DelightfulApi<ChainApi extends GenericSubstrateApi = Substr
     return newProxyChain<ChainApi>({ executor: new ConstantExecutor(this) }) as ChainApi['consts'];
   }
 
+  get query(): ChainApi['query'] {
+    return newProxyChain<ChainApi>({ executor: new StorageQueryExecutor(this) }) as ChainApi['query'];
+  }
+
   get provider() {
     return this.#provider;
   }
@@ -70,7 +73,7 @@ export default class DelightfulApi<ChainApi extends GenericSubstrateApi = Substr
   setMetadata(metadata: Metadata) {
     this.#metadata = metadata;
     this.#metadataLatest = metadata.latest;
-    this.registry.setMetadata(metadata);
+    this.registry.setMetadata(this.#metadataLatest);
   }
 
   async disconnect() {
