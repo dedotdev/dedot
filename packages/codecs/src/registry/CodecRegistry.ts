@@ -14,6 +14,9 @@ const KNOWN_PATHS: KnownPath[] = [
   'account::AccountId20',
 
   'pallet_identity::types::Data',
+  'sp_runtime::generic::digest::Digest',
+  'sp_runtime::generic::digest::DigestItem',
+  'sp_runtime::generic::header::Header',
 
   /^primitive_types::\w+$/,
   /^sp_arithmetic::per_things::\w+$/,

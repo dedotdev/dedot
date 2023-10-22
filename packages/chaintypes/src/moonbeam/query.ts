@@ -12,6 +12,7 @@ import {
   CumulusPalletXcmpQueueQueueConfigData,
   CumulusPrimitivesParachainInherentMessageQueueChain,
   Data,
+  Digest,
   EthereumBlock,
   EthereumReceiptReceiptV3,
   EthereumTransactionTransactionV2,
@@ -84,7 +85,6 @@ import {
   PolkadotPrimitivesV4AbridgedHostConfiguration,
   PolkadotPrimitivesV4PersistedValidationData,
   PolkadotPrimitivesV4UpgradeRestriction,
-  SpRuntimeDigest,
   SpTrieStorageProof,
   SpWeightsWeightV2Weight,
   U256,
@@ -138,7 +138,7 @@ export interface ChainStorage extends GenericChainStorage {
     /**
      * Digest of the current block, also part of the block header.
      **/
-    digest(): Promise<SpRuntimeDigest>;
+    digest(): Promise<Digest>;
 
     /**
      * Events deposited for the current block.

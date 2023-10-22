@@ -4,11 +4,14 @@ import type {
   BitSequence,
   Bytes,
   Data,
+  Digest,
+  DigestItem,
   FixedArray,
   FixedBytes,
   FixedI64,
   FixedU128,
   H256,
+  Header,
   MultiAddress,
   Perbill,
   Percent,
@@ -24,7 +27,10 @@ export type {
   FixedArray,
   AccountId32Like,
   H256,
+  Digest,
+  DigestItem,
   Perbill,
+  Header,
   MultiAddress,
   Percent,
   Data,
@@ -62,15 +68,6 @@ export type SpWeightsWeightV2Weight = {
   refTime: bigint;
   proofSize: bigint;
 };
-
-export type SpRuntimeDigest = { logs: Array<SpRuntimeDigestDigestItem> };
-
-export type SpRuntimeDigestDigestItem =
-  | { tag: 'PreRuntime'; value: [FixedBytes<4>, Bytes] }
-  | { tag: 'Consensus'; value: [FixedBytes<4>, Bytes] }
-  | { tag: 'Seal'; value: [FixedBytes<4>, Bytes] }
-  | { tag: 'Other'; value: Bytes }
-  | { tag: 'RuntimeEnvironmentUpdated' };
 
 export type FrameSystemEventRecord = {
   phase: FrameSystemPhase;
@@ -898,16 +895,8 @@ export type PalletBabeCall =
 export type SpConsensusSlotsEquivocationProof = {
   offender: SpConsensusBabeAppPublic;
   slot: SpConsensusSlotsSlot;
-  firstHeader: SpRuntimeHeader;
-  secondHeader: SpRuntimeHeader;
-};
-
-export type SpRuntimeHeader = {
-  parentHash: H256;
-  number: number;
-  stateRoot: H256;
-  extrinsicsRoot: H256;
-  digest: SpRuntimeDigest;
+  firstHeader: Header;
+  secondHeader: Header;
 };
 
 export type SpRuntimeBlakeTwo256 = {};
@@ -2536,7 +2525,7 @@ export type PolkadotPrimitivesV4InherentData = {
   bitfields: Array<PolkadotPrimitivesV4SignedUncheckedSigned>;
   backedCandidates: Array<PolkadotPrimitivesV4BackedCandidate>;
   disputes: Array<PolkadotPrimitivesV4DisputeStatementSet>;
-  parentHeader: SpRuntimeHeader;
+  parentHeader: Header;
 };
 
 export type PolkadotPrimitivesV4SignedUncheckedSigned = {

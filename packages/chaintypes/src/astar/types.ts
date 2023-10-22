@@ -3,6 +3,8 @@ import type {
   AccountId32Like,
   Bytes,
   Data,
+  Digest,
+  DigestItem,
   FixedBytes,
   FixedU128,
   H160,
@@ -18,6 +20,8 @@ export type {
   FixedBytes,
   AccountId32Like,
   H256,
+  Digest,
+  DigestItem,
   H160,
   Perbill,
   U256,
@@ -54,15 +58,6 @@ export type SpWeightsWeightV2Weight = {
   refTime: bigint;
   proofSize: bigint;
 };
-
-export type SpRuntimeDigest = { logs: Array<SpRuntimeDigestDigestItem> };
-
-export type SpRuntimeDigestDigestItem =
-  | { tag: 'PreRuntime'; value: [FixedBytes<4>, Bytes] }
-  | { tag: 'Consensus'; value: [FixedBytes<4>, Bytes] }
-  | { tag: 'Seal'; value: [FixedBytes<4>, Bytes] }
-  | { tag: 'Other'; value: Bytes }
-  | { tag: 'RuntimeEnvironmentUpdated' };
 
 export type FrameSystemEventRecord = {
   phase: FrameSystemPhase;

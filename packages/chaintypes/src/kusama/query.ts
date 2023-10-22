@@ -4,6 +4,7 @@ import {
   AccountId32Like,
   Bytes,
   Data,
+  Digest,
   FixedArray,
   FixedBytes,
   FixedU128,
@@ -125,7 +126,6 @@ import {
   SpConsensusSlotsSlot,
   SpCoreCryptoKeyTypeId,
   SpNposElectionsElectionScore,
-  SpRuntimeDigest,
   SpStakingOffenceOffenceDetails,
   SpWeightsWeightV2Weight,
   XcmVersionedAssetId,
@@ -177,7 +177,7 @@ export interface ChainStorage extends GenericChainStorage {
     /**
      * Digest of the current block, also part of the block header.
      **/
-    digest(): Promise<SpRuntimeDigest>;
+    digest(): Promise<Digest>;
 
     /**
      * Events deposited for the current block.
