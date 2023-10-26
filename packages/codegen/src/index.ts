@@ -44,9 +44,9 @@ async function generateTypes(chain: string, endpoint: string) {
   const typesGen = new TypesGen(api.metadataLatest);
   const constsGen = new ConstsGen(typesGen);
   const queryGen = new QueryGen(typesGen);
-  fs.writeFileSync(defTypesFileName, typesGen.generate());
-  fs.writeFileSync(constsTypesFileName, constsGen.generate());
-  fs.writeFileSync(queryTypesFileName, queryGen.generate());
+  fs.writeFileSync(defTypesFileName, await typesGen.generate());
+  fs.writeFileSync(constsTypesFileName, await constsGen.generate());
+  fs.writeFileSync(queryTypesFileName, await queryGen.generate());
 
   await api.disconnect();
 }
