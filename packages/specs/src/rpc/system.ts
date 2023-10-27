@@ -61,8 +61,7 @@ export const system: RpcModuleSpec = {
     params: [],
     type: 'Array<PeerInfo>',
   },
-  networkState: {
-    name: 'system_unstable_networkState',
+  unstable_networkState: {
     docs: [
       'Returns current state of the network.\n',
       '\t\n',

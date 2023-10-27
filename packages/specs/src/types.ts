@@ -15,6 +15,8 @@ export type RpcCallSpec = {
   type: string;
   isScale?: boolean;
   isUnsafe?: boolean;
+  module?: string;
+  method?: string;
   [prop: string]: any;
 };
 

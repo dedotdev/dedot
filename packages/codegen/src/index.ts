@@ -4,7 +4,7 @@ import * as fs from 'fs';
 import * as path from 'path';
 import * as process from 'process';
 import { ConstsGen, TypesGen, QueryGen, RpcGen } from './generator';
-import { RpcMethods } from "@delightfuldot/types";
+import { RpcMethods } from '@delightfuldot/types';
 
 const NETWORKS = [
   {
@@ -51,7 +51,7 @@ async function generateTypes(chain: string, endpoint: string) {
   const rpcGen = new RpcGen(typesGen, methods);
 
   fs.writeFileSync(defTypesFileName, await typesGen.generate());
-  fs.writeFileSync(rpcCallsFileName, rpcGen.generate());
+  fs.writeFileSync(rpcCallsFileName, await rpcGen.generate());
   fs.writeFileSync(queryTypesFileName, await queryGen.generate());
   fs.writeFileSync(constsTypesFileName, await constsGen.generate());
 
