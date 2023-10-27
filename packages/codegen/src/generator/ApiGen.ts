@@ -1,12 +1,13 @@
 import { TypesGen } from '@delightfuldot/codegen/generator/TypesGen';
 
 export abstract class ApiGen {
-  typesGen: TypesGen;
-  constructor(typesGen: TypesGen) {
-    this.typesGen = typesGen;
-  }
+  constructor(readonly typesGen: TypesGen) {}
 
   get metadata() {
     return this.typesGen.metadata;
+  }
+
+  get registry() {
+    return this.typesGen.registry;
   }
 }

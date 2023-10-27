@@ -172,6 +172,7 @@ __metadata:
   dependencies:
     "@delightfuldot/codecs": "workspace:*"
     "@delightfuldot/shape": "workspace:*"
+    "@delightfuldot/specs": "workspace:*"
     "@delightfuldot/utils": "workspace:*"
     "@polkadot/util": ^12.5.1
   languageName: unknown
@@ -194,6 +195,7 @@ __metadata:
   dependencies:
     "@delightfuldot/codecs": "workspace:*"
     "@delightfuldot/shape": "workspace:*"
+    "@delightfuldot/specs": "workspace:*"
     "@delightfuldot/utils": "workspace:*"
     "@polkadot/util": ^12.5.1
     delightfuldot: "workspace:*"
@@ -208,6 +210,12 @@ __metadata:
     "@polkadot/util": ^12.5.1
     "@polkadot/util-crypto": ^12.5.1
     subshape: ^0.14.0
+  languageName: unknown
+  linkType: soft
+
+"@delightfuldot/specs@workspace:*, @delightfuldot/specs@workspace:packages/specs":
+  version: 0.0.0-use.local
+  resolution: "@delightfuldot/specs@workspace:packages/specs"
   languageName: unknown
   linkType: soft
 

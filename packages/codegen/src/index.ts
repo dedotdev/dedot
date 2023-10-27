@@ -3,7 +3,8 @@ import { DelightfulApi } from 'delightfuldot';
 import * as fs from 'fs';
 import * as path from 'path';
 import * as process from 'process';
-import { ConstsGen, TypesGen, QueryGen } from './generator';
+import { ConstsGen, TypesGen, QueryGen, RpcGen } from './generator';
+import { RpcMethods } from "@delightfuldot/types";
 
 const NETWORKS = [
   {
@@ -38,15 +39,21 @@ async function generateTypes(chain: string, endpoint: string) {
   const defTypesFileName = path.resolve(process.cwd(), `packages/chaintypes/src/${chain}/types.ts`);
   const constsTypesFileName = path.resolve(process.cwd(), `packages/chaintypes/src/${chain}/consts.ts`);
   const queryTypesFileName = path.resolve(process.cwd(), `packages/chaintypes/src/${chain}/query.ts`);
+  const rpcCallsFileName = path.resolve(process.cwd(), `packages/chaintypes/src/${chain}/rpc.ts`);
 
   const api = await DelightfulApi.create({ provider: new WsProvider(endpoint, 2500) });
 
   const typesGen = new TypesGen(api.metadataLatest);
   const constsGen = new ConstsGen(typesGen);
   const queryGen = new QueryGen(typesGen);
+
+  const { methods }: RpcMethods = await api.rpc.rpc.methods();
+  const rpcGen = new RpcGen(typesGen, methods);
+
   fs.writeFileSync(defTypesFileName, typesGen.generate());
-  fs.writeFileSync(constsTypesFileName, constsGen.generate());
+  fs.writeFileSync(rpcCallsFileName, rpcGen.generate());
   fs.writeFileSync(queryTypesFileName, queryGen.generate());
+  fs.writeFileSync(constsTypesFileName, constsGen.generate());
 
   await api.disconnect();
 }

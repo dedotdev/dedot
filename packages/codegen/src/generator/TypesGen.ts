@@ -51,6 +51,10 @@ export class TypesGen {
       .filter(({ skip, knownType }) => !skip && knownType)
       .map((one) => one.name);
 
+    // TODO check get type of AccountId (AccountId32Like/AccountId20Like)
+    defTypeOut += `export type AccountId = ${this.inferAccountIdType()};\n\n`;
+    this.usedNameTypes.add('AccountId');
+
     Object.values(this.includedTypes)
       .filter(({ skip, knownType }) => !(skip || knownType))
       .forEach(({ name, id, docs }) => {
@@ -77,6 +81,29 @@ ${defTypeOut}
   clearCache() {
     this.typeCache = {};
     this.usedNameTypes.clear();
+  }
+
+  inferAccountIdType(): string {
+    const UncheckedExtrinsicPath = 'sp_runtime::generic::unchecked_extrinsic::UncheckedExtrinsic';
+    const MultiAddressPath = 'sp_runtime::multiaddress::MultiAddress';
+
+    const uncheckedExtrinsicType = Object.values(this.includedTypes).find(
+      (one) => one.path.join('::') === UncheckedExtrinsicPath,
+    );
+
+    if (!uncheckedExtrinsicType) {
+      return 'Unit8Array'; // TODO ?!?
+    }
+
+    const [{ typeId: addressTypeId }] = uncheckedExtrinsicType.params;
+    const addressType = this.includedTypes[addressTypeId!];
+
+    if (addressType.path.join('::') === MultiAddressPath) {
+      const [{ typeId: accountIdTypeId }] = addressType.params;
+      return this.generateType(accountIdTypeId!, 1);
+    }
+
+    return this.generateType(addressTypeId!, 1);
   }
 
   generateType(typeId: TypeId, nestedLevel = 0): string {
@@ -174,7 +201,9 @@ ${defTypeOut}
               const valueType =
                 fields.length === 1
                   ? this.generateType(fields[0].typeId, nestedLevel + 1)
-                  : `[${fields.map(({typeId, docs}) => `${commentBlock(docs)}${this.generateType(typeId, nestedLevel + 1)}`).join(', ')}]`;
+                  : `[${fields
+                      .map(({ typeId, docs }) => `${commentBlock(docs)}${this.generateType(typeId, nestedLevel + 1)}`)
+                      .join(', ')}]`;
               membersType[keyName] = valueType;
             } else {
               membersType[keyName] = this.#generateObjectType(fields, nestedLevel + 1);

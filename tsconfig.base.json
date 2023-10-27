@@ -33,6 +33,8 @@
       "@delightfuldot/types/*": ["../types/src/*"],
       "@delightfuldot/chaintypes": ["../chaintypes/src"],
       "@delightfuldot/chaintypes/*": ["../chaintypes/src/*"],
+      "@delightfuldot/specs": ["../specs/src"],
+      "@delightfuldot/specs/*": ["../specs/src/*"],
       "delightfuldot": ["../api/src"],
       "delightfuldot/*": ["../api/src/*"]
     }
