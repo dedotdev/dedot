@@ -1,7 +1,7 @@
 export type AsyncMethod = (...args: any[]) => Promise<any>;
 
 export interface GenericRpcCalls {
-  [pallet: string]: {
+  [module: string]: {
     [method: string]: AsyncMethod;
   };
 }
