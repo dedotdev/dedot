@@ -15,7 +15,7 @@ export const accountId20ToHex = (input: AccountId20Like): HexString => {
   throw Error(`Invalid input for AccountId20: ${input}`);
 };
 
-class AccountId20 {
+export class AccountId20 {
   raw: HexString;
 
   constructor(input: AccountId20Like) {
