@@ -24,6 +24,6 @@ export const resolveFilePath = (relativePath: string | string[]) => {
 
 export const PRETTIER_FORMAT_OPTION = await prettier.resolveConfig(resolveFilePath('./.prettierrc.js'));
 
-export const format = (tsInput: string) => {
+export const beautifySourceCode = (tsInput: string): Promise<string> => {
   return prettier.format(tsInput, { parser: 'babel-ts', ...PRETTIER_FORMAT_OPTION });
 };
