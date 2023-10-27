@@ -197,8 +197,8 @@ __metadata:
     "@delightfuldot/utils": "workspace:*"
     "@polkadot/util": ^12.5.1
     delightfuldot: "workspace:*"
-    handlebars: ^4.7.8
     prettier: ^3.0.3
+    handlebars: ^4.7.8
   languageName: unknown
   linkType: soft
 
