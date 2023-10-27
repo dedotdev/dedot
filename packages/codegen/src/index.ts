@@ -50,10 +50,10 @@ async function generateTypes(chain: string, endpoint: string) {
   const { methods }: RpcMethods = await api.rpc.rpc.methods();
   const rpcGen = new RpcGen(typesGen, methods);
 
-  fs.writeFileSync(defTypesFileName, typesGen.generate());
+  fs.writeFileSync(defTypesFileName, await typesGen.generate());
   fs.writeFileSync(rpcCallsFileName, rpcGen.generate());
-  fs.writeFileSync(queryTypesFileName, queryGen.generate());
-  fs.writeFileSync(constsTypesFileName, constsGen.generate());
+  fs.writeFileSync(queryTypesFileName, await queryGen.generate());
+  fs.writeFileSync(constsTypesFileName, await constsGen.generate());
 
   await api.disconnect();
 }

@@ -16,7 +16,8 @@
     "@delightfuldot/specs": "workspace:*",
     "@delightfuldot/utils": "workspace:*",
     "@polkadot/util": "^12.5.1",
-    "delightfuldot": "workspace:*"
+    "delightfuldot": "workspace:*",
+    "prettier": "^3.0.3"
   },
   "license": "Apache-2.0"
 }
