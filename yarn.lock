@@ -172,7 +172,6 @@ __metadata:
   dependencies:
     "@delightfuldot/codecs": "workspace:*"
     "@delightfuldot/shape": "workspace:*"
-    "@delightfuldot/specs": "workspace:*"
     "@delightfuldot/utils": "workspace:*"
     "@polkadot/util": ^12.5.1
   languageName: unknown
@@ -2912,6 +2911,7 @@ __metadata:
     "@delightfuldot/chaintypes": "workspace:*"
     "@delightfuldot/codecs": "workspace:*"
     "@delightfuldot/shape": "workspace:*"
+    "@delightfuldot/specs": "workspace:*"
     "@delightfuldot/utils": "workspace:*"
     "@polkadot/rpc-provider": ^10.9.1
     "@polkadot/types": ^10.9.1
