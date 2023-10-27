@@ -1,26 +1,26 @@
-import { createShape, metadata, Shape, ShapeDecodeError } from "subshape";
+import { createShape, metadata, Shape, ShapeDecodeError } from 'subshape';
 
-const textEncoder = new TextEncoder()
-const textDecoder = new TextDecoder()
+const textEncoder = new TextEncoder();
+const textDecoder = new TextDecoder();
 
 export function FixedStr(lengthInBytes: number): Shape<string> {
   return createShape({
-    metadata: metadata("$FixedStr", FixedStr, lengthInBytes),
+    metadata: metadata('$FixedStr', FixedStr, lengthInBytes),
     staticSize: lengthInBytes,
     subEncode(buffer, value) {
-      buffer.insertArray(textEncoder.encode(value))
+      buffer.insertArray(textEncoder.encode(value));
     },
     subDecode(buffer) {
       if (buffer.array.length < buffer.index + lengthInBytes) {
-        throw new ShapeDecodeError(this, buffer, "Attempting to `str`-decode beyond bounds of input bytes")
+        throw new ShapeDecodeError(this, buffer, 'Attempting to `str`-decode beyond bounds of input bytes');
       }
 
-      const slice = buffer.array.subarray(buffer.index, buffer.index + lengthInBytes)
-      buffer.index += lengthInBytes
-      return textDecoder.decode(slice)
+      const slice = buffer.array.subarray(buffer.index, buffer.index + lengthInBytes);
+      buffer.index += lengthInBytes;
+      return textDecoder.decode(slice);
     },
     subAssert(assert) {
-      assert.typeof(this, "string")
-    }
-  })
+      assert.typeof(this, 'string');
+    },
+  });
 }

@@ -1,4 +1,5 @@
-import { hexFixLength, hexToU8a, isHex } from '@polkadot/util';
+import { hexFixLength, hexToU8a, isBoolean, isHex, isNumber, isString } from '@polkadot/util';
+import * as $ from 'subshape';
 import { AnyShape, Decoder, Encoder, Predicate, Shape } from 'subshape';
 
 declare module 'subshape' {
@@ -40,12 +41,12 @@ Shape.prototype.tryDecode = function (input: any) {
   }
 
   return this.decode(input);
-}
+};
 
 Shape.prototype.registerDecoder = function (predicate: Predicate, decoder: Decoder) {
   this.decoders = this.decoders || [];
-  this.decoders.push([predicate, decoder])
-}
+  this.decoders.push([predicate, decoder]);
+};
 
 Shape.prototype.tryEncode = function (input: any) {
   if (this.encoders && this.encoders.length > 0) {
@@ -60,9 +61,26 @@ Shape.prototype.tryEncode = function (input: any) {
   }
 
   return this.encode(input);
-}
+};
 
 Shape.prototype.registerEncoder = function (predicate: Predicate, encoder: Encoder) {
   this.encoders = this.encoders || [];
-  this.encoders.push([predicate, encoder])
-}
+  this.encoders.push([predicate, encoder]);
+};
+
+// Register decoder from plain values, TODO support more!
+const identity = (_: $.Shape<any>, input: any) => input;
+$.bool.registerDecoder(isBoolean, identity);
+$.i128.registerDecoder(isNumber, identity);
+$.i16.registerDecoder(isNumber, identity);
+$.i256.registerDecoder(isNumber, identity);
+$.i32.registerDecoder(isNumber, identity);
+$.i64.registerDecoder(isNumber, identity);
+$.i8.registerDecoder(isNumber, identity);
+$.u128.registerDecoder(isNumber, identity);
+$.u16.registerDecoder(isNumber, identity);
+$.u256.registerDecoder(isNumber, identity);
+$.u32.registerDecoder(isNumber, identity);
+$.u64.registerDecoder(isNumber, identity);
+$.u8.registerDecoder(isNumber, identity);
+$.str.registerDecoder(isString, identity);
