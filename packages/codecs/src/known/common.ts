@@ -24,3 +24,5 @@ export type FixedArray<T, N extends number> = N extends 0
       0: T;
       length: N;
     } & ReadonlyArray<T>;
+
+export type Option<T> = T | undefined;

@@ -12,6 +12,7 @@ const KNOWN_PATHS: KnownPath[] = [
 
   'fp_account::AccountId20',
   'account::AccountId20',
+  'polkadot_runtime_common::claims::EthereumAddress',
 
   'pallet_identity::types::Data',
   'sp_runtime::generic::digest::Digest',
