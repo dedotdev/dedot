@@ -15,6 +15,9 @@
     },
     {
       "path": "../codecs/tsconfig.json"
+    },
+    {
+      "path": "../types/tsconfig.json"
     }
   ]
 }

@@ -15,6 +15,7 @@
     "@delightfuldot/shape": "workspace:*",
     "@delightfuldot/specs": "workspace:*",
     "@delightfuldot/utils": "workspace:*",
+    "@polkadot/types-support": "^10.10.1",
     "@polkadot/util": "^12.5.1",
     "delightfuldot": "workspace:*",
     "prettier": "^3.0.3"
