@@ -81,7 +81,7 @@ export type AstarRuntimeRuntimeEvent =
   | { tag: 'DmpQueue'; value: CumulusPalletDmpQueueEvent }
   | { tag: 'XcAssetConfig'; value: PalletXcAssetConfigEvent }
   | { tag: 'Xtokens'; value: OrmlXtokensModuleEvent }
-  | { tag: 'EVM'; value: PalletEvmEvent }
+  | { tag: 'Evm'; value: PalletEvmEvent }
   | { tag: 'Ethereum'; value: PalletEthereumEvent }
   | { tag: 'EthCall'; value: PalletCustomSignaturesEvent }
   | { tag: 'BaseFee'; value: PalletBaseFeeEvent }
@@ -944,7 +944,7 @@ export type EvmCoreErrorExitError =
   | { tag: 'OutOfOffset' }
   | { tag: 'OutOfGas' }
   | { tag: 'OutOfFund' }
-  | { tag: 'PCUnderflow' }
+  | { tag: 'PcUnderflow' }
   | { tag: 'CreateEmpty' }
   | { tag: 'Other'; value: string }
   | { tag: 'MaxNonce' };
@@ -1080,14 +1080,14 @@ export type FrameSystemLastRuntimeUpgradeInfo = { specVersion: number; specName:
  * Contains one variant per dispatchable that can be called by an extrinsic.
  **/
 export type FrameSystemCall =
-  | { tag: 'remark'; value: { remark: Bytes } }
-  | { tag: 'set_heap_pages'; value: { pages: bigint } }
-  | { tag: 'set_code'; value: { code: Bytes } }
-  | { tag: 'set_code_without_checks'; value: { code: Bytes } }
-  | { tag: 'set_storage'; value: { items: Array<[Bytes, Bytes]> } }
-  | { tag: 'kill_storage'; value: { keys: Array<Bytes> } }
-  | { tag: 'kill_prefix'; value: { prefix: Bytes; subkeys: number } }
-  | { tag: 'remark_with_event'; value: { remark: Bytes } };
+  | { tag: 'Remark'; value: { remark: Bytes } }
+  | { tag: 'SetHeapPages'; value: { pages: bigint } }
+  | { tag: 'SetCode'; value: { code: Bytes } }
+  | { tag: 'SetCodeWithoutChecks'; value: { code: Bytes } }
+  | { tag: 'SetStorage'; value: { items: Array<[Bytes, Bytes]> } }
+  | { tag: 'KillStorage'; value: { keys: Array<Bytes> } }
+  | { tag: 'KillPrefix'; value: { prefix: Bytes; subkeys: number } }
+  | { tag: 'RemarkWithEvent'; value: { remark: Bytes } };
 
 export type FrameSystemLimitsBlockWeights = {
   baseBlock: SpWeightsWeightV2Weight;
@@ -1162,12 +1162,12 @@ export type FrameSystemError =
  * Contains one variant per dispatchable that can be called by an extrinsic.
  **/
 export type PalletUtilityCall =
-  | { tag: 'batch'; value: { calls: Array<AstarRuntimeRuntimeCall> } }
-  | { tag: 'as_derivative'; value: { index: number; call: AstarRuntimeRuntimeCall } }
-  | { tag: 'batch_all'; value: { calls: Array<AstarRuntimeRuntimeCall> } }
-  | { tag: 'dispatch_as'; value: { asOrigin: AstarRuntimeOriginCaller; call: AstarRuntimeRuntimeCall } }
-  | { tag: 'force_batch'; value: { calls: Array<AstarRuntimeRuntimeCall> } }
-  | { tag: 'with_weight'; value: { call: AstarRuntimeRuntimeCall; weight: SpWeightsWeightV2Weight } };
+  | { tag: 'Batch'; value: { calls: Array<AstarRuntimeRuntimeCall> } }
+  | { tag: 'AsDerivative'; value: { index: number; call: AstarRuntimeRuntimeCall } }
+  | { tag: 'BatchAll'; value: { calls: Array<AstarRuntimeRuntimeCall> } }
+  | { tag: 'DispatchAs'; value: { asOrigin: AstarRuntimeOriginCaller; call: AstarRuntimeRuntimeCall } }
+  | { tag: 'ForceBatch'; value: { calls: Array<AstarRuntimeRuntimeCall> } }
+  | { tag: 'WithWeight'; value: { call: AstarRuntimeRuntimeCall; weight: SpWeightsWeightV2Weight } };
 
 export type AstarRuntimeRuntimeCall =
   | { tag: 'System'; value: FrameSystemCall }
@@ -1191,7 +1191,7 @@ export type AstarRuntimeRuntimeCall =
   | { tag: 'DmpQueue'; value: CumulusPalletDmpQueueCall }
   | { tag: 'XcAssetConfig'; value: PalletXcAssetConfigCall }
   | { tag: 'Xtokens'; value: OrmlXtokensModuleCall }
-  | { tag: 'EVM'; value: PalletEvmCall }
+  | { tag: 'Evm'; value: PalletEvmCall }
   | { tag: 'Ethereum'; value: PalletEthereumCall }
   | { tag: 'EthCall'; value: PalletCustomSignaturesCall }
   | { tag: 'BaseFee'; value: PalletBaseFeeCall }
@@ -1202,24 +1202,24 @@ export type AstarRuntimeRuntimeCall =
  * Identity pallet declaration.
  **/
 export type PalletIdentityCall =
-  | { tag: 'add_registrar'; value: { account: MultiAddress } }
-  | { tag: 'set_identity'; value: { info: PalletIdentityIdentityInfo } }
-  | { tag: 'set_subs'; value: { subs: Array<[AccountId32Like, Data]> } }
-  | { tag: 'clear_identity' }
-  | { tag: 'request_judgement'; value: { regIndex: number; maxFee: bigint } }
-  | { tag: 'cancel_request'; value: { regIndex: number } }
-  | { tag: 'set_fee'; value: { index: number; fee: bigint } }
-  | { tag: 'set_account_id'; value: { index: number; new: MultiAddress } }
-  | { tag: 'set_fields'; value: { index: number; fields: PalletIdentityBitFlags } }
+  | { tag: 'AddRegistrar'; value: { account: MultiAddress } }
+  | { tag: 'SetIdentity'; value: { info: PalletIdentityIdentityInfo } }
+  | { tag: 'SetSubs'; value: { subs: Array<[AccountId32Like, Data]> } }
+  | { tag: 'ClearIdentity' }
+  | { tag: 'RequestJudgement'; value: { regIndex: number; maxFee: bigint } }
+  | { tag: 'CancelRequest'; value: { regIndex: number } }
+  | { tag: 'SetFee'; value: { index: number; fee: bigint } }
+  | { tag: 'SetAccountId'; value: { index: number; new: MultiAddress } }
+  | { tag: 'SetFields'; value: { index: number; fields: PalletIdentityBitFlags } }
   | {
-      tag: 'provide_judgement';
+      tag: 'ProvideJudgement';
       value: { regIndex: number; target: MultiAddress; judgement: PalletIdentityJudgement; identity: H256 };
     }
-  | { tag: 'kill_identity'; value: { target: MultiAddress } }
-  | { tag: 'add_sub'; value: { sub: MultiAddress; data: Data } }
-  | { tag: 'rename_sub'; value: { sub: MultiAddress; data: Data } }
-  | { tag: 'remove_sub'; value: { sub: MultiAddress } }
-  | { tag: 'quit_sub' };
+  | { tag: 'KillIdentity'; value: { target: MultiAddress } }
+  | { tag: 'AddSub'; value: { sub: MultiAddress; data: Data } }
+  | { tag: 'RenameSub'; value: { sub: MultiAddress; data: Data } }
+  | { tag: 'RemoveSub'; value: { sub: MultiAddress } }
+  | { tag: 'QuitSub' };
 
 export type PalletIdentityIdentityInfo = {
   additional: Array<[Data, Data]>;
@@ -1257,15 +1257,15 @@ export type PalletIdentityJudgement =
 /**
  * Contains one variant per dispatchable that can be called by an extrinsic.
  **/
-export type PalletTimestampCall = { tag: 'set'; value: { now: bigint } };
+export type PalletTimestampCall = { tag: 'Set'; value: { now: bigint } };
 
 /**
  * Contains one variant per dispatchable that can be called by an extrinsic.
  **/
 export type PalletMultisigCall =
-  | { tag: 'as_multi_threshold_1'; value: { otherSignatories: Array<AccountId32Like>; call: AstarRuntimeRuntimeCall } }
+  | { tag: 'AsMultiThreshold1'; value: { otherSignatories: Array<AccountId32Like>; call: AstarRuntimeRuntimeCall } }
   | {
-      tag: 'as_multi';
+      tag: 'AsMulti';
       value: {
         threshold: number;
         otherSignatories: Array<AccountId32Like>;
@@ -1275,7 +1275,7 @@ export type PalletMultisigCall =
       };
     }
   | {
-      tag: 'approve_as_multi';
+      tag: 'ApproveAsMulti';
       value: {
         threshold: number;
         otherSignatories: Array<AccountId32Like>;
@@ -1285,7 +1285,7 @@ export type PalletMultisigCall =
       };
     }
   | {
-      tag: 'cancel_as_multi';
+      tag: 'CancelAsMulti';
       value: {
         threshold: number;
         otherSignatories: Array<AccountId32Like>;
@@ -1299,15 +1299,15 @@ export type PalletMultisigCall =
  **/
 export type PalletProxyCall =
   | {
-      tag: 'proxy';
+      tag: 'Proxy';
       value: { real: MultiAddress; forceProxyType?: AstarRuntimeProxyType | undefined; call: AstarRuntimeRuntimeCall };
     }
-  | { tag: 'add_proxy'; value: { delegate: MultiAddress; proxyType: AstarRuntimeProxyType; delay: number } }
-  | { tag: 'remove_proxy'; value: { delegate: MultiAddress; proxyType: AstarRuntimeProxyType; delay: number } }
-  | { tag: 'remove_proxies' }
-  | { tag: 'create_pure'; value: { proxyType: AstarRuntimeProxyType; delay: number; index: number } }
+  | { tag: 'AddProxy'; value: { delegate: MultiAddress; proxyType: AstarRuntimeProxyType; delay: number } }
+  | { tag: 'RemoveProxy'; value: { delegate: MultiAddress; proxyType: AstarRuntimeProxyType; delay: number } }
+  | { tag: 'RemoveProxies' }
+  | { tag: 'CreatePure'; value: { proxyType: AstarRuntimeProxyType; delay: number; index: number } }
   | {
-      tag: 'kill_pure';
+      tag: 'KillPure';
       value: {
         spawner: MultiAddress;
         proxyType: AstarRuntimeProxyType;
@@ -1316,11 +1316,11 @@ export type PalletProxyCall =
         extIndex: number;
       };
     }
-  | { tag: 'announce'; value: { real: MultiAddress; callHash: H256 } }
-  | { tag: 'remove_announcement'; value: { real: MultiAddress; callHash: H256 } }
-  | { tag: 'reject_announcement'; value: { delegate: MultiAddress; callHash: H256 } }
+  | { tag: 'Announce'; value: { real: MultiAddress; callHash: H256 } }
+  | { tag: 'RemoveAnnouncement'; value: { real: MultiAddress; callHash: H256 } }
+  | { tag: 'RejectAnnouncement'; value: { delegate: MultiAddress; callHash: H256 } }
   | {
-      tag: 'proxy_announced';
+      tag: 'ProxyAnnounced';
       value: {
         delegate: MultiAddress;
         real: MultiAddress;
@@ -1333,10 +1333,10 @@ export type PalletProxyCall =
  * Contains one variant per dispatchable that can be called by an extrinsic.
  **/
 export type CumulusPalletParachainSystemCall =
-  | { tag: 'set_validation_data'; value: { data: CumulusPrimitivesParachainInherentParachainInherentData } }
-  | { tag: 'sudo_send_upward_message'; value: { message: Bytes } }
-  | { tag: 'authorize_upgrade'; value: { codeHash: H256; checkVersion: boolean } }
-  | { tag: 'enact_authorized_upgrade'; value: { code: Bytes } };
+  | { tag: 'SetValidationData'; value: { data: CumulusPrimitivesParachainInherentParachainInherentData } }
+  | { tag: 'SudoSendUpwardMessage'; value: { message: Bytes } }
+  | { tag: 'AuthorizeUpgrade'; value: { codeHash: H256; checkVersion: boolean } }
+  | { tag: 'EnactAuthorizedUpgrade'; value: { code: Bytes } };
 
 export type CumulusPrimitivesParachainInherentParachainInherentData = {
   validationData: PolkadotPrimitivesV4PersistedValidationData;
@@ -1369,28 +1369,28 @@ export type ParachainInfoCall = null;
  * Contains one variant per dispatchable that can be called by an extrinsic.
  **/
 export type PalletBalancesCall =
-  | { tag: 'transfer_allow_death'; value: { dest: MultiAddress; value: bigint } }
-  | { tag: 'set_balance_deprecated'; value: { who: MultiAddress; newFree: bigint; oldReserved: bigint } }
-  | { tag: 'force_transfer'; value: { source: MultiAddress; dest: MultiAddress; value: bigint } }
-  | { tag: 'transfer_keep_alive'; value: { dest: MultiAddress; value: bigint } }
-  | { tag: 'transfer_all'; value: { dest: MultiAddress; keepAlive: boolean } }
-  | { tag: 'force_unreserve'; value: { who: MultiAddress; amount: bigint } }
-  | { tag: 'upgrade_accounts'; value: { who: Array<AccountId32Like> } }
-  | { tag: 'transfer'; value: { dest: MultiAddress; value: bigint } }
-  | { tag: 'force_set_balance'; value: { who: MultiAddress; newFree: bigint } };
+  | { tag: 'TransferAllowDeath'; value: { dest: MultiAddress; value: bigint } }
+  | { tag: 'SetBalanceDeprecated'; value: { who: MultiAddress; newFree: bigint; oldReserved: bigint } }
+  | { tag: 'ForceTransfer'; value: { source: MultiAddress; dest: MultiAddress; value: bigint } }
+  | { tag: 'TransferKeepAlive'; value: { dest: MultiAddress; value: bigint } }
+  | { tag: 'TransferAll'; value: { dest: MultiAddress; keepAlive: boolean } }
+  | { tag: 'ForceUnreserve'; value: { who: MultiAddress; amount: bigint } }
+  | { tag: 'UpgradeAccounts'; value: { who: Array<AccountId32Like> } }
+  | { tag: 'Transfer'; value: { dest: MultiAddress; value: bigint } }
+  | { tag: 'ForceSetBalance'; value: { who: MultiAddress; newFree: bigint } };
 
 /**
  * Contains one variant per dispatchable that can be called by an extrinsic.
  **/
 export type PalletVestingCall =
-  | { tag: 'vest' }
-  | { tag: 'vest_other'; value: { target: MultiAddress } }
-  | { tag: 'vested_transfer'; value: { target: MultiAddress; schedule: PalletVestingVestingInfo } }
+  | { tag: 'Vest' }
+  | { tag: 'VestOther'; value: { target: MultiAddress } }
+  | { tag: 'VestedTransfer'; value: { target: MultiAddress; schedule: PalletVestingVestingInfo } }
   | {
-      tag: 'force_vested_transfer';
+      tag: 'ForceVestedTransfer';
       value: { source: MultiAddress; target: MultiAddress; schedule: PalletVestingVestingInfo };
     }
-  | { tag: 'merge_schedules'; value: { schedule1Index: number; schedule2Index: number } };
+  | { tag: 'MergeSchedules'; value: { schedule1Index: number; schedule2Index: number } };
 
 export type PalletVestingVestingInfo = { locked: bigint; perBlock: bigint; startingBlock: number };
 
@@ -1398,34 +1398,34 @@ export type PalletVestingVestingInfo = { locked: bigint; perBlock: bigint; start
  * Contains one variant per dispatchable that can be called by an extrinsic.
  **/
 export type PalletDappsStakingPalletCall =
-  | { tag: 'register'; value: { developer: AccountId32Like; contractId: AstarRuntimeSmartContract } }
-  | { tag: 'unregister'; value: { contractId: AstarRuntimeSmartContract } }
-  | { tag: 'withdraw_from_unregistered'; value: { contractId: AstarRuntimeSmartContract } }
-  | { tag: 'bond_and_stake'; value: { contractId: AstarRuntimeSmartContract; value: bigint } }
-  | { tag: 'unbond_and_unstake'; value: { contractId: AstarRuntimeSmartContract; value: bigint } }
-  | { tag: 'withdraw_unbonded' }
+  | { tag: 'Register'; value: { developer: AccountId32Like; contractId: AstarRuntimeSmartContract } }
+  | { tag: 'Unregister'; value: { contractId: AstarRuntimeSmartContract } }
+  | { tag: 'WithdrawFromUnregistered'; value: { contractId: AstarRuntimeSmartContract } }
+  | { tag: 'BondAndStake'; value: { contractId: AstarRuntimeSmartContract; value: bigint } }
+  | { tag: 'UnbondAndUnstake'; value: { contractId: AstarRuntimeSmartContract; value: bigint } }
+  | { tag: 'WithdrawUnbonded' }
   | {
-      tag: 'nomination_transfer';
+      tag: 'NominationTransfer';
       value: {
         originContractId: AstarRuntimeSmartContract;
         value: bigint;
         targetContractId: AstarRuntimeSmartContract;
       };
     }
-  | { tag: 'claim_staker'; value: { contractId: AstarRuntimeSmartContract } }
-  | { tag: 'claim_dapp'; value: { contractId: AstarRuntimeSmartContract; era: number } }
-  | { tag: 'force_new_era' }
-  | { tag: 'maintenance_mode'; value: { enableMaintenance: boolean } }
-  | { tag: 'set_reward_destination'; value: { rewardDestination: PalletDappsStakingRewardDestination } }
+  | { tag: 'ClaimStaker'; value: { contractId: AstarRuntimeSmartContract } }
+  | { tag: 'ClaimDapp'; value: { contractId: AstarRuntimeSmartContract; era: number } }
+  | { tag: 'ForceNewEra' }
+  | { tag: 'MaintenanceMode'; value: { enableMaintenance: boolean } }
+  | { tag: 'SetRewardDestination'; value: { rewardDestination: PalletDappsStakingRewardDestination } }
   | {
-      tag: 'set_contract_stake_info';
+      tag: 'SetContractStakeInfo';
       value: {
         contract: AstarRuntimeSmartContract;
         era: number;
         contractStakeInfo: PalletDappsStakingContractStakeInfo;
       };
     }
-  | { tag: 'burn_stale_reward'; value: { contractId: AstarRuntimeSmartContract; era: number } };
+  | { tag: 'BurnStaleReward'; value: { contractId: AstarRuntimeSmartContract; era: number } };
 
 export type PalletDappsStakingContractStakeInfo = {
   total: bigint;
@@ -1437,7 +1437,7 @@ export type PalletDappsStakingContractStakeInfo = {
  * Contains one variant per dispatchable that can be called by an extrinsic.
  **/
 export type PalletBlockRewardCall = {
-  tag: 'set_configuration';
+  tag: 'SetConfiguration';
   value: { rewardDistroParams: PalletBlockRewardRewardDistributionConfig };
 };
 
@@ -1445,32 +1445,29 @@ export type PalletBlockRewardCall = {
  * Contains one variant per dispatchable that can be called by an extrinsic.
  **/
 export type PalletAssetsCall =
-  | { tag: 'create'; value: { id: bigint; admin: MultiAddress; minBalance: bigint } }
-  | { tag: 'force_create'; value: { id: bigint; owner: MultiAddress; isSufficient: boolean; minBalance: bigint } }
-  | { tag: 'start_destroy'; value: { id: bigint } }
-  | { tag: 'destroy_accounts'; value: { id: bigint } }
-  | { tag: 'destroy_approvals'; value: { id: bigint } }
-  | { tag: 'finish_destroy'; value: { id: bigint } }
-  | { tag: 'mint'; value: { id: bigint; beneficiary: MultiAddress; amount: bigint } }
-  | { tag: 'burn'; value: { id: bigint; who: MultiAddress; amount: bigint } }
-  | { tag: 'transfer'; value: { id: bigint; target: MultiAddress; amount: bigint } }
-  | { tag: 'transfer_keep_alive'; value: { id: bigint; target: MultiAddress; amount: bigint } }
-  | { tag: 'force_transfer'; value: { id: bigint; source: MultiAddress; dest: MultiAddress; amount: bigint } }
-  | { tag: 'freeze'; value: { id: bigint; who: MultiAddress } }
-  | { tag: 'thaw'; value: { id: bigint; who: MultiAddress } }
-  | { tag: 'freeze_asset'; value: { id: bigint } }
-  | { tag: 'thaw_asset'; value: { id: bigint } }
-  | { tag: 'transfer_ownership'; value: { id: bigint; owner: MultiAddress } }
-  | { tag: 'set_team'; value: { id: bigint; issuer: MultiAddress; admin: MultiAddress; freezer: MultiAddress } }
-  | { tag: 'set_metadata'; value: { id: bigint; name: Bytes; symbol: Bytes; decimals: number } }
-  | { tag: 'clear_metadata'; value: { id: bigint } }
+  | { tag: 'Create'; value: { id: bigint; admin: MultiAddress; minBalance: bigint } }
+  | { tag: 'ForceCreate'; value: { id: bigint; owner: MultiAddress; isSufficient: boolean; minBalance: bigint } }
+  | { tag: 'StartDestroy'; value: { id: bigint } }
+  | { tag: 'DestroyAccounts'; value: { id: bigint } }
+  | { tag: 'DestroyApprovals'; value: { id: bigint } }
+  | { tag: 'FinishDestroy'; value: { id: bigint } }
+  | { tag: 'Mint'; value: { id: bigint; beneficiary: MultiAddress; amount: bigint } }
+  | { tag: 'Burn'; value: { id: bigint; who: MultiAddress; amount: bigint } }
+  | { tag: 'Transfer'; value: { id: bigint; target: MultiAddress; amount: bigint } }
+  | { tag: 'TransferKeepAlive'; value: { id: bigint; target: MultiAddress; amount: bigint } }
+  | { tag: 'ForceTransfer'; value: { id: bigint; source: MultiAddress; dest: MultiAddress; amount: bigint } }
+  | { tag: 'Freeze'; value: { id: bigint; who: MultiAddress } }
+  | { tag: 'Thaw'; value: { id: bigint; who: MultiAddress } }
+  | { tag: 'FreezeAsset'; value: { id: bigint } }
+  | { tag: 'ThawAsset'; value: { id: bigint } }
+  | { tag: 'TransferOwnership'; value: { id: bigint; owner: MultiAddress } }
+  | { tag: 'SetTeam'; value: { id: bigint; issuer: MultiAddress; admin: MultiAddress; freezer: MultiAddress } }
+  | { tag: 'SetMetadata'; value: { id: bigint; name: Bytes; symbol: Bytes; decimals: number } }
+  | { tag: 'ClearMetadata'; value: { id: bigint } }
+  | { tag: 'ForceSetMetadata'; value: { id: bigint; name: Bytes; symbol: Bytes; decimals: number; isFrozen: boolean } }
+  | { tag: 'ForceClearMetadata'; value: { id: bigint } }
   | {
-      tag: 'force_set_metadata';
-      value: { id: bigint; name: Bytes; symbol: Bytes; decimals: number; isFrozen: boolean };
-    }
-  | { tag: 'force_clear_metadata'; value: { id: bigint } }
-  | {
-      tag: 'force_asset_status';
+      tag: 'ForceAssetStatus';
       value: {
         id: bigint;
         owner: MultiAddress;
@@ -1482,33 +1479,33 @@ export type PalletAssetsCall =
         isFrozen: boolean;
       };
     }
-  | { tag: 'approve_transfer'; value: { id: bigint; delegate: MultiAddress; amount: bigint } }
-  | { tag: 'cancel_approval'; value: { id: bigint; delegate: MultiAddress } }
-  | { tag: 'force_cancel_approval'; value: { id: bigint; owner: MultiAddress; delegate: MultiAddress } }
-  | { tag: 'transfer_approved'; value: { id: bigint; owner: MultiAddress; destination: MultiAddress; amount: bigint } }
-  | { tag: 'touch'; value: { id: bigint } }
-  | { tag: 'refund'; value: { id: bigint; allowBurn: boolean } }
-  | { tag: 'set_min_balance'; value: { id: bigint; minBalance: bigint } }
-  | { tag: 'touch_other'; value: { id: bigint; who: MultiAddress } }
-  | { tag: 'refund_other'; value: { id: bigint; who: MultiAddress } }
-  | { tag: 'block'; value: { id: bigint; who: MultiAddress } };
+  | { tag: 'ApproveTransfer'; value: { id: bigint; delegate: MultiAddress; amount: bigint } }
+  | { tag: 'CancelApproval'; value: { id: bigint; delegate: MultiAddress } }
+  | { tag: 'ForceCancelApproval'; value: { id: bigint; owner: MultiAddress; delegate: MultiAddress } }
+  | { tag: 'TransferApproved'; value: { id: bigint; owner: MultiAddress; destination: MultiAddress; amount: bigint } }
+  | { tag: 'Touch'; value: { id: bigint } }
+  | { tag: 'Refund'; value: { id: bigint; allowBurn: boolean } }
+  | { tag: 'SetMinBalance'; value: { id: bigint; minBalance: bigint } }
+  | { tag: 'TouchOther'; value: { id: bigint; who: MultiAddress } }
+  | { tag: 'RefundOther'; value: { id: bigint; who: MultiAddress } }
+  | { tag: 'Block'; value: { id: bigint; who: MultiAddress } };
 
 /**
  * Contains one variant per dispatchable that can be called by an extrinsic.
  **/
 export type PalletCollatorSelectionCall =
-  | { tag: 'set_invulnerables'; value: { new: Array<AccountId32Like> } }
-  | { tag: 'set_desired_candidates'; value: { max: number } }
-  | { tag: 'set_candidacy_bond'; value: { bond: bigint } }
-  | { tag: 'register_as_candidate' }
-  | { tag: 'leave_intent' };
+  | { tag: 'SetInvulnerables'; value: { new: Array<AccountId32Like> } }
+  | { tag: 'SetDesiredCandidates'; value: { max: number } }
+  | { tag: 'SetCandidacyBond'; value: { bond: bigint } }
+  | { tag: 'RegisterAsCandidate' }
+  | { tag: 'LeaveIntent' };
 
 /**
  * Contains one variant per dispatchable that can be called by an extrinsic.
  **/
 export type PalletSessionCall =
-  | { tag: 'set_keys'; value: { keys: AstarRuntimeSessionKeys; proof: Bytes } }
-  | { tag: 'purge_keys' };
+  | { tag: 'SetKeys'; value: { keys: AstarRuntimeSessionKeys; proof: Bytes } }
+  | { tag: 'PurgeKeys' };
 
 export type AstarRuntimeSessionKeys = { aura: SpConsensusAuraSr25519AppSr25519Public };
 
@@ -1520,23 +1517,23 @@ export type SpCoreSr25519Public = FixedBytes<32>;
  * Contains one variant per dispatchable that can be called by an extrinsic.
  **/
 export type CumulusPalletXcmpQueueCall =
-  | { tag: 'service_overweight'; value: { index: bigint; weightLimit: SpWeightsWeightV2Weight } }
-  | { tag: 'suspend_xcm_execution' }
-  | { tag: 'resume_xcm_execution' }
-  | { tag: 'update_suspend_threshold'; value: { new: number } }
-  | { tag: 'update_drop_threshold'; value: { new: number } }
-  | { tag: 'update_resume_threshold'; value: { new: number } }
-  | { tag: 'update_threshold_weight'; value: { new: SpWeightsWeightV2Weight } }
-  | { tag: 'update_weight_restrict_decay'; value: { new: SpWeightsWeightV2Weight } }
-  | { tag: 'update_xcmp_max_individual_weight'; value: { new: SpWeightsWeightV2Weight } };
+  | { tag: 'ServiceOverweight'; value: { index: bigint; weightLimit: SpWeightsWeightV2Weight } }
+  | { tag: 'SuspendXcmExecution' }
+  | { tag: 'ResumeXcmExecution' }
+  | { tag: 'UpdateSuspendThreshold'; value: { new: number } }
+  | { tag: 'UpdateDropThreshold'; value: { new: number } }
+  | { tag: 'UpdateResumeThreshold'; value: { new: number } }
+  | { tag: 'UpdateThresholdWeight'; value: { new: SpWeightsWeightV2Weight } }
+  | { tag: 'UpdateWeightRestrictDecay'; value: { new: SpWeightsWeightV2Weight } }
+  | { tag: 'UpdateXcmpMaxIndividualWeight'; value: { new: SpWeightsWeightV2Weight } };
 
 /**
  * Contains one variant per dispatchable that can be called by an extrinsic.
  **/
 export type PalletXcmCall =
-  | { tag: 'send'; value: { dest: XcmVersionedMultiLocation; message: XcmVersionedXcm } }
+  | { tag: 'Send'; value: { dest: XcmVersionedMultiLocation; message: XcmVersionedXcm } }
   | {
-      tag: 'teleport_assets';
+      tag: 'TeleportAssets';
       value: {
         dest: XcmVersionedMultiLocation;
         beneficiary: XcmVersionedMultiLocation;
@@ -1545,7 +1542,7 @@ export type PalletXcmCall =
       };
     }
   | {
-      tag: 'reserve_transfer_assets';
+      tag: 'ReserveTransferAssets';
       value: {
         dest: XcmVersionedMultiLocation;
         beneficiary: XcmVersionedMultiLocation;
@@ -1553,23 +1550,13 @@ export type PalletXcmCall =
         feeAssetItem: number;
       };
     }
-  | { tag: 'execute'; value: { message: XcmVersionedXcm; maxWeight: SpWeightsWeightV2Weight } }
-  | { tag: 'force_xcm_version'; value: { location: XcmV3MultilocationMultiLocation; xcmVersion: number } }
-  | { tag: 'force_default_xcm_version'; value: { maybeXcmVersion?: number | undefined } }
-  | { tag: 'force_subscribe_version_notify'; value: { location: XcmVersionedMultiLocation } }
-  | { tag: 'force_unsubscribe_version_notify'; value: { location: XcmVersionedMultiLocation } }
+  | { tag: 'Execute'; value: { message: XcmVersionedXcm; maxWeight: SpWeightsWeightV2Weight } }
+  | { tag: 'ForceXcmVersion'; value: { location: XcmV3MultilocationMultiLocation; xcmVersion: number } }
+  | { tag: 'ForceDefaultXcmVersion'; value: { maybeXcmVersion?: number | undefined } }
+  | { tag: 'ForceSubscribeVersionNotify'; value: { location: XcmVersionedMultiLocation } }
+  | { tag: 'ForceUnsubscribeVersionNotify'; value: { location: XcmVersionedMultiLocation } }
   | {
-      tag: 'limited_reserve_transfer_assets';
-      value: {
-        dest: XcmVersionedMultiLocation;
-        beneficiary: XcmVersionedMultiLocation;
-        assets: XcmVersionedMultiAssets;
-        feeAssetItem: number;
-        weightLimit: XcmV3WeightLimit;
-      };
-    }
-  | {
-      tag: 'limited_teleport_assets';
+      tag: 'LimitedReserveTransferAssets';
       value: {
         dest: XcmVersionedMultiLocation;
         beneficiary: XcmVersionedMultiLocation;
@@ -1578,9 +1565,19 @@ export type PalletXcmCall =
         weightLimit: XcmV3WeightLimit;
       };
     }
-  | { tag: 'force_suspension'; value: { suspended: boolean } }
   | {
-      tag: 'reserve_withdraw_assets';
+      tag: 'LimitedTeleportAssets';
+      value: {
+        dest: XcmVersionedMultiLocation;
+        beneficiary: XcmVersionedMultiLocation;
+        assets: XcmVersionedMultiAssets;
+        feeAssetItem: number;
+        weightLimit: XcmV3WeightLimit;
+      };
+    }
+  | { tag: 'ForceSuspension'; value: { suspended: boolean } }
+  | {
+      tag: 'ReserveWithdrawAssets';
       value: {
         dest: XcmVersionedMultiLocation;
         beneficiary: XcmVersionedMultiLocation;
@@ -1589,7 +1586,7 @@ export type PalletXcmCall =
       };
     }
   | {
-      tag: 'limited_reserve_withdraw_assets';
+      tag: 'LimitedReserveWithdrawAssets';
       value: {
         dest: XcmVersionedMultiLocation;
         beneficiary: XcmVersionedMultiLocation;
@@ -1723,7 +1720,7 @@ export type CumulusPalletXcmCall = null;
  * Contains one variant per dispatchable that can be called by an extrinsic.
  **/
 export type CumulusPalletDmpQueueCall = {
-  tag: 'service_overweight';
+  tag: 'ServiceOverweight';
   value: { index: bigint; weightLimit: SpWeightsWeightV2Weight };
 };
 
@@ -1731,26 +1728,26 @@ export type CumulusPalletDmpQueueCall = {
  * Contains one variant per dispatchable that can be called by an extrinsic.
  **/
 export type PalletXcAssetConfigCall =
-  | { tag: 'register_asset_location'; value: { assetLocation: XcmVersionedMultiLocation; assetId: bigint } }
-  | { tag: 'set_asset_units_per_second'; value: { assetLocation: XcmVersionedMultiLocation; unitsPerSecond: bigint } }
-  | { tag: 'change_existing_asset_location'; value: { newAssetLocation: XcmVersionedMultiLocation; assetId: bigint } }
-  | { tag: 'remove_payment_asset'; value: { assetLocation: XcmVersionedMultiLocation } }
-  | { tag: 'remove_asset'; value: { assetId: bigint } };
+  | { tag: 'RegisterAssetLocation'; value: { assetLocation: XcmVersionedMultiLocation; assetId: bigint } }
+  | { tag: 'SetAssetUnitsPerSecond'; value: { assetLocation: XcmVersionedMultiLocation; unitsPerSecond: bigint } }
+  | { tag: 'ChangeExistingAssetLocation'; value: { newAssetLocation: XcmVersionedMultiLocation; assetId: bigint } }
+  | { tag: 'RemovePaymentAsset'; value: { assetLocation: XcmVersionedMultiLocation } }
+  | { tag: 'RemoveAsset'; value: { assetId: bigint } };
 
 /**
  * Contains one variant per dispatchable that can be called by an extrinsic.
  **/
 export type OrmlXtokensModuleCall =
   | {
-      tag: 'transfer';
+      tag: 'Transfer';
       value: { currencyId: bigint; amount: bigint; dest: XcmVersionedMultiLocation; destWeightLimit: XcmV3WeightLimit };
     }
   | {
-      tag: 'transfer_multiasset';
+      tag: 'TransferMultiasset';
       value: { asset: XcmVersionedMultiAsset; dest: XcmVersionedMultiLocation; destWeightLimit: XcmV3WeightLimit };
     }
   | {
-      tag: 'transfer_with_fee';
+      tag: 'TransferWithFee';
       value: {
         currencyId: bigint;
         amount: bigint;
@@ -1760,7 +1757,7 @@ export type OrmlXtokensModuleCall =
       };
     }
   | {
-      tag: 'transfer_multiasset_with_fee';
+      tag: 'TransferMultiassetWithFee';
       value: {
         asset: XcmVersionedMultiAsset;
         fee: XcmVersionedMultiAsset;
@@ -1769,7 +1766,7 @@ export type OrmlXtokensModuleCall =
       };
     }
   | {
-      tag: 'transfer_multicurrencies';
+      tag: 'TransferMulticurrencies';
       value: {
         currencies: Array<[bigint, bigint]>;
         feeItem: number;
@@ -1778,7 +1775,7 @@ export type OrmlXtokensModuleCall =
       };
     }
   | {
-      tag: 'transfer_multiassets';
+      tag: 'TransferMultiassets';
       value: {
         assets: XcmVersionedMultiAssets;
         feeItem: number;
@@ -1795,9 +1792,9 @@ export type XcmVersionedMultiAsset =
  * Contains one variant per dispatchable that can be called by an extrinsic.
  **/
 export type PalletEvmCall =
-  | { tag: 'withdraw'; value: { address: H160; value: bigint } }
+  | { tag: 'Withdraw'; value: { address: H160; value: bigint } }
   | {
-      tag: 'call';
+      tag: 'Call';
       value: {
         source: H160;
         target: H160;
@@ -1811,7 +1808,7 @@ export type PalletEvmCall =
       };
     }
   | {
-      tag: 'create';
+      tag: 'Create';
       value: {
         source: H160;
         init: Bytes;
@@ -1824,7 +1821,7 @@ export type PalletEvmCall =
       };
     }
   | {
-      tag: 'create2';
+      tag: 'Create2';
       value: {
         source: H160;
         init: Bytes;
@@ -1841,12 +1838,12 @@ export type PalletEvmCall =
 /**
  * Contains one variant per dispatchable that can be called by an extrinsic.
  **/
-export type PalletEthereumCall = { tag: 'transact'; value: { transaction: EthereumTransactionTransactionV2 } };
+export type PalletEthereumCall = { tag: 'Transact'; value: { transaction: EthereumTransactionTransactionV2 } };
 
 export type EthereumTransactionTransactionV2 =
   | { tag: 'Legacy'; value: EthereumTransactionLegacyTransaction }
-  | { tag: 'EIP2930'; value: EthereumTransactionEip2930Transaction }
-  | { tag: 'EIP1559'; value: EthereumTransactionEip1559Transaction };
+  | { tag: 'Eip2930'; value: EthereumTransactionEip2930Transaction }
+  | { tag: 'Eip1559'; value: EthereumTransactionEip1559Transaction };
 
 export type EthereumTransactionLegacyTransaction = {
   nonce: U256;
@@ -1899,7 +1896,7 @@ export type EthereumTransactionEip1559Transaction = {
  * Contains one variant per dispatchable that can be called by an extrinsic.
  **/
 export type PalletCustomSignaturesCall = {
-  tag: 'call';
+  tag: 'Call';
   value: { call: AstarRuntimeRuntimeCall; signer: AccountId32Like; signature: Bytes; nonce: number };
 };
 
@@ -1907,15 +1904,15 @@ export type PalletCustomSignaturesCall = {
  * Contains one variant per dispatchable that can be called by an extrinsic.
  **/
 export type PalletBaseFeeCall =
-  | { tag: 'set_base_fee_per_gas'; value: { fee: U256 } }
-  | { tag: 'set_elasticity'; value: { elasticity: Permill } };
+  | { tag: 'SetBaseFeePerGas'; value: { fee: U256 } }
+  | { tag: 'SetElasticity'; value: { elasticity: Permill } };
 
 /**
  * Contains one variant per dispatchable that can be called by an extrinsic.
  **/
 export type PalletContractsCall =
   | {
-      tag: 'call_old_weight';
+      tag: 'CallOldWeight';
       value: {
         dest: MultiAddress;
         value: bigint;
@@ -1925,7 +1922,7 @@ export type PalletContractsCall =
       };
     }
   | {
-      tag: 'instantiate_with_code_old_weight';
+      tag: 'InstantiateWithCodeOldWeight';
       value: {
         value: bigint;
         gasLimit: bigint;
@@ -1936,7 +1933,7 @@ export type PalletContractsCall =
       };
     }
   | {
-      tag: 'instantiate_old_weight';
+      tag: 'InstantiateOldWeight';
       value: {
         value: bigint;
         gasLimit: bigint;
@@ -1947,13 +1944,13 @@ export type PalletContractsCall =
       };
     }
   | {
-      tag: 'upload_code';
+      tag: 'UploadCode';
       value: { code: Bytes; storageDepositLimit?: bigint | undefined; determinism: PalletContractsWasmDeterminism };
     }
-  | { tag: 'remove_code'; value: { codeHash: H256 } }
-  | { tag: 'set_code'; value: { dest: MultiAddress; codeHash: H256 } }
+  | { tag: 'RemoveCode'; value: { codeHash: H256 } }
+  | { tag: 'SetCode'; value: { dest: MultiAddress; codeHash: H256 } }
   | {
-      tag: 'call';
+      tag: 'Call';
       value: {
         dest: MultiAddress;
         value: bigint;
@@ -1963,7 +1960,7 @@ export type PalletContractsCall =
       };
     }
   | {
-      tag: 'instantiate_with_code';
+      tag: 'InstantiateWithCode';
       value: {
         value: bigint;
         gasLimit: SpWeightsWeightV2Weight;
@@ -1974,7 +1971,7 @@ export type PalletContractsCall =
       };
     }
   | {
-      tag: 'instantiate';
+      tag: 'Instantiate';
       value: {
         value: bigint;
         gasLimit: SpWeightsWeightV2Weight;
@@ -1984,7 +1981,7 @@ export type PalletContractsCall =
         salt: Bytes;
       };
     }
-  | { tag: 'migrate'; value: { weightLimit: SpWeightsWeightV2Weight } };
+  | { tag: 'Migrate'; value: { weightLimit: SpWeightsWeightV2Weight } };
 
 export type PalletContractsWasmDeterminism = 'Enforced' | 'Relaxed';
 
@@ -1992,13 +1989,13 @@ export type PalletContractsWasmDeterminism = 'Enforced' | 'Relaxed';
  * Contains one variant per dispatchable that can be called by an extrinsic.
  **/
 export type PalletSudoCall =
-  | { tag: 'sudo'; value: { call: AstarRuntimeRuntimeCall } }
-  | { tag: 'sudo_unchecked_weight'; value: { call: AstarRuntimeRuntimeCall; weight: SpWeightsWeightV2Weight } }
-  | { tag: 'set_key'; value: { new: MultiAddress } }
-  | { tag: 'sudo_as'; value: { who: MultiAddress; call: AstarRuntimeRuntimeCall } };
+  | { tag: 'Sudo'; value: { call: AstarRuntimeRuntimeCall } }
+  | { tag: 'SudoUncheckedWeight'; value: { call: AstarRuntimeRuntimeCall; weight: SpWeightsWeightV2Weight } }
+  | { tag: 'SetKey'; value: { new: MultiAddress } }
+  | { tag: 'SudoAs'; value: { who: MultiAddress; call: AstarRuntimeRuntimeCall } };
 
 export type AstarRuntimeOriginCaller =
-  | { tag: 'system'; value: FrameSupportDispatchRawOrigin }
+  | { tag: 'System'; value: FrameSupportDispatchRawOrigin }
   | { tag: 'PolkadotXcm'; value: PalletXcmOrigin }
   | { tag: 'CumulusXcm'; value: CumulusPalletXcmOrigin }
   | { tag: 'Ethereum'; value: PalletEthereumRawOrigin }
@@ -3088,8 +3085,8 @@ export type EthbloomBloom = FixedBytes<256>;
 
 export type EthereumReceiptReceiptV3 =
   | { tag: 'Legacy'; value: EthereumReceiptEip658ReceiptData }
-  | { tag: 'EIP2930'; value: EthereumReceiptEip658ReceiptData }
-  | { tag: 'EIP1559'; value: EthereumReceiptEip658ReceiptData };
+  | { tag: 'Eip2930'; value: EthereumReceiptEip658ReceiptData }
+  | { tag: 'Eip1559'; value: EthereumReceiptEip658ReceiptData };
 
 export type EthereumReceiptEip658ReceiptData = {
   statusCode: number;

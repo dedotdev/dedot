@@ -81,7 +81,7 @@ export type MoonbeamRuntimeRuntimeEvent =
   | { tag: 'Identity'; value: PalletIdentityEvent }
   | { tag: 'Migrations'; value: PalletMigrationsEvent }
   | { tag: 'Multisig'; value: PalletMultisigEvent }
-  | { tag: 'EVM'; value: PalletEvmEvent }
+  | { tag: 'Evm'; value: PalletEvmEvent }
   | { tag: 'Ethereum'; value: PalletEthereumEvent }
   | { tag: 'Scheduler'; value: PalletSchedulerEvent }
   | { tag: 'Democracy'; value: PalletDemocracyEvent }
@@ -575,7 +575,7 @@ export type EvmCoreErrorExitError =
   | { tag: 'OutOfOffset' }
   | { tag: 'OutOfGas' }
   | { tag: 'OutOfFund' }
-  | { tag: 'PCUnderflow' }
+  | { tag: 'PcUnderflow' }
   | { tag: 'CreateEmpty' }
   | { tag: 'Other'; value: string }
   | { tag: 'MaxNonce' };
@@ -963,7 +963,7 @@ export type MoonbeamRuntimeRuntimeCall =
   | { tag: 'MaintenanceMode'; value: PalletMaintenanceModeCall }
   | { tag: 'Identity'; value: PalletIdentityCall }
   | { tag: 'Multisig'; value: PalletMultisigCall }
-  | { tag: 'EVM'; value: PalletEvmCall }
+  | { tag: 'Evm'; value: PalletEvmCall }
   | { tag: 'Ethereum'; value: PalletEthereumCall }
   | { tag: 'Scheduler'; value: PalletSchedulerCall }
   | { tag: 'Democracy'; value: PalletDemocracyCall }
@@ -991,23 +991,23 @@ export type MoonbeamRuntimeRuntimeCall =
  * Contains one variant per dispatchable that can be called by an extrinsic.
  **/
 export type FrameSystemCall =
-  | { tag: 'remark'; value: { remark: Bytes } }
-  | { tag: 'set_heap_pages'; value: { pages: bigint } }
-  | { tag: 'set_code'; value: { code: Bytes } }
-  | { tag: 'set_code_without_checks'; value: { code: Bytes } }
-  | { tag: 'set_storage'; value: { items: Array<[Bytes, Bytes]> } }
-  | { tag: 'kill_storage'; value: { keys: Array<Bytes> } }
-  | { tag: 'kill_prefix'; value: { prefix: Bytes; subkeys: number } }
-  | { tag: 'remark_with_event'; value: { remark: Bytes } };
+  | { tag: 'Remark'; value: { remark: Bytes } }
+  | { tag: 'SetHeapPages'; value: { pages: bigint } }
+  | { tag: 'SetCode'; value: { code: Bytes } }
+  | { tag: 'SetCodeWithoutChecks'; value: { code: Bytes } }
+  | { tag: 'SetStorage'; value: { items: Array<[Bytes, Bytes]> } }
+  | { tag: 'KillStorage'; value: { keys: Array<Bytes> } }
+  | { tag: 'KillPrefix'; value: { prefix: Bytes; subkeys: number } }
+  | { tag: 'RemarkWithEvent'; value: { remark: Bytes } };
 
 /**
  * Contains one variant per dispatchable that can be called by an extrinsic.
  **/
 export type CumulusPalletParachainSystemCall =
-  | { tag: 'set_validation_data'; value: { data: CumulusPrimitivesParachainInherentParachainInherentData } }
-  | { tag: 'sudo_send_upward_message'; value: { message: Bytes } }
-  | { tag: 'authorize_upgrade'; value: { codeHash: H256; checkVersion: boolean } }
-  | { tag: 'enact_authorized_upgrade'; value: { code: Bytes } };
+  | { tag: 'SetValidationData'; value: { data: CumulusPrimitivesParachainInherentParachainInherentData } }
+  | { tag: 'SudoSendUpwardMessage'; value: { message: Bytes } }
+  | { tag: 'AuthorizeUpgrade'; value: { codeHash: H256; checkVersion: boolean } }
+  | { tag: 'EnactAuthorizedUpgrade'; value: { code: Bytes } };
 
 export type CumulusPrimitivesParachainInherentParachainInherentData = {
   validationData: PolkadotPrimitivesV4PersistedValidationData;
@@ -1036,54 +1036,54 @@ export type PolkadotCorePrimitivesInboundHrmpMessage = { sentAt: number; data: B
 /**
  * Contains one variant per dispatchable that can be called by an extrinsic.
  **/
-export type PalletTimestampCall = { tag: 'set'; value: { now: bigint } };
+export type PalletTimestampCall = { tag: 'Set'; value: { now: bigint } };
 
 /**
  * Contains one variant per dispatchable that can be called by an extrinsic.
  **/
-export type PalletRootTestingCall = { tag: 'fill_block'; value: { ratio: Perbill } };
+export type PalletRootTestingCall = { tag: 'FillBlock'; value: { ratio: Perbill } };
 
 /**
  * Contains one variant per dispatchable that can be called by an extrinsic.
  **/
 export type PalletBalancesCall =
-  | { tag: 'transfer_allow_death'; value: { dest: AccountId20Like; value: bigint } }
-  | { tag: 'set_balance_deprecated'; value: { who: AccountId20Like; newFree: bigint; oldReserved: bigint } }
-  | { tag: 'force_transfer'; value: { source: AccountId20Like; dest: AccountId20Like; value: bigint } }
-  | { tag: 'transfer_keep_alive'; value: { dest: AccountId20Like; value: bigint } }
-  | { tag: 'transfer_all'; value: { dest: AccountId20Like; keepAlive: boolean } }
-  | { tag: 'force_unreserve'; value: { who: AccountId20Like; amount: bigint } }
-  | { tag: 'upgrade_accounts'; value: { who: Array<AccountId20Like> } }
-  | { tag: 'transfer'; value: { dest: AccountId20Like; value: bigint } }
-  | { tag: 'force_set_balance'; value: { who: AccountId20Like; newFree: bigint } };
+  | { tag: 'TransferAllowDeath'; value: { dest: AccountId20Like; value: bigint } }
+  | { tag: 'SetBalanceDeprecated'; value: { who: AccountId20Like; newFree: bigint; oldReserved: bigint } }
+  | { tag: 'ForceTransfer'; value: { source: AccountId20Like; dest: AccountId20Like; value: bigint } }
+  | { tag: 'TransferKeepAlive'; value: { dest: AccountId20Like; value: bigint } }
+  | { tag: 'TransferAll'; value: { dest: AccountId20Like; keepAlive: boolean } }
+  | { tag: 'ForceUnreserve'; value: { who: AccountId20Like; amount: bigint } }
+  | { tag: 'UpgradeAccounts'; value: { who: Array<AccountId20Like> } }
+  | { tag: 'Transfer'; value: { dest: AccountId20Like; value: bigint } }
+  | { tag: 'ForceSetBalance'; value: { who: AccountId20Like; newFree: bigint } };
 
 /**
  * Contains one variant per dispatchable that can be called by an extrinsic.
  **/
 export type PalletParachainStakingCall =
-  | { tag: 'set_staking_expectations'; value: { expectations: { min: bigint; ideal: bigint; max: bigint } } }
-  | { tag: 'set_inflation'; value: { schedule: { min: Perbill; ideal: Perbill; max: Perbill } } }
-  | { tag: 'set_parachain_bond_account'; value: { new: AccountId20Like } }
-  | { tag: 'set_parachain_bond_reserve_percent'; value: { new: Percent } }
-  | { tag: 'set_total_selected'; value: { new: number } }
-  | { tag: 'set_collator_commission'; value: { new: Perbill } }
-  | { tag: 'set_blocks_per_round'; value: { new: number } }
-  | { tag: 'join_candidates'; value: { bond: bigint; candidateCount: number } }
-  | { tag: 'schedule_leave_candidates'; value: { candidateCount: number } }
-  | { tag: 'execute_leave_candidates'; value: { candidate: AccountId20Like; candidateDelegationCount: number } }
-  | { tag: 'cancel_leave_candidates'; value: { candidateCount: number } }
-  | { tag: 'go_offline' }
-  | { tag: 'go_online' }
-  | { tag: 'candidate_bond_more'; value: { more: bigint } }
-  | { tag: 'schedule_candidate_bond_less'; value: { less: bigint } }
-  | { tag: 'execute_candidate_bond_less'; value: { candidate: AccountId20Like } }
-  | { tag: 'cancel_candidate_bond_less' }
+  | { tag: 'SetStakingExpectations'; value: { expectations: { min: bigint; ideal: bigint; max: bigint } } }
+  | { tag: 'SetInflation'; value: { schedule: { min: Perbill; ideal: Perbill; max: Perbill } } }
+  | { tag: 'SetParachainBondAccount'; value: { new: AccountId20Like } }
+  | { tag: 'SetParachainBondReservePercent'; value: { new: Percent } }
+  | { tag: 'SetTotalSelected'; value: { new: number } }
+  | { tag: 'SetCollatorCommission'; value: { new: Perbill } }
+  | { tag: 'SetBlocksPerRound'; value: { new: number } }
+  | { tag: 'JoinCandidates'; value: { bond: bigint; candidateCount: number } }
+  | { tag: 'ScheduleLeaveCandidates'; value: { candidateCount: number } }
+  | { tag: 'ExecuteLeaveCandidates'; value: { candidate: AccountId20Like; candidateDelegationCount: number } }
+  | { tag: 'CancelLeaveCandidates'; value: { candidateCount: number } }
+  | { tag: 'GoOffline' }
+  | { tag: 'GoOnline' }
+  | { tag: 'CandidateBondMore'; value: { more: bigint } }
+  | { tag: 'ScheduleCandidateBondLess'; value: { less: bigint } }
+  | { tag: 'ExecuteCandidateBondLess'; value: { candidate: AccountId20Like } }
+  | { tag: 'CancelCandidateBondLess' }
   | {
-      tag: 'delegate';
+      tag: 'Delegate';
       value: { candidate: AccountId20Like; amount: bigint; candidateDelegationCount: number; delegationCount: number };
     }
   | {
-      tag: 'delegate_with_auto_compound';
+      tag: 'DelegateWithAutoCompound';
       value: {
         candidate: AccountId20Like;
         amount: bigint;
@@ -1093,16 +1093,16 @@ export type PalletParachainStakingCall =
         delegationCount: number;
       };
     }
-  | { tag: 'removed_call_19' }
-  | { tag: 'removed_call_20' }
-  | { tag: 'removed_call_21' }
-  | { tag: 'schedule_revoke_delegation'; value: { collator: AccountId20Like } }
-  | { tag: 'delegator_bond_more'; value: { candidate: AccountId20Like; more: bigint } }
-  | { tag: 'schedule_delegator_bond_less'; value: { candidate: AccountId20Like; less: bigint } }
-  | { tag: 'execute_delegation_request'; value: { delegator: AccountId20Like; candidate: AccountId20Like } }
-  | { tag: 'cancel_delegation_request'; value: { candidate: AccountId20Like } }
+  | { tag: 'RemovedCall19' }
+  | { tag: 'RemovedCall20' }
+  | { tag: 'RemovedCall21' }
+  | { tag: 'ScheduleRevokeDelegation'; value: { collator: AccountId20Like } }
+  | { tag: 'DelegatorBondMore'; value: { candidate: AccountId20Like; more: bigint } }
+  | { tag: 'ScheduleDelegatorBondLess'; value: { candidate: AccountId20Like; less: bigint } }
+  | { tag: 'ExecuteDelegationRequest'; value: { delegator: AccountId20Like; candidate: AccountId20Like } }
+  | { tag: 'CancelDelegationRequest'; value: { candidate: AccountId20Like } }
   | {
-      tag: 'set_auto_compound';
+      tag: 'SetAutoCompound';
       value: {
         candidate: AccountId20Like;
         value: Percent;
@@ -1110,7 +1110,7 @@ export type PalletParachainStakingCall =
         delegationCountHint: number;
       };
     }
-  | { tag: 'hotfix_remove_delegation_requests_exited_candidates'; value: { candidates: Array<AccountId20Like> } };
+  | { tag: 'HotfixRemoveDelegationRequestsExitedCandidates'; value: { candidates: Array<AccountId20Like> } };
 
 /**
  * Contains one variant per dispatchable that can be called by an extrinsic.
@@ -1125,46 +1125,46 @@ export type PalletAuthorInherentCall =
 /**
  * Contains one variant per dispatchable that can be called by an extrinsic.
  **/
-export type PalletAuthorSlotFilterCall = { tag: 'set_eligible'; value: { new: PalletAuthorSlotFilterNumNonZeroU32 } };
+export type PalletAuthorSlotFilterCall = { tag: 'SetEligible'; value: { new: PalletAuthorSlotFilterNumNonZeroU32 } };
 
 /**
  * Contains one variant per dispatchable that can be called by an extrinsic.
  **/
 export type PalletAuthorMappingCall =
-  | { tag: 'add_association'; value: { nimbusId: NimbusPrimitivesNimbusCryptoPublic } }
+  | { tag: 'AddAssociation'; value: { nimbusId: NimbusPrimitivesNimbusCryptoPublic } }
   | {
-      tag: 'update_association';
+      tag: 'UpdateAssociation';
       value: { oldNimbusId: NimbusPrimitivesNimbusCryptoPublic; newNimbusId: NimbusPrimitivesNimbusCryptoPublic };
     }
-  | { tag: 'clear_association'; value: { nimbusId: NimbusPrimitivesNimbusCryptoPublic } }
-  | { tag: 'remove_keys' }
-  | { tag: 'set_keys'; value: { keys: Bytes } };
+  | { tag: 'ClearAssociation'; value: { nimbusId: NimbusPrimitivesNimbusCryptoPublic } }
+  | { tag: 'RemoveKeys' }
+  | { tag: 'SetKeys'; value: { keys: Bytes } };
 
 /**
  * Contains one variant per dispatchable that can be called by an extrinsic.
  **/
 export type PalletMoonbeamOrbitersCall =
-  | { tag: 'collator_add_orbiter'; value: { orbiter: AccountId20Like } }
-  | { tag: 'collator_remove_orbiter'; value: { orbiter: AccountId20Like } }
-  | { tag: 'orbiter_leave_collator_pool'; value: { collator: AccountId20Like } }
-  | { tag: 'orbiter_register' }
-  | { tag: 'orbiter_unregister'; value: { collatorsPoolCount: number } }
-  | { tag: 'add_collator'; value: { collator: AccountId20Like } }
-  | { tag: 'remove_collator'; value: { collator: AccountId20Like } };
+  | { tag: 'CollatorAddOrbiter'; value: { orbiter: AccountId20Like } }
+  | { tag: 'CollatorRemoveOrbiter'; value: { orbiter: AccountId20Like } }
+  | { tag: 'OrbiterLeaveCollatorPool'; value: { collator: AccountId20Like } }
+  | { tag: 'OrbiterRegister' }
+  | { tag: 'OrbiterUnregister'; value: { collatorsPoolCount: number } }
+  | { tag: 'AddCollator'; value: { collator: AccountId20Like } }
+  | { tag: 'RemoveCollator'; value: { collator: AccountId20Like } };
 
 /**
  * Contains one variant per dispatchable that can be called by an extrinsic.
  **/
 export type PalletUtilityCall =
-  | { tag: 'batch'; value: { calls: Array<MoonbeamRuntimeRuntimeCall> } }
-  | { tag: 'as_derivative'; value: { index: number; call: MoonbeamRuntimeRuntimeCall } }
-  | { tag: 'batch_all'; value: { calls: Array<MoonbeamRuntimeRuntimeCall> } }
-  | { tag: 'dispatch_as'; value: { asOrigin: MoonbeamRuntimeOriginCaller; call: MoonbeamRuntimeRuntimeCall } }
-  | { tag: 'force_batch'; value: { calls: Array<MoonbeamRuntimeRuntimeCall> } }
-  | { tag: 'with_weight'; value: { call: MoonbeamRuntimeRuntimeCall; weight: SpWeightsWeightV2Weight } };
+  | { tag: 'Batch'; value: { calls: Array<MoonbeamRuntimeRuntimeCall> } }
+  | { tag: 'AsDerivative'; value: { index: number; call: MoonbeamRuntimeRuntimeCall } }
+  | { tag: 'BatchAll'; value: { calls: Array<MoonbeamRuntimeRuntimeCall> } }
+  | { tag: 'DispatchAs'; value: { asOrigin: MoonbeamRuntimeOriginCaller; call: MoonbeamRuntimeRuntimeCall } }
+  | { tag: 'ForceBatch'; value: { calls: Array<MoonbeamRuntimeRuntimeCall> } }
+  | { tag: 'WithWeight'; value: { call: MoonbeamRuntimeRuntimeCall; weight: SpWeightsWeightV2Weight } };
 
 export type MoonbeamRuntimeOriginCaller =
-  | { tag: 'system'; value: FrameSupportDispatchRawOrigin }
+  | { tag: 'System'; value: FrameSupportDispatchRawOrigin }
   | { tag: 'Ethereum'; value: PalletEthereumRawOrigin }
   | { tag: 'Origins'; value: MoonbeamRuntimeGovernanceOriginsCustomOriginsOrigin }
   | { tag: 'CouncilCollective'; value: PalletCollectiveRawOrigin }
@@ -1192,7 +1192,7 @@ export type MoonbeamRuntimeGovernanceOriginsCustomOriginsOrigin =
 export type PalletCollectiveRawOrigin =
   | { tag: 'Members'; value: [number, number] }
   | { tag: 'Member'; value: AccountId20Like }
-  | { tag: '_Phantom' };
+  | { tag: 'Phantom' };
 
 export type CumulusPalletXcmOrigin =
   | { tag: 'Relay' }
@@ -1282,19 +1282,19 @@ export type SpCoreVoid = null;
  **/
 export type PalletProxyCall =
   | {
-      tag: 'proxy';
+      tag: 'Proxy';
       value: {
         real: AccountId20Like;
         forceProxyType?: MoonbeamRuntimeProxyType | undefined;
         call: MoonbeamRuntimeRuntimeCall;
       };
     }
-  | { tag: 'add_proxy'; value: { delegate: AccountId20Like; proxyType: MoonbeamRuntimeProxyType; delay: number } }
-  | { tag: 'remove_proxy'; value: { delegate: AccountId20Like; proxyType: MoonbeamRuntimeProxyType; delay: number } }
-  | { tag: 'remove_proxies' }
-  | { tag: 'create_pure'; value: { proxyType: MoonbeamRuntimeProxyType; delay: number; index: number } }
+  | { tag: 'AddProxy'; value: { delegate: AccountId20Like; proxyType: MoonbeamRuntimeProxyType; delay: number } }
+  | { tag: 'RemoveProxy'; value: { delegate: AccountId20Like; proxyType: MoonbeamRuntimeProxyType; delay: number } }
+  | { tag: 'RemoveProxies' }
+  | { tag: 'CreatePure'; value: { proxyType: MoonbeamRuntimeProxyType; delay: number; index: number } }
   | {
-      tag: 'kill_pure';
+      tag: 'KillPure';
       value: {
         spawner: AccountId20Like;
         proxyType: MoonbeamRuntimeProxyType;
@@ -1303,11 +1303,11 @@ export type PalletProxyCall =
         extIndex: number;
       };
     }
-  | { tag: 'announce'; value: { real: AccountId20Like; callHash: H256 } }
-  | { tag: 'remove_announcement'; value: { real: AccountId20Like; callHash: H256 } }
-  | { tag: 'reject_announcement'; value: { delegate: AccountId20Like; callHash: H256 } }
+  | { tag: 'Announce'; value: { real: AccountId20Like; callHash: H256 } }
+  | { tag: 'RemoveAnnouncement'; value: { real: AccountId20Like; callHash: H256 } }
+  | { tag: 'RejectAnnouncement'; value: { delegate: AccountId20Like; callHash: H256 } }
   | {
-      tag: 'proxy_announced';
+      tag: 'ProxyAnnounced';
       value: {
         delegate: AccountId20Like;
         real: AccountId20Like;
@@ -1341,24 +1341,24 @@ export type PalletMaintenanceModeCall =
  * Identity pallet declaration.
  **/
 export type PalletIdentityCall =
-  | { tag: 'add_registrar'; value: { account: AccountId20Like } }
-  | { tag: 'set_identity'; value: { info: PalletIdentityIdentityInfo } }
-  | { tag: 'set_subs'; value: { subs: Array<[AccountId20Like, Data]> } }
-  | { tag: 'clear_identity' }
-  | { tag: 'request_judgement'; value: { regIndex: number; maxFee: bigint } }
-  | { tag: 'cancel_request'; value: { regIndex: number } }
-  | { tag: 'set_fee'; value: { index: number; fee: bigint } }
-  | { tag: 'set_account_id'; value: { index: number; new: AccountId20Like } }
-  | { tag: 'set_fields'; value: { index: number; fields: PalletIdentityBitFlags } }
+  | { tag: 'AddRegistrar'; value: { account: AccountId20Like } }
+  | { tag: 'SetIdentity'; value: { info: PalletIdentityIdentityInfo } }
+  | { tag: 'SetSubs'; value: { subs: Array<[AccountId20Like, Data]> } }
+  | { tag: 'ClearIdentity' }
+  | { tag: 'RequestJudgement'; value: { regIndex: number; maxFee: bigint } }
+  | { tag: 'CancelRequest'; value: { regIndex: number } }
+  | { tag: 'SetFee'; value: { index: number; fee: bigint } }
+  | { tag: 'SetAccountId'; value: { index: number; new: AccountId20Like } }
+  | { tag: 'SetFields'; value: { index: number; fields: PalletIdentityBitFlags } }
   | {
-      tag: 'provide_judgement';
+      tag: 'ProvideJudgement';
       value: { regIndex: number; target: AccountId20Like; judgement: PalletIdentityJudgement; identity: H256 };
     }
-  | { tag: 'kill_identity'; value: { target: AccountId20Like } }
-  | { tag: 'add_sub'; value: { sub: AccountId20Like; data: Data } }
-  | { tag: 'rename_sub'; value: { sub: AccountId20Like; data: Data } }
-  | { tag: 'remove_sub'; value: { sub: AccountId20Like } }
-  | { tag: 'quit_sub' };
+  | { tag: 'KillIdentity'; value: { target: AccountId20Like } }
+  | { tag: 'AddSub'; value: { sub: AccountId20Like; data: Data } }
+  | { tag: 'RenameSub'; value: { sub: AccountId20Like; data: Data } }
+  | { tag: 'RemoveSub'; value: { sub: AccountId20Like } }
+  | { tag: 'QuitSub' };
 
 export type PalletIdentityIdentityInfo = {
   additional: Array<[Data, Data]>;
@@ -1397,12 +1397,9 @@ export type PalletIdentityJudgement =
  * Contains one variant per dispatchable that can be called by an extrinsic.
  **/
 export type PalletMultisigCall =
+  | { tag: 'AsMultiThreshold1'; value: { otherSignatories: Array<AccountId20Like>; call: MoonbeamRuntimeRuntimeCall } }
   | {
-      tag: 'as_multi_threshold_1';
-      value: { otherSignatories: Array<AccountId20Like>; call: MoonbeamRuntimeRuntimeCall };
-    }
-  | {
-      tag: 'as_multi';
+      tag: 'AsMulti';
       value: {
         threshold: number;
         otherSignatories: Array<AccountId20Like>;
@@ -1412,7 +1409,7 @@ export type PalletMultisigCall =
       };
     }
   | {
-      tag: 'approve_as_multi';
+      tag: 'ApproveAsMulti';
       value: {
         threshold: number;
         otherSignatories: Array<AccountId20Like>;
@@ -1422,7 +1419,7 @@ export type PalletMultisigCall =
       };
     }
   | {
-      tag: 'cancel_as_multi';
+      tag: 'CancelAsMulti';
       value: {
         threshold: number;
         otherSignatories: Array<AccountId20Like>;
@@ -1435,9 +1432,9 @@ export type PalletMultisigCall =
  * Contains one variant per dispatchable that can be called by an extrinsic.
  **/
 export type PalletEvmCall =
-  | { tag: 'withdraw'; value: { address: H160; value: bigint } }
+  | { tag: 'Withdraw'; value: { address: H160; value: bigint } }
   | {
-      tag: 'call';
+      tag: 'Call';
       value: {
         source: H160;
         target: H160;
@@ -1451,7 +1448,7 @@ export type PalletEvmCall =
       };
     }
   | {
-      tag: 'create';
+      tag: 'Create';
       value: {
         source: H160;
         init: Bytes;
@@ -1464,7 +1461,7 @@ export type PalletEvmCall =
       };
     }
   | {
-      tag: 'create2';
+      tag: 'Create2';
       value: {
         source: H160;
         init: Bytes;
@@ -1481,12 +1478,12 @@ export type PalletEvmCall =
 /**
  * Contains one variant per dispatchable that can be called by an extrinsic.
  **/
-export type PalletEthereumCall = { tag: 'transact'; value: { transaction: EthereumTransactionTransactionV2 } };
+export type PalletEthereumCall = { tag: 'Transact'; value: { transaction: EthereumTransactionTransactionV2 } };
 
 export type EthereumTransactionTransactionV2 =
   | { tag: 'Legacy'; value: EthereumTransactionLegacyTransaction }
-  | { tag: 'EIP2930'; value: EthereumTransactionEip2930Transaction }
-  | { tag: 'EIP1559'; value: EthereumTransactionEip1559Transaction };
+  | { tag: 'Eip2930'; value: EthereumTransactionEip2930Transaction }
+  | { tag: 'Eip1559'; value: EthereumTransactionEip1559Transaction };
 
 export type EthereumTransactionLegacyTransaction = {
   nonce: U256;
@@ -1540,7 +1537,7 @@ export type EthereumTransactionEip1559Transaction = {
  **/
 export type PalletSchedulerCall =
   | {
-      tag: 'schedule';
+      tag: 'Schedule';
       value: {
         when: number;
         maybePeriodic?: [number, number] | undefined;
@@ -1548,9 +1545,9 @@ export type PalletSchedulerCall =
         call: MoonbeamRuntimeRuntimeCall;
       };
     }
-  | { tag: 'cancel'; value: { when: number; index: number } }
+  | { tag: 'Cancel'; value: { when: number; index: number } }
   | {
-      tag: 'schedule_named';
+      tag: 'ScheduleNamed';
       value: {
         id: FixedBytes<32>;
         when: number;
@@ -1559,9 +1556,9 @@ export type PalletSchedulerCall =
         call: MoonbeamRuntimeRuntimeCall;
       };
     }
-  | { tag: 'cancel_named'; value: { id: FixedBytes<32> } }
+  | { tag: 'CancelNamed'; value: { id: FixedBytes<32> } }
   | {
-      tag: 'schedule_after';
+      tag: 'ScheduleAfter';
       value: {
         after: number;
         maybePeriodic?: [number, number] | undefined;
@@ -1570,7 +1567,7 @@ export type PalletSchedulerCall =
       };
     }
   | {
-      tag: 'schedule_named_after';
+      tag: 'ScheduleNamedAfter';
       value: {
         id: FixedBytes<32>;
         after: number;
@@ -1584,25 +1581,25 @@ export type PalletSchedulerCall =
  * Contains one variant per dispatchable that can be called by an extrinsic.
  **/
 export type PalletDemocracyCall =
-  | { tag: 'propose'; value: { proposal: FrameSupportPreimagesBounded; value: bigint } }
-  | { tag: 'second'; value: { proposal: number } }
-  | { tag: 'vote'; value: { refIndex: number; vote: PalletDemocracyVoteAccountVote } }
-  | { tag: 'emergency_cancel'; value: { refIndex: number } }
-  | { tag: 'external_propose'; value: { proposal: FrameSupportPreimagesBounded } }
-  | { tag: 'external_propose_majority'; value: { proposal: FrameSupportPreimagesBounded } }
-  | { tag: 'external_propose_default'; value: { proposal: FrameSupportPreimagesBounded } }
-  | { tag: 'fast_track'; value: { proposalHash: H256; votingPeriod: number; delay: number } }
-  | { tag: 'veto_external'; value: { proposalHash: H256 } }
-  | { tag: 'cancel_referendum'; value: { refIndex: number } }
-  | { tag: 'delegate'; value: { to: AccountId20Like; conviction: PalletDemocracyConviction; balance: bigint } }
-  | { tag: 'undelegate' }
-  | { tag: 'clear_public_proposals' }
-  | { tag: 'unlock'; value: { target: AccountId20Like } }
-  | { tag: 'remove_vote'; value: { index: number } }
-  | { tag: 'remove_other_vote'; value: { target: AccountId20Like; index: number } }
-  | { tag: 'blacklist'; value: { proposalHash: H256; maybeRefIndex?: number | undefined } }
-  | { tag: 'cancel_proposal'; value: { propIndex: number } }
-  | { tag: 'set_metadata'; value: { owner: PalletDemocracyMetadataOwner; maybeHash?: H256 | undefined } };
+  | { tag: 'Propose'; value: { proposal: FrameSupportPreimagesBounded; value: bigint } }
+  | { tag: 'Second'; value: { proposal: number } }
+  | { tag: 'Vote'; value: { refIndex: number; vote: PalletDemocracyVoteAccountVote } }
+  | { tag: 'EmergencyCancel'; value: { refIndex: number } }
+  | { tag: 'ExternalPropose'; value: { proposal: FrameSupportPreimagesBounded } }
+  | { tag: 'ExternalProposeMajority'; value: { proposal: FrameSupportPreimagesBounded } }
+  | { tag: 'ExternalProposeDefault'; value: { proposal: FrameSupportPreimagesBounded } }
+  | { tag: 'FastTrack'; value: { proposalHash: H256; votingPeriod: number; delay: number } }
+  | { tag: 'VetoExternal'; value: { proposalHash: H256 } }
+  | { tag: 'CancelReferendum'; value: { refIndex: number } }
+  | { tag: 'Delegate'; value: { to: AccountId20Like; conviction: PalletDemocracyConviction; balance: bigint } }
+  | { tag: 'Undelegate' }
+  | { tag: 'ClearPublicProposals' }
+  | { tag: 'Unlock'; value: { target: AccountId20Like } }
+  | { tag: 'RemoveVote'; value: { index: number } }
+  | { tag: 'RemoveOtherVote'; value: { target: AccountId20Like; index: number } }
+  | { tag: 'Blacklist'; value: { proposalHash: H256; maybeRefIndex?: number | undefined } }
+  | { tag: 'CancelProposal'; value: { propIndex: number } }
+  | { tag: 'SetMetadata'; value: { owner: PalletDemocracyMetadataOwner; maybeHash?: H256 | undefined } };
 
 export type PalletDemocracyConviction =
   | 'None'
@@ -1617,24 +1614,24 @@ export type PalletDemocracyConviction =
  * Contains one variant per dispatchable that can be called by an extrinsic.
  **/
 export type PalletPreimageCall =
-  | { tag: 'note_preimage'; value: { bytes: Bytes } }
-  | { tag: 'unnote_preimage'; value: { hash: H256 } }
-  | { tag: 'request_preimage'; value: { hash: H256 } }
-  | { tag: 'unrequest_preimage'; value: { hash: H256 } };
+  | { tag: 'NotePreimage'; value: { bytes: Bytes } }
+  | { tag: 'UnnotePreimage'; value: { hash: H256 } }
+  | { tag: 'RequestPreimage'; value: { hash: H256 } }
+  | { tag: 'UnrequestPreimage'; value: { hash: H256 } };
 
 /**
  * Contains one variant per dispatchable that can be called by an extrinsic.
  **/
 export type PalletConvictionVotingCall =
-  | { tag: 'vote'; value: { pollIndex: number; vote: PalletConvictionVotingVoteAccountVote } }
+  | { tag: 'Vote'; value: { pollIndex: number; vote: PalletConvictionVotingVoteAccountVote } }
   | {
-      tag: 'delegate';
+      tag: 'Delegate';
       value: { class: number; to: AccountId20Like; conviction: PalletConvictionVotingConviction; balance: bigint };
     }
-  | { tag: 'undelegate'; value: { class: number } }
-  | { tag: 'unlock'; value: { class: number; target: AccountId20Like } }
-  | { tag: 'remove_vote'; value: { class?: number | undefined; index: number } }
-  | { tag: 'remove_other_vote'; value: { target: AccountId20Like; class: number; index: number } };
+  | { tag: 'Undelegate'; value: { class: number } }
+  | { tag: 'Unlock'; value: { class: number; target: AccountId20Like } }
+  | { tag: 'RemoveVote'; value: { class?: number | undefined; index: number } }
+  | { tag: 'RemoveOtherVote'; value: { target: AccountId20Like; class: number; index: number } };
 
 export type PalletConvictionVotingVoteAccountVote =
   | { tag: 'Standard'; value: { vote: PalletConvictionVotingVote; balance: bigint } }
@@ -1657,21 +1654,21 @@ export type PalletConvictionVotingConviction =
  **/
 export type PalletReferendaCall =
   | {
-      tag: 'submit';
+      tag: 'Submit';
       value: {
         proposalOrigin: MoonbeamRuntimeOriginCaller;
         proposal: FrameSupportPreimagesBounded;
         enactmentMoment: FrameSupportScheduleDispatchTime;
       };
     }
-  | { tag: 'place_decision_deposit'; value: { index: number } }
-  | { tag: 'refund_decision_deposit'; value: { index: number } }
-  | { tag: 'cancel'; value: { index: number } }
-  | { tag: 'kill'; value: { index: number } }
-  | { tag: 'nudge_referendum'; value: { index: number } }
-  | { tag: 'one_fewer_deciding'; value: { track: number } }
-  | { tag: 'refund_submission_deposit'; value: { index: number } }
-  | { tag: 'set_metadata'; value: { index: number; maybeHash?: H256 | undefined } };
+  | { tag: 'PlaceDecisionDeposit'; value: { index: number } }
+  | { tag: 'RefundDecisionDeposit'; value: { index: number } }
+  | { tag: 'Cancel'; value: { index: number } }
+  | { tag: 'Kill'; value: { index: number } }
+  | { tag: 'NudgeReferendum'; value: { index: number } }
+  | { tag: 'OneFewerDeciding'; value: { track: number } }
+  | { tag: 'RefundSubmissionDeposit'; value: { index: number } }
+  | { tag: 'SetMetadata'; value: { index: number; maybeHash?: H256 | undefined } };
 
 export type FrameSupportScheduleDispatchTime = { tag: 'At'; value: number } | { tag: 'After'; value: number };
 
@@ -1679,28 +1676,28 @@ export type FrameSupportScheduleDispatchTime = { tag: 'At'; value: number } | { 
  * Contains one variant per dispatchable that can be called by an extrinsic.
  **/
 export type PalletWhitelistCall =
-  | { tag: 'whitelist_call'; value: { callHash: H256 } }
-  | { tag: 'remove_whitelisted_call'; value: { callHash: H256 } }
+  | { tag: 'WhitelistCall'; value: { callHash: H256 } }
+  | { tag: 'RemoveWhitelistedCall'; value: { callHash: H256 } }
   | {
-      tag: 'dispatch_whitelisted_call';
+      tag: 'DispatchWhitelistedCall';
       value: { callHash: H256; callEncodedLen: number; callWeightWitness: SpWeightsWeightV2Weight };
     }
-  | { tag: 'dispatch_whitelisted_call_with_preimage'; value: { call: MoonbeamRuntimeRuntimeCall } };
+  | { tag: 'DispatchWhitelistedCallWithPreimage'; value: { call: MoonbeamRuntimeRuntimeCall } };
 
 /**
  * Contains one variant per dispatchable that can be called by an extrinsic.
  **/
 export type PalletCollectiveCall =
   | {
-      tag: 'set_members';
+      tag: 'SetMembers';
       value: { newMembers: Array<AccountId20Like>; prime?: AccountId20Like | undefined; oldCount: number };
     }
-  | { tag: 'execute'; value: { proposal: MoonbeamRuntimeRuntimeCall; lengthBound: number } }
-  | { tag: 'propose'; value: { threshold: number; proposal: MoonbeamRuntimeRuntimeCall; lengthBound: number } }
-  | { tag: 'vote'; value: { proposal: H256; index: number; approve: boolean } }
-  | { tag: 'disapprove_proposal'; value: { proposalHash: H256 } }
+  | { tag: 'Execute'; value: { proposal: MoonbeamRuntimeRuntimeCall; lengthBound: number } }
+  | { tag: 'Propose'; value: { threshold: number; proposal: MoonbeamRuntimeRuntimeCall; lengthBound: number } }
+  | { tag: 'Vote'; value: { proposal: H256; index: number; approve: boolean } }
+  | { tag: 'DisapproveProposal'; value: { proposalHash: H256 } }
   | {
-      tag: 'close';
+      tag: 'Close';
       value: { proposalHash: H256; index: number; proposalWeightBound: SpWeightsWeightV2Weight; lengthBound: number };
     };
 
@@ -1708,32 +1705,32 @@ export type PalletCollectiveCall =
  * Contains one variant per dispatchable that can be called by an extrinsic.
  **/
 export type PalletTreasuryCall =
-  | { tag: 'propose_spend'; value: { value: bigint; beneficiary: AccountId20Like } }
-  | { tag: 'reject_proposal'; value: { proposalId: number } }
-  | { tag: 'approve_proposal'; value: { proposalId: number } }
-  | { tag: 'spend'; value: { amount: bigint; beneficiary: AccountId20Like } }
-  | { tag: 'remove_approval'; value: { proposalId: number } };
+  | { tag: 'ProposeSpend'; value: { value: bigint; beneficiary: AccountId20Like } }
+  | { tag: 'RejectProposal'; value: { proposalId: number } }
+  | { tag: 'ApproveProposal'; value: { proposalId: number } }
+  | { tag: 'Spend'; value: { amount: bigint; beneficiary: AccountId20Like } }
+  | { tag: 'RemoveApproval'; value: { proposalId: number } };
 
 /**
  * Contains one variant per dispatchable that can be called by an extrinsic.
  **/
 export type PalletCrowdloanRewardsCall =
   | {
-      tag: 'associate_native_identity';
+      tag: 'AssociateNativeIdentity';
       value: { rewardAccount: AccountId20Like; relayAccount: FixedBytes<32>; proof: SpRuntimeMultiSignature };
     }
   | {
-      tag: 'change_association_with_relay_keys';
+      tag: 'ChangeAssociationWithRelayKeys';
       value: {
         rewardAccount: AccountId20Like;
         previousAccount: AccountId20Like;
         proofs: Array<[FixedBytes<32>, SpRuntimeMultiSignature]>;
       };
     }
-  | { tag: 'claim' }
-  | { tag: 'update_reward_address'; value: { newRewardAccount: AccountId20Like } }
-  | { tag: 'complete_initialization'; value: { leaseEndingBlock: number } }
-  | { tag: 'initialize_reward_vec'; value: { rewards: Array<[FixedBytes<32>, AccountId20Like | undefined, bigint]> } };
+  | { tag: 'Claim' }
+  | { tag: 'UpdateRewardAddress'; value: { newRewardAccount: AccountId20Like } }
+  | { tag: 'CompleteInitialization'; value: { leaseEndingBlock: number } }
+  | { tag: 'InitializeRewardVec'; value: { rewards: Array<[FixedBytes<32>, AccountId20Like | undefined, bigint]> } };
 
 export type SpRuntimeMultiSignature =
   | { tag: 'Ed25519'; value: SpCoreEd25519Signature }
@@ -1750,7 +1747,7 @@ export type SpCoreEcdsaSignature = FixedBytes<65>;
  * Contains one variant per dispatchable that can be called by an extrinsic.
  **/
 export type CumulusPalletDmpQueueCall = {
-  tag: 'service_overweight';
+  tag: 'ServiceOverweight';
   value: { index: bigint; weightLimit: SpWeightsWeightV2Weight };
 };
 
@@ -1758,9 +1755,9 @@ export type CumulusPalletDmpQueueCall = {
  * Contains one variant per dispatchable that can be called by an extrinsic.
  **/
 export type PalletXcmCall =
-  | { tag: 'send'; value: { dest: XcmVersionedMultiLocation; message: XcmVersionedXcm } }
+  | { tag: 'Send'; value: { dest: XcmVersionedMultiLocation; message: XcmVersionedXcm } }
   | {
-      tag: 'teleport_assets';
+      tag: 'TeleportAssets';
       value: {
         dest: XcmVersionedMultiLocation;
         beneficiary: XcmVersionedMultiLocation;
@@ -1769,7 +1766,7 @@ export type PalletXcmCall =
       };
     }
   | {
-      tag: 'reserve_transfer_assets';
+      tag: 'ReserveTransferAssets';
       value: {
         dest: XcmVersionedMultiLocation;
         beneficiary: XcmVersionedMultiLocation;
@@ -1777,23 +1774,13 @@ export type PalletXcmCall =
         feeAssetItem: number;
       };
     }
-  | { tag: 'execute'; value: { message: XcmVersionedXcm; maxWeight: SpWeightsWeightV2Weight } }
-  | { tag: 'force_xcm_version'; value: { location: XcmV3MultilocationMultiLocation; xcmVersion: number } }
-  | { tag: 'force_default_xcm_version'; value: { maybeXcmVersion?: number | undefined } }
-  | { tag: 'force_subscribe_version_notify'; value: { location: XcmVersionedMultiLocation } }
-  | { tag: 'force_unsubscribe_version_notify'; value: { location: XcmVersionedMultiLocation } }
+  | { tag: 'Execute'; value: { message: XcmVersionedXcm; maxWeight: SpWeightsWeightV2Weight } }
+  | { tag: 'ForceXcmVersion'; value: { location: XcmV3MultilocationMultiLocation; xcmVersion: number } }
+  | { tag: 'ForceDefaultXcmVersion'; value: { maybeXcmVersion?: number | undefined } }
+  | { tag: 'ForceSubscribeVersionNotify'; value: { location: XcmVersionedMultiLocation } }
+  | { tag: 'ForceUnsubscribeVersionNotify'; value: { location: XcmVersionedMultiLocation } }
   | {
-      tag: 'limited_reserve_transfer_assets';
-      value: {
-        dest: XcmVersionedMultiLocation;
-        beneficiary: XcmVersionedMultiLocation;
-        assets: XcmVersionedMultiAssets;
-        feeAssetItem: number;
-        weightLimit: XcmV3WeightLimit;
-      };
-    }
-  | {
-      tag: 'limited_teleport_assets';
+      tag: 'LimitedReserveTransferAssets';
       value: {
         dest: XcmVersionedMultiLocation;
         beneficiary: XcmVersionedMultiLocation;
@@ -1802,7 +1789,17 @@ export type PalletXcmCall =
         weightLimit: XcmV3WeightLimit;
       };
     }
-  | { tag: 'force_suspension'; value: { suspended: boolean } };
+  | {
+      tag: 'LimitedTeleportAssets';
+      value: {
+        dest: XcmVersionedMultiLocation;
+        beneficiary: XcmVersionedMultiLocation;
+        assets: XcmVersionedMultiAssets;
+        feeAssetItem: number;
+        weightLimit: XcmV3WeightLimit;
+      };
+    }
+  | { tag: 'ForceSuspension'; value: { suspended: boolean } };
 
 export type XcmVersionedMultiLocation =
   | { tag: 'V2'; value: XcmV2MultilocationMultiLocation }
@@ -2210,35 +2207,29 @@ export type XcmVersionedMultiAssets =
  * Contains one variant per dispatchable that can be called by an extrinsic.
  **/
 export type PalletAssetsCall =
-  | { tag: 'create'; value: { id: bigint; admin: AccountId20Like; minBalance: bigint } }
-  | { tag: 'force_create'; value: { id: bigint; owner: AccountId20Like; isSufficient: boolean; minBalance: bigint } }
-  | { tag: 'start_destroy'; value: { id: bigint } }
-  | { tag: 'destroy_accounts'; value: { id: bigint } }
-  | { tag: 'destroy_approvals'; value: { id: bigint } }
-  | { tag: 'finish_destroy'; value: { id: bigint } }
-  | { tag: 'mint'; value: { id: bigint; beneficiary: AccountId20Like; amount: bigint } }
-  | { tag: 'burn'; value: { id: bigint; who: AccountId20Like; amount: bigint } }
-  | { tag: 'transfer'; value: { id: bigint; target: AccountId20Like; amount: bigint } }
-  | { tag: 'transfer_keep_alive'; value: { id: bigint; target: AccountId20Like; amount: bigint } }
-  | { tag: 'force_transfer'; value: { id: bigint; source: AccountId20Like; dest: AccountId20Like; amount: bigint } }
-  | { tag: 'freeze'; value: { id: bigint; who: AccountId20Like } }
-  | { tag: 'thaw'; value: { id: bigint; who: AccountId20Like } }
-  | { tag: 'freeze_asset'; value: { id: bigint } }
-  | { tag: 'thaw_asset'; value: { id: bigint } }
-  | { tag: 'transfer_ownership'; value: { id: bigint; owner: AccountId20Like } }
+  | { tag: 'Create'; value: { id: bigint; admin: AccountId20Like; minBalance: bigint } }
+  | { tag: 'ForceCreate'; value: { id: bigint; owner: AccountId20Like; isSufficient: boolean; minBalance: bigint } }
+  | { tag: 'StartDestroy'; value: { id: bigint } }
+  | { tag: 'DestroyAccounts'; value: { id: bigint } }
+  | { tag: 'DestroyApprovals'; value: { id: bigint } }
+  | { tag: 'FinishDestroy'; value: { id: bigint } }
+  | { tag: 'Mint'; value: { id: bigint; beneficiary: AccountId20Like; amount: bigint } }
+  | { tag: 'Burn'; value: { id: bigint; who: AccountId20Like; amount: bigint } }
+  | { tag: 'Transfer'; value: { id: bigint; target: AccountId20Like; amount: bigint } }
+  | { tag: 'TransferKeepAlive'; value: { id: bigint; target: AccountId20Like; amount: bigint } }
+  | { tag: 'ForceTransfer'; value: { id: bigint; source: AccountId20Like; dest: AccountId20Like; amount: bigint } }
+  | { tag: 'Freeze'; value: { id: bigint; who: AccountId20Like } }
+  | { tag: 'Thaw'; value: { id: bigint; who: AccountId20Like } }
+  | { tag: 'FreezeAsset'; value: { id: bigint } }
+  | { tag: 'ThawAsset'; value: { id: bigint } }
+  | { tag: 'TransferOwnership'; value: { id: bigint; owner: AccountId20Like } }
+  | { tag: 'SetTeam'; value: { id: bigint; issuer: AccountId20Like; admin: AccountId20Like; freezer: AccountId20Like } }
+  | { tag: 'SetMetadata'; value: { id: bigint; name: Bytes; symbol: Bytes; decimals: number } }
+  | { tag: 'ClearMetadata'; value: { id: bigint } }
+  | { tag: 'ForceSetMetadata'; value: { id: bigint; name: Bytes; symbol: Bytes; decimals: number; isFrozen: boolean } }
+  | { tag: 'ForceClearMetadata'; value: { id: bigint } }
   | {
-      tag: 'set_team';
-      value: { id: bigint; issuer: AccountId20Like; admin: AccountId20Like; freezer: AccountId20Like };
-    }
-  | { tag: 'set_metadata'; value: { id: bigint; name: Bytes; symbol: Bytes; decimals: number } }
-  | { tag: 'clear_metadata'; value: { id: bigint } }
-  | {
-      tag: 'force_set_metadata';
-      value: { id: bigint; name: Bytes; symbol: Bytes; decimals: number; isFrozen: boolean };
-    }
-  | { tag: 'force_clear_metadata'; value: { id: bigint } }
-  | {
-      tag: 'force_asset_status';
+      tag: 'ForceAssetStatus';
       value: {
         id: bigint;
         owner: AccountId20Like;
@@ -2250,26 +2241,26 @@ export type PalletAssetsCall =
         isFrozen: boolean;
       };
     }
-  | { tag: 'approve_transfer'; value: { id: bigint; delegate: AccountId20Like; amount: bigint } }
-  | { tag: 'cancel_approval'; value: { id: bigint; delegate: AccountId20Like } }
-  | { tag: 'force_cancel_approval'; value: { id: bigint; owner: AccountId20Like; delegate: AccountId20Like } }
+  | { tag: 'ApproveTransfer'; value: { id: bigint; delegate: AccountId20Like; amount: bigint } }
+  | { tag: 'CancelApproval'; value: { id: bigint; delegate: AccountId20Like } }
+  | { tag: 'ForceCancelApproval'; value: { id: bigint; owner: AccountId20Like; delegate: AccountId20Like } }
   | {
-      tag: 'transfer_approved';
+      tag: 'TransferApproved';
       value: { id: bigint; owner: AccountId20Like; destination: AccountId20Like; amount: bigint };
     }
-  | { tag: 'touch'; value: { id: bigint } }
-  | { tag: 'refund'; value: { id: bigint; allowBurn: boolean } }
-  | { tag: 'set_min_balance'; value: { id: bigint; minBalance: bigint } }
-  | { tag: 'touch_other'; value: { id: bigint; who: AccountId20Like } }
-  | { tag: 'refund_other'; value: { id: bigint; who: AccountId20Like } }
-  | { tag: 'block'; value: { id: bigint; who: AccountId20Like } };
+  | { tag: 'Touch'; value: { id: bigint } }
+  | { tag: 'Refund'; value: { id: bigint; allowBurn: boolean } }
+  | { tag: 'SetMinBalance'; value: { id: bigint; minBalance: bigint } }
+  | { tag: 'TouchOther'; value: { id: bigint; who: AccountId20Like } }
+  | { tag: 'RefundOther'; value: { id: bigint; who: AccountId20Like } }
+  | { tag: 'Block'; value: { id: bigint; who: AccountId20Like } };
 
 /**
  * Contains one variant per dispatchable that can be called by an extrinsic.
  **/
 export type PalletAssetManagerCall =
   | {
-      tag: 'register_foreign_asset';
+      tag: 'RegisterForeignAsset';
       value: {
         asset: MoonbeamRuntimeXcmConfigAssetType;
         metadata: MoonbeamRuntimeAssetConfigAssetRegistrarMetadata;
@@ -2278,24 +2269,24 @@ export type PalletAssetManagerCall =
       };
     }
   | {
-      tag: 'set_asset_units_per_second';
+      tag: 'SetAssetUnitsPerSecond';
       value: { assetType: MoonbeamRuntimeXcmConfigAssetType; unitsPerSecond: bigint; numAssetsWeightHint: number };
     }
   | {
-      tag: 'change_existing_asset_type';
+      tag: 'ChangeExistingAssetType';
       value: { assetId: bigint; newAssetType: MoonbeamRuntimeXcmConfigAssetType; numAssetsWeightHint: number };
     }
   | {
-      tag: 'remove_supported_asset';
+      tag: 'RemoveSupportedAsset';
       value: { assetType: MoonbeamRuntimeXcmConfigAssetType; numAssetsWeightHint: number };
     }
-  | { tag: 'remove_existing_asset_type'; value: { assetId: bigint; numAssetsWeightHint: number } }
+  | { tag: 'RemoveExistingAssetType'; value: { assetId: bigint; numAssetsWeightHint: number } }
   | {
-      tag: 'register_local_asset';
+      tag: 'RegisterLocalAsset';
       value: { creator: AccountId20Like; owner: AccountId20Like; isSufficient: boolean; minBalance: bigint };
     }
-  | { tag: 'destroy_foreign_asset'; value: { assetId: bigint; numAssetsWeightHint: number } }
-  | { tag: 'destroy_local_asset'; value: { assetId: bigint } };
+  | { tag: 'DestroyForeignAsset'; value: { assetId: bigint; numAssetsWeightHint: number } }
+  | { tag: 'DestroyLocalAsset'; value: { assetId: bigint } };
 
 export type MoonbeamRuntimeXcmConfigAssetType = { tag: 'Xcm'; value: XcmV3MultilocationMultiLocation };
 
@@ -2311,7 +2302,7 @@ export type MoonbeamRuntimeAssetConfigAssetRegistrarMetadata = {
  **/
 export type OrmlXtokensModuleCall =
   | {
-      tag: 'transfer';
+      tag: 'Transfer';
       value: {
         currencyId: MoonbeamRuntimeXcmConfigCurrencyId;
         amount: bigint;
@@ -2320,11 +2311,11 @@ export type OrmlXtokensModuleCall =
       };
     }
   | {
-      tag: 'transfer_multiasset';
+      tag: 'TransferMultiasset';
       value: { asset: XcmVersionedMultiAsset; dest: XcmVersionedMultiLocation; destWeightLimit: XcmV3WeightLimit };
     }
   | {
-      tag: 'transfer_with_fee';
+      tag: 'TransferWithFee';
       value: {
         currencyId: MoonbeamRuntimeXcmConfigCurrencyId;
         amount: bigint;
@@ -2334,7 +2325,7 @@ export type OrmlXtokensModuleCall =
       };
     }
   | {
-      tag: 'transfer_multiasset_with_fee';
+      tag: 'TransferMultiassetWithFee';
       value: {
         asset: XcmVersionedMultiAsset;
         fee: XcmVersionedMultiAsset;
@@ -2343,7 +2334,7 @@ export type OrmlXtokensModuleCall =
       };
     }
   | {
-      tag: 'transfer_multicurrencies';
+      tag: 'TransferMulticurrencies';
       value: {
         currencies: Array<[MoonbeamRuntimeXcmConfigCurrencyId, bigint]>;
         feeItem: number;
@@ -2352,7 +2343,7 @@ export type OrmlXtokensModuleCall =
       };
     }
   | {
-      tag: 'transfer_multiassets';
+      tag: 'TransferMultiassets';
       value: {
         assets: XcmVersionedMultiAssets;
         feeItem: number;
@@ -2375,10 +2366,10 @@ export type XcmVersionedMultiAsset =
  * Contains one variant per dispatchable that can be called by an extrinsic.
  **/
 export type PalletXcmTransactorCall =
-  | { tag: 'register'; value: { who: AccountId20Like; index: number } }
-  | { tag: 'deregister'; value: { index: number } }
+  | { tag: 'Register'; value: { who: AccountId20Like; index: number } }
+  | { tag: 'Deregister'; value: { index: number } }
   | {
-      tag: 'transact_through_derivative';
+      tag: 'TransactThroughDerivative';
       value: {
         dest: MoonbeamRuntimeXcmConfigTransactors;
         index: number;
@@ -2389,7 +2380,7 @@ export type PalletXcmTransactorCall =
       };
     }
   | {
-      tag: 'transact_through_sovereign';
+      tag: 'TransactThroughSovereign';
       value: {
         dest: XcmVersionedMultiLocation;
         feePayer: AccountId20Like;
@@ -2401,7 +2392,7 @@ export type PalletXcmTransactorCall =
       };
     }
   | {
-      tag: 'set_transact_info';
+      tag: 'SetTransactInfo';
       value: {
         location: XcmVersionedMultiLocation;
         transactExtraWeight: SpWeightsWeightV2Weight;
@@ -2409,9 +2400,9 @@ export type PalletXcmTransactorCall =
         transactExtraWeightSigned?: SpWeightsWeightV2Weight | undefined;
       };
     }
-  | { tag: 'remove_transact_info'; value: { location: XcmVersionedMultiLocation } }
+  | { tag: 'RemoveTransactInfo'; value: { location: XcmVersionedMultiLocation } }
   | {
-      tag: 'transact_through_signed';
+      tag: 'TransactThroughSigned';
       value: {
         dest: XcmVersionedMultiLocation;
         fee: PalletXcmTransactorCurrencyPayment;
@@ -2420,10 +2411,10 @@ export type PalletXcmTransactorCall =
         refund: boolean;
       };
     }
-  | { tag: 'set_fee_per_second'; value: { assetLocation: XcmVersionedMultiLocation; feePerSecond: bigint } }
-  | { tag: 'remove_fee_per_second'; value: { assetLocation: XcmVersionedMultiLocation } }
+  | { tag: 'SetFeePerSecond'; value: { assetLocation: XcmVersionedMultiLocation; feePerSecond: bigint } }
+  | { tag: 'RemoveFeePerSecond'; value: { assetLocation: XcmVersionedMultiLocation } }
   | {
-      tag: 'hrmp_manage';
+      tag: 'HrmpManage';
       value: {
         action: PalletXcmTransactorHrmpOperation;
         fee: PalletXcmTransactorCurrencyPayment;
@@ -2468,13 +2459,13 @@ export type PolkadotParachainPrimitivesHrmpChannelId = {
  * Contains one variant per dispatchable that can be called by an extrinsic.
  **/
 export type PalletEthereumXcmCall =
-  | { tag: 'transact'; value: { xcmTransaction: XcmPrimitivesEthereumXcmEthereumXcmTransaction } }
+  | { tag: 'Transact'; value: { xcmTransaction: XcmPrimitivesEthereumXcmEthereumXcmTransaction } }
   | {
-      tag: 'transact_through_proxy';
+      tag: 'TransactThroughProxy';
       value: { transactAs: H160; xcmTransaction: XcmPrimitivesEthereumXcmEthereumXcmTransaction };
     }
-  | { tag: 'suspend_ethereum_xcm_execution' }
-  | { tag: 'resume_ethereum_xcm_execution' };
+  | { tag: 'SuspendEthereumXcmExecution' }
+  | { tag: 'ResumeEthereumXcmExecution' };
 
 export type XcmPrimitivesEthereumXcmEthereumXcmTransaction =
   | { tag: 'V1'; value: XcmPrimitivesEthereumXcmEthereumXcmTransactionV1 }
@@ -3584,8 +3575,8 @@ export type EthbloomBloom = FixedBytes<256>;
 
 export type EthereumReceiptReceiptV3 =
   | { tag: 'Legacy'; value: EthereumReceiptEip658ReceiptData }
-  | { tag: 'EIP2930'; value: EthereumReceiptEip658ReceiptData }
-  | { tag: 'EIP1559'; value: EthereumReceiptEip658ReceiptData };
+  | { tag: 'Eip2930'; value: EthereumReceiptEip658ReceiptData }
+  | { tag: 'Eip1559'; value: EthereumReceiptEip658ReceiptData };
 
 export type EthereumReceiptEip658ReceiptData = {
   statusCode: number;

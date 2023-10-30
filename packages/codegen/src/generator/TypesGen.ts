@@ -194,7 +194,7 @@ ${defTypeOut}
         } else {
           const membersType: Record<string, string | null> = {};
           for (const { fields, name } of members) {
-            const keyName = name;
+            const keyName = stringPascalCase(name);
             if (fields.length === 0) {
               membersType[keyName] = null;
             } else if (fields[0]!.name === undefined) {
