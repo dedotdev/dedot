@@ -1,4 +1,4 @@
-import { TypesGen } from '@delightfuldot/codegen/generator/TypesGen';
+import { TypesGen } from '../generator';
 
 export abstract class ApiGen {
   constructor(readonly typesGen: TypesGen) {}
