@@ -1,8 +1,7 @@
 import { stringLowerFirst } from '@polkadot/util';
 import { normalizeName } from '@delightfuldot/utils';
 import { ApiGen } from '../generator';
-import { commentBlock, compileTemplate, beautifySourceCode, resolveFilePath } from './utils';
-
+import { beautifySourceCode, commentBlock, compileTemplate } from './utils';
 
 export class ConstsGen extends ApiGen {
   generate() {
@@ -24,11 +23,9 @@ export class ConstsGen extends ApiGen {
         .join(',\n')}},`;
     }
 
-    // TODO improve this!
-    const toImportTypes = [...this.typesGen.usedNameTypes];
+    const importTypes = this.typesGen.typeImports.toImports();
+    const template = compileTemplate('consts.hbs');
 
-    const constsTemplateFilePath = resolveFilePath('packages/codegen/src/templates/consts.hbs');
-    const template = compileTemplate(constsTemplateFilePath);
-    return beautifySourceCode(template({toImportTypes, defTypeOut}));
+    return beautifySourceCode(template({ importTypes, defTypeOut }));
   }
 }

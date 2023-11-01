@@ -3,7 +3,7 @@ import { DelightfulApi } from 'delightfuldot';
 import * as fs from 'fs';
 import * as path from 'path';
 import * as process from 'process';
-import { ConstsGen, TypesGen, QueryGen, RpcGen, IndexGen } from './generator';
+import { ConstsGen, IndexGen, QueryGen, RpcGen, TypesGen } from './generator';
 import { RpcMethods } from '@delightfuldot/types';
 import { $Metadata, MetadataLatest } from '@delightfuldot/codecs';
 import staticSubstrate, { rpc } from '@polkadot/types-support/metadata/static-substrate';
@@ -34,7 +34,7 @@ const NETWORKS: NetworkInfo[] = [
 ];
 
 async function run() {
-  for (const network of NETWORKS.slice(4, 5)) {
+  for (const network of NETWORKS.slice(0, 5)) {
     const { chain, endpoint, metadataHex, rpcMethods } = network;
 
     if (endpoint) {

@@ -26,10 +26,11 @@ export const resolveFilePath = (relativePath: string | string[]) => {
 export const PRETTIER_FORMAT_OPTION = await prettier.resolveConfig(resolveFilePath('./.prettierrc.js'));
 
 export const beautifySourceCode = (source: string): Promise<string> => {
-    return prettier.format(source, {parser: 'babel-ts', ...PRETTIER_FORMAT_OPTION});
-}
-
-export const compileTemplate = (templateFilePath: string) => {
-  return handlebars.compile(fs.readFileSync(templateFilePath, 'utf8'));
+  return prettier.format(source, { parser: 'babel-ts', ...PRETTIER_FORMAT_OPTION });
 };
 
+export const compileTemplate = (templateFileName: string) => {
+  const templateFilePath = resolveFilePath(`packages/codegen/src/templates/${templateFileName}`);
+
+  return handlebars.compile(fs.readFileSync(templateFilePath, 'utf8'));
+};

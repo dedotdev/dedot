@@ -1,1 +1,1 @@
-export type { SubstrateApi } from './substrate';
+export type {SubstrateApi} from './substrate';
