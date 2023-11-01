@@ -1,4 +1,4 @@
-import { stringCamelCase } from "@polkadot/util";
+import { stringCamelCase } from '@polkadot/util';
 
 export const shortenAddress = (address: string): string => {
   if (!address) {
@@ -25,3 +25,20 @@ export const trimTrailingSlash = (input: string): string => {
 export function normalizeName(ident: string) {
   return stringCamelCase(ident.replace('#', '_'));
 }
+
+const JS_PRIMITIVE_TYPES = [
+  'void',
+  'undefined',
+  'null',
+  'number',
+  'boolean',
+  'bigint',
+  'Map',
+  'Set',
+  'string',
+  'any',
+  /^Record<(.+),(.+)>$/,
+];
+export const isJsPrimitive = (type: string) => {
+  return JS_PRIMITIVE_TYPES.some((one) => type.match(one));
+};

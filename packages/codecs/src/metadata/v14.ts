@@ -1,5 +1,5 @@
 import * as $ from '@delightfuldot/shape';
-import { $Type, $TypeId } from './scale-info';
+import { $PortableType, $TypeId } from './scale-info';
 
 export const $Hasher = $.FlatEnum([
   'blake2_128',
@@ -67,7 +67,7 @@ export const $ExtrinsicDef = $.Struct({
 export type ExtrinsicDef = $.Input<typeof $ExtrinsicDef>;
 
 export const $MetadataV14 = $.Struct({
-  types: $.Vec($Type),
+  types: $.Vec($PortableType),
   pallets: $.Vec($Pallet),
   extrinsic: $ExtrinsicDef,
   runtimeType: $TypeId,

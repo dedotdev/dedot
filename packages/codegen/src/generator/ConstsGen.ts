@@ -1,7 +1,7 @@
 import { stringLowerFirst } from '@polkadot/util';
 import { normalizeName } from '@delightfuldot/utils';
 import { ApiGen } from '../generator';
-import { commentBlock, compileTemplate, format, resolveFilePath } from './utils';
+import { commentBlock, compileTemplate, beautifySourceCode, resolveFilePath } from './utils';
 
 
 export class ConstsGen extends ApiGen {
@@ -9,12 +9,13 @@ export class ConstsGen extends ApiGen {
     const { pallets } = this.metadata;
 
     this.typesGen.clearCache();
+    this.typesGen.typeImports.addKnownType('GenericChainConsts');
 
     let defTypeOut = '';
     for (let pallet of pallets) {
       const typedConstants = pallet.constants.map((one) => ({
         name: normalizeName(one.name),
-        type: this.typesGen.generateType(one.typeId, 1),
+        type: this.typesGen.generateType(one.typeId, 1, true),
         docs: one.docs,
       }));
 
@@ -28,7 +29,6 @@ export class ConstsGen extends ApiGen {
 
     const constsTemplateFilePath = resolveFilePath('packages/codegen/src/templates/consts.hbs');
     const template = compileTemplate(constsTemplateFilePath);
-
-    return format(template({ toImportTypes, defTypeOut }));
+    return beautifySourceCode(template({toImportTypes, defTypeOut}));
   }
 }

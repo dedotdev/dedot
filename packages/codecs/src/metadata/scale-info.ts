@@ -60,7 +60,7 @@ export const $TypeDef = $.Enum({
 export const $TypeParam = $.Struct({ name: $.str, typeId: $.Option($TypeId) });
 export type TypeParam = $.Input<typeof $TypeParam>;
 
-export const $Type = $.Struct({
+export const $PortableType = $.Struct({
   id: $.compact($.u32),
   path: $.Vec($.str),
   params: $.Vec($TypeParam),
@@ -68,5 +68,5 @@ export const $Type = $.Struct({
   docs: $.Vec($.str),
 });
 
-export type Type = $.Input<typeof $Type>;
+export type Type = $.Input<typeof $PortableType>;
 export type TypeParams = Type['params'];

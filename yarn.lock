@@ -172,6 +172,7 @@ __metadata:
   dependencies:
     "@delightfuldot/codecs": "workspace:*"
     "@delightfuldot/shape": "workspace:*"
+    "@delightfuldot/types": "workspace:*"
     "@delightfuldot/utils": "workspace:*"
     "@polkadot/util": ^12.5.1
   languageName: unknown
@@ -194,7 +195,9 @@ __metadata:
   dependencies:
     "@delightfuldot/codecs": "workspace:*"
     "@delightfuldot/shape": "workspace:*"
+    "@delightfuldot/specs": "workspace:*"
     "@delightfuldot/utils": "workspace:*"
+    "@polkadot/types-support": ^10.10.1
     "@polkadot/util": ^12.5.1
     delightfuldot: "workspace:*"
     prettier: ^3.0.3
@@ -213,7 +216,13 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@delightfuldot/types@workspace:packages/types":
+"@delightfuldot/specs@workspace:*, @delightfuldot/specs@workspace:packages/specs":
+  version: 0.0.0-use.local
+  resolution: "@delightfuldot/specs@workspace:packages/specs"
+  languageName: unknown
+  linkType: soft
+
+"@delightfuldot/types@workspace:*, @delightfuldot/types@workspace:packages/types":
   version: 0.0.0-use.local
   resolution: "@delightfuldot/types@workspace:packages/types"
   dependencies:
@@ -1365,6 +1374,16 @@ __metadata:
     "@polkadot/util": ^12.3.1
     tslib: ^2.5.3
   checksum: f5df33f215f529c33d4fd7ad7d6877a4567954488971c2986da416b6578ccb6d5c6eeadab4602abe0e3ce17373cdd6de0ce6f09529852b6e2fd6bc28b9183f9b
+  languageName: node
+  linkType: hard
+
+"@polkadot/types-support@npm:^10.10.1":
+  version: 10.10.1
+  resolution: "@polkadot/types-support@npm:10.10.1"
+  dependencies:
+    "@polkadot/util": ^12.5.1
+    tslib: ^2.6.2
+  checksum: 391857f39463fcc9bbc34a6bafd191e12eb3fd28f386d4094cc3cdcbcd0fcc8799c6e99a49b0e634c6a1b78d07188eb6e1e01299f55df2593c3f30fcb241631c
   languageName: node
   linkType: hard
 
@@ -2905,6 +2924,7 @@ __metadata:
     "@delightfuldot/chaintypes": "workspace:*"
     "@delightfuldot/codecs": "workspace:*"
     "@delightfuldot/shape": "workspace:*"
+    "@delightfuldot/specs": "workspace:*"
     "@delightfuldot/utils": "workspace:*"
     "@polkadot/rpc-provider": ^10.9.1
     "@polkadot/types": ^10.9.1

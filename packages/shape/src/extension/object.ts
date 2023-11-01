@@ -15,6 +15,7 @@ function decodeObject($shape: Shape<any>, input: any) {
   const {args} = $shape.metadata[0];
 
   return args!.map(one => one.metadata[0].args).reduce((o, [name, field]) => {
+    // TODO check optional field
     o[name] = field.tryDecode(input[name]);
 
     return o;

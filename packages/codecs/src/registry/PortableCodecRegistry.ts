@@ -2,6 +2,7 @@ import { Type, TypeId } from '@delightfuldot/codecs';
 import * as $ from '@delightfuldot/shape';
 import { normalizeName } from '@delightfuldot/utils';
 import { CodecRegistry } from './CodecRegistry';
+import { stringPascalCase } from '@polkadot/util';
 
 const KNOWN_CODECS = ['AccountId32', 'Header', 'Digest', 'DigestItem', 'Data'];
 
@@ -14,10 +15,13 @@ export class PortableCodecRegistry {
     this.#registry = registry;
 
     if (Array.isArray(types)) {
-      this.types = types.reduce((o, one) => {
-        o[one.id] = one;
-        return o;
-      }, {} as Record<TypeId, Type>);
+      this.types = types.reduce(
+        (o, one) => {
+          o[one.id] = one;
+          return o;
+        },
+        {} as Record<TypeId, Type>,
+      );
     } else {
       this.types = types;
     }
@@ -125,7 +129,7 @@ export class PortableCodecRegistry {
       } else {
         const enumMembers: $.EnumMembers<$.AnyShape> = {};
         for (const { fields, name, index } of members) {
-          const keyName = name;
+          const keyName = stringPascalCase(name);
           if (fields.length === 0) {
             enumMembers[keyName] = { index };
           } else if (fields[0]!.name === undefined) {
