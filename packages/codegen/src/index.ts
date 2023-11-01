@@ -34,7 +34,7 @@ const NETWORKS: NetworkInfo[] = [
 ];
 
 async function run() {
-  for (const network of NETWORKS) {
+  for (const network of NETWORKS.slice(1, 2)) {
     const { chain, endpoint, metadataHex, rpcMethods } = network;
 
     if (endpoint) {
