@@ -13,7 +13,7 @@ export class StorageQueryExecutor<ChainApi extends GenericSubstrateApi = Substra
       const valueTypeId = storageKeyFn.valueTypeId;
       const entry = storageKeyFn.targetEntry;
 
-      const result = await this.api.rpc.state.getStorage(hexToU8a(key));
+      const result = await this.api.rpc.state.getStorage(key);
 
       if (result === null) {
         if (entry.modifier === 'Optional') {
