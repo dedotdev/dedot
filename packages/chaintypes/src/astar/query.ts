@@ -2,20 +2,27 @@
 
 import type { GenericChainStorage } from '@delightfuldot/types';
 import type {
-  FrameSystemAccountInfo,
   AccountId32Like,
-  FrameSupportDispatchPerDispatchClass,
   H256,
   Bytes,
   Digest,
+  AccountId32,
+  Data,
+  FixedBytes,
+  FixedU128,
+  H160,
+  U256,
+  Permill,
+} from '@delightfuldot/codecs';
+import type {
+  FrameSystemAccountInfo,
+  FrameSupportDispatchPerDispatchClass,
   FrameSystemEventRecord,
   FrameSystemLastRuntimeUpgradeInfo,
   FrameSystemPhase,
   PalletIdentityRegistration,
-  Data,
   PalletIdentityRegistrarInfo,
   PalletMultisigMultisig,
-  FixedBytes,
   PalletProxyProxyDefinition,
   PalletProxyAnnouncement,
   PolkadotPrimitivesV4PersistedValidationData,
@@ -28,7 +35,6 @@ import type {
   PolkadotCorePrimitivesOutboundHrmpMessage,
   SpWeightsWeightV2Weight,
   CumulusPalletParachainSystemCodeUpgradeAuthorization,
-  FixedU128,
   PalletTransactionPaymentReleases,
   PalletBalancesAccountData,
   PalletBalancesBalanceLock,
@@ -65,14 +71,11 @@ import type {
   XcmVersionedAssetId,
   CumulusPalletDmpQueueConfigData,
   CumulusPalletDmpQueuePageIndexData,
-  H160,
   PalletEvmCodeMetadata,
   EthereumTransactionTransactionV2,
   FpRpcTransactionStatus,
   EthereumReceiptReceiptV3,
   EthereumBlock,
-  U256,
-  Permill,
   PalletContractsWasmPrefabWasmModule,
   PalletContractsWasmOwnerInfo,
   PalletContractsStorageContractInfo,
@@ -189,7 +192,7 @@ export interface ChainStorage extends GenericChainStorage {
      * The super-identity of an alternative "sub" identity together with its name, within that
      * context. If the account is not some other account's sub-identity, then just `None`.
      **/
-    superOf(arg: AccountId32Like): Promise<[AccountId32Like, Data] | undefined>;
+    superOf(arg: AccountId32Like): Promise<[AccountId32, Data] | undefined>;
 
     /**
      * Alternative "sub" identities of this account.
@@ -198,7 +201,7 @@ export interface ChainStorage extends GenericChainStorage {
      *
      * TWOX-NOTE: OK ― `AccountId` is a secure hash.
      **/
-    subsOf(arg: AccountId32Like): Promise<[bigint, Array<AccountId32Like>]>;
+    subsOf(arg: AccountId32Like): Promise<[bigint, Array<AccountId32>]>;
 
     /**
      * The set of registrars. Not expected to get very big as can only be added through a
@@ -566,13 +569,13 @@ export interface ChainStorage extends GenericChainStorage {
     /**
      * Author of current block.
      **/
-    author(): Promise<AccountId32Like | undefined>;
+    author(): Promise<AccountId32 | undefined>;
   };
   collatorSelection: {
     /**
      * The invulnerable, fixed collators.
      **/
-    invulnerables(): Promise<Array<AccountId32Like>>;
+    invulnerables(): Promise<Array<AccountId32>>;
 
     /**
      * The (community, limited) collation candidates.
@@ -601,13 +604,13 @@ export interface ChainStorage extends GenericChainStorage {
     /**
      * Destination account for slashed amount.
      **/
-    slashDestination(): Promise<AccountId32Like | undefined>;
+    slashDestination(): Promise<AccountId32 | undefined>;
   };
   session: {
     /**
      * The current set of validators.
      **/
-    validators(): Promise<Array<AccountId32Like>>;
+    validators(): Promise<Array<AccountId32>>;
 
     /**
      * Current index of the session.
@@ -624,7 +627,7 @@ export interface ChainStorage extends GenericChainStorage {
      * The queued keys for the next session. When the next session begins, these keys
      * will be used to determine the validator's session keys.
      **/
-    queuedKeys(): Promise<Array<[AccountId32Like, AstarRuntimeSessionKeys]>>;
+    queuedKeys(): Promise<Array<[AccountId32, AstarRuntimeSessionKeys]>>;
 
     /**
      * Indices of disabled validators.
@@ -643,7 +646,7 @@ export interface ChainStorage extends GenericChainStorage {
     /**
      * The owner of a key. The key is the `KeyTypeId` + the encoded key.
      **/
-    keyOwner(arg: [SpCoreCryptoKeyTypeId, Bytes]): Promise<AccountId32Like | undefined>;
+    keyOwner(arg: [SpCoreCryptoKeyTypeId, Bytes]): Promise<AccountId32 | undefined>;
   };
   aura: {
     /**
@@ -945,6 +948,6 @@ export interface ChainStorage extends GenericChainStorage {
     /**
      * The `AccountId` of the sudo key.
      **/
-    key(): Promise<AccountId32Like | undefined>;
+    key(): Promise<AccountId32 | undefined>;
   };
 }

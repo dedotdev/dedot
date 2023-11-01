@@ -2,17 +2,27 @@
 
 import type { GenericChainStorage } from '@delightfuldot/types';
 import type {
-  FrameSystemAccountInfo,
   AccountId32Like,
-  FrameSupportDispatchPerDispatchClass,
   H256,
   Bytes,
   Digest,
+  FixedBytes,
+  AccountId32,
+  FixedU128,
+  Perbill,
+  Percent,
+  EthereumAddressLike,
+  EthereumAddress,
+  Data,
+  FixedArray,
+} from '@delightfuldot/codecs';
+import type {
+  FrameSystemAccountInfo,
+  FrameSupportDispatchPerDispatchClass,
   FrameSystemEventRecord,
   FrameSystemLastRuntimeUpgradeInfo,
   FrameSystemPhase,
   PalletSchedulerScheduled,
-  FixedBytes,
   PalletPreimageRequestStatus,
   SpConsensusBabeAppPublic,
   SpConsensusSlotsSlot,
@@ -23,9 +33,7 @@ import type {
   PalletBalancesBalanceLock,
   PalletBalancesReserveData,
   PalletBalancesIdAmount,
-  FixedU128,
   PalletTransactionPaymentReleases,
-  Perbill,
   PalletStakingStakingLedger,
   PalletStakingRewardDestination,
   PalletStakingValidatorPrefs,
@@ -37,7 +45,6 @@ import type {
   PalletStakingUnappliedSlash,
   PalletStakingSlashingSlashingSpans,
   PalletStakingSlashingSpanRecord,
-  Percent,
   SpStakingOffenceOffenceDetails,
   PolkadotRuntimeSessionKeys,
   SpCoreCryptoKeyTypeId,
@@ -57,12 +64,10 @@ import type {
   PalletTreasuryProposal,
   PalletConvictionVotingVoteVoting,
   PalletReferendaReferendumInfo,
-  EthereumAddressLike,
   PolkadotRuntimeCommonClaimsStatementKind,
   PalletVestingVestingInfo,
   PalletVestingReleases,
   PalletIdentityRegistration,
-  Data,
   PalletIdentityRegistrarInfo,
   PalletProxyProxyDefinition,
   PalletProxyAnnouncement,
@@ -117,7 +122,6 @@ import type {
   PolkadotCorePrimitivesCandidateHash,
   PolkadotRuntimeParachainsDisputesSlashingPendingSlashes,
   PolkadotRuntimeCommonParasRegistrarParaInfo,
-  FixedArray,
   PolkadotRuntimeCommonCrowdloanFundInfo,
   PalletXcmQueryStatus,
   XcmVersionedMultiLocation,
@@ -391,7 +395,7 @@ export interface ChainStorage extends GenericChainStorage {
     /**
      * The lookup from index to account.
      **/
-    accounts(arg: number): Promise<[AccountId32Like, bigint, boolean] | undefined>;
+    accounts(arg: number): Promise<[AccountId32, bigint, boolean] | undefined>;
   };
   balances: {
     /**
@@ -461,7 +465,7 @@ export interface ChainStorage extends GenericChainStorage {
     /**
      * Author of current block.
      **/
-    author(): Promise<AccountId32Like | undefined>;
+    author(): Promise<AccountId32 | undefined>;
   };
   staking: {
     /**
@@ -479,14 +483,14 @@ export interface ChainStorage extends GenericChainStorage {
      * easy to initialize and the performance hit is minimal (we expect no more than four
      * invulnerables) and restricted to testnets.
      **/
-    invulnerables(): Promise<Array<AccountId32Like>>;
+    invulnerables(): Promise<Array<AccountId32>>;
 
     /**
      * Map from all locked "stash" accounts to the controller account.
      *
      * TWOX-NOTE: SAFE since `AccountId` is a secure hash.
      **/
-    bonded(arg: AccountId32Like): Promise<AccountId32Like | undefined>;
+    bonded(arg: AccountId32Like): Promise<AccountId32 | undefined>;
 
     /**
      * The minimum active bond to become and maintain the role of a nominator.
@@ -747,7 +751,7 @@ export interface ChainStorage extends GenericChainStorage {
     /**
      * The current set of validators.
      **/
-    validators(): Promise<Array<AccountId32Like>>;
+    validators(): Promise<Array<AccountId32>>;
 
     /**
      * Current index of the session.
@@ -764,7 +768,7 @@ export interface ChainStorage extends GenericChainStorage {
      * The queued keys for the next session. When the next session begins, these keys
      * will be used to determine the validator's session keys.
      **/
-    queuedKeys(): Promise<Array<[AccountId32Like, PolkadotRuntimeSessionKeys]>>;
+    queuedKeys(): Promise<Array<[AccountId32, PolkadotRuntimeSessionKeys]>>;
 
     /**
      * Indices of disabled validators.
@@ -783,7 +787,7 @@ export interface ChainStorage extends GenericChainStorage {
     /**
      * The owner of a key. The key is the `KeyTypeId` + the encoded key.
      **/
-    keyOwner(arg: [SpCoreCryptoKeyTypeId, Bytes]): Promise<AccountId32Like | undefined>;
+    keyOwner(arg: [SpCoreCryptoKeyTypeId, Bytes]): Promise<AccountId32 | undefined>;
   };
   grandpa: {
     /**
@@ -868,14 +872,14 @@ export interface ChainStorage extends GenericChainStorage {
     /**
      * The public proposals. Unsorted. The second item is the proposal.
      **/
-    publicProps(): Promise<Array<[number, FrameSupportPreimagesBounded, AccountId32Like]>>;
+    publicProps(): Promise<Array<[number, FrameSupportPreimagesBounded, AccountId32]>>;
 
     /**
      * Those who have locked a deposit.
      *
      * TWOX-NOTE: Safe, as increasing integer keys are safe.
      **/
-    depositOf(arg: number): Promise<[Array<AccountId32Like>, bigint] | undefined>;
+    depositOf(arg: number): Promise<[Array<AccountId32>, bigint] | undefined>;
 
     /**
      * The next free referendum index, aka the number of referenda started so far.
@@ -921,7 +925,7 @@ export interface ChainStorage extends GenericChainStorage {
      * A record of who vetoed what. Maps proposal hash to a possible existent block number
      * (until when it may not be resubmitted) and who vetoed it.
      **/
-    blacklist(arg: H256): Promise<[number, Array<AccountId32Like>] | undefined>;
+    blacklist(arg: H256): Promise<[number, Array<AccountId32>] | undefined>;
 
     /**
      * Record of all proposals that have been subject to emergency cancellation.
@@ -962,12 +966,12 @@ export interface ChainStorage extends GenericChainStorage {
     /**
      * The current members of the collective. This is stored sorted (just by value).
      **/
-    members(): Promise<Array<AccountId32Like>>;
+    members(): Promise<Array<AccountId32>>;
 
     /**
      * The prime member that helps determine the default vote behavior in case of absentations.
      **/
-    prime(): Promise<AccountId32Like | undefined>;
+    prime(): Promise<AccountId32 | undefined>;
   };
   technicalCommittee: {
     /**
@@ -993,12 +997,12 @@ export interface ChainStorage extends GenericChainStorage {
     /**
      * The current members of the collective. This is stored sorted (just by value).
      **/
-    members(): Promise<Array<AccountId32Like>>;
+    members(): Promise<Array<AccountId32>>;
 
     /**
      * The prime member that helps determine the default vote behavior in case of absentations.
      **/
-    prime(): Promise<AccountId32Like | undefined>;
+    prime(): Promise<AccountId32 | undefined>;
   };
   phragmenElection: {
     /**
@@ -1024,7 +1028,7 @@ export interface ChainStorage extends GenericChainStorage {
      *
      * Invariant: Always sorted based on account id.
      **/
-    candidates(): Promise<Array<[AccountId32Like, bigint]>>;
+    candidates(): Promise<Array<[AccountId32, bigint]>>;
 
     /**
      * The total number of vote rounds that have happened, excluding the upcoming one.
@@ -1042,12 +1046,12 @@ export interface ChainStorage extends GenericChainStorage {
     /**
      * The current membership, stored as an ordered Vec.
      **/
-    members(): Promise<Array<AccountId32Like>>;
+    members(): Promise<Array<AccountId32>>;
 
     /**
      * The current prime member, if one exists.
      **/
-    prime(): Promise<AccountId32Like | undefined>;
+    prime(): Promise<AccountId32 | undefined>;
   };
   treasury: {
     /**
@@ -1139,7 +1143,7 @@ export interface ChainStorage extends GenericChainStorage {
     /**
      * Pre-claimed Ethereum accounts, by the Account ID that they are claimed to.
      **/
-    preclaims(arg: AccountId32Like): Promise<EthereumAddressLike | undefined>;
+    preclaims(arg: AccountId32Like): Promise<EthereumAddress | undefined>;
   };
   vesting: {
     /**
@@ -1166,7 +1170,7 @@ export interface ChainStorage extends GenericChainStorage {
      * The super-identity of an alternative "sub" identity together with its name, within that
      * context. If the account is not some other account's sub-identity, then just `None`.
      **/
-    superOf(arg: AccountId32Like): Promise<[AccountId32Like, Data] | undefined>;
+    superOf(arg: AccountId32Like): Promise<[AccountId32, Data] | undefined>;
 
     /**
      * Alternative "sub" identities of this account.
@@ -1175,7 +1179,7 @@ export interface ChainStorage extends GenericChainStorage {
      *
      * TWOX-NOTE: OK ― `AccountId` is a secure hash.
      **/
-    subsOf(arg: AccountId32Like): Promise<[bigint, Array<AccountId32Like>]>;
+    subsOf(arg: AccountId32Like): Promise<[bigint, Array<AccountId32>]>;
 
     /**
      * The set of registrars. Not expected to get very big as can only be added through a
@@ -1983,7 +1987,7 @@ export interface ChainStorage extends GenericChainStorage {
     /**
      * The validator account keys of the validators actively participating in parachain consensus.
      **/
-    accountKeys(arg: number): Promise<Array<AccountId32Like> | undefined>;
+    accountKeys(arg: number): Promise<Array<AccountId32> | undefined>;
 
     /**
      * Executor parameter set for a given session index
@@ -2075,7 +2079,7 @@ export interface ChainStorage extends GenericChainStorage {
      *
      * It is illegal for a `None` value to trail in the list.
      **/
-    leases(arg: PolkadotParachainPrimitivesId): Promise<Array<[AccountId32Like, bigint] | undefined>>;
+    leases(arg: PolkadotParachainPrimitivesId): Promise<Array<[AccountId32, bigint] | undefined>>;
   };
   auctions: {
     /**
@@ -2105,7 +2109,7 @@ export interface ChainStorage extends GenericChainStorage {
      **/
     winning(
       arg: number,
-    ): Promise<FixedArray<[AccountId32Like, PolkadotParachainPrimitivesId, bigint] | undefined, 36> | undefined>;
+    ): Promise<FixedArray<[AccountId32, PolkadotParachainPrimitivesId, bigint] | undefined, 36> | undefined>;
   };
   crowdloan: {
     /**

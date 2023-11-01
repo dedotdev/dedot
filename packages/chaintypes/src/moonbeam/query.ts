@@ -2,12 +2,22 @@
 
 import type { GenericChainStorage } from '@delightfuldot/types';
 import type {
-  FrameSystemAccountInfo,
   AccountId20Like,
-  FrameSupportDispatchPerDispatchClass,
   H256,
   Bytes,
   Digest,
+  FixedU128,
+  Perbill,
+  AccountId20,
+  Percent,
+  Data,
+  FixedBytes,
+  H160,
+  U256,
+} from '@delightfuldot/codecs';
+import type {
+  FrameSystemAccountInfo,
+  FrameSupportDispatchPerDispatchClass,
   FrameSystemEventRecord,
   FrameSystemLastRuntimeUpgradeInfo,
   FrameSystemPhase,
@@ -25,9 +35,7 @@ import type {
   PalletBalancesBalanceLock,
   PalletBalancesReserveData,
   PalletBalancesIdAmount,
-  FixedU128,
   PalletTransactionPaymentReleases,
-  Perbill,
   PalletParachainStakingParachainBondConfig,
   PalletParachainStakingRoundInfo,
   PalletParachainStakingDelegator,
@@ -35,29 +43,22 @@ import type {
   PalletParachainStakingDelegationRequestsScheduledRequest,
   PalletParachainStakingAutoCompoundAutoCompoundConfig,
   PalletParachainStakingDelegations,
-  PalletParachainStakingSetBoundedOrderedSet,
   PalletParachainStakingCollatorSnapshot,
   PalletParachainStakingDelayedPayout,
   PalletParachainStakingInflationInflationInfo,
-  Percent,
   PalletAuthorSlotFilterNumNonZeroU32,
-  PalletAuthorMappingRegistrationInfo,
   NimbusPrimitivesNimbusCryptoPublic,
   PalletMoonbeamOrbitersCollatorPoolInfo,
   PalletProxyProxyDefinition,
   PalletProxyAnnouncement,
   PalletIdentityRegistration,
-  Data,
   PalletIdentityRegistrarInfo,
   PalletMultisigMultisig,
-  FixedBytes,
-  H160,
   PalletEvmCodeMetadata,
   EthereumTransactionTransactionV2,
   FpRpcTransactionStatus,
   EthereumReceiptReceiptV3,
   EthereumBlock,
-  U256,
   PalletSchedulerScheduled,
   FrameSupportPreimagesBounded,
   PalletDemocracyReferendumInfo,
@@ -487,7 +488,7 @@ export interface ChainStorage extends GenericChainStorage {
     /**
      * The collator candidates selected for the current round
      **/
-    selectedCandidates(): Promise<Array<AccountId20Like>>;
+    selectedCandidates(): Promise<Array<AccountId20>>;
 
     /**
      * Total capital locked by this staking pallet
@@ -533,7 +534,7 @@ export interface ChainStorage extends GenericChainStorage {
     /**
      * Author of current block.
      **/
-    author(): Promise<AccountId20Like | undefined>;
+    author(): Promise<AccountId20 | undefined>;
 
     /**
      * The highest slot that has been seen in the history of this chain.
@@ -567,7 +568,7 @@ export interface ChainStorage extends GenericChainStorage {
     /**
      * Account lookup override
      **/
-    accountLookupOverride(arg: AccountId20Like): Promise<AccountId20Like | undefined | undefined>;
+    accountLookupOverride(arg: AccountId20Like): Promise<AccountId20 | undefined | undefined>;
 
     /**
      * Current orbiters, with their "parent" collator
@@ -599,7 +600,7 @@ export interface ChainStorage extends GenericChainStorage {
     /**
      * Store active orbiter per round and per parent collator
      **/
-    orbiterPerRound(arg: [number, AccountId20Like]): Promise<AccountId20Like | undefined>;
+    orbiterPerRound(arg: [number, AccountId20Like]): Promise<AccountId20 | undefined>;
 
     /**
      * Check if account is an orbiter
@@ -636,7 +637,7 @@ export interface ChainStorage extends GenericChainStorage {
      * The super-identity of an alternative "sub" identity together with its name, within that
      * context. If the account is not some other account's sub-identity, then just `None`.
      **/
-    superOf(arg: AccountId20Like): Promise<[AccountId20Like, Data] | undefined>;
+    superOf(arg: AccountId20Like): Promise<[AccountId20, Data] | undefined>;
 
     /**
      * Alternative "sub" identities of this account.
@@ -645,7 +646,7 @@ export interface ChainStorage extends GenericChainStorage {
      *
      * TWOX-NOTE: OK ― `AccountId` is a secure hash.
      **/
-    subsOf(arg: AccountId20Like): Promise<[bigint, Array<AccountId20Like>]>;
+    subsOf(arg: AccountId20Like): Promise<[bigint, Array<AccountId20>]>;
 
     /**
      * The set of registrars. Not expected to get very big as can only be added through a
@@ -732,14 +733,14 @@ export interface ChainStorage extends GenericChainStorage {
     /**
      * The public proposals. Unsorted. The second item is the proposal.
      **/
-    publicProps(): Promise<Array<[number, FrameSupportPreimagesBounded, AccountId20Like]>>;
+    publicProps(): Promise<Array<[number, FrameSupportPreimagesBounded, AccountId20]>>;
 
     /**
      * Those who have locked a deposit.
      *
      * TWOX-NOTE: Safe, as increasing integer keys are safe.
      **/
-    depositOf(arg: number): Promise<[Array<AccountId20Like>, bigint] | undefined>;
+    depositOf(arg: number): Promise<[Array<AccountId20>, bigint] | undefined>;
 
     /**
      * The next free referendum index, aka the number of referenda started so far.
@@ -785,7 +786,7 @@ export interface ChainStorage extends GenericChainStorage {
      * A record of who vetoed what. Maps proposal hash to a possible existent block number
      * (until when it may not be resubmitted) and who vetoed it.
      **/
-    blacklist(arg: H256): Promise<[number, Array<AccountId20Like>] | undefined>;
+    blacklist(arg: H256): Promise<[number, Array<AccountId20>] | undefined>;
 
     /**
      * Record of all proposals that have been subject to emergency cancellation.
@@ -882,12 +883,12 @@ export interface ChainStorage extends GenericChainStorage {
     /**
      * The current members of the collective. This is stored sorted (just by value).
      **/
-    members(): Promise<Array<AccountId20Like>>;
+    members(): Promise<Array<AccountId20>>;
 
     /**
      * The prime member that helps determine the default vote behavior in case of absentations.
      **/
-    prime(): Promise<AccountId20Like | undefined>;
+    prime(): Promise<AccountId20 | undefined>;
   };
   techCommitteeCollective: {
     /**
@@ -913,12 +914,12 @@ export interface ChainStorage extends GenericChainStorage {
     /**
      * The current members of the collective. This is stored sorted (just by value).
      **/
-    members(): Promise<Array<AccountId20Like>>;
+    members(): Promise<Array<AccountId20>>;
 
     /**
      * The prime member that helps determine the default vote behavior in case of absentations.
      **/
-    prime(): Promise<AccountId20Like | undefined>;
+    prime(): Promise<AccountId20 | undefined>;
   };
   treasuryCouncilCollective: {
     /**
@@ -944,12 +945,12 @@ export interface ChainStorage extends GenericChainStorage {
     /**
      * The current members of the collective. This is stored sorted (just by value).
      **/
-    members(): Promise<Array<AccountId20Like>>;
+    members(): Promise<Array<AccountId20>>;
 
     /**
      * The prime member that helps determine the default vote behavior in case of absentations.
      **/
-    prime(): Promise<AccountId20Like | undefined>;
+    prime(): Promise<AccountId20 | undefined>;
   };
   openTechCommitteeCollective: {
     /**
@@ -975,12 +976,12 @@ export interface ChainStorage extends GenericChainStorage {
     /**
      * The current members of the collective. This is stored sorted (just by value).
      **/
-    members(): Promise<Array<AccountId20Like>>;
+    members(): Promise<Array<AccountId20>>;
 
     /**
      * The prime member that helps determine the default vote behavior in case of absentations.
      **/
-    prime(): Promise<AccountId20Like | undefined>;
+    prime(): Promise<AccountId20 | undefined>;
   };
   treasury: {
     /**
@@ -1259,7 +1260,7 @@ export interface ChainStorage extends GenericChainStorage {
      * we need to provide an index for the account derivation. This storage item stores the index
      * assigned for a given local account. These indices are usable as derivative in the relay chain
      **/
-    indexToAccount(arg: number): Promise<AccountId20Like | undefined>;
+    indexToAccount(arg: number): Promise<AccountId20 | undefined>;
 
     /**
      * Stores the transact info of a MultiLocation. This defines how much extra weight we need to
