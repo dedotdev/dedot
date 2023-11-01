@@ -24,20 +24,27 @@ const KNOWN_PATHS: KnownPath[] = [
   /^sp_arithmetic::fixed_point::\w+$/,
 ];
 
+const UNCHECKED_EXTRINSIC_PATH = 'sp_runtime::generic::unchecked_extrinsic::UncheckedExtrinsic';
+const MULTI_ADDRESS_PATH = 'sp_runtime::multiaddress::MultiAddress';
+
 export class CodecRegistry {
   #metadata?: MetadataLatest;
   #portableCodecRegistry?: PortableCodecRegistry;
-  // TODO docs!
-  #runtimeCodecs: Record<string, $.AnyShape>;
+
+  /**
+   * runtime inferred types after setting up metadata
+   * @private
+   */
+  #inferredTypes: Record<string, TypeId>;
 
   constructor(metadata?: MetadataLatest) {
-    if (metadata) this.setMetadata(metadata);
+    this.#inferredTypes = {};
 
-    this.#runtimeCodecs = {};
+    if (metadata) this.setMetadata(metadata);
   }
 
   findCodec(name: string): $.AnyShape {
-    return this.#runtimeCodecs[name] || this.#findKnownCodec(name);
+    return this.#findKnownCodec(name);
   }
 
   #findKnownCodec(typeName: string): $.AnyShape {
@@ -56,7 +63,13 @@ export class CodecRegistry {
     return KNOWN_PATHS.some((one) => joinedPath.match(one));
   }
 
-  findPortableCodec(typeId: TypeId): $.AnyShape {
+  findPortableCodec(typeId: TypeId | string): $.AnyShape {
+    if (typeof typeId === 'string') {
+      const inferTypeId = this.#inferredTypes[typeId];
+      if (Number.isInteger(inferTypeId)) return this.findPortableCodec(inferTypeId);
+      throw Error('Cannot find infer portable codec!');
+    }
+
     // TODO add assertion
     return this.#portableCodecRegistry!.findCodec(typeId);
   }
@@ -65,6 +78,36 @@ export class CodecRegistry {
     this.#metadata = metadata;
     this.#portableCodecRegistry = new PortableCodecRegistry(this.#metadata.types, this);
 
-    // TODO determine runtime codecs
+    this.#inferPortableTypes();
+  }
+
+  #inferPortableTypes() {
+    // TODO assert metadata!
+
+    const types = this.#metadata!.types;
+    const uncheckedExtrinsicType = types.find((one) => one.path.join('::') === UNCHECKED_EXTRINSIC_PATH);
+
+    if (!uncheckedExtrinsicType) {
+      return;
+    }
+
+    const [{ typeId: addressTypeId }] = uncheckedExtrinsicType.params;
+    if (!addressTypeId) {
+      return;
+    }
+
+    const addressType = types[addressTypeId];
+
+    // TODO refactor this!
+    if (addressType.path.join('::') === MULTI_ADDRESS_PATH) {
+      const [{ typeId: accountIdTypeId }] = addressType.params;
+      this.#inferredTypes['AccountId'] = accountIdTypeId!;
+    } else {
+      this.#inferredTypes['AccountId'] = addressTypeId;
+    }
+  }
+
+  get inferredTypes() {
+    return this.#inferredTypes;
   }
 }
