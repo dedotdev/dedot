@@ -20,8 +20,14 @@ import type {
   FixedU128,
 } from '@delightfuldot/codecs';
 
+/**
+ * Inferred types
+ **/
 export type AccountId = AccountId32Like;
 
+/**
+ * Portable types
+ **/
 export type FrameSystemAccountInfo = {
   nonce: number;
   consumers: number;

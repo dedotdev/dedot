@@ -92,18 +92,18 @@ export class CodecRegistry {
     }
 
     const [{ typeId: addressTypeId }] = uncheckedExtrinsicType.params;
-    if (!addressTypeId) {
+    if (!Number.isInteger(addressTypeId)) {
       return;
     }
 
-    const addressType = types[addressTypeId];
+    const addressType = types[addressTypeId!];
 
     // TODO refactor this!
     if (addressType.path.join('::') === MULTI_ADDRESS_PATH) {
       const [{ typeId: accountIdTypeId }] = addressType.params;
       this.#inferredTypes['AccountId'] = accountIdTypeId!;
     } else {
-      this.#inferredTypes['AccountId'] = addressTypeId;
+      this.#inferredTypes['AccountId'] = addressTypeId!;
     }
   }
 
