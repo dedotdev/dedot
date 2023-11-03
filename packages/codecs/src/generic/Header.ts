@@ -3,6 +3,7 @@ import * as $ from '@delightfuldot/shape';
 import { HexString } from '@delightfuldot/utils';
 import { $BlockNumber } from './Block';
 import { $Hash } from './Hash';
+import { registerLooseCodecType } from '../codectypes';
 
 export class ConsensusEngineId {
   id: HexString;
@@ -38,6 +39,8 @@ export const $ConsensusEngineId: $.Shape<ConsensusEngineIdLike, ConsensusEngineI
     }
   },
 );
+
+registerLooseCodecType({ $ConsensusEngineId });
 
 // TODO docs!
 export const $DigestItem = $.Enum({

@@ -1,5 +1,6 @@
 import * as $ from '@delightfuldot/shape';
 import { HexString } from '@delightfuldot/utils';
+import { registerLooseCodecType } from '../codectypes';
 
 export const $Text = $.str;
 export type Text = string;
@@ -11,6 +12,8 @@ export type StorageKey = $.Output<typeof $StorageKey>;
 export const $StorageData = $.RawHex;
 export type StorageDataLike = $.Input<typeof $StorageData>;
 export type StorageData = $.Output<typeof $StorageData>;
+
+registerLooseCodecType({ $StorageKey, $StorageData });
 
 export const $Extrinsic = $.PrefixedHex;
 

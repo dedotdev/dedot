@@ -3,6 +3,7 @@ import { decodeAddress, encodeAddress } from '@polkadot/util-crypto';
 import type { Prefix } from '@polkadot/util-crypto/types';
 import * as $ from '@delightfuldot/shape';
 import { HexString } from '@delightfuldot/utils';
+import { registerLooseCodecType } from '../codectypes';
 
 export const accountId32ToHex = (input: AccountId32Like): HexString => {
   if (input instanceof AccountId32) {
@@ -42,8 +43,4 @@ export const $AccountId32: $.Shape<AccountId32Like, AccountId32> = $.instance(
   (input) => [accountId32ToHex(input)],
 );
 
-export const Types = {
-  $AccountId32,
-  typeIn: 'AccountId32Like',
-  typeOut: 'AccountId32',
-};
+registerLooseCodecType({ $AccountId32 });

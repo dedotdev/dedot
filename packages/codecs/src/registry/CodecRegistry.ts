@@ -2,6 +2,7 @@ import * as $ from '@delightfuldot/shape';
 import * as Codecs from '../index';
 import { MetadataLatest, TypeId } from '../metadata';
 import { PortableCodecRegistry } from './PortableCodecRegistry';
+import { CodecType, knownCodecTypes, normalizeCodecName } from '../codectypes';
 
 type KnownPath = string | RegExp;
 
@@ -47,9 +48,25 @@ export class CodecRegistry {
     return this.#findKnownCodec(name);
   }
 
+  findCodecType(name: string): CodecType {
+    const normalizedName = normalizeCodecName(name);
+    const knownType = knownCodecTypes[normalizedName];
+    if (knownType) {
+      return knownType;
+    }
+
+    const $codec = this.findCodec(name);
+    return {
+      name: normalizedName,
+      $codec,
+      typeIn: name,
+      typeOut: name,
+    };
+  }
+
   #findKnownCodec(typeName: string): $.AnyShape {
     // @ts-ignore
-    const $codec = Codecs[`$${typeName}`] || $[typeName];
+    const $codec = Codecs[normalizeCodecName(typeName)] || $[typeName];
 
     if (!$codec || !($codec instanceof $.Shape)) {
       throw new Error(`Unsupported codec - ${typeName}`);

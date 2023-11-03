@@ -310,10 +310,9 @@ ${defTypeOut}
         let name, nameOut;
 
         if (this.registry.isKnownType(joinedPath)) {
-          name = path.at(-1)!;
-
-          const $knownCodec = this.registry.findCodec(name);
-          // TODO add nameOut
+          const codecType = this.registry.findCodecType(path.at(-1)!);
+          name = codecType.typeIn;
+          nameOut = codecType.typeOut;
 
           knownType = true;
         } else if (PATH_RM_INDEX_1.includes(path[1])) {
