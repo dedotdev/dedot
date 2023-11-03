@@ -312,11 +312,10 @@ ${defTypeOut}
         if (this.registry.isKnownType(joinedPath)) {
           name = path.at(-1)!;
 
-          // TODO docs! this behavior
           const $knownCodec = this.registry.findCodec(name);
-          if ($knownCodec.metadata[0].name === '$.instance') {
-            nameOut = name;
-            name = `${name}Like`;
+          if ($knownCodec.typeIn) {
+            name = $knownCodec.typeIn;
+            nameOut = $knownCodec.typeOut || name;
           }
 
           knownType = true;
