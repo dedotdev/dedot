@@ -1,7 +1,5 @@
 import * as $ from '@delightfuldot/shape';
 import { HexString } from '@delightfuldot/utils';
-import { registerCodecType } from '../codectypes';
-import { $ConsensusEngineId } from '@delightfuldot/codecs/generic';
 
 export const $Text = $.str;
 
