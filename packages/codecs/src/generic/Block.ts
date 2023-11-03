@@ -14,5 +14,3 @@ $BlockNumber.registerDecoder(
 
 export type BlockNumberLike = number | HexString;
 export type BlockNumber = number;
-
-$BlockNumber.registerType('BlockNumberLike');

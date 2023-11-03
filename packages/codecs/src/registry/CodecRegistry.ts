@@ -49,13 +49,13 @@ export class CodecRegistry {
 
   #findKnownCodec(typeName: string): $.AnyShape {
     // @ts-ignore
-    const $codec = (Codecs[`$${typeName}`] || $[typeName]) as $.AnyShape | undefined;
+    const $codec = Codecs[`$${typeName}`] || $[typeName];
 
-    if (!$codec) {
+    if (!$codec || !($codec instanceof $.Shape)) {
       throw new Error(`Unsupported codec - ${typeName}`);
     }
 
-    return $codec;
+    return $codec as $.AnyShape;
   }
 
   isKnownType(path: string | string[]) {

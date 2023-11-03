@@ -42,4 +42,8 @@ export const $AccountId32: $.Shape<AccountId32Like, AccountId32> = $.instance(
   (input) => [accountId32ToHex(input)],
 );
 
-$AccountId32.registerType('AccountId32Like');
+export const Types = {
+  $AccountId32,
+  typeIn: 'AccountId32Like',
+  typeOut: 'AccountId32',
+};

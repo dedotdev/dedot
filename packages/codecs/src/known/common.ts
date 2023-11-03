@@ -2,23 +2,22 @@ import * as $ from '@delightfuldot/shape';
 import { HexString } from '@delightfuldot/utils';
 
 export const $Text = $.str;
+export type Text = string;
 
 export const $StorageKey = $.RawHex;
 export type StorageKeyLike = $.Input<typeof $StorageKey>;
 export type StorageKey = $.Output<typeof $StorageKey>;
 
-$StorageKey.registerType('StorageKeyLike');
-
 export const $StorageData = $.RawHex;
 export type StorageDataLike = $.Input<typeof $StorageData>;
 export type StorageData = $.Output<typeof $StorageData>;
 
-$StorageData.registerType('StorageDataLike');
-
 export const $Extrinsic = $.PrefixedHex;
 
 export const $Bytes = $.RawHex;
+export type BytesLike = $.Input<typeof $Bytes>;
 export type Bytes = HexString;
+
 export type FixedBytes<Bytes extends number> = HexString; // TODO: add Unit8Array
 
 export type BitSequence = $.BitSequence;
