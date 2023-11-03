@@ -1,11 +1,11 @@
 import { stringPascalCase } from '@polkadot/util';
-import { CodecRegistry, Field, MetadataLatest, Type, TypeId, TypeParam } from '@delightfuldot/codecs';
+import { CodecRegistry, Field, MetadataLatest, PortableType, TypeId, TypeParam } from '@delightfuldot/codecs';
 import { isJsPrimitive, normalizeName } from '@delightfuldot/utils';
 import { beautifySourceCode, commentBlock } from './utils';
 import { registry } from '@delightfuldot/types';
 import { TypeImports } from './TypeImports.ts';
 
-interface NamedType extends Type {
+interface NamedType extends PortableType {
   name: string; // nameIn, TODO docs!
   nameOut: string;
   skip?: boolean;
