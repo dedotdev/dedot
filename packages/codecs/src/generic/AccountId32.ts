@@ -41,3 +41,5 @@ export const $AccountId32: $.Shape<AccountId32Like, AccountId32> = $.instance(
   $.Tuple($.FixedHex(32)),
   (input) => [accountId32ToHex(input)],
 );
+
+$AccountId32.registerType('AccountId32Like');

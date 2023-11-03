@@ -1,6 +1,6 @@
 import { hexToBn, isHex } from '@polkadot/util';
 import * as $ from '@delightfuldot/shape';
-import { HexString } from "@delightfuldot/utils";
+import { HexString } from '@delightfuldot/utils';
 
 export const $BlockNumber = $.u32; // TODO docs: why fixed at u32?
 $BlockNumber.registerDecoder(
@@ -12,4 +12,7 @@ $BlockNumber.registerDecoder(
     }).toNumber(),
 );
 
-export type BlockNumber = number | HexString;
+export type BlockNumberLike = number | HexString;
+export type BlockNumber = number;
+
+$BlockNumber.registerType('BlockNumberLike');

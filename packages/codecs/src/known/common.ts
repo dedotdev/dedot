@@ -1,13 +1,21 @@
 import * as $ from '@delightfuldot/shape';
 import { HexString } from '@delightfuldot/utils';
+import { registerCodecType } from '../codectypes';
+import { $ConsensusEngineId } from '@delightfuldot/codecs/generic';
 
 export const $Text = $.str;
 
 export const $StorageKey = $.RawHex;
-export type StorageKey = $.Input<typeof $StorageKey>;
+export type StorageKeyLike = $.Input<typeof $StorageKey>;
+export type StorageKey = $.Output<typeof $StorageKey>;
+
+$StorageKey.registerType('StorageKeyLike');
 
 export const $StorageData = $.RawHex;
-export type StorageData = $.Input<typeof $StorageData>;
+export type StorageDataLike = $.Input<typeof $StorageData>;
+export type StorageData = $.Output<typeof $StorageData>;
+
+$StorageData.registerType('StorageDataLike');
 
 export const $Extrinsic = $.PrefixedHex;
 
@@ -25,4 +33,7 @@ export type FixedArray<T, N extends number> = N extends 0
       length: N;
     } & ReadonlyArray<T>;
 
+// typeIn for $.Option codec
 export type Option<T> = T | undefined;
+
+// TODO add typeIn for other primitives codecs!

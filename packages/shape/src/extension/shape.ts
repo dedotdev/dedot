@@ -22,6 +22,10 @@ declare module 'subshape' {
     registerDecoder: (predicate: Predicate, decoder: Decoder) => void;
     tryEncode: (input: any) => Uint8Array;
     tryDecode: (input: any) => O;
+
+    registerType: (typeIn: string, typeOut?: string) => void;
+    typeIn?: string;
+    typeOut?: string;
   }
 }
 
@@ -66,6 +70,15 @@ Shape.prototype.tryEncode = function (input: any) {
 Shape.prototype.registerEncoder = function (predicate: Predicate, encoder: Encoder) {
   this.encoders = this.encoders || [];
   this.encoders.push([predicate, encoder]);
+};
+
+Shape.prototype.registerType = function (typeIn: string, typeOut?: string) {
+  this.typeIn = typeIn;
+  this.typeOut = typeOut;
+
+  if (!typeOut && typeIn?.endsWith('Like')) {
+    this.typeOut = typeIn.slice(0, typeIn.length - 4); // "Like".length = 4
+  }
 };
 
 // Register decoder from plain values, TODO support more!

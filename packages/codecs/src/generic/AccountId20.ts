@@ -38,7 +38,10 @@ export const $AccountId20: $.Shape<AccountId20Like, AccountId20> = $.instance(
   $.Tuple($.FixedHex(20)),
   (input) => [accountId20ToHex(input)],
 );
+$AccountId20.registerType('AccountId20Like');
 
 export class EthereumAddress extends AccountId20 {}
 export type EthereumAddressLike = AccountId20Like;
 export const $EthereumAddress: $.Shape<EthereumAddressLike, EthereumAddress> = $AccountId20;
+
+$EthereumAddress.registerType('EthereumAddressLike');

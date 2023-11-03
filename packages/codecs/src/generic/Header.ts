@@ -39,6 +39,8 @@ export const $ConsensusEngineId: $.Shape<ConsensusEngineIdLike, ConsensusEngineI
   },
 );
 
+$ConsensusEngineId.registerType('ConsensusEngineIdLike');
+
 // TODO docs!
 export const $DigestItem = $.Enum({
   Other: { index: 0, value: $.PrefixedHex },
