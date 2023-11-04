@@ -38,17 +38,17 @@ export class RpcExecutor<ChainApi extends GenericSubstrateApi> extends Executor<
   tryDecode(callSpec: RpcCallSpec, raw: any) {
     if (raw === null) {
       // TODO clarify this & improve this
-      return null;
+      return undefined;
     }
 
     const { type, isScale } = callSpec;
 
-    if (isJsPrimitive(type)) {
-      return raw;
-    }
-
     if (isScale) {
       return this.registry.findCodec(type).tryDecode(raw);
+    }
+
+    if (isJsPrimitive(type)) {
+      return raw;
     }
 
     return raw;
