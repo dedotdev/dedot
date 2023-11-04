@@ -155,8 +155,8 @@ export const system: RpcModuleSpec = {
     ],
     params: [
       {
-        name: 'accountId',
-        type: 'AccountId',
+        name: 'address',
+        type: 'string',
       },
     ],
     type: 'number',
