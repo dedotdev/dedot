@@ -2,7 +2,7 @@ import { findAliasRpcSpec, findRpcSpec, RpcModuleName } from '@delightfuldot/spe
 import { RpcCallSpec } from '@delightfuldot/specs/types';
 import { isJsPrimitive } from '@delightfuldot/utils';
 import { ApiGen, TypesGen } from '../generator';
-import { beautifySourceCode, commentBlock } from './utils';
+import { beautifySourceCode, commentBlock, WRAPPER_TYPE_REGEX } from './utils';
 
 const HIDDEN_RPCS = [
   // Ref: https://github.com/paritytech/polkadot-sdk/blob/43415ef58c143b985e09015cd000dbd65f6d3997/substrate/client/rpc-servers/src/lib.rs#L152C9-L158
@@ -91,37 +91,66 @@ export interface RpcCalls extends GenericRpcCalls {
       return `${commentBlock(defaultDocs)}${method}: AsyncMethod`;
     }
 
-    this.addTypeImport(type);
-    this.addTypeImport(params.map((one) => one.type));
+    this.addTypeImport(type, false);
+    params.forEach(({ type, isScale }) => {
+      this.addTypeImport(type, !!isScale);
+    });
 
+    // TODO Convert param types to corresponding typeIn & typeOut
     return `${commentBlock(docs, '\n', defaultDocs)}${method}(${params.map(
-      ({ name, type, isOptional }) => `${name}${isOptional ? '?' : ''}: ${type}`,
-    )}): Promise<${type}>`;
+      ({ name, type, isOptional, isScale }) =>
+        `${name}${isOptional ? '?' : ''}: ${this.getGeneratedTypeName(type, !!isScale)}`,
+    )}): Promise<${this.getGeneratedTypeName(type, false)}>`;
   }
 
-  addTypeImport(type: string | string[]) {
+  // TODO check typeIn, typeOut if param type, or rpc type isScale
+  addTypeImport(type: string | string[], toTypeIn = true) {
     if (Array.isArray(type)) {
-      type.forEach((one) => this.addTypeImport(one));
+      type.forEach((one) => this.addTypeImport(one, toTypeIn));
       return;
     }
+
+    type = type.trim();
 
     if (isJsPrimitive(type)) {
       return;
     }
 
     // TODO handle for generic wrapper types
-    const matchArray = type.match(/^Array<(.+)>$/);
+    const matchArray = type.match(WRAPPER_TYPE_REGEX);
     if (matchArray) {
-      this.addTypeImport(matchArray[1]);
+      const [_, $1, $2] = matchArray;
+      this.addTypeImport($1, toTypeIn);
+      this.addTypeImport(
+        $2.split(',').map((one) => one.trim()),
+        toTypeIn,
+      );
+      return;
+    }
+
+    if (type.includes(' | ')) {
+      this.addTypeImport(
+        type.split(' | ').map((one) => one.trim()),
+        toTypeIn,
+      );
       return;
     }
 
     try {
-      this.registry.findCodec(type);
-      this.typesGen.typeImports.addCodecType(type);
+      const { typeIn, typeOut } = this.registry.findCodecType(type);
+      this.typesGen.typeImports.addCodecType(toTypeIn ? typeIn : typeOut);
       return;
     } catch (e) {}
 
     this.typesGen.addTypeImport(type);
+  }
+
+  getGeneratedTypeName(type: string, toTypeIn = true) {
+    try {
+      const { typeIn, typeOut } = this.registry.findCodecType(type);
+      return toTypeIn ? typeIn : typeOut;
+    } catch (e) {}
+
+    return type;
   }
 }

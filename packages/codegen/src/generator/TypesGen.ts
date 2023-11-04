@@ -55,11 +55,6 @@ export class TypesGen {
 
     let defTypeOut = '';
 
-    defTypeOut += commentBlock('Inferred types');
-    defTypeOut += this.generateInferredTypes();
-
-    defTypeOut += '\n';
-    defTypeOut += commentBlock('Portable types');
     Object.values(this.includedTypes)
       .filter(({ skip, knownType }) => !(skip || knownType))
       .forEach(({ name, id, docs }) => {
@@ -80,16 +75,6 @@ ${defTypeOut}
   clearCache() {
     this.typeCache = {};
     this.typeImports.clear();
-  }
-
-  generateInferredTypes() {
-    const inferredTypes = Object.keys(this.registry.inferredTypes);
-
-    this.typeImports.addPortableType(...inferredTypes);
-
-    return inferredTypes
-      .map((type) => `export type ${type} = ${this.generateType(this.registry.inferredTypes[type], 1)};`)
-      .join('\n');
   }
 
   generateType(typeId: TypeId, nestedLevel = 0, typeOut = false): string {
@@ -479,13 +464,6 @@ ${defTypeOut}
         return;
       }
     }
-
-    try {
-      // Check if typeName is an inferred portable type!
-      this.registry.findPortableCodec(typeName);
-      this.typeImports.addPortableType(typeName);
-      return;
-    } catch (e) {}
 
     if (BASIC_KNOWN_TYPES.includes(typeName)) {
       this.typeImports.addCodecType(typeName);
