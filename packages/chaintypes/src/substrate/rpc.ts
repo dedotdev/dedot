@@ -12,8 +12,7 @@ import type {
   SyncState,
   NetworkState,
 } from '@delightfuldot/types';
-import type { Metadata, BlockHash, Bytes } from '@delightfuldot/codecs';
-import type { AccountId } from './types';
+import type { Metadata, BlockHash, Option, StorageData, StorageKeyLike, Bytes } from '@delightfuldot/codecs';
 
 export interface RpcCalls extends GenericRpcCalls {
   author: {
@@ -423,14 +422,11 @@ export interface RpcCalls extends GenericRpcCalls {
     getRuntimeVersion: AsyncMethod;
 
     /**
+     * Returns a storage entry at a specific block's state.
+     *
      * @rpcname: state_getStorage
      **/
-    getStorage: AsyncMethod;
-
-    /**
-     * @rpcname: state_getStorageAt
-     **/
-    getStorageAt: AsyncMethod;
+    getStorage(key: StorageKeyLike, at?: BlockHash): Promise<Option<StorageData>>;
 
     /**
      * @rpcname: state_getStorageHash
@@ -555,7 +551,7 @@ export interface RpcCalls extends GenericRpcCalls {
      *
      * @rpcname: system_accountNextIndex
      **/
-    accountNextIndex(accountId: AccountId): Promise<number>;
+    accountNextIndex(address: string): Promise<number>;
 
     /**
      * Adds the supplied directives to the current log filter
