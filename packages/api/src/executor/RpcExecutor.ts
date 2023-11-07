@@ -1,10 +1,11 @@
+import type { SubstrateApi } from '@delightfuldot/chaintypes';
 import { u8aToHex } from '@polkadot/util';
 import { findAliasRpcSpec, findRpcSpec, RpcCallSpec, RpcParamSpec } from '@delightfuldot/specs';
 import { GenericSubstrateApi } from '@delightfuldot/types';
 import { isJsPrimitive } from '@delightfuldot/utils';
 import { Executor } from './Executor';
 
-export class RpcExecutor<ChainApi extends GenericSubstrateApi> extends Executor<ChainApi> {
+export class RpcExecutor<ChainApi extends GenericSubstrateApi = SubstrateApi> extends Executor<ChainApi> {
   execute(section: string, method: string) {
     const maybeRpcName = `${section}_${method}`;
     const callSpec = findRpcSpec(maybeRpcName) || findAliasRpcSpec(maybeRpcName);

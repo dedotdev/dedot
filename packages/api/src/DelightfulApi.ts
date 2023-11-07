@@ -26,10 +26,10 @@ export default class DelightfulApi<ChainApi extends GenericSubstrateApi = Substr
     this.setMetadata(metadata);
   }
 
-  static async create<ChainType extends GenericSubstrateApi = SubstrateApi>(
+  static async create<ChainApi extends GenericSubstrateApi = SubstrateApi>(
     options: ApiOptions,
-  ): Promise<DelightfulApi<ChainType>> {
-    const api = new DelightfulApi<ChainType>(options);
+  ): Promise<DelightfulApi<ChainApi>> {
+    const api = new DelightfulApi<ChainApi>(options);
 
     if (api.provider instanceof WsProvider) {
       await api.provider.isReady;
