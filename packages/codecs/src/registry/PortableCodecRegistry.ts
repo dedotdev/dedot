@@ -29,8 +29,17 @@ export class PortableCodecRegistry {
     this.#cache = new Map();
   }
 
+  findType(typeId: TypeId): PortableType {
+    const type = this.types[typeId];
+    if (!type) {
+      throw new Error(`Cannot find portable type for id: ${typeId}`);
+    }
+
+    return type;
+  }
+
   findCodec(typeId: TypeId): $.AnyShape {
-    const typeDef = this.types[typeId];
+    const typeDef = this.findType(typeId);
     if (typeDef && typeDef.path.length > 0) {
       try {
         const codecName = typeDef.path.at(-1)!;

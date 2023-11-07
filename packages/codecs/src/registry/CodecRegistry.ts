@@ -3,6 +3,7 @@ import * as Codecs from '../index';
 import { MetadataLatest, TypeId } from '../metadata';
 import { PortableCodecRegistry } from './PortableCodecRegistry';
 import { CodecType, knownCodecTypes, normalizeCodecName } from '../codectypes';
+import { PortableType } from '../metadata/scale-info';
 
 type KnownPath = string | RegExp;
 
@@ -74,10 +75,18 @@ export class CodecRegistry {
     return this.#portableCodecRegistry!.findCodec(typeId);
   }
 
+  findPortableType(typeId: TypeId): PortableType {
+    return this.#portableCodecRegistry!.findType(typeId);
+  }
+
   setMetadata(metadata: MetadataLatest) {
     this.#metadata = metadata;
     this.#portableCodecRegistry = new PortableCodecRegistry(this.#metadata.types, this);
 
     // TODO runtime inferred types after setting up metadata
+  }
+
+  get metadata(): MetadataLatest | undefined {
+    return this.#metadata;
   }
 }
