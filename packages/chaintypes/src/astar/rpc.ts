@@ -3,6 +3,8 @@
 import type {
   GenericRpcCalls,
   AsyncMethod,
+  Unsub,
+  Callback,
   RpcMethods,
   ChainType,
   Health,
@@ -12,7 +14,7 @@ import type {
   SyncState,
   NetworkState,
 } from '@delightfuldot/types';
-import type { Metadata, BlockHash, Option, StorageData, StorageKeyLike, Bytes } from '@delightfuldot/codecs';
+import type { Header, Metadata, BlockHash, Option, StorageData, StorageKeyLike, Bytes } from '@delightfuldot/codecs';
 
 export interface RpcCalls extends GenericRpcCalls {
   author: {
@@ -173,14 +175,11 @@ export interface RpcCalls extends GenericRpcCalls {
     subscribeFinalizedHeads: AsyncMethod;
 
     /**
-     * @rpcname: chain_subscribeNewHead
+     * Retrieves the best header via subscription
+     *
+     * @pubsub: chain_newHead, chain_subscribeNewHeads, chain_unsubscribeNewHeads
      **/
-    subscribeNewHead: AsyncMethod;
-
-    /**
-     * @rpcname: chain_subscribeNewHeads
-     **/
-    subscribeNewHeads: AsyncMethod;
+    subscribeNewHeads(callback: Callback<Header>): Promise<Unsub>;
 
     /**
      * @rpcname: chain_subscribeRuntimeVersion
@@ -201,11 +200,6 @@ export interface RpcCalls extends GenericRpcCalls {
      * @rpcname: chain_unsubscribeFinalizedHeads
      **/
     unsubscribeFinalizedHeads: AsyncMethod;
-
-    /**
-     * @rpcname: chain_unsubscribeNewHead
-     **/
-    unsubscribeNewHead: AsyncMethod;
 
     /**
      * @rpcname: chain_unsubscribeNewHeads
@@ -654,14 +648,6 @@ export interface RpcCalls extends GenericRpcCalls {
 
     [method: string]: AsyncMethod;
   };
-  subscribe: {
-    /**
-     * @rpcname: subscribe_newHead
-     **/
-    newHead: AsyncMethod;
-
-    [method: string]: AsyncMethod;
-  };
   system: {
     /**
      * Returns the next valid index (aka nonce) for given account.
@@ -831,14 +817,6 @@ export interface RpcCalls extends GenericRpcCalls {
      * @rpcname: transaction_unstable_unwatch
      **/
     unstable_unwatch: AsyncMethod;
-
-    [method: string]: AsyncMethod;
-  };
-  unsubscribe: {
-    /**
-     * @rpcname: unsubscribe_newHead
-     **/
-    newHead: AsyncMethod;
 
     [method: string]: AsyncMethod;
   };

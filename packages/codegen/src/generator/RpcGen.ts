@@ -21,7 +21,7 @@ export class RpcGen extends ApiGen {
 
   generate() {
     this.typesGen.clearCache();
-    this.typesGen.typeImports.addKnownType('GenericRpcCalls', 'AsyncMethod');
+    this.typesGen.typeImports.addKnownType('GenericRpcCalls', 'AsyncMethod', 'Unsub', 'Callback');
 
     const specsByModule = this.rpcMethods
       .filter((one) => !findAliasRpcSpec(one)) // we'll ignore alias rpc for now if defined in the specs! TODO should we generate alias rpc as well?
@@ -82,10 +82,10 @@ export interface RpcCalls extends GenericRpcCalls {
   }
 
   #generateMethodDef(spec: RpcCallSpec) {
-    const { name, type, module, method, docs = [], params } = spec;
+    const { name, type, module, method, docs = [], params, pubsub } = spec;
 
     const rpcName = name || `${module}_${method}`;
-    const defaultDocs = `@rpcname: ${rpcName}`;
+    let defaultDocs = [`@rpcname: ${rpcName}`];
 
     if (type === 'AsyncMethod' && params.length === 0) {
       return `${commentBlock(defaultDocs)}${method}: AsyncMethod`;
@@ -96,11 +96,23 @@ export interface RpcCalls extends GenericRpcCalls {
       this.addTypeImport(type, !!isScale);
     });
 
-    // TODO Convert param types to corresponding typeIn & typeOut
-    return `${commentBlock(docs, '\n', defaultDocs)}${method}(${params.map(
+    const isSubscription = !!pubsub;
+
+    const paramsOut = params.map(
       ({ name, type, isOptional, isScale }) =>
         `${name}${isOptional ? '?' : ''}: ${this.getGeneratedTypeName(type, !!isScale)}`,
-    )}): Promise<${this.getGeneratedTypeName(type, false)}>`;
+    );
+
+    const typeOut = this.getGeneratedTypeName(type, false);
+
+    if (isSubscription) {
+      defaultDocs = [`@pubsub: ${pubsub?.join(', ')}`];
+
+      paramsOut.push(`callback: Callback<${typeOut}>`);
+      return `${commentBlock(docs, '\n', defaultDocs)}${method}(${paramsOut.join(', ')}): Promise<Unsub>`;
+    } else {
+      return `${commentBlock(docs, '\n', defaultDocs)}${method}(${paramsOut.join(', ')}): Promise<${typeOut}>`;
+    }
   }
 
   // TODO check typeIn, typeOut if param type, or rpc type isScale

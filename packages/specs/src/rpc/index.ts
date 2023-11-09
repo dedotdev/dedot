@@ -1,7 +1,6 @@
 // import { author } from './author';
 // import { babe } from './babe';
 // import { beefy } from './beefy';
-// import { chain } from './chain';
 // import { childstate } from './childstate';
 // import { contracts } from './contracts';
 // import { dev } from './dev';
@@ -12,9 +11,10 @@
 // import { net } from './net';
 // import { offchain } from './offchain';
 // import { payment } from './payment';
-import { syncstate } from './syncstate';
 // import { web3 } from './web3';
-import { RpcCallSpec, RpcCallsSpec } from '@delightfuldot/specs/types';
+import { RpcCallSpec, RpcCallsSpec } from '../types';
+import { chain } from './chain';
+import { syncstate } from './syncstate';
 import { rpc } from './rpc';
 import { state } from './state';
 import { system } from './system';
@@ -24,10 +24,10 @@ export const rpcCalls: RpcCallsSpec = {
   state,
   rpc,
   syncstate,
+  chain,
   // author,
   // babe,
   // beefy,
-  // chain,
   // childstate,
   // contracts,
   // dev,

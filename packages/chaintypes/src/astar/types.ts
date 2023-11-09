@@ -60,7 +60,7 @@ export type AstarRuntimeRuntimeEvent =
   | { tag: 'CumulusXcm'; value: CumulusPalletXcmEvent }
   | { tag: 'DmpQueue'; value: CumulusPalletDmpQueueEvent }
   | { tag: 'XcAssetConfig'; value: PalletXcAssetConfigEvent }
-  | { tag: 'Xtokens'; value: OrmlXtokensModuleEvent }
+  | { tag: 'XTokens'; value: OrmlXtokensModuleEvent }
   | { tag: 'Evm'; value: PalletEvmEvent }
   | { tag: 'Ethereum'; value: PalletEthereumEvent }
   | { tag: 'BaseFee'; value: PalletBaseFeeEvent }
@@ -1134,7 +1134,7 @@ export type AstarRuntimeRuntimeCall =
   | { tag: 'CumulusXcm'; value: CumulusPalletXcmCall }
   | { tag: 'DmpQueue'; value: CumulusPalletDmpQueueCall }
   | { tag: 'XcAssetConfig'; value: PalletXcAssetConfigCall }
-  | { tag: 'Xtokens'; value: OrmlXtokensModuleCall }
+  | { tag: 'XTokens'; value: OrmlXtokensModuleCall }
   | { tag: 'Evm'; value: PalletEvmCall }
   | { tag: 'Ethereum'; value: PalletEthereumCall }
   | { tag: 'BaseFee'; value: PalletBaseFeeCall }
