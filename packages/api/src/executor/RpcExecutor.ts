@@ -1,8 +1,8 @@
 import type { SubstrateApi } from '@delightfuldot/chaintypes';
-import { u8aToHex } from '@polkadot/util';
+import { isFunction, u8aToHex } from '@polkadot/util';
 import { findAliasRpcSpec, findRpcSpec, RpcCallSpec, RpcParamSpec } from '@delightfuldot/specs';
-import { GenericSubstrateApi } from '@delightfuldot/types';
-import { isJsPrimitive } from '@delightfuldot/utils';
+import { GenericSubstrateApi, Unsub } from '@delightfuldot/types';
+import { assert, isJsPrimitive } from '@delightfuldot/utils';
 import { Executor } from './Executor';
 
 export class RpcExecutor<ChainApi extends GenericSubstrateApi = SubstrateApi> extends Executor<ChainApi> {
@@ -10,6 +10,7 @@ export class RpcExecutor<ChainApi extends GenericSubstrateApi = SubstrateApi> ex
     const maybeRpcName = `${section}_${method}`;
     const callSpec = findRpcSpec(maybeRpcName) || findAliasRpcSpec(maybeRpcName);
     const rpcName = callSpec?.name || `${section}_${method}`;
+    const isSubscription = !!callSpec?.pubsub;
 
     const fnRpc = async (...args: any[]): Promise<any> => {
       if (!callSpec) {
@@ -29,11 +30,47 @@ export class RpcExecutor<ChainApi extends GenericSubstrateApi = SubstrateApi> ex
       return this.tryDecode(callSpec, result);
     };
 
+    const fnSubRpc = async (...args: any[]): Promise<Unsub> => {
+      assert(callSpec, 'Invalid rpc call spec!');
+
+      const inArgs = args.slice();
+      const callback = inArgs.pop();
+      assert(isFunction(callback), 'A callback is required for subscription');
+
+      const onNewMessage = (error?: Error | null, result?: unknown) => {
+        if (error) {
+          console.error(error);
+          return;
+        }
+
+        callback(this.tryDecode(callSpec!, result));
+      };
+
+      const { params, pubsub } = callSpec!;
+      const formattedInputs = inArgs.map((input, index) => this.tryEncode(params[index], input));
+      const [subname, subscribe, unsubcribe] = pubsub!;
+
+      const subscription = this.provider.subscribe(subname, subscribe, formattedInputs, onNewMessage);
+
+      return async () => {
+        return subscription
+          .then((subscriptionId) => this.provider.unsubscribe(subname, unsubcribe, subscriptionId))
+          .catch((err) => {
+            console.error(err);
+            return false;
+          });
+      };
+    };
+
     const rawRpc = async (...args: any[]): Promise<any> => {
       return await this.provider.send<any>(rpcName, args);
     };
 
-    return callSpec ? fnRpc : rawRpc;
+    if (!callSpec) {
+      return rawRpc;
+    }
+
+    return isSubscription ? fnSubRpc : fnRpc;
   }
 
   tryDecode(callSpec: RpcCallSpec, raw: any) {
