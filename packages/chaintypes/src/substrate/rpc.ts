@@ -168,7 +168,7 @@ export interface RpcCalls extends GenericRpcCalls {
      *
      * @rpcname: chain_getBlockHash
      **/
-    getBlockHash(blockNumber?: BlockNumber): Promise<BlockHash>;
+    getBlockHash(blockNumber?: BlockNumber): Promise<Option<BlockHash>>;
 
     /**
      * Get hash of the last finalized block in the canon chain
@@ -182,7 +182,7 @@ export interface RpcCalls extends GenericRpcCalls {
      *
      * @rpcname: chain_getHeader
      **/
-    getHeader(at?: BlockHash): Promise<Header>;
+    getHeader(at?: BlockHash): Promise<Option<Header>>;
 
     /**
      * All head subscription.

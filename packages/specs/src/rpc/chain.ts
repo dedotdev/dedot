@@ -1,15 +1,25 @@
 import { RpcModuleSpec } from '../types';
 import { atBlockHashParam } from './shared';
 
+/**
+ * Ref: https://github.com/paritytech/polkadot-sdk/blob/cbc8e5f7df2fa9735281a1388f5f7f4ae36cd25c/substrate/client/rpc-api/src/chain/mod.rs#L27
+ */
 export const chain: RpcModuleSpec = {
-  subscribeNewHeads: {
-    docs: 'Retrieves the best header via subscription',
-    params: [],
-    pubsub: ['chain_newHead', 'chain_subscribeNewHeads', 'chain_unsubscribeNewHeads'],
-    alias: ['chain_unsubscribeNewHead', 'chain_subscribeNewHead', 'subscribe_newHead', 'unsubscribe_newHead'],
-    type: 'Header',
+  getHeader: {
+    alias: ['chain_getHead'],
+    docs: 'Retrieves the header for a specific block',
+    params: [atBlockHashParam],
+    type: 'Option<Header>',
     isScale: true,
   },
+  getBlock: {
+    docs: 'Get header and body of a relay chain block',
+    params: [atBlockHashParam],
+    type: 'Option<SignedBlock>',
+    isScale: true,
+  },
+  // TODO support get list of block hash
+  // Ref: https://github.com/paritytech/polkadot-sdk/blob/cbc8e5f7df2fa9735281a1388f5f7f4ae36cd25c/substrate/client/rpc-api/src/chain/mod.rs#L40-L43
   getBlockHash: {
     docs: 'Get the block hash for a specific block',
     params: [
@@ -19,13 +29,7 @@ export const chain: RpcModuleSpec = {
         type: 'BlockNumber',
       },
     ],
-    type: 'BlockHash',
-  },
-  getBlock: {
-    docs: 'Get header and body of a relay chain block',
-    params: [atBlockHashParam],
-    type: 'Option<SignedBlock>',
-    isScale: true,
+    type: 'Option<BlockHash>',
   },
   getFinalizedHead: {
     alias: ['chain_getFinalisedHead'],
@@ -33,17 +37,18 @@ export const chain: RpcModuleSpec = {
     params: [],
     type: 'BlockHash',
   },
-  getHeader: {
-    alias: ['chain_getHead'],
-    docs: 'Retrieves the header for a specific block',
-    params: [atBlockHashParam],
-    type: 'Header',
-    isScale: true,
-  },
   subscribeAllHeads: {
     docs: 'All head subscription.',
     params: [],
     pubsub: ['chain_allHead', 'chain_subscribeAllHeads', 'chain_unsubscribeAllHeads'],
+    type: 'Header',
+    isScale: true,
+  },
+  subscribeNewHeads: {
+    docs: 'Retrieves the best header via subscription',
+    params: [],
+    pubsub: ['chain_newHead', 'chain_subscribeNewHeads', 'chain_unsubscribeNewHeads'],
+    alias: ['chain_unsubscribeNewHead', 'chain_subscribeNewHead', 'subscribe_newHead', 'unsubscribe_newHead'],
     type: 'Header',
     isScale: true,
   },
