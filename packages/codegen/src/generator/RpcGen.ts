@@ -1,4 +1,4 @@
-import { findAliasRpcSpec, findRpcSpec, RpcModuleName } from '@delightfuldot/specs';
+import { findAliasRpcSpec, findRpcSpec, isUnsubscribeMethod, RpcModuleName } from '@delightfuldot/specs';
 import { RpcCallSpec } from '@delightfuldot/specs/types';
 import { isJsPrimitive } from '@delightfuldot/utils';
 import { ApiGen, TypesGen } from '../generator';
@@ -24,7 +24,8 @@ export class RpcGen extends ApiGen {
     this.typesGen.typeImports.addKnownType('GenericRpcCalls', 'AsyncMethod', 'Unsub', 'Callback');
 
     const specsByModule = this.rpcMethods
-      .filter((one) => !findAliasRpcSpec(one)) // we'll ignore alias rpc for now if defined in the specs! TODO should we generate alias rpc as well?
+      .filter((one) => !findAliasRpcSpec(one)) // we'll ignore  alias rpc for now if defined in the specs! TODO should we generate alias rpc as well?
+      .filter((one) => !isUnsubscribeMethod(one)) // we'll ignore unsubscribe method as well
       .map((one) => {
         const spec = findRpcSpec(one);
         if (spec) {

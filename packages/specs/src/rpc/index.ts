@@ -50,9 +50,15 @@ export const rpcCallSpecs: RpcCallSpec[] = Object.keys(rpcCalls)
   .flat();
 
 export const findRpcSpec = (rpcName: string) => {
-  return rpcCallSpecs.find((spec) => rpcName === `${spec.module}_${spec.method}` || rpcName === spec.name);
+  return rpcCallSpecs.find(
+    (spec) => rpcName === `${spec.module}_${spec.method}` || rpcName === spec.name || rpcName === spec.pubsub?.at(1),
+  );
 };
 
 export const findAliasRpcSpec = (rpcName: string) => {
   return rpcCallSpecs.find((spec) => spec.alias?.includes(rpcName));
+};
+
+export const isUnsubscribeMethod = (rpcName: string): boolean => {
+  return rpcCallSpecs.some((spec) => spec.pubsub && spec.pubsub.slice(2).includes(rpcName));
 };
