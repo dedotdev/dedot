@@ -14,7 +14,18 @@ import type {
   SyncState,
   NetworkState,
 } from '@delightfuldot/types';
-import type { Header, Metadata, BlockHash, Option, StorageData, StorageKeyLike, Bytes } from '@delightfuldot/codecs';
+import type {
+  Option,
+  SignedBlock,
+  BlockHash,
+  BlockNumber,
+  Header,
+  Metadata,
+  StorageData,
+  StorageKeyLike,
+  Bytes,
+} from '@delightfuldot/codecs';
+import type { SpVersionRuntimeVersion } from './types';
 
 export interface RpcCalls extends GenericRpcCalls {
   author: {
@@ -146,54 +157,46 @@ export interface RpcCalls extends GenericRpcCalls {
   };
   chain: {
     /**
+     * Get header and body of a relay chain block
+     *
      * @rpcname: chain_getBlock
      **/
-    getBlock: AsyncMethod;
+    getBlock(at?: BlockHash): Promise<Option<SignedBlock>>;
 
     /**
+     * Get the block hash for a specific block
+     *
      * @rpcname: chain_getBlockHash
      **/
-    getBlockHash: AsyncMethod;
+    getBlockHash(blockNumber?: BlockNumber): Promise<BlockHash>;
 
     /**
-     * @rpcname: chain_getFinalisedHead
-     **/
-    getFinalisedHead: AsyncMethod;
-
-    /**
+     * Get hash of the last finalized block in the canon chain
+     *
      * @rpcname: chain_getFinalizedHead
      **/
-    getFinalizedHead: AsyncMethod;
+    getFinalizedHead(): Promise<BlockHash>;
 
     /**
-     * @rpcname: chain_getHead
-     **/
-    getHead: AsyncMethod;
-
-    /**
+     * Retrieves the header for a specific block
+     *
      * @rpcname: chain_getHeader
      **/
-    getHeader: AsyncMethod;
+    getHeader(at?: BlockHash): Promise<Header>;
 
     /**
-     * @rpcname: chain_getRuntimeVersion
+     * All head subscription.
+     *
+     * @pubsub: chain_allHead, chain_subscribeAllHeads, chain_unsubscribeAllHeads
      **/
-    getRuntimeVersion: AsyncMethod;
+    subscribeAllHeads(callback: Callback<Header>): Promise<Unsub>;
 
     /**
-     * @rpcname: chain_subscribeAllHeads
+     * Retrieves the best finalized header via subscription
+     *
+     * @pubsub: chain_finalizedHead, chain_subscribeFinalizedHeads, chain_unsubscribeFinalizedHeads
      **/
-    subscribeAllHeads: AsyncMethod;
-
-    /**
-     * @rpcname: chain_subscribeFinalisedHeads
-     **/
-    subscribeFinalisedHeads: AsyncMethod;
-
-    /**
-     * @rpcname: chain_subscribeFinalizedHeads
-     **/
-    subscribeFinalizedHeads: AsyncMethod;
+    subscribeFinalizedHeads(callback: Callback<Header>): Promise<Unsub>;
 
     /**
      * Retrieves the best header via subscription
@@ -201,36 +204,6 @@ export interface RpcCalls extends GenericRpcCalls {
      * @pubsub: chain_newHead, chain_subscribeNewHeads, chain_unsubscribeNewHeads
      **/
     subscribeNewHeads(callback: Callback<Header>): Promise<Unsub>;
-
-    /**
-     * @rpcname: chain_subscribeRuntimeVersion
-     **/
-    subscribeRuntimeVersion: AsyncMethod;
-
-    /**
-     * @rpcname: chain_unsubscribeAllHeads
-     **/
-    unsubscribeAllHeads: AsyncMethod;
-
-    /**
-     * @rpcname: chain_unsubscribeFinalisedHeads
-     **/
-    unsubscribeFinalisedHeads: AsyncMethod;
-
-    /**
-     * @rpcname: chain_unsubscribeFinalizedHeads
-     **/
-    unsubscribeFinalizedHeads: AsyncMethod;
-
-    /**
-     * @rpcname: chain_unsubscribeNewHeads
-     **/
-    unsubscribeNewHeads: AsyncMethod;
-
-    /**
-     * @rpcname: chain_unsubscribeRuntimeVersion
-     **/
-    unsubscribeRuntimeVersion: AsyncMethod;
 
     [method: string]: AsyncMethod;
   };
@@ -403,9 +376,11 @@ export interface RpcCalls extends GenericRpcCalls {
     getReadProof: AsyncMethod;
 
     /**
+     * Get the runtime version.
+     *
      * @rpcname: state_getRuntimeVersion
      **/
-    getRuntimeVersion: AsyncMethod;
+    getRuntimeVersion(): Promise<SpVersionRuntimeVersion>;
 
     /**
      * Returns a storage entry at a specific block's state.
@@ -445,9 +420,11 @@ export interface RpcCalls extends GenericRpcCalls {
     queryStorageAt: AsyncMethod;
 
     /**
-     * @rpcname: state_subscribeRuntimeVersion
+     * New runtime version subscription
+     *
+     * @pubsub: state_runtimeVersion, state_subscribeRuntimeVersion, state_unsubscribeRuntimeVersion
      **/
-    subscribeRuntimeVersion: AsyncMethod;
+    subscribeRuntimeVersion(callback: Callback<SpVersionRuntimeVersion>): Promise<Unsub>;
 
     /**
      * @rpcname: state_subscribeStorage
@@ -463,11 +440,6 @@ export interface RpcCalls extends GenericRpcCalls {
      * @rpcname: state_trieMigrationStatus
      **/
     trieMigrationStatus: AsyncMethod;
-
-    /**
-     * @rpcname: state_unsubscribeRuntimeVersion
-     **/
-    unsubscribeRuntimeVersion: AsyncMethod;
 
     /**
      * @rpcname: state_unsubscribeStorage
