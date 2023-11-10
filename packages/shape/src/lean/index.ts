@@ -4,7 +4,6 @@ import {
   field,
   Input,
   literalUnion,
-  option,
   optionalField,
   Output,
   result,
@@ -17,7 +16,7 @@ import {
   variant,
 } from 'subshape';
 import * as $ from '../extension';
-import { array, object } from '../extension';
+import { array, object, option } from '../extension';
 
 export type StructMembers<T extends AnyShape> = {
   [prop: string]: T;
