@@ -1,5 +1,13 @@
 import { isHex, isString, isU8a } from '@polkadot/util';
-import { AnyShape, InputObject, object as originalObject, ObjectMembers, OutputObject, Shape } from 'subshape';
+import {
+  AnyShape,
+  InputObject,
+  object as originalObject,
+  ObjectMembers,
+  OutputObject,
+  Shape,
+  optionalField,
+} from 'subshape';
 
 function shouldDecodeObject(input: any) {
   // TODO check if the shape is actually an $.object
@@ -12,14 +20,22 @@ function shouldDecodeObject(input: any) {
 }
 
 function decodeObject($shape: Shape<any>, input: any) {
-  const {args} = $shape.metadata[0];
+  const { args } = $shape.metadata[0];
 
-  return args!.map(one => one.metadata[0].args).reduce((o, [name, field]) => {
-    // TODO check optional field
-    o[name] = field.tryDecode(input[name]);
+  return args!
+    .map((one) => one.metadata[0])
+    .reduce((o, { factory, args: [name, field] }) => {
+      const fieldInput = input[name];
+      const isOptional = factory === optionalField;
 
-    return o;
-  }, {} as any);
+      if (isOptional && (fieldInput === null || fieldInput === undefined)) {
+        o[name] = undefined;
+      } else {
+        o[name] = field.tryDecode(fieldInput);
+      }
+
+      return o;
+    }, {} as any);
 }
 
 export function object<T extends AnyShape[]>(...members: ObjectMembers<T>): Shape<InputObject<T>, OutputObject<T>> {
