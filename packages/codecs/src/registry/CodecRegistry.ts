@@ -26,6 +26,9 @@ const KNOWN_PATHS: KnownPath[] = [
   /^sp_arithmetic::fixed_point::\w+$/,
 ];
 
+const WRAPPER_TYPE_REGEX = /^(\w+)<(.*)>$/;
+const KNOWN_WRAPPER_TYPES = ['Option', 'Vec', 'SizedVec', 'Result'];
+
 export class CodecRegistry {
   #metadata?: MetadataLatest;
   #portableCodecRegistry?: PortableCodecRegistry;
@@ -56,13 +59,28 @@ export class CodecRegistry {
 
   #findKnownCodec(typeName: string): $.AnyShape {
     // @ts-ignore
-    const $codec = Codecs[normalizeCodecName(typeName)] || $[typeName];
+    const $codec = this.#findKnownWrapperCodec(typeName) || Codecs[normalizeCodecName(typeName)] || $[typeName];
 
     if (!$codec) {
       throw new Error(`Unsupported codec - ${typeName}`);
     }
 
     return $codec as $.AnyShape;
+  }
+
+  #findKnownWrapperCodec(typeName: string): $.AnyShape | undefined {
+    const matchNames = typeName.match(WRAPPER_TYPE_REGEX);
+    if (matchNames) {
+      const [_, wrapper, inner] = matchNames;
+      if (KNOWN_WRAPPER_TYPES.includes(wrapper)) {
+        // @ts-ignore
+        const $Wrapper = $[wrapper] as (...args: any[]) => $.AnyShape;
+        const $inners = inner.split(', ').map((one) => this.#findKnownCodec(one.trim()));
+        return $Wrapper(...$inners);
+      }
+
+      throw new Error(`Unknown wrapper type ${wrapper} from ${typeName}`);
+    }
   }
 
   isKnownType(path: string | string[]) {
