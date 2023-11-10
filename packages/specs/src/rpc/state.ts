@@ -20,4 +20,17 @@ export const state: RpcModuleSpec = {
     type: 'Metadata',
     isScale: true,
   },
+  getRuntimeVersion: {
+    docs: 'Get the runtime version.',
+    params: [],
+    type: 'SpVersionRuntimeVersion',
+    alias: ['chain_getRuntimeVersion'],
+  },
+  subscribeRuntimeVersion: {
+    docs: 'New runtime version subscription',
+    params: [],
+    type: 'SpVersionRuntimeVersion',
+    pubsub: ['state_runtimeVersion', 'state_subscribeRuntimeVersion', 'state_unsubscribeRuntimeVersion'],
+    alias: ['chain_subscribeRuntimeVersion', 'chain_unsubscribeRuntimeVersion'],
+  },
 };
