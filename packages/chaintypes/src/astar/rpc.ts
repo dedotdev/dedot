@@ -21,10 +21,10 @@ import type {
   BlockHash,
   BlockNumber,
   Header,
+  Bytes,
   Metadata,
   StorageData,
   StorageKey,
-  Bytes,
 } from '@delightfuldot/codecs';
 import type { SpVersionRuntimeVersion } from './types';
 
@@ -507,14 +507,11 @@ export interface RpcCalls extends GenericRpcCalls {
   };
   state: {
     /**
+     * Call a method from the runtime API at a block's state.
+     *
      * @rpcname: state_call
      **/
-    call: AsyncMethod;
-
-    /**
-     * @rpcname: state_callAt
-     **/
-    callAt: AsyncMethod;
+    call(method: string, data: Bytes, at?: BlockHash): Promise<Bytes>;
 
     /**
      * @rpcname: state_getChildReadProof

@@ -4,6 +4,7 @@ import { HexString } from '@delightfuldot/utils';
 import { $Hash } from './Hash';
 import { registerLooseCodecType } from '../codectypes';
 
+// TODO create a separate codec for $BlockNumber
 export const $BlockNumber = $.u32; // TODO docs: why fixed at u32?
 $BlockNumber.registerDecoder(
   (input) => isHex(input, -1, true),

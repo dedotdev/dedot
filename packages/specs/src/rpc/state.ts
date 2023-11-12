@@ -2,6 +2,22 @@ import { RpcModuleSpec } from '../types';
 import { atBlockHashParam } from './shared';
 
 export const state: RpcModuleSpec = {
+  call: {
+    docs: "Call a method from the runtime API at a block's state.",
+    params: [
+      {
+        name: 'method',
+        type: 'string',
+      },
+      {
+        name: 'data',
+        type: 'Bytes',
+      },
+      atBlockHashParam,
+    ],
+    type: 'Bytes',
+    alias: ['state_callAt'],
+  },
   getStorage: {
     docs: "Returns a storage entry at a specific block's state.",
     params: [{ name: 'key', type: 'StorageKey' }, atBlockHashParam],
