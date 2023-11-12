@@ -9,7 +9,7 @@ export class QueryGen extends ApiGen {
     const { pallets } = this.metadata;
 
     this.typesGen.clearCache();
-    this.typesGen.typeImports.addKnownType('GenericChainStorage');
+    this.typesGen.typeImports.addKnownType('GenericChainStorage', 'Callback', 'Unsub');
 
     let defTypeOut = '';
     for (let pallet of pallets) {
@@ -19,10 +19,14 @@ export class QueryGen extends ApiGen {
       }
 
       const queries = storage.entries.map((one) => this.#generateEntry(one));
+      const queryDefs = queries
+        .map(({ name, valueType, keyType, docs }) => [
+          `${commentBlock(docs)}${name}(${keyType}): Promise<${valueType}>`,
+          `${name}(${keyType}${keyType ? ',' : ''} callback: Callback<${valueType}>): Promise<Unsub>`,
+        ])
+        .flat();
 
-      defTypeOut += `${stringLowerFirst(pallet.name)}: {${queries
-        .map(({ name, valueType, keyType, docs }) => `${commentBlock(docs)}${name}(${keyType}): Promise<${valueType}>`)
-        .join(',\n')}},`;
+      defTypeOut += `${stringLowerFirst(pallet.name)}: {${queryDefs.join(',\n')}},`;
     }
 
     return beautifySourceCode(`

@@ -6,6 +6,7 @@ import type {
   Unsub,
   Callback,
   RpcMethods,
+  StorageChangeSet,
   ChainType,
   Health,
   NodeRole,
@@ -22,7 +23,7 @@ import type {
   Header,
   Metadata,
   StorageData,
-  StorageKeyLike,
+  StorageKey,
   Bytes,
 } from '@delightfuldot/codecs';
 import type { SpVersionRuntimeVersion } from './types';
@@ -387,7 +388,7 @@ export interface RpcCalls extends GenericRpcCalls {
      *
      * @rpcname: state_getStorage
      **/
-    getStorage(key: StorageKeyLike, at?: BlockHash): Promise<Option<StorageData>>;
+    getStorage(key: StorageKey, at?: BlockHash): Promise<Option<StorageData>>;
 
     /**
      * @rpcname: state_getStorageHash
@@ -427,9 +428,11 @@ export interface RpcCalls extends GenericRpcCalls {
     subscribeRuntimeVersion(callback: Callback<SpVersionRuntimeVersion>): Promise<Unsub>;
 
     /**
-     * @rpcname: state_subscribeStorage
+     * Subscribes to storage changes for the provided keys
+     *
+     * @pubsub: state_storage, state_subscribeStorage, state_unsubscribeStorage
      **/
-    subscribeStorage: AsyncMethod;
+    subscribeStorage(keys: Array<StorageKey>, callback: Callback<StorageChangeSet>): Promise<Unsub>;
 
     /**
      * @rpcname: state_traceBlock
@@ -440,11 +443,6 @@ export interface RpcCalls extends GenericRpcCalls {
      * @rpcname: state_trieMigrationStatus
      **/
     trieMigrationStatus: AsyncMethod;
-
-    /**
-     * @rpcname: state_unsubscribeStorage
-     **/
-    unsubscribeStorage: AsyncMethod;
 
     [method: string]: AsyncMethod;
   };

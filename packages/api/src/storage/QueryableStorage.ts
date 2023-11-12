@@ -51,7 +51,7 @@ export class QueryableStorage {
     throw Error(`Invalid storage entry type: ${type}`);
   }
 
-  decodeValue(raw: StorageDataLike | undefined): any {
+  decodeValue(raw?: StorageDataLike | null): any {
     const {
       modifier,
       type: {
