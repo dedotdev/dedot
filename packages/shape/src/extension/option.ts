@@ -11,15 +11,12 @@ function decodeInner($shape: Shape<any>, input: any) {
   return $some.tryDecode(input);
 }
 
-export function option<SI, SO>($some: Shape<SI, SO>): Shape<SI | undefined, SO | undefined>;
-export function option<SI, SO, N>($some: Shape<SI, SO>, none: N): Shape<SI | N, SO | N>;
-export function option<SI, SO, N>($some: Shape<SI, SO>, none?: N): Shape<SI | N, SO | N> {
-  const shaped = originalOption($some, none);
+export function option<SI, SO>($some: Shape<SI, SO>): Shape<SI | undefined, SO | undefined> {
+  const shaped = originalOption($some);
 
   shaped.registerDecoder(isUndefined, (_, input) => undefined);
   shaped.registerDecoder(isNull, (_, input) => undefined);
   shaped.registerDecoder(shouldDecodeInner, decodeInner);
 
-  // @ts-ignore
   return shaped;
 }
