@@ -150,8 +150,7 @@ export interface RpcCalls extends GenericRpcCalls {
     }
 
     try {
-      const { typeIn, typeOut } = this.registry.findCodecType(type);
-      this.typesGen.typeImports.addCodecType(toTypeIn ? typeIn : typeOut);
+      this.typesGen.typeImports.addCodecType(this.#getCodecType(type, toTypeIn));
       return;
     } catch (e) {}
 
@@ -160,10 +159,20 @@ export interface RpcCalls extends GenericRpcCalls {
 
   getGeneratedTypeName(type: string, toTypeIn = true) {
     try {
-      const { typeIn, typeOut } = this.registry.findCodecType(type);
-      return toTypeIn ? typeIn : typeOut;
+      const matchArray = type.match(WRAPPER_TYPE_REGEX);
+      if (matchArray) {
+        const [_, $1, $2] = matchArray;
+        return `${this.#getCodecType($1, toTypeIn)}<${this.#getCodecType($2, toTypeIn)}>`;
+      }
+
+      return this.#getCodecType(type, toTypeIn);
     } catch (e) {}
 
     return type;
+  }
+
+  #getCodecType(type: string, toTypeIn = true) {
+    const { typeIn, typeOut } = this.registry.findCodecType(type);
+    return toTypeIn ? typeIn : typeOut;
   }
 }

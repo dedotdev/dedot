@@ -27,7 +27,7 @@ const KNOWN_PATHS: KnownPath[] = [
 ];
 
 const WRAPPER_TYPE_REGEX = /^(\w+)<(.*)>$/;
-const KNOWN_WRAPPER_TYPES = ['Option', 'Vec', 'SizedVec', 'Result'];
+const KNOWN_WRAPPER_TYPES = ['Option', 'Vec', 'SizedVec', 'Result', 'Array'];
 
 export class CodecRegistry {
   #metadata?: MetadataLatest;

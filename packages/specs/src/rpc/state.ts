@@ -4,7 +4,7 @@ import { atBlockHashParam } from './shared';
 export const state: RpcModuleSpec = {
   getStorage: {
     docs: "Returns a storage entry at a specific block's state.",
-    params: [{ name: 'key', type: 'StorageKey', isScale: true }, atBlockHashParam],
+    params: [{ name: 'key', type: 'StorageKey' }, atBlockHashParam],
     type: 'Option<StorageData>',
     alias: ['state_getStorageAt'],
   },
@@ -32,5 +32,16 @@ export const state: RpcModuleSpec = {
     type: 'SpVersionRuntimeVersion',
     pubsub: ['state_runtimeVersion', 'state_subscribeRuntimeVersion', 'state_unsubscribeRuntimeVersion'],
     alias: ['chain_subscribeRuntimeVersion', 'chain_unsubscribeRuntimeVersion'],
+  },
+  subscribeStorage: {
+    docs: 'Subscribes to storage changes for the provided keys',
+    params: [
+      {
+        name: 'keys',
+        type: 'Array<StorageKey>',
+      },
+    ],
+    pubsub: ['state_storage', 'state_subscribeStorage', 'state_unsubscribeStorage'],
+    type: 'StorageChangeSet',
   },
 };

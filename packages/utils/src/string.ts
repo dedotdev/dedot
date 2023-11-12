@@ -37,6 +37,7 @@ const JS_PRIMITIVE_TYPES = [
   'Set',
   'string',
   'any',
+  'Array',
   /^Record<(.+),(.+)>$/,
 ];
 
