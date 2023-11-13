@@ -1,6 +1,6 @@
 {
   "name": "@delightfuldot/codecs",
-  "version": "0.0.1-alpha.4",
+  "version": "0.0.1-alpha.5",
   "description": "Known codecs",
   "author": "Thang X. Vu <thang@coongcrafts.io>",
   "main": "src/index.ts",
