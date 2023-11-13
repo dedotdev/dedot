@@ -17,5 +17,9 @@
     "@delightfuldot/utils": "workspace:*",
     "@polkadot/util": "^12.5.1"
   },
+  "publishConfig": {
+    "access": "public",
+    "directory": "dist"
+  },
   "license": "Apache-2.0"
 }

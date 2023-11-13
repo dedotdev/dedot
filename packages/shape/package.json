@@ -15,5 +15,9 @@
     "build": "tsc --project tsconfig.build.json",
     "clean": "rm -rf ./dist && rm -rf ./tsconfig.tsbuildinfo ./tsconfig.build.tsbuildinfo"
   },
+  "publishConfig": {
+    "access": "public",
+    "directory": "dist"
+  },
   "license": "Apache-2.0"
 }

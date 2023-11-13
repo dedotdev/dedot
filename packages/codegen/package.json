@@ -20,5 +20,9 @@
     "delightfuldot": "workspace:*",
     "prettier": "^3.0.3"
   },
+  "publishConfig": {
+    "access": "public",
+    "directory": "dist"
+  },
   "license": "Apache-2.0"
 }
