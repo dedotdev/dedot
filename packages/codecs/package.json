@@ -1,6 +1,6 @@
 {
   "name": "@delightfuldot/codecs",
-  "version": "0.0.1",
+  "version": "0.0.0",
   "description": "> TODO",
   "author": "Thang X. Vu <thang@coongcrafts.io>",
   "main": "src/index.ts",

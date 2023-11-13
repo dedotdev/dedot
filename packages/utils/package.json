@@ -1,6 +1,6 @@
 {
   "name": "@delightfuldot/utils",
-  "version": "0.0.1",
+  "version": "0.0.0",
   "description": "Utilities for delightful apis",
   "author": "Thang X. Vu <thang@coongcrafts.io>",
   "main": "src/index.ts",
