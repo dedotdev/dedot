@@ -1,6 +1,6 @@
 {
   "name": "delightfuldot",
-  "version": "0.0.0",
+  "version": "0.0.1-alpha.0",
   "description": "A fast & lightweight JS/TS client for Polkadot & Substrate",
   "author": "Thang X. Vu <thang@coongcrafts.io>",
   "main": "src/index.ts",
