@@ -19,7 +19,8 @@
     "@delightfuldot/chaintypes": "workspace:*"
   },
   "scripts": {
-    "start": "ts-node ./src/index.ts"
+    "build": "tsc --project tsconfig.build.json",
+    "clean": "rm -rf ./dist && rm -rf ./tsconfig.tsbuildinfo ./tsconfig.build.tsbuildinfo"
   },
   "license": "Apache-2.0"
 }

@@ -13,6 +13,12 @@
     },
     {
       "path": "../types/tsconfig.json"
+    },
+    {
+      "path": "../chaintypes/tsconfig.json"
+    },
+    {
+      "path": "../specs/tsconfig.json"
     }
   ]
 }

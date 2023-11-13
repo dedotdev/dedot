@@ -3,7 +3,7 @@ import { CodecRegistry, Field, MetadataLatest, PortableType, TypeId, TypeParam }
 import { isJsPrimitive, normalizeName } from '@delightfuldot/utils';
 import { beautifySourceCode, commentBlock } from './utils';
 import { registry } from '@delightfuldot/types';
-import { TypeImports } from './TypeImports.ts';
+import { TypeImports } from './TypeImports';
 
 interface NamedType extends PortableType {
   name: string; // nameIn, TODO docs!

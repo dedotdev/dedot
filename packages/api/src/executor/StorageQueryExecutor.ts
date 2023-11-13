@@ -1,7 +1,7 @@
 import type { SubstrateApi } from '@delightfuldot/chaintypes';
 import { GenericSubstrateApi, StorageChangeSet } from '@delightfuldot/types';
 import { Executor } from './Executor';
-import { QueryableStorage } from '../storage/QueryableStorage.ts';
+import { QueryableStorage } from '../storage/QueryableStorage';
 import { isFunction } from '@polkadot/util';
 
 export class StorageQueryExecutor<ChainApi extends GenericSubstrateApi = SubstrateApi> extends Executor<ChainApi> {
