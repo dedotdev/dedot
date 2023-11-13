@@ -1,7 +1,7 @@
 {
   "name": "@delightfuldot/shape",
   "version": "0.0.0",
-  "description": "> TODO",
+  "description": "Basic codecs & shapes, extending existing subshape",
   "author": "Thang X. Vu <thang@coongcrafts.io>",
   "main": "src/index.ts",
   "type": "module",

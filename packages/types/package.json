@@ -1,7 +1,7 @@
 {
   "name": "@delightfuldot/types",
   "version": "0.0.0",
-  "description": "Chain types",
+  "description": "Known types",
   "author": "Thang X. Vu <thang@coongcrafts.io>",
   "main": "src/index.ts",
   "type": "module",
