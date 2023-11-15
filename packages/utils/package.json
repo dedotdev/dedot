@@ -1,7 +1,7 @@
 {
   "name": "@delightfuldot/utils",
-  "version": "0.0.1",
-  "description": "Utilities for delightful apis",
+  "version": "0.0.1-alpha.5",
+  "description": "Useful utilities for delightful apis",
   "author": "Thang X. Vu <thang@coongcrafts.io>",
   "main": "src/index.ts",
   "type": "module",
@@ -9,6 +9,10 @@
     "build": "tsc --project tsconfig.build.json",
     "clean": "rm -rf ./dist && rm -rf ./tsconfig.tsbuildinfo ./tsconfig.build.tsbuildinfo",
     "test": "vitest --watch=false"
+  },
+  "publishConfig": {
+    "access": "public",
+    "directory": "dist"
   },
   "license": "Apache-2.0"
 }

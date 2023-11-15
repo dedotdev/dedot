@@ -11,14 +11,12 @@ import {
   withMetadata,
 } from 'subshape';
 
-type BytesInput = HexString | string | number | Uint8Array;
+type BytesInput = HexString | string | Uint8Array;
 const xToU8a = (input: BytesInput): Uint8Array => {
   if (isHex(input)) {
     return hexToU8a(input);
   } else if (isString(input)) {
     return stringToU8a(input);
-  } else if (isNumber(input)) {
-    return numberToU8a(input);
   }
 
   return u8aToU8a(input);

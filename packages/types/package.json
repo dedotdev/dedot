@@ -1,7 +1,7 @@
 {
   "name": "@delightfuldot/types",
-  "version": "0.0.1",
-  "description": "Chain types",
+  "version": "0.0.1-alpha.5",
+  "description": "Known types",
   "author": "Thang X. Vu <thang@coongcrafts.io>",
   "main": "src/index.ts",
   "type": "module",
@@ -15,6 +15,10 @@
     "@delightfuldot/shape": "workspace:*",
     "@delightfuldot/utils": "workspace:*",
     "@polkadot/util": "^12.5.1"
+  },
+  "publishConfig": {
+    "access": "public",
+    "directory": "dist"
   },
   "license": "Apache-2.0"
 }

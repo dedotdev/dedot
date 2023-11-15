@@ -1,15 +1,22 @@
-import { hexToBn, isHex } from '@polkadot/util';
 import * as $ from '@delightfuldot/shape';
-import { HexString } from "@delightfuldot/utils";
+import { $ConsensusEngineId, $Header } from './Header';
+import { $Extrinsic } from '../known';
 
-export const $BlockNumber = $.u32; // TODO docs: why fixed at u32?
-$BlockNumber.registerDecoder(
-  (input) => isHex(input, -1, true),
-  ($shape, input) =>
-    hexToBn(input, {
-      isLe: false, // TODO docs: why Le=false here?
-      isNegative: false,
-    }).toNumber(),
-);
+export const $Block = $.Struct({
+  header: $Header,
+  extrinsics: $.Vec($Extrinsic),
+});
 
-export type BlockNumber = number | HexString;
+export type Block = $.Input<typeof $Block>;
+
+export const $Justification = $.Tuple($ConsensusEngineId, $.PrefixedHex);
+export type Justification = $.Input<typeof $Justification>;
+export const $Justifications = $.Vec($Justification);
+export type Justifications = $.Input<typeof $Justifications>;
+
+export const $SignedBlock = $.Struct({
+  block: $Block,
+  justifications: $.Option($Justifications),
+});
+
+export type SignedBlock = $.Input<typeof $SignedBlock>;

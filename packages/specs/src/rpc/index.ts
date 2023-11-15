@@ -1,7 +1,6 @@
 // import { author } from './author';
 // import { babe } from './babe';
 // import { beefy } from './beefy';
-// import { chain } from './chain';
 // import { childstate } from './childstate';
 // import { contracts } from './contracts';
 // import { dev } from './dev';
@@ -12,9 +11,10 @@
 // import { net } from './net';
 // import { offchain } from './offchain';
 // import { payment } from './payment';
-import { syncstate } from './syncstate';
 // import { web3 } from './web3';
-import { RpcCallSpec, RpcCallsSpec } from '@delightfuldot/specs/types';
+import { RpcCallSpec, RpcCallsSpec } from '../types';
+import { chain } from './chain';
+import { syncstate } from './syncstate';
 import { rpc } from './rpc';
 import { state } from './state';
 import { system } from './system';
@@ -24,10 +24,10 @@ export const rpcCalls: RpcCallsSpec = {
   state,
   rpc,
   syncstate,
+  chain,
   // author,
   // babe,
   // beefy,
-  // chain,
   // childstate,
   // contracts,
   // dev,
@@ -50,9 +50,15 @@ export const rpcCallSpecs: RpcCallSpec[] = Object.keys(rpcCalls)
   .flat();
 
 export const findRpcSpec = (rpcName: string) => {
-  return rpcCallSpecs.find((spec) => rpcName === `${spec.module}_${spec.method}` || rpcName === spec.name);
+  return rpcCallSpecs.find(
+    (spec) => rpcName === `${spec.module}_${spec.method}` || rpcName === spec.name || rpcName === spec.pubsub?.at(1),
+  );
 };
 
 export const findAliasRpcSpec = (rpcName: string) => {
   return rpcCallSpecs.find((spec) => spec.alias?.includes(rpcName));
+};
+
+export const isUnsubscribeMethod = (rpcName: string): boolean => {
+  return rpcCallSpecs.some((spec) => spec.pubsub && spec.pubsub.slice(2).includes(rpcName));
 };

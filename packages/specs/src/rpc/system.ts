@@ -1,4 +1,4 @@
-import { RpcModuleSpec } from '@delightfuldot/specs/types';
+import { RpcModuleSpec } from '../types';
 
 export const system: RpcModuleSpec = {
   ///
@@ -155,8 +155,8 @@ export const system: RpcModuleSpec = {
     ],
     params: [
       {
-        name: 'accountId',
-        type: 'AccountId',
+        name: 'address',
+        type: 'string',
       },
     ],
     type: 'number',

@@ -1,4 +1,4 @@
-import { RpcModuleSpec } from '@delightfuldot/specs/types';
+import { RpcModuleSpec } from '../types';
 
 /**
  * Ref: https://github.com/paritytech/polkadot-sdk/blob/bdf186870dc4a7d74d59cad338baf8478d0715b4/substrate/client/sync-state-rpc/src/lib.rs#L129

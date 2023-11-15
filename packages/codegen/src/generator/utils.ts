@@ -4,6 +4,8 @@ import * as path from 'path';
 import * as process from 'process';
 import * as prettier from 'prettier';
 
+export const WRAPPER_TYPE_REGEX = /^(\w+)<(.*)>$/;
+
 export const commentBlock = (...docs: (string | string[])[]) => {
   const flatLines = docs.flat();
   if (flatLines.length === 0) {

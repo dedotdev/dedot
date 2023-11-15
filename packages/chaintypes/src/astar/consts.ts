@@ -355,7 +355,7 @@ export interface ChainConsts extends GenericChainConsts {
   cumulusXcm: {};
   dmpQueue: {};
   xcAssetConfig: {};
-  xtokens: {
+  xTokens: {
     /**
      * Self chain location.
      **/

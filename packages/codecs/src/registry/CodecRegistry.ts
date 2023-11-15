@@ -2,6 +2,8 @@ import * as $ from '@delightfuldot/shape';
 import * as Codecs from '../index';
 import { MetadataLatest, TypeId } from '../metadata';
 import { PortableCodecRegistry } from './PortableCodecRegistry';
+import { CodecType, knownCodecTypes, normalizeCodecName } from '../codectypes';
+import { PortableType } from '../metadata/scale-info';
 
 type KnownPath = string | RegExp;
 
@@ -24,22 +26,14 @@ const KNOWN_PATHS: KnownPath[] = [
   /^sp_arithmetic::fixed_point::\w+$/,
 ];
 
-const UNCHECKED_EXTRINSIC_PATH = 'sp_runtime::generic::unchecked_extrinsic::UncheckedExtrinsic';
-const MULTI_ADDRESS_PATH = 'sp_runtime::multiaddress::MultiAddress';
+const WRAPPER_TYPE_REGEX = /^(\w+)<(.*)>$/;
+const KNOWN_WRAPPER_TYPES = ['Option', 'Vec', 'SizedVec', 'Result', 'Array'];
 
 export class CodecRegistry {
   #metadata?: MetadataLatest;
   #portableCodecRegistry?: PortableCodecRegistry;
 
-  /**
-   * runtime inferred types after setting up metadata
-   * @private
-   */
-  #inferredTypes: Record<string, TypeId>;
-
   constructor(metadata?: MetadataLatest) {
-    this.#inferredTypes = {};
-
     if (metadata) this.setMetadata(metadata);
   }
 
@@ -47,15 +41,46 @@ export class CodecRegistry {
     return this.#findKnownCodec(name);
   }
 
+  findCodecType(name: string): CodecType {
+    const normalizedName = normalizeCodecName(name);
+    const knownType = knownCodecTypes[normalizedName];
+    if (knownType) {
+      return knownType;
+    }
+
+    const $codec = this.findCodec(name);
+    return {
+      name: normalizedName,
+      $codec,
+      typeIn: name,
+      typeOut: name,
+    };
+  }
+
   #findKnownCodec(typeName: string): $.AnyShape {
     // @ts-ignore
-    const $codec = (Codecs[`$${typeName}`] || $[typeName]) as $.AnyShape | undefined;
+    const $codec = this.#findKnownWrapperCodec(typeName) || Codecs[normalizeCodecName(typeName)] || $[typeName];
 
     if (!$codec) {
       throw new Error(`Unsupported codec - ${typeName}`);
     }
 
-    return $codec;
+    return $codec as $.AnyShape;
+  }
+
+  #findKnownWrapperCodec(typeName: string): $.AnyShape | undefined {
+    const matchNames = typeName.match(WRAPPER_TYPE_REGEX);
+    if (matchNames) {
+      const [_, wrapper, inner] = matchNames;
+      if (KNOWN_WRAPPER_TYPES.includes(wrapper)) {
+        // @ts-ignore
+        const $Wrapper = $[wrapper] as (...args: any[]) => $.AnyShape;
+        const $inners = inner.split(', ').map((one) => this.#findKnownCodec(one.trim()));
+        return $Wrapper(...$inners);
+      }
+
+      throw new Error(`Unknown wrapper type ${wrapper} from ${typeName}`);
+    }
   }
 
   isKnownType(path: string | string[]) {
@@ -63,51 +88,23 @@ export class CodecRegistry {
     return KNOWN_PATHS.some((one) => joinedPath.match(one));
   }
 
-  findPortableCodec(typeId: TypeId | string): $.AnyShape {
-    if (typeof typeId === 'string') {
-      const inferTypeId = this.#inferredTypes[typeId];
-      if (Number.isInteger(inferTypeId)) return this.findPortableCodec(inferTypeId);
-      throw Error('Cannot find infer portable codec!');
-    }
-
+  findPortableCodec(typeId: TypeId): $.AnyShape {
     // TODO add assertion
     return this.#portableCodecRegistry!.findCodec(typeId);
+  }
+
+  findPortableType(typeId: TypeId): PortableType {
+    return this.#portableCodecRegistry!.findType(typeId);
   }
 
   setMetadata(metadata: MetadataLatest) {
     this.#metadata = metadata;
     this.#portableCodecRegistry = new PortableCodecRegistry(this.#metadata.types, this);
 
-    this.#inferPortableTypes();
+    // TODO runtime inferred types after setting up metadata
   }
 
-  #inferPortableTypes() {
-    // TODO assert metadata!
-
-    const types = this.#metadata!.types;
-    const uncheckedExtrinsicType = types.find((one) => one.path.join('::') === UNCHECKED_EXTRINSIC_PATH);
-
-    if (!uncheckedExtrinsicType) {
-      return;
-    }
-
-    const [{ typeId: addressTypeId }] = uncheckedExtrinsicType.params;
-    if (!Number.isInteger(addressTypeId)) {
-      return;
-    }
-
-    const addressType = types[addressTypeId!];
-
-    // TODO refactor this!
-    if (addressType.path.join('::') === MULTI_ADDRESS_PATH) {
-      const [{ typeId: accountIdTypeId }] = addressType.params;
-      this.#inferredTypes['AccountId'] = accountIdTypeId!;
-    } else {
-      this.#inferredTypes['AccountId'] = addressTypeId!;
-    }
-  }
-
-  get inferredTypes() {
-    return this.#inferredTypes;
+  get metadata(): MetadataLatest | undefined {
+    return this.#metadata;
   }
 }

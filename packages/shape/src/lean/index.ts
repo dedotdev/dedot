@@ -4,7 +4,6 @@ import {
   field,
   Input,
   literalUnion,
-  option,
   optionalField,
   Output,
   result,
@@ -17,7 +16,7 @@ import {
   variant,
 } from 'subshape';
 import * as $ from '../extension';
-import { array, object } from '../extension';
+import { array, object, option } from '../extension';
 
 export type StructMembers<T extends AnyShape> = {
   [prop: string]: T;
@@ -105,6 +104,7 @@ export const FlatEnum = literalUnion;
 export const Option = option;
 export const Tuple = tuple;
 export const Vec = array;
+export const Array = array;
 export const SizedVec = sizedArray;
 export const U8a = uint8Array;
 export const SizedU8a = sizedUint8Array;

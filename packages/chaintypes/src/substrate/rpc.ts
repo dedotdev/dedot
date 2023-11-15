@@ -3,7 +3,10 @@
 import type {
   GenericRpcCalls,
   AsyncMethod,
+  Unsub,
+  Callback,
   RpcMethods,
+  StorageChangeSet,
   ChainType,
   Health,
   NodeRole,
@@ -12,8 +15,18 @@ import type {
   SyncState,
   NetworkState,
 } from '@delightfuldot/types';
-import type { Metadata, BlockHash, Bytes } from '@delightfuldot/codecs';
-import type { AccountId } from './types';
+import type {
+  Option,
+  SignedBlock,
+  BlockHash,
+  BlockNumber,
+  Header,
+  Bytes,
+  Metadata,
+  StorageData,
+  StorageKey,
+} from '@delightfuldot/codecs';
+import type { SpVersionRuntimeVersion } from './types';
 
 export interface RpcCalls extends GenericRpcCalls {
   author: {
@@ -145,99 +158,53 @@ export interface RpcCalls extends GenericRpcCalls {
   };
   chain: {
     /**
+     * Get header and body of a relay chain block
+     *
      * @rpcname: chain_getBlock
      **/
-    getBlock: AsyncMethod;
+    getBlock(at?: BlockHash): Promise<Option<SignedBlock>>;
 
     /**
+     * Get the block hash for a specific block
+     *
      * @rpcname: chain_getBlockHash
      **/
-    getBlockHash: AsyncMethod;
+    getBlockHash(blockNumber?: BlockNumber): Promise<Option<BlockHash>>;
 
     /**
-     * @rpcname: chain_getFinalisedHead
-     **/
-    getFinalisedHead: AsyncMethod;
-
-    /**
+     * Get hash of the last finalized block in the canon chain
+     *
      * @rpcname: chain_getFinalizedHead
      **/
-    getFinalizedHead: AsyncMethod;
+    getFinalizedHead(): Promise<BlockHash>;
 
     /**
-     * @rpcname: chain_getHead
-     **/
-    getHead: AsyncMethod;
-
-    /**
+     * Retrieves the header for a specific block
+     *
      * @rpcname: chain_getHeader
      **/
-    getHeader: AsyncMethod;
+    getHeader(at?: BlockHash): Promise<Option<Header>>;
 
     /**
-     * @rpcname: chain_getRuntimeVersion
+     * All head subscription.
+     *
+     * @pubsub: chain_allHead, chain_subscribeAllHeads, chain_unsubscribeAllHeads
      **/
-    getRuntimeVersion: AsyncMethod;
+    subscribeAllHeads(callback: Callback<Header>): Promise<Unsub>;
 
     /**
-     * @rpcname: chain_subscribeAllHeads
+     * Retrieves the best finalized header via subscription
+     *
+     * @pubsub: chain_finalizedHead, chain_subscribeFinalizedHeads, chain_unsubscribeFinalizedHeads
      **/
-    subscribeAllHeads: AsyncMethod;
+    subscribeFinalizedHeads(callback: Callback<Header>): Promise<Unsub>;
 
     /**
-     * @rpcname: chain_subscribeFinalisedHeads
+     * Retrieves the best header via subscription
+     *
+     * @pubsub: chain_newHead, chain_subscribeNewHeads, chain_unsubscribeNewHeads
      **/
-    subscribeFinalisedHeads: AsyncMethod;
-
-    /**
-     * @rpcname: chain_subscribeFinalizedHeads
-     **/
-    subscribeFinalizedHeads: AsyncMethod;
-
-    /**
-     * @rpcname: chain_subscribeNewHead
-     **/
-    subscribeNewHead: AsyncMethod;
-
-    /**
-     * @rpcname: chain_subscribeNewHeads
-     **/
-    subscribeNewHeads: AsyncMethod;
-
-    /**
-     * @rpcname: chain_subscribeRuntimeVersion
-     **/
-    subscribeRuntimeVersion: AsyncMethod;
-
-    /**
-     * @rpcname: chain_unsubscribeAllHeads
-     **/
-    unsubscribeAllHeads: AsyncMethod;
-
-    /**
-     * @rpcname: chain_unsubscribeFinalisedHeads
-     **/
-    unsubscribeFinalisedHeads: AsyncMethod;
-
-    /**
-     * @rpcname: chain_unsubscribeFinalizedHeads
-     **/
-    unsubscribeFinalizedHeads: AsyncMethod;
-
-    /**
-     * @rpcname: chain_unsubscribeNewHead
-     **/
-    unsubscribeNewHead: AsyncMethod;
-
-    /**
-     * @rpcname: chain_unsubscribeNewHeads
-     **/
-    unsubscribeNewHeads: AsyncMethod;
-
-    /**
-     * @rpcname: chain_unsubscribeRuntimeVersion
-     **/
-    unsubscribeRuntimeVersion: AsyncMethod;
+    subscribeNewHeads(callback: Callback<Header>): Promise<Unsub>;
 
     [method: string]: AsyncMethod;
   };
@@ -371,14 +338,11 @@ export interface RpcCalls extends GenericRpcCalls {
   };
   state: {
     /**
+     * Call a method from the runtime API at a block's state.
+     *
      * @rpcname: state_call
      **/
-    call: AsyncMethod;
-
-    /**
-     * @rpcname: state_callAt
-     **/
-    callAt: AsyncMethod;
+    call(method: string, data: Bytes, at?: BlockHash): Promise<Bytes>;
 
     /**
      * @rpcname: state_getChildReadProof
@@ -418,19 +382,18 @@ export interface RpcCalls extends GenericRpcCalls {
     getReadProof: AsyncMethod;
 
     /**
+     * Get the runtime version.
+     *
      * @rpcname: state_getRuntimeVersion
      **/
-    getRuntimeVersion: AsyncMethod;
+    getRuntimeVersion(): Promise<SpVersionRuntimeVersion>;
 
     /**
+     * Returns a storage entry at a specific block's state.
+     *
      * @rpcname: state_getStorage
      **/
-    getStorage: AsyncMethod;
-
-    /**
-     * @rpcname: state_getStorageAt
-     **/
-    getStorageAt: AsyncMethod;
+    getStorage(key: StorageKey, at?: BlockHash): Promise<Option<StorageData>>;
 
     /**
      * @rpcname: state_getStorageHash
@@ -463,14 +426,18 @@ export interface RpcCalls extends GenericRpcCalls {
     queryStorageAt: AsyncMethod;
 
     /**
-     * @rpcname: state_subscribeRuntimeVersion
+     * New runtime version subscription
+     *
+     * @pubsub: state_runtimeVersion, state_subscribeRuntimeVersion, state_unsubscribeRuntimeVersion
      **/
-    subscribeRuntimeVersion: AsyncMethod;
+    subscribeRuntimeVersion(callback: Callback<SpVersionRuntimeVersion>): Promise<Unsub>;
 
     /**
-     * @rpcname: state_subscribeStorage
+     * Subscribes to storage changes for the provided keys
+     *
+     * @pubsub: state_storage, state_subscribeStorage, state_unsubscribeStorage
      **/
-    subscribeStorage: AsyncMethod;
+    subscribeStorage(keys: Array<StorageKey>, callback: Callback<StorageChangeSet>): Promise<Unsub>;
 
     /**
      * @rpcname: state_traceBlock
@@ -481,16 +448,6 @@ export interface RpcCalls extends GenericRpcCalls {
      * @rpcname: state_trieMigrationStatus
      **/
     trieMigrationStatus: AsyncMethod;
-
-    /**
-     * @rpcname: state_unsubscribeRuntimeVersion
-     **/
-    unsubscribeRuntimeVersion: AsyncMethod;
-
-    /**
-     * @rpcname: state_unsubscribeStorage
-     **/
-    unsubscribeStorage: AsyncMethod;
 
     [method: string]: AsyncMethod;
   };
@@ -527,14 +484,6 @@ export interface RpcCalls extends GenericRpcCalls {
 
     [method: string]: AsyncMethod;
   };
-  subscribe: {
-    /**
-     * @rpcname: subscribe_newHead
-     **/
-    newHead: AsyncMethod;
-
-    [method: string]: AsyncMethod;
-  };
   syncstate: {
     /**
      * Returns the JSON-serialized chainspec running the node, with a sync state.
@@ -555,7 +504,7 @@ export interface RpcCalls extends GenericRpcCalls {
      *
      * @rpcname: system_accountNextIndex
      **/
-    accountNextIndex(accountId: AccountId): Promise<number>;
+    accountNextIndex(address: string): Promise<number>;
 
     /**
      * Adds the supplied directives to the current log filter
@@ -714,14 +663,6 @@ export interface RpcCalls extends GenericRpcCalls {
      * @rpcname: transaction_unstable_unwatch
      **/
     unstable_unwatch: AsyncMethod;
-
-    [method: string]: AsyncMethod;
-  };
-  unsubscribe: {
-    /**
-     * @rpcname: unsubscribe_newHead
-     **/
-    newHead: AsyncMethod;
 
     [method: string]: AsyncMethod;
   };

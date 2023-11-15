@@ -1,5 +1,5 @@
-import { stringCamelCase } from '@polkadot/util';
 import type { SubstrateApi } from '@delightfuldot/chaintypes';
+import { stringCamelCase } from '@polkadot/util';
 import { GenericSubstrateApi } from '@delightfuldot/types';
 import { Executor } from './Executor';
 

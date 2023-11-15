@@ -1,6 +1,6 @@
 {
   "name": "@delightfuldot/chaintypes",
-  "version": "0.0.1",
+  "version": "0.0.1-alpha.5",
   "description": "Types for substrate-based chains",
   "author": "Thang X. Vu <thang@coongcrafts.io>",
   "main": "src/index.ts",
@@ -16,6 +16,10 @@
     "@delightfuldot/types": "workspace:*",
     "@delightfuldot/utils": "workspace:*",
     "@polkadot/util": "^12.5.1"
+  },
+  "publishConfig": {
+    "access": "public",
+    "directory": "dist"
   },
   "license": "Apache-2.0"
 }

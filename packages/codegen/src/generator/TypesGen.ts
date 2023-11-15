@@ -1,11 +1,11 @@
 import { stringPascalCase } from '@polkadot/util';
-import { CodecRegistry, Field, MetadataLatest, Type, TypeId, TypeParam } from '@delightfuldot/codecs';
+import { CodecRegistry, Field, MetadataLatest, PortableType, TypeId, TypeParam } from '@delightfuldot/codecs';
 import { isJsPrimitive, normalizeName } from '@delightfuldot/utils';
 import { beautifySourceCode, commentBlock, compileTemplate } from './utils';
 import { registry } from '@delightfuldot/types';
-import { TypeImports } from './TypeImports.ts';
+import { TypeImports } from './TypeImports';
 
-interface NamedType extends Type {
+interface NamedType extends PortableType {
   name: string; // nameIn, TODO docs!
   nameOut: string;
   skip?: boolean;
@@ -55,11 +55,6 @@ export class TypesGen {
 
     let defTypeOut = '';
 
-    defTypeOut += commentBlock('Inferred types');
-    defTypeOut += this.generateInferredTypes();
-
-    defTypeOut += '\n';
-    defTypeOut += commentBlock('Portable types');
     Object.values(this.includedTypes)
       .filter(({ skip, knownType }) => !(skip || knownType))
       .forEach(({ name, id, docs }) => {
@@ -77,16 +72,6 @@ export class TypesGen {
   clearCache() {
     this.typeCache = {};
     this.typeImports.clear();
-  }
-
-  generateInferredTypes() {
-    const inferredTypes = Object.keys(this.registry.inferredTypes);
-
-    this.typeImports.addPortableType(...inferredTypes);
-
-    return inferredTypes
-      .map((type) => `export type ${type} = ${this.generateType(this.registry.inferredTypes[type], 1)};`)
-      .join('\n');
   }
 
   generateType(typeId: TypeId, nestedLevel = 0, typeOut = false): string {
@@ -307,14 +292,9 @@ export class TypesGen {
         let name, nameOut;
 
         if (this.registry.isKnownType(joinedPath)) {
-          name = path.at(-1)!;
-
-          // TODO docs! this behavior
-          const $knownCodec = this.registry.findCodec(name);
-          if ($knownCodec.metadata[0].name === '$.instance') {
-            nameOut = name;
-            name = `${name}Like`;
-          }
+          const codecType = this.registry.findCodecType(path.at(-1)!);
+          name = codecType.typeIn;
+          nameOut = codecType.typeOut;
 
           knownType = true;
         } else if (PATH_RM_INDEX_1.includes(path[1])) {
@@ -481,13 +461,6 @@ export class TypesGen {
         return;
       }
     }
-
-    try {
-      // Check if typeName is an inferred portable type!
-      this.registry.findPortableCodec(typeName);
-      this.typeImports.addPortableType(typeName);
-      return;
-    } catch (e) {}
 
     if (BASIC_KNOWN_TYPES.includes(typeName)) {
       this.typeImports.addCodecType(typeName);

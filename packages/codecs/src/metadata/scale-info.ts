@@ -34,6 +34,7 @@ export const $PrimitiveKind = $.FlatEnum([
   'i128',
   'i256',
 ]);
+export type PrimitiveKind = $.Input<typeof $PrimitiveKind>;
 
 export const $EnumTypeDef = $.Struct({
   members: $.Vec(
@@ -45,6 +46,7 @@ export const $EnumTypeDef = $.Struct({
     }),
   ),
 });
+export type EnumTypeDef = $.Input<typeof $EnumTypeDef>;
 
 export const $TypeDef = $.Enum({
   Struct: $.Struct({ fields: $.Vec($Field) }),
@@ -56,6 +58,7 @@ export const $TypeDef = $.Enum({
   Compact: $.Struct({ typeParam: $TypeId }),
   BitSequence: $.Struct({ bitOrderType: $TypeId, bitStoreType: $TypeId }),
 });
+export type TypeDef = $.Input<typeof $TypeDef>;
 
 export const $TypeParam = $.Struct({ name: $.str, typeId: $.Option($TypeId) });
 export type TypeParam = $.Input<typeof $TypeParam>;
@@ -68,5 +71,5 @@ export const $PortableType = $.Struct({
   docs: $.Vec($.str),
 });
 
-export type Type = $.Input<typeof $PortableType>;
-export type TypeParams = Type['params'];
+export type PortableType = $.Input<typeof $PortableType>;
+export type TypeParams = PortableType['params'];

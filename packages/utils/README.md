@@ -1,3 +1,3 @@
 # @delightfuldot/utils
 
-Useful utilities are used across packages 
+Useful utilities for delightful apis 

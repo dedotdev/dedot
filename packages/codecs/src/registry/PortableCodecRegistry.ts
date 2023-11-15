@@ -1,4 +1,4 @@
-import { Type, TypeId } from '@delightfuldot/codecs';
+import { PortableType, TypeId } from '@delightfuldot/codecs';
 import * as $ from '@delightfuldot/shape';
 import { normalizeName } from '@delightfuldot/utils';
 import { CodecRegistry } from './CodecRegistry';
@@ -7,11 +7,11 @@ import { stringPascalCase } from '@polkadot/util';
 const KNOWN_CODECS = ['AccountId32', 'Header', 'Digest', 'DigestItem', 'Data'];
 
 export class PortableCodecRegistry {
-  readonly types: Record<TypeId, Type>;
+  readonly types: Record<TypeId, PortableType>;
   readonly #cache: Map<TypeId, $.AnyShape>;
   readonly #registry: CodecRegistry;
 
-  constructor(types: Type[] | Record<TypeId, Type>, registry: CodecRegistry) {
+  constructor(types: PortableType[] | Record<TypeId, PortableType>, registry: CodecRegistry) {
     this.#registry = registry;
 
     if (Array.isArray(types)) {
@@ -20,7 +20,7 @@ export class PortableCodecRegistry {
           o[one.id] = one;
           return o;
         },
-        {} as Record<TypeId, Type>,
+        {} as Record<TypeId, PortableType>,
       );
     } else {
       this.types = types;
@@ -29,8 +29,17 @@ export class PortableCodecRegistry {
     this.#cache = new Map();
   }
 
+  findType(typeId: TypeId): PortableType {
+    const type = this.types[typeId];
+    if (!type) {
+      throw new Error(`Cannot find portable type for id: ${typeId}`);
+    }
+
+    return type;
+  }
+
   findCodec(typeId: TypeId): $.AnyShape {
-    const typeDef = this.types[typeId];
+    const typeDef = this.findType(typeId);
     if (typeDef && typeDef.path.length > 0) {
       try {
         const codecName = typeDef.path.at(-1)!;

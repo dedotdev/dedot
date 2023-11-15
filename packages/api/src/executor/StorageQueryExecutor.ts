@@ -1,71 +1,30 @@
-import { hexToU8a, stringCamelCase, u8aConcat, u8aToHex, u8aToU8a } from '@polkadot/util';
-import { xxhashAsU8a } from '@polkadot/util-crypto';
 import type { SubstrateApi } from '@delightfuldot/chaintypes';
-import { GenericSubstrateApi } from '@delightfuldot/types';
-import { HASHERS } from '@delightfuldot/utils';
+import { GenericSubstrateApi, StorageChangeSet } from '@delightfuldot/types';
 import { Executor } from './Executor';
+import { QueryableStorage } from '../storage/QueryableStorage';
+import { isFunction } from '@polkadot/util';
 
 export class StorageQueryExecutor<ChainApi extends GenericSubstrateApi = SubstrateApi> extends Executor<ChainApi> {
   execute(pallet: string, storage: string) {
-    return async (...args: unknown[]) => {
-      const storageKeyFn = this.storageKey(pallet, storage);
-      const key = storageKeyFn(...args);
-      const valueTypeId = storageKeyFn.valueTypeId;
-      const entry = storageKeyFn.targetEntry;
+    return async (...args: any[]) => {
+      const entry = new QueryableStorage(this.registry, pallet, storage);
 
-      const result = await this.api.rpc.state.getStorage(key);
+      const inArgs = args.slice();
+      const lastArg = args.at(-1);
+      const callback = isFunction(lastArg) ? inArgs.pop() : undefined;
+      const encodedKey = entry.encodeKey(inArgs.at(0));
 
-      if (result === null) {
-        if (entry.modifier === 'Optional') {
-          return undefined;
-        } else if (entry.modifier === 'Default') {
-          return this.registry.findPortableCodec(valueTypeId).tryDecode(hexToU8a(entry.default));
-        }
+      // if a callback is passed, make a storage subscription and return an unsub function
+      if (callback) {
+        return await this.api.rpc.state.subscribeStorage([encodedKey], (changeSet: StorageChangeSet) => {
+          const targetChange = changeSet.changes.find((change) => change[0] === encodedKey);
+
+          targetChange && callback(entry.decodeValue(targetChange[1]));
+        });
       } else {
-        return this.registry.findPortableCodec(valueTypeId).tryDecode(hexToU8a(result));
+        const result = await this.api.rpc.state.getStorage(encodedKey);
+        return entry.decodeValue(result);
       }
     };
-  }
-
-  storageKey(pallet: string, item: string) {
-    const targetPallet = this.getPallet(pallet);
-
-    const targetEntry = targetPallet.storage?.entries?.find((entry) => stringCamelCase(entry.name) === item);
-    if (!targetEntry) {
-      throw new Error('Item not found');
-    }
-
-    const fn = (...args: unknown[]) => {
-      const palletNameHash = xxhashAsU8a(targetPallet.name, 128);
-      const entryNameHash = xxhashAsU8a(targetEntry.name, 128);
-
-      const { type } = targetEntry;
-
-      if (type.tag === 'Plain') {
-        return u8aToHex(u8aConcat(palletNameHash, entryNameHash));
-      } else if (type.tag === 'Map') {
-        const { hashers, keyTypeId } = type.value;
-        if (hashers.length === 1) {
-          let input = args[0];
-
-          const $keyCodec = this.registry.findPortableCodec(keyTypeId);
-
-          // @ts-ignore
-          fn.keyCodec = $keyCodec;
-
-          const inputHash = HASHERS[hashers[0]]($keyCodec.tryEncode(input));
-          return u8aToHex(u8aConcat(palletNameHash, entryNameHash, inputHash));
-        } else {
-          throw Error('// TODO To implement!');
-        }
-      }
-
-      throw Error('Invalid type');
-    };
-
-    fn.targetEntry = targetEntry;
-    fn.valueTypeId = targetEntry.type.value.valueTypeId;
-
-    return fn;
   }
 }

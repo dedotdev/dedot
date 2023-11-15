@@ -1,9 +1,13 @@
 export type AsyncMethod = (...args: any[]) => Promise<any>;
+export type Unsub = () => Promise<boolean>;
+export type Callback<T> = (result: T) => Promise<void> | void;
+
+export interface GenericRpcModule {
+  [method: string]: AsyncMethod;
+}
 
 export interface GenericRpcCalls {
-  [module: string]: {
-    [method: string]: AsyncMethod;
-  };
+  [module: string]: GenericRpcModule;
 }
 
 export interface GenericChainConsts {

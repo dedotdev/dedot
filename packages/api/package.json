@@ -1,6 +1,6 @@
 {
   "name": "delightfuldot",
-  "version": "0.0.1",
+  "version": "0.0.1-alpha.5",
   "description": "A fast & lightweight JS/TS client for Polkadot & Substrate",
   "author": "Thang X. Vu <thang@coongcrafts.io>",
   "main": "src/index.ts",
@@ -19,7 +19,12 @@
     "@delightfuldot/chaintypes": "workspace:*"
   },
   "scripts": {
-    "start": "ts-node ./src/index.ts"
+    "build": "tsc --project tsconfig.build.json",
+    "clean": "rm -rf ./dist && rm -rf ./tsconfig.tsbuildinfo ./tsconfig.build.tsbuildinfo"
+  },
+  "publishConfig": {
+    "access": "public",
+    "directory": "dist"
   },
   "license": "Apache-2.0"
 }

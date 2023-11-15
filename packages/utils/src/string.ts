@@ -37,8 +37,17 @@ const JS_PRIMITIVE_TYPES = [
   'Set',
   'string',
   'any',
+  'Array',
   /^Record<(.+),(.+)>$/,
 ];
+
+// FIXME rename to isNativeType
 export const isJsPrimitive = (type: string) => {
-  return JS_PRIMITIVE_TYPES.some((one) => type.match(one));
+  return JS_PRIMITIVE_TYPES.some((one) => {
+    if (typeof one === 'string') {
+      return one === type;
+    } else {
+      return type.match(one);
+    }
+  });
 };
