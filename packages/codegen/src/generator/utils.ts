@@ -1,3 +1,5 @@
+import * as fs from 'fs';
+import handlebars from 'handlebars';
 import * as path from 'path';
 import * as process from 'process';
 import * as prettier from 'prettier';
@@ -27,4 +29,10 @@ export const PRETTIER_FORMAT_OPTION = await prettier.resolveConfig(resolveFilePa
 
 export const beautifySourceCode = (source: string): Promise<string> => {
   return prettier.format(source, { parser: 'babel-ts', ...PRETTIER_FORMAT_OPTION });
+};
+
+export const compileTemplate = (templateFileName: string) => {
+  const templateFilePath = resolveFilePath(`packages/codegen/src/templates/${templateFileName}`);
+
+  return handlebars.compile(fs.readFileSync(templateFilePath, 'utf8'));
 };
