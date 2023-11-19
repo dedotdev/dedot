@@ -6,7 +6,10 @@ import type {
   Unsub,
   Callback,
   RpcMethods,
+  ReadProof,
+  RuntimeVersion,
   StorageChangeSet,
+  TraceBlockResponse,
   ChainType,
   Health,
   NodeRole,
@@ -22,11 +25,12 @@ import type {
   BlockNumber,
   Header,
   Bytes,
+  PrefixedStorageKey,
+  StorageKey,
   Metadata,
   StorageData,
-  StorageKey,
+  Hash,
 } from '@delightfuldot/codecs';
-import type { SpVersionRuntimeVersion } from './types';
 
 export interface RpcCalls extends GenericRpcCalls {
   author: {
@@ -514,24 +518,26 @@ export interface RpcCalls extends GenericRpcCalls {
     call(method: string, data: Bytes, at?: BlockHash): Promise<Bytes>;
 
     /**
+     * Returns proof of storage for child key entries at a specific block state.
+     *
      * @rpcname: state_getChildReadProof
      **/
-    getChildReadProof: AsyncMethod;
+    getChildReadProof(childStorageKey: PrefixedStorageKey, keys: Array<StorageKey>, at?: BlockHash): Promise<ReadProof>;
 
     /**
+     * Returns the keys with prefix, leave empty to get all the keys.
+     *
      * @rpcname: state_getKeys
+     * @deprecated: Please use `getKeysPaged` with proper paging support
      **/
-    getKeys: AsyncMethod;
+    getKeys(prefix: StorageKey, at?: BlockHash): Promise<Array<StorageKey>>;
 
     /**
+     * Returns the keys with prefix with pagination support. Up to `count` keys will be returned. If `start_key` is passed, return next keys in storage in lexicographic order.
+     *
      * @rpcname: state_getKeysPaged
      **/
-    getKeysPaged: AsyncMethod;
-
-    /**
-     * @rpcname: state_getKeysPagedAt
-     **/
-    getKeysPagedAt: AsyncMethod;
+    getKeysPaged(prefix: StorageKey, count: number, startKey?: StorageKey, at?: BlockHash): Promise<Array<StorageKey>>;
 
     /**
      * Returns the runtime metadata
@@ -541,21 +547,26 @@ export interface RpcCalls extends GenericRpcCalls {
     getMetadata(at?: BlockHash): Promise<Metadata>;
 
     /**
+     * Returns the keys with prefix, leave empty to get all the keys
+     *
      * @rpcname: state_getPairs
+     * @deprecated: Please use `getKeysPaged` with proper paging support
      **/
-    getPairs: AsyncMethod;
+    getPairs(prefix: StorageKey, at?: BlockHash): Promise<Array<[StorageKey, StorageData]>>;
 
     /**
+     * Returns proof of storage entries at a specific block's state.
+     *
      * @rpcname: state_getReadProof
      **/
-    getReadProof: AsyncMethod;
+    getReadProof(keys: Array<StorageKey>, at?: BlockHash): Promise<ReadProof>;
 
     /**
      * Get the runtime version.
      *
      * @rpcname: state_getRuntimeVersion
      **/
-    getRuntimeVersion(): Promise<SpVersionRuntimeVersion>;
+    getRuntimeVersion(): Promise<RuntimeVersion>;
 
     /**
      * Returns a storage entry at a specific block's state.
@@ -565,41 +576,39 @@ export interface RpcCalls extends GenericRpcCalls {
     getStorage(key: StorageKey, at?: BlockHash): Promise<Option<StorageData>>;
 
     /**
+     * Returns the hash of a storage entry at a block's state.
+     *
      * @rpcname: state_getStorageHash
      **/
-    getStorageHash: AsyncMethod;
+    getStorageHash(key: StorageKey, at?: BlockHash): Promise<Option<Hash>>;
 
     /**
-     * @rpcname: state_getStorageHashAt
-     **/
-    getStorageHashAt: AsyncMethod;
-
-    /**
+     * Returns the hash of a storage entry at a block's state.
+     *
      * @rpcname: state_getStorageSize
      **/
-    getStorageSize: AsyncMethod;
+    getStorageSize(key: StorageKey, at?: BlockHash): Promise<Option<bigint>>;
 
     /**
-     * @rpcname: state_getStorageSizeAt
-     **/
-    getStorageSizeAt: AsyncMethod;
-
-    /**
+     * Query historical storage entries (by key) starting from a block given as the second parameter. NOTE: The first returned result contains the initial state of storage for all keys. Subsequent values in the vector represent changes to the previous state (diffs). WARNING: The time complexity of this query is O(|keys|*dist(block, hash)), and the memory complexity is O(dist(block, hash)) -- use with caution.
+     *
      * @rpcname: state_queryStorage
      **/
-    queryStorage: AsyncMethod;
+    queryStorage(keys: Array<StorageKey>, fromBlock: Hash, at?: BlockHash): Promise<Array<StorageChangeSet>>;
 
     /**
+     * Query storage entries (by key) at a block hash given as the second parameter. NOTE: Each StorageChangeSet in the result corresponds to exactly one element -- the storage value under an input key at the input block hash.
+     *
      * @rpcname: state_queryStorageAt
      **/
-    queryStorageAt: AsyncMethod;
+    queryStorageAt(keys: Array<StorageKey>, at?: BlockHash): Promise<Array<StorageChangeSet>>;
 
     /**
      * New runtime version subscription
      *
      * @pubsub: state_runtimeVersion, state_subscribeRuntimeVersion, state_unsubscribeRuntimeVersion
      **/
-    subscribeRuntimeVersion(callback: Callback<SpVersionRuntimeVersion>): Promise<Unsub>;
+    subscribeRuntimeVersion(callback: Callback<RuntimeVersion>): Promise<Unsub>;
 
     /**
      * Subscribes to storage changes for the provided keys
@@ -609,9 +618,16 @@ export interface RpcCalls extends GenericRpcCalls {
     subscribeStorage(keys: Array<StorageKey>, callback: Callback<StorageChangeSet>): Promise<Unsub>;
 
     /**
+     * The `traceBlock` RPC provides a way to trace the re-execution of a single block, collecting Spans and Events from both the client and the relevant WASM runtime.
+     *
      * @rpcname: state_traceBlock
      **/
-    traceBlock: AsyncMethod;
+    traceBlock(
+      block: Hash,
+      targets: Option<string>,
+      storage_keys: Option<string>,
+      methods: Option<string>,
+    ): Promise<TraceBlockResponse>;
 
     [method: string]: AsyncMethod;
   };
