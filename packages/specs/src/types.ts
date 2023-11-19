@@ -11,6 +11,7 @@ export type RpcCallSpec = {
   name?: string;
   pubsub?: [subname: string, subscribe: string, unsubscribe: string];
   docs?: string | string[];
+  deprecated?: string;
   alias?: string[];
   params: RpcParamSpec[];
   type: string;

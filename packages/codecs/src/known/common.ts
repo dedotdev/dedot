@@ -9,6 +9,10 @@ export const $StorageKey = $.RawHex;
 export type StorageKeyLike = $.Input<typeof $StorageKey>;
 export type StorageKey = $.Output<typeof $StorageKey>;
 
+export const $PrefixedStorageKey = $.RawHex;
+export type PrefixedStorageKeyLike = $.Input<typeof $PrefixedStorageKey>;
+export type PrefixedStorageKey = $.Output<typeof $PrefixedStorageKey>;
+
 export const $StorageData = $.RawHex;
 export type StorageDataLike = $.Input<typeof $StorageData>;
 export type StorageData = $.Output<typeof $StorageData>;
