@@ -78,10 +78,13 @@ export class RpcGen extends ApiGen {
   }
 
   #generateMethodDef(spec: RpcCallSpec) {
-    const { name, type, module, method, docs = [], params, pubsub } = spec;
+    const { name, type, module, method, docs = [], params, pubsub, deprecated } = spec;
 
     const rpcName = name || `${module}_${method}`;
     let defaultDocs = [`@rpcname: ${rpcName}`];
+    if (deprecated) {
+      defaultDocs.push(`@deprecated: ${deprecated}`);
+    }
 
     if (type === 'AsyncMethod' && params.length === 0) {
       return `${commentBlock(defaultDocs)}${method}: AsyncMethod`;
@@ -102,7 +105,8 @@ export class RpcGen extends ApiGen {
     const typeOut = this.getGeneratedTypeName(type, false);
 
     if (isSubscription) {
-      defaultDocs = [`@pubsub: ${pubsub?.join(', ')}`];
+      defaultDocs.shift();
+      defaultDocs.unshift(`@pubsub: ${pubsub?.join(', ')}`);
 
       paramsOut.push(`callback: Callback<${typeOut}>`);
       return `${commentBlock(docs, '\n', defaultDocs)}${method}(${paramsOut.join(', ')}): Promise<Unsub>`;
@@ -133,6 +137,12 @@ export class RpcGen extends ApiGen {
         $2.split(',').map((one) => one.trim()),
         toTypeIn,
       );
+      return;
+    }
+
+    // Check tuple type
+    if (type.startsWith('[') && type.endsWith(']')) {
+      this.addTypeImport(type.slice(1, -1).split(','));
       return;
     }
 
