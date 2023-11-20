@@ -1,7 +1,7 @@
 import { WsProvider } from '@polkadot/rpc-provider';
 import { ProviderInterface } from '@polkadot/rpc-provider/types';
 import type { SubstrateApi } from '@delightfuldot/chaintypes';
-import { Metadata, MetadataLatest, CodecRegistry } from '@delightfuldot/codecs';
+import { CodecRegistry, Metadata, MetadataLatest } from '@delightfuldot/codecs';
 import { GenericSubstrateApi } from '@delightfuldot/types';
 import { ConstantExecutor, RpcExecutor, StorageQueryExecutor } from './executor';
 import { newProxyChain } from './proxychain';
@@ -65,7 +65,7 @@ export default class DelightfulApi<ChainApi extends GenericSubstrateApi = Substr
     return this.#metadata!;
   }
 
-  get metadataLatest() {
+  get metadataLatest(): MetadataLatest {
     // TODO assert metadata!
     return this.#metadataLatest!;
   }
