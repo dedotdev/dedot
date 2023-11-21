@@ -2,6 +2,7 @@
 
 import type {
   H256,
+  DispatchError,
   AccountId20,
   FixedBytes,
   Percent,
@@ -89,10 +90,7 @@ export type MoonbeamRuntimeRuntimeEvent =
  **/
 export type FrameSystemEvent =
   | { tag: 'ExtrinsicSuccess'; value: { dispatchInfo: FrameSupportDispatchDispatchInfo } }
-  | {
-      tag: 'ExtrinsicFailed';
-      value: { dispatchError: SpRuntimeDispatchError; dispatchInfo: FrameSupportDispatchDispatchInfo };
-    }
+  | { tag: 'ExtrinsicFailed'; value: { dispatchError: DispatchError; dispatchInfo: FrameSupportDispatchDispatchInfo } }
   | { tag: 'CodeUpdated' }
   | { tag: 'NewAccount'; value: { account: AccountId20 } }
   | { tag: 'KilledAccount'; value: { account: AccountId20 } }
@@ -107,40 +105,6 @@ export type FrameSupportDispatchDispatchInfo = {
 export type FrameSupportDispatchDispatchClass = 'Normal' | 'Operational' | 'Mandatory';
 
 export type FrameSupportDispatchPays = 'Yes' | 'No';
-
-export type SpRuntimeDispatchError =
-  | { tag: 'Other' }
-  | { tag: 'CannotLookup' }
-  | { tag: 'BadOrigin' }
-  | { tag: 'Module'; value: SpRuntimeModuleError }
-  | { tag: 'ConsumerRemaining' }
-  | { tag: 'NoProviders' }
-  | { tag: 'TooManyConsumers' }
-  | { tag: 'Token'; value: SpRuntimeTokenError }
-  | { tag: 'Arithmetic'; value: SpArithmeticArithmeticError }
-  | { tag: 'Transactional'; value: SpRuntimeTransactionalError }
-  | { tag: 'Exhausted' }
-  | { tag: 'Corruption' }
-  | { tag: 'Unavailable' }
-  | { tag: 'RootNotAllowed' };
-
-export type SpRuntimeModuleError = { index: number; error: FixedBytes<4> };
-
-export type SpRuntimeTokenError =
-  | 'FundsUnavailable'
-  | 'OnlyProvider'
-  | 'BelowMinimum'
-  | 'CannotCreate'
-  | 'UnknownAsset'
-  | 'Frozen'
-  | 'Unsupported'
-  | 'CannotCreateHold'
-  | 'NotExpendable'
-  | 'Blocked';
-
-export type SpArithmeticArithmeticError = 'Underflow' | 'Overflow' | 'DivisionByZero';
-
-export type SpRuntimeTransactionalError = 'LimitReached' | 'NoLayer';
 
 /**
  * The [event](https://docs.substrate.io/main-docs/build/events-errors/) emitted by this pallet.
@@ -375,18 +339,18 @@ export type PalletMoonbeamOrbitersEvent =
  * The [event](https://docs.substrate.io/main-docs/build/events-errors/) emitted by this pallet.
  **/
 export type PalletUtilityEvent =
-  | { tag: 'BatchInterrupted'; value: { index: number; error: SpRuntimeDispatchError } }
+  | { tag: 'BatchInterrupted'; value: { index: number; error: DispatchError } }
   | { tag: 'BatchCompleted' }
   | { tag: 'BatchCompletedWithErrors' }
   | { tag: 'ItemCompleted' }
-  | { tag: 'ItemFailed'; value: { error: SpRuntimeDispatchError } }
-  | { tag: 'DispatchedAs'; value: { result: [] | SpRuntimeDispatchError } };
+  | { tag: 'ItemFailed'; value: { error: DispatchError } }
+  | { tag: 'DispatchedAs'; value: { result: [] | DispatchError } };
 
 /**
  * The [event](https://docs.substrate.io/main-docs/build/events-errors/) emitted by this pallet.
  **/
 export type PalletProxyEvent =
-  | { tag: 'ProxyExecuted'; value: { result: [] | SpRuntimeDispatchError } }
+  | { tag: 'ProxyExecuted'; value: { result: [] | DispatchError } }
   | {
       tag: 'PureCreated';
       value: { pure: AccountId20; who: AccountId20; proxyType: MoonbeamRuntimeProxyType; disambiguationIndex: number };
@@ -417,8 +381,8 @@ export type MoonbeamRuntimeProxyType =
 export type PalletMaintenanceModeEvent =
   | { tag: 'EnteredMaintenanceMode' }
   | { tag: 'NormalOperationResumed' }
-  | { tag: 'FailedToSuspendIdleXcmExecution'; value: { error: SpRuntimeDispatchError } }
-  | { tag: 'FailedToResumeIdleXcmExecution'; value: { error: SpRuntimeDispatchError } };
+  | { tag: 'FailedToSuspendIdleXcmExecution'; value: { error: DispatchError } }
+  | { tag: 'FailedToResumeIdleXcmExecution'; value: { error: DispatchError } };
 
 /**
  * The [event](https://docs.substrate.io/main-docs/build/events-errors/) emitted by this pallet.
@@ -443,8 +407,8 @@ export type PalletMigrationsEvent =
   | { tag: 'RuntimeUpgradeCompleted'; value: { weight: SpWeightsWeightV2Weight } }
   | { tag: 'MigrationStarted'; value: { migrationName: Bytes } }
   | { tag: 'MigrationCompleted'; value: { migrationName: Bytes; consumedWeight: SpWeightsWeightV2Weight } }
-  | { tag: 'FailedToSuspendIdleXcmExecution'; value: { error: SpRuntimeDispatchError } }
-  | { tag: 'FailedToResumeIdleXcmExecution'; value: { error: SpRuntimeDispatchError } };
+  | { tag: 'FailedToSuspendIdleXcmExecution'; value: { error: DispatchError } }
+  | { tag: 'FailedToResumeIdleXcmExecution'; value: { error: DispatchError } };
 
 /**
  * The [event](https://docs.substrate.io/main-docs/build/events-errors/) emitted by this pallet.
@@ -467,7 +431,7 @@ export type PalletMultisigEvent =
         timepoint: PalletMultisigTimepoint;
         multisig: AccountId20;
         callHash: FixedBytes<32>;
-        result: [] | SpRuntimeDispatchError;
+        result: [] | DispatchError;
       };
     }
   | {
@@ -546,7 +510,7 @@ export type PalletSchedulerEvent =
   | { tag: 'Canceled'; value: { when: number; index: number } }
   | {
       tag: 'Dispatched';
-      value: { task: [number, number]; id?: FixedBytes<32> | undefined; result: [] | SpRuntimeDispatchError };
+      value: { task: [number, number]; id?: FixedBytes<32> | undefined; result: [] | DispatchError };
     }
   | { tag: 'CallUnavailable'; value: { task: [number, number]; id?: FixedBytes<32> | undefined } }
   | { tag: 'PeriodicFailed'; value: { task: [number, number]; id?: FixedBytes<32> | undefined } }
@@ -2465,7 +2429,7 @@ export type FrameSupportDispatchPostDispatchInfo = {
 
 export type SpRuntimeDispatchErrorWithPostInfo = {
   postInfo: FrameSupportDispatchPostDispatchInfo;
-  error: SpRuntimeDispatchError;
+  error: DispatchError;
 };
 
 /**
@@ -2476,8 +2440,8 @@ export type PalletCollectiveEvent =
   | { tag: 'Voted'; value: { account: AccountId20; proposalHash: H256; voted: boolean; yes: number; no: number } }
   | { tag: 'Approved'; value: { proposalHash: H256 } }
   | { tag: 'Disapproved'; value: { proposalHash: H256 } }
-  | { tag: 'Executed'; value: { proposalHash: H256; result: [] | SpRuntimeDispatchError } }
-  | { tag: 'MemberExecuted'; value: { proposalHash: H256; result: [] | SpRuntimeDispatchError } }
+  | { tag: 'Executed'; value: { proposalHash: H256; result: [] | DispatchError } }
+  | { tag: 'MemberExecuted'; value: { proposalHash: H256; result: [] | DispatchError } }
   | { tag: 'Closed'; value: { proposalHash: H256; yes: number; no: number } };
 
 /**

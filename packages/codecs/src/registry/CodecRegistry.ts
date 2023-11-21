@@ -11,6 +11,11 @@ const KNOWN_PATHS: KnownPath[] = [
   'sp_core::crypto::AccountId32',
   // 'sp_runtime::generic::era::Era',
   'sp_runtime::multiaddress::MultiAddress',
+  /^sp_runtime::DispatchError$/,
+  'sp_runtime::ModuleError',
+  'sp_runtime::TokenError',
+  'sp_arithmetic::ArithmeticError',
+  'sp_runtime::TransactionalError',
 
   'fp_account::AccountId20',
   'account::AccountId20',
