@@ -19,7 +19,7 @@ export class ErrorsGen extends ApiGen {
       const errors = this.#getErrorVariants(error);
 
       defTypeOut += `${stringLowerFirst(pallet.name)}: {
-        ${errors?.map(({ name, docs }) => `${commentBlock(docs)}${name}: GenericModuleError`).join(',\n')}
+        ${errors.map(({ name, docs }) => `${commentBlock(docs)}${name}: GenericModuleError`).join(',\n')}
       },`;
     }
 
@@ -32,12 +32,12 @@ export class ErrorsGen extends ApiGen {
   #getErrorVariants(errorId: number) {
     const def = this.metadata.types[errorId];
     if (!def) {
-      throw new Error(`Error def not found ${JSON.stringify(def)}`);
+      throw new Error(`Error def not found: ${JSON.stringify(def)}`);
     }
 
     const { tag, value } = def.type;
     if (tag !== 'Enum') {
-      throw new Error(`Not an Error type ${JSON.stringify(def)}`);
+      throw new Error(`Invalid pallet error type!`);
     }
 
     return value.members;

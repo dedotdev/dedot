@@ -9,7 +9,7 @@ export class ErrorsExecutor<ChainApi extends GenericSubstrateApi = SubstrateApi>
 
     const error = targetPallet.error;
     if (!error) {
-      throw new Error(`Error not found in pallet ${pallet}`);
+      throw new Error(`Not found error in pallet ${pallet}`);
     }
 
     const variantMeta = this.#getVariantMeta(error, variantName);
@@ -24,12 +24,12 @@ export class ErrorsExecutor<ChainApi extends GenericSubstrateApi = SubstrateApi>
   #getVariantMeta(errorId: number, variantName: string) {
     const def = this.metadata.types[errorId];
     if (!def) {
-      throw new Error(`Error def not found ${JSON.stringify(def)}`);
+      throw new Error(`Error def not found: ${JSON.stringify(def)}`);
     }
 
     const { tag, value } = def.type;
     if (tag !== 'Enum') {
-      throw new Error(`Not an Error type ${JSON.stringify(def)}`);
+      throw new Error(`Invalid pallet error type!`);
     }
 
     const variantMeta = value.members.find(({ name }) => name == variantName);
