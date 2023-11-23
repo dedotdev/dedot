@@ -1,5 +1,5 @@
 import * as $ from '@delightfuldot/shape';
-import {$AccountId32} from '../generic';
+import { $AccountId32 } from '../generic';
 
 /**
  * A multi-format address wrapper for on-chain accounts.
