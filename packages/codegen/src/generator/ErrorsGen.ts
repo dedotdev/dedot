@@ -1,6 +1,7 @@
 import { ApiGen } from './ApiGen';
-import { stringLowerFirst } from '@polkadot/util';
 import { beautifySourceCode, commentBlock, compileTemplate } from './utils';
+import { stringCamelCase } from '@polkadot/util';
+import { assert } from '@delightfuldot/utils';
 
 export class ErrorsGen extends ApiGen {
   generate() {
@@ -18,8 +19,10 @@ export class ErrorsGen extends ApiGen {
 
       const errors = this.#getErrorVariants(error);
 
-      defTypeOut += `${stringLowerFirst(pallet.name)}: {
-        ${errors.map(({ name, docs }) => `${commentBlock(docs)}${name}: GenericModuleError`).join(',\n')}
+      defTypeOut += `${stringCamelCase(pallet.name)}: {
+        ${errors
+          .map(({ name, docs }) => `${commentBlock(docs)}${stringCamelCase(name)}: GenericModuleError`)
+          .join(',\n')}
       },`;
     }
 
@@ -31,14 +34,10 @@ export class ErrorsGen extends ApiGen {
 
   #getErrorVariants(errorId: number) {
     const def = this.metadata.types[errorId];
-    if (!def) {
-      throw new Error(`Error def not found: ${JSON.stringify(def)}`);
-    }
+    assert(def, `Error def not found for id ${errorId}`);
 
     const { tag, value } = def.type;
-    if (tag !== 'Enum') {
-      throw new Error(`Invalid pallet error type!`);
-    }
+    assert(tag === 'Enum', `Invalid pallet error type!`);
 
     return value.members;
   }

@@ -8,1097 +8,1103 @@ export interface ChainErrors extends GenericChainErrors {
      * The name of specification does not match between the current runtime
      * and the new runtime.
      **/
-    InvalidSpecName: GenericModuleError;
+    invalidSpecName: GenericModuleError;
 
     /**
      * The specification version is not allowed to decrease between the current runtime
      * and the new runtime.
      **/
-    SpecVersionNeedsToIncrease: GenericModuleError;
+    specVersionNeedsToIncrease: GenericModuleError;
 
     /**
      * Failed to extract the runtime version from the new runtime.
      *
      * Either calling `Core_version` or decoding `RuntimeVersion` failed.
      **/
-    FailedToExtractRuntimeVersion: GenericModuleError;
+    failedToExtractRuntimeVersion: GenericModuleError;
 
     /**
      * Suicide called when the account has non-default composite data.
      **/
-    NonDefaultComposite: GenericModuleError;
+    nonDefaultComposite: GenericModuleError;
 
     /**
      * There is a non-zero reference count preventing the account from being purged.
      **/
-    NonZeroRefCount: GenericModuleError;
+    nonZeroRefCount: GenericModuleError;
 
     /**
      * The origin filter prevent the call to be dispatched.
      **/
-    CallFiltered: GenericModuleError;
+    callFiltered: GenericModuleError;
   };
   utility: {
     /**
      * Too many calls batched.
      **/
-    TooManyCalls: GenericModuleError;
+    tooManyCalls: GenericModuleError;
   };
   identity: {
     /**
      * Too many subs-accounts.
      **/
-    TooManySubAccounts: GenericModuleError;
+    tooManySubAccounts: GenericModuleError;
 
     /**
      * Account isn't found.
      **/
-    NotFound: GenericModuleError;
+    notFound: GenericModuleError;
 
     /**
      * Account isn't named.
      **/
-    NotNamed: GenericModuleError;
+    notNamed: GenericModuleError;
 
     /**
      * Empty index.
      **/
-    EmptyIndex: GenericModuleError;
+    emptyIndex: GenericModuleError;
 
     /**
      * Fee is changed.
      **/
-    FeeChanged: GenericModuleError;
+    feeChanged: GenericModuleError;
 
     /**
      * No identity found.
      **/
-    NoIdentity: GenericModuleError;
+    noIdentity: GenericModuleError;
 
     /**
      * Sticky judgement.
      **/
-    StickyJudgement: GenericModuleError;
+    stickyJudgement: GenericModuleError;
 
     /**
      * Judgement given.
      **/
-    JudgementGiven: GenericModuleError;
+    judgementGiven: GenericModuleError;
 
     /**
      * Invalid judgement.
      **/
-    InvalidJudgement: GenericModuleError;
+    invalidJudgement: GenericModuleError;
 
     /**
      * The index is invalid.
      **/
-    InvalidIndex: GenericModuleError;
+    invalidIndex: GenericModuleError;
 
     /**
      * The target is invalid.
      **/
-    InvalidTarget: GenericModuleError;
+    invalidTarget: GenericModuleError;
 
     /**
      * Too many additional fields.
      **/
-    TooManyFields: GenericModuleError;
+    tooManyFields: GenericModuleError;
 
     /**
      * Maximum amount of registrars reached. Cannot add any more.
      **/
-    TooManyRegistrars: GenericModuleError;
+    tooManyRegistrars: GenericModuleError;
 
     /**
      * Account ID is already named.
      **/
-    AlreadyClaimed: GenericModuleError;
+    alreadyClaimed: GenericModuleError;
 
     /**
      * Sender is not a sub-account.
      **/
-    NotSub: GenericModuleError;
+    notSub: GenericModuleError;
 
     /**
      * Sub-account isn't owned by sender.
      **/
-    NotOwned: GenericModuleError;
+    notOwned: GenericModuleError;
 
     /**
      * The provided judgement was for a different identity.
      **/
-    JudgementForDifferentIdentity: GenericModuleError;
+    judgementForDifferentIdentity: GenericModuleError;
 
     /**
      * Error that occurs when there is an issue paying for judgement.
      **/
-    JudgementPaymentFailed: GenericModuleError;
+    judgementPaymentFailed: GenericModuleError;
   };
   multisig: {
     /**
      * Threshold must be 2 or greater.
      **/
-    MinimumThreshold: GenericModuleError;
+    minimumThreshold: GenericModuleError;
 
     /**
      * Call is already approved by this signatory.
      **/
-    AlreadyApproved: GenericModuleError;
+    alreadyApproved: GenericModuleError;
 
     /**
      * Call doesn't need any (more) approvals.
      **/
-    NoApprovalsNeeded: GenericModuleError;
+    noApprovalsNeeded: GenericModuleError;
 
     /**
      * There are too few signatories in the list.
      **/
-    TooFewSignatories: GenericModuleError;
+    tooFewSignatories: GenericModuleError;
 
     /**
      * There are too many signatories in the list.
      **/
-    TooManySignatories: GenericModuleError;
+    tooManySignatories: GenericModuleError;
 
     /**
      * The signatories were provided out of order; they should be ordered.
      **/
-    SignatoriesOutOfOrder: GenericModuleError;
+    signatoriesOutOfOrder: GenericModuleError;
 
     /**
      * The sender was contained in the other signatories; it shouldn't be.
      **/
-    SenderInSignatories: GenericModuleError;
+    senderInSignatories: GenericModuleError;
 
     /**
      * Multisig operation not found when attempting to cancel.
      **/
-    NotFound: GenericModuleError;
+    notFound: GenericModuleError;
 
     /**
      * Only the account that originally created the multisig is able to cancel it.
      **/
-    NotOwner: GenericModuleError;
+    notOwner: GenericModuleError;
 
     /**
      * No timepoint was given, yet the multisig operation is already underway.
      **/
-    NoTimepoint: GenericModuleError;
+    noTimepoint: GenericModuleError;
 
     /**
      * A different timepoint was given to the multisig operation that is underway.
      **/
-    WrongTimepoint: GenericModuleError;
+    wrongTimepoint: GenericModuleError;
 
     /**
      * A timepoint was given, yet no multisig operation is underway.
      **/
-    UnexpectedTimepoint: GenericModuleError;
+    unexpectedTimepoint: GenericModuleError;
 
     /**
      * The maximum weight information provided was too low.
      **/
-    MaxWeightTooLow: GenericModuleError;
+    maxWeightTooLow: GenericModuleError;
 
     /**
      * The data to be stored is already stored.
      **/
-    AlreadyStored: GenericModuleError;
+    alreadyStored: GenericModuleError;
   };
   proxy: {
     /**
      * There are too many proxies registered or too many announcements pending.
      **/
-    TooMany: GenericModuleError;
+    tooMany: GenericModuleError;
 
     /**
      * Proxy registration not found.
      **/
-    NotFound: GenericModuleError;
+    notFound: GenericModuleError;
 
     /**
      * Sender is not a proxy of the account to be proxied.
      **/
-    NotProxy: GenericModuleError;
+    notProxy: GenericModuleError;
 
     /**
      * A call which is incompatible with the proxy type's filter was attempted.
      **/
-    Unproxyable: GenericModuleError;
+    unproxyable: GenericModuleError;
 
     /**
      * Account is already a proxy.
      **/
-    Duplicate: GenericModuleError;
+    duplicate: GenericModuleError;
 
     /**
      * Call may not be made by proxy because it may escalate its privileges.
      **/
-    NoPermission: GenericModuleError;
+    noPermission: GenericModuleError;
 
     /**
      * Announcement, if made at all, was made too recently.
      **/
-    Unannounced: GenericModuleError;
+    unannounced: GenericModuleError;
 
     /**
      * Cannot add self as proxy.
      **/
-    NoSelfProxy: GenericModuleError;
+    noSelfProxy: GenericModuleError;
   };
   parachainSystem: {
     /**
      * Attempt to upgrade validation function while existing upgrade pending.
      **/
-    OverlappingUpgrades: GenericModuleError;
+    overlappingUpgrades: GenericModuleError;
 
     /**
      * Polkadot currently prohibits this parachain from upgrading its validation function.
      **/
-    ProhibitedByPolkadot: GenericModuleError;
+    prohibitedByPolkadot: GenericModuleError;
 
     /**
      * The supplied validation function has compiled into a blob larger than Polkadot is
      * willing to run.
      **/
-    TooBig: GenericModuleError;
+    tooBig: GenericModuleError;
 
     /**
      * The inherent which supplies the validation data did not run this block.
      **/
-    ValidationDataNotAvailable: GenericModuleError;
+    validationDataNotAvailable: GenericModuleError;
 
     /**
      * The inherent which supplies the host configuration did not run this block.
      **/
-    HostConfigurationNotAvailable: GenericModuleError;
+    hostConfigurationNotAvailable: GenericModuleError;
 
     /**
      * No validation function upgrade is currently scheduled.
      **/
-    NotScheduled: GenericModuleError;
+    notScheduled: GenericModuleError;
 
     /**
      * No code upgrade has been authorized.
      **/
-    NothingAuthorized: GenericModuleError;
+    nothingAuthorized: GenericModuleError;
 
     /**
      * The given code upgrade has not been authorized.
      **/
-    Unauthorized: GenericModuleError;
+    unauthorized: GenericModuleError;
   };
   balances: {
     /**
      * Vesting balance too high to send value.
      **/
-    VestingBalance: GenericModuleError;
+    vestingBalance: GenericModuleError;
 
     /**
      * Account liquidity restrictions prevent withdrawal.
      **/
-    LiquidityRestrictions: GenericModuleError;
+    liquidityRestrictions: GenericModuleError;
 
     /**
      * Balance too low to send value.
      **/
-    InsufficientBalance: GenericModuleError;
+    insufficientBalance: GenericModuleError;
 
     /**
      * Value too low to create account due to existential deposit.
      **/
-    ExistentialDeposit: GenericModuleError;
+    existentialDeposit: GenericModuleError;
 
     /**
      * Transfer/payment would kill account.
      **/
-    Expendability: GenericModuleError;
+    expendability: GenericModuleError;
 
     /**
      * A vesting schedule already exists for this account.
      **/
-    ExistingVestingSchedule: GenericModuleError;
+    existingVestingSchedule: GenericModuleError;
 
     /**
      * Beneficiary account must pre-exist.
      **/
-    DeadAccount: GenericModuleError;
+    deadAccount: GenericModuleError;
 
     /**
      * Number of named reserves exceed `MaxReserves`.
      **/
-    TooManyReserves: GenericModuleError;
+    tooManyReserves: GenericModuleError;
 
     /**
      * Number of holds exceed `MaxHolds`.
      **/
-    TooManyHolds: GenericModuleError;
+    tooManyHolds: GenericModuleError;
 
     /**
      * Number of freezes exceed `MaxFreezes`.
      **/
-    TooManyFreezes: GenericModuleError;
+    tooManyFreezes: GenericModuleError;
   };
   vesting: {
     /**
      * The account given is not vesting.
      **/
-    NotVesting: GenericModuleError;
+    notVesting: GenericModuleError;
 
     /**
      * The account already has `MaxVestingSchedules` count of schedules and thus
      * cannot add another one. Consider merging existing schedules in order to add another.
      **/
-    AtMaxVestingSchedules: GenericModuleError;
+    atMaxVestingSchedules: GenericModuleError;
 
     /**
      * Amount being transferred is too low to create a vesting schedule.
      **/
-    AmountLow: GenericModuleError;
+    amountLow: GenericModuleError;
 
     /**
      * An index was out of bounds of the vesting schedules.
      **/
-    ScheduleIndexOutOfBounds: GenericModuleError;
+    scheduleIndexOutOfBounds: GenericModuleError;
 
     /**
      * Failed to create a new schedule because some parameter was invalid.
      **/
-    InvalidScheduleParams: GenericModuleError;
+    invalidScheduleParams: GenericModuleError;
   };
   dappsStaking: {
     /**
      * Disabled
      **/
-    Disabled: GenericModuleError;
+    disabled: GenericModuleError;
 
     /**
      * No change in maintenance mode
      **/
-    NoMaintenanceModeChange: GenericModuleError;
+    noMaintenanceModeChange: GenericModuleError;
 
     /**
      * Upgrade is too heavy, reduce the weight parameter.
      **/
-    UpgradeTooHeavy: GenericModuleError;
+    upgradeTooHeavy: GenericModuleError;
 
     /**
      * Can not stake with zero value.
      **/
-    StakingWithNoValue: GenericModuleError;
+    stakingWithNoValue: GenericModuleError;
 
     /**
      * Can not stake with value less than minimum staking value
      **/
-    InsufficientValue: GenericModuleError;
+    insufficientValue: GenericModuleError;
 
     /**
      * Number of stakers per contract exceeded.
      **/
-    MaxNumberOfStakersExceeded: GenericModuleError;
+    maxNumberOfStakersExceeded: GenericModuleError;
 
     /**
      * Targets must be operated contracts
      **/
-    NotOperatedContract: GenericModuleError;
+    notOperatedContract: GenericModuleError;
 
     /**
      * Contract isn't staked.
      **/
-    NotStakedContract: GenericModuleError;
+    notStakedContract: GenericModuleError;
 
     /**
      * Contract isn't unregistered.
      **/
-    NotUnregisteredContract: GenericModuleError;
+    notUnregisteredContract: GenericModuleError;
 
     /**
      * Unclaimed rewards should be claimed before withdrawing stake.
      **/
-    UnclaimedRewardsRemaining: GenericModuleError;
+    unclaimedRewardsRemaining: GenericModuleError;
 
     /**
      * Unstaking a contract with zero value
      **/
-    UnstakingWithNoValue: GenericModuleError;
+    unstakingWithNoValue: GenericModuleError;
 
     /**
      * There are no previously unbonded funds that can be unstaked and withdrawn.
      **/
-    NothingToWithdraw: GenericModuleError;
+    nothingToWithdraw: GenericModuleError;
 
     /**
      * The contract is already registered by other account
      **/
-    AlreadyRegisteredContract: GenericModuleError;
+    alreadyRegisteredContract: GenericModuleError;
 
     /**
      * This account was already used to register contract
      **/
-    AlreadyUsedDeveloperAccount: GenericModuleError;
+    alreadyUsedDeveloperAccount: GenericModuleError;
 
     /**
      * Smart contract not owned by the account id.
      **/
-    NotOwnedContract: GenericModuleError;
+    notOwnedContract: GenericModuleError;
 
     /**
      * Report issue on github if this is ever emitted
      **/
-    UnknownEraReward: GenericModuleError;
+    unknownEraReward: GenericModuleError;
 
     /**
      * Report issue on github if this is ever emitted
      **/
-    UnexpectedStakeInfoEra: GenericModuleError;
+    unexpectedStakeInfoEra: GenericModuleError;
 
     /**
      * Contract has too many unlocking chunks. Withdraw the existing chunks if possible
      * or wait for current chunks to complete unlocking process to withdraw them.
      **/
-    TooManyUnlockingChunks: GenericModuleError;
+    tooManyUnlockingChunks: GenericModuleError;
 
     /**
      * Contract already claimed in this era and reward is distributed
      **/
-    AlreadyClaimedInThisEra: GenericModuleError;
+    alreadyClaimedInThisEra: GenericModuleError;
 
     /**
      * Era parameter is out of bounds
      **/
-    EraOutOfBounds: GenericModuleError;
+    eraOutOfBounds: GenericModuleError;
 
     /**
      * Too many active `EraStake` values for (staker, contract) pairing.
      * Claim existing rewards to fix this problem.
      **/
-    TooManyEraStakeValues: GenericModuleError;
+    tooManyEraStakeValues: GenericModuleError;
 
     /**
      * Account is not actively staking
      **/
-    NotActiveStaker: GenericModuleError;
+    notActiveStaker: GenericModuleError;
 
     /**
      * Transfering nomination to the same contract
      **/
-    NominationTransferToSameContract: GenericModuleError;
+    nominationTransferToSameContract: GenericModuleError;
   };
   blockReward: {
     /**
      * Sum of all rations must be one whole (100%)
      **/
-    InvalidDistributionConfiguration: GenericModuleError;
+    invalidDistributionConfiguration: GenericModuleError;
   };
   assets: {
     /**
      * Account balance must be greater than or equal to the transfer amount.
      **/
-    BalanceLow: GenericModuleError;
+    balanceLow: GenericModuleError;
 
     /**
      * The account to alter does not exist.
      **/
-    NoAccount: GenericModuleError;
+    noAccount: GenericModuleError;
 
     /**
      * The signing account has no permission to do the operation.
      **/
-    NoPermission: GenericModuleError;
+    noPermission: GenericModuleError;
 
     /**
      * The given asset ID is unknown.
      **/
-    Unknown: GenericModuleError;
+    unknown: GenericModuleError;
 
     /**
      * The origin account is frozen.
      **/
-    Frozen: GenericModuleError;
+    frozen: GenericModuleError;
 
     /**
      * The asset ID is already taken.
      **/
-    InUse: GenericModuleError;
+    inUse: GenericModuleError;
 
     /**
      * Invalid witness data given.
      **/
-    BadWitness: GenericModuleError;
+    badWitness: GenericModuleError;
 
     /**
      * Minimum balance should be non-zero.
      **/
-    MinBalanceZero: GenericModuleError;
+    minBalanceZero: GenericModuleError;
 
     /**
      * Unable to increment the consumer reference counters on the account. Either no provider
      * reference exists to allow a non-zero balance of a non-self-sufficient asset, or one
      * fewer then the maximum number of consumers has been reached.
      **/
-    UnavailableConsumer: GenericModuleError;
+    unavailableConsumer: GenericModuleError;
 
     /**
      * Invalid metadata given.
      **/
-    BadMetadata: GenericModuleError;
+    badMetadata: GenericModuleError;
 
     /**
      * No approval exists that would allow the transfer.
      **/
-    Unapproved: GenericModuleError;
+    unapproved: GenericModuleError;
 
     /**
      * The source account would not survive the transfer and it needs to stay alive.
      **/
-    WouldDie: GenericModuleError;
+    wouldDie: GenericModuleError;
 
     /**
      * The asset-account already exists.
      **/
-    AlreadyExists: GenericModuleError;
+    alreadyExists: GenericModuleError;
 
     /**
      * The asset-account doesn't have an associated deposit.
      **/
-    NoDeposit: GenericModuleError;
+    noDeposit: GenericModuleError;
 
     /**
      * The operation would result in funds being burned.
      **/
-    WouldBurn: GenericModuleError;
+    wouldBurn: GenericModuleError;
 
     /**
      * The asset is a live asset and is actively being used. Usually emit for operations such
      * as `start_destroy` which require the asset to be in a destroying state.
      **/
-    LiveAsset: GenericModuleError;
+    liveAsset: GenericModuleError;
 
     /**
      * The asset is not live, and likely being destroyed.
      **/
-    AssetNotLive: GenericModuleError;
+    assetNotLive: GenericModuleError;
 
     /**
      * The asset status is not the expected status.
      **/
-    IncorrectStatus: GenericModuleError;
+    incorrectStatus: GenericModuleError;
 
     /**
      * The asset should be frozen before the given operation.
      **/
-    NotFrozen: GenericModuleError;
+    notFrozen: GenericModuleError;
 
     /**
      * Callback action resulted in error
      **/
-    CallbackFailed: GenericModuleError;
+    callbackFailed: GenericModuleError;
   };
   collatorSelection: {
     /**
      * Too many candidates
      **/
-    TooManyCandidates: GenericModuleError;
+    tooManyCandidates: GenericModuleError;
 
     /**
      * Too few candidates
      **/
-    TooFewCandidates: GenericModuleError;
+    tooFewCandidates: GenericModuleError;
 
     /**
      * Unknown error
      **/
-    Unknown: GenericModuleError;
+    unknown: GenericModuleError;
 
     /**
      * Permission issue
      **/
-    Permission: GenericModuleError;
+    permission: GenericModuleError;
 
     /**
      * User is already a candidate
      **/
-    AlreadyCandidate: GenericModuleError;
+    alreadyCandidate: GenericModuleError;
 
     /**
      * User is not a candidate
      **/
-    NotCandidate: GenericModuleError;
+    notCandidate: GenericModuleError;
 
     /**
      * User is already an Invulnerable
      **/
-    AlreadyInvulnerable: GenericModuleError;
+    alreadyInvulnerable: GenericModuleError;
 
     /**
      * Account has no associated validator ID
      **/
-    NoAssociatedValidatorId: GenericModuleError;
+    noAssociatedValidatorId: GenericModuleError;
 
     /**
      * Validator ID is not yet registered
      **/
-    ValidatorNotRegistered: GenericModuleError;
+    validatorNotRegistered: GenericModuleError;
   };
   session: {
     /**
      * Invalid ownership proof.
      **/
-    InvalidProof: GenericModuleError;
+    invalidProof: GenericModuleError;
 
     /**
      * No associated validator ID for account.
      **/
-    NoAssociatedValidatorId: GenericModuleError;
+    noAssociatedValidatorId: GenericModuleError;
 
     /**
      * Registered duplicate key.
      **/
-    DuplicatedKey: GenericModuleError;
+    duplicatedKey: GenericModuleError;
 
     /**
      * No keys are associated with this account.
      **/
-    NoKeys: GenericModuleError;
+    noKeys: GenericModuleError;
 
     /**
      * Key setting account is not live, so it's impossible to associate keys.
      **/
-    NoAccount: GenericModuleError;
+    noAccount: GenericModuleError;
   };
   xcmpQueue: {
     /**
      * Failed to send XCM message.
      **/
-    FailedToSend: GenericModuleError;
+    failedToSend: GenericModuleError;
 
     /**
      * Bad XCM origin.
      **/
-    BadXcmOrigin: GenericModuleError;
+    badXcmOrigin: GenericModuleError;
 
     /**
      * Bad XCM data.
      **/
-    BadXcm: GenericModuleError;
+    badXcm: GenericModuleError;
 
     /**
      * Bad overweight index.
      **/
-    BadOverweightIndex: GenericModuleError;
+    badOverweightIndex: GenericModuleError;
 
     /**
      * Provided weight is possibly not enough to execute the message.
      **/
-    WeightOverLimit: GenericModuleError;
+    weightOverLimit: GenericModuleError;
   };
   polkadotXcm: {
     /**
      * The desired destination was unreachable, generally because there is a no way of routing
      * to it.
      **/
-    Unreachable: GenericModuleError;
+    unreachable: GenericModuleError;
 
     /**
      * There was some other issue (i.e. not to do with routing) in sending the message. Perhaps
      * a lack of space for buffering the message.
      **/
-    SendFailure: GenericModuleError;
+    sendFailure: GenericModuleError;
 
     /**
      * The message execution fails the filter.
      **/
-    Filtered: GenericModuleError;
+    filtered: GenericModuleError;
 
     /**
      * The message's weight could not be determined.
      **/
-    UnweighableMessage: GenericModuleError;
+    unweighableMessage: GenericModuleError;
 
     /**
      * The destination `MultiLocation` provided cannot be inverted.
      **/
-    DestinationNotInvertible: GenericModuleError;
+    destinationNotInvertible: GenericModuleError;
 
     /**
      * The assets to be sent are empty.
      **/
-    Empty: GenericModuleError;
+    empty: GenericModuleError;
 
     /**
      * Could not re-anchor the assets to declare the fees for the destination chain.
      **/
-    CannotReanchor: GenericModuleError;
+    cannotReanchor: GenericModuleError;
 
     /**
      * Too many assets have been attempted for transfer.
      **/
-    TooManyAssets: GenericModuleError;
+    tooManyAssets: GenericModuleError;
 
     /**
      * Origin is invalid for sending.
      **/
-    InvalidOrigin: GenericModuleError;
+    invalidOrigin: GenericModuleError;
 
     /**
      * The version of the `Versioned` value used is not able to be interpreted.
      **/
-    BadVersion: GenericModuleError;
+    badVersion: GenericModuleError;
 
     /**
      * The given location could not be used (e.g. because it cannot be expressed in the
      * desired version of XCM).
      **/
-    BadLocation: GenericModuleError;
+    badLocation: GenericModuleError;
 
     /**
      * The referenced subscription could not be found.
      **/
-    NoSubscription: GenericModuleError;
+    noSubscription: GenericModuleError;
 
     /**
      * The location is invalid since it already has a subscription from us.
      **/
-    AlreadySubscribed: GenericModuleError;
+    alreadySubscribed: GenericModuleError;
 
     /**
      * Invalid asset for the operation.
      **/
-    InvalidAsset: GenericModuleError;
+    invalidAsset: GenericModuleError;
 
     /**
      * The owner does not own (all) of the asset that they wish to do the operation on.
      **/
-    LowBalance: GenericModuleError;
+    lowBalance: GenericModuleError;
 
     /**
      * The asset owner has too many locks on the asset.
      **/
-    TooManyLocks: GenericModuleError;
+    tooManyLocks: GenericModuleError;
 
     /**
      * The given account is not an identifiable sovereign account for any location.
      **/
-    AccountNotSovereign: GenericModuleError;
+    accountNotSovereign: GenericModuleError;
 
     /**
      * The operation required fees to be paid which the initiator could not meet.
      **/
-    FeesNotMet: GenericModuleError;
+    feesNotMet: GenericModuleError;
 
     /**
      * A remote lock with the corresponding data could not be found.
      **/
-    LockNotFound: GenericModuleError;
+    lockNotFound: GenericModuleError;
 
     /**
      * The unlock operation cannot succeed because there are still consumers of the lock.
      **/
-    InUse: GenericModuleError;
+    inUse: GenericModuleError;
   };
   cumulusXcm: {};
   dmpQueue: {
     /**
      * The message index given is unknown.
      **/
-    Unknown: GenericModuleError;
+    unknown: GenericModuleError;
 
     /**
      * The amount of weight given is possibly not enough for executing the message.
      **/
-    OverLimit: GenericModuleError;
+    overLimit: GenericModuleError;
   };
   xcAssetConfig: {
     /**
      * Asset is already registered.
      **/
-    AssetAlreadyRegistered: GenericModuleError;
+    assetAlreadyRegistered: GenericModuleError;
 
     /**
      * Asset does not exist (hasn't been registered).
      **/
-    AssetDoesNotExist: GenericModuleError;
+    assetDoesNotExist: GenericModuleError;
 
     /**
      * Failed to convert to latest versioned MultiLocation
      **/
-    MultiLocationNotSupported: GenericModuleError;
+    multiLocationNotSupported: GenericModuleError;
   };
   xTokens: {
     /**
      * Asset has no reserve location.
      **/
-    AssetHasNoReserve: GenericModuleError;
+    assetHasNoReserve: GenericModuleError;
 
     /**
      * Not cross-chain transfer.
      **/
-    NotCrossChainTransfer: GenericModuleError;
+    notCrossChainTransfer: GenericModuleError;
 
     /**
      * Invalid transfer destination.
      **/
-    InvalidDest: GenericModuleError;
+    invalidDest: GenericModuleError;
 
     /**
      * Currency is not cross-chain transferable.
      **/
-    NotCrossChainTransferableCurrency: GenericModuleError;
+    notCrossChainTransferableCurrency: GenericModuleError;
 
     /**
      * The message's weight could not be determined.
      **/
-    UnweighableMessage: GenericModuleError;
+    unweighableMessage: GenericModuleError;
 
     /**
      * XCM execution failed.
      **/
-    XcmExecutionFailed: GenericModuleError;
+    xcmExecutionFailed: GenericModuleError;
 
     /**
      * Could not re-anchor the assets to declare the fees for the
      * destination chain.
      **/
-    CannotReanchor: GenericModuleError;
+    cannotReanchor: GenericModuleError;
 
     /**
      * Could not get ancestry of asset reserve location.
      **/
-    InvalidAncestry: GenericModuleError;
+    invalidAncestry: GenericModuleError;
 
     /**
      * The MultiAsset is invalid.
      **/
-    InvalidAsset: GenericModuleError;
+    invalidAsset: GenericModuleError;
 
     /**
      * The destination `MultiLocation` provided cannot be inverted.
      **/
-    DestinationNotInvertible: GenericModuleError;
+    destinationNotInvertible: GenericModuleError;
 
     /**
      * The version of the `Versioned` value used is not able to be
      * interpreted.
      **/
-    BadVersion: GenericModuleError;
+    badVersion: GenericModuleError;
 
     /**
      * We tried sending distinct asset and fee but they have different
      * reserve chains.
      **/
-    DistinctReserveForAssetAndFee: GenericModuleError;
+    distinctReserveForAssetAndFee: GenericModuleError;
 
     /**
      * The fee is zero.
      **/
-    ZeroFee: GenericModuleError;
+    zeroFee: GenericModuleError;
 
     /**
      * The transfering asset amount is zero.
      **/
-    ZeroAmount: GenericModuleError;
+    zeroAmount: GenericModuleError;
 
     /**
      * The number of assets to be sent is over the maximum.
      **/
-    TooManyAssetsBeingSent: GenericModuleError;
+    tooManyAssetsBeingSent: GenericModuleError;
 
     /**
      * The specified index does not exist in a MultiAssets struct.
      **/
-    AssetIndexNonExistent: GenericModuleError;
+    assetIndexNonExistent: GenericModuleError;
 
     /**
      * Fee is not enough.
      **/
-    FeeNotEnough: GenericModuleError;
+    feeNotEnough: GenericModuleError;
 
     /**
      * Not supported MultiLocation
      **/
-    NotSupportedMultiLocation: GenericModuleError;
+    notSupportedMultiLocation: GenericModuleError;
 
     /**
      * MinXcmFee not registered for certain reserve location
      **/
-    MinXcmFeeNotDefined: GenericModuleError;
+    minXcmFeeNotDefined: GenericModuleError;
   };
-  eVM: {
+  evm: {
     /**
      * Not enough balance to perform action
      **/
-    BalanceLow: GenericModuleError;
+    balanceLow: GenericModuleError;
 
     /**
      * Calculating total fee overflowed
      **/
-    FeeOverflow: GenericModuleError;
+    feeOverflow: GenericModuleError;
 
     /**
      * Calculating total payment overflowed
      **/
-    PaymentOverflow: GenericModuleError;
+    paymentOverflow: GenericModuleError;
 
     /**
      * Withdraw fee failed
      **/
-    WithdrawFailed: GenericModuleError;
+    withdrawFailed: GenericModuleError;
 
     /**
      * Gas price is too low.
      **/
-    GasPriceTooLow: GenericModuleError;
+    gasPriceTooLow: GenericModuleError;
 
     /**
      * Nonce is invalid
      **/
-    InvalidNonce: GenericModuleError;
+    invalidNonce: GenericModuleError;
 
     /**
      * Gas limit is too low.
      **/
-    GasLimitTooLow: GenericModuleError;
+    gasLimitTooLow: GenericModuleError;
 
     /**
      * Gas limit is too high.
      **/
-    GasLimitTooHigh: GenericModuleError;
+    gasLimitTooHigh: GenericModuleError;
 
     /**
      * Undefined error.
      **/
-    Undefined: GenericModuleError;
+    undefined: GenericModuleError;
 
     /**
      * EVM reentrancy
      **/
-    Reentrancy: GenericModuleError;
+    reentrancy: GenericModuleError;
 
     /**
      * EIP-3607,
      **/
-    TransactionMustComeFromEOA: GenericModuleError;
+    transactionMustComeFromEOA: GenericModuleError;
   };
   ethereum: {
     /**
      * Signature is invalid.
      **/
-    InvalidSignature: GenericModuleError;
+    invalidSignature: GenericModuleError;
 
     /**
      * Pre-log is present, therefore transact is not allowed.
      **/
-    PreLogExists: GenericModuleError;
+    preLogExists: GenericModuleError;
+  };
+  dynamicEvmBaseFee: {
+    /**
+     * Specified value is outside of the allowed range.
+     **/
+    valueOutOfBounds: GenericModuleError;
   };
   contracts: {
     /**
      * A new schedule must have a greater version than the current one.
      **/
-    InvalidScheduleVersion: GenericModuleError;
+    invalidScheduleVersion: GenericModuleError;
 
     /**
      * Invalid combination of flags supplied to `seal_call` or `seal_delegate_call`.
      **/
-    InvalidCallFlags: GenericModuleError;
+    invalidCallFlags: GenericModuleError;
 
     /**
      * The executed contract exhausted its gas limit.
      **/
-    OutOfGas: GenericModuleError;
+    outOfGas: GenericModuleError;
 
     /**
      * The output buffer supplied to a contract API call was too small.
      **/
-    OutputBufferTooSmall: GenericModuleError;
+    outputBufferTooSmall: GenericModuleError;
 
     /**
      * Performing the requested transfer failed. Probably because there isn't enough
      * free balance in the sender's account.
      **/
-    TransferFailed: GenericModuleError;
+    transferFailed: GenericModuleError;
 
     /**
      * Performing a call was denied because the calling depth reached the limit
      * of what is specified in the schedule.
      **/
-    MaxCallDepthReached: GenericModuleError;
+    maxCallDepthReached: GenericModuleError;
 
     /**
      * No contract was found at the specified address.
      **/
-    ContractNotFound: GenericModuleError;
+    contractNotFound: GenericModuleError;
 
     /**
      * The code supplied to `instantiate_with_code` exceeds the limit specified in the
      * current schedule.
      **/
-    CodeTooLarge: GenericModuleError;
+    codeTooLarge: GenericModuleError;
 
     /**
      * No code could be found at the supplied code hash.
      **/
-    CodeNotFound: GenericModuleError;
+    codeNotFound: GenericModuleError;
 
     /**
      * A buffer outside of sandbox memory was passed to a contract API function.
      **/
-    OutOfBounds: GenericModuleError;
+    outOfBounds: GenericModuleError;
 
     /**
      * Input passed to a contract API function failed to decode as expected type.
      **/
-    DecodingFailed: GenericModuleError;
+    decodingFailed: GenericModuleError;
 
     /**
      * Contract trapped during execution.
      **/
-    ContractTrapped: GenericModuleError;
+    contractTrapped: GenericModuleError;
 
     /**
      * The size defined in `T::MaxValueSize` was exceeded.
      **/
-    ValueTooLarge: GenericModuleError;
+    valueTooLarge: GenericModuleError;
 
     /**
      * Termination of a contract is not allowed while the contract is already
      * on the call stack. Can be triggered by `seal_terminate`.
      **/
-    TerminatedWhileReentrant: GenericModuleError;
+    terminatedWhileReentrant: GenericModuleError;
 
     /**
      * `seal_call` forwarded this contracts input. It therefore is no longer available.
      **/
-    InputForwarded: GenericModuleError;
+    inputForwarded: GenericModuleError;
 
     /**
      * The subject passed to `seal_random` exceeds the limit.
      **/
-    RandomSubjectTooLong: GenericModuleError;
+    randomSubjectTooLong: GenericModuleError;
 
     /**
      * The amount of topics passed to `seal_deposit_events` exceeds the limit.
      **/
-    TooManyTopics: GenericModuleError;
+    tooManyTopics: GenericModuleError;
 
     /**
      * The chain does not provide a chain extension. Calling the chain extension results
      * in this error. Note that this usually shouldn't happen as deploying such contracts
      * is rejected.
      **/
-    NoChainExtension: GenericModuleError;
+    noChainExtension: GenericModuleError;
 
     /**
      * A contract with the same AccountId already exists.
      **/
-    DuplicateContract: GenericModuleError;
+    duplicateContract: GenericModuleError;
 
     /**
      * A contract self destructed in its constructor.
      *
      * This can be triggered by a call to `seal_terminate`.
      **/
-    TerminatedInConstructor: GenericModuleError;
+    terminatedInConstructor: GenericModuleError;
 
     /**
      * A call tried to invoke a contract that is flagged as non-reentrant.
@@ -1106,22 +1112,22 @@ export interface ChainErrors extends GenericChainErrors {
      * into `pallet-contracts`. This would make the whole pallet reentrant with regard to
      * contract code execution which is not supported.
      **/
-    ReentranceDenied: GenericModuleError;
+    reentranceDenied: GenericModuleError;
 
     /**
      * Origin doesn't have enough balance to pay the required storage deposits.
      **/
-    StorageDepositNotEnoughFunds: GenericModuleError;
+    storageDepositNotEnoughFunds: GenericModuleError;
 
     /**
      * More storage was created than allowed by the storage deposit limit.
      **/
-    StorageDepositLimitExhausted: GenericModuleError;
+    storageDepositLimitExhausted: GenericModuleError;
 
     /**
      * Code removal was denied because the code is still in use by at least one contract.
      **/
-    CodeInUse: GenericModuleError;
+    codeInUse: GenericModuleError;
 
     /**
      * The contract ran to completion but decided to revert its storage changes.
@@ -1129,7 +1135,7 @@ export interface ChainErrors extends GenericChainErrors {
      * or via RPC an `Ok` will be returned. In this case the caller needs to inspect the flags
      * to determine whether a reversion has taken place.
      **/
-    ContractReverted: GenericModuleError;
+    contractReverted: GenericModuleError;
 
     /**
      * The contract's code was found to be invalid during validation or instrumentation.
@@ -1141,27 +1147,27 @@ export interface ChainErrors extends GenericChainErrors {
      * A more detailed error can be found on the node console if debug messages are enabled
      * by supplying `-lruntime::contracts=debug`.
      **/
-    CodeRejected: GenericModuleError;
+    codeRejected: GenericModuleError;
 
     /**
      * An indetermistic code was used in a context where this is not permitted.
      **/
-    Indeterministic: GenericModuleError;
+    indeterministic: GenericModuleError;
 
     /**
      * A pending migration needs to complete before the extrinsic can be called.
      **/
-    MigrationInProgress: GenericModuleError;
+    migrationInProgress: GenericModuleError;
 
     /**
      * Migrate dispatch call was attempted but no migration was performed.
      **/
-    NoMigrationPerformed: GenericModuleError;
+    noMigrationPerformed: GenericModuleError;
   };
   sudo: {
     /**
      * Sender must be the Sudo account
      **/
-    RequireSudo: GenericModuleError;
+    requireSudo: GenericModuleError;
   };
 }

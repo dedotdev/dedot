@@ -13,6 +13,7 @@ export interface GenericModuleError {
     index: number;
     docs: string[];
   };
+  module: string;
 }
 
 export interface GenericRpcModule {
