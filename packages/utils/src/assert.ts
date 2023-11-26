@@ -1,4 +1,4 @@
-export function assert(condition: unknown, message?: string) {
+export function assert(condition: unknown, message?: string): asserts condition {
   if (condition) {
     return;
   }
@@ -12,6 +12,6 @@ export function assert(condition: unknown, message?: string) {
  * @param condition
  * @param message
  */
-export function assertFalse(condition: unknown, message?: string) {
+export function assertFalse(condition: unknown, message?: string): asserts condition {
   assert(!condition, message);
 }
