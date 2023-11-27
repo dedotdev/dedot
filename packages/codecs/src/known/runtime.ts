@@ -23,29 +23,29 @@ export type MultiAddress = $.Input<typeof $MultiAddress>;
  * DispatchError
  */
 
-export const $TokenError = $.Enum({
+export const $TokenError = $.FlatEnum([
   /// Funds are unavailable.
-  FundsUnavailable: null,
+  'FundsUnavailable',
   /// Some part of the balance gives the only provider reference to the account and thus cannot
   /// be (re)moved.
-  OnlyProvider: null,
+  'OnlyProvider',
   /// Account cannot exist with the funds that would be given.
-  BelowMinimum: null,
+  'BelowMinimum',
   /// Account cannot be created.
-  CannotCreate: null,
+  'CannotCreate',
   /// The asset in question is unknown.
-  UnknownAsset: null,
+  'UnknownAsset',
   /// Funds exist but are frozen.
-  Frozen: null,
+  'Frozen',
   /// Operation is not supported by the asset.
-  Unsupported: null,
+  'Unsupported',
   /// Account cannot be created for a held balance.
-  CannotCreateHold: null,
+  'CannotCreateHold',
   /// Withdrawal would cause unwanted loss of account.
-  NotExpendable: null,
+  'NotExpendable',
   /// Account cannot receive the assets.
-  Blocked: null,
-});
+  'Blocked',
+]);
 
 export type TokenError = $.Input<typeof $TokenError>;
 
@@ -56,23 +56,23 @@ export const $ModuleError = $.Struct({
 
 export type ModuleError = $.Input<typeof $ModuleError>;
 
-export const $TransactionalError = $.Enum({
+export const $TransactionalError = $.FlatEnum([
   /// Too many transactional layers have been spawned.
-  LimitReached: null,
+  'LimitReached',
   /// A transactional layer was expected, but does not exist.
-  NoLayer: null,
-});
+  'NoLayer',
+]);
 
 export type TransactionalError = $.Input<typeof $TransactionalError>;
 
-export const $ArithmeticError = $.Enum({
+export const $ArithmeticError = $.FlatEnum([
   /// Underflow.
-  Underflow: null,
+  'Underflow',
   /// Overflow.
-  Overflow: null,
+  'Overflow',
   /// Division by zero.
-  DivisionByZero: null,
-});
+  'DivisionByZero',
+]);
 
 export type ArithmeticError = $.Input<typeof $ArithmeticError>;
 
