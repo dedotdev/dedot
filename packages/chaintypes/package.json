@@ -8,7 +8,6 @@
   "scripts": {
     "build": "tsc --project tsconfig.build.json",
     "clean": "rm -rf ./dist && rm -rf ./tsconfig.tsbuildinfo ./tsconfig.build.tsbuildinfo",
-    "test": "vitest --watch=false"
   },
   "dependencies": {
     "@delightfuldot/codecs": "workspace:*",
