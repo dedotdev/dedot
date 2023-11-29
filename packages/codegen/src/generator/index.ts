@@ -4,3 +4,4 @@ export * from './ConstsGen';
 export * from './QueryGen';
 export * from './RpcGen';
 export * from './IndexGen';
+export * from './ErrorsGen';

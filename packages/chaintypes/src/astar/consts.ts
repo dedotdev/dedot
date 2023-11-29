@@ -371,7 +371,7 @@ export interface ChainConsts extends GenericChainConsts {
   };
   eVM: {};
   ethereum: {};
-  baseFee: {};
+  dynamicEvmBaseFee: {};
   contracts: {
     /**
      * Cost schedule and limits.

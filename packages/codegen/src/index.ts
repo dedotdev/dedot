@@ -3,7 +3,7 @@ import { DelightfulApi } from 'delightfuldot';
 import * as fs from 'fs';
 import * as path from 'path';
 import * as process from 'process';
-import { ConstsGen, TypesGen, QueryGen, RpcGen, IndexGen } from './generator';
+import { ConstsGen, ErrorsGen, IndexGen, QueryGen, RpcGen, TypesGen } from './generator';
 import { RpcMethods } from '@delightfuldot/types';
 import { $Metadata, MetadataLatest } from '@delightfuldot/codecs';
 import staticSubstrate, { rpc } from '@polkadot/types-support/metadata/static-substrate';
@@ -66,6 +66,7 @@ async function generateTypes(network: NetworkInfo, metadata: MetadataLatest, rpc
   const queryTypesFileName = path.join(dirPath, `query.ts`);
   const rpcCallsFileName = path.join(dirPath, `rpc.ts`);
   const indexFileName = path.join(dirPath, `index.ts`);
+  const errorsFileName = path.join(dirPath, `errors.ts`);
 
   if (!fs.existsSync(dirPath)) {
     fs.mkdirSync(dirPath);
@@ -76,8 +77,10 @@ async function generateTypes(network: NetworkInfo, metadata: MetadataLatest, rpc
   const queryGen = new QueryGen(typesGen);
   const rpcGen = new RpcGen(typesGen, rpcMethods);
   const indexGen = new IndexGen(network);
+  const errorsGen = new ErrorsGen(typesGen);
 
   fs.writeFileSync(defTypesFileName, await typesGen.generate());
+  fs.writeFileSync(errorsFileName, await errorsGen.generate());
   fs.writeFileSync(rpcCallsFileName, await rpcGen.generate());
   fs.writeFileSync(queryTypesFileName, await queryGen.generate());
   fs.writeFileSync(constsTypesFileName, await constsGen.generate());

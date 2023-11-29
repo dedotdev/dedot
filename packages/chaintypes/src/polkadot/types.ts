@@ -2,6 +2,7 @@
 
 import type {
   H256,
+  DispatchError,
   AccountId32,
   FixedBytes,
   Perbill,
@@ -99,10 +100,7 @@ export type PolkadotRuntimeRuntimeEvent =
  **/
 export type FrameSystemEvent =
   | { tag: 'ExtrinsicSuccess'; value: { dispatchInfo: FrameSupportDispatchDispatchInfo } }
-  | {
-      tag: 'ExtrinsicFailed';
-      value: { dispatchError: SpRuntimeDispatchError; dispatchInfo: FrameSupportDispatchDispatchInfo };
-    }
+  | { tag: 'ExtrinsicFailed'; value: { dispatchError: DispatchError; dispatchInfo: FrameSupportDispatchDispatchInfo } }
   | { tag: 'CodeUpdated' }
   | { tag: 'NewAccount'; value: { account: AccountId32 } }
   | { tag: 'KilledAccount'; value: { account: AccountId32 } }
@@ -118,40 +116,6 @@ export type FrameSupportDispatchDispatchClass = 'Normal' | 'Operational' | 'Mand
 
 export type FrameSupportDispatchPays = 'Yes' | 'No';
 
-export type SpRuntimeDispatchError =
-  | { tag: 'Other' }
-  | { tag: 'CannotLookup' }
-  | { tag: 'BadOrigin' }
-  | { tag: 'Module'; value: SpRuntimeModuleError }
-  | { tag: 'ConsumerRemaining' }
-  | { tag: 'NoProviders' }
-  | { tag: 'TooManyConsumers' }
-  | { tag: 'Token'; value: SpRuntimeTokenError }
-  | { tag: 'Arithmetic'; value: SpArithmeticArithmeticError }
-  | { tag: 'Transactional'; value: SpRuntimeTransactionalError }
-  | { tag: 'Exhausted' }
-  | { tag: 'Corruption' }
-  | { tag: 'Unavailable' }
-  | { tag: 'RootNotAllowed' };
-
-export type SpRuntimeModuleError = { index: number; error: FixedBytes<4> };
-
-export type SpRuntimeTokenError =
-  | 'FundsUnavailable'
-  | 'OnlyProvider'
-  | 'BelowMinimum'
-  | 'CannotCreate'
-  | 'UnknownAsset'
-  | 'Frozen'
-  | 'Unsupported'
-  | 'CannotCreateHold'
-  | 'NotExpendable'
-  | 'Blocked';
-
-export type SpArithmeticArithmeticError = 'Underflow' | 'Overflow' | 'DivisionByZero';
-
-export type SpRuntimeTransactionalError = 'LimitReached' | 'NoLayer';
-
 /**
  * Events type.
  **/
@@ -160,7 +124,7 @@ export type PalletSchedulerEvent =
   | { tag: 'Canceled'; value: { when: number; index: number } }
   | {
       tag: 'Dispatched';
-      value: { task: [number, number]; id?: FixedBytes<32> | undefined; result: [] | SpRuntimeDispatchError };
+      value: { task: [number, number]; id?: FixedBytes<32> | undefined; result: [] | DispatchError };
     }
   | { tag: 'CallUnavailable'; value: { task: [number, number]; id?: FixedBytes<32> | undefined } }
   | { tag: 'PeriodicFailed'; value: { task: [number, number]; id?: FixedBytes<32> | undefined } }
@@ -375,8 +339,8 @@ export type PalletCollectiveEvent =
   | { tag: 'Voted'; value: { account: AccountId32; proposalHash: H256; voted: boolean; yes: number; no: number } }
   | { tag: 'Approved'; value: { proposalHash: H256 } }
   | { tag: 'Disapproved'; value: { proposalHash: H256 } }
-  | { tag: 'Executed'; value: { proposalHash: H256; result: [] | SpRuntimeDispatchError } }
-  | { tag: 'MemberExecuted'; value: { proposalHash: H256; result: [] | SpRuntimeDispatchError } }
+  | { tag: 'Executed'; value: { proposalHash: H256; result: [] | DispatchError } }
+  | { tag: 'MemberExecuted'; value: { proposalHash: H256; result: [] | DispatchError } }
   | { tag: 'Closed'; value: { proposalHash: H256; yes: number; no: number } };
 
 /**
@@ -2557,7 +2521,7 @@ export type FrameSupportDispatchPostDispatchInfo = {
 
 export type SpRuntimeDispatchErrorWithPostInfo = {
   postInfo: FrameSupportDispatchPostDispatchInfo;
-  error: SpRuntimeDispatchError;
+  error: DispatchError;
 };
 
 /**
@@ -2579,12 +2543,12 @@ export type PalletVestingEvent =
  * The [event](https://docs.substrate.io/main-docs/build/events-errors/) emitted by this pallet.
  **/
 export type PalletUtilityEvent =
-  | { tag: 'BatchInterrupted'; value: { index: number; error: SpRuntimeDispatchError } }
+  | { tag: 'BatchInterrupted'; value: { index: number; error: DispatchError } }
   | { tag: 'BatchCompleted' }
   | { tag: 'BatchCompletedWithErrors' }
   | { tag: 'ItemCompleted' }
-  | { tag: 'ItemFailed'; value: { error: SpRuntimeDispatchError } }
-  | { tag: 'DispatchedAs'; value: { result: [] | SpRuntimeDispatchError } };
+  | { tag: 'ItemFailed'; value: { error: DispatchError } }
+  | { tag: 'DispatchedAs'; value: { result: [] | DispatchError } };
 
 /**
  * The [event](https://docs.substrate.io/main-docs/build/events-errors/) emitted by this pallet.
@@ -2605,7 +2569,7 @@ export type PalletIdentityEvent =
  * The [event](https://docs.substrate.io/main-docs/build/events-errors/) emitted by this pallet.
  **/
 export type PalletProxyEvent =
-  | { tag: 'ProxyExecuted'; value: { result: [] | SpRuntimeDispatchError } }
+  | { tag: 'ProxyExecuted'; value: { result: [] | DispatchError } }
   | {
       tag: 'PureCreated';
       value: { pure: AccountId32; who: AccountId32; proxyType: PolkadotRuntimeProxyType; disambiguationIndex: number };
@@ -2641,7 +2605,7 @@ export type PalletMultisigEvent =
         timepoint: PalletMultisigTimepoint;
         multisig: AccountId32;
         callHash: FixedBytes<32>;
-        result: [] | SpRuntimeDispatchError;
+        result: [] | DispatchError;
       };
     }
   | {
@@ -2759,7 +2723,7 @@ export type PalletNominationPoolsEvent =
  * The events of this pallet.
  **/
 export type PalletFastUnstakeEvent =
-  | { tag: 'Unstaked'; value: { stash: AccountId32; result: [] | SpRuntimeDispatchError } }
+  | { tag: 'Unstaked'; value: { stash: AccountId32; result: [] | DispatchError } }
   | { tag: 'Slashed'; value: { stash: AccountId32; amount: bigint } }
   | { tag: 'InternalError' }
   | { tag: 'BatchChecked'; value: { eras: Array<number> } }
@@ -2906,7 +2870,7 @@ export type PolkadotRuntimeCommonCrowdloanPalletEvent =
   | { tag: 'PartiallyRefunded'; value: { paraId: PolkadotParachainPrimitivesId } }
   | { tag: 'AllRefunded'; value: { paraId: PolkadotParachainPrimitivesId } }
   | { tag: 'Dissolved'; value: { paraId: PolkadotParachainPrimitivesId } }
-  | { tag: 'HandleBidResult'; value: { paraId: PolkadotParachainPrimitivesId; result: [] | SpRuntimeDispatchError } }
+  | { tag: 'HandleBidResult'; value: { paraId: PolkadotParachainPrimitivesId; result: [] | DispatchError } }
   | { tag: 'Edited'; value: { paraId: PolkadotParachainPrimitivesId } }
   | { tag: 'MemoUpdated'; value: { who: AccountId32; paraId: PolkadotParachainPrimitivesId; memo: Bytes } }
   | { tag: 'AddedToNewRaise'; value: { paraId: PolkadotParachainPrimitivesId } };

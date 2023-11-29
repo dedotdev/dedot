@@ -1,6 +1,23 @@
+import { ModuleError } from '@delightfuldot/codecs';
+import * as $ from '@delightfuldot/shape';
+
 export type AsyncMethod = (...args: any[]) => Promise<any>;
 export type Unsub = () => Promise<boolean>;
 export type Callback<T> = (result: T) => Promise<void> | void;
+
+export interface ModuleErrorMetadata {
+  module: string;
+  moduleIndex: number;
+  name: string;
+  fields: $.AnyShape[];
+  index: number;
+  docs: string[];
+}
+
+export interface GenericModuleError {
+  is: (moduleError: ModuleError) => boolean;
+  meta: ModuleErrorMetadata;
+}
 
 export interface GenericRpcModule {
   [method: string]: AsyncMethod;
@@ -22,10 +39,17 @@ export interface GenericChainStorage {
   };
 }
 
+export interface GenericChainErrors {
+  [pallet: string]: {
+    [errorName: string]: GenericModuleError;
+  };
+}
+
 export interface GenericSubstrateApi {
   rpc: GenericRpcCalls;
   consts: GenericChainConsts;
   query: GenericChainStorage;
+  errors: GenericChainErrors;
 
   // TODO tx, events, errors, calls ...
 }

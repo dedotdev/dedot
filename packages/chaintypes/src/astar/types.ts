@@ -2,13 +2,13 @@
 
 import type {
   H256,
+  DispatchError,
   AccountId32,
   FixedBytes,
   H160,
   Perbill,
   Bytes,
   U256,
-  Permill,
   MultiAddress,
   Data,
 } from '@delightfuldot/codecs';
@@ -63,7 +63,7 @@ export type AstarRuntimeRuntimeEvent =
   | { tag: 'XTokens'; value: OrmlXtokensModuleEvent }
   | { tag: 'Evm'; value: PalletEvmEvent }
   | { tag: 'Ethereum'; value: PalletEthereumEvent }
-  | { tag: 'BaseFee'; value: PalletBaseFeeEvent }
+  | { tag: 'DynamicEvmBaseFee'; value: PalletDynamicEvmBaseFeeEvent }
   | { tag: 'Contracts'; value: PalletContractsEvent }
   | { tag: 'Sudo'; value: PalletSudoEvent };
 
@@ -72,10 +72,7 @@ export type AstarRuntimeRuntimeEvent =
  **/
 export type FrameSystemEvent =
   | { tag: 'ExtrinsicSuccess'; value: { dispatchInfo: FrameSupportDispatchDispatchInfo } }
-  | {
-      tag: 'ExtrinsicFailed';
-      value: { dispatchError: SpRuntimeDispatchError; dispatchInfo: FrameSupportDispatchDispatchInfo };
-    }
+  | { tag: 'ExtrinsicFailed'; value: { dispatchError: DispatchError; dispatchInfo: FrameSupportDispatchDispatchInfo } }
   | { tag: 'CodeUpdated' }
   | { tag: 'NewAccount'; value: { account: AccountId32 } }
   | { tag: 'KilledAccount'; value: { account: AccountId32 } }
@@ -91,50 +88,16 @@ export type FrameSupportDispatchDispatchClass = 'Normal' | 'Operational' | 'Mand
 
 export type FrameSupportDispatchPays = 'Yes' | 'No';
 
-export type SpRuntimeDispatchError =
-  | { tag: 'Other' }
-  | { tag: 'CannotLookup' }
-  | { tag: 'BadOrigin' }
-  | { tag: 'Module'; value: SpRuntimeModuleError }
-  | { tag: 'ConsumerRemaining' }
-  | { tag: 'NoProviders' }
-  | { tag: 'TooManyConsumers' }
-  | { tag: 'Token'; value: SpRuntimeTokenError }
-  | { tag: 'Arithmetic'; value: SpArithmeticArithmeticError }
-  | { tag: 'Transactional'; value: SpRuntimeTransactionalError }
-  | { tag: 'Exhausted' }
-  | { tag: 'Corruption' }
-  | { tag: 'Unavailable' }
-  | { tag: 'RootNotAllowed' };
-
-export type SpRuntimeModuleError = { index: number; error: FixedBytes<4> };
-
-export type SpRuntimeTokenError =
-  | 'FundsUnavailable'
-  | 'OnlyProvider'
-  | 'BelowMinimum'
-  | 'CannotCreate'
-  | 'UnknownAsset'
-  | 'Frozen'
-  | 'Unsupported'
-  | 'CannotCreateHold'
-  | 'NotExpendable'
-  | 'Blocked';
-
-export type SpArithmeticArithmeticError = 'Underflow' | 'Overflow' | 'DivisionByZero';
-
-export type SpRuntimeTransactionalError = 'LimitReached' | 'NoLayer';
-
 /**
  * The [event](https://docs.substrate.io/main-docs/build/events-errors/) emitted by this pallet.
  **/
 export type PalletUtilityEvent =
-  | { tag: 'BatchInterrupted'; value: { index: number; error: SpRuntimeDispatchError } }
+  | { tag: 'BatchInterrupted'; value: { index: number; error: DispatchError } }
   | { tag: 'BatchCompleted' }
   | { tag: 'BatchCompletedWithErrors' }
   | { tag: 'ItemCompleted' }
-  | { tag: 'ItemFailed'; value: { error: SpRuntimeDispatchError } }
-  | { tag: 'DispatchedAs'; value: { result: [] | SpRuntimeDispatchError } };
+  | { tag: 'ItemFailed'; value: { error: DispatchError } }
+  | { tag: 'DispatchedAs'; value: { result: [] | DispatchError } };
 
 /**
  * The [event](https://docs.substrate.io/main-docs/build/events-errors/) emitted by this pallet.
@@ -172,7 +135,7 @@ export type PalletMultisigEvent =
         timepoint: PalletMultisigTimepoint;
         multisig: AccountId32;
         callHash: FixedBytes<32>;
-        result: [] | SpRuntimeDispatchError;
+        result: [] | DispatchError;
       };
     }
   | {
@@ -191,7 +154,7 @@ export type PalletMultisigTimepoint = { height: number; index: number };
  * The [event](https://docs.substrate.io/main-docs/build/events-errors/) emitted by this pallet.
  **/
 export type PalletProxyEvent =
-  | { tag: 'ProxyExecuted'; value: { result: [] | SpRuntimeDispatchError } }
+  | { tag: 'ProxyExecuted'; value: { result: [] | DispatchError } }
   | {
       tag: 'PureCreated';
       value: { pure: AccountId32; who: AccountId32; proxyType: AstarRuntimeProxyType; disambiguationIndex: number };
@@ -911,10 +874,7 @@ export type EvmCoreErrorExitFatal =
 /**
  * The [event](https://docs.substrate.io/main-docs/build/events-errors/) emitted by this pallet.
  **/
-export type PalletBaseFeeEvent =
-  | { tag: 'NewBaseFeePerGas'; value: { fee: U256 } }
-  | { tag: 'BaseFeeOverflow' }
-  | { tag: 'NewElasticity'; value: { elasticity: Permill } };
+export type PalletDynamicEvmBaseFeeEvent = { tag: 'NewBaseFeePerGas'; value: { fee: U256 } };
 
 /**
  * The [event](https://docs.substrate.io/main-docs/build/events-errors/) emitted by this pallet.
@@ -1009,9 +969,9 @@ export type AstarRuntimeRuntime = {};
  * The [event](https://docs.substrate.io/main-docs/build/events-errors/) emitted by this pallet.
  **/
 export type PalletSudoEvent =
-  | { tag: 'Sudid'; value: { sudoResult: [] | SpRuntimeDispatchError } }
+  | { tag: 'Sudid'; value: { sudoResult: [] | DispatchError } }
   | { tag: 'KeyChanged'; value: { oldSudoer?: AccountId32 | undefined } }
-  | { tag: 'SudoAsDone'; value: { sudoResult: [] | SpRuntimeDispatchError } };
+  | { tag: 'SudoAsDone'; value: { sudoResult: [] | DispatchError } };
 
 export type FrameSystemPhase =
   | { tag: 'ApplyExtrinsic'; value: number }
@@ -1137,7 +1097,7 @@ export type AstarRuntimeRuntimeCall =
   | { tag: 'XTokens'; value: OrmlXtokensModuleCall }
   | { tag: 'Evm'; value: PalletEvmCall }
   | { tag: 'Ethereum'; value: PalletEthereumCall }
-  | { tag: 'BaseFee'; value: PalletBaseFeeCall }
+  | { tag: 'DynamicEvmBaseFee'; value: PalletDynamicEvmBaseFeeCall }
   | { tag: 'Contracts'; value: PalletContractsCall }
   | { tag: 'Sudo'; value: PalletSudoCall };
 
@@ -1819,9 +1779,7 @@ export type EthereumTransactionEip1559Transaction = {
 /**
  * Contains one variant per dispatchable that can be called by an extrinsic.
  **/
-export type PalletBaseFeeCall =
-  | { tag: 'SetBaseFeePerGas'; value: { fee: U256 } }
-  | { tag: 'SetElasticity'; value: { elasticity: Permill } };
+export type PalletDynamicEvmBaseFeeCall = { tag: 'SetBaseFeePerGas'; value: { fee: U256 } };
 
 /**
  * Contains one variant per dispatchable that can be called by an extrinsic.
@@ -3046,6 +3004,15 @@ export type PalletEthereumError =
    * Pre-log is present, therefore transact is not allowed.
    **/
   | 'PreLogExists';
+
+/**
+ * Custom [dispatch errors](https://docs.substrate.io/main-docs/build/events-errors/) of this pallet.
+ **/
+export type PalletDynamicEvmBaseFeeError =
+  /**
+   * Specified value is outside of the allowed range.
+   **/
+  'ValueOutOfBounds';
 
 export type PalletContractsWasmPrefabWasmModule = {
   instructionWeightsVersion: number;
