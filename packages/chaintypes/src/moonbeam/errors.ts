@@ -8,1745 +8,1745 @@ export interface ChainErrors extends GenericChainErrors {
      * The name of specification does not match between the current runtime
      * and the new runtime.
      **/
-    invalidSpecName: GenericModuleError;
+    InvalidSpecName: GenericModuleError;
 
     /**
      * The specification version is not allowed to decrease between the current runtime
      * and the new runtime.
      **/
-    specVersionNeedsToIncrease: GenericModuleError;
+    SpecVersionNeedsToIncrease: GenericModuleError;
 
     /**
      * Failed to extract the runtime version from the new runtime.
      *
      * Either calling `Core_version` or decoding `RuntimeVersion` failed.
      **/
-    failedToExtractRuntimeVersion: GenericModuleError;
+    FailedToExtractRuntimeVersion: GenericModuleError;
 
     /**
      * Suicide called when the account has non-default composite data.
      **/
-    nonDefaultComposite: GenericModuleError;
+    NonDefaultComposite: GenericModuleError;
 
     /**
      * There is a non-zero reference count preventing the account from being purged.
      **/
-    nonZeroRefCount: GenericModuleError;
+    NonZeroRefCount: GenericModuleError;
 
     /**
      * The origin filter prevent the call to be dispatched.
      **/
-    callFiltered: GenericModuleError;
+    CallFiltered: GenericModuleError;
   };
   parachainSystem: {
     /**
      * Attempt to upgrade validation function while existing upgrade pending.
      **/
-    overlappingUpgrades: GenericModuleError;
+    OverlappingUpgrades: GenericModuleError;
 
     /**
      * Polkadot currently prohibits this parachain from upgrading its validation function.
      **/
-    prohibitedByPolkadot: GenericModuleError;
+    ProhibitedByPolkadot: GenericModuleError;
 
     /**
      * The supplied validation function has compiled into a blob larger than Polkadot is
      * willing to run.
      **/
-    tooBig: GenericModuleError;
+    TooBig: GenericModuleError;
 
     /**
      * The inherent which supplies the validation data did not run this block.
      **/
-    validationDataNotAvailable: GenericModuleError;
+    ValidationDataNotAvailable: GenericModuleError;
 
     /**
      * The inherent which supplies the host configuration did not run this block.
      **/
-    hostConfigurationNotAvailable: GenericModuleError;
+    HostConfigurationNotAvailable: GenericModuleError;
 
     /**
      * No validation function upgrade is currently scheduled.
      **/
-    notScheduled: GenericModuleError;
+    NotScheduled: GenericModuleError;
 
     /**
      * No code upgrade has been authorized.
      **/
-    nothingAuthorized: GenericModuleError;
+    NothingAuthorized: GenericModuleError;
 
     /**
      * The given code upgrade has not been authorized.
      **/
-    unauthorized: GenericModuleError;
+    Unauthorized: GenericModuleError;
   };
   balances: {
     /**
      * Vesting balance too high to send value.
      **/
-    vestingBalance: GenericModuleError;
+    VestingBalance: GenericModuleError;
 
     /**
      * Account liquidity restrictions prevent withdrawal.
      **/
-    liquidityRestrictions: GenericModuleError;
+    LiquidityRestrictions: GenericModuleError;
 
     /**
      * Balance too low to send value.
      **/
-    insufficientBalance: GenericModuleError;
+    InsufficientBalance: GenericModuleError;
 
     /**
      * Value too low to create account due to existential deposit.
      **/
-    existentialDeposit: GenericModuleError;
+    ExistentialDeposit: GenericModuleError;
 
     /**
      * Transfer/payment would kill account.
      **/
-    expendability: GenericModuleError;
+    Expendability: GenericModuleError;
 
     /**
      * A vesting schedule already exists for this account.
      **/
-    existingVestingSchedule: GenericModuleError;
+    ExistingVestingSchedule: GenericModuleError;
 
     /**
      * Beneficiary account must pre-exist.
      **/
-    deadAccount: GenericModuleError;
+    DeadAccount: GenericModuleError;
 
     /**
      * Number of named reserves exceed `MaxReserves`.
      **/
-    tooManyReserves: GenericModuleError;
+    TooManyReserves: GenericModuleError;
 
     /**
      * Number of holds exceed `MaxHolds`.
      **/
-    tooManyHolds: GenericModuleError;
+    TooManyHolds: GenericModuleError;
 
     /**
      * Number of freezes exceed `MaxFreezes`.
      **/
-    tooManyFreezes: GenericModuleError;
+    TooManyFreezes: GenericModuleError;
   };
   parachainStaking: {
-    delegatorDNE: GenericModuleError;
-    delegatorDNEinTopNorBottom: GenericModuleError;
-    delegatorDNEInDelegatorSet: GenericModuleError;
-    candidateDNE: GenericModuleError;
-    delegationDNE: GenericModuleError;
-    delegatorExists: GenericModuleError;
-    candidateExists: GenericModuleError;
-    candidateBondBelowMin: GenericModuleError;
-    insufficientBalance: GenericModuleError;
-    delegatorBondBelowMin: GenericModuleError;
-    delegationBelowMin: GenericModuleError;
-    alreadyOffline: GenericModuleError;
-    alreadyActive: GenericModuleError;
-    delegatorAlreadyLeaving: GenericModuleError;
-    delegatorNotLeaving: GenericModuleError;
-    delegatorCannotLeaveYet: GenericModuleError;
-    cannotDelegateIfLeaving: GenericModuleError;
-    candidateAlreadyLeaving: GenericModuleError;
-    candidateNotLeaving: GenericModuleError;
-    candidateCannotLeaveYet: GenericModuleError;
-    cannotGoOnlineIfLeaving: GenericModuleError;
-    exceedMaxDelegationsPerDelegator: GenericModuleError;
-    alreadyDelegatedCandidate: GenericModuleError;
-    invalidSchedule: GenericModuleError;
-    cannotSetBelowMin: GenericModuleError;
-    roundLengthMustBeGreaterThanTotalSelectedCollators: GenericModuleError;
-    noWritingSameValue: GenericModuleError;
-    tooLowCandidateCountWeightHintJoinCandidates: GenericModuleError;
-    tooLowCandidateCountWeightHintCancelLeaveCandidates: GenericModuleError;
-    tooLowCandidateCountToLeaveCandidates: GenericModuleError;
-    tooLowDelegationCountToDelegate: GenericModuleError;
-    tooLowCandidateDelegationCountToDelegate: GenericModuleError;
-    tooLowCandidateDelegationCountToLeaveCandidates: GenericModuleError;
-    tooLowDelegationCountToLeaveDelegators: GenericModuleError;
-    pendingCandidateRequestsDNE: GenericModuleError;
-    pendingCandidateRequestAlreadyExists: GenericModuleError;
-    pendingCandidateRequestNotDueYet: GenericModuleError;
-    pendingDelegationRequestDNE: GenericModuleError;
-    pendingDelegationRequestAlreadyExists: GenericModuleError;
-    pendingDelegationRequestNotDueYet: GenericModuleError;
-    cannotDelegateLessThanOrEqualToLowestBottomWhenFull: GenericModuleError;
-    pendingDelegationRevoke: GenericModuleError;
-    tooLowDelegationCountToAutoCompound: GenericModuleError;
-    tooLowCandidateAutoCompoundingDelegationCountToAutoCompound: GenericModuleError;
-    tooLowCandidateAutoCompoundingDelegationCountToDelegate: GenericModuleError;
-    tooLowCandidateAutoCompoundingDelegationCountToLeaveCandidates: GenericModuleError;
-    tooLowCandidateCountWeightHint: GenericModuleError;
-    tooLowCandidateCountWeightHintGoOffline: GenericModuleError;
-    candidateLimitReached: GenericModuleError;
-    cannotSetAboveMaxCandidates: GenericModuleError;
-    removedCall: GenericModuleError;
+    DelegatorDNE: GenericModuleError;
+    DelegatorDNEinTopNorBottom: GenericModuleError;
+    DelegatorDNEInDelegatorSet: GenericModuleError;
+    CandidateDNE: GenericModuleError;
+    DelegationDNE: GenericModuleError;
+    DelegatorExists: GenericModuleError;
+    CandidateExists: GenericModuleError;
+    CandidateBondBelowMin: GenericModuleError;
+    InsufficientBalance: GenericModuleError;
+    DelegatorBondBelowMin: GenericModuleError;
+    DelegationBelowMin: GenericModuleError;
+    AlreadyOffline: GenericModuleError;
+    AlreadyActive: GenericModuleError;
+    DelegatorAlreadyLeaving: GenericModuleError;
+    DelegatorNotLeaving: GenericModuleError;
+    DelegatorCannotLeaveYet: GenericModuleError;
+    CannotDelegateIfLeaving: GenericModuleError;
+    CandidateAlreadyLeaving: GenericModuleError;
+    CandidateNotLeaving: GenericModuleError;
+    CandidateCannotLeaveYet: GenericModuleError;
+    CannotGoOnlineIfLeaving: GenericModuleError;
+    ExceedMaxDelegationsPerDelegator: GenericModuleError;
+    AlreadyDelegatedCandidate: GenericModuleError;
+    InvalidSchedule: GenericModuleError;
+    CannotSetBelowMin: GenericModuleError;
+    RoundLengthMustBeGreaterThanTotalSelectedCollators: GenericModuleError;
+    NoWritingSameValue: GenericModuleError;
+    TooLowCandidateCountWeightHintJoinCandidates: GenericModuleError;
+    TooLowCandidateCountWeightHintCancelLeaveCandidates: GenericModuleError;
+    TooLowCandidateCountToLeaveCandidates: GenericModuleError;
+    TooLowDelegationCountToDelegate: GenericModuleError;
+    TooLowCandidateDelegationCountToDelegate: GenericModuleError;
+    TooLowCandidateDelegationCountToLeaveCandidates: GenericModuleError;
+    TooLowDelegationCountToLeaveDelegators: GenericModuleError;
+    PendingCandidateRequestsDNE: GenericModuleError;
+    PendingCandidateRequestAlreadyExists: GenericModuleError;
+    PendingCandidateRequestNotDueYet: GenericModuleError;
+    PendingDelegationRequestDNE: GenericModuleError;
+    PendingDelegationRequestAlreadyExists: GenericModuleError;
+    PendingDelegationRequestNotDueYet: GenericModuleError;
+    CannotDelegateLessThanOrEqualToLowestBottomWhenFull: GenericModuleError;
+    PendingDelegationRevoke: GenericModuleError;
+    TooLowDelegationCountToAutoCompound: GenericModuleError;
+    TooLowCandidateAutoCompoundingDelegationCountToAutoCompound: GenericModuleError;
+    TooLowCandidateAutoCompoundingDelegationCountToDelegate: GenericModuleError;
+    TooLowCandidateAutoCompoundingDelegationCountToLeaveCandidates: GenericModuleError;
+    TooLowCandidateCountWeightHint: GenericModuleError;
+    TooLowCandidateCountWeightHintGoOffline: GenericModuleError;
+    CandidateLimitReached: GenericModuleError;
+    CannotSetAboveMaxCandidates: GenericModuleError;
+    RemovedCall: GenericModuleError;
   };
   authorInherent: {
     /**
      * Author already set in block.
      **/
-    authorAlreadySet: GenericModuleError;
+    AuthorAlreadySet: GenericModuleError;
 
     /**
      * No AccountId was found to be associated with this author
      **/
-    noAccountId: GenericModuleError;
+    NoAccountId: GenericModuleError;
 
     /**
      * The author in the inherent is not an eligible author.
      **/
-    cannotBeAuthor: GenericModuleError;
+    CannotBeAuthor: GenericModuleError;
   };
   authorMapping: {
     /**
      * The association can't be cleared because it is not found.
      **/
-    associationNotFound: GenericModuleError;
+    AssociationNotFound: GenericModuleError;
 
     /**
      * The association can't be cleared because it belongs to another account.
      **/
-    notYourAssociation: GenericModuleError;
+    NotYourAssociation: GenericModuleError;
 
     /**
      * This account cannot set an author because it cannon afford the security deposit
      **/
-    cannotAffordSecurityDeposit: GenericModuleError;
+    CannotAffordSecurityDeposit: GenericModuleError;
 
     /**
      * The NimbusId in question is already associated and cannot be overwritten
      **/
-    alreadyAssociated: GenericModuleError;
+    AlreadyAssociated: GenericModuleError;
 
     /**
      * No existing NimbusId can be found for the account
      **/
-    oldAuthorIdNotFound: GenericModuleError;
+    OldAuthorIdNotFound: GenericModuleError;
 
     /**
      * Keys have wrong size
      **/
-    wrongKeySize: GenericModuleError;
+    WrongKeySize: GenericModuleError;
 
     /**
      * Failed to decode NimbusId for `set_keys`
      **/
-    decodeNimbusFailed: GenericModuleError;
+    DecodeNimbusFailed: GenericModuleError;
 
     /**
      * Failed to decode T::Keys for `set_keys`
      **/
-    decodeKeysFailed: GenericModuleError;
+    DecodeKeysFailed: GenericModuleError;
   };
   moonbeamOrbiters: {
     /**
      * The collator is already added in orbiters program.
      **/
-    collatorAlreadyAdded: GenericModuleError;
+    CollatorAlreadyAdded: GenericModuleError;
 
     /**
      * This collator is not in orbiters program.
      **/
-    collatorNotFound: GenericModuleError;
+    CollatorNotFound: GenericModuleError;
 
     /**
      * There are already too many orbiters associated with this collator.
      **/
-    collatorPoolTooLarge: GenericModuleError;
+    CollatorPoolTooLarge: GenericModuleError;
 
     /**
      * There are more collator pools than the number specified in the parameter.
      **/
-    collatorsPoolCountTooLow: GenericModuleError;
+    CollatorsPoolCountTooLow: GenericModuleError;
 
     /**
      * The minimum deposit required to register as an orbiter has not yet been included in the
      * onchain storage
      **/
-    minOrbiterDepositNotSet: GenericModuleError;
+    MinOrbiterDepositNotSet: GenericModuleError;
 
     /**
      * This orbiter is already associated with this collator.
      **/
-    orbiterAlreadyInPool: GenericModuleError;
+    OrbiterAlreadyInPool: GenericModuleError;
 
     /**
      * This orbiter has not made a deposit
      **/
-    orbiterDepositNotFound: GenericModuleError;
+    OrbiterDepositNotFound: GenericModuleError;
 
     /**
      * This orbiter is not found
      **/
-    orbiterNotFound: GenericModuleError;
+    OrbiterNotFound: GenericModuleError;
 
     /**
      * The orbiter is still at least in one pool
      **/
-    orbiterStillInAPool: GenericModuleError;
+    OrbiterStillInAPool: GenericModuleError;
   };
   utility: {
     /**
      * Too many calls batched.
      **/
-    tooManyCalls: GenericModuleError;
+    TooManyCalls: GenericModuleError;
   };
   proxy: {
     /**
      * There are too many proxies registered or too many announcements pending.
      **/
-    tooMany: GenericModuleError;
+    TooMany: GenericModuleError;
 
     /**
      * Proxy registration not found.
      **/
-    notFound: GenericModuleError;
+    NotFound: GenericModuleError;
 
     /**
      * Sender is not a proxy of the account to be proxied.
      **/
-    notProxy: GenericModuleError;
+    NotProxy: GenericModuleError;
 
     /**
      * A call which is incompatible with the proxy type's filter was attempted.
      **/
-    unproxyable: GenericModuleError;
+    Unproxyable: GenericModuleError;
 
     /**
      * Account is already a proxy.
      **/
-    duplicate: GenericModuleError;
+    Duplicate: GenericModuleError;
 
     /**
      * Call may not be made by proxy because it may escalate its privileges.
      **/
-    noPermission: GenericModuleError;
+    NoPermission: GenericModuleError;
 
     /**
      * Announcement, if made at all, was made too recently.
      **/
-    unannounced: GenericModuleError;
+    Unannounced: GenericModuleError;
 
     /**
      * Cannot add self as proxy.
      **/
-    noSelfProxy: GenericModuleError;
+    NoSelfProxy: GenericModuleError;
   };
   maintenanceMode: {
     /**
      * The chain cannot enter maintenance mode because it is already in maintenance mode
      **/
-    alreadyInMaintenanceMode: GenericModuleError;
+    AlreadyInMaintenanceMode: GenericModuleError;
 
     /**
      * The chain cannot resume normal operation because it is not in maintenance mode
      **/
-    notInMaintenanceMode: GenericModuleError;
+    NotInMaintenanceMode: GenericModuleError;
   };
   identity: {
     /**
      * Too many subs-accounts.
      **/
-    tooManySubAccounts: GenericModuleError;
+    TooManySubAccounts: GenericModuleError;
 
     /**
      * Account isn't found.
      **/
-    notFound: GenericModuleError;
+    NotFound: GenericModuleError;
 
     /**
      * Account isn't named.
      **/
-    notNamed: GenericModuleError;
+    NotNamed: GenericModuleError;
 
     /**
      * Empty index.
      **/
-    emptyIndex: GenericModuleError;
+    EmptyIndex: GenericModuleError;
 
     /**
      * Fee is changed.
      **/
-    feeChanged: GenericModuleError;
+    FeeChanged: GenericModuleError;
 
     /**
      * No identity found.
      **/
-    noIdentity: GenericModuleError;
+    NoIdentity: GenericModuleError;
 
     /**
      * Sticky judgement.
      **/
-    stickyJudgement: GenericModuleError;
+    StickyJudgement: GenericModuleError;
 
     /**
      * Judgement given.
      **/
-    judgementGiven: GenericModuleError;
+    JudgementGiven: GenericModuleError;
 
     /**
      * Invalid judgement.
      **/
-    invalidJudgement: GenericModuleError;
+    InvalidJudgement: GenericModuleError;
 
     /**
      * The index is invalid.
      **/
-    invalidIndex: GenericModuleError;
+    InvalidIndex: GenericModuleError;
 
     /**
      * The target is invalid.
      **/
-    invalidTarget: GenericModuleError;
+    InvalidTarget: GenericModuleError;
 
     /**
      * Too many additional fields.
      **/
-    tooManyFields: GenericModuleError;
+    TooManyFields: GenericModuleError;
 
     /**
      * Maximum amount of registrars reached. Cannot add any more.
      **/
-    tooManyRegistrars: GenericModuleError;
+    TooManyRegistrars: GenericModuleError;
 
     /**
      * Account ID is already named.
      **/
-    alreadyClaimed: GenericModuleError;
+    AlreadyClaimed: GenericModuleError;
 
     /**
      * Sender is not a sub-account.
      **/
-    notSub: GenericModuleError;
+    NotSub: GenericModuleError;
 
     /**
      * Sub-account isn't owned by sender.
      **/
-    notOwned: GenericModuleError;
+    NotOwned: GenericModuleError;
 
     /**
      * The provided judgement was for a different identity.
      **/
-    judgementForDifferentIdentity: GenericModuleError;
+    JudgementForDifferentIdentity: GenericModuleError;
 
     /**
      * Error that occurs when there is an issue paying for judgement.
      **/
-    judgementPaymentFailed: GenericModuleError;
+    JudgementPaymentFailed: GenericModuleError;
   };
   migrations: {
     /**
      * Missing preimage in original democracy storage
      **/
-    preimageMissing: GenericModuleError;
+    PreimageMissing: GenericModuleError;
 
     /**
      * Provided upper bound is too low.
      **/
-    wrongUpperBound: GenericModuleError;
+    WrongUpperBound: GenericModuleError;
 
     /**
      * Preimage is larger than the new max size.
      **/
-    preimageIsTooBig: GenericModuleError;
+    PreimageIsTooBig: GenericModuleError;
 
     /**
      * Preimage already exists in the new storage.
      **/
-    preimageAlreadyExists: GenericModuleError;
+    PreimageAlreadyExists: GenericModuleError;
   };
   multisig: {
     /**
      * Threshold must be 2 or greater.
      **/
-    minimumThreshold: GenericModuleError;
+    MinimumThreshold: GenericModuleError;
 
     /**
      * Call is already approved by this signatory.
      **/
-    alreadyApproved: GenericModuleError;
+    AlreadyApproved: GenericModuleError;
 
     /**
      * Call doesn't need any (more) approvals.
      **/
-    noApprovalsNeeded: GenericModuleError;
+    NoApprovalsNeeded: GenericModuleError;
 
     /**
      * There are too few signatories in the list.
      **/
-    tooFewSignatories: GenericModuleError;
+    TooFewSignatories: GenericModuleError;
 
     /**
      * There are too many signatories in the list.
      **/
-    tooManySignatories: GenericModuleError;
+    TooManySignatories: GenericModuleError;
 
     /**
      * The signatories were provided out of order; they should be ordered.
      **/
-    signatoriesOutOfOrder: GenericModuleError;
+    SignatoriesOutOfOrder: GenericModuleError;
 
     /**
      * The sender was contained in the other signatories; it shouldn't be.
      **/
-    senderInSignatories: GenericModuleError;
+    SenderInSignatories: GenericModuleError;
 
     /**
      * Multisig operation not found when attempting to cancel.
      **/
-    notFound: GenericModuleError;
+    NotFound: GenericModuleError;
 
     /**
      * Only the account that originally created the multisig is able to cancel it.
      **/
-    notOwner: GenericModuleError;
+    NotOwner: GenericModuleError;
 
     /**
      * No timepoint was given, yet the multisig operation is already underway.
      **/
-    noTimepoint: GenericModuleError;
+    NoTimepoint: GenericModuleError;
 
     /**
      * A different timepoint was given to the multisig operation that is underway.
      **/
-    wrongTimepoint: GenericModuleError;
+    WrongTimepoint: GenericModuleError;
 
     /**
      * A timepoint was given, yet no multisig operation is underway.
      **/
-    unexpectedTimepoint: GenericModuleError;
+    UnexpectedTimepoint: GenericModuleError;
 
     /**
      * The maximum weight information provided was too low.
      **/
-    maxWeightTooLow: GenericModuleError;
+    MaxWeightTooLow: GenericModuleError;
 
     /**
      * The data to be stored is already stored.
      **/
-    alreadyStored: GenericModuleError;
+    AlreadyStored: GenericModuleError;
   };
   evm: {
     /**
      * Not enough balance to perform action
      **/
-    balanceLow: GenericModuleError;
+    BalanceLow: GenericModuleError;
 
     /**
      * Calculating total fee overflowed
      **/
-    feeOverflow: GenericModuleError;
+    FeeOverflow: GenericModuleError;
 
     /**
      * Calculating total payment overflowed
      **/
-    paymentOverflow: GenericModuleError;
+    PaymentOverflow: GenericModuleError;
 
     /**
      * Withdraw fee failed
      **/
-    withdrawFailed: GenericModuleError;
+    WithdrawFailed: GenericModuleError;
 
     /**
      * Gas price is too low.
      **/
-    gasPriceTooLow: GenericModuleError;
+    GasPriceTooLow: GenericModuleError;
 
     /**
      * Nonce is invalid
      **/
-    invalidNonce: GenericModuleError;
+    InvalidNonce: GenericModuleError;
 
     /**
      * Gas limit is too low.
      **/
-    gasLimitTooLow: GenericModuleError;
+    GasLimitTooLow: GenericModuleError;
 
     /**
      * Gas limit is too high.
      **/
-    gasLimitTooHigh: GenericModuleError;
+    GasLimitTooHigh: GenericModuleError;
 
     /**
      * Undefined error.
      **/
-    undefined: GenericModuleError;
+    Undefined: GenericModuleError;
 
     /**
      * EVM reentrancy
      **/
-    reentrancy: GenericModuleError;
+    Reentrancy: GenericModuleError;
 
     /**
      * EIP-3607,
      **/
-    transactionMustComeFromEOA: GenericModuleError;
+    TransactionMustComeFromEOA: GenericModuleError;
   };
   ethereum: {
     /**
      * Signature is invalid.
      **/
-    invalidSignature: GenericModuleError;
+    InvalidSignature: GenericModuleError;
 
     /**
      * Pre-log is present, therefore transact is not allowed.
      **/
-    preLogExists: GenericModuleError;
+    PreLogExists: GenericModuleError;
   };
   scheduler: {
     /**
      * Failed to schedule a call
      **/
-    failedToSchedule: GenericModuleError;
+    FailedToSchedule: GenericModuleError;
 
     /**
      * Cannot find the scheduled call.
      **/
-    notFound: GenericModuleError;
+    NotFound: GenericModuleError;
 
     /**
      * Given target block number is in the past.
      **/
-    targetBlockNumberInPast: GenericModuleError;
+    TargetBlockNumberInPast: GenericModuleError;
 
     /**
      * Reschedule failed because it does not change scheduled time.
      **/
-    rescheduleNoChange: GenericModuleError;
+    RescheduleNoChange: GenericModuleError;
 
     /**
      * Attempt to use a non-named function on a named task.
      **/
-    named: GenericModuleError;
+    Named: GenericModuleError;
   };
   democracy: {
     /**
      * Value too low
      **/
-    valueLow: GenericModuleError;
+    ValueLow: GenericModuleError;
 
     /**
      * Proposal does not exist
      **/
-    proposalMissing: GenericModuleError;
+    ProposalMissing: GenericModuleError;
 
     /**
      * Cannot cancel the same proposal twice
      **/
-    alreadyCanceled: GenericModuleError;
+    AlreadyCanceled: GenericModuleError;
 
     /**
      * Proposal already made
      **/
-    duplicateProposal: GenericModuleError;
+    DuplicateProposal: GenericModuleError;
 
     /**
      * Proposal still blacklisted
      **/
-    proposalBlacklisted: GenericModuleError;
+    ProposalBlacklisted: GenericModuleError;
 
     /**
      * Next external proposal not simple majority
      **/
-    notSimpleMajority: GenericModuleError;
+    NotSimpleMajority: GenericModuleError;
 
     /**
      * Invalid hash
      **/
-    invalidHash: GenericModuleError;
+    InvalidHash: GenericModuleError;
 
     /**
      * No external proposal
      **/
-    noProposal: GenericModuleError;
+    NoProposal: GenericModuleError;
 
     /**
      * Identity may not veto a proposal twice
      **/
-    alreadyVetoed: GenericModuleError;
+    AlreadyVetoed: GenericModuleError;
 
     /**
      * Vote given for invalid referendum
      **/
-    referendumInvalid: GenericModuleError;
+    ReferendumInvalid: GenericModuleError;
 
     /**
      * No proposals waiting
      **/
-    noneWaiting: GenericModuleError;
+    NoneWaiting: GenericModuleError;
 
     /**
      * The given account did not vote on the referendum.
      **/
-    notVoter: GenericModuleError;
+    NotVoter: GenericModuleError;
 
     /**
      * The actor has no permission to conduct the action.
      **/
-    noPermission: GenericModuleError;
+    NoPermission: GenericModuleError;
 
     /**
      * The account is already delegating.
      **/
-    alreadyDelegating: GenericModuleError;
+    AlreadyDelegating: GenericModuleError;
 
     /**
      * Too high a balance was provided that the account cannot afford.
      **/
-    insufficientFunds: GenericModuleError;
+    InsufficientFunds: GenericModuleError;
 
     /**
      * The account is not currently delegating.
      **/
-    notDelegating: GenericModuleError;
+    NotDelegating: GenericModuleError;
 
     /**
      * The account currently has votes attached to it and the operation cannot succeed until
      * these are removed, either through `unvote` or `reap_vote`.
      **/
-    votesExist: GenericModuleError;
+    VotesExist: GenericModuleError;
 
     /**
      * The instant referendum origin is currently disallowed.
      **/
-    instantNotAllowed: GenericModuleError;
+    InstantNotAllowed: GenericModuleError;
 
     /**
      * Delegation to oneself makes no sense.
      **/
-    nonsense: GenericModuleError;
+    Nonsense: GenericModuleError;
 
     /**
      * Invalid upper bound.
      **/
-    wrongUpperBound: GenericModuleError;
+    WrongUpperBound: GenericModuleError;
 
     /**
      * Maximum number of votes reached.
      **/
-    maxVotesReached: GenericModuleError;
+    MaxVotesReached: GenericModuleError;
 
     /**
      * Maximum number of items reached.
      **/
-    tooMany: GenericModuleError;
+    TooMany: GenericModuleError;
 
     /**
      * Voting period too low
      **/
-    votingPeriodLow: GenericModuleError;
+    VotingPeriodLow: GenericModuleError;
 
     /**
      * The preimage does not exist.
      **/
-    preimageNotExist: GenericModuleError;
+    PreimageNotExist: GenericModuleError;
   };
   preimage: {
     /**
      * Preimage is too large to store on-chain.
      **/
-    tooBig: GenericModuleError;
+    TooBig: GenericModuleError;
 
     /**
      * Preimage has already been noted on-chain.
      **/
-    alreadyNoted: GenericModuleError;
+    AlreadyNoted: GenericModuleError;
 
     /**
      * The user is not authorized to perform this action.
      **/
-    notAuthorized: GenericModuleError;
+    NotAuthorized: GenericModuleError;
 
     /**
      * The preimage cannot be removed since it has not yet been noted.
      **/
-    notNoted: GenericModuleError;
+    NotNoted: GenericModuleError;
 
     /**
      * A preimage may not be removed when there are outstanding requests.
      **/
-    requested: GenericModuleError;
+    Requested: GenericModuleError;
 
     /**
      * The preimage request cannot be removed since no outstanding requests exist.
      **/
-    notRequested: GenericModuleError;
+    NotRequested: GenericModuleError;
   };
   convictionVoting: {
     /**
      * Poll is not ongoing.
      **/
-    notOngoing: GenericModuleError;
+    NotOngoing: GenericModuleError;
 
     /**
      * The given account did not vote on the poll.
      **/
-    notVoter: GenericModuleError;
+    NotVoter: GenericModuleError;
 
     /**
      * The actor has no permission to conduct the action.
      **/
-    noPermission: GenericModuleError;
+    NoPermission: GenericModuleError;
 
     /**
      * The actor has no permission to conduct the action right now but will do in the future.
      **/
-    noPermissionYet: GenericModuleError;
+    NoPermissionYet: GenericModuleError;
 
     /**
      * The account is already delegating.
      **/
-    alreadyDelegating: GenericModuleError;
+    AlreadyDelegating: GenericModuleError;
 
     /**
      * The account currently has votes attached to it and the operation cannot succeed until
      * these are removed, either through `unvote` or `reap_vote`.
      **/
-    alreadyVoting: GenericModuleError;
+    AlreadyVoting: GenericModuleError;
 
     /**
      * Too high a balance was provided that the account cannot afford.
      **/
-    insufficientFunds: GenericModuleError;
+    InsufficientFunds: GenericModuleError;
 
     /**
      * The account is not currently delegating.
      **/
-    notDelegating: GenericModuleError;
+    NotDelegating: GenericModuleError;
 
     /**
      * Delegation to oneself makes no sense.
      **/
-    nonsense: GenericModuleError;
+    Nonsense: GenericModuleError;
 
     /**
      * Maximum number of votes reached.
      **/
-    maxVotesReached: GenericModuleError;
+    MaxVotesReached: GenericModuleError;
 
     /**
      * The class must be supplied since it is not easily determinable from the state.
      **/
-    classNeeded: GenericModuleError;
+    ClassNeeded: GenericModuleError;
 
     /**
      * The class ID supplied is invalid.
      **/
-    badClass: GenericModuleError;
+    BadClass: GenericModuleError;
   };
   referenda: {
     /**
      * Referendum is not ongoing.
      **/
-    notOngoing: GenericModuleError;
+    NotOngoing: GenericModuleError;
 
     /**
      * Referendum's decision deposit is already paid.
      **/
-    hasDeposit: GenericModuleError;
+    HasDeposit: GenericModuleError;
 
     /**
      * The track identifier given was invalid.
      **/
-    badTrack: GenericModuleError;
+    BadTrack: GenericModuleError;
 
     /**
      * There are already a full complement of referenda in progress for this track.
      **/
-    full: GenericModuleError;
+    Full: GenericModuleError;
 
     /**
      * The queue of the track is empty.
      **/
-    queueEmpty: GenericModuleError;
+    QueueEmpty: GenericModuleError;
 
     /**
      * The referendum index provided is invalid in this context.
      **/
-    badReferendum: GenericModuleError;
+    BadReferendum: GenericModuleError;
 
     /**
      * There was nothing to do in the advancement.
      **/
-    nothingToDo: GenericModuleError;
+    NothingToDo: GenericModuleError;
 
     /**
      * No track exists for the proposal origin.
      **/
-    noTrack: GenericModuleError;
+    NoTrack: GenericModuleError;
 
     /**
      * Any deposit cannot be refunded until after the decision is over.
      **/
-    unfinished: GenericModuleError;
+    Unfinished: GenericModuleError;
 
     /**
      * The deposit refunder is not the depositor.
      **/
-    noPermission: GenericModuleError;
+    NoPermission: GenericModuleError;
 
     /**
      * The deposit cannot be refunded since none was made.
      **/
-    noDeposit: GenericModuleError;
+    NoDeposit: GenericModuleError;
 
     /**
      * The referendum status is invalid for this operation.
      **/
-    badStatus: GenericModuleError;
+    BadStatus: GenericModuleError;
 
     /**
      * The preimage does not exist.
      **/
-    preimageNotExist: GenericModuleError;
+    PreimageNotExist: GenericModuleError;
   };
   whitelist: {
     /**
      * The preimage of the call hash could not be loaded.
      **/
-    unavailablePreImage: GenericModuleError;
+    UnavailablePreImage: GenericModuleError;
 
     /**
      * The call could not be decoded.
      **/
-    undecodableCall: GenericModuleError;
+    UndecodableCall: GenericModuleError;
 
     /**
      * The weight of the decoded call was higher than the witness.
      **/
-    invalidCallWeightWitness: GenericModuleError;
+    InvalidCallWeightWitness: GenericModuleError;
 
     /**
      * The call was not whitelisted.
      **/
-    callIsNotWhitelisted: GenericModuleError;
+    CallIsNotWhitelisted: GenericModuleError;
 
     /**
      * The call was already whitelisted; No-Op.
      **/
-    callAlreadyWhitelisted: GenericModuleError;
+    CallAlreadyWhitelisted: GenericModuleError;
   };
   councilCollective: {
     /**
      * Account is not a member
      **/
-    notMember: GenericModuleError;
+    NotMember: GenericModuleError;
 
     /**
      * Duplicate proposals not allowed
      **/
-    duplicateProposal: GenericModuleError;
+    DuplicateProposal: GenericModuleError;
 
     /**
      * Proposal must exist
      **/
-    proposalMissing: GenericModuleError;
+    ProposalMissing: GenericModuleError;
 
     /**
      * Mismatched index
      **/
-    wrongIndex: GenericModuleError;
+    WrongIndex: GenericModuleError;
 
     /**
      * Duplicate vote ignored
      **/
-    duplicateVote: GenericModuleError;
+    DuplicateVote: GenericModuleError;
 
     /**
      * Members are already initialized!
      **/
-    alreadyInitialized: GenericModuleError;
+    AlreadyInitialized: GenericModuleError;
 
     /**
      * The close call was made too early, before the end of the voting.
      **/
-    tooEarly: GenericModuleError;
+    TooEarly: GenericModuleError;
 
     /**
      * There can only be a maximum of `MaxProposals` active proposals.
      **/
-    tooManyProposals: GenericModuleError;
+    TooManyProposals: GenericModuleError;
 
     /**
      * The given weight bound for the proposal was too low.
      **/
-    wrongProposalWeight: GenericModuleError;
+    WrongProposalWeight: GenericModuleError;
 
     /**
      * The given length bound for the proposal was too low.
      **/
-    wrongProposalLength: GenericModuleError;
+    WrongProposalLength: GenericModuleError;
   };
   techCommitteeCollective: {
     /**
      * Account is not a member
      **/
-    notMember: GenericModuleError;
+    NotMember: GenericModuleError;
 
     /**
      * Duplicate proposals not allowed
      **/
-    duplicateProposal: GenericModuleError;
+    DuplicateProposal: GenericModuleError;
 
     /**
      * Proposal must exist
      **/
-    proposalMissing: GenericModuleError;
+    ProposalMissing: GenericModuleError;
 
     /**
      * Mismatched index
      **/
-    wrongIndex: GenericModuleError;
+    WrongIndex: GenericModuleError;
 
     /**
      * Duplicate vote ignored
      **/
-    duplicateVote: GenericModuleError;
+    DuplicateVote: GenericModuleError;
 
     /**
      * Members are already initialized!
      **/
-    alreadyInitialized: GenericModuleError;
+    AlreadyInitialized: GenericModuleError;
 
     /**
      * The close call was made too early, before the end of the voting.
      **/
-    tooEarly: GenericModuleError;
+    TooEarly: GenericModuleError;
 
     /**
      * There can only be a maximum of `MaxProposals` active proposals.
      **/
-    tooManyProposals: GenericModuleError;
+    TooManyProposals: GenericModuleError;
 
     /**
      * The given weight bound for the proposal was too low.
      **/
-    wrongProposalWeight: GenericModuleError;
+    WrongProposalWeight: GenericModuleError;
 
     /**
      * The given length bound for the proposal was too low.
      **/
-    wrongProposalLength: GenericModuleError;
+    WrongProposalLength: GenericModuleError;
   };
   treasuryCouncilCollective: {
     /**
      * Account is not a member
      **/
-    notMember: GenericModuleError;
+    NotMember: GenericModuleError;
 
     /**
      * Duplicate proposals not allowed
      **/
-    duplicateProposal: GenericModuleError;
+    DuplicateProposal: GenericModuleError;
 
     /**
      * Proposal must exist
      **/
-    proposalMissing: GenericModuleError;
+    ProposalMissing: GenericModuleError;
 
     /**
      * Mismatched index
      **/
-    wrongIndex: GenericModuleError;
+    WrongIndex: GenericModuleError;
 
     /**
      * Duplicate vote ignored
      **/
-    duplicateVote: GenericModuleError;
+    DuplicateVote: GenericModuleError;
 
     /**
      * Members are already initialized!
      **/
-    alreadyInitialized: GenericModuleError;
+    AlreadyInitialized: GenericModuleError;
 
     /**
      * The close call was made too early, before the end of the voting.
      **/
-    tooEarly: GenericModuleError;
+    TooEarly: GenericModuleError;
 
     /**
      * There can only be a maximum of `MaxProposals` active proposals.
      **/
-    tooManyProposals: GenericModuleError;
+    TooManyProposals: GenericModuleError;
 
     /**
      * The given weight bound for the proposal was too low.
      **/
-    wrongProposalWeight: GenericModuleError;
+    WrongProposalWeight: GenericModuleError;
 
     /**
      * The given length bound for the proposal was too low.
      **/
-    wrongProposalLength: GenericModuleError;
+    WrongProposalLength: GenericModuleError;
   };
   openTechCommitteeCollective: {
     /**
      * Account is not a member
      **/
-    notMember: GenericModuleError;
+    NotMember: GenericModuleError;
 
     /**
      * Duplicate proposals not allowed
      **/
-    duplicateProposal: GenericModuleError;
+    DuplicateProposal: GenericModuleError;
 
     /**
      * Proposal must exist
      **/
-    proposalMissing: GenericModuleError;
+    ProposalMissing: GenericModuleError;
 
     /**
      * Mismatched index
      **/
-    wrongIndex: GenericModuleError;
+    WrongIndex: GenericModuleError;
 
     /**
      * Duplicate vote ignored
      **/
-    duplicateVote: GenericModuleError;
+    DuplicateVote: GenericModuleError;
 
     /**
      * Members are already initialized!
      **/
-    alreadyInitialized: GenericModuleError;
+    AlreadyInitialized: GenericModuleError;
 
     /**
      * The close call was made too early, before the end of the voting.
      **/
-    tooEarly: GenericModuleError;
+    TooEarly: GenericModuleError;
 
     /**
      * There can only be a maximum of `MaxProposals` active proposals.
      **/
-    tooManyProposals: GenericModuleError;
+    TooManyProposals: GenericModuleError;
 
     /**
      * The given weight bound for the proposal was too low.
      **/
-    wrongProposalWeight: GenericModuleError;
+    WrongProposalWeight: GenericModuleError;
 
     /**
      * The given length bound for the proposal was too low.
      **/
-    wrongProposalLength: GenericModuleError;
+    WrongProposalLength: GenericModuleError;
   };
   treasury: {
     /**
      * Proposer's balance is too low.
      **/
-    insufficientProposersBalance: GenericModuleError;
+    InsufficientProposersBalance: GenericModuleError;
 
     /**
      * No proposal or bounty at that index.
      **/
-    invalidIndex: GenericModuleError;
+    InvalidIndex: GenericModuleError;
 
     /**
      * Too many approvals in the queue.
      **/
-    tooManyApprovals: GenericModuleError;
+    TooManyApprovals: GenericModuleError;
 
     /**
      * The spend origin is valid but the amount it is allowed to spend is lower than the
      * amount to be spent.
      **/
-    insufficientPermission: GenericModuleError;
+    InsufficientPermission: GenericModuleError;
 
     /**
      * Proposal has not been approved.
      **/
-    proposalNotApproved: GenericModuleError;
+    ProposalNotApproved: GenericModuleError;
   };
   crowdloanRewards: {
     /**
      * User trying to associate a native identity with a relay chain identity for posterior
      * reward claiming provided an already associated relay chain identity
      **/
-    alreadyAssociated: GenericModuleError;
+    AlreadyAssociated: GenericModuleError;
 
     /**
      * Trying to introduce a batch that goes beyond the limits of the funds
      **/
-    batchBeyondFundPot: GenericModuleError;
+    BatchBeyondFundPot: GenericModuleError;
 
     /**
      * First claim already done
      **/
-    firstClaimAlreadyDone: GenericModuleError;
+    FirstClaimAlreadyDone: GenericModuleError;
 
     /**
      * The contribution is not high enough to be eligible for rewards
      **/
-    rewardNotHighEnough: GenericModuleError;
+    RewardNotHighEnough: GenericModuleError;
 
     /**
      * User trying to associate a native identity with a relay chain identity for posterior
      * reward claiming provided a wrong signature
      **/
-    invalidClaimSignature: GenericModuleError;
+    InvalidClaimSignature: GenericModuleError;
 
     /**
      * User trying to claim the first free reward provided the wrong signature
      **/
-    invalidFreeClaimSignature: GenericModuleError;
+    InvalidFreeClaimSignature: GenericModuleError;
 
     /**
      * User trying to claim an award did not have an claim associated with it. This may mean
      * they did not contribute to the crowdloan, or they have not yet associated a native id
      * with their contribution
      **/
-    noAssociatedClaim: GenericModuleError;
+    NoAssociatedClaim: GenericModuleError;
 
     /**
      * User trying to claim rewards has already claimed all rewards associated with its
      * identity and contribution
      **/
-    rewardsAlreadyClaimed: GenericModuleError;
+    RewardsAlreadyClaimed: GenericModuleError;
 
     /**
      * Reward vec has already been initialized
      **/
-    rewardVecAlreadyInitialized: GenericModuleError;
+    RewardVecAlreadyInitialized: GenericModuleError;
 
     /**
      * Reward vec has not yet been fully initialized
      **/
-    rewardVecNotFullyInitializedYet: GenericModuleError;
+    RewardVecNotFullyInitializedYet: GenericModuleError;
 
     /**
      * Rewards should match funds of the pallet
      **/
-    rewardsDoNotMatchFund: GenericModuleError;
+    RewardsDoNotMatchFund: GenericModuleError;
 
     /**
      * Initialize_reward_vec received too many contributors
      **/
-    tooManyContributors: GenericModuleError;
+    TooManyContributors: GenericModuleError;
 
     /**
      * Provided vesting period is not valid
      **/
-    vestingPeriodNonValid: GenericModuleError;
+    VestingPeriodNonValid: GenericModuleError;
 
     /**
      * User provided a signature from a non-contributor relay account
      **/
-    nonContributedAddressProvided: GenericModuleError;
+    NonContributedAddressProvided: GenericModuleError;
 
     /**
      * User submitted an unsifficient number of proofs to change the reward address
      **/
-    insufficientNumberOfValidProofs: GenericModuleError;
+    InsufficientNumberOfValidProofs: GenericModuleError;
   };
   xcmpQueue: {
     /**
      * Failed to send XCM message.
      **/
-    failedToSend: GenericModuleError;
+    FailedToSend: GenericModuleError;
 
     /**
      * Bad XCM origin.
      **/
-    badXcmOrigin: GenericModuleError;
+    BadXcmOrigin: GenericModuleError;
 
     /**
      * Bad XCM data.
      **/
-    badXcm: GenericModuleError;
+    BadXcm: GenericModuleError;
 
     /**
      * Bad overweight index.
      **/
-    badOverweightIndex: GenericModuleError;
+    BadOverweightIndex: GenericModuleError;
 
     /**
      * Provided weight is possibly not enough to execute the message.
      **/
-    weightOverLimit: GenericModuleError;
+    WeightOverLimit: GenericModuleError;
   };
   cumulusXcm: {};
   dmpQueue: {
     /**
      * The message index given is unknown.
      **/
-    unknown: GenericModuleError;
+    Unknown: GenericModuleError;
 
     /**
      * The amount of weight given is possibly not enough for executing the message.
      **/
-    overLimit: GenericModuleError;
+    OverLimit: GenericModuleError;
   };
   polkadotXcm: {
     /**
      * The desired destination was unreachable, generally because there is a no way of routing
      * to it.
      **/
-    unreachable: GenericModuleError;
+    Unreachable: GenericModuleError;
 
     /**
      * There was some other issue (i.e. not to do with routing) in sending the message. Perhaps
      * a lack of space for buffering the message.
      **/
-    sendFailure: GenericModuleError;
+    SendFailure: GenericModuleError;
 
     /**
      * The message execution fails the filter.
      **/
-    filtered: GenericModuleError;
+    Filtered: GenericModuleError;
 
     /**
      * The message's weight could not be determined.
      **/
-    unweighableMessage: GenericModuleError;
+    UnweighableMessage: GenericModuleError;
 
     /**
      * The destination `MultiLocation` provided cannot be inverted.
      **/
-    destinationNotInvertible: GenericModuleError;
+    DestinationNotInvertible: GenericModuleError;
 
     /**
      * The assets to be sent are empty.
      **/
-    empty: GenericModuleError;
+    Empty: GenericModuleError;
 
     /**
      * Could not re-anchor the assets to declare the fees for the destination chain.
      **/
-    cannotReanchor: GenericModuleError;
+    CannotReanchor: GenericModuleError;
 
     /**
      * Too many assets have been attempted for transfer.
      **/
-    tooManyAssets: GenericModuleError;
+    TooManyAssets: GenericModuleError;
 
     /**
      * Origin is invalid for sending.
      **/
-    invalidOrigin: GenericModuleError;
+    InvalidOrigin: GenericModuleError;
 
     /**
      * The version of the `Versioned` value used is not able to be interpreted.
      **/
-    badVersion: GenericModuleError;
+    BadVersion: GenericModuleError;
 
     /**
      * The given location could not be used (e.g. because it cannot be expressed in the
      * desired version of XCM).
      **/
-    badLocation: GenericModuleError;
+    BadLocation: GenericModuleError;
 
     /**
      * The referenced subscription could not be found.
      **/
-    noSubscription: GenericModuleError;
+    NoSubscription: GenericModuleError;
 
     /**
      * The location is invalid since it already has a subscription from us.
      **/
-    alreadySubscribed: GenericModuleError;
+    AlreadySubscribed: GenericModuleError;
 
     /**
      * Invalid asset for the operation.
      **/
-    invalidAsset: GenericModuleError;
+    InvalidAsset: GenericModuleError;
 
     /**
      * The owner does not own (all) of the asset that they wish to do the operation on.
      **/
-    lowBalance: GenericModuleError;
+    LowBalance: GenericModuleError;
 
     /**
      * The asset owner has too many locks on the asset.
      **/
-    tooManyLocks: GenericModuleError;
+    TooManyLocks: GenericModuleError;
 
     /**
      * The given account is not an identifiable sovereign account for any location.
      **/
-    accountNotSovereign: GenericModuleError;
+    AccountNotSovereign: GenericModuleError;
 
     /**
      * The operation required fees to be paid which the initiator could not meet.
      **/
-    feesNotMet: GenericModuleError;
+    FeesNotMet: GenericModuleError;
 
     /**
      * A remote lock with the corresponding data could not be found.
      **/
-    lockNotFound: GenericModuleError;
+    LockNotFound: GenericModuleError;
 
     /**
      * The unlock operation cannot succeed because there are still consumers of the lock.
      **/
-    inUse: GenericModuleError;
+    InUse: GenericModuleError;
   };
   assets: {
     /**
      * Account balance must be greater than or equal to the transfer amount.
      **/
-    balanceLow: GenericModuleError;
+    BalanceLow: GenericModuleError;
 
     /**
      * The account to alter does not exist.
      **/
-    noAccount: GenericModuleError;
+    NoAccount: GenericModuleError;
 
     /**
      * The signing account has no permission to do the operation.
      **/
-    noPermission: GenericModuleError;
+    NoPermission: GenericModuleError;
 
     /**
      * The given asset ID is unknown.
      **/
-    unknown: GenericModuleError;
+    Unknown: GenericModuleError;
 
     /**
      * The origin account is frozen.
      **/
-    frozen: GenericModuleError;
+    Frozen: GenericModuleError;
 
     /**
      * The asset ID is already taken.
      **/
-    inUse: GenericModuleError;
+    InUse: GenericModuleError;
 
     /**
      * Invalid witness data given.
      **/
-    badWitness: GenericModuleError;
+    BadWitness: GenericModuleError;
 
     /**
      * Minimum balance should be non-zero.
      **/
-    minBalanceZero: GenericModuleError;
+    MinBalanceZero: GenericModuleError;
 
     /**
      * Unable to increment the consumer reference counters on the account. Either no provider
      * reference exists to allow a non-zero balance of a non-self-sufficient asset, or one
      * fewer then the maximum number of consumers has been reached.
      **/
-    unavailableConsumer: GenericModuleError;
+    UnavailableConsumer: GenericModuleError;
 
     /**
      * Invalid metadata given.
      **/
-    badMetadata: GenericModuleError;
+    BadMetadata: GenericModuleError;
 
     /**
      * No approval exists that would allow the transfer.
      **/
-    unapproved: GenericModuleError;
+    Unapproved: GenericModuleError;
 
     /**
      * The source account would not survive the transfer and it needs to stay alive.
      **/
-    wouldDie: GenericModuleError;
+    WouldDie: GenericModuleError;
 
     /**
      * The asset-account already exists.
      **/
-    alreadyExists: GenericModuleError;
+    AlreadyExists: GenericModuleError;
 
     /**
      * The asset-account doesn't have an associated deposit.
      **/
-    noDeposit: GenericModuleError;
+    NoDeposit: GenericModuleError;
 
     /**
      * The operation would result in funds being burned.
      **/
-    wouldBurn: GenericModuleError;
+    WouldBurn: GenericModuleError;
 
     /**
      * The asset is a live asset and is actively being used. Usually emit for operations such
      * as `start_destroy` which require the asset to be in a destroying state.
      **/
-    liveAsset: GenericModuleError;
+    LiveAsset: GenericModuleError;
 
     /**
      * The asset is not live, and likely being destroyed.
      **/
-    assetNotLive: GenericModuleError;
+    AssetNotLive: GenericModuleError;
 
     /**
      * The asset status is not the expected status.
      **/
-    incorrectStatus: GenericModuleError;
+    IncorrectStatus: GenericModuleError;
 
     /**
      * The asset should be frozen before the given operation.
      **/
-    notFrozen: GenericModuleError;
+    NotFrozen: GenericModuleError;
 
     /**
      * Callback action resulted in error
      **/
-    callbackFailed: GenericModuleError;
+    CallbackFailed: GenericModuleError;
   };
   assetManager: {
-    errorCreatingAsset: GenericModuleError;
-    assetAlreadyExists: GenericModuleError;
-    assetDoesNotExist: GenericModuleError;
-    tooLowNumAssetsWeightHint: GenericModuleError;
-    localAssetLimitReached: GenericModuleError;
-    errorDestroyingAsset: GenericModuleError;
-    notSufficientDeposit: GenericModuleError;
-    nonExistentLocalAsset: GenericModuleError;
+    ErrorCreatingAsset: GenericModuleError;
+    AssetAlreadyExists: GenericModuleError;
+    AssetDoesNotExist: GenericModuleError;
+    TooLowNumAssetsWeightHint: GenericModuleError;
+    LocalAssetLimitReached: GenericModuleError;
+    ErrorDestroyingAsset: GenericModuleError;
+    NotSufficientDeposit: GenericModuleError;
+    NonExistentLocalAsset: GenericModuleError;
   };
   xTokens: {
     /**
      * Asset has no reserve location.
      **/
-    assetHasNoReserve: GenericModuleError;
+    AssetHasNoReserve: GenericModuleError;
 
     /**
      * Not cross-chain transfer.
      **/
-    notCrossChainTransfer: GenericModuleError;
+    NotCrossChainTransfer: GenericModuleError;
 
     /**
      * Invalid transfer destination.
      **/
-    invalidDest: GenericModuleError;
+    InvalidDest: GenericModuleError;
 
     /**
      * Currency is not cross-chain transferable.
      **/
-    notCrossChainTransferableCurrency: GenericModuleError;
+    NotCrossChainTransferableCurrency: GenericModuleError;
 
     /**
      * The message's weight could not be determined.
      **/
-    unweighableMessage: GenericModuleError;
+    UnweighableMessage: GenericModuleError;
 
     /**
      * XCM execution failed.
      **/
-    xcmExecutionFailed: GenericModuleError;
+    XcmExecutionFailed: GenericModuleError;
 
     /**
      * Could not re-anchor the assets to declare the fees for the
      * destination chain.
      **/
-    cannotReanchor: GenericModuleError;
+    CannotReanchor: GenericModuleError;
 
     /**
      * Could not get ancestry of asset reserve location.
      **/
-    invalidAncestry: GenericModuleError;
+    InvalidAncestry: GenericModuleError;
 
     /**
      * The MultiAsset is invalid.
      **/
-    invalidAsset: GenericModuleError;
+    InvalidAsset: GenericModuleError;
 
     /**
      * The destination `MultiLocation` provided cannot be inverted.
      **/
-    destinationNotInvertible: GenericModuleError;
+    DestinationNotInvertible: GenericModuleError;
 
     /**
      * The version of the `Versioned` value used is not able to be
      * interpreted.
      **/
-    badVersion: GenericModuleError;
+    BadVersion: GenericModuleError;
 
     /**
      * We tried sending distinct asset and fee but they have different
      * reserve chains.
      **/
-    distinctReserveForAssetAndFee: GenericModuleError;
+    DistinctReserveForAssetAndFee: GenericModuleError;
 
     /**
      * The fee is zero.
      **/
-    zeroFee: GenericModuleError;
+    ZeroFee: GenericModuleError;
 
     /**
      * The transfering asset amount is zero.
      **/
-    zeroAmount: GenericModuleError;
+    ZeroAmount: GenericModuleError;
 
     /**
      * The number of assets to be sent is over the maximum.
      **/
-    tooManyAssetsBeingSent: GenericModuleError;
+    TooManyAssetsBeingSent: GenericModuleError;
 
     /**
      * The specified index does not exist in a MultiAssets struct.
      **/
-    assetIndexNonExistent: GenericModuleError;
+    AssetIndexNonExistent: GenericModuleError;
 
     /**
      * Fee is not enough.
      **/
-    feeNotEnough: GenericModuleError;
+    FeeNotEnough: GenericModuleError;
 
     /**
      * Not supported MultiLocation
      **/
-    notSupportedMultiLocation: GenericModuleError;
+    NotSupportedMultiLocation: GenericModuleError;
 
     /**
      * MinXcmFee not registered for certain reserve location
      **/
-    minXcmFeeNotDefined: GenericModuleError;
+    MinXcmFeeNotDefined: GenericModuleError;
   };
   xcmTransactor: {
-    indexAlreadyClaimed: GenericModuleError;
-    unclaimedIndex: GenericModuleError;
-    notOwner: GenericModuleError;
-    unweighableMessage: GenericModuleError;
-    cannotReanchor: GenericModuleError;
-    assetHasNoReserve: GenericModuleError;
-    invalidDest: GenericModuleError;
-    notCrossChainTransfer: GenericModuleError;
-    assetIsNotReserveInDestination: GenericModuleError;
-    destinationNotInvertible: GenericModuleError;
-    errorDelivering: GenericModuleError;
-    dispatchWeightBiggerThanTotalWeight: GenericModuleError;
-    weightOverflow: GenericModuleError;
-    amountOverflow: GenericModuleError;
-    transactorInfoNotSet: GenericModuleError;
-    notCrossChainTransferableCurrency: GenericModuleError;
-    xcmExecuteError: GenericModuleError;
-    badVersion: GenericModuleError;
-    maxWeightTransactReached: GenericModuleError;
-    unableToWithdrawAsset: GenericModuleError;
-    feePerSecondNotSet: GenericModuleError;
-    signedTransactNotAllowedForDestination: GenericModuleError;
-    failedMultiLocationToJunction: GenericModuleError;
-    hrmpHandlerNotImplemented: GenericModuleError;
-    tooMuchFeeUsed: GenericModuleError;
-    errorValidating: GenericModuleError;
-    refundNotSupportedWithTransactInfo: GenericModuleError;
+    IndexAlreadyClaimed: GenericModuleError;
+    UnclaimedIndex: GenericModuleError;
+    NotOwner: GenericModuleError;
+    UnweighableMessage: GenericModuleError;
+    CannotReanchor: GenericModuleError;
+    AssetHasNoReserve: GenericModuleError;
+    InvalidDest: GenericModuleError;
+    NotCrossChainTransfer: GenericModuleError;
+    AssetIsNotReserveInDestination: GenericModuleError;
+    DestinationNotInvertible: GenericModuleError;
+    ErrorDelivering: GenericModuleError;
+    DispatchWeightBiggerThanTotalWeight: GenericModuleError;
+    WeightOverflow: GenericModuleError;
+    AmountOverflow: GenericModuleError;
+    TransactorInfoNotSet: GenericModuleError;
+    NotCrossChainTransferableCurrency: GenericModuleError;
+    XcmExecuteError: GenericModuleError;
+    BadVersion: GenericModuleError;
+    MaxWeightTransactReached: GenericModuleError;
+    UnableToWithdrawAsset: GenericModuleError;
+    FeePerSecondNotSet: GenericModuleError;
+    SignedTransactNotAllowedForDestination: GenericModuleError;
+    FailedMultiLocationToJunction: GenericModuleError;
+    HrmpHandlerNotImplemented: GenericModuleError;
+    TooMuchFeeUsed: GenericModuleError;
+    ErrorValidating: GenericModuleError;
+    RefundNotSupportedWithTransactInfo: GenericModuleError;
   };
   localAssets: {
     /**
      * Account balance must be greater than or equal to the transfer amount.
      **/
-    balanceLow: GenericModuleError;
+    BalanceLow: GenericModuleError;
 
     /**
      * The account to alter does not exist.
      **/
-    noAccount: GenericModuleError;
+    NoAccount: GenericModuleError;
 
     /**
      * The signing account has no permission to do the operation.
      **/
-    noPermission: GenericModuleError;
+    NoPermission: GenericModuleError;
 
     /**
      * The given asset ID is unknown.
      **/
-    unknown: GenericModuleError;
+    Unknown: GenericModuleError;
 
     /**
      * The origin account is frozen.
      **/
-    frozen: GenericModuleError;
+    Frozen: GenericModuleError;
 
     /**
      * The asset ID is already taken.
      **/
-    inUse: GenericModuleError;
+    InUse: GenericModuleError;
 
     /**
      * Invalid witness data given.
      **/
-    badWitness: GenericModuleError;
+    BadWitness: GenericModuleError;
 
     /**
      * Minimum balance should be non-zero.
      **/
-    minBalanceZero: GenericModuleError;
+    MinBalanceZero: GenericModuleError;
 
     /**
      * Unable to increment the consumer reference counters on the account. Either no provider
      * reference exists to allow a non-zero balance of a non-self-sufficient asset, or one
      * fewer then the maximum number of consumers has been reached.
      **/
-    unavailableConsumer: GenericModuleError;
+    UnavailableConsumer: GenericModuleError;
 
     /**
      * Invalid metadata given.
      **/
-    badMetadata: GenericModuleError;
+    BadMetadata: GenericModuleError;
 
     /**
      * No approval exists that would allow the transfer.
      **/
-    unapproved: GenericModuleError;
+    Unapproved: GenericModuleError;
 
     /**
      * The source account would not survive the transfer and it needs to stay alive.
      **/
-    wouldDie: GenericModuleError;
+    WouldDie: GenericModuleError;
 
     /**
      * The asset-account already exists.
      **/
-    alreadyExists: GenericModuleError;
+    AlreadyExists: GenericModuleError;
 
     /**
      * The asset-account doesn't have an associated deposit.
      **/
-    noDeposit: GenericModuleError;
+    NoDeposit: GenericModuleError;
 
     /**
      * The operation would result in funds being burned.
      **/
-    wouldBurn: GenericModuleError;
+    WouldBurn: GenericModuleError;
 
     /**
      * The asset is a live asset and is actively being used. Usually emit for operations such
      * as `start_destroy` which require the asset to be in a destroying state.
      **/
-    liveAsset: GenericModuleError;
+    LiveAsset: GenericModuleError;
 
     /**
      * The asset is not live, and likely being destroyed.
      **/
-    assetNotLive: GenericModuleError;
+    AssetNotLive: GenericModuleError;
 
     /**
      * The asset status is not the expected status.
      **/
-    incorrectStatus: GenericModuleError;
+    IncorrectStatus: GenericModuleError;
 
     /**
      * The asset should be frozen before the given operation.
      **/
-    notFrozen: GenericModuleError;
+    NotFrozen: GenericModuleError;
 
     /**
      * Callback action resulted in error
      **/
-    callbackFailed: GenericModuleError;
+    CallbackFailed: GenericModuleError;
   };
   ethereumXcm: {
     /**
      * Xcm to Ethereum execution is suspended
      **/
-    ethereumXcmExecutionSuspended: GenericModuleError;
+    EthereumXcmExecutionSuspended: GenericModuleError;
   };
   randomness: {
-    requestCounterOverflowed: GenericModuleError;
-    requestFeeOverflowed: GenericModuleError;
-    mustRequestAtLeastOneWord: GenericModuleError;
-    cannotRequestMoreWordsThanMax: GenericModuleError;
-    cannotRequestRandomnessAfterMaxDelay: GenericModuleError;
-    cannotRequestRandomnessBeforeMinDelay: GenericModuleError;
-    requestDNE: GenericModuleError;
-    requestCannotYetBeFulfilled: GenericModuleError;
-    onlyRequesterCanIncreaseFee: GenericModuleError;
-    requestHasNotExpired: GenericModuleError;
-    randomnessResultDNE: GenericModuleError;
-    randomnessResultNotFilled: GenericModuleError;
+    RequestCounterOverflowed: GenericModuleError;
+    RequestFeeOverflowed: GenericModuleError;
+    MustRequestAtLeastOneWord: GenericModuleError;
+    CannotRequestMoreWordsThanMax: GenericModuleError;
+    CannotRequestRandomnessAfterMaxDelay: GenericModuleError;
+    CannotRequestRandomnessBeforeMinDelay: GenericModuleError;
+    RequestDNE: GenericModuleError;
+    RequestCannotYetBeFulfilled: GenericModuleError;
+    OnlyRequesterCanIncreaseFee: GenericModuleError;
+    RequestHasNotExpired: GenericModuleError;
+    RandomnessResultDNE: GenericModuleError;
+    RandomnessResultNotFilled: GenericModuleError;
   };
 }

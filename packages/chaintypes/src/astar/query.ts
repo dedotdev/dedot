@@ -12,7 +12,6 @@ import type {
   FixedU128,
   H160,
   U256,
-  Permill,
 } from '@delightfuldot/codecs';
 import type {
   FrameSystemAccountInfo,
@@ -1051,12 +1050,7 @@ export interface ChainStorage extends GenericChainStorage {
     blockHash(arg: U256): Promise<H256>;
     blockHash(arg: U256, callback: Callback<H256>): Promise<Unsub>;
   };
-  baseFee: {
-    baseFeePerGas(): Promise<U256>;
-    baseFeePerGas(callback: Callback<U256>): Promise<Unsub>;
-    elasticity(): Promise<Permill>;
-    elasticity(callback: Callback<Permill>): Promise<Unsub>;
-  };
+  dynamicEvmBaseFee: { baseFeePerGas(): Promise<U256>; baseFeePerGas(callback: Callback<U256>): Promise<Unsub> };
   contracts: {
     /**
      * A mapping from an original code hash to the original code, untouched by instrumentation.

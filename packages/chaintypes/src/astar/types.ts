@@ -9,7 +9,6 @@ import type {
   Perbill,
   Bytes,
   U256,
-  Permill,
   MultiAddress,
   Data,
 } from '@delightfuldot/codecs';
@@ -64,7 +63,7 @@ export type AstarRuntimeRuntimeEvent =
   | { tag: 'XTokens'; value: OrmlXtokensModuleEvent }
   | { tag: 'Evm'; value: PalletEvmEvent }
   | { tag: 'Ethereum'; value: PalletEthereumEvent }
-  | { tag: 'BaseFee'; value: PalletBaseFeeEvent }
+  | { tag: 'DynamicEvmBaseFee'; value: PalletDynamicEvmBaseFeeEvent }
   | { tag: 'Contracts'; value: PalletContractsEvent }
   | { tag: 'Sudo'; value: PalletSudoEvent };
 
@@ -875,10 +874,7 @@ export type EvmCoreErrorExitFatal =
 /**
  * The [event](https://docs.substrate.io/main-docs/build/events-errors/) emitted by this pallet.
  **/
-export type PalletBaseFeeEvent =
-  | { tag: 'NewBaseFeePerGas'; value: { fee: U256 } }
-  | { tag: 'BaseFeeOverflow' }
-  | { tag: 'NewElasticity'; value: { elasticity: Permill } };
+export type PalletDynamicEvmBaseFeeEvent = { tag: 'NewBaseFeePerGas'; value: { fee: U256 } };
 
 /**
  * The [event](https://docs.substrate.io/main-docs/build/events-errors/) emitted by this pallet.
@@ -1101,7 +1097,7 @@ export type AstarRuntimeRuntimeCall =
   | { tag: 'XTokens'; value: OrmlXtokensModuleCall }
   | { tag: 'Evm'; value: PalletEvmCall }
   | { tag: 'Ethereum'; value: PalletEthereumCall }
-  | { tag: 'BaseFee'; value: PalletBaseFeeCall }
+  | { tag: 'DynamicEvmBaseFee'; value: PalletDynamicEvmBaseFeeCall }
   | { tag: 'Contracts'; value: PalletContractsCall }
   | { tag: 'Sudo'; value: PalletSudoCall };
 
@@ -1783,9 +1779,7 @@ export type EthereumTransactionEip1559Transaction = {
 /**
  * Contains one variant per dispatchable that can be called by an extrinsic.
  **/
-export type PalletBaseFeeCall =
-  | { tag: 'SetBaseFeePerGas'; value: { fee: U256 } }
-  | { tag: 'SetElasticity'; value: { elasticity: Permill } };
+export type PalletDynamicEvmBaseFeeCall = { tag: 'SetBaseFeePerGas'; value: { fee: U256 } };
 
 /**
  * Contains one variant per dispatchable that can be called by an extrinsic.
@@ -3010,6 +3004,15 @@ export type PalletEthereumError =
    * Pre-log is present, therefore transact is not allowed.
    **/
   | 'PreLogExists';
+
+/**
+ * Custom [dispatch errors](https://docs.substrate.io/main-docs/build/events-errors/) of this pallet.
+ **/
+export type PalletDynamicEvmBaseFeeError =
+  /**
+   * Specified value is outside of the allowed range.
+   **/
+  'ValueOutOfBounds';
 
 export type PalletContractsWasmPrefabWasmModule = {
   instructionWeightsVersion: number;

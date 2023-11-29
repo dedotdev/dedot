@@ -1,6 +1,6 @@
 import { ApiGen } from './ApiGen';
 import { beautifySourceCode, commentBlock, compileTemplate } from './utils';
-import { stringCamelCase } from '@polkadot/util';
+import { stringCamelCase, stringPascalCase } from '@polkadot/util';
 import { assert } from '@delightfuldot/utils';
 
 export class ErrorsGen extends ApiGen {
@@ -12,16 +12,16 @@ export class ErrorsGen extends ApiGen {
 
     let defTypeOut = '';
     for (let pallet of pallets) {
-      const error = pallet.error;
-      if (!error) {
+      const errorTypeId = pallet.error;
+      if (!errorTypeId) {
         continue;
       }
 
-      const errors = this.#getErrorVariants(error);
+      const errorDefs = this.#getErrorDefs(errorTypeId);
 
       defTypeOut += `${stringCamelCase(pallet.name)}: {
-        ${errors
-          .map(({ name, docs }) => `${commentBlock(docs)}${stringCamelCase(name)}: GenericModuleError`)
+        ${errorDefs
+          .map(({ name, docs }) => `${commentBlock(docs)}${stringPascalCase(name)}: GenericModuleError`)
           .join(',\n')}
       },`;
     }
@@ -32,9 +32,9 @@ export class ErrorsGen extends ApiGen {
     return beautifySourceCode(template({ importTypes, defTypeOut }));
   }
 
-  #getErrorVariants(errorId: number) {
-    const def = this.metadata.types[errorId];
-    assert(def, `Error def not found for id ${errorId}`);
+  #getErrorDefs(errorTypeId: number) {
+    const def = this.metadata.types[errorTypeId];
+    assert(def, `Error def not found for id ${errorTypeId}`);
 
     const { tag, value } = def.type;
     assert(tag === 'Enum', `Invalid pallet error type!`);

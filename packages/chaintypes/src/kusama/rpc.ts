@@ -125,11 +125,6 @@ export interface RpcCalls extends GenericRpcCalls {
     unstable_follow: AsyncMethod;
 
     /**
-     * @rpcname: chainHead_unstable_genesisHash
-     **/
-    unstable_genesisHash: AsyncMethod;
-
-    /**
      * @rpcname: chainHead_unstable_header
      **/
     unstable_header: AsyncMethod;
