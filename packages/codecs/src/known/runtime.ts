@@ -51,7 +51,7 @@ export type TokenError = $.Input<typeof $TokenError>;
 
 export const $ModuleError = $.Struct({
   index: $.u8,
-  error: $.SizedU8a(4),
+  error: $.FixedHex(4),
 });
 
 export type ModuleError = $.Input<typeof $ModuleError>;

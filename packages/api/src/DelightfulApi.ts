@@ -3,7 +3,7 @@ import { ProviderInterface } from '@polkadot/rpc-provider/types';
 import type { SubstrateApi } from '@delightfuldot/chaintypes';
 import { CodecRegistry, Metadata, MetadataLatest } from '@delightfuldot/codecs';
 import { GenericSubstrateApi } from '@delightfuldot/types';
-import { ConstantExecutor, ErrorsExecutor, RpcExecutor, StorageQueryExecutor } from './executor';
+import { ConstantExecutor, ErrorExecutor, RpcExecutor, StorageQueryExecutor } from './executor';
 import { newProxyChain } from './proxychain';
 
 interface ApiOptions {
@@ -53,7 +53,7 @@ export default class DelightfulApi<ChainApi extends GenericSubstrateApi = Substr
   }
 
   get errors(): ChainApi['errors'] {
-    return newProxyChain<ChainApi>({ executor: new ErrorsExecutor(this) }) as ChainApi['errors'];
+    return newProxyChain<ChainApi>({ executor: new ErrorExecutor(this) }) as ChainApi['errors'];
   }
 
   get provider() {

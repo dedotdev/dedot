@@ -5,15 +5,18 @@ export type AsyncMethod = (...args: any[]) => Promise<any>;
 export type Unsub = () => Promise<boolean>;
 export type Callback<T> = (result: T) => Promise<void> | void;
 
+export interface ModuleErrorMetadata {
+  module: string;
+  moduleIndex: number;
+  name: string;
+  fields: $.AnyShape[];
+  index: number;
+  docs: string[];
+}
+
 export interface GenericModuleError {
   is: (moduleError: ModuleError) => boolean;
-  meta: {
-    name: string;
-    fields: $.AnyShape[];
-    index: number;
-    docs: string[];
-  };
-  module: string;
+  meta: ModuleErrorMetadata;
 }
 
 export interface GenericRpcModule {
