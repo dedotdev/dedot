@@ -7,6 +7,7 @@ import type {
   FixedBytes,
   Percent,
   Perbill,
+  ResultPayload,
   Bytes,
   H160,
   Data,
@@ -46,55 +47,73 @@ export type FrameSystemEventRecord = {
 };
 
 export type MoonbeamRuntimeRuntimeEvent =
-  | { tag: 'System'; value: FrameSystemEvent }
-  | { tag: 'ParachainSystem'; value: CumulusPalletParachainSystemEvent }
-  | { tag: 'Balances'; value: PalletBalancesEvent }
-  | { tag: 'TransactionPayment'; value: PalletTransactionPaymentEvent }
-  | { tag: 'ParachainStaking'; value: PalletParachainStakingEvent }
-  | { tag: 'AuthorFilter'; value: PalletAuthorSlotFilterEvent }
-  | { tag: 'AuthorMapping'; value: PalletAuthorMappingEvent }
-  | { tag: 'MoonbeamOrbiters'; value: PalletMoonbeamOrbitersEvent }
-  | { tag: 'Utility'; value: PalletUtilityEvent }
-  | { tag: 'Proxy'; value: PalletProxyEvent }
-  | { tag: 'MaintenanceMode'; value: PalletMaintenanceModeEvent }
-  | { tag: 'Identity'; value: PalletIdentityEvent }
-  | { tag: 'Migrations'; value: PalletMigrationsEvent }
-  | { tag: 'Multisig'; value: PalletMultisigEvent }
-  | { tag: 'Evm'; value: PalletEvmEvent }
-  | { tag: 'Ethereum'; value: PalletEthereumEvent }
-  | { tag: 'Scheduler'; value: PalletSchedulerEvent }
-  | { tag: 'Democracy'; value: PalletDemocracyEvent }
-  | { tag: 'Preimage'; value: PalletPreimageEvent }
-  | { tag: 'ConvictionVoting'; value: PalletConvictionVotingEvent }
-  | { tag: 'Referenda'; value: PalletReferendaEvent }
-  | { tag: 'Whitelist'; value: PalletWhitelistEvent }
-  | { tag: 'CouncilCollective'; value: PalletCollectiveEvent }
-  | { tag: 'TechCommitteeCollective'; value: PalletCollectiveEvent }
-  | { tag: 'TreasuryCouncilCollective'; value: PalletCollectiveEvent }
-  | { tag: 'OpenTechCommitteeCollective'; value: PalletCollectiveEvent }
-  | { tag: 'Treasury'; value: PalletTreasuryEvent }
-  | { tag: 'CrowdloanRewards'; value: PalletCrowdloanRewardsEvent }
-  | { tag: 'XcmpQueue'; value: CumulusPalletXcmpQueueEvent }
-  | { tag: 'CumulusXcm'; value: CumulusPalletXcmEvent }
-  | { tag: 'DmpQueue'; value: CumulusPalletDmpQueueEvent }
-  | { tag: 'PolkadotXcm'; value: PalletXcmEvent }
-  | { tag: 'Assets'; value: PalletAssetsEvent }
-  | { tag: 'AssetManager'; value: PalletAssetManagerEvent }
-  | { tag: 'XTokens'; value: OrmlXtokensModuleEvent }
-  | { tag: 'XcmTransactor'; value: PalletXcmTransactorEvent }
-  | { tag: 'LocalAssets'; value: PalletAssetsEvent }
-  | { tag: 'Randomness'; value: PalletRandomnessEvent };
+  | { pallet: 'System'; palletEvent: FrameSystemEvent }
+  | { pallet: 'ParachainSystem'; palletEvent: CumulusPalletParachainSystemEvent }
+  | { pallet: 'Balances'; palletEvent: PalletBalancesEvent }
+  | { pallet: 'TransactionPayment'; palletEvent: PalletTransactionPaymentEvent }
+  | { pallet: 'ParachainStaking'; palletEvent: PalletParachainStakingEvent }
+  | { pallet: 'AuthorFilter'; palletEvent: PalletAuthorSlotFilterEvent }
+  | { pallet: 'AuthorMapping'; palletEvent: PalletAuthorMappingEvent }
+  | { pallet: 'MoonbeamOrbiters'; palletEvent: PalletMoonbeamOrbitersEvent }
+  | { pallet: 'Utility'; palletEvent: PalletUtilityEvent }
+  | { pallet: 'Proxy'; palletEvent: PalletProxyEvent }
+  | { pallet: 'MaintenanceMode'; palletEvent: PalletMaintenanceModeEvent }
+  | { pallet: 'Identity'; palletEvent: PalletIdentityEvent }
+  | { pallet: 'Migrations'; palletEvent: PalletMigrationsEvent }
+  | { pallet: 'Multisig'; palletEvent: PalletMultisigEvent }
+  | { pallet: 'Evm'; palletEvent: PalletEvmEvent }
+  | { pallet: 'Ethereum'; palletEvent: PalletEthereumEvent }
+  | { pallet: 'Scheduler'; palletEvent: PalletSchedulerEvent }
+  | { pallet: 'Democracy'; palletEvent: PalletDemocracyEvent }
+  | { pallet: 'Preimage'; palletEvent: PalletPreimageEvent }
+  | { pallet: 'ConvictionVoting'; palletEvent: PalletConvictionVotingEvent }
+  | { pallet: 'Referenda'; palletEvent: PalletReferendaEvent }
+  | { pallet: 'Whitelist'; palletEvent: PalletWhitelistEvent }
+  | { pallet: 'CouncilCollective'; palletEvent: PalletCollectiveEvent }
+  | { pallet: 'TechCommitteeCollective'; palletEvent: PalletCollectiveEvent }
+  | { pallet: 'TreasuryCouncilCollective'; palletEvent: PalletCollectiveEvent }
+  | { pallet: 'OpenTechCommitteeCollective'; palletEvent: PalletCollectiveEvent }
+  | { pallet: 'Treasury'; palletEvent: PalletTreasuryEvent }
+  | { pallet: 'CrowdloanRewards'; palletEvent: PalletCrowdloanRewardsEvent }
+  | { pallet: 'XcmpQueue'; palletEvent: CumulusPalletXcmpQueueEvent }
+  | { pallet: 'CumulusXcm'; palletEvent: CumulusPalletXcmEvent }
+  | { pallet: 'DmpQueue'; palletEvent: CumulusPalletDmpQueueEvent }
+  | { pallet: 'PolkadotXcm'; palletEvent: PalletXcmEvent }
+  | { pallet: 'Assets'; palletEvent: PalletAssetsEvent }
+  | { pallet: 'AssetManager'; palletEvent: PalletAssetManagerEvent }
+  | { pallet: 'XTokens'; palletEvent: OrmlXtokensModuleEvent }
+  | { pallet: 'XcmTransactor'; palletEvent: PalletXcmTransactorEvent }
+  | { pallet: 'LocalAssets'; palletEvent: PalletAssetsEvent }
+  | { pallet: 'Randomness'; palletEvent: PalletRandomnessEvent };
 
 /**
  * Event for the System pallet.
  **/
 export type FrameSystemEvent =
-  | { tag: 'ExtrinsicSuccess'; value: { dispatchInfo: FrameSupportDispatchDispatchInfo } }
-  | { tag: 'ExtrinsicFailed'; value: { dispatchError: DispatchError; dispatchInfo: FrameSupportDispatchDispatchInfo } }
-  | { tag: 'CodeUpdated' }
-  | { tag: 'NewAccount'; value: { account: AccountId20 } }
-  | { tag: 'KilledAccount'; value: { account: AccountId20 } }
-  | { tag: 'Remarked'; value: { sender: AccountId20; hash: H256 } };
+  /**
+   * An extrinsic completed successfully.
+   **/
+  | { name: 'ExtrinsicSuccess'; data: { dispatchInfo: FrameSupportDispatchDispatchInfo } }
+  /**
+   * An extrinsic failed.
+   **/
+  | { name: 'ExtrinsicFailed'; data: { dispatchError: DispatchError; dispatchInfo: FrameSupportDispatchDispatchInfo } }
+  /**
+   * `:code` was updated.
+   **/
+  | { name: 'CodeUpdated' }
+  /**
+   * A new account was created.
+   **/
+  | { name: 'NewAccount'; data: { account: AccountId20 } }
+  /**
+   * An account was reaped.
+   **/
+  | { name: 'KilledAccount'; data: { account: AccountId20 } }
+  /**
+   * On on-chain remark happened.
+   **/
+  | { name: 'Remarked'; data: { sender: AccountId20; hash: H256 } };
 
 export type FrameSupportDispatchDispatchInfo = {
   weight: SpWeightsWeightV2Weight;
@@ -107,121 +126,272 @@ export type FrameSupportDispatchDispatchClass = 'Normal' | 'Operational' | 'Mand
 export type FrameSupportDispatchPays = 'Yes' | 'No';
 
 /**
- * The [event](https://docs.substrate.io/main-docs/build/events-errors/) emitted by this pallet.
+ * The `Event` enum of this pallet
  **/
 export type CumulusPalletParachainSystemEvent =
-  | { tag: 'ValidationFunctionStored' }
-  | { tag: 'ValidationFunctionApplied'; value: { relayChainBlockNum: number } }
-  | { tag: 'ValidationFunctionDiscarded' }
-  | { tag: 'UpgradeAuthorized'; value: { codeHash: H256 } }
-  | { tag: 'DownwardMessagesReceived'; value: { count: number } }
-  | { tag: 'DownwardMessagesProcessed'; value: { weightUsed: SpWeightsWeightV2Weight; dmqHead: H256 } }
-  | { tag: 'UpwardMessageSent'; value: { messageHash?: FixedBytes<32> | undefined } };
+  /**
+   * The validation function has been scheduled to apply.
+   **/
+  | { name: 'ValidationFunctionStored' }
+  /**
+   * The validation function was applied as of the contained relay chain block number.
+   **/
+  | { name: 'ValidationFunctionApplied'; data: { relayChainBlockNum: number } }
+  /**
+   * The relay-chain aborted the upgrade process.
+   **/
+  | { name: 'ValidationFunctionDiscarded' }
+  /**
+   * An upgrade has been authorized.
+   **/
+  | { name: 'UpgradeAuthorized'; data: { codeHash: H256 } }
+  /**
+   * Some downward messages have been received and will be processed.
+   **/
+  | { name: 'DownwardMessagesReceived'; data: { count: number } }
+  /**
+   * Downward messages were processed using the given weight.
+   **/
+  | { name: 'DownwardMessagesProcessed'; data: { weightUsed: SpWeightsWeightV2Weight; dmqHead: H256 } }
+  /**
+   * An upward message was sent to the relay chain.
+   **/
+  | { name: 'UpwardMessageSent'; data: { messageHash?: FixedBytes<32> | undefined } };
 
 /**
- * The [event](https://docs.substrate.io/main-docs/build/events-errors/) emitted by this pallet.
+ * The `Event` enum of this pallet
  **/
 export type PalletBalancesEvent =
-  | { tag: 'Endowed'; value: { account: AccountId20; freeBalance: bigint } }
-  | { tag: 'DustLost'; value: { account: AccountId20; amount: bigint } }
-  | { tag: 'Transfer'; value: { from: AccountId20; to: AccountId20; amount: bigint } }
-  | { tag: 'BalanceSet'; value: { who: AccountId20; free: bigint } }
-  | { tag: 'Reserved'; value: { who: AccountId20; amount: bigint } }
-  | { tag: 'Unreserved'; value: { who: AccountId20; amount: bigint } }
+  /**
+   * An account was created with some free balance.
+   **/
+  | { name: 'Endowed'; data: { account: AccountId20; freeBalance: bigint } }
+  /**
+   * An account was removed whose balance was non-zero but below ExistentialDeposit,
+   * resulting in an outright loss.
+   **/
+  | { name: 'DustLost'; data: { account: AccountId20; amount: bigint } }
+  /**
+   * Transfer succeeded.
+   **/
+  | { name: 'Transfer'; data: { from: AccountId20; to: AccountId20; amount: bigint } }
+  /**
+   * A balance was set by root.
+   **/
+  | { name: 'BalanceSet'; data: { who: AccountId20; free: bigint } }
+  /**
+   * Some balance was reserved (moved from free to reserved).
+   **/
+  | { name: 'Reserved'; data: { who: AccountId20; amount: bigint } }
+  /**
+   * Some balance was unreserved (moved from reserved to free).
+   **/
+  | { name: 'Unreserved'; data: { who: AccountId20; amount: bigint } }
+  /**
+   * Some balance was moved from the reserve of the first account to the second account.
+   * Final argument indicates the destination balance type.
+   **/
   | {
-      tag: 'ReserveRepatriated';
-      value: {
+      name: 'ReserveRepatriated';
+      data: {
         from: AccountId20;
         to: AccountId20;
         amount: bigint;
         destinationStatus: FrameSupportTokensMiscBalanceStatus;
       };
     }
-  | { tag: 'Deposit'; value: { who: AccountId20; amount: bigint } }
-  | { tag: 'Withdraw'; value: { who: AccountId20; amount: bigint } }
-  | { tag: 'Slashed'; value: { who: AccountId20; amount: bigint } }
-  | { tag: 'Minted'; value: { who: AccountId20; amount: bigint } }
-  | { tag: 'Burned'; value: { who: AccountId20; amount: bigint } }
-  | { tag: 'Suspended'; value: { who: AccountId20; amount: bigint } }
-  | { tag: 'Restored'; value: { who: AccountId20; amount: bigint } }
-  | { tag: 'Upgraded'; value: { who: AccountId20 } }
-  | { tag: 'Issued'; value: { amount: bigint } }
-  | { tag: 'Rescinded'; value: { amount: bigint } }
-  | { tag: 'Locked'; value: { who: AccountId20; amount: bigint } }
-  | { tag: 'Unlocked'; value: { who: AccountId20; amount: bigint } }
-  | { tag: 'Frozen'; value: { who: AccountId20; amount: bigint } }
-  | { tag: 'Thawed'; value: { who: AccountId20; amount: bigint } };
+  /**
+   * Some amount was deposited (e.g. for transaction fees).
+   **/
+  | { name: 'Deposit'; data: { who: AccountId20; amount: bigint } }
+  /**
+   * Some amount was withdrawn from the account (e.g. for transaction fees).
+   **/
+  | { name: 'Withdraw'; data: { who: AccountId20; amount: bigint } }
+  /**
+   * Some amount was removed from the account (e.g. for misbehavior).
+   **/
+  | { name: 'Slashed'; data: { who: AccountId20; amount: bigint } }
+  /**
+   * Some amount was minted into an account.
+   **/
+  | { name: 'Minted'; data: { who: AccountId20; amount: bigint } }
+  /**
+   * Some amount was burned from an account.
+   **/
+  | { name: 'Burned'; data: { who: AccountId20; amount: bigint } }
+  /**
+   * Some amount was suspended from an account (it can be restored later).
+   **/
+  | { name: 'Suspended'; data: { who: AccountId20; amount: bigint } }
+  /**
+   * Some amount was restored into an account.
+   **/
+  | { name: 'Restored'; data: { who: AccountId20; amount: bigint } }
+  /**
+   * An account was upgraded.
+   **/
+  | { name: 'Upgraded'; data: { who: AccountId20 } }
+  /**
+   * Total issuance was increased by `amount`, creating a credit to be balanced.
+   **/
+  | { name: 'Issued'; data: { amount: bigint } }
+  /**
+   * Total issuance was decreased by `amount`, creating a debt to be balanced.
+   **/
+  | { name: 'Rescinded'; data: { amount: bigint } }
+  /**
+   * Some balance was locked.
+   **/
+  | { name: 'Locked'; data: { who: AccountId20; amount: bigint } }
+  /**
+   * Some balance was unlocked.
+   **/
+  | { name: 'Unlocked'; data: { who: AccountId20; amount: bigint } }
+  /**
+   * Some balance was frozen.
+   **/
+  | { name: 'Frozen'; data: { who: AccountId20; amount: bigint } }
+  /**
+   * Some balance was thawed.
+   **/
+  | { name: 'Thawed'; data: { who: AccountId20; amount: bigint } };
 
 export type FrameSupportTokensMiscBalanceStatus = 'Free' | 'Reserved';
 
 /**
- * The [event](https://docs.substrate.io/main-docs/build/events-errors/) emitted by this pallet.
+ * The `Event` enum of this pallet
  **/
-export type PalletTransactionPaymentEvent = {
-  tag: 'TransactionFeePaid';
-  value: { who: AccountId20; actualFee: bigint; tip: bigint };
-};
+export type PalletTransactionPaymentEvent =
+  /**
+   * A transaction fee `actual_fee`, of which `tip` was added to the minimum inclusion fee,
+   * has been paid by `who`.
+   **/
+  { name: 'TransactionFeePaid'; data: { who: AccountId20; actualFee: bigint; tip: bigint } };
 
 /**
- * The [event](https://docs.substrate.io/main-docs/build/events-errors/) emitted by this pallet.
+ * The `Event` enum of this pallet
  **/
 export type PalletParachainStakingEvent =
+  /**
+   * Started new round.
+   **/
   | {
-      tag: 'NewRound';
-      value: { startingBlock: number; round: number; selectedCollatorsNumber: number; totalBalance: bigint };
+      name: 'NewRound';
+      data: { startingBlock: number; round: number; selectedCollatorsNumber: number; totalBalance: bigint };
+    }
+  /**
+   * Account joined the set of collator candidates.
+   **/
+  | {
+      name: 'JoinedCollatorCandidates';
+      data: { account: AccountId20; amountLocked: bigint; newTotalAmtLocked: bigint };
+    }
+  /**
+   * Candidate selected for collators. Total Exposed Amount includes all delegations.
+   **/
+  | { name: 'CollatorChosen'; data: { round: number; collatorAccount: AccountId20; totalExposedAmount: bigint } }
+  /**
+   * Candidate requested to decrease a self bond.
+   **/
+  | {
+      name: 'CandidateBondLessRequested';
+      data: { candidate: AccountId20; amountToDecrease: bigint; executeRound: number };
+    }
+  /**
+   * Candidate has increased a self bond.
+   **/
+  | { name: 'CandidateBondedMore'; data: { candidate: AccountId20; amount: bigint; newTotalBond: bigint } }
+  /**
+   * Candidate has decreased a self bond.
+   **/
+  | { name: 'CandidateBondedLess'; data: { candidate: AccountId20; amount: bigint; newBond: bigint } }
+  /**
+   * Candidate temporarily leave the set of collator candidates without unbonding.
+   **/
+  | { name: 'CandidateWentOffline'; data: { candidate: AccountId20 } }
+  /**
+   * Candidate rejoins the set of collator candidates.
+   **/
+  | { name: 'CandidateBackOnline'; data: { candidate: AccountId20 } }
+  /**
+   * Candidate has requested to leave the set of candidates.
+   **/
+  | {
+      name: 'CandidateScheduledExit';
+      data: { exitAllowedRound: number; candidate: AccountId20; scheduledExit: number };
+    }
+  /**
+   * Cancelled request to leave the set of candidates.
+   **/
+  | { name: 'CancelledCandidateExit'; data: { candidate: AccountId20 } }
+  /**
+   * Cancelled request to decrease candidate's bond.
+   **/
+  | { name: 'CancelledCandidateBondLess'; data: { candidate: AccountId20; amount: bigint; executeRound: number } }
+  /**
+   * Candidate has left the set of candidates.
+   **/
+  | { name: 'CandidateLeft'; data: { exCandidate: AccountId20; unlockedAmount: bigint; newTotalAmtLocked: bigint } }
+  /**
+   * Delegator requested to decrease a bond for the collator candidate.
+   **/
+  | {
+      name: 'DelegationDecreaseScheduled';
+      data: { delegator: AccountId20; candidate: AccountId20; amountToDecrease: bigint; executeRound: number };
     }
   | {
-      tag: 'JoinedCollatorCandidates';
-      value: { account: AccountId20; amountLocked: bigint; newTotalAmtLocked: bigint };
-    }
-  | { tag: 'CollatorChosen'; value: { round: number; collatorAccount: AccountId20; totalExposedAmount: bigint } }
-  | {
-      tag: 'CandidateBondLessRequested';
-      value: { candidate: AccountId20; amountToDecrease: bigint; executeRound: number };
-    }
-  | { tag: 'CandidateBondedMore'; value: { candidate: AccountId20; amount: bigint; newTotalBond: bigint } }
-  | { tag: 'CandidateBondedLess'; value: { candidate: AccountId20; amount: bigint; newBond: bigint } }
-  | { tag: 'CandidateWentOffline'; value: { candidate: AccountId20 } }
-  | { tag: 'CandidateBackOnline'; value: { candidate: AccountId20 } }
-  | {
-      tag: 'CandidateScheduledExit';
-      value: { exitAllowedRound: number; candidate: AccountId20; scheduledExit: number };
-    }
-  | { tag: 'CancelledCandidateExit'; value: { candidate: AccountId20 } }
-  | { tag: 'CancelledCandidateBondLess'; value: { candidate: AccountId20; amount: bigint; executeRound: number } }
-  | { tag: 'CandidateLeft'; value: { exCandidate: AccountId20; unlockedAmount: bigint; newTotalAmtLocked: bigint } }
-  | {
-      tag: 'DelegationDecreaseScheduled';
-      value: { delegator: AccountId20; candidate: AccountId20; amountToDecrease: bigint; executeRound: number };
+      name: 'DelegationIncreased';
+      data: { delegator: AccountId20; candidate: AccountId20; amount: bigint; inTop: boolean };
     }
   | {
-      tag: 'DelegationIncreased';
-      value: { delegator: AccountId20; candidate: AccountId20; amount: bigint; inTop: boolean };
+      name: 'DelegationDecreased';
+      data: { delegator: AccountId20; candidate: AccountId20; amount: bigint; inTop: boolean };
     }
+  /**
+   * Delegator requested to leave the set of delegators.
+   **/
+  | { name: 'DelegatorExitScheduled'; data: { round: number; delegator: AccountId20; scheduledExit: number } }
+  /**
+   * Delegator requested to revoke delegation.
+   **/
   | {
-      tag: 'DelegationDecreased';
-      value: { delegator: AccountId20; candidate: AccountId20; amount: bigint; inTop: boolean };
+      name: 'DelegationRevocationScheduled';
+      data: { round: number; delegator: AccountId20; candidate: AccountId20; scheduledExit: number };
     }
-  | { tag: 'DelegatorExitScheduled'; value: { round: number; delegator: AccountId20; scheduledExit: number } }
+  /**
+   * Delegator has left the set of delegators.
+   **/
+  | { name: 'DelegatorLeft'; data: { delegator: AccountId20; unstakedAmount: bigint } }
+  /**
+   * Delegation revoked.
+   **/
+  | { name: 'DelegationRevoked'; data: { delegator: AccountId20; candidate: AccountId20; unstakedAmount: bigint } }
+  /**
+   * Delegation kicked.
+   **/
+  | { name: 'DelegationKicked'; data: { delegator: AccountId20; candidate: AccountId20; unstakedAmount: bigint } }
+  /**
+   * Cancelled a pending request to exit the set of delegators.
+   **/
+  | { name: 'DelegatorExitCancelled'; data: { delegator: AccountId20 } }
+  /**
+   * Cancelled request to change an existing delegation.
+   **/
   | {
-      tag: 'DelegationRevocationScheduled';
-      value: { round: number; delegator: AccountId20; candidate: AccountId20; scheduledExit: number };
-    }
-  | { tag: 'DelegatorLeft'; value: { delegator: AccountId20; unstakedAmount: bigint } }
-  | { tag: 'DelegationRevoked'; value: { delegator: AccountId20; candidate: AccountId20; unstakedAmount: bigint } }
-  | { tag: 'DelegationKicked'; value: { delegator: AccountId20; candidate: AccountId20; unstakedAmount: bigint } }
-  | { tag: 'DelegatorExitCancelled'; value: { delegator: AccountId20 } }
-  | {
-      tag: 'CancelledDelegationRequest';
-      value: {
+      name: 'CancelledDelegationRequest';
+      data: {
         delegator: AccountId20;
         cancelledRequest: PalletParachainStakingDelegationRequestsCancelledScheduledRequest;
         collator: AccountId20;
       };
     }
+  /**
+   * New delegation (increase of the existing one).
+   **/
   | {
-      tag: 'Delegation';
-      value: {
+      name: 'Delegation';
+      data: {
         delegator: AccountId20;
         lockedAmount: bigint;
         candidate: AccountId20;
@@ -229,17 +399,35 @@ export type PalletParachainStakingEvent =
         autoCompound: Percent;
       };
     }
+  /**
+   * Delegation from candidate state has been remove.
+   **/
   | {
-      tag: 'DelegatorLeftCandidate';
-      value: { delegator: AccountId20; candidate: AccountId20; unstakedAmount: bigint; totalCandidateStaked: bigint };
+      name: 'DelegatorLeftCandidate';
+      data: { delegator: AccountId20; candidate: AccountId20; unstakedAmount: bigint; totalCandidateStaked: bigint };
     }
-  | { tag: 'Rewarded'; value: { account: AccountId20; rewards: bigint } }
-  | { tag: 'ReservedForParachainBond'; value: { account: AccountId20; value: bigint } }
-  | { tag: 'ParachainBondAccountSet'; value: { old: AccountId20; new: AccountId20 } }
-  | { tag: 'ParachainBondReservePercentSet'; value: { old: Percent; new: Percent } }
+  /**
+   * Paid the account (delegator or collator) the balance as liquid rewards.
+   **/
+  | { name: 'Rewarded'; data: { account: AccountId20; rewards: bigint } }
+  /**
+   * Transferred to account which holds funds reserved for parachain bond.
+   **/
+  | { name: 'ReservedForParachainBond'; data: { account: AccountId20; value: bigint } }
+  /**
+   * Account (re)set for parachain bond treasury.
+   **/
+  | { name: 'ParachainBondAccountSet'; data: { old: AccountId20; new: AccountId20 } }
+  /**
+   * Percent of inflation reserved for parachain bond (re)set.
+   **/
+  | { name: 'ParachainBondReservePercentSet'; data: { old: Percent; new: Percent } }
+  /**
+   * Annual inflation input (first 3) was used to derive new per-round inflation (last 3)
+   **/
   | {
-      tag: 'InflationSet';
-      value: {
+      name: 'InflationSet';
+      data: {
         annualMin: Perbill;
         annualIdeal: Perbill;
         annualMax: Perbill;
@@ -248,12 +436,24 @@ export type PalletParachainStakingEvent =
         roundMax: Perbill;
       };
     }
-  | { tag: 'StakeExpectationsSet'; value: { expectMin: bigint; expectIdeal: bigint; expectMax: bigint } }
-  | { tag: 'TotalSelectedSet'; value: { old: number; new: number } }
-  | { tag: 'CollatorCommissionSet'; value: { old: Perbill; new: Perbill } }
+  /**
+   * Staking expectations set.
+   **/
+  | { name: 'StakeExpectationsSet'; data: { expectMin: bigint; expectIdeal: bigint; expectMax: bigint } }
+  /**
+   * Set total selected candidates to this value.
+   **/
+  | { name: 'TotalSelectedSet'; data: { old: number; new: number } }
+  /**
+   * Set collator commission to this value.
+   **/
+  | { name: 'CollatorCommissionSet'; data: { old: Perbill; new: Perbill } }
+  /**
+   * Set blocks per round
+   **/
   | {
-      tag: 'BlocksPerRoundSet';
-      value: {
+      name: 'BlocksPerRoundSet';
+      data: {
         currentRound: number;
         firstBlock: number;
         old: number;
@@ -263,8 +463,14 @@ export type PalletParachainStakingEvent =
         newPerRoundInflationMax: Perbill;
       };
     }
-  | { tag: 'AutoCompoundSet'; value: { candidate: AccountId20; delegator: AccountId20; value: Percent } }
-  | { tag: 'Compounded'; value: { candidate: AccountId20; delegator: AccountId20; amount: bigint } };
+  /**
+   * Auto-compounding reward percent was set for a delegation.
+   **/
+  | { name: 'AutoCompoundSet'; data: { candidate: AccountId20; delegator: AccountId20; value: Percent } }
+  /**
+   * Compounded a portion of rewards towards the delegation.
+   **/
+  | { name: 'Compounded'; data: { candidate: AccountId20; delegator: AccountId20; amount: bigint } };
 
 export type PalletParachainStakingDelegationRequestsCancelledScheduledRequest = {
   whenExecutable: number;
@@ -280,35 +486,48 @@ export type PalletParachainStakingDelegatorAdded =
   | { tag: 'AddedToBottom' };
 
 /**
- * The [event](https://docs.substrate.io/main-docs/build/events-errors/) emitted by this pallet.
+ * The `Event` enum of this pallet
  **/
-export type PalletAuthorSlotFilterEvent = { tag: 'EligibleUpdated'; value: PalletAuthorSlotFilterNumNonZeroU32 };
+export type PalletAuthorSlotFilterEvent =
+  /**
+   * The amount of eligible authors for the filter to select has been changed.
+   **/
+  { name: 'EligibleUpdated'; data: PalletAuthorSlotFilterNumNonZeroU32 };
 
 export type PalletAuthorSlotFilterNumNonZeroU32 = number;
 
 /**
- * The [event](https://docs.substrate.io/main-docs/build/events-errors/) emitted by this pallet.
+ * The `Event` enum of this pallet
  **/
 export type PalletAuthorMappingEvent =
+  /**
+   * A NimbusId has been registered and mapped to an AccountId.
+   **/
   | {
-      tag: 'KeysRegistered';
-      value: {
+      name: 'KeysRegistered';
+      data: {
         nimbusId: NimbusPrimitivesNimbusCryptoPublic;
         accountId: AccountId20;
         keys: SessionKeysPrimitivesVrfVrfCryptoPublic;
       };
     }
+  /**
+   * An NimbusId has been de-registered, and its AccountId mapping removed.
+   **/
   | {
-      tag: 'KeysRemoved';
-      value: {
+      name: 'KeysRemoved';
+      data: {
         nimbusId: NimbusPrimitivesNimbusCryptoPublic;
         accountId: AccountId20;
         keys: SessionKeysPrimitivesVrfVrfCryptoPublic;
       };
     }
+  /**
+   * An NimbusId has been registered, replacing a previous registration and its mapping.
+   **/
   | {
-      tag: 'KeysRotated';
-      value: {
+      name: 'KeysRotated';
+      data: {
         newNimbusId: NimbusPrimitivesNimbusCryptoPublic;
         accountId: AccountId20;
         newKeys: SessionKeysPrimitivesVrfVrfCryptoPublic;
@@ -322,47 +541,97 @@ export type SpCoreSr25519Public = FixedBytes<32>;
 export type SessionKeysPrimitivesVrfVrfCryptoPublic = SpCoreSr25519Public;
 
 /**
- * The [event](https://docs.substrate.io/main-docs/build/events-errors/) emitted by this pallet.
+ * The `Event` enum of this pallet
  **/
 export type PalletMoonbeamOrbitersEvent =
-  | { tag: 'OrbiterJoinCollatorPool'; value: { collator: AccountId20; orbiter: AccountId20 } }
-  | { tag: 'OrbiterLeaveCollatorPool'; value: { collator: AccountId20; orbiter: AccountId20 } }
-  | { tag: 'OrbiterRewarded'; value: { account: AccountId20; rewards: bigint } }
+  /**
+   * An orbiter join a collator pool
+   **/
+  | { name: 'OrbiterJoinCollatorPool'; data: { collator: AccountId20; orbiter: AccountId20 } }
+  /**
+   * An orbiter leave a collator pool
+   **/
+  | { name: 'OrbiterLeaveCollatorPool'; data: { collator: AccountId20; orbiter: AccountId20 } }
+  /**
+   * Paid the orbiter account the balance as liquid rewards.
+   **/
+  | { name: 'OrbiterRewarded'; data: { account: AccountId20; rewards: bigint } }
   | {
-      tag: 'OrbiterRotation';
-      value: { collator: AccountId20; oldOrbiter?: AccountId20 | undefined; newOrbiter?: AccountId20 | undefined };
+      name: 'OrbiterRotation';
+      data: { collator: AccountId20; oldOrbiter?: AccountId20 | undefined; newOrbiter?: AccountId20 | undefined };
     }
-  | { tag: 'OrbiterRegistered'; value: { account: AccountId20; deposit: bigint } }
-  | { tag: 'OrbiterUnregistered'; value: { account: AccountId20 } };
+  /**
+   * An orbiter has registered
+   **/
+  | { name: 'OrbiterRegistered'; data: { account: AccountId20; deposit: bigint } }
+  /**
+   * An orbiter has unregistered
+   **/
+  | { name: 'OrbiterUnregistered'; data: { account: AccountId20 } };
 
 /**
- * The [event](https://docs.substrate.io/main-docs/build/events-errors/) emitted by this pallet.
+ * The `Event` enum of this pallet
  **/
 export type PalletUtilityEvent =
-  | { tag: 'BatchInterrupted'; value: { index: number; error: DispatchError } }
-  | { tag: 'BatchCompleted' }
-  | { tag: 'BatchCompletedWithErrors' }
-  | { tag: 'ItemCompleted' }
-  | { tag: 'ItemFailed'; value: { error: DispatchError } }
-  | { tag: 'DispatchedAs'; value: { result: [] | DispatchError } };
+  /**
+   * Batch of dispatches did not complete fully. Index of first failing dispatch given, as
+   * well as the error.
+   **/
+  | { name: 'BatchInterrupted'; data: { index: number; error: DispatchError } }
+  /**
+   * Batch of dispatches completed fully with no error.
+   **/
+  | { name: 'BatchCompleted' }
+  /**
+   * Batch of dispatches completed but has errors.
+   **/
+  | { name: 'BatchCompletedWithErrors' }
+  /**
+   * A single item within a Batch of dispatches has completed with no error.
+   **/
+  | { name: 'ItemCompleted' }
+  /**
+   * A single item within a Batch of dispatches has completed with error.
+   **/
+  | { name: 'ItemFailed'; data: { error: DispatchError } }
+  /**
+   * A call was dispatched.
+   **/
+  | { name: 'DispatchedAs'; data: { result: ResultPayload<[], DispatchError> } };
 
 /**
- * The [event](https://docs.substrate.io/main-docs/build/events-errors/) emitted by this pallet.
+ * The `Event` enum of this pallet
  **/
 export type PalletProxyEvent =
-  | { tag: 'ProxyExecuted'; value: { result: [] | DispatchError } }
+  /**
+   * A proxy was executed correctly, with the given.
+   **/
+  | { name: 'ProxyExecuted'; data: { result: ResultPayload<[], DispatchError> } }
+  /**
+   * A pure account has been created by new proxy with given
+   * disambiguation index and proxy type.
+   **/
   | {
-      tag: 'PureCreated';
-      value: { pure: AccountId20; who: AccountId20; proxyType: MoonbeamRuntimeProxyType; disambiguationIndex: number };
+      name: 'PureCreated';
+      data: { pure: AccountId20; who: AccountId20; proxyType: MoonbeamRuntimeProxyType; disambiguationIndex: number };
     }
-  | { tag: 'Announced'; value: { real: AccountId20; proxy: AccountId20; callHash: H256 } }
+  /**
+   * An announcement was placed to make a call in the future.
+   **/
+  | { name: 'Announced'; data: { real: AccountId20; proxy: AccountId20; callHash: H256 } }
+  /**
+   * A proxy was added.
+   **/
   | {
-      tag: 'ProxyAdded';
-      value: { delegator: AccountId20; delegatee: AccountId20; proxyType: MoonbeamRuntimeProxyType; delay: number };
+      name: 'ProxyAdded';
+      data: { delegator: AccountId20; delegatee: AccountId20; proxyType: MoonbeamRuntimeProxyType; delay: number };
     }
+  /**
+   * A proxy was removed.
+   **/
   | {
-      tag: 'ProxyRemoved';
-      value: { delegator: AccountId20; delegatee: AccountId20; proxyType: MoonbeamRuntimeProxyType; delay: number };
+      name: 'ProxyRemoved';
+      data: { delegator: AccountId20; delegatee: AccountId20; proxyType: MoonbeamRuntimeProxyType; delay: number };
     };
 
 export type MoonbeamRuntimeProxyType =
@@ -376,67 +645,140 @@ export type MoonbeamRuntimeProxyType =
   | 'IdentityJudgement';
 
 /**
- * The [event](https://docs.substrate.io/main-docs/build/events-errors/) emitted by this pallet.
+ * The `Event` enum of this pallet
  **/
 export type PalletMaintenanceModeEvent =
-  | { tag: 'EnteredMaintenanceMode' }
-  | { tag: 'NormalOperationResumed' }
-  | { tag: 'FailedToSuspendIdleXcmExecution'; value: { error: DispatchError } }
-  | { tag: 'FailedToResumeIdleXcmExecution'; value: { error: DispatchError } };
+  /**
+   * The chain was put into Maintenance Mode
+   **/
+  | { name: 'EnteredMaintenanceMode' }
+  /**
+   * The chain returned to its normal operating state
+   **/
+  | { name: 'NormalOperationResumed' }
+  /**
+   * The call to suspend on_idle XCM execution failed with inner error
+   **/
+  | { name: 'FailedToSuspendIdleXcmExecution'; data: { error: DispatchError } }
+  /**
+   * The call to resume on_idle XCM execution failed with inner error
+   **/
+  | { name: 'FailedToResumeIdleXcmExecution'; data: { error: DispatchError } };
 
 /**
- * The [event](https://docs.substrate.io/main-docs/build/events-errors/) emitted by this pallet.
+ * The `Event` enum of this pallet
  **/
 export type PalletIdentityEvent =
-  | { tag: 'IdentitySet'; value: { who: AccountId20 } }
-  | { tag: 'IdentityCleared'; value: { who: AccountId20; deposit: bigint } }
-  | { tag: 'IdentityKilled'; value: { who: AccountId20; deposit: bigint } }
-  | { tag: 'JudgementRequested'; value: { who: AccountId20; registrarIndex: number } }
-  | { tag: 'JudgementUnrequested'; value: { who: AccountId20; registrarIndex: number } }
-  | { tag: 'JudgementGiven'; value: { target: AccountId20; registrarIndex: number } }
-  | { tag: 'RegistrarAdded'; value: { registrarIndex: number } }
-  | { tag: 'SubIdentityAdded'; value: { sub: AccountId20; main: AccountId20; deposit: bigint } }
-  | { tag: 'SubIdentityRemoved'; value: { sub: AccountId20; main: AccountId20; deposit: bigint } }
-  | { tag: 'SubIdentityRevoked'; value: { sub: AccountId20; main: AccountId20; deposit: bigint } };
+  /**
+   * A name was set or reset (which will remove all judgements).
+   **/
+  | { name: 'IdentitySet'; data: { who: AccountId20 } }
+  /**
+   * A name was cleared, and the given balance returned.
+   **/
+  | { name: 'IdentityCleared'; data: { who: AccountId20; deposit: bigint } }
+  /**
+   * A name was removed and the given balance slashed.
+   **/
+  | { name: 'IdentityKilled'; data: { who: AccountId20; deposit: bigint } }
+  /**
+   * A judgement was asked from a registrar.
+   **/
+  | { name: 'JudgementRequested'; data: { who: AccountId20; registrarIndex: number } }
+  /**
+   * A judgement request was retracted.
+   **/
+  | { name: 'JudgementUnrequested'; data: { who: AccountId20; registrarIndex: number } }
+  /**
+   * A judgement was given by a registrar.
+   **/
+  | { name: 'JudgementGiven'; data: { target: AccountId20; registrarIndex: number } }
+  /**
+   * A registrar was added.
+   **/
+  | { name: 'RegistrarAdded'; data: { registrarIndex: number } }
+  /**
+   * A sub-identity was added to an identity and the deposit paid.
+   **/
+  | { name: 'SubIdentityAdded'; data: { sub: AccountId20; main: AccountId20; deposit: bigint } }
+  /**
+   * A sub-identity was removed from an identity and the deposit freed.
+   **/
+  | { name: 'SubIdentityRemoved'; data: { sub: AccountId20; main: AccountId20; deposit: bigint } }
+  /**
+   * A sub-identity was cleared, and the given deposit repatriated from the
+   * main identity account to the sub-identity account.
+   **/
+  | { name: 'SubIdentityRevoked'; data: { sub: AccountId20; main: AccountId20; deposit: bigint } };
 
 /**
- * The [event](https://docs.substrate.io/main-docs/build/events-errors/) emitted by this pallet.
+ * The `Event` enum of this pallet
  **/
 export type PalletMigrationsEvent =
-  | { tag: 'RuntimeUpgradeStarted' }
-  | { tag: 'RuntimeUpgradeCompleted'; value: { weight: SpWeightsWeightV2Weight } }
-  | { tag: 'MigrationStarted'; value: { migrationName: Bytes } }
-  | { tag: 'MigrationCompleted'; value: { migrationName: Bytes; consumedWeight: SpWeightsWeightV2Weight } }
-  | { tag: 'FailedToSuspendIdleXcmExecution'; value: { error: DispatchError } }
-  | { tag: 'FailedToResumeIdleXcmExecution'; value: { error: DispatchError } };
+  /**
+   * Runtime upgrade started
+   **/
+  | { name: 'RuntimeUpgradeStarted' }
+  /**
+   * Runtime upgrade completed
+   **/
+  | { name: 'RuntimeUpgradeCompleted'; data: { weight: SpWeightsWeightV2Weight } }
+  /**
+   * Migration started
+   **/
+  | { name: 'MigrationStarted'; data: { migrationName: Bytes } }
+  /**
+   * Migration completed
+   **/
+  | { name: 'MigrationCompleted'; data: { migrationName: Bytes; consumedWeight: SpWeightsWeightV2Weight } }
+  /**
+   * XCM execution suspension failed with inner error
+   **/
+  | { name: 'FailedToSuspendIdleXcmExecution'; data: { error: DispatchError } }
+  /**
+   * XCM execution resume failed with inner error
+   **/
+  | { name: 'FailedToResumeIdleXcmExecution'; data: { error: DispatchError } };
 
 /**
- * The [event](https://docs.substrate.io/main-docs/build/events-errors/) emitted by this pallet.
+ * The `Event` enum of this pallet
  **/
 export type PalletMultisigEvent =
-  | { tag: 'NewMultisig'; value: { approving: AccountId20; multisig: AccountId20; callHash: FixedBytes<32> } }
+  /**
+   * A new multisig operation has begun.
+   **/
+  | { name: 'NewMultisig'; data: { approving: AccountId20; multisig: AccountId20; callHash: FixedBytes<32> } }
+  /**
+   * A multisig operation has been approved by someone.
+   **/
   | {
-      tag: 'MultisigApproval';
-      value: {
+      name: 'MultisigApproval';
+      data: {
         approving: AccountId20;
         timepoint: PalletMultisigTimepoint;
         multisig: AccountId20;
         callHash: FixedBytes<32>;
       };
     }
+  /**
+   * A multisig operation has been executed.
+   **/
   | {
-      tag: 'MultisigExecuted';
-      value: {
+      name: 'MultisigExecuted';
+      data: {
         approving: AccountId20;
         timepoint: PalletMultisigTimepoint;
         multisig: AccountId20;
         callHash: FixedBytes<32>;
-        result: [] | DispatchError;
+        result: ResultPayload<[], DispatchError>;
       };
     }
+  /**
+   * A multisig operation has been cancelled.
+   **/
   | {
-      tag: 'MultisigCancelled';
-      value: {
+      name: 'MultisigCancelled';
+      data: {
         cancelling: AccountId20;
         timepoint: PalletMultisigTimepoint;
         multisig: AccountId20;
@@ -447,24 +789,43 @@ export type PalletMultisigEvent =
 export type PalletMultisigTimepoint = { height: number; index: number };
 
 /**
- * The [event](https://docs.substrate.io/main-docs/build/events-errors/) emitted by this pallet.
+ * The `Event` enum of this pallet
  **/
 export type PalletEvmEvent =
-  | { tag: 'Log'; value: { log: EthereumLog } }
-  | { tag: 'Created'; value: { address: H160 } }
-  | { tag: 'CreatedFailed'; value: { address: H160 } }
-  | { tag: 'Executed'; value: { address: H160 } }
-  | { tag: 'ExecutedFailed'; value: { address: H160 } };
+  /**
+   * Ethereum events from contracts.
+   **/
+  | { name: 'Log'; data: { log: EthereumLog } }
+  /**
+   * A contract has been created at given address.
+   **/
+  | { name: 'Created'; data: { address: H160 } }
+  /**
+   * A contract was attempted to be created, but the execution failed.
+   **/
+  | { name: 'CreatedFailed'; data: { address: H160 } }
+  /**
+   * A contract has been executed successfully with states applied.
+   **/
+  | { name: 'Executed'; data: { address: H160 } }
+  /**
+   * A contract has been executed with errors. States are reverted with only gas fees applied.
+   **/
+  | { name: 'ExecutedFailed'; data: { address: H160 } };
 
 export type EthereumLog = { address: H160; topics: Array<H256>; data: Bytes };
 
 /**
- * The [event](https://docs.substrate.io/main-docs/build/events-errors/) emitted by this pallet.
+ * The `Event` enum of this pallet
  **/
-export type PalletEthereumEvent = {
-  tag: 'Executed';
-  value: { from: H160; to: H160; transactionHash: H256; exitReason: EvmCoreErrorExitReason; extraData: Bytes };
-};
+export type PalletEthereumEvent =
+  /**
+   * An ethereum transaction was successfully executed.
+   **/
+  {
+    name: 'Executed';
+    data: { from: H160; to: H160; transactionHash: H256; exitReason: EvmCoreErrorExitReason; extraData: Bytes };
+  };
 
 export type EvmCoreErrorExitReason =
   | { tag: 'Succeed'; value: EvmCoreErrorExitSucceed }
@@ -506,37 +867,100 @@ export type EvmCoreErrorExitFatal =
  * Events type.
  **/
 export type PalletSchedulerEvent =
-  | { tag: 'Scheduled'; value: { when: number; index: number } }
-  | { tag: 'Canceled'; value: { when: number; index: number } }
+  /**
+   * Scheduled some task.
+   **/
+  | { name: 'Scheduled'; data: { when: number; index: number } }
+  /**
+   * Canceled some task.
+   **/
+  | { name: 'Canceled'; data: { when: number; index: number } }
+  /**
+   * Dispatched some task.
+   **/
   | {
-      tag: 'Dispatched';
-      value: { task: [number, number]; id?: FixedBytes<32> | undefined; result: [] | DispatchError };
+      name: 'Dispatched';
+      data: { task: [number, number]; id?: FixedBytes<32> | undefined; result: ResultPayload<[], DispatchError> };
     }
-  | { tag: 'CallUnavailable'; value: { task: [number, number]; id?: FixedBytes<32> | undefined } }
-  | { tag: 'PeriodicFailed'; value: { task: [number, number]; id?: FixedBytes<32> | undefined } }
-  | { tag: 'PermanentlyOverweight'; value: { task: [number, number]; id?: FixedBytes<32> | undefined } };
+  /**
+   * The call for the provided hash was not found so the task has been aborted.
+   **/
+  | { name: 'CallUnavailable'; data: { task: [number, number]; id?: FixedBytes<32> | undefined } }
+  /**
+   * The given task was unable to be renewed since the agenda is full at that block.
+   **/
+  | { name: 'PeriodicFailed'; data: { task: [number, number]; id?: FixedBytes<32> | undefined } }
+  /**
+   * The given task can never be executed since it is overweight.
+   **/
+  | { name: 'PermanentlyOverweight'; data: { task: [number, number]; id?: FixedBytes<32> | undefined } };
 
 /**
- * The [event](https://docs.substrate.io/main-docs/build/events-errors/) emitted by this pallet.
+ * The `Event` enum of this pallet
  **/
 export type PalletDemocracyEvent =
-  | { tag: 'Proposed'; value: { proposalIndex: number; deposit: bigint } }
-  | { tag: 'Tabled'; value: { proposalIndex: number; deposit: bigint } }
-  | { tag: 'ExternalTabled' }
-  | { tag: 'Started'; value: { refIndex: number; threshold: PalletDemocracyVoteThreshold } }
-  | { tag: 'Passed'; value: { refIndex: number } }
-  | { tag: 'NotPassed'; value: { refIndex: number } }
-  | { tag: 'Cancelled'; value: { refIndex: number } }
-  | { tag: 'Delegated'; value: { who: AccountId20; target: AccountId20 } }
-  | { tag: 'Undelegated'; value: { account: AccountId20 } }
-  | { tag: 'Vetoed'; value: { who: AccountId20; proposalHash: H256; until: number } }
-  | { tag: 'Blacklisted'; value: { proposalHash: H256 } }
-  | { tag: 'Voted'; value: { voter: AccountId20; refIndex: number; vote: PalletDemocracyVoteAccountVote } }
-  | { tag: 'Seconded'; value: { seconder: AccountId20; propIndex: number } }
-  | { tag: 'ProposalCanceled'; value: { propIndex: number } }
+  /**
+   * A motion has been proposed by a public account.
+   **/
+  | { name: 'Proposed'; data: { proposalIndex: number; deposit: bigint } }
+  /**
+   * A public proposal has been tabled for referendum vote.
+   **/
+  | { name: 'Tabled'; data: { proposalIndex: number; deposit: bigint } }
+  /**
+   * An external proposal has been tabled.
+   **/
+  | { name: 'ExternalTabled' }
+  /**
+   * A referendum has begun.
+   **/
+  | { name: 'Started'; data: { refIndex: number; threshold: PalletDemocracyVoteThreshold } }
+  /**
+   * A proposal has been approved by referendum.
+   **/
+  | { name: 'Passed'; data: { refIndex: number } }
+  /**
+   * A proposal has been rejected by referendum.
+   **/
+  | { name: 'NotPassed'; data: { refIndex: number } }
+  /**
+   * A referendum has been cancelled.
+   **/
+  | { name: 'Cancelled'; data: { refIndex: number } }
+  /**
+   * An account has delegated their vote to another account.
+   **/
+  | { name: 'Delegated'; data: { who: AccountId20; target: AccountId20 } }
+  /**
+   * An account has cancelled a previous delegation operation.
+   **/
+  | { name: 'Undelegated'; data: { account: AccountId20 } }
+  /**
+   * An external proposal has been vetoed.
+   **/
+  | { name: 'Vetoed'; data: { who: AccountId20; proposalHash: H256; until: number } }
+  /**
+   * A proposal_hash has been blacklisted permanently.
+   **/
+  | { name: 'Blacklisted'; data: { proposalHash: H256 } }
+  /**
+   * An account has voted in a referendum
+   **/
+  | { name: 'Voted'; data: { voter: AccountId20; refIndex: number; vote: PalletDemocracyVoteAccountVote } }
+  /**
+   * An account has secconded a proposal
+   **/
+  | { name: 'Seconded'; data: { seconder: AccountId20; propIndex: number } }
+  /**
+   * A proposal got canceled.
+   **/
+  | { name: 'ProposalCanceled'; data: { propIndex: number } }
+  /**
+   * Metadata for a proposal or a referendum has been set.
+   **/
   | {
-      tag: 'MetadataSet';
-      value: {
+      name: 'MetadataSet';
+      data: {
         /**
          * Metadata owner.
          **/
@@ -548,9 +972,12 @@ export type PalletDemocracyEvent =
         hash: H256;
       };
     }
+  /**
+   * Metadata for a proposal or a referendum has been cleared.
+   **/
   | {
-      tag: 'MetadataCleared';
-      value: {
+      name: 'MetadataCleared';
+      data: {
         /**
          * Metadata owner.
          **/
@@ -562,9 +989,12 @@ export type PalletDemocracyEvent =
         hash: H256;
       };
     }
+  /**
+   * Metadata has been transferred to new owner.
+   **/
   | {
-      tag: 'MetadataTransferred';
-      value: {
+      name: 'MetadataTransferred';
+      data: {
         /**
          * Previous metadata owner.
          **/
@@ -596,27 +1026,45 @@ export type PalletDemocracyMetadataOwner =
   | { tag: 'Referendum'; value: number };
 
 /**
- * The [event](https://docs.substrate.io/main-docs/build/events-errors/) emitted by this pallet.
+ * The `Event` enum of this pallet
  **/
 export type PalletPreimageEvent =
-  | { tag: 'Noted'; value: { hash: H256 } }
-  | { tag: 'Requested'; value: { hash: H256 } }
-  | { tag: 'Cleared'; value: { hash: H256 } };
+  /**
+   * A preimage has been noted.
+   **/
+  | { name: 'Noted'; data: { hash: H256 } }
+  /**
+   * A preimage has been requested.
+   **/
+  | { name: 'Requested'; data: { hash: H256 } }
+  /**
+   * A preimage has ben cleared.
+   **/
+  | { name: 'Cleared'; data: { hash: H256 } };
 
 /**
- * The [event](https://docs.substrate.io/main-docs/build/events-errors/) emitted by this pallet.
+ * The `Event` enum of this pallet
  **/
 export type PalletConvictionVotingEvent =
-  | { tag: 'Delegated'; value: [AccountId20, AccountId20] }
-  | { tag: 'Undelegated'; value: AccountId20 };
+  /**
+   * An account has delegated their vote to another account. \[who, target\]
+   **/
+  | { name: 'Delegated'; data: [AccountId20, AccountId20] }
+  /**
+   * An \[account\] has cancelled a previous delegation operation.
+   **/
+  | { name: 'Undelegated'; data: AccountId20 };
 
 /**
- * The [event](https://docs.substrate.io/main-docs/build/events-errors/) emitted by this pallet.
+ * The `Event` enum of this pallet
  **/
 export type PalletReferendaEvent =
+  /**
+   * A referendum has been submitted.
+   **/
   | {
-      tag: 'Submitted';
-      value: {
+      name: 'Submitted';
+      data: {
         /**
          * Index of the referendum.
          **/
@@ -633,9 +1081,12 @@ export type PalletReferendaEvent =
         proposal: FrameSupportPreimagesBounded;
       };
     }
+  /**
+   * The decision deposit has been placed.
+   **/
   | {
-      tag: 'DecisionDepositPlaced';
-      value: {
+      name: 'DecisionDepositPlaced';
+      data: {
         /**
          * Index of the referendum.
          **/
@@ -652,9 +1103,12 @@ export type PalletReferendaEvent =
         amount: bigint;
       };
     }
+  /**
+   * The decision deposit has been refunded.
+   **/
   | {
-      tag: 'DecisionDepositRefunded';
-      value: {
+      name: 'DecisionDepositRefunded';
+      data: {
         /**
          * Index of the referendum.
          **/
@@ -671,9 +1125,12 @@ export type PalletReferendaEvent =
         amount: bigint;
       };
     }
+  /**
+   * A deposit has been slashaed.
+   **/
   | {
-      tag: 'DepositSlashed';
-      value: {
+      name: 'DepositSlashed';
+      data: {
         /**
          * The account who placed the deposit.
          **/
@@ -685,9 +1142,12 @@ export type PalletReferendaEvent =
         amount: bigint;
       };
     }
+  /**
+   * A referendum has moved into the deciding phase.
+   **/
   | {
-      tag: 'DecisionStarted';
-      value: {
+      name: 'DecisionStarted';
+      data: {
         /**
          * Index of the referendum.
          **/
@@ -710,8 +1170,8 @@ export type PalletReferendaEvent =
       };
     }
   | {
-      tag: 'ConfirmStarted';
-      value: {
+      name: 'ConfirmStarted';
+      data: {
         /**
          * Index of the referendum.
          **/
@@ -719,40 +1179,20 @@ export type PalletReferendaEvent =
       };
     }
   | {
-      tag: 'ConfirmAborted';
-      value: {
+      name: 'ConfirmAborted';
+      data: {
         /**
          * Index of the referendum.
          **/
         index: number;
       };
     }
+  /**
+   * A referendum has ended its confirmation phase and is ready for approval.
+   **/
   | {
-      tag: 'Confirmed';
-      value: {
-        /**
-         * Index of the referendum.
-         **/
-        index: number;
-
-        /**
-         * The final tally of votes in this referendum.
-         **/
-        tally: PalletConvictionVotingTally;
-      };
-    }
-  | {
-      tag: 'Approved';
-      value: {
-        /**
-         * Index of the referendum.
-         **/
-        index: number;
-      };
-    }
-  | {
-      tag: 'Rejected';
-      value: {
+      name: 'Confirmed';
+      data: {
         /**
          * Index of the referendum.
          **/
@@ -764,9 +1204,24 @@ export type PalletReferendaEvent =
         tally: PalletConvictionVotingTally;
       };
     }
+  /**
+   * A referendum has been approved and its proposal has been scheduled.
+   **/
   | {
-      tag: 'TimedOut';
-      value: {
+      name: 'Approved';
+      data: {
+        /**
+         * Index of the referendum.
+         **/
+        index: number;
+      };
+    }
+  /**
+   * A proposal has been rejected by referendum.
+   **/
+  | {
+      name: 'Rejected';
+      data: {
         /**
          * Index of the referendum.
          **/
@@ -778,9 +1233,12 @@ export type PalletReferendaEvent =
         tally: PalletConvictionVotingTally;
       };
     }
+  /**
+   * A referendum has been timed out without being decided.
+   **/
   | {
-      tag: 'Cancelled';
-      value: {
+      name: 'TimedOut';
+      data: {
         /**
          * Index of the referendum.
          **/
@@ -792,9 +1250,12 @@ export type PalletReferendaEvent =
         tally: PalletConvictionVotingTally;
       };
     }
+  /**
+   * A referendum has been cancelled.
+   **/
   | {
-      tag: 'Killed';
-      value: {
+      name: 'Cancelled';
+      data: {
         /**
          * Index of the referendum.
          **/
@@ -806,9 +1267,29 @@ export type PalletReferendaEvent =
         tally: PalletConvictionVotingTally;
       };
     }
+  /**
+   * A referendum has been killed.
+   **/
   | {
-      tag: 'SubmissionDepositRefunded';
-      value: {
+      name: 'Killed';
+      data: {
+        /**
+         * Index of the referendum.
+         **/
+        index: number;
+
+        /**
+         * The final tally of votes in this referendum.
+         **/
+        tally: PalletConvictionVotingTally;
+      };
+    }
+  /**
+   * The submission deposit has been refunded.
+   **/
+  | {
+      name: 'SubmissionDepositRefunded';
+      data: {
         /**
          * Index of the referendum.
          **/
@@ -825,9 +1306,12 @@ export type PalletReferendaEvent =
         amount: bigint;
       };
     }
+  /**
+   * Metadata for a referendum has been set.
+   **/
   | {
-      tag: 'MetadataSet';
-      value: {
+      name: 'MetadataSet';
+      data: {
         /**
          * Index of the referendum.
          **/
@@ -839,9 +1323,12 @@ export type PalletReferendaEvent =
         hash: H256;
       };
     }
+  /**
+   * Metadata for a referendum has been cleared.
+   **/
   | {
-      tag: 'MetadataCleared';
-      value: {
+      name: 'MetadataCleared';
+      data: {
         /**
          * Index of the referendum.
          **/
@@ -900,100 +1387,228 @@ export type MoonbeamRuntimeRuntimeCall =
   | { tag: 'Randomness'; value: PalletRandomnessCall };
 
 /**
- * Contains one variant per dispatchable that can be called by an extrinsic.
+ * Contains a variant per dispatchable extrinsic that this pallet has.
  **/
 export type FrameSystemCall =
+  /**
+   * See [`Pallet::remark`].
+   **/
   | { tag: 'Remark'; value: { remark: Bytes } }
+  /**
+   * See [`Pallet::set_heap_pages`].
+   **/
   | { tag: 'SetHeapPages'; value: { pages: bigint } }
+  /**
+   * See [`Pallet::set_code`].
+   **/
   | { tag: 'SetCode'; value: { code: Bytes } }
+  /**
+   * See [`Pallet::set_code_without_checks`].
+   **/
   | { tag: 'SetCodeWithoutChecks'; value: { code: Bytes } }
+  /**
+   * See [`Pallet::set_storage`].
+   **/
   | { tag: 'SetStorage'; value: { items: Array<[Bytes, Bytes]> } }
+  /**
+   * See [`Pallet::kill_storage`].
+   **/
   | { tag: 'KillStorage'; value: { keys: Array<Bytes> } }
+  /**
+   * See [`Pallet::kill_prefix`].
+   **/
   | { tag: 'KillPrefix'; value: { prefix: Bytes; subkeys: number } }
+  /**
+   * See [`Pallet::remark_with_event`].
+   **/
   | { tag: 'RemarkWithEvent'; value: { remark: Bytes } };
 
 /**
- * Contains one variant per dispatchable that can be called by an extrinsic.
+ * Contains a variant per dispatchable extrinsic that this pallet has.
  **/
 export type CumulusPalletParachainSystemCall =
+  /**
+   * See [`Pallet::set_validation_data`].
+   **/
   | { tag: 'SetValidationData'; value: { data: CumulusPrimitivesParachainInherentParachainInherentData } }
+  /**
+   * See [`Pallet::sudo_send_upward_message`].
+   **/
   | { tag: 'SudoSendUpwardMessage'; value: { message: Bytes } }
+  /**
+   * See [`Pallet::authorize_upgrade`].
+   **/
   | { tag: 'AuthorizeUpgrade'; value: { codeHash: H256; checkVersion: boolean } }
+  /**
+   * See [`Pallet::enact_authorized_upgrade`].
+   **/
   | { tag: 'EnactAuthorizedUpgrade'; value: { code: Bytes } };
 
 export type CumulusPrimitivesParachainInherentParachainInherentData = {
-  validationData: PolkadotPrimitivesV4PersistedValidationData;
+  validationData: PolkadotPrimitivesV5PersistedValidationData;
   relayChainState: SpTrieStorageProof;
   downwardMessages: Array<PolkadotCorePrimitivesInboundDownwardMessage>;
-  horizontalMessages: Array<[PolkadotParachainPrimitivesId, Array<PolkadotCorePrimitivesInboundHrmpMessage>]>;
+  horizontalMessages: Array<[PolkadotParachainPrimitivesPrimitivesId, Array<PolkadotCorePrimitivesInboundHrmpMessage>]>;
 };
 
-export type PolkadotPrimitivesV4PersistedValidationData = {
-  parentHead: PolkadotParachainPrimitivesHeadData;
+export type PolkadotPrimitivesV5PersistedValidationData = {
+  parentHead: PolkadotParachainPrimitivesPrimitivesHeadData;
   relayParentNumber: number;
   relayParentStorageRoot: H256;
   maxPovSize: number;
 };
 
-export type PolkadotParachainPrimitivesHeadData = Bytes;
+export type PolkadotParachainPrimitivesPrimitivesHeadData = Bytes;
 
 export type SpTrieStorageProof = { trieNodes: Array<Bytes> };
 
 export type PolkadotCorePrimitivesInboundDownwardMessage = { sentAt: number; msg: Bytes };
 
-export type PolkadotParachainPrimitivesId = number;
+export type PolkadotParachainPrimitivesPrimitivesId = number;
 
 export type PolkadotCorePrimitivesInboundHrmpMessage = { sentAt: number; data: Bytes };
 
 /**
- * Contains one variant per dispatchable that can be called by an extrinsic.
+ * Contains a variant per dispatchable extrinsic that this pallet has.
  **/
-export type PalletTimestampCall = { tag: 'Set'; value: { now: bigint } };
+export type PalletTimestampCall =
+  /**
+   * See [`Pallet::set`].
+   **/
+  { tag: 'Set'; value: { now: bigint } };
 
 /**
- * Contains one variant per dispatchable that can be called by an extrinsic.
+ * Contains a variant per dispatchable extrinsic that this pallet has.
  **/
-export type PalletRootTestingCall = { tag: 'FillBlock'; value: { ratio: Perbill } };
+export type PalletRootTestingCall =
+  /**
+   * See [`Pallet::fill_block`].
+   **/
+  { tag: 'FillBlock'; value: { ratio: Perbill } };
 
 /**
- * Contains one variant per dispatchable that can be called by an extrinsic.
+ * Contains a variant per dispatchable extrinsic that this pallet has.
  **/
 export type PalletBalancesCall =
+  /**
+   * See [`Pallet::transfer_allow_death`].
+   **/
   | { tag: 'TransferAllowDeath'; value: { dest: AccountId20; value: bigint } }
+  /**
+   * See [`Pallet::set_balance_deprecated`].
+   **/
   | { tag: 'SetBalanceDeprecated'; value: { who: AccountId20; newFree: bigint; oldReserved: bigint } }
+  /**
+   * See [`Pallet::force_transfer`].
+   **/
   | { tag: 'ForceTransfer'; value: { source: AccountId20; dest: AccountId20; value: bigint } }
+  /**
+   * See [`Pallet::transfer_keep_alive`].
+   **/
   | { tag: 'TransferKeepAlive'; value: { dest: AccountId20; value: bigint } }
+  /**
+   * See [`Pallet::transfer_all`].
+   **/
   | { tag: 'TransferAll'; value: { dest: AccountId20; keepAlive: boolean } }
+  /**
+   * See [`Pallet::force_unreserve`].
+   **/
   | { tag: 'ForceUnreserve'; value: { who: AccountId20; amount: bigint } }
+  /**
+   * See [`Pallet::upgrade_accounts`].
+   **/
   | { tag: 'UpgradeAccounts'; value: { who: Array<AccountId20> } }
+  /**
+   * See [`Pallet::transfer`].
+   **/
   | { tag: 'Transfer'; value: { dest: AccountId20; value: bigint } }
+  /**
+   * See [`Pallet::force_set_balance`].
+   **/
   | { tag: 'ForceSetBalance'; value: { who: AccountId20; newFree: bigint } };
 
 /**
- * Contains one variant per dispatchable that can be called by an extrinsic.
+ * Contains a variant per dispatchable extrinsic that this pallet has.
  **/
 export type PalletParachainStakingCall =
+  /**
+   * See [`Pallet::set_staking_expectations`].
+   **/
   | { tag: 'SetStakingExpectations'; value: { expectations: { min: bigint; ideal: bigint; max: bigint } } }
+  /**
+   * See [`Pallet::set_inflation`].
+   **/
   | { tag: 'SetInflation'; value: { schedule: { min: Perbill; ideal: Perbill; max: Perbill } } }
+  /**
+   * See [`Pallet::set_parachain_bond_account`].
+   **/
   | { tag: 'SetParachainBondAccount'; value: { new: AccountId20 } }
+  /**
+   * See [`Pallet::set_parachain_bond_reserve_percent`].
+   **/
   | { tag: 'SetParachainBondReservePercent'; value: { new: Percent } }
+  /**
+   * See [`Pallet::set_total_selected`].
+   **/
   | { tag: 'SetTotalSelected'; value: { new: number } }
+  /**
+   * See [`Pallet::set_collator_commission`].
+   **/
   | { tag: 'SetCollatorCommission'; value: { new: Perbill } }
+  /**
+   * See [`Pallet::set_blocks_per_round`].
+   **/
   | { tag: 'SetBlocksPerRound'; value: { new: number } }
+  /**
+   * See [`Pallet::join_candidates`].
+   **/
   | { tag: 'JoinCandidates'; value: { bond: bigint; candidateCount: number } }
+  /**
+   * See [`Pallet::schedule_leave_candidates`].
+   **/
   | { tag: 'ScheduleLeaveCandidates'; value: { candidateCount: number } }
+  /**
+   * See [`Pallet::execute_leave_candidates`].
+   **/
   | { tag: 'ExecuteLeaveCandidates'; value: { candidate: AccountId20; candidateDelegationCount: number } }
+  /**
+   * See [`Pallet::cancel_leave_candidates`].
+   **/
   | { tag: 'CancelLeaveCandidates'; value: { candidateCount: number } }
+  /**
+   * See [`Pallet::go_offline`].
+   **/
   | { tag: 'GoOffline' }
+  /**
+   * See [`Pallet::go_online`].
+   **/
   | { tag: 'GoOnline' }
+  /**
+   * See [`Pallet::candidate_bond_more`].
+   **/
   | { tag: 'CandidateBondMore'; value: { more: bigint } }
+  /**
+   * See [`Pallet::schedule_candidate_bond_less`].
+   **/
   | { tag: 'ScheduleCandidateBondLess'; value: { less: bigint } }
+  /**
+   * See [`Pallet::execute_candidate_bond_less`].
+   **/
   | { tag: 'ExecuteCandidateBondLess'; value: { candidate: AccountId20 } }
+  /**
+   * See [`Pallet::cancel_candidate_bond_less`].
+   **/
   | { tag: 'CancelCandidateBondLess' }
+  /**
+   * See [`Pallet::delegate`].
+   **/
   | {
       tag: 'Delegate';
       value: { candidate: AccountId20; amount: bigint; candidateDelegationCount: number; delegationCount: number };
     }
+  /**
+   * See [`Pallet::delegate_with_auto_compound`].
+   **/
   | {
       tag: 'DelegateWithAutoCompound';
       value: {
@@ -1005,14 +1620,41 @@ export type PalletParachainStakingCall =
         delegationCount: number;
       };
     }
+  /**
+   * See [`Pallet::removed_call_19`].
+   **/
   | { tag: 'RemovedCall19' }
+  /**
+   * See [`Pallet::removed_call_20`].
+   **/
   | { tag: 'RemovedCall20' }
+  /**
+   * See [`Pallet::removed_call_21`].
+   **/
   | { tag: 'RemovedCall21' }
+  /**
+   * See [`Pallet::schedule_revoke_delegation`].
+   **/
   | { tag: 'ScheduleRevokeDelegation'; value: { collator: AccountId20 } }
+  /**
+   * See [`Pallet::delegator_bond_more`].
+   **/
   | { tag: 'DelegatorBondMore'; value: { candidate: AccountId20; more: bigint } }
+  /**
+   * See [`Pallet::schedule_delegator_bond_less`].
+   **/
   | { tag: 'ScheduleDelegatorBondLess'; value: { candidate: AccountId20; less: bigint } }
+  /**
+   * See [`Pallet::execute_delegation_request`].
+   **/
   | { tag: 'ExecuteDelegationRequest'; value: { delegator: AccountId20; candidate: AccountId20 } }
+  /**
+   * See [`Pallet::cancel_delegation_request`].
+   **/
   | { tag: 'CancelDelegationRequest'; value: { candidate: AccountId20 } }
+  /**
+   * See [`Pallet::set_auto_compound`].
+   **/
   | {
       tag: 'SetAutoCompound';
       value: {
@@ -1022,57 +1664,129 @@ export type PalletParachainStakingCall =
         delegationCountHint: number;
       };
     }
-  | { tag: 'HotfixRemoveDelegationRequestsExitedCandidates'; value: { candidates: Array<AccountId20> } };
+  /**
+   * See [`Pallet::hotfix_remove_delegation_requests_exited_candidates`].
+   **/
+  | { tag: 'HotfixRemoveDelegationRequestsExitedCandidates'; value: { candidates: Array<AccountId20> } }
+  /**
+   * See [`Pallet::notify_inactive_collator`].
+   **/
+  | { tag: 'NotifyInactiveCollator'; value: { collator: AccountId20 } }
+  /**
+   * See [`Pallet::enable_marking_offline`].
+   **/
+  | { tag: 'EnableMarkingOffline'; value: { value: boolean } }
+  /**
+   * See [`Pallet::force_join_candidates`].
+   **/
+  | { tag: 'ForceJoinCandidates'; value: { account: AccountId20; bond: bigint; candidateCount: number } };
 
 /**
- * Contains one variant per dispatchable that can be called by an extrinsic.
+ * Contains a variant per dispatchable extrinsic that this pallet has.
  **/
 export type PalletAuthorInherentCall =
   /**
-   * This inherent is a workaround to run code after the "real" inherents have executed,
-   * but before transactions are executed.
+   * See [`Pallet::kick_off_authorship_validation`].
    **/
   'kick_off_authorship_validation';
 
 /**
- * Contains one variant per dispatchable that can be called by an extrinsic.
+ * Contains a variant per dispatchable extrinsic that this pallet has.
  **/
-export type PalletAuthorSlotFilterCall = { tag: 'SetEligible'; value: { new: PalletAuthorSlotFilterNumNonZeroU32 } };
+export type PalletAuthorSlotFilterCall =
+  /**
+   * See [`Pallet::set_eligible`].
+   **/
+  { tag: 'SetEligible'; value: { new: PalletAuthorSlotFilterNumNonZeroU32 } };
 
 /**
- * Contains one variant per dispatchable that can be called by an extrinsic.
+ * Contains a variant per dispatchable extrinsic that this pallet has.
  **/
 export type PalletAuthorMappingCall =
+  /**
+   * See [`Pallet::add_association`].
+   **/
   | { tag: 'AddAssociation'; value: { nimbusId: NimbusPrimitivesNimbusCryptoPublic } }
+  /**
+   * See [`Pallet::update_association`].
+   **/
   | {
       tag: 'UpdateAssociation';
       value: { oldNimbusId: NimbusPrimitivesNimbusCryptoPublic; newNimbusId: NimbusPrimitivesNimbusCryptoPublic };
     }
+  /**
+   * See [`Pallet::clear_association`].
+   **/
   | { tag: 'ClearAssociation'; value: { nimbusId: NimbusPrimitivesNimbusCryptoPublic } }
+  /**
+   * See [`Pallet::remove_keys`].
+   **/
   | { tag: 'RemoveKeys' }
+  /**
+   * See [`Pallet::set_keys`].
+   **/
   | { tag: 'SetKeys'; value: { keys: Bytes } };
 
 /**
- * Contains one variant per dispatchable that can be called by an extrinsic.
+ * Contains a variant per dispatchable extrinsic that this pallet has.
  **/
 export type PalletMoonbeamOrbitersCall =
+  /**
+   * See [`Pallet::collator_add_orbiter`].
+   **/
   | { tag: 'CollatorAddOrbiter'; value: { orbiter: AccountId20 } }
+  /**
+   * See [`Pallet::collator_remove_orbiter`].
+   **/
   | { tag: 'CollatorRemoveOrbiter'; value: { orbiter: AccountId20 } }
+  /**
+   * See [`Pallet::orbiter_leave_collator_pool`].
+   **/
   | { tag: 'OrbiterLeaveCollatorPool'; value: { collator: AccountId20 } }
+  /**
+   * See [`Pallet::orbiter_register`].
+   **/
   | { tag: 'OrbiterRegister' }
+  /**
+   * See [`Pallet::orbiter_unregister`].
+   **/
   | { tag: 'OrbiterUnregister'; value: { collatorsPoolCount: number } }
+  /**
+   * See [`Pallet::add_collator`].
+   **/
   | { tag: 'AddCollator'; value: { collator: AccountId20 } }
+  /**
+   * See [`Pallet::remove_collator`].
+   **/
   | { tag: 'RemoveCollator'; value: { collator: AccountId20 } };
 
 /**
- * Contains one variant per dispatchable that can be called by an extrinsic.
+ * Contains a variant per dispatchable extrinsic that this pallet has.
  **/
 export type PalletUtilityCall =
+  /**
+   * See [`Pallet::batch`].
+   **/
   | { tag: 'Batch'; value: { calls: Array<MoonbeamRuntimeRuntimeCall> } }
+  /**
+   * See [`Pallet::as_derivative`].
+   **/
   | { tag: 'AsDerivative'; value: { index: number; call: MoonbeamRuntimeRuntimeCall } }
+  /**
+   * See [`Pallet::batch_all`].
+   **/
   | { tag: 'BatchAll'; value: { calls: Array<MoonbeamRuntimeRuntimeCall> } }
+  /**
+   * See [`Pallet::dispatch_as`].
+   **/
   | { tag: 'DispatchAs'; value: { asOrigin: MoonbeamRuntimeOriginCaller; call: MoonbeamRuntimeRuntimeCall } }
+  /**
+   * See [`Pallet::force_batch`].
+   **/
   | { tag: 'ForceBatch'; value: { calls: Array<MoonbeamRuntimeRuntimeCall> } }
+  /**
+   * See [`Pallet::with_weight`].
+   **/
   | { tag: 'WithWeight'; value: { call: MoonbeamRuntimeRuntimeCall; weight: SpWeightsWeightV2Weight } };
 
 export type MoonbeamRuntimeOriginCaller =
@@ -1105,53 +1819,80 @@ export type PalletCollectiveRawOrigin =
 
 export type CumulusPalletXcmOrigin =
   | { tag: 'Relay' }
-  | { tag: 'SiblingParachain'; value: PolkadotParachainPrimitivesId };
+  | { tag: 'SiblingParachain'; value: PolkadotParachainPrimitivesPrimitivesId };
 
 export type PalletXcmOrigin =
-  | { tag: 'Xcm'; value: XcmV3MultilocationMultiLocation }
-  | { tag: 'Response'; value: XcmV3MultilocationMultiLocation };
+  | { tag: 'Xcm'; value: StagingXcmV3MultilocationMultiLocation }
+  | { tag: 'Response'; value: StagingXcmV3MultilocationMultiLocation };
 
-export type XcmV3MultilocationMultiLocation = { parents: number; interior: XcmV3Junctions };
+export type StagingXcmV3MultilocationMultiLocation = { parents: number; interior: StagingXcmV3Junctions };
 
-export type XcmV3Junctions =
+export type StagingXcmV3Junctions =
   | { tag: 'Here' }
-  | { tag: 'X1'; value: XcmV3Junction }
-  | { tag: 'X2'; value: [XcmV3Junction, XcmV3Junction] }
-  | { tag: 'X3'; value: [XcmV3Junction, XcmV3Junction, XcmV3Junction] }
-  | { tag: 'X4'; value: [XcmV3Junction, XcmV3Junction, XcmV3Junction, XcmV3Junction] }
-  | { tag: 'X5'; value: [XcmV3Junction, XcmV3Junction, XcmV3Junction, XcmV3Junction, XcmV3Junction] }
-  | { tag: 'X6'; value: [XcmV3Junction, XcmV3Junction, XcmV3Junction, XcmV3Junction, XcmV3Junction, XcmV3Junction] }
+  | { tag: 'X1'; value: StagingXcmV3Junction }
+  | { tag: 'X2'; value: [StagingXcmV3Junction, StagingXcmV3Junction] }
+  | { tag: 'X3'; value: [StagingXcmV3Junction, StagingXcmV3Junction, StagingXcmV3Junction] }
+  | { tag: 'X4'; value: [StagingXcmV3Junction, StagingXcmV3Junction, StagingXcmV3Junction, StagingXcmV3Junction] }
+  | {
+      tag: 'X5';
+      value: [
+        StagingXcmV3Junction,
+        StagingXcmV3Junction,
+        StagingXcmV3Junction,
+        StagingXcmV3Junction,
+        StagingXcmV3Junction,
+      ];
+    }
+  | {
+      tag: 'X6';
+      value: [
+        StagingXcmV3Junction,
+        StagingXcmV3Junction,
+        StagingXcmV3Junction,
+        StagingXcmV3Junction,
+        StagingXcmV3Junction,
+        StagingXcmV3Junction,
+      ];
+    }
   | {
       tag: 'X7';
-      value: [XcmV3Junction, XcmV3Junction, XcmV3Junction, XcmV3Junction, XcmV3Junction, XcmV3Junction, XcmV3Junction];
+      value: [
+        StagingXcmV3Junction,
+        StagingXcmV3Junction,
+        StagingXcmV3Junction,
+        StagingXcmV3Junction,
+        StagingXcmV3Junction,
+        StagingXcmV3Junction,
+        StagingXcmV3Junction,
+      ];
     }
   | {
       tag: 'X8';
       value: [
-        XcmV3Junction,
-        XcmV3Junction,
-        XcmV3Junction,
-        XcmV3Junction,
-        XcmV3Junction,
-        XcmV3Junction,
-        XcmV3Junction,
-        XcmV3Junction,
+        StagingXcmV3Junction,
+        StagingXcmV3Junction,
+        StagingXcmV3Junction,
+        StagingXcmV3Junction,
+        StagingXcmV3Junction,
+        StagingXcmV3Junction,
+        StagingXcmV3Junction,
+        StagingXcmV3Junction,
       ];
     };
 
-export type XcmV3Junction =
+export type StagingXcmV3Junction =
   | { tag: 'Parachain'; value: number }
-  | { tag: 'AccountId32'; value: { network?: XcmV3JunctionNetworkId | undefined; id: FixedBytes<32> } }
-  | { tag: 'AccountIndex64'; value: { network?: XcmV3JunctionNetworkId | undefined; index: bigint } }
-  | { tag: 'AccountKey20'; value: { network?: XcmV3JunctionNetworkId | undefined; key: FixedBytes<20> } }
+  | { tag: 'AccountId32'; value: { network?: StagingXcmV3JunctionNetworkId | undefined; id: FixedBytes<32> } }
+  | { tag: 'AccountIndex64'; value: { network?: StagingXcmV3JunctionNetworkId | undefined; index: bigint } }
+  | { tag: 'AccountKey20'; value: { network?: StagingXcmV3JunctionNetworkId | undefined; key: FixedBytes<20> } }
   | { tag: 'PalletInstance'; value: number }
   | { tag: 'GeneralIndex'; value: bigint }
   | { tag: 'GeneralKey'; value: { length: number; data: FixedBytes<32> } }
   | { tag: 'OnlyChild' }
-  | { tag: 'Plurality'; value: { id: XcmV3JunctionBodyId; part: XcmV3JunctionBodyPart } }
-  | { tag: 'GlobalConsensus'; value: XcmV3JunctionNetworkId };
+  | { tag: 'Plurality'; value: { id: StagingXcmV3JunctionBodyId; part: StagingXcmV3JunctionBodyPart } }
+  | { tag: 'GlobalConsensus'; value: StagingXcmV3JunctionNetworkId };
 
-export type XcmV3JunctionNetworkId =
+export type StagingXcmV3JunctionNetworkId =
   | { tag: 'ByGenesis'; value: FixedBytes<32> }
   | { tag: 'ByFork'; value: { blockNumber: bigint; blockHash: FixedBytes<32> } }
   | { tag: 'Polkadot' }
@@ -1163,7 +1904,7 @@ export type XcmV3JunctionNetworkId =
   | { tag: 'BitcoinCore' }
   | { tag: 'BitcoinCash' };
 
-export type XcmV3JunctionBodyId =
+export type StagingXcmV3JunctionBodyId =
   | { tag: 'Unit' }
   | { tag: 'Moniker'; value: FixedBytes<4> }
   | { tag: 'Index'; value: number }
@@ -1175,7 +1916,7 @@ export type XcmV3JunctionBodyId =
   | { tag: 'Administration' }
   | { tag: 'Treasury' };
 
-export type XcmV3JunctionBodyPart =
+export type StagingXcmV3JunctionBodyPart =
   | { tag: 'Voice' }
   | { tag: 'Members'; value: { count: number } }
   | { tag: 'Fraction'; value: { nom: number; denom: number } }
@@ -1187,9 +1928,12 @@ export type PalletEthereumXcmRawOrigin = { tag: 'XcmEthereumTransaction'; value:
 export type SpCoreVoid = null;
 
 /**
- * Contains one variant per dispatchable that can be called by an extrinsic.
+ * Contains a variant per dispatchable extrinsic that this pallet has.
  **/
 export type PalletProxyCall =
+  /**
+   * See [`Pallet::proxy`].
+   **/
   | {
       tag: 'Proxy';
       value: {
@@ -1198,10 +1942,25 @@ export type PalletProxyCall =
         call: MoonbeamRuntimeRuntimeCall;
       };
     }
+  /**
+   * See [`Pallet::add_proxy`].
+   **/
   | { tag: 'AddProxy'; value: { delegate: AccountId20; proxyType: MoonbeamRuntimeProxyType; delay: number } }
+  /**
+   * See [`Pallet::remove_proxy`].
+   **/
   | { tag: 'RemoveProxy'; value: { delegate: AccountId20; proxyType: MoonbeamRuntimeProxyType; delay: number } }
+  /**
+   * See [`Pallet::remove_proxies`].
+   **/
   | { tag: 'RemoveProxies' }
+  /**
+   * See [`Pallet::create_pure`].
+   **/
   | { tag: 'CreatePure'; value: { proxyType: MoonbeamRuntimeProxyType; delay: number; index: number } }
+  /**
+   * See [`Pallet::kill_pure`].
+   **/
   | {
       tag: 'KillPure';
       value: {
@@ -1212,9 +1971,21 @@ export type PalletProxyCall =
         extIndex: number;
       };
     }
+  /**
+   * See [`Pallet::announce`].
+   **/
   | { tag: 'Announce'; value: { real: AccountId20; callHash: H256 } }
+  /**
+   * See [`Pallet::remove_announcement`].
+   **/
   | { tag: 'RemoveAnnouncement'; value: { real: AccountId20; callHash: H256 } }
+  /**
+   * See [`Pallet::reject_announcement`].
+   **/
   | { tag: 'RejectAnnouncement'; value: { delegate: AccountId20; callHash: H256 } }
+  /**
+   * See [`Pallet::proxy_announced`].
+   **/
   | {
       tag: 'ProxyAnnounced';
       value: {
@@ -1226,23 +1997,15 @@ export type PalletProxyCall =
     };
 
 /**
- * Contains one variant per dispatchable that can be called by an extrinsic.
+ * Contains a variant per dispatchable extrinsic that this pallet has.
  **/
 export type PalletMaintenanceModeCall =
   /**
-   * Place the chain in maintenance mode
-   *
-   * Weight cost is:
-   * * One DB read to ensure we're not already in maintenance mode
-   * * Three DB writes - 1 for the mode, 1 for suspending xcm execution, 1 for the event
+   * See [`Pallet::enter_maintenance_mode`].
    **/
   | 'enter_maintenance_mode'
   /**
-   * Return the chain to normal operating mode
-   *
-   * Weight cost is:
-   * * One DB read to ensure we're in maintenance mode
-   * * Three DB writes - 1 for the mode, 1 for resuming xcm execution, 1 for the event
+   * See [`Pallet::resume_normal_operation`].
    **/
   | 'resume_normal_operation';
 
@@ -1250,23 +2013,68 @@ export type PalletMaintenanceModeCall =
  * Identity pallet declaration.
  **/
 export type PalletIdentityCall =
+  /**
+   * See [`Pallet::add_registrar`].
+   **/
   | { tag: 'AddRegistrar'; value: { account: AccountId20 } }
+  /**
+   * See [`Pallet::set_identity`].
+   **/
   | { tag: 'SetIdentity'; value: { info: PalletIdentityIdentityInfo } }
+  /**
+   * See [`Pallet::set_subs`].
+   **/
   | { tag: 'SetSubs'; value: { subs: Array<[AccountId20, Data]> } }
+  /**
+   * See [`Pallet::clear_identity`].
+   **/
   | { tag: 'ClearIdentity' }
+  /**
+   * See [`Pallet::request_judgement`].
+   **/
   | { tag: 'RequestJudgement'; value: { regIndex: number; maxFee: bigint } }
+  /**
+   * See [`Pallet::cancel_request`].
+   **/
   | { tag: 'CancelRequest'; value: { regIndex: number } }
+  /**
+   * See [`Pallet::set_fee`].
+   **/
   | { tag: 'SetFee'; value: { index: number; fee: bigint } }
+  /**
+   * See [`Pallet::set_account_id`].
+   **/
   | { tag: 'SetAccountId'; value: { index: number; new: AccountId20 } }
+  /**
+   * See [`Pallet::set_fields`].
+   **/
   | { tag: 'SetFields'; value: { index: number; fields: PalletIdentityBitFlags } }
+  /**
+   * See [`Pallet::provide_judgement`].
+   **/
   | {
       tag: 'ProvideJudgement';
       value: { regIndex: number; target: AccountId20; judgement: PalletIdentityJudgement; identity: H256 };
     }
+  /**
+   * See [`Pallet::kill_identity`].
+   **/
   | { tag: 'KillIdentity'; value: { target: AccountId20 } }
+  /**
+   * See [`Pallet::add_sub`].
+   **/
   | { tag: 'AddSub'; value: { sub: AccountId20; data: Data } }
+  /**
+   * See [`Pallet::rename_sub`].
+   **/
   | { tag: 'RenameSub'; value: { sub: AccountId20; data: Data } }
+  /**
+   * See [`Pallet::remove_sub`].
+   **/
   | { tag: 'RemoveSub'; value: { sub: AccountId20 } }
+  /**
+   * See [`Pallet::quit_sub`].
+   **/
   | { tag: 'QuitSub' };
 
 export type PalletIdentityIdentityInfo = {
@@ -1303,10 +2111,16 @@ export type PalletIdentityJudgement =
   | { tag: 'Erroneous' };
 
 /**
- * Contains one variant per dispatchable that can be called by an extrinsic.
+ * Contains a variant per dispatchable extrinsic that this pallet has.
  **/
 export type PalletMultisigCall =
+  /**
+   * See [`Pallet::as_multi_threshold_1`].
+   **/
   | { tag: 'AsMultiThreshold1'; value: { otherSignatories: Array<AccountId20>; call: MoonbeamRuntimeRuntimeCall } }
+  /**
+   * See [`Pallet::as_multi`].
+   **/
   | {
       tag: 'AsMulti';
       value: {
@@ -1317,6 +2131,9 @@ export type PalletMultisigCall =
         maxWeight: SpWeightsWeightV2Weight;
       };
     }
+  /**
+   * See [`Pallet::approve_as_multi`].
+   **/
   | {
       tag: 'ApproveAsMulti';
       value: {
@@ -1327,6 +2144,9 @@ export type PalletMultisigCall =
         maxWeight: SpWeightsWeightV2Weight;
       };
     }
+  /**
+   * See [`Pallet::cancel_as_multi`].
+   **/
   | {
       tag: 'CancelAsMulti';
       value: {
@@ -1338,10 +2158,16 @@ export type PalletMultisigCall =
     };
 
 /**
- * Contains one variant per dispatchable that can be called by an extrinsic.
+ * Contains a variant per dispatchable extrinsic that this pallet has.
  **/
 export type PalletEvmCall =
+  /**
+   * See [`Pallet::withdraw`].
+   **/
   | { tag: 'Withdraw'; value: { address: H160; value: bigint } }
+  /**
+   * See [`Pallet::call`].
+   **/
   | {
       tag: 'Call';
       value: {
@@ -1356,6 +2182,9 @@ export type PalletEvmCall =
         accessList: Array<[H160, Array<H256>]>;
       };
     }
+  /**
+   * See [`Pallet::create`].
+   **/
   | {
       tag: 'Create';
       value: {
@@ -1369,6 +2198,9 @@ export type PalletEvmCall =
         accessList: Array<[H160, Array<H256>]>;
       };
     }
+  /**
+   * See [`Pallet::create2`].
+   **/
   | {
       tag: 'Create2';
       value: {
@@ -1385,9 +2217,13 @@ export type PalletEvmCall =
     };
 
 /**
- * Contains one variant per dispatchable that can be called by an extrinsic.
+ * Contains a variant per dispatchable extrinsic that this pallet has.
  **/
-export type PalletEthereumCall = { tag: 'Transact'; value: { transaction: EthereumTransactionTransactionV2 } };
+export type PalletEthereumCall =
+  /**
+   * See [`Pallet::transact`].
+   **/
+  { tag: 'Transact'; value: { transaction: EthereumTransactionTransactionV2 } };
 
 export type EthereumTransactionTransactionV2 =
   | { tag: 'Legacy'; value: EthereumTransactionLegacyTransaction }
@@ -1442,9 +2278,12 @@ export type EthereumTransactionEip1559Transaction = {
 };
 
 /**
- * Contains one variant per dispatchable that can be called by an extrinsic.
+ * Contains a variant per dispatchable extrinsic that this pallet has.
  **/
 export type PalletSchedulerCall =
+  /**
+   * See [`Pallet::schedule`].
+   **/
   | {
       tag: 'Schedule';
       value: {
@@ -1454,7 +2293,13 @@ export type PalletSchedulerCall =
         call: MoonbeamRuntimeRuntimeCall;
       };
     }
+  /**
+   * See [`Pallet::cancel`].
+   **/
   | { tag: 'Cancel'; value: { when: number; index: number } }
+  /**
+   * See [`Pallet::schedule_named`].
+   **/
   | {
       tag: 'ScheduleNamed';
       value: {
@@ -1465,7 +2310,13 @@ export type PalletSchedulerCall =
         call: MoonbeamRuntimeRuntimeCall;
       };
     }
+  /**
+   * See [`Pallet::cancel_named`].
+   **/
   | { tag: 'CancelNamed'; value: { id: FixedBytes<32> } }
+  /**
+   * See [`Pallet::schedule_after`].
+   **/
   | {
       tag: 'ScheduleAfter';
       value: {
@@ -1475,6 +2326,9 @@ export type PalletSchedulerCall =
         call: MoonbeamRuntimeRuntimeCall;
       };
     }
+  /**
+   * See [`Pallet::schedule_named_after`].
+   **/
   | {
       tag: 'ScheduleNamedAfter';
       value: {
@@ -1487,27 +2341,84 @@ export type PalletSchedulerCall =
     };
 
 /**
- * Contains one variant per dispatchable that can be called by an extrinsic.
+ * Contains a variant per dispatchable extrinsic that this pallet has.
  **/
 export type PalletDemocracyCall =
+  /**
+   * See [`Pallet::propose`].
+   **/
   | { tag: 'Propose'; value: { proposal: FrameSupportPreimagesBounded; value: bigint } }
+  /**
+   * See [`Pallet::second`].
+   **/
   | { tag: 'Second'; value: { proposal: number } }
+  /**
+   * See [`Pallet::vote`].
+   **/
   | { tag: 'Vote'; value: { refIndex: number; vote: PalletDemocracyVoteAccountVote } }
+  /**
+   * See [`Pallet::emergency_cancel`].
+   **/
   | { tag: 'EmergencyCancel'; value: { refIndex: number } }
+  /**
+   * See [`Pallet::external_propose`].
+   **/
   | { tag: 'ExternalPropose'; value: { proposal: FrameSupportPreimagesBounded } }
+  /**
+   * See [`Pallet::external_propose_majority`].
+   **/
   | { tag: 'ExternalProposeMajority'; value: { proposal: FrameSupportPreimagesBounded } }
+  /**
+   * See [`Pallet::external_propose_default`].
+   **/
   | { tag: 'ExternalProposeDefault'; value: { proposal: FrameSupportPreimagesBounded } }
+  /**
+   * See [`Pallet::fast_track`].
+   **/
   | { tag: 'FastTrack'; value: { proposalHash: H256; votingPeriod: number; delay: number } }
+  /**
+   * See [`Pallet::veto_external`].
+   **/
   | { tag: 'VetoExternal'; value: { proposalHash: H256 } }
+  /**
+   * See [`Pallet::cancel_referendum`].
+   **/
   | { tag: 'CancelReferendum'; value: { refIndex: number } }
+  /**
+   * See [`Pallet::delegate`].
+   **/
   | { tag: 'Delegate'; value: { to: AccountId20; conviction: PalletDemocracyConviction; balance: bigint } }
+  /**
+   * See [`Pallet::undelegate`].
+   **/
   | { tag: 'Undelegate' }
+  /**
+   * See [`Pallet::clear_public_proposals`].
+   **/
   | { tag: 'ClearPublicProposals' }
+  /**
+   * See [`Pallet::unlock`].
+   **/
   | { tag: 'Unlock'; value: { target: AccountId20 } }
+  /**
+   * See [`Pallet::remove_vote`].
+   **/
   | { tag: 'RemoveVote'; value: { index: number } }
+  /**
+   * See [`Pallet::remove_other_vote`].
+   **/
   | { tag: 'RemoveOtherVote'; value: { target: AccountId20; index: number } }
+  /**
+   * See [`Pallet::blacklist`].
+   **/
   | { tag: 'Blacklist'; value: { proposalHash: H256; maybeRefIndex?: number | undefined } }
+  /**
+   * See [`Pallet::cancel_proposal`].
+   **/
   | { tag: 'CancelProposal'; value: { propIndex: number } }
+  /**
+   * See [`Pallet::set_metadata`].
+   **/
   | { tag: 'SetMetadata'; value: { owner: PalletDemocracyMetadataOwner; maybeHash?: H256 | undefined } };
 
 export type PalletDemocracyConviction =
@@ -1520,26 +2431,56 @@ export type PalletDemocracyConviction =
   | 'Locked6x';
 
 /**
- * Contains one variant per dispatchable that can be called by an extrinsic.
+ * Contains a variant per dispatchable extrinsic that this pallet has.
  **/
 export type PalletPreimageCall =
+  /**
+   * See [`Pallet::note_preimage`].
+   **/
   | { tag: 'NotePreimage'; value: { bytes: Bytes } }
+  /**
+   * See [`Pallet::unnote_preimage`].
+   **/
   | { tag: 'UnnotePreimage'; value: { hash: H256 } }
+  /**
+   * See [`Pallet::request_preimage`].
+   **/
   | { tag: 'RequestPreimage'; value: { hash: H256 } }
+  /**
+   * See [`Pallet::unrequest_preimage`].
+   **/
   | { tag: 'UnrequestPreimage'; value: { hash: H256 } };
 
 /**
- * Contains one variant per dispatchable that can be called by an extrinsic.
+ * Contains a variant per dispatchable extrinsic that this pallet has.
  **/
 export type PalletConvictionVotingCall =
+  /**
+   * See [`Pallet::vote`].
+   **/
   | { tag: 'Vote'; value: { pollIndex: number; vote: PalletConvictionVotingVoteAccountVote } }
+  /**
+   * See [`Pallet::delegate`].
+   **/
   | {
       tag: 'Delegate';
       value: { class: number; to: AccountId20; conviction: PalletConvictionVotingConviction; balance: bigint };
     }
+  /**
+   * See [`Pallet::undelegate`].
+   **/
   | { tag: 'Undelegate'; value: { class: number } }
+  /**
+   * See [`Pallet::unlock`].
+   **/
   | { tag: 'Unlock'; value: { class: number; target: AccountId20 } }
+  /**
+   * See [`Pallet::remove_vote`].
+   **/
   | { tag: 'RemoveVote'; value: { class?: number | undefined; index: number } }
+  /**
+   * See [`Pallet::remove_other_vote`].
+   **/
   | { tag: 'RemoveOtherVote'; value: { target: AccountId20; class: number; index: number } };
 
 export type PalletConvictionVotingVoteAccountVote =
@@ -1559,9 +2500,12 @@ export type PalletConvictionVotingConviction =
   | 'Locked6x';
 
 /**
- * Contains one variant per dispatchable that can be called by an extrinsic.
+ * Contains a variant per dispatchable extrinsic that this pallet has.
  **/
 export type PalletReferendaCall =
+  /**
+   * See [`Pallet::submit`].
+   **/
   | {
       tag: 'Submit';
       value: {
@@ -1570,61 +2514,136 @@ export type PalletReferendaCall =
         enactmentMoment: FrameSupportScheduleDispatchTime;
       };
     }
+  /**
+   * See [`Pallet::place_decision_deposit`].
+   **/
   | { tag: 'PlaceDecisionDeposit'; value: { index: number } }
+  /**
+   * See [`Pallet::refund_decision_deposit`].
+   **/
   | { tag: 'RefundDecisionDeposit'; value: { index: number } }
+  /**
+   * See [`Pallet::cancel`].
+   **/
   | { tag: 'Cancel'; value: { index: number } }
+  /**
+   * See [`Pallet::kill`].
+   **/
   | { tag: 'Kill'; value: { index: number } }
+  /**
+   * See [`Pallet::nudge_referendum`].
+   **/
   | { tag: 'NudgeReferendum'; value: { index: number } }
+  /**
+   * See [`Pallet::one_fewer_deciding`].
+   **/
   | { tag: 'OneFewerDeciding'; value: { track: number } }
+  /**
+   * See [`Pallet::refund_submission_deposit`].
+   **/
   | { tag: 'RefundSubmissionDeposit'; value: { index: number } }
+  /**
+   * See [`Pallet::set_metadata`].
+   **/
   | { tag: 'SetMetadata'; value: { index: number; maybeHash?: H256 | undefined } };
 
 export type FrameSupportScheduleDispatchTime = { tag: 'At'; value: number } | { tag: 'After'; value: number };
 
 /**
- * Contains one variant per dispatchable that can be called by an extrinsic.
+ * Contains a variant per dispatchable extrinsic that this pallet has.
  **/
 export type PalletWhitelistCall =
+  /**
+   * See [`Pallet::whitelist_call`].
+   **/
   | { tag: 'WhitelistCall'; value: { callHash: H256 } }
+  /**
+   * See [`Pallet::remove_whitelisted_call`].
+   **/
   | { tag: 'RemoveWhitelistedCall'; value: { callHash: H256 } }
+  /**
+   * See [`Pallet::dispatch_whitelisted_call`].
+   **/
   | {
       tag: 'DispatchWhitelistedCall';
       value: { callHash: H256; callEncodedLen: number; callWeightWitness: SpWeightsWeightV2Weight };
     }
+  /**
+   * See [`Pallet::dispatch_whitelisted_call_with_preimage`].
+   **/
   | { tag: 'DispatchWhitelistedCallWithPreimage'; value: { call: MoonbeamRuntimeRuntimeCall } };
 
 /**
- * Contains one variant per dispatchable that can be called by an extrinsic.
+ * Contains a variant per dispatchable extrinsic that this pallet has.
  **/
 export type PalletCollectiveCall =
+  /**
+   * See [`Pallet::set_members`].
+   **/
   | { tag: 'SetMembers'; value: { newMembers: Array<AccountId20>; prime?: AccountId20 | undefined; oldCount: number } }
+  /**
+   * See [`Pallet::execute`].
+   **/
   | { tag: 'Execute'; value: { proposal: MoonbeamRuntimeRuntimeCall; lengthBound: number } }
+  /**
+   * See [`Pallet::propose`].
+   **/
   | { tag: 'Propose'; value: { threshold: number; proposal: MoonbeamRuntimeRuntimeCall; lengthBound: number } }
+  /**
+   * See [`Pallet::vote`].
+   **/
   | { tag: 'Vote'; value: { proposal: H256; index: number; approve: boolean } }
+  /**
+   * See [`Pallet::disapprove_proposal`].
+   **/
   | { tag: 'DisapproveProposal'; value: { proposalHash: H256 } }
+  /**
+   * See [`Pallet::close`].
+   **/
   | {
       tag: 'Close';
       value: { proposalHash: H256; index: number; proposalWeightBound: SpWeightsWeightV2Weight; lengthBound: number };
     };
 
 /**
- * Contains one variant per dispatchable that can be called by an extrinsic.
+ * Contains a variant per dispatchable extrinsic that this pallet has.
  **/
 export type PalletTreasuryCall =
+  /**
+   * See [`Pallet::propose_spend`].
+   **/
   | { tag: 'ProposeSpend'; value: { value: bigint; beneficiary: AccountId20 } }
+  /**
+   * See [`Pallet::reject_proposal`].
+   **/
   | { tag: 'RejectProposal'; value: { proposalId: number } }
+  /**
+   * See [`Pallet::approve_proposal`].
+   **/
   | { tag: 'ApproveProposal'; value: { proposalId: number } }
+  /**
+   * See [`Pallet::spend`].
+   **/
   | { tag: 'Spend'; value: { amount: bigint; beneficiary: AccountId20 } }
+  /**
+   * See [`Pallet::remove_approval`].
+   **/
   | { tag: 'RemoveApproval'; value: { proposalId: number } };
 
 /**
- * Contains one variant per dispatchable that can be called by an extrinsic.
+ * Contains a variant per dispatchable extrinsic that this pallet has.
  **/
 export type PalletCrowdloanRewardsCall =
+  /**
+   * See [`Pallet::associate_native_identity`].
+   **/
   | {
       tag: 'AssociateNativeIdentity';
       value: { rewardAccount: AccountId20; relayAccount: FixedBytes<32>; proof: SpRuntimeMultiSignature };
     }
+  /**
+   * See [`Pallet::change_association_with_relay_keys`].
+   **/
   | {
       tag: 'ChangeAssociationWithRelayKeys';
       value: {
@@ -1633,9 +2652,21 @@ export type PalletCrowdloanRewardsCall =
         proofs: Array<[FixedBytes<32>, SpRuntimeMultiSignature]>;
       };
     }
+  /**
+   * See [`Pallet::claim`].
+   **/
   | { tag: 'Claim' }
+  /**
+   * See [`Pallet::update_reward_address`].
+   **/
   | { tag: 'UpdateRewardAddress'; value: { newRewardAccount: AccountId20 } }
+  /**
+   * See [`Pallet::complete_initialization`].
+   **/
   | { tag: 'CompleteInitialization'; value: { leaseEndingBlock: number } }
+  /**
+   * See [`Pallet::initialize_reward_vec`].
+   **/
   | { tag: 'InitializeRewardVec'; value: { rewards: Array<[FixedBytes<32>, AccountId20 | undefined, bigint]> } };
 
 export type SpRuntimeMultiSignature =
@@ -1650,109 +2681,174 @@ export type SpCoreSr25519Signature = FixedBytes<64>;
 export type SpCoreEcdsaSignature = FixedBytes<65>;
 
 /**
- * Contains one variant per dispatchable that can be called by an extrinsic.
+ * Contains a variant per dispatchable extrinsic that this pallet has.
  **/
-export type CumulusPalletDmpQueueCall = {
-  tag: 'ServiceOverweight';
-  value: { index: bigint; weightLimit: SpWeightsWeightV2Weight };
-};
+export type CumulusPalletDmpQueueCall =
+  /**
+   * See [`Pallet::service_overweight`].
+   **/
+  { tag: 'ServiceOverweight'; value: { index: bigint; weightLimit: SpWeightsWeightV2Weight } };
 
 /**
- * Contains one variant per dispatchable that can be called by an extrinsic.
+ * Contains a variant per dispatchable extrinsic that this pallet has.
  **/
 export type PalletXcmCall =
-  | { tag: 'Send'; value: { dest: XcmVersionedMultiLocation; message: XcmVersionedXcm } }
+  /**
+   * See [`Pallet::send`].
+   **/
+  | { tag: 'Send'; value: { dest: StagingXcmVersionedMultiLocation; message: StagingXcmVersionedXcm } }
+  /**
+   * See [`Pallet::teleport_assets`].
+   **/
   | {
       tag: 'TeleportAssets';
       value: {
-        dest: XcmVersionedMultiLocation;
-        beneficiary: XcmVersionedMultiLocation;
-        assets: XcmVersionedMultiAssets;
+        dest: StagingXcmVersionedMultiLocation;
+        beneficiary: StagingXcmVersionedMultiLocation;
+        assets: StagingXcmVersionedMultiAssets;
         feeAssetItem: number;
       };
     }
+  /**
+   * See [`Pallet::reserve_transfer_assets`].
+   **/
   | {
       tag: 'ReserveTransferAssets';
       value: {
-        dest: XcmVersionedMultiLocation;
-        beneficiary: XcmVersionedMultiLocation;
-        assets: XcmVersionedMultiAssets;
+        dest: StagingXcmVersionedMultiLocation;
+        beneficiary: StagingXcmVersionedMultiLocation;
+        assets: StagingXcmVersionedMultiAssets;
         feeAssetItem: number;
       };
     }
-  | { tag: 'Execute'; value: { message: XcmVersionedXcm; maxWeight: SpWeightsWeightV2Weight } }
-  | { tag: 'ForceXcmVersion'; value: { location: XcmV3MultilocationMultiLocation; xcmVersion: number } }
+  /**
+   * See [`Pallet::execute`].
+   **/
+  | { tag: 'Execute'; value: { message: StagingXcmVersionedXcm; maxWeight: SpWeightsWeightV2Weight } }
+  /**
+   * See [`Pallet::force_xcm_version`].
+   **/
+  | { tag: 'ForceXcmVersion'; value: { location: StagingXcmV3MultilocationMultiLocation; version: number } }
+  /**
+   * See [`Pallet::force_default_xcm_version`].
+   **/
   | { tag: 'ForceDefaultXcmVersion'; value: { maybeXcmVersion?: number | undefined } }
-  | { tag: 'ForceSubscribeVersionNotify'; value: { location: XcmVersionedMultiLocation } }
-  | { tag: 'ForceUnsubscribeVersionNotify'; value: { location: XcmVersionedMultiLocation } }
+  /**
+   * See [`Pallet::force_subscribe_version_notify`].
+   **/
+  | { tag: 'ForceSubscribeVersionNotify'; value: { location: StagingXcmVersionedMultiLocation } }
+  /**
+   * See [`Pallet::force_unsubscribe_version_notify`].
+   **/
+  | { tag: 'ForceUnsubscribeVersionNotify'; value: { location: StagingXcmVersionedMultiLocation } }
+  /**
+   * See [`Pallet::limited_reserve_transfer_assets`].
+   **/
   | {
       tag: 'LimitedReserveTransferAssets';
       value: {
-        dest: XcmVersionedMultiLocation;
-        beneficiary: XcmVersionedMultiLocation;
-        assets: XcmVersionedMultiAssets;
+        dest: StagingXcmVersionedMultiLocation;
+        beneficiary: StagingXcmVersionedMultiLocation;
+        assets: StagingXcmVersionedMultiAssets;
         feeAssetItem: number;
-        weightLimit: XcmV3WeightLimit;
+        weightLimit: StagingXcmV3WeightLimit;
       };
     }
+  /**
+   * See [`Pallet::limited_teleport_assets`].
+   **/
   | {
       tag: 'LimitedTeleportAssets';
       value: {
-        dest: XcmVersionedMultiLocation;
-        beneficiary: XcmVersionedMultiLocation;
-        assets: XcmVersionedMultiAssets;
+        dest: StagingXcmVersionedMultiLocation;
+        beneficiary: StagingXcmVersionedMultiLocation;
+        assets: StagingXcmVersionedMultiAssets;
         feeAssetItem: number;
-        weightLimit: XcmV3WeightLimit;
+        weightLimit: StagingXcmV3WeightLimit;
       };
     }
+  /**
+   * See [`Pallet::force_suspension`].
+   **/
   | { tag: 'ForceSuspension'; value: { suspended: boolean } };
 
-export type XcmVersionedMultiLocation =
-  | { tag: 'V2'; value: XcmV2MultilocationMultiLocation }
-  | { tag: 'V3'; value: XcmV3MultilocationMultiLocation };
+export type StagingXcmVersionedMultiLocation =
+  | { tag: 'V2'; value: StagingXcmV2MultilocationMultiLocation }
+  | { tag: 'V3'; value: StagingXcmV3MultilocationMultiLocation };
 
-export type XcmV2MultilocationMultiLocation = { parents: number; interior: XcmV2MultilocationJunctions };
+export type StagingXcmV2MultilocationMultiLocation = { parents: number; interior: StagingXcmV2MultilocationJunctions };
 
-export type XcmV2MultilocationJunctions =
+export type StagingXcmV2MultilocationJunctions =
   | { tag: 'Here' }
-  | { tag: 'X1'; value: XcmV2Junction }
-  | { tag: 'X2'; value: [XcmV2Junction, XcmV2Junction] }
-  | { tag: 'X3'; value: [XcmV2Junction, XcmV2Junction, XcmV2Junction] }
-  | { tag: 'X4'; value: [XcmV2Junction, XcmV2Junction, XcmV2Junction, XcmV2Junction] }
-  | { tag: 'X5'; value: [XcmV2Junction, XcmV2Junction, XcmV2Junction, XcmV2Junction, XcmV2Junction] }
-  | { tag: 'X6'; value: [XcmV2Junction, XcmV2Junction, XcmV2Junction, XcmV2Junction, XcmV2Junction, XcmV2Junction] }
+  | { tag: 'X1'; value: StagingXcmV2Junction }
+  | { tag: 'X2'; value: [StagingXcmV2Junction, StagingXcmV2Junction] }
+  | { tag: 'X3'; value: [StagingXcmV2Junction, StagingXcmV2Junction, StagingXcmV2Junction] }
+  | { tag: 'X4'; value: [StagingXcmV2Junction, StagingXcmV2Junction, StagingXcmV2Junction, StagingXcmV2Junction] }
+  | {
+      tag: 'X5';
+      value: [
+        StagingXcmV2Junction,
+        StagingXcmV2Junction,
+        StagingXcmV2Junction,
+        StagingXcmV2Junction,
+        StagingXcmV2Junction,
+      ];
+    }
+  | {
+      tag: 'X6';
+      value: [
+        StagingXcmV2Junction,
+        StagingXcmV2Junction,
+        StagingXcmV2Junction,
+        StagingXcmV2Junction,
+        StagingXcmV2Junction,
+        StagingXcmV2Junction,
+      ];
+    }
   | {
       tag: 'X7';
-      value: [XcmV2Junction, XcmV2Junction, XcmV2Junction, XcmV2Junction, XcmV2Junction, XcmV2Junction, XcmV2Junction];
+      value: [
+        StagingXcmV2Junction,
+        StagingXcmV2Junction,
+        StagingXcmV2Junction,
+        StagingXcmV2Junction,
+        StagingXcmV2Junction,
+        StagingXcmV2Junction,
+        StagingXcmV2Junction,
+      ];
     }
   | {
       tag: 'X8';
       value: [
-        XcmV2Junction,
-        XcmV2Junction,
-        XcmV2Junction,
-        XcmV2Junction,
-        XcmV2Junction,
-        XcmV2Junction,
-        XcmV2Junction,
-        XcmV2Junction,
+        StagingXcmV2Junction,
+        StagingXcmV2Junction,
+        StagingXcmV2Junction,
+        StagingXcmV2Junction,
+        StagingXcmV2Junction,
+        StagingXcmV2Junction,
+        StagingXcmV2Junction,
+        StagingXcmV2Junction,
       ];
     };
 
-export type XcmV2Junction =
+export type StagingXcmV2Junction =
   | { tag: 'Parachain'; value: number }
-  | { tag: 'AccountId32'; value: { network: XcmV2NetworkId; id: FixedBytes<32> } }
-  | { tag: 'AccountIndex64'; value: { network: XcmV2NetworkId; index: bigint } }
-  | { tag: 'AccountKey20'; value: { network: XcmV2NetworkId; key: FixedBytes<20> } }
+  | { tag: 'AccountId32'; value: { network: StagingXcmV2NetworkId; id: FixedBytes<32> } }
+  | { tag: 'AccountIndex64'; value: { network: StagingXcmV2NetworkId; index: bigint } }
+  | { tag: 'AccountKey20'; value: { network: StagingXcmV2NetworkId; key: FixedBytes<20> } }
   | { tag: 'PalletInstance'; value: number }
   | { tag: 'GeneralIndex'; value: bigint }
   | { tag: 'GeneralKey'; value: Bytes }
   | { tag: 'OnlyChild' }
-  | { tag: 'Plurality'; value: { id: XcmV2BodyId; part: XcmV2BodyPart } };
+  | { tag: 'Plurality'; value: { id: StagingXcmV2BodyId; part: StagingXcmV2BodyPart } };
 
-export type XcmV2NetworkId = { tag: 'Any' } | { tag: 'Named'; value: Bytes } | { tag: 'Polkadot' } | { tag: 'Kusama' };
+export type StagingXcmV2NetworkId =
+  | { tag: 'Any' }
+  | { tag: 'Named'; value: Bytes }
+  | { tag: 'Polkadot' }
+  | { tag: 'Kusama' };
 
-export type XcmV2BodyId =
+export type StagingXcmV2BodyId =
   | { tag: 'Unit' }
   | { tag: 'Named'; value: Bytes }
   | { tag: 'Index'; value: number }
@@ -1764,95 +2860,122 @@ export type XcmV2BodyId =
   | { tag: 'Administration' }
   | { tag: 'Treasury' };
 
-export type XcmV2BodyPart =
+export type StagingXcmV2BodyPart =
   | { tag: 'Voice' }
   | { tag: 'Members'; value: { count: number } }
   | { tag: 'Fraction'; value: { nom: number; denom: number } }
   | { tag: 'AtLeastProportion'; value: { nom: number; denom: number } }
   | { tag: 'MoreThanProportion'; value: { nom: number; denom: number } };
 
-export type XcmVersionedXcm = { tag: 'V2'; value: XcmV2Xcm } | { tag: 'V3'; value: XcmV3Xcm };
+export type StagingXcmVersionedXcm = { tag: 'V2'; value: StagingXcmV2Xcm } | { tag: 'V3'; value: StagingXcmV3Xcm };
 
-export type XcmV2Xcm = Array<XcmV2Instruction>;
+export type StagingXcmV2Xcm = Array<StagingXcmV2Instruction>;
 
-export type XcmV2Instruction =
-  | { tag: 'WithdrawAsset'; value: XcmV2MultiassetMultiAssets }
-  | { tag: 'ReserveAssetDeposited'; value: XcmV2MultiassetMultiAssets }
-  | { tag: 'ReceiveTeleportedAsset'; value: XcmV2MultiassetMultiAssets }
-  | { tag: 'QueryResponse'; value: { queryId: bigint; response: XcmV2Response; maxWeight: bigint } }
+export type StagingXcmV2Instruction =
+  | { tag: 'WithdrawAsset'; value: StagingXcmV2MultiassetMultiAssets }
+  | { tag: 'ReserveAssetDeposited'; value: StagingXcmV2MultiassetMultiAssets }
+  | { tag: 'ReceiveTeleportedAsset'; value: StagingXcmV2MultiassetMultiAssets }
+  | { tag: 'QueryResponse'; value: { queryId: bigint; response: StagingXcmV2Response; maxWeight: bigint } }
   | {
       tag: 'TransferAsset';
-      value: { assets: XcmV2MultiassetMultiAssets; beneficiary: XcmV2MultilocationMultiLocation };
+      value: { assets: StagingXcmV2MultiassetMultiAssets; beneficiary: StagingXcmV2MultilocationMultiLocation };
     }
   | {
       tag: 'TransferReserveAsset';
-      value: { assets: XcmV2MultiassetMultiAssets; dest: XcmV2MultilocationMultiLocation; xcm: XcmV2Xcm };
+      value: {
+        assets: StagingXcmV2MultiassetMultiAssets;
+        dest: StagingXcmV2MultilocationMultiLocation;
+        xcm: StagingXcmV2Xcm;
+      };
     }
-  | { tag: 'Transact'; value: { originType: XcmV2OriginKind; requireWeightAtMost: bigint; call: XcmDoubleEncoded } }
+  | {
+      tag: 'Transact';
+      value: { originType: StagingXcmV2OriginKind; requireWeightAtMost: bigint; call: StagingXcmDoubleEncoded };
+    }
   | { tag: 'HrmpNewChannelOpenRequest'; value: { sender: number; maxMessageSize: number; maxCapacity: number } }
   | { tag: 'HrmpChannelAccepted'; value: { recipient: number } }
   | { tag: 'HrmpChannelClosing'; value: { initiator: number; sender: number; recipient: number } }
   | { tag: 'ClearOrigin' }
-  | { tag: 'DescendOrigin'; value: XcmV2MultilocationJunctions }
-  | { tag: 'ReportError'; value: { queryId: bigint; dest: XcmV2MultilocationMultiLocation; maxResponseWeight: bigint } }
+  | { tag: 'DescendOrigin'; value: StagingXcmV2MultilocationJunctions }
+  | {
+      tag: 'ReportError';
+      value: { queryId: bigint; dest: StagingXcmV2MultilocationMultiLocation; maxResponseWeight: bigint };
+    }
   | {
       tag: 'DepositAsset';
       value: {
-        assets: XcmV2MultiassetMultiAssetFilter;
+        assets: StagingXcmV2MultiassetMultiAssetFilter;
         maxAssets: number;
-        beneficiary: XcmV2MultilocationMultiLocation;
+        beneficiary: StagingXcmV2MultilocationMultiLocation;
       };
     }
   | {
       tag: 'DepositReserveAsset';
       value: {
-        assets: XcmV2MultiassetMultiAssetFilter;
+        assets: StagingXcmV2MultiassetMultiAssetFilter;
         maxAssets: number;
-        dest: XcmV2MultilocationMultiLocation;
-        xcm: XcmV2Xcm;
+        dest: StagingXcmV2MultilocationMultiLocation;
+        xcm: StagingXcmV2Xcm;
       };
     }
-  | { tag: 'ExchangeAsset'; value: { give: XcmV2MultiassetMultiAssetFilter; receive: XcmV2MultiassetMultiAssets } }
+  | {
+      tag: 'ExchangeAsset';
+      value: { give: StagingXcmV2MultiassetMultiAssetFilter; receive: StagingXcmV2MultiassetMultiAssets };
+    }
   | {
       tag: 'InitiateReserveWithdraw';
-      value: { assets: XcmV2MultiassetMultiAssetFilter; reserve: XcmV2MultilocationMultiLocation; xcm: XcmV2Xcm };
+      value: {
+        assets: StagingXcmV2MultiassetMultiAssetFilter;
+        reserve: StagingXcmV2MultilocationMultiLocation;
+        xcm: StagingXcmV2Xcm;
+      };
     }
   | {
       tag: 'InitiateTeleport';
-      value: { assets: XcmV2MultiassetMultiAssetFilter; dest: XcmV2MultilocationMultiLocation; xcm: XcmV2Xcm };
+      value: {
+        assets: StagingXcmV2MultiassetMultiAssetFilter;
+        dest: StagingXcmV2MultilocationMultiLocation;
+        xcm: StagingXcmV2Xcm;
+      };
     }
   | {
       tag: 'QueryHolding';
       value: {
         queryId: bigint;
-        dest: XcmV2MultilocationMultiLocation;
-        assets: XcmV2MultiassetMultiAssetFilter;
+        dest: StagingXcmV2MultilocationMultiLocation;
+        assets: StagingXcmV2MultiassetMultiAssetFilter;
         maxResponseWeight: bigint;
       };
     }
-  | { tag: 'BuyExecution'; value: { fees: XcmV2MultiassetMultiAsset; weightLimit: XcmV2WeightLimit } }
+  | { tag: 'BuyExecution'; value: { fees: StagingXcmV2MultiassetMultiAsset; weightLimit: StagingXcmV2WeightLimit } }
   | { tag: 'RefundSurplus' }
-  | { tag: 'SetErrorHandler'; value: XcmV2Xcm }
-  | { tag: 'SetAppendix'; value: XcmV2Xcm }
+  | { tag: 'SetErrorHandler'; value: StagingXcmV2Xcm }
+  | { tag: 'SetAppendix'; value: StagingXcmV2Xcm }
   | { tag: 'ClearError' }
-  | { tag: 'ClaimAsset'; value: { assets: XcmV2MultiassetMultiAssets; ticket: XcmV2MultilocationMultiLocation } }
+  | {
+      tag: 'ClaimAsset';
+      value: { assets: StagingXcmV2MultiassetMultiAssets; ticket: StagingXcmV2MultilocationMultiLocation };
+    }
   | { tag: 'Trap'; value: bigint }
   | { tag: 'SubscribeVersion'; value: { queryId: bigint; maxResponseWeight: bigint } }
   | { tag: 'UnsubscribeVersion' };
 
-export type XcmV2MultiassetMultiAssets = Array<XcmV2MultiassetMultiAsset>;
+export type StagingXcmV2MultiassetMultiAssets = Array<StagingXcmV2MultiassetMultiAsset>;
 
-export type XcmV2MultiassetMultiAsset = { id: XcmV2MultiassetAssetId; fun: XcmV2MultiassetFungibility };
+export type StagingXcmV2MultiassetMultiAsset = {
+  id: StagingXcmV2MultiassetAssetId;
+  fun: StagingXcmV2MultiassetFungibility;
+};
 
-export type XcmV2MultiassetAssetId =
-  | { tag: 'Concrete'; value: XcmV2MultilocationMultiLocation }
+export type StagingXcmV2MultiassetAssetId =
+  | { tag: 'Concrete'; value: StagingXcmV2MultilocationMultiLocation }
   | { tag: 'Abstract'; value: Bytes };
 
-export type XcmV2MultiassetFungibility =
+export type StagingXcmV2MultiassetFungibility =
   | { tag: 'Fungible'; value: bigint }
-  | { tag: 'NonFungible'; value: XcmV2MultiassetAssetInstance };
+  | { tag: 'NonFungible'; value: StagingXcmV2MultiassetAssetInstance };
 
-export type XcmV2MultiassetAssetInstance =
+export type StagingXcmV2MultiassetAssetInstance =
   | { tag: 'Undefined' }
   | { tag: 'Index'; value: bigint }
   | { tag: 'Array4'; value: FixedBytes<4> }
@@ -1861,13 +2984,13 @@ export type XcmV2MultiassetAssetInstance =
   | { tag: 'Array32'; value: FixedBytes<32> }
   | { tag: 'Blob'; value: Bytes };
 
-export type XcmV2Response =
+export type StagingXcmV2Response =
   | { tag: 'Null' }
-  | { tag: 'Assets'; value: XcmV2MultiassetMultiAssets }
-  | { tag: 'ExecutionResult'; value?: [number, XcmV2TraitsError] | undefined }
+  | { tag: 'Assets'; value: StagingXcmV2MultiassetMultiAssets }
+  | { tag: 'ExecutionResult'; value?: [number, StagingXcmV2TraitsError] | undefined }
   | { tag: 'Version'; value: number };
 
-export type XcmV2TraitsError =
+export type StagingXcmV2TraitsError =
   | { tag: 'Overflow' }
   | { tag: 'Unimplemented' }
   | { tag: 'UntrustedReserveLocation' }
@@ -1895,125 +3018,173 @@ export type XcmV2TraitsError =
   | { tag: 'Barrier' }
   | { tag: 'WeightNotComputable' };
 
-export type XcmV2OriginKind = 'Native' | 'SovereignAccount' | 'Superuser' | 'Xcm';
+export type StagingXcmV2OriginKind = 'Native' | 'SovereignAccount' | 'Superuser' | 'Xcm';
 
-export type XcmDoubleEncoded = { encoded: Bytes };
+export type StagingXcmDoubleEncoded = { encoded: Bytes };
 
-export type XcmV2MultiassetMultiAssetFilter =
-  | { tag: 'Definite'; value: XcmV2MultiassetMultiAssets }
-  | { tag: 'Wild'; value: XcmV2MultiassetWildMultiAsset };
+export type StagingXcmV2MultiassetMultiAssetFilter =
+  | { tag: 'Definite'; value: StagingXcmV2MultiassetMultiAssets }
+  | { tag: 'Wild'; value: StagingXcmV2MultiassetWildMultiAsset };
 
-export type XcmV2MultiassetWildMultiAsset =
+export type StagingXcmV2MultiassetWildMultiAsset =
   | { tag: 'All' }
-  | { tag: 'AllOf'; value: { id: XcmV2MultiassetAssetId; fun: XcmV2MultiassetWildFungibility } };
+  | { tag: 'AllOf'; value: { id: StagingXcmV2MultiassetAssetId; fun: StagingXcmV2MultiassetWildFungibility } };
 
-export type XcmV2MultiassetWildFungibility = 'Fungible' | 'NonFungible';
+export type StagingXcmV2MultiassetWildFungibility = 'Fungible' | 'NonFungible';
 
-export type XcmV2WeightLimit = { tag: 'Unlimited' } | { tag: 'Limited'; value: bigint };
+export type StagingXcmV2WeightLimit = { tag: 'Unlimited' } | { tag: 'Limited'; value: bigint };
 
-export type XcmV3Xcm = Array<XcmV3Instruction>;
+export type StagingXcmV3Xcm = Array<StagingXcmV3Instruction>;
 
-export type XcmV3Instruction =
-  | { tag: 'WithdrawAsset'; value: XcmV3MultiassetMultiAssets }
-  | { tag: 'ReserveAssetDeposited'; value: XcmV3MultiassetMultiAssets }
-  | { tag: 'ReceiveTeleportedAsset'; value: XcmV3MultiassetMultiAssets }
+export type StagingXcmV3Instruction =
+  | { tag: 'WithdrawAsset'; value: StagingXcmV3MultiassetMultiAssets }
+  | { tag: 'ReserveAssetDeposited'; value: StagingXcmV3MultiassetMultiAssets }
+  | { tag: 'ReceiveTeleportedAsset'; value: StagingXcmV3MultiassetMultiAssets }
   | {
       tag: 'QueryResponse';
       value: {
         queryId: bigint;
-        response: XcmV3Response;
+        response: StagingXcmV3Response;
         maxWeight: SpWeightsWeightV2Weight;
-        querier?: XcmV3MultilocationMultiLocation | undefined;
+        querier?: StagingXcmV3MultilocationMultiLocation | undefined;
       };
     }
   | {
       tag: 'TransferAsset';
-      value: { assets: XcmV3MultiassetMultiAssets; beneficiary: XcmV3MultilocationMultiLocation };
+      value: { assets: StagingXcmV3MultiassetMultiAssets; beneficiary: StagingXcmV3MultilocationMultiLocation };
     }
   | {
       tag: 'TransferReserveAsset';
-      value: { assets: XcmV3MultiassetMultiAssets; dest: XcmV3MultilocationMultiLocation; xcm: XcmV3Xcm };
+      value: {
+        assets: StagingXcmV3MultiassetMultiAssets;
+        dest: StagingXcmV3MultilocationMultiLocation;
+        xcm: StagingXcmV3Xcm;
+      };
     }
   | {
       tag: 'Transact';
-      value: { originKind: XcmV2OriginKind; requireWeightAtMost: SpWeightsWeightV2Weight; call: XcmDoubleEncoded };
+      value: {
+        originKind: StagingXcmV2OriginKind;
+        requireWeightAtMost: SpWeightsWeightV2Weight;
+        call: StagingXcmDoubleEncoded;
+      };
     }
   | { tag: 'HrmpNewChannelOpenRequest'; value: { sender: number; maxMessageSize: number; maxCapacity: number } }
   | { tag: 'HrmpChannelAccepted'; value: { recipient: number } }
   | { tag: 'HrmpChannelClosing'; value: { initiator: number; sender: number; recipient: number } }
   | { tag: 'ClearOrigin' }
-  | { tag: 'DescendOrigin'; value: XcmV3Junctions }
-  | { tag: 'ReportError'; value: XcmV3QueryResponseInfo }
+  | { tag: 'DescendOrigin'; value: StagingXcmV3Junctions }
+  | { tag: 'ReportError'; value: StagingXcmV3QueryResponseInfo }
   | {
       tag: 'DepositAsset';
-      value: { assets: XcmV3MultiassetMultiAssetFilter; beneficiary: XcmV3MultilocationMultiLocation };
+      value: { assets: StagingXcmV3MultiassetMultiAssetFilter; beneficiary: StagingXcmV3MultilocationMultiLocation };
     }
   | {
       tag: 'DepositReserveAsset';
-      value: { assets: XcmV3MultiassetMultiAssetFilter; dest: XcmV3MultilocationMultiLocation; xcm: XcmV3Xcm };
+      value: {
+        assets: StagingXcmV3MultiassetMultiAssetFilter;
+        dest: StagingXcmV3MultilocationMultiLocation;
+        xcm: StagingXcmV3Xcm;
+      };
     }
   | {
       tag: 'ExchangeAsset';
-      value: { give: XcmV3MultiassetMultiAssetFilter; want: XcmV3MultiassetMultiAssets; maximal: boolean };
+      value: {
+        give: StagingXcmV3MultiassetMultiAssetFilter;
+        want: StagingXcmV3MultiassetMultiAssets;
+        maximal: boolean;
+      };
     }
   | {
       tag: 'InitiateReserveWithdraw';
-      value: { assets: XcmV3MultiassetMultiAssetFilter; reserve: XcmV3MultilocationMultiLocation; xcm: XcmV3Xcm };
+      value: {
+        assets: StagingXcmV3MultiassetMultiAssetFilter;
+        reserve: StagingXcmV3MultilocationMultiLocation;
+        xcm: StagingXcmV3Xcm;
+      };
     }
   | {
       tag: 'InitiateTeleport';
-      value: { assets: XcmV3MultiassetMultiAssetFilter; dest: XcmV3MultilocationMultiLocation; xcm: XcmV3Xcm };
+      value: {
+        assets: StagingXcmV3MultiassetMultiAssetFilter;
+        dest: StagingXcmV3MultilocationMultiLocation;
+        xcm: StagingXcmV3Xcm;
+      };
     }
-  | { tag: 'ReportHolding'; value: { responseInfo: XcmV3QueryResponseInfo; assets: XcmV3MultiassetMultiAssetFilter } }
-  | { tag: 'BuyExecution'; value: { fees: XcmV3MultiassetMultiAsset; weightLimit: XcmV3WeightLimit } }
+  | {
+      tag: 'ReportHolding';
+      value: { responseInfo: StagingXcmV3QueryResponseInfo; assets: StagingXcmV3MultiassetMultiAssetFilter };
+    }
+  | { tag: 'BuyExecution'; value: { fees: StagingXcmV3MultiassetMultiAsset; weightLimit: StagingXcmV3WeightLimit } }
   | { tag: 'RefundSurplus' }
-  | { tag: 'SetErrorHandler'; value: XcmV3Xcm }
-  | { tag: 'SetAppendix'; value: XcmV3Xcm }
+  | { tag: 'SetErrorHandler'; value: StagingXcmV3Xcm }
+  | { tag: 'SetAppendix'; value: StagingXcmV3Xcm }
   | { tag: 'ClearError' }
-  | { tag: 'ClaimAsset'; value: { assets: XcmV3MultiassetMultiAssets; ticket: XcmV3MultilocationMultiLocation } }
+  | {
+      tag: 'ClaimAsset';
+      value: { assets: StagingXcmV3MultiassetMultiAssets; ticket: StagingXcmV3MultilocationMultiLocation };
+    }
   | { tag: 'Trap'; value: bigint }
   | { tag: 'SubscribeVersion'; value: { queryId: bigint; maxResponseWeight: SpWeightsWeightV2Weight } }
   | { tag: 'UnsubscribeVersion' }
-  | { tag: 'BurnAsset'; value: XcmV3MultiassetMultiAssets }
-  | { tag: 'ExpectAsset'; value: XcmV3MultiassetMultiAssets }
-  | { tag: 'ExpectOrigin'; value?: XcmV3MultilocationMultiLocation | undefined }
-  | { tag: 'ExpectError'; value?: [number, XcmV3TraitsError] | undefined }
-  | { tag: 'ExpectTransactStatus'; value: XcmV3MaybeErrorCode }
-  | { tag: 'QueryPallet'; value: { moduleName: Bytes; responseInfo: XcmV3QueryResponseInfo } }
+  | { tag: 'BurnAsset'; value: StagingXcmV3MultiassetMultiAssets }
+  | { tag: 'ExpectAsset'; value: StagingXcmV3MultiassetMultiAssets }
+  | { tag: 'ExpectOrigin'; value?: StagingXcmV3MultilocationMultiLocation | undefined }
+  | { tag: 'ExpectError'; value?: [number, StagingXcmV3TraitsError] | undefined }
+  | { tag: 'ExpectTransactStatus'; value: StagingXcmV3MaybeErrorCode }
+  | { tag: 'QueryPallet'; value: { moduleName: Bytes; responseInfo: StagingXcmV3QueryResponseInfo } }
   | {
       tag: 'ExpectPallet';
       value: { index: number; name: Bytes; moduleName: Bytes; crateMajor: number; minCrateMinor: number };
     }
-  | { tag: 'ReportTransactStatus'; value: XcmV3QueryResponseInfo }
+  | { tag: 'ReportTransactStatus'; value: StagingXcmV3QueryResponseInfo }
   | { tag: 'ClearTransactStatus' }
-  | { tag: 'UniversalOrigin'; value: XcmV3Junction }
-  | { tag: 'ExportMessage'; value: { network: XcmV3JunctionNetworkId; destination: XcmV3Junctions; xcm: XcmV3Xcm } }
-  | { tag: 'LockAsset'; value: { asset: XcmV3MultiassetMultiAsset; unlocker: XcmV3MultilocationMultiLocation } }
-  | { tag: 'UnlockAsset'; value: { asset: XcmV3MultiassetMultiAsset; target: XcmV3MultilocationMultiLocation } }
-  | { tag: 'NoteUnlockable'; value: { asset: XcmV3MultiassetMultiAsset; owner: XcmV3MultilocationMultiLocation } }
-  | { tag: 'RequestUnlock'; value: { asset: XcmV3MultiassetMultiAsset; locker: XcmV3MultilocationMultiLocation } }
+  | { tag: 'UniversalOrigin'; value: StagingXcmV3Junction }
+  | {
+      tag: 'ExportMessage';
+      value: { network: StagingXcmV3JunctionNetworkId; destination: StagingXcmV3Junctions; xcm: StagingXcmV3Xcm };
+    }
+  | {
+      tag: 'LockAsset';
+      value: { asset: StagingXcmV3MultiassetMultiAsset; unlocker: StagingXcmV3MultilocationMultiLocation };
+    }
+  | {
+      tag: 'UnlockAsset';
+      value: { asset: StagingXcmV3MultiassetMultiAsset; target: StagingXcmV3MultilocationMultiLocation };
+    }
+  | {
+      tag: 'NoteUnlockable';
+      value: { asset: StagingXcmV3MultiassetMultiAsset; owner: StagingXcmV3MultilocationMultiLocation };
+    }
+  | {
+      tag: 'RequestUnlock';
+      value: { asset: StagingXcmV3MultiassetMultiAsset; locker: StagingXcmV3MultilocationMultiLocation };
+    }
   | { tag: 'SetFeesMode'; value: { jitWithdraw: boolean } }
   | { tag: 'SetTopic'; value: FixedBytes<32> }
   | { tag: 'ClearTopic' }
-  | { tag: 'AliasOrigin'; value: XcmV3MultilocationMultiLocation }
+  | { tag: 'AliasOrigin'; value: StagingXcmV3MultilocationMultiLocation }
   | {
       tag: 'UnpaidExecution';
-      value: { weightLimit: XcmV3WeightLimit; checkOrigin?: XcmV3MultilocationMultiLocation | undefined };
+      value: { weightLimit: StagingXcmV3WeightLimit; checkOrigin?: StagingXcmV3MultilocationMultiLocation | undefined };
     };
 
-export type XcmV3MultiassetMultiAssets = Array<XcmV3MultiassetMultiAsset>;
+export type StagingXcmV3MultiassetMultiAssets = Array<StagingXcmV3MultiassetMultiAsset>;
 
-export type XcmV3MultiassetMultiAsset = { id: XcmV3MultiassetAssetId; fun: XcmV3MultiassetFungibility };
+export type StagingXcmV3MultiassetMultiAsset = {
+  id: StagingXcmV3MultiassetAssetId;
+  fun: StagingXcmV3MultiassetFungibility;
+};
 
-export type XcmV3MultiassetAssetId =
-  | { tag: 'Concrete'; value: XcmV3MultilocationMultiLocation }
+export type StagingXcmV3MultiassetAssetId =
+  | { tag: 'Concrete'; value: StagingXcmV3MultilocationMultiLocation }
   | { tag: 'Abstract'; value: FixedBytes<32> };
 
-export type XcmV3MultiassetFungibility =
+export type StagingXcmV3MultiassetFungibility =
   | { tag: 'Fungible'; value: bigint }
-  | { tag: 'NonFungible'; value: XcmV3MultiassetAssetInstance };
+  | { tag: 'NonFungible'; value: StagingXcmV3MultiassetAssetInstance };
 
-export type XcmV3MultiassetAssetInstance =
+export type StagingXcmV3MultiassetAssetInstance =
   | { tag: 'Undefined' }
   | { tag: 'Index'; value: bigint }
   | { tag: 'Array4'; value: FixedBytes<4> }
@@ -2021,15 +3192,15 @@ export type XcmV3MultiassetAssetInstance =
   | { tag: 'Array16'; value: FixedBytes<16> }
   | { tag: 'Array32'; value: FixedBytes<32> };
 
-export type XcmV3Response =
+export type StagingXcmV3Response =
   | { tag: 'Null' }
-  | { tag: 'Assets'; value: XcmV3MultiassetMultiAssets }
-  | { tag: 'ExecutionResult'; value?: [number, XcmV3TraitsError] | undefined }
+  | { tag: 'Assets'; value: StagingXcmV3MultiassetMultiAssets }
+  | { tag: 'ExecutionResult'; value?: [number, StagingXcmV3TraitsError] | undefined }
   | { tag: 'Version'; value: number }
-  | { tag: 'PalletsInfo'; value: Array<XcmV3PalletInfo> }
-  | { tag: 'DispatchResult'; value: XcmV3MaybeErrorCode };
+  | { tag: 'PalletsInfo'; value: Array<StagingXcmV3PalletInfo> }
+  | { tag: 'DispatchResult'; value: StagingXcmV3MaybeErrorCode };
 
-export type XcmV3TraitsError =
+export type StagingXcmV3TraitsError =
   | { tag: 'Overflow' }
   | { tag: 'Unimplemented' }
   | { tag: 'UntrustedReserveLocation' }
@@ -2071,7 +3242,7 @@ export type XcmV3TraitsError =
   | { tag: 'WeightNotComputable' }
   | { tag: 'ExceedsStackLimit' };
 
-export type XcmV3PalletInfo = {
+export type StagingXcmV3PalletInfo = {
   index: number;
   name: Bytes;
   moduleName: Bytes;
@@ -2080,60 +3251,129 @@ export type XcmV3PalletInfo = {
   patch: number;
 };
 
-export type XcmV3MaybeErrorCode =
+export type StagingXcmV3MaybeErrorCode =
   | { tag: 'Success' }
   | { tag: 'Error'; value: Bytes }
   | { tag: 'TruncatedError'; value: Bytes };
 
-export type XcmV3QueryResponseInfo = {
-  destination: XcmV3MultilocationMultiLocation;
+export type StagingXcmV3QueryResponseInfo = {
+  destination: StagingXcmV3MultilocationMultiLocation;
   queryId: bigint;
   maxWeight: SpWeightsWeightV2Weight;
 };
 
-export type XcmV3MultiassetMultiAssetFilter =
-  | { tag: 'Definite'; value: XcmV3MultiassetMultiAssets }
-  | { tag: 'Wild'; value: XcmV3MultiassetWildMultiAsset };
+export type StagingXcmV3MultiassetMultiAssetFilter =
+  | { tag: 'Definite'; value: StagingXcmV3MultiassetMultiAssets }
+  | { tag: 'Wild'; value: StagingXcmV3MultiassetWildMultiAsset };
 
-export type XcmV3MultiassetWildMultiAsset =
+export type StagingXcmV3MultiassetWildMultiAsset =
   | { tag: 'All' }
-  | { tag: 'AllOf'; value: { id: XcmV3MultiassetAssetId; fun: XcmV3MultiassetWildFungibility } }
+  | { tag: 'AllOf'; value: { id: StagingXcmV3MultiassetAssetId; fun: StagingXcmV3MultiassetWildFungibility } }
   | { tag: 'AllCounted'; value: number }
-  | { tag: 'AllOfCounted'; value: { id: XcmV3MultiassetAssetId; fun: XcmV3MultiassetWildFungibility; count: number } };
+  | {
+      tag: 'AllOfCounted';
+      value: { id: StagingXcmV3MultiassetAssetId; fun: StagingXcmV3MultiassetWildFungibility; count: number };
+    };
 
-export type XcmV3MultiassetWildFungibility = 'Fungible' | 'NonFungible';
+export type StagingXcmV3MultiassetWildFungibility = 'Fungible' | 'NonFungible';
 
-export type XcmV3WeightLimit = { tag: 'Unlimited' } | { tag: 'Limited'; value: SpWeightsWeightV2Weight };
+export type StagingXcmV3WeightLimit = { tag: 'Unlimited' } | { tag: 'Limited'; value: SpWeightsWeightV2Weight };
 
-export type XcmVersionedMultiAssets =
-  | { tag: 'V2'; value: XcmV2MultiassetMultiAssets }
-  | { tag: 'V3'; value: XcmV3MultiassetMultiAssets };
+export type StagingXcmVersionedMultiAssets =
+  | { tag: 'V2'; value: StagingXcmV2MultiassetMultiAssets }
+  | { tag: 'V3'; value: StagingXcmV3MultiassetMultiAssets };
 
 /**
- * Contains one variant per dispatchable that can be called by an extrinsic.
+ * Contains a variant per dispatchable extrinsic that this pallet has.
  **/
 export type PalletAssetsCall =
+  /**
+   * See [`Pallet::create`].
+   **/
   | { tag: 'Create'; value: { id: bigint; admin: AccountId20; minBalance: bigint } }
+  /**
+   * See [`Pallet::force_create`].
+   **/
   | { tag: 'ForceCreate'; value: { id: bigint; owner: AccountId20; isSufficient: boolean; minBalance: bigint } }
+  /**
+   * See [`Pallet::start_destroy`].
+   **/
   | { tag: 'StartDestroy'; value: { id: bigint } }
+  /**
+   * See [`Pallet::destroy_accounts`].
+   **/
   | { tag: 'DestroyAccounts'; value: { id: bigint } }
+  /**
+   * See [`Pallet::destroy_approvals`].
+   **/
   | { tag: 'DestroyApprovals'; value: { id: bigint } }
+  /**
+   * See [`Pallet::finish_destroy`].
+   **/
   | { tag: 'FinishDestroy'; value: { id: bigint } }
+  /**
+   * See [`Pallet::mint`].
+   **/
   | { tag: 'Mint'; value: { id: bigint; beneficiary: AccountId20; amount: bigint } }
+  /**
+   * See [`Pallet::burn`].
+   **/
   | { tag: 'Burn'; value: { id: bigint; who: AccountId20; amount: bigint } }
+  /**
+   * See [`Pallet::transfer`].
+   **/
   | { tag: 'Transfer'; value: { id: bigint; target: AccountId20; amount: bigint } }
+  /**
+   * See [`Pallet::transfer_keep_alive`].
+   **/
   | { tag: 'TransferKeepAlive'; value: { id: bigint; target: AccountId20; amount: bigint } }
+  /**
+   * See [`Pallet::force_transfer`].
+   **/
   | { tag: 'ForceTransfer'; value: { id: bigint; source: AccountId20; dest: AccountId20; amount: bigint } }
+  /**
+   * See [`Pallet::freeze`].
+   **/
   | { tag: 'Freeze'; value: { id: bigint; who: AccountId20 } }
+  /**
+   * See [`Pallet::thaw`].
+   **/
   | { tag: 'Thaw'; value: { id: bigint; who: AccountId20 } }
+  /**
+   * See [`Pallet::freeze_asset`].
+   **/
   | { tag: 'FreezeAsset'; value: { id: bigint } }
+  /**
+   * See [`Pallet::thaw_asset`].
+   **/
   | { tag: 'ThawAsset'; value: { id: bigint } }
+  /**
+   * See [`Pallet::transfer_ownership`].
+   **/
   | { tag: 'TransferOwnership'; value: { id: bigint; owner: AccountId20 } }
+  /**
+   * See [`Pallet::set_team`].
+   **/
   | { tag: 'SetTeam'; value: { id: bigint; issuer: AccountId20; admin: AccountId20; freezer: AccountId20 } }
+  /**
+   * See [`Pallet::set_metadata`].
+   **/
   | { tag: 'SetMetadata'; value: { id: bigint; name: Bytes; symbol: Bytes; decimals: number } }
+  /**
+   * See [`Pallet::clear_metadata`].
+   **/
   | { tag: 'ClearMetadata'; value: { id: bigint } }
+  /**
+   * See [`Pallet::force_set_metadata`].
+   **/
   | { tag: 'ForceSetMetadata'; value: { id: bigint; name: Bytes; symbol: Bytes; decimals: number; isFrozen: boolean } }
+  /**
+   * See [`Pallet::force_clear_metadata`].
+   **/
   | { tag: 'ForceClearMetadata'; value: { id: bigint } }
+  /**
+   * See [`Pallet::force_asset_status`].
+   **/
   | {
       tag: 'ForceAssetStatus';
       value: {
@@ -2147,21 +3387,54 @@ export type PalletAssetsCall =
         isFrozen: boolean;
       };
     }
+  /**
+   * See [`Pallet::approve_transfer`].
+   **/
   | { tag: 'ApproveTransfer'; value: { id: bigint; delegate: AccountId20; amount: bigint } }
+  /**
+   * See [`Pallet::cancel_approval`].
+   **/
   | { tag: 'CancelApproval'; value: { id: bigint; delegate: AccountId20 } }
+  /**
+   * See [`Pallet::force_cancel_approval`].
+   **/
   | { tag: 'ForceCancelApproval'; value: { id: bigint; owner: AccountId20; delegate: AccountId20 } }
+  /**
+   * See [`Pallet::transfer_approved`].
+   **/
   | { tag: 'TransferApproved'; value: { id: bigint; owner: AccountId20; destination: AccountId20; amount: bigint } }
+  /**
+   * See [`Pallet::touch`].
+   **/
   | { tag: 'Touch'; value: { id: bigint } }
+  /**
+   * See [`Pallet::refund`].
+   **/
   | { tag: 'Refund'; value: { id: bigint; allowBurn: boolean } }
+  /**
+   * See [`Pallet::set_min_balance`].
+   **/
   | { tag: 'SetMinBalance'; value: { id: bigint; minBalance: bigint } }
+  /**
+   * See [`Pallet::touch_other`].
+   **/
   | { tag: 'TouchOther'; value: { id: bigint; who: AccountId20 } }
+  /**
+   * See [`Pallet::refund_other`].
+   **/
   | { tag: 'RefundOther'; value: { id: bigint; who: AccountId20 } }
+  /**
+   * See [`Pallet::block`].
+   **/
   | { tag: 'Block'; value: { id: bigint; who: AccountId20 } };
 
 /**
- * Contains one variant per dispatchable that can be called by an extrinsic.
+ * Contains a variant per dispatchable extrinsic that this pallet has.
  **/
 export type PalletAssetManagerCall =
+  /**
+   * See [`Pallet::register_foreign_asset`].
+   **/
   | {
       tag: 'RegisterForeignAsset';
       value: {
@@ -2171,27 +3444,48 @@ export type PalletAssetManagerCall =
         isSufficient: boolean;
       };
     }
+  /**
+   * See [`Pallet::set_asset_units_per_second`].
+   **/
   | {
       tag: 'SetAssetUnitsPerSecond';
       value: { assetType: MoonbeamRuntimeXcmConfigAssetType; unitsPerSecond: bigint; numAssetsWeightHint: number };
     }
+  /**
+   * See [`Pallet::change_existing_asset_type`].
+   **/
   | {
       tag: 'ChangeExistingAssetType';
       value: { assetId: bigint; newAssetType: MoonbeamRuntimeXcmConfigAssetType; numAssetsWeightHint: number };
     }
+  /**
+   * See [`Pallet::remove_supported_asset`].
+   **/
   | {
       tag: 'RemoveSupportedAsset';
       value: { assetType: MoonbeamRuntimeXcmConfigAssetType; numAssetsWeightHint: number };
     }
+  /**
+   * See [`Pallet::remove_existing_asset_type`].
+   **/
   | { tag: 'RemoveExistingAssetType'; value: { assetId: bigint; numAssetsWeightHint: number } }
+  /**
+   * See [`Pallet::register_local_asset`].
+   **/
   | {
       tag: 'RegisterLocalAsset';
       value: { creator: AccountId20; owner: AccountId20; isSufficient: boolean; minBalance: bigint };
     }
+  /**
+   * See [`Pallet::destroy_foreign_asset`].
+   **/
   | { tag: 'DestroyForeignAsset'; value: { assetId: bigint; numAssetsWeightHint: number } }
+  /**
+   * See [`Pallet::destroy_local_asset`].
+   **/
   | { tag: 'DestroyLocalAsset'; value: { assetId: bigint } };
 
-export type MoonbeamRuntimeXcmConfigAssetType = { tag: 'Xcm'; value: XcmV3MultilocationMultiLocation };
+export type MoonbeamRuntimeXcmConfigAssetType = { tag: 'Xcm'; value: StagingXcmV3MultilocationMultiLocation };
 
 export type MoonbeamRuntimeAssetConfigAssetRegistrarMetadata = {
   name: Bytes;
@@ -2201,57 +3495,79 @@ export type MoonbeamRuntimeAssetConfigAssetRegistrarMetadata = {
 };
 
 /**
- * Contains one variant per dispatchable that can be called by an extrinsic.
+ * Contains a variant per dispatchable extrinsic that this pallet has.
  **/
 export type OrmlXtokensModuleCall =
+  /**
+   * See [`Pallet::transfer`].
+   **/
   | {
       tag: 'Transfer';
       value: {
         currencyId: MoonbeamRuntimeXcmConfigCurrencyId;
         amount: bigint;
-        dest: XcmVersionedMultiLocation;
-        destWeightLimit: XcmV3WeightLimit;
+        dest: StagingXcmVersionedMultiLocation;
+        destWeightLimit: StagingXcmV3WeightLimit;
       };
     }
+  /**
+   * See [`Pallet::transfer_multiasset`].
+   **/
   | {
       tag: 'TransferMultiasset';
-      value: { asset: XcmVersionedMultiAsset; dest: XcmVersionedMultiLocation; destWeightLimit: XcmV3WeightLimit };
+      value: {
+        asset: StagingXcmVersionedMultiAsset;
+        dest: StagingXcmVersionedMultiLocation;
+        destWeightLimit: StagingXcmV3WeightLimit;
+      };
     }
+  /**
+   * See [`Pallet::transfer_with_fee`].
+   **/
   | {
       tag: 'TransferWithFee';
       value: {
         currencyId: MoonbeamRuntimeXcmConfigCurrencyId;
         amount: bigint;
         fee: bigint;
-        dest: XcmVersionedMultiLocation;
-        destWeightLimit: XcmV3WeightLimit;
+        dest: StagingXcmVersionedMultiLocation;
+        destWeightLimit: StagingXcmV3WeightLimit;
       };
     }
+  /**
+   * See [`Pallet::transfer_multiasset_with_fee`].
+   **/
   | {
       tag: 'TransferMultiassetWithFee';
       value: {
-        asset: XcmVersionedMultiAsset;
-        fee: XcmVersionedMultiAsset;
-        dest: XcmVersionedMultiLocation;
-        destWeightLimit: XcmV3WeightLimit;
+        asset: StagingXcmVersionedMultiAsset;
+        fee: StagingXcmVersionedMultiAsset;
+        dest: StagingXcmVersionedMultiLocation;
+        destWeightLimit: StagingXcmV3WeightLimit;
       };
     }
+  /**
+   * See [`Pallet::transfer_multicurrencies`].
+   **/
   | {
       tag: 'TransferMulticurrencies';
       value: {
         currencies: Array<[MoonbeamRuntimeXcmConfigCurrencyId, bigint]>;
         feeItem: number;
-        dest: XcmVersionedMultiLocation;
-        destWeightLimit: XcmV3WeightLimit;
+        dest: StagingXcmVersionedMultiLocation;
+        destWeightLimit: StagingXcmV3WeightLimit;
       };
     }
+  /**
+   * See [`Pallet::transfer_multiassets`].
+   **/
   | {
       tag: 'TransferMultiassets';
       value: {
-        assets: XcmVersionedMultiAssets;
+        assets: StagingXcmVersionedMultiAssets;
         feeItem: number;
-        dest: XcmVersionedMultiLocation;
-        destWeightLimit: XcmV3WeightLimit;
+        dest: StagingXcmVersionedMultiLocation;
+        destWeightLimit: StagingXcmV3WeightLimit;
       };
     };
 
@@ -2261,16 +3577,25 @@ export type MoonbeamRuntimeXcmConfigCurrencyId =
   | { tag: 'LocalAssetReserve'; value: bigint }
   | { tag: 'Erc20'; value: { contractAddress: H160 } };
 
-export type XcmVersionedMultiAsset =
-  | { tag: 'V2'; value: XcmV2MultiassetMultiAsset }
-  | { tag: 'V3'; value: XcmV3MultiassetMultiAsset };
+export type StagingXcmVersionedMultiAsset =
+  | { tag: 'V2'; value: StagingXcmV2MultiassetMultiAsset }
+  | { tag: 'V3'; value: StagingXcmV3MultiassetMultiAsset };
 
 /**
- * Contains one variant per dispatchable that can be called by an extrinsic.
+ * Contains a variant per dispatchable extrinsic that this pallet has.
  **/
 export type PalletXcmTransactorCall =
+  /**
+   * See [`Pallet::register`].
+   **/
   | { tag: 'Register'; value: { who: AccountId20; index: number } }
+  /**
+   * See [`Pallet::deregister`].
+   **/
   | { tag: 'Deregister'; value: { index: number } }
+  /**
+   * See [`Pallet::transact_through_derivative`].
+   **/
   | {
       tag: 'TransactThroughDerivative';
       value: {
@@ -2282,40 +3607,61 @@ export type PalletXcmTransactorCall =
         refund: boolean;
       };
     }
+  /**
+   * See [`Pallet::transact_through_sovereign`].
+   **/
   | {
       tag: 'TransactThroughSovereign';
       value: {
-        dest: XcmVersionedMultiLocation;
+        dest: StagingXcmVersionedMultiLocation;
         feePayer: AccountId20;
         fee: PalletXcmTransactorCurrencyPayment;
         call: Bytes;
-        originKind: XcmV2OriginKind;
+        originKind: StagingXcmV2OriginKind;
         weightInfo: PalletXcmTransactorTransactWeights;
         refund: boolean;
       };
     }
+  /**
+   * See [`Pallet::set_transact_info`].
+   **/
   | {
       tag: 'SetTransactInfo';
       value: {
-        location: XcmVersionedMultiLocation;
+        location: StagingXcmVersionedMultiLocation;
         transactExtraWeight: SpWeightsWeightV2Weight;
         maxWeight: SpWeightsWeightV2Weight;
         transactExtraWeightSigned?: SpWeightsWeightV2Weight | undefined;
       };
     }
-  | { tag: 'RemoveTransactInfo'; value: { location: XcmVersionedMultiLocation } }
+  /**
+   * See [`Pallet::remove_transact_info`].
+   **/
+  | { tag: 'RemoveTransactInfo'; value: { location: StagingXcmVersionedMultiLocation } }
+  /**
+   * See [`Pallet::transact_through_signed`].
+   **/
   | {
       tag: 'TransactThroughSigned';
       value: {
-        dest: XcmVersionedMultiLocation;
+        dest: StagingXcmVersionedMultiLocation;
         fee: PalletXcmTransactorCurrencyPayment;
         call: Bytes;
         weightInfo: PalletXcmTransactorTransactWeights;
         refund: boolean;
       };
     }
-  | { tag: 'SetFeePerSecond'; value: { assetLocation: XcmVersionedMultiLocation; feePerSecond: bigint } }
-  | { tag: 'RemoveFeePerSecond'; value: { assetLocation: XcmVersionedMultiLocation } }
+  /**
+   * See [`Pallet::set_fee_per_second`].
+   **/
+  | { tag: 'SetFeePerSecond'; value: { assetLocation: StagingXcmVersionedMultiLocation; feePerSecond: bigint } }
+  /**
+   * See [`Pallet::remove_fee_per_second`].
+   **/
+  | { tag: 'RemoveFeePerSecond'; value: { assetLocation: StagingXcmVersionedMultiLocation } }
+  /**
+   * See [`Pallet::hrmp_manage`].
+   **/
   | {
       tag: 'HrmpManage';
       value: {
@@ -2334,7 +3680,7 @@ export type PalletXcmTransactorCurrencyPayment = {
 
 export type PalletXcmTransactorCurrency =
   | { tag: 'AsCurrencyId'; value: MoonbeamRuntimeXcmConfigCurrencyId }
-  | { tag: 'AsMultiLocation'; value: XcmVersionedMultiLocation };
+  | { tag: 'AsMultiLocation'; value: StagingXcmVersionedMultiLocation };
 
 export type PalletXcmTransactorTransactWeights = {
   transactRequiredWeightAtMost: SpWeightsWeightV2Weight;
@@ -2343,31 +3689,43 @@ export type PalletXcmTransactorTransactWeights = {
 
 export type PalletXcmTransactorHrmpOperation =
   | { tag: 'InitOpen'; value: PalletXcmTransactorHrmpInitParams }
-  | { tag: 'Accept'; value: { paraId: PolkadotParachainPrimitivesId } }
-  | { tag: 'Close'; value: PolkadotParachainPrimitivesHrmpChannelId }
-  | { tag: 'Cancel'; value: { channelId: PolkadotParachainPrimitivesHrmpChannelId; openRequests: number } };
+  | { tag: 'Accept'; value: { paraId: PolkadotParachainPrimitivesPrimitivesId } }
+  | { tag: 'Close'; value: PolkadotParachainPrimitivesPrimitivesHrmpChannelId }
+  | { tag: 'Cancel'; value: { channelId: PolkadotParachainPrimitivesPrimitivesHrmpChannelId; openRequests: number } };
 
 export type PalletXcmTransactorHrmpInitParams = {
-  paraId: PolkadotParachainPrimitivesId;
+  paraId: PolkadotParachainPrimitivesPrimitivesId;
   proposedMaxCapacity: number;
   proposedMaxMessageSize: number;
 };
 
-export type PolkadotParachainPrimitivesHrmpChannelId = {
-  sender: PolkadotParachainPrimitivesId;
-  recipient: PolkadotParachainPrimitivesId;
+export type PolkadotParachainPrimitivesPrimitivesHrmpChannelId = {
+  sender: PolkadotParachainPrimitivesPrimitivesId;
+  recipient: PolkadotParachainPrimitivesPrimitivesId;
 };
 
 /**
- * Contains one variant per dispatchable that can be called by an extrinsic.
+ * Contains a variant per dispatchable extrinsic that this pallet has.
  **/
 export type PalletEthereumXcmCall =
+  /**
+   * See `Pallet::transact`.
+   **/
   | { tag: 'Transact'; value: { xcmTransaction: XcmPrimitivesEthereumXcmEthereumXcmTransaction } }
+  /**
+   * See `Pallet::transact_through_proxy`.
+   **/
   | {
       tag: 'TransactThroughProxy';
       value: { transactAs: H160; xcmTransaction: XcmPrimitivesEthereumXcmEthereumXcmTransaction };
     }
+  /**
+   * See `Pallet::suspend_ethereum_xcm_execution`.
+   **/
   | { tag: 'SuspendEthereumXcmExecution' }
+  /**
+   * See `Pallet::resume_ethereum_xcm_execution`.
+   **/
   | { tag: 'ResumeEthereumXcmExecution' };
 
 export type XcmPrimitivesEthereumXcmEthereumXcmTransaction =
@@ -2401,25 +3759,28 @@ export type XcmPrimitivesEthereumXcmEthereumXcmTransactionV2 = {
 };
 
 /**
- * Contains one variant per dispatchable that can be called by an extrinsic.
+ * Contains a variant per dispatchable extrinsic that this pallet has.
  **/
 export type PalletRandomnessCall =
   /**
-   * Populates `RandomnessResults` due this epoch with BABE epoch randomness
+   * See [`Pallet::set_babe_randomness_results`].
    **/
   'set_babe_randomness_results';
 
 export type PalletConvictionVotingTally = { ayes: bigint; nays: bigint; support: bigint };
 
 /**
- * The [event](https://docs.substrate.io/main-docs/build/events-errors/) emitted by this pallet.
+ * The `Event` enum of this pallet
  **/
 export type PalletWhitelistEvent =
-  | { tag: 'CallWhitelisted'; value: { callHash: H256 } }
-  | { tag: 'WhitelistedCallRemoved'; value: { callHash: H256 } }
+  | { name: 'CallWhitelisted'; data: { callHash: H256 } }
+  | { name: 'WhitelistedCallRemoved'; data: { callHash: H256 } }
   | {
-      tag: 'WhitelistedCallDispatched';
-      value: { callHash: H256; result: FrameSupportDispatchPostDispatchInfo | SpRuntimeDispatchErrorWithPostInfo };
+      name: 'WhitelistedCallDispatched';
+      data: {
+        callHash: H256;
+        result: ResultPayload<FrameSupportDispatchPostDispatchInfo, SpRuntimeDispatchErrorWithPostInfo>;
+      };
     };
 
 export type FrameSupportDispatchPostDispatchInfo = {
@@ -2433,228 +3794,672 @@ export type SpRuntimeDispatchErrorWithPostInfo = {
 };
 
 /**
- * The [event](https://docs.substrate.io/main-docs/build/events-errors/) emitted by this pallet.
+ * The `Event` enum of this pallet
  **/
 export type PalletCollectiveEvent =
-  | { tag: 'Proposed'; value: { account: AccountId20; proposalIndex: number; proposalHash: H256; threshold: number } }
-  | { tag: 'Voted'; value: { account: AccountId20; proposalHash: H256; voted: boolean; yes: number; no: number } }
-  | { tag: 'Approved'; value: { proposalHash: H256 } }
-  | { tag: 'Disapproved'; value: { proposalHash: H256 } }
-  | { tag: 'Executed'; value: { proposalHash: H256; result: [] | DispatchError } }
-  | { tag: 'MemberExecuted'; value: { proposalHash: H256; result: [] | DispatchError } }
-  | { tag: 'Closed'; value: { proposalHash: H256; yes: number; no: number } };
+  /**
+   * A motion (given hash) has been proposed (by given account) with a threshold (given
+   * `MemberCount`).
+   **/
+  | { name: 'Proposed'; data: { account: AccountId20; proposalIndex: number; proposalHash: H256; threshold: number } }
+  /**
+   * A motion (given hash) has been voted on by given account, leaving
+   * a tally (yes votes and no votes given respectively as `MemberCount`).
+   **/
+  | { name: 'Voted'; data: { account: AccountId20; proposalHash: H256; voted: boolean; yes: number; no: number } }
+  /**
+   * A motion was approved by the required threshold.
+   **/
+  | { name: 'Approved'; data: { proposalHash: H256 } }
+  /**
+   * A motion was not approved by the required threshold.
+   **/
+  | { name: 'Disapproved'; data: { proposalHash: H256 } }
+  /**
+   * A motion was executed; result will be `Ok` if it returned without error.
+   **/
+  | { name: 'Executed'; data: { proposalHash: H256; result: ResultPayload<[], DispatchError> } }
+  /**
+   * A single member did some action; result will be `Ok` if it returned without error.
+   **/
+  | { name: 'MemberExecuted'; data: { proposalHash: H256; result: ResultPayload<[], DispatchError> } }
+  /**
+   * A proposal was closed because its threshold was reached or after its duration was up.
+   **/
+  | { name: 'Closed'; data: { proposalHash: H256; yes: number; no: number } };
 
 /**
- * The [event](https://docs.substrate.io/main-docs/build/events-errors/) emitted by this pallet.
+ * The `Event` enum of this pallet
  **/
 export type PalletTreasuryEvent =
-  | { tag: 'Proposed'; value: { proposalIndex: number } }
-  | { tag: 'Spending'; value: { budgetRemaining: bigint } }
-  | { tag: 'Awarded'; value: { proposalIndex: number; award: bigint; account: AccountId20 } }
-  | { tag: 'Rejected'; value: { proposalIndex: number; slashed: bigint } }
-  | { tag: 'Burnt'; value: { burntFunds: bigint } }
-  | { tag: 'Rollover'; value: { rolloverBalance: bigint } }
-  | { tag: 'Deposit'; value: { value: bigint } }
-  | { tag: 'SpendApproved'; value: { proposalIndex: number; amount: bigint; beneficiary: AccountId20 } }
-  | { tag: 'UpdatedInactive'; value: { reactivated: bigint; deactivated: bigint } };
+  /**
+   * New proposal.
+   **/
+  | { name: 'Proposed'; data: { proposalIndex: number } }
+  /**
+   * We have ended a spend period and will now allocate funds.
+   **/
+  | { name: 'Spending'; data: { budgetRemaining: bigint } }
+  /**
+   * Some funds have been allocated.
+   **/
+  | { name: 'Awarded'; data: { proposalIndex: number; award: bigint; account: AccountId20 } }
+  /**
+   * A proposal was rejected; funds were slashed.
+   **/
+  | { name: 'Rejected'; data: { proposalIndex: number; slashed: bigint } }
+  /**
+   * Some of our funds have been burnt.
+   **/
+  | { name: 'Burnt'; data: { burntFunds: bigint } }
+  /**
+   * Spending has finished; this is the amount that rolls over until next spend.
+   **/
+  | { name: 'Rollover'; data: { rolloverBalance: bigint } }
+  /**
+   * Some funds have been deposited.
+   **/
+  | { name: 'Deposit'; data: { value: bigint } }
+  /**
+   * A new spend proposal has been approved.
+   **/
+  | { name: 'SpendApproved'; data: { proposalIndex: number; amount: bigint; beneficiary: AccountId20 } }
+  /**
+   * The inactive funds of the pallet have been updated.
+   **/
+  | { name: 'UpdatedInactive'; data: { reactivated: bigint; deactivated: bigint } };
 
 /**
- * The [event](https://docs.substrate.io/main-docs/build/events-errors/) emitted by this pallet.
+ * The `Event` enum of this pallet
  **/
 export type PalletCrowdloanRewardsEvent =
-  | { tag: 'InitialPaymentMade'; value: [AccountId20, bigint] }
-  | { tag: 'NativeIdentityAssociated'; value: [FixedBytes<32>, AccountId20, bigint] }
-  | { tag: 'RewardsPaid'; value: [AccountId20, bigint] }
-  | { tag: 'RewardAddressUpdated'; value: [AccountId20, AccountId20] }
-  | { tag: 'InitializedAlreadyInitializedAccount'; value: [FixedBytes<32>, AccountId20 | undefined, bigint] }
-  | { tag: 'InitializedAccountWithNotEnoughContribution'; value: [FixedBytes<32>, AccountId20 | undefined, bigint] };
+  /**
+   * The initial payment of InitializationPayment % was paid
+   **/
+  | { name: 'InitialPaymentMade'; data: [AccountId20, bigint] }
+  /**
+   * Someone has proven they made a contribution and associated a native identity with it.
+   * Data is the relay account, native account and the total amount of _rewards_ that will be paid
+   **/
+  | { name: 'NativeIdentityAssociated'; data: [FixedBytes<32>, AccountId20, bigint] }
+  /**
+   * A contributor has claimed some rewards.
+   * Data is the account getting paid and the amount of rewards paid.
+   **/
+  | { name: 'RewardsPaid'; data: [AccountId20, bigint] }
+  /**
+   * A contributor has updated the reward address.
+   **/
+  | { name: 'RewardAddressUpdated'; data: [AccountId20, AccountId20] }
+  /**
+   * When initializing the reward vec an already initialized account was found
+   **/
+  | { name: 'InitializedAlreadyInitializedAccount'; data: [FixedBytes<32>, AccountId20 | undefined, bigint] }
+  /**
+   * When initializing the reward vec an already initialized account was found
+   **/
+  | { name: 'InitializedAccountWithNotEnoughContribution'; data: [FixedBytes<32>, AccountId20 | undefined, bigint] };
 
 /**
- * The [event](https://docs.substrate.io/main-docs/build/events-errors/) emitted by this pallet.
+ * The `Event` enum of this pallet
  **/
 export type CumulusPalletXcmpQueueEvent =
-  | { tag: 'Success'; value: { messageHash?: FixedBytes<32> | undefined; weight: SpWeightsWeightV2Weight } }
+  /**
+   * Some XCM was executed ok.
+   **/
   | {
-      tag: 'Fail';
-      value: { messageHash?: FixedBytes<32> | undefined; error: XcmV3TraitsError; weight: SpWeightsWeightV2Weight };
+      name: 'Success';
+      data: { messageHash: FixedBytes<32>; messageId: FixedBytes<32>; weight: SpWeightsWeightV2Weight };
     }
-  | { tag: 'BadVersion'; value: { messageHash?: FixedBytes<32> | undefined } }
-  | { tag: 'BadFormat'; value: { messageHash?: FixedBytes<32> | undefined } }
-  | { tag: 'XcmpMessageSent'; value: { messageHash?: FixedBytes<32> | undefined } }
+  /**
+   * Some XCM failed.
+   **/
   | {
-      tag: 'OverweightEnqueued';
-      value: {
-        sender: PolkadotParachainPrimitivesId;
+      name: 'Fail';
+      data: {
+        messageHash: FixedBytes<32>;
+        messageId: FixedBytes<32>;
+        error: StagingXcmV3TraitsError;
+        weight: SpWeightsWeightV2Weight;
+      };
+    }
+  /**
+   * Bad XCM version used.
+   **/
+  | { name: 'BadVersion'; data: { messageHash: FixedBytes<32> } }
+  /**
+   * Bad XCM format used.
+   **/
+  | { name: 'BadFormat'; data: { messageHash: FixedBytes<32> } }
+  /**
+   * An HRMP message was sent to a sibling parachain.
+   **/
+  | { name: 'XcmpMessageSent'; data: { messageHash: FixedBytes<32> } }
+  /**
+   * An XCM exceeded the individual message weight budget.
+   **/
+  | {
+      name: 'OverweightEnqueued';
+      data: {
+        sender: PolkadotParachainPrimitivesPrimitivesId;
         sentAt: number;
         index: bigint;
         required: SpWeightsWeightV2Weight;
       };
     }
-  | { tag: 'OverweightServiced'; value: { index: bigint; used: SpWeightsWeightV2Weight } };
+  /**
+   * An XCM from the overweight queue was executed with the given actual weight used.
+   **/
+  | { name: 'OverweightServiced'; data: { index: bigint; used: SpWeightsWeightV2Weight } };
 
 /**
- * The [event](https://docs.substrate.io/main-docs/build/events-errors/) emitted by this pallet.
+ * The `Event` enum of this pallet
  **/
 export type CumulusPalletXcmEvent =
-  | { tag: 'InvalidFormat'; value: FixedBytes<32> }
-  | { tag: 'UnsupportedVersion'; value: FixedBytes<32> }
-  | { tag: 'ExecutedDownward'; value: [FixedBytes<32>, XcmV3TraitsOutcome] };
+  /**
+   * Downward message is invalid XCM.
+   * \[ id \]
+   **/
+  | { name: 'InvalidFormat'; data: FixedBytes<32> }
+  /**
+   * Downward message is unsupported version of XCM.
+   * \[ id \]
+   **/
+  | { name: 'UnsupportedVersion'; data: FixedBytes<32> }
+  /**
+   * Downward message executed with the given outcome.
+   * \[ id, outcome \]
+   **/
+  | { name: 'ExecutedDownward'; data: [FixedBytes<32>, StagingXcmV3TraitsOutcome] };
 
-export type XcmV3TraitsOutcome =
+export type StagingXcmV3TraitsOutcome =
   | { tag: 'Complete'; value: SpWeightsWeightV2Weight }
-  | { tag: 'Incomplete'; value: [SpWeightsWeightV2Weight, XcmV3TraitsError] }
-  | { tag: 'Error'; value: XcmV3TraitsError };
+  | { tag: 'Incomplete'; value: [SpWeightsWeightV2Weight, StagingXcmV3TraitsError] }
+  | { tag: 'Error'; value: StagingXcmV3TraitsError };
 
 /**
- * The [event](https://docs.substrate.io/main-docs/build/events-errors/) emitted by this pallet.
+ * The `Event` enum of this pallet
  **/
 export type CumulusPalletDmpQueueEvent =
-  | { tag: 'InvalidFormat'; value: { messageId: FixedBytes<32> } }
-  | { tag: 'UnsupportedVersion'; value: { messageId: FixedBytes<32> } }
-  | { tag: 'ExecutedDownward'; value: { messageId: FixedBytes<32>; outcome: XcmV3TraitsOutcome } }
+  /**
+   * Downward message is invalid XCM.
+   **/
+  | { name: 'InvalidFormat'; data: { messageHash: FixedBytes<32> } }
+  /**
+   * Downward message is unsupported version of XCM.
+   **/
+  | { name: 'UnsupportedVersion'; data: { messageHash: FixedBytes<32> } }
+  /**
+   * Downward message executed with the given outcome.
+   **/
   | {
-      tag: 'WeightExhausted';
-      value: {
+      name: 'ExecutedDownward';
+      data: { messageHash: FixedBytes<32>; messageId: FixedBytes<32>; outcome: StagingXcmV3TraitsOutcome };
+    }
+  /**
+   * The weight limit for handling downward messages was reached.
+   **/
+  | {
+      name: 'WeightExhausted';
+      data: {
+        messageHash: FixedBytes<32>;
         messageId: FixedBytes<32>;
         remainingWeight: SpWeightsWeightV2Weight;
         requiredWeight: SpWeightsWeightV2Weight;
       };
     }
+  /**
+   * Downward message is overweight and was placed in the overweight queue.
+   **/
   | {
-      tag: 'OverweightEnqueued';
-      value: { messageId: FixedBytes<32>; overweightIndex: bigint; requiredWeight: SpWeightsWeightV2Weight };
+      name: 'OverweightEnqueued';
+      data: {
+        messageHash: FixedBytes<32>;
+        messageId: FixedBytes<32>;
+        overweightIndex: bigint;
+        requiredWeight: SpWeightsWeightV2Weight;
+      };
     }
-  | { tag: 'OverweightServiced'; value: { overweightIndex: bigint; weightUsed: SpWeightsWeightV2Weight } }
-  | { tag: 'MaxMessagesExhausted'; value: { messageId: FixedBytes<32> } };
+  /**
+   * Downward message from the overweight queue was executed.
+   **/
+  | { name: 'OverweightServiced'; data: { overweightIndex: bigint; weightUsed: SpWeightsWeightV2Weight } }
+  /**
+   * The maximum number of downward messages was reached.
+   **/
+  | { name: 'MaxMessagesExhausted'; data: { messageHash: FixedBytes<32> } };
 
 /**
- * The [event](https://docs.substrate.io/main-docs/build/events-errors/) emitted by this pallet.
+ * The `Event` enum of this pallet
  **/
 export type PalletXcmEvent =
-  | { tag: 'Attempted'; value: XcmV3TraitsOutcome }
-  | { tag: 'Sent'; value: [XcmV3MultilocationMultiLocation, XcmV3MultilocationMultiLocation, XcmV3Xcm] }
-  | { tag: 'UnexpectedResponse'; value: [XcmV3MultilocationMultiLocation, bigint] }
-  | { tag: 'ResponseReady'; value: [bigint, XcmV3Response] }
-  | { tag: 'Notified'; value: [bigint, number, number] }
-  | { tag: 'NotifyOverweight'; value: [bigint, number, number, SpWeightsWeightV2Weight, SpWeightsWeightV2Weight] }
-  | { tag: 'NotifyDispatchError'; value: [bigint, number, number] }
-  | { tag: 'NotifyDecodeFailed'; value: [bigint, number, number] }
+  /**
+   * Execution of an XCM message was attempted.
+   **/
+  | { name: 'Attempted'; data: { outcome: StagingXcmV3TraitsOutcome } }
+  /**
+   * A XCM message was sent.
+   **/
   | {
-      tag: 'InvalidResponder';
-      value: [XcmV3MultilocationMultiLocation, bigint, XcmV3MultilocationMultiLocation | undefined];
+      name: 'Sent';
+      data: {
+        origin: StagingXcmV3MultilocationMultiLocation;
+        destination: StagingXcmV3MultilocationMultiLocation;
+        message: StagingXcmV3Xcm;
+        messageId: FixedBytes<32>;
+      };
     }
-  | { tag: 'InvalidResponderVersion'; value: [XcmV3MultilocationMultiLocation, bigint] }
-  | { tag: 'ResponseTaken'; value: bigint }
-  | { tag: 'AssetsTrapped'; value: [H256, XcmV3MultilocationMultiLocation, XcmVersionedMultiAssets] }
-  | { tag: 'VersionChangeNotified'; value: [XcmV3MultilocationMultiLocation, number, XcmV3MultiassetMultiAssets] }
-  | { tag: 'SupportedVersionChanged'; value: [XcmV3MultilocationMultiLocation, number] }
-  | { tag: 'NotifyTargetSendFail'; value: [XcmV3MultilocationMultiLocation, bigint, XcmV3TraitsError] }
-  | { tag: 'NotifyTargetMigrationFail'; value: [XcmVersionedMultiLocation, bigint] }
-  | { tag: 'InvalidQuerierVersion'; value: [XcmV3MultilocationMultiLocation, bigint] }
+  /**
+   * Query response received which does not match a registered query. This may be because a
+   * matching query was never registered, it may be because it is a duplicate response, or
+   * because the query timed out.
+   **/
+  | { name: 'UnexpectedResponse'; data: { origin: StagingXcmV3MultilocationMultiLocation; queryId: bigint } }
+  /**
+   * Query response has been received and is ready for taking with `take_response`. There is
+   * no registered notification call.
+   **/
+  | { name: 'ResponseReady'; data: { queryId: bigint; response: StagingXcmV3Response } }
+  /**
+   * Query response has been received and query is removed. The registered notification has
+   * been dispatched and executed successfully.
+   **/
+  | { name: 'Notified'; data: { queryId: bigint; palletIndex: number; callIndex: number } }
+  /**
+   * Query response has been received and query is removed. The registered notification
+   * could not be dispatched because the dispatch weight is greater than the maximum weight
+   * originally budgeted by this runtime for the query result.
+   **/
   | {
-      tag: 'InvalidQuerier';
-      value: [
-        XcmV3MultilocationMultiLocation,
-        bigint,
-        XcmV3MultilocationMultiLocation,
-        XcmV3MultilocationMultiLocation | undefined,
-      ];
+      name: 'NotifyOverweight';
+      data: {
+        queryId: bigint;
+        palletIndex: number;
+        callIndex: number;
+        actualWeight: SpWeightsWeightV2Weight;
+        maxBudgetedWeight: SpWeightsWeightV2Weight;
+      };
     }
-  | { tag: 'VersionNotifyStarted'; value: [XcmV3MultilocationMultiLocation, XcmV3MultiassetMultiAssets] }
-  | { tag: 'VersionNotifyRequested'; value: [XcmV3MultilocationMultiLocation, XcmV3MultiassetMultiAssets] }
-  | { tag: 'VersionNotifyUnrequested'; value: [XcmV3MultilocationMultiLocation, XcmV3MultiassetMultiAssets] }
-  | { tag: 'FeesPaid'; value: [XcmV3MultilocationMultiLocation, XcmV3MultiassetMultiAssets] }
-  | { tag: 'AssetsClaimed'; value: [H256, XcmV3MultilocationMultiLocation, XcmVersionedMultiAssets] };
+  /**
+   * Query response has been received and query is removed. There was a general error with
+   * dispatching the notification call.
+   **/
+  | { name: 'NotifyDispatchError'; data: { queryId: bigint; palletIndex: number; callIndex: number } }
+  /**
+   * Query response has been received and query is removed. The dispatch was unable to be
+   * decoded into a `Call`; this might be due to dispatch function having a signature which
+   * is not `(origin, QueryId, Response)`.
+   **/
+  | { name: 'NotifyDecodeFailed'; data: { queryId: bigint; palletIndex: number; callIndex: number } }
+  /**
+   * Expected query response has been received but the origin location of the response does
+   * not match that expected. The query remains registered for a later, valid, response to
+   * be received and acted upon.
+   **/
+  | {
+      name: 'InvalidResponder';
+      data: {
+        origin: StagingXcmV3MultilocationMultiLocation;
+        queryId: bigint;
+        expectedLocation?: StagingXcmV3MultilocationMultiLocation | undefined;
+      };
+    }
+  /**
+   * Expected query response has been received but the expected origin location placed in
+   * storage by this runtime previously cannot be decoded. The query remains registered.
+   *
+   * This is unexpected (since a location placed in storage in a previously executing
+   * runtime should be readable prior to query timeout) and dangerous since the possibly
+   * valid response will be dropped. Manual governance intervention is probably going to be
+   * needed.
+   **/
+  | { name: 'InvalidResponderVersion'; data: { origin: StagingXcmV3MultilocationMultiLocation; queryId: bigint } }
+  /**
+   * Received query response has been read and removed.
+   **/
+  | { name: 'ResponseTaken'; data: { queryId: bigint } }
+  /**
+   * Some assets have been placed in an asset trap.
+   **/
+  | {
+      name: 'AssetsTrapped';
+      data: { hash: H256; origin: StagingXcmV3MultilocationMultiLocation; assets: StagingXcmVersionedMultiAssets };
+    }
+  /**
+   * An XCM version change notification message has been attempted to be sent.
+   *
+   * The cost of sending it (borne by the chain) is included.
+   **/
+  | {
+      name: 'VersionChangeNotified';
+      data: {
+        destination: StagingXcmV3MultilocationMultiLocation;
+        result: number;
+        cost: StagingXcmV3MultiassetMultiAssets;
+        messageId: FixedBytes<32>;
+      };
+    }
+  /**
+   * The supported version of a location has been changed. This might be through an
+   * automatic notification or a manual intervention.
+   **/
+  | { name: 'SupportedVersionChanged'; data: { location: StagingXcmV3MultilocationMultiLocation; version: number } }
+  /**
+   * A given location which had a version change subscription was dropped owing to an error
+   * sending the notification to it.
+   **/
+  | {
+      name: 'NotifyTargetSendFail';
+      data: { location: StagingXcmV3MultilocationMultiLocation; queryId: bigint; error: StagingXcmV3TraitsError };
+    }
+  /**
+   * A given location which had a version change subscription was dropped owing to an error
+   * migrating the location to our new XCM format.
+   **/
+  | { name: 'NotifyTargetMigrationFail'; data: { location: StagingXcmVersionedMultiLocation; queryId: bigint } }
+  /**
+   * Expected query response has been received but the expected querier location placed in
+   * storage by this runtime previously cannot be decoded. The query remains registered.
+   *
+   * This is unexpected (since a location placed in storage in a previously executing
+   * runtime should be readable prior to query timeout) and dangerous since the possibly
+   * valid response will be dropped. Manual governance intervention is probably going to be
+   * needed.
+   **/
+  | { name: 'InvalidQuerierVersion'; data: { origin: StagingXcmV3MultilocationMultiLocation; queryId: bigint } }
+  /**
+   * Expected query response has been received but the querier location of the response does
+   * not match the expected. The query remains registered for a later, valid, response to
+   * be received and acted upon.
+   **/
+  | {
+      name: 'InvalidQuerier';
+      data: {
+        origin: StagingXcmV3MultilocationMultiLocation;
+        queryId: bigint;
+        expectedQuerier: StagingXcmV3MultilocationMultiLocation;
+        maybeActualQuerier?: StagingXcmV3MultilocationMultiLocation | undefined;
+      };
+    }
+  /**
+   * A remote has requested XCM version change notification from us and we have honored it.
+   * A version information message is sent to them and its cost is included.
+   **/
+  | {
+      name: 'VersionNotifyStarted';
+      data: {
+        destination: StagingXcmV3MultilocationMultiLocation;
+        cost: StagingXcmV3MultiassetMultiAssets;
+        messageId: FixedBytes<32>;
+      };
+    }
+  /**
+   * We have requested that a remote chain send us XCM version change notifications.
+   **/
+  | {
+      name: 'VersionNotifyRequested';
+      data: {
+        destination: StagingXcmV3MultilocationMultiLocation;
+        cost: StagingXcmV3MultiassetMultiAssets;
+        messageId: FixedBytes<32>;
+      };
+    }
+  /**
+   * We have requested that a remote chain stops sending us XCM version change
+   * notifications.
+   **/
+  | {
+      name: 'VersionNotifyUnrequested';
+      data: {
+        destination: StagingXcmV3MultilocationMultiLocation;
+        cost: StagingXcmV3MultiassetMultiAssets;
+        messageId: FixedBytes<32>;
+      };
+    }
+  /**
+   * Fees were paid from a location for an operation (often for using `SendXcm`).
+   **/
+  | {
+      name: 'FeesPaid';
+      data: { paying: StagingXcmV3MultilocationMultiLocation; fees: StagingXcmV3MultiassetMultiAssets };
+    }
+  /**
+   * Some assets have been claimed from an asset trap
+   **/
+  | {
+      name: 'AssetsClaimed';
+      data: { hash: H256; origin: StagingXcmV3MultilocationMultiLocation; assets: StagingXcmVersionedMultiAssets };
+    };
 
 /**
- * The [event](https://docs.substrate.io/main-docs/build/events-errors/) emitted by this pallet.
+ * The `Event` enum of this pallet
  **/
 export type PalletAssetsEvent =
-  | { tag: 'Created'; value: { assetId: bigint; creator: AccountId20; owner: AccountId20 } }
-  | { tag: 'Issued'; value: { assetId: bigint; owner: AccountId20; amount: bigint } }
-  | { tag: 'Transferred'; value: { assetId: bigint; from: AccountId20; to: AccountId20; amount: bigint } }
-  | { tag: 'Burned'; value: { assetId: bigint; owner: AccountId20; balance: bigint } }
-  | { tag: 'TeamChanged'; value: { assetId: bigint; issuer: AccountId20; admin: AccountId20; freezer: AccountId20 } }
-  | { tag: 'OwnerChanged'; value: { assetId: bigint; owner: AccountId20 } }
-  | { tag: 'Frozen'; value: { assetId: bigint; who: AccountId20 } }
-  | { tag: 'Thawed'; value: { assetId: bigint; who: AccountId20 } }
-  | { tag: 'AssetFrozen'; value: { assetId: bigint } }
-  | { tag: 'AssetThawed'; value: { assetId: bigint } }
-  | { tag: 'AccountsDestroyed'; value: { assetId: bigint; accountsDestroyed: number; accountsRemaining: number } }
-  | { tag: 'ApprovalsDestroyed'; value: { assetId: bigint; approvalsDestroyed: number; approvalsRemaining: number } }
-  | { tag: 'DestructionStarted'; value: { assetId: bigint } }
-  | { tag: 'Destroyed'; value: { assetId: bigint } }
-  | { tag: 'ForceCreated'; value: { assetId: bigint; owner: AccountId20 } }
-  | { tag: 'MetadataSet'; value: { assetId: bigint; name: Bytes; symbol: Bytes; decimals: number; isFrozen: boolean } }
-  | { tag: 'MetadataCleared'; value: { assetId: bigint } }
-  | { tag: 'ApprovedTransfer'; value: { assetId: bigint; source: AccountId20; delegate: AccountId20; amount: bigint } }
-  | { tag: 'ApprovalCancelled'; value: { assetId: bigint; owner: AccountId20; delegate: AccountId20 } }
+  /**
+   * Some asset class was created.
+   **/
+  | { name: 'Created'; data: { assetId: bigint; creator: AccountId20; owner: AccountId20 } }
+  /**
+   * Some assets were issued.
+   **/
+  | { name: 'Issued'; data: { assetId: bigint; owner: AccountId20; amount: bigint } }
+  /**
+   * Some assets were transferred.
+   **/
+  | { name: 'Transferred'; data: { assetId: bigint; from: AccountId20; to: AccountId20; amount: bigint } }
+  /**
+   * Some assets were destroyed.
+   **/
+  | { name: 'Burned'; data: { assetId: bigint; owner: AccountId20; balance: bigint } }
+  /**
+   * The management team changed.
+   **/
+  | { name: 'TeamChanged'; data: { assetId: bigint; issuer: AccountId20; admin: AccountId20; freezer: AccountId20 } }
+  /**
+   * The owner changed.
+   **/
+  | { name: 'OwnerChanged'; data: { assetId: bigint; owner: AccountId20 } }
+  /**
+   * Some account `who` was frozen.
+   **/
+  | { name: 'Frozen'; data: { assetId: bigint; who: AccountId20 } }
+  /**
+   * Some account `who` was thawed.
+   **/
+  | { name: 'Thawed'; data: { assetId: bigint; who: AccountId20 } }
+  /**
+   * Some asset `asset_id` was frozen.
+   **/
+  | { name: 'AssetFrozen'; data: { assetId: bigint } }
+  /**
+   * Some asset `asset_id` was thawed.
+   **/
+  | { name: 'AssetThawed'; data: { assetId: bigint } }
+  /**
+   * Accounts were destroyed for given asset.
+   **/
+  | { name: 'AccountsDestroyed'; data: { assetId: bigint; accountsDestroyed: number; accountsRemaining: number } }
+  /**
+   * Approvals were destroyed for given asset.
+   **/
+  | { name: 'ApprovalsDestroyed'; data: { assetId: bigint; approvalsDestroyed: number; approvalsRemaining: number } }
+  /**
+   * An asset class is in the process of being destroyed.
+   **/
+  | { name: 'DestructionStarted'; data: { assetId: bigint } }
+  /**
+   * An asset class was destroyed.
+   **/
+  | { name: 'Destroyed'; data: { assetId: bigint } }
+  /**
+   * Some asset class was force-created.
+   **/
+  | { name: 'ForceCreated'; data: { assetId: bigint; owner: AccountId20 } }
+  /**
+   * New metadata has been set for an asset.
+   **/
+  | { name: 'MetadataSet'; data: { assetId: bigint; name: Bytes; symbol: Bytes; decimals: number; isFrozen: boolean } }
+  /**
+   * Metadata has been cleared for an asset.
+   **/
+  | { name: 'MetadataCleared'; data: { assetId: bigint } }
+  /**
+   * (Additional) funds have been approved for transfer to a destination account.
+   **/
+  | { name: 'ApprovedTransfer'; data: { assetId: bigint; source: AccountId20; delegate: AccountId20; amount: bigint } }
+  /**
+   * An approval for account `delegate` was cancelled by `owner`.
+   **/
+  | { name: 'ApprovalCancelled'; data: { assetId: bigint; owner: AccountId20; delegate: AccountId20 } }
+  /**
+   * An `amount` was transferred in its entirety from `owner` to `destination` by
+   * the approved `delegate`.
+   **/
   | {
-      tag: 'TransferredApproved';
-      value: { assetId: bigint; owner: AccountId20; delegate: AccountId20; destination: AccountId20; amount: bigint };
+      name: 'TransferredApproved';
+      data: { assetId: bigint; owner: AccountId20; delegate: AccountId20; destination: AccountId20; amount: bigint };
     }
-  | { tag: 'AssetStatusChanged'; value: { assetId: bigint } }
-  | { tag: 'AssetMinBalanceChanged'; value: { assetId: bigint; newMinBalance: bigint } }
-  | { tag: 'Touched'; value: { assetId: bigint; who: AccountId20; depositor: AccountId20 } }
-  | { tag: 'Blocked'; value: { assetId: bigint; who: AccountId20 } };
+  /**
+   * An asset has had its attributes changed by the `Force` origin.
+   **/
+  | { name: 'AssetStatusChanged'; data: { assetId: bigint } }
+  /**
+   * The min_balance of an asset has been updated by the asset owner.
+   **/
+  | { name: 'AssetMinBalanceChanged'; data: { assetId: bigint; newMinBalance: bigint } }
+  /**
+   * Some account `who` was created with a deposit from `depositor`.
+   **/
+  | { name: 'Touched'; data: { assetId: bigint; who: AccountId20; depositor: AccountId20 } }
+  /**
+   * Some account `who` was blocked.
+   **/
+  | { name: 'Blocked'; data: { assetId: bigint; who: AccountId20 } };
 
 /**
- * The [event](https://docs.substrate.io/main-docs/build/events-errors/) emitted by this pallet.
+ * The `Event` enum of this pallet
  **/
 export type PalletAssetManagerEvent =
+  /**
+   * New asset with the asset manager is registered
+   **/
   | {
-      tag: 'ForeignAssetRegistered';
-      value: {
+      name: 'ForeignAssetRegistered';
+      data: {
         assetId: bigint;
         asset: MoonbeamRuntimeXcmConfigAssetType;
         metadata: MoonbeamRuntimeAssetConfigAssetRegistrarMetadata;
       };
     }
-  | { tag: 'UnitsPerSecondChanged'; value: { assetType: MoonbeamRuntimeXcmConfigAssetType; unitsPerSecond: bigint } }
-  | { tag: 'ForeignAssetTypeChanged'; value: { assetId: bigint; newAssetType: MoonbeamRuntimeXcmConfigAssetType } }
-  | { tag: 'ForeignAssetRemoved'; value: { assetId: bigint; assetType: MoonbeamRuntimeXcmConfigAssetType } }
-  | { tag: 'SupportedAssetRemoved'; value: { assetType: MoonbeamRuntimeXcmConfigAssetType } }
-  | { tag: 'LocalAssetRegistered'; value: { assetId: bigint; creator: AccountId20; owner: AccountId20 } }
-  | { tag: 'ForeignAssetDestroyed'; value: { assetId: bigint; assetType: MoonbeamRuntimeXcmConfigAssetType } }
-  | { tag: 'LocalAssetDestroyed'; value: { assetId: bigint } };
+  /**
+   * Changed the amount of units we are charging per execution second for a given asset
+   **/
+  | { name: 'UnitsPerSecondChanged'; data: { assetType: MoonbeamRuntimeXcmConfigAssetType; unitsPerSecond: bigint } }
+  /**
+   * Changed the xcm type mapping for a given asset id
+   **/
+  | { name: 'ForeignAssetTypeChanged'; data: { assetId: bigint; newAssetType: MoonbeamRuntimeXcmConfigAssetType } }
+  /**
+   * Removed all information related to an assetId
+   **/
+  | { name: 'ForeignAssetRemoved'; data: { assetId: bigint; assetType: MoonbeamRuntimeXcmConfigAssetType } }
+  /**
+   * Supported asset type for fee payment removed
+   **/
+  | { name: 'SupportedAssetRemoved'; data: { assetType: MoonbeamRuntimeXcmConfigAssetType } }
+  /**
+   * Local asset was created
+   **/
+  | { name: 'LocalAssetRegistered'; data: { assetId: bigint; creator: AccountId20; owner: AccountId20 } }
+  /**
+   * Removed all information related to an assetId and destroyed asset
+   **/
+  | { name: 'ForeignAssetDestroyed'; data: { assetId: bigint; assetType: MoonbeamRuntimeXcmConfigAssetType } }
+  /**
+   * Removed all information related to an assetId and destroyed asset
+   **/
+  | { name: 'LocalAssetDestroyed'; data: { assetId: bigint } };
 
 /**
- * The [event](https://docs.substrate.io/main-docs/build/events-errors/) emitted by this pallet.
+ * The `Event` enum of this pallet
  **/
-export type OrmlXtokensModuleEvent = {
-  tag: 'TransferredMultiAssets';
-  value: {
-    sender: AccountId20;
-    assets: XcmV3MultiassetMultiAssets;
-    fee: XcmV3MultiassetMultiAsset;
-    dest: XcmV3MultilocationMultiLocation;
+export type OrmlXtokensModuleEvent =
+  /**
+   * Transferred `MultiAsset` with fee.
+   **/
+  {
+    tag: 'TransferredMultiAssets';
+    value: {
+      sender: AccountId20;
+      assets: StagingXcmV3MultiassetMultiAssets;
+      fee: StagingXcmV3MultiassetMultiAsset;
+      dest: StagingXcmV3MultilocationMultiLocation;
+    };
   };
-};
 
 /**
- * The [event](https://docs.substrate.io/main-docs/build/events-errors/) emitted by this pallet.
+ * The `Event` enum of this pallet
  **/
 export type PalletXcmTransactorEvent =
+  /**
+   * Transacted the inner call through a derivative account in a destination chain.
+   **/
   | {
-      tag: 'TransactedDerivative';
-      value: { accountId: AccountId20; dest: XcmV3MultilocationMultiLocation; call: Bytes; index: number };
+      name: 'TransactedDerivative';
+      data: { accountId: AccountId20; dest: StagingXcmV3MultilocationMultiLocation; call: Bytes; index: number };
     }
-  | { tag: 'TransactedSovereign'; value: { feePayer: AccountId20; dest: XcmV3MultilocationMultiLocation; call: Bytes } }
-  | { tag: 'TransactedSigned'; value: { feePayer: AccountId20; dest: XcmV3MultilocationMultiLocation; call: Bytes } }
-  | { tag: 'RegisteredDerivative'; value: { accountId: AccountId20; index: number } }
-  | { tag: 'DeRegisteredDerivative'; value: { index: number } }
-  | { tag: 'TransactFailed'; value: { error: XcmV3TraitsError } }
+  /**
+   * Transacted the call through the sovereign account in a destination chain.
+   **/
   | {
-      tag: 'TransactInfoChanged';
-      value: {
-        location: XcmV3MultilocationMultiLocation;
+      name: 'TransactedSovereign';
+      data: { feePayer: AccountId20; dest: StagingXcmV3MultilocationMultiLocation; call: Bytes };
+    }
+  /**
+   * Transacted the call through a signed account in a destination chain.
+   **/
+  | {
+      name: 'TransactedSigned';
+      data: { feePayer: AccountId20; dest: StagingXcmV3MultilocationMultiLocation; call: Bytes };
+    }
+  /**
+   * Registered a derivative index for an account id.
+   **/
+  | { name: 'RegisteredDerivative'; data: { accountId: AccountId20; index: number } }
+  | { name: 'DeRegisteredDerivative'; data: { index: number } }
+  /**
+   * Transact failed
+   **/
+  | { name: 'TransactFailed'; data: { error: StagingXcmV3TraitsError } }
+  /**
+   * Changed the transact info of a location
+   **/
+  | {
+      name: 'TransactInfoChanged';
+      data: {
+        location: StagingXcmV3MultilocationMultiLocation;
         remoteInfo: PalletXcmTransactorRemoteTransactInfoWithMaxWeight;
       };
     }
-  | { tag: 'TransactInfoRemoved'; value: { location: XcmV3MultilocationMultiLocation } }
-  | { tag: 'DestFeePerSecondChanged'; value: { location: XcmV3MultilocationMultiLocation; feePerSecond: bigint } }
-  | { tag: 'DestFeePerSecondRemoved'; value: { location: XcmV3MultilocationMultiLocation } }
-  | { tag: 'HrmpManagementSent'; value: { action: PalletXcmTransactorHrmpOperation } };
+  /**
+   * Removed the transact info of a location
+   **/
+  | { name: 'TransactInfoRemoved'; data: { location: StagingXcmV3MultilocationMultiLocation } }
+  /**
+   * Set dest fee per second
+   **/
+  | {
+      name: 'DestFeePerSecondChanged';
+      data: { location: StagingXcmV3MultilocationMultiLocation; feePerSecond: bigint };
+    }
+  /**
+   * Remove dest fee per second
+   **/
+  | { name: 'DestFeePerSecondRemoved'; data: { location: StagingXcmV3MultilocationMultiLocation } }
+  /**
+   * HRMP manage action succesfully sent
+   **/
+  | { name: 'HrmpManagementSent'; data: { action: PalletXcmTransactorHrmpOperation } };
 
 export type PalletXcmTransactorRemoteTransactInfoWithMaxWeight = {
   transactExtraWeight: SpWeightsWeightV2Weight;
@@ -2663,12 +4468,12 @@ export type PalletXcmTransactorRemoteTransactInfoWithMaxWeight = {
 };
 
 /**
- * The [event](https://docs.substrate.io/main-docs/build/events-errors/) emitted by this pallet.
+ * The `Event` enum of this pallet
  **/
 export type PalletRandomnessEvent =
   | {
-      tag: 'RandomnessRequestedBabeEpoch';
-      value: {
+      name: 'RandomnessRequestedBabeEpoch';
+      data: {
         id: bigint;
         refundAddress: H160;
         contractAddress: H160;
@@ -2680,8 +4485,8 @@ export type PalletRandomnessEvent =
       };
     }
   | {
-      tag: 'RandomnessRequestedLocal';
-      value: {
+      name: 'RandomnessRequestedLocal';
+      data: {
         id: bigint;
         refundAddress: H160;
         contractAddress: H160;
@@ -2692,9 +4497,9 @@ export type PalletRandomnessEvent =
         earliestBlock: number;
       };
     }
-  | { tag: 'RequestFulfilled'; value: { id: bigint } }
-  | { tag: 'RequestFeeIncreased'; value: { id: bigint; newFee: bigint } }
-  | { tag: 'RequestExpirationExecuted'; value: { id: bigint } };
+  | { name: 'RequestFulfilled'; data: { id: bigint } }
+  | { name: 'RequestFeeIncreased'; data: { id: bigint; newFee: bigint } }
+  | { name: 'RequestExpirationExecuted'; data: { id: bigint } };
 
 export type FrameSystemPhase =
   | { tag: 'ApplyExtrinsic'; value: number }
@@ -2772,21 +4577,45 @@ export type FrameSystemError =
    **/
   | 'CallFiltered';
 
-export type PolkadotPrimitivesV4UpgradeRestriction = 'Present';
+export type CumulusPalletParachainSystemUnincludedSegmentAncestor = {
+  usedBandwidth: CumulusPalletParachainSystemUnincludedSegmentUsedBandwidth;
+  paraHeadHash?: H256 | undefined;
+  consumedGoAheadSignal?: PolkadotPrimitivesV5UpgradeGoAhead | undefined;
+};
+
+export type CumulusPalletParachainSystemUnincludedSegmentUsedBandwidth = {
+  umpMsgCount: number;
+  umpTotalBytes: number;
+  hrmpOutgoing: Array<
+    [PolkadotParachainPrimitivesPrimitivesId, CumulusPalletParachainSystemUnincludedSegmentHrmpChannelUpdate]
+  >;
+};
+
+export type CumulusPalletParachainSystemUnincludedSegmentHrmpChannelUpdate = { msgCount: number; totalBytes: number };
+
+export type PolkadotPrimitivesV5UpgradeGoAhead = 'Abort' | 'GoAhead';
+
+export type CumulusPalletParachainSystemUnincludedSegmentSegmentTracker = {
+  usedBandwidth: CumulusPalletParachainSystemUnincludedSegmentUsedBandwidth;
+  hrmpWatermark?: number | undefined;
+  consumedGoAheadSignal?: PolkadotPrimitivesV5UpgradeGoAhead | undefined;
+};
+
+export type PolkadotPrimitivesV5UpgradeRestriction = 'Present';
 
 export type CumulusPalletParachainSystemRelayStateSnapshotMessagingStateSnapshot = {
   dmqMqcHead: H256;
-  relayDispatchQueueSize: CumulusPalletParachainSystemRelayStateSnapshotRelayDispachQueueSize;
-  ingressChannels: Array<[PolkadotParachainPrimitivesId, PolkadotPrimitivesV4AbridgedHrmpChannel]>;
-  egressChannels: Array<[PolkadotParachainPrimitivesId, PolkadotPrimitivesV4AbridgedHrmpChannel]>;
+  relayDispatchQueueRemainingCapacity: CumulusPalletParachainSystemRelayStateSnapshotRelayDispatchQueueRemainingCapacity;
+  ingressChannels: Array<[PolkadotParachainPrimitivesPrimitivesId, PolkadotPrimitivesV5AbridgedHrmpChannel]>;
+  egressChannels: Array<[PolkadotParachainPrimitivesPrimitivesId, PolkadotPrimitivesV5AbridgedHrmpChannel]>;
 };
 
-export type CumulusPalletParachainSystemRelayStateSnapshotRelayDispachQueueSize = {
+export type CumulusPalletParachainSystemRelayStateSnapshotRelayDispatchQueueRemainingCapacity = {
   remainingCount: number;
   remainingSize: number;
 };
 
-export type PolkadotPrimitivesV4AbridgedHrmpChannel = {
+export type PolkadotPrimitivesV5AbridgedHrmpChannel = {
   maxCapacity: number;
   maxTotalSize: number;
   maxMessageSize: number;
@@ -2795,7 +4624,7 @@ export type PolkadotPrimitivesV4AbridgedHrmpChannel = {
   mqcHead?: H256 | undefined;
 };
 
-export type PolkadotPrimitivesV4AbridgedHostConfiguration = {
+export type PolkadotPrimitivesV5AbridgedHostConfiguration = {
   maxCodeSize: number;
   maxHeadDataSize: number;
   maxUpwardQueueCount: number;
@@ -2805,16 +4634,22 @@ export type PolkadotPrimitivesV4AbridgedHostConfiguration = {
   hrmpMaxMessageNumPerCandidate: number;
   validationUpgradeCooldown: number;
   validationUpgradeDelay: number;
+  asyncBackingParams: PolkadotPrimitivesVstagingAsyncBackingParams;
 };
+
+export type PolkadotPrimitivesVstagingAsyncBackingParams = { maxCandidateDepth: number; allowedAncestryLen: number };
 
 export type CumulusPrimitivesParachainInherentMessageQueueChain = H256;
 
-export type PolkadotCorePrimitivesOutboundHrmpMessage = { recipient: PolkadotParachainPrimitivesId; data: Bytes };
+export type PolkadotCorePrimitivesOutboundHrmpMessage = {
+  recipient: PolkadotParachainPrimitivesPrimitivesId;
+  data: Bytes;
+};
 
 export type CumulusPalletParachainSystemCodeUpgradeAuthorization = { codeHash: H256; checkVersion: boolean };
 
 /**
- * Custom [dispatch errors](https://docs.substrate.io/main-docs/build/events-errors/) of this pallet.
+ * The `Error` enum of this pallet.
  **/
 export type CumulusPalletParachainSystemError =
   /**
@@ -2857,10 +4692,14 @@ export type PalletBalancesReasons = 'Fee' | 'Misc' | 'All';
 
 export type PalletBalancesReserveData = { id: FixedBytes<4>; amount: bigint };
 
-export type PalletBalancesIdAmount = { id: []; amount: bigint };
+export type PalletBalancesIdAmount = { id: MoonbeamRuntimeRuntimeHoldReason; amount: bigint };
+
+export type MoonbeamRuntimeRuntimeHoldReason = null;
+
+export type PalletBalancesIdAmount002 = { id: []; amount: bigint };
 
 /**
- * Custom [dispatch errors](https://docs.substrate.io/main-docs/build/events-errors/) of this pallet.
+ * The `Error` enum of this pallet.
  **/
 export type PalletBalancesError =
   /**
@@ -2979,7 +4818,7 @@ export type PalletParachainStakingInflationInflationInfo = {
 };
 
 /**
- * Custom [dispatch errors](https://docs.substrate.io/main-docs/build/events-errors/) of this pallet.
+ * The `Error` enum of this pallet.
  **/
 export type PalletParachainStakingError =
   | 'DelegatorDNE'
@@ -3027,15 +4866,19 @@ export type PalletParachainStakingError =
   | 'TooLowDelegationCountToAutoCompound'
   | 'TooLowCandidateAutoCompoundingDelegationCountToAutoCompound'
   | 'TooLowCandidateAutoCompoundingDelegationCountToDelegate'
+  | 'TooLowCollatorCountToNotifyAsInactive'
+  | 'CannotBeNotifiedAsInactive'
   | 'TooLowCandidateAutoCompoundingDelegationCountToLeaveCandidates'
   | 'TooLowCandidateCountWeightHint'
   | 'TooLowCandidateCountWeightHintGoOffline'
   | 'CandidateLimitReached'
   | 'CannotSetAboveMaxCandidates'
-  | 'RemovedCall';
+  | 'RemovedCall'
+  | 'MarkingOfflineNotEnabled'
+  | 'CurrentRoundTooLow';
 
 /**
- * Custom [dispatch errors](https://docs.substrate.io/main-docs/build/events-errors/) of this pallet.
+ * The `Error` enum of this pallet.
  **/
 export type PalletAuthorInherentError =
   /**
@@ -3145,7 +4988,7 @@ export type PalletMoonbeamOrbitersError =
   | 'OrbiterStillInAPool';
 
 /**
- * Custom [dispatch errors](https://docs.substrate.io/main-docs/build/events-errors/) of this pallet.
+ * The `Error` enum of this pallet.
  **/
 export type PalletUtilityError =
   /**
@@ -3158,7 +5001,7 @@ export type PalletProxyProxyDefinition = { delegate: AccountId20; proxyType: Moo
 export type PalletProxyAnnouncement = { real: AccountId20; callHash: H256; height: number };
 
 /**
- * Custom [dispatch errors](https://docs.substrate.io/main-docs/build/events-errors/) of this pallet.
+ * The `Error` enum of this pallet.
  **/
 export type PalletProxyError =
   /**
@@ -3216,7 +5059,7 @@ export type PalletIdentityRegistration = {
 export type PalletIdentityRegistrarInfo = { account: AccountId20; fee: bigint; fields: PalletIdentityBitFlags };
 
 /**
- * Custom [dispatch errors](https://docs.substrate.io/main-docs/build/events-errors/) of this pallet.
+ * The `Error` enum of this pallet.
  **/
 export type PalletIdentityError =
   /**
@@ -3293,7 +5136,7 @@ export type PalletIdentityError =
   | 'JudgementPaymentFailed';
 
 /**
- * Custom [dispatch errors](https://docs.substrate.io/main-docs/build/events-errors/) of this pallet.
+ * The `Error` enum of this pallet.
  **/
 export type PalletMigrationsError =
   /**
@@ -3321,7 +5164,7 @@ export type PalletMultisigMultisig = {
 };
 
 /**
- * Custom [dispatch errors](https://docs.substrate.io/main-docs/build/events-errors/) of this pallet.
+ * The `Error` enum of this pallet.
  **/
 export type PalletMultisigError =
   /**
@@ -3384,7 +5227,7 @@ export type PalletMultisigError =
 export type PalletEvmCodeMetadata = { size: bigint; hash: H256 };
 
 /**
- * Custom [dispatch errors](https://docs.substrate.io/main-docs/build/events-errors/) of this pallet.
+ * The `Error` enum of this pallet.
  **/
 export type PalletEvmError =
   /**
@@ -3483,7 +5326,7 @@ export type EthereumHeader = {
 export type EthereumTypesHashH64 = FixedBytes<8>;
 
 /**
- * Custom [dispatch errors](https://docs.substrate.io/main-docs/build/events-errors/) of this pallet.
+ * The `Error` enum of this pallet.
  **/
 export type PalletEthereumError =
   /**
@@ -3504,7 +5347,7 @@ export type PalletSchedulerScheduled = {
 };
 
 /**
- * Custom [dispatch errors](https://docs.substrate.io/main-docs/build/events-errors/) of this pallet.
+ * The `Error` enum of this pallet.
  **/
 export type PalletSchedulerError =
   /**
@@ -3567,7 +5410,7 @@ export type PalletDemocracyDelegations = { votes: bigint; capital: bigint };
 export type PalletDemocracyVotePriorLock = [number, bigint];
 
 /**
- * Custom [dispatch errors](https://docs.substrate.io/main-docs/build/events-errors/) of this pallet.
+ * The `Error` enum of this pallet.
  **/
 export type PalletDemocracyError =
   /**
@@ -3676,7 +5519,7 @@ export type PalletPreimageRequestStatus =
     };
 
 /**
- * Custom [dispatch errors](https://docs.substrate.io/main-docs/build/events-errors/) of this pallet.
+ * The `Error` enum of this pallet.
  **/
 export type PalletPreimageError =
   /**
@@ -3727,7 +5570,7 @@ export type PalletConvictionVotingVoteDelegating = {
 };
 
 /**
- * Custom [dispatch errors](https://docs.substrate.io/main-docs/build/events-errors/) of this pallet.
+ * The `Error` enum of this pallet.
  **/
 export type PalletConvictionVotingError =
   /**
@@ -3824,7 +5667,7 @@ export type PalletReferendaCurve =
   | { tag: 'Reciprocal'; value: { factor: FixedI64; xOffset: FixedI64; yOffset: FixedI64 } };
 
 /**
- * Custom [dispatch errors](https://docs.substrate.io/main-docs/build/events-errors/) of this pallet.
+ * The `Error` enum of this pallet.
  **/
 export type PalletReferendaError =
   /**
@@ -3881,7 +5724,7 @@ export type PalletReferendaError =
   | 'PreimageNotExist';
 
 /**
- * Custom [dispatch errors](https://docs.substrate.io/main-docs/build/events-errors/) of this pallet.
+ * The `Error` enum of this pallet.
  **/
 export type PalletWhitelistError =
   /**
@@ -3914,7 +5757,7 @@ export type PalletCollectiveVotes = {
 };
 
 /**
- * Custom [dispatch errors](https://docs.substrate.io/main-docs/build/events-errors/) of this pallet.
+ * The `Error` enum of this pallet.
  **/
 export type PalletCollectiveError =
   /**
@@ -3956,7 +5799,11 @@ export type PalletCollectiveError =
   /**
    * The given length bound for the proposal was too low.
    **/
-  | 'WrongProposalLength';
+  | 'WrongProposalLength'
+  /**
+   * Prime account is not a member
+   **/
+  | 'PrimeAccountNotMember';
 
 export type PalletTreasuryProposal = { proposer: AccountId20; value: bigint; beneficiary: AccountId20; bond: bigint };
 
@@ -3995,7 +5842,7 @@ export type PalletCrowdloanRewardsRewardInfo = {
 };
 
 /**
- * Custom [dispatch errors](https://docs.substrate.io/main-docs/build/events-errors/) of this pallet.
+ * The `Error` enum of this pallet.
  **/
 export type PalletCrowdloanRewardsError =
   /**
@@ -4065,20 +5912,20 @@ export type PalletCrowdloanRewardsError =
   | 'InsufficientNumberOfValidProofs';
 
 export type CumulusPalletXcmpQueueInboundChannelDetails = {
-  sender: PolkadotParachainPrimitivesId;
+  sender: PolkadotParachainPrimitivesPrimitivesId;
   state: CumulusPalletXcmpQueueInboundState;
-  messageMetadata: Array<[number, PolkadotParachainPrimitivesXcmpMessageFormat]>;
+  messageMetadata: Array<[number, PolkadotParachainPrimitivesPrimitivesXcmpMessageFormat]>;
 };
 
 export type CumulusPalletXcmpQueueInboundState = 'Ok' | 'Suspended';
 
-export type PolkadotParachainPrimitivesXcmpMessageFormat =
+export type PolkadotParachainPrimitivesPrimitivesXcmpMessageFormat =
   | 'ConcatenatedVersionedXcm'
   | 'ConcatenatedEncodedBlob'
   | 'Signals';
 
 export type CumulusPalletXcmpQueueOutboundChannelDetails = {
-  recipient: PolkadotParachainPrimitivesId;
+  recipient: PolkadotParachainPrimitivesPrimitivesId;
   state: CumulusPalletXcmpQueueOutboundState;
   signalsExist: boolean;
   firstIndex: number;
@@ -4097,7 +5944,7 @@ export type CumulusPalletXcmpQueueQueueConfigData = {
 };
 
 /**
- * Custom [dispatch errors](https://docs.substrate.io/main-docs/build/events-errors/) of this pallet.
+ * The `Error` enum of this pallet.
  **/
 export type CumulusPalletXcmpQueueError =
   /**
@@ -4122,7 +5969,7 @@ export type CumulusPalletXcmpQueueError =
   | 'WeightOverLimit';
 
 /**
- * Custom [dispatch errors](https://docs.substrate.io/main-docs/build/events-errors/) of this pallet.
+ * The `Error` enum of this pallet.
  **/
 export type CumulusPalletXcmError = null;
 
@@ -4131,7 +5978,7 @@ export type CumulusPalletDmpQueueConfigData = { maxIndividual: SpWeightsWeightV2
 export type CumulusPalletDmpQueuePageIndexData = { beginUsed: number; endUsed: number; overweightCount: bigint };
 
 /**
- * Custom [dispatch errors](https://docs.substrate.io/main-docs/build/events-errors/) of this pallet.
+ * The `Error` enum of this pallet.
  **/
 export type CumulusPalletDmpQueueError =
   /**
@@ -4147,16 +5994,18 @@ export type PalletXcmQueryStatus =
   | {
       tag: 'Pending';
       value: {
-        responder: XcmVersionedMultiLocation;
-        maybeMatchQuerier?: XcmVersionedMultiLocation | undefined;
+        responder: StagingXcmVersionedMultiLocation;
+        maybeMatchQuerier?: StagingXcmVersionedMultiLocation | undefined;
         maybeNotify?: [number, number] | undefined;
         timeout: number;
       };
     }
-  | { tag: 'VersionNotifier'; value: { origin: XcmVersionedMultiLocation; isActive: boolean } }
-  | { tag: 'Ready'; value: { response: XcmVersionedResponse; at: number } };
+  | { tag: 'VersionNotifier'; value: { origin: StagingXcmVersionedMultiLocation; isActive: boolean } }
+  | { tag: 'Ready'; value: { response: StagingXcmVersionedResponse; at: number } };
 
-export type XcmVersionedResponse = { tag: 'V2'; value: XcmV2Response } | { tag: 'V3'; value: XcmV3Response };
+export type StagingXcmVersionedResponse =
+  | { tag: 'V2'; value: StagingXcmV2Response }
+  | { tag: 'V3'; value: StagingXcmV3Response };
 
 export type PalletXcmVersionMigrationStage =
   | { tag: 'MigrateSupportedVersion' }
@@ -4164,17 +6013,17 @@ export type PalletXcmVersionMigrationStage =
   | { tag: 'NotifyCurrentTargets'; value?: Bytes | undefined }
   | { tag: 'MigrateAndNotifyOldTargets' };
 
-export type XcmVersionedAssetId = { tag: 'V3'; value: XcmV3MultiassetAssetId };
+export type StagingXcmVersionedAssetId = { tag: 'V3'; value: StagingXcmV3MultiassetAssetId };
 
 export type PalletXcmRemoteLockedFungibleRecord = {
   amount: bigint;
-  owner: XcmVersionedMultiLocation;
-  locker: XcmVersionedMultiLocation;
+  owner: StagingXcmVersionedMultiLocation;
+  locker: StagingXcmVersionedMultiLocation;
   consumers: Array<[[], bigint]>;
 };
 
 /**
- * Custom [dispatch errors](https://docs.substrate.io/main-docs/build/events-errors/) of this pallet.
+ * The `Error` enum of this pallet.
  **/
 export type PalletXcmError =
   /**
@@ -4183,8 +6032,8 @@ export type PalletXcmError =
    **/
   | 'Unreachable'
   /**
-   * There was some other issue (i.e. not to do with routing) in sending the message. Perhaps
-   * a lack of space for buffering the message.
+   * There was some other issue (i.e. not to do with routing) in sending the message.
+   * Perhaps a lack of space for buffering the message.
    **/
   | 'SendFailure'
   /**
@@ -4305,7 +6154,7 @@ export type PalletAssetsAssetMetadata = {
 };
 
 /**
- * Custom [dispatch errors](https://docs.substrate.io/main-docs/build/events-errors/) of this pallet.
+ * The `Error` enum of this pallet.
  **/
 export type PalletAssetsError =
   /**
@@ -4408,7 +6257,7 @@ export type PalletAssetManagerError =
   | 'NonExistentLocalAsset';
 
 /**
- * Custom [dispatch errors](https://docs.substrate.io/main-docs/build/events-errors/) of this pallet.
+ * The `Error` enum of this pallet.
  **/
 export type OrmlXtokensModuleError =
   /**
@@ -4491,6 +6340,27 @@ export type OrmlXtokensModuleError =
    **/
   | 'MinXcmFeeNotDefined';
 
+export type PalletXcmTransactorRelayIndicesRelayChainIndices = {
+  staking: number;
+  utility: number;
+  hrmp: number;
+  bond: number;
+  bondExtra: number;
+  unbond: number;
+  withdrawUnbonded: number;
+  validate: number;
+  nominate: number;
+  chill: number;
+  setPayee: number;
+  setController: number;
+  rebond: number;
+  asDerivative: number;
+  initOpenChannel: number;
+  acceptOpenChannel: number;
+  closeChannel: number;
+  cancelOpenRequest: number;
+};
+
 /**
  * An error that can occur while executing the mapping pallet's logic.
  **/
@@ -4524,7 +6394,7 @@ export type PalletXcmTransactorError =
   | 'RefundNotSupportedWithTransactInfo';
 
 /**
- * Custom [dispatch errors](https://docs.substrate.io/main-docs/build/events-errors/) of this pallet.
+ * The `Error` enum of this pallet.
  **/
 export type PalletEthereumXcmError =
   /**
@@ -4553,7 +6423,7 @@ export type PalletRandomnessRequestType = { tag: 'BabeEpoch'; value: bigint } | 
 export type PalletRandomnessRandomnessResult = { randomness?: H256 | undefined; requestCount: bigint };
 
 /**
- * Custom [dispatch errors](https://docs.substrate.io/main-docs/build/events-errors/) of this pallet.
+ * The `Error` enum of this pallet.
  **/
 export type PalletRandomnessError =
   | 'RequestCounterOverflowed'

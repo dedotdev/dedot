@@ -1,5 +1,6 @@
 import { PortableType, TypeId } from '@delightfuldot/codecs';
 import * as $ from '@delightfuldot/shape';
+import { EnumOptions } from '@delightfuldot/shape';
 import { normalizeName } from '@delightfuldot/utils';
 import { CodecRegistry } from './CodecRegistry';
 import { stringPascalCase } from '@polkadot/util';
@@ -114,7 +115,7 @@ export class PortableCodecRegistry {
       const { members } = value;
 
       // Handle optional field
-      if (path[0] === 'Option') {
+      if (path.join('::') === 'Option') {
         const some = members.find((one) => one.name === 'Some');
         if (some) {
           const $codec = this.findCodec(some.fields[0].typeId);
@@ -123,6 +124,15 @@ export class PortableCodecRegistry {
           } else {
             return $.Option($codec);
           }
+        }
+      } else if (path.join('::') === 'Result') {
+        const ok = members.find((one) => one.name === 'Ok');
+        const err = members.find((one) => one.name === 'Err');
+        if (ok && err) {
+          const $OkCodec = this.findCodec(ok.fields[0].typeId);
+          const $ErrCodec = this.findCodec(err.fields[0].typeId);
+
+          return $.Result($OkCodec, $ErrCodec);
         }
       }
 
@@ -162,7 +172,7 @@ export class PortableCodecRegistry {
             };
           }
         }
-        return $.Enum(enumMembers);
+        return $.Enum(enumMembers, this.getEnumOptions(path));
       }
     } else if (tag === 'Sequence') {
       const $inner = this.findCodec(type.value.typeParam);
@@ -198,4 +208,30 @@ export class PortableCodecRegistry {
 
     throw Error(`Not support yet! ${JSON.stringify(def, null, 2)}`);
   };
+
+  /**
+   * Custom enum labels for different types
+   *
+   * @param path
+   */
+  getEnumOptions(path: string[]): EnumOptions {
+    const fullPath = path.join('::');
+
+    if (fullPath.endsWith('RuntimeEvent')) {
+      return {
+        tagKey: 'pallet',
+        valueKey: 'palletEvent',
+      };
+    } else if (fullPath.endsWith('::pallet::Event')) {
+      return {
+        tagKey: 'name',
+        valueKey: 'data',
+      };
+    }
+
+    return {
+      tagKey: 'tag',
+      valueKey: 'value',
+    };
+  }
 }

@@ -40,4 +40,6 @@ export type FixedArray<T, N extends number> = N extends 0
 // typeIn for $.Option codec
 export type Option<T> = T | undefined;
 
+export type ResultPayload<Ok, Err> = $.ResultPayload<Ok, Err>;
+
 // TODO add typeIn for other primitives codecs!

@@ -7,7 +7,7 @@
   "type": "module",
   "scripts": {
     "build": "tsc --project tsconfig.build.json",
-    "clean": "rm -rf ./dist && rm -rf ./tsconfig.tsbuildinfo ./tsconfig.build.tsbuildinfo",
+    "clean": "rm -rf ./dist && rm -rf ./tsconfig.tsbuildinfo ./tsconfig.build.tsbuildinfo"
   },
   "dependencies": {
     "@delightfuldot/codecs": "workspace:*",

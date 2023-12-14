@@ -177,12 +177,16 @@ export interface ChainErrors extends GenericChainErrors {
     TooLowDelegationCountToAutoCompound: GenericModuleError;
     TooLowCandidateAutoCompoundingDelegationCountToAutoCompound: GenericModuleError;
     TooLowCandidateAutoCompoundingDelegationCountToDelegate: GenericModuleError;
+    TooLowCollatorCountToNotifyAsInactive: GenericModuleError;
+    CannotBeNotifiedAsInactive: GenericModuleError;
     TooLowCandidateAutoCompoundingDelegationCountToLeaveCandidates: GenericModuleError;
     TooLowCandidateCountWeightHint: GenericModuleError;
     TooLowCandidateCountWeightHintGoOffline: GenericModuleError;
     CandidateLimitReached: GenericModuleError;
     CannotSetAboveMaxCandidates: GenericModuleError;
     RemovedCall: GenericModuleError;
+    MarkingOfflineNotEnabled: GenericModuleError;
+    CurrentRoundTooLow: GenericModuleError;
   };
   authorInherent: {
     /**
@@ -979,6 +983,11 @@ export interface ChainErrors extends GenericChainErrors {
      * The given length bound for the proposal was too low.
      **/
     WrongProposalLength: GenericModuleError;
+
+    /**
+     * Prime account is not a member
+     **/
+    PrimeAccountNotMember: GenericModuleError;
   };
   techCommitteeCollective: {
     /**
@@ -1030,6 +1039,11 @@ export interface ChainErrors extends GenericChainErrors {
      * The given length bound for the proposal was too low.
      **/
     WrongProposalLength: GenericModuleError;
+
+    /**
+     * Prime account is not a member
+     **/
+    PrimeAccountNotMember: GenericModuleError;
   };
   treasuryCouncilCollective: {
     /**
@@ -1081,6 +1095,11 @@ export interface ChainErrors extends GenericChainErrors {
      * The given length bound for the proposal was too low.
      **/
     WrongProposalLength: GenericModuleError;
+
+    /**
+     * Prime account is not a member
+     **/
+    PrimeAccountNotMember: GenericModuleError;
   };
   openTechCommitteeCollective: {
     /**
@@ -1132,6 +1151,11 @@ export interface ChainErrors extends GenericChainErrors {
      * The given length bound for the proposal was too low.
      **/
     WrongProposalLength: GenericModuleError;
+
+    /**
+     * Prime account is not a member
+     **/
+    PrimeAccountNotMember: GenericModuleError;
   };
   treasury: {
     /**
@@ -1287,8 +1311,8 @@ export interface ChainErrors extends GenericChainErrors {
     Unreachable: GenericModuleError;
 
     /**
-     * There was some other issue (i.e. not to do with routing) in sending the message. Perhaps
-     * a lack of space for buffering the message.
+     * There was some other issue (i.e. not to do with routing) in sending the message.
+     * Perhaps a lack of space for buffering the message.
      **/
     SendFailure: GenericModuleError;
 

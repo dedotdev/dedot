@@ -398,332 +398,6 @@ export interface ChainErrors extends GenericChainErrors {
      **/
     DuplicatedHeartbeat: GenericModuleError;
   };
-  democracy: {
-    /**
-     * Value too low
-     **/
-    ValueLow: GenericModuleError;
-
-    /**
-     * Proposal does not exist
-     **/
-    ProposalMissing: GenericModuleError;
-
-    /**
-     * Cannot cancel the same proposal twice
-     **/
-    AlreadyCanceled: GenericModuleError;
-
-    /**
-     * Proposal already made
-     **/
-    DuplicateProposal: GenericModuleError;
-
-    /**
-     * Proposal still blacklisted
-     **/
-    ProposalBlacklisted: GenericModuleError;
-
-    /**
-     * Next external proposal not simple majority
-     **/
-    NotSimpleMajority: GenericModuleError;
-
-    /**
-     * Invalid hash
-     **/
-    InvalidHash: GenericModuleError;
-
-    /**
-     * No external proposal
-     **/
-    NoProposal: GenericModuleError;
-
-    /**
-     * Identity may not veto a proposal twice
-     **/
-    AlreadyVetoed: GenericModuleError;
-
-    /**
-     * Vote given for invalid referendum
-     **/
-    ReferendumInvalid: GenericModuleError;
-
-    /**
-     * No proposals waiting
-     **/
-    NoneWaiting: GenericModuleError;
-
-    /**
-     * The given account did not vote on the referendum.
-     **/
-    NotVoter: GenericModuleError;
-
-    /**
-     * The actor has no permission to conduct the action.
-     **/
-    NoPermission: GenericModuleError;
-
-    /**
-     * The account is already delegating.
-     **/
-    AlreadyDelegating: GenericModuleError;
-
-    /**
-     * Too high a balance was provided that the account cannot afford.
-     **/
-    InsufficientFunds: GenericModuleError;
-
-    /**
-     * The account is not currently delegating.
-     **/
-    NotDelegating: GenericModuleError;
-
-    /**
-     * The account currently has votes attached to it and the operation cannot succeed until
-     * these are removed, either through `unvote` or `reap_vote`.
-     **/
-    VotesExist: GenericModuleError;
-
-    /**
-     * The instant referendum origin is currently disallowed.
-     **/
-    InstantNotAllowed: GenericModuleError;
-
-    /**
-     * Delegation to oneself makes no sense.
-     **/
-    Nonsense: GenericModuleError;
-
-    /**
-     * Invalid upper bound.
-     **/
-    WrongUpperBound: GenericModuleError;
-
-    /**
-     * Maximum number of votes reached.
-     **/
-    MaxVotesReached: GenericModuleError;
-
-    /**
-     * Maximum number of items reached.
-     **/
-    TooMany: GenericModuleError;
-
-    /**
-     * Voting period too low
-     **/
-    VotingPeriodLow: GenericModuleError;
-
-    /**
-     * The preimage does not exist.
-     **/
-    PreimageNotExist: GenericModuleError;
-  };
-  council: {
-    /**
-     * Account is not a member
-     **/
-    NotMember: GenericModuleError;
-
-    /**
-     * Duplicate proposals not allowed
-     **/
-    DuplicateProposal: GenericModuleError;
-
-    /**
-     * Proposal must exist
-     **/
-    ProposalMissing: GenericModuleError;
-
-    /**
-     * Mismatched index
-     **/
-    WrongIndex: GenericModuleError;
-
-    /**
-     * Duplicate vote ignored
-     **/
-    DuplicateVote: GenericModuleError;
-
-    /**
-     * Members are already initialized!
-     **/
-    AlreadyInitialized: GenericModuleError;
-
-    /**
-     * The close call was made too early, before the end of the voting.
-     **/
-    TooEarly: GenericModuleError;
-
-    /**
-     * There can only be a maximum of `MaxProposals` active proposals.
-     **/
-    TooManyProposals: GenericModuleError;
-
-    /**
-     * The given weight bound for the proposal was too low.
-     **/
-    WrongProposalWeight: GenericModuleError;
-
-    /**
-     * The given length bound for the proposal was too low.
-     **/
-    WrongProposalLength: GenericModuleError;
-  };
-  technicalCommittee: {
-    /**
-     * Account is not a member
-     **/
-    NotMember: GenericModuleError;
-
-    /**
-     * Duplicate proposals not allowed
-     **/
-    DuplicateProposal: GenericModuleError;
-
-    /**
-     * Proposal must exist
-     **/
-    ProposalMissing: GenericModuleError;
-
-    /**
-     * Mismatched index
-     **/
-    WrongIndex: GenericModuleError;
-
-    /**
-     * Duplicate vote ignored
-     **/
-    DuplicateVote: GenericModuleError;
-
-    /**
-     * Members are already initialized!
-     **/
-    AlreadyInitialized: GenericModuleError;
-
-    /**
-     * The close call was made too early, before the end of the voting.
-     **/
-    TooEarly: GenericModuleError;
-
-    /**
-     * There can only be a maximum of `MaxProposals` active proposals.
-     **/
-    TooManyProposals: GenericModuleError;
-
-    /**
-     * The given weight bound for the proposal was too low.
-     **/
-    WrongProposalWeight: GenericModuleError;
-
-    /**
-     * The given length bound for the proposal was too low.
-     **/
-    WrongProposalLength: GenericModuleError;
-  };
-  phragmenElection: {
-    /**
-     * Cannot vote when no candidates or members exist.
-     **/
-    UnableToVote: GenericModuleError;
-
-    /**
-     * Must vote for at least one candidate.
-     **/
-    NoVotes: GenericModuleError;
-
-    /**
-     * Cannot vote more than candidates.
-     **/
-    TooManyVotes: GenericModuleError;
-
-    /**
-     * Cannot vote more than maximum allowed.
-     **/
-    MaximumVotesExceeded: GenericModuleError;
-
-    /**
-     * Cannot vote with stake less than minimum balance.
-     **/
-    LowBalance: GenericModuleError;
-
-    /**
-     * Voter can not pay voting bond.
-     **/
-    UnableToPayBond: GenericModuleError;
-
-    /**
-     * Must be a voter.
-     **/
-    MustBeVoter: GenericModuleError;
-
-    /**
-     * Duplicated candidate submission.
-     **/
-    DuplicatedCandidate: GenericModuleError;
-
-    /**
-     * Too many candidates have been created.
-     **/
-    TooManyCandidates: GenericModuleError;
-
-    /**
-     * Member cannot re-submit candidacy.
-     **/
-    MemberSubmit: GenericModuleError;
-
-    /**
-     * Runner cannot re-submit candidacy.
-     **/
-    RunnerUpSubmit: GenericModuleError;
-
-    /**
-     * Candidate does not have enough funds.
-     **/
-    InsufficientCandidateFunds: GenericModuleError;
-
-    /**
-     * Not a member.
-     **/
-    NotMember: GenericModuleError;
-
-    /**
-     * The provided count of number of candidates is incorrect.
-     **/
-    InvalidWitnessData: GenericModuleError;
-
-    /**
-     * The provided count of number of votes is incorrect.
-     **/
-    InvalidVoteCount: GenericModuleError;
-
-    /**
-     * The renouncing origin presented a wrong `Renouncing` parameter.
-     **/
-    InvalidRenouncing: GenericModuleError;
-
-    /**
-     * Prediction regarding replacement after member removal is wrong.
-     **/
-    InvalidReplacement: GenericModuleError;
-  };
-  technicalMembership: {
-    /**
-     * Already a member.
-     **/
-    AlreadyMember: GenericModuleError;
-
-    /**
-     * Not a member.
-     **/
-    NotMember: GenericModuleError;
-
-    /**
-     * Too many members.
-     **/
-    TooManyMembers: GenericModuleError;
-  };
   treasury: {
     /**
      * Proposer's balance is too low.
@@ -922,8 +596,8 @@ export interface ChainErrors extends GenericChainErrors {
     SenderHasNoClaim: GenericModuleError;
 
     /**
-     * There's not enough in the pot to pay out some unvested amount. Generally implies a logic
-     * error.
+     * There's not enough in the pot to pay out some unvested amount. Generally implies a
+     * logic error.
      **/
     PotUnderflow: GenericModuleError;
 
@@ -1246,37 +920,6 @@ export interface ChainErrors extends GenericChainErrors {
      **/
     TooManyChildBounties: GenericModuleError;
   };
-  tips: {
-    /**
-     * The reason given is just too big.
-     **/
-    ReasonTooBig: GenericModuleError;
-
-    /**
-     * The tip was already found/started.
-     **/
-    AlreadyKnown: GenericModuleError;
-
-    /**
-     * The tip hash is unknown.
-     **/
-    UnknownTip: GenericModuleError;
-
-    /**
-     * The account attempting to retract the tip is not the finder of the tip.
-     **/
-    NotFinder: GenericModuleError;
-
-    /**
-     * The tip cannot be claimed/closed because there are not enough tippers yet.
-     **/
-    StillOpen: GenericModuleError;
-
-    /**
-     * The tip cannot be claimed/closed because it's still in the countdown period.
-     **/
-    Premature: GenericModuleError;
-  };
   electionProviderMultiPhase: {
     /**
      * Submission was too early.
@@ -1479,6 +1122,11 @@ export interface ChainErrors extends GenericChainErrors {
     CommissionExceedsMaximum: GenericModuleError;
 
     /**
+     * The supplied commission exceeds global maximum commission.
+     **/
+    CommissionExceedsGlobalMaximum: GenericModuleError;
+
+    /**
      * Not enough blocks have surpassed since the last commission update.
      **/
     CommissionChangeThrottled: GenericModuleError;
@@ -1609,11 +1257,6 @@ export interface ChainErrors extends GenericChainErrors {
     CandidateScheduledBeforeParaFree: GenericModuleError;
 
     /**
-     * Candidate included with the wrong collator.
-     **/
-    WrongCollator: GenericModuleError;
-
-    /**
      * Scheduled cores out of order.
      **/
     ScheduledOutOfOrder: GenericModuleError;
@@ -1634,9 +1277,16 @@ export interface ChainErrors extends GenericChainErrors {
     NewCodeTooLarge: GenericModuleError;
 
     /**
-     * Candidate not in parent context.
+     * The candidate's relay-parent was not allowed. Either it was
+     * not recent enough or it didn't advance based on the last parachain block.
      **/
-    CandidateNotInParentContext: GenericModuleError;
+    DisallowedRelayParent: GenericModuleError;
+
+    /**
+     * Failed to compute group index for the core: either it's out of bounds
+     * or the relay parent doesn't belong to the current session.
+     **/
+    InvalidAssignment: GenericModuleError;
 
     /**
      * Invalid group index in core assignment.
@@ -1689,8 +1339,8 @@ export interface ChainErrors extends GenericChainErrors {
     InvalidValidationCodeHash: GenericModuleError;
 
     /**
-     * The `para_head` hash in the candidate descriptor doesn't match the hash of the actual para head in the
-     * commitments.
+     * The `para_head` hash in the candidate descriptor doesn't match the hash of the actual
+     * para head in the commitments.
      **/
     ParaHeadMismatch: GenericModuleError;
 
@@ -1750,12 +1400,12 @@ export interface ChainErrors extends GenericChainErrors {
     CannotOffboard: GenericModuleError;
 
     /**
-     * Para cannot be upgraded to a parachain.
+     * Para cannot be upgraded to a lease holding parachain.
      **/
     CannotUpgrade: GenericModuleError;
 
     /**
-     * Para cannot be downgraded to a parathread.
+     * Para cannot be downgraded to an on-demand parachain.
      **/
     CannotDowngrade: GenericModuleError;
 
@@ -2000,7 +1650,7 @@ export interface ChainErrors extends GenericChainErrors {
     NotParachain: GenericModuleError;
 
     /**
-     * Para is not a Parathread.
+     * Para is not a Parathread (on-demand parachain).
      **/
     NotParathread: GenericModuleError;
 
@@ -2010,17 +1660,18 @@ export interface ChainErrors extends GenericChainErrors {
     CannotDeregister: GenericModuleError;
 
     /**
-     * Cannot schedule downgrade of parachain to parathread
+     * Cannot schedule downgrade of lease holding parachain to on-demand parachain
      **/
     CannotDowngrade: GenericModuleError;
 
     /**
-     * Cannot schedule upgrade of parathread to parachain
+     * Cannot schedule upgrade of on-demand parachain to lease holding parachain
      **/
     CannotUpgrade: GenericModuleError;
 
     /**
-     * Para is locked from manipulation by the manager. Must use parachain or relay chain governance.
+     * Para is locked from manipulation by the manager. Must use parachain or relay chain
+     * governance.
      **/
     ParaLocked: GenericModuleError;
 
@@ -2035,8 +1686,8 @@ export interface ChainErrors extends GenericChainErrors {
     EmptyCode: GenericModuleError;
 
     /**
-     * Cannot perform a parachain slot / lifecycle swap. Check that the state of both paras are
-     * correct for the swap to work.
+     * Cannot perform a parachain slot / lifecycle swap. Check that the state of both paras
+     * are correct for the swap to work.
      **/
     CannotSwap: GenericModuleError;
   };
@@ -2174,7 +1825,8 @@ export interface ChainErrors extends GenericChainErrors {
     NoContributions: GenericModuleError;
 
     /**
-     * The crowdloan is not ready to dissolve. Potentially still has a slot or in retirement period.
+     * The crowdloan is not ready to dissolve. Potentially still has a slot or in retirement
+     * period.
      **/
     NotReadyToDissolve: GenericModuleError;
 
@@ -2211,8 +1863,8 @@ export interface ChainErrors extends GenericChainErrors {
     Unreachable: GenericModuleError;
 
     /**
-     * There was some other issue (i.e. not to do with routing) in sending the message. Perhaps
-     * a lack of space for buffering the message.
+     * There was some other issue (i.e. not to do with routing) in sending the message.
+     * Perhaps a lack of space for buffering the message.
      **/
     SendFailure: GenericModuleError;
 
@@ -2346,5 +1998,12 @@ export interface ChainErrors extends GenericChainErrors {
      * retrying.
      **/
     TemporarilyUnprocessable: GenericModuleError;
+
+    /**
+     * The queue is paused and no message can be executed from it.
+     *
+     * This can change at any time and may resolve in the future by re-trying.
+     **/
+    QueuePaused: GenericModuleError;
   };
 }

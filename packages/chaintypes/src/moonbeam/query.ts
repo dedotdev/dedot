@@ -21,13 +21,16 @@ import type {
   FrameSystemEventRecord,
   FrameSystemLastRuntimeUpgradeInfo,
   FrameSystemPhase,
-  PolkadotPrimitivesV4PersistedValidationData,
-  PolkadotPrimitivesV4UpgradeRestriction,
+  CumulusPalletParachainSystemUnincludedSegmentAncestor,
+  CumulusPalletParachainSystemUnincludedSegmentSegmentTracker,
+  PolkadotPrimitivesV5PersistedValidationData,
+  PolkadotPrimitivesV5UpgradeRestriction,
+  PolkadotPrimitivesV5UpgradeGoAhead,
   SpTrieStorageProof,
   CumulusPalletParachainSystemRelayStateSnapshotMessagingStateSnapshot,
-  PolkadotPrimitivesV4AbridgedHostConfiguration,
+  PolkadotPrimitivesV5AbridgedHostConfiguration,
   CumulusPrimitivesParachainInherentMessageQueueChain,
-  PolkadotParachainPrimitivesId,
+  PolkadotParachainPrimitivesPrimitivesId,
   PolkadotCorePrimitivesOutboundHrmpMessage,
   SpWeightsWeightV2Weight,
   CumulusPalletParachainSystemCodeUpgradeAuthorization,
@@ -35,6 +38,7 @@ import type {
   PalletBalancesBalanceLock,
   PalletBalancesReserveData,
   PalletBalancesIdAmount,
+  PalletBalancesIdAmount002,
   PalletTransactionPaymentReleases,
   PalletParachainStakingParachainBondConfig,
   PalletParachainStakingRoundInfo,
@@ -80,10 +84,10 @@ import type {
   CumulusPalletDmpQueueConfigData,
   CumulusPalletDmpQueuePageIndexData,
   PalletXcmQueryStatus,
-  XcmVersionedMultiLocation,
+  StagingXcmVersionedMultiLocation,
   PalletXcmVersionMigrationStage,
   PalletXcmRemoteLockedFungibleRecord,
-  XcmVersionedAssetId,
+  StagingXcmVersionedAssetId,
   PalletAssetsAssetDetails,
   PalletAssetsAssetAccount,
   PalletAssetsApproval,
@@ -91,7 +95,8 @@ import type {
   MoonbeamRuntimeXcmConfigAssetType,
   PalletAssetManagerAssetInfo,
   PalletXcmTransactorRemoteTransactInfoWithMaxWeight,
-  XcmV3MultilocationMultiLocation,
+  StagingXcmV3MultilocationMultiLocation,
+  PalletXcmTransactorRelayIndicesRelayChainIndices,
   PalletRandomnessRequestState,
   PalletRandomnessRandomnessResult,
   PalletRandomnessRequestType,
@@ -179,7 +184,7 @@ export interface ChainStorage extends GenericChainStorage {
      * allows light-clients to leverage the changes trie storage tracking mechanism and
      * in case of changes fetch the list of events of interest.
      *
-     * The value has the type `(T::BlockNumber, EventIndex)` because if we used only just
+     * The value has the type `(BlockNumberFor<T>, EventIndex)` because if we used only just
      * the `EventIndex` then in case if the topic has the same contents on the next block
      * no notification will be triggered thus the event might be lost.
      **/
@@ -213,12 +218,33 @@ export interface ChainStorage extends GenericChainStorage {
   };
   parachainSystem: {
     /**
-     * In case of a scheduled upgrade, this storage field contains the validation code to be applied.
+     * Latest included block descendants the runtime accepted. In other words, these are
+     * ancestors of the currently executing block which have not been included in the observed
+     * relay-chain state.
      *
-     * As soon as the relay chain gives us the go-ahead signal, we will overwrite the [`:code`][well_known_keys::CODE]
-     * which will result the next block process with the new validation code. This concludes the upgrade process.
+     * The segment length is limited by the capacity returned from the [`ConsensusHook`] configured
+     * in the pallet.
+     **/
+    unincludedSegment(): Promise<Array<CumulusPalletParachainSystemUnincludedSegmentAncestor>>;
+    unincludedSegment(callback: Callback<Array<CumulusPalletParachainSystemUnincludedSegmentAncestor>>): Promise<Unsub>;
+
+    /**
+     * Storage field that keeps track of bandwidth used by the unincluded segment along with the
+     * latest the latest HRMP watermark. Used for limiting the acceptance of new blocks with
+     * respect to relay chain constraints.
+     **/
+    aggregatedUnincludedSegment(): Promise<CumulusPalletParachainSystemUnincludedSegmentSegmentTracker | undefined>;
+    aggregatedUnincludedSegment(
+      callback: Callback<CumulusPalletParachainSystemUnincludedSegmentSegmentTracker | undefined>,
+    ): Promise<Unsub>;
+
+    /**
+     * In case of a scheduled upgrade, this storage field contains the validation code to be
+     * applied.
      *
-     * [well_known_keys::CODE]: sp_core::storage::well_known_keys::CODE
+     * As soon as the relay chain gives us the go-ahead signal, we will overwrite the
+     * [`:code`][sp_core::storage::well_known_keys::CODE] which will result the next block process
+     * with the new validation code. This concludes the upgrade process.
      **/
     pendingValidationCode(): Promise<Bytes>;
     pendingValidationCode(callback: Callback<Bytes>): Promise<Unsub>;
@@ -238,8 +264,8 @@ export interface ChainStorage extends GenericChainStorage {
      * This value is expected to be set only once per block and it's never stored
      * in the trie.
      **/
-    validationData(): Promise<PolkadotPrimitivesV4PersistedValidationData | undefined>;
-    validationData(callback: Callback<PolkadotPrimitivesV4PersistedValidationData | undefined>): Promise<Unsub>;
+    validationData(): Promise<PolkadotPrimitivesV5PersistedValidationData | undefined>;
+    validationData(callback: Callback<PolkadotPrimitivesV5PersistedValidationData | undefined>): Promise<Unsub>;
 
     /**
      * Were the validation data set to notify the relay chain?
@@ -262,8 +288,18 @@ export interface ChainStorage extends GenericChainStorage {
      * relay-chain. This value is ephemeral which means it doesn't hit the storage. This value is
      * set after the inherent.
      **/
-    upgradeRestrictionSignal(): Promise<PolkadotPrimitivesV4UpgradeRestriction | undefined>;
-    upgradeRestrictionSignal(callback: Callback<PolkadotPrimitivesV4UpgradeRestriction | undefined>): Promise<Unsub>;
+    upgradeRestrictionSignal(): Promise<PolkadotPrimitivesV5UpgradeRestriction | undefined>;
+    upgradeRestrictionSignal(callback: Callback<PolkadotPrimitivesV5UpgradeRestriction | undefined>): Promise<Unsub>;
+
+    /**
+     * Optional upgrade go-ahead signal from the relay-chain.
+     *
+     * This storage item is a mirror of the corresponding value for the current parachain from the
+     * relay-chain. This value is ephemeral which means it doesn't hit the storage. This value is
+     * set after the inherent.
+     **/
+    upgradeGoAhead(): Promise<PolkadotPrimitivesV5UpgradeGoAhead | undefined>;
+    upgradeGoAhead(callback: Callback<PolkadotPrimitivesV5UpgradeGoAhead | undefined>): Promise<Unsub>;
 
     /**
      * The state proof for the last relay parent block.
@@ -298,8 +334,8 @@ export interface ChainStorage extends GenericChainStorage {
      *
      * This data is also absent from the genesis.
      **/
-    hostConfiguration(): Promise<PolkadotPrimitivesV4AbridgedHostConfiguration | undefined>;
-    hostConfiguration(callback: Callback<PolkadotPrimitivesV4AbridgedHostConfiguration | undefined>): Promise<Unsub>;
+    hostConfiguration(): Promise<PolkadotPrimitivesV5AbridgedHostConfiguration | undefined>;
+    hostConfiguration(callback: Callback<PolkadotPrimitivesV5AbridgedHostConfiguration | undefined>): Promise<Unsub>;
 
     /**
      * The last downward message queue chain head we have observed.
@@ -317,10 +353,12 @@ export interface ChainStorage extends GenericChainStorage {
      * by the system inherent.
      **/
     lastHrmpMqcHeads(): Promise<
-      Array<[PolkadotParachainPrimitivesId, CumulusPrimitivesParachainInherentMessageQueueChain]>
+      Array<[PolkadotParachainPrimitivesPrimitivesId, CumulusPrimitivesParachainInherentMessageQueueChain]>
     >;
     lastHrmpMqcHeads(
-      callback: Callback<Array<[PolkadotParachainPrimitivesId, CumulusPrimitivesParachainInherentMessageQueueChain]>>,
+      callback: Callback<
+        Array<[PolkadotParachainPrimitivesPrimitivesId, CumulusPrimitivesParachainInherentMessageQueueChain]>
+      >,
     ): Promise<Unsub>;
 
     /**
@@ -393,7 +431,7 @@ export interface ChainStorage extends GenericChainStorage {
     /**
      * A custom head data that should be returned as result of `validate_block`.
      *
-     * See [`Pallet::set_custom_validation_head_data`] for more information.
+     * See `Pallet::set_custom_validation_head_data` for more information.
      **/
     customValidationHeadData(): Promise<Bytes | undefined>;
     customValidationHeadData(callback: Callback<Bytes | undefined>): Promise<Unsub>;
@@ -412,8 +450,8 @@ export interface ChainStorage extends GenericChainStorage {
     didUpdate(callback: Callback<boolean>): Promise<Unsub>;
   };
   parachainInfo: {
-    parachainId(): Promise<PolkadotParachainPrimitivesId>;
-    parachainId(callback: Callback<PolkadotParachainPrimitivesId>): Promise<Unsub>;
+    parachainId(): Promise<PolkadotParachainPrimitivesPrimitivesId>;
+    parachainId(callback: Callback<PolkadotParachainPrimitivesPrimitivesId>): Promise<Unsub>;
   };
   rootTesting: {};
   balances: {
@@ -480,8 +518,8 @@ export interface ChainStorage extends GenericChainStorage {
     /**
      * Freeze locks on account balances.
      **/
-    freezes(arg: AccountId20Like): Promise<Array<PalletBalancesIdAmount>>;
-    freezes(arg: AccountId20Like, callback: Callback<Array<PalletBalancesIdAmount>>): Promise<Unsub>;
+    freezes(arg: AccountId20Like): Promise<Array<PalletBalancesIdAmount002>>;
+    freezes(arg: AccountId20Like, callback: Callback<Array<PalletBalancesIdAmount002>>): Promise<Unsub>;
   };
   transactionPayment: {
     nextFeeMultiplier(): Promise<FixedU128>;
@@ -593,8 +631,11 @@ export interface ChainStorage extends GenericChainStorage {
     /**
      * Snapshot of collator delegation stake at the start of the round
      **/
-    atStake(arg: [number, AccountId20Like]): Promise<PalletParachainStakingCollatorSnapshot>;
-    atStake(arg: [number, AccountId20Like], callback: Callback<PalletParachainStakingCollatorSnapshot>): Promise<Unsub>;
+    atStake(arg: [number, AccountId20Like]): Promise<PalletParachainStakingCollatorSnapshot | undefined>;
+    atStake(
+      arg: [number, AccountId20Like],
+      callback: Callback<PalletParachainStakingCollatorSnapshot | undefined>,
+    ): Promise<Unsub>;
 
     /**
      * Delayed payouts
@@ -625,6 +666,12 @@ export interface ChainStorage extends GenericChainStorage {
      **/
     awardedPts(arg: [number, AccountId20Like]): Promise<number>;
     awardedPts(arg: [number, AccountId20Like], callback: Callback<number>): Promise<Unsub>;
+
+    /**
+     * Killswitch to enable/disable marking offline feature.
+     **/
+    enableMarkingOffline(): Promise<boolean>;
+    enableMarkingOffline(callback: Callback<boolean>): Promise<Unsub>;
   };
   authorInherent: {
     /**
@@ -816,7 +863,13 @@ export interface ChainStorage extends GenericChainStorage {
       callback: Callback<PalletMultisigMultisig | undefined>,
     ): Promise<Unsub>;
   };
-  ethereumChainId: { chainId(): Promise<bigint>; chainId(callback: Callback<bigint>): Promise<Unsub> };
+  ethereumChainId: {
+    /**
+     * The EVM chain ID.
+     **/
+    chainId(): Promise<bigint>;
+    chainId(callback: Callback<bigint>): Promise<Unsub>;
+  };
   eVM: {
     accountCodes(arg: H160): Promise<Bytes>;
     accountCodes(arg: H160, callback: Callback<Bytes>): Promise<Unsub>;
@@ -824,6 +877,8 @@ export interface ChainStorage extends GenericChainStorage {
     accountCodesMetadata(arg: H160, callback: Callback<PalletEvmCodeMetadata | undefined>): Promise<Unsub>;
     accountStorages(arg: [H160, H256]): Promise<H256>;
     accountStorages(arg: [H160, H256], callback: Callback<H256>): Promise<Unsub>;
+    suicided(arg: H160): Promise<[] | undefined>;
+    suicided(arg: H160, callback: Callback<[] | undefined>): Promise<Unsub>;
   };
   ethereum: {
     /**
@@ -1258,8 +1313,11 @@ export interface ChainStorage extends GenericChainStorage {
     /**
      * Inbound aggregate XCMP messages. It can only be one per ParaId/block.
      **/
-    inboundXcmpMessages(arg: [PolkadotParachainPrimitivesId, number]): Promise<Bytes>;
-    inboundXcmpMessages(arg: [PolkadotParachainPrimitivesId, number], callback: Callback<Bytes>): Promise<Unsub>;
+    inboundXcmpMessages(arg: [PolkadotParachainPrimitivesPrimitivesId, number]): Promise<Bytes>;
+    inboundXcmpMessages(
+      arg: [PolkadotParachainPrimitivesPrimitivesId, number],
+      callback: Callback<Bytes>,
+    ): Promise<Unsub>;
 
     /**
      * The non-empty XCMP channels in order of becoming non-empty, and the index of the first
@@ -1275,14 +1333,17 @@ export interface ChainStorage extends GenericChainStorage {
     /**
      * The messages outbound in a given XCMP channel.
      **/
-    outboundXcmpMessages(arg: [PolkadotParachainPrimitivesId, number]): Promise<Bytes>;
-    outboundXcmpMessages(arg: [PolkadotParachainPrimitivesId, number], callback: Callback<Bytes>): Promise<Unsub>;
+    outboundXcmpMessages(arg: [PolkadotParachainPrimitivesPrimitivesId, number]): Promise<Bytes>;
+    outboundXcmpMessages(
+      arg: [PolkadotParachainPrimitivesPrimitivesId, number],
+      callback: Callback<Bytes>,
+    ): Promise<Unsub>;
 
     /**
      * Any signal messages waiting to be sent.
      **/
-    signalMessages(arg: PolkadotParachainPrimitivesId): Promise<Bytes>;
-    signalMessages(arg: PolkadotParachainPrimitivesId, callback: Callback<Bytes>): Promise<Unsub>;
+    signalMessages(arg: PolkadotParachainPrimitivesPrimitivesId): Promise<Bytes>;
+    signalMessages(arg: PolkadotParachainPrimitivesPrimitivesId, callback: Callback<Bytes>): Promise<Unsub>;
 
     /**
      * The configuration which controls the dynamics of the outbound queue.
@@ -1296,10 +1357,10 @@ export interface ChainStorage extends GenericChainStorage {
      * These message stay in this storage map until they are manually dispatched via
      * `service_overweight`.
      **/
-    overweight(arg: bigint): Promise<[PolkadotParachainPrimitivesId, number, Bytes] | undefined>;
+    overweight(arg: bigint): Promise<[PolkadotParachainPrimitivesPrimitivesId, number, Bytes] | undefined>;
     overweight(
       arg: bigint,
-      callback: Callback<[PolkadotParachainPrimitivesId, number, Bytes] | undefined>,
+      callback: Callback<[PolkadotParachainPrimitivesPrimitivesId, number, Bytes] | undefined>,
     ): Promise<Unsub>;
 
     /**
@@ -1384,24 +1445,30 @@ export interface ChainStorage extends GenericChainStorage {
     /**
      * The Latest versions that we know various locations support.
      **/
-    supportedVersion(arg: [number, XcmVersionedMultiLocation]): Promise<number | undefined>;
-    supportedVersion(arg: [number, XcmVersionedMultiLocation], callback: Callback<number | undefined>): Promise<Unsub>;
+    supportedVersion(arg: [number, StagingXcmVersionedMultiLocation]): Promise<number | undefined>;
+    supportedVersion(
+      arg: [number, StagingXcmVersionedMultiLocation],
+      callback: Callback<number | undefined>,
+    ): Promise<Unsub>;
 
     /**
      * All locations that we have requested version notifications from.
      **/
-    versionNotifiers(arg: [number, XcmVersionedMultiLocation]): Promise<bigint | undefined>;
-    versionNotifiers(arg: [number, XcmVersionedMultiLocation], callback: Callback<bigint | undefined>): Promise<Unsub>;
+    versionNotifiers(arg: [number, StagingXcmVersionedMultiLocation]): Promise<bigint | undefined>;
+    versionNotifiers(
+      arg: [number, StagingXcmVersionedMultiLocation],
+      callback: Callback<bigint | undefined>,
+    ): Promise<Unsub>;
 
     /**
      * The target locations that are subscribed to our version changes, as well as the most recent
      * of our versions we informed them of.
      **/
     versionNotifyTargets(
-      arg: [number, XcmVersionedMultiLocation],
+      arg: [number, StagingXcmVersionedMultiLocation],
     ): Promise<[bigint, SpWeightsWeightV2Weight, number] | undefined>;
     versionNotifyTargets(
-      arg: [number, XcmVersionedMultiLocation],
+      arg: [number, StagingXcmVersionedMultiLocation],
       callback: Callback<[bigint, SpWeightsWeightV2Weight, number] | undefined>,
     ): Promise<Unsub>;
 
@@ -1410,8 +1477,8 @@ export interface ChainStorage extends GenericChainStorage {
      * the `u32` counter is the number of times that a send to the destination has been attempted,
      * which is used as a prioritization.
      **/
-    versionDiscoveryQueue(): Promise<Array<[XcmVersionedMultiLocation, number]>>;
-    versionDiscoveryQueue(callback: Callback<Array<[XcmVersionedMultiLocation, number]>>): Promise<Unsub>;
+    versionDiscoveryQueue(): Promise<Array<[StagingXcmVersionedMultiLocation, number]>>;
+    versionDiscoveryQueue(callback: Callback<Array<[StagingXcmVersionedMultiLocation, number]>>): Promise<Unsub>;
 
     /**
      * The current migration's stage, if any.
@@ -1423,20 +1490,20 @@ export interface ChainStorage extends GenericChainStorage {
      * Fungible assets which we know are locked on a remote chain.
      **/
     remoteLockedFungibles(
-      arg: [number, AccountId20Like, XcmVersionedAssetId],
+      arg: [number, AccountId20Like, StagingXcmVersionedAssetId],
     ): Promise<PalletXcmRemoteLockedFungibleRecord | undefined>;
     remoteLockedFungibles(
-      arg: [number, AccountId20Like, XcmVersionedAssetId],
+      arg: [number, AccountId20Like, StagingXcmVersionedAssetId],
       callback: Callback<PalletXcmRemoteLockedFungibleRecord | undefined>,
     ): Promise<Unsub>;
 
     /**
      * Fungible assets which we know are locked on this chain.
      **/
-    lockedFungibles(arg: AccountId20Like): Promise<Array<[bigint, XcmVersionedMultiLocation]> | undefined>;
+    lockedFungibles(arg: AccountId20Like): Promise<Array<[bigint, StagingXcmVersionedMultiLocation]> | undefined>;
     lockedFungibles(
       arg: AccountId20Like,
-      callback: Callback<Array<[bigint, XcmVersionedMultiLocation]> | undefined>,
+      callback: Callback<Array<[bigint, StagingXcmVersionedMultiLocation]> | undefined>,
     ): Promise<Unsub>;
 
     /**
@@ -1541,10 +1608,10 @@ export interface ChainStorage extends GenericChainStorage {
      * by the destination chain
      **/
     transactInfoWithWeightLimit(
-      arg: XcmV3MultilocationMultiLocation,
+      arg: StagingXcmV3MultilocationMultiLocation,
     ): Promise<PalletXcmTransactorRemoteTransactInfoWithMaxWeight | undefined>;
     transactInfoWithWeightLimit(
-      arg: XcmV3MultilocationMultiLocation,
+      arg: StagingXcmV3MultilocationMultiLocation,
       callback: Callback<PalletXcmTransactorRemoteTransactInfoWithMaxWeight | undefined>,
     ): Promise<Unsub>;
 
@@ -1552,11 +1619,17 @@ export interface ChainStorage extends GenericChainStorage {
      * Stores the fee per second for an asset in its reserve chain. This allows us to convert
      * from weight to fee
      **/
-    destinationAssetFeePerSecond(arg: XcmV3MultilocationMultiLocation): Promise<bigint | undefined>;
+    destinationAssetFeePerSecond(arg: StagingXcmV3MultilocationMultiLocation): Promise<bigint | undefined>;
     destinationAssetFeePerSecond(
-      arg: XcmV3MultilocationMultiLocation,
+      arg: StagingXcmV3MultilocationMultiLocation,
       callback: Callback<bigint | undefined>,
     ): Promise<Unsub>;
+
+    /**
+     * Stores the indices of relay chain pallets
+     **/
+    relayIndices(): Promise<PalletXcmTransactorRelayIndicesRelayChainIndices>;
+    relayIndices(callback: Callback<PalletXcmTransactorRelayIndicesRelayChainIndices>): Promise<Unsub>;
   };
   localAssets: {
     /**

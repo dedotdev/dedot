@@ -5,6 +5,7 @@ import type {
   DispatchError,
   AccountId32,
   FixedBytes,
+  ResultPayload,
   Perbill,
   Bytes,
   Header,
@@ -51,60 +52,72 @@ export type FrameSystemEventRecord = {
 };
 
 export type PolkadotRuntimeRuntimeEvent =
-  | { tag: 'System'; value: FrameSystemEvent }
-  | { tag: 'Scheduler'; value: PalletSchedulerEvent }
-  | { tag: 'Preimage'; value: PalletPreimageEvent }
-  | { tag: 'Indices'; value: PalletIndicesEvent }
-  | { tag: 'Balances'; value: PalletBalancesEvent }
-  | { tag: 'TransactionPayment'; value: PalletTransactionPaymentEvent }
-  | { tag: 'Staking'; value: PalletStakingPalletEvent }
-  | { tag: 'Offences'; value: PalletOffencesEvent }
-  | { tag: 'Session'; value: PalletSessionEvent }
-  | { tag: 'Grandpa'; value: PalletGrandpaEvent }
-  | { tag: 'ImOnline'; value: PalletImOnlineEvent }
-  | { tag: 'Democracy'; value: PalletDemocracyEvent }
-  | { tag: 'Council'; value: PalletCollectiveEvent }
-  | { tag: 'TechnicalCommittee'; value: PalletCollectiveEvent }
-  | { tag: 'PhragmenElection'; value: PalletElectionsPhragmenEvent }
-  | { tag: 'TechnicalMembership'; value: PalletMembershipEvent }
-  | { tag: 'Treasury'; value: PalletTreasuryEvent }
-  | { tag: 'ConvictionVoting'; value: PalletConvictionVotingEvent }
-  | { tag: 'Referenda'; value: PalletReferendaEvent }
-  | { tag: 'Whitelist'; value: PalletWhitelistEvent }
-  | { tag: 'Claims'; value: PolkadotRuntimeCommonClaimsPalletEvent }
-  | { tag: 'Vesting'; value: PalletVestingEvent }
-  | { tag: 'Utility'; value: PalletUtilityEvent }
-  | { tag: 'Identity'; value: PalletIdentityEvent }
-  | { tag: 'Proxy'; value: PalletProxyEvent }
-  | { tag: 'Multisig'; value: PalletMultisigEvent }
-  | { tag: 'Bounties'; value: PalletBountiesEvent }
-  | { tag: 'ChildBounties'; value: PalletChildBountiesEvent }
-  | { tag: 'Tips'; value: PalletTipsEvent }
-  | { tag: 'ElectionProviderMultiPhase'; value: PalletElectionProviderMultiPhaseEvent }
-  | { tag: 'VoterList'; value: PalletBagsListEvent }
-  | { tag: 'NominationPools'; value: PalletNominationPoolsEvent }
-  | { tag: 'FastUnstake'; value: PalletFastUnstakeEvent }
-  | { tag: 'ParaInclusion'; value: PolkadotRuntimeParachainsInclusionPalletEvent }
-  | { tag: 'Paras'; value: PolkadotRuntimeParachainsParasPalletEvent }
-  | { tag: 'Hrmp'; value: PolkadotRuntimeParachainsHrmpPalletEvent }
-  | { tag: 'ParasDisputes'; value: PolkadotRuntimeParachainsDisputesPalletEvent }
-  | { tag: 'Registrar'; value: PolkadotRuntimeCommonParasRegistrarPalletEvent }
-  | { tag: 'Slots'; value: PolkadotRuntimeCommonSlotsPalletEvent }
-  | { tag: 'Auctions'; value: PolkadotRuntimeCommonAuctionsPalletEvent }
-  | { tag: 'Crowdloan'; value: PolkadotRuntimeCommonCrowdloanPalletEvent }
-  | { tag: 'XcmPallet'; value: PalletXcmEvent }
-  | { tag: 'MessageQueue'; value: PalletMessageQueueEvent };
+  | { pallet: 'System'; palletEvent: FrameSystemEvent }
+  | { pallet: 'Scheduler'; palletEvent: PalletSchedulerEvent }
+  | { pallet: 'Preimage'; palletEvent: PalletPreimageEvent }
+  | { pallet: 'Indices'; palletEvent: PalletIndicesEvent }
+  | { pallet: 'Balances'; palletEvent: PalletBalancesEvent }
+  | { pallet: 'TransactionPayment'; palletEvent: PalletTransactionPaymentEvent }
+  | { pallet: 'Staking'; palletEvent: PalletStakingPalletEvent }
+  | { pallet: 'Offences'; palletEvent: PalletOffencesEvent }
+  | { pallet: 'Session'; palletEvent: PalletSessionEvent }
+  | { pallet: 'Grandpa'; palletEvent: PalletGrandpaEvent }
+  | { pallet: 'ImOnline'; palletEvent: PalletImOnlineEvent }
+  | { pallet: 'Treasury'; palletEvent: PalletTreasuryEvent }
+  | { pallet: 'ConvictionVoting'; palletEvent: PalletConvictionVotingEvent }
+  | { pallet: 'Referenda'; palletEvent: PalletReferendaEvent }
+  | { pallet: 'Whitelist'; palletEvent: PalletWhitelistEvent }
+  | { pallet: 'Claims'; palletEvent: PolkadotRuntimeCommonClaimsPalletEvent }
+  | { pallet: 'Vesting'; palletEvent: PalletVestingEvent }
+  | { pallet: 'Utility'; palletEvent: PalletUtilityEvent }
+  | { pallet: 'Identity'; palletEvent: PalletIdentityEvent }
+  | { pallet: 'Proxy'; palletEvent: PalletProxyEvent }
+  | { pallet: 'Multisig'; palletEvent: PalletMultisigEvent }
+  | { pallet: 'Bounties'; palletEvent: PalletBountiesEvent }
+  | { pallet: 'ChildBounties'; palletEvent: PalletChildBountiesEvent }
+  | { pallet: 'ElectionProviderMultiPhase'; palletEvent: PalletElectionProviderMultiPhaseEvent }
+  | { pallet: 'VoterList'; palletEvent: PalletBagsListEvent }
+  | { pallet: 'NominationPools'; palletEvent: PalletNominationPoolsEvent }
+  | { pallet: 'FastUnstake'; palletEvent: PalletFastUnstakeEvent }
+  | { pallet: 'ParaInclusion'; palletEvent: PolkadotRuntimeParachainsInclusionPalletEvent }
+  | { pallet: 'Paras'; palletEvent: PolkadotRuntimeParachainsParasPalletEvent }
+  | { pallet: 'Hrmp'; palletEvent: PolkadotRuntimeParachainsHrmpPalletEvent }
+  | { pallet: 'ParasDisputes'; palletEvent: PolkadotRuntimeParachainsDisputesPalletEvent }
+  | { pallet: 'Registrar'; palletEvent: PolkadotRuntimeCommonParasRegistrarPalletEvent }
+  | { pallet: 'Slots'; palletEvent: PolkadotRuntimeCommonSlotsPalletEvent }
+  | { pallet: 'Auctions'; palletEvent: PolkadotRuntimeCommonAuctionsPalletEvent }
+  | { pallet: 'Crowdloan'; palletEvent: PolkadotRuntimeCommonCrowdloanPalletEvent }
+  | { pallet: 'XcmPallet'; palletEvent: PalletXcmEvent }
+  | { pallet: 'MessageQueue'; palletEvent: PalletMessageQueueEvent };
 
 /**
  * Event for the System pallet.
  **/
 export type FrameSystemEvent =
-  | { tag: 'ExtrinsicSuccess'; value: { dispatchInfo: FrameSupportDispatchDispatchInfo } }
-  | { tag: 'ExtrinsicFailed'; value: { dispatchError: DispatchError; dispatchInfo: FrameSupportDispatchDispatchInfo } }
-  | { tag: 'CodeUpdated' }
-  | { tag: 'NewAccount'; value: { account: AccountId32 } }
-  | { tag: 'KilledAccount'; value: { account: AccountId32 } }
-  | { tag: 'Remarked'; value: { sender: AccountId32; hash: H256 } };
+  /**
+   * An extrinsic completed successfully.
+   **/
+  | { name: 'ExtrinsicSuccess'; data: { dispatchInfo: FrameSupportDispatchDispatchInfo } }
+  /**
+   * An extrinsic failed.
+   **/
+  | { name: 'ExtrinsicFailed'; data: { dispatchError: DispatchError; dispatchInfo: FrameSupportDispatchDispatchInfo } }
+  /**
+   * `:code` was updated.
+   **/
+  | { name: 'CodeUpdated' }
+  /**
+   * A new account was created.
+   **/
+  | { name: 'NewAccount'; data: { account: AccountId32 } }
+  /**
+   * An account was reaped.
+   **/
+  | { name: 'KilledAccount'; data: { account: AccountId32 } }
+  /**
+   * On on-chain remark happened.
+   **/
+  | { name: 'Remarked'; data: { sender: AccountId32; hash: H256 } };
 
 export type FrameSupportDispatchDispatchInfo = {
   weight: SpWeightsWeightV2Weight;
@@ -120,95 +133,258 @@ export type FrameSupportDispatchPays = 'Yes' | 'No';
  * Events type.
  **/
 export type PalletSchedulerEvent =
-  | { tag: 'Scheduled'; value: { when: number; index: number } }
-  | { tag: 'Canceled'; value: { when: number; index: number } }
+  /**
+   * Scheduled some task.
+   **/
+  | { name: 'Scheduled'; data: { when: number; index: number } }
+  /**
+   * Canceled some task.
+   **/
+  | { name: 'Canceled'; data: { when: number; index: number } }
+  /**
+   * Dispatched some task.
+   **/
   | {
-      tag: 'Dispatched';
-      value: { task: [number, number]; id?: FixedBytes<32> | undefined; result: [] | DispatchError };
+      name: 'Dispatched';
+      data: { task: [number, number]; id?: FixedBytes<32> | undefined; result: ResultPayload<[], DispatchError> };
     }
-  | { tag: 'CallUnavailable'; value: { task: [number, number]; id?: FixedBytes<32> | undefined } }
-  | { tag: 'PeriodicFailed'; value: { task: [number, number]; id?: FixedBytes<32> | undefined } }
-  | { tag: 'PermanentlyOverweight'; value: { task: [number, number]; id?: FixedBytes<32> | undefined } };
+  /**
+   * The call for the provided hash was not found so the task has been aborted.
+   **/
+  | { name: 'CallUnavailable'; data: { task: [number, number]; id?: FixedBytes<32> | undefined } }
+  /**
+   * The given task was unable to be renewed since the agenda is full at that block.
+   **/
+  | { name: 'PeriodicFailed'; data: { task: [number, number]; id?: FixedBytes<32> | undefined } }
+  /**
+   * The given task can never be executed since it is overweight.
+   **/
+  | { name: 'PermanentlyOverweight'; data: { task: [number, number]; id?: FixedBytes<32> | undefined } };
 
 /**
- * The [event](https://docs.substrate.io/main-docs/build/events-errors/) emitted by this pallet.
+ * The `Event` enum of this pallet
  **/
 export type PalletPreimageEvent =
-  | { tag: 'Noted'; value: { hash: H256 } }
-  | { tag: 'Requested'; value: { hash: H256 } }
-  | { tag: 'Cleared'; value: { hash: H256 } };
+  /**
+   * A preimage has been noted.
+   **/
+  | { name: 'Noted'; data: { hash: H256 } }
+  /**
+   * A preimage has been requested.
+   **/
+  | { name: 'Requested'; data: { hash: H256 } }
+  /**
+   * A preimage has ben cleared.
+   **/
+  | { name: 'Cleared'; data: { hash: H256 } };
 
 /**
- * The [event](https://docs.substrate.io/main-docs/build/events-errors/) emitted by this pallet.
+ * The `Event` enum of this pallet
  **/
 export type PalletIndicesEvent =
-  | { tag: 'IndexAssigned'; value: { who: AccountId32; index: number } }
-  | { tag: 'IndexFreed'; value: { index: number } }
-  | { tag: 'IndexFrozen'; value: { index: number; who: AccountId32 } };
+  /**
+   * A account index was assigned.
+   **/
+  | { name: 'IndexAssigned'; data: { who: AccountId32; index: number } }
+  /**
+   * A account index has been freed up (unassigned).
+   **/
+  | { name: 'IndexFreed'; data: { index: number } }
+  /**
+   * A account index has been frozen to its current account ID.
+   **/
+  | { name: 'IndexFrozen'; data: { index: number; who: AccountId32 } };
 
 /**
- * The [event](https://docs.substrate.io/main-docs/build/events-errors/) emitted by this pallet.
+ * The `Event` enum of this pallet
  **/
 export type PalletBalancesEvent =
-  | { tag: 'Endowed'; value: { account: AccountId32; freeBalance: bigint } }
-  | { tag: 'DustLost'; value: { account: AccountId32; amount: bigint } }
-  | { tag: 'Transfer'; value: { from: AccountId32; to: AccountId32; amount: bigint } }
-  | { tag: 'BalanceSet'; value: { who: AccountId32; free: bigint } }
-  | { tag: 'Reserved'; value: { who: AccountId32; amount: bigint } }
-  | { tag: 'Unreserved'; value: { who: AccountId32; amount: bigint } }
+  /**
+   * An account was created with some free balance.
+   **/
+  | { name: 'Endowed'; data: { account: AccountId32; freeBalance: bigint } }
+  /**
+   * An account was removed whose balance was non-zero but below ExistentialDeposit,
+   * resulting in an outright loss.
+   **/
+  | { name: 'DustLost'; data: { account: AccountId32; amount: bigint } }
+  /**
+   * Transfer succeeded.
+   **/
+  | { name: 'Transfer'; data: { from: AccountId32; to: AccountId32; amount: bigint } }
+  /**
+   * A balance was set by root.
+   **/
+  | { name: 'BalanceSet'; data: { who: AccountId32; free: bigint } }
+  /**
+   * Some balance was reserved (moved from free to reserved).
+   **/
+  | { name: 'Reserved'; data: { who: AccountId32; amount: bigint } }
+  /**
+   * Some balance was unreserved (moved from reserved to free).
+   **/
+  | { name: 'Unreserved'; data: { who: AccountId32; amount: bigint } }
+  /**
+   * Some balance was moved from the reserve of the first account to the second account.
+   * Final argument indicates the destination balance type.
+   **/
   | {
-      tag: 'ReserveRepatriated';
-      value: {
+      name: 'ReserveRepatriated';
+      data: {
         from: AccountId32;
         to: AccountId32;
         amount: bigint;
         destinationStatus: FrameSupportTokensMiscBalanceStatus;
       };
     }
-  | { tag: 'Deposit'; value: { who: AccountId32; amount: bigint } }
-  | { tag: 'Withdraw'; value: { who: AccountId32; amount: bigint } }
-  | { tag: 'Slashed'; value: { who: AccountId32; amount: bigint } }
-  | { tag: 'Minted'; value: { who: AccountId32; amount: bigint } }
-  | { tag: 'Burned'; value: { who: AccountId32; amount: bigint } }
-  | { tag: 'Suspended'; value: { who: AccountId32; amount: bigint } }
-  | { tag: 'Restored'; value: { who: AccountId32; amount: bigint } }
-  | { tag: 'Upgraded'; value: { who: AccountId32 } }
-  | { tag: 'Issued'; value: { amount: bigint } }
-  | { tag: 'Rescinded'; value: { amount: bigint } }
-  | { tag: 'Locked'; value: { who: AccountId32; amount: bigint } }
-  | { tag: 'Unlocked'; value: { who: AccountId32; amount: bigint } }
-  | { tag: 'Frozen'; value: { who: AccountId32; amount: bigint } }
-  | { tag: 'Thawed'; value: { who: AccountId32; amount: bigint } };
+  /**
+   * Some amount was deposited (e.g. for transaction fees).
+   **/
+  | { name: 'Deposit'; data: { who: AccountId32; amount: bigint } }
+  /**
+   * Some amount was withdrawn from the account (e.g. for transaction fees).
+   **/
+  | { name: 'Withdraw'; data: { who: AccountId32; amount: bigint } }
+  /**
+   * Some amount was removed from the account (e.g. for misbehavior).
+   **/
+  | { name: 'Slashed'; data: { who: AccountId32; amount: bigint } }
+  /**
+   * Some amount was minted into an account.
+   **/
+  | { name: 'Minted'; data: { who: AccountId32; amount: bigint } }
+  /**
+   * Some amount was burned from an account.
+   **/
+  | { name: 'Burned'; data: { who: AccountId32; amount: bigint } }
+  /**
+   * Some amount was suspended from an account (it can be restored later).
+   **/
+  | { name: 'Suspended'; data: { who: AccountId32; amount: bigint } }
+  /**
+   * Some amount was restored into an account.
+   **/
+  | { name: 'Restored'; data: { who: AccountId32; amount: bigint } }
+  /**
+   * An account was upgraded.
+   **/
+  | { name: 'Upgraded'; data: { who: AccountId32 } }
+  /**
+   * Total issuance was increased by `amount`, creating a credit to be balanced.
+   **/
+  | { name: 'Issued'; data: { amount: bigint } }
+  /**
+   * Total issuance was decreased by `amount`, creating a debt to be balanced.
+   **/
+  | { name: 'Rescinded'; data: { amount: bigint } }
+  /**
+   * Some balance was locked.
+   **/
+  | { name: 'Locked'; data: { who: AccountId32; amount: bigint } }
+  /**
+   * Some balance was unlocked.
+   **/
+  | { name: 'Unlocked'; data: { who: AccountId32; amount: bigint } }
+  /**
+   * Some balance was frozen.
+   **/
+  | { name: 'Frozen'; data: { who: AccountId32; amount: bigint } }
+  /**
+   * Some balance was thawed.
+   **/
+  | { name: 'Thawed'; data: { who: AccountId32; amount: bigint } };
 
 export type FrameSupportTokensMiscBalanceStatus = 'Free' | 'Reserved';
 
 /**
- * The [event](https://docs.substrate.io/main-docs/build/events-errors/) emitted by this pallet.
+ * The `Event` enum of this pallet
  **/
-export type PalletTransactionPaymentEvent = {
-  tag: 'TransactionFeePaid';
-  value: { who: AccountId32; actualFee: bigint; tip: bigint };
-};
+export type PalletTransactionPaymentEvent =
+  /**
+   * A transaction fee `actual_fee`, of which `tip` was added to the minimum inclusion fee,
+   * has been paid by `who`.
+   **/
+  { name: 'TransactionFeePaid'; data: { who: AccountId32; actualFee: bigint; tip: bigint } };
 
 /**
- * The [event](https://docs.substrate.io/main-docs/build/events-errors/) emitted by this pallet.
+ * The `Event` enum of this pallet
  **/
 export type PalletStakingPalletEvent =
-  | { tag: 'EraPaid'; value: { eraIndex: number; validatorPayout: bigint; remainder: bigint } }
-  | { tag: 'Rewarded'; value: { stash: AccountId32; amount: bigint } }
-  | { tag: 'Slashed'; value: { staker: AccountId32; amount: bigint } }
-  | { tag: 'SlashReported'; value: { validator: AccountId32; fraction: Perbill; slashEra: number } }
-  | { tag: 'OldSlashingReportDiscarded'; value: { sessionIndex: number } }
-  | { tag: 'StakersElected' }
-  | { tag: 'Bonded'; value: { stash: AccountId32; amount: bigint } }
-  | { tag: 'Unbonded'; value: { stash: AccountId32; amount: bigint } }
-  | { tag: 'Withdrawn'; value: { stash: AccountId32; amount: bigint } }
-  | { tag: 'Kicked'; value: { nominator: AccountId32; stash: AccountId32 } }
-  | { tag: 'StakingElectionFailed' }
-  | { tag: 'Chilled'; value: { stash: AccountId32 } }
-  | { tag: 'PayoutStarted'; value: { eraIndex: number; validatorStash: AccountId32 } }
-  | { tag: 'ValidatorPrefsSet'; value: { stash: AccountId32; prefs: PalletStakingValidatorPrefs } }
-  | { tag: 'ForceEra'; value: { mode: PalletStakingForcing } };
+  /**
+   * The era payout has been set; the first balance is the validator-payout; the second is
+   * the remainder from the maximum amount of reward.
+   **/
+  | { name: 'EraPaid'; data: { eraIndex: number; validatorPayout: bigint; remainder: bigint } }
+  /**
+   * The nominator has been rewarded by this amount.
+   **/
+  | { name: 'Rewarded'; data: { stash: AccountId32; amount: bigint } }
+  /**
+   * A staker (validator or nominator) has been slashed by the given amount.
+   **/
+  | { name: 'Slashed'; data: { staker: AccountId32; amount: bigint } }
+  /**
+   * A slash for the given validator, for the given percentage of their stake, at the given
+   * era as been reported.
+   **/
+  | { name: 'SlashReported'; data: { validator: AccountId32; fraction: Perbill; slashEra: number } }
+  /**
+   * An old slashing report from a prior era was discarded because it could
+   * not be processed.
+   **/
+  | { name: 'OldSlashingReportDiscarded'; data: { sessionIndex: number } }
+  /**
+   * A new set of stakers was elected.
+   **/
+  | { name: 'StakersElected' }
+  /**
+   * An account has bonded this amount. \[stash, amount\]
+   *
+   * NOTE: This event is only emitted when funds are bonded via a dispatchable. Notably,
+   * it will not be emitted for staking rewards when they are added to stake.
+   **/
+  | { name: 'Bonded'; data: { stash: AccountId32; amount: bigint } }
+  /**
+   * An account has unbonded this amount.
+   **/
+  | { name: 'Unbonded'; data: { stash: AccountId32; amount: bigint } }
+  /**
+   * An account has called `withdraw_unbonded` and removed unbonding chunks worth `Balance`
+   * from the unlocking queue.
+   **/
+  | { name: 'Withdrawn'; data: { stash: AccountId32; amount: bigint } }
+  /**
+   * A nominator has been kicked from a validator.
+   **/
+  | { name: 'Kicked'; data: { nominator: AccountId32; stash: AccountId32 } }
+  /**
+   * The election failed. No new era is planned.
+   **/
+  | { name: 'StakingElectionFailed' }
+  /**
+   * An account has stopped participating as either a validator or nominator.
+   **/
+  | { name: 'Chilled'; data: { stash: AccountId32 } }
+  /**
+   * The stakers' rewards are getting paid.
+   **/
+  | { name: 'PayoutStarted'; data: { eraIndex: number; validatorStash: AccountId32 } }
+  /**
+   * A validator has set their preferences.
+   **/
+  | { name: 'ValidatorPrefsSet'; data: { stash: AccountId32; prefs: PalletStakingValidatorPrefs } }
+  /**
+   * Voters size limit reached.
+   **/
+  | { name: 'SnapshotVotersSizeExceeded'; data: { size: number } }
+  /**
+   * Targets size limit reached.
+   **/
+  | { name: 'SnapshotTargetsSizeExceeded'; data: { size: number } }
+  /**
+   * A new force era mode was set.
+   **/
+  | { name: 'ForceEra'; data: { mode: PalletStakingForcing } };
 
 export type PalletStakingValidatorPrefs = { commission: Perbill; blocked: boolean };
 
@@ -217,32 +393,61 @@ export type PalletStakingForcing = 'NotForcing' | 'ForceNew' | 'ForceNone' | 'Fo
 /**
  * Events type.
  **/
-export type PalletOffencesEvent = { tag: 'Offence'; value: { kind: FixedBytes<16>; timeslot: Bytes } };
+export type PalletOffencesEvent =
+  /**
+   * There is an offence reported of the given `kind` happened at the `session_index` and
+   * (kind-specific) time slot. This event is not deposited for duplicate slashes.
+   * \[kind, timeslot\].
+   **/
+  { name: 'Offence'; data: { kind: FixedBytes<16>; timeslot: Bytes } };
 
 /**
- * The [event](https://docs.substrate.io/main-docs/build/events-errors/) emitted by this pallet.
+ * The `Event` enum of this pallet
  **/
-export type PalletSessionEvent = { tag: 'NewSession'; value: { sessionIndex: number } };
+export type PalletSessionEvent =
+  /**
+   * New session has happened. Note that the argument is the session index, not the
+   * block number as the type might suggest.
+   **/
+  { name: 'NewSession'; data: { sessionIndex: number } };
 
 /**
- * The [event](https://docs.substrate.io/main-docs/build/events-errors/) emitted by this pallet.
+ * The `Event` enum of this pallet
  **/
 export type PalletGrandpaEvent =
-  | { tag: 'NewAuthorities'; value: { authoritySet: Array<[SpConsensusGrandpaAppPublic, bigint]> } }
-  | { tag: 'Paused' }
-  | { tag: 'Resumed' };
+  /**
+   * New authority set has been applied.
+   **/
+  | { name: 'NewAuthorities'; data: { authoritySet: Array<[SpConsensusGrandpaAppPublic, bigint]> } }
+  /**
+   * Current authority set has been paused.
+   **/
+  | { name: 'Paused' }
+  /**
+   * Current authority set has been resumed.
+   **/
+  | { name: 'Resumed' };
 
 export type SpConsensusGrandpaAppPublic = SpCoreEd25519Public;
 
 export type SpCoreEd25519Public = FixedBytes<32>;
 
 /**
- * The [event](https://docs.substrate.io/main-docs/build/events-errors/) emitted by this pallet.
+ * The `Event` enum of this pallet
  **/
 export type PalletImOnlineEvent =
-  | { tag: 'HeartbeatReceived'; value: { authorityId: PalletImOnlineSr25519AppSr25519Public } }
-  | { tag: 'AllGood' }
-  | { tag: 'SomeOffline'; value: { offline: Array<[AccountId32, PalletStakingExposure]> } };
+  /**
+   * A new heartbeat was received from `AuthorityId`.
+   **/
+  | { name: 'HeartbeatReceived'; data: { authorityId: PalletImOnlineSr25519AppSr25519Public } }
+  /**
+   * At the end of the session, no offence was committed.
+   **/
+  | { name: 'AllGood' }
+  /**
+   * At the end of the session, at least one validator was found to be offline.
+   **/
+  | { name: 'SomeOffline'; data: { offline: Array<[AccountId32, PalletStakingExposure]> } };
 
 export type PalletImOnlineSr25519AppSr25519Public = SpCoreSr25519Public;
 
@@ -253,165 +458,69 @@ export type PalletStakingExposure = { total: bigint; own: bigint; others: Array<
 export type PalletStakingIndividualExposure = { who: AccountId32; value: bigint };
 
 /**
- * The [event](https://docs.substrate.io/main-docs/build/events-errors/) emitted by this pallet.
- **/
-export type PalletDemocracyEvent =
-  | { tag: 'Proposed'; value: { proposalIndex: number; deposit: bigint } }
-  | { tag: 'Tabled'; value: { proposalIndex: number; deposit: bigint } }
-  | { tag: 'ExternalTabled' }
-  | { tag: 'Started'; value: { refIndex: number; threshold: PalletDemocracyVoteThreshold } }
-  | { tag: 'Passed'; value: { refIndex: number } }
-  | { tag: 'NotPassed'; value: { refIndex: number } }
-  | { tag: 'Cancelled'; value: { refIndex: number } }
-  | { tag: 'Delegated'; value: { who: AccountId32; target: AccountId32 } }
-  | { tag: 'Undelegated'; value: { account: AccountId32 } }
-  | { tag: 'Vetoed'; value: { who: AccountId32; proposalHash: H256; until: number } }
-  | { tag: 'Blacklisted'; value: { proposalHash: H256 } }
-  | { tag: 'Voted'; value: { voter: AccountId32; refIndex: number; vote: PalletDemocracyVoteAccountVote } }
-  | { tag: 'Seconded'; value: { seconder: AccountId32; propIndex: number } }
-  | { tag: 'ProposalCanceled'; value: { propIndex: number } }
-  | {
-      tag: 'MetadataSet';
-      value: {
-        /**
-         * Metadata owner.
-         **/
-        owner: PalletDemocracyMetadataOwner;
-
-        /**
-         * Preimage hash.
-         **/
-        hash: H256;
-      };
-    }
-  | {
-      tag: 'MetadataCleared';
-      value: {
-        /**
-         * Metadata owner.
-         **/
-        owner: PalletDemocracyMetadataOwner;
-
-        /**
-         * Preimage hash.
-         **/
-        hash: H256;
-      };
-    }
-  | {
-      tag: 'MetadataTransferred';
-      value: {
-        /**
-         * Previous metadata owner.
-         **/
-        prevOwner: PalletDemocracyMetadataOwner;
-
-        /**
-         * New metadata owner.
-         **/
-        owner: PalletDemocracyMetadataOwner;
-
-        /**
-         * Preimage hash.
-         **/
-        hash: H256;
-      };
-    };
-
-export type PalletDemocracyVoteThreshold = 'SuperMajorityApprove' | 'SuperMajorityAgainst' | 'SimpleMajority';
-
-export type PalletDemocracyVoteAccountVote =
-  | { tag: 'Standard'; value: { vote: PalletDemocracyVote; balance: bigint } }
-  | { tag: 'Split'; value: { aye: bigint; nay: bigint } };
-
-export type PalletDemocracyVote = number;
-
-export type PalletDemocracyMetadataOwner =
-  | { tag: 'External' }
-  | { tag: 'Proposal'; value: number }
-  | { tag: 'Referendum'; value: number };
-
-/**
- * The [event](https://docs.substrate.io/main-docs/build/events-errors/) emitted by this pallet.
- **/
-export type PalletCollectiveEvent =
-  | { tag: 'Proposed'; value: { account: AccountId32; proposalIndex: number; proposalHash: H256; threshold: number } }
-  | { tag: 'Voted'; value: { account: AccountId32; proposalHash: H256; voted: boolean; yes: number; no: number } }
-  | { tag: 'Approved'; value: { proposalHash: H256 } }
-  | { tag: 'Disapproved'; value: { proposalHash: H256 } }
-  | { tag: 'Executed'; value: { proposalHash: H256; result: [] | DispatchError } }
-  | { tag: 'MemberExecuted'; value: { proposalHash: H256; result: [] | DispatchError } }
-  | { tag: 'Closed'; value: { proposalHash: H256; yes: number; no: number } };
-
-/**
- * The [event](https://docs.substrate.io/main-docs/build/events-errors/) emitted by this pallet.
- **/
-export type PalletElectionsPhragmenEvent =
-  | { tag: 'NewTerm'; value: { newMembers: Array<[AccountId32, bigint]> } }
-  | { tag: 'EmptyTerm' }
-  | { tag: 'ElectionError' }
-  | { tag: 'MemberKicked'; value: { member: AccountId32 } }
-  | { tag: 'Renounced'; value: { candidate: AccountId32 } }
-  | { tag: 'CandidateSlashed'; value: { candidate: AccountId32; amount: bigint } }
-  | { tag: 'SeatHolderSlashed'; value: { seatHolder: AccountId32; amount: bigint } };
-
-/**
- * The [event](https://docs.substrate.io/main-docs/build/events-errors/) emitted by this pallet.
- **/
-export type PalletMembershipEvent =
-  /**
-   * The given member was added; see the transaction for who.
-   **/
-  | 'MemberAdded'
-  /**
-   * The given member was removed; see the transaction for who.
-   **/
-  | 'MemberRemoved'
-  /**
-   * Two members were swapped; see the transaction for who.
-   **/
-  | 'MembersSwapped'
-  /**
-   * The membership was reset; see the transaction for who the new set is.
-   **/
-  | 'MembersReset'
-  /**
-   * One of the members' keys changed.
-   **/
-  | 'KeyChanged'
-  /**
-   * Phantom member, never used.
-   **/
-  | 'Dummy';
-
-/**
- * The [event](https://docs.substrate.io/main-docs/build/events-errors/) emitted by this pallet.
+ * The `Event` enum of this pallet
  **/
 export type PalletTreasuryEvent =
-  | { tag: 'Proposed'; value: { proposalIndex: number } }
-  | { tag: 'Spending'; value: { budgetRemaining: bigint } }
-  | { tag: 'Awarded'; value: { proposalIndex: number; award: bigint; account: AccountId32 } }
-  | { tag: 'Rejected'; value: { proposalIndex: number; slashed: bigint } }
-  | { tag: 'Burnt'; value: { burntFunds: bigint } }
-  | { tag: 'Rollover'; value: { rolloverBalance: bigint } }
-  | { tag: 'Deposit'; value: { value: bigint } }
-  | { tag: 'SpendApproved'; value: { proposalIndex: number; amount: bigint; beneficiary: AccountId32 } }
-  | { tag: 'UpdatedInactive'; value: { reactivated: bigint; deactivated: bigint } };
+  /**
+   * New proposal.
+   **/
+  | { name: 'Proposed'; data: { proposalIndex: number } }
+  /**
+   * We have ended a spend period and will now allocate funds.
+   **/
+  | { name: 'Spending'; data: { budgetRemaining: bigint } }
+  /**
+   * Some funds have been allocated.
+   **/
+  | { name: 'Awarded'; data: { proposalIndex: number; award: bigint; account: AccountId32 } }
+  /**
+   * A proposal was rejected; funds were slashed.
+   **/
+  | { name: 'Rejected'; data: { proposalIndex: number; slashed: bigint } }
+  /**
+   * Some of our funds have been burnt.
+   **/
+  | { name: 'Burnt'; data: { burntFunds: bigint } }
+  /**
+   * Spending has finished; this is the amount that rolls over until next spend.
+   **/
+  | { name: 'Rollover'; data: { rolloverBalance: bigint } }
+  /**
+   * Some funds have been deposited.
+   **/
+  | { name: 'Deposit'; data: { value: bigint } }
+  /**
+   * A new spend proposal has been approved.
+   **/
+  | { name: 'SpendApproved'; data: { proposalIndex: number; amount: bigint; beneficiary: AccountId32 } }
+  /**
+   * The inactive funds of the pallet have been updated.
+   **/
+  | { name: 'UpdatedInactive'; data: { reactivated: bigint; deactivated: bigint } };
 
 /**
- * The [event](https://docs.substrate.io/main-docs/build/events-errors/) emitted by this pallet.
+ * The `Event` enum of this pallet
  **/
 export type PalletConvictionVotingEvent =
-  | { tag: 'Delegated'; value: [AccountId32, AccountId32] }
-  | { tag: 'Undelegated'; value: AccountId32 };
+  /**
+   * An account has delegated their vote to another account. \[who, target\]
+   **/
+  | { name: 'Delegated'; data: [AccountId32, AccountId32] }
+  /**
+   * An \[account\] has cancelled a previous delegation operation.
+   **/
+  | { name: 'Undelegated'; data: AccountId32 };
 
 /**
- * The [event](https://docs.substrate.io/main-docs/build/events-errors/) emitted by this pallet.
+ * The `Event` enum of this pallet
  **/
 export type PalletReferendaEvent =
+  /**
+   * A referendum has been submitted.
+   **/
   | {
-      tag: 'Submitted';
-      value: {
+      name: 'Submitted';
+      data: {
         /**
          * Index of the referendum.
          **/
@@ -428,9 +537,12 @@ export type PalletReferendaEvent =
         proposal: FrameSupportPreimagesBounded;
       };
     }
+  /**
+   * The decision deposit has been placed.
+   **/
   | {
-      tag: 'DecisionDepositPlaced';
-      value: {
+      name: 'DecisionDepositPlaced';
+      data: {
         /**
          * Index of the referendum.
          **/
@@ -447,9 +559,12 @@ export type PalletReferendaEvent =
         amount: bigint;
       };
     }
+  /**
+   * The decision deposit has been refunded.
+   **/
   | {
-      tag: 'DecisionDepositRefunded';
-      value: {
+      name: 'DecisionDepositRefunded';
+      data: {
         /**
          * Index of the referendum.
          **/
@@ -466,9 +581,12 @@ export type PalletReferendaEvent =
         amount: bigint;
       };
     }
+  /**
+   * A deposit has been slashaed.
+   **/
   | {
-      tag: 'DepositSlashed';
-      value: {
+      name: 'DepositSlashed';
+      data: {
         /**
          * The account who placed the deposit.
          **/
@@ -480,9 +598,12 @@ export type PalletReferendaEvent =
         amount: bigint;
       };
     }
+  /**
+   * A referendum has moved into the deciding phase.
+   **/
   | {
-      tag: 'DecisionStarted';
-      value: {
+      name: 'DecisionStarted';
+      data: {
         /**
          * Index of the referendum.
          **/
@@ -505,8 +626,8 @@ export type PalletReferendaEvent =
       };
     }
   | {
-      tag: 'ConfirmStarted';
-      value: {
+      name: 'ConfirmStarted';
+      data: {
         /**
          * Index of the referendum.
          **/
@@ -514,40 +635,20 @@ export type PalletReferendaEvent =
       };
     }
   | {
-      tag: 'ConfirmAborted';
-      value: {
+      name: 'ConfirmAborted';
+      data: {
         /**
          * Index of the referendum.
          **/
         index: number;
       };
     }
+  /**
+   * A referendum has ended its confirmation phase and is ready for approval.
+   **/
   | {
-      tag: 'Confirmed';
-      value: {
-        /**
-         * Index of the referendum.
-         **/
-        index: number;
-
-        /**
-         * The final tally of votes in this referendum.
-         **/
-        tally: PalletConvictionVotingTally;
-      };
-    }
-  | {
-      tag: 'Approved';
-      value: {
-        /**
-         * Index of the referendum.
-         **/
-        index: number;
-      };
-    }
-  | {
-      tag: 'Rejected';
-      value: {
+      name: 'Confirmed';
+      data: {
         /**
          * Index of the referendum.
          **/
@@ -559,9 +660,24 @@ export type PalletReferendaEvent =
         tally: PalletConvictionVotingTally;
       };
     }
+  /**
+   * A referendum has been approved and its proposal has been scheduled.
+   **/
   | {
-      tag: 'TimedOut';
-      value: {
+      name: 'Approved';
+      data: {
+        /**
+         * Index of the referendum.
+         **/
+        index: number;
+      };
+    }
+  /**
+   * A proposal has been rejected by referendum.
+   **/
+  | {
+      name: 'Rejected';
+      data: {
         /**
          * Index of the referendum.
          **/
@@ -573,9 +689,12 @@ export type PalletReferendaEvent =
         tally: PalletConvictionVotingTally;
       };
     }
+  /**
+   * A referendum has been timed out without being decided.
+   **/
   | {
-      tag: 'Cancelled';
-      value: {
+      name: 'TimedOut';
+      data: {
         /**
          * Index of the referendum.
          **/
@@ -587,9 +706,12 @@ export type PalletReferendaEvent =
         tally: PalletConvictionVotingTally;
       };
     }
+  /**
+   * A referendum has been cancelled.
+   **/
   | {
-      tag: 'Killed';
-      value: {
+      name: 'Cancelled';
+      data: {
         /**
          * Index of the referendum.
          **/
@@ -601,9 +723,29 @@ export type PalletReferendaEvent =
         tally: PalletConvictionVotingTally;
       };
     }
+  /**
+   * A referendum has been killed.
+   **/
   | {
-      tag: 'SubmissionDepositRefunded';
-      value: {
+      name: 'Killed';
+      data: {
+        /**
+         * Index of the referendum.
+         **/
+        index: number;
+
+        /**
+         * The final tally of votes in this referendum.
+         **/
+        tally: PalletConvictionVotingTally;
+      };
+    }
+  /**
+   * The submission deposit has been refunded.
+   **/
+  | {
+      name: 'SubmissionDepositRefunded';
+      data: {
         /**
          * Index of the referendum.
          **/
@@ -620,9 +762,12 @@ export type PalletReferendaEvent =
         amount: bigint;
       };
     }
+  /**
+   * Metadata for a referendum has been set.
+   **/
   | {
-      tag: 'MetadataSet';
-      value: {
+      name: 'MetadataSet';
+      data: {
         /**
          * Index of the referendum.
          **/
@@ -634,9 +779,12 @@ export type PalletReferendaEvent =
         hash: H256;
       };
     }
+  /**
+   * Metadata for a referendum has been cleared.
+   **/
   | {
-      tag: 'MetadataCleared';
-      value: {
+      name: 'MetadataCleared';
+      data: {
         /**
          * Index of the referendum.
          **/
@@ -666,11 +814,6 @@ export type PolkadotRuntimeRuntimeCall =
   | { tag: 'Session'; value: PalletSessionCall }
   | { tag: 'Grandpa'; value: PalletGrandpaCall }
   | { tag: 'ImOnline'; value: PalletImOnlineCall }
-  | { tag: 'Democracy'; value: PalletDemocracyCall }
-  | { tag: 'Council'; value: PalletCollectiveCall }
-  | { tag: 'TechnicalCommittee'; value: PalletCollectiveCall }
-  | { tag: 'PhragmenElection'; value: PalletElectionsPhragmenCall }
-  | { tag: 'TechnicalMembership'; value: PalletMembershipCall }
   | { tag: 'Treasury'; value: PalletTreasuryCall }
   | { tag: 'ConvictionVoting'; value: PalletConvictionVotingCall }
   | { tag: 'Referenda'; value: PalletReferendaCall }
@@ -683,7 +826,6 @@ export type PolkadotRuntimeRuntimeCall =
   | { tag: 'Multisig'; value: PalletMultisigCall }
   | { tag: 'Bounties'; value: PalletBountiesCall }
   | { tag: 'ChildBounties'; value: PalletChildBountiesCall }
-  | { tag: 'Tips'; value: PalletTipsCall }
   | { tag: 'ElectionProviderMultiPhase'; value: PalletElectionProviderMultiPhaseCall }
   | { tag: 'VoterList'; value: PalletBagsListCall }
   | { tag: 'NominationPools'; value: PalletNominationPoolsCall }
@@ -705,22 +847,49 @@ export type PolkadotRuntimeRuntimeCall =
   | { tag: 'MessageQueue'; value: PalletMessageQueueCall };
 
 /**
- * Contains one variant per dispatchable that can be called by an extrinsic.
+ * Contains a variant per dispatchable extrinsic that this pallet has.
  **/
 export type FrameSystemCall =
+  /**
+   * See [`Pallet::remark`].
+   **/
   | { tag: 'Remark'; value: { remark: Bytes } }
+  /**
+   * See [`Pallet::set_heap_pages`].
+   **/
   | { tag: 'SetHeapPages'; value: { pages: bigint } }
+  /**
+   * See [`Pallet::set_code`].
+   **/
   | { tag: 'SetCode'; value: { code: Bytes } }
+  /**
+   * See [`Pallet::set_code_without_checks`].
+   **/
   | { tag: 'SetCodeWithoutChecks'; value: { code: Bytes } }
+  /**
+   * See [`Pallet::set_storage`].
+   **/
   | { tag: 'SetStorage'; value: { items: Array<[Bytes, Bytes]> } }
+  /**
+   * See [`Pallet::kill_storage`].
+   **/
   | { tag: 'KillStorage'; value: { keys: Array<Bytes> } }
+  /**
+   * See [`Pallet::kill_prefix`].
+   **/
   | { tag: 'KillPrefix'; value: { prefix: Bytes; subkeys: number } }
+  /**
+   * See [`Pallet::remark_with_event`].
+   **/
   | { tag: 'RemarkWithEvent'; value: { remark: Bytes } };
 
 /**
- * Contains one variant per dispatchable that can be called by an extrinsic.
+ * Contains a variant per dispatchable extrinsic that this pallet has.
  **/
 export type PalletSchedulerCall =
+  /**
+   * See [`Pallet::schedule`].
+   **/
   | {
       tag: 'Schedule';
       value: {
@@ -730,7 +899,13 @@ export type PalletSchedulerCall =
         call: PolkadotRuntimeRuntimeCall;
       };
     }
+  /**
+   * See [`Pallet::cancel`].
+   **/
   | { tag: 'Cancel'; value: { when: number; index: number } }
+  /**
+   * See [`Pallet::schedule_named`].
+   **/
   | {
       tag: 'ScheduleNamed';
       value: {
@@ -741,7 +916,13 @@ export type PalletSchedulerCall =
         call: PolkadotRuntimeRuntimeCall;
       };
     }
+  /**
+   * See [`Pallet::cancel_named`].
+   **/
   | { tag: 'CancelNamed'; value: { id: FixedBytes<32> } }
+  /**
+   * See [`Pallet::schedule_after`].
+   **/
   | {
       tag: 'ScheduleAfter';
       value: {
@@ -751,6 +932,9 @@ export type PalletSchedulerCall =
         call: PolkadotRuntimeRuntimeCall;
       };
     }
+  /**
+   * See [`Pallet::schedule_named_after`].
+   **/
   | {
       tag: 'ScheduleNamedAfter';
       value: {
@@ -763,26 +947,47 @@ export type PalletSchedulerCall =
     };
 
 /**
- * Contains one variant per dispatchable that can be called by an extrinsic.
+ * Contains a variant per dispatchable extrinsic that this pallet has.
  **/
 export type PalletPreimageCall =
+  /**
+   * See [`Pallet::note_preimage`].
+   **/
   | { tag: 'NotePreimage'; value: { bytes: Bytes } }
+  /**
+   * See [`Pallet::unnote_preimage`].
+   **/
   | { tag: 'UnnotePreimage'; value: { hash: H256 } }
+  /**
+   * See [`Pallet::request_preimage`].
+   **/
   | { tag: 'RequestPreimage'; value: { hash: H256 } }
+  /**
+   * See [`Pallet::unrequest_preimage`].
+   **/
   | { tag: 'UnrequestPreimage'; value: { hash: H256 } };
 
 /**
- * Contains one variant per dispatchable that can be called by an extrinsic.
+ * Contains a variant per dispatchable extrinsic that this pallet has.
  **/
 export type PalletBabeCall =
+  /**
+   * See [`Pallet::report_equivocation`].
+   **/
   | {
       tag: 'ReportEquivocation';
       value: { equivocationProof: SpConsensusSlotsEquivocationProof; keyOwnerProof: SpSessionMembershipProof };
     }
+  /**
+   * See [`Pallet::report_equivocation_unsigned`].
+   **/
   | {
       tag: 'ReportEquivocationUnsigned';
       value: { equivocationProof: SpConsensusSlotsEquivocationProof; keyOwnerProof: SpSessionMembershipProof };
     }
+  /**
+   * See [`Pallet::plan_config_change`].
+   **/
   | { tag: 'PlanConfigChange'; value: { config: SpConsensusBabeDigestsNextConfigDescriptor } };
 
 export type SpConsensusSlotsEquivocationProof = {
@@ -791,8 +996,6 @@ export type SpConsensusSlotsEquivocationProof = {
   firstHeader: Header;
   secondHeader: Header;
 };
-
-export type SpRuntimeBlakeTwo256 = {};
 
 export type SpConsensusBabeAppPublic = SpCoreSr25519Public;
 
@@ -811,60 +1014,175 @@ export type SpConsensusBabeAllowedSlots =
   | 'PrimaryAndSecondaryVRFSlots';
 
 /**
- * Contains one variant per dispatchable that can be called by an extrinsic.
+ * Contains a variant per dispatchable extrinsic that this pallet has.
  **/
-export type PalletTimestampCall = { tag: 'Set'; value: { now: bigint } };
+export type PalletTimestampCall =
+  /**
+   * See [`Pallet::set`].
+   **/
+  { tag: 'Set'; value: { now: bigint } };
 
 /**
- * Contains one variant per dispatchable that can be called by an extrinsic.
+ * Contains a variant per dispatchable extrinsic that this pallet has.
  **/
 export type PalletIndicesCall =
+  /**
+   * See [`Pallet::claim`].
+   **/
   | { tag: 'Claim'; value: { index: number } }
+  /**
+   * See [`Pallet::transfer`].
+   **/
   | { tag: 'Transfer'; value: { new: MultiAddress; index: number } }
+  /**
+   * See [`Pallet::free`].
+   **/
   | { tag: 'Free'; value: { index: number } }
+  /**
+   * See [`Pallet::force_transfer`].
+   **/
   | { tag: 'ForceTransfer'; value: { new: MultiAddress; index: number; freeze: boolean } }
+  /**
+   * See [`Pallet::freeze`].
+   **/
   | { tag: 'Freeze'; value: { index: number } };
 
 /**
- * Contains one variant per dispatchable that can be called by an extrinsic.
+ * Contains a variant per dispatchable extrinsic that this pallet has.
  **/
 export type PalletBalancesCall =
+  /**
+   * See [`Pallet::transfer_allow_death`].
+   **/
   | { tag: 'TransferAllowDeath'; value: { dest: MultiAddress; value: bigint } }
+  /**
+   * See [`Pallet::set_balance_deprecated`].
+   **/
   | { tag: 'SetBalanceDeprecated'; value: { who: MultiAddress; newFree: bigint; oldReserved: bigint } }
+  /**
+   * See [`Pallet::force_transfer`].
+   **/
   | { tag: 'ForceTransfer'; value: { source: MultiAddress; dest: MultiAddress; value: bigint } }
+  /**
+   * See [`Pallet::transfer_keep_alive`].
+   **/
   | { tag: 'TransferKeepAlive'; value: { dest: MultiAddress; value: bigint } }
+  /**
+   * See [`Pallet::transfer_all`].
+   **/
   | { tag: 'TransferAll'; value: { dest: MultiAddress; keepAlive: boolean } }
+  /**
+   * See [`Pallet::force_unreserve`].
+   **/
   | { tag: 'ForceUnreserve'; value: { who: MultiAddress; amount: bigint } }
+  /**
+   * See [`Pallet::upgrade_accounts`].
+   **/
   | { tag: 'UpgradeAccounts'; value: { who: Array<AccountId32> } }
+  /**
+   * See [`Pallet::transfer`].
+   **/
   | { tag: 'Transfer'; value: { dest: MultiAddress; value: bigint } }
+  /**
+   * See [`Pallet::force_set_balance`].
+   **/
   | { tag: 'ForceSetBalance'; value: { who: MultiAddress; newFree: bigint } };
 
 /**
- * Contains one variant per dispatchable that can be called by an extrinsic.
+ * Contains a variant per dispatchable extrinsic that this pallet has.
  **/
 export type PalletStakingPalletCall =
+  /**
+   * See [`Pallet::bond`].
+   **/
   | { tag: 'Bond'; value: { value: bigint; payee: PalletStakingRewardDestination } }
+  /**
+   * See [`Pallet::bond_extra`].
+   **/
   | { tag: 'BondExtra'; value: { maxAdditional: bigint } }
+  /**
+   * See [`Pallet::unbond`].
+   **/
   | { tag: 'Unbond'; value: { value: bigint } }
+  /**
+   * See [`Pallet::withdraw_unbonded`].
+   **/
   | { tag: 'WithdrawUnbonded'; value: { numSlashingSpans: number } }
+  /**
+   * See [`Pallet::validate`].
+   **/
   | { tag: 'Validate'; value: { prefs: PalletStakingValidatorPrefs } }
+  /**
+   * See [`Pallet::nominate`].
+   **/
   | { tag: 'Nominate'; value: { targets: Array<MultiAddress> } }
+  /**
+   * See [`Pallet::chill`].
+   **/
   | { tag: 'Chill' }
+  /**
+   * See [`Pallet::set_payee`].
+   **/
   | { tag: 'SetPayee'; value: { payee: PalletStakingRewardDestination } }
+  /**
+   * See [`Pallet::set_controller`].
+   **/
   | { tag: 'SetController' }
+  /**
+   * See [`Pallet::set_validator_count`].
+   **/
   | { tag: 'SetValidatorCount'; value: { new: number } }
+  /**
+   * See [`Pallet::increase_validator_count`].
+   **/
   | { tag: 'IncreaseValidatorCount'; value: { additional: number } }
+  /**
+   * See [`Pallet::scale_validator_count`].
+   **/
   | { tag: 'ScaleValidatorCount'; value: { factor: Percent } }
+  /**
+   * See [`Pallet::force_no_eras`].
+   **/
   | { tag: 'ForceNoEras' }
+  /**
+   * See [`Pallet::force_new_era`].
+   **/
   | { tag: 'ForceNewEra' }
+  /**
+   * See [`Pallet::set_invulnerables`].
+   **/
   | { tag: 'SetInvulnerables'; value: { invulnerables: Array<AccountId32> } }
+  /**
+   * See [`Pallet::force_unstake`].
+   **/
   | { tag: 'ForceUnstake'; value: { stash: AccountId32; numSlashingSpans: number } }
+  /**
+   * See [`Pallet::force_new_era_always`].
+   **/
   | { tag: 'ForceNewEraAlways' }
+  /**
+   * See [`Pallet::cancel_deferred_slash`].
+   **/
   | { tag: 'CancelDeferredSlash'; value: { era: number; slashIndices: Array<number> } }
+  /**
+   * See [`Pallet::payout_stakers`].
+   **/
   | { tag: 'PayoutStakers'; value: { validatorStash: AccountId32; era: number } }
+  /**
+   * See [`Pallet::rebond`].
+   **/
   | { tag: 'Rebond'; value: { value: bigint } }
+  /**
+   * See [`Pallet::reap_stash`].
+   **/
   | { tag: 'ReapStash'; value: { stash: AccountId32; numSlashingSpans: number } }
+  /**
+   * See [`Pallet::kick`].
+   **/
   | { tag: 'Kick'; value: { who: Array<MultiAddress> } }
+  /**
+   * See [`Pallet::set_staking_configs`].
+   **/
   | {
       tag: 'SetStakingConfigs';
       value: {
@@ -876,8 +1194,17 @@ export type PalletStakingPalletCall =
         minCommission: PalletStakingPalletConfigOpPerbill;
       };
     }
+  /**
+   * See [`Pallet::chill_other`].
+   **/
   | { tag: 'ChillOther'; value: { controller: AccountId32 } }
+  /**
+   * See [`Pallet::force_apply_min_commission`].
+   **/
   | { tag: 'ForceApplyMinCommission'; value: { validatorStash: AccountId32 } }
+  /**
+   * See [`Pallet::set_min_commission`].
+   **/
   | { tag: 'SetMinCommission'; value: { new: Perbill } };
 
 export type PalletStakingRewardDestination =
@@ -896,39 +1223,54 @@ export type PalletStakingPalletConfigOpPercent = { tag: 'Noop' } | { tag: 'Set';
 export type PalletStakingPalletConfigOpPerbill = { tag: 'Noop' } | { tag: 'Set'; value: Perbill } | { tag: 'Remove' };
 
 /**
- * Contains one variant per dispatchable that can be called by an extrinsic.
+ * Contains a variant per dispatchable extrinsic that this pallet has.
  **/
 export type PalletSessionCall =
+  /**
+   * See [`Pallet::set_keys`].
+   **/
   | { tag: 'SetKeys'; value: { keys: PolkadotRuntimeSessionKeys; proof: Bytes } }
+  /**
+   * See [`Pallet::purge_keys`].
+   **/
   | { tag: 'PurgeKeys' };
 
 export type PolkadotRuntimeSessionKeys = {
   grandpa: SpConsensusGrandpaAppPublic;
   babe: SpConsensusBabeAppPublic;
   imOnline: PalletImOnlineSr25519AppSr25519Public;
-  paraValidator: PolkadotPrimitivesV4ValidatorAppPublic;
-  paraAssignment: PolkadotPrimitivesV4AssignmentAppPublic;
+  paraValidator: PolkadotPrimitivesV5ValidatorAppPublic;
+  paraAssignment: PolkadotPrimitivesV5AssignmentAppPublic;
   authorityDiscovery: SpAuthorityDiscoveryAppPublic;
 };
 
-export type PolkadotPrimitivesV4ValidatorAppPublic = SpCoreSr25519Public;
+export type PolkadotPrimitivesV5ValidatorAppPublic = SpCoreSr25519Public;
 
-export type PolkadotPrimitivesV4AssignmentAppPublic = SpCoreSr25519Public;
+export type PolkadotPrimitivesV5AssignmentAppPublic = SpCoreSr25519Public;
 
 export type SpAuthorityDiscoveryAppPublic = SpCoreSr25519Public;
 
 /**
- * Contains one variant per dispatchable that can be called by an extrinsic.
+ * Contains a variant per dispatchable extrinsic that this pallet has.
  **/
 export type PalletGrandpaCall =
+  /**
+   * See [`Pallet::report_equivocation`].
+   **/
   | {
       tag: 'ReportEquivocation';
       value: { equivocationProof: SpConsensusGrandpaEquivocationProof; keyOwnerProof: SpSessionMembershipProof };
     }
+  /**
+   * See [`Pallet::report_equivocation_unsigned`].
+   **/
   | {
       tag: 'ReportEquivocationUnsigned';
       value: { equivocationProof: SpConsensusGrandpaEquivocationProof; keyOwnerProof: SpSessionMembershipProof };
     }
+  /**
+   * See [`Pallet::note_stalled`].
+   **/
   | { tag: 'NoteStalled'; value: { delay: number; bestFinalizedBlockNumber: number } };
 
 export type SpConsensusGrandpaEquivocationProof = { setId: bigint; equivocation: SpConsensusGrandpaEquivocation };
@@ -960,131 +1302,83 @@ export type FinalityGrandpaEquivocationPrecommit = {
 export type FinalityGrandpaPrecommit = { targetHash: H256; targetNumber: number };
 
 /**
- * Contains one variant per dispatchable that can be called by an extrinsic.
+ * Contains a variant per dispatchable extrinsic that this pallet has.
  **/
-export type PalletImOnlineCall = {
-  tag: 'Heartbeat';
-  value: { heartbeat: PalletImOnlineHeartbeat; signature: PalletImOnlineSr25519AppSr25519Signature };
-};
+export type PalletImOnlineCall =
+  /**
+   * See [`Pallet::heartbeat`].
+   **/
+  {
+    tag: 'Heartbeat';
+    value: { heartbeat: PalletImOnlineHeartbeat; signature: PalletImOnlineSr25519AppSr25519Signature };
+  };
 
 export type PalletImOnlineHeartbeat = {
   blockNumber: number;
-  networkState: SpCoreOffchainOpaqueNetworkState;
   sessionIndex: number;
   authorityIndex: number;
   validatorsLen: number;
 };
-
-export type SpCoreOffchainOpaqueNetworkState = {
-  peerId: SpCoreOpaquePeerId;
-  externalAddresses: Array<SpCoreOffchainOpaqueMultiaddr>;
-};
-
-export type SpCoreOpaquePeerId = Bytes;
-
-export type SpCoreOffchainOpaqueMultiaddr = Bytes;
 
 export type PalletImOnlineSr25519AppSr25519Signature = SpCoreSr25519Signature;
 
 export type SpCoreSr25519Signature = FixedBytes<64>;
 
 /**
- * Contains one variant per dispatchable that can be called by an extrinsic.
- **/
-export type PalletDemocracyCall =
-  | { tag: 'Propose'; value: { proposal: FrameSupportPreimagesBounded; value: bigint } }
-  | { tag: 'Second'; value: { proposal: number } }
-  | { tag: 'Vote'; value: { refIndex: number; vote: PalletDemocracyVoteAccountVote } }
-  | { tag: 'EmergencyCancel'; value: { refIndex: number } }
-  | { tag: 'ExternalPropose'; value: { proposal: FrameSupportPreimagesBounded } }
-  | { tag: 'ExternalProposeMajority'; value: { proposal: FrameSupportPreimagesBounded } }
-  | { tag: 'ExternalProposeDefault'; value: { proposal: FrameSupportPreimagesBounded } }
-  | { tag: 'FastTrack'; value: { proposalHash: H256; votingPeriod: number; delay: number } }
-  | { tag: 'VetoExternal'; value: { proposalHash: H256 } }
-  | { tag: 'CancelReferendum'; value: { refIndex: number } }
-  | { tag: 'Delegate'; value: { to: MultiAddress; conviction: PalletDemocracyConviction; balance: bigint } }
-  | { tag: 'Undelegate' }
-  | { tag: 'ClearPublicProposals' }
-  | { tag: 'Unlock'; value: { target: MultiAddress } }
-  | { tag: 'RemoveVote'; value: { index: number } }
-  | { tag: 'RemoveOtherVote'; value: { target: MultiAddress; index: number } }
-  | { tag: 'Blacklist'; value: { proposalHash: H256; maybeRefIndex?: number | undefined } }
-  | { tag: 'CancelProposal'; value: { propIndex: number } }
-  | { tag: 'SetMetadata'; value: { owner: PalletDemocracyMetadataOwner; maybeHash?: H256 | undefined } };
-
-export type PalletDemocracyConviction =
-  | 'None'
-  | 'Locked1x'
-  | 'Locked2x'
-  | 'Locked3x'
-  | 'Locked4x'
-  | 'Locked5x'
-  | 'Locked6x';
-
-/**
- * Contains one variant per dispatchable that can be called by an extrinsic.
- **/
-export type PalletCollectiveCall =
-  | { tag: 'SetMembers'; value: { newMembers: Array<AccountId32>; prime?: AccountId32 | undefined; oldCount: number } }
-  | { tag: 'Execute'; value: { proposal: PolkadotRuntimeRuntimeCall; lengthBound: number } }
-  | { tag: 'Propose'; value: { threshold: number; proposal: PolkadotRuntimeRuntimeCall; lengthBound: number } }
-  | { tag: 'Vote'; value: { proposal: H256; index: number; approve: boolean } }
-  | { tag: 'DisapproveProposal'; value: { proposalHash: H256 } }
-  | {
-      tag: 'Close';
-      value: { proposalHash: H256; index: number; proposalWeightBound: SpWeightsWeightV2Weight; lengthBound: number };
-    };
-
-/**
- * Contains one variant per dispatchable that can be called by an extrinsic.
- **/
-export type PalletElectionsPhragmenCall =
-  | { tag: 'Vote'; value: { votes: Array<AccountId32>; value: bigint } }
-  | { tag: 'RemoveVoter' }
-  | { tag: 'SubmitCandidacy'; value: { candidateCount: number } }
-  | { tag: 'RenounceCandidacy'; value: { renouncing: PalletElectionsPhragmenRenouncing } }
-  | { tag: 'RemoveMember'; value: { who: MultiAddress; slashBond: boolean; rerunElection: boolean } }
-  | { tag: 'CleanDefunctVoters'; value: { numVoters: number; numDefunct: number } };
-
-export type PalletElectionsPhragmenRenouncing =
-  | { tag: 'Member' }
-  | { tag: 'RunnerUp' }
-  | { tag: 'Candidate'; value: number };
-
-/**
- * Contains one variant per dispatchable that can be called by an extrinsic.
- **/
-export type PalletMembershipCall =
-  | { tag: 'AddMember'; value: { who: MultiAddress } }
-  | { tag: 'RemoveMember'; value: { who: MultiAddress } }
-  | { tag: 'SwapMember'; value: { remove: MultiAddress; add: MultiAddress } }
-  | { tag: 'ResetMembers'; value: { members: Array<AccountId32> } }
-  | { tag: 'ChangeKey'; value: { new: MultiAddress } }
-  | { tag: 'SetPrime'; value: { who: MultiAddress } }
-  | { tag: 'ClearPrime' };
-
-/**
- * Contains one variant per dispatchable that can be called by an extrinsic.
+ * Contains a variant per dispatchable extrinsic that this pallet has.
  **/
 export type PalletTreasuryCall =
+  /**
+   * See [`Pallet::propose_spend`].
+   **/
   | { tag: 'ProposeSpend'; value: { value: bigint; beneficiary: MultiAddress } }
+  /**
+   * See [`Pallet::reject_proposal`].
+   **/
   | { tag: 'RejectProposal'; value: { proposalId: number } }
+  /**
+   * See [`Pallet::approve_proposal`].
+   **/
   | { tag: 'ApproveProposal'; value: { proposalId: number } }
+  /**
+   * See [`Pallet::spend`].
+   **/
   | { tag: 'Spend'; value: { amount: bigint; beneficiary: MultiAddress } }
+  /**
+   * See [`Pallet::remove_approval`].
+   **/
   | { tag: 'RemoveApproval'; value: { proposalId: number } };
 
 /**
- * Contains one variant per dispatchable that can be called by an extrinsic.
+ * Contains a variant per dispatchable extrinsic that this pallet has.
  **/
 export type PalletConvictionVotingCall =
+  /**
+   * See [`Pallet::vote`].
+   **/
   | { tag: 'Vote'; value: { pollIndex: number; vote: PalletConvictionVotingVoteAccountVote } }
+  /**
+   * See [`Pallet::delegate`].
+   **/
   | {
       tag: 'Delegate';
       value: { class: number; to: MultiAddress; conviction: PalletConvictionVotingConviction; balance: bigint };
     }
+  /**
+   * See [`Pallet::undelegate`].
+   **/
   | { tag: 'Undelegate'; value: { class: number } }
+  /**
+   * See [`Pallet::unlock`].
+   **/
   | { tag: 'Unlock'; value: { class: number; target: MultiAddress } }
+  /**
+   * See [`Pallet::remove_vote`].
+   **/
   | { tag: 'RemoveVote'; value: { class?: number | undefined; index: number } }
+  /**
+   * See [`Pallet::remove_other_vote`].
+   **/
   | { tag: 'RemoveOtherVote'; value: { target: MultiAddress; class: number; index: number } };
 
 export type PalletConvictionVotingVoteAccountVote =
@@ -1104,9 +1398,12 @@ export type PalletConvictionVotingConviction =
   | 'Locked6x';
 
 /**
- * Contains one variant per dispatchable that can be called by an extrinsic.
+ * Contains a variant per dispatchable extrinsic that this pallet has.
  **/
 export type PalletReferendaCall =
+  /**
+   * See [`Pallet::submit`].
+   **/
   | {
       tag: 'Submit';
       value: {
@@ -1115,30 +1412,47 @@ export type PalletReferendaCall =
         enactmentMoment: FrameSupportScheduleDispatchTime;
       };
     }
+  /**
+   * See [`Pallet::place_decision_deposit`].
+   **/
   | { tag: 'PlaceDecisionDeposit'; value: { index: number } }
+  /**
+   * See [`Pallet::refund_decision_deposit`].
+   **/
   | { tag: 'RefundDecisionDeposit'; value: { index: number } }
+  /**
+   * See [`Pallet::cancel`].
+   **/
   | { tag: 'Cancel'; value: { index: number } }
+  /**
+   * See [`Pallet::kill`].
+   **/
   | { tag: 'Kill'; value: { index: number } }
+  /**
+   * See [`Pallet::nudge_referendum`].
+   **/
   | { tag: 'NudgeReferendum'; value: { index: number } }
+  /**
+   * See [`Pallet::one_fewer_deciding`].
+   **/
   | { tag: 'OneFewerDeciding'; value: { track: number } }
+  /**
+   * See [`Pallet::refund_submission_deposit`].
+   **/
   | { tag: 'RefundSubmissionDeposit'; value: { index: number } }
+  /**
+   * See [`Pallet::set_metadata`].
+   **/
   | { tag: 'SetMetadata'; value: { index: number; maybeHash?: H256 | undefined } };
 
 export type PolkadotRuntimeOriginCaller =
   | { tag: 'System'; value: FrameSupportDispatchRawOrigin }
-  | { tag: 'Council'; value: PalletCollectiveRawOrigin }
-  | { tag: 'TechnicalCommittee'; value: PalletCollectiveRawOrigin }
   | { tag: 'Origins'; value: PolkadotRuntimeGovernanceOriginsPalletCustomOriginsOrigin }
   | { tag: 'ParachainsOrigin'; value: PolkadotRuntimeParachainsOriginPalletOrigin }
   | { tag: 'XcmPallet'; value: PalletXcmOrigin }
   | { tag: 'Void'; value: SpCoreVoid };
 
 export type FrameSupportDispatchRawOrigin = { tag: 'Root' } | { tag: 'Signed'; value: AccountId32 } | { tag: 'None' };
-
-export type PalletCollectiveRawOrigin =
-  | { tag: 'Members'; value: [number, number] }
-  | { tag: 'Member'; value: AccountId32 }
-  | { tag: 'Phantom' };
 
 export type PolkadotRuntimeGovernanceOriginsPalletCustomOriginsOrigin =
   | 'StakingAdmin'
@@ -1156,15 +1470,18 @@ export type PolkadotRuntimeGovernanceOriginsPalletCustomOriginsOrigin =
   | 'BigSpender'
   | 'WhitelistedCaller';
 
-export type PolkadotRuntimeParachainsOriginPalletOrigin = { tag: 'Parachain'; value: PolkadotParachainPrimitivesId };
+export type PolkadotRuntimeParachainsOriginPalletOrigin = {
+  tag: 'Parachain';
+  value: PolkadotParachainPrimitivesPrimitivesId;
+};
 
-export type PolkadotParachainPrimitivesId = number;
+export type PolkadotParachainPrimitivesPrimitivesId = number;
 
 export type PalletXcmOrigin =
-  | { tag: 'Xcm'; value: XcmV3MultilocationMultiLocation }
-  | { tag: 'Response'; value: XcmV3MultilocationMultiLocation };
+  | { tag: 'Xcm'; value: StagingXcmV3MultilocationMultiLocation }
+  | { tag: 'Response'; value: StagingXcmV3MultilocationMultiLocation };
 
-export type XcmV3MultilocationMultiLocation = { parents: number; interior: XcmV3Junctions };
+export type StagingXcmV3MultilocationMultiLocation = { parents: number; interior: XcmV3Junctions };
 
 export type XcmV3Junctions =
   | { tag: 'Here' }
@@ -1240,22 +1557,40 @@ export type SpCoreVoid = null;
 export type FrameSupportScheduleDispatchTime = { tag: 'At'; value: number } | { tag: 'After'; value: number };
 
 /**
- * Contains one variant per dispatchable that can be called by an extrinsic.
+ * Contains a variant per dispatchable extrinsic that this pallet has.
  **/
 export type PalletWhitelistCall =
+  /**
+   * See [`Pallet::whitelist_call`].
+   **/
   | { tag: 'WhitelistCall'; value: { callHash: H256 } }
+  /**
+   * See [`Pallet::remove_whitelisted_call`].
+   **/
   | { tag: 'RemoveWhitelistedCall'; value: { callHash: H256 } }
+  /**
+   * See [`Pallet::dispatch_whitelisted_call`].
+   **/
   | {
       tag: 'DispatchWhitelistedCall';
       value: { callHash: H256; callEncodedLen: number; callWeightWitness: SpWeightsWeightV2Weight };
     }
+  /**
+   * See [`Pallet::dispatch_whitelisted_call_with_preimage`].
+   **/
   | { tag: 'DispatchWhitelistedCallWithPreimage'; value: { call: PolkadotRuntimeRuntimeCall } };
 
 /**
- * Contains one variant per dispatchable that can be called by an extrinsic.
+ * Contains a variant per dispatchable extrinsic that this pallet has.
  **/
 export type PolkadotRuntimeCommonClaimsPalletCall =
+  /**
+   * See [`Pallet::claim`].
+   **/
   | { tag: 'Claim'; value: { dest: AccountId32; ethereumSignature: PolkadotRuntimeCommonClaimsEcdsaSignature } }
+  /**
+   * See [`Pallet::mint_claim`].
+   **/
   | {
       tag: 'MintClaim';
       value: {
@@ -1265,11 +1600,20 @@ export type PolkadotRuntimeCommonClaimsPalletCall =
         statement?: PolkadotRuntimeCommonClaimsStatementKind | undefined;
       };
     }
+  /**
+   * See [`Pallet::claim_attest`].
+   **/
   | {
       tag: 'ClaimAttest';
       value: { dest: AccountId32; ethereumSignature: PolkadotRuntimeCommonClaimsEcdsaSignature; statement: Bytes };
     }
+  /**
+   * See [`Pallet::attest`].
+   **/
   | { tag: 'Attest'; value: { statement: Bytes } }
+  /**
+   * See [`Pallet::move_claim`].
+   **/
   | {
       tag: 'MoveClaim';
       value: { old: EthereumAddress; new: EthereumAddress; maybePreclaim?: AccountId32 | undefined };
@@ -1280,52 +1624,130 @@ export type PolkadotRuntimeCommonClaimsEcdsaSignature = FixedBytes<65>;
 export type PolkadotRuntimeCommonClaimsStatementKind = 'Regular' | 'Saft';
 
 /**
- * Contains one variant per dispatchable that can be called by an extrinsic.
+ * Contains a variant per dispatchable extrinsic that this pallet has.
  **/
 export type PalletVestingCall =
+  /**
+   * See [`Pallet::vest`].
+   **/
   | { tag: 'Vest' }
+  /**
+   * See [`Pallet::vest_other`].
+   **/
   | { tag: 'VestOther'; value: { target: MultiAddress } }
+  /**
+   * See [`Pallet::vested_transfer`].
+   **/
   | { tag: 'VestedTransfer'; value: { target: MultiAddress; schedule: PalletVestingVestingInfo } }
+  /**
+   * See [`Pallet::force_vested_transfer`].
+   **/
   | {
       tag: 'ForceVestedTransfer';
       value: { source: MultiAddress; target: MultiAddress; schedule: PalletVestingVestingInfo };
     }
+  /**
+   * See [`Pallet::merge_schedules`].
+   **/
   | { tag: 'MergeSchedules'; value: { schedule1Index: number; schedule2Index: number } };
 
 export type PalletVestingVestingInfo = { locked: bigint; perBlock: bigint; startingBlock: number };
 
 /**
- * Contains one variant per dispatchable that can be called by an extrinsic.
+ * Contains a variant per dispatchable extrinsic that this pallet has.
  **/
 export type PalletUtilityCall =
+  /**
+   * See [`Pallet::batch`].
+   **/
   | { tag: 'Batch'; value: { calls: Array<PolkadotRuntimeRuntimeCall> } }
+  /**
+   * See [`Pallet::as_derivative`].
+   **/
   | { tag: 'AsDerivative'; value: { index: number; call: PolkadotRuntimeRuntimeCall } }
+  /**
+   * See [`Pallet::batch_all`].
+   **/
   | { tag: 'BatchAll'; value: { calls: Array<PolkadotRuntimeRuntimeCall> } }
+  /**
+   * See [`Pallet::dispatch_as`].
+   **/
   | { tag: 'DispatchAs'; value: { asOrigin: PolkadotRuntimeOriginCaller; call: PolkadotRuntimeRuntimeCall } }
+  /**
+   * See [`Pallet::force_batch`].
+   **/
   | { tag: 'ForceBatch'; value: { calls: Array<PolkadotRuntimeRuntimeCall> } }
+  /**
+   * See [`Pallet::with_weight`].
+   **/
   | { tag: 'WithWeight'; value: { call: PolkadotRuntimeRuntimeCall; weight: SpWeightsWeightV2Weight } };
 
 /**
  * Identity pallet declaration.
  **/
 export type PalletIdentityCall =
+  /**
+   * See [`Pallet::add_registrar`].
+   **/
   | { tag: 'AddRegistrar'; value: { account: MultiAddress } }
+  /**
+   * See [`Pallet::set_identity`].
+   **/
   | { tag: 'SetIdentity'; value: { info: PalletIdentityIdentityInfo } }
+  /**
+   * See [`Pallet::set_subs`].
+   **/
   | { tag: 'SetSubs'; value: { subs: Array<[AccountId32, Data]> } }
+  /**
+   * See [`Pallet::clear_identity`].
+   **/
   | { tag: 'ClearIdentity' }
+  /**
+   * See [`Pallet::request_judgement`].
+   **/
   | { tag: 'RequestJudgement'; value: { regIndex: number; maxFee: bigint } }
+  /**
+   * See [`Pallet::cancel_request`].
+   **/
   | { tag: 'CancelRequest'; value: { regIndex: number } }
+  /**
+   * See [`Pallet::set_fee`].
+   **/
   | { tag: 'SetFee'; value: { index: number; fee: bigint } }
+  /**
+   * See [`Pallet::set_account_id`].
+   **/
   | { tag: 'SetAccountId'; value: { index: number; new: MultiAddress } }
+  /**
+   * See [`Pallet::set_fields`].
+   **/
   | { tag: 'SetFields'; value: { index: number; fields: PalletIdentityBitFlags } }
+  /**
+   * See [`Pallet::provide_judgement`].
+   **/
   | {
       tag: 'ProvideJudgement';
       value: { regIndex: number; target: MultiAddress; judgement: PalletIdentityJudgement; identity: H256 };
     }
+  /**
+   * See [`Pallet::kill_identity`].
+   **/
   | { tag: 'KillIdentity'; value: { target: MultiAddress } }
+  /**
+   * See [`Pallet::add_sub`].
+   **/
   | { tag: 'AddSub'; value: { sub: MultiAddress; data: Data } }
+  /**
+   * See [`Pallet::rename_sub`].
+   **/
   | { tag: 'RenameSub'; value: { sub: MultiAddress; data: Data } }
+  /**
+   * See [`Pallet::remove_sub`].
+   **/
   | { tag: 'RemoveSub'; value: { sub: MultiAddress } }
+  /**
+   * See [`Pallet::quit_sub`].
+   **/
   | { tag: 'QuitSub' };
 
 export type PalletIdentityIdentityInfo = {
@@ -1362,9 +1784,12 @@ export type PalletIdentityJudgement =
   | { tag: 'Erroneous' };
 
 /**
- * Contains one variant per dispatchable that can be called by an extrinsic.
+ * Contains a variant per dispatchable extrinsic that this pallet has.
  **/
 export type PalletProxyCall =
+  /**
+   * See [`Pallet::proxy`].
+   **/
   | {
       tag: 'Proxy';
       value: {
@@ -1373,10 +1798,25 @@ export type PalletProxyCall =
         call: PolkadotRuntimeRuntimeCall;
       };
     }
+  /**
+   * See [`Pallet::add_proxy`].
+   **/
   | { tag: 'AddProxy'; value: { delegate: MultiAddress; proxyType: PolkadotRuntimeProxyType; delay: number } }
+  /**
+   * See [`Pallet::remove_proxy`].
+   **/
   | { tag: 'RemoveProxy'; value: { delegate: MultiAddress; proxyType: PolkadotRuntimeProxyType; delay: number } }
+  /**
+   * See [`Pallet::remove_proxies`].
+   **/
   | { tag: 'RemoveProxies' }
+  /**
+   * See [`Pallet::create_pure`].
+   **/
   | { tag: 'CreatePure'; value: { proxyType: PolkadotRuntimeProxyType; delay: number; index: number } }
+  /**
+   * See [`Pallet::kill_pure`].
+   **/
   | {
       tag: 'KillPure';
       value: {
@@ -1387,9 +1827,21 @@ export type PalletProxyCall =
         extIndex: number;
       };
     }
+  /**
+   * See [`Pallet::announce`].
+   **/
   | { tag: 'Announce'; value: { real: MultiAddress; callHash: H256 } }
+  /**
+   * See [`Pallet::remove_announcement`].
+   **/
   | { tag: 'RemoveAnnouncement'; value: { real: MultiAddress; callHash: H256 } }
+  /**
+   * See [`Pallet::reject_announcement`].
+   **/
   | { tag: 'RejectAnnouncement'; value: { delegate: MultiAddress; callHash: H256 } }
+  /**
+   * See [`Pallet::proxy_announced`].
+   **/
   | {
       tag: 'ProxyAnnounced';
       value: {
@@ -1411,10 +1863,16 @@ export type PolkadotRuntimeProxyType =
   | 'NominationPools';
 
 /**
- * Contains one variant per dispatchable that can be called by an extrinsic.
+ * Contains a variant per dispatchable extrinsic that this pallet has.
  **/
 export type PalletMultisigCall =
+  /**
+   * See [`Pallet::as_multi_threshold_1`].
+   **/
   | { tag: 'AsMultiThreshold1'; value: { otherSignatories: Array<AccountId32>; call: PolkadotRuntimeRuntimeCall } }
+  /**
+   * See [`Pallet::as_multi`].
+   **/
   | {
       tag: 'AsMulti';
       value: {
@@ -1425,6 +1883,9 @@ export type PalletMultisigCall =
         maxWeight: SpWeightsWeightV2Weight;
       };
     }
+  /**
+   * See [`Pallet::approve_as_multi`].
+   **/
   | {
       tag: 'ApproveAsMulti';
       value: {
@@ -1435,6 +1896,9 @@ export type PalletMultisigCall =
         maxWeight: SpWeightsWeightV2Weight;
       };
     }
+  /**
+   * See [`Pallet::cancel_as_multi`].
+   **/
   | {
       tag: 'CancelAsMulti';
       value: {
@@ -1448,49 +1912,89 @@ export type PalletMultisigCall =
 export type PalletMultisigTimepoint = { height: number; index: number };
 
 /**
- * Contains one variant per dispatchable that can be called by an extrinsic.
+ * Contains a variant per dispatchable extrinsic that this pallet has.
  **/
 export type PalletBountiesCall =
+  /**
+   * See [`Pallet::propose_bounty`].
+   **/
   | { tag: 'ProposeBounty'; value: { value: bigint; description: Bytes } }
+  /**
+   * See [`Pallet::approve_bounty`].
+   **/
   | { tag: 'ApproveBounty'; value: { bountyId: number } }
+  /**
+   * See [`Pallet::propose_curator`].
+   **/
   | { tag: 'ProposeCurator'; value: { bountyId: number; curator: MultiAddress; fee: bigint } }
+  /**
+   * See [`Pallet::unassign_curator`].
+   **/
   | { tag: 'UnassignCurator'; value: { bountyId: number } }
+  /**
+   * See [`Pallet::accept_curator`].
+   **/
   | { tag: 'AcceptCurator'; value: { bountyId: number } }
+  /**
+   * See [`Pallet::award_bounty`].
+   **/
   | { tag: 'AwardBounty'; value: { bountyId: number; beneficiary: MultiAddress } }
+  /**
+   * See [`Pallet::claim_bounty`].
+   **/
   | { tag: 'ClaimBounty'; value: { bountyId: number } }
+  /**
+   * See [`Pallet::close_bounty`].
+   **/
   | { tag: 'CloseBounty'; value: { bountyId: number } }
+  /**
+   * See [`Pallet::extend_bounty_expiry`].
+   **/
   | { tag: 'ExtendBountyExpiry'; value: { bountyId: number; remark: Bytes } };
 
 /**
- * Contains one variant per dispatchable that can be called by an extrinsic.
+ * Contains a variant per dispatchable extrinsic that this pallet has.
  **/
 export type PalletChildBountiesCall =
+  /**
+   * See [`Pallet::add_child_bounty`].
+   **/
   | { tag: 'AddChildBounty'; value: { parentBountyId: number; value: bigint; description: Bytes } }
+  /**
+   * See [`Pallet::propose_curator`].
+   **/
   | {
       tag: 'ProposeCurator';
       value: { parentBountyId: number; childBountyId: number; curator: MultiAddress; fee: bigint };
     }
+  /**
+   * See [`Pallet::accept_curator`].
+   **/
   | { tag: 'AcceptCurator'; value: { parentBountyId: number; childBountyId: number } }
+  /**
+   * See [`Pallet::unassign_curator`].
+   **/
   | { tag: 'UnassignCurator'; value: { parentBountyId: number; childBountyId: number } }
+  /**
+   * See [`Pallet::award_child_bounty`].
+   **/
   | { tag: 'AwardChildBounty'; value: { parentBountyId: number; childBountyId: number; beneficiary: MultiAddress } }
+  /**
+   * See [`Pallet::claim_child_bounty`].
+   **/
   | { tag: 'ClaimChildBounty'; value: { parentBountyId: number; childBountyId: number } }
+  /**
+   * See [`Pallet::close_child_bounty`].
+   **/
   | { tag: 'CloseChildBounty'; value: { parentBountyId: number; childBountyId: number } };
 
 /**
- * Contains one variant per dispatchable that can be called by an extrinsic.
- **/
-export type PalletTipsCall =
-  | { tag: 'ReportAwesome'; value: { reason: Bytes; who: MultiAddress } }
-  | { tag: 'RetractTip'; value: { hash: H256 } }
-  | { tag: 'TipNew'; value: { reason: Bytes; who: MultiAddress; tipValue: bigint } }
-  | { tag: 'Tip'; value: { hash: H256; tipValue: bigint } }
-  | { tag: 'CloseTip'; value: { hash: H256 } }
-  | { tag: 'SlashTip'; value: { hash: H256 } };
-
-/**
- * Contains one variant per dispatchable that can be called by an extrinsic.
+ * Contains a variant per dispatchable extrinsic that this pallet has.
  **/
 export type PalletElectionProviderMultiPhaseCall =
+  /**
+   * See [`Pallet::submit_unsigned`].
+   **/
   | {
       tag: 'SubmitUnsigned';
       value: {
@@ -1498,9 +2002,21 @@ export type PalletElectionProviderMultiPhaseCall =
         witness: PalletElectionProviderMultiPhaseSolutionOrSnapshotSize;
       };
     }
+  /**
+   * See [`Pallet::set_minimum_untrusted_score`].
+   **/
   | { tag: 'SetMinimumUntrustedScore'; value: { maybeNextScore?: SpNposElectionsElectionScore | undefined } }
+  /**
+   * See [`Pallet::set_emergency_election_result`].
+   **/
   | { tag: 'SetEmergencyElectionResult'; value: { supports: Array<[AccountId32, SpNposElectionsSupport]> } }
+  /**
+   * See [`Pallet::submit`].
+   **/
   | { tag: 'Submit'; value: { rawSolution: PalletElectionProviderMultiPhaseRawSolution } }
+  /**
+   * See [`Pallet::governance_fallback`].
+   **/
   | { tag: 'GovernanceFallback'; value: { maybeMaxVoters?: number | undefined; maybeMaxTargets?: number | undefined } };
 
 export type PalletElectionProviderMultiPhaseRawSolution = {
@@ -1535,30 +2051,76 @@ export type PalletElectionProviderMultiPhaseSolutionOrSnapshotSize = { voters: n
 export type SpNposElectionsSupport = { total: bigint; voters: Array<[AccountId32, bigint]> };
 
 /**
- * Contains one variant per dispatchable that can be called by an extrinsic.
+ * Contains a variant per dispatchable extrinsic that this pallet has.
  **/
 export type PalletBagsListCall =
+  /**
+   * See [`Pallet::rebag`].
+   **/
   | { tag: 'Rebag'; value: { dislocated: MultiAddress } }
-  | { tag: 'PutInFrontOf'; value: { lighter: MultiAddress } };
+  /**
+   * See [`Pallet::put_in_front_of`].
+   **/
+  | { tag: 'PutInFrontOf'; value: { lighter: MultiAddress } }
+  /**
+   * See [`Pallet::put_in_front_of_other`].
+   **/
+  | { tag: 'PutInFrontOfOther'; value: { heavier: MultiAddress; lighter: MultiAddress } };
 
 /**
- * Contains one variant per dispatchable that can be called by an extrinsic.
+ * Contains a variant per dispatchable extrinsic that this pallet has.
  **/
 export type PalletNominationPoolsCall =
+  /**
+   * See [`Pallet::join`].
+   **/
   | { tag: 'Join'; value: { amount: bigint; poolId: number } }
+  /**
+   * See [`Pallet::bond_extra`].
+   **/
   | { tag: 'BondExtra'; value: { extra: PalletNominationPoolsBondExtra } }
+  /**
+   * See [`Pallet::claim_payout`].
+   **/
   | { tag: 'ClaimPayout' }
+  /**
+   * See [`Pallet::unbond`].
+   **/
   | { tag: 'Unbond'; value: { memberAccount: MultiAddress; unbondingPoints: bigint } }
+  /**
+   * See [`Pallet::pool_withdraw_unbonded`].
+   **/
   | { tag: 'PoolWithdrawUnbonded'; value: { poolId: number; numSlashingSpans: number } }
+  /**
+   * See [`Pallet::withdraw_unbonded`].
+   **/
   | { tag: 'WithdrawUnbonded'; value: { memberAccount: MultiAddress; numSlashingSpans: number } }
+  /**
+   * See [`Pallet::create`].
+   **/
   | { tag: 'Create'; value: { amount: bigint; root: MultiAddress; nominator: MultiAddress; bouncer: MultiAddress } }
+  /**
+   * See [`Pallet::create_with_pool_id`].
+   **/
   | {
       tag: 'CreateWithPoolId';
       value: { amount: bigint; root: MultiAddress; nominator: MultiAddress; bouncer: MultiAddress; poolId: number };
     }
+  /**
+   * See [`Pallet::nominate`].
+   **/
   | { tag: 'Nominate'; value: { poolId: number; validators: Array<AccountId32> } }
+  /**
+   * See [`Pallet::set_state`].
+   **/
   | { tag: 'SetState'; value: { poolId: number; state: PalletNominationPoolsPoolState } }
+  /**
+   * See [`Pallet::set_metadata`].
+   **/
   | { tag: 'SetMetadata'; value: { poolId: number; metadata: Bytes } }
+  /**
+   * See [`Pallet::set_configs`].
+   **/
   | {
       tag: 'SetConfigs';
       value: {
@@ -1570,6 +2132,9 @@ export type PalletNominationPoolsCall =
         globalMaxCommission: PalletNominationPoolsConfigOpPerbill;
       };
     }
+  /**
+   * See [`Pallet::update_roles`].
+   **/
   | {
       tag: 'UpdateRoles';
       value: {
@@ -1579,13 +2144,37 @@ export type PalletNominationPoolsCall =
         newBouncer: PalletNominationPoolsConfigOp004;
       };
     }
+  /**
+   * See [`Pallet::chill`].
+   **/
   | { tag: 'Chill'; value: { poolId: number } }
+  /**
+   * See [`Pallet::bond_extra_other`].
+   **/
   | { tag: 'BondExtraOther'; value: { member: MultiAddress; extra: PalletNominationPoolsBondExtra } }
+  /**
+   * See [`Pallet::set_claim_permission`].
+   **/
   | { tag: 'SetClaimPermission'; value: { permission: PalletNominationPoolsClaimPermission } }
+  /**
+   * See [`Pallet::claim_payout_other`].
+   **/
   | { tag: 'ClaimPayoutOther'; value: { other: AccountId32 } }
+  /**
+   * See [`Pallet::set_commission`].
+   **/
   | { tag: 'SetCommission'; value: { poolId: number; newCommission?: [Perbill, AccountId32] | undefined } }
+  /**
+   * See [`Pallet::set_commission_max`].
+   **/
   | { tag: 'SetCommissionMax'; value: { poolId: number; maxCommission: Perbill } }
+  /**
+   * See [`Pallet::set_commission_change_rate`].
+   **/
   | { tag: 'SetCommissionChangeRate'; value: { poolId: number; changeRate: PalletNominationPoolsCommissionChangeRate } }
+  /**
+   * See [`Pallet::claim_commission`].
+   **/
   | { tag: 'ClaimCommission'; value: { poolId: number } };
 
 export type PalletNominationPoolsBondExtra = { tag: 'FreeBalance'; value: bigint } | { tag: 'Rewards' };
@@ -1609,375 +2198,653 @@ export type PalletNominationPoolsClaimPermission =
 export type PalletNominationPoolsCommissionChangeRate = { maxIncrease: Perbill; minDelay: number };
 
 /**
- * Contains one variant per dispatchable that can be called by an extrinsic.
+ * Contains a variant per dispatchable extrinsic that this pallet has.
  **/
 export type PalletFastUnstakeCall =
+  /**
+   * See [`Pallet::register_fast_unstake`].
+   **/
   | { tag: 'RegisterFastUnstake' }
+  /**
+   * See [`Pallet::deregister`].
+   **/
   | { tag: 'Deregister' }
+  /**
+   * See [`Pallet::control`].
+   **/
   | { tag: 'Control'; value: { erasToCheck: number } };
 
 /**
- * Contains one variant per dispatchable that can be called by an extrinsic.
+ * Contains a variant per dispatchable extrinsic that this pallet has.
  **/
 export type PolkadotRuntimeParachainsConfigurationPalletCall =
+  /**
+   * See [`Pallet::set_validation_upgrade_cooldown`].
+   **/
   | { tag: 'SetValidationUpgradeCooldown'; value: { new: number } }
+  /**
+   * See [`Pallet::set_validation_upgrade_delay`].
+   **/
   | { tag: 'SetValidationUpgradeDelay'; value: { new: number } }
+  /**
+   * See [`Pallet::set_code_retention_period`].
+   **/
   | { tag: 'SetCodeRetentionPeriod'; value: { new: number } }
+  /**
+   * See [`Pallet::set_max_code_size`].
+   **/
   | { tag: 'SetMaxCodeSize'; value: { new: number } }
+  /**
+   * See [`Pallet::set_max_pov_size`].
+   **/
   | { tag: 'SetMaxPovSize'; value: { new: number } }
+  /**
+   * See [`Pallet::set_max_head_data_size`].
+   **/
   | { tag: 'SetMaxHeadDataSize'; value: { new: number } }
-  | { tag: 'SetParathreadCores'; value: { new: number } }
-  | { tag: 'SetParathreadRetries'; value: { new: number } }
+  /**
+   * See [`Pallet::set_on_demand_cores`].
+   **/
+  | { tag: 'SetOnDemandCores'; value: { new: number } }
+  /**
+   * See [`Pallet::set_on_demand_retries`].
+   **/
+  | { tag: 'SetOnDemandRetries'; value: { new: number } }
+  /**
+   * See [`Pallet::set_group_rotation_frequency`].
+   **/
   | { tag: 'SetGroupRotationFrequency'; value: { new: number } }
-  | { tag: 'SetChainAvailabilityPeriod'; value: { new: number } }
-  | { tag: 'SetThreadAvailabilityPeriod'; value: { new: number } }
+  /**
+   * See [`Pallet::set_paras_availability_period`].
+   **/
+  | { tag: 'SetParasAvailabilityPeriod'; value: { new: number } }
+  /**
+   * See [`Pallet::set_scheduling_lookahead`].
+   **/
   | { tag: 'SetSchedulingLookahead'; value: { new: number } }
+  /**
+   * See [`Pallet::set_max_validators_per_core`].
+   **/
   | { tag: 'SetMaxValidatorsPerCore'; value: { new?: number | undefined } }
+  /**
+   * See [`Pallet::set_max_validators`].
+   **/
   | { tag: 'SetMaxValidators'; value: { new?: number | undefined } }
+  /**
+   * See [`Pallet::set_dispute_period`].
+   **/
   | { tag: 'SetDisputePeriod'; value: { new: number } }
+  /**
+   * See [`Pallet::set_dispute_post_conclusion_acceptance_period`].
+   **/
   | { tag: 'SetDisputePostConclusionAcceptancePeriod'; value: { new: number } }
+  /**
+   * See [`Pallet::set_no_show_slots`].
+   **/
   | { tag: 'SetNoShowSlots'; value: { new: number } }
+  /**
+   * See [`Pallet::set_n_delay_tranches`].
+   **/
   | { tag: 'SetNDelayTranches'; value: { new: number } }
+  /**
+   * See [`Pallet::set_zeroth_delay_tranche_width`].
+   **/
   | { tag: 'SetZerothDelayTrancheWidth'; value: { new: number } }
+  /**
+   * See [`Pallet::set_needed_approvals`].
+   **/
   | { tag: 'SetNeededApprovals'; value: { new: number } }
+  /**
+   * See [`Pallet::set_relay_vrf_modulo_samples`].
+   **/
   | { tag: 'SetRelayVrfModuloSamples'; value: { new: number } }
+  /**
+   * See [`Pallet::set_max_upward_queue_count`].
+   **/
   | { tag: 'SetMaxUpwardQueueCount'; value: { new: number } }
+  /**
+   * See [`Pallet::set_max_upward_queue_size`].
+   **/
   | { tag: 'SetMaxUpwardQueueSize'; value: { new: number } }
+  /**
+   * See [`Pallet::set_max_downward_message_size`].
+   **/
   | { tag: 'SetMaxDownwardMessageSize'; value: { new: number } }
+  /**
+   * See [`Pallet::set_max_upward_message_size`].
+   **/
   | { tag: 'SetMaxUpwardMessageSize'; value: { new: number } }
+  /**
+   * See [`Pallet::set_max_upward_message_num_per_candidate`].
+   **/
   | { tag: 'SetMaxUpwardMessageNumPerCandidate'; value: { new: number } }
+  /**
+   * See [`Pallet::set_hrmp_open_request_ttl`].
+   **/
   | { tag: 'SetHrmpOpenRequestTtl'; value: { new: number } }
+  /**
+   * See [`Pallet::set_hrmp_sender_deposit`].
+   **/
   | { tag: 'SetHrmpSenderDeposit'; value: { new: bigint } }
+  /**
+   * See [`Pallet::set_hrmp_recipient_deposit`].
+   **/
   | { tag: 'SetHrmpRecipientDeposit'; value: { new: bigint } }
+  /**
+   * See [`Pallet::set_hrmp_channel_max_capacity`].
+   **/
   | { tag: 'SetHrmpChannelMaxCapacity'; value: { new: number } }
+  /**
+   * See [`Pallet::set_hrmp_channel_max_total_size`].
+   **/
   | { tag: 'SetHrmpChannelMaxTotalSize'; value: { new: number } }
+  /**
+   * See [`Pallet::set_hrmp_max_parachain_inbound_channels`].
+   **/
   | { tag: 'SetHrmpMaxParachainInboundChannels'; value: { new: number } }
-  | { tag: 'SetHrmpMaxParathreadInboundChannels'; value: { new: number } }
+  /**
+   * See [`Pallet::set_hrmp_channel_max_message_size`].
+   **/
   | { tag: 'SetHrmpChannelMaxMessageSize'; value: { new: number } }
+  /**
+   * See [`Pallet::set_hrmp_max_parachain_outbound_channels`].
+   **/
   | { tag: 'SetHrmpMaxParachainOutboundChannels'; value: { new: number } }
-  | { tag: 'SetHrmpMaxParathreadOutboundChannels'; value: { new: number } }
+  /**
+   * See [`Pallet::set_hrmp_max_message_num_per_candidate`].
+   **/
   | { tag: 'SetHrmpMaxMessageNumPerCandidate'; value: { new: number } }
-  | { tag: 'SetPvfCheckingEnabled'; value: { new: boolean } }
+  /**
+   * See [`Pallet::set_pvf_voting_ttl`].
+   **/
   | { tag: 'SetPvfVotingTtl'; value: { new: number } }
+  /**
+   * See [`Pallet::set_minimum_validation_upgrade_delay`].
+   **/
   | { tag: 'SetMinimumValidationUpgradeDelay'; value: { new: number } }
+  /**
+   * See [`Pallet::set_bypass_consistency_check`].
+   **/
   | { tag: 'SetBypassConsistencyCheck'; value: { new: boolean } }
+  /**
+   * See [`Pallet::set_async_backing_params`].
+   **/
   | { tag: 'SetAsyncBackingParams'; value: { new: PolkadotPrimitivesVstagingAsyncBackingParams } }
-  | { tag: 'SetExecutorParams'; value: { new: PolkadotPrimitivesV4ExecutorParams } };
+  /**
+   * See [`Pallet::set_executor_params`].
+   **/
+  | { tag: 'SetExecutorParams'; value: { new: PolkadotPrimitivesV5ExecutorParams } }
+  /**
+   * See [`Pallet::set_on_demand_base_fee`].
+   **/
+  | { tag: 'SetOnDemandBaseFee'; value: { new: bigint } }
+  /**
+   * See [`Pallet::set_on_demand_fee_variability`].
+   **/
+  | { tag: 'SetOnDemandFeeVariability'; value: { new: Perbill } }
+  /**
+   * See [`Pallet::set_on_demand_queue_max_size`].
+   **/
+  | { tag: 'SetOnDemandQueueMaxSize'; value: { new: number } }
+  /**
+   * See [`Pallet::set_on_demand_target_queue_utilization`].
+   **/
+  | { tag: 'SetOnDemandTargetQueueUtilization'; value: { new: Perbill } }
+  /**
+   * See [`Pallet::set_on_demand_ttl`].
+   **/
+  | { tag: 'SetOnDemandTtl'; value: { new: number } }
+  /**
+   * See [`Pallet::set_minimum_backing_votes`].
+   **/
+  | { tag: 'SetMinimumBackingVotes'; value: { new: number } };
 
 export type PolkadotPrimitivesVstagingAsyncBackingParams = { maxCandidateDepth: number; allowedAncestryLen: number };
 
-export type PolkadotPrimitivesV4ExecutorParams = Array<PolkadotPrimitivesV4ExecutorParamsExecutorParam>;
+export type PolkadotPrimitivesV5ExecutorParams = Array<PolkadotPrimitivesV5ExecutorParamsExecutorParam>;
 
-export type PolkadotPrimitivesV4ExecutorParamsExecutorParam =
+export type PolkadotPrimitivesV5ExecutorParamsExecutorParam =
   | { tag: 'MaxMemoryPages'; value: number }
   | { tag: 'StackLogicalMax'; value: number }
   | { tag: 'StackNativeMax'; value: number }
   | { tag: 'PrecheckingMaxMemory'; value: bigint }
-  | { tag: 'PvfPrepTimeout'; value: [PolkadotPrimitivesV4PvfPrepTimeoutKind, bigint] }
-  | { tag: 'PvfExecTimeout'; value: [PolkadotPrimitivesV4PvfExecTimeoutKind, bigint] }
+  | { tag: 'PvfPrepTimeout'; value: [PolkadotPrimitivesV5PvfPrepTimeoutKind, bigint] }
+  | { tag: 'PvfExecTimeout'; value: [PolkadotPrimitivesV5PvfExecTimeoutKind, bigint] }
   | { tag: 'WasmExtBulkMemory' };
 
-export type PolkadotPrimitivesV4PvfPrepTimeoutKind = 'Precheck' | 'Lenient';
+export type PolkadotPrimitivesV5PvfPrepTimeoutKind = 'Precheck' | 'Lenient';
 
-export type PolkadotPrimitivesV4PvfExecTimeoutKind = 'Backing' | 'Approval';
+export type PolkadotPrimitivesV5PvfExecTimeoutKind = 'Backing' | 'Approval';
 
 /**
- * Contains one variant per dispatchable that can be called by an extrinsic.
+ * Contains a variant per dispatchable extrinsic that this pallet has.
  **/
 export type PolkadotRuntimeParachainsSharedPalletCall = null;
 
 /**
- * Contains one variant per dispatchable that can be called by an extrinsic.
+ * Contains a variant per dispatchable extrinsic that this pallet has.
  **/
 export type PolkadotRuntimeParachainsInclusionPalletCall = null;
 
 /**
- * Contains one variant per dispatchable that can be called by an extrinsic.
+ * Contains a variant per dispatchable extrinsic that this pallet has.
  **/
-export type PolkadotRuntimeParachainsParasInherentPalletCall = {
-  tag: 'Enter';
-  value: { data: PolkadotPrimitivesV4InherentData };
-};
+export type PolkadotRuntimeParachainsParasInherentPalletCall =
+  /**
+   * See [`Pallet::enter`].
+   **/
+  { tag: 'Enter'; value: { data: PolkadotPrimitivesV5InherentData } };
 
-export type PolkadotPrimitivesV4InherentData = {
-  bitfields: Array<PolkadotPrimitivesV4SignedUncheckedSigned>;
-  backedCandidates: Array<PolkadotPrimitivesV4BackedCandidate>;
-  disputes: Array<PolkadotPrimitivesV4DisputeStatementSet>;
+export type PolkadotPrimitivesV5InherentData = {
+  bitfields: Array<PolkadotPrimitivesV5SignedUncheckedSigned>;
+  backedCandidates: Array<PolkadotPrimitivesV5BackedCandidate>;
+  disputes: Array<PolkadotPrimitivesV5DisputeStatementSet>;
   parentHeader: Header;
 };
 
-export type PolkadotPrimitivesV4SignedUncheckedSigned = {
-  payload: PolkadotPrimitivesV4AvailabilityBitfield;
-  validatorIndex: PolkadotPrimitivesV4ValidatorIndex;
-  signature: PolkadotPrimitivesV4ValidatorAppSignature;
+export type PolkadotPrimitivesV5SignedUncheckedSigned = {
+  payload: PolkadotPrimitivesV5AvailabilityBitfield;
+  validatorIndex: PolkadotPrimitivesV5ValidatorIndex;
+  signature: PolkadotPrimitivesV5ValidatorAppSignature;
 };
 
-export type PolkadotPrimitivesV4AvailabilityBitfield = BitSequence;
+export type PolkadotPrimitivesV5AvailabilityBitfield = BitSequence;
 
 export type BitvecOrderLsb0 = {};
 
-export type PolkadotPrimitivesV4ValidatorIndex = number;
+export type PolkadotPrimitivesV5ValidatorIndex = number;
 
-export type PolkadotPrimitivesV4ValidatorAppSignature = SpCoreSr25519Signature;
+export type PolkadotPrimitivesV5ValidatorAppSignature = SpCoreSr25519Signature;
 
-export type PolkadotPrimitivesV4BackedCandidate = {
-  candidate: PolkadotPrimitivesV4CommittedCandidateReceipt;
-  validityVotes: Array<PolkadotPrimitivesV4ValidityAttestation>;
+export type PolkadotPrimitivesV5BackedCandidate = {
+  candidate: PolkadotPrimitivesV5CommittedCandidateReceipt;
+  validityVotes: Array<PolkadotPrimitivesV5ValidityAttestation>;
   validatorIndices: BitSequence;
 };
 
-export type PolkadotPrimitivesV4CommittedCandidateReceipt = {
-  descriptor: PolkadotPrimitivesV4CandidateDescriptor;
-  commitments: PolkadotPrimitivesV4CandidateCommitments;
+export type PolkadotPrimitivesV5CommittedCandidateReceipt = {
+  descriptor: PolkadotPrimitivesV5CandidateDescriptor;
+  commitments: PolkadotPrimitivesV5CandidateCommitments;
 };
 
-export type PolkadotPrimitivesV4CandidateDescriptor = {
-  paraId: PolkadotParachainPrimitivesId;
+export type PolkadotPrimitivesV5CandidateDescriptor = {
+  paraId: PolkadotParachainPrimitivesPrimitivesId;
   relayParent: H256;
-  collator: PolkadotPrimitivesV4CollatorAppPublic;
+  collator: PolkadotPrimitivesV5CollatorAppPublic;
   persistedValidationDataHash: H256;
   povHash: H256;
   erasureRoot: H256;
-  signature: PolkadotPrimitivesV4CollatorAppSignature;
+  signature: PolkadotPrimitivesV5CollatorAppSignature;
   paraHead: H256;
-  validationCodeHash: PolkadotParachainPrimitivesValidationCodeHash;
+  validationCodeHash: PolkadotParachainPrimitivesPrimitivesValidationCodeHash;
 };
 
-export type PolkadotPrimitivesV4CollatorAppPublic = SpCoreSr25519Public;
+export type PolkadotPrimitivesV5CollatorAppPublic = SpCoreSr25519Public;
 
-export type PolkadotPrimitivesV4CollatorAppSignature = SpCoreSr25519Signature;
+export type PolkadotPrimitivesV5CollatorAppSignature = SpCoreSr25519Signature;
 
-export type PolkadotParachainPrimitivesValidationCodeHash = H256;
+export type PolkadotParachainPrimitivesPrimitivesValidationCodeHash = H256;
 
-export type PolkadotPrimitivesV4CandidateCommitments = {
+export type PolkadotPrimitivesV5CandidateCommitments = {
   upwardMessages: Array<Bytes>;
   horizontalMessages: Array<PolkadotCorePrimitivesOutboundHrmpMessage>;
-  newValidationCode?: PolkadotParachainPrimitivesValidationCode | undefined;
-  headData: PolkadotParachainPrimitivesHeadData;
+  newValidationCode?: PolkadotParachainPrimitivesPrimitivesValidationCode | undefined;
+  headData: PolkadotParachainPrimitivesPrimitivesHeadData;
   processedDownwardMessages: number;
   hrmpWatermark: number;
 };
 
-export type PolkadotCorePrimitivesOutboundHrmpMessage = { recipient: PolkadotParachainPrimitivesId; data: Bytes };
+export type PolkadotCorePrimitivesOutboundHrmpMessage = {
+  recipient: PolkadotParachainPrimitivesPrimitivesId;
+  data: Bytes;
+};
 
-export type PolkadotParachainPrimitivesValidationCode = Bytes;
+export type PolkadotParachainPrimitivesPrimitivesValidationCode = Bytes;
 
-export type PolkadotParachainPrimitivesHeadData = Bytes;
+export type PolkadotParachainPrimitivesPrimitivesHeadData = Bytes;
 
-export type PolkadotPrimitivesV4ValidityAttestation =
-  | { tag: 'Implicit'; value: PolkadotPrimitivesV4ValidatorAppSignature }
-  | { tag: 'Explicit'; value: PolkadotPrimitivesV4ValidatorAppSignature };
+export type PolkadotPrimitivesV5ValidityAttestation =
+  | { tag: 'Implicit'; value: PolkadotPrimitivesV5ValidatorAppSignature }
+  | { tag: 'Explicit'; value: PolkadotPrimitivesV5ValidatorAppSignature };
 
-export type PolkadotPrimitivesV4DisputeStatementSet = {
+export type PolkadotPrimitivesV5DisputeStatementSet = {
   candidateHash: PolkadotCorePrimitivesCandidateHash;
   session: number;
   statements: Array<
     [
-      PolkadotPrimitivesV4DisputeStatement,
-      PolkadotPrimitivesV4ValidatorIndex,
-      PolkadotPrimitivesV4ValidatorAppSignature,
+      PolkadotPrimitivesV5DisputeStatement,
+      PolkadotPrimitivesV5ValidatorIndex,
+      PolkadotPrimitivesV5ValidatorAppSignature,
     ]
   >;
 };
 
 export type PolkadotCorePrimitivesCandidateHash = H256;
 
-export type PolkadotPrimitivesV4DisputeStatement =
-  | { tag: 'Valid'; value: PolkadotPrimitivesV4ValidDisputeStatementKind }
-  | { tag: 'Invalid'; value: PolkadotPrimitivesV4InvalidDisputeStatementKind };
+export type PolkadotPrimitivesV5DisputeStatement =
+  | { tag: 'Valid'; value: PolkadotPrimitivesV5ValidDisputeStatementKind }
+  | { tag: 'Invalid'; value: PolkadotPrimitivesV5InvalidDisputeStatementKind };
 
-export type PolkadotPrimitivesV4ValidDisputeStatementKind =
+export type PolkadotPrimitivesV5ValidDisputeStatementKind =
   | { tag: 'Explicit' }
   | { tag: 'BackingSeconded'; value: H256 }
   | { tag: 'BackingValid'; value: H256 }
   | { tag: 'ApprovalChecking' };
 
-export type PolkadotPrimitivesV4InvalidDisputeStatementKind = 'Explicit';
+export type PolkadotPrimitivesV5InvalidDisputeStatementKind = 'Explicit';
 
 /**
- * Contains one variant per dispatchable that can be called by an extrinsic.
+ * Contains a variant per dispatchable extrinsic that this pallet has.
  **/
 export type PolkadotRuntimeParachainsParasPalletCall =
+  /**
+   * See [`Pallet::force_set_current_code`].
+   **/
   | {
       tag: 'ForceSetCurrentCode';
-      value: { para: PolkadotParachainPrimitivesId; newCode: PolkadotParachainPrimitivesValidationCode };
+      value: {
+        para: PolkadotParachainPrimitivesPrimitivesId;
+        newCode: PolkadotParachainPrimitivesPrimitivesValidationCode;
+      };
     }
+  /**
+   * See [`Pallet::force_set_current_head`].
+   **/
   | {
       tag: 'ForceSetCurrentHead';
-      value: { para: PolkadotParachainPrimitivesId; newHead: PolkadotParachainPrimitivesHeadData };
+      value: { para: PolkadotParachainPrimitivesPrimitivesId; newHead: PolkadotParachainPrimitivesPrimitivesHeadData };
     }
+  /**
+   * See [`Pallet::force_schedule_code_upgrade`].
+   **/
   | {
       tag: 'ForceScheduleCodeUpgrade';
       value: {
-        para: PolkadotParachainPrimitivesId;
-        newCode: PolkadotParachainPrimitivesValidationCode;
+        para: PolkadotParachainPrimitivesPrimitivesId;
+        newCode: PolkadotParachainPrimitivesPrimitivesValidationCode;
         relayParentNumber: number;
       };
     }
+  /**
+   * See [`Pallet::force_note_new_head`].
+   **/
   | {
       tag: 'ForceNoteNewHead';
-      value: { para: PolkadotParachainPrimitivesId; newHead: PolkadotParachainPrimitivesHeadData };
+      value: { para: PolkadotParachainPrimitivesPrimitivesId; newHead: PolkadotParachainPrimitivesPrimitivesHeadData };
     }
-  | { tag: 'ForceQueueAction'; value: { para: PolkadotParachainPrimitivesId } }
-  | { tag: 'AddTrustedValidationCode'; value: { validationCode: PolkadotParachainPrimitivesValidationCode } }
-  | { tag: 'PokeUnusedValidationCode'; value: { validationCodeHash: PolkadotParachainPrimitivesValidationCodeHash } }
+  /**
+   * See [`Pallet::force_queue_action`].
+   **/
+  | { tag: 'ForceQueueAction'; value: { para: PolkadotParachainPrimitivesPrimitivesId } }
+  /**
+   * See [`Pallet::add_trusted_validation_code`].
+   **/
+  | { tag: 'AddTrustedValidationCode'; value: { validationCode: PolkadotParachainPrimitivesPrimitivesValidationCode } }
+  /**
+   * See [`Pallet::poke_unused_validation_code`].
+   **/
+  | {
+      tag: 'PokeUnusedValidationCode';
+      value: { validationCodeHash: PolkadotParachainPrimitivesPrimitivesValidationCodeHash };
+    }
+  /**
+   * See [`Pallet::include_pvf_check_statement`].
+   **/
   | {
       tag: 'IncludePvfCheckStatement';
-      value: { stmt: PolkadotPrimitivesV4PvfCheckStatement; signature: PolkadotPrimitivesV4ValidatorAppSignature };
-    };
+      value: { stmt: PolkadotPrimitivesV5PvfCheckStatement; signature: PolkadotPrimitivesV5ValidatorAppSignature };
+    }
+  /**
+   * See [`Pallet::force_set_most_recent_context`].
+   **/
+  | { tag: 'ForceSetMostRecentContext'; value: { para: PolkadotParachainPrimitivesPrimitivesId; context: number } };
 
-export type PolkadotPrimitivesV4PvfCheckStatement = {
+export type PolkadotPrimitivesV5PvfCheckStatement = {
   accept: boolean;
-  subject: PolkadotParachainPrimitivesValidationCodeHash;
+  subject: PolkadotParachainPrimitivesPrimitivesValidationCodeHash;
   sessionIndex: number;
-  validatorIndex: PolkadotPrimitivesV4ValidatorIndex;
+  validatorIndex: PolkadotPrimitivesV5ValidatorIndex;
 };
 
 /**
- * Contains one variant per dispatchable that can be called by an extrinsic.
+ * Contains a variant per dispatchable extrinsic that this pallet has.
  **/
-export type PolkadotRuntimeParachainsInitializerPalletCall = { tag: 'ForceApprove'; value: { upTo: number } };
+export type PolkadotRuntimeParachainsInitializerPalletCall =
+  /**
+   * See [`Pallet::force_approve`].
+   **/
+  { tag: 'ForceApprove'; value: { upTo: number } };
 
 /**
- * Contains one variant per dispatchable that can be called by an extrinsic.
+ * Contains a variant per dispatchable extrinsic that this pallet has.
  **/
 export type PolkadotRuntimeParachainsHrmpPalletCall =
+  /**
+   * See [`Pallet::hrmp_init_open_channel`].
+   **/
   | {
       tag: 'HrmpInitOpenChannel';
-      value: { recipient: PolkadotParachainPrimitivesId; proposedMaxCapacity: number; proposedMaxMessageSize: number };
+      value: {
+        recipient: PolkadotParachainPrimitivesPrimitivesId;
+        proposedMaxCapacity: number;
+        proposedMaxMessageSize: number;
+      };
     }
-  | { tag: 'HrmpAcceptOpenChannel'; value: { sender: PolkadotParachainPrimitivesId } }
-  | { tag: 'HrmpCloseChannel'; value: { channelId: PolkadotParachainPrimitivesHrmpChannelId } }
-  | { tag: 'ForceCleanHrmp'; value: { para: PolkadotParachainPrimitivesId; inbound: number; outbound: number } }
+  /**
+   * See [`Pallet::hrmp_accept_open_channel`].
+   **/
+  | { tag: 'HrmpAcceptOpenChannel'; value: { sender: PolkadotParachainPrimitivesPrimitivesId } }
+  /**
+   * See [`Pallet::hrmp_close_channel`].
+   **/
+  | { tag: 'HrmpCloseChannel'; value: { channelId: PolkadotParachainPrimitivesPrimitivesHrmpChannelId } }
+  /**
+   * See [`Pallet::force_clean_hrmp`].
+   **/
+  | {
+      tag: 'ForceCleanHrmp';
+      value: { para: PolkadotParachainPrimitivesPrimitivesId; inbound: number; outbound: number };
+    }
+  /**
+   * See [`Pallet::force_process_hrmp_open`].
+   **/
   | { tag: 'ForceProcessHrmpOpen'; value: { channels: number } }
+  /**
+   * See [`Pallet::force_process_hrmp_close`].
+   **/
   | { tag: 'ForceProcessHrmpClose'; value: { channels: number } }
+  /**
+   * See [`Pallet::hrmp_cancel_open_request`].
+   **/
   | {
       tag: 'HrmpCancelOpenRequest';
-      value: { channelId: PolkadotParachainPrimitivesHrmpChannelId; openRequests: number };
+      value: { channelId: PolkadotParachainPrimitivesPrimitivesHrmpChannelId; openRequests: number };
     }
+  /**
+   * See [`Pallet::force_open_hrmp_channel`].
+   **/
   | {
       tag: 'ForceOpenHrmpChannel';
       value: {
-        sender: PolkadotParachainPrimitivesId;
-        recipient: PolkadotParachainPrimitivesId;
+        sender: PolkadotParachainPrimitivesPrimitivesId;
+        recipient: PolkadotParachainPrimitivesPrimitivesId;
         maxCapacity: number;
         maxMessageSize: number;
       };
     };
 
-export type PolkadotParachainPrimitivesHrmpChannelId = {
-  sender: PolkadotParachainPrimitivesId;
-  recipient: PolkadotParachainPrimitivesId;
+export type PolkadotParachainPrimitivesPrimitivesHrmpChannelId = {
+  sender: PolkadotParachainPrimitivesPrimitivesId;
+  recipient: PolkadotParachainPrimitivesPrimitivesId;
 };
 
 /**
- * Contains one variant per dispatchable that can be called by an extrinsic.
+ * Contains a variant per dispatchable extrinsic that this pallet has.
  **/
-export type PolkadotRuntimeParachainsDisputesPalletCall = 'force_unfreeze';
+export type PolkadotRuntimeParachainsDisputesPalletCall =
+  /**
+   * See [`Pallet::force_unfreeze`].
+   **/
+  'force_unfreeze';
 
 /**
- * Contains one variant per dispatchable that can be called by an extrinsic.
+ * Contains a variant per dispatchable extrinsic that this pallet has.
  **/
-export type PolkadotRuntimeParachainsDisputesSlashingPalletCall = {
-  tag: 'ReportDisputeLostUnsigned';
-  value: {
-    disputeProof: PolkadotRuntimeParachainsDisputesSlashingDisputeProof;
-    keyOwnerProof: SpSessionMembershipProof;
+export type PolkadotRuntimeParachainsDisputesSlashingPalletCall =
+  /**
+   * See [`Pallet::report_dispute_lost_unsigned`].
+   **/
+  {
+    tag: 'ReportDisputeLostUnsigned';
+    value: { disputeProof: PolkadotPrimitivesV5SlashingDisputeProof; keyOwnerProof: SpSessionMembershipProof };
   };
+
+export type PolkadotPrimitivesV5SlashingDisputeProof = {
+  timeSlot: PolkadotPrimitivesV5SlashingDisputesTimeSlot;
+  kind: PolkadotPrimitivesV5SlashingSlashingOffenceKind;
+  validatorIndex: PolkadotPrimitivesV5ValidatorIndex;
+  validatorId: PolkadotPrimitivesV5ValidatorAppPublic;
 };
 
-export type PolkadotRuntimeParachainsDisputesSlashingDisputeProof = {
-  timeSlot: PolkadotRuntimeParachainsDisputesSlashingDisputesTimeSlot;
-  kind: PolkadotRuntimeParachainsDisputesSlashingSlashingOffenceKind;
-  validatorIndex: PolkadotPrimitivesV4ValidatorIndex;
-  validatorId: PolkadotPrimitivesV4ValidatorAppPublic;
-};
-
-export type PolkadotRuntimeParachainsDisputesSlashingDisputesTimeSlot = {
+export type PolkadotPrimitivesV5SlashingDisputesTimeSlot = {
   sessionIndex: number;
   candidateHash: PolkadotCorePrimitivesCandidateHash;
 };
 
-export type PolkadotRuntimeParachainsDisputesSlashingSlashingOffenceKind = 'ForInvalid' | 'AgainstValid';
+export type PolkadotPrimitivesV5SlashingSlashingOffenceKind = 'ForInvalid' | 'AgainstValid';
 
 /**
- * Contains one variant per dispatchable that can be called by an extrinsic.
+ * Contains a variant per dispatchable extrinsic that this pallet has.
  **/
 export type PolkadotRuntimeCommonParasRegistrarPalletCall =
+  /**
+   * See [`Pallet::register`].
+   **/
   | {
       tag: 'Register';
       value: {
-        id: PolkadotParachainPrimitivesId;
-        genesisHead: PolkadotParachainPrimitivesHeadData;
-        validationCode: PolkadotParachainPrimitivesValidationCode;
+        id: PolkadotParachainPrimitivesPrimitivesId;
+        genesisHead: PolkadotParachainPrimitivesPrimitivesHeadData;
+        validationCode: PolkadotParachainPrimitivesPrimitivesValidationCode;
       };
     }
+  /**
+   * See [`Pallet::force_register`].
+   **/
   | {
       tag: 'ForceRegister';
       value: {
         who: AccountId32;
         deposit: bigint;
-        id: PolkadotParachainPrimitivesId;
-        genesisHead: PolkadotParachainPrimitivesHeadData;
-        validationCode: PolkadotParachainPrimitivesValidationCode;
+        id: PolkadotParachainPrimitivesPrimitivesId;
+        genesisHead: PolkadotParachainPrimitivesPrimitivesHeadData;
+        validationCode: PolkadotParachainPrimitivesPrimitivesValidationCode;
       };
     }
-  | { tag: 'Deregister'; value: { id: PolkadotParachainPrimitivesId } }
-  | { tag: 'Swap'; value: { id: PolkadotParachainPrimitivesId; other: PolkadotParachainPrimitivesId } }
-  | { tag: 'RemoveLock'; value: { para: PolkadotParachainPrimitivesId } }
+  /**
+   * See [`Pallet::deregister`].
+   **/
+  | { tag: 'Deregister'; value: { id: PolkadotParachainPrimitivesPrimitivesId } }
+  /**
+   * See [`Pallet::swap`].
+   **/
+  | {
+      tag: 'Swap';
+      value: { id: PolkadotParachainPrimitivesPrimitivesId; other: PolkadotParachainPrimitivesPrimitivesId };
+    }
+  /**
+   * See [`Pallet::remove_lock`].
+   **/
+  | { tag: 'RemoveLock'; value: { para: PolkadotParachainPrimitivesPrimitivesId } }
+  /**
+   * See [`Pallet::reserve`].
+   **/
   | { tag: 'Reserve' }
-  | { tag: 'AddLock'; value: { para: PolkadotParachainPrimitivesId } }
+  /**
+   * See [`Pallet::add_lock`].
+   **/
+  | { tag: 'AddLock'; value: { para: PolkadotParachainPrimitivesPrimitivesId } }
+  /**
+   * See [`Pallet::schedule_code_upgrade`].
+   **/
   | {
       tag: 'ScheduleCodeUpgrade';
-      value: { para: PolkadotParachainPrimitivesId; newCode: PolkadotParachainPrimitivesValidationCode };
+      value: {
+        para: PolkadotParachainPrimitivesPrimitivesId;
+        newCode: PolkadotParachainPrimitivesPrimitivesValidationCode;
+      };
     }
+  /**
+   * See [`Pallet::set_current_head`].
+   **/
   | {
       tag: 'SetCurrentHead';
-      value: { para: PolkadotParachainPrimitivesId; newHead: PolkadotParachainPrimitivesHeadData };
+      value: { para: PolkadotParachainPrimitivesPrimitivesId; newHead: PolkadotParachainPrimitivesPrimitivesHeadData };
     };
 
 /**
- * Contains one variant per dispatchable that can be called by an extrinsic.
+ * Contains a variant per dispatchable extrinsic that this pallet has.
  **/
 export type PolkadotRuntimeCommonSlotsPalletCall =
+  /**
+   * See [`Pallet::force_lease`].
+   **/
   | {
       tag: 'ForceLease';
       value: {
-        para: PolkadotParachainPrimitivesId;
+        para: PolkadotParachainPrimitivesPrimitivesId;
         leaser: AccountId32;
         amount: bigint;
         periodBegin: number;
         periodCount: number;
       };
     }
-  | { tag: 'ClearAllLeases'; value: { para: PolkadotParachainPrimitivesId } }
-  | { tag: 'TriggerOnboard'; value: { para: PolkadotParachainPrimitivesId } };
+  /**
+   * See [`Pallet::clear_all_leases`].
+   **/
+  | { tag: 'ClearAllLeases'; value: { para: PolkadotParachainPrimitivesPrimitivesId } }
+  /**
+   * See [`Pallet::trigger_onboard`].
+   **/
+  | { tag: 'TriggerOnboard'; value: { para: PolkadotParachainPrimitivesPrimitivesId } };
 
 /**
- * Contains one variant per dispatchable that can be called by an extrinsic.
+ * Contains a variant per dispatchable extrinsic that this pallet has.
  **/
 export type PolkadotRuntimeCommonAuctionsPalletCall =
+  /**
+   * See [`Pallet::new_auction`].
+   **/
   | { tag: 'NewAuction'; value: { duration: number; leasePeriodIndex: number } }
+  /**
+   * See [`Pallet::bid`].
+   **/
   | {
       tag: 'Bid';
       value: {
-        para: PolkadotParachainPrimitivesId;
+        para: PolkadotParachainPrimitivesPrimitivesId;
         auctionIndex: number;
         firstSlot: number;
         lastSlot: number;
         amount: bigint;
       };
     }
+  /**
+   * See [`Pallet::cancel_auction`].
+   **/
   | { tag: 'CancelAuction' };
 
 /**
- * Contains one variant per dispatchable that can be called by an extrinsic.
+ * Contains a variant per dispatchable extrinsic that this pallet has.
  **/
 export type PolkadotRuntimeCommonCrowdloanPalletCall =
+  /**
+   * See [`Pallet::create`].
+   **/
   | {
       tag: 'Create';
       value: {
-        index: PolkadotParachainPrimitivesId;
+        index: PolkadotParachainPrimitivesPrimitivesId;
         cap: bigint;
         firstPeriod: number;
         lastPeriod: number;
@@ -1985,17 +2852,36 @@ export type PolkadotRuntimeCommonCrowdloanPalletCall =
         verifier?: SpRuntimeMultiSigner | undefined;
       };
     }
+  /**
+   * See [`Pallet::contribute`].
+   **/
   | {
       tag: 'Contribute';
-      value: { index: PolkadotParachainPrimitivesId; value: bigint; signature?: SpRuntimeMultiSignature | undefined };
+      value: {
+        index: PolkadotParachainPrimitivesPrimitivesId;
+        value: bigint;
+        signature?: SpRuntimeMultiSignature | undefined;
+      };
     }
-  | { tag: 'Withdraw'; value: { who: AccountId32; index: PolkadotParachainPrimitivesId } }
-  | { tag: 'Refund'; value: { index: PolkadotParachainPrimitivesId } }
-  | { tag: 'Dissolve'; value: { index: PolkadotParachainPrimitivesId } }
+  /**
+   * See [`Pallet::withdraw`].
+   **/
+  | { tag: 'Withdraw'; value: { who: AccountId32; index: PolkadotParachainPrimitivesPrimitivesId } }
+  /**
+   * See [`Pallet::refund`].
+   **/
+  | { tag: 'Refund'; value: { index: PolkadotParachainPrimitivesPrimitivesId } }
+  /**
+   * See [`Pallet::dissolve`].
+   **/
+  | { tag: 'Dissolve'; value: { index: PolkadotParachainPrimitivesPrimitivesId } }
+  /**
+   * See [`Pallet::edit`].
+   **/
   | {
       tag: 'Edit';
       value: {
-        index: PolkadotParachainPrimitivesId;
+        index: PolkadotParachainPrimitivesPrimitivesId;
         cap: bigint;
         firstPeriod: number;
         lastPeriod: number;
@@ -2003,11 +2889,20 @@ export type PolkadotRuntimeCommonCrowdloanPalletCall =
         verifier?: SpRuntimeMultiSigner | undefined;
       };
     }
-  | { tag: 'AddMemo'; value: { index: PolkadotParachainPrimitivesId; memo: Bytes } }
-  | { tag: 'Poke'; value: { index: PolkadotParachainPrimitivesId } }
+  /**
+   * See [`Pallet::add_memo`].
+   **/
+  | { tag: 'AddMemo'; value: { index: PolkadotParachainPrimitivesPrimitivesId; memo: Bytes } }
+  /**
+   * See [`Pallet::poke`].
+   **/
+  | { tag: 'Poke'; value: { index: PolkadotParachainPrimitivesPrimitivesId } }
+  /**
+   * See [`Pallet::contribute_all`].
+   **/
   | {
       tag: 'ContributeAll';
-      value: { index: PolkadotParachainPrimitivesId; signature?: SpRuntimeMultiSignature | undefined };
+      value: { index: PolkadotParachainPrimitivesPrimitivesId; signature?: SpRuntimeMultiSignature | undefined };
     };
 
 export type SpRuntimeMultiSigner =
@@ -2025,10 +2920,16 @@ export type SpRuntimeMultiSignature =
 export type SpCoreEcdsaSignature = FixedBytes<65>;
 
 /**
- * Contains one variant per dispatchable that can be called by an extrinsic.
+ * Contains a variant per dispatchable extrinsic that this pallet has.
  **/
 export type PalletXcmCall =
+  /**
+   * See [`Pallet::send`].
+   **/
   | { tag: 'Send'; value: { dest: XcmVersionedMultiLocation; message: XcmVersionedXcm } }
+  /**
+   * See [`Pallet::teleport_assets`].
+   **/
   | {
       tag: 'TeleportAssets';
       value: {
@@ -2038,6 +2939,9 @@ export type PalletXcmCall =
         feeAssetItem: number;
       };
     }
+  /**
+   * See [`Pallet::reserve_transfer_assets`].
+   **/
   | {
       tag: 'ReserveTransferAssets';
       value: {
@@ -2047,11 +2951,29 @@ export type PalletXcmCall =
         feeAssetItem: number;
       };
     }
+  /**
+   * See [`Pallet::execute`].
+   **/
   | { tag: 'Execute'; value: { message: XcmVersionedXcm; maxWeight: SpWeightsWeightV2Weight } }
-  | { tag: 'ForceXcmVersion'; value: { location: XcmV3MultilocationMultiLocation; xcmVersion: number } }
+  /**
+   * See [`Pallet::force_xcm_version`].
+   **/
+  | { tag: 'ForceXcmVersion'; value: { location: StagingXcmV3MultilocationMultiLocation; version: number } }
+  /**
+   * See [`Pallet::force_default_xcm_version`].
+   **/
   | { tag: 'ForceDefaultXcmVersion'; value: { maybeXcmVersion?: number | undefined } }
+  /**
+   * See [`Pallet::force_subscribe_version_notify`].
+   **/
   | { tag: 'ForceSubscribeVersionNotify'; value: { location: XcmVersionedMultiLocation } }
+  /**
+   * See [`Pallet::force_unsubscribe_version_notify`].
+   **/
   | { tag: 'ForceUnsubscribeVersionNotify'; value: { location: XcmVersionedMultiLocation } }
+  /**
+   * See [`Pallet::limited_reserve_transfer_assets`].
+   **/
   | {
       tag: 'LimitedReserveTransferAssets';
       value: {
@@ -2062,6 +2984,9 @@ export type PalletXcmCall =
         weightLimit: XcmV3WeightLimit;
       };
     }
+  /**
+   * See [`Pallet::limited_teleport_assets`].
+   **/
   | {
       tag: 'LimitedTeleportAssets';
       value: {
@@ -2072,11 +2997,14 @@ export type PalletXcmCall =
         weightLimit: XcmV3WeightLimit;
       };
     }
+  /**
+   * See [`Pallet::force_suspension`].
+   **/
   | { tag: 'ForceSuspension'; value: { suspended: boolean } };
 
 export type XcmVersionedMultiLocation =
   | { tag: 'V2'; value: XcmV2MultilocationMultiLocation }
-  | { tag: 'V3'; value: XcmV3MultilocationMultiLocation };
+  | { tag: 'V3'; value: StagingXcmV3MultilocationMultiLocation };
 
 export type XcmV2MultilocationMultiLocation = { parents: number; interior: XcmV2MultilocationJunctions };
 
@@ -2290,16 +3218,16 @@ export type XcmV3Instruction =
         queryId: bigint;
         response: XcmV3Response;
         maxWeight: SpWeightsWeightV2Weight;
-        querier?: XcmV3MultilocationMultiLocation | undefined;
+        querier?: StagingXcmV3MultilocationMultiLocation | undefined;
       };
     }
   | {
       tag: 'TransferAsset';
-      value: { assets: XcmV3MultiassetMultiAssets; beneficiary: XcmV3MultilocationMultiLocation };
+      value: { assets: XcmV3MultiassetMultiAssets; beneficiary: StagingXcmV3MultilocationMultiLocation };
     }
   | {
       tag: 'TransferReserveAsset';
-      value: { assets: XcmV3MultiassetMultiAssets; dest: XcmV3MultilocationMultiLocation; xcm: XcmV3Xcm };
+      value: { assets: XcmV3MultiassetMultiAssets; dest: StagingXcmV3MultilocationMultiLocation; xcm: XcmV3Xcm };
     }
   | {
       tag: 'Transact';
@@ -2313,11 +3241,11 @@ export type XcmV3Instruction =
   | { tag: 'ReportError'; value: XcmV3QueryResponseInfo }
   | {
       tag: 'DepositAsset';
-      value: { assets: XcmV3MultiassetMultiAssetFilter; beneficiary: XcmV3MultilocationMultiLocation };
+      value: { assets: XcmV3MultiassetMultiAssetFilter; beneficiary: StagingXcmV3MultilocationMultiLocation };
     }
   | {
       tag: 'DepositReserveAsset';
-      value: { assets: XcmV3MultiassetMultiAssetFilter; dest: XcmV3MultilocationMultiLocation; xcm: XcmV3Xcm };
+      value: { assets: XcmV3MultiassetMultiAssetFilter; dest: StagingXcmV3MultilocationMultiLocation; xcm: XcmV3Xcm };
     }
   | {
       tag: 'ExchangeAsset';
@@ -2325,11 +3253,15 @@ export type XcmV3Instruction =
     }
   | {
       tag: 'InitiateReserveWithdraw';
-      value: { assets: XcmV3MultiassetMultiAssetFilter; reserve: XcmV3MultilocationMultiLocation; xcm: XcmV3Xcm };
+      value: {
+        assets: XcmV3MultiassetMultiAssetFilter;
+        reserve: StagingXcmV3MultilocationMultiLocation;
+        xcm: XcmV3Xcm;
+      };
     }
   | {
       tag: 'InitiateTeleport';
-      value: { assets: XcmV3MultiassetMultiAssetFilter; dest: XcmV3MultilocationMultiLocation; xcm: XcmV3Xcm };
+      value: { assets: XcmV3MultiassetMultiAssetFilter; dest: StagingXcmV3MultilocationMultiLocation; xcm: XcmV3Xcm };
     }
   | { tag: 'ReportHolding'; value: { responseInfo: XcmV3QueryResponseInfo; assets: XcmV3MultiassetMultiAssetFilter } }
   | { tag: 'BuyExecution'; value: { fees: XcmV3MultiassetMultiAsset; weightLimit: XcmV3WeightLimit } }
@@ -2337,13 +3269,13 @@ export type XcmV3Instruction =
   | { tag: 'SetErrorHandler'; value: XcmV3Xcm }
   | { tag: 'SetAppendix'; value: XcmV3Xcm }
   | { tag: 'ClearError' }
-  | { tag: 'ClaimAsset'; value: { assets: XcmV3MultiassetMultiAssets; ticket: XcmV3MultilocationMultiLocation } }
+  | { tag: 'ClaimAsset'; value: { assets: XcmV3MultiassetMultiAssets; ticket: StagingXcmV3MultilocationMultiLocation } }
   | { tag: 'Trap'; value: bigint }
   | { tag: 'SubscribeVersion'; value: { queryId: bigint; maxResponseWeight: SpWeightsWeightV2Weight } }
   | { tag: 'UnsubscribeVersion' }
   | { tag: 'BurnAsset'; value: XcmV3MultiassetMultiAssets }
   | { tag: 'ExpectAsset'; value: XcmV3MultiassetMultiAssets }
-  | { tag: 'ExpectOrigin'; value?: XcmV3MultilocationMultiLocation | undefined }
+  | { tag: 'ExpectOrigin'; value?: StagingXcmV3MultilocationMultiLocation | undefined }
   | { tag: 'ExpectError'; value?: [number, XcmV3TraitsError] | undefined }
   | { tag: 'ExpectTransactStatus'; value: XcmV3MaybeErrorCode }
   | { tag: 'QueryPallet'; value: { moduleName: Bytes; responseInfo: XcmV3QueryResponseInfo } }
@@ -2355,17 +3287,23 @@ export type XcmV3Instruction =
   | { tag: 'ClearTransactStatus' }
   | { tag: 'UniversalOrigin'; value: XcmV3Junction }
   | { tag: 'ExportMessage'; value: { network: XcmV3JunctionNetworkId; destination: XcmV3Junctions; xcm: XcmV3Xcm } }
-  | { tag: 'LockAsset'; value: { asset: XcmV3MultiassetMultiAsset; unlocker: XcmV3MultilocationMultiLocation } }
-  | { tag: 'UnlockAsset'; value: { asset: XcmV3MultiassetMultiAsset; target: XcmV3MultilocationMultiLocation } }
-  | { tag: 'NoteUnlockable'; value: { asset: XcmV3MultiassetMultiAsset; owner: XcmV3MultilocationMultiLocation } }
-  | { tag: 'RequestUnlock'; value: { asset: XcmV3MultiassetMultiAsset; locker: XcmV3MultilocationMultiLocation } }
+  | { tag: 'LockAsset'; value: { asset: XcmV3MultiassetMultiAsset; unlocker: StagingXcmV3MultilocationMultiLocation } }
+  | { tag: 'UnlockAsset'; value: { asset: XcmV3MultiassetMultiAsset; target: StagingXcmV3MultilocationMultiLocation } }
+  | {
+      tag: 'NoteUnlockable';
+      value: { asset: XcmV3MultiassetMultiAsset; owner: StagingXcmV3MultilocationMultiLocation };
+    }
+  | {
+      tag: 'RequestUnlock';
+      value: { asset: XcmV3MultiassetMultiAsset; locker: StagingXcmV3MultilocationMultiLocation };
+    }
   | { tag: 'SetFeesMode'; value: { jitWithdraw: boolean } }
   | { tag: 'SetTopic'; value: FixedBytes<32> }
   | { tag: 'ClearTopic' }
-  | { tag: 'AliasOrigin'; value: XcmV3MultilocationMultiLocation }
+  | { tag: 'AliasOrigin'; value: StagingXcmV3MultilocationMultiLocation }
   | {
       tag: 'UnpaidExecution';
-      value: { weightLimit: XcmV3WeightLimit; checkOrigin?: XcmV3MultilocationMultiLocation | undefined };
+      value: { weightLimit: XcmV3WeightLimit; checkOrigin?: StagingXcmV3MultilocationMultiLocation | undefined };
     };
 
 export type XcmV3MultiassetMultiAssets = Array<XcmV3MultiassetMultiAsset>;
@@ -2373,7 +3311,7 @@ export type XcmV3MultiassetMultiAssets = Array<XcmV3MultiassetMultiAsset>;
 export type XcmV3MultiassetMultiAsset = { id: XcmV3MultiassetAssetId; fun: XcmV3MultiassetFungibility };
 
 export type XcmV3MultiassetAssetId =
-  | { tag: 'Concrete'; value: XcmV3MultilocationMultiLocation }
+  | { tag: 'Concrete'; value: StagingXcmV3MultilocationMultiLocation }
   | { tag: 'Abstract'; value: FixedBytes<32> };
 
 export type XcmV3MultiassetFungibility =
@@ -2453,7 +3391,7 @@ export type XcmV3MaybeErrorCode =
   | { tag: 'TruncatedError'; value: Bytes };
 
 export type XcmV3QueryResponseInfo = {
-  destination: XcmV3MultilocationMultiLocation;
+  destination: StagingXcmV3MultilocationMultiLocation;
   queryId: bigint;
   maxWeight: SpWeightsWeightV2Weight;
 };
@@ -2477,13 +3415,19 @@ export type XcmVersionedMultiAssets =
   | { tag: 'V3'; value: XcmV3MultiassetMultiAssets };
 
 /**
- * Contains one variant per dispatchable that can be called by an extrinsic.
+ * Contains a variant per dispatchable extrinsic that this pallet has.
  **/
 export type PalletMessageQueueCall =
+  /**
+   * See [`Pallet::reap_page`].
+   **/
   | {
       tag: 'ReapPage';
       value: { messageOrigin: PolkadotRuntimeParachainsInclusionAggregateMessageOrigin; pageIndex: number };
     }
+  /**
+   * See [`Pallet::execute_overweight`].
+   **/
   | {
       tag: 'ExecuteOverweight';
       value: {
@@ -2499,19 +3443,25 @@ export type PolkadotRuntimeParachainsInclusionAggregateMessageOrigin = {
   value: PolkadotRuntimeParachainsInclusionUmpQueueId;
 };
 
-export type PolkadotRuntimeParachainsInclusionUmpQueueId = { tag: 'Para'; value: PolkadotParachainPrimitivesId };
+export type PolkadotRuntimeParachainsInclusionUmpQueueId = {
+  tag: 'Para';
+  value: PolkadotParachainPrimitivesPrimitivesId;
+};
 
 export type PalletConvictionVotingTally = { ayes: bigint; nays: bigint; support: bigint };
 
 /**
- * The [event](https://docs.substrate.io/main-docs/build/events-errors/) emitted by this pallet.
+ * The `Event` enum of this pallet
  **/
 export type PalletWhitelistEvent =
-  | { tag: 'CallWhitelisted'; value: { callHash: H256 } }
-  | { tag: 'WhitelistedCallRemoved'; value: { callHash: H256 } }
+  | { name: 'CallWhitelisted'; data: { callHash: H256 } }
+  | { name: 'WhitelistedCallRemoved'; data: { callHash: H256 } }
   | {
-      tag: 'WhitelistedCallDispatched';
-      value: { callHash: H256; result: FrameSupportDispatchPostDispatchInfo | SpRuntimeDispatchErrorWithPostInfo };
+      name: 'WhitelistedCallDispatched';
+      data: {
+        callHash: H256;
+        result: ResultPayload<FrameSupportDispatchPostDispatchInfo, SpRuntimeDispatchErrorWithPostInfo>;
+      };
     };
 
 export type FrameSupportDispatchPostDispatchInfo = {
@@ -2525,92 +3475,178 @@ export type SpRuntimeDispatchErrorWithPostInfo = {
 };
 
 /**
- * The [event](https://docs.substrate.io/main-docs/build/events-errors/) emitted by this pallet.
+ * The `Event` enum of this pallet
  **/
-export type PolkadotRuntimeCommonClaimsPalletEvent = {
-  tag: 'Claimed';
-  value: { who: AccountId32; ethereumAddress: EthereumAddress; amount: bigint };
-};
+export type PolkadotRuntimeCommonClaimsPalletEvent =
+  /**
+   * Someone claimed some DOTs.
+   **/
+  { name: 'Claimed'; data: { who: AccountId32; ethereumAddress: EthereumAddress; amount: bigint } };
 
 /**
- * The [event](https://docs.substrate.io/main-docs/build/events-errors/) emitted by this pallet.
+ * The `Event` enum of this pallet
  **/
 export type PalletVestingEvent =
-  | { tag: 'VestingUpdated'; value: { account: AccountId32; unvested: bigint } }
-  | { tag: 'VestingCompleted'; value: { account: AccountId32 } };
+  /**
+   * The amount vested has been updated. This could indicate a change in funds available.
+   * The balance given is the amount which is left unvested (and thus locked).
+   **/
+  | { name: 'VestingUpdated'; data: { account: AccountId32; unvested: bigint } }
+  /**
+   * An \[account\] has become fully vested.
+   **/
+  | { name: 'VestingCompleted'; data: { account: AccountId32 } };
 
 /**
- * The [event](https://docs.substrate.io/main-docs/build/events-errors/) emitted by this pallet.
+ * The `Event` enum of this pallet
  **/
 export type PalletUtilityEvent =
-  | { tag: 'BatchInterrupted'; value: { index: number; error: DispatchError } }
-  | { tag: 'BatchCompleted' }
-  | { tag: 'BatchCompletedWithErrors' }
-  | { tag: 'ItemCompleted' }
-  | { tag: 'ItemFailed'; value: { error: DispatchError } }
-  | { tag: 'DispatchedAs'; value: { result: [] | DispatchError } };
+  /**
+   * Batch of dispatches did not complete fully. Index of first failing dispatch given, as
+   * well as the error.
+   **/
+  | { name: 'BatchInterrupted'; data: { index: number; error: DispatchError } }
+  /**
+   * Batch of dispatches completed fully with no error.
+   **/
+  | { name: 'BatchCompleted' }
+  /**
+   * Batch of dispatches completed but has errors.
+   **/
+  | { name: 'BatchCompletedWithErrors' }
+  /**
+   * A single item within a Batch of dispatches has completed with no error.
+   **/
+  | { name: 'ItemCompleted' }
+  /**
+   * A single item within a Batch of dispatches has completed with error.
+   **/
+  | { name: 'ItemFailed'; data: { error: DispatchError } }
+  /**
+   * A call was dispatched.
+   **/
+  | { name: 'DispatchedAs'; data: { result: ResultPayload<[], DispatchError> } };
 
 /**
- * The [event](https://docs.substrate.io/main-docs/build/events-errors/) emitted by this pallet.
+ * The `Event` enum of this pallet
  **/
 export type PalletIdentityEvent =
-  | { tag: 'IdentitySet'; value: { who: AccountId32 } }
-  | { tag: 'IdentityCleared'; value: { who: AccountId32; deposit: bigint } }
-  | { tag: 'IdentityKilled'; value: { who: AccountId32; deposit: bigint } }
-  | { tag: 'JudgementRequested'; value: { who: AccountId32; registrarIndex: number } }
-  | { tag: 'JudgementUnrequested'; value: { who: AccountId32; registrarIndex: number } }
-  | { tag: 'JudgementGiven'; value: { target: AccountId32; registrarIndex: number } }
-  | { tag: 'RegistrarAdded'; value: { registrarIndex: number } }
-  | { tag: 'SubIdentityAdded'; value: { sub: AccountId32; main: AccountId32; deposit: bigint } }
-  | { tag: 'SubIdentityRemoved'; value: { sub: AccountId32; main: AccountId32; deposit: bigint } }
-  | { tag: 'SubIdentityRevoked'; value: { sub: AccountId32; main: AccountId32; deposit: bigint } };
+  /**
+   * A name was set or reset (which will remove all judgements).
+   **/
+  | { name: 'IdentitySet'; data: { who: AccountId32 } }
+  /**
+   * A name was cleared, and the given balance returned.
+   **/
+  | { name: 'IdentityCleared'; data: { who: AccountId32; deposit: bigint } }
+  /**
+   * A name was removed and the given balance slashed.
+   **/
+  | { name: 'IdentityKilled'; data: { who: AccountId32; deposit: bigint } }
+  /**
+   * A judgement was asked from a registrar.
+   **/
+  | { name: 'JudgementRequested'; data: { who: AccountId32; registrarIndex: number } }
+  /**
+   * A judgement request was retracted.
+   **/
+  | { name: 'JudgementUnrequested'; data: { who: AccountId32; registrarIndex: number } }
+  /**
+   * A judgement was given by a registrar.
+   **/
+  | { name: 'JudgementGiven'; data: { target: AccountId32; registrarIndex: number } }
+  /**
+   * A registrar was added.
+   **/
+  | { name: 'RegistrarAdded'; data: { registrarIndex: number } }
+  /**
+   * A sub-identity was added to an identity and the deposit paid.
+   **/
+  | { name: 'SubIdentityAdded'; data: { sub: AccountId32; main: AccountId32; deposit: bigint } }
+  /**
+   * A sub-identity was removed from an identity and the deposit freed.
+   **/
+  | { name: 'SubIdentityRemoved'; data: { sub: AccountId32; main: AccountId32; deposit: bigint } }
+  /**
+   * A sub-identity was cleared, and the given deposit repatriated from the
+   * main identity account to the sub-identity account.
+   **/
+  | { name: 'SubIdentityRevoked'; data: { sub: AccountId32; main: AccountId32; deposit: bigint } };
 
 /**
- * The [event](https://docs.substrate.io/main-docs/build/events-errors/) emitted by this pallet.
+ * The `Event` enum of this pallet
  **/
 export type PalletProxyEvent =
-  | { tag: 'ProxyExecuted'; value: { result: [] | DispatchError } }
+  /**
+   * A proxy was executed correctly, with the given.
+   **/
+  | { name: 'ProxyExecuted'; data: { result: ResultPayload<[], DispatchError> } }
+  /**
+   * A pure account has been created by new proxy with given
+   * disambiguation index and proxy type.
+   **/
   | {
-      tag: 'PureCreated';
-      value: { pure: AccountId32; who: AccountId32; proxyType: PolkadotRuntimeProxyType; disambiguationIndex: number };
+      name: 'PureCreated';
+      data: { pure: AccountId32; who: AccountId32; proxyType: PolkadotRuntimeProxyType; disambiguationIndex: number };
     }
-  | { tag: 'Announced'; value: { real: AccountId32; proxy: AccountId32; callHash: H256 } }
+  /**
+   * An announcement was placed to make a call in the future.
+   **/
+  | { name: 'Announced'; data: { real: AccountId32; proxy: AccountId32; callHash: H256 } }
+  /**
+   * A proxy was added.
+   **/
   | {
-      tag: 'ProxyAdded';
-      value: { delegator: AccountId32; delegatee: AccountId32; proxyType: PolkadotRuntimeProxyType; delay: number };
+      name: 'ProxyAdded';
+      data: { delegator: AccountId32; delegatee: AccountId32; proxyType: PolkadotRuntimeProxyType; delay: number };
     }
+  /**
+   * A proxy was removed.
+   **/
   | {
-      tag: 'ProxyRemoved';
-      value: { delegator: AccountId32; delegatee: AccountId32; proxyType: PolkadotRuntimeProxyType; delay: number };
+      name: 'ProxyRemoved';
+      data: { delegator: AccountId32; delegatee: AccountId32; proxyType: PolkadotRuntimeProxyType; delay: number };
     };
 
 /**
- * The [event](https://docs.substrate.io/main-docs/build/events-errors/) emitted by this pallet.
+ * The `Event` enum of this pallet
  **/
 export type PalletMultisigEvent =
-  | { tag: 'NewMultisig'; value: { approving: AccountId32; multisig: AccountId32; callHash: FixedBytes<32> } }
+  /**
+   * A new multisig operation has begun.
+   **/
+  | { name: 'NewMultisig'; data: { approving: AccountId32; multisig: AccountId32; callHash: FixedBytes<32> } }
+  /**
+   * A multisig operation has been approved by someone.
+   **/
   | {
-      tag: 'MultisigApproval';
-      value: {
+      name: 'MultisigApproval';
+      data: {
         approving: AccountId32;
         timepoint: PalletMultisigTimepoint;
         multisig: AccountId32;
         callHash: FixedBytes<32>;
       };
     }
+  /**
+   * A multisig operation has been executed.
+   **/
   | {
-      tag: 'MultisigExecuted';
-      value: {
+      name: 'MultisigExecuted';
+      data: {
         approving: AccountId32;
         timepoint: PalletMultisigTimepoint;
         multisig: AccountId32;
         callHash: FixedBytes<32>;
-        result: [] | DispatchError;
+        result: ResultPayload<[], DispatchError>;
       };
     }
+  /**
+   * A multisig operation has been cancelled.
+   **/
   | {
-      tag: 'MultisigCancelled';
-      value: {
+      name: 'MultisigCancelled';
+      data: {
         cancelling: AccountId32;
         timepoint: PalletMultisigTimepoint;
         multisig: AccountId32;
@@ -2619,58 +3655,107 @@ export type PalletMultisigEvent =
     };
 
 /**
- * The [event](https://docs.substrate.io/main-docs/build/events-errors/) emitted by this pallet.
+ * The `Event` enum of this pallet
  **/
 export type PalletBountiesEvent =
-  | { tag: 'BountyProposed'; value: { index: number } }
-  | { tag: 'BountyRejected'; value: { index: number; bond: bigint } }
-  | { tag: 'BountyBecameActive'; value: { index: number } }
-  | { tag: 'BountyAwarded'; value: { index: number; beneficiary: AccountId32 } }
-  | { tag: 'BountyClaimed'; value: { index: number; payout: bigint; beneficiary: AccountId32 } }
-  | { tag: 'BountyCanceled'; value: { index: number } }
-  | { tag: 'BountyExtended'; value: { index: number } };
+  /**
+   * New bounty proposal.
+   **/
+  | { name: 'BountyProposed'; data: { index: number } }
+  /**
+   * A bounty proposal was rejected; funds were slashed.
+   **/
+  | { name: 'BountyRejected'; data: { index: number; bond: bigint } }
+  /**
+   * A bounty proposal is funded and became active.
+   **/
+  | { name: 'BountyBecameActive'; data: { index: number } }
+  /**
+   * A bounty is awarded to a beneficiary.
+   **/
+  | { name: 'BountyAwarded'; data: { index: number; beneficiary: AccountId32 } }
+  /**
+   * A bounty is claimed by beneficiary.
+   **/
+  | { name: 'BountyClaimed'; data: { index: number; payout: bigint; beneficiary: AccountId32 } }
+  /**
+   * A bounty is cancelled.
+   **/
+  | { name: 'BountyCanceled'; data: { index: number } }
+  /**
+   * A bounty expiry is extended.
+   **/
+  | { name: 'BountyExtended'; data: { index: number } };
 
 /**
- * The [event](https://docs.substrate.io/main-docs/build/events-errors/) emitted by this pallet.
+ * The `Event` enum of this pallet
  **/
 export type PalletChildBountiesEvent =
-  | { tag: 'Added'; value: { index: number; childIndex: number } }
-  | { tag: 'Awarded'; value: { index: number; childIndex: number; beneficiary: AccountId32 } }
-  | { tag: 'Claimed'; value: { index: number; childIndex: number; payout: bigint; beneficiary: AccountId32 } }
-  | { tag: 'Canceled'; value: { index: number; childIndex: number } };
+  /**
+   * A child-bounty is added.
+   **/
+  | { name: 'Added'; data: { index: number; childIndex: number } }
+  /**
+   * A child-bounty is awarded to a beneficiary.
+   **/
+  | { name: 'Awarded'; data: { index: number; childIndex: number; beneficiary: AccountId32 } }
+  /**
+   * A child-bounty is claimed by beneficiary.
+   **/
+  | { name: 'Claimed'; data: { index: number; childIndex: number; payout: bigint; beneficiary: AccountId32 } }
+  /**
+   * A child-bounty is cancelled.
+   **/
+  | { name: 'Canceled'; data: { index: number; childIndex: number } };
 
 /**
- * The [event](https://docs.substrate.io/main-docs/build/events-errors/) emitted by this pallet.
- **/
-export type PalletTipsEvent =
-  | { tag: 'NewTip'; value: { tipHash: H256 } }
-  | { tag: 'TipClosing'; value: { tipHash: H256 } }
-  | { tag: 'TipClosed'; value: { tipHash: H256; who: AccountId32; payout: bigint } }
-  | { tag: 'TipRetracted'; value: { tipHash: H256 } }
-  | { tag: 'TipSlashed'; value: { tipHash: H256; finder: AccountId32; deposit: bigint } };
-
-/**
- * The [event](https://docs.substrate.io/main-docs/build/events-errors/) emitted by this pallet.
+ * The `Event` enum of this pallet
  **/
 export type PalletElectionProviderMultiPhaseEvent =
+  /**
+   * A solution was stored with the given compute.
+   *
+   * The `origin` indicates the origin of the solution. If `origin` is `Some(AccountId)`,
+   * the stored solution was submited in the signed phase by a miner with the `AccountId`.
+   * Otherwise, the solution was stored either during the unsigned phase or by
+   * `T::ForceOrigin`. The `bool` is `true` when a previous solution was ejected to make
+   * room for this one.
+   **/
   | {
-      tag: 'SolutionStored';
-      value: {
+      name: 'SolutionStored';
+      data: {
         compute: PalletElectionProviderMultiPhaseElectionCompute;
         origin?: AccountId32 | undefined;
         prevEjected: boolean;
       };
     }
+  /**
+   * The election has been finalized, with the given computation and score.
+   **/
   | {
-      tag: 'ElectionFinalized';
-      value: { compute: PalletElectionProviderMultiPhaseElectionCompute; score: SpNposElectionsElectionScore };
+      name: 'ElectionFinalized';
+      data: { compute: PalletElectionProviderMultiPhaseElectionCompute; score: SpNposElectionsElectionScore };
     }
-  | { tag: 'ElectionFailed' }
-  | { tag: 'Rewarded'; value: { account: AccountId32; value: bigint } }
-  | { tag: 'Slashed'; value: { account: AccountId32; value: bigint } }
+  /**
+   * An election failed.
+   *
+   * Not much can be said about which computes failed in the process.
+   **/
+  | { name: 'ElectionFailed' }
+  /**
+   * An account has been rewarded for their signed submission being finalized.
+   **/
+  | { name: 'Rewarded'; data: { account: AccountId32; value: bigint } }
+  /**
+   * An account has been slashed for submitting an invalid signed submission.
+   **/
+  | { name: 'Slashed'; data: { account: AccountId32; value: bigint } }
+  /**
+   * There was a phase transition in a given round.
+   **/
   | {
-      tag: 'PhaseTransitioned';
-      value: { from: PalletElectionProviderMultiPhasePhase; to: PalletElectionProviderMultiPhasePhase; round: number };
+      name: 'PhaseTransitioned';
+      data: { from: PalletElectionProviderMultiPhasePhase; to: PalletElectionProviderMultiPhasePhase; round: number };
     };
 
 export type PalletElectionProviderMultiPhaseElectionCompute =
@@ -2687,150 +3772,340 @@ export type PalletElectionProviderMultiPhasePhase =
   | { tag: 'Emergency' };
 
 /**
- * The [event](https://docs.substrate.io/main-docs/build/events-errors/) emitted by this pallet.
+ * The `Event` enum of this pallet
  **/
 export type PalletBagsListEvent =
-  | { tag: 'Rebagged'; value: { who: AccountId32; from: bigint; to: bigint } }
-  | { tag: 'ScoreUpdated'; value: { who: AccountId32; newScore: bigint } };
+  /**
+   * Moved an account from one bag to another.
+   **/
+  | { name: 'Rebagged'; data: { who: AccountId32; from: bigint; to: bigint } }
+  /**
+   * Updated the score of some account to the given amount.
+   **/
+  | { name: 'ScoreUpdated'; data: { who: AccountId32; newScore: bigint } };
 
 /**
  * Events of this pallet.
  **/
 export type PalletNominationPoolsEvent =
-  | { tag: 'Created'; value: { depositor: AccountId32; poolId: number } }
-  | { tag: 'Bonded'; value: { member: AccountId32; poolId: number; bonded: bigint; joined: boolean } }
-  | { tag: 'PaidOut'; value: { member: AccountId32; poolId: number; payout: bigint } }
-  | { tag: 'Unbonded'; value: { member: AccountId32; poolId: number; balance: bigint; points: bigint; era: number } }
-  | { tag: 'Withdrawn'; value: { member: AccountId32; poolId: number; balance: bigint; points: bigint } }
-  | { tag: 'Destroyed'; value: { poolId: number } }
-  | { tag: 'StateChanged'; value: { poolId: number; newState: PalletNominationPoolsPoolState } }
-  | { tag: 'MemberRemoved'; value: { poolId: number; member: AccountId32 } }
+  /**
+   * A pool has been created.
+   **/
+  | { name: 'Created'; data: { depositor: AccountId32; poolId: number } }
+  /**
+   * A member has became bonded in a pool.
+   **/
+  | { name: 'Bonded'; data: { member: AccountId32; poolId: number; bonded: bigint; joined: boolean } }
+  /**
+   * A payout has been made to a member.
+   **/
+  | { name: 'PaidOut'; data: { member: AccountId32; poolId: number; payout: bigint } }
+  /**
+   * A member has unbonded from their pool.
+   *
+   * - `balance` is the corresponding balance of the number of points that has been
+   * requested to be unbonded (the argument of the `unbond` transaction) from the bonded
+   * pool.
+   * - `points` is the number of points that are issued as a result of `balance` being
+   * dissolved into the corresponding unbonding pool.
+   * - `era` is the era in which the balance will be unbonded.
+   * In the absence of slashing, these values will match. In the presence of slashing, the
+   * number of points that are issued in the unbonding pool will be less than the amount
+   * requested to be unbonded.
+   **/
+  | { name: 'Unbonded'; data: { member: AccountId32; poolId: number; balance: bigint; points: bigint; era: number } }
+  /**
+   * A member has withdrawn from their pool.
+   *
+   * The given number of `points` have been dissolved in return of `balance`.
+   *
+   * Similar to `Unbonded` event, in the absence of slashing, the ratio of point to balance
+   * will be 1.
+   **/
+  | { name: 'Withdrawn'; data: { member: AccountId32; poolId: number; balance: bigint; points: bigint } }
+  /**
+   * A pool has been destroyed.
+   **/
+  | { name: 'Destroyed'; data: { poolId: number } }
+  /**
+   * The state of a pool has changed
+   **/
+  | { name: 'StateChanged'; data: { poolId: number; newState: PalletNominationPoolsPoolState } }
+  /**
+   * A member has been removed from a pool.
+   *
+   * The removal can be voluntary (withdrawn all unbonded funds) or involuntary (kicked).
+   **/
+  | { name: 'MemberRemoved'; data: { poolId: number; member: AccountId32 } }
+  /**
+   * The roles of a pool have been updated to the given new roles. Note that the depositor
+   * can never change.
+   **/
   | {
-      tag: 'RolesUpdated';
-      value: { root?: AccountId32 | undefined; bouncer?: AccountId32 | undefined; nominator?: AccountId32 | undefined };
+      name: 'RolesUpdated';
+      data: { root?: AccountId32 | undefined; bouncer?: AccountId32 | undefined; nominator?: AccountId32 | undefined };
     }
-  | { tag: 'PoolSlashed'; value: { poolId: number; balance: bigint } }
-  | { tag: 'UnbondingPoolSlashed'; value: { poolId: number; era: number; balance: bigint } }
-  | { tag: 'PoolCommissionUpdated'; value: { poolId: number; current?: [Perbill, AccountId32] | undefined } }
-  | { tag: 'PoolMaxCommissionUpdated'; value: { poolId: number; maxCommission: Perbill } }
+  /**
+   * The active balance of pool `pool_id` has been slashed to `balance`.
+   **/
+  | { name: 'PoolSlashed'; data: { poolId: number; balance: bigint } }
+  /**
+   * The unbond pool at `era` of pool `pool_id` has been slashed to `balance`.
+   **/
+  | { name: 'UnbondingPoolSlashed'; data: { poolId: number; era: number; balance: bigint } }
+  /**
+   * A pool's commission setting has been changed.
+   **/
+  | { name: 'PoolCommissionUpdated'; data: { poolId: number; current?: [Perbill, AccountId32] | undefined } }
+  /**
+   * A pool's maximum commission setting has been changed.
+   **/
+  | { name: 'PoolMaxCommissionUpdated'; data: { poolId: number; maxCommission: Perbill } }
+  /**
+   * A pool's commission `change_rate` has been changed.
+   **/
   | {
-      tag: 'PoolCommissionChangeRateUpdated';
-      value: { poolId: number; changeRate: PalletNominationPoolsCommissionChangeRate };
+      name: 'PoolCommissionChangeRateUpdated';
+      data: { poolId: number; changeRate: PalletNominationPoolsCommissionChangeRate };
     }
-  | { tag: 'PoolCommissionClaimed'; value: { poolId: number; commission: bigint } };
+  /**
+   * Pool commission has been claimed.
+   **/
+  | { name: 'PoolCommissionClaimed'; data: { poolId: number; commission: bigint } };
 
 /**
- * The events of this pallet.
+ * The `Event` enum of this pallet
  **/
 export type PalletFastUnstakeEvent =
-  | { tag: 'Unstaked'; value: { stash: AccountId32; result: [] | DispatchError } }
-  | { tag: 'Slashed'; value: { stash: AccountId32; amount: bigint } }
-  | { tag: 'InternalError' }
-  | { tag: 'BatchChecked'; value: { eras: Array<number> } }
-  | { tag: 'BatchFinished'; value: { size: number } };
+  /**
+   * A staker was unstaked.
+   **/
+  | { name: 'Unstaked'; data: { stash: AccountId32; result: ResultPayload<[], DispatchError> } }
+  /**
+   * A staker was slashed for requesting fast-unstake whilst being exposed.
+   **/
+  | { name: 'Slashed'; data: { stash: AccountId32; amount: bigint } }
+  /**
+   * A batch was partially checked for the given eras, but the process did not finish.
+   **/
+  | { name: 'BatchChecked'; data: { eras: Array<number> } }
+  /**
+   * A batch of a given size was terminated.
+   *
+   * This is always follows by a number of `Unstaked` or `Slashed` events, marking the end
+   * of the batch. A new batch will be created upon next block.
+   **/
+  | { name: 'BatchFinished'; data: { size: number } }
+  /**
+   * An internal error happened. Operations will be paused now.
+   **/
+  | { name: 'InternalError' };
 
 /**
- * The [event](https://docs.substrate.io/main-docs/build/events-errors/) emitted by this pallet.
+ * The `Event` enum of this pallet
  **/
 export type PolkadotRuntimeParachainsInclusionPalletEvent =
+  /**
+   * A candidate was backed. `[candidate, head_data]`
+   **/
   | {
-      tag: 'CandidateBacked';
-      value: [
-        PolkadotPrimitivesV4CandidateReceipt,
-        PolkadotParachainPrimitivesHeadData,
-        PolkadotPrimitivesV4CoreIndex,
-        PolkadotPrimitivesV4GroupIndex,
+      name: 'CandidateBacked';
+      data: [
+        PolkadotPrimitivesV5CandidateReceipt,
+        PolkadotParachainPrimitivesPrimitivesHeadData,
+        PolkadotPrimitivesV5CoreIndex,
+        PolkadotPrimitivesV5GroupIndex,
       ];
     }
+  /**
+   * A candidate was included. `[candidate, head_data]`
+   **/
   | {
-      tag: 'CandidateIncluded';
-      value: [
-        PolkadotPrimitivesV4CandidateReceipt,
-        PolkadotParachainPrimitivesHeadData,
-        PolkadotPrimitivesV4CoreIndex,
-        PolkadotPrimitivesV4GroupIndex,
+      name: 'CandidateIncluded';
+      data: [
+        PolkadotPrimitivesV5CandidateReceipt,
+        PolkadotParachainPrimitivesPrimitivesHeadData,
+        PolkadotPrimitivesV5CoreIndex,
+        PolkadotPrimitivesV5GroupIndex,
       ];
     }
+  /**
+   * A candidate timed out. `[candidate, head_data]`
+   **/
   | {
-      tag: 'CandidateTimedOut';
-      value: [PolkadotPrimitivesV4CandidateReceipt, PolkadotParachainPrimitivesHeadData, PolkadotPrimitivesV4CoreIndex];
+      name: 'CandidateTimedOut';
+      data: [
+        PolkadotPrimitivesV5CandidateReceipt,
+        PolkadotParachainPrimitivesPrimitivesHeadData,
+        PolkadotPrimitivesV5CoreIndex,
+      ];
     }
-  | { tag: 'UpwardMessagesReceived'; value: { from: PolkadotParachainPrimitivesId; count: number } };
+  /**
+   * Some upward messages have been received and will be processed.
+   **/
+  | { name: 'UpwardMessagesReceived'; data: { from: PolkadotParachainPrimitivesPrimitivesId; count: number } };
 
-export type PolkadotPrimitivesV4CandidateReceipt = {
-  descriptor: PolkadotPrimitivesV4CandidateDescriptor;
+export type PolkadotPrimitivesV5CandidateReceipt = {
+  descriptor: PolkadotPrimitivesV5CandidateDescriptor;
   commitmentsHash: H256;
 };
 
-export type PolkadotPrimitivesV4CoreIndex = number;
+export type PolkadotPrimitivesV5CoreIndex = number;
 
-export type PolkadotPrimitivesV4GroupIndex = number;
+export type PolkadotPrimitivesV5GroupIndex = number;
 
 /**
- * The [event](https://docs.substrate.io/main-docs/build/events-errors/) emitted by this pallet.
+ * The `Event` enum of this pallet
  **/
 export type PolkadotRuntimeParachainsParasPalletEvent =
-  | { tag: 'CurrentCodeUpdated'; value: PolkadotParachainPrimitivesId }
-  | { tag: 'CurrentHeadUpdated'; value: PolkadotParachainPrimitivesId }
-  | { tag: 'CodeUpgradeScheduled'; value: PolkadotParachainPrimitivesId }
-  | { tag: 'NewHeadNoted'; value: PolkadotParachainPrimitivesId }
-  | { tag: 'ActionQueued'; value: [PolkadotParachainPrimitivesId, number] }
-  | { tag: 'PvfCheckStarted'; value: [PolkadotParachainPrimitivesValidationCodeHash, PolkadotParachainPrimitivesId] }
-  | { tag: 'PvfCheckAccepted'; value: [PolkadotParachainPrimitivesValidationCodeHash, PolkadotParachainPrimitivesId] }
-  | { tag: 'PvfCheckRejected'; value: [PolkadotParachainPrimitivesValidationCodeHash, PolkadotParachainPrimitivesId] };
-
-/**
- * The [event](https://docs.substrate.io/main-docs/build/events-errors/) emitted by this pallet.
- **/
-export type PolkadotRuntimeParachainsHrmpPalletEvent =
+  /**
+   * Current code has been updated for a Para. `para_id`
+   **/
+  | { name: 'CurrentCodeUpdated'; data: PolkadotParachainPrimitivesPrimitivesId }
+  /**
+   * Current head has been updated for a Para. `para_id`
+   **/
+  | { name: 'CurrentHeadUpdated'; data: PolkadotParachainPrimitivesPrimitivesId }
+  /**
+   * A code upgrade has been scheduled for a Para. `para_id`
+   **/
+  | { name: 'CodeUpgradeScheduled'; data: PolkadotParachainPrimitivesPrimitivesId }
+  /**
+   * A new head has been noted for a Para. `para_id`
+   **/
+  | { name: 'NewHeadNoted'; data: PolkadotParachainPrimitivesPrimitivesId }
+  /**
+   * A para has been queued to execute pending actions. `para_id`
+   **/
+  | { name: 'ActionQueued'; data: [PolkadotParachainPrimitivesPrimitivesId, number] }
+  /**
+   * The given para either initiated or subscribed to a PVF check for the given validation
+   * code. `code_hash` `para_id`
+   **/
   | {
-      tag: 'OpenChannelRequested';
-      value: [PolkadotParachainPrimitivesId, PolkadotParachainPrimitivesId, number, number];
+      name: 'PvfCheckStarted';
+      data: [PolkadotParachainPrimitivesPrimitivesValidationCodeHash, PolkadotParachainPrimitivesPrimitivesId];
     }
-  | { tag: 'OpenChannelCanceled'; value: [PolkadotParachainPrimitivesId, PolkadotParachainPrimitivesHrmpChannelId] }
-  | { tag: 'OpenChannelAccepted'; value: [PolkadotParachainPrimitivesId, PolkadotParachainPrimitivesId] }
-  | { tag: 'ChannelClosed'; value: [PolkadotParachainPrimitivesId, PolkadotParachainPrimitivesHrmpChannelId] }
+  /**
+   * The given validation code was accepted by the PVF pre-checking vote.
+   * `code_hash` `para_id`
+   **/
   | {
-      tag: 'HrmpChannelForceOpened';
-      value: [PolkadotParachainPrimitivesId, PolkadotParachainPrimitivesId, number, number];
+      name: 'PvfCheckAccepted';
+      data: [PolkadotParachainPrimitivesPrimitivesValidationCodeHash, PolkadotParachainPrimitivesPrimitivesId];
+    }
+  /**
+   * The given validation code was rejected by the PVF pre-checking vote.
+   * `code_hash` `para_id`
+   **/
+  | {
+      name: 'PvfCheckRejected';
+      data: [PolkadotParachainPrimitivesPrimitivesValidationCodeHash, PolkadotParachainPrimitivesPrimitivesId];
     };
 
 /**
- * The [event](https://docs.substrate.io/main-docs/build/events-errors/) emitted by this pallet.
+ * The `Event` enum of this pallet
+ **/
+export type PolkadotRuntimeParachainsHrmpPalletEvent =
+  /**
+   * Open HRMP channel requested.
+   * `[sender, recipient, proposed_max_capacity, proposed_max_message_size]`
+   **/
+  | {
+      name: 'OpenChannelRequested';
+      data: [PolkadotParachainPrimitivesPrimitivesId, PolkadotParachainPrimitivesPrimitivesId, number, number];
+    }
+  /**
+   * An HRMP channel request sent by the receiver was canceled by either party.
+   * `[by_parachain, channel_id]`
+   **/
+  | {
+      name: 'OpenChannelCanceled';
+      data: [PolkadotParachainPrimitivesPrimitivesId, PolkadotParachainPrimitivesPrimitivesHrmpChannelId];
+    }
+  /**
+   * Open HRMP channel accepted. `[sender, recipient]`
+   **/
+  | {
+      name: 'OpenChannelAccepted';
+      data: [PolkadotParachainPrimitivesPrimitivesId, PolkadotParachainPrimitivesPrimitivesId];
+    }
+  /**
+   * HRMP channel closed. `[by_parachain, channel_id]`
+   **/
+  | {
+      name: 'ChannelClosed';
+      data: [PolkadotParachainPrimitivesPrimitivesId, PolkadotParachainPrimitivesPrimitivesHrmpChannelId];
+    }
+  /**
+   * An HRMP channel was opened via Root origin.
+   * `[sender, recipient, proposed_max_capacity, proposed_max_message_size]`
+   **/
+  | {
+      name: 'HrmpChannelForceOpened';
+      data: [PolkadotParachainPrimitivesPrimitivesId, PolkadotParachainPrimitivesPrimitivesId, number, number];
+    };
+
+/**
+ * The `Event` enum of this pallet
  **/
 export type PolkadotRuntimeParachainsDisputesPalletEvent =
+  /**
+   * A dispute has been initiated. \[candidate hash, dispute location\]
+   **/
   | {
-      tag: 'DisputeInitiated';
-      value: [PolkadotCorePrimitivesCandidateHash, PolkadotRuntimeParachainsDisputesDisputeLocation];
+      name: 'DisputeInitiated';
+      data: [PolkadotCorePrimitivesCandidateHash, PolkadotRuntimeParachainsDisputesDisputeLocation];
     }
+  /**
+   * A dispute has concluded for or against a candidate.
+   * `\[para id, candidate hash, dispute result\]`
+   **/
   | {
-      tag: 'DisputeConcluded';
-      value: [PolkadotCorePrimitivesCandidateHash, PolkadotRuntimeParachainsDisputesDisputeResult];
+      name: 'DisputeConcluded';
+      data: [PolkadotCorePrimitivesCandidateHash, PolkadotRuntimeParachainsDisputesDisputeResult];
     }
-  | { tag: 'Revert'; value: number };
+  /**
+   * A dispute has concluded with supermajority against a candidate.
+   * Block authors should no longer build on top of this head and should
+   * instead revert the block at the given height. This should be the
+   * number of the child of the last known valid block in the chain.
+   **/
+  | { name: 'Revert'; data: number };
 
 export type PolkadotRuntimeParachainsDisputesDisputeLocation = 'Local' | 'Remote';
 
 export type PolkadotRuntimeParachainsDisputesDisputeResult = 'Valid' | 'Invalid';
 
 /**
- * The [event](https://docs.substrate.io/main-docs/build/events-errors/) emitted by this pallet.
+ * The `Event` enum of this pallet
  **/
 export type PolkadotRuntimeCommonParasRegistrarPalletEvent =
-  | { tag: 'Registered'; value: { paraId: PolkadotParachainPrimitivesId; manager: AccountId32 } }
-  | { tag: 'Deregistered'; value: { paraId: PolkadotParachainPrimitivesId } }
-  | { tag: 'Reserved'; value: { paraId: PolkadotParachainPrimitivesId; who: AccountId32 } }
-  | { tag: 'Swapped'; value: { paraId: PolkadotParachainPrimitivesId; otherId: PolkadotParachainPrimitivesId } };
+  | { name: 'Registered'; data: { paraId: PolkadotParachainPrimitivesPrimitivesId; manager: AccountId32 } }
+  | { name: 'Deregistered'; data: { paraId: PolkadotParachainPrimitivesPrimitivesId } }
+  | { name: 'Reserved'; data: { paraId: PolkadotParachainPrimitivesPrimitivesId; who: AccountId32 } }
+  | {
+      name: 'Swapped';
+      data: { paraId: PolkadotParachainPrimitivesPrimitivesId; otherId: PolkadotParachainPrimitivesPrimitivesId };
+    };
 
 /**
- * The [event](https://docs.substrate.io/main-docs/build/events-errors/) emitted by this pallet.
+ * The `Event` enum of this pallet
  **/
 export type PolkadotRuntimeCommonSlotsPalletEvent =
-  | { tag: 'NewLeasePeriod'; value: { leasePeriod: number } }
+  /**
+   * A new `[lease_period]` is beginning.
+   **/
+  | { name: 'NewLeasePeriod'; data: { leasePeriod: number } }
+  /**
+   * A para has won the right to a continuous set of lease periods as a parachain.
+   * First balance is any extra amount reserved on top of the para's existing deposit.
+   * Second balance is the total amount reserved.
+   **/
   | {
-      tag: 'Leased';
-      value: {
-        paraId: PolkadotParachainPrimitivesId;
+      name: 'Leased';
+      data: {
+        paraId: PolkadotParachainPrimitivesPrimitivesId;
         leaser: AccountId32;
         periodBegin: number;
         periodCount: number;
@@ -2840,79 +4115,304 @@ export type PolkadotRuntimeCommonSlotsPalletEvent =
     };
 
 /**
- * The [event](https://docs.substrate.io/main-docs/build/events-errors/) emitted by this pallet.
+ * The `Event` enum of this pallet
  **/
 export type PolkadotRuntimeCommonAuctionsPalletEvent =
-  | { tag: 'AuctionStarted'; value: { auctionIndex: number; leasePeriod: number; ending: number } }
-  | { tag: 'AuctionClosed'; value: { auctionIndex: number } }
-  | { tag: 'Reserved'; value: { bidder: AccountId32; extraReserved: bigint; totalAmount: bigint } }
-  | { tag: 'Unreserved'; value: { bidder: AccountId32; amount: bigint } }
-  | { tag: 'ReserveConfiscated'; value: { paraId: PolkadotParachainPrimitivesId; leaser: AccountId32; amount: bigint } }
+  /**
+   * An auction started. Provides its index and the block number where it will begin to
+   * close and the first lease period of the quadruplet that is auctioned.
+   **/
+  | { name: 'AuctionStarted'; data: { auctionIndex: number; leasePeriod: number; ending: number } }
+  /**
+   * An auction ended. All funds become unreserved.
+   **/
+  | { name: 'AuctionClosed'; data: { auctionIndex: number } }
+  /**
+   * Funds were reserved for a winning bid. First balance is the extra amount reserved.
+   * Second is the total.
+   **/
+  | { name: 'Reserved'; data: { bidder: AccountId32; extraReserved: bigint; totalAmount: bigint } }
+  /**
+   * Funds were unreserved since bidder is no longer active. `[bidder, amount]`
+   **/
+  | { name: 'Unreserved'; data: { bidder: AccountId32; amount: bigint } }
+  /**
+   * Someone attempted to lease the same slot twice for a parachain. The amount is held in
+   * reserve but no parachain slot has been leased.
+   **/
   | {
-      tag: 'BidAccepted';
-      value: {
+      name: 'ReserveConfiscated';
+      data: { paraId: PolkadotParachainPrimitivesPrimitivesId; leaser: AccountId32; amount: bigint };
+    }
+  /**
+   * A new bid has been accepted as the current winner.
+   **/
+  | {
+      name: 'BidAccepted';
+      data: {
         bidder: AccountId32;
-        paraId: PolkadotParachainPrimitivesId;
+        paraId: PolkadotParachainPrimitivesPrimitivesId;
         amount: bigint;
         firstSlot: number;
         lastSlot: number;
       };
     }
-  | { tag: 'WinningOffset'; value: { auctionIndex: number; blockNumber: number } };
+  /**
+   * The winning offset was chosen for an auction. This will map into the `Winning` storage
+   * map.
+   **/
+  | { name: 'WinningOffset'; data: { auctionIndex: number; blockNumber: number } };
 
 /**
- * The [event](https://docs.substrate.io/main-docs/build/events-errors/) emitted by this pallet.
+ * The `Event` enum of this pallet
  **/
 export type PolkadotRuntimeCommonCrowdloanPalletEvent =
-  | { tag: 'Created'; value: { paraId: PolkadotParachainPrimitivesId } }
-  | { tag: 'Contributed'; value: { who: AccountId32; fundIndex: PolkadotParachainPrimitivesId; amount: bigint } }
-  | { tag: 'Withdrew'; value: { who: AccountId32; fundIndex: PolkadotParachainPrimitivesId; amount: bigint } }
-  | { tag: 'PartiallyRefunded'; value: { paraId: PolkadotParachainPrimitivesId } }
-  | { tag: 'AllRefunded'; value: { paraId: PolkadotParachainPrimitivesId } }
-  | { tag: 'Dissolved'; value: { paraId: PolkadotParachainPrimitivesId } }
-  | { tag: 'HandleBidResult'; value: { paraId: PolkadotParachainPrimitivesId; result: [] | DispatchError } }
-  | { tag: 'Edited'; value: { paraId: PolkadotParachainPrimitivesId } }
-  | { tag: 'MemoUpdated'; value: { who: AccountId32; paraId: PolkadotParachainPrimitivesId; memo: Bytes } }
-  | { tag: 'AddedToNewRaise'; value: { paraId: PolkadotParachainPrimitivesId } };
+  /**
+   * Create a new crowdloaning campaign.
+   **/
+  | { name: 'Created'; data: { paraId: PolkadotParachainPrimitivesPrimitivesId } }
+  /**
+   * Contributed to a crowd sale.
+   **/
+  | {
+      name: 'Contributed';
+      data: { who: AccountId32; fundIndex: PolkadotParachainPrimitivesPrimitivesId; amount: bigint };
+    }
+  /**
+   * Withdrew full balance of a contributor.
+   **/
+  | { name: 'Withdrew'; data: { who: AccountId32; fundIndex: PolkadotParachainPrimitivesPrimitivesId; amount: bigint } }
+  /**
+   * The loans in a fund have been partially dissolved, i.e. there are some left
+   * over child keys that still need to be killed.
+   **/
+  | { name: 'PartiallyRefunded'; data: { paraId: PolkadotParachainPrimitivesPrimitivesId } }
+  /**
+   * All loans in a fund have been refunded.
+   **/
+  | { name: 'AllRefunded'; data: { paraId: PolkadotParachainPrimitivesPrimitivesId } }
+  /**
+   * Fund is dissolved.
+   **/
+  | { name: 'Dissolved'; data: { paraId: PolkadotParachainPrimitivesPrimitivesId } }
+  /**
+   * The result of trying to submit a new bid to the Slots pallet.
+   **/
+  | {
+      name: 'HandleBidResult';
+      data: { paraId: PolkadotParachainPrimitivesPrimitivesId; result: ResultPayload<[], DispatchError> };
+    }
+  /**
+   * The configuration to a crowdloan has been edited.
+   **/
+  | { name: 'Edited'; data: { paraId: PolkadotParachainPrimitivesPrimitivesId } }
+  /**
+   * A memo has been updated.
+   **/
+  | { name: 'MemoUpdated'; data: { who: AccountId32; paraId: PolkadotParachainPrimitivesPrimitivesId; memo: Bytes } }
+  /**
+   * A parachain has been moved to `NewRaise`
+   **/
+  | { name: 'AddedToNewRaise'; data: { paraId: PolkadotParachainPrimitivesPrimitivesId } };
 
 /**
- * The [event](https://docs.substrate.io/main-docs/build/events-errors/) emitted by this pallet.
+ * The `Event` enum of this pallet
  **/
 export type PalletXcmEvent =
-  | { tag: 'Attempted'; value: XcmV3TraitsOutcome }
-  | { tag: 'Sent'; value: [XcmV3MultilocationMultiLocation, XcmV3MultilocationMultiLocation, XcmV3Xcm] }
-  | { tag: 'UnexpectedResponse'; value: [XcmV3MultilocationMultiLocation, bigint] }
-  | { tag: 'ResponseReady'; value: [bigint, XcmV3Response] }
-  | { tag: 'Notified'; value: [bigint, number, number] }
-  | { tag: 'NotifyOverweight'; value: [bigint, number, number, SpWeightsWeightV2Weight, SpWeightsWeightV2Weight] }
-  | { tag: 'NotifyDispatchError'; value: [bigint, number, number] }
-  | { tag: 'NotifyDecodeFailed'; value: [bigint, number, number] }
+  /**
+   * Execution of an XCM message was attempted.
+   **/
+  | { name: 'Attempted'; data: { outcome: XcmV3TraitsOutcome } }
+  /**
+   * A XCM message was sent.
+   **/
   | {
-      tag: 'InvalidResponder';
-      value: [XcmV3MultilocationMultiLocation, bigint, XcmV3MultilocationMultiLocation | undefined];
+      name: 'Sent';
+      data: {
+        origin: StagingXcmV3MultilocationMultiLocation;
+        destination: StagingXcmV3MultilocationMultiLocation;
+        message: XcmV3Xcm;
+        messageId: FixedBytes<32>;
+      };
     }
-  | { tag: 'InvalidResponderVersion'; value: [XcmV3MultilocationMultiLocation, bigint] }
-  | { tag: 'ResponseTaken'; value: bigint }
-  | { tag: 'AssetsTrapped'; value: [H256, XcmV3MultilocationMultiLocation, XcmVersionedMultiAssets] }
-  | { tag: 'VersionChangeNotified'; value: [XcmV3MultilocationMultiLocation, number, XcmV3MultiassetMultiAssets] }
-  | { tag: 'SupportedVersionChanged'; value: [XcmV3MultilocationMultiLocation, number] }
-  | { tag: 'NotifyTargetSendFail'; value: [XcmV3MultilocationMultiLocation, bigint, XcmV3TraitsError] }
-  | { tag: 'NotifyTargetMigrationFail'; value: [XcmVersionedMultiLocation, bigint] }
-  | { tag: 'InvalidQuerierVersion'; value: [XcmV3MultilocationMultiLocation, bigint] }
+  /**
+   * Query response received which does not match a registered query. This may be because a
+   * matching query was never registered, it may be because it is a duplicate response, or
+   * because the query timed out.
+   **/
+  | { name: 'UnexpectedResponse'; data: { origin: StagingXcmV3MultilocationMultiLocation; queryId: bigint } }
+  /**
+   * Query response has been received and is ready for taking with `take_response`. There is
+   * no registered notification call.
+   **/
+  | { name: 'ResponseReady'; data: { queryId: bigint; response: XcmV3Response } }
+  /**
+   * Query response has been received and query is removed. The registered notification has
+   * been dispatched and executed successfully.
+   **/
+  | { name: 'Notified'; data: { queryId: bigint; palletIndex: number; callIndex: number } }
+  /**
+   * Query response has been received and query is removed. The registered notification
+   * could not be dispatched because the dispatch weight is greater than the maximum weight
+   * originally budgeted by this runtime for the query result.
+   **/
   | {
-      tag: 'InvalidQuerier';
-      value: [
-        XcmV3MultilocationMultiLocation,
-        bigint,
-        XcmV3MultilocationMultiLocation,
-        XcmV3MultilocationMultiLocation | undefined,
-      ];
+      name: 'NotifyOverweight';
+      data: {
+        queryId: bigint;
+        palletIndex: number;
+        callIndex: number;
+        actualWeight: SpWeightsWeightV2Weight;
+        maxBudgetedWeight: SpWeightsWeightV2Weight;
+      };
     }
-  | { tag: 'VersionNotifyStarted'; value: [XcmV3MultilocationMultiLocation, XcmV3MultiassetMultiAssets] }
-  | { tag: 'VersionNotifyRequested'; value: [XcmV3MultilocationMultiLocation, XcmV3MultiassetMultiAssets] }
-  | { tag: 'VersionNotifyUnrequested'; value: [XcmV3MultilocationMultiLocation, XcmV3MultiassetMultiAssets] }
-  | { tag: 'FeesPaid'; value: [XcmV3MultilocationMultiLocation, XcmV3MultiassetMultiAssets] }
-  | { tag: 'AssetsClaimed'; value: [H256, XcmV3MultilocationMultiLocation, XcmVersionedMultiAssets] };
+  /**
+   * Query response has been received and query is removed. There was a general error with
+   * dispatching the notification call.
+   **/
+  | { name: 'NotifyDispatchError'; data: { queryId: bigint; palletIndex: number; callIndex: number } }
+  /**
+   * Query response has been received and query is removed. The dispatch was unable to be
+   * decoded into a `Call`; this might be due to dispatch function having a signature which
+   * is not `(origin, QueryId, Response)`.
+   **/
+  | { name: 'NotifyDecodeFailed'; data: { queryId: bigint; palletIndex: number; callIndex: number } }
+  /**
+   * Expected query response has been received but the origin location of the response does
+   * not match that expected. The query remains registered for a later, valid, response to
+   * be received and acted upon.
+   **/
+  | {
+      name: 'InvalidResponder';
+      data: {
+        origin: StagingXcmV3MultilocationMultiLocation;
+        queryId: bigint;
+        expectedLocation?: StagingXcmV3MultilocationMultiLocation | undefined;
+      };
+    }
+  /**
+   * Expected query response has been received but the expected origin location placed in
+   * storage by this runtime previously cannot be decoded. The query remains registered.
+   *
+   * This is unexpected (since a location placed in storage in a previously executing
+   * runtime should be readable prior to query timeout) and dangerous since the possibly
+   * valid response will be dropped. Manual governance intervention is probably going to be
+   * needed.
+   **/
+  | { name: 'InvalidResponderVersion'; data: { origin: StagingXcmV3MultilocationMultiLocation; queryId: bigint } }
+  /**
+   * Received query response has been read and removed.
+   **/
+  | { name: 'ResponseTaken'; data: { queryId: bigint } }
+  /**
+   * Some assets have been placed in an asset trap.
+   **/
+  | {
+      name: 'AssetsTrapped';
+      data: { hash: H256; origin: StagingXcmV3MultilocationMultiLocation; assets: XcmVersionedMultiAssets };
+    }
+  /**
+   * An XCM version change notification message has been attempted to be sent.
+   *
+   * The cost of sending it (borne by the chain) is included.
+   **/
+  | {
+      name: 'VersionChangeNotified';
+      data: {
+        destination: StagingXcmV3MultilocationMultiLocation;
+        result: number;
+        cost: XcmV3MultiassetMultiAssets;
+        messageId: FixedBytes<32>;
+      };
+    }
+  /**
+   * The supported version of a location has been changed. This might be through an
+   * automatic notification or a manual intervention.
+   **/
+  | { name: 'SupportedVersionChanged'; data: { location: StagingXcmV3MultilocationMultiLocation; version: number } }
+  /**
+   * A given location which had a version change subscription was dropped owing to an error
+   * sending the notification to it.
+   **/
+  | {
+      name: 'NotifyTargetSendFail';
+      data: { location: StagingXcmV3MultilocationMultiLocation; queryId: bigint; error: XcmV3TraitsError };
+    }
+  /**
+   * A given location which had a version change subscription was dropped owing to an error
+   * migrating the location to our new XCM format.
+   **/
+  | { name: 'NotifyTargetMigrationFail'; data: { location: XcmVersionedMultiLocation; queryId: bigint } }
+  /**
+   * Expected query response has been received but the expected querier location placed in
+   * storage by this runtime previously cannot be decoded. The query remains registered.
+   *
+   * This is unexpected (since a location placed in storage in a previously executing
+   * runtime should be readable prior to query timeout) and dangerous since the possibly
+   * valid response will be dropped. Manual governance intervention is probably going to be
+   * needed.
+   **/
+  | { name: 'InvalidQuerierVersion'; data: { origin: StagingXcmV3MultilocationMultiLocation; queryId: bigint } }
+  /**
+   * Expected query response has been received but the querier location of the response does
+   * not match the expected. The query remains registered for a later, valid, response to
+   * be received and acted upon.
+   **/
+  | {
+      name: 'InvalidQuerier';
+      data: {
+        origin: StagingXcmV3MultilocationMultiLocation;
+        queryId: bigint;
+        expectedQuerier: StagingXcmV3MultilocationMultiLocation;
+        maybeActualQuerier?: StagingXcmV3MultilocationMultiLocation | undefined;
+      };
+    }
+  /**
+   * A remote has requested XCM version change notification from us and we have honored it.
+   * A version information message is sent to them and its cost is included.
+   **/
+  | {
+      name: 'VersionNotifyStarted';
+      data: {
+        destination: StagingXcmV3MultilocationMultiLocation;
+        cost: XcmV3MultiassetMultiAssets;
+        messageId: FixedBytes<32>;
+      };
+    }
+  /**
+   * We have requested that a remote chain send us XCM version change notifications.
+   **/
+  | {
+      name: 'VersionNotifyRequested';
+      data: {
+        destination: StagingXcmV3MultilocationMultiLocation;
+        cost: XcmV3MultiassetMultiAssets;
+        messageId: FixedBytes<32>;
+      };
+    }
+  /**
+   * We have requested that a remote chain stops sending us XCM version change
+   * notifications.
+   **/
+  | {
+      name: 'VersionNotifyUnrequested';
+      data: {
+        destination: StagingXcmV3MultilocationMultiLocation;
+        cost: XcmV3MultiassetMultiAssets;
+        messageId: FixedBytes<32>;
+      };
+    }
+  /**
+   * Fees were paid from a location for an operation (often for using `SendXcm`).
+   **/
+  | { name: 'FeesPaid'; data: { paying: StagingXcmV3MultilocationMultiLocation; fees: XcmV3MultiassetMultiAssets } }
+  /**
+   * Some assets have been claimed from an asset trap
+   **/
+  | {
+      name: 'AssetsClaimed';
+      data: { hash: H256; origin: StagingXcmV3MultilocationMultiLocation; assets: XcmVersionedMultiAssets };
+    };
 
 export type XcmV3TraitsOutcome =
   | { tag: 'Complete'; value: SpWeightsWeightV2Weight }
@@ -2920,36 +4420,48 @@ export type XcmV3TraitsOutcome =
   | { tag: 'Error'; value: XcmV3TraitsError };
 
 /**
- * The [event](https://docs.substrate.io/main-docs/build/events-errors/) emitted by this pallet.
+ * The `Event` enum of this pallet
  **/
 export type PalletMessageQueueEvent =
+  /**
+   * Message discarded due to an error in the `MessageProcessor` (usually a format error).
+   **/
   | {
-      tag: 'ProcessingFailed';
-      value: {
+      name: 'ProcessingFailed';
+      data: {
         id: FixedBytes<32>;
         origin: PolkadotRuntimeParachainsInclusionAggregateMessageOrigin;
         error: FrameSupportMessagesProcessMessageError;
       };
     }
+  /**
+   * Message is processed.
+   **/
   | {
-      tag: 'Processed';
-      value: {
+      name: 'Processed';
+      data: {
         id: FixedBytes<32>;
         origin: PolkadotRuntimeParachainsInclusionAggregateMessageOrigin;
         weightUsed: SpWeightsWeightV2Weight;
         success: boolean;
       };
     }
+  /**
+   * Message placed in overweight queue.
+   **/
   | {
-      tag: 'OverweightEnqueued';
-      value: {
+      name: 'OverweightEnqueued';
+      data: {
         id: FixedBytes<32>;
         origin: PolkadotRuntimeParachainsInclusionAggregateMessageOrigin;
         pageIndex: number;
         messageIndex: number;
       };
     }
-  | { tag: 'PageReaped'; value: { origin: PolkadotRuntimeParachainsInclusionAggregateMessageOrigin; index: number } };
+  /**
+   * This page was reaped.
+   **/
+  | { name: 'PageReaped'; data: { origin: PolkadotRuntimeParachainsInclusionAggregateMessageOrigin; index: number } };
 
 export type FrameSupportMessagesProcessMessageError =
   | { tag: 'BadFormat' }
@@ -3043,7 +4555,7 @@ export type PalletSchedulerScheduled = {
 };
 
 /**
- * Custom [dispatch errors](https://docs.substrate.io/main-docs/build/events-errors/) of this pallet.
+ * The `Error` enum of this pallet.
  **/
 export type PalletSchedulerError =
   /**
@@ -3075,7 +4587,7 @@ export type PalletPreimageRequestStatus =
     };
 
 /**
- * Custom [dispatch errors](https://docs.substrate.io/main-docs/build/events-errors/) of this pallet.
+ * The `Error` enum of this pallet.
  **/
 export type PalletPreimageError =
   /**
@@ -3127,7 +4639,7 @@ export type SpConsensusBabeDigestsSecondaryVRFPreDigest = {
 export type SpConsensusBabeBabeEpochConfiguration = { c: [bigint, bigint]; allowedSlots: SpConsensusBabeAllowedSlots };
 
 /**
- * Custom [dispatch errors](https://docs.substrate.io/main-docs/build/events-errors/) of this pallet.
+ * The `Error` enum of this pallet.
  **/
 export type PalletBabeError =
   /**
@@ -3148,7 +4660,7 @@ export type PalletBabeError =
   | 'InvalidConfiguration';
 
 /**
- * Custom [dispatch errors](https://docs.substrate.io/main-docs/build/events-errors/) of this pallet.
+ * The `Error` enum of this pallet.
  **/
 export type PalletIndicesError =
   /**
@@ -3178,10 +4690,14 @@ export type PalletBalancesReasons = 'Fee' | 'Misc' | 'All';
 
 export type PalletBalancesReserveData = { id: FixedBytes<8>; amount: bigint };
 
-export type PalletBalancesIdAmount = { id: []; amount: bigint };
+export type PalletBalancesIdAmount = { id: PolkadotRuntimeRuntimeHoldReason; amount: bigint };
+
+export type PolkadotRuntimeRuntimeHoldReason = null;
+
+export type PalletBalancesIdAmount002 = { id: []; amount: bigint };
 
 /**
- * Custom [dispatch errors](https://docs.substrate.io/main-docs/build/events-errors/) of this pallet.
+ * The `Error` enum of this pallet.
  **/
 export type PalletBalancesError =
   /**
@@ -3261,7 +4777,7 @@ export type PalletStakingSlashingSlashingSpans = {
 export type PalletStakingSlashingSpanRecord = { slashed: bigint; paidOut: bigint };
 
 /**
- * Custom [dispatch errors](https://docs.substrate.io/main-docs/build/events-errors/) of this pallet.
+ * The `Error` enum of this pallet.
  **/
 export type PalletStakingPalletError =
   /**
@@ -3415,7 +4931,7 @@ export type PalletGrandpaStoredPendingChange = {
 };
 
 /**
- * Custom [dispatch errors](https://docs.substrate.io/main-docs/build/events-errors/) of this pallet.
+ * The `Error` enum of this pallet.
  **/
 export type PalletGrandpaError =
   /**
@@ -3449,10 +4965,8 @@ export type PalletGrandpaError =
    **/
   | 'DuplicateOffenceReport';
 
-export type PalletImOnlineBoundedOpaqueNetworkState = { peerId: Bytes; externalAddresses: Array<Bytes> };
-
 /**
- * Custom [dispatch errors](https://docs.substrate.io/main-docs/build/events-errors/) of this pallet.
+ * The `Error` enum of this pallet.
  **/
 export type PalletImOnlineError =
   /**
@@ -3463,293 +4977,6 @@ export type PalletImOnlineError =
    * Duplicated heartbeat.
    **/
   | 'DuplicatedHeartbeat';
-
-export type PalletDemocracyReferendumInfo =
-  | { tag: 'Ongoing'; value: PalletDemocracyReferendumStatus }
-  | { tag: 'Finished'; value: { approved: boolean; end: number } };
-
-export type PalletDemocracyReferendumStatus = {
-  end: number;
-  proposal: FrameSupportPreimagesBounded;
-  threshold: PalletDemocracyVoteThreshold;
-  delay: number;
-  tally: PalletDemocracyTally;
-};
-
-export type PalletDemocracyTally = { ayes: bigint; nays: bigint; turnout: bigint };
-
-export type PalletDemocracyVoteVoting =
-  | {
-      tag: 'Direct';
-      value: {
-        votes: Array<[number, PalletDemocracyVoteAccountVote]>;
-        delegations: PalletDemocracyDelegations;
-        prior: PalletDemocracyVotePriorLock;
-      };
-    }
-  | {
-      tag: 'Delegating';
-      value: {
-        balance: bigint;
-        target: AccountId32;
-        conviction: PalletDemocracyConviction;
-        delegations: PalletDemocracyDelegations;
-        prior: PalletDemocracyVotePriorLock;
-      };
-    };
-
-export type PalletDemocracyDelegations = { votes: bigint; capital: bigint };
-
-export type PalletDemocracyVotePriorLock = [number, bigint];
-
-/**
- * Custom [dispatch errors](https://docs.substrate.io/main-docs/build/events-errors/) of this pallet.
- **/
-export type PalletDemocracyError =
-  /**
-   * Value too low
-   **/
-  | 'ValueLow'
-  /**
-   * Proposal does not exist
-   **/
-  | 'ProposalMissing'
-  /**
-   * Cannot cancel the same proposal twice
-   **/
-  | 'AlreadyCanceled'
-  /**
-   * Proposal already made
-   **/
-  | 'DuplicateProposal'
-  /**
-   * Proposal still blacklisted
-   **/
-  | 'ProposalBlacklisted'
-  /**
-   * Next external proposal not simple majority
-   **/
-  | 'NotSimpleMajority'
-  /**
-   * Invalid hash
-   **/
-  | 'InvalidHash'
-  /**
-   * No external proposal
-   **/
-  | 'NoProposal'
-  /**
-   * Identity may not veto a proposal twice
-   **/
-  | 'AlreadyVetoed'
-  /**
-   * Vote given for invalid referendum
-   **/
-  | 'ReferendumInvalid'
-  /**
-   * No proposals waiting
-   **/
-  | 'NoneWaiting'
-  /**
-   * The given account did not vote on the referendum.
-   **/
-  | 'NotVoter'
-  /**
-   * The actor has no permission to conduct the action.
-   **/
-  | 'NoPermission'
-  /**
-   * The account is already delegating.
-   **/
-  | 'AlreadyDelegating'
-  /**
-   * Too high a balance was provided that the account cannot afford.
-   **/
-  | 'InsufficientFunds'
-  /**
-   * The account is not currently delegating.
-   **/
-  | 'NotDelegating'
-  /**
-   * The account currently has votes attached to it and the operation cannot succeed until
-   * these are removed, either through `unvote` or `reap_vote`.
-   **/
-  | 'VotesExist'
-  /**
-   * The instant referendum origin is currently disallowed.
-   **/
-  | 'InstantNotAllowed'
-  /**
-   * Delegation to oneself makes no sense.
-   **/
-  | 'Nonsense'
-  /**
-   * Invalid upper bound.
-   **/
-  | 'WrongUpperBound'
-  /**
-   * Maximum number of votes reached.
-   **/
-  | 'MaxVotesReached'
-  /**
-   * Maximum number of items reached.
-   **/
-  | 'TooMany'
-  /**
-   * Voting period too low
-   **/
-  | 'VotingPeriodLow'
-  /**
-   * The preimage does not exist.
-   **/
-  | 'PreimageNotExist';
-
-export type PalletCollectiveVotes = {
-  index: number;
-  threshold: number;
-  ayes: Array<AccountId32>;
-  nays: Array<AccountId32>;
-  end: number;
-};
-
-/**
- * Custom [dispatch errors](https://docs.substrate.io/main-docs/build/events-errors/) of this pallet.
- **/
-export type PalletCollectiveError =
-  /**
-   * Account is not a member
-   **/
-  | 'NotMember'
-  /**
-   * Duplicate proposals not allowed
-   **/
-  | 'DuplicateProposal'
-  /**
-   * Proposal must exist
-   **/
-  | 'ProposalMissing'
-  /**
-   * Mismatched index
-   **/
-  | 'WrongIndex'
-  /**
-   * Duplicate vote ignored
-   **/
-  | 'DuplicateVote'
-  /**
-   * Members are already initialized!
-   **/
-  | 'AlreadyInitialized'
-  /**
-   * The close call was made too early, before the end of the voting.
-   **/
-  | 'TooEarly'
-  /**
-   * There can only be a maximum of `MaxProposals` active proposals.
-   **/
-  | 'TooManyProposals'
-  /**
-   * The given weight bound for the proposal was too low.
-   **/
-  | 'WrongProposalWeight'
-  /**
-   * The given length bound for the proposal was too low.
-   **/
-  | 'WrongProposalLength';
-
-export type PalletElectionsPhragmenSeatHolder = { who: AccountId32; stake: bigint; deposit: bigint };
-
-export type PalletElectionsPhragmenVoter = { votes: Array<AccountId32>; stake: bigint; deposit: bigint };
-
-/**
- * Custom [dispatch errors](https://docs.substrate.io/main-docs/build/events-errors/) of this pallet.
- **/
-export type PalletElectionsPhragmenError =
-  /**
-   * Cannot vote when no candidates or members exist.
-   **/
-  | 'UnableToVote'
-  /**
-   * Must vote for at least one candidate.
-   **/
-  | 'NoVotes'
-  /**
-   * Cannot vote more than candidates.
-   **/
-  | 'TooManyVotes'
-  /**
-   * Cannot vote more than maximum allowed.
-   **/
-  | 'MaximumVotesExceeded'
-  /**
-   * Cannot vote with stake less than minimum balance.
-   **/
-  | 'LowBalance'
-  /**
-   * Voter can not pay voting bond.
-   **/
-  | 'UnableToPayBond'
-  /**
-   * Must be a voter.
-   **/
-  | 'MustBeVoter'
-  /**
-   * Duplicated candidate submission.
-   **/
-  | 'DuplicatedCandidate'
-  /**
-   * Too many candidates have been created.
-   **/
-  | 'TooManyCandidates'
-  /**
-   * Member cannot re-submit candidacy.
-   **/
-  | 'MemberSubmit'
-  /**
-   * Runner cannot re-submit candidacy.
-   **/
-  | 'RunnerUpSubmit'
-  /**
-   * Candidate does not have enough funds.
-   **/
-  | 'InsufficientCandidateFunds'
-  /**
-   * Not a member.
-   **/
-  | 'NotMember'
-  /**
-   * The provided count of number of candidates is incorrect.
-   **/
-  | 'InvalidWitnessData'
-  /**
-   * The provided count of number of votes is incorrect.
-   **/
-  | 'InvalidVoteCount'
-  /**
-   * The renouncing origin presented a wrong `Renouncing` parameter.
-   **/
-  | 'InvalidRenouncing'
-  /**
-   * Prediction regarding replacement after member removal is wrong.
-   **/
-  | 'InvalidReplacement';
-
-/**
- * Custom [dispatch errors](https://docs.substrate.io/main-docs/build/events-errors/) of this pallet.
- **/
-export type PalletMembershipError =
-  /**
-   * Already a member.
-   **/
-  | 'AlreadyMember'
-  /**
-   * Not a member.
-   **/
-  | 'NotMember'
-  /**
-   * Too many members.
-   **/
-  | 'TooManyMembers';
 
 export type PalletTreasuryProposal = { proposer: AccountId32; value: bigint; beneficiary: AccountId32; bond: bigint };
 
@@ -3804,7 +5031,7 @@ export type PalletConvictionVotingVoteDelegating = {
 };
 
 /**
- * Custom [dispatch errors](https://docs.substrate.io/main-docs/build/events-errors/) of this pallet.
+ * The `Error` enum of this pallet.
  **/
 export type PalletConvictionVotingError =
   /**
@@ -3901,7 +5128,7 @@ export type PalletReferendaCurve =
   | { tag: 'Reciprocal'; value: { factor: FixedI64; xOffset: FixedI64; yOffset: FixedI64 } };
 
 /**
- * Custom [dispatch errors](https://docs.substrate.io/main-docs/build/events-errors/) of this pallet.
+ * The `Error` enum of this pallet.
  **/
 export type PalletReferendaError =
   /**
@@ -3958,7 +5185,7 @@ export type PalletReferendaError =
   | 'PreimageNotExist';
 
 /**
- * Custom [dispatch errors](https://docs.substrate.io/main-docs/build/events-errors/) of this pallet.
+ * The `Error` enum of this pallet.
  **/
 export type PalletWhitelistError =
   /**
@@ -3983,7 +5210,7 @@ export type PalletWhitelistError =
   | 'CallAlreadyWhitelisted';
 
 /**
- * Custom [dispatch errors](https://docs.substrate.io/main-docs/build/events-errors/) of this pallet.
+ * The `Error` enum of this pallet.
  **/
 export type PolkadotRuntimeCommonClaimsPalletError =
   /**
@@ -3999,8 +5226,8 @@ export type PolkadotRuntimeCommonClaimsPalletError =
    **/
   | 'SenderHasNoClaim'
   /**
-   * There's not enough in the pot to pay out some unvested amount. Generally implies a logic
-   * error.
+   * There's not enough in the pot to pay out some unvested amount. Generally implies a
+   * logic error.
    **/
   | 'PotUnderflow'
   /**
@@ -4041,7 +5268,7 @@ export type PalletVestingError =
   | 'InvalidScheduleParams';
 
 /**
- * Custom [dispatch errors](https://docs.substrate.io/main-docs/build/events-errors/) of this pallet.
+ * The `Error` enum of this pallet.
  **/
 export type PalletUtilityError =
   /**
@@ -4058,7 +5285,7 @@ export type PalletIdentityRegistration = {
 export type PalletIdentityRegistrarInfo = { account: AccountId32; fee: bigint; fields: PalletIdentityBitFlags };
 
 /**
- * Custom [dispatch errors](https://docs.substrate.io/main-docs/build/events-errors/) of this pallet.
+ * The `Error` enum of this pallet.
  **/
 export type PalletIdentityError =
   /**
@@ -4139,7 +5366,7 @@ export type PalletProxyProxyDefinition = { delegate: AccountId32; proxyType: Pol
 export type PalletProxyAnnouncement = { real: AccountId32; callHash: H256; height: number };
 
 /**
- * Custom [dispatch errors](https://docs.substrate.io/main-docs/build/events-errors/) of this pallet.
+ * The `Error` enum of this pallet.
  **/
 export type PalletProxyError =
   /**
@@ -4183,7 +5410,7 @@ export type PalletMultisigMultisig = {
 };
 
 /**
- * Custom [dispatch errors](https://docs.substrate.io/main-docs/build/events-errors/) of this pallet.
+ * The `Error` enum of this pallet.
  **/
 export type PalletMultisigError =
   /**
@@ -4261,7 +5488,7 @@ export type PalletBountiesBountyStatus =
   | { tag: 'PendingPayout'; value: { curator: AccountId32; beneficiary: AccountId32; unlockAt: number } };
 
 /**
- * Custom [dispatch errors](https://docs.substrate.io/main-docs/build/events-errors/) of this pallet.
+ * The `Error` enum of this pallet.
  **/
 export type PalletBountiesError =
   /**
@@ -4325,7 +5552,7 @@ export type PalletChildBountiesChildBountyStatus =
   | { tag: 'PendingPayout'; value: { curator: AccountId32; beneficiary: AccountId32; unlockAt: number } };
 
 /**
- * Custom [dispatch errors](https://docs.substrate.io/main-docs/build/events-errors/) of this pallet.
+ * The `Error` enum of this pallet.
  **/
 export type PalletChildBountiesError =
   /**
@@ -4340,45 +5567,6 @@ export type PalletChildBountiesError =
    * Number of child bounties exceeds limit `MaxActiveChildBountyCount`.
    **/
   | 'TooManyChildBounties';
-
-export type PalletTipsOpenTip = {
-  reason: H256;
-  who: AccountId32;
-  finder: AccountId32;
-  deposit: bigint;
-  closes?: number | undefined;
-  tips: Array<[AccountId32, bigint]>;
-  findersFee: boolean;
-};
-
-/**
- * Custom [dispatch errors](https://docs.substrate.io/main-docs/build/events-errors/) of this pallet.
- **/
-export type PalletTipsError =
-  /**
-   * The reason given is just too big.
-   **/
-  | 'ReasonTooBig'
-  /**
-   * The tip was already found/started.
-   **/
-  | 'AlreadyKnown'
-  /**
-   * The tip hash is unknown.
-   **/
-  | 'UnknownTip'
-  /**
-   * The account attempting to retract the tip is not the finder of the tip.
-   **/
-  | 'NotFinder'
-  /**
-   * The tip cannot be claimed/closed because there are not enough tippers yet.
-   **/
-  | 'StillOpen'
-  /**
-   * The tip cannot be claimed/closed because it's still in the countdown period.
-   **/
-  | 'Premature';
 
 export type PalletElectionProviderMultiPhaseReadySolution = {
   supports: Array<[AccountId32, SpNposElectionsSupport]>;
@@ -4470,9 +5658,13 @@ export type PalletBagsListListNode = {
 export type PalletBagsListListBag = { head?: AccountId32 | undefined; tail?: AccountId32 | undefined };
 
 /**
- * Custom [dispatch errors](https://docs.substrate.io/main-docs/build/events-errors/) of this pallet.
+ * The `Error` enum of this pallet.
  **/
-export type PalletBagsListError = { tag: 'List'; value: PalletBagsListListListError };
+export type PalletBagsListError =
+  /**
+   * A error in the list interface implementation.
+   **/
+  { tag: 'List'; value: PalletBagsListListListError };
 
 export type PalletBagsListListListError = 'Duplicate' | 'NotHeavier' | 'NotInSameBag' | 'NodeNotFound';
 
@@ -4521,38 +5713,140 @@ export type PalletNominationPoolsSubPools = {
 export type PalletNominationPoolsUnbondPool = { points: bigint; balance: bigint };
 
 /**
- * Custom [dispatch errors](https://docs.substrate.io/main-docs/build/events-errors/) of this pallet.
+ * The `Error` enum of this pallet.
  **/
 export type PalletNominationPoolsError =
+  /**
+   * A (bonded) pool id does not exist.
+   **/
   | { tag: 'PoolNotFound' }
+  /**
+   * An account is not a member.
+   **/
   | { tag: 'PoolMemberNotFound' }
+  /**
+   * A reward pool does not exist. In all cases this is a system logic error.
+   **/
   | { tag: 'RewardPoolNotFound' }
+  /**
+   * A sub pool does not exist.
+   **/
   | { tag: 'SubPoolsNotFound' }
+  /**
+   * An account is already delegating in another pool. An account may only belong to one
+   * pool at a time.
+   **/
   | { tag: 'AccountBelongsToOtherPool' }
+  /**
+   * The member is fully unbonded (and thus cannot access the bonded and reward pool
+   * anymore to, for example, collect rewards).
+   **/
   | { tag: 'FullyUnbonding' }
+  /**
+   * The member cannot unbond further chunks due to reaching the limit.
+   **/
   | { tag: 'MaxUnbondingLimit' }
+  /**
+   * None of the funds can be withdrawn yet because the bonding duration has not passed.
+   **/
   | { tag: 'CannotWithdrawAny' }
+  /**
+   * The amount does not meet the minimum bond to either join or create a pool.
+   *
+   * The depositor can never unbond to a value less than
+   * `Pallet::depositor_min_bond`. The caller does not have nominating
+   * permissions for the pool. Members can never unbond to a value below `MinJoinBond`.
+   **/
   | { tag: 'MinimumBondNotMet' }
+  /**
+   * The transaction could not be executed due to overflow risk for the pool.
+   **/
   | { tag: 'OverflowRisk' }
+  /**
+   * A pool must be in [`PoolState::Destroying`] in order for the depositor to unbond or for
+   * other members to be permissionlessly unbonded.
+   **/
   | { tag: 'NotDestroying' }
+  /**
+   * The caller does not have nominating permissions for the pool.
+   **/
   | { tag: 'NotNominator' }
+  /**
+   * Either a) the caller cannot make a valid kick or b) the pool is not destroying.
+   **/
   | { tag: 'NotKickerOrDestroying' }
+  /**
+   * The pool is not open to join
+   **/
   | { tag: 'NotOpen' }
+  /**
+   * The system is maxed out on pools.
+   **/
   | { tag: 'MaxPools' }
+  /**
+   * Too many members in the pool or system.
+   **/
   | { tag: 'MaxPoolMembers' }
+  /**
+   * The pools state cannot be changed.
+   **/
   | { tag: 'CanNotChangeState' }
+  /**
+   * The caller does not have adequate permissions.
+   **/
   | { tag: 'DoesNotHavePermission' }
+  /**
+   * Metadata exceeds [`Config::MaxMetadataLen`]
+   **/
   | { tag: 'MetadataExceedsMaxLen' }
+  /**
+   * Some error occurred that should never happen. This should be reported to the
+   * maintainers.
+   **/
   | { tag: 'Defensive'; value: PalletNominationPoolsDefensiveError }
+  /**
+   * Partial unbonding now allowed permissionlessly.
+   **/
   | { tag: 'PartialUnbondNotAllowedPermissionlessly' }
+  /**
+   * The pool's max commission cannot be set higher than the existing value.
+   **/
   | { tag: 'MaxCommissionRestricted' }
+  /**
+   * The supplied commission exceeds the max allowed commission.
+   **/
   | { tag: 'CommissionExceedsMaximum' }
+  /**
+   * The supplied commission exceeds global maximum commission.
+   **/
+  | { tag: 'CommissionExceedsGlobalMaximum' }
+  /**
+   * Not enough blocks have surpassed since the last commission update.
+   **/
   | { tag: 'CommissionChangeThrottled' }
+  /**
+   * The submitted changes to commission change rate are not allowed.
+   **/
   | { tag: 'CommissionChangeRateNotAllowed' }
+  /**
+   * There is no pending commission to claim.
+   **/
   | { tag: 'NoPendingCommission' }
+  /**
+   * No commission current has been set.
+   **/
   | { tag: 'NoCommissionCurrentSet' }
+  /**
+   * Pool id currently in use.
+   **/
   | { tag: 'PoolIdInUse' }
+  /**
+   * Pool id provided is not correct/usable.
+   **/
   | { tag: 'InvalidPoolId' }
+  /**
+   * Bonding extra is restricted to the exact pending reward amount.
+   **/
   | { tag: 'BondExtraRestricted' };
 
 export type PalletNominationPoolsDefensiveError =
@@ -4565,7 +5859,7 @@ export type PalletNominationPoolsDefensiveError =
 export type PalletFastUnstakeUnstakeRequest = { stashes: Array<[AccountId32, bigint]>; checked: Array<number> };
 
 /**
- * Custom [dispatch errors](https://docs.substrate.io/main-docs/build/events-errors/) of this pallet.
+ * The `Error` enum of this pallet.
  **/
 export type PalletFastUnstakeError =
   /**
@@ -4609,21 +5903,23 @@ export type PolkadotRuntimeParachainsConfigurationHostConfiguration = {
   maxPovSize: number;
   maxDownwardMessageSize: number;
   hrmpMaxParachainOutboundChannels: number;
-  hrmpMaxParathreadOutboundChannels: number;
   hrmpSenderDeposit: bigint;
   hrmpRecipientDeposit: bigint;
   hrmpChannelMaxCapacity: number;
   hrmpChannelMaxTotalSize: number;
   hrmpMaxParachainInboundChannels: number;
-  hrmpMaxParathreadInboundChannels: number;
   hrmpChannelMaxMessageSize: number;
-  executorParams: PolkadotPrimitivesV4ExecutorParams;
+  executorParams: PolkadotPrimitivesV5ExecutorParams;
   codeRetentionPeriod: number;
-  parathreadCores: number;
-  parathreadRetries: number;
+  onDemandCores: number;
+  onDemandRetries: number;
+  onDemandQueueMaxSize: number;
+  onDemandTargetQueueUtilization: Perbill;
+  onDemandFeeVariability: Perbill;
+  onDemandBaseFee: bigint;
+  onDemandTtl: number;
   groupRotationFrequency: number;
-  chainAvailabilityPeriod: number;
-  threadAvailabilityPeriod: number;
+  parasAvailabilityPeriod: number;
   schedulingLookahead: number;
   maxValidatorsPerCore?: number | undefined;
   maxValidators?: number | undefined;
@@ -4634,13 +5930,13 @@ export type PolkadotRuntimeParachainsConfigurationHostConfiguration = {
   zerothDelayTrancheWidth: number;
   neededApprovals: number;
   relayVrfModuloSamples: number;
-  pvfCheckingEnabled: boolean;
   pvfVotingTtl: number;
   minimumValidationUpgradeDelay: number;
+  minimumBackingVotes: number;
 };
 
 /**
- * Custom [dispatch errors](https://docs.substrate.io/main-docs/build/events-errors/) of this pallet.
+ * The `Error` enum of this pallet.
  **/
 export type PolkadotRuntimeParachainsConfigurationPalletError =
   /**
@@ -4648,24 +5944,29 @@ export type PolkadotRuntimeParachainsConfigurationPalletError =
    **/
   'InvalidNewValue';
 
+export type PolkadotRuntimeParachainsSharedAllowedRelayParentsTracker = {
+  buffer: Array<[H256, H256]>;
+  latestNumber: number;
+};
+
 export type PolkadotRuntimeParachainsInclusionAvailabilityBitfieldRecord = {
-  bitfield: PolkadotPrimitivesV4AvailabilityBitfield;
+  bitfield: PolkadotPrimitivesV5AvailabilityBitfield;
   submittedAt: number;
 };
 
 export type PolkadotRuntimeParachainsInclusionCandidatePendingAvailability = {
-  core: PolkadotPrimitivesV4CoreIndex;
+  core: PolkadotPrimitivesV5CoreIndex;
   hash: PolkadotCorePrimitivesCandidateHash;
-  descriptor: PolkadotPrimitivesV4CandidateDescriptor;
+  descriptor: PolkadotPrimitivesV5CandidateDescriptor;
   availabilityVotes: BitSequence;
   backers: BitSequence;
   relayParentNumber: number;
   backedInNumber: number;
-  backingGroup: PolkadotPrimitivesV4GroupIndex;
+  backingGroup: PolkadotPrimitivesV5GroupIndex;
 };
 
 /**
- * Custom [dispatch errors](https://docs.substrate.io/main-docs/build/events-errors/) of this pallet.
+ * The `Error` enum of this pallet.
  **/
 export type PolkadotRuntimeParachainsInclusionPalletError =
   /**
@@ -4713,10 +6014,6 @@ export type PolkadotRuntimeParachainsInclusionPalletError =
    **/
   | 'CandidateScheduledBeforeParaFree'
   /**
-   * Candidate included with the wrong collator.
-   **/
-  | 'WrongCollator'
-  /**
    * Scheduled cores out of order.
    **/
   | 'ScheduledOutOfOrder'
@@ -4733,9 +6030,15 @@ export type PolkadotRuntimeParachainsInclusionPalletError =
    **/
   | 'NewCodeTooLarge'
   /**
-   * Candidate not in parent context.
+   * The candidate's relay-parent was not allowed. Either it was
+   * not recent enough or it didn't advance based on the last parachain block.
    **/
-  | 'CandidateNotInParentContext'
+  | 'DisallowedRelayParent'
+  /**
+   * Failed to compute group index for the core: either it's out of bounds
+   * or the relay parent doesn't belong to the current session.
+   **/
+  | 'InvalidAssignment'
   /**
    * Invalid group index in core assignment.
    **/
@@ -4777,8 +6080,8 @@ export type PolkadotRuntimeParachainsInclusionPalletError =
    **/
   | 'InvalidValidationCodeHash'
   /**
-   * The `para_head` hash in the candidate descriptor doesn't match the hash of the actual para head in the
-   * commitments.
+   * The `para_head` hash in the candidate descriptor doesn't match the hash of the actual
+   * para head in the commitments.
    **/
   | 'ParaHeadMismatch'
   /**
@@ -4788,19 +6091,19 @@ export type PolkadotRuntimeParachainsInclusionPalletError =
    **/
   | 'BitfieldReferencesFreedCore';
 
-export type PolkadotPrimitivesV4ScrapedOnChainVotes = {
+export type PolkadotPrimitivesV5ScrapedOnChainVotes = {
   session: number;
   backingValidatorsPerCandidate: Array<
     [
-      PolkadotPrimitivesV4CandidateReceipt,
-      Array<[PolkadotPrimitivesV4ValidatorIndex, PolkadotPrimitivesV4ValidityAttestation]>,
+      PolkadotPrimitivesV5CandidateReceipt,
+      Array<[PolkadotPrimitivesV5ValidatorIndex, PolkadotPrimitivesV5ValidityAttestation]>,
     ]
   >;
-  disputes: Array<PolkadotPrimitivesV4DisputeStatementSet>;
+  disputes: Array<PolkadotPrimitivesV5DisputeStatementSet>;
 };
 
 /**
- * Custom [dispatch errors](https://docs.substrate.io/main-docs/build/events-errors/) of this pallet.
+ * The `Error` enum of this pallet.
  **/
 export type PolkadotRuntimeParachainsParasInherentPalletError =
   /**
@@ -4829,37 +6132,17 @@ export type PolkadotRuntimeParachainsParasInherentPalletError =
    **/
   | 'DisputeInvalid';
 
-export type PolkadotRuntimeParachainsSchedulerParathreadClaimQueue = {
-  queue: Array<PolkadotRuntimeParachainsSchedulerQueuedParathread>;
-  nextCoreOffset: number;
+export type PolkadotPrimitivesV5CoreOccupied =
+  | { tag: 'Free' }
+  | { tag: 'Paras'; value: PolkadotPrimitivesV5ParasEntry };
+
+export type PolkadotPrimitivesV5ParasEntry = {
+  assignment: PolkadotPrimitivesV5Assignment;
+  availabilityTimeouts: number;
+  ttl: number;
 };
 
-export type PolkadotRuntimeParachainsSchedulerQueuedParathread = {
-  claim: PolkadotPrimitivesV4ParathreadEntry;
-  coreOffset: number;
-};
-
-export type PolkadotPrimitivesV4ParathreadEntry = { claim: PolkadotPrimitivesV4ParathreadClaim; retries: number };
-
-export type PolkadotPrimitivesV4ParathreadClaim = [
-  PolkadotParachainPrimitivesId,
-  PolkadotPrimitivesV4CollatorAppPublic,
-];
-
-export type PolkadotPrimitivesV4CoreOccupied =
-  | { tag: 'Parathread'; value: PolkadotPrimitivesV4ParathreadEntry }
-  | { tag: 'Parachain' };
-
-export type PolkadotRuntimeParachainsSchedulerCoreAssignment = {
-  core: PolkadotPrimitivesV4CoreIndex;
-  paraId: PolkadotParachainPrimitivesId;
-  kind: PolkadotRuntimeParachainsSchedulerAssignmentKind;
-  groupIdx: PolkadotPrimitivesV4GroupIndex;
-};
-
-export type PolkadotRuntimeParachainsSchedulerAssignmentKind =
-  | { tag: 'Parachain' }
-  | { tag: 'Parathread'; value: [PolkadotPrimitivesV4CollatorAppPublic, number] };
+export type PolkadotPrimitivesV5Assignment = { paraId: PolkadotParachainPrimitivesPrimitivesId };
 
 export type PolkadotRuntimeParachainsParasPvfCheckActiveVoteState = {
   votesAccept: BitSequence;
@@ -4870,8 +6153,8 @@ export type PolkadotRuntimeParachainsParasPvfCheckActiveVoteState = {
 };
 
 export type PolkadotRuntimeParachainsParasPvfCheckCause =
-  | { tag: 'Onboarding'; value: PolkadotParachainPrimitivesId }
-  | { tag: 'Upgrade'; value: { id: PolkadotParachainPrimitivesId; relayParentNumber: number } };
+  | { tag: 'Onboarding'; value: PolkadotParachainPrimitivesPrimitivesId }
+  | { tag: 'Upgrade'; value: { id: PolkadotParachainPrimitivesPrimitivesId; includedAt: number } };
 
 export type PolkadotRuntimeParachainsParasParaLifecycle =
   | 'Onboarding'
@@ -4889,18 +6172,18 @@ export type PolkadotRuntimeParachainsParasParaPastCodeMeta = {
 
 export type PolkadotRuntimeParachainsParasReplacementTimes = { expectedAt: number; activatedAt: number };
 
-export type PolkadotPrimitivesV4UpgradeGoAhead = 'Abort' | 'GoAhead';
+export type PolkadotPrimitivesV5UpgradeGoAhead = 'Abort' | 'GoAhead';
 
-export type PolkadotPrimitivesV4UpgradeRestriction = 'Present';
+export type PolkadotPrimitivesV5UpgradeRestriction = 'Present';
 
 export type PolkadotRuntimeParachainsParasParaGenesisArgs = {
-  genesisHead: PolkadotParachainPrimitivesHeadData;
-  validationCode: PolkadotParachainPrimitivesValidationCode;
+  genesisHead: PolkadotParachainPrimitivesPrimitivesHeadData;
+  validationCode: PolkadotParachainPrimitivesPrimitivesValidationCode;
   paraKind: boolean;
 };
 
 /**
- * Custom [dispatch errors](https://docs.substrate.io/main-docs/build/events-errors/) of this pallet.
+ * The `Error` enum of this pallet.
  **/
 export type PolkadotRuntimeParachainsParasPalletError =
   /**
@@ -4916,11 +6199,11 @@ export type PolkadotRuntimeParachainsParasPalletError =
    **/
   | 'CannotOffboard'
   /**
-   * Para cannot be upgraded to a parachain.
+   * Para cannot be upgraded to a lease holding parachain.
    **/
   | 'CannotUpgrade'
   /**
-   * Para cannot be downgraded to a parathread.
+   * Para cannot be downgraded to an on-demand parachain.
    **/
   | 'CannotDowngrade'
   /**
@@ -4953,8 +6236,8 @@ export type PolkadotRuntimeParachainsParasPalletError =
   | 'CannotUpgradeCode';
 
 export type PolkadotRuntimeParachainsInitializerBufferedSessionChange = {
-  validators: Array<PolkadotPrimitivesV4ValidatorAppPublic>;
-  queued: Array<PolkadotPrimitivesV4ValidatorAppPublic>;
+  validators: Array<PolkadotPrimitivesV5ValidatorAppPublic>;
+  queued: Array<PolkadotPrimitivesV5ValidatorAppPublic>;
   sessionIndex: number;
 };
 
@@ -4983,7 +6266,7 @@ export type PolkadotRuntimeParachainsHrmpHrmpChannel = {
 export type PolkadotCorePrimitivesInboundHrmpMessage = { sentAt: number; data: Bytes };
 
 /**
- * Custom [dispatch errors](https://docs.substrate.io/main-docs/build/events-errors/) of this pallet.
+ * The `Error` enum of this pallet.
  **/
 export type PolkadotRuntimeParachainsHrmpPalletError =
   /**
@@ -5063,14 +6346,14 @@ export type PolkadotRuntimeParachainsHrmpPalletError =
    **/
   | 'WrongWitness';
 
-export type PolkadotPrimitivesV4SessionInfo = {
-  activeValidatorIndices: Array<PolkadotPrimitivesV4ValidatorIndex>;
+export type PolkadotPrimitivesV5SessionInfo = {
+  activeValidatorIndices: Array<PolkadotPrimitivesV5ValidatorIndex>;
   randomSeed: FixedBytes<32>;
   disputePeriod: number;
-  validators: PolkadotPrimitivesV4IndexedVec;
+  validators: PolkadotPrimitivesV5IndexedVec;
   discoveryKeys: Array<SpAuthorityDiscoveryAppPublic>;
-  assignmentKeys: Array<PolkadotPrimitivesV4AssignmentAppPublic>;
-  validatorGroups: PolkadotPrimitivesV4IndexedVecGroupIndex;
+  assignmentKeys: Array<PolkadotPrimitivesV5AssignmentAppPublic>;
+  validatorGroups: PolkadotPrimitivesV5IndexedVecGroupIndex;
   nCores: number;
   zerothDelayTrancheWidth: number;
   relayVrfModuloSamples: number;
@@ -5079,11 +6362,11 @@ export type PolkadotPrimitivesV4SessionInfo = {
   neededApprovals: number;
 };
 
-export type PolkadotPrimitivesV4IndexedVec = Array<PolkadotPrimitivesV4ValidatorAppPublic>;
+export type PolkadotPrimitivesV5IndexedVec = Array<PolkadotPrimitivesV5ValidatorAppPublic>;
 
-export type PolkadotPrimitivesV4IndexedVecGroupIndex = Array<Array<PolkadotPrimitivesV4ValidatorIndex>>;
+export type PolkadotPrimitivesV5IndexedVecGroupIndex = Array<Array<PolkadotPrimitivesV5ValidatorIndex>>;
 
-export type PolkadotPrimitivesV4DisputeState = {
+export type PolkadotPrimitivesV5DisputeState = {
   validatorsFor: BitSequence;
   validatorsAgainst: BitSequence;
   start: number;
@@ -5091,7 +6374,7 @@ export type PolkadotPrimitivesV4DisputeState = {
 };
 
 /**
- * Custom [dispatch errors](https://docs.substrate.io/main-docs/build/events-errors/) of this pallet.
+ * The `Error` enum of this pallet.
  **/
 export type PolkadotRuntimeParachainsDisputesPalletError =
   /**
@@ -5131,13 +6414,13 @@ export type PolkadotRuntimeParachainsDisputesPalletError =
    **/
   | 'UnconfirmedDispute';
 
-export type PolkadotRuntimeParachainsDisputesSlashingPendingSlashes = {
-  keys: Array<[PolkadotPrimitivesV4ValidatorIndex, PolkadotPrimitivesV4ValidatorAppPublic]>;
-  kind: PolkadotRuntimeParachainsDisputesSlashingSlashingOffenceKind;
+export type PolkadotPrimitivesV5SlashingPendingSlashes = {
+  keys: Array<[PolkadotPrimitivesV5ValidatorIndex, PolkadotPrimitivesV5ValidatorAppPublic]>;
+  kind: PolkadotPrimitivesV5SlashingSlashingOffenceKind;
 };
 
 /**
- * Custom [dispatch errors](https://docs.substrate.io/main-docs/build/events-errors/) of this pallet.
+ * The `Error` enum of this pallet.
  **/
 export type PolkadotRuntimeParachainsDisputesSlashingPalletError =
   /**
@@ -5166,10 +6449,14 @@ export type PolkadotRuntimeParachainsDisputesSlashingPalletError =
    **/
   | 'DuplicateSlashingReport';
 
-export type PolkadotRuntimeCommonParasRegistrarParaInfo = { manager: AccountId32; deposit: bigint; locked: boolean };
+export type PolkadotRuntimeCommonParasRegistrarParaInfo = {
+  manager: AccountId32;
+  deposit: bigint;
+  locked?: boolean | undefined;
+};
 
 /**
- * Custom [dispatch errors](https://docs.substrate.io/main-docs/build/events-errors/) of this pallet.
+ * The `Error` enum of this pallet.
  **/
 export type PolkadotRuntimeCommonParasRegistrarPalletError =
   /**
@@ -5197,7 +6484,7 @@ export type PolkadotRuntimeCommonParasRegistrarPalletError =
    **/
   | 'NotParachain'
   /**
-   * Para is not a Parathread.
+   * Para is not a Parathread (on-demand parachain).
    **/
   | 'NotParathread'
   /**
@@ -5205,15 +6492,16 @@ export type PolkadotRuntimeCommonParasRegistrarPalletError =
    **/
   | 'CannotDeregister'
   /**
-   * Cannot schedule downgrade of parachain to parathread
+   * Cannot schedule downgrade of lease holding parachain to on-demand parachain
    **/
   | 'CannotDowngrade'
   /**
-   * Cannot schedule upgrade of parathread to parachain
+   * Cannot schedule upgrade of on-demand parachain to lease holding parachain
    **/
   | 'CannotUpgrade'
   /**
-   * Para is locked from manipulation by the manager. Must use parachain or relay chain governance.
+   * Para is locked from manipulation by the manager. Must use parachain or relay chain
+   * governance.
    **/
   | 'ParaLocked'
   /**
@@ -5225,13 +6513,13 @@ export type PolkadotRuntimeCommonParasRegistrarPalletError =
    **/
   | 'EmptyCode'
   /**
-   * Cannot perform a parachain slot / lifecycle swap. Check that the state of both paras are
-   * correct for the swap to work.
+   * Cannot perform a parachain slot / lifecycle swap. Check that the state of both paras
+   * are correct for the swap to work.
    **/
   | 'CannotSwap';
 
 /**
- * Custom [dispatch errors](https://docs.substrate.io/main-docs/build/events-errors/) of this pallet.
+ * The `Error` enum of this pallet.
  **/
 export type PolkadotRuntimeCommonSlotsPalletError =
   /**
@@ -5244,7 +6532,7 @@ export type PolkadotRuntimeCommonSlotsPalletError =
   | 'LeaseError';
 
 /**
- * Custom [dispatch errors](https://docs.substrate.io/main-docs/build/events-errors/) of this pallet.
+ * The `Error` enum of this pallet.
  **/
 export type PolkadotRuntimeCommonAuctionsPalletError =
   /**
@@ -5295,7 +6583,7 @@ export type PolkadotRuntimeCommonCrowdloanLastContribution =
   | { tag: 'Ending'; value: number };
 
 /**
- * Custom [dispatch errors](https://docs.substrate.io/main-docs/build/events-errors/) of this pallet.
+ * The `Error` enum of this pallet.
  **/
 export type PolkadotRuntimeCommonCrowdloanPalletError =
   /**
@@ -5367,7 +6655,8 @@ export type PolkadotRuntimeCommonCrowdloanPalletError =
    **/
   | 'NoContributions'
   /**
-   * The crowdloan is not ready to dissolve. Potentially still has a slot or in retirement period.
+   * The crowdloan is not ready to dissolve. Potentially still has a slot or in retirement
+   * period.
    **/
   | 'NotReadyToDissolve'
   /**
@@ -5422,7 +6711,7 @@ export type PalletXcmRemoteLockedFungibleRecord = {
 };
 
 /**
- * Custom [dispatch errors](https://docs.substrate.io/main-docs/build/events-errors/) of this pallet.
+ * The `Error` enum of this pallet.
  **/
 export type PalletXcmError =
   /**
@@ -5431,8 +6720,8 @@ export type PalletXcmError =
    **/
   | 'Unreachable'
   /**
-   * There was some other issue (i.e. not to do with routing) in sending the message. Perhaps
-   * a lack of space for buffering the message.
+   * There was some other issue (i.e. not to do with routing) in sending the message.
+   * Perhaps a lack of space for buffering the message.
    **/
   | 'SendFailure'
   /**
@@ -5533,7 +6822,7 @@ export type PalletMessageQueuePage = {
 };
 
 /**
- * Custom [dispatch errors](https://docs.substrate.io/main-docs/build/events-errors/) of this pallet.
+ * The `Error` enum of this pallet.
  **/
 export type PalletMessageQueueError =
   /**
@@ -5567,7 +6856,13 @@ export type PalletMessageQueueError =
    * Such errors are expected, but not guaranteed, to resolve themselves eventually through
    * retrying.
    **/
-  | 'TemporarilyUnprocessable';
+  | 'TemporarilyUnprocessable'
+  /**
+   * The queue is paused and no message can be executed from it.
+   *
+   * This can change at any time and may resolve in the future by re-trying.
+   **/
+  | 'QueuePaused';
 
 export type SpRuntimeUncheckedExtrinsic = Bytes;
 

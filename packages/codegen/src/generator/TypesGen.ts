@@ -34,7 +34,7 @@ const SKIP_TYPES = [
 // TODO docs: include ref
 const PATH_RM_INDEX_1 = ['generic', 'misc', 'pallet', 'traits', 'types'];
 
-export const BASIC_KNOWN_TYPES = ['BitSequence', 'Bytes', 'FixedBytes', 'FixedArray'];
+export const BASIC_KNOWN_TYPES = ['BitSequence', 'Bytes', 'FixedBytes', 'FixedArray', 'ResultPayload'];
 const WRAPPER_TYPE_REGEX = /^(\w+)(<.*>)$/g;
 
 export class TypesGen {
@@ -139,7 +139,7 @@ export class TypesGen {
             return `[${fields.map((f) => this.generateType(f.typeId, nestedLevel + 1, typeOut)).join(', ')}]`;
           }
         } else {
-          return this.#generateObjectType(fields, nestedLevel + 1, typeOut);
+          return this.generateObjectType(fields, nestedLevel + 1, typeOut);
         }
       }
 
@@ -157,7 +157,7 @@ export class TypesGen {
             const OkType = this.generateType(ok.fields[0].typeId, nestedLevel + 1, typeOut);
             const ErrType = this.generateType(err.fields[0].typeId, nestedLevel + 1, typeOut);
 
-            return `${OkType} | ${ErrType}`;
+            return `ResultPayload<${OkType}, ${ErrType}>`;
           }
         }
 
@@ -166,11 +166,11 @@ export class TypesGen {
         } else if (members.every((x) => x.fields.length === 0)) {
           return members.map(({ name, docs }) => `${commentBlock(docs)}'${name}'`).join(' | ');
         } else {
-          const membersType: Record<string, string | null> = {};
-          for (const { fields, name } of members) {
+          const membersType: [key: string, value: string | null, docs: string[]][] = [];
+          for (const { fields, name, docs } of members) {
             const keyName = stringPascalCase(name);
             if (fields.length === 0) {
-              membersType[keyName] = null;
+              membersType.push([keyName, null, docs]);
             } else if (fields[0]!.name === undefined) {
               const valueType =
                 fields.length === 1
@@ -181,18 +181,21 @@ export class TypesGen {
                           `${commentBlock(docs)}${this.generateType(typeId, nestedLevel + 1, typeOut)}`,
                       )
                       .join(', ')}]`;
-              membersType[keyName] = valueType;
+              membersType.push([keyName, valueType, docs]);
             } else {
-              membersType[keyName] = this.#generateObjectType(fields, nestedLevel + 1, typeOut);
+              membersType.push([keyName, this.generateObjectType(fields, nestedLevel + 1, typeOut), docs]);
             }
           }
 
-          return Object.entries(membersType)
-            .map(([keyName, valueType]) => ({
-              tag: `tag: '${keyName}'`,
-              value: valueType ? `, value${this.#isOptionalType(valueType) ? '?' : ''}: ${valueType} ` : '',
+          const { tagKey, valueKey } = this.registry.portableRegistry!.getEnumOptions(path);
+
+          return membersType
+            .map(([keyName, valueType, docs]) => ({
+              tag: `${tagKey}: '${keyName}'`,
+              value: valueType ? `, ${valueKey}${this.#isOptionalType(valueType) ? '?' : ''}: ${valueType} ` : '',
+              docs,
             }))
-            .map(({ tag, value }) => `{ ${tag}${value} }`)
+            .map(({ tag, value, docs }) => `${commentBlock(docs)}{ ${tag}${value} }`)
             .join(' | ');
         }
       }
@@ -228,7 +231,7 @@ export class TypesGen {
     }
   }
 
-  #generateObjectType(fields: Field[], nestedLevel = 0, typeOut = false) {
+  generateObjectType(fields: Field[], nestedLevel = 0, typeOut = false) {
     const props = fields.map(({ typeId, name, docs }) => {
       const type = this.generateType(typeId, nestedLevel + 1, typeOut);
       return {

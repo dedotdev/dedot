@@ -33,6 +33,7 @@ import type {
   PalletBalancesBalanceLock,
   PalletBalancesReserveData,
   PalletBalancesIdAmount,
+  PalletBalancesIdAmount002,
   PalletTransactionPaymentReleases,
   PalletStakingStakingLedger,
   PalletStakingRewardDestination,
@@ -51,16 +52,6 @@ import type {
   PalletGrandpaStoredState,
   PalletGrandpaStoredPendingChange,
   PalletImOnlineSr25519AppSr25519Public,
-  PalletImOnlineBoundedOpaqueNetworkState,
-  FrameSupportPreimagesBounded,
-  PalletDemocracyReferendumInfo,
-  PalletDemocracyVoteVoting,
-  PalletDemocracyVoteThreshold,
-  PalletDemocracyMetadataOwner,
-  PolkadotRuntimeRuntimeCall,
-  PalletCollectiveVotes,
-  PalletElectionsPhragmenSeatHolder,
-  PalletElectionsPhragmenVoter,
   PalletTreasuryProposal,
   PalletConvictionVotingVoteVoting,
   PalletReferendaReferendumInfo,
@@ -74,7 +65,6 @@ import type {
   PalletMultisigMultisig,
   PalletBountiesBounty,
   PalletChildBountiesChildBounty,
-  PalletTipsOpenTip,
   PalletElectionProviderMultiPhasePhase,
   PalletElectionProviderMultiPhaseReadySolution,
   PalletElectionProviderMultiPhaseRoundSnapshot,
@@ -90,37 +80,38 @@ import type {
   PalletNominationPoolsClaimPermission,
   PalletFastUnstakeUnstakeRequest,
   PolkadotRuntimeParachainsConfigurationHostConfiguration,
-  PolkadotPrimitivesV4ValidatorIndex,
-  PolkadotPrimitivesV4ValidatorAppPublic,
+  PolkadotPrimitivesV5ValidatorIndex,
+  PolkadotPrimitivesV5ValidatorAppPublic,
+  PolkadotRuntimeParachainsSharedAllowedRelayParentsTracker,
   PolkadotRuntimeParachainsInclusionAvailabilityBitfieldRecord,
   PolkadotRuntimeParachainsInclusionCandidatePendingAvailability,
-  PolkadotParachainPrimitivesId,
-  PolkadotPrimitivesV4CandidateCommitments,
-  PolkadotPrimitivesV4ScrapedOnChainVotes,
-  PolkadotRuntimeParachainsSchedulerParathreadClaimQueue,
-  PolkadotPrimitivesV4CoreOccupied,
-  PolkadotRuntimeParachainsSchedulerCoreAssignment,
+  PolkadotParachainPrimitivesPrimitivesId,
+  PolkadotPrimitivesV5CandidateCommitments,
+  PolkadotPrimitivesV5ScrapedOnChainVotes,
+  PolkadotPrimitivesV5CoreOccupied,
+  PolkadotPrimitivesV5CoreIndex,
+  PolkadotPrimitivesV5ParasEntry,
   PolkadotRuntimeParachainsParasPvfCheckActiveVoteState,
-  PolkadotParachainPrimitivesValidationCodeHash,
+  PolkadotParachainPrimitivesPrimitivesValidationCodeHash,
   PolkadotRuntimeParachainsParasParaLifecycle,
-  PolkadotParachainPrimitivesHeadData,
+  PolkadotParachainPrimitivesPrimitivesHeadData,
   PolkadotRuntimeParachainsParasParaPastCodeMeta,
-  PolkadotPrimitivesV4UpgradeGoAhead,
-  PolkadotPrimitivesV4UpgradeRestriction,
+  PolkadotPrimitivesV5UpgradeGoAhead,
+  PolkadotPrimitivesV5UpgradeRestriction,
   PolkadotRuntimeParachainsParasParaGenesisArgs,
-  PolkadotParachainPrimitivesValidationCode,
+  PolkadotParachainPrimitivesPrimitivesValidationCode,
   PolkadotRuntimeParachainsInitializerBufferedSessionChange,
   PolkadotCorePrimitivesInboundDownwardMessage,
   PolkadotRuntimeParachainsHrmpHrmpOpenChannelRequest,
-  PolkadotParachainPrimitivesHrmpChannelId,
+  PolkadotParachainPrimitivesPrimitivesHrmpChannelId,
   PolkadotRuntimeParachainsHrmpHrmpChannel,
   PolkadotCorePrimitivesInboundHrmpMessage,
-  PolkadotPrimitivesV4AssignmentAppPublic,
-  PolkadotPrimitivesV4SessionInfo,
-  PolkadotPrimitivesV4ExecutorParams,
-  PolkadotPrimitivesV4DisputeState,
+  PolkadotPrimitivesV5AssignmentAppPublic,
+  PolkadotPrimitivesV5SessionInfo,
+  PolkadotPrimitivesV5ExecutorParams,
+  PolkadotPrimitivesV5DisputeState,
   PolkadotCorePrimitivesCandidateHash,
-  PolkadotRuntimeParachainsDisputesSlashingPendingSlashes,
+  PolkadotPrimitivesV5SlashingPendingSlashes,
   PolkadotRuntimeCommonParasRegistrarParaInfo,
   PolkadotRuntimeCommonCrowdloanFundInfo,
   PalletXcmQueryStatus,
@@ -216,7 +207,7 @@ export interface ChainStorage extends GenericChainStorage {
      * allows light-clients to leverage the changes trie storage tracking mechanism and
      * in case of changes fetch the list of events of interest.
      *
-     * The value has the type `(T::BlockNumber, EventIndex)` because if we used only just
+     * The value has the type `(BlockNumberFor<T>, EventIndex)` because if we used only just
      * the `EventIndex` then in case if the topic has the same contents on the next block
      * no notification will be triggered thus the event might be lost.
      **/
@@ -504,8 +495,8 @@ export interface ChainStorage extends GenericChainStorage {
     /**
      * Freeze locks on account balances.
      **/
-    freezes(arg: AccountId32Like): Promise<Array<PalletBalancesIdAmount>>;
-    freezes(arg: AccountId32Like, callback: Callback<Array<PalletBalancesIdAmount>>): Promise<Unsub>;
+    freezes(arg: AccountId32Like): Promise<Array<PalletBalancesIdAmount002>>;
+    freezes(arg: AccountId32Like, callback: Callback<Array<PalletBalancesIdAmount002>>): Promise<Unsub>;
   };
   transactionPayment: {
     nextFeeMultiplier(): Promise<FixedU128>;
@@ -616,7 +607,8 @@ export interface ChainStorage extends GenericChainStorage {
      * they wish to support.
      *
      * Note that the keys of this storage map might become non-decodable in case the
-     * [`Config::MaxNominations`] configuration is decreased. In this rare case, these nominators
+     * account's [`NominationsQuota::MaxNominations`] configuration is decreased.
+     * In this rare case, these nominators
      * are still existent in storage, their key is correct and retrievable (i.e. `contains_key`
      * indicates that they exist), but their value cannot be decoded. Therefore, the non-decodable
      * nominators will effectively not-exist, until they re-submit their preferences such that it
@@ -965,14 +957,10 @@ export interface ChainStorage extends GenericChainStorage {
     keys(callback: Callback<Array<PalletImOnlineSr25519AppSr25519Public>>): Promise<Unsub>;
 
     /**
-     * For each session index, we keep a mapping of `SessionIndex` and `AuthIndex` to
-     * `WrapperOpaque<BoundedOpaqueNetworkState>`.
+     * For each session index, we keep a mapping of `SessionIndex` and `AuthIndex`.
      **/
-    receivedHeartbeats(arg: [number, number]): Promise<[number, PalletImOnlineBoundedOpaqueNetworkState] | undefined>;
-    receivedHeartbeats(
-      arg: [number, number],
-      callback: Callback<[number, PalletImOnlineBoundedOpaqueNetworkState] | undefined>,
-    ): Promise<Unsub>;
+    receivedHeartbeats(arg: [number, number]): Promise<boolean | undefined>;
+    receivedHeartbeats(arg: [number, number], callback: Callback<boolean | undefined>): Promise<Unsub>;
 
     /**
      * For each session index, we keep a mapping of `ValidatorId<T>` to the
@@ -980,229 +968,6 @@ export interface ChainStorage extends GenericChainStorage {
      **/
     authoredBlocks(arg: [number, AccountId32Like]): Promise<number>;
     authoredBlocks(arg: [number, AccountId32Like], callback: Callback<number>): Promise<Unsub>;
-  };
-  democracy: {
-    /**
-     * The number of (public) proposals that have been made so far.
-     **/
-    publicPropCount(): Promise<number>;
-    publicPropCount(callback: Callback<number>): Promise<Unsub>;
-
-    /**
-     * The public proposals. Unsorted. The second item is the proposal.
-     **/
-    publicProps(): Promise<Array<[number, FrameSupportPreimagesBounded, AccountId32]>>;
-    publicProps(callback: Callback<Array<[number, FrameSupportPreimagesBounded, AccountId32]>>): Promise<Unsub>;
-
-    /**
-     * Those who have locked a deposit.
-     *
-     * TWOX-NOTE: Safe, as increasing integer keys are safe.
-     **/
-    depositOf(arg: number): Promise<[Array<AccountId32>, bigint] | undefined>;
-    depositOf(arg: number, callback: Callback<[Array<AccountId32>, bigint] | undefined>): Promise<Unsub>;
-
-    /**
-     * The next free referendum index, aka the number of referenda started so far.
-     **/
-    referendumCount(): Promise<number>;
-    referendumCount(callback: Callback<number>): Promise<Unsub>;
-
-    /**
-     * The lowest referendum index representing an unbaked referendum. Equal to
-     * `ReferendumCount` if there isn't a unbaked referendum.
-     **/
-    lowestUnbaked(): Promise<number>;
-    lowestUnbaked(callback: Callback<number>): Promise<Unsub>;
-
-    /**
-     * Information concerning any given referendum.
-     *
-     * TWOX-NOTE: SAFE as indexes are not under an attacker’s control.
-     **/
-    referendumInfoOf(arg: number): Promise<PalletDemocracyReferendumInfo | undefined>;
-    referendumInfoOf(arg: number, callback: Callback<PalletDemocracyReferendumInfo | undefined>): Promise<Unsub>;
-
-    /**
-     * All votes for a particular voter. We store the balance for the number of votes that we
-     * have recorded. The second item is the total amount of delegations, that will be added.
-     *
-     * TWOX-NOTE: SAFE as `AccountId`s are crypto hashes anyway.
-     **/
-    votingOf(arg: AccountId32Like): Promise<PalletDemocracyVoteVoting>;
-    votingOf(arg: AccountId32Like, callback: Callback<PalletDemocracyVoteVoting>): Promise<Unsub>;
-
-    /**
-     * True if the last referendum tabled was submitted externally. False if it was a public
-     * proposal.
-     **/
-    lastTabledWasExternal(): Promise<boolean>;
-    lastTabledWasExternal(callback: Callback<boolean>): Promise<Unsub>;
-
-    /**
-     * The referendum to be tabled whenever it would be valid to table an external proposal.
-     * This happens when a referendum needs to be tabled and one of two conditions are met:
-     * - `LastTabledWasExternal` is `false`; or
-     * - `PublicProps` is empty.
-     **/
-    nextExternal(): Promise<[FrameSupportPreimagesBounded, PalletDemocracyVoteThreshold] | undefined>;
-    nextExternal(
-      callback: Callback<[FrameSupportPreimagesBounded, PalletDemocracyVoteThreshold] | undefined>,
-    ): Promise<Unsub>;
-
-    /**
-     * A record of who vetoed what. Maps proposal hash to a possible existent block number
-     * (until when it may not be resubmitted) and who vetoed it.
-     **/
-    blacklist(arg: H256): Promise<[number, Array<AccountId32>] | undefined>;
-    blacklist(arg: H256, callback: Callback<[number, Array<AccountId32>] | undefined>): Promise<Unsub>;
-
-    /**
-     * Record of all proposals that have been subject to emergency cancellation.
-     **/
-    cancellations(arg: H256): Promise<boolean>;
-    cancellations(arg: H256, callback: Callback<boolean>): Promise<Unsub>;
-
-    /**
-     * General information concerning any proposal or referendum.
-     * The `PreimageHash` refers to the preimage of the `Preimages` provider which can be a JSON
-     * dump or IPFS hash of a JSON file.
-     *
-     * Consider a garbage collection for a metadata of finished referendums to `unrequest` (remove)
-     * large preimages.
-     **/
-    metadataOf(arg: PalletDemocracyMetadataOwner): Promise<H256 | undefined>;
-    metadataOf(arg: PalletDemocracyMetadataOwner, callback: Callback<H256 | undefined>): Promise<Unsub>;
-  };
-  council: {
-    /**
-     * The hashes of the active proposals.
-     **/
-    proposals(): Promise<Array<H256>>;
-    proposals(callback: Callback<Array<H256>>): Promise<Unsub>;
-
-    /**
-     * Actual proposal for a given hash, if it's current.
-     **/
-    proposalOf(arg: H256): Promise<PolkadotRuntimeRuntimeCall | undefined>;
-    proposalOf(arg: H256, callback: Callback<PolkadotRuntimeRuntimeCall | undefined>): Promise<Unsub>;
-
-    /**
-     * Votes on a given proposal, if it is ongoing.
-     **/
-    voting(arg: H256): Promise<PalletCollectiveVotes | undefined>;
-    voting(arg: H256, callback: Callback<PalletCollectiveVotes | undefined>): Promise<Unsub>;
-
-    /**
-     * Proposals so far.
-     **/
-    proposalCount(): Promise<number>;
-    proposalCount(callback: Callback<number>): Promise<Unsub>;
-
-    /**
-     * The current members of the collective. This is stored sorted (just by value).
-     **/
-    members(): Promise<Array<AccountId32>>;
-    members(callback: Callback<Array<AccountId32>>): Promise<Unsub>;
-
-    /**
-     * The prime member that helps determine the default vote behavior in case of absentations.
-     **/
-    prime(): Promise<AccountId32 | undefined>;
-    prime(callback: Callback<AccountId32 | undefined>): Promise<Unsub>;
-  };
-  technicalCommittee: {
-    /**
-     * The hashes of the active proposals.
-     **/
-    proposals(): Promise<Array<H256>>;
-    proposals(callback: Callback<Array<H256>>): Promise<Unsub>;
-
-    /**
-     * Actual proposal for a given hash, if it's current.
-     **/
-    proposalOf(arg: H256): Promise<PolkadotRuntimeRuntimeCall | undefined>;
-    proposalOf(arg: H256, callback: Callback<PolkadotRuntimeRuntimeCall | undefined>): Promise<Unsub>;
-
-    /**
-     * Votes on a given proposal, if it is ongoing.
-     **/
-    voting(arg: H256): Promise<PalletCollectiveVotes | undefined>;
-    voting(arg: H256, callback: Callback<PalletCollectiveVotes | undefined>): Promise<Unsub>;
-
-    /**
-     * Proposals so far.
-     **/
-    proposalCount(): Promise<number>;
-    proposalCount(callback: Callback<number>): Promise<Unsub>;
-
-    /**
-     * The current members of the collective. This is stored sorted (just by value).
-     **/
-    members(): Promise<Array<AccountId32>>;
-    members(callback: Callback<Array<AccountId32>>): Promise<Unsub>;
-
-    /**
-     * The prime member that helps determine the default vote behavior in case of absentations.
-     **/
-    prime(): Promise<AccountId32 | undefined>;
-    prime(callback: Callback<AccountId32 | undefined>): Promise<Unsub>;
-  };
-  phragmenElection: {
-    /**
-     * The current elected members.
-     *
-     * Invariant: Always sorted based on account id.
-     **/
-    members(): Promise<Array<PalletElectionsPhragmenSeatHolder>>;
-    members(callback: Callback<Array<PalletElectionsPhragmenSeatHolder>>): Promise<Unsub>;
-
-    /**
-     * The current reserved runners-up.
-     *
-     * Invariant: Always sorted based on rank (worse to best). Upon removal of a member, the
-     * last (i.e. _best_) runner-up will be replaced.
-     **/
-    runnersUp(): Promise<Array<PalletElectionsPhragmenSeatHolder>>;
-    runnersUp(callback: Callback<Array<PalletElectionsPhragmenSeatHolder>>): Promise<Unsub>;
-
-    /**
-     * The present candidate list. A current member or runner-up can never enter this vector
-     * and is always implicitly assumed to be a candidate.
-     *
-     * Second element is the deposit.
-     *
-     * Invariant: Always sorted based on account id.
-     **/
-    candidates(): Promise<Array<[AccountId32, bigint]>>;
-    candidates(callback: Callback<Array<[AccountId32, bigint]>>): Promise<Unsub>;
-
-    /**
-     * The total number of vote rounds that have happened, excluding the upcoming one.
-     **/
-    electionRounds(): Promise<number>;
-    electionRounds(callback: Callback<number>): Promise<Unsub>;
-
-    /**
-     * Votes and locked stake of a particular voter.
-     *
-     * TWOX-NOTE: SAFE as `AccountId` is a crypto hash.
-     **/
-    voting(arg: AccountId32Like): Promise<PalletElectionsPhragmenVoter>;
-    voting(arg: AccountId32Like, callback: Callback<PalletElectionsPhragmenVoter>): Promise<Unsub>;
-  };
-  technicalMembership: {
-    /**
-     * The current membership, stored as an ordered Vec.
-     **/
-    members(): Promise<Array<AccountId32>>;
-    members(callback: Callback<Array<AccountId32>>): Promise<Unsub>;
-
-    /**
-     * The current prime member, if one exists.
-     **/
-    prime(): Promise<AccountId32 | undefined>;
-    prime(callback: Callback<AccountId32 | undefined>): Promise<Unsub>;
   };
   treasury: {
     /**
@@ -1451,22 +1216,6 @@ export interface ChainStorage extends GenericChainStorage {
      **/
     childrenCuratorFees(arg: number): Promise<bigint>;
     childrenCuratorFees(arg: number, callback: Callback<bigint>): Promise<Unsub>;
-  };
-  tips: {
-    /**
-     * TipsMap that are not yet completed. Keyed by the hash of `(reason, who)` from the value.
-     * This has the insecure enumerable hash function since the key itself is already
-     * guaranteed to be a secure hash.
-     **/
-    tips(arg: H256): Promise<PalletTipsOpenTip | undefined>;
-    tips(arg: H256, callback: Callback<PalletTipsOpenTip | undefined>): Promise<Unsub>;
-
-    /**
-     * Simple preimage lookup from the reason's hash to the original data. Again, has an
-     * insecure enumerable hash since the key is guaranteed to be the result of a secure hash.
-     **/
-    reasons(arg: H256): Promise<Bytes | undefined>;
-    reasons(arg: H256, callback: Callback<Bytes | undefined>): Promise<Unsub>;
   };
   electionProviderMultiPhase: {
     /**
@@ -1734,6 +1483,8 @@ export interface ChainStorage extends GenericChainStorage {
   fastUnstake: {
     /**
      * The current "head of the queue" being unstaked.
+     *
+     * The head in itself can be a batch of up to [`Config::BatchSize`] stakers.
      **/
     head(): Promise<PalletFastUnstakeUnstakeRequest | undefined>;
     head(callback: Callback<PalletFastUnstakeUnstakeRequest | undefined>): Promise<Unsub>;
@@ -1742,8 +1493,6 @@ export interface ChainStorage extends GenericChainStorage {
      * The map of all accounts wishing to be unstaked.
      *
      * Keeps track of `AccountId` wishing to unstake and it's corresponding deposit.
-     *
-     * TWOX-NOTE: SAFE since `AccountId` is a secure hash.
      **/
     queue(arg: AccountId32Like): Promise<bigint | undefined>;
     queue(arg: AccountId32Like, callback: Callback<bigint | undefined>): Promise<Unsub>;
@@ -1757,10 +1506,12 @@ export interface ChainStorage extends GenericChainStorage {
     /**
      * Number of eras to check per block.
      *
-     * If set to 0, this pallet does absolutely nothing.
+     * If set to 0, this pallet does absolutely nothing. Cannot be set to more than
+     * [`Config::MaxErasToCheckPerBlock`].
      *
-     * Based on the amount of weight available at `on_idle`, up to this many eras of a single
-     * nominator might be checked.
+     * Based on the amount of weight available at [`Pallet::on_idle`], up to this many eras are
+     * checked. The checking is represented by updating [`UnstakeRequest::checked`], which is
+     * stored in [`Head`].
      **/
     erasToCheckPerBlock(): Promise<number>;
     erasToCheckPerBlock(callback: Callback<number>): Promise<Unsub>;
@@ -1804,25 +1555,31 @@ export interface ChainStorage extends GenericChainStorage {
      * All the validators actively participating in parachain consensus.
      * Indices are into the broader validator set.
      **/
-    activeValidatorIndices(): Promise<Array<PolkadotPrimitivesV4ValidatorIndex>>;
-    activeValidatorIndices(callback: Callback<Array<PolkadotPrimitivesV4ValidatorIndex>>): Promise<Unsub>;
+    activeValidatorIndices(): Promise<Array<PolkadotPrimitivesV5ValidatorIndex>>;
+    activeValidatorIndices(callback: Callback<Array<PolkadotPrimitivesV5ValidatorIndex>>): Promise<Unsub>;
 
     /**
-     * The parachain attestation keys of the validators actively participating in parachain consensus.
-     * This should be the same length as `ActiveValidatorIndices`.
+     * The parachain attestation keys of the validators actively participating in parachain
+     * consensus. This should be the same length as `ActiveValidatorIndices`.
      **/
-    activeValidatorKeys(): Promise<Array<PolkadotPrimitivesV4ValidatorAppPublic>>;
-    activeValidatorKeys(callback: Callback<Array<PolkadotPrimitivesV4ValidatorAppPublic>>): Promise<Unsub>;
+    activeValidatorKeys(): Promise<Array<PolkadotPrimitivesV5ValidatorAppPublic>>;
+    activeValidatorKeys(callback: Callback<Array<PolkadotPrimitivesV5ValidatorAppPublic>>): Promise<Unsub>;
+
+    /**
+     * All allowed relay-parents.
+     **/
+    allowedRelayParents(): Promise<PolkadotRuntimeParachainsSharedAllowedRelayParentsTracker>;
+    allowedRelayParents(callback: Callback<PolkadotRuntimeParachainsSharedAllowedRelayParentsTracker>): Promise<Unsub>;
   };
   paraInclusion: {
     /**
      * The latest bitfield for each validator, referred to by their index in the validator set.
      **/
     availabilityBitfields(
-      arg: PolkadotPrimitivesV4ValidatorIndex,
+      arg: PolkadotPrimitivesV5ValidatorIndex,
     ): Promise<PolkadotRuntimeParachainsInclusionAvailabilityBitfieldRecord | undefined>;
     availabilityBitfields(
-      arg: PolkadotPrimitivesV4ValidatorIndex,
+      arg: PolkadotPrimitivesV5ValidatorIndex,
       callback: Callback<PolkadotRuntimeParachainsInclusionAvailabilityBitfieldRecord | undefined>,
     ): Promise<Unsub>;
 
@@ -1830,10 +1587,10 @@ export interface ChainStorage extends GenericChainStorage {
      * Candidates pending availability by `ParaId`.
      **/
     pendingAvailability(
-      arg: PolkadotParachainPrimitivesId,
+      arg: PolkadotParachainPrimitivesPrimitivesId,
     ): Promise<PolkadotRuntimeParachainsInclusionCandidatePendingAvailability | undefined>;
     pendingAvailability(
-      arg: PolkadotParachainPrimitivesId,
+      arg: PolkadotParachainPrimitivesPrimitivesId,
       callback: Callback<PolkadotRuntimeParachainsInclusionCandidatePendingAvailability | undefined>,
     ): Promise<Unsub>;
 
@@ -1841,11 +1598,11 @@ export interface ChainStorage extends GenericChainStorage {
      * The commitments of candidates pending availability, by `ParaId`.
      **/
     pendingAvailabilityCommitments(
-      arg: PolkadotParachainPrimitivesId,
-    ): Promise<PolkadotPrimitivesV4CandidateCommitments | undefined>;
+      arg: PolkadotParachainPrimitivesPrimitivesId,
+    ): Promise<PolkadotPrimitivesV5CandidateCommitments | undefined>;
     pendingAvailabilityCommitments(
-      arg: PolkadotParachainPrimitivesId,
-      callback: Callback<PolkadotPrimitivesV4CandidateCommitments | undefined>,
+      arg: PolkadotParachainPrimitivesPrimitivesId,
+      callback: Callback<PolkadotPrimitivesV5CandidateCommitments | undefined>,
     ): Promise<Unsub>;
   };
   paraInherent: {
@@ -1863,8 +1620,8 @@ export interface ChainStorage extends GenericChainStorage {
     /**
      * Scraped on chain data for extracting resolved disputes as well as backing votes.
      **/
-    onChainVotes(): Promise<PolkadotPrimitivesV4ScrapedOnChainVotes | undefined>;
-    onChainVotes(callback: Callback<PolkadotPrimitivesV4ScrapedOnChainVotes | undefined>): Promise<Unsub>;
+    onChainVotes(): Promise<PolkadotPrimitivesV5ScrapedOnChainVotes | undefined>;
+    onChainVotes(callback: Callback<PolkadotPrimitivesV5ScrapedOnChainVotes | undefined>): Promise<Unsub>;
   };
   paraScheduler: {
     /**
@@ -1872,24 +1629,16 @@ export interface ChainStorage extends GenericChainStorage {
      * broader set of Polkadot validators, but instead just the subset used for parachains during
      * this session.
      *
-     * Bound: The number of cores is the sum of the numbers of parachains and parathread multiplexers.
-     * Reasonably, 100-1000. The dominant factor is the number of validators: safe upper bound at 10k.
+     * Bound: The number of cores is the sum of the numbers of parachains and parathread
+     * multiplexers. Reasonably, 100-1000. The dominant factor is the number of validators: safe
+     * upper bound at 10k.
      **/
-    validatorGroups(): Promise<Array<Array<PolkadotPrimitivesV4ValidatorIndex>>>;
-    validatorGroups(callback: Callback<Array<Array<PolkadotPrimitivesV4ValidatorIndex>>>): Promise<Unsub>;
+    validatorGroups(): Promise<Array<Array<PolkadotPrimitivesV5ValidatorIndex>>>;
+    validatorGroups(callback: Callback<Array<Array<PolkadotPrimitivesV5ValidatorIndex>>>): Promise<Unsub>;
 
     /**
-     * A queue of upcoming claims and which core they should be mapped onto.
-     *
-     * The number of queued claims is bounded at the `scheduling_lookahead`
-     * multiplied by the number of parathread multiplexer cores. Reasonably, 10 * 50 = 500.
-     **/
-    parathreadQueue(): Promise<PolkadotRuntimeParachainsSchedulerParathreadClaimQueue>;
-    parathreadQueue(callback: Callback<PolkadotRuntimeParachainsSchedulerParathreadClaimQueue>): Promise<Unsub>;
-
-    /**
-     * One entry for each availability core. Entries are `None` if the core is not currently occupied. Can be
-     * temporarily `Some` if scheduled but not occupied.
+     * One entry for each availability core. Entries are `None` if the core is not currently
+     * occupied. Can be temporarily `Some` if scheduled but not occupied.
      * The i'th parachain belongs to the i'th core, with the remaining cores all being
      * parathread-multiplexers.
      *
@@ -1897,20 +1646,12 @@ export interface ChainStorage extends GenericChainStorage {
      * * The number of parachains and parathread multiplexers
      * * The number of validators divided by `configuration.max_validators_per_core`.
      **/
-    availabilityCores(): Promise<Array<PolkadotPrimitivesV4CoreOccupied | undefined>>;
-    availabilityCores(callback: Callback<Array<PolkadotPrimitivesV4CoreOccupied | undefined>>): Promise<Unsub>;
+    availabilityCores(): Promise<Array<PolkadotPrimitivesV5CoreOccupied>>;
+    availabilityCores(callback: Callback<Array<PolkadotPrimitivesV5CoreOccupied>>): Promise<Unsub>;
 
     /**
-     * An index used to ensure that only one claim on a parathread exists in the queue or is
-     * currently being handled by an occupied core.
-     *
-     * Bounded by the number of parathread cores and scheduling lookahead. Reasonably, 10 * 50 = 500.
-     **/
-    parathreadClaimIndex(): Promise<Array<PolkadotParachainPrimitivesId>>;
-    parathreadClaimIndex(callback: Callback<Array<PolkadotParachainPrimitivesId>>): Promise<Unsub>;
-
-    /**
-     * The block number where the session start occurred. Used to track how many group rotations have occurred.
+     * The block number where the session start occurred. Used to track how many group rotations
+     * have occurred.
      *
      * Note that in the context of parachains modules the session change is signaled during
      * the block and enacted at the end of the block (at the finalization stage, to be exact).
@@ -1921,15 +1662,16 @@ export interface ChainStorage extends GenericChainStorage {
     sessionStartBlock(callback: Callback<number>): Promise<Unsub>;
 
     /**
-     * Currently scheduled cores - free but up to be occupied.
-     *
-     * Bounded by the number of cores: one for each parachain and parathread multiplexer.
-     *
-     * The value contained here will not be valid after the end of a block. Runtime APIs should be used to determine scheduled cores/
-     * for the upcoming block.
+     * One entry for each availability core. The `VecDeque` represents the assignments to be
+     * scheduled on that core. `None` is used to signal to not schedule the next para of the core
+     * as there is one currently being scheduled. Not using `None` here would overwrite the
+     * `CoreState` in the runtime API. The value contained here will not be valid after the end of
+     * a block. Runtime APIs should be used to determine scheduled cores/ for the upcoming block.
      **/
-    scheduled(): Promise<Array<PolkadotRuntimeParachainsSchedulerCoreAssignment>>;
-    scheduled(callback: Callback<Array<PolkadotRuntimeParachainsSchedulerCoreAssignment>>): Promise<Unsub>;
+    claimQueue(): Promise<Array<[PolkadotPrimitivesV5CoreIndex, Array<PolkadotPrimitivesV5ParasEntry | undefined>]>>;
+    claimQueue(
+      callback: Callback<Array<[PolkadotPrimitivesV5CoreIndex, Array<PolkadotPrimitivesV5ParasEntry | undefined>]>>,
+    ): Promise<Unsub>;
   };
   paras: {
     /**
@@ -1939,45 +1681,59 @@ export interface ChainStorage extends GenericChainStorage {
      * - There are no PVF pre-checking votes that exists in list but not in the set and vice versa.
      **/
     pvfActiveVoteMap(
-      arg: PolkadotParachainPrimitivesValidationCodeHash,
+      arg: PolkadotParachainPrimitivesPrimitivesValidationCodeHash,
     ): Promise<PolkadotRuntimeParachainsParasPvfCheckActiveVoteState | undefined>;
     pvfActiveVoteMap(
-      arg: PolkadotParachainPrimitivesValidationCodeHash,
+      arg: PolkadotParachainPrimitivesPrimitivesValidationCodeHash,
       callback: Callback<PolkadotRuntimeParachainsParasPvfCheckActiveVoteState | undefined>,
     ): Promise<Unsub>;
 
     /**
      * The list of all currently active PVF votes. Auxiliary to `PvfActiveVoteMap`.
      **/
-    pvfActiveVoteList(): Promise<Array<PolkadotParachainPrimitivesValidationCodeHash>>;
-    pvfActiveVoteList(callback: Callback<Array<PolkadotParachainPrimitivesValidationCodeHash>>): Promise<Unsub>;
+    pvfActiveVoteList(): Promise<Array<PolkadotParachainPrimitivesPrimitivesValidationCodeHash>>;
+    pvfActiveVoteList(
+      callback: Callback<Array<PolkadotParachainPrimitivesPrimitivesValidationCodeHash>>,
+    ): Promise<Unsub>;
 
     /**
-     * All parachains. Ordered ascending by `ParaId`. Parathreads are not included.
+     * All lease holding parachains. Ordered ascending by `ParaId`. On demand parachains are not
+     * included.
      *
      * Consider using the [`ParachainsCache`] type of modifying.
      **/
-    parachains(): Promise<Array<PolkadotParachainPrimitivesId>>;
-    parachains(callback: Callback<Array<PolkadotParachainPrimitivesId>>): Promise<Unsub>;
+    parachains(): Promise<Array<PolkadotParachainPrimitivesPrimitivesId>>;
+    parachains(callback: Callback<Array<PolkadotParachainPrimitivesPrimitivesId>>): Promise<Unsub>;
 
     /**
      * The current lifecycle of a all known Para IDs.
      **/
     paraLifecycles(
-      arg: PolkadotParachainPrimitivesId,
+      arg: PolkadotParachainPrimitivesPrimitivesId,
     ): Promise<PolkadotRuntimeParachainsParasParaLifecycle | undefined>;
     paraLifecycles(
-      arg: PolkadotParachainPrimitivesId,
+      arg: PolkadotParachainPrimitivesPrimitivesId,
       callback: Callback<PolkadotRuntimeParachainsParasParaLifecycle | undefined>,
     ): Promise<Unsub>;
 
     /**
      * The head-data of every registered para.
      **/
-    heads(arg: PolkadotParachainPrimitivesId): Promise<PolkadotParachainPrimitivesHeadData | undefined>;
     heads(
-      arg: PolkadotParachainPrimitivesId,
-      callback: Callback<PolkadotParachainPrimitivesHeadData | undefined>,
+      arg: PolkadotParachainPrimitivesPrimitivesId,
+    ): Promise<PolkadotParachainPrimitivesPrimitivesHeadData | undefined>;
+    heads(
+      arg: PolkadotParachainPrimitivesPrimitivesId,
+      callback: Callback<PolkadotParachainPrimitivesPrimitivesHeadData | undefined>,
+    ): Promise<Unsub>;
+
+    /**
+     * The context (relay-chain block number) of the most recent parachain head.
+     **/
+    mostRecentContext(arg: PolkadotParachainPrimitivesPrimitivesId): Promise<number | undefined>;
+    mostRecentContext(
+      arg: PolkadotParachainPrimitivesPrimitivesId,
+      callback: Callback<number | undefined>,
     ): Promise<Unsub>;
 
     /**
@@ -1986,11 +1742,11 @@ export interface ChainStorage extends GenericChainStorage {
      * Corresponding code can be retrieved with [`CodeByHash`].
      **/
     currentCodeHash(
-      arg: PolkadotParachainPrimitivesId,
-    ): Promise<PolkadotParachainPrimitivesValidationCodeHash | undefined>;
+      arg: PolkadotParachainPrimitivesPrimitivesId,
+    ): Promise<PolkadotParachainPrimitivesPrimitivesValidationCodeHash | undefined>;
     currentCodeHash(
-      arg: PolkadotParachainPrimitivesId,
-      callback: Callback<PolkadotParachainPrimitivesValidationCodeHash | undefined>,
+      arg: PolkadotParachainPrimitivesPrimitivesId,
+      callback: Callback<PolkadotParachainPrimitivesPrimitivesValidationCodeHash | undefined>,
     ): Promise<Unsub>;
 
     /**
@@ -2000,11 +1756,11 @@ export interface ChainStorage extends GenericChainStorage {
      * Corresponding code can be retrieved with [`CodeByHash`].
      **/
     pastCodeHash(
-      arg: [PolkadotParachainPrimitivesId, number],
-    ): Promise<PolkadotParachainPrimitivesValidationCodeHash | undefined>;
+      arg: [PolkadotParachainPrimitivesPrimitivesId, number],
+    ): Promise<PolkadotParachainPrimitivesPrimitivesValidationCodeHash | undefined>;
     pastCodeHash(
-      arg: [PolkadotParachainPrimitivesId, number],
-      callback: Callback<PolkadotParachainPrimitivesValidationCodeHash | undefined>,
+      arg: [PolkadotParachainPrimitivesPrimitivesId, number],
+      callback: Callback<PolkadotParachainPrimitivesPrimitivesValidationCodeHash | undefined>,
     ): Promise<Unsub>;
 
     /**
@@ -2012,30 +1768,33 @@ export interface ChainStorage extends GenericChainStorage {
      * but we also keep their code on-chain for the same amount of time as outdated code
      * to keep it available for approval checkers.
      **/
-    pastCodeMeta(arg: PolkadotParachainPrimitivesId): Promise<PolkadotRuntimeParachainsParasParaPastCodeMeta>;
+    pastCodeMeta(arg: PolkadotParachainPrimitivesPrimitivesId): Promise<PolkadotRuntimeParachainsParasParaPastCodeMeta>;
     pastCodeMeta(
-      arg: PolkadotParachainPrimitivesId,
+      arg: PolkadotParachainPrimitivesPrimitivesId,
       callback: Callback<PolkadotRuntimeParachainsParasParaPastCodeMeta>,
     ): Promise<Unsub>;
 
     /**
-     * Which paras have past code that needs pruning and the relay-chain block at which the code was replaced.
-     * Note that this is the actual height of the included block, not the expected height at which the
-     * code upgrade would be applied, although they may be equal.
-     * This is to ensure the entire acceptance period is covered, not an offset acceptance period starting
-     * from the time at which the parachain perceives a code upgrade as having occurred.
+     * Which paras have past code that needs pruning and the relay-chain block at which the code
+     * was replaced. Note that this is the actual height of the included block, not the expected
+     * height at which the code upgrade would be applied, although they may be equal.
+     * This is to ensure the entire acceptance period is covered, not an offset acceptance period
+     * starting from the time at which the parachain perceives a code upgrade as having occurred.
      * Multiple entries for a single para are permitted. Ordered ascending by block number.
      **/
-    pastCodePruning(): Promise<Array<[PolkadotParachainPrimitivesId, number]>>;
-    pastCodePruning(callback: Callback<Array<[PolkadotParachainPrimitivesId, number]>>): Promise<Unsub>;
+    pastCodePruning(): Promise<Array<[PolkadotParachainPrimitivesPrimitivesId, number]>>;
+    pastCodePruning(callback: Callback<Array<[PolkadotParachainPrimitivesPrimitivesId, number]>>): Promise<Unsub>;
 
     /**
      * The block number at which the planned code change is expected for a para.
      * The change will be applied after the first parablock for this ID included which executes
      * in the context of a relay chain block with a number >= `expected_at`.
      **/
-    futureCodeUpgrades(arg: PolkadotParachainPrimitivesId): Promise<number | undefined>;
-    futureCodeUpgrades(arg: PolkadotParachainPrimitivesId, callback: Callback<number | undefined>): Promise<Unsub>;
+    futureCodeUpgrades(arg: PolkadotParachainPrimitivesPrimitivesId): Promise<number | undefined>;
+    futureCodeUpgrades(
+      arg: PolkadotParachainPrimitivesPrimitivesId,
+      callback: Callback<number | undefined>,
+    ): Promise<Unsub>;
 
     /**
      * The actual future code hash of a para.
@@ -2043,28 +1802,31 @@ export interface ChainStorage extends GenericChainStorage {
      * Corresponding code can be retrieved with [`CodeByHash`].
      **/
     futureCodeHash(
-      arg: PolkadotParachainPrimitivesId,
-    ): Promise<PolkadotParachainPrimitivesValidationCodeHash | undefined>;
+      arg: PolkadotParachainPrimitivesPrimitivesId,
+    ): Promise<PolkadotParachainPrimitivesPrimitivesValidationCodeHash | undefined>;
     futureCodeHash(
-      arg: PolkadotParachainPrimitivesId,
-      callback: Callback<PolkadotParachainPrimitivesValidationCodeHash | undefined>,
+      arg: PolkadotParachainPrimitivesPrimitivesId,
+      callback: Callback<PolkadotParachainPrimitivesPrimitivesValidationCodeHash | undefined>,
     ): Promise<Unsub>;
 
     /**
-     * This is used by the relay-chain to communicate to a parachain a go-ahead with in the upgrade procedure.
+     * This is used by the relay-chain to communicate to a parachain a go-ahead with in the upgrade
+     * procedure.
      *
      * This value is absent when there are no upgrades scheduled or during the time the relay chain
-     * performs the checks. It is set at the first relay-chain block when the corresponding parachain
-     * can switch its upgrade function. As soon as the parachain's block is included, the value
-     * gets reset to `None`.
+     * performs the checks. It is set at the first relay-chain block when the corresponding
+     * parachain can switch its upgrade function. As soon as the parachain's block is included, the
+     * value gets reset to `None`.
      *
      * NOTE that this field is used by parachains via merkle storage proofs, therefore changing
      * the format will require migration of parachains.
      **/
-    upgradeGoAheadSignal(arg: PolkadotParachainPrimitivesId): Promise<PolkadotPrimitivesV4UpgradeGoAhead | undefined>;
     upgradeGoAheadSignal(
-      arg: PolkadotParachainPrimitivesId,
-      callback: Callback<PolkadotPrimitivesV4UpgradeGoAhead | undefined>,
+      arg: PolkadotParachainPrimitivesPrimitivesId,
+    ): Promise<PolkadotPrimitivesV5UpgradeGoAhead | undefined>;
+    upgradeGoAheadSignal(
+      arg: PolkadotParachainPrimitivesPrimitivesId,
+      callback: Callback<PolkadotPrimitivesV5UpgradeGoAhead | undefined>,
     ): Promise<Unsub>;
 
     /**
@@ -2079,11 +1841,11 @@ export interface ChainStorage extends GenericChainStorage {
      * the format will require migration of parachains.
      **/
     upgradeRestrictionSignal(
-      arg: PolkadotParachainPrimitivesId,
-    ): Promise<PolkadotPrimitivesV4UpgradeRestriction | undefined>;
+      arg: PolkadotParachainPrimitivesPrimitivesId,
+    ): Promise<PolkadotPrimitivesV5UpgradeRestriction | undefined>;
     upgradeRestrictionSignal(
-      arg: PolkadotParachainPrimitivesId,
-      callback: Callback<PolkadotPrimitivesV4UpgradeRestriction | undefined>,
+      arg: PolkadotParachainPrimitivesPrimitivesId,
+      callback: Callback<PolkadotPrimitivesV5UpgradeRestriction | undefined>,
     ): Promise<Unsub>;
 
     /**
@@ -2091,8 +1853,8 @@ export interface ChainStorage extends GenericChainStorage {
      *
      * Ordered ascending by block number.
      **/
-    upgradeCooldowns(): Promise<Array<[PolkadotParachainPrimitivesId, number]>>;
-    upgradeCooldowns(callback: Callback<Array<[PolkadotParachainPrimitivesId, number]>>): Promise<Unsub>;
+    upgradeCooldowns(): Promise<Array<[PolkadotParachainPrimitivesPrimitivesId, number]>>;
+    upgradeCooldowns(callback: Callback<Array<[PolkadotParachainPrimitivesPrimitivesId, number]>>): Promise<Unsub>;
 
     /**
      * The list of upcoming code upgrades. Each item is a pair of which para performs a code
@@ -2100,14 +1862,14 @@ export interface ChainStorage extends GenericChainStorage {
      *
      * Ordered ascending by block number.
      **/
-    upcomingUpgrades(): Promise<Array<[PolkadotParachainPrimitivesId, number]>>;
-    upcomingUpgrades(callback: Callback<Array<[PolkadotParachainPrimitivesId, number]>>): Promise<Unsub>;
+    upcomingUpgrades(): Promise<Array<[PolkadotParachainPrimitivesPrimitivesId, number]>>;
+    upcomingUpgrades(callback: Callback<Array<[PolkadotParachainPrimitivesPrimitivesId, number]>>): Promise<Unsub>;
 
     /**
      * The actions to perform during the start of a specific session index.
      **/
-    actionsQueue(arg: number): Promise<Array<PolkadotParachainPrimitivesId>>;
-    actionsQueue(arg: number, callback: Callback<Array<PolkadotParachainPrimitivesId>>): Promise<Unsub>;
+    actionsQueue(arg: number): Promise<Array<PolkadotParachainPrimitivesPrimitivesId>>;
+    actionsQueue(arg: number, callback: Callback<Array<PolkadotParachainPrimitivesPrimitivesId>>): Promise<Unsub>;
 
     /**
      * Upcoming paras instantiation arguments.
@@ -2116,18 +1878,21 @@ export interface ChainStorage extends GenericChainStorage {
      * to empty. Instead, the code will be saved into the storage right away via `CodeByHash`.
      **/
     upcomingParasGenesis(
-      arg: PolkadotParachainPrimitivesId,
+      arg: PolkadotParachainPrimitivesPrimitivesId,
     ): Promise<PolkadotRuntimeParachainsParasParaGenesisArgs | undefined>;
     upcomingParasGenesis(
-      arg: PolkadotParachainPrimitivesId,
+      arg: PolkadotParachainPrimitivesPrimitivesId,
       callback: Callback<PolkadotRuntimeParachainsParasParaGenesisArgs | undefined>,
     ): Promise<Unsub>;
 
     /**
      * The number of reference on the validation code in [`CodeByHash`] storage.
      **/
-    codeByHashRefs(arg: PolkadotParachainPrimitivesValidationCodeHash): Promise<number>;
-    codeByHashRefs(arg: PolkadotParachainPrimitivesValidationCodeHash, callback: Callback<number>): Promise<Unsub>;
+    codeByHashRefs(arg: PolkadotParachainPrimitivesPrimitivesValidationCodeHash): Promise<number>;
+    codeByHashRefs(
+      arg: PolkadotParachainPrimitivesPrimitivesValidationCodeHash,
+      callback: Callback<number>,
+    ): Promise<Unsub>;
 
     /**
      * Validation code stored by its hash.
@@ -2136,11 +1901,11 @@ export interface ChainStorage extends GenericChainStorage {
      * [`PastCodeHash`].
      **/
     codeByHash(
-      arg: PolkadotParachainPrimitivesValidationCodeHash,
-    ): Promise<PolkadotParachainPrimitivesValidationCode | undefined>;
+      arg: PolkadotParachainPrimitivesPrimitivesValidationCodeHash,
+    ): Promise<PolkadotParachainPrimitivesPrimitivesValidationCode | undefined>;
     codeByHash(
-      arg: PolkadotParachainPrimitivesValidationCodeHash,
-      callback: Callback<PolkadotParachainPrimitivesValidationCode | undefined>,
+      arg: PolkadotParachainPrimitivesPrimitivesValidationCodeHash,
+      callback: Callback<PolkadotParachainPrimitivesPrimitivesValidationCode | undefined>,
     ): Promise<Unsub>;
   };
   initializer: {
@@ -2150,9 +1915,9 @@ export interface ChainStorage extends GenericChainStorage {
      * Semantically a `bool`, but this guarantees it should never hit the trie,
      * as this is cleared in `on_finalize` and Frame optimizes `None` values to be empty values.
      *
-     * As a `bool`, `set(false)` and `remove()` both lead to the next `get()` being false, but one of
-     * them writes to the trie and one does not. This confusion makes `Option<()>` more suitable for
-     * the semantics of this variable.
+     * As a `bool`, `set(false)` and `remove()` both lead to the next `get()` being false, but one
+     * of them writes to the trie and one does not. This confusion makes `Option<()>` more suitable
+     * for the semantics of this variable.
      **/
     hasInitialized(): Promise<[] | undefined>;
     hasInitialized(callback: Callback<[] | undefined>): Promise<Unsub>;
@@ -2176,10 +1941,10 @@ export interface ChainStorage extends GenericChainStorage {
      * The downward messages addressed for a certain para.
      **/
     downwardMessageQueues(
-      arg: PolkadotParachainPrimitivesId,
+      arg: PolkadotParachainPrimitivesPrimitivesId,
     ): Promise<Array<PolkadotCorePrimitivesInboundDownwardMessage>>;
     downwardMessageQueues(
-      arg: PolkadotParachainPrimitivesId,
+      arg: PolkadotParachainPrimitivesPrimitivesId,
       callback: Callback<Array<PolkadotCorePrimitivesInboundDownwardMessage>>,
     ): Promise<Unsub>;
 
@@ -2192,14 +1957,14 @@ export interface ChainStorage extends GenericChainStorage {
      * - `B`: is the relay-chain block number in which a message was appended.
      * - `H(M)`: is the hash of the message being appended.
      **/
-    downwardMessageQueueHeads(arg: PolkadotParachainPrimitivesId): Promise<H256>;
-    downwardMessageQueueHeads(arg: PolkadotParachainPrimitivesId, callback: Callback<H256>): Promise<Unsub>;
+    downwardMessageQueueHeads(arg: PolkadotParachainPrimitivesPrimitivesId): Promise<H256>;
+    downwardMessageQueueHeads(arg: PolkadotParachainPrimitivesPrimitivesId, callback: Callback<H256>): Promise<Unsub>;
 
     /**
      * The number to multiply the base delivery fee by.
      **/
-    deliveryFeeFactor(arg: PolkadotParachainPrimitivesId): Promise<FixedU128>;
-    deliveryFeeFactor(arg: PolkadotParachainPrimitivesId, callback: Callback<FixedU128>): Promise<Unsub>;
+    deliveryFeeFactor(arg: PolkadotParachainPrimitivesPrimitivesId): Promise<FixedU128>;
+    deliveryFeeFactor(arg: PolkadotParachainPrimitivesPrimitivesId, callback: Callback<FixedU128>): Promise<Unsub>;
   };
   hrmp: {
     /**
@@ -2211,30 +1976,38 @@ export interface ChainStorage extends GenericChainStorage {
      * - There are no channels that exists in list but not in the set and vice versa.
      **/
     hrmpOpenChannelRequests(
-      arg: PolkadotParachainPrimitivesHrmpChannelId,
+      arg: PolkadotParachainPrimitivesPrimitivesHrmpChannelId,
     ): Promise<PolkadotRuntimeParachainsHrmpHrmpOpenChannelRequest | undefined>;
     hrmpOpenChannelRequests(
-      arg: PolkadotParachainPrimitivesHrmpChannelId,
+      arg: PolkadotParachainPrimitivesPrimitivesHrmpChannelId,
       callback: Callback<PolkadotRuntimeParachainsHrmpHrmpOpenChannelRequest | undefined>,
     ): Promise<Unsub>;
-    hrmpOpenChannelRequestsList(): Promise<Array<PolkadotParachainPrimitivesHrmpChannelId>>;
-    hrmpOpenChannelRequestsList(callback: Callback<Array<PolkadotParachainPrimitivesHrmpChannelId>>): Promise<Unsub>;
+    hrmpOpenChannelRequestsList(): Promise<Array<PolkadotParachainPrimitivesPrimitivesHrmpChannelId>>;
+    hrmpOpenChannelRequestsList(
+      callback: Callback<Array<PolkadotParachainPrimitivesPrimitivesHrmpChannelId>>,
+    ): Promise<Unsub>;
 
     /**
      * This mapping tracks how many open channel requests are initiated by a given sender para.
      * Invariant: `HrmpOpenChannelRequests` should contain the same number of items that has
      * `(X, _)` as the number of `HrmpOpenChannelRequestCount` for `X`.
      **/
-    hrmpOpenChannelRequestCount(arg: PolkadotParachainPrimitivesId): Promise<number>;
-    hrmpOpenChannelRequestCount(arg: PolkadotParachainPrimitivesId, callback: Callback<number>): Promise<Unsub>;
+    hrmpOpenChannelRequestCount(arg: PolkadotParachainPrimitivesPrimitivesId): Promise<number>;
+    hrmpOpenChannelRequestCount(
+      arg: PolkadotParachainPrimitivesPrimitivesId,
+      callback: Callback<number>,
+    ): Promise<Unsub>;
 
     /**
      * This mapping tracks how many open channel requests were accepted by a given recipient para.
      * Invariant: `HrmpOpenChannelRequests` should contain the same number of items `(_, X)` with
      * `confirmed` set to true, as the number of `HrmpAcceptedChannelRequestCount` for `X`.
      **/
-    hrmpAcceptedChannelRequestCount(arg: PolkadotParachainPrimitivesId): Promise<number>;
-    hrmpAcceptedChannelRequestCount(arg: PolkadotParachainPrimitivesId, callback: Callback<number>): Promise<Unsub>;
+    hrmpAcceptedChannelRequestCount(arg: PolkadotParachainPrimitivesPrimitivesId): Promise<number>;
+    hrmpAcceptedChannelRequestCount(
+      arg: PolkadotParachainPrimitivesPrimitivesId,
+      callback: Callback<number>,
+    ): Promise<Unsub>;
 
     /**
      * A set of pending HRMP close channel requests that are going to be closed during the session
@@ -2245,21 +2018,27 @@ export interface ChainStorage extends GenericChainStorage {
      * Invariant:
      * - There are no channels that exists in list but not in the set and vice versa.
      **/
-    hrmpCloseChannelRequests(arg: PolkadotParachainPrimitivesHrmpChannelId): Promise<[] | undefined>;
+    hrmpCloseChannelRequests(arg: PolkadotParachainPrimitivesPrimitivesHrmpChannelId): Promise<[] | undefined>;
     hrmpCloseChannelRequests(
-      arg: PolkadotParachainPrimitivesHrmpChannelId,
+      arg: PolkadotParachainPrimitivesPrimitivesHrmpChannelId,
       callback: Callback<[] | undefined>,
     ): Promise<Unsub>;
-    hrmpCloseChannelRequestsList(): Promise<Array<PolkadotParachainPrimitivesHrmpChannelId>>;
-    hrmpCloseChannelRequestsList(callback: Callback<Array<PolkadotParachainPrimitivesHrmpChannelId>>): Promise<Unsub>;
+    hrmpCloseChannelRequestsList(): Promise<Array<PolkadotParachainPrimitivesPrimitivesHrmpChannelId>>;
+    hrmpCloseChannelRequestsList(
+      callback: Callback<Array<PolkadotParachainPrimitivesPrimitivesHrmpChannelId>>,
+    ): Promise<Unsub>;
 
     /**
      * The HRMP watermark associated with each para.
      * Invariant:
-     * - each para `P` used here as a key should satisfy `Paras::is_valid_para(P)` within a session.
+     * - each para `P` used here as a key should satisfy `Paras::is_valid_para(P)` within a
+     * session.
      **/
-    hrmpWatermarks(arg: PolkadotParachainPrimitivesId): Promise<number | undefined>;
-    hrmpWatermarks(arg: PolkadotParachainPrimitivesId, callback: Callback<number | undefined>): Promise<Unsub>;
+    hrmpWatermarks(arg: PolkadotParachainPrimitivesPrimitivesId): Promise<number | undefined>;
+    hrmpWatermarks(
+      arg: PolkadotParachainPrimitivesPrimitivesId,
+      callback: Callback<number | undefined>,
+    ): Promise<Unsub>;
 
     /**
      * HRMP channel data associated with each para.
@@ -2267,10 +2046,10 @@ export interface ChainStorage extends GenericChainStorage {
      * - each participant in the channel should satisfy `Paras::is_valid_para(P)` within a session.
      **/
     hrmpChannels(
-      arg: PolkadotParachainPrimitivesHrmpChannelId,
+      arg: PolkadotParachainPrimitivesPrimitivesHrmpChannelId,
     ): Promise<PolkadotRuntimeParachainsHrmpHrmpChannel | undefined>;
     hrmpChannels(
-      arg: PolkadotParachainPrimitivesHrmpChannelId,
+      arg: PolkadotParachainPrimitivesPrimitivesHrmpChannelId,
       callback: Callback<PolkadotRuntimeParachainsHrmpHrmpChannel | undefined>,
     ): Promise<Unsub>;
 
@@ -2289,15 +2068,19 @@ export interface ChainStorage extends GenericChainStorage {
      * - there should be no other dangling channels in `HrmpChannels`.
      * - the vectors are sorted.
      **/
-    hrmpIngressChannelsIndex(arg: PolkadotParachainPrimitivesId): Promise<Array<PolkadotParachainPrimitivesId>>;
     hrmpIngressChannelsIndex(
-      arg: PolkadotParachainPrimitivesId,
-      callback: Callback<Array<PolkadotParachainPrimitivesId>>,
+      arg: PolkadotParachainPrimitivesPrimitivesId,
+    ): Promise<Array<PolkadotParachainPrimitivesPrimitivesId>>;
+    hrmpIngressChannelsIndex(
+      arg: PolkadotParachainPrimitivesPrimitivesId,
+      callback: Callback<Array<PolkadotParachainPrimitivesPrimitivesId>>,
     ): Promise<Unsub>;
-    hrmpEgressChannelsIndex(arg: PolkadotParachainPrimitivesId): Promise<Array<PolkadotParachainPrimitivesId>>;
     hrmpEgressChannelsIndex(
-      arg: PolkadotParachainPrimitivesId,
-      callback: Callback<Array<PolkadotParachainPrimitivesId>>,
+      arg: PolkadotParachainPrimitivesPrimitivesId,
+    ): Promise<Array<PolkadotParachainPrimitivesPrimitivesId>>;
+    hrmpEgressChannelsIndex(
+      arg: PolkadotParachainPrimitivesPrimitivesId,
+      callback: Callback<Array<PolkadotParachainPrimitivesPrimitivesId>>,
     ): Promise<Unsub>;
 
     /**
@@ -2305,10 +2088,10 @@ export interface ChainStorage extends GenericChainStorage {
      * Invariant: cannot be non-empty if the corresponding channel in `HrmpChannels` is `None`.
      **/
     hrmpChannelContents(
-      arg: PolkadotParachainPrimitivesHrmpChannelId,
+      arg: PolkadotParachainPrimitivesPrimitivesHrmpChannelId,
     ): Promise<Array<PolkadotCorePrimitivesInboundHrmpMessage>>;
     hrmpChannelContents(
-      arg: PolkadotParachainPrimitivesHrmpChannelId,
+      arg: PolkadotParachainPrimitivesPrimitivesHrmpChannelId,
       callback: Callback<Array<PolkadotCorePrimitivesInboundHrmpMessage>>,
     ): Promise<Unsub>;
 
@@ -2321,11 +2104,11 @@ export interface ChainStorage extends GenericChainStorage {
      * same block number.
      **/
     hrmpChannelDigests(
-      arg: PolkadotParachainPrimitivesId,
-    ): Promise<Array<[number, Array<PolkadotParachainPrimitivesId>]>>;
+      arg: PolkadotParachainPrimitivesPrimitivesId,
+    ): Promise<Array<[number, Array<PolkadotParachainPrimitivesPrimitivesId>]>>;
     hrmpChannelDigests(
-      arg: PolkadotParachainPrimitivesId,
-      callback: Callback<Array<[number, Array<PolkadotParachainPrimitivesId>]>>,
+      arg: PolkadotParachainPrimitivesPrimitivesId,
+      callback: Callback<Array<[number, Array<PolkadotParachainPrimitivesPrimitivesId>]>>,
     ): Promise<Unsub>;
   };
   paraSessionInfo: {
@@ -2334,8 +2117,8 @@ export interface ChainStorage extends GenericChainStorage {
      * Note that this API is private due to it being prone to 'off-by-one' at session boundaries.
      * When in doubt, use `Sessions` API instead.
      **/
-    assignmentKeysUnsafe(): Promise<Array<PolkadotPrimitivesV4AssignmentAppPublic>>;
-    assignmentKeysUnsafe(callback: Callback<Array<PolkadotPrimitivesV4AssignmentAppPublic>>): Promise<Unsub>;
+    assignmentKeysUnsafe(): Promise<Array<PolkadotPrimitivesV5AssignmentAppPublic>>;
+    assignmentKeysUnsafe(callback: Callback<Array<PolkadotPrimitivesV5AssignmentAppPublic>>): Promise<Unsub>;
 
     /**
      * The earliest session for which previous session info is stored.
@@ -2348,8 +2131,8 @@ export interface ChainStorage extends GenericChainStorage {
      * Should have an entry in range `EarliestStoredSession..=CurrentSessionIndex`.
      * Does not have any entries before the session index in the first session change notification.
      **/
-    sessions(arg: number): Promise<PolkadotPrimitivesV4SessionInfo | undefined>;
-    sessions(arg: number, callback: Callback<PolkadotPrimitivesV4SessionInfo | undefined>): Promise<Unsub>;
+    sessions(arg: number): Promise<PolkadotPrimitivesV5SessionInfo | undefined>;
+    sessions(arg: number, callback: Callback<PolkadotPrimitivesV5SessionInfo | undefined>): Promise<Unsub>;
 
     /**
      * The validator account keys of the validators actively participating in parachain consensus.
@@ -2360,10 +2143,10 @@ export interface ChainStorage extends GenericChainStorage {
     /**
      * Executor parameter set for a given session index
      **/
-    sessionExecutorParams(arg: number): Promise<PolkadotPrimitivesV4ExecutorParams | undefined>;
+    sessionExecutorParams(arg: number): Promise<PolkadotPrimitivesV5ExecutorParams | undefined>;
     sessionExecutorParams(
       arg: number,
-      callback: Callback<PolkadotPrimitivesV4ExecutorParams | undefined>,
+      callback: Callback<PolkadotPrimitivesV5ExecutorParams | undefined>,
     ): Promise<Unsub>;
   };
   parasDisputes: {
@@ -2377,10 +2160,10 @@ export interface ChainStorage extends GenericChainStorage {
     /**
      * All ongoing or concluded disputes for the last several sessions.
      **/
-    disputes(arg: [number, PolkadotCorePrimitivesCandidateHash]): Promise<PolkadotPrimitivesV4DisputeState | undefined>;
+    disputes(arg: [number, PolkadotCorePrimitivesCandidateHash]): Promise<PolkadotPrimitivesV5DisputeState | undefined>;
     disputes(
       arg: [number, PolkadotCorePrimitivesCandidateHash],
-      callback: Callback<PolkadotPrimitivesV4DisputeState | undefined>,
+      callback: Callback<PolkadotPrimitivesV5DisputeState | undefined>,
     ): Promise<Unsub>;
 
     /**
@@ -2389,10 +2172,10 @@ export interface ChainStorage extends GenericChainStorage {
      **/
     backersOnDisputes(
       arg: [number, PolkadotCorePrimitivesCandidateHash],
-    ): Promise<Array<PolkadotPrimitivesV4ValidatorIndex> | undefined>;
+    ): Promise<Array<PolkadotPrimitivesV5ValidatorIndex> | undefined>;
     backersOnDisputes(
       arg: [number, PolkadotCorePrimitivesCandidateHash],
-      callback: Callback<Array<PolkadotPrimitivesV4ValidatorIndex> | undefined>,
+      callback: Callback<Array<PolkadotPrimitivesV5ValidatorIndex> | undefined>,
     ): Promise<Unsub>;
 
     /**
@@ -2420,10 +2203,10 @@ export interface ChainStorage extends GenericChainStorage {
      **/
     unappliedSlashes(
       arg: [number, PolkadotCorePrimitivesCandidateHash],
-    ): Promise<PolkadotRuntimeParachainsDisputesSlashingPendingSlashes | undefined>;
+    ): Promise<PolkadotPrimitivesV5SlashingPendingSlashes | undefined>;
     unappliedSlashes(
       arg: [number, PolkadotCorePrimitivesCandidateHash],
-      callback: Callback<PolkadotRuntimeParachainsDisputesSlashingPendingSlashes | undefined>,
+      callback: Callback<PolkadotPrimitivesV5SlashingPendingSlashes | undefined>,
     ): Promise<Unsub>;
 
     /**
@@ -2436,36 +2219,40 @@ export interface ChainStorage extends GenericChainStorage {
     /**
      * Pending swap operations.
      **/
-    pendingSwap(arg: PolkadotParachainPrimitivesId): Promise<PolkadotParachainPrimitivesId | undefined>;
     pendingSwap(
-      arg: PolkadotParachainPrimitivesId,
-      callback: Callback<PolkadotParachainPrimitivesId | undefined>,
+      arg: PolkadotParachainPrimitivesPrimitivesId,
+    ): Promise<PolkadotParachainPrimitivesPrimitivesId | undefined>;
+    pendingSwap(
+      arg: PolkadotParachainPrimitivesPrimitivesId,
+      callback: Callback<PolkadotParachainPrimitivesPrimitivesId | undefined>,
     ): Promise<Unsub>;
 
     /**
      * Amount held on deposit for each para and the original depositor.
      *
-     * The given account ID is responsible for registering the code and initial head data, but may only do
-     * so if it isn't yet registered. (After that, it's up to governance to do so.)
+     * The given account ID is responsible for registering the code and initial head data, but may
+     * only do so if it isn't yet registered. (After that, it's up to governance to do so.)
      **/
-    paras(arg: PolkadotParachainPrimitivesId): Promise<PolkadotRuntimeCommonParasRegistrarParaInfo | undefined>;
     paras(
-      arg: PolkadotParachainPrimitivesId,
+      arg: PolkadotParachainPrimitivesPrimitivesId,
+    ): Promise<PolkadotRuntimeCommonParasRegistrarParaInfo | undefined>;
+    paras(
+      arg: PolkadotParachainPrimitivesPrimitivesId,
       callback: Callback<PolkadotRuntimeCommonParasRegistrarParaInfo | undefined>,
     ): Promise<Unsub>;
 
     /**
      * The next free `ParaId`.
      **/
-    nextFreeParaId(): Promise<PolkadotParachainPrimitivesId>;
-    nextFreeParaId(callback: Callback<PolkadotParachainPrimitivesId>): Promise<Unsub>;
+    nextFreeParaId(): Promise<PolkadotParachainPrimitivesPrimitivesId>;
+    nextFreeParaId(callback: Callback<PolkadotParachainPrimitivesPrimitivesId>): Promise<Unsub>;
   };
   slots: {
     /**
      * Amounts held on deposit for each (possibly future) leased parachain.
      *
-     * The actual amount locked on its behalf by any account at any time is the maximum of the second values
-     * of the items in this list whose first value is the account.
+     * The actual amount locked on its behalf by any account at any time is the maximum of the
+     * second values of the items in this list whose first value is the account.
      *
      * The first item in the list is the amount locked for the current Lease Period. Following
      * items are for the subsequent lease periods.
@@ -2479,9 +2266,9 @@ export interface ChainStorage extends GenericChainStorage {
      *
      * It is illegal for a `None` value to trail in the list.
      **/
-    leases(arg: PolkadotParachainPrimitivesId): Promise<Array<[AccountId32, bigint] | undefined>>;
+    leases(arg: PolkadotParachainPrimitivesPrimitivesId): Promise<Array<[AccountId32, bigint] | undefined>>;
     leases(
-      arg: PolkadotParachainPrimitivesId,
+      arg: PolkadotParachainPrimitivesPrimitivesId,
       callback: Callback<Array<[AccountId32, bigint] | undefined>>,
     ): Promise<Unsub>;
   };
@@ -2506,9 +2293,9 @@ export interface ChainStorage extends GenericChainStorage {
      * Amounts currently reserved in the accounts of the bidders currently winning
      * (sub-)ranges.
      **/
-    reservedAmounts(arg: [AccountId32Like, PolkadotParachainPrimitivesId]): Promise<bigint | undefined>;
+    reservedAmounts(arg: [AccountId32Like, PolkadotParachainPrimitivesPrimitivesId]): Promise<bigint | undefined>;
     reservedAmounts(
-      arg: [AccountId32Like, PolkadotParachainPrimitivesId],
+      arg: [AccountId32Like, PolkadotParachainPrimitivesPrimitivesId],
       callback: Callback<bigint | undefined>,
     ): Promise<Unsub>;
 
@@ -2519,19 +2306,21 @@ export interface ChainStorage extends GenericChainStorage {
      **/
     winning(
       arg: number,
-    ): Promise<FixedArray<[AccountId32, PolkadotParachainPrimitivesId, bigint] | undefined, 36> | undefined>;
+    ): Promise<FixedArray<[AccountId32, PolkadotParachainPrimitivesPrimitivesId, bigint] | undefined, 36> | undefined>;
     winning(
       arg: number,
-      callback: Callback<FixedArray<[AccountId32, PolkadotParachainPrimitivesId, bigint] | undefined, 36> | undefined>,
+      callback: Callback<
+        FixedArray<[AccountId32, PolkadotParachainPrimitivesPrimitivesId, bigint] | undefined, 36> | undefined
+      >,
     ): Promise<Unsub>;
   };
   crowdloan: {
     /**
      * Info on all of the funds.
      **/
-    funds(arg: PolkadotParachainPrimitivesId): Promise<PolkadotRuntimeCommonCrowdloanFundInfo | undefined>;
+    funds(arg: PolkadotParachainPrimitivesPrimitivesId): Promise<PolkadotRuntimeCommonCrowdloanFundInfo | undefined>;
     funds(
-      arg: PolkadotParachainPrimitivesId,
+      arg: PolkadotParachainPrimitivesPrimitivesId,
       callback: Callback<PolkadotRuntimeCommonCrowdloanFundInfo | undefined>,
     ): Promise<Unsub>;
 
@@ -2539,8 +2328,8 @@ export interface ChainStorage extends GenericChainStorage {
      * The funds that have had additional contributions during the last block. This is used
      * in order to determine which funds should submit new or updated bids.
      **/
-    newRaise(): Promise<Array<PolkadotParachainPrimitivesId>>;
-    newRaise(callback: Callback<Array<PolkadotParachainPrimitivesId>>): Promise<Unsub>;
+    newRaise(): Promise<Array<PolkadotParachainPrimitivesPrimitivesId>>;
+    newRaise(callback: Callback<Array<PolkadotParachainPrimitivesPrimitivesId>>): Promise<Unsub>;
 
     /**
      * The number of auctions that have entered into their ending period so far.

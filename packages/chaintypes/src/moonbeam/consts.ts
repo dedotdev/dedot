@@ -10,7 +10,7 @@ import type {
   SpWeightsWeightV2Weight,
   PalletReferendaTrackInfo,
   FrameSupportPalletId,
-  XcmV3MultilocationMultiLocation,
+  StagingXcmV3MultilocationMultiLocation,
 } from './types';
 
 export interface ChainConsts extends GenericChainConsts {
@@ -126,6 +126,12 @@ export interface ChainConsts extends GenericChainConsts {
      * Minimum number of blocks per round
      **/
     minBlocksPerRound: number;
+
+    /**
+     * If a collator doesn't produce any block on this number of rounds, it is notified as inactive.
+     * This value must be less than or equal to RewardPaymentDelay.
+     **/
+    maxOfflineRounds: number;
 
     /**
      * Number of rounds that candidates remain bonded before exit request is executable
@@ -599,7 +605,7 @@ export interface ChainConsts extends GenericChainConsts {
     /**
      * Self chain location.
      **/
-    selfLocation: XcmV3MultilocationMultiLocation;
+    selfLocation: StagingXcmV3MultilocationMultiLocation;
 
     /**
      * Base XCM weight.
@@ -613,7 +619,7 @@ export interface ChainConsts extends GenericChainConsts {
     /**
      * Self chain location.
      **/
-    selfLocation: XcmV3MultilocationMultiLocation;
+    selfLocation: StagingXcmV3MultilocationMultiLocation;
 
     /**
      *

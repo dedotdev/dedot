@@ -4,6 +4,7 @@ import type {
   H256,
   DispatchError,
   AccountId32,
+  ResultPayload,
   Perbill,
   FixedBytes,
   FixedU128,
@@ -52,80 +53,98 @@ export type FrameSystemEventRecord = {
 };
 
 export type KitchensinkRuntimeRuntimeEvent =
-  | { tag: 'System'; value: FrameSystemEvent }
-  | { tag: 'Utility'; value: PalletUtilityEvent }
-  | { tag: 'Indices'; value: PalletIndicesEvent }
-  | { tag: 'Balances'; value: PalletBalancesEvent }
-  | { tag: 'TransactionPayment'; value: PalletTransactionPaymentEvent }
-  | { tag: 'AssetTxPayment'; value: PalletAssetTxPaymentEvent }
-  | { tag: 'AssetConversionTxPayment'; value: PalletAssetConversionTxPaymentEvent }
-  | { tag: 'ElectionProviderMultiPhase'; value: PalletElectionProviderMultiPhaseEvent }
-  | { tag: 'Staking'; value: PalletStakingPalletEvent }
-  | { tag: 'Session'; value: PalletSessionEvent }
-  | { tag: 'Democracy'; value: PalletDemocracyEvent }
-  | { tag: 'Council'; value: PalletCollectiveEvent }
-  | { tag: 'TechnicalCommittee'; value: PalletCollectiveEvent }
-  | { tag: 'Elections'; value: PalletElectionsPhragmenEvent }
-  | { tag: 'TechnicalMembership'; value: PalletMembershipEvent }
-  | { tag: 'Grandpa'; value: PalletGrandpaEvent }
-  | { tag: 'Treasury'; value: PalletTreasuryEvent }
-  | { tag: 'AssetRate'; value: PalletAssetRateEvent }
-  | { tag: 'Contracts'; value: PalletContractsEvent }
-  | { tag: 'Sudo'; value: PalletSudoEvent }
-  | { tag: 'ImOnline'; value: PalletImOnlineEvent }
-  | { tag: 'Offences'; value: PalletOffencesEvent }
-  | { tag: 'Identity'; value: PalletIdentityEvent }
-  | { tag: 'Society'; value: PalletSocietyEvent }
-  | { tag: 'Recovery'; value: PalletRecoveryEvent }
-  | { tag: 'Vesting'; value: PalletVestingEvent }
-  | { tag: 'Scheduler'; value: PalletSchedulerEvent }
-  | { tag: 'Glutton'; value: PalletGluttonEvent }
-  | { tag: 'Preimage'; value: PalletPreimageEvent }
-  | { tag: 'Proxy'; value: PalletProxyEvent }
-  | { tag: 'Multisig'; value: PalletMultisigEvent }
-  | { tag: 'Bounties'; value: PalletBountiesEvent }
-  | { tag: 'Tips'; value: PalletTipsEvent }
-  | { tag: 'Assets'; value: PalletAssetsEvent }
-  | { tag: 'PoolAssets'; value: PalletAssetsEvent }
-  | { tag: 'Lottery'; value: PalletLotteryEvent }
-  | { tag: 'Nis'; value: PalletNisEvent }
-  | { tag: 'Uniques'; value: PalletUniquesEvent }
-  | { tag: 'Nfts'; value: PalletNftsEvent }
-  | { tag: 'NftFractionalization'; value: PalletNftFractionalizationEvent }
-  | { tag: 'Salary'; value: PalletSalaryEvent }
-  | { tag: 'CoreFellowship'; value: PalletCoreFellowshipEvent }
-  | { tag: 'TransactionStorage'; value: PalletTransactionStorageEvent }
-  | { tag: 'VoterList'; value: PalletBagsListEvent }
-  | { tag: 'StateTrieMigration'; value: PalletStateTrieMigrationEvent }
-  | { tag: 'ChildBounties'; value: PalletChildBountiesEvent }
-  | { tag: 'Referenda'; value: PalletReferendaEvent }
-  | { tag: 'Remark'; value: PalletRemarkEvent }
-  | { tag: 'ConvictionVoting'; value: PalletConvictionVotingEvent }
-  | { tag: 'Whitelist'; value: PalletWhitelistEvent }
-  | { tag: 'AllianceMotion'; value: PalletCollectiveEvent }
-  | { tag: 'Alliance'; value: PalletAllianceEvent }
-  | { tag: 'NominationPools'; value: PalletNominationPoolsEvent }
-  | { tag: 'RankedPolls'; value: PalletReferendaEvent002 }
-  | { tag: 'RankedCollective'; value: PalletRankedCollectiveEvent }
-  | { tag: 'AssetConversion'; value: PalletAssetConversionEvent }
-  | { tag: 'FastUnstake'; value: PalletFastUnstakeEvent }
-  | { tag: 'MessageQueue'; value: PalletMessageQueueEvent }
-  | { tag: 'Pov'; value: FrameBenchmarkingPalletPovEvent }
-  | { tag: 'TxPause'; value: PalletTxPauseEvent }
-  | { tag: 'SafeMode'; value: PalletSafeModeEvent }
-  | { tag: 'Statement'; value: PalletStatementEvent }
-  | { tag: 'Broker'; value: PalletBrokerEvent };
+  | { pallet: 'System'; palletEvent: FrameSystemEvent }
+  | { pallet: 'Utility'; palletEvent: PalletUtilityEvent }
+  | { pallet: 'Indices'; palletEvent: PalletIndicesEvent }
+  | { pallet: 'Balances'; palletEvent: PalletBalancesEvent }
+  | { pallet: 'TransactionPayment'; palletEvent: PalletTransactionPaymentEvent }
+  | { pallet: 'AssetTxPayment'; palletEvent: PalletAssetTxPaymentEvent }
+  | { pallet: 'AssetConversionTxPayment'; palletEvent: PalletAssetConversionTxPaymentEvent }
+  | { pallet: 'ElectionProviderMultiPhase'; palletEvent: PalletElectionProviderMultiPhaseEvent }
+  | { pallet: 'Staking'; palletEvent: PalletStakingPalletEvent }
+  | { pallet: 'Session'; palletEvent: PalletSessionEvent }
+  | { pallet: 'Democracy'; palletEvent: PalletDemocracyEvent }
+  | { pallet: 'Council'; palletEvent: PalletCollectiveEvent }
+  | { pallet: 'TechnicalCommittee'; palletEvent: PalletCollectiveEvent }
+  | { pallet: 'Elections'; palletEvent: PalletElectionsPhragmenEvent }
+  | { pallet: 'TechnicalMembership'; palletEvent: PalletMembershipEvent }
+  | { pallet: 'Grandpa'; palletEvent: PalletGrandpaEvent }
+  | { pallet: 'Treasury'; palletEvent: PalletTreasuryEvent }
+  | { pallet: 'AssetRate'; palletEvent: PalletAssetRateEvent }
+  | { pallet: 'Contracts'; palletEvent: PalletContractsEvent }
+  | { pallet: 'Sudo'; palletEvent: PalletSudoEvent }
+  | { pallet: 'ImOnline'; palletEvent: PalletImOnlineEvent }
+  | { pallet: 'Offences'; palletEvent: PalletOffencesEvent }
+  | { pallet: 'Identity'; palletEvent: PalletIdentityEvent }
+  | { pallet: 'Society'; palletEvent: PalletSocietyEvent }
+  | { pallet: 'Recovery'; palletEvent: PalletRecoveryEvent }
+  | { pallet: 'Vesting'; palletEvent: PalletVestingEvent }
+  | { pallet: 'Scheduler'; palletEvent: PalletSchedulerEvent }
+  | { pallet: 'Glutton'; palletEvent: PalletGluttonEvent }
+  | { pallet: 'Preimage'; palletEvent: PalletPreimageEvent }
+  | { pallet: 'Proxy'; palletEvent: PalletProxyEvent }
+  | { pallet: 'Multisig'; palletEvent: PalletMultisigEvent }
+  | { pallet: 'Bounties'; palletEvent: PalletBountiesEvent }
+  | { pallet: 'Tips'; palletEvent: PalletTipsEvent }
+  | { pallet: 'Assets'; palletEvent: PalletAssetsEvent }
+  | { pallet: 'PoolAssets'; palletEvent: PalletAssetsEvent }
+  | { pallet: 'Lottery'; palletEvent: PalletLotteryEvent }
+  | { pallet: 'Nis'; palletEvent: PalletNisEvent }
+  | { pallet: 'Uniques'; palletEvent: PalletUniquesEvent }
+  | { pallet: 'Nfts'; palletEvent: PalletNftsEvent }
+  | { pallet: 'NftFractionalization'; palletEvent: PalletNftFractionalizationEvent }
+  | { pallet: 'Salary'; palletEvent: PalletSalaryEvent }
+  | { pallet: 'CoreFellowship'; palletEvent: PalletCoreFellowshipEvent }
+  | { pallet: 'TransactionStorage'; palletEvent: PalletTransactionStorageEvent }
+  | { pallet: 'VoterList'; palletEvent: PalletBagsListEvent }
+  | { pallet: 'StateTrieMigration'; palletEvent: PalletStateTrieMigrationEvent }
+  | { pallet: 'ChildBounties'; palletEvent: PalletChildBountiesEvent }
+  | { pallet: 'Referenda'; palletEvent: PalletReferendaEvent }
+  | { pallet: 'Remark'; palletEvent: PalletRemarkEvent }
+  | { pallet: 'ConvictionVoting'; palletEvent: PalletConvictionVotingEvent }
+  | { pallet: 'Whitelist'; palletEvent: PalletWhitelistEvent }
+  | { pallet: 'AllianceMotion'; palletEvent: PalletCollectiveEvent }
+  | { pallet: 'Alliance'; palletEvent: PalletAllianceEvent }
+  | { pallet: 'NominationPools'; palletEvent: PalletNominationPoolsEvent }
+  | { pallet: 'RankedPolls'; palletEvent: PalletReferendaEvent002 }
+  | { pallet: 'RankedCollective'; palletEvent: PalletRankedCollectiveEvent }
+  | { pallet: 'AssetConversion'; palletEvent: PalletAssetConversionEvent }
+  | { pallet: 'FastUnstake'; palletEvent: PalletFastUnstakeEvent }
+  | { pallet: 'MessageQueue'; palletEvent: PalletMessageQueueEvent }
+  | { pallet: 'Pov'; palletEvent: FrameBenchmarkingPalletPovEvent }
+  | { pallet: 'TxPause'; palletEvent: PalletTxPauseEvent }
+  | { pallet: 'SafeMode'; palletEvent: PalletSafeModeEvent }
+  | { pallet: 'Statement'; palletEvent: PalletStatementEvent }
+  | { pallet: 'Broker'; palletEvent: PalletBrokerEvent };
 
 /**
  * Event for the System pallet.
  **/
 export type FrameSystemEvent =
-  | { tag: 'ExtrinsicSuccess'; value: { dispatchInfo: FrameSupportDispatchDispatchInfo } }
-  | { tag: 'ExtrinsicFailed'; value: { dispatchError: DispatchError; dispatchInfo: FrameSupportDispatchDispatchInfo } }
-  | { tag: 'CodeUpdated' }
-  | { tag: 'NewAccount'; value: { account: AccountId32 } }
-  | { tag: 'KilledAccount'; value: { account: AccountId32 } }
-  | { tag: 'Remarked'; value: { sender: AccountId32; hash: H256 } };
+  /**
+   * An extrinsic completed successfully.
+   **/
+  | { name: 'ExtrinsicSuccess'; data: { dispatchInfo: FrameSupportDispatchDispatchInfo } }
+  /**
+   * An extrinsic failed.
+   **/
+  | { name: 'ExtrinsicFailed'; data: { dispatchError: DispatchError; dispatchInfo: FrameSupportDispatchDispatchInfo } }
+  /**
+   * `:code` was updated.
+   **/
+  | { name: 'CodeUpdated' }
+  /**
+   * A new account was created.
+   **/
+  | { name: 'NewAccount'; data: { account: AccountId32 } }
+  /**
+   * An account was reaped.
+   **/
+  | { name: 'KilledAccount'; data: { account: AccountId32 } }
+  /**
+   * On on-chain remark happened.
+   **/
+  | { name: 'Remarked'; data: { sender: AccountId32; hash: H256 } };
 
 export type FrameSupportDispatchDispatchInfo = {
   weight: SpWeightsWeightV2Weight;
@@ -141,102 +160,232 @@ export type FrameSupportDispatchPays = 'Yes' | 'No';
  * The `Event` enum of this pallet
  **/
 export type PalletUtilityEvent =
-  | { tag: 'BatchInterrupted'; value: { index: number; error: DispatchError } }
-  | { tag: 'BatchCompleted' }
-  | { tag: 'BatchCompletedWithErrors' }
-  | { tag: 'ItemCompleted' }
-  | { tag: 'ItemFailed'; value: { error: DispatchError } }
-  | { tag: 'DispatchedAs'; value: { result: [] | DispatchError } };
+  /**
+   * Batch of dispatches did not complete fully. Index of first failing dispatch given, as
+   * well as the error.
+   **/
+  | { name: 'BatchInterrupted'; data: { index: number; error: DispatchError } }
+  /**
+   * Batch of dispatches completed fully with no error.
+   **/
+  | { name: 'BatchCompleted' }
+  /**
+   * Batch of dispatches completed but has errors.
+   **/
+  | { name: 'BatchCompletedWithErrors' }
+  /**
+   * A single item within a Batch of dispatches has completed with no error.
+   **/
+  | { name: 'ItemCompleted' }
+  /**
+   * A single item within a Batch of dispatches has completed with error.
+   **/
+  | { name: 'ItemFailed'; data: { error: DispatchError } }
+  /**
+   * A call was dispatched.
+   **/
+  | { name: 'DispatchedAs'; data: { result: ResultPayload<[], DispatchError> } };
 
 /**
  * The `Event` enum of this pallet
  **/
 export type PalletIndicesEvent =
-  | { tag: 'IndexAssigned'; value: { who: AccountId32; index: number } }
-  | { tag: 'IndexFreed'; value: { index: number } }
-  | { tag: 'IndexFrozen'; value: { index: number; who: AccountId32 } };
+  /**
+   * A account index was assigned.
+   **/
+  | { name: 'IndexAssigned'; data: { who: AccountId32; index: number } }
+  /**
+   * A account index has been freed up (unassigned).
+   **/
+  | { name: 'IndexFreed'; data: { index: number } }
+  /**
+   * A account index has been frozen to its current account ID.
+   **/
+  | { name: 'IndexFrozen'; data: { index: number; who: AccountId32 } };
 
 /**
  * The `Event` enum of this pallet
  **/
 export type PalletBalancesEvent =
-  | { tag: 'Endowed'; value: { account: AccountId32; freeBalance: bigint } }
-  | { tag: 'DustLost'; value: { account: AccountId32; amount: bigint } }
-  | { tag: 'Transfer'; value: { from: AccountId32; to: AccountId32; amount: bigint } }
-  | { tag: 'BalanceSet'; value: { who: AccountId32; free: bigint } }
-  | { tag: 'Reserved'; value: { who: AccountId32; amount: bigint } }
-  | { tag: 'Unreserved'; value: { who: AccountId32; amount: bigint } }
+  /**
+   * An account was created with some free balance.
+   **/
+  | { name: 'Endowed'; data: { account: AccountId32; freeBalance: bigint } }
+  /**
+   * An account was removed whose balance was non-zero but below ExistentialDeposit,
+   * resulting in an outright loss.
+   **/
+  | { name: 'DustLost'; data: { account: AccountId32; amount: bigint } }
+  /**
+   * Transfer succeeded.
+   **/
+  | { name: 'Transfer'; data: { from: AccountId32; to: AccountId32; amount: bigint } }
+  /**
+   * A balance was set by root.
+   **/
+  | { name: 'BalanceSet'; data: { who: AccountId32; free: bigint } }
+  /**
+   * Some balance was reserved (moved from free to reserved).
+   **/
+  | { name: 'Reserved'; data: { who: AccountId32; amount: bigint } }
+  /**
+   * Some balance was unreserved (moved from reserved to free).
+   **/
+  | { name: 'Unreserved'; data: { who: AccountId32; amount: bigint } }
+  /**
+   * Some balance was moved from the reserve of the first account to the second account.
+   * Final argument indicates the destination balance type.
+   **/
   | {
-      tag: 'ReserveRepatriated';
-      value: {
+      name: 'ReserveRepatriated';
+      data: {
         from: AccountId32;
         to: AccountId32;
         amount: bigint;
         destinationStatus: FrameSupportTokensMiscBalanceStatus;
       };
     }
-  | { tag: 'Deposit'; value: { who: AccountId32; amount: bigint } }
-  | { tag: 'Withdraw'; value: { who: AccountId32; amount: bigint } }
-  | { tag: 'Slashed'; value: { who: AccountId32; amount: bigint } }
-  | { tag: 'Minted'; value: { who: AccountId32; amount: bigint } }
-  | { tag: 'Burned'; value: { who: AccountId32; amount: bigint } }
-  | { tag: 'Suspended'; value: { who: AccountId32; amount: bigint } }
-  | { tag: 'Restored'; value: { who: AccountId32; amount: bigint } }
-  | { tag: 'Upgraded'; value: { who: AccountId32 } }
-  | { tag: 'Issued'; value: { amount: bigint } }
-  | { tag: 'Rescinded'; value: { amount: bigint } }
-  | { tag: 'Locked'; value: { who: AccountId32; amount: bigint } }
-  | { tag: 'Unlocked'; value: { who: AccountId32; amount: bigint } }
-  | { tag: 'Frozen'; value: { who: AccountId32; amount: bigint } }
-  | { tag: 'Thawed'; value: { who: AccountId32; amount: bigint } };
+  /**
+   * Some amount was deposited (e.g. for transaction fees).
+   **/
+  | { name: 'Deposit'; data: { who: AccountId32; amount: bigint } }
+  /**
+   * Some amount was withdrawn from the account (e.g. for transaction fees).
+   **/
+  | { name: 'Withdraw'; data: { who: AccountId32; amount: bigint } }
+  /**
+   * Some amount was removed from the account (e.g. for misbehavior).
+   **/
+  | { name: 'Slashed'; data: { who: AccountId32; amount: bigint } }
+  /**
+   * Some amount was minted into an account.
+   **/
+  | { name: 'Minted'; data: { who: AccountId32; amount: bigint } }
+  /**
+   * Some amount was burned from an account.
+   **/
+  | { name: 'Burned'; data: { who: AccountId32; amount: bigint } }
+  /**
+   * Some amount was suspended from an account (it can be restored later).
+   **/
+  | { name: 'Suspended'; data: { who: AccountId32; amount: bigint } }
+  /**
+   * Some amount was restored into an account.
+   **/
+  | { name: 'Restored'; data: { who: AccountId32; amount: bigint } }
+  /**
+   * An account was upgraded.
+   **/
+  | { name: 'Upgraded'; data: { who: AccountId32 } }
+  /**
+   * Total issuance was increased by `amount`, creating a credit to be balanced.
+   **/
+  | { name: 'Issued'; data: { amount: bigint } }
+  /**
+   * Total issuance was decreased by `amount`, creating a debt to be balanced.
+   **/
+  | { name: 'Rescinded'; data: { amount: bigint } }
+  /**
+   * Some balance was locked.
+   **/
+  | { name: 'Locked'; data: { who: AccountId32; amount: bigint } }
+  /**
+   * Some balance was unlocked.
+   **/
+  | { name: 'Unlocked'; data: { who: AccountId32; amount: bigint } }
+  /**
+   * Some balance was frozen.
+   **/
+  | { name: 'Frozen'; data: { who: AccountId32; amount: bigint } }
+  /**
+   * Some balance was thawed.
+   **/
+  | { name: 'Thawed'; data: { who: AccountId32; amount: bigint } };
 
 export type FrameSupportTokensMiscBalanceStatus = 'Free' | 'Reserved';
 
 /**
  * The `Event` enum of this pallet
  **/
-export type PalletTransactionPaymentEvent = {
-  tag: 'TransactionFeePaid';
-  value: { who: AccountId32; actualFee: bigint; tip: bigint };
-};
+export type PalletTransactionPaymentEvent =
+  /**
+   * A transaction fee `actual_fee`, of which `tip` was added to the minimum inclusion fee,
+   * has been paid by `who`.
+   **/
+  { name: 'TransactionFeePaid'; data: { who: AccountId32; actualFee: bigint; tip: bigint } };
 
 /**
  * The `Event` enum of this pallet
  **/
-export type PalletAssetTxPaymentEvent = {
-  tag: 'AssetTxFeePaid';
-  value: { who: AccountId32; actualFee: bigint; tip: bigint; assetId?: number | undefined };
-};
+export type PalletAssetTxPaymentEvent =
+  /**
+   * A transaction fee `actual_fee`, of which `tip` was added to the minimum inclusion fee,
+   * has been paid by `who` in an asset `asset_id`.
+   **/
+  { name: 'AssetTxFeePaid'; data: { who: AccountId32; actualFee: bigint; tip: bigint; assetId?: number | undefined } };
 
 /**
  * The `Event` enum of this pallet
  **/
 export type PalletAssetConversionTxPaymentEvent =
-  | { tag: 'AssetTxFeePaid'; value: { who: AccountId32; actualFee: bigint; tip: bigint; assetId: number } }
-  | { tag: 'AssetRefundFailed'; value: { nativeAmountKept: bigint } };
+  /**
+   * A transaction fee `actual_fee`, of which `tip` was added to the minimum inclusion fee,
+   * has been paid by `who` in an asset `asset_id`.
+   **/
+  | { name: 'AssetTxFeePaid'; data: { who: AccountId32; actualFee: bigint; tip: bigint; assetId: number } }
+  /**
+   * A swap of the refund in native currency back to asset failed.
+   **/
+  | { name: 'AssetRefundFailed'; data: { nativeAmountKept: bigint } };
 
 /**
  * The `Event` enum of this pallet
  **/
 export type PalletElectionProviderMultiPhaseEvent =
+  /**
+   * A solution was stored with the given compute.
+   *
+   * The `origin` indicates the origin of the solution. If `origin` is `Some(AccountId)`,
+   * the stored solution was submited in the signed phase by a miner with the `AccountId`.
+   * Otherwise, the solution was stored either during the unsigned phase or by
+   * `T::ForceOrigin`. The `bool` is `true` when a previous solution was ejected to make
+   * room for this one.
+   **/
   | {
-      tag: 'SolutionStored';
-      value: {
+      name: 'SolutionStored';
+      data: {
         compute: PalletElectionProviderMultiPhaseElectionCompute;
         origin?: AccountId32 | undefined;
         prevEjected: boolean;
       };
     }
+  /**
+   * The election has been finalized, with the given computation and score.
+   **/
   | {
-      tag: 'ElectionFinalized';
-      value: { compute: PalletElectionProviderMultiPhaseElectionCompute; score: SpNposElectionsElectionScore };
+      name: 'ElectionFinalized';
+      data: { compute: PalletElectionProviderMultiPhaseElectionCompute; score: SpNposElectionsElectionScore };
     }
-  | { tag: 'ElectionFailed' }
-  | { tag: 'Rewarded'; value: { account: AccountId32; value: bigint } }
-  | { tag: 'Slashed'; value: { account: AccountId32; value: bigint } }
+  /**
+   * An election failed.
+   *
+   * Not much can be said about which computes failed in the process.
+   **/
+  | { name: 'ElectionFailed' }
+  /**
+   * An account has been rewarded for their signed submission being finalized.
+   **/
+  | { name: 'Rewarded'; data: { account: AccountId32; value: bigint } }
+  /**
+   * An account has been slashed for submitting an invalid signed submission.
+   **/
+  | { name: 'Slashed'; data: { account: AccountId32; value: bigint } }
+  /**
+   * There was a phase transition in a given round.
+   **/
   | {
-      tag: 'PhaseTransitioned';
-      value: { from: PalletElectionProviderMultiPhasePhase; to: PalletElectionProviderMultiPhasePhase; round: number };
+      name: 'PhaseTransitioned';
+      data: { from: PalletElectionProviderMultiPhasePhase; to: PalletElectionProviderMultiPhasePhase; round: number };
     };
 
 export type PalletElectionProviderMultiPhaseElectionCompute =
@@ -258,23 +407,81 @@ export type PalletElectionProviderMultiPhasePhase =
  * The `Event` enum of this pallet
  **/
 export type PalletStakingPalletEvent =
-  | { tag: 'EraPaid'; value: { eraIndex: number; validatorPayout: bigint; remainder: bigint } }
-  | { tag: 'Rewarded'; value: { stash: AccountId32; amount: bigint } }
-  | { tag: 'Slashed'; value: { staker: AccountId32; amount: bigint } }
-  | { tag: 'SlashReported'; value: { validator: AccountId32; fraction: Perbill; slashEra: number } }
-  | { tag: 'OldSlashingReportDiscarded'; value: { sessionIndex: number } }
-  | { tag: 'StakersElected' }
-  | { tag: 'Bonded'; value: { stash: AccountId32; amount: bigint } }
-  | { tag: 'Unbonded'; value: { stash: AccountId32; amount: bigint } }
-  | { tag: 'Withdrawn'; value: { stash: AccountId32; amount: bigint } }
-  | { tag: 'Kicked'; value: { nominator: AccountId32; stash: AccountId32 } }
-  | { tag: 'StakingElectionFailed' }
-  | { tag: 'Chilled'; value: { stash: AccountId32 } }
-  | { tag: 'PayoutStarted'; value: { eraIndex: number; validatorStash: AccountId32 } }
-  | { tag: 'ValidatorPrefsSet'; value: { stash: AccountId32; prefs: PalletStakingValidatorPrefs } }
-  | { tag: 'SnapshotVotersSizeExceeded'; value: { size: number } }
-  | { tag: 'SnapshotTargetsSizeExceeded'; value: { size: number } }
-  | { tag: 'ForceEra'; value: { mode: PalletStakingForcing } };
+  /**
+   * The era payout has been set; the first balance is the validator-payout; the second is
+   * the remainder from the maximum amount of reward.
+   **/
+  | { name: 'EraPaid'; data: { eraIndex: number; validatorPayout: bigint; remainder: bigint } }
+  /**
+   * The nominator has been rewarded by this amount.
+   **/
+  | { name: 'Rewarded'; data: { stash: AccountId32; amount: bigint } }
+  /**
+   * A staker (validator or nominator) has been slashed by the given amount.
+   **/
+  | { name: 'Slashed'; data: { staker: AccountId32; amount: bigint } }
+  /**
+   * A slash for the given validator, for the given percentage of their stake, at the given
+   * era as been reported.
+   **/
+  | { name: 'SlashReported'; data: { validator: AccountId32; fraction: Perbill; slashEra: number } }
+  /**
+   * An old slashing report from a prior era was discarded because it could
+   * not be processed.
+   **/
+  | { name: 'OldSlashingReportDiscarded'; data: { sessionIndex: number } }
+  /**
+   * A new set of stakers was elected.
+   **/
+  | { name: 'StakersElected' }
+  /**
+   * An account has bonded this amount. \[stash, amount\]
+   *
+   * NOTE: This event is only emitted when funds are bonded via a dispatchable. Notably,
+   * it will not be emitted for staking rewards when they are added to stake.
+   **/
+  | { name: 'Bonded'; data: { stash: AccountId32; amount: bigint } }
+  /**
+   * An account has unbonded this amount.
+   **/
+  | { name: 'Unbonded'; data: { stash: AccountId32; amount: bigint } }
+  /**
+   * An account has called `withdraw_unbonded` and removed unbonding chunks worth `Balance`
+   * from the unlocking queue.
+   **/
+  | { name: 'Withdrawn'; data: { stash: AccountId32; amount: bigint } }
+  /**
+   * A nominator has been kicked from a validator.
+   **/
+  | { name: 'Kicked'; data: { nominator: AccountId32; stash: AccountId32 } }
+  /**
+   * The election failed. No new era is planned.
+   **/
+  | { name: 'StakingElectionFailed' }
+  /**
+   * An account has stopped participating as either a validator or nominator.
+   **/
+  | { name: 'Chilled'; data: { stash: AccountId32 } }
+  /**
+   * The stakers' rewards are getting paid.
+   **/
+  | { name: 'PayoutStarted'; data: { eraIndex: number; validatorStash: AccountId32 } }
+  /**
+   * A validator has set their preferences.
+   **/
+  | { name: 'ValidatorPrefsSet'; data: { stash: AccountId32; prefs: PalletStakingValidatorPrefs } }
+  /**
+   * Voters size limit reached.
+   **/
+  | { name: 'SnapshotVotersSizeExceeded'; data: { size: number } }
+  /**
+   * Targets size limit reached.
+   **/
+  | { name: 'SnapshotTargetsSizeExceeded'; data: { size: number } }
+  /**
+   * A new force era mode was set.
+   **/
+  | { name: 'ForceEra'; data: { mode: PalletStakingForcing } };
 
 export type PalletStakingValidatorPrefs = { commission: Perbill; blocked: boolean };
 
@@ -283,29 +490,79 @@ export type PalletStakingForcing = 'NotForcing' | 'ForceNew' | 'ForceNone' | 'Fo
 /**
  * The `Event` enum of this pallet
  **/
-export type PalletSessionEvent = { tag: 'NewSession'; value: { sessionIndex: number } };
+export type PalletSessionEvent =
+  /**
+   * New session has happened. Note that the argument is the session index, not the
+   * block number as the type might suggest.
+   **/
+  { name: 'NewSession'; data: { sessionIndex: number } };
 
 /**
  * The `Event` enum of this pallet
  **/
 export type PalletDemocracyEvent =
-  | { tag: 'Proposed'; value: { proposalIndex: number; deposit: bigint } }
-  | { tag: 'Tabled'; value: { proposalIndex: number; deposit: bigint } }
-  | { tag: 'ExternalTabled' }
-  | { tag: 'Started'; value: { refIndex: number; threshold: PalletDemocracyVoteThreshold } }
-  | { tag: 'Passed'; value: { refIndex: number } }
-  | { tag: 'NotPassed'; value: { refIndex: number } }
-  | { tag: 'Cancelled'; value: { refIndex: number } }
-  | { tag: 'Delegated'; value: { who: AccountId32; target: AccountId32 } }
-  | { tag: 'Undelegated'; value: { account: AccountId32 } }
-  | { tag: 'Vetoed'; value: { who: AccountId32; proposalHash: H256; until: number } }
-  | { tag: 'Blacklisted'; value: { proposalHash: H256 } }
-  | { tag: 'Voted'; value: { voter: AccountId32; refIndex: number; vote: PalletDemocracyVoteAccountVote } }
-  | { tag: 'Seconded'; value: { seconder: AccountId32; propIndex: number } }
-  | { tag: 'ProposalCanceled'; value: { propIndex: number } }
+  /**
+   * A motion has been proposed by a public account.
+   **/
+  | { name: 'Proposed'; data: { proposalIndex: number; deposit: bigint } }
+  /**
+   * A public proposal has been tabled for referendum vote.
+   **/
+  | { name: 'Tabled'; data: { proposalIndex: number; deposit: bigint } }
+  /**
+   * An external proposal has been tabled.
+   **/
+  | { name: 'ExternalTabled' }
+  /**
+   * A referendum has begun.
+   **/
+  | { name: 'Started'; data: { refIndex: number; threshold: PalletDemocracyVoteThreshold } }
+  /**
+   * A proposal has been approved by referendum.
+   **/
+  | { name: 'Passed'; data: { refIndex: number } }
+  /**
+   * A proposal has been rejected by referendum.
+   **/
+  | { name: 'NotPassed'; data: { refIndex: number } }
+  /**
+   * A referendum has been cancelled.
+   **/
+  | { name: 'Cancelled'; data: { refIndex: number } }
+  /**
+   * An account has delegated their vote to another account.
+   **/
+  | { name: 'Delegated'; data: { who: AccountId32; target: AccountId32 } }
+  /**
+   * An account has cancelled a previous delegation operation.
+   **/
+  | { name: 'Undelegated'; data: { account: AccountId32 } }
+  /**
+   * An external proposal has been vetoed.
+   **/
+  | { name: 'Vetoed'; data: { who: AccountId32; proposalHash: H256; until: number } }
+  /**
+   * A proposal_hash has been blacklisted permanently.
+   **/
+  | { name: 'Blacklisted'; data: { proposalHash: H256 } }
+  /**
+   * An account has voted in a referendum
+   **/
+  | { name: 'Voted'; data: { voter: AccountId32; refIndex: number; vote: PalletDemocracyVoteAccountVote } }
+  /**
+   * An account has secconded a proposal
+   **/
+  | { name: 'Seconded'; data: { seconder: AccountId32; propIndex: number } }
+  /**
+   * A proposal got canceled.
+   **/
+  | { name: 'ProposalCanceled'; data: { propIndex: number } }
+  /**
+   * Metadata for a proposal or a referendum has been set.
+   **/
   | {
-      tag: 'MetadataSet';
-      value: {
+      name: 'MetadataSet';
+      data: {
         /**
          * Metadata owner.
          **/
@@ -317,9 +574,12 @@ export type PalletDemocracyEvent =
         hash: H256;
       };
     }
+  /**
+   * Metadata for a proposal or a referendum has been cleared.
+   **/
   | {
-      tag: 'MetadataCleared';
-      value: {
+      name: 'MetadataCleared';
+      data: {
         /**
          * Metadata owner.
          **/
@@ -331,9 +591,12 @@ export type PalletDemocracyEvent =
         hash: H256;
       };
     }
+  /**
+   * Metadata has been transferred to new owner.
+   **/
   | {
-      tag: 'MetadataTransferred';
-      value: {
+      name: 'MetadataTransferred';
+      data: {
         /**
          * Previous metadata owner.
          **/
@@ -368,25 +631,78 @@ export type PalletDemocracyMetadataOwner =
  * The `Event` enum of this pallet
  **/
 export type PalletCollectiveEvent =
-  | { tag: 'Proposed'; value: { account: AccountId32; proposalIndex: number; proposalHash: H256; threshold: number } }
-  | { tag: 'Voted'; value: { account: AccountId32; proposalHash: H256; voted: boolean; yes: number; no: number } }
-  | { tag: 'Approved'; value: { proposalHash: H256 } }
-  | { tag: 'Disapproved'; value: { proposalHash: H256 } }
-  | { tag: 'Executed'; value: { proposalHash: H256; result: [] | DispatchError } }
-  | { tag: 'MemberExecuted'; value: { proposalHash: H256; result: [] | DispatchError } }
-  | { tag: 'Closed'; value: { proposalHash: H256; yes: number; no: number } };
+  /**
+   * A motion (given hash) has been proposed (by given account) with a threshold (given
+   * `MemberCount`).
+   **/
+  | { name: 'Proposed'; data: { account: AccountId32; proposalIndex: number; proposalHash: H256; threshold: number } }
+  /**
+   * A motion (given hash) has been voted on by given account, leaving
+   * a tally (yes votes and no votes given respectively as `MemberCount`).
+   **/
+  | { name: 'Voted'; data: { account: AccountId32; proposalHash: H256; voted: boolean; yes: number; no: number } }
+  /**
+   * A motion was approved by the required threshold.
+   **/
+  | { name: 'Approved'; data: { proposalHash: H256 } }
+  /**
+   * A motion was not approved by the required threshold.
+   **/
+  | { name: 'Disapproved'; data: { proposalHash: H256 } }
+  /**
+   * A motion was executed; result will be `Ok` if it returned without error.
+   **/
+  | { name: 'Executed'; data: { proposalHash: H256; result: ResultPayload<[], DispatchError> } }
+  /**
+   * A single member did some action; result will be `Ok` if it returned without error.
+   **/
+  | { name: 'MemberExecuted'; data: { proposalHash: H256; result: ResultPayload<[], DispatchError> } }
+  /**
+   * A proposal was closed because its threshold was reached or after its duration was up.
+   **/
+  | { name: 'Closed'; data: { proposalHash: H256; yes: number; no: number } };
 
 /**
  * The `Event` enum of this pallet
  **/
 export type PalletElectionsPhragmenEvent =
-  | { tag: 'NewTerm'; value: { newMembers: Array<[AccountId32, bigint]> } }
-  | { tag: 'EmptyTerm' }
-  | { tag: 'ElectionError' }
-  | { tag: 'MemberKicked'; value: { member: AccountId32 } }
-  | { tag: 'Renounced'; value: { candidate: AccountId32 } }
-  | { tag: 'CandidateSlashed'; value: { candidate: AccountId32; amount: bigint } }
-  | { tag: 'SeatHolderSlashed'; value: { seatHolder: AccountId32; amount: bigint } };
+  /**
+   * A new term with new_members. This indicates that enough candidates existed to run
+   * the election, not that enough have has been elected. The inner value must be examined
+   * for this purpose. A `NewTerm(\[\])` indicates that some candidates got their bond
+   * slashed and none were elected, whilst `EmptyTerm` means that no candidates existed to
+   * begin with.
+   **/
+  | { name: 'NewTerm'; data: { newMembers: Array<[AccountId32, bigint]> } }
+  /**
+   * No (or not enough) candidates existed for this round. This is different from
+   * `NewTerm(\[\])`. See the description of `NewTerm`.
+   **/
+  | { name: 'EmptyTerm' }
+  /**
+   * Internal error happened while trying to perform election.
+   **/
+  | { name: 'ElectionError' }
+  /**
+   * A member has been removed. This should always be followed by either `NewTerm` or
+   * `EmptyTerm`.
+   **/
+  | { name: 'MemberKicked'; data: { member: AccountId32 } }
+  /**
+   * Someone has renounced their candidacy.
+   **/
+  | { name: 'Renounced'; data: { candidate: AccountId32 } }
+  /**
+   * A candidate was slashed by amount due to failing to obtain a seat as member or
+   * runner-up.
+   *
+   * Note that old members and runners-up are also candidates.
+   **/
+  | { name: 'CandidateSlashed'; data: { candidate: AccountId32; amount: bigint } }
+  /**
+   * A seat holder was slashed by amount by being forcefully removed from the set.
+   **/
+  | { name: 'SeatHolderSlashed'; data: { seatHolder: AccountId32; amount: bigint } };
 
 /**
  * The `Event` enum of this pallet
@@ -421,9 +737,18 @@ export type PalletMembershipEvent =
  * The `Event` enum of this pallet
  **/
 export type PalletGrandpaEvent =
-  | { tag: 'NewAuthorities'; value: { authoritySet: Array<[SpConsensusGrandpaAppPublic, bigint]> } }
-  | { tag: 'Paused' }
-  | { tag: 'Resumed' };
+  /**
+   * New authority set has been applied.
+   **/
+  | { name: 'NewAuthorities'; data: { authoritySet: Array<[SpConsensusGrandpaAppPublic, bigint]> } }
+  /**
+   * Current authority set has been paused.
+   **/
+  | { name: 'Paused' }
+  /**
+   * Current authority set has been resumed.
+   **/
+  | { name: 'Resumed' };
 
 export type SpConsensusGrandpaAppPublic = SpCoreEd25519Public;
 
@@ -433,32 +758,70 @@ export type SpCoreEd25519Public = FixedBytes<32>;
  * The `Event` enum of this pallet
  **/
 export type PalletTreasuryEvent =
-  | { tag: 'Proposed'; value: { proposalIndex: number } }
-  | { tag: 'Spending'; value: { budgetRemaining: bigint } }
-  | { tag: 'Awarded'; value: { proposalIndex: number; award: bigint; account: AccountId32 } }
-  | { tag: 'Rejected'; value: { proposalIndex: number; slashed: bigint } }
-  | { tag: 'Burnt'; value: { burntFunds: bigint } }
-  | { tag: 'Rollover'; value: { rolloverBalance: bigint } }
-  | { tag: 'Deposit'; value: { value: bigint } }
-  | { tag: 'SpendApproved'; value: { proposalIndex: number; amount: bigint; beneficiary: AccountId32 } }
-  | { tag: 'UpdatedInactive'; value: { reactivated: bigint; deactivated: bigint } };
+  /**
+   * New proposal.
+   **/
+  | { name: 'Proposed'; data: { proposalIndex: number } }
+  /**
+   * We have ended a spend period and will now allocate funds.
+   **/
+  | { name: 'Spending'; data: { budgetRemaining: bigint } }
+  /**
+   * Some funds have been allocated.
+   **/
+  | { name: 'Awarded'; data: { proposalIndex: number; award: bigint; account: AccountId32 } }
+  /**
+   * A proposal was rejected; funds were slashed.
+   **/
+  | { name: 'Rejected'; data: { proposalIndex: number; slashed: bigint } }
+  /**
+   * Some of our funds have been burnt.
+   **/
+  | { name: 'Burnt'; data: { burntFunds: bigint } }
+  /**
+   * Spending has finished; this is the amount that rolls over until next spend.
+   **/
+  | { name: 'Rollover'; data: { rolloverBalance: bigint } }
+  /**
+   * Some funds have been deposited.
+   **/
+  | { name: 'Deposit'; data: { value: bigint } }
+  /**
+   * A new spend proposal has been approved.
+   **/
+  | { name: 'SpendApproved'; data: { proposalIndex: number; amount: bigint; beneficiary: AccountId32 } }
+  /**
+   * The inactive funds of the pallet have been updated.
+   **/
+  | { name: 'UpdatedInactive'; data: { reactivated: bigint; deactivated: bigint } };
 
 /**
  * The `Event` enum of this pallet
  **/
 export type PalletAssetRateEvent =
-  | { tag: 'AssetRateCreated'; value: { assetKind: number; rate: FixedU128 } }
-  | { tag: 'AssetRateRemoved'; value: { assetKind: number } }
-  | { tag: 'AssetRateUpdated'; value: { assetKind: number; old: FixedU128; new: FixedU128 } };
+  | { name: 'AssetRateCreated'; data: { assetKind: number; rate: FixedU128 } }
+  | { name: 'AssetRateRemoved'; data: { assetKind: number } }
+  | { name: 'AssetRateUpdated'; data: { assetKind: number; old: FixedU128; new: FixedU128 } };
 
 /**
  * The `Event` enum of this pallet
  **/
 export type PalletContractsEvent =
-  | { tag: 'Instantiated'; value: { deployer: AccountId32; contract: AccountId32 } }
+  /**
+   * Contract deployed by address at the specified address.
+   **/
+  | { name: 'Instantiated'; data: { deployer: AccountId32; contract: AccountId32 } }
+  /**
+   * Contract has been removed.
+   *
+   * # Note
+   *
+   * The only way for a contract to be removed and emitting this event is by calling
+   * `seal_terminate`.
+   **/
   | {
-      tag: 'Terminated';
-      value: {
+      name: 'Terminated';
+      data: {
         /**
          * The contract that was terminated.
          **/
@@ -470,10 +833,16 @@ export type PalletContractsEvent =
         beneficiary: AccountId32;
       };
     }
-  | { tag: 'CodeStored'; value: { codeHash: H256; depositHeld: bigint; uploader: AccountId32 } }
+  /**
+   * Code with the specified hash has been stored.
+   **/
+  | { name: 'CodeStored'; data: { codeHash: H256; depositHeld: bigint; uploader: AccountId32 } }
+  /**
+   * A custom event emitted by the contract.
+   **/
   | {
-      tag: 'ContractEmitted';
-      value: {
+      name: 'ContractEmitted';
+      data: {
         /**
          * The contract that emitted the event.
          **/
@@ -486,10 +855,16 @@ export type PalletContractsEvent =
         data: Bytes;
       };
     }
-  | { tag: 'CodeRemoved'; value: { codeHash: H256; depositReleased: bigint; remover: AccountId32 } }
+  /**
+   * A code with the specified hash was removed.
+   **/
+  | { name: 'CodeRemoved'; data: { codeHash: H256; depositReleased: bigint; remover: AccountId32 } }
+  /**
+   * A contract's code was updated.
+   **/
   | {
-      tag: 'ContractCodeUpdated';
-      value: {
+      name: 'ContractCodeUpdated';
+      data: {
         /**
          * The contract that has been updated.
          **/
@@ -506,9 +881,18 @@ export type PalletContractsEvent =
         oldCodeHash: H256;
       };
     }
+  /**
+   * A contract was called either by a plain account or another contract.
+   *
+   * # Note
+   *
+   * Please keep in mind that like all events this is only emitted for successful
+   * calls. This is because on failure all storage changes including events are
+   * rolled back.
+   **/
   | {
-      tag: 'Called';
-      value: {
+      name: 'Called';
+      data: {
         /**
          * The caller of the `contract`.
          **/
@@ -520,9 +904,18 @@ export type PalletContractsEvent =
         contract: AccountId32;
       };
     }
+  /**
+   * A contract delegate called a code hash.
+   *
+   * # Note
+   *
+   * Please keep in mind that like all events this is only emitted for successful
+   * calls. This is because on failure all storage changes including events are
+   * rolled back.
+   **/
   | {
-      tag: 'DelegateCalled';
-      value: {
+      name: 'DelegateCalled';
+      data: {
         /**
          * The contract that performed the delegate call and hence in whose context
          * the `code_hash` is executed.
@@ -535,8 +928,14 @@ export type PalletContractsEvent =
         codeHash: H256;
       };
     }
-  | { tag: 'StorageDepositTransferredAndHeld'; value: { from: AccountId32; to: AccountId32; amount: bigint } }
-  | { tag: 'StorageDepositTransferredAndReleased'; value: { from: AccountId32; to: AccountId32; amount: bigint } };
+  /**
+   * Some funds have been transferred and held as storage deposit.
+   **/
+  | { name: 'StorageDepositTransferredAndHeld'; data: { from: AccountId32; to: AccountId32; amount: bigint } }
+  /**
+   * Some storage deposit funds have been transferred and released.
+   **/
+  | { name: 'StorageDepositTransferredAndReleased'; data: { from: AccountId32; to: AccountId32; amount: bigint } };
 
 export type PalletContractsOrigin = { tag: 'Root' } | { tag: 'Signed'; value: AccountId32 };
 
@@ -546,17 +945,35 @@ export type KitchensinkRuntimeRuntime = {};
  * The `Event` enum of this pallet
  **/
 export type PalletSudoEvent =
-  | { tag: 'Sudid'; value: { sudoResult: [] | DispatchError } }
-  | { tag: 'KeyChanged'; value: { oldSudoer?: AccountId32 | undefined } }
-  | { tag: 'SudoAsDone'; value: { sudoResult: [] | DispatchError } };
+  /**
+   * A sudo just took place. \[result\]
+   **/
+  | { name: 'Sudid'; data: { sudoResult: ResultPayload<[], DispatchError> } }
+  /**
+   * The \[sudoer\] just switched identity; the old key is supplied if one existed.
+   **/
+  | { name: 'KeyChanged'; data: { oldSudoer?: AccountId32 | undefined } }
+  /**
+   * A sudo just took place. \[result\]
+   **/
+  | { name: 'SudoAsDone'; data: { sudoResult: ResultPayload<[], DispatchError> } };
 
 /**
  * The `Event` enum of this pallet
  **/
 export type PalletImOnlineEvent =
-  | { tag: 'HeartbeatReceived'; value: { authorityId: PalletImOnlineSr25519AppSr25519Public } }
-  | { tag: 'AllGood' }
-  | { tag: 'SomeOffline'; value: { offline: Array<[AccountId32, PalletStakingExposure]> } };
+  /**
+   * A new heartbeat was received from `AuthorityId`.
+   **/
+  | { name: 'HeartbeatReceived'; data: { authorityId: PalletImOnlineSr25519AppSr25519Public } }
+  /**
+   * At the end of the session, no offence was committed.
+   **/
+  | { name: 'AllGood' }
+  /**
+   * At the end of the session, at least one validator was found to be offline.
+   **/
+  | { name: 'SomeOffline'; data: { offline: Array<[AccountId32, PalletStakingExposure]> } };
 
 export type PalletImOnlineSr25519AppSr25519Public = SpCoreSr25519Public;
 
@@ -569,44 +986,135 @@ export type PalletStakingIndividualExposure = { who: AccountId32; value: bigint 
 /**
  * Events type.
  **/
-export type PalletOffencesEvent = { tag: 'Offence'; value: { kind: FixedBytes<16>; timeslot: Bytes } };
+export type PalletOffencesEvent =
+  /**
+   * There is an offence reported of the given `kind` happened at the `session_index` and
+   * (kind-specific) time slot. This event is not deposited for duplicate slashes.
+   * \[kind, timeslot\].
+   **/
+  { name: 'Offence'; data: { kind: FixedBytes<16>; timeslot: Bytes } };
 
 /**
  * The `Event` enum of this pallet
  **/
 export type PalletIdentityEvent =
-  | { tag: 'IdentitySet'; value: { who: AccountId32 } }
-  | { tag: 'IdentityCleared'; value: { who: AccountId32; deposit: bigint } }
-  | { tag: 'IdentityKilled'; value: { who: AccountId32; deposit: bigint } }
-  | { tag: 'JudgementRequested'; value: { who: AccountId32; registrarIndex: number } }
-  | { tag: 'JudgementUnrequested'; value: { who: AccountId32; registrarIndex: number } }
-  | { tag: 'JudgementGiven'; value: { target: AccountId32; registrarIndex: number } }
-  | { tag: 'RegistrarAdded'; value: { registrarIndex: number } }
-  | { tag: 'SubIdentityAdded'; value: { sub: AccountId32; main: AccountId32; deposit: bigint } }
-  | { tag: 'SubIdentityRemoved'; value: { sub: AccountId32; main: AccountId32; deposit: bigint } }
-  | { tag: 'SubIdentityRevoked'; value: { sub: AccountId32; main: AccountId32; deposit: bigint } };
+  /**
+   * A name was set or reset (which will remove all judgements).
+   **/
+  | { name: 'IdentitySet'; data: { who: AccountId32 } }
+  /**
+   * A name was cleared, and the given balance returned.
+   **/
+  | { name: 'IdentityCleared'; data: { who: AccountId32; deposit: bigint } }
+  /**
+   * A name was removed and the given balance slashed.
+   **/
+  | { name: 'IdentityKilled'; data: { who: AccountId32; deposit: bigint } }
+  /**
+   * A judgement was asked from a registrar.
+   **/
+  | { name: 'JudgementRequested'; data: { who: AccountId32; registrarIndex: number } }
+  /**
+   * A judgement request was retracted.
+   **/
+  | { name: 'JudgementUnrequested'; data: { who: AccountId32; registrarIndex: number } }
+  /**
+   * A judgement was given by a registrar.
+   **/
+  | { name: 'JudgementGiven'; data: { target: AccountId32; registrarIndex: number } }
+  /**
+   * A registrar was added.
+   **/
+  | { name: 'RegistrarAdded'; data: { registrarIndex: number } }
+  /**
+   * A sub-identity was added to an identity and the deposit paid.
+   **/
+  | { name: 'SubIdentityAdded'; data: { sub: AccountId32; main: AccountId32; deposit: bigint } }
+  /**
+   * A sub-identity was removed from an identity and the deposit freed.
+   **/
+  | { name: 'SubIdentityRemoved'; data: { sub: AccountId32; main: AccountId32; deposit: bigint } }
+  /**
+   * A sub-identity was cleared, and the given deposit repatriated from the
+   * main identity account to the sub-identity account.
+   **/
+  | { name: 'SubIdentityRevoked'; data: { sub: AccountId32; main: AccountId32; deposit: bigint } };
 
 /**
  * The `Event` enum of this pallet
  **/
 export type PalletSocietyEvent =
-  | { tag: 'Founded'; value: { founder: AccountId32 } }
-  | { tag: 'Bid'; value: { candidateId: AccountId32; offer: bigint } }
-  | { tag: 'Vouch'; value: { candidateId: AccountId32; offer: bigint; vouching: AccountId32 } }
-  | { tag: 'AutoUnbid'; value: { candidate: AccountId32 } }
-  | { tag: 'Unbid'; value: { candidate: AccountId32 } }
-  | { tag: 'Unvouch'; value: { candidate: AccountId32 } }
-  | { tag: 'Inducted'; value: { primary: AccountId32; candidates: Array<AccountId32> } }
-  | { tag: 'SuspendedMemberJudgement'; value: { who: AccountId32; judged: boolean } }
-  | { tag: 'CandidateSuspended'; value: { candidate: AccountId32 } }
-  | { tag: 'MemberSuspended'; value: { member: AccountId32 } }
-  | { tag: 'Challenged'; value: { member: AccountId32 } }
-  | { tag: 'Vote'; value: { candidate: AccountId32; voter: AccountId32; vote: boolean } }
-  | { tag: 'DefenderVote'; value: { voter: AccountId32; vote: boolean } }
-  | { tag: 'NewParams'; value: { params: PalletSocietyGroupParams } }
-  | { tag: 'Unfounded'; value: { founder: AccountId32 } }
-  | { tag: 'Deposit'; value: { value: bigint } }
-  | { tag: 'Elevated'; value: { member: AccountId32; rank: number } };
+  /**
+   * The society is founded by the given identity.
+   **/
+  | { name: 'Founded'; data: { founder: AccountId32 } }
+  /**
+   * A membership bid just happened. The given account is the candidate's ID and their offer
+   * is the second.
+   **/
+  | { name: 'Bid'; data: { candidateId: AccountId32; offer: bigint } }
+  /**
+   * A membership bid just happened by vouching. The given account is the candidate's ID and
+   * their offer is the second. The vouching party is the third.
+   **/
+  | { name: 'Vouch'; data: { candidateId: AccountId32; offer: bigint; vouching: AccountId32 } }
+  /**
+   * A candidate was dropped (due to an excess of bids in the system).
+   **/
+  | { name: 'AutoUnbid'; data: { candidate: AccountId32 } }
+  /**
+   * A candidate was dropped (by their request).
+   **/
+  | { name: 'Unbid'; data: { candidate: AccountId32 } }
+  /**
+   * A candidate was dropped (by request of who vouched for them).
+   **/
+  | { name: 'Unvouch'; data: { candidate: AccountId32 } }
+  /**
+   * A group of candidates have been inducted. The batch's primary is the first value, the
+   * batch in full is the second.
+   **/
+  | { name: 'Inducted'; data: { primary: AccountId32; candidates: Array<AccountId32> } }
+  /**
+   * A suspended member has been judged.
+   **/
+  | { name: 'SuspendedMemberJudgement'; data: { who: AccountId32; judged: boolean } }
+  /**
+   * A candidate has been suspended
+   **/
+  | { name: 'CandidateSuspended'; data: { candidate: AccountId32 } }
+  /**
+   * A member has been suspended
+   **/
+  | { name: 'MemberSuspended'; data: { member: AccountId32 } }
+  /**
+   * A member has been challenged
+   **/
+  | { name: 'Challenged'; data: { member: AccountId32 } }
+  /**
+   * A vote has been placed
+   **/
+  | { name: 'Vote'; data: { candidate: AccountId32; voter: AccountId32; vote: boolean } }
+  /**
+   * A vote has been placed for a defending member
+   **/
+  | { name: 'DefenderVote'; data: { voter: AccountId32; vote: boolean } }
+  /**
+   * A new set of \[params\] has been set for the group.
+   **/
+  | { name: 'NewParams'; data: { params: PalletSocietyGroupParams } }
+  /**
+   * Society is unfounded.
+   **/
+  | { name: 'Unfounded'; data: { founder: AccountId32 } }
+  /**
+   * Some funds were deposited into the society account.
+   **/
+  | { name: 'Deposit'; data: { value: bigint } }
+  /**
+   * A \[member\] got elevated to \[rank\].
+   **/
+  | { name: 'Elevated'; data: { member: AccountId32; rank: number } };
 
 export type PalletSocietyGroupParams = {
   maxMembers: number;
@@ -619,59 +1127,111 @@ export type PalletSocietyGroupParams = {
  * Events type.
  **/
 export type PalletRecoveryEvent =
-  | { tag: 'RecoveryCreated'; value: { account: AccountId32 } }
-  | { tag: 'RecoveryInitiated'; value: { lostAccount: AccountId32; rescuerAccount: AccountId32 } }
-  | { tag: 'RecoveryVouched'; value: { lostAccount: AccountId32; rescuerAccount: AccountId32; sender: AccountId32 } }
-  | { tag: 'RecoveryClosed'; value: { lostAccount: AccountId32; rescuerAccount: AccountId32 } }
-  | { tag: 'AccountRecovered'; value: { lostAccount: AccountId32; rescuerAccount: AccountId32 } }
-  | { tag: 'RecoveryRemoved'; value: { lostAccount: AccountId32 } };
+  /**
+   * A recovery process has been set up for an account.
+   **/
+  | { name: 'RecoveryCreated'; data: { account: AccountId32 } }
+  /**
+   * A recovery process has been initiated for lost account by rescuer account.
+   **/
+  | { name: 'RecoveryInitiated'; data: { lostAccount: AccountId32; rescuerAccount: AccountId32 } }
+  /**
+   * A recovery process for lost account by rescuer account has been vouched for by sender.
+   **/
+  | { name: 'RecoveryVouched'; data: { lostAccount: AccountId32; rescuerAccount: AccountId32; sender: AccountId32 } }
+  /**
+   * A recovery process for lost account by rescuer account has been closed.
+   **/
+  | { name: 'RecoveryClosed'; data: { lostAccount: AccountId32; rescuerAccount: AccountId32 } }
+  /**
+   * Lost account has been successfully recovered by rescuer account.
+   **/
+  | { name: 'AccountRecovered'; data: { lostAccount: AccountId32; rescuerAccount: AccountId32 } }
+  /**
+   * A recovery process has been removed for an account.
+   **/
+  | { name: 'RecoveryRemoved'; data: { lostAccount: AccountId32 } };
 
 /**
  * The `Event` enum of this pallet
  **/
 export type PalletVestingEvent =
-  | { tag: 'VestingUpdated'; value: { account: AccountId32; unvested: bigint } }
-  | { tag: 'VestingCompleted'; value: { account: AccountId32 } };
+  /**
+   * The amount vested has been updated. This could indicate a change in funds available.
+   * The balance given is the amount which is left unvested (and thus locked).
+   **/
+  | { name: 'VestingUpdated'; data: { account: AccountId32; unvested: bigint } }
+  /**
+   * An \[account\] has become fully vested.
+   **/
+  | { name: 'VestingCompleted'; data: { account: AccountId32 } };
 
 /**
  * Events type.
  **/
 export type PalletSchedulerEvent =
-  | { tag: 'Scheduled'; value: { when: number; index: number } }
-  | { tag: 'Canceled'; value: { when: number; index: number } }
+  /**
+   * Scheduled some task.
+   **/
+  | { name: 'Scheduled'; data: { when: number; index: number } }
+  /**
+   * Canceled some task.
+   **/
+  | { name: 'Canceled'; data: { when: number; index: number } }
+  /**
+   * Dispatched some task.
+   **/
   | {
-      tag: 'Dispatched';
-      value: { task: [number, number]; id?: FixedBytes<32> | undefined; result: [] | DispatchError };
+      name: 'Dispatched';
+      data: { task: [number, number]; id?: FixedBytes<32> | undefined; result: ResultPayload<[], DispatchError> };
     }
-  | { tag: 'CallUnavailable'; value: { task: [number, number]; id?: FixedBytes<32> | undefined } }
-  | { tag: 'PeriodicFailed'; value: { task: [number, number]; id?: FixedBytes<32> | undefined } }
-  | { tag: 'PermanentlyOverweight'; value: { task: [number, number]; id?: FixedBytes<32> | undefined } };
+  /**
+   * The call for the provided hash was not found so the task has been aborted.
+   **/
+  | { name: 'CallUnavailable'; data: { task: [number, number]; id?: FixedBytes<32> | undefined } }
+  /**
+   * The given task was unable to be renewed since the agenda is full at that block.
+   **/
+  | { name: 'PeriodicFailed'; data: { task: [number, number]; id?: FixedBytes<32> | undefined } }
+  /**
+   * The given task can never be executed since it is overweight.
+   **/
+  | { name: 'PermanentlyOverweight'; data: { task: [number, number]; id?: FixedBytes<32> | undefined } };
 
 /**
  * The `Event` enum of this pallet
  **/
 export type PalletGluttonEvent =
+  /**
+   * The pallet has been (re)initialized.
+   **/
   | {
-      tag: 'PalletInitialized';
-      value: {
+      name: 'PalletInitialized';
+      data: {
         /**
          * Whether the pallet has been re-initialized.
          **/
         reinit: boolean;
       };
     }
+  /**
+   * The computation limit has been updated.
+   **/
   | {
-      tag: 'ComputationLimitSet';
-      value: {
+      name: 'ComputationLimitSet';
+      data: {
         /**
          * The computation limit.
          **/
         compute: FixedU64;
       };
     }
+  /**
+   * The storage limit has been updated.
+   **/
   | {
-      tag: 'StorageLimitSet';
-      value: {
+      name: 'StorageLimitSet';
+      data: {
         /**
          * The storage limit.
          **/
@@ -683,32 +1243,57 @@ export type PalletGluttonEvent =
  * The `Event` enum of this pallet
  **/
 export type PalletPreimageEvent =
-  | { tag: 'Noted'; value: { hash: H256 } }
-  | { tag: 'Requested'; value: { hash: H256 } }
-  | { tag: 'Cleared'; value: { hash: H256 } };
+  /**
+   * A preimage has been noted.
+   **/
+  | { name: 'Noted'; data: { hash: H256 } }
+  /**
+   * A preimage has been requested.
+   **/
+  | { name: 'Requested'; data: { hash: H256 } }
+  /**
+   * A preimage has ben cleared.
+   **/
+  | { name: 'Cleared'; data: { hash: H256 } };
 
 /**
  * The `Event` enum of this pallet
  **/
 export type PalletProxyEvent =
-  | { tag: 'ProxyExecuted'; value: { result: [] | DispatchError } }
+  /**
+   * A proxy was executed correctly, with the given.
+   **/
+  | { name: 'ProxyExecuted'; data: { result: ResultPayload<[], DispatchError> } }
+  /**
+   * A pure account has been created by new proxy with given
+   * disambiguation index and proxy type.
+   **/
   | {
-      tag: 'PureCreated';
-      value: {
+      name: 'PureCreated';
+      data: {
         pure: AccountId32;
         who: AccountId32;
         proxyType: KitchensinkRuntimeProxyType;
         disambiguationIndex: number;
       };
     }
-  | { tag: 'Announced'; value: { real: AccountId32; proxy: AccountId32; callHash: H256 } }
+  /**
+   * An announcement was placed to make a call in the future.
+   **/
+  | { name: 'Announced'; data: { real: AccountId32; proxy: AccountId32; callHash: H256 } }
+  /**
+   * A proxy was added.
+   **/
   | {
-      tag: 'ProxyAdded';
-      value: { delegator: AccountId32; delegatee: AccountId32; proxyType: KitchensinkRuntimeProxyType; delay: number };
+      name: 'ProxyAdded';
+      data: { delegator: AccountId32; delegatee: AccountId32; proxyType: KitchensinkRuntimeProxyType; delay: number };
     }
+  /**
+   * A proxy was removed.
+   **/
   | {
-      tag: 'ProxyRemoved';
-      value: { delegator: AccountId32; delegatee: AccountId32; proxyType: KitchensinkRuntimeProxyType; delay: number };
+      name: 'ProxyRemoved';
+      data: { delegator: AccountId32; delegatee: AccountId32; proxyType: KitchensinkRuntimeProxyType; delay: number };
     };
 
 export type KitchensinkRuntimeProxyType = 'Any' | 'NonTransfer' | 'Governance' | 'Staking';
@@ -717,29 +1302,41 @@ export type KitchensinkRuntimeProxyType = 'Any' | 'NonTransfer' | 'Governance' |
  * The `Event` enum of this pallet
  **/
 export type PalletMultisigEvent =
-  | { tag: 'NewMultisig'; value: { approving: AccountId32; multisig: AccountId32; callHash: FixedBytes<32> } }
+  /**
+   * A new multisig operation has begun.
+   **/
+  | { name: 'NewMultisig'; data: { approving: AccountId32; multisig: AccountId32; callHash: FixedBytes<32> } }
+  /**
+   * A multisig operation has been approved by someone.
+   **/
   | {
-      tag: 'MultisigApproval';
-      value: {
+      name: 'MultisigApproval';
+      data: {
         approving: AccountId32;
         timepoint: PalletMultisigTimepoint;
         multisig: AccountId32;
         callHash: FixedBytes<32>;
       };
     }
+  /**
+   * A multisig operation has been executed.
+   **/
   | {
-      tag: 'MultisigExecuted';
-      value: {
+      name: 'MultisigExecuted';
+      data: {
         approving: AccountId32;
         timepoint: PalletMultisigTimepoint;
         multisig: AccountId32;
         callHash: FixedBytes<32>;
-        result: [] | DispatchError;
+        result: ResultPayload<[], DispatchError>;
       };
     }
+  /**
+   * A multisig operation has been cancelled.
+   **/
   | {
-      tag: 'MultisigCancelled';
-      value: {
+      name: 'MultisigCancelled';
+      data: {
         cancelling: AccountId32;
         timepoint: PalletMultisigTimepoint;
         multisig: AccountId32;
@@ -753,75 +1350,208 @@ export type PalletMultisigTimepoint = { height: number; index: number };
  * The `Event` enum of this pallet
  **/
 export type PalletBountiesEvent =
-  | { tag: 'BountyProposed'; value: { index: number } }
-  | { tag: 'BountyRejected'; value: { index: number; bond: bigint } }
-  | { tag: 'BountyBecameActive'; value: { index: number } }
-  | { tag: 'BountyAwarded'; value: { index: number; beneficiary: AccountId32 } }
-  | { tag: 'BountyClaimed'; value: { index: number; payout: bigint; beneficiary: AccountId32 } }
-  | { tag: 'BountyCanceled'; value: { index: number } }
-  | { tag: 'BountyExtended'; value: { index: number } };
+  /**
+   * New bounty proposal.
+   **/
+  | { name: 'BountyProposed'; data: { index: number } }
+  /**
+   * A bounty proposal was rejected; funds were slashed.
+   **/
+  | { name: 'BountyRejected'; data: { index: number; bond: bigint } }
+  /**
+   * A bounty proposal is funded and became active.
+   **/
+  | { name: 'BountyBecameActive'; data: { index: number } }
+  /**
+   * A bounty is awarded to a beneficiary.
+   **/
+  | { name: 'BountyAwarded'; data: { index: number; beneficiary: AccountId32 } }
+  /**
+   * A bounty is claimed by beneficiary.
+   **/
+  | { name: 'BountyClaimed'; data: { index: number; payout: bigint; beneficiary: AccountId32 } }
+  /**
+   * A bounty is cancelled.
+   **/
+  | { name: 'BountyCanceled'; data: { index: number } }
+  /**
+   * A bounty expiry is extended.
+   **/
+  | { name: 'BountyExtended'; data: { index: number } };
 
 /**
  * The `Event` enum of this pallet
  **/
 export type PalletTipsEvent =
-  | { tag: 'NewTip'; value: { tipHash: H256 } }
-  | { tag: 'TipClosing'; value: { tipHash: H256 } }
-  | { tag: 'TipClosed'; value: { tipHash: H256; who: AccountId32; payout: bigint } }
-  | { tag: 'TipRetracted'; value: { tipHash: H256 } }
-  | { tag: 'TipSlashed'; value: { tipHash: H256; finder: AccountId32; deposit: bigint } };
+  /**
+   * A new tip suggestion has been opened.
+   **/
+  | { name: 'NewTip'; data: { tipHash: H256 } }
+  /**
+   * A tip suggestion has reached threshold and is closing.
+   **/
+  | { name: 'TipClosing'; data: { tipHash: H256 } }
+  /**
+   * A tip suggestion has been closed.
+   **/
+  | { name: 'TipClosed'; data: { tipHash: H256; who: AccountId32; payout: bigint } }
+  /**
+   * A tip suggestion has been retracted.
+   **/
+  | { name: 'TipRetracted'; data: { tipHash: H256 } }
+  /**
+   * A tip suggestion has been slashed.
+   **/
+  | { name: 'TipSlashed'; data: { tipHash: H256; finder: AccountId32; deposit: bigint } };
 
 /**
  * The `Event` enum of this pallet
  **/
 export type PalletAssetsEvent =
-  | { tag: 'Created'; value: { assetId: number; creator: AccountId32; owner: AccountId32 } }
-  | { tag: 'Issued'; value: { assetId: number; owner: AccountId32; amount: bigint } }
-  | { tag: 'Transferred'; value: { assetId: number; from: AccountId32; to: AccountId32; amount: bigint } }
-  | { tag: 'Burned'; value: { assetId: number; owner: AccountId32; balance: bigint } }
-  | { tag: 'TeamChanged'; value: { assetId: number; issuer: AccountId32; admin: AccountId32; freezer: AccountId32 } }
-  | { tag: 'OwnerChanged'; value: { assetId: number; owner: AccountId32 } }
-  | { tag: 'Frozen'; value: { assetId: number; who: AccountId32 } }
-  | { tag: 'Thawed'; value: { assetId: number; who: AccountId32 } }
-  | { tag: 'AssetFrozen'; value: { assetId: number } }
-  | { tag: 'AssetThawed'; value: { assetId: number } }
-  | { tag: 'AccountsDestroyed'; value: { assetId: number; accountsDestroyed: number; accountsRemaining: number } }
-  | { tag: 'ApprovalsDestroyed'; value: { assetId: number; approvalsDestroyed: number; approvalsRemaining: number } }
-  | { tag: 'DestructionStarted'; value: { assetId: number } }
-  | { tag: 'Destroyed'; value: { assetId: number } }
-  | { tag: 'ForceCreated'; value: { assetId: number; owner: AccountId32 } }
-  | { tag: 'MetadataSet'; value: { assetId: number; name: Bytes; symbol: Bytes; decimals: number; isFrozen: boolean } }
-  | { tag: 'MetadataCleared'; value: { assetId: number } }
-  | { tag: 'ApprovedTransfer'; value: { assetId: number; source: AccountId32; delegate: AccountId32; amount: bigint } }
-  | { tag: 'ApprovalCancelled'; value: { assetId: number; owner: AccountId32; delegate: AccountId32 } }
+  /**
+   * Some asset class was created.
+   **/
+  | { name: 'Created'; data: { assetId: number; creator: AccountId32; owner: AccountId32 } }
+  /**
+   * Some assets were issued.
+   **/
+  | { name: 'Issued'; data: { assetId: number; owner: AccountId32; amount: bigint } }
+  /**
+   * Some assets were transferred.
+   **/
+  | { name: 'Transferred'; data: { assetId: number; from: AccountId32; to: AccountId32; amount: bigint } }
+  /**
+   * Some assets were destroyed.
+   **/
+  | { name: 'Burned'; data: { assetId: number; owner: AccountId32; balance: bigint } }
+  /**
+   * The management team changed.
+   **/
+  | { name: 'TeamChanged'; data: { assetId: number; issuer: AccountId32; admin: AccountId32; freezer: AccountId32 } }
+  /**
+   * The owner changed.
+   **/
+  | { name: 'OwnerChanged'; data: { assetId: number; owner: AccountId32 } }
+  /**
+   * Some account `who` was frozen.
+   **/
+  | { name: 'Frozen'; data: { assetId: number; who: AccountId32 } }
+  /**
+   * Some account `who` was thawed.
+   **/
+  | { name: 'Thawed'; data: { assetId: number; who: AccountId32 } }
+  /**
+   * Some asset `asset_id` was frozen.
+   **/
+  | { name: 'AssetFrozen'; data: { assetId: number } }
+  /**
+   * Some asset `asset_id` was thawed.
+   **/
+  | { name: 'AssetThawed'; data: { assetId: number } }
+  /**
+   * Accounts were destroyed for given asset.
+   **/
+  | { name: 'AccountsDestroyed'; data: { assetId: number; accountsDestroyed: number; accountsRemaining: number } }
+  /**
+   * Approvals were destroyed for given asset.
+   **/
+  | { name: 'ApprovalsDestroyed'; data: { assetId: number; approvalsDestroyed: number; approvalsRemaining: number } }
+  /**
+   * An asset class is in the process of being destroyed.
+   **/
+  | { name: 'DestructionStarted'; data: { assetId: number } }
+  /**
+   * An asset class was destroyed.
+   **/
+  | { name: 'Destroyed'; data: { assetId: number } }
+  /**
+   * Some asset class was force-created.
+   **/
+  | { name: 'ForceCreated'; data: { assetId: number; owner: AccountId32 } }
+  /**
+   * New metadata has been set for an asset.
+   **/
+  | { name: 'MetadataSet'; data: { assetId: number; name: Bytes; symbol: Bytes; decimals: number; isFrozen: boolean } }
+  /**
+   * Metadata has been cleared for an asset.
+   **/
+  | { name: 'MetadataCleared'; data: { assetId: number } }
+  /**
+   * (Additional) funds have been approved for transfer to a destination account.
+   **/
+  | { name: 'ApprovedTransfer'; data: { assetId: number; source: AccountId32; delegate: AccountId32; amount: bigint } }
+  /**
+   * An approval for account `delegate` was cancelled by `owner`.
+   **/
+  | { name: 'ApprovalCancelled'; data: { assetId: number; owner: AccountId32; delegate: AccountId32 } }
+  /**
+   * An `amount` was transferred in its entirety from `owner` to `destination` by
+   * the approved `delegate`.
+   **/
   | {
-      tag: 'TransferredApproved';
-      value: { assetId: number; owner: AccountId32; delegate: AccountId32; destination: AccountId32; amount: bigint };
+      name: 'TransferredApproved';
+      data: { assetId: number; owner: AccountId32; delegate: AccountId32; destination: AccountId32; amount: bigint };
     }
-  | { tag: 'AssetStatusChanged'; value: { assetId: number } }
-  | { tag: 'AssetMinBalanceChanged'; value: { assetId: number; newMinBalance: bigint } }
-  | { tag: 'Touched'; value: { assetId: number; who: AccountId32; depositor: AccountId32 } }
-  | { tag: 'Blocked'; value: { assetId: number; who: AccountId32 } };
+  /**
+   * An asset has had its attributes changed by the `Force` origin.
+   **/
+  | { name: 'AssetStatusChanged'; data: { assetId: number } }
+  /**
+   * The min_balance of an asset has been updated by the asset owner.
+   **/
+  | { name: 'AssetMinBalanceChanged'; data: { assetId: number; newMinBalance: bigint } }
+  /**
+   * Some account `who` was created with a deposit from `depositor`.
+   **/
+  | { name: 'Touched'; data: { assetId: number; who: AccountId32; depositor: AccountId32 } }
+  /**
+   * Some account `who` was blocked.
+   **/
+  | { name: 'Blocked'; data: { assetId: number; who: AccountId32 } };
 
 /**
  * The `Event` enum of this pallet
  **/
 export type PalletLotteryEvent =
-  | { tag: 'LotteryStarted' }
-  | { tag: 'CallsUpdated' }
-  | { tag: 'Winner'; value: { winner: AccountId32; lotteryBalance: bigint } }
-  | { tag: 'TicketBought'; value: { who: AccountId32; callIndex: [number, number] } };
+  /**
+   * A lottery has been started!
+   **/
+  | { name: 'LotteryStarted' }
+  /**
+   * A new set of calls have been set!
+   **/
+  | { name: 'CallsUpdated' }
+  /**
+   * A winner has been chosen!
+   **/
+  | { name: 'Winner'; data: { winner: AccountId32; lotteryBalance: bigint } }
+  /**
+   * A ticket has been bought!
+   **/
+  | { name: 'TicketBought'; data: { who: AccountId32; callIndex: [number, number] } };
 
 /**
  * The `Event` enum of this pallet
  **/
 export type PalletNisEvent =
-  | { tag: 'BidPlaced'; value: { who: AccountId32; amount: bigint; duration: number } }
-  | { tag: 'BidRetracted'; value: { who: AccountId32; amount: bigint; duration: number } }
-  | { tag: 'BidDropped'; value: { who: AccountId32; amount: bigint; duration: number } }
+  /**
+   * A bid was successfully placed.
+   **/
+  | { name: 'BidPlaced'; data: { who: AccountId32; amount: bigint; duration: number } }
+  /**
+   * A bid was successfully removed (before being accepted).
+   **/
+  | { name: 'BidRetracted'; data: { who: AccountId32; amount: bigint; duration: number } }
+  /**
+   * A bid was dropped from a queue because of another, more substantial, bid was present.
+   **/
+  | { name: 'BidDropped'; data: { who: AccountId32; amount: bigint; duration: number } }
+  /**
+   * A bid was accepted. The balance may not be released until expiry.
+   **/
   | {
-      tag: 'Issued';
-      value: {
+      name: 'Issued';
+      data: {
         /**
          * The identity of the receipt.
          **/
@@ -848,9 +1578,12 @@ export type PalletNisEvent =
         amount: bigint;
       };
     }
+  /**
+   * An receipt has been (at least partially) thawed.
+   **/
   | {
-      tag: 'Thawed';
-      value: {
+      name: 'Thawed';
+      data: {
         /**
          * The identity of the receipt.
          **/
@@ -877,77 +1610,206 @@ export type PalletNisEvent =
         dropped: boolean;
       };
     }
-  | { tag: 'Funded'; value: { deficit: bigint } }
-  | { tag: 'Transferred'; value: { from: AccountId32; to: AccountId32; index: number } };
+  /**
+   * An automatic funding of the deficit was made.
+   **/
+  | { name: 'Funded'; data: { deficit: bigint } }
+  /**
+   * A receipt was transfered.
+   **/
+  | { name: 'Transferred'; data: { from: AccountId32; to: AccountId32; index: number } };
 
 /**
  * The `Event` enum of this pallet
  **/
 export type PalletUniquesEvent =
-  | { tag: 'Created'; value: { collection: number; creator: AccountId32; owner: AccountId32 } }
-  | { tag: 'ForceCreated'; value: { collection: number; owner: AccountId32 } }
-  | { tag: 'Destroyed'; value: { collection: number } }
-  | { tag: 'Issued'; value: { collection: number; item: number; owner: AccountId32 } }
-  | { tag: 'Transferred'; value: { collection: number; item: number; from: AccountId32; to: AccountId32 } }
-  | { tag: 'Burned'; value: { collection: number; item: number; owner: AccountId32 } }
-  | { tag: 'Frozen'; value: { collection: number; item: number } }
-  | { tag: 'Thawed'; value: { collection: number; item: number } }
-  | { tag: 'CollectionFrozen'; value: { collection: number } }
-  | { tag: 'CollectionThawed'; value: { collection: number } }
-  | { tag: 'OwnerChanged'; value: { collection: number; newOwner: AccountId32 } }
-  | { tag: 'TeamChanged'; value: { collection: number; issuer: AccountId32; admin: AccountId32; freezer: AccountId32 } }
-  | { tag: 'ApprovedTransfer'; value: { collection: number; item: number; owner: AccountId32; delegate: AccountId32 } }
-  | { tag: 'ApprovalCancelled'; value: { collection: number; item: number; owner: AccountId32; delegate: AccountId32 } }
-  | { tag: 'ItemStatusChanged'; value: { collection: number } }
-  | { tag: 'CollectionMetadataSet'; value: { collection: number; data: Bytes; isFrozen: boolean } }
-  | { tag: 'CollectionMetadataCleared'; value: { collection: number } }
-  | { tag: 'MetadataSet'; value: { collection: number; item: number; data: Bytes; isFrozen: boolean } }
-  | { tag: 'MetadataCleared'; value: { collection: number; item: number } }
-  | { tag: 'Redeposited'; value: { collection: number; successfulItems: Array<number> } }
-  | { tag: 'AttributeSet'; value: { collection: number; maybeItem?: number | undefined; key: Bytes; value: Bytes } }
-  | { tag: 'AttributeCleared'; value: { collection: number; maybeItem?: number | undefined; key: Bytes } }
-  | { tag: 'OwnershipAcceptanceChanged'; value: { who: AccountId32; maybeCollection?: number | undefined } }
-  | { tag: 'CollectionMaxSupplySet'; value: { collection: number; maxSupply: number } }
+  /**
+   * A `collection` was created.
+   **/
+  | { name: 'Created'; data: { collection: number; creator: AccountId32; owner: AccountId32 } }
+  /**
+   * A `collection` was force-created.
+   **/
+  | { name: 'ForceCreated'; data: { collection: number; owner: AccountId32 } }
+  /**
+   * A `collection` was destroyed.
+   **/
+  | { name: 'Destroyed'; data: { collection: number } }
+  /**
+   * An `item` was issued.
+   **/
+  | { name: 'Issued'; data: { collection: number; item: number; owner: AccountId32 } }
+  /**
+   * An `item` was transferred.
+   **/
+  | { name: 'Transferred'; data: { collection: number; item: number; from: AccountId32; to: AccountId32 } }
+  /**
+   * An `item` was destroyed.
+   **/
+  | { name: 'Burned'; data: { collection: number; item: number; owner: AccountId32 } }
+  /**
+   * Some `item` was frozen.
+   **/
+  | { name: 'Frozen'; data: { collection: number; item: number } }
+  /**
+   * Some `item` was thawed.
+   **/
+  | { name: 'Thawed'; data: { collection: number; item: number } }
+  /**
+   * Some `collection` was frozen.
+   **/
+  | { name: 'CollectionFrozen'; data: { collection: number } }
+  /**
+   * Some `collection` was thawed.
+   **/
+  | { name: 'CollectionThawed'; data: { collection: number } }
+  /**
+   * The owner changed.
+   **/
+  | { name: 'OwnerChanged'; data: { collection: number; newOwner: AccountId32 } }
+  /**
+   * The management team changed.
+   **/
+  | { name: 'TeamChanged'; data: { collection: number; issuer: AccountId32; admin: AccountId32; freezer: AccountId32 } }
+  /**
+   * An `item` of a `collection` has been approved by the `owner` for transfer by
+   * a `delegate`.
+   **/
+  | { name: 'ApprovedTransfer'; data: { collection: number; item: number; owner: AccountId32; delegate: AccountId32 } }
+  /**
+   * An approval for a `delegate` account to transfer the `item` of an item
+   * `collection` was cancelled by its `owner`.
+   **/
+  | { name: 'ApprovalCancelled'; data: { collection: number; item: number; owner: AccountId32; delegate: AccountId32 } }
+  /**
+   * A `collection` has had its attributes changed by the `Force` origin.
+   **/
+  | { name: 'ItemStatusChanged'; data: { collection: number } }
+  /**
+   * New metadata has been set for a `collection`.
+   **/
+  | { name: 'CollectionMetadataSet'; data: { collection: number; data: Bytes; isFrozen: boolean } }
+  /**
+   * Metadata has been cleared for a `collection`.
+   **/
+  | { name: 'CollectionMetadataCleared'; data: { collection: number } }
+  /**
+   * New metadata has been set for an item.
+   **/
+  | { name: 'MetadataSet'; data: { collection: number; item: number; data: Bytes; isFrozen: boolean } }
+  /**
+   * Metadata has been cleared for an item.
+   **/
+  | { name: 'MetadataCleared'; data: { collection: number; item: number } }
+  /**
+   * Metadata has been cleared for an item.
+   **/
+  | { name: 'Redeposited'; data: { collection: number; successfulItems: Array<number> } }
+  /**
+   * New attribute metadata has been set for a `collection` or `item`.
+   **/
+  | { name: 'AttributeSet'; data: { collection: number; maybeItem?: number | undefined; key: Bytes; value: Bytes } }
+  /**
+   * Attribute metadata has been cleared for a `collection` or `item`.
+   **/
+  | { name: 'AttributeCleared'; data: { collection: number; maybeItem?: number | undefined; key: Bytes } }
+  /**
+   * Ownership acceptance has changed for an account.
+   **/
+  | { name: 'OwnershipAcceptanceChanged'; data: { who: AccountId32; maybeCollection?: number | undefined } }
+  /**
+   * Max supply has been set for a collection.
+   **/
+  | { name: 'CollectionMaxSupplySet'; data: { collection: number; maxSupply: number } }
+  /**
+   * The price was set for the instance.
+   **/
   | {
-      tag: 'ItemPriceSet';
-      value: { collection: number; item: number; price: bigint; whitelistedBuyer?: AccountId32 | undefined };
+      name: 'ItemPriceSet';
+      data: { collection: number; item: number; price: bigint; whitelistedBuyer?: AccountId32 | undefined };
     }
-  | { tag: 'ItemPriceRemoved'; value: { collection: number; item: number } }
+  /**
+   * The price for the instance was removed.
+   **/
+  | { name: 'ItemPriceRemoved'; data: { collection: number; item: number } }
+  /**
+   * An item was bought.
+   **/
   | {
-      tag: 'ItemBought';
-      value: { collection: number; item: number; price: bigint; seller: AccountId32; buyer: AccountId32 };
+      name: 'ItemBought';
+      data: { collection: number; item: number; price: bigint; seller: AccountId32; buyer: AccountId32 };
     };
 
 /**
  * The `Event` enum of this pallet
  **/
 export type PalletNftsEvent =
-  | { tag: 'Created'; value: { collection: number; creator: AccountId32; owner: AccountId32 } }
-  | { tag: 'ForceCreated'; value: { collection: number; owner: AccountId32 } }
-  | { tag: 'Destroyed'; value: { collection: number } }
-  | { tag: 'Issued'; value: { collection: number; item: number; owner: AccountId32 } }
-  | { tag: 'Transferred'; value: { collection: number; item: number; from: AccountId32; to: AccountId32 } }
-  | { tag: 'Burned'; value: { collection: number; item: number; owner: AccountId32 } }
-  | { tag: 'ItemTransferLocked'; value: { collection: number; item: number } }
-  | { tag: 'ItemTransferUnlocked'; value: { collection: number; item: number } }
+  /**
+   * A `collection` was created.
+   **/
+  | { name: 'Created'; data: { collection: number; creator: AccountId32; owner: AccountId32 } }
+  /**
+   * A `collection` was force-created.
+   **/
+  | { name: 'ForceCreated'; data: { collection: number; owner: AccountId32 } }
+  /**
+   * A `collection` was destroyed.
+   **/
+  | { name: 'Destroyed'; data: { collection: number } }
+  /**
+   * An `item` was issued.
+   **/
+  | { name: 'Issued'; data: { collection: number; item: number; owner: AccountId32 } }
+  /**
+   * An `item` was transferred.
+   **/
+  | { name: 'Transferred'; data: { collection: number; item: number; from: AccountId32; to: AccountId32 } }
+  /**
+   * An `item` was destroyed.
+   **/
+  | { name: 'Burned'; data: { collection: number; item: number; owner: AccountId32 } }
+  /**
+   * An `item` became non-transferable.
+   **/
+  | { name: 'ItemTransferLocked'; data: { collection: number; item: number } }
+  /**
+   * An `item` became transferable.
+   **/
+  | { name: 'ItemTransferUnlocked'; data: { collection: number; item: number } }
+  /**
+   * `item` metadata or attributes were locked.
+   **/
   | {
-      tag: 'ItemPropertiesLocked';
-      value: { collection: number; item: number; lockMetadata: boolean; lockAttributes: boolean };
+      name: 'ItemPropertiesLocked';
+      data: { collection: number; item: number; lockMetadata: boolean; lockAttributes: boolean };
     }
-  | { tag: 'CollectionLocked'; value: { collection: number } }
-  | { tag: 'OwnerChanged'; value: { collection: number; newOwner: AccountId32 } }
+  /**
+   * Some `collection` was locked.
+   **/
+  | { name: 'CollectionLocked'; data: { collection: number } }
+  /**
+   * The owner changed.
+   **/
+  | { name: 'OwnerChanged'; data: { collection: number; newOwner: AccountId32 } }
+  /**
+   * The management team changed.
+   **/
   | {
-      tag: 'TeamChanged';
-      value: {
+      name: 'TeamChanged';
+      data: {
         collection: number;
         issuer?: AccountId32 | undefined;
         admin?: AccountId32 | undefined;
         freezer?: AccountId32 | undefined;
       };
     }
+  /**
+   * An `item` of a `collection` has been approved by the `owner` for transfer by
+   * a `delegate`.
+   **/
   | {
-      tag: 'TransferApproved';
-      value: {
+      name: 'TransferApproved';
+      data: {
         collection: number;
         item: number;
         owner: AccountId32;
@@ -955,17 +1817,45 @@ export type PalletNftsEvent =
         deadline?: number | undefined;
       };
     }
-  | { tag: 'ApprovalCancelled'; value: { collection: number; item: number; owner: AccountId32; delegate: AccountId32 } }
-  | { tag: 'AllApprovalsCancelled'; value: { collection: number; item: number; owner: AccountId32 } }
-  | { tag: 'CollectionConfigChanged'; value: { collection: number } }
-  | { tag: 'CollectionMetadataSet'; value: { collection: number; data: Bytes } }
-  | { tag: 'CollectionMetadataCleared'; value: { collection: number } }
-  | { tag: 'ItemMetadataSet'; value: { collection: number; item: number; data: Bytes } }
-  | { tag: 'ItemMetadataCleared'; value: { collection: number; item: number } }
-  | { tag: 'Redeposited'; value: { collection: number; successfulItems: Array<number> } }
+  /**
+   * An approval for a `delegate` account to transfer the `item` of an item
+   * `collection` was cancelled by its `owner`.
+   **/
+  | { name: 'ApprovalCancelled'; data: { collection: number; item: number; owner: AccountId32; delegate: AccountId32 } }
+  /**
+   * All approvals of an item got cancelled.
+   **/
+  | { name: 'AllApprovalsCancelled'; data: { collection: number; item: number; owner: AccountId32 } }
+  /**
+   * A `collection` has had its config changed by the `Force` origin.
+   **/
+  | { name: 'CollectionConfigChanged'; data: { collection: number } }
+  /**
+   * New metadata has been set for a `collection`.
+   **/
+  | { name: 'CollectionMetadataSet'; data: { collection: number; data: Bytes } }
+  /**
+   * Metadata has been cleared for a `collection`.
+   **/
+  | { name: 'CollectionMetadataCleared'; data: { collection: number } }
+  /**
+   * New metadata has been set for an item.
+   **/
+  | { name: 'ItemMetadataSet'; data: { collection: number; item: number; data: Bytes } }
+  /**
+   * Metadata has been cleared for an item.
+   **/
+  | { name: 'ItemMetadataCleared'; data: { collection: number; item: number } }
+  /**
+   * The deposit for a set of `item`s within a `collection` has been updated.
+   **/
+  | { name: 'Redeposited'; data: { collection: number; successfulItems: Array<number> } }
+  /**
+   * New attribute metadata has been set for a `collection` or `item`.
+   **/
   | {
-      tag: 'AttributeSet';
-      value: {
+      name: 'AttributeSet';
+      data: {
         collection: number;
         maybeItem?: number | undefined;
         key: Bytes;
@@ -973,37 +1863,68 @@ export type PalletNftsEvent =
         namespace: PalletNftsAttributeNamespace;
       };
     }
+  /**
+   * Attribute metadata has been cleared for a `collection` or `item`.
+   **/
   | {
-      tag: 'AttributeCleared';
-      value: {
-        collection: number;
-        maybeItem?: number | undefined;
-        key: Bytes;
-        namespace: PalletNftsAttributeNamespace;
-      };
+      name: 'AttributeCleared';
+      data: { collection: number; maybeItem?: number | undefined; key: Bytes; namespace: PalletNftsAttributeNamespace };
     }
-  | { tag: 'ItemAttributesApprovalAdded'; value: { collection: number; item: number; delegate: AccountId32 } }
-  | { tag: 'ItemAttributesApprovalRemoved'; value: { collection: number; item: number; delegate: AccountId32 } }
-  | { tag: 'OwnershipAcceptanceChanged'; value: { who: AccountId32; maybeCollection?: number | undefined } }
-  | { tag: 'CollectionMaxSupplySet'; value: { collection: number; maxSupply: number } }
-  | { tag: 'CollectionMintSettingsUpdated'; value: { collection: number } }
-  | { tag: 'NextCollectionIdIncremented'; value: { nextId?: number | undefined } }
+  /**
+   * A new approval to modify item attributes was added.
+   **/
+  | { name: 'ItemAttributesApprovalAdded'; data: { collection: number; item: number; delegate: AccountId32 } }
+  /**
+   * A new approval to modify item attributes was removed.
+   **/
+  | { name: 'ItemAttributesApprovalRemoved'; data: { collection: number; item: number; delegate: AccountId32 } }
+  /**
+   * Ownership acceptance has changed for an account.
+   **/
+  | { name: 'OwnershipAcceptanceChanged'; data: { who: AccountId32; maybeCollection?: number | undefined } }
+  /**
+   * Max supply has been set for a collection.
+   **/
+  | { name: 'CollectionMaxSupplySet'; data: { collection: number; maxSupply: number } }
+  /**
+   * Mint settings for a collection had changed.
+   **/
+  | { name: 'CollectionMintSettingsUpdated'; data: { collection: number } }
+  /**
+   * Event gets emitted when the `NextCollectionId` gets incremented.
+   **/
+  | { name: 'NextCollectionIdIncremented'; data: { nextId?: number | undefined } }
+  /**
+   * The price was set for the item.
+   **/
   | {
-      tag: 'ItemPriceSet';
-      value: { collection: number; item: number; price: bigint; whitelistedBuyer?: AccountId32 | undefined };
+      name: 'ItemPriceSet';
+      data: { collection: number; item: number; price: bigint; whitelistedBuyer?: AccountId32 | undefined };
     }
-  | { tag: 'ItemPriceRemoved'; value: { collection: number; item: number } }
+  /**
+   * The price for the item was removed.
+   **/
+  | { name: 'ItemPriceRemoved'; data: { collection: number; item: number } }
+  /**
+   * An item was bought.
+   **/
   | {
-      tag: 'ItemBought';
-      value: { collection: number; item: number; price: bigint; seller: AccountId32; buyer: AccountId32 };
+      name: 'ItemBought';
+      data: { collection: number; item: number; price: bigint; seller: AccountId32; buyer: AccountId32 };
     }
+  /**
+   * A tip was sent.
+   **/
   | {
-      tag: 'TipSent';
-      value: { collection: number; item: number; sender: AccountId32; receiver: AccountId32; amount: bigint };
+      name: 'TipSent';
+      data: { collection: number; item: number; sender: AccountId32; receiver: AccountId32; amount: bigint };
     }
+  /**
+   * An `item` swap intent was created.
+   **/
   | {
-      tag: 'SwapCreated';
-      value: {
+      name: 'SwapCreated';
+      data: {
         offeredCollection: number;
         offeredItem: number;
         desiredCollection: number;
@@ -1012,9 +1933,12 @@ export type PalletNftsEvent =
         deadline: number;
       };
     }
+  /**
+   * The swap was cancelled.
+   **/
   | {
-      tag: 'SwapCancelled';
-      value: {
+      name: 'SwapCancelled';
+      data: {
         offeredCollection: number;
         offeredItem: number;
         desiredCollection: number;
@@ -1023,9 +1947,12 @@ export type PalletNftsEvent =
         deadline: number;
       };
     }
+  /**
+   * The swap has been claimed.
+   **/
   | {
-      tag: 'SwapClaimed';
-      value: {
+      name: 'SwapClaimed';
+      data: {
         sentCollection: number;
         sentItem: number;
         sentItemOwner: AccountId32;
@@ -1036,13 +1963,20 @@ export type PalletNftsEvent =
         deadline: number;
       };
     }
+  /**
+   * New attributes have been set for an `item` of the `collection`.
+   **/
   | {
-      tag: 'PreSignedAttributesSet';
-      value: { collection: number; item: number; namespace: PalletNftsAttributeNamespace };
+      name: 'PreSignedAttributesSet';
+      data: { collection: number; item: number; namespace: PalletNftsAttributeNamespace };
     }
+  /**
+   * A new attribute in the `Pallet` namespace was set for the `collection` or an `item`
+   * within that `collection`.
+   **/
   | {
-      tag: 'PalletAttributeSet';
-      value: { collection: number; item?: number | undefined; attribute: PalletNftsPalletAttributes; value: Bytes };
+      name: 'PalletAttributeSet';
+      data: { collection: number; item?: number | undefined; attribute: PalletNftsPalletAttributes; value: Bytes };
     };
 
 export type PalletNftsAttributeNamespace =
@@ -1061,36 +1995,83 @@ export type PalletNftsPalletAttributes = { tag: 'UsedToClaim'; value: number } |
  * The `Event` enum of this pallet
  **/
 export type PalletNftFractionalizationEvent =
+  /**
+   * An NFT was successfully fractionalized.
+   **/
   | {
-      tag: 'NftFractionalized';
-      value: { nftCollection: number; nft: number; fractions: bigint; asset: number; beneficiary: AccountId32 };
+      name: 'NftFractionalized';
+      data: { nftCollection: number; nft: number; fractions: bigint; asset: number; beneficiary: AccountId32 };
     }
-  | { tag: 'NftUnified'; value: { nftCollection: number; nft: number; asset: number; beneficiary: AccountId32 } };
+  /**
+   * An NFT was successfully returned back.
+   **/
+  | { name: 'NftUnified'; data: { nftCollection: number; nft: number; asset: number; beneficiary: AccountId32 } };
 
 /**
  * The `Event` enum of this pallet
  **/
 export type PalletSalaryEvent =
-  | { tag: 'Inducted'; value: { who: AccountId32 } }
-  | { tag: 'Registered'; value: { who: AccountId32; amount: bigint } }
-  | { tag: 'Paid'; value: { who: AccountId32; beneficiary: AccountId32; amount: bigint; id: [] } }
-  | { tag: 'CycleStarted'; value: { index: number } };
+  /**
+   * A member is inducted into the payroll.
+   **/
+  | { name: 'Inducted'; data: { who: AccountId32 } }
+  /**
+   * A member registered for a payout.
+   **/
+  | { name: 'Registered'; data: { who: AccountId32; amount: bigint } }
+  /**
+   * A payment happened.
+   **/
+  | { name: 'Paid'; data: { who: AccountId32; beneficiary: AccountId32; amount: bigint; id: [] } }
+  /**
+   * The next cycle begins.
+   **/
+  | { name: 'CycleStarted'; data: { index: number } };
 
 /**
  * The `Event` enum of this pallet
  **/
 export type PalletCoreFellowshipEvent =
-  | { tag: 'ParamsChanged'; value: { params: PalletCoreFellowshipParamsType } }
-  | { tag: 'ActiveChanged'; value: { who: AccountId32; isActive: boolean } }
-  | { tag: 'Inducted'; value: { who: AccountId32 } }
-  | { tag: 'Offboarded'; value: { who: AccountId32 } }
-  | { tag: 'Promoted'; value: { who: AccountId32; toRank: number } }
-  | { tag: 'Demoted'; value: { who: AccountId32; toRank: number } }
-  | { tag: 'Proven'; value: { who: AccountId32; atRank: number } }
-  | { tag: 'Requested'; value: { who: AccountId32; wish: PalletCoreFellowshipWish } }
+  /**
+   * Parameters for the pallet have changed.
+   **/
+  | { name: 'ParamsChanged'; data: { params: PalletCoreFellowshipParamsType } }
+  /**
+   * Member activity flag has been set.
+   **/
+  | { name: 'ActiveChanged'; data: { who: AccountId32; isActive: boolean } }
+  /**
+   * Member has begun being tracked in this pallet.
+   **/
+  | { name: 'Inducted'; data: { who: AccountId32 } }
+  /**
+   * Member has been removed from being tracked in this pallet (i.e. because rank is now
+   * zero).
+   **/
+  | { name: 'Offboarded'; data: { who: AccountId32 } }
+  /**
+   * Member has been promoted to the given rank.
+   **/
+  | { name: 'Promoted'; data: { who: AccountId32; toRank: number } }
+  /**
+   * Member has been demoted to the given (non-zero) rank.
+   **/
+  | { name: 'Demoted'; data: { who: AccountId32; toRank: number } }
+  /**
+   * Member has been proven at their current rank, postponing auto-demotion.
+   **/
+  | { name: 'Proven'; data: { who: AccountId32; atRank: number } }
+  /**
+   * Member has stated evidence of their efforts their request for rank.
+   **/
+  | { name: 'Requested'; data: { who: AccountId32; wish: PalletCoreFellowshipWish } }
+  /**
+   * Some submitted evidence was judged and removed. There may or may not have been a change
+   * to the rank, but in any case, `last_proof` is reset.
+   **/
   | {
-      tag: 'EvidenceJudged';
-      value: {
+      name: 'EvidenceJudged';
+      data: {
         /**
          * The member/candidate.
          **/
@@ -1117,7 +2098,10 @@ export type PalletCoreFellowshipEvent =
         newRank?: number | undefined;
       };
     }
-  | { tag: 'Imported'; value: { who: AccountId32; rank: number } };
+  /**
+   * Pre-ranked account has been inducted at their current rank.
+   **/
+  | { name: 'Imported'; data: { who: AccountId32; rank: number } };
 
 export type PalletCoreFellowshipParamsType = {
   activeSalary: FixedArray<bigint, 9>;
@@ -1133,25 +2117,53 @@ export type PalletCoreFellowshipWish = 'Retention' | 'Promotion';
  * The `Event` enum of this pallet
  **/
 export type PalletTransactionStorageEvent =
-  | { tag: 'Stored'; value: { index: number } }
-  | { tag: 'Renewed'; value: { index: number } }
-  | { tag: 'ProofChecked' };
+  /**
+   * Stored data under specified index.
+   **/
+  | { name: 'Stored'; data: { index: number } }
+  /**
+   * Renewed data under specified index.
+   **/
+  | { name: 'Renewed'; data: { index: number } }
+  /**
+   * Storage proof was successfully checked.
+   **/
+  | { name: 'ProofChecked' };
 
 /**
  * The `Event` enum of this pallet
  **/
 export type PalletBagsListEvent =
-  | { tag: 'Rebagged'; value: { who: AccountId32; from: bigint; to: bigint } }
-  | { tag: 'ScoreUpdated'; value: { who: AccountId32; newScore: bigint } };
+  /**
+   * Moved an account from one bag to another.
+   **/
+  | { name: 'Rebagged'; data: { who: AccountId32; from: bigint; to: bigint } }
+  /**
+   * Updated the score of some account to the given amount.
+   **/
+  | { name: 'ScoreUpdated'; data: { who: AccountId32; newScore: bigint } };
 
 /**
  * Inner events of this pallet.
  **/
 export type PalletStateTrieMigrationEvent =
-  | { tag: 'Migrated'; value: { top: number; child: number; compute: PalletStateTrieMigrationMigrationCompute } }
-  | { tag: 'Slashed'; value: { who: AccountId32; amount: bigint } }
-  | { tag: 'AutoMigrationFinished' }
-  | { tag: 'Halted'; value: { error: PalletStateTrieMigrationError } };
+  /**
+   * Given number of `(top, child)` keys were migrated respectively, with the given
+   * `compute`.
+   **/
+  | { name: 'Migrated'; data: { top: number; child: number; compute: PalletStateTrieMigrationMigrationCompute } }
+  /**
+   * Some account got slashed by the given amount.
+   **/
+  | { name: 'Slashed'; data: { who: AccountId32; amount: bigint } }
+  /**
+   * The auto migration task finished.
+   **/
+  | { name: 'AutoMigrationFinished' }
+  /**
+   * Migration got halted due to an error or miss-configuration.
+   **/
+  | { name: 'Halted'; data: { error: PalletStateTrieMigrationError } };
 
 export type PalletStateTrieMigrationMigrationCompute = 'Signed' | 'Auto';
 
@@ -1194,18 +2206,33 @@ export type PalletStateTrieMigrationError =
  * The `Event` enum of this pallet
  **/
 export type PalletChildBountiesEvent =
-  | { tag: 'Added'; value: { index: number; childIndex: number } }
-  | { tag: 'Awarded'; value: { index: number; childIndex: number; beneficiary: AccountId32 } }
-  | { tag: 'Claimed'; value: { index: number; childIndex: number; payout: bigint; beneficiary: AccountId32 } }
-  | { tag: 'Canceled'; value: { index: number; childIndex: number } };
+  /**
+   * A child-bounty is added.
+   **/
+  | { name: 'Added'; data: { index: number; childIndex: number } }
+  /**
+   * A child-bounty is awarded to a beneficiary.
+   **/
+  | { name: 'Awarded'; data: { index: number; childIndex: number; beneficiary: AccountId32 } }
+  /**
+   * A child-bounty is claimed by beneficiary.
+   **/
+  | { name: 'Claimed'; data: { index: number; childIndex: number; payout: bigint; beneficiary: AccountId32 } }
+  /**
+   * A child-bounty is cancelled.
+   **/
+  | { name: 'Canceled'; data: { index: number; childIndex: number } };
 
 /**
  * The `Event` enum of this pallet
  **/
 export type PalletReferendaEvent =
+  /**
+   * A referendum has been submitted.
+   **/
   | {
-      tag: 'Submitted';
-      value: {
+      name: 'Submitted';
+      data: {
         /**
          * Index of the referendum.
          **/
@@ -1222,9 +2249,12 @@ export type PalletReferendaEvent =
         proposal: FrameSupportPreimagesBounded;
       };
     }
+  /**
+   * The decision deposit has been placed.
+   **/
   | {
-      tag: 'DecisionDepositPlaced';
-      value: {
+      name: 'DecisionDepositPlaced';
+      data: {
         /**
          * Index of the referendum.
          **/
@@ -1241,9 +2271,12 @@ export type PalletReferendaEvent =
         amount: bigint;
       };
     }
+  /**
+   * The decision deposit has been refunded.
+   **/
   | {
-      tag: 'DecisionDepositRefunded';
-      value: {
+      name: 'DecisionDepositRefunded';
+      data: {
         /**
          * Index of the referendum.
          **/
@@ -1260,9 +2293,12 @@ export type PalletReferendaEvent =
         amount: bigint;
       };
     }
+  /**
+   * A deposit has been slashaed.
+   **/
   | {
-      tag: 'DepositSlashed';
-      value: {
+      name: 'DepositSlashed';
+      data: {
         /**
          * The account who placed the deposit.
          **/
@@ -1274,9 +2310,12 @@ export type PalletReferendaEvent =
         amount: bigint;
       };
     }
+  /**
+   * A referendum has moved into the deciding phase.
+   **/
   | {
-      tag: 'DecisionStarted';
-      value: {
+      name: 'DecisionStarted';
+      data: {
         /**
          * Index of the referendum.
          **/
@@ -1299,8 +2338,8 @@ export type PalletReferendaEvent =
       };
     }
   | {
-      tag: 'ConfirmStarted';
-      value: {
+      name: 'ConfirmStarted';
+      data: {
         /**
          * Index of the referendum.
          **/
@@ -1308,40 +2347,20 @@ export type PalletReferendaEvent =
       };
     }
   | {
-      tag: 'ConfirmAborted';
-      value: {
+      name: 'ConfirmAborted';
+      data: {
         /**
          * Index of the referendum.
          **/
         index: number;
       };
     }
+  /**
+   * A referendum has ended its confirmation phase and is ready for approval.
+   **/
   | {
-      tag: 'Confirmed';
-      value: {
-        /**
-         * Index of the referendum.
-         **/
-        index: number;
-
-        /**
-         * The final tally of votes in this referendum.
-         **/
-        tally: PalletConvictionVotingTally;
-      };
-    }
-  | {
-      tag: 'Approved';
-      value: {
-        /**
-         * Index of the referendum.
-         **/
-        index: number;
-      };
-    }
-  | {
-      tag: 'Rejected';
-      value: {
+      name: 'Confirmed';
+      data: {
         /**
          * Index of the referendum.
          **/
@@ -1353,9 +2372,24 @@ export type PalletReferendaEvent =
         tally: PalletConvictionVotingTally;
       };
     }
+  /**
+   * A referendum has been approved and its proposal has been scheduled.
+   **/
   | {
-      tag: 'TimedOut';
-      value: {
+      name: 'Approved';
+      data: {
+        /**
+         * Index of the referendum.
+         **/
+        index: number;
+      };
+    }
+  /**
+   * A proposal has been rejected by referendum.
+   **/
+  | {
+      name: 'Rejected';
+      data: {
         /**
          * Index of the referendum.
          **/
@@ -1367,9 +2401,12 @@ export type PalletReferendaEvent =
         tally: PalletConvictionVotingTally;
       };
     }
+  /**
+   * A referendum has been timed out without being decided.
+   **/
   | {
-      tag: 'Cancelled';
-      value: {
+      name: 'TimedOut';
+      data: {
         /**
          * Index of the referendum.
          **/
@@ -1381,9 +2418,12 @@ export type PalletReferendaEvent =
         tally: PalletConvictionVotingTally;
       };
     }
+  /**
+   * A referendum has been cancelled.
+   **/
   | {
-      tag: 'Killed';
-      value: {
+      name: 'Cancelled';
+      data: {
         /**
          * Index of the referendum.
          **/
@@ -1395,9 +2435,29 @@ export type PalletReferendaEvent =
         tally: PalletConvictionVotingTally;
       };
     }
+  /**
+   * A referendum has been killed.
+   **/
   | {
-      tag: 'SubmissionDepositRefunded';
-      value: {
+      name: 'Killed';
+      data: {
+        /**
+         * Index of the referendum.
+         **/
+        index: number;
+
+        /**
+         * The final tally of votes in this referendum.
+         **/
+        tally: PalletConvictionVotingTally;
+      };
+    }
+  /**
+   * The submission deposit has been refunded.
+   **/
+  | {
+      name: 'SubmissionDepositRefunded';
+      data: {
         /**
          * Index of the referendum.
          **/
@@ -1414,9 +2474,12 @@ export type PalletReferendaEvent =
         amount: bigint;
       };
     }
+  /**
+   * Metadata for a referendum has been set.
+   **/
   | {
-      tag: 'MetadataSet';
-      value: {
+      name: 'MetadataSet';
+      data: {
         /**
          * Index of the referendum.
          **/
@@ -1428,9 +2491,12 @@ export type PalletReferendaEvent =
         hash: H256;
       };
     }
+  /**
+   * Metadata for a referendum has been cleared.
+   **/
   | {
-      tag: 'MetadataCleared';
-      value: {
+      name: 'MetadataCleared';
+      data: {
         /**
          * Index of the referendum.
          **/
@@ -1515,24 +2581,66 @@ export type KitchensinkRuntimeRuntimeCall =
  * Contains a variant per dispatchable extrinsic that this pallet has.
  **/
 export type FrameSystemCall =
+  /**
+   * See [`Pallet::remark`].
+   **/
   | { tag: 'Remark'; value: { remark: Bytes } }
+  /**
+   * See [`Pallet::set_heap_pages`].
+   **/
   | { tag: 'SetHeapPages'; value: { pages: bigint } }
+  /**
+   * See [`Pallet::set_code`].
+   **/
   | { tag: 'SetCode'; value: { code: Bytes } }
+  /**
+   * See [`Pallet::set_code_without_checks`].
+   **/
   | { tag: 'SetCodeWithoutChecks'; value: { code: Bytes } }
+  /**
+   * See [`Pallet::set_storage`].
+   **/
   | { tag: 'SetStorage'; value: { items: Array<[Bytes, Bytes]> } }
+  /**
+   * See [`Pallet::kill_storage`].
+   **/
   | { tag: 'KillStorage'; value: { keys: Array<Bytes> } }
+  /**
+   * See [`Pallet::kill_prefix`].
+   **/
   | { tag: 'KillPrefix'; value: { prefix: Bytes; subkeys: number } }
+  /**
+   * See [`Pallet::remark_with_event`].
+   **/
   | { tag: 'RemarkWithEvent'; value: { remark: Bytes } };
 
 /**
  * Contains a variant per dispatchable extrinsic that this pallet has.
  **/
 export type PalletUtilityCall =
+  /**
+   * See [`Pallet::batch`].
+   **/
   | { tag: 'Batch'; value: { calls: Array<KitchensinkRuntimeRuntimeCall> } }
+  /**
+   * See [`Pallet::as_derivative`].
+   **/
   | { tag: 'AsDerivative'; value: { index: number; call: KitchensinkRuntimeRuntimeCall } }
+  /**
+   * See [`Pallet::batch_all`].
+   **/
   | { tag: 'BatchAll'; value: { calls: Array<KitchensinkRuntimeRuntimeCall> } }
+  /**
+   * See [`Pallet::dispatch_as`].
+   **/
   | { tag: 'DispatchAs'; value: { asOrigin: KitchensinkRuntimeOriginCaller; call: KitchensinkRuntimeRuntimeCall } }
+  /**
+   * See [`Pallet::force_batch`].
+   **/
   | { tag: 'ForceBatch'; value: { calls: Array<KitchensinkRuntimeRuntimeCall> } }
+  /**
+   * See [`Pallet::with_weight`].
+   **/
   | { tag: 'WithWeight'; value: { call: KitchensinkRuntimeRuntimeCall; weight: SpWeightsWeightV2Weight } };
 
 export type KitchensinkRuntimeOriginCaller =
@@ -1555,14 +2663,23 @@ export type SpCoreVoid = null;
  * Contains a variant per dispatchable extrinsic that this pallet has.
  **/
 export type PalletBabeCall =
+  /**
+   * See [`Pallet::report_equivocation`].
+   **/
   | {
       tag: 'ReportEquivocation';
       value: { equivocationProof: SpConsensusSlotsEquivocationProof; keyOwnerProof: SpSessionMembershipProof };
     }
+  /**
+   * See [`Pallet::report_equivocation_unsigned`].
+   **/
   | {
       tag: 'ReportEquivocationUnsigned';
       value: { equivocationProof: SpConsensusSlotsEquivocationProof; keyOwnerProof: SpSessionMembershipProof };
     }
+  /**
+   * See [`Pallet::plan_config_change`].
+   **/
   | { tag: 'PlanConfigChange'; value: { config: SpConsensusBabeDigestsNextConfigDescriptor } };
 
 export type SpConsensusSlotsEquivocationProof = {
@@ -1591,36 +2708,85 @@ export type SpConsensusBabeAllowedSlots =
 /**
  * Contains a variant per dispatchable extrinsic that this pallet has.
  **/
-export type PalletTimestampCall = { tag: 'Set'; value: { now: bigint } };
+export type PalletTimestampCall =
+  /**
+   * See [`Pallet::set`].
+   **/
+  { tag: 'Set'; value: { now: bigint } };
 
 /**
  * Contains a variant per dispatchable extrinsic that this pallet has.
  **/
 export type PalletIndicesCall =
+  /**
+   * See [`Pallet::claim`].
+   **/
   | { tag: 'Claim'; value: { index: number } }
+  /**
+   * See [`Pallet::transfer`].
+   **/
   | { tag: 'Transfer'; value: { new: MultiAddress; index: number } }
+  /**
+   * See [`Pallet::free`].
+   **/
   | { tag: 'Free'; value: { index: number } }
+  /**
+   * See [`Pallet::force_transfer`].
+   **/
   | { tag: 'ForceTransfer'; value: { new: MultiAddress; index: number; freeze: boolean } }
+  /**
+   * See [`Pallet::freeze`].
+   **/
   | { tag: 'Freeze'; value: { index: number } };
 
 /**
  * Contains a variant per dispatchable extrinsic that this pallet has.
  **/
 export type PalletBalancesCall =
+  /**
+   * See [`Pallet::transfer_allow_death`].
+   **/
   | { tag: 'TransferAllowDeath'; value: { dest: MultiAddress; value: bigint } }
+  /**
+   * See [`Pallet::set_balance_deprecated`].
+   **/
   | { tag: 'SetBalanceDeprecated'; value: { who: MultiAddress; newFree: bigint; oldReserved: bigint } }
+  /**
+   * See [`Pallet::force_transfer`].
+   **/
   | { tag: 'ForceTransfer'; value: { source: MultiAddress; dest: MultiAddress; value: bigint } }
+  /**
+   * See [`Pallet::transfer_keep_alive`].
+   **/
   | { tag: 'TransferKeepAlive'; value: { dest: MultiAddress; value: bigint } }
+  /**
+   * See [`Pallet::transfer_all`].
+   **/
   | { tag: 'TransferAll'; value: { dest: MultiAddress; keepAlive: boolean } }
+  /**
+   * See [`Pallet::force_unreserve`].
+   **/
   | { tag: 'ForceUnreserve'; value: { who: MultiAddress; amount: bigint } }
+  /**
+   * See [`Pallet::upgrade_accounts`].
+   **/
   | { tag: 'UpgradeAccounts'; value: { who: Array<AccountId32> } }
+  /**
+   * See [`Pallet::transfer`].
+   **/
   | { tag: 'Transfer'; value: { dest: MultiAddress; value: bigint } }
+  /**
+   * See [`Pallet::force_set_balance`].
+   **/
   | { tag: 'ForceSetBalance'; value: { who: MultiAddress; newFree: bigint } };
 
 /**
  * Contains a variant per dispatchable extrinsic that this pallet has.
  **/
 export type PalletElectionProviderMultiPhaseCall =
+  /**
+   * See [`Pallet::submit_unsigned`].
+   **/
   | {
       tag: 'SubmitUnsigned';
       value: {
@@ -1628,9 +2794,21 @@ export type PalletElectionProviderMultiPhaseCall =
         witness: PalletElectionProviderMultiPhaseSolutionOrSnapshotSize;
       };
     }
+  /**
+   * See [`Pallet::set_minimum_untrusted_score`].
+   **/
   | { tag: 'SetMinimumUntrustedScore'; value: { maybeNextScore?: SpNposElectionsElectionScore | undefined } }
+  /**
+   * See [`Pallet::set_emergency_election_result`].
+   **/
   | { tag: 'SetEmergencyElectionResult'; value: { supports: Array<[AccountId32, SpNposElectionsSupport]> } }
+  /**
+   * See [`Pallet::submit`].
+   **/
   | { tag: 'Submit'; value: { rawSolution: PalletElectionProviderMultiPhaseRawSolution } }
+  /**
+   * See [`Pallet::governance_fallback`].
+   **/
   | { tag: 'GovernanceFallback'; value: { maybeMaxVoters?: number | undefined; maybeMaxTargets?: number | undefined } };
 
 export type PalletElectionProviderMultiPhaseRawSolution = {
@@ -1666,28 +2844,97 @@ export type SpNposElectionsSupport = { total: bigint; voters: Array<[AccountId32
  * Contains a variant per dispatchable extrinsic that this pallet has.
  **/
 export type PalletStakingPalletCall =
+  /**
+   * See [`Pallet::bond`].
+   **/
   | { tag: 'Bond'; value: { value: bigint; payee: PalletStakingRewardDestination } }
+  /**
+   * See [`Pallet::bond_extra`].
+   **/
   | { tag: 'BondExtra'; value: { maxAdditional: bigint } }
+  /**
+   * See [`Pallet::unbond`].
+   **/
   | { tag: 'Unbond'; value: { value: bigint } }
+  /**
+   * See [`Pallet::withdraw_unbonded`].
+   **/
   | { tag: 'WithdrawUnbonded'; value: { numSlashingSpans: number } }
+  /**
+   * See [`Pallet::validate`].
+   **/
   | { tag: 'Validate'; value: { prefs: PalletStakingValidatorPrefs } }
+  /**
+   * See [`Pallet::nominate`].
+   **/
   | { tag: 'Nominate'; value: { targets: Array<MultiAddress> } }
+  /**
+   * See [`Pallet::chill`].
+   **/
   | { tag: 'Chill' }
+  /**
+   * See [`Pallet::set_payee`].
+   **/
   | { tag: 'SetPayee'; value: { payee: PalletStakingRewardDestination } }
+  /**
+   * See [`Pallet::set_controller`].
+   **/
   | { tag: 'SetController' }
+  /**
+   * See [`Pallet::set_validator_count`].
+   **/
   | { tag: 'SetValidatorCount'; value: { new: number } }
+  /**
+   * See [`Pallet::increase_validator_count`].
+   **/
   | { tag: 'IncreaseValidatorCount'; value: { additional: number } }
+  /**
+   * See [`Pallet::scale_validator_count`].
+   **/
   | { tag: 'ScaleValidatorCount'; value: { factor: Percent } }
+  /**
+   * See [`Pallet::force_no_eras`].
+   **/
   | { tag: 'ForceNoEras' }
+  /**
+   * See [`Pallet::force_new_era`].
+   **/
   | { tag: 'ForceNewEra' }
+  /**
+   * See [`Pallet::set_invulnerables`].
+   **/
   | { tag: 'SetInvulnerables'; value: { invulnerables: Array<AccountId32> } }
+  /**
+   * See [`Pallet::force_unstake`].
+   **/
   | { tag: 'ForceUnstake'; value: { stash: AccountId32; numSlashingSpans: number } }
+  /**
+   * See [`Pallet::force_new_era_always`].
+   **/
   | { tag: 'ForceNewEraAlways' }
+  /**
+   * See [`Pallet::cancel_deferred_slash`].
+   **/
   | { tag: 'CancelDeferredSlash'; value: { era: number; slashIndices: Array<number> } }
+  /**
+   * See [`Pallet::payout_stakers`].
+   **/
   | { tag: 'PayoutStakers'; value: { validatorStash: AccountId32; era: number } }
+  /**
+   * See [`Pallet::rebond`].
+   **/
   | { tag: 'Rebond'; value: { value: bigint } }
+  /**
+   * See [`Pallet::reap_stash`].
+   **/
   | { tag: 'ReapStash'; value: { stash: AccountId32; numSlashingSpans: number } }
+  /**
+   * See [`Pallet::kick`].
+   **/
   | { tag: 'Kick'; value: { who: Array<MultiAddress> } }
+  /**
+   * See [`Pallet::set_staking_configs`].
+   **/
   | {
       tag: 'SetStakingConfigs';
       value: {
@@ -1699,8 +2946,17 @@ export type PalletStakingPalletCall =
         minCommission: PalletStakingPalletConfigOpPerbill;
       };
     }
+  /**
+   * See [`Pallet::chill_other`].
+   **/
   | { tag: 'ChillOther'; value: { controller: AccountId32 } }
+  /**
+   * See [`Pallet::force_apply_min_commission`].
+   **/
   | { tag: 'ForceApplyMinCommission'; value: { validatorStash: AccountId32 } }
+  /**
+   * See [`Pallet::set_min_commission`].
+   **/
   | { tag: 'SetMinCommission'; value: { new: Perbill } };
 
 export type PalletStakingRewardDestination =
@@ -1722,7 +2978,13 @@ export type PalletStakingPalletConfigOpPerbill = { tag: 'Noop' } | { tag: 'Set';
  * Contains a variant per dispatchable extrinsic that this pallet has.
  **/
 export type PalletSessionCall =
+  /**
+   * See [`Pallet::set_keys`].
+   **/
   | { tag: 'SetKeys'; value: { keys: KitchensinkRuntimeSessionKeys; proof: Bytes } }
+  /**
+   * See [`Pallet::purge_keys`].
+   **/
   | { tag: 'PurgeKeys' };
 
 export type KitchensinkRuntimeSessionKeys = {
@@ -1738,24 +3000,81 @@ export type SpAuthorityDiscoveryAppPublic = SpCoreSr25519Public;
  * Contains a variant per dispatchable extrinsic that this pallet has.
  **/
 export type PalletDemocracyCall =
+  /**
+   * See [`Pallet::propose`].
+   **/
   | { tag: 'Propose'; value: { proposal: FrameSupportPreimagesBounded; value: bigint } }
+  /**
+   * See [`Pallet::second`].
+   **/
   | { tag: 'Second'; value: { proposal: number } }
+  /**
+   * See [`Pallet::vote`].
+   **/
   | { tag: 'Vote'; value: { refIndex: number; vote: PalletDemocracyVoteAccountVote } }
+  /**
+   * See [`Pallet::emergency_cancel`].
+   **/
   | { tag: 'EmergencyCancel'; value: { refIndex: number } }
+  /**
+   * See [`Pallet::external_propose`].
+   **/
   | { tag: 'ExternalPropose'; value: { proposal: FrameSupportPreimagesBounded } }
+  /**
+   * See [`Pallet::external_propose_majority`].
+   **/
   | { tag: 'ExternalProposeMajority'; value: { proposal: FrameSupportPreimagesBounded } }
+  /**
+   * See [`Pallet::external_propose_default`].
+   **/
   | { tag: 'ExternalProposeDefault'; value: { proposal: FrameSupportPreimagesBounded } }
+  /**
+   * See [`Pallet::fast_track`].
+   **/
   | { tag: 'FastTrack'; value: { proposalHash: H256; votingPeriod: number; delay: number } }
+  /**
+   * See [`Pallet::veto_external`].
+   **/
   | { tag: 'VetoExternal'; value: { proposalHash: H256 } }
+  /**
+   * See [`Pallet::cancel_referendum`].
+   **/
   | { tag: 'CancelReferendum'; value: { refIndex: number } }
+  /**
+   * See [`Pallet::delegate`].
+   **/
   | { tag: 'Delegate'; value: { to: MultiAddress; conviction: PalletDemocracyConviction; balance: bigint } }
+  /**
+   * See [`Pallet::undelegate`].
+   **/
   | { tag: 'Undelegate' }
+  /**
+   * See [`Pallet::clear_public_proposals`].
+   **/
   | { tag: 'ClearPublicProposals' }
+  /**
+   * See [`Pallet::unlock`].
+   **/
   | { tag: 'Unlock'; value: { target: MultiAddress } }
+  /**
+   * See [`Pallet::remove_vote`].
+   **/
   | { tag: 'RemoveVote'; value: { index: number } }
+  /**
+   * See [`Pallet::remove_other_vote`].
+   **/
   | { tag: 'RemoveOtherVote'; value: { target: MultiAddress; index: number } }
+  /**
+   * See [`Pallet::blacklist`].
+   **/
   | { tag: 'Blacklist'; value: { proposalHash: H256; maybeRefIndex?: number | undefined } }
+  /**
+   * See [`Pallet::cancel_proposal`].
+   **/
   | { tag: 'CancelProposal'; value: { propIndex: number } }
+  /**
+   * See [`Pallet::set_metadata`].
+   **/
   | { tag: 'SetMetadata'; value: { owner: PalletDemocracyMetadataOwner; maybeHash?: H256 | undefined } };
 
 export type PalletDemocracyConviction =
@@ -1771,11 +3090,29 @@ export type PalletDemocracyConviction =
  * Contains a variant per dispatchable extrinsic that this pallet has.
  **/
 export type PalletCollectiveCall =
+  /**
+   * See [`Pallet::set_members`].
+   **/
   | { tag: 'SetMembers'; value: { newMembers: Array<AccountId32>; prime?: AccountId32 | undefined; oldCount: number } }
+  /**
+   * See [`Pallet::execute`].
+   **/
   | { tag: 'Execute'; value: { proposal: KitchensinkRuntimeRuntimeCall; lengthBound: number } }
+  /**
+   * See [`Pallet::propose`].
+   **/
   | { tag: 'Propose'; value: { threshold: number; proposal: KitchensinkRuntimeRuntimeCall; lengthBound: number } }
+  /**
+   * See [`Pallet::vote`].
+   **/
   | { tag: 'Vote'; value: { proposal: H256; index: number; approve: boolean } }
+  /**
+   * See [`Pallet::disapprove_proposal`].
+   **/
   | { tag: 'DisapproveProposal'; value: { proposalHash: H256 } }
+  /**
+   * See [`Pallet::close`].
+   **/
   | {
       tag: 'Close';
       value: { proposalHash: H256; index: number; proposalWeightBound: SpWeightsWeightV2Weight; lengthBound: number };
@@ -1785,11 +3122,29 @@ export type PalletCollectiveCall =
  * Contains a variant per dispatchable extrinsic that this pallet has.
  **/
 export type PalletElectionsPhragmenCall =
+  /**
+   * See [`Pallet::vote`].
+   **/
   | { tag: 'Vote'; value: { votes: Array<AccountId32>; value: bigint } }
+  /**
+   * See [`Pallet::remove_voter`].
+   **/
   | { tag: 'RemoveVoter' }
+  /**
+   * See [`Pallet::submit_candidacy`].
+   **/
   | { tag: 'SubmitCandidacy'; value: { candidateCount: number } }
+  /**
+   * See [`Pallet::renounce_candidacy`].
+   **/
   | { tag: 'RenounceCandidacy'; value: { renouncing: PalletElectionsPhragmenRenouncing } }
+  /**
+   * See [`Pallet::remove_member`].
+   **/
   | { tag: 'RemoveMember'; value: { who: MultiAddress; slashBond: boolean; rerunElection: boolean } }
+  /**
+   * See [`Pallet::clean_defunct_voters`].
+   **/
   | { tag: 'CleanDefunctVoters'; value: { numVoters: number; numDefunct: number } };
 
 export type PalletElectionsPhragmenRenouncing =
@@ -1801,26 +3156,56 @@ export type PalletElectionsPhragmenRenouncing =
  * Contains a variant per dispatchable extrinsic that this pallet has.
  **/
 export type PalletMembershipCall =
+  /**
+   * See [`Pallet::add_member`].
+   **/
   | { tag: 'AddMember'; value: { who: MultiAddress } }
+  /**
+   * See [`Pallet::remove_member`].
+   **/
   | { tag: 'RemoveMember'; value: { who: MultiAddress } }
+  /**
+   * See [`Pallet::swap_member`].
+   **/
   | { tag: 'SwapMember'; value: { remove: MultiAddress; add: MultiAddress } }
+  /**
+   * See [`Pallet::reset_members`].
+   **/
   | { tag: 'ResetMembers'; value: { members: Array<AccountId32> } }
+  /**
+   * See [`Pallet::change_key`].
+   **/
   | { tag: 'ChangeKey'; value: { new: MultiAddress } }
+  /**
+   * See [`Pallet::set_prime`].
+   **/
   | { tag: 'SetPrime'; value: { who: MultiAddress } }
+  /**
+   * See [`Pallet::clear_prime`].
+   **/
   | { tag: 'ClearPrime' };
 
 /**
  * Contains a variant per dispatchable extrinsic that this pallet has.
  **/
 export type PalletGrandpaCall =
+  /**
+   * See [`Pallet::report_equivocation`].
+   **/
   | {
       tag: 'ReportEquivocation';
       value: { equivocationProof: SpConsensusGrandpaEquivocationProof; keyOwnerProof: SpSessionMembershipProof };
     }
+  /**
+   * See [`Pallet::report_equivocation_unsigned`].
+   **/
   | {
       tag: 'ReportEquivocationUnsigned';
       value: { equivocationProof: SpConsensusGrandpaEquivocationProof; keyOwnerProof: SpSessionMembershipProof };
     }
+  /**
+   * See [`Pallet::note_stalled`].
+   **/
   | { tag: 'NoteStalled'; value: { delay: number; bestFinalizedBlockNumber: number } };
 
 export type SpConsensusGrandpaEquivocationProof = { setId: bigint; equivocation: SpConsensusGrandpaEquivocation };
@@ -1855,24 +3240,51 @@ export type FinalityGrandpaPrecommit = { targetHash: H256; targetNumber: number 
  * Contains a variant per dispatchable extrinsic that this pallet has.
  **/
 export type PalletTreasuryCall =
+  /**
+   * See [`Pallet::propose_spend`].
+   **/
   | { tag: 'ProposeSpend'; value: { value: bigint; beneficiary: MultiAddress } }
+  /**
+   * See [`Pallet::reject_proposal`].
+   **/
   | { tag: 'RejectProposal'; value: { proposalId: number } }
+  /**
+   * See [`Pallet::approve_proposal`].
+   **/
   | { tag: 'ApproveProposal'; value: { proposalId: number } }
+  /**
+   * See [`Pallet::spend`].
+   **/
   | { tag: 'Spend'; value: { amount: bigint; beneficiary: MultiAddress } }
+  /**
+   * See [`Pallet::remove_approval`].
+   **/
   | { tag: 'RemoveApproval'; value: { proposalId: number } };
 
 /**
  * Contains a variant per dispatchable extrinsic that this pallet has.
  **/
 export type PalletAssetRateCall =
+  /**
+   * See [`Pallet::create`].
+   **/
   | { tag: 'Create'; value: { assetKind: number; rate: FixedU128 } }
+  /**
+   * See [`Pallet::update`].
+   **/
   | { tag: 'Update'; value: { assetKind: number; rate: FixedU128 } }
+  /**
+   * See [`Pallet::remove`].
+   **/
   | { tag: 'Remove'; value: { assetKind: number } };
 
 /**
  * Contains a variant per dispatchable extrinsic that this pallet has.
  **/
 export type PalletContractsCall =
+  /**
+   * See [`Pallet::call_old_weight`].
+   **/
   | {
       tag: 'CallOldWeight';
       value: {
@@ -1883,6 +3295,9 @@ export type PalletContractsCall =
         data: Bytes;
       };
     }
+  /**
+   * See [`Pallet::instantiate_with_code_old_weight`].
+   **/
   | {
       tag: 'InstantiateWithCodeOldWeight';
       value: {
@@ -1894,6 +3309,9 @@ export type PalletContractsCall =
         salt: Bytes;
       };
     }
+  /**
+   * See [`Pallet::instantiate_old_weight`].
+   **/
   | {
       tag: 'InstantiateOldWeight';
       value: {
@@ -1905,12 +3323,24 @@ export type PalletContractsCall =
         salt: Bytes;
       };
     }
+  /**
+   * See [`Pallet::upload_code`].
+   **/
   | {
       tag: 'UploadCode';
       value: { code: Bytes; storageDepositLimit?: bigint | undefined; determinism: PalletContractsWasmDeterminism };
     }
+  /**
+   * See [`Pallet::remove_code`].
+   **/
   | { tag: 'RemoveCode'; value: { codeHash: H256 } }
+  /**
+   * See [`Pallet::set_code`].
+   **/
   | { tag: 'SetCode'; value: { dest: MultiAddress; codeHash: H256 } }
+  /**
+   * See [`Pallet::call`].
+   **/
   | {
       tag: 'Call';
       value: {
@@ -1921,6 +3351,9 @@ export type PalletContractsCall =
         data: Bytes;
       };
     }
+  /**
+   * See [`Pallet::instantiate_with_code`].
+   **/
   | {
       tag: 'InstantiateWithCode';
       value: {
@@ -1932,6 +3365,9 @@ export type PalletContractsCall =
         salt: Bytes;
       };
     }
+  /**
+   * See [`Pallet::instantiate`].
+   **/
   | {
       tag: 'Instantiate';
       value: {
@@ -1943,6 +3379,9 @@ export type PalletContractsCall =
         salt: Bytes;
       };
     }
+  /**
+   * See [`Pallet::migrate`].
+   **/
   | { tag: 'Migrate'; value: { weightLimit: SpWeightsWeightV2Weight } };
 
 export type PalletContractsWasmDeterminism = 'Enforced' | 'Relaxed';
@@ -1951,18 +3390,34 @@ export type PalletContractsWasmDeterminism = 'Enforced' | 'Relaxed';
  * Contains a variant per dispatchable extrinsic that this pallet has.
  **/
 export type PalletSudoCall =
+  /**
+   * See [`Pallet::sudo`].
+   **/
   | { tag: 'Sudo'; value: { call: KitchensinkRuntimeRuntimeCall } }
+  /**
+   * See [`Pallet::sudo_unchecked_weight`].
+   **/
   | { tag: 'SudoUncheckedWeight'; value: { call: KitchensinkRuntimeRuntimeCall; weight: SpWeightsWeightV2Weight } }
+  /**
+   * See [`Pallet::set_key`].
+   **/
   | { tag: 'SetKey'; value: { new: MultiAddress } }
+  /**
+   * See [`Pallet::sudo_as`].
+   **/
   | { tag: 'SudoAs'; value: { who: MultiAddress; call: KitchensinkRuntimeRuntimeCall } };
 
 /**
  * Contains a variant per dispatchable extrinsic that this pallet has.
  **/
-export type PalletImOnlineCall = {
-  tag: 'Heartbeat';
-  value: { heartbeat: PalletImOnlineHeartbeat; signature: PalletImOnlineSr25519AppSr25519Signature };
-};
+export type PalletImOnlineCall =
+  /**
+   * See [`Pallet::heartbeat`].
+   **/
+  {
+    tag: 'Heartbeat';
+    value: { heartbeat: PalletImOnlineHeartbeat; signature: PalletImOnlineSr25519AppSr25519Signature };
+  };
 
 export type PalletImOnlineHeartbeat = {
   blockNumber: number;
@@ -1979,23 +3434,68 @@ export type SpCoreSr25519Signature = FixedBytes<64>;
  * Identity pallet declaration.
  **/
 export type PalletIdentityCall =
+  /**
+   * See [`Pallet::add_registrar`].
+   **/
   | { tag: 'AddRegistrar'; value: { account: MultiAddress } }
+  /**
+   * See [`Pallet::set_identity`].
+   **/
   | { tag: 'SetIdentity'; value: { info: PalletIdentityIdentityInfo } }
+  /**
+   * See [`Pallet::set_subs`].
+   **/
   | { tag: 'SetSubs'; value: { subs: Array<[AccountId32, Data]> } }
+  /**
+   * See [`Pallet::clear_identity`].
+   **/
   | { tag: 'ClearIdentity' }
+  /**
+   * See [`Pallet::request_judgement`].
+   **/
   | { tag: 'RequestJudgement'; value: { regIndex: number; maxFee: bigint } }
+  /**
+   * See [`Pallet::cancel_request`].
+   **/
   | { tag: 'CancelRequest'; value: { regIndex: number } }
+  /**
+   * See [`Pallet::set_fee`].
+   **/
   | { tag: 'SetFee'; value: { index: number; fee: bigint } }
+  /**
+   * See [`Pallet::set_account_id`].
+   **/
   | { tag: 'SetAccountId'; value: { index: number; new: MultiAddress } }
+  /**
+   * See [`Pallet::set_fields`].
+   **/
   | { tag: 'SetFields'; value: { index: number; fields: PalletIdentityBitFlags } }
+  /**
+   * See [`Pallet::provide_judgement`].
+   **/
   | {
       tag: 'ProvideJudgement';
       value: { regIndex: number; target: MultiAddress; judgement: PalletIdentityJudgement; identity: H256 };
     }
+  /**
+   * See [`Pallet::kill_identity`].
+   **/
   | { tag: 'KillIdentity'; value: { target: MultiAddress } }
+  /**
+   * See [`Pallet::add_sub`].
+   **/
   | { tag: 'AddSub'; value: { sub: MultiAddress; data: Data } }
+  /**
+   * See [`Pallet::rename_sub`].
+   **/
   | { tag: 'RenameSub'; value: { sub: MultiAddress; data: Data } }
+  /**
+   * See [`Pallet::remove_sub`].
+   **/
   | { tag: 'RemoveSub'; value: { sub: MultiAddress } }
+  /**
+   * See [`Pallet::quit_sub`].
+   **/
   | { tag: 'QuitSub' };
 
 export type PalletIdentityIdentityInfo = {
@@ -2035,14 +3535,41 @@ export type PalletIdentityJudgement =
  * Contains a variant per dispatchable extrinsic that this pallet has.
  **/
 export type PalletSocietyCall =
+  /**
+   * See [`Pallet::bid`].
+   **/
   | { tag: 'Bid'; value: { value: bigint } }
+  /**
+   * See [`Pallet::unbid`].
+   **/
   | { tag: 'Unbid' }
+  /**
+   * See [`Pallet::vouch`].
+   **/
   | { tag: 'Vouch'; value: { who: MultiAddress; value: bigint; tip: bigint } }
+  /**
+   * See [`Pallet::unvouch`].
+   **/
   | { tag: 'Unvouch' }
+  /**
+   * See [`Pallet::vote`].
+   **/
   | { tag: 'Vote'; value: { candidate: MultiAddress; approve: boolean } }
+  /**
+   * See [`Pallet::defender_vote`].
+   **/
   | { tag: 'DefenderVote'; value: { approve: boolean } }
+  /**
+   * See [`Pallet::payout`].
+   **/
   | { tag: 'Payout' }
+  /**
+   * See [`Pallet::waive_repay`].
+   **/
   | { tag: 'WaiveRepay'; value: { amount: bigint } }
+  /**
+   * See [`Pallet::found_society`].
+   **/
   | {
       tag: 'FoundSociety';
       value: {
@@ -2054,46 +3581,121 @@ export type PalletSocietyCall =
         rules: Bytes;
       };
     }
+  /**
+   * See [`Pallet::dissolve`].
+   **/
   | { tag: 'Dissolve' }
+  /**
+   * See [`Pallet::judge_suspended_member`].
+   **/
   | { tag: 'JudgeSuspendedMember'; value: { who: MultiAddress; forgive: boolean } }
+  /**
+   * See [`Pallet::set_parameters`].
+   **/
   | {
       tag: 'SetParameters';
       value: { maxMembers: number; maxIntake: number; maxStrikes: number; candidateDeposit: bigint };
     }
+  /**
+   * See [`Pallet::punish_skeptic`].
+   **/
   | { tag: 'PunishSkeptic' }
+  /**
+   * See [`Pallet::claim_membership`].
+   **/
   | { tag: 'ClaimMembership' }
+  /**
+   * See [`Pallet::bestow_membership`].
+   **/
   | { tag: 'BestowMembership'; value: { candidate: AccountId32 } }
+  /**
+   * See [`Pallet::kick_candidate`].
+   **/
   | { tag: 'KickCandidate'; value: { candidate: AccountId32 } }
+  /**
+   * See [`Pallet::resign_candidacy`].
+   **/
   | { tag: 'ResignCandidacy' }
+  /**
+   * See [`Pallet::drop_candidate`].
+   **/
   | { tag: 'DropCandidate'; value: { candidate: AccountId32 } }
+  /**
+   * See [`Pallet::cleanup_candidacy`].
+   **/
   | { tag: 'CleanupCandidacy'; value: { candidate: AccountId32; max: number } }
+  /**
+   * See [`Pallet::cleanup_challenge`].
+   **/
   | { tag: 'CleanupChallenge'; value: { challengeRound: number; max: number } };
 
 /**
  * Contains a variant per dispatchable extrinsic that this pallet has.
  **/
 export type PalletRecoveryCall =
+  /**
+   * See [`Pallet::as_recovered`].
+   **/
   | { tag: 'AsRecovered'; value: { account: MultiAddress; call: KitchensinkRuntimeRuntimeCall } }
+  /**
+   * See [`Pallet::set_recovered`].
+   **/
   | { tag: 'SetRecovered'; value: { lost: MultiAddress; rescuer: MultiAddress } }
+  /**
+   * See [`Pallet::create_recovery`].
+   **/
   | { tag: 'CreateRecovery'; value: { friends: Array<AccountId32>; threshold: number; delayPeriod: number } }
+  /**
+   * See [`Pallet::initiate_recovery`].
+   **/
   | { tag: 'InitiateRecovery'; value: { account: MultiAddress } }
+  /**
+   * See [`Pallet::vouch_recovery`].
+   **/
   | { tag: 'VouchRecovery'; value: { lost: MultiAddress; rescuer: MultiAddress } }
+  /**
+   * See [`Pallet::claim_recovery`].
+   **/
   | { tag: 'ClaimRecovery'; value: { account: MultiAddress } }
+  /**
+   * See [`Pallet::close_recovery`].
+   **/
   | { tag: 'CloseRecovery'; value: { rescuer: MultiAddress } }
+  /**
+   * See [`Pallet::remove_recovery`].
+   **/
   | { tag: 'RemoveRecovery' }
+  /**
+   * See [`Pallet::cancel_recovered`].
+   **/
   | { tag: 'CancelRecovered'; value: { account: MultiAddress } };
 
 /**
  * Contains a variant per dispatchable extrinsic that this pallet has.
  **/
 export type PalletVestingCall =
+  /**
+   * See [`Pallet::vest`].
+   **/
   | { tag: 'Vest' }
+  /**
+   * See [`Pallet::vest_other`].
+   **/
   | { tag: 'VestOther'; value: { target: MultiAddress } }
+  /**
+   * See [`Pallet::vested_transfer`].
+   **/
   | { tag: 'VestedTransfer'; value: { target: MultiAddress; schedule: PalletVestingVestingInfo } }
+  /**
+   * See [`Pallet::force_vested_transfer`].
+   **/
   | {
       tag: 'ForceVestedTransfer';
       value: { source: MultiAddress; target: MultiAddress; schedule: PalletVestingVestingInfo };
     }
+  /**
+   * See [`Pallet::merge_schedules`].
+   **/
   | { tag: 'MergeSchedules'; value: { schedule1Index: number; schedule2Index: number } };
 
 export type PalletVestingVestingInfo = { locked: bigint; perBlock: bigint; startingBlock: number };
@@ -2102,6 +3704,9 @@ export type PalletVestingVestingInfo = { locked: bigint; perBlock: bigint; start
  * Contains a variant per dispatchable extrinsic that this pallet has.
  **/
 export type PalletSchedulerCall =
+  /**
+   * See [`Pallet::schedule`].
+   **/
   | {
       tag: 'Schedule';
       value: {
@@ -2111,7 +3716,13 @@ export type PalletSchedulerCall =
         call: KitchensinkRuntimeRuntimeCall;
       };
     }
+  /**
+   * See [`Pallet::cancel`].
+   **/
   | { tag: 'Cancel'; value: { when: number; index: number } }
+  /**
+   * See [`Pallet::schedule_named`].
+   **/
   | {
       tag: 'ScheduleNamed';
       value: {
@@ -2122,7 +3733,13 @@ export type PalletSchedulerCall =
         call: KitchensinkRuntimeRuntimeCall;
       };
     }
+  /**
+   * See [`Pallet::cancel_named`].
+   **/
   | { tag: 'CancelNamed'; value: { id: FixedBytes<32> } }
+  /**
+   * See [`Pallet::schedule_after`].
+   **/
   | {
       tag: 'ScheduleAfter';
       value: {
@@ -2132,6 +3749,9 @@ export type PalletSchedulerCall =
         call: KitchensinkRuntimeRuntimeCall;
       };
     }
+  /**
+   * See [`Pallet::schedule_named_after`].
+   **/
   | {
       tag: 'ScheduleNamedAfter';
       value: {
@@ -2147,23 +3767,47 @@ export type PalletSchedulerCall =
  * Contains a variant per dispatchable extrinsic that this pallet has.
  **/
 export type PalletGluttonCall =
+  /**
+   * See [`Pallet::initialize_pallet`].
+   **/
   | { tag: 'InitializePallet'; value: { newCount: number; witnessCount?: number | undefined } }
+  /**
+   * See [`Pallet::set_compute`].
+   **/
   | { tag: 'SetCompute'; value: { compute: FixedU64 } }
+  /**
+   * See [`Pallet::set_storage`].
+   **/
   | { tag: 'SetStorage'; value: { storage: FixedU64 } };
 
 /**
  * Contains a variant per dispatchable extrinsic that this pallet has.
  **/
 export type PalletPreimageCall =
+  /**
+   * See [`Pallet::note_preimage`].
+   **/
   | { tag: 'NotePreimage'; value: { bytes: Bytes } }
+  /**
+   * See [`Pallet::unnote_preimage`].
+   **/
   | { tag: 'UnnotePreimage'; value: { hash: H256 } }
+  /**
+   * See [`Pallet::request_preimage`].
+   **/
   | { tag: 'RequestPreimage'; value: { hash: H256 } }
+  /**
+   * See [`Pallet::unrequest_preimage`].
+   **/
   | { tag: 'UnrequestPreimage'; value: { hash: H256 } };
 
 /**
  * Contains a variant per dispatchable extrinsic that this pallet has.
  **/
 export type PalletProxyCall =
+  /**
+   * See [`Pallet::proxy`].
+   **/
   | {
       tag: 'Proxy';
       value: {
@@ -2172,10 +3816,25 @@ export type PalletProxyCall =
         call: KitchensinkRuntimeRuntimeCall;
       };
     }
+  /**
+   * See [`Pallet::add_proxy`].
+   **/
   | { tag: 'AddProxy'; value: { delegate: MultiAddress; proxyType: KitchensinkRuntimeProxyType; delay: number } }
+  /**
+   * See [`Pallet::remove_proxy`].
+   **/
   | { tag: 'RemoveProxy'; value: { delegate: MultiAddress; proxyType: KitchensinkRuntimeProxyType; delay: number } }
+  /**
+   * See [`Pallet::remove_proxies`].
+   **/
   | { tag: 'RemoveProxies' }
+  /**
+   * See [`Pallet::create_pure`].
+   **/
   | { tag: 'CreatePure'; value: { proxyType: KitchensinkRuntimeProxyType; delay: number; index: number } }
+  /**
+   * See [`Pallet::kill_pure`].
+   **/
   | {
       tag: 'KillPure';
       value: {
@@ -2186,9 +3845,21 @@ export type PalletProxyCall =
         extIndex: number;
       };
     }
+  /**
+   * See [`Pallet::announce`].
+   **/
   | { tag: 'Announce'; value: { real: MultiAddress; callHash: H256 } }
+  /**
+   * See [`Pallet::remove_announcement`].
+   **/
   | { tag: 'RemoveAnnouncement'; value: { real: MultiAddress; callHash: H256 } }
+  /**
+   * See [`Pallet::reject_announcement`].
+   **/
   | { tag: 'RejectAnnouncement'; value: { delegate: MultiAddress; callHash: H256 } }
+  /**
+   * See [`Pallet::proxy_announced`].
+   **/
   | {
       tag: 'ProxyAnnounced';
       value: {
@@ -2203,7 +3874,13 @@ export type PalletProxyCall =
  * Contains a variant per dispatchable extrinsic that this pallet has.
  **/
 export type PalletMultisigCall =
+  /**
+   * See [`Pallet::as_multi_threshold_1`].
+   **/
   | { tag: 'AsMultiThreshold1'; value: { otherSignatories: Array<AccountId32>; call: KitchensinkRuntimeRuntimeCall } }
+  /**
+   * See [`Pallet::as_multi`].
+   **/
   | {
       tag: 'AsMulti';
       value: {
@@ -2214,6 +3891,9 @@ export type PalletMultisigCall =
         maxWeight: SpWeightsWeightV2Weight;
       };
     }
+  /**
+   * See [`Pallet::approve_as_multi`].
+   **/
   | {
       tag: 'ApproveAsMulti';
       value: {
@@ -2224,6 +3904,9 @@ export type PalletMultisigCall =
         maxWeight: SpWeightsWeightV2Weight;
       };
     }
+  /**
+   * See [`Pallet::cancel_as_multi`].
+   **/
   | {
       tag: 'CancelAsMulti';
       value: {
@@ -2238,52 +3921,163 @@ export type PalletMultisigCall =
  * Contains a variant per dispatchable extrinsic that this pallet has.
  **/
 export type PalletBountiesCall =
+  /**
+   * See [`Pallet::propose_bounty`].
+   **/
   | { tag: 'ProposeBounty'; value: { value: bigint; description: Bytes } }
+  /**
+   * See [`Pallet::approve_bounty`].
+   **/
   | { tag: 'ApproveBounty'; value: { bountyId: number } }
+  /**
+   * See [`Pallet::propose_curator`].
+   **/
   | { tag: 'ProposeCurator'; value: { bountyId: number; curator: MultiAddress; fee: bigint } }
+  /**
+   * See [`Pallet::unassign_curator`].
+   **/
   | { tag: 'UnassignCurator'; value: { bountyId: number } }
+  /**
+   * See [`Pallet::accept_curator`].
+   **/
   | { tag: 'AcceptCurator'; value: { bountyId: number } }
+  /**
+   * See [`Pallet::award_bounty`].
+   **/
   | { tag: 'AwardBounty'; value: { bountyId: number; beneficiary: MultiAddress } }
+  /**
+   * See [`Pallet::claim_bounty`].
+   **/
   | { tag: 'ClaimBounty'; value: { bountyId: number } }
+  /**
+   * See [`Pallet::close_bounty`].
+   **/
   | { tag: 'CloseBounty'; value: { bountyId: number } }
+  /**
+   * See [`Pallet::extend_bounty_expiry`].
+   **/
   | { tag: 'ExtendBountyExpiry'; value: { bountyId: number; remark: Bytes } };
 
 /**
  * Contains a variant per dispatchable extrinsic that this pallet has.
  **/
 export type PalletTipsCall =
+  /**
+   * See [`Pallet::report_awesome`].
+   **/
   | { tag: 'ReportAwesome'; value: { reason: Bytes; who: MultiAddress } }
+  /**
+   * See [`Pallet::retract_tip`].
+   **/
   | { tag: 'RetractTip'; value: { hash: H256 } }
+  /**
+   * See [`Pallet::tip_new`].
+   **/
   | { tag: 'TipNew'; value: { reason: Bytes; who: MultiAddress; tipValue: bigint } }
+  /**
+   * See [`Pallet::tip`].
+   **/
   | { tag: 'Tip'; value: { hash: H256; tipValue: bigint } }
+  /**
+   * See [`Pallet::close_tip`].
+   **/
   | { tag: 'CloseTip'; value: { hash: H256 } }
+  /**
+   * See [`Pallet::slash_tip`].
+   **/
   | { tag: 'SlashTip'; value: { hash: H256 } };
 
 /**
  * Contains a variant per dispatchable extrinsic that this pallet has.
  **/
 export type PalletAssetsCall =
+  /**
+   * See [`Pallet::create`].
+   **/
   | { tag: 'Create'; value: { id: number; admin: MultiAddress; minBalance: bigint } }
+  /**
+   * See [`Pallet::force_create`].
+   **/
   | { tag: 'ForceCreate'; value: { id: number; owner: MultiAddress; isSufficient: boolean; minBalance: bigint } }
+  /**
+   * See [`Pallet::start_destroy`].
+   **/
   | { tag: 'StartDestroy'; value: { id: number } }
+  /**
+   * See [`Pallet::destroy_accounts`].
+   **/
   | { tag: 'DestroyAccounts'; value: { id: number } }
+  /**
+   * See [`Pallet::destroy_approvals`].
+   **/
   | { tag: 'DestroyApprovals'; value: { id: number } }
+  /**
+   * See [`Pallet::finish_destroy`].
+   **/
   | { tag: 'FinishDestroy'; value: { id: number } }
+  /**
+   * See [`Pallet::mint`].
+   **/
   | { tag: 'Mint'; value: { id: number; beneficiary: MultiAddress; amount: bigint } }
+  /**
+   * See [`Pallet::burn`].
+   **/
   | { tag: 'Burn'; value: { id: number; who: MultiAddress; amount: bigint } }
+  /**
+   * See [`Pallet::transfer`].
+   **/
   | { tag: 'Transfer'; value: { id: number; target: MultiAddress; amount: bigint } }
+  /**
+   * See [`Pallet::transfer_keep_alive`].
+   **/
   | { tag: 'TransferKeepAlive'; value: { id: number; target: MultiAddress; amount: bigint } }
+  /**
+   * See [`Pallet::force_transfer`].
+   **/
   | { tag: 'ForceTransfer'; value: { id: number; source: MultiAddress; dest: MultiAddress; amount: bigint } }
+  /**
+   * See [`Pallet::freeze`].
+   **/
   | { tag: 'Freeze'; value: { id: number; who: MultiAddress } }
+  /**
+   * See [`Pallet::thaw`].
+   **/
   | { tag: 'Thaw'; value: { id: number; who: MultiAddress } }
+  /**
+   * See [`Pallet::freeze_asset`].
+   **/
   | { tag: 'FreezeAsset'; value: { id: number } }
+  /**
+   * See [`Pallet::thaw_asset`].
+   **/
   | { tag: 'ThawAsset'; value: { id: number } }
+  /**
+   * See [`Pallet::transfer_ownership`].
+   **/
   | { tag: 'TransferOwnership'; value: { id: number; owner: MultiAddress } }
+  /**
+   * See [`Pallet::set_team`].
+   **/
   | { tag: 'SetTeam'; value: { id: number; issuer: MultiAddress; admin: MultiAddress; freezer: MultiAddress } }
+  /**
+   * See [`Pallet::set_metadata`].
+   **/
   | { tag: 'SetMetadata'; value: { id: number; name: Bytes; symbol: Bytes; decimals: number } }
+  /**
+   * See [`Pallet::clear_metadata`].
+   **/
   | { tag: 'ClearMetadata'; value: { id: number } }
+  /**
+   * See [`Pallet::force_set_metadata`].
+   **/
   | { tag: 'ForceSetMetadata'; value: { id: number; name: Bytes; symbol: Bytes; decimals: number; isFrozen: boolean } }
+  /**
+   * See [`Pallet::force_clear_metadata`].
+   **/
   | { tag: 'ForceClearMetadata'; value: { id: number } }
+  /**
+   * See [`Pallet::force_asset_status`].
+   **/
   | {
       tag: 'ForceAssetStatus';
       value: {
@@ -2297,60 +4091,171 @@ export type PalletAssetsCall =
         isFrozen: boolean;
       };
     }
+  /**
+   * See [`Pallet::approve_transfer`].
+   **/
   | { tag: 'ApproveTransfer'; value: { id: number; delegate: MultiAddress; amount: bigint } }
+  /**
+   * See [`Pallet::cancel_approval`].
+   **/
   | { tag: 'CancelApproval'; value: { id: number; delegate: MultiAddress } }
+  /**
+   * See [`Pallet::force_cancel_approval`].
+   **/
   | { tag: 'ForceCancelApproval'; value: { id: number; owner: MultiAddress; delegate: MultiAddress } }
+  /**
+   * See [`Pallet::transfer_approved`].
+   **/
   | { tag: 'TransferApproved'; value: { id: number; owner: MultiAddress; destination: MultiAddress; amount: bigint } }
+  /**
+   * See [`Pallet::touch`].
+   **/
   | { tag: 'Touch'; value: { id: number } }
+  /**
+   * See [`Pallet::refund`].
+   **/
   | { tag: 'Refund'; value: { id: number; allowBurn: boolean } }
+  /**
+   * See [`Pallet::set_min_balance`].
+   **/
   | { tag: 'SetMinBalance'; value: { id: number; minBalance: bigint } }
+  /**
+   * See [`Pallet::touch_other`].
+   **/
   | { tag: 'TouchOther'; value: { id: number; who: MultiAddress } }
+  /**
+   * See [`Pallet::refund_other`].
+   **/
   | { tag: 'RefundOther'; value: { id: number; who: MultiAddress } }
+  /**
+   * See [`Pallet::block`].
+   **/
   | { tag: 'Block'; value: { id: number; who: MultiAddress } };
 
 /**
  * Contains a variant per dispatchable extrinsic that this pallet has.
  **/
 export type PalletLotteryCall =
+  /**
+   * See [`Pallet::buy_ticket`].
+   **/
   | { tag: 'BuyTicket'; value: { call: KitchensinkRuntimeRuntimeCall } }
+  /**
+   * See [`Pallet::set_calls`].
+   **/
   | { tag: 'SetCalls'; value: { calls: Array<KitchensinkRuntimeRuntimeCall> } }
+  /**
+   * See [`Pallet::start_lottery`].
+   **/
   | { tag: 'StartLottery'; value: { price: bigint; length: number; delay: number; repeat: boolean } }
+  /**
+   * See [`Pallet::stop_repeat`].
+   **/
   | { tag: 'StopRepeat' };
 
 /**
  * Contains a variant per dispatchable extrinsic that this pallet has.
  **/
 export type PalletNisCall =
+  /**
+   * See [`Pallet::place_bid`].
+   **/
   | { tag: 'PlaceBid'; value: { amount: bigint; duration: number } }
+  /**
+   * See [`Pallet::retract_bid`].
+   **/
   | { tag: 'RetractBid'; value: { amount: bigint; duration: number } }
+  /**
+   * See [`Pallet::fund_deficit`].
+   **/
   | { tag: 'FundDeficit' }
+  /**
+   * See [`Pallet::thaw_private`].
+   **/
   | { tag: 'ThawPrivate'; value: { index: number; maybeProportion?: Perquintill | undefined } }
+  /**
+   * See [`Pallet::thaw_communal`].
+   **/
   | { tag: 'ThawCommunal'; value: { index: number } }
+  /**
+   * See [`Pallet::communify`].
+   **/
   | { tag: 'Communify'; value: { index: number } }
+  /**
+   * See [`Pallet::privatize`].
+   **/
   | { tag: 'Privatize'; value: { index: number } };
 
 /**
  * Contains a variant per dispatchable extrinsic that this pallet has.
  **/
 export type PalletUniquesCall =
+  /**
+   * See [`Pallet::create`].
+   **/
   | { tag: 'Create'; value: { collection: number; admin: MultiAddress } }
+  /**
+   * See [`Pallet::force_create`].
+   **/
   | { tag: 'ForceCreate'; value: { collection: number; owner: MultiAddress; freeHolding: boolean } }
+  /**
+   * See [`Pallet::destroy`].
+   **/
   | { tag: 'Destroy'; value: { collection: number; witness: PalletUniquesDestroyWitness } }
+  /**
+   * See [`Pallet::mint`].
+   **/
   | { tag: 'Mint'; value: { collection: number; item: number; owner: MultiAddress } }
+  /**
+   * See [`Pallet::burn`].
+   **/
   | { tag: 'Burn'; value: { collection: number; item: number; checkOwner?: MultiAddress | undefined } }
+  /**
+   * See [`Pallet::transfer`].
+   **/
   | { tag: 'Transfer'; value: { collection: number; item: number; dest: MultiAddress } }
+  /**
+   * See [`Pallet::redeposit`].
+   **/
   | { tag: 'Redeposit'; value: { collection: number; items: Array<number> } }
+  /**
+   * See [`Pallet::freeze`].
+   **/
   | { tag: 'Freeze'; value: { collection: number; item: number } }
+  /**
+   * See [`Pallet::thaw`].
+   **/
   | { tag: 'Thaw'; value: { collection: number; item: number } }
+  /**
+   * See [`Pallet::freeze_collection`].
+   **/
   | { tag: 'FreezeCollection'; value: { collection: number } }
+  /**
+   * See [`Pallet::thaw_collection`].
+   **/
   | { tag: 'ThawCollection'; value: { collection: number } }
+  /**
+   * See [`Pallet::transfer_ownership`].
+   **/
   | { tag: 'TransferOwnership'; value: { collection: number; owner: MultiAddress } }
+  /**
+   * See [`Pallet::set_team`].
+   **/
   | { tag: 'SetTeam'; value: { collection: number; issuer: MultiAddress; admin: MultiAddress; freezer: MultiAddress } }
+  /**
+   * See [`Pallet::approve_transfer`].
+   **/
   | { tag: 'ApproveTransfer'; value: { collection: number; item: number; delegate: MultiAddress } }
+  /**
+   * See [`Pallet::cancel_approval`].
+   **/
   | {
       tag: 'CancelApproval';
       value: { collection: number; item: number; maybeCheckDelegate?: MultiAddress | undefined };
     }
+  /**
+   * See [`Pallet::force_item_status`].
+   **/
   | {
       tag: 'ForceItemStatus';
       value: {
@@ -2363,14 +4268,41 @@ export type PalletUniquesCall =
         isFrozen: boolean;
       };
     }
+  /**
+   * See [`Pallet::set_attribute`].
+   **/
   | { tag: 'SetAttribute'; value: { collection: number; maybeItem?: number | undefined; key: Bytes; value: Bytes } }
+  /**
+   * See [`Pallet::clear_attribute`].
+   **/
   | { tag: 'ClearAttribute'; value: { collection: number; maybeItem?: number | undefined; key: Bytes } }
+  /**
+   * See [`Pallet::set_metadata`].
+   **/
   | { tag: 'SetMetadata'; value: { collection: number; item: number; data: Bytes; isFrozen: boolean } }
+  /**
+   * See [`Pallet::clear_metadata`].
+   **/
   | { tag: 'ClearMetadata'; value: { collection: number; item: number } }
+  /**
+   * See [`Pallet::set_collection_metadata`].
+   **/
   | { tag: 'SetCollectionMetadata'; value: { collection: number; data: Bytes; isFrozen: boolean } }
+  /**
+   * See [`Pallet::clear_collection_metadata`].
+   **/
   | { tag: 'ClearCollectionMetadata'; value: { collection: number } }
+  /**
+   * See [`Pallet::set_accept_ownership`].
+   **/
   | { tag: 'SetAcceptOwnership'; value: { maybeCollection?: number | undefined } }
+  /**
+   * See [`Pallet::set_collection_max_supply`].
+   **/
   | { tag: 'SetCollectionMaxSupply'; value: { collection: number; maxSupply: number } }
+  /**
+   * See [`Pallet::set_price`].
+   **/
   | {
       tag: 'SetPrice';
       value: {
@@ -2380,6 +4312,9 @@ export type PalletUniquesCall =
         whitelistedBuyer?: MultiAddress | undefined;
       };
     }
+  /**
+   * See [`Pallet::buy_item`].
+   **/
   | { tag: 'BuyItem'; value: { collection: number; item: number; bidPrice: bigint } };
 
 export type PalletUniquesDestroyWitness = { items: number; itemMetadatas: number; attributes: number };
@@ -2388,9 +4323,21 @@ export type PalletUniquesDestroyWitness = { items: number; itemMetadatas: number
  * Contains a variant per dispatchable extrinsic that this pallet has.
  **/
 export type PalletNftsCall =
+  /**
+   * See [`Pallet::create`].
+   **/
   | { tag: 'Create'; value: { admin: MultiAddress; config: PalletNftsCollectionConfig } }
+  /**
+   * See [`Pallet::force_create`].
+   **/
   | { tag: 'ForceCreate'; value: { owner: MultiAddress; config: PalletNftsCollectionConfig } }
+  /**
+   * See [`Pallet::destroy`].
+   **/
   | { tag: 'Destroy'; value: { collection: number; witness: PalletNftsDestroyWitness } }
+  /**
+   * See [`Pallet::mint`].
+   **/
   | {
       tag: 'Mint';
       value: {
@@ -2400,17 +4347,44 @@ export type PalletNftsCall =
         witnessData?: PalletNftsMintWitness | undefined;
       };
     }
+  /**
+   * See [`Pallet::force_mint`].
+   **/
   | {
       tag: 'ForceMint';
       value: { collection: number; item: number; mintTo: MultiAddress; itemConfig: PalletNftsItemConfig };
     }
+  /**
+   * See [`Pallet::burn`].
+   **/
   | { tag: 'Burn'; value: { collection: number; item: number } }
+  /**
+   * See [`Pallet::transfer`].
+   **/
   | { tag: 'Transfer'; value: { collection: number; item: number; dest: MultiAddress } }
+  /**
+   * See [`Pallet::redeposit`].
+   **/
   | { tag: 'Redeposit'; value: { collection: number; items: Array<number> } }
+  /**
+   * See [`Pallet::lock_item_transfer`].
+   **/
   | { tag: 'LockItemTransfer'; value: { collection: number; item: number } }
+  /**
+   * See [`Pallet::unlock_item_transfer`].
+   **/
   | { tag: 'UnlockItemTransfer'; value: { collection: number; item: number } }
+  /**
+   * See [`Pallet::lock_collection`].
+   **/
   | { tag: 'LockCollection'; value: { collection: number; lockSettings: PalletNftsBitFlags } }
+  /**
+   * See [`Pallet::transfer_ownership`].
+   **/
   | { tag: 'TransferOwnership'; value: { collection: number; owner: MultiAddress } }
+  /**
+   * See [`Pallet::set_team`].
+   **/
   | {
       tag: 'SetTeam';
       value: {
@@ -2420,18 +4394,39 @@ export type PalletNftsCall =
         freezer?: MultiAddress | undefined;
       };
     }
+  /**
+   * See [`Pallet::force_collection_owner`].
+   **/
   | { tag: 'ForceCollectionOwner'; value: { collection: number; owner: MultiAddress } }
+  /**
+   * See [`Pallet::force_collection_config`].
+   **/
   | { tag: 'ForceCollectionConfig'; value: { collection: number; config: PalletNftsCollectionConfig } }
+  /**
+   * See [`Pallet::approve_transfer`].
+   **/
   | {
       tag: 'ApproveTransfer';
       value: { collection: number; item: number; delegate: MultiAddress; maybeDeadline?: number | undefined };
     }
+  /**
+   * See [`Pallet::cancel_approval`].
+   **/
   | { tag: 'CancelApproval'; value: { collection: number; item: number; delegate: MultiAddress } }
+  /**
+   * See [`Pallet::clear_all_transfer_approvals`].
+   **/
   | { tag: 'ClearAllTransferApprovals'; value: { collection: number; item: number } }
+  /**
+   * See [`Pallet::lock_item_properties`].
+   **/
   | {
       tag: 'LockItemProperties';
       value: { collection: number; item: number; lockMetadata: boolean; lockAttributes: boolean };
     }
+  /**
+   * See [`Pallet::set_attribute`].
+   **/
   | {
       tag: 'SetAttribute';
       value: {
@@ -2442,6 +4437,9 @@ export type PalletNftsCall =
         value: Bytes;
       };
     }
+  /**
+   * See [`Pallet::force_set_attribute`].
+   **/
   | {
       tag: 'ForceSetAttribute';
       value: {
@@ -2453,6 +4451,9 @@ export type PalletNftsCall =
         value: Bytes;
       };
     }
+  /**
+   * See [`Pallet::clear_attribute`].
+   **/
   | {
       tag: 'ClearAttribute';
       value: {
@@ -2462,7 +4463,13 @@ export type PalletNftsCall =
         key: Bytes;
       };
     }
+  /**
+   * See [`Pallet::approve_item_attributes`].
+   **/
   | { tag: 'ApproveItemAttributes'; value: { collection: number; item: number; delegate: MultiAddress } }
+  /**
+   * See [`Pallet::cancel_item_attributes_approval`].
+   **/
   | {
       tag: 'CancelItemAttributesApproval';
       value: {
@@ -2472,13 +4479,37 @@ export type PalletNftsCall =
         witness: PalletNftsCancelAttributesApprovalWitness;
       };
     }
+  /**
+   * See [`Pallet::set_metadata`].
+   **/
   | { tag: 'SetMetadata'; value: { collection: number; item: number; data: Bytes } }
+  /**
+   * See [`Pallet::clear_metadata`].
+   **/
   | { tag: 'ClearMetadata'; value: { collection: number; item: number } }
+  /**
+   * See [`Pallet::set_collection_metadata`].
+   **/
   | { tag: 'SetCollectionMetadata'; value: { collection: number; data: Bytes } }
+  /**
+   * See [`Pallet::clear_collection_metadata`].
+   **/
   | { tag: 'ClearCollectionMetadata'; value: { collection: number } }
+  /**
+   * See [`Pallet::set_accept_ownership`].
+   **/
   | { tag: 'SetAcceptOwnership'; value: { maybeCollection?: number | undefined } }
+  /**
+   * See [`Pallet::set_collection_max_supply`].
+   **/
   | { tag: 'SetCollectionMaxSupply'; value: { collection: number; maxSupply: number } }
+  /**
+   * See [`Pallet::update_mint_settings`].
+   **/
   | { tag: 'UpdateMintSettings'; value: { collection: number; mintSettings: PalletNftsMintSettings } }
+  /**
+   * See [`Pallet::set_price`].
+   **/
   | {
       tag: 'SetPrice';
       value: {
@@ -2488,8 +4519,17 @@ export type PalletNftsCall =
         whitelistedBuyer?: MultiAddress | undefined;
       };
     }
+  /**
+   * See [`Pallet::buy_item`].
+   **/
   | { tag: 'BuyItem'; value: { collection: number; item: number; bidPrice: bigint } }
+  /**
+   * See [`Pallet::pay_tips`].
+   **/
   | { tag: 'PayTips'; value: { tips: Array<PalletNftsItemTip> } }
+  /**
+   * See [`Pallet::create_swap`].
+   **/
   | {
       tag: 'CreateSwap';
       value: {
@@ -2501,7 +4541,13 @@ export type PalletNftsCall =
         duration: number;
       };
     }
+  /**
+   * See [`Pallet::cancel_swap`].
+   **/
   | { tag: 'CancelSwap'; value: { offeredCollection: number; offeredItem: number } }
+  /**
+   * See [`Pallet::claim_swap`].
+   **/
   | {
       tag: 'ClaimSwap';
       value: {
@@ -2512,10 +4558,16 @@ export type PalletNftsCall =
         witnessPrice?: PalletNftsPriceWithDirection | undefined;
       };
     }
+  /**
+   * See [`Pallet::mint_pre_signed`].
+   **/
   | {
       tag: 'MintPreSigned';
       value: { mintData: PalletNftsPreSignedMint; signature: SpRuntimeMultiSignature; signer: AccountId32 };
     }
+  /**
+   * See [`Pallet::set_attributes_pre_signed`].
+   **/
   | {
       tag: 'SetAttributesPreSigned';
       value: { data: PalletNftsPreSignedAttributes; signature: SpRuntimeMultiSignature; signer: AccountId32 };
@@ -2589,44 +4641,107 @@ export type PalletNftsPreSignedAttributes = {
  * Contains a variant per dispatchable extrinsic that this pallet has.
  **/
 export type PalletNftFractionalizationCall =
+  /**
+   * See [`Pallet::fractionalize`].
+   **/
   | {
       tag: 'Fractionalize';
       value: { nftCollectionId: number; nftId: number; assetId: number; beneficiary: MultiAddress; fractions: bigint };
     }
+  /**
+   * See [`Pallet::unify`].
+   **/
   | { tag: 'Unify'; value: { nftCollectionId: number; nftId: number; assetId: number; beneficiary: MultiAddress } };
 
 /**
  * Contains a variant per dispatchable extrinsic that this pallet has.
  **/
 export type PalletSalaryCall =
+  /**
+   * See [`Pallet::init`].
+   **/
   | { tag: 'Init' }
+  /**
+   * See [`Pallet::bump`].
+   **/
   | { tag: 'Bump' }
+  /**
+   * See [`Pallet::induct`].
+   **/
   | { tag: 'Induct' }
+  /**
+   * See [`Pallet::register`].
+   **/
   | { tag: 'Register' }
+  /**
+   * See [`Pallet::payout`].
+   **/
   | { tag: 'Payout' }
+  /**
+   * See [`Pallet::payout_other`].
+   **/
   | { tag: 'PayoutOther'; value: { beneficiary: AccountId32 } }
+  /**
+   * See [`Pallet::check_payment`].
+   **/
   | { tag: 'CheckPayment' };
 
 /**
  * Contains a variant per dispatchable extrinsic that this pallet has.
  **/
 export type PalletCoreFellowshipCall =
+  /**
+   * See [`Pallet::bump`].
+   **/
   | { tag: 'Bump'; value: { who: AccountId32 } }
+  /**
+   * See [`Pallet::set_params`].
+   **/
   | { tag: 'SetParams'; value: { params: PalletCoreFellowshipParamsType } }
+  /**
+   * See [`Pallet::set_active`].
+   **/
   | { tag: 'SetActive'; value: { isActive: boolean } }
+  /**
+   * See [`Pallet::approve`].
+   **/
   | { tag: 'Approve'; value: { who: AccountId32; atRank: number } }
+  /**
+   * See [`Pallet::induct`].
+   **/
   | { tag: 'Induct'; value: { who: AccountId32 } }
+  /**
+   * See [`Pallet::promote`].
+   **/
   | { tag: 'Promote'; value: { who: AccountId32; toRank: number } }
+  /**
+   * See [`Pallet::offboard`].
+   **/
   | { tag: 'Offboard'; value: { who: AccountId32 } }
+  /**
+   * See [`Pallet::submit_evidence`].
+   **/
   | { tag: 'SubmitEvidence'; value: { wish: PalletCoreFellowshipWish; evidence: Bytes } }
+  /**
+   * See [`Pallet::import`].
+   **/
   | { tag: 'Import' };
 
 /**
  * Contains a variant per dispatchable extrinsic that this pallet has.
  **/
 export type PalletTransactionStorageCall =
+  /**
+   * See [`Pallet::store`].
+   **/
   | { tag: 'Store'; value: { data: Bytes } }
+  /**
+   * See [`Pallet::renew`].
+   **/
   | { tag: 'Renew'; value: { block: number; index: number } }
+  /**
+   * See [`Pallet::check_proof`].
+   **/
   | { tag: 'CheckProof'; value: { proof: SpTransactionStorageProofTransactionStorageProof } };
 
 export type SpTransactionStorageProofTransactionStorageProof = { chunk: Bytes; proof: Array<Bytes> };
@@ -2635,15 +4750,30 @@ export type SpTransactionStorageProofTransactionStorageProof = { chunk: Bytes; p
  * Contains a variant per dispatchable extrinsic that this pallet has.
  **/
 export type PalletBagsListCall =
+  /**
+   * See [`Pallet::rebag`].
+   **/
   | { tag: 'Rebag'; value: { dislocated: MultiAddress } }
+  /**
+   * See [`Pallet::put_in_front_of`].
+   **/
   | { tag: 'PutInFrontOf'; value: { lighter: MultiAddress } }
+  /**
+   * See [`Pallet::put_in_front_of_other`].
+   **/
   | { tag: 'PutInFrontOfOther'; value: { heavier: MultiAddress; lighter: MultiAddress } };
 
 /**
  * Contains a variant per dispatchable extrinsic that this pallet has.
  **/
 export type PalletStateTrieMigrationCall =
+  /**
+   * See [`Pallet::control_auto_migration`].
+   **/
   | { tag: 'ControlAutoMigration'; value: { maybeConfig?: PalletStateTrieMigrationMigrationLimits | undefined } }
+  /**
+   * See [`Pallet::continue_migrate`].
+   **/
   | {
       tag: 'ContinueMigrate';
       value: {
@@ -2652,9 +4782,21 @@ export type PalletStateTrieMigrationCall =
         witnessTask: PalletStateTrieMigrationMigrationTask;
       };
     }
+  /**
+   * See [`Pallet::migrate_custom_top`].
+   **/
   | { tag: 'MigrateCustomTop'; value: { keys: Array<Bytes>; witnessSize: number } }
+  /**
+   * See [`Pallet::migrate_custom_child`].
+   **/
   | { tag: 'MigrateCustomChild'; value: { root: Bytes; childKeys: Array<Bytes>; totalSize: number } }
+  /**
+   * See [`Pallet::set_signed_max_limits`].
+   **/
   | { tag: 'SetSignedMaxLimits'; value: { limits: PalletStateTrieMigrationMigrationLimits } }
+  /**
+   * See [`Pallet::force_set_progress`].
+   **/
   | {
       tag: 'ForceSetProgress';
       value: { progressTop: PalletStateTrieMigrationProgress; progressChild: PalletStateTrieMigrationProgress };
@@ -2679,21 +4821,45 @@ export type PalletStateTrieMigrationProgress =
  * Contains a variant per dispatchable extrinsic that this pallet has.
  **/
 export type PalletChildBountiesCall =
+  /**
+   * See [`Pallet::add_child_bounty`].
+   **/
   | { tag: 'AddChildBounty'; value: { parentBountyId: number; value: bigint; description: Bytes } }
+  /**
+   * See [`Pallet::propose_curator`].
+   **/
   | {
       tag: 'ProposeCurator';
       value: { parentBountyId: number; childBountyId: number; curator: MultiAddress; fee: bigint };
     }
+  /**
+   * See [`Pallet::accept_curator`].
+   **/
   | { tag: 'AcceptCurator'; value: { parentBountyId: number; childBountyId: number } }
+  /**
+   * See [`Pallet::unassign_curator`].
+   **/
   | { tag: 'UnassignCurator'; value: { parentBountyId: number; childBountyId: number } }
+  /**
+   * See [`Pallet::award_child_bounty`].
+   **/
   | { tag: 'AwardChildBounty'; value: { parentBountyId: number; childBountyId: number; beneficiary: MultiAddress } }
+  /**
+   * See [`Pallet::claim_child_bounty`].
+   **/
   | { tag: 'ClaimChildBounty'; value: { parentBountyId: number; childBountyId: number } }
+  /**
+   * See [`Pallet::close_child_bounty`].
+   **/
   | { tag: 'CloseChildBounty'; value: { parentBountyId: number; childBountyId: number } };
 
 /**
  * Contains a variant per dispatchable extrinsic that this pallet has.
  **/
 export type PalletReferendaCall =
+  /**
+   * See [`Pallet::submit`].
+   **/
   | {
       tag: 'Submit';
       value: {
@@ -2702,13 +4868,37 @@ export type PalletReferendaCall =
         enactmentMoment: FrameSupportScheduleDispatchTime;
       };
     }
+  /**
+   * See [`Pallet::place_decision_deposit`].
+   **/
   | { tag: 'PlaceDecisionDeposit'; value: { index: number } }
+  /**
+   * See [`Pallet::refund_decision_deposit`].
+   **/
   | { tag: 'RefundDecisionDeposit'; value: { index: number } }
+  /**
+   * See [`Pallet::cancel`].
+   **/
   | { tag: 'Cancel'; value: { index: number } }
+  /**
+   * See [`Pallet::kill`].
+   **/
   | { tag: 'Kill'; value: { index: number } }
+  /**
+   * See [`Pallet::nudge_referendum`].
+   **/
   | { tag: 'NudgeReferendum'; value: { index: number } }
+  /**
+   * See [`Pallet::one_fewer_deciding`].
+   **/
   | { tag: 'OneFewerDeciding'; value: { track: number } }
+  /**
+   * See [`Pallet::refund_submission_deposit`].
+   **/
   | { tag: 'RefundSubmissionDeposit'; value: { index: number } }
+  /**
+   * See [`Pallet::set_metadata`].
+   **/
   | { tag: 'SetMetadata'; value: { index: number; maybeHash?: H256 | undefined } };
 
 export type FrameSupportScheduleDispatchTime = { tag: 'At'; value: number } | { tag: 'After'; value: number };
@@ -2716,25 +4906,51 @@ export type FrameSupportScheduleDispatchTime = { tag: 'At'; value: number } | { 
 /**
  * Contains a variant per dispatchable extrinsic that this pallet has.
  **/
-export type PalletRemarkCall = { tag: 'Store'; value: { remark: Bytes } };
+export type PalletRemarkCall =
+  /**
+   * See [`Pallet::store`].
+   **/
+  { tag: 'Store'; value: { remark: Bytes } };
 
 /**
  * Contains a variant per dispatchable extrinsic that this pallet has.
  **/
-export type PalletRootTestingCall = { tag: 'FillBlock'; value: { ratio: Perbill } };
+export type PalletRootTestingCall =
+  /**
+   * See [`Pallet::fill_block`].
+   **/
+  { tag: 'FillBlock'; value: { ratio: Perbill } };
 
 /**
  * Contains a variant per dispatchable extrinsic that this pallet has.
  **/
 export type PalletConvictionVotingCall =
+  /**
+   * See [`Pallet::vote`].
+   **/
   | { tag: 'Vote'; value: { pollIndex: number; vote: PalletConvictionVotingVoteAccountVote } }
+  /**
+   * See [`Pallet::delegate`].
+   **/
   | {
       tag: 'Delegate';
       value: { class: number; to: MultiAddress; conviction: PalletConvictionVotingConviction; balance: bigint };
     }
+  /**
+   * See [`Pallet::undelegate`].
+   **/
   | { tag: 'Undelegate'; value: { class: number } }
+  /**
+   * See [`Pallet::unlock`].
+   **/
   | { tag: 'Unlock'; value: { class: number; target: MultiAddress } }
+  /**
+   * See [`Pallet::remove_vote`].
+   **/
   | { tag: 'RemoveVote'; value: { class?: number | undefined; index: number } }
+  /**
+   * See [`Pallet::remove_other_vote`].
+   **/
   | { tag: 'RemoveOtherVote'; value: { target: MultiAddress; class: number; index: number } };
 
 export type PalletConvictionVotingVoteAccountVote =
@@ -2757,37 +4973,100 @@ export type PalletConvictionVotingConviction =
  * Contains a variant per dispatchable extrinsic that this pallet has.
  **/
 export type PalletWhitelistCall =
+  /**
+   * See [`Pallet::whitelist_call`].
+   **/
   | { tag: 'WhitelistCall'; value: { callHash: H256 } }
+  /**
+   * See [`Pallet::remove_whitelisted_call`].
+   **/
   | { tag: 'RemoveWhitelistedCall'; value: { callHash: H256 } }
+  /**
+   * See [`Pallet::dispatch_whitelisted_call`].
+   **/
   | {
       tag: 'DispatchWhitelistedCall';
       value: { callHash: H256; callEncodedLen: number; callWeightWitness: SpWeightsWeightV2Weight };
     }
+  /**
+   * See [`Pallet::dispatch_whitelisted_call_with_preimage`].
+   **/
   | { tag: 'DispatchWhitelistedCallWithPreimage'; value: { call: KitchensinkRuntimeRuntimeCall } };
 
 /**
  * Contains a variant per dispatchable extrinsic that this pallet has.
  **/
 export type PalletAllianceCall =
+  /**
+   * See [`Pallet::propose`].
+   **/
   | { tag: 'Propose'; value: { threshold: number; proposal: KitchensinkRuntimeRuntimeCall; lengthBound: number } }
+  /**
+   * See [`Pallet::vote`].
+   **/
   | { tag: 'Vote'; value: { proposal: H256; index: number; approve: boolean } }
+  /**
+   * See [`Pallet::init_members`].
+   **/
   | { tag: 'InitMembers'; value: { fellows: Array<AccountId32>; allies: Array<AccountId32> } }
+  /**
+   * See [`Pallet::disband`].
+   **/
   | { tag: 'Disband'; value: { witness: PalletAllianceDisbandWitness } }
+  /**
+   * See [`Pallet::set_rule`].
+   **/
   | { tag: 'SetRule'; value: { rule: PalletAllianceCid } }
+  /**
+   * See [`Pallet::announce`].
+   **/
   | { tag: 'Announce'; value: { announcement: PalletAllianceCid } }
+  /**
+   * See [`Pallet::remove_announcement`].
+   **/
   | { tag: 'RemoveAnnouncement'; value: { announcement: PalletAllianceCid } }
+  /**
+   * See [`Pallet::join_alliance`].
+   **/
   | { tag: 'JoinAlliance' }
+  /**
+   * See [`Pallet::nominate_ally`].
+   **/
   | { tag: 'NominateAlly'; value: { who: MultiAddress } }
+  /**
+   * See [`Pallet::elevate_ally`].
+   **/
   | { tag: 'ElevateAlly'; value: { ally: MultiAddress } }
+  /**
+   * See [`Pallet::give_retirement_notice`].
+   **/
   | { tag: 'GiveRetirementNotice' }
+  /**
+   * See [`Pallet::retire`].
+   **/
   | { tag: 'Retire' }
+  /**
+   * See [`Pallet::kick_member`].
+   **/
   | { tag: 'KickMember'; value: { who: MultiAddress } }
+  /**
+   * See [`Pallet::add_unscrupulous_items`].
+   **/
   | { tag: 'AddUnscrupulousItems'; value: { items: Array<PalletAllianceUnscrupulousItem> } }
+  /**
+   * See [`Pallet::remove_unscrupulous_items`].
+   **/
   | { tag: 'RemoveUnscrupulousItems'; value: { items: Array<PalletAllianceUnscrupulousItem> } }
+  /**
+   * See [`Pallet::close`].
+   **/
   | {
       tag: 'Close';
       value: { proposalHash: H256; index: number; proposalWeightBound: SpWeightsWeightV2Weight; lengthBound: number };
     }
+  /**
+   * See [`Pallet::abdicate_fellow_status`].
+   **/
   | { tag: 'AbdicateFellowStatus' };
 
 export type PalletAllianceDisbandWitness = { fellowMembers: number; allyMembers: number };
@@ -2806,20 +5085,56 @@ export type PalletAllianceUnscrupulousItem =
  * Contains a variant per dispatchable extrinsic that this pallet has.
  **/
 export type PalletNominationPoolsCall =
+  /**
+   * See [`Pallet::join`].
+   **/
   | { tag: 'Join'; value: { amount: bigint; poolId: number } }
+  /**
+   * See [`Pallet::bond_extra`].
+   **/
   | { tag: 'BondExtra'; value: { extra: PalletNominationPoolsBondExtra } }
+  /**
+   * See [`Pallet::claim_payout`].
+   **/
   | { tag: 'ClaimPayout' }
+  /**
+   * See [`Pallet::unbond`].
+   **/
   | { tag: 'Unbond'; value: { memberAccount: MultiAddress; unbondingPoints: bigint } }
+  /**
+   * See [`Pallet::pool_withdraw_unbonded`].
+   **/
   | { tag: 'PoolWithdrawUnbonded'; value: { poolId: number; numSlashingSpans: number } }
+  /**
+   * See [`Pallet::withdraw_unbonded`].
+   **/
   | { tag: 'WithdrawUnbonded'; value: { memberAccount: MultiAddress; numSlashingSpans: number } }
+  /**
+   * See [`Pallet::create`].
+   **/
   | { tag: 'Create'; value: { amount: bigint; root: MultiAddress; nominator: MultiAddress; bouncer: MultiAddress } }
+  /**
+   * See [`Pallet::create_with_pool_id`].
+   **/
   | {
       tag: 'CreateWithPoolId';
       value: { amount: bigint; root: MultiAddress; nominator: MultiAddress; bouncer: MultiAddress; poolId: number };
     }
+  /**
+   * See [`Pallet::nominate`].
+   **/
   | { tag: 'Nominate'; value: { poolId: number; validators: Array<AccountId32> } }
+  /**
+   * See [`Pallet::set_state`].
+   **/
   | { tag: 'SetState'; value: { poolId: number; state: PalletNominationPoolsPoolState } }
+  /**
+   * See [`Pallet::set_metadata`].
+   **/
   | { tag: 'SetMetadata'; value: { poolId: number; metadata: Bytes } }
+  /**
+   * See [`Pallet::set_configs`].
+   **/
   | {
       tag: 'SetConfigs';
       value: {
@@ -2831,6 +5146,9 @@ export type PalletNominationPoolsCall =
         globalMaxCommission: PalletNominationPoolsConfigOpPerbill;
       };
     }
+  /**
+   * See [`Pallet::update_roles`].
+   **/
   | {
       tag: 'UpdateRoles';
       value: {
@@ -2840,13 +5158,37 @@ export type PalletNominationPoolsCall =
         newBouncer: PalletNominationPoolsConfigOp004;
       };
     }
+  /**
+   * See [`Pallet::chill`].
+   **/
   | { tag: 'Chill'; value: { poolId: number } }
+  /**
+   * See [`Pallet::bond_extra_other`].
+   **/
   | { tag: 'BondExtraOther'; value: { member: MultiAddress; extra: PalletNominationPoolsBondExtra } }
+  /**
+   * See [`Pallet::set_claim_permission`].
+   **/
   | { tag: 'SetClaimPermission'; value: { permission: PalletNominationPoolsClaimPermission } }
+  /**
+   * See [`Pallet::claim_payout_other`].
+   **/
   | { tag: 'ClaimPayoutOther'; value: { other: AccountId32 } }
+  /**
+   * See [`Pallet::set_commission`].
+   **/
   | { tag: 'SetCommission'; value: { poolId: number; newCommission?: [Perbill, AccountId32] | undefined } }
+  /**
+   * See [`Pallet::set_commission_max`].
+   **/
   | { tag: 'SetCommissionMax'; value: { poolId: number; maxCommission: Perbill } }
+  /**
+   * See [`Pallet::set_commission_change_rate`].
+   **/
   | { tag: 'SetCommissionChangeRate'; value: { poolId: number; changeRate: PalletNominationPoolsCommissionChangeRate } }
+  /**
+   * See [`Pallet::claim_commission`].
+   **/
   | { tag: 'ClaimCommission'; value: { poolId: number } };
 
 export type PalletNominationPoolsBondExtra = { tag: 'FreeBalance'; value: bigint } | { tag: 'Rewards' };
@@ -2873,21 +5215,45 @@ export type PalletNominationPoolsCommissionChangeRate = { maxIncrease: Perbill; 
  * Contains a variant per dispatchable extrinsic that this pallet has.
  **/
 export type PalletRankedCollectiveCall =
+  /**
+   * See [`Pallet::add_member`].
+   **/
   | { tag: 'AddMember'; value: { who: MultiAddress } }
+  /**
+   * See [`Pallet::promote_member`].
+   **/
   | { tag: 'PromoteMember'; value: { who: MultiAddress } }
+  /**
+   * See [`Pallet::demote_member`].
+   **/
   | { tag: 'DemoteMember'; value: { who: MultiAddress } }
+  /**
+   * See [`Pallet::remove_member`].
+   **/
   | { tag: 'RemoveMember'; value: { who: MultiAddress; minRank: number } }
+  /**
+   * See [`Pallet::vote`].
+   **/
   | { tag: 'Vote'; value: { poll: number; aye: boolean } }
+  /**
+   * See [`Pallet::cleanup_poll`].
+   **/
   | { tag: 'CleanupPoll'; value: { pollIndex: number; max: number } };
 
 /**
  * Pallet's callable functions.
  **/
 export type PalletAssetConversionCall =
+  /**
+   * See [`Pallet::create_pool`].
+   **/
   | {
       tag: 'CreatePool';
       value: { asset1: PalletAssetConversionNativeOrAssetId; asset2: PalletAssetConversionNativeOrAssetId };
     }
+  /**
+   * See [`Pallet::add_liquidity`].
+   **/
   | {
       tag: 'AddLiquidity';
       value: {
@@ -2900,6 +5266,9 @@ export type PalletAssetConversionCall =
         mintTo: AccountId32;
       };
     }
+  /**
+   * See [`Pallet::remove_liquidity`].
+   **/
   | {
       tag: 'RemoveLiquidity';
       value: {
@@ -2911,6 +5280,9 @@ export type PalletAssetConversionCall =
         withdrawTo: AccountId32;
       };
     }
+  /**
+   * See [`Pallet::swap_exact_tokens_for_tokens`].
+   **/
   | {
       tag: 'SwapExactTokensForTokens';
       value: {
@@ -2921,6 +5293,9 @@ export type PalletAssetConversionCall =
         keepAlive: boolean;
       };
     }
+  /**
+   * See [`Pallet::swap_tokens_for_exact_tokens`].
+   **/
   | {
       tag: 'SwapTokensForExactTokens';
       value: {
@@ -2938,15 +5313,30 @@ export type PalletAssetConversionNativeOrAssetId = { tag: 'Native' } | { tag: 'A
  * Contains a variant per dispatchable extrinsic that this pallet has.
  **/
 export type PalletFastUnstakeCall =
+  /**
+   * See [`Pallet::register_fast_unstake`].
+   **/
   | { tag: 'RegisterFastUnstake' }
+  /**
+   * See [`Pallet::deregister`].
+   **/
   | { tag: 'Deregister' }
+  /**
+   * See [`Pallet::control`].
+   **/
   | { tag: 'Control'; value: { erasToCheck: number } };
 
 /**
  * Contains a variant per dispatchable extrinsic that this pallet has.
  **/
 export type PalletMessageQueueCall =
+  /**
+   * See [`Pallet::reap_page`].
+   **/
   | { tag: 'ReapPage'; value: { messageOrigin: number; pageIndex: number } }
+  /**
+   * See [`Pallet::execute_overweight`].
+   **/
   | {
       tag: 'ExecuteOverweight';
       value: { messageOrigin: number; page: number; index: number; weightLimit: SpWeightsWeightV2Weight };
@@ -2969,44 +5359,131 @@ export type FrameBenchmarkingPalletPovCall =
  * Contains a variant per dispatchable extrinsic that this pallet has.
  **/
 export type PalletTxPauseCall =
+  /**
+   * See [`Pallet::pause`].
+   **/
   | { tag: 'Pause'; value: { fullName: [Bytes, Bytes] } }
+  /**
+   * See [`Pallet::unpause`].
+   **/
   | { tag: 'Unpause'; value: { ident: [Bytes, Bytes] } };
 
 /**
  * Contains a variant per dispatchable extrinsic that this pallet has.
  **/
 export type PalletSafeModeCall =
+  /**
+   * See [`Pallet::enter`].
+   **/
   | { tag: 'Enter' }
+  /**
+   * See [`Pallet::force_enter`].
+   **/
   | { tag: 'ForceEnter' }
+  /**
+   * See [`Pallet::extend`].
+   **/
   | { tag: 'Extend' }
+  /**
+   * See [`Pallet::force_extend`].
+   **/
   | { tag: 'ForceExtend' }
+  /**
+   * See [`Pallet::force_exit`].
+   **/
   | { tag: 'ForceExit' }
+  /**
+   * See [`Pallet::force_slash_deposit`].
+   **/
   | { tag: 'ForceSlashDeposit'; value: { account: AccountId32; block: number } }
+  /**
+   * See [`Pallet::release_deposit`].
+   **/
   | { tag: 'ReleaseDeposit'; value: { account: AccountId32; block: number } }
+  /**
+   * See [`Pallet::force_release_deposit`].
+   **/
   | { tag: 'ForceReleaseDeposit'; value: { account: AccountId32; block: number } };
 
 /**
  * Contains a variant per dispatchable extrinsic that this pallet has.
  **/
 export type PalletBrokerCall =
+  /**
+   * See [`Pallet::configure`].
+   **/
   | { tag: 'Configure'; value: { config: PalletBrokerConfigRecord } }
+  /**
+   * See [`Pallet::reserve`].
+   **/
   | { tag: 'Reserve'; value: { workload: Array<PalletBrokerScheduleItem> } }
+  /**
+   * See [`Pallet::unreserve`].
+   **/
   | { tag: 'Unreserve'; value: { itemIndex: number } }
+  /**
+   * See [`Pallet::set_lease`].
+   **/
   | { tag: 'SetLease'; value: { task: number; until: number } }
+  /**
+   * See [`Pallet::start_sales`].
+   **/
   | { tag: 'StartSales'; value: { initialPrice: bigint; coreCount: number } }
+  /**
+   * See [`Pallet::purchase`].
+   **/
   | { tag: 'Purchase'; value: { priceLimit: bigint } }
+  /**
+   * See [`Pallet::renew`].
+   **/
   | { tag: 'Renew'; value: { core: number } }
+  /**
+   * See [`Pallet::transfer`].
+   **/
   | { tag: 'Transfer'; value: { regionId: PalletBrokerRegionId; newOwner: AccountId32 } }
+  /**
+   * See [`Pallet::partition`].
+   **/
   | { tag: 'Partition'; value: { regionId: PalletBrokerRegionId; pivot: number } }
+  /**
+   * See [`Pallet::interlace`].
+   **/
   | { tag: 'Interlace'; value: { regionId: PalletBrokerRegionId; pivot: PalletBrokerCoreMask } }
+  /**
+   * See [`Pallet::assign`].
+   **/
   | { tag: 'Assign'; value: { regionId: PalletBrokerRegionId; task: number; finality: PalletBrokerFinality } }
+  /**
+   * See [`Pallet::pool`].
+   **/
   | { tag: 'Pool'; value: { regionId: PalletBrokerRegionId; payee: AccountId32; finality: PalletBrokerFinality } }
+  /**
+   * See [`Pallet::claim_revenue`].
+   **/
   | { tag: 'ClaimRevenue'; value: { regionId: PalletBrokerRegionId; maxTimeslices: number } }
+  /**
+   * See [`Pallet::purchase_credit`].
+   **/
   | { tag: 'PurchaseCredit'; value: { amount: bigint; beneficiary: AccountId32 } }
+  /**
+   * See [`Pallet::drop_region`].
+   **/
   | { tag: 'DropRegion'; value: { regionId: PalletBrokerRegionId } }
+  /**
+   * See [`Pallet::drop_contribution`].
+   **/
   | { tag: 'DropContribution'; value: { regionId: PalletBrokerRegionId } }
+  /**
+   * See [`Pallet::drop_history`].
+   **/
   | { tag: 'DropHistory'; value: { when: number } }
+  /**
+   * See [`Pallet::drop_renewal`].
+   **/
   | { tag: 'DropRenewal'; value: { core: number; when: number } }
+  /**
+   * See [`Pallet::request_core_count`].
+   **/
   | { tag: 'RequestCoreCount'; value: { coreCount: number } };
 
 export type PalletBrokerConfigRecord = {
@@ -3041,24 +5518,37 @@ export type PalletConvictionVotingTally = { ayes: bigint; nays: bigint; support:
 /**
  * The `Event` enum of this pallet
  **/
-export type PalletRemarkEvent = { tag: 'Stored'; value: { sender: AccountId32; contentHash: H256 } };
+export type PalletRemarkEvent =
+  /**
+   * Stored data off chain.
+   **/
+  { name: 'Stored'; data: { sender: AccountId32; contentHash: H256 } };
 
 /**
  * The `Event` enum of this pallet
  **/
 export type PalletConvictionVotingEvent =
-  | { tag: 'Delegated'; value: [AccountId32, AccountId32] }
-  | { tag: 'Undelegated'; value: AccountId32 };
+  /**
+   * An account has delegated their vote to another account. \[who, target\]
+   **/
+  | { name: 'Delegated'; data: [AccountId32, AccountId32] }
+  /**
+   * An \[account\] has cancelled a previous delegation operation.
+   **/
+  | { name: 'Undelegated'; data: AccountId32 };
 
 /**
  * The `Event` enum of this pallet
  **/
 export type PalletWhitelistEvent =
-  | { tag: 'CallWhitelisted'; value: { callHash: H256 } }
-  | { tag: 'WhitelistedCallRemoved'; value: { callHash: H256 } }
+  | { name: 'CallWhitelisted'; data: { callHash: H256 } }
+  | { name: 'WhitelistedCallRemoved'; data: { callHash: H256 } }
   | {
-      tag: 'WhitelistedCallDispatched';
-      value: { callHash: H256; result: FrameSupportDispatchPostDispatchInfo | SpRuntimeDispatchErrorWithPostInfo };
+      name: 'WhitelistedCallDispatched';
+      data: {
+        callHash: H256;
+        result: ResultPayload<FrameSupportDispatchPostDispatchInfo, SpRuntimeDispatchErrorWithPostInfo>;
+      };
     };
 
 export type FrameSupportDispatchPostDispatchInfo = {
@@ -3075,56 +5565,161 @@ export type SpRuntimeDispatchErrorWithPostInfo = {
  * The `Event` enum of this pallet
  **/
 export type PalletAllianceEvent =
-  | { tag: 'NewRuleSet'; value: { rule: PalletAllianceCid } }
-  | { tag: 'Announced'; value: { announcement: PalletAllianceCid } }
-  | { tag: 'AnnouncementRemoved'; value: { announcement: PalletAllianceCid } }
-  | { tag: 'MembersInitialized'; value: { fellows: Array<AccountId32>; allies: Array<AccountId32> } }
+  /**
+   * A new rule has been set.
+   **/
+  | { name: 'NewRuleSet'; data: { rule: PalletAllianceCid } }
+  /**
+   * A new announcement has been proposed.
+   **/
+  | { name: 'Announced'; data: { announcement: PalletAllianceCid } }
+  /**
+   * An on-chain announcement has been removed.
+   **/
+  | { name: 'AnnouncementRemoved'; data: { announcement: PalletAllianceCid } }
+  /**
+   * Some accounts have been initialized as members (fellows/allies).
+   **/
+  | { name: 'MembersInitialized'; data: { fellows: Array<AccountId32>; allies: Array<AccountId32> } }
+  /**
+   * An account has been added as an Ally and reserved its deposit.
+   **/
   | {
-      tag: 'NewAllyJoined';
-      value: { ally: AccountId32; nominator?: AccountId32 | undefined; reserved?: bigint | undefined };
+      name: 'NewAllyJoined';
+      data: { ally: AccountId32; nominator?: AccountId32 | undefined; reserved?: bigint | undefined };
     }
-  | { tag: 'AllyElevated'; value: { ally: AccountId32 } }
-  | { tag: 'MemberRetirementPeriodStarted'; value: { member: AccountId32 } }
-  | { tag: 'MemberRetired'; value: { member: AccountId32; unreserved?: bigint | undefined } }
-  | { tag: 'MemberKicked'; value: { member: AccountId32; slashed?: bigint | undefined } }
-  | { tag: 'UnscrupulousItemAdded'; value: { items: Array<PalletAllianceUnscrupulousItem> } }
-  | { tag: 'UnscrupulousItemRemoved'; value: { items: Array<PalletAllianceUnscrupulousItem> } }
-  | { tag: 'AllianceDisbanded'; value: { fellowMembers: number; allyMembers: number; unreserved: number } }
-  | { tag: 'FellowAbdicated'; value: { fellow: AccountId32 } };
+  /**
+   * An ally has been elevated to Fellow.
+   **/
+  | { name: 'AllyElevated'; data: { ally: AccountId32 } }
+  /**
+   * A member gave retirement notice and their retirement period started.
+   **/
+  | { name: 'MemberRetirementPeriodStarted'; data: { member: AccountId32 } }
+  /**
+   * A member has retired with its deposit unreserved.
+   **/
+  | { name: 'MemberRetired'; data: { member: AccountId32; unreserved?: bigint | undefined } }
+  /**
+   * A member has been kicked out with its deposit slashed.
+   **/
+  | { name: 'MemberKicked'; data: { member: AccountId32; slashed?: bigint | undefined } }
+  /**
+   * Accounts or websites have been added into the list of unscrupulous items.
+   **/
+  | { name: 'UnscrupulousItemAdded'; data: { items: Array<PalletAllianceUnscrupulousItem> } }
+  /**
+   * Accounts or websites have been removed from the list of unscrupulous items.
+   **/
+  | { name: 'UnscrupulousItemRemoved'; data: { items: Array<PalletAllianceUnscrupulousItem> } }
+  /**
+   * Alliance disbanded. Includes number deleted members and unreserved deposits.
+   **/
+  | { name: 'AllianceDisbanded'; data: { fellowMembers: number; allyMembers: number; unreserved: number } }
+  /**
+   * A Fellow abdicated their voting rights. They are now an Ally.
+   **/
+  | { name: 'FellowAbdicated'; data: { fellow: AccountId32 } };
 
 /**
  * Events of this pallet.
  **/
 export type PalletNominationPoolsEvent =
-  | { tag: 'Created'; value: { depositor: AccountId32; poolId: number } }
-  | { tag: 'Bonded'; value: { member: AccountId32; poolId: number; bonded: bigint; joined: boolean } }
-  | { tag: 'PaidOut'; value: { member: AccountId32; poolId: number; payout: bigint } }
-  | { tag: 'Unbonded'; value: { member: AccountId32; poolId: number; balance: bigint; points: bigint; era: number } }
-  | { tag: 'Withdrawn'; value: { member: AccountId32; poolId: number; balance: bigint; points: bigint } }
-  | { tag: 'Destroyed'; value: { poolId: number } }
-  | { tag: 'StateChanged'; value: { poolId: number; newState: PalletNominationPoolsPoolState } }
-  | { tag: 'MemberRemoved'; value: { poolId: number; member: AccountId32 } }
+  /**
+   * A pool has been created.
+   **/
+  | { name: 'Created'; data: { depositor: AccountId32; poolId: number } }
+  /**
+   * A member has became bonded in a pool.
+   **/
+  | { name: 'Bonded'; data: { member: AccountId32; poolId: number; bonded: bigint; joined: boolean } }
+  /**
+   * A payout has been made to a member.
+   **/
+  | { name: 'PaidOut'; data: { member: AccountId32; poolId: number; payout: bigint } }
+  /**
+   * A member has unbonded from their pool.
+   *
+   * - `balance` is the corresponding balance of the number of points that has been
+   * requested to be unbonded (the argument of the `unbond` transaction) from the bonded
+   * pool.
+   * - `points` is the number of points that are issued as a result of `balance` being
+   * dissolved into the corresponding unbonding pool.
+   * - `era` is the era in which the balance will be unbonded.
+   * In the absence of slashing, these values will match. In the presence of slashing, the
+   * number of points that are issued in the unbonding pool will be less than the amount
+   * requested to be unbonded.
+   **/
+  | { name: 'Unbonded'; data: { member: AccountId32; poolId: number; balance: bigint; points: bigint; era: number } }
+  /**
+   * A member has withdrawn from their pool.
+   *
+   * The given number of `points` have been dissolved in return of `balance`.
+   *
+   * Similar to `Unbonded` event, in the absence of slashing, the ratio of point to balance
+   * will be 1.
+   **/
+  | { name: 'Withdrawn'; data: { member: AccountId32; poolId: number; balance: bigint; points: bigint } }
+  /**
+   * A pool has been destroyed.
+   **/
+  | { name: 'Destroyed'; data: { poolId: number } }
+  /**
+   * The state of a pool has changed
+   **/
+  | { name: 'StateChanged'; data: { poolId: number; newState: PalletNominationPoolsPoolState } }
+  /**
+   * A member has been removed from a pool.
+   *
+   * The removal can be voluntary (withdrawn all unbonded funds) or involuntary (kicked).
+   **/
+  | { name: 'MemberRemoved'; data: { poolId: number; member: AccountId32 } }
+  /**
+   * The roles of a pool have been updated to the given new roles. Note that the depositor
+   * can never change.
+   **/
   | {
-      tag: 'RolesUpdated';
-      value: { root?: AccountId32 | undefined; bouncer?: AccountId32 | undefined; nominator?: AccountId32 | undefined };
+      name: 'RolesUpdated';
+      data: { root?: AccountId32 | undefined; bouncer?: AccountId32 | undefined; nominator?: AccountId32 | undefined };
     }
-  | { tag: 'PoolSlashed'; value: { poolId: number; balance: bigint } }
-  | { tag: 'UnbondingPoolSlashed'; value: { poolId: number; era: number; balance: bigint } }
-  | { tag: 'PoolCommissionUpdated'; value: { poolId: number; current?: [Perbill, AccountId32] | undefined } }
-  | { tag: 'PoolMaxCommissionUpdated'; value: { poolId: number; maxCommission: Perbill } }
+  /**
+   * The active balance of pool `pool_id` has been slashed to `balance`.
+   **/
+  | { name: 'PoolSlashed'; data: { poolId: number; balance: bigint } }
+  /**
+   * The unbond pool at `era` of pool `pool_id` has been slashed to `balance`.
+   **/
+  | { name: 'UnbondingPoolSlashed'; data: { poolId: number; era: number; balance: bigint } }
+  /**
+   * A pool's commission setting has been changed.
+   **/
+  | { name: 'PoolCommissionUpdated'; data: { poolId: number; current?: [Perbill, AccountId32] | undefined } }
+  /**
+   * A pool's maximum commission setting has been changed.
+   **/
+  | { name: 'PoolMaxCommissionUpdated'; data: { poolId: number; maxCommission: Perbill } }
+  /**
+   * A pool's commission `change_rate` has been changed.
+   **/
   | {
-      tag: 'PoolCommissionChangeRateUpdated';
-      value: { poolId: number; changeRate: PalletNominationPoolsCommissionChangeRate };
+      name: 'PoolCommissionChangeRateUpdated';
+      data: { poolId: number; changeRate: PalletNominationPoolsCommissionChangeRate };
     }
-  | { tag: 'PoolCommissionClaimed'; value: { poolId: number; commission: bigint } };
+  /**
+   * Pool commission has been claimed.
+   **/
+  | { name: 'PoolCommissionClaimed'; data: { poolId: number; commission: bigint } };
 
 /**
  * The `Event` enum of this pallet
  **/
 export type PalletReferendaEvent002 =
+  /**
+   * A referendum has been submitted.
+   **/
   | {
-      tag: 'Submitted';
-      value: {
+      name: 'Submitted';
+      data: {
         /**
          * Index of the referendum.
          **/
@@ -3141,9 +5736,12 @@ export type PalletReferendaEvent002 =
         proposal: FrameSupportPreimagesBounded;
       };
     }
+  /**
+   * The decision deposit has been placed.
+   **/
   | {
-      tag: 'DecisionDepositPlaced';
-      value: {
+      name: 'DecisionDepositPlaced';
+      data: {
         /**
          * Index of the referendum.
          **/
@@ -3160,9 +5758,12 @@ export type PalletReferendaEvent002 =
         amount: bigint;
       };
     }
+  /**
+   * The decision deposit has been refunded.
+   **/
   | {
-      tag: 'DecisionDepositRefunded';
-      value: {
+      name: 'DecisionDepositRefunded';
+      data: {
         /**
          * Index of the referendum.
          **/
@@ -3179,9 +5780,12 @@ export type PalletReferendaEvent002 =
         amount: bigint;
       };
     }
+  /**
+   * A deposit has been slashaed.
+   **/
   | {
-      tag: 'DepositSlashed';
-      value: {
+      name: 'DepositSlashed';
+      data: {
         /**
          * The account who placed the deposit.
          **/
@@ -3193,9 +5797,12 @@ export type PalletReferendaEvent002 =
         amount: bigint;
       };
     }
+  /**
+   * A referendum has moved into the deciding phase.
+   **/
   | {
-      tag: 'DecisionStarted';
-      value: {
+      name: 'DecisionStarted';
+      data: {
         /**
          * Index of the referendum.
          **/
@@ -3218,8 +5825,8 @@ export type PalletReferendaEvent002 =
       };
     }
   | {
-      tag: 'ConfirmStarted';
-      value: {
+      name: 'ConfirmStarted';
+      data: {
         /**
          * Index of the referendum.
          **/
@@ -3227,40 +5834,20 @@ export type PalletReferendaEvent002 =
       };
     }
   | {
-      tag: 'ConfirmAborted';
-      value: {
+      name: 'ConfirmAborted';
+      data: {
         /**
          * Index of the referendum.
          **/
         index: number;
       };
     }
+  /**
+   * A referendum has ended its confirmation phase and is ready for approval.
+   **/
   | {
-      tag: 'Confirmed';
-      value: {
-        /**
-         * Index of the referendum.
-         **/
-        index: number;
-
-        /**
-         * The final tally of votes in this referendum.
-         **/
-        tally: PalletRankedCollectiveTally;
-      };
-    }
-  | {
-      tag: 'Approved';
-      value: {
-        /**
-         * Index of the referendum.
-         **/
-        index: number;
-      };
-    }
-  | {
-      tag: 'Rejected';
-      value: {
+      name: 'Confirmed';
+      data: {
         /**
          * Index of the referendum.
          **/
@@ -3272,9 +5859,24 @@ export type PalletReferendaEvent002 =
         tally: PalletRankedCollectiveTally;
       };
     }
+  /**
+   * A referendum has been approved and its proposal has been scheduled.
+   **/
   | {
-      tag: 'TimedOut';
-      value: {
+      name: 'Approved';
+      data: {
+        /**
+         * Index of the referendum.
+         **/
+        index: number;
+      };
+    }
+  /**
+   * A proposal has been rejected by referendum.
+   **/
+  | {
+      name: 'Rejected';
+      data: {
         /**
          * Index of the referendum.
          **/
@@ -3286,9 +5888,12 @@ export type PalletReferendaEvent002 =
         tally: PalletRankedCollectiveTally;
       };
     }
+  /**
+   * A referendum has been timed out without being decided.
+   **/
   | {
-      tag: 'Cancelled';
-      value: {
+      name: 'TimedOut';
+      data: {
         /**
          * Index of the referendum.
          **/
@@ -3300,9 +5905,12 @@ export type PalletReferendaEvent002 =
         tally: PalletRankedCollectiveTally;
       };
     }
+  /**
+   * A referendum has been cancelled.
+   **/
   | {
-      tag: 'Killed';
-      value: {
+      name: 'Cancelled';
+      data: {
         /**
          * Index of the referendum.
          **/
@@ -3314,9 +5922,29 @@ export type PalletReferendaEvent002 =
         tally: PalletRankedCollectiveTally;
       };
     }
+  /**
+   * A referendum has been killed.
+   **/
   | {
-      tag: 'SubmissionDepositRefunded';
-      value: {
+      name: 'Killed';
+      data: {
+        /**
+         * Index of the referendum.
+         **/
+        index: number;
+
+        /**
+         * The final tally of votes in this referendum.
+         **/
+        tally: PalletRankedCollectiveTally;
+      };
+    }
+  /**
+   * The submission deposit has been refunded.
+   **/
+  | {
+      name: 'SubmissionDepositRefunded';
+      data: {
         /**
          * Index of the referendum.
          **/
@@ -3333,9 +5961,12 @@ export type PalletReferendaEvent002 =
         amount: bigint;
       };
     }
+  /**
+   * Metadata for a referendum has been set.
+   **/
   | {
-      tag: 'MetadataSet';
-      value: {
+      name: 'MetadataSet';
+      data: {
         /**
          * Index of the referendum.
          **/
@@ -3347,9 +5978,12 @@ export type PalletReferendaEvent002 =
         hash: H256;
       };
     }
+  /**
+   * Metadata for a referendum has been cleared.
+   **/
   | {
-      tag: 'MetadataCleared';
-      value: {
+      name: 'MetadataCleared';
+      data: {
         /**
          * Index of the referendum.
          **/
@@ -3368,12 +6002,25 @@ export type PalletRankedCollectiveTally = { bareAyes: number; ayes: number; nays
  * The `Event` enum of this pallet
  **/
 export type PalletRankedCollectiveEvent =
-  | { tag: 'MemberAdded'; value: { who: AccountId32 } }
-  | { tag: 'RankChanged'; value: { who: AccountId32; rank: number } }
-  | { tag: 'MemberRemoved'; value: { who: AccountId32; rank: number } }
+  /**
+   * A member `who` has been added.
+   **/
+  | { name: 'MemberAdded'; data: { who: AccountId32 } }
+  /**
+   * The member `who`se rank has been changed to the given `rank`.
+   **/
+  | { name: 'RankChanged'; data: { who: AccountId32; rank: number } }
+  /**
+   * The member `who` of given `rank` has been removed from the collective.
+   **/
+  | { name: 'MemberRemoved'; data: { who: AccountId32; rank: number } }
+  /**
+   * The member `who` has voted for the `poll` with the given `vote` leading to an updated
+   * `tally`.
+   **/
   | {
-      tag: 'Voted';
-      value: {
+      name: 'Voted';
+      data: {
         who: AccountId32;
         poll: number;
         vote: PalletRankedCollectiveVoteRecord;
@@ -3387,9 +6034,12 @@ export type PalletRankedCollectiveVoteRecord = { tag: 'Aye'; value: number } | {
  * The `Event` enum of this pallet
  **/
 export type PalletAssetConversionEvent =
+  /**
+   * A successful call of the `CretaPool` extrinsic will create this event.
+   **/
   | {
-      tag: 'PoolCreated';
-      value: {
+      name: 'PoolCreated';
+      data: {
         /**
          * The account that created the pool.
          **/
@@ -3413,9 +6063,12 @@ export type PalletAssetConversionEvent =
         lpToken: number;
       };
     }
+  /**
+   * A successful call of the `AddLiquidity` extrinsic will create this event.
+   **/
   | {
-      tag: 'LiquidityAdded';
-      value: {
+      name: 'LiquidityAdded';
+      data: {
         /**
          * The account that the liquidity was taken from.
          **/
@@ -3452,9 +6105,12 @@ export type PalletAssetConversionEvent =
         lpTokenMinted: bigint;
       };
     }
+  /**
+   * A successful call of the `RemoveLiquidity` extrinsic will create this event.
+   **/
   | {
-      tag: 'LiquidityRemoved';
-      value: {
+      name: 'LiquidityRemoved';
+      data: {
         /**
          * The account that the liquidity tokens were burned from.
          **/
@@ -3496,9 +6152,13 @@ export type PalletAssetConversionEvent =
         withdrawalFee: Permill;
       };
     }
+  /**
+   * Assets have been converted from one to another. Both `SwapExactTokenForToken`
+   * and `SwapTokenForExactToken` will generate this event.
+   **/
   | {
-      tag: 'SwapExecuted';
-      value: {
+      name: 'SwapExecuted';
+      data: {
         /**
          * Which account was the instigator of the swap.
          **/
@@ -3526,9 +6186,12 @@ export type PalletAssetConversionEvent =
         amountOut: bigint;
       };
     }
+  /**
+   * An amount has been transferred from one account to another.
+   **/
   | {
-      tag: 'Transfer';
-      value: {
+      name: 'Transfer';
+      data: {
         /**
          * The account that the assets were transferred from.
          **/
@@ -3555,29 +6218,59 @@ export type PalletAssetConversionEvent =
  * The `Event` enum of this pallet
  **/
 export type PalletFastUnstakeEvent =
-  | { tag: 'Unstaked'; value: { stash: AccountId32; result: [] | DispatchError } }
-  | { tag: 'Slashed'; value: { stash: AccountId32; amount: bigint } }
-  | { tag: 'BatchChecked'; value: { eras: Array<number> } }
-  | { tag: 'BatchFinished'; value: { size: number } }
-  | { tag: 'InternalError' };
+  /**
+   * A staker was unstaked.
+   **/
+  | { name: 'Unstaked'; data: { stash: AccountId32; result: ResultPayload<[], DispatchError> } }
+  /**
+   * A staker was slashed for requesting fast-unstake whilst being exposed.
+   **/
+  | { name: 'Slashed'; data: { stash: AccountId32; amount: bigint } }
+  /**
+   * A batch was partially checked for the given eras, but the process did not finish.
+   **/
+  | { name: 'BatchChecked'; data: { eras: Array<number> } }
+  /**
+   * A batch of a given size was terminated.
+   *
+   * This is always follows by a number of `Unstaked` or `Slashed` events, marking the end
+   * of the batch. A new batch will be created upon next block.
+   **/
+  | { name: 'BatchFinished'; data: { size: number } }
+  /**
+   * An internal error happened. Operations will be paused now.
+   **/
+  | { name: 'InternalError' };
 
 /**
  * The `Event` enum of this pallet
  **/
 export type PalletMessageQueueEvent =
+  /**
+   * Message discarded due to an error in the `MessageProcessor` (usually a format error).
+   **/
   | {
-      tag: 'ProcessingFailed';
-      value: { id: FixedBytes<32>; origin: number; error: FrameSupportMessagesProcessMessageError };
+      name: 'ProcessingFailed';
+      data: { id: FixedBytes<32>; origin: number; error: FrameSupportMessagesProcessMessageError };
     }
+  /**
+   * Message is processed.
+   **/
   | {
-      tag: 'Processed';
-      value: { id: FixedBytes<32>; origin: number; weightUsed: SpWeightsWeightV2Weight; success: boolean };
+      name: 'Processed';
+      data: { id: FixedBytes<32>; origin: number; weightUsed: SpWeightsWeightV2Weight; success: boolean };
     }
+  /**
+   * Message placed in overweight queue.
+   **/
   | {
-      tag: 'OverweightEnqueued';
-      value: { id: FixedBytes<32>; origin: number; pageIndex: number; messageIndex: number };
+      name: 'OverweightEnqueued';
+      data: { id: FixedBytes<32>; origin: number; pageIndex: number; messageIndex: number };
     }
-  | { tag: 'PageReaped'; value: { origin: number; index: number } };
+  /**
+   * This page was reaped.
+   **/
+  | { name: 'PageReaped'; data: { origin: number; index: number } };
 
 export type FrameSupportMessagesProcessMessageError =
   | { tag: 'BadFormat' }
@@ -3595,31 +6288,66 @@ export type FrameBenchmarkingPalletPovEvent = 'TestEvent';
  * The `Event` enum of this pallet
  **/
 export type PalletTxPauseEvent =
-  | { tag: 'CallPaused'; value: { fullName: [Bytes, Bytes] } }
-  | { tag: 'CallUnpaused'; value: { fullName: [Bytes, Bytes] } };
+  /**
+   * This pallet, or a specific call is now paused.
+   **/
+  | { name: 'CallPaused'; data: { fullName: [Bytes, Bytes] } }
+  /**
+   * This pallet, or a specific call is now unpaused.
+   **/
+  | { name: 'CallUnpaused'; data: { fullName: [Bytes, Bytes] } };
 
 /**
  * The `Event` enum of this pallet
  **/
 export type PalletSafeModeEvent =
-  | { tag: 'Entered'; value: { until: number } }
-  | { tag: 'Extended'; value: { until: number } }
-  | { tag: 'Exited'; value: { reason: PalletSafeModeExitReason } }
-  | { tag: 'DepositPlaced'; value: { account: AccountId32; amount: bigint } }
-  | { tag: 'DepositReleased'; value: { account: AccountId32; amount: bigint } }
-  | { tag: 'DepositSlashed'; value: { account: AccountId32; amount: bigint } }
-  | { tag: 'CannotDeposit' }
-  | { tag: 'CannotRelease' };
+  /**
+   * The safe-mode was entered until inclusively this block.
+   **/
+  | { name: 'Entered'; data: { until: number } }
+  /**
+   * The safe-mode was extended until inclusively this block.
+   **/
+  | { name: 'Extended'; data: { until: number } }
+  /**
+   * Exited the safe-mode for a specific reason.
+   **/
+  | { name: 'Exited'; data: { reason: PalletSafeModeExitReason } }
+  /**
+   * An account reserved funds for either entering or extending the safe-mode.
+   **/
+  | { name: 'DepositPlaced'; data: { account: AccountId32; amount: bigint } }
+  /**
+   * An account had a reserve released that was reserved.
+   **/
+  | { name: 'DepositReleased'; data: { account: AccountId32; amount: bigint } }
+  /**
+   * An account had reserve slashed that was reserved.
+   **/
+  | { name: 'DepositSlashed'; data: { account: AccountId32; amount: bigint } }
+  /**
+   * Could not hold funds for entering or extending the safe-mode.
+   *
+   * This error comes from the underlying `Currency`.
+   **/
+  | { name: 'CannotDeposit' }
+  /**
+   * Could not release funds for entering or extending the safe-mode.
+   *
+   * This error comes from the underlying `Currency`.
+   **/
+  | { name: 'CannotRelease' };
 
 export type PalletSafeModeExitReason = 'Timeout' | 'Force';
 
 /**
  * The `Event` enum of this pallet
  **/
-export type PalletStatementEvent = {
-  tag: 'NewStatement';
-  value: { account: AccountId32; statement: SpStatementStoreStatement };
-};
+export type PalletStatementEvent =
+  /**
+   * A new statement is submitted
+   **/
+  { name: 'NewStatement'; data: { account: AccountId32; statement: SpStatementStoreStatement } };
 
 export type SpStatementStoreStatement = {
   proof?: SpStatementStoreProof | undefined;
@@ -3641,9 +6369,12 @@ export type SpStatementStoreProof =
  * The `Event` enum of this pallet
  **/
 export type PalletBrokerEvent =
+  /**
+   * A Region of Bulk Coretime has been purchased.
+   **/
   | {
-      tag: 'Purchased';
-      value: {
+      name: 'Purchased';
+      data: {
         /**
          * The identity of the purchaser.
          **/
@@ -3665,9 +6396,12 @@ export type PalletBrokerEvent =
         duration: number;
       };
     }
+  /**
+   * The workload of a core has become renewable.
+   **/
   | {
-      tag: 'Renewable';
-      value: {
+      name: 'Renewable';
+      data: {
         /**
          * The core whose workload can be renewed.
          **/
@@ -3691,9 +6425,12 @@ export type PalletBrokerEvent =
         workload: Array<PalletBrokerScheduleItem>;
       };
     }
+  /**
+   * A workload has been renewed.
+   **/
   | {
-      tag: 'Renewed';
-      value: {
+      name: 'Renewed';
+      data: {
         /**
          * The identity of the renewer.
          **/
@@ -3730,9 +6467,12 @@ export type PalletBrokerEvent =
         workload: Array<PalletBrokerScheduleItem>;
       };
     }
+  /**
+   * Ownership of a Region has been transferred.
+   **/
   | {
-      tag: 'Transferred';
-      value: {
+      name: 'Transferred';
+      data: {
         /**
          * The Region which has been transferred.
          **/
@@ -3754,9 +6494,12 @@ export type PalletBrokerEvent =
         owner: AccountId32;
       };
     }
+  /**
+   * A Region has been split into two non-overlapping Regions.
+   **/
   | {
-      tag: 'Partitioned';
-      value: {
+      name: 'Partitioned';
+      data: {
         /**
          * The Region which was split.
          **/
@@ -3768,9 +6511,12 @@ export type PalletBrokerEvent =
         newRegionIds: [PalletBrokerRegionId, PalletBrokerRegionId];
       };
     }
+  /**
+   * A Region has been converted into two overlapping Regions each of lesser regularity.
+   **/
   | {
-      tag: 'Interlaced';
-      value: {
+      name: 'Interlaced';
+      data: {
         /**
          * The Region which was interlaced.
          **/
@@ -3782,9 +6528,12 @@ export type PalletBrokerEvent =
         newRegionIds: [PalletBrokerRegionId, PalletBrokerRegionId];
       };
     }
+  /**
+   * A Region has been assigned to a particular task.
+   **/
   | {
-      tag: 'Assigned';
-      value: {
+      name: 'Assigned';
+      data: {
         /**
          * The Region which was assigned.
          **/
@@ -3801,9 +6550,12 @@ export type PalletBrokerEvent =
         task: number;
       };
     }
+  /**
+   * A Region has been added to the Instantaneous Coretime Pool.
+   **/
   | {
-      tag: 'Pooled';
-      value: {
+      name: 'Pooled';
+      data: {
         /**
          * The Region which was added to the Instantaneous Coretime Pool.
          **/
@@ -3815,27 +6567,36 @@ export type PalletBrokerEvent =
         duration: number;
       };
     }
+  /**
+   * A new number of cores has been requested.
+   **/
   | {
-      tag: 'CoreCountRequested';
-      value: {
+      name: 'CoreCountRequested';
+      data: {
         /**
          * The number of cores requested.
          **/
         coreCount: number;
       };
     }
+  /**
+   * The number of cores available for scheduling has changed.
+   **/
   | {
-      tag: 'CoreCountChanged';
-      value: {
+      name: 'CoreCountChanged';
+      data: {
         /**
          * The new number of cores available for scheduling.
          **/
         coreCount: number;
       };
     }
+  /**
+   * There is a new reservation for a workload.
+   **/
   | {
-      tag: 'ReservationMade';
-      value: {
+      name: 'ReservationMade';
+      data: {
         /**
          * The index of the reservation.
          **/
@@ -3847,9 +6608,12 @@ export type PalletBrokerEvent =
         workload: Array<PalletBrokerScheduleItem>;
       };
     }
+  /**
+   * A reservation for a workload has been cancelled.
+   **/
   | {
-      tag: 'ReservationCancelled';
-      value: {
+      name: 'ReservationCancelled';
+      data: {
         /**
          * The index of the reservation which was cancelled.
          **/
@@ -3861,9 +6625,12 @@ export type PalletBrokerEvent =
         workload: Array<PalletBrokerScheduleItem>;
       };
     }
+  /**
+   * A new sale has been initialized.
+   **/
   | {
-      tag: 'SaleInitialized';
-      value: {
+      name: 'SaleInitialized';
+      data: {
         /**
          * The local block number at which the sale will/did start.
          **/
@@ -3907,9 +6674,12 @@ export type PalletBrokerEvent =
         coresOffered: number;
       };
     }
+  /**
+   * A new lease has been created.
+   **/
   | {
-      tag: 'Leased';
-      value: {
+      name: 'Leased';
+      data: {
         /**
          * The task to which a core will be assigned.
          **/
@@ -3923,9 +6693,12 @@ export type PalletBrokerEvent =
         until: number;
       };
     }
+  /**
+   * A lease is about to end.
+   **/
   | {
-      tag: 'LeaseEnding';
-      value: {
+      name: 'LeaseEnding';
+      data: {
         /**
          * The task to which a core was assigned.
          **/
@@ -3937,9 +6710,12 @@ export type PalletBrokerEvent =
         when: number;
       };
     }
+  /**
+   * The sale rotation has been started and a new sale is imminent.
+   **/
   | {
-      tag: 'SalesStarted';
-      value: {
+      name: 'SalesStarted';
+      data: {
         /**
          * The nominal price of an Region of Bulk Coretime.
          **/
@@ -3951,9 +6727,12 @@ export type PalletBrokerEvent =
         coreCount: number;
       };
     }
+  /**
+   * The act of claiming revenue has begun.
+   **/
   | {
-      tag: 'RevenueClaimBegun';
-      value: {
+      name: 'RevenueClaimBegun';
+      data: {
         /**
          * The region to be claimed for.
          **/
@@ -3965,9 +6744,12 @@ export type PalletBrokerEvent =
         maxTimeslices: number;
       };
     }
+  /**
+   * A particular timeslice has a non-zero claim.
+   **/
   | {
-      tag: 'RevenueClaimItem';
-      value: {
+      name: 'RevenueClaimItem';
+      data: {
         /**
          * The timeslice whose claim is being processed.
          **/
@@ -3979,9 +6761,12 @@ export type PalletBrokerEvent =
         amount: bigint;
       };
     }
+  /**
+   * A revenue claim has (possibly only in part) been paid.
+   **/
   | {
-      tag: 'RevenueClaimPaid';
-      value: {
+      name: 'RevenueClaimPaid';
+      data: {
         /**
          * The account to whom revenue has been paid.
          **/
@@ -3998,9 +6783,12 @@ export type PalletBrokerEvent =
         next?: PalletBrokerRegionId | undefined;
       };
     }
+  /**
+   * Some Instantaneous Coretime Pool credit has been purchased.
+   **/
   | {
-      tag: 'CreditPurchased';
-      value: {
+      name: 'CreditPurchased';
+      data: {
         /**
          * The account which purchased the credit.
          **/
@@ -4017,9 +6805,12 @@ export type PalletBrokerEvent =
         amount: bigint;
       };
     }
+  /**
+   * A Region has been dropped due to being out of date.
+   **/
   | {
-      tag: 'RegionDropped';
-      value: {
+      name: 'RegionDropped';
+      data: {
         /**
          * The Region which no longer exists.
          **/
@@ -4031,18 +6822,24 @@ export type PalletBrokerEvent =
         duration: number;
       };
     }
+  /**
+   * Some historical Instantaneous Core Pool contribution record has been dropped.
+   **/
   | {
-      tag: 'ContributionDropped';
-      value: {
+      name: 'ContributionDropped';
+      data: {
         /**
          * The Region whose contribution is no longer exists.
          **/
         regionId: PalletBrokerRegionId;
       };
     }
+  /**
+   * Some historical Instantaneous Core Pool payment record has been initialized.
+   **/
   | {
-      tag: 'HistoryInitialized';
-      value: {
+      name: 'HistoryInitialized';
+      data: {
         /**
          * The timeslice whose history has been initialized.
          **/
@@ -4060,9 +6857,12 @@ export type PalletBrokerEvent =
         systemPoolSize: number;
       };
     }
+  /**
+   * Some historical Instantaneous Core Pool payment record has been dropped.
+   **/
   | {
-      tag: 'HistoryDropped';
-      value: {
+      name: 'HistoryDropped';
+      data: {
         /**
          * The timeslice whose history is no longer available.
          **/
@@ -4074,9 +6874,13 @@ export type PalletBrokerEvent =
         revenue: bigint;
       };
     }
+  /**
+   * Some historical Instantaneous Core Pool payment record has been ignored because the
+   * timeslice was already known. Governance may need to intervene.
+   **/
   | {
-      tag: 'HistoryIgnored';
-      value: {
+      name: 'HistoryIgnored';
+      data: {
         /**
          * The timeslice whose history is was ignored.
          **/
@@ -4088,9 +6892,12 @@ export type PalletBrokerEvent =
         revenue: bigint;
       };
     }
+  /**
+   * Some historical Instantaneous Core Pool Revenue is ready for payout claims.
+   **/
   | {
-      tag: 'ClaimsReady';
-      value: {
+      name: 'ClaimsReady';
+      data: {
         /**
          * The timeslice whose history is available.
          **/
@@ -4107,9 +6914,12 @@ export type PalletBrokerEvent =
         privatePayout: bigint;
       };
     }
+  /**
+   * A Core has been assigned to one or more tasks and/or the Pool on the Relay-chain.
+   **/
   | {
-      tag: 'CoreAssigned';
-      value: {
+      name: 'CoreAssigned';
+      data: {
         /**
          * The index of the Core which has been assigned.
          **/
@@ -4126,9 +6936,12 @@ export type PalletBrokerEvent =
         assignment: Array<[PalletBrokerCoretimeInterfaceCoreAssignment, number]>;
       };
     }
+  /**
+   * Some historical Instantaneous Core Pool payment record has been dropped.
+   **/
   | {
-      tag: 'AllowedRenewalDropped';
-      value: {
+      name: 'AllowedRenewalDropped';
+      data: {
         /**
          * The timeslice whose renewal is no longer available.
          **/
@@ -6775,7 +9588,11 @@ export type PalletBagsListListBag = { head?: AccountId32 | undefined; tail?: Acc
 /**
  * The `Error` enum of this pallet.
  **/
-export type PalletBagsListError = { tag: 'List'; value: PalletBagsListListListError };
+export type PalletBagsListError =
+  /**
+   * A error in the list interface implementation.
+   **/
+  { tag: 'List'; value: PalletBagsListListListError };
 
 export type PalletBagsListListListError = 'Duplicate' | 'NotHeavier' | 'NotInSameBag' | 'NodeNotFound';
 
@@ -7176,36 +9993,137 @@ export type PalletNominationPoolsUnbondPool = { points: bigint; balance: bigint 
  * The `Error` enum of this pallet.
  **/
 export type PalletNominationPoolsError =
+  /**
+   * A (bonded) pool id does not exist.
+   **/
   | { tag: 'PoolNotFound' }
+  /**
+   * An account is not a member.
+   **/
   | { tag: 'PoolMemberNotFound' }
+  /**
+   * A reward pool does not exist. In all cases this is a system logic error.
+   **/
   | { tag: 'RewardPoolNotFound' }
+  /**
+   * A sub pool does not exist.
+   **/
   | { tag: 'SubPoolsNotFound' }
+  /**
+   * An account is already delegating in another pool. An account may only belong to one
+   * pool at a time.
+   **/
   | { tag: 'AccountBelongsToOtherPool' }
+  /**
+   * The member is fully unbonded (and thus cannot access the bonded and reward pool
+   * anymore to, for example, collect rewards).
+   **/
   | { tag: 'FullyUnbonding' }
+  /**
+   * The member cannot unbond further chunks due to reaching the limit.
+   **/
   | { tag: 'MaxUnbondingLimit' }
+  /**
+   * None of the funds can be withdrawn yet because the bonding duration has not passed.
+   **/
   | { tag: 'CannotWithdrawAny' }
+  /**
+   * The amount does not meet the minimum bond to either join or create a pool.
+   *
+   * The depositor can never unbond to a value less than
+   * `Pallet::depositor_min_bond`. The caller does not have nominating
+   * permissions for the pool. Members can never unbond to a value below `MinJoinBond`.
+   **/
   | { tag: 'MinimumBondNotMet' }
+  /**
+   * The transaction could not be executed due to overflow risk for the pool.
+   **/
   | { tag: 'OverflowRisk' }
+  /**
+   * A pool must be in [`PoolState::Destroying`] in order for the depositor to unbond or for
+   * other members to be permissionlessly unbonded.
+   **/
   | { tag: 'NotDestroying' }
+  /**
+   * The caller does not have nominating permissions for the pool.
+   **/
   | { tag: 'NotNominator' }
+  /**
+   * Either a) the caller cannot make a valid kick or b) the pool is not destroying.
+   **/
   | { tag: 'NotKickerOrDestroying' }
+  /**
+   * The pool is not open to join
+   **/
   | { tag: 'NotOpen' }
+  /**
+   * The system is maxed out on pools.
+   **/
   | { tag: 'MaxPools' }
+  /**
+   * Too many members in the pool or system.
+   **/
   | { tag: 'MaxPoolMembers' }
+  /**
+   * The pools state cannot be changed.
+   **/
   | { tag: 'CanNotChangeState' }
+  /**
+   * The caller does not have adequate permissions.
+   **/
   | { tag: 'DoesNotHavePermission' }
+  /**
+   * Metadata exceeds [`Config::MaxMetadataLen`]
+   **/
   | { tag: 'MetadataExceedsMaxLen' }
+  /**
+   * Some error occurred that should never happen. This should be reported to the
+   * maintainers.
+   **/
   | { tag: 'Defensive'; value: PalletNominationPoolsDefensiveError }
+  /**
+   * Partial unbonding now allowed permissionlessly.
+   **/
   | { tag: 'PartialUnbondNotAllowedPermissionlessly' }
+  /**
+   * The pool's max commission cannot be set higher than the existing value.
+   **/
   | { tag: 'MaxCommissionRestricted' }
+  /**
+   * The supplied commission exceeds the max allowed commission.
+   **/
   | { tag: 'CommissionExceedsMaximum' }
+  /**
+   * The supplied commission exceeds global maximum commission.
+   **/
   | { tag: 'CommissionExceedsGlobalMaximum' }
+  /**
+   * Not enough blocks have surpassed since the last commission update.
+   **/
   | { tag: 'CommissionChangeThrottled' }
+  /**
+   * The submitted changes to commission change rate are not allowed.
+   **/
   | { tag: 'CommissionChangeRateNotAllowed' }
+  /**
+   * There is no pending commission to claim.
+   **/
   | { tag: 'NoPendingCommission' }
+  /**
+   * No commission current has been set.
+   **/
   | { tag: 'NoCommissionCurrentSet' }
+  /**
+   * Pool id currently in use.
+   **/
   | { tag: 'PoolIdInUse' }
+  /**
+   * Pool id provided is not correct/usable.
+   **/
   | { tag: 'InvalidPoolId' }
+  /**
+   * Bonding extra is restricted to the exact pending reward amount.
+   **/
   | { tag: 'BondExtraRestricted' };
 
 export type PalletNominationPoolsDefensiveError =

@@ -45,11 +45,43 @@ export interface GenericChainErrors {
   };
 }
 
+export interface PalletEvent<
+  Pallet extends string = string,
+  EventName extends string = string,
+  Data extends any = any,
+> {
+  pallet: Pallet;
+  palletEvent: Data extends undefined
+    ? EventName
+    : Data extends null
+    ? { name: EventName }
+    : {
+        name: EventName;
+        data: Data;
+      };
+}
+
+export interface GenericPalletEvent<
+  Pallet extends string = string,
+  EventName extends string = string,
+  Data extends any = any,
+> {
+  is: (event: PalletEvent) => event is PalletEvent<Pallet, EventName, Data>;
+  as: (event: PalletEvent) => PalletEvent<Pallet, EventName, Data> | undefined;
+}
+
+export type GenericChainEvents<
+  Pallet extends string = string,
+  EventName extends string = string,
+  Data extends any = any,
+> = Record<Pallet, Record<EventName, GenericPalletEvent<Pallet, EventName, Data>>>;
+
 export interface GenericSubstrateApi {
   rpc: GenericRpcCalls;
   consts: GenericChainConsts;
   query: GenericChainStorage;
   errors: GenericChainErrors;
+  events: GenericChainEvents;
 
-  // TODO tx, events, errors, calls ...
+  // TODO tx, calls ...
 }

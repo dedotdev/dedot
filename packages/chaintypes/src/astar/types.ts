@@ -4,6 +4,7 @@ import type {
   H256,
   DispatchError,
   AccountId32,
+  ResultPayload,
   FixedBytes,
   H160,
   Perbill,
@@ -41,42 +42,60 @@ export type SpWeightsWeightV2Weight = { refTime: bigint; proofSize: bigint };
 export type FrameSystemEventRecord = { phase: FrameSystemPhase; event: AstarRuntimeRuntimeEvent; topics: Array<H256> };
 
 export type AstarRuntimeRuntimeEvent =
-  | { tag: 'System'; value: FrameSystemEvent }
-  | { tag: 'Utility'; value: PalletUtilityEvent }
-  | { tag: 'Identity'; value: PalletIdentityEvent }
-  | { tag: 'Multisig'; value: PalletMultisigEvent }
-  | { tag: 'Proxy'; value: PalletProxyEvent }
-  | { tag: 'ParachainSystem'; value: CumulusPalletParachainSystemEvent }
-  | { tag: 'TransactionPayment'; value: PalletTransactionPaymentEvent }
-  | { tag: 'Balances'; value: PalletBalancesEvent }
-  | { tag: 'Vesting'; value: PalletVestingEvent }
-  | { tag: 'DappsStaking'; value: PalletDappsStakingPalletEvent }
-  | { tag: 'BlockReward'; value: PalletBlockRewardEvent }
-  | { tag: 'Assets'; value: PalletAssetsEvent }
-  | { tag: 'CollatorSelection'; value: PalletCollatorSelectionEvent }
-  | { tag: 'Session'; value: PalletSessionEvent }
-  | { tag: 'XcmpQueue'; value: CumulusPalletXcmpQueueEvent }
-  | { tag: 'PolkadotXcm'; value: PalletXcmEvent }
-  | { tag: 'CumulusXcm'; value: CumulusPalletXcmEvent }
-  | { tag: 'DmpQueue'; value: CumulusPalletDmpQueueEvent }
-  | { tag: 'XcAssetConfig'; value: PalletXcAssetConfigEvent }
-  | { tag: 'XTokens'; value: OrmlXtokensModuleEvent }
-  | { tag: 'Evm'; value: PalletEvmEvent }
-  | { tag: 'Ethereum'; value: PalletEthereumEvent }
-  | { tag: 'DynamicEvmBaseFee'; value: PalletDynamicEvmBaseFeeEvent }
-  | { tag: 'Contracts'; value: PalletContractsEvent }
-  | { tag: 'Sudo'; value: PalletSudoEvent };
+  | { pallet: 'System'; palletEvent: FrameSystemEvent }
+  | { pallet: 'Utility'; palletEvent: PalletUtilityEvent }
+  | { pallet: 'Identity'; palletEvent: PalletIdentityEvent }
+  | { pallet: 'Multisig'; palletEvent: PalletMultisigEvent }
+  | { pallet: 'Proxy'; palletEvent: PalletProxyEvent }
+  | { pallet: 'ParachainSystem'; palletEvent: CumulusPalletParachainSystemEvent }
+  | { pallet: 'TransactionPayment'; palletEvent: PalletTransactionPaymentEvent }
+  | { pallet: 'Balances'; palletEvent: PalletBalancesEvent }
+  | { pallet: 'Vesting'; palletEvent: PalletVestingEvent }
+  | { pallet: 'DappsStaking'; palletEvent: PalletDappsStakingPalletEvent }
+  | { pallet: 'BlockReward'; palletEvent: PalletBlockRewardEvent }
+  | { pallet: 'Assets'; palletEvent: PalletAssetsEvent }
+  | { pallet: 'CollatorSelection'; palletEvent: PalletCollatorSelectionEvent }
+  | { pallet: 'Session'; palletEvent: PalletSessionEvent }
+  | { pallet: 'XcmpQueue'; palletEvent: CumulusPalletXcmpQueueEvent }
+  | { pallet: 'PolkadotXcm'; palletEvent: PalletXcmEvent }
+  | { pallet: 'CumulusXcm'; palletEvent: CumulusPalletXcmEvent }
+  | { pallet: 'DmpQueue'; palletEvent: CumulusPalletDmpQueueEvent }
+  | { pallet: 'XcAssetConfig'; palletEvent: PalletXcAssetConfigEvent }
+  | { pallet: 'XTokens'; palletEvent: OrmlXtokensModuleEvent }
+  | { pallet: 'Evm'; palletEvent: PalletEvmEvent }
+  | { pallet: 'Ethereum'; palletEvent: PalletEthereumEvent }
+  | { pallet: 'DynamicEvmBaseFee'; palletEvent: PalletDynamicEvmBaseFeeEvent }
+  | { pallet: 'Contracts'; palletEvent: PalletContractsEvent }
+  | { pallet: 'Sudo'; palletEvent: PalletSudoEvent };
 
 /**
  * Event for the System pallet.
  **/
 export type FrameSystemEvent =
-  | { tag: 'ExtrinsicSuccess'; value: { dispatchInfo: FrameSupportDispatchDispatchInfo } }
-  | { tag: 'ExtrinsicFailed'; value: { dispatchError: DispatchError; dispatchInfo: FrameSupportDispatchDispatchInfo } }
-  | { tag: 'CodeUpdated' }
-  | { tag: 'NewAccount'; value: { account: AccountId32 } }
-  | { tag: 'KilledAccount'; value: { account: AccountId32 } }
-  | { tag: 'Remarked'; value: { sender: AccountId32; hash: H256 } };
+  /**
+   * An extrinsic completed successfully.
+   **/
+  | { name: 'ExtrinsicSuccess'; data: { dispatchInfo: FrameSupportDispatchDispatchInfo } }
+  /**
+   * An extrinsic failed.
+   **/
+  | { name: 'ExtrinsicFailed'; data: { dispatchError: DispatchError; dispatchInfo: FrameSupportDispatchDispatchInfo } }
+  /**
+   * `:code` was updated.
+   **/
+  | { name: 'CodeUpdated' }
+  /**
+   * A new account was created.
+   **/
+  | { name: 'NewAccount'; data: { account: AccountId32 } }
+  /**
+   * An account was reaped.
+   **/
+  | { name: 'KilledAccount'; data: { account: AccountId32 } }
+  /**
+   * On on-chain remark happened.
+   **/
+  | { name: 'Remarked'; data: { sender: AccountId32; hash: H256 } };
 
 export type FrameSupportDispatchDispatchInfo = {
   weight: SpWeightsWeightV2Weight;
@@ -92,55 +111,117 @@ export type FrameSupportDispatchPays = 'Yes' | 'No';
  * The [event](https://docs.substrate.io/main-docs/build/events-errors/) emitted by this pallet.
  **/
 export type PalletUtilityEvent =
-  | { tag: 'BatchInterrupted'; value: { index: number; error: DispatchError } }
-  | { tag: 'BatchCompleted' }
-  | { tag: 'BatchCompletedWithErrors' }
-  | { tag: 'ItemCompleted' }
-  | { tag: 'ItemFailed'; value: { error: DispatchError } }
-  | { tag: 'DispatchedAs'; value: { result: [] | DispatchError } };
+  /**
+   * Batch of dispatches did not complete fully. Index of first failing dispatch given, as
+   * well as the error.
+   **/
+  | { name: 'BatchInterrupted'; data: { index: number; error: DispatchError } }
+  /**
+   * Batch of dispatches completed fully with no error.
+   **/
+  | { name: 'BatchCompleted' }
+  /**
+   * Batch of dispatches completed but has errors.
+   **/
+  | { name: 'BatchCompletedWithErrors' }
+  /**
+   * A single item within a Batch of dispatches has completed with no error.
+   **/
+  | { name: 'ItemCompleted' }
+  /**
+   * A single item within a Batch of dispatches has completed with error.
+   **/
+  | { name: 'ItemFailed'; data: { error: DispatchError } }
+  /**
+   * A call was dispatched.
+   **/
+  | { name: 'DispatchedAs'; data: { result: ResultPayload<[], DispatchError> } };
 
 /**
  * The [event](https://docs.substrate.io/main-docs/build/events-errors/) emitted by this pallet.
  **/
 export type PalletIdentityEvent =
-  | { tag: 'IdentitySet'; value: { who: AccountId32 } }
-  | { tag: 'IdentityCleared'; value: { who: AccountId32; deposit: bigint } }
-  | { tag: 'IdentityKilled'; value: { who: AccountId32; deposit: bigint } }
-  | { tag: 'JudgementRequested'; value: { who: AccountId32; registrarIndex: number } }
-  | { tag: 'JudgementUnrequested'; value: { who: AccountId32; registrarIndex: number } }
-  | { tag: 'JudgementGiven'; value: { target: AccountId32; registrarIndex: number } }
-  | { tag: 'RegistrarAdded'; value: { registrarIndex: number } }
-  | { tag: 'SubIdentityAdded'; value: { sub: AccountId32; main: AccountId32; deposit: bigint } }
-  | { tag: 'SubIdentityRemoved'; value: { sub: AccountId32; main: AccountId32; deposit: bigint } }
-  | { tag: 'SubIdentityRevoked'; value: { sub: AccountId32; main: AccountId32; deposit: bigint } };
+  /**
+   * A name was set or reset (which will remove all judgements).
+   **/
+  | { name: 'IdentitySet'; data: { who: AccountId32 } }
+  /**
+   * A name was cleared, and the given balance returned.
+   **/
+  | { name: 'IdentityCleared'; data: { who: AccountId32; deposit: bigint } }
+  /**
+   * A name was removed and the given balance slashed.
+   **/
+  | { name: 'IdentityKilled'; data: { who: AccountId32; deposit: bigint } }
+  /**
+   * A judgement was asked from a registrar.
+   **/
+  | { name: 'JudgementRequested'; data: { who: AccountId32; registrarIndex: number } }
+  /**
+   * A judgement request was retracted.
+   **/
+  | { name: 'JudgementUnrequested'; data: { who: AccountId32; registrarIndex: number } }
+  /**
+   * A judgement was given by a registrar.
+   **/
+  | { name: 'JudgementGiven'; data: { target: AccountId32; registrarIndex: number } }
+  /**
+   * A registrar was added.
+   **/
+  | { name: 'RegistrarAdded'; data: { registrarIndex: number } }
+  /**
+   * A sub-identity was added to an identity and the deposit paid.
+   **/
+  | { name: 'SubIdentityAdded'; data: { sub: AccountId32; main: AccountId32; deposit: bigint } }
+  /**
+   * A sub-identity was removed from an identity and the deposit freed.
+   **/
+  | { name: 'SubIdentityRemoved'; data: { sub: AccountId32; main: AccountId32; deposit: bigint } }
+  /**
+   * A sub-identity was cleared, and the given deposit repatriated from the
+   * main identity account to the sub-identity account.
+   **/
+  | { name: 'SubIdentityRevoked'; data: { sub: AccountId32; main: AccountId32; deposit: bigint } };
 
 /**
  * The [event](https://docs.substrate.io/main-docs/build/events-errors/) emitted by this pallet.
  **/
 export type PalletMultisigEvent =
-  | { tag: 'NewMultisig'; value: { approving: AccountId32; multisig: AccountId32; callHash: FixedBytes<32> } }
+  /**
+   * A new multisig operation has begun.
+   **/
+  | { name: 'NewMultisig'; data: { approving: AccountId32; multisig: AccountId32; callHash: FixedBytes<32> } }
+  /**
+   * A multisig operation has been approved by someone.
+   **/
   | {
-      tag: 'MultisigApproval';
-      value: {
+      name: 'MultisigApproval';
+      data: {
         approving: AccountId32;
         timepoint: PalletMultisigTimepoint;
         multisig: AccountId32;
         callHash: FixedBytes<32>;
       };
     }
+  /**
+   * A multisig operation has been executed.
+   **/
   | {
-      tag: 'MultisigExecuted';
-      value: {
+      name: 'MultisigExecuted';
+      data: {
         approving: AccountId32;
         timepoint: PalletMultisigTimepoint;
         multisig: AccountId32;
         callHash: FixedBytes<32>;
-        result: [] | DispatchError;
+        result: ResultPayload<[], DispatchError>;
       };
     }
+  /**
+   * A multisig operation has been cancelled.
+   **/
   | {
-      tag: 'MultisigCancelled';
-      value: {
+      name: 'MultisigCancelled';
+      data: {
         cancelling: AccountId32;
         timepoint: PalletMultisigTimepoint;
         multisig: AccountId32;
@@ -154,19 +235,35 @@ export type PalletMultisigTimepoint = { height: number; index: number };
  * The [event](https://docs.substrate.io/main-docs/build/events-errors/) emitted by this pallet.
  **/
 export type PalletProxyEvent =
-  | { tag: 'ProxyExecuted'; value: { result: [] | DispatchError } }
+  /**
+   * A proxy was executed correctly, with the given.
+   **/
+  | { name: 'ProxyExecuted'; data: { result: ResultPayload<[], DispatchError> } }
+  /**
+   * A pure account has been created by new proxy with given
+   * disambiguation index and proxy type.
+   **/
   | {
-      tag: 'PureCreated';
-      value: { pure: AccountId32; who: AccountId32; proxyType: AstarRuntimeProxyType; disambiguationIndex: number };
+      name: 'PureCreated';
+      data: { pure: AccountId32; who: AccountId32; proxyType: AstarRuntimeProxyType; disambiguationIndex: number };
     }
-  | { tag: 'Announced'; value: { real: AccountId32; proxy: AccountId32; callHash: H256 } }
+  /**
+   * An announcement was placed to make a call in the future.
+   **/
+  | { name: 'Announced'; data: { real: AccountId32; proxy: AccountId32; callHash: H256 } }
+  /**
+   * A proxy was added.
+   **/
   | {
-      tag: 'ProxyAdded';
-      value: { delegator: AccountId32; delegatee: AccountId32; proxyType: AstarRuntimeProxyType; delay: number };
+      name: 'ProxyAdded';
+      data: { delegator: AccountId32; delegatee: AccountId32; proxyType: AstarRuntimeProxyType; delay: number };
     }
+  /**
+   * A proxy was removed.
+   **/
   | {
-      tag: 'ProxyRemoved';
-      value: { delegator: AccountId32; delegatee: AccountId32; proxyType: AstarRuntimeProxyType; delay: number };
+      name: 'ProxyRemoved';
+      data: { delegator: AccountId32; delegatee: AccountId32; proxyType: AstarRuntimeProxyType; delay: number };
     };
 
 export type AstarRuntimeProxyType =
@@ -183,55 +280,143 @@ export type AstarRuntimeProxyType =
  * The [event](https://docs.substrate.io/main-docs/build/events-errors/) emitted by this pallet.
  **/
 export type CumulusPalletParachainSystemEvent =
-  | { tag: 'ValidationFunctionStored' }
-  | { tag: 'ValidationFunctionApplied'; value: { relayChainBlockNum: number } }
-  | { tag: 'ValidationFunctionDiscarded' }
-  | { tag: 'UpgradeAuthorized'; value: { codeHash: H256 } }
-  | { tag: 'DownwardMessagesReceived'; value: { count: number } }
-  | { tag: 'DownwardMessagesProcessed'; value: { weightUsed: SpWeightsWeightV2Weight; dmqHead: H256 } }
-  | { tag: 'UpwardMessageSent'; value: { messageHash?: FixedBytes<32> | undefined } };
+  /**
+   * The validation function has been scheduled to apply.
+   **/
+  | { name: 'ValidationFunctionStored' }
+  /**
+   * The validation function was applied as of the contained relay chain block number.
+   **/
+  | { name: 'ValidationFunctionApplied'; data: { relayChainBlockNum: number } }
+  /**
+   * The relay-chain aborted the upgrade process.
+   **/
+  | { name: 'ValidationFunctionDiscarded' }
+  /**
+   * An upgrade has been authorized.
+   **/
+  | { name: 'UpgradeAuthorized'; data: { codeHash: H256 } }
+  /**
+   * Some downward messages have been received and will be processed.
+   **/
+  | { name: 'DownwardMessagesReceived'; data: { count: number } }
+  /**
+   * Downward messages were processed using the given weight.
+   **/
+  | { name: 'DownwardMessagesProcessed'; data: { weightUsed: SpWeightsWeightV2Weight; dmqHead: H256 } }
+  /**
+   * An upward message was sent to the relay chain.
+   **/
+  | { name: 'UpwardMessageSent'; data: { messageHash?: FixedBytes<32> | undefined } };
 
 /**
  * The [event](https://docs.substrate.io/main-docs/build/events-errors/) emitted by this pallet.
  **/
-export type PalletTransactionPaymentEvent = {
-  tag: 'TransactionFeePaid';
-  value: { who: AccountId32; actualFee: bigint; tip: bigint };
-};
+export type PalletTransactionPaymentEvent =
+  /**
+   * A transaction fee `actual_fee`, of which `tip` was added to the minimum inclusion fee,
+   * has been paid by `who`.
+   **/
+  { name: 'TransactionFeePaid'; data: { who: AccountId32; actualFee: bigint; tip: bigint } };
 
 /**
  * The [event](https://docs.substrate.io/main-docs/build/events-errors/) emitted by this pallet.
  **/
 export type PalletBalancesEvent =
-  | { tag: 'Endowed'; value: { account: AccountId32; freeBalance: bigint } }
-  | { tag: 'DustLost'; value: { account: AccountId32; amount: bigint } }
-  | { tag: 'Transfer'; value: { from: AccountId32; to: AccountId32; amount: bigint } }
-  | { tag: 'BalanceSet'; value: { who: AccountId32; free: bigint } }
-  | { tag: 'Reserved'; value: { who: AccountId32; amount: bigint } }
-  | { tag: 'Unreserved'; value: { who: AccountId32; amount: bigint } }
+  /**
+   * An account was created with some free balance.
+   **/
+  | { name: 'Endowed'; data: { account: AccountId32; freeBalance: bigint } }
+  /**
+   * An account was removed whose balance was non-zero but below ExistentialDeposit,
+   * resulting in an outright loss.
+   **/
+  | { name: 'DustLost'; data: { account: AccountId32; amount: bigint } }
+  /**
+   * Transfer succeeded.
+   **/
+  | { name: 'Transfer'; data: { from: AccountId32; to: AccountId32; amount: bigint } }
+  /**
+   * A balance was set by root.
+   **/
+  | { name: 'BalanceSet'; data: { who: AccountId32; free: bigint } }
+  /**
+   * Some balance was reserved (moved from free to reserved).
+   **/
+  | { name: 'Reserved'; data: { who: AccountId32; amount: bigint } }
+  /**
+   * Some balance was unreserved (moved from reserved to free).
+   **/
+  | { name: 'Unreserved'; data: { who: AccountId32; amount: bigint } }
+  /**
+   * Some balance was moved from the reserve of the first account to the second account.
+   * Final argument indicates the destination balance type.
+   **/
   | {
-      tag: 'ReserveRepatriated';
-      value: {
+      name: 'ReserveRepatriated';
+      data: {
         from: AccountId32;
         to: AccountId32;
         amount: bigint;
         destinationStatus: FrameSupportTokensMiscBalanceStatus;
       };
     }
-  | { tag: 'Deposit'; value: { who: AccountId32; amount: bigint } }
-  | { tag: 'Withdraw'; value: { who: AccountId32; amount: bigint } }
-  | { tag: 'Slashed'; value: { who: AccountId32; amount: bigint } }
-  | { tag: 'Minted'; value: { who: AccountId32; amount: bigint } }
-  | { tag: 'Burned'; value: { who: AccountId32; amount: bigint } }
-  | { tag: 'Suspended'; value: { who: AccountId32; amount: bigint } }
-  | { tag: 'Restored'; value: { who: AccountId32; amount: bigint } }
-  | { tag: 'Upgraded'; value: { who: AccountId32 } }
-  | { tag: 'Issued'; value: { amount: bigint } }
-  | { tag: 'Rescinded'; value: { amount: bigint } }
-  | { tag: 'Locked'; value: { who: AccountId32; amount: bigint } }
-  | { tag: 'Unlocked'; value: { who: AccountId32; amount: bigint } }
-  | { tag: 'Frozen'; value: { who: AccountId32; amount: bigint } }
-  | { tag: 'Thawed'; value: { who: AccountId32; amount: bigint } };
+  /**
+   * Some amount was deposited (e.g. for transaction fees).
+   **/
+  | { name: 'Deposit'; data: { who: AccountId32; amount: bigint } }
+  /**
+   * Some amount was withdrawn from the account (e.g. for transaction fees).
+   **/
+  | { name: 'Withdraw'; data: { who: AccountId32; amount: bigint } }
+  /**
+   * Some amount was removed from the account (e.g. for misbehavior).
+   **/
+  | { name: 'Slashed'; data: { who: AccountId32; amount: bigint } }
+  /**
+   * Some amount was minted into an account.
+   **/
+  | { name: 'Minted'; data: { who: AccountId32; amount: bigint } }
+  /**
+   * Some amount was burned from an account.
+   **/
+  | { name: 'Burned'; data: { who: AccountId32; amount: bigint } }
+  /**
+   * Some amount was suspended from an account (it can be restored later).
+   **/
+  | { name: 'Suspended'; data: { who: AccountId32; amount: bigint } }
+  /**
+   * Some amount was restored into an account.
+   **/
+  | { name: 'Restored'; data: { who: AccountId32; amount: bigint } }
+  /**
+   * An account was upgraded.
+   **/
+  | { name: 'Upgraded'; data: { who: AccountId32 } }
+  /**
+   * Total issuance was increased by `amount`, creating a credit to be balanced.
+   **/
+  | { name: 'Issued'; data: { amount: bigint } }
+  /**
+   * Total issuance was decreased by `amount`, creating a debt to be balanced.
+   **/
+  | { name: 'Rescinded'; data: { amount: bigint } }
+  /**
+   * Some balance was locked.
+   **/
+  | { name: 'Locked'; data: { who: AccountId32; amount: bigint } }
+  /**
+   * Some balance was unlocked.
+   **/
+  | { name: 'Unlocked'; data: { who: AccountId32; amount: bigint } }
+  /**
+   * Some balance was frozen.
+   **/
+  | { name: 'Frozen'; data: { who: AccountId32; amount: bigint } }
+  /**
+   * Some balance was thawed.
+   **/
+  | { name: 'Thawed'; data: { who: AccountId32; amount: bigint } };
 
 export type FrameSupportTokensMiscBalanceStatus = 'Free' | 'Reserved';
 
@@ -239,25 +424,72 @@ export type FrameSupportTokensMiscBalanceStatus = 'Free' | 'Reserved';
  * The [event](https://docs.substrate.io/main-docs/build/events-errors/) emitted by this pallet.
  **/
 export type PalletVestingEvent =
-  | { tag: 'VestingUpdated'; value: { account: AccountId32; unvested: bigint } }
-  | { tag: 'VestingCompleted'; value: { account: AccountId32 } };
+  /**
+   * The amount vested has been updated. This could indicate a change in funds available.
+   * The balance given is the amount which is left unvested (and thus locked).
+   **/
+  | { name: 'VestingUpdated'; data: { account: AccountId32; unvested: bigint } }
+  /**
+   * An \[account\] has become fully vested.
+   **/
+  | { name: 'VestingCompleted'; data: { account: AccountId32 } };
 
 /**
  * The [event](https://docs.substrate.io/main-docs/build/events-errors/) emitted by this pallet.
  **/
 export type PalletDappsStakingPalletEvent =
-  | { tag: 'BondAndStake'; value: [AccountId32, AstarRuntimeSmartContract, bigint] }
-  | { tag: 'UnbondAndUnstake'; value: [AccountId32, AstarRuntimeSmartContract, bigint] }
-  | { tag: 'WithdrawFromUnregistered'; value: [AccountId32, AstarRuntimeSmartContract, bigint] }
-  | { tag: 'Withdrawn'; value: [AccountId32, bigint] }
-  | { tag: 'NewContract'; value: [AccountId32, AstarRuntimeSmartContract] }
-  | { tag: 'ContractRemoved'; value: [AccountId32, AstarRuntimeSmartContract] }
-  | { tag: 'NewDappStakingEra'; value: number }
-  | { tag: 'Reward'; value: [AccountId32, AstarRuntimeSmartContract, number, bigint] }
-  | { tag: 'MaintenanceMode'; value: boolean }
-  | { tag: 'RewardDestination'; value: [AccountId32, PalletDappsStakingRewardDestination] }
-  | { tag: 'NominationTransfer'; value: [AccountId32, AstarRuntimeSmartContract, bigint, AstarRuntimeSmartContract] }
-  | { tag: 'StaleRewardBurned'; value: [AccountId32, AstarRuntimeSmartContract, number, bigint] };
+  /**
+   * Account has bonded and staked funds on a smart contract.
+   **/
+  | { name: 'BondAndStake'; data: [AccountId32, AstarRuntimeSmartContract, bigint] }
+  /**
+   * Account has unbonded & unstaked some funds. Unbonding process begins.
+   **/
+  | { name: 'UnbondAndUnstake'; data: [AccountId32, AstarRuntimeSmartContract, bigint] }
+  /**
+   * Account has fully withdrawn all staked amount from an unregistered contract.
+   **/
+  | { name: 'WithdrawFromUnregistered'; data: [AccountId32, AstarRuntimeSmartContract, bigint] }
+  /**
+   * Account has withdrawn unbonded funds.
+   **/
+  | { name: 'Withdrawn'; data: [AccountId32, bigint] }
+  /**
+   * New contract added for staking.
+   **/
+  | { name: 'NewContract'; data: [AccountId32, AstarRuntimeSmartContract] }
+  /**
+   * Contract removed from dapps staking.
+   **/
+  | { name: 'ContractRemoved'; data: [AccountId32, AstarRuntimeSmartContract] }
+  /**
+   * New dapps staking era. Distribute era rewards to contracts.
+   **/
+  | { name: 'NewDappStakingEra'; data: number }
+  /**
+   * Reward paid to staker or developer.
+   **/
+  | { name: 'Reward'; data: [AccountId32, AstarRuntimeSmartContract, number, bigint] }
+  /**
+   * Maintenance mode has been enabled or disabled
+   **/
+  | { name: 'MaintenanceMode'; data: boolean }
+  /**
+   * Reward handling modified
+   **/
+  | { name: 'RewardDestination'; data: [AccountId32, PalletDappsStakingRewardDestination] }
+  /**
+   * Nomination part has been transfered from one contract to another.
+   *
+   * \(staker account, origin smart contract, amount, target smart contract\)
+   **/
+  | { name: 'NominationTransfer'; data: [AccountId32, AstarRuntimeSmartContract, bigint, AstarRuntimeSmartContract] }
+  /**
+   * Stale, unclaimed reward from an unregistered contract has been burned.
+   *
+   * \(developer account, smart contract, era, amount burned\)
+   **/
+  | { name: 'StaleRewardBurned'; data: [AccountId32, AstarRuntimeSmartContract, number, bigint] };
 
 export type AstarRuntimeSmartContract = { tag: 'Evm'; value: H160 } | { tag: 'Wasm'; value: AccountId32 };
 
@@ -266,10 +498,11 @@ export type PalletDappsStakingRewardDestination = 'FreeBalance' | 'StakeBalance'
 /**
  * The [event](https://docs.substrate.io/main-docs/build/events-errors/) emitted by this pallet.
  **/
-export type PalletBlockRewardEvent = {
-  tag: 'DistributionConfigurationChanged';
-  value: PalletBlockRewardRewardDistributionConfig;
-};
+export type PalletBlockRewardEvent =
+  /**
+   * Distribution configuration has been updated.
+   **/
+  { name: 'DistributionConfigurationChanged'; data: PalletBlockRewardRewardDistributionConfig };
 
 export type PalletBlockRewardRewardDistributionConfig = {
   baseTreasuryPercent: Perbill;
@@ -284,72 +517,166 @@ export type PalletBlockRewardRewardDistributionConfig = {
  * The [event](https://docs.substrate.io/main-docs/build/events-errors/) emitted by this pallet.
  **/
 export type PalletAssetsEvent =
-  | { tag: 'Created'; value: { assetId: bigint; creator: AccountId32; owner: AccountId32 } }
-  | { tag: 'Issued'; value: { assetId: bigint; owner: AccountId32; amount: bigint } }
-  | { tag: 'Transferred'; value: { assetId: bigint; from: AccountId32; to: AccountId32; amount: bigint } }
-  | { tag: 'Burned'; value: { assetId: bigint; owner: AccountId32; balance: bigint } }
-  | { tag: 'TeamChanged'; value: { assetId: bigint; issuer: AccountId32; admin: AccountId32; freezer: AccountId32 } }
-  | { tag: 'OwnerChanged'; value: { assetId: bigint; owner: AccountId32 } }
-  | { tag: 'Frozen'; value: { assetId: bigint; who: AccountId32 } }
-  | { tag: 'Thawed'; value: { assetId: bigint; who: AccountId32 } }
-  | { tag: 'AssetFrozen'; value: { assetId: bigint } }
-  | { tag: 'AssetThawed'; value: { assetId: bigint } }
-  | { tag: 'AccountsDestroyed'; value: { assetId: bigint; accountsDestroyed: number; accountsRemaining: number } }
-  | { tag: 'ApprovalsDestroyed'; value: { assetId: bigint; approvalsDestroyed: number; approvalsRemaining: number } }
-  | { tag: 'DestructionStarted'; value: { assetId: bigint } }
-  | { tag: 'Destroyed'; value: { assetId: bigint } }
-  | { tag: 'ForceCreated'; value: { assetId: bigint; owner: AccountId32 } }
-  | { tag: 'MetadataSet'; value: { assetId: bigint; name: Bytes; symbol: Bytes; decimals: number; isFrozen: boolean } }
-  | { tag: 'MetadataCleared'; value: { assetId: bigint } }
-  | { tag: 'ApprovedTransfer'; value: { assetId: bigint; source: AccountId32; delegate: AccountId32; amount: bigint } }
-  | { tag: 'ApprovalCancelled'; value: { assetId: bigint; owner: AccountId32; delegate: AccountId32 } }
+  /**
+   * Some asset class was created.
+   **/
+  | { name: 'Created'; data: { assetId: bigint; creator: AccountId32; owner: AccountId32 } }
+  /**
+   * Some assets were issued.
+   **/
+  | { name: 'Issued'; data: { assetId: bigint; owner: AccountId32; amount: bigint } }
+  /**
+   * Some assets were transferred.
+   **/
+  | { name: 'Transferred'; data: { assetId: bigint; from: AccountId32; to: AccountId32; amount: bigint } }
+  /**
+   * Some assets were destroyed.
+   **/
+  | { name: 'Burned'; data: { assetId: bigint; owner: AccountId32; balance: bigint } }
+  /**
+   * The management team changed.
+   **/
+  | { name: 'TeamChanged'; data: { assetId: bigint; issuer: AccountId32; admin: AccountId32; freezer: AccountId32 } }
+  /**
+   * The owner changed.
+   **/
+  | { name: 'OwnerChanged'; data: { assetId: bigint; owner: AccountId32 } }
+  /**
+   * Some account `who` was frozen.
+   **/
+  | { name: 'Frozen'; data: { assetId: bigint; who: AccountId32 } }
+  /**
+   * Some account `who` was thawed.
+   **/
+  | { name: 'Thawed'; data: { assetId: bigint; who: AccountId32 } }
+  /**
+   * Some asset `asset_id` was frozen.
+   **/
+  | { name: 'AssetFrozen'; data: { assetId: bigint } }
+  /**
+   * Some asset `asset_id` was thawed.
+   **/
+  | { name: 'AssetThawed'; data: { assetId: bigint } }
+  /**
+   * Accounts were destroyed for given asset.
+   **/
+  | { name: 'AccountsDestroyed'; data: { assetId: bigint; accountsDestroyed: number; accountsRemaining: number } }
+  /**
+   * Approvals were destroyed for given asset.
+   **/
+  | { name: 'ApprovalsDestroyed'; data: { assetId: bigint; approvalsDestroyed: number; approvalsRemaining: number } }
+  /**
+   * An asset class is in the process of being destroyed.
+   **/
+  | { name: 'DestructionStarted'; data: { assetId: bigint } }
+  /**
+   * An asset class was destroyed.
+   **/
+  | { name: 'Destroyed'; data: { assetId: bigint } }
+  /**
+   * Some asset class was force-created.
+   **/
+  | { name: 'ForceCreated'; data: { assetId: bigint; owner: AccountId32 } }
+  /**
+   * New metadata has been set for an asset.
+   **/
+  | { name: 'MetadataSet'; data: { assetId: bigint; name: Bytes; symbol: Bytes; decimals: number; isFrozen: boolean } }
+  /**
+   * Metadata has been cleared for an asset.
+   **/
+  | { name: 'MetadataCleared'; data: { assetId: bigint } }
+  /**
+   * (Additional) funds have been approved for transfer to a destination account.
+   **/
+  | { name: 'ApprovedTransfer'; data: { assetId: bigint; source: AccountId32; delegate: AccountId32; amount: bigint } }
+  /**
+   * An approval for account `delegate` was cancelled by `owner`.
+   **/
+  | { name: 'ApprovalCancelled'; data: { assetId: bigint; owner: AccountId32; delegate: AccountId32 } }
+  /**
+   * An `amount` was transferred in its entirety from `owner` to `destination` by
+   * the approved `delegate`.
+   **/
   | {
-      tag: 'TransferredApproved';
-      value: { assetId: bigint; owner: AccountId32; delegate: AccountId32; destination: AccountId32; amount: bigint };
+      name: 'TransferredApproved';
+      data: { assetId: bigint; owner: AccountId32; delegate: AccountId32; destination: AccountId32; amount: bigint };
     }
-  | { tag: 'AssetStatusChanged'; value: { assetId: bigint } }
-  | { tag: 'AssetMinBalanceChanged'; value: { assetId: bigint; newMinBalance: bigint } }
-  | { tag: 'Touched'; value: { assetId: bigint; who: AccountId32; depositor: AccountId32 } }
-  | { tag: 'Blocked'; value: { assetId: bigint; who: AccountId32 } };
+  /**
+   * An asset has had its attributes changed by the `Force` origin.
+   **/
+  | { name: 'AssetStatusChanged'; data: { assetId: bigint } }
+  /**
+   * The min_balance of an asset has been updated by the asset owner.
+   **/
+  | { name: 'AssetMinBalanceChanged'; data: { assetId: bigint; newMinBalance: bigint } }
+  /**
+   * Some account `who` was created with a deposit from `depositor`.
+   **/
+  | { name: 'Touched'; data: { assetId: bigint; who: AccountId32; depositor: AccountId32 } }
+  /**
+   * Some account `who` was blocked.
+   **/
+  | { name: 'Blocked'; data: { assetId: bigint; who: AccountId32 } };
 
 /**
  * The [event](https://docs.substrate.io/main-docs/build/events-errors/) emitted by this pallet.
  **/
 export type PalletCollatorSelectionEvent =
-  | { tag: 'NewInvulnerables'; value: Array<AccountId32> }
-  | { tag: 'NewDesiredCandidates'; value: number }
-  | { tag: 'NewCandidacyBond'; value: bigint }
-  | { tag: 'CandidateAdded'; value: [AccountId32, bigint] }
-  | { tag: 'CandidateRemoved'; value: AccountId32 }
-  | { tag: 'CandidateSlashed'; value: AccountId32 };
+  | { name: 'NewInvulnerables'; data: Array<AccountId32> }
+  | { name: 'NewDesiredCandidates'; data: number }
+  | { name: 'NewCandidacyBond'; data: bigint }
+  | { name: 'CandidateAdded'; data: [AccountId32, bigint] }
+  | { name: 'CandidateRemoved'; data: AccountId32 }
+  | { name: 'CandidateSlashed'; data: AccountId32 };
 
 /**
  * The [event](https://docs.substrate.io/main-docs/build/events-errors/) emitted by this pallet.
  **/
-export type PalletSessionEvent = { tag: 'NewSession'; value: { sessionIndex: number } };
+export type PalletSessionEvent =
+  /**
+   * New session has happened. Note that the argument is the session index, not the
+   * block number as the type might suggest.
+   **/
+  { name: 'NewSession'; data: { sessionIndex: number } };
 
 /**
  * The [event](https://docs.substrate.io/main-docs/build/events-errors/) emitted by this pallet.
  **/
 export type CumulusPalletXcmpQueueEvent =
-  | { tag: 'Success'; value: { messageHash?: FixedBytes<32> | undefined; weight: SpWeightsWeightV2Weight } }
+  /**
+   * Some XCM was executed ok.
+   **/
+  | { name: 'Success'; data: { messageHash?: FixedBytes<32> | undefined; weight: SpWeightsWeightV2Weight } }
+  /**
+   * Some XCM failed.
+   **/
   | {
-      tag: 'Fail';
-      value: { messageHash?: FixedBytes<32> | undefined; error: XcmV3TraitsError; weight: SpWeightsWeightV2Weight };
+      name: 'Fail';
+      data: { messageHash?: FixedBytes<32> | undefined; error: XcmV3TraitsError; weight: SpWeightsWeightV2Weight };
     }
-  | { tag: 'BadVersion'; value: { messageHash?: FixedBytes<32> | undefined } }
-  | { tag: 'BadFormat'; value: { messageHash?: FixedBytes<32> | undefined } }
-  | { tag: 'XcmpMessageSent'; value: { messageHash?: FixedBytes<32> | undefined } }
+  /**
+   * Bad XCM version used.
+   **/
+  | { name: 'BadVersion'; data: { messageHash?: FixedBytes<32> | undefined } }
+  /**
+   * Bad XCM format used.
+   **/
+  | { name: 'BadFormat'; data: { messageHash?: FixedBytes<32> | undefined } }
+  /**
+   * An HRMP message was sent to a sibling parachain.
+   **/
+  | { name: 'XcmpMessageSent'; data: { messageHash?: FixedBytes<32> | undefined } }
+  /**
+   * An XCM exceeded the individual message weight budget.
+   **/
   | {
-      tag: 'OverweightEnqueued';
-      value: {
-        sender: PolkadotParachainPrimitivesId;
-        sentAt: number;
-        index: bigint;
-        required: SpWeightsWeightV2Weight;
-      };
+      name: 'OverweightEnqueued';
+      data: { sender: PolkadotParachainPrimitivesId; sentAt: number; index: bigint; required: SpWeightsWeightV2Weight };
     }
-  | { tag: 'OverweightServiced'; value: { index: bigint; used: SpWeightsWeightV2Weight } };
+  /**
+   * An XCM from the overweight queue was executed with the given actual weight used.
+   **/
+  | { name: 'OverweightServiced'; data: { index: bigint; used: SpWeightsWeightV2Weight } };
 
 export type XcmV3TraitsError =
   | { tag: 'Overflow' }
@@ -399,40 +726,186 @@ export type PolkadotParachainPrimitivesId = number;
  * The [event](https://docs.substrate.io/main-docs/build/events-errors/) emitted by this pallet.
  **/
 export type PalletXcmEvent =
-  | { tag: 'Attempted'; value: XcmV3TraitsOutcome }
-  | { tag: 'Sent'; value: [XcmV3MultilocationMultiLocation, XcmV3MultilocationMultiLocation, XcmV3Xcm] }
-  | { tag: 'UnexpectedResponse'; value: [XcmV3MultilocationMultiLocation, bigint] }
-  | { tag: 'ResponseReady'; value: [bigint, XcmV3Response] }
-  | { tag: 'Notified'; value: [bigint, number, number] }
-  | { tag: 'NotifyOverweight'; value: [bigint, number, number, SpWeightsWeightV2Weight, SpWeightsWeightV2Weight] }
-  | { tag: 'NotifyDispatchError'; value: [bigint, number, number] }
-  | { tag: 'NotifyDecodeFailed'; value: [bigint, number, number] }
+  /**
+   * Execution of an XCM message was attempted.
+   *
+   * \[ outcome \]
+   **/
+  | { name: 'Attempted'; data: XcmV3TraitsOutcome }
+  /**
+   * A XCM message was sent.
+   *
+   * \[ origin, destination, message \]
+   **/
+  | { name: 'Sent'; data: [XcmV3MultilocationMultiLocation, XcmV3MultilocationMultiLocation, XcmV3Xcm] }
+  /**
+   * Query response received which does not match a registered query. This may be because a
+   * matching query was never registered, it may be because it is a duplicate response, or
+   * because the query timed out.
+   *
+   * \[ origin location, id \]
+   **/
+  | { name: 'UnexpectedResponse'; data: [XcmV3MultilocationMultiLocation, bigint] }
+  /**
+   * Query response has been received and is ready for taking with `take_response`. There is
+   * no registered notification call.
+   *
+   * \[ id, response \]
+   **/
+  | { name: 'ResponseReady'; data: [bigint, XcmV3Response] }
+  /**
+   * Query response has been received and query is removed. The registered notification has
+   * been dispatched and executed successfully.
+   *
+   * \[ id, pallet index, call index \]
+   **/
+  | { name: 'Notified'; data: [bigint, number, number] }
+  /**
+   * Query response has been received and query is removed. The registered notification could
+   * not be dispatched because the dispatch weight is greater than the maximum weight
+   * originally budgeted by this runtime for the query result.
+   *
+   * \[ id, pallet index, call index, actual weight, max budgeted weight \]
+   **/
+  | { name: 'NotifyOverweight'; data: [bigint, number, number, SpWeightsWeightV2Weight, SpWeightsWeightV2Weight] }
+  /**
+   * Query response has been received and query is removed. There was a general error with
+   * dispatching the notification call.
+   *
+   * \[ id, pallet index, call index \]
+   **/
+  | { name: 'NotifyDispatchError'; data: [bigint, number, number] }
+  /**
+   * Query response has been received and query is removed. The dispatch was unable to be
+   * decoded into a `Call`; this might be due to dispatch function having a signature which
+   * is not `(origin, QueryId, Response)`.
+   *
+   * \[ id, pallet index, call index \]
+   **/
+  | { name: 'NotifyDecodeFailed'; data: [bigint, number, number] }
+  /**
+   * Expected query response has been received but the origin location of the response does
+   * not match that expected. The query remains registered for a later, valid, response to
+   * be received and acted upon.
+   *
+   * \[ origin location, id, expected location \]
+   **/
   | {
-      tag: 'InvalidResponder';
-      value: [XcmV3MultilocationMultiLocation, bigint, XcmV3MultilocationMultiLocation | undefined];
+      name: 'InvalidResponder';
+      data: [XcmV3MultilocationMultiLocation, bigint, XcmV3MultilocationMultiLocation | undefined];
     }
-  | { tag: 'InvalidResponderVersion'; value: [XcmV3MultilocationMultiLocation, bigint] }
-  | { tag: 'ResponseTaken'; value: bigint }
-  | { tag: 'AssetsTrapped'; value: [H256, XcmV3MultilocationMultiLocation, XcmVersionedMultiAssets] }
-  | { tag: 'VersionChangeNotified'; value: [XcmV3MultilocationMultiLocation, number, XcmV3MultiassetMultiAssets] }
-  | { tag: 'SupportedVersionChanged'; value: [XcmV3MultilocationMultiLocation, number] }
-  | { tag: 'NotifyTargetSendFail'; value: [XcmV3MultilocationMultiLocation, bigint, XcmV3TraitsError] }
-  | { tag: 'NotifyTargetMigrationFail'; value: [XcmVersionedMultiLocation, bigint] }
-  | { tag: 'InvalidQuerierVersion'; value: [XcmV3MultilocationMultiLocation, bigint] }
+  /**
+   * Expected query response has been received but the expected origin location placed in
+   * storage by this runtime previously cannot be decoded. The query remains registered.
+   *
+   * This is unexpected (since a location placed in storage in a previously executing
+   * runtime should be readable prior to query timeout) and dangerous since the possibly
+   * valid response will be dropped. Manual governance intervention is probably going to be
+   * needed.
+   *
+   * \[ origin location, id \]
+   **/
+  | { name: 'InvalidResponderVersion'; data: [XcmV3MultilocationMultiLocation, bigint] }
+  /**
+   * Received query response has been read and removed.
+   *
+   * \[ id \]
+   **/
+  | { name: 'ResponseTaken'; data: bigint }
+  /**
+   * Some assets have been placed in an asset trap.
+   *
+   * \[ hash, origin, assets \]
+   **/
+  | { name: 'AssetsTrapped'; data: [H256, XcmV3MultilocationMultiLocation, XcmVersionedMultiAssets] }
+  /**
+   * An XCM version change notification message has been attempted to be sent.
+   *
+   * The cost of sending it (borne by the chain) is included.
+   *
+   * \[ destination, result, cost \]
+   **/
+  | { name: 'VersionChangeNotified'; data: [XcmV3MultilocationMultiLocation, number, XcmV3MultiassetMultiAssets] }
+  /**
+   * The supported version of a location has been changed. This might be through an
+   * automatic notification or a manual intervention.
+   *
+   * \[ location, XCM version \]
+   **/
+  | { name: 'SupportedVersionChanged'; data: [XcmV3MultilocationMultiLocation, number] }
+  /**
+   * A given location which had a version change subscription was dropped owing to an error
+   * sending the notification to it.
+   *
+   * \[ location, query ID, error \]
+   **/
+  | { name: 'NotifyTargetSendFail'; data: [XcmV3MultilocationMultiLocation, bigint, XcmV3TraitsError] }
+  /**
+   * A given location which had a version change subscription was dropped owing to an error
+   * migrating the location to our new XCM format.
+   *
+   * \[ location, query ID \]
+   **/
+  | { name: 'NotifyTargetMigrationFail'; data: [XcmVersionedMultiLocation, bigint] }
+  /**
+   * Expected query response has been received but the expected querier location placed in
+   * storage by this runtime previously cannot be decoded. The query remains registered.
+   *
+   * This is unexpected (since a location placed in storage in a previously executing
+   * runtime should be readable prior to query timeout) and dangerous since the possibly
+   * valid response will be dropped. Manual governance intervention is probably going to be
+   * needed.
+   *
+   * \[ origin location, id \]
+   **/
+  | { name: 'InvalidQuerierVersion'; data: [XcmV3MultilocationMultiLocation, bigint] }
+  /**
+   * Expected query response has been received but the querier location of the response does
+   * not match the expected. The query remains registered for a later, valid, response to
+   * be received and acted upon.
+   *
+   * \[ origin location, id, expected querier, maybe actual querier \]
+   **/
   | {
-      tag: 'InvalidQuerier';
-      value: [
+      name: 'InvalidQuerier';
+      data: [
         XcmV3MultilocationMultiLocation,
         bigint,
         XcmV3MultilocationMultiLocation,
         XcmV3MultilocationMultiLocation | undefined,
       ];
     }
-  | { tag: 'VersionNotifyStarted'; value: [XcmV3MultilocationMultiLocation, XcmV3MultiassetMultiAssets] }
-  | { tag: 'VersionNotifyRequested'; value: [XcmV3MultilocationMultiLocation, XcmV3MultiassetMultiAssets] }
-  | { tag: 'VersionNotifyUnrequested'; value: [XcmV3MultilocationMultiLocation, XcmV3MultiassetMultiAssets] }
-  | { tag: 'FeesPaid'; value: [XcmV3MultilocationMultiLocation, XcmV3MultiassetMultiAssets] }
-  | { tag: 'AssetsClaimed'; value: [H256, XcmV3MultilocationMultiLocation, XcmVersionedMultiAssets] };
+  /**
+   * A remote has requested XCM version change notification from us and we have honored it.
+   * A version information message is sent to them and its cost is included.
+   *
+   * \[ destination location, cost \]
+   **/
+  | { name: 'VersionNotifyStarted'; data: [XcmV3MultilocationMultiLocation, XcmV3MultiassetMultiAssets] }
+  /**
+   * We have requested that a remote chain sends us XCM version change notifications.
+   *
+   * \[ destination location, cost \]
+   **/
+  | { name: 'VersionNotifyRequested'; data: [XcmV3MultilocationMultiLocation, XcmV3MultiassetMultiAssets] }
+  /**
+   * We have requested that a remote chain stops sending us XCM version change notifications.
+   *
+   * \[ destination location, cost \]
+   **/
+  | { name: 'VersionNotifyUnrequested'; data: [XcmV3MultilocationMultiLocation, XcmV3MultiassetMultiAssets] }
+  /**
+   * Fees were paid from a location for an operation (often for using `SendXcm`).
+   *
+   * \[ paying location, fees \]
+   **/
+  | { name: 'FeesPaid'; data: [XcmV3MultilocationMultiLocation, XcmV3MultiassetMultiAssets] }
+  /**
+   * Some assets have been claimed from an asset trap
+   *
+   * \[ hash, origin, assets \]
+   **/
+  | { name: 'AssetsClaimed'; data: [H256, XcmV3MultilocationMultiLocation, XcmVersionedMultiAssets] };
 
 export type XcmV3TraitsOutcome =
   | { tag: 'Complete'; value: SpWeightsWeightV2Weight }
@@ -759,81 +1232,152 @@ export type XcmVersionedMultiLocation =
  * The [event](https://docs.substrate.io/main-docs/build/events-errors/) emitted by this pallet.
  **/
 export type CumulusPalletXcmEvent =
-  | { tag: 'InvalidFormat'; value: FixedBytes<32> }
-  | { tag: 'UnsupportedVersion'; value: FixedBytes<32> }
-  | { tag: 'ExecutedDownward'; value: [FixedBytes<32>, XcmV3TraitsOutcome] };
+  /**
+   * Downward message is invalid XCM.
+   * \[ id \]
+   **/
+  | { name: 'InvalidFormat'; data: FixedBytes<32> }
+  /**
+   * Downward message is unsupported version of XCM.
+   * \[ id \]
+   **/
+  | { name: 'UnsupportedVersion'; data: FixedBytes<32> }
+  /**
+   * Downward message executed with the given outcome.
+   * \[ id, outcome \]
+   **/
+  | { name: 'ExecutedDownward'; data: [FixedBytes<32>, XcmV3TraitsOutcome] };
 
 /**
  * The [event](https://docs.substrate.io/main-docs/build/events-errors/) emitted by this pallet.
  **/
 export type CumulusPalletDmpQueueEvent =
-  | { tag: 'InvalidFormat'; value: { messageId: FixedBytes<32> } }
-  | { tag: 'UnsupportedVersion'; value: { messageId: FixedBytes<32> } }
-  | { tag: 'ExecutedDownward'; value: { messageId: FixedBytes<32>; outcome: XcmV3TraitsOutcome } }
+  /**
+   * Downward message is invalid XCM.
+   **/
+  | { name: 'InvalidFormat'; data: { messageId: FixedBytes<32> } }
+  /**
+   * Downward message is unsupported version of XCM.
+   **/
+  | { name: 'UnsupportedVersion'; data: { messageId: FixedBytes<32> } }
+  /**
+   * Downward message executed with the given outcome.
+   **/
+  | { name: 'ExecutedDownward'; data: { messageId: FixedBytes<32>; outcome: XcmV3TraitsOutcome } }
+  /**
+   * The weight limit for handling downward messages was reached.
+   **/
   | {
-      tag: 'WeightExhausted';
-      value: {
+      name: 'WeightExhausted';
+      data: {
         messageId: FixedBytes<32>;
         remainingWeight: SpWeightsWeightV2Weight;
         requiredWeight: SpWeightsWeightV2Weight;
       };
     }
+  /**
+   * Downward message is overweight and was placed in the overweight queue.
+   **/
   | {
-      tag: 'OverweightEnqueued';
-      value: { messageId: FixedBytes<32>; overweightIndex: bigint; requiredWeight: SpWeightsWeightV2Weight };
+      name: 'OverweightEnqueued';
+      data: { messageId: FixedBytes<32>; overweightIndex: bigint; requiredWeight: SpWeightsWeightV2Weight };
     }
-  | { tag: 'OverweightServiced'; value: { overweightIndex: bigint; weightUsed: SpWeightsWeightV2Weight } }
-  | { tag: 'MaxMessagesExhausted'; value: { messageId: FixedBytes<32> } };
+  /**
+   * Downward message from the overweight queue was executed.
+   **/
+  | { name: 'OverweightServiced'; data: { overweightIndex: bigint; weightUsed: SpWeightsWeightV2Weight } }
+  /**
+   * The maximum number of downward messages was.
+   **/
+  | { name: 'MaxMessagesExhausted'; data: { messageId: FixedBytes<32> } };
 
 /**
  * The [event](https://docs.substrate.io/main-docs/build/events-errors/) emitted by this pallet.
  **/
 export type PalletXcAssetConfigEvent =
-  | { tag: 'AssetRegistered'; value: { assetLocation: XcmVersionedMultiLocation; assetId: bigint } }
-  | { tag: 'UnitsPerSecondChanged'; value: { assetLocation: XcmVersionedMultiLocation; unitsPerSecond: bigint } }
+  /**
+   * Registed mapping between asset type and asset Id.
+   **/
+  | { name: 'AssetRegistered'; data: { assetLocation: XcmVersionedMultiLocation; assetId: bigint } }
+  /**
+   * Changed the amount of units we are charging per execution second for an asset
+   **/
+  | { name: 'UnitsPerSecondChanged'; data: { assetLocation: XcmVersionedMultiLocation; unitsPerSecond: bigint } }
+  /**
+   * Changed the asset type mapping for a given asset id
+   **/
   | {
-      tag: 'AssetLocationChanged';
-      value: {
+      name: 'AssetLocationChanged';
+      data: {
         previousAssetLocation: XcmVersionedMultiLocation;
         assetId: bigint;
         newAssetLocation: XcmVersionedMultiLocation;
       };
     }
-  | { tag: 'SupportedAssetRemoved'; value: { assetLocation: XcmVersionedMultiLocation } }
-  | { tag: 'AssetRemoved'; value: { assetLocation: XcmVersionedMultiLocation; assetId: bigint } };
+  /**
+   * Supported asset type for fee payment removed.
+   **/
+  | { name: 'SupportedAssetRemoved'; data: { assetLocation: XcmVersionedMultiLocation } }
+  /**
+   * Removed all information related to an asset Id
+   **/
+  | { name: 'AssetRemoved'; data: { assetLocation: XcmVersionedMultiLocation; assetId: bigint } };
 
 /**
  * The [event](https://docs.substrate.io/main-docs/build/events-errors/) emitted by this pallet.
  **/
-export type OrmlXtokensModuleEvent = {
-  tag: 'TransferredMultiAssets';
-  value: {
-    sender: AccountId32;
-    assets: XcmV3MultiassetMultiAssets;
-    fee: XcmV3MultiassetMultiAsset;
-    dest: XcmV3MultilocationMultiLocation;
+export type OrmlXtokensModuleEvent =
+  /**
+   * Transferred `MultiAsset` with fee.
+   **/
+  {
+    tag: 'TransferredMultiAssets';
+    value: {
+      sender: AccountId32;
+      assets: XcmV3MultiassetMultiAssets;
+      fee: XcmV3MultiassetMultiAsset;
+      dest: XcmV3MultilocationMultiLocation;
+    };
   };
-};
 
 /**
  * The [event](https://docs.substrate.io/main-docs/build/events-errors/) emitted by this pallet.
  **/
 export type PalletEvmEvent =
-  | { tag: 'Log'; value: { log: EthereumLog } }
-  | { tag: 'Created'; value: { address: H160 } }
-  | { tag: 'CreatedFailed'; value: { address: H160 } }
-  | { tag: 'Executed'; value: { address: H160 } }
-  | { tag: 'ExecutedFailed'; value: { address: H160 } };
+  /**
+   * Ethereum events from contracts.
+   **/
+  | { name: 'Log'; data: { log: EthereumLog } }
+  /**
+   * A contract has been created at given address.
+   **/
+  | { name: 'Created'; data: { address: H160 } }
+  /**
+   * A contract was attempted to be created, but the execution failed.
+   **/
+  | { name: 'CreatedFailed'; data: { address: H160 } }
+  /**
+   * A contract has been executed successfully with states applied.
+   **/
+  | { name: 'Executed'; data: { address: H160 } }
+  /**
+   * A contract has been executed with errors. States are reverted with only gas fees applied.
+   **/
+  | { name: 'ExecutedFailed'; data: { address: H160 } };
 
 export type EthereumLog = { address: H160; topics: Array<H256>; data: Bytes };
 
 /**
  * The [event](https://docs.substrate.io/main-docs/build/events-errors/) emitted by this pallet.
  **/
-export type PalletEthereumEvent = {
-  tag: 'Executed';
-  value: { from: H160; to: H160; transactionHash: H256; exitReason: EvmCoreErrorExitReason; extraData: Bytes };
-};
+export type PalletEthereumEvent =
+  /**
+   * An ethereum transaction was successfully executed.
+   **/
+  {
+    name: 'Executed';
+    data: { from: H160; to: H160; transactionHash: H256; exitReason: EvmCoreErrorExitReason; extraData: Bytes };
+  };
 
 export type EvmCoreErrorExitReason =
   | { tag: 'Succeed'; value: EvmCoreErrorExitSucceed }
@@ -874,16 +1418,31 @@ export type EvmCoreErrorExitFatal =
 /**
  * The [event](https://docs.substrate.io/main-docs/build/events-errors/) emitted by this pallet.
  **/
-export type PalletDynamicEvmBaseFeeEvent = { tag: 'NewBaseFeePerGas'; value: { fee: U256 } };
+export type PalletDynamicEvmBaseFeeEvent =
+  /**
+   * New `base fee per gas` value has been force-set.
+   **/
+  { name: 'NewBaseFeePerGas'; data: { fee: U256 } };
 
 /**
  * The [event](https://docs.substrate.io/main-docs/build/events-errors/) emitted by this pallet.
  **/
 export type PalletContractsEvent =
-  | { tag: 'Instantiated'; value: { deployer: AccountId32; contract: AccountId32 } }
+  /**
+   * Contract deployed by address at the specified address.
+   **/
+  | { name: 'Instantiated'; data: { deployer: AccountId32; contract: AccountId32 } }
+  /**
+   * Contract has been removed.
+   *
+   * # Note
+   *
+   * The only way for a contract to be removed and emitting this event is by calling
+   * `seal_terminate`.
+   **/
   | {
-      tag: 'Terminated';
-      value: {
+      name: 'Terminated';
+      data: {
         /**
          * The contract that was terminated.
          **/
@@ -895,10 +1454,16 @@ export type PalletContractsEvent =
         beneficiary: AccountId32;
       };
     }
-  | { tag: 'CodeStored'; value: { codeHash: H256 } }
+  /**
+   * Code with the specified hash has been stored.
+   **/
+  | { name: 'CodeStored'; data: { codeHash: H256 } }
+  /**
+   * A custom event emitted by the contract.
+   **/
   | {
-      tag: 'ContractEmitted';
-      value: {
+      name: 'ContractEmitted';
+      data: {
         /**
          * The contract that emitted the event.
          **/
@@ -911,10 +1476,16 @@ export type PalletContractsEvent =
         data: Bytes;
       };
     }
-  | { tag: 'CodeRemoved'; value: { codeHash: H256 } }
+  /**
+   * A code with the specified hash was removed.
+   **/
+  | { name: 'CodeRemoved'; data: { codeHash: H256 } }
+  /**
+   * A contract's code was updated.
+   **/
   | {
-      tag: 'ContractCodeUpdated';
-      value: {
+      name: 'ContractCodeUpdated';
+      data: {
         /**
          * The contract that has been updated.
          **/
@@ -931,9 +1502,18 @@ export type PalletContractsEvent =
         oldCodeHash: H256;
       };
     }
+  /**
+   * A contract was called either by a plain account or another contract.
+   *
+   * # Note
+   *
+   * Please keep in mind that like all events this is only emitted for successful
+   * calls. This is because on failure all storage changes including events are
+   * rolled back.
+   **/
   | {
-      tag: 'Called';
-      value: {
+      name: 'Called';
+      data: {
         /**
          * The caller of the `contract`.
          **/
@@ -945,9 +1525,18 @@ export type PalletContractsEvent =
         contract: AccountId32;
       };
     }
+  /**
+   * A contract delegate called a code hash.
+   *
+   * # Note
+   *
+   * Please keep in mind that like all events this is only emitted for successful
+   * calls. This is because on failure all storage changes including events are
+   * rolled back.
+   **/
   | {
-      tag: 'DelegateCalled';
-      value: {
+      name: 'DelegateCalled';
+      data: {
         /**
          * The contract that performed the delegate call and hence in whose context
          * the `code_hash` is executed.
@@ -969,9 +1558,18 @@ export type AstarRuntimeRuntime = {};
  * The [event](https://docs.substrate.io/main-docs/build/events-errors/) emitted by this pallet.
  **/
 export type PalletSudoEvent =
-  | { tag: 'Sudid'; value: { sudoResult: [] | DispatchError } }
-  | { tag: 'KeyChanged'; value: { oldSudoer?: AccountId32 | undefined } }
-  | { tag: 'SudoAsDone'; value: { sudoResult: [] | DispatchError } };
+  /**
+   * A sudo just took place. \[result\]
+   **/
+  | { name: 'Sudid'; data: { sudoResult: ResultPayload<[], DispatchError> } }
+  /**
+   * The \[sudoer\] just switched identity; the old key is supplied if one existed.
+   **/
+  | { name: 'KeyChanged'; data: { oldSudoer?: AccountId32 | undefined } }
+  /**
+   * A sudo just took place. \[result\]
+   **/
+  | { name: 'SudoAsDone'; data: { sudoResult: ResultPayload<[], DispatchError> } };
 
 export type FrameSystemPhase =
   | { tag: 'ApplyExtrinsic'; value: number }
@@ -984,13 +1582,42 @@ export type FrameSystemLastRuntimeUpgradeInfo = { specVersion: number; specName:
  * Contains one variant per dispatchable that can be called by an extrinsic.
  **/
 export type FrameSystemCall =
+  /**
+   * Make some on-chain remark.
+   *
+   * - `O(1)`
+   **/
   | { tag: 'Remark'; value: { remark: Bytes } }
+  /**
+   * Set the number of pages in the WebAssembly environment's heap.
+   **/
   | { tag: 'SetHeapPages'; value: { pages: bigint } }
+  /**
+   * Set the new runtime code.
+   **/
   | { tag: 'SetCode'; value: { code: Bytes } }
+  /**
+   * Set the new runtime code without doing any checks of the given `code`.
+   **/
   | { tag: 'SetCodeWithoutChecks'; value: { code: Bytes } }
+  /**
+   * Set some items of storage.
+   **/
   | { tag: 'SetStorage'; value: { items: Array<[Bytes, Bytes]> } }
+  /**
+   * Kill some items from storage.
+   **/
   | { tag: 'KillStorage'; value: { keys: Array<Bytes> } }
+  /**
+   * Kill all storage items with a key that starts with the given prefix.
+   *
+   * **NOTE:** We rely on the Root origin to provide us the number of subkeys under
+   * the prefix we are removing to accurately calculate the weight of this function.
+   **/
   | { tag: 'KillPrefix'; value: { prefix: Bytes; subkeys: number } }
+  /**
+   * Make some on-chain remark and emit event.
+   **/
   | { tag: 'RemarkWithEvent'; value: { remark: Bytes } };
 
 export type FrameSystemLimitsBlockWeights = {
@@ -1066,11 +1693,92 @@ export type FrameSystemError =
  * Contains one variant per dispatchable that can be called by an extrinsic.
  **/
 export type PalletUtilityCall =
+  /**
+   * Send a batch of dispatch calls.
+   *
+   * May be called from any origin except `None`.
+   *
+   * - `calls`: The calls to be dispatched from the same origin. The number of call must not
+   * exceed the constant: `batched_calls_limit` (available in constant metadata).
+   *
+   * If origin is root then the calls are dispatched without checking origin filter. (This
+   * includes bypassing `frame_system::Config::BaseCallFilter`).
+   *
+   * ## Complexity
+   * - O(C) where C is the number of calls to be batched.
+   *
+   * This will return `Ok` in all circumstances. To determine the success of the batch, an
+   * event is deposited. If a call failed and the batch was interrupted, then the
+   * `BatchInterrupted` event is deposited, along with the number of successful calls made
+   * and the error of the failed call. If all were successful, then the `BatchCompleted`
+   * event is deposited.
+   **/
   | { tag: 'Batch'; value: { calls: Array<AstarRuntimeRuntimeCall> } }
+  /**
+   * Send a call through an indexed pseudonym of the sender.
+   *
+   * Filter from origin are passed along. The call will be dispatched with an origin which
+   * use the same filter as the origin of this call.
+   *
+   * NOTE: If you need to ensure that any account-based filtering is not honored (i.e.
+   * because you expect `proxy` to have been used prior in the call stack and you do not want
+   * the call restrictions to apply to any sub-accounts), then use `as_multi_threshold_1`
+   * in the Multisig pallet instead.
+   *
+   * NOTE: Prior to version *12, this was called `as_limited_sub`.
+   *
+   * The dispatch origin for this call must be _Signed_.
+   **/
   | { tag: 'AsDerivative'; value: { index: number; call: AstarRuntimeRuntimeCall } }
+  /**
+   * Send a batch of dispatch calls and atomically execute them.
+   * The whole transaction will rollback and fail if any of the calls failed.
+   *
+   * May be called from any origin except `None`.
+   *
+   * - `calls`: The calls to be dispatched from the same origin. The number of call must not
+   * exceed the constant: `batched_calls_limit` (available in constant metadata).
+   *
+   * If origin is root then the calls are dispatched without checking origin filter. (This
+   * includes bypassing `frame_system::Config::BaseCallFilter`).
+   *
+   * ## Complexity
+   * - O(C) where C is the number of calls to be batched.
+   **/
   | { tag: 'BatchAll'; value: { calls: Array<AstarRuntimeRuntimeCall> } }
+  /**
+   * Dispatches a function call with a provided origin.
+   *
+   * The dispatch origin for this call must be _Root_.
+   *
+   * ## Complexity
+   * - O(1).
+   **/
   | { tag: 'DispatchAs'; value: { asOrigin: AstarRuntimeOriginCaller; call: AstarRuntimeRuntimeCall } }
+  /**
+   * Send a batch of dispatch calls.
+   * Unlike `batch`, it allows errors and won't interrupt.
+   *
+   * May be called from any origin except `None`.
+   *
+   * - `calls`: The calls to be dispatched from the same origin. The number of call must not
+   * exceed the constant: `batched_calls_limit` (available in constant metadata).
+   *
+   * If origin is root then the calls are dispatch without checking origin filter. (This
+   * includes bypassing `frame_system::Config::BaseCallFilter`).
+   *
+   * ## Complexity
+   * - O(C) where C is the number of calls to be batched.
+   **/
   | { tag: 'ForceBatch'; value: { calls: Array<AstarRuntimeRuntimeCall> } }
+  /**
+   * Dispatch a function call with a specified weight.
+   *
+   * This function does not check the weight of the call, and instead allows the
+   * Root origin to specify the weight of the call.
+   *
+   * The dispatch origin for this call must be _Root_.
+   **/
   | { tag: 'WithWeight'; value: { call: AstarRuntimeRuntimeCall; weight: SpWeightsWeightV2Weight } };
 
 export type AstarRuntimeRuntimeCall =
@@ -1105,23 +1813,238 @@ export type AstarRuntimeRuntimeCall =
  * Identity pallet declaration.
  **/
 export type PalletIdentityCall =
+  /**
+   * Add a registrar to the system.
+   *
+   * The dispatch origin for this call must be `T::RegistrarOrigin`.
+   *
+   * - `account`: the account of the registrar.
+   *
+   * Emits `RegistrarAdded` if successful.
+   *
+   * ## Complexity
+   * - `O(R)` where `R` registrar-count (governance-bounded and code-bounded).
+   **/
   | { tag: 'AddRegistrar'; value: { account: MultiAddress } }
+  /**
+   * Set an account's identity information and reserve the appropriate deposit.
+   *
+   * If the account already has identity information, the deposit is taken as part payment
+   * for the new deposit.
+   *
+   * The dispatch origin for this call must be _Signed_.
+   *
+   * - `info`: The identity information.
+   *
+   * Emits `IdentitySet` if successful.
+   *
+   * ## Complexity
+   * - `O(X + X' + R)`
+   * - where `X` additional-field-count (deposit-bounded and code-bounded)
+   * - where `R` judgements-count (registrar-count-bounded)
+   **/
   | { tag: 'SetIdentity'; value: { info: PalletIdentityIdentityInfo } }
+  /**
+   * Set the sub-accounts of the sender.
+   *
+   * Payment: Any aggregate balance reserved by previous `set_subs` calls will be returned
+   * and an amount `SubAccountDeposit` will be reserved for each item in `subs`.
+   *
+   * The dispatch origin for this call must be _Signed_ and the sender must have a registered
+   * identity.
+   *
+   * - `subs`: The identity's (new) sub-accounts.
+   *
+   * ## Complexity
+   * - `O(P + S)`
+   * - where `P` old-subs-count (hard- and deposit-bounded).
+   * - where `S` subs-count (hard- and deposit-bounded).
+   **/
   | { tag: 'SetSubs'; value: { subs: Array<[AccountId32, Data]> } }
+  /**
+   * Clear an account's identity info and all sub-accounts and return all deposits.
+   *
+   * Payment: All reserved balances on the account are returned.
+   *
+   * The dispatch origin for this call must be _Signed_ and the sender must have a registered
+   * identity.
+   *
+   * Emits `IdentityCleared` if successful.
+   *
+   * ## Complexity
+   * - `O(R + S + X)`
+   * - where `R` registrar-count (governance-bounded).
+   * - where `S` subs-count (hard- and deposit-bounded).
+   * - where `X` additional-field-count (deposit-bounded and code-bounded).
+   **/
   | { tag: 'ClearIdentity' }
+  /**
+   * Request a judgement from a registrar.
+   *
+   * Payment: At most `max_fee` will be reserved for payment to the registrar if judgement
+   * given.
+   *
+   * The dispatch origin for this call must be _Signed_ and the sender must have a
+   * registered identity.
+   *
+   * - `reg_index`: The index of the registrar whose judgement is requested.
+   * - `max_fee`: The maximum fee that may be paid. This should just be auto-populated as:
+   *
+   * ```nocompile
+   * Self::registrars().get(reg_index).unwrap().fee
+   * ```
+   *
+   * Emits `JudgementRequested` if successful.
+   *
+   * ## Complexity
+   * - `O(R + X)`.
+   * - where `R` registrar-count (governance-bounded).
+   * - where `X` additional-field-count (deposit-bounded and code-bounded).
+   **/
   | { tag: 'RequestJudgement'; value: { regIndex: number; maxFee: bigint } }
+  /**
+   * Cancel a previous request.
+   *
+   * Payment: A previously reserved deposit is returned on success.
+   *
+   * The dispatch origin for this call must be _Signed_ and the sender must have a
+   * registered identity.
+   *
+   * - `reg_index`: The index of the registrar whose judgement is no longer requested.
+   *
+   * Emits `JudgementUnrequested` if successful.
+   *
+   * ## Complexity
+   * - `O(R + X)`.
+   * - where `R` registrar-count (governance-bounded).
+   * - where `X` additional-field-count (deposit-bounded and code-bounded).
+   **/
   | { tag: 'CancelRequest'; value: { regIndex: number } }
+  /**
+   * Set the fee required for a judgement to be requested from a registrar.
+   *
+   * The dispatch origin for this call must be _Signed_ and the sender must be the account
+   * of the registrar whose index is `index`.
+   *
+   * - `index`: the index of the registrar whose fee is to be set.
+   * - `fee`: the new fee.
+   *
+   * ## Complexity
+   * - `O(R)`.
+   * - where `R` registrar-count (governance-bounded).
+   **/
   | { tag: 'SetFee'; value: { index: number; fee: bigint } }
+  /**
+   * Change the account associated with a registrar.
+   *
+   * The dispatch origin for this call must be _Signed_ and the sender must be the account
+   * of the registrar whose index is `index`.
+   *
+   * - `index`: the index of the registrar whose fee is to be set.
+   * - `new`: the new account ID.
+   *
+   * ## Complexity
+   * - `O(R)`.
+   * - where `R` registrar-count (governance-bounded).
+   **/
   | { tag: 'SetAccountId'; value: { index: number; new: MultiAddress } }
+  /**
+   * Set the field information for a registrar.
+   *
+   * The dispatch origin for this call must be _Signed_ and the sender must be the account
+   * of the registrar whose index is `index`.
+   *
+   * - `index`: the index of the registrar whose fee is to be set.
+   * - `fields`: the fields that the registrar concerns themselves with.
+   *
+   * ## Complexity
+   * - `O(R)`.
+   * - where `R` registrar-count (governance-bounded).
+   **/
   | { tag: 'SetFields'; value: { index: number; fields: PalletIdentityBitFlags } }
+  /**
+   * Provide a judgement for an account's identity.
+   *
+   * The dispatch origin for this call must be _Signed_ and the sender must be the account
+   * of the registrar whose index is `reg_index`.
+   *
+   * - `reg_index`: the index of the registrar whose judgement is being made.
+   * - `target`: the account whose identity the judgement is upon. This must be an account
+   * with a registered identity.
+   * - `judgement`: the judgement of the registrar of index `reg_index` about `target`.
+   * - `identity`: The hash of the [`IdentityInfo`] for that the judgement is provided.
+   *
+   * Emits `JudgementGiven` if successful.
+   *
+   * ## Complexity
+   * - `O(R + X)`.
+   * - where `R` registrar-count (governance-bounded).
+   * - where `X` additional-field-count (deposit-bounded and code-bounded).
+   **/
   | {
       tag: 'ProvideJudgement';
       value: { regIndex: number; target: MultiAddress; judgement: PalletIdentityJudgement; identity: H256 };
     }
+  /**
+   * Remove an account's identity and sub-account information and slash the deposits.
+   *
+   * Payment: Reserved balances from `set_subs` and `set_identity` are slashed and handled by
+   * `Slash`. Verification request deposits are not returned; they should be cancelled
+   * manually using `cancel_request`.
+   *
+   * The dispatch origin for this call must match `T::ForceOrigin`.
+   *
+   * - `target`: the account whose identity the judgement is upon. This must be an account
+   * with a registered identity.
+   *
+   * Emits `IdentityKilled` if successful.
+   *
+   * ## Complexity
+   * - `O(R + S + X)`
+   * - where `R` registrar-count (governance-bounded).
+   * - where `S` subs-count (hard- and deposit-bounded).
+   * - where `X` additional-field-count (deposit-bounded and code-bounded).
+   **/
   | { tag: 'KillIdentity'; value: { target: MultiAddress } }
+  /**
+   * Add the given account to the sender's subs.
+   *
+   * Payment: Balance reserved by a previous `set_subs` call for one sub will be repatriated
+   * to the sender.
+   *
+   * The dispatch origin for this call must be _Signed_ and the sender must have a registered
+   * sub identity of `sub`.
+   **/
   | { tag: 'AddSub'; value: { sub: MultiAddress; data: Data } }
+  /**
+   * Alter the associated name of the given sub-account.
+   *
+   * The dispatch origin for this call must be _Signed_ and the sender must have a registered
+   * sub identity of `sub`.
+   **/
   | { tag: 'RenameSub'; value: { sub: MultiAddress; data: Data } }
+  /**
+   * Remove the given account from the sender's subs.
+   *
+   * Payment: Balance reserved by a previous `set_subs` call for one sub will be repatriated
+   * to the sender.
+   *
+   * The dispatch origin for this call must be _Signed_ and the sender must have a registered
+   * sub identity of `sub`.
+   **/
   | { tag: 'RemoveSub'; value: { sub: MultiAddress } }
+  /**
+   * Remove the sender as a sub-account.
+   *
+   * Payment: Balance reserved by a previous `set_subs` call for one sub will be repatriated
+   * to the sender (*not* the original depositor).
+   *
+   * The dispatch origin for this call must be _Signed_ and the sender must have a registered
+   * super-identity.
+   *
+   * NOTE: This should not normally be used, but is provided in the case that the non-
+   * controller of an account is maliciously registered as a sub-account.
+   **/
   | { tag: 'QuitSub' };
 
 export type PalletIdentityIdentityInfo = {
@@ -1160,13 +2083,86 @@ export type PalletIdentityJudgement =
 /**
  * Contains one variant per dispatchable that can be called by an extrinsic.
  **/
-export type PalletTimestampCall = { tag: 'Set'; value: { now: bigint } };
+export type PalletTimestampCall =
+  /**
+   * Set the current time.
+   *
+   * This call should be invoked exactly once per block. It will panic at the finalization
+   * phase, if this call hasn't been invoked by that time.
+   *
+   * The timestamp should be greater than the previous one by the amount specified by
+   * `MinimumPeriod`.
+   *
+   * The dispatch origin for this call must be `Inherent`.
+   *
+   * ## Complexity
+   * - `O(1)` (Note that implementations of `OnTimestampSet` must also be `O(1)`)
+   * - 1 storage read and 1 storage mutation (codec `O(1)`). (because of `DidUpdate::take` in
+   * `on_finalize`)
+   * - 1 event handler `on_timestamp_set`. Must be `O(1)`.
+   **/
+  { tag: 'Set'; value: { now: bigint } };
 
 /**
  * Contains one variant per dispatchable that can be called by an extrinsic.
  **/
 export type PalletMultisigCall =
+  /**
+   * Immediately dispatch a multi-signature call using a single approval from the caller.
+   *
+   * The dispatch origin for this call must be _Signed_.
+   *
+   * - `other_signatories`: The accounts (other than the sender) who are part of the
+   * multi-signature, but do not participate in the approval process.
+   * - `call`: The call to be executed.
+   *
+   * Result is equivalent to the dispatched result.
+   *
+   * ## Complexity
+   * O(Z + C) where Z is the length of the call and C its execution weight.
+   **/
   | { tag: 'AsMultiThreshold1'; value: { otherSignatories: Array<AccountId32>; call: AstarRuntimeRuntimeCall } }
+  /**
+   * Register approval for a dispatch to be made from a deterministic composite account if
+   * approved by a total of `threshold - 1` of `other_signatories`.
+   *
+   * If there are enough, then dispatch the call.
+   *
+   * Payment: `DepositBase` will be reserved if this is the first approval, plus
+   * `threshold` times `DepositFactor`. It is returned once this dispatch happens or
+   * is cancelled.
+   *
+   * The dispatch origin for this call must be _Signed_.
+   *
+   * - `threshold`: The total number of approvals for this dispatch before it is executed.
+   * - `other_signatories`: The accounts (other than the sender) who can approve this
+   * dispatch. May not be empty.
+   * - `maybe_timepoint`: If this is the first approval, then this must be `None`. If it is
+   * not the first approval, then it must be `Some`, with the timepoint (block number and
+   * transaction index) of the first approval transaction.
+   * - `call`: The call to be executed.
+   *
+   * NOTE: Unless this is the final approval, you will generally want to use
+   * `approve_as_multi` instead, since it only requires a hash of the call.
+   *
+   * Result is equivalent to the dispatched result if `threshold` is exactly `1`. Otherwise
+   * on success, result is `Ok` and the result from the interior call, if it was executed,
+   * may be found in the deposited `MultisigExecuted` event.
+   *
+   * ## Complexity
+   * - `O(S + Z + Call)`.
+   * - Up to one balance-reserve or unreserve operation.
+   * - One passthrough operation, one insert, both `O(S)` where `S` is the number of
+   * signatories. `S` is capped by `MaxSignatories`, with weight being proportional.
+   * - One call encode & hash, both of complexity `O(Z)` where `Z` is tx-len.
+   * - One encode & hash, both of complexity `O(S)`.
+   * - Up to one binary search and insert (`O(logS + S)`).
+   * - I/O: 1 read `O(S)`, up to 1 mutate `O(S)`. Up to one remove.
+   * - One event.
+   * - The weight of the `call`.
+   * - Storage: inserts one item, value size bounded by `MaxSignatories`, with a deposit
+   * taken for its lifetime of `DepositBase + threshold * DepositFactor`.
+   **/
   | {
       tag: 'AsMulti';
       value: {
@@ -1177,6 +2173,38 @@ export type PalletMultisigCall =
         maxWeight: SpWeightsWeightV2Weight;
       };
     }
+  /**
+   * Register approval for a dispatch to be made from a deterministic composite account if
+   * approved by a total of `threshold - 1` of `other_signatories`.
+   *
+   * Payment: `DepositBase` will be reserved if this is the first approval, plus
+   * `threshold` times `DepositFactor`. It is returned once this dispatch happens or
+   * is cancelled.
+   *
+   * The dispatch origin for this call must be _Signed_.
+   *
+   * - `threshold`: The total number of approvals for this dispatch before it is executed.
+   * - `other_signatories`: The accounts (other than the sender) who can approve this
+   * dispatch. May not be empty.
+   * - `maybe_timepoint`: If this is the first approval, then this must be `None`. If it is
+   * not the first approval, then it must be `Some`, with the timepoint (block number and
+   * transaction index) of the first approval transaction.
+   * - `call_hash`: The hash of the call to be executed.
+   *
+   * NOTE: If this is the final approval, you will want to use `as_multi` instead.
+   *
+   * ## Complexity
+   * - `O(S)`.
+   * - Up to one balance-reserve or unreserve operation.
+   * - One passthrough operation, one insert, both `O(S)` where `S` is the number of
+   * signatories. `S` is capped by `MaxSignatories`, with weight being proportional.
+   * - One encode & hash, both of complexity `O(S)`.
+   * - Up to one binary search and insert (`O(logS + S)`).
+   * - I/O: 1 read `O(S)`, up to 1 mutate `O(S)`. Up to one remove.
+   * - One event.
+   * - Storage: inserts one item, value size bounded by `MaxSignatories`, with a deposit
+   * taken for its lifetime of `DepositBase + threshold * DepositFactor`.
+   **/
   | {
       tag: 'ApproveAsMulti';
       value: {
@@ -1187,6 +2215,29 @@ export type PalletMultisigCall =
         maxWeight: SpWeightsWeightV2Weight;
       };
     }
+  /**
+   * Cancel a pre-existing, on-going multisig transaction. Any deposit reserved previously
+   * for this operation will be unreserved on success.
+   *
+   * The dispatch origin for this call must be _Signed_.
+   *
+   * - `threshold`: The total number of approvals for this dispatch before it is executed.
+   * - `other_signatories`: The accounts (other than the sender) who can approve this
+   * dispatch. May not be empty.
+   * - `timepoint`: The timepoint (block number and transaction index) of the first approval
+   * transaction for this dispatch.
+   * - `call_hash`: The hash of the call to be executed.
+   *
+   * ## Complexity
+   * - `O(S)`.
+   * - Up to one balance-reserve or unreserve operation.
+   * - One passthrough operation, one insert, both `O(S)` where `S` is the number of
+   * signatories. `S` is capped by `MaxSignatories`, with weight being proportional.
+   * - One encode & hash, both of complexity `O(S)`.
+   * - One event.
+   * - I/O: 1 read `O(S)`, one remove.
+   * - Storage: removes one item.
+   **/
   | {
       tag: 'CancelAsMulti';
       value: {
@@ -1201,14 +2252,91 @@ export type PalletMultisigCall =
  * Contains one variant per dispatchable that can be called by an extrinsic.
  **/
 export type PalletProxyCall =
+  /**
+   * Dispatch the given `call` from an account that the sender is authorised for through
+   * `add_proxy`.
+   *
+   * The dispatch origin for this call must be _Signed_.
+   *
+   * Parameters:
+   * - `real`: The account that the proxy will make a call on behalf of.
+   * - `force_proxy_type`: Specify the exact proxy type to be used and checked for this call.
+   * - `call`: The call to be made by the `real` account.
+   **/
   | {
       tag: 'Proxy';
       value: { real: MultiAddress; forceProxyType?: AstarRuntimeProxyType | undefined; call: AstarRuntimeRuntimeCall };
     }
+  /**
+   * Register a proxy account for the sender that is able to make calls on its behalf.
+   *
+   * The dispatch origin for this call must be _Signed_.
+   *
+   * Parameters:
+   * - `proxy`: The account that the `caller` would like to make a proxy.
+   * - `proxy_type`: The permissions allowed for this proxy account.
+   * - `delay`: The announcement period required of the initial proxy. Will generally be
+   * zero.
+   **/
   | { tag: 'AddProxy'; value: { delegate: MultiAddress; proxyType: AstarRuntimeProxyType; delay: number } }
+  /**
+   * Unregister a proxy account for the sender.
+   *
+   * The dispatch origin for this call must be _Signed_.
+   *
+   * Parameters:
+   * - `proxy`: The account that the `caller` would like to remove as a proxy.
+   * - `proxy_type`: The permissions currently enabled for the removed proxy account.
+   **/
   | { tag: 'RemoveProxy'; value: { delegate: MultiAddress; proxyType: AstarRuntimeProxyType; delay: number } }
+  /**
+   * Unregister all proxy accounts for the sender.
+   *
+   * The dispatch origin for this call must be _Signed_.
+   *
+   * WARNING: This may be called on accounts created by `pure`, however if done, then
+   * the unreserved fees will be inaccessible. **All access to this account will be lost.**
+   **/
   | { tag: 'RemoveProxies' }
+  /**
+   * Spawn a fresh new account that is guaranteed to be otherwise inaccessible, and
+   * initialize it with a proxy of `proxy_type` for `origin` sender.
+   *
+   * Requires a `Signed` origin.
+   *
+   * - `proxy_type`: The type of the proxy that the sender will be registered as over the
+   * new account. This will almost always be the most permissive `ProxyType` possible to
+   * allow for maximum flexibility.
+   * - `index`: A disambiguation index, in case this is called multiple times in the same
+   * transaction (e.g. with `utility::batch`). Unless you're using `batch` you probably just
+   * want to use `0`.
+   * - `delay`: The announcement period required of the initial proxy. Will generally be
+   * zero.
+   *
+   * Fails with `Duplicate` if this has already been called in this transaction, from the
+   * same sender, with the same parameters.
+   *
+   * Fails if there are insufficient funds to pay for deposit.
+   **/
   | { tag: 'CreatePure'; value: { proxyType: AstarRuntimeProxyType; delay: number; index: number } }
+  /**
+   * Removes a previously spawned pure proxy.
+   *
+   * WARNING: **All access to this account will be lost.** Any funds held in it will be
+   * inaccessible.
+   *
+   * Requires a `Signed` origin, and the sender account must have been created by a call to
+   * `pure` with corresponding parameters.
+   *
+   * - `spawner`: The account that originally called `pure` to create this account.
+   * - `index`: The disambiguation index originally passed to `pure`. Probably `0`.
+   * - `proxy_type`: The proxy type originally passed to `pure`.
+   * - `height`: The height of the chain when the call to `pure` was processed.
+   * - `ext_index`: The extrinsic index in which the call to `pure` was processed.
+   *
+   * Fails with `NoPermission` in case the caller is not a previously created pure
+   * account whose `pure` call has corresponding parameters.
+   **/
   | {
       tag: 'KillPure';
       value: {
@@ -1219,9 +2347,63 @@ export type PalletProxyCall =
         extIndex: number;
       };
     }
+  /**
+   * Publish the hash of a proxy-call that will be made in the future.
+   *
+   * This must be called some number of blocks before the corresponding `proxy` is attempted
+   * if the delay associated with the proxy relationship is greater than zero.
+   *
+   * No more than `MaxPending` announcements may be made at any one time.
+   *
+   * This will take a deposit of `AnnouncementDepositFactor` as well as
+   * `AnnouncementDepositBase` if there are no other pending announcements.
+   *
+   * The dispatch origin for this call must be _Signed_ and a proxy of `real`.
+   *
+   * Parameters:
+   * - `real`: The account that the proxy will make a call on behalf of.
+   * - `call_hash`: The hash of the call to be made by the `real` account.
+   **/
   | { tag: 'Announce'; value: { real: MultiAddress; callHash: H256 } }
+  /**
+   * Remove a given announcement.
+   *
+   * May be called by a proxy account to remove a call they previously announced and return
+   * the deposit.
+   *
+   * The dispatch origin for this call must be _Signed_.
+   *
+   * Parameters:
+   * - `real`: The account that the proxy will make a call on behalf of.
+   * - `call_hash`: The hash of the call to be made by the `real` account.
+   **/
   | { tag: 'RemoveAnnouncement'; value: { real: MultiAddress; callHash: H256 } }
+  /**
+   * Remove the given announcement of a delegate.
+   *
+   * May be called by a target (proxied) account to remove a call that one of their delegates
+   * (`delegate`) has announced they want to execute. The deposit is returned.
+   *
+   * The dispatch origin for this call must be _Signed_.
+   *
+   * Parameters:
+   * - `delegate`: The account that previously announced the call.
+   * - `call_hash`: The hash of the call to be made.
+   **/
   | { tag: 'RejectAnnouncement'; value: { delegate: MultiAddress; callHash: H256 } }
+  /**
+   * Dispatch the given `call` from an account that the sender is authorized for through
+   * `add_proxy`.
+   *
+   * Removes any corresponding announcement(s).
+   *
+   * The dispatch origin for this call must be _Signed_.
+   *
+   * Parameters:
+   * - `real`: The account that the proxy will make a call on behalf of.
+   * - `force_proxy_type`: Specify the exact proxy type to be used and checked for this call.
+   * - `call`: The call to be made by the `real` account.
+   **/
   | {
       tag: 'ProxyAnnounced';
       value: {
@@ -1236,9 +2418,41 @@ export type PalletProxyCall =
  * Contains one variant per dispatchable that can be called by an extrinsic.
  **/
 export type CumulusPalletParachainSystemCall =
+  /**
+   * Set the current validation data.
+   *
+   * This should be invoked exactly once per block. It will panic at the finalization
+   * phase if the call was not invoked.
+   *
+   * The dispatch origin for this call must be `Inherent`
+   *
+   * As a side effect, this function upgrades the current validation function
+   * if the appropriate time has come.
+   **/
   | { tag: 'SetValidationData'; value: { data: CumulusPrimitivesParachainInherentParachainInherentData } }
   | { tag: 'SudoSendUpwardMessage'; value: { message: Bytes } }
+  /**
+   * Authorize an upgrade to a given `code_hash` for the runtime. The runtime can be supplied
+   * later.
+   *
+   * The `check_version` parameter sets a boolean flag for whether or not the runtime's spec
+   * version and name should be verified on upgrade. Since the authorization only has a hash,
+   * it cannot actually perform the verification.
+   *
+   * This call requires Root origin.
+   **/
   | { tag: 'AuthorizeUpgrade'; value: { codeHash: H256; checkVersion: boolean } }
+  /**
+   * Provide the preimage (runtime binary) `code` for an upgrade that has been authorized.
+   *
+   * If the authorization required a version check, this call will ensure the spec name
+   * remains unchanged and that the spec version has increased.
+   *
+   * Note that this function will not apply the new `code`, but only attempt to schedule the
+   * upgrade with the Relay Chain.
+   *
+   * All origins are allowed.
+   **/
   | { tag: 'EnactAuthorizedUpgrade'; value: { code: Bytes } };
 
 export type CumulusPrimitivesParachainInherentParachainInherentData = {
@@ -1272,27 +2486,176 @@ export type ParachainInfoCall = null;
  * Contains one variant per dispatchable that can be called by an extrinsic.
  **/
 export type PalletBalancesCall =
+  /**
+   * Transfer some liquid free balance to another account.
+   *
+   * `transfer_allow_death` will set the `FreeBalance` of the sender and receiver.
+   * If the sender's account is below the existential deposit as a result
+   * of the transfer, the account will be reaped.
+   *
+   * The dispatch origin for this call must be `Signed` by the transactor.
+   **/
   | { tag: 'TransferAllowDeath'; value: { dest: MultiAddress; value: bigint } }
+  /**
+   * Set the regular balance of a given account; it also takes a reserved balance but this
+   * must be the same as the account's current reserved balance.
+   *
+   * The dispatch origin for this call is `root`.
+   *
+   * WARNING: This call is DEPRECATED! Use `force_set_balance` instead.
+   **/
   | { tag: 'SetBalanceDeprecated'; value: { who: MultiAddress; newFree: bigint; oldReserved: bigint } }
+  /**
+   * Exactly as `transfer_allow_death`, except the origin must be root and the source account
+   * may be specified.
+   **/
   | { tag: 'ForceTransfer'; value: { source: MultiAddress; dest: MultiAddress; value: bigint } }
+  /**
+   * Same as the [`transfer_allow_death`] call, but with a check that the transfer will not
+   * kill the origin account.
+   *
+   * 99% of the time you want [`transfer_allow_death`] instead.
+   *
+   * [`transfer_allow_death`]: struct.Pallet.html#method.transfer
+   **/
   | { tag: 'TransferKeepAlive'; value: { dest: MultiAddress; value: bigint } }
+  /**
+   * Transfer the entire transferable balance from the caller account.
+   *
+   * NOTE: This function only attempts to transfer _transferable_ balances. This means that
+   * any locked, reserved, or existential deposits (when `keep_alive` is `true`), will not be
+   * transferred by this function. To ensure that this function results in a killed account,
+   * you might need to prepare the account by removing any reference counters, storage
+   * deposits, etc...
+   *
+   * The dispatch origin of this call must be Signed.
+   *
+   * - `dest`: The recipient of the transfer.
+   * - `keep_alive`: A boolean to determine if the `transfer_all` operation should send all
+   * of the funds the account has, causing the sender account to be killed (false), or
+   * transfer everything except at least the existential deposit, which will guarantee to
+   * keep the sender account alive (true).
+   **/
   | { tag: 'TransferAll'; value: { dest: MultiAddress; keepAlive: boolean } }
+  /**
+   * Unreserve some balance from a user by force.
+   *
+   * Can only be called by ROOT.
+   **/
   | { tag: 'ForceUnreserve'; value: { who: MultiAddress; amount: bigint } }
+  /**
+   * Upgrade a specified account.
+   *
+   * - `origin`: Must be `Signed`.
+   * - `who`: The account to be upgraded.
+   *
+   * This will waive the transaction fee if at least all but 10% of the accounts needed to
+   * be upgraded. (We let some not have to be upgraded just in order to allow for the
+   * possibililty of churn).
+   **/
   | { tag: 'UpgradeAccounts'; value: { who: Array<AccountId32> } }
+  /**
+   * Alias for `transfer_allow_death`, provided only for name-wise compatibility.
+   *
+   * WARNING: DEPRECATED! Will be released in approximately 3 months.
+   **/
   | { tag: 'Transfer'; value: { dest: MultiAddress; value: bigint } }
+  /**
+   * Set the regular balance of a given account.
+   *
+   * The dispatch origin for this call is `root`.
+   **/
   | { tag: 'ForceSetBalance'; value: { who: MultiAddress; newFree: bigint } };
 
 /**
  * Contains one variant per dispatchable that can be called by an extrinsic.
  **/
 export type PalletVestingCall =
+  /**
+   * Unlock any vested funds of the sender account.
+   *
+   * The dispatch origin for this call must be _Signed_ and the sender must have funds still
+   * locked under this pallet.
+   *
+   * Emits either `VestingCompleted` or `VestingUpdated`.
+   *
+   * ## Complexity
+   * - `O(1)`.
+   **/
   | { tag: 'Vest' }
+  /**
+   * Unlock any vested funds of a `target` account.
+   *
+   * The dispatch origin for this call must be _Signed_.
+   *
+   * - `target`: The account whose vested funds should be unlocked. Must have funds still
+   * locked under this pallet.
+   *
+   * Emits either `VestingCompleted` or `VestingUpdated`.
+   *
+   * ## Complexity
+   * - `O(1)`.
+   **/
   | { tag: 'VestOther'; value: { target: MultiAddress } }
+  /**
+   * Create a vested transfer.
+   *
+   * The dispatch origin for this call must be _Signed_.
+   *
+   * - `target`: The account receiving the vested funds.
+   * - `schedule`: The vesting schedule attached to the transfer.
+   *
+   * Emits `VestingCreated`.
+   *
+   * NOTE: This will unlock all schedules through the current block.
+   *
+   * ## Complexity
+   * - `O(1)`.
+   **/
   | { tag: 'VestedTransfer'; value: { target: MultiAddress; schedule: PalletVestingVestingInfo } }
+  /**
+   * Force a vested transfer.
+   *
+   * The dispatch origin for this call must be _Root_.
+   *
+   * - `source`: The account whose funds should be transferred.
+   * - `target`: The account that should be transferred the vested funds.
+   * - `schedule`: The vesting schedule attached to the transfer.
+   *
+   * Emits `VestingCreated`.
+   *
+   * NOTE: This will unlock all schedules through the current block.
+   *
+   * ## Complexity
+   * - `O(1)`.
+   **/
   | {
       tag: 'ForceVestedTransfer';
       value: { source: MultiAddress; target: MultiAddress; schedule: PalletVestingVestingInfo };
     }
+  /**
+   * Merge two vesting schedules together, creating a new vesting schedule that unlocks over
+   * the highest possible start and end blocks. If both schedules have already started the
+   * current block will be used as the schedule start; with the caveat that if one schedule
+   * is finished by the current block, the other will be treated as the new merged schedule,
+   * unmodified.
+   *
+   * NOTE: If `schedule1_index == schedule2_index` this is a no-op.
+   * NOTE: This will unlock all schedules through the current block prior to merging.
+   * NOTE: If both schedules have ended by the current block, no new schedule will be created
+   * and both will be removed.
+   *
+   * Merged schedule attributes:
+   * - `starting_block`: `MAX(schedule1.starting_block, scheduled2.starting_block,
+   * current_block)`.
+   * - `ending_block`: `MAX(schedule1.ending_block, schedule2.ending_block)`.
+   * - `locked`: `schedule1.locked_at(current_block) + schedule2.locked_at(current_block)`.
+   *
+   * The dispatch origin for this call must be _Signed_.
+   *
+   * - `schedule1_index`: index of the first schedule to merge.
+   * - `schedule2_index`: index of the second schedule to merge.
+   **/
   | { tag: 'MergeSchedules'; value: { schedule1Index: number; schedule2Index: number } };
 
 export type PalletVestingVestingInfo = { locked: bigint; perBlock: bigint; startingBlock: number };
@@ -1301,12 +2664,65 @@ export type PalletVestingVestingInfo = { locked: bigint; perBlock: bigint; start
  * Contains one variant per dispatchable that can be called by an extrinsic.
  **/
 export type PalletDappsStakingPalletCall =
+  /**
+   * Used to register contract for dapps staking.
+   * The origin account used is treated as the `developer` account.
+   *
+   * Depending on the pallet configuration/state it is possible that developer needs to be whitelisted prior to registration.
+   *
+   * As part of this call, `RegisterDeposit` will be reserved from devs account.
+   **/
   | { tag: 'Register'; value: { developer: AccountId32; contractId: AstarRuntimeSmartContract } }
+  /**
+   * Unregister existing contract from dapps staking, making it ineligible for rewards from current era onwards.
+   * This must be called by the root (at the moment).
+   *
+   * Deposit is returned to the developer but existing stakers should manually call `withdraw_from_unregistered` if they wish to to unstake.
+   *
+   * **Warning**: After this action ,contract can not be registered for dapps staking again.
+   **/
   | { tag: 'Unregister'; value: { contractId: AstarRuntimeSmartContract } }
+  /**
+   * Withdraw locked funds from a contract that was unregistered.
+   *
+   * Funds don't need to undergo the unbonding period - they are returned immediately to the staker's free balance.
+   **/
   | { tag: 'WithdrawFromUnregistered'; value: { contractId: AstarRuntimeSmartContract } }
+  /**
+   * Lock up and stake balance of the origin account.
+   *
+   * `value` must be more than the `minimum_balance` specified by `MinimumStakingAmount`
+   * unless account already has bonded value equal or more than 'minimum_balance'.
+   *
+   * The dispatch origin for this call must be _Signed_ by the staker's account.
+   **/
   | { tag: 'BondAndStake'; value: { contractId: AstarRuntimeSmartContract; value: bigint } }
+  /**
+   * Start unbonding process and unstake balance from the contract.
+   *
+   * The unstaked amount will no longer be eligible for rewards but still won't be unlocked.
+   * User needs to wait for the unbonding period to finish before being able to withdraw
+   * the funds via `withdraw_unbonded` call.
+   *
+   * In case remaining staked balance on contract is below minimum staking amount,
+   * entire stake for that contract will be unstaked.
+   **/
   | { tag: 'UnbondAndUnstake'; value: { contractId: AstarRuntimeSmartContract; value: bigint } }
+  /**
+   * Withdraw all funds that have completed the unbonding process.
+   *
+   * If there are unbonding chunks which will be fully unbonded in future eras,
+   * they will remain and can be withdrawn later.
+   **/
   | { tag: 'WithdrawUnbonded' }
+  /**
+   * Transfer nomination from one contract to another.
+   *
+   * Same rules as for `bond_and_stake` and `unbond_and_unstake` apply.
+   * Minor difference is that there is no unbonding period so this call won't
+   * check whether max number of unbonding chunks is exceeded.
+   *
+   **/
   | {
       tag: 'NominationTransfer';
       value: {
@@ -1315,11 +2731,45 @@ export type PalletDappsStakingPalletCall =
         targetContractId: AstarRuntimeSmartContract;
       };
     }
+  /**
+   * Claim earned staker rewards for the oldest unclaimed era.
+   * In order to claim multiple eras, this call has to be called multiple times.
+   *
+   * The rewards are always added to the staker's free balance (account) but depending on the reward destination configuration,
+   * they might be immediately re-staked.
+   **/
   | { tag: 'ClaimStaker'; value: { contractId: AstarRuntimeSmartContract } }
+  /**
+   * Claim earned dapp rewards for the specified era.
+   *
+   * Call must ensure that the specified era is eligible for reward payout and that it hasn't already been paid out for the dapp.
+   **/
   | { tag: 'ClaimDapp'; value: { contractId: AstarRuntimeSmartContract; era: number } }
+  /**
+   * Force a new era at the start of the next block.
+   *
+   * The dispatch origin must be Root.
+   **/
   | { tag: 'ForceNewEra' }
+  /**
+   * `true` will disable pallet, enabling maintenance mode. `false` will do the opposite.
+   *
+   * The dispatch origin must be Root.
+   **/
   | { tag: 'MaintenanceMode'; value: { enableMaintenance: boolean } }
+  /**
+   * Used to set reward destination for staker rewards.
+   *
+   * User must be an active staker in order to use this call.
+   * This will apply to all existing unclaimed rewards.
+   **/
   | { tag: 'SetRewardDestination'; value: { rewardDestination: PalletDappsStakingRewardDestination } }
+  /**
+   * Used to force set `ContractEraStake` storage values.
+   * The purpose of this call is only for fixing one of the issues detected with dapps-staking.
+   *
+   * The dispatch origin must be Root.
+   **/
   | {
       tag: 'SetContractStakeInfo';
       value: {
@@ -1328,6 +2778,9 @@ export type PalletDappsStakingPalletCall =
         contractStakeInfo: PalletDappsStakingContractStakeInfo;
       };
     }
+  /**
+   * Used to burn unclaimed & stale rewards from an unregistered contract.
+   **/
   | { tag: 'BurnStaleReward'; value: { contractId: AstarRuntimeSmartContract; era: number } };
 
 export type PalletDappsStakingContractStakeInfo = {
@@ -1339,36 +2792,390 @@ export type PalletDappsStakingContractStakeInfo = {
 /**
  * Contains one variant per dispatchable that can be called by an extrinsic.
  **/
-export type PalletBlockRewardCall = {
-  tag: 'SetConfiguration';
-  value: { rewardDistroParams: PalletBlockRewardRewardDistributionConfig };
-};
+export type PalletBlockRewardCall =
+  /**
+   * Sets the reward distribution configuration parameters which will be used from next block reward distribution.
+   *
+   * It is mandatory that all components of configuration sum up to one whole (**100%**),
+   * otherwise an error `InvalidDistributionConfiguration` will be raised.
+   *
+   * - `reward_distro_params` - reward distribution params
+   *
+   * Emits `DistributionConfigurationChanged` with config embeded into event itself.
+   *
+   **/
+  { tag: 'SetConfiguration'; value: { rewardDistroParams: PalletBlockRewardRewardDistributionConfig } };
 
 /**
  * Contains one variant per dispatchable that can be called by an extrinsic.
  **/
 export type PalletAssetsCall =
+  /**
+   * Issue a new class of fungible assets from a public origin.
+   *
+   * This new asset class has no assets initially and its owner is the origin.
+   *
+   * The origin must conform to the configured `CreateOrigin` and have sufficient funds free.
+   *
+   * Funds of sender are reserved by `AssetDeposit`.
+   *
+   * Parameters:
+   * - `id`: The identifier of the new asset. This must not be currently in use to identify
+   * an existing asset.
+   * - `admin`: The admin of this class of assets. The admin is the initial address of each
+   * member of the asset class's admin team.
+   * - `min_balance`: The minimum balance of this new asset that any single account must
+   * have. If an account's balance is reduced below this, then it collapses to zero.
+   *
+   * Emits `Created` event when successful.
+   *
+   * Weight: `O(1)`
+   **/
   | { tag: 'Create'; value: { id: bigint; admin: MultiAddress; minBalance: bigint } }
+  /**
+   * Issue a new class of fungible assets from a privileged origin.
+   *
+   * This new asset class has no assets initially.
+   *
+   * The origin must conform to `ForceOrigin`.
+   *
+   * Unlike `create`, no funds are reserved.
+   *
+   * - `id`: The identifier of the new asset. This must not be currently in use to identify
+   * an existing asset.
+   * - `owner`: The owner of this class of assets. The owner has full superuser permissions
+   * over this asset, but may later change and configure the permissions using
+   * `transfer_ownership` and `set_team`.
+   * - `min_balance`: The minimum balance of this new asset that any single account must
+   * have. If an account's balance is reduced below this, then it collapses to zero.
+   *
+   * Emits `ForceCreated` event when successful.
+   *
+   * Weight: `O(1)`
+   **/
   | { tag: 'ForceCreate'; value: { id: bigint; owner: MultiAddress; isSufficient: boolean; minBalance: bigint } }
+  /**
+   * Start the process of destroying a fungible asset class.
+   *
+   * `start_destroy` is the first in a series of extrinsics that should be called, to allow
+   * destruction of an asset class.
+   *
+   * The origin must conform to `ForceOrigin` or must be `Signed` by the asset's `owner`.
+   *
+   * - `id`: The identifier of the asset to be destroyed. This must identify an existing
+   * asset.
+   *
+   * The asset class must be frozen before calling `start_destroy`.
+   **/
   | { tag: 'StartDestroy'; value: { id: bigint } }
+  /**
+   * Destroy all accounts associated with a given asset.
+   *
+   * `destroy_accounts` should only be called after `start_destroy` has been called, and the
+   * asset is in a `Destroying` state.
+   *
+   * Due to weight restrictions, this function may need to be called multiple times to fully
+   * destroy all accounts. It will destroy `RemoveItemsLimit` accounts at a time.
+   *
+   * - `id`: The identifier of the asset to be destroyed. This must identify an existing
+   * asset.
+   *
+   * Each call emits the `Event::DestroyedAccounts` event.
+   **/
   | { tag: 'DestroyAccounts'; value: { id: bigint } }
+  /**
+   * Destroy all approvals associated with a given asset up to the max (T::RemoveItemsLimit).
+   *
+   * `destroy_approvals` should only be called after `start_destroy` has been called, and the
+   * asset is in a `Destroying` state.
+   *
+   * Due to weight restrictions, this function may need to be called multiple times to fully
+   * destroy all approvals. It will destroy `RemoveItemsLimit` approvals at a time.
+   *
+   * - `id`: The identifier of the asset to be destroyed. This must identify an existing
+   * asset.
+   *
+   * Each call emits the `Event::DestroyedApprovals` event.
+   **/
   | { tag: 'DestroyApprovals'; value: { id: bigint } }
+  /**
+   * Complete destroying asset and unreserve currency.
+   *
+   * `finish_destroy` should only be called after `start_destroy` has been called, and the
+   * asset is in a `Destroying` state. All accounts or approvals should be destroyed before
+   * hand.
+   *
+   * - `id`: The identifier of the asset to be destroyed. This must identify an existing
+   * asset.
+   *
+   * Each successful call emits the `Event::Destroyed` event.
+   **/
   | { tag: 'FinishDestroy'; value: { id: bigint } }
+  /**
+   * Mint assets of a particular class.
+   *
+   * The origin must be Signed and the sender must be the Issuer of the asset `id`.
+   *
+   * - `id`: The identifier of the asset to have some amount minted.
+   * - `beneficiary`: The account to be credited with the minted assets.
+   * - `amount`: The amount of the asset to be minted.
+   *
+   * Emits `Issued` event when successful.
+   *
+   * Weight: `O(1)`
+   * Modes: Pre-existing balance of `beneficiary`; Account pre-existence of `beneficiary`.
+   **/
   | { tag: 'Mint'; value: { id: bigint; beneficiary: MultiAddress; amount: bigint } }
+  /**
+   * Reduce the balance of `who` by as much as possible up to `amount` assets of `id`.
+   *
+   * Origin must be Signed and the sender should be the Manager of the asset `id`.
+   *
+   * Bails with `NoAccount` if the `who` is already dead.
+   *
+   * - `id`: The identifier of the asset to have some amount burned.
+   * - `who`: The account to be debited from.
+   * - `amount`: The maximum amount by which `who`'s balance should be reduced.
+   *
+   * Emits `Burned` with the actual amount burned. If this takes the balance to below the
+   * minimum for the asset, then the amount burned is increased to take it to zero.
+   *
+   * Weight: `O(1)`
+   * Modes: Post-existence of `who`; Pre & post Zombie-status of `who`.
+   **/
   | { tag: 'Burn'; value: { id: bigint; who: MultiAddress; amount: bigint } }
+  /**
+   * Move some assets from the sender account to another.
+   *
+   * Origin must be Signed.
+   *
+   * - `id`: The identifier of the asset to have some amount transferred.
+   * - `target`: The account to be credited.
+   * - `amount`: The amount by which the sender's balance of assets should be reduced and
+   * `target`'s balance increased. The amount actually transferred may be slightly greater in
+   * the case that the transfer would otherwise take the sender balance above zero but below
+   * the minimum balance. Must be greater than zero.
+   *
+   * Emits `Transferred` with the actual amount transferred. If this takes the source balance
+   * to below the minimum for the asset, then the amount transferred is increased to take it
+   * to zero.
+   *
+   * Weight: `O(1)`
+   * Modes: Pre-existence of `target`; Post-existence of sender; Account pre-existence of
+   * `target`.
+   **/
   | { tag: 'Transfer'; value: { id: bigint; target: MultiAddress; amount: bigint } }
+  /**
+   * Move some assets from the sender account to another, keeping the sender account alive.
+   *
+   * Origin must be Signed.
+   *
+   * - `id`: The identifier of the asset to have some amount transferred.
+   * - `target`: The account to be credited.
+   * - `amount`: The amount by which the sender's balance of assets should be reduced and
+   * `target`'s balance increased. The amount actually transferred may be slightly greater in
+   * the case that the transfer would otherwise take the sender balance above zero but below
+   * the minimum balance. Must be greater than zero.
+   *
+   * Emits `Transferred` with the actual amount transferred. If this takes the source balance
+   * to below the minimum for the asset, then the amount transferred is increased to take it
+   * to zero.
+   *
+   * Weight: `O(1)`
+   * Modes: Pre-existence of `target`; Post-existence of sender; Account pre-existence of
+   * `target`.
+   **/
   | { tag: 'TransferKeepAlive'; value: { id: bigint; target: MultiAddress; amount: bigint } }
+  /**
+   * Move some assets from one account to another.
+   *
+   * Origin must be Signed and the sender should be the Admin of the asset `id`.
+   *
+   * - `id`: The identifier of the asset to have some amount transferred.
+   * - `source`: The account to be debited.
+   * - `dest`: The account to be credited.
+   * - `amount`: The amount by which the `source`'s balance of assets should be reduced and
+   * `dest`'s balance increased. The amount actually transferred may be slightly greater in
+   * the case that the transfer would otherwise take the `source` balance above zero but
+   * below the minimum balance. Must be greater than zero.
+   *
+   * Emits `Transferred` with the actual amount transferred. If this takes the source balance
+   * to below the minimum for the asset, then the amount transferred is increased to take it
+   * to zero.
+   *
+   * Weight: `O(1)`
+   * Modes: Pre-existence of `dest`; Post-existence of `source`; Account pre-existence of
+   * `dest`.
+   **/
   | { tag: 'ForceTransfer'; value: { id: bigint; source: MultiAddress; dest: MultiAddress; amount: bigint } }
+  /**
+   * Disallow further unprivileged transfers of an asset `id` from an account `who`. `who`
+   * must already exist as an entry in `Account`s of the asset. If you want to freeze an
+   * account that does not have an entry, use `touch_other` first.
+   *
+   * Origin must be Signed and the sender should be the Freezer of the asset `id`.
+   *
+   * - `id`: The identifier of the asset to be frozen.
+   * - `who`: The account to be frozen.
+   *
+   * Emits `Frozen`.
+   *
+   * Weight: `O(1)`
+   **/
   | { tag: 'Freeze'; value: { id: bigint; who: MultiAddress } }
+  /**
+   * Allow unprivileged transfers to and from an account again.
+   *
+   * Origin must be Signed and the sender should be the Admin of the asset `id`.
+   *
+   * - `id`: The identifier of the asset to be frozen.
+   * - `who`: The account to be unfrozen.
+   *
+   * Emits `Thawed`.
+   *
+   * Weight: `O(1)`
+   **/
   | { tag: 'Thaw'; value: { id: bigint; who: MultiAddress } }
+  /**
+   * Disallow further unprivileged transfers for the asset class.
+   *
+   * Origin must be Signed and the sender should be the Freezer of the asset `id`.
+   *
+   * - `id`: The identifier of the asset to be frozen.
+   *
+   * Emits `Frozen`.
+   *
+   * Weight: `O(1)`
+   **/
   | { tag: 'FreezeAsset'; value: { id: bigint } }
+  /**
+   * Allow unprivileged transfers for the asset again.
+   *
+   * Origin must be Signed and the sender should be the Admin of the asset `id`.
+   *
+   * - `id`: The identifier of the asset to be thawed.
+   *
+   * Emits `Thawed`.
+   *
+   * Weight: `O(1)`
+   **/
   | { tag: 'ThawAsset'; value: { id: bigint } }
+  /**
+   * Change the Owner of an asset.
+   *
+   * Origin must be Signed and the sender should be the Owner of the asset `id`.
+   *
+   * - `id`: The identifier of the asset.
+   * - `owner`: The new Owner of this asset.
+   *
+   * Emits `OwnerChanged`.
+   *
+   * Weight: `O(1)`
+   **/
   | { tag: 'TransferOwnership'; value: { id: bigint; owner: MultiAddress } }
+  /**
+   * Change the Issuer, Admin and Freezer of an asset.
+   *
+   * Origin must be Signed and the sender should be the Owner of the asset `id`.
+   *
+   * - `id`: The identifier of the asset to be frozen.
+   * - `issuer`: The new Issuer of this asset.
+   * - `admin`: The new Admin of this asset.
+   * - `freezer`: The new Freezer of this asset.
+   *
+   * Emits `TeamChanged`.
+   *
+   * Weight: `O(1)`
+   **/
   | { tag: 'SetTeam'; value: { id: bigint; issuer: MultiAddress; admin: MultiAddress; freezer: MultiAddress } }
+  /**
+   * Set the metadata for an asset.
+   *
+   * Origin must be Signed and the sender should be the Owner of the asset `id`.
+   *
+   * Funds of sender are reserved according to the formula:
+   * `MetadataDepositBase + MetadataDepositPerByte * (name.len + symbol.len)` taking into
+   * account any already reserved funds.
+   *
+   * - `id`: The identifier of the asset to update.
+   * - `name`: The user friendly name of this asset. Limited in length by `StringLimit`.
+   * - `symbol`: The exchange symbol for this asset. Limited in length by `StringLimit`.
+   * - `decimals`: The number of decimals this asset uses to represent one unit.
+   *
+   * Emits `MetadataSet`.
+   *
+   * Weight: `O(1)`
+   **/
   | { tag: 'SetMetadata'; value: { id: bigint; name: Bytes; symbol: Bytes; decimals: number } }
+  /**
+   * Clear the metadata for an asset.
+   *
+   * Origin must be Signed and the sender should be the Owner of the asset `id`.
+   *
+   * Any deposit is freed for the asset owner.
+   *
+   * - `id`: The identifier of the asset to clear.
+   *
+   * Emits `MetadataCleared`.
+   *
+   * Weight: `O(1)`
+   **/
   | { tag: 'ClearMetadata'; value: { id: bigint } }
+  /**
+   * Force the metadata for an asset to some value.
+   *
+   * Origin must be ForceOrigin.
+   *
+   * Any deposit is left alone.
+   *
+   * - `id`: The identifier of the asset to update.
+   * - `name`: The user friendly name of this asset. Limited in length by `StringLimit`.
+   * - `symbol`: The exchange symbol for this asset. Limited in length by `StringLimit`.
+   * - `decimals`: The number of decimals this asset uses to represent one unit.
+   *
+   * Emits `MetadataSet`.
+   *
+   * Weight: `O(N + S)` where N and S are the length of the name and symbol respectively.
+   **/
   | { tag: 'ForceSetMetadata'; value: { id: bigint; name: Bytes; symbol: Bytes; decimals: number; isFrozen: boolean } }
+  /**
+   * Clear the metadata for an asset.
+   *
+   * Origin must be ForceOrigin.
+   *
+   * Any deposit is returned.
+   *
+   * - `id`: The identifier of the asset to clear.
+   *
+   * Emits `MetadataCleared`.
+   *
+   * Weight: `O(1)`
+   **/
   | { tag: 'ForceClearMetadata'; value: { id: bigint } }
+  /**
+   * Alter the attributes of a given asset.
+   *
+   * Origin must be `ForceOrigin`.
+   *
+   * - `id`: The identifier of the asset.
+   * - `owner`: The new Owner of this asset.
+   * - `issuer`: The new Issuer of this asset.
+   * - `admin`: The new Admin of this asset.
+   * - `freezer`: The new Freezer of this asset.
+   * - `min_balance`: The minimum balance of this new asset that any single account must
+   * have. If an account's balance is reduced below this, then it collapses to zero.
+   * - `is_sufficient`: Whether a non-zero balance of this asset is deposit of sufficient
+   * value to account for the state bloat associated with its balance storage. If set to
+   * `true`, then non-zero balances may be stored without a `consumer` reference (and thus
+   * an ED in the Balances pallet or whatever else is used to control user-account state
+   * growth).
+   * - `is_frozen`: Whether this asset class is frozen except for permissioned/admin
+   * instructions.
+   *
+   * Emits `AssetStatusChanged` with the identity of the asset.
+   *
+   * Weight: `O(1)`
+   **/
   | {
       tag: 'ForceAssetStatus';
       value: {
@@ -1382,32 +3189,227 @@ export type PalletAssetsCall =
         isFrozen: boolean;
       };
     }
+  /**
+   * Approve an amount of asset for transfer by a delegated third-party account.
+   *
+   * Origin must be Signed.
+   *
+   * Ensures that `ApprovalDeposit` worth of `Currency` is reserved from signing account
+   * for the purpose of holding the approval. If some non-zero amount of assets is already
+   * approved from signing account to `delegate`, then it is topped up or unreserved to
+   * meet the right value.
+   *
+   * NOTE: The signing account does not need to own `amount` of assets at the point of
+   * making this call.
+   *
+   * - `id`: The identifier of the asset.
+   * - `delegate`: The account to delegate permission to transfer asset.
+   * - `amount`: The amount of asset that may be transferred by `delegate`. If there is
+   * already an approval in place, then this acts additively.
+   *
+   * Emits `ApprovedTransfer` on success.
+   *
+   * Weight: `O(1)`
+   **/
   | { tag: 'ApproveTransfer'; value: { id: bigint; delegate: MultiAddress; amount: bigint } }
+  /**
+   * Cancel all of some asset approved for delegated transfer by a third-party account.
+   *
+   * Origin must be Signed and there must be an approval in place between signer and
+   * `delegate`.
+   *
+   * Unreserves any deposit previously reserved by `approve_transfer` for the approval.
+   *
+   * - `id`: The identifier of the asset.
+   * - `delegate`: The account delegated permission to transfer asset.
+   *
+   * Emits `ApprovalCancelled` on success.
+   *
+   * Weight: `O(1)`
+   **/
   | { tag: 'CancelApproval'; value: { id: bigint; delegate: MultiAddress } }
+  /**
+   * Cancel all of some asset approved for delegated transfer by a third-party account.
+   *
+   * Origin must be either ForceOrigin or Signed origin with the signer being the Admin
+   * account of the asset `id`.
+   *
+   * Unreserves any deposit previously reserved by `approve_transfer` for the approval.
+   *
+   * - `id`: The identifier of the asset.
+   * - `delegate`: The account delegated permission to transfer asset.
+   *
+   * Emits `ApprovalCancelled` on success.
+   *
+   * Weight: `O(1)`
+   **/
   | { tag: 'ForceCancelApproval'; value: { id: bigint; owner: MultiAddress; delegate: MultiAddress } }
+  /**
+   * Transfer some asset balance from a previously delegated account to some third-party
+   * account.
+   *
+   * Origin must be Signed and there must be an approval in place by the `owner` to the
+   * signer.
+   *
+   * If the entire amount approved for transfer is transferred, then any deposit previously
+   * reserved by `approve_transfer` is unreserved.
+   *
+   * - `id`: The identifier of the asset.
+   * - `owner`: The account which previously approved for a transfer of at least `amount` and
+   * from which the asset balance will be withdrawn.
+   * - `destination`: The account to which the asset balance of `amount` will be transferred.
+   * - `amount`: The amount of assets to transfer.
+   *
+   * Emits `TransferredApproved` on success.
+   *
+   * Weight: `O(1)`
+   **/
   | { tag: 'TransferApproved'; value: { id: bigint; owner: MultiAddress; destination: MultiAddress; amount: bigint } }
+  /**
+   * Create an asset account for non-provider assets.
+   *
+   * A deposit will be taken from the signer account.
+   *
+   * - `origin`: Must be Signed; the signer account must have sufficient funds for a deposit
+   * to be taken.
+   * - `id`: The identifier of the asset for the account to be created.
+   *
+   * Emits `Touched` event when successful.
+   **/
   | { tag: 'Touch'; value: { id: bigint } }
+  /**
+   * Return the deposit (if any) of an asset account or a consumer reference (if any) of an
+   * account.
+   *
+   * The origin must be Signed.
+   *
+   * - `id`: The identifier of the asset for which the caller would like the deposit
+   * refunded.
+   * - `allow_burn`: If `true` then assets may be destroyed in order to complete the refund.
+   *
+   * Emits `Refunded` event when successful.
+   **/
   | { tag: 'Refund'; value: { id: bigint; allowBurn: boolean } }
+  /**
+   * Sets the minimum balance of an asset.
+   *
+   * Only works if there aren't any accounts that are holding the asset or if
+   * the new value of `min_balance` is less than the old one.
+   *
+   * Origin must be Signed and the sender has to be the Owner of the
+   * asset `id`.
+   *
+   * - `id`: The identifier of the asset.
+   * - `min_balance`: The new value of `min_balance`.
+   *
+   * Emits `AssetMinBalanceChanged` event when successful.
+   **/
   | { tag: 'SetMinBalance'; value: { id: bigint; minBalance: bigint } }
+  /**
+   * Create an asset account for `who`.
+   *
+   * A deposit will be taken from the signer account.
+   *
+   * - `origin`: Must be Signed by `Freezer` or `Admin` of the asset `id`; the signer account
+   * must have sufficient funds for a deposit to be taken.
+   * - `id`: The identifier of the asset for the account to be created.
+   * - `who`: The account to be created.
+   *
+   * Emits `Touched` event when successful.
+   **/
   | { tag: 'TouchOther'; value: { id: bigint; who: MultiAddress } }
+  /**
+   * Return the deposit (if any) of a target asset account. Useful if you are the depositor.
+   *
+   * The origin must be Signed and either the account owner, depositor, or asset `Admin`. In
+   * order to burn a non-zero balance of the asset, the caller must be the account and should
+   * use `refund`.
+   *
+   * - `id`: The identifier of the asset for the account holding a deposit.
+   * - `who`: The account to refund.
+   *
+   * Emits `Refunded` event when successful.
+   **/
   | { tag: 'RefundOther'; value: { id: bigint; who: MultiAddress } }
+  /**
+   * Disallow further unprivileged transfers of an asset `id` to and from an account `who`.
+   *
+   * Origin must be Signed and the sender should be the Freezer of the asset `id`.
+   *
+   * - `id`: The identifier of the account's asset.
+   * - `who`: The account to be unblocked.
+   *
+   * Emits `Blocked`.
+   *
+   * Weight: `O(1)`
+   **/
   | { tag: 'Block'; value: { id: bigint; who: MultiAddress } };
 
 /**
  * Contains one variant per dispatchable that can be called by an extrinsic.
  **/
 export type PalletCollatorSelectionCall =
+  /**
+   * Set the list of invulnerable (fixed) collators.
+   **/
   | { tag: 'SetInvulnerables'; value: { new: Array<AccountId32> } }
+  /**
+   * Set the ideal number of collators (not including the invulnerables).
+   * If lowering this number, then the number of running collators could be higher than this figure.
+   * Aside from that edge case, there should be no other way to have more collators than the desired number.
+   **/
   | { tag: 'SetDesiredCandidates'; value: { max: number } }
+  /**
+   * Set the candidacy bond amount.
+   **/
   | { tag: 'SetCandidacyBond'; value: { bond: bigint } }
+  /**
+   * Register this account as a collator candidate. The account must (a) already have
+   * registered session keys and (b) be able to reserve the `CandidacyBond`.
+   *
+   * This call is not available to `Invulnerable` collators.
+   **/
   | { tag: 'RegisterAsCandidate' }
+  /**
+   * Deregister `origin` as a collator candidate. Note that the collator can only leave on
+   * session change. The `CandidacyBond` will be unreserved immediately.
+   *
+   * This call will fail if the total number of candidates would drop below `MinCandidates`.
+   *
+   * This call is not available to `Invulnerable` collators.
+   **/
   | { tag: 'LeaveIntent' };
 
 /**
  * Contains one variant per dispatchable that can be called by an extrinsic.
  **/
 export type PalletSessionCall =
+  /**
+   * Sets the session key(s) of the function caller to `keys`.
+   * Allows an account to set its session key prior to becoming a validator.
+   * This doesn't take effect until the next session.
+   *
+   * The dispatch origin of this function must be signed.
+   *
+   * ## Complexity
+   * - `O(1)`. Actual cost depends on the number of length of `T::Keys::key_ids()` which is
+   * fixed.
+   **/
   | { tag: 'SetKeys'; value: { keys: AstarRuntimeSessionKeys; proof: Bytes } }
+  /**
+   * Removes any session key(s) of the function caller.
+   *
+   * This doesn't take effect until the next session.
+   *
+   * The dispatch origin of this function must be Signed and the account must be either be
+   * convertible to a validator ID using the chain's typical addressing system (this usually
+   * means being a controller account) or directly convertible into a validator ID (which
+   * usually means being a stash account).
+   *
+   * ## Complexity
+   * - `O(1)` in number of key types. Actual cost depends on the number of length of
+   * `T::Keys::key_ids()` which is fixed.
+   **/
   | { tag: 'PurgeKeys' };
 
 export type AstarRuntimeSessionKeys = { aura: SpConsensusAuraSr25519AppSr25519Public };
@@ -1420,14 +3422,82 @@ export type SpCoreSr25519Public = FixedBytes<32>;
  * Contains one variant per dispatchable that can be called by an extrinsic.
  **/
 export type CumulusPalletXcmpQueueCall =
+  /**
+   * Services a single overweight XCM.
+   *
+   * - `origin`: Must pass `ExecuteOverweightOrigin`.
+   * - `index`: The index of the overweight XCM to service
+   * - `weight_limit`: The amount of weight that XCM execution may take.
+   *
+   * Errors:
+   * - `BadOverweightIndex`: XCM under `index` is not found in the `Overweight` storage map.
+   * - `BadXcm`: XCM under `index` cannot be properly decoded into a valid XCM format.
+   * - `WeightOverLimit`: XCM execution may use greater `weight_limit`.
+   *
+   * Events:
+   * - `OverweightServiced`: On success.
+   **/
   | { tag: 'ServiceOverweight'; value: { index: bigint; weightLimit: SpWeightsWeightV2Weight } }
+  /**
+   * Suspends all XCM executions for the XCMP queue, regardless of the sender's origin.
+   *
+   * - `origin`: Must pass `ControllerOrigin`.
+   **/
   | { tag: 'SuspendXcmExecution' }
+  /**
+   * Resumes all XCM executions for the XCMP queue.
+   *
+   * Note that this function doesn't change the status of the in/out bound channels.
+   *
+   * - `origin`: Must pass `ControllerOrigin`.
+   **/
   | { tag: 'ResumeXcmExecution' }
+  /**
+   * Overwrites the number of pages of messages which must be in the queue for the other side to be told to
+   * suspend their sending.
+   *
+   * - `origin`: Must pass `Root`.
+   * - `new`: Desired value for `QueueConfigData.suspend_value`
+   **/
   | { tag: 'UpdateSuspendThreshold'; value: { new: number } }
+  /**
+   * Overwrites the number of pages of messages which must be in the queue after which we drop any further
+   * messages from the channel.
+   *
+   * - `origin`: Must pass `Root`.
+   * - `new`: Desired value for `QueueConfigData.drop_threshold`
+   **/
   | { tag: 'UpdateDropThreshold'; value: { new: number } }
+  /**
+   * Overwrites the number of pages of messages which the queue must be reduced to before it signals that
+   * message sending may recommence after it has been suspended.
+   *
+   * - `origin`: Must pass `Root`.
+   * - `new`: Desired value for `QueueConfigData.resume_threshold`
+   **/
   | { tag: 'UpdateResumeThreshold'; value: { new: number } }
+  /**
+   * Overwrites the amount of remaining weight under which we stop processing messages.
+   *
+   * - `origin`: Must pass `Root`.
+   * - `new`: Desired value for `QueueConfigData.threshold_weight`
+   **/
   | { tag: 'UpdateThresholdWeight'; value: { new: SpWeightsWeightV2Weight } }
+  /**
+   * Overwrites the speed to which the available weight approaches the maximum weight.
+   * A lower number results in a faster progression. A value of 1 makes the entire weight available initially.
+   *
+   * - `origin`: Must pass `Root`.
+   * - `new`: Desired value for `QueueConfigData.weight_restrict_decay`.
+   **/
   | { tag: 'UpdateWeightRestrictDecay'; value: { new: SpWeightsWeightV2Weight } }
+  /**
+   * Overwrite the maximum amount of weight any individual message may consume.
+   * Messages above this weight go into the overweight queue and may only be serviced explicitly.
+   *
+   * - `origin`: Must pass `Root`.
+   * - `new`: Desired value for `QueueConfigData.xcmp_max_individual_weight`.
+   **/
   | { tag: 'UpdateXcmpMaxIndividualWeight'; value: { new: SpWeightsWeightV2Weight } };
 
 /**
@@ -1435,6 +3505,23 @@ export type CumulusPalletXcmpQueueCall =
  **/
 export type PalletXcmCall =
   | { tag: 'Send'; value: { dest: XcmVersionedMultiLocation; message: XcmVersionedXcm } }
+  /**
+   * Teleport some assets from the local chain to some destination chain.
+   *
+   * Fee payment on the destination side is made from the asset in the `assets` vector of
+   * index `fee_asset_item`. The weight limit for fees is not provided and thus is unlimited,
+   * with all fees taken as needed from the asset.
+   *
+   * - `origin`: Must be capable of withdrawing the `assets` and executing XCM.
+   * - `dest`: Destination context for the assets. Will typically be `X2(Parent, Parachain(..))` to send
+   * from parachain to parachain, or `X1(Parachain(..))` to send from relay to parachain.
+   * - `beneficiary`: A beneficiary location for the assets in the context of `dest`. Will generally be
+   * an `AccountId32` value.
+   * - `assets`: The assets to be withdrawn. The first item should be the currency used to to pay the fee on the
+   * `dest` side. May not be empty.
+   * - `fee_asset_item`: The index into `assets` of the item which should be used to pay
+   * fees.
+   **/
   | {
       tag: 'TeleportAssets';
       value: {
@@ -1444,6 +3531,24 @@ export type PalletXcmCall =
         feeAssetItem: number;
       };
     }
+  /**
+   * Transfer some assets from the local chain to the sovereign account of a destination
+   * chain and forward a notification XCM.
+   *
+   * Fee payment on the destination side is made from the asset in the `assets` vector of
+   * index `fee_asset_item`. The weight limit for fees is not provided and thus is unlimited,
+   * with all fees taken as needed from the asset.
+   *
+   * - `origin`: Must be capable of withdrawing the `assets` and executing XCM.
+   * - `dest`: Destination context for the assets. Will typically be `X2(Parent, Parachain(..))` to send
+   * from parachain to parachain, or `X1(Parachain(..))` to send from relay to parachain.
+   * - `beneficiary`: A beneficiary location for the assets in the context of `dest`. Will generally be
+   * an `AccountId32` value.
+   * - `assets`: The assets to be withdrawn. This should include the assets used to pay the fee on the
+   * `dest` side.
+   * - `fee_asset_item`: The index into `assets` of the item which should be used to pay
+   * fees.
+   **/
   | {
       tag: 'ReserveTransferAssets';
       value: {
@@ -1453,11 +3558,73 @@ export type PalletXcmCall =
         feeAssetItem: number;
       };
     }
+  /**
+   * Execute an XCM message from a local, signed, origin.
+   *
+   * An event is deposited indicating whether `msg` could be executed completely or only
+   * partially.
+   *
+   * No more than `max_weight` will be used in its attempted execution. If this is less than the
+   * maximum amount of weight that the message could take to be executed, then no execution
+   * attempt will be made.
+   *
+   * NOTE: A successful return to this does *not* imply that the `msg` was executed successfully
+   * to completion; only that *some* of it was executed.
+   **/
   | { tag: 'Execute'; value: { message: XcmVersionedXcm; maxWeight: SpWeightsWeightV2Weight } }
+  /**
+   * Extoll that a particular destination can be communicated with through a particular
+   * version of XCM.
+   *
+   * - `origin`: Must be an origin specified by AdminOrigin.
+   * - `location`: The destination that is being described.
+   * - `xcm_version`: The latest version of XCM that `location` supports.
+   **/
   | { tag: 'ForceXcmVersion'; value: { location: XcmV3MultilocationMultiLocation; xcmVersion: number } }
+  /**
+   * Set a safe XCM version (the version that XCM should be encoded with if the most recent
+   * version a destination can accept is unknown).
+   *
+   * - `origin`: Must be an origin specified by AdminOrigin.
+   * - `maybe_xcm_version`: The default XCM encoding version, or `None` to disable.
+   **/
   | { tag: 'ForceDefaultXcmVersion'; value: { maybeXcmVersion?: number | undefined } }
+  /**
+   * Ask a location to notify us regarding their XCM version and any changes to it.
+   *
+   * - `origin`: Must be an origin specified by AdminOrigin.
+   * - `location`: The location to which we should subscribe for XCM version notifications.
+   **/
   | { tag: 'ForceSubscribeVersionNotify'; value: { location: XcmVersionedMultiLocation } }
+  /**
+   * Require that a particular destination should no longer notify us regarding any XCM
+   * version changes.
+   *
+   * - `origin`: Must be an origin specified by AdminOrigin.
+   * - `location`: The location to which we are currently subscribed for XCM version
+   * notifications which we no longer desire.
+   **/
   | { tag: 'ForceUnsubscribeVersionNotify'; value: { location: XcmVersionedMultiLocation } }
+  /**
+   * Transfer some assets from the local chain to the sovereign account of a destination
+   * chain and forward a notification XCM.
+   *
+   * Fee payment on the destination side is made from the asset in the `assets` vector of
+   * index `fee_asset_item`, up to enough to pay for `weight_limit` of weight. If more weight
+   * is needed than `weight_limit`, then the operation will fail and the assets send may be
+   * at risk.
+   *
+   * - `origin`: Must be capable of withdrawing the `assets` and executing XCM.
+   * - `dest`: Destination context for the assets. Will typically be `X2(Parent, Parachain(..))` to send
+   * from parachain to parachain, or `X1(Parachain(..))` to send from relay to parachain.
+   * - `beneficiary`: A beneficiary location for the assets in the context of `dest`. Will generally be
+   * an `AccountId32` value.
+   * - `assets`: The assets to be withdrawn. This should include the assets used to pay the fee on the
+   * `dest` side.
+   * - `fee_asset_item`: The index into `assets` of the item which should be used to pay
+   * fees.
+   * - `weight_limit`: The remote-side weight limit, if any, for the XCM fee purchase.
+   **/
   | {
       tag: 'LimitedReserveTransferAssets';
       value: {
@@ -1468,6 +3635,25 @@ export type PalletXcmCall =
         weightLimit: XcmV3WeightLimit;
       };
     }
+  /**
+   * Teleport some assets from the local chain to some destination chain.
+   *
+   * Fee payment on the destination side is made from the asset in the `assets` vector of
+   * index `fee_asset_item`, up to enough to pay for `weight_limit` of weight. If more weight
+   * is needed than `weight_limit`, then the operation will fail and the assets send may be
+   * at risk.
+   *
+   * - `origin`: Must be capable of withdrawing the `assets` and executing XCM.
+   * - `dest`: Destination context for the assets. Will typically be `X2(Parent, Parachain(..))` to send
+   * from parachain to parachain, or `X1(Parachain(..))` to send from relay to parachain.
+   * - `beneficiary`: A beneficiary location for the assets in the context of `dest`. Will generally be
+   * an `AccountId32` value.
+   * - `assets`: The assets to be withdrawn. The first item should be the currency used to to pay the fee on the
+   * `dest` side. May not be empty.
+   * - `fee_asset_item`: The index into `assets` of the item which should be used to pay
+   * fees.
+   * - `weight_limit`: The remote-side weight limit, if any, for the XCM fee purchase.
+   **/
   | {
       tag: 'LimitedTeleportAssets';
       value: {
@@ -1478,6 +3664,12 @@ export type PalletXcmCall =
         weightLimit: XcmV3WeightLimit;
       };
     }
+  /**
+   * Set or unset the global suspension state of the XCM executor.
+   *
+   * - `origin`: Must be an origin specified by AdminOrigin.
+   * - `suspended`: `true` to suspend, `false` to resume.
+   **/
   | { tag: 'ForceSuspension'; value: { suspended: boolean } };
 
 export type XcmVersionedXcm = { tag: 'V2'; value: XcmV2Xcm } | { tag: 'V3'; value: XcmV3Xcm };
@@ -1603,33 +3795,106 @@ export type CumulusPalletXcmCall = null;
 /**
  * Contains one variant per dispatchable that can be called by an extrinsic.
  **/
-export type CumulusPalletDmpQueueCall = {
-  tag: 'ServiceOverweight';
-  value: { index: bigint; weightLimit: SpWeightsWeightV2Weight };
-};
+export type CumulusPalletDmpQueueCall =
+  /**
+   * Service a single overweight message.
+   **/
+  { tag: 'ServiceOverweight'; value: { index: bigint; weightLimit: SpWeightsWeightV2Weight } };
 
 /**
  * Contains one variant per dispatchable that can be called by an extrinsic.
  **/
 export type PalletXcAssetConfigCall =
+  /**
+   * Register new asset location to asset Id mapping.
+   *
+   * This makes the asset eligible for XCM interaction.
+   **/
   | { tag: 'RegisterAssetLocation'; value: { assetLocation: XcmVersionedMultiLocation; assetId: bigint } }
+  /**
+   * Change the amount of units we are charging per execution second
+   * for a given AssetLocation.
+   **/
   | { tag: 'SetAssetUnitsPerSecond'; value: { assetLocation: XcmVersionedMultiLocation; unitsPerSecond: bigint } }
+  /**
+   * Change the xcm type mapping for a given asset Id.
+   * The new asset type will inherit old `units per second` value.
+   **/
   | { tag: 'ChangeExistingAssetLocation'; value: { newAssetLocation: XcmVersionedMultiLocation; assetId: bigint } }
+  /**
+   * Removes asset from the set of supported payment assets.
+   *
+   * The asset can still be interacted with via XCM but it cannot be used to pay for execution time.
+   **/
   | { tag: 'RemovePaymentAsset'; value: { assetLocation: XcmVersionedMultiLocation } }
+  /**
+   * Removes all information related to asset, removing it from XCM support.
+   **/
   | { tag: 'RemoveAsset'; value: { assetId: bigint } };
 
 /**
  * Contains one variant per dispatchable that can be called by an extrinsic.
  **/
 export type OrmlXtokensModuleCall =
+  /**
+   * Transfer native currencies.
+   *
+   * `dest_weight_limit` is the weight for XCM execution on the dest
+   * chain, and it would be charged from the transferred assets. If set
+   * below requirements, the execution may fail and assets wouldn't be
+   * received.
+   *
+   * It's a no-op if any error on local XCM execution or message sending.
+   * Note sending assets out per se doesn't guarantee they would be
+   * received. Receiving depends on if the XCM message could be delivered
+   * by the network, and if the receiving chain would handle
+   * messages correctly.
+   **/
   | {
       tag: 'Transfer';
       value: { currencyId: bigint; amount: bigint; dest: XcmVersionedMultiLocation; destWeightLimit: XcmV3WeightLimit };
     }
+  /**
+   * Transfer `MultiAsset`.
+   *
+   * `dest_weight_limit` is the weight for XCM execution on the dest
+   * chain, and it would be charged from the transferred assets. If set
+   * below requirements, the execution may fail and assets wouldn't be
+   * received.
+   *
+   * It's a no-op if any error on local XCM execution or message sending.
+   * Note sending assets out per se doesn't guarantee they would be
+   * received. Receiving depends on if the XCM message could be delivered
+   * by the network, and if the receiving chain would handle
+   * messages correctly.
+   **/
   | {
       tag: 'TransferMultiasset';
       value: { asset: XcmVersionedMultiAsset; dest: XcmVersionedMultiLocation; destWeightLimit: XcmV3WeightLimit };
     }
+  /**
+   * Transfer native currencies specifying the fee and amount as
+   * separate.
+   *
+   * `dest_weight_limit` is the weight for XCM execution on the dest
+   * chain, and it would be charged from the transferred assets. If set
+   * below requirements, the execution may fail and assets wouldn't be
+   * received.
+   *
+   * `fee` is the amount to be spent to pay for execution in destination
+   * chain. Both fee and amount will be subtracted form the callers
+   * balance.
+   *
+   * If `fee` is not high enough to cover for the execution costs in the
+   * destination chain, then the assets will be trapped in the
+   * destination chain
+   *
+   * It's a no-op if any error on local XCM execution or message sending.
+   * Note sending assets out per se doesn't guarantee they would be
+   * received. Receiving depends on if the XCM message could be delivered
+   * by the network, and if the receiving chain would handle
+   * messages correctly.
+   **/
   | {
       tag: 'TransferWithFee';
       value: {
@@ -1640,6 +3905,29 @@ export type OrmlXtokensModuleCall =
         destWeightLimit: XcmV3WeightLimit;
       };
     }
+  /**
+   * Transfer `MultiAsset` specifying the fee and amount as separate.
+   *
+   * `dest_weight_limit` is the weight for XCM execution on the dest
+   * chain, and it would be charged from the transferred assets. If set
+   * below requirements, the execution may fail and assets wouldn't be
+   * received.
+   *
+   * `fee` is the multiasset to be spent to pay for execution in
+   * destination chain. Both fee and amount will be subtracted form the
+   * callers balance For now we only accept fee and asset having the same
+   * `MultiLocation` id.
+   *
+   * If `fee` is not high enough to cover for the execution costs in the
+   * destination chain, then the assets will be trapped in the
+   * destination chain
+   *
+   * It's a no-op if any error on local XCM execution or message sending.
+   * Note sending assets out per se doesn't guarantee they would be
+   * received. Receiving depends on if the XCM message could be delivered
+   * by the network, and if the receiving chain would handle
+   * messages correctly.
+   **/
   | {
       tag: 'TransferMultiassetWithFee';
       value: {
@@ -1649,6 +3937,23 @@ export type OrmlXtokensModuleCall =
         destWeightLimit: XcmV3WeightLimit;
       };
     }
+  /**
+   * Transfer several currencies specifying the item to be used as fee
+   *
+   * `dest_weight_limit` is the weight for XCM execution on the dest
+   * chain, and it would be charged from the transferred assets. If set
+   * below requirements, the execution may fail and assets wouldn't be
+   * received.
+   *
+   * `fee_item` is index of the currencies tuple that we want to use for
+   * payment
+   *
+   * It's a no-op if any error on local XCM execution or message sending.
+   * Note sending assets out per se doesn't guarantee they would be
+   * received. Receiving depends on if the XCM message could be delivered
+   * by the network, and if the receiving chain would handle
+   * messages correctly.
+   **/
   | {
       tag: 'TransferMulticurrencies';
       value: {
@@ -1658,6 +3963,23 @@ export type OrmlXtokensModuleCall =
         destWeightLimit: XcmV3WeightLimit;
       };
     }
+  /**
+   * Transfer several `MultiAsset` specifying the item to be used as fee
+   *
+   * `dest_weight_limit` is the weight for XCM execution on the dest
+   * chain, and it would be charged from the transferred assets. If set
+   * below requirements, the execution may fail and assets wouldn't be
+   * received.
+   *
+   * `fee_item` is index of the MultiAssets that we want to use for
+   * payment
+   *
+   * It's a no-op if any error on local XCM execution or message sending.
+   * Note sending assets out per se doesn't guarantee they would be
+   * received. Receiving depends on if the XCM message could be delivered
+   * by the network, and if the receiving chain would handle
+   * messages correctly.
+   **/
   | {
       tag: 'TransferMultiassets';
       value: {
@@ -1676,7 +3998,13 @@ export type XcmVersionedMultiAsset =
  * Contains one variant per dispatchable that can be called by an extrinsic.
  **/
 export type PalletEvmCall =
+  /**
+   * Withdraw balance from EVM into currency/balances pallet.
+   **/
   | { tag: 'Withdraw'; value: { address: H160; value: bigint } }
+  /**
+   * Issue an EVM call operation. This is similar to a message call transaction in Ethereum.
+   **/
   | {
       tag: 'Call';
       value: {
@@ -1691,6 +4019,10 @@ export type PalletEvmCall =
         accessList: Array<[H160, Array<H256>]>;
       };
     }
+  /**
+   * Issue an EVM create operation. This is similar to a contract creation transaction in
+   * Ethereum.
+   **/
   | {
       tag: 'Create';
       value: {
@@ -1704,6 +4036,9 @@ export type PalletEvmCall =
         accessList: Array<[H160, Array<H256>]>;
       };
     }
+  /**
+   * Issue an EVM create2 operation.
+   **/
   | {
       tag: 'Create2';
       value: {
@@ -1722,7 +4057,11 @@ export type PalletEvmCall =
 /**
  * Contains one variant per dispatchable that can be called by an extrinsic.
  **/
-export type PalletEthereumCall = { tag: 'Transact'; value: { transaction: EthereumTransactionTransactionV2 } };
+export type PalletEthereumCall =
+  /**
+   * Transact an Ethereum transaction.
+   **/
+  { tag: 'Transact'; value: { transaction: EthereumTransactionTransactionV2 } };
 
 export type EthereumTransactionTransactionV2 =
   | { tag: 'Legacy'; value: EthereumTransactionLegacyTransaction }
@@ -1779,12 +4118,20 @@ export type EthereumTransactionEip1559Transaction = {
 /**
  * Contains one variant per dispatchable that can be called by an extrinsic.
  **/
-export type PalletDynamicEvmBaseFeeCall = { tag: 'SetBaseFeePerGas'; value: { fee: U256 } };
+export type PalletDynamicEvmBaseFeeCall =
+  /**
+   * `root-only` extrinsic to set the `base_fee_per_gas` value manually.
+   * The specified value has to respect min & max limits configured in the runtime.
+   **/
+  { tag: 'SetBaseFeePerGas'; value: { fee: U256 } };
 
 /**
  * Contains one variant per dispatchable that can be called by an extrinsic.
  **/
 export type PalletContractsCall =
+  /**
+   * Deprecated version if [`Self::call`] for use in an in-storage `Call`.
+   **/
   | {
       tag: 'CallOldWeight';
       value: {
@@ -1795,6 +4142,9 @@ export type PalletContractsCall =
         data: Bytes;
       };
     }
+  /**
+   * Deprecated version if [`Self::instantiate_with_code`] for use in an in-storage `Call`.
+   **/
   | {
       tag: 'InstantiateWithCodeOldWeight';
       value: {
@@ -1806,6 +4156,9 @@ export type PalletContractsCall =
         salt: Bytes;
       };
     }
+  /**
+   * Deprecated version if [`Self::instantiate`] for use in an in-storage `Call`.
+   **/
   | {
       tag: 'InstantiateOldWeight';
       value: {
@@ -1817,12 +4170,70 @@ export type PalletContractsCall =
         salt: Bytes;
       };
     }
+  /**
+   * Upload new `code` without instantiating a contract from it.
+   *
+   * If the code does not already exist a deposit is reserved from the caller
+   * and unreserved only when [`Self::remove_code`] is called. The size of the reserve
+   * depends on the instrumented size of the the supplied `code`.
+   *
+   * If the code already exists in storage it will still return `Ok` and upgrades
+   * the in storage version to the current
+   * [`InstructionWeights::version`](InstructionWeights).
+   *
+   * - `determinism`: If this is set to any other value but [`Determinism::Enforced`] then
+   * the only way to use this code is to delegate call into it from an offchain execution.
+   * Set to [`Determinism::Enforced`] if in doubt.
+   *
+   * # Note
+   *
+   * Anyone can instantiate a contract from any uploaded code and thus prevent its removal.
+   * To avoid this situation a constructor could employ access control so that it can
+   * only be instantiated by permissioned entities. The same is true when uploading
+   * through [`Self::instantiate_with_code`].
+   **/
   | {
       tag: 'UploadCode';
       value: { code: Bytes; storageDepositLimit?: bigint | undefined; determinism: PalletContractsWasmDeterminism };
     }
+  /**
+   * Remove the code stored under `code_hash` and refund the deposit to its owner.
+   *
+   * A code can only be removed by its original uploader (its owner) and only if it is
+   * not used by any contract.
+   **/
   | { tag: 'RemoveCode'; value: { codeHash: H256 } }
+  /**
+   * Privileged function that changes the code of an existing contract.
+   *
+   * This takes care of updating refcounts and all other necessary operations. Returns
+   * an error if either the `code_hash` or `dest` do not exist.
+   *
+   * # Note
+   *
+   * This does **not** change the address of the contract in question. This means
+   * that the contract address is no longer derived from its code hash after calling
+   * this dispatchable.
+   **/
   | { tag: 'SetCode'; value: { dest: MultiAddress; codeHash: H256 } }
+  /**
+   * Makes a call to an account, optionally transferring some balance.
+   *
+   * # Parameters
+   *
+   * * `dest`: Address of the contract to call.
+   * * `value`: The balance to transfer from the `origin` to `dest`.
+   * * `gas_limit`: The gas limit enforced when executing the constructor.
+   * * `storage_deposit_limit`: The maximum amount of balance that can be charged from the
+   * caller to pay for the storage consumed.
+   * * `data`: The input data to pass to the contract.
+   *
+   * * If the account is a smart-contract account, the associated code will be
+   * executed and any value will be transferred.
+   * * If the account is a regular account, any value will be transferred.
+   * * If no account exists and the call value is not less than `existential_deposit`,
+   * a regular account will be created and any value will be transferred.
+   **/
   | {
       tag: 'Call';
       value: {
@@ -1833,6 +4244,34 @@ export type PalletContractsCall =
         data: Bytes;
       };
     }
+  /**
+   * Instantiates a new contract from the supplied `code` optionally transferring
+   * some balance.
+   *
+   * This dispatchable has the same effect as calling [`Self::upload_code`] +
+   * [`Self::instantiate`]. Bundling them together provides efficiency gains. Please
+   * also check the documentation of [`Self::upload_code`].
+   *
+   * # Parameters
+   *
+   * * `value`: The balance to transfer from the `origin` to the newly created contract.
+   * * `gas_limit`: The gas limit enforced when executing the constructor.
+   * * `storage_deposit_limit`: The maximum amount of balance that can be charged/reserved
+   * from the caller to pay for the storage consumed.
+   * * `code`: The contract code to deploy in raw bytes.
+   * * `data`: The input data to pass to the contract constructor.
+   * * `salt`: Used for the address derivation. See [`Pallet::contract_address`].
+   *
+   * Instantiation is executed as follows:
+   *
+   * - The supplied `code` is instrumented, deployed, and a `code_hash` is created for that
+   * code.
+   * - If the `code_hash` already exists on the chain the underlying `code` will be shared.
+   * - The destination address is computed based on the sender, code_hash and the salt.
+   * - The smart-contract account is created at the computed address.
+   * - The `value` is transferred to the new account.
+   * - The `deploy` function is executed in the context of the newly-created account.
+   **/
   | {
       tag: 'InstantiateWithCode';
       value: {
@@ -1844,6 +4283,13 @@ export type PalletContractsCall =
         salt: Bytes;
       };
     }
+  /**
+   * Instantiates a contract from a previously deployed wasm binary.
+   *
+   * This function is identical to [`Self::instantiate_with_code`] but without the
+   * code deployment step. Instead, the `code_hash` of an on-chain deployed wasm binary
+   * must be supplied.
+   **/
   | {
       tag: 'Instantiate';
       value: {
@@ -1855,6 +4301,12 @@ export type PalletContractsCall =
         salt: Bytes;
       };
     }
+  /**
+   * When a migration is in progress, this dispatchable can be used to run migration steps.
+   * Calls that contribute to advancing the migration have their fees waived, as it's helpful
+   * for the chain. Note that while the migration is in progress, the pallet will also
+   * leverage the `on_idle` hooks to run migration steps.
+   **/
   | { tag: 'Migrate'; value: { weightLimit: SpWeightsWeightV2Weight } };
 
 export type PalletContractsWasmDeterminism = 'Enforced' | 'Relaxed';
@@ -1863,9 +4315,45 @@ export type PalletContractsWasmDeterminism = 'Enforced' | 'Relaxed';
  * Contains one variant per dispatchable that can be called by an extrinsic.
  **/
 export type PalletSudoCall =
+  /**
+   * Authenticates the sudo key and dispatches a function call with `Root` origin.
+   *
+   * The dispatch origin for this call must be _Signed_.
+   *
+   * ## Complexity
+   * - O(1).
+   **/
   | { tag: 'Sudo'; value: { call: AstarRuntimeRuntimeCall } }
+  /**
+   * Authenticates the sudo key and dispatches a function call with `Root` origin.
+   * This function does not check the weight of the call, and instead allows the
+   * Sudo user to specify the weight of the call.
+   *
+   * The dispatch origin for this call must be _Signed_.
+   *
+   * ## Complexity
+   * - O(1).
+   **/
   | { tag: 'SudoUncheckedWeight'; value: { call: AstarRuntimeRuntimeCall; weight: SpWeightsWeightV2Weight } }
+  /**
+   * Authenticates the current sudo key and sets the given AccountId (`new`) as the new sudo
+   * key.
+   *
+   * The dispatch origin for this call must be _Signed_.
+   *
+   * ## Complexity
+   * - O(1).
+   **/
   | { tag: 'SetKey'; value: { new: MultiAddress } }
+  /**
+   * Authenticates the sudo key and dispatches a function call with `Signed` origin from
+   * a given account.
+   *
+   * The dispatch origin for this call must be _Signed_.
+   *
+   * ## Complexity
+   * - O(1).
+   **/
   | { tag: 'SudoAs'; value: { who: MultiAddress; call: AstarRuntimeRuntimeCall } };
 
 export type AstarRuntimeOriginCaller =

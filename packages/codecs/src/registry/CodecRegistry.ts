@@ -112,4 +112,8 @@ export class CodecRegistry {
   get metadata(): MetadataLatest | undefined {
     return this.#metadata;
   }
+
+  get portableRegistry(): PortableCodecRegistry | undefined {
+    return this.#portableCodecRegistry;
+  }
 }

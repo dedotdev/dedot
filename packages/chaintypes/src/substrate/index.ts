@@ -5,6 +5,7 @@ import { ChainConsts } from './consts';
 import { ChainStorage } from './query';
 import { RpcCalls } from './rpc';
 import { ChainErrors } from './errors';
+import { ChainEvents } from './events';
 
 export * from './types';
 export * from './consts';
@@ -14,4 +15,5 @@ export interface SubstrateApi extends GenericSubstrateApi {
   consts: ChainConsts;
   query: ChainStorage;
   errors: ChainErrors;
+  events: ChainEvents;
 }
