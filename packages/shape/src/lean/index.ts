@@ -73,9 +73,18 @@ export type OutputEnumShape<V extends AnyShape, A extends EnumMembers<V>> = Expa
   }[keyof A]
 >;
 
+export interface EnumOptions {
+  tagKey?: string;
+  valueKey?: string;
+}
+
 export const Enum = <T extends AnyShape, A extends EnumMembers<T>>(
   members: A,
+  options?: EnumOptions,
 ): Shape<InputEnumShape<T, A>, OutputEnumShape<T, A>> => {
+  const tagKey = options?.tagKey || 'tag';
+  const valueKey = options?.valueKey || 'value';
+
   const enumMembers: Record<number, $.AnyVariant> = {};
 
   Object.keys(members).forEach((keyName, keyIndex) => {
@@ -83,12 +92,12 @@ export const Enum = <T extends AnyShape, A extends EnumMembers<T>>(
       const { index, value } = members[keyName] as IndexedEnumMember<T>;
       if (Number.isInteger(index)) {
         if (value) {
-          enumMembers[index] = variant(keyName, field('value', value as any));
+          enumMembers[index] = variant(keyName, field(valueKey, value as any));
         } else {
           enumMembers[index] = variant(keyName);
         }
       } else {
-        enumMembers[keyIndex] = variant(keyName, field('value', members[keyName] as any));
+        enumMembers[keyIndex] = variant(keyName, field(valueKey, members[keyName] as any));
       }
     } else {
       enumMembers[keyIndex] = variant(keyName);
@@ -96,7 +105,7 @@ export const Enum = <T extends AnyShape, A extends EnumMembers<T>>(
   });
 
   // @ts-ignore
-  return taggedUnion('tag', enumMembers);
+  return taggedUnion(tagKey, enumMembers);
 };
 
 export const FlatEnum = literalUnion;
@@ -108,5 +117,3 @@ export const Array = array;
 export const SizedVec = sizedArray;
 export const U8a = uint8Array;
 export const SizedU8a = sizedUint8Array;
-
-export const Result = result;

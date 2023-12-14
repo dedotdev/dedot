@@ -7,3 +7,4 @@ export * from './hex';
 export * from './raw';
 export * from './compact';
 export * from './str';
+export * from './result';
