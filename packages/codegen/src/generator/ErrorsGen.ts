@@ -8,7 +8,7 @@ export class ErrorsGen extends ApiGen {
     const { pallets } = this.metadata;
 
     this.typesGen.clearCache();
-    this.typesGen.typeImports.addKnownType('GenericChainErrors', 'GenericModuleError');
+    this.typesGen.typeImports.addKnownType('GenericChainErrors', 'GenericPalletError');
 
     let defTypeOut = '';
     for (let pallet of pallets) {
@@ -21,8 +21,10 @@ export class ErrorsGen extends ApiGen {
 
       defTypeOut += `${stringCamelCase(pallet.name)}: {
         ${errorDefs
-          .map(({ name, docs }) => `${commentBlock(docs)}${stringPascalCase(name)}: GenericModuleError`)
+          .map(({ name, docs }) => `${commentBlock(docs)}${stringPascalCase(name)}: GenericPalletError`)
           .join(',\n')}
+          
+        ${commentBlock('Generic pallet error')}[error: string]: GenericPalletError,
       },`;
     }
 

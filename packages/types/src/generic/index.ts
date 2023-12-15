@@ -5,18 +5,18 @@ export type AsyncMethod = (...args: any[]) => Promise<any>;
 export type Unsub = () => Promise<boolean>;
 export type Callback<T> = (result: T) => Promise<void> | void;
 
-export interface ModuleErrorMetadata {
-  module: string;
-  moduleIndex: number;
+export interface PalletErrorMetadata {
+  pallet: string;
+  palletIndex: number;
   name: string;
   fields: $.AnyShape[];
   index: number;
   docs: string[];
 }
 
-export interface GenericModuleError {
+export interface GenericPalletError {
   is: (moduleError: ModuleError) => boolean;
-  meta: ModuleErrorMetadata;
+  meta: PalletErrorMetadata;
 }
 
 export interface GenericRpcModule {
@@ -41,7 +41,7 @@ export interface GenericChainStorage {
 
 export interface GenericChainErrors {
   [pallet: string]: {
-    [errorName: string]: GenericModuleError;
+    [errorName: string]: GenericPalletError;
   };
 }
 
@@ -61,6 +61,7 @@ export interface PalletEvent<
       };
 }
 
+// TODO add metadata
 export interface GenericPalletEvent<
   Pallet extends string = string,
   EventName extends string = string,

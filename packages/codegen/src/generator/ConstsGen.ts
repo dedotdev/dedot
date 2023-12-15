@@ -21,6 +21,7 @@ export class ConstsGen extends ApiGen {
       defTypeOut += `${stringLowerFirst(pallet.name)}: {${typedConstants
         .map(({ name, type, docs }) => `${commentBlock(docs)}${name}: ${type}`)
         .join(',\n')}},`;
+      // TODO add generic const query
     }
 
     const importTypes = this.typesGen.typeImports.toImports();

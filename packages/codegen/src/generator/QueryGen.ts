@@ -29,6 +29,8 @@ export class QueryGen extends ApiGen {
       defTypeOut += `${stringLowerFirst(pallet.name)}: {${queryDefs.join(',\n')}},`;
     }
 
+    // TODO add generic storage query
+
     const importTypes = this.typesGen.typeImports.toImports();
     const template = compileTemplate('query.hbs');
 
