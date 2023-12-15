@@ -9,7 +9,7 @@ export class ConstantExecutor<ChainApi extends GenericSubstrateApi = SubstrateAp
 
     const constantDef = targetPallet.constants.find((one) => stringCamelCase(one.name) === constantName);
     if (!constantDef) {
-      throw new Error(`Constant not found: ${constantName} in pallet ${pallet}`);
+      throw new Error(`Constant ${constantName} not found in pallet ${pallet}`);
     }
 
     const $codec = this.registry.findPortableCodec(constantDef.typeId);

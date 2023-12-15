@@ -48,12 +48,22 @@ export interface ChainConsts extends GenericChainConsts {
      * an identifier of the chain.
      **/
     ss58Prefix: number;
+
+    /**
+     * Generic pallet constant
+     **/
+    [name: string]: any;
   };
   utility: {
     /**
      * The limit on the number of batched calls.
      **/
     batchedCallsLimit: number;
+
+    /**
+     * Generic pallet constant
+     **/
+    [name: string]: any;
   };
   identity: {
     /**
@@ -89,6 +99,11 @@ export interface ChainConsts extends GenericChainConsts {
      * of, e.g., updating judgements.
      **/
     maxRegistrars: number;
+
+    /**
+     * Generic pallet constant
+     **/
+    [name: string]: any;
   };
   timestamp: {
     /**
@@ -98,6 +113,11 @@ export interface ChainConsts extends GenericChainConsts {
      * double this period on default settings.
      **/
     minimumPeriod: bigint;
+
+    /**
+     * Generic pallet constant
+     **/
+    [name: string]: any;
   };
   multisig: {
     /**
@@ -121,6 +141,11 @@ export interface ChainConsts extends GenericChainConsts {
      * The maximum amount of signatories allowed in the multisig.
      **/
     maxSignatories: number;
+
+    /**
+     * Generic pallet constant
+     **/
+    [name: string]: any;
   };
   proxy: {
     /**
@@ -165,9 +190,24 @@ export interface ChainConsts extends GenericChainConsts {
      * into a pre-existing storage value.
      **/
     announcementDepositFactor: bigint;
+
+    /**
+     * Generic pallet constant
+     **/
+    [name: string]: any;
   };
-  parachainSystem: {};
-  parachainInfo: {};
+  parachainSystem: {
+    /**
+     * Generic pallet constant
+     **/
+    [name: string]: any;
+  };
+  parachainInfo: {
+    /**
+     * Generic pallet constant
+     **/
+    [name: string]: any;
+  };
   transactionPayment: {
     /**
      * A fee mulitplier for `Operational` extrinsics to compute "virtual tip" to boost their
@@ -193,6 +233,11 @@ export interface ChainConsts extends GenericChainConsts {
      * transactions.
      **/
     operationalFeeMultiplier: number;
+
+    /**
+     * Generic pallet constant
+     **/
+    [name: string]: any;
   };
   balances: {
     /**
@@ -227,6 +272,11 @@ export interface ChainConsts extends GenericChainConsts {
      * The maximum number of individual freeze locks that can exist on an account at any time.
      **/
     maxFreezes: number;
+
+    /**
+     * Generic pallet constant
+     **/
+    [name: string]: any;
   };
   vesting: {
     /**
@@ -234,6 +284,11 @@ export interface ChainConsts extends GenericChainConsts {
      **/
     minVestedTransfer: bigint;
     maxVestingSchedules: number;
+
+    /**
+     * Generic pallet constant
+     **/
+    [name: string]: any;
   };
   dappsStaking: {
     /**
@@ -298,12 +353,22 @@ export interface ChainConsts extends GenericChainConsts {
      * For example, if retention is set to `2` and current era is `10`, it means that all unclaimed rewards bellow era `8` can be burned.
      **/
     unregisteredDappRewardRetention: number;
+
+    /**
+     * Generic pallet constant
+     **/
+    [name: string]: any;
   };
   blockReward: {
     /**
      * The amount of issuance for each block.
      **/
     rewardAmount: bigint;
+
+    /**
+     * Generic pallet constant
+     **/
+    [name: string]: any;
   };
   assets: {
     /**
@@ -344,17 +409,72 @@ export interface ChainConsts extends GenericChainConsts {
      * The maximum length of a name or symbol stored on-chain.
      **/
     stringLimit: number;
+
+    /**
+     * Generic pallet constant
+     **/
+    [name: string]: any;
   };
-  authorship: {};
-  collatorSelection: {};
-  session: {};
-  aura: {};
-  auraExt: {};
-  xcmpQueue: {};
-  polkadotXcm: {};
-  cumulusXcm: {};
-  dmpQueue: {};
-  xcAssetConfig: {};
+  authorship: {
+    /**
+     * Generic pallet constant
+     **/
+    [name: string]: any;
+  };
+  collatorSelection: {
+    /**
+     * Generic pallet constant
+     **/
+    [name: string]: any;
+  };
+  session: {
+    /**
+     * Generic pallet constant
+     **/
+    [name: string]: any;
+  };
+  aura: {
+    /**
+     * Generic pallet constant
+     **/
+    [name: string]: any;
+  };
+  auraExt: {
+    /**
+     * Generic pallet constant
+     **/
+    [name: string]: any;
+  };
+  xcmpQueue: {
+    /**
+     * Generic pallet constant
+     **/
+    [name: string]: any;
+  };
+  polkadotXcm: {
+    /**
+     * Generic pallet constant
+     **/
+    [name: string]: any;
+  };
+  cumulusXcm: {
+    /**
+     * Generic pallet constant
+     **/
+    [name: string]: any;
+  };
+  dmpQueue: {
+    /**
+     * Generic pallet constant
+     **/
+    [name: string]: any;
+  };
+  xcAssetConfig: {
+    /**
+     * Generic pallet constant
+     **/
+    [name: string]: any;
+  };
   xTokens: {
     /**
      * Self chain location.
@@ -368,10 +488,30 @@ export interface ChainConsts extends GenericChainConsts {
      * T::Weigher::weight(&msg)`.
      **/
     baseXcmWeight: SpWeightsWeightV2Weight;
+
+    /**
+     * Generic pallet constant
+     **/
+    [name: string]: any;
   };
-  eVM: {};
-  ethereum: {};
-  dynamicEvmBaseFee: {};
+  eVM: {
+    /**
+     * Generic pallet constant
+     **/
+    [name: string]: any;
+  };
+  ethereum: {
+    /**
+     * Generic pallet constant
+     **/
+    [name: string]: any;
+  };
+  dynamicEvmBaseFee: {
+    /**
+     * Generic pallet constant
+     **/
+    [name: string]: any;
+  };
   contracts: {
     /**
      * Cost schedule and limits.
@@ -434,6 +574,16 @@ export interface ChainConsts extends GenericChainConsts {
      * The maximum length of the debug buffer in bytes.
      **/
     maxDebugBufferLen: number;
+
+    /**
+     * Generic pallet constant
+     **/
+    [name: string]: any;
   };
-  sudo: {};
+  sudo: {
+    /**
+     * Generic pallet constant
+     **/
+    [name: string]: any;
+  };
 }
