@@ -25,10 +25,10 @@ export const resolveFilePath = (relativePath: string | string[]) => {
   return path.resolve(process.cwd(), ...relativePath);
 };
 
-export const PRETTIER_FORMAT_OPTION = await prettier.resolveConfig(resolveFilePath('./.prettierrc.js'));
+export const beautifySourceCode = async (source: string): Promise<string> => {
+  const prettierOptions = await prettier.resolveConfig(resolveFilePath('./.prettierrc.js'));
 
-export const beautifySourceCode = (source: string): Promise<string> => {
-  return prettier.format(source, { parser: 'babel-ts', ...PRETTIER_FORMAT_OPTION });
+  return prettier.format(source, { parser: 'babel-ts', ...prettierOptions });
 };
 
 export const compileTemplate = (templateFileName: string) => {

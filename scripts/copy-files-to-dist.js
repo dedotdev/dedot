@@ -21,13 +21,29 @@ const main = () => {
 
     if (file === 'package.json') {
       const pkgJson = JSON.parse(fileContent);
-      pkgJson.main = 'index.js';
+      pkgJson.main = './cjs/index.js';
+      pkgJson.module = './index.js';
+      pkgJson.types = './types/index.d.ts';
+      pkgJson.exports = {
+        '.': {
+          import: {
+            types: './types/index.d.ts',
+            default: './index.js',
+          },
+          require: {
+            types: './types/index.d.ts',
+            default: './cjs/index.js',
+          },
+        },
+      };
 
       fileContent = JSON.stringify(pkgJson, null, 2);
     }
 
     fs.writeFileSync(path.join(currentDir, targetDir, file), fileContent);
   });
+
+  fs.writeFileSync(path.join(currentDir, targetDir, 'cjs/package.json'), `{"type": "commonjs"}`);
 };
 
 main();
