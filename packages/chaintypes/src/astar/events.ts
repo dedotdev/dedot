@@ -75,6 +75,9 @@ export interface ChainEvents extends GenericChainEvents {
      **/
     Remarked: GenericPalletEvent<'System', 'Remarked', { sender: AccountId32Like; hash: H256 }>;
 
+    /**
+     * Generic pallet event
+     **/
     [prop: string]: GenericPalletEvent;
   };
   utility: {
@@ -109,6 +112,9 @@ export interface ChainEvents extends GenericChainEvents {
      **/
     DispatchedAs: GenericPalletEvent<'Utility', 'DispatchedAs', { result: ResultPayload<[], DispatchError> }>;
 
+    /**
+     * Generic pallet event
+     **/
     [prop: string]: GenericPalletEvent;
   };
   identity: {
@@ -187,6 +193,9 @@ export interface ChainEvents extends GenericChainEvents {
       { sub: AccountId32Like; main: AccountId32Like; deposit: bigint }
     >;
 
+    /**
+     * Generic pallet event
+     **/
     [prop: string]: GenericPalletEvent;
   };
   multisig: {
@@ -242,6 +251,9 @@ export interface ChainEvents extends GenericChainEvents {
       }
     >;
 
+    /**
+     * Generic pallet event
+     **/
     [prop: string]: GenericPalletEvent;
   };
   proxy: {
@@ -287,6 +299,9 @@ export interface ChainEvents extends GenericChainEvents {
       { delegator: AccountId32Like; delegatee: AccountId32Like; proxyType: AstarRuntimeProxyType; delay: number }
     >;
 
+    /**
+     * Generic pallet event
+     **/
     [prop: string]: GenericPalletEvent;
   };
   parachainSystem: {
@@ -337,6 +352,9 @@ export interface ChainEvents extends GenericChainEvents {
       { messageHash?: FixedBytes<32> | undefined }
     >;
 
+    /**
+     * Generic pallet event
+     **/
     [prop: string]: GenericPalletEvent;
   };
   transactionPayment: {
@@ -350,6 +368,9 @@ export interface ChainEvents extends GenericChainEvents {
       { who: AccountId32Like; actualFee: bigint; tip: bigint }
     >;
 
+    /**
+     * Generic pallet event
+     **/
     [prop: string]: GenericPalletEvent;
   };
   balances: {
@@ -473,6 +494,9 @@ export interface ChainEvents extends GenericChainEvents {
      **/
     Thawed: GenericPalletEvent<'Balances', 'Thawed', { who: AccountId32Like; amount: bigint }>;
 
+    /**
+     * Generic pallet event
+     **/
     [prop: string]: GenericPalletEvent;
   };
   vesting: {
@@ -487,6 +511,9 @@ export interface ChainEvents extends GenericChainEvents {
      **/
     VestingCompleted: GenericPalletEvent<'Vesting', 'VestingCompleted', { account: AccountId32Like }>;
 
+    /**
+     * Generic pallet event
+     **/
     [prop: string]: GenericPalletEvent;
   };
   dappsStaking: {
@@ -582,6 +609,9 @@ export interface ChainEvents extends GenericChainEvents {
       [AccountId32Like, AstarRuntimeSmartContract, number, bigint]
     >;
 
+    /**
+     * Generic pallet event
+     **/
     [prop: string]: GenericPalletEvent;
   };
   blockReward: {
@@ -594,6 +624,9 @@ export interface ChainEvents extends GenericChainEvents {
       PalletBlockRewardRewardDistributionConfig
     >;
 
+    /**
+     * Generic pallet event
+     **/
     [prop: string]: GenericPalletEvent;
   };
   assets: {
@@ -768,6 +801,9 @@ export interface ChainEvents extends GenericChainEvents {
      **/
     Blocked: GenericPalletEvent<'Assets', 'Blocked', { assetId: bigint; who: AccountId32Like }>;
 
+    /**
+     * Generic pallet event
+     **/
     [prop: string]: GenericPalletEvent;
   };
   collatorSelection: {
@@ -778,6 +814,9 @@ export interface ChainEvents extends GenericChainEvents {
     CandidateRemoved: GenericPalletEvent<'CollatorSelection', 'CandidateRemoved', AccountId32Like>;
     CandidateSlashed: GenericPalletEvent<'CollatorSelection', 'CandidateSlashed', AccountId32Like>;
 
+    /**
+     * Generic pallet event
+     **/
     [prop: string]: GenericPalletEvent;
   };
   session: {
@@ -787,6 +826,9 @@ export interface ChainEvents extends GenericChainEvents {
      **/
     NewSession: GenericPalletEvent<'Session', 'NewSession', { sessionIndex: number }>;
 
+    /**
+     * Generic pallet event
+     **/
     [prop: string]: GenericPalletEvent;
   };
   xcmpQueue: {
@@ -841,6 +883,9 @@ export interface ChainEvents extends GenericChainEvents {
       { index: bigint; used: SpWeightsWeightV2Weight }
     >;
 
+    /**
+     * Generic pallet event
+     **/
     [prop: string]: GenericPalletEvent;
   };
   polkadotXcm: {
@@ -1109,6 +1154,9 @@ export interface ChainEvents extends GenericChainEvents {
       [H256, XcmV3MultilocationMultiLocation, XcmVersionedMultiAssets]
     >;
 
+    /**
+     * Generic pallet event
+     **/
     [prop: string]: GenericPalletEvent;
   };
   cumulusXcm: {
@@ -1130,6 +1178,9 @@ export interface ChainEvents extends GenericChainEvents {
      **/
     ExecutedDownward: GenericPalletEvent<'CumulusXcm', 'ExecutedDownward', [FixedBytes<32>, XcmV3TraitsOutcome]>;
 
+    /**
+     * Generic pallet event
+     **/
     [prop: string]: GenericPalletEvent;
   };
   dmpQueue: {
@@ -1184,6 +1235,9 @@ export interface ChainEvents extends GenericChainEvents {
      **/
     MaxMessagesExhausted: GenericPalletEvent<'DmpQueue', 'MaxMessagesExhausted', { messageId: FixedBytes<32> }>;
 
+    /**
+     * Generic pallet event
+     **/
     [prop: string]: GenericPalletEvent;
   };
   xcAssetConfig: {
@@ -1232,6 +1286,9 @@ export interface ChainEvents extends GenericChainEvents {
       { assetLocation: XcmVersionedMultiLocation; assetId: bigint }
     >;
 
+    /**
+     * Generic pallet event
+     **/
     [prop: string]: GenericPalletEvent;
   };
   xTokens: {
@@ -1249,6 +1306,9 @@ export interface ChainEvents extends GenericChainEvents {
       }
     >;
 
+    /**
+     * Generic pallet event
+     **/
     [prop: string]: GenericPalletEvent;
   };
   evm: {
@@ -1277,6 +1337,9 @@ export interface ChainEvents extends GenericChainEvents {
      **/
     ExecutedFailed: GenericPalletEvent<'EVM', 'ExecutedFailed', { address: H160 }>;
 
+    /**
+     * Generic pallet event
+     **/
     [prop: string]: GenericPalletEvent;
   };
   ethereum: {
@@ -1289,6 +1352,9 @@ export interface ChainEvents extends GenericChainEvents {
       { from: H160; to: H160; transactionHash: H256; exitReason: EvmCoreErrorExitReason; extraData: Bytes }
     >;
 
+    /**
+     * Generic pallet event
+     **/
     [prop: string]: GenericPalletEvent;
   };
   dynamicEvmBaseFee: {
@@ -1297,6 +1363,9 @@ export interface ChainEvents extends GenericChainEvents {
      **/
     NewBaseFeePerGas: GenericPalletEvent<'DynamicEvmBaseFee', 'NewBaseFeePerGas', { fee: U256 }>;
 
+    /**
+     * Generic pallet event
+     **/
     [prop: string]: GenericPalletEvent;
   };
   contracts: {
@@ -1438,6 +1507,9 @@ export interface ChainEvents extends GenericChainEvents {
       }
     >;
 
+    /**
+     * Generic pallet event
+     **/
     [prop: string]: GenericPalletEvent;
   };
   sudo: {
@@ -1456,6 +1528,9 @@ export interface ChainEvents extends GenericChainEvents {
      **/
     SudoAsDone: GenericPalletEvent<'Sudo', 'SudoAsDone', { sudoResult: ResultPayload<[], DispatchError> }>;
 
+    /**
+     * Generic pallet event
+     **/
     [prop: string]: GenericPalletEvent;
   };
 }

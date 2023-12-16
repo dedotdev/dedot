@@ -99,6 +99,9 @@ export interface ChainEvents extends GenericChainEvents {
      **/
     Remarked: GenericPalletEvent<'System', 'Remarked', { sender: AccountId32Like; hash: H256 }>;
 
+    /**
+     * Generic pallet event
+     **/
     [prop: string]: GenericPalletEvent;
   };
   utility: {
@@ -133,6 +136,9 @@ export interface ChainEvents extends GenericChainEvents {
      **/
     DispatchedAs: GenericPalletEvent<'Utility', 'DispatchedAs', { result: ResultPayload<[], DispatchError> }>;
 
+    /**
+     * Generic pallet event
+     **/
     [prop: string]: GenericPalletEvent;
   };
   indices: {
@@ -151,6 +157,9 @@ export interface ChainEvents extends GenericChainEvents {
      **/
     IndexFrozen: GenericPalletEvent<'Indices', 'IndexFrozen', { index: number; who: AccountId32Like }>;
 
+    /**
+     * Generic pallet event
+     **/
     [prop: string]: GenericPalletEvent;
   };
   balances: {
@@ -274,6 +283,9 @@ export interface ChainEvents extends GenericChainEvents {
      **/
     Thawed: GenericPalletEvent<'Balances', 'Thawed', { who: AccountId32Like; amount: bigint }>;
 
+    /**
+     * Generic pallet event
+     **/
     [prop: string]: GenericPalletEvent;
   };
   transactionPayment: {
@@ -287,6 +299,9 @@ export interface ChainEvents extends GenericChainEvents {
       { who: AccountId32Like; actualFee: bigint; tip: bigint }
     >;
 
+    /**
+     * Generic pallet event
+     **/
     [prop: string]: GenericPalletEvent;
   };
   assetTxPayment: {
@@ -300,6 +315,9 @@ export interface ChainEvents extends GenericChainEvents {
       { who: AccountId32Like; actualFee: bigint; tip: bigint; assetId?: number | undefined }
     >;
 
+    /**
+     * Generic pallet event
+     **/
     [prop: string]: GenericPalletEvent;
   };
   assetConversionTxPayment: {
@@ -322,6 +340,9 @@ export interface ChainEvents extends GenericChainEvents {
       { nativeAmountKept: bigint }
     >;
 
+    /**
+     * Generic pallet event
+     **/
     [prop: string]: GenericPalletEvent;
   };
   electionProviderMultiPhase: {
@@ -379,6 +400,9 @@ export interface ChainEvents extends GenericChainEvents {
       { from: PalletElectionProviderMultiPhasePhase; to: PalletElectionProviderMultiPhasePhase; round: number }
     >;
 
+    /**
+     * Generic pallet event
+     **/
     [prop: string]: GenericPalletEvent;
   };
   staking: {
@@ -486,6 +510,9 @@ export interface ChainEvents extends GenericChainEvents {
      **/
     ForceEra: GenericPalletEvent<'Staking', 'ForceEra', { mode: PalletStakingForcing }>;
 
+    /**
+     * Generic pallet event
+     **/
     [prop: string]: GenericPalletEvent;
   };
   session: {
@@ -495,6 +522,9 @@ export interface ChainEvents extends GenericChainEvents {
      **/
     NewSession: GenericPalletEvent<'Session', 'NewSession', { sessionIndex: number }>;
 
+    /**
+     * Generic pallet event
+     **/
     [prop: string]: GenericPalletEvent;
   };
   democracy: {
@@ -634,6 +664,9 @@ export interface ChainEvents extends GenericChainEvents {
       }
     >;
 
+    /**
+     * Generic pallet event
+     **/
     [prop: string]: GenericPalletEvent;
   };
   council: {
@@ -690,6 +723,9 @@ export interface ChainEvents extends GenericChainEvents {
      **/
     Closed: GenericPalletEvent<'Council', 'Closed', { proposalHash: H256; yes: number; no: number }>;
 
+    /**
+     * Generic pallet event
+     **/
     [prop: string]: GenericPalletEvent;
   };
   technicalCommittee: {
@@ -746,6 +782,9 @@ export interface ChainEvents extends GenericChainEvents {
      **/
     Closed: GenericPalletEvent<'TechnicalCommittee', 'Closed', { proposalHash: H256; yes: number; no: number }>;
 
+    /**
+     * Generic pallet event
+     **/
     [prop: string]: GenericPalletEvent;
   };
   elections: {
@@ -801,6 +840,9 @@ export interface ChainEvents extends GenericChainEvents {
       { seatHolder: AccountId32Like; amount: bigint }
     >;
 
+    /**
+     * Generic pallet event
+     **/
     [prop: string]: GenericPalletEvent;
   };
   technicalMembership: {
@@ -834,6 +876,9 @@ export interface ChainEvents extends GenericChainEvents {
      **/
     Dummy: GenericPalletEvent<'TechnicalMembership', 'Dummy', undefined>;
 
+    /**
+     * Generic pallet event
+     **/
     [prop: string]: GenericPalletEvent;
   };
   grandpa: {
@@ -856,6 +901,9 @@ export interface ChainEvents extends GenericChainEvents {
      **/
     Resumed: GenericPalletEvent<'Grandpa', 'Resumed', null>;
 
+    /**
+     * Generic pallet event
+     **/
     [prop: string]: GenericPalletEvent;
   };
   treasury: {
@@ -912,6 +960,9 @@ export interface ChainEvents extends GenericChainEvents {
      **/
     UpdatedInactive: GenericPalletEvent<'Treasury', 'UpdatedInactive', { reactivated: bigint; deactivated: bigint }>;
 
+    /**
+     * Generic pallet event
+     **/
     [prop: string]: GenericPalletEvent;
   };
   assetRate: {
@@ -923,6 +974,9 @@ export interface ChainEvents extends GenericChainEvents {
       { assetKind: number; old: FixedU128; new: FixedU128 }
     >;
 
+    /**
+     * Generic pallet event
+     **/
     [prop: string]: GenericPalletEvent;
   };
   contracts: {
@@ -1090,6 +1144,9 @@ export interface ChainEvents extends GenericChainEvents {
       { from: AccountId32Like; to: AccountId32Like; amount: bigint }
     >;
 
+    /**
+     * Generic pallet event
+     **/
     [prop: string]: GenericPalletEvent;
   };
   sudo: {
@@ -1108,6 +1165,9 @@ export interface ChainEvents extends GenericChainEvents {
      **/
     SudoAsDone: GenericPalletEvent<'Sudo', 'SudoAsDone', { sudoResult: ResultPayload<[], DispatchError> }>;
 
+    /**
+     * Generic pallet event
+     **/
     [prop: string]: GenericPalletEvent;
   };
   imOnline: {
@@ -1134,6 +1194,9 @@ export interface ChainEvents extends GenericChainEvents {
       { offline: Array<[AccountId32Like, PalletStakingExposure]> }
     >;
 
+    /**
+     * Generic pallet event
+     **/
     [prop: string]: GenericPalletEvent;
   };
   offences: {
@@ -1144,6 +1207,9 @@ export interface ChainEvents extends GenericChainEvents {
      **/
     Offence: GenericPalletEvent<'Offences', 'Offence', { kind: FixedBytes<16>; timeslot: Bytes }>;
 
+    /**
+     * Generic pallet event
+     **/
     [prop: string]: GenericPalletEvent;
   };
   identity: {
@@ -1222,6 +1288,9 @@ export interface ChainEvents extends GenericChainEvents {
       { sub: AccountId32Like; main: AccountId32Like; deposit: bigint }
     >;
 
+    /**
+     * Generic pallet event
+     **/
     [prop: string]: GenericPalletEvent;
   };
   society: {
@@ -1325,6 +1394,9 @@ export interface ChainEvents extends GenericChainEvents {
      **/
     Elevated: GenericPalletEvent<'Society', 'Elevated', { member: AccountId32Like; rank: number }>;
 
+    /**
+     * Generic pallet event
+     **/
     [prop: string]: GenericPalletEvent;
   };
   recovery: {
@@ -1374,6 +1446,9 @@ export interface ChainEvents extends GenericChainEvents {
      **/
     RecoveryRemoved: GenericPalletEvent<'Recovery', 'RecoveryRemoved', { lostAccount: AccountId32Like }>;
 
+    /**
+     * Generic pallet event
+     **/
     [prop: string]: GenericPalletEvent;
   };
   vesting: {
@@ -1388,6 +1463,9 @@ export interface ChainEvents extends GenericChainEvents {
      **/
     VestingCompleted: GenericPalletEvent<'Vesting', 'VestingCompleted', { account: AccountId32Like }>;
 
+    /**
+     * Generic pallet event
+     **/
     [prop: string]: GenericPalletEvent;
   };
   scheduler: {
@@ -1437,6 +1515,9 @@ export interface ChainEvents extends GenericChainEvents {
       { task: [number, number]; id?: FixedBytes<32> | undefined }
     >;
 
+    /**
+     * Generic pallet event
+     **/
     [prop: string]: GenericPalletEvent;
   };
   glutton: {
@@ -1482,6 +1563,9 @@ export interface ChainEvents extends GenericChainEvents {
       }
     >;
 
+    /**
+     * Generic pallet event
+     **/
     [prop: string]: GenericPalletEvent;
   };
   preimage: {
@@ -1500,6 +1584,9 @@ export interface ChainEvents extends GenericChainEvents {
      **/
     Cleared: GenericPalletEvent<'Preimage', 'Cleared', { hash: H256 }>;
 
+    /**
+     * Generic pallet event
+     **/
     [prop: string]: GenericPalletEvent;
   };
   proxy: {
@@ -1550,6 +1637,9 @@ export interface ChainEvents extends GenericChainEvents {
       { delegator: AccountId32Like; delegatee: AccountId32Like; proxyType: KitchensinkRuntimeProxyType; delay: number }
     >;
 
+    /**
+     * Generic pallet event
+     **/
     [prop: string]: GenericPalletEvent;
   };
   multisig: {
@@ -1605,6 +1695,9 @@ export interface ChainEvents extends GenericChainEvents {
       }
     >;
 
+    /**
+     * Generic pallet event
+     **/
     [prop: string]: GenericPalletEvent;
   };
   bounties: {
@@ -1647,6 +1740,9 @@ export interface ChainEvents extends GenericChainEvents {
      **/
     BountyExtended: GenericPalletEvent<'Bounties', 'BountyExtended', { index: number }>;
 
+    /**
+     * Generic pallet event
+     **/
     [prop: string]: GenericPalletEvent;
   };
   tips: {
@@ -1675,6 +1771,9 @@ export interface ChainEvents extends GenericChainEvents {
      **/
     TipSlashed: GenericPalletEvent<'Tips', 'TipSlashed', { tipHash: H256; finder: AccountId32Like; deposit: bigint }>;
 
+    /**
+     * Generic pallet event
+     **/
     [prop: string]: GenericPalletEvent;
   };
   assets: {
@@ -1849,6 +1948,9 @@ export interface ChainEvents extends GenericChainEvents {
      **/
     Blocked: GenericPalletEvent<'Assets', 'Blocked', { assetId: number; who: AccountId32Like }>;
 
+    /**
+     * Generic pallet event
+     **/
     [prop: string]: GenericPalletEvent;
   };
   poolAssets: {
@@ -2023,6 +2125,9 @@ export interface ChainEvents extends GenericChainEvents {
      **/
     Blocked: GenericPalletEvent<'PoolAssets', 'Blocked', { assetId: number; who: AccountId32Like }>;
 
+    /**
+     * Generic pallet event
+     **/
     [prop: string]: GenericPalletEvent;
   };
   lottery: {
@@ -2046,6 +2151,9 @@ export interface ChainEvents extends GenericChainEvents {
      **/
     TicketBought: GenericPalletEvent<'Lottery', 'TicketBought', { who: AccountId32Like; callIndex: [number, number] }>;
 
+    /**
+     * Generic pallet event
+     **/
     [prop: string]: GenericPalletEvent;
   };
   nis: {
@@ -2146,6 +2254,9 @@ export interface ChainEvents extends GenericChainEvents {
       { from: AccountId32Like; to: AccountId32Like; index: number }
     >;
 
+    /**
+     * Generic pallet event
+     **/
     [prop: string]: GenericPalletEvent;
   };
   uniques: {
@@ -2338,6 +2449,9 @@ export interface ChainEvents extends GenericChainEvents {
       { collection: number; item: number; price: bigint; seller: AccountId32Like; buyer: AccountId32Like }
     >;
 
+    /**
+     * Generic pallet event
+     **/
     [prop: string]: GenericPalletEvent;
   };
   nfts: {
@@ -2662,6 +2776,9 @@ export interface ChainEvents extends GenericChainEvents {
       { collection: number; item?: number | undefined; attribute: PalletNftsPalletAttributes; value: Bytes }
     >;
 
+    /**
+     * Generic pallet event
+     **/
     [prop: string]: GenericPalletEvent;
   };
   nftFractionalization: {
@@ -2683,6 +2800,9 @@ export interface ChainEvents extends GenericChainEvents {
       { nftCollection: number; nft: number; asset: number; beneficiary: AccountId32Like }
     >;
 
+    /**
+     * Generic pallet event
+     **/
     [prop: string]: GenericPalletEvent;
   };
   salary: {
@@ -2710,6 +2830,9 @@ export interface ChainEvents extends GenericChainEvents {
      **/
     CycleStarted: GenericPalletEvent<'Salary', 'CycleStarted', { index: number }>;
 
+    /**
+     * Generic pallet event
+     **/
     [prop: string]: GenericPalletEvent;
   };
   coreFellowship: {
@@ -2798,6 +2921,9 @@ export interface ChainEvents extends GenericChainEvents {
      **/
     Imported: GenericPalletEvent<'CoreFellowship', 'Imported', { who: AccountId32Like; rank: number }>;
 
+    /**
+     * Generic pallet event
+     **/
     [prop: string]: GenericPalletEvent;
   };
   transactionStorage: {
@@ -2816,6 +2942,9 @@ export interface ChainEvents extends GenericChainEvents {
      **/
     ProofChecked: GenericPalletEvent<'TransactionStorage', 'ProofChecked', null>;
 
+    /**
+     * Generic pallet event
+     **/
     [prop: string]: GenericPalletEvent;
   };
   voterList: {
@@ -2829,6 +2958,9 @@ export interface ChainEvents extends GenericChainEvents {
      **/
     ScoreUpdated: GenericPalletEvent<'VoterList', 'ScoreUpdated', { who: AccountId32Like; newScore: bigint }>;
 
+    /**
+     * Generic pallet event
+     **/
     [prop: string]: GenericPalletEvent;
   };
   stateTrieMigration: {
@@ -2857,6 +2989,9 @@ export interface ChainEvents extends GenericChainEvents {
      **/
     Halted: GenericPalletEvent<'StateTrieMigration', 'Halted', { error: PalletStateTrieMigrationError }>;
 
+    /**
+     * Generic pallet event
+     **/
     [prop: string]: GenericPalletEvent;
   };
   childBounties: {
@@ -2888,6 +3023,9 @@ export interface ChainEvents extends GenericChainEvents {
      **/
     Canceled: GenericPalletEvent<'ChildBounties', 'Canceled', { index: number; childIndex: number }>;
 
+    /**
+     * Generic pallet event
+     **/
     [prop: string]: GenericPalletEvent;
   };
   referenda: {
@@ -3202,6 +3340,9 @@ export interface ChainEvents extends GenericChainEvents {
       }
     >;
 
+    /**
+     * Generic pallet event
+     **/
     [prop: string]: GenericPalletEvent;
   };
   remark: {
@@ -3210,6 +3351,9 @@ export interface ChainEvents extends GenericChainEvents {
      **/
     Stored: GenericPalletEvent<'Remark', 'Stored', { sender: AccountId32Like; contentHash: H256 }>;
 
+    /**
+     * Generic pallet event
+     **/
     [prop: string]: GenericPalletEvent;
   };
   convictionVoting: {
@@ -3223,6 +3367,9 @@ export interface ChainEvents extends GenericChainEvents {
      **/
     Undelegated: GenericPalletEvent<'ConvictionVoting', 'Undelegated', AccountId32Like>;
 
+    /**
+     * Generic pallet event
+     **/
     [prop: string]: GenericPalletEvent;
   };
   whitelist: {
@@ -3237,6 +3384,9 @@ export interface ChainEvents extends GenericChainEvents {
       }
     >;
 
+    /**
+     * Generic pallet event
+     **/
     [prop: string]: GenericPalletEvent;
   };
   allianceMotion: {
@@ -3293,6 +3443,9 @@ export interface ChainEvents extends GenericChainEvents {
      **/
     Closed: GenericPalletEvent<'AllianceMotion', 'Closed', { proposalHash: H256; yes: number; no: number }>;
 
+    /**
+     * Generic pallet event
+     **/
     [prop: string]: GenericPalletEvent;
   };
   alliance: {
@@ -3393,6 +3546,9 @@ export interface ChainEvents extends GenericChainEvents {
      **/
     FellowAbdicated: GenericPalletEvent<'Alliance', 'FellowAbdicated', { fellow: AccountId32Like }>;
 
+    /**
+     * Generic pallet event
+     **/
     [prop: string]: GenericPalletEvent;
   };
   nominationPools: {
@@ -3537,6 +3693,9 @@ export interface ChainEvents extends GenericChainEvents {
       { poolId: number; commission: bigint }
     >;
 
+    /**
+     * Generic pallet event
+     **/
     [prop: string]: GenericPalletEvent;
   };
   rankedPolls: {
@@ -3851,6 +4010,9 @@ export interface ChainEvents extends GenericChainEvents {
       }
     >;
 
+    /**
+     * Generic pallet event
+     **/
     [prop: string]: GenericPalletEvent;
   };
   rankedCollective: {
@@ -3879,6 +4041,9 @@ export interface ChainEvents extends GenericChainEvents {
       { who: AccountId32Like; poll: number; vote: PalletRankedCollectiveVoteRecord; tally: PalletRankedCollectiveTally }
     >;
 
+    /**
+     * Generic pallet event
+     **/
     [prop: string]: GenericPalletEvent;
   };
   assetConversion: {
@@ -4071,6 +4236,9 @@ export interface ChainEvents extends GenericChainEvents {
       }
     >;
 
+    /**
+     * Generic pallet event
+     **/
     [prop: string]: GenericPalletEvent;
   };
   fastUnstake: {
@@ -4106,6 +4274,9 @@ export interface ChainEvents extends GenericChainEvents {
      **/
     InternalError: GenericPalletEvent<'FastUnstake', 'InternalError', null>;
 
+    /**
+     * Generic pallet event
+     **/
     [prop: string]: GenericPalletEvent;
   };
   messageQueue: {
@@ -4141,11 +4312,17 @@ export interface ChainEvents extends GenericChainEvents {
      **/
     PageReaped: GenericPalletEvent<'MessageQueue', 'PageReaped', { origin: number; index: number }>;
 
+    /**
+     * Generic pallet event
+     **/
     [prop: string]: GenericPalletEvent;
   };
   pov: {
     TestEvent: GenericPalletEvent<'Pov', 'TestEvent', undefined>;
 
+    /**
+     * Generic pallet event
+     **/
     [prop: string]: GenericPalletEvent;
   };
   txPause: {
@@ -4159,6 +4336,9 @@ export interface ChainEvents extends GenericChainEvents {
      **/
     CallUnpaused: GenericPalletEvent<'TxPause', 'CallUnpaused', { fullName: [Bytes, Bytes] }>;
 
+    /**
+     * Generic pallet event
+     **/
     [prop: string]: GenericPalletEvent;
   };
   safeMode: {
@@ -4206,6 +4386,9 @@ export interface ChainEvents extends GenericChainEvents {
      **/
     CannotRelease: GenericPalletEvent<'SafeMode', 'CannotRelease', null>;
 
+    /**
+     * Generic pallet event
+     **/
     [prop: string]: GenericPalletEvent;
   };
   statement: {
@@ -4218,6 +4401,9 @@ export interface ChainEvents extends GenericChainEvents {
       { account: AccountId32Like; statement: SpStatementStoreStatement }
     >;
 
+    /**
+     * Generic pallet event
+     **/
     [prop: string]: GenericPalletEvent;
   };
   broker: {
@@ -4861,6 +5047,9 @@ export interface ChainEvents extends GenericChainEvents {
       }
     >;
 
+    /**
+     * Generic pallet event
+     **/
     [prop: string]: GenericPalletEvent;
   };
 }

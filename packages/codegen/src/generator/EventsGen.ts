@@ -42,7 +42,7 @@ export class EventsGen extends ApiGen {
           )
           .join(',\n')}
           
-        [prop: string]: GenericPalletEvent,
+        ${commentBlock('Generic pallet event')}[prop: string]: GenericPalletEvent,
       },`;
     }
 
