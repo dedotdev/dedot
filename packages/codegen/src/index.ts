@@ -1,9 +1,8 @@
-import { WsProvider } from '@polkadot/rpc-provider';
 import { DelightfulApi } from 'delightfuldot';
 import * as fs from 'fs';
 import * as path from 'path';
 import * as process from 'process';
-import { ConstsGen, ErrorsGen, IndexGen, QueryGen, RpcGen, TypesGen, EventsGen } from './generator';
+import { ConstsGen, ErrorsGen, EventsGen, IndexGen, QueryGen, RpcGen, TypesGen } from './generator';
 import { RpcMethods } from '@delightfuldot/types';
 import { $Metadata, MetadataLatest } from '@delightfuldot/codecs';
 import staticSubstrate, { rpc } from '@polkadot/types-support/metadata/static-substrate';
@@ -51,7 +50,7 @@ async function run() {
 }
 
 async function generateTypesFromChain(network: NetworkInfo, endpoint: string) {
-  const api = await DelightfulApi.create({ provider: new WsProvider(endpoint, 2500) });
+  const api = await DelightfulApi.create(endpoint);
   const { methods }: RpcMethods = await api.rpc.rpc.methods();
 
   await generateTypes(network, api.metadataLatest, methods);
