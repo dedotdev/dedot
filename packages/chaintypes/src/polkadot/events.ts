@@ -3,13 +3,13 @@
 import type { GenericChainEvents, GenericPalletEvent } from '@delightfuldot/types';
 import type {
   DispatchError,
-  AccountId32Like,
+  AccountId32,
   H256,
   FixedBytes,
   ResultPayload,
   Perbill,
   Bytes,
-  EthereumAddressLike,
+  EthereumAddress,
 } from '@delightfuldot/codecs';
 import type {
   FrameSupportDispatchDispatchInfo,
@@ -81,17 +81,17 @@ export interface ChainEvents extends GenericChainEvents {
     /**
      * A new account was created.
      **/
-    NewAccount: GenericPalletEvent<'System', 'NewAccount', { account: AccountId32Like }>;
+    NewAccount: GenericPalletEvent<'System', 'NewAccount', { account: AccountId32 }>;
 
     /**
      * An account was reaped.
      **/
-    KilledAccount: GenericPalletEvent<'System', 'KilledAccount', { account: AccountId32Like }>;
+    KilledAccount: GenericPalletEvent<'System', 'KilledAccount', { account: AccountId32 }>;
 
     /**
      * On on-chain remark happened.
      **/
-    Remarked: GenericPalletEvent<'System', 'Remarked', { sender: AccountId32Like; hash: H256 }>;
+    Remarked: GenericPalletEvent<'System', 'Remarked', { sender: AccountId32; hash: H256 }>;
 
     /**
      * Generic pallet event
@@ -175,7 +175,7 @@ export interface ChainEvents extends GenericChainEvents {
     /**
      * A account index was assigned.
      **/
-    IndexAssigned: GenericPalletEvent<'Indices', 'IndexAssigned', { who: AccountId32Like; index: number }>;
+    IndexAssigned: GenericPalletEvent<'Indices', 'IndexAssigned', { who: AccountId32; index: number }>;
 
     /**
      * A account index has been freed up (unassigned).
@@ -185,7 +185,7 @@ export interface ChainEvents extends GenericChainEvents {
     /**
      * A account index has been frozen to its current account ID.
      **/
-    IndexFrozen: GenericPalletEvent<'Indices', 'IndexFrozen', { index: number; who: AccountId32Like }>;
+    IndexFrozen: GenericPalletEvent<'Indices', 'IndexFrozen', { index: number; who: AccountId32 }>;
 
     /**
      * Generic pallet event
@@ -196,37 +196,33 @@ export interface ChainEvents extends GenericChainEvents {
     /**
      * An account was created with some free balance.
      **/
-    Endowed: GenericPalletEvent<'Balances', 'Endowed', { account: AccountId32Like; freeBalance: bigint }>;
+    Endowed: GenericPalletEvent<'Balances', 'Endowed', { account: AccountId32; freeBalance: bigint }>;
 
     /**
      * An account was removed whose balance was non-zero but below ExistentialDeposit,
      * resulting in an outright loss.
      **/
-    DustLost: GenericPalletEvent<'Balances', 'DustLost', { account: AccountId32Like; amount: bigint }>;
+    DustLost: GenericPalletEvent<'Balances', 'DustLost', { account: AccountId32; amount: bigint }>;
 
     /**
      * Transfer succeeded.
      **/
-    Transfer: GenericPalletEvent<
-      'Balances',
-      'Transfer',
-      { from: AccountId32Like; to: AccountId32Like; amount: bigint }
-    >;
+    Transfer: GenericPalletEvent<'Balances', 'Transfer', { from: AccountId32; to: AccountId32; amount: bigint }>;
 
     /**
      * A balance was set by root.
      **/
-    BalanceSet: GenericPalletEvent<'Balances', 'BalanceSet', { who: AccountId32Like; free: bigint }>;
+    BalanceSet: GenericPalletEvent<'Balances', 'BalanceSet', { who: AccountId32; free: bigint }>;
 
     /**
      * Some balance was reserved (moved from free to reserved).
      **/
-    Reserved: GenericPalletEvent<'Balances', 'Reserved', { who: AccountId32Like; amount: bigint }>;
+    Reserved: GenericPalletEvent<'Balances', 'Reserved', { who: AccountId32; amount: bigint }>;
 
     /**
      * Some balance was unreserved (moved from reserved to free).
      **/
-    Unreserved: GenericPalletEvent<'Balances', 'Unreserved', { who: AccountId32Like; amount: bigint }>;
+    Unreserved: GenericPalletEvent<'Balances', 'Unreserved', { who: AccountId32; amount: bigint }>;
 
     /**
      * Some balance was moved from the reserve of the first account to the second account.
@@ -235,53 +231,48 @@ export interface ChainEvents extends GenericChainEvents {
     ReserveRepatriated: GenericPalletEvent<
       'Balances',
       'ReserveRepatriated',
-      {
-        from: AccountId32Like;
-        to: AccountId32Like;
-        amount: bigint;
-        destinationStatus: FrameSupportTokensMiscBalanceStatus;
-      }
+      { from: AccountId32; to: AccountId32; amount: bigint; destinationStatus: FrameSupportTokensMiscBalanceStatus }
     >;
 
     /**
      * Some amount was deposited (e.g. for transaction fees).
      **/
-    Deposit: GenericPalletEvent<'Balances', 'Deposit', { who: AccountId32Like; amount: bigint }>;
+    Deposit: GenericPalletEvent<'Balances', 'Deposit', { who: AccountId32; amount: bigint }>;
 
     /**
      * Some amount was withdrawn from the account (e.g. for transaction fees).
      **/
-    Withdraw: GenericPalletEvent<'Balances', 'Withdraw', { who: AccountId32Like; amount: bigint }>;
+    Withdraw: GenericPalletEvent<'Balances', 'Withdraw', { who: AccountId32; amount: bigint }>;
 
     /**
      * Some amount was removed from the account (e.g. for misbehavior).
      **/
-    Slashed: GenericPalletEvent<'Balances', 'Slashed', { who: AccountId32Like; amount: bigint }>;
+    Slashed: GenericPalletEvent<'Balances', 'Slashed', { who: AccountId32; amount: bigint }>;
 
     /**
      * Some amount was minted into an account.
      **/
-    Minted: GenericPalletEvent<'Balances', 'Minted', { who: AccountId32Like; amount: bigint }>;
+    Minted: GenericPalletEvent<'Balances', 'Minted', { who: AccountId32; amount: bigint }>;
 
     /**
      * Some amount was burned from an account.
      **/
-    Burned: GenericPalletEvent<'Balances', 'Burned', { who: AccountId32Like; amount: bigint }>;
+    Burned: GenericPalletEvent<'Balances', 'Burned', { who: AccountId32; amount: bigint }>;
 
     /**
      * Some amount was suspended from an account (it can be restored later).
      **/
-    Suspended: GenericPalletEvent<'Balances', 'Suspended', { who: AccountId32Like; amount: bigint }>;
+    Suspended: GenericPalletEvent<'Balances', 'Suspended', { who: AccountId32; amount: bigint }>;
 
     /**
      * Some amount was restored into an account.
      **/
-    Restored: GenericPalletEvent<'Balances', 'Restored', { who: AccountId32Like; amount: bigint }>;
+    Restored: GenericPalletEvent<'Balances', 'Restored', { who: AccountId32; amount: bigint }>;
 
     /**
      * An account was upgraded.
      **/
-    Upgraded: GenericPalletEvent<'Balances', 'Upgraded', { who: AccountId32Like }>;
+    Upgraded: GenericPalletEvent<'Balances', 'Upgraded', { who: AccountId32 }>;
 
     /**
      * Total issuance was increased by `amount`, creating a credit to be balanced.
@@ -296,22 +287,22 @@ export interface ChainEvents extends GenericChainEvents {
     /**
      * Some balance was locked.
      **/
-    Locked: GenericPalletEvent<'Balances', 'Locked', { who: AccountId32Like; amount: bigint }>;
+    Locked: GenericPalletEvent<'Balances', 'Locked', { who: AccountId32; amount: bigint }>;
 
     /**
      * Some balance was unlocked.
      **/
-    Unlocked: GenericPalletEvent<'Balances', 'Unlocked', { who: AccountId32Like; amount: bigint }>;
+    Unlocked: GenericPalletEvent<'Balances', 'Unlocked', { who: AccountId32; amount: bigint }>;
 
     /**
      * Some balance was frozen.
      **/
-    Frozen: GenericPalletEvent<'Balances', 'Frozen', { who: AccountId32Like; amount: bigint }>;
+    Frozen: GenericPalletEvent<'Balances', 'Frozen', { who: AccountId32; amount: bigint }>;
 
     /**
      * Some balance was thawed.
      **/
-    Thawed: GenericPalletEvent<'Balances', 'Thawed', { who: AccountId32Like; amount: bigint }>;
+    Thawed: GenericPalletEvent<'Balances', 'Thawed', { who: AccountId32; amount: bigint }>;
 
     /**
      * Generic pallet event
@@ -326,7 +317,7 @@ export interface ChainEvents extends GenericChainEvents {
     TransactionFeePaid: GenericPalletEvent<
       'TransactionPayment',
       'TransactionFeePaid',
-      { who: AccountId32Like; actualFee: bigint; tip: bigint }
+      { who: AccountId32; actualFee: bigint; tip: bigint }
     >;
 
     /**
@@ -344,12 +335,12 @@ export interface ChainEvents extends GenericChainEvents {
     /**
      * The nominator has been rewarded by this amount.
      **/
-    Rewarded: GenericPalletEvent<'Staking', 'Rewarded', { stash: AccountId32Like; amount: bigint }>;
+    Rewarded: GenericPalletEvent<'Staking', 'Rewarded', { stash: AccountId32; amount: bigint }>;
 
     /**
      * A staker (validator or nominator) has been slashed by the given amount.
      **/
-    Slashed: GenericPalletEvent<'Staking', 'Slashed', { staker: AccountId32Like; amount: bigint }>;
+    Slashed: GenericPalletEvent<'Staking', 'Slashed', { staker: AccountId32; amount: bigint }>;
 
     /**
      * A slash for the given validator, for the given percentage of their stake, at the given
@@ -358,7 +349,7 @@ export interface ChainEvents extends GenericChainEvents {
     SlashReported: GenericPalletEvent<
       'Staking',
       'SlashReported',
-      { validator: AccountId32Like; fraction: Perbill; slashEra: number }
+      { validator: AccountId32; fraction: Perbill; slashEra: number }
     >;
 
     /**
@@ -378,23 +369,23 @@ export interface ChainEvents extends GenericChainEvents {
      * NOTE: This event is only emitted when funds are bonded via a dispatchable. Notably,
      * it will not be emitted for staking rewards when they are added to stake.
      **/
-    Bonded: GenericPalletEvent<'Staking', 'Bonded', { stash: AccountId32Like; amount: bigint }>;
+    Bonded: GenericPalletEvent<'Staking', 'Bonded', { stash: AccountId32; amount: bigint }>;
 
     /**
      * An account has unbonded this amount.
      **/
-    Unbonded: GenericPalletEvent<'Staking', 'Unbonded', { stash: AccountId32Like; amount: bigint }>;
+    Unbonded: GenericPalletEvent<'Staking', 'Unbonded', { stash: AccountId32; amount: bigint }>;
 
     /**
      * An account has called `withdraw_unbonded` and removed unbonding chunks worth `Balance`
      * from the unlocking queue.
      **/
-    Withdrawn: GenericPalletEvent<'Staking', 'Withdrawn', { stash: AccountId32Like; amount: bigint }>;
+    Withdrawn: GenericPalletEvent<'Staking', 'Withdrawn', { stash: AccountId32; amount: bigint }>;
 
     /**
      * A nominator has been kicked from a validator.
      **/
-    Kicked: GenericPalletEvent<'Staking', 'Kicked', { nominator: AccountId32Like; stash: AccountId32Like }>;
+    Kicked: GenericPalletEvent<'Staking', 'Kicked', { nominator: AccountId32; stash: AccountId32 }>;
 
     /**
      * The election failed. No new era is planned.
@@ -404,16 +395,12 @@ export interface ChainEvents extends GenericChainEvents {
     /**
      * An account has stopped participating as either a validator or nominator.
      **/
-    Chilled: GenericPalletEvent<'Staking', 'Chilled', { stash: AccountId32Like }>;
+    Chilled: GenericPalletEvent<'Staking', 'Chilled', { stash: AccountId32 }>;
 
     /**
      * The stakers' rewards are getting paid.
      **/
-    PayoutStarted: GenericPalletEvent<
-      'Staking',
-      'PayoutStarted',
-      { eraIndex: number; validatorStash: AccountId32Like }
-    >;
+    PayoutStarted: GenericPalletEvent<'Staking', 'PayoutStarted', { eraIndex: number; validatorStash: AccountId32 }>;
 
     /**
      * A validator has set their preferences.
@@ -421,7 +408,7 @@ export interface ChainEvents extends GenericChainEvents {
     ValidatorPrefsSet: GenericPalletEvent<
       'Staking',
       'ValidatorPrefsSet',
-      { stash: AccountId32Like; prefs: PalletStakingValidatorPrefs }
+      { stash: AccountId32; prefs: PalletStakingValidatorPrefs }
     >;
 
     /**
@@ -515,7 +502,7 @@ export interface ChainEvents extends GenericChainEvents {
     SomeOffline: GenericPalletEvent<
       'ImOnline',
       'SomeOffline',
-      { offline: Array<[AccountId32Like, PalletStakingExposure]> }
+      { offline: Array<[AccountId32, PalletStakingExposure]> }
     >;
 
     /**
@@ -537,11 +524,7 @@ export interface ChainEvents extends GenericChainEvents {
     /**
      * Some funds have been allocated.
      **/
-    Awarded: GenericPalletEvent<
-      'Treasury',
-      'Awarded',
-      { proposalIndex: number; award: bigint; account: AccountId32Like }
-    >;
+    Awarded: GenericPalletEvent<'Treasury', 'Awarded', { proposalIndex: number; award: bigint; account: AccountId32 }>;
 
     /**
      * A proposal was rejected; funds were slashed.
@@ -569,7 +552,7 @@ export interface ChainEvents extends GenericChainEvents {
     SpendApproved: GenericPalletEvent<
       'Treasury',
       'SpendApproved',
-      { proposalIndex: number; amount: bigint; beneficiary: AccountId32Like }
+      { proposalIndex: number; amount: bigint; beneficiary: AccountId32 }
     >;
 
     /**
@@ -586,12 +569,12 @@ export interface ChainEvents extends GenericChainEvents {
     /**
      * An account has delegated their vote to another account. \[who, target\]
      **/
-    Delegated: GenericPalletEvent<'ConvictionVoting', 'Delegated', [AccountId32Like, AccountId32Like]>;
+    Delegated: GenericPalletEvent<'ConvictionVoting', 'Delegated', [AccountId32, AccountId32]>;
 
     /**
      * An \[account\] has cancelled a previous delegation operation.
      **/
-    Undelegated: GenericPalletEvent<'ConvictionVoting', 'Undelegated', AccountId32Like>;
+    Undelegated: GenericPalletEvent<'ConvictionVoting', 'Undelegated', AccountId32>;
 
     /**
      * Generic pallet event
@@ -638,7 +621,7 @@ export interface ChainEvents extends GenericChainEvents {
         /**
          * The account who placed the deposit.
          **/
-        who: AccountId32Like;
+        who: AccountId32;
 
         /**
          * The amount placed by the account.
@@ -662,7 +645,7 @@ export interface ChainEvents extends GenericChainEvents {
         /**
          * The account who placed the deposit.
          **/
-        who: AccountId32Like;
+        who: AccountId32;
 
         /**
          * The amount placed by the account.
@@ -681,7 +664,7 @@ export interface ChainEvents extends GenericChainEvents {
         /**
          * The account who placed the deposit.
          **/
-        who: AccountId32Like;
+        who: AccountId32;
 
         /**
          * The amount placed by the account.
@@ -863,7 +846,7 @@ export interface ChainEvents extends GenericChainEvents {
         /**
          * The account who placed the deposit.
          **/
-        who: AccountId32Like;
+        who: AccountId32;
 
         /**
          * The amount placed by the account.
@@ -939,7 +922,7 @@ export interface ChainEvents extends GenericChainEvents {
     Claimed: GenericPalletEvent<
       'Claims',
       'Claimed',
-      { who: AccountId32Like; ethereumAddress: EthereumAddressLike; amount: bigint }
+      { who: AccountId32; ethereumAddress: EthereumAddress; amount: bigint }
     >;
 
     /**
@@ -952,12 +935,12 @@ export interface ChainEvents extends GenericChainEvents {
      * The amount vested has been updated. This could indicate a change in funds available.
      * The balance given is the amount which is left unvested (and thus locked).
      **/
-    VestingUpdated: GenericPalletEvent<'Vesting', 'VestingUpdated', { account: AccountId32Like; unvested: bigint }>;
+    VestingUpdated: GenericPalletEvent<'Vesting', 'VestingUpdated', { account: AccountId32; unvested: bigint }>;
 
     /**
      * An \[account\] has become fully vested.
      **/
-    VestingCompleted: GenericPalletEvent<'Vesting', 'VestingCompleted', { account: AccountId32Like }>;
+    VestingCompleted: GenericPalletEvent<'Vesting', 'VestingCompleted', { account: AccountId32 }>;
 
     /**
      * Generic pallet event
@@ -1005,17 +988,17 @@ export interface ChainEvents extends GenericChainEvents {
     /**
      * A name was set or reset (which will remove all judgements).
      **/
-    IdentitySet: GenericPalletEvent<'Identity', 'IdentitySet', { who: AccountId32Like }>;
+    IdentitySet: GenericPalletEvent<'Identity', 'IdentitySet', { who: AccountId32 }>;
 
     /**
      * A name was cleared, and the given balance returned.
      **/
-    IdentityCleared: GenericPalletEvent<'Identity', 'IdentityCleared', { who: AccountId32Like; deposit: bigint }>;
+    IdentityCleared: GenericPalletEvent<'Identity', 'IdentityCleared', { who: AccountId32; deposit: bigint }>;
 
     /**
      * A name was removed and the given balance slashed.
      **/
-    IdentityKilled: GenericPalletEvent<'Identity', 'IdentityKilled', { who: AccountId32Like; deposit: bigint }>;
+    IdentityKilled: GenericPalletEvent<'Identity', 'IdentityKilled', { who: AccountId32; deposit: bigint }>;
 
     /**
      * A judgement was asked from a registrar.
@@ -1023,7 +1006,7 @@ export interface ChainEvents extends GenericChainEvents {
     JudgementRequested: GenericPalletEvent<
       'Identity',
       'JudgementRequested',
-      { who: AccountId32Like; registrarIndex: number }
+      { who: AccountId32; registrarIndex: number }
     >;
 
     /**
@@ -1032,17 +1015,13 @@ export interface ChainEvents extends GenericChainEvents {
     JudgementUnrequested: GenericPalletEvent<
       'Identity',
       'JudgementUnrequested',
-      { who: AccountId32Like; registrarIndex: number }
+      { who: AccountId32; registrarIndex: number }
     >;
 
     /**
      * A judgement was given by a registrar.
      **/
-    JudgementGiven: GenericPalletEvent<
-      'Identity',
-      'JudgementGiven',
-      { target: AccountId32Like; registrarIndex: number }
-    >;
+    JudgementGiven: GenericPalletEvent<'Identity', 'JudgementGiven', { target: AccountId32; registrarIndex: number }>;
 
     /**
      * A registrar was added.
@@ -1055,7 +1034,7 @@ export interface ChainEvents extends GenericChainEvents {
     SubIdentityAdded: GenericPalletEvent<
       'Identity',
       'SubIdentityAdded',
-      { sub: AccountId32Like; main: AccountId32Like; deposit: bigint }
+      { sub: AccountId32; main: AccountId32; deposit: bigint }
     >;
 
     /**
@@ -1064,7 +1043,7 @@ export interface ChainEvents extends GenericChainEvents {
     SubIdentityRemoved: GenericPalletEvent<
       'Identity',
       'SubIdentityRemoved',
-      { sub: AccountId32Like; main: AccountId32Like; deposit: bigint }
+      { sub: AccountId32; main: AccountId32; deposit: bigint }
     >;
 
     /**
@@ -1074,7 +1053,7 @@ export interface ChainEvents extends GenericChainEvents {
     SubIdentityRevoked: GenericPalletEvent<
       'Identity',
       'SubIdentityRevoked',
-      { sub: AccountId32Like; main: AccountId32Like; deposit: bigint }
+      { sub: AccountId32; main: AccountId32; deposit: bigint }
     >;
 
     /**
@@ -1095,17 +1074,13 @@ export interface ChainEvents extends GenericChainEvents {
     PureCreated: GenericPalletEvent<
       'Proxy',
       'PureCreated',
-      { pure: AccountId32Like; who: AccountId32Like; proxyType: PolkadotRuntimeProxyType; disambiguationIndex: number }
+      { pure: AccountId32; who: AccountId32; proxyType: PolkadotRuntimeProxyType; disambiguationIndex: number }
     >;
 
     /**
      * An announcement was placed to make a call in the future.
      **/
-    Announced: GenericPalletEvent<
-      'Proxy',
-      'Announced',
-      { real: AccountId32Like; proxy: AccountId32Like; callHash: H256 }
-    >;
+    Announced: GenericPalletEvent<'Proxy', 'Announced', { real: AccountId32; proxy: AccountId32; callHash: H256 }>;
 
     /**
      * A proxy was added.
@@ -1113,7 +1088,7 @@ export interface ChainEvents extends GenericChainEvents {
     ProxyAdded: GenericPalletEvent<
       'Proxy',
       'ProxyAdded',
-      { delegator: AccountId32Like; delegatee: AccountId32Like; proxyType: PolkadotRuntimeProxyType; delay: number }
+      { delegator: AccountId32; delegatee: AccountId32; proxyType: PolkadotRuntimeProxyType; delay: number }
     >;
 
     /**
@@ -1122,7 +1097,7 @@ export interface ChainEvents extends GenericChainEvents {
     ProxyRemoved: GenericPalletEvent<
       'Proxy',
       'ProxyRemoved',
-      { delegator: AccountId32Like; delegatee: AccountId32Like; proxyType: PolkadotRuntimeProxyType; delay: number }
+      { delegator: AccountId32; delegatee: AccountId32; proxyType: PolkadotRuntimeProxyType; delay: number }
     >;
 
     /**
@@ -1137,7 +1112,7 @@ export interface ChainEvents extends GenericChainEvents {
     NewMultisig: GenericPalletEvent<
       'Multisig',
       'NewMultisig',
-      { approving: AccountId32Like; multisig: AccountId32Like; callHash: FixedBytes<32> }
+      { approving: AccountId32; multisig: AccountId32; callHash: FixedBytes<32> }
     >;
 
     /**
@@ -1146,12 +1121,7 @@ export interface ChainEvents extends GenericChainEvents {
     MultisigApproval: GenericPalletEvent<
       'Multisig',
       'MultisigApproval',
-      {
-        approving: AccountId32Like;
-        timepoint: PalletMultisigTimepoint;
-        multisig: AccountId32Like;
-        callHash: FixedBytes<32>;
-      }
+      { approving: AccountId32; timepoint: PalletMultisigTimepoint; multisig: AccountId32; callHash: FixedBytes<32> }
     >;
 
     /**
@@ -1161,9 +1131,9 @@ export interface ChainEvents extends GenericChainEvents {
       'Multisig',
       'MultisigExecuted',
       {
-        approving: AccountId32Like;
+        approving: AccountId32;
         timepoint: PalletMultisigTimepoint;
-        multisig: AccountId32Like;
+        multisig: AccountId32;
         callHash: FixedBytes<32>;
         result: ResultPayload<[], DispatchError>;
       }
@@ -1175,12 +1145,7 @@ export interface ChainEvents extends GenericChainEvents {
     MultisigCancelled: GenericPalletEvent<
       'Multisig',
       'MultisigCancelled',
-      {
-        cancelling: AccountId32Like;
-        timepoint: PalletMultisigTimepoint;
-        multisig: AccountId32Like;
-        callHash: FixedBytes<32>;
-      }
+      { cancelling: AccountId32; timepoint: PalletMultisigTimepoint; multisig: AccountId32; callHash: FixedBytes<32> }
     >;
 
     /**
@@ -1207,7 +1172,7 @@ export interface ChainEvents extends GenericChainEvents {
     /**
      * A bounty is awarded to a beneficiary.
      **/
-    BountyAwarded: GenericPalletEvent<'Bounties', 'BountyAwarded', { index: number; beneficiary: AccountId32Like }>;
+    BountyAwarded: GenericPalletEvent<'Bounties', 'BountyAwarded', { index: number; beneficiary: AccountId32 }>;
 
     /**
      * A bounty is claimed by beneficiary.
@@ -1215,7 +1180,7 @@ export interface ChainEvents extends GenericChainEvents {
     BountyClaimed: GenericPalletEvent<
       'Bounties',
       'BountyClaimed',
-      { index: number; payout: bigint; beneficiary: AccountId32Like }
+      { index: number; payout: bigint; beneficiary: AccountId32 }
     >;
 
     /**
@@ -1245,7 +1210,7 @@ export interface ChainEvents extends GenericChainEvents {
     Awarded: GenericPalletEvent<
       'ChildBounties',
       'Awarded',
-      { index: number; childIndex: number; beneficiary: AccountId32Like }
+      { index: number; childIndex: number; beneficiary: AccountId32 }
     >;
 
     /**
@@ -1254,7 +1219,7 @@ export interface ChainEvents extends GenericChainEvents {
     Claimed: GenericPalletEvent<
       'ChildBounties',
       'Claimed',
-      { index: number; childIndex: number; payout: bigint; beneficiary: AccountId32Like }
+      { index: number; childIndex: number; payout: bigint; beneficiary: AccountId32 }
     >;
 
     /**
@@ -1282,7 +1247,7 @@ export interface ChainEvents extends GenericChainEvents {
       'SolutionStored',
       {
         compute: PalletElectionProviderMultiPhaseElectionCompute;
-        origin?: AccountId32Like | undefined;
+        origin?: AccountId32 | undefined;
         prevEjected: boolean;
       }
     >;
@@ -1306,12 +1271,12 @@ export interface ChainEvents extends GenericChainEvents {
     /**
      * An account has been rewarded for their signed submission being finalized.
      **/
-    Rewarded: GenericPalletEvent<'ElectionProviderMultiPhase', 'Rewarded', { account: AccountId32Like; value: bigint }>;
+    Rewarded: GenericPalletEvent<'ElectionProviderMultiPhase', 'Rewarded', { account: AccountId32; value: bigint }>;
 
     /**
      * An account has been slashed for submitting an invalid signed submission.
      **/
-    Slashed: GenericPalletEvent<'ElectionProviderMultiPhase', 'Slashed', { account: AccountId32Like; value: bigint }>;
+    Slashed: GenericPalletEvent<'ElectionProviderMultiPhase', 'Slashed', { account: AccountId32; value: bigint }>;
 
     /**
      * There was a phase transition in a given round.
@@ -1331,12 +1296,12 @@ export interface ChainEvents extends GenericChainEvents {
     /**
      * Moved an account from one bag to another.
      **/
-    Rebagged: GenericPalletEvent<'VoterList', 'Rebagged', { who: AccountId32Like; from: bigint; to: bigint }>;
+    Rebagged: GenericPalletEvent<'VoterList', 'Rebagged', { who: AccountId32; from: bigint; to: bigint }>;
 
     /**
      * Updated the score of some account to the given amount.
      **/
-    ScoreUpdated: GenericPalletEvent<'VoterList', 'ScoreUpdated', { who: AccountId32Like; newScore: bigint }>;
+    ScoreUpdated: GenericPalletEvent<'VoterList', 'ScoreUpdated', { who: AccountId32; newScore: bigint }>;
 
     /**
      * Generic pallet event
@@ -1347,7 +1312,7 @@ export interface ChainEvents extends GenericChainEvents {
     /**
      * A pool has been created.
      **/
-    Created: GenericPalletEvent<'NominationPools', 'Created', { depositor: AccountId32Like; poolId: number }>;
+    Created: GenericPalletEvent<'NominationPools', 'Created', { depositor: AccountId32; poolId: number }>;
 
     /**
      * A member has became bonded in a pool.
@@ -1355,17 +1320,13 @@ export interface ChainEvents extends GenericChainEvents {
     Bonded: GenericPalletEvent<
       'NominationPools',
       'Bonded',
-      { member: AccountId32Like; poolId: number; bonded: bigint; joined: boolean }
+      { member: AccountId32; poolId: number; bonded: bigint; joined: boolean }
     >;
 
     /**
      * A payout has been made to a member.
      **/
-    PaidOut: GenericPalletEvent<
-      'NominationPools',
-      'PaidOut',
-      { member: AccountId32Like; poolId: number; payout: bigint }
-    >;
+    PaidOut: GenericPalletEvent<'NominationPools', 'PaidOut', { member: AccountId32; poolId: number; payout: bigint }>;
 
     /**
      * A member has unbonded from their pool.
@@ -1383,7 +1344,7 @@ export interface ChainEvents extends GenericChainEvents {
     Unbonded: GenericPalletEvent<
       'NominationPools',
       'Unbonded',
-      { member: AccountId32Like; poolId: number; balance: bigint; points: bigint; era: number }
+      { member: AccountId32; poolId: number; balance: bigint; points: bigint; era: number }
     >;
 
     /**
@@ -1397,7 +1358,7 @@ export interface ChainEvents extends GenericChainEvents {
     Withdrawn: GenericPalletEvent<
       'NominationPools',
       'Withdrawn',
-      { member: AccountId32Like; poolId: number; balance: bigint; points: bigint }
+      { member: AccountId32; poolId: number; balance: bigint; points: bigint }
     >;
 
     /**
@@ -1419,7 +1380,7 @@ export interface ChainEvents extends GenericChainEvents {
      *
      * The removal can be voluntary (withdrawn all unbonded funds) or involuntary (kicked).
      **/
-    MemberRemoved: GenericPalletEvent<'NominationPools', 'MemberRemoved', { poolId: number; member: AccountId32Like }>;
+    MemberRemoved: GenericPalletEvent<'NominationPools', 'MemberRemoved', { poolId: number; member: AccountId32 }>;
 
     /**
      * The roles of a pool have been updated to the given new roles. Note that the depositor
@@ -1428,11 +1389,7 @@ export interface ChainEvents extends GenericChainEvents {
     RolesUpdated: GenericPalletEvent<
       'NominationPools',
       'RolesUpdated',
-      {
-        root?: AccountId32Like | undefined;
-        bouncer?: AccountId32Like | undefined;
-        nominator?: AccountId32Like | undefined;
-      }
+      { root?: AccountId32 | undefined; bouncer?: AccountId32 | undefined; nominator?: AccountId32 | undefined }
     >;
 
     /**
@@ -1455,7 +1412,7 @@ export interface ChainEvents extends GenericChainEvents {
     PoolCommissionUpdated: GenericPalletEvent<
       'NominationPools',
       'PoolCommissionUpdated',
-      { poolId: number; current?: [Perbill, AccountId32Like] | undefined }
+      { poolId: number; current?: [Perbill, AccountId32] | undefined }
     >;
 
     /**
@@ -1497,13 +1454,13 @@ export interface ChainEvents extends GenericChainEvents {
     Unstaked: GenericPalletEvent<
       'FastUnstake',
       'Unstaked',
-      { stash: AccountId32Like; result: ResultPayload<[], DispatchError> }
+      { stash: AccountId32; result: ResultPayload<[], DispatchError> }
     >;
 
     /**
      * A staker was slashed for requesting fast-unstake whilst being exposed.
      **/
-    Slashed: GenericPalletEvent<'FastUnstake', 'Slashed', { stash: AccountId32Like; amount: bigint }>;
+    Slashed: GenericPalletEvent<'FastUnstake', 'Slashed', { stash: AccountId32; amount: bigint }>;
 
     /**
      * A batch was partially checked for the given eras, but the process did not finish.
@@ -1736,13 +1693,13 @@ export interface ChainEvents extends GenericChainEvents {
     Registered: GenericPalletEvent<
       'Registrar',
       'Registered',
-      { paraId: PolkadotParachainPrimitivesPrimitivesId; manager: AccountId32Like }
+      { paraId: PolkadotParachainPrimitivesPrimitivesId; manager: AccountId32 }
     >;
     Deregistered: GenericPalletEvent<'Registrar', 'Deregistered', { paraId: PolkadotParachainPrimitivesPrimitivesId }>;
     Reserved: GenericPalletEvent<
       'Registrar',
       'Reserved',
-      { paraId: PolkadotParachainPrimitivesPrimitivesId; who: AccountId32Like }
+      { paraId: PolkadotParachainPrimitivesPrimitivesId; who: AccountId32 }
     >;
     Swapped: GenericPalletEvent<
       'Registrar',
@@ -1771,7 +1728,7 @@ export interface ChainEvents extends GenericChainEvents {
       'Leased',
       {
         paraId: PolkadotParachainPrimitivesPrimitivesId;
-        leaser: AccountId32Like;
+        leaser: AccountId32;
         periodBegin: number;
         periodCount: number;
         extraReserved: bigint;
@@ -1807,13 +1764,13 @@ export interface ChainEvents extends GenericChainEvents {
     Reserved: GenericPalletEvent<
       'Auctions',
       'Reserved',
-      { bidder: AccountId32Like; extraReserved: bigint; totalAmount: bigint }
+      { bidder: AccountId32; extraReserved: bigint; totalAmount: bigint }
     >;
 
     /**
      * Funds were unreserved since bidder is no longer active. `[bidder, amount]`
      **/
-    Unreserved: GenericPalletEvent<'Auctions', 'Unreserved', { bidder: AccountId32Like; amount: bigint }>;
+    Unreserved: GenericPalletEvent<'Auctions', 'Unreserved', { bidder: AccountId32; amount: bigint }>;
 
     /**
      * Someone attempted to lease the same slot twice for a parachain. The amount is held in
@@ -1822,7 +1779,7 @@ export interface ChainEvents extends GenericChainEvents {
     ReserveConfiscated: GenericPalletEvent<
       'Auctions',
       'ReserveConfiscated',
-      { paraId: PolkadotParachainPrimitivesPrimitivesId; leaser: AccountId32Like; amount: bigint }
+      { paraId: PolkadotParachainPrimitivesPrimitivesId; leaser: AccountId32; amount: bigint }
     >;
 
     /**
@@ -1832,7 +1789,7 @@ export interface ChainEvents extends GenericChainEvents {
       'Auctions',
       'BidAccepted',
       {
-        bidder: AccountId32Like;
+        bidder: AccountId32;
         paraId: PolkadotParachainPrimitivesPrimitivesId;
         amount: bigint;
         firstSlot: number;
@@ -1863,7 +1820,7 @@ export interface ChainEvents extends GenericChainEvents {
     Contributed: GenericPalletEvent<
       'Crowdloan',
       'Contributed',
-      { who: AccountId32Like; fundIndex: PolkadotParachainPrimitivesPrimitivesId; amount: bigint }
+      { who: AccountId32; fundIndex: PolkadotParachainPrimitivesPrimitivesId; amount: bigint }
     >;
 
     /**
@@ -1872,7 +1829,7 @@ export interface ChainEvents extends GenericChainEvents {
     Withdrew: GenericPalletEvent<
       'Crowdloan',
       'Withdrew',
-      { who: AccountId32Like; fundIndex: PolkadotParachainPrimitivesPrimitivesId; amount: bigint }
+      { who: AccountId32; fundIndex: PolkadotParachainPrimitivesPrimitivesId; amount: bigint }
     >;
 
     /**
@@ -1915,7 +1872,7 @@ export interface ChainEvents extends GenericChainEvents {
     MemoUpdated: GenericPalletEvent<
       'Crowdloan',
       'MemoUpdated',
-      { who: AccountId32Like; paraId: PolkadotParachainPrimitivesPrimitivesId; memo: Bytes }
+      { who: AccountId32; paraId: PolkadotParachainPrimitivesPrimitivesId; memo: Bytes }
     >;
 
     /**

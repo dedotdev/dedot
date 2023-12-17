@@ -67,12 +67,12 @@ export class EventsGen extends ApiGen {
       return null;
     } else if (fields[0]!.name === undefined) {
       return fields.length === 1
-        ? this.typesGen.generateType(fields[0].typeId, 1)
+        ? this.typesGen.generateType(fields[0].typeId, 1, true)
         : `[${fields
-            .map(({ typeId, docs }) => `${commentBlock(docs)}${this.typesGen.generateType(typeId, 1)}`)
+            .map(({ typeId, docs }) => `${commentBlock(docs)}${this.typesGen.generateType(typeId, 1, true)}`)
             .join(', ')}]`;
     } else {
-      return this.typesGen.generateObjectType(fields, 1);
+      return this.typesGen.generateObjectType(fields, 1, true);
     }
   }
 }
