@@ -1,18 +1,22 @@
-import { ModuleError } from '@delightfuldot/codecs';
+import { Field, ModuleError } from '@delightfuldot/codecs';
 import * as $ from '@delightfuldot/shape';
 
 export type AsyncMethod = (...args: any[]) => Promise<any>;
 export type Unsub = () => Promise<boolean>;
 export type Callback<T> = (result: T) => Promise<void> | void;
 
-export interface PalletErrorMetadata {
+export interface PalletItemMetadata {
   pallet: string;
   palletIndex: number;
   name: string;
-  fields: $.AnyShape[];
+  fields: Field[];
+  fieldCodecs: $.AnyShape[];
   index: number;
   docs: string[];
 }
+
+export interface PalletErrorMetadata extends PalletItemMetadata {}
+export interface PalletEventMetadata extends PalletItemMetadata {}
 
 export interface GenericPalletError {
   is: (moduleError: ModuleError) => boolean;
@@ -61,7 +65,6 @@ export interface PalletEvent<
       };
 }
 
-// TODO add metadata
 export interface GenericPalletEvent<
   Pallet extends string = string,
   EventName extends string = string,
@@ -69,6 +72,7 @@ export interface GenericPalletEvent<
 > {
   is: (event: PalletEvent) => event is PalletEvent<Pallet, EventName, Data>;
   as: (event: PalletEvent) => PalletEvent<Pallet, EventName, Data> | undefined;
+  meta: PalletEventMetadata;
 }
 
 export type GenericChainEvents<

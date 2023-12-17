@@ -36,7 +36,7 @@ export class ErrorExecutor<ChainApi extends GenericSubstrateApi = SubstrateApi> 
 
     return {
       ...errorDef,
-      fields: errorDef.fields.map(({ typeId }) => this.registry.findPortableCodec(typeId)),
+      fieldCodecs: errorDef.fields.map(({ typeId }) => this.registry.findPortableCodec(typeId)),
     };
   }
 }
