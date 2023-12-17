@@ -15,12 +15,14 @@ export interface PalletItemMetadata {
   docs: string[];
 }
 
-export interface PalletErrorMetadata extends PalletItemMetadata {}
-export interface PalletEventMetadata extends PalletItemMetadata {}
+export interface PalletErrorMetadataV14 extends PalletItemMetadata {}
+export interface PalletEventMetadataV14 extends PalletItemMetadata {}
+export interface PalletErrorMetadataLatest extends PalletErrorMetadataV14 {}
+export interface PalletEventMetadataLatest extends PalletEventMetadataV14 {}
 
 export interface GenericPalletError {
   is: (moduleError: ModuleError) => boolean;
-  meta: PalletErrorMetadata;
+  meta: PalletErrorMetadataLatest;
 }
 
 export interface GenericRpcModule {
@@ -72,7 +74,7 @@ export interface GenericPalletEvent<
 > {
   is: (event: PalletEvent) => event is PalletEvent<Pallet, EventName, Data>;
   as: (event: PalletEvent) => PalletEvent<Pallet, EventName, Data> | undefined;
-  meta: PalletEventMetadata;
+  meta: PalletEventMetadataLatest;
 }
 
 export type GenericChainEvents<
