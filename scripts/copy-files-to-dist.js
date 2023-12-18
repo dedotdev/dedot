@@ -23,15 +23,15 @@ const main = () => {
       const pkgJson = JSON.parse(fileContent);
       pkgJson.main = './cjs/index.js';
       pkgJson.module = './index.js';
-      pkgJson.types = './types/index.d.ts';
+      pkgJson.types = './index.d.ts';
       pkgJson.exports = {
         '.': {
           import: {
-            types: './types/index.d.ts',
+            types: './index.d.ts',
             default: './index.js',
           },
           require: {
-            types: './types/index.d.ts',
+            types: './index.d.ts',
             default: './cjs/index.js',
           },
         },
