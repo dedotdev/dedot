@@ -12,8 +12,10 @@ In the meantime, you can read the proposal [here](https://grants.web3.foundation
 
 - Install prerelease packages
 ```shell
+# via yarn
 yarn add delightfuldot @delightfuldot/chaintypes
 
+# via npm
 npm install -S delightfuldot @delightfuldot/chaintypes
 ```
 
@@ -22,7 +24,7 @@ npm install -S delightfuldot @delightfuldot/chaintypes
 // main.ts
 
 import { DelightfulApi } from 'delightfuldot';
-import { PolkadotApi } from '@delightfuldot/chaintypes/types/polkadot';
+import { PolkadotApi } from '@delightfuldot/chaintypes/polkadot';
 
 const run = async () => {
   const api = await DelightfulApi.create<PolkadotApi>('wss://rpc.polkadot.io');
