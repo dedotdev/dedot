@@ -21,6 +21,39 @@ export default class DelightfulApi<ChainApi extends GenericSubstrateApi = Substr
     this.#registry = new CodecRegistry();
   }
 
+  /**
+   * Create a new DelightfulApi instance
+   * @param options
+   */
+  static async create<ChainApi extends GenericSubstrateApi = SubstrateApi>(
+    options: ApiOptions | NetworkEndpoint,
+  ): Promise<DelightfulApi<ChainApi>> {
+    const api = new DelightfulApi<ChainApi>(options);
+
+    if (api.provider instanceof WsProvider) {
+      await api.provider.isReady;
+    }
+
+    await api.init();
+
+    return api;
+  }
+
+  /**
+   * Alias for __DelightfulApi.create__
+   * @param options
+   */
+  static async new<ChainApi extends GenericSubstrateApi = SubstrateApi>(
+    options: ApiOptions | NetworkEndpoint,
+  ): Promise<DelightfulApi<ChainApi>> {
+    return DelightfulApi.create(options);
+  }
+
+  async init() {
+    const metadata = await this.rpc.state.getMetadata();
+    this.setMetadata(metadata);
+  }
+
   #normalizeOptions(options: ApiOptions | NetworkEndpoint): ApiOptions {
     if (typeof options === 'string') {
       return { endpoint: options };
@@ -45,25 +78,6 @@ export default class DelightfulApi<ChainApi extends GenericSubstrateApi = Substr
     // TODO support light-client
 
     return new WsProvider();
-  }
-
-  async init() {
-    const metadata = await this.rpc.state.getMetadata();
-    this.setMetadata(metadata);
-  }
-
-  static async create<ChainApi extends GenericSubstrateApi = SubstrateApi>(
-    options: ApiOptions | NetworkEndpoint,
-  ): Promise<DelightfulApi<ChainApi>> {
-    const api = new DelightfulApi<ChainApi>(options);
-
-    if (api.provider instanceof WsProvider) {
-      await api.provider.isReady;
-    }
-
-    await api.init();
-
-    return api;
   }
 
   get rpc(): ChainApi['rpc'] {
