@@ -363,7 +363,7 @@ export interface ChainConsts extends GenericChainConsts {
     /**
      * The amount of issuance for each block.
      **/
-    rewardAmount: bigint;
+    maxBlockRewardAmount: bigint;
 
     /**
      * Generic pallet constant

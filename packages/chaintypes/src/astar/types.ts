@@ -52,7 +52,7 @@ export type AstarRuntimeRuntimeEvent =
   | { pallet: 'Balances'; palletEvent: PalletBalancesEvent }
   | { pallet: 'Vesting'; palletEvent: PalletVestingEvent }
   | { pallet: 'DappsStaking'; palletEvent: PalletDappsStakingPalletEvent }
-  | { pallet: 'BlockReward'; palletEvent: PalletBlockRewardEvent }
+  | { pallet: 'BlockReward'; palletEvent: PalletBlockRewardsHybridEvent }
   | { pallet: 'Assets'; palletEvent: PalletAssetsEvent }
   | { pallet: 'CollatorSelection'; palletEvent: PalletCollatorSelectionEvent }
   | { pallet: 'Session'; palletEvent: PalletSessionEvent }
@@ -498,14 +498,14 @@ export type PalletDappsStakingRewardDestination = 'FreeBalance' | 'StakeBalance'
 /**
  * The [event](https://docs.substrate.io/main-docs/build/events-errors/) emitted by this pallet.
  **/
-export type PalletBlockRewardEvent =
+export type PalletBlockRewardsHybridEvent =
   /**
    * Distribution configuration has been updated.
    **/
-  { name: 'DistributionConfigurationChanged'; data: PalletBlockRewardRewardDistributionConfig };
+  { name: 'DistributionConfigurationChanged'; data: PalletBlockRewardsHybridRewardDistributionConfig };
 
-export type PalletBlockRewardRewardDistributionConfig = {
-  baseTreasuryPercent: Perbill;
+export type PalletBlockRewardsHybridRewardDistributionConfig = {
+  treasuryPercent: Perbill;
   baseStakerPercent: Perbill;
   dappsPercent: Perbill;
   collatorsPercent: Perbill;
@@ -1793,7 +1793,7 @@ export type AstarRuntimeRuntimeCall =
   | { tag: 'Balances'; value: PalletBalancesCall }
   | { tag: 'Vesting'; value: PalletVestingCall }
   | { tag: 'DappsStaking'; value: PalletDappsStakingPalletCall }
-  | { tag: 'BlockReward'; value: PalletBlockRewardCall }
+  | { tag: 'BlockReward'; value: PalletBlockRewardsHybridCall }
   | { tag: 'Assets'; value: PalletAssetsCall }
   | { tag: 'CollatorSelection'; value: PalletCollatorSelectionCall }
   | { tag: 'Session'; value: PalletSessionCall }
@@ -2792,7 +2792,7 @@ export type PalletDappsStakingContractStakeInfo = {
 /**
  * Contains one variant per dispatchable that can be called by an extrinsic.
  **/
-export type PalletBlockRewardCall =
+export type PalletBlockRewardsHybridCall =
   /**
    * Sets the reward distribution configuration parameters which will be used from next block reward distribution.
    *
@@ -2804,7 +2804,7 @@ export type PalletBlockRewardCall =
    * Emits `DistributionConfigurationChanged` with config embeded into event itself.
    *
    **/
-  { tag: 'SetConfiguration'; value: { rewardDistroParams: PalletBlockRewardRewardDistributionConfig } };
+  { tag: 'SetConfiguration'; value: { rewardDistroParams: PalletBlockRewardsHybridRewardDistributionConfig } };
 
 /**
  * Contains one variant per dispatchable that can be called by an extrinsic.
@@ -4872,7 +4872,7 @@ export type PalletDappsStakingPalletError =
 /**
  * Custom [dispatch errors](https://docs.substrate.io/main-docs/build/events-errors/) of this pallet.
  **/
-export type PalletBlockRewardError =
+export type PalletBlockRewardsHybridError =
   /**
    * Sum of all rations must be one whole (100%)
    **/

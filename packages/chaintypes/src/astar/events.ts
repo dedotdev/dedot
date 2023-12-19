@@ -19,7 +19,7 @@ import type {
   FrameSupportTokensMiscBalanceStatus,
   AstarRuntimeSmartContract,
   PalletDappsStakingRewardDestination,
-  PalletBlockRewardRewardDistributionConfig,
+  PalletBlockRewardsHybridRewardDistributionConfig,
   XcmV3TraitsError,
   PolkadotParachainPrimitivesId,
   XcmV3TraitsOutcome,
@@ -586,7 +586,7 @@ export interface ChainEvents extends GenericChainEvents {
     DistributionConfigurationChanged: GenericPalletEvent<
       'BlockReward',
       'DistributionConfigurationChanged',
-      PalletBlockRewardRewardDistributionConfig
+      PalletBlockRewardsHybridRewardDistributionConfig
     >;
 
     /**

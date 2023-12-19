@@ -50,7 +50,7 @@ import type {
   PalletDappsStakingContractStakeInfo,
   PalletDappsStakingStakerInfo,
   PalletDappsStakingVersion,
-  PalletBlockRewardRewardDistributionConfig,
+  PalletBlockRewardsHybridRewardDistributionConfig,
   PalletAssetsAssetDetails,
   PalletAssetsAssetAccount,
   PalletAssetsApproval,
@@ -634,8 +634,10 @@ export interface ChainStorage extends GenericChainStorage {
     storageVersion(callback: Callback<PalletDappsStakingVersion>): Promise<Unsub>;
   };
   blockReward: {
-    rewardDistributionConfigStorage(): Promise<PalletBlockRewardRewardDistributionConfig>;
-    rewardDistributionConfigStorage(callback: Callback<PalletBlockRewardRewardDistributionConfig>): Promise<Unsub>;
+    rewardDistributionConfigStorage(): Promise<PalletBlockRewardsHybridRewardDistributionConfig>;
+    rewardDistributionConfigStorage(
+      callback: Callback<PalletBlockRewardsHybridRewardDistributionConfig>,
+    ): Promise<Unsub>;
   };
   assets: {
     /**

@@ -176,8 +176,8 @@ export const system: RpcModuleSpec = {
         type: 'BlockHash',
       },
     ],
-    type: 'Bytes', // TODO implement ApplyExtrinsicResult!
-    isScale: false, // TODO turn to true when implementing ApplyExtrinsicResult
+    type: 'ApplyExtrinsicResult',
+    isScale: true,
     alias: ['system_dryRunAt'],
   },
 };

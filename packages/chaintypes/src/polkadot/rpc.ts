@@ -33,6 +33,7 @@ import type {
   StorageKey,
   Metadata,
   StorageData,
+  ApplyExtrinsicResult,
 } from '@delightfuldot/codecs';
 
 export interface RpcCalls extends GenericRpcCalls {
@@ -533,7 +534,7 @@ export interface RpcCalls extends GenericRpcCalls {
      *
      * @rpcname: system_dryRun
      **/
-    dryRun(extrinsic: Bytes, at?: BlockHash): Promise<Bytes>;
+    dryRun(extrinsic: Bytes, at?: BlockHash): Promise<ApplyExtrinsicResult>;
 
     /**
      * Return health status of the node.

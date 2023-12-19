@@ -1,9 +1,11 @@
 import * as $ from '@delightfuldot/shape';
 import * as Codecs from '../index';
+import { EnumTypeDef, ModuleError } from '../index';
 import { MetadataLatest, TypeId } from '../metadata';
 import { PortableCodecRegistry } from './PortableCodecRegistry';
 import { CodecType, knownCodecTypes, normalizeCodecName } from '../codectypes';
 import { PortableType } from '../metadata/scale-info';
+import { hexToU8a } from '@polkadot/util';
 
 type KnownPath = string | RegExp;
 
@@ -115,5 +117,19 @@ export class CodecRegistry {
 
   get portableRegistry(): PortableCodecRegistry | undefined {
     return this.#portableCodecRegistry;
+  }
+
+  // TODO add types, PalletErrorMetadataLatest
+  findMetaError(moduleError: ModuleError): EnumTypeDef['members'][0] | undefined {
+    const targetPallet = this.metadata!.pallets.find((p) => p.index === moduleError.index);
+    if (!targetPallet || !targetPallet.error) return;
+
+    const def = this.metadata!.types[targetPallet.error];
+    if (!def) return;
+
+    const { tag, value } = def.type;
+    if (tag !== 'Enum') return;
+
+    return value.members.find(({ index }) => index === hexToU8a(moduleError.error)[0]);
   }
 }
