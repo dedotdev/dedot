@@ -10,7 +10,6 @@
 // import { mmr } from './mmr';
 // import { net } from './net';
 // import { offchain } from './offchain';
-// import { payment } from './payment';
 // import { web3 } from './web3';
 import { RpcCallSpec, RpcCallsSpec } from '../types';
 import { chain } from './chain';
@@ -19,6 +18,7 @@ import { rpc } from './rpc';
 import { state } from './state';
 import { system } from './system';
 import { author } from './author';
+import { payment } from './payment';
 
 export const rpcCalls: RpcCallsSpec = {
   system,
@@ -27,6 +27,7 @@ export const rpcCalls: RpcCallsSpec = {
   syncstate,
   chain,
   author,
+  payment,
   // babe,
   // beefy,
   // childstate,
@@ -38,7 +39,6 @@ export const rpcCalls: RpcCallsSpec = {
   // mmr,
   // net,
   // offchain,
-  // payment,
   // web3,
 };
 

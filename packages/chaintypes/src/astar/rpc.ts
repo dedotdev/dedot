@@ -7,6 +7,8 @@ import type {
   Callback,
   ExtrinsicOrHash,
   TransactionStatus,
+  FeeDetails,
+  RuntimeDispatchInfo,
   RpcMethods,
   ReadProof,
   RuntimeVersion,
@@ -502,14 +504,18 @@ export interface RpcCalls extends GenericRpcCalls {
   };
   payment: {
     /**
+     * Query the detailed fee of a given encoded extrinsic
+     *
      * @rpcname: payment_queryFeeDetails
      **/
-    queryFeeDetails: AsyncMethod;
+    queryFeeDetails(extrinsic: Bytes, at?: BlockHash): Promise<FeeDetails>;
 
     /**
+     * Retrieves the fee information for an encoded extrinsic
+     *
      * @rpcname: payment_queryInfo
      **/
-    queryInfo: AsyncMethod;
+    queryInfo(extrinsic: Bytes, at?: BlockHash): Promise<RuntimeDispatchInfo>;
 
     [method: string]: AsyncMethod;
   };
