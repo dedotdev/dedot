@@ -102,8 +102,8 @@ export type TraceError = {
  * Response for the `state_traceBlock` RPC.
  */
 export type TraceBlockResponse = SerdeEnum<{
-  TraceError: TraceError;
-  BlockTrace: BlockTrace;
+  traceError: TraceError;
+  blockTrace: BlockTrace;
 }>;
 registry.add('TraceBlockResponse');
 

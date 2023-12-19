@@ -18,6 +18,7 @@ import { syncstate } from './syncstate';
 import { rpc } from './rpc';
 import { state } from './state';
 import { system } from './system';
+import { author } from './author';
 
 export const rpcCalls: RpcCallsSpec = {
   system,
@@ -25,7 +26,7 @@ export const rpcCalls: RpcCallsSpec = {
   rpc,
   syncstate,
   chain,
-  // author,
+  author,
   // babe,
   // beefy,
   // childstate,

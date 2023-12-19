@@ -5,6 +5,8 @@ import type {
   AsyncMethod,
   Unsub,
   Callback,
+  ExtrinsicOrHash,
+  TransactionStatus,
   RpcMethods,
   ReadProof,
   RuntimeVersion,
@@ -19,65 +21,76 @@ import type {
   NetworkState,
 } from '@delightfuldot/types';
 import type {
+  Bytes,
+  Hash,
   Option,
   SignedBlock,
   BlockHash,
   BlockNumber,
   Header,
-  Bytes,
   PrefixedStorageKey,
   StorageKey,
   Metadata,
   StorageData,
-  Hash,
 } from '@delightfuldot/codecs';
 
 export interface RpcCalls extends GenericRpcCalls {
   author: {
     /**
+     * Checks if the keystore has private keys for the given public key and key type. Returns `true` if a private key could be found.
+     *
      * @rpcname: author_hasKey
      **/
-    hasKey: AsyncMethod;
+    hasKey(publicKey: Bytes, keyType: string): Promise<boolean>;
 
     /**
+     * Checks if the keystore has private keys for the given session public keys. `session_keys` is the SCALE encoded session keys object from the runtime. Returns `true` iff all private keys could be found.
+     *
      * @rpcname: author_hasSessionKeys
      **/
-    hasSessionKeys: AsyncMethod;
+    hasSessionKeys(sessionKeys: Bytes): Promise<boolean>;
 
     /**
+     * Insert a key into the keystore.
+     *
      * @rpcname: author_insertKey
      **/
-    insertKey: AsyncMethod;
+    insertKey(keyType: string, suri: string, publicKey: Bytes): Promise<void>;
 
     /**
+     * Returns all pending extrinsics, potentially grouped by sender.
+     *
      * @rpcname: author_pendingExtrinsics
      **/
-    pendingExtrinsics: AsyncMethod;
+    pendingExtrinsics(): Promise<Array<Bytes>>;
 
     /**
+     * Remove given extrinsic from the pool and temporarily ban it to prevent reimporting.
+     *
      * @rpcname: author_removeExtrinsic
      **/
-    removeExtrinsic: AsyncMethod;
+    removeExtrinsic(bytesOrHash: Array<ExtrinsicOrHash>): Promise<Array<Hash>>;
 
     /**
+     * Generate new session keys and returns the corresponding public keys.
+     *
      * @rpcname: author_rotateKeys
      **/
-    rotateKeys: AsyncMethod;
+    rotateKeys(): Promise<Bytes>;
 
     /**
-     * @rpcname: author_submitAndWatchExtrinsic
+     * Submit and subscribe to watch an extrinsic until unsubscribed
+     *
+     * @pubsub: author_extrinsicUpdate, author_submitAndWatchExtrinsic, author_unwatchExtrinsic
      **/
-    submitAndWatchExtrinsic: AsyncMethod;
+    submitAndWatchExtrinsic(extrinsic: Bytes, callback: Callback<TransactionStatus>): Promise<Unsub>;
 
     /**
+     * Submit hex-encoded extrinsic for inclusion in block.
+     *
      * @rpcname: author_submitExtrinsic
      **/
-    submitExtrinsic: AsyncMethod;
-
-    /**
-     * @rpcname: author_unwatchExtrinsic
-     **/
-    unwatchExtrinsic: AsyncMethod;
+    submitExtrinsic(extrinsic: Bytes): Promise<Hash>;
 
     [method: string]: AsyncMethod;
   };

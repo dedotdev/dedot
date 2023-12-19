@@ -16,7 +16,8 @@
     "prepublishOnly": "yarn copy-files-to-dist",
     "postinstall": "husky install",
     "generate-package-info-file": "lerna exec -- node \\$LERNA_ROOT_PATH/scripts/generate-package-info-file.js",
-    "copy-files-to-dist": "lerna exec -- node \\$LERNA_ROOT_PATH/scripts/copy-files-to-dist.js"
+    "copy-files-to-dist": "lerna exec -- node \\$LERNA_ROOT_PATH/scripts/copy-files-to-dist.js",
+    "gen-chaintypes": "npx ts-node ./packages/codegen/src/index.ts"
   },
   "devDependencies": {
     "@trivago/prettier-plugin-sort-imports": "^4.1.1",
