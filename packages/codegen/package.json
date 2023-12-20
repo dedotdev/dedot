@@ -16,7 +16,7 @@
     "@delightfuldot/specs": "workspace:*",
     "@delightfuldot/utils": "workspace:*",
     "@polkadot/types-support": "^10.10.1",
-    "@polkadot/util": "^12.5.1",
+    "@polkadot/util": "^12.6.2",
     "delightfuldot": "workspace:*",
     "handlebars": "^4.7.8",
     "prettier": "^3.0.3"

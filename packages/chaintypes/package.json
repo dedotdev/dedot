@@ -15,7 +15,7 @@
     "@delightfuldot/shape": "workspace:*",
     "@delightfuldot/types": "workspace:*",
     "@delightfuldot/utils": "workspace:*",
-    "@polkadot/util": "^12.5.1"
+    "@polkadot/util": "^12.6.2"
   },
   "publishConfig": {
     "access": "public",

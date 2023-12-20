@@ -32,8 +32,8 @@
     "vitest": "^0.34.6"
   },
   "resolutions": {
-    "@polkadot/util": "^12.5.1",
-    "@polkadot/util-crypto": "^12.5.1"
+    "@polkadot/util": "^12.6.2",
+    "@polkadot/util-crypto": "^12.6.2"
   },
   "license": "Apache-2.0"
 }

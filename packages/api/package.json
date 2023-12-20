@@ -11,10 +11,10 @@
     "@delightfuldot/shape": "workspace:*",
     "@delightfuldot/specs": "workspace:*",
     "@delightfuldot/utils": "workspace:*",
-    "@polkadot/rpc-provider": "^10.9.1",
-    "@polkadot/types": "^10.9.1",
-    "@polkadot/util": "^12.5.1",
-    "@polkadot/util-crypto": "^12.5.1"
+    "@polkadot/rpc-provider": "^10.11.2",
+    "@polkadot/types": "^10.11.2",
+    "@polkadot/util": "^12.6.2",
+    "@polkadot/util-crypto": "^12.6.2"
   },
   "scripts": {
     "build": "tsc --project tsconfig.build.json && tsc --project tsconfig.build.cjs.json",
