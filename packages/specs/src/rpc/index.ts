@@ -5,7 +5,6 @@
 // import { contracts } from './contracts';
 // import { engine } from './engine';
 // import { eth } from './eth';
-// import { grandpa } from './grandpa';
 // import { mmr } from './mmr';
 // import { net } from './net';
 // import { offchain } from './offchain';
@@ -19,6 +18,7 @@ import { system } from './system';
 import { author } from './author';
 import { payment } from './payment';
 import { dev } from './dev';
+import { grandpa } from './grandpa';
 
 export const rpcCalls: RpcCallsSpec = {
   system,
@@ -29,13 +29,13 @@ export const rpcCalls: RpcCallsSpec = {
   author,
   payment,
   dev,
+  grandpa,
   // babe,
   // beefy,
   // childstate,
   // contracts,
   // engine,
   // eth,
-  // grandpa,
   // mmr,
   // net,
   // offchain,

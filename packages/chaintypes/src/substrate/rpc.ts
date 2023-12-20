@@ -8,6 +8,9 @@ import type {
   ExtrinsicOrHash,
   TransactionStatus,
   BlockStats,
+  EncodedFinalityProofs,
+  ReportedRoundStates,
+  JustificationNotification,
   FeeDetails,
   RuntimeDispatchInfo,
   RpcMethods,
@@ -284,24 +287,25 @@ export interface RpcCalls extends GenericRpcCalls {
   };
   grandpa: {
     /**
+     * Prove finality for the given block number, returning the Justification for the last block in the set.
+     *
      * @rpcname: grandpa_proveFinality
      **/
-    proveFinality: AsyncMethod;
+    proveFinality(blockNumber: BlockNumber): Promise<Option<EncodedFinalityProofs>>;
 
     /**
+     * Returns the state of the current best round state as well as the ongoing background rounds
+     *
      * @rpcname: grandpa_roundState
      **/
-    roundState: AsyncMethod;
+    roundState(): Promise<ReportedRoundStates>;
 
     /**
-     * @rpcname: grandpa_subscribeJustifications
+     * Returns the block most recently finalized by Grandpa, alongside side its justification.
+     *
+     * @pubsub: grandpa_justifications, grandpa_subscribeJustifications, grandpa_unsubscribeJustifications
      **/
-    subscribeJustifications: AsyncMethod;
-
-    /**
-     * @rpcname: grandpa_unsubscribeJustifications
-     **/
-    unsubscribeJustifications: AsyncMethod;
+    subscribeJustifications(callback: Callback<JustificationNotification>): Promise<Unsub>;
 
     [method: string]: AsyncMethod;
   };
