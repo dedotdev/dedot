@@ -1,4 +1,4 @@
-import { RpcModuleSpec } from '@delightfuldot/specs';
+import { RpcModuleSpec } from '../types';
 import { atBlockHashParam } from './shared';
 
 /**

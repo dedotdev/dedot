@@ -3,7 +3,6 @@
 // import { beefy } from './beefy';
 // import { childstate } from './childstate';
 // import { contracts } from './contracts';
-// import { dev } from './dev';
 // import { engine } from './engine';
 // import { eth } from './eth';
 // import { grandpa } from './grandpa';
@@ -19,6 +18,7 @@ import { state } from './state';
 import { system } from './system';
 import { author } from './author';
 import { payment } from './payment';
+import { dev } from './dev';
 
 export const rpcCalls: RpcCallsSpec = {
   system,
@@ -28,11 +28,11 @@ export const rpcCalls: RpcCallsSpec = {
   chain,
   author,
   payment,
+  dev,
   // babe,
   // beefy,
   // childstate,
   // contracts,
-  // dev,
   // engine,
   // eth,
   // grandpa,

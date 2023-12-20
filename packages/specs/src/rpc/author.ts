@@ -1,4 +1,4 @@
-import { RpcModuleSpec } from '@delightfuldot/specs';
+import { RpcModuleSpec } from '../types';
 
 export const author: RpcModuleSpec = {
   submitExtrinsic: {

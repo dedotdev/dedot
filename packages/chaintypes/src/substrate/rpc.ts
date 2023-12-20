@@ -7,6 +7,7 @@ import type {
   Callback,
   ExtrinsicOrHash,
   TransactionStatus,
+  BlockStats,
   FeeDetails,
   RuntimeDispatchInfo,
   RpcMethods,
@@ -269,9 +270,15 @@ export interface RpcCalls extends GenericRpcCalls {
   };
   dev: {
     /**
+     * Reexecute the specified `block_hash` and gather statistics while doing so.
+     *
+     * This function requires the specified block and its parent to be available
+     * at the queried node. If either the specified block or the parent is pruned,
+     * this function will return `None`.
+     *
      * @rpcname: dev_getBlockStats
      **/
-    getBlockStats: AsyncMethod;
+    getBlockStats(at?: BlockHash): Promise<Option<BlockStats>>;
 
     [method: string]: AsyncMethod;
   };
