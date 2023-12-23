@@ -27,7 +27,7 @@ import { DelightfulApi } from 'delightfuldot';
 import { PolkadotApi } from '@delightfuldot/chaintypes/polkadot';
 
 const run = async () => {
-  const api = await DelightfulApi.create<PolkadotApi>('wss://rpc.polkadot.io');
+  const api = await DelightfulApi.new<PolkadotApi>('wss://rpc.polkadot.io');
   const balances = await api.query.system.account('14...');
 
   console.log(balances);
@@ -45,8 +45,9 @@ run().catch(console.error);
 const { DelightfulApi } = require('delightfuldot');
 
 const run = async () => {
-    const api = await DelightfulApi.create('wss://rpc.polkadot.io');
+    const api = await DelightfulApi.new('wss://rpc.polkadot.io');
     const balances = await api.query.system.account('14...');
+
     console.log(balances);
 
     await api.disconnect();
