@@ -8,3 +8,4 @@ export * from './author';
 export * from './payment';
 export * from './dev';
 export * from './grandpa';
+export * from './babe';
