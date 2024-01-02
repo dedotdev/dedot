@@ -30,7 +30,7 @@ import type {
 import type {
   Bytes,
   Hash,
-  Block,
+  EncodedVersionedFinalityProof,
   Option,
   SignedBlock,
   BlockHash,
@@ -126,7 +126,7 @@ export interface RpcCalls extends GenericRpcCalls {
      *
      * @pubsub: beefy_justifications, beefy_subscribeJustifications, beefy_unsubscribeJustifications
      **/
-    subscribeJustifications(callback: Callback<Block>): Promise<Unsub>;
+    subscribeJustifications(callback: Callback<EncodedVersionedFinalityProof>): Promise<Unsub>;
 
     [method: string]: AsyncMethod;
   };

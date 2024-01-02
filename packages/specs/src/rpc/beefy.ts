@@ -14,6 +14,7 @@ export const beefy: RpcModuleSpec = {
     docs: 'Returns the block most recently finalized by BEEFY, alongside its justification.',
     params: [],
     pubsub: ['beefy_justifications', 'beefy_subscribeJustifications', 'beefy_unsubscribeJustifications'],
-    type: 'Block',
+    type: 'EncodedVersionedFinalityProof',
+    isScale: true,
   },
 };
