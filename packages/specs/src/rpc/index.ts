@@ -5,7 +5,7 @@
 // import { contracts } from './contracts';
 // import { engine } from './engine';
 // import { eth } from './eth';
-// import { mmr } from './mmr';
+import { mmr } from './mmr';
 // import { net } from './net';
 // import { offchain } from './offchain';
 // import { web3 } from './web3';
@@ -36,7 +36,7 @@ export const rpcCalls: RpcCallsSpec = {
   // contracts,
   // engine,
   // eth,
-  // mmr,
+  mmr,
   // net,
   // offchain,
   // web3,
