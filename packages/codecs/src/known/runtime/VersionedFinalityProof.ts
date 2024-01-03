@@ -71,5 +71,4 @@ export const $VersionedFinalityProof = $.Enum({
   V1: { index: 1, value: $CompactSignedCommitment },
 });
 
-export const $EncodedVersionedFinalityProof = $VersionedFinalityProof;
-export type EncodedVersionedFinalityProof = $.Input<typeof $EncodedVersionedFinalityProof>;
+export type VersionedFinalityProof = $.Input<typeof $VersionedFinalityProof>;

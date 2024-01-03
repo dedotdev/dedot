@@ -30,7 +30,7 @@ import type {
 import type {
   Bytes,
   Hash,
-  EncodedVersionedFinalityProof,
+  VersionedFinalityProof,
   Option,
   SignedBlock,
   BlockHash,
@@ -115,7 +115,10 @@ export interface RpcCalls extends GenericRpcCalls {
   };
   beefy: {
     /**
-     * Returns hash of the latest BEEFY finalized block as seen by this client. The latest BEEFY block might not be available if the BEEFY gadget is not running in the network or if the client is still initializing or syncing with the network. In such case an error would be returned.
+     * Returns hash of the latest BEEFY finalized block as seen by this client.
+     * The latest BEEFY block might not be available if the BEEFY gadget is not running
+     * in the network or if the client is still initializing or syncing with the network.
+     * In such case an error would be returned.
      *
      * @rpcname: beefy_getFinalizedHead
      **/
@@ -126,7 +129,7 @@ export interface RpcCalls extends GenericRpcCalls {
      *
      * @pubsub: beefy_justifications, beefy_subscribeJustifications, beefy_unsubscribeJustifications
      **/
-    subscribeJustifications(callback: Callback<EncodedVersionedFinalityProof>): Promise<Unsub>;
+    subscribeJustifications(callback: Callback<VersionedFinalityProof>): Promise<Unsub>;
 
     [method: string]: AsyncMethod;
   };

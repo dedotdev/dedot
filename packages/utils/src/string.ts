@@ -38,7 +38,7 @@ const JS_PRIMITIVE_TYPES = [
   'string',
   'any',
   'Array',
-  // /^Record<(.+),(.+)>$/,
+  'Record',
 ];
 
 // FIXME rename to isNativeType

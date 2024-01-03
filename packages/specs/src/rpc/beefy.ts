@@ -2,11 +2,12 @@ import { RpcModuleSpec } from '@delightfuldot/specs';
 
 export const beefy: RpcModuleSpec = {
   getFinalizedHead: {
-    docs:
-      'Returns hash of the latest BEEFY finalized block as seen by this client.\n\n' +
-      'The latest BEEFY block might not be available if the BEEFY gadget is not running\n' +
-      'in the network or if the client is still initializing or syncing with the network.\n' +
+    docs: [
+      'Returns hash of the latest BEEFY finalized block as seen by this client.',
+      'The latest BEEFY block might not be available if the BEEFY gadget is not running',
+      'in the network or if the client is still initializing or syncing with the network.',
       'In such case an error would be returned.',
+    ],
     params: [],
     type: 'Hash',
   },
@@ -14,7 +15,7 @@ export const beefy: RpcModuleSpec = {
     docs: 'Returns the block most recently finalized by BEEFY, alongside its justification.',
     params: [],
     pubsub: ['beefy_justifications', 'beefy_subscribeJustifications', 'beefy_unsubscribeJustifications'],
-    type: 'EncodedVersionedFinalityProof',
+    type: 'VersionedFinalityProof',
     isScale: true,
   },
 };
