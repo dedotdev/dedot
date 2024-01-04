@@ -7,6 +7,7 @@ import type {
   Callback,
   ExtrinsicOrHash,
   TransactionStatus,
+  EpochAuthorship,
   BlockStats,
   EncodedFinalityProofs,
   ReportedRoundStates,
@@ -104,9 +105,11 @@ export interface RpcCalls extends GenericRpcCalls {
   };
   babe: {
     /**
+     * Returns data about which slots (primary or secondary) can be claimed in the current epoch with the keys in the keystore.
+     *
      * @rpcname: babe_epochAuthorship
      **/
-    epochAuthorship: AsyncMethod;
+    epochAuthorship(): Promise<Record<string, EpochAuthorship>>;
 
     [method: string]: AsyncMethod;
   };
