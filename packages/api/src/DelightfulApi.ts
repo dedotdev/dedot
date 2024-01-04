@@ -3,17 +3,21 @@ import { ProviderInterface } from '@polkadot/rpc-provider/types';
 import type { SubstrateApi } from '@delightfuldot/chaintypes';
 import { $Metadata, CodecRegistry, Hash, Metadata, MetadataLatest } from '@delightfuldot/codecs';
 import { ChainProperties, GenericSubstrateApi, RuntimeVersion, Unsub } from '@delightfuldot/types';
-import { ConstantExecutor, ErrorExecutor, RpcExecutor, StorageQueryExecutor, EventExecutor } from './executor';
+import { ConstantExecutor, ErrorExecutor, EventExecutor, RpcExecutor, StorageQueryExecutor } from './executor';
 import { newProxyChain } from './proxychain';
-import { ApiOptions, NetworkEndpoint } from './types';
+import { ApiOptions, NetworkEndpoint, NormalizedApiOptions } from './types';
 import { ensurePresence } from '@delightfuldot/utils';
 import localforage from 'localforage';
-import { u8aToHex } from '@polkadot/util';
+import { hexAddPrefix, u8aToHex } from '@polkadot/util';
+
+export const KEEP_ALIVE_INTERVAL = 10_000; // ms
+export const METADATA_KEY_PREFIX = 'RAW_META';
+export const CATCH_ALL_METADATA_KEY = `${METADATA_KEY_PREFIX}/ALL`;
 
 export default class DelightfulApi<ChainApi extends GenericSubstrateApi = SubstrateApi> {
   readonly #provider: ProviderInterface;
   readonly #registry: CodecRegistry;
-  readonly #options: ApiOptions;
+  readonly #options: NormalizedApiOptions;
   #metadata?: Metadata;
   #metadataLatest?: MetadataLatest;
 
@@ -107,24 +111,37 @@ export default class DelightfulApi<ChainApi extends GenericSubstrateApi = Substr
   async #setupMetadata(preloadMetadata: Metadata | undefined) {
     let metadata: Metadata | undefined = preloadMetadata;
 
-    if (this.#localCache && this.#options.cacheMetadata) {
-      const metadataKey = this.currentMetadataKey;
-      let cachedRawMetadata: string | null = null;
+    const metadataKey = this.currentMetadataKey;
+    const optMetadataBundles = this.#options.metadata;
+    let shouldUpdateCache = !!metadata;
 
-      try {
-        if (!metadata) {
-          cachedRawMetadata = await this.#localCache.getItem(metadataKey);
+    if (optMetadataBundles && !metadata) {
+      const optRawMetadata = optMetadataBundles[CATCH_ALL_METADATA_KEY] || optMetadataBundles[metadataKey];
+      if (optRawMetadata) {
+        metadata = $Metadata.tryDecode(optRawMetadata);
+      }
+    }
+
+    if (this.#localCache && this.#options.cacheMetadata) {
+      if (!metadata) {
+        try {
+          const cachedRawMetadata = await this.#localCache.getItem(metadataKey);
           if (cachedRawMetadata) {
             metadata = $Metadata.tryDecode(cachedRawMetadata);
-          } else {
+          }
+        } catch (e) {
+          console.error('Cannot decode raw metadata, try fetching fresh metadata from chain.', e);
+        } finally {
+          if (!metadata) {
             metadata = await this.rpc.state.getMetadata();
+
+            shouldUpdateCache = true;
           }
         }
-      } finally {
-        // Only cache metadata if cannot find one
-        if (!cachedRawMetadata) {
-          await this.#localCache.setItem(metadataKey, u8aToHex($Metadata.tryEncode(metadata)));
-        }
+      }
+
+      if (shouldUpdateCache) {
+        await this.#localCache.setItem(metadataKey, u8aToHex($Metadata.tryEncode(metadata)));
       }
     }
 
@@ -135,8 +152,9 @@ export default class DelightfulApi<ChainApi extends GenericSubstrateApi = Substr
     this.setMetadata(metadata);
   }
 
-  #subscribeRuntimeUpdates() {
-    if (this.#runtimeSubscriptionUnsub || !this.hasSubscriptions) {
+  #subscribeRuntimeUpgrades() {
+    // Disable runtime upgrades subscriptions if using a catch all metadata
+    if (this.#runtimeSubscriptionUnsub || !this.hasSubscriptions || this.hasCatchAllMetadata) {
       return;
     }
 
@@ -158,7 +176,7 @@ export default class DelightfulApi<ChainApi extends GenericSubstrateApi = Substr
 
     this.#healthTimer = setInterval(() => {
       this.rpc.system.health().catch(console.error);
-    }, 10_000);
+    }, KEEP_ALIVE_INTERVAL);
   }
 
   #unsubscribeHealth() {
@@ -180,7 +198,7 @@ export default class DelightfulApi<ChainApi extends GenericSubstrateApi = Substr
   }
 
   #subscribeUpdates() {
-    this.#subscribeRuntimeUpdates();
+    this.#subscribeRuntimeUpgrades();
     this.#subscribeHealth();
   }
 
@@ -190,6 +208,10 @@ export default class DelightfulApi<ChainApi extends GenericSubstrateApi = Substr
   }
 
   async #shouldLoadPreloadMetadata() {
+    if (this.#options.metadata && Object.keys(this.#options.metadata).length) {
+      return false;
+    }
+
     if (!this.#options.cacheMetadata || !this.#localCache) {
       return true;
     }
@@ -199,11 +221,18 @@ export default class DelightfulApi<ChainApi extends GenericSubstrateApi = Substr
     return !keys.some((k) => k.startsWith('RAW_META/'));
   }
 
-  #normalizeOptions(options: ApiOptions | NetworkEndpoint): ApiOptions {
+  #normalizeOptions(options: ApiOptions | NetworkEndpoint): NormalizedApiOptions {
     if (typeof options === 'string') {
       return { endpoint: options };
     } else {
-      return options;
+      let { metadata } = options;
+      if (metadata && typeof metadata === 'string') {
+        metadata = {
+          [CATCH_ALL_METADATA_KEY]: hexAddPrefix(metadata),
+        };
+      }
+
+      return { ...options, metadata } as NormalizedApiOptions;
     }
   }
 
@@ -287,5 +316,12 @@ export default class DelightfulApi<ChainApi extends GenericSubstrateApi = Substr
 
   get hasSubscriptions(): boolean {
     return this.provider.hasSubscriptions;
+  }
+
+  /**
+   * Check if the api instance is using a catch-all metadata
+   */
+  get hasCatchAllMetadata(): boolean {
+    return !!this.#options.metadata && !!this.#options.metadata[CATCH_ALL_METADATA_KEY];
   }
 }
