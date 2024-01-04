@@ -1,12 +1,14 @@
 import { HttpProvider, WsProvider } from '@polkadot/rpc-provider';
 import { ProviderInterface } from '@polkadot/rpc-provider/types';
 import type { SubstrateApi } from '@delightfuldot/chaintypes';
-import { CodecRegistry, Metadata, MetadataLatest } from '@delightfuldot/codecs';
-import { GenericSubstrateApi } from '@delightfuldot/types';
+import { $Metadata, CodecRegistry, Hash, Metadata, MetadataLatest } from '@delightfuldot/codecs';
+import { ChainProperties, GenericSubstrateApi, RuntimeVersion } from '@delightfuldot/types';
 import { ConstantExecutor, ErrorExecutor, RpcExecutor, StorageQueryExecutor, EventExecutor } from './executor';
 import { newProxyChain } from './proxychain';
 import { ApiOptions, NetworkEndpoint } from './types';
 import { ensurePresence } from '@delightfuldot/utils';
+import localforage from 'localforage';
+import { u8aToHex } from '@polkadot/util';
 
 export default class DelightfulApi<ChainApi extends GenericSubstrateApi = SubstrateApi> {
   readonly #provider: ProviderInterface;
@@ -14,6 +16,12 @@ export default class DelightfulApi<ChainApi extends GenericSubstrateApi = Substr
   readonly #options: ApiOptions;
   #metadata?: Metadata;
   #metadataLatest?: MetadataLatest;
+
+  #genesisHash?: Hash;
+  #runtimeVersion?: RuntimeVersion;
+  #chainProperties?: ChainProperties;
+  #runtimeChain?: string;
+  #localCache?: LocalForage;
 
   protected constructor(options: ApiOptions | NetworkEndpoint) {
     this.#options = this.#normalizeOptions(options);
@@ -50,8 +58,87 @@ export default class DelightfulApi<ChainApi extends GenericSubstrateApi = Substr
   }
 
   async init() {
-    const metadata = await this.rpc.state.getMetadata();
+    await this.#initializeLocalCache();
+
+    // Fetching node information
+    let [genesisHash, runtimeVersion, chainName, chainProps, metadata] = await Promise.all([
+      this.rpc.chain.getBlockHash(0),
+      this.rpc.state.getRuntimeVersion(),
+      this.rpc.system.chain(),
+      this.rpc.system.properties(),
+      (await this.#shouldLoadPreloadMetadata()) ? this.rpc.state.getMetadata() : Promise.resolve(undefined),
+    ]);
+
+    this.#genesisHash = genesisHash;
+    this.#runtimeVersion = runtimeVersion;
+    this.#chainProperties = chainProps;
+    this.#runtimeChain = chainName;
+
+    await this.#setupMetadata(metadata);
+  }
+
+  async #initializeLocalCache() {
+    // Initialize local cache
+    if (this.#options.cacheMetadata) {
+      try {
+        // TODO add a custom driver to support nodejs
+        this.#localCache = localforage.createInstance({
+          driver: [localforage.INDEXEDDB, localforage.LOCALSTORAGE],
+          name: 'DelightfulApiCache',
+          storeName: 'LocalCache',
+        });
+
+        // Verify the storage is working
+        await this.#localCache.setItem('testKey', 'testValue');
+        await this.#localCache.removeItem('testKey');
+      } catch (e: any) {
+        this.#localCache = undefined;
+        this.#options.cacheMetadata = false;
+
+        console.error('Cannot initialize local cache in this environment, disable metadata caching');
+      }
+    }
+  }
+
+  async #setupMetadata(preloadMetadata: Metadata | undefined) {
+    let metadata: Metadata | undefined = preloadMetadata;
+
+    if (this.#localCache && this.#options.cacheMetadata) {
+      const metadataKey = `RAW_META/${this.#genesisHash || '0x'}/${this.#runtimeVersion!.specVersion}`;
+      let cachedRawMetadata: string | null = null;
+
+      try {
+        if (!metadata) {
+          cachedRawMetadata = await this.#localCache.getItem(metadataKey);
+          if (cachedRawMetadata) {
+            metadata = $Metadata.tryDecode(cachedRawMetadata);
+          } else {
+            metadata = await this.rpc.state.getMetadata();
+          }
+        }
+      } finally {
+        // Only cache metadata if cannot find one
+        if (!cachedRawMetadata) {
+          await this.#localCache.setItem(metadataKey, u8aToHex($Metadata.tryEncode(metadata)));
+        }
+      }
+    }
+
+    if (!metadata) {
+      throw new Error('Cannot load metadata');
+    }
+
     this.setMetadata(metadata);
+  }
+
+  async #shouldLoadPreloadMetadata() {
+    if (!this.#options.cacheMetadata || !this.#localCache) {
+      return true;
+    }
+
+    // TODO improve this
+    const keys = await this.#localCache.keys();
+    return !keys.some((k) => k.startsWith('RAW_META/'));
   }
 
   #normalizeOptions(options: ApiOptions | NetworkEndpoint): ApiOptions {

@@ -14,7 +14,8 @@
     "@polkadot/rpc-provider": "^10.11.2",
     "@polkadot/types": "^10.11.2",
     "@polkadot/util": "^12.6.2",
-    "@polkadot/util-crypto": "^12.6.2"
+    "@polkadot/util-crypto": "^12.6.2",
+    "localforage": "^1.10.0"
   },
   "scripts": {
     "build": "tsc --project tsconfig.build.json && tsc --project tsconfig.build.cjs.json",
