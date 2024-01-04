@@ -4,7 +4,8 @@
   "author": "Thang X. Vu <thang@coongcrafts.io>",
   "packageManager": "yarn@3.4.1",
   "workspaces": [
-    "packages/*"
+    "packages/*",
+    "examples/*"
   ],
   "scripts": {
     "build": "yarn clean && npx lerna run build",
