@@ -2,7 +2,7 @@ import { HttpProvider, WsProvider } from '@polkadot/rpc-provider';
 import { ProviderInterface } from '@polkadot/rpc-provider/types';
 import type { SubstrateApi } from '@delightfuldot/chaintypes';
 import { $Metadata, CodecRegistry, Hash, Metadata, MetadataLatest } from '@delightfuldot/codecs';
-import { ChainProperties, GenericSubstrateApi, RuntimeVersion } from '@delightfuldot/types';
+import { ChainProperties, GenericSubstrateApi, RuntimeVersion, Unsub } from '@delightfuldot/types';
 import { ConstantExecutor, ErrorExecutor, RpcExecutor, StorageQueryExecutor, EventExecutor } from './executor';
 import { newProxyChain } from './proxychain';
 import { ApiOptions, NetworkEndpoint } from './types';
@@ -22,6 +22,9 @@ export default class DelightfulApi<ChainApi extends GenericSubstrateApi = Substr
   #chainProperties?: ChainProperties;
   #runtimeChain?: string;
   #localCache?: LocalForage;
+
+  #runtimeSubscriptionUnsub?: Unsub;
+  #healthTimer?: ReturnType<typeof setInterval>;
 
   protected constructor(options: ApiOptions | NetworkEndpoint) {
     this.#options = this.#normalizeOptions(options);
@@ -75,6 +78,7 @@ export default class DelightfulApi<ChainApi extends GenericSubstrateApi = Substr
     this.#runtimeChain = chainName;
 
     await this.#setupMetadata(metadata);
+    this.#subscribeUpdates();
   }
 
   async #initializeLocalCache() {
@@ -104,7 +108,7 @@ export default class DelightfulApi<ChainApi extends GenericSubstrateApi = Substr
     let metadata: Metadata | undefined = preloadMetadata;
 
     if (this.#localCache && this.#options.cacheMetadata) {
-      const metadataKey = `RAW_META/${this.#genesisHash || '0x'}/${this.#runtimeVersion!.specVersion}`;
+      const metadataKey = this.currentMetadataKey;
       let cachedRawMetadata: string | null = null;
 
       try {
@@ -129,6 +133,60 @@ export default class DelightfulApi<ChainApi extends GenericSubstrateApi = Substr
     }
 
     this.setMetadata(metadata);
+  }
+
+  #subscribeRuntimeUpdates() {
+    if (this.#runtimeSubscriptionUnsub || !this.hasSubscriptions) {
+      return;
+    }
+
+    this.rpc.state
+      .subscribeRuntimeVersion(async (runtimeVersion: RuntimeVersion) => {
+        if (runtimeVersion.specVersion !== this.#runtimeVersion?.specVersion) {
+          this.#runtimeVersion = runtimeVersion;
+          const newMetadata = await this.rpc.state.getMetadata();
+          await this.#setupMetadata(newMetadata);
+        }
+      })
+      .then((unsub) => {
+        this.#runtimeSubscriptionUnsub = unsub;
+      });
+  }
+
+  #subscribeHealth() {
+    this.#unsubscribeHealth();
+
+    this.#healthTimer = setInterval(() => {
+      this.rpc.system.health().catch(console.error);
+    }, 10_000);
+  }
+
+  #unsubscribeHealth() {
+    if (!this.#healthTimer) {
+      return;
+    }
+
+    clearInterval(this.#healthTimer);
+    this.#healthTimer = undefined;
+  }
+
+  #unsubscribeRuntimeUpdates() {
+    if (!this.#runtimeSubscriptionUnsub) {
+      return;
+    }
+
+    this.#runtimeSubscriptionUnsub().catch(console.error);
+    this.#runtimeSubscriptionUnsub = undefined;
+  }
+
+  #subscribeUpdates() {
+    this.#subscribeRuntimeUpdates();
+    this.#subscribeHealth();
+  }
+
+  #unsubscribeUpdates() {
+    this.#unsubscribeRuntimeUpdates();
+    this.#unsubscribeHealth();
   }
 
   async #shouldLoadPreloadMetadata() {
@@ -214,6 +272,20 @@ export default class DelightfulApi<ChainApi extends GenericSubstrateApi = Substr
   }
 
   async disconnect() {
+    this.#unsubscribeUpdates();
+
     await this.#provider.disconnect();
+  }
+
+  async clearCache() {
+    await this.#localCache?.clear();
+  }
+
+  get currentMetadataKey(): string {
+    return `RAW_META/${this.#genesisHash || '0x'}/${this.#runtimeVersion?.specVersion || '---'}`;
+  }
+
+  get hasSubscriptions(): boolean {
+    return this.provider.hasSubscriptions;
   }
 }
