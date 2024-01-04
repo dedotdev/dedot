@@ -1,11 +1,12 @@
 import { registry } from '@delightfuldot/types/src/registry';
+import { BlockHash } from '@delightfuldot/codecs';
 
 /*
  * Retrieved MMR leaves and their proof.
  */
 export interface LeavesProof {
   // Block hash the proof was generated for.
-  blockHash: string;
+  blockHash: BlockHash;
   // SCALE-encoded vector of `LeafData`.
   leaves: string;
   // SCALE-encoded proof data. See [sp_mmr_primitives::Proof].
