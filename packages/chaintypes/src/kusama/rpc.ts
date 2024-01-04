@@ -7,6 +7,7 @@ import type {
   Callback,
   ExtrinsicOrHash,
   TransactionStatus,
+  EpochAuthorship,
   EncodedFinalityProofs,
   ReportedRoundStates,
   JustificationNotification,
@@ -30,6 +31,7 @@ import type {
 import type {
   Bytes,
   Hash,
+  VersionedFinalityProof,
   Option,
   SignedBlock,
   BlockHash,
@@ -104,27 +106,31 @@ export interface RpcCalls extends GenericRpcCalls {
   };
   babe: {
     /**
+     * Returns data about which slots (primary or secondary) can be claimed in the current epoch with the keys in the keystore.
+     *
      * @rpcname: babe_epochAuthorship
      **/
-    epochAuthorship: AsyncMethod;
+    epochAuthorship(): Promise<Record<string, EpochAuthorship>>;
 
     [method: string]: AsyncMethod;
   };
   beefy: {
     /**
+     * Returns hash of the latest BEEFY finalized block as seen by this client.
+     * The latest BEEFY block might not be available if the BEEFY gadget is not running
+     * in the network or if the client is still initializing or syncing with the network.
+     * In such case an error would be returned.
+     *
      * @rpcname: beefy_getFinalizedHead
      **/
-    getFinalizedHead: AsyncMethod;
+    getFinalizedHead(): Promise<Hash>;
 
     /**
-     * @rpcname: beefy_subscribeJustifications
+     * Returns the block most recently finalized by BEEFY, alongside its justification.
+     *
+     * @pubsub: beefy_justifications, beefy_subscribeJustifications, beefy_unsubscribeJustifications
      **/
-    subscribeJustifications: AsyncMethod;
-
-    /**
-     * @rpcname: beefy_unsubscribeJustifications
-     **/
-    unsubscribeJustifications: AsyncMethod;
+    subscribeJustifications(callback: Callback<VersionedFinalityProof>): Promise<Unsub>;
 
     [method: string]: AsyncMethod;
   };
