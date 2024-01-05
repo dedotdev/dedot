@@ -188,12 +188,12 @@ export default class DelightfulApi<ChainApi extends GenericSubstrateApi = Substr
     this.#healthTimer = undefined;
   }
 
-  #unsubscribeRuntimeUpdates() {
+  async #unsubscribeRuntimeUpdates() {
     if (!this.#runtimeSubscriptionUnsub) {
       return;
     }
 
-    this.#runtimeSubscriptionUnsub().catch(console.error);
+    await this.#runtimeSubscriptionUnsub();
     this.#runtimeSubscriptionUnsub = undefined;
   }
 
@@ -202,8 +202,8 @@ export default class DelightfulApi<ChainApi extends GenericSubstrateApi = Substr
     this.#subscribeHealth();
   }
 
-  #unsubscribeUpdates() {
-    this.#unsubscribeRuntimeUpdates();
+  async #unsubscribeUpdates() {
+    await this.#unsubscribeRuntimeUpdates();
     this.#unsubscribeHealth();
   }
 
@@ -301,7 +301,7 @@ export default class DelightfulApi<ChainApi extends GenericSubstrateApi = Substr
   }
 
   async disconnect() {
-    this.#unsubscribeUpdates();
+    await this.#unsubscribeUpdates();
 
     await this.#provider.disconnect();
   }
