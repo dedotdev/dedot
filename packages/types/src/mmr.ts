@@ -1,4 +1,4 @@
-import { registry } from '@delightfuldot/types/src/registry';
+import { registry } from './registry';
 import { BlockHash } from '@delightfuldot/codecs';
 
 /*

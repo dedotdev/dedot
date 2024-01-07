@@ -1,5 +1,5 @@
-import { RpcModuleSpec } from '@delightfuldot/specs';
-import { atBlockHashParam } from '@delightfuldot/specs/src/rpc/shared';
+import { RpcModuleSpec } from '../types';
+import { atBlockHashParam } from './shared';
 
 export const mmr: RpcModuleSpec = {
   root: {
