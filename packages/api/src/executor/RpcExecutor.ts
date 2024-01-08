@@ -5,6 +5,10 @@ import { GenericSubstrateApi, Unsub } from '@delightfuldot/types';
 import { assert, isJsPrimitive } from '@delightfuldot/utils';
 import { Executor } from './Executor';
 
+const isOptionalParam = (param: RpcParamSpec): boolean => {
+  return param.isOptional || param.name.startsWith('Option<');
+};
+
 export class RpcExecutor<ChainApi extends GenericSubstrateApi = SubstrateApi> extends Executor<ChainApi> {
   execute(section: string, method: string) {
     const maybeRpcName = `${section}_${method}`;
@@ -13,16 +17,10 @@ export class RpcExecutor<ChainApi extends GenericSubstrateApi = SubstrateApi> ex
     const isSubscription = !!callSpec?.pubsub;
 
     const fnRpc = async (...args: any[]): Promise<any> => {
-      if (!callSpec) {
-        throw Error('Invalid rpc call spec!');
-      }
+      assert(callSpec, 'Rpc spec not found');
+      this.checkRpcInputs(callSpec, args);
 
       const { params } = callSpec;
-      if (params.length !== args.length && params.filter((param) => !param.isOptional).length !== args.length) {
-        // TODO check for optional
-        throw new Error(`Miss match input length, required: ${JSON.stringify(params)}, current inputs: ${args.length}`);
-      }
-
       const formattedInputs = args.map((input, index) => this.tryEncode(params[index], input));
 
       const result = await this.provider.send<any>(rpcName, formattedInputs);
@@ -31,11 +29,12 @@ export class RpcExecutor<ChainApi extends GenericSubstrateApi = SubstrateApi> ex
     };
 
     const fnSubRpc = async (...args: any[]): Promise<Unsub> => {
-      assert(callSpec, 'Invalid rpc call spec!');
+      assert(callSpec, 'Rpc spec not found');
 
       const inArgs = args.slice();
       const callback = inArgs.pop();
       assert(isFunction(callback), 'A callback is required for subscription');
+      this.checkRpcInputs(callSpec, inArgs);
 
       const onNewMessage = (error?: Error | null, result?: unknown) => {
         if (error) {
@@ -43,10 +42,10 @@ export class RpcExecutor<ChainApi extends GenericSubstrateApi = SubstrateApi> ex
           return;
         }
 
-        callback(this.tryDecode(callSpec!, result));
+        callback(this.tryDecode(callSpec, result));
       };
 
-      const { params, pubsub } = callSpec!;
+      const { params, pubsub } = callSpec;
       const formattedInputs = inArgs.map((input, index) => this.tryEncode(params[index], input));
       const [subname, subscribe, unsubcribe] = pubsub!;
 
@@ -109,5 +108,22 @@ export class RpcExecutor<ChainApi extends GenericSubstrateApi = SubstrateApi> ex
     }
 
     return value;
+  }
+
+  checkRpcInputs(callSpec: RpcCallSpec, actualArgs: any[]) {
+    const params = callSpec.params;
+    if (params.length === actualArgs.length) {
+      return;
+    }
+
+    params.forEach((param, idx) => {
+      const isRequiredParam = !isOptionalParam(param);
+      if (isRequiredParam && actualArgs[idx] === undefined) {
+        const requiredParamCount = params.filter((p) => !isOptionalParam(p)).length;
+        throw new Error(
+          `Miss match RPC params, required ${requiredParamCount} params, current inputs length: ${actualArgs.length}`,
+        );
+      }
+    });
   }
 }

@@ -76,18 +76,18 @@ export class QueryableStorage {
       return [];
     } else {
       if (keyInput === undefined) {
-        throw new Error(`Invalid key inputs, required ${numberOfValue} inputs`);
+        throw new Error(`Invalid key inputs, required ${numberOfValue} input(s)`);
       }
 
       if (numberOfValue === 1) {
         return [keyInput];
       } else {
         if (!Array.isArray(keyInput)) {
-          throw new Error(`Input should be an array with ${numberOfValue} values`);
+          throw new Error(`Input should be an array with ${numberOfValue} value(s)`);
         }
 
         if (keyInput.length !== numberOfValue) {
-          throw new Error(`Mismatch key inputs length, required an array of ${numberOfValue} values`);
+          throw new Error(`Mismatch key inputs length, required an array of ${numberOfValue} value(s)`);
         }
 
         return keyInput.slice(0, numberOfValue);
