@@ -8,6 +8,7 @@ import type {
   ExtrinsicOrHash,
   TransactionStatus,
   BlockStats,
+  StorageKind,
   FeeDetails,
   RuntimeDispatchInfo,
   RpcMethods,
@@ -498,14 +499,18 @@ export interface RpcCalls extends GenericRpcCalls {
   };
   offchain: {
     /**
+     * Get offchain local storage under given key and prefix.
+     *
      * @rpcname: offchain_localStorageGet
      **/
-    localStorageGet: AsyncMethod;
+    localStorageGet(kind: StorageKind, key: Bytes): Promise<Option<Bytes>>;
 
     /**
+     * Set offchain local storage under given key and prefix.
+     *
      * @rpcname: offchain_localStorageSet
      **/
-    localStorageSet: AsyncMethod;
+    localStorageSet(kind: StorageKind, key: Bytes, value: Bytes): Promise<void>;
 
     [method: string]: AsyncMethod;
   };

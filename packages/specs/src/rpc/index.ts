@@ -5,9 +5,9 @@ import { beefy } from './beefy';
 // import { contracts } from './contracts';
 // import { engine } from './engine';
 // import { eth } from './eth';
-// import { mmr } from './mmr';
+import { mmr } from './mmr';
 // import { net } from './net';
-// import { offchain } from './offchain';
+import { offchain } from './offchain';
 // import { web3 } from './web3';
 import { RpcCallSpec, RpcCallsSpec } from '../types';
 import { chain } from './chain';
@@ -36,9 +36,9 @@ export const rpcCalls: RpcCallsSpec = {
   // contracts,
   // engine,
   // eth,
-  // mmr,
+  mmr,
   // net,
-  // offchain,
+  offchain,
   // web3,
 };
 
