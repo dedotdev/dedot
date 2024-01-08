@@ -32,7 +32,7 @@ export const mmr: RpcModuleSpec = {
     ],
     params: [
       {
-        name: 'blockNumber',
+        name: 'blockNumbers',
         type: 'Array<BlockNumber>',
       },
       {

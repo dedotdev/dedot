@@ -338,7 +338,7 @@ export interface RpcCalls extends GenericRpcCalls {
      * @rpcname: mmr_generateProof
      **/
     generateProof(
-      blockNumber: Array<BlockNumber>,
+      blockNumbers: Array<BlockNumber>,
       bestKnownBlockNumber?: BlockNumber,
       at?: BlockHash,
     ): Promise<LeavesProof>;
