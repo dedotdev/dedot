@@ -38,10 +38,10 @@ import type {
   BlockHash,
   BlockNumber,
   Header,
-  PrefixedStorageKey,
   StorageKey,
-  Metadata,
+  PrefixedStorageKey,
   StorageData,
+  Metadata,
   ApplyExtrinsicResult,
 } from '@delightfuldot/codecs';
 
@@ -240,39 +240,59 @@ export interface RpcCalls extends GenericRpcCalls {
   };
   childstate: {
     /**
+     * Returns the keys with prefix from a child storage, leave empty to get all the keys
+     *
      * @rpcname: childstate_getKeys
+     * @deprecated: Please use `getKeysPaged` with proper paging support
      **/
-    getKeys: AsyncMethod;
+    getKeys(childStorageKey: PrefixedStorageKey, prefix: StorageKey, hash?: Hash): Promise<Array<StorageKey>>;
 
     /**
+     * Returns the keys with prefix from a child storage with pagination support.
+     * Up to `count` keys will be returned.
+     * If `start_key` is passed, return next keys in storage in lexicographic order.
+     *
      * @rpcname: childstate_getKeysPaged
      **/
-    getKeysPaged: AsyncMethod;
+    getKeysPaged(
+      childStorageKey: PrefixedStorageKey,
+      prefix: Option<StorageKey>,
+      count: number,
+      startKey?: StorageKey,
+      hash?: Hash,
+    ): Promise<Array<StorageKey>>;
 
     /**
-     * @rpcname: childstate_getKeysPagedAt
-     **/
-    getKeysPagedAt: AsyncMethod;
-
-    /**
+     * Returns a child storage entry at specific block's state.
+     *
      * @rpcname: childstate_getStorage
      **/
-    getStorage: AsyncMethod;
+    getStorage(childStorageKey: PrefixedStorageKey, key: StorageKey, hash?: Hash): Promise<Option<StorageData>>;
 
     /**
+     * Returns child storage entries for multiple keys at a specific block's state.
+     *
      * @rpcname: childstate_getStorageEntries
      **/
-    getStorageEntries: AsyncMethod;
+    getStorageEntries(
+      childStorageKey: PrefixedStorageKey,
+      keys: Array<StorageKey>,
+      hash?: Hash,
+    ): Promise<Array<Option<StorageData>>>;
 
     /**
+     * Returns the hash of a child storage entry at a block's state.
+     *
      * @rpcname: childstate_getStorageHash
      **/
-    getStorageHash: AsyncMethod;
+    getStorageHash(childStorageKey: PrefixedStorageKey, key: StorageKey, hash?: Hash): Promise<Option<Hash>>;
 
     /**
+     * Returns the size of a child storage entry at a block's state
+     *
      * @rpcname: childstate_getStorageSize
      **/
-    getStorageSize: AsyncMethod;
+    getStorageSize(childStorageKey: PrefixedStorageKey, key: StorageKey, hash?: Hash): Promise<Option<number>>;
 
     [method: string]: AsyncMethod;
   };
