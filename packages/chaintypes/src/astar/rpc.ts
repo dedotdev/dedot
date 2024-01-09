@@ -216,7 +216,7 @@ export interface RpcCalls extends GenericRpcCalls {
      * @rpcname: childstate_getKeys
      * @deprecated: Please use `getKeysPaged` with proper paging support
      **/
-    getKeys(childStorageKey: PrefixedStorageKey, prefix: StorageKey, hash?: Hash): Promise<Array<StorageKey>>;
+    getKeys(childStorageKey: PrefixedStorageKey, prefix: StorageKey, at?: BlockHash): Promise<Array<StorageKey>>;
 
     /**
      * Returns the keys with prefix from a child storage with pagination support.
@@ -230,7 +230,7 @@ export interface RpcCalls extends GenericRpcCalls {
       prefix: Option<StorageKey>,
       count: number,
       startKey?: StorageKey,
-      hash?: Hash,
+      at?: BlockHash,
     ): Promise<Array<StorageKey>>;
 
     /**
@@ -238,7 +238,7 @@ export interface RpcCalls extends GenericRpcCalls {
      *
      * @rpcname: childstate_getStorage
      **/
-    getStorage(childStorageKey: PrefixedStorageKey, key: StorageKey, hash?: Hash): Promise<Option<StorageData>>;
+    getStorage(childStorageKey: PrefixedStorageKey, key: StorageKey, at?: BlockHash): Promise<Option<StorageData>>;
 
     /**
      * Returns child storage entries for multiple keys at a specific block's state.
@@ -248,7 +248,7 @@ export interface RpcCalls extends GenericRpcCalls {
     getStorageEntries(
       childStorageKey: PrefixedStorageKey,
       keys: Array<StorageKey>,
-      hash?: Hash,
+      at?: BlockHash,
     ): Promise<Array<Option<StorageData>>>;
 
     /**
@@ -256,14 +256,14 @@ export interface RpcCalls extends GenericRpcCalls {
      *
      * @rpcname: childstate_getStorageHash
      **/
-    getStorageHash(childStorageKey: PrefixedStorageKey, key: StorageKey, hash?: Hash): Promise<Option<Hash>>;
+    getStorageHash(childStorageKey: PrefixedStorageKey, key: StorageKey, at?: BlockHash): Promise<Option<Hash>>;
 
     /**
      * Returns the size of a child storage entry at a block's state
      *
      * @rpcname: childstate_getStorageSize
      **/
-    getStorageSize(childStorageKey: PrefixedStorageKey, key: StorageKey, hash?: Hash): Promise<Option<number>>;
+    getStorageSize(childStorageKey: PrefixedStorageKey, key: StorageKey, at?: BlockHash): Promise<Option<number>>;
 
     [method: string]: AsyncMethod;
   };
@@ -589,7 +589,12 @@ export interface RpcCalls extends GenericRpcCalls {
      *
      * @rpcname: state_getKeysPaged
      **/
-    getKeysPaged(prefix: StorageKey, count: number, startKey?: StorageKey, at?: BlockHash): Promise<Array<StorageKey>>;
+    getKeysPaged(
+      prefix: Option<StorageKey>,
+      count: number,
+      startKey?: StorageKey,
+      at?: BlockHash,
+    ): Promise<Array<StorageKey>>;
 
     /**
      * Returns the runtime metadata
