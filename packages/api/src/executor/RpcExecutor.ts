@@ -1,7 +1,7 @@
 import type { SubstrateApi } from '@delightfuldot/chaintypes';
 import { isFunction, u8aToHex } from '@polkadot/util';
-import { findAliasRpcSpec, findRpcSpec, RpcCallSpec, RpcParamSpec } from '@delightfuldot/specs';
-import { GenericSubstrateApi, Unsub } from '@delightfuldot/types';
+import { findAliasRpcSpec, findRpcSpec } from '@delightfuldot/specs';
+import { GenericSubstrateApi, Unsub, RpcCallSpec, RpcParamSpec, GenericRpcCall } from '@delightfuldot/types';
 import { assert, isJsPrimitive } from '@delightfuldot/utils';
 import { Executor } from './Executor';
 
@@ -10,7 +10,7 @@ const isOptionalParam = (param: RpcParamSpec): boolean => {
 };
 
 export class RpcExecutor<ChainApi extends GenericSubstrateApi = SubstrateApi> extends Executor<ChainApi> {
-  execute(section: string, method: string) {
+  execute(section: string, method: string): GenericRpcCall {
     const maybeRpcName = `${section}_${method}`;
     const callSpec = findRpcSpec(maybeRpcName) || findAliasRpcSpec(maybeRpcName);
     const rpcName = callSpec?.name || `${section}_${method}`;
@@ -69,7 +69,10 @@ export class RpcExecutor<ChainApi extends GenericSubstrateApi = SubstrateApi> ex
       return rawRpc;
     }
 
-    return isSubscription ? fnSubRpc : fnRpc;
+    const oneFnRpc: GenericRpcCall = isSubscription ? fnSubRpc : fnRpc;
+    oneFnRpc.meta = callSpec;
+
+    return oneFnRpc;
   }
 
   tryDecode(callSpec: RpcCallSpec, raw: any) {
