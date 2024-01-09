@@ -9,7 +9,7 @@ import { mmr } from './mmr';
 // import { net } from './net';
 import { offchain } from './offchain';
 // import { web3 } from './web3';
-import { RpcCallSpec, RpcCallsSpec } from '../types';
+import { RpcCallSpec, RpcCallsSpec } from '@delightfuldot/types';
 import { chain } from './chain';
 import { syncstate } from './syncstate';
 import { rpc } from './rpc';

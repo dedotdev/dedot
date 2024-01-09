@@ -1,4 +1,4 @@
-import { RpcModuleSpec } from '@delightfuldot/specs';
+import { RpcModuleSpec } from '@delightfuldot/types';
 
 export const grandpa: RpcModuleSpec = {
   proveFinality: {

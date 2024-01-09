@@ -446,6 +446,8 @@ __metadata:
 "@delightfuldot/specs@workspace:*, @delightfuldot/specs@workspace:packages/specs":
   version: 0.0.0-use.local
   resolution: "@delightfuldot/specs@workspace:packages/specs"
+  dependencies:
+    "@delightfuldot/types": "workspace:*"
   languageName: unknown
   linkType: soft
 
@@ -3461,6 +3463,7 @@ __metadata:
     "@delightfuldot/utils": "workspace:*"
     "@polkadot/rpc-provider": ^10.11.2
     "@polkadot/types": ^10.11.2
+    "@polkadot/types-support": ^10.10.1
     "@polkadot/util": ^12.6.2
     "@polkadot/util-crypto": ^12.6.2
     localforage: ^1.10.0

@@ -1,4 +1,4 @@
-import { RpcParamSpec } from '@delightfuldot/specs';
+import { RpcParamSpec } from '@delightfuldot/types';
 
 export const atBlockHashParam: RpcParamSpec = {
   name: 'at',

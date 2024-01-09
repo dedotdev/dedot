@@ -1,4 +1,4 @@
-import { RpcModuleSpec } from '../types';
+import { RpcModuleSpec } from '@delightfuldot/types';
 
 export const system: RpcModuleSpec = {
   ///

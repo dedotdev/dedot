@@ -1,6 +1,10 @@
 import { Field, ModuleError } from '@delightfuldot/codecs';
 import * as $ from '@delightfuldot/shape';
+import { RpcCallSpec } from './rpc';
 
+export * from './rpc';
+
+export type AnyFunc = (...args: any[]) => any;
 export type AsyncMethod = (...args: any[]) => Promise<any>;
 export type Unsub = () => Promise<boolean>;
 export type Callback<T> = (result: T) => Promise<void> | void;
@@ -25,8 +29,13 @@ export interface GenericPalletError {
   meta: PalletErrorMetadataLatest;
 }
 
+export interface GenericRpcCall<F extends AnyFunc = AnyFunc> {
+  (...args: Parameters<F>): Promise<ReturnType<F>>;
+  meta?: RpcCallSpec;
+}
+
 export interface GenericRpcModule {
-  [method: string]: AsyncMethod;
+  [method: string]: GenericRpcCall;
 }
 
 export interface GenericRpcCalls {
