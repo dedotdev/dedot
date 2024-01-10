@@ -1,7 +1,7 @@
 // import { author } from './author';
 import { babe } from './babe';
 import { beefy } from './beefy';
-// import { childstate } from './childstate';
+import { childstate } from './childstate';
 // import { contracts } from './contracts';
 // import { engine } from './engine';
 // import { eth } from './eth';
@@ -32,7 +32,7 @@ export const rpcCalls: RpcCallsSpec = {
   grandpa,
   babe,
   beefy,
-  // childstate,
+  childstate,
   // contracts,
   // engine,
   // eth,

@@ -38,7 +38,7 @@ export const state: RpcModuleSpec = {
     params: [
       {
         name: 'prefix',
-        type: 'StorageKey',
+        type: 'Option<StorageKey>',
       },
       {
         name: 'count',
