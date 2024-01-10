@@ -41,7 +41,7 @@ export class ConsensusEngineId {
   // TODO inspect!?!
 }
 
-type ConsensusEngineIdLike = ConsensusEngineId | HexString;
+export type ConsensusEngineIdLike = ConsensusEngineId | HexString;
 
 export const $ConsensusEngineId: $.Shape<ConsensusEngineIdLike, ConsensusEngineId> = $.instance(
   ConsensusEngineId,
