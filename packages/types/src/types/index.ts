@@ -4,6 +4,7 @@ import { RpcCallSpec } from './rpc';
 
 export * from './rpc';
 
+export type Append<T extends readonly unknown[], V> = [...T, V];
 export type AnyFunc = (...args: any[]) => any;
 export type AsyncMethod = (...args: any[]) => Promise<any>;
 export type Unsub = () => Promise<boolean>;
@@ -47,9 +48,16 @@ export interface GenericChainConsts {
   };
 }
 
+export interface StorageQueryMethod<F extends AnyFunc = AnyFunc> {
+  (...args: Parameters<F>): Promise<ReturnType<F>>;
+  (...args: Append<Parameters<F>, Callback<ReturnType<F>>>): Promise<Unsub>;
+}
+
+export type GenericStorageQuery<T extends AnyFunc = AnyFunc> = StorageQueryMethod<T> & {};
+
 export interface GenericChainStorage {
   [pallet: string]: {
-    [storageName: string]: AsyncMethod;
+    [storageName: string]: GenericStorageQuery;
   };
 }
 
