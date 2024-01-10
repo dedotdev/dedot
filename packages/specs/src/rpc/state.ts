@@ -1,4 +1,4 @@
-import { RpcModuleSpec } from '../types';
+import { RpcModuleSpec } from '@delightfuldot/types';
 import { atBlockHashParam } from './shared';
 
 export const state: RpcModuleSpec = {

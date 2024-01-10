@@ -4,5 +4,10 @@
     "outDir": "dist/cjs",
     "module": "CommonJS"
   },
-  "exclude": ["**/__tests__/*"]
+  "exclude": ["**/__tests__/*"],
+  "references": [
+    {
+      "path": "../types/tsconfig.json"
+    }
+  ]
 }

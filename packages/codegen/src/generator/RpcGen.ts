@@ -1,5 +1,5 @@
-import { findAliasRpcSpec, findRpcSpec, isUnsubscribeMethod, RpcModuleName } from '@delightfuldot/specs';
-import { RpcCallSpec } from '@delightfuldot/specs/types';
+import { findAliasRpcSpec, findRpcSpec, isUnsubscribeMethod } from '@delightfuldot/specs';
+import { RpcCallSpec, RpcModuleName } from '@delightfuldot/types';
 import { isJsPrimitive } from '@delightfuldot/utils';
 import { ApiGen, TypesGen } from '../generator';
 import { beautifySourceCode, commentBlock, compileTemplate, WRAPPER_TYPE_REGEX } from './utils';
@@ -21,7 +21,7 @@ export class RpcGen extends ApiGen {
 
   generate() {
     this.typesGen.clearCache();
-    this.typesGen.typeImports.addKnownType('GenericRpcCalls', 'AsyncMethod', 'Unsub', 'Callback');
+    this.typesGen.typeImports.addKnownType('GenericRpcCalls', 'Unsub', 'Callback', 'GenericRpcCall');
 
     const specsByModule = this.rpcMethods
       .filter((one) => !findAliasRpcSpec(one)) // we'll ignore  alias rpc for now if defined in the specs! TODO should we generate alias rpc as well?
@@ -37,7 +37,7 @@ export class RpcGen extends ApiGen {
 
         return {
           params: [],
-          type: 'AsyncMethod',
+          type: 'GenericRpcCall',
           module,
           method,
         } as RpcCallSpec;
@@ -65,7 +65,7 @@ export class RpcGen extends ApiGen {
       rpcCallsOut += `${module}: {
       ${specs.map((spec) => this.#generateMethodDef(spec)).join(',\n')},
 
-      [method: string]: AsyncMethod,
+      [method: string]: GenericRpcCall,
     },`;
     });
 
@@ -86,8 +86,8 @@ export class RpcGen extends ApiGen {
       defaultDocs.push(`@deprecated: ${deprecated}`);
     }
 
-    if (type === 'AsyncMethod' && params.length === 0) {
-      return `${commentBlock(defaultDocs)}${method}: AsyncMethod`;
+    if (type === 'GenericRpcCall' && params.length === 0) {
+      return `${commentBlock(defaultDocs)}${method}: GenericRpcCall`;
     }
 
     this.addTypeImport(type, false);
@@ -109,9 +109,13 @@ export class RpcGen extends ApiGen {
       defaultDocs.unshift(`@pubsub: ${pubsub?.join(', ')}`);
 
       paramsOut.push(`callback: Callback<${typeOut}>`);
-      return `${commentBlock(docs, '\n', defaultDocs)}${method}(${paramsOut.join(', ')}): Promise<Unsub>`;
+      return `${commentBlock(docs, '\n', defaultDocs)}${method}: GenericRpcCall<(${paramsOut.join(
+        ', ',
+      )}) => Promise<Unsub>>`;
     } else {
-      return `${commentBlock(docs, '\n', defaultDocs)}${method}(${paramsOut.join(', ')}): Promise<${typeOut}>`;
+      return `${commentBlock(docs, '\n', defaultDocs)}${method}: GenericRpcCall<(${paramsOut.join(
+        ', ',
+      )}) => Promise<${typeOut}>>`;
     }
   }
 

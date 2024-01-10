@@ -2,9 +2,9 @@
 
 import type {
   GenericRpcCalls,
-  AsyncMethod,
   Unsub,
   Callback,
+  GenericRpcCall,
   ExtrinsicOrHash,
   TransactionStatus,
   EpochAuthorship,
@@ -38,10 +38,10 @@ import type {
   BlockHash,
   BlockNumber,
   Header,
-  StorageKey,
   PrefixedStorageKey,
-  StorageData,
+  StorageKey,
   Metadata,
+  StorageData,
   ApplyExtrinsicResult,
 } from '@delightfuldot/codecs';
 
@@ -52,58 +52,60 @@ export interface RpcCalls extends GenericRpcCalls {
      *
      * @rpcname: author_hasKey
      **/
-    hasKey(publicKey: Bytes, keyType: string): Promise<boolean>;
+    hasKey: GenericRpcCall<(publicKey: Bytes, keyType: string) => Promise<boolean>>;
 
     /**
      * Checks if the keystore has private keys for the given session public keys. `session_keys` is the SCALE encoded session keys object from the runtime. Returns `true` iff all private keys could be found.
      *
      * @rpcname: author_hasSessionKeys
      **/
-    hasSessionKeys(sessionKeys: Bytes): Promise<boolean>;
+    hasSessionKeys: GenericRpcCall<(sessionKeys: Bytes) => Promise<boolean>>;
 
     /**
      * Insert a key into the keystore.
      *
      * @rpcname: author_insertKey
      **/
-    insertKey(keyType: string, suri: string, publicKey: Bytes): Promise<void>;
+    insertKey: GenericRpcCall<(keyType: string, suri: string, publicKey: Bytes) => Promise<void>>;
 
     /**
      * Returns all pending extrinsics, potentially grouped by sender.
      *
      * @rpcname: author_pendingExtrinsics
      **/
-    pendingExtrinsics(): Promise<Array<Bytes>>;
+    pendingExtrinsics: GenericRpcCall<() => Promise<Array<Bytes>>>;
 
     /**
      * Remove given extrinsic from the pool and temporarily ban it to prevent reimporting.
      *
      * @rpcname: author_removeExtrinsic
      **/
-    removeExtrinsic(bytesOrHash: Array<ExtrinsicOrHash>): Promise<Array<Hash>>;
+    removeExtrinsic: GenericRpcCall<(bytesOrHash: Array<ExtrinsicOrHash>) => Promise<Array<Hash>>>;
 
     /**
      * Generate new session keys and returns the corresponding public keys.
      *
      * @rpcname: author_rotateKeys
      **/
-    rotateKeys(): Promise<Bytes>;
+    rotateKeys: GenericRpcCall<() => Promise<Bytes>>;
 
     /**
      * Submit and subscribe to watch an extrinsic until unsubscribed
      *
      * @pubsub: author_extrinsicUpdate, author_submitAndWatchExtrinsic, author_unwatchExtrinsic
      **/
-    submitAndWatchExtrinsic(extrinsic: Bytes, callback: Callback<TransactionStatus>): Promise<Unsub>;
+    submitAndWatchExtrinsic: GenericRpcCall<
+      (extrinsic: Bytes, callback: Callback<TransactionStatus>) => Promise<Unsub>
+    >;
 
     /**
      * Submit hex-encoded extrinsic for inclusion in block.
      *
      * @rpcname: author_submitExtrinsic
      **/
-    submitExtrinsic(extrinsic: Bytes): Promise<Hash>;
+    submitExtrinsic: GenericRpcCall<(extrinsic: Bytes) => Promise<Hash>>;
 
-    [method: string]: AsyncMethod;
+    [method: string]: GenericRpcCall;
   };
   babe: {
     /**
@@ -111,80 +113,80 @@ export interface RpcCalls extends GenericRpcCalls {
      *
      * @rpcname: babe_epochAuthorship
      **/
-    epochAuthorship(): Promise<Record<string, EpochAuthorship>>;
+    epochAuthorship: GenericRpcCall<() => Promise<Record<string, EpochAuthorship>>>;
 
-    [method: string]: AsyncMethod;
+    [method: string]: GenericRpcCall;
   };
   chainHead: {
     /**
      * @rpcname: chainHead_unstable_body
      **/
-    unstable_body: AsyncMethod;
+    unstable_body: GenericRpcCall;
 
     /**
      * @rpcname: chainHead_unstable_call
      **/
-    unstable_call: AsyncMethod;
+    unstable_call: GenericRpcCall;
 
     /**
      * @rpcname: chainHead_unstable_continue
      **/
-    unstable_continue: AsyncMethod;
+    unstable_continue: GenericRpcCall;
 
     /**
      * @rpcname: chainHead_unstable_follow
      **/
-    unstable_follow: AsyncMethod;
+    unstable_follow: GenericRpcCall;
 
     /**
      * @rpcname: chainHead_unstable_genesisHash
      **/
-    unstable_genesisHash: AsyncMethod;
+    unstable_genesisHash: GenericRpcCall;
 
     /**
      * @rpcname: chainHead_unstable_header
      **/
-    unstable_header: AsyncMethod;
+    unstable_header: GenericRpcCall;
 
     /**
      * @rpcname: chainHead_unstable_stopOperation
      **/
-    unstable_stopOperation: AsyncMethod;
+    unstable_stopOperation: GenericRpcCall;
 
     /**
      * @rpcname: chainHead_unstable_storage
      **/
-    unstable_storage: AsyncMethod;
+    unstable_storage: GenericRpcCall;
 
     /**
      * @rpcname: chainHead_unstable_unfollow
      **/
-    unstable_unfollow: AsyncMethod;
+    unstable_unfollow: GenericRpcCall;
 
     /**
      * @rpcname: chainHead_unstable_unpin
      **/
-    unstable_unpin: AsyncMethod;
+    unstable_unpin: GenericRpcCall;
 
-    [method: string]: AsyncMethod;
+    [method: string]: GenericRpcCall;
   };
   chainSpec: {
     /**
      * @rpcname: chainSpec_unstable_chainName
      **/
-    unstable_chainName: AsyncMethod;
+    unstable_chainName: GenericRpcCall;
 
     /**
      * @rpcname: chainSpec_unstable_genesisHash
      **/
-    unstable_genesisHash: AsyncMethod;
+    unstable_genesisHash: GenericRpcCall;
 
     /**
      * @rpcname: chainSpec_unstable_properties
      **/
-    unstable_properties: AsyncMethod;
+    unstable_properties: GenericRpcCall;
 
-    [method: string]: AsyncMethod;
+    [method: string]: GenericRpcCall;
   };
   chain: {
     /**
@@ -192,109 +194,89 @@ export interface RpcCalls extends GenericRpcCalls {
      *
      * @rpcname: chain_getBlock
      **/
-    getBlock(at?: BlockHash): Promise<Option<SignedBlock>>;
+    getBlock: GenericRpcCall<(at?: BlockHash) => Promise<Option<SignedBlock>>>;
 
     /**
      * Get the block hash for a specific block
      *
      * @rpcname: chain_getBlockHash
      **/
-    getBlockHash(blockNumber?: BlockNumber): Promise<Option<BlockHash>>;
+    getBlockHash: GenericRpcCall<(blockNumber?: BlockNumber) => Promise<Option<BlockHash>>>;
 
     /**
      * Get hash of the last finalized block in the canon chain
      *
      * @rpcname: chain_getFinalizedHead
      **/
-    getFinalizedHead(): Promise<BlockHash>;
+    getFinalizedHead: GenericRpcCall<() => Promise<BlockHash>>;
 
     /**
      * Retrieves the header for a specific block
      *
      * @rpcname: chain_getHeader
      **/
-    getHeader(at?: BlockHash): Promise<Option<Header>>;
+    getHeader: GenericRpcCall<(at?: BlockHash) => Promise<Option<Header>>>;
 
     /**
      * All head subscription.
      *
      * @pubsub: chain_allHead, chain_subscribeAllHeads, chain_unsubscribeAllHeads
      **/
-    subscribeAllHeads(callback: Callback<Header>): Promise<Unsub>;
+    subscribeAllHeads: GenericRpcCall<(callback: Callback<Header>) => Promise<Unsub>>;
 
     /**
      * Retrieves the best finalized header via subscription
      *
      * @pubsub: chain_finalizedHead, chain_subscribeFinalizedHeads, chain_unsubscribeFinalizedHeads
      **/
-    subscribeFinalizedHeads(callback: Callback<Header>): Promise<Unsub>;
+    subscribeFinalizedHeads: GenericRpcCall<(callback: Callback<Header>) => Promise<Unsub>>;
 
     /**
      * Retrieves the best header via subscription
      *
      * @pubsub: chain_newHead, chain_subscribeNewHeads, chain_unsubscribeNewHeads
      **/
-    subscribeNewHeads(callback: Callback<Header>): Promise<Unsub>;
+    subscribeNewHeads: GenericRpcCall<(callback: Callback<Header>) => Promise<Unsub>>;
 
-    [method: string]: AsyncMethod;
+    [method: string]: GenericRpcCall;
   };
   childstate: {
     /**
-     * Returns the keys with prefix from a child storage, leave empty to get all the keys
-     *
      * @rpcname: childstate_getKeys
-     * @deprecated: Please use `getKeysPaged` with proper paging support
      **/
-    getKeys(childStorageKey: PrefixedStorageKey, prefix: StorageKey, at?: BlockHash): Promise<Array<StorageKey>>;
+    getKeys: GenericRpcCall;
 
     /**
-     * Returns the keys with prefix from a child storage with pagination support.
-     * Up to `count` keys will be returned.
-     * If `start_key` is passed, return next keys in storage in lexicographic order.
-     *
      * @rpcname: childstate_getKeysPaged
      **/
-    getKeysPaged(
-      childStorageKey: PrefixedStorageKey,
-      prefix: Option<StorageKey>,
-      count: number,
-      startKey?: StorageKey,
-      at?: BlockHash,
-    ): Promise<Array<StorageKey>>;
+    getKeysPaged: GenericRpcCall;
 
     /**
-     * Returns a child storage entry at specific block's state.
-     *
+     * @rpcname: childstate_getKeysPagedAt
+     **/
+    getKeysPagedAt: GenericRpcCall;
+
+    /**
      * @rpcname: childstate_getStorage
      **/
-    getStorage(childStorageKey: PrefixedStorageKey, key: StorageKey, at?: BlockHash): Promise<Option<StorageData>>;
+    getStorage: GenericRpcCall;
 
     /**
-     * Returns child storage entries for multiple keys at a specific block's state.
-     *
      * @rpcname: childstate_getStorageEntries
      **/
-    getStorageEntries(
-      childStorageKey: PrefixedStorageKey,
-      keys: Array<StorageKey>,
-      at?: BlockHash,
-    ): Promise<Array<Option<StorageData>>>;
+    getStorageEntries: GenericRpcCall;
 
     /**
-     * Returns the hash of a child storage entry at a block's state.
-     *
      * @rpcname: childstate_getStorageHash
      **/
-    getStorageHash(childStorageKey: PrefixedStorageKey, key: StorageKey, at?: BlockHash): Promise<Option<Hash>>;
+    getStorageHash: GenericRpcCall;
 
     /**
-     * Returns the size of a child storage entry at a block's state
-     *
      * @rpcname: childstate_getStorageSize
      **/
-    getStorageSize(childStorageKey: PrefixedStorageKey, key: StorageKey, at?: BlockHash): Promise<Option<number>>;
+    getStorageSize: GenericRpcCall;
 
-    [method: string]: AsyncMethod;
+    [method: string]: GenericRpcCall;
   };
   dev: {
     /**
@@ -306,9 +288,9 @@ export interface RpcCalls extends GenericRpcCalls {
      *
      * @rpcname: dev_getBlockStats
      **/
-    getBlockStats(at?: BlockHash): Promise<Option<BlockStats>>;
+    getBlockStats: GenericRpcCall<(at?: BlockHash) => Promise<Option<BlockStats>>>;
 
-    [method: string]: AsyncMethod;
+    [method: string]: GenericRpcCall;
   };
   grandpa: {
     /**
@@ -316,23 +298,23 @@ export interface RpcCalls extends GenericRpcCalls {
      *
      * @rpcname: grandpa_proveFinality
      **/
-    proveFinality(blockNumber: BlockNumber): Promise<Option<EncodedFinalityProofs>>;
+    proveFinality: GenericRpcCall<(blockNumber: BlockNumber) => Promise<Option<EncodedFinalityProofs>>>;
 
     /**
      * Returns the state of the current best round state as well as the ongoing background rounds
      *
      * @rpcname: grandpa_roundState
      **/
-    roundState(): Promise<ReportedRoundStates>;
+    roundState: GenericRpcCall<() => Promise<ReportedRoundStates>>;
 
     /**
      * Returns the block most recently finalized by Grandpa, alongside side its justification.
      *
      * @pubsub: grandpa_justifications, grandpa_subscribeJustifications, grandpa_unsubscribeJustifications
      **/
-    subscribeJustifications(callback: Callback<JustificationNotification>): Promise<Unsub>;
+    subscribeJustifications: GenericRpcCall<(callback: Callback<JustificationNotification>) => Promise<Unsub>>;
 
-    [method: string]: AsyncMethod;
+    [method: string]: GenericRpcCall;
   };
   mmr: {
     /**
@@ -358,18 +340,16 @@ export interface RpcCalls extends GenericRpcCalls {
      *
      * @rpcname: mmr_generateProof
      **/
-    generateProof(
-      blockNumbers: Array<BlockNumber>,
-      bestKnownBlockNumber?: BlockNumber,
-      at?: BlockHash,
-    ): Promise<LeavesProof>;
+    generateProof: GenericRpcCall<
+      (blockNumbers: Array<BlockNumber>, bestKnownBlockNumber?: BlockNumber, at?: BlockHash) => Promise<LeavesProof>
+    >;
 
     /**
      * Get the MMR root hash for the current best block
      *
      * @rpcname: mmr_root
      **/
-    root(at?: BlockHash): Promise<Hash>;
+    root: GenericRpcCall<(at?: BlockHash) => Promise<Hash>>;
 
     /**
      * Verify an MMR `proof`.
@@ -381,7 +361,7 @@ export interface RpcCalls extends GenericRpcCalls {
      *
      * @rpcname: mmr_verifyProof
      **/
-    verifyProof(proof: LeavesProof): Promise<boolean>;
+    verifyProof: GenericRpcCall<(proof: LeavesProof) => Promise<boolean>>;
 
     /**
      * Verify an MMR `proof` statelessly given an `mmr_root`.
@@ -393,9 +373,9 @@ export interface RpcCalls extends GenericRpcCalls {
      *
      * @rpcname: mmr_verifyProofStateless
      **/
-    verifyProofStateless(mmrRoot: Hash, proof: LeavesProof): Promise<boolean>;
+    verifyProofStateless: GenericRpcCall<(mmrRoot: Hash, proof: LeavesProof) => Promise<boolean>>;
 
-    [method: string]: AsyncMethod;
+    [method: string]: GenericRpcCall;
   };
   offchain: {
     /**
@@ -403,16 +383,16 @@ export interface RpcCalls extends GenericRpcCalls {
      *
      * @rpcname: offchain_localStorageGet
      **/
-    localStorageGet(kind: StorageKind, key: Bytes): Promise<Option<Bytes>>;
+    localStorageGet: GenericRpcCall<(kind: StorageKind, key: Bytes) => Promise<Option<Bytes>>>;
 
     /**
      * Set offchain local storage under given key and prefix.
      *
      * @rpcname: offchain_localStorageSet
      **/
-    localStorageSet(kind: StorageKind, key: Bytes, value: Bytes): Promise<void>;
+    localStorageSet: GenericRpcCall<(kind: StorageKind, key: Bytes, value: Bytes) => Promise<void>>;
 
-    [method: string]: AsyncMethod;
+    [method: string]: GenericRpcCall;
   };
   payment: {
     /**
@@ -420,16 +400,16 @@ export interface RpcCalls extends GenericRpcCalls {
      *
      * @rpcname: payment_queryFeeDetails
      **/
-    queryFeeDetails(extrinsic: Bytes, at?: BlockHash): Promise<FeeDetails>;
+    queryFeeDetails: GenericRpcCall<(extrinsic: Bytes, at?: BlockHash) => Promise<FeeDetails>>;
 
     /**
      * Retrieves the fee information for an encoded extrinsic
      *
      * @rpcname: payment_queryInfo
      **/
-    queryInfo(extrinsic: Bytes, at?: BlockHash): Promise<RuntimeDispatchInfo>;
+    queryInfo: GenericRpcCall<(extrinsic: Bytes, at?: BlockHash) => Promise<RuntimeDispatchInfo>>;
 
-    [method: string]: AsyncMethod;
+    [method: string]: GenericRpcCall;
   };
   rpc: {
     /**
@@ -437,9 +417,9 @@ export interface RpcCalls extends GenericRpcCalls {
      *
      * @rpcname: rpc_methods
      **/
-    methods(): Promise<RpcMethods>;
+    methods: GenericRpcCall<() => Promise<RpcMethods>>;
 
-    [method: string]: AsyncMethod;
+    [method: string]: GenericRpcCall;
   };
   state: {
     /**
@@ -447,14 +427,16 @@ export interface RpcCalls extends GenericRpcCalls {
      *
      * @rpcname: state_call
      **/
-    call(method: string, data: Bytes, at?: BlockHash): Promise<Bytes>;
+    call: GenericRpcCall<(method: string, data: Bytes, at?: BlockHash) => Promise<Bytes>>;
 
     /**
      * Returns proof of storage for child key entries at a specific block state.
      *
      * @rpcname: state_getChildReadProof
      **/
-    getChildReadProof(childStorageKey: PrefixedStorageKey, keys: Array<StorageKey>, at?: BlockHash): Promise<ReadProof>;
+    getChildReadProof: GenericRpcCall<
+      (childStorageKey: PrefixedStorageKey, keys: Array<StorageKey>, at?: BlockHash) => Promise<ReadProof>
+    >;
 
     /**
      * Returns the keys with prefix, leave empty to get all the keys.
@@ -462,26 +444,23 @@ export interface RpcCalls extends GenericRpcCalls {
      * @rpcname: state_getKeys
      * @deprecated: Please use `getKeysPaged` with proper paging support
      **/
-    getKeys(prefix: StorageKey, at?: BlockHash): Promise<Array<StorageKey>>;
+    getKeys: GenericRpcCall<(prefix: StorageKey, at?: BlockHash) => Promise<Array<StorageKey>>>;
 
     /**
      * Returns the keys with prefix with pagination support. Up to `count` keys will be returned. If `start_key` is passed, return next keys in storage in lexicographic order.
      *
      * @rpcname: state_getKeysPaged
      **/
-    getKeysPaged(
-      prefix: Option<StorageKey>,
-      count: number,
-      startKey?: StorageKey,
-      at?: BlockHash,
-    ): Promise<Array<StorageKey>>;
+    getKeysPaged: GenericRpcCall<
+      (prefix: StorageKey, count: number, startKey?: StorageKey, at?: BlockHash) => Promise<Array<StorageKey>>
+    >;
 
     /**
      * Returns the runtime metadata
      *
      * @rpcname: state_getMetadata
      **/
-    getMetadata(at?: BlockHash): Promise<Metadata>;
+    getMetadata: GenericRpcCall<(at?: BlockHash) => Promise<Metadata>>;
 
     /**
      * Returns the keys with prefix, leave empty to get all the keys
@@ -489,124 +468,128 @@ export interface RpcCalls extends GenericRpcCalls {
      * @rpcname: state_getPairs
      * @deprecated: Please use `getKeysPaged` with proper paging support
      **/
-    getPairs(prefix: StorageKey, at?: BlockHash): Promise<Array<[StorageKey, StorageData]>>;
+    getPairs: GenericRpcCall<(prefix: StorageKey, at?: BlockHash) => Promise<Array<[StorageKey, StorageData]>>>;
 
     /**
      * Returns proof of storage entries at a specific block's state.
      *
      * @rpcname: state_getReadProof
      **/
-    getReadProof(keys: Array<StorageKey>, at?: BlockHash): Promise<ReadProof>;
+    getReadProof: GenericRpcCall<(keys: Array<StorageKey>, at?: BlockHash) => Promise<ReadProof>>;
 
     /**
      * Get the runtime version.
      *
      * @rpcname: state_getRuntimeVersion
      **/
-    getRuntimeVersion(): Promise<RuntimeVersion>;
+    getRuntimeVersion: GenericRpcCall<() => Promise<RuntimeVersion>>;
 
     /**
      * Returns a storage entry at a specific block's state.
      *
      * @rpcname: state_getStorage
      **/
-    getStorage(key: StorageKey, at?: BlockHash): Promise<Option<StorageData>>;
+    getStorage: GenericRpcCall<(key: StorageKey, at?: BlockHash) => Promise<Option<StorageData>>>;
 
     /**
      * Returns the hash of a storage entry at a block's state.
      *
      * @rpcname: state_getStorageHash
      **/
-    getStorageHash(key: StorageKey, at?: BlockHash): Promise<Option<Hash>>;
+    getStorageHash: GenericRpcCall<(key: StorageKey, at?: BlockHash) => Promise<Option<Hash>>>;
 
     /**
      * Returns the hash of a storage entry at a block's state.
      *
      * @rpcname: state_getStorageSize
      **/
-    getStorageSize(key: StorageKey, at?: BlockHash): Promise<Option<bigint>>;
+    getStorageSize: GenericRpcCall<(key: StorageKey, at?: BlockHash) => Promise<Option<bigint>>>;
 
     /**
      * Query historical storage entries (by key) starting from a block given as the second parameter. NOTE: The first returned result contains the initial state of storage for all keys. Subsequent values in the vector represent changes to the previous state (diffs). WARNING: The time complexity of this query is O(|keys|*dist(block, hash)), and the memory complexity is O(dist(block, hash)) -- use with caution.
      *
      * @rpcname: state_queryStorage
      **/
-    queryStorage(keys: Array<StorageKey>, fromBlock: Hash, at?: BlockHash): Promise<Array<StorageChangeSet>>;
+    queryStorage: GenericRpcCall<
+      (keys: Array<StorageKey>, fromBlock: Hash, at?: BlockHash) => Promise<Array<StorageChangeSet>>
+    >;
 
     /**
      * Query storage entries (by key) at a block hash given as the second parameter. NOTE: Each StorageChangeSet in the result corresponds to exactly one element -- the storage value under an input key at the input block hash.
      *
      * @rpcname: state_queryStorageAt
      **/
-    queryStorageAt(keys: Array<StorageKey>, at?: BlockHash): Promise<Array<StorageChangeSet>>;
+    queryStorageAt: GenericRpcCall<(keys: Array<StorageKey>, at?: BlockHash) => Promise<Array<StorageChangeSet>>>;
 
     /**
      * New runtime version subscription
      *
      * @pubsub: state_runtimeVersion, state_subscribeRuntimeVersion, state_unsubscribeRuntimeVersion
      **/
-    subscribeRuntimeVersion(callback: Callback<RuntimeVersion>): Promise<Unsub>;
+    subscribeRuntimeVersion: GenericRpcCall<(callback: Callback<RuntimeVersion>) => Promise<Unsub>>;
 
     /**
      * Subscribes to storage changes for the provided keys
      *
      * @pubsub: state_storage, state_subscribeStorage, state_unsubscribeStorage
      **/
-    subscribeStorage(keys: Array<StorageKey>, callback: Callback<StorageChangeSet>): Promise<Unsub>;
+    subscribeStorage: GenericRpcCall<(keys: Array<StorageKey>, callback: Callback<StorageChangeSet>) => Promise<Unsub>>;
 
     /**
      * The `traceBlock` RPC provides a way to trace the re-execution of a single block, collecting Spans and Events from both the client and the relevant WASM runtime.
      *
      * @rpcname: state_traceBlock
      **/
-    traceBlock(
-      block: Hash,
-      targets: Option<string>,
-      storage_keys: Option<string>,
-      methods: Option<string>,
-    ): Promise<TraceBlockResponse>;
+    traceBlock: GenericRpcCall<
+      (
+        block: Hash,
+        targets: Option<string>,
+        storage_keys: Option<string>,
+        methods: Option<string>,
+      ) => Promise<TraceBlockResponse>
+    >;
 
     /**
      * Check current migration state. This call is performed locally without submitting any transactions. Thus executing this won't change any state. Nonetheless it is a VERY costy call that should be only exposed to trusted peers.
      *
      * @rpcname: state_trieMigrationStatus
      **/
-    trieMigrationStatus(at?: BlockHash): Promise<MigrationStatusResult>;
+    trieMigrationStatus: GenericRpcCall<(at?: BlockHash) => Promise<MigrationStatusResult>>;
 
-    [method: string]: AsyncMethod;
+    [method: string]: GenericRpcCall;
   };
   statement: {
     /**
      * @rpcname: statement_broadcasts
      **/
-    broadcasts: AsyncMethod;
+    broadcasts: GenericRpcCall;
 
     /**
      * @rpcname: statement_dump
      **/
-    dump: AsyncMethod;
+    dump: GenericRpcCall;
 
     /**
      * @rpcname: statement_posted
      **/
-    posted: AsyncMethod;
+    posted: GenericRpcCall;
 
     /**
      * @rpcname: statement_postedClear
      **/
-    postedClear: AsyncMethod;
+    postedClear: GenericRpcCall;
 
     /**
      * @rpcname: statement_remove
      **/
-    remove: AsyncMethod;
+    remove: GenericRpcCall;
 
     /**
      * @rpcname: statement_submit
      **/
-    submit: AsyncMethod;
+    submit: GenericRpcCall;
 
-    [method: string]: AsyncMethod;
+    [method: string]: GenericRpcCall;
   };
   syncstate: {
     /**
@@ -614,9 +597,9 @@ export interface RpcCalls extends GenericRpcCalls {
      *
      * @rpcname: sync_state_genSyncSpec
      **/
-    genSyncSpec(raw: boolean): Promise<Record<string, any>>;
+    genSyncSpec: GenericRpcCall<(raw: boolean) => Promise<Record<string, any>>>;
 
-    [method: string]: AsyncMethod;
+    [method: string]: GenericRpcCall;
   };
   system: {
     /**
@@ -628,7 +611,7 @@ export interface RpcCalls extends GenericRpcCalls {
      *
      * @rpcname: system_accountNextIndex
      **/
-    accountNextIndex(address: string): Promise<number>;
+    accountNextIndex: GenericRpcCall<(address: string) => Promise<number>>;
 
     /**
      * Adds the supplied directives to the current log filter
@@ -639,7 +622,7 @@ export interface RpcCalls extends GenericRpcCalls {
      *
      * @rpcname: system_addLogFilter
      **/
-    addLogFilter(directives: string): Promise<void>;
+    addLogFilter: GenericRpcCall<(directives: string) => Promise<void>>;
 
     /**
      * Adds a reserved peer. Returns the empty string or an error. The string
@@ -650,28 +633,28 @@ export interface RpcCalls extends GenericRpcCalls {
      *
      * @rpcname: system_addReservedPeer
      **/
-    addReservedPeer(peer: string): Promise<void>;
+    addReservedPeer: GenericRpcCall<(peer: string) => Promise<void>>;
 
     /**
      * Get the chain's name. Given as a string identifier.
      *
      * @rpcname: system_chain
      **/
-    chain(): Promise<string>;
+    chain: GenericRpcCall<() => Promise<string>>;
 
     /**
      * Get the chain's type.
      *
      * @rpcname: system_chainType
      **/
-    chainType(): Promise<ChainType>;
+    chainType: GenericRpcCall<() => Promise<ChainType>>;
 
     /**
      * Dry run an extrinsic at a given block. Return SCALE encoded ApplyExtrinsicResult.
      *
      * @rpcname: system_dryRun
      **/
-    dryRun(extrinsic: Bytes, at?: BlockHash): Promise<ApplyExtrinsicResult>;
+    dryRun: GenericRpcCall<(extrinsic: Bytes, at?: BlockHash) => Promise<ApplyExtrinsicResult>>;
 
     /**
      * Return health status of the node.
@@ -682,7 +665,7 @@ export interface RpcCalls extends GenericRpcCalls {
      *
      * @rpcname: system_health
      **/
-    health(): Promise<Health>;
+    health: GenericRpcCall<() => Promise<Health>>;
 
     /**
      * Returns the multi-addresses that the local node is listening on
@@ -692,42 +675,42 @@ export interface RpcCalls extends GenericRpcCalls {
      *
      * @rpcname: system_localListenAddresses
      **/
-    localListenAddresses(): Promise<Array<string>>;
+    localListenAddresses: GenericRpcCall<() => Promise<Array<string>>>;
 
     /**
      * Returns the base58-encoded PeerId of the node.
      *
      * @rpcname: system_localPeerId
      **/
-    localPeerId(): Promise<string>;
+    localPeerId: GenericRpcCall<() => Promise<string>>;
 
     /**
      * Get the node's implementation name. Plain old string.
      *
      * @rpcname: system_name
      **/
-    name(): Promise<string>;
+    name: GenericRpcCall<() => Promise<string>>;
 
     /**
      * Returns the roles the node is running as
      *
      * @rpcname: system_nodeRoles
      **/
-    nodeRoles(): Promise<Array<NodeRole>>;
+    nodeRoles: GenericRpcCall<() => Promise<Array<NodeRole>>>;
 
     /**
      * Returns the currently connected peers
      *
      * @rpcname: system_peers
      **/
-    peers(): Promise<Array<PeerInfo>>;
+    peers: GenericRpcCall<() => Promise<Array<PeerInfo>>>;
 
     /**
      * Get a custom set of properties as a JSON object, defined in the chain spec.
      *
      * @rpcname: system_properties
      **/
-    properties(): Promise<ChainProperties>;
+    properties: GenericRpcCall<() => Promise<ChainProperties>>;
 
     /**
      * Remove a reserved peer. Returns the empty string or an error. The string
@@ -735,28 +718,28 @@ export interface RpcCalls extends GenericRpcCalls {
      *
      * @rpcname: system_removeReservedPeer
      **/
-    removeReservedPeer(peerId: string): Promise<void>;
+    removeReservedPeer: GenericRpcCall<(peerId: string) => Promise<void>>;
 
     /**
      * Returns the list of reserved peers
      *
      * @rpcname: system_reservedPeers
      **/
-    reservedPeers(): Promise<Array<string>>;
+    reservedPeers: GenericRpcCall<() => Promise<Array<string>>>;
 
     /**
      * Resets the log filter to Substrate defaults
      *
      * @rpcname: system_resetLogFilter
      **/
-    resetLogFilter(): Promise<void>;
+    resetLogFilter: GenericRpcCall<() => Promise<void>>;
 
     /**
      * Returns the state of the syncing of the node: starting block, current best block, highest known block.
      *
      * @rpcname: system_syncState
      **/
-    syncState(): Promise<SyncState>;
+    syncState: GenericRpcCall<() => Promise<SyncState>>;
 
     /**
      * Returns current state of the network.
@@ -766,28 +749,28 @@ export interface RpcCalls extends GenericRpcCalls {
      *
      * @rpcname: system_unstable_networkState
      **/
-    unstable_networkState(): Promise<NetworkState>;
+    unstable_networkState: GenericRpcCall<() => Promise<NetworkState>>;
 
     /**
      * Get the node implementation's version. Should be a semver string.
      *
      * @rpcname: system_version
      **/
-    version(): Promise<string>;
+    version: GenericRpcCall<() => Promise<string>>;
 
-    [method: string]: AsyncMethod;
+    [method: string]: GenericRpcCall;
   };
   transaction: {
     /**
      * @rpcname: transaction_unstable_submitAndWatch
      **/
-    unstable_submitAndWatch: AsyncMethod;
+    unstable_submitAndWatch: GenericRpcCall;
 
     /**
      * @rpcname: transaction_unstable_unwatch
      **/
-    unstable_unwatch: AsyncMethod;
+    unstable_unwatch: GenericRpcCall;
 
-    [method: string]: AsyncMethod;
+    [method: string]: GenericRpcCall;
   };
 }

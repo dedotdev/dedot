@@ -10,6 +10,9 @@
     "clean": "rm -rf ./dist && rm -rf ./tsconfig.tsbuildinfo ./tsconfig.build.tsbuildinfo",
     "test": "vitest --watch=false"
   },
+  "dependencies": {
+    "@delightfuldot/types": "workspace:*"
+  },
   "publishConfig": {
     "access": "public",
     "directory": "dist"
