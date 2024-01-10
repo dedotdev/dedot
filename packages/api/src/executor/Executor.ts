@@ -26,7 +26,7 @@ export abstract class Executor<ChainApi extends GenericSubstrateApi = SubstrateA
     return this.api.metadataLatest;
   }
 
-  getPallet(name: string, throwErr = false): Pallet {
+  getPallet(name: string, throwErr = true): Pallet {
     const targetPallet = this.metadata.pallets.find((p) => stringCamelCase(p.name) === name);
     if (!targetPallet && throwErr) {
       throw new Error(`Pallet not found: ${name}`);

@@ -34,7 +34,9 @@
   },
   "resolutions": {
     "@polkadot/util": "^12.6.2",
-    "@polkadot/util-crypto": "^12.6.2"
+    "@polkadot/util-crypto": "^12.6.2",
+    "@polkadot/types": "^10.11.2",
+    "@polkadot/types-support": "^10.11.2"
   },
   "license": "Apache-2.0"
 }

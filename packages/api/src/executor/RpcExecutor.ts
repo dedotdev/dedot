@@ -61,12 +61,11 @@ export class RpcExecutor<ChainApi extends GenericSubstrateApi = SubstrateApi> ex
       };
     };
 
-    const rawRpc = async (...args: any[]): Promise<any> => {
-      return await this.provider.send<any>(rpcName, args);
-    };
-
     if (!callSpec) {
-      return rawRpc;
+      // Call arbitrary rpc method
+      return async (...args: any[]): Promise<any> => {
+        return await this.provider.send<any>(rpcName, args);
+      };
     }
 
     const oneFnRpc: GenericRpcCall = isSubscription ? fnSubRpc : fnRpc;

@@ -255,6 +255,7 @@ export default class DelightfulApi<ChainApi extends GenericSubstrateApi = Substr
   }
 
   get rpc(): ChainApi['rpc'] {
+    // TODO add executable carrier to support calling arbitrary rpc methods
     return newProxyChain<ChainApi>({ executor: new RpcExecutor(this) }) as ChainApi['rpc'];
   }
 

@@ -5,7 +5,7 @@ import { Executor } from './Executor';
 
 export class ConstantExecutor<ChainApi extends GenericSubstrateApi = SubstrateApi> extends Executor<ChainApi> {
   execute(pallet: string, constantName: string) {
-    const targetPallet = this.getPallet(pallet, true);
+    const targetPallet = this.getPallet(pallet);
 
     const constantDef = targetPallet.constants.find((one) => stringCamelCase(one.name) === constantName);
     if (!constantDef) {

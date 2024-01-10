@@ -424,7 +424,7 @@ __metadata:
     "@delightfuldot/shape": "workspace:*"
     "@delightfuldot/specs": "workspace:*"
     "@delightfuldot/utils": "workspace:*"
-    "@polkadot/types-support": ^10.10.1
+    "@polkadot/types-support": ^10.11.2
     "@polkadot/util": ^12.6.2
     delightfuldot: "workspace:*"
     handlebars: ^4.7.8
@@ -1591,7 +1591,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@polkadot/types-support@npm:10.11.2":
+"@polkadot/types-support@npm:^10.11.2":
   version: 10.11.2
   resolution: "@polkadot/types-support@npm:10.11.2"
   dependencies:
@@ -1601,17 +1601,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@polkadot/types-support@npm:^10.10.1":
-  version: 10.10.1
-  resolution: "@polkadot/types-support@npm:10.10.1"
-  dependencies:
-    "@polkadot/util": ^12.5.1
-    tslib: ^2.6.2
-  checksum: 391857f39463fcc9bbc34a6bafd191e12eb3fd28f386d4094cc3cdcbcd0fcc8799c6e99a49b0e634c6a1b78d07188eb6e1e01299f55df2593c3f30fcb241631c
-  languageName: node
-  linkType: hard
-
-"@polkadot/types@npm:10.11.2, @polkadot/types@npm:^10.11.2":
+"@polkadot/types@npm:^10.11.2":
   version: 10.11.2
   resolution: "@polkadot/types@npm:10.11.2"
   dependencies:
@@ -3463,7 +3453,7 @@ __metadata:
     "@delightfuldot/utils": "workspace:*"
     "@polkadot/rpc-provider": ^10.11.2
     "@polkadot/types": ^10.11.2
-    "@polkadot/types-support": ^10.10.1
+    "@polkadot/types-support": ^10.11.2
     "@polkadot/util": ^12.6.2
     "@polkadot/util-crypto": ^12.6.2
     localforage: ^1.10.0
