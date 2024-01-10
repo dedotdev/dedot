@@ -4,6 +4,7 @@ import { RpcCallSpec } from './rpc';
 
 export * from './rpc';
 
+export type AnyFunc = (...args: any[]) => any;
 export type AsyncMethod = (...args: any[]) => Promise<any>;
 export type Unsub = () => Promise<boolean>;
 export type Callback<T> = (result: T) => Promise<void> | void;

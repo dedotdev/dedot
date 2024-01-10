@@ -23,12 +23,13 @@
   "devDependencies": {
     "@trivago/prettier-plugin-sort-imports": "^4.1.1",
     "husky": "^8.0.3",
+    "jsdom": "^23.2.0",
     "lerna": "^7.4.2",
     "prettier": "^3.0.3",
     "prettier-plugin-organize-imports": "^3.2.3",
     "ts-node": "^10.9.1",
     "typescript": "^5.2.2",
-    "vite": "^4.4.9",
+    "vite": "^5.0.11",
     "vite-tsconfig-paths": "^4.2.1",
     "vitest": "^0.34.6"
   },
