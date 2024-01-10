@@ -39,6 +39,16 @@ export interface ChainErrors extends GenericChainErrors {
     CallFiltered: GenericPalletError;
 
     /**
+     * The specified [`Task`] is not valid.
+     **/
+    InvalidTask: GenericPalletError;
+
+    /**
+     * The specified [`Task`] failed during execution.
+     **/
+    FailedTask: GenericPalletError;
+
+    /**
      * Generic pallet error
      **/
     [error: string]: GenericPalletError;
@@ -322,6 +332,11 @@ export interface ChainErrors extends GenericChainErrors {
     AlreadyClaimed: GenericPalletError;
 
     /**
+     * No nominators exist on this page.
+     **/
+    InvalidPage: GenericPalletError;
+
+    /**
      * Incorrect previous history depth input provided.
      **/
     IncorrectHistoryDepth: GenericPalletError;
@@ -372,6 +387,11 @@ export interface ChainErrors extends GenericChainErrors {
      * Some bound is not met.
      **/
     BoundNotMet: GenericPalletError;
+
+    /**
+     * Used when attempting to use deprecated controller account logic.
+     **/
+    ControllerDeprecated: GenericPalletError;
 
     /**
      * Generic pallet error
@@ -820,7 +840,7 @@ export interface ChainErrors extends GenericChainErrors {
     InsufficientProposersBalance: GenericPalletError;
 
     /**
-     * No proposal or bounty at that index.
+     * No proposal, bounty or spend at that index.
      **/
     InvalidIndex: GenericPalletError;
 
@@ -839,6 +859,41 @@ export interface ChainErrors extends GenericChainErrors {
      * Proposal has not been approved.
      **/
     ProposalNotApproved: GenericPalletError;
+
+    /**
+     * The balance of the asset kind is not convertible to the balance of the native asset.
+     **/
+    FailedToConvertBalance: GenericPalletError;
+
+    /**
+     * The spend has expired and cannot be claimed.
+     **/
+    SpendExpired: GenericPalletError;
+
+    /**
+     * The spend is not yet eligible for payout.
+     **/
+    EarlyPayout: GenericPalletError;
+
+    /**
+     * The payment has already been attempted.
+     **/
+    AlreadyAttempted: GenericPalletError;
+
+    /**
+     * There was some issue with the mechanism of payment.
+     **/
+    PayoutError: GenericPalletError;
+
+    /**
+     * The payout was not yet attempted/claimed.
+     **/
+    NotAttempted: GenericPalletError;
+
+    /**
+     * The payment has neither failed nor succeeded yet.
+     **/
+    Inconclusive: GenericPalletError;
 
     /**
      * Generic pallet error
@@ -964,6 +1019,11 @@ export interface ChainErrors extends GenericChainErrors {
     NoChainExtension: GenericPalletError;
 
     /**
+     * Failed to decode the XCM program.
+     **/
+    XcmDecodeFailed: GenericPalletError;
+
+    /**
      * A contract with the same AccountId already exists.
      **/
     DuplicateContract: GenericPalletError;
@@ -1060,7 +1120,7 @@ export interface ChainErrors extends GenericChainErrors {
   };
   sudo: {
     /**
-     * Sender must be the Sudo account
+     * Sender must be the Sudo account.
      **/
     RequireSudo: GenericPalletError;
 
@@ -1140,11 +1200,6 @@ export interface ChainErrors extends GenericChainErrors {
      * The target is invalid.
      **/
     InvalidTarget: GenericPalletError;
-
-    /**
-     * Too many additional fields.
-     **/
-    TooManyFields: GenericPalletError;
 
     /**
      * Maximum amount of registrars reached. Cannot add any more.
@@ -1546,6 +1601,16 @@ export interface ChainErrors extends GenericChainErrors {
     NotRequested: GenericPalletError;
 
     /**
+     * More than `MAX_HASH_UPGRADE_BULK_COUNT` hashes were requested to be upgraded at once.
+     **/
+    TooMany: GenericPalletError;
+
+    /**
+     * Too few hashes were requested to be upgraded (i.e. zero).
+     **/
+    TooFew: GenericPalletError;
+
+    /**
      * Generic pallet error
      **/
     [error: string]: GenericPalletError;
@@ -1749,6 +1814,11 @@ export interface ChainErrors extends GenericChainErrors {
      * The tip hash is unknown.
      **/
     UnknownTip: GenericPalletError;
+
+    /**
+     * The tip given was too generous.
+     **/
+    MaxTipAmountExceeded: GenericPalletError;
 
     /**
      * The account attempting to retract the tip is not the finder of the tip.
@@ -2591,11 +2661,6 @@ export interface ChainErrors extends GenericChainErrors {
   };
   transactionStorage: {
     /**
-     * Insufficient account balance.
-     **/
-    InsufficientFunds: GenericPalletError;
-
-    /**
      * Invalid configuration.
      **/
     NotConfigured: GenericPalletError;
@@ -3050,7 +3115,7 @@ export interface ChainErrors extends GenericChainErrors {
     /**
      * The account's identity does not have display field and website field.
      **/
-    WithoutIdentityDisplayAndWebsite: GenericPalletError;
+    WithoutRequiredIdentityFields: GenericPalletError;
 
     /**
      * The account's identity has no good judgement.
@@ -3153,9 +3218,9 @@ export interface ChainErrors extends GenericChainErrors {
     /**
      * The amount does not meet the minimum bond to either join or create a pool.
      *
-     * The depositor can never unbond to a value less than
-     * `Pallet::depositor_min_bond`. The caller does not have nominating
-     * permissions for the pool. Members can never unbond to a value below `MinJoinBond`.
+     * The depositor can never unbond to a value less than `Pallet::depositor_min_bond`. The
+     * caller does not have nominating permissions for the pool. Members can never unbond to a
+     * value below `MinJoinBond`.
      **/
     MinimumBondNotMet: GenericPalletError;
 
@@ -3270,6 +3335,11 @@ export interface ChainErrors extends GenericChainErrors {
      * Bonding extra is restricted to the exact pending reward amount.
      **/
     BondExtraRestricted: GenericPalletError;
+
+    /**
+     * No imbalance in the ED deposit for the pool.
+     **/
+    NothingToAdjust: GenericPalletError;
 
     /**
      * Generic pallet error
@@ -3630,6 +3700,11 @@ export interface ChainErrors extends GenericChainErrors {
     QueuePaused: GenericPalletError;
 
     /**
+     * Another call is in progress and needs to finish before this call can happen.
+     **/
+    RecursiveDisallowed: GenericPalletError;
+
+    /**
      * Generic pallet error
      **/
     [error: string]: GenericPalletError;
@@ -3840,6 +3915,17 @@ export interface ChainErrors extends GenericChainErrors {
      * The configuration could not be applied because it is invalid.
      **/
     InvalidConfig: GenericPalletError;
+
+    /**
+     * Generic pallet error
+     **/
+    [error: string]: GenericPalletError;
+  };
+  tasksExample: {
+    /**
+     * The referenced task was not found.
+     **/
+    NotFound: GenericPalletError;
 
     /**
      * Generic pallet error

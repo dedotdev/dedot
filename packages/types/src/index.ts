@@ -1,4 +1,4 @@
-export * from './generic';
+export * from './types';
 export * from './registry';
 export * from './serde';
 export * from './system';
@@ -11,4 +11,3 @@ export * from './grandpa';
 export * from './babe';
 export * from './mmr';
 export * from './offchain';
-

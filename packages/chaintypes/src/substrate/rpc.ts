@@ -139,11 +139,6 @@ export interface RpcCalls extends GenericRpcCalls {
     unstable_follow: GenericRpcCall;
 
     /**
-     * @rpcname: chainHead_unstable_genesisHash
-     **/
-    unstable_genesisHash: GenericRpcCall;
-
-    /**
      * @rpcname: chainHead_unstable_header
      **/
     unstable_header: GenericRpcCall;
@@ -172,19 +167,19 @@ export interface RpcCalls extends GenericRpcCalls {
   };
   chainSpec: {
     /**
-     * @rpcname: chainSpec_unstable_chainName
+     * @rpcname: chainSpec_v1_chainName
      **/
-    unstable_chainName: GenericRpcCall;
+    v1_chainName: GenericRpcCall;
 
     /**
-     * @rpcname: chainSpec_unstable_genesisHash
+     * @rpcname: chainSpec_v1_genesisHash
      **/
-    unstable_genesisHash: GenericRpcCall;
+    v1_genesisHash: GenericRpcCall;
 
     /**
-     * @rpcname: chainSpec_unstable_properties
+     * @rpcname: chainSpec_v1_properties
      **/
-    unstable_properties: GenericRpcCall;
+    v1_properties: GenericRpcCall;
 
     [method: string]: GenericRpcCall;
   };

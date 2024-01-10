@@ -1,6 +1,6 @@
 import { HexString } from '@delightfuldot/utils';
-import { registry } from '../registry';
-import { SerdeEnum } from '../serde';
+import { registry } from './registry';
+import { SerdeEnum } from './serde';
 
 /**
  * The type of a chain.

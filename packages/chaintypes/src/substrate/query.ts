@@ -29,7 +29,7 @@ import type {
   PalletBalancesBalanceLock,
   PalletBalancesReserveData,
   PalletBalancesIdAmount,
-  PalletBalancesIdAmount002,
+  PalletBalancesIdAmountRuntimeFreezeReason,
   PalletTransactionPaymentReleases,
   PalletElectionProviderMultiPhasePhase,
   PalletElectionProviderMultiPhaseReadySolution,
@@ -42,7 +42,9 @@ import type {
   PalletStakingValidatorPrefs,
   PalletStakingNominations,
   PalletStakingActiveEraInfo,
-  PalletStakingExposure,
+  SpStakingExposure,
+  SpStakingPagedExposureMetadata,
+  SpStakingExposurePage,
   PalletStakingEraRewardPoints,
   PalletStakingForcing,
   PalletStakingUnappliedSlash,
@@ -61,7 +63,9 @@ import type {
   PalletElectionsPhragmenVoter,
   PalletGrandpaStoredState,
   PalletGrandpaStoredPendingChange,
+  SpConsensusGrandpaAppPublic,
   PalletTreasuryProposal,
+  PalletTreasurySpendStatus,
   PalletContractsWasmCodeInfo,
   PalletContractsStorageContractInfo,
   PalletContractsStorageDeletionQueueManager,
@@ -83,6 +87,7 @@ import type {
   PalletVestingVestingInfo,
   PalletVestingReleases,
   PalletSchedulerScheduled,
+  PalletPreimageOldRequestStatus,
   PalletPreimageRequestStatus,
   PalletProxyProxyDefinition,
   PalletProxyAnnouncement,
@@ -152,6 +157,8 @@ import type {
   PalletBrokerContributionRecord,
   PalletBrokerPoolIoRecord,
   PalletBrokerInstaPoolHistoryRecord,
+  SpMixnetAppPublic,
+  PalletMixnetBoundedMixnode,
 } from './types';
 
 export interface ChainStorage extends GenericChainStorage {
@@ -414,13 +421,16 @@ export interface ChainStorage extends GenericChainStorage {
   };
   timestamp: {
     /**
-     * Current time for the current block.
+     * The current time for the current block.
      **/
     now(): Promise<bigint>;
     now(callback: Callback<bigint>): Promise<Unsub>;
 
     /**
-     * Did the timestamp get updated in this block?
+     * Whether the timestamp has been updated in this block.
+     *
+     * This value is updated to `true` upon successful submission of a timestamp by a node.
+     * It is then checked at the end of each block execution in the `on_finalize` hook.
      **/
     didUpdate(): Promise<boolean>;
     didUpdate(callback: Callback<boolean>): Promise<Unsub>;
@@ -503,8 +513,8 @@ export interface ChainStorage extends GenericChainStorage {
     /**
      * Freeze locks on account balances.
      **/
-    freezes(arg: AccountId32Like): Promise<Array<PalletBalancesIdAmount002>>;
-    freezes(arg: AccountId32Like, callback: Callback<Array<PalletBalancesIdAmount002>>): Promise<Unsub>;
+    freezes(arg: AccountId32Like): Promise<Array<PalletBalancesIdAmountRuntimeFreezeReason>>;
+    freezes(arg: AccountId32Like, callback: Callback<Array<PalletBalancesIdAmountRuntimeFreezeReason>>): Promise<Unsub>;
   };
   transactionPayment: {
     nextFeeMultiplier(): Promise<FixedU128>;
@@ -670,6 +680,9 @@ export interface ChainStorage extends GenericChainStorage {
 
     /**
      * Map from all (unlocked) "controller" accounts to the info regarding the staking.
+     *
+     * Note: All the reads and mutations to this storage *MUST* be done through the methods exposed
+     * by [`StakingLedger`] to ensure data and lock consistency.
      **/
     ledger(arg: AccountId32Like): Promise<PalletStakingStakingLedger | undefined>;
     ledger(arg: AccountId32Like, callback: Callback<PalletStakingStakingLedger | undefined>): Promise<Unsub>;
@@ -761,7 +774,7 @@ export interface ChainStorage extends GenericChainStorage {
     activeEra(callback: Callback<PalletStakingActiveEraInfo | undefined>): Promise<Unsub>;
 
     /**
-     * The session index at which the era start for the last `HISTORY_DEPTH` eras.
+     * The session index at which the era start for the last [`Config::HistoryDepth`] eras.
      *
      * Note: This tracks the starting session (i.e. session index when era start being active)
      * for the eras in `[CurrentEra - HISTORY_DEPTH, CurrentEra]`.
@@ -774,40 +787,92 @@ export interface ChainStorage extends GenericChainStorage {
      *
      * This is keyed first by the era index to allow bulk deletion and then the stash account.
      *
-     * Is it removed after `HISTORY_DEPTH` eras.
+     * Is it removed after [`Config::HistoryDepth`] eras.
      * If stakers hasn't been set or has been removed then empty exposure is returned.
+     *
+     * Note: Deprecated since v14. Use `EraInfo` instead to work with exposures.
      **/
-    erasStakers(arg: [number, AccountId32Like]): Promise<PalletStakingExposure>;
-    erasStakers(arg: [number, AccountId32Like], callback: Callback<PalletStakingExposure>): Promise<Unsub>;
+    erasStakers(arg: [number, AccountId32Like]): Promise<SpStakingExposure>;
+    erasStakers(arg: [number, AccountId32Like], callback: Callback<SpStakingExposure>): Promise<Unsub>;
+
+    /**
+     * Summary of validator exposure at a given era.
+     *
+     * This contains the total stake in support of the validator and their own stake. In addition,
+     * it can also be used to get the number of nominators backing this validator and the number of
+     * exposure pages they are divided into. The page count is useful to determine the number of
+     * pages of rewards that needs to be claimed.
+     *
+     * This is keyed first by the era index to allow bulk deletion and then the stash account.
+     * Should only be accessed through `EraInfo`.
+     *
+     * Is it removed after [`Config::HistoryDepth`] eras.
+     * If stakers hasn't been set or has been removed then empty overview is returned.
+     **/
+    erasStakersOverview(arg: [number, AccountId32Like]): Promise<SpStakingPagedExposureMetadata | undefined>;
+    erasStakersOverview(
+      arg: [number, AccountId32Like],
+      callback: Callback<SpStakingPagedExposureMetadata | undefined>,
+    ): Promise<Unsub>;
 
     /**
      * Clipped Exposure of validator at era.
      *
+     * Note: This is deprecated, should be used as read-only and will be removed in the future.
+     * New `Exposure`s are stored in a paged manner in `ErasStakersPaged` instead.
+     *
      * This is similar to [`ErasStakers`] but number of nominators exposed is reduced to the
-     * `T::MaxNominatorRewardedPerValidator` biggest stakers.
+     * `T::MaxExposurePageSize` biggest stakers.
      * (Note: the field `total` and `own` of the exposure remains unchanged).
      * This is used to limit the i/o cost for the nominator payout.
      *
      * This is keyed fist by the era index to allow bulk deletion and then the stash account.
      *
-     * Is it removed after `HISTORY_DEPTH` eras.
+     * It is removed after [`Config::HistoryDepth`] eras.
      * If stakers hasn't been set or has been removed then empty exposure is returned.
+     *
+     * Note: Deprecated since v14. Use `EraInfo` instead to work with exposures.
      **/
-    erasStakersClipped(arg: [number, AccountId32Like]): Promise<PalletStakingExposure>;
-    erasStakersClipped(arg: [number, AccountId32Like], callback: Callback<PalletStakingExposure>): Promise<Unsub>;
+    erasStakersClipped(arg: [number, AccountId32Like]): Promise<SpStakingExposure>;
+    erasStakersClipped(arg: [number, AccountId32Like], callback: Callback<SpStakingExposure>): Promise<Unsub>;
+
+    /**
+     * Paginated exposure of a validator at given era.
+     *
+     * This is keyed first by the era index to allow bulk deletion, then stash account and finally
+     * the page. Should only be accessed through `EraInfo`.
+     *
+     * This is cleared after [`Config::HistoryDepth`] eras.
+     **/
+    erasStakersPaged(arg: [number, AccountId32Like, number]): Promise<SpStakingExposurePage | undefined>;
+    erasStakersPaged(
+      arg: [number, AccountId32Like, number],
+      callback: Callback<SpStakingExposurePage | undefined>,
+    ): Promise<Unsub>;
+
+    /**
+     * History of claimed paged rewards by era and validator.
+     *
+     * This is keyed by era and validator stash which maps to the set of page indexes which have
+     * been claimed.
+     *
+     * It is removed after [`Config::HistoryDepth`] eras.
+     **/
+    claimedRewards(arg: [number, AccountId32Like]): Promise<Array<number>>;
+    claimedRewards(arg: [number, AccountId32Like], callback: Callback<Array<number>>): Promise<Unsub>;
 
     /**
      * Similar to `ErasStakers`, this holds the preferences of validators.
      *
      * This is keyed first by the era index to allow bulk deletion and then the stash account.
      *
-     * Is it removed after `HISTORY_DEPTH` eras.
+     * Is it removed after [`Config::HistoryDepth`] eras.
      **/
     erasValidatorPrefs(arg: [number, AccountId32Like]): Promise<PalletStakingValidatorPrefs>;
     erasValidatorPrefs(arg: [number, AccountId32Like], callback: Callback<PalletStakingValidatorPrefs>): Promise<Unsub>;
 
     /**
-     * The total validator era payout for the last `HISTORY_DEPTH` eras.
+     * The total validator era payout for the last [`Config::HistoryDepth`] eras.
      *
      * Eras that haven't finished yet or has been removed doesn't have reward.
      **/
@@ -815,14 +880,14 @@ export interface ChainStorage extends GenericChainStorage {
     erasValidatorReward(arg: number, callback: Callback<bigint | undefined>): Promise<Unsub>;
 
     /**
-     * Rewards for the last `HISTORY_DEPTH` eras.
+     * Rewards for the last [`Config::HistoryDepth`] eras.
      * If reward hasn't been set or has been removed then 0 reward is returned.
      **/
     erasRewardPoints(arg: number): Promise<PalletStakingEraRewardPoints>;
     erasRewardPoints(arg: number, callback: Callback<PalletStakingEraRewardPoints>): Promise<Unsub>;
 
     /**
-     * The total amount staked for the last `HISTORY_DEPTH` eras.
+     * The total amount staked for the last [`Config::HistoryDepth`] eras.
      * If total hasn't been set or has been removed then 0 stake is returned.
      **/
     erasTotalStake(arg: number): Promise<bigint>;
@@ -1059,7 +1124,7 @@ export interface ChainStorage extends GenericChainStorage {
 
     /**
      * General information concerning any proposal or referendum.
-     * The `PreimageHash` refers to the preimage of the `Preimages` provider which can be a JSON
+     * The `Hash` refers to the preimage of the `Preimages` provider which can be a JSON
      * dump or IPFS hash of a JSON file.
      *
      * Consider a garbage collection for a metadata of finished referendums to `unrequest` (remove)
@@ -1244,6 +1309,12 @@ export interface ChainStorage extends GenericChainStorage {
      **/
     setIdSession(arg: bigint): Promise<number | undefined>;
     setIdSession(arg: bigint, callback: Callback<number | undefined>): Promise<Unsub>;
+
+    /**
+     * The current list of authorities.
+     **/
+    authorities(): Promise<Array<[SpConsensusGrandpaAppPublic, bigint]>>;
+    authorities(callback: Callback<Array<[SpConsensusGrandpaAppPublic, bigint]>>): Promise<Unsub>;
   };
   treasury: {
     /**
@@ -1269,6 +1340,18 @@ export interface ChainStorage extends GenericChainStorage {
      **/
     approvals(): Promise<Array<number>>;
     approvals(callback: Callback<Array<number>>): Promise<Unsub>;
+
+    /**
+     * The count of spends that have been made.
+     **/
+    spendCount(): Promise<number>;
+    spendCount(callback: Callback<number>): Promise<Unsub>;
+
+    /**
+     * Spends that have been approved and being processed.
+     **/
+    spends(arg: number): Promise<PalletTreasurySpendStatus | undefined>;
+    spends(arg: number, callback: Callback<PalletTreasurySpendStatus | undefined>): Promise<Unsub>;
   };
   assetRate: {
     /**
@@ -1690,8 +1773,14 @@ export interface ChainStorage extends GenericChainStorage {
     /**
      * The request status of a given hash.
      **/
-    statusFor(arg: H256): Promise<PalletPreimageRequestStatus | undefined>;
-    statusFor(arg: H256, callback: Callback<PalletPreimageRequestStatus | undefined>): Promise<Unsub>;
+    statusFor(arg: H256): Promise<PalletPreimageOldRequestStatus | undefined>;
+    statusFor(arg: H256, callback: Callback<PalletPreimageOldRequestStatus | undefined>): Promise<Unsub>;
+
+    /**
+     * The request status of a given hash.
+     **/
+    requestStatusFor(arg: H256): Promise<PalletPreimageRequestStatus | undefined>;
+    requestStatusFor(arg: H256, callback: Callback<PalletPreimageRequestStatus | undefined>): Promise<Unsub>;
     preimageFor(arg: [H256, number]): Promise<Bytes | undefined>;
     preimageFor(arg: [H256, number], callback: Callback<Bytes | undefined>): Promise<Unsub>;
   };
@@ -2289,7 +2378,7 @@ export interface ChainStorage extends GenericChainStorage {
 
     /**
      * The metadata is a general information concerning the referendum.
-     * The `PreimageHash` refers to the preimage of the `Preimages` provider which can be a JSON
+     * The `Hash` refers to the preimage of the `Preimages` provider which can be a JSON
      * dump or IPFS hash of a JSON file.
      *
      * Consider a garbage collection for a metadata of finished referendums to `unrequest` (remove)
@@ -2402,6 +2491,16 @@ export interface ChainStorage extends GenericChainStorage {
     unscrupulousWebsites(callback: Callback<Array<Bytes>>): Promise<Unsub>;
   };
   nominationPools: {
+    /**
+     * The sum of funds across all pools.
+     *
+     * This might be lower but never higher than the sum of `total_balance` of all [`PoolMembers`]
+     * because calling `pool_withdraw_unbonded` might decrease the total stake of the pool's
+     * `bonded_account` without adjusting the pallet-internal `UnbondingPool`'s.
+     **/
+    totalValueLocked(): Promise<bigint>;
+    totalValueLocked(callback: Callback<bigint>): Promise<Unsub>;
+
     /**
      * Minimum amount to bond to join a pool.
      **/
@@ -2570,7 +2669,7 @@ export interface ChainStorage extends GenericChainStorage {
 
     /**
      * The metadata is a general information concerning the referendum.
-     * The `PreimageHash` refers to the preimage of the `Preimages` provider which can be a JSON
+     * The `Hash` refers to the preimage of the `Preimages` provider which can be a JSON
      * dump or IPFS hash of a JSON file.
      *
      * Consider a garbage collection for a metadata of finished referendums to `unrequest` (remove)
@@ -2843,5 +2942,49 @@ export interface ChainStorage extends GenericChainStorage {
      **/
     instaPoolHistory(arg: number): Promise<PalletBrokerInstaPoolHistoryRecord | undefined>;
     instaPoolHistory(arg: number, callback: Callback<PalletBrokerInstaPoolHistoryRecord | undefined>): Promise<Unsub>;
+  };
+  tasksExample: {
+    /**
+     * Some running total.
+     **/
+    total(): Promise<[number, number]>;
+    total(callback: Callback<[number, number]>): Promise<Unsub>;
+
+    /**
+     * Numbers to be added into the total.
+     **/
+    numbers(arg: number): Promise<number | undefined>;
+    numbers(arg: number, callback: Callback<number | undefined>): Promise<Unsub>;
+  };
+  mixnet: {
+    /**
+     * Index of the current session. This may be offset relative to the session index tracked by
+     * eg `pallet_session`; mixnet session indices are independent.
+     **/
+    currentSessionIndex(): Promise<number>;
+    currentSessionIndex(callback: Callback<number>): Promise<Unsub>;
+
+    /**
+     * Block in which the current session started.
+     **/
+    currentSessionStartBlock(): Promise<number>;
+    currentSessionStartBlock(callback: Callback<number>): Promise<Unsub>;
+
+    /**
+     * Authority list for the next session.
+     **/
+    nextAuthorityIds(arg: number): Promise<SpMixnetAppPublic | undefined>;
+    nextAuthorityIds(arg: number, callback: Callback<SpMixnetAppPublic | undefined>): Promise<Unsub>;
+
+    /**
+     * Mixnode sets by session index. Only the mixnode sets for the previous, current, and next
+     * sessions are kept; older sets are discarded.
+     *
+     * The mixnodes in each set are keyed by authority index so we can easily check if an
+     * authority has registered a mixnode. The authority indices should only be used during
+     * registration; the authority indices for the very first session are made up.
+     **/
+    mixnodes(arg: [number, number]): Promise<PalletMixnetBoundedMixnode | undefined>;
+    mixnodes(arg: [number, number], callback: Callback<PalletMixnetBoundedMixnode | undefined>): Promise<Unsub>;
   };
 }
