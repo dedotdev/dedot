@@ -20,7 +20,7 @@ yarn add delightfuldot
 npm i delightfuldot
 ```
 
-- Install `@delightfuldot/chaintypes` package for chain types & APIs suggestion, skip this step if you don't use TypeScript.
+- Install `@delightfuldot/chaintypes` package for chain types & APIs suggestion. Skip this step if you don't use TypeScript.
 ```shell
 # via yarn
 yarn add -D @delightfuldot/chaintypes
