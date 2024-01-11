@@ -12,7 +12,13 @@ const main = () => {
   const currentDir = process.cwd();
 
   filesToCopy.forEach((file) => {
-    const filePath = path.join(currentDir, file);
+    let filePath = path.resolve(currentDir, file);
+
+    // Copy the root README.md if current dir is api
+    if (currentDir.endsWith('packages/api') && file === 'README.md') {
+      filePath = path.resolve(currentDir, '../..', file);
+    }
+
     if (!fs.existsSync(filePath)) {
       return;
     }
@@ -46,7 +52,7 @@ const main = () => {
   fs.writeFileSync(path.join(currentDir, targetDir, 'cjs/package.json'), `{"type": "commonjs"}`);
 
   // clean up
-  fs.rmSync(path.join(currentDir, targetDir, 'tsconfig.build.cjs.tsbuildinfo'));
+  fs.rmSync(path.join(currentDir, targetDir, 'tsconfig.build.cjs.tsbuildinfo'), { force: true });
 };
 
 main();
