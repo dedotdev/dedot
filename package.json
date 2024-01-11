@@ -8,7 +8,7 @@
     "examples/*"
   ],
   "scripts": {
-    "build": "yarn clean && npx lerna run build",
+    "build": "yarn clean && npx lerna run build --no-private",
     "clean": "npx lerna run clean",
     "test": "npx lerna run --no-bail --verbose test",
     "prettify": "npx prettier --write \"{packages,scripts}/{**/*,*}.{js,ts,jsx,tsx,json,mjs}\"",
@@ -16,8 +16,8 @@
     "version": "yarn generate-package-info-file",
     "prepublishOnly": "yarn copy-files-to-dist",
     "postinstall": "husky install",
-    "generate-package-info-file": "lerna exec -- node \\$LERNA_ROOT_PATH/scripts/generate-package-info-file.js",
-    "copy-files-to-dist": "lerna exec -- node \\$LERNA_ROOT_PATH/scripts/copy-files-to-dist.js",
+    "generate-package-info-file": "npx lerna exec --no-private -- node \\$LERNA_ROOT_PATH/scripts/generate-package-info-file.js",
+    "copy-files-to-dist": "npx lerna exec --no-private -- node \\$LERNA_ROOT_PATH/scripts/copy-files-to-dist.js",
     "gen-chaintypes": "npx ts-node ./packages/codegen/src/genSupportedChainTypes.ts"
   },
   "devDependencies": {
