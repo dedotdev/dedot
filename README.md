@@ -60,4 +60,11 @@ const run = async () => {
 
 run().catch(console.error);
 ```
+- You can also import `delightfuldot` using `require`.
+```js
+// main.js
+const { DelightfulApi } = require('delightfuldot');
+// ...
+const api = await DelightfulApi.new('wss://rpc.polkadot.io');
+```
 
