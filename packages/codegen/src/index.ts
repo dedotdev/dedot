@@ -4,62 +4,25 @@ import * as path from 'path';
 import * as process from 'process';
 import { ConstsGen, ErrorsGen, EventsGen, IndexGen, QueryGen, RpcGen, TypesGen } from './generator';
 import { RpcMethods } from '@delightfuldot/types';
-import { $Metadata, MetadataLatest } from '@delightfuldot/codecs';
-import staticSubstrate, { rpc } from '@polkadot/types-support/metadata/static-substrate';
+import { MetadataLatest } from '@delightfuldot/codecs';
 import { NetworkInfo } from './types';
 
-const NETWORKS: NetworkInfo[] = [
-  {
-    chain: 'substrate',
-    metadataHex: staticSubstrate,
-    rpcMethods: rpc.methods,
-  },
-  {
-    chain: 'polkadot',
-    endpoint: 'wss://rpc.polkadot.io',
-  },
-  {
-    chain: 'kusama',
-    endpoint: 'wss://kusama-rpc.polkadot.io',
-  },
-  {
-    chain: 'astar',
-    endpoint: 'wss://rpc.astar.network',
-  },
-  {
-    chain: 'moonbeam',
-    endpoint: 'wss://1rpc.io/glmr',
-  },
-];
-
-async function run() {
-  for (const network of NETWORKS) {
-    const { chain, endpoint, metadataHex, rpcMethods } = network;
-
-    if (endpoint) {
-      console.log(`Generate types for ${chain} via endpoint ${endpoint}`);
-      await generateTypesFromChain(network, endpoint);
-    } else if (metadataHex && rpcMethods) {
-      console.log(`Generate types for ${chain} via raw data`);
-      const metadata = $Metadata.tryDecode(metadataHex);
-      await generateTypes(network, metadata.metadataVersioned.value, rpcMethods);
-    }
-  }
-
-  console.log('DONE!');
-}
-
-async function generateTypesFromChain(network: NetworkInfo, endpoint: string) {
+export async function generateTypesFromChain(network: NetworkInfo, endpoint: string, outDir: string) {
   const api = await DelightfulApi.create(endpoint);
   const { methods }: RpcMethods = await api.rpc.rpc.methods();
 
-  await generateTypes(network, api.metadataLatest, methods);
+  await generateTypes(network, api.metadataLatest, methods, outDir);
 
   await api.disconnect();
 }
 
-async function generateTypes(network: NetworkInfo, metadata: MetadataLatest, rpcMethods: string[]) {
-  const dirPath = path.resolve(process.cwd(), `packages/chaintypes/src/${network.chain}`);
+export async function generateTypes(
+  network: NetworkInfo,
+  metadata: MetadataLatest,
+  rpcMethods: string[],
+  outDir: string = '.',
+) {
+  const dirPath = path.resolve(process.cwd(), outDir, network.chain);
   const defTypesFileName = path.join(dirPath, `types.ts`);
   const constsTypesFileName = path.join(dirPath, `consts.ts`);
   const queryTypesFileName = path.join(dirPath, `query.ts`);
@@ -88,5 +51,3 @@ async function generateTypes(network: NetworkInfo, metadata: MetadataLatest, rpc
   fs.writeFileSync(constsTypesFileName, await constsGen.generate());
   fs.writeFileSync(indexFileName, await indexGen.generate());
 }
-
-run().catch(console.log);

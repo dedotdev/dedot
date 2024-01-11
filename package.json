@@ -11,14 +11,14 @@
     "build": "yarn clean && npx lerna run build",
     "clean": "npx lerna run clean",
     "test": "npx lerna run --no-bail --verbose test",
-    "prettify": "npx prettier --write \"{packages,scripts}/{**/*,*}.{js,ts,jsx,tsx,json}\"",
-    "check-format": "npx prettier --check \"{packages,scripts}/{**/*,*}.{js,ts,jsx,tsx,json}\"",
+    "prettify": "npx prettier --write \"{packages,scripts}/{**/*,*}.{js,ts,jsx,tsx,json,mjs}\"",
+    "check-format": "npx prettier --check \"{packages,scripts}/{**/*,*}.{js,ts,jsx,tsx,json,mjs}\"",
     "version": "yarn generate-package-info-file",
     "prepublishOnly": "yarn copy-files-to-dist",
     "postinstall": "husky install",
     "generate-package-info-file": "lerna exec -- node \\$LERNA_ROOT_PATH/scripts/generate-package-info-file.js",
     "copy-files-to-dist": "lerna exec -- node \\$LERNA_ROOT_PATH/scripts/copy-files-to-dist.js",
-    "gen-chaintypes": "npx ts-node ./packages/codegen/src/index.ts"
+    "gen-chaintypes": "npx ts-node ./packages/codegen/src/genSupportedChainTypes.ts"
   },
   "devDependencies": {
     "@polkadot/types-support": "^10.11.2",
