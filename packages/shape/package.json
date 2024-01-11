@@ -3,6 +3,12 @@
   "version": "0.0.1-alpha.13",
   "description": "Basic codecs & shapes, extending existing subshape",
   "author": "Thang X. Vu <thang@coongcrafts.io>",
+  "homepage": "https://github.com/CoongCrafts/delightfuldot/tree/main/packages/shape",
+  "repository": {
+    "directory": "packages/shape",
+    "type": "git",
+    "url": "https://github.com/CoongCrafts/delightfuldot.git"
+  },
   "main": "src/index.ts",
   "type": "module",
   "dependencies": {

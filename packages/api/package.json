@@ -3,6 +3,12 @@
   "version": "0.0.1-alpha.13",
   "description": "A fast & lightweight JS/TS client for Polkadot & Substrate",
   "author": "Thang X. Vu <thang@coongcrafts.io>",
+  "homepage": "https://github.com/CoongCrafts/delightfuldot",
+  "repository": {
+    "directory": "packages/api",
+    "type": "git",
+    "url": "https://github.com/CoongCrafts/delightfuldot.git"
+  },
   "main": "src/index.ts",
   "type": "module",
   "dependencies": {

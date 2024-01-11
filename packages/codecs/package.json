@@ -3,6 +3,12 @@
   "version": "0.0.1-alpha.13",
   "description": "Known codecs",
   "author": "Thang X. Vu <thang@coongcrafts.io>",
+  "homepage": "https://github.com/CoongCrafts/delightfuldot/tree/main/packages/codecs",
+  "repository": {
+    "directory": "packages/codecs",
+    "type": "git",
+    "url": "https://github.com/CoongCrafts/delightfuldot.git"
+  },
   "main": "src/index.ts",
   "type": "module",
   "dependencies": {

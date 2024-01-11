@@ -3,6 +3,12 @@
   "version": "0.0.1-alpha.13",
   "description": "Generate types",
   "author": "Thang X. Vu <thang@coongcrafts.io>",
+  "homepage": "https://github.com/CoongCrafts/delightfuldot/tree/main/packages/codegen",
+  "repository": {
+    "directory": "packages/codegen",
+    "type": "git",
+    "url": "https://github.com/CoongCrafts/delightfuldot.git"
+  },
   "main": "src/index.ts",
   "type": "module",
   "scripts": {
