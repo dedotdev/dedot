@@ -1,6 +1,6 @@
 # DelightfulDOT
 
-A fast & lightweight client for Polkadot & Substrate
+A fast & lightweight JavaScript/TypeScript client for Polkadot & Substrate
 
 <p align="left">
   <img src="https://img.shields.io/github/license/CoongCrafts/delightfuldot?style=flat-square"/>
