@@ -29,97 +29,116 @@ describe('DelightfulApi', () => {
       );
     });
 
-    it('should inspect constants', () => {
-      api.metadataLatest.pallets.forEach((pallet) => {
-        pallet.constants.forEach((cnst) => {
-          api.consts[stringCamelCase(pallet.name)][stringCamelCase(cnst.name)];
+    describe('const', () => {
+      it('should inspect constants', () => {
+        api.metadataLatest.pallets.forEach((pallet) => {
+          pallet.constants.forEach((cnst) => {
+            expect(() => api.consts[stringCamelCase(pallet.name)][stringCamelCase(cnst.name)]).not.toThrowError();
+          });
         });
       });
+
+      it('should throw error if constants not found', () => {
+        expect(() => {
+          api.consts.palletName.notFound;
+        }).toThrowError(new Error('Pallet not found: palletName'));
+
+        expect(() => {
+          api.consts.system.notFound;
+        }).toThrowError(new Error('Constant notFound not found in pallet system'));
+      });
     });
 
-    it('should throw error if constants not found', () => {
-      expect(() => {
-        api.consts.palletName.notFound;
-      }).toThrowError(new Error('Pallet not found: palletName'));
-
-      expect(() => {
-        api.consts.system.notFound;
-      }).toThrowError(new Error('Constant notFound not found in pallet system'));
-    });
-
-    it('should query storage', () => {
-      api.metadataLatest.pallets.forEach((pallet) => {
-        pallet.storage?.entries.forEach((entry) => {
-          expect(api.query[stringCamelCase(pallet.name)][stringCamelCase(entry.name)]).toBeDefined();
+    describe('storage query', () => {
+      it('should query storage', () => {
+        api.metadataLatest.pallets.forEach((pallet) => {
+          pallet.storage?.entries.forEach((entry) => {
+            expect(api.query[stringCamelCase(pallet.name)][stringCamelCase(entry.name)]).toBeDefined();
+          });
         });
       });
-    });
 
-    it('should throws error if query entry not found', () => {
-      expect(async () => {
-        await api.query.palletName.notFound();
-      }).rejects.toThrowError(new Error('Pallet not found: palletName'));
+      it('should throws error if query entry not found', () => {
+        expect(async () => {
+          await api.query.palletName.notFound();
+        }).rejects.toThrowError(new Error('Pallet not found: palletName'));
 
-      expect(async () => {
-        // @ts-ignore
-        await api.query.system.notFound();
-      }).rejects.toThrowError(new Error(`Storage item not found: notFound`));
-    });
-
-    it('should inspect errors', () => {
-      api.metadataLatest.pallets.forEach((pallet) => {
-        if (!pallet.error) return;
-        const event = api.metadataLatest.types[pallet.error];
-        if (event.type.tag === 'Enum') {
-          event.type.value.members.forEach((m) => {
-            expect(api.errors[stringCamelCase(pallet.name)][stringPascalCase(m.name)]).toHaveProperty(['is']);
-          });
-        }
+        expect(async () => {
+          // @ts-ignore
+          await api.query.system.notFound();
+        }).rejects.toThrowError(new Error(`Storage item not found: notFound`));
       });
     });
 
-    it('should throws error if error not found', () => {
-      expect(() => {
-        // @ts-ignore
-        api.errors.palletName.notFound();
-      }).toThrowError(new Error('Pallet not found: palletName'));
+    describe('errors', () => {
+      it('should inspect errors', () => {
+        api.metadataLatest.pallets.forEach((pallet) => {
+          if (!pallet.error) return;
+          const event = api.metadataLatest.types[pallet.error];
+          if (event.type.tag === 'Enum') {
+            event.type.value.members.forEach((m) => {
+              expect(api.errors[stringCamelCase(pallet.name)][stringPascalCase(m.name)]).toHaveProperty(['is']);
+            });
+          }
+        });
+      });
 
-      expect(() => {
-        // @ts-ignore
-        api.errors.system.notFound();
-      }).toThrowError(new Error(`Error def not found for notFound`));
-    });
+      it('should throws error if error not found', () => {
+        expect(() => {
+          // @ts-ignore
+          api.errors.palletName.notFound();
+        }).toThrowError(new Error('Pallet not found: palletName'));
 
-    it('should inspect events', () => {
-      api.metadataLatest.pallets.forEach((pallet) => {
-        if (!pallet.event) return;
-        const event = api.metadataLatest.types[pallet.event];
-        if (event.type.tag === 'Enum') {
-          event.type.value.members.forEach((m) => {
-            expect(api.events[stringCamelCase(pallet.name)][stringPascalCase(m.name)]).toHaveProperty(['is']);
-          });
-        }
+        expect(() => {
+          // @ts-ignore
+          api.errors.system.notFound();
+        }).toThrowError(new Error(`Error def not found for notFound`));
       });
     });
 
-    it('should throws error if event not found', () => {
-      expect(() => {
-        // @ts-ignore
-        api.events.palletName.notFound();
-      }).toThrowError(new Error('Pallet not found: palletName'));
+    describe('events', () => {
+      it('should inspect events', () => {
+        api.metadataLatest.pallets.forEach((pallet) => {
+          if (!pallet.event) return;
+          const event = api.metadataLatest.types[pallet.event];
+          if (event.type.tag === 'Enum') {
+            event.type.value.members.forEach((m) => {
+              expect(api.events[stringCamelCase(pallet.name)][stringPascalCase(m.name)]).toHaveProperty(['is']);
+            });
+          }
+        });
+      });
 
-      expect(() => {
-        // @ts-ignore
-        api.events.system.notFound();
-      }).toThrowError(new Error(`Event def not found for notFound`));
+      it('should throws error if event not found', () => {
+        expect(() => {
+          // @ts-ignore
+          api.events.palletName.notFound();
+        }).toThrowError(new Error('Pallet not found: palletName'));
+
+        expect(() => {
+          // @ts-ignore
+          api.events.system.notFound();
+        }).toThrowError(new Error(`Event def not found for notFound`));
+      });
     });
 
-    it('should call arbitrary rpc', async () => {
-      // @ts-ignore
-      const providerSend = vi.spyOn(api.provider, 'send').mockImplementation(() => vi.fn());
+    describe('rpc', () => {
+      it('should call rpc methods', async () => {
+        const providerSend = vi.spyOn(api.provider, 'send');
 
-      await api.rpc.module.rpc_name('param_1', 'param_2');
-      expect(providerSend).toBeCalledWith('module_rpc_name', ['param_1', 'param_2']);
+        await api.rpc.state.getMetadata();
+        expect(providerSend).toBeCalledWith('state_getMetadata', []);
+
+        await api.rpc.state.getRuntimeVersion();
+        expect(providerSend).toBeCalledWith('state_getRuntimeVersion', []);
+      });
+
+      it('should call arbitrary rpc', async () => {
+        const providerSend = vi.spyOn(api.provider, 'send').mockImplementation(() => vi.fn() as any);
+
+        await api.rpc.module.rpc_name('param_1', 'param_2');
+        expect(providerSend).toBeCalledWith('module_rpc_name', ['param_1', 'param_2']);
+      });
     });
   });
 

@@ -9,6 +9,8 @@ import { hexToU8a } from '@polkadot/util';
 
 type KnownPath = string | RegExp;
 
+// Known paths for codecs (primitives) that are shared between
+// different substrate-based blockchains
 const KNOWN_PATHS: KnownPath[] = [
   'sp_core::crypto::AccountId32',
   // 'sp_runtime::generic::era::Era',
@@ -34,8 +36,11 @@ const KNOWN_PATHS: KnownPath[] = [
 ];
 
 const WRAPPER_TYPE_REGEX = /^(\w+)<(.*)>$/;
-const KNOWN_WRAPPER_TYPES = ['Option', 'Vec', 'SizedVec', 'Result', 'Array'];
+const KNOWN_WRAPPER_TYPES = ['Option', 'Vec', 'Result', 'Array'];
 
+/**
+ * A codec registry for both known and portable codecs,
+ */
 export class CodecRegistry {
   #metadata?: MetadataLatest;
   #portableCodecRegistry?: PortableCodecRegistry;
@@ -96,7 +101,6 @@ export class CodecRegistry {
   }
 
   findPortableCodec(typeId: TypeId): $.AnyShape {
-    // TODO add assertion
     return this.#portableCodecRegistry!.findCodec(typeId);
   }
 

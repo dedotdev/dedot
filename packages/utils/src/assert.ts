@@ -26,5 +26,5 @@ function throwError(message?: string): never {
  * @param message
  */
 export function ensurePresence<T>(value: T, message?: string): NonNullable<T> {
-  return value ?? throwError(message || 'Value is missing');
+  return value ?? throwError(message || 'Value is not present (null or undefined)');
 }

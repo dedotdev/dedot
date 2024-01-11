@@ -1,15 +1,9 @@
-// import { author } from './author';
+import { RpcCallSpec, RpcCallsSpec } from '@delightfuldot/types';
 import { babe } from './babe';
 import { beefy } from './beefy';
 import { childstate } from './childstate';
-// import { contracts } from './contracts';
-// import { engine } from './engine';
-// import { eth } from './eth';
 import { mmr } from './mmr';
-// import { net } from './net';
 import { offchain } from './offchain';
-// import { web3 } from './web3';
-import { RpcCallSpec, RpcCallsSpec } from '@delightfuldot/types';
 import { chain } from './chain';
 import { syncstate } from './syncstate';
 import { rpc } from './rpc';
@@ -33,13 +27,8 @@ export const rpcCalls: RpcCallsSpec = {
   babe,
   beefy,
   childstate,
-  // contracts,
-  // engine,
-  // eth,
   mmr,
-  // net,
   offchain,
-  // web3,
 };
 
 export const rpcCallSpecs: RpcCallSpec[] = Object.keys(rpcCalls)

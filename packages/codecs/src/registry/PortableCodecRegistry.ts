@@ -7,6 +7,9 @@ import { stringPascalCase } from '@polkadot/util';
 
 const KNOWN_CODECS = ['AccountId32', 'Header', 'Digest', 'DigestItem', 'Data'];
 
+/**
+ * Codec registry for portable types from metadata
+ */
 export class PortableCodecRegistry {
   readonly types: Record<TypeId, PortableType>;
   readonly #cache: Map<TypeId, $.AnyShape>;
@@ -45,8 +48,7 @@ export class PortableCodecRegistry {
       try {
         const codecName = typeDef.path.at(-1)!;
         if (KNOWN_CODECS.includes(codecName)) {
-          const $knownCodec = this.#registry.findCodec(codecName);
-          return $knownCodec;
+          return this.#registry.findCodec(codecName);
         }
       } catch (e) {
         // ignore

@@ -83,4 +83,4 @@ $.u256.registerDecoder(isNumber, identity);
 $.u32.registerDecoder(isNumber, identity);
 $.u64.registerDecoder(isNumber, identity);
 $.u8.registerDecoder(isNumber, identity);
-$.str.registerDecoder(isString, identity);
+$.str.registerDecoder((input) => isString(input) && !isHex(input), identity);

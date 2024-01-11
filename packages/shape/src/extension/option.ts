@@ -5,6 +5,10 @@ function shouldDecodeInner(input: any) {
   return !(isHex(input) || isU8a(input));
 }
 
+function isNone(input: any) {
+  return isUndefined(input) || isNull(input) || input === '0x';
+}
+
 function decodeInner($shape: Shape<any>, input: any) {
   // @ts-ignore
   const $some = $shape.metadata[0].args[0];
@@ -14,8 +18,7 @@ function decodeInner($shape: Shape<any>, input: any) {
 export function option<SI, SO>($some: Shape<SI, SO>): Shape<SI | undefined, SO | undefined> {
   const shaped = originalOption($some);
 
-  shaped.registerDecoder(isUndefined, (_, input) => undefined);
-  shaped.registerDecoder(isNull, (_, input) => undefined);
+  shaped.registerDecoder(isNone, (_, input) => undefined);
   shaped.registerDecoder(shouldDecodeInner, decodeInner);
 
   return shaped;

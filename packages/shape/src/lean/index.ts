@@ -6,7 +6,6 @@ import {
   literalUnion,
   optionalField,
   Output,
-  result,
   Shape,
   sizedArray,
   sizedUint8Array,

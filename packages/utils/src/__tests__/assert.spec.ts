@@ -29,13 +29,13 @@ describe('ensurePresence', () => {
   it('should throw error for null value', () => {
     expect(() => {
       ensurePresence(null);
-    }).toThrowError(new Error('Value is missing'));
+    }).toThrowError(new Error('Value is not present (null or undefined)'));
   });
 
   it('should throw error for undefined value', () => {
     expect(() => {
       ensurePresence(undefined);
-    }).toThrowError(new Error('Value is missing'));
+    }).toThrowError(new Error('Value is not present (null or undefined)'));
   });
 
   it('should be silent', () => {
