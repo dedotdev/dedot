@@ -11,16 +11,25 @@ A fast & lightweight JavaScript/TypeScript client for Polkadot & Substrate
 ---
 ### Have a quick taste
 
-- Install prerelease packages
+- Install `delightfuldot` package
 ```shell
 # via yarn
-yarn add delightfuldot @delightfuldot/chaintypes
+yarn add delightfuldot
 
 # via npm
-npm install -S delightfuldot @delightfuldot/chaintypes
+npm i delightfuldot
 ```
 
-- Query storage
+- Install `@delightfuldot/chaintypes` package for chain types & APIs suggestion, skip this step if you don't use TypeScript.
+```shell
+# via yarn
+yarn add -D @delightfuldot/chaintypes
+
+# via npm
+npm i -D @delightfuldot/chaintypes
+```
+
+- Initialize the API client and play around
 ```typescript
 // main.ts
 
@@ -29,28 +38,23 @@ import { PolkadotApi } from '@delightfuldot/chaintypes/polkadot';
 
 const run = async () => {
   const api = await DelightfulApi.new<PolkadotApi>('wss://rpc.polkadot.io');
-  const balances = await api.query.system.account('14...');
 
-  console.log(balances);
+  // Call rpc `state_getMetadata` to fetch raw scale-encoded metadata and decode it.
+  const metadata = await api.rpc.state.getMetadata();
 
-  await api.disconnect();
-}
+  // Query on-chain storage
+  const address = '14...';
+  const balances = await api.query.system.account(address);
 
-run().catch(console.error);
-```
+  // Subscribe to on-chain storage changes
+  const unsub = await api.query.system.number((blockNumber) => {
+    console.log(`Current block number: ${blockNumber}`);
+  });
 
-- Works with CommonJS on NodeJS
-```js
-// main.js
+  // Get pallet constants
+  const ss58Prefix = api.consts.system.ss58Prefix;
 
-const { DelightfulApi } = require('delightfuldot');
-
-const run = async () => {
-  const api = await DelightfulApi.new('wss://rpc.polkadot.io');
-  const balances = await api.query.system.account('14...');
-
-  console.log(balances);
-
+  await unsub();
   await api.disconnect();
 }
 
