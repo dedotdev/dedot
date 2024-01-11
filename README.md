@@ -2,7 +2,7 @@
 
 <p align="left">
   <img src="https://img.shields.io/github/license/CoongCrafts/delightfuldot?style=flat-square"/>
-  <img src="https://img.shields.io/github/actions/workflow/status/CoongCrafts/delightfuldot/run-tests.yml?label=unit%20tests"/>
+  <img src="https://img.shields.io/github/actions/workflow/status/CoongCrafts/delightfuldot/run-tests.yml?label=unit%20tests&style=flat-square"/>
   <img src="https://img.shields.io/github/package-json/v/CoongCrafts/delightfuldot?filename=packages%2Fapi%2Fpackage.json&style=flat-square"/>
 </p>
 
