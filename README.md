@@ -1,6 +1,6 @@
 # DelightfulDOT
 
-A fast & lightweight JavaScript/TypeScript client for Polkadot & Substrate
+A fast & lightweight JavaScript/TypeScript client for [Polkadot](https://polkadot.network/) & [Substrate](https://substrate.io/)
 
 <p align="left">
   <img src="https://img.shields.io/github/license/CoongCrafts/delightfuldot?style=flat-square"/>
@@ -8,9 +8,13 @@ A fast & lightweight JavaScript/TypeScript client for Polkadot & Substrate
   <img src="https://img.shields.io/github/package-json/v/CoongCrafts/delightfuldot?filename=packages%2Fapi%2Fpackage.json&style=flat-square"/>
 </p>
 
+
+
+
 ---
 ### Have a quick taste
 
+Try `delightfuldot` now on [CodeSandbox Playground](https://codesandbox.io/p/devbox/trydedot-th96cm?file=%2Fmain.ts%3A24%2C26) or follow the below steps to run it on your local environment.
 - Install `delightfuldot` package
 ```shell
 # via yarn
@@ -29,7 +33,7 @@ yarn add -D @delightfuldot/chaintypes
 npm i -D @delightfuldot/chaintypes
 ```
 
-- Initialize the API client and play around
+- Initialize the API client and start interacting with Polkadot network
 ```typescript
 // main.ts
 
@@ -41,10 +45,13 @@ const run = async () => {
 
   // Call rpc `state_getMetadata` to fetch raw scale-encoded metadata and decode it.
   const metadata = await api.rpc.state.getMetadata();
+  console.log('Metadata:', metadata);
 
   // Query on-chain storage
   const address = '14...';
-  const balances = await api.query.system.account(address);
+  const balance = await api.query.system.account(address);
+  console.log('Balance:', balance);
+
 
   // Subscribe to on-chain storage changes
   const unsub = await api.query.system.number((blockNumber) => {
@@ -53,9 +60,10 @@ const run = async () => {
 
   // Get pallet constants
   const ss58Prefix = api.consts.system.ss58Prefix;
+  console.log('Polkadot ss58Prefix:', ss58Prefix)
 
-  await unsub();
-  await api.disconnect();
+  // await unsub();
+  // await api.disconnect();
 }
 
 run().catch(console.error);
