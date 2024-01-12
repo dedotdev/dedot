@@ -2,7 +2,7 @@ import { DelightfulApi } from 'delightfuldot';
 import * as fs from 'fs';
 import * as path from 'path';
 import * as process from 'process';
-import { ConstsGen, ErrorsGen, EventsGen, IndexGen, QueryGen, RpcGen, TypesGen } from './generator';
+import { ConstsGen, ErrorsGen, EventsGen, IndexGen, QueryGen, RpcGen, TypesGen, CallGen } from './generator';
 import { RpcMethods } from '@delightfuldot/types';
 import { MetadataLatest } from '@delightfuldot/codecs';
 import { NetworkInfo } from './types';
@@ -11,7 +11,7 @@ export async function generateTypesFromChain(network: NetworkInfo, endpoint: str
   const api = await DelightfulApi.create(endpoint);
   const { methods }: RpcMethods = await api.rpc.rpc.methods();
 
-  await generateTypes(network, api.metadataLatest, methods, outDir);
+  await generateTypes(network, api.metadataLatest, methods, outDir, api.runtimeVersion.apis);
 
   await api.disconnect();
 }
@@ -21,6 +21,7 @@ export async function generateTypes(
   metadata: MetadataLatest,
   rpcMethods: string[],
   outDir: string = '.',
+  apis: [string, number][],
 ) {
   const dirPath = path.resolve(process.cwd(), outDir, network.chain);
   const defTypesFileName = path.join(dirPath, `types.ts`);
@@ -30,6 +31,7 @@ export async function generateTypes(
   const indexFileName = path.join(dirPath, `index.ts`);
   const errorsFileName = path.join(dirPath, `errors.ts`);
   const eventsFileName = path.join(dirPath, `events.ts`);
+  const runtimeCallsFileName = path.join(dirPath, `call.ts`);
 
   if (!fs.existsSync(dirPath)) {
     fs.mkdirSync(dirPath);
@@ -42,6 +44,7 @@ export async function generateTypes(
   const indexGen = new IndexGen(network);
   const errorsGen = new ErrorsGen(typesGen);
   const eventsGen = new EventsGen(typesGen);
+  const callGen = new CallGen(typesGen, apis);
 
   fs.writeFileSync(defTypesFileName, await typesGen.generate());
   fs.writeFileSync(errorsFileName, await errorsGen.generate());
@@ -50,4 +53,5 @@ export async function generateTypes(
   fs.writeFileSync(queryTypesFileName, await queryGen.generate());
   fs.writeFileSync(constsTypesFileName, await constsGen.generate());
   fs.writeFileSync(indexFileName, await indexGen.generate());
+  fs.writeFileSync(runtimeCallsFileName, await callGen.generate());
 }

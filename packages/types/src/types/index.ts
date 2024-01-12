@@ -3,6 +3,7 @@ import * as $ from '@delightfuldot/shape';
 import { RpcCallSpec } from './rpc';
 
 export * from './rpc';
+export * from './call';
 
 export type Append<T extends readonly unknown[], V> = [...T, V];
 export type AnyFunc = (...args: any[]) => any;
@@ -55,6 +56,16 @@ export interface StorageQueryMethod<F extends AnyFunc = AnyFunc> {
 
 export type GenericStorageQuery<T extends AnyFunc = AnyFunc> = StorageQueryMethod<T> & {};
 
+export type GenericRuntimeCall<F extends AsyncMethod = AsyncMethod> = F;
+
+export interface GenericRuntime {
+  [method: string]: GenericRuntimeCall;
+}
+
+export interface GenericRuntimeCalls {
+  [runtime: string]: GenericRuntime;
+}
+
 export interface GenericChainStorage {
   [pallet: string]: {
     [storageName: string]: GenericStorageQuery;
@@ -105,6 +116,7 @@ export interface GenericSubstrateApi {
   query: GenericChainStorage;
   errors: GenericChainErrors;
   events: GenericChainEvents;
+  call: GenericRuntimeCalls;
 
   // TODO tx, calls ...
 }

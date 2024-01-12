@@ -6,6 +6,7 @@ import { ChainStorage } from './query';
 import { RpcCalls } from './rpc';
 import { ChainErrors } from './errors';
 import { ChainEvents } from './events';
+import { RuntimeCalls } from './call';
 
 export * from './types';
 export * from './consts';
@@ -16,4 +17,5 @@ export interface SubstrateApi extends GenericSubstrateApi {
   query: ChainStorage;
   errors: ChainErrors;
   events: ChainEvents;
+  call: RuntimeCalls;
 }

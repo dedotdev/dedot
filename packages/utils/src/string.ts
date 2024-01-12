@@ -56,3 +56,8 @@ export const isNativeType = (type: string) => {
     }
   });
 };
+
+export const stringSnakeCase = (camelCaseString: string | undefined) => {
+  if (!camelCaseString) return undefined;
+  return camelCaseString.replace(/[A-Z]/g, (letter) => `_${letter.toLowerCase()}`);
+};
