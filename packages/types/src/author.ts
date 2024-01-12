@@ -3,7 +3,9 @@ import { BlockHash, Bytes, Hash } from '@delightfuldot/codecs';
 import { registry } from './registry';
 
 /**
- * TODO add ref
+ * Possible transaction status events.
+ *
+ * Ref: https://github.com/paritytech/polkadot-sdk/blob/ab3a3bc2786673bfda47646a20f871b8a2e4d59d/substrate/client/transaction-pool/api/src/lib.rs#L58-L132
  */
 export type TransactionStatus = SerdeEnum<{
   // Transaction is part of the future queue.

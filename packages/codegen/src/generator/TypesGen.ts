@@ -1,19 +1,20 @@
 import { stringPascalCase } from '@polkadot/util';
 import { CodecRegistry, Field, MetadataLatest, PortableType, TypeId, TypeParam } from '@delightfuldot/codecs';
-import { isJsPrimitive, normalizeName } from '@delightfuldot/utils';
+import { isNativeType, normalizeName } from '@delightfuldot/utils';
 import { beautifySourceCode, commentBlock, compileTemplate } from './utils';
 import { registry } from '@delightfuldot/types';
 import { TypeImports } from './TypeImports';
 
 interface NamedType extends PortableType {
-  name: string; // nameIn, TODO docs!
-  nameOut: string;
+  name: string; // nameIn, ~ typeIn
+  nameOut: string; // ~ typeOut
   skip?: boolean;
   knownType?: boolean;
   suffix?: string;
 }
 
-// TODO docs!
+// Skip generate types for these
+// as we do have native types for them
 const SKIP_TYPES = [
   'BoundedBTreeMap',
   'BoundedBTreeSet',
@@ -30,8 +31,9 @@ const SKIP_TYPES = [
   'WrapperKeepOpaque',
   'WrapperOpaque',
 ];
-// Remove these from all paths at index 1
-// TODO docs: include ref
+
+// These are common & generic types, so we'll remove these from all paths at index 1
+// This helps make the type name shorter
 const PATH_RM_INDEX_1 = ['generic', 'misc', 'pallet', 'traits', 'types'];
 
 export const BASIC_KNOWN_TYPES = ['BitSequence', 'Bytes', 'FixedBytes', 'FixedArray', 'ResultPayload'];
@@ -39,6 +41,9 @@ const WRAPPER_TYPE_REGEX = /^(\w+)(<.*>)$/g;
 
 export class TypesGen {
   metadata: MetadataLatest;
+  /**
+   * Types will be generated its definition out.
+   */
   includedTypes: Record<TypeId, NamedType>;
   registry: CodecRegistry;
   typeImports: TypeImports;
@@ -77,7 +82,8 @@ export class TypesGen {
   generateType(typeId: TypeId, nestedLevel = 0, typeOut = false): string {
     if (nestedLevel > 0) {
       const includedDef = this.includedTypes[typeId];
-      // TODO docs this!
+      // If current typeId has its definition generated,
+      // we can just use its name, no need to generate its type again
       if (includedDef) {
         const { name, nameOut } = includedDef;
         if (typeOut) {
@@ -261,7 +267,7 @@ export class TypesGen {
     typesWithPath.forEach(({ path, id }) => {
       const joinedPath = path.join('::');
       if (pathsCount.has(joinedPath)) {
-        // TODO we compare 2 types with the same path here,
+        // We compare 2 types with the same path here,
         //  if they are the same type -> skip the current one, keep the first occurrence
         //  if they are not the same type but has the same path -> we'll try to calculate & add a suffix for the current type name
         const firstOccurrenceTypeId = pathsCount.get(joinedPath)![0];
@@ -330,7 +336,16 @@ export class TypesGen {
     }
   }
 
-  // TODO docs! remove duplicated part of the path
+  /**
+   * @description Remove duplicated part of the path
+   *
+   * Example:
+   * ["pallet_staking", "pallet", "pallet", "Event"]
+   * => ["pallet_staking", "pallet", "Event"]
+   *
+   * @param path
+   * @private
+   */
   #cleanPath(path: string[]) {
     return path
       .map((one) => stringPascalCase(one))
@@ -443,7 +458,7 @@ export class TypesGen {
   }
 
   addTypeImport(typeName: string) {
-    if (isJsPrimitive(typeName)) {
+    if (isNativeType(typeName)) {
       return;
     }
 
@@ -454,7 +469,6 @@ export class TypesGen {
 
       const { name, nameOut, knownType } = type;
       if (name === typeName || nameOut === typeName) {
-        // TODO docs! ref
         if (knownType) {
           this.typeImports.addCodecType(typeName);
         } else {

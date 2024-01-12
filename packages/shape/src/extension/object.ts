@@ -1,4 +1,4 @@
-import { isHex, isString, isU8a } from '@polkadot/util';
+import { isHex, isObject, isString, isU8a } from '@polkadot/util';
 import {
   AnyShape,
   InputObject,
@@ -10,9 +10,7 @@ import {
 } from 'subshape';
 
 function shouldDecodeObject(input: any) {
-  // TODO check if the shape is actually an $.object
-
-  if (isHex(input) || isU8a(input) || isString(input)) {
+  if (isHex(input) || isU8a(input) || isString(input) || !isObject(input)) {
     return false;
   }
 

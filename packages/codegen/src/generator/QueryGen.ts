@@ -31,8 +31,6 @@ export class QueryGen extends ApiGen {
       },`;
     }
 
-    // TODO add generic storage query
-
     const importTypes = this.typesGen.typeImports.toImports();
     const template = compileTemplate('query.hbs');
 

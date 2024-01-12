@@ -54,7 +54,6 @@ Shape.prototype.tryEncode = function (input: any) {
       const [predicate, encoder] = one as [Predicate, Encoder];
 
       if (predicate(input)) {
-        // TODO check if the out is correct
         return encoder.call(this, this, input);
       }
     }

@@ -41,8 +41,12 @@ export interface MultipleCodecTypePartial {
 }
 
 /**
- * Register codec types with loose input convention
- * TODO explain this!
+ * @description Register codec types with loose input convention
+ *
+ * Loose codecs are codecs with different typeIn & typeOut,
+ * E.g: Codec `$AccountId32`, we have its typeIn is `AccountId32Like` & typeOut is `AccountId32`
+ *
+ * This registry keep track the list of codecs which follow this convention
  *
  * @param codecTypes
  */

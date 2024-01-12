@@ -1,6 +1,6 @@
 import { findAliasRpcSpec, findRpcSpec, isUnsubscribeMethod } from '@delightfuldot/specs';
 import { RpcCallSpec, RpcModuleName } from '@delightfuldot/types';
-import { isJsPrimitive } from '@delightfuldot/utils';
+import { isNativeType } from '@delightfuldot/utils';
 import { ApiGen, TypesGen } from '../generator';
 import { beautifySourceCode, commentBlock, compileTemplate, WRAPPER_TYPE_REGEX } from './utils';
 
@@ -128,11 +128,11 @@ export class RpcGen extends ApiGen {
 
     type = type.trim();
 
-    if (isJsPrimitive(type)) {
+    if (isNativeType(type)) {
       return;
     }
 
-    // TODO handle for generic wrapper types
+    // Handle generic wrapper types
     const matchArray = type.match(WRAPPER_TYPE_REGEX);
     if (matchArray) {
       const [_, $1, $2] = matchArray;

@@ -2,7 +2,7 @@ import type { SubstrateApi } from '@delightfuldot/chaintypes';
 import { isFunction, u8aToHex } from '@polkadot/util';
 import { findAliasRpcSpec, findRpcSpec } from '@delightfuldot/specs';
 import { GenericSubstrateApi, Unsub, RpcCallSpec, RpcParamSpec, GenericRpcCall } from '@delightfuldot/types';
-import { assert, isJsPrimitive } from '@delightfuldot/utils';
+import { assert, isNativeType } from '@delightfuldot/utils';
 import { Executor } from './Executor';
 
 const isOptionalParam = (param: RpcParamSpec): boolean => {
@@ -81,7 +81,7 @@ export class RpcExecutor<ChainApi extends GenericSubstrateApi = SubstrateApi> ex
 
   tryDecode(callSpec: RpcCallSpec, raw: any) {
     if (raw === null) {
-      // TODO clarify this & improve this
+      // We use `undefined` to represent Option::None in the client
       return undefined;
     }
 
@@ -91,7 +91,7 @@ export class RpcExecutor<ChainApi extends GenericSubstrateApi = SubstrateApi> ex
       return this.registry.findCodec(type).tryDecode(raw);
     }
 
-    if (isJsPrimitive(type)) {
+    if (isNativeType(type)) {
       return raw;
     }
 

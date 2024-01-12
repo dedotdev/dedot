@@ -21,12 +21,14 @@ export const trimTrailingSlash = (input: string): string => {
   return input.endsWith('/') ? trimTrailingSlash(input.slice(0, -1)) : input;
 };
 
-// TODO docs: Remove special characters
+/**
+ * Remove special characters
+ */
 export function normalizeName(ident: string) {
   return stringCamelCase(ident.replace('#', '_'));
 }
 
-const JS_PRIMITIVE_TYPES = [
+const TS_PRIMITIVE_TYPES = [
   'void',
   'undefined',
   'null',
@@ -41,9 +43,12 @@ const JS_PRIMITIVE_TYPES = [
   'Record',
 ];
 
-// FIXME rename to isNativeType
-export const isJsPrimitive = (type: string) => {
-  return JS_PRIMITIVE_TYPES.some((one) => {
+/**
+ * Check if a type is native JS/TS type
+ * @param type
+ */
+export const isNativeType = (type: string) => {
+  return TS_PRIMITIVE_TYPES.some((one) => {
     if (typeof one === 'string') {
       return one === type;
     } else {

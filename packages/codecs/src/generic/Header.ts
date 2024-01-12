@@ -5,12 +5,14 @@ import { $Hash } from './Hash';
 import { registerLooseCodecType } from '../codectypes';
 
 // TODO create a separate codec for $BlockNumber
-export const $BlockNumber = $.u32; // TODO docs: why fixed at u32?
+export const $BlockNumber = $.u32;
 $BlockNumber.registerDecoder(
   (input) => isHex(input, -1, true),
   ($shape, input) =>
     hexToBn(input, {
-      isLe: false, // TODO docs: why Le=false here?
+      // BlockNumber in $Header codec is a hex in BE format
+      // So Le=false here is to support decode block number in $Header
+      isLe: false,
       isNegative: false,
     }).toNumber(),
 );
@@ -57,7 +59,12 @@ export const $ConsensusEngineId: $.Shape<ConsensusEngineIdLike, ConsensusEngineI
 
 registerLooseCodecType({ $ConsensusEngineId });
 
-// TODO docs!
+/**
+ * Digest item that is able to encode/decode 'system' digest items and
+ * provide opaque access to other items.
+ *
+ * Ref: https://github.com/paritytech/polkadot-sdk/blob/0e49ed72aa365475e30069a5c30e251a009fdacf/substrate/primitives/runtime/src/generic/digest.rs#L72-L109
+ */
 export const $DigestItem = $.Enum({
   Other: { index: 0, value: $.PrefixedHex },
   Consensus: { index: 4, value: $.Tuple($ConsensusEngineId, $.PrefixedHex) },

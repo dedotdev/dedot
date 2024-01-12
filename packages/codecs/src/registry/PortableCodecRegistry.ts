@@ -59,7 +59,8 @@ export class PortableCodecRegistry {
       return this.#cache.get(typeId)!;
     }
 
-    // TODO check this recursion issue again, add docs!
+    // A placeholder codec for typeId so if this typeId is used in the `#createCodec`
+    // the recursion will be resolved
     this.#cache.set(typeId, $.Bytes);
 
     const $codec = this.#createCodec(typeId);
@@ -68,6 +69,7 @@ export class PortableCodecRegistry {
     return $codec;
   }
 
+  // Create codec for a portable type from its type definition
   // TODO refactor this!
   #createCodec = (typeId: TypeId): $.AnyShape => {
     const def = this.types[typeId];
@@ -79,7 +81,6 @@ export class PortableCodecRegistry {
     const { type, path } = def;
     const { tag, value } = type;
 
-    // TODO implement alias
     if (tag === 'Struct') {
       const { fields } = value;
 
