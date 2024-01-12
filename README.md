@@ -11,16 +11,25 @@ A fast & lightweight JavaScript/TypeScript client for Polkadot & Substrate
 ---
 ### Have a quick taste
 
-- Install prerelease packages
+- Install `delightfuldot` package
 ```shell
 # via yarn
-yarn add delightfuldot @delightfuldot/chaintypes
+yarn add delightfuldot
 
 # via npm
-npm install -S delightfuldot @delightfuldot/chaintypes
+npm i delightfuldot
 ```
 
-- Query storage
+- Install `@delightfuldot/chaintypes` package for chain types & APIs suggestion. Skip this step if you don't use TypeScript.
+```shell
+# via yarn
+yarn add -D @delightfuldot/chaintypes
+
+# via npm
+npm i -D @delightfuldot/chaintypes
+```
+
+- Initialize the API client and play around
 ```typescript
 // main.ts
 
@@ -29,31 +38,33 @@ import { PolkadotApi } from '@delightfuldot/chaintypes/polkadot';
 
 const run = async () => {
   const api = await DelightfulApi.new<PolkadotApi>('wss://rpc.polkadot.io');
-  const balances = await api.query.system.account('14...');
 
-  console.log(balances);
+  // Call rpc `state_getMetadata` to fetch raw scale-encoded metadata and decode it.
+  const metadata = await api.rpc.state.getMetadata();
 
+  // Query on-chain storage
+  const address = '14...';
+  const balances = await api.query.system.account(address);
+
+  // Subscribe to on-chain storage changes
+  const unsub = await api.query.system.number((blockNumber) => {
+    console.log(`Current block number: ${blockNumber}`);
+  });
+
+  // Get pallet constants
+  const ss58Prefix = api.consts.system.ss58Prefix;
+
+  await unsub();
   await api.disconnect();
 }
 
 run().catch(console.error);
 ```
-
-- Works with CommonJS on NodeJS
+- You can also import `delightfuldot` using `require`.
 ```js
 // main.js
-
 const { DelightfulApi } = require('delightfuldot');
-
-const run = async () => {
-  const api = await DelightfulApi.new('wss://rpc.polkadot.io');
-  const balances = await api.query.system.account('14...');
-
-  console.log(balances);
-
-  await api.disconnect();
-}
-
-run().catch(console.error);
+// ...
+const api = await DelightfulApi.new('wss://rpc.polkadot.io');
 ```
 
