@@ -30,18 +30,21 @@ const main = () => {
       pkgJson.main = './cjs/index.js';
       pkgJson.module = './index.js';
       pkgJson.types = './index.d.ts';
-      pkgJson.exports = {
-        '.': {
-          import: {
-            types: './index.d.ts',
-            default: './index.js',
+
+      if (pkgJson.name !== '@delightfuldot/chaintypes') {
+        pkgJson.exports = {
+          '.': {
+            import: {
+              types: './index.d.ts',
+              default: './index.js',
+            },
+            require: {
+              types: './index.d.ts',
+              default: './cjs/index.js',
+            },
           },
-          require: {
-            types: './index.d.ts',
-            default: './cjs/index.js',
-          },
-        },
-      };
+        };
+      }
 
       fileContent = JSON.stringify(pkgJson, null, 2);
     }
