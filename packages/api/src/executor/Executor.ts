@@ -4,6 +4,10 @@ import { Pallet } from '@delightfuldot/codecs';
 import { GenericSubstrateApi } from '@delightfuldot/types';
 import DelightfulApi from '../DelightfulApi';
 
+/**
+ * @name Executor
+ * @description Execution abstraction for a specific action
+ */
 export abstract class Executor<ChainApi extends GenericSubstrateApi = SubstrateApi> {
   readonly #api: DelightfulApi<ChainApi>;
   constructor(api: DelightfulApi<ChainApi>) {

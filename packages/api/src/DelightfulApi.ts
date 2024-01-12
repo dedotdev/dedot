@@ -5,15 +5,52 @@ import { $Metadata, CodecRegistry, Hash, Metadata, MetadataLatest } from '@delig
 import { ChainProperties, GenericSubstrateApi, RuntimeVersion, Unsub } from '@delightfuldot/types';
 import { ConstantExecutor, ErrorExecutor, EventExecutor, RpcExecutor, StorageQueryExecutor } from './executor';
 import { newProxyChain } from './proxychain';
-import { ApiOptions, NetworkEndpoint, NormalizedApiOptions } from './types';
+import { ApiOptions, MetadataKey, NetworkEndpoint, NormalizedApiOptions } from './types';
 import { ensurePresence } from '@delightfuldot/utils';
 import localforage from 'localforage';
 import { hexAddPrefix, u8aToHex } from '@polkadot/util';
 
-export const KEEP_ALIVE_INTERVAL = 10_000; // ms
-export const METADATA_KEY_PREFIX = 'RAW_META';
-export const CATCH_ALL_METADATA_KEY = `${METADATA_KEY_PREFIX}/ALL`;
+export const KEEP_ALIVE_INTERVAL = 10_000; // in ms
+export const CATCH_ALL_METADATA_KEY: MetadataKey = `RAW_META/ALL`;
 
+/**
+ * @name DelightfulApi
+ * @description Promised-based API Client for Polkadot & Substrate
+ *
+ * ### Initialize API instance and interact with substrate-based network
+ * ```typescript
+ * import { DelightfulApi } from 'delightfuldot';
+ * import { PolkadotApi } from '@delightfuldot/chaintypes/polkadot';
+ *
+ * const run = async () => {
+ *   const api = await DelightfulApi.new<PolkadotApi>('wss://rpc.polkadot.io');
+ *
+ *   // Call rpc `state_getMetadata` to fetch raw scale-encoded metadata and decode it.
+ *   const metadata = await api.rpc.state.getMetadata();
+ *   console.log('Metadata:', metadata);
+ *
+ *   // Query on-chain storage
+ *   const address = '14...';
+ *   const balance = await api.query.system.account(address);
+ *   console.log('Balance:', balance);
+ *
+ *
+ *   // Subscribe to on-chain storage changes
+ *   const unsub = await api.query.system.number((blockNumber) => {
+ *     console.log(`Current block number: ${blockNumber}`);
+ *   });
+ *
+ *   // Get pallet constants
+ *   const ss58Prefix = api.consts.system.ss58Prefix;
+ *   console.log('Polkadot ss58Prefix:', ss58Prefix)
+ *
+ *   // await unsub();
+ *   // await api.disconnect();
+ * }
+ *
+ * run().catch(console.error);
+ * ```
+ */
 export default class DelightfulApi<ChainApi extends GenericSubstrateApi = SubstrateApi> {
   readonly #provider: ProviderInterface;
   readonly #registry: CodecRegistry;
@@ -30,6 +67,12 @@ export default class DelightfulApi<ChainApi extends GenericSubstrateApi = Substr
   #runtimeSubscriptionUnsub?: Unsub;
   #healthTimer?: ReturnType<typeof setInterval>;
 
+  /**
+   * Use factory methods (`create`, `new`) to create `DelightfulApi` instances.
+   *
+   * @param options
+   * @protected
+   */
   protected constructor(options: ApiOptions | NetworkEndpoint) {
     this.#options = this.#normalizeOptions(options);
     this.#provider = this.#getProvider();
@@ -37,7 +80,8 @@ export default class DelightfulApi<ChainApi extends GenericSubstrateApi = Substr
   }
 
   /**
-   * Create a new DelightfulApi instance
+   * Factory method to create a new DelightfulApi instance
+   *
    * @param options
    */
   static async create<ChainApi extends GenericSubstrateApi = SubstrateApi>(
@@ -64,6 +108,9 @@ export default class DelightfulApi<ChainApi extends GenericSubstrateApi = Substr
     return DelightfulApi.create(options);
   }
 
+  /**
+   * Initialize APIs before usage
+   */
   async init() {
     await this.#initializeLocalCache();
 
@@ -254,35 +301,79 @@ export default class DelightfulApi<ChainApi extends GenericSubstrateApi = Substr
     return new WsProvider();
   }
 
+  /**
+   * @description Entry-point for executing RPCs to blockchain node.
+   *
+   * ```typescript
+   * // Subscribe to new heads
+   * api.rpc.chain.subscribeNewHeads((header) => {
+   *   console.log(header);
+   * });
+   *
+   * // Execute arbitrary rpc method: `module_rpc_name`
+   * const result = await api.rpc.module.rpc_name();
+   * ```
+   */
   get rpc(): ChainApi['rpc'] {
     // TODO add executable carrier to support calling arbitrary rpc methods
     return newProxyChain<ChainApi>({ executor: new RpcExecutor(this) }) as ChainApi['rpc'];
   }
 
+  /**
+   * @description Entry-point for inspecting constants (parameter types) for all pallets (modules).
+   *
+   * ```typescript
+   * const ss58Prefix = api.consts.system.ss58Prefix;
+   * console.log('ss58Prefix:', ss58Prefix)
+   * ```
+   */
   get consts(): ChainApi['consts'] {
     return newProxyChain<ChainApi>({ executor: new ConstantExecutor(this) }) as ChainApi['consts'];
   }
 
+  /**
+   * @description Entry-point for executing query to on-chain storage.
+   *
+   * ```typescript
+   * const balance = await api.query.system.account(<address>);
+   * console.log('Balance:', balance);
+   * ```
+   */
   get query(): ChainApi['query'] {
     return newProxyChain<ChainApi>({ executor: new StorageQueryExecutor(this) }) as ChainApi['query'];
   }
 
+  /**
+   * @description Entry-point for inspecting errors from metadata
+   */
   get errors(): ChainApi['errors'] {
     return newProxyChain<ChainApi>({ executor: new ErrorExecutor(this) }) as ChainApi['errors'];
   }
 
+  /**
+   * @description Entry-point for inspecting events from metadata
+   */
   get events(): ChainApi['events'] {
     return newProxyChain<ChainApi>({ executor: new EventExecutor(this) }) as ChainApi['events'];
   }
 
+  /**
+   * @description Current provider for api connection
+   */
   get provider() {
     return this.#provider;
   }
 
+  /**
+   * @description Codec registry
+   */
   get registry() {
     return this.#registry;
   }
 
+  /**
+   * @description Check if metadata is present
+   */
   get hasMetadata(): boolean {
     return !!this.#metadata && !!this.#metadataLatest;
   }
@@ -295,34 +386,82 @@ export default class DelightfulApi<ChainApi extends GenericSubstrateApi = Substr
     return ensurePresence(this.#metadataLatest);
   }
 
+  /**
+   * Setup metadata for
+   * @param metadata
+   */
   setMetadata(metadata: Metadata) {
     this.#metadata = metadata;
     this.#metadataLatest = metadata.latest;
     this.registry.setMetadata(this.#metadataLatest);
   }
 
+  /**
+   * @description Disconnect to blockchain node
+   */
   async disconnect() {
     await this.#unsubscribeUpdates();
 
     await this.#provider.disconnect();
   }
 
+  /**
+   * @description Clear local cache
+   */
   async clearCache() {
     await this.#localCache?.clear();
+  }
+
+  /**
+   * @description Check if current provider can make subscription request (e.: via WebSocket)
+   */
+  get hasSubscriptions(): boolean {
+    return this.provider.hasSubscriptions;
+  }
+
+  /**
+   * @description Check if it's connected to the blockchain node
+   */
+  get isConnected(): boolean {
+    return this.provider.isConnected;
+  }
+
+  /**
+   * @description Check if the api instance is using a catch-all metadata
+   */
+  get hasCatchAllMetadata(): boolean {
+    return !!this.#options.metadata && !!this.#options.metadata[CATCH_ALL_METADATA_KEY];
   }
 
   get currentMetadataKey(): string {
     return `RAW_META/${this.#genesisHash || '0x'}/${this.#runtimeVersion?.specVersion || '---'}`;
   }
 
-  get hasSubscriptions(): boolean {
-    return this.provider.hasSubscriptions;
+  /**
+   * @description Genesis hash of connected blockchain node
+   */
+  get genesisHash() {
+    return ensurePresence(this.#genesisHash);
   }
 
   /**
-   * Check if the api instance is using a catch-all metadata
+   * @description Runtime version of connected blockchain node
    */
-  get hasCatchAllMetadata(): boolean {
-    return !!this.#options.metadata && !!this.#options.metadata[CATCH_ALL_METADATA_KEY];
+  get runtimeVersion() {
+    return ensurePresence(this.#runtimeVersion);
+  }
+
+  /**
+   * @description Chain properties of connected blockchain node
+   */
+  get chainProperties() {
+    return ensurePresence(this.#chainProperties);
+  }
+
+  /**
+   * @description Runtime chain name of connected blockchain node
+   */
+  get runtimeChain() {
+    return ensurePresence(this.#runtimeChain);
   }
 }

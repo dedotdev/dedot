@@ -9,6 +9,11 @@ const isOptionalParam = (param: RpcParamSpec): boolean => {
   return param.isOptional || param.name.startsWith('Option<');
 };
 
+/**
+ * @name RpcExecutor
+ * @description Execute a rpc based from an RPC spec,
+ * if a spec is not found we execute an arbitrary rpc method
+ */
 export class RpcExecutor<ChainApi extends GenericSubstrateApi = SubstrateApi> extends Executor<ChainApi> {
   execute(section: string, method: string): GenericRpcCall {
     const maybeRpcName = `${section}_${method}`;

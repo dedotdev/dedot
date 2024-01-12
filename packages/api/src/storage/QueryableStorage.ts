@@ -3,6 +3,10 @@ import { $StorageData, CodecRegistry, Pallet, StorageDataLike, StorageEntry, Sto
 import { hexToU8a, stringCamelCase, u8aConcat, u8aToHex } from '@polkadot/util';
 import { xxhashAsU8a } from '@polkadot/util-crypto';
 
+/**
+ * @name QueryableStorage
+ * @description A helper to encode key & decode value for a storage entry
+ */
 export class QueryableStorage {
   readonly pallet: Pallet;
   readonly storageEntry: StorageEntry;

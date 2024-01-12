@@ -4,6 +4,10 @@ import { Executor } from './Executor';
 import { stringCamelCase, stringPascalCase } from '@polkadot/util';
 import { assert } from '@delightfuldot/utils';
 
+/**
+ * @name EventExecutor
+ * @description Find pallet event information from metadata
+ */
 export class EventExecutor<ChainApi extends GenericSubstrateApi = SubstrateApi> extends Executor<ChainApi> {
   execute(pallet: string, errorName: string): GenericPalletEvent<string, string> {
     const targetPallet = this.getPallet(pallet);

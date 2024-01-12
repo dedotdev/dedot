@@ -4,6 +4,10 @@ import { Executor } from './Executor';
 import { QueryableStorage } from '../storage/QueryableStorage';
 import { isFunction } from '@polkadot/util';
 
+/**
+ * @name StorageQueryExecutor
+ * @description Execute a query to on-chain storage
+ */
 export class StorageQueryExecutor<ChainApi extends GenericSubstrateApi = SubstrateApi> extends Executor<ChainApi> {
   execute(pallet: string, storage: string) {
     return async (...args: any[]) => {

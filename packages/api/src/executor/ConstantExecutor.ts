@@ -3,6 +3,11 @@ import { stringCamelCase } from '@polkadot/util';
 import { GenericSubstrateApi } from '@delightfuldot/types';
 import { Executor } from './Executor';
 
+/**
+ * @name ConstantExecutor
+ *
+ * Find & decode the constant value from metadata
+ */
 export class ConstantExecutor<ChainApi extends GenericSubstrateApi = SubstrateApi> extends Executor<ChainApi> {
   execute(pallet: string, constantName: string) {
     const targetPallet = this.getPallet(pallet);

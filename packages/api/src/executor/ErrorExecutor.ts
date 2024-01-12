@@ -5,6 +5,10 @@ import { ModuleError } from '@delightfuldot/codecs';
 import { assert } from '@delightfuldot/utils';
 import { hexToU8a, stringPascalCase } from '@polkadot/util';
 
+/**
+ * @name ErrorExecutor
+ * @description Find pallet error information from metadata
+ */
 export class ErrorExecutor<ChainApi extends GenericSubstrateApi = SubstrateApi> extends Executor<ChainApi> {
   execute(pallet: string, errorName: string): GenericPalletError {
     const targetPallet = this.getPallet(pallet);
