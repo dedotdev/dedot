@@ -1,6 +1,6 @@
 {
   "name": "@delightfuldot/specs",
-  "version": "0.0.1-alpha.14",
+  "version": "0.0.1-alpha.15",
   "description": "Known specs for rpc, runtime calls",
   "author": "Thang X. Vu <thang@coongcrafts.io>",
   "homepage": "https://github.com/CoongCrafts/delightfuldot/tree/main/packages/specs",
