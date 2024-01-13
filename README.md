@@ -74,16 +74,16 @@ const { DelightfulApi } = require('delightfuldot');
 const api = await DelightfulApi.new('wss://rpc.polkadot.io');
 ```
 ### Table of contents
-- Status
-- Chain Types & APIs
-- Execute RPC Methods
-- Query On-chain Storage
-- Runtime Constants
-- Runtime APIs ⏳
-- Submit Transactions ⏳
-- Events
-- Errors
-- Credit
+- [Status](#status)
+- [Chain Types & APIs](#chain-types--apis)
+- [Execute RPC Methods](#execute-rpc-methods)
+- [Query On-chain Storage](#query-on-chain-storage)
+- [Constants](#constants)
+- [Runtime APIs ⏳](#runtime-apis)
+- [Submit Transactions ⏳](#submit-transactions)
+- [Events](#events)
+- [Errors](#errors)
+- [Credit](#credit)
 
 ### Status
 
