@@ -1,16 +1,15 @@
 import { generateTypes, generateTypesFromChain } from './index';
 import staticSubstrate, { rpc } from '@polkadot/types-support/metadata/static-substrate';
-import { $Metadata } from '@delightfuldot/codecs';
+import { $Metadata, CodecRegistry, Metadata } from '@delightfuldot/codecs';
 import { NetworkInfo } from './types';
-import { SUBSTRATE_RUNTIMES } from '@delightfuldot/specs';
-import { blake2AsHex } from '@polkadot/util-crypto';
+import { RuntimeVersion } from '@delightfuldot/types';
+import { DelightfulApi, ConstantExecutor } from 'delightfuldot';
 
 const NETWORKS: NetworkInfo[] = [
   {
     chain: 'substrate',
     metadataHex: staticSubstrate,
     rpcMethods: rpc.methods,
-    runtimeApis: SUBSTRATE_RUNTIMES.map((one) => [blake2AsHex(one[0], 64), one[1]]),
   },
   {
     chain: 'polkadot',
@@ -34,19 +33,31 @@ const OUT_DIR = 'packages/chaintypes/src';
 
 async function run() {
   for (const network of NETWORKS) {
-    const { chain, endpoint, metadataHex, rpcMethods, runtimeApis } = network;
+    const { chain, endpoint, metadataHex, rpcMethods } = network;
 
     if (endpoint) {
       console.log(`Generate types for ${chain} via endpoint ${endpoint}`);
       await generateTypesFromChain(network, endpoint, OUT_DIR);
-    } else if (metadataHex && rpcMethods && runtimeApis) {
+    } else if (metadataHex && rpcMethods) {
       console.log(`Generate types for ${chain} via raw data`);
       const metadata = $Metadata.tryDecode(metadataHex);
-      await generateTypes(network, metadata.metadataVersioned.value, rpcMethods, OUT_DIR, runtimeApis);
+      const runtimeVersion = getRuntimeVersion(metadata);
+
+      await generateTypes(network, metadata.metadataVersioned.value, rpcMethods, runtimeVersion.apis, OUT_DIR);
     }
   }
 
   console.log('DONE!');
 }
+
+const getRuntimeVersion = (metadata: Metadata): RuntimeVersion => {
+  const registry = new CodecRegistry(metadata.latest);
+  const executor = new ConstantExecutor({
+    registry,
+    metadataLatest: metadata.latest,
+  } as unknown as DelightfulApi);
+
+  return executor.execute('system', 'version') as RuntimeVersion;
+};
 
 run().catch(console.log);

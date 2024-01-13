@@ -1,9 +1,10 @@
 import { Field, ModuleError } from '@delightfuldot/codecs';
 import * as $ from '@delightfuldot/shape';
 import { RpcCallSpec } from './rpc';
+import { RuntimeApiSpec } from './runtime';
 
 export * from './rpc';
-export * from './call';
+export * from './runtime';
 
 export type Append<T extends readonly unknown[], V> = [...T, V];
 export type AnyFunc = (...args: any[]) => any;
@@ -56,7 +57,9 @@ export interface StorageQueryMethod<F extends AnyFunc = AnyFunc> {
 
 export type GenericStorageQuery<T extends AnyFunc = AnyFunc> = StorageQueryMethod<T> & {};
 
-export type GenericRuntimeCall<F extends AsyncMethod = AsyncMethod> = F;
+export type GenericRuntimeCall<F extends AsyncMethod = AsyncMethod> = F & {
+  meta: RuntimeApiSpec;
+};
 
 export interface GenericRuntime {
   [method: string]: GenericRuntimeCall;

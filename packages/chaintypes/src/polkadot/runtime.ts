@@ -13,36 +13,35 @@ import type {
 
 export interface RuntimeCalls extends GenericRuntimeCalls {
   /**
-   * @module: babe
-   * @runtimehash: 0xcbca25e39f142387
+   * @runtimeapi: BabeApi - 0xcbca25e39f142387
    * @version: 2
    **/
-  BabeApi: {
+  babeApi: {
     /**
      * Return the configuration for BABE.
      *
-     * @call: BabeApi_configuration
+     * @callname: BabeApi_configuration
      **/
     configuration: GenericRuntimeCall<() => Promise<BabeConfiguration>>;
 
     /**
      * Returns information regarding the current epoch.
      *
-     * @call: BabeApi_current_epoch
+     * @callname: BabeApi_current_epoch
      **/
     currentEpoch: GenericRuntimeCall<() => Promise<Epoch>>;
 
     /**
      * Returns the slot that started the current epoch.
      *
-     * @call: BabeApi_current_epoch_start
+     * @callname: BabeApi_current_epoch_start
      **/
     currentEpochStart: GenericRuntimeCall<() => Promise<Slot>>;
 
     /**
      * Returns information regarding the next epoch (which was already previously announced).
      *
-     * @call: BabeApi_next_epoch
+     * @callname: BabeApi_next_epoch
      **/
     nextEpoch: GenericRuntimeCall<() => Promise<Epoch>>;
 
@@ -59,7 +58,7 @@ export interface RuntimeCalls extends GenericRuntimeCalls {
      * implementations will instead use indexed data through an offchain
      * worker, not requiring older states to be available.
      *
-     * @call: BabeApi_generate_key_ownership_proof
+     * @callname: BabeApi_generate_key_ownership_proof
      **/
     generateKeyOwnershipProof: GenericRuntimeCall<
       (slot: Slot, authorityId: AccountId32Like) => Promise<Option<OpaqueKeyOwnershipProof>>
@@ -75,28 +74,33 @@ export interface RuntimeCalls extends GenericRuntimeCalls {
      * reporting is disabled for the given runtime (i.e. this method is
      * hardcoded to return `None`). Only useful in an offchain context.
      *
-     * @call: BabeApi_submit_report_equivocation_unsigned_extrinsic
+     * @callname: BabeApi_submit_report_equivocation_unsigned_extrinsic
      **/
     submitReportEquivocationUnsignedExtrinsic: GenericRuntimeCall<
       (equivocationProof: BabeConfiguration, keyOwnerProof: OpaqueKeyOwnershipProof) => Promise<Option<null>>
     >;
 
+    /**
+     * Generic runtime call
+     **/
     [method: string]: GenericRuntimeCall;
   };
 
   /**
-   * @module: discovery
-   * @runtimehash: 0x687ad44ad37f03c2
+   * @runtimeapi: AuthorityDiscoveryApi - 0x687ad44ad37f03c2
    * @version: 1
    **/
-  AuthorityDiscoveryApi: {
+  authorityDiscoveryApi: {
     /**
      * Retrieve authority identifiers of the current and next authority set.
      *
-     * @call: AuthorityDiscoveryApi_authorities
+     * @callname: AuthorityDiscoveryApi_authorities
      **/
     authorities: GenericRuntimeCall<() => Promise<Array<AccountId32>>>;
 
+    /**
+     * Generic runtime call
+     **/
     [method: string]: GenericRuntimeCall;
   };
 }

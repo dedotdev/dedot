@@ -18,6 +18,7 @@ export type RuntimeSpec = {
   version: number;
   runtime?: string;
   module?: string;
+  hash?: string;
   [prop: string]: any;
 };
 

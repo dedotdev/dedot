@@ -6,4 +6,4 @@ export * from './RpcGen';
 export * from './IndexGen';
 export * from './ErrorsGen';
 export * from './EventsGen';
-export * from './CallGen';
+export * from './RuntimeCallsGen';

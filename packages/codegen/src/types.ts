@@ -5,5 +5,4 @@ export type NetworkInfo = {
   endpoint?: string;
   metadataHex?: string;
   rpcMethods?: string[];
-  runtimeApis?: [string, number][];
 };
