@@ -1,2 +1,2 @@
 export * from './rpc';
-export * from './call';
+export * from './runtime';
