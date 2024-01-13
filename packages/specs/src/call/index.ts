@@ -52,7 +52,7 @@ export const runtimeApisSpec = runtimesSpec
   })
   .flat();
 
-export const hashToRuntime = (hash: string) => {
+export const toKnownRuntime = (hash: string) => {
   return runtimes.find((one) => blake2AsHex(one, 64) === hash);
 };
 

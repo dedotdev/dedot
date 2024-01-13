@@ -1,9 +1,9 @@
 import { ApiGen } from './ApiGen';
 import { TypesGen } from './TypesGen';
-import { hashToRuntime, runtimesSpec } from '@delightfuldot/specs';
+import { runtimesSpec, toKnownRuntime } from '@delightfuldot/specs';
 import { RuntimeApiSpec, RuntimeSpec } from '@delightfuldot/types';
 import { beautifySourceCode, commentBlock, compileTemplate, WRAPPER_TYPE_REGEX } from './utils';
-import { isNativeType, stringSnakeCase } from '@delightfuldot/utils';
+import { assert, isNativeType, stringSnakeCase } from '@delightfuldot/utils';
 import { blake2AsHex } from '@polkadot/util-crypto';
 
 export class CallGen extends ApiGen {
@@ -19,14 +19,16 @@ export class CallGen extends ApiGen {
 
     const specsByModule = this.runtime
       .map(([runtimeHash, version]) => {
-        const runtime = hashToRuntime(runtimeHash);
+        const runtime = toKnownRuntime(runtimeHash);
 
         if (!runtime) {
-          // TODO: Handle this
+          // TODO: Handle unknown runtime
           return;
         }
 
         const spec = runtimesSpec.find((one) => one.runtime === runtime && one.version === version);
+
+        assert(spec, `Runtime specs not found ${runtime} ${version}`);
 
         return spec;
       })
