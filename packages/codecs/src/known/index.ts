@@ -4,3 +4,4 @@ export * from './arithmetic';
 export * from './runtime';
 export * from './identity';
 export * from './babe';
+export * from './beefy';

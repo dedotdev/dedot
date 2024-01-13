@@ -4,6 +4,9 @@ import { RuntimeApisModules, RuntimeApiSpec, RuntimeSpec } from '@delightfuldot/
 import { blake2AsHex } from '@polkadot/util-crypto';
 import { stringSnakeCase } from '@delightfuldot/utils';
 
+/*
+ * Ref: https://github.com/polkadot-js/api/blob/3bdf49b0428a62f16b3222b9a31bfefa43c1ca55/packages/types/src/interfaces/definitions.ts#L6-L52
+ */
 export const SUBSTRATE_RUNTIMES: [string, number][] = [
   ['AssetConversionApi', 1],
   ['AssetsApi', 1],
