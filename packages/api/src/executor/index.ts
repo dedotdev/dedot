@@ -4,3 +4,4 @@ export * from './ConstantExecutor';
 export * from './StorageQueryExecutor';
 export * from './ErrorExecutor';
 export * from './EventExecutor';
+export * from './CallExecutor';

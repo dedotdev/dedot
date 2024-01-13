@@ -3,7 +3,14 @@ import { ProviderInterface } from '@polkadot/rpc-provider/types';
 import type { SubstrateApi } from '@delightfuldot/chaintypes';
 import { $Metadata, CodecRegistry, Hash, Metadata, MetadataLatest } from '@delightfuldot/codecs';
 import { ChainProperties, GenericSubstrateApi, RuntimeVersion, Unsub } from '@delightfuldot/types';
-import { ConstantExecutor, ErrorExecutor, EventExecutor, RpcExecutor, StorageQueryExecutor } from './executor';
+import {
+  CallExecutor,
+  ConstantExecutor,
+  ErrorExecutor,
+  EventExecutor,
+  RpcExecutor,
+  StorageQueryExecutor,
+} from './executor';
 import { newProxyChain } from './proxychain';
 import { ApiOptions, MetadataKey, NetworkEndpoint, NormalizedApiOptions } from './types';
 import { ensurePresence } from '@delightfuldot/utils';
@@ -355,6 +362,10 @@ export default class DelightfulApi<ChainApi extends GenericSubstrateApi = Substr
    */
   get events(): ChainApi['events'] {
     return newProxyChain<ChainApi>({ executor: new EventExecutor(this) }) as ChainApi['events'];
+  }
+
+  get call(): ChainApi['call'] {
+    return newProxyChain<ChainApi>({ executor: new CallExecutor(this) }) as ChainApi['call'];
   }
 
   /**
