@@ -42,9 +42,9 @@ export const $BabeConfiguration = $.Struct({
   // of a slot being empty.
   c: $.Tuple($.u64, $.u64),
   // The authorities
-  authorities: $.Vec($.Tuple($AccountId32, $.u64)),
+  authorities: $.Vec($.Tuple($AccountId32, $BabeAuthorityWeight)),
   // The randomness
-  randomness: $.FixedHex(32),
+  randomness: $Randomness,
   // Type of allowed slots.
   allowedSlots: $AllowedSlots,
 });
@@ -59,10 +59,10 @@ export const $BabeConfigurationV1 = $.Struct({
   // the value provided by this type at genesis will be used.
   ///
   // Dynamic slot duration may be supported in the future.
-  slot_duration: $.u64,
+  slotDuration: $.u64,
 
   // The duration of epochs in slots.
-  epoch_length: $.u64,
+  epochLength: $.u64,
 
   // A constant value that is used in the threshold calculation formula.
   // Expressed as a rational where the first member of the tuple is the
@@ -80,7 +80,7 @@ export const $BabeConfigurationV1 = $.Struct({
 
   // Whether this chain should run with secondary slots, which are assigned
   // in round-robin manner.
-  secondary_slots: $.bool,
+  secondarySlots: $.bool,
 });
 
 export type BabeConfigurationV1 = $.Input<typeof $BabeConfigurationV1>;
@@ -113,15 +113,15 @@ export const $BabeEpochConfiguration = $.Struct({
  */
 export const $Epoch = $.Struct({
   // The epoch index
-  epoch_index: $.u64,
+  epochIndex: $.u64,
   // The starting slot of the epoch.
-  start_slot: $Slot,
+  startSlot: $Slot,
   // The duration of this epoch.
   duration: $.u64,
   // The authorities and their weights.
-  authorities: $.Vec($.Tuple($AccountId32, $.u64)),
+  authorities: $.Vec($.Tuple($AccountId32, $BabeAuthorityWeight)),
   // Randomness for this epoch.
-  randomness: $.FixedHex(32),
+  randomness: $Randomness,
   // Configuration of the epoch.
   config: $BabeEpochConfiguration,
 });
@@ -149,9 +149,9 @@ export const $EquivocationProof = $.Struct({
   // The slot at which the equivocation happened.
   slot: $Slot,
   // The first header involved in the equivocation.
-  first_header: $Header,
+  firstHeader: $Header,
   // The second header involved in the equivocation.
-  second_header: $Header,
+  secondHeader: $Header,
 });
 
 export type EquivocationProof = $.Input<typeof $EquivocationProof>;
