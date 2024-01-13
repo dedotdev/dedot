@@ -8,14 +8,14 @@ import { blake2AsHex } from '@polkadot/util-crypto';
 export class RuntimeCallExecutor<
   ChainApi extends GenericSubstrateApi = GenericSubstrateApi,
 > extends Executor<ChainApi> {
-  execute(runtimeModule: string, method: string) {
-    runtimeModule = stringPascalCase(runtimeModule);
-    const callName = `${runtimeModule}_${stringSnakeCase(method)}`;
+  execute(runtime: string, method: string) {
+    runtime = stringPascalCase(runtime);
+    const callName = `${runtime}_${stringSnakeCase(method)}`;
     const targetRuntimeVersion = this.api.runtimeVersion.apis.find(
-      ([runtimeModuleHash]) => blake2AsHex(runtimeModule, 64) === runtimeModuleHash,
+      ([runtimeHash]) => blake2AsHex(runtime, 64) === runtimeHash,
     );
 
-    assert(targetRuntimeVersion, `Chain does not support ${runtimeModule}`);
+    assert(targetRuntimeVersion, `Chain does not support ${runtime}`);
     const [_, version] = targetRuntimeVersion;
 
     const callSpec = findRuntimeApiSpec(callName, version);
