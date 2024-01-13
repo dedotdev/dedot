@@ -4,7 +4,7 @@ import type { SubstrateApi } from '@delightfuldot/chaintypes';
 import { $Metadata, CodecRegistry, Hash, Metadata, MetadataLatest } from '@delightfuldot/codecs';
 import { ChainProperties, GenericSubstrateApi, RuntimeVersion, Unsub } from '@delightfuldot/types';
 import {
-  CallExecutor,
+  RuntimeCallExecutor,
   ConstantExecutor,
   ErrorExecutor,
   EventExecutor,
@@ -365,7 +365,7 @@ export default class DelightfulApi<ChainApi extends GenericSubstrateApi = Substr
   }
 
   get call(): ChainApi['call'] {
-    return newProxyChain<ChainApi>({ executor: new CallExecutor(this) }) as ChainApi['call'];
+    return newProxyChain<ChainApi>({ executor: new RuntimeCallExecutor(this) }) as ChainApi['call'];
   }
 
   /**
