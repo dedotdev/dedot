@@ -114,7 +114,7 @@ yarn add -D @delightfuldot/chaintypes
 npm i -D @delightfuldot/chaintypes
 ```
 
-Initialize a `DelighfulApi` instance using the `ChainApi` interface for a target blockchain to enable types & APIs suggestions for that particular blockchain:
+Initialize a `DelighfulApi` instance using the `ChainApi` interface for a target chain to enable types & APIs suggestion/autocompletion for that particular chain:
 ```typescript
 import { DelightfulApi } from 'delightfuldot';
 import type { PolkadotApi, KusamaApi, MoonbeamApi, AstarApi } from '@delightfuldot/chaintypes';
@@ -174,7 +174,7 @@ Examples:
 // Get runtime version
 const runtimeVersion = api.consts.system.version;
 
-// Get existential deposit in balances pallet
+// Get existential deposit in pallet balances
 const existentialDeposit = api.consts.balances.existentialDeposit;
 ```
 
