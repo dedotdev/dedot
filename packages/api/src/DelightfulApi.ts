@@ -292,10 +292,13 @@ export default class DelightfulApi<ChainApi extends GenericSubstrateApi = Substr
         return new WsProvider(endpoint);
       } else if (endpoint.startsWith('http://') || endpoint.startsWith('https://')) {
         return new HttpProvider(endpoint);
+      } else {
+        throw new Error(
+          'Invalid network endpoint, a valid endpoint should start with `wss://`, `ws://`, `https://` or `http://`',
+        );
       }
     }
 
-    // TODO validate endpoint url
     // TODO support light-client
 
     return new WsProvider();
