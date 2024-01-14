@@ -148,6 +148,24 @@ describe('DelightfulApi', () => {
         expect(providerSend).toBeCalledWith('module_rpc_name', ['param_1', 'param_2']);
       });
     });
+
+    describe('call', () => {
+      it('should works properly', async () => {
+        const providerSend = vi.spyOn(api.provider, 'send');
+
+        await api.call.metadata.metadata();
+        expect(providerSend).toBeCalledWith('state_call', ['Metadata_metadata', '0x']);
+
+        await api.call.metadata.metadataAtVersion(14);
+        // 0x0e000000 is 14 with scale-ts encoded
+        expect(providerSend).toBeCalledWith('state_call', ['Metadata_metadata_at_version', '0x0e000000']);
+      });
+
+      it('should throws error if runtime not support or call spec not found', async () => {
+        expect(() => api.call.metadata.notFound()).toThrowError(new Error('Call spec not found'));
+        expect(() => api.call.notFound.notFound()).toThrowError(new Error('Chain does not support NotFound'));
+      });
+    });
   });
 
   describe('cache enabled', () => {

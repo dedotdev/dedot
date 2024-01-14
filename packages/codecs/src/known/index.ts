@@ -5,3 +5,4 @@ export * from './runtime';
 export * from './identity';
 export * from './babe';
 export * from './beefy';
+export * from './metadata';

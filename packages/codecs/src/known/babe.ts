@@ -1,5 +1,5 @@
 import * as $ from '@delightfuldot/shape';
-import { $AccountId32, $Header } from '@delightfuldot/codecs';
+import { $AccountId32, $Header } from '../generic';
 
 /*
  * The weight of an authority.
