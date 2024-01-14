@@ -1,10 +1,11 @@
 import { discovery } from './discovery';
 import { babe } from './babe';
+import { metadata } from './metadata';
 import { RuntimeApisModules, RuntimeApiSpec, RuntimeSpec } from '@delightfuldot/types';
 import { blake2AsHex } from '@polkadot/util-crypto';
 import { stringSnakeCase } from '@delightfuldot/utils';
 
-export const runtimeApisModules: RuntimeApisModules = { discovery, babe };
+export const runtimeApisModules: RuntimeApisModules = { discovery, babe, metadata };
 
 export const runtimes = Object.values(runtimeApisModules)
   .map((one) => Object.keys(one))

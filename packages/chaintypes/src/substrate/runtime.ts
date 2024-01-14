@@ -2,16 +2,50 @@
 
 import type { GenericRuntimeCalls, GenericRuntimeCall } from '@delightfuldot/types';
 import type {
+  Option,
+  OpaqueMetadata,
+  u32,
   BabeConfiguration,
   Epoch,
   Slot,
-  Option,
   OpaqueKeyOwnershipProof,
   AccountId32Like,
   AccountId32,
 } from '@delightfuldot/codecs';
 
 export interface RuntimeCalls extends GenericRuntimeCalls {
+  /**
+   * @runtimeapi: Metadata - 0x37e397fc7c91f5e4
+   * @version: 2
+   **/
+  metadata: {
+    /**
+     * Returns the metadata at a given version.
+     *
+     * @callname: Metadata_metadata_at_version
+     **/
+    metadataAtVersion: GenericRuntimeCall<(version: u32) => Promise<Option<OpaqueMetadata>>>;
+
+    /**
+     * Returns the supported metadata versions.
+     *
+     * @callname: Metadata_metadata_versions
+     **/
+    metadataVersions: GenericRuntimeCall<() => Promise<Array<u32>>>;
+
+    /**
+     * Returns the metadata of a runtime.
+     *
+     * @callname: Metadata_metadata
+     **/
+    metadata: GenericRuntimeCall<() => Promise<OpaqueMetadata>>;
+
+    /**
+     * Generic runtime call
+     **/
+    [method: string]: GenericRuntimeCall;
+  };
+
   /**
    * @runtimeapi: BabeApi - 0xcbca25e39f142387
    * @version: 2
