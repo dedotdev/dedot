@@ -13,7 +13,6 @@ import type {
   RuntimeDispatchInfo,
   RpcMethods,
   ReadProof,
-  RuntimeVersion,
   StorageChangeSet,
   TraceBlockResponse,
   ChainType,
@@ -36,6 +35,7 @@ import type {
   PrefixedStorageKey,
   StorageData,
   Metadata,
+  RuntimeVersion,
   ApplyExtrinsicResult,
 } from '@delightfuldot/codecs';
 

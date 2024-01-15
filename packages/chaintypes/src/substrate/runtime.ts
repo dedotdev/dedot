@@ -2,6 +2,9 @@
 
 import type { GenericRuntimeCalls, GenericRuntimeCall } from '@delightfuldot/types';
 import type {
+  RuntimeVersion,
+  Block,
+  Header,
   Option,
   OpaqueMetadata,
   u32,
@@ -11,9 +14,42 @@ import type {
   OpaqueKeyOwnershipProof,
   AccountId32Like,
   AccountId32,
+  Nonce,
 } from '@delightfuldot/codecs';
 
 export interface RuntimeCalls extends GenericRuntimeCalls {
+  /**
+   * @runtimeapi: Core - 0xdf6acb689907609b
+   * @version: 4
+   **/
+  core: {
+    /**
+     * Returns the version of the runtime.
+     *
+     * @callname: Core_version
+     **/
+    version: GenericRuntimeCall<() => Promise<RuntimeVersion>>;
+
+    /**
+     * Execute the given block.
+     *
+     * @callname: Core_execute_block
+     **/
+    execute_block: GenericRuntimeCall<(block: Block) => Promise<null>>;
+
+    /**
+     * Initialize a block with the given header.
+     *
+     * @callname: Core_initialize_block
+     **/
+    initialize_block: GenericRuntimeCall<(header: Header) => Promise<null>>;
+
+    /**
+     * Generic runtime call
+     **/
+    [method: string]: GenericRuntimeCall;
+  };
+
   /**
    * @runtimeapi: Metadata - 0x37e397fc7c91f5e4
    * @version: 2
@@ -131,6 +167,24 @@ export interface RuntimeCalls extends GenericRuntimeCalls {
      * @callname: AuthorityDiscoveryApi_authorities
      **/
     authorities: GenericRuntimeCall<() => Promise<Array<AccountId32>>>;
+
+    /**
+     * Generic runtime call
+     **/
+    [method: string]: GenericRuntimeCall;
+  };
+
+  /**
+   * @runtimeapi: AccountNonceApi - 0xbc9d89904f5b923f
+   * @version: 1
+   **/
+  accountNonceApi: {
+    /**
+     * The API to query account nonce (aka transaction index)
+     *
+     * @callname: AccountNonceApi_account_nonce
+     **/
+    accountNonce: GenericRuntimeCall<(accountId: AccountId32Like) => Promise<Nonce>>;
 
     /**
      * Generic runtime call
