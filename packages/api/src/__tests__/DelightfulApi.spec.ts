@@ -6,6 +6,14 @@ import { stringCamelCase, stringPascalCase } from '@polkadot/util';
 import { RuntimeVersion } from '@delightfuldot/types';
 
 describe('DelightfulApi', () => {
+  it('should throws error for invalid endpoint', () => {
+    expect(async () => {
+      await DelightfulApi.new('invalid_endpoint');
+    }).rejects.toThrowError(
+      'Invalid network endpoint, a valid endpoint should start with `wss://`, `ws://`, `https://` or `http://`',
+    );
+  });
+
   describe('cache disabled', () => {
     let api: DelightfulApi<SubstrateApi>;
     beforeEach(async () => {
