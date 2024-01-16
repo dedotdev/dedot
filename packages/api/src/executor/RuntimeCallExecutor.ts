@@ -1,5 +1,5 @@
 import { Executor } from './Executor';
-import { GenericSubstrateApi, RuntimeApiParamSpec, RuntimeApiSpec } from '@delightfuldot/types';
+import { GenericRuntimeCall, GenericSubstrateApi, RuntimeApiParamSpec, RuntimeApiSpec } from '@delightfuldot/types';
 import { assert, stringSnakeCase } from '@delightfuldot/utils';
 import { stringPascalCase, u8aConcat, u8aToHex } from '@polkadot/util';
 import { findRuntimeApiSpec } from '@delightfuldot/specs';
@@ -8,21 +8,21 @@ import { blake2AsHex } from '@polkadot/util-crypto';
 export class RuntimeCallExecutor<
   ChainApi extends GenericSubstrateApi = GenericSubstrateApi,
 > extends Executor<ChainApi> {
-  execute(runtime: string, method: string) {
-    runtime = stringPascalCase(runtime);
-    const callName = `${runtime}_${stringSnakeCase(method)}`;
-    const targetRuntimeVersion = this.api.runtimeVersion.apis.find(
-      ([runtimeHash]) => blake2AsHex(runtime, 64) === runtimeHash,
+  execute(runtimeApi: string, method: string): GenericRuntimeCall {
+    runtimeApi = stringPascalCase(runtimeApi);
+    const callName = `${runtimeApi}_${stringSnakeCase(method)}`;
+    const targetRuntimeApi = this.api.runtimeVersion.apis.find(
+      ([runtimeApiHash]) => blake2AsHex(runtimeApi, 64) === runtimeApiHash,
     );
 
-    assert(targetRuntimeVersion, `Chain does not support ${runtime}`);
-    const [_, version] = targetRuntimeVersion;
+    assert(targetRuntimeApi, `Connected chain does not support runtime API: ${runtimeApi}`);
+    const [_, version] = targetRuntimeApi;
 
     const callSpec = findRuntimeApiSpec(callName, version);
 
-    assert(callSpec, 'Call spec not found');
+    assert(callSpec, `Runtime call spec not found ${callName}`);
 
-    const callFn = async (...args: any[]) => {
+    const callFn: GenericRuntimeCall = async (...args: any[]) => {
       const { params } = callSpec;
 
       const formattedInputs = args.map((input, index) => this.tryEncode(params[index], input));
@@ -39,11 +39,6 @@ export class RuntimeCallExecutor<
   }
 
   tryDecode(callSpec: RuntimeApiSpec, raw: any) {
-    if (raw === null) {
-      // TODO clarify this & improve this
-      return undefined;
-    }
-
     const { type } = callSpec;
 
     return this.registry.findCodec(type).tryDecode(raw);

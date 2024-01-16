@@ -149,8 +149,7 @@ describe('DelightfulApi', () => {
         expect(providerSend).toBeCalledWith('state_call', ['Metadata_metadata', '0x']);
 
         await api.call.metadata.metadataAtVersion(14);
-        // 0x0e000000 is 14 with scale-ts encoded
-        expect(providerSend).toBeCalledWith('state_call', ['Metadata_metadata_at_version', '0x0e000000']);
+        expect(providerSend).toBeCalledWith('state_call', ['Metadata_metadata_at_version', '0x0e000000']); // $.u32.decode(14) = '0x0e000000'
       });
 
       it('should throws error if runtime not support or call spec not found', async () => {
