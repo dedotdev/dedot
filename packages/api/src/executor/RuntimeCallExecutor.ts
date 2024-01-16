@@ -10,15 +10,15 @@ export class RuntimeCallExecutor<
 > extends Executor<ChainApi> {
   execute(runtimeApi: string, method: string): GenericRuntimeCall {
     runtimeApi = stringPascalCase(runtimeApi);
+    const targetRuntimeApiHash = blake2AsHex(runtimeApi, 64);
+    const targetRuntimeApiVersion = this.api.runtimeVersion.apis
+      .find(([supportedRuntimeApiHash]) => targetRuntimeApiHash === supportedRuntimeApiHash)
+      ?.at(1) as number;
+
+    assert(targetRuntimeApiVersion, `Connected chain does not support runtime API: ${runtimeApi}`);
+
     const callName = `${runtimeApi}_${stringSnakeCase(method)}`;
-    const targetRuntimeApi = this.api.runtimeVersion.apis.find(
-      ([runtimeApiHash]) => blake2AsHex(runtimeApi, 64) === runtimeApiHash,
-    );
-
-    assert(targetRuntimeApi, `Connected chain does not support runtime API: ${runtimeApi}`);
-    const [_, version] = targetRuntimeApi;
-
-    const callSpec = findRuntimeCallSpec(callName, version);
+    const callSpec = findRuntimeCallSpec(callName, targetRuntimeApiVersion);
 
     assert(callSpec, `Runtime call spec not found for ${callName}`);
 
