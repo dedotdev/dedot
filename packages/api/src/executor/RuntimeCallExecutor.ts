@@ -1,8 +1,8 @@
 import { Executor } from './Executor';
-import { GenericRuntimeCall, GenericSubstrateApi, RuntimeApiParamSpec, RuntimeApiSpec } from '@delightfuldot/types';
+import { GenericRuntimeCall, GenericSubstrateApi, RuntimeCallParamSpec, RuntimeCallSpec } from '@delightfuldot/types';
 import { assert, stringSnakeCase } from '@delightfuldot/utils';
 import { stringPascalCase, u8aConcat, u8aToHex } from '@polkadot/util';
-import { findRuntimeApiSpec } from '@delightfuldot/specs';
+import { findRuntimeCallSpec } from '@delightfuldot/specs';
 import { blake2AsHex } from '@polkadot/util-crypto';
 
 export class RuntimeCallExecutor<
@@ -18,9 +18,9 @@ export class RuntimeCallExecutor<
     assert(targetRuntimeApi, `Connected chain does not support runtime API: ${runtimeApi}`);
     const [_, version] = targetRuntimeApi;
 
-    const callSpec = findRuntimeApiSpec(callName, version);
+    const callSpec = findRuntimeCallSpec(callName, version);
 
-    assert(callSpec, `Runtime call spec not found ${callName}`);
+    assert(callSpec, `Runtime call spec not found for ${callName}`);
 
     const callFn: GenericRuntimeCall = async (...args: any[]) => {
       const { params } = callSpec;
@@ -38,13 +38,13 @@ export class RuntimeCallExecutor<
     return callFn;
   }
 
-  tryDecode(callSpec: RuntimeApiSpec, raw: any) {
+  tryDecode(callSpec: RuntimeCallSpec, raw: any) {
     const { type } = callSpec;
 
     return this.registry.findCodec(type).tryDecode(raw);
   }
 
-  tryEncode(paramSpec: RuntimeApiParamSpec, value: any): Uint8Array {
+  tryEncode(paramSpec: RuntimeCallParamSpec, value: any): Uint8Array {
     const { type } = paramSpec;
 
     const $codec = this.registry.findCodec(type);

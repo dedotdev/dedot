@@ -1,6 +1,6 @@
-import { RuntimeApis, RuntimeApisModule } from '@delightfuldot/types';
+import { RuntimeCalls, RuntimeApisModule } from '@delightfuldot/types';
 
-const V1_V2_SHARED: RuntimeApis = {
+const V1_V2_SHARED: RuntimeCalls = {
   currentEpoch: {
     docs: 'Returns information regarding the current epoch.',
     params: [],
