@@ -136,7 +136,7 @@ export type Epoch = $.Input<typeof $Epoch>;
  * opaque representation, implementors of the runtime API will have to make
  * sure that all usages of `OpaqueKeyOwnershipProof` refer to the same type.
  */
-export const $OpaqueKeyOwnershipProof = $.Vec($.u8);
+export const $OpaqueKeyOwnershipProof = $.PrefixedHex;
 
 export type OpaqueKeyOwnershipProof = $.Input<typeof $OpaqueKeyOwnershipProof>;
 
