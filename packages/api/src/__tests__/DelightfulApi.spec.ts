@@ -161,8 +161,12 @@ describe('DelightfulApi', () => {
       });
 
       it('should throws error if runtime not support or call spec not found', async () => {
-        expect(() => api.call.metadata.notFound()).toThrowError(new Error('Call spec not found'));
-        expect(() => api.call.notFound.notFound()).toThrowError(new Error('Chain does not support NotFound'));
+        expect(() => api.call.metadata.notFound()).toThrowError(
+          new Error('Runtime call spec not found for Metadata_not_found'),
+        );
+        expect(() => api.call.notFound.notFound()).toThrowError(
+          new Error('Connected chain does not support runtime API: NotFound'),
+        );
       });
     });
   });

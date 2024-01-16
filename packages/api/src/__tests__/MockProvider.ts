@@ -20,7 +20,7 @@ export default class MockProvider implements ProviderInterface {
     system_chain: () => 'MockedChain',
     system_properties: () => ({ ss58Format: 42 }) as ChainProperties,
     state_getMetadata: () => staticSubstrate,
-    state_call: () => [],
+    state_call: () => '0x',
   };
 
   connect(): Promise<void> {
