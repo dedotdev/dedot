@@ -4,7 +4,6 @@ import type { GenericRuntimeCalls, GenericRuntimeCall } from '@delightfuldot/typ
 import type {
   Option,
   OpaqueMetadata,
-  u32,
   BabeConfiguration,
   Epoch,
   Slot,
@@ -24,14 +23,14 @@ export interface RuntimeCalls extends GenericRuntimeCalls {
      *
      * @callname: Metadata_metadata_at_version
      **/
-    metadataAtVersion: GenericRuntimeCall<(version: u32) => Promise<Option<OpaqueMetadata>>>;
+    metadataAtVersion: GenericRuntimeCall<(version: number) => Promise<Option<OpaqueMetadata>>>;
 
     /**
      * Returns the supported metadata versions.
      *
      * @callname: Metadata_metadata_versions
      **/
-    metadataVersions: GenericRuntimeCall<() => Promise<Array<u32>>>;
+    metadataVersions: GenericRuntimeCall<() => Promise<Array<number>>>;
 
     /**
      * Returns the metadata of a runtime.
@@ -45,7 +44,6 @@ export interface RuntimeCalls extends GenericRuntimeCalls {
      **/
     [method: string]: GenericRuntimeCall;
   };
-
   /**
    * @runtimeapi: BabeApi - 0xcbca25e39f142387
    * @version: 2
@@ -119,7 +117,6 @@ export interface RuntimeCalls extends GenericRuntimeCalls {
      **/
     [method: string]: GenericRuntimeCall;
   };
-
   /**
    * @runtimeapi: AuthorityDiscoveryApi - 0x687ad44ad37f03c2
    * @version: 1
