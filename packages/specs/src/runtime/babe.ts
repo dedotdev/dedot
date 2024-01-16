@@ -71,6 +71,9 @@ const V1_V2_SHARED: RuntimeCalls = {
   },
 };
 
+/**
+ * Ref: https://github.com/paritytech/polkadot-sdk/blob/1f023deab8d021c5bab08731e13aa12590ed4026/substrate/primitives/consensus/babe/src/lib.rs#L377-L427
+ */
 export const babe: RuntimeApisModule = {
   BabeApi: [
     {
