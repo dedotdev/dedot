@@ -19,7 +19,6 @@ declare module 'subshape' {
   interface Shape<in I, out O = I> {
     encoders: [Predicate, Encoder][];
     decoders: [Predicate, Decoder][];
-    encoderTrans: [Predicate];
     registerEncoder: (predicate: Predicate, encoder: Encoder) => void;
     registerDecoder: (predicate: Predicate, decoder: Decoder) => void;
     tryEncode: (input: any) => Uint8Array;
