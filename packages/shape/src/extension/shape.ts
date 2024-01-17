@@ -1,6 +1,7 @@
 import { hexFixLength, hexToU8a, isBoolean, isHex, isNumber, isString } from '@polkadot/util';
 import * as $ from 'subshape';
 import { AnyShape, Decoder, Encoder, Predicate, Shape } from 'subshape';
+import cloneDeep from 'lodash.clonedeep';
 
 declare module 'subshape' {
   export interface Decoder<T extends AnyShape = Shape<any>, I = any, O = any> {
@@ -23,6 +24,11 @@ declare module 'subshape' {
     tryEncode: (input: any) => Uint8Array;
     tryDecode: (input: any) => O;
     nativeType?: string;
+
+    /**
+     * @description Deep clone a shape
+     */
+    clone(): Shape<I, O>;
   }
 }
 
@@ -49,7 +55,7 @@ Shape.prototype.registerDecoder = function (predicate: Predicate, decoder: Decod
   this.decoders.push([predicate, decoder]);
 };
 
-Shape.prototype.tryEncode = function (input: any) {
+Shape.prototype.tryEncode = function (input: any): Uint8Array {
   if (this.encoders && this.encoders.length > 0) {
     for (const one of this.encoders.reverse()) {
       const [predicate, encoder] = one as [Predicate, Encoder];
@@ -66,6 +72,13 @@ Shape.prototype.tryEncode = function (input: any) {
 Shape.prototype.registerEncoder = function (predicate: Predicate, encoder: Encoder) {
   this.encoders = this.encoders || [];
   this.encoders.push([predicate, encoder]);
+};
+
+Shape.prototype.clone = function () {
+  return {
+    __proto__: Shape.prototype,
+    ...cloneDeep(this),
+  } as unknown as Shape<any, any>;
 };
 
 // Register decoder from plain values, TODO support more!

@@ -4,8 +4,7 @@ import { HexString } from '@delightfuldot/utils';
 import { $Hash } from './Hash';
 import { registerLooseCodecType } from '../codectypes';
 
-// TODO create a separate codec for $BlockNumber
-export const $BlockNumber = $.u32;
+export const $BlockNumber = $.withMetadata($.metadata('$BlockNumber'), $.u32.clone());
 $BlockNumber.registerDecoder(
   (input) => isHex(input, -1, true),
   ($shape, input) =>
