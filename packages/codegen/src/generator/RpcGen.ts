@@ -3,7 +3,6 @@ import { RpcCallSpec, RpcModuleName } from '@delightfuldot/types';
 import { isNativeType } from '@delightfuldot/utils';
 import { ApiGen, TypesGen } from '../generator';
 import { beautifySourceCode, commentBlock, compileTemplate, WRAPPER_TYPE_REGEX } from './utils';
-import { RUST_PRIMITIVE_TYPES } from '@delightfuldot/codecs';
 
 const HIDDEN_RPCS = [
   // Ref: https://github.com/paritytech/polkadot-sdk/blob/43415ef58c143b985e09015cd000dbd65f6d3997/substrate/client/rpc-servers/src/lib.rs#L152C9-L158
@@ -133,10 +132,6 @@ export class RpcGen extends ApiGen {
       return;
     }
 
-    if (RUST_PRIMITIVE_TYPES.includes(type)) {
-      return;
-    }
-
     // Handle generic wrapper types
     const matchArray = type.match(WRAPPER_TYPE_REGEX);
     if (matchArray) {
@@ -164,7 +159,10 @@ export class RpcGen extends ApiGen {
     }
 
     try {
-      this.typesGen.typeImports.addCodecType(this.#getCodecType(type, toTypeIn));
+      const codecType = this.#getCodecType(type, toTypeIn);
+      if (isNativeType(codecType)) return;
+
+      this.typesGen.typeImports.addCodecType(codecType);
       return;
     } catch (e) {}
 

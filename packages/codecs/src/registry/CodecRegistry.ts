@@ -35,10 +35,6 @@ const KNOWN_PATHS: KnownPath[] = [
   /^sp_arithmetic::fixed_point::\w+$/,
 ];
 
-const NUMBER_TYPES = ['u8', 'u16', 'u32', 'i8', 'i16', 'i32'];
-const BIGINT_TYPES = ['u64', 'u128', 'u256', 'i64', 'i128', 'i256'];
-export const RUST_PRIMITIVE_TYPES = [...NUMBER_TYPES, ...BIGINT_TYPES, 'str', 'bool'];
-
 const WRAPPER_TYPE_REGEX = /^(\w+)<(.*)>$/;
 const KNOWN_WRAPPER_TYPES = ['Option', 'Vec', 'Result', 'Array'];
 
@@ -66,13 +62,12 @@ export class CodecRegistry {
 
     const $codec = this.findCodec(name);
 
-    if (RUST_PRIMITIVE_TYPES.includes(name)) {
-      const nativeType = this.#toNativeType(name)!;
+    if ($codec.nativeType && $[name as keyof typeof $]) {
       return {
         name: normalizedName,
         $codec,
-        typeIn: nativeType,
-        typeOut: nativeType,
+        typeIn: $codec.nativeType,
+        typeOut: $codec.nativeType,
       };
     }
 
@@ -150,21 +145,5 @@ export class CodecRegistry {
     if (tag !== 'Enum') return;
 
     return value.members.find(({ index }) => index === hexToU8a(moduleError.error)[0]);
-  }
-
-  #toNativeType(type: string) {
-    if (!RUST_PRIMITIVE_TYPES.includes(type)) {
-      return;
-    }
-
-    if (NUMBER_TYPES.includes(type)) {
-      return 'number';
-    } else if (BIGINT_TYPES.includes(type)) {
-      return 'bigint';
-    } else if (type === 'str') {
-      return 'string';
-    } else if (type === 'bool') {
-      return 'boolean';
-    }
   }
 }
