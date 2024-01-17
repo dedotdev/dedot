@@ -1,8 +1,8 @@
 import { TypesGen } from './TypesGen';
-import { runtimesApisSpecs, toKnownRuntimeApi } from '@delightfuldot/specs';
+import { findRuntimeApiSpec } from '@delightfuldot/specs';
 import { RuntimeCallSpec, RuntimeApiSpec } from '@delightfuldot/types';
 import { beautifySourceCode, commentBlock, compileTemplate } from './utils';
-import { assert, stringSnakeCase } from '@delightfuldot/utils';
+import { stringSnakeCase } from '@delightfuldot/utils';
 import { RpcGen } from './RpcGen';
 import { stringCamelCase } from '@polkadot/util';
 
@@ -64,18 +64,12 @@ export class RuntimeCallsGen extends RpcGen {
 
   #runtimeApisSpecsByModule(): Record<string, RuntimeApiSpec[]> {
     const specs = this.runtimeApis.map(([runtimeApiHash, version]) => {
-      const runtimeApi = toKnownRuntimeApi(runtimeApiHash);
+      const runtimeApiSpec = findRuntimeApiSpec(runtimeApiHash, version);
 
-      if (!runtimeApi) {
-        return;
-      }
-
-      const spec = runtimesApisSpecs.find((one) => one.runtimeApiName === runtimeApi && one.version === version);
-
-      assert(spec, `Runtime specs not found for ${runtimeApi} at ${version}`);
+      if (!runtimeApiSpec) return;
 
       return {
-        ...spec,
+        ...runtimeApiSpec,
         runtimeApiHash,
       } as RuntimeApiSpec;
     });

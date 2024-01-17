@@ -1,16 +1,15 @@
 import { Executor } from './Executor';
 import { GenericRuntimeCall, GenericSubstrateApi, RuntimeCallParamSpec, RuntimeCallSpec } from '@delightfuldot/types';
-import { assert, stringSnakeCase } from '@delightfuldot/utils';
+import { assert, calculateRuntimeApiHash, stringSnakeCase } from '@delightfuldot/utils';
 import { stringPascalCase, u8aConcat, u8aToHex } from '@polkadot/util';
 import { findRuntimeCallSpec } from '@delightfuldot/specs';
-import { blake2AsHex } from '@polkadot/util-crypto';
 
 export class RuntimeCallExecutor<
   ChainApi extends GenericSubstrateApi = GenericSubstrateApi,
 > extends Executor<ChainApi> {
   execute(runtimeApi: string, method: string): GenericRuntimeCall {
     runtimeApi = stringPascalCase(runtimeApi);
-    const targetRuntimeApiHash = blake2AsHex(runtimeApi, 64);
+    const targetRuntimeApiHash = calculateRuntimeApiHash(runtimeApi);
     const targetRuntimeApiVersion = this.api.runtimeVersion.apis
       .find(([supportedRuntimeApiHash]) => targetRuntimeApiHash === supportedRuntimeApiHash)
       ?.at(1) as number;

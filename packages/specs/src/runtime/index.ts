@@ -1,11 +1,11 @@
 import { discovery } from './discovery';
 import { babe } from './babe';
 import { metadata } from './metadata';
-import { RuntimeApisModules, RuntimeCallSpec, RuntimeApiSpec } from '@delightfuldot/types';
+import { RuntimeApisSpec, RuntimeCallSpec, RuntimeApiSpec } from '@delightfuldot/types';
 import { blake2AsHex } from '@polkadot/util-crypto';
 import { stringSnakeCase } from '@delightfuldot/utils';
 
-export const runtimeApisModules: RuntimeApisModules = { discovery, babe, metadata };
+export const runtimeApisModules: RuntimeApisSpec = { discovery, babe, metadata };
 
 export const runtimeApisNames = Object.values(runtimeApisModules)
   .map((one) => Object.keys(one))
@@ -29,8 +29,10 @@ export const runtimeCallsSpecs = runtimesApisSpecs
   })
   .flat();
 
-export const toKnownRuntimeApi = (runtimeApiHash: string) => {
-  return runtimeApisNames.find((one) => blake2AsHex(one, 64) === runtimeApiHash);
+export const findRuntimeApiSpec = (runtimeApiHash: string, version: number) => {
+  const runtimeApiName = runtimeApisNames.find((one) => blake2AsHex(one, 64) === runtimeApiHash);
+
+  return runtimesApisSpecs.find((one) => one.runtimeApiName === runtimeApiName && one.version === version);
 };
 
 export const findRuntimeCallSpec = (callName: string, version: number) => {

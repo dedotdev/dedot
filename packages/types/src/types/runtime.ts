@@ -14,7 +14,7 @@ export type RuntimeCallSpec = {
 };
 
 export type RuntimeApiSpec = {
-  methods: RuntimeCalls;
+  methods: RuntimeCallsSpec;
   version: number;
   runtimeApiName?: string;
   moduleName?: string;
@@ -22,8 +22,14 @@ export type RuntimeApiSpec = {
   [prop: string]: any;
 };
 
-export type RuntimeCalls = Record<string, RuntimeCallSpec>;
+export type RuntimeCallName = string;
 
-export type RuntimeApisModule = Record<string, RuntimeApiSpec[]>;
+export type RuntimeApiName = string;
 
-export type RuntimeApisModules = Record<string, RuntimeApisModule>;
+export type ModuleName = string;
+
+export type RuntimeCallsSpec = Record<RuntimeCallName, RuntimeCallSpec>;
+
+export type RuntimeApisModule = Record<RuntimeApiName, RuntimeApiSpec[]>;
+
+export type RuntimeApisSpec = Record<ModuleName, RuntimeApisModule>;

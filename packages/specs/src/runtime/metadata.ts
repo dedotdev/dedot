@@ -1,6 +1,6 @@
-import { RuntimeCalls, RuntimeApisModule } from '@delightfuldot/types';
+import { RuntimeCallsSpec, RuntimeApisModule } from '@delightfuldot/types';
 
-const V1_V2_SHARED: RuntimeCalls = {
+const V1_V2_SHARED: RuntimeCallsSpec = {
   metadata: {
     docs: 'Returns the metadata of a runtime.',
     params: [],
