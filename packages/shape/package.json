@@ -15,6 +15,7 @@
     "@delightfuldot/utils": "workspace:*",
     "@polkadot/util": "^12.6.2",
     "@polkadot/util-crypto": "^12.6.2",
+    "lodash.clonedeep": "^4.5.0",
     "subshape": "^0.14.0"
   },
   "scripts": {
@@ -26,5 +27,8 @@
     "access": "public",
     "directory": "dist"
   },
-  "license": "Apache-2.0"
+  "license": "Apache-2.0",
+  "devDependencies": {
+    "@types/lodash.clonedeep": "^4.5.9"
+  }
 }
