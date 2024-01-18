@@ -8,3 +8,4 @@ export * from './raw';
 export * from './compact';
 export * from './str';
 export * from './result';
+export * from './collection';
