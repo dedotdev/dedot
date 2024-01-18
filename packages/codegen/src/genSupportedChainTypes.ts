@@ -39,7 +39,7 @@ async function run() {
     } else if (metadataHex && rpcMethods) {
       console.log(`Generate types for ${chain} via raw data`);
       const metadata = $Metadata.tryDecode(metadataHex);
-      await generateTypes(network, metadata.metadataVersioned.value, rpcMethods, OUT_DIR);
+      await generateTypes(network, metadata.latest, rpcMethods, OUT_DIR);
     }
   }
 

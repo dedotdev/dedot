@@ -66,6 +66,9 @@ export const $ExtrinsicDef = $.Struct({
 
 export type ExtrinsicDef = $.Input<typeof $ExtrinsicDef>;
 
+/**
+ * Ref: https://github.com/paritytech/frame-metadata/blob/a07b2451b82809501fd797691046c1164f7e8840/frame-metadata/src/v14.rs#L45-L54
+ */
 export const $MetadataV14 = $.Struct({
   types: $.Vec($PortableType),
   pallets: $.Vec($Pallet),

@@ -1,5 +1,7 @@
 import * as $ from '@delightfuldot/shape';
 import { $MetadataV14 } from './v14';
+import { $MetadataV15 } from './v15';
+import { toV15 } from './conversion';
 
 export const notSupportedCodec = (msg = 'Not supported!'): $.Shape<never> => {
   return $.createShape({
@@ -35,8 +37,7 @@ export const $MetadataVersioned = $.Enum({
   V12: notSupportedCodec('Metadata V12 is not supported'),
   V13: notSupportedCodec('Metadata V13 is not supported'),
   V14: $MetadataV14,
-  // TODO support metadata V15
-  V15: notSupportedCodec('Metadata V15 support is coming soon'),
+  V15: $MetadataV15,
 });
 
 export type MetadataVersioned = $.Input<typeof $MetadataVersioned>;
@@ -57,8 +58,23 @@ export class Metadata {
     this.metadataVersioned = metadata;
   }
 
+  get versionNumber(): number {
+    return parseInt(this.version.substring(1));
+  }
+
+  get version() {
+    return this.metadataVersioned.tag;
+  }
+
   get latest(): MetadataLatest {
-    return this.metadataVersioned.value;
+    const currentVersion = this.metadataVersioned.tag;
+    if (currentVersion === 'V15') {
+      return this.metadataVersioned.value;
+    } else if (currentVersion === 'V14') {
+      return toV15(this.metadataVersioned.value);
+    }
+
+    throw new Error(`Unsupported metadata version, found: ${currentVersion}`);
   }
 }
 
@@ -68,6 +84,6 @@ export const $Metadata: $.Shape<Metadata> = $.instance(
   (metadata: Metadata) => [metadata.magicNumber, metadata.metadataVersioned],
 );
 
-export const $MetadataLatest = $MetadataV14;
+export const $MetadataLatest = $MetadataV15;
 
 export type MetadataLatest = $.Input<typeof $MetadataLatest>;
