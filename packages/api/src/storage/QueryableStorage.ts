@@ -1,5 +1,12 @@
 import { assert, HASHERS } from '@delightfuldot/utils';
-import { $StorageData, CodecRegistry, Pallet, StorageDataLike, StorageEntry, StorageKey } from '@delightfuldot/codecs';
+import {
+  $StorageData,
+  CodecRegistry,
+  PalletDefLatest,
+  StorageDataLike,
+  StorageEntryLatest,
+  StorageKey,
+} from '@delightfuldot/codecs';
 import { hexToU8a, stringCamelCase, u8aConcat, u8aToHex } from '@polkadot/util';
 import { xxhashAsU8a } from '@polkadot/util-crypto';
 
@@ -8,8 +15,8 @@ import { xxhashAsU8a } from '@polkadot/util-crypto';
  * @description A helper to encode key & decode value for a storage entry
  */
 export class QueryableStorage {
-  readonly pallet: Pallet;
-  readonly storageEntry: StorageEntry;
+  readonly pallet: PalletDefLatest;
+  readonly storageEntry: StorageEntryLatest;
   constructor(
     readonly registry: CodecRegistry,
     readonly palletName: string,
@@ -99,7 +106,7 @@ export class QueryableStorage {
     }
   }
 
-  #getPallet(): Pallet {
+  #getPallet(): PalletDefLatest {
     const targetPallet = this.registry.metadata!.pallets.find(
       (p) => stringCamelCase(p.name) === stringCamelCase(this.palletName),
     )!;
@@ -109,7 +116,7 @@ export class QueryableStorage {
     return targetPallet;
   }
 
-  #getStorageEntry(): StorageEntry {
+  #getStorageEntry(): StorageEntryLatest {
     const targetEntry = this.pallet.storage?.entries?.find(
       (entry) => stringCamelCase(entry.name) === stringCamelCase(this.storageItem),
     )!;

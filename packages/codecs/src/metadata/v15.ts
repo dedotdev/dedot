@@ -1,26 +1,31 @@
 import * as $ from '@delightfuldot/shape';
 import { $PortableType, $TypeId } from './scale-info';
-import { $Constants, $StorageEntry } from './v14';
+import { $ConstantDefV14, $StorageEntryV14 } from './v14';
 
-export const $Pallet = $.Struct({
+export const $ConstantDefV15 = $ConstantDefV14;
+export type ConstantDefV15 = $.Input<typeof $ConstantDefV15>;
+export const $StorageEntryV15 = $StorageEntryV14;
+export type StorageEntryV15 = $.Input<typeof $StorageEntryV15>;
+
+export const $PalletDefV15 = $.Struct({
   name: $.str,
   storage: $.Option(
     $.Struct({
       prefix: $.str,
-      entries: $.Vec($StorageEntry),
+      entries: $.Vec($StorageEntryV15),
     }),
   ),
   calls: $.Option($TypeId),
   event: $.Option($TypeId),
-  constants: $.Vec($Constants),
+  constants: $.Vec($ConstantDefV15),
   error: $.Option($TypeId),
   index: $.u8,
   docs: $.Vec($.str),
 });
 
-export type Pallet = $.Input<typeof $Pallet>;
+export type PalletDefV15 = $.Input<typeof $PalletDefV15>;
 
-export const $ExtrinsicDef = $.Struct({
+export const $ExtrinsicDefV15 = $.Struct({
   version: $.u8,
   addressTypeId: $TypeId,
   callTypeId: $TypeId,
@@ -35,35 +40,41 @@ export const $ExtrinsicDef = $.Struct({
   ),
 });
 
-export type ExtrinsicDef = $.Input<typeof $ExtrinsicDef>;
+export type ExtrinsicDefV15 = $.Input<typeof $ExtrinsicDefV15>;
 
-export const $RuntimeApiMethodParamDef = $.Struct({
+export const $RuntimeApiMethodParamDefV15 = $.Struct({
   name: $.str,
   typeId: $TypeId,
 });
 
-export const $RuntimeApiMethodDef = $.Struct({
+export type RuntimeApiMethodParamDefV15 = $.Input<typeof $RuntimeApiMethodParamDefV15>;
+
+export const $RuntimeApiMethodDefV15 = $.Struct({
   name: $.str,
-  inputs: $.Vec($RuntimeApiMethodParamDef),
+  inputs: $.Vec($RuntimeApiMethodParamDefV15),
   output: $TypeId,
   docs: $.Vec($.str),
 });
 
-export const $RuntimeApiDef = $.Struct({
+export type RuntimeApiMethodDefV15 = $.Input<typeof $RuntimeApiMethodDefV15>;
+
+export const $RuntimeApiDefV15 = $.Struct({
   name: $.str,
-  methods: $.Vec($RuntimeApiMethodDef),
+  methods: $.Vec($RuntimeApiMethodDefV15),
   docs: $.Vec($.str),
 });
+
+export type RuntimeApiDefV15 = $.Input<typeof $RuntimeApiDefV15>;
 
 /**
  * Ref: https://github.com/paritytech/frame-metadata/blob/a07b2451b82809501fd797691046c1164f7e8840/frame-metadata/src/v15.rs#L48-L63
  */
 export const $MetadataV15 = $.Struct({
   types: $.Vec($PortableType),
-  pallets: $.Vec($Pallet),
-  extrinsic: $ExtrinsicDef,
+  pallets: $.Vec($PalletDefV15),
+  extrinsic: $ExtrinsicDefV15,
   runtimeType: $TypeId,
-  apis: $.Vec($RuntimeApiDef),
+  apis: $.Vec($RuntimeApiDefV15),
   outerEnums: $.Struct({
     callEnumTypeId: $TypeId,
     eventEnumTypeId: $TypeId,

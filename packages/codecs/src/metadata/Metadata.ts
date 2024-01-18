@@ -1,6 +1,6 @@
 import * as $ from '@delightfuldot/shape';
 import { $MetadataV14 } from './v14';
-import { $MetadataV15 } from './v15';
+import { $MetadataV15, $PalletDefV15, $StorageEntryV15, MetadataV15, PalletDefV15, StorageEntryV15 } from './v15';
 import { toV15 } from './conversion';
 
 export const notSupportedCodec = (msg = 'Not supported!'): $.Shape<never> => {
@@ -45,6 +45,15 @@ export type MetadataVersioned = $.Input<typeof $MetadataVersioned>;
 // Ref: https://github.com/paritytech/frame-metadata/blob/a07b2451b82809501fd797691046c1164f7e8840/frame-metadata/src/v14.rs#L30
 export const MAGIC_NUMBER = 1635018093; // 0x6174656d
 
+export const $MetadataLatest = $MetadataV15;
+export type MetadataLatest = MetadataV15;
+
+export const $PalletDefLatest = $PalletDefV15;
+export type PalletDefLatest = PalletDefV15;
+
+export const $StorageEntryLatest = $StorageEntryV15;
+export type StorageEntryLatest = StorageEntryV15;
+
 export class Metadata {
   magicNumber: number;
   metadataVersioned: MetadataVersioned;
@@ -83,7 +92,3 @@ export const $Metadata: $.Shape<Metadata> = $.instance(
   $.Tuple($.u32, $MetadataVersioned),
   (metadata: Metadata) => [metadata.magicNumber, metadata.metadataVersioned],
 );
-
-export const $MetadataLatest = $MetadataV15;
-
-export type MetadataLatest = $.Input<typeof $MetadataLatest>;
