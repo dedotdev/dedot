@@ -27,7 +27,7 @@ export class RuntimeCallExecutor<
       const formattedInputs = args.map((input, index) => this.tryEncode(params[index], input));
       const bytes = u8aToHex(u8aConcat(...formattedInputs));
 
-      const result = await this.provider.send<any>('state_call', [callName, bytes]);
+      const result = await this.api.rpc.state.call(callName, bytes);
 
       return this.tryDecode(callSpec, result);
     };
