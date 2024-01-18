@@ -23,6 +23,8 @@ declare module 'subshape' {
     registerDecoder: (predicate: Predicate, decoder: Decoder) => void;
     tryEncode: (input: any) => Uint8Array;
     tryDecode: (input: any) => O;
+    // Native JS/TS type for codec.
+    // This is useful when we want to quickly find an equivalent native type for a codec.
     nativeType?: string;
 
     /**

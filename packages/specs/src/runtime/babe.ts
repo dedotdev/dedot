@@ -67,7 +67,7 @@ const V1_V2_SHARED: RuntimeCallsSpec = {
         type: 'OpaqueKeyOwnershipProof',
       },
     ],
-    type: 'Option<null>',
+    type: 'Option<Null>',
   },
 };
 

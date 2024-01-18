@@ -9,6 +9,7 @@ import type {
   Slot,
   OpaqueKeyOwnershipProof,
   AccountId32Like,
+  Null,
   AccountId32,
 } from '@delightfuldot/codecs';
 
@@ -109,7 +110,7 @@ export interface RuntimeCalls extends GenericRuntimeCalls {
      * @callname: BabeApi_submit_report_equivocation_unsigned_extrinsic
      **/
     submitReportEquivocationUnsignedExtrinsic: GenericRuntimeCall<
-      (equivocationProof: BabeConfiguration, keyOwnerProof: OpaqueKeyOwnershipProof) => Promise<Option<null>>
+      (equivocationProof: BabeConfiguration, keyOwnerProof: OpaqueKeyOwnershipProof) => Promise<Option<Null>>
     >;
 
     /**

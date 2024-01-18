@@ -56,3 +56,4 @@ export type i128 = bigint;
 export type i256 = bigint;
 export type str = string;
 export type bool = boolean;
+export type Null = null;

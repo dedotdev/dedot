@@ -43,7 +43,7 @@ async function run() {
       const metadata = $Metadata.tryDecode(metadataHex);
       const runtimeVersion = getRuntimeVersion(metadata);
 
-      await generateTypes(network, metadata.metadataVersioned.value, rpcMethods, runtimeVersion.apis, OUT_DIR);
+      await generateTypes(network, metadata.latest, rpcMethods, runtimeVersion.apis, OUT_DIR);
     }
   }
 
