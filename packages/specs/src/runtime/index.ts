@@ -1,11 +1,12 @@
 import { discovery } from './discovery';
 import { babe } from './babe';
 import { metadata } from './metadata';
+import { payment } from './payment';
 import { RuntimeApisSpec, RuntimeCallSpec, RuntimeApiSpec, RuntimeApiName } from '@delightfuldot/types';
 import { blake2AsHex } from '@polkadot/util-crypto';
 import { stringSnakeCase } from '@delightfuldot/utils';
 
-export const runtimeApisSpec: RuntimeApisSpec = { discovery, babe, metadata };
+export const runtimeApisSpec: RuntimeApisSpec = { discovery, babe, metadata, payment };
 
 export const runtimeApiNames: RuntimeApiName[] = Object.values(runtimeApisSpec)
   .map((one) => Object.keys(one))
