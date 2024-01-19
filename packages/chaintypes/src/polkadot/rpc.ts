@@ -13,8 +13,6 @@ import type {
   JustificationNotification,
   LeavesProof,
   StorageKind,
-  FeeDetails,
-  RuntimeDispatchInfo,
   RpcMethods,
   ReadProof,
   RuntimeVersion,
@@ -41,6 +39,8 @@ import type {
   StorageKey,
   PrefixedStorageKey,
   StorageData,
+  FeeDetails,
+  RuntimeDispatchInfo,
   Metadata,
   ApplyExtrinsicResult,
 } from '@delightfuldot/codecs';
@@ -182,6 +182,24 @@ export interface RpcCalls extends GenericRpcCalls {
      * @rpcname: chainHead_unstable_unpin
      **/
     unstable_unpin: GenericRpcCall;
+
+    [method: string]: GenericRpcCall;
+  };
+  chainSpec: {
+    /**
+     * @rpcname: chainSpec_v1_chainName
+     **/
+    v1_chainName: GenericRpcCall;
+
+    /**
+     * @rpcname: chainSpec_v1_genesisHash
+     **/
+    v1_genesisHash: GenericRpcCall;
+
+    /**
+     * @rpcname: chainSpec_v1_properties
+     **/
+    v1_properties: GenericRpcCall;
 
     [method: string]: GenericRpcCall;
   };

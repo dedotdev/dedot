@@ -11,6 +11,11 @@ import type {
   AccountId32Like,
   Null,
   AccountId32,
+  RuntimeDispatchInfo,
+  Bytes,
+  FeeDetails,
+  Balance,
+  Weight,
 } from '@delightfuldot/codecs';
 
 export interface RuntimeCalls extends GenericRuntimeCalls {
@@ -129,6 +134,44 @@ export interface RuntimeCalls extends GenericRuntimeCalls {
      * @callname: AuthorityDiscoveryApi_authorities
      **/
     authorities: GenericRuntimeCall<() => Promise<Array<AccountId32>>>;
+
+    /**
+     * Generic runtime call
+     **/
+    [method: string]: GenericRuntimeCall;
+  };
+  /**
+   * @runtimeapi: TransactionPaymentApi - 0x37c8bb1350a9a2a8
+   * @version: 4
+   **/
+  transactionPaymentApi: {
+    /**
+     * The transaction info
+     *
+     * @callname: TransactionPaymentApi_query_info
+     **/
+    queryInfo: GenericRuntimeCall<(uxt: Bytes, len: number) => Promise<RuntimeDispatchInfo>>;
+
+    /**
+     * The transaction fee details
+     *
+     * @callname: TransactionPaymentApi_query_fee_details
+     **/
+    queryFeeDetails: GenericRuntimeCall<(uxt: Bytes, len: number) => Promise<FeeDetails>>;
+
+    /**
+     * Query the output of the current LengthToFee given some input
+     *
+     * @callname: TransactionPaymentApi_query_length_to_fee
+     **/
+    queryLengthToFee: GenericRuntimeCall<(length: number) => Promise<Balance>>;
+
+    /**
+     * Query the output of the current WeightToFee given some input
+     *
+     * @callname: TransactionPaymentApi_query_weight_to_fee
+     **/
+    queryWeightToFee: GenericRuntimeCall<(weight: Weight) => Promise<Balance>>;
 
     /**
      * Generic runtime call
