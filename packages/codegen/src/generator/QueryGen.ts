@@ -1,5 +1,5 @@
 import { stringLowerFirst } from '@polkadot/util';
-import { StorageEntry } from '@delightfuldot/codecs';
+import { StorageEntryLatest } from '@delightfuldot/codecs';
 import { normalizeName } from '@delightfuldot/utils';
 import { ApiGen } from '../generator';
 import { beautifySourceCode, commentBlock, compileTemplate } from './utils';
@@ -37,7 +37,7 @@ export class QueryGen extends ApiGen {
     return beautifySourceCode(template({ importTypes, defTypeOut }));
   }
 
-  #generateEntry(entry: StorageEntry) {
+  #generateEntry(entry: StorageEntryLatest) {
     const { name, type, docs, modifier } = entry;
 
     let valueType, keyType;

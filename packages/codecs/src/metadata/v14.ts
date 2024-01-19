@@ -11,7 +11,7 @@ export const $Hasher = $.FlatEnum([
   'identity',
 ]);
 
-export const $StorageEntry = $.Struct({
+export const $StorageEntryV14 = $.Struct({
   name: $.str,
   modifier: $.FlatEnum(['Optional', 'Default']),
   type: $.Enum({
@@ -26,33 +26,35 @@ export const $StorageEntry = $.Struct({
   docs: $.Vec($.str),
 });
 
-export type StorageEntry = $.Input<typeof $StorageEntry>;
+export type StorageEntryV14 = $.Input<typeof $StorageEntryV14>;
 
-export const $Constants = $.Struct({
+export const $ConstantDefV14 = $.Struct({
   name: $.str,
   typeId: $TypeId,
   value: $.PrefixedHex,
   docs: $.Vec($.str),
 });
 
-export const $Pallet = $.Struct({
+export type ConstantDefV14 = $.Input<typeof $ConstantDefV14>;
+
+export const $PalletDefV14 = $.Struct({
   name: $.str,
   storage: $.Option(
     $.Struct({
       prefix: $.str,
-      entries: $.Vec($StorageEntry),
+      entries: $.Vec($StorageEntryV14),
     }),
   ),
   calls: $.Option($TypeId),
   event: $.Option($TypeId),
-  constants: $.Vec($Constants),
+  constants: $.Vec($ConstantDefV14),
   error: $.Option($TypeId),
   index: $.u8,
 });
 
-export type Pallet = $.Input<typeof $Pallet>;
+export type PalletDefV14 = $.Input<typeof $PalletDefV14>;
 
-export const $ExtrinsicDef = $.Struct({
+export const $ExtrinsicDefV14 = $.Struct({
   typeId: $TypeId,
   version: $.u8,
   signedExtensions: $.Vec(
@@ -64,12 +66,15 @@ export const $ExtrinsicDef = $.Struct({
   ),
 });
 
-export type ExtrinsicDef = $.Input<typeof $ExtrinsicDef>;
+export type ExtrinsicDefV14 = $.Input<typeof $ExtrinsicDefV14>;
 
+/**
+ * Ref: https://github.com/paritytech/frame-metadata/blob/a07b2451b82809501fd797691046c1164f7e8840/frame-metadata/src/v14.rs#L45-L54
+ */
 export const $MetadataV14 = $.Struct({
   types: $.Vec($PortableType),
-  pallets: $.Vec($Pallet),
-  extrinsic: $ExtrinsicDef,
+  pallets: $.Vec($PalletDefV14),
+  extrinsic: $ExtrinsicDefV14,
   runtimeType: $TypeId,
 });
 

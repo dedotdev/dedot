@@ -1,5 +1,7 @@
 import * as $ from '@delightfuldot/shape';
 import { $MetadataV14 } from './v14';
+import { $MetadataV15, $PalletDefV15, $StorageEntryV15, MetadataV15, PalletDefV15, StorageEntryV15 } from './v15';
+import { toV15 } from './conversion';
 
 export const notSupportedCodec = (msg = 'Not supported!'): $.Shape<never> => {
   return $.createShape({
@@ -35,14 +37,22 @@ export const $MetadataVersioned = $.Enum({
   V12: notSupportedCodec('Metadata V12 is not supported'),
   V13: notSupportedCodec('Metadata V13 is not supported'),
   V14: $MetadataV14,
-  // TODO support metadata V15
-  V15: notSupportedCodec('Metadata V15 support is coming soon'),
+  V15: $MetadataV15,
 });
 
 export type MetadataVersioned = $.Input<typeof $MetadataVersioned>;
 
 // Ref: https://github.com/paritytech/frame-metadata/blob/a07b2451b82809501fd797691046c1164f7e8840/frame-metadata/src/v14.rs#L30
 export const MAGIC_NUMBER = 1635018093; // 0x6174656d
+
+export const $MetadataLatest = $MetadataV15;
+export type MetadataLatest = MetadataV15;
+
+export const $PalletDefLatest = $PalletDefV15;
+export type PalletDefLatest = PalletDefV15;
+
+export const $StorageEntryLatest = $StorageEntryV15;
+export type StorageEntryLatest = StorageEntryV15;
 
 export class Metadata {
   magicNumber: number;
@@ -57,8 +67,23 @@ export class Metadata {
     this.metadataVersioned = metadata;
   }
 
+  get versionNumber(): number {
+    return parseInt(this.version.substring(1));
+  }
+
+  get version() {
+    return this.metadataVersioned.tag;
+  }
+
   get latest(): MetadataLatest {
-    return this.metadataVersioned.value;
+    const currentVersion = this.metadataVersioned.tag;
+    if (currentVersion === 'V15') {
+      return this.metadataVersioned.value;
+    } else if (currentVersion === 'V14') {
+      return toV15(this.metadataVersioned.value);
+    }
+
+    throw new Error(`Unsupported metadata version, found: ${currentVersion}`);
   }
 }
 
@@ -67,7 +92,3 @@ export const $Metadata: $.Shape<Metadata> = $.instance(
   $.Tuple($.u32, $MetadataVersioned),
   (metadata: Metadata) => [metadata.magicNumber, metadata.metadataVersioned],
 );
-
-export const $MetadataLatest = $MetadataV14;
-
-export type MetadataLatest = $.Input<typeof $MetadataLatest>;
