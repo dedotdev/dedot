@@ -122,17 +122,16 @@ export class TypesGen {
 
     switch (tag) {
       case 'Primitive':
-        if (['u8', 'i8', 'u16', 'i16', 'u32', 'i32'].includes(value.kind)) {
-          return 'number';
-        } else if (['u64', 'i64', 'u128', 'i128', 'u256', 'i256'].includes(value.kind)) {
-          return 'bigint';
-        } else if (value.kind === 'bool') {
-          return 'boolean';
-        } else if (value.kind === 'char' || value.kind === 'str') {
+        const $codec = this.registry.findCodec(value.kind);
+
+        if ($codec.nativeType) {
+          return $codec.nativeType;
+        } else if (value.kind === 'char') {
           return 'string';
         } else {
           throw new Error(`Invalid primitive type: ${value.kind}`);
         }
+
       case 'Struct': {
         const { fields } = value;
 

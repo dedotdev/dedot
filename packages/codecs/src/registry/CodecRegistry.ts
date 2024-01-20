@@ -61,6 +61,16 @@ export class CodecRegistry {
     }
 
     const $codec = this.findCodec(name);
+
+    if ($codec.nativeType && $[name as keyof typeof $]) {
+      return {
+        name: normalizedName,
+        $codec,
+        typeIn: $codec.nativeType,
+        typeOut: $codec.nativeType,
+      };
+    }
+
     return {
       name: normalizedName,
       $codec,

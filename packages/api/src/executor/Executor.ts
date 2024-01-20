@@ -1,6 +1,6 @@
 import type { SubstrateApi } from '@delightfuldot/chaintypes';
 import { stringCamelCase } from '@polkadot/util';
-import { Pallet } from '@delightfuldot/codecs';
+import { PalletDefLatest } from '@delightfuldot/codecs';
 import { GenericSubstrateApi } from '@delightfuldot/types';
 import DelightfulApi from '../DelightfulApi';
 
@@ -30,7 +30,7 @@ export abstract class Executor<ChainApi extends GenericSubstrateApi = SubstrateA
     return this.api.metadataLatest;
   }
 
-  getPallet(name: string, throwErr = true): Pallet {
+  getPallet(name: string, throwErr = true): PalletDefLatest {
     const targetPallet = this.metadata.pallets.find((p) => stringCamelCase(p.name) === name);
     if (!targetPallet && throwErr) {
       throw new Error(`Pallet not found: ${name}`);

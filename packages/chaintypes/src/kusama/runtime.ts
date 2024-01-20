@@ -2,54 +2,23 @@
 
 import type { GenericRuntimeCalls, GenericRuntimeCall } from '@delightfuldot/types';
 import type {
-  RuntimeVersion,
-  Block,
-  Header,
   Option,
   OpaqueMetadata,
-  u32,
   BabeConfiguration,
   Epoch,
   Slot,
   OpaqueKeyOwnershipProof,
   AccountId32Like,
+  Null,
   AccountId32,
-  Nonce,
+  RuntimeDispatchInfo,
+  Bytes,
+  FeeDetails,
+  Balance,
+  Weight,
 } from '@delightfuldot/codecs';
 
 export interface RuntimeCalls extends GenericRuntimeCalls {
-  /**
-   * @runtimeapi: Core - 0xdf6acb689907609b
-   * @version: 4
-   **/
-  core: {
-    /**
-     * Returns the version of the runtime.
-     *
-     * @callname: Core_version
-     **/
-    version: GenericRuntimeCall<() => Promise<RuntimeVersion>>;
-
-    /**
-     * Execute the given block.
-     *
-     * @callname: Core_execute_block
-     **/
-    executeBlock: GenericRuntimeCall<(block: Block) => Promise<null>>;
-
-    /**
-     * Initialize a block with the given header.
-     *
-     * @callname: Core_initialize_block
-     **/
-    initializeBlock: GenericRuntimeCall<(header: Header) => Promise<null>>;
-
-    /**
-     * Generic runtime call
-     **/
-    [method: string]: GenericRuntimeCall;
-  };
-
   /**
    * @runtimeapi: Metadata - 0x37e397fc7c91f5e4
    * @version: 2
@@ -60,14 +29,14 @@ export interface RuntimeCalls extends GenericRuntimeCalls {
      *
      * @callname: Metadata_metadata_at_version
      **/
-    metadataAtVersion: GenericRuntimeCall<(version: u32) => Promise<Option<OpaqueMetadata>>>;
+    metadataAtVersion: GenericRuntimeCall<(version: number) => Promise<Option<OpaqueMetadata>>>;
 
     /**
      * Returns the supported metadata versions.
      *
      * @callname: Metadata_metadata_versions
      **/
-    metadataVersions: GenericRuntimeCall<() => Promise<Array<u32>>>;
+    metadataVersions: GenericRuntimeCall<() => Promise<Array<number>>>;
 
     /**
      * Returns the metadata of a runtime.
@@ -81,7 +50,6 @@ export interface RuntimeCalls extends GenericRuntimeCalls {
      **/
     [method: string]: GenericRuntimeCall;
   };
-
   /**
    * @runtimeapi: BabeApi - 0xcbca25e39f142387
    * @version: 2
@@ -147,7 +115,7 @@ export interface RuntimeCalls extends GenericRuntimeCalls {
      * @callname: BabeApi_submit_report_equivocation_unsigned_extrinsic
      **/
     submitReportEquivocationUnsignedExtrinsic: GenericRuntimeCall<
-      (equivocationProof: BabeConfiguration, keyOwnerProof: OpaqueKeyOwnershipProof) => Promise<Option<null>>
+      (equivocationProof: BabeConfiguration, keyOwnerProof: OpaqueKeyOwnershipProof) => Promise<Option<Null>>
     >;
 
     /**
@@ -155,7 +123,6 @@ export interface RuntimeCalls extends GenericRuntimeCalls {
      **/
     [method: string]: GenericRuntimeCall;
   };
-
   /**
    * @runtimeapi: AuthorityDiscoveryApi - 0x687ad44ad37f03c2
    * @version: 1
@@ -173,18 +140,38 @@ export interface RuntimeCalls extends GenericRuntimeCalls {
      **/
     [method: string]: GenericRuntimeCall;
   };
-
   /**
-   * @runtimeapi: AccountNonceApi - 0xbc9d89904f5b923f
-   * @version: 1
+   * @runtimeapi: TransactionPaymentApi - 0x37c8bb1350a9a2a8
+   * @version: 4
    **/
-  accountNonceApi: {
+  transactionPaymentApi: {
     /**
-     * The API to query account nonce (aka transaction index)
+     * The transaction info
      *
-     * @callname: AccountNonceApi_account_nonce
+     * @callname: TransactionPaymentApi_query_info
      **/
-    accountNonce: GenericRuntimeCall<(accountId: AccountId32Like) => Promise<Nonce>>;
+    queryInfo: GenericRuntimeCall<(uxt: Bytes, len: number) => Promise<RuntimeDispatchInfo>>;
+
+    /**
+     * The transaction fee details
+     *
+     * @callname: TransactionPaymentApi_query_fee_details
+     **/
+    queryFeeDetails: GenericRuntimeCall<(uxt: Bytes, len: number) => Promise<FeeDetails>>;
+
+    /**
+     * Query the output of the current LengthToFee given some input
+     *
+     * @callname: TransactionPaymentApi_query_length_to_fee
+     **/
+    queryLengthToFee: GenericRuntimeCall<(length: number) => Promise<Balance>>;
+
+    /**
+     * Query the output of the current WeightToFee given some input
+     *
+     * @callname: TransactionPaymentApi_query_weight_to_fee
+     **/
+    queryWeightToFee: GenericRuntimeCall<(weight: Weight) => Promise<Balance>>;
 
     /**
      * Generic runtime call

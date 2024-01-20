@@ -4,6 +4,7 @@ import staticSubstrateV13 from '@polkadot/types-support/metadata/v13/substrate-h
 import staticSubstrateV14 from '@polkadot/types-support/metadata/v14/substrate-hex';
 import staticSubstrateV15 from '@polkadot/types-support/metadata/v15/substrate-hex';
 import { hexToString, numberToHex } from '@polkadot/util';
+import { assert } from '@delightfuldot/utils';
 
 describe('$Metadata', () => {
   it('should verify magic number', () => {
@@ -17,17 +18,36 @@ describe('$Metadata', () => {
   });
 
   it('should decode metadata v14', () => {
-    const { metadataVersioned } = $Metadata.tryDecode(staticSubstrateV14);
+    const { metadataVersioned, version, versionNumber } = $Metadata.tryDecode(staticSubstrateV14);
+
+    expect(version).toEqual('V14');
+    expect(versionNumber).toEqual(14);
+
     expect(metadataVersioned.tag).toEqual('V14');
+
+    assert(metadataVersioned.tag === 'V14');
     expectTypeOf(metadataVersioned.value.pallets).toBeArray();
     expectTypeOf(metadataVersioned.value.types).toBeArray();
     expectTypeOf(metadataVersioned.value.extrinsic).toBeObject();
     expectTypeOf(metadataVersioned.value.runtimeType).toBeNumber();
   });
 
-  it('Metadata V15 is coming soon', () => {
-    expect(() => {
-      $Metadata.tryDecode(staticSubstrateV15);
-    }).toThrowError('Metadata V15 support is coming soon');
+  it('should decode metadata v15', () => {
+    const metadata = $Metadata.tryDecode(staticSubstrateV15);
+
+    expect(metadata.version).toEqual('V15');
+    expect(metadata.versionNumber).toEqual(15);
+
+    const { metadataVersioned } = metadata;
+    expect(metadataVersioned.tag).toEqual('V15');
+
+    assert(metadataVersioned.tag === 'V15');
+    expectTypeOf(metadataVersioned.value.pallets).toBeArray();
+    expectTypeOf(metadataVersioned.value.types).toBeArray();
+    expectTypeOf(metadataVersioned.value.extrinsic).toBeObject();
+    expectTypeOf(metadataVersioned.value.runtimeType).toBeNumber();
+    expectTypeOf(metadataVersioned.value.apis).toBeArray();
+    expectTypeOf(metadataVersioned.value.outerEnums).toBeObject();
+    expectTypeOf(metadataVersioned.value.custom.map).toBeObject();
   });
 });

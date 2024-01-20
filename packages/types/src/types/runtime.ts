@@ -1,29 +1,35 @@
-export type RuntimeApiParamSpec = {
+export type RuntimeCallParamSpec = {
   name: string;
   type: string;
 };
 
-export type RuntimeApiSpec = {
+export type RuntimeCallSpec = {
   docs?: string | string[];
-  params: RuntimeApiParamSpec[];
+  params: RuntimeCallParamSpec[];
   type: string;
-  runtime?: string;
-  method?: string;
+  runtimeApiName?: string;
+  methodName?: string;
   version?: number;
   [prop: string]: any;
 };
 
-export type RuntimeSpec = {
-  methods: RuntimeApis;
+export type RuntimeApiSpec = {
+  methods: RuntimeCallsSpec;
   version: number;
-  runtime?: string;
-  module?: string;
-  hash?: string;
+  runtimeApiName?: string;
+  moduleName?: string;
+  runtimeApiHash?: string;
   [prop: string]: any;
 };
 
-export type RuntimeApis = Record<string, RuntimeApiSpec>;
+export type RuntimeCallName = string;
 
-export type RuntimeApisModule = Record<string, RuntimeSpec[]>;
+export type RuntimeApiName = string;
 
-export type RuntimeApisModules = Record<string, RuntimeApisModule>;
+export type ModuleName = string;
+
+export type RuntimeCallsSpec = Record<RuntimeCallName, RuntimeCallSpec>;
+
+export type RuntimeApisModule = Record<RuntimeApiName, RuntimeApiSpec[]>;
+
+export type RuntimeApisSpec = Record<ModuleName, RuntimeApisModule>;

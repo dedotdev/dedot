@@ -8,7 +8,7 @@ import staticSubstrate from '@polkadot/types-support/metadata/static-substrate';
 import { AnyFunc, ChainProperties } from '@delightfuldot/types';
 import { RuntimeVersion } from '@delightfuldot/codecs';
 
-const MOCK_APIS = [
+const MOCK_RUNTIME_APIS = [
   // Metadata
   ['0x37e397fc7c91f5e4', 2],
 ];
@@ -17,11 +17,11 @@ export default class MockProvider implements ProviderInterface {
   rpcRequests: Record<string, AnyFunc> = {
     chain_getBlockHash: () => '0x0000000000000000000000000000000000000000000000000000000000000000',
     state_getRuntimeVersion: () =>
-      ({ specVersion: 1, specName: 'MockedSpec', apis: MOCK_APIS }) as unknown as RuntimeVersion,
+      ({ specVersion: 1, specName: 'MockedSpec', apis: MOCK_RUNTIME_APIS }) as unknown as RuntimeVersion,
     system_chain: () => 'MockedChain',
     system_properties: () => ({ ss58Format: 42 }) as ChainProperties,
     state_getMetadata: () => staticSubstrate,
-    state_call: () => [],
+    state_call: () => '0x',
   };
 
   connect(): Promise<void> {

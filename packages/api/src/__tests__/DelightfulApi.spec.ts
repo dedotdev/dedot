@@ -6,6 +6,14 @@ import { stringCamelCase, stringPascalCase } from '@polkadot/util';
 import { RuntimeVersion } from '@delightfuldot/codecs';
 
 describe('DelightfulApi', () => {
+  it('should throws error for invalid endpoint', () => {
+    expect(async () => {
+      await DelightfulApi.new('invalid_endpoint');
+    }).rejects.toThrowError(
+      'Invalid network endpoint, a valid endpoint should start with `wss://`, `ws://`, `https://` or `http://`',
+    );
+  });
+
   describe('cache disabled', () => {
     let api: DelightfulApi<SubstrateApi>;
     beforeEach(async () => {
@@ -149,13 +157,16 @@ describe('DelightfulApi', () => {
         expect(providerSend).toBeCalledWith('state_call', ['Metadata_metadata', '0x']);
 
         await api.call.metadata.metadataAtVersion(14);
-        // 0x0e000000 is 14 with scale-ts encoded
-        expect(providerSend).toBeCalledWith('state_call', ['Metadata_metadata_at_version', '0x0e000000']);
+        expect(providerSend).toBeCalledWith('state_call', ['Metadata_metadata_at_version', '0x0e000000']); // $.u32.decode(14) = '0x0e000000'
       });
 
       it('should throws error if runtime not support or call spec not found', async () => {
-        expect(() => api.call.metadata.notFound()).toThrowError(new Error('Call spec not found'));
-        expect(() => api.call.notFound.notFound()).toThrowError(new Error('Chain does not support NotFound'));
+        expect(() => api.call.metadata.notFound()).toThrowError(
+          new Error('Runtime call spec not found for Metadata_not_found'),
+        );
+        expect(() => api.call.notFound.notFound()).toThrowError(
+          new Error('Connected chain does not support runtime API: NotFound'),
+        );
       });
     });
   });

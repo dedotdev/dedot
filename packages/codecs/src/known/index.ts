@@ -7,3 +7,4 @@ export * from './babe';
 export * from './beefy';
 export * from './metadata';
 export * from './system';
+export * from './payment';

@@ -1,15 +1,15 @@
 import { TypesGen } from './TypesGen';
-import { runtimesSpec, toKnownRuntime } from '@delightfuldot/specs';
-import { RuntimeApiSpec, RuntimeSpec } from '@delightfuldot/types';
+import { findRuntimeApiSpec } from '@delightfuldot/specs';
+import { RuntimeCallSpec, RuntimeApiSpec } from '@delightfuldot/types';
 import { beautifySourceCode, commentBlock, compileTemplate } from './utils';
-import { assert, stringSnakeCase } from '@delightfuldot/utils';
+import { stringSnakeCase } from '@delightfuldot/utils';
 import { RpcGen } from './RpcGen';
 import { stringCamelCase } from '@polkadot/util';
 
 export class RuntimeCallsGen extends RpcGen {
   constructor(
     readonly typesGen: TypesGen,
-    readonly runtimeApis: any[],
+    readonly runtimeApis: [string, number][],
   ) {
     super(typesGen, []);
   }
@@ -17,57 +17,16 @@ export class RuntimeCallsGen extends RpcGen {
     this.typesGen.clearCache();
     this.typesGen.typeImports.addKnownType('GenericRuntimeCalls', 'GenericRuntimeCall');
 
-    const specsByModule = this.runtimeApis
-      .map(([hash, version]) => {
-        const runtime = toKnownRuntime(hash);
+    const specsByModule = this.#runtimeApisSpecsByModule();
 
-        if (!runtime) {
-          // TODO: Handle unknown runtime
-          // console.log('...');
-          return;
-        }
+    let runtimeCallsOut = '';
 
-        const spec = runtimesSpec.find((one) => one.runtime === runtime && one.version === version);
-
-        assert(spec, `Runtime specs not found ${runtime} ${version}`);
-
-        return {
-          ...spec,
-          hash,
-        } as RuntimeSpec;
-      })
-      .reduce(
-        (o, spec) => {
-          if (!spec) {
-            return o;
-          }
-
-          const { module, runtime } = spec;
-
-          if (!module || !runtime) {
-            return o;
-          }
-
-          return {
-            ...o,
-            [module]: o[module] ? [...o[module], spec] : [spec],
-          };
-        },
-        {} as Record<string, RuntimeSpec[]>,
-      );
-
-    let runtimeApisCallsOut = '';
     Object.values(specsByModule).forEach((specs) => {
-      specs.forEach(({ methods, runtime, hash, version }) => {
-        runtimeApisCallsOut += `\n
-        /**
-         * @runtimeapi: ${runtime} - ${hash}
-         * @version: ${version}
-        **/\n`;
-
-        runtimeApisCallsOut += `${stringCamelCase(runtime!)}: {
+      specs.forEach(({ methods, runtimeApiName, runtimeApiHash, version }) => {
+        runtimeCallsOut += commentBlock(`@runtimeapi: ${runtimeApiName} - ${runtimeApiHash}`, `@version: ${version}`);
+        runtimeCallsOut += `${stringCamelCase(runtimeApiName!)}: {
           ${Object.keys(methods)
-            .map((method) => this.#generateMethodDef({ ...methods[method], runtime, method }))
+            .map((methodName) => this.#generateMethodDef({ ...methods[methodName], runtimeApiName, methodName }))
             .join('\n')} 
             
         ${commentBlock('Generic runtime call')}[method: string]: GenericRuntimeCall
@@ -76,15 +35,15 @@ export class RuntimeCallsGen extends RpcGen {
     });
 
     const importTypes = this.typesGen.typeImports.toImports();
-    const template = compileTemplate('call.hbs');
+    const template = compileTemplate('runtime.hbs');
 
-    return beautifySourceCode(template({ importTypes, runtimeApisCallsOut }));
+    return beautifySourceCode(template({ importTypes, runtimeCallsOut }));
   }
 
-  #generateMethodDef(spec: RuntimeApiSpec) {
-    const { docs = [], params, type, runtime, method } = spec;
+  #generateMethodDef(spec: RuntimeCallSpec) {
+    const { docs = [], params, type, runtimeApiName, methodName } = spec;
 
-    const callName = `${runtime}_${stringSnakeCase(method)}`;
+    const callName = `${runtimeApiName}_${stringSnakeCase(methodName)}`;
     const defaultDocs = [`@callname: ${callName}`];
 
     this.addTypeImport(type, false);
@@ -100,6 +59,39 @@ export class RuntimeCallsGen extends RpcGen {
       docs,
       '\n',
       defaultDocs,
-    )}${method}: GenericRuntimeCall<(${paramsOut}) => Promise<${typeOut}>>`;
+    )}${methodName}: GenericRuntimeCall<(${paramsOut}) => Promise<${typeOut}>>`;
+  }
+
+  #runtimeApisSpecsByModule(): Record<string, RuntimeApiSpec[]> {
+    const specs = this.runtimeApis.map(([runtimeApiHash, version]) => {
+      const runtimeApiSpec = findRuntimeApiSpec(runtimeApiHash, version);
+
+      if (!runtimeApiSpec) return;
+
+      return {
+        ...runtimeApiSpec,
+        runtimeApiHash,
+      } as RuntimeApiSpec;
+    });
+
+    return specs.reduce(
+      (o, spec) => {
+        if (!spec) {
+          return o;
+        }
+
+        const { moduleName } = spec;
+
+        if (!moduleName) {
+          return o;
+        }
+
+        return {
+          ...o,
+          [moduleName]: o[moduleName] ? [...o[moduleName], spec] : [spec],
+        };
+      },
+      {} as Record<string, RuntimeApiSpec[]>,
+    );
   }
 }
