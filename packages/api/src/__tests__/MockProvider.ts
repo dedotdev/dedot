@@ -5,7 +5,8 @@ import {
   ProviderInterfaceEmitted,
 } from '@polkadot/rpc-provider/types';
 import staticSubstrate from '@polkadot/types-support/metadata/static-substrate';
-import { AnyFunc, ChainProperties, RuntimeVersion } from '@delightfuldot/types';
+import { AnyFunc, ChainProperties } from '@delightfuldot/types';
+import { RuntimeVersion } from '@delightfuldot/codecs';
 
 const MOCK_APIS = [
   // Metadata

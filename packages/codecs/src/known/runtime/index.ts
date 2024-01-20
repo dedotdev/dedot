@@ -28,17 +28,20 @@ export const $ApiId = $.FixedHex(8);
 
 /**
  * A vector of pairs of `ApiId` and a `u32` for version.
- * */
+ */
 export const $ApisVec = $.Vec($.Tuple($ApiId, $.u32));
 
 /**
  * Runtime version.
  * This should not be thought of as classic Semver (major/minor/tiny).
  * This triplet have different semantics and mis-interpretation could cause problems.
+ *
  * In particular: bug fixes should result in an increment of `spec_version` and possibly
  * `authoring_version`, absolutely not `impl_version` since they change the semantics of the
  * runtime.
- * */
+ *
+ * Ref: https://github.com/paritytech/polkadot-sdk/blob/0e49ed72aa365475e30069a5c30e251a009fdacf/substrate/primitives/version/src/lib.rs#L152-L215
+ */
 export const $RuntimeVersion = $.Struct({
   // Identifies the different Substrate runtimes. There'll be at least polkadot and node.
   // A different on-chain spec_name to that of the native runtime would normally result

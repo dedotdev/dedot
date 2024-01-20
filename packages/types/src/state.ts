@@ -121,26 +121,3 @@ export interface MigrationStatusResult {
   totalChild: bigint;
 }
 registry.add('MigrationStatusResult');
-
-/**
- * Runtime version.
- * This should not be thought of as classic Semver (major/minor/tiny).
- * This triplet have different semantics and mis-interpretation could cause problems.
- *
- * In particular: bug fixes should result in an increment of `spec_version` and possibly
- * `authoring_version`, absolutely not `impl_version` since they change the semantics of the
- * runtime.
- *
- * Ref: https://github.com/paritytech/polkadot-sdk/blob/0e49ed72aa365475e30069a5c30e251a009fdacf/substrate/primitives/version/src/lib.rs#L152-L215
- */
-export interface RuntimeVersion {
-  specName: string;
-  implName: string;
-  authoringVersion: number;
-  specVersion: number;
-  implVersion: number;
-  apis: Array<[FixedBytes<8>, number]>;
-  transactionVersion: number;
-  stateVersion: number;
-}
-registry.add('RuntimeVersion');

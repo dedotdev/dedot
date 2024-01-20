@@ -34,7 +34,10 @@ const V2_TO_V4_SHARED: RuntimeApis = {
   },
 };
 
-export const runtime: RuntimeApisModule = {
+/**
+ * Ref: https://github.com/paritytech/polkadot-sdk/blob/eaf1bc5633ebbacce97e4f167ebe1d0d268c4b24/substrate/primitives/api/src/lib.rs#L799-L809
+ */
+export const core: RuntimeApisModule = {
   Core: [
     {
       methods: {

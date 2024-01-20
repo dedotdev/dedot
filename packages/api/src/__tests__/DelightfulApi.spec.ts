@@ -3,7 +3,7 @@ import DelightfulApi from '../DelightfulApi';
 import MockProvider from './MockProvider';
 import { SubstrateApi } from '@delightfuldot/chaintypes';
 import { stringCamelCase, stringPascalCase } from '@polkadot/util';
-import { RuntimeVersion } from '@delightfuldot/types';
+import { RuntimeVersion } from '@delightfuldot/codecs';
 
 describe('DelightfulApi', () => {
   describe('cache disabled', () => {

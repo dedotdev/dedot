@@ -21,7 +21,7 @@ export async function generateTypes(
   network: NetworkInfo,
   metadata: MetadataLatest,
   rpcMethods: string[],
-  runtimeApis: [string, number][],
+  runtimeApis: any[],
   outDir: string = '.',
 ) {
   const dirPath = path.resolve(process.cwd(), outDir, network.chain);

@@ -2,7 +2,7 @@ import { generateTypes, generateTypesFromChain } from './index';
 import staticSubstrate, { rpc } from '@polkadot/types-support/metadata/static-substrate';
 import { $Metadata, CodecRegistry, Metadata } from '@delightfuldot/codecs';
 import { NetworkInfo } from './types';
-import { RuntimeVersion } from '@delightfuldot/types';
+import { RuntimeVersion } from '@delightfuldot/codecs';
 import { DelightfulApi, ConstantExecutor } from 'delightfuldot';
 
 const NETWORKS: NetworkInfo[] = [
@@ -41,9 +41,9 @@ async function run() {
     } else if (metadataHex && rpcMethods) {
       console.log(`Generate types for ${chain} via raw data`);
       const metadata = $Metadata.tryDecode(metadataHex);
-      const runtimeVersion = getRuntimeVersion(metadata);
+      const { apis } = getRuntimeVersion(metadata);
 
-      await generateTypes(network, metadata.metadataVersioned.value, rpcMethods, runtimeVersion.apis, OUT_DIR);
+      await generateTypes(network, metadata.metadataVersioned.value, rpcMethods, apis, OUT_DIR);
     }
   }
 

@@ -1,8 +1,8 @@
 import { HttpProvider, WsProvider } from '@polkadot/rpc-provider';
 import { ProviderInterface } from '@polkadot/rpc-provider/types';
 import type { SubstrateApi } from '@delightfuldot/chaintypes';
-import { $Metadata, CodecRegistry, Hash, Metadata, MetadataLatest } from '@delightfuldot/codecs';
-import { ChainProperties, GenericSubstrateApi, RuntimeVersion, Unsub } from '@delightfuldot/types';
+import { $Metadata, CodecRegistry, Hash, Metadata, MetadataLatest, RuntimeVersion } from '@delightfuldot/codecs';
+import { ChainProperties, GenericSubstrateApi, Unsub } from '@delightfuldot/types';
 import {
   RuntimeCallExecutor,
   ConstantExecutor,
