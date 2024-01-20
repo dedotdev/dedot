@@ -185,6 +185,24 @@ export interface RpcCalls extends GenericRpcCalls {
 
     [method: string]: GenericRpcCall;
   };
+  chainSpec: {
+    /**
+     * @rpcname: chainSpec_v1_chainName
+     **/
+    v1_chainName: GenericRpcCall;
+
+    /**
+     * @rpcname: chainSpec_v1_genesisHash
+     **/
+    v1_genesisHash: GenericRpcCall;
+
+    /**
+     * @rpcname: chainSpec_v1_properties
+     **/
+    v1_properties: GenericRpcCall;
+
+    [method: string]: GenericRpcCall;
+  };
   chain: {
     /**
      * Get header and body of a relay chain block

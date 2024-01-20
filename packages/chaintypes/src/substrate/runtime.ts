@@ -35,14 +35,14 @@ export interface RuntimeCalls extends GenericRuntimeCalls {
      *
      * @callname: Core_execute_block
      **/
-    execute_block: GenericRuntimeCall<(block: Block) => Promise<null>>;
+    executeBlock: GenericRuntimeCall<(block: Block) => Promise<null>>;
 
     /**
      * Initialize a block with the given header.
      *
      * @callname: Core_initialize_block
      **/
-    initialize_block: GenericRuntimeCall<(header: Header) => Promise<null>>;
+    initializeBlock: GenericRuntimeCall<(header: Header) => Promise<null>>;
 
     /**
      * Generic runtime call
