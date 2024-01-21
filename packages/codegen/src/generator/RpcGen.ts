@@ -174,6 +174,16 @@ export class RpcGen extends ApiGen {
       const matchArray = type.match(WRAPPER_TYPE_REGEX);
       if (matchArray) {
         const [_, $1, $2] = matchArray;
+
+        // Check tuple type
+        if ($2.startsWith('[') && $2.endsWith(']')) {
+          return `${this.#getCodecType($1, toTypeIn)}<[${$2
+            .slice(1, -1)
+            .split(',')
+            .map((one) => this.#getCodecType(one.trim(), toTypeIn))
+            .join(',')}]>`;
+        }
+
         return `${this.#getCodecType($1, toTypeIn)}<${this.#getCodecType($2, toTypeIn)}>`;
       }
 
