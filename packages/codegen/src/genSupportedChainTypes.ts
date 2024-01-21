@@ -1,8 +1,7 @@
 import { generateTypes, generateTypesFromChain } from './index';
 import staticSubstrate, { rpc } from '@polkadot/types-support/metadata/static-substrate';
-import { $Metadata, CodecRegistry, Metadata } from '@delightfuldot/codecs';
+import { $Metadata, CodecRegistry, Metadata, RuntimeVersion } from '@delightfuldot/codecs';
 import { NetworkInfo } from './types';
-import { RuntimeVersion } from '@delightfuldot/types';
 import { DelightfulApi, ConstantExecutor } from 'delightfuldot';
 
 const NETWORKS: NetworkInfo[] = [

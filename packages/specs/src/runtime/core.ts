@@ -1,6 +1,6 @@
-import { RuntimeApis, RuntimeApisModule } from '@delightfuldot/types';
+import { RuntimeCallsSpec, RuntimeApisModule } from '@delightfuldot/types';
 
-const V1_TO_V4_SHARED: RuntimeApis = {
+const V1_TO_V4_SHARED: RuntimeCallsSpec = {
   executeBlock: {
     docs: 'Execute the given block.',
     params: [
@@ -13,7 +13,7 @@ const V1_TO_V4_SHARED: RuntimeApis = {
   },
 };
 
-const V1_V2_SHARED: RuntimeApis = {
+const V1_V2_SHARED: RuntimeCallsSpec = {
   version: {
     docs: 'Returns the version of the runtime.',
     params: [],
@@ -21,7 +21,7 @@ const V1_V2_SHARED: RuntimeApis = {
   },
 };
 
-const V2_TO_V4_SHARED: RuntimeApis = {
+const V2_TO_V4_SHARED: RuntimeCallsSpec = {
   initializeBlock: {
     docs: 'Initialize a block with the given header.',
     params: [
