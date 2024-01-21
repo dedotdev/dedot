@@ -2,6 +2,9 @@
 
 import type { GenericRuntimeCalls, GenericRuntimeCall } from '@delightfuldot/types';
 import type {
+  RuntimeVersion,
+  Block,
+  Header,
   Option,
   OpaqueMetadata,
   BabeConfiguration,
@@ -11,14 +14,47 @@ import type {
   AccountId32Like,
   Null,
   AccountId32,
+  Nonce,
   RuntimeDispatchInfo,
   Bytes,
   FeeDetails,
   Balance,
   Weight,
+  Location,
 } from '@delightfuldot/codecs';
 
 export interface RuntimeCalls extends GenericRuntimeCalls {
+  /**
+   * @runtimeapi: Core - 0xdf6acb689907609b
+   * @version: 4
+   **/
+  core: {
+    /**
+     * Returns the version of the runtime.
+     *
+     * @callname: Core_version
+     **/
+    version: GenericRuntimeCall<() => Promise<RuntimeVersion>>;
+
+    /**
+     * Execute the given block.
+     *
+     * @callname: Core_execute_block
+     **/
+    executeBlock: GenericRuntimeCall<(block: Block) => Promise<null>>;
+
+    /**
+     * Initialize a block with the given header.
+     *
+     * @callname: Core_initialize_block
+     **/
+    initializeBlock: GenericRuntimeCall<(header: Header) => Promise<null>>;
+
+    /**
+     * Generic runtime call
+     **/
+    [method: string]: GenericRuntimeCall;
+  };
   /**
    * @runtimeapi: Metadata - 0x37e397fc7c91f5e4
    * @version: 2
@@ -141,6 +177,40 @@ export interface RuntimeCalls extends GenericRuntimeCalls {
     [method: string]: GenericRuntimeCall;
   };
   /**
+   * @runtimeapi: AccountNonceApi - 0xbc9d89904f5b923f
+   * @version: 1
+   **/
+  accountNonceApi: {
+    /**
+     * The API to query account nonce (aka transaction index)
+     *
+     * @callname: AccountNonceApi_account_nonce
+     **/
+    accountNonce: GenericRuntimeCall<(accountId: AccountId32Like) => Promise<Nonce>>;
+
+    /**
+     * Generic runtime call
+     **/
+    [method: string]: GenericRuntimeCall;
+  };
+  /**
+   * @runtimeapi: AssetsApi - 0x8453b50b22293977
+   * @version: 1
+   **/
+  assetsApi: {
+    /**
+     * Returns the list of `AssetId`s and corresponding balance that an `AccountId` has.
+     *
+     * @callname: AssetsApi_account_balances
+     **/
+    accountBalances: GenericRuntimeCall<(account: AccountId32Like) => Promise<Array<[number, Balance]>>>;
+
+    /**
+     * Generic runtime call
+     **/
+    [method: string]: GenericRuntimeCall;
+  };
+  /**
    * @runtimeapi: TransactionPaymentApi - 0x37c8bb1350a9a2a8
    * @version: 4
    **/
@@ -172,6 +242,40 @@ export interface RuntimeCalls extends GenericRuntimeCalls {
      * @callname: TransactionPaymentApi_query_weight_to_fee
      **/
     queryWeightToFee: GenericRuntimeCall<(weight: Weight) => Promise<Balance>>;
+
+    /**
+     * Generic runtime call
+     **/
+    [method: string]: GenericRuntimeCall;
+  };
+  /**
+   * @runtimeapi: AssetConversionApi - 0x8a8047a53a8277ec
+   * @version: 1
+   **/
+  assetConversionApi: {
+    /**
+     * Get pool reserves
+     *
+     * @callname: AssetConversionApi_get_reserves
+     **/
+    getReserves: GenericRuntimeCall<(asset1: Location, asset2: Location) => Promise<Option<[Balance, Balance]>>>;
+
+    /**
+     * Quote price: exact tokens for tokens
+     *
+     * @callname: AssetConversionApi_quote_price_exact_tokens_for_tokens
+     **/
+    quotePriceExactTokensForTokens: GenericRuntimeCall<
+      (asset1: Location, asset2: Location, amount: bigint, includeFee: boolean) => Promise<Option<Balance>>
+    >;
+
+    /**
+     *
+     * @callname: AssetConversionApi_quote_price_tokens_for_exact_tokens
+     **/
+    quotePriceTokensForExactTokens: GenericRuntimeCall<
+      (asset1: Location, asset2: Location, amount: bigint, includeFee: boolean) => Promise<Option<Balance>>
+    >;
 
     /**
      * Generic runtime call
