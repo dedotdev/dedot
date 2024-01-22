@@ -7,10 +7,14 @@ import type {
   Header,
   Option,
   OpaqueMetadata,
+  ApplyExtrinsicResult,
+  Bytes,
+  CheckInherentsResult,
+  InherentData,
+  Extrinsic,
   Nonce,
   AccountId32Like,
   RuntimeDispatchInfo,
-  Bytes,
   FeeDetails,
   Balance,
   Weight,
@@ -73,6 +77,40 @@ export interface RuntimeCalls extends GenericRuntimeCalls {
      * @callname: Metadata_metadata
      **/
     metadata: GenericRuntimeCall<() => Promise<OpaqueMetadata>>;
+
+    /**
+     * Generic runtime call
+     **/
+    [method: string]: GenericRuntimeCall;
+  };
+  /**
+   * @runtimeapi: BlockBuilder - 0x40fe3ad401f8959a
+   * @version: 6
+   **/
+  blockBuilder: {
+    /**
+     *
+     * @callname: BlockBuilder_apply_extrinsic
+     **/
+    applyExtrinsic: GenericRuntimeCall<(extrinsic: Bytes) => Promise<ApplyExtrinsicResult>>;
+
+    /**
+     *
+     * @callname: BlockBuilder_check_inherents
+     **/
+    checkInherents: GenericRuntimeCall<(block: Block, data: InherentData) => Promise<CheckInherentsResult>>;
+
+    /**
+     *
+     * @callname: BlockBuilder_inherent_extrinsics
+     **/
+    inherentExtrinsics: GenericRuntimeCall<(inherent: InherentData) => Promise<Array<Extrinsic>>>;
+
+    /**
+     *
+     * @callname: BlockBuilder_finalize_block
+     **/
+    finalizeBlock: GenericRuntimeCall<() => Promise<Header>>;
 
     /**
      * Generic runtime call

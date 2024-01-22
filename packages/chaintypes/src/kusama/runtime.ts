@@ -7,16 +7,23 @@ import type {
   Header,
   Option,
   OpaqueMetadata,
+  ApplyExtrinsicResult,
+  Bytes,
+  CheckInherentsResult,
+  InherentData,
+  Extrinsic,
+  SetId,
+  OpaqueKeyOwnershipProof,
+  AccountId32Like,
+  AuthorityList,
+  Null,
+  GrandpaEquivocationProof,
   BabeConfiguration,
   Epoch,
   Slot,
-  OpaqueKeyOwnershipProof,
-  AccountId32Like,
-  Null,
   AccountId32,
   Nonce,
   RuntimeDispatchInfo,
-  Bytes,
   FeeDetails,
   Balance,
   Weight,
@@ -79,6 +86,104 @@ export interface RuntimeCalls extends GenericRuntimeCalls {
      * @callname: Metadata_metadata
      **/
     metadata: GenericRuntimeCall<() => Promise<OpaqueMetadata>>;
+
+    /**
+     * Generic runtime call
+     **/
+    [method: string]: GenericRuntimeCall;
+  };
+  /**
+   * @runtimeapi: BlockBuilder - 0x40fe3ad401f8959a
+   * @version: 6
+   **/
+  blockBuilder: {
+    /**
+     *
+     * @callname: BlockBuilder_apply_extrinsic
+     **/
+    applyExtrinsic: GenericRuntimeCall<(extrinsic: Bytes) => Promise<ApplyExtrinsicResult>>;
+
+    /**
+     *
+     * @callname: BlockBuilder_check_inherents
+     **/
+    checkInherents: GenericRuntimeCall<(block: Block, data: InherentData) => Promise<CheckInherentsResult>>;
+
+    /**
+     *
+     * @callname: BlockBuilder_inherent_extrinsics
+     **/
+    inherentExtrinsics: GenericRuntimeCall<(inherent: InherentData) => Promise<Array<Extrinsic>>>;
+
+    /**
+     *
+     * @callname: BlockBuilder_finalize_block
+     **/
+    finalizeBlock: GenericRuntimeCall<() => Promise<Header>>;
+
+    /**
+     * Generic runtime call
+     **/
+    [method: string]: GenericRuntimeCall;
+  };
+  /**
+   * @runtimeapi: GrandpaApi - 0xed99c5acb25eedf5
+   * @version: 3
+   **/
+  grandpaApi: {
+    /**
+     * Get current GRANDPA authority set id.
+     *
+     * @callname: GrandpaApi_current_set_id
+     **/
+    currentSetId: GenericRuntimeCall<() => Promise<SetId>>;
+
+    /**
+     * Get the current GRANDPA authorities and weights. This should not change except
+     * for when changes are scheduled and the corresponding delay has passed.
+     *
+     * When called at block B, it will return the set of authorities that should be
+     * used to finalize descendants of this block (B+1, B+2, ...). The block B itself
+     * is finalized by the authorities from block B-1.
+     *
+     * @callname: GrandpaApi_generate_key_ownership_proof
+     **/
+    generateKeyOwnershipProof: GenericRuntimeCall<
+      (setId: SetId, authorityId: AccountId32Like) => Promise<Option<OpaqueKeyOwnershipProof>>
+    >;
+
+    /**
+     * Generates a proof of key ownership for the given authority in the
+     * given set. An example usage of this module is coupled with the
+     * session historical module to prove that a given authority key is
+     * tied to a given staking identity during a specific session. Proofs
+     * of key ownership are necessary for submitting equivocation reports.
+     * NOTE: even though the API takes a `set_id` as parameter the current
+     * implementations ignore this parameter and instead rely on this
+     * method being called at the correct block height, i.e. any point at
+     * which the given set id is live on-chain. Future implementations will
+     * instead use indexed data through an offchain worker, not requiring
+     * older states to be available.
+     *
+     * @callname: GrandpaApi_grandpa_authorities
+     **/
+    grandpaAuthorities: GenericRuntimeCall<() => Promise<AuthorityList>>;
+
+    /**
+     * Submits an unsigned extrinsic to report an equivocation. The caller
+     * must provide the equivocation proof and a key ownership proof
+     * (should be obtained using `generate_key_ownership_proof`). The
+     * extrinsic will be unsigned and should only be accepted for local
+     * authorship (not to be broadcast to the network). This method returns
+     * `None` when creation of the extrinsic fails, e.g. if equivocation
+     * reporting is disabled for the given runtime (i.e. this method is
+     * hardcoded to return `None`). Only useful in an offchain context.
+     *
+     * @callname: GrandpaApi_submit_report_equivocation_unsigned_extrinsic
+     **/
+    submitReportEquivocationUnsignedExtrinsic: GenericRuntimeCall<
+      (equivocationProof: GrandpaEquivocationProof, keyOwnerProof: OpaqueKeyOwnershipProof) => Promise<Option<Null>>
+    >;
 
     /**
      * Generic runtime call
