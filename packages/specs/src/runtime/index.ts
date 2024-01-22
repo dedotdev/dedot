@@ -6,6 +6,8 @@ import { system } from './system';
 import { assetConversion } from './assetConversion';
 import { assets } from './assets';
 import { payment } from './payment';
+import { blockBuilder } from './blockBuilder';
+import { grandpa } from './grandpa';
 import { RuntimeApisSpec, RuntimeCallSpec, RuntimeApiSpec, RuntimeApiName } from '@delightfuldot/types';
 import { blake2AsHex } from '@polkadot/util-crypto';
 import { stringSnakeCase } from '@delightfuldot/utils';
@@ -19,6 +21,8 @@ export const runtimeApisSpec: RuntimeApisSpec = {
   core,
   system,
   assets,
+  blockBuilder,
+  grandpa,
 };
 
 export const runtimeApiNames: RuntimeApiName[] = Object.values(runtimeApisSpec)

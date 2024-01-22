@@ -9,3 +9,5 @@ export * from './metadata';
 export * from './system';
 export * from './assetConversion';
 export * from './payment';
+export * from './blockBuilder';
+export * from './grandpa';
