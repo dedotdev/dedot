@@ -1,7 +1,9 @@
 import { generateTypes, generateTypesFromChain } from './index';
 import staticSubstrate, { rpc } from '@polkadot/types-support/metadata/static-substrate';
-import { $Metadata } from '@delightfuldot/codecs';
+import { $Metadata, CodecRegistry, Metadata } from '@delightfuldot/codecs';
 import { NetworkInfo } from './types';
+import { RuntimeVersion } from '@delightfuldot/types';
+import { DelightfulApi, ConstantExecutor } from 'delightfuldot';
 
 const NETWORKS: NetworkInfo[] = [
   {
@@ -39,11 +41,23 @@ async function run() {
     } else if (metadataHex && rpcMethods) {
       console.log(`Generate types for ${chain} via raw data`);
       const metadata = $Metadata.tryDecode(metadataHex);
-      await generateTypes(network, metadata.latest, rpcMethods, OUT_DIR);
+      const runtimeVersion = getRuntimeVersion(metadata);
+
+      await generateTypes(network, metadata.latest, rpcMethods, runtimeVersion.apis, OUT_DIR);
     }
   }
 
   console.log('DONE!');
 }
+
+const getRuntimeVersion = (metadata: Metadata): RuntimeVersion => {
+  const registry = new CodecRegistry(metadata.latest);
+  const executor = new ConstantExecutor({
+    registry,
+    metadataLatest: metadata.latest,
+  } as unknown as DelightfulApi);
+
+  return executor.execute('system', 'version') as RuntimeVersion;
+};
 
 run().catch(console.log);

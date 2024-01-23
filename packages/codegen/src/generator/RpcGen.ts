@@ -159,7 +159,10 @@ export class RpcGen extends ApiGen {
     }
 
     try {
-      this.typesGen.typeImports.addCodecType(this.#getCodecType(type, toTypeIn));
+      const codecType = this.#getCodecType(type, toTypeIn);
+      if (isNativeType(codecType)) return;
+
+      this.typesGen.typeImports.addCodecType(codecType);
       return;
     } catch (e) {}
 

@@ -42,4 +42,18 @@ export type Option<T> = T | undefined;
 
 export type ResultPayload<Ok, Err> = $.ResultPayload<Ok, Err>;
 
-// TODO add typeIn for other primitives codecs!
+export type u8 = number;
+export type u16 = number;
+export type u32 = number;
+export type u64 = bigint;
+export type u128 = bigint;
+export type u256 = bigint;
+export type i8 = number;
+export type i16 = number;
+export type i32 = number;
+export type i64 = bigint;
+export type i128 = bigint;
+export type i256 = bigint;
+export type str = string;
+export type bool = boolean;
+export type Null = null;

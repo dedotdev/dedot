@@ -148,6 +148,27 @@ describe('DelightfulApi', () => {
         expect(providerSend).toBeCalledWith('module_rpc_name', ['param_1', 'param_2']);
       });
     });
+
+    describe('call', () => {
+      it('should works properly', async () => {
+        const providerSend = vi.spyOn(api.provider, 'send');
+
+        await api.call.metadata.metadata();
+        expect(providerSend).toBeCalledWith('state_call', ['Metadata_metadata', '0x']);
+
+        await api.call.metadata.metadataAtVersion(14);
+        expect(providerSend).toBeCalledWith('state_call', ['Metadata_metadata_at_version', '0x0e000000']); // $.u32.decode(14) = '0x0e000000'
+      });
+
+      it('should throws error if runtime not support or call spec not found', async () => {
+        expect(() => api.call.metadata.notFound()).toThrowError(
+          new Error('Runtime call spec not found for Metadata_not_found'),
+        );
+        expect(() => api.call.notFound.notFound()).toThrowError(
+          new Error('Connected chain does not support runtime API: NotFound'),
+        );
+      });
+    });
   });
 
   describe('cache enabled', () => {

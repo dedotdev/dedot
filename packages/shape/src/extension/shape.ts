@@ -23,6 +23,9 @@ declare module 'subshape' {
     registerDecoder: (predicate: Predicate, decoder: Decoder) => void;
     tryEncode: (input: any) => Uint8Array;
     tryDecode: (input: any) => O;
+    // Native JS/TS type for codec.
+    // This is useful when we want to quickly find an equivalent native type for a codec.
+    nativeType?: string;
 
     /**
      * @description Deep clone a shape
@@ -96,3 +99,19 @@ $.u32.registerDecoder(isNumber, identity);
 $.u64.registerDecoder(isNumber, identity);
 $.u8.registerDecoder(isNumber, identity);
 $.str.registerDecoder((input) => isString(input) && !isHex(input), identity);
+
+// Register native types for primitive codecs.
+$.bool.nativeType = 'boolean';
+$.i256.nativeType = 'bigint';
+$.i128.nativeType = 'bigint';
+$.i64.nativeType = 'bigint';
+$.i32.nativeType = 'number';
+$.i16.nativeType = 'number';
+$.i8.nativeType = 'number';
+$.u256.nativeType = 'bigint';
+$.u128.nativeType = 'bigint';
+$.u64.nativeType = 'bigint';
+$.u32.nativeType = 'number';
+$.u16.nativeType = 'number';
+$.u8.nativeType = 'number';
+$.str.nativeType = 'string';

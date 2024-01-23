@@ -4,7 +4,6 @@ import { $AccountId32 } from '../../generic';
 export * from './TransactionValidityError';
 export * from './DispatchError';
 export * from './ApplyExtrinsicResult';
-export * from './VersionedFinalityProof';
 
 /**
  * A multi-format address wrapper for on-chain accounts.

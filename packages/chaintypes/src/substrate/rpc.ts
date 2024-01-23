@@ -14,8 +14,6 @@ import type {
   JustificationNotification,
   LeavesProof,
   StorageKind,
-  FeeDetails,
-  RuntimeDispatchInfo,
   RpcMethods,
   ReadProof,
   RuntimeVersion,
@@ -41,6 +39,8 @@ import type {
   StorageKey,
   PrefixedStorageKey,
   StorageData,
+  FeeDetails,
+  RuntimeDispatchInfo,
   Metadata,
   ApplyExtrinsicResult,
 } from '@delightfuldot/codecs';

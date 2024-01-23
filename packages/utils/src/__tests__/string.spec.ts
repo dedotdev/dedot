@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { shortenAddress, trimOffUrlProtocol } from '../string';
+import { shortenAddress, stringSnakeCase, trimOffUrlProtocol } from '../string';
 
 describe('shortenAddress', () => {
   it.each(['', null, undefined])('should return empty string if input = %s', (input) => {
@@ -29,5 +29,14 @@ describe('trimOffUrlProtocol', () => {
     { input: 'https://example.com/path', expected: 'example.com/path' },
   ])('should trim off protocol from $input to $expected', ({ input, expected }) => {
     expect(trimOffUrlProtocol(input)).toEqual(expected);
+  });
+});
+
+describe('stringSnakeCase', () => {
+  it.each([
+    { input: 'anExampleWithCamelCase', expected: 'an_example_with_camel_case' },
+    { input: 'AnExampleWithPascalCase', expected: 'an_example_with_pascal_case' },
+  ])('should turn camelCase or pascalCase string to snakeCase string', ({ input, expected }) => {
+    expect(stringSnakeCase(input)).toEqual(expected);
   });
 });
