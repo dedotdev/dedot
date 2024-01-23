@@ -4,7 +4,7 @@ const V1_V2_SHARED: RuntimeCallsSpec = {
   currentEpoch: {
     docs: 'Returns information regarding the current epoch.',
     params: [],
-    type: 'Epoch',
+    type: 'BabeEpoch',
   },
 
   currentEpochStart: {
@@ -16,7 +16,7 @@ const V1_V2_SHARED: RuntimeCallsSpec = {
   nextEpoch: {
     docs: 'Returns information regarding the next epoch (which was already previously announced).',
     params: [],
-    type: 'Epoch',
+    type: 'BabeEpoch',
   },
 
   generateKeyOwnershipProof: {
@@ -60,7 +60,7 @@ const V1_V2_SHARED: RuntimeCallsSpec = {
     params: [
       {
         name: 'equivocationProof',
-        type: 'BabeConfiguration',
+        type: 'BabeEquivocationProof',
       },
       {
         name: 'keyOwnerProof',

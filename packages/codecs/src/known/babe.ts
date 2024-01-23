@@ -6,10 +6,14 @@ import { $AccountId32, $Header } from '../generic';
  */
 export const $BabeAuthorityWeight = $.u64;
 
+export type BabeAuthorityWeight = $.Input<typeof $BabeAuthorityWeight>;
+
 /*
  * Randomness type required by BABE operations.
  */
 export const $Randomness = $.FixedHex(32);
+
+export type Randomness = $.Input<typeof $Randomness>;
 
 /*
  * Types of allowed slots.
@@ -22,6 +26,8 @@ export const $AllowedSlots = $.FlatEnum([
   // Allow primary and secondary VRF slots.
   'PrimaryAndSecondaryVRFSlots',
 ]);
+
+export type AllowedSlots = $.Input<typeof $AllowedSlots>;
 
 /*
  * Configuration data used by the BABE consensus engine.
@@ -108,10 +114,12 @@ export const $BabeEpochConfiguration = $.Struct({
   allowedSlots: $AllowedSlots,
 });
 
+export type BabeEpochConfiguration = $.Input<typeof $BabeEpochConfiguration>;
+
 /*
  * BABE epoch information
  */
-export const $Epoch = $.Struct({
+export const $BabeEpoch = $.Struct({
   // The epoch index
   epochIndex: $.u64,
   // The starting slot of the epoch.
@@ -126,7 +134,7 @@ export const $Epoch = $.Struct({
   config: $BabeEpochConfiguration,
 });
 
-export type Epoch = $.Input<typeof $Epoch>;
+export type BabeEpoch = $.Input<typeof $BabeEpoch>;
 
 /*
  * An opaque type used to represent the key ownership proof at the runtime API
@@ -143,7 +151,7 @@ export type OpaqueKeyOwnershipProof = $.Input<typeof $OpaqueKeyOwnershipProof>;
 /*
  * An equivocation proof for multiple block authorships on the same slot (i.e. double vote).
  */
-export const $EquivocationProof = $.Struct({
+export const $BabeEquivocationProof = $.Struct({
   // Returns the authority id of the equivocator.
   offender: $AccountId32,
   // The slot at which the equivocation happened.
@@ -154,4 +162,4 @@ export const $EquivocationProof = $.Struct({
   secondHeader: $Header,
 });
 
-export type EquivocationProof = $.Input<typeof $EquivocationProof>;
+export type BabeEquivocationProof = $.Input<typeof $BabeEquivocationProof>;

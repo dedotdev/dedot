@@ -1,7 +1,12 @@
 import * as $ from '@delightfuldot/shape';
 
 export const $BeefyPayloadId = $.FixedHex(2);
+
+export type BeefyPayloadId = $.Input<typeof $BeefyPayloadId>;
+
 export const $Payload = $.Vec($.Tuple($BeefyPayloadId, $.PrefixedHex));
+
+export type Payload = $.Input<typeof $Payload>;
 
 export const $Commitment = $.Struct({
   //  A collection of payloads to be signed, see [`Payload`] for details.
@@ -35,6 +40,8 @@ export const $Commitment = $.Struct({
   validatorSetId: $.u64,
 });
 
+export type Commitment = $.Input<typeof $Commitment>;
+
 export const $CompactSignedCommitment = $.Struct({
   // The commitment, unchanged compared to regular [`SignedCommitment`].
   commitment: $Commitment,
@@ -60,6 +67,8 @@ export const $CompactSignedCommitment = $.Struct({
   // signature.
   signatures_compact: $.Vec($.FixedHex(65)),
 });
+
+export type CompactSignedCommitment = $.Input<typeof $CompactSignedCommitment>;
 
 /*
  * Ref: https://github.com/paritytech/polkadot-sdk/blob/3fef703e3027a60cbeba8a72369554c6dabfb689/substrate/primitives/consensus/beefy/src/commitment.rs#L237-L242
