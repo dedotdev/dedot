@@ -11,3 +11,5 @@ export * from './assetConversion';
 export * from './payment';
 export * from './blockBuilder';
 export * from './grandpa';
+export * from './mmr';
+// export * from './nominationPools';
