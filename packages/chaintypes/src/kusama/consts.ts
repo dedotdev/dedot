@@ -87,10 +87,12 @@ export interface ChainConsts extends GenericChainConsts {
   };
   timestamp: {
     /**
-     * The minimum period between blocks. Beware that this is different to the *expected*
-     * period that the block production apparatus provides. Your chosen consensus system will
-     * generally work with this to determine a sensible block time. e.g. For Aura, it will be
-     * double this period on default settings.
+     * The minimum period between blocks.
+     *
+     * Be aware that this is different to the *expected* period that the block production
+     * apparatus provides. Your chosen consensus system will generally work with this to
+     * determine a sensible block time. For example, in the Aura pallet it will be double this
+     * period on default settings.
      **/
     minimumPeriod: bigint;
 
@@ -396,6 +398,11 @@ export interface ChainConsts extends GenericChainConsts {
      * NOTE: This parameter is also used within the Bounties Pallet extension if enabled.
      **/
     maxApprovals: number;
+
+    /**
+     * The period during which an approved treasury spend has to be claimed.
+     **/
+    payoutPeriod: number;
 
     /**
      * Generic pallet constant
@@ -914,11 +921,6 @@ export interface ChainConsts extends GenericChainConsts {
     signedRewardBase: bigint;
 
     /**
-     * Base deposit for a signed solution.
-     **/
-    signedDepositBase: bigint;
-
-    /**
      * Per-byte deposit for a signed solution.
      **/
     signedDepositByte: bigint;
@@ -1374,6 +1376,12 @@ export interface ChainConsts extends GenericChainConsts {
      **/
     serviceWeight: SpWeightsWeightV2Weight | undefined;
 
+    /**
+     * Generic pallet constant
+     **/
+    [name: string]: any;
+  };
+  assetRate: {
     /**
      * Generic pallet constant
      **/

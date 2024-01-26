@@ -31,7 +31,7 @@ import type {
   PalletBalancesBalanceLock,
   PalletBalancesReserveData,
   PalletBalancesIdAmount,
-  PalletBalancesIdAmount002,
+  PalletBalancesIdAmountRuntimeFreezeReason,
   PalletTransactionPaymentReleases,
   PalletStakingStakingLedger,
   PalletStakingRewardDestination,
@@ -53,6 +53,7 @@ import type {
   PalletGrandpaStoredPendingChange,
   PalletImOnlineSr25519AppSr25519Public,
   PalletTreasuryProposal,
+  PalletTreasurySpendStatus,
   PalletConvictionVotingVoteVoting,
   PalletReferendaReferendumInfo,
   PalletRankedCollectiveMemberRecord,
@@ -77,6 +78,7 @@ import type {
   PalletProxyProxyDefinition,
   PalletProxyAnnouncement,
   PalletMultisigMultisig,
+  PalletPreimageOldRequestStatus,
   PalletPreimageRequestStatus,
   PalletBountiesBounty,
   PalletChildBountiesChildBounty,
@@ -89,6 +91,7 @@ import type {
   PalletNisBid,
   PalletNisSummaryRecord,
   PalletNisReceiptRecord,
+  PalletBalancesIdAmount003,
   PalletBagsListListNode,
   PalletBagsListListBag,
   PalletNominationPoolsPoolMember,
@@ -98,24 +101,24 @@ import type {
   PalletNominationPoolsClaimPermission,
   PalletFastUnstakeUnstakeRequest,
   PolkadotRuntimeParachainsConfigurationHostConfiguration,
-  PolkadotPrimitivesV5ValidatorIndex,
-  PolkadotPrimitivesV5ValidatorAppPublic,
+  PolkadotPrimitivesV6ValidatorIndex,
+  PolkadotPrimitivesV6ValidatorAppPublic,
   PolkadotRuntimeParachainsSharedAllowedRelayParentsTracker,
   PolkadotRuntimeParachainsInclusionAvailabilityBitfieldRecord,
   PolkadotRuntimeParachainsInclusionCandidatePendingAvailability,
   PolkadotParachainPrimitivesPrimitivesId,
-  PolkadotPrimitivesV5CandidateCommitments,
-  PolkadotPrimitivesV5ScrapedOnChainVotes,
-  PolkadotPrimitivesV5CoreOccupied,
-  PolkadotPrimitivesV5CoreIndex,
-  PolkadotPrimitivesV5ParasEntry,
+  PolkadotPrimitivesV6CandidateCommitments,
+  PolkadotPrimitivesV6ScrapedOnChainVotes,
+  PolkadotRuntimeParachainsSchedulerPalletCoreOccupied,
+  PolkadotPrimitivesV6CoreIndex,
+  PolkadotRuntimeParachainsSchedulerPalletParasEntry,
   PolkadotRuntimeParachainsParasPvfCheckActiveVoteState,
   PolkadotParachainPrimitivesPrimitivesValidationCodeHash,
   PolkadotRuntimeParachainsParasParaLifecycle,
   PolkadotParachainPrimitivesPrimitivesHeadData,
   PolkadotRuntimeParachainsParasParaPastCodeMeta,
-  PolkadotPrimitivesV5UpgradeGoAhead,
-  PolkadotPrimitivesV5UpgradeRestriction,
+  PolkadotPrimitivesV6UpgradeGoAhead,
+  PolkadotPrimitivesV6UpgradeRestriction,
   PolkadotRuntimeParachainsParasParaGenesisArgs,
   PolkadotParachainPrimitivesPrimitivesValidationCode,
   PolkadotRuntimeParachainsInitializerBufferedSessionChange,
@@ -124,12 +127,12 @@ import type {
   PolkadotParachainPrimitivesPrimitivesHrmpChannelId,
   PolkadotRuntimeParachainsHrmpHrmpChannel,
   PolkadotCorePrimitivesInboundHrmpMessage,
-  PolkadotPrimitivesV5AssignmentAppPublic,
-  PolkadotPrimitivesV5SessionInfo,
-  PolkadotPrimitivesV5ExecutorParams,
-  PolkadotPrimitivesV5DisputeState,
+  PolkadotPrimitivesV6AssignmentAppPublic,
+  PolkadotPrimitivesV6SessionInfo,
+  PolkadotPrimitivesV6ExecutorParams,
+  PolkadotPrimitivesV6DisputeState,
   PolkadotCorePrimitivesCandidateHash,
-  PolkadotPrimitivesV5SlashingPendingSlashes,
+  PolkadotPrimitivesV6SlashingPendingSlashes,
   PolkadotRuntimeCommonParasRegistrarParaInfo,
   PolkadotRuntimeCommonCrowdloanFundInfo,
   PalletStateTrieMigrationMigrationTask,
@@ -143,6 +146,7 @@ import type {
   PalletMessageQueueBookState,
   PolkadotRuntimeParachainsInclusionAggregateMessageOrigin,
   PalletMessageQueuePage,
+  PolkadotRuntimeCommonImplsVersionedLocatableAsset,
 } from './types';
 
 export interface ChainStorage extends GenericChainStorage {
@@ -380,12 +384,15 @@ export interface ChainStorage extends GenericChainStorage {
   };
   timestamp: {
     /**
-     * Current time for the current block.
+     * The current time for the current block.
      **/
     now: GenericStorageQuery<() => bigint>;
 
     /**
-     * Did the timestamp get updated in this block?
+     * Whether the timestamp has been updated in this block.
+     *
+     * This value is updated to `true` upon successful submission of a timestamp by a node.
+     * It is then checked at the end of each block execution in the `on_finalize` hook.
      **/
     didUpdate: GenericStorageQuery<() => boolean>;
 
@@ -463,7 +470,7 @@ export interface ChainStorage extends GenericChainStorage {
     /**
      * Freeze locks on account balances.
      **/
-    freezes: GenericStorageQuery<(arg: AccountId32Like) => Array<PalletBalancesIdAmount002>>;
+    freezes: GenericStorageQuery<(arg: AccountId32Like) => Array<PalletBalancesIdAmountRuntimeFreezeReason>>;
 
     /**
      * Generic pallet storage query
@@ -539,6 +546,9 @@ export interface ChainStorage extends GenericChainStorage {
 
     /**
      * Map from all (unlocked) "controller" accounts to the info regarding the staking.
+     *
+     * Note: All the reads and mutations to this storage *MUST* be done through the methods exposed
+     * by [`StakingLedger`] to ensure data and lock consistency.
      **/
     ledger: GenericStorageQuery<(arg: AccountId32Like) => PalletStakingStakingLedger | undefined>;
 
@@ -813,8 +823,8 @@ export interface ChainStorage extends GenericChainStorage {
 
     /**
      * Block number where BEEFY consensus is enabled/started.
-     * By changing this (through governance or sudo), BEEFY consensus is effectively
-     * restarted from the new block number.
+     * By changing this (through privileged `set_new_genesis()`), BEEFY consensus is effectively
+     * restarted from the newly set block number.
      **/
     genesisBlock: GenericStorageQuery<() => number | undefined>;
 
@@ -1017,6 +1027,16 @@ export interface ChainStorage extends GenericChainStorage {
     approvals: GenericStorageQuery<() => Array<number>>;
 
     /**
+     * The count of spends that have been made.
+     **/
+    spendCount: GenericStorageQuery<() => number>;
+
+    /**
+     * Spends that have been approved and being processed.
+     **/
+    spends: GenericStorageQuery<(arg: number) => PalletTreasurySpendStatus | undefined>;
+
+    /**
      * Generic pallet storage query
      **/
     [storage: string]: GenericStorageQuery;
@@ -1066,7 +1086,7 @@ export interface ChainStorage extends GenericChainStorage {
 
     /**
      * The metadata is a general information concerning the referendum.
-     * The `PreimageHash` refers to the preimage of the `Preimages` provider which can be a JSON
+     * The `Hash` refers to the preimage of the `Preimages` provider which can be a JSON
      * dump or IPFS hash of a JSON file.
      *
      * Consider a garbage collection for a metadata of finished referendums to `unrequest` (remove)
@@ -1139,7 +1159,7 @@ export interface ChainStorage extends GenericChainStorage {
 
     /**
      * The metadata is a general information concerning the referendum.
-     * The `PreimageHash` refers to the preimage of the `Preimages` provider which can be a JSON
+     * The `Hash` refers to the preimage of the `Preimages` provider which can be a JSON
      * dump or IPFS hash of a JSON file.
      *
      * Consider a garbage collection for a metadata of finished referendums to `unrequest` (remove)
@@ -1428,7 +1448,12 @@ export interface ChainStorage extends GenericChainStorage {
     /**
      * The request status of a given hash.
      **/
-    statusFor: GenericStorageQuery<(arg: H256) => PalletPreimageRequestStatus | undefined>;
+    statusFor: GenericStorageQuery<(arg: H256) => PalletPreimageOldRequestStatus | undefined>;
+
+    /**
+     * The request status of a given hash.
+     **/
+    requestStatusFor: GenericStorageQuery<(arg: H256) => PalletPreimageRequestStatus | undefined>;
     preimageFor: GenericStorageQuery<(arg: [H256, number]) => Bytes | undefined>;
 
     /**
@@ -1675,7 +1700,7 @@ export interface ChainStorage extends GenericChainStorage {
     /**
      * Freeze locks on account balances.
      **/
-    freezes: GenericStorageQuery<(arg: AccountId32Like) => Array<PalletBalancesIdAmount002>>;
+    freezes: GenericStorageQuery<(arg: AccountId32Like) => Array<PalletBalancesIdAmount003>>;
 
     /**
      * Generic pallet storage query
@@ -1708,6 +1733,15 @@ export interface ChainStorage extends GenericChainStorage {
     [storage: string]: GenericStorageQuery;
   };
   nominationPools: {
+    /**
+     * The sum of funds across all pools.
+     *
+     * This might be lower but never higher than the sum of `total_balance` of all [`PoolMembers`]
+     * because calling `pool_withdraw_unbonded` might decrease the total stake of the pool's
+     * `bonded_account` without adjusting the pallet-internal `UnbondingPool`'s.
+     **/
+    totalValueLocked: GenericStorageQuery<() => bigint>;
+
     /**
      * Minimum amount to bond to join a pool.
      **/
@@ -1906,13 +1940,13 @@ export interface ChainStorage extends GenericChainStorage {
      * All the validators actively participating in parachain consensus.
      * Indices are into the broader validator set.
      **/
-    activeValidatorIndices: GenericStorageQuery<() => Array<PolkadotPrimitivesV5ValidatorIndex>>;
+    activeValidatorIndices: GenericStorageQuery<() => Array<PolkadotPrimitivesV6ValidatorIndex>>;
 
     /**
      * The parachain attestation keys of the validators actively participating in parachain
      * consensus. This should be the same length as `ActiveValidatorIndices`.
      **/
-    activeValidatorKeys: GenericStorageQuery<() => Array<PolkadotPrimitivesV5ValidatorAppPublic>>;
+    activeValidatorKeys: GenericStorageQuery<() => Array<PolkadotPrimitivesV6ValidatorAppPublic>>;
 
     /**
      * All allowed relay-parents.
@@ -1930,7 +1964,7 @@ export interface ChainStorage extends GenericChainStorage {
      **/
     availabilityBitfields: GenericStorageQuery<
       (
-        arg: PolkadotPrimitivesV5ValidatorIndex,
+        arg: PolkadotPrimitivesV6ValidatorIndex,
       ) => PolkadotRuntimeParachainsInclusionAvailabilityBitfieldRecord | undefined
     >;
 
@@ -1947,7 +1981,7 @@ export interface ChainStorage extends GenericChainStorage {
      * The commitments of candidates pending availability, by `ParaId`.
      **/
     pendingAvailabilityCommitments: GenericStorageQuery<
-      (arg: PolkadotParachainPrimitivesPrimitivesId) => PolkadotPrimitivesV5CandidateCommitments | undefined
+      (arg: PolkadotParachainPrimitivesPrimitivesId) => PolkadotPrimitivesV6CandidateCommitments | undefined
     >;
 
     /**
@@ -1969,7 +2003,7 @@ export interface ChainStorage extends GenericChainStorage {
     /**
      * Scraped on chain data for extracting resolved disputes as well as backing votes.
      **/
-    onChainVotes: GenericStorageQuery<() => PolkadotPrimitivesV5ScrapedOnChainVotes | undefined>;
+    onChainVotes: GenericStorageQuery<() => PolkadotPrimitivesV6ScrapedOnChainVotes | undefined>;
 
     /**
      * Generic pallet storage query
@@ -1986,7 +2020,7 @@ export interface ChainStorage extends GenericChainStorage {
      * multiplexers. Reasonably, 100-1000. The dominant factor is the number of validators: safe
      * upper bound at 10k.
      **/
-    validatorGroups: GenericStorageQuery<() => Array<Array<PolkadotPrimitivesV5ValidatorIndex>>>;
+    validatorGroups: GenericStorageQuery<() => Array<Array<PolkadotPrimitivesV6ValidatorIndex>>>;
 
     /**
      * One entry for each availability core. Entries are `None` if the core is not currently
@@ -1998,7 +2032,7 @@ export interface ChainStorage extends GenericChainStorage {
      * * The number of parachains and parathread multiplexers
      * * The number of validators divided by `configuration.max_validators_per_core`.
      **/
-    availabilityCores: GenericStorageQuery<() => Array<PolkadotPrimitivesV5CoreOccupied>>;
+    availabilityCores: GenericStorageQuery<() => Array<PolkadotRuntimeParachainsSchedulerPalletCoreOccupied>>;
 
     /**
      * The block number where the session start occurred. Used to track how many group rotations
@@ -2019,7 +2053,9 @@ export interface ChainStorage extends GenericChainStorage {
      * a block. Runtime APIs should be used to determine scheduled cores/ for the upcoming block.
      **/
     claimQueue: GenericStorageQuery<
-      () => Array<[PolkadotPrimitivesV5CoreIndex, Array<PolkadotPrimitivesV5ParasEntry | undefined>]>
+      () => Array<
+        [PolkadotPrimitivesV6CoreIndex, Array<PolkadotRuntimeParachainsSchedulerPalletParasEntry | undefined>]
+      >
     >;
 
     /**
@@ -2145,7 +2181,7 @@ export interface ChainStorage extends GenericChainStorage {
      * the format will require migration of parachains.
      **/
     upgradeGoAheadSignal: GenericStorageQuery<
-      (arg: PolkadotParachainPrimitivesPrimitivesId) => PolkadotPrimitivesV5UpgradeGoAhead | undefined
+      (arg: PolkadotParachainPrimitivesPrimitivesId) => PolkadotPrimitivesV6UpgradeGoAhead | undefined
     >;
 
     /**
@@ -2160,7 +2196,7 @@ export interface ChainStorage extends GenericChainStorage {
      * the format will require migration of parachains.
      **/
     upgradeRestrictionSignal: GenericStorageQuery<
-      (arg: PolkadotParachainPrimitivesPrimitivesId) => PolkadotPrimitivesV5UpgradeRestriction | undefined
+      (arg: PolkadotParachainPrimitivesPrimitivesId) => PolkadotPrimitivesV6UpgradeRestriction | undefined
     >;
 
     /**
@@ -2264,7 +2300,7 @@ export interface ChainStorage extends GenericChainStorage {
     downwardMessageQueueHeads: GenericStorageQuery<(arg: PolkadotParachainPrimitivesPrimitivesId) => H256>;
 
     /**
-     * The number to multiply the base delivery fee by.
+     * The factor to multiply the base delivery fee by.
      **/
     deliveryFeeFactor: GenericStorageQuery<(arg: PolkadotParachainPrimitivesPrimitivesId) => FixedU128>;
 
@@ -2387,7 +2423,7 @@ export interface ChainStorage extends GenericChainStorage {
      * Note that this API is private due to it being prone to 'off-by-one' at session boundaries.
      * When in doubt, use `Sessions` API instead.
      **/
-    assignmentKeysUnsafe: GenericStorageQuery<() => Array<PolkadotPrimitivesV5AssignmentAppPublic>>;
+    assignmentKeysUnsafe: GenericStorageQuery<() => Array<PolkadotPrimitivesV6AssignmentAppPublic>>;
 
     /**
      * The earliest session for which previous session info is stored.
@@ -2399,7 +2435,7 @@ export interface ChainStorage extends GenericChainStorage {
      * Should have an entry in range `EarliestStoredSession..=CurrentSessionIndex`.
      * Does not have any entries before the session index in the first session change notification.
      **/
-    sessions: GenericStorageQuery<(arg: number) => PolkadotPrimitivesV5SessionInfo | undefined>;
+    sessions: GenericStorageQuery<(arg: number) => PolkadotPrimitivesV6SessionInfo | undefined>;
 
     /**
      * The validator account keys of the validators actively participating in parachain consensus.
@@ -2409,7 +2445,7 @@ export interface ChainStorage extends GenericChainStorage {
     /**
      * Executor parameter set for a given session index
      **/
-    sessionExecutorParams: GenericStorageQuery<(arg: number) => PolkadotPrimitivesV5ExecutorParams | undefined>;
+    sessionExecutorParams: GenericStorageQuery<(arg: number) => PolkadotPrimitivesV6ExecutorParams | undefined>;
 
     /**
      * Generic pallet storage query
@@ -2427,7 +2463,7 @@ export interface ChainStorage extends GenericChainStorage {
      * All ongoing or concluded disputes for the last several sessions.
      **/
     disputes: GenericStorageQuery<
-      (arg: [number, PolkadotCorePrimitivesCandidateHash]) => PolkadotPrimitivesV5DisputeState | undefined
+      (arg: [number, PolkadotCorePrimitivesCandidateHash]) => PolkadotPrimitivesV6DisputeState | undefined
     >;
 
     /**
@@ -2435,7 +2471,7 @@ export interface ChainStorage extends GenericChainStorage {
      * This storage is used for slashing.
      **/
     backersOnDisputes: GenericStorageQuery<
-      (arg: [number, PolkadotCorePrimitivesCandidateHash]) => Array<PolkadotPrimitivesV5ValidatorIndex> | undefined
+      (arg: [number, PolkadotCorePrimitivesCandidateHash]) => Array<PolkadotPrimitivesV6ValidatorIndex> | undefined
     >;
 
     /**
@@ -2462,7 +2498,7 @@ export interface ChainStorage extends GenericChainStorage {
      * Validators pending dispute slashes.
      **/
     unappliedSlashes: GenericStorageQuery<
-      (arg: [number, PolkadotCorePrimitivesCandidateHash]) => PolkadotPrimitivesV5SlashingPendingSlashes | undefined
+      (arg: [number, PolkadotCorePrimitivesCandidateHash]) => PolkadotPrimitivesV6SlashingPendingSlashes | undefined
     >;
 
     /**
@@ -2730,6 +2766,21 @@ export interface ChainStorage extends GenericChainStorage {
      **/
     pages: GenericStorageQuery<
       (arg: [PolkadotRuntimeParachainsInclusionAggregateMessageOrigin, number]) => PalletMessageQueuePage | undefined
+    >;
+
+    /**
+     * Generic pallet storage query
+     **/
+    [storage: string]: GenericStorageQuery;
+  };
+  assetRate: {
+    /**
+     * Maps an asset to its fixed point representation in the native balance.
+     *
+     * E.g. `native_amount = asset_amount * ConversionRateToNative::<T>::get(asset_kind)`
+     **/
+    conversionRateToNative: GenericStorageQuery<
+      (arg: PolkadotRuntimeCommonImplsVersionedLocatableAsset) => FixedU128 | undefined
     >;
 
     /**

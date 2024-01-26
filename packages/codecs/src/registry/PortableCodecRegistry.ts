@@ -5,7 +5,7 @@ import { normalizeName } from '@delightfuldot/utils';
 import { CodecRegistry } from './CodecRegistry';
 import { stringPascalCase } from '@polkadot/util';
 
-const KNOWN_CODECS = ['AccountId32', 'Header', 'Digest', 'DigestItem', 'Data'];
+const KNOWN_CODECS = ['AccountId32', 'Header', 'Digest', 'DigestItem', 'Data', 'MultiAddress', 'Era'];
 
 /**
  * Codec registry for portable types from metadata

@@ -112,6 +112,11 @@ export interface RpcCalls extends GenericRpcCalls {
     unstable_call: GenericRpcCall;
 
     /**
+     * @rpcname: chainHead_unstable_continue
+     **/
+    unstable_continue: GenericRpcCall;
+
+    /**
      * @rpcname: chainHead_unstable_follow
      **/
     unstable_follow: GenericRpcCall;
@@ -127,19 +132,9 @@ export interface RpcCalls extends GenericRpcCalls {
     unstable_header: GenericRpcCall;
 
     /**
-     * @rpcname: chainHead_unstable_stopBody
+     * @rpcname: chainHead_unstable_stopOperation
      **/
-    unstable_stopBody: GenericRpcCall;
-
-    /**
-     * @rpcname: chainHead_unstable_stopCall
-     **/
-    unstable_stopCall: GenericRpcCall;
-
-    /**
-     * @rpcname: chainHead_unstable_stopStorage
-     **/
-    unstable_stopStorage: GenericRpcCall;
+    unstable_stopOperation: GenericRpcCall;
 
     /**
      * @rpcname: chainHead_unstable_storage
@@ -335,6 +330,11 @@ export interface RpcCalls extends GenericRpcCalls {
      * @rpcname: eth_getBlockByNumber
      **/
     getBlockByNumber: GenericRpcCall;
+
+    /**
+     * @rpcname: eth_getBlockReceipts
+     **/
+    getBlockReceipts: GenericRpcCall;
 
     /**
      * @rpcname: eth_getBlockTransactionCountByHash
