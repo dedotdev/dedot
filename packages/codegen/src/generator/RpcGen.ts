@@ -149,7 +149,7 @@ export class RpcGen extends ApiGen {
 
     // Check tuple type
     if (type.match(TUPLE_TYPE_REGEX)) {
-      this.addTypeImport(type.slice(1, -1).split(','));
+      this.addTypeImport(type.slice(1, -1).split(','), toTypeIn);
       return;
     }
 
