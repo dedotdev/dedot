@@ -54,16 +54,17 @@ export const $PalletDefV14 = $.Struct({
 
 export type PalletDefV14 = $.Input<typeof $PalletDefV14>;
 
+export const $SignedExtensionDefV14 = $.Struct({
+  ident: $.str,
+  typeId: $TypeId,
+  additionalSigned: $TypeId,
+});
+export type SignedExtensionDefV14 = $.Input<typeof $SignedExtensionDefV14>;
+
 export const $ExtrinsicDefV14 = $.Struct({
   typeId: $TypeId,
   version: $.u8,
-  signedExtensions: $.Vec(
-    $.Struct({
-      ident: $.str,
-      typeId: $TypeId,
-      additionalSigned: $TypeId,
-    }),
-  ),
+  signedExtensions: $.Vec($SignedExtensionDefV14),
 });
 
 export type ExtrinsicDefV14 = $.Input<typeof $ExtrinsicDefV14>;

@@ -1,6 +1,6 @@
 import * as $ from '@delightfuldot/shape';
 import { $PortableType, $TypeId } from './scale-info';
-import { $ConstantDefV14, $StorageEntryV14 } from './v14';
+import { $ConstantDefV14, $SignedExtensionDefV14, $StorageEntryV14, SignedExtensionDefV14 } from './v14';
 
 export const $ConstantDefV15 = $ConstantDefV14;
 export type ConstantDefV15 = $.Input<typeof $ConstantDefV15>;
@@ -25,19 +25,16 @@ export const $PalletDefV15 = $.Struct({
 
 export type PalletDefV15 = $.Input<typeof $PalletDefV15>;
 
+export const $SignedExtensionDefV15 = $SignedExtensionDefV14;
+export type SignedExtensionDefV15 = $.Input<typeof $SignedExtensionDefV15>;
+
 export const $ExtrinsicDefV15 = $.Struct({
   version: $.u8,
   addressTypeId: $TypeId,
   callTypeId: $TypeId,
   signatureTypeId: $TypeId,
   extraTypeId: $TypeId,
-  signedExtensions: $.Vec(
-    $.Struct({
-      ident: $.str,
-      typeId: $TypeId,
-      additionalSigned: $TypeId,
-    }),
-  ),
+  signedExtensions: $.Vec($SignedExtensionDefV15),
 });
 
 export type ExtrinsicDefV15 = $.Input<typeof $ExtrinsicDefV15>;
