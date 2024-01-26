@@ -36,6 +36,7 @@ const KNOWN_PATHS: KnownPath[] = [
 ];
 
 const WRAPPER_TYPE_REGEX = /^(\w+)<(.*)>$/;
+const TUPLE_TYPE_REGEX = /^\[(.*)]$/;
 const KNOWN_WRAPPER_TYPES = ['Option', 'Vec', 'Result', 'Array'];
 
 /**
@@ -97,11 +98,28 @@ export class CodecRegistry {
       if (KNOWN_WRAPPER_TYPES.includes(wrapper)) {
         // @ts-ignore
         const $Wrapper = $[wrapper] as (...args: any[]) => $.AnyShape;
-        const $inners = inner.split(', ').map((one) => this.#findKnownCodec(one.trim()));
+
+        if (inner.match(TUPLE_TYPE_REGEX)) {
+          const $inners = inner
+            .slice(1, -1)
+            .split(',')
+            .map((one) => this.#findKnownCodec(one.trim()));
+
+          return $Wrapper($.Tuple(...$inners));
+        }
+
+        const $inners = inner.split(',').map((one) => this.#findKnownCodec(one.trim()));
         return $Wrapper(...$inners);
       }
 
       throw new Error(`Unknown wrapper type ${wrapper} from ${typeName}`);
+    } else if (typeName.match(TUPLE_TYPE_REGEX)) {
+      const $inner = typeName
+        .slice(1, -1)
+        .split(',')
+        .map((one) => this.#findKnownCodec(one.trim()));
+
+      return $.Tuple(...$inner);
     }
   }
 

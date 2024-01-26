@@ -2,7 +2,7 @@ import { findAliasRpcSpec, findRpcSpec, isUnsubscribeMethod } from '@delightfuld
 import { RpcCallSpec, RpcModuleName } from '@delightfuldot/types';
 import { isNativeType } from '@delightfuldot/utils';
 import { ApiGen, TypesGen } from '../generator';
-import { beautifySourceCode, commentBlock, compileTemplate, WRAPPER_TYPE_REGEX } from './utils';
+import { beautifySourceCode, commentBlock, compileTemplate, TUPLE_TYPE_REGEX, WRAPPER_TYPE_REGEX } from './utils';
 
 const HIDDEN_RPCS = [
   // Ref: https://github.com/paritytech/polkadot-sdk/blob/43415ef58c143b985e09015cd000dbd65f6d3997/substrate/client/rpc-servers/src/lib.rs#L152C9-L158
@@ -137,15 +137,18 @@ export class RpcGen extends ApiGen {
     if (matchArray) {
       const [_, $1, $2] = matchArray;
       this.addTypeImport($1, toTypeIn);
-      this.addTypeImport(
-        $2.split(',').map((one) => one.trim()),
-        toTypeIn,
-      );
+
+      if ($2.match(WRAPPER_TYPE_REGEX) || $2.match(TUPLE_TYPE_REGEX)) {
+        this.addTypeImport($2, toTypeIn);
+      } else {
+        this.addTypeImport($2.split(','), toTypeIn);
+      }
+
       return;
     }
 
     // Check tuple type
-    if (type.startsWith('[') && type.endsWith(']')) {
+    if (type.match(TUPLE_TYPE_REGEX)) {
       this.addTypeImport(type.slice(1, -1).split(','));
       return;
     }
@@ -169,22 +172,22 @@ export class RpcGen extends ApiGen {
     this.typesGen.addTypeImport(type);
   }
 
-  getGeneratedTypeName(type: string, toTypeIn = true) {
+  getGeneratedTypeName(type: string, toTypeIn = true): string {
     try {
       const matchArray = type.match(WRAPPER_TYPE_REGEX);
       if (matchArray) {
         const [_, $1, $2] = matchArray;
 
         // Check tuple type
-        if ($2.startsWith('[') && $2.endsWith(']')) {
+        if ($2.match(TUPLE_TYPE_REGEX)) {
           return `${this.#getCodecType($1, toTypeIn)}<[${$2
             .slice(1, -1)
             .split(',')
-            .map((one) => this.#getCodecType(one.trim(), toTypeIn))
+            .map((one) => this.getGeneratedTypeName(one.trim(), toTypeIn))
             .join(',')}]>`;
         }
 
-        return `${this.#getCodecType($1, toTypeIn)}<${this.#getCodecType($2, toTypeIn)}>`;
+        return `${this.#getCodecType($1, toTypeIn)}<${this.getGeneratedTypeName($2, toTypeIn)}>`;
       }
 
       return this.#getCodecType(type, toTypeIn);
