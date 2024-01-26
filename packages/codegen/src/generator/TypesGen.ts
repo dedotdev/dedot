@@ -192,7 +192,7 @@ export class TypesGen {
             }
           }
 
-          const { tagKey, valueKey } = this.registry.portableRegistry!.getEnumOptions(path);
+          const { tagKey, valueKey } = this.registry.portableRegistry!.getEnumOptions(typeId);
 
           return membersType
             .map(([keyName, valueType, docs]) => ({
