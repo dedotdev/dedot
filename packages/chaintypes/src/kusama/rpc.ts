@@ -41,8 +41,6 @@ import type {
   FeeDetails,
   RuntimeDispatchInfo,
   Metadata,
-  StorageKeyLike,
-  StorageDataLike,
   RuntimeVersion,
   ApplyExtrinsicResult,
 } from '@delightfuldot/codecs';
