@@ -12,6 +12,7 @@ import { mmr } from './mmr';
 import { nominationPools } from './nominationPools';
 import { offchain } from './offchain';
 import { session } from './session';
+import { parachains } from './parachains';
 import { RuntimeApisSpec, RuntimeCallSpec, RuntimeApiSpec, RuntimeApiName } from '@delightfuldot/types';
 import { blake2AsHex } from '@polkadot/util-crypto';
 import { stringSnakeCase } from '@delightfuldot/utils';
@@ -31,6 +32,7 @@ export const runtimeApisSpec: RuntimeApisSpec = {
   nominationPools,
   offchain,
   session,
+  parachains,
 };
 
 export const runtimeApiNames: RuntimeApiName[] = Object.values(runtimeApisSpec)

@@ -14,3 +14,4 @@ export * from './grandpa';
 export * from './mmr';
 export * from './nominationPools';
 export * from './session';
+export * from './parachains';
