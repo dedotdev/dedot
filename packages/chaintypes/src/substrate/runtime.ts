@@ -12,12 +12,14 @@ import type {
   CheckInherentsResult,
   InherentData,
   Extrinsic,
+  Null,
   SetId,
   OpaqueKeyOwnershipProof,
   AccountId32Like,
   AuthorityList,
-  Null,
   GrandpaEquivocationProof,
+  Balance,
+  NpPoolId,
   BabeConfiguration,
   Epoch,
   Slot,
@@ -25,9 +27,16 @@ import type {
   Nonce,
   RuntimeDispatchInfo,
   FeeDetails,
-  Balance,
   Weight,
   Location,
+  ResultPayload,
+  Hash,
+  MmrError,
+  LeafIndex,
+  BlockNumberLike,
+  MmrEncodableOpaqueLeaf,
+  MmrBatchProof,
+  KeyTypeId,
 } from '@delightfuldot/codecs';
 
 export interface RuntimeCalls extends GenericRuntimeCalls {
@@ -128,6 +137,23 @@ export interface RuntimeCalls extends GenericRuntimeCalls {
     [method: string]: GenericRuntimeCall;
   };
   /**
+   * @runtimeapi: OffchainWorkerApi - 0xf78b278be53f454c
+   * @version: 2
+   **/
+  offchainWorkerApi: {
+    /**
+     * Starts the off-chain task for given block header.
+     *
+     * @callname: OffchainWorkerApi_offchain_worker
+     **/
+    offchainWorker: GenericRuntimeCall<(header: Header) => Promise<Null>>;
+
+    /**
+     * Generic runtime call
+     **/
+    [method: string]: GenericRuntimeCall;
+  };
+  /**
    * @runtimeapi: GrandpaApi - 0xed99c5acb25eedf5
    * @version: 3
    **/
@@ -185,6 +211,37 @@ export interface RuntimeCalls extends GenericRuntimeCalls {
     submitReportEquivocationUnsignedExtrinsic: GenericRuntimeCall<
       (equivocationProof: GrandpaEquivocationProof, keyOwnerProof: OpaqueKeyOwnershipProof) => Promise<Option<Null>>
     >;
+
+    /**
+     * Generic runtime call
+     **/
+    [method: string]: GenericRuntimeCall;
+  };
+  /**
+   * @runtimeapi: NominationPoolsApi - 0x17a6bc0d0062aeb3
+   * @version: 1
+   **/
+  nominationPoolsApi: {
+    /**
+     * Returns the pending rewards for the member that the AccountId was given for.
+     *
+     * @callname: NominationPoolsApi_pending_rewards
+     **/
+    pendingRewards: GenericRuntimeCall<(who: AccountId32Like) => Promise<Balance>>;
+
+    /**
+     * Returns the equivalent balance of `points` for a given pool.
+     *
+     * @callname: NominationPoolsApi_points_to_balance
+     **/
+    pointsToBalance: GenericRuntimeCall<(poolId: NpPoolId, points: Balance) => Promise<Balance>>;
+
+    /**
+     * Returns the equivalent points of `new_funds` for a given pool.
+     *
+     * @callname: NominationPoolsApi_balance_to_points
+     **/
+    balanceToPoints: GenericRuntimeCall<(poolId: NpPoolId, newFunds: Balance) => Promise<Balance>>;
 
     /**
      * Generic runtime call
@@ -381,6 +438,107 @@ export interface RuntimeCalls extends GenericRuntimeCalls {
     quotePriceTokensForExactTokens: GenericRuntimeCall<
       (asset1: Location, asset2: Location, amount: bigint, includeFee: boolean) => Promise<Option<Balance>>
     >;
+
+    /**
+     * Generic runtime call
+     **/
+    [method: string]: GenericRuntimeCall;
+  };
+  /**
+   * @runtimeapi: MmrApi - 0x91d5df18b0d2cf58
+   * @version: 2
+   **/
+  mmrApi: {
+    /**
+     * Return the on-chain MMR root hash.
+     *
+     * @callname: MmrApi_mmr_root
+     **/
+    mmrRoot: GenericRuntimeCall<() => Promise<ResultPayload<Hash, MmrError>>>;
+
+    /**
+     * Return the number of MMR blocks in the chain.
+     *
+     * @callname: MmrApi_mmr_leaf_count
+     **/
+    mmrLeafCount: GenericRuntimeCall<() => Promise<ResultPayload<LeafIndex, MmrError>>>;
+
+    /**
+     * Generate MMR proof for a series of block numbers. If `best_known_block_number = Some(n)`,
+     * use historical MMR state at given block height `n`. Else, use current MMR state.
+     *
+     * @callname: MmrApi_generate_proof
+     **/
+    generateProof: GenericRuntimeCall<
+      (
+        blockNumbers: Array<BlockNumberLike>,
+        bestKnownBlockNumber: Option<BlockNumberLike>,
+      ) => Promise<ResultPayload<[Array<MmrEncodableOpaqueLeaf>, MmrBatchProof], MmrError>>
+    >;
+
+    /**
+     * Verify MMR proof against on-chain MMR for a batch of leaves.
+     *
+     * Note this function will use on-chain MMR root hash and check if the proof matches the hash.
+     * Note, the leaves should be sorted such that corresponding leaves and leaf indices have the
+     * same position in both the `leaves` vector and the `leaf_indices` vector contained in the [Proof]
+     *
+     * @callname: MmrApi_verify_proof
+     **/
+    verifyProof: GenericRuntimeCall<
+      (leaves: Array<MmrEncodableOpaqueLeaf>, proof: MmrBatchProof) => Promise<ResultPayload<Null, MmrError>>
+    >;
+
+    /**
+     * Verify MMR proof against given root hash for a batch of leaves.
+     *
+     * Note this function does not require any on-chain storage - the
+     * proof is verified against given MMR root hash.
+     *
+     * Note, the leaves should be sorted such that corresponding leaves and leaf indices have the
+     * same position in both the `leaves` vector and the `leaf_indices` vector contained in the [Proof]
+     *
+     * @callname: MmrApi_verify_proof_stateless
+     **/
+    verifyProofStateless: GenericRuntimeCall<
+      (
+        root: Hash,
+        leaves: Array<MmrEncodableOpaqueLeaf>,
+        proof: MmrBatchProof,
+      ) => Promise<ResultPayload<Null, MmrError>>
+    >;
+
+    /**
+     * Generic runtime call
+     **/
+    [method: string]: GenericRuntimeCall;
+  };
+  /**
+   * @runtimeapi: SessionKeys - 0xab3c0572291feb8b
+   * @version: 1
+   **/
+  sessionKeys: {
+    /**
+     * Generate a set of session keys with optionally using the given seed.
+     * The keys should be stored within the keystore exposed via runtime
+     * externalities.
+     *
+     * The seed needs to be a valid `utf8` string.
+     *
+     * Returns the concatenated SCALE encoded public keys.
+     *
+     * @callname: SessionKeys_generate_session_keys
+     **/
+    generateSessionKeys: GenericRuntimeCall<(seed: Option<Array<number>>) => Promise<Array<number>>>;
+
+    /**
+     * Decode the given public session key
+     *
+     * Returns the list of public raw public keys + key typ
+     *
+     * @callname: SessionKeys_decode_session_keys
+     **/
+    decodeSessionKeys: GenericRuntimeCall<(encoded: Bytes) => Promise<Option<Array<[Array<number>, KeyTypeId]>>>>;
 
     /**
      * Generic runtime call

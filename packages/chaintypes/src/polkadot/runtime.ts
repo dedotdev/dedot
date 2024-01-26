@@ -12,20 +12,53 @@ import type {
   CheckInherentsResult,
   InherentData,
   Extrinsic,
-  SetId,
-  OpaqueKeyOwnershipProof,
+  Balance,
   AccountId32Like,
-  AuthorityList,
+  NpPoolId,
   Null,
+  ValidatorId,
+  ParaValidatorIndex,
+  GroupRotationInfo,
+  CoreState,
+  PersistedValidationData,
+  ParaId,
+  OccupiedCoreAssumption,
+  ValidationCodeHash,
+  Hash,
+  CandidateCommitments,
+  SessionIndex,
+  ValidationCode,
+  CommittedCandidateReceipt,
+  CandidateEvent,
+  InboundDownwardMessage,
+  InboundHrmpMessage,
+  ScrapedOnChainVotes,
+  SessionInfo,
+  PvfCheckStatement,
+  ValidatorSignature,
+  CandidateHash,
+  DisputeState,
+  ExecutorParams,
+  PendingSlashes,
+  OpaqueKeyOwnershipProof,
+  DisputeProof,
+  ResultPayload,
+  MmrError,
+  LeafIndex,
+  BlockNumberLike,
+  MmrEncodableOpaqueLeaf,
+  MmrBatchProof,
+  SetId,
+  AuthorityList,
   GrandpaEquivocationProof,
   BabeConfiguration,
   Epoch,
   Slot,
   AccountId32,
+  KeyTypeId,
   Nonce,
   RuntimeDispatchInfo,
   FeeDetails,
-  Balance,
   Weight,
 } from '@delightfuldot/codecs';
 
@@ -120,6 +153,323 @@ export interface RuntimeCalls extends GenericRuntimeCalls {
      * @callname: BlockBuilder_finalize_block
      **/
     finalizeBlock: GenericRuntimeCall<() => Promise<Header>>;
+
+    /**
+     * Generic runtime call
+     **/
+    [method: string]: GenericRuntimeCall;
+  };
+  /**
+   * @runtimeapi: NominationPoolsApi - 0x17a6bc0d0062aeb3
+   * @version: 1
+   **/
+  nominationPoolsApi: {
+    /**
+     * Returns the pending rewards for the member that the AccountId was given for.
+     *
+     * @callname: NominationPoolsApi_pending_rewards
+     **/
+    pendingRewards: GenericRuntimeCall<(who: AccountId32Like) => Promise<Balance>>;
+
+    /**
+     * Returns the equivalent balance of `points` for a given pool.
+     *
+     * @callname: NominationPoolsApi_points_to_balance
+     **/
+    pointsToBalance: GenericRuntimeCall<(poolId: NpPoolId, points: Balance) => Promise<Balance>>;
+
+    /**
+     * Returns the equivalent points of `new_funds` for a given pool.
+     *
+     * @callname: NominationPoolsApi_balance_to_points
+     **/
+    balanceToPoints: GenericRuntimeCall<(poolId: NpPoolId, newFunds: Balance) => Promise<Balance>>;
+
+    /**
+     * Generic runtime call
+     **/
+    [method: string]: GenericRuntimeCall;
+  };
+  /**
+   * @runtimeapi: OffchainWorkerApi - 0xf78b278be53f454c
+   * @version: 2
+   **/
+  offchainWorkerApi: {
+    /**
+     * Starts the off-chain task for given block header.
+     *
+     * @callname: OffchainWorkerApi_offchain_worker
+     **/
+    offchainWorker: GenericRuntimeCall<(header: Header) => Promise<Null>>;
+
+    /**
+     * Generic runtime call
+     **/
+    [method: string]: GenericRuntimeCall;
+  };
+  /**
+   * @runtimeapi: ParachainHost - 0xaf2c0297a23e6d3d
+   * @version: 5
+   **/
+  parachainHost: {
+    /**
+     * Get the current validators.
+     *
+     * @callname: ParachainHost_validators
+     **/
+    validators: GenericRuntimeCall<() => Promise<Array<ValidatorId>>>;
+
+    /**
+     * Returns the validator groups and rotation info localized based on the hypothetical child
+     * of a block whose state this is invoked on. Note that `now` in the `GroupRotationInfo`
+     * should be the successor of the number of the block.
+     *
+     * @callname: ParachainHost_validator_groups
+     **/
+    validatorGroups: GenericRuntimeCall<() => Promise<[Array<Array<ParaValidatorIndex>>, GroupRotationInfo]>>;
+
+    /**
+     * Yields information on all availability cores as relevant to the child block.
+     * Cores are either free or occupied. Free cores can have paras assigned to them.
+     *
+     * @callname: ParachainHost_availability_cores
+     **/
+    availabilityCores: GenericRuntimeCall<() => Promise<Array<CoreState>>>;
+
+    /**
+     * Yields the persisted validation data for the given `ParaId` along with an assumption that
+     * should be used if the para currently occupies a core.
+     *
+     * Returns `None` if either the para is not registered or the assumption is `Freed`
+     * and the para already occupies a core.
+     *
+     * @callname: ParachainHost_persisted_validation_data
+     **/
+    persistedValidationData: GenericRuntimeCall<
+      (paraId: ParaId, assumption: OccupiedCoreAssumption) => Promise<Option<PersistedValidationData>>
+    >;
+
+    /**
+     * Returns the persisted validation data for the given `ParaId` along with the corresponding
+     * validation code hash. Instead of accepting assumption about the para, matches the validation
+     * data hash against an expected one and yields `None` if they're not equal.
+     *
+     * @callname: ParachainHost_assumed_validation_data
+     **/
+    assumedValidationData: GenericRuntimeCall<
+      (
+        paraId: ParaId,
+        expectedPersistedValidationDataHash: Hash,
+      ) => Promise<Option<[PersistedValidationData, ValidationCodeHash]>>
+    >;
+
+    /**
+     * Checks if the given validation outputs pass the acceptance criteria.
+     *
+     * @callname: ParachainHost_check_validation_outputs
+     **/
+    checkValidationOutputs: GenericRuntimeCall<(paraId: ParaId, outputs: CandidateCommitments) => Promise<boolean>>;
+
+    /**
+     * Returns the session index expected at a child of the block.
+     *
+     * This can be used to instantiate a `SigningContext`.
+     *
+     * @callname: ParachainHost_session_index_for_child
+     **/
+    sessionIndexForChild: GenericRuntimeCall<() => Promise<SessionIndex>>;
+
+    /**
+     * Fetch the validation code used by a para, making the given `OccupiedCoreAssumption`.
+     *
+     * Returns `None` if either the para is not registered or the assumption is `Freed`
+     * and the para already occupies a core.
+     *
+     * @callname: ParachainHost_validation_code
+     **/
+    validationCode: GenericRuntimeCall<(paraId: ParaId, assumption: OccupiedCoreAssumption) => Promise<ValidationCode>>;
+
+    /**
+     * Get the receipt of a candidate pending availability. This returns `Some` for any paras
+     * assigned to occupied cores in `availability_cores` and `None` otherwise.
+     *
+     * @callname: ParachainHost_candidate_pending_availability
+     **/
+    candidatePendingAvailability: GenericRuntimeCall<(paraId: ParaId) => Promise<Option<CommittedCandidateReceipt>>>;
+
+    /**
+     * Get a vector of events concerning candidates that occurred within a block.
+     *
+     * @callname: ParachainHost_candidate_events
+     **/
+    candidateEvents: GenericRuntimeCall<() => Promise<Array<CandidateEvent>>>;
+
+    /**
+     * Get all the pending inbound messages in the downward message queue for a para.
+     *
+     * @callname: ParachainHost_dmq_contents
+     **/
+    dmqContents: GenericRuntimeCall<(recipient: ParaId) => Promise<Array<InboundDownwardMessage>>>;
+
+    /**
+     * Get the contents of all channels addressed to the given recipient. Channels that have no
+     * messages in them are also included.
+     *
+     * @callname: ParachainHost_inbound_hrmp_channels_contents
+     **/
+    inboundHrmpChannelsContents: GenericRuntimeCall<(recipient: ParaId) => Promise<Array<InboundHrmpMessage>>>;
+
+    /**
+     * Get the validation code from its hash.
+     *
+     * @callname: ParachainHost_validation_code_by_hash
+     **/
+    validationCodeByHash: GenericRuntimeCall<(hash: ValidationCodeHash) => Promise<Option<ValidationCode>>>;
+
+    /**
+     * Scrape dispute relevant from on-chain, backing votes and resolved disputes.
+     *
+     * @callname: ParachainHost_on_chain_votes
+     **/
+    onChainVotes: GenericRuntimeCall<() => Promise<Option<ScrapedOnChainVotes>>>;
+
+    /**
+     * Get the session info for the given session, if stored.
+     *
+     * @callname: ParachainHost_session_info
+     **/
+    sessionInfo: GenericRuntimeCall<(index: SessionIndex) => Promise<Option<SessionInfo>>>;
+
+    /**
+     * Submits a PVF pre-checking statement into the transaction pool.
+     *
+     * @callname: ParachainHost_submit_pvf_check_statement
+     **/
+    submitPvfCheckStatement: GenericRuntimeCall<
+      (stmt: PvfCheckStatement, signature: ValidatorSignature) => Promise<Null>
+    >;
+
+    /**
+     * Returns code hashes of PVFs that require pre-checking by validators in the active set.
+     *
+     * @callname: ParachainHost_pvfs_require_precheck
+     **/
+    pvfsRequirePrecheck: GenericRuntimeCall<() => Promise<Array<ValidationCodeHash>>>;
+
+    /**
+     * Fetch the hash of the validation code used by a para, making the given `OccupiedCoreAssumption`.
+     *
+     * @callname: ParachainHost_validation_code_hash
+     **/
+    validationCodeHash: GenericRuntimeCall<
+      (paraId: ParaId, assumption: OccupiedCoreAssumption) => Promise<Option<ValidationCodeHash>>
+    >;
+
+    /**
+     * Returns all onchain disputes.
+     *
+     * @callname: ParachainHost_disputes
+     **/
+    disputes: GenericRuntimeCall<() => Promise<Array<[SessionIndex, CandidateHash, DisputeState]>>>;
+
+    /**
+     * Returns execution parameters for the session.
+     *
+     * @callname: ParachainHost_session_executor_params
+     **/
+    sessionExecutorParams: GenericRuntimeCall<(sessionIndex: SessionIndex) => Promise<Option<ExecutorParams>>>;
+
+    /**
+     * Returns a list of validators that lost a past session dispute and need to be slashed
+     *
+     * @callname: ParachainHost_unapplied_slashes
+     **/
+    unappliedSlashes: GenericRuntimeCall<() => Promise<Array<[SessionIndex, CandidateHash, PendingSlashes]>>>;
+
+    /**
+     * Returns a merkle proof of a validator session key
+     *
+     * @callname: ParachainHost_key_ownership_proof
+     **/
+    keyOwnershipProof: GenericRuntimeCall<(validatorId: ValidatorId) => Promise<Option<OpaqueKeyOwnershipProof>>>;
+
+    /**
+     * Submit an unsigned extrinsic to slash validators who lost a dispute about a candidate of a past session
+     *
+     * @callname: ParachainHost_submit_report_dispute_lost
+     **/
+    submitReportDisputeLost: GenericRuntimeCall<
+      (disputeProof: DisputeProof, keyOwnershipProof: OpaqueKeyOwnershipProof) => Promise<Option<Null>>
+    >;
+
+    /**
+     * Generic runtime call
+     **/
+    [method: string]: GenericRuntimeCall;
+  };
+  /**
+   * @runtimeapi: MmrApi - 0x91d5df18b0d2cf58
+   * @version: 2
+   **/
+  mmrApi: {
+    /**
+     * Return the on-chain MMR root hash.
+     *
+     * @callname: MmrApi_mmr_root
+     **/
+    mmrRoot: GenericRuntimeCall<() => Promise<ResultPayload<Hash, MmrError>>>;
+
+    /**
+     * Return the number of MMR blocks in the chain.
+     *
+     * @callname: MmrApi_mmr_leaf_count
+     **/
+    mmrLeafCount: GenericRuntimeCall<() => Promise<ResultPayload<LeafIndex, MmrError>>>;
+
+    /**
+     * Generate MMR proof for a series of block numbers. If `best_known_block_number = Some(n)`,
+     * use historical MMR state at given block height `n`. Else, use current MMR state.
+     *
+     * @callname: MmrApi_generate_proof
+     **/
+    generateProof: GenericRuntimeCall<
+      (
+        blockNumbers: Array<BlockNumberLike>,
+        bestKnownBlockNumber: Option<BlockNumberLike>,
+      ) => Promise<ResultPayload<[Array<MmrEncodableOpaqueLeaf>, MmrBatchProof], MmrError>>
+    >;
+
+    /**
+     * Verify MMR proof against on-chain MMR for a batch of leaves.
+     *
+     * Note this function will use on-chain MMR root hash and check if the proof matches the hash.
+     * Note, the leaves should be sorted such that corresponding leaves and leaf indices have the
+     * same position in both the `leaves` vector and the `leaf_indices` vector contained in the [Proof]
+     *
+     * @callname: MmrApi_verify_proof
+     **/
+    verifyProof: GenericRuntimeCall<
+      (leaves: Array<MmrEncodableOpaqueLeaf>, proof: MmrBatchProof) => Promise<ResultPayload<Null, MmrError>>
+    >;
+
+    /**
+     * Verify MMR proof against given root hash for a batch of leaves.
+     *
+     * Note this function does not require any on-chain storage - the
+     * proof is verified against given MMR root hash.
+     *
+     * Note, the leaves should be sorted such that corresponding leaves and leaf indices have the
+     * same position in both the `leaves` vector and the `leaf_indices` vector contained in the [Proof]
+     *
+     * @callname: MmrApi_verify_proof_stateless
+     **/
+    verifyProofStateless: GenericRuntimeCall<
+      (
+        root: Hash,
+        leaves: Array<MmrEncodableOpaqueLeaf>,
+        proof: MmrBatchProof,
+      ) => Promise<ResultPayload<Null, MmrError>>
+    >;
 
     /**
      * Generic runtime call
@@ -274,6 +624,38 @@ export interface RuntimeCalls extends GenericRuntimeCalls {
      * @callname: AuthorityDiscoveryApi_authorities
      **/
     authorities: GenericRuntimeCall<() => Promise<Array<AccountId32>>>;
+
+    /**
+     * Generic runtime call
+     **/
+    [method: string]: GenericRuntimeCall;
+  };
+  /**
+   * @runtimeapi: SessionKeys - 0xab3c0572291feb8b
+   * @version: 1
+   **/
+  sessionKeys: {
+    /**
+     * Generate a set of session keys with optionally using the given seed.
+     * The keys should be stored within the keystore exposed via runtime
+     * externalities.
+     *
+     * The seed needs to be a valid `utf8` string.
+     *
+     * Returns the concatenated SCALE encoded public keys.
+     *
+     * @callname: SessionKeys_generate_session_keys
+     **/
+    generateSessionKeys: GenericRuntimeCall<(seed: Option<Array<number>>) => Promise<Array<number>>>;
+
+    /**
+     * Decode the given public session key
+     *
+     * Returns the list of public raw public keys + key typ
+     *
+     * @callname: SessionKeys_decode_session_keys
+     **/
+    decodeSessionKeys: GenericRuntimeCall<(encoded: Bytes) => Promise<Option<Array<[Array<number>, KeyTypeId]>>>>;
 
     /**
      * Generic runtime call

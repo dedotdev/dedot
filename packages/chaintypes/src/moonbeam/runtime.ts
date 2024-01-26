@@ -12,6 +12,8 @@ import type {
   CheckInherentsResult,
   InherentData,
   Extrinsic,
+  Null,
+  KeyTypeId,
   Nonce,
   AccountId32Like,
   RuntimeDispatchInfo,
@@ -111,6 +113,55 @@ export interface RuntimeCalls extends GenericRuntimeCalls {
      * @callname: BlockBuilder_finalize_block
      **/
     finalizeBlock: GenericRuntimeCall<() => Promise<Header>>;
+
+    /**
+     * Generic runtime call
+     **/
+    [method: string]: GenericRuntimeCall;
+  };
+  /**
+   * @runtimeapi: OffchainWorkerApi - 0xf78b278be53f454c
+   * @version: 2
+   **/
+  offchainWorkerApi: {
+    /**
+     * Starts the off-chain task for given block header.
+     *
+     * @callname: OffchainWorkerApi_offchain_worker
+     **/
+    offchainWorker: GenericRuntimeCall<(header: Header) => Promise<Null>>;
+
+    /**
+     * Generic runtime call
+     **/
+    [method: string]: GenericRuntimeCall;
+  };
+  /**
+   * @runtimeapi: SessionKeys - 0xab3c0572291feb8b
+   * @version: 1
+   **/
+  sessionKeys: {
+    /**
+     * Generate a set of session keys with optionally using the given seed.
+     * The keys should be stored within the keystore exposed via runtime
+     * externalities.
+     *
+     * The seed needs to be a valid `utf8` string.
+     *
+     * Returns the concatenated SCALE encoded public keys.
+     *
+     * @callname: SessionKeys_generate_session_keys
+     **/
+    generateSessionKeys: GenericRuntimeCall<(seed: Option<Array<number>>) => Promise<Array<number>>>;
+
+    /**
+     * Decode the given public session key
+     *
+     * Returns the list of public raw public keys + key typ
+     *
+     * @callname: SessionKeys_decode_session_keys
+     **/
+    decodeSessionKeys: GenericRuntimeCall<(encoded: Bytes) => Promise<Option<Array<[Array<number>, KeyTypeId]>>>>;
 
     /**
      * Generic runtime call
