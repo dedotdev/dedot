@@ -3359,6 +3359,7 @@ __metadata:
   dependencies:
     "@polkadot/types-support": ^10.11.2
     "@trivago/prettier-plugin-sort-imports": ^4.1.1
+    happy-dom: ^13.1.4
     husky: ^8.0.3
     jsdom: ^23.2.0
     lerna: ^7.4.2
@@ -3531,7 +3532,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"entities@npm:^4.4.0":
+"entities@npm:^4.4.0, entities@npm:^4.5.0":
   version: 4.5.0
   resolution: "entities@npm:4.5.0"
   checksum: 853f8ebd5b425d350bffa97dd6958143179a5938352ccae092c62d1267c4e392a039be1bae7d51b6e4ffad25f51f9617531fedf5237f15df302ccfb452cbf2d7
@@ -4434,6 +4435,17 @@ __metadata:
   bin:
     handlebars: bin/handlebars
   checksum: 00e68bb5c183fd7b8b63322e6234b5ac8fbb960d712cb3f25587d559c2951d9642df83c04a1172c918c41bcfc81bfbd7a7718bbce93b893e0135fc99edea93ff
+  languageName: node
+  linkType: hard
+
+"happy-dom@npm:^13.1.4":
+  version: 13.3.1
+  resolution: "happy-dom@npm:13.3.1"
+  dependencies:
+    entities: ^4.5.0
+    webidl-conversions: ^7.0.0
+    whatwg-mimetype: ^3.0.0
+  checksum: 149da820e0e3b079f939b9190cc303c11b6bd0f5aaaab325222febaeb45b3c3bcfc89dd8f335e65128901af225e801b7e6da02f800577fc22f4b8fc854ad54d4
   languageName: node
   linkType: hard
 
@@ -8627,6 +8639,13 @@ __metadata:
   dependencies:
     iconv-lite: 0.6.3
   checksum: f75a61422421d991e4aec775645705beaf99a16a88294d68404866f65e92441698a4f5b9fa11dd609017b132d7b286c3c1534e2de5b3e800333856325b549e3c
+  languageName: node
+  linkType: hard
+
+"whatwg-mimetype@npm:^3.0.0":
+  version: 3.0.0
+  resolution: "whatwg-mimetype@npm:3.0.0"
+  checksum: ce08bbb36b6aaf64f3a84da89707e3e6a31e5ab1c1a2379fd68df79ba712a4ab090904f0b50e6693b0dafc8e6343a6157e40bf18fdffd26e513cf95ee2a59824
   languageName: node
   linkType: hard
 

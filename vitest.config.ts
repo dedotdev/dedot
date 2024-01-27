@@ -5,6 +5,6 @@ export default defineConfig({
   // @ts-ignore
   plugins: [tsconfigPaths()],
   test: {
-    environment: 'jsdom',
+    environment: 'happy-dom',
   },
 });

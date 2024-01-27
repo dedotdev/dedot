@@ -13,7 +13,7 @@ type KnownPath = string | RegExp;
 // different substrate-based blockchains
 const KNOWN_PATHS: KnownPath[] = [
   'sp_core::crypto::AccountId32',
-  // 'sp_runtime::generic::era::Era',
+  'sp_runtime::generic::era::Era',
   'sp_runtime::multiaddress::MultiAddress',
   /^sp_runtime::DispatchError$/,
   'sp_runtime::ModuleError',

@@ -1,6 +1,6 @@
 import * as $ from '@delightfuldot/shape';
 import { $ConsensusEngineId, $Header } from './Header';
-import { $Extrinsic } from '../known';
+import { $Extrinsic } from '../known/common';
 
 export const $Block = $.Struct({
   header: $Header,

@@ -5,7 +5,7 @@ import { normalizeName } from '@delightfuldot/utils';
 import { CodecRegistry } from './CodecRegistry';
 import { stringPascalCase } from '@polkadot/util';
 
-const KNOWN_CODECS = ['AccountId32', 'Header', 'Digest', 'DigestItem', 'Data'];
+const KNOWN_CODECS = ['AccountId32', 'Header', 'Digest', 'DigestItem', 'Data', 'MultiAddress', 'Era'];
 
 /**
  * Codec registry for portable types from metadata
@@ -175,7 +175,7 @@ export class PortableCodecRegistry {
             };
           }
         }
-        return $.Enum(enumMembers, this.getEnumOptions(path));
+        return $.Enum(enumMembers, this.getEnumOptions(typeId));
       }
     } else if (tag === 'Sequence') {
       const $inner = this.findCodec(type.value.typeParam);
@@ -215,12 +215,18 @@ export class PortableCodecRegistry {
   /**
    * Custom enum labels for different types
    *
-   * @param path
+   * @param typeId
    */
-  getEnumOptions(path: string[]): EnumOptions {
+  getEnumOptions(typeId: TypeId): EnumOptions {
+    const {
+      extrinsic: { callTypeId },
+      outerEnums: { eventEnumTypeId },
+    } = this.#registry.metadata!;
+
+    const { path } = this.types[typeId];
     const fullPath = path.join('::');
 
-    if (fullPath.endsWith('RuntimeEvent')) {
+    if (typeId === eventEnumTypeId) {
       return {
         tagKey: 'pallet',
         valueKey: 'palletEvent',
@@ -229,6 +235,16 @@ export class PortableCodecRegistry {
       return {
         tagKey: 'name',
         valueKey: 'data',
+      };
+    } else if (typeId === callTypeId) {
+      return {
+        tagKey: 'pallet',
+        valueKey: 'palletCall',
+      };
+    } else if (fullPath.endsWith('::pallet::Call')) {
+      return {
+        tagKey: 'name',
+        valueKey: 'params',
       };
     }
 

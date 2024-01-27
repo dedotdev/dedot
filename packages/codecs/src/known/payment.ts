@@ -1,4 +1,5 @@
 import * as $ from '@delightfuldot/shape';
+
 export const $Weight = $.Struct({
   // The weight of computational time used based on some reference hardware.
   refTime: $.compactU64,
@@ -36,6 +37,8 @@ export const $DispatchClass = $.FlatEnum([
   'Mandatory',
 ]);
 
+export type DispatchClass = $.Input<typeof $DispatchClass>;
+
 /**
  * Information related to a dispatchable's class, weight, and fee that can be queried from the
  * runtime.
@@ -72,6 +75,8 @@ export const $InclusionFee = $.Struct({
   // adjusted_weight_fee = targeted_fee_adjustment * weight_fee
   adjustedWeightFee: $Balance,
 });
+
+export type InclusionFee = $.Input<typeof $InclusionFee>;
 
 /**
  * The `FeeDetails` is composed of:

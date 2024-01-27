@@ -12,6 +12,7 @@ import type {
   U256,
   MultiAddress,
   Data,
+  Era,
 } from '@delightfuldot/codecs';
 
 export type FrameSystemAccountInfo = {
@@ -1587,38 +1588,38 @@ export type FrameSystemCall =
    *
    * - `O(1)`
    **/
-  | { tag: 'Remark'; value: { remark: Bytes } }
+  | { name: 'Remark'; params: { remark: Bytes } }
   /**
    * Set the number of pages in the WebAssembly environment's heap.
    **/
-  | { tag: 'SetHeapPages'; value: { pages: bigint } }
+  | { name: 'SetHeapPages'; params: { pages: bigint } }
   /**
    * Set the new runtime code.
    **/
-  | { tag: 'SetCode'; value: { code: Bytes } }
+  | { name: 'SetCode'; params: { code: Bytes } }
   /**
    * Set the new runtime code without doing any checks of the given `code`.
    **/
-  | { tag: 'SetCodeWithoutChecks'; value: { code: Bytes } }
+  | { name: 'SetCodeWithoutChecks'; params: { code: Bytes } }
   /**
    * Set some items of storage.
    **/
-  | { tag: 'SetStorage'; value: { items: Array<[Bytes, Bytes]> } }
+  | { name: 'SetStorage'; params: { items: Array<[Bytes, Bytes]> } }
   /**
    * Kill some items from storage.
    **/
-  | { tag: 'KillStorage'; value: { keys: Array<Bytes> } }
+  | { name: 'KillStorage'; params: { keys: Array<Bytes> } }
   /**
    * Kill all storage items with a key that starts with the given prefix.
    *
    * **NOTE:** We rely on the Root origin to provide us the number of subkeys under
    * the prefix we are removing to accurately calculate the weight of this function.
    **/
-  | { tag: 'KillPrefix'; value: { prefix: Bytes; subkeys: number } }
+  | { name: 'KillPrefix'; params: { prefix: Bytes; subkeys: number } }
   /**
    * Make some on-chain remark and emit event.
    **/
-  | { tag: 'RemarkWithEvent'; value: { remark: Bytes } };
+  | { name: 'RemarkWithEvent'; params: { remark: Bytes } };
 
 export type FrameSystemLimitsBlockWeights = {
   baseBlock: SpWeightsWeightV2Weight;
@@ -1713,7 +1714,7 @@ export type PalletUtilityCall =
    * and the error of the failed call. If all were successful, then the `BatchCompleted`
    * event is deposited.
    **/
-  | { tag: 'Batch'; value: { calls: Array<AstarRuntimeRuntimeCall> } }
+  | { name: 'Batch'; params: { calls: Array<AstarRuntimeRuntimeCall> } }
   /**
    * Send a call through an indexed pseudonym of the sender.
    *
@@ -1729,7 +1730,7 @@ export type PalletUtilityCall =
    *
    * The dispatch origin for this call must be _Signed_.
    **/
-  | { tag: 'AsDerivative'; value: { index: number; call: AstarRuntimeRuntimeCall } }
+  | { name: 'AsDerivative'; params: { index: number; call: AstarRuntimeRuntimeCall } }
   /**
    * Send a batch of dispatch calls and atomically execute them.
    * The whole transaction will rollback and fail if any of the calls failed.
@@ -1745,7 +1746,7 @@ export type PalletUtilityCall =
    * ## Complexity
    * - O(C) where C is the number of calls to be batched.
    **/
-  | { tag: 'BatchAll'; value: { calls: Array<AstarRuntimeRuntimeCall> } }
+  | { name: 'BatchAll'; params: { calls: Array<AstarRuntimeRuntimeCall> } }
   /**
    * Dispatches a function call with a provided origin.
    *
@@ -1754,7 +1755,7 @@ export type PalletUtilityCall =
    * ## Complexity
    * - O(1).
    **/
-  | { tag: 'DispatchAs'; value: { asOrigin: AstarRuntimeOriginCaller; call: AstarRuntimeRuntimeCall } }
+  | { name: 'DispatchAs'; params: { asOrigin: AstarRuntimeOriginCaller; call: AstarRuntimeRuntimeCall } }
   /**
    * Send a batch of dispatch calls.
    * Unlike `batch`, it allows errors and won't interrupt.
@@ -1770,7 +1771,7 @@ export type PalletUtilityCall =
    * ## Complexity
    * - O(C) where C is the number of calls to be batched.
    **/
-  | { tag: 'ForceBatch'; value: { calls: Array<AstarRuntimeRuntimeCall> } }
+  | { name: 'ForceBatch'; params: { calls: Array<AstarRuntimeRuntimeCall> } }
   /**
    * Dispatch a function call with a specified weight.
    *
@@ -1779,35 +1780,35 @@ export type PalletUtilityCall =
    *
    * The dispatch origin for this call must be _Root_.
    **/
-  | { tag: 'WithWeight'; value: { call: AstarRuntimeRuntimeCall; weight: SpWeightsWeightV2Weight } };
+  | { name: 'WithWeight'; params: { call: AstarRuntimeRuntimeCall; weight: SpWeightsWeightV2Weight } };
 
 export type AstarRuntimeRuntimeCall =
-  | { tag: 'System'; value: FrameSystemCall }
-  | { tag: 'Utility'; value: PalletUtilityCall }
-  | { tag: 'Identity'; value: PalletIdentityCall }
-  | { tag: 'Timestamp'; value: PalletTimestampCall }
-  | { tag: 'Multisig'; value: PalletMultisigCall }
-  | { tag: 'Proxy'; value: PalletProxyCall }
-  | { tag: 'ParachainSystem'; value: CumulusPalletParachainSystemCall }
-  | { tag: 'ParachainInfo'; value: ParachainInfoCall }
-  | { tag: 'Balances'; value: PalletBalancesCall }
-  | { tag: 'Vesting'; value: PalletVestingCall }
-  | { tag: 'DappsStaking'; value: PalletDappsStakingPalletCall }
-  | { tag: 'BlockReward'; value: PalletBlockRewardsHybridCall }
-  | { tag: 'Assets'; value: PalletAssetsCall }
-  | { tag: 'CollatorSelection'; value: PalletCollatorSelectionCall }
-  | { tag: 'Session'; value: PalletSessionCall }
-  | { tag: 'XcmpQueue'; value: CumulusPalletXcmpQueueCall }
-  | { tag: 'PolkadotXcm'; value: PalletXcmCall }
-  | { tag: 'CumulusXcm'; value: CumulusPalletXcmCall }
-  | { tag: 'DmpQueue'; value: CumulusPalletDmpQueueCall }
-  | { tag: 'XcAssetConfig'; value: PalletXcAssetConfigCall }
-  | { tag: 'XTokens'; value: OrmlXtokensModuleCall }
-  | { tag: 'Evm'; value: PalletEvmCall }
-  | { tag: 'Ethereum'; value: PalletEthereumCall }
-  | { tag: 'DynamicEvmBaseFee'; value: PalletDynamicEvmBaseFeeCall }
-  | { tag: 'Contracts'; value: PalletContractsCall }
-  | { tag: 'Sudo'; value: PalletSudoCall };
+  | { pallet: 'System'; palletCall: FrameSystemCall }
+  | { pallet: 'Utility'; palletCall: PalletUtilityCall }
+  | { pallet: 'Identity'; palletCall: PalletIdentityCall }
+  | { pallet: 'Timestamp'; palletCall: PalletTimestampCall }
+  | { pallet: 'Multisig'; palletCall: PalletMultisigCall }
+  | { pallet: 'Proxy'; palletCall: PalletProxyCall }
+  | { pallet: 'ParachainSystem'; palletCall: CumulusPalletParachainSystemCall }
+  | { pallet: 'ParachainInfo'; palletCall: ParachainInfoCall }
+  | { pallet: 'Balances'; palletCall: PalletBalancesCall }
+  | { pallet: 'Vesting'; palletCall: PalletVestingCall }
+  | { pallet: 'DappsStaking'; palletCall: PalletDappsStakingPalletCall }
+  | { pallet: 'BlockReward'; palletCall: PalletBlockRewardsHybridCall }
+  | { pallet: 'Assets'; palletCall: PalletAssetsCall }
+  | { pallet: 'CollatorSelection'; palletCall: PalletCollatorSelectionCall }
+  | { pallet: 'Session'; palletCall: PalletSessionCall }
+  | { pallet: 'XcmpQueue'; palletCall: CumulusPalletXcmpQueueCall }
+  | { pallet: 'PolkadotXcm'; palletCall: PalletXcmCall }
+  | { pallet: 'CumulusXcm'; palletCall: CumulusPalletXcmCall }
+  | { pallet: 'DmpQueue'; palletCall: CumulusPalletDmpQueueCall }
+  | { pallet: 'XcAssetConfig'; palletCall: PalletXcAssetConfigCall }
+  | { pallet: 'XTokens'; palletCall: OrmlXtokensModuleCall }
+  | { pallet: 'Evm'; palletCall: PalletEvmCall }
+  | { pallet: 'Ethereum'; palletCall: PalletEthereumCall }
+  | { pallet: 'DynamicEvmBaseFee'; palletCall: PalletDynamicEvmBaseFeeCall }
+  | { pallet: 'Contracts'; palletCall: PalletContractsCall }
+  | { pallet: 'Sudo'; palletCall: PalletSudoCall };
 
 /**
  * Identity pallet declaration.
@@ -1825,7 +1826,7 @@ export type PalletIdentityCall =
    * ## Complexity
    * - `O(R)` where `R` registrar-count (governance-bounded and code-bounded).
    **/
-  | { tag: 'AddRegistrar'; value: { account: MultiAddress } }
+  | { name: 'AddRegistrar'; params: { account: MultiAddress } }
   /**
    * Set an account's identity information and reserve the appropriate deposit.
    *
@@ -1843,7 +1844,7 @@ export type PalletIdentityCall =
    * - where `X` additional-field-count (deposit-bounded and code-bounded)
    * - where `R` judgements-count (registrar-count-bounded)
    **/
-  | { tag: 'SetIdentity'; value: { info: PalletIdentityIdentityInfo } }
+  | { name: 'SetIdentity'; params: { info: PalletIdentityIdentityInfo } }
   /**
    * Set the sub-accounts of the sender.
    *
@@ -1860,7 +1861,7 @@ export type PalletIdentityCall =
    * - where `P` old-subs-count (hard- and deposit-bounded).
    * - where `S` subs-count (hard- and deposit-bounded).
    **/
-  | { tag: 'SetSubs'; value: { subs: Array<[AccountId32, Data]> } }
+  | { name: 'SetSubs'; params: { subs: Array<[AccountId32, Data]> } }
   /**
    * Clear an account's identity info and all sub-accounts and return all deposits.
    *
@@ -1877,7 +1878,7 @@ export type PalletIdentityCall =
    * - where `S` subs-count (hard- and deposit-bounded).
    * - where `X` additional-field-count (deposit-bounded and code-bounded).
    **/
-  | { tag: 'ClearIdentity' }
+  | { name: 'ClearIdentity' }
   /**
    * Request a judgement from a registrar.
    *
@@ -1901,7 +1902,7 @@ export type PalletIdentityCall =
    * - where `R` registrar-count (governance-bounded).
    * - where `X` additional-field-count (deposit-bounded and code-bounded).
    **/
-  | { tag: 'RequestJudgement'; value: { regIndex: number; maxFee: bigint } }
+  | { name: 'RequestJudgement'; params: { regIndex: number; maxFee: bigint } }
   /**
    * Cancel a previous request.
    *
@@ -1919,7 +1920,7 @@ export type PalletIdentityCall =
    * - where `R` registrar-count (governance-bounded).
    * - where `X` additional-field-count (deposit-bounded and code-bounded).
    **/
-  | { tag: 'CancelRequest'; value: { regIndex: number } }
+  | { name: 'CancelRequest'; params: { regIndex: number } }
   /**
    * Set the fee required for a judgement to be requested from a registrar.
    *
@@ -1933,7 +1934,7 @@ export type PalletIdentityCall =
    * - `O(R)`.
    * - where `R` registrar-count (governance-bounded).
    **/
-  | { tag: 'SetFee'; value: { index: number; fee: bigint } }
+  | { name: 'SetFee'; params: { index: number; fee: bigint } }
   /**
    * Change the account associated with a registrar.
    *
@@ -1947,7 +1948,7 @@ export type PalletIdentityCall =
    * - `O(R)`.
    * - where `R` registrar-count (governance-bounded).
    **/
-  | { tag: 'SetAccountId'; value: { index: number; new: MultiAddress } }
+  | { name: 'SetAccountId'; params: { index: number; new: MultiAddress } }
   /**
    * Set the field information for a registrar.
    *
@@ -1961,7 +1962,7 @@ export type PalletIdentityCall =
    * - `O(R)`.
    * - where `R` registrar-count (governance-bounded).
    **/
-  | { tag: 'SetFields'; value: { index: number; fields: PalletIdentityBitFlags } }
+  | { name: 'SetFields'; params: { index: number; fields: PalletIdentityBitFlags } }
   /**
    * Provide a judgement for an account's identity.
    *
@@ -1982,8 +1983,8 @@ export type PalletIdentityCall =
    * - where `X` additional-field-count (deposit-bounded and code-bounded).
    **/
   | {
-      tag: 'ProvideJudgement';
-      value: { regIndex: number; target: MultiAddress; judgement: PalletIdentityJudgement; identity: H256 };
+      name: 'ProvideJudgement';
+      params: { regIndex: number; target: MultiAddress; judgement: PalletIdentityJudgement; identity: H256 };
     }
   /**
    * Remove an account's identity and sub-account information and slash the deposits.
@@ -2005,7 +2006,7 @@ export type PalletIdentityCall =
    * - where `S` subs-count (hard- and deposit-bounded).
    * - where `X` additional-field-count (deposit-bounded and code-bounded).
    **/
-  | { tag: 'KillIdentity'; value: { target: MultiAddress } }
+  | { name: 'KillIdentity'; params: { target: MultiAddress } }
   /**
    * Add the given account to the sender's subs.
    *
@@ -2015,14 +2016,14 @@ export type PalletIdentityCall =
    * The dispatch origin for this call must be _Signed_ and the sender must have a registered
    * sub identity of `sub`.
    **/
-  | { tag: 'AddSub'; value: { sub: MultiAddress; data: Data } }
+  | { name: 'AddSub'; params: { sub: MultiAddress; data: Data } }
   /**
    * Alter the associated name of the given sub-account.
    *
    * The dispatch origin for this call must be _Signed_ and the sender must have a registered
    * sub identity of `sub`.
    **/
-  | { tag: 'RenameSub'; value: { sub: MultiAddress; data: Data } }
+  | { name: 'RenameSub'; params: { sub: MultiAddress; data: Data } }
   /**
    * Remove the given account from the sender's subs.
    *
@@ -2032,7 +2033,7 @@ export type PalletIdentityCall =
    * The dispatch origin for this call must be _Signed_ and the sender must have a registered
    * sub identity of `sub`.
    **/
-  | { tag: 'RemoveSub'; value: { sub: MultiAddress } }
+  | { name: 'RemoveSub'; params: { sub: MultiAddress } }
   /**
    * Remove the sender as a sub-account.
    *
@@ -2045,7 +2046,7 @@ export type PalletIdentityCall =
    * NOTE: This should not normally be used, but is provided in the case that the non-
    * controller of an account is maliciously registered as a sub-account.
    **/
-  | { tag: 'QuitSub' };
+  | { name: 'QuitSub' };
 
 export type PalletIdentityIdentityInfo = {
   additional: Array<[Data, Data]>;
@@ -2101,7 +2102,7 @@ export type PalletTimestampCall =
    * `on_finalize`)
    * - 1 event handler `on_timestamp_set`. Must be `O(1)`.
    **/
-  { tag: 'Set'; value: { now: bigint } };
+  { name: 'Set'; params: { now: bigint } };
 
 /**
  * Contains one variant per dispatchable that can be called by an extrinsic.
@@ -2121,7 +2122,7 @@ export type PalletMultisigCall =
    * ## Complexity
    * O(Z + C) where Z is the length of the call and C its execution weight.
    **/
-  | { tag: 'AsMultiThreshold1'; value: { otherSignatories: Array<AccountId32>; call: AstarRuntimeRuntimeCall } }
+  | { name: 'AsMultiThreshold1'; params: { otherSignatories: Array<AccountId32>; call: AstarRuntimeRuntimeCall } }
   /**
    * Register approval for a dispatch to be made from a deterministic composite account if
    * approved by a total of `threshold - 1` of `other_signatories`.
@@ -2164,8 +2165,8 @@ export type PalletMultisigCall =
    * taken for its lifetime of `DepositBase + threshold * DepositFactor`.
    **/
   | {
-      tag: 'AsMulti';
-      value: {
+      name: 'AsMulti';
+      params: {
         threshold: number;
         otherSignatories: Array<AccountId32>;
         maybeTimepoint?: PalletMultisigTimepoint | undefined;
@@ -2206,8 +2207,8 @@ export type PalletMultisigCall =
    * taken for its lifetime of `DepositBase + threshold * DepositFactor`.
    **/
   | {
-      tag: 'ApproveAsMulti';
-      value: {
+      name: 'ApproveAsMulti';
+      params: {
         threshold: number;
         otherSignatories: Array<AccountId32>;
         maybeTimepoint?: PalletMultisigTimepoint | undefined;
@@ -2239,8 +2240,8 @@ export type PalletMultisigCall =
    * - Storage: removes one item.
    **/
   | {
-      tag: 'CancelAsMulti';
-      value: {
+      name: 'CancelAsMulti';
+      params: {
         threshold: number;
         otherSignatories: Array<AccountId32>;
         timepoint: PalletMultisigTimepoint;
@@ -2264,8 +2265,8 @@ export type PalletProxyCall =
    * - `call`: The call to be made by the `real` account.
    **/
   | {
-      tag: 'Proxy';
-      value: { real: MultiAddress; forceProxyType?: AstarRuntimeProxyType | undefined; call: AstarRuntimeRuntimeCall };
+      name: 'Proxy';
+      params: { real: MultiAddress; forceProxyType?: AstarRuntimeProxyType | undefined; call: AstarRuntimeRuntimeCall };
     }
   /**
    * Register a proxy account for the sender that is able to make calls on its behalf.
@@ -2278,7 +2279,7 @@ export type PalletProxyCall =
    * - `delay`: The announcement period required of the initial proxy. Will generally be
    * zero.
    **/
-  | { tag: 'AddProxy'; value: { delegate: MultiAddress; proxyType: AstarRuntimeProxyType; delay: number } }
+  | { name: 'AddProxy'; params: { delegate: MultiAddress; proxyType: AstarRuntimeProxyType; delay: number } }
   /**
    * Unregister a proxy account for the sender.
    *
@@ -2288,7 +2289,7 @@ export type PalletProxyCall =
    * - `proxy`: The account that the `caller` would like to remove as a proxy.
    * - `proxy_type`: The permissions currently enabled for the removed proxy account.
    **/
-  | { tag: 'RemoveProxy'; value: { delegate: MultiAddress; proxyType: AstarRuntimeProxyType; delay: number } }
+  | { name: 'RemoveProxy'; params: { delegate: MultiAddress; proxyType: AstarRuntimeProxyType; delay: number } }
   /**
    * Unregister all proxy accounts for the sender.
    *
@@ -2297,7 +2298,7 @@ export type PalletProxyCall =
    * WARNING: This may be called on accounts created by `pure`, however if done, then
    * the unreserved fees will be inaccessible. **All access to this account will be lost.**
    **/
-  | { tag: 'RemoveProxies' }
+  | { name: 'RemoveProxies' }
   /**
    * Spawn a fresh new account that is guaranteed to be otherwise inaccessible, and
    * initialize it with a proxy of `proxy_type` for `origin` sender.
@@ -2318,7 +2319,7 @@ export type PalletProxyCall =
    *
    * Fails if there are insufficient funds to pay for deposit.
    **/
-  | { tag: 'CreatePure'; value: { proxyType: AstarRuntimeProxyType; delay: number; index: number } }
+  | { name: 'CreatePure'; params: { proxyType: AstarRuntimeProxyType; delay: number; index: number } }
   /**
    * Removes a previously spawned pure proxy.
    *
@@ -2338,8 +2339,8 @@ export type PalletProxyCall =
    * account whose `pure` call has corresponding parameters.
    **/
   | {
-      tag: 'KillPure';
-      value: {
+      name: 'KillPure';
+      params: {
         spawner: MultiAddress;
         proxyType: AstarRuntimeProxyType;
         index: number;
@@ -2364,7 +2365,7 @@ export type PalletProxyCall =
    * - `real`: The account that the proxy will make a call on behalf of.
    * - `call_hash`: The hash of the call to be made by the `real` account.
    **/
-  | { tag: 'Announce'; value: { real: MultiAddress; callHash: H256 } }
+  | { name: 'Announce'; params: { real: MultiAddress; callHash: H256 } }
   /**
    * Remove a given announcement.
    *
@@ -2377,7 +2378,7 @@ export type PalletProxyCall =
    * - `real`: The account that the proxy will make a call on behalf of.
    * - `call_hash`: The hash of the call to be made by the `real` account.
    **/
-  | { tag: 'RemoveAnnouncement'; value: { real: MultiAddress; callHash: H256 } }
+  | { name: 'RemoveAnnouncement'; params: { real: MultiAddress; callHash: H256 } }
   /**
    * Remove the given announcement of a delegate.
    *
@@ -2390,7 +2391,7 @@ export type PalletProxyCall =
    * - `delegate`: The account that previously announced the call.
    * - `call_hash`: The hash of the call to be made.
    **/
-  | { tag: 'RejectAnnouncement'; value: { delegate: MultiAddress; callHash: H256 } }
+  | { name: 'RejectAnnouncement'; params: { delegate: MultiAddress; callHash: H256 } }
   /**
    * Dispatch the given `call` from an account that the sender is authorized for through
    * `add_proxy`.
@@ -2405,8 +2406,8 @@ export type PalletProxyCall =
    * - `call`: The call to be made by the `real` account.
    **/
   | {
-      tag: 'ProxyAnnounced';
-      value: {
+      name: 'ProxyAnnounced';
+      params: {
         delegate: MultiAddress;
         real: MultiAddress;
         forceProxyType?: AstarRuntimeProxyType | undefined;
@@ -2429,8 +2430,8 @@ export type CumulusPalletParachainSystemCall =
    * As a side effect, this function upgrades the current validation function
    * if the appropriate time has come.
    **/
-  | { tag: 'SetValidationData'; value: { data: CumulusPrimitivesParachainInherentParachainInherentData } }
-  | { tag: 'SudoSendUpwardMessage'; value: { message: Bytes } }
+  | { name: 'SetValidationData'; params: { data: CumulusPrimitivesParachainInherentParachainInherentData } }
+  | { name: 'SudoSendUpwardMessage'; params: { message: Bytes } }
   /**
    * Authorize an upgrade to a given `code_hash` for the runtime. The runtime can be supplied
    * later.
@@ -2441,7 +2442,7 @@ export type CumulusPalletParachainSystemCall =
    *
    * This call requires Root origin.
    **/
-  | { tag: 'AuthorizeUpgrade'; value: { codeHash: H256; checkVersion: boolean } }
+  | { name: 'AuthorizeUpgrade'; params: { codeHash: H256; checkVersion: boolean } }
   /**
    * Provide the preimage (runtime binary) `code` for an upgrade that has been authorized.
    *
@@ -2453,7 +2454,7 @@ export type CumulusPalletParachainSystemCall =
    *
    * All origins are allowed.
    **/
-  | { tag: 'EnactAuthorizedUpgrade'; value: { code: Bytes } };
+  | { name: 'EnactAuthorizedUpgrade'; params: { code: Bytes } };
 
 export type CumulusPrimitivesParachainInherentParachainInherentData = {
   validationData: PolkadotPrimitivesV4PersistedValidationData;
@@ -2495,7 +2496,7 @@ export type PalletBalancesCall =
    *
    * The dispatch origin for this call must be `Signed` by the transactor.
    **/
-  | { tag: 'TransferAllowDeath'; value: { dest: MultiAddress; value: bigint } }
+  | { name: 'TransferAllowDeath'; params: { dest: MultiAddress; value: bigint } }
   /**
    * Set the regular balance of a given account; it also takes a reserved balance but this
    * must be the same as the account's current reserved balance.
@@ -2504,12 +2505,12 @@ export type PalletBalancesCall =
    *
    * WARNING: This call is DEPRECATED! Use `force_set_balance` instead.
    **/
-  | { tag: 'SetBalanceDeprecated'; value: { who: MultiAddress; newFree: bigint; oldReserved: bigint } }
+  | { name: 'SetBalanceDeprecated'; params: { who: MultiAddress; newFree: bigint; oldReserved: bigint } }
   /**
    * Exactly as `transfer_allow_death`, except the origin must be root and the source account
    * may be specified.
    **/
-  | { tag: 'ForceTransfer'; value: { source: MultiAddress; dest: MultiAddress; value: bigint } }
+  | { name: 'ForceTransfer'; params: { source: MultiAddress; dest: MultiAddress; value: bigint } }
   /**
    * Same as the [`transfer_allow_death`] call, but with a check that the transfer will not
    * kill the origin account.
@@ -2518,7 +2519,7 @@ export type PalletBalancesCall =
    *
    * [`transfer_allow_death`]: struct.Pallet.html#method.transfer
    **/
-  | { tag: 'TransferKeepAlive'; value: { dest: MultiAddress; value: bigint } }
+  | { name: 'TransferKeepAlive'; params: { dest: MultiAddress; value: bigint } }
   /**
    * Transfer the entire transferable balance from the caller account.
    *
@@ -2536,13 +2537,13 @@ export type PalletBalancesCall =
    * transfer everything except at least the existential deposit, which will guarantee to
    * keep the sender account alive (true).
    **/
-  | { tag: 'TransferAll'; value: { dest: MultiAddress; keepAlive: boolean } }
+  | { name: 'TransferAll'; params: { dest: MultiAddress; keepAlive: boolean } }
   /**
    * Unreserve some balance from a user by force.
    *
    * Can only be called by ROOT.
    **/
-  | { tag: 'ForceUnreserve'; value: { who: MultiAddress; amount: bigint } }
+  | { name: 'ForceUnreserve'; params: { who: MultiAddress; amount: bigint } }
   /**
    * Upgrade a specified account.
    *
@@ -2553,19 +2554,19 @@ export type PalletBalancesCall =
    * be upgraded. (We let some not have to be upgraded just in order to allow for the
    * possibililty of churn).
    **/
-  | { tag: 'UpgradeAccounts'; value: { who: Array<AccountId32> } }
+  | { name: 'UpgradeAccounts'; params: { who: Array<AccountId32> } }
   /**
    * Alias for `transfer_allow_death`, provided only for name-wise compatibility.
    *
    * WARNING: DEPRECATED! Will be released in approximately 3 months.
    **/
-  | { tag: 'Transfer'; value: { dest: MultiAddress; value: bigint } }
+  | { name: 'Transfer'; params: { dest: MultiAddress; value: bigint } }
   /**
    * Set the regular balance of a given account.
    *
    * The dispatch origin for this call is `root`.
    **/
-  | { tag: 'ForceSetBalance'; value: { who: MultiAddress; newFree: bigint } };
+  | { name: 'ForceSetBalance'; params: { who: MultiAddress; newFree: bigint } };
 
 /**
  * Contains one variant per dispatchable that can be called by an extrinsic.
@@ -2582,7 +2583,7 @@ export type PalletVestingCall =
    * ## Complexity
    * - `O(1)`.
    **/
-  | { tag: 'Vest' }
+  | { name: 'Vest' }
   /**
    * Unlock any vested funds of a `target` account.
    *
@@ -2596,7 +2597,7 @@ export type PalletVestingCall =
    * ## Complexity
    * - `O(1)`.
    **/
-  | { tag: 'VestOther'; value: { target: MultiAddress } }
+  | { name: 'VestOther'; params: { target: MultiAddress } }
   /**
    * Create a vested transfer.
    *
@@ -2612,7 +2613,7 @@ export type PalletVestingCall =
    * ## Complexity
    * - `O(1)`.
    **/
-  | { tag: 'VestedTransfer'; value: { target: MultiAddress; schedule: PalletVestingVestingInfo } }
+  | { name: 'VestedTransfer'; params: { target: MultiAddress; schedule: PalletVestingVestingInfo } }
   /**
    * Force a vested transfer.
    *
@@ -2630,8 +2631,8 @@ export type PalletVestingCall =
    * - `O(1)`.
    **/
   | {
-      tag: 'ForceVestedTransfer';
-      value: { source: MultiAddress; target: MultiAddress; schedule: PalletVestingVestingInfo };
+      name: 'ForceVestedTransfer';
+      params: { source: MultiAddress; target: MultiAddress; schedule: PalletVestingVestingInfo };
     }
   /**
    * Merge two vesting schedules together, creating a new vesting schedule that unlocks over
@@ -2656,7 +2657,7 @@ export type PalletVestingCall =
    * - `schedule1_index`: index of the first schedule to merge.
    * - `schedule2_index`: index of the second schedule to merge.
    **/
-  | { tag: 'MergeSchedules'; value: { schedule1Index: number; schedule2Index: number } };
+  | { name: 'MergeSchedules'; params: { schedule1Index: number; schedule2Index: number } };
 
 export type PalletVestingVestingInfo = { locked: bigint; perBlock: bigint; startingBlock: number };
 
@@ -2672,7 +2673,7 @@ export type PalletDappsStakingPalletCall =
    *
    * As part of this call, `RegisterDeposit` will be reserved from devs account.
    **/
-  | { tag: 'Register'; value: { developer: AccountId32; contractId: AstarRuntimeSmartContract } }
+  | { name: 'Register'; params: { developer: AccountId32; contractId: AstarRuntimeSmartContract } }
   /**
    * Unregister existing contract from dapps staking, making it ineligible for rewards from current era onwards.
    * This must be called by the root (at the moment).
@@ -2681,13 +2682,13 @@ export type PalletDappsStakingPalletCall =
    *
    * **Warning**: After this action ,contract can not be registered for dapps staking again.
    **/
-  | { tag: 'Unregister'; value: { contractId: AstarRuntimeSmartContract } }
+  | { name: 'Unregister'; params: { contractId: AstarRuntimeSmartContract } }
   /**
    * Withdraw locked funds from a contract that was unregistered.
    *
    * Funds don't need to undergo the unbonding period - they are returned immediately to the staker's free balance.
    **/
-  | { tag: 'WithdrawFromUnregistered'; value: { contractId: AstarRuntimeSmartContract } }
+  | { name: 'WithdrawFromUnregistered'; params: { contractId: AstarRuntimeSmartContract } }
   /**
    * Lock up and stake balance of the origin account.
    *
@@ -2696,7 +2697,7 @@ export type PalletDappsStakingPalletCall =
    *
    * The dispatch origin for this call must be _Signed_ by the staker's account.
    **/
-  | { tag: 'BondAndStake'; value: { contractId: AstarRuntimeSmartContract; value: bigint } }
+  | { name: 'BondAndStake'; params: { contractId: AstarRuntimeSmartContract; value: bigint } }
   /**
    * Start unbonding process and unstake balance from the contract.
    *
@@ -2707,14 +2708,14 @@ export type PalletDappsStakingPalletCall =
    * In case remaining staked balance on contract is below minimum staking amount,
    * entire stake for that contract will be unstaked.
    **/
-  | { tag: 'UnbondAndUnstake'; value: { contractId: AstarRuntimeSmartContract; value: bigint } }
+  | { name: 'UnbondAndUnstake'; params: { contractId: AstarRuntimeSmartContract; value: bigint } }
   /**
    * Withdraw all funds that have completed the unbonding process.
    *
    * If there are unbonding chunks which will be fully unbonded in future eras,
    * they will remain and can be withdrawn later.
    **/
-  | { tag: 'WithdrawUnbonded' }
+  | { name: 'WithdrawUnbonded' }
   /**
    * Transfer nomination from one contract to another.
    *
@@ -2724,8 +2725,8 @@ export type PalletDappsStakingPalletCall =
    *
    **/
   | {
-      tag: 'NominationTransfer';
-      value: {
+      name: 'NominationTransfer';
+      params: {
         originContractId: AstarRuntimeSmartContract;
         value: bigint;
         targetContractId: AstarRuntimeSmartContract;
@@ -2738,32 +2739,32 @@ export type PalletDappsStakingPalletCall =
    * The rewards are always added to the staker's free balance (account) but depending on the reward destination configuration,
    * they might be immediately re-staked.
    **/
-  | { tag: 'ClaimStaker'; value: { contractId: AstarRuntimeSmartContract } }
+  | { name: 'ClaimStaker'; params: { contractId: AstarRuntimeSmartContract } }
   /**
    * Claim earned dapp rewards for the specified era.
    *
    * Call must ensure that the specified era is eligible for reward payout and that it hasn't already been paid out for the dapp.
    **/
-  | { tag: 'ClaimDapp'; value: { contractId: AstarRuntimeSmartContract; era: number } }
+  | { name: 'ClaimDapp'; params: { contractId: AstarRuntimeSmartContract; era: number } }
   /**
    * Force a new era at the start of the next block.
    *
    * The dispatch origin must be Root.
    **/
-  | { tag: 'ForceNewEra' }
+  | { name: 'ForceNewEra' }
   /**
    * `true` will disable pallet, enabling maintenance mode. `false` will do the opposite.
    *
    * The dispatch origin must be Root.
    **/
-  | { tag: 'MaintenanceMode'; value: { enableMaintenance: boolean } }
+  | { name: 'MaintenanceMode'; params: { enableMaintenance: boolean } }
   /**
    * Used to set reward destination for staker rewards.
    *
    * User must be an active staker in order to use this call.
    * This will apply to all existing unclaimed rewards.
    **/
-  | { tag: 'SetRewardDestination'; value: { rewardDestination: PalletDappsStakingRewardDestination } }
+  | { name: 'SetRewardDestination'; params: { rewardDestination: PalletDappsStakingRewardDestination } }
   /**
    * Used to force set `ContractEraStake` storage values.
    * The purpose of this call is only for fixing one of the issues detected with dapps-staking.
@@ -2771,8 +2772,8 @@ export type PalletDappsStakingPalletCall =
    * The dispatch origin must be Root.
    **/
   | {
-      tag: 'SetContractStakeInfo';
-      value: {
+      name: 'SetContractStakeInfo';
+      params: {
         contract: AstarRuntimeSmartContract;
         era: number;
         contractStakeInfo: PalletDappsStakingContractStakeInfo;
@@ -2781,7 +2782,7 @@ export type PalletDappsStakingPalletCall =
   /**
    * Used to burn unclaimed & stale rewards from an unregistered contract.
    **/
-  | { tag: 'BurnStaleReward'; value: { contractId: AstarRuntimeSmartContract; era: number } };
+  | { name: 'BurnStaleReward'; params: { contractId: AstarRuntimeSmartContract; era: number } };
 
 export type PalletDappsStakingContractStakeInfo = {
   total: bigint;
@@ -2804,7 +2805,7 @@ export type PalletBlockRewardsHybridCall =
    * Emits `DistributionConfigurationChanged` with config embeded into event itself.
    *
    **/
-  { tag: 'SetConfiguration'; value: { rewardDistroParams: PalletBlockRewardsHybridRewardDistributionConfig } };
+  { name: 'SetConfiguration'; params: { rewardDistroParams: PalletBlockRewardsHybridRewardDistributionConfig } };
 
 /**
  * Contains one variant per dispatchable that can be called by an extrinsic.
@@ -2831,7 +2832,7 @@ export type PalletAssetsCall =
    *
    * Weight: `O(1)`
    **/
-  | { tag: 'Create'; value: { id: bigint; admin: MultiAddress; minBalance: bigint } }
+  | { name: 'Create'; params: { id: bigint; admin: MultiAddress; minBalance: bigint } }
   /**
    * Issue a new class of fungible assets from a privileged origin.
    *
@@ -2853,7 +2854,7 @@ export type PalletAssetsCall =
    *
    * Weight: `O(1)`
    **/
-  | { tag: 'ForceCreate'; value: { id: bigint; owner: MultiAddress; isSufficient: boolean; minBalance: bigint } }
+  | { name: 'ForceCreate'; params: { id: bigint; owner: MultiAddress; isSufficient: boolean; minBalance: bigint } }
   /**
    * Start the process of destroying a fungible asset class.
    *
@@ -2867,7 +2868,7 @@ export type PalletAssetsCall =
    *
    * The asset class must be frozen before calling `start_destroy`.
    **/
-  | { tag: 'StartDestroy'; value: { id: bigint } }
+  | { name: 'StartDestroy'; params: { id: bigint } }
   /**
    * Destroy all accounts associated with a given asset.
    *
@@ -2882,7 +2883,7 @@ export type PalletAssetsCall =
    *
    * Each call emits the `Event::DestroyedAccounts` event.
    **/
-  | { tag: 'DestroyAccounts'; value: { id: bigint } }
+  | { name: 'DestroyAccounts'; params: { id: bigint } }
   /**
    * Destroy all approvals associated with a given asset up to the max (T::RemoveItemsLimit).
    *
@@ -2897,7 +2898,7 @@ export type PalletAssetsCall =
    *
    * Each call emits the `Event::DestroyedApprovals` event.
    **/
-  | { tag: 'DestroyApprovals'; value: { id: bigint } }
+  | { name: 'DestroyApprovals'; params: { id: bigint } }
   /**
    * Complete destroying asset and unreserve currency.
    *
@@ -2910,7 +2911,7 @@ export type PalletAssetsCall =
    *
    * Each successful call emits the `Event::Destroyed` event.
    **/
-  | { tag: 'FinishDestroy'; value: { id: bigint } }
+  | { name: 'FinishDestroy'; params: { id: bigint } }
   /**
    * Mint assets of a particular class.
    *
@@ -2925,7 +2926,7 @@ export type PalletAssetsCall =
    * Weight: `O(1)`
    * Modes: Pre-existing balance of `beneficiary`; Account pre-existence of `beneficiary`.
    **/
-  | { tag: 'Mint'; value: { id: bigint; beneficiary: MultiAddress; amount: bigint } }
+  | { name: 'Mint'; params: { id: bigint; beneficiary: MultiAddress; amount: bigint } }
   /**
    * Reduce the balance of `who` by as much as possible up to `amount` assets of `id`.
    *
@@ -2943,7 +2944,7 @@ export type PalletAssetsCall =
    * Weight: `O(1)`
    * Modes: Post-existence of `who`; Pre & post Zombie-status of `who`.
    **/
-  | { tag: 'Burn'; value: { id: bigint; who: MultiAddress; amount: bigint } }
+  | { name: 'Burn'; params: { id: bigint; who: MultiAddress; amount: bigint } }
   /**
    * Move some assets from the sender account to another.
    *
@@ -2964,7 +2965,7 @@ export type PalletAssetsCall =
    * Modes: Pre-existence of `target`; Post-existence of sender; Account pre-existence of
    * `target`.
    **/
-  | { tag: 'Transfer'; value: { id: bigint; target: MultiAddress; amount: bigint } }
+  | { name: 'Transfer'; params: { id: bigint; target: MultiAddress; amount: bigint } }
   /**
    * Move some assets from the sender account to another, keeping the sender account alive.
    *
@@ -2985,7 +2986,7 @@ export type PalletAssetsCall =
    * Modes: Pre-existence of `target`; Post-existence of sender; Account pre-existence of
    * `target`.
    **/
-  | { tag: 'TransferKeepAlive'; value: { id: bigint; target: MultiAddress; amount: bigint } }
+  | { name: 'TransferKeepAlive'; params: { id: bigint; target: MultiAddress; amount: bigint } }
   /**
    * Move some assets from one account to another.
    *
@@ -3007,7 +3008,7 @@ export type PalletAssetsCall =
    * Modes: Pre-existence of `dest`; Post-existence of `source`; Account pre-existence of
    * `dest`.
    **/
-  | { tag: 'ForceTransfer'; value: { id: bigint; source: MultiAddress; dest: MultiAddress; amount: bigint } }
+  | { name: 'ForceTransfer'; params: { id: bigint; source: MultiAddress; dest: MultiAddress; amount: bigint } }
   /**
    * Disallow further unprivileged transfers of an asset `id` from an account `who`. `who`
    * must already exist as an entry in `Account`s of the asset. If you want to freeze an
@@ -3022,7 +3023,7 @@ export type PalletAssetsCall =
    *
    * Weight: `O(1)`
    **/
-  | { tag: 'Freeze'; value: { id: bigint; who: MultiAddress } }
+  | { name: 'Freeze'; params: { id: bigint; who: MultiAddress } }
   /**
    * Allow unprivileged transfers to and from an account again.
    *
@@ -3035,7 +3036,7 @@ export type PalletAssetsCall =
    *
    * Weight: `O(1)`
    **/
-  | { tag: 'Thaw'; value: { id: bigint; who: MultiAddress } }
+  | { name: 'Thaw'; params: { id: bigint; who: MultiAddress } }
   /**
    * Disallow further unprivileged transfers for the asset class.
    *
@@ -3047,7 +3048,7 @@ export type PalletAssetsCall =
    *
    * Weight: `O(1)`
    **/
-  | { tag: 'FreezeAsset'; value: { id: bigint } }
+  | { name: 'FreezeAsset'; params: { id: bigint } }
   /**
    * Allow unprivileged transfers for the asset again.
    *
@@ -3059,7 +3060,7 @@ export type PalletAssetsCall =
    *
    * Weight: `O(1)`
    **/
-  | { tag: 'ThawAsset'; value: { id: bigint } }
+  | { name: 'ThawAsset'; params: { id: bigint } }
   /**
    * Change the Owner of an asset.
    *
@@ -3072,7 +3073,7 @@ export type PalletAssetsCall =
    *
    * Weight: `O(1)`
    **/
-  | { tag: 'TransferOwnership'; value: { id: bigint; owner: MultiAddress } }
+  | { name: 'TransferOwnership'; params: { id: bigint; owner: MultiAddress } }
   /**
    * Change the Issuer, Admin and Freezer of an asset.
    *
@@ -3087,7 +3088,7 @@ export type PalletAssetsCall =
    *
    * Weight: `O(1)`
    **/
-  | { tag: 'SetTeam'; value: { id: bigint; issuer: MultiAddress; admin: MultiAddress; freezer: MultiAddress } }
+  | { name: 'SetTeam'; params: { id: bigint; issuer: MultiAddress; admin: MultiAddress; freezer: MultiAddress } }
   /**
    * Set the metadata for an asset.
    *
@@ -3106,7 +3107,7 @@ export type PalletAssetsCall =
    *
    * Weight: `O(1)`
    **/
-  | { tag: 'SetMetadata'; value: { id: bigint; name: Bytes; symbol: Bytes; decimals: number } }
+  | { name: 'SetMetadata'; params: { id: bigint; name: Bytes; symbol: Bytes; decimals: number } }
   /**
    * Clear the metadata for an asset.
    *
@@ -3120,7 +3121,7 @@ export type PalletAssetsCall =
    *
    * Weight: `O(1)`
    **/
-  | { tag: 'ClearMetadata'; value: { id: bigint } }
+  | { name: 'ClearMetadata'; params: { id: bigint } }
   /**
    * Force the metadata for an asset to some value.
    *
@@ -3137,7 +3138,10 @@ export type PalletAssetsCall =
    *
    * Weight: `O(N + S)` where N and S are the length of the name and symbol respectively.
    **/
-  | { tag: 'ForceSetMetadata'; value: { id: bigint; name: Bytes; symbol: Bytes; decimals: number; isFrozen: boolean } }
+  | {
+      name: 'ForceSetMetadata';
+      params: { id: bigint; name: Bytes; symbol: Bytes; decimals: number; isFrozen: boolean };
+    }
   /**
    * Clear the metadata for an asset.
    *
@@ -3151,7 +3155,7 @@ export type PalletAssetsCall =
    *
    * Weight: `O(1)`
    **/
-  | { tag: 'ForceClearMetadata'; value: { id: bigint } }
+  | { name: 'ForceClearMetadata'; params: { id: bigint } }
   /**
    * Alter the attributes of a given asset.
    *
@@ -3177,8 +3181,8 @@ export type PalletAssetsCall =
    * Weight: `O(1)`
    **/
   | {
-      tag: 'ForceAssetStatus';
-      value: {
+      name: 'ForceAssetStatus';
+      params: {
         id: bigint;
         owner: MultiAddress;
         issuer: MultiAddress;
@@ -3211,7 +3215,7 @@ export type PalletAssetsCall =
    *
    * Weight: `O(1)`
    **/
-  | { tag: 'ApproveTransfer'; value: { id: bigint; delegate: MultiAddress; amount: bigint } }
+  | { name: 'ApproveTransfer'; params: { id: bigint; delegate: MultiAddress; amount: bigint } }
   /**
    * Cancel all of some asset approved for delegated transfer by a third-party account.
    *
@@ -3227,7 +3231,7 @@ export type PalletAssetsCall =
    *
    * Weight: `O(1)`
    **/
-  | { tag: 'CancelApproval'; value: { id: bigint; delegate: MultiAddress } }
+  | { name: 'CancelApproval'; params: { id: bigint; delegate: MultiAddress } }
   /**
    * Cancel all of some asset approved for delegated transfer by a third-party account.
    *
@@ -3243,7 +3247,7 @@ export type PalletAssetsCall =
    *
    * Weight: `O(1)`
    **/
-  | { tag: 'ForceCancelApproval'; value: { id: bigint; owner: MultiAddress; delegate: MultiAddress } }
+  | { name: 'ForceCancelApproval'; params: { id: bigint; owner: MultiAddress; delegate: MultiAddress } }
   /**
    * Transfer some asset balance from a previously delegated account to some third-party
    * account.
@@ -3264,7 +3268,7 @@ export type PalletAssetsCall =
    *
    * Weight: `O(1)`
    **/
-  | { tag: 'TransferApproved'; value: { id: bigint; owner: MultiAddress; destination: MultiAddress; amount: bigint } }
+  | { name: 'TransferApproved'; params: { id: bigint; owner: MultiAddress; destination: MultiAddress; amount: bigint } }
   /**
    * Create an asset account for non-provider assets.
    *
@@ -3276,7 +3280,7 @@ export type PalletAssetsCall =
    *
    * Emits `Touched` event when successful.
    **/
-  | { tag: 'Touch'; value: { id: bigint } }
+  | { name: 'Touch'; params: { id: bigint } }
   /**
    * Return the deposit (if any) of an asset account or a consumer reference (if any) of an
    * account.
@@ -3289,7 +3293,7 @@ export type PalletAssetsCall =
    *
    * Emits `Refunded` event when successful.
    **/
-  | { tag: 'Refund'; value: { id: bigint; allowBurn: boolean } }
+  | { name: 'Refund'; params: { id: bigint; allowBurn: boolean } }
   /**
    * Sets the minimum balance of an asset.
    *
@@ -3304,7 +3308,7 @@ export type PalletAssetsCall =
    *
    * Emits `AssetMinBalanceChanged` event when successful.
    **/
-  | { tag: 'SetMinBalance'; value: { id: bigint; minBalance: bigint } }
+  | { name: 'SetMinBalance'; params: { id: bigint; minBalance: bigint } }
   /**
    * Create an asset account for `who`.
    *
@@ -3317,7 +3321,7 @@ export type PalletAssetsCall =
    *
    * Emits `Touched` event when successful.
    **/
-  | { tag: 'TouchOther'; value: { id: bigint; who: MultiAddress } }
+  | { name: 'TouchOther'; params: { id: bigint; who: MultiAddress } }
   /**
    * Return the deposit (if any) of a target asset account. Useful if you are the depositor.
    *
@@ -3330,7 +3334,7 @@ export type PalletAssetsCall =
    *
    * Emits `Refunded` event when successful.
    **/
-  | { tag: 'RefundOther'; value: { id: bigint; who: MultiAddress } }
+  | { name: 'RefundOther'; params: { id: bigint; who: MultiAddress } }
   /**
    * Disallow further unprivileged transfers of an asset `id` to and from an account `who`.
    *
@@ -3343,7 +3347,7 @@ export type PalletAssetsCall =
    *
    * Weight: `O(1)`
    **/
-  | { tag: 'Block'; value: { id: bigint; who: MultiAddress } };
+  | { name: 'Block'; params: { id: bigint; who: MultiAddress } };
 
 /**
  * Contains one variant per dispatchable that can be called by an extrinsic.
@@ -3352,24 +3356,24 @@ export type PalletCollatorSelectionCall =
   /**
    * Set the list of invulnerable (fixed) collators.
    **/
-  | { tag: 'SetInvulnerables'; value: { new: Array<AccountId32> } }
+  | { name: 'SetInvulnerables'; params: { new: Array<AccountId32> } }
   /**
    * Set the ideal number of collators (not including the invulnerables).
    * If lowering this number, then the number of running collators could be higher than this figure.
    * Aside from that edge case, there should be no other way to have more collators than the desired number.
    **/
-  | { tag: 'SetDesiredCandidates'; value: { max: number } }
+  | { name: 'SetDesiredCandidates'; params: { max: number } }
   /**
    * Set the candidacy bond amount.
    **/
-  | { tag: 'SetCandidacyBond'; value: { bond: bigint } }
+  | { name: 'SetCandidacyBond'; params: { bond: bigint } }
   /**
    * Register this account as a collator candidate. The account must (a) already have
    * registered session keys and (b) be able to reserve the `CandidacyBond`.
    *
    * This call is not available to `Invulnerable` collators.
    **/
-  | { tag: 'RegisterAsCandidate' }
+  | { name: 'RegisterAsCandidate' }
   /**
    * Deregister `origin` as a collator candidate. Note that the collator can only leave on
    * session change. The `CandidacyBond` will be unreserved immediately.
@@ -3378,7 +3382,7 @@ export type PalletCollatorSelectionCall =
    *
    * This call is not available to `Invulnerable` collators.
    **/
-  | { tag: 'LeaveIntent' };
+  | { name: 'LeaveIntent' };
 
 /**
  * Contains one variant per dispatchable that can be called by an extrinsic.
@@ -3395,7 +3399,7 @@ export type PalletSessionCall =
    * - `O(1)`. Actual cost depends on the number of length of `T::Keys::key_ids()` which is
    * fixed.
    **/
-  | { tag: 'SetKeys'; value: { keys: AstarRuntimeSessionKeys; proof: Bytes } }
+  | { name: 'SetKeys'; params: { keys: AstarRuntimeSessionKeys; proof: Bytes } }
   /**
    * Removes any session key(s) of the function caller.
    *
@@ -3410,7 +3414,7 @@ export type PalletSessionCall =
    * - `O(1)` in number of key types. Actual cost depends on the number of length of
    * `T::Keys::key_ids()` which is fixed.
    **/
-  | { tag: 'PurgeKeys' };
+  | { name: 'PurgeKeys' };
 
 export type AstarRuntimeSessionKeys = { aura: SpConsensusAuraSr25519AppSr25519Public };
 
@@ -3437,13 +3441,13 @@ export type CumulusPalletXcmpQueueCall =
    * Events:
    * - `OverweightServiced`: On success.
    **/
-  | { tag: 'ServiceOverweight'; value: { index: bigint; weightLimit: SpWeightsWeightV2Weight } }
+  | { name: 'ServiceOverweight'; params: { index: bigint; weightLimit: SpWeightsWeightV2Weight } }
   /**
    * Suspends all XCM executions for the XCMP queue, regardless of the sender's origin.
    *
    * - `origin`: Must pass `ControllerOrigin`.
    **/
-  | { tag: 'SuspendXcmExecution' }
+  | { name: 'SuspendXcmExecution' }
   /**
    * Resumes all XCM executions for the XCMP queue.
    *
@@ -3451,7 +3455,7 @@ export type CumulusPalletXcmpQueueCall =
    *
    * - `origin`: Must pass `ControllerOrigin`.
    **/
-  | { tag: 'ResumeXcmExecution' }
+  | { name: 'ResumeXcmExecution' }
   /**
    * Overwrites the number of pages of messages which must be in the queue for the other side to be told to
    * suspend their sending.
@@ -3459,7 +3463,7 @@ export type CumulusPalletXcmpQueueCall =
    * - `origin`: Must pass `Root`.
    * - `new`: Desired value for `QueueConfigData.suspend_value`
    **/
-  | { tag: 'UpdateSuspendThreshold'; value: { new: number } }
+  | { name: 'UpdateSuspendThreshold'; params: { new: number } }
   /**
    * Overwrites the number of pages of messages which must be in the queue after which we drop any further
    * messages from the channel.
@@ -3467,7 +3471,7 @@ export type CumulusPalletXcmpQueueCall =
    * - `origin`: Must pass `Root`.
    * - `new`: Desired value for `QueueConfigData.drop_threshold`
    **/
-  | { tag: 'UpdateDropThreshold'; value: { new: number } }
+  | { name: 'UpdateDropThreshold'; params: { new: number } }
   /**
    * Overwrites the number of pages of messages which the queue must be reduced to before it signals that
    * message sending may recommence after it has been suspended.
@@ -3475,14 +3479,14 @@ export type CumulusPalletXcmpQueueCall =
    * - `origin`: Must pass `Root`.
    * - `new`: Desired value for `QueueConfigData.resume_threshold`
    **/
-  | { tag: 'UpdateResumeThreshold'; value: { new: number } }
+  | { name: 'UpdateResumeThreshold'; params: { new: number } }
   /**
    * Overwrites the amount of remaining weight under which we stop processing messages.
    *
    * - `origin`: Must pass `Root`.
    * - `new`: Desired value for `QueueConfigData.threshold_weight`
    **/
-  | { tag: 'UpdateThresholdWeight'; value: { new: SpWeightsWeightV2Weight } }
+  | { name: 'UpdateThresholdWeight'; params: { new: SpWeightsWeightV2Weight } }
   /**
    * Overwrites the speed to which the available weight approaches the maximum weight.
    * A lower number results in a faster progression. A value of 1 makes the entire weight available initially.
@@ -3490,7 +3494,7 @@ export type CumulusPalletXcmpQueueCall =
    * - `origin`: Must pass `Root`.
    * - `new`: Desired value for `QueueConfigData.weight_restrict_decay`.
    **/
-  | { tag: 'UpdateWeightRestrictDecay'; value: { new: SpWeightsWeightV2Weight } }
+  | { name: 'UpdateWeightRestrictDecay'; params: { new: SpWeightsWeightV2Weight } }
   /**
    * Overwrite the maximum amount of weight any individual message may consume.
    * Messages above this weight go into the overweight queue and may only be serviced explicitly.
@@ -3498,13 +3502,13 @@ export type CumulusPalletXcmpQueueCall =
    * - `origin`: Must pass `Root`.
    * - `new`: Desired value for `QueueConfigData.xcmp_max_individual_weight`.
    **/
-  | { tag: 'UpdateXcmpMaxIndividualWeight'; value: { new: SpWeightsWeightV2Weight } };
+  | { name: 'UpdateXcmpMaxIndividualWeight'; params: { new: SpWeightsWeightV2Weight } };
 
 /**
  * Contains one variant per dispatchable that can be called by an extrinsic.
  **/
 export type PalletXcmCall =
-  | { tag: 'Send'; value: { dest: XcmVersionedMultiLocation; message: XcmVersionedXcm } }
+  | { name: 'Send'; params: { dest: XcmVersionedMultiLocation; message: XcmVersionedXcm } }
   /**
    * Teleport some assets from the local chain to some destination chain.
    *
@@ -3523,8 +3527,8 @@ export type PalletXcmCall =
    * fees.
    **/
   | {
-      tag: 'TeleportAssets';
-      value: {
+      name: 'TeleportAssets';
+      params: {
         dest: XcmVersionedMultiLocation;
         beneficiary: XcmVersionedMultiLocation;
         assets: XcmVersionedMultiAssets;
@@ -3550,8 +3554,8 @@ export type PalletXcmCall =
    * fees.
    **/
   | {
-      tag: 'ReserveTransferAssets';
-      value: {
+      name: 'ReserveTransferAssets';
+      params: {
         dest: XcmVersionedMultiLocation;
         beneficiary: XcmVersionedMultiLocation;
         assets: XcmVersionedMultiAssets;
@@ -3571,7 +3575,7 @@ export type PalletXcmCall =
    * NOTE: A successful return to this does *not* imply that the `msg` was executed successfully
    * to completion; only that *some* of it was executed.
    **/
-  | { tag: 'Execute'; value: { message: XcmVersionedXcm; maxWeight: SpWeightsWeightV2Weight } }
+  | { name: 'Execute'; params: { message: XcmVersionedXcm; maxWeight: SpWeightsWeightV2Weight } }
   /**
    * Extoll that a particular destination can be communicated with through a particular
    * version of XCM.
@@ -3580,7 +3584,7 @@ export type PalletXcmCall =
    * - `location`: The destination that is being described.
    * - `xcm_version`: The latest version of XCM that `location` supports.
    **/
-  | { tag: 'ForceXcmVersion'; value: { location: XcmV3MultilocationMultiLocation; xcmVersion: number } }
+  | { name: 'ForceXcmVersion'; params: { location: XcmV3MultilocationMultiLocation; xcmVersion: number } }
   /**
    * Set a safe XCM version (the version that XCM should be encoded with if the most recent
    * version a destination can accept is unknown).
@@ -3588,14 +3592,14 @@ export type PalletXcmCall =
    * - `origin`: Must be an origin specified by AdminOrigin.
    * - `maybe_xcm_version`: The default XCM encoding version, or `None` to disable.
    **/
-  | { tag: 'ForceDefaultXcmVersion'; value: { maybeXcmVersion?: number | undefined } }
+  | { name: 'ForceDefaultXcmVersion'; params: { maybeXcmVersion?: number | undefined } }
   /**
    * Ask a location to notify us regarding their XCM version and any changes to it.
    *
    * - `origin`: Must be an origin specified by AdminOrigin.
    * - `location`: The location to which we should subscribe for XCM version notifications.
    **/
-  | { tag: 'ForceSubscribeVersionNotify'; value: { location: XcmVersionedMultiLocation } }
+  | { name: 'ForceSubscribeVersionNotify'; params: { location: XcmVersionedMultiLocation } }
   /**
    * Require that a particular destination should no longer notify us regarding any XCM
    * version changes.
@@ -3604,7 +3608,7 @@ export type PalletXcmCall =
    * - `location`: The location to which we are currently subscribed for XCM version
    * notifications which we no longer desire.
    **/
-  | { tag: 'ForceUnsubscribeVersionNotify'; value: { location: XcmVersionedMultiLocation } }
+  | { name: 'ForceUnsubscribeVersionNotify'; params: { location: XcmVersionedMultiLocation } }
   /**
    * Transfer some assets from the local chain to the sovereign account of a destination
    * chain and forward a notification XCM.
@@ -3626,8 +3630,8 @@ export type PalletXcmCall =
    * - `weight_limit`: The remote-side weight limit, if any, for the XCM fee purchase.
    **/
   | {
-      tag: 'LimitedReserveTransferAssets';
-      value: {
+      name: 'LimitedReserveTransferAssets';
+      params: {
         dest: XcmVersionedMultiLocation;
         beneficiary: XcmVersionedMultiLocation;
         assets: XcmVersionedMultiAssets;
@@ -3655,8 +3659,8 @@ export type PalletXcmCall =
    * - `weight_limit`: The remote-side weight limit, if any, for the XCM fee purchase.
    **/
   | {
-      tag: 'LimitedTeleportAssets';
-      value: {
+      name: 'LimitedTeleportAssets';
+      params: {
         dest: XcmVersionedMultiLocation;
         beneficiary: XcmVersionedMultiLocation;
         assets: XcmVersionedMultiAssets;
@@ -3670,7 +3674,7 @@ export type PalletXcmCall =
    * - `origin`: Must be an origin specified by AdminOrigin.
    * - `suspended`: `true` to suspend, `false` to resume.
    **/
-  | { tag: 'ForceSuspension'; value: { suspended: boolean } };
+  | { name: 'ForceSuspension'; params: { suspended: boolean } };
 
 export type XcmVersionedXcm = { tag: 'V2'; value: XcmV2Xcm } | { tag: 'V3'; value: XcmV3Xcm };
 
@@ -3799,7 +3803,7 @@ export type CumulusPalletDmpQueueCall =
   /**
    * Service a single overweight message.
    **/
-  { tag: 'ServiceOverweight'; value: { index: bigint; weightLimit: SpWeightsWeightV2Weight } };
+  { name: 'ServiceOverweight'; params: { index: bigint; weightLimit: SpWeightsWeightV2Weight } };
 
 /**
  * Contains one variant per dispatchable that can be called by an extrinsic.
@@ -3810,27 +3814,27 @@ export type PalletXcAssetConfigCall =
    *
    * This makes the asset eligible for XCM interaction.
    **/
-  | { tag: 'RegisterAssetLocation'; value: { assetLocation: XcmVersionedMultiLocation; assetId: bigint } }
+  | { name: 'RegisterAssetLocation'; params: { assetLocation: XcmVersionedMultiLocation; assetId: bigint } }
   /**
    * Change the amount of units we are charging per execution second
    * for a given AssetLocation.
    **/
-  | { tag: 'SetAssetUnitsPerSecond'; value: { assetLocation: XcmVersionedMultiLocation; unitsPerSecond: bigint } }
+  | { name: 'SetAssetUnitsPerSecond'; params: { assetLocation: XcmVersionedMultiLocation; unitsPerSecond: bigint } }
   /**
    * Change the xcm type mapping for a given asset Id.
    * The new asset type will inherit old `units per second` value.
    **/
-  | { tag: 'ChangeExistingAssetLocation'; value: { newAssetLocation: XcmVersionedMultiLocation; assetId: bigint } }
+  | { name: 'ChangeExistingAssetLocation'; params: { newAssetLocation: XcmVersionedMultiLocation; assetId: bigint } }
   /**
    * Removes asset from the set of supported payment assets.
    *
    * The asset can still be interacted with via XCM but it cannot be used to pay for execution time.
    **/
-  | { tag: 'RemovePaymentAsset'; value: { assetLocation: XcmVersionedMultiLocation } }
+  | { name: 'RemovePaymentAsset'; params: { assetLocation: XcmVersionedMultiLocation } }
   /**
    * Removes all information related to asset, removing it from XCM support.
    **/
-  | { tag: 'RemoveAsset'; value: { assetId: bigint } };
+  | { name: 'RemoveAsset'; params: { assetId: bigint } };
 
 /**
  * Contains one variant per dispatchable that can be called by an extrinsic.
@@ -4001,13 +4005,13 @@ export type PalletEvmCall =
   /**
    * Withdraw balance from EVM into currency/balances pallet.
    **/
-  | { tag: 'Withdraw'; value: { address: H160; value: bigint } }
+  | { name: 'Withdraw'; params: { address: H160; value: bigint } }
   /**
    * Issue an EVM call operation. This is similar to a message call transaction in Ethereum.
    **/
   | {
-      tag: 'Call';
-      value: {
+      name: 'Call';
+      params: {
         source: H160;
         target: H160;
         input: Bytes;
@@ -4024,8 +4028,8 @@ export type PalletEvmCall =
    * Ethereum.
    **/
   | {
-      tag: 'Create';
-      value: {
+      name: 'Create';
+      params: {
         source: H160;
         init: Bytes;
         value: U256;
@@ -4040,8 +4044,8 @@ export type PalletEvmCall =
    * Issue an EVM create2 operation.
    **/
   | {
-      tag: 'Create2';
-      value: {
+      name: 'Create2';
+      params: {
         source: H160;
         init: Bytes;
         salt: H256;
@@ -4061,7 +4065,7 @@ export type PalletEthereumCall =
   /**
    * Transact an Ethereum transaction.
    **/
-  { tag: 'Transact'; value: { transaction: EthereumTransactionTransactionV2 } };
+  { name: 'Transact'; params: { transaction: EthereumTransactionTransactionV2 } };
 
 export type EthereumTransactionTransactionV2 =
   | { tag: 'Legacy'; value: EthereumTransactionLegacyTransaction }
@@ -4123,7 +4127,7 @@ export type PalletDynamicEvmBaseFeeCall =
    * `root-only` extrinsic to set the `base_fee_per_gas` value manually.
    * The specified value has to respect min & max limits configured in the runtime.
    **/
-  { tag: 'SetBaseFeePerGas'; value: { fee: U256 } };
+  { name: 'SetBaseFeePerGas'; params: { fee: U256 } };
 
 /**
  * Contains one variant per dispatchable that can be called by an extrinsic.
@@ -4133,8 +4137,8 @@ export type PalletContractsCall =
    * Deprecated version if [`Self::call`] for use in an in-storage `Call`.
    **/
   | {
-      tag: 'CallOldWeight';
-      value: {
+      name: 'CallOldWeight';
+      params: {
         dest: MultiAddress;
         value: bigint;
         gasLimit: bigint;
@@ -4146,8 +4150,8 @@ export type PalletContractsCall =
    * Deprecated version if [`Self::instantiate_with_code`] for use in an in-storage `Call`.
    **/
   | {
-      tag: 'InstantiateWithCodeOldWeight';
-      value: {
+      name: 'InstantiateWithCodeOldWeight';
+      params: {
         value: bigint;
         gasLimit: bigint;
         storageDepositLimit?: bigint | undefined;
@@ -4160,8 +4164,8 @@ export type PalletContractsCall =
    * Deprecated version if [`Self::instantiate`] for use in an in-storage `Call`.
    **/
   | {
-      tag: 'InstantiateOldWeight';
-      value: {
+      name: 'InstantiateOldWeight';
+      params: {
         value: bigint;
         gasLimit: bigint;
         storageDepositLimit?: bigint | undefined;
@@ -4193,8 +4197,8 @@ export type PalletContractsCall =
    * through [`Self::instantiate_with_code`].
    **/
   | {
-      tag: 'UploadCode';
-      value: { code: Bytes; storageDepositLimit?: bigint | undefined; determinism: PalletContractsWasmDeterminism };
+      name: 'UploadCode';
+      params: { code: Bytes; storageDepositLimit?: bigint | undefined; determinism: PalletContractsWasmDeterminism };
     }
   /**
    * Remove the code stored under `code_hash` and refund the deposit to its owner.
@@ -4202,7 +4206,7 @@ export type PalletContractsCall =
    * A code can only be removed by its original uploader (its owner) and only if it is
    * not used by any contract.
    **/
-  | { tag: 'RemoveCode'; value: { codeHash: H256 } }
+  | { name: 'RemoveCode'; params: { codeHash: H256 } }
   /**
    * Privileged function that changes the code of an existing contract.
    *
@@ -4215,7 +4219,7 @@ export type PalletContractsCall =
    * that the contract address is no longer derived from its code hash after calling
    * this dispatchable.
    **/
-  | { tag: 'SetCode'; value: { dest: MultiAddress; codeHash: H256 } }
+  | { name: 'SetCode'; params: { dest: MultiAddress; codeHash: H256 } }
   /**
    * Makes a call to an account, optionally transferring some balance.
    *
@@ -4235,8 +4239,8 @@ export type PalletContractsCall =
    * a regular account will be created and any value will be transferred.
    **/
   | {
-      tag: 'Call';
-      value: {
+      name: 'Call';
+      params: {
         dest: MultiAddress;
         value: bigint;
         gasLimit: SpWeightsWeightV2Weight;
@@ -4273,8 +4277,8 @@ export type PalletContractsCall =
    * - The `deploy` function is executed in the context of the newly-created account.
    **/
   | {
-      tag: 'InstantiateWithCode';
-      value: {
+      name: 'InstantiateWithCode';
+      params: {
         value: bigint;
         gasLimit: SpWeightsWeightV2Weight;
         storageDepositLimit?: bigint | undefined;
@@ -4291,8 +4295,8 @@ export type PalletContractsCall =
    * must be supplied.
    **/
   | {
-      tag: 'Instantiate';
-      value: {
+      name: 'Instantiate';
+      params: {
         value: bigint;
         gasLimit: SpWeightsWeightV2Weight;
         storageDepositLimit?: bigint | undefined;
@@ -4307,7 +4311,7 @@ export type PalletContractsCall =
    * for the chain. Note that while the migration is in progress, the pallet will also
    * leverage the `on_idle` hooks to run migration steps.
    **/
-  | { tag: 'Migrate'; value: { weightLimit: SpWeightsWeightV2Weight } };
+  | { name: 'Migrate'; params: { weightLimit: SpWeightsWeightV2Weight } };
 
 export type PalletContractsWasmDeterminism = 'Enforced' | 'Relaxed';
 
@@ -4323,7 +4327,7 @@ export type PalletSudoCall =
    * ## Complexity
    * - O(1).
    **/
-  | { tag: 'Sudo'; value: { call: AstarRuntimeRuntimeCall } }
+  | { name: 'Sudo'; params: { call: AstarRuntimeRuntimeCall } }
   /**
    * Authenticates the sudo key and dispatches a function call with `Root` origin.
    * This function does not check the weight of the call, and instead allows the
@@ -4334,7 +4338,7 @@ export type PalletSudoCall =
    * ## Complexity
    * - O(1).
    **/
-  | { tag: 'SudoUncheckedWeight'; value: { call: AstarRuntimeRuntimeCall; weight: SpWeightsWeightV2Weight } }
+  | { name: 'SudoUncheckedWeight'; params: { call: AstarRuntimeRuntimeCall; weight: SpWeightsWeightV2Weight } }
   /**
    * Authenticates the current sudo key and sets the given AccountId (`new`) as the new sudo
    * key.
@@ -4344,7 +4348,7 @@ export type PalletSudoCall =
    * ## Complexity
    * - O(1).
    **/
-  | { tag: 'SetKey'; value: { new: MultiAddress } }
+  | { name: 'SetKey'; params: { new: MultiAddress } }
   /**
    * Authenticates the sudo key and dispatches a function call with `Signed` origin from
    * a given account.
@@ -4354,7 +4358,7 @@ export type PalletSudoCall =
    * ## Complexity
    * - O(1).
    **/
-  | { tag: 'SudoAs'; value: { who: MultiAddress; call: AstarRuntimeRuntimeCall } };
+  | { name: 'SudoAs'; params: { who: MultiAddress; call: AstarRuntimeRuntimeCall } };
 
 export type AstarRuntimeOriginCaller =
   | { tag: 'System'; value: FrameSupportDispatchRawOrigin }
@@ -5837,265 +5841,7 @@ export type FrameSystemExtensionsCheckTxVersion = {};
 
 export type FrameSystemExtensionsCheckGenesis = {};
 
-export type FrameSystemExtensionsCheckMortality = SpRuntimeEra;
-
-export type SpRuntimeEra =
-  | { tag: 'Immortal' }
-  | { tag: 'Mortal1'; value: number }
-  | { tag: 'Mortal2'; value: number }
-  | { tag: 'Mortal3'; value: number }
-  | { tag: 'Mortal4'; value: number }
-  | { tag: 'Mortal5'; value: number }
-  | { tag: 'Mortal6'; value: number }
-  | { tag: 'Mortal7'; value: number }
-  | { tag: 'Mortal8'; value: number }
-  | { tag: 'Mortal9'; value: number }
-  | { tag: 'Mortal10'; value: number }
-  | { tag: 'Mortal11'; value: number }
-  | { tag: 'Mortal12'; value: number }
-  | { tag: 'Mortal13'; value: number }
-  | { tag: 'Mortal14'; value: number }
-  | { tag: 'Mortal15'; value: number }
-  | { tag: 'Mortal16'; value: number }
-  | { tag: 'Mortal17'; value: number }
-  | { tag: 'Mortal18'; value: number }
-  | { tag: 'Mortal19'; value: number }
-  | { tag: 'Mortal20'; value: number }
-  | { tag: 'Mortal21'; value: number }
-  | { tag: 'Mortal22'; value: number }
-  | { tag: 'Mortal23'; value: number }
-  | { tag: 'Mortal24'; value: number }
-  | { tag: 'Mortal25'; value: number }
-  | { tag: 'Mortal26'; value: number }
-  | { tag: 'Mortal27'; value: number }
-  | { tag: 'Mortal28'; value: number }
-  | { tag: 'Mortal29'; value: number }
-  | { tag: 'Mortal30'; value: number }
-  | { tag: 'Mortal31'; value: number }
-  | { tag: 'Mortal32'; value: number }
-  | { tag: 'Mortal33'; value: number }
-  | { tag: 'Mortal34'; value: number }
-  | { tag: 'Mortal35'; value: number }
-  | { tag: 'Mortal36'; value: number }
-  | { tag: 'Mortal37'; value: number }
-  | { tag: 'Mortal38'; value: number }
-  | { tag: 'Mortal39'; value: number }
-  | { tag: 'Mortal40'; value: number }
-  | { tag: 'Mortal41'; value: number }
-  | { tag: 'Mortal42'; value: number }
-  | { tag: 'Mortal43'; value: number }
-  | { tag: 'Mortal44'; value: number }
-  | { tag: 'Mortal45'; value: number }
-  | { tag: 'Mortal46'; value: number }
-  | { tag: 'Mortal47'; value: number }
-  | { tag: 'Mortal48'; value: number }
-  | { tag: 'Mortal49'; value: number }
-  | { tag: 'Mortal50'; value: number }
-  | { tag: 'Mortal51'; value: number }
-  | { tag: 'Mortal52'; value: number }
-  | { tag: 'Mortal53'; value: number }
-  | { tag: 'Mortal54'; value: number }
-  | { tag: 'Mortal55'; value: number }
-  | { tag: 'Mortal56'; value: number }
-  | { tag: 'Mortal57'; value: number }
-  | { tag: 'Mortal58'; value: number }
-  | { tag: 'Mortal59'; value: number }
-  | { tag: 'Mortal60'; value: number }
-  | { tag: 'Mortal61'; value: number }
-  | { tag: 'Mortal62'; value: number }
-  | { tag: 'Mortal63'; value: number }
-  | { tag: 'Mortal64'; value: number }
-  | { tag: 'Mortal65'; value: number }
-  | { tag: 'Mortal66'; value: number }
-  | { tag: 'Mortal67'; value: number }
-  | { tag: 'Mortal68'; value: number }
-  | { tag: 'Mortal69'; value: number }
-  | { tag: 'Mortal70'; value: number }
-  | { tag: 'Mortal71'; value: number }
-  | { tag: 'Mortal72'; value: number }
-  | { tag: 'Mortal73'; value: number }
-  | { tag: 'Mortal74'; value: number }
-  | { tag: 'Mortal75'; value: number }
-  | { tag: 'Mortal76'; value: number }
-  | { tag: 'Mortal77'; value: number }
-  | { tag: 'Mortal78'; value: number }
-  | { tag: 'Mortal79'; value: number }
-  | { tag: 'Mortal80'; value: number }
-  | { tag: 'Mortal81'; value: number }
-  | { tag: 'Mortal82'; value: number }
-  | { tag: 'Mortal83'; value: number }
-  | { tag: 'Mortal84'; value: number }
-  | { tag: 'Mortal85'; value: number }
-  | { tag: 'Mortal86'; value: number }
-  | { tag: 'Mortal87'; value: number }
-  | { tag: 'Mortal88'; value: number }
-  | { tag: 'Mortal89'; value: number }
-  | { tag: 'Mortal90'; value: number }
-  | { tag: 'Mortal91'; value: number }
-  | { tag: 'Mortal92'; value: number }
-  | { tag: 'Mortal93'; value: number }
-  | { tag: 'Mortal94'; value: number }
-  | { tag: 'Mortal95'; value: number }
-  | { tag: 'Mortal96'; value: number }
-  | { tag: 'Mortal97'; value: number }
-  | { tag: 'Mortal98'; value: number }
-  | { tag: 'Mortal99'; value: number }
-  | { tag: 'Mortal100'; value: number }
-  | { tag: 'Mortal101'; value: number }
-  | { tag: 'Mortal102'; value: number }
-  | { tag: 'Mortal103'; value: number }
-  | { tag: 'Mortal104'; value: number }
-  | { tag: 'Mortal105'; value: number }
-  | { tag: 'Mortal106'; value: number }
-  | { tag: 'Mortal107'; value: number }
-  | { tag: 'Mortal108'; value: number }
-  | { tag: 'Mortal109'; value: number }
-  | { tag: 'Mortal110'; value: number }
-  | { tag: 'Mortal111'; value: number }
-  | { tag: 'Mortal112'; value: number }
-  | { tag: 'Mortal113'; value: number }
-  | { tag: 'Mortal114'; value: number }
-  | { tag: 'Mortal115'; value: number }
-  | { tag: 'Mortal116'; value: number }
-  | { tag: 'Mortal117'; value: number }
-  | { tag: 'Mortal118'; value: number }
-  | { tag: 'Mortal119'; value: number }
-  | { tag: 'Mortal120'; value: number }
-  | { tag: 'Mortal121'; value: number }
-  | { tag: 'Mortal122'; value: number }
-  | { tag: 'Mortal123'; value: number }
-  | { tag: 'Mortal124'; value: number }
-  | { tag: 'Mortal125'; value: number }
-  | { tag: 'Mortal126'; value: number }
-  | { tag: 'Mortal127'; value: number }
-  | { tag: 'Mortal128'; value: number }
-  | { tag: 'Mortal129'; value: number }
-  | { tag: 'Mortal130'; value: number }
-  | { tag: 'Mortal131'; value: number }
-  | { tag: 'Mortal132'; value: number }
-  | { tag: 'Mortal133'; value: number }
-  | { tag: 'Mortal134'; value: number }
-  | { tag: 'Mortal135'; value: number }
-  | { tag: 'Mortal136'; value: number }
-  | { tag: 'Mortal137'; value: number }
-  | { tag: 'Mortal138'; value: number }
-  | { tag: 'Mortal139'; value: number }
-  | { tag: 'Mortal140'; value: number }
-  | { tag: 'Mortal141'; value: number }
-  | { tag: 'Mortal142'; value: number }
-  | { tag: 'Mortal143'; value: number }
-  | { tag: 'Mortal144'; value: number }
-  | { tag: 'Mortal145'; value: number }
-  | { tag: 'Mortal146'; value: number }
-  | { tag: 'Mortal147'; value: number }
-  | { tag: 'Mortal148'; value: number }
-  | { tag: 'Mortal149'; value: number }
-  | { tag: 'Mortal150'; value: number }
-  | { tag: 'Mortal151'; value: number }
-  | { tag: 'Mortal152'; value: number }
-  | { tag: 'Mortal153'; value: number }
-  | { tag: 'Mortal154'; value: number }
-  | { tag: 'Mortal155'; value: number }
-  | { tag: 'Mortal156'; value: number }
-  | { tag: 'Mortal157'; value: number }
-  | { tag: 'Mortal158'; value: number }
-  | { tag: 'Mortal159'; value: number }
-  | { tag: 'Mortal160'; value: number }
-  | { tag: 'Mortal161'; value: number }
-  | { tag: 'Mortal162'; value: number }
-  | { tag: 'Mortal163'; value: number }
-  | { tag: 'Mortal164'; value: number }
-  | { tag: 'Mortal165'; value: number }
-  | { tag: 'Mortal166'; value: number }
-  | { tag: 'Mortal167'; value: number }
-  | { tag: 'Mortal168'; value: number }
-  | { tag: 'Mortal169'; value: number }
-  | { tag: 'Mortal170'; value: number }
-  | { tag: 'Mortal171'; value: number }
-  | { tag: 'Mortal172'; value: number }
-  | { tag: 'Mortal173'; value: number }
-  | { tag: 'Mortal174'; value: number }
-  | { tag: 'Mortal175'; value: number }
-  | { tag: 'Mortal176'; value: number }
-  | { tag: 'Mortal177'; value: number }
-  | { tag: 'Mortal178'; value: number }
-  | { tag: 'Mortal179'; value: number }
-  | { tag: 'Mortal180'; value: number }
-  | { tag: 'Mortal181'; value: number }
-  | { tag: 'Mortal182'; value: number }
-  | { tag: 'Mortal183'; value: number }
-  | { tag: 'Mortal184'; value: number }
-  | { tag: 'Mortal185'; value: number }
-  | { tag: 'Mortal186'; value: number }
-  | { tag: 'Mortal187'; value: number }
-  | { tag: 'Mortal188'; value: number }
-  | { tag: 'Mortal189'; value: number }
-  | { tag: 'Mortal190'; value: number }
-  | { tag: 'Mortal191'; value: number }
-  | { tag: 'Mortal192'; value: number }
-  | { tag: 'Mortal193'; value: number }
-  | { tag: 'Mortal194'; value: number }
-  | { tag: 'Mortal195'; value: number }
-  | { tag: 'Mortal196'; value: number }
-  | { tag: 'Mortal197'; value: number }
-  | { tag: 'Mortal198'; value: number }
-  | { tag: 'Mortal199'; value: number }
-  | { tag: 'Mortal200'; value: number }
-  | { tag: 'Mortal201'; value: number }
-  | { tag: 'Mortal202'; value: number }
-  | { tag: 'Mortal203'; value: number }
-  | { tag: 'Mortal204'; value: number }
-  | { tag: 'Mortal205'; value: number }
-  | { tag: 'Mortal206'; value: number }
-  | { tag: 'Mortal207'; value: number }
-  | { tag: 'Mortal208'; value: number }
-  | { tag: 'Mortal209'; value: number }
-  | { tag: 'Mortal210'; value: number }
-  | { tag: 'Mortal211'; value: number }
-  | { tag: 'Mortal212'; value: number }
-  | { tag: 'Mortal213'; value: number }
-  | { tag: 'Mortal214'; value: number }
-  | { tag: 'Mortal215'; value: number }
-  | { tag: 'Mortal216'; value: number }
-  | { tag: 'Mortal217'; value: number }
-  | { tag: 'Mortal218'; value: number }
-  | { tag: 'Mortal219'; value: number }
-  | { tag: 'Mortal220'; value: number }
-  | { tag: 'Mortal221'; value: number }
-  | { tag: 'Mortal222'; value: number }
-  | { tag: 'Mortal223'; value: number }
-  | { tag: 'Mortal224'; value: number }
-  | { tag: 'Mortal225'; value: number }
-  | { tag: 'Mortal226'; value: number }
-  | { tag: 'Mortal227'; value: number }
-  | { tag: 'Mortal228'; value: number }
-  | { tag: 'Mortal229'; value: number }
-  | { tag: 'Mortal230'; value: number }
-  | { tag: 'Mortal231'; value: number }
-  | { tag: 'Mortal232'; value: number }
-  | { tag: 'Mortal233'; value: number }
-  | { tag: 'Mortal234'; value: number }
-  | { tag: 'Mortal235'; value: number }
-  | { tag: 'Mortal236'; value: number }
-  | { tag: 'Mortal237'; value: number }
-  | { tag: 'Mortal238'; value: number }
-  | { tag: 'Mortal239'; value: number }
-  | { tag: 'Mortal240'; value: number }
-  | { tag: 'Mortal241'; value: number }
-  | { tag: 'Mortal242'; value: number }
-  | { tag: 'Mortal243'; value: number }
-  | { tag: 'Mortal244'; value: number }
-  | { tag: 'Mortal245'; value: number }
-  | { tag: 'Mortal246'; value: number }
-  | { tag: 'Mortal247'; value: number }
-  | { tag: 'Mortal248'; value: number }
-  | { tag: 'Mortal249'; value: number }
-  | { tag: 'Mortal250'; value: number }
-  | { tag: 'Mortal251'; value: number }
-  | { tag: 'Mortal252'; value: number }
-  | { tag: 'Mortal253'; value: number }
-  | { tag: 'Mortal254'; value: number }
-  | { tag: 'Mortal255'; value: number };
+export type FrameSystemExtensionsCheckMortality = Era;
 
 export type FrameSystemExtensionsCheckNonce = number;
 

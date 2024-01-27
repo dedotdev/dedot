@@ -1,6 +1,15 @@
 import * as $ from '@delightfuldot/shape';
 import { $MetadataV14 } from './v14';
-import { $MetadataV15, $PalletDefV15, $StorageEntryV15, MetadataV15, PalletDefV15, StorageEntryV15 } from './v15';
+import {
+  $MetadataV15,
+  $PalletDefV15,
+  $SignedExtensionDefV15,
+  $StorageEntryV15,
+  MetadataV15,
+  PalletDefV15,
+  SignedExtensionDefV15,
+  StorageEntryV15,
+} from './v15';
 import { toV15 } from './conversion';
 
 export const notSupportedCodec = (msg = 'Not supported!'): $.Shape<never> => {
@@ -53,6 +62,9 @@ export type PalletDefLatest = PalletDefV15;
 
 export const $StorageEntryLatest = $StorageEntryV15;
 export type StorageEntryLatest = StorageEntryV15;
+
+export const $SignedExtensionDefLatest = $SignedExtensionDefV15;
+export type SignedExtensionDefLatest = SignedExtensionDefV15;
 
 export class Metadata {
   magicNumber: number;
