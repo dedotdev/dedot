@@ -1,5 +1,6 @@
 import * as $ from '@delightfuldot/shape';
-import { $AccountId32, $BlockHash, $BlockNumber, $H512 } from '@delightfuldot/codecs';
+import { $AccountId32, $BlockHash, $BlockNumber } from '../../generic';
+import { $H512 } from '../primitives';
 
 /**
  * The monotonic identifier of a GRANDPA set of authorities.

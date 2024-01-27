@@ -61,8 +61,9 @@ import type {
   AuthorityList,
   GrandpaEquivocationProof,
   BabeConfiguration,
-  Epoch,
+  BabeEpoch,
   Slot,
+  BabeEquivocationProof,
   AccountId32,
   KeyTypeId,
   Nonce,
@@ -644,7 +645,7 @@ export interface RuntimeCalls extends GenericRuntimeCalls {
      *
      * @callname: BabeApi_current_epoch
      **/
-    currentEpoch: GenericRuntimeCall<() => Promise<Epoch>>;
+    currentEpoch: GenericRuntimeCall<() => Promise<BabeEpoch>>;
 
     /**
      * Returns the slot that started the current epoch.
@@ -658,7 +659,7 @@ export interface RuntimeCalls extends GenericRuntimeCalls {
      *
      * @callname: BabeApi_next_epoch
      **/
-    nextEpoch: GenericRuntimeCall<() => Promise<Epoch>>;
+    nextEpoch: GenericRuntimeCall<() => Promise<BabeEpoch>>;
 
     /**
      * Generates a proof of key ownership for the given authority in the
@@ -692,7 +693,7 @@ export interface RuntimeCalls extends GenericRuntimeCalls {
      * @callname: BabeApi_submit_report_equivocation_unsigned_extrinsic
      **/
     submitReportEquivocationUnsignedExtrinsic: GenericRuntimeCall<
-      (equivocationProof: BabeConfiguration, keyOwnerProof: OpaqueKeyOwnershipProof) => Promise<Option<Null>>
+      (equivocationProof: BabeEquivocationProof, keyOwnerProof: OpaqueKeyOwnershipProof) => Promise<Option<Null>>
     >;
 
     /**
