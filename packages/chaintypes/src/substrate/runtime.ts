@@ -12,6 +12,9 @@ import type {
   CheckInherentsResult,
   InherentData,
   Extrinsic,
+  TransactionValidity,
+  TransactionSource,
+  BlockHash,
   Null,
   SetId,
   OpaqueKeyOwnershipProof,
@@ -137,6 +140,25 @@ export interface RuntimeCalls extends GenericRuntimeCalls {
     [method: string]: GenericRuntimeCall;
   };
   /**
+   * @runtimeapi: TaggedTransactionQueue - 0xd2bc9897eed08f15
+   * @version: 3
+   **/
+  taggedTransactionQueue: {
+    /**
+     * Validate the transaction.
+     *
+     * @callname: TaggedTransactionQueue_validate_transaction
+     **/
+    validateTransaction: GenericRuntimeCall<
+      (source: TransactionSource, tx: Bytes, blockHash: BlockHash) => Promise<TransactionValidity>
+    >;
+
+    /**
+     * Generic runtime call
+     **/
+    [method: string]: GenericRuntimeCall;
+  };
+  /**
    * @runtimeapi: OffchainWorkerApi - 0xf78b278be53f454c
    * @version: 2
    **/
@@ -242,6 +264,23 @@ export interface RuntimeCalls extends GenericRuntimeCalls {
      * @callname: NominationPoolsApi_balance_to_points
      **/
     balanceToPoints: GenericRuntimeCall<(poolId: NpPoolId, newFunds: Balance) => Promise<Balance>>;
+
+    /**
+     * Generic runtime call
+     **/
+    [method: string]: GenericRuntimeCall;
+  };
+  /**
+   * @runtimeapi: StakingApi - 0x18ef58a3b67ba770
+   * @version: 1
+   **/
+  stakingApi: {
+    /**
+     * Returns the nominations quota for a nominator with a given balance.
+     *
+     * @callname: StakingApi_nominations_quota
+     **/
+    nominationsQuota: GenericRuntimeCall<(balance: Balance) => Promise<number>>;
 
     /**
      * Generic runtime call

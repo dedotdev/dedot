@@ -12,6 +12,9 @@ import type {
   CheckInherentsResult,
   InherentData,
   Extrinsic,
+  TransactionValidity,
+  TransactionSource,
+  BlockHash,
   Null,
   BackingState,
   ParaId,
@@ -41,6 +44,13 @@ import type {
   PendingSlashes,
   OpaqueKeyOwnershipProof,
   DisputeProof,
+  BlockNumber,
+  ValidatorSet,
+  BeefyEquivocationProof,
+  ValidatorSetId,
+  AccountId32Like,
+  BeefyAuthoritySet,
+  BeefyNextAuthoritySet,
   ResultPayload,
   MmrError,
   LeafIndex,
@@ -48,7 +58,6 @@ import type {
   MmrEncodableOpaqueLeaf,
   MmrBatchProof,
   SetId,
-  AccountId32Like,
   AuthorityList,
   GrandpaEquivocationProof,
   BabeConfiguration,
@@ -155,6 +164,25 @@ export interface RuntimeCalls extends GenericRuntimeCalls {
      * @callname: BlockBuilder_finalize_block
      **/
     finalizeBlock: GenericRuntimeCall<() => Promise<Header>>;
+
+    /**
+     * Generic runtime call
+     **/
+    [method: string]: GenericRuntimeCall;
+  };
+  /**
+   * @runtimeapi: TaggedTransactionQueue - 0xd2bc9897eed08f15
+   * @version: 3
+   **/
+  taggedTransactionQueue: {
+    /**
+     * Validate the transaction.
+     *
+     * @callname: TaggedTransactionQueue_validate_transaction
+     **/
+    validateTransaction: GenericRuntimeCall<
+      (source: TransactionSource, tx: Bytes, blockHash: BlockHash) => Promise<TransactionValidity>
+    >;
 
     /**
      * Generic runtime call
@@ -394,6 +422,72 @@ export interface RuntimeCalls extends GenericRuntimeCalls {
     submitReportDisputeLost: GenericRuntimeCall<
       (disputeProof: DisputeProof, keyOwnershipProof: OpaqueKeyOwnershipProof) => Promise<Option<Null>>
     >;
+
+    /**
+     * Generic runtime call
+     **/
+    [method: string]: GenericRuntimeCall;
+  };
+  /**
+   * @runtimeapi: BeefyApi - 0x49eaaf1b548a0cb0
+   * @version: 3
+   **/
+  beefyApi: {
+    /**
+     * Return the block number where BEEFY consensus is enabled/started
+     *
+     * @callname: BeefyApi_beefy_genesis
+     **/
+    beefyGenesis: GenericRuntimeCall<() => Promise<Option<BlockNumber>>>;
+
+    /**
+     * Return the current active BEEFY validator set
+     *
+     * @callname: BeefyApi_validator_set
+     **/
+    validatorSet: GenericRuntimeCall<() => Promise<Option<ValidatorSet>>>;
+
+    /**
+     * Submits an unsigned extrinsic to report an equivocation.
+     *
+     * @callname: BeefyApi_submit_report_equivocation_unsigned_extrinsic
+     **/
+    submitReportEquivocationUnsignedExtrinsic: GenericRuntimeCall<
+      (equivocationProof: BeefyEquivocationProof, keyOwnerProof: OpaqueKeyOwnershipProof) => Promise<Option<Null>>
+    >;
+
+    /**
+     * Generates a proof of key ownership for the given authority in the given set.
+     *
+     * @callname: BeefyApi_generate_key_ownership_proof
+     **/
+    generateKeyOwnershipProof: GenericRuntimeCall<
+      (setId: ValidatorSetId, authorityId: AccountId32Like) => Promise<Option<OpaqueKeyOwnershipProof>>
+    >;
+
+    /**
+     * Generic runtime call
+     **/
+    [method: string]: GenericRuntimeCall;
+  };
+  /**
+   * @runtimeapi: BeefyMmrApi - 0x2a5e924655399e60
+   * @version: 1
+   **/
+  beefyMmrApi: {
+    /**
+     * Return the currently active BEEFY authority set proof.
+     *
+     * @callname: BeefyMmrApi_authority_set_proof
+     **/
+    authoritySetProof: GenericRuntimeCall<() => Promise<BeefyAuthoritySet>>;
+
+    /**
+     * Return the next/queued BEEFY authority set proof.
+     *
+     * @callname: BeefyMmrApi_next_authority_set_proof
+     **/
+    nextAuthoritySetProof: GenericRuntimeCall<() => Promise<BeefyNextAuthoritySet>>;
 
     /**
      * Generic runtime call
@@ -735,6 +829,23 @@ export interface RuntimeCalls extends GenericRuntimeCalls {
      * @callname: NominationPoolsApi_balance_to_points
      **/
     balanceToPoints: GenericRuntimeCall<(poolId: NpPoolId, newFunds: Balance) => Promise<Balance>>;
+
+    /**
+     * Generic runtime call
+     **/
+    [method: string]: GenericRuntimeCall;
+  };
+  /**
+   * @runtimeapi: StakingApi - 0x18ef58a3b67ba770
+   * @version: 1
+   **/
+  stakingApi: {
+    /**
+     * Returns the nominations quota for a nominator with a given balance.
+     *
+     * @callname: StakingApi_nominations_quota
+     **/
+    nominationsQuota: GenericRuntimeCall<(balance: Balance) => Promise<number>>;
 
     /**
      * Generic runtime call

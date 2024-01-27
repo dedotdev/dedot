@@ -2,13 +2,16 @@
 
 import type { GenericRuntimeCalls, GenericRuntimeCall } from '@delightfuldot/types';
 import type {
+  TransactionValidity,
+  TransactionSource,
+  Bytes,
+  BlockHash,
   RuntimeVersion,
   Block,
   Header,
   Option,
   OpaqueMetadata,
   ApplyExtrinsicResult,
-  Bytes,
   CheckInherentsResult,
   InherentData,
   Extrinsic,
@@ -23,6 +26,25 @@ import type {
 } from '@delightfuldot/codecs';
 
 export interface RuntimeCalls extends GenericRuntimeCalls {
+  /**
+   * @runtimeapi: TaggedTransactionQueue - 0xd2bc9897eed08f15
+   * @version: 3
+   **/
+  taggedTransactionQueue: {
+    /**
+     * Validate the transaction.
+     *
+     * @callname: TaggedTransactionQueue_validate_transaction
+     **/
+    validateTransaction: GenericRuntimeCall<
+      (source: TransactionSource, tx: Bytes, blockHash: BlockHash) => Promise<TransactionValidity>
+    >;
+
+    /**
+     * Generic runtime call
+     **/
+    [method: string]: GenericRuntimeCall;
+  };
   /**
    * @runtimeapi: Core - 0xdf6acb689907609b
    * @version: 4

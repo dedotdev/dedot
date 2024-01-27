@@ -15,6 +15,9 @@ import type {
   Balance,
   AccountId32Like,
   NpPoolId,
+  TransactionValidity,
+  TransactionSource,
+  BlockHash,
   Null,
   ValidatorId,
   ParaValidatorIndex,
@@ -42,6 +45,10 @@ import type {
   PendingSlashes,
   OpaqueKeyOwnershipProof,
   DisputeProof,
+  BlockNumber,
+  ValidatorSet,
+  BeefyEquivocationProof,
+  ValidatorSetId,
   ResultPayload,
   MmrError,
   LeafIndex,
@@ -184,6 +191,42 @@ export interface RuntimeCalls extends GenericRuntimeCalls {
      * @callname: NominationPoolsApi_balance_to_points
      **/
     balanceToPoints: GenericRuntimeCall<(poolId: NpPoolId, newFunds: Balance) => Promise<Balance>>;
+
+    /**
+     * Generic runtime call
+     **/
+    [method: string]: GenericRuntimeCall;
+  };
+  /**
+   * @runtimeapi: StakingApi - 0x18ef58a3b67ba770
+   * @version: 1
+   **/
+  stakingApi: {
+    /**
+     * Returns the nominations quota for a nominator with a given balance.
+     *
+     * @callname: StakingApi_nominations_quota
+     **/
+    nominationsQuota: GenericRuntimeCall<(balance: Balance) => Promise<number>>;
+
+    /**
+     * Generic runtime call
+     **/
+    [method: string]: GenericRuntimeCall;
+  };
+  /**
+   * @runtimeapi: TaggedTransactionQueue - 0xd2bc9897eed08f15
+   * @version: 3
+   **/
+  taggedTransactionQueue: {
+    /**
+     * Validate the transaction.
+     *
+     * @callname: TaggedTransactionQueue_validate_transaction
+     **/
+    validateTransaction: GenericRuntimeCall<
+      (source: TransactionSource, tx: Bytes, blockHash: BlockHash) => Promise<TransactionValidity>
+    >;
 
     /**
      * Generic runtime call
@@ -400,6 +443,48 @@ export interface RuntimeCalls extends GenericRuntimeCalls {
      **/
     submitReportDisputeLost: GenericRuntimeCall<
       (disputeProof: DisputeProof, keyOwnershipProof: OpaqueKeyOwnershipProof) => Promise<Option<Null>>
+    >;
+
+    /**
+     * Generic runtime call
+     **/
+    [method: string]: GenericRuntimeCall;
+  };
+  /**
+   * @runtimeapi: BeefyApi - 0x49eaaf1b548a0cb0
+   * @version: 3
+   **/
+  beefyApi: {
+    /**
+     * Return the block number where BEEFY consensus is enabled/started
+     *
+     * @callname: BeefyApi_beefy_genesis
+     **/
+    beefyGenesis: GenericRuntimeCall<() => Promise<Option<BlockNumber>>>;
+
+    /**
+     * Return the current active BEEFY validator set
+     *
+     * @callname: BeefyApi_validator_set
+     **/
+    validatorSet: GenericRuntimeCall<() => Promise<Option<ValidatorSet>>>;
+
+    /**
+     * Submits an unsigned extrinsic to report an equivocation.
+     *
+     * @callname: BeefyApi_submit_report_equivocation_unsigned_extrinsic
+     **/
+    submitReportEquivocationUnsignedExtrinsic: GenericRuntimeCall<
+      (equivocationProof: BeefyEquivocationProof, keyOwnerProof: OpaqueKeyOwnershipProof) => Promise<Option<Null>>
+    >;
+
+    /**
+     * Generates a proof of key ownership for the given authority in the given set.
+     *
+     * @callname: BeefyApi_generate_key_ownership_proof
+     **/
+    generateKeyOwnershipProof: GenericRuntimeCall<
+      (setId: ValidatorSetId, authorityId: AccountId32Like) => Promise<Option<OpaqueKeyOwnershipProof>>
     >;
 
     /**

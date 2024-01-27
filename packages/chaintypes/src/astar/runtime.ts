@@ -12,6 +12,9 @@ import type {
   CheckInherentsResult,
   InherentData,
   Extrinsic,
+  TransactionValidity,
+  TransactionSource,
+  BlockHash,
   Null,
   Nonce,
   AccountId32Like,
@@ -113,6 +116,25 @@ export interface RuntimeCalls extends GenericRuntimeCalls {
      * @callname: BlockBuilder_finalize_block
      **/
     finalizeBlock: GenericRuntimeCall<() => Promise<Header>>;
+
+    /**
+     * Generic runtime call
+     **/
+    [method: string]: GenericRuntimeCall;
+  };
+  /**
+   * @runtimeapi: TaggedTransactionQueue - 0xd2bc9897eed08f15
+   * @version: 3
+   **/
+  taggedTransactionQueue: {
+    /**
+     * Validate the transaction.
+     *
+     * @callname: TaggedTransactionQueue_validate_transaction
+     **/
+    validateTransaction: GenericRuntimeCall<
+      (source: TransactionSource, tx: Bytes, blockHash: BlockHash) => Promise<TransactionValidity>
+    >;
 
     /**
      * Generic runtime call
