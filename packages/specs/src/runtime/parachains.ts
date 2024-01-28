@@ -287,13 +287,16 @@ const V8_V10_SHARED: RuntimeCallsSpec = {
 };
 
 const V9_V10_SHARED: RuntimeCallsSpec = {
-  node_features: {
+  nodeFeatures: {
     docs: ['Get node features.', 'This is a staging method! Do not use on production runtimes!'],
     params: [],
     type: 'NodeFeatures',
   },
 };
 
+/**
+ * Ref https://github.com/paritytech/polkadot-sdk/blob/a84dd0dba58d51503b8942360aa4fb30a5a96af5/polkadot/primitives/src/runtime_api.rs#L129-L134
+ */
 export const parachains: RuntimeApisModule = {
   ParachainHost: [
     { methods: { ...V5_V10_SHARED }, version: 5 },
