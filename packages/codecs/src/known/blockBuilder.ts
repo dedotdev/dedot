@@ -21,11 +21,11 @@ export type InherentData = $.Input<typeof $InherentData>;
  * abort checking inherents.
  */
 export const $CheckInherentsResult = $.Struct({
-  /// Did the check succeed?
+  // Did the check succeed?
   okay: $.bool,
-  /// Did we encounter a fatal error?
+  // Did we encounter a fatal error?
   fatalError: $.bool,
-  /// We use the `InherentData` to store our errors.
+  // We use the `InherentData` to store our errors.
   errors: $InherentData,
 });
 

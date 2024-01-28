@@ -22,7 +22,7 @@ export const core: RuntimeApisModule = {
           ],
           type: 'null',
         },
-        // Renamed at v2 (initialiseBlock)
+        // Renamed at v2 (initialise_block)
         initializeBlock: {
           docs: 'Initialize a block with the given header.',
           params: [

@@ -42,7 +42,7 @@ export const blockBuilder: RuntimeApisModule = {
           ],
           type: 'Array<Extrinsic>',
         },
-        // Renamed in v3 from finalize_block
+        // Renamed in v3 from finalise_block
         finalizeBlock: {
           description: 'Finish the current block.',
           params: [],
