@@ -100,12 +100,7 @@ export class CodecRegistry {
         const $Wrapper = $[wrapper] as (...args: any[]) => $.AnyShape;
 
         if (inner.match(TUPLE_TYPE_REGEX)) {
-          const $inners = inner
-            .slice(1, -1)
-            .split(',')
-            .map((one) => this.#findKnownCodec(one.trim()));
-
-          return $Wrapper($.Tuple(...$inners));
+          return $Wrapper(this.#findKnownWrapperCodec(inner));
         }
 
         const $inners = inner.split(',').map((one) => this.#findKnownCodec(one.trim()));
