@@ -1,38 +1,4 @@
-import { RuntimeCallsSpec, RuntimeApisModule } from '@delightfuldot/types';
-
-const V1_TO_V4_SHARED: RuntimeCallsSpec = {
-  executeBlock: {
-    docs: 'Execute the given block.',
-    params: [
-      {
-        name: 'block',
-        type: 'Block',
-      },
-    ],
-    type: 'null',
-  },
-};
-
-const V1_V2_SHARED: RuntimeCallsSpec = {
-  version: {
-    docs: 'Returns the version of the runtime.',
-    params: [],
-    type: 'RuntimeVersionPre3',
-  },
-};
-
-const V2_TO_V4_SHARED: RuntimeCallsSpec = {
-  initializeBlock: {
-    docs: 'Initialize a block with the given header.',
-    params: [
-      {
-        name: 'header',
-        type: 'Header',
-      },
-    ],
-    type: 'null',
-  },
-};
+import { RuntimeApisModule } from '@delightfuldot/types';
 
 /**
  * Ref: https://github.com/paritytech/polkadot-sdk/blob/eaf1bc5633ebbacce97e4f167ebe1d0d268c4b24/substrate/primitives/api/src/lib.rs#L799-L809
@@ -46,34 +12,18 @@ export const core: RuntimeApisModule = {
           params: [],
           type: 'RuntimeVersion',
         },
-        ...V1_TO_V4_SHARED,
-        ...V2_TO_V4_SHARED,
-      },
-      version: 4,
-    },
-    {
-      methods: {
-        version: {
-          docs: 'Returns the version of the runtime.',
-          params: [],
-          type: 'RuntimeVersionPre4',
+        executeBlock: {
+          docs: 'Execute the given block.',
+          params: [
+            {
+              name: 'block',
+              type: 'Block',
+            },
+          ],
+          type: 'null',
         },
-        ...V1_TO_V4_SHARED,
-        ...V2_TO_V4_SHARED,
-      },
-      version: 3,
-    },
-    {
-      methods: {
-        ...V1_V2_SHARED,
-        ...V1_TO_V4_SHARED,
-        ...V2_TO_V4_SHARED,
-      },
-      version: 2,
-    },
-    {
-      methods: {
-        initialiseBlock: {
+        // Renamed at v2 (initialiseBlock)
+        initializeBlock: {
           docs: 'Initialize a block with the given header.',
           params: [
             {
@@ -83,10 +33,8 @@ export const core: RuntimeApisModule = {
           ],
           type: 'null',
         },
-        ...V1_V2_SHARED,
-        ...V1_TO_V4_SHARED,
       },
-      version: 1,
+      version: 4,
     },
   ],
 };
