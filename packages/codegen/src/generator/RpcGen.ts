@@ -177,17 +177,26 @@ export class RpcGen extends ApiGen {
       const matchArray = type.match(WRAPPER_TYPE_REGEX);
       if (matchArray) {
         const [_, $1, $2] = matchArray;
+        const wrapperTypeName = this.#getCodecType($1, toTypeIn);
 
-        // Check tuple type
-        if ($2.match(TUPLE_TYPE_REGEX)) {
-          return `${this.#getCodecType($1, toTypeIn)}<[${$2
-            .slice(1, -1)
-            .split(',')
-            .map((one) => this.getGeneratedTypeName(one.trim(), toTypeIn))
-            .join(',')}]>`;
+        if ($2.match(WRAPPER_TYPE_REGEX) || $2.match(TUPLE_TYPE_REGEX)) {
+          return `${wrapperTypeName}<${this.getGeneratedTypeName($2, toTypeIn)}>`;
         }
 
-        return `${this.#getCodecType($1, toTypeIn)}<${this.getGeneratedTypeName($2, toTypeIn)}>`;
+        const innerTypeNames = $2
+          .split(',')
+          .map((one) => this.getGeneratedTypeName(one.trim(), toTypeIn))
+          .join(', ');
+
+        return `${wrapperTypeName}<${innerTypeNames}>`;
+      } else if (type.match(TUPLE_TYPE_REGEX)) {
+        const innerTypeNames = type
+          .slice(1, -1)
+          .split(',')
+          .map((one) => this.getGeneratedTypeName(one.trim(), toTypeIn))
+          .join(', ');
+
+        return `[${innerTypeNames}]`;
       }
 
       return this.#getCodecType(type, toTypeIn);
