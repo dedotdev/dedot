@@ -8,8 +8,8 @@ export interface ISignedExtension {
   dataCodec: $.AnyShape;
   additionalSignedCodec: $.AnyShape;
 
-  data?: any;
-  additionalSigned?: any;
+  data: any;
+  additionalSigned: any;
   init(): Promise<void>;
   registry: CodecRegistry;
   toPayload(...additional: any[]): object;
