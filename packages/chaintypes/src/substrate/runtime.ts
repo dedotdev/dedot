@@ -33,6 +33,8 @@ import type {
   FeeDetails,
   Weight,
   Location,
+  NftCollectionId,
+  NftItemId,
   ResultPayload,
   Hash,
   MmrError,
@@ -40,6 +42,10 @@ import type {
   BlockNumberLike,
   MmrEncodableOpaqueLeaf,
   MmrBatchProof,
+  SessionStatus,
+  Mixnode,
+  MixnodesErr,
+  MixnetSessionIndex,
   KeyTypeId,
 } from '@delightfuldot/codecs';
 
@@ -485,6 +491,71 @@ export interface RuntimeCalls extends GenericRuntimeCalls {
     [method: string]: GenericRuntimeCall;
   };
   /**
+   * @runtimeapi: NftsApi - 0x899a250cbe84f250
+   * @version: 1
+   **/
+  nftsApi: {
+    /**
+     * Collection owner
+     *
+     * @callname: NftsApi_owner
+     **/
+    owner: GenericRuntimeCall<(collection: NftCollectionId, item: NftItemId) => Promise<Option<AccountId32>>>;
+
+    /**
+     * A collection owner
+     *
+     * @callname: NftsApi_collection_owner
+     **/
+    collectionOwner: GenericRuntimeCall<(collection: NftCollectionId) => Promise<Option<AccountId32>>>;
+
+    /**
+     * An attribute
+     *
+     * @callname: NftsApi_attribute
+     **/
+    attribute: GenericRuntimeCall<
+      (collection: NftCollectionId, item: NftItemId, key: Array<number>) => Promise<Option<Array<number>>>
+    >;
+
+    /**
+     * A custom attribute
+     *
+     * @callname: NftsApi_custom_attribute
+     **/
+    customAttribute: GenericRuntimeCall<
+      (
+        account: AccountId32Like,
+        collection: NftCollectionId,
+        item: NftItemId,
+        key: Array<number>,
+      ) => Promise<Option<Array<number>>>
+    >;
+
+    /**
+     * System attribute
+     *
+     * @callname: NftsApi_system_attribute
+     **/
+    systemAttribute: GenericRuntimeCall<
+      (collection: NftCollectionId, item: NftItemId, key: Array<number>) => Promise<Option<Array<number>>>
+    >;
+
+    /**
+     * A collection attribute
+     *
+     * @callname: NftsApi_collection_attribute
+     **/
+    collectionAttribute: GenericRuntimeCall<
+      (collection: NftCollectionId, key: Array<number>) => Promise<Option<Array<number>>>
+    >;
+
+    /**
+     * Generic runtime call
+     **/
+    [method: string]: GenericRuntimeCall;
+  };
+  /**
    * @runtimeapi: MmrApi - 0x91d5df18b0d2cf58
    * @version: 2
    **/
@@ -547,6 +618,43 @@ export interface RuntimeCalls extends GenericRuntimeCalls {
         proof: MmrBatchProof,
       ) => Promise<ResultPayload<Null, MmrError>>
     >;
+
+    /**
+     * Generic runtime call
+     **/
+    [method: string]: GenericRuntimeCall;
+  };
+  /**
+   * @runtimeapi: MixnetApi - 0x6fd7c327202e4a8d
+   * @version: 1
+   **/
+  mixnetApi: {
+    /**
+     *
+     * @callname: MixnetApi_session_status
+     **/
+    sessionStatus: GenericRuntimeCall<() => Promise<SessionStatus>>;
+
+    /**
+     * Get the mixnode set for the previous session.
+     *
+     * @callname: MixnetApi_prev_mixnodes
+     **/
+    prevMixnodes: GenericRuntimeCall<() => Promise<ResultPayload<Array<Mixnode>, MixnodesErr>>>;
+
+    /**
+     * Get the mixnode set for the current session.
+     *
+     * @callname: MixnetApi_current_mixnodes
+     **/
+    currentMixnodes: GenericRuntimeCall<() => Promise<ResultPayload<Array<Mixnode>, MixnodesErr>>>;
+
+    /**
+     * Try to register a mixnode for the next session.
+     *
+     * @callname: MixnetApi_maybe_register
+     **/
+    maybeRegister: GenericRuntimeCall<(sessionIndex: MixnetSessionIndex, mixnode: Mixnode) => Promise<boolean>>;
 
     /**
      * Generic runtime call

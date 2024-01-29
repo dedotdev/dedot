@@ -16,3 +16,5 @@ export * from './nominationPools';
 export * from './session';
 export * from './parachains';
 export * from './consensus';
+export * from './nfts';
+export * from './mixnet';
