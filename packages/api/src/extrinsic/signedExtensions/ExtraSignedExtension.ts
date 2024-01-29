@@ -35,11 +35,11 @@ export class ExtraSignedExtension extends SignedExtension<any[], any[]> {
   }
 
   get additionalSignedCodec(): $.AnyShape {
-    const $additionalSignedCodecs = this.#signedExtensionDefs.map((se) =>
+    const $AdditionalSignedCodecs = this.#signedExtensionDefs.map((se) =>
       this.registry.findPortableCodec(se.additionalSigned),
     );
 
-    return $.Tuple(...$additionalSignedCodecs);
+    return $.Tuple(...$AdditionalSignedCodecs);
   }
 
   get payloadCodec(): $.AnyShape {
