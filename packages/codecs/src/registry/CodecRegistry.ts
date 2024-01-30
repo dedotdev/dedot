@@ -99,7 +99,7 @@ export class CodecRegistry {
         // @ts-ignore
         const $Wrapper = $[wrapper] as (...args: any[]) => $.AnyShape;
 
-        if (inner.match(TUPLE_TYPE_REGEX)) {
+        if (inner.match(TUPLE_TYPE_REGEX) || inner.match(WRAPPER_TYPE_REGEX)) {
           return $Wrapper(this.#findKnownWrapperCodec(inner));
         }
 
