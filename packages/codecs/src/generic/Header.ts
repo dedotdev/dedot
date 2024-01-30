@@ -4,8 +4,11 @@ import { HexString } from '@delightfuldot/utils';
 import { $Hash } from './Hash';
 import { registerLooseCodecType } from '../codectypes';
 
-export const $BlockNumber = $.withMetadata($.metadata('$BlockNumber'), $.u32.clone());
-$BlockNumber.registerDecoder(
+export const $BlockNumber = $.withMetadata($.metadata('$BlockNumber'), $.u32);
+
+export const $HeaderBlockNumber = $.compactU32.clone();
+
+$HeaderBlockNumber.registerDecoder(
   (input) => isHex(input, -1, true),
   ($shape, input) =>
     hexToBn(input, {
@@ -80,7 +83,7 @@ export type Digest = $.Input<typeof $Digest>;
 
 export const $Header = $.Struct({
   parentHash: $Hash,
-  number: $BlockNumber,
+  number: $HeaderBlockNumber,
   stateRoot: $Hash,
   extrinsicsRoot: $Hash,
   digest: $Digest,
