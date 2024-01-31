@@ -3,6 +3,7 @@
 import type { GenericRuntimeCalls, GenericRuntimeCall } from '@delightfuldot/types';
 import type {
   RuntimeVersion,
+  Null,
   Block,
   Header,
   Option,
@@ -15,7 +16,6 @@ import type {
   TransactionValidity,
   TransactionSource,
   BlockHash,
-  Null,
   Nonce,
   AccountId32Like,
   RuntimeDispatchInfo,
@@ -43,14 +43,14 @@ export interface RuntimeCalls extends GenericRuntimeCalls {
      *
      * @callname: Core_execute_block
      **/
-    executeBlock: GenericRuntimeCall<(block: Block) => Promise<null>>;
+    executeBlock: GenericRuntimeCall<(block: Block) => Promise<Null>>;
 
     /**
      * Initialize a block with the given header.
      *
      * @callname: Core_initialize_block
      **/
-    initializeBlock: GenericRuntimeCall<(header: Header) => Promise<null>>;
+    initializeBlock: GenericRuntimeCall<(header: Header) => Promise<Null>>;
 
     /**
      * Generic runtime call
