@@ -47,6 +47,7 @@ import type {
   MixnodesErr,
   MixnetSessionIndex,
   KeyTypeId,
+  Text,
 } from '@delightfuldot/codecs';
 
 export interface RuntimeCalls extends GenericRuntimeCalls {
@@ -687,6 +688,39 @@ export interface RuntimeCalls extends GenericRuntimeCalls {
      * @callname: SessionKeys_decode_session_keys
      **/
     decodeSessionKeys: GenericRuntimeCall<(encoded: Bytes) => Promise<Option<Array<[Array<number>, KeyTypeId]>>>>;
+
+    /**
+     * Generic runtime call
+     **/
+    [method: string]: GenericRuntimeCall;
+  };
+  /**
+   * @runtimeapi: GenesisBuilder - 0xfbc577b9d747efd6
+   * @version: 1
+   **/
+  genesisBuilder: {
+    /**
+     * Creates the default `GenesisConfig` and returns it as a JSON blob.
+     *
+     * This function instantiates the default `GenesisConfig` struct for the runtime and serializes it into a JSON
+     * blob. It returns a `Vec<u8>` containing the JSON representation of the default `GenesisConfig`.
+     *
+     * @callname: GenesisBuilder_create_default_config
+     **/
+    createDefaultConfig: GenericRuntimeCall<() => Promise<Array<number>>>;
+
+    /**
+     * Build `GenesisConfig` from a JSON blob not using any defaults and store it in the storage.
+     *
+     * This function deserializes the full `GenesisConfig` from the given JSON blob and puts it into the storage.
+     * If the provided JSON blob is incorrect or incomplete or the deserialization fails, an error is returned.
+     * It is recommended to log any errors encountered during the process.
+     *
+     * Please note that provided json blob must contain all `GenesisConfig` fields, no defaults will be used.
+     *
+     * @callname: GenesisBuilder_build_config
+     **/
+    buildConfig: GenericRuntimeCall<(json: Array<number>) => Promise<ResultPayload<Null, Text>>>;
 
     /**
      * Generic runtime call

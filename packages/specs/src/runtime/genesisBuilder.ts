@@ -17,7 +17,7 @@ export const genesisBuilder: RuntimeApisModule = {
           params: [],
           type: 'Array<u8>',
         },
-        build_config: {
+        buildConfig: {
           docs: [
             'Build `GenesisConfig` from a JSON blob not using any defaults and store it in the storage.',
             '\n',
@@ -33,7 +33,7 @@ export const genesisBuilder: RuntimeApisModule = {
               type: 'Array<u8>',
             },
           ],
-          type: 'ResultPayload<Null, str>',
+          type: 'ResultPayload<Null, Text>',
         },
       },
       version: 1,

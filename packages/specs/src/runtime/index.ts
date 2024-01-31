@@ -18,6 +18,7 @@ import { staking } from './staking';
 import { transactionPool } from './transactionPool';
 import { nfts } from './nfts';
 import { mixnet } from './mixnet';
+import { genesisBuilder } from './genesisBuilder';
 import { RuntimeApisSpec, RuntimeCallSpec, RuntimeApiSpec, RuntimeApiName } from '@delightfuldot/types';
 import { blake2AsHex } from '@polkadot/util-crypto';
 import { stringSnakeCase } from '@delightfuldot/utils';
@@ -41,8 +42,6 @@ export const runtimeApisSpec: RuntimeApisSpec = {
   beefy,
   staking,
   transactionPool,
-  nfts,
-  mixnet,
 };
 
 export const runtimeApiNames: RuntimeApiName[] = Object.values(runtimeApisSpec)
