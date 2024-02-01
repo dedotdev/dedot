@@ -355,6 +355,17 @@ export interface ChainConsts extends GenericChainConsts {
     unregisteredDappRewardRetention: number;
 
     /**
+     * Can be used to force pallet into permanent maintenance mode.
+     **/
+    forcePalletDisabled: boolean;
+
+    /**
+     * The fee that will be charged for claiming rewards on behalf of a staker.
+     * This amount will be transferred from the staker over to the caller.
+     **/
+    delegateClaimFee: bigint;
+
+    /**
      * Generic pallet constant
      **/
     [name: string]: any;

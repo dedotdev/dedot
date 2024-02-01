@@ -807,6 +807,44 @@ export interface RuntimeCalls extends GenericRuntimeCalls {
     [method: string]: GenericRuntimeCall;
   };
   /**
+   * @runtimeapi: TransactionPaymentCallApi - 0xf3ff14d5ab527059
+   * @version: 3
+   **/
+  transactionPaymentCallApi: {
+    /**
+     * Query information of a dispatch class, weight, and fee of a given encoded `Call`.
+     *
+     * @callname: TransactionPaymentCallApi_query_call_info
+     **/
+    queryCallInfo: GenericRuntimeCall<(call: Bytes, len: number) => Promise<RuntimeDispatchInfo>>;
+
+    /**
+     * Query fee details of a given encoded `Call`.
+     *
+     * @callname: TransactionPaymentCallApi_query_call_fee_details
+     **/
+    queryCallFeeDetails: GenericRuntimeCall<(call: Bytes, len: number) => Promise<FeeDetails>>;
+
+    /**
+     * Query the output of the current LengthToFee given some input
+     *
+     * @callname: TransactionPaymentCallApi_query_length_to_fee
+     **/
+    queryLengthToFee: GenericRuntimeCall<(length: number) => Promise<Balance>>;
+
+    /**
+     * Query the output of the current WeightToFee given some input
+     *
+     * @callname: TransactionPaymentCallApi_query_weight_to_fee
+     **/
+    queryWeightToFee: GenericRuntimeCall<(weight: Weight) => Promise<Balance>>;
+
+    /**
+     * Generic runtime call
+     **/
+    [method: string]: GenericRuntimeCall;
+  };
+  /**
    * @runtimeapi: NominationPoolsApi - 0x17a6bc0d0062aeb3
    * @version: 1
    **/

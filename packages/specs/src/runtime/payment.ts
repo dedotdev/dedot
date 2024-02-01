@@ -59,4 +59,60 @@ export const payment: RuntimeApisModule = {
       version: 4,
     },
   ],
+  TransactionPaymentCallApi: [
+    {
+      methods: {
+        //TODO: Generate RuntimeCallLike for better suggestion when using.
+        queryCallInfo: {
+          docs: 'Query information of a dispatch class, weight, and fee of a given encoded `Call`.',
+          params: [
+            {
+              name: 'call',
+              type: 'Bytes',
+            },
+            {
+              name: 'len',
+              type: 'u32',
+            },
+          ],
+          type: 'RuntimeDispatchInfo',
+        },
+        queryCallFeeDetails: {
+          docs: 'Query fee details of a given encoded `Call`.',
+          params: [
+            {
+              name: 'call',
+              type: 'Bytes',
+            },
+            {
+              name: 'len',
+              type: 'u32',
+            },
+          ],
+          type: 'FeeDetails',
+        },
+        queryLengthToFee: {
+          docs: 'Query the output of the current LengthToFee given some input',
+          params: [
+            {
+              name: 'length',
+              type: 'u32',
+            },
+          ],
+          type: 'Balance',
+        },
+        queryWeightToFee: {
+          docs: 'Query the output of the current WeightToFee given some input',
+          params: [
+            {
+              name: 'weight',
+              type: 'Weight',
+            },
+          ],
+          type: 'Balance',
+        },
+      },
+      version: 3,
+    },
+  ],
 };
