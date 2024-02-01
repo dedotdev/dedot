@@ -490,7 +490,11 @@ export type PalletDappsStakingPalletEvent =
    *
    * \(developer account, smart contract, era, amount burned\)
    **/
-  | { name: 'StaleRewardBurned'; data: [AccountId32, AstarRuntimeSmartContract, number, bigint] };
+  | { name: 'StaleRewardBurned'; data: [AccountId32, AstarRuntimeSmartContract, number, bigint] }
+  /**
+   * Pallet is being decommissioned.
+   **/
+  | { name: 'Decommission' };
 
 export type AstarRuntimeSmartContract = { tag: 'Evm'; value: H160 } | { tag: 'Wasm'; value: AccountId32 };
 
@@ -2782,7 +2786,28 @@ export type PalletDappsStakingPalletCall =
   /**
    * Used to burn unclaimed & stale rewards from an unregistered contract.
    **/
-  | { name: 'BurnStaleReward'; params: { contractId: AstarRuntimeSmartContract; era: number } };
+  | { name: 'BurnStaleReward'; params: { contractId: AstarRuntimeSmartContract; era: number } }
+  /**
+   * Claim earned staker rewards for the given staker, and the oldest unclaimed era.
+   * In order to claim multiple eras, this call has to be called multiple times.
+   *
+   * This call can only be used during the pallet decommission process.
+   **/
+  | { name: 'ClaimStakerFor'; params: { staker: AccountId32; contractId: AstarRuntimeSmartContract } }
+  /**
+   * Used to set reward destination for staker rewards, for the given staker
+   *
+   **/
+  | {
+      name: 'SetRewardDestinationFor';
+      params: { staker: AccountId32; rewardDestination: PalletDappsStakingRewardDestination };
+    }
+  /**
+   * Enable the `decommission` flag for the pallet.
+   *
+   * The dispatch origin must be Root.
+   **/
+  | { name: 'Decommission' };
 
 export type PalletDappsStakingContractStakeInfo = {
   total: bigint;
@@ -4871,7 +4896,15 @@ export type PalletDappsStakingPalletError =
   /**
    * Transfering nomination to the same contract
    **/
-  | 'NominationTransferToSameContract';
+  | 'NominationTransferToSameContract'
+  /**
+   * Decommission is in progress so this call is not allowed.
+   **/
+  | 'DecommissionInProgress'
+  /**
+   * Delegated claim call is not allowed if both the staker & caller are the same accounts.
+   **/
+  | 'ClaimForCallerAccount';
 
 /**
  * Custom [dispatch errors](https://docs.substrate.io/main-docs/build/events-errors/) of this pallet.
