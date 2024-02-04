@@ -1,6 +1,5 @@
 import * as $ from '@delightfuldot/shape';
 import { $TransactionValidityError } from './TransactionValidityError';
-import { $TransactionSource } from '@delightfuldot/codecs/known';
 
 /**
  * Priority for a transaction. Additive. Higher is better.
