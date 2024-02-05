@@ -1,5 +1,9 @@
-import { Field, ModuleError } from '@delightfuldot/codecs';
-import * as $ from '@delightfuldot/shape';
+import {
+  DispatchError,
+  ModuleError,
+  PalletErrorMetadataLatest,
+  PalletEventMetadataLatest,
+} from '@delightfuldot/codecs';
 import { RpcCallSpec } from './rpc';
 import { RuntimeCallSpec } from './runtime';
 
@@ -13,23 +17,8 @@ export type AsyncMethod = (...args: any[]) => Promise<any>;
 export type Unsub = () => Promise<boolean>;
 export type Callback<T> = (result: T) => Promise<void> | void;
 
-export interface PalletItemMetadata {
-  pallet: string;
-  palletIndex: number;
-  name: string;
-  fields: Field[];
-  fieldCodecs: $.AnyShape[];
-  index: number;
-  docs: string[];
-}
-
-export interface PalletErrorMetadataV14 extends PalletItemMetadata {}
-export interface PalletEventMetadataV14 extends PalletItemMetadata {}
-export interface PalletErrorMetadataLatest extends PalletErrorMetadataV14 {}
-export interface PalletEventMetadataLatest extends PalletEventMetadataV14 {}
-
 export interface GenericPalletError {
-  is: (moduleError: ModuleError) => boolean;
+  is: (moduleError: ModuleError | DispatchError) => boolean;
   meta: PalletErrorMetadataLatest;
 }
 
