@@ -26,7 +26,7 @@ export class StorageQueryExecutor<ChainApi extends GenericSubstrateApi = Substra
           targetChange && callback(entry.decodeValue(targetChange[1]));
         });
       } else {
-        const result = await this.api.rpc.state.getStorage(encodedKey);
+        const result = await this.api.rpc.state.getStorage(encodedKey, this.atBlockHash);
         return entry.decodeValue(result);
       }
     };
