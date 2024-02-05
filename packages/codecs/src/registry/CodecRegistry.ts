@@ -20,6 +20,7 @@ const KNOWN_PATHS: KnownPath[] = [
   'sp_runtime::TokenError',
   'sp_arithmetic::ArithmeticError',
   'sp_runtime::TransactionalError',
+  'frame_support::dispatch::DispatchInfo',
 
   'fp_account::AccountId20',
   'account::AccountId20',
@@ -85,6 +86,13 @@ export class CodecRegistry {
 
     if (!$codec) {
       throw new Error(`Unsupported codec - ${typeName}`);
+    }
+
+    // This only works with top-level $.deferred codecs
+    // We should make it work for nested $.deferred codecs as well
+    if ($codec.metadata && $codec.metadata[0].name === '$.deferred') {
+      const getShape = $codec.metadata[0].args![0] as (...args: any[]) => $.AnyShape;
+      return $.deferred(() => getShape(this));
     }
 
     return $codec as $.AnyShape;

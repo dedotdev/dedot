@@ -1,3 +1,4 @@
+import { ISignedExtension } from '../SignedExtension';
 import { CheckNonZeroSender } from './CheckNonZeroSender';
 import { CheckSpecVersion } from './CheckSpecVersion';
 import { CheckTxVersion } from './CheckTxVersion';
@@ -7,8 +8,8 @@ import { CheckNonce } from './CheckNonce';
 import { CheckWeight } from './CheckWeight';
 import { ChargeTransactionPayment } from './ChargeTransactionPayment';
 import { PrevalidateAttests } from './PrevalidateAttests';
-import { ISignedExtension } from '../SignedExtension';
 
+// TODO Supports more known extensions
 const knownSignedExtensions: Record<string, new (...args: any[]) => ISignedExtension> = {
   CheckNonZeroSender,
   CheckSpecVersion,

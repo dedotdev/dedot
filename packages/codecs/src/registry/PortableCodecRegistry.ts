@@ -48,6 +48,8 @@ export class PortableCodecRegistry {
       try {
         const codecName = typeDef.path.at(-1)!;
         if (KNOWN_CODECS.includes(codecName)) {
+          // TODO Check codec structure matches with corresponding portable codec
+          // Preparing for customizing primitive codecs
           return this.#registry.findCodec(codecName);
         }
       } catch (e) {

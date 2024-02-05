@@ -1,7 +1,8 @@
 import { SignedExtension } from '../SignedExtension';
 import { EraLike, Hash, Header } from '@delightfuldot/codecs';
 import { min } from '@delightfuldot/utils';
-import { u8aToHex } from '@polkadot/util';
+import { numberToHex, u8aToHex } from '@polkadot/util';
+import { SignerPayloadJSON } from '@polkadot/types/types';
 
 export const MAX_FINALITY_LAG = 5;
 export const FALLBACK_MAX_HASH_COUNT = 250;
@@ -54,11 +55,11 @@ export class CheckMortality extends SignedExtension<EraLike, Hash> {
     );
   }
 
-  toPayload() {
+  toPayload(): Partial<SignerPayloadJSON> {
     return {
       era: u8aToHex(this.dataCodec.tryEncode(this.data)),
       blockHash: this.additionalSigned,
-      blockNumber: this.#signingHeader!.number,
+      blockNumber: numberToHex(this.#signingHeader!.number),
     };
   }
 }

@@ -10,6 +10,7 @@ import {
   RpcExecutor,
   RuntimeCallExecutor,
   StorageQueryExecutor,
+  TxExecutor,
 } from './executor';
 import { newProxyChain } from './proxychain';
 import { ApiOptions, MetadataKey, NetworkEndpoint, NormalizedApiOptions } from './types';
@@ -377,6 +378,10 @@ export default class DelightfulApi<ChainApi extends GenericSubstrateApi = Substr
 
   callAt(blockHash: BlockHash): ChainApi['call'] {
     return newProxyChain<ChainApi>({ executor: new RuntimeCallExecutor(this, blockHash) }) as ChainApi['call'];
+  }
+
+  get tx(): ChainApi['tx'] {
+    return newProxyChain<ChainApi>({ executor: new TxExecutor(this) }) as ChainApi['tx'];
   }
 
   /**

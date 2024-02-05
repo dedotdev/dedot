@@ -1,0 +1,233 @@
+import { Executor } from './Executor';
+import {
+  AddressOrPair,
+  Callback,
+  DryRunResult,
+  GenericSubstrateApi,
+  ISubmittableExtrinsic,
+  ISubmittableResult,
+  PaymentInfoResult,
+  SignerOptions,
+  Unsub,
+} from '@delightfuldot/types';
+import { SubstrateApi } from '@delightfuldot/chaintypes';
+import { assert, HexString } from '@delightfuldot/utils';
+import { hexToU8a, isFunction, objectSpread, stringCamelCase, stringPascalCase, u8aToHex } from '@polkadot/util';
+import { BlockHash, Extrinsic, Hash, SignedBlock, TransactionStatus } from '@delightfuldot/codecs';
+import DelightfulApi from '../DelightfulApi';
+import { IKeyringPair } from '@polkadot/types/types';
+import { ExtraSignedExtension, SubmittableResult } from '../extrinsic';
+import { SignOptions } from '@polkadot/keyring/types';
+import { blake2AsHex, blake2AsU8a } from '@polkadot/util-crypto';
+
+export function isKeyringPair(account: string | IKeyringPair): account is IKeyringPair {
+  return isFunction((account as IKeyringPair).sign);
+}
+
+export function sign(signerPair: IKeyringPair, raw: HexString, options?: SignOptions): Uint8Array {
+  const u8a = hexToU8a(raw);
+  const encoded = u8a.length > 256 ? blake2AsU8a(u8a, 256) : u8a;
+
+  return signerPair.sign(encoded, options);
+}
+
+export type GenericRuntimeCall = {
+  pallet: string;
+  palletCall:
+    | {
+        name: string;
+        params: object;
+      }
+    | string;
+};
+
+export class TxExecutor<ChainApi extends GenericSubstrateApi = SubstrateApi> extends Executor<ChainApi> {
+  execute(pallet: string, functionName: string) {
+    const targetPallet = this.getPallet(pallet);
+
+    assert(targetPallet.calls, 'Tx call type not found');
+
+    const txType = this.metadata.types[targetPallet.calls]!;
+
+    assert(txType.type.tag === 'Enum', 'Tx type should be enum');
+
+    const isFlatEnum = txType.type.value.members.every((m) => m.fields.length === 0);
+    const txCall = txType.type.value.members.find((m) => stringCamelCase(m.name) === functionName);
+    assert(txCall, 'Tx call not found');
+
+    const txCallFn = (...args: any[]) => {
+      let call: GenericRuntimeCall;
+      if (isFlatEnum) {
+        call = { pallet: targetPallet.name, palletCall: txCall.name };
+      } else {
+        const callParams = txCall.fields.reduce((o, { name }, idx) => {
+          o[stringCamelCase(name!)] = args[idx];
+          return o;
+        }, {} as any);
+
+        call = {
+          pallet: stringPascalCase(targetPallet.name),
+          palletCall: { name: stringPascalCase(txCall.name), params: callParams },
+        };
+      }
+
+      return this.createExtrinsic(call);
+    };
+
+    // txCallFn.meta TODO assign tx meta
+
+    return txCallFn;
+  }
+
+  createExtrinsic(call: GenericRuntimeCall) {
+    const api = this.api;
+
+    // TODO implements ISubmittableExtrinsic
+    class GenericExtrinsic extends Extrinsic implements ISubmittableExtrinsic {
+      async signAsync(fromAccount: AddressOrPair, options?: Partial<SignerOptions>) {
+        const address = isKeyringPair(fromAccount) ? fromAccount.address : fromAccount.toString();
+        const extra = new ExtraSignedExtension(api as unknown as DelightfulApi, {
+          signerAddress: address,
+          payloadOptions: options,
+        });
+
+        await extra.init();
+
+        const { signer } = options || {};
+
+        let signature;
+        if (isKeyringPair(fromAccount)) {
+          signature = u8aToHex(
+            sign(fromAccount, extra.toRawPayload(this.rawCall).data as HexString, { withType: true }),
+          );
+        } else if (signer?.signPayload) {
+          const result = await signer.signPayload(extra.toPayload(this.rawCall));
+          signature = result.signature;
+        } else if (signer?.signRaw) {
+          const result = await signer.signRaw(extra.toRawPayload(this.rawCall));
+          signature = result.signature;
+        } else {
+          throw new Error('Cannot sign');
+        }
+
+        const { signatureTypeId } = this.registry.metadata!.extrinsic;
+        const $Signature = this.registry.findPortableCodec(signatureTypeId);
+
+        this.attachSignature({
+          address,
+          signature: $Signature.tryDecode(signature),
+          extra: extra.data,
+        });
+
+        return this;
+      }
+
+      signAndSend(account: AddressOrPair, options?: Partial<SignerOptions>): Promise<Hash>;
+
+      signAndSend(account: AddressOrPair, statusCb: Callback<ISubmittableResult>): Promise<Unsub>;
+
+      signAndSend(
+        account: AddressOrPair,
+        options: Partial<SignerOptions>,
+        statusCb?: Callback<ISubmittableResult>,
+      ): Promise<Unsub>;
+
+      async signAndSend(
+        fromAccount: AddressOrPair,
+        partialOptions?: Partial<SignerOptions> | Callback<ISubmittableResult>,
+        maybeCallback?: Callback<ISubmittableResult>,
+      ): Promise<Hash | Unsub> {
+        const [options, callback] = this.#normalizeOptions(partialOptions, maybeCallback);
+        await this.signAsync(fromAccount, options);
+
+        const isSubscription = !!callback;
+
+        const txHash = this.hash;
+        if (isSubscription) {
+          return api.rpc.author.submitAndWatchExtrinsic(this.toHex(), async (status: TransactionStatus) => {
+            if (status.tag === 'InBlock' || status.tag === 'Finalized') {
+              const blockHash: BlockHash = status.value;
+
+              const [signedBlock, events] = await Promise.all([
+                api.rpc.chain.getBlock(blockHash),
+                api.queryAt(blockHash).system.events(),
+              ]);
+
+              const txIndex = (signedBlock as SignedBlock).block.extrinsics.findIndex(
+                (tx) => blake2AsHex(hexToU8a(tx as HexString)) === txHash,
+              );
+
+              if (txIndex === undefined) {
+                throw new Error('Extrinsic not found!');
+              }
+
+              const targetEvents = (events as any[]).filter(
+                (e) => e.phase.tag === 'ApplyExtrinsic' && e.phase.value === txIndex,
+              );
+
+              // const extrinsicSuccessEvent = targetEvents.find(({ e }) => api.events.system.ExtrinsicSuccess.is(e));
+              // const extrinsicFailedEvent = targetEvents.find(({ e }) => api.events.system.ExtrinsicFailed.is(e));
+
+              return callback(new SubmittableResult({ status, txHash, events: targetEvents, txIndex }));
+            } else {
+              return callback(new SubmittableResult({ status, txHash }));
+            }
+          });
+        } else {
+          return api.rpc.author.submitExtrinsic(this.toHex());
+        }
+      }
+
+      #normalizeOptions(
+        partialOptions?: Partial<SignerOptions> | Callback<ISubmittableResult>,
+        callback?: Callback<ISubmittableResult>,
+      ): [Partial<SignerOptions>, Callback<ISubmittableResult> | undefined] {
+        if (isFunction(partialOptions)) {
+          return [{}, partialOptions];
+        } else {
+          return [objectSpread({}, partialOptions), callback];
+        }
+      }
+
+      get $Codec() {
+        return this.registry.findCodec('Extrinsic');
+      }
+
+      toU8a() {
+        return this.$Codec.tryEncode(this);
+      }
+
+      toHex() {
+        return u8aToHex(this.toU8a());
+      }
+
+      get hash(): Hash {
+        return blake2AsHex(this.toU8a());
+      }
+
+      get hasDryRun(): boolean {
+        return true;
+      }
+
+      get hasPaymentInfo(): boolean {
+        return true;
+      }
+
+      dryRun(account: AddressOrPair, options?: Partial<SignerOptions>): Promise<DryRunResult> {
+        throw new Error('To implement!');
+      }
+
+      paymentInfo(account: AddressOrPair, options?: Partial<SignerOptions>): Promise<PaymentInfoResult> {
+        throw new Error('To implement!');
+      }
+
+      send(): Promise<Hash>;
+      send(statusCb: Callback<ISubmittableResult>): Promise<Unsub>;
+      send(statusCb?: Callback<ISubmittableResult>): Promise<Hash> | Promise<Unsub> {
+        throw new Error('To implement!');
+      }
+    }
+
+    return new GenericExtrinsic(api.registry, call);
+  }
+}

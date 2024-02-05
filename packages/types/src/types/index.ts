@@ -5,6 +5,7 @@ import { RuntimeCallSpec } from './runtime';
 
 export * from './rpc';
 export * from './runtime';
+export * from './extrinsic';
 
 export type Append<T extends readonly unknown[], V> = [...T, V];
 export type AnyFunc = (...args: any[]) => any;
@@ -50,6 +51,12 @@ export interface GenericChainConsts {
   };
 }
 
+export interface GenericChainTx {
+  [pallet: string]: {
+    [callName: string]: AnyFunc;
+  };
+}
+
 export interface StorageQueryMethod<F extends AnyFunc = AnyFunc> {
   (...args: Parameters<F>): Promise<ReturnType<F>>;
   (...args: Append<Parameters<F>, Callback<ReturnType<F>>>): Promise<Unsub>;
@@ -90,11 +97,11 @@ export interface PalletEvent<
   palletEvent: Data extends undefined
     ? EventName
     : Data extends null
-    ? { name: EventName }
-    : {
-        name: EventName;
-        data: Data;
-      };
+      ? { name: EventName }
+      : {
+          name: EventName;
+          data: Data;
+        };
 }
 
 export interface GenericPalletEvent<
@@ -120,6 +127,5 @@ export interface GenericSubstrateApi {
   errors: GenericChainErrors;
   events: GenericChainEvents;
   call: GenericRuntimeCalls;
-
-  // TODO tx, calls ...
+  tx: GenericChainTx;
 }

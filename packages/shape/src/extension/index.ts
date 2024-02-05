@@ -9,3 +9,4 @@ export * from './compact';
 export * from './str';
 export * from './result';
 export * from './collection';
+export { deferred } from './deferred';
