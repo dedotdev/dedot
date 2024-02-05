@@ -2,6 +2,7 @@
 
 import type {
   H256,
+  DispatchInfo,
   DispatchError,
   AccountId32,
   ResultPayload,
@@ -76,11 +77,11 @@ export type FrameSystemEvent =
   /**
    * An extrinsic completed successfully.
    **/
-  | { name: 'ExtrinsicSuccess'; data: { dispatchInfo: FrameSupportDispatchDispatchInfo } }
+  | { name: 'ExtrinsicSuccess'; data: { dispatchInfo: DispatchInfo } }
   /**
    * An extrinsic failed.
    **/
-  | { name: 'ExtrinsicFailed'; data: { dispatchError: DispatchError; dispatchInfo: FrameSupportDispatchDispatchInfo } }
+  | { name: 'ExtrinsicFailed'; data: { dispatchError: DispatchError; dispatchInfo: DispatchInfo } }
   /**
    * `:code` was updated.
    **/
@@ -97,12 +98,6 @@ export type FrameSystemEvent =
    * On on-chain remark happened.
    **/
   | { name: 'Remarked'; data: { sender: AccountId32; hash: H256 } };
-
-export type FrameSupportDispatchDispatchInfo = {
-  weight: SpWeightsWeightV2Weight;
-  class: FrameSupportDispatchDispatchClass;
-  paysFee: FrameSupportDispatchPays;
-};
 
 export type FrameSupportDispatchDispatchClass = 'Normal' | 'Operational' | 'Mandatory';
 
@@ -490,7 +485,11 @@ export type PalletDappsStakingPalletEvent =
    *
    * \(developer account, smart contract, era, amount burned\)
    **/
-  | { name: 'StaleRewardBurned'; data: [AccountId32, AstarRuntimeSmartContract, number, bigint] };
+  | { name: 'StaleRewardBurned'; data: [AccountId32, AstarRuntimeSmartContract, number, bigint] }
+  /**
+   * Pallet is being decommissioned.
+   **/
+  | { name: 'Decommission' };
 
 export type AstarRuntimeSmartContract = { tag: 'Evm'; value: H160 } | { tag: 'Wasm'; value: AccountId32 };
 
@@ -2782,7 +2781,28 @@ export type PalletDappsStakingPalletCall =
   /**
    * Used to burn unclaimed & stale rewards from an unregistered contract.
    **/
-  | { name: 'BurnStaleReward'; params: { contractId: AstarRuntimeSmartContract; era: number } };
+  | { name: 'BurnStaleReward'; params: { contractId: AstarRuntimeSmartContract; era: number } }
+  /**
+   * Claim earned staker rewards for the given staker, and the oldest unclaimed era.
+   * In order to claim multiple eras, this call has to be called multiple times.
+   *
+   * This call can only be used during the pallet decommission process.
+   **/
+  | { name: 'ClaimStakerFor'; params: { staker: AccountId32; contractId: AstarRuntimeSmartContract } }
+  /**
+   * Used to set reward destination for staker rewards, for the given staker
+   *
+   **/
+  | {
+      name: 'SetRewardDestinationFor';
+      params: { staker: AccountId32; rewardDestination: PalletDappsStakingRewardDestination };
+    }
+  /**
+   * Enable the `decommission` flag for the pallet.
+   *
+   * The dispatch origin must be Root.
+   **/
+  | { name: 'Decommission' };
 
 export type PalletDappsStakingContractStakeInfo = {
   total: bigint;
@@ -4871,7 +4891,15 @@ export type PalletDappsStakingPalletError =
   /**
    * Transfering nomination to the same contract
    **/
-  | 'NominationTransferToSameContract';
+  | 'NominationTransferToSameContract'
+  /**
+   * Decommission is in progress so this call is not allowed.
+   **/
+  | 'DecommissionInProgress'
+  /**
+   * Delegated claim call is not allowed if both the staker & caller are the same accounts.
+   **/
+  | 'ClaimForCallerAccount';
 
 /**
  * Custom [dispatch errors](https://docs.substrate.io/main-docs/build/events-errors/) of this pallet.

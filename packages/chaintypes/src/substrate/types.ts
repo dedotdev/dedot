@@ -2,6 +2,7 @@
 
 import type {
   H256,
+  DispatchInfo,
   DispatchError,
   AccountId32,
   ResultPayload,
@@ -127,11 +128,11 @@ export type FrameSystemEvent =
   /**
    * An extrinsic completed successfully.
    **/
-  | { name: 'ExtrinsicSuccess'; data: { dispatchInfo: FrameSupportDispatchDispatchInfo } }
+  | { name: 'ExtrinsicSuccess'; data: { dispatchInfo: DispatchInfo } }
   /**
    * An extrinsic failed.
    **/
-  | { name: 'ExtrinsicFailed'; data: { dispatchError: DispatchError; dispatchInfo: FrameSupportDispatchDispatchInfo } }
+  | { name: 'ExtrinsicFailed'; data: { dispatchError: DispatchError; dispatchInfo: DispatchInfo } }
   /**
    * `:code` was updated.
    **/
@@ -160,12 +161,6 @@ export type FrameSystemEvent =
    * A [`Task`] failed during execution.
    **/
   | { name: 'TaskFailed'; data: { task: KitchensinkRuntimeRuntimeTask; err: DispatchError } };
-
-export type FrameSupportDispatchDispatchInfo = {
-  weight: SpWeightsWeightV2Weight;
-  class: FrameSupportDispatchDispatchClass;
-  paysFee: FrameSupportDispatchPays;
-};
 
 export type FrameSupportDispatchDispatchClass = 'Normal' | 'Operational' | 'Mandatory';
 

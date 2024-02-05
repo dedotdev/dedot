@@ -6,7 +6,6 @@ import type {
   Callback,
   GenericRpcCall,
   ExtrinsicOrHash,
-  TransactionStatus,
   BlockStats,
   StorageKind,
   RpcMethods,
@@ -25,6 +24,7 @@ import type {
 import type {
   Bytes,
   Hash,
+  TransactionStatus,
   Option,
   SignedBlock,
   BlockHash,

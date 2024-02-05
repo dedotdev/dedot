@@ -2,6 +2,7 @@
 
 import type {
   H256,
+  DispatchInfo,
   DispatchError,
   AccountId32,
   Perbill,
@@ -107,11 +108,11 @@ export type FrameSystemEvent =
   /**
    * An extrinsic completed successfully.
    **/
-  | { name: 'ExtrinsicSuccess'; data: { dispatchInfo: FrameSupportDispatchDispatchInfo } }
+  | { name: 'ExtrinsicSuccess'; data: { dispatchInfo: DispatchInfo } }
   /**
    * An extrinsic failed.
    **/
-  | { name: 'ExtrinsicFailed'; data: { dispatchError: DispatchError; dispatchInfo: FrameSupportDispatchDispatchInfo } }
+  | { name: 'ExtrinsicFailed'; data: { dispatchError: DispatchError; dispatchInfo: DispatchInfo } }
   /**
    * `:code` was updated.
    **/
@@ -128,12 +129,6 @@ export type FrameSystemEvent =
    * On on-chain remark happened.
    **/
   | { name: 'Remarked'; data: { sender: AccountId32; hash: H256 } };
-
-export type FrameSupportDispatchDispatchInfo = {
-  weight: SpWeightsWeightV2Weight;
-  class: FrameSupportDispatchDispatchClass;
-  paysFee: FrameSupportDispatchPays;
-};
 
 export type FrameSupportDispatchDispatchClass = 'Normal' | 'Operational' | 'Mandatory';
 

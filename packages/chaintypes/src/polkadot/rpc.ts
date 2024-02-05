@@ -6,7 +6,6 @@ import type {
   Callback,
   GenericRpcCall,
   ExtrinsicOrHash,
-  TransactionStatus,
   EpochAuthorship,
   EncodedFinalityProofs,
   ReportedRoundStates,
@@ -30,6 +29,7 @@ import type {
 import type {
   Bytes,
   Hash,
+  TransactionStatus,
   VersionedFinalityProof,
   Option,
   SignedBlock,

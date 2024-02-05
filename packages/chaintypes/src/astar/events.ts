@@ -2,6 +2,7 @@
 
 import type { GenericChainEvents, GenericPalletEvent } from '@delightfuldot/types';
 import type {
+  DispatchInfo,
   DispatchError,
   AccountId32,
   H256,
@@ -12,7 +13,6 @@ import type {
   U256,
 } from '@delightfuldot/codecs';
 import type {
-  FrameSupportDispatchDispatchInfo,
   PalletMultisigTimepoint,
   AstarRuntimeProxyType,
   SpWeightsWeightV2Weight,
@@ -40,11 +40,7 @@ export interface ChainEvents extends GenericChainEvents {
     /**
      * An extrinsic completed successfully.
      **/
-    ExtrinsicSuccess: GenericPalletEvent<
-      'System',
-      'ExtrinsicSuccess',
-      { dispatchInfo: FrameSupportDispatchDispatchInfo }
-    >;
+    ExtrinsicSuccess: GenericPalletEvent<'System', 'ExtrinsicSuccess', { dispatchInfo: DispatchInfo }>;
 
     /**
      * An extrinsic failed.
@@ -52,7 +48,7 @@ export interface ChainEvents extends GenericChainEvents {
     ExtrinsicFailed: GenericPalletEvent<
       'System',
       'ExtrinsicFailed',
-      { dispatchError: DispatchError; dispatchInfo: FrameSupportDispatchDispatchInfo }
+      { dispatchError: DispatchError; dispatchInfo: DispatchInfo }
     >;
 
     /**
@@ -573,6 +569,11 @@ export interface ChainEvents extends GenericChainEvents {
       'StaleRewardBurned',
       [AccountId32, AstarRuntimeSmartContract, number, bigint]
     >;
+
+    /**
+     * Pallet is being decommissioned.
+     **/
+    Decommission: GenericPalletEvent<'DappsStaking', 'Decommission', null>;
 
     /**
      * Generic pallet event

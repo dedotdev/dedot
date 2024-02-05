@@ -538,6 +538,11 @@ export interface ChainStorage extends GenericChainStorage {
     palletDisabled: GenericStorageQuery<() => boolean>;
 
     /**
+     * Denotes whether pallet decommissioning has started or not.
+     **/
+    decommissionStarted: GenericStorageQuery<() => boolean>;
+
+    /**
      * General information about the staker (non-smart-contract specific).
      **/
     ledger: GenericStorageQuery<(arg: AccountId32Like) => PalletDappsStakingAccountLedger>;
