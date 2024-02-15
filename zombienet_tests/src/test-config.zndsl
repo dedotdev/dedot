@@ -1,0 +1,8 @@
+Description: Small Network test
+Network: ./networks.toml
+Creds: config
+
+alice: is up
+bob: is up
+alice: reports node_roles is 4
+alice: ts-script ./scripts.ts return is greater than 1 within 200 seconds

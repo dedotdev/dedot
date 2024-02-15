@@ -5,7 +5,8 @@
   "packageManager": "yarn@3.4.1",
   "workspaces": [
     "packages/*",
-    "examples/*"
+    "examples/*",
+    "zombienet_tests"
   ],
   "scripts": {
     "build": "yarn clean && npx lerna run build --no-private",
@@ -18,7 +19,8 @@
     "postinstall": "husky install",
     "generate-package-info-file": "npx lerna exec --no-private -- node \\$LERNA_ROOT_PATH/scripts/generate-package-info-file.js",
     "copy-files-to-dist": "npx lerna exec --no-private -- node \\$LERNA_ROOT_PATH/scripts/copy-files-to-dist.js",
-    "gen-chaintypes": "npx ts-node ./packages/codegen/src/genSupportedChainTypes.ts"
+    "gen-chaintypes": "npx ts-node ./packages/codegen/src/genSupportedChainTypes.ts",
+    "zombienet-test-preps": "npx lerna exec --no-private -- node \\$LERNA_ROOT_PATH/scripts/zombienet-tests-preps.js"
   },
   "devDependencies": {
     "@polkadot/types-support": "^10.11.2",

@@ -8970,3 +8970,12 @@ __metadata:
   checksum: 2cac84540f65c64ccc1683c267edce396b26b1e931aa429660aefac8fbe0188167b7aee815a3c22fa59a28a58d898d1a2b1825048f834d8d629f4c2a5d443801
   languageName: node
   linkType: hard
+
+"zombienet_tests@workspace:zombienet_tests":
+  version: 0.0.0-use.local
+  resolution: "zombienet_tests@workspace:zombienet_tests"
+  dependencies:
+    delightfuldot: "workspace:*"
+    prettier: ^3.0.3
+  languageName: unknown
+  linkType: soft

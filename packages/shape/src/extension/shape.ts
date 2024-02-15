@@ -1,7 +1,7 @@
 import { hexFixLength, hexToU8a, isBoolean, isHex, isNumber, isString } from '@polkadot/util';
 import * as $ from 'subshape';
 import { AnyShape, Decoder, Encoder, Predicate, Shape } from 'subshape';
-import cloneDeep from 'lodash.clonedeep';
+import * as lodash from 'lodash';
 
 declare module 'subshape' {
   export interface Decoder<T extends AnyShape = Shape<any>, I = any, O = any> {
@@ -79,7 +79,7 @@ Shape.prototype.registerEncoder = function (predicate: Predicate, encoder: Encod
 Shape.prototype.clone = function () {
   return {
     __proto__: Shape.prototype,
-    ...cloneDeep(this),
+    ...lodash.cloneDeep(this),
   } as unknown as Shape<any, any>;
 };
 

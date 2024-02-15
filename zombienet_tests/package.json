@@ -1,0 +1,10 @@
+{
+  "name": "zombienet_tests",
+  "private": true,
+  "dependencies": {
+    "delightfuldot": "workspace:*"
+  },
+  "devDependencies": {
+    "prettier": "^3.0.3"
+  }
+}
