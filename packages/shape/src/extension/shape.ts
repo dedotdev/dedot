@@ -1,7 +1,7 @@
 import { hexFixLength, hexToU8a, isBoolean, isHex, isNumber, isString } from '@polkadot/util';
 import * as $ from 'subshape';
 import { AnyShape, Decoder, Encoder, Predicate, Shape } from 'subshape';
-import * as lodash from 'lodash';
+import lodash from 'lodash';
 
 declare module 'subshape' {
   export interface Decoder<T extends AnyShape = Shape<any>, I = any, O = any> {
