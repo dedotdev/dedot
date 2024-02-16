@@ -42,6 +42,9 @@ export const runtimeApisSpec: RuntimeApisSpec = {
   beefy,
   staking,
   transactionPool,
+  nfts,
+  genesisBuilder,
+  mixnet,
 };
 
 export const runtimeApiNames: RuntimeApiName[] = Object.values(runtimeApisSpec)
