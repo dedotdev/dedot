@@ -7,12 +7,14 @@ import type {
   AccountId32,
   ResultPayload,
   FixedBytes,
+  Perquintill,
   H160,
-  Perbill,
   Bytes,
   U256,
+  FixedU64,
   MultiAddress,
   Data,
+  Permill,
   Era,
 } from '@delightfuldot/codecs';
 
@@ -53,8 +55,8 @@ export type AstarRuntimeRuntimeEvent =
   | { pallet: 'TransactionPayment'; palletEvent: PalletTransactionPaymentEvent }
   | { pallet: 'Balances'; palletEvent: PalletBalancesEvent }
   | { pallet: 'Vesting'; palletEvent: PalletVestingEvent }
-  | { pallet: 'DappsStaking'; palletEvent: PalletDappsStakingPalletEvent }
-  | { pallet: 'BlockReward'; palletEvent: PalletBlockRewardsHybridEvent }
+  | { pallet: 'Inflation'; palletEvent: PalletInflationEvent }
+  | { pallet: 'DappStaking'; palletEvent: PalletDappStakingV3Event }
   | { pallet: 'Assets'; palletEvent: PalletAssetsEvent }
   | { pallet: 'CollatorSelection'; palletEvent: PalletCollatorSelectionEvent }
   | { pallet: 'Session'; palletEvent: PalletSessionEvent }
@@ -68,7 +70,10 @@ export type AstarRuntimeRuntimeEvent =
   | { pallet: 'Ethereum'; palletEvent: PalletEthereumEvent }
   | { pallet: 'DynamicEvmBaseFee'; palletEvent: PalletDynamicEvmBaseFeeEvent }
   | { pallet: 'Contracts'; palletEvent: PalletContractsEvent }
-  | { pallet: 'Sudo'; palletEvent: PalletSudoEvent };
+  | { pallet: 'Sudo'; palletEvent: PalletSudoEvent }
+  | { pallet: 'StaticPriceProvider'; palletEvent: PalletStaticPriceProviderEvent }
+  | { pallet: 'DappStakingMigration'; palletEvent: PalletDappStakingMigrationEvent }
+  | { pallet: 'DappsStaking'; palletEvent: PalletDappsStakingPalletEvent };
 
 /**
  * Event for the System pallet.
@@ -269,7 +274,7 @@ export type AstarRuntimeProxyType =
   | 'Assets'
   | 'IdentityJudgement'
   | 'CancelProxy'
-  | 'DappsStaking'
+  | 'DappStaking'
   | 'StakerRewardClaim';
 
 /**
@@ -433,85 +438,157 @@ export type PalletVestingEvent =
 /**
  * The [event](https://docs.substrate.io/main-docs/build/events-errors/) emitted by this pallet.
  **/
-export type PalletDappsStakingPalletEvent =
+export type PalletInflationEvent =
   /**
-   * Account has bonded and staked funds on a smart contract.
+   * Inflation parameters have been force changed. This will have effect on the next inflation recalculation.
    **/
-  | { name: 'BondAndStake'; data: [AccountId32, AstarRuntimeSmartContract, bigint] }
+  | { name: 'InflationParametersForceChanged' }
   /**
-   * Account has unbonded & unstaked some funds. Unbonding process begins.
+   * Inflation configuration has been force changed. This will have an immediate effect from this block.
    **/
-  | { name: 'UnbondAndUnstake'; data: [AccountId32, AstarRuntimeSmartContract, bigint] }
+  | { name: 'InflationConfigurationForceChanged'; data: { config: PalletInflationInflationConfiguration } }
   /**
-   * Account has fully withdrawn all staked amount from an unregistered contract.
+   * Inflation recalculation has been forced.
    **/
-  | { name: 'WithdrawFromUnregistered'; data: [AccountId32, AstarRuntimeSmartContract, bigint] }
+  | { name: 'ForcedInflationRecalculation'; data: { config: PalletInflationInflationConfiguration } }
   /**
-   * Account has withdrawn unbonded funds.
+   * New inflation configuration has been set.
    **/
-  | { name: 'Withdrawn'; data: [AccountId32, bigint] }
-  /**
-   * New contract added for staking.
-   **/
-  | { name: 'NewContract'; data: [AccountId32, AstarRuntimeSmartContract] }
-  /**
-   * Contract removed from dapps staking.
-   **/
-  | { name: 'ContractRemoved'; data: [AccountId32, AstarRuntimeSmartContract] }
-  /**
-   * New dapps staking era. Distribute era rewards to contracts.
-   **/
-  | { name: 'NewDappStakingEra'; data: number }
-  /**
-   * Reward paid to staker or developer.
-   **/
-  | { name: 'Reward'; data: [AccountId32, AstarRuntimeSmartContract, number, bigint] }
-  /**
-   * Maintenance mode has been enabled or disabled
-   **/
-  | { name: 'MaintenanceMode'; data: boolean }
-  /**
-   * Reward handling modified
-   **/
-  | { name: 'RewardDestination'; data: [AccountId32, PalletDappsStakingRewardDestination] }
-  /**
-   * Nomination part has been transfered from one contract to another.
-   *
-   * \(staker account, origin smart contract, amount, target smart contract\)
-   **/
-  | { name: 'NominationTransfer'; data: [AccountId32, AstarRuntimeSmartContract, bigint, AstarRuntimeSmartContract] }
-  /**
-   * Stale, unclaimed reward from an unregistered contract has been burned.
-   *
-   * \(developer account, smart contract, era, amount burned\)
-   **/
-  | { name: 'StaleRewardBurned'; data: [AccountId32, AstarRuntimeSmartContract, number, bigint] }
-  /**
-   * Pallet is being decommissioned.
-   **/
-  | { name: 'Decommission' };
+  | { name: 'NewInflationConfiguration'; data: { config: PalletInflationInflationConfiguration } };
 
-export type AstarRuntimeSmartContract = { tag: 'Evm'; value: H160 } | { tag: 'Wasm'; value: AccountId32 };
-
-export type PalletDappsStakingRewardDestination = 'FreeBalance' | 'StakeBalance';
+export type PalletInflationInflationConfiguration = {
+  recalculationEra: number;
+  issuanceSafetyCap: bigint;
+  collatorRewardPerBlock: bigint;
+  treasuryRewardPerBlock: bigint;
+  dappRewardPoolPerEra: bigint;
+  baseStakerRewardPoolPerEra: bigint;
+  adjustableStakerRewardPoolPerEra: bigint;
+  bonusRewardPoolPerPeriod: bigint;
+  idealStakingRate: Perquintill;
+};
 
 /**
  * The [event](https://docs.substrate.io/main-docs/build/events-errors/) emitted by this pallet.
  **/
-export type PalletBlockRewardsHybridEvent =
+export type PalletDappStakingV3Event =
   /**
-   * Distribution configuration has been updated.
+   * Maintenance mode has been either enabled or disabled.
    **/
-  { name: 'DistributionConfigurationChanged'; data: PalletBlockRewardsHybridRewardDistributionConfig };
+  | { name: 'MaintenanceMode'; data: { enabled: boolean } }
+  /**
+   * New era has started.
+   **/
+  | { name: 'NewEra'; data: { era: number } }
+  /**
+   * New subperiod has started.
+   **/
+  | { name: 'NewSubperiod'; data: { subperiod: PalletDappStakingV3Subperiod; number: number } }
+  /**
+   * A smart contract has been registered for dApp staking
+   **/
+  | {
+      name: 'DAppRegistered';
+      data: { owner: AccountId32; smartContract: AstarPrimitivesDappStakingSmartContract; dappId: number };
+    }
+  /**
+   * dApp reward destination has been updated.
+   **/
+  | {
+      name: 'DAppRewardDestinationUpdated';
+      data: { smartContract: AstarPrimitivesDappStakingSmartContract; beneficiary?: AccountId32 | undefined };
+    }
+  /**
+   * dApp owner has been changed.
+   **/
+  | {
+      name: 'DAppOwnerChanged';
+      data: { smartContract: AstarPrimitivesDappStakingSmartContract; newOwner: AccountId32 };
+    }
+  /**
+   * dApp has been unregistered
+   **/
+  | { name: 'DAppUnregistered'; data: { smartContract: AstarPrimitivesDappStakingSmartContract; era: number } }
+  /**
+   * Account has locked some amount into dApp staking.
+   **/
+  | { name: 'Locked'; data: { account: AccountId32; amount: bigint } }
+  /**
+   * Account has started the unlocking process for some amount.
+   **/
+  | { name: 'Unlocking'; data: { account: AccountId32; amount: bigint } }
+  /**
+   * Account has claimed unlocked amount, removing the lock from it.
+   **/
+  | { name: 'ClaimedUnlocked'; data: { account: AccountId32; amount: bigint } }
+  /**
+   * Account has relocked all of the unlocking chunks.
+   **/
+  | { name: 'Relock'; data: { account: AccountId32; amount: bigint } }
+  /**
+   * Account has staked some amount on a smart contract.
+   **/
+  | {
+      name: 'Stake';
+      data: { account: AccountId32; smartContract: AstarPrimitivesDappStakingSmartContract; amount: bigint };
+    }
+  /**
+   * Account has unstaked some amount from a smart contract.
+   **/
+  | {
+      name: 'Unstake';
+      data: { account: AccountId32; smartContract: AstarPrimitivesDappStakingSmartContract; amount: bigint };
+    }
+  /**
+   * Account has claimed some stake rewards.
+   **/
+  | { name: 'Reward'; data: { account: AccountId32; era: number; amount: bigint } }
+  /**
+   * Bonus reward has been paid out to a loyal staker.
+   **/
+  | {
+      name: 'BonusReward';
+      data: {
+        account: AccountId32;
+        smartContract: AstarPrimitivesDappStakingSmartContract;
+        period: number;
+        amount: bigint;
+      };
+    }
+  /**
+   * dApp reward has been paid out to a beneficiary.
+   **/
+  | {
+      name: 'DAppReward';
+      data: {
+        beneficiary: AccountId32;
+        smartContract: AstarPrimitivesDappStakingSmartContract;
+        tierId: number;
+        era: number;
+        amount: bigint;
+      };
+    }
+  /**
+   * Account has unstaked funds from an unregistered smart contract
+   **/
+  | {
+      name: 'UnstakeFromUnregistered';
+      data: { account: AccountId32; smartContract: AstarPrimitivesDappStakingSmartContract; amount: bigint };
+    }
+  /**
+   * Some expired stake entries have been removed from storage.
+   **/
+  | { name: 'ExpiredEntriesRemoved'; data: { account: AccountId32; count: number } }
+  /**
+   * Privileged origin has forced a new era and possibly a subperiod to start from next block.
+   **/
+  | { name: 'Force'; data: { forcingType: PalletDappStakingV3ForcingType } };
 
-export type PalletBlockRewardsHybridRewardDistributionConfig = {
-  treasuryPercent: Perbill;
-  baseStakerPercent: Perbill;
-  dappsPercent: Perbill;
-  collatorsPercent: Perbill;
-  adjustablePercent: Perbill;
-  idealDappsStakingTvl: Perbill;
-};
+export type PalletDappStakingV3Subperiod = 'Voting' | 'BuildAndEarn';
+
+export type AstarPrimitivesDappStakingSmartContract = { tag: 'Evm'; value: H160 } | { tag: 'Wasm'; value: AccountId32 };
+
+export type PalletDappStakingV3ForcingType = 'Era' | 'Subperiod';
 
 /**
  * The [event](https://docs.substrate.io/main-docs/build/events-errors/) emitted by this pallet.
@@ -1331,8 +1408,8 @@ export type OrmlXtokensModuleEvent =
    * Transferred `MultiAsset` with fee.
    **/
   {
-    tag: 'TransferredMultiAssets';
-    value: {
+    name: 'TransferredMultiAssets';
+    data: {
       sender: AccountId32;
       assets: XcmV3MultiassetMultiAssets;
       fee: XcmV3MultiassetMultiAsset;
@@ -1571,6 +1648,94 @@ export type PalletSudoEvent =
    **/
   | { name: 'SudoAsDone'; data: { sudoResult: ResultPayload<[], DispatchError> } };
 
+/**
+ * The [event](https://docs.substrate.io/main-docs/build/events-errors/) emitted by this pallet.
+ **/
+export type PalletStaticPriceProviderEvent =
+  /**
+   * New static native currency price has been set.
+   **/
+  { name: 'PriceSet'; data: { price: FixedU64 } };
+
+/**
+ * The [event](https://docs.substrate.io/main-docs/build/events-errors/) emitted by this pallet.
+ **/
+export type PalletDappStakingMigrationEvent =
+  /**
+   * Number of entries migrated from v2 over to v3
+   **/
+  | { name: 'EntriesMigrated'; data: number }
+  /**
+   * Number of entries deleted from v2
+   **/
+  | { name: 'EntriesDeleted'; data: number };
+
+/**
+ * The [event](https://docs.substrate.io/main-docs/build/events-errors/) emitted by this pallet.
+ **/
+export type PalletDappsStakingPalletEvent =
+  /**
+   * Account has bonded and staked funds on a smart contract.
+   **/
+  | { name: 'BondAndStake'; data: [AccountId32, AstarPrimitivesDappStakingSmartContract, bigint] }
+  /**
+   * Account has unbonded & unstaked some funds. Unbonding process begins.
+   **/
+  | { name: 'UnbondAndUnstake'; data: [AccountId32, AstarPrimitivesDappStakingSmartContract, bigint] }
+  /**
+   * Account has fully withdrawn all staked amount from an unregistered contract.
+   **/
+  | { name: 'WithdrawFromUnregistered'; data: [AccountId32, AstarPrimitivesDappStakingSmartContract, bigint] }
+  /**
+   * Account has withdrawn unbonded funds.
+   **/
+  | { name: 'Withdrawn'; data: [AccountId32, bigint] }
+  /**
+   * New contract added for staking.
+   **/
+  | { name: 'NewContract'; data: [AccountId32, AstarPrimitivesDappStakingSmartContract] }
+  /**
+   * Contract removed from dapps staking.
+   **/
+  | { name: 'ContractRemoved'; data: [AccountId32, AstarPrimitivesDappStakingSmartContract] }
+  /**
+   * New dapps staking era. Distribute era rewards to contracts.
+   **/
+  | { name: 'NewDappStakingEra'; data: number }
+  /**
+   * Reward paid to staker or developer.
+   **/
+  | { name: 'Reward'; data: [AccountId32, AstarPrimitivesDappStakingSmartContract, number, bigint] }
+  /**
+   * Maintenance mode has been enabled or disabled
+   **/
+  | { name: 'MaintenanceMode'; data: boolean }
+  /**
+   * Reward handling modified
+   **/
+  | { name: 'RewardDestination'; data: [AccountId32, PalletDappsStakingRewardDestination] }
+  /**
+   * Nomination part has been transfered from one contract to another.
+   *
+   * \(staker account, origin smart contract, amount, target smart contract\)
+   **/
+  | {
+      name: 'NominationTransfer';
+      data: [AccountId32, AstarPrimitivesDappStakingSmartContract, bigint, AstarPrimitivesDappStakingSmartContract];
+    }
+  /**
+   * Stale, unclaimed reward from an unregistered contract has been burned.
+   *
+   * \(developer account, smart contract, era, amount burned\)
+   **/
+  | { name: 'StaleRewardBurned'; data: [AccountId32, AstarPrimitivesDappStakingSmartContract, number, bigint] }
+  /**
+   * Pallet is being decommissioned.
+   **/
+  | { name: 'Decommission' };
+
+export type PalletDappsStakingRewardDestination = 'FreeBalance' | 'StakeBalance';
+
 export type FrameSystemPhase =
   | { tag: 'ApplyExtrinsic'; value: number }
   | { tag: 'Finalization' }
@@ -1792,8 +1957,8 @@ export type AstarRuntimeRuntimeCall =
   | { pallet: 'ParachainInfo'; palletCall: ParachainInfoCall }
   | { pallet: 'Balances'; palletCall: PalletBalancesCall }
   | { pallet: 'Vesting'; palletCall: PalletVestingCall }
-  | { pallet: 'DappsStaking'; palletCall: PalletDappsStakingPalletCall }
-  | { pallet: 'BlockReward'; palletCall: PalletBlockRewardsHybridCall }
+  | { pallet: 'Inflation'; palletCall: PalletInflationCall }
+  | { pallet: 'DappStaking'; palletCall: PalletDappStakingV3Call }
   | { pallet: 'Assets'; palletCall: PalletAssetsCall }
   | { pallet: 'CollatorSelection'; palletCall: PalletCollatorSelectionCall }
   | { pallet: 'Session'; palletCall: PalletSessionCall }
@@ -1807,7 +1972,10 @@ export type AstarRuntimeRuntimeCall =
   | { pallet: 'Ethereum'; palletCall: PalletEthereumCall }
   | { pallet: 'DynamicEvmBaseFee'; palletCall: PalletDynamicEvmBaseFeeCall }
   | { pallet: 'Contracts'; palletCall: PalletContractsCall }
-  | { pallet: 'Sudo'; palletCall: PalletSudoCall };
+  | { pallet: 'Sudo'; palletCall: PalletSudoCall }
+  | { pallet: 'StaticPriceProvider'; palletCall: PalletStaticPriceProviderCall }
+  | { pallet: 'DappStakingMigration'; palletCall: PalletDappStakingMigrationCall }
+  | { pallet: 'DappsStaking'; palletCall: PalletDappsStakingPalletCall };
 
 /**
  * Identity pallet declaration.
@@ -2663,169 +2831,174 @@ export type PalletVestingVestingInfo = { locked: bigint; perBlock: bigint; start
 /**
  * Contains one variant per dispatchable that can be called by an extrinsic.
  **/
-export type PalletDappsStakingPalletCall =
+export type PalletInflationCall =
   /**
-   * Used to register contract for dapps staking.
-   * The origin account used is treated as the `developer` account.
+   * Used to force-set the inflation parameters.
+   * The parameters must be valid, all parts summing up to one whole (100%), otherwise the call will fail.
    *
-   * Depending on the pallet configuration/state it is possible that developer needs to be whitelisted prior to registration.
+   * Must be called by `root` origin.
    *
-   * As part of this call, `RegisterDeposit` will be reserved from devs account.
+   * Purpose of the call is testing & handling unforeseen circumstances.
    **/
-  | { name: 'Register'; params: { developer: AccountId32; contractId: AstarRuntimeSmartContract } }
+  | { name: 'ForceSetInflationParams'; params: { params: PalletInflationInflationParameters } }
   /**
-   * Unregister existing contract from dapps staking, making it ineligible for rewards from current era onwards.
-   * This must be called by the root (at the moment).
+   * Used to force inflation recalculation.
+   * This is done in the same way as it would be done in an appropriate block, but this call forces it.
    *
-   * Deposit is returned to the developer but existing stakers should manually call `withdraw_from_unregistered` if they wish to to unstake.
+   * Must be called by `root` origin.
    *
-   * **Warning**: After this action ,contract can not be registered for dapps staking again.
+   * Purpose of the call is testing & handling unforeseen circumstances.
    **/
-  | { name: 'Unregister'; params: { contractId: AstarRuntimeSmartContract } }
-  /**
-   * Withdraw locked funds from a contract that was unregistered.
-   *
-   * Funds don't need to undergo the unbonding period - they are returned immediately to the staker's free balance.
-   **/
-  | { name: 'WithdrawFromUnregistered'; params: { contractId: AstarRuntimeSmartContract } }
-  /**
-   * Lock up and stake balance of the origin account.
-   *
-   * `value` must be more than the `minimum_balance` specified by `MinimumStakingAmount`
-   * unless account already has bonded value equal or more than 'minimum_balance'.
-   *
-   * The dispatch origin for this call must be _Signed_ by the staker's account.
-   **/
-  | { name: 'BondAndStake'; params: { contractId: AstarRuntimeSmartContract; value: bigint } }
-  /**
-   * Start unbonding process and unstake balance from the contract.
-   *
-   * The unstaked amount will no longer be eligible for rewards but still won't be unlocked.
-   * User needs to wait for the unbonding period to finish before being able to withdraw
-   * the funds via `withdraw_unbonded` call.
-   *
-   * In case remaining staked balance on contract is below minimum staking amount,
-   * entire stake for that contract will be unstaked.
-   **/
-  | { name: 'UnbondAndUnstake'; params: { contractId: AstarRuntimeSmartContract; value: bigint } }
-  /**
-   * Withdraw all funds that have completed the unbonding process.
-   *
-   * If there are unbonding chunks which will be fully unbonded in future eras,
-   * they will remain and can be withdrawn later.
-   **/
-  | { name: 'WithdrawUnbonded' }
-  /**
-   * Transfer nomination from one contract to another.
-   *
-   * Same rules as for `bond_and_stake` and `unbond_and_unstake` apply.
-   * Minor difference is that there is no unbonding period so this call won't
-   * check whether max number of unbonding chunks is exceeded.
-   *
-   **/
-  | {
-      name: 'NominationTransfer';
-      params: {
-        originContractId: AstarRuntimeSmartContract;
-        value: bigint;
-        targetContractId: AstarRuntimeSmartContract;
-      };
-    }
-  /**
-   * Claim earned staker rewards for the oldest unclaimed era.
-   * In order to claim multiple eras, this call has to be called multiple times.
-   *
-   * The rewards are always added to the staker's free balance (account) but depending on the reward destination configuration,
-   * they might be immediately re-staked.
-   **/
-  | { name: 'ClaimStaker'; params: { contractId: AstarRuntimeSmartContract } }
-  /**
-   * Claim earned dapp rewards for the specified era.
-   *
-   * Call must ensure that the specified era is eligible for reward payout and that it hasn't already been paid out for the dapp.
-   **/
-  | { name: 'ClaimDapp'; params: { contractId: AstarRuntimeSmartContract; era: number } }
-  /**
-   * Force a new era at the start of the next block.
-   *
-   * The dispatch origin must be Root.
-   **/
-  | { name: 'ForceNewEra' }
-  /**
-   * `true` will disable pallet, enabling maintenance mode. `false` will do the opposite.
-   *
-   * The dispatch origin must be Root.
-   **/
-  | { name: 'MaintenanceMode'; params: { enableMaintenance: boolean } }
-  /**
-   * Used to set reward destination for staker rewards.
-   *
-   * User must be an active staker in order to use this call.
-   * This will apply to all existing unclaimed rewards.
-   **/
-  | { name: 'SetRewardDestination'; params: { rewardDestination: PalletDappsStakingRewardDestination } }
-  /**
-   * Used to force set `ContractEraStake` storage values.
-   * The purpose of this call is only for fixing one of the issues detected with dapps-staking.
-   *
-   * The dispatch origin must be Root.
-   **/
-  | {
-      name: 'SetContractStakeInfo';
-      params: {
-        contract: AstarRuntimeSmartContract;
-        era: number;
-        contractStakeInfo: PalletDappsStakingContractStakeInfo;
-      };
-    }
-  /**
-   * Used to burn unclaimed & stale rewards from an unregistered contract.
-   **/
-  | { name: 'BurnStaleReward'; params: { contractId: AstarRuntimeSmartContract; era: number } }
-  /**
-   * Claim earned staker rewards for the given staker, and the oldest unclaimed era.
-   * In order to claim multiple eras, this call has to be called multiple times.
-   *
-   * This call can only be used during the pallet decommission process.
-   **/
-  | { name: 'ClaimStakerFor'; params: { staker: AccountId32; contractId: AstarRuntimeSmartContract } }
-  /**
-   * Used to set reward destination for staker rewards, for the given staker
-   *
-   **/
-  | {
-      name: 'SetRewardDestinationFor';
-      params: { staker: AccountId32; rewardDestination: PalletDappsStakingRewardDestination };
-    }
-  /**
-   * Enable the `decommission` flag for the pallet.
-   *
-   * The dispatch origin must be Root.
-   **/
-  | { name: 'Decommission' };
+  | { name: 'ForceInflationRecalculation'; params: { nextEra: number } };
 
-export type PalletDappsStakingContractStakeInfo = {
-  total: bigint;
-  numberOfStakers: number;
-  contractRewardClaimed: boolean;
+export type PalletInflationInflationParameters = {
+  maxInflationRate: Perquintill;
+  treasuryPart: Perquintill;
+  collatorsPart: Perquintill;
+  dappsPart: Perquintill;
+  baseStakersPart: Perquintill;
+  adjustableStakersPart: Perquintill;
+  bonusPart: Perquintill;
+  idealStakingRate: Perquintill;
 };
 
 /**
  * Contains one variant per dispatchable that can be called by an extrinsic.
  **/
-export type PalletBlockRewardsHybridCall =
+export type PalletDappStakingV3Call =
   /**
-   * Sets the reward distribution configuration parameters which will be used from next block reward distribution.
+   * Wrapper around _legacy-like_ `unbond_and_unstake`.
    *
-   * It is mandatory that all components of configuration sum up to one whole (**100%**),
-   * otherwise an error `InvalidDistributionConfiguration` will be raised.
-   *
-   * - `reward_distro_params` - reward distribution params
-   *
-   * Emits `DistributionConfigurationChanged` with config embeded into event itself.
-   *
+   * Used to support legacy Ledger users so they can start the unlocking process for their funds.
    **/
-  { name: 'SetConfiguration'; params: { rewardDistroParams: PalletBlockRewardsHybridRewardDistributionConfig } };
+  | { name: 'UnbondAndUnstake'; params: { contractId: AstarPrimitivesDappStakingSmartContract; value: bigint } }
+  /**
+   * Wrapper around _legacy-like_ `withdraw_unbonded`.
+   *
+   * Used to support legacy Ledger users so they can reclaim unlocked chunks back into
+   * their _transferable_ free balance.
+   **/
+  | { name: 'WithdrawUnbonded' }
+  /**
+   * Used to enable or disable maintenance mode.
+   * Can only be called by manager origin.
+   **/
+  | { name: 'MaintenanceMode'; params: { enabled: boolean } }
+  /**
+   * Used to register a new contract for dApp staking.
+   *
+   * If successful, smart contract will be assigned a simple, unique numerical identifier.
+   * Owner is set to be initial beneficiary & manager of the dApp.
+   **/
+  | { name: 'Register'; params: { owner: AccountId32; smartContract: AstarPrimitivesDappStakingSmartContract } }
+  /**
+   * Used to modify the reward beneficiary account for a dApp.
+   *
+   * Caller has to be dApp owner.
+   * If set to `None`, rewards will be deposited to the dApp owner.
+   * After this call, all existing & future rewards will be paid out to the beneficiary.
+   **/
+  | {
+      name: 'SetDappRewardBeneficiary';
+      params: { smartContract: AstarPrimitivesDappStakingSmartContract; beneficiary?: AccountId32 | undefined };
+    }
+  /**
+   * Used to change dApp owner.
+   *
+   * Can be called by dApp owner or dApp staking manager origin.
+   * This is useful in two cases:
+   * 1. when the dApp owner account is compromised, manager can change the owner to a new account
+   * 2. if project wants to transfer ownership to a new account (DAO, multisig, etc.).
+   **/
+  | { name: 'SetDappOwner'; params: { smartContract: AstarPrimitivesDappStakingSmartContract; newOwner: AccountId32 } }
+  /**
+   * Unregister dApp from dApp staking protocol, making it ineligible for future rewards.
+   * This doesn't remove the dApp completely from the system just yet, but it can no longer be used for staking.
+   *
+   * Can be called by dApp staking manager origin.
+   **/
+  | { name: 'Unregister'; params: { smartContract: AstarPrimitivesDappStakingSmartContract } }
+  /**
+   * Locks additional funds into dApp staking.
+   *
+   * In case caller account doesn't have sufficient balance to cover the specified amount, everything is locked.
+   * After adjustment, lock amount must be greater than zero and in total must be equal or greater than the minimum locked amount.
+   *
+   * Locked amount can immediately be used for staking.
+   **/
+  | { name: 'Lock'; params: { amount: bigint } }
+  /**
+   * Attempts to start the unlocking process for the specified amount.
+   *
+   * Only the amount that isn't actively used for staking can be unlocked.
+   * If the amount is greater than the available amount for unlocking, everything is unlocked.
+   * If the remaining locked amount would take the account below the minimum locked amount, everything is unlocked.
+   **/
+  | { name: 'Unlock'; params: { amount: bigint } }
+  /**
+   * Claims all of fully unlocked chunks, removing the lock from them.
+   **/
+  | { name: 'ClaimUnlocked' }
+  | { name: 'RelockUnlocking' }
+  /**
+   * Stake the specified amount on a smart contract.
+   * The precise `amount` specified **must** be available for staking.
+   * The total amount staked on a dApp must be greater than the minimum required value.
+   *
+   * Depending on the period type, appropriate stake amount will be updated. During `Voting` subperiod, `voting` stake amount is updated,
+   * and same for `Build&Earn` subperiod.
+   *
+   * Staked amount is only eligible for rewards from the next era onwards.
+   **/
+  | { name: 'Stake'; params: { smartContract: AstarPrimitivesDappStakingSmartContract; amount: bigint } }
+  /**
+   * Unstake the specified amount from a smart contract.
+   * The `amount` specified **must** not exceed what's staked, otherwise the call will fail.
+   *
+   * If unstaking the specified `amount` would take staker below the minimum stake threshold, everything is unstaked.
+   *
+   * Depending on the period type, appropriate stake amount will be updated.
+   * In case amount is unstaked during `Voting` subperiod, the `voting` amount is reduced.
+   * In case amount is unstaked during `Build&Earn` subperiod, first the `build_and_earn` is reduced,
+   * and any spillover is subtracted from the `voting` amount.
+   **/
+  | { name: 'Unstake'; params: { smartContract: AstarPrimitivesDappStakingSmartContract; amount: bigint } }
+  /**
+   * Claims some staker rewards, if user has any.
+   * In the case of a successful call, at least one era will be claimed, with the possibility of multiple claims happening.
+   **/
+  | { name: 'ClaimStakerRewards' }
+  /**
+   * Used to claim bonus reward for a smart contract, if eligible.
+   **/
+  | { name: 'ClaimBonusReward'; params: { smartContract: AstarPrimitivesDappStakingSmartContract } }
+  /**
+   * Used to claim dApp reward for the specified era.
+   **/
+  | { name: 'ClaimDappReward'; params: { smartContract: AstarPrimitivesDappStakingSmartContract; era: number } }
+  /**
+   * Used to unstake funds from a contract that was unregistered after an account staked on it.
+   * This is required if staker wants to re-stake these funds on another active contract during the ongoing period.
+   **/
+  | { name: 'UnstakeFromUnregistered'; params: { smartContract: AstarPrimitivesDappStakingSmartContract } }
+  /**
+   * Cleanup expired stake entries for the contract.
+   *
+   * Entry is considered to be expired if:
+   * 1. It's from a past period & the account wasn't a loyal staker, meaning there's no claimable bonus reward.
+   * 2. It's from a period older than the oldest claimable period, regardless whether the account was loyal or not.
+   **/
+  | { name: 'CleanupExpiredEntries' }
+  /**
+   * Used to force a change of era or subperiod.
+   * The effect isn't immediate but will happen on the next block.
+   *
+   * Used for testing purposes, when we want to force an era change, or a subperiod change.
+   * Not intended to be used in production, except in case of unforeseen circumstances.
+   *
+   * Can only be called by manager origin.
+   **/
+  | { name: 'Force'; params: { forcingType: PalletDappStakingV3ForcingType } };
 
 /**
  * Contains one variant per dispatchable that can be called by an extrinsic.
@@ -3875,8 +4048,13 @@ export type OrmlXtokensModuleCall =
    * messages correctly.
    **/
   | {
-      tag: 'Transfer';
-      value: { currencyId: bigint; amount: bigint; dest: XcmVersionedMultiLocation; destWeightLimit: XcmV3WeightLimit };
+      name: 'Transfer';
+      params: {
+        currencyId: bigint;
+        amount: bigint;
+        dest: XcmVersionedMultiLocation;
+        destWeightLimit: XcmV3WeightLimit;
+      };
     }
   /**
    * Transfer `MultiAsset`.
@@ -3893,8 +4071,8 @@ export type OrmlXtokensModuleCall =
    * messages correctly.
    **/
   | {
-      tag: 'TransferMultiasset';
-      value: { asset: XcmVersionedMultiAsset; dest: XcmVersionedMultiLocation; destWeightLimit: XcmV3WeightLimit };
+      name: 'TransferMultiasset';
+      params: { asset: XcmVersionedMultiAsset; dest: XcmVersionedMultiLocation; destWeightLimit: XcmV3WeightLimit };
     }
   /**
    * Transfer native currencies specifying the fee and amount as
@@ -3920,8 +4098,8 @@ export type OrmlXtokensModuleCall =
    * messages correctly.
    **/
   | {
-      tag: 'TransferWithFee';
-      value: {
+      name: 'TransferWithFee';
+      params: {
         currencyId: bigint;
         amount: bigint;
         fee: bigint;
@@ -3953,8 +4131,8 @@ export type OrmlXtokensModuleCall =
    * messages correctly.
    **/
   | {
-      tag: 'TransferMultiassetWithFee';
-      value: {
+      name: 'TransferMultiassetWithFee';
+      params: {
         asset: XcmVersionedMultiAsset;
         fee: XcmVersionedMultiAsset;
         dest: XcmVersionedMultiLocation;
@@ -3979,8 +4157,8 @@ export type OrmlXtokensModuleCall =
    * messages correctly.
    **/
   | {
-      tag: 'TransferMulticurrencies';
-      value: {
+      name: 'TransferMulticurrencies';
+      params: {
         currencies: Array<[bigint, bigint]>;
         feeItem: number;
         dest: XcmVersionedMultiLocation;
@@ -4005,8 +4183,8 @@ export type OrmlXtokensModuleCall =
    * messages correctly.
    **/
   | {
-      tag: 'TransferMultiassets';
-      value: {
+      name: 'TransferMultiassets';
+      params: {
         assets: XcmVersionedMultiAssets;
         feeItem: number;
         dest: XcmVersionedMultiLocation;
@@ -4380,6 +4558,181 @@ export type PalletSudoCall =
    **/
   | { name: 'SudoAs'; params: { who: MultiAddress; call: AstarRuntimeRuntimeCall } };
 
+/**
+ * Contains one variant per dispatchable that can be called by an extrinsic.
+ **/
+export type PalletStaticPriceProviderCall =
+  /**
+   * Privileged action used to set the active native currency price.
+   *
+   * This is a temporary solution before oracle is implemented & operational.
+   **/
+  { name: 'ForceSetPrice'; params: { price: FixedU64 } };
+
+/**
+ * Contains one variant per dispatchable that can be called by an extrinsic.
+ **/
+export type PalletDappStakingMigrationCall =
+  /**
+   * Attempt to execute migration steps, consuming up to the specified amount of weight.
+   * If no weight is specified, max allowed weight is used.
+   *
+   * Regardless of the specified weight limit, it will be clamped between the minimum & maximum allowed values.
+   * This means that even if user specifies `Weight::zero()` as the limit,
+   * the call will be charged & executed using the minimum allowed weight.
+   **/
+  { name: 'Migrate'; params: { weightLimit?: SpWeightsWeightV2Weight | undefined } };
+
+/**
+ * Contains one variant per dispatchable that can be called by an extrinsic.
+ **/
+export type PalletDappsStakingPalletCall =
+  /**
+   * Used to register contract for dapps staking.
+   * The origin account used is treated as the `developer` account.
+   *
+   * Depending on the pallet configuration/state it is possible that developer needs to be whitelisted prior to registration.
+   *
+   * As part of this call, `RegisterDeposit` will be reserved from devs account.
+   **/
+  | { name: 'Register'; params: { developer: AccountId32; contractId: AstarPrimitivesDappStakingSmartContract } }
+  /**
+   * Unregister existing contract from dapps staking, making it ineligible for rewards from current era onwards.
+   * This must be called by the root (at the moment).
+   *
+   * Deposit is returned to the developer but existing stakers should manually call `withdraw_from_unregistered` if they wish to to unstake.
+   *
+   * **Warning**: After this action ,contract can not be registered for dapps staking again.
+   **/
+  | { name: 'Unregister'; params: { contractId: AstarPrimitivesDappStakingSmartContract } }
+  /**
+   * Withdraw locked funds from a contract that was unregistered.
+   *
+   * Funds don't need to undergo the unbonding period - they are returned immediately to the staker's free balance.
+   **/
+  | { name: 'WithdrawFromUnregistered'; params: { contractId: AstarPrimitivesDappStakingSmartContract } }
+  /**
+   * Lock up and stake balance of the origin account.
+   *
+   * `value` must be more than the `minimum_balance` specified by `MinimumStakingAmount`
+   * unless account already has bonded value equal or more than 'minimum_balance'.
+   *
+   * The dispatch origin for this call must be _Signed_ by the staker's account.
+   **/
+  | { name: 'BondAndStake'; params: { contractId: AstarPrimitivesDappStakingSmartContract; value: bigint } }
+  /**
+   * Start unbonding process and unstake balance from the contract.
+   *
+   * The unstaked amount will no longer be eligible for rewards but still won't be unlocked.
+   * User needs to wait for the unbonding period to finish before being able to withdraw
+   * the funds via `withdraw_unbonded` call.
+   *
+   * In case remaining staked balance on contract is below minimum staking amount,
+   * entire stake for that contract will be unstaked.
+   **/
+  | { name: 'UnbondAndUnstake'; params: { contractId: AstarPrimitivesDappStakingSmartContract; value: bigint } }
+  /**
+   * Withdraw all funds that have completed the unbonding process.
+   *
+   * If there are unbonding chunks which will be fully unbonded in future eras,
+   * they will remain and can be withdrawn later.
+   **/
+  | { name: 'WithdrawUnbonded' }
+  /**
+   * Transfer nomination from one contract to another.
+   *
+   * Same rules as for `bond_and_stake` and `unbond_and_unstake` apply.
+   * Minor difference is that there is no unbonding period so this call won't
+   * check whether max number of unbonding chunks is exceeded.
+   *
+   **/
+  | {
+      name: 'NominationTransfer';
+      params: {
+        originContractId: AstarPrimitivesDappStakingSmartContract;
+        value: bigint;
+        targetContractId: AstarPrimitivesDappStakingSmartContract;
+      };
+    }
+  /**
+   * Claim earned staker rewards for the oldest unclaimed era.
+   * In order to claim multiple eras, this call has to be called multiple times.
+   *
+   * The rewards are always added to the staker's free balance (account) but depending on the reward destination configuration,
+   * they might be immediately re-staked.
+   **/
+  | { name: 'ClaimStaker'; params: { contractId: AstarPrimitivesDappStakingSmartContract } }
+  /**
+   * Claim earned dapp rewards for the specified era.
+   *
+   * Call must ensure that the specified era is eligible for reward payout and that it hasn't already been paid out for the dapp.
+   **/
+  | { name: 'ClaimDapp'; params: { contractId: AstarPrimitivesDappStakingSmartContract; era: number } }
+  /**
+   * Force a new era at the start of the next block.
+   *
+   * The dispatch origin must be Root.
+   **/
+  | { name: 'ForceNewEra' }
+  /**
+   * `true` will disable pallet, enabling maintenance mode. `false` will do the opposite.
+   *
+   * The dispatch origin must be Root.
+   **/
+  | { name: 'MaintenanceMode'; params: { enableMaintenance: boolean } }
+  /**
+   * Used to set reward destination for staker rewards.
+   *
+   * User must be an active staker in order to use this call.
+   * This will apply to all existing unclaimed rewards.
+   **/
+  | { name: 'SetRewardDestination'; params: { rewardDestination: PalletDappsStakingRewardDestination } }
+  /**
+   * Used to force set `ContractEraStake` storage values.
+   * The purpose of this call is only for fixing one of the issues detected with dapps-staking.
+   *
+   * The dispatch origin must be Root.
+   **/
+  | {
+      name: 'SetContractStakeInfo';
+      params: {
+        contract: AstarPrimitivesDappStakingSmartContract;
+        era: number;
+        contractStakeInfo: PalletDappsStakingContractStakeInfo;
+      };
+    }
+  /**
+   * Used to burn unclaimed & stale rewards from an unregistered contract.
+   **/
+  | { name: 'BurnStaleReward'; params: { contractId: AstarPrimitivesDappStakingSmartContract; era: number } }
+  /**
+   * Claim earned staker rewards for the given staker, and the oldest unclaimed era.
+   * In order to claim multiple eras, this call has to be called multiple times.
+   *
+   * This call can only be used during the pallet decommission process.
+   **/
+  | { name: 'ClaimStakerFor'; params: { staker: AccountId32; contractId: AstarPrimitivesDappStakingSmartContract } }
+  /**
+   * Used to set reward destination for staker rewards, for the given staker
+   *
+   **/
+  | {
+      name: 'SetRewardDestinationFor';
+      params: { staker: AccountId32; rewardDestination: PalletDappsStakingRewardDestination };
+    }
+  /**
+   * Enable the `decommission` flag for the pallet.
+   *
+   * The dispatch origin must be Root.
+   **/
+  | { name: 'Decommission' };
+
+export type PalletDappsStakingContractStakeInfo = {
+  total: bigint;
+  numberOfStakers: number;
+  contractRewardClaimed: boolean;
+};
+
 export type AstarRuntimeOriginCaller =
   | { tag: 'System'; value: FrameSupportDispatchRawOrigin }
   | { tag: 'PolkadotXcm'; value: PalletXcmOrigin }
@@ -4693,6 +5046,12 @@ export type PalletBalancesReserveData = { id: FixedBytes<8>; amount: bigint };
 
 export type PalletBalancesIdAmount = { id: []; amount: bigint };
 
+export type PalletBalancesIdAmountRuntimeFreezeReason = { id: AstarRuntimeRuntimeFreezeReason; amount: bigint };
+
+export type AstarRuntimeRuntimeFreezeReason = { tag: 'DappStaking'; value: PalletDappStakingV3FreezeReason };
+
+export type PalletDappStakingV3FreezeReason = 'DAppStaking';
+
 /**
  * Custom [dispatch errors](https://docs.substrate.io/main-docs/build/events-errors/) of this pallet.
  **/
@@ -4766,149 +5125,245 @@ export type PalletVestingError =
    **/
   | 'InvalidScheduleParams';
 
-export type PalletDappsStakingAccountLedger = {
-  locked: bigint;
-  unbondingInfo: PalletDappsStakingUnbondingInfo;
-  rewardDestination: PalletDappsStakingRewardDestination;
+/**
+ * Custom [dispatch errors](https://docs.substrate.io/main-docs/build/events-errors/) of this pallet.
+ **/
+export type PalletInflationError =
+  /**
+   * Sum of all parts must be one whole (100%).
+   **/
+  'InvalidInflationParameters';
+
+export type PalletDappStakingV3ProtocolState = {
+  era: number;
+  nextEraStart: number;
+  periodInfo: PalletDappStakingV3PeriodInfo;
+  maintenance: boolean;
 };
 
-export type PalletDappsStakingUnbondingInfo = { unlockingChunks: Array<PalletDappsStakingUnlockingChunk> };
+export type PalletDappStakingV3PeriodInfo = {
+  number: number;
+  subperiod: PalletDappStakingV3Subperiod;
+  nextSubperiodStartEra: number;
+};
 
-export type PalletDappsStakingUnlockingChunk = { amount: bigint; unlockEra: number };
+export type PalletDappStakingV3DAppInfo = {
+  owner: AccountId32;
+  id: number;
+  rewardBeneficiary?: AccountId32 | undefined;
+};
 
-export type PalletDappsStakingRewardInfo = { stakers: bigint; dapps: bigint };
+export type PalletDappStakingV3AccountLedger = {
+  locked: bigint;
+  unlocking: Array<PalletDappStakingV3UnlockingChunk>;
+  staked: PalletDappStakingV3StakeAmount;
+  stakedFuture?: PalletDappStakingV3StakeAmount | undefined;
+  contractStakeCount: number;
+};
 
-export type PalletDappsStakingForcing = 'NotForcing' | 'ForceNew';
+export type PalletDappStakingV3UnlockingChunk = { amount: bigint; unlockBlock: number };
 
-export type PalletDappsStakingDAppInfo = { developer: AccountId32; state: PalletDappsStakingDAppState };
+export type PalletDappStakingV3StakeAmount = { voting: bigint; buildAndEarn: bigint; era: number; period: number };
 
-export type PalletDappsStakingDAppState = { tag: 'Registered' } | { tag: 'Unregistered'; value: number };
+export type PalletDappStakingV3SingularStakingInfo = { staked: PalletDappStakingV3StakeAmount; loyalStaker: boolean };
 
-export type PalletDappsStakingEraInfo = { rewards: PalletDappsStakingRewardInfo; staked: bigint; locked: bigint };
+export type PalletDappStakingV3ContractStakeAmount = {
+  staked: PalletDappStakingV3StakeAmount;
+  stakedFuture?: PalletDappStakingV3StakeAmount | undefined;
+};
 
-export type PalletDappsStakingStakerInfo = { stakes: Array<PalletDappsStakingEraStake> };
+export type PalletDappStakingV3EraInfo = {
+  totalLocked: bigint;
+  unlocking: bigint;
+  currentStakeAmount: PalletDappStakingV3StakeAmount;
+  nextStakeAmount: PalletDappStakingV3StakeAmount;
+};
 
-export type PalletDappsStakingEraStake = { staked: bigint; era: number };
+export type PalletDappStakingV3EraRewardSpan = {
+  span: Array<PalletDappStakingV3EraReward>;
+  firstEra: number;
+  lastEra: number;
+};
 
-export type PalletDappsStakingVersion = 'V1_0_0' | 'V2_0_0' | 'V3_0_0' | 'V4_0_0';
+export type PalletDappStakingV3EraReward = { stakerRewardPool: bigint; staked: bigint; dappRewardPool: bigint };
 
-export type FrameSupportPalletId = FixedBytes<8>;
+export type PalletDappStakingV3PeriodEndInfo = { bonusRewardPool: bigint; totalVpStake: bigint; finalEra: number };
+
+export type PalletDappStakingV3TierParameters = {
+  rewardPortion: Array<Permill>;
+  slotDistribution: Array<Permill>;
+  tierThresholds: Array<PalletDappStakingV3TierThreshold>;
+};
+
+export type PalletDappStakingV3TierThreshold =
+  | { tag: 'FixedTvlAmount'; value: { amount: bigint } }
+  | { tag: 'DynamicTvlAmount'; value: { amount: bigint; minimumAmount: bigint } };
+
+export type PalletDappStakingV3TiersConfiguration = {
+  numberOfSlots: number;
+  slotsPerTier: Array<number>;
+  rewardPortion: Array<Permill>;
+  tierThresholds: Array<PalletDappStakingV3TierThreshold>;
+};
+
+export type PalletDappStakingV3DAppTierRewards = {
+  dapps: Array<[number, number]>;
+  rewards: Array<bigint>;
+  period: number;
+};
+
+export type PalletDappStakingV3CleanupMarker = {
+  eraRewardIndex: number;
+  dappTiersIndex: number;
+  oldestValidEra: number;
+};
 
 /**
  * Custom [dispatch errors](https://docs.substrate.io/main-docs/build/events-errors/) of this pallet.
  **/
-export type PalletDappsStakingPalletError =
+export type PalletDappStakingV3Error =
   /**
-   * Disabled
+   * Pallet is disabled/in maintenance mode.
    **/
   | 'Disabled'
   /**
-   * No change in maintenance mode
+   * Smart contract already exists within dApp staking protocol.
    **/
-  | 'NoMaintenanceModeChange'
+  | 'ContractAlreadyExists'
   /**
-   * Upgrade is too heavy, reduce the weight parameter.
+   * Maximum number of smart contracts has been reached.
    **/
-  | 'UpgradeTooHeavy'
+  | 'ExceededMaxNumberOfContracts'
   /**
-   * Can not stake with zero value.
+   * Not possible to assign a new dApp Id.
+   * This should never happen since current type can support up to 65536 - 1 unique dApps.
    **/
-  | 'StakingWithNoValue'
+  | 'NewDAppIdUnavailable'
   /**
-   * Can not stake with value less than minimum staking value
+   * Specified smart contract does not exist in dApp staking.
    **/
-  | 'InsufficientValue'
+  | 'ContractNotFound'
   /**
-   * Number of stakers per contract exceeded.
+   * Call origin is not dApp owner.
    **/
-  | 'MaxNumberOfStakersExceeded'
+  | 'OriginNotOwner'
   /**
-   * Targets must be operated contracts
+   * Performing locking or staking with 0 amount.
    **/
-  | 'NotOperatedContract'
+  | 'ZeroAmount'
   /**
-   * Contract isn't staked.
+   * Total locked amount for staker is below minimum threshold.
    **/
-  | 'NotStakedContract'
+  | 'LockedAmountBelowThreshold'
   /**
-   * Contract isn't unregistered.
+   * Account is not allowed to participate in dApp staking due to some external reason (e.g. account is already a collator).
    **/
-  | 'NotUnregisteredContract'
+  | 'AccountNotAvailableForDappStaking'
   /**
-   * Unclaimed rewards should be claimed before withdrawing stake.
-   **/
-  | 'UnclaimedRewardsRemaining'
-  /**
-   * Unstaking a contract with zero value
-   **/
-  | 'UnstakingWithNoValue'
-  /**
-   * There are no previously unbonded funds that can be unstaked and withdrawn.
-   **/
-  | 'NothingToWithdraw'
-  /**
-   * The contract is already registered by other account
-   **/
-  | 'AlreadyRegisteredContract'
-  /**
-   * This account was already used to register contract
-   **/
-  | 'AlreadyUsedDeveloperAccount'
-  /**
-   * Smart contract not owned by the account id.
-   **/
-  | 'NotOwnedContract'
-  /**
-   * Report issue on github if this is ever emitted
-   **/
-  | 'UnknownEraReward'
-  /**
-   * Report issue on github if this is ever emitted
-   **/
-  | 'UnexpectedStakeInfoEra'
-  /**
-   * Contract has too many unlocking chunks. Withdraw the existing chunks if possible
-   * or wait for current chunks to complete unlocking process to withdraw them.
+   * Cannot add additional unlocking chunks due to capacity limit.
    **/
   | 'TooManyUnlockingChunks'
   /**
-   * Contract already claimed in this era and reward is distributed
+   * Remaining stake prevents entire balance of starting the unlocking process.
    **/
-  | 'AlreadyClaimedInThisEra'
+  | 'RemainingStakePreventsFullUnlock'
   /**
-   * Era parameter is out of bounds
+   * There are no eligible unlocked chunks to claim. This can happen either if no eligible chunks exist, or if user has no chunks at all.
    **/
-  | 'EraOutOfBounds'
+  | 'NoUnlockedChunksToClaim'
   /**
-   * Too many active `EraStake` values for (staker, contract) pairing.
-   * Claim existing rewards to fix this problem.
+   * There are no unlocking chunks available to relock.
    **/
-  | 'TooManyEraStakeValues'
+  | 'NoUnlockingChunks'
   /**
-   * Account is not actively staking
+   * The amount being staked is too large compared to what's available for staking.
    **/
-  | 'NotActiveStaker'
+  | 'UnavailableStakeFunds'
   /**
-   * Transfering nomination to the same contract
+   * There are unclaimed rewards remaining from past eras or periods. They should be claimed before attempting any stake modification again.
    **/
-  | 'NominationTransferToSameContract'
+  | 'UnclaimedRewards'
   /**
-   * Decommission is in progress so this call is not allowed.
+   * An unexpected error occurred while trying to stake.
    **/
-  | 'DecommissionInProgress'
+  | 'InternalStakeError'
   /**
-   * Delegated claim call is not allowed if both the staker & caller are the same accounts.
+   * Total staked amount on contract is below the minimum required value.
    **/
-  | 'ClaimForCallerAccount';
-
-/**
- * Custom [dispatch errors](https://docs.substrate.io/main-docs/build/events-errors/) of this pallet.
- **/
-export type PalletBlockRewardsHybridError =
+  | 'InsufficientStakeAmount'
   /**
-   * Sum of all rations must be one whole (100%)
+   * Stake operation is rejected since period ends in the next era.
    **/
-  'InvalidDistributionConfiguration';
+  | 'PeriodEndsInNextEra'
+  /**
+   * Unstaking is rejected since the period in which past stake was active has passed.
+   **/
+  | 'UnstakeFromPastPeriod'
+  /**
+   * Unstake amount is greater than the staked amount.
+   **/
+  | 'UnstakeAmountTooLarge'
+  /**
+   * Account has no staking information for the contract.
+   **/
+  | 'NoStakingInfo'
+  /**
+   * An unexpected error occurred while trying to unstake.
+   **/
+  | 'InternalUnstakeError'
+  /**
+   * Rewards are no longer claimable since they are too old.
+   **/
+  | 'RewardExpired'
+  /**
+   * Reward payout has failed due to an unexpected reason.
+   **/
+  | 'RewardPayoutFailed'
+  /**
+   * There are no claimable rewards.
+   **/
+  | 'NoClaimableRewards'
+  /**
+   * An unexpected error occurred while trying to claim staker rewards.
+   **/
+  | 'InternalClaimStakerError'
+  /**
+   * Account is has no eligible stake amount for bonus reward.
+   **/
+  | 'NotEligibleForBonusReward'
+  /**
+   * An unexpected error occurred while trying to claim bonus reward.
+   **/
+  | 'InternalClaimBonusError'
+  /**
+   * Claim era is invalid - it must be in history, and rewards must exist for it.
+   **/
+  | 'InvalidClaimEra'
+  /**
+   * No dApp tier info exists for the specified era. This can be because era has expired
+   * or because during the specified era there were no eligible rewards or protocol wasn't active.
+   **/
+  | 'NoDAppTierInfo'
+  /**
+   * An unexpected error occurred while trying to claim dApp reward.
+   **/
+  | 'InternalClaimDAppError'
+  /**
+   * Contract is still active, not unregistered.
+   **/
+  | 'ContractStillActive'
+  /**
+   * There are too many contract stake entries for the account. This can be cleaned up by either unstaking or cleaning expired entries.
+   **/
+  | 'TooManyStakedContracts'
+  /**
+   * There are no expired entries to cleanup for the account.
+   **/
+  | 'NoExpiredEntries'
+  /**
+   * Force call is not allowed in production.
+   **/
+  | 'ForceNotAllowed';
 
 export type PalletAssetsAssetDetails = {
   owner: AccountId32;
@@ -5082,7 +5537,11 @@ export type PalletCollatorSelectionError =
   /**
    * Validator ID is not yet registered
    **/
-  | 'ValidatorNotRegistered';
+  | 'ValidatorNotRegistered'
+  /**
+   * Account is now allowed to be a candidate due to an external reason (e.g. it might be participating in dApp staking)
+   **/
+  | 'NotAllowedCandidate';
 
 export type SpCoreCryptoKeyTypeId = FixedBytes<4>;
 
@@ -5849,6 +6308,157 @@ export type PalletSudoError =
    * Sender must be the Sudo account
    **/
   'RequireSudo';
+
+/**
+ * Custom [dispatch errors](https://docs.substrate.io/main-docs/build/events-errors/) of this pallet.
+ **/
+export type PalletStaticPriceProviderError =
+  /**
+   * Zero is invalid value for the price (hopefully).
+   **/
+  'ZeroPrice';
+
+export type PalletDappStakingMigrationMigrationState =
+  | 'NotInProgress'
+  | 'RegisteredDApps'
+  | 'Ledgers'
+  | 'Cleanup'
+  | 'Finished';
+
+export type PalletDappsStakingAccountLedger = {
+  locked: bigint;
+  unbondingInfo: PalletDappsStakingUnbondingInfo;
+  rewardDestination: PalletDappsStakingRewardDestination;
+};
+
+export type PalletDappsStakingUnbondingInfo = { unlockingChunks: Array<PalletDappsStakingUnlockingChunk> };
+
+export type PalletDappsStakingUnlockingChunk = { amount: bigint; unlockEra: number };
+
+export type PalletDappsStakingRewardInfo = { stakers: bigint; dapps: bigint };
+
+export type PalletDappsStakingForcing = 'NotForcing' | 'ForceNew';
+
+export type PalletDappsStakingDAppInfo = { developer: AccountId32; state: PalletDappsStakingDAppState };
+
+export type PalletDappsStakingDAppState = { tag: 'Registered' } | { tag: 'Unregistered'; value: number };
+
+export type PalletDappsStakingEraInfo = { rewards: PalletDappsStakingRewardInfo; staked: bigint; locked: bigint };
+
+export type PalletDappsStakingStakerInfo = { stakes: Array<PalletDappsStakingEraStake> };
+
+export type PalletDappsStakingEraStake = { staked: bigint; era: number };
+
+export type PalletDappsStakingVersion = 'V100' | 'V200' | 'V300' | 'V400';
+
+export type FrameSupportPalletId = FixedBytes<8>;
+
+/**
+ * Custom [dispatch errors](https://docs.substrate.io/main-docs/build/events-errors/) of this pallet.
+ **/
+export type PalletDappsStakingPalletError =
+  /**
+   * Disabled
+   **/
+  | 'Disabled'
+  /**
+   * No change in maintenance mode
+   **/
+  | 'NoMaintenanceModeChange'
+  /**
+   * Upgrade is too heavy, reduce the weight parameter.
+   **/
+  | 'UpgradeTooHeavy'
+  /**
+   * Can not stake with zero value.
+   **/
+  | 'StakingWithNoValue'
+  /**
+   * Can not stake with value less than minimum staking value
+   **/
+  | 'InsufficientValue'
+  /**
+   * Number of stakers per contract exceeded.
+   **/
+  | 'MaxNumberOfStakersExceeded'
+  /**
+   * Targets must be operated contracts
+   **/
+  | 'NotOperatedContract'
+  /**
+   * Contract isn't staked.
+   **/
+  | 'NotStakedContract'
+  /**
+   * Contract isn't unregistered.
+   **/
+  | 'NotUnregisteredContract'
+  /**
+   * Unclaimed rewards should be claimed before withdrawing stake.
+   **/
+  | 'UnclaimedRewardsRemaining'
+  /**
+   * Unstaking a contract with zero value
+   **/
+  | 'UnstakingWithNoValue'
+  /**
+   * There are no previously unbonded funds that can be unstaked and withdrawn.
+   **/
+  | 'NothingToWithdraw'
+  /**
+   * The contract is already registered by other account
+   **/
+  | 'AlreadyRegisteredContract'
+  /**
+   * This account was already used to register contract
+   **/
+  | 'AlreadyUsedDeveloperAccount'
+  /**
+   * Smart contract not owned by the account id.
+   **/
+  | 'NotOwnedContract'
+  /**
+   * Report issue on github if this is ever emitted
+   **/
+  | 'UnknownEraReward'
+  /**
+   * Report issue on github if this is ever emitted
+   **/
+  | 'UnexpectedStakeInfoEra'
+  /**
+   * Contract has too many unlocking chunks. Withdraw the existing chunks if possible
+   * or wait for current chunks to complete unlocking process to withdraw them.
+   **/
+  | 'TooManyUnlockingChunks'
+  /**
+   * Contract already claimed in this era and reward is distributed
+   **/
+  | 'AlreadyClaimedInThisEra'
+  /**
+   * Era parameter is out of bounds
+   **/
+  | 'EraOutOfBounds'
+  /**
+   * Too many active `EraStake` values for (staker, contract) pairing.
+   * Claim existing rewards to fix this problem.
+   **/
+  | 'TooManyEraStakeValues'
+  /**
+   * Account is not actively staking
+   **/
+  | 'NotActiveStaker'
+  /**
+   * Transfering nomination to the same contract
+   **/
+  | 'NominationTransferToSameContract'
+  /**
+   * Decommission is in progress so this call is not allowed.
+   **/
+  | 'DecommissionInProgress'
+  /**
+   * Delegated claim call is not allowed if both the staker & caller are the same accounts.
+   **/
+  | 'ClaimForCallerAccount';
 
 export type FpSelfContainedUncheckedExtrinsic = SpRuntimeUncheckedExtrinsic;
 

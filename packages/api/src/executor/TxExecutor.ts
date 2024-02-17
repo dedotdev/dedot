@@ -4,6 +4,8 @@ import {
   Callback,
   DryRunResult,
   GenericSubstrateApi,
+  GenericTxCall,
+  IRuntimeTxCall,
   ISubmittableExtrinsic,
   ISubmittableResult,
   PaymentInfoResult,
@@ -31,16 +33,6 @@ export function sign(signerPair: IKeyringPair, raw: HexString, options?: SignOpt
   return signerPair.sign(encoded, options);
 }
 
-export type GenericRuntimeCall = {
-  pallet: string;
-  palletCall:
-    | {
-        name: string;
-        params: object;
-      }
-    | string;
-};
-
 export class TxExecutor<ChainApi extends GenericSubstrateApi = SubstrateApi> extends Executor<ChainApi> {
   execute(pallet: string, functionName: string) {
     const targetPallet = this.getPallet(pallet);
@@ -52,38 +44,49 @@ export class TxExecutor<ChainApi extends GenericSubstrateApi = SubstrateApi> ext
     assert(txType.type.tag === 'Enum', 'Tx type should be enum');
 
     const isFlatEnum = txType.type.value.members.every((m) => m.fields.length === 0);
-    const txCall = txType.type.value.members.find((m) => stringCamelCase(m.name) === functionName);
-    assert(txCall, 'Tx call not found');
+    const txCallDef = txType.type.value.members.find((m) => stringCamelCase(m.name) === functionName);
+    assert(txCallDef, 'Tx call not found');
 
-    const txCallFn = (...args: any[]) => {
-      let call: GenericRuntimeCall;
+    const txCallFn: GenericTxCall = (...args: any[]) => {
+      let call: IRuntimeTxCall;
       if (isFlatEnum) {
-        call = { pallet: targetPallet.name, palletCall: txCall.name };
+        call = {
+          pallet: stringPascalCase(targetPallet.name),
+          palletCall: stringPascalCase(txCallDef.name),
+        };
       } else {
-        const callParams = txCall.fields.reduce((o, { name }, idx) => {
+        const callParams = txCallDef.fields.reduce((o, { name }, idx) => {
           o[stringCamelCase(name!)] = args[idx];
           return o;
         }, {} as any);
 
         call = {
           pallet: stringPascalCase(targetPallet.name),
-          palletCall: { name: stringPascalCase(txCall.name), params: callParams },
+          palletCall: {
+            name: stringPascalCase(txCallDef.name),
+            params: callParams,
+          },
         };
       }
 
       return this.createExtrinsic(call);
     };
 
-    // txCallFn.meta TODO assign tx meta
+    txCallFn.meta = {
+      ...txCallDef,
+      fieldCodecs: txCallDef.fields.map(({ typeId }) => this.registry.findPortableCodec(typeId)),
+      pallet: targetPallet.name,
+      palletIndex: targetPallet.index,
+    };
 
     return txCallFn;
   }
 
-  createExtrinsic(call: GenericRuntimeCall) {
+  createExtrinsic(call: IRuntimeTxCall) {
     const api = this.api;
 
     // TODO implements ISubmittableExtrinsic
-    class GenericExtrinsic extends Extrinsic implements ISubmittableExtrinsic {
+    class SubmittableExtrinsic extends Extrinsic implements ISubmittableExtrinsic {
       async signAsync(fromAccount: AddressOrPair, options?: Partial<SignerOptions>) {
         const address = isKeyringPair(fromAccount) ? fromAccount.address : fromAccount.toString();
         const extra = new ExtraSignedExtension(api as unknown as DelightfulApi, {
@@ -114,7 +117,7 @@ export class TxExecutor<ChainApi extends GenericSubstrateApi = SubstrateApi> ext
         const $Signature = this.registry.findPortableCodec(signatureTypeId);
 
         this.attachSignature({
-          address,
+          address: address,
           signature: $Signature.tryDecode(signature),
           extra: extra.data,
         });
@@ -124,12 +127,12 @@ export class TxExecutor<ChainApi extends GenericSubstrateApi = SubstrateApi> ext
 
       signAndSend(account: AddressOrPair, options?: Partial<SignerOptions>): Promise<Hash>;
 
-      signAndSend(account: AddressOrPair, statusCb: Callback<ISubmittableResult>): Promise<Unsub>;
+      signAndSend(account: AddressOrPair, callback: Callback<ISubmittableResult>): Promise<Unsub>;
 
       signAndSend(
         account: AddressOrPair,
         options: Partial<SignerOptions>,
-        statusCb?: Callback<ISubmittableResult>,
+        callback?: Callback<ISubmittableResult>,
       ): Promise<Unsub>;
 
       async signAndSend(
@@ -222,12 +225,12 @@ export class TxExecutor<ChainApi extends GenericSubstrateApi = SubstrateApi> ext
       }
 
       send(): Promise<Hash>;
-      send(statusCb: Callback<ISubmittableResult>): Promise<Unsub>;
-      send(statusCb?: Callback<ISubmittableResult>): Promise<Hash> | Promise<Unsub> {
+      send(callback: Callback<ISubmittableResult>): Promise<Unsub>;
+      send(callback?: Callback<ISubmittableResult>): Promise<Hash> | Promise<Unsub> {
         throw new Error('To implement!');
       }
     }
 
-    return new GenericExtrinsic(api.registry, call);
+    return new SubmittableExtrinsic(api.registry, call);
   }
 }

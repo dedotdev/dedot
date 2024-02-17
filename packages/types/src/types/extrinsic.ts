@@ -26,7 +26,6 @@ export interface SignerOptions extends PayloadOptions {
 export type DryRunResult = ApplyExtrinsicResult;
 export type PaymentInfoResult = RuntimeDispatchInfo;
 
-// TODO GenericEventRecord
 export interface ISubmittableResult<EventRecord = any> {
   dispatchError?: DispatchError;
   dispatchInfo?: DispatchInfo;
@@ -34,6 +33,17 @@ export interface ISubmittableResult<EventRecord = any> {
   status: TransactionStatus;
   txHash: Hash;
   txIndex?: number;
+}
+
+export interface IRuntimeTxCall {
+  pallet: string;
+  palletCall:
+    | {
+        name: string;
+        params?: object;
+      }
+    | string
+    | null;
 }
 
 export interface ISubmittableExtrinsic<R extends ISubmittableResult = ISubmittableResult> {

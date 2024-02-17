@@ -2690,7 +2690,7 @@ export type PolkadotRuntimeParachainsDisputesPalletCall =
   /**
    * See [`Pallet::force_unfreeze`].
    **/
-  'force_unfreeze';
+  'ForceUnfreeze';
 
 /**
  * Contains a variant per dispatchable extrinsic that this pallet has.

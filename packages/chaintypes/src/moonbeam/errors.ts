@@ -640,9 +640,14 @@ export interface ChainErrors extends GenericChainErrors {
     GasLimitTooHigh: GenericPalletError;
 
     /**
-     * Undefined error.
+     * The chain id is invalid.
      **/
-    Undefined: GenericPalletError;
+    InvalidChainId: GenericPalletError;
+
+    /**
+     * the signature is invalid.
+     **/
+    InvalidSignature: GenericPalletError;
 
     /**
      * EVM reentrancy
@@ -653,6 +658,11 @@ export interface ChainErrors extends GenericChainErrors {
      * EIP-3607,
      **/
     TransactionMustComeFromEOA: GenericPalletError;
+
+    /**
+     * Undefined error.
+     **/
+    Undefined: GenericPalletError;
 
     /**
      * Generic pallet error
@@ -863,6 +873,16 @@ export interface ChainErrors extends GenericChainErrors {
      * The preimage request cannot be removed since no outstanding requests exist.
      **/
     NotRequested: GenericPalletError;
+
+    /**
+     * More than `MAX_HASH_UPGRADE_BULK_COUNT` hashes were requested to be upgraded at once.
+     **/
+    TooMany: GenericPalletError;
+
+    /**
+     * Too few hashes were requested to be upgraded (i.e. zero).
+     **/
+    TooFew: GenericPalletError;
 
     /**
      * Generic pallet error
@@ -1289,7 +1309,7 @@ export interface ChainErrors extends GenericChainErrors {
     InsufficientProposersBalance: GenericPalletError;
 
     /**
-     * No proposal or bounty at that index.
+     * No proposal, bounty or spend at that index.
      **/
     InvalidIndex: GenericPalletError;
 
@@ -1308,6 +1328,41 @@ export interface ChainErrors extends GenericChainErrors {
      * Proposal has not been approved.
      **/
     ProposalNotApproved: GenericPalletError;
+
+    /**
+     * The balance of the asset kind is not convertible to the balance of the native asset.
+     **/
+    FailedToConvertBalance: GenericPalletError;
+
+    /**
+     * The spend has expired and cannot be claimed.
+     **/
+    SpendExpired: GenericPalletError;
+
+    /**
+     * The spend is not yet eligible for payout.
+     **/
+    EarlyPayout: GenericPalletError;
+
+    /**
+     * The payment has already been attempted.
+     **/
+    AlreadyAttempted: GenericPalletError;
+
+    /**
+     * There was some issue with the mechanism of payment.
+     **/
+    PayoutError: GenericPalletError;
+
+    /**
+     * The payout was not yet attempted/claimed.
+     **/
+    NotAttempted: GenericPalletError;
+
+    /**
+     * The payment has neither failed nor succeeded yet.
+     **/
+    Inconclusive: GenericPalletError;
 
     /**
      * Generic pallet error

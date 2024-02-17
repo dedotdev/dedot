@@ -5504,11 +5504,11 @@ export type FrameBenchmarkingPalletPovCall =
   /**
    * See [`Pallet::emit_event`].
    **/
-  | 'emit_event'
+  | 'EmitEvent'
   /**
    * See [`Pallet::noop`].
    **/
-  | 'noop';
+  | 'Noop';
 
 /**
  * Contains a variant per dispatchable extrinsic that this pallet has.
@@ -8392,7 +8392,7 @@ export type PalletContractsError =
   /**
    * Failed to decode the XCM program.
    **/
-  | 'XCMDecodeFailed'
+  | 'XcmDecodeFailed'
   /**
    * A contract with the same AccountId already exists.
    **/

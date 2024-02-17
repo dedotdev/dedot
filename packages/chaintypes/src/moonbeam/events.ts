@@ -32,18 +32,18 @@ import type {
   PalletConvictionVotingTally,
   FrameSupportDispatchPostDispatchInfo,
   SpRuntimeDispatchErrorWithPostInfo,
-  StagingXcmV3TraitsError,
+  XcmV3TraitsError,
   PolkadotParachainPrimitivesPrimitivesId,
-  StagingXcmV3TraitsOutcome,
+  XcmV3TraitsOutcome,
   StagingXcmV3MultilocationMultiLocation,
-  StagingXcmV3Xcm,
-  StagingXcmV3Response,
-  StagingXcmVersionedMultiAssets,
-  StagingXcmV3MultiassetMultiAssets,
-  StagingXcmVersionedMultiLocation,
+  XcmV3Xcm,
+  XcmV3Response,
+  XcmVersionedMultiAssets,
+  XcmV3MultiassetMultiAssets,
+  XcmVersionedMultiLocation,
   MoonbeamRuntimeXcmConfigAssetType,
   MoonbeamRuntimeAssetConfigAssetRegistrarMetadata,
-  StagingXcmV3MultiassetMultiAsset,
+  XcmV3MultiassetMultiAsset,
   PalletXcmTransactorRemoteTransactInfoWithMaxWeight,
   PalletXcmTransactorHrmpOperation,
 } from './types';
@@ -1899,6 +1899,36 @@ export interface ChainEvents extends GenericChainEvents {
     UpdatedInactive: GenericPalletEvent<'Treasury', 'UpdatedInactive', { reactivated: bigint; deactivated: bigint }>;
 
     /**
+     * A new asset spend proposal has been approved.
+     **/
+    AssetSpendApproved: GenericPalletEvent<
+      'Treasury',
+      'AssetSpendApproved',
+      { index: number; assetKind: []; amount: bigint; beneficiary: AccountId20; validFrom: number; expireAt: number }
+    >;
+
+    /**
+     * An approved spend was voided.
+     **/
+    AssetSpendVoided: GenericPalletEvent<'Treasury', 'AssetSpendVoided', { index: number }>;
+
+    /**
+     * A payment happened.
+     **/
+    Paid: GenericPalletEvent<'Treasury', 'Paid', { index: number; paymentId: [] }>;
+
+    /**
+     * A payment failed and can be retried.
+     **/
+    PaymentFailed: GenericPalletEvent<'Treasury', 'PaymentFailed', { index: number; paymentId: [] }>;
+
+    /**
+     * A spend was processed and removed from the storage. It might have been successfully
+     * paid or it may have expired.
+     **/
+    SpendProcessed: GenericPalletEvent<'Treasury', 'SpendProcessed', { index: number }>;
+
+    /**
      * Generic pallet event
      **/
     [prop: string]: GenericPalletEvent;
@@ -1972,7 +2002,7 @@ export interface ChainEvents extends GenericChainEvents {
       {
         messageHash: FixedBytes<32>;
         messageId: FixedBytes<32>;
-        error: StagingXcmV3TraitsError;
+        error: XcmV3TraitsError;
         weight: SpWeightsWeightV2Weight;
       }
     >;
@@ -2037,7 +2067,7 @@ export interface ChainEvents extends GenericChainEvents {
      * Downward message executed with the given outcome.
      * \[ id, outcome \]
      **/
-    ExecutedDownward: GenericPalletEvent<'CumulusXcm', 'ExecutedDownward', [FixedBytes<32>, StagingXcmV3TraitsOutcome]>;
+    ExecutedDownward: GenericPalletEvent<'CumulusXcm', 'ExecutedDownward', [FixedBytes<32>, XcmV3TraitsOutcome]>;
 
     /**
      * Generic pallet event
@@ -2061,7 +2091,7 @@ export interface ChainEvents extends GenericChainEvents {
     ExecutedDownward: GenericPalletEvent<
       'DmpQueue',
       'ExecutedDownward',
-      { messageHash: FixedBytes<32>; messageId: FixedBytes<32>; outcome: StagingXcmV3TraitsOutcome }
+      { messageHash: FixedBytes<32>; messageId: FixedBytes<32>; outcome: XcmV3TraitsOutcome }
     >;
 
     /**
@@ -2115,7 +2145,7 @@ export interface ChainEvents extends GenericChainEvents {
     /**
      * Execution of an XCM message was attempted.
      **/
-    Attempted: GenericPalletEvent<'PolkadotXcm', 'Attempted', { outcome: StagingXcmV3TraitsOutcome }>;
+    Attempted: GenericPalletEvent<'PolkadotXcm', 'Attempted', { outcome: XcmV3TraitsOutcome }>;
 
     /**
      * A XCM message was sent.
@@ -2126,7 +2156,7 @@ export interface ChainEvents extends GenericChainEvents {
       {
         origin: StagingXcmV3MultilocationMultiLocation;
         destination: StagingXcmV3MultilocationMultiLocation;
-        message: StagingXcmV3Xcm;
+        message: XcmV3Xcm;
         messageId: FixedBytes<32>;
       }
     >;
@@ -2146,11 +2176,7 @@ export interface ChainEvents extends GenericChainEvents {
      * Query response has been received and is ready for taking with `take_response`. There is
      * no registered notification call.
      **/
-    ResponseReady: GenericPalletEvent<
-      'PolkadotXcm',
-      'ResponseReady',
-      { queryId: bigint; response: StagingXcmV3Response }
-    >;
+    ResponseReady: GenericPalletEvent<'PolkadotXcm', 'ResponseReady', { queryId: bigint; response: XcmV3Response }>;
 
     /**
      * Query response has been received and query is removed. The registered notification has
@@ -2241,7 +2267,7 @@ export interface ChainEvents extends GenericChainEvents {
     AssetsTrapped: GenericPalletEvent<
       'PolkadotXcm',
       'AssetsTrapped',
-      { hash: H256; origin: StagingXcmV3MultilocationMultiLocation; assets: StagingXcmVersionedMultiAssets }
+      { hash: H256; origin: StagingXcmV3MultilocationMultiLocation; assets: XcmVersionedMultiAssets }
     >;
 
     /**
@@ -2255,7 +2281,7 @@ export interface ChainEvents extends GenericChainEvents {
       {
         destination: StagingXcmV3MultilocationMultiLocation;
         result: number;
-        cost: StagingXcmV3MultiassetMultiAssets;
+        cost: XcmV3MultiassetMultiAssets;
         messageId: FixedBytes<32>;
       }
     >;
@@ -2277,7 +2303,7 @@ export interface ChainEvents extends GenericChainEvents {
     NotifyTargetSendFail: GenericPalletEvent<
       'PolkadotXcm',
       'NotifyTargetSendFail',
-      { location: StagingXcmV3MultilocationMultiLocation; queryId: bigint; error: StagingXcmV3TraitsError }
+      { location: StagingXcmV3MultilocationMultiLocation; queryId: bigint; error: XcmV3TraitsError }
     >;
 
     /**
@@ -2287,7 +2313,7 @@ export interface ChainEvents extends GenericChainEvents {
     NotifyTargetMigrationFail: GenericPalletEvent<
       'PolkadotXcm',
       'NotifyTargetMigrationFail',
-      { location: StagingXcmVersionedMultiLocation; queryId: bigint }
+      { location: XcmVersionedMultiLocation; queryId: bigint }
     >;
 
     /**
@@ -2330,7 +2356,7 @@ export interface ChainEvents extends GenericChainEvents {
       'VersionNotifyStarted',
       {
         destination: StagingXcmV3MultilocationMultiLocation;
-        cost: StagingXcmV3MultiassetMultiAssets;
+        cost: XcmV3MultiassetMultiAssets;
         messageId: FixedBytes<32>;
       }
     >;
@@ -2343,7 +2369,7 @@ export interface ChainEvents extends GenericChainEvents {
       'VersionNotifyRequested',
       {
         destination: StagingXcmV3MultilocationMultiLocation;
-        cost: StagingXcmV3MultiassetMultiAssets;
+        cost: XcmV3MultiassetMultiAssets;
         messageId: FixedBytes<32>;
       }
     >;
@@ -2357,7 +2383,7 @@ export interface ChainEvents extends GenericChainEvents {
       'VersionNotifyUnrequested',
       {
         destination: StagingXcmV3MultilocationMultiLocation;
-        cost: StagingXcmV3MultiassetMultiAssets;
+        cost: XcmV3MultiassetMultiAssets;
         messageId: FixedBytes<32>;
       }
     >;
@@ -2368,7 +2394,7 @@ export interface ChainEvents extends GenericChainEvents {
     FeesPaid: GenericPalletEvent<
       'PolkadotXcm',
       'FeesPaid',
-      { paying: StagingXcmV3MultilocationMultiLocation; fees: StagingXcmV3MultiassetMultiAssets }
+      { paying: StagingXcmV3MultilocationMultiLocation; fees: XcmV3MultiassetMultiAssets }
     >;
 
     /**
@@ -2377,7 +2403,7 @@ export interface ChainEvents extends GenericChainEvents {
     AssetsClaimed: GenericPalletEvent<
       'PolkadotXcm',
       'AssetsClaimed',
-      { hash: H256; origin: StagingXcmV3MultilocationMultiLocation; assets: StagingXcmVersionedMultiAssets }
+      { hash: H256; origin: StagingXcmV3MultilocationMultiLocation; assets: XcmVersionedMultiAssets }
     >;
 
     /**
@@ -2635,8 +2661,8 @@ export interface ChainEvents extends GenericChainEvents {
       'TransferredMultiAssets',
       {
         sender: AccountId20;
-        assets: StagingXcmV3MultiassetMultiAssets;
-        fee: StagingXcmV3MultiassetMultiAsset;
+        assets: XcmV3MultiassetMultiAssets;
+        fee: XcmV3MultiassetMultiAsset;
         dest: StagingXcmV3MultilocationMultiLocation;
       }
     >;
@@ -2687,7 +2713,7 @@ export interface ChainEvents extends GenericChainEvents {
     /**
      * Transact failed
      **/
-    TransactFailed: GenericPalletEvent<'XcmTransactor', 'TransactFailed', { error: StagingXcmV3TraitsError }>;
+    TransactFailed: GenericPalletEvent<'XcmTransactor', 'TransactFailed', { error: XcmV3TraitsError }>;
 
     /**
      * Changed the transact info of a location
