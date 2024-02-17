@@ -291,32 +291,6 @@ export interface ChainErrors extends GenericChainErrors {
      **/
     [error: string]: GenericPalletError;
   };
-  beefy: {
-    /**
-     * A key ownership proof provided as part of an equivocation report is invalid.
-     **/
-    InvalidKeyOwnershipProof: GenericPalletError;
-
-    /**
-     * An equivocation proof provided as part of an equivocation report is invalid.
-     **/
-    InvalidEquivocationProof: GenericPalletError;
-
-    /**
-     * A given equivocation report is valid but already previously reported.
-     **/
-    DuplicateOffenceReport: GenericPalletError;
-
-    /**
-     * Submitted configuration is invalid.
-     **/
-    InvalidConfiguration: GenericPalletError;
-
-    /**
-     * Generic pallet error
-     **/
-    [error: string]: GenericPalletError;
-  };
   session: {
     /**
      * Invalid ownership proof.
@@ -2846,6 +2820,32 @@ export interface ChainErrors extends GenericChainErrors {
      * The given asset ID already has an assigned conversion rate and cannot be re-created.
      **/
     AlreadyExists: GenericPalletError;
+
+    /**
+     * Generic pallet error
+     **/
+    [error: string]: GenericPalletError;
+  };
+  beefy: {
+    /**
+     * A key ownership proof provided as part of an equivocation report is invalid.
+     **/
+    InvalidKeyOwnershipProof: GenericPalletError;
+
+    /**
+     * An equivocation proof provided as part of an equivocation report is invalid.
+     **/
+    InvalidEquivocationProof: GenericPalletError;
+
+    /**
+     * A given equivocation report is valid but already previously reported.
+     **/
+    DuplicateOffenceReport: GenericPalletError;
+
+    /**
+     * Submitted configuration is invalid.
+     **/
+    InvalidConfiguration: GenericPalletError;
 
     /**
      * Generic pallet error

@@ -17,7 +17,7 @@ import type {
   Perquintill,
   BitSequence,
   FixedU128,
-  ResultPayload,
+  Result,
   FixedI64,
   Era,
 } from '@delightfuldot/codecs';
@@ -952,7 +952,6 @@ export type StagingKusamaRuntimeRuntimeCall =
   | { pallet: 'Indices'; palletCall: PalletIndicesCall }
   | { pallet: 'Balances'; palletCall: PalletBalancesCall }
   | { pallet: 'Staking'; palletCall: PalletStakingPalletCall }
-  | { pallet: 'Beefy'; palletCall: PalletBeefyCall }
   | { pallet: 'Session'; palletCall: PalletSessionCall }
   | { pallet: 'Grandpa'; palletCall: PalletGrandpaCall }
   | { pallet: 'ImOnline'; palletCall: PalletImOnlineCall }
@@ -996,7 +995,8 @@ export type StagingKusamaRuntimeRuntimeCall =
   | { pallet: 'StateTrieMigration'; palletCall: PalletStateTrieMigrationCall }
   | { pallet: 'XcmPallet'; palletCall: PalletXcmCall }
   | { pallet: 'MessageQueue'; palletCall: PalletMessageQueueCall }
-  | { pallet: 'AssetRate'; palletCall: PalletAssetRateCall };
+  | { pallet: 'AssetRate'; palletCall: PalletAssetRateCall }
+  | { pallet: 'Beefy'; palletCall: PalletBeefyCall };
 
 /**
  * Contains a variant per dispatchable extrinsic that this pallet has.
@@ -1278,56 +1278,6 @@ export type PalletStakingPalletConfigOpPerbill = { tag: 'Noop' } | { tag: 'Set';
 /**
  * Contains a variant per dispatchable extrinsic that this pallet has.
  **/
-export type PalletBeefyCall =
-  /**
-   * See [`Pallet::report_equivocation`].
-   **/
-  | {
-      name: 'ReportEquivocation';
-      params: { equivocationProof: SpConsensusBeefyEquivocationProof; keyOwnerProof: SpSessionMembershipProof };
-    }
-  /**
-   * See [`Pallet::report_equivocation_unsigned`].
-   **/
-  | {
-      name: 'ReportEquivocationUnsigned';
-      params: { equivocationProof: SpConsensusBeefyEquivocationProof; keyOwnerProof: SpSessionMembershipProof };
-    }
-  /**
-   * See [`Pallet::set_new_genesis`].
-   **/
-  | { name: 'SetNewGenesis'; params: { delayInBlocks: number } };
-
-export type SpConsensusBeefyEquivocationProof = {
-  first: SpConsensusBeefyVoteMessage;
-  second: SpConsensusBeefyVoteMessage;
-};
-
-export type SpConsensusBeefyEcdsaCryptoPublic = SpCoreEcdsaPublic;
-
-export type SpCoreEcdsaPublic = FixedBytes<33>;
-
-export type SpConsensusBeefyEcdsaCryptoSignature = SpCoreEcdsaSignature;
-
-export type SpCoreEcdsaSignature = FixedBytes<65>;
-
-export type SpConsensusBeefyVoteMessage = {
-  commitment: SpConsensusBeefyCommitment;
-  id: SpConsensusBeefyEcdsaCryptoPublic;
-  signature: SpConsensusBeefyEcdsaCryptoSignature;
-};
-
-export type SpConsensusBeefyCommitment = {
-  payload: SpConsensusBeefyPayload;
-  blockNumber: number;
-  validatorSetId: bigint;
-};
-
-export type SpConsensusBeefyPayload = Array<[FixedBytes<2>, Bytes]>;
-
-/**
- * Contains a variant per dispatchable extrinsic that this pallet has.
- **/
 export type PalletSessionCall =
   /**
    * See [`Pallet::set_keys`].
@@ -1353,6 +1303,10 @@ export type PolkadotPrimitivesV6ValidatorAppPublic = SpCoreSr25519Public;
 export type PolkadotPrimitivesV6AssignmentAppPublic = SpCoreSr25519Public;
 
 export type SpAuthorityDiscoveryAppPublic = SpCoreSr25519Public;
+
+export type SpConsensusBeefyEcdsaCryptoPublic = SpCoreEcdsaPublic;
+
+export type SpCoreEcdsaPublic = FixedBytes<33>;
 
 /**
  * Contains a variant per dispatchable extrinsic that this pallet has.
@@ -3319,6 +3273,8 @@ export type SpRuntimeMultiSignature =
   | { tag: 'Sr25519'; value: SpCoreSr25519Signature }
   | { tag: 'Ecdsa'; value: SpCoreEcdsaSignature };
 
+export type SpCoreEcdsaSignature = FixedBytes<65>;
+
 /**
  * Contains a variant per dispatchable extrinsic that this pallet has.
  **/
@@ -3851,6 +3807,50 @@ export type PalletAssetRateCall =
    **/
   | { name: 'Remove'; params: { assetKind: PolkadotRuntimeCommonImplsVersionedLocatableAsset } };
 
+/**
+ * Contains a variant per dispatchable extrinsic that this pallet has.
+ **/
+export type PalletBeefyCall =
+  /**
+   * See [`Pallet::report_equivocation`].
+   **/
+  | {
+      name: 'ReportEquivocation';
+      params: { equivocationProof: SpConsensusBeefyEquivocationProof; keyOwnerProof: SpSessionMembershipProof };
+    }
+  /**
+   * See [`Pallet::report_equivocation_unsigned`].
+   **/
+  | {
+      name: 'ReportEquivocationUnsigned';
+      params: { equivocationProof: SpConsensusBeefyEquivocationProof; keyOwnerProof: SpSessionMembershipProof };
+    }
+  /**
+   * See [`Pallet::set_new_genesis`].
+   **/
+  | { name: 'SetNewGenesis'; params: { delayInBlocks: number } };
+
+export type SpConsensusBeefyEquivocationProof = {
+  first: SpConsensusBeefyVoteMessage;
+  second: SpConsensusBeefyVoteMessage;
+};
+
+export type SpConsensusBeefyEcdsaCryptoSignature = SpCoreEcdsaSignature;
+
+export type SpConsensusBeefyVoteMessage = {
+  commitment: SpConsensusBeefyCommitment;
+  id: SpConsensusBeefyEcdsaCryptoPublic;
+  signature: SpConsensusBeefyEcdsaCryptoSignature;
+};
+
+export type SpConsensusBeefyCommitment = {
+  payload: SpConsensusBeefyPayload;
+  blockNumber: number;
+  validatorSetId: bigint;
+};
+
+export type SpConsensusBeefyPayload = Array<[FixedBytes<2>, Bytes]>;
+
 export type SpRuntimeBlakeTwo256 = {};
 
 export type PalletConvictionVotingTally = { ayes: bigint; nays: bigint; support: bigint };
@@ -4185,7 +4185,7 @@ export type PalletWhitelistEvent =
       name: 'WhitelistedCallDispatched';
       data: {
         callHash: H256;
-        result: ResultPayload<FrameSupportDispatchPostDispatchInfo, SpRuntimeDispatchErrorWithPostInfo>;
+        result: Result<FrameSupportDispatchPostDispatchInfo, SpRuntimeDispatchErrorWithPostInfo>;
       };
     };
 
@@ -4236,7 +4236,7 @@ export type PalletUtilityEvent =
   /**
    * A call was dispatched.
    **/
-  | { name: 'DispatchedAs'; data: { result: ResultPayload<[], DispatchError> } };
+  | { name: 'DispatchedAs'; data: { result: Result<[], DispatchError> } };
 
 /**
  * The `Event` enum of this pallet
@@ -4427,7 +4427,7 @@ export type PalletSchedulerEvent =
    **/
   | {
       name: 'Dispatched';
-      data: { task: [number, number]; id?: FixedBytes<32> | undefined; result: ResultPayload<[], DispatchError> };
+      data: { task: [number, number]; id?: FixedBytes<32> | undefined; result: Result<[], DispatchError> };
     }
   /**
    * The call for the provided hash was not found so the task has been aborted.
@@ -4449,7 +4449,7 @@ export type PalletProxyEvent =
   /**
    * A proxy was executed correctly, with the given.
    **/
-  | { name: 'ProxyExecuted'; data: { result: ResultPayload<[], DispatchError> } }
+  | { name: 'ProxyExecuted'; data: { result: Result<[], DispatchError> } }
   /**
    * A pure account has been created by new proxy with given
    * disambiguation index and proxy type.
@@ -4512,7 +4512,7 @@ export type PalletMultisigEvent =
         timepoint: PalletMultisigTimepoint;
         multisig: AccountId32;
         callHash: FixedBytes<32>;
-        result: ResultPayload<[], DispatchError>;
+        result: Result<[], DispatchError>;
       };
     }
   /**
@@ -4884,7 +4884,7 @@ export type PalletFastUnstakeEvent =
   /**
    * A staker was unstaked.
    **/
-  | { name: 'Unstaked'; data: { stash: AccountId32; result: ResultPayload<[], DispatchError> } }
+  | { name: 'Unstaked'; data: { stash: AccountId32; result: Result<[], DispatchError> } }
   /**
    * A staker was slashed for requesting fast-unstake whilst being exposed.
    **/
@@ -5236,7 +5236,7 @@ export type PolkadotRuntimeCommonCrowdloanPalletEvent =
    **/
   | {
       name: 'HandleBidResult';
-      data: { paraId: PolkadotParachainPrimitivesPrimitivesId; result: ResultPayload<[], DispatchError> };
+      data: { paraId: PolkadotParachainPrimitivesPrimitivesId; result: Result<[], DispatchError> };
     }
   /**
    * The configuration to a crowdloan has been edited.
@@ -5942,29 +5942,6 @@ export type SpStakingOffenceOffenceDetails = {
   offender: [AccountId32, PalletStakingExposure];
   reporters: Array<AccountId32>;
 };
-
-/**
- * The `Error` enum of this pallet.
- **/
-export type PalletBeefyError =
-  /**
-   * A key ownership proof provided as part of an equivocation report is invalid.
-   **/
-  | 'InvalidKeyOwnershipProof'
-  /**
-   * An equivocation proof provided as part of an equivocation report is invalid.
-   **/
-  | 'InvalidEquivocationProof'
-  /**
-   * A given equivocation report is valid but already previously reported.
-   **/
-  | 'DuplicateOffenceReport'
-  /**
-   * Submitted configuration is invalid.
-   **/
-  | 'InvalidConfiguration';
-
-export type SpConsensusBeefyMmrBeefyAuthoritySet = { id: bigint; len: number; keysetCommitment: H256 };
 
 export type SpCoreCryptoKeyTypeId = FixedBytes<4>;
 
@@ -8494,6 +8471,29 @@ export type PalletAssetRateError =
    * The given asset ID already has an assigned conversion rate and cannot be re-created.
    **/
   | 'AlreadyExists';
+
+/**
+ * The `Error` enum of this pallet.
+ **/
+export type PalletBeefyError =
+  /**
+   * A key ownership proof provided as part of an equivocation report is invalid.
+   **/
+  | 'InvalidKeyOwnershipProof'
+  /**
+   * An equivocation proof provided as part of an equivocation report is invalid.
+   **/
+  | 'InvalidEquivocationProof'
+  /**
+   * A given equivocation report is valid but already previously reported.
+   **/
+  | 'DuplicateOffenceReport'
+  /**
+   * Submitted configuration is invalid.
+   **/
+  | 'InvalidConfiguration';
+
+export type SpConsensusBeefyMmrBeefyAuthoritySet = { id: bigint; len: number; keysetCommitment: H256 };
 
 export type SpRuntimeUncheckedExtrinsic = Bytes;
 

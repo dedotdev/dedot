@@ -5,7 +5,7 @@ import type {
   DispatchError,
   AccountId32,
   H256,
-  ResultPayload,
+  Result,
   Perbill,
   FixedU128,
   Bytes,
@@ -152,7 +152,7 @@ export interface ChainEvents extends GenericChainEvents {
     /**
      * A call was dispatched.
      **/
-    DispatchedAs: GenericPalletEvent<'Utility', 'DispatchedAs', { result: ResultPayload<[], DispatchError> }>;
+    DispatchedAs: GenericPalletEvent<'Utility', 'DispatchedAs', { result: Result<[], DispatchError> }>;
 
     /**
      * Generic pallet event
@@ -712,11 +712,7 @@ export interface ChainEvents extends GenericChainEvents {
     /**
      * A motion was executed; result will be `Ok` if it returned without error.
      **/
-    Executed: GenericPalletEvent<
-      'Council',
-      'Executed',
-      { proposalHash: H256; result: ResultPayload<[], DispatchError> }
-    >;
+    Executed: GenericPalletEvent<'Council', 'Executed', { proposalHash: H256; result: Result<[], DispatchError> }>;
 
     /**
      * A single member did some action; result will be `Ok` if it returned without error.
@@ -724,7 +720,7 @@ export interface ChainEvents extends GenericChainEvents {
     MemberExecuted: GenericPalletEvent<
       'Council',
       'MemberExecuted',
-      { proposalHash: H256; result: ResultPayload<[], DispatchError> }
+      { proposalHash: H256; result: Result<[], DispatchError> }
     >;
 
     /**
@@ -774,7 +770,7 @@ export interface ChainEvents extends GenericChainEvents {
     Executed: GenericPalletEvent<
       'TechnicalCommittee',
       'Executed',
-      { proposalHash: H256; result: ResultPayload<[], DispatchError> }
+      { proposalHash: H256; result: Result<[], DispatchError> }
     >;
 
     /**
@@ -783,7 +779,7 @@ export interface ChainEvents extends GenericChainEvents {
     MemberExecuted: GenericPalletEvent<
       'TechnicalCommittee',
       'MemberExecuted',
-      { proposalHash: H256; result: ResultPayload<[], DispatchError> }
+      { proposalHash: H256; result: Result<[], DispatchError> }
     >;
 
     /**
@@ -1194,7 +1190,7 @@ export interface ChainEvents extends GenericChainEvents {
         /**
          * The result of the call made by the sudo user.
          **/
-        sudoResult: ResultPayload<[], DispatchError>;
+        sudoResult: Result<[], DispatchError>;
       }
     >;
 
@@ -1232,7 +1228,7 @@ export interface ChainEvents extends GenericChainEvents {
         /**
          * The result of the call made by the sudo user.
          **/
-        sudoResult: ResultPayload<[], DispatchError>;
+        sudoResult: Result<[], DispatchError>;
       }
     >;
 
@@ -1540,7 +1536,7 @@ export interface ChainEvents extends GenericChainEvents {
     Dispatched: GenericPalletEvent<
       'Scheduler',
       'Dispatched',
-      { task: [number, number]; id?: FixedBytes<32> | undefined; result: ResultPayload<[], DispatchError> }
+      { task: [number, number]; id?: FixedBytes<32> | undefined; result: Result<[], DispatchError> }
     >;
 
     /**
@@ -1648,7 +1644,7 @@ export interface ChainEvents extends GenericChainEvents {
     /**
      * A proxy was executed correctly, with the given.
      **/
-    ProxyExecuted: GenericPalletEvent<'Proxy', 'ProxyExecuted', { result: ResultPayload<[], DispatchError> }>;
+    ProxyExecuted: GenericPalletEvent<'Proxy', 'ProxyExecuted', { result: Result<[], DispatchError> }>;
 
     /**
      * A pure account has been created by new proxy with given
@@ -1718,7 +1714,7 @@ export interface ChainEvents extends GenericChainEvents {
         timepoint: PalletMultisigTimepoint;
         multisig: AccountId32;
         callHash: FixedBytes<32>;
-        result: ResultPayload<[], DispatchError>;
+        result: Result<[], DispatchError>;
       }
     >;
 
@@ -3391,10 +3387,7 @@ export interface ChainEvents extends GenericChainEvents {
     WhitelistedCallDispatched: GenericPalletEvent<
       'Whitelist',
       'WhitelistedCallDispatched',
-      {
-        callHash: H256;
-        result: ResultPayload<FrameSupportDispatchPostDispatchInfo, SpRuntimeDispatchErrorWithPostInfo>;
-      }
+      { callHash: H256; result: Result<FrameSupportDispatchPostDispatchInfo, SpRuntimeDispatchErrorWithPostInfo> }
     >;
 
     /**
@@ -3439,7 +3432,7 @@ export interface ChainEvents extends GenericChainEvents {
     Executed: GenericPalletEvent<
       'AllianceMotion',
       'Executed',
-      { proposalHash: H256; result: ResultPayload<[], DispatchError> }
+      { proposalHash: H256; result: Result<[], DispatchError> }
     >;
 
     /**
@@ -3448,7 +3441,7 @@ export interface ChainEvents extends GenericChainEvents {
     MemberExecuted: GenericPalletEvent<
       'AllianceMotion',
       'MemberExecuted',
-      { proposalHash: H256; result: ResultPayload<[], DispatchError> }
+      { proposalHash: H256; result: Result<[], DispatchError> }
     >;
 
     /**
@@ -4273,11 +4266,7 @@ export interface ChainEvents extends GenericChainEvents {
     /**
      * A staker was unstaked.
      **/
-    Unstaked: GenericPalletEvent<
-      'FastUnstake',
-      'Unstaked',
-      { stash: AccountId32; result: ResultPayload<[], DispatchError> }
-    >;
+    Unstaked: GenericPalletEvent<'FastUnstake', 'Unstaked', { stash: AccountId32; result: Result<[], DispatchError> }>;
 
     /**
      * A staker was slashed for requesting fast-unstake whilst being exposed.

@@ -33,10 +33,11 @@ import type {
   FeeDetails,
   Weight,
   Location,
-  ResultPayload,
+  Result,
   Hash,
   MmrError,
   LeafIndex,
+  TupleOfMmrEncodableOpaqueLeafsAndMmrBatchProof,
   BlockNumberLike,
   MmrEncodableOpaqueLeaf,
   MmrBatchProof,
@@ -533,14 +534,14 @@ export interface RuntimeCalls extends GenericRuntimeCalls {
      *
      * @callname: MmrApi_mmr_root
      **/
-    mmrRoot: GenericRuntimeCall<() => Promise<ResultPayload<Hash, MmrError>>>;
+    mmrRoot: GenericRuntimeCall<() => Promise<Result<Hash, MmrError>>>;
 
     /**
      * Return the number of MMR blocks in the chain.
      *
      * @callname: MmrApi_mmr_leaf_count
      **/
-    mmrLeafCount: GenericRuntimeCall<() => Promise<ResultPayload<LeafIndex, MmrError>>>;
+    mmrLeafCount: GenericRuntimeCall<() => Promise<Result<LeafIndex, MmrError>>>;
 
     /**
      * Generate MMR proof for a series of block numbers. If `best_known_block_number = Some(n)`,
@@ -552,7 +553,7 @@ export interface RuntimeCalls extends GenericRuntimeCalls {
       (
         blockNumbers: Array<BlockNumberLike>,
         bestKnownBlockNumber: Option<BlockNumberLike>,
-      ) => Promise<ResultPayload<[Array<MmrEncodableOpaqueLeaf>, MmrBatchProof], MmrError>>
+      ) => Promise<Result<TupleOfMmrEncodableOpaqueLeafsAndMmrBatchProof, MmrError>>
     >;
 
     /**
@@ -565,7 +566,7 @@ export interface RuntimeCalls extends GenericRuntimeCalls {
      * @callname: MmrApi_verify_proof
      **/
     verifyProof: GenericRuntimeCall<
-      (leaves: Array<MmrEncodableOpaqueLeaf>, proof: MmrBatchProof) => Promise<ResultPayload<Null, MmrError>>
+      (leaves: Array<MmrEncodableOpaqueLeaf>, proof: MmrBatchProof) => Promise<Result<Null, MmrError>>
     >;
 
     /**
@@ -580,11 +581,7 @@ export interface RuntimeCalls extends GenericRuntimeCalls {
      * @callname: MmrApi_verify_proof_stateless
      **/
     verifyProofStateless: GenericRuntimeCall<
-      (
-        root: Hash,
-        leaves: Array<MmrEncodableOpaqueLeaf>,
-        proof: MmrBatchProof,
-      ) => Promise<ResultPayload<Null, MmrError>>
+      (root: Hash, leaves: Array<MmrEncodableOpaqueLeaf>, proof: MmrBatchProof) => Promise<Result<Null, MmrError>>
     >;
 
     /**
@@ -650,7 +647,7 @@ export interface RuntimeCalls extends GenericRuntimeCalls {
      *
      * @callname: GenesisBuilder_build_config
      **/
-    buildConfig: GenericRuntimeCall<(json: Array<number>) => Promise<ResultPayload<Null, Text>>>;
+    buildConfig: GenericRuntimeCall<(json: Array<number>) => Promise<Result<Null, Text>>>;
 
     /**
      * Generic runtime call

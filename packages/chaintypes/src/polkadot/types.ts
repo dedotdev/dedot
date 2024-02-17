@@ -5,7 +5,7 @@ import type {
   DispatchError,
   AccountId32,
   FixedBytes,
-  ResultPayload,
+  Result,
   Perbill,
   Bytes,
   Header,
@@ -147,7 +147,7 @@ export type PalletSchedulerEvent =
    **/
   | {
       name: 'Dispatched';
-      data: { task: [number, number]; id?: FixedBytes<32> | undefined; result: ResultPayload<[], DispatchError> };
+      data: { task: [number, number]; id?: FixedBytes<32> | undefined; result: Result<[], DispatchError> };
     }
   /**
    * The call for the provided hash was not found so the task has been aborted.
@@ -3470,7 +3470,7 @@ export type PalletWhitelistEvent =
       name: 'WhitelistedCallDispatched';
       data: {
         callHash: H256;
-        result: ResultPayload<FrameSupportDispatchPostDispatchInfo, SpRuntimeDispatchErrorWithPostInfo>;
+        result: Result<FrameSupportDispatchPostDispatchInfo, SpRuntimeDispatchErrorWithPostInfo>;
       };
     };
 
@@ -3535,7 +3535,7 @@ export type PalletUtilityEvent =
   /**
    * A call was dispatched.
    **/
-  | { name: 'DispatchedAs'; data: { result: ResultPayload<[], DispatchError> } };
+  | { name: 'DispatchedAs'; data: { result: Result<[], DispatchError> } };
 
 /**
  * The `Event` enum of this pallet
@@ -3590,7 +3590,7 @@ export type PalletProxyEvent =
   /**
    * A proxy was executed correctly, with the given.
    **/
-  | { name: 'ProxyExecuted'; data: { result: ResultPayload<[], DispatchError> } }
+  | { name: 'ProxyExecuted'; data: { result: Result<[], DispatchError> } }
   /**
    * A pure account has been created by new proxy with given
    * disambiguation index and proxy type.
@@ -3648,7 +3648,7 @@ export type PalletMultisigEvent =
         timepoint: PalletMultisigTimepoint;
         multisig: AccountId32;
         callHash: FixedBytes<32>;
-        result: ResultPayload<[], DispatchError>;
+        result: Result<[], DispatchError>;
       };
     }
   /**
@@ -3890,7 +3890,7 @@ export type PalletFastUnstakeEvent =
   /**
    * A staker was unstaked.
    **/
-  | { name: 'Unstaked'; data: { stash: AccountId32; result: ResultPayload<[], DispatchError> } }
+  | { name: 'Unstaked'; data: { stash: AccountId32; result: Result<[], DispatchError> } }
   /**
    * A staker was slashed for requesting fast-unstake whilst being exposed.
    **/
@@ -4210,7 +4210,7 @@ export type PolkadotRuntimeCommonCrowdloanPalletEvent =
    **/
   | {
       name: 'HandleBidResult';
-      data: { paraId: PolkadotParachainPrimitivesPrimitivesId; result: ResultPayload<[], DispatchError> };
+      data: { paraId: PolkadotParachainPrimitivesPrimitivesId; result: Result<[], DispatchError> };
     }
   /**
    * The configuration to a crowdloan has been edited.
