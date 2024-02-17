@@ -101,13 +101,13 @@ export class TxExecutor<ChainApi extends GenericSubstrateApi = SubstrateApi> ext
         let signature;
         if (isKeyringPair(fromAccount)) {
           signature = u8aToHex(
-            sign(fromAccount, extra.toRawPayload(this.rawCall).data as HexString, { withType: true }),
+            sign(fromAccount, extra.toRawPayload(this.callRaw).data as HexString, { withType: true }),
           );
         } else if (signer?.signPayload) {
-          const result = await signer.signPayload(extra.toPayload(this.rawCall));
+          const result = await signer.signPayload(extra.toPayload(this.callRaw));
           signature = result.signature;
         } else if (signer?.signRaw) {
-          const result = await signer.signRaw(extra.toRawPayload(this.rawCall));
+          const result = await signer.signRaw(extra.toRawPayload(this.callRaw));
           signature = result.signature;
         } else {
           throw new Error('Cannot sign');

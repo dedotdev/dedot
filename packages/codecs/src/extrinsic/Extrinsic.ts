@@ -41,7 +41,7 @@ export class ExtrinsicV4<Address = any, Call = any, Signature = any, Extra = any
     return this.#call;
   }
 
-  get rawCall(): HexString {
+  get callRaw(): HexString {
     const { callTypeId } = this.registry.metadata!.extrinsic;
     const $RuntimeCall = this.registry.findPortableCodec(callTypeId);
     return u8aToHex($RuntimeCall.tryEncode(this.call));
