@@ -8,7 +8,6 @@ import {
   IRuntimeTxCall,
   ISubmittableExtrinsic,
   ISubmittableResult,
-  PaymentInfoResult,
   SignerOptions,
   Unsub,
 } from '@delightfuldot/types';
@@ -83,11 +82,11 @@ export class TxExecutor<ChainApi extends GenericSubstrateApi = SubstrateApi> ext
   }
 
   createExtrinsic(call: IRuntimeTxCall) {
-    const api = this.api;
+    const api = this.api as unknown as DelightfulApi<SubstrateApi>;
 
     // TODO implements ISubmittableExtrinsic
     class SubmittableExtrinsic extends Extrinsic implements ISubmittableExtrinsic {
-      async signAsync(fromAccount: AddressOrPair, options?: Partial<SignerOptions>) {
+      async sign(fromAccount: AddressOrPair, options?: Partial<SignerOptions>) {
         const address = isKeyringPair(fromAccount) ? fromAccount.address : fromAccount.toString();
         const extra = new ExtraSignedExtension(api as unknown as DelightfulApi, {
           signerAddress: address,
@@ -141,44 +140,8 @@ export class TxExecutor<ChainApi extends GenericSubstrateApi = SubstrateApi> ext
         maybeCallback?: Callback<ISubmittableResult>,
       ): Promise<Hash | Unsub> {
         const [options, callback] = this.#normalizeOptions(partialOptions, maybeCallback);
-        await this.signAsync(fromAccount, options);
-
-        const isSubscription = !!callback;
-
-        const txHash = this.hash;
-        if (isSubscription) {
-          return api.rpc.author.submitAndWatchExtrinsic(this.toHex(), async (status: TransactionStatus) => {
-            if (status.tag === 'InBlock' || status.tag === 'Finalized') {
-              const blockHash: BlockHash = status.value;
-
-              const [signedBlock, events] = await Promise.all([
-                api.rpc.chain.getBlock(blockHash),
-                api.queryAt(blockHash).system.events(),
-              ]);
-
-              const txIndex = (signedBlock as SignedBlock).block.extrinsics.findIndex(
-                (tx) => blake2AsHex(hexToU8a(tx as HexString)) === txHash,
-              );
-
-              if (txIndex === undefined) {
-                throw new Error('Extrinsic not found!');
-              }
-
-              const targetEvents = (events as any[]).filter(
-                (e) => e.phase.tag === 'ApplyExtrinsic' && e.phase.value === txIndex,
-              );
-
-              // const extrinsicSuccessEvent = targetEvents.find(({ e }) => api.events.system.ExtrinsicSuccess.is(e));
-              // const extrinsicFailedEvent = targetEvents.find(({ e }) => api.events.system.ExtrinsicFailed.is(e));
-
-              return callback(new SubmittableResult({ status, txHash, events: targetEvents, txIndex }));
-            } else {
-              return callback(new SubmittableResult({ status, txHash }));
-            }
-          });
-        } else {
-          return api.rpc.author.submitExtrinsic(this.toHex());
-        }
+        await this.sign(fromAccount, options);
+        return this.send(callback as any);
       }
 
       #normalizeOptions(
@@ -208,26 +171,42 @@ export class TxExecutor<ChainApi extends GenericSubstrateApi = SubstrateApi> ext
         return blake2AsHex(this.toU8a());
       }
 
-      get hasDryRun(): boolean {
-        return true;
-      }
-
-      get hasPaymentInfo(): boolean {
-        return true;
-      }
-
       dryRun(account: AddressOrPair, options?: Partial<SignerOptions>): Promise<DryRunResult> {
-        throw new Error('To implement!');
-      }
-
-      paymentInfo(account: AddressOrPair, options?: Partial<SignerOptions>): Promise<PaymentInfoResult> {
         throw new Error('To implement!');
       }
 
       send(): Promise<Hash>;
       send(callback: Callback<ISubmittableResult>): Promise<Unsub>;
-      send(callback?: Callback<ISubmittableResult>): Promise<Hash> | Promise<Unsub> {
-        throw new Error('To implement!');
+      async send(callback?: Callback<ISubmittableResult> | undefined): Promise<Hash | Unsub> {
+        const isSubscription = !!callback;
+        const txHash = this.hash;
+
+        if (isSubscription) {
+          return api.rpc.author.submitAndWatchExtrinsic(this.toHex(), async (status: TransactionStatus) => {
+            if (status.tag === 'InBlock' || status.tag === 'Finalized') {
+              const blockHash: BlockHash = status.value;
+
+              const [signedBlock, events] = await Promise.all([
+                api.rpc.chain.getBlock(blockHash),
+                api.queryAt(blockHash).system.events(),
+              ]);
+
+              const txIndex = (signedBlock as SignedBlock).block.extrinsics.findIndex(
+                (tx) => blake2AsHex(hexToU8a(tx as HexString)) === txHash,
+              );
+
+              assert(txIndex >= 0, 'Extrinsic not found!');
+
+              const txEvents = events.filter(({ phase }) => phase.tag === 'ApplyExtrinsic' && phase.value === txIndex);
+
+              return callback(new SubmittableResult({ status, txHash, events: txEvents, txIndex }));
+            } else {
+              return callback(new SubmittableResult({ status, txHash }));
+            }
+          });
+        } else {
+          return api.rpc.author.submitExtrinsic(this.toHex());
+        }
       }
     }
 

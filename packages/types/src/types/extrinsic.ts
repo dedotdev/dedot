@@ -48,19 +48,13 @@ export interface IRuntimeTxCall {
 }
 
 export interface ISubmittableExtrinsic<R extends ISubmittableResult = ISubmittableResult> {
-  hasDryRun: boolean;
-
-  hasPaymentInfo: boolean;
-
   dryRun(account: AddressOrPair, options?: Partial<SignerOptions>): Promise<DryRunResult>;
-
-  paymentInfo(account: AddressOrPair, options?: Partial<SignerOptions>): Promise<PaymentInfoResult>;
 
   send(): Promise<Hash>;
 
   send(callback: Callback<R>): Promise<Unsub>;
 
-  signAsync(account: AddressOrPair, options?: Partial<SignerOptions>): Promise<this>;
+  sign(account: AddressOrPair, options?: Partial<SignerOptions>): Promise<this>;
 
   signAndSend(account: AddressOrPair, options?: Partial<SignerOptions>): Promise<Hash>;
 
