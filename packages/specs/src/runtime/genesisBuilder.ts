@@ -33,7 +33,7 @@ export const genesisBuilder: RuntimeApisModule = {
               type: 'Array<u8>',
             },
           ],
-          type: 'ResultPayload<Null, Text>',
+          type: 'Result<Null, Text>',
         },
       },
       version: 1,
