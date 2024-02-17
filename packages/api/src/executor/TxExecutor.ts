@@ -13,7 +13,7 @@ import {
 } from '@delightfuldot/types';
 import { SubstrateApi } from '@delightfuldot/chaintypes';
 import { assert, HexString } from '@delightfuldot/utils';
-import { hexToU8a, isFunction, objectSpread, stringCamelCase, stringPascalCase, u8aToHex } from '@polkadot/util';
+import { hexToU8a, isFunction, isHex, objectSpread, stringCamelCase, stringPascalCase, u8aToHex } from '@polkadot/util';
 import { BlockHash, Extrinsic, Hash, SignedBlock, TransactionStatus } from '@delightfuldot/codecs';
 import DelightfulApi from '../DelightfulApi';
 import { IKeyringPair } from '@polkadot/types/types';
@@ -171,8 +171,16 @@ export class TxExecutor<ChainApi extends GenericSubstrateApi = SubstrateApi> ext
         return blake2AsHex(this.toU8a());
       }
 
-      dryRun(account: AddressOrPair, options?: Partial<SignerOptions>): Promise<DryRunResult> {
-        throw new Error('To implement!');
+      async dryRun(account: AddressOrPair, optionsOrHash?: Partial<SignerOptions> | BlockHash): Promise<DryRunResult> {
+        const dryRunFn = api.rpc.system.dryRun;
+        assert(dryRunFn.meta, 'system_dryRun RPC does not supported!');
+
+        if (isHex(optionsOrHash)) {
+          return dryRunFn(this.toHex(), optionsOrHash);
+        }
+
+        await this.sign(account, optionsOrHash);
+        return dryRunFn(this.toHex());
       }
 
       send(): Promise<Hash>;

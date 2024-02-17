@@ -1,9 +1,9 @@
 import {
   ApplyExtrinsicResult,
+  BlockHash,
   DispatchError,
   DispatchInfo,
   Hash,
-  RuntimeDispatchInfo,
   TransactionStatus,
 } from '@delightfuldot/codecs';
 import { Callback, Unsub } from './index';
@@ -25,7 +25,6 @@ export interface SignerOptions extends PayloadOptions {
 }
 
 export type DryRunResult = ApplyExtrinsicResult;
-export type PaymentInfoResult = RuntimeDispatchInfo;
 
 export interface ISubmittableResult<EventRecord = any> {
   dispatchError?: DispatchError;
@@ -48,7 +47,7 @@ export interface IRuntimeTxCall {
 }
 
 export interface ISubmittableExtrinsic<R extends ISubmittableResult = ISubmittableResult> {
-  dryRun(account: AddressOrPair, options?: Partial<SignerOptions>): Promise<DryRunResult>;
+  dryRun(account: AddressOrPair, optionsOrHash?: Partial<SignerOptions> | BlockHash): Promise<DryRunResult>;
 
   send(): Promise<Hash>;
 
