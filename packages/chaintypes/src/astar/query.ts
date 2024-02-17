@@ -10,6 +10,7 @@ import type {
   Data,
   FixedBytes,
   FixedU128,
+  BytesLike,
   H160,
   U256,
   FixedU64,
@@ -790,7 +791,7 @@ export interface ChainStorage extends GenericChainStorage {
     /**
      * The owner of a key. The key is the `KeyTypeId` + the encoded key.
      **/
-    keyOwner: GenericStorageQuery<(arg: [SpCoreCryptoKeyTypeId, Bytes]) => AccountId32 | undefined>;
+    keyOwner: GenericStorageQuery<(arg: [SpCoreCryptoKeyTypeId, BytesLike]) => AccountId32 | undefined>;
 
     /**
      * Generic pallet storage query

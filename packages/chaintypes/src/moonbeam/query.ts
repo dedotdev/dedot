@@ -11,6 +11,7 @@ import type {
   AccountId20,
   Percent,
   Data,
+  BytesLike,
   FixedBytes,
   H160,
   U256,
@@ -793,7 +794,7 @@ export interface ChainStorage extends GenericChainStorage {
      * MigrationState tracks the progress of a migration.
      * Maps name (Vec<u8>) -> whether or not migration has been completed (bool)
      **/
-    migrationState: GenericStorageQuery<(arg: Bytes) => boolean>;
+    migrationState: GenericStorageQuery<(arg: BytesLike) => boolean>;
 
     /**
      * Temporary value that is set to true at the beginning of the block during which the execution

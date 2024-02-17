@@ -13,8 +13,11 @@ import type {
   FixedU64,
   Perquintill,
   FixedArray,
+  BytesLike,
   Header,
   MultiAddress,
+  MultiAddressLike,
+  AccountId32Like,
   PerU16,
   Percent,
   Data,
@@ -2679,6 +2682,70 @@ export type KitchensinkRuntimeRuntimeCall =
   | { pallet: 'Broker'; palletCall: PalletBrokerCall }
   | { pallet: 'Mixnet'; palletCall: PalletMixnetCall };
 
+export type KitchensinkRuntimeRuntimeCallLike =
+  | { pallet: 'System'; palletCall: FrameSystemCallLike }
+  | { pallet: 'Utility'; palletCall: PalletUtilityCallLike }
+  | { pallet: 'Babe'; palletCall: PalletBabeCallLike }
+  | { pallet: 'Timestamp'; palletCall: PalletTimestampCallLike }
+  | { pallet: 'Indices'; palletCall: PalletIndicesCallLike }
+  | { pallet: 'Balances'; palletCall: PalletBalancesCallLike }
+  | { pallet: 'ElectionProviderMultiPhase'; palletCall: PalletElectionProviderMultiPhaseCallLike }
+  | { pallet: 'Staking'; palletCall: PalletStakingPalletCallLike }
+  | { pallet: 'Session'; palletCall: PalletSessionCallLike }
+  | { pallet: 'Democracy'; palletCall: PalletDemocracyCallLike }
+  | { pallet: 'Council'; palletCall: PalletCollectiveCallLike }
+  | { pallet: 'TechnicalCommittee'; palletCall: PalletCollectiveCallLike }
+  | { pallet: 'Elections'; palletCall: PalletElectionsPhragmenCallLike }
+  | { pallet: 'TechnicalMembership'; palletCall: PalletMembershipCallLike }
+  | { pallet: 'Grandpa'; palletCall: PalletGrandpaCallLike }
+  | { pallet: 'Treasury'; palletCall: PalletTreasuryCallLike }
+  | { pallet: 'AssetRate'; palletCall: PalletAssetRateCallLike }
+  | { pallet: 'Contracts'; palletCall: PalletContractsCallLike }
+  | { pallet: 'Sudo'; palletCall: PalletSudoCallLike }
+  | { pallet: 'ImOnline'; palletCall: PalletImOnlineCallLike }
+  | { pallet: 'Identity'; palletCall: PalletIdentityCallLike }
+  | { pallet: 'Society'; palletCall: PalletSocietyCallLike }
+  | { pallet: 'Recovery'; palletCall: PalletRecoveryCallLike }
+  | { pallet: 'Vesting'; palletCall: PalletVestingCallLike }
+  | { pallet: 'Scheduler'; palletCall: PalletSchedulerCallLike }
+  | { pallet: 'Glutton'; palletCall: PalletGluttonCallLike }
+  | { pallet: 'Preimage'; palletCall: PalletPreimageCallLike }
+  | { pallet: 'Proxy'; palletCall: PalletProxyCallLike }
+  | { pallet: 'Multisig'; palletCall: PalletMultisigCallLike }
+  | { pallet: 'Bounties'; palletCall: PalletBountiesCallLike }
+  | { pallet: 'Tips'; palletCall: PalletTipsCallLike }
+  | { pallet: 'Assets'; palletCall: PalletAssetsCallLike }
+  | { pallet: 'PoolAssets'; palletCall: PalletAssetsCallLike }
+  | { pallet: 'Lottery'; palletCall: PalletLotteryCallLike }
+  | { pallet: 'Nis'; palletCall: PalletNisCallLike }
+  | { pallet: 'Uniques'; palletCall: PalletUniquesCallLike }
+  | { pallet: 'Nfts'; palletCall: PalletNftsCallLike }
+  | { pallet: 'NftFractionalization'; palletCall: PalletNftFractionalizationCallLike }
+  | { pallet: 'Salary'; palletCall: PalletSalaryCallLike }
+  | { pallet: 'CoreFellowship'; palletCall: PalletCoreFellowshipCallLike }
+  | { pallet: 'TransactionStorage'; palletCall: PalletTransactionStorageCallLike }
+  | { pallet: 'VoterList'; palletCall: PalletBagsListCallLike }
+  | { pallet: 'StateTrieMigration'; palletCall: PalletStateTrieMigrationCallLike }
+  | { pallet: 'ChildBounties'; palletCall: PalletChildBountiesCallLike }
+  | { pallet: 'Referenda'; palletCall: PalletReferendaCallLike }
+  | { pallet: 'Remark'; palletCall: PalletRemarkCallLike }
+  | { pallet: 'RootTesting'; palletCall: PalletRootTestingCallLike }
+  | { pallet: 'ConvictionVoting'; palletCall: PalletConvictionVotingCallLike }
+  | { pallet: 'Whitelist'; palletCall: PalletWhitelistCallLike }
+  | { pallet: 'AllianceMotion'; palletCall: PalletCollectiveCallLike }
+  | { pallet: 'Alliance'; palletCall: PalletAllianceCallLike }
+  | { pallet: 'NominationPools'; palletCall: PalletNominationPoolsCallLike }
+  | { pallet: 'RankedPolls'; palletCall: PalletReferendaCallLike }
+  | { pallet: 'RankedCollective'; palletCall: PalletRankedCollectiveCallLike }
+  | { pallet: 'AssetConversion'; palletCall: PalletAssetConversionCallLike }
+  | { pallet: 'FastUnstake'; palletCall: PalletFastUnstakeCallLike }
+  | { pallet: 'MessageQueue'; palletCall: PalletMessageQueueCallLike }
+  | { pallet: 'Pov'; palletCall: FrameBenchmarkingPalletPovCallLike }
+  | { pallet: 'TxPause'; palletCall: PalletTxPauseCallLike }
+  | { pallet: 'SafeMode'; palletCall: PalletSafeModeCallLike }
+  | { pallet: 'Broker'; palletCall: PalletBrokerCallLike }
+  | { pallet: 'Mixnet'; palletCall: PalletMixnetCallLike };
+
 /**
  * Contains a variant per dispatchable extrinsic that this pallet has.
  **/
@@ -2720,6 +2787,44 @@ export type FrameSystemCall =
    **/
   | { name: 'DoTask'; params: { task: KitchensinkRuntimeRuntimeTask } };
 
+export type FrameSystemCallLike =
+  /**
+   * See [`Pallet::remark`].
+   **/
+  | { name: 'Remark'; params: { remark: BytesLike } }
+  /**
+   * See [`Pallet::set_heap_pages`].
+   **/
+  | { name: 'SetHeapPages'; params: { pages: bigint } }
+  /**
+   * See [`Pallet::set_code`].
+   **/
+  | { name: 'SetCode'; params: { code: BytesLike } }
+  /**
+   * See [`Pallet::set_code_without_checks`].
+   **/
+  | { name: 'SetCodeWithoutChecks'; params: { code: BytesLike } }
+  /**
+   * See [`Pallet::set_storage`].
+   **/
+  | { name: 'SetStorage'; params: { items: Array<[BytesLike, BytesLike]> } }
+  /**
+   * See [`Pallet::kill_storage`].
+   **/
+  | { name: 'KillStorage'; params: { keys: Array<BytesLike> } }
+  /**
+   * See [`Pallet::kill_prefix`].
+   **/
+  | { name: 'KillPrefix'; params: { prefix: BytesLike; subkeys: number } }
+  /**
+   * See [`Pallet::remark_with_event`].
+   **/
+  | { name: 'RemarkWithEvent'; params: { remark: BytesLike } }
+  /**
+   * See [`Pallet::do_task`].
+   **/
+  | { name: 'DoTask'; params: { task: KitchensinkRuntimeRuntimeTask } };
+
 /**
  * Contains a variant per dispatchable extrinsic that this pallet has.
  **/
@@ -2749,6 +2854,35 @@ export type PalletUtilityCall =
    **/
   | { name: 'WithWeight'; params: { call: KitchensinkRuntimeRuntimeCall; weight: SpWeightsWeightV2Weight } };
 
+export type PalletUtilityCallLike =
+  /**
+   * See [`Pallet::batch`].
+   **/
+  | { name: 'Batch'; params: { calls: Array<KitchensinkRuntimeRuntimeCallLike> } }
+  /**
+   * See [`Pallet::as_derivative`].
+   **/
+  | { name: 'AsDerivative'; params: { index: number; call: KitchensinkRuntimeRuntimeCallLike } }
+  /**
+   * See [`Pallet::batch_all`].
+   **/
+  | { name: 'BatchAll'; params: { calls: Array<KitchensinkRuntimeRuntimeCallLike> } }
+  /**
+   * See [`Pallet::dispatch_as`].
+   **/
+  | {
+      name: 'DispatchAs';
+      params: { asOrigin: KitchensinkRuntimeOriginCaller; call: KitchensinkRuntimeRuntimeCallLike };
+    }
+  /**
+   * See [`Pallet::force_batch`].
+   **/
+  | { name: 'ForceBatch'; params: { calls: Array<KitchensinkRuntimeRuntimeCallLike> } }
+  /**
+   * See [`Pallet::with_weight`].
+   **/
+  | { name: 'WithWeight'; params: { call: KitchensinkRuntimeRuntimeCallLike; weight: SpWeightsWeightV2Weight } };
+
 export type KitchensinkRuntimeOriginCaller =
   | { tag: 'System'; value: FrameSupportDispatchRawOrigin }
   | { tag: 'Council'; value: PalletCollectiveRawOrigin }
@@ -2769,6 +2903,26 @@ export type SpCoreVoid = null;
  * Contains a variant per dispatchable extrinsic that this pallet has.
  **/
 export type PalletBabeCall =
+  /**
+   * See [`Pallet::report_equivocation`].
+   **/
+  | {
+      name: 'ReportEquivocation';
+      params: { equivocationProof: SpConsensusSlotsEquivocationProof; keyOwnerProof: SpSessionMembershipProof };
+    }
+  /**
+   * See [`Pallet::report_equivocation_unsigned`].
+   **/
+  | {
+      name: 'ReportEquivocationUnsigned';
+      params: { equivocationProof: SpConsensusSlotsEquivocationProof; keyOwnerProof: SpSessionMembershipProof };
+    }
+  /**
+   * See [`Pallet::plan_config_change`].
+   **/
+  | { name: 'PlanConfigChange'; params: { config: SpConsensusBabeDigestsNextConfigDescriptor } };
+
+export type PalletBabeCallLike =
   /**
    * See [`Pallet::report_equivocation`].
    **/
@@ -2820,6 +2974,12 @@ export type PalletTimestampCall =
    **/
   { name: 'Set'; params: { now: bigint } };
 
+export type PalletTimestampCallLike =
+  /**
+   * See [`Pallet::set`].
+   **/
+  { name: 'Set'; params: { now: bigint } };
+
 /**
  * Contains a variant per dispatchable extrinsic that this pallet has.
  **/
@@ -2840,6 +3000,28 @@ export type PalletIndicesCall =
    * See [`Pallet::force_transfer`].
    **/
   | { name: 'ForceTransfer'; params: { new: MultiAddress; index: number; freeze: boolean } }
+  /**
+   * See [`Pallet::freeze`].
+   **/
+  | { name: 'Freeze'; params: { index: number } };
+
+export type PalletIndicesCallLike =
+  /**
+   * See [`Pallet::claim`].
+   **/
+  | { name: 'Claim'; params: { index: number } }
+  /**
+   * See [`Pallet::transfer`].
+   **/
+  | { name: 'Transfer'; params: { new: MultiAddressLike; index: number } }
+  /**
+   * See [`Pallet::free`].
+   **/
+  | { name: 'Free'; params: { index: number } }
+  /**
+   * See [`Pallet::force_transfer`].
+   **/
+  | { name: 'ForceTransfer'; params: { new: MultiAddressLike; index: number; freeze: boolean } }
   /**
    * See [`Pallet::freeze`].
    **/
@@ -2878,6 +3060,36 @@ export type PalletBalancesCall =
    **/
   | { name: 'ForceSetBalance'; params: { who: MultiAddress; newFree: bigint } };
 
+export type PalletBalancesCallLike =
+  /**
+   * See [`Pallet::transfer_allow_death`].
+   **/
+  | { name: 'TransferAllowDeath'; params: { dest: MultiAddressLike; value: bigint } }
+  /**
+   * See [`Pallet::force_transfer`].
+   **/
+  | { name: 'ForceTransfer'; params: { source: MultiAddressLike; dest: MultiAddressLike; value: bigint } }
+  /**
+   * See [`Pallet::transfer_keep_alive`].
+   **/
+  | { name: 'TransferKeepAlive'; params: { dest: MultiAddressLike; value: bigint } }
+  /**
+   * See [`Pallet::transfer_all`].
+   **/
+  | { name: 'TransferAll'; params: { dest: MultiAddressLike; keepAlive: boolean } }
+  /**
+   * See [`Pallet::force_unreserve`].
+   **/
+  | { name: 'ForceUnreserve'; params: { who: MultiAddressLike; amount: bigint } }
+  /**
+   * See [`Pallet::upgrade_accounts`].
+   **/
+  | { name: 'UpgradeAccounts'; params: { who: Array<AccountId32Like> } }
+  /**
+   * See [`Pallet::force_set_balance`].
+   **/
+  | { name: 'ForceSetBalance'; params: { who: MultiAddressLike; newFree: bigint } };
+
 /**
  * Contains a variant per dispatchable extrinsic that this pallet has.
  **/
@@ -2900,6 +3112,37 @@ export type PalletElectionProviderMultiPhaseCall =
    * See [`Pallet::set_emergency_election_result`].
    **/
   | { name: 'SetEmergencyElectionResult'; params: { supports: Array<[AccountId32, SpNposElectionsSupport]> } }
+  /**
+   * See [`Pallet::submit`].
+   **/
+  | { name: 'Submit'; params: { rawSolution: PalletElectionProviderMultiPhaseRawSolution } }
+  /**
+   * See [`Pallet::governance_fallback`].
+   **/
+  | {
+      name: 'GovernanceFallback';
+      params: { maybeMaxVoters?: number | undefined; maybeMaxTargets?: number | undefined };
+    };
+
+export type PalletElectionProviderMultiPhaseCallLike =
+  /**
+   * See [`Pallet::submit_unsigned`].
+   **/
+  | {
+      name: 'SubmitUnsigned';
+      params: {
+        rawSolution: PalletElectionProviderMultiPhaseRawSolution;
+        witness: PalletElectionProviderMultiPhaseSolutionOrSnapshotSize;
+      };
+    }
+  /**
+   * See [`Pallet::set_minimum_untrusted_score`].
+   **/
+  | { name: 'SetMinimumUntrustedScore'; params: { maybeNextScore?: SpNposElectionsElectionScore | undefined } }
+  /**
+   * See [`Pallet::set_emergency_election_result`].
+   **/
+  | { name: 'SetEmergencyElectionResult'; params: { supports: Array<[AccountId32Like, SpNposElectionsSupport]> } }
   /**
    * See [`Pallet::submit`].
    **/
@@ -3068,6 +3311,130 @@ export type PalletStakingPalletCall =
    **/
   | { name: 'UpdatePayee'; params: { controller: AccountId32 } };
 
+export type PalletStakingPalletCallLike =
+  /**
+   * See [`Pallet::bond`].
+   **/
+  | { name: 'Bond'; params: { value: bigint; payee: PalletStakingRewardDestination } }
+  /**
+   * See [`Pallet::bond_extra`].
+   **/
+  | { name: 'BondExtra'; params: { maxAdditional: bigint } }
+  /**
+   * See [`Pallet::unbond`].
+   **/
+  | { name: 'Unbond'; params: { value: bigint } }
+  /**
+   * See [`Pallet::withdraw_unbonded`].
+   **/
+  | { name: 'WithdrawUnbonded'; params: { numSlashingSpans: number } }
+  /**
+   * See [`Pallet::validate`].
+   **/
+  | { name: 'Validate'; params: { prefs: PalletStakingValidatorPrefs } }
+  /**
+   * See [`Pallet::nominate`].
+   **/
+  | { name: 'Nominate'; params: { targets: Array<MultiAddressLike> } }
+  /**
+   * See [`Pallet::chill`].
+   **/
+  | { name: 'Chill' }
+  /**
+   * See [`Pallet::set_payee`].
+   **/
+  | { name: 'SetPayee'; params: { payee: PalletStakingRewardDestination } }
+  /**
+   * See [`Pallet::set_controller`].
+   **/
+  | { name: 'SetController' }
+  /**
+   * See [`Pallet::set_validator_count`].
+   **/
+  | { name: 'SetValidatorCount'; params: { new: number } }
+  /**
+   * See [`Pallet::increase_validator_count`].
+   **/
+  | { name: 'IncreaseValidatorCount'; params: { additional: number } }
+  /**
+   * See [`Pallet::scale_validator_count`].
+   **/
+  | { name: 'ScaleValidatorCount'; params: { factor: Percent } }
+  /**
+   * See [`Pallet::force_no_eras`].
+   **/
+  | { name: 'ForceNoEras' }
+  /**
+   * See [`Pallet::force_new_era`].
+   **/
+  | { name: 'ForceNewEra' }
+  /**
+   * See [`Pallet::set_invulnerables`].
+   **/
+  | { name: 'SetInvulnerables'; params: { invulnerables: Array<AccountId32Like> } }
+  /**
+   * See [`Pallet::force_unstake`].
+   **/
+  | { name: 'ForceUnstake'; params: { stash: AccountId32Like; numSlashingSpans: number } }
+  /**
+   * See [`Pallet::force_new_era_always`].
+   **/
+  | { name: 'ForceNewEraAlways' }
+  /**
+   * See [`Pallet::cancel_deferred_slash`].
+   **/
+  | { name: 'CancelDeferredSlash'; params: { era: number; slashIndices: Array<number> } }
+  /**
+   * See [`Pallet::payout_stakers`].
+   **/
+  | { name: 'PayoutStakers'; params: { validatorStash: AccountId32Like; era: number } }
+  /**
+   * See [`Pallet::rebond`].
+   **/
+  | { name: 'Rebond'; params: { value: bigint } }
+  /**
+   * See [`Pallet::reap_stash`].
+   **/
+  | { name: 'ReapStash'; params: { stash: AccountId32Like; numSlashingSpans: number } }
+  /**
+   * See [`Pallet::kick`].
+   **/
+  | { name: 'Kick'; params: { who: Array<MultiAddressLike> } }
+  /**
+   * See [`Pallet::set_staking_configs`].
+   **/
+  | {
+      name: 'SetStakingConfigs';
+      params: {
+        minNominatorBond: PalletStakingPalletConfigOp;
+        minValidatorBond: PalletStakingPalletConfigOp;
+        maxNominatorCount: PalletStakingPalletConfigOpU32;
+        maxValidatorCount: PalletStakingPalletConfigOpU32;
+        chillThreshold: PalletStakingPalletConfigOpPercent;
+        minCommission: PalletStakingPalletConfigOpPerbill;
+      };
+    }
+  /**
+   * See [`Pallet::chill_other`].
+   **/
+  | { name: 'ChillOther'; params: { stash: AccountId32Like } }
+  /**
+   * See [`Pallet::force_apply_min_commission`].
+   **/
+  | { name: 'ForceApplyMinCommission'; params: { validatorStash: AccountId32Like } }
+  /**
+   * See [`Pallet::set_min_commission`].
+   **/
+  | { name: 'SetMinCommission'; params: { new: Perbill } }
+  /**
+   * See [`Pallet::payout_stakers_by_page`].
+   **/
+  | { name: 'PayoutStakersByPage'; params: { validatorStash: AccountId32Like; era: number; page: number } }
+  /**
+   * See [`Pallet::update_payee`].
+   **/
+  | { name: 'UpdatePayee'; params: { controller: AccountId32Like } };
+
 export type PalletStakingPalletConfigOp = { tag: 'Noop' } | { tag: 'Set'; value: bigint } | { tag: 'Remove' };
 
 export type PalletStakingPalletConfigOpU32 = { tag: 'Noop' } | { tag: 'Set'; value: number } | { tag: 'Remove' };
@@ -3084,6 +3451,16 @@ export type PalletSessionCall =
    * See [`Pallet::set_keys`].
    **/
   | { name: 'SetKeys'; params: { keys: KitchensinkRuntimeSessionKeys; proof: Bytes } }
+  /**
+   * See [`Pallet::purge_keys`].
+   **/
+  | { name: 'PurgeKeys' };
+
+export type PalletSessionCallLike =
+  /**
+   * See [`Pallet::set_keys`].
+   **/
+  | { name: 'SetKeys'; params: { keys: KitchensinkRuntimeSessionKeys; proof: BytesLike } }
   /**
    * See [`Pallet::purge_keys`].
    **/
@@ -3182,6 +3559,84 @@ export type PalletDemocracyCall =
    **/
   | { name: 'SetMetadata'; params: { owner: PalletDemocracyMetadataOwner; maybeHash?: H256 | undefined } };
 
+export type PalletDemocracyCallLike =
+  /**
+   * See [`Pallet::propose`].
+   **/
+  | { name: 'Propose'; params: { proposal: FrameSupportPreimagesBounded; value: bigint } }
+  /**
+   * See [`Pallet::second`].
+   **/
+  | { name: 'Second'; params: { proposal: number } }
+  /**
+   * See [`Pallet::vote`].
+   **/
+  | { name: 'Vote'; params: { refIndex: number; vote: PalletDemocracyVoteAccountVote } }
+  /**
+   * See [`Pallet::emergency_cancel`].
+   **/
+  | { name: 'EmergencyCancel'; params: { refIndex: number } }
+  /**
+   * See [`Pallet::external_propose`].
+   **/
+  | { name: 'ExternalPropose'; params: { proposal: FrameSupportPreimagesBounded } }
+  /**
+   * See [`Pallet::external_propose_majority`].
+   **/
+  | { name: 'ExternalProposeMajority'; params: { proposal: FrameSupportPreimagesBounded } }
+  /**
+   * See [`Pallet::external_propose_default`].
+   **/
+  | { name: 'ExternalProposeDefault'; params: { proposal: FrameSupportPreimagesBounded } }
+  /**
+   * See [`Pallet::fast_track`].
+   **/
+  | { name: 'FastTrack'; params: { proposalHash: H256; votingPeriod: number; delay: number } }
+  /**
+   * See [`Pallet::veto_external`].
+   **/
+  | { name: 'VetoExternal'; params: { proposalHash: H256 } }
+  /**
+   * See [`Pallet::cancel_referendum`].
+   **/
+  | { name: 'CancelReferendum'; params: { refIndex: number } }
+  /**
+   * See [`Pallet::delegate`].
+   **/
+  | { name: 'Delegate'; params: { to: MultiAddressLike; conviction: PalletDemocracyConviction; balance: bigint } }
+  /**
+   * See [`Pallet::undelegate`].
+   **/
+  | { name: 'Undelegate' }
+  /**
+   * See [`Pallet::clear_public_proposals`].
+   **/
+  | { name: 'ClearPublicProposals' }
+  /**
+   * See [`Pallet::unlock`].
+   **/
+  | { name: 'Unlock'; params: { target: MultiAddressLike } }
+  /**
+   * See [`Pallet::remove_vote`].
+   **/
+  | { name: 'RemoveVote'; params: { index: number } }
+  /**
+   * See [`Pallet::remove_other_vote`].
+   **/
+  | { name: 'RemoveOtherVote'; params: { target: MultiAddressLike; index: number } }
+  /**
+   * See [`Pallet::blacklist`].
+   **/
+  | { name: 'Blacklist'; params: { proposalHash: H256; maybeRefIndex?: number | undefined } }
+  /**
+   * See [`Pallet::cancel_proposal`].
+   **/
+  | { name: 'CancelProposal'; params: { propIndex: number } }
+  /**
+   * See [`Pallet::set_metadata`].
+   **/
+  | { name: 'SetMetadata'; params: { owner: PalletDemocracyMetadataOwner; maybeHash?: H256 | undefined } };
+
 export type PalletDemocracyConviction =
   | 'None'
   | 'Locked1x'
@@ -3210,6 +3665,38 @@ export type PalletCollectiveCall =
    * See [`Pallet::propose`].
    **/
   | { name: 'Propose'; params: { threshold: number; proposal: KitchensinkRuntimeRuntimeCall; lengthBound: number } }
+  /**
+   * See [`Pallet::vote`].
+   **/
+  | { name: 'Vote'; params: { proposal: H256; index: number; approve: boolean } }
+  /**
+   * See [`Pallet::disapprove_proposal`].
+   **/
+  | { name: 'DisapproveProposal'; params: { proposalHash: H256 } }
+  /**
+   * See [`Pallet::close`].
+   **/
+  | {
+      name: 'Close';
+      params: { proposalHash: H256; index: number; proposalWeightBound: SpWeightsWeightV2Weight; lengthBound: number };
+    };
+
+export type PalletCollectiveCallLike =
+  /**
+   * See [`Pallet::set_members`].
+   **/
+  | {
+      name: 'SetMembers';
+      params: { newMembers: Array<AccountId32Like>; prime?: AccountId32Like | undefined; oldCount: number };
+    }
+  /**
+   * See [`Pallet::execute`].
+   **/
+  | { name: 'Execute'; params: { proposal: KitchensinkRuntimeRuntimeCallLike; lengthBound: number } }
+  /**
+   * See [`Pallet::propose`].
+   **/
+  | { name: 'Propose'; params: { threshold: number; proposal: KitchensinkRuntimeRuntimeCallLike; lengthBound: number } }
   /**
    * See [`Pallet::vote`].
    **/
@@ -3255,6 +3742,32 @@ export type PalletElectionsPhragmenCall =
    **/
   | { name: 'CleanDefunctVoters'; params: { numVoters: number; numDefunct: number } };
 
+export type PalletElectionsPhragmenCallLike =
+  /**
+   * See [`Pallet::vote`].
+   **/
+  | { name: 'Vote'; params: { votes: Array<AccountId32Like>; value: bigint } }
+  /**
+   * See [`Pallet::remove_voter`].
+   **/
+  | { name: 'RemoveVoter' }
+  /**
+   * See [`Pallet::submit_candidacy`].
+   **/
+  | { name: 'SubmitCandidacy'; params: { candidateCount: number } }
+  /**
+   * See [`Pallet::renounce_candidacy`].
+   **/
+  | { name: 'RenounceCandidacy'; params: { renouncing: PalletElectionsPhragmenRenouncing } }
+  /**
+   * See [`Pallet::remove_member`].
+   **/
+  | { name: 'RemoveMember'; params: { who: MultiAddressLike; slashBond: boolean; rerunElection: boolean } }
+  /**
+   * See [`Pallet::clean_defunct_voters`].
+   **/
+  | { name: 'CleanDefunctVoters'; params: { numVoters: number; numDefunct: number } };
+
 export type PalletElectionsPhragmenRenouncing =
   | { tag: 'Member' }
   | { tag: 'RunnerUp' }
@@ -3293,10 +3806,60 @@ export type PalletMembershipCall =
    **/
   | { name: 'ClearPrime' };
 
+export type PalletMembershipCallLike =
+  /**
+   * See [`Pallet::add_member`].
+   **/
+  | { name: 'AddMember'; params: { who: MultiAddressLike } }
+  /**
+   * See [`Pallet::remove_member`].
+   **/
+  | { name: 'RemoveMember'; params: { who: MultiAddressLike } }
+  /**
+   * See [`Pallet::swap_member`].
+   **/
+  | { name: 'SwapMember'; params: { remove: MultiAddressLike; add: MultiAddressLike } }
+  /**
+   * See [`Pallet::reset_members`].
+   **/
+  | { name: 'ResetMembers'; params: { members: Array<AccountId32Like> } }
+  /**
+   * See [`Pallet::change_key`].
+   **/
+  | { name: 'ChangeKey'; params: { new: MultiAddressLike } }
+  /**
+   * See [`Pallet::set_prime`].
+   **/
+  | { name: 'SetPrime'; params: { who: MultiAddressLike } }
+  /**
+   * See [`Pallet::clear_prime`].
+   **/
+  | { name: 'ClearPrime' };
+
 /**
  * Contains a variant per dispatchable extrinsic that this pallet has.
  **/
 export type PalletGrandpaCall =
+  /**
+   * See [`Pallet::report_equivocation`].
+   **/
+  | {
+      name: 'ReportEquivocation';
+      params: { equivocationProof: SpConsensusGrandpaEquivocationProof; keyOwnerProof: SpSessionMembershipProof };
+    }
+  /**
+   * See [`Pallet::report_equivocation_unsigned`].
+   **/
+  | {
+      name: 'ReportEquivocationUnsigned';
+      params: { equivocationProof: SpConsensusGrandpaEquivocationProof; keyOwnerProof: SpSessionMembershipProof };
+    }
+  /**
+   * See [`Pallet::note_stalled`].
+   **/
+  | { name: 'NoteStalled'; params: { delay: number; bestFinalizedBlockNumber: number } };
+
+export type PalletGrandpaCallLike =
   /**
    * See [`Pallet::report_equivocation`].
    **/
@@ -3388,10 +3951,65 @@ export type PalletTreasuryCall =
    **/
   | { name: 'VoidSpend'; params: { index: number } };
 
+export type PalletTreasuryCallLike =
+  /**
+   * See [`Pallet::propose_spend`].
+   **/
+  | { name: 'ProposeSpend'; params: { value: bigint; beneficiary: MultiAddressLike } }
+  /**
+   * See [`Pallet::reject_proposal`].
+   **/
+  | { name: 'RejectProposal'; params: { proposalId: number } }
+  /**
+   * See [`Pallet::approve_proposal`].
+   **/
+  | { name: 'ApproveProposal'; params: { proposalId: number } }
+  /**
+   * See [`Pallet::spend_local`].
+   **/
+  | { name: 'SpendLocal'; params: { amount: bigint; beneficiary: MultiAddressLike } }
+  /**
+   * See [`Pallet::remove_approval`].
+   **/
+  | { name: 'RemoveApproval'; params: { proposalId: number } }
+  /**
+   * See [`Pallet::spend`].
+   **/
+  | {
+      name: 'Spend';
+      params: { assetKind: number; amount: bigint; beneficiary: MultiAddressLike; validFrom?: number | undefined };
+    }
+  /**
+   * See [`Pallet::payout`].
+   **/
+  | { name: 'Payout'; params: { index: number } }
+  /**
+   * See [`Pallet::check_status`].
+   **/
+  | { name: 'CheckStatus'; params: { index: number } }
+  /**
+   * See [`Pallet::void_spend`].
+   **/
+  | { name: 'VoidSpend'; params: { index: number } };
+
 /**
  * Contains a variant per dispatchable extrinsic that this pallet has.
  **/
 export type PalletAssetRateCall =
+  /**
+   * See [`Pallet::create`].
+   **/
+  | { name: 'Create'; params: { assetKind: number; rate: FixedU128 } }
+  /**
+   * See [`Pallet::update`].
+   **/
+  | { name: 'Update'; params: { assetKind: number; rate: FixedU128 } }
+  /**
+   * See [`Pallet::remove`].
+   **/
+  | { name: 'Remove'; params: { assetKind: number } };
+
+export type PalletAssetRateCallLike =
   /**
    * See [`Pallet::create`].
    **/
@@ -3511,6 +4129,113 @@ export type PalletContractsCall =
    **/
   | { name: 'Migrate'; params: { weightLimit: SpWeightsWeightV2Weight } };
 
+export type PalletContractsCallLike =
+  /**
+   * See [`Pallet::call_old_weight`].
+   **/
+  | {
+      name: 'CallOldWeight';
+      params: {
+        dest: MultiAddressLike;
+        value: bigint;
+        gasLimit: bigint;
+        storageDepositLimit?: bigint | undefined;
+        data: BytesLike;
+      };
+    }
+  /**
+   * See [`Pallet::instantiate_with_code_old_weight`].
+   **/
+  | {
+      name: 'InstantiateWithCodeOldWeight';
+      params: {
+        value: bigint;
+        gasLimit: bigint;
+        storageDepositLimit?: bigint | undefined;
+        code: BytesLike;
+        data: BytesLike;
+        salt: BytesLike;
+      };
+    }
+  /**
+   * See [`Pallet::instantiate_old_weight`].
+   **/
+  | {
+      name: 'InstantiateOldWeight';
+      params: {
+        value: bigint;
+        gasLimit: bigint;
+        storageDepositLimit?: bigint | undefined;
+        codeHash: H256;
+        data: BytesLike;
+        salt: BytesLike;
+      };
+    }
+  /**
+   * See [`Pallet::upload_code`].
+   **/
+  | {
+      name: 'UploadCode';
+      params: {
+        code: BytesLike;
+        storageDepositLimit?: bigint | undefined;
+        determinism: PalletContractsWasmDeterminism;
+      };
+    }
+  /**
+   * See [`Pallet::remove_code`].
+   **/
+  | { name: 'RemoveCode'; params: { codeHash: H256 } }
+  /**
+   * See [`Pallet::set_code`].
+   **/
+  | { name: 'SetCode'; params: { dest: MultiAddressLike; codeHash: H256 } }
+  /**
+   * See [`Pallet::call`].
+   **/
+  | {
+      name: 'Call';
+      params: {
+        dest: MultiAddressLike;
+        value: bigint;
+        gasLimit: SpWeightsWeightV2Weight;
+        storageDepositLimit?: bigint | undefined;
+        data: BytesLike;
+      };
+    }
+  /**
+   * See [`Pallet::instantiate_with_code`].
+   **/
+  | {
+      name: 'InstantiateWithCode';
+      params: {
+        value: bigint;
+        gasLimit: SpWeightsWeightV2Weight;
+        storageDepositLimit?: bigint | undefined;
+        code: BytesLike;
+        data: BytesLike;
+        salt: BytesLike;
+      };
+    }
+  /**
+   * See [`Pallet::instantiate`].
+   **/
+  | {
+      name: 'Instantiate';
+      params: {
+        value: bigint;
+        gasLimit: SpWeightsWeightV2Weight;
+        storageDepositLimit?: bigint | undefined;
+        codeHash: H256;
+        data: BytesLike;
+        salt: BytesLike;
+      };
+    }
+  /**
+   * See [`Pallet::migrate`].
+   **/
+  | { name: 'Migrate'; params: { weightLimit: SpWeightsWeightV2Weight } };
+
 export type PalletContractsWasmDeterminism = 'Enforced' | 'Relaxed';
 
 /**
@@ -3538,10 +4263,44 @@ export type PalletSudoCall =
    **/
   | { name: 'RemoveKey' };
 
+export type PalletSudoCallLike =
+  /**
+   * See [`Pallet::sudo`].
+   **/
+  | { name: 'Sudo'; params: { call: KitchensinkRuntimeRuntimeCallLike } }
+  /**
+   * See [`Pallet::sudo_unchecked_weight`].
+   **/
+  | {
+      name: 'SudoUncheckedWeight';
+      params: { call: KitchensinkRuntimeRuntimeCallLike; weight: SpWeightsWeightV2Weight };
+    }
+  /**
+   * See [`Pallet::set_key`].
+   **/
+  | { name: 'SetKey'; params: { new: MultiAddressLike } }
+  /**
+   * See [`Pallet::sudo_as`].
+   **/
+  | { name: 'SudoAs'; params: { who: MultiAddressLike; call: KitchensinkRuntimeRuntimeCallLike } }
+  /**
+   * See [`Pallet::remove_key`].
+   **/
+  | { name: 'RemoveKey' };
+
 /**
  * Contains a variant per dispatchable extrinsic that this pallet has.
  **/
 export type PalletImOnlineCall =
+  /**
+   * See [`Pallet::heartbeat`].
+   **/
+  {
+    name: 'Heartbeat';
+    params: { heartbeat: PalletImOnlineHeartbeat; signature: PalletImOnlineSr25519AppSr25519Signature };
+  };
+
+export type PalletImOnlineCallLike =
   /**
    * See [`Pallet::heartbeat`].
    **/
@@ -3624,6 +4383,71 @@ export type PalletIdentityCall =
    * See [`Pallet::remove_sub`].
    **/
   | { name: 'RemoveSub'; params: { sub: MultiAddress } }
+  /**
+   * See [`Pallet::quit_sub`].
+   **/
+  | { name: 'QuitSub' };
+
+export type PalletIdentityCallLike =
+  /**
+   * See [`Pallet::add_registrar`].
+   **/
+  | { name: 'AddRegistrar'; params: { account: MultiAddressLike } }
+  /**
+   * See [`Pallet::set_identity`].
+   **/
+  | { name: 'SetIdentity'; params: { info: PalletIdentityLegacyIdentityInfo } }
+  /**
+   * See [`Pallet::set_subs`].
+   **/
+  | { name: 'SetSubs'; params: { subs: Array<[AccountId32Like, Data]> } }
+  /**
+   * See [`Pallet::clear_identity`].
+   **/
+  | { name: 'ClearIdentity' }
+  /**
+   * See [`Pallet::request_judgement`].
+   **/
+  | { name: 'RequestJudgement'; params: { regIndex: number; maxFee: bigint } }
+  /**
+   * See [`Pallet::cancel_request`].
+   **/
+  | { name: 'CancelRequest'; params: { regIndex: number } }
+  /**
+   * See [`Pallet::set_fee`].
+   **/
+  | { name: 'SetFee'; params: { index: number; fee: bigint } }
+  /**
+   * See [`Pallet::set_account_id`].
+   **/
+  | { name: 'SetAccountId'; params: { index: number; new: MultiAddressLike } }
+  /**
+   * See [`Pallet::set_fields`].
+   **/
+  | { name: 'SetFields'; params: { index: number; fields: bigint } }
+  /**
+   * See [`Pallet::provide_judgement`].
+   **/
+  | {
+      name: 'ProvideJudgement';
+      params: { regIndex: number; target: MultiAddressLike; judgement: PalletIdentityJudgement; identity: H256 };
+    }
+  /**
+   * See [`Pallet::kill_identity`].
+   **/
+  | { name: 'KillIdentity'; params: { target: MultiAddressLike } }
+  /**
+   * See [`Pallet::add_sub`].
+   **/
+  | { name: 'AddSub'; params: { sub: MultiAddressLike; data: Data } }
+  /**
+   * See [`Pallet::rename_sub`].
+   **/
+  | { name: 'RenameSub'; params: { sub: MultiAddressLike; data: Data } }
+  /**
+   * See [`Pallet::remove_sub`].
+   **/
+  | { name: 'RemoveSub'; params: { sub: MultiAddressLike } }
   /**
    * See [`Pallet::quit_sub`].
    **/
@@ -3748,6 +4572,101 @@ export type PalletSocietyCall =
    **/
   | { name: 'CleanupChallenge'; params: { challengeRound: number; max: number } };
 
+export type PalletSocietyCallLike =
+  /**
+   * See [`Pallet::bid`].
+   **/
+  | { name: 'Bid'; params: { value: bigint } }
+  /**
+   * See [`Pallet::unbid`].
+   **/
+  | { name: 'Unbid' }
+  /**
+   * See [`Pallet::vouch`].
+   **/
+  | { name: 'Vouch'; params: { who: MultiAddressLike; value: bigint; tip: bigint } }
+  /**
+   * See [`Pallet::unvouch`].
+   **/
+  | { name: 'Unvouch' }
+  /**
+   * See [`Pallet::vote`].
+   **/
+  | { name: 'Vote'; params: { candidate: MultiAddressLike; approve: boolean } }
+  /**
+   * See [`Pallet::defender_vote`].
+   **/
+  | { name: 'DefenderVote'; params: { approve: boolean } }
+  /**
+   * See [`Pallet::payout`].
+   **/
+  | { name: 'Payout' }
+  /**
+   * See [`Pallet::waive_repay`].
+   **/
+  | { name: 'WaiveRepay'; params: { amount: bigint } }
+  /**
+   * See [`Pallet::found_society`].
+   **/
+  | {
+      name: 'FoundSociety';
+      params: {
+        founder: MultiAddressLike;
+        maxMembers: number;
+        maxIntake: number;
+        maxStrikes: number;
+        candidateDeposit: bigint;
+        rules: BytesLike;
+      };
+    }
+  /**
+   * See [`Pallet::dissolve`].
+   **/
+  | { name: 'Dissolve' }
+  /**
+   * See [`Pallet::judge_suspended_member`].
+   **/
+  | { name: 'JudgeSuspendedMember'; params: { who: MultiAddressLike; forgive: boolean } }
+  /**
+   * See [`Pallet::set_parameters`].
+   **/
+  | {
+      name: 'SetParameters';
+      params: { maxMembers: number; maxIntake: number; maxStrikes: number; candidateDeposit: bigint };
+    }
+  /**
+   * See [`Pallet::punish_skeptic`].
+   **/
+  | { name: 'PunishSkeptic' }
+  /**
+   * See [`Pallet::claim_membership`].
+   **/
+  | { name: 'ClaimMembership' }
+  /**
+   * See [`Pallet::bestow_membership`].
+   **/
+  | { name: 'BestowMembership'; params: { candidate: AccountId32Like } }
+  /**
+   * See [`Pallet::kick_candidate`].
+   **/
+  | { name: 'KickCandidate'; params: { candidate: AccountId32Like } }
+  /**
+   * See [`Pallet::resign_candidacy`].
+   **/
+  | { name: 'ResignCandidacy' }
+  /**
+   * See [`Pallet::drop_candidate`].
+   **/
+  | { name: 'DropCandidate'; params: { candidate: AccountId32Like } }
+  /**
+   * See [`Pallet::cleanup_candidacy`].
+   **/
+  | { name: 'CleanupCandidacy'; params: { candidate: AccountId32Like; max: number } }
+  /**
+   * See [`Pallet::cleanup_challenge`].
+   **/
+  | { name: 'CleanupChallenge'; params: { challengeRound: number; max: number } };
+
 /**
  * Contains a variant per dispatchable extrinsic that this pallet has.
  **/
@@ -3789,6 +4708,44 @@ export type PalletRecoveryCall =
    **/
   | { name: 'CancelRecovered'; params: { account: MultiAddress } };
 
+export type PalletRecoveryCallLike =
+  /**
+   * See [`Pallet::as_recovered`].
+   **/
+  | { name: 'AsRecovered'; params: { account: MultiAddressLike; call: KitchensinkRuntimeRuntimeCallLike } }
+  /**
+   * See [`Pallet::set_recovered`].
+   **/
+  | { name: 'SetRecovered'; params: { lost: MultiAddressLike; rescuer: MultiAddressLike } }
+  /**
+   * See [`Pallet::create_recovery`].
+   **/
+  | { name: 'CreateRecovery'; params: { friends: Array<AccountId32Like>; threshold: number; delayPeriod: number } }
+  /**
+   * See [`Pallet::initiate_recovery`].
+   **/
+  | { name: 'InitiateRecovery'; params: { account: MultiAddressLike } }
+  /**
+   * See [`Pallet::vouch_recovery`].
+   **/
+  | { name: 'VouchRecovery'; params: { lost: MultiAddressLike; rescuer: MultiAddressLike } }
+  /**
+   * See [`Pallet::claim_recovery`].
+   **/
+  | { name: 'ClaimRecovery'; params: { account: MultiAddressLike } }
+  /**
+   * See [`Pallet::close_recovery`].
+   **/
+  | { name: 'CloseRecovery'; params: { rescuer: MultiAddressLike } }
+  /**
+   * See [`Pallet::remove_recovery`].
+   **/
+  | { name: 'RemoveRecovery' }
+  /**
+   * See [`Pallet::cancel_recovered`].
+   **/
+  | { name: 'CancelRecovered'; params: { account: MultiAddressLike } };
+
 /**
  * Contains a variant per dispatchable extrinsic that this pallet has.
  **/
@@ -3820,6 +4777,35 @@ export type PalletVestingCall =
    * See [`Pallet::force_remove_vesting_schedule`].
    **/
   | { name: 'ForceRemoveVestingSchedule'; params: { target: MultiAddress; scheduleIndex: number } };
+
+export type PalletVestingCallLike =
+  /**
+   * See [`Pallet::vest`].
+   **/
+  | { name: 'Vest' }
+  /**
+   * See [`Pallet::vest_other`].
+   **/
+  | { name: 'VestOther'; params: { target: MultiAddressLike } }
+  /**
+   * See [`Pallet::vested_transfer`].
+   **/
+  | { name: 'VestedTransfer'; params: { target: MultiAddressLike; schedule: PalletVestingVestingInfo } }
+  /**
+   * See [`Pallet::force_vested_transfer`].
+   **/
+  | {
+      name: 'ForceVestedTransfer';
+      params: { source: MultiAddressLike; target: MultiAddressLike; schedule: PalletVestingVestingInfo };
+    }
+  /**
+   * See [`Pallet::merge_schedules`].
+   **/
+  | { name: 'MergeSchedules'; params: { schedule1Index: number; schedule2Index: number } }
+  /**
+   * See [`Pallet::force_remove_vesting_schedule`].
+   **/
+  | { name: 'ForceRemoveVestingSchedule'; params: { target: MultiAddressLike; scheduleIndex: number } };
 
 export type PalletVestingVestingInfo = { locked: bigint; perBlock: bigint; startingBlock: number };
 
@@ -3886,10 +4872,84 @@ export type PalletSchedulerCall =
       };
     };
 
+export type PalletSchedulerCallLike =
+  /**
+   * See [`Pallet::schedule`].
+   **/
+  | {
+      name: 'Schedule';
+      params: {
+        when: number;
+        maybePeriodic?: [number, number] | undefined;
+        priority: number;
+        call: KitchensinkRuntimeRuntimeCallLike;
+      };
+    }
+  /**
+   * See [`Pallet::cancel`].
+   **/
+  | { name: 'Cancel'; params: { when: number; index: number } }
+  /**
+   * See [`Pallet::schedule_named`].
+   **/
+  | {
+      name: 'ScheduleNamed';
+      params: {
+        id: FixedBytes<32>;
+        when: number;
+        maybePeriodic?: [number, number] | undefined;
+        priority: number;
+        call: KitchensinkRuntimeRuntimeCallLike;
+      };
+    }
+  /**
+   * See [`Pallet::cancel_named`].
+   **/
+  | { name: 'CancelNamed'; params: { id: FixedBytes<32> } }
+  /**
+   * See [`Pallet::schedule_after`].
+   **/
+  | {
+      name: 'ScheduleAfter';
+      params: {
+        after: number;
+        maybePeriodic?: [number, number] | undefined;
+        priority: number;
+        call: KitchensinkRuntimeRuntimeCallLike;
+      };
+    }
+  /**
+   * See [`Pallet::schedule_named_after`].
+   **/
+  | {
+      name: 'ScheduleNamedAfter';
+      params: {
+        id: FixedBytes<32>;
+        after: number;
+        maybePeriodic?: [number, number] | undefined;
+        priority: number;
+        call: KitchensinkRuntimeRuntimeCallLike;
+      };
+    };
+
 /**
  * Contains a variant per dispatchable extrinsic that this pallet has.
  **/
 export type PalletGluttonCall =
+  /**
+   * See [`Pallet::initialize_pallet`].
+   **/
+  | { name: 'InitializePallet'; params: { newCount: number; witnessCount?: number | undefined } }
+  /**
+   * See [`Pallet::set_compute`].
+   **/
+  | { name: 'SetCompute'; params: { compute: FixedU64 } }
+  /**
+   * See [`Pallet::set_storage`].
+   **/
+  | { name: 'SetStorage'; params: { storage: FixedU64 } };
+
+export type PalletGluttonCallLike =
   /**
    * See [`Pallet::initialize_pallet`].
    **/
@@ -3911,6 +4971,28 @@ export type PalletPreimageCall =
    * See [`Pallet::note_preimage`].
    **/
   | { name: 'NotePreimage'; params: { bytes: Bytes } }
+  /**
+   * See [`Pallet::unnote_preimage`].
+   **/
+  | { name: 'UnnotePreimage'; params: { hash: H256 } }
+  /**
+   * See [`Pallet::request_preimage`].
+   **/
+  | { name: 'RequestPreimage'; params: { hash: H256 } }
+  /**
+   * See [`Pallet::unrequest_preimage`].
+   **/
+  | { name: 'UnrequestPreimage'; params: { hash: H256 } }
+  /**
+   * See [`Pallet::ensure_updated`].
+   **/
+  | { name: 'EnsureUpdated'; params: { hashes: Array<H256> } };
+
+export type PalletPreimageCallLike =
+  /**
+   * See [`Pallet::note_preimage`].
+   **/
+  | { name: 'NotePreimage'; params: { bytes: BytesLike } }
   /**
    * See [`Pallet::unnote_preimage`].
    **/
@@ -3997,6 +5079,75 @@ export type PalletProxyCall =
       };
     };
 
+export type PalletProxyCallLike =
+  /**
+   * See [`Pallet::proxy`].
+   **/
+  | {
+      name: 'Proxy';
+      params: {
+        real: MultiAddressLike;
+        forceProxyType?: KitchensinkRuntimeProxyType | undefined;
+        call: KitchensinkRuntimeRuntimeCallLike;
+      };
+    }
+  /**
+   * See [`Pallet::add_proxy`].
+   **/
+  | { name: 'AddProxy'; params: { delegate: MultiAddressLike; proxyType: KitchensinkRuntimeProxyType; delay: number } }
+  /**
+   * See [`Pallet::remove_proxy`].
+   **/
+  | {
+      name: 'RemoveProxy';
+      params: { delegate: MultiAddressLike; proxyType: KitchensinkRuntimeProxyType; delay: number };
+    }
+  /**
+   * See [`Pallet::remove_proxies`].
+   **/
+  | { name: 'RemoveProxies' }
+  /**
+   * See [`Pallet::create_pure`].
+   **/
+  | { name: 'CreatePure'; params: { proxyType: KitchensinkRuntimeProxyType; delay: number; index: number } }
+  /**
+   * See [`Pallet::kill_pure`].
+   **/
+  | {
+      name: 'KillPure';
+      params: {
+        spawner: MultiAddressLike;
+        proxyType: KitchensinkRuntimeProxyType;
+        index: number;
+        height: number;
+        extIndex: number;
+      };
+    }
+  /**
+   * See [`Pallet::announce`].
+   **/
+  | { name: 'Announce'; params: { real: MultiAddressLike; callHash: H256 } }
+  /**
+   * See [`Pallet::remove_announcement`].
+   **/
+  | { name: 'RemoveAnnouncement'; params: { real: MultiAddressLike; callHash: H256 } }
+  /**
+   * See [`Pallet::reject_announcement`].
+   **/
+  | { name: 'RejectAnnouncement'; params: { delegate: MultiAddressLike; callHash: H256 } }
+  /**
+   * See [`Pallet::proxy_announced`].
+   **/
+  | {
+      name: 'ProxyAnnounced';
+      params: {
+        delegate: MultiAddressLike;
+        real: MultiAddressLike;
+        forceProxyType?: KitchensinkRuntimeProxyType | undefined;
+        call: KitchensinkRuntimeRuntimeCallLike;
+      };
+    };
+
 /**
  * Contains a variant per dispatchable extrinsic that this pallet has.
  **/
@@ -4044,6 +5195,53 @@ export type PalletMultisigCall =
       };
     };
 
+export type PalletMultisigCallLike =
+  /**
+   * See [`Pallet::as_multi_threshold_1`].
+   **/
+  | {
+      name: 'AsMultiThreshold1';
+      params: { otherSignatories: Array<AccountId32Like>; call: KitchensinkRuntimeRuntimeCallLike };
+    }
+  /**
+   * See [`Pallet::as_multi`].
+   **/
+  | {
+      name: 'AsMulti';
+      params: {
+        threshold: number;
+        otherSignatories: Array<AccountId32Like>;
+        maybeTimepoint?: PalletMultisigTimepoint | undefined;
+        call: KitchensinkRuntimeRuntimeCallLike;
+        maxWeight: SpWeightsWeightV2Weight;
+      };
+    }
+  /**
+   * See [`Pallet::approve_as_multi`].
+   **/
+  | {
+      name: 'ApproveAsMulti';
+      params: {
+        threshold: number;
+        otherSignatories: Array<AccountId32Like>;
+        maybeTimepoint?: PalletMultisigTimepoint | undefined;
+        callHash: FixedBytes<32>;
+        maxWeight: SpWeightsWeightV2Weight;
+      };
+    }
+  /**
+   * See [`Pallet::cancel_as_multi`].
+   **/
+  | {
+      name: 'CancelAsMulti';
+      params: {
+        threshold: number;
+        otherSignatories: Array<AccountId32Like>;
+        timepoint: PalletMultisigTimepoint;
+        callHash: FixedBytes<32>;
+      };
+    };
+
 /**
  * Contains a variant per dispatchable extrinsic that this pallet has.
  **/
@@ -4085,6 +5283,44 @@ export type PalletBountiesCall =
    **/
   | { name: 'ExtendBountyExpiry'; params: { bountyId: number; remark: Bytes } };
 
+export type PalletBountiesCallLike =
+  /**
+   * See [`Pallet::propose_bounty`].
+   **/
+  | { name: 'ProposeBounty'; params: { value: bigint; description: BytesLike } }
+  /**
+   * See [`Pallet::approve_bounty`].
+   **/
+  | { name: 'ApproveBounty'; params: { bountyId: number } }
+  /**
+   * See [`Pallet::propose_curator`].
+   **/
+  | { name: 'ProposeCurator'; params: { bountyId: number; curator: MultiAddressLike; fee: bigint } }
+  /**
+   * See [`Pallet::unassign_curator`].
+   **/
+  | { name: 'UnassignCurator'; params: { bountyId: number } }
+  /**
+   * See [`Pallet::accept_curator`].
+   **/
+  | { name: 'AcceptCurator'; params: { bountyId: number } }
+  /**
+   * See [`Pallet::award_bounty`].
+   **/
+  | { name: 'AwardBounty'; params: { bountyId: number; beneficiary: MultiAddressLike } }
+  /**
+   * See [`Pallet::claim_bounty`].
+   **/
+  | { name: 'ClaimBounty'; params: { bountyId: number } }
+  /**
+   * See [`Pallet::close_bounty`].
+   **/
+  | { name: 'CloseBounty'; params: { bountyId: number } }
+  /**
+   * See [`Pallet::extend_bounty_expiry`].
+   **/
+  | { name: 'ExtendBountyExpiry'; params: { bountyId: number; remark: BytesLike } };
+
 /**
  * Contains a variant per dispatchable extrinsic that this pallet has.
  **/
@@ -4101,6 +5337,32 @@ export type PalletTipsCall =
    * See [`Pallet::tip_new`].
    **/
   | { name: 'TipNew'; params: { reason: Bytes; who: MultiAddress; tipValue: bigint } }
+  /**
+   * See [`Pallet::tip`].
+   **/
+  | { name: 'Tip'; params: { hash: H256; tipValue: bigint } }
+  /**
+   * See [`Pallet::close_tip`].
+   **/
+  | { name: 'CloseTip'; params: { hash: H256 } }
+  /**
+   * See [`Pallet::slash_tip`].
+   **/
+  | { name: 'SlashTip'; params: { hash: H256 } };
+
+export type PalletTipsCallLike =
+  /**
+   * See [`Pallet::report_awesome`].
+   **/
+  | { name: 'ReportAwesome'; params: { reason: BytesLike; who: MultiAddressLike } }
+  /**
+   * See [`Pallet::retract_tip`].
+   **/
+  | { name: 'RetractTip'; params: { hash: H256 } }
+  /**
+   * See [`Pallet::tip_new`].
+   **/
+  | { name: 'TipNew'; params: { reason: BytesLike; who: MultiAddressLike; tipValue: bigint } }
   /**
    * See [`Pallet::tip`].
    **/
@@ -4262,6 +5524,157 @@ export type PalletAssetsCall =
    **/
   | { name: 'Block'; params: { id: number; who: MultiAddress } };
 
+export type PalletAssetsCallLike =
+  /**
+   * See [`Pallet::create`].
+   **/
+  | { name: 'Create'; params: { id: number; admin: MultiAddressLike; minBalance: bigint } }
+  /**
+   * See [`Pallet::force_create`].
+   **/
+  | { name: 'ForceCreate'; params: { id: number; owner: MultiAddressLike; isSufficient: boolean; minBalance: bigint } }
+  /**
+   * See [`Pallet::start_destroy`].
+   **/
+  | { name: 'StartDestroy'; params: { id: number } }
+  /**
+   * See [`Pallet::destroy_accounts`].
+   **/
+  | { name: 'DestroyAccounts'; params: { id: number } }
+  /**
+   * See [`Pallet::destroy_approvals`].
+   **/
+  | { name: 'DestroyApprovals'; params: { id: number } }
+  /**
+   * See [`Pallet::finish_destroy`].
+   **/
+  | { name: 'FinishDestroy'; params: { id: number } }
+  /**
+   * See [`Pallet::mint`].
+   **/
+  | { name: 'Mint'; params: { id: number; beneficiary: MultiAddressLike; amount: bigint } }
+  /**
+   * See [`Pallet::burn`].
+   **/
+  | { name: 'Burn'; params: { id: number; who: MultiAddressLike; amount: bigint } }
+  /**
+   * See [`Pallet::transfer`].
+   **/
+  | { name: 'Transfer'; params: { id: number; target: MultiAddressLike; amount: bigint } }
+  /**
+   * See [`Pallet::transfer_keep_alive`].
+   **/
+  | { name: 'TransferKeepAlive'; params: { id: number; target: MultiAddressLike; amount: bigint } }
+  /**
+   * See [`Pallet::force_transfer`].
+   **/
+  | { name: 'ForceTransfer'; params: { id: number; source: MultiAddressLike; dest: MultiAddressLike; amount: bigint } }
+  /**
+   * See [`Pallet::freeze`].
+   **/
+  | { name: 'Freeze'; params: { id: number; who: MultiAddressLike } }
+  /**
+   * See [`Pallet::thaw`].
+   **/
+  | { name: 'Thaw'; params: { id: number; who: MultiAddressLike } }
+  /**
+   * See [`Pallet::freeze_asset`].
+   **/
+  | { name: 'FreezeAsset'; params: { id: number } }
+  /**
+   * See [`Pallet::thaw_asset`].
+   **/
+  | { name: 'ThawAsset'; params: { id: number } }
+  /**
+   * See [`Pallet::transfer_ownership`].
+   **/
+  | { name: 'TransferOwnership'; params: { id: number; owner: MultiAddressLike } }
+  /**
+   * See [`Pallet::set_team`].
+   **/
+  | {
+      name: 'SetTeam';
+      params: { id: number; issuer: MultiAddressLike; admin: MultiAddressLike; freezer: MultiAddressLike };
+    }
+  /**
+   * See [`Pallet::set_metadata`].
+   **/
+  | { name: 'SetMetadata'; params: { id: number; name: BytesLike; symbol: BytesLike; decimals: number } }
+  /**
+   * See [`Pallet::clear_metadata`].
+   **/
+  | { name: 'ClearMetadata'; params: { id: number } }
+  /**
+   * See [`Pallet::force_set_metadata`].
+   **/
+  | {
+      name: 'ForceSetMetadata';
+      params: { id: number; name: BytesLike; symbol: BytesLike; decimals: number; isFrozen: boolean };
+    }
+  /**
+   * See [`Pallet::force_clear_metadata`].
+   **/
+  | { name: 'ForceClearMetadata'; params: { id: number } }
+  /**
+   * See [`Pallet::force_asset_status`].
+   **/
+  | {
+      name: 'ForceAssetStatus';
+      params: {
+        id: number;
+        owner: MultiAddressLike;
+        issuer: MultiAddressLike;
+        admin: MultiAddressLike;
+        freezer: MultiAddressLike;
+        minBalance: bigint;
+        isSufficient: boolean;
+        isFrozen: boolean;
+      };
+    }
+  /**
+   * See [`Pallet::approve_transfer`].
+   **/
+  | { name: 'ApproveTransfer'; params: { id: number; delegate: MultiAddressLike; amount: bigint } }
+  /**
+   * See [`Pallet::cancel_approval`].
+   **/
+  | { name: 'CancelApproval'; params: { id: number; delegate: MultiAddressLike } }
+  /**
+   * See [`Pallet::force_cancel_approval`].
+   **/
+  | { name: 'ForceCancelApproval'; params: { id: number; owner: MultiAddressLike; delegate: MultiAddressLike } }
+  /**
+   * See [`Pallet::transfer_approved`].
+   **/
+  | {
+      name: 'TransferApproved';
+      params: { id: number; owner: MultiAddressLike; destination: MultiAddressLike; amount: bigint };
+    }
+  /**
+   * See [`Pallet::touch`].
+   **/
+  | { name: 'Touch'; params: { id: number } }
+  /**
+   * See [`Pallet::refund`].
+   **/
+  | { name: 'Refund'; params: { id: number; allowBurn: boolean } }
+  /**
+   * See [`Pallet::set_min_balance`].
+   **/
+  | { name: 'SetMinBalance'; params: { id: number; minBalance: bigint } }
+  /**
+   * See [`Pallet::touch_other`].
+   **/
+  | { name: 'TouchOther'; params: { id: number; who: MultiAddressLike } }
+  /**
+   * See [`Pallet::refund_other`].
+   **/
+  | { name: 'RefundOther'; params: { id: number; who: MultiAddressLike } }
+  /**
+   * See [`Pallet::block`].
+   **/
+  | { name: 'Block'; params: { id: number; who: MultiAddressLike } };
+
 /**
  * Contains a variant per dispatchable extrinsic that this pallet has.
  **/
@@ -4283,10 +5696,58 @@ export type PalletLotteryCall =
    **/
   | { name: 'StopRepeat' };
 
+export type PalletLotteryCallLike =
+  /**
+   * See [`Pallet::buy_ticket`].
+   **/
+  | { name: 'BuyTicket'; params: { call: KitchensinkRuntimeRuntimeCallLike } }
+  /**
+   * See [`Pallet::set_calls`].
+   **/
+  | { name: 'SetCalls'; params: { calls: Array<KitchensinkRuntimeRuntimeCallLike> } }
+  /**
+   * See [`Pallet::start_lottery`].
+   **/
+  | { name: 'StartLottery'; params: { price: bigint; length: number; delay: number; repeat: boolean } }
+  /**
+   * See [`Pallet::stop_repeat`].
+   **/
+  | { name: 'StopRepeat' };
+
 /**
  * Contains a variant per dispatchable extrinsic that this pallet has.
  **/
 export type PalletNisCall =
+  /**
+   * See [`Pallet::place_bid`].
+   **/
+  | { name: 'PlaceBid'; params: { amount: bigint; duration: number } }
+  /**
+   * See [`Pallet::retract_bid`].
+   **/
+  | { name: 'RetractBid'; params: { amount: bigint; duration: number } }
+  /**
+   * See [`Pallet::fund_deficit`].
+   **/
+  | { name: 'FundDeficit' }
+  /**
+   * See [`Pallet::thaw_private`].
+   **/
+  | { name: 'ThawPrivate'; params: { index: number; maybeProportion?: Perquintill | undefined } }
+  /**
+   * See [`Pallet::thaw_communal`].
+   **/
+  | { name: 'ThawCommunal'; params: { index: number } }
+  /**
+   * See [`Pallet::communify`].
+   **/
+  | { name: 'Communify'; params: { index: number } }
+  /**
+   * See [`Pallet::privatize`].
+   **/
+  | { name: 'Privatize'; params: { index: number } };
+
+export type PalletNisCallLike =
   /**
    * See [`Pallet::place_bid`].
    **/
@@ -4443,6 +5904,140 @@ export type PalletUniquesCall =
         item: number;
         price?: bigint | undefined;
         whitelistedBuyer?: MultiAddress | undefined;
+      };
+    }
+  /**
+   * See [`Pallet::buy_item`].
+   **/
+  | { name: 'BuyItem'; params: { collection: number; item: number; bidPrice: bigint } };
+
+export type PalletUniquesCallLike =
+  /**
+   * See [`Pallet::create`].
+   **/
+  | { name: 'Create'; params: { collection: number; admin: MultiAddressLike } }
+  /**
+   * See [`Pallet::force_create`].
+   **/
+  | { name: 'ForceCreate'; params: { collection: number; owner: MultiAddressLike; freeHolding: boolean } }
+  /**
+   * See [`Pallet::destroy`].
+   **/
+  | { name: 'Destroy'; params: { collection: number; witness: PalletUniquesDestroyWitness } }
+  /**
+   * See [`Pallet::mint`].
+   **/
+  | { name: 'Mint'; params: { collection: number; item: number; owner: MultiAddressLike } }
+  /**
+   * See [`Pallet::burn`].
+   **/
+  | { name: 'Burn'; params: { collection: number; item: number; checkOwner?: MultiAddressLike | undefined } }
+  /**
+   * See [`Pallet::transfer`].
+   **/
+  | { name: 'Transfer'; params: { collection: number; item: number; dest: MultiAddressLike } }
+  /**
+   * See [`Pallet::redeposit`].
+   **/
+  | { name: 'Redeposit'; params: { collection: number; items: Array<number> } }
+  /**
+   * See [`Pallet::freeze`].
+   **/
+  | { name: 'Freeze'; params: { collection: number; item: number } }
+  /**
+   * See [`Pallet::thaw`].
+   **/
+  | { name: 'Thaw'; params: { collection: number; item: number } }
+  /**
+   * See [`Pallet::freeze_collection`].
+   **/
+  | { name: 'FreezeCollection'; params: { collection: number } }
+  /**
+   * See [`Pallet::thaw_collection`].
+   **/
+  | { name: 'ThawCollection'; params: { collection: number } }
+  /**
+   * See [`Pallet::transfer_ownership`].
+   **/
+  | { name: 'TransferOwnership'; params: { collection: number; owner: MultiAddressLike } }
+  /**
+   * See [`Pallet::set_team`].
+   **/
+  | {
+      name: 'SetTeam';
+      params: { collection: number; issuer: MultiAddressLike; admin: MultiAddressLike; freezer: MultiAddressLike };
+    }
+  /**
+   * See [`Pallet::approve_transfer`].
+   **/
+  | { name: 'ApproveTransfer'; params: { collection: number; item: number; delegate: MultiAddressLike } }
+  /**
+   * See [`Pallet::cancel_approval`].
+   **/
+  | {
+      name: 'CancelApproval';
+      params: { collection: number; item: number; maybeCheckDelegate?: MultiAddressLike | undefined };
+    }
+  /**
+   * See [`Pallet::force_item_status`].
+   **/
+  | {
+      name: 'ForceItemStatus';
+      params: {
+        collection: number;
+        owner: MultiAddressLike;
+        issuer: MultiAddressLike;
+        admin: MultiAddressLike;
+        freezer: MultiAddressLike;
+        freeHolding: boolean;
+        isFrozen: boolean;
+      };
+    }
+  /**
+   * See [`Pallet::set_attribute`].
+   **/
+  | {
+      name: 'SetAttribute';
+      params: { collection: number; maybeItem?: number | undefined; key: BytesLike; value: BytesLike };
+    }
+  /**
+   * See [`Pallet::clear_attribute`].
+   **/
+  | { name: 'ClearAttribute'; params: { collection: number; maybeItem?: number | undefined; key: BytesLike } }
+  /**
+   * See [`Pallet::set_metadata`].
+   **/
+  | { name: 'SetMetadata'; params: { collection: number; item: number; data: BytesLike; isFrozen: boolean } }
+  /**
+   * See [`Pallet::clear_metadata`].
+   **/
+  | { name: 'ClearMetadata'; params: { collection: number; item: number } }
+  /**
+   * See [`Pallet::set_collection_metadata`].
+   **/
+  | { name: 'SetCollectionMetadata'; params: { collection: number; data: BytesLike; isFrozen: boolean } }
+  /**
+   * See [`Pallet::clear_collection_metadata`].
+   **/
+  | { name: 'ClearCollectionMetadata'; params: { collection: number } }
+  /**
+   * See [`Pallet::set_accept_ownership`].
+   **/
+  | { name: 'SetAcceptOwnership'; params: { maybeCollection?: number | undefined } }
+  /**
+   * See [`Pallet::set_collection_max_supply`].
+   **/
+  | { name: 'SetCollectionMaxSupply'; params: { collection: number; maxSupply: number } }
+  /**
+   * See [`Pallet::set_price`].
+   **/
+  | {
+      name: 'SetPrice';
+      params: {
+        collection: number;
+        item: number;
+        price?: bigint | undefined;
+        whitelistedBuyer?: MultiAddressLike | undefined;
       };
     }
   /**
@@ -4706,6 +6301,257 @@ export type PalletNftsCall =
       params: { data: PalletNftsPreSignedAttributes; signature: SpRuntimeMultiSignature; signer: AccountId32 };
     };
 
+export type PalletNftsCallLike =
+  /**
+   * See [`Pallet::create`].
+   **/
+  | { name: 'Create'; params: { admin: MultiAddressLike; config: PalletNftsCollectionConfig } }
+  /**
+   * See [`Pallet::force_create`].
+   **/
+  | { name: 'ForceCreate'; params: { owner: MultiAddressLike; config: PalletNftsCollectionConfig } }
+  /**
+   * See [`Pallet::destroy`].
+   **/
+  | { name: 'Destroy'; params: { collection: number; witness: PalletNftsDestroyWitness } }
+  /**
+   * See [`Pallet::mint`].
+   **/
+  | {
+      name: 'Mint';
+      params: {
+        collection: number;
+        item: number;
+        mintTo: MultiAddressLike;
+        witnessData?: PalletNftsMintWitness | undefined;
+      };
+    }
+  /**
+   * See [`Pallet::force_mint`].
+   **/
+  | {
+      name: 'ForceMint';
+      params: { collection: number; item: number; mintTo: MultiAddressLike; itemConfig: PalletNftsItemConfig };
+    }
+  /**
+   * See [`Pallet::burn`].
+   **/
+  | { name: 'Burn'; params: { collection: number; item: number } }
+  /**
+   * See [`Pallet::transfer`].
+   **/
+  | { name: 'Transfer'; params: { collection: number; item: number; dest: MultiAddressLike } }
+  /**
+   * See [`Pallet::redeposit`].
+   **/
+  | { name: 'Redeposit'; params: { collection: number; items: Array<number> } }
+  /**
+   * See [`Pallet::lock_item_transfer`].
+   **/
+  | { name: 'LockItemTransfer'; params: { collection: number; item: number } }
+  /**
+   * See [`Pallet::unlock_item_transfer`].
+   **/
+  | { name: 'UnlockItemTransfer'; params: { collection: number; item: number } }
+  /**
+   * See [`Pallet::lock_collection`].
+   **/
+  | { name: 'LockCollection'; params: { collection: number; lockSettings: PalletNftsBitFlags } }
+  /**
+   * See [`Pallet::transfer_ownership`].
+   **/
+  | { name: 'TransferOwnership'; params: { collection: number; owner: MultiAddressLike } }
+  /**
+   * See [`Pallet::set_team`].
+   **/
+  | {
+      name: 'SetTeam';
+      params: {
+        collection: number;
+        issuer?: MultiAddressLike | undefined;
+        admin?: MultiAddressLike | undefined;
+        freezer?: MultiAddressLike | undefined;
+      };
+    }
+  /**
+   * See [`Pallet::force_collection_owner`].
+   **/
+  | { name: 'ForceCollectionOwner'; params: { collection: number; owner: MultiAddressLike } }
+  /**
+   * See [`Pallet::force_collection_config`].
+   **/
+  | { name: 'ForceCollectionConfig'; params: { collection: number; config: PalletNftsCollectionConfig } }
+  /**
+   * See [`Pallet::approve_transfer`].
+   **/
+  | {
+      name: 'ApproveTransfer';
+      params: { collection: number; item: number; delegate: MultiAddressLike; maybeDeadline?: number | undefined };
+    }
+  /**
+   * See [`Pallet::cancel_approval`].
+   **/
+  | { name: 'CancelApproval'; params: { collection: number; item: number; delegate: MultiAddressLike } }
+  /**
+   * See [`Pallet::clear_all_transfer_approvals`].
+   **/
+  | { name: 'ClearAllTransferApprovals'; params: { collection: number; item: number } }
+  /**
+   * See [`Pallet::lock_item_properties`].
+   **/
+  | {
+      name: 'LockItemProperties';
+      params: { collection: number; item: number; lockMetadata: boolean; lockAttributes: boolean };
+    }
+  /**
+   * See [`Pallet::set_attribute`].
+   **/
+  | {
+      name: 'SetAttribute';
+      params: {
+        collection: number;
+        maybeItem?: number | undefined;
+        namespace: PalletNftsAttributeNamespace;
+        key: BytesLike;
+        value: BytesLike;
+      };
+    }
+  /**
+   * See [`Pallet::force_set_attribute`].
+   **/
+  | {
+      name: 'ForceSetAttribute';
+      params: {
+        setAs?: AccountId32Like | undefined;
+        collection: number;
+        maybeItem?: number | undefined;
+        namespace: PalletNftsAttributeNamespace;
+        key: BytesLike;
+        value: BytesLike;
+      };
+    }
+  /**
+   * See [`Pallet::clear_attribute`].
+   **/
+  | {
+      name: 'ClearAttribute';
+      params: {
+        collection: number;
+        maybeItem?: number | undefined;
+        namespace: PalletNftsAttributeNamespace;
+        key: BytesLike;
+      };
+    }
+  /**
+   * See [`Pallet::approve_item_attributes`].
+   **/
+  | { name: 'ApproveItemAttributes'; params: { collection: number; item: number; delegate: MultiAddressLike } }
+  /**
+   * See [`Pallet::cancel_item_attributes_approval`].
+   **/
+  | {
+      name: 'CancelItemAttributesApproval';
+      params: {
+        collection: number;
+        item: number;
+        delegate: MultiAddressLike;
+        witness: PalletNftsCancelAttributesApprovalWitness;
+      };
+    }
+  /**
+   * See [`Pallet::set_metadata`].
+   **/
+  | { name: 'SetMetadata'; params: { collection: number; item: number; data: BytesLike } }
+  /**
+   * See [`Pallet::clear_metadata`].
+   **/
+  | { name: 'ClearMetadata'; params: { collection: number; item: number } }
+  /**
+   * See [`Pallet::set_collection_metadata`].
+   **/
+  | { name: 'SetCollectionMetadata'; params: { collection: number; data: BytesLike } }
+  /**
+   * See [`Pallet::clear_collection_metadata`].
+   **/
+  | { name: 'ClearCollectionMetadata'; params: { collection: number } }
+  /**
+   * See [`Pallet::set_accept_ownership`].
+   **/
+  | { name: 'SetAcceptOwnership'; params: { maybeCollection?: number | undefined } }
+  /**
+   * See [`Pallet::set_collection_max_supply`].
+   **/
+  | { name: 'SetCollectionMaxSupply'; params: { collection: number; maxSupply: number } }
+  /**
+   * See [`Pallet::update_mint_settings`].
+   **/
+  | { name: 'UpdateMintSettings'; params: { collection: number; mintSettings: PalletNftsMintSettings } }
+  /**
+   * See [`Pallet::set_price`].
+   **/
+  | {
+      name: 'SetPrice';
+      params: {
+        collection: number;
+        item: number;
+        price?: bigint | undefined;
+        whitelistedBuyer?: MultiAddressLike | undefined;
+      };
+    }
+  /**
+   * See [`Pallet::buy_item`].
+   **/
+  | { name: 'BuyItem'; params: { collection: number; item: number; bidPrice: bigint } }
+  /**
+   * See [`Pallet::pay_tips`].
+   **/
+  | { name: 'PayTips'; params: { tips: Array<PalletNftsItemTip> } }
+  /**
+   * See [`Pallet::create_swap`].
+   **/
+  | {
+      name: 'CreateSwap';
+      params: {
+        offeredCollection: number;
+        offeredItem: number;
+        desiredCollection: number;
+        maybeDesiredItem?: number | undefined;
+        maybePrice?: PalletNftsPriceWithDirection | undefined;
+        duration: number;
+      };
+    }
+  /**
+   * See [`Pallet::cancel_swap`].
+   **/
+  | { name: 'CancelSwap'; params: { offeredCollection: number; offeredItem: number } }
+  /**
+   * See [`Pallet::claim_swap`].
+   **/
+  | {
+      name: 'ClaimSwap';
+      params: {
+        sendCollection: number;
+        sendItem: number;
+        receiveCollection: number;
+        receiveItem: number;
+        witnessPrice?: PalletNftsPriceWithDirection | undefined;
+      };
+    }
+  /**
+   * See [`Pallet::mint_pre_signed`].
+   **/
+  | {
+      name: 'MintPreSigned';
+      params: { mintData: PalletNftsPreSignedMint; signature: SpRuntimeMultiSignature; signer: AccountId32Like };
+    }
+  /**
+   * See [`Pallet::set_attributes_pre_signed`].
+   **/
+  | {
+      name: 'SetAttributesPreSigned';
+      params: { data: PalletNftsPreSignedAttributes; signature: SpRuntimeMultiSignature; signer: AccountId32Like };
+    };
+
 export type PalletNftsCollectionConfig = {
   settings: PalletNftsBitFlags;
   maxSupply?: number | undefined;
@@ -4786,6 +6632,28 @@ export type PalletNftFractionalizationCall =
    **/
   | { name: 'Unify'; params: { nftCollectionId: number; nftId: number; assetId: number; beneficiary: MultiAddress } };
 
+export type PalletNftFractionalizationCallLike =
+  /**
+   * See [`Pallet::fractionalize`].
+   **/
+  | {
+      name: 'Fractionalize';
+      params: {
+        nftCollectionId: number;
+        nftId: number;
+        assetId: number;
+        beneficiary: MultiAddressLike;
+        fractions: bigint;
+      };
+    }
+  /**
+   * See [`Pallet::unify`].
+   **/
+  | {
+      name: 'Unify';
+      params: { nftCollectionId: number; nftId: number; assetId: number; beneficiary: MultiAddressLike };
+    };
+
 /**
  * Contains a variant per dispatchable extrinsic that this pallet has.
  **/
@@ -4814,6 +6682,36 @@ export type PalletSalaryCall =
    * See [`Pallet::payout_other`].
    **/
   | { name: 'PayoutOther'; params: { beneficiary: AccountId32 } }
+  /**
+   * See [`Pallet::check_payment`].
+   **/
+  | { name: 'CheckPayment' };
+
+export type PalletSalaryCallLike =
+  /**
+   * See [`Pallet::init`].
+   **/
+  | { name: 'Init' }
+  /**
+   * See [`Pallet::bump`].
+   **/
+  | { name: 'Bump' }
+  /**
+   * See [`Pallet::induct`].
+   **/
+  | { name: 'Induct' }
+  /**
+   * See [`Pallet::register`].
+   **/
+  | { name: 'Register' }
+  /**
+   * See [`Pallet::payout`].
+   **/
+  | { name: 'Payout' }
+  /**
+   * See [`Pallet::payout_other`].
+   **/
+  | { name: 'PayoutOther'; params: { beneficiary: AccountId32Like } }
   /**
    * See [`Pallet::check_payment`].
    **/
@@ -4860,6 +6758,44 @@ export type PalletCoreFellowshipCall =
    **/
   | { name: 'Import' };
 
+export type PalletCoreFellowshipCallLike =
+  /**
+   * See [`Pallet::bump`].
+   **/
+  | { name: 'Bump'; params: { who: AccountId32Like } }
+  /**
+   * See [`Pallet::set_params`].
+   **/
+  | { name: 'SetParams'; params: { params: PalletCoreFellowshipParamsType } }
+  /**
+   * See [`Pallet::set_active`].
+   **/
+  | { name: 'SetActive'; params: { isActive: boolean } }
+  /**
+   * See [`Pallet::approve`].
+   **/
+  | { name: 'Approve'; params: { who: AccountId32Like; atRank: number } }
+  /**
+   * See [`Pallet::induct`].
+   **/
+  | { name: 'Induct'; params: { who: AccountId32Like } }
+  /**
+   * See [`Pallet::promote`].
+   **/
+  | { name: 'Promote'; params: { who: AccountId32Like; toRank: number } }
+  /**
+   * See [`Pallet::offboard`].
+   **/
+  | { name: 'Offboard'; params: { who: AccountId32Like } }
+  /**
+   * See [`Pallet::submit_evidence`].
+   **/
+  | { name: 'SubmitEvidence'; params: { wish: PalletCoreFellowshipWish; evidence: BytesLike } }
+  /**
+   * See [`Pallet::import`].
+   **/
+  | { name: 'Import' };
+
 /**
  * Contains a variant per dispatchable extrinsic that this pallet has.
  **/
@@ -4868,6 +6804,20 @@ export type PalletTransactionStorageCall =
    * See [`Pallet::store`].
    **/
   | { name: 'Store'; params: { data: Bytes } }
+  /**
+   * See [`Pallet::renew`].
+   **/
+  | { name: 'Renew'; params: { block: number; index: number } }
+  /**
+   * See [`Pallet::check_proof`].
+   **/
+  | { name: 'CheckProof'; params: { proof: SpTransactionStorageProofTransactionStorageProof } };
+
+export type PalletTransactionStorageCallLike =
+  /**
+   * See [`Pallet::store`].
+   **/
+  | { name: 'Store'; params: { data: BytesLike } }
   /**
    * See [`Pallet::renew`].
    **/
@@ -4896,6 +6846,20 @@ export type PalletBagsListCall =
    **/
   | { name: 'PutInFrontOfOther'; params: { heavier: MultiAddress; lighter: MultiAddress } };
 
+export type PalletBagsListCallLike =
+  /**
+   * See [`Pallet::rebag`].
+   **/
+  | { name: 'Rebag'; params: { dislocated: MultiAddressLike } }
+  /**
+   * See [`Pallet::put_in_front_of`].
+   **/
+  | { name: 'PutInFrontOf'; params: { lighter: MultiAddressLike } }
+  /**
+   * See [`Pallet::put_in_front_of_other`].
+   **/
+  | { name: 'PutInFrontOfOther'; params: { heavier: MultiAddressLike; lighter: MultiAddressLike } };
+
 /**
  * Contains a variant per dispatchable extrinsic that this pallet has.
  **/
@@ -4923,6 +6887,42 @@ export type PalletStateTrieMigrationCall =
    * See [`Pallet::migrate_custom_child`].
    **/
   | { name: 'MigrateCustomChild'; params: { root: Bytes; childKeys: Array<Bytes>; totalSize: number } }
+  /**
+   * See [`Pallet::set_signed_max_limits`].
+   **/
+  | { name: 'SetSignedMaxLimits'; params: { limits: PalletStateTrieMigrationMigrationLimits } }
+  /**
+   * See [`Pallet::force_set_progress`].
+   **/
+  | {
+      name: 'ForceSetProgress';
+      params: { progressTop: PalletStateTrieMigrationProgress; progressChild: PalletStateTrieMigrationProgress };
+    };
+
+export type PalletStateTrieMigrationCallLike =
+  /**
+   * See [`Pallet::control_auto_migration`].
+   **/
+  | { name: 'ControlAutoMigration'; params: { maybeConfig?: PalletStateTrieMigrationMigrationLimits | undefined } }
+  /**
+   * See [`Pallet::continue_migrate`].
+   **/
+  | {
+      name: 'ContinueMigrate';
+      params: {
+        limits: PalletStateTrieMigrationMigrationLimits;
+        realSizeUpper: number;
+        witnessTask: PalletStateTrieMigrationMigrationTask;
+      };
+    }
+  /**
+   * See [`Pallet::migrate_custom_top`].
+   **/
+  | { name: 'MigrateCustomTop'; params: { keys: Array<BytesLike>; witnessSize: number } }
+  /**
+   * See [`Pallet::migrate_custom_child`].
+   **/
+  | { name: 'MigrateCustomChild'; params: { root: BytesLike; childKeys: Array<BytesLike>; totalSize: number } }
   /**
    * See [`Pallet::set_signed_max_limits`].
    **/
@@ -4986,10 +6986,91 @@ export type PalletChildBountiesCall =
    **/
   | { name: 'CloseChildBounty'; params: { parentBountyId: number; childBountyId: number } };
 
+export type PalletChildBountiesCallLike =
+  /**
+   * See [`Pallet::add_child_bounty`].
+   **/
+  | { name: 'AddChildBounty'; params: { parentBountyId: number; value: bigint; description: BytesLike } }
+  /**
+   * See [`Pallet::propose_curator`].
+   **/
+  | {
+      name: 'ProposeCurator';
+      params: { parentBountyId: number; childBountyId: number; curator: MultiAddressLike; fee: bigint };
+    }
+  /**
+   * See [`Pallet::accept_curator`].
+   **/
+  | { name: 'AcceptCurator'; params: { parentBountyId: number; childBountyId: number } }
+  /**
+   * See [`Pallet::unassign_curator`].
+   **/
+  | { name: 'UnassignCurator'; params: { parentBountyId: number; childBountyId: number } }
+  /**
+   * See [`Pallet::award_child_bounty`].
+   **/
+  | {
+      name: 'AwardChildBounty';
+      params: { parentBountyId: number; childBountyId: number; beneficiary: MultiAddressLike };
+    }
+  /**
+   * See [`Pallet::claim_child_bounty`].
+   **/
+  | { name: 'ClaimChildBounty'; params: { parentBountyId: number; childBountyId: number } }
+  /**
+   * See [`Pallet::close_child_bounty`].
+   **/
+  | { name: 'CloseChildBounty'; params: { parentBountyId: number; childBountyId: number } };
+
 /**
  * Contains a variant per dispatchable extrinsic that this pallet has.
  **/
 export type PalletReferendaCall =
+  /**
+   * See [`Pallet::submit`].
+   **/
+  | {
+      name: 'Submit';
+      params: {
+        proposalOrigin: KitchensinkRuntimeOriginCaller;
+        proposal: FrameSupportPreimagesBounded;
+        enactmentMoment: FrameSupportScheduleDispatchTime;
+      };
+    }
+  /**
+   * See [`Pallet::place_decision_deposit`].
+   **/
+  | { name: 'PlaceDecisionDeposit'; params: { index: number } }
+  /**
+   * See [`Pallet::refund_decision_deposit`].
+   **/
+  | { name: 'RefundDecisionDeposit'; params: { index: number } }
+  /**
+   * See [`Pallet::cancel`].
+   **/
+  | { name: 'Cancel'; params: { index: number } }
+  /**
+   * See [`Pallet::kill`].
+   **/
+  | { name: 'Kill'; params: { index: number } }
+  /**
+   * See [`Pallet::nudge_referendum`].
+   **/
+  | { name: 'NudgeReferendum'; params: { index: number } }
+  /**
+   * See [`Pallet::one_fewer_deciding`].
+   **/
+  | { name: 'OneFewerDeciding'; params: { track: number } }
+  /**
+   * See [`Pallet::refund_submission_deposit`].
+   **/
+  | { name: 'RefundSubmissionDeposit'; params: { index: number } }
+  /**
+   * See [`Pallet::set_metadata`].
+   **/
+  | { name: 'SetMetadata'; params: { index: number; maybeHash?: H256 | undefined } };
+
+export type PalletReferendaCallLike =
   /**
    * See [`Pallet::submit`].
    **/
@@ -5045,10 +7126,26 @@ export type PalletRemarkCall =
    **/
   { name: 'Store'; params: { remark: Bytes } };
 
+export type PalletRemarkCallLike =
+  /**
+   * See [`Pallet::store`].
+   **/
+  { name: 'Store'; params: { remark: BytesLike } };
+
 /**
  * Contains a variant per dispatchable extrinsic that this pallet has.
  **/
 export type PalletRootTestingCall =
+  /**
+   * See `Pallet::fill_block`.
+   **/
+  | { name: 'FillBlock'; params: { ratio: Perbill } }
+  /**
+   * See `Pallet::trigger_defensive`.
+   **/
+  | { name: 'TriggerDefensive' };
+
+export type PalletRootTestingCallLike =
   /**
    * See `Pallet::fill_block`.
    **/
@@ -5090,6 +7187,35 @@ export type PalletConvictionVotingCall =
    **/
   | { name: 'RemoveOtherVote'; params: { target: MultiAddress; class: number; index: number } };
 
+export type PalletConvictionVotingCallLike =
+  /**
+   * See [`Pallet::vote`].
+   **/
+  | { name: 'Vote'; params: { pollIndex: number; vote: PalletConvictionVotingVoteAccountVote } }
+  /**
+   * See [`Pallet::delegate`].
+   **/
+  | {
+      name: 'Delegate';
+      params: { class: number; to: MultiAddressLike; conviction: PalletConvictionVotingConviction; balance: bigint };
+    }
+  /**
+   * See [`Pallet::undelegate`].
+   **/
+  | { name: 'Undelegate'; params: { class: number } }
+  /**
+   * See [`Pallet::unlock`].
+   **/
+  | { name: 'Unlock'; params: { class: number; target: MultiAddressLike } }
+  /**
+   * See [`Pallet::remove_vote`].
+   **/
+  | { name: 'RemoveVote'; params: { class?: number | undefined; index: number } }
+  /**
+   * See [`Pallet::remove_other_vote`].
+   **/
+  | { name: 'RemoveOtherVote'; params: { target: MultiAddressLike; class: number; index: number } };
+
 export type PalletConvictionVotingVoteAccountVote =
   | { tag: 'Standard'; value: { vote: PalletConvictionVotingVote; balance: bigint } }
   | { tag: 'Split'; value: { aye: bigint; nay: bigint } }
@@ -5129,6 +7255,27 @@ export type PalletWhitelistCall =
    * See [`Pallet::dispatch_whitelisted_call_with_preimage`].
    **/
   | { name: 'DispatchWhitelistedCallWithPreimage'; params: { call: KitchensinkRuntimeRuntimeCall } };
+
+export type PalletWhitelistCallLike =
+  /**
+   * See [`Pallet::whitelist_call`].
+   **/
+  | { name: 'WhitelistCall'; params: { callHash: H256 } }
+  /**
+   * See [`Pallet::remove_whitelisted_call`].
+   **/
+  | { name: 'RemoveWhitelistedCall'; params: { callHash: H256 } }
+  /**
+   * See [`Pallet::dispatch_whitelisted_call`].
+   **/
+  | {
+      name: 'DispatchWhitelistedCall';
+      params: { callHash: H256; callEncodedLen: number; callWeightWitness: SpWeightsWeightV2Weight };
+    }
+  /**
+   * See [`Pallet::dispatch_whitelisted_call_with_preimage`].
+   **/
+  | { name: 'DispatchWhitelistedCallWithPreimage'; params: { call: KitchensinkRuntimeRuntimeCallLike } };
 
 /**
  * Contains a variant per dispatchable extrinsic that this pallet has.
@@ -5186,6 +7333,79 @@ export type PalletAllianceCall =
    * See [`Pallet::kick_member`].
    **/
   | { name: 'KickMember'; params: { who: MultiAddress } }
+  /**
+   * See [`Pallet::add_unscrupulous_items`].
+   **/
+  | { name: 'AddUnscrupulousItems'; params: { items: Array<PalletAllianceUnscrupulousItem> } }
+  /**
+   * See [`Pallet::remove_unscrupulous_items`].
+   **/
+  | { name: 'RemoveUnscrupulousItems'; params: { items: Array<PalletAllianceUnscrupulousItem> } }
+  /**
+   * See [`Pallet::close`].
+   **/
+  | {
+      name: 'Close';
+      params: { proposalHash: H256; index: number; proposalWeightBound: SpWeightsWeightV2Weight; lengthBound: number };
+    }
+  /**
+   * See [`Pallet::abdicate_fellow_status`].
+   **/
+  | { name: 'AbdicateFellowStatus' };
+
+export type PalletAllianceCallLike =
+  /**
+   * See [`Pallet::propose`].
+   **/
+  | { name: 'Propose'; params: { threshold: number; proposal: KitchensinkRuntimeRuntimeCallLike; lengthBound: number } }
+  /**
+   * See [`Pallet::vote`].
+   **/
+  | { name: 'Vote'; params: { proposal: H256; index: number; approve: boolean } }
+  /**
+   * See [`Pallet::init_members`].
+   **/
+  | { name: 'InitMembers'; params: { fellows: Array<AccountId32Like>; allies: Array<AccountId32Like> } }
+  /**
+   * See [`Pallet::disband`].
+   **/
+  | { name: 'Disband'; params: { witness: PalletAllianceDisbandWitness } }
+  /**
+   * See [`Pallet::set_rule`].
+   **/
+  | { name: 'SetRule'; params: { rule: PalletAllianceCid } }
+  /**
+   * See [`Pallet::announce`].
+   **/
+  | { name: 'Announce'; params: { announcement: PalletAllianceCid } }
+  /**
+   * See [`Pallet::remove_announcement`].
+   **/
+  | { name: 'RemoveAnnouncement'; params: { announcement: PalletAllianceCid } }
+  /**
+   * See [`Pallet::join_alliance`].
+   **/
+  | { name: 'JoinAlliance' }
+  /**
+   * See [`Pallet::nominate_ally`].
+   **/
+  | { name: 'NominateAlly'; params: { who: MultiAddressLike } }
+  /**
+   * See [`Pallet::elevate_ally`].
+   **/
+  | { name: 'ElevateAlly'; params: { ally: MultiAddressLike } }
+  /**
+   * See [`Pallet::give_retirement_notice`].
+   **/
+  | { name: 'GiveRetirementNotice' }
+  /**
+   * See [`Pallet::retire`].
+   **/
+  | { name: 'Retire' }
+  /**
+   * See [`Pallet::kick_member`].
+   **/
+  | { name: 'KickMember'; params: { who: MultiAddressLike } }
   /**
    * See [`Pallet::add_unscrupulous_items`].
    **/
@@ -5342,6 +7562,136 @@ export type PalletNominationPoolsCall =
       params: { poolId: number; permission?: PalletNominationPoolsCommissionClaimPermission | undefined };
     };
 
+export type PalletNominationPoolsCallLike =
+  /**
+   * See [`Pallet::join`].
+   **/
+  | { name: 'Join'; params: { amount: bigint; poolId: number } }
+  /**
+   * See [`Pallet::bond_extra`].
+   **/
+  | { name: 'BondExtra'; params: { extra: PalletNominationPoolsBondExtra } }
+  /**
+   * See [`Pallet::claim_payout`].
+   **/
+  | { name: 'ClaimPayout' }
+  /**
+   * See [`Pallet::unbond`].
+   **/
+  | { name: 'Unbond'; params: { memberAccount: MultiAddressLike; unbondingPoints: bigint } }
+  /**
+   * See [`Pallet::pool_withdraw_unbonded`].
+   **/
+  | { name: 'PoolWithdrawUnbonded'; params: { poolId: number; numSlashingSpans: number } }
+  /**
+   * See [`Pallet::withdraw_unbonded`].
+   **/
+  | { name: 'WithdrawUnbonded'; params: { memberAccount: MultiAddressLike; numSlashingSpans: number } }
+  /**
+   * See [`Pallet::create`].
+   **/
+  | {
+      name: 'Create';
+      params: { amount: bigint; root: MultiAddressLike; nominator: MultiAddressLike; bouncer: MultiAddressLike };
+    }
+  /**
+   * See [`Pallet::create_with_pool_id`].
+   **/
+  | {
+      name: 'CreateWithPoolId';
+      params: {
+        amount: bigint;
+        root: MultiAddressLike;
+        nominator: MultiAddressLike;
+        bouncer: MultiAddressLike;
+        poolId: number;
+      };
+    }
+  /**
+   * See [`Pallet::nominate`].
+   **/
+  | { name: 'Nominate'; params: { poolId: number; validators: Array<AccountId32Like> } }
+  /**
+   * See [`Pallet::set_state`].
+   **/
+  | { name: 'SetState'; params: { poolId: number; state: PalletNominationPoolsPoolState } }
+  /**
+   * See [`Pallet::set_metadata`].
+   **/
+  | { name: 'SetMetadata'; params: { poolId: number; metadata: BytesLike } }
+  /**
+   * See [`Pallet::set_configs`].
+   **/
+  | {
+      name: 'SetConfigs';
+      params: {
+        minJoinBond: PalletNominationPoolsConfigOp;
+        minCreateBond: PalletNominationPoolsConfigOp;
+        maxPools: PalletNominationPoolsConfigOpU32;
+        maxMembers: PalletNominationPoolsConfigOpU32;
+        maxMembersPerPool: PalletNominationPoolsConfigOpU32;
+        globalMaxCommission: PalletNominationPoolsConfigOpPerbill;
+      };
+    }
+  /**
+   * See [`Pallet::update_roles`].
+   **/
+  | {
+      name: 'UpdateRoles';
+      params: {
+        poolId: number;
+        newRoot: PalletNominationPoolsConfigOp004;
+        newNominator: PalletNominationPoolsConfigOp004;
+        newBouncer: PalletNominationPoolsConfigOp004;
+      };
+    }
+  /**
+   * See [`Pallet::chill`].
+   **/
+  | { name: 'Chill'; params: { poolId: number } }
+  /**
+   * See [`Pallet::bond_extra_other`].
+   **/
+  | { name: 'BondExtraOther'; params: { member: MultiAddressLike; extra: PalletNominationPoolsBondExtra } }
+  /**
+   * See [`Pallet::set_claim_permission`].
+   **/
+  | { name: 'SetClaimPermission'; params: { permission: PalletNominationPoolsClaimPermission } }
+  /**
+   * See [`Pallet::claim_payout_other`].
+   **/
+  | { name: 'ClaimPayoutOther'; params: { other: AccountId32Like } }
+  /**
+   * See [`Pallet::set_commission`].
+   **/
+  | { name: 'SetCommission'; params: { poolId: number; newCommission?: [Perbill, AccountId32Like] | undefined } }
+  /**
+   * See [`Pallet::set_commission_max`].
+   **/
+  | { name: 'SetCommissionMax'; params: { poolId: number; maxCommission: Perbill } }
+  /**
+   * See [`Pallet::set_commission_change_rate`].
+   **/
+  | {
+      name: 'SetCommissionChangeRate';
+      params: { poolId: number; changeRate: PalletNominationPoolsCommissionChangeRate };
+    }
+  /**
+   * See [`Pallet::claim_commission`].
+   **/
+  | { name: 'ClaimCommission'; params: { poolId: number } }
+  /**
+   * See [`Pallet::adjust_pool_deposit`].
+   **/
+  | { name: 'AdjustPoolDeposit'; params: { poolId: number } }
+  /**
+   * See [`Pallet::set_commission_claim_permission`].
+   **/
+  | {
+      name: 'SetCommissionClaimPermission';
+      params: { poolId: number; permission?: PalletNominationPoolsCommissionClaimPermission | undefined };
+    };
+
 export type PalletNominationPoolsBondExtra = { tag: 'FreeBalance'; value: bigint } | { tag: 'Rewards' };
 
 export type PalletNominationPoolsPoolState = 'Open' | 'Blocked' | 'Destroying';
@@ -5386,6 +7736,32 @@ export type PalletRankedCollectiveCall =
    * See [`Pallet::remove_member`].
    **/
   | { name: 'RemoveMember'; params: { who: MultiAddress; minRank: number } }
+  /**
+   * See [`Pallet::vote`].
+   **/
+  | { name: 'Vote'; params: { poll: number; aye: boolean } }
+  /**
+   * See [`Pallet::cleanup_poll`].
+   **/
+  | { name: 'CleanupPoll'; params: { pollIndex: number; max: number } };
+
+export type PalletRankedCollectiveCallLike =
+  /**
+   * See [`Pallet::add_member`].
+   **/
+  | { name: 'AddMember'; params: { who: MultiAddressLike } }
+  /**
+   * See [`Pallet::promote_member`].
+   **/
+  | { name: 'PromoteMember'; params: { who: MultiAddressLike } }
+  /**
+   * See [`Pallet::demote_member`].
+   **/
+  | { name: 'DemoteMember'; params: { who: MultiAddressLike } }
+  /**
+   * See [`Pallet::remove_member`].
+   **/
+  | { name: 'RemoveMember'; params: { who: MultiAddressLike; minRank: number } }
   /**
    * See [`Pallet::vote`].
    **/
@@ -5462,12 +7838,90 @@ export type PalletAssetConversionCall =
       };
     };
 
+export type PalletAssetConversionCallLike =
+  /**
+   * See [`Pallet::create_pool`].
+   **/
+  | {
+      name: 'CreatePool';
+      params: { asset1: PalletAssetConversionNativeOrAssetId; asset2: PalletAssetConversionNativeOrAssetId };
+    }
+  /**
+   * See [`Pallet::add_liquidity`].
+   **/
+  | {
+      name: 'AddLiquidity';
+      params: {
+        asset1: PalletAssetConversionNativeOrAssetId;
+        asset2: PalletAssetConversionNativeOrAssetId;
+        amount1Desired: bigint;
+        amount2Desired: bigint;
+        amount1Min: bigint;
+        amount2Min: bigint;
+        mintTo: AccountId32Like;
+      };
+    }
+  /**
+   * See [`Pallet::remove_liquidity`].
+   **/
+  | {
+      name: 'RemoveLiquidity';
+      params: {
+        asset1: PalletAssetConversionNativeOrAssetId;
+        asset2: PalletAssetConversionNativeOrAssetId;
+        lpTokenBurn: bigint;
+        amount1MinReceive: bigint;
+        amount2MinReceive: bigint;
+        withdrawTo: AccountId32Like;
+      };
+    }
+  /**
+   * See [`Pallet::swap_exact_tokens_for_tokens`].
+   **/
+  | {
+      name: 'SwapExactTokensForTokens';
+      params: {
+        path: Array<PalletAssetConversionNativeOrAssetId>;
+        amountIn: bigint;
+        amountOutMin: bigint;
+        sendTo: AccountId32Like;
+        keepAlive: boolean;
+      };
+    }
+  /**
+   * See [`Pallet::swap_tokens_for_exact_tokens`].
+   **/
+  | {
+      name: 'SwapTokensForExactTokens';
+      params: {
+        path: Array<PalletAssetConversionNativeOrAssetId>;
+        amountOut: bigint;
+        amountInMax: bigint;
+        sendTo: AccountId32Like;
+        keepAlive: boolean;
+      };
+    };
+
 export type PalletAssetConversionNativeOrAssetId = { tag: 'Native' } | { tag: 'Asset'; value: number };
 
 /**
  * Contains a variant per dispatchable extrinsic that this pallet has.
  **/
 export type PalletFastUnstakeCall =
+  /**
+   * See [`Pallet::register_fast_unstake`].
+   **/
+  | { name: 'RegisterFastUnstake' }
+  /**
+   * See [`Pallet::deregister`].
+   **/
+  | { name: 'Deregister' }
+  /**
+   * See [`Pallet::control`].
+   **/
+  | { name: 'Control'; params: { erasToCheck: number } };
+
+export type PalletFastUnstakeCallLike =
   /**
    * See [`Pallet::register_fast_unstake`].
    **/
@@ -5497,10 +7951,33 @@ export type PalletMessageQueueCall =
       params: { messageOrigin: number; page: number; index: number; weightLimit: SpWeightsWeightV2Weight };
     };
 
+export type PalletMessageQueueCallLike =
+  /**
+   * See [`Pallet::reap_page`].
+   **/
+  | { name: 'ReapPage'; params: { messageOrigin: number; pageIndex: number } }
+  /**
+   * See [`Pallet::execute_overweight`].
+   **/
+  | {
+      name: 'ExecuteOverweight';
+      params: { messageOrigin: number; page: number; index: number; weightLimit: SpWeightsWeightV2Weight };
+    };
+
 /**
  * Contains a variant per dispatchable extrinsic that this pallet has.
  **/
 export type FrameBenchmarkingPalletPovCall =
+  /**
+   * See [`Pallet::emit_event`].
+   **/
+  | 'EmitEvent'
+  /**
+   * See [`Pallet::noop`].
+   **/
+  | 'Noop';
+
+export type FrameBenchmarkingPalletPovCallLike =
   /**
    * See [`Pallet::emit_event`].
    **/
@@ -5522,6 +7999,16 @@ export type PalletTxPauseCall =
    * See [`Pallet::unpause`].
    **/
   | { name: 'Unpause'; params: { ident: [Bytes, Bytes] } };
+
+export type PalletTxPauseCallLike =
+  /**
+   * See [`Pallet::pause`].
+   **/
+  | { name: 'Pause'; params: { fullName: [BytesLike, BytesLike] } }
+  /**
+   * See [`Pallet::unpause`].
+   **/
+  | { name: 'Unpause'; params: { ident: [BytesLike, BytesLike] } };
 
 /**
  * Contains a variant per dispatchable extrinsic that this pallet has.
@@ -5559,6 +8046,40 @@ export type PalletSafeModeCall =
    * See [`Pallet::force_release_deposit`].
    **/
   | { name: 'ForceReleaseDeposit'; params: { account: AccountId32; block: number } };
+
+export type PalletSafeModeCallLike =
+  /**
+   * See [`Pallet::enter`].
+   **/
+  | { name: 'Enter' }
+  /**
+   * See [`Pallet::force_enter`].
+   **/
+  | { name: 'ForceEnter' }
+  /**
+   * See [`Pallet::extend`].
+   **/
+  | { name: 'Extend' }
+  /**
+   * See [`Pallet::force_extend`].
+   **/
+  | { name: 'ForceExtend' }
+  /**
+   * See [`Pallet::force_exit`].
+   **/
+  | { name: 'ForceExit' }
+  /**
+   * See [`Pallet::force_slash_deposit`].
+   **/
+  | { name: 'ForceSlashDeposit'; params: { account: AccountId32Like; block: number } }
+  /**
+   * See [`Pallet::release_deposit`].
+   **/
+  | { name: 'ReleaseDeposit'; params: { account: AccountId32Like; block: number } }
+  /**
+   * See [`Pallet::force_release_deposit`].
+   **/
+  | { name: 'ForceReleaseDeposit'; params: { account: AccountId32Like; block: number } };
 
 /**
  * Contains a variant per dispatchable extrinsic that this pallet has.
@@ -5641,6 +8162,84 @@ export type PalletBrokerCall =
    **/
   | { name: 'RequestCoreCount'; params: { coreCount: number } };
 
+export type PalletBrokerCallLike =
+  /**
+   * See [`Pallet::configure`].
+   **/
+  | { name: 'Configure'; params: { config: PalletBrokerConfigRecord } }
+  /**
+   * See [`Pallet::reserve`].
+   **/
+  | { name: 'Reserve'; params: { workload: Array<PalletBrokerScheduleItem> } }
+  /**
+   * See [`Pallet::unreserve`].
+   **/
+  | { name: 'Unreserve'; params: { itemIndex: number } }
+  /**
+   * See [`Pallet::set_lease`].
+   **/
+  | { name: 'SetLease'; params: { task: number; until: number } }
+  /**
+   * See [`Pallet::start_sales`].
+   **/
+  | { name: 'StartSales'; params: { initialPrice: bigint; coreCount: number } }
+  /**
+   * See [`Pallet::purchase`].
+   **/
+  | { name: 'Purchase'; params: { priceLimit: bigint } }
+  /**
+   * See [`Pallet::renew`].
+   **/
+  | { name: 'Renew'; params: { core: number } }
+  /**
+   * See [`Pallet::transfer`].
+   **/
+  | { name: 'Transfer'; params: { regionId: PalletBrokerRegionId; newOwner: AccountId32Like } }
+  /**
+   * See [`Pallet::partition`].
+   **/
+  | { name: 'Partition'; params: { regionId: PalletBrokerRegionId; pivot: number } }
+  /**
+   * See [`Pallet::interlace`].
+   **/
+  | { name: 'Interlace'; params: { regionId: PalletBrokerRegionId; pivot: PalletBrokerCoreMask } }
+  /**
+   * See [`Pallet::assign`].
+   **/
+  | { name: 'Assign'; params: { regionId: PalletBrokerRegionId; task: number; finality: PalletBrokerFinality } }
+  /**
+   * See [`Pallet::pool`].
+   **/
+  | { name: 'Pool'; params: { regionId: PalletBrokerRegionId; payee: AccountId32Like; finality: PalletBrokerFinality } }
+  /**
+   * See [`Pallet::claim_revenue`].
+   **/
+  | { name: 'ClaimRevenue'; params: { regionId: PalletBrokerRegionId; maxTimeslices: number } }
+  /**
+   * See [`Pallet::purchase_credit`].
+   **/
+  | { name: 'PurchaseCredit'; params: { amount: bigint; beneficiary: AccountId32Like } }
+  /**
+   * See [`Pallet::drop_region`].
+   **/
+  | { name: 'DropRegion'; params: { regionId: PalletBrokerRegionId } }
+  /**
+   * See [`Pallet::drop_contribution`].
+   **/
+  | { name: 'DropContribution'; params: { regionId: PalletBrokerRegionId } }
+  /**
+   * See [`Pallet::drop_history`].
+   **/
+  | { name: 'DropHistory'; params: { when: number } }
+  /**
+   * See [`Pallet::drop_renewal`].
+   **/
+  | { name: 'DropRenewal'; params: { core: number; when: number } }
+  /**
+   * See [`Pallet::request_core_count`].
+   **/
+  | { name: 'RequestCoreCount'; params: { coreCount: number } };
+
 export type PalletBrokerConfigRecord = {
   advanceNotice: number;
   interludeLength: number;
@@ -5672,6 +8271,12 @@ export type PalletBrokerFinality = 'Provisional' | 'Final';
  * Contains a variant per dispatchable extrinsic that this pallet has.
  **/
 export type PalletMixnetCall =
+  /**
+   * See `Pallet::register`.
+   **/
+  { name: 'Register'; params: { registration: PalletMixnetRegistration; signature: SpMixnetAppSignature } };
+
+export type PalletMixnetCallLike =
   /**
    * See `Pallet::register`.
    **/

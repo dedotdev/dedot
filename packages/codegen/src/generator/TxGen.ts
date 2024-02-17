@@ -18,15 +18,13 @@ export class TxGen extends ApiGen {
 
     const { callTypeId, addressTypeId, signatureTypeId } = this.metadata.extrinsic;
 
-    const callTypeOut = this.typesGen.generateType(callTypeId, 1, true);
-    const addressTypeOut = this.typesGen.generateType(addressTypeId, 1, true);
-    const signatureTypeOut = this.typesGen.generateType(signatureTypeId, 1, true);
+    const callTypeIn = this.typesGen.generateType(callTypeId, 1);
+    const addressTypeIn = this.typesGen.generateType(addressTypeId, 1);
+    const signatureTypeIn = this.typesGen.generateType(signatureTypeId, 1);
 
     this.typesGen.typeImports.addPortableType('FrameSystemEventRecord');
     this.typesGen.typeImports.addCodecType('Extrinsic');
-    this.typesGen.addTypeImport(callTypeOut);
-    this.typesGen.addTypeImport(addressTypeOut);
-    this.typesGen.addTypeImport(signatureTypeOut);
+    this.typesGen.addTypeImport([callTypeIn, addressTypeIn, signatureTypeIn]);
 
     let txDefsOut = '';
     for (let pallet of pallets) {
@@ -43,8 +41,7 @@ export class TxGen extends ApiGen {
             params: one.fields.map((f) => ({
               name: stringCamelCase(f.name!),
               normalizedName: this.#normalizeParamName(f.name!),
-              typeIn: this.typesGen.generateType(f.typeId, 1, false),
-              typeOut: this.typesGen.generateType(f.typeId, 1, true),
+              type: this.typesGen.generateType(f.typeId, 1),
               docs: f.docs,
             })),
             docs: one.docs,
@@ -55,7 +52,7 @@ export class TxGen extends ApiGen {
               callInput: this.#generateCallInput(
                 stringPascalCase(pallet.name),
                 stringPascalCase(f.functionName),
-                isFlatEnum ? undefined : f.params.map((p) => `${p.name}: ${p.typeOut}`),
+                !isFlatEnum ? f.params.map((p) => `${p.name}: ${p.type}`) : undefined,
               ),
             };
           });
@@ -68,7 +65,7 @@ export class TxGen extends ApiGen {
                 docs,
                 '\n',
                 params.map((p) => `@param ${p.normalizedName} ${p.docs}`),
-              )}${functionName}: GenericTxCall<(${params.map((p) => `${p.normalizedName}: ${p.typeIn}`).join(', ')}) => ChainSubmittableExtrinsic<${callInput}>>`,
+              )}${functionName}: GenericTxCall<(${params.map((p) => `${p.normalizedName}: ${p.type}`).join(', ')}) => ChainSubmittableExtrinsic<${callInput}>>`,
           )
           .join(',\n')}
           
@@ -79,8 +76,8 @@ export class TxGen extends ApiGen {
 
     const importTypes = this.typesGen.typeImports.toImports();
     const defTypes = `
-    type ChainSubmittableExtrinsic<T extends IRuntimeTxCall = ${callTypeOut}> = 
-        Extrinsic<${addressTypeOut}, T, ${signatureTypeOut}, any[]> &
+    type ChainSubmittableExtrinsic<T extends IRuntimeTxCall = ${callTypeIn}> = 
+        Extrinsic<${addressTypeIn}, T, ${signatureTypeIn}, any[]> &
         ISubmittableExtrinsic<ISubmittableResult<FrameSystemEventRecord>>
 `;
     const template = compileTemplate('tx.hbs');

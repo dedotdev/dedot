@@ -8,6 +8,7 @@ import {
 } from '@delightfuldot/codecs';
 import { Callback, Unsub } from './index';
 import { IKeyringPair, Signer } from '@polkadot/types/types';
+import { HexString } from '@delightfuldot/utils';
 
 export type AddressOrPair = IKeyringPair | string; // | AccountId32Like | MultiAddressLike;
 
@@ -66,4 +67,8 @@ export interface ISubmittableExtrinsic<R extends ISubmittableResult = ISubmittab
   signAndSend(account: AddressOrPair, callback: Callback<R>): Promise<Unsub>;
 
   signAndSend(account: AddressOrPair, options: Partial<SignerOptions>, callback?: Callback<R>): Promise<Unsub>;
+
+  toHex(): HexString;
+
+  toU8a(): Uint8Array;
 }

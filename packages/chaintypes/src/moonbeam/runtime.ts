@@ -5,7 +5,7 @@ import type {
   Option,
   OpaqueMetadata,
   RuntimeDispatchInfo,
-  Bytes,
+  BytesLike,
   FeeDetails,
   Balance,
   Weight,
@@ -53,14 +53,14 @@ export interface RuntimeCalls extends GenericRuntimeCalls {
      *
      * @callname: TransactionPaymentApi_query_info
      **/
-    queryInfo: GenericRuntimeCall<(uxt: Bytes, len: number) => Promise<RuntimeDispatchInfo>>;
+    queryInfo: GenericRuntimeCall<(uxt: BytesLike, len: number) => Promise<RuntimeDispatchInfo>>;
 
     /**
      * The transaction fee details
      *
      * @callname: TransactionPaymentApi_query_fee_details
      **/
-    queryFeeDetails: GenericRuntimeCall<(uxt: Bytes, len: number) => Promise<FeeDetails>>;
+    queryFeeDetails: GenericRuntimeCall<(uxt: BytesLike, len: number) => Promise<FeeDetails>>;
 
     /**
      * Query the output of the current LengthToFee given some input

@@ -25,6 +25,8 @@ export const $Bytes = $.RawHex;
 export type BytesLike = $.Input<typeof $Bytes>;
 export type Bytes = HexString;
 
+registerLooseCodecType({ $Bytes });
+
 export type FixedBytes<Bytes extends number> = HexString; // TODO: add Unit8Array
 
 export type BitSequence = $.BitSequence;

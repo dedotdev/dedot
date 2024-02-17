@@ -11,6 +11,7 @@ import type {
   FixedU128,
   Perbill,
   Percent,
+  BytesLike,
   Data,
   FixedU64,
 } from '@delightfuldot/codecs';
@@ -967,7 +968,7 @@ export interface ChainStorage extends GenericChainStorage {
     /**
      * The owner of a key. The key is the `KeyTypeId` + the encoded key.
      **/
-    keyOwner: GenericStorageQuery<(arg: [SpCoreCryptoKeyTypeId, Bytes]) => AccountId32 | undefined>;
+    keyOwner: GenericStorageQuery<(arg: [SpCoreCryptoKeyTypeId, BytesLike]) => AccountId32 | undefined>;
 
     /**
      * Generic pallet storage query
@@ -1431,7 +1432,7 @@ export interface ChainStorage extends GenericChainStorage {
     /**
      * A vector of reports of the same kind that happened at the same time slot.
      **/
-    concurrentReportsIndex: GenericStorageQuery<(arg: [FixedBytes<16>, Bytes]) => Array<H256>>;
+    concurrentReportsIndex: GenericStorageQuery<(arg: [FixedBytes<16>, BytesLike]) => Array<H256>>;
 
     /**
      * Generic pallet storage query
@@ -1981,7 +1982,7 @@ export interface ChainStorage extends GenericChainStorage {
     /**
      * Attributes of a collection.
      **/
-    attribute: GenericStorageQuery<(arg: [number, number | undefined, Bytes]) => [Bytes, bigint] | undefined>;
+    attribute: GenericStorageQuery<(arg: [number, number | undefined, BytesLike]) => [Bytes, bigint] | undefined>;
 
     /**
      * Price of an asset instance.
@@ -2049,7 +2050,7 @@ export interface ChainStorage extends GenericChainStorage {
      **/
     attribute: GenericStorageQuery<
       (
-        arg: [number, number | undefined, PalletNftsAttributeNamespace, Bytes],
+        arg: [number, number | undefined, PalletNftsAttributeNamespace, BytesLike],
       ) => [Bytes, PalletNftsAttributeDeposit] | undefined
     >;
 
@@ -2735,7 +2736,7 @@ export interface ChainStorage extends GenericChainStorage {
     /**
      * The set of calls that are explicitly paused.
      **/
-    pausedCalls: GenericStorageQuery<(arg: [Bytes, Bytes]) => [] | undefined>;
+    pausedCalls: GenericStorageQuery<(arg: [BytesLike, BytesLike]) => [] | undefined>;
 
     /**
      * Generic pallet storage query

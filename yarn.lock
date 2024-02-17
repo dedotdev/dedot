@@ -418,6 +418,8 @@ __metadata:
 "@delightfuldot/utils@workspace:*, @delightfuldot/utils@workspace:packages/utils":
   version: 0.0.0-use.local
   resolution: "@delightfuldot/utils@workspace:packages/utils"
+  dependencies:
+    "@polkadot/util": ^12.6.2
   languageName: unknown
   linkType: soft
 

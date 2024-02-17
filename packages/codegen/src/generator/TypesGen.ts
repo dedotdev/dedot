@@ -36,7 +36,7 @@ const SKIP_TYPES = [
 // This helps make the type name shorter
 const PATH_RM_INDEX_1 = ['generic', 'misc', 'pallet', 'traits', 'types'];
 
-export const BASIC_KNOWN_TYPES = ['BitSequence', 'Bytes', 'FixedBytes', 'FixedArray', 'ResultPayload'];
+export const BASIC_KNOWN_TYPES = ['BitSequence', 'Bytes', 'BytesLike', 'FixedBytes', 'FixedArray', 'ResultPayload'];
 const WRAPPER_TYPE_REGEX = /^(\w+)(<.*>)$/g;
 
 export class TypesGen {
@@ -62,8 +62,12 @@ export class TypesGen {
 
     Object.values(this.includedTypes)
       .filter(({ skip, knownType }) => !(skip || knownType))
-      .forEach(({ name, id, docs }) => {
-        defTypeOut += `${commentBlock(docs)}export type ${name} = ${this.generateType(id, 0, true)};\n\n`;
+      .forEach(({ name, nameOut, id, docs }) => {
+        defTypeOut += `${commentBlock(docs)}export type ${nameOut} = ${this.generateType(id, 0, true)};\n\n`;
+
+        if (this.#shouldGenerateTypeIn(id)) {
+          defTypeOut += `export type ${name} = ${this.generateType(id)};\n\n`;
+        }
       });
 
     const importTypes = this.typeImports.toImports('./types');
@@ -227,7 +231,7 @@ export class TypesGen {
         const fixedSize = tag === 'SizedVec' ? `${value.len}` : null;
         const $innerType = this.metadata.types[value.typeParam].type;
         if ($innerType.tag === 'Primitive' && $innerType.value.kind === 'u8') {
-          return fixedSize ? `FixedBytes<${fixedSize}>` : 'Bytes';
+          return fixedSize ? `FixedBytes<${fixedSize}>` : typeOut ? 'Bytes' : 'BytesLike';
         } else {
           const innerType = this.generateType(value.typeParam, nestedLevel + 1, typeOut);
           return fixedSize ? `FixedArray<${innerType}, ${fixedSize}>` : `Array<${innerType}>`;
@@ -259,6 +263,7 @@ export class TypesGen {
   }
 
   #includedTypes(): Record<TypeId, NamedType> {
+    const { callTypeId } = this.registry.metadata!.extrinsic;
     const { types } = this.metadata;
     const pathsCount = new Map<string, Array<number>>();
     const typesWithPath = types.filter((one) => one.path.length > 0);
@@ -315,6 +320,11 @@ export class TypesGen {
           name = this.#cleanPath(path);
         }
 
+        if (this.#shouldGenerateTypeIn(id)) {
+          nameOut = name;
+          name = name.endsWith('Like') ? name : `${name}Like`;
+        }
+
         o[id] = {
           name: `${name}${suffix}`,
           nameOut: nameOut || `${name}${suffix}`,
@@ -352,6 +362,13 @@ export class TypesGen {
       .map((one) => stringPascalCase(one))
       .filter((one, idx, currentPath) => idx === 0 || one !== currentPath[idx - 1])
       .join('');
+  }
+
+  #shouldGenerateTypeIn(id: TypeId) {
+    const { callTypeId } = this.metadata.extrinsic;
+    const palletCallTypeIds = this.registry.portableRegistry!.getPalletCallTypeIds();
+
+    return callTypeId === id || palletCallTypeIds.includes(id);
   }
 
   eqlCache = new Map<string, boolean>();
@@ -458,7 +475,12 @@ export class TypesGen {
     return dupCount.toString().padStart(3, '0');
   }
 
-  addTypeImport(typeName: string) {
+  addTypeImport(typeName: string | string[]) {
+    if (Array.isArray(typeName)) {
+      typeName.forEach((one) => this.addTypeImport(one));
+      return;
+    }
+
     if (isNativeType(typeName)) {
       return;
     }

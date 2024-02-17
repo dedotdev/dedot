@@ -11,6 +11,7 @@ import type {
   FixedU128,
   Perbill,
   Percent,
+  BytesLike,
   EthereumAddressLike,
   EthereumAddress,
   Data,
@@ -784,7 +785,7 @@ export interface ChainStorage extends GenericChainStorage {
     /**
      * A vector of reports of the same kind that happened at the same time slot.
      **/
-    concurrentReportsIndex: GenericStorageQuery<(arg: [FixedBytes<16>, Bytes]) => Array<H256>>;
+    concurrentReportsIndex: GenericStorageQuery<(arg: [FixedBytes<16>, BytesLike]) => Array<H256>>;
 
     /**
      * Generic pallet storage query
@@ -831,7 +832,7 @@ export interface ChainStorage extends GenericChainStorage {
     /**
      * The owner of a key. The key is the `KeyTypeId` + the encoded key.
      **/
-    keyOwner: GenericStorageQuery<(arg: [SpCoreCryptoKeyTypeId, Bytes]) => AccountId32 | undefined>;
+    keyOwner: GenericStorageQuery<(arg: [SpCoreCryptoKeyTypeId, BytesLike]) => AccountId32 | undefined>;
 
     /**
      * Generic pallet storage query

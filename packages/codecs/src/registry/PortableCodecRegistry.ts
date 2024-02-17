@@ -63,7 +63,10 @@ export class PortableCodecRegistry {
 
     // A placeholder codec for typeId so if this typeId is used in the `#createCodec`
     // the recursion will be resolved
-    this.#cache.set(typeId, $.Bytes);
+    this.#cache.set(
+      typeId,
+      $.deferred(() => this.#cache.get(typeId) || $.Bytes),
+    );
 
     const $codec = this.#createCodec(typeId);
     this.#cache.set(typeId, $codec);
@@ -235,12 +238,12 @@ export class PortableCodecRegistry {
         tagKey: 'pallet',
         valueKey: 'palletCall',
       };
-    } else if (this.#getPalletEventTypeIds().includes(typeId)) {
+    } else if (this.getPalletEventTypeIds().includes(typeId)) {
       return {
         tagKey: 'name',
         valueKey: 'data',
       };
-    } else if (this.#getPalletCallTypeIds().includes(typeId)) {
+    } else if (this.getPalletCallTypeIds().includes(typeId)) {
       return {
         tagKey: 'name',
         valueKey: 'params',
@@ -253,7 +256,7 @@ export class PortableCodecRegistry {
     };
   }
 
-  #getPalletCallTypeIds(): number[] {
+  getPalletCallTypeIds(): number[] {
     const {
       extrinsic: { callTypeId },
     } = this.#registry.metadata!;
@@ -266,7 +269,7 @@ export class PortableCodecRegistry {
     return [];
   }
 
-  #getPalletEventTypeIds(): number[] {
+  getPalletEventTypeIds(): number[] {
     const {
       outerEnums: { eventEnumTypeId },
     } = this.#registry.metadata!;

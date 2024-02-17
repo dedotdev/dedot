@@ -11,6 +11,8 @@ import type {
   ResultPayload,
   Bytes,
   H160,
+  BytesLike,
+  AccountId20Like,
   Data,
   U256,
   FixedI64,
@@ -1382,6 +1384,46 @@ export type MoonbeamRuntimeRuntimeCall =
   | { pallet: 'EthereumXcm'; palletCall: PalletEthereumXcmCall }
   | { pallet: 'Randomness'; palletCall: PalletRandomnessCall };
 
+export type MoonbeamRuntimeRuntimeCallLike =
+  | { pallet: 'System'; palletCall: FrameSystemCallLike }
+  | { pallet: 'ParachainSystem'; palletCall: CumulusPalletParachainSystemCallLike }
+  | { pallet: 'Timestamp'; palletCall: PalletTimestampCallLike }
+  | { pallet: 'RootTesting'; palletCall: PalletRootTestingCallLike }
+  | { pallet: 'Balances'; palletCall: PalletBalancesCallLike }
+  | { pallet: 'ParachainStaking'; palletCall: PalletParachainStakingCallLike }
+  | { pallet: 'AuthorInherent'; palletCall: PalletAuthorInherentCallLike }
+  | { pallet: 'AuthorFilter'; palletCall: PalletAuthorSlotFilterCallLike }
+  | { pallet: 'AuthorMapping'; palletCall: PalletAuthorMappingCallLike }
+  | { pallet: 'MoonbeamOrbiters'; palletCall: PalletMoonbeamOrbitersCallLike }
+  | { pallet: 'Utility'; palletCall: PalletUtilityCallLike }
+  | { pallet: 'Proxy'; palletCall: PalletProxyCallLike }
+  | { pallet: 'MaintenanceMode'; palletCall: PalletMaintenanceModeCallLike }
+  | { pallet: 'Identity'; palletCall: PalletIdentityCallLike }
+  | { pallet: 'Multisig'; palletCall: PalletMultisigCallLike }
+  | { pallet: 'Evm'; palletCall: PalletEvmCallLike }
+  | { pallet: 'Ethereum'; palletCall: PalletEthereumCallLike }
+  | { pallet: 'Scheduler'; palletCall: PalletSchedulerCallLike }
+  | { pallet: 'Democracy'; palletCall: PalletDemocracyCallLike }
+  | { pallet: 'Preimage'; palletCall: PalletPreimageCallLike }
+  | { pallet: 'ConvictionVoting'; palletCall: PalletConvictionVotingCallLike }
+  | { pallet: 'Referenda'; palletCall: PalletReferendaCallLike }
+  | { pallet: 'Whitelist'; palletCall: PalletWhitelistCallLike }
+  | { pallet: 'CouncilCollective'; palletCall: PalletCollectiveCallLike }
+  | { pallet: 'TechCommitteeCollective'; palletCall: PalletCollectiveCallLike }
+  | { pallet: 'TreasuryCouncilCollective'; palletCall: PalletCollectiveCallLike }
+  | { pallet: 'OpenTechCommitteeCollective'; palletCall: PalletCollectiveCallLike }
+  | { pallet: 'Treasury'; palletCall: PalletTreasuryCallLike }
+  | { pallet: 'CrowdloanRewards'; palletCall: PalletCrowdloanRewardsCallLike }
+  | { pallet: 'DmpQueue'; palletCall: CumulusPalletDmpQueueCallLike }
+  | { pallet: 'PolkadotXcm'; palletCall: PalletXcmCallLike }
+  | { pallet: 'Assets'; palletCall: PalletAssetsCallLike }
+  | { pallet: 'AssetManager'; palletCall: PalletAssetManagerCallLike }
+  | { pallet: 'XTokens'; palletCall: OrmlXtokensModuleCallLike }
+  | { pallet: 'XcmTransactor'; palletCall: PalletXcmTransactorCallLike }
+  | { pallet: 'LocalAssets'; palletCall: PalletAssetsCallLike }
+  | { pallet: 'EthereumXcm'; palletCall: PalletEthereumXcmCallLike }
+  | { pallet: 'Randomness'; palletCall: PalletRandomnessCallLike };
+
 /**
  * Contains a variant per dispatchable extrinsic that this pallet has.
  **/
@@ -1419,6 +1461,40 @@ export type FrameSystemCall =
    **/
   | { name: 'RemarkWithEvent'; params: { remark: Bytes } };
 
+export type FrameSystemCallLike =
+  /**
+   * See [`Pallet::remark`].
+   **/
+  | { name: 'Remark'; params: { remark: BytesLike } }
+  /**
+   * See [`Pallet::set_heap_pages`].
+   **/
+  | { name: 'SetHeapPages'; params: { pages: bigint } }
+  /**
+   * See [`Pallet::set_code`].
+   **/
+  | { name: 'SetCode'; params: { code: BytesLike } }
+  /**
+   * See [`Pallet::set_code_without_checks`].
+   **/
+  | { name: 'SetCodeWithoutChecks'; params: { code: BytesLike } }
+  /**
+   * See [`Pallet::set_storage`].
+   **/
+  | { name: 'SetStorage'; params: { items: Array<[BytesLike, BytesLike]> } }
+  /**
+   * See [`Pallet::kill_storage`].
+   **/
+  | { name: 'KillStorage'; params: { keys: Array<BytesLike> } }
+  /**
+   * See [`Pallet::kill_prefix`].
+   **/
+  | { name: 'KillPrefix'; params: { prefix: BytesLike; subkeys: number } }
+  /**
+   * See [`Pallet::remark_with_event`].
+   **/
+  | { name: 'RemarkWithEvent'; params: { remark: BytesLike } };
+
 /**
  * Contains a variant per dispatchable extrinsic that this pallet has.
  **/
@@ -1439,6 +1515,24 @@ export type CumulusPalletParachainSystemCall =
    * See [`Pallet::enact_authorized_upgrade`].
    **/
   | { name: 'EnactAuthorizedUpgrade'; params: { code: Bytes } };
+
+export type CumulusPalletParachainSystemCallLike =
+  /**
+   * See [`Pallet::set_validation_data`].
+   **/
+  | { name: 'SetValidationData'; params: { data: CumulusPrimitivesParachainInherentParachainInherentData } }
+  /**
+   * See [`Pallet::sudo_send_upward_message`].
+   **/
+  | { name: 'SudoSendUpwardMessage'; params: { message: BytesLike } }
+  /**
+   * See [`Pallet::authorize_upgrade`].
+   **/
+  | { name: 'AuthorizeUpgrade'; params: { codeHash: H256; checkVersion: boolean } }
+  /**
+   * See [`Pallet::enact_authorized_upgrade`].
+   **/
+  | { name: 'EnactAuthorizedUpgrade'; params: { code: BytesLike } };
 
 export type CumulusPrimitivesParachainInherentParachainInherentData = {
   validationData: PolkadotPrimitivesV6PersistedValidationData;
@@ -1473,10 +1567,22 @@ export type PalletTimestampCall =
    **/
   { name: 'Set'; params: { now: bigint } };
 
+export type PalletTimestampCallLike =
+  /**
+   * See [`Pallet::set`].
+   **/
+  { name: 'Set'; params: { now: bigint } };
+
 /**
  * Contains a variant per dispatchable extrinsic that this pallet has.
  **/
 export type PalletRootTestingCall =
+  /**
+   * See `Pallet::fill_block`.
+   **/
+  { name: 'FillBlock'; params: { ratio: Perbill } };
+
+export type PalletRootTestingCallLike =
   /**
    * See `Pallet::fill_block`.
    **/
@@ -1514,6 +1620,36 @@ export type PalletBalancesCall =
    * See [`Pallet::force_set_balance`].
    **/
   | { name: 'ForceSetBalance'; params: { who: AccountId20; newFree: bigint } };
+
+export type PalletBalancesCallLike =
+  /**
+   * See [`Pallet::transfer_allow_death`].
+   **/
+  | { name: 'TransferAllowDeath'; params: { dest: AccountId20Like; value: bigint } }
+  /**
+   * See [`Pallet::force_transfer`].
+   **/
+  | { name: 'ForceTransfer'; params: { source: AccountId20Like; dest: AccountId20Like; value: bigint } }
+  /**
+   * See [`Pallet::transfer_keep_alive`].
+   **/
+  | { name: 'TransferKeepAlive'; params: { dest: AccountId20Like; value: bigint } }
+  /**
+   * See [`Pallet::transfer_all`].
+   **/
+  | { name: 'TransferAll'; params: { dest: AccountId20Like; keepAlive: boolean } }
+  /**
+   * See [`Pallet::force_unreserve`].
+   **/
+  | { name: 'ForceUnreserve'; params: { who: AccountId20Like; amount: bigint } }
+  /**
+   * See [`Pallet::upgrade_accounts`].
+   **/
+  | { name: 'UpgradeAccounts'; params: { who: Array<AccountId20Like> } }
+  /**
+   * See [`Pallet::force_set_balance`].
+   **/
+  | { name: 'ForceSetBalance'; params: { who: AccountId20Like; newFree: bigint } };
 
 /**
  * Contains a variant per dispatchable extrinsic that this pallet has.
@@ -1669,6 +1805,157 @@ export type PalletParachainStakingCall =
    **/
   | { name: 'ForceJoinCandidates'; params: { account: AccountId20; bond: bigint; candidateCount: number } };
 
+export type PalletParachainStakingCallLike =
+  /**
+   * See [`Pallet::set_staking_expectations`].
+   **/
+  | { name: 'SetStakingExpectations'; params: { expectations: { min: bigint; ideal: bigint; max: bigint } } }
+  /**
+   * See [`Pallet::set_inflation`].
+   **/
+  | { name: 'SetInflation'; params: { schedule: { min: Perbill; ideal: Perbill; max: Perbill } } }
+  /**
+   * See [`Pallet::set_parachain_bond_account`].
+   **/
+  | { name: 'SetParachainBondAccount'; params: { new: AccountId20Like } }
+  /**
+   * See [`Pallet::set_parachain_bond_reserve_percent`].
+   **/
+  | { name: 'SetParachainBondReservePercent'; params: { new: Percent } }
+  /**
+   * See [`Pallet::set_total_selected`].
+   **/
+  | { name: 'SetTotalSelected'; params: { new: number } }
+  /**
+   * See [`Pallet::set_collator_commission`].
+   **/
+  | { name: 'SetCollatorCommission'; params: { new: Perbill } }
+  /**
+   * See [`Pallet::set_blocks_per_round`].
+   **/
+  | { name: 'SetBlocksPerRound'; params: { new: number } }
+  /**
+   * See [`Pallet::join_candidates`].
+   **/
+  | { name: 'JoinCandidates'; params: { bond: bigint; candidateCount: number } }
+  /**
+   * See [`Pallet::schedule_leave_candidates`].
+   **/
+  | { name: 'ScheduleLeaveCandidates'; params: { candidateCount: number } }
+  /**
+   * See [`Pallet::execute_leave_candidates`].
+   **/
+  | { name: 'ExecuteLeaveCandidates'; params: { candidate: AccountId20Like; candidateDelegationCount: number } }
+  /**
+   * See [`Pallet::cancel_leave_candidates`].
+   **/
+  | { name: 'CancelLeaveCandidates'; params: { candidateCount: number } }
+  /**
+   * See [`Pallet::go_offline`].
+   **/
+  | { name: 'GoOffline' }
+  /**
+   * See [`Pallet::go_online`].
+   **/
+  | { name: 'GoOnline' }
+  /**
+   * See [`Pallet::candidate_bond_more`].
+   **/
+  | { name: 'CandidateBondMore'; params: { more: bigint } }
+  /**
+   * See [`Pallet::schedule_candidate_bond_less`].
+   **/
+  | { name: 'ScheduleCandidateBondLess'; params: { less: bigint } }
+  /**
+   * See [`Pallet::execute_candidate_bond_less`].
+   **/
+  | { name: 'ExecuteCandidateBondLess'; params: { candidate: AccountId20Like } }
+  /**
+   * See [`Pallet::cancel_candidate_bond_less`].
+   **/
+  | { name: 'CancelCandidateBondLess' }
+  /**
+   * See [`Pallet::delegate`].
+   **/
+  | {
+      name: 'Delegate';
+      params: { candidate: AccountId20Like; amount: bigint; candidateDelegationCount: number; delegationCount: number };
+    }
+  /**
+   * See [`Pallet::delegate_with_auto_compound`].
+   **/
+  | {
+      name: 'DelegateWithAutoCompound';
+      params: {
+        candidate: AccountId20Like;
+        amount: bigint;
+        autoCompound: Percent;
+        candidateDelegationCount: number;
+        candidateAutoCompoundingDelegationCount: number;
+        delegationCount: number;
+      };
+    }
+  /**
+   * See [`Pallet::removed_call_19`].
+   **/
+  | { name: 'RemovedCall19' }
+  /**
+   * See [`Pallet::removed_call_20`].
+   **/
+  | { name: 'RemovedCall20' }
+  /**
+   * See [`Pallet::removed_call_21`].
+   **/
+  | { name: 'RemovedCall21' }
+  /**
+   * See [`Pallet::schedule_revoke_delegation`].
+   **/
+  | { name: 'ScheduleRevokeDelegation'; params: { collator: AccountId20Like } }
+  /**
+   * See [`Pallet::delegator_bond_more`].
+   **/
+  | { name: 'DelegatorBondMore'; params: { candidate: AccountId20Like; more: bigint } }
+  /**
+   * See [`Pallet::schedule_delegator_bond_less`].
+   **/
+  | { name: 'ScheduleDelegatorBondLess'; params: { candidate: AccountId20Like; less: bigint } }
+  /**
+   * See [`Pallet::execute_delegation_request`].
+   **/
+  | { name: 'ExecuteDelegationRequest'; params: { delegator: AccountId20Like; candidate: AccountId20Like } }
+  /**
+   * See [`Pallet::cancel_delegation_request`].
+   **/
+  | { name: 'CancelDelegationRequest'; params: { candidate: AccountId20Like } }
+  /**
+   * See [`Pallet::set_auto_compound`].
+   **/
+  | {
+      name: 'SetAutoCompound';
+      params: {
+        candidate: AccountId20Like;
+        value: Percent;
+        candidateAutoCompoundingDelegationCountHint: number;
+        delegationCountHint: number;
+      };
+    }
+  /**
+   * See [`Pallet::hotfix_remove_delegation_requests_exited_candidates`].
+   **/
+  | { name: 'HotfixRemoveDelegationRequestsExitedCandidates'; params: { candidates: Array<AccountId20Like> } }
+  /**
+   * See [`Pallet::notify_inactive_collator`].
+   **/
+  | { name: 'NotifyInactiveCollator'; params: { collator: AccountId20Like } }
+  /**
+   * See [`Pallet::enable_marking_offline`].
+   **/
+  | { name: 'EnableMarkingOffline'; params: { value: boolean } }
+  /**
+   * See [`Pallet::force_join_candidates`].
+   **/
+  | { name: 'ForceJoinCandidates'; params: { account: AccountId20Like; bond: bigint; candidateCount: number } };
+
 /**
  * Contains a variant per dispatchable extrinsic that this pallet has.
  **/
@@ -1678,10 +1965,22 @@ export type PalletAuthorInherentCall =
    **/
   'KickOffAuthorshipValidation';
 
+export type PalletAuthorInherentCallLike =
+  /**
+   * See [`Pallet::kick_off_authorship_validation`].
+   **/
+  'KickOffAuthorshipValidation';
+
 /**
  * Contains a variant per dispatchable extrinsic that this pallet has.
  **/
 export type PalletAuthorSlotFilterCall =
+  /**
+   * See [`Pallet::set_eligible`].
+   **/
+  { name: 'SetEligible'; params: { new: PalletAuthorSlotFilterNumNonZeroU32 } };
+
+export type PalletAuthorSlotFilterCallLike =
   /**
    * See [`Pallet::set_eligible`].
    **/
@@ -1714,6 +2013,31 @@ export type PalletAuthorMappingCall =
    * See [`Pallet::set_keys`].
    **/
   | { name: 'SetKeys'; params: { keys: Bytes } };
+
+export type PalletAuthorMappingCallLike =
+  /**
+   * See [`Pallet::add_association`].
+   **/
+  | { name: 'AddAssociation'; params: { nimbusId: NimbusPrimitivesNimbusCryptoPublic } }
+  /**
+   * See [`Pallet::update_association`].
+   **/
+  | {
+      name: 'UpdateAssociation';
+      params: { oldNimbusId: NimbusPrimitivesNimbusCryptoPublic; newNimbusId: NimbusPrimitivesNimbusCryptoPublic };
+    }
+  /**
+   * See [`Pallet::clear_association`].
+   **/
+  | { name: 'ClearAssociation'; params: { nimbusId: NimbusPrimitivesNimbusCryptoPublic } }
+  /**
+   * See [`Pallet::remove_keys`].
+   **/
+  | { name: 'RemoveKeys' }
+  /**
+   * See [`Pallet::set_keys`].
+   **/
+  | { name: 'SetKeys'; params: { keys: BytesLike } };
 
 /**
  * Contains a variant per dispatchable extrinsic that this pallet has.
@@ -1748,6 +2072,36 @@ export type PalletMoonbeamOrbitersCall =
    **/
   | { name: 'RemoveCollator'; params: { collator: AccountId20 } };
 
+export type PalletMoonbeamOrbitersCallLike =
+  /**
+   * See [`Pallet::collator_add_orbiter`].
+   **/
+  | { name: 'CollatorAddOrbiter'; params: { orbiter: AccountId20Like } }
+  /**
+   * See [`Pallet::collator_remove_orbiter`].
+   **/
+  | { name: 'CollatorRemoveOrbiter'; params: { orbiter: AccountId20Like } }
+  /**
+   * See [`Pallet::orbiter_leave_collator_pool`].
+   **/
+  | { name: 'OrbiterLeaveCollatorPool'; params: { collator: AccountId20Like } }
+  /**
+   * See [`Pallet::orbiter_register`].
+   **/
+  | { name: 'OrbiterRegister' }
+  /**
+   * See [`Pallet::orbiter_unregister`].
+   **/
+  | { name: 'OrbiterUnregister'; params: { collatorsPoolCount: number } }
+  /**
+   * See [`Pallet::add_collator`].
+   **/
+  | { name: 'AddCollator'; params: { collator: AccountId20Like } }
+  /**
+   * See [`Pallet::remove_collator`].
+   **/
+  | { name: 'RemoveCollator'; params: { collator: AccountId20Like } };
+
 /**
  * Contains a variant per dispatchable extrinsic that this pallet has.
  **/
@@ -1776,6 +2130,32 @@ export type PalletUtilityCall =
    * See [`Pallet::with_weight`].
    **/
   | { name: 'WithWeight'; params: { call: MoonbeamRuntimeRuntimeCall; weight: SpWeightsWeightV2Weight } };
+
+export type PalletUtilityCallLike =
+  /**
+   * See [`Pallet::batch`].
+   **/
+  | { name: 'Batch'; params: { calls: Array<MoonbeamRuntimeRuntimeCallLike> } }
+  /**
+   * See [`Pallet::as_derivative`].
+   **/
+  | { name: 'AsDerivative'; params: { index: number; call: MoonbeamRuntimeRuntimeCallLike } }
+  /**
+   * See [`Pallet::batch_all`].
+   **/
+  | { name: 'BatchAll'; params: { calls: Array<MoonbeamRuntimeRuntimeCallLike> } }
+  /**
+   * See [`Pallet::dispatch_as`].
+   **/
+  | { name: 'DispatchAs'; params: { asOrigin: MoonbeamRuntimeOriginCaller; call: MoonbeamRuntimeRuntimeCallLike } }
+  /**
+   * See [`Pallet::force_batch`].
+   **/
+  | { name: 'ForceBatch'; params: { calls: Array<MoonbeamRuntimeRuntimeCallLike> } }
+  /**
+   * See [`Pallet::with_weight`].
+   **/
+  | { name: 'WithWeight'; params: { call: MoonbeamRuntimeRuntimeCallLike; weight: SpWeightsWeightV2Weight } };
 
 export type MoonbeamRuntimeOriginCaller =
   | { tag: 'System'; value: FrameSupportDispatchRawOrigin }
@@ -1957,10 +2337,86 @@ export type PalletProxyCall =
       };
     };
 
+export type PalletProxyCallLike =
+  /**
+   * See [`Pallet::proxy`].
+   **/
+  | {
+      name: 'Proxy';
+      params: {
+        real: AccountId20Like;
+        forceProxyType?: MoonbeamRuntimeProxyType | undefined;
+        call: MoonbeamRuntimeRuntimeCallLike;
+      };
+    }
+  /**
+   * See [`Pallet::add_proxy`].
+   **/
+  | { name: 'AddProxy'; params: { delegate: AccountId20Like; proxyType: MoonbeamRuntimeProxyType; delay: number } }
+  /**
+   * See [`Pallet::remove_proxy`].
+   **/
+  | { name: 'RemoveProxy'; params: { delegate: AccountId20Like; proxyType: MoonbeamRuntimeProxyType; delay: number } }
+  /**
+   * See [`Pallet::remove_proxies`].
+   **/
+  | { name: 'RemoveProxies' }
+  /**
+   * See [`Pallet::create_pure`].
+   **/
+  | { name: 'CreatePure'; params: { proxyType: MoonbeamRuntimeProxyType; delay: number; index: number } }
+  /**
+   * See [`Pallet::kill_pure`].
+   **/
+  | {
+      name: 'KillPure';
+      params: {
+        spawner: AccountId20Like;
+        proxyType: MoonbeamRuntimeProxyType;
+        index: number;
+        height: number;
+        extIndex: number;
+      };
+    }
+  /**
+   * See [`Pallet::announce`].
+   **/
+  | { name: 'Announce'; params: { real: AccountId20Like; callHash: H256 } }
+  /**
+   * See [`Pallet::remove_announcement`].
+   **/
+  | { name: 'RemoveAnnouncement'; params: { real: AccountId20Like; callHash: H256 } }
+  /**
+   * See [`Pallet::reject_announcement`].
+   **/
+  | { name: 'RejectAnnouncement'; params: { delegate: AccountId20Like; callHash: H256 } }
+  /**
+   * See [`Pallet::proxy_announced`].
+   **/
+  | {
+      name: 'ProxyAnnounced';
+      params: {
+        delegate: AccountId20Like;
+        real: AccountId20Like;
+        forceProxyType?: MoonbeamRuntimeProxyType | undefined;
+        call: MoonbeamRuntimeRuntimeCallLike;
+      };
+    };
+
 /**
  * Contains a variant per dispatchable extrinsic that this pallet has.
  **/
 export type PalletMaintenanceModeCall =
+  /**
+   * See [`Pallet::enter_maintenance_mode`].
+   **/
+  | 'EnterMaintenanceMode'
+  /**
+   * See [`Pallet::resume_normal_operation`].
+   **/
+  | 'ResumeNormalOperation';
+
+export type PalletMaintenanceModeCallLike =
   /**
    * See [`Pallet::enter_maintenance_mode`].
    **/
@@ -2033,6 +2489,71 @@ export type PalletIdentityCall =
    * See [`Pallet::remove_sub`].
    **/
   | { name: 'RemoveSub'; params: { sub: AccountId20 } }
+  /**
+   * See [`Pallet::quit_sub`].
+   **/
+  | { name: 'QuitSub' };
+
+export type PalletIdentityCallLike =
+  /**
+   * See [`Pallet::add_registrar`].
+   **/
+  | { name: 'AddRegistrar'; params: { account: AccountId20Like } }
+  /**
+   * See [`Pallet::set_identity`].
+   **/
+  | { name: 'SetIdentity'; params: { info: PalletIdentitySimpleIdentityInfo } }
+  /**
+   * See [`Pallet::set_subs`].
+   **/
+  | { name: 'SetSubs'; params: { subs: Array<[AccountId20Like, Data]> } }
+  /**
+   * See [`Pallet::clear_identity`].
+   **/
+  | { name: 'ClearIdentity' }
+  /**
+   * See [`Pallet::request_judgement`].
+   **/
+  | { name: 'RequestJudgement'; params: { regIndex: number; maxFee: bigint } }
+  /**
+   * See [`Pallet::cancel_request`].
+   **/
+  | { name: 'CancelRequest'; params: { regIndex: number } }
+  /**
+   * See [`Pallet::set_fee`].
+   **/
+  | { name: 'SetFee'; params: { index: number; fee: bigint } }
+  /**
+   * See [`Pallet::set_account_id`].
+   **/
+  | { name: 'SetAccountId'; params: { index: number; new: AccountId20Like } }
+  /**
+   * See [`Pallet::set_fields`].
+   **/
+  | { name: 'SetFields'; params: { index: number; fields: PalletIdentityBitFlags } }
+  /**
+   * See [`Pallet::provide_judgement`].
+   **/
+  | {
+      name: 'ProvideJudgement';
+      params: { regIndex: number; target: AccountId20Like; judgement: PalletIdentityJudgement; identity: H256 };
+    }
+  /**
+   * See [`Pallet::kill_identity`].
+   **/
+  | { name: 'KillIdentity'; params: { target: AccountId20Like } }
+  /**
+   * See [`Pallet::add_sub`].
+   **/
+  | { name: 'AddSub'; params: { sub: AccountId20Like; data: Data } }
+  /**
+   * See [`Pallet::rename_sub`].
+   **/
+  | { name: 'RenameSub'; params: { sub: AccountId20Like; data: Data } }
+  /**
+   * See [`Pallet::remove_sub`].
+   **/
+  | { name: 'RemoveSub'; params: { sub: AccountId20Like } }
   /**
    * See [`Pallet::quit_sub`].
    **/
@@ -2118,6 +2639,53 @@ export type PalletMultisigCall =
       };
     };
 
+export type PalletMultisigCallLike =
+  /**
+   * See [`Pallet::as_multi_threshold_1`].
+   **/
+  | {
+      name: 'AsMultiThreshold1';
+      params: { otherSignatories: Array<AccountId20Like>; call: MoonbeamRuntimeRuntimeCallLike };
+    }
+  /**
+   * See [`Pallet::as_multi`].
+   **/
+  | {
+      name: 'AsMulti';
+      params: {
+        threshold: number;
+        otherSignatories: Array<AccountId20Like>;
+        maybeTimepoint?: PalletMultisigTimepoint | undefined;
+        call: MoonbeamRuntimeRuntimeCallLike;
+        maxWeight: SpWeightsWeightV2Weight;
+      };
+    }
+  /**
+   * See [`Pallet::approve_as_multi`].
+   **/
+  | {
+      name: 'ApproveAsMulti';
+      params: {
+        threshold: number;
+        otherSignatories: Array<AccountId20Like>;
+        maybeTimepoint?: PalletMultisigTimepoint | undefined;
+        callHash: FixedBytes<32>;
+        maxWeight: SpWeightsWeightV2Weight;
+      };
+    }
+  /**
+   * See [`Pallet::cancel_as_multi`].
+   **/
+  | {
+      name: 'CancelAsMulti';
+      params: {
+        threshold: number;
+        otherSignatories: Array<AccountId20Like>;
+        timepoint: PalletMultisigTimepoint;
+        callHash: FixedBytes<32>;
+      };
+    };
+
 /**
  * Contains a variant per dispatchable extrinsic that this pallet has.
  **/
@@ -2177,10 +2745,72 @@ export type PalletEvmCall =
       };
     };
 
+export type PalletEvmCallLike =
+  /**
+   * See [`Pallet::withdraw`].
+   **/
+  | { name: 'Withdraw'; params: { address: H160; value: bigint } }
+  /**
+   * See [`Pallet::call`].
+   **/
+  | {
+      name: 'Call';
+      params: {
+        source: H160;
+        target: H160;
+        input: BytesLike;
+        value: U256;
+        gasLimit: bigint;
+        maxFeePerGas: U256;
+        maxPriorityFeePerGas?: U256 | undefined;
+        nonce?: U256 | undefined;
+        accessList: Array<[H160, Array<H256>]>;
+      };
+    }
+  /**
+   * See [`Pallet::create`].
+   **/
+  | {
+      name: 'Create';
+      params: {
+        source: H160;
+        init: BytesLike;
+        value: U256;
+        gasLimit: bigint;
+        maxFeePerGas: U256;
+        maxPriorityFeePerGas?: U256 | undefined;
+        nonce?: U256 | undefined;
+        accessList: Array<[H160, Array<H256>]>;
+      };
+    }
+  /**
+   * See [`Pallet::create2`].
+   **/
+  | {
+      name: 'Create2';
+      params: {
+        source: H160;
+        init: BytesLike;
+        salt: H256;
+        value: U256;
+        gasLimit: bigint;
+        maxFeePerGas: U256;
+        maxPriorityFeePerGas?: U256 | undefined;
+        nonce?: U256 | undefined;
+        accessList: Array<[H160, Array<H256>]>;
+      };
+    };
+
 /**
  * Contains a variant per dispatchable extrinsic that this pallet has.
  **/
 export type PalletEthereumCall =
+  /**
+   * See [`Pallet::transact`].
+   **/
+  { name: 'Transact'; params: { transaction: EthereumTransactionTransactionV2 } };
+
+export type PalletEthereumCallLike =
   /**
    * See [`Pallet::transact`].
    **/
@@ -2301,6 +2931,66 @@ export type PalletSchedulerCall =
       };
     };
 
+export type PalletSchedulerCallLike =
+  /**
+   * See [`Pallet::schedule`].
+   **/
+  | {
+      name: 'Schedule';
+      params: {
+        when: number;
+        maybePeriodic?: [number, number] | undefined;
+        priority: number;
+        call: MoonbeamRuntimeRuntimeCallLike;
+      };
+    }
+  /**
+   * See [`Pallet::cancel`].
+   **/
+  | { name: 'Cancel'; params: { when: number; index: number } }
+  /**
+   * See [`Pallet::schedule_named`].
+   **/
+  | {
+      name: 'ScheduleNamed';
+      params: {
+        id: FixedBytes<32>;
+        when: number;
+        maybePeriodic?: [number, number] | undefined;
+        priority: number;
+        call: MoonbeamRuntimeRuntimeCallLike;
+      };
+    }
+  /**
+   * See [`Pallet::cancel_named`].
+   **/
+  | { name: 'CancelNamed'; params: { id: FixedBytes<32> } }
+  /**
+   * See [`Pallet::schedule_after`].
+   **/
+  | {
+      name: 'ScheduleAfter';
+      params: {
+        after: number;
+        maybePeriodic?: [number, number] | undefined;
+        priority: number;
+        call: MoonbeamRuntimeRuntimeCallLike;
+      };
+    }
+  /**
+   * See [`Pallet::schedule_named_after`].
+   **/
+  | {
+      name: 'ScheduleNamedAfter';
+      params: {
+        id: FixedBytes<32>;
+        after: number;
+        maybePeriodic?: [number, number] | undefined;
+        priority: number;
+        call: MoonbeamRuntimeRuntimeCallLike;
+      };
+    };
+
 /**
  * Contains a variant per dispatchable extrinsic that this pallet has.
  **/
@@ -2382,6 +3072,84 @@ export type PalletDemocracyCall =
    **/
   | { name: 'SetMetadata'; params: { owner: PalletDemocracyMetadataOwner; maybeHash?: H256 | undefined } };
 
+export type PalletDemocracyCallLike =
+  /**
+   * See [`Pallet::propose`].
+   **/
+  | { name: 'Propose'; params: { proposal: FrameSupportPreimagesBounded; value: bigint } }
+  /**
+   * See [`Pallet::second`].
+   **/
+  | { name: 'Second'; params: { proposal: number } }
+  /**
+   * See [`Pallet::vote`].
+   **/
+  | { name: 'Vote'; params: { refIndex: number; vote: PalletDemocracyVoteAccountVote } }
+  /**
+   * See [`Pallet::emergency_cancel`].
+   **/
+  | { name: 'EmergencyCancel'; params: { refIndex: number } }
+  /**
+   * See [`Pallet::external_propose`].
+   **/
+  | { name: 'ExternalPropose'; params: { proposal: FrameSupportPreimagesBounded } }
+  /**
+   * See [`Pallet::external_propose_majority`].
+   **/
+  | { name: 'ExternalProposeMajority'; params: { proposal: FrameSupportPreimagesBounded } }
+  /**
+   * See [`Pallet::external_propose_default`].
+   **/
+  | { name: 'ExternalProposeDefault'; params: { proposal: FrameSupportPreimagesBounded } }
+  /**
+   * See [`Pallet::fast_track`].
+   **/
+  | { name: 'FastTrack'; params: { proposalHash: H256; votingPeriod: number; delay: number } }
+  /**
+   * See [`Pallet::veto_external`].
+   **/
+  | { name: 'VetoExternal'; params: { proposalHash: H256 } }
+  /**
+   * See [`Pallet::cancel_referendum`].
+   **/
+  | { name: 'CancelReferendum'; params: { refIndex: number } }
+  /**
+   * See [`Pallet::delegate`].
+   **/
+  | { name: 'Delegate'; params: { to: AccountId20Like; conviction: PalletDemocracyConviction; balance: bigint } }
+  /**
+   * See [`Pallet::undelegate`].
+   **/
+  | { name: 'Undelegate' }
+  /**
+   * See [`Pallet::clear_public_proposals`].
+   **/
+  | { name: 'ClearPublicProposals' }
+  /**
+   * See [`Pallet::unlock`].
+   **/
+  | { name: 'Unlock'; params: { target: AccountId20Like } }
+  /**
+   * See [`Pallet::remove_vote`].
+   **/
+  | { name: 'RemoveVote'; params: { index: number } }
+  /**
+   * See [`Pallet::remove_other_vote`].
+   **/
+  | { name: 'RemoveOtherVote'; params: { target: AccountId20Like; index: number } }
+  /**
+   * See [`Pallet::blacklist`].
+   **/
+  | { name: 'Blacklist'; params: { proposalHash: H256; maybeRefIndex?: number | undefined } }
+  /**
+   * See [`Pallet::cancel_proposal`].
+   **/
+  | { name: 'CancelProposal'; params: { propIndex: number } }
+  /**
+   * See [`Pallet::set_metadata`].
+   **/
+  | { name: 'SetMetadata'; params: { owner: PalletDemocracyMetadataOwner; maybeHash?: H256 | undefined } };
+
 export type PalletDemocracyConviction =
   | 'None'
   | 'Locked1x'
@@ -2399,6 +3167,28 @@ export type PalletPreimageCall =
    * See [`Pallet::note_preimage`].
    **/
   | { name: 'NotePreimage'; params: { bytes: Bytes } }
+  /**
+   * See [`Pallet::unnote_preimage`].
+   **/
+  | { name: 'UnnotePreimage'; params: { hash: H256 } }
+  /**
+   * See [`Pallet::request_preimage`].
+   **/
+  | { name: 'RequestPreimage'; params: { hash: H256 } }
+  /**
+   * See [`Pallet::unrequest_preimage`].
+   **/
+  | { name: 'UnrequestPreimage'; params: { hash: H256 } }
+  /**
+   * See [`Pallet::ensure_updated`].
+   **/
+  | { name: 'EnsureUpdated'; params: { hashes: Array<H256> } };
+
+export type PalletPreimageCallLike =
+  /**
+   * See [`Pallet::note_preimage`].
+   **/
+  | { name: 'NotePreimage'; params: { bytes: BytesLike } }
   /**
    * See [`Pallet::unnote_preimage`].
    **/
@@ -2448,6 +3238,35 @@ export type PalletConvictionVotingCall =
    **/
   | { name: 'RemoveOtherVote'; params: { target: AccountId20; class: number; index: number } };
 
+export type PalletConvictionVotingCallLike =
+  /**
+   * See [`Pallet::vote`].
+   **/
+  | { name: 'Vote'; params: { pollIndex: number; vote: PalletConvictionVotingVoteAccountVote } }
+  /**
+   * See [`Pallet::delegate`].
+   **/
+  | {
+      name: 'Delegate';
+      params: { class: number; to: AccountId20Like; conviction: PalletConvictionVotingConviction; balance: bigint };
+    }
+  /**
+   * See [`Pallet::undelegate`].
+   **/
+  | { name: 'Undelegate'; params: { class: number } }
+  /**
+   * See [`Pallet::unlock`].
+   **/
+  | { name: 'Unlock'; params: { class: number; target: AccountId20Like } }
+  /**
+   * See [`Pallet::remove_vote`].
+   **/
+  | { name: 'RemoveVote'; params: { class?: number | undefined; index: number } }
+  /**
+   * See [`Pallet::remove_other_vote`].
+   **/
+  | { name: 'RemoveOtherVote'; params: { target: AccountId20Like; class: number; index: number } };
+
 export type PalletConvictionVotingVoteAccountVote =
   | { tag: 'Standard'; value: { vote: PalletConvictionVotingVote; balance: bigint } }
   | { tag: 'Split'; value: { aye: bigint; nay: bigint } }
@@ -2468,6 +3287,51 @@ export type PalletConvictionVotingConviction =
  * Contains a variant per dispatchable extrinsic that this pallet has.
  **/
 export type PalletReferendaCall =
+  /**
+   * See [`Pallet::submit`].
+   **/
+  | {
+      name: 'Submit';
+      params: {
+        proposalOrigin: MoonbeamRuntimeOriginCaller;
+        proposal: FrameSupportPreimagesBounded;
+        enactmentMoment: FrameSupportScheduleDispatchTime;
+      };
+    }
+  /**
+   * See [`Pallet::place_decision_deposit`].
+   **/
+  | { name: 'PlaceDecisionDeposit'; params: { index: number } }
+  /**
+   * See [`Pallet::refund_decision_deposit`].
+   **/
+  | { name: 'RefundDecisionDeposit'; params: { index: number } }
+  /**
+   * See [`Pallet::cancel`].
+   **/
+  | { name: 'Cancel'; params: { index: number } }
+  /**
+   * See [`Pallet::kill`].
+   **/
+  | { name: 'Kill'; params: { index: number } }
+  /**
+   * See [`Pallet::nudge_referendum`].
+   **/
+  | { name: 'NudgeReferendum'; params: { index: number } }
+  /**
+   * See [`Pallet::one_fewer_deciding`].
+   **/
+  | { name: 'OneFewerDeciding'; params: { track: number } }
+  /**
+   * See [`Pallet::refund_submission_deposit`].
+   **/
+  | { name: 'RefundSubmissionDeposit'; params: { index: number } }
+  /**
+   * See [`Pallet::set_metadata`].
+   **/
+  | { name: 'SetMetadata'; params: { index: number; maybeHash?: H256 | undefined } };
+
+export type PalletReferendaCallLike =
   /**
    * See [`Pallet::submit`].
    **/
@@ -2538,6 +3402,27 @@ export type PalletWhitelistCall =
    **/
   | { name: 'DispatchWhitelistedCallWithPreimage'; params: { call: MoonbeamRuntimeRuntimeCall } };
 
+export type PalletWhitelistCallLike =
+  /**
+   * See [`Pallet::whitelist_call`].
+   **/
+  | { name: 'WhitelistCall'; params: { callHash: H256 } }
+  /**
+   * See [`Pallet::remove_whitelisted_call`].
+   **/
+  | { name: 'RemoveWhitelistedCall'; params: { callHash: H256 } }
+  /**
+   * See [`Pallet::dispatch_whitelisted_call`].
+   **/
+  | {
+      name: 'DispatchWhitelistedCall';
+      params: { callHash: H256; callEncodedLen: number; callWeightWitness: SpWeightsWeightV2Weight };
+    }
+  /**
+   * See [`Pallet::dispatch_whitelisted_call_with_preimage`].
+   **/
+  | { name: 'DispatchWhitelistedCallWithPreimage'; params: { call: MoonbeamRuntimeRuntimeCallLike } };
+
 /**
  * Contains a variant per dispatchable extrinsic that this pallet has.
  **/
@@ -2557,6 +3442,38 @@ export type PalletCollectiveCall =
    * See [`Pallet::propose`].
    **/
   | { name: 'Propose'; params: { threshold: number; proposal: MoonbeamRuntimeRuntimeCall; lengthBound: number } }
+  /**
+   * See [`Pallet::vote`].
+   **/
+  | { name: 'Vote'; params: { proposal: H256; index: number; approve: boolean } }
+  /**
+   * See [`Pallet::disapprove_proposal`].
+   **/
+  | { name: 'DisapproveProposal'; params: { proposalHash: H256 } }
+  /**
+   * See [`Pallet::close`].
+   **/
+  | {
+      name: 'Close';
+      params: { proposalHash: H256; index: number; proposalWeightBound: SpWeightsWeightV2Weight; lengthBound: number };
+    };
+
+export type PalletCollectiveCallLike =
+  /**
+   * See [`Pallet::set_members`].
+   **/
+  | {
+      name: 'SetMembers';
+      params: { newMembers: Array<AccountId20Like>; prime?: AccountId20Like | undefined; oldCount: number };
+    }
+  /**
+   * See [`Pallet::execute`].
+   **/
+  | { name: 'Execute'; params: { proposal: MoonbeamRuntimeRuntimeCallLike; lengthBound: number } }
+  /**
+   * See [`Pallet::propose`].
+   **/
+  | { name: 'Propose'; params: { threshold: number; proposal: MoonbeamRuntimeRuntimeCallLike; lengthBound: number } }
   /**
    * See [`Pallet::vote`].
    **/
@@ -2617,6 +3534,47 @@ export type PalletTreasuryCall =
    **/
   | { name: 'VoidSpend'; params: { index: number } };
 
+export type PalletTreasuryCallLike =
+  /**
+   * See [`Pallet::propose_spend`].
+   **/
+  | { name: 'ProposeSpend'; params: { value: bigint; beneficiary: AccountId20Like } }
+  /**
+   * See [`Pallet::reject_proposal`].
+   **/
+  | { name: 'RejectProposal'; params: { proposalId: number } }
+  /**
+   * See [`Pallet::approve_proposal`].
+   **/
+  | { name: 'ApproveProposal'; params: { proposalId: number } }
+  /**
+   * See [`Pallet::spend_local`].
+   **/
+  | { name: 'SpendLocal'; params: { amount: bigint; beneficiary: AccountId20Like } }
+  /**
+   * See [`Pallet::remove_approval`].
+   **/
+  | { name: 'RemoveApproval'; params: { proposalId: number } }
+  /**
+   * See [`Pallet::spend`].
+   **/
+  | {
+      name: 'Spend';
+      params: { assetKind: []; amount: bigint; beneficiary: AccountId20Like; validFrom?: number | undefined };
+    }
+  /**
+   * See [`Pallet::payout`].
+   **/
+  | { name: 'Payout'; params: { index: number } }
+  /**
+   * See [`Pallet::check_status`].
+   **/
+  | { name: 'CheckStatus'; params: { index: number } }
+  /**
+   * See [`Pallet::void_spend`].
+   **/
+  | { name: 'VoidSpend'; params: { index: number } };
+
 /**
  * Contains a variant per dispatchable extrinsic that this pallet has.
  **/
@@ -2656,6 +3614,42 @@ export type PalletCrowdloanRewardsCall =
    **/
   | { name: 'InitializeRewardVec'; params: { rewards: Array<[FixedBytes<32>, AccountId20 | undefined, bigint]> } };
 
+export type PalletCrowdloanRewardsCallLike =
+  /**
+   * See [`Pallet::associate_native_identity`].
+   **/
+  | {
+      name: 'AssociateNativeIdentity';
+      params: { rewardAccount: AccountId20Like; relayAccount: FixedBytes<32>; proof: SpRuntimeMultiSignature };
+    }
+  /**
+   * See [`Pallet::change_association_with_relay_keys`].
+   **/
+  | {
+      name: 'ChangeAssociationWithRelayKeys';
+      params: {
+        rewardAccount: AccountId20Like;
+        previousAccount: AccountId20Like;
+        proofs: Array<[FixedBytes<32>, SpRuntimeMultiSignature]>;
+      };
+    }
+  /**
+   * See [`Pallet::claim`].
+   **/
+  | { name: 'Claim' }
+  /**
+   * See [`Pallet::update_reward_address`].
+   **/
+  | { name: 'UpdateRewardAddress'; params: { newRewardAccount: AccountId20Like } }
+  /**
+   * See [`Pallet::complete_initialization`].
+   **/
+  | { name: 'CompleteInitialization'; params: { leaseEndingBlock: number } }
+  /**
+   * See [`Pallet::initialize_reward_vec`].
+   **/
+  | { name: 'InitializeRewardVec'; params: { rewards: Array<[FixedBytes<32>, AccountId20Like | undefined, bigint]> } };
+
 export type SpRuntimeMultiSignature =
   | { tag: 'Ed25519'; value: SpCoreEd25519Signature }
   | { tag: 'Sr25519'; value: SpCoreSr25519Signature }
@@ -2676,10 +3670,96 @@ export type CumulusPalletDmpQueueCall =
    **/
   { name: 'ServiceOverweight'; params: { index: bigint; weightLimit: SpWeightsWeightV2Weight } };
 
+export type CumulusPalletDmpQueueCallLike =
+  /**
+   * See [`Pallet::service_overweight`].
+   **/
+  { name: 'ServiceOverweight'; params: { index: bigint; weightLimit: SpWeightsWeightV2Weight } };
+
 /**
  * Contains a variant per dispatchable extrinsic that this pallet has.
  **/
 export type PalletXcmCall =
+  /**
+   * See [`Pallet::send`].
+   **/
+  | { name: 'Send'; params: { dest: XcmVersionedMultiLocation; message: XcmVersionedXcm } }
+  /**
+   * See [`Pallet::teleport_assets`].
+   **/
+  | {
+      name: 'TeleportAssets';
+      params: {
+        dest: XcmVersionedMultiLocation;
+        beneficiary: XcmVersionedMultiLocation;
+        assets: XcmVersionedMultiAssets;
+        feeAssetItem: number;
+      };
+    }
+  /**
+   * See [`Pallet::reserve_transfer_assets`].
+   **/
+  | {
+      name: 'ReserveTransferAssets';
+      params: {
+        dest: XcmVersionedMultiLocation;
+        beneficiary: XcmVersionedMultiLocation;
+        assets: XcmVersionedMultiAssets;
+        feeAssetItem: number;
+      };
+    }
+  /**
+   * See [`Pallet::execute`].
+   **/
+  | { name: 'Execute'; params: { message: XcmVersionedXcm; maxWeight: SpWeightsWeightV2Weight } }
+  /**
+   * See [`Pallet::force_xcm_version`].
+   **/
+  | { name: 'ForceXcmVersion'; params: { location: StagingXcmV3MultilocationMultiLocation; version: number } }
+  /**
+   * See [`Pallet::force_default_xcm_version`].
+   **/
+  | { name: 'ForceDefaultXcmVersion'; params: { maybeXcmVersion?: number | undefined } }
+  /**
+   * See [`Pallet::force_subscribe_version_notify`].
+   **/
+  | { name: 'ForceSubscribeVersionNotify'; params: { location: XcmVersionedMultiLocation } }
+  /**
+   * See [`Pallet::force_unsubscribe_version_notify`].
+   **/
+  | { name: 'ForceUnsubscribeVersionNotify'; params: { location: XcmVersionedMultiLocation } }
+  /**
+   * See [`Pallet::limited_reserve_transfer_assets`].
+   **/
+  | {
+      name: 'LimitedReserveTransferAssets';
+      params: {
+        dest: XcmVersionedMultiLocation;
+        beneficiary: XcmVersionedMultiLocation;
+        assets: XcmVersionedMultiAssets;
+        feeAssetItem: number;
+        weightLimit: XcmV3WeightLimit;
+      };
+    }
+  /**
+   * See [`Pallet::limited_teleport_assets`].
+   **/
+  | {
+      name: 'LimitedTeleportAssets';
+      params: {
+        dest: XcmVersionedMultiLocation;
+        beneficiary: XcmVersionedMultiLocation;
+        assets: XcmVersionedMultiAssets;
+        feeAssetItem: number;
+        weightLimit: XcmV3WeightLimit;
+      };
+    }
+  /**
+   * See [`Pallet::force_suspension`].
+   **/
+  | { name: 'ForceSuspension'; params: { suspended: boolean } };
+
+export type PalletXcmCallLike =
   /**
    * See [`Pallet::send`].
    **/
@@ -3319,6 +4399,157 @@ export type PalletAssetsCall =
    **/
   | { name: 'Block'; params: { id: bigint; who: AccountId20 } };
 
+export type PalletAssetsCallLike =
+  /**
+   * See [`Pallet::create`].
+   **/
+  | { name: 'Create'; params: { id: bigint; admin: AccountId20Like; minBalance: bigint } }
+  /**
+   * See [`Pallet::force_create`].
+   **/
+  | { name: 'ForceCreate'; params: { id: bigint; owner: AccountId20Like; isSufficient: boolean; minBalance: bigint } }
+  /**
+   * See [`Pallet::start_destroy`].
+   **/
+  | { name: 'StartDestroy'; params: { id: bigint } }
+  /**
+   * See [`Pallet::destroy_accounts`].
+   **/
+  | { name: 'DestroyAccounts'; params: { id: bigint } }
+  /**
+   * See [`Pallet::destroy_approvals`].
+   **/
+  | { name: 'DestroyApprovals'; params: { id: bigint } }
+  /**
+   * See [`Pallet::finish_destroy`].
+   **/
+  | { name: 'FinishDestroy'; params: { id: bigint } }
+  /**
+   * See [`Pallet::mint`].
+   **/
+  | { name: 'Mint'; params: { id: bigint; beneficiary: AccountId20Like; amount: bigint } }
+  /**
+   * See [`Pallet::burn`].
+   **/
+  | { name: 'Burn'; params: { id: bigint; who: AccountId20Like; amount: bigint } }
+  /**
+   * See [`Pallet::transfer`].
+   **/
+  | { name: 'Transfer'; params: { id: bigint; target: AccountId20Like; amount: bigint } }
+  /**
+   * See [`Pallet::transfer_keep_alive`].
+   **/
+  | { name: 'TransferKeepAlive'; params: { id: bigint; target: AccountId20Like; amount: bigint } }
+  /**
+   * See [`Pallet::force_transfer`].
+   **/
+  | { name: 'ForceTransfer'; params: { id: bigint; source: AccountId20Like; dest: AccountId20Like; amount: bigint } }
+  /**
+   * See [`Pallet::freeze`].
+   **/
+  | { name: 'Freeze'; params: { id: bigint; who: AccountId20Like } }
+  /**
+   * See [`Pallet::thaw`].
+   **/
+  | { name: 'Thaw'; params: { id: bigint; who: AccountId20Like } }
+  /**
+   * See [`Pallet::freeze_asset`].
+   **/
+  | { name: 'FreezeAsset'; params: { id: bigint } }
+  /**
+   * See [`Pallet::thaw_asset`].
+   **/
+  | { name: 'ThawAsset'; params: { id: bigint } }
+  /**
+   * See [`Pallet::transfer_ownership`].
+   **/
+  | { name: 'TransferOwnership'; params: { id: bigint; owner: AccountId20Like } }
+  /**
+   * See [`Pallet::set_team`].
+   **/
+  | {
+      name: 'SetTeam';
+      params: { id: bigint; issuer: AccountId20Like; admin: AccountId20Like; freezer: AccountId20Like };
+    }
+  /**
+   * See [`Pallet::set_metadata`].
+   **/
+  | { name: 'SetMetadata'; params: { id: bigint; name: BytesLike; symbol: BytesLike; decimals: number } }
+  /**
+   * See [`Pallet::clear_metadata`].
+   **/
+  | { name: 'ClearMetadata'; params: { id: bigint } }
+  /**
+   * See [`Pallet::force_set_metadata`].
+   **/
+  | {
+      name: 'ForceSetMetadata';
+      params: { id: bigint; name: BytesLike; symbol: BytesLike; decimals: number; isFrozen: boolean };
+    }
+  /**
+   * See [`Pallet::force_clear_metadata`].
+   **/
+  | { name: 'ForceClearMetadata'; params: { id: bigint } }
+  /**
+   * See [`Pallet::force_asset_status`].
+   **/
+  | {
+      name: 'ForceAssetStatus';
+      params: {
+        id: bigint;
+        owner: AccountId20Like;
+        issuer: AccountId20Like;
+        admin: AccountId20Like;
+        freezer: AccountId20Like;
+        minBalance: bigint;
+        isSufficient: boolean;
+        isFrozen: boolean;
+      };
+    }
+  /**
+   * See [`Pallet::approve_transfer`].
+   **/
+  | { name: 'ApproveTransfer'; params: { id: bigint; delegate: AccountId20Like; amount: bigint } }
+  /**
+   * See [`Pallet::cancel_approval`].
+   **/
+  | { name: 'CancelApproval'; params: { id: bigint; delegate: AccountId20Like } }
+  /**
+   * See [`Pallet::force_cancel_approval`].
+   **/
+  | { name: 'ForceCancelApproval'; params: { id: bigint; owner: AccountId20Like; delegate: AccountId20Like } }
+  /**
+   * See [`Pallet::transfer_approved`].
+   **/
+  | {
+      name: 'TransferApproved';
+      params: { id: bigint; owner: AccountId20Like; destination: AccountId20Like; amount: bigint };
+    }
+  /**
+   * See [`Pallet::touch`].
+   **/
+  | { name: 'Touch'; params: { id: bigint } }
+  /**
+   * See [`Pallet::refund`].
+   **/
+  | { name: 'Refund'; params: { id: bigint; allowBurn: boolean } }
+  /**
+   * See [`Pallet::set_min_balance`].
+   **/
+  | { name: 'SetMinBalance'; params: { id: bigint; minBalance: bigint } }
+  /**
+   * See [`Pallet::touch_other`].
+   **/
+  | { name: 'TouchOther'; params: { id: bigint; who: AccountId20Like } }
+  /**
+   * See [`Pallet::refund_other`].
+   **/
+  | { name: 'RefundOther'; params: { id: bigint; who: AccountId20Like } }
+  /**
+   * See [`Pallet::block`].
+   **/
+  | { name: 'Block'; params: { id: bigint; who: AccountId20Like } };
+
 /**
  * Contains a variant per dispatchable extrinsic that this pallet has.
  **/
@@ -3376,6 +4607,60 @@ export type PalletAssetManagerCall =
    **/
   | { name: 'DestroyLocalAsset'; params: { assetId: bigint } };
 
+export type PalletAssetManagerCallLike =
+  /**
+   * See [`Pallet::register_foreign_asset`].
+   **/
+  | {
+      name: 'RegisterForeignAsset';
+      params: {
+        asset: MoonbeamRuntimeXcmConfigAssetType;
+        metadata: MoonbeamRuntimeAssetConfigAssetRegistrarMetadata;
+        minAmount: bigint;
+        isSufficient: boolean;
+      };
+    }
+  /**
+   * See [`Pallet::set_asset_units_per_second`].
+   **/
+  | {
+      name: 'SetAssetUnitsPerSecond';
+      params: { assetType: MoonbeamRuntimeXcmConfigAssetType; unitsPerSecond: bigint; numAssetsWeightHint: number };
+    }
+  /**
+   * See [`Pallet::change_existing_asset_type`].
+   **/
+  | {
+      name: 'ChangeExistingAssetType';
+      params: { assetId: bigint; newAssetType: MoonbeamRuntimeXcmConfigAssetType; numAssetsWeightHint: number };
+    }
+  /**
+   * See [`Pallet::remove_supported_asset`].
+   **/
+  | {
+      name: 'RemoveSupportedAsset';
+      params: { assetType: MoonbeamRuntimeXcmConfigAssetType; numAssetsWeightHint: number };
+    }
+  /**
+   * See [`Pallet::remove_existing_asset_type`].
+   **/
+  | { name: 'RemoveExistingAssetType'; params: { assetId: bigint; numAssetsWeightHint: number } }
+  /**
+   * See [`Pallet::register_local_asset`].
+   **/
+  | {
+      name: 'RegisterLocalAsset';
+      params: { creator: AccountId20Like; owner: AccountId20Like; isSufficient: boolean; minBalance: bigint };
+    }
+  /**
+   * See [`Pallet::destroy_foreign_asset`].
+   **/
+  | { name: 'DestroyForeignAsset'; params: { assetId: bigint; numAssetsWeightHint: number } }
+  /**
+   * See [`Pallet::destroy_local_asset`].
+   **/
+  | { name: 'DestroyLocalAsset'; params: { assetId: bigint } };
+
 export type MoonbeamRuntimeXcmConfigAssetType = { tag: 'Xcm'; value: StagingXcmV3MultilocationMultiLocation };
 
 export type MoonbeamRuntimeAssetConfigAssetRegistrarMetadata = {
@@ -3389,6 +4674,76 @@ export type MoonbeamRuntimeAssetConfigAssetRegistrarMetadata = {
  * Contains a variant per dispatchable extrinsic that this pallet has.
  **/
 export type OrmlXtokensModuleCall =
+  /**
+   * See [`Pallet::transfer`].
+   **/
+  | {
+      name: 'Transfer';
+      params: {
+        currencyId: MoonbeamRuntimeXcmConfigCurrencyId;
+        amount: bigint;
+        dest: XcmVersionedMultiLocation;
+        destWeightLimit: XcmV3WeightLimit;
+      };
+    }
+  /**
+   * See [`Pallet::transfer_multiasset`].
+   **/
+  | {
+      name: 'TransferMultiasset';
+      params: { asset: XcmVersionedMultiAsset; dest: XcmVersionedMultiLocation; destWeightLimit: XcmV3WeightLimit };
+    }
+  /**
+   * See [`Pallet::transfer_with_fee`].
+   **/
+  | {
+      name: 'TransferWithFee';
+      params: {
+        currencyId: MoonbeamRuntimeXcmConfigCurrencyId;
+        amount: bigint;
+        fee: bigint;
+        dest: XcmVersionedMultiLocation;
+        destWeightLimit: XcmV3WeightLimit;
+      };
+    }
+  /**
+   * See [`Pallet::transfer_multiasset_with_fee`].
+   **/
+  | {
+      name: 'TransferMultiassetWithFee';
+      params: {
+        asset: XcmVersionedMultiAsset;
+        fee: XcmVersionedMultiAsset;
+        dest: XcmVersionedMultiLocation;
+        destWeightLimit: XcmV3WeightLimit;
+      };
+    }
+  /**
+   * See [`Pallet::transfer_multicurrencies`].
+   **/
+  | {
+      name: 'TransferMulticurrencies';
+      params: {
+        currencies: Array<[MoonbeamRuntimeXcmConfigCurrencyId, bigint]>;
+        feeItem: number;
+        dest: XcmVersionedMultiLocation;
+        destWeightLimit: XcmV3WeightLimit;
+      };
+    }
+  /**
+   * See [`Pallet::transfer_multiassets`].
+   **/
+  | {
+      name: 'TransferMultiassets';
+      params: {
+        assets: XcmVersionedMultiAssets;
+        feeItem: number;
+        dest: XcmVersionedMultiLocation;
+        destWeightLimit: XcmV3WeightLimit;
+      };
+    };
+
+export type OrmlXtokensModuleCallLike =
   /**
    * See [`Pallet::transfer`].
    **/
@@ -3558,6 +4913,93 @@ export type PalletXcmTransactorCall =
       };
     };
 
+export type PalletXcmTransactorCallLike =
+  /**
+   * See [`Pallet::register`].
+   **/
+  | { name: 'Register'; params: { who: AccountId20Like; index: number } }
+  /**
+   * See [`Pallet::deregister`].
+   **/
+  | { name: 'Deregister'; params: { index: number } }
+  /**
+   * See [`Pallet::transact_through_derivative`].
+   **/
+  | {
+      name: 'TransactThroughDerivative';
+      params: {
+        dest: MoonbeamRuntimeXcmConfigTransactors;
+        index: number;
+        fee: PalletXcmTransactorCurrencyPayment;
+        innerCall: BytesLike;
+        weightInfo: PalletXcmTransactorTransactWeights;
+        refund: boolean;
+      };
+    }
+  /**
+   * See [`Pallet::transact_through_sovereign`].
+   **/
+  | {
+      name: 'TransactThroughSovereign';
+      params: {
+        dest: XcmVersionedMultiLocation;
+        feePayer: AccountId20Like;
+        fee: PalletXcmTransactorCurrencyPayment;
+        call: BytesLike;
+        originKind: XcmV2OriginKind;
+        weightInfo: PalletXcmTransactorTransactWeights;
+        refund: boolean;
+      };
+    }
+  /**
+   * See [`Pallet::set_transact_info`].
+   **/
+  | {
+      name: 'SetTransactInfo';
+      params: {
+        location: XcmVersionedMultiLocation;
+        transactExtraWeight: SpWeightsWeightV2Weight;
+        maxWeight: SpWeightsWeightV2Weight;
+        transactExtraWeightSigned?: SpWeightsWeightV2Weight | undefined;
+      };
+    }
+  /**
+   * See [`Pallet::remove_transact_info`].
+   **/
+  | { name: 'RemoveTransactInfo'; params: { location: XcmVersionedMultiLocation } }
+  /**
+   * See [`Pallet::transact_through_signed`].
+   **/
+  | {
+      name: 'TransactThroughSigned';
+      params: {
+        dest: XcmVersionedMultiLocation;
+        fee: PalletXcmTransactorCurrencyPayment;
+        call: BytesLike;
+        weightInfo: PalletXcmTransactorTransactWeights;
+        refund: boolean;
+      };
+    }
+  /**
+   * See [`Pallet::set_fee_per_second`].
+   **/
+  | { name: 'SetFeePerSecond'; params: { assetLocation: XcmVersionedMultiLocation; feePerSecond: bigint } }
+  /**
+   * See [`Pallet::remove_fee_per_second`].
+   **/
+  | { name: 'RemoveFeePerSecond'; params: { assetLocation: XcmVersionedMultiLocation } }
+  /**
+   * See [`Pallet::hrmp_manage`].
+   **/
+  | {
+      name: 'HrmpManage';
+      params: {
+        action: PalletXcmTransactorHrmpOperation;
+        fee: PalletXcmTransactorCurrencyPayment;
+        weightInfo: PalletXcmTransactorTransactWeights;
+      };
+    };
+
 export type MoonbeamRuntimeXcmConfigTransactors = 'Relay';
 
 export type PalletXcmTransactorCurrencyPayment = {
@@ -3615,6 +5057,27 @@ export type PalletEthereumXcmCall =
    **/
   | { name: 'ResumeEthereumXcmExecution' };
 
+export type PalletEthereumXcmCallLike =
+  /**
+   * See `Pallet::transact`.
+   **/
+  | { name: 'Transact'; params: { xcmTransaction: XcmPrimitivesEthereumXcmEthereumXcmTransaction } }
+  /**
+   * See `Pallet::transact_through_proxy`.
+   **/
+  | {
+      name: 'TransactThroughProxy';
+      params: { transactAs: H160; xcmTransaction: XcmPrimitivesEthereumXcmEthereumXcmTransaction };
+    }
+  /**
+   * See `Pallet::suspend_ethereum_xcm_execution`.
+   **/
+  | { name: 'SuspendEthereumXcmExecution' }
+  /**
+   * See `Pallet::resume_ethereum_xcm_execution`.
+   **/
+  | { name: 'ResumeEthereumXcmExecution' };
+
 export type XcmPrimitivesEthereumXcmEthereumXcmTransaction =
   | { tag: 'V1'; value: XcmPrimitivesEthereumXcmEthereumXcmTransactionV1 }
   | { tag: 'V2'; value: XcmPrimitivesEthereumXcmEthereumXcmTransactionV2 };
@@ -3649,6 +5112,12 @@ export type XcmPrimitivesEthereumXcmEthereumXcmTransactionV2 = {
  * Contains a variant per dispatchable extrinsic that this pallet has.
  **/
 export type PalletRandomnessCall =
+  /**
+   * See [`Pallet::set_babe_randomness_results`].
+   **/
+  'SetBabeRandomnessResults';
+
+export type PalletRandomnessCallLike =
   /**
    * See [`Pallet::set_babe_randomness_results`].
    **/

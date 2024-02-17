@@ -12,8 +12,11 @@ import type {
   Bytes,
   U256,
   FixedU64,
+  BytesLike,
   MultiAddress,
   Data,
+  MultiAddressLike,
+  AccountId32Like,
   Permill,
   Era,
 } from '@delightfuldot/codecs';
@@ -1785,6 +1788,45 @@ export type FrameSystemCall =
    **/
   | { name: 'RemarkWithEvent'; params: { remark: Bytes } };
 
+export type FrameSystemCallLike =
+  /**
+   * Make some on-chain remark.
+   *
+   * - `O(1)`
+   **/
+  | { name: 'Remark'; params: { remark: BytesLike } }
+  /**
+   * Set the number of pages in the WebAssembly environment's heap.
+   **/
+  | { name: 'SetHeapPages'; params: { pages: bigint } }
+  /**
+   * Set the new runtime code.
+   **/
+  | { name: 'SetCode'; params: { code: BytesLike } }
+  /**
+   * Set the new runtime code without doing any checks of the given `code`.
+   **/
+  | { name: 'SetCodeWithoutChecks'; params: { code: BytesLike } }
+  /**
+   * Set some items of storage.
+   **/
+  | { name: 'SetStorage'; params: { items: Array<[BytesLike, BytesLike]> } }
+  /**
+   * Kill some items from storage.
+   **/
+  | { name: 'KillStorage'; params: { keys: Array<BytesLike> } }
+  /**
+   * Kill all storage items with a key that starts with the given prefix.
+   *
+   * **NOTE:** We rely on the Root origin to provide us the number of subkeys under
+   * the prefix we are removing to accurately calculate the weight of this function.
+   **/
+  | { name: 'KillPrefix'; params: { prefix: BytesLike; subkeys: number } }
+  /**
+   * Make some on-chain remark and emit event.
+   **/
+  | { name: 'RemarkWithEvent'; params: { remark: BytesLike } };
+
 export type FrameSystemLimitsBlockWeights = {
   baseBlock: SpWeightsWeightV2Weight;
   maxBlock: SpWeightsWeightV2Weight;
@@ -1946,6 +1988,95 @@ export type PalletUtilityCall =
    **/
   | { name: 'WithWeight'; params: { call: AstarRuntimeRuntimeCall; weight: SpWeightsWeightV2Weight } };
 
+export type PalletUtilityCallLike =
+  /**
+   * Send a batch of dispatch calls.
+   *
+   * May be called from any origin except `None`.
+   *
+   * - `calls`: The calls to be dispatched from the same origin. The number of call must not
+   * exceed the constant: `batched_calls_limit` (available in constant metadata).
+   *
+   * If origin is root then the calls are dispatched without checking origin filter. (This
+   * includes bypassing `frame_system::Config::BaseCallFilter`).
+   *
+   * ## Complexity
+   * - O(C) where C is the number of calls to be batched.
+   *
+   * This will return `Ok` in all circumstances. To determine the success of the batch, an
+   * event is deposited. If a call failed and the batch was interrupted, then the
+   * `BatchInterrupted` event is deposited, along with the number of successful calls made
+   * and the error of the failed call. If all were successful, then the `BatchCompleted`
+   * event is deposited.
+   **/
+  | { name: 'Batch'; params: { calls: Array<AstarRuntimeRuntimeCallLike> } }
+  /**
+   * Send a call through an indexed pseudonym of the sender.
+   *
+   * Filter from origin are passed along. The call will be dispatched with an origin which
+   * use the same filter as the origin of this call.
+   *
+   * NOTE: If you need to ensure that any account-based filtering is not honored (i.e.
+   * because you expect `proxy` to have been used prior in the call stack and you do not want
+   * the call restrictions to apply to any sub-accounts), then use `as_multi_threshold_1`
+   * in the Multisig pallet instead.
+   *
+   * NOTE: Prior to version *12, this was called `as_limited_sub`.
+   *
+   * The dispatch origin for this call must be _Signed_.
+   **/
+  | { name: 'AsDerivative'; params: { index: number; call: AstarRuntimeRuntimeCallLike } }
+  /**
+   * Send a batch of dispatch calls and atomically execute them.
+   * The whole transaction will rollback and fail if any of the calls failed.
+   *
+   * May be called from any origin except `None`.
+   *
+   * - `calls`: The calls to be dispatched from the same origin. The number of call must not
+   * exceed the constant: `batched_calls_limit` (available in constant metadata).
+   *
+   * If origin is root then the calls are dispatched without checking origin filter. (This
+   * includes bypassing `frame_system::Config::BaseCallFilter`).
+   *
+   * ## Complexity
+   * - O(C) where C is the number of calls to be batched.
+   **/
+  | { name: 'BatchAll'; params: { calls: Array<AstarRuntimeRuntimeCallLike> } }
+  /**
+   * Dispatches a function call with a provided origin.
+   *
+   * The dispatch origin for this call must be _Root_.
+   *
+   * ## Complexity
+   * - O(1).
+   **/
+  | { name: 'DispatchAs'; params: { asOrigin: AstarRuntimeOriginCaller; call: AstarRuntimeRuntimeCallLike } }
+  /**
+   * Send a batch of dispatch calls.
+   * Unlike `batch`, it allows errors and won't interrupt.
+   *
+   * May be called from any origin except `None`.
+   *
+   * - `calls`: The calls to be dispatched from the same origin. The number of call must not
+   * exceed the constant: `batched_calls_limit` (available in constant metadata).
+   *
+   * If origin is root then the calls are dispatch without checking origin filter. (This
+   * includes bypassing `frame_system::Config::BaseCallFilter`).
+   *
+   * ## Complexity
+   * - O(C) where C is the number of calls to be batched.
+   **/
+  | { name: 'ForceBatch'; params: { calls: Array<AstarRuntimeRuntimeCallLike> } }
+  /**
+   * Dispatch a function call with a specified weight.
+   *
+   * This function does not check the weight of the call, and instead allows the
+   * Root origin to specify the weight of the call.
+   *
+   * The dispatch origin for this call must be _Root_.
+   **/
+  | { name: 'WithWeight'; params: { call: AstarRuntimeRuntimeCallLike; weight: SpWeightsWeightV2Weight } };
+
 export type AstarRuntimeRuntimeCall =
   | { pallet: 'System'; palletCall: FrameSystemCall }
   | { pallet: 'Utility'; palletCall: PalletUtilityCall }
@@ -1976,6 +2107,37 @@ export type AstarRuntimeRuntimeCall =
   | { pallet: 'StaticPriceProvider'; palletCall: PalletStaticPriceProviderCall }
   | { pallet: 'DappStakingMigration'; palletCall: PalletDappStakingMigrationCall }
   | { pallet: 'DappsStaking'; palletCall: PalletDappsStakingPalletCall };
+
+export type AstarRuntimeRuntimeCallLike =
+  | { pallet: 'System'; palletCall: FrameSystemCallLike }
+  | { pallet: 'Utility'; palletCall: PalletUtilityCallLike }
+  | { pallet: 'Identity'; palletCall: PalletIdentityCallLike }
+  | { pallet: 'Timestamp'; palletCall: PalletTimestampCallLike }
+  | { pallet: 'Multisig'; palletCall: PalletMultisigCallLike }
+  | { pallet: 'Proxy'; palletCall: PalletProxyCallLike }
+  | { pallet: 'ParachainSystem'; palletCall: CumulusPalletParachainSystemCallLike }
+  | { pallet: 'ParachainInfo'; palletCall: ParachainInfoCallLike }
+  | { pallet: 'Balances'; palletCall: PalletBalancesCallLike }
+  | { pallet: 'Vesting'; palletCall: PalletVestingCallLike }
+  | { pallet: 'Inflation'; palletCall: PalletInflationCallLike }
+  | { pallet: 'DappStaking'; palletCall: PalletDappStakingV3CallLike }
+  | { pallet: 'Assets'; palletCall: PalletAssetsCallLike }
+  | { pallet: 'CollatorSelection'; palletCall: PalletCollatorSelectionCallLike }
+  | { pallet: 'Session'; palletCall: PalletSessionCallLike }
+  | { pallet: 'XcmpQueue'; palletCall: CumulusPalletXcmpQueueCallLike }
+  | { pallet: 'PolkadotXcm'; palletCall: PalletXcmCallLike }
+  | { pallet: 'CumulusXcm'; palletCall: CumulusPalletXcmCallLike }
+  | { pallet: 'DmpQueue'; palletCall: CumulusPalletDmpQueueCallLike }
+  | { pallet: 'XcAssetConfig'; palletCall: PalletXcAssetConfigCallLike }
+  | { pallet: 'XTokens'; palletCall: OrmlXtokensModuleCallLike }
+  | { pallet: 'Evm'; palletCall: PalletEvmCallLike }
+  | { pallet: 'Ethereum'; palletCall: PalletEthereumCallLike }
+  | { pallet: 'DynamicEvmBaseFee'; palletCall: PalletDynamicEvmBaseFeeCallLike }
+  | { pallet: 'Contracts'; palletCall: PalletContractsCallLike }
+  | { pallet: 'Sudo'; palletCall: PalletSudoCallLike }
+  | { pallet: 'StaticPriceProvider'; palletCall: PalletStaticPriceProviderCallLike }
+  | { pallet: 'DappStakingMigration'; palletCall: PalletDappStakingMigrationCallLike }
+  | { pallet: 'DappsStaking'; palletCall: PalletDappsStakingPalletCallLike };
 
 /**
  * Identity pallet declaration.
@@ -2215,6 +2377,241 @@ export type PalletIdentityCall =
    **/
   | { name: 'QuitSub' };
 
+export type PalletIdentityCallLike =
+  /**
+   * Add a registrar to the system.
+   *
+   * The dispatch origin for this call must be `T::RegistrarOrigin`.
+   *
+   * - `account`: the account of the registrar.
+   *
+   * Emits `RegistrarAdded` if successful.
+   *
+   * ## Complexity
+   * - `O(R)` where `R` registrar-count (governance-bounded and code-bounded).
+   **/
+  | { name: 'AddRegistrar'; params: { account: MultiAddressLike } }
+  /**
+   * Set an account's identity information and reserve the appropriate deposit.
+   *
+   * If the account already has identity information, the deposit is taken as part payment
+   * for the new deposit.
+   *
+   * The dispatch origin for this call must be _Signed_.
+   *
+   * - `info`: The identity information.
+   *
+   * Emits `IdentitySet` if successful.
+   *
+   * ## Complexity
+   * - `O(X + X' + R)`
+   * - where `X` additional-field-count (deposit-bounded and code-bounded)
+   * - where `R` judgements-count (registrar-count-bounded)
+   **/
+  | { name: 'SetIdentity'; params: { info: PalletIdentityIdentityInfo } }
+  /**
+   * Set the sub-accounts of the sender.
+   *
+   * Payment: Any aggregate balance reserved by previous `set_subs` calls will be returned
+   * and an amount `SubAccountDeposit` will be reserved for each item in `subs`.
+   *
+   * The dispatch origin for this call must be _Signed_ and the sender must have a registered
+   * identity.
+   *
+   * - `subs`: The identity's (new) sub-accounts.
+   *
+   * ## Complexity
+   * - `O(P + S)`
+   * - where `P` old-subs-count (hard- and deposit-bounded).
+   * - where `S` subs-count (hard- and deposit-bounded).
+   **/
+  | { name: 'SetSubs'; params: { subs: Array<[AccountId32Like, Data]> } }
+  /**
+   * Clear an account's identity info and all sub-accounts and return all deposits.
+   *
+   * Payment: All reserved balances on the account are returned.
+   *
+   * The dispatch origin for this call must be _Signed_ and the sender must have a registered
+   * identity.
+   *
+   * Emits `IdentityCleared` if successful.
+   *
+   * ## Complexity
+   * - `O(R + S + X)`
+   * - where `R` registrar-count (governance-bounded).
+   * - where `S` subs-count (hard- and deposit-bounded).
+   * - where `X` additional-field-count (deposit-bounded and code-bounded).
+   **/
+  | { name: 'ClearIdentity' }
+  /**
+   * Request a judgement from a registrar.
+   *
+   * Payment: At most `max_fee` will be reserved for payment to the registrar if judgement
+   * given.
+   *
+   * The dispatch origin for this call must be _Signed_ and the sender must have a
+   * registered identity.
+   *
+   * - `reg_index`: The index of the registrar whose judgement is requested.
+   * - `max_fee`: The maximum fee that may be paid. This should just be auto-populated as:
+   *
+   * ```nocompile
+   * Self::registrars().get(reg_index).unwrap().fee
+   * ```
+   *
+   * Emits `JudgementRequested` if successful.
+   *
+   * ## Complexity
+   * - `O(R + X)`.
+   * - where `R` registrar-count (governance-bounded).
+   * - where `X` additional-field-count (deposit-bounded and code-bounded).
+   **/
+  | { name: 'RequestJudgement'; params: { regIndex: number; maxFee: bigint } }
+  /**
+   * Cancel a previous request.
+   *
+   * Payment: A previously reserved deposit is returned on success.
+   *
+   * The dispatch origin for this call must be _Signed_ and the sender must have a
+   * registered identity.
+   *
+   * - `reg_index`: The index of the registrar whose judgement is no longer requested.
+   *
+   * Emits `JudgementUnrequested` if successful.
+   *
+   * ## Complexity
+   * - `O(R + X)`.
+   * - where `R` registrar-count (governance-bounded).
+   * - where `X` additional-field-count (deposit-bounded and code-bounded).
+   **/
+  | { name: 'CancelRequest'; params: { regIndex: number } }
+  /**
+   * Set the fee required for a judgement to be requested from a registrar.
+   *
+   * The dispatch origin for this call must be _Signed_ and the sender must be the account
+   * of the registrar whose index is `index`.
+   *
+   * - `index`: the index of the registrar whose fee is to be set.
+   * - `fee`: the new fee.
+   *
+   * ## Complexity
+   * - `O(R)`.
+   * - where `R` registrar-count (governance-bounded).
+   **/
+  | { name: 'SetFee'; params: { index: number; fee: bigint } }
+  /**
+   * Change the account associated with a registrar.
+   *
+   * The dispatch origin for this call must be _Signed_ and the sender must be the account
+   * of the registrar whose index is `index`.
+   *
+   * - `index`: the index of the registrar whose fee is to be set.
+   * - `new`: the new account ID.
+   *
+   * ## Complexity
+   * - `O(R)`.
+   * - where `R` registrar-count (governance-bounded).
+   **/
+  | { name: 'SetAccountId'; params: { index: number; new: MultiAddressLike } }
+  /**
+   * Set the field information for a registrar.
+   *
+   * The dispatch origin for this call must be _Signed_ and the sender must be the account
+   * of the registrar whose index is `index`.
+   *
+   * - `index`: the index of the registrar whose fee is to be set.
+   * - `fields`: the fields that the registrar concerns themselves with.
+   *
+   * ## Complexity
+   * - `O(R)`.
+   * - where `R` registrar-count (governance-bounded).
+   **/
+  | { name: 'SetFields'; params: { index: number; fields: PalletIdentityBitFlags } }
+  /**
+   * Provide a judgement for an account's identity.
+   *
+   * The dispatch origin for this call must be _Signed_ and the sender must be the account
+   * of the registrar whose index is `reg_index`.
+   *
+   * - `reg_index`: the index of the registrar whose judgement is being made.
+   * - `target`: the account whose identity the judgement is upon. This must be an account
+   * with a registered identity.
+   * - `judgement`: the judgement of the registrar of index `reg_index` about `target`.
+   * - `identity`: The hash of the [`IdentityInfo`] for that the judgement is provided.
+   *
+   * Emits `JudgementGiven` if successful.
+   *
+   * ## Complexity
+   * - `O(R + X)`.
+   * - where `R` registrar-count (governance-bounded).
+   * - where `X` additional-field-count (deposit-bounded and code-bounded).
+   **/
+  | {
+      name: 'ProvideJudgement';
+      params: { regIndex: number; target: MultiAddressLike; judgement: PalletIdentityJudgement; identity: H256 };
+    }
+  /**
+   * Remove an account's identity and sub-account information and slash the deposits.
+   *
+   * Payment: Reserved balances from `set_subs` and `set_identity` are slashed and handled by
+   * `Slash`. Verification request deposits are not returned; they should be cancelled
+   * manually using `cancel_request`.
+   *
+   * The dispatch origin for this call must match `T::ForceOrigin`.
+   *
+   * - `target`: the account whose identity the judgement is upon. This must be an account
+   * with a registered identity.
+   *
+   * Emits `IdentityKilled` if successful.
+   *
+   * ## Complexity
+   * - `O(R + S + X)`
+   * - where `R` registrar-count (governance-bounded).
+   * - where `S` subs-count (hard- and deposit-bounded).
+   * - where `X` additional-field-count (deposit-bounded and code-bounded).
+   **/
+  | { name: 'KillIdentity'; params: { target: MultiAddressLike } }
+  /**
+   * Add the given account to the sender's subs.
+   *
+   * Payment: Balance reserved by a previous `set_subs` call for one sub will be repatriated
+   * to the sender.
+   *
+   * The dispatch origin for this call must be _Signed_ and the sender must have a registered
+   * sub identity of `sub`.
+   **/
+  | { name: 'AddSub'; params: { sub: MultiAddressLike; data: Data } }
+  /**
+   * Alter the associated name of the given sub-account.
+   *
+   * The dispatch origin for this call must be _Signed_ and the sender must have a registered
+   * sub identity of `sub`.
+   **/
+  | { name: 'RenameSub'; params: { sub: MultiAddressLike; data: Data } }
+  /**
+   * Remove the given account from the sender's subs.
+   *
+   * Payment: Balance reserved by a previous `set_subs` call for one sub will be repatriated
+   * to the sender.
+   *
+   * The dispatch origin for this call must be _Signed_ and the sender must have a registered
+   * sub identity of `sub`.
+   **/
+  | { name: 'RemoveSub'; params: { sub: MultiAddressLike } }
+  /**
+   * Remove the sender as a sub-account.
+   *
+   * Payment: Balance reserved by a previous `set_subs` call for one sub will be repatriated
+   * to the sender (*not* the original depositor).
+   *
+   * The dispatch origin for this call must be _Signed_ and the sender must have a registered
+   * super-identity.
+   *
+   * NOTE: This should not normally be used, but is provided in the case that the non-
+   * controller of an account is maliciously registered as a sub-account.
+   **/
+  | { name: 'QuitSub' };
+
 export type PalletIdentityIdentityInfo = {
   additional: Array<[Data, Data]>;
   display: Data;
@@ -2252,6 +2649,26 @@ export type PalletIdentityJudgement =
  * Contains one variant per dispatchable that can be called by an extrinsic.
  **/
 export type PalletTimestampCall =
+  /**
+   * Set the current time.
+   *
+   * This call should be invoked exactly once per block. It will panic at the finalization
+   * phase, if this call hasn't been invoked by that time.
+   *
+   * The timestamp should be greater than the previous one by the amount specified by
+   * `MinimumPeriod`.
+   *
+   * The dispatch origin for this call must be `Inherent`.
+   *
+   * ## Complexity
+   * - `O(1)` (Note that implementations of `OnTimestampSet` must also be `O(1)`)
+   * - 1 storage read and 1 storage mutation (codec `O(1)`). (because of `DidUpdate::take` in
+   * `on_finalize`)
+   * - 1 event handler `on_timestamp_set`. Must be `O(1)`.
+   **/
+  { name: 'Set'; params: { now: bigint } };
+
+export type PalletTimestampCallLike =
   /**
    * Set the current time.
    *
@@ -2411,6 +2828,151 @@ export type PalletMultisigCall =
       params: {
         threshold: number;
         otherSignatories: Array<AccountId32>;
+        timepoint: PalletMultisigTimepoint;
+        callHash: FixedBytes<32>;
+      };
+    };
+
+export type PalletMultisigCallLike =
+  /**
+   * Immediately dispatch a multi-signature call using a single approval from the caller.
+   *
+   * The dispatch origin for this call must be _Signed_.
+   *
+   * - `other_signatories`: The accounts (other than the sender) who are part of the
+   * multi-signature, but do not participate in the approval process.
+   * - `call`: The call to be executed.
+   *
+   * Result is equivalent to the dispatched result.
+   *
+   * ## Complexity
+   * O(Z + C) where Z is the length of the call and C its execution weight.
+   **/
+  | {
+      name: 'AsMultiThreshold1';
+      params: { otherSignatories: Array<AccountId32Like>; call: AstarRuntimeRuntimeCallLike };
+    }
+  /**
+   * Register approval for a dispatch to be made from a deterministic composite account if
+   * approved by a total of `threshold - 1` of `other_signatories`.
+   *
+   * If there are enough, then dispatch the call.
+   *
+   * Payment: `DepositBase` will be reserved if this is the first approval, plus
+   * `threshold` times `DepositFactor`. It is returned once this dispatch happens or
+   * is cancelled.
+   *
+   * The dispatch origin for this call must be _Signed_.
+   *
+   * - `threshold`: The total number of approvals for this dispatch before it is executed.
+   * - `other_signatories`: The accounts (other than the sender) who can approve this
+   * dispatch. May not be empty.
+   * - `maybe_timepoint`: If this is the first approval, then this must be `None`. If it is
+   * not the first approval, then it must be `Some`, with the timepoint (block number and
+   * transaction index) of the first approval transaction.
+   * - `call`: The call to be executed.
+   *
+   * NOTE: Unless this is the final approval, you will generally want to use
+   * `approve_as_multi` instead, since it only requires a hash of the call.
+   *
+   * Result is equivalent to the dispatched result if `threshold` is exactly `1`. Otherwise
+   * on success, result is `Ok` and the result from the interior call, if it was executed,
+   * may be found in the deposited `MultisigExecuted` event.
+   *
+   * ## Complexity
+   * - `O(S + Z + Call)`.
+   * - Up to one balance-reserve or unreserve operation.
+   * - One passthrough operation, one insert, both `O(S)` where `S` is the number of
+   * signatories. `S` is capped by `MaxSignatories`, with weight being proportional.
+   * - One call encode & hash, both of complexity `O(Z)` where `Z` is tx-len.
+   * - One encode & hash, both of complexity `O(S)`.
+   * - Up to one binary search and insert (`O(logS + S)`).
+   * - I/O: 1 read `O(S)`, up to 1 mutate `O(S)`. Up to one remove.
+   * - One event.
+   * - The weight of the `call`.
+   * - Storage: inserts one item, value size bounded by `MaxSignatories`, with a deposit
+   * taken for its lifetime of `DepositBase + threshold * DepositFactor`.
+   **/
+  | {
+      name: 'AsMulti';
+      params: {
+        threshold: number;
+        otherSignatories: Array<AccountId32Like>;
+        maybeTimepoint?: PalletMultisigTimepoint | undefined;
+        call: AstarRuntimeRuntimeCallLike;
+        maxWeight: SpWeightsWeightV2Weight;
+      };
+    }
+  /**
+   * Register approval for a dispatch to be made from a deterministic composite account if
+   * approved by a total of `threshold - 1` of `other_signatories`.
+   *
+   * Payment: `DepositBase` will be reserved if this is the first approval, plus
+   * `threshold` times `DepositFactor`. It is returned once this dispatch happens or
+   * is cancelled.
+   *
+   * The dispatch origin for this call must be _Signed_.
+   *
+   * - `threshold`: The total number of approvals for this dispatch before it is executed.
+   * - `other_signatories`: The accounts (other than the sender) who can approve this
+   * dispatch. May not be empty.
+   * - `maybe_timepoint`: If this is the first approval, then this must be `None`. If it is
+   * not the first approval, then it must be `Some`, with the timepoint (block number and
+   * transaction index) of the first approval transaction.
+   * - `call_hash`: The hash of the call to be executed.
+   *
+   * NOTE: If this is the final approval, you will want to use `as_multi` instead.
+   *
+   * ## Complexity
+   * - `O(S)`.
+   * - Up to one balance-reserve or unreserve operation.
+   * - One passthrough operation, one insert, both `O(S)` where `S` is the number of
+   * signatories. `S` is capped by `MaxSignatories`, with weight being proportional.
+   * - One encode & hash, both of complexity `O(S)`.
+   * - Up to one binary search and insert (`O(logS + S)`).
+   * - I/O: 1 read `O(S)`, up to 1 mutate `O(S)`. Up to one remove.
+   * - One event.
+   * - Storage: inserts one item, value size bounded by `MaxSignatories`, with a deposit
+   * taken for its lifetime of `DepositBase + threshold * DepositFactor`.
+   **/
+  | {
+      name: 'ApproveAsMulti';
+      params: {
+        threshold: number;
+        otherSignatories: Array<AccountId32Like>;
+        maybeTimepoint?: PalletMultisigTimepoint | undefined;
+        callHash: FixedBytes<32>;
+        maxWeight: SpWeightsWeightV2Weight;
+      };
+    }
+  /**
+   * Cancel a pre-existing, on-going multisig transaction. Any deposit reserved previously
+   * for this operation will be unreserved on success.
+   *
+   * The dispatch origin for this call must be _Signed_.
+   *
+   * - `threshold`: The total number of approvals for this dispatch before it is executed.
+   * - `other_signatories`: The accounts (other than the sender) who can approve this
+   * dispatch. May not be empty.
+   * - `timepoint`: The timepoint (block number and transaction index) of the first approval
+   * transaction for this dispatch.
+   * - `call_hash`: The hash of the call to be executed.
+   *
+   * ## Complexity
+   * - `O(S)`.
+   * - Up to one balance-reserve or unreserve operation.
+   * - One passthrough operation, one insert, both `O(S)` where `S` is the number of
+   * signatories. `S` is capped by `MaxSignatories`, with weight being proportional.
+   * - One encode & hash, both of complexity `O(S)`.
+   * - One event.
+   * - I/O: 1 read `O(S)`, one remove.
+   * - Storage: removes one item.
+   **/
+  | {
+      name: 'CancelAsMulti';
+      params: {
+        threshold: number;
+        otherSignatories: Array<AccountId32Like>;
         timepoint: PalletMultisigTimepoint;
         callHash: FixedBytes<32>;
       };
@@ -2582,6 +3144,173 @@ export type PalletProxyCall =
       };
     };
 
+export type PalletProxyCallLike =
+  /**
+   * Dispatch the given `call` from an account that the sender is authorised for through
+   * `add_proxy`.
+   *
+   * The dispatch origin for this call must be _Signed_.
+   *
+   * Parameters:
+   * - `real`: The account that the proxy will make a call on behalf of.
+   * - `force_proxy_type`: Specify the exact proxy type to be used and checked for this call.
+   * - `call`: The call to be made by the `real` account.
+   **/
+  | {
+      name: 'Proxy';
+      params: {
+        real: MultiAddressLike;
+        forceProxyType?: AstarRuntimeProxyType | undefined;
+        call: AstarRuntimeRuntimeCallLike;
+      };
+    }
+  /**
+   * Register a proxy account for the sender that is able to make calls on its behalf.
+   *
+   * The dispatch origin for this call must be _Signed_.
+   *
+   * Parameters:
+   * - `proxy`: The account that the `caller` would like to make a proxy.
+   * - `proxy_type`: The permissions allowed for this proxy account.
+   * - `delay`: The announcement period required of the initial proxy. Will generally be
+   * zero.
+   **/
+  | { name: 'AddProxy'; params: { delegate: MultiAddressLike; proxyType: AstarRuntimeProxyType; delay: number } }
+  /**
+   * Unregister a proxy account for the sender.
+   *
+   * The dispatch origin for this call must be _Signed_.
+   *
+   * Parameters:
+   * - `proxy`: The account that the `caller` would like to remove as a proxy.
+   * - `proxy_type`: The permissions currently enabled for the removed proxy account.
+   **/
+  | { name: 'RemoveProxy'; params: { delegate: MultiAddressLike; proxyType: AstarRuntimeProxyType; delay: number } }
+  /**
+   * Unregister all proxy accounts for the sender.
+   *
+   * The dispatch origin for this call must be _Signed_.
+   *
+   * WARNING: This may be called on accounts created by `pure`, however if done, then
+   * the unreserved fees will be inaccessible. **All access to this account will be lost.**
+   **/
+  | { name: 'RemoveProxies' }
+  /**
+   * Spawn a fresh new account that is guaranteed to be otherwise inaccessible, and
+   * initialize it with a proxy of `proxy_type` for `origin` sender.
+   *
+   * Requires a `Signed` origin.
+   *
+   * - `proxy_type`: The type of the proxy that the sender will be registered as over the
+   * new account. This will almost always be the most permissive `ProxyType` possible to
+   * allow for maximum flexibility.
+   * - `index`: A disambiguation index, in case this is called multiple times in the same
+   * transaction (e.g. with `utility::batch`). Unless you're using `batch` you probably just
+   * want to use `0`.
+   * - `delay`: The announcement period required of the initial proxy. Will generally be
+   * zero.
+   *
+   * Fails with `Duplicate` if this has already been called in this transaction, from the
+   * same sender, with the same parameters.
+   *
+   * Fails if there are insufficient funds to pay for deposit.
+   **/
+  | { name: 'CreatePure'; params: { proxyType: AstarRuntimeProxyType; delay: number; index: number } }
+  /**
+   * Removes a previously spawned pure proxy.
+   *
+   * WARNING: **All access to this account will be lost.** Any funds held in it will be
+   * inaccessible.
+   *
+   * Requires a `Signed` origin, and the sender account must have been created by a call to
+   * `pure` with corresponding parameters.
+   *
+   * - `spawner`: The account that originally called `pure` to create this account.
+   * - `index`: The disambiguation index originally passed to `pure`. Probably `0`.
+   * - `proxy_type`: The proxy type originally passed to `pure`.
+   * - `height`: The height of the chain when the call to `pure` was processed.
+   * - `ext_index`: The extrinsic index in which the call to `pure` was processed.
+   *
+   * Fails with `NoPermission` in case the caller is not a previously created pure
+   * account whose `pure` call has corresponding parameters.
+   **/
+  | {
+      name: 'KillPure';
+      params: {
+        spawner: MultiAddressLike;
+        proxyType: AstarRuntimeProxyType;
+        index: number;
+        height: number;
+        extIndex: number;
+      };
+    }
+  /**
+   * Publish the hash of a proxy-call that will be made in the future.
+   *
+   * This must be called some number of blocks before the corresponding `proxy` is attempted
+   * if the delay associated with the proxy relationship is greater than zero.
+   *
+   * No more than `MaxPending` announcements may be made at any one time.
+   *
+   * This will take a deposit of `AnnouncementDepositFactor` as well as
+   * `AnnouncementDepositBase` if there are no other pending announcements.
+   *
+   * The dispatch origin for this call must be _Signed_ and a proxy of `real`.
+   *
+   * Parameters:
+   * - `real`: The account that the proxy will make a call on behalf of.
+   * - `call_hash`: The hash of the call to be made by the `real` account.
+   **/
+  | { name: 'Announce'; params: { real: MultiAddressLike; callHash: H256 } }
+  /**
+   * Remove a given announcement.
+   *
+   * May be called by a proxy account to remove a call they previously announced and return
+   * the deposit.
+   *
+   * The dispatch origin for this call must be _Signed_.
+   *
+   * Parameters:
+   * - `real`: The account that the proxy will make a call on behalf of.
+   * - `call_hash`: The hash of the call to be made by the `real` account.
+   **/
+  | { name: 'RemoveAnnouncement'; params: { real: MultiAddressLike; callHash: H256 } }
+  /**
+   * Remove the given announcement of a delegate.
+   *
+   * May be called by a target (proxied) account to remove a call that one of their delegates
+   * (`delegate`) has announced they want to execute. The deposit is returned.
+   *
+   * The dispatch origin for this call must be _Signed_.
+   *
+   * Parameters:
+   * - `delegate`: The account that previously announced the call.
+   * - `call_hash`: The hash of the call to be made.
+   **/
+  | { name: 'RejectAnnouncement'; params: { delegate: MultiAddressLike; callHash: H256 } }
+  /**
+   * Dispatch the given `call` from an account that the sender is authorized for through
+   * `add_proxy`.
+   *
+   * Removes any corresponding announcement(s).
+   *
+   * The dispatch origin for this call must be _Signed_.
+   *
+   * Parameters:
+   * - `real`: The account that the proxy will make a call on behalf of.
+   * - `force_proxy_type`: Specify the exact proxy type to be used and checked for this call.
+   * - `call`: The call to be made by the `real` account.
+   **/
+  | {
+      name: 'ProxyAnnounced';
+      params: {
+        delegate: MultiAddressLike;
+        real: MultiAddressLike;
+        forceProxyType?: AstarRuntimeProxyType | undefined;
+        call: AstarRuntimeRuntimeCallLike;
+      };
+    };
+
 /**
  * Contains one variant per dispatchable that can be called by an extrinsic.
  **/
@@ -2623,6 +3352,44 @@ export type CumulusPalletParachainSystemCall =
    **/
   | { name: 'EnactAuthorizedUpgrade'; params: { code: Bytes } };
 
+export type CumulusPalletParachainSystemCallLike =
+  /**
+   * Set the current validation data.
+   *
+   * This should be invoked exactly once per block. It will panic at the finalization
+   * phase if the call was not invoked.
+   *
+   * The dispatch origin for this call must be `Inherent`
+   *
+   * As a side effect, this function upgrades the current validation function
+   * if the appropriate time has come.
+   **/
+  | { name: 'SetValidationData'; params: { data: CumulusPrimitivesParachainInherentParachainInherentData } }
+  | { name: 'SudoSendUpwardMessage'; params: { message: BytesLike } }
+  /**
+   * Authorize an upgrade to a given `code_hash` for the runtime. The runtime can be supplied
+   * later.
+   *
+   * The `check_version` parameter sets a boolean flag for whether or not the runtime's spec
+   * version and name should be verified on upgrade. Since the authorization only has a hash,
+   * it cannot actually perform the verification.
+   *
+   * This call requires Root origin.
+   **/
+  | { name: 'AuthorizeUpgrade'; params: { codeHash: H256; checkVersion: boolean } }
+  /**
+   * Provide the preimage (runtime binary) `code` for an upgrade that has been authorized.
+   *
+   * If the authorization required a version check, this call will ensure the spec name
+   * remains unchanged and that the spec version has increased.
+   *
+   * Note that this function will not apply the new `code`, but only attempt to schedule the
+   * upgrade with the Relay Chain.
+   *
+   * All origins are allowed.
+   **/
+  | { name: 'EnactAuthorizedUpgrade'; params: { code: BytesLike } };
+
 export type CumulusPrimitivesParachainInherentParachainInherentData = {
   validationData: PolkadotPrimitivesV4PersistedValidationData;
   relayChainState: SpTrieStorageProof;
@@ -2649,6 +3416,8 @@ export type PolkadotCorePrimitivesInboundHrmpMessage = { sentAt: number; data: B
  * Contains one variant per dispatchable that can be called by an extrinsic.
  **/
 export type ParachainInfoCall = null;
+
+export type ParachainInfoCallLike = null;
 
 /**
  * Contains one variant per dispatchable that can be called by an extrinsic.
@@ -2734,6 +3503,88 @@ export type PalletBalancesCall =
    * The dispatch origin for this call is `root`.
    **/
   | { name: 'ForceSetBalance'; params: { who: MultiAddress; newFree: bigint } };
+
+export type PalletBalancesCallLike =
+  /**
+   * Transfer some liquid free balance to another account.
+   *
+   * `transfer_allow_death` will set the `FreeBalance` of the sender and receiver.
+   * If the sender's account is below the existential deposit as a result
+   * of the transfer, the account will be reaped.
+   *
+   * The dispatch origin for this call must be `Signed` by the transactor.
+   **/
+  | { name: 'TransferAllowDeath'; params: { dest: MultiAddressLike; value: bigint } }
+  /**
+   * Set the regular balance of a given account; it also takes a reserved balance but this
+   * must be the same as the account's current reserved balance.
+   *
+   * The dispatch origin for this call is `root`.
+   *
+   * WARNING: This call is DEPRECATED! Use `force_set_balance` instead.
+   **/
+  | { name: 'SetBalanceDeprecated'; params: { who: MultiAddressLike; newFree: bigint; oldReserved: bigint } }
+  /**
+   * Exactly as `transfer_allow_death`, except the origin must be root and the source account
+   * may be specified.
+   **/
+  | { name: 'ForceTransfer'; params: { source: MultiAddressLike; dest: MultiAddressLike; value: bigint } }
+  /**
+   * Same as the [`transfer_allow_death`] call, but with a check that the transfer will not
+   * kill the origin account.
+   *
+   * 99% of the time you want [`transfer_allow_death`] instead.
+   *
+   * [`transfer_allow_death`]: struct.Pallet.html#method.transfer
+   **/
+  | { name: 'TransferKeepAlive'; params: { dest: MultiAddressLike; value: bigint } }
+  /**
+   * Transfer the entire transferable balance from the caller account.
+   *
+   * NOTE: This function only attempts to transfer _transferable_ balances. This means that
+   * any locked, reserved, or existential deposits (when `keep_alive` is `true`), will not be
+   * transferred by this function. To ensure that this function results in a killed account,
+   * you might need to prepare the account by removing any reference counters, storage
+   * deposits, etc...
+   *
+   * The dispatch origin of this call must be Signed.
+   *
+   * - `dest`: The recipient of the transfer.
+   * - `keep_alive`: A boolean to determine if the `transfer_all` operation should send all
+   * of the funds the account has, causing the sender account to be killed (false), or
+   * transfer everything except at least the existential deposit, which will guarantee to
+   * keep the sender account alive (true).
+   **/
+  | { name: 'TransferAll'; params: { dest: MultiAddressLike; keepAlive: boolean } }
+  /**
+   * Unreserve some balance from a user by force.
+   *
+   * Can only be called by ROOT.
+   **/
+  | { name: 'ForceUnreserve'; params: { who: MultiAddressLike; amount: bigint } }
+  /**
+   * Upgrade a specified account.
+   *
+   * - `origin`: Must be `Signed`.
+   * - `who`: The account to be upgraded.
+   *
+   * This will waive the transaction fee if at least all but 10% of the accounts needed to
+   * be upgraded. (We let some not have to be upgraded just in order to allow for the
+   * possibililty of churn).
+   **/
+  | { name: 'UpgradeAccounts'; params: { who: Array<AccountId32Like> } }
+  /**
+   * Alias for `transfer_allow_death`, provided only for name-wise compatibility.
+   *
+   * WARNING: DEPRECATED! Will be released in approximately 3 months.
+   **/
+  | { name: 'Transfer'; params: { dest: MultiAddressLike; value: bigint } }
+  /**
+   * Set the regular balance of a given account.
+   *
+   * The dispatch origin for this call is `root`.
+   **/
+  | { name: 'ForceSetBalance'; params: { who: MultiAddressLike; newFree: bigint } };
 
 /**
  * Contains one variant per dispatchable that can be called by an extrinsic.
@@ -2826,12 +3677,120 @@ export type PalletVestingCall =
    **/
   | { name: 'MergeSchedules'; params: { schedule1Index: number; schedule2Index: number } };
 
+export type PalletVestingCallLike =
+  /**
+   * Unlock any vested funds of the sender account.
+   *
+   * The dispatch origin for this call must be _Signed_ and the sender must have funds still
+   * locked under this pallet.
+   *
+   * Emits either `VestingCompleted` or `VestingUpdated`.
+   *
+   * ## Complexity
+   * - `O(1)`.
+   **/
+  | { name: 'Vest' }
+  /**
+   * Unlock any vested funds of a `target` account.
+   *
+   * The dispatch origin for this call must be _Signed_.
+   *
+   * - `target`: The account whose vested funds should be unlocked. Must have funds still
+   * locked under this pallet.
+   *
+   * Emits either `VestingCompleted` or `VestingUpdated`.
+   *
+   * ## Complexity
+   * - `O(1)`.
+   **/
+  | { name: 'VestOther'; params: { target: MultiAddressLike } }
+  /**
+   * Create a vested transfer.
+   *
+   * The dispatch origin for this call must be _Signed_.
+   *
+   * - `target`: The account receiving the vested funds.
+   * - `schedule`: The vesting schedule attached to the transfer.
+   *
+   * Emits `VestingCreated`.
+   *
+   * NOTE: This will unlock all schedules through the current block.
+   *
+   * ## Complexity
+   * - `O(1)`.
+   **/
+  | { name: 'VestedTransfer'; params: { target: MultiAddressLike; schedule: PalletVestingVestingInfo } }
+  /**
+   * Force a vested transfer.
+   *
+   * The dispatch origin for this call must be _Root_.
+   *
+   * - `source`: The account whose funds should be transferred.
+   * - `target`: The account that should be transferred the vested funds.
+   * - `schedule`: The vesting schedule attached to the transfer.
+   *
+   * Emits `VestingCreated`.
+   *
+   * NOTE: This will unlock all schedules through the current block.
+   *
+   * ## Complexity
+   * - `O(1)`.
+   **/
+  | {
+      name: 'ForceVestedTransfer';
+      params: { source: MultiAddressLike; target: MultiAddressLike; schedule: PalletVestingVestingInfo };
+    }
+  /**
+   * Merge two vesting schedules together, creating a new vesting schedule that unlocks over
+   * the highest possible start and end blocks. If both schedules have already started the
+   * current block will be used as the schedule start; with the caveat that if one schedule
+   * is finished by the current block, the other will be treated as the new merged schedule,
+   * unmodified.
+   *
+   * NOTE: If `schedule1_index == schedule2_index` this is a no-op.
+   * NOTE: This will unlock all schedules through the current block prior to merging.
+   * NOTE: If both schedules have ended by the current block, no new schedule will be created
+   * and both will be removed.
+   *
+   * Merged schedule attributes:
+   * - `starting_block`: `MAX(schedule1.starting_block, scheduled2.starting_block,
+   * current_block)`.
+   * - `ending_block`: `MAX(schedule1.ending_block, schedule2.ending_block)`.
+   * - `locked`: `schedule1.locked_at(current_block) + schedule2.locked_at(current_block)`.
+   *
+   * The dispatch origin for this call must be _Signed_.
+   *
+   * - `schedule1_index`: index of the first schedule to merge.
+   * - `schedule2_index`: index of the second schedule to merge.
+   **/
+  | { name: 'MergeSchedules'; params: { schedule1Index: number; schedule2Index: number } };
+
 export type PalletVestingVestingInfo = { locked: bigint; perBlock: bigint; startingBlock: number };
 
 /**
  * Contains one variant per dispatchable that can be called by an extrinsic.
  **/
 export type PalletInflationCall =
+  /**
+   * Used to force-set the inflation parameters.
+   * The parameters must be valid, all parts summing up to one whole (100%), otherwise the call will fail.
+   *
+   * Must be called by `root` origin.
+   *
+   * Purpose of the call is testing & handling unforeseen circumstances.
+   **/
+  | { name: 'ForceSetInflationParams'; params: { params: PalletInflationInflationParameters } }
+  /**
+   * Used to force inflation recalculation.
+   * This is done in the same way as it would be done in an appropriate block, but this call forces it.
+   *
+   * Must be called by `root` origin.
+   *
+   * Purpose of the call is testing & handling unforeseen circumstances.
+   **/
+  | { name: 'ForceInflationRecalculation'; params: { nextEra: number } };
+
+export type PalletInflationCallLike =
   /**
    * Used to force-set the inflation parameters.
    * The parameters must be valid, all parts summing up to one whole (100%), otherwise the call will fail.
@@ -2911,6 +3870,144 @@ export type PalletDappStakingV3Call =
    * 2. if project wants to transfer ownership to a new account (DAO, multisig, etc.).
    **/
   | { name: 'SetDappOwner'; params: { smartContract: AstarPrimitivesDappStakingSmartContract; newOwner: AccountId32 } }
+  /**
+   * Unregister dApp from dApp staking protocol, making it ineligible for future rewards.
+   * This doesn't remove the dApp completely from the system just yet, but it can no longer be used for staking.
+   *
+   * Can be called by dApp staking manager origin.
+   **/
+  | { name: 'Unregister'; params: { smartContract: AstarPrimitivesDappStakingSmartContract } }
+  /**
+   * Locks additional funds into dApp staking.
+   *
+   * In case caller account doesn't have sufficient balance to cover the specified amount, everything is locked.
+   * After adjustment, lock amount must be greater than zero and in total must be equal or greater than the minimum locked amount.
+   *
+   * Locked amount can immediately be used for staking.
+   **/
+  | { name: 'Lock'; params: { amount: bigint } }
+  /**
+   * Attempts to start the unlocking process for the specified amount.
+   *
+   * Only the amount that isn't actively used for staking can be unlocked.
+   * If the amount is greater than the available amount for unlocking, everything is unlocked.
+   * If the remaining locked amount would take the account below the minimum locked amount, everything is unlocked.
+   **/
+  | { name: 'Unlock'; params: { amount: bigint } }
+  /**
+   * Claims all of fully unlocked chunks, removing the lock from them.
+   **/
+  | { name: 'ClaimUnlocked' }
+  | { name: 'RelockUnlocking' }
+  /**
+   * Stake the specified amount on a smart contract.
+   * The precise `amount` specified **must** be available for staking.
+   * The total amount staked on a dApp must be greater than the minimum required value.
+   *
+   * Depending on the period type, appropriate stake amount will be updated. During `Voting` subperiod, `voting` stake amount is updated,
+   * and same for `Build&Earn` subperiod.
+   *
+   * Staked amount is only eligible for rewards from the next era onwards.
+   **/
+  | { name: 'Stake'; params: { smartContract: AstarPrimitivesDappStakingSmartContract; amount: bigint } }
+  /**
+   * Unstake the specified amount from a smart contract.
+   * The `amount` specified **must** not exceed what's staked, otherwise the call will fail.
+   *
+   * If unstaking the specified `amount` would take staker below the minimum stake threshold, everything is unstaked.
+   *
+   * Depending on the period type, appropriate stake amount will be updated.
+   * In case amount is unstaked during `Voting` subperiod, the `voting` amount is reduced.
+   * In case amount is unstaked during `Build&Earn` subperiod, first the `build_and_earn` is reduced,
+   * and any spillover is subtracted from the `voting` amount.
+   **/
+  | { name: 'Unstake'; params: { smartContract: AstarPrimitivesDappStakingSmartContract; amount: bigint } }
+  /**
+   * Claims some staker rewards, if user has any.
+   * In the case of a successful call, at least one era will be claimed, with the possibility of multiple claims happening.
+   **/
+  | { name: 'ClaimStakerRewards' }
+  /**
+   * Used to claim bonus reward for a smart contract, if eligible.
+   **/
+  | { name: 'ClaimBonusReward'; params: { smartContract: AstarPrimitivesDappStakingSmartContract } }
+  /**
+   * Used to claim dApp reward for the specified era.
+   **/
+  | { name: 'ClaimDappReward'; params: { smartContract: AstarPrimitivesDappStakingSmartContract; era: number } }
+  /**
+   * Used to unstake funds from a contract that was unregistered after an account staked on it.
+   * This is required if staker wants to re-stake these funds on another active contract during the ongoing period.
+   **/
+  | { name: 'UnstakeFromUnregistered'; params: { smartContract: AstarPrimitivesDappStakingSmartContract } }
+  /**
+   * Cleanup expired stake entries for the contract.
+   *
+   * Entry is considered to be expired if:
+   * 1. It's from a past period & the account wasn't a loyal staker, meaning there's no claimable bonus reward.
+   * 2. It's from a period older than the oldest claimable period, regardless whether the account was loyal or not.
+   **/
+  | { name: 'CleanupExpiredEntries' }
+  /**
+   * Used to force a change of era or subperiod.
+   * The effect isn't immediate but will happen on the next block.
+   *
+   * Used for testing purposes, when we want to force an era change, or a subperiod change.
+   * Not intended to be used in production, except in case of unforeseen circumstances.
+   *
+   * Can only be called by manager origin.
+   **/
+  | { name: 'Force'; params: { forcingType: PalletDappStakingV3ForcingType } };
+
+export type PalletDappStakingV3CallLike =
+  /**
+   * Wrapper around _legacy-like_ `unbond_and_unstake`.
+   *
+   * Used to support legacy Ledger users so they can start the unlocking process for their funds.
+   **/
+  | { name: 'UnbondAndUnstake'; params: { contractId: AstarPrimitivesDappStakingSmartContract; value: bigint } }
+  /**
+   * Wrapper around _legacy-like_ `withdraw_unbonded`.
+   *
+   * Used to support legacy Ledger users so they can reclaim unlocked chunks back into
+   * their _transferable_ free balance.
+   **/
+  | { name: 'WithdrawUnbonded' }
+  /**
+   * Used to enable or disable maintenance mode.
+   * Can only be called by manager origin.
+   **/
+  | { name: 'MaintenanceMode'; params: { enabled: boolean } }
+  /**
+   * Used to register a new contract for dApp staking.
+   *
+   * If successful, smart contract will be assigned a simple, unique numerical identifier.
+   * Owner is set to be initial beneficiary & manager of the dApp.
+   **/
+  | { name: 'Register'; params: { owner: AccountId32Like; smartContract: AstarPrimitivesDappStakingSmartContract } }
+  /**
+   * Used to modify the reward beneficiary account for a dApp.
+   *
+   * Caller has to be dApp owner.
+   * If set to `None`, rewards will be deposited to the dApp owner.
+   * After this call, all existing & future rewards will be paid out to the beneficiary.
+   **/
+  | {
+      name: 'SetDappRewardBeneficiary';
+      params: { smartContract: AstarPrimitivesDappStakingSmartContract; beneficiary?: AccountId32Like | undefined };
+    }
+  /**
+   * Used to change dApp owner.
+   *
+   * Can be called by dApp owner or dApp staking manager origin.
+   * This is useful in two cases:
+   * 1. when the dApp owner account is compromised, manager can change the owner to a new account
+   * 2. if project wants to transfer ownership to a new account (DAO, multisig, etc.).
+   **/
+  | {
+      name: 'SetDappOwner';
+      params: { smartContract: AstarPrimitivesDappStakingSmartContract; newOwner: AccountId32Like };
+    }
   /**
    * Unregister dApp from dApp staking protocol, making it ineligible for future rewards.
    * This doesn't remove the dApp completely from the system just yet, but it can no longer be used for staking.
@@ -3542,6 +4639,551 @@ export type PalletAssetsCall =
    **/
   | { name: 'Block'; params: { id: bigint; who: MultiAddress } };
 
+export type PalletAssetsCallLike =
+  /**
+   * Issue a new class of fungible assets from a public origin.
+   *
+   * This new asset class has no assets initially and its owner is the origin.
+   *
+   * The origin must conform to the configured `CreateOrigin` and have sufficient funds free.
+   *
+   * Funds of sender are reserved by `AssetDeposit`.
+   *
+   * Parameters:
+   * - `id`: The identifier of the new asset. This must not be currently in use to identify
+   * an existing asset.
+   * - `admin`: The admin of this class of assets. The admin is the initial address of each
+   * member of the asset class's admin team.
+   * - `min_balance`: The minimum balance of this new asset that any single account must
+   * have. If an account's balance is reduced below this, then it collapses to zero.
+   *
+   * Emits `Created` event when successful.
+   *
+   * Weight: `O(1)`
+   **/
+  | { name: 'Create'; params: { id: bigint; admin: MultiAddressLike; minBalance: bigint } }
+  /**
+   * Issue a new class of fungible assets from a privileged origin.
+   *
+   * This new asset class has no assets initially.
+   *
+   * The origin must conform to `ForceOrigin`.
+   *
+   * Unlike `create`, no funds are reserved.
+   *
+   * - `id`: The identifier of the new asset. This must not be currently in use to identify
+   * an existing asset.
+   * - `owner`: The owner of this class of assets. The owner has full superuser permissions
+   * over this asset, but may later change and configure the permissions using
+   * `transfer_ownership` and `set_team`.
+   * - `min_balance`: The minimum balance of this new asset that any single account must
+   * have. If an account's balance is reduced below this, then it collapses to zero.
+   *
+   * Emits `ForceCreated` event when successful.
+   *
+   * Weight: `O(1)`
+   **/
+  | { name: 'ForceCreate'; params: { id: bigint; owner: MultiAddressLike; isSufficient: boolean; minBalance: bigint } }
+  /**
+   * Start the process of destroying a fungible asset class.
+   *
+   * `start_destroy` is the first in a series of extrinsics that should be called, to allow
+   * destruction of an asset class.
+   *
+   * The origin must conform to `ForceOrigin` or must be `Signed` by the asset's `owner`.
+   *
+   * - `id`: The identifier of the asset to be destroyed. This must identify an existing
+   * asset.
+   *
+   * The asset class must be frozen before calling `start_destroy`.
+   **/
+  | { name: 'StartDestroy'; params: { id: bigint } }
+  /**
+   * Destroy all accounts associated with a given asset.
+   *
+   * `destroy_accounts` should only be called after `start_destroy` has been called, and the
+   * asset is in a `Destroying` state.
+   *
+   * Due to weight restrictions, this function may need to be called multiple times to fully
+   * destroy all accounts. It will destroy `RemoveItemsLimit` accounts at a time.
+   *
+   * - `id`: The identifier of the asset to be destroyed. This must identify an existing
+   * asset.
+   *
+   * Each call emits the `Event::DestroyedAccounts` event.
+   **/
+  | { name: 'DestroyAccounts'; params: { id: bigint } }
+  /**
+   * Destroy all approvals associated with a given asset up to the max (T::RemoveItemsLimit).
+   *
+   * `destroy_approvals` should only be called after `start_destroy` has been called, and the
+   * asset is in a `Destroying` state.
+   *
+   * Due to weight restrictions, this function may need to be called multiple times to fully
+   * destroy all approvals. It will destroy `RemoveItemsLimit` approvals at a time.
+   *
+   * - `id`: The identifier of the asset to be destroyed. This must identify an existing
+   * asset.
+   *
+   * Each call emits the `Event::DestroyedApprovals` event.
+   **/
+  | { name: 'DestroyApprovals'; params: { id: bigint } }
+  /**
+   * Complete destroying asset and unreserve currency.
+   *
+   * `finish_destroy` should only be called after `start_destroy` has been called, and the
+   * asset is in a `Destroying` state. All accounts or approvals should be destroyed before
+   * hand.
+   *
+   * - `id`: The identifier of the asset to be destroyed. This must identify an existing
+   * asset.
+   *
+   * Each successful call emits the `Event::Destroyed` event.
+   **/
+  | { name: 'FinishDestroy'; params: { id: bigint } }
+  /**
+   * Mint assets of a particular class.
+   *
+   * The origin must be Signed and the sender must be the Issuer of the asset `id`.
+   *
+   * - `id`: The identifier of the asset to have some amount minted.
+   * - `beneficiary`: The account to be credited with the minted assets.
+   * - `amount`: The amount of the asset to be minted.
+   *
+   * Emits `Issued` event when successful.
+   *
+   * Weight: `O(1)`
+   * Modes: Pre-existing balance of `beneficiary`; Account pre-existence of `beneficiary`.
+   **/
+  | { name: 'Mint'; params: { id: bigint; beneficiary: MultiAddressLike; amount: bigint } }
+  /**
+   * Reduce the balance of `who` by as much as possible up to `amount` assets of `id`.
+   *
+   * Origin must be Signed and the sender should be the Manager of the asset `id`.
+   *
+   * Bails with `NoAccount` if the `who` is already dead.
+   *
+   * - `id`: The identifier of the asset to have some amount burned.
+   * - `who`: The account to be debited from.
+   * - `amount`: The maximum amount by which `who`'s balance should be reduced.
+   *
+   * Emits `Burned` with the actual amount burned. If this takes the balance to below the
+   * minimum for the asset, then the amount burned is increased to take it to zero.
+   *
+   * Weight: `O(1)`
+   * Modes: Post-existence of `who`; Pre & post Zombie-status of `who`.
+   **/
+  | { name: 'Burn'; params: { id: bigint; who: MultiAddressLike; amount: bigint } }
+  /**
+   * Move some assets from the sender account to another.
+   *
+   * Origin must be Signed.
+   *
+   * - `id`: The identifier of the asset to have some amount transferred.
+   * - `target`: The account to be credited.
+   * - `amount`: The amount by which the sender's balance of assets should be reduced and
+   * `target`'s balance increased. The amount actually transferred may be slightly greater in
+   * the case that the transfer would otherwise take the sender balance above zero but below
+   * the minimum balance. Must be greater than zero.
+   *
+   * Emits `Transferred` with the actual amount transferred. If this takes the source balance
+   * to below the minimum for the asset, then the amount transferred is increased to take it
+   * to zero.
+   *
+   * Weight: `O(1)`
+   * Modes: Pre-existence of `target`; Post-existence of sender; Account pre-existence of
+   * `target`.
+   **/
+  | { name: 'Transfer'; params: { id: bigint; target: MultiAddressLike; amount: bigint } }
+  /**
+   * Move some assets from the sender account to another, keeping the sender account alive.
+   *
+   * Origin must be Signed.
+   *
+   * - `id`: The identifier of the asset to have some amount transferred.
+   * - `target`: The account to be credited.
+   * - `amount`: The amount by which the sender's balance of assets should be reduced and
+   * `target`'s balance increased. The amount actually transferred may be slightly greater in
+   * the case that the transfer would otherwise take the sender balance above zero but below
+   * the minimum balance. Must be greater than zero.
+   *
+   * Emits `Transferred` with the actual amount transferred. If this takes the source balance
+   * to below the minimum for the asset, then the amount transferred is increased to take it
+   * to zero.
+   *
+   * Weight: `O(1)`
+   * Modes: Pre-existence of `target`; Post-existence of sender; Account pre-existence of
+   * `target`.
+   **/
+  | { name: 'TransferKeepAlive'; params: { id: bigint; target: MultiAddressLike; amount: bigint } }
+  /**
+   * Move some assets from one account to another.
+   *
+   * Origin must be Signed and the sender should be the Admin of the asset `id`.
+   *
+   * - `id`: The identifier of the asset to have some amount transferred.
+   * - `source`: The account to be debited.
+   * - `dest`: The account to be credited.
+   * - `amount`: The amount by which the `source`'s balance of assets should be reduced and
+   * `dest`'s balance increased. The amount actually transferred may be slightly greater in
+   * the case that the transfer would otherwise take the `source` balance above zero but
+   * below the minimum balance. Must be greater than zero.
+   *
+   * Emits `Transferred` with the actual amount transferred. If this takes the source balance
+   * to below the minimum for the asset, then the amount transferred is increased to take it
+   * to zero.
+   *
+   * Weight: `O(1)`
+   * Modes: Pre-existence of `dest`; Post-existence of `source`; Account pre-existence of
+   * `dest`.
+   **/
+  | { name: 'ForceTransfer'; params: { id: bigint; source: MultiAddressLike; dest: MultiAddressLike; amount: bigint } }
+  /**
+   * Disallow further unprivileged transfers of an asset `id` from an account `who`. `who`
+   * must already exist as an entry in `Account`s of the asset. If you want to freeze an
+   * account that does not have an entry, use `touch_other` first.
+   *
+   * Origin must be Signed and the sender should be the Freezer of the asset `id`.
+   *
+   * - `id`: The identifier of the asset to be frozen.
+   * - `who`: The account to be frozen.
+   *
+   * Emits `Frozen`.
+   *
+   * Weight: `O(1)`
+   **/
+  | { name: 'Freeze'; params: { id: bigint; who: MultiAddressLike } }
+  /**
+   * Allow unprivileged transfers to and from an account again.
+   *
+   * Origin must be Signed and the sender should be the Admin of the asset `id`.
+   *
+   * - `id`: The identifier of the asset to be frozen.
+   * - `who`: The account to be unfrozen.
+   *
+   * Emits `Thawed`.
+   *
+   * Weight: `O(1)`
+   **/
+  | { name: 'Thaw'; params: { id: bigint; who: MultiAddressLike } }
+  /**
+   * Disallow further unprivileged transfers for the asset class.
+   *
+   * Origin must be Signed and the sender should be the Freezer of the asset `id`.
+   *
+   * - `id`: The identifier of the asset to be frozen.
+   *
+   * Emits `Frozen`.
+   *
+   * Weight: `O(1)`
+   **/
+  | { name: 'FreezeAsset'; params: { id: bigint } }
+  /**
+   * Allow unprivileged transfers for the asset again.
+   *
+   * Origin must be Signed and the sender should be the Admin of the asset `id`.
+   *
+   * - `id`: The identifier of the asset to be thawed.
+   *
+   * Emits `Thawed`.
+   *
+   * Weight: `O(1)`
+   **/
+  | { name: 'ThawAsset'; params: { id: bigint } }
+  /**
+   * Change the Owner of an asset.
+   *
+   * Origin must be Signed and the sender should be the Owner of the asset `id`.
+   *
+   * - `id`: The identifier of the asset.
+   * - `owner`: The new Owner of this asset.
+   *
+   * Emits `OwnerChanged`.
+   *
+   * Weight: `O(1)`
+   **/
+  | { name: 'TransferOwnership'; params: { id: bigint; owner: MultiAddressLike } }
+  /**
+   * Change the Issuer, Admin and Freezer of an asset.
+   *
+   * Origin must be Signed and the sender should be the Owner of the asset `id`.
+   *
+   * - `id`: The identifier of the asset to be frozen.
+   * - `issuer`: The new Issuer of this asset.
+   * - `admin`: The new Admin of this asset.
+   * - `freezer`: The new Freezer of this asset.
+   *
+   * Emits `TeamChanged`.
+   *
+   * Weight: `O(1)`
+   **/
+  | {
+      name: 'SetTeam';
+      params: { id: bigint; issuer: MultiAddressLike; admin: MultiAddressLike; freezer: MultiAddressLike };
+    }
+  /**
+   * Set the metadata for an asset.
+   *
+   * Origin must be Signed and the sender should be the Owner of the asset `id`.
+   *
+   * Funds of sender are reserved according to the formula:
+   * `MetadataDepositBase + MetadataDepositPerByte * (name.len + symbol.len)` taking into
+   * account any already reserved funds.
+   *
+   * - `id`: The identifier of the asset to update.
+   * - `name`: The user friendly name of this asset. Limited in length by `StringLimit`.
+   * - `symbol`: The exchange symbol for this asset. Limited in length by `StringLimit`.
+   * - `decimals`: The number of decimals this asset uses to represent one unit.
+   *
+   * Emits `MetadataSet`.
+   *
+   * Weight: `O(1)`
+   **/
+  | { name: 'SetMetadata'; params: { id: bigint; name: BytesLike; symbol: BytesLike; decimals: number } }
+  /**
+   * Clear the metadata for an asset.
+   *
+   * Origin must be Signed and the sender should be the Owner of the asset `id`.
+   *
+   * Any deposit is freed for the asset owner.
+   *
+   * - `id`: The identifier of the asset to clear.
+   *
+   * Emits `MetadataCleared`.
+   *
+   * Weight: `O(1)`
+   **/
+  | { name: 'ClearMetadata'; params: { id: bigint } }
+  /**
+   * Force the metadata for an asset to some value.
+   *
+   * Origin must be ForceOrigin.
+   *
+   * Any deposit is left alone.
+   *
+   * - `id`: The identifier of the asset to update.
+   * - `name`: The user friendly name of this asset. Limited in length by `StringLimit`.
+   * - `symbol`: The exchange symbol for this asset. Limited in length by `StringLimit`.
+   * - `decimals`: The number of decimals this asset uses to represent one unit.
+   *
+   * Emits `MetadataSet`.
+   *
+   * Weight: `O(N + S)` where N and S are the length of the name and symbol respectively.
+   **/
+  | {
+      name: 'ForceSetMetadata';
+      params: { id: bigint; name: BytesLike; symbol: BytesLike; decimals: number; isFrozen: boolean };
+    }
+  /**
+   * Clear the metadata for an asset.
+   *
+   * Origin must be ForceOrigin.
+   *
+   * Any deposit is returned.
+   *
+   * - `id`: The identifier of the asset to clear.
+   *
+   * Emits `MetadataCleared`.
+   *
+   * Weight: `O(1)`
+   **/
+  | { name: 'ForceClearMetadata'; params: { id: bigint } }
+  /**
+   * Alter the attributes of a given asset.
+   *
+   * Origin must be `ForceOrigin`.
+   *
+   * - `id`: The identifier of the asset.
+   * - `owner`: The new Owner of this asset.
+   * - `issuer`: The new Issuer of this asset.
+   * - `admin`: The new Admin of this asset.
+   * - `freezer`: The new Freezer of this asset.
+   * - `min_balance`: The minimum balance of this new asset that any single account must
+   * have. If an account's balance is reduced below this, then it collapses to zero.
+   * - `is_sufficient`: Whether a non-zero balance of this asset is deposit of sufficient
+   * value to account for the state bloat associated with its balance storage. If set to
+   * `true`, then non-zero balances may be stored without a `consumer` reference (and thus
+   * an ED in the Balances pallet or whatever else is used to control user-account state
+   * growth).
+   * - `is_frozen`: Whether this asset class is frozen except for permissioned/admin
+   * instructions.
+   *
+   * Emits `AssetStatusChanged` with the identity of the asset.
+   *
+   * Weight: `O(1)`
+   **/
+  | {
+      name: 'ForceAssetStatus';
+      params: {
+        id: bigint;
+        owner: MultiAddressLike;
+        issuer: MultiAddressLike;
+        admin: MultiAddressLike;
+        freezer: MultiAddressLike;
+        minBalance: bigint;
+        isSufficient: boolean;
+        isFrozen: boolean;
+      };
+    }
+  /**
+   * Approve an amount of asset for transfer by a delegated third-party account.
+   *
+   * Origin must be Signed.
+   *
+   * Ensures that `ApprovalDeposit` worth of `Currency` is reserved from signing account
+   * for the purpose of holding the approval. If some non-zero amount of assets is already
+   * approved from signing account to `delegate`, then it is topped up or unreserved to
+   * meet the right value.
+   *
+   * NOTE: The signing account does not need to own `amount` of assets at the point of
+   * making this call.
+   *
+   * - `id`: The identifier of the asset.
+   * - `delegate`: The account to delegate permission to transfer asset.
+   * - `amount`: The amount of asset that may be transferred by `delegate`. If there is
+   * already an approval in place, then this acts additively.
+   *
+   * Emits `ApprovedTransfer` on success.
+   *
+   * Weight: `O(1)`
+   **/
+  | { name: 'ApproveTransfer'; params: { id: bigint; delegate: MultiAddressLike; amount: bigint } }
+  /**
+   * Cancel all of some asset approved for delegated transfer by a third-party account.
+   *
+   * Origin must be Signed and there must be an approval in place between signer and
+   * `delegate`.
+   *
+   * Unreserves any deposit previously reserved by `approve_transfer` for the approval.
+   *
+   * - `id`: The identifier of the asset.
+   * - `delegate`: The account delegated permission to transfer asset.
+   *
+   * Emits `ApprovalCancelled` on success.
+   *
+   * Weight: `O(1)`
+   **/
+  | { name: 'CancelApproval'; params: { id: bigint; delegate: MultiAddressLike } }
+  /**
+   * Cancel all of some asset approved for delegated transfer by a third-party account.
+   *
+   * Origin must be either ForceOrigin or Signed origin with the signer being the Admin
+   * account of the asset `id`.
+   *
+   * Unreserves any deposit previously reserved by `approve_transfer` for the approval.
+   *
+   * - `id`: The identifier of the asset.
+   * - `delegate`: The account delegated permission to transfer asset.
+   *
+   * Emits `ApprovalCancelled` on success.
+   *
+   * Weight: `O(1)`
+   **/
+  | { name: 'ForceCancelApproval'; params: { id: bigint; owner: MultiAddressLike; delegate: MultiAddressLike } }
+  /**
+   * Transfer some asset balance from a previously delegated account to some third-party
+   * account.
+   *
+   * Origin must be Signed and there must be an approval in place by the `owner` to the
+   * signer.
+   *
+   * If the entire amount approved for transfer is transferred, then any deposit previously
+   * reserved by `approve_transfer` is unreserved.
+   *
+   * - `id`: The identifier of the asset.
+   * - `owner`: The account which previously approved for a transfer of at least `amount` and
+   * from which the asset balance will be withdrawn.
+   * - `destination`: The account to which the asset balance of `amount` will be transferred.
+   * - `amount`: The amount of assets to transfer.
+   *
+   * Emits `TransferredApproved` on success.
+   *
+   * Weight: `O(1)`
+   **/
+  | {
+      name: 'TransferApproved';
+      params: { id: bigint; owner: MultiAddressLike; destination: MultiAddressLike; amount: bigint };
+    }
+  /**
+   * Create an asset account for non-provider assets.
+   *
+   * A deposit will be taken from the signer account.
+   *
+   * - `origin`: Must be Signed; the signer account must have sufficient funds for a deposit
+   * to be taken.
+   * - `id`: The identifier of the asset for the account to be created.
+   *
+   * Emits `Touched` event when successful.
+   **/
+  | { name: 'Touch'; params: { id: bigint } }
+  /**
+   * Return the deposit (if any) of an asset account or a consumer reference (if any) of an
+   * account.
+   *
+   * The origin must be Signed.
+   *
+   * - `id`: The identifier of the asset for which the caller would like the deposit
+   * refunded.
+   * - `allow_burn`: If `true` then assets may be destroyed in order to complete the refund.
+   *
+   * Emits `Refunded` event when successful.
+   **/
+  | { name: 'Refund'; params: { id: bigint; allowBurn: boolean } }
+  /**
+   * Sets the minimum balance of an asset.
+   *
+   * Only works if there aren't any accounts that are holding the asset or if
+   * the new value of `min_balance` is less than the old one.
+   *
+   * Origin must be Signed and the sender has to be the Owner of the
+   * asset `id`.
+   *
+   * - `id`: The identifier of the asset.
+   * - `min_balance`: The new value of `min_balance`.
+   *
+   * Emits `AssetMinBalanceChanged` event when successful.
+   **/
+  | { name: 'SetMinBalance'; params: { id: bigint; minBalance: bigint } }
+  /**
+   * Create an asset account for `who`.
+   *
+   * A deposit will be taken from the signer account.
+   *
+   * - `origin`: Must be Signed by `Freezer` or `Admin` of the asset `id`; the signer account
+   * must have sufficient funds for a deposit to be taken.
+   * - `id`: The identifier of the asset for the account to be created.
+   * - `who`: The account to be created.
+   *
+   * Emits `Touched` event when successful.
+   **/
+  | { name: 'TouchOther'; params: { id: bigint; who: MultiAddressLike } }
+  /**
+   * Return the deposit (if any) of a target asset account. Useful if you are the depositor.
+   *
+   * The origin must be Signed and either the account owner, depositor, or asset `Admin`. In
+   * order to burn a non-zero balance of the asset, the caller must be the account and should
+   * use `refund`.
+   *
+   * - `id`: The identifier of the asset for the account holding a deposit.
+   * - `who`: The account to refund.
+   *
+   * Emits `Refunded` event when successful.
+   **/
+  | { name: 'RefundOther'; params: { id: bigint; who: MultiAddressLike } }
+  /**
+   * Disallow further unprivileged transfers of an asset `id` to and from an account `who`.
+   *
+   * Origin must be Signed and the sender should be the Freezer of the asset `id`.
+   *
+   * - `id`: The identifier of the account's asset.
+   * - `who`: The account to be unblocked.
+   *
+   * Emits `Blocked`.
+   *
+   * Weight: `O(1)`
+   **/
+  | { name: 'Block'; params: { id: bigint; who: MultiAddressLike } };
+
 /**
  * Contains one variant per dispatchable that can be called by an extrinsic.
  **/
@@ -3550,6 +5192,38 @@ export type PalletCollatorSelectionCall =
    * Set the list of invulnerable (fixed) collators.
    **/
   | { name: 'SetInvulnerables'; params: { new: Array<AccountId32> } }
+  /**
+   * Set the ideal number of collators (not including the invulnerables).
+   * If lowering this number, then the number of running collators could be higher than this figure.
+   * Aside from that edge case, there should be no other way to have more collators than the desired number.
+   **/
+  | { name: 'SetDesiredCandidates'; params: { max: number } }
+  /**
+   * Set the candidacy bond amount.
+   **/
+  | { name: 'SetCandidacyBond'; params: { bond: bigint } }
+  /**
+   * Register this account as a collator candidate. The account must (a) already have
+   * registered session keys and (b) be able to reserve the `CandidacyBond`.
+   *
+   * This call is not available to `Invulnerable` collators.
+   **/
+  | { name: 'RegisterAsCandidate' }
+  /**
+   * Deregister `origin` as a collator candidate. Note that the collator can only leave on
+   * session change. The `CandidacyBond` will be unreserved immediately.
+   *
+   * This call will fail if the total number of candidates would drop below `MinCandidates`.
+   *
+   * This call is not available to `Invulnerable` collators.
+   **/
+  | { name: 'LeaveIntent' };
+
+export type PalletCollatorSelectionCallLike =
+  /**
+   * Set the list of invulnerable (fixed) collators.
+   **/
+  | { name: 'SetInvulnerables'; params: { new: Array<AccountId32Like> } }
   /**
    * Set the ideal number of collators (not including the invulnerables).
    * If lowering this number, then the number of running collators could be higher than this figure.
@@ -3593,6 +5267,35 @@ export type PalletSessionCall =
    * fixed.
    **/
   | { name: 'SetKeys'; params: { keys: AstarRuntimeSessionKeys; proof: Bytes } }
+  /**
+   * Removes any session key(s) of the function caller.
+   *
+   * This doesn't take effect until the next session.
+   *
+   * The dispatch origin of this function must be Signed and the account must be either be
+   * convertible to a validator ID using the chain's typical addressing system (this usually
+   * means being a controller account) or directly convertible into a validator ID (which
+   * usually means being a stash account).
+   *
+   * ## Complexity
+   * - `O(1)` in number of key types. Actual cost depends on the number of length of
+   * `T::Keys::key_ids()` which is fixed.
+   **/
+  | { name: 'PurgeKeys' };
+
+export type PalletSessionCallLike =
+  /**
+   * Sets the session key(s) of the function caller to `keys`.
+   * Allows an account to set its session key prior to becoming a validator.
+   * This doesn't take effect until the next session.
+   *
+   * The dispatch origin of this function must be signed.
+   *
+   * ## Complexity
+   * - `O(1)`. Actual cost depends on the number of length of `T::Keys::key_ids()` which is
+   * fixed.
+   **/
+  | { name: 'SetKeys'; params: { keys: AstarRuntimeSessionKeys; proof: BytesLike } }
   /**
    * Removes any session key(s) of the function caller.
    *
@@ -3697,10 +5400,258 @@ export type CumulusPalletXcmpQueueCall =
    **/
   | { name: 'UpdateXcmpMaxIndividualWeight'; params: { new: SpWeightsWeightV2Weight } };
 
+export type CumulusPalletXcmpQueueCallLike =
+  /**
+   * Services a single overweight XCM.
+   *
+   * - `origin`: Must pass `ExecuteOverweightOrigin`.
+   * - `index`: The index of the overweight XCM to service
+   * - `weight_limit`: The amount of weight that XCM execution may take.
+   *
+   * Errors:
+   * - `BadOverweightIndex`: XCM under `index` is not found in the `Overweight` storage map.
+   * - `BadXcm`: XCM under `index` cannot be properly decoded into a valid XCM format.
+   * - `WeightOverLimit`: XCM execution may use greater `weight_limit`.
+   *
+   * Events:
+   * - `OverweightServiced`: On success.
+   **/
+  | { name: 'ServiceOverweight'; params: { index: bigint; weightLimit: SpWeightsWeightV2Weight } }
+  /**
+   * Suspends all XCM executions for the XCMP queue, regardless of the sender's origin.
+   *
+   * - `origin`: Must pass `ControllerOrigin`.
+   **/
+  | { name: 'SuspendXcmExecution' }
+  /**
+   * Resumes all XCM executions for the XCMP queue.
+   *
+   * Note that this function doesn't change the status of the in/out bound channels.
+   *
+   * - `origin`: Must pass `ControllerOrigin`.
+   **/
+  | { name: 'ResumeXcmExecution' }
+  /**
+   * Overwrites the number of pages of messages which must be in the queue for the other side to be told to
+   * suspend their sending.
+   *
+   * - `origin`: Must pass `Root`.
+   * - `new`: Desired value for `QueueConfigData.suspend_value`
+   **/
+  | { name: 'UpdateSuspendThreshold'; params: { new: number } }
+  /**
+   * Overwrites the number of pages of messages which must be in the queue after which we drop any further
+   * messages from the channel.
+   *
+   * - `origin`: Must pass `Root`.
+   * - `new`: Desired value for `QueueConfigData.drop_threshold`
+   **/
+  | { name: 'UpdateDropThreshold'; params: { new: number } }
+  /**
+   * Overwrites the number of pages of messages which the queue must be reduced to before it signals that
+   * message sending may recommence after it has been suspended.
+   *
+   * - `origin`: Must pass `Root`.
+   * - `new`: Desired value for `QueueConfigData.resume_threshold`
+   **/
+  | { name: 'UpdateResumeThreshold'; params: { new: number } }
+  /**
+   * Overwrites the amount of remaining weight under which we stop processing messages.
+   *
+   * - `origin`: Must pass `Root`.
+   * - `new`: Desired value for `QueueConfigData.threshold_weight`
+   **/
+  | { name: 'UpdateThresholdWeight'; params: { new: SpWeightsWeightV2Weight } }
+  /**
+   * Overwrites the speed to which the available weight approaches the maximum weight.
+   * A lower number results in a faster progression. A value of 1 makes the entire weight available initially.
+   *
+   * - `origin`: Must pass `Root`.
+   * - `new`: Desired value for `QueueConfigData.weight_restrict_decay`.
+   **/
+  | { name: 'UpdateWeightRestrictDecay'; params: { new: SpWeightsWeightV2Weight } }
+  /**
+   * Overwrite the maximum amount of weight any individual message may consume.
+   * Messages above this weight go into the overweight queue and may only be serviced explicitly.
+   *
+   * - `origin`: Must pass `Root`.
+   * - `new`: Desired value for `QueueConfigData.xcmp_max_individual_weight`.
+   **/
+  | { name: 'UpdateXcmpMaxIndividualWeight'; params: { new: SpWeightsWeightV2Weight } };
+
 /**
  * Contains one variant per dispatchable that can be called by an extrinsic.
  **/
 export type PalletXcmCall =
+  | { name: 'Send'; params: { dest: XcmVersionedMultiLocation; message: XcmVersionedXcm } }
+  /**
+   * Teleport some assets from the local chain to some destination chain.
+   *
+   * Fee payment on the destination side is made from the asset in the `assets` vector of
+   * index `fee_asset_item`. The weight limit for fees is not provided and thus is unlimited,
+   * with all fees taken as needed from the asset.
+   *
+   * - `origin`: Must be capable of withdrawing the `assets` and executing XCM.
+   * - `dest`: Destination context for the assets. Will typically be `X2(Parent, Parachain(..))` to send
+   * from parachain to parachain, or `X1(Parachain(..))` to send from relay to parachain.
+   * - `beneficiary`: A beneficiary location for the assets in the context of `dest`. Will generally be
+   * an `AccountId32` value.
+   * - `assets`: The assets to be withdrawn. The first item should be the currency used to to pay the fee on the
+   * `dest` side. May not be empty.
+   * - `fee_asset_item`: The index into `assets` of the item which should be used to pay
+   * fees.
+   **/
+  | {
+      name: 'TeleportAssets';
+      params: {
+        dest: XcmVersionedMultiLocation;
+        beneficiary: XcmVersionedMultiLocation;
+        assets: XcmVersionedMultiAssets;
+        feeAssetItem: number;
+      };
+    }
+  /**
+   * Transfer some assets from the local chain to the sovereign account of a destination
+   * chain and forward a notification XCM.
+   *
+   * Fee payment on the destination side is made from the asset in the `assets` vector of
+   * index `fee_asset_item`. The weight limit for fees is not provided and thus is unlimited,
+   * with all fees taken as needed from the asset.
+   *
+   * - `origin`: Must be capable of withdrawing the `assets` and executing XCM.
+   * - `dest`: Destination context for the assets. Will typically be `X2(Parent, Parachain(..))` to send
+   * from parachain to parachain, or `X1(Parachain(..))` to send from relay to parachain.
+   * - `beneficiary`: A beneficiary location for the assets in the context of `dest`. Will generally be
+   * an `AccountId32` value.
+   * - `assets`: The assets to be withdrawn. This should include the assets used to pay the fee on the
+   * `dest` side.
+   * - `fee_asset_item`: The index into `assets` of the item which should be used to pay
+   * fees.
+   **/
+  | {
+      name: 'ReserveTransferAssets';
+      params: {
+        dest: XcmVersionedMultiLocation;
+        beneficiary: XcmVersionedMultiLocation;
+        assets: XcmVersionedMultiAssets;
+        feeAssetItem: number;
+      };
+    }
+  /**
+   * Execute an XCM message from a local, signed, origin.
+   *
+   * An event is deposited indicating whether `msg` could be executed completely or only
+   * partially.
+   *
+   * No more than `max_weight` will be used in its attempted execution. If this is less than the
+   * maximum amount of weight that the message could take to be executed, then no execution
+   * attempt will be made.
+   *
+   * NOTE: A successful return to this does *not* imply that the `msg` was executed successfully
+   * to completion; only that *some* of it was executed.
+   **/
+  | { name: 'Execute'; params: { message: XcmVersionedXcm; maxWeight: SpWeightsWeightV2Weight } }
+  /**
+   * Extoll that a particular destination can be communicated with through a particular
+   * version of XCM.
+   *
+   * - `origin`: Must be an origin specified by AdminOrigin.
+   * - `location`: The destination that is being described.
+   * - `xcm_version`: The latest version of XCM that `location` supports.
+   **/
+  | { name: 'ForceXcmVersion'; params: { location: XcmV3MultilocationMultiLocation; xcmVersion: number } }
+  /**
+   * Set a safe XCM version (the version that XCM should be encoded with if the most recent
+   * version a destination can accept is unknown).
+   *
+   * - `origin`: Must be an origin specified by AdminOrigin.
+   * - `maybe_xcm_version`: The default XCM encoding version, or `None` to disable.
+   **/
+  | { name: 'ForceDefaultXcmVersion'; params: { maybeXcmVersion?: number | undefined } }
+  /**
+   * Ask a location to notify us regarding their XCM version and any changes to it.
+   *
+   * - `origin`: Must be an origin specified by AdminOrigin.
+   * - `location`: The location to which we should subscribe for XCM version notifications.
+   **/
+  | { name: 'ForceSubscribeVersionNotify'; params: { location: XcmVersionedMultiLocation } }
+  /**
+   * Require that a particular destination should no longer notify us regarding any XCM
+   * version changes.
+   *
+   * - `origin`: Must be an origin specified by AdminOrigin.
+   * - `location`: The location to which we are currently subscribed for XCM version
+   * notifications which we no longer desire.
+   **/
+  | { name: 'ForceUnsubscribeVersionNotify'; params: { location: XcmVersionedMultiLocation } }
+  /**
+   * Transfer some assets from the local chain to the sovereign account of a destination
+   * chain and forward a notification XCM.
+   *
+   * Fee payment on the destination side is made from the asset in the `assets` vector of
+   * index `fee_asset_item`, up to enough to pay for `weight_limit` of weight. If more weight
+   * is needed than `weight_limit`, then the operation will fail and the assets send may be
+   * at risk.
+   *
+   * - `origin`: Must be capable of withdrawing the `assets` and executing XCM.
+   * - `dest`: Destination context for the assets. Will typically be `X2(Parent, Parachain(..))` to send
+   * from parachain to parachain, or `X1(Parachain(..))` to send from relay to parachain.
+   * - `beneficiary`: A beneficiary location for the assets in the context of `dest`. Will generally be
+   * an `AccountId32` value.
+   * - `assets`: The assets to be withdrawn. This should include the assets used to pay the fee on the
+   * `dest` side.
+   * - `fee_asset_item`: The index into `assets` of the item which should be used to pay
+   * fees.
+   * - `weight_limit`: The remote-side weight limit, if any, for the XCM fee purchase.
+   **/
+  | {
+      name: 'LimitedReserveTransferAssets';
+      params: {
+        dest: XcmVersionedMultiLocation;
+        beneficiary: XcmVersionedMultiLocation;
+        assets: XcmVersionedMultiAssets;
+        feeAssetItem: number;
+        weightLimit: XcmV3WeightLimit;
+      };
+    }
+  /**
+   * Teleport some assets from the local chain to some destination chain.
+   *
+   * Fee payment on the destination side is made from the asset in the `assets` vector of
+   * index `fee_asset_item`, up to enough to pay for `weight_limit` of weight. If more weight
+   * is needed than `weight_limit`, then the operation will fail and the assets send may be
+   * at risk.
+   *
+   * - `origin`: Must be capable of withdrawing the `assets` and executing XCM.
+   * - `dest`: Destination context for the assets. Will typically be `X2(Parent, Parachain(..))` to send
+   * from parachain to parachain, or `X1(Parachain(..))` to send from relay to parachain.
+   * - `beneficiary`: A beneficiary location for the assets in the context of `dest`. Will generally be
+   * an `AccountId32` value.
+   * - `assets`: The assets to be withdrawn. The first item should be the currency used to to pay the fee on the
+   * `dest` side. May not be empty.
+   * - `fee_asset_item`: The index into `assets` of the item which should be used to pay
+   * fees.
+   * - `weight_limit`: The remote-side weight limit, if any, for the XCM fee purchase.
+   **/
+  | {
+      name: 'LimitedTeleportAssets';
+      params: {
+        dest: XcmVersionedMultiLocation;
+        beneficiary: XcmVersionedMultiLocation;
+        assets: XcmVersionedMultiAssets;
+        feeAssetItem: number;
+        weightLimit: XcmV3WeightLimit;
+      };
+    }
+  /**
+   * Set or unset the global suspension state of the XCM executor.
+   *
+   * - `origin`: Must be an origin specified by AdminOrigin.
+   * - `suspended`: `true` to suspend, `false` to resume.
+   **/
+  | { name: 'ForceSuspension'; params: { suspended: boolean } };
+
+export type PalletXcmCallLike =
   | { name: 'Send'; params: { dest: XcmVersionedMultiLocation; message: XcmVersionedXcm } }
   /**
    * Teleport some assets from the local chain to some destination chain.
@@ -3989,10 +5940,18 @@ export type XcmV2WeightLimit = { tag: 'Unlimited' } | { tag: 'Limited'; value: b
  **/
 export type CumulusPalletXcmCall = null;
 
+export type CumulusPalletXcmCallLike = null;
+
 /**
  * Contains one variant per dispatchable that can be called by an extrinsic.
  **/
 export type CumulusPalletDmpQueueCall =
+  /**
+   * Service a single overweight message.
+   **/
+  { name: 'ServiceOverweight'; params: { index: bigint; weightLimit: SpWeightsWeightV2Weight } };
+
+export type CumulusPalletDmpQueueCallLike =
   /**
    * Service a single overweight message.
    **/
@@ -4029,10 +5988,198 @@ export type PalletXcAssetConfigCall =
    **/
   | { name: 'RemoveAsset'; params: { assetId: bigint } };
 
+export type PalletXcAssetConfigCallLike =
+  /**
+   * Register new asset location to asset Id mapping.
+   *
+   * This makes the asset eligible for XCM interaction.
+   **/
+  | { name: 'RegisterAssetLocation'; params: { assetLocation: XcmVersionedMultiLocation; assetId: bigint } }
+  /**
+   * Change the amount of units we are charging per execution second
+   * for a given AssetLocation.
+   **/
+  | { name: 'SetAssetUnitsPerSecond'; params: { assetLocation: XcmVersionedMultiLocation; unitsPerSecond: bigint } }
+  /**
+   * Change the xcm type mapping for a given asset Id.
+   * The new asset type will inherit old `units per second` value.
+   **/
+  | { name: 'ChangeExistingAssetLocation'; params: { newAssetLocation: XcmVersionedMultiLocation; assetId: bigint } }
+  /**
+   * Removes asset from the set of supported payment assets.
+   *
+   * The asset can still be interacted with via XCM but it cannot be used to pay for execution time.
+   **/
+  | { name: 'RemovePaymentAsset'; params: { assetLocation: XcmVersionedMultiLocation } }
+  /**
+   * Removes all information related to asset, removing it from XCM support.
+   **/
+  | { name: 'RemoveAsset'; params: { assetId: bigint } };
+
 /**
  * Contains one variant per dispatchable that can be called by an extrinsic.
  **/
 export type OrmlXtokensModuleCall =
+  /**
+   * Transfer native currencies.
+   *
+   * `dest_weight_limit` is the weight for XCM execution on the dest
+   * chain, and it would be charged from the transferred assets. If set
+   * below requirements, the execution may fail and assets wouldn't be
+   * received.
+   *
+   * It's a no-op if any error on local XCM execution or message sending.
+   * Note sending assets out per se doesn't guarantee they would be
+   * received. Receiving depends on if the XCM message could be delivered
+   * by the network, and if the receiving chain would handle
+   * messages correctly.
+   **/
+  | {
+      name: 'Transfer';
+      params: {
+        currencyId: bigint;
+        amount: bigint;
+        dest: XcmVersionedMultiLocation;
+        destWeightLimit: XcmV3WeightLimit;
+      };
+    }
+  /**
+   * Transfer `MultiAsset`.
+   *
+   * `dest_weight_limit` is the weight for XCM execution on the dest
+   * chain, and it would be charged from the transferred assets. If set
+   * below requirements, the execution may fail and assets wouldn't be
+   * received.
+   *
+   * It's a no-op if any error on local XCM execution or message sending.
+   * Note sending assets out per se doesn't guarantee they would be
+   * received. Receiving depends on if the XCM message could be delivered
+   * by the network, and if the receiving chain would handle
+   * messages correctly.
+   **/
+  | {
+      name: 'TransferMultiasset';
+      params: { asset: XcmVersionedMultiAsset; dest: XcmVersionedMultiLocation; destWeightLimit: XcmV3WeightLimit };
+    }
+  /**
+   * Transfer native currencies specifying the fee and amount as
+   * separate.
+   *
+   * `dest_weight_limit` is the weight for XCM execution on the dest
+   * chain, and it would be charged from the transferred assets. If set
+   * below requirements, the execution may fail and assets wouldn't be
+   * received.
+   *
+   * `fee` is the amount to be spent to pay for execution in destination
+   * chain. Both fee and amount will be subtracted form the callers
+   * balance.
+   *
+   * If `fee` is not high enough to cover for the execution costs in the
+   * destination chain, then the assets will be trapped in the
+   * destination chain
+   *
+   * It's a no-op if any error on local XCM execution or message sending.
+   * Note sending assets out per se doesn't guarantee they would be
+   * received. Receiving depends on if the XCM message could be delivered
+   * by the network, and if the receiving chain would handle
+   * messages correctly.
+   **/
+  | {
+      name: 'TransferWithFee';
+      params: {
+        currencyId: bigint;
+        amount: bigint;
+        fee: bigint;
+        dest: XcmVersionedMultiLocation;
+        destWeightLimit: XcmV3WeightLimit;
+      };
+    }
+  /**
+   * Transfer `MultiAsset` specifying the fee and amount as separate.
+   *
+   * `dest_weight_limit` is the weight for XCM execution on the dest
+   * chain, and it would be charged from the transferred assets. If set
+   * below requirements, the execution may fail and assets wouldn't be
+   * received.
+   *
+   * `fee` is the multiasset to be spent to pay for execution in
+   * destination chain. Both fee and amount will be subtracted form the
+   * callers balance For now we only accept fee and asset having the same
+   * `MultiLocation` id.
+   *
+   * If `fee` is not high enough to cover for the execution costs in the
+   * destination chain, then the assets will be trapped in the
+   * destination chain
+   *
+   * It's a no-op if any error on local XCM execution or message sending.
+   * Note sending assets out per se doesn't guarantee they would be
+   * received. Receiving depends on if the XCM message could be delivered
+   * by the network, and if the receiving chain would handle
+   * messages correctly.
+   **/
+  | {
+      name: 'TransferMultiassetWithFee';
+      params: {
+        asset: XcmVersionedMultiAsset;
+        fee: XcmVersionedMultiAsset;
+        dest: XcmVersionedMultiLocation;
+        destWeightLimit: XcmV3WeightLimit;
+      };
+    }
+  /**
+   * Transfer several currencies specifying the item to be used as fee
+   *
+   * `dest_weight_limit` is the weight for XCM execution on the dest
+   * chain, and it would be charged from the transferred assets. If set
+   * below requirements, the execution may fail and assets wouldn't be
+   * received.
+   *
+   * `fee_item` is index of the currencies tuple that we want to use for
+   * payment
+   *
+   * It's a no-op if any error on local XCM execution or message sending.
+   * Note sending assets out per se doesn't guarantee they would be
+   * received. Receiving depends on if the XCM message could be delivered
+   * by the network, and if the receiving chain would handle
+   * messages correctly.
+   **/
+  | {
+      name: 'TransferMulticurrencies';
+      params: {
+        currencies: Array<[bigint, bigint]>;
+        feeItem: number;
+        dest: XcmVersionedMultiLocation;
+        destWeightLimit: XcmV3WeightLimit;
+      };
+    }
+  /**
+   * Transfer several `MultiAsset` specifying the item to be used as fee
+   *
+   * `dest_weight_limit` is the weight for XCM execution on the dest
+   * chain, and it would be charged from the transferred assets. If set
+   * below requirements, the execution may fail and assets wouldn't be
+   * received.
+   *
+   * `fee_item` is index of the MultiAssets that we want to use for
+   * payment
+   *
+   * It's a no-op if any error on local XCM execution or message sending.
+   * Note sending assets out per se doesn't guarantee they would be
+   * received. Receiving depends on if the XCM message could be delivered
+   * by the network, and if the receiving chain would handle
+   * messages correctly.
+   **/
+  | {
+      name: 'TransferMultiassets';
+      params: {
+        assets: XcmVersionedMultiAssets;
+        feeItem: number;
+        dest: XcmVersionedMultiLocation;
+        destWeightLimit: XcmV3WeightLimit;
+      };
+    };
+
+export type OrmlXtokensModuleCallLike =
   /**
    * Transfer native currencies.
    *
@@ -4256,10 +6403,73 @@ export type PalletEvmCall =
       };
     };
 
+export type PalletEvmCallLike =
+  /**
+   * Withdraw balance from EVM into currency/balances pallet.
+   **/
+  | { name: 'Withdraw'; params: { address: H160; value: bigint } }
+  /**
+   * Issue an EVM call operation. This is similar to a message call transaction in Ethereum.
+   **/
+  | {
+      name: 'Call';
+      params: {
+        source: H160;
+        target: H160;
+        input: BytesLike;
+        value: U256;
+        gasLimit: bigint;
+        maxFeePerGas: U256;
+        maxPriorityFeePerGas?: U256 | undefined;
+        nonce?: U256 | undefined;
+        accessList: Array<[H160, Array<H256>]>;
+      };
+    }
+  /**
+   * Issue an EVM create operation. This is similar to a contract creation transaction in
+   * Ethereum.
+   **/
+  | {
+      name: 'Create';
+      params: {
+        source: H160;
+        init: BytesLike;
+        value: U256;
+        gasLimit: bigint;
+        maxFeePerGas: U256;
+        maxPriorityFeePerGas?: U256 | undefined;
+        nonce?: U256 | undefined;
+        accessList: Array<[H160, Array<H256>]>;
+      };
+    }
+  /**
+   * Issue an EVM create2 operation.
+   **/
+  | {
+      name: 'Create2';
+      params: {
+        source: H160;
+        init: BytesLike;
+        salt: H256;
+        value: U256;
+        gasLimit: bigint;
+        maxFeePerGas: U256;
+        maxPriorityFeePerGas?: U256 | undefined;
+        nonce?: U256 | undefined;
+        accessList: Array<[H160, Array<H256>]>;
+      };
+    };
+
 /**
  * Contains one variant per dispatchable that can be called by an extrinsic.
  **/
 export type PalletEthereumCall =
+  /**
+   * Transact an Ethereum transaction.
+   **/
+  { name: 'Transact'; params: { transaction: EthereumTransactionTransactionV2 } };
+
+export type PalletEthereumCallLike =
   /**
    * Transact an Ethereum transaction.
    **/
@@ -4321,6 +6531,13 @@ export type EthereumTransactionEip1559Transaction = {
  * Contains one variant per dispatchable that can be called by an extrinsic.
  **/
 export type PalletDynamicEvmBaseFeeCall =
+  /**
+   * `root-only` extrinsic to set the `base_fee_per_gas` value manually.
+   * The specified value has to respect min & max limits configured in the runtime.
+   **/
+  { name: 'SetBaseFeePerGas'; params: { fee: U256 } };
+
+export type PalletDynamicEvmBaseFeeCallLike =
   /**
    * `root-only` extrinsic to set the `base_fee_per_gas` value manually.
    * The specified value has to respect min & max limits configured in the runtime.
@@ -4511,6 +6728,191 @@ export type PalletContractsCall =
    **/
   | { name: 'Migrate'; params: { weightLimit: SpWeightsWeightV2Weight } };
 
+export type PalletContractsCallLike =
+  /**
+   * Deprecated version if [`Self::call`] for use in an in-storage `Call`.
+   **/
+  | {
+      name: 'CallOldWeight';
+      params: {
+        dest: MultiAddressLike;
+        value: bigint;
+        gasLimit: bigint;
+        storageDepositLimit?: bigint | undefined;
+        data: BytesLike;
+      };
+    }
+  /**
+   * Deprecated version if [`Self::instantiate_with_code`] for use in an in-storage `Call`.
+   **/
+  | {
+      name: 'InstantiateWithCodeOldWeight';
+      params: {
+        value: bigint;
+        gasLimit: bigint;
+        storageDepositLimit?: bigint | undefined;
+        code: BytesLike;
+        data: BytesLike;
+        salt: BytesLike;
+      };
+    }
+  /**
+   * Deprecated version if [`Self::instantiate`] for use in an in-storage `Call`.
+   **/
+  | {
+      name: 'InstantiateOldWeight';
+      params: {
+        value: bigint;
+        gasLimit: bigint;
+        storageDepositLimit?: bigint | undefined;
+        codeHash: H256;
+        data: BytesLike;
+        salt: BytesLike;
+      };
+    }
+  /**
+   * Upload new `code` without instantiating a contract from it.
+   *
+   * If the code does not already exist a deposit is reserved from the caller
+   * and unreserved only when [`Self::remove_code`] is called. The size of the reserve
+   * depends on the instrumented size of the the supplied `code`.
+   *
+   * If the code already exists in storage it will still return `Ok` and upgrades
+   * the in storage version to the current
+   * [`InstructionWeights::version`](InstructionWeights).
+   *
+   * - `determinism`: If this is set to any other value but [`Determinism::Enforced`] then
+   * the only way to use this code is to delegate call into it from an offchain execution.
+   * Set to [`Determinism::Enforced`] if in doubt.
+   *
+   * # Note
+   *
+   * Anyone can instantiate a contract from any uploaded code and thus prevent its removal.
+   * To avoid this situation a constructor could employ access control so that it can
+   * only be instantiated by permissioned entities. The same is true when uploading
+   * through [`Self::instantiate_with_code`].
+   **/
+  | {
+      name: 'UploadCode';
+      params: {
+        code: BytesLike;
+        storageDepositLimit?: bigint | undefined;
+        determinism: PalletContractsWasmDeterminism;
+      };
+    }
+  /**
+   * Remove the code stored under `code_hash` and refund the deposit to its owner.
+   *
+   * A code can only be removed by its original uploader (its owner) and only if it is
+   * not used by any contract.
+   **/
+  | { name: 'RemoveCode'; params: { codeHash: H256 } }
+  /**
+   * Privileged function that changes the code of an existing contract.
+   *
+   * This takes care of updating refcounts and all other necessary operations. Returns
+   * an error if either the `code_hash` or `dest` do not exist.
+   *
+   * # Note
+   *
+   * This does **not** change the address of the contract in question. This means
+   * that the contract address is no longer derived from its code hash after calling
+   * this dispatchable.
+   **/
+  | { name: 'SetCode'; params: { dest: MultiAddressLike; codeHash: H256 } }
+  /**
+   * Makes a call to an account, optionally transferring some balance.
+   *
+   * # Parameters
+   *
+   * * `dest`: Address of the contract to call.
+   * * `value`: The balance to transfer from the `origin` to `dest`.
+   * * `gas_limit`: The gas limit enforced when executing the constructor.
+   * * `storage_deposit_limit`: The maximum amount of balance that can be charged from the
+   * caller to pay for the storage consumed.
+   * * `data`: The input data to pass to the contract.
+   *
+   * * If the account is a smart-contract account, the associated code will be
+   * executed and any value will be transferred.
+   * * If the account is a regular account, any value will be transferred.
+   * * If no account exists and the call value is not less than `existential_deposit`,
+   * a regular account will be created and any value will be transferred.
+   **/
+  | {
+      name: 'Call';
+      params: {
+        dest: MultiAddressLike;
+        value: bigint;
+        gasLimit: SpWeightsWeightV2Weight;
+        storageDepositLimit?: bigint | undefined;
+        data: BytesLike;
+      };
+    }
+  /**
+   * Instantiates a new contract from the supplied `code` optionally transferring
+   * some balance.
+   *
+   * This dispatchable has the same effect as calling [`Self::upload_code`] +
+   * [`Self::instantiate`]. Bundling them together provides efficiency gains. Please
+   * also check the documentation of [`Self::upload_code`].
+   *
+   * # Parameters
+   *
+   * * `value`: The balance to transfer from the `origin` to the newly created contract.
+   * * `gas_limit`: The gas limit enforced when executing the constructor.
+   * * `storage_deposit_limit`: The maximum amount of balance that can be charged/reserved
+   * from the caller to pay for the storage consumed.
+   * * `code`: The contract code to deploy in raw bytes.
+   * * `data`: The input data to pass to the contract constructor.
+   * * `salt`: Used for the address derivation. See [`Pallet::contract_address`].
+   *
+   * Instantiation is executed as follows:
+   *
+   * - The supplied `code` is instrumented, deployed, and a `code_hash` is created for that
+   * code.
+   * - If the `code_hash` already exists on the chain the underlying `code` will be shared.
+   * - The destination address is computed based on the sender, code_hash and the salt.
+   * - The smart-contract account is created at the computed address.
+   * - The `value` is transferred to the new account.
+   * - The `deploy` function is executed in the context of the newly-created account.
+   **/
+  | {
+      name: 'InstantiateWithCode';
+      params: {
+        value: bigint;
+        gasLimit: SpWeightsWeightV2Weight;
+        storageDepositLimit?: bigint | undefined;
+        code: BytesLike;
+        data: BytesLike;
+        salt: BytesLike;
+      };
+    }
+  /**
+   * Instantiates a contract from a previously deployed wasm binary.
+   *
+   * This function is identical to [`Self::instantiate_with_code`] but without the
+   * code deployment step. Instead, the `code_hash` of an on-chain deployed wasm binary
+   * must be supplied.
+   **/
+  | {
+      name: 'Instantiate';
+      params: {
+        value: bigint;
+        gasLimit: SpWeightsWeightV2Weight;
+        storageDepositLimit?: bigint | undefined;
+        codeHash: H256;
+        data: BytesLike;
+        salt: BytesLike;
+      };
+    }
+  /**
+   * When a migration is in progress, this dispatchable can be used to run migration steps.
+   * Calls that contribute to advancing the migration have their fees waived, as it's helpful
+   * for the chain. Note that while the migration is in progress, the pallet will also
+   * leverage the `on_idle` hooks to run migration steps.
+   **/
+  | { name: 'Migrate'; params: { weightLimit: SpWeightsWeightV2Weight } };
+
 export type PalletContractsWasmDeterminism = 'Enforced' | 'Relaxed';
 
 /**
@@ -4558,6 +6960,48 @@ export type PalletSudoCall =
    **/
   | { name: 'SudoAs'; params: { who: MultiAddress; call: AstarRuntimeRuntimeCall } };
 
+export type PalletSudoCallLike =
+  /**
+   * Authenticates the sudo key and dispatches a function call with `Root` origin.
+   *
+   * The dispatch origin for this call must be _Signed_.
+   *
+   * ## Complexity
+   * - O(1).
+   **/
+  | { name: 'Sudo'; params: { call: AstarRuntimeRuntimeCallLike } }
+  /**
+   * Authenticates the sudo key and dispatches a function call with `Root` origin.
+   * This function does not check the weight of the call, and instead allows the
+   * Sudo user to specify the weight of the call.
+   *
+   * The dispatch origin for this call must be _Signed_.
+   *
+   * ## Complexity
+   * - O(1).
+   **/
+  | { name: 'SudoUncheckedWeight'; params: { call: AstarRuntimeRuntimeCallLike; weight: SpWeightsWeightV2Weight } }
+  /**
+   * Authenticates the current sudo key and sets the given AccountId (`new`) as the new sudo
+   * key.
+   *
+   * The dispatch origin for this call must be _Signed_.
+   *
+   * ## Complexity
+   * - O(1).
+   **/
+  | { name: 'SetKey'; params: { new: MultiAddressLike } }
+  /**
+   * Authenticates the sudo key and dispatches a function call with `Signed` origin from
+   * a given account.
+   *
+   * The dispatch origin for this call must be _Signed_.
+   *
+   * ## Complexity
+   * - O(1).
+   **/
+  | { name: 'SudoAs'; params: { who: MultiAddressLike; call: AstarRuntimeRuntimeCallLike } };
+
 /**
  * Contains one variant per dispatchable that can be called by an extrinsic.
  **/
@@ -4569,10 +7013,29 @@ export type PalletStaticPriceProviderCall =
    **/
   { name: 'ForceSetPrice'; params: { price: FixedU64 } };
 
+export type PalletStaticPriceProviderCallLike =
+  /**
+   * Privileged action used to set the active native currency price.
+   *
+   * This is a temporary solution before oracle is implemented & operational.
+   **/
+  { name: 'ForceSetPrice'; params: { price: FixedU64 } };
+
 /**
  * Contains one variant per dispatchable that can be called by an extrinsic.
  **/
 export type PalletDappStakingMigrationCall =
+  /**
+   * Attempt to execute migration steps, consuming up to the specified amount of weight.
+   * If no weight is specified, max allowed weight is used.
+   *
+   * Regardless of the specified weight limit, it will be clamped between the minimum & maximum allowed values.
+   * This means that even if user specifies `Weight::zero()` as the limit,
+   * the call will be charged & executed using the minimum allowed weight.
+   **/
+  { name: 'Migrate'; params: { weightLimit?: SpWeightsWeightV2Weight | undefined } };
+
+export type PalletDappStakingMigrationCallLike =
   /**
    * Attempt to execute migration steps, consuming up to the specified amount of weight.
    * If no weight is specified, max allowed weight is used.
@@ -4719,6 +7182,147 @@ export type PalletDappsStakingPalletCall =
   | {
       name: 'SetRewardDestinationFor';
       params: { staker: AccountId32; rewardDestination: PalletDappsStakingRewardDestination };
+    }
+  /**
+   * Enable the `decommission` flag for the pallet.
+   *
+   * The dispatch origin must be Root.
+   **/
+  | { name: 'Decommission' };
+
+export type PalletDappsStakingPalletCallLike =
+  /**
+   * Used to register contract for dapps staking.
+   * The origin account used is treated as the `developer` account.
+   *
+   * Depending on the pallet configuration/state it is possible that developer needs to be whitelisted prior to registration.
+   *
+   * As part of this call, `RegisterDeposit` will be reserved from devs account.
+   **/
+  | { name: 'Register'; params: { developer: AccountId32Like; contractId: AstarPrimitivesDappStakingSmartContract } }
+  /**
+   * Unregister existing contract from dapps staking, making it ineligible for rewards from current era onwards.
+   * This must be called by the root (at the moment).
+   *
+   * Deposit is returned to the developer but existing stakers should manually call `withdraw_from_unregistered` if they wish to to unstake.
+   *
+   * **Warning**: After this action ,contract can not be registered for dapps staking again.
+   **/
+  | { name: 'Unregister'; params: { contractId: AstarPrimitivesDappStakingSmartContract } }
+  /**
+   * Withdraw locked funds from a contract that was unregistered.
+   *
+   * Funds don't need to undergo the unbonding period - they are returned immediately to the staker's free balance.
+   **/
+  | { name: 'WithdrawFromUnregistered'; params: { contractId: AstarPrimitivesDappStakingSmartContract } }
+  /**
+   * Lock up and stake balance of the origin account.
+   *
+   * `value` must be more than the `minimum_balance` specified by `MinimumStakingAmount`
+   * unless account already has bonded value equal or more than 'minimum_balance'.
+   *
+   * The dispatch origin for this call must be _Signed_ by the staker's account.
+   **/
+  | { name: 'BondAndStake'; params: { contractId: AstarPrimitivesDappStakingSmartContract; value: bigint } }
+  /**
+   * Start unbonding process and unstake balance from the contract.
+   *
+   * The unstaked amount will no longer be eligible for rewards but still won't be unlocked.
+   * User needs to wait for the unbonding period to finish before being able to withdraw
+   * the funds via `withdraw_unbonded` call.
+   *
+   * In case remaining staked balance on contract is below minimum staking amount,
+   * entire stake for that contract will be unstaked.
+   **/
+  | { name: 'UnbondAndUnstake'; params: { contractId: AstarPrimitivesDappStakingSmartContract; value: bigint } }
+  /**
+   * Withdraw all funds that have completed the unbonding process.
+   *
+   * If there are unbonding chunks which will be fully unbonded in future eras,
+   * they will remain and can be withdrawn later.
+   **/
+  | { name: 'WithdrawUnbonded' }
+  /**
+   * Transfer nomination from one contract to another.
+   *
+   * Same rules as for `bond_and_stake` and `unbond_and_unstake` apply.
+   * Minor difference is that there is no unbonding period so this call won't
+   * check whether max number of unbonding chunks is exceeded.
+   *
+   **/
+  | {
+      name: 'NominationTransfer';
+      params: {
+        originContractId: AstarPrimitivesDappStakingSmartContract;
+        value: bigint;
+        targetContractId: AstarPrimitivesDappStakingSmartContract;
+      };
+    }
+  /**
+   * Claim earned staker rewards for the oldest unclaimed era.
+   * In order to claim multiple eras, this call has to be called multiple times.
+   *
+   * The rewards are always added to the staker's free balance (account) but depending on the reward destination configuration,
+   * they might be immediately re-staked.
+   **/
+  | { name: 'ClaimStaker'; params: { contractId: AstarPrimitivesDappStakingSmartContract } }
+  /**
+   * Claim earned dapp rewards for the specified era.
+   *
+   * Call must ensure that the specified era is eligible for reward payout and that it hasn't already been paid out for the dapp.
+   **/
+  | { name: 'ClaimDapp'; params: { contractId: AstarPrimitivesDappStakingSmartContract; era: number } }
+  /**
+   * Force a new era at the start of the next block.
+   *
+   * The dispatch origin must be Root.
+   **/
+  | { name: 'ForceNewEra' }
+  /**
+   * `true` will disable pallet, enabling maintenance mode. `false` will do the opposite.
+   *
+   * The dispatch origin must be Root.
+   **/
+  | { name: 'MaintenanceMode'; params: { enableMaintenance: boolean } }
+  /**
+   * Used to set reward destination for staker rewards.
+   *
+   * User must be an active staker in order to use this call.
+   * This will apply to all existing unclaimed rewards.
+   **/
+  | { name: 'SetRewardDestination'; params: { rewardDestination: PalletDappsStakingRewardDestination } }
+  /**
+   * Used to force set `ContractEraStake` storage values.
+   * The purpose of this call is only for fixing one of the issues detected with dapps-staking.
+   *
+   * The dispatch origin must be Root.
+   **/
+  | {
+      name: 'SetContractStakeInfo';
+      params: {
+        contract: AstarPrimitivesDappStakingSmartContract;
+        era: number;
+        contractStakeInfo: PalletDappsStakingContractStakeInfo;
+      };
+    }
+  /**
+   * Used to burn unclaimed & stale rewards from an unregistered contract.
+   **/
+  | { name: 'BurnStaleReward'; params: { contractId: AstarPrimitivesDappStakingSmartContract; era: number } }
+  /**
+   * Claim earned staker rewards for the given staker, and the oldest unclaimed era.
+   * In order to claim multiple eras, this call has to be called multiple times.
+   *
+   * This call can only be used during the pallet decommission process.
+   **/
+  | { name: 'ClaimStakerFor'; params: { staker: AccountId32Like; contractId: AstarPrimitivesDappStakingSmartContract } }
+  /**
+   * Used to set reward destination for staker rewards, for the given staker
+   *
+   **/
+  | {
+      name: 'SetRewardDestinationFor';
+      params: { staker: AccountId32Like; rewardDestination: PalletDappsStakingRewardDestination };
     }
   /**
    * Enable the `decommission` flag for the pallet.
