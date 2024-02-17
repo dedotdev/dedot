@@ -225,25 +225,22 @@ export class PortableCodecRegistry {
       outerEnums: { eventEnumTypeId },
     } = this.#registry.metadata!;
 
-    const { path } = this.types[typeId];
-    const fullPath = path.join('::');
-
     if (typeId === eventEnumTypeId) {
       return {
         tagKey: 'pallet',
         valueKey: 'palletEvent',
-      };
-    } else if (fullPath.endsWith('::pallet::Event')) {
-      return {
-        tagKey: 'name',
-        valueKey: 'data',
       };
     } else if (typeId === callTypeId) {
       return {
         tagKey: 'pallet',
         valueKey: 'palletCall',
       };
-    } else if (fullPath.endsWith('::pallet::Call')) {
+    } else if (this.#getPalletEventTypeIds().includes(typeId)) {
+      return {
+        tagKey: 'name',
+        valueKey: 'data',
+      };
+    } else if (this.#getPalletCallTypeIds().includes(typeId)) {
       return {
         tagKey: 'name',
         valueKey: 'params',
@@ -254,5 +251,31 @@ export class PortableCodecRegistry {
       tagKey: 'tag',
       valueKey: 'value',
     };
+  }
+
+  #getPalletCallTypeIds(): number[] {
+    const {
+      extrinsic: { callTypeId },
+    } = this.#registry.metadata!;
+
+    const callType = this.#registry.findPortableType(callTypeId);
+    if (callType.type.tag === 'Enum') {
+      return callType.type.value.members.map((m) => m.fields[0].typeId);
+    }
+
+    return [];
+  }
+
+  #getPalletEventTypeIds(): number[] {
+    const {
+      outerEnums: { eventEnumTypeId },
+    } = this.#registry.metadata!;
+
+    const eventType = this.#registry.findPortableType(eventEnumTypeId);
+    if (eventType.type.tag === 'Enum') {
+      return eventType.type.value.members.map((m) => m.fields[0].typeId);
+    }
+
+    return [];
   }
 }

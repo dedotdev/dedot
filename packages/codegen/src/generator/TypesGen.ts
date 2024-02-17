@@ -72,7 +72,7 @@ export class TypesGen {
     return beautifySourceCode(template({ importTypes, defTypeOut }));
   }
 
-  typeCache: Record<TypeId, string> = {};
+  typeCache: Record<string, string> = {};
 
   clearCache() {
     this.typeCache = {};
@@ -96,12 +96,14 @@ export class TypesGen {
       }
     }
 
-    if (this.typeCache[typeId]) {
-      return this.typeCache[typeId];
+    const typeCacheKey = `${typeId}/${typeOut ? 'typeOut' : 'typeIn'}`;
+
+    if (this.typeCache[typeCacheKey]) {
+      return this.typeCache[typeCacheKey];
     }
 
     const type = this.#generateType(typeId, nestedLevel, typeOut);
-    this.typeCache[typeId] = type;
+    this.typeCache[typeCacheKey] = type;
 
     const baseType = this.#removeGenericPart(type);
     if (BASIC_KNOWN_TYPES.includes(baseType)) {
@@ -169,7 +171,7 @@ export class TypesGen {
         if (members.length === 0) {
           return 'null';
         } else if (members.every((x) => x.fields.length === 0)) {
-          return members.map(({ name, docs }) => `${commentBlock(docs)}'${name}'`).join(' | ');
+          return members.map(({ name, docs }) => `${commentBlock(docs)}'${stringPascalCase(name)}'`).join(' | ');
         } else {
           const membersType: [key: string, value: string | null, docs: string[]][] = [];
           for (const { fields, name, docs } of members) {
