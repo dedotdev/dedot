@@ -4,7 +4,7 @@ import { SignerPayloadJSON } from '@polkadot/types/types';
 
 export class ChargeTransactionPayment extends SignedExtension<bigint> {
   async init(): Promise<void> {
-    this.data = 0n; // leave this as 0 for now as tip
+    this.data = this.payloadOptions.tip || 0n;
   }
 
   toPayload(): Partial<SignerPayloadJSON> {

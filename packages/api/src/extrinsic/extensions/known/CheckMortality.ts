@@ -1,6 +1,6 @@
 import { SignedExtension } from '../SignedExtension';
 import { EraLike, Hash, Header } from '@delightfuldot/codecs';
-import { min } from '@delightfuldot/utils';
+import { assert, isZeroHash, min } from '@delightfuldot/utils';
 import { numberToHex, u8aToHex } from '@polkadot/util';
 import { SignerPayloadJSON } from '@polkadot/types/types';
 
@@ -26,13 +26,15 @@ export class CheckMortality extends SignedExtension<EraLike, Hash> {
       this.api.rpc.chain.getFinalizedHead(),
     ]);
 
+    assert(header, 'Current header not found');
+
     const [currentHeader, finalizedHeader] = await Promise.all([
-      Promise.resolve(header!).then((header) => {
-        // TODO check empty parentHash, zero hash
-        if (header!.parentHash.length === 0) {
+      Promise.resolve(header).then((header) => {
+        const { parentHash } = header;
+        if (parentHash.length === 0 || isZeroHash(parentHash)) {
           return header;
         } else {
-          return this.api.rpc.chain.getHeader(header!.parentHash);
+          return this.api.rpc.chain.getHeader(parentHash);
         }
       }),
       this.api.rpc.chain.getHeader(finalizedHash),
