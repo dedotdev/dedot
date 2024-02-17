@@ -19,7 +19,7 @@ export type StorageData = $.Output<typeof $StorageData>;
 
 registerLooseCodecType({ $StorageKey, $StorageData });
 
-export const $Extrinsic = $.PrefixedHex;
+export const $Extrinsic = $.RawHex;
 export type Extrinsic = $.Input<typeof $Extrinsic>;
 
 export const $Bytes = $.RawHex;
