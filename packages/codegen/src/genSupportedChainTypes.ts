@@ -25,7 +25,7 @@ const NETWORKS: NetworkInfo[] = [
   },
   {
     chain: 'moonbeam',
-    endpoint: 'wss://1rpc.io/glmr',
+    endpoint: 'wss://moonbeam.api.onfinality.io/public-ws',
   },
 ];
 
