@@ -22,6 +22,7 @@ const KNOWN_PATHS: KnownPath[] = [
   'sp_arithmetic::ArithmeticError',
   'sp_runtime::TransactionalError',
   'frame_support::dispatch::DispatchInfo',
+  'frame_system::Phase',
 
   'fp_account::AccountId20',
   'account::AccountId20',

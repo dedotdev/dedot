@@ -1,14 +1,15 @@
-import { ISubmittableResult } from '@delightfuldot/types';
+import { IEventRecord, ISubmittableResult } from '@delightfuldot/types';
 import { DispatchError, DispatchInfo, Hash, TransactionStatus } from '@delightfuldot/codecs';
+import { FrameSystemEventRecord } from '@delightfuldot/chaintypes/substrate';
 
-export interface SubmittableResultInputs<E = any> {
+export interface SubmittableResultInputs<E extends IEventRecord = FrameSystemEventRecord> {
   events?: E[];
   status: TransactionStatus;
   txHash: Hash;
   txIndex?: number;
 }
 
-export class SubmittableResult<E = any> implements ISubmittableResult<E> {
+export class SubmittableResult<E extends IEventRecord = FrameSystemEventRecord> implements ISubmittableResult<E> {
   dispatchInfo?: DispatchInfo;
   dispatchError?: DispatchError;
   events: E[];
@@ -22,19 +23,21 @@ export class SubmittableResult<E = any> implements ISubmittableResult<E> {
     this.txHash = txHash;
     this.txIndex = txIndex;
 
-    const extrinsicSuccessEvent = this.events.find(
-      (e: any) => e.event.pallet === 'System' && e.event.palletEvent.name === 'ExtrinsicSuccess',
-    ) as any;
+    [this.dispatchInfo, this.dispatchError] = this.#extractInfo();
+  }
 
-    if (extrinsicSuccessEvent) {
-      this.dispatchInfo = extrinsicSuccessEvent?.event?.palletEvent?.data.dispatchInfo;
-    } else {
-      const extrinsicFailedEvent = this.events.find(
-        (e: any) => e.event.pallet === 'System' && e.event.palletEvent.name === 'ExtrinsicFailed',
-      ) as any;
-
-      this.dispatchInfo = extrinsicFailedEvent?.event?.palletEvent?.data.dispatchInfo;
-      this.dispatchError = extrinsicFailedEvent?.event?.palletEvent?.data.dispatchError;
+  #extractInfo(): [DispatchInfo | undefined, DispatchError | undefined] {
+    for (const { event } of this.events as FrameSystemEventRecord[]) {
+      const { pallet, palletEvent } = event;
+      if (pallet === 'System' && palletEvent.name === 'ExtrinsicFailed') {
+        const { dispatchInfo, dispatchError } = palletEvent.data;
+        return [dispatchInfo, dispatchError];
+      } else if (pallet === 'System' && palletEvent.name === 'ExtrinsicSuccess') {
+        const { dispatchInfo } = palletEvent.data;
+        return [dispatchInfo, undefined];
+      }
     }
+
+    return [undefined, undefined];
   }
 }

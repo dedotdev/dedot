@@ -6,7 +6,7 @@ import {
   Hash,
   TransactionStatus,
 } from '@delightfuldot/codecs';
-import { Callback, Unsub } from './index';
+import { Callback, IEventRecord, Unsub } from './index';
 import { IKeyringPair, Signer } from '@polkadot/types/types';
 import { HexString } from '@delightfuldot/utils';
 
@@ -26,7 +26,7 @@ export interface SignerOptions extends PayloadOptions {
 
 export type DryRunResult = ApplyExtrinsicResult;
 
-export interface ISubmittableResult<EventRecord = any> {
+export interface ISubmittableResult<EventRecord extends IEventRecord = IEventRecord> {
   dispatchError?: DispatchError;
   dispatchInfo?: DispatchInfo;
   events: EventRecord[];

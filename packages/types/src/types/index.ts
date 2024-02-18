@@ -11,6 +11,7 @@ import { RuntimeCallSpec } from './runtime';
 export * from './rpc';
 export * from './runtime';
 export * from './extrinsic';
+export * from './event';
 
 export type Append<T extends readonly unknown[], V> = [...T, V];
 export type AnyFunc = (...args: any[]) => any;

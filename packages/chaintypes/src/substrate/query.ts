@@ -6,6 +6,7 @@ import type {
   H256,
   Bytes,
   Digest,
+  Phase,
   FixedBytes,
   AccountId32,
   FixedU128,
@@ -20,7 +21,6 @@ import type {
   FrameSupportDispatchPerDispatchClass,
   FrameSystemEventRecord,
   FrameSystemLastRuntimeUpgradeInfo,
-  FrameSystemPhase,
   SpConsensusBabeAppPublic,
   SpConsensusSlotsSlot,
   SpConsensusBabeDigestsNextConfigDescriptor,
@@ -258,7 +258,7 @@ export interface ChainStorage extends GenericChainStorage {
     /**
      * The execution phase of the block.
      **/
-    executionPhase: GenericStorageQuery<() => FrameSystemPhase | undefined>;
+    executionPhase: GenericStorageQuery<() => Phase | undefined>;
 
     /**
      * Generic pallet storage query

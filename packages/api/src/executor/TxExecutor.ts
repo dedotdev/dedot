@@ -194,7 +194,7 @@ export class TxExecutor<ChainApi extends GenericSubstrateApi = SubstrateApi> ext
             if (status.tag === 'InBlock' || status.tag === 'Finalized') {
               const blockHash: BlockHash = status.value;
 
-              const [signedBlock, events] = await Promise.all([
+              const [signedBlock, blockEvents] = await Promise.all([
                 api.rpc.chain.getBlock(blockHash),
                 api.queryAt(blockHash).system.events(),
               ]);
@@ -205,9 +205,11 @@ export class TxExecutor<ChainApi extends GenericSubstrateApi = SubstrateApi> ext
 
               assert(txIndex >= 0, 'Extrinsic not found!');
 
-              const txEvents = events.filter(({ phase }) => phase.tag === 'ApplyExtrinsic' && phase.value === txIndex);
+              const events = blockEvents.filter(
+                ({ phase }) => phase.tag === 'ApplyExtrinsic' && phase.value === txIndex,
+              );
 
-              return callback(new SubmittableResult({ status, txHash, events: txEvents, txIndex }));
+              return callback(new SubmittableResult({ status, txHash, events, txIndex }));
             } else {
               return callback(new SubmittableResult({ status, txHash }));
             }

@@ -6,6 +6,7 @@ import type {
   H256,
   Bytes,
   Digest,
+  Phase,
   FixedU128,
   Perbill,
   AccountId20,
@@ -21,7 +22,6 @@ import type {
   FrameSupportDispatchPerDispatchClass,
   FrameSystemEventRecord,
   FrameSystemLastRuntimeUpgradeInfo,
-  FrameSystemPhase,
   CumulusPalletParachainSystemUnincludedSegmentAncestor,
   CumulusPalletParachainSystemUnincludedSegmentSegmentTracker,
   PolkadotPrimitivesV6PersistedValidationData,
@@ -201,7 +201,7 @@ export interface ChainStorage extends GenericChainStorage {
     /**
      * The execution phase of the block.
      **/
-    executionPhase: GenericStorageQuery<() => FrameSystemPhase | undefined>;
+    executionPhase: GenericStorageQuery<() => Phase | undefined>;
 
     /**
      * Generic pallet storage query
