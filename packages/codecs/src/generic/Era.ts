@@ -53,9 +53,6 @@ export const $Era: $.Shape<EraLike, Era> = $.createShape({
       }
     }
   },
-  subAssert(state: $.AssertState): void {
-    // TODO implementation
-  },
 });
 
 export type MortalInputs = { period: bigint; current: bigint };
