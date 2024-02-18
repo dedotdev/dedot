@@ -1290,7 +1290,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@polkadot/api@npm:10.11.2, @polkadot/api@npm:^10.11.1, @polkadot/api@npm:^10.11.2":
+"@polkadot/api@npm:10.11.2, @polkadot/api@npm:^10.11.2":
   version: 10.11.2
   resolution: "@polkadot/api@npm:10.11.2"
   dependencies:
@@ -1312,24 +1312,6 @@ __metadata:
     rxjs: ^7.8.1
     tslib: ^2.6.2
   checksum: 4bb1c3ab28e7a96ea2c7a10f192ed679aff3c49e713164e69f163df7503686cb9fea7a20ab59b2dd6b85ed51e9c84df3efb346902dfd91b2f2e39aec0bdb351f
-  languageName: node
-  linkType: hard
-
-"@polkadot/extension-inject@npm:^0.46.6":
-  version: 0.46.6
-  resolution: "@polkadot/extension-inject@npm:0.46.6"
-  dependencies:
-    "@polkadot/api": ^10.11.1
-    "@polkadot/rpc-provider": ^10.11.1
-    "@polkadot/types": ^10.11.1
-    "@polkadot/util": ^12.6.1
-    "@polkadot/util-crypto": ^12.6.1
-    "@polkadot/x-global": ^12.6.1
-    tslib: ^2.6.2
-  peerDependencies:
-    "@polkadot/api": "*"
-    "@polkadot/util": "*"
-  checksum: fe1672b429a5356858bb79d6f0b128a5eac247845aae5d3567f4f1e5e852726de12db9be4caa863f5cb7497e9ba6d4d540428eb266647e039dd9e68e7f159c03
   languageName: node
   linkType: hard
 
@@ -1385,7 +1367,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@polkadot/rpc-provider@npm:10.11.2, @polkadot/rpc-provider@npm:^10.11.1, @polkadot/rpc-provider@npm:^10.11.2":
+"@polkadot/rpc-provider@npm:10.11.2, @polkadot/rpc-provider@npm:^10.11.2":
   version: 10.11.2
   resolution: "@polkadot/rpc-provider@npm:10.11.2"
   dependencies:
@@ -1619,7 +1601,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@polkadot/x-global@npm:12.6.2, @polkadot/x-global@npm:^12.6.1, @polkadot/x-global@npm:^12.6.2":
+"@polkadot/x-global@npm:12.6.2, @polkadot/x-global@npm:^12.6.2":
   version: 12.6.2
   resolution: "@polkadot/x-global@npm:12.6.2"
   dependencies:
@@ -3293,7 +3275,6 @@ __metadata:
   dependencies:
     "@delightfuldot/chaintypes": "workspace:*"
     "@polkadot/api": ^10.11.2
-    "@polkadot/extension-inject": ^0.46.6
     "@types/react": ^18.2.43
     "@types/react-dom": ^18.2.17
     "@typescript-eslint/eslint-plugin": ^6.14.0
