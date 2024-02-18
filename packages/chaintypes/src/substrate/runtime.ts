@@ -33,19 +33,14 @@ import type {
   FeeDetails,
   Weight,
   Location,
-  NftCollectionId,
-  NftItemId,
-  ResultPayload,
+  Result,
   Hash,
   MmrError,
   LeafIndex,
+  TupleOfMmrEncodableOpaqueLeafsAndMmrBatchProof,
   BlockNumberLike,
   MmrEncodableOpaqueLeaf,
   MmrBatchProof,
-  SessionStatus,
-  Mixnode,
-  MixnodesErr,
-  MixnetSessionIndex,
   KeyTypeId,
   Text,
 } from '@delightfuldot/codecs';
@@ -530,71 +525,6 @@ export interface RuntimeCalls extends GenericRuntimeCalls {
     [method: string]: GenericRuntimeCall;
   };
   /**
-   * @runtimeapi: NftsApi - 0x899a250cbe84f250
-   * @version: 1
-   **/
-  nftsApi: {
-    /**
-     * Collection owner
-     *
-     * @callname: NftsApi_owner
-     **/
-    owner: GenericRuntimeCall<(collection: NftCollectionId, item: NftItemId) => Promise<Option<AccountId32>>>;
-
-    /**
-     * A collection owner
-     *
-     * @callname: NftsApi_collection_owner
-     **/
-    collectionOwner: GenericRuntimeCall<(collection: NftCollectionId) => Promise<Option<AccountId32>>>;
-
-    /**
-     * An attribute
-     *
-     * @callname: NftsApi_attribute
-     **/
-    attribute: GenericRuntimeCall<
-      (collection: NftCollectionId, item: NftItemId, key: Array<number>) => Promise<Option<Array<number>>>
-    >;
-
-    /**
-     * A custom attribute
-     *
-     * @callname: NftsApi_custom_attribute
-     **/
-    customAttribute: GenericRuntimeCall<
-      (
-        account: AccountId32Like,
-        collection: NftCollectionId,
-        item: NftItemId,
-        key: Array<number>,
-      ) => Promise<Option<Array<number>>>
-    >;
-
-    /**
-     * System attribute
-     *
-     * @callname: NftsApi_system_attribute
-     **/
-    systemAttribute: GenericRuntimeCall<
-      (collection: NftCollectionId, item: NftItemId, key: Array<number>) => Promise<Option<Array<number>>>
-    >;
-
-    /**
-     * A collection attribute
-     *
-     * @callname: NftsApi_collection_attribute
-     **/
-    collectionAttribute: GenericRuntimeCall<
-      (collection: NftCollectionId, key: Array<number>) => Promise<Option<Array<number>>>
-    >;
-
-    /**
-     * Generic runtime call
-     **/
-    [method: string]: GenericRuntimeCall;
-  };
-  /**
    * @runtimeapi: MmrApi - 0x91d5df18b0d2cf58
    * @version: 2
    **/
@@ -604,14 +534,14 @@ export interface RuntimeCalls extends GenericRuntimeCalls {
      *
      * @callname: MmrApi_mmr_root
      **/
-    mmrRoot: GenericRuntimeCall<() => Promise<ResultPayload<Hash, MmrError>>>;
+    mmrRoot: GenericRuntimeCall<() => Promise<Result<Hash, MmrError>>>;
 
     /**
      * Return the number of MMR blocks in the chain.
      *
      * @callname: MmrApi_mmr_leaf_count
      **/
-    mmrLeafCount: GenericRuntimeCall<() => Promise<ResultPayload<LeafIndex, MmrError>>>;
+    mmrLeafCount: GenericRuntimeCall<() => Promise<Result<LeafIndex, MmrError>>>;
 
     /**
      * Generate MMR proof for a series of block numbers. If `best_known_block_number = Some(n)`,
@@ -623,7 +553,7 @@ export interface RuntimeCalls extends GenericRuntimeCalls {
       (
         blockNumbers: Array<BlockNumberLike>,
         bestKnownBlockNumber: Option<BlockNumberLike>,
-      ) => Promise<ResultPayload<[Array<MmrEncodableOpaqueLeaf>, MmrBatchProof], MmrError>>
+      ) => Promise<Result<TupleOfMmrEncodableOpaqueLeafsAndMmrBatchProof, MmrError>>
     >;
 
     /**
@@ -636,7 +566,7 @@ export interface RuntimeCalls extends GenericRuntimeCalls {
      * @callname: MmrApi_verify_proof
      **/
     verifyProof: GenericRuntimeCall<
-      (leaves: Array<MmrEncodableOpaqueLeaf>, proof: MmrBatchProof) => Promise<ResultPayload<Null, MmrError>>
+      (leaves: Array<MmrEncodableOpaqueLeaf>, proof: MmrBatchProof) => Promise<Result<Null, MmrError>>
     >;
 
     /**
@@ -651,49 +581,8 @@ export interface RuntimeCalls extends GenericRuntimeCalls {
      * @callname: MmrApi_verify_proof_stateless
      **/
     verifyProofStateless: GenericRuntimeCall<
-      (
-        root: Hash,
-        leaves: Array<MmrEncodableOpaqueLeaf>,
-        proof: MmrBatchProof,
-      ) => Promise<ResultPayload<Null, MmrError>>
+      (root: Hash, leaves: Array<MmrEncodableOpaqueLeaf>, proof: MmrBatchProof) => Promise<Result<Null, MmrError>>
     >;
-
-    /**
-     * Generic runtime call
-     **/
-    [method: string]: GenericRuntimeCall;
-  };
-  /**
-   * @runtimeapi: MixnetApi - 0x6fd7c327202e4a8d
-   * @version: 1
-   **/
-  mixnetApi: {
-    /**
-     *
-     * @callname: MixnetApi_session_status
-     **/
-    sessionStatus: GenericRuntimeCall<() => Promise<SessionStatus>>;
-
-    /**
-     * Get the mixnode set for the previous session.
-     *
-     * @callname: MixnetApi_prev_mixnodes
-     **/
-    prevMixnodes: GenericRuntimeCall<() => Promise<ResultPayload<Array<Mixnode>, MixnodesErr>>>;
-
-    /**
-     * Get the mixnode set for the current session.
-     *
-     * @callname: MixnetApi_current_mixnodes
-     **/
-    currentMixnodes: GenericRuntimeCall<() => Promise<ResultPayload<Array<Mixnode>, MixnodesErr>>>;
-
-    /**
-     * Try to register a mixnode for the next session.
-     *
-     * @callname: MixnetApi_maybe_register
-     **/
-    maybeRegister: GenericRuntimeCall<(sessionIndex: MixnetSessionIndex, mixnode: Mixnode) => Promise<boolean>>;
 
     /**
      * Generic runtime call
@@ -758,7 +647,7 @@ export interface RuntimeCalls extends GenericRuntimeCalls {
      *
      * @callname: GenesisBuilder_build_config
      **/
-    buildConfig: GenericRuntimeCall<(json: Array<number>) => Promise<ResultPayload<Null, Text>>>;
+    buildConfig: GenericRuntimeCall<(json: Array<number>) => Promise<Result<Null, Text>>>;
 
     /**
      * Generic runtime call

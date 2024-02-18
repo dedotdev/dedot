@@ -407,123 +407,11 @@ export interface ChainErrors extends GenericChainErrors {
      **/
     [error: string]: GenericPalletError;
   };
-  dappsStaking: {
+  inflation: {
     /**
-     * Disabled
+     * Sum of all parts must be one whole (100%).
      **/
-    Disabled: GenericPalletError;
-
-    /**
-     * No change in maintenance mode
-     **/
-    NoMaintenanceModeChange: GenericPalletError;
-
-    /**
-     * Upgrade is too heavy, reduce the weight parameter.
-     **/
-    UpgradeTooHeavy: GenericPalletError;
-
-    /**
-     * Can not stake with zero value.
-     **/
-    StakingWithNoValue: GenericPalletError;
-
-    /**
-     * Can not stake with value less than minimum staking value
-     **/
-    InsufficientValue: GenericPalletError;
-
-    /**
-     * Number of stakers per contract exceeded.
-     **/
-    MaxNumberOfStakersExceeded: GenericPalletError;
-
-    /**
-     * Targets must be operated contracts
-     **/
-    NotOperatedContract: GenericPalletError;
-
-    /**
-     * Contract isn't staked.
-     **/
-    NotStakedContract: GenericPalletError;
-
-    /**
-     * Contract isn't unregistered.
-     **/
-    NotUnregisteredContract: GenericPalletError;
-
-    /**
-     * Unclaimed rewards should be claimed before withdrawing stake.
-     **/
-    UnclaimedRewardsRemaining: GenericPalletError;
-
-    /**
-     * Unstaking a contract with zero value
-     **/
-    UnstakingWithNoValue: GenericPalletError;
-
-    /**
-     * There are no previously unbonded funds that can be unstaked and withdrawn.
-     **/
-    NothingToWithdraw: GenericPalletError;
-
-    /**
-     * The contract is already registered by other account
-     **/
-    AlreadyRegisteredContract: GenericPalletError;
-
-    /**
-     * This account was already used to register contract
-     **/
-    AlreadyUsedDeveloperAccount: GenericPalletError;
-
-    /**
-     * Smart contract not owned by the account id.
-     **/
-    NotOwnedContract: GenericPalletError;
-
-    /**
-     * Report issue on github if this is ever emitted
-     **/
-    UnknownEraReward: GenericPalletError;
-
-    /**
-     * Report issue on github if this is ever emitted
-     **/
-    UnexpectedStakeInfoEra: GenericPalletError;
-
-    /**
-     * Contract has too many unlocking chunks. Withdraw the existing chunks if possible
-     * or wait for current chunks to complete unlocking process to withdraw them.
-     **/
-    TooManyUnlockingChunks: GenericPalletError;
-
-    /**
-     * Contract already claimed in this era and reward is distributed
-     **/
-    AlreadyClaimedInThisEra: GenericPalletError;
-
-    /**
-     * Era parameter is out of bounds
-     **/
-    EraOutOfBounds: GenericPalletError;
-
-    /**
-     * Too many active `EraStake` values for (staker, contract) pairing.
-     * Claim existing rewards to fix this problem.
-     **/
-    TooManyEraStakeValues: GenericPalletError;
-
-    /**
-     * Account is not actively staking
-     **/
-    NotActiveStaker: GenericPalletError;
-
-    /**
-     * Transfering nomination to the same contract
-     **/
-    NominationTransferToSameContract: GenericPalletError;
+    InvalidInflationParameters: GenericPalletError;
 
     /**
      * Decommission is in progress so this call is not allowed.
@@ -540,11 +428,183 @@ export interface ChainErrors extends GenericChainErrors {
      **/
     [error: string]: GenericPalletError;
   };
-  blockReward: {
+  dappStaking: {
     /**
-     * Sum of all rations must be one whole (100%)
+     * Pallet is disabled/in maintenance mode.
      **/
-    InvalidDistributionConfiguration: GenericPalletError;
+    Disabled: GenericPalletError;
+
+    /**
+     * Smart contract already exists within dApp staking protocol.
+     **/
+    ContractAlreadyExists: GenericPalletError;
+
+    /**
+     * Maximum number of smart contracts has been reached.
+     **/
+    ExceededMaxNumberOfContracts: GenericPalletError;
+
+    /**
+     * Not possible to assign a new dApp Id.
+     * This should never happen since current type can support up to 65536 - 1 unique dApps.
+     **/
+    NewDAppIdUnavailable: GenericPalletError;
+
+    /**
+     * Specified smart contract does not exist in dApp staking.
+     **/
+    ContractNotFound: GenericPalletError;
+
+    /**
+     * Call origin is not dApp owner.
+     **/
+    OriginNotOwner: GenericPalletError;
+
+    /**
+     * Performing locking or staking with 0 amount.
+     **/
+    ZeroAmount: GenericPalletError;
+
+    /**
+     * Total locked amount for staker is below minimum threshold.
+     **/
+    LockedAmountBelowThreshold: GenericPalletError;
+
+    /**
+     * Account is not allowed to participate in dApp staking due to some external reason (e.g. account is already a collator).
+     **/
+    AccountNotAvailableForDappStaking: GenericPalletError;
+
+    /**
+     * Cannot add additional unlocking chunks due to capacity limit.
+     **/
+    TooManyUnlockingChunks: GenericPalletError;
+
+    /**
+     * Remaining stake prevents entire balance of starting the unlocking process.
+     **/
+    RemainingStakePreventsFullUnlock: GenericPalletError;
+
+    /**
+     * There are no eligible unlocked chunks to claim. This can happen either if no eligible chunks exist, or if user has no chunks at all.
+     **/
+    NoUnlockedChunksToClaim: GenericPalletError;
+
+    /**
+     * There are no unlocking chunks available to relock.
+     **/
+    NoUnlockingChunks: GenericPalletError;
+
+    /**
+     * The amount being staked is too large compared to what's available for staking.
+     **/
+    UnavailableStakeFunds: GenericPalletError;
+
+    /**
+     * There are unclaimed rewards remaining from past eras or periods. They should be claimed before attempting any stake modification again.
+     **/
+    UnclaimedRewards: GenericPalletError;
+
+    /**
+     * An unexpected error occurred while trying to stake.
+     **/
+    InternalStakeError: GenericPalletError;
+
+    /**
+     * Total staked amount on contract is below the minimum required value.
+     **/
+    InsufficientStakeAmount: GenericPalletError;
+
+    /**
+     * Stake operation is rejected since period ends in the next era.
+     **/
+    PeriodEndsInNextEra: GenericPalletError;
+
+    /**
+     * Unstaking is rejected since the period in which past stake was active has passed.
+     **/
+    UnstakeFromPastPeriod: GenericPalletError;
+
+    /**
+     * Unstake amount is greater than the staked amount.
+     **/
+    UnstakeAmountTooLarge: GenericPalletError;
+
+    /**
+     * Account has no staking information for the contract.
+     **/
+    NoStakingInfo: GenericPalletError;
+
+    /**
+     * An unexpected error occurred while trying to unstake.
+     **/
+    InternalUnstakeError: GenericPalletError;
+
+    /**
+     * Rewards are no longer claimable since they are too old.
+     **/
+    RewardExpired: GenericPalletError;
+
+    /**
+     * Reward payout has failed due to an unexpected reason.
+     **/
+    RewardPayoutFailed: GenericPalletError;
+
+    /**
+     * There are no claimable rewards.
+     **/
+    NoClaimableRewards: GenericPalletError;
+
+    /**
+     * An unexpected error occurred while trying to claim staker rewards.
+     **/
+    InternalClaimStakerError: GenericPalletError;
+
+    /**
+     * Account is has no eligible stake amount for bonus reward.
+     **/
+    NotEligibleForBonusReward: GenericPalletError;
+
+    /**
+     * An unexpected error occurred while trying to claim bonus reward.
+     **/
+    InternalClaimBonusError: GenericPalletError;
+
+    /**
+     * Claim era is invalid - it must be in history, and rewards must exist for it.
+     **/
+    InvalidClaimEra: GenericPalletError;
+
+    /**
+     * No dApp tier info exists for the specified era. This can be because era has expired
+     * or because during the specified era there were no eligible rewards or protocol wasn't active.
+     **/
+    NoDAppTierInfo: GenericPalletError;
+
+    /**
+     * An unexpected error occurred while trying to claim dApp reward.
+     **/
+    InternalClaimDAppError: GenericPalletError;
+
+    /**
+     * Contract is still active, not unregistered.
+     **/
+    ContractStillActive: GenericPalletError;
+
+    /**
+     * There are too many contract stake entries for the account. This can be cleaned up by either unstaking or cleaning expired entries.
+     **/
+    TooManyStakedContracts: GenericPalletError;
+
+    /**
+     * There are no expired entries to cleanup for the account.
+     **/
+    NoExpiredEntries: GenericPalletError;
+
+    /**
+     * Force call is not allowed in production.
+     **/
+    ForceNotAllowed: GenericPalletError;
 
     /**
      * Generic pallet error
@@ -705,6 +765,11 @@ export interface ChainErrors extends GenericChainErrors {
      * Validator ID is not yet registered
      **/
     ValidatorNotRegistered: GenericPalletError;
+
+    /**
+     * Account is now allowed to be a candidate due to an external reason (e.g. it might be participating in dApp staking)
+     **/
+    NotAllowedCandidate: GenericPalletError;
 
     /**
      * Generic pallet error
@@ -1294,6 +1359,150 @@ export interface ChainErrors extends GenericChainErrors {
      * Sender must be the Sudo account
      **/
     RequireSudo: GenericPalletError;
+
+    /**
+     * Generic pallet error
+     **/
+    [error: string]: GenericPalletError;
+  };
+  staticPriceProvider: {
+    /**
+     * Zero is invalid value for the price (hopefully).
+     **/
+    ZeroPrice: GenericPalletError;
+
+    /**
+     * Generic pallet error
+     **/
+    [error: string]: GenericPalletError;
+  };
+  dappsStaking: {
+    /**
+     * Disabled
+     **/
+    Disabled: GenericPalletError;
+
+    /**
+     * No change in maintenance mode
+     **/
+    NoMaintenanceModeChange: GenericPalletError;
+
+    /**
+     * Upgrade is too heavy, reduce the weight parameter.
+     **/
+    UpgradeTooHeavy: GenericPalletError;
+
+    /**
+     * Can not stake with zero value.
+     **/
+    StakingWithNoValue: GenericPalletError;
+
+    /**
+     * Can not stake with value less than minimum staking value
+     **/
+    InsufficientValue: GenericPalletError;
+
+    /**
+     * Number of stakers per contract exceeded.
+     **/
+    MaxNumberOfStakersExceeded: GenericPalletError;
+
+    /**
+     * Targets must be operated contracts
+     **/
+    NotOperatedContract: GenericPalletError;
+
+    /**
+     * Contract isn't staked.
+     **/
+    NotStakedContract: GenericPalletError;
+
+    /**
+     * Contract isn't unregistered.
+     **/
+    NotUnregisteredContract: GenericPalletError;
+
+    /**
+     * Unclaimed rewards should be claimed before withdrawing stake.
+     **/
+    UnclaimedRewardsRemaining: GenericPalletError;
+
+    /**
+     * Unstaking a contract with zero value
+     **/
+    UnstakingWithNoValue: GenericPalletError;
+
+    /**
+     * There are no previously unbonded funds that can be unstaked and withdrawn.
+     **/
+    NothingToWithdraw: GenericPalletError;
+
+    /**
+     * The contract is already registered by other account
+     **/
+    AlreadyRegisteredContract: GenericPalletError;
+
+    /**
+     * This account was already used to register contract
+     **/
+    AlreadyUsedDeveloperAccount: GenericPalletError;
+
+    /**
+     * Smart contract not owned by the account id.
+     **/
+    NotOwnedContract: GenericPalletError;
+
+    /**
+     * Report issue on github if this is ever emitted
+     **/
+    UnknownEraReward: GenericPalletError;
+
+    /**
+     * Report issue on github if this is ever emitted
+     **/
+    UnexpectedStakeInfoEra: GenericPalletError;
+
+    /**
+     * Contract has too many unlocking chunks. Withdraw the existing chunks if possible
+     * or wait for current chunks to complete unlocking process to withdraw them.
+     **/
+    TooManyUnlockingChunks: GenericPalletError;
+
+    /**
+     * Contract already claimed in this era and reward is distributed
+     **/
+    AlreadyClaimedInThisEra: GenericPalletError;
+
+    /**
+     * Era parameter is out of bounds
+     **/
+    EraOutOfBounds: GenericPalletError;
+
+    /**
+     * Too many active `EraStake` values for (staker, contract) pairing.
+     * Claim existing rewards to fix this problem.
+     **/
+    TooManyEraStakeValues: GenericPalletError;
+
+    /**
+     * Account is not actively staking
+     **/
+    NotActiveStaker: GenericPalletError;
+
+    /**
+     * Transfering nomination to the same contract
+     **/
+    NominationTransferToSameContract: GenericPalletError;
+
+    /**
+     * Decommission is in progress so this call is not allowed.
+     **/
+    DecommissionInProgress: GenericPalletError;
+
+    /**
+     * Delegated claim call is not allowed if both the staker & caller are the same accounts.
+     **/
+    ClaimForCallerAccount: GenericPalletError;
 
     /**
      * Generic pallet error

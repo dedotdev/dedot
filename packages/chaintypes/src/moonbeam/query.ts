@@ -23,12 +23,12 @@ import type {
   FrameSystemPhase,
   CumulusPalletParachainSystemUnincludedSegmentAncestor,
   CumulusPalletParachainSystemUnincludedSegmentSegmentTracker,
-  PolkadotPrimitivesV5PersistedValidationData,
-  PolkadotPrimitivesV5UpgradeRestriction,
-  PolkadotPrimitivesV5UpgradeGoAhead,
+  PolkadotPrimitivesV6PersistedValidationData,
+  PolkadotPrimitivesV6UpgradeRestriction,
+  PolkadotPrimitivesV6UpgradeGoAhead,
   SpTrieStorageProof,
   CumulusPalletParachainSystemRelayStateSnapshotMessagingStateSnapshot,
-  PolkadotPrimitivesV5AbridgedHostConfiguration,
+  PolkadotPrimitivesV6AbridgedHostConfiguration,
   CumulusPrimitivesParachainInherentMessageQueueChain,
   PolkadotParachainPrimitivesPrimitivesId,
   PolkadotCorePrimitivesOutboundHrmpMessage,
@@ -71,12 +71,14 @@ import type {
   PalletDemocracyVoteVoting,
   PalletDemocracyVoteThreshold,
   PalletDemocracyMetadataOwner,
+  PalletPreimageOldRequestStatus,
   PalletPreimageRequestStatus,
   PalletConvictionVotingVoteVoting,
   PalletReferendaReferendumInfo,
   MoonbeamRuntimeRuntimeCall,
   PalletCollectiveVotes,
   PalletTreasuryProposal,
+  PalletTreasurySpendStatus,
   PalletCrowdloanRewardsRewardInfo,
   CumulusPalletXcmpQueueInboundChannelDetails,
   CumulusPalletXcmpQueueOutboundChannelDetails,
@@ -84,10 +86,10 @@ import type {
   CumulusPalletDmpQueueConfigData,
   CumulusPalletDmpQueuePageIndexData,
   PalletXcmQueryStatus,
-  StagingXcmVersionedMultiLocation,
+  XcmVersionedMultiLocation,
   PalletXcmVersionMigrationStage,
   PalletXcmRemoteLockedFungibleRecord,
-  StagingXcmVersionedAssetId,
+  XcmVersionedAssetId,
   PalletAssetsAssetDetails,
   PalletAssetsAssetAccount,
   PalletAssetsApproval,
@@ -218,7 +220,7 @@ export interface ChainStorage extends GenericChainStorage {
 
     /**
      * Storage field that keeps track of bandwidth used by the unincluded segment along with the
-     * latest the latest HRMP watermark. Used for limiting the acceptance of new blocks with
+     * latest HRMP watermark. Used for limiting the acceptance of new blocks with
      * respect to relay chain constraints.
      **/
     aggregatedUnincludedSegment: GenericStorageQuery<
@@ -249,7 +251,7 @@ export interface ChainStorage extends GenericChainStorage {
      * This value is expected to be set only once per block and it's never stored
      * in the trie.
      **/
-    validationData: GenericStorageQuery<() => PolkadotPrimitivesV5PersistedValidationData | undefined>;
+    validationData: GenericStorageQuery<() => PolkadotPrimitivesV6PersistedValidationData | undefined>;
 
     /**
      * Were the validation data set to notify the relay chain?
@@ -258,6 +260,8 @@ export interface ChainStorage extends GenericChainStorage {
 
     /**
      * The relay chain block number associated with the last parachain block.
+     *
+     * This is updated in `on_finalize`.
      **/
     lastRelayChainBlockNumber: GenericStorageQuery<() => number>;
 
@@ -270,7 +274,7 @@ export interface ChainStorage extends GenericChainStorage {
      * relay-chain. This value is ephemeral which means it doesn't hit the storage. This value is
      * set after the inherent.
      **/
-    upgradeRestrictionSignal: GenericStorageQuery<() => PolkadotPrimitivesV5UpgradeRestriction | undefined>;
+    upgradeRestrictionSignal: GenericStorageQuery<() => PolkadotPrimitivesV6UpgradeRestriction | undefined>;
 
     /**
      * Optional upgrade go-ahead signal from the relay-chain.
@@ -279,7 +283,7 @@ export interface ChainStorage extends GenericChainStorage {
      * relay-chain. This value is ephemeral which means it doesn't hit the storage. This value is
      * set after the inherent.
      **/
-    upgradeGoAhead: GenericStorageQuery<() => PolkadotPrimitivesV5UpgradeGoAhead | undefined>;
+    upgradeGoAhead: GenericStorageQuery<() => PolkadotPrimitivesV6UpgradeGoAhead | undefined>;
 
     /**
      * The state proof for the last relay parent block.
@@ -312,7 +316,7 @@ export interface ChainStorage extends GenericChainStorage {
      *
      * This data is also absent from the genesis.
      **/
-    hostConfiguration: GenericStorageQuery<() => PolkadotPrimitivesV5AbridgedHostConfiguration | undefined>;
+    hostConfiguration: GenericStorageQuery<() => PolkadotPrimitivesV6AbridgedHostConfiguration | undefined>;
 
     /**
      * The last downward message queue chain head we have observed.
@@ -366,6 +370,11 @@ export interface ChainStorage extends GenericChainStorage {
     pendingUpwardMessages: GenericStorageQuery<() => Array<Bytes>>;
 
     /**
+     * The factor to multiply the base delivery fee by for UMP.
+     **/
+    upwardDeliveryFeeFactor: GenericStorageQuery<() => FixedU128>;
+
+    /**
      * The number of HRMP messages we observed in `on_initialize` and thus used that number for
      * announcing the weight of `on_initialize` and `on_finalize`.
      **/
@@ -402,12 +411,15 @@ export interface ChainStorage extends GenericChainStorage {
   };
   timestamp: {
     /**
-     * Current time for the current block.
+     * The current time for the current block.
      **/
     now: GenericStorageQuery<() => bigint>;
 
     /**
-     * Did the timestamp get updated in this block?
+     * Whether the timestamp has been updated in this block.
+     *
+     * This value is updated to `true` upon successful submission of a timestamp by a node.
+     * It is then checked at the end of each block execution in the `on_finalize` hook.
      **/
     didUpdate: GenericStorageQuery<() => boolean>;
 
@@ -621,12 +633,6 @@ export interface ChainStorage extends GenericChainStorage {
      * Author of current block.
      **/
     author: GenericStorageQuery<() => AccountId20 | undefined>;
-
-    /**
-     * The highest slot that has been seen in the history of this chain.
-     * This is a strictly-increasing value.
-     **/
-    highestSlotSeen: GenericStorageQuery<() => number>;
 
     /**
      * Generic pallet storage query
@@ -954,7 +960,7 @@ export interface ChainStorage extends GenericChainStorage {
 
     /**
      * General information concerning any proposal or referendum.
-     * The `PreimageHash` refers to the preimage of the `Preimages` provider which can be a JSON
+     * The `Hash` refers to the preimage of the `Preimages` provider which can be a JSON
      * dump or IPFS hash of a JSON file.
      *
      * Consider a garbage collection for a metadata of finished referendums to `unrequest` (remove)
@@ -971,7 +977,12 @@ export interface ChainStorage extends GenericChainStorage {
     /**
      * The request status of a given hash.
      **/
-    statusFor: GenericStorageQuery<(arg: H256) => PalletPreimageRequestStatus | undefined>;
+    statusFor: GenericStorageQuery<(arg: H256) => PalletPreimageOldRequestStatus | undefined>;
+
+    /**
+     * The request status of a given hash.
+     **/
+    requestStatusFor: GenericStorageQuery<(arg: H256) => PalletPreimageRequestStatus | undefined>;
     preimageFor: GenericStorageQuery<(arg: [H256, number]) => Bytes | undefined>;
 
     /**
@@ -1024,7 +1035,7 @@ export interface ChainStorage extends GenericChainStorage {
 
     /**
      * The metadata is a general information concerning the referendum.
-     * The `PreimageHash` refers to the preimage of the `Preimages` provider which can be a JSON
+     * The `Hash` refers to the preimage of the `Preimages` provider which can be a JSON
      * dump or IPFS hash of a JSON file.
      *
      * Consider a garbage collection for a metadata of finished referendums to `unrequest` (remove)
@@ -1211,6 +1222,16 @@ export interface ChainStorage extends GenericChainStorage {
     approvals: GenericStorageQuery<() => Array<number>>;
 
     /**
+     * The count of spends that have been made.
+     **/
+    spendCount: GenericStorageQuery<() => number>;
+
+    /**
+     * Spends that have been approved and being processed.
+     **/
+    spends: GenericStorageQuery<(arg: number) => PalletTreasurySpendStatus | undefined>;
+
+    /**
      * Generic pallet storage query
      **/
     [storage: string]: GenericStorageQuery;
@@ -1312,6 +1333,11 @@ export interface ChainStorage extends GenericChainStorage {
     queueSuspended: GenericStorageQuery<() => boolean>;
 
     /**
+     * The factor to multiply the base delivery fee by.
+     **/
+    deliveryFeeFactor: GenericStorageQuery<(arg: PolkadotParachainPrimitivesPrimitivesId) => FixedU128>;
+
+    /**
      * Generic pallet storage query
      **/
     [storage: string]: GenericStorageQuery;
@@ -1375,19 +1401,19 @@ export interface ChainStorage extends GenericChainStorage {
     /**
      * The Latest versions that we know various locations support.
      **/
-    supportedVersion: GenericStorageQuery<(arg: [number, StagingXcmVersionedMultiLocation]) => number | undefined>;
+    supportedVersion: GenericStorageQuery<(arg: [number, XcmVersionedMultiLocation]) => number | undefined>;
 
     /**
      * All locations that we have requested version notifications from.
      **/
-    versionNotifiers: GenericStorageQuery<(arg: [number, StagingXcmVersionedMultiLocation]) => bigint | undefined>;
+    versionNotifiers: GenericStorageQuery<(arg: [number, XcmVersionedMultiLocation]) => bigint | undefined>;
 
     /**
      * The target locations that are subscribed to our version changes, as well as the most recent
      * of our versions we informed them of.
      **/
     versionNotifyTargets: GenericStorageQuery<
-      (arg: [number, StagingXcmVersionedMultiLocation]) => [bigint, SpWeightsWeightV2Weight, number] | undefined
+      (arg: [number, XcmVersionedMultiLocation]) => [bigint, SpWeightsWeightV2Weight, number] | undefined
     >;
 
     /**
@@ -1395,7 +1421,7 @@ export interface ChainStorage extends GenericChainStorage {
      * the `u32` counter is the number of times that a send to the destination has been attempted,
      * which is used as a prioritization.
      **/
-    versionDiscoveryQueue: GenericStorageQuery<() => Array<[StagingXcmVersionedMultiLocation, number]>>;
+    versionDiscoveryQueue: GenericStorageQuery<() => Array<[XcmVersionedMultiLocation, number]>>;
 
     /**
      * The current migration's stage, if any.
@@ -1406,14 +1432,14 @@ export interface ChainStorage extends GenericChainStorage {
      * Fungible assets which we know are locked on a remote chain.
      **/
     remoteLockedFungibles: GenericStorageQuery<
-      (arg: [number, AccountId20Like, StagingXcmVersionedAssetId]) => PalletXcmRemoteLockedFungibleRecord | undefined
+      (arg: [number, AccountId20Like, XcmVersionedAssetId]) => PalletXcmRemoteLockedFungibleRecord | undefined
     >;
 
     /**
      * Fungible assets which we know are locked on this chain.
      **/
     lockedFungibles: GenericStorageQuery<
-      (arg: AccountId20Like) => Array<[bigint, StagingXcmVersionedMultiLocation]> | undefined
+      (arg: AccountId20Like) => Array<[bigint, XcmVersionedMultiLocation]> | undefined
     >;
 
     /**

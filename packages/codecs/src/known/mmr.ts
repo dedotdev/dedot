@@ -34,7 +34,7 @@ export const $MmrError = $.FlatEnum([
   // Error during proof generation.
   'GenerateProof,',
   // Proof verification error.
-  'Verify,',
+  'Verify',
   // Leaf not found in the storage.
   'LeafNotFound,',
   // Mmr Pallet not included in runtime
@@ -73,3 +73,10 @@ export type MmrBatchProof = $.Input<typeof $MmrBatchProof>;
 export const $MmrEncodableOpaqueLeaf = $.PrefixedHex;
 
 export type MmrEncodableOpaqueLeaf = $.Input<typeof $MmrEncodableOpaqueLeaf>;
+
+//TODO: Handle nested tuple or wrapper types
+export const $TupleOfMmrEncodableOpaqueLeafsAndMmrBatchProof = $.Tuple($.Vec($MmrEncodableOpaqueLeaf), $MmrBatchProof);
+
+export type TupleOfMmrEncodableOpaqueLeafsAndMmrBatchProof = $.Input<
+  typeof $TupleOfMmrEncodableOpaqueLeafsAndMmrBatchProof
+>;

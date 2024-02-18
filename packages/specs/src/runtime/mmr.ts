@@ -10,12 +10,12 @@ export const mmr: RuntimeApisModule = {
         mmrRoot: {
           docs: 'Return the on-chain MMR root hash.',
           params: [],
-          type: 'ResultPayload<Hash, MmrError>',
+          type: 'Result<Hash, MmrError>',
         },
         mmrLeafCount: {
           docs: 'Return the number of MMR blocks in the chain.',
           params: [],
-          type: 'ResultPayload<LeafIndex, MmrError>',
+          type: 'Result<LeafIndex, MmrError>',
         },
         generateProof: {
           docs: [
@@ -32,7 +32,7 @@ export const mmr: RuntimeApisModule = {
               type: 'Option<BlockNumber>',
             },
           ],
-          type: 'ResultPayload<[Array<MmrEncodableOpaqueLeaf>, MmrBatchProof], MmrError>',
+          type: 'Result<TupleOfMmrEncodableOpaqueLeafsAndMmrBatchProof, MmrError>',
         },
         verifyProof: {
           docs: [
@@ -52,7 +52,7 @@ export const mmr: RuntimeApisModule = {
               type: 'MmrBatchProof',
             },
           ],
-          type: 'ResultPayload<Null, MmrError>',
+          type: 'Result<Null, MmrError>',
         },
         verifyProofStateless: {
           docs: [
@@ -78,7 +78,7 @@ export const mmr: RuntimeApisModule = {
               type: 'MmrBatchProof',
             },
           ],
-          type: 'ResultPayload<Null, MmrError>',
+          type: 'Result<Null, MmrError>',
         },
       },
       version: 2,

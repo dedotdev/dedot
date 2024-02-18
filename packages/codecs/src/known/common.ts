@@ -19,7 +19,7 @@ export type StorageData = $.Output<typeof $StorageData>;
 
 registerLooseCodecType({ $StorageKey, $StorageData });
 
-export const $Extrinsic = $.PrefixedHex;
+export const $Extrinsic = $.RawHex;
 export type Extrinsic = $.Input<typeof $Extrinsic>;
 
 export const $Bytes = $.RawHex;
@@ -41,7 +41,7 @@ export type FixedArray<T, N extends number> = N extends 0
 // typeIn for $.Option codec
 export type Option<T> = T | undefined;
 
-export type ResultPayload<Ok, Err> = $.ResultPayload<Ok, Err>;
+export type Result<Ok, Err> = $.Result<Ok, Err>;
 
 export type u8 = number;
 export type u16 = number;

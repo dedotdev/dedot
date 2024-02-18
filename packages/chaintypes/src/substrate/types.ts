@@ -4,7 +4,7 @@ import type {
   H256,
   DispatchError,
   AccountId32,
-  ResultPayload,
+  Result,
   Perbill,
   FixedBytes,
   FixedU128,
@@ -203,7 +203,7 @@ export type PalletUtilityEvent =
   /**
    * A call was dispatched.
    **/
-  | { name: 'DispatchedAs'; data: { result: ResultPayload<[], DispatchError> } };
+  | { name: 'DispatchedAs'; data: { result: Result<[], DispatchError> } };
 
 /**
  * The `Event` enum of this pallet
@@ -678,11 +678,11 @@ export type PalletCollectiveEvent =
   /**
    * A motion was executed; result will be `Ok` if it returned without error.
    **/
-  | { name: 'Executed'; data: { proposalHash: H256; result: ResultPayload<[], DispatchError> } }
+  | { name: 'Executed'; data: { proposalHash: H256; result: Result<[], DispatchError> } }
   /**
    * A single member did some action; result will be `Ok` if it returned without error.
    **/
-  | { name: 'MemberExecuted'; data: { proposalHash: H256; result: ResultPayload<[], DispatchError> } }
+  | { name: 'MemberExecuted'; data: { proposalHash: H256; result: Result<[], DispatchError> } }
   /**
    * A proposal was closed because its threshold was reached or after its duration was up.
    **/
@@ -1011,7 +1011,7 @@ export type PalletSudoEvent =
         /**
          * The result of the call made by the sudo user.
          **/
-        sudoResult: ResultPayload<[], DispatchError>;
+        sudoResult: Result<[], DispatchError>;
       };
     }
   /**
@@ -1044,7 +1044,7 @@ export type PalletSudoEvent =
         /**
          * The result of the call made by the sudo user.
          **/
-        sudoResult: ResultPayload<[], DispatchError>;
+        sudoResult: Result<[], DispatchError>;
       };
     };
 
@@ -1273,7 +1273,7 @@ export type PalletSchedulerEvent =
    **/
   | {
       name: 'Dispatched';
-      data: { task: [number, number]; id?: FixedBytes<32> | undefined; result: ResultPayload<[], DispatchError> };
+      data: { task: [number, number]; id?: FixedBytes<32> | undefined; result: Result<[], DispatchError> };
     }
   /**
    * The call for the provided hash was not found so the task has been aborted.
@@ -1353,7 +1353,7 @@ export type PalletProxyEvent =
   /**
    * A proxy was executed correctly, with the given.
    **/
-  | { name: 'ProxyExecuted'; data: { result: ResultPayload<[], DispatchError> } }
+  | { name: 'ProxyExecuted'; data: { result: Result<[], DispatchError> } }
   /**
    * A pure account has been created by new proxy with given
    * disambiguation index and proxy type.
@@ -1418,7 +1418,7 @@ export type PalletMultisigEvent =
         timepoint: PalletMultisigTimepoint;
         multisig: AccountId32;
         callHash: FixedBytes<32>;
-        result: ResultPayload<[], DispatchError>;
+        result: Result<[], DispatchError>;
       };
     }
   /**
@@ -5742,7 +5742,7 @@ export type PalletWhitelistEvent =
       name: 'WhitelistedCallDispatched';
       data: {
         callHash: H256;
-        result: ResultPayload<FrameSupportDispatchPostDispatchInfo, SpRuntimeDispatchErrorWithPostInfo>;
+        result: Result<FrameSupportDispatchPostDispatchInfo, SpRuntimeDispatchErrorWithPostInfo>;
       };
     };
 
@@ -6431,7 +6431,7 @@ export type PalletFastUnstakeEvent =
   /**
    * A staker was unstaked.
    **/
-  | { name: 'Unstaked'; data: { stash: AccountId32; result: ResultPayload<[], DispatchError> } }
+  | { name: 'Unstaked'; data: { stash: AccountId32; result: Result<[], DispatchError> } }
   /**
    * A staker was slashed for requesting fast-unstake whilst being exposed.
    **/
