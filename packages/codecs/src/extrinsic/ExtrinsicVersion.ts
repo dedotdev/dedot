@@ -1,12 +1,11 @@
 import * as $ from '@delightfuldot/shape';
+import { assert } from '@delightfuldot/utils';
 
 export const EXTRINSIC_FORMAT_VERSION = 4;
 
 // Only support V4 for now!
 const verifyExtrinsicVersion = (actualVersion: number) => {
-  if (actualVersion !== EXTRINSIC_FORMAT_VERSION) {
-    throw new Error(`Unsupported extrinsic format version, found: ${actualVersion}`);
-  }
+  assert(actualVersion === EXTRINSIC_FORMAT_VERSION, `Unsupported extrinsic format version, found: ${actualVersion}`);
 };
 
 export type ExtrinsicVersion = {
@@ -36,8 +35,5 @@ export const $ExtrinsicVersion: $.Shape<ExtrinsicVersion> = $.createShape({
 
     // https://github.com/paritytech/polkadot-sdk/blob/943697fa693a4da6ef481ef93df522accb7d0583/substrate/primitives/runtime/src/generic/unchecked_extrinsic.rs#L300-L308
     buffer.array[buffer.index++] = (+signed << 7) | version;
-  },
-  subAssert(state: $.AssertState): void {
-    // TODO to implement
   },
 });

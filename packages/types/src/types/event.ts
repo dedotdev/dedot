@@ -6,7 +6,7 @@ export interface IRuntimeEvent {
     | string
     | {
         name: string;
-        data?: object;
+        data?: any;
       };
 }
 

@@ -75,6 +75,8 @@ export class TxGen extends ApiGen {
     }
 
     const importTypes = this.typesGen.typeImports.toImports();
+
+    // TODO make explicit separate type for Extra
     const defTypes = `
     type ChainSubmittableExtrinsic<T extends IRuntimeTxCall = ${callTypeIn}> = 
         Extrinsic<${addressTypeIn}, T, ${signatureTypeIn}, any[]> &
