@@ -52,8 +52,8 @@ export class CodecRegistry {
     if (metadata) this.setMetadata(metadata);
   }
 
-  findCodec(name: string): $.AnyShape {
-    return this.#findKnownCodec(name);
+  findCodec<I = unknown, O = I>(name: string): $.Shape<I, O> {
+    return this.#findKnownCodec<I, O>(name);
   }
 
   findCodecType(name: string): CodecType {
@@ -82,7 +82,7 @@ export class CodecRegistry {
     };
   }
 
-  #findKnownCodec(typeName: string): $.AnyShape {
+  #findKnownCodec<I = unknown, O = I>(typeName: string): $.Shape<I, O> {
     // @ts-ignore
     const $codec = this.#findKnownWrapperCodec(typeName) || Codecs[normalizeCodecName(typeName)] || $[typeName];
 
@@ -93,11 +93,11 @@ export class CodecRegistry {
     // This only works with top-level $.deferred codecs
     // We should make it work for nested $.deferred codecs as well
     if ($codec.metadata && $codec.metadata[0].name === '$.deferred') {
-      const getShape = $codec.metadata[0].args![0] as (...args: any[]) => $.AnyShape;
+      const getShape = $codec.metadata[0].args![0] as (...args: any[]) => $.Shape<I, O>;
       return $.deferred(() => getShape(this));
     }
 
-    return $codec as $.AnyShape;
+    return $codec;
   }
 
   #findKnownWrapperCodec(typeName: string): $.AnyShape | undefined {
@@ -120,8 +120,8 @@ export class CodecRegistry {
     return KNOWN_PATHS.some((one) => joinedPath.match(one));
   }
 
-  findPortableCodec(typeId: TypeId): $.AnyShape {
-    return this.#portableCodecRegistry!.findCodec(typeId);
+  findPortableCodec<I = unknown, O = I>(typeId: TypeId): $.Shape<I, O> {
+    return this.#portableCodecRegistry!.findCodec<I, O>(typeId);
   }
 
   findPortableType(typeId: TypeId): PortableType {

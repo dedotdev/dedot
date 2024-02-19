@@ -42,7 +42,7 @@ export class PortableCodecRegistry {
     return type;
   }
 
-  findCodec(typeId: TypeId): $.AnyShape {
+  findCodec<I = unknown, O = I>(typeId: TypeId): $.Shape<I, O> {
     const typeDef = this.findType(typeId);
     if (typeDef && typeDef.path.length > 0) {
       try {
@@ -58,7 +58,7 @@ export class PortableCodecRegistry {
     }
 
     if (this.#cache.has(typeId)) {
-      return this.#cache.get(typeId)!;
+      return this.#cache.get(typeId)! as $.Shape<I, O>;
     }
 
     // A placeholder codec for typeId so if this typeId is used in the `#createCodec`
@@ -71,7 +71,7 @@ export class PortableCodecRegistry {
     const $codec = this.#createCodec(typeId);
     this.#cache.set(typeId, $codec);
 
-    return $codec;
+    return $codec as $.Shape<I, O>;
   }
 
   // Create codec for a portable type from its type definition
