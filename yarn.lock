@@ -1315,7 +1315,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@polkadot/keyring@npm:^12.5.1, @polkadot/keyring@npm:^12.6.2":
+"@polkadot/keyring@npm:^12.6.2":
   version: 12.6.2
   resolution: "@polkadot/keyring@npm:12.6.2"
   dependencies:
@@ -3441,7 +3441,7 @@ __metadata:
     "@delightfuldot/shape": "workspace:*"
     "@delightfuldot/specs": "workspace:*"
     "@delightfuldot/utils": "workspace:*"
-    "@polkadot/keyring": ^12.5.1
+    "@polkadot/keyring": ^12.6.2
     "@polkadot/rpc-provider": ^10.11.2
     "@polkadot/types": ^10.11.2
     "@polkadot/util": ^12.6.2
