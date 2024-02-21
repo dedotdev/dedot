@@ -327,7 +327,7 @@ export class TypesGen {
 
         o[id] = {
           name: `${name}${suffix}`,
-          nameOut: nameOut || `${name}${suffix}`,
+          nameOut: nameOut ? `${nameOut}${suffix}` : `${name}${suffix}`,
           knownType,
           skip: skipIds.includes(id),
           ...type,

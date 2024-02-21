@@ -90,7 +90,7 @@ export class PortableCodecRegistry {
       const { fields } = value;
 
       if (fields.length === 0) {
-        return $.Null;
+        return $.Struct({});
       } else if (fields[0].name === undefined) {
         if (fields.length === 1) {
           return this.findCodec(fields[0]!.typeId);
@@ -112,7 +112,7 @@ export class PortableCodecRegistry {
       const { fields } = value;
 
       if (fields.length === 0) {
-        return $.Null;
+        return $.Tuple();
       } else if (fields.length === 1) {
         // wrapper
         return this.findCodec(fields[0]!);
@@ -145,7 +145,7 @@ export class PortableCodecRegistry {
       }
 
       if (members.length === 0) {
-        return $.never as any;
+        return $.Null;
       } else if (members.every((x) => x.fields.length === 0)) {
         const enumMembers: Record<number, string> = {};
         for (const { index, name } of members) {

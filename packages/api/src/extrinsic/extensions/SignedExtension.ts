@@ -23,7 +23,7 @@ interface SignedExtensionOptions {
   payloadOptions?: Partial<PayloadOptions>;
 }
 
-export abstract class SignedExtension<Data extends any = null, AdditionalSigned extends any = null>
+export abstract class SignedExtension<Data extends any = {}, AdditionalSigned extends any = []>
   implements ISignedExtension
 {
   data: Data;
@@ -33,8 +33,8 @@ export abstract class SignedExtension<Data extends any = null, AdditionalSigned 
     public api: DelightfulApi,
     public options?: SignedExtensionOptions,
   ) {
-    this.data = null as unknown as Data;
-    this.additionalSigned = null as unknown as AdditionalSigned;
+    this.data = {} as unknown as Data;
+    this.additionalSigned = [] as unknown as AdditionalSigned;
   }
 
   async init() {
