@@ -21,17 +21,28 @@ import { ExtraSignedExtension, SubmittableResult } from '../extrinsic';
 import { SignOptions } from '@polkadot/keyring/types';
 import { blake2AsHex, blake2AsU8a } from '@polkadot/util-crypto';
 
-export function isKeyringPair(account: string | IKeyringPair): account is IKeyringPair {
+export function isKeyringPair(account: AddressOrPair): account is IKeyringPair {
   return isFunction((account as IKeyringPair).sign);
 }
 
-export function sign(signerPair: IKeyringPair, raw: HexString, options?: SignOptions): Uint8Array {
+/**
+ * Sign a raw message
+ * @param signerPair
+ * @param raw
+ * @param options
+ */
+export function signRaw(signerPair: IKeyringPair, raw: HexString, options?: SignOptions): Uint8Array {
   const u8a = hexToU8a(raw);
-  const encoded = u8a.length > 256 ? blake2AsU8a(u8a, 256) : u8a;
+  // Ref: https://github.com/paritytech/polkadot-sdk/blob/943697fa693a4da6ef481ef93df522accb7d0583/substrate/primitives/runtime/src/generic/unchecked_extrinsic.rs#L234-L238
+  const toSignRaw = u8a.length > 256 ? blake2AsU8a(u8a, 256) : u8a;
 
-  return signerPair.sign(encoded, options);
+  return signerPair.sign(toSignRaw, options);
 }
 
+/**
+ * @name TxExecutor
+ * @description Execute a transaction instruction, returns a submittable extrinsic
+ */
 export class TxExecutor<ChainApi extends GenericSubstrateApi = SubstrateApi> extends Executor<ChainApi> {
   execute(pallet: string, functionName: string) {
     const targetPallet = this.getPallet(pallet);
@@ -84,7 +95,6 @@ export class TxExecutor<ChainApi extends GenericSubstrateApi = SubstrateApi> ext
   createExtrinsic(call: IRuntimeTxCall) {
     const api = this.api as unknown as DelightfulApi<SubstrateApi>;
 
-    // TODO implements ISubmittableExtrinsic
     class SubmittableExtrinsic extends Extrinsic implements ISubmittableExtrinsic {
       async sign(fromAccount: AddressOrPair, options?: Partial<SignerOptions>) {
         const address = isKeyringPair(fromAccount) ? fromAccount.address : fromAccount.toString();
@@ -100,7 +110,7 @@ export class TxExecutor<ChainApi extends GenericSubstrateApi = SubstrateApi> ext
         let signature;
         if (isKeyringPair(fromAccount)) {
           signature = u8aToHex(
-            sign(fromAccount, extra.toRawPayload(this.callRaw).data as HexString, { withType: true }),
+            signRaw(fromAccount, extra.toRawPayload(this.callRaw).data as HexString, { withType: true }),
           );
         } else if (signer?.signPayload) {
           const result = await signer.signPayload(extra.toPayload(this.callRaw));
@@ -109,7 +119,7 @@ export class TxExecutor<ChainApi extends GenericSubstrateApi = SubstrateApi> ext
           const result = await signer.signRaw(extra.toRawPayload(this.callRaw));
           signature = result.signature;
         } else {
-          throw new Error('Cannot sign');
+          throw new Error('Signer not found. Cannot sign the extrinsic!');
         }
 
         const { signatureTypeId } = this.registry.metadata!.extrinsic;

@@ -1,5 +1,5 @@
 import { ISignedExtension, SignedExtension } from './SignedExtension';
-import { ensurePresence, HexString } from '@delightfuldot/utils';
+import { assert, ensurePresence, HexString } from '@delightfuldot/utils';
 import * as $ from '@delightfuldot/shape';
 import knownSignedExtensions from './known';
 import { SignerPayloadJSON, SignerPayloadRaw } from '@polkadot/types/types';
@@ -47,13 +47,15 @@ export class ExtraSignedExtension extends SignedExtension<any[], any[]> {
   }
 
   #getSignedExtensions() {
-    return this.#signedExtensionDefs.map(
-      (extDef) =>
-        new knownSignedExtensions[extDef.ident as keyof typeof knownSignedExtensions](this.api, {
-          ...ensurePresence(this.options),
-          def: extDef,
-        }),
-    );
+    return this.#signedExtensionDefs.map((extDef) => {
+      const Extension = knownSignedExtensions[extDef.ident as keyof typeof knownSignedExtensions];
+      assert(Extension, `SignedExtension for ${extDef.ident} not found`);
+
+      return new Extension(this.api, {
+        ...ensurePresence(this.options),
+        def: extDef,
+      });
+    });
   }
 
   toPayload(call: HexString = '0x'): SignerPayloadJSON {

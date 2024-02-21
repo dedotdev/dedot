@@ -15,6 +15,7 @@ export type AddressOrPair = IKeyringPair | string; // | AccountId32Like | MultiA
 export interface PayloadOptions {
   nonce?: number;
   tip?: bigint;
+  assetId?: number | object; // TODO support generic types
 
   // TODO support customize mortality
   // blockHash?: Uint8Array | HexString;

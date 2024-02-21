@@ -8,6 +8,7 @@ import { CheckNonce } from './CheckNonce';
 import { CheckWeight } from './CheckWeight';
 import { ChargeTransactionPayment } from './ChargeTransactionPayment';
 import { PrevalidateAttests } from './PrevalidateAttests';
+import { ChargeAssetTxPayment } from './ChargeAssetTxPayment';
 
 // TODO Supports more known extensions
 const knownSignedExtensions: Record<string, new (...args: any[]) => ISignedExtension> = {
@@ -20,6 +21,7 @@ const knownSignedExtensions: Record<string, new (...args: any[]) => ISignedExten
   CheckWeight,
   ChargeTransactionPayment,
   PrevalidateAttests,
+  ChargeAssetTxPayment,
 };
 
 export default knownSignedExtensions;
