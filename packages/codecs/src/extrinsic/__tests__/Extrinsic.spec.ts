@@ -47,13 +47,13 @@ describe('Extrinsic', () => {
       '0xd99ffe3e610ad234e1414bda5831395a6df9098bf80b01561ce89a5065ae89d5c10e1619c6c99131b0bea4fb73ef04d07c07770e2ae9df5c325c331769ccb300',
     );
     expect(ex.signature?.extra).toEqual([
-      null,
-      null,
-      null,
-      null,
+      {},
+      {},
+      {},
+      {},
       { tag: 'Mortal', value: { period: 1024n, phase: 186n } }, // mortality
       68, // nonce
-      null,
+      {},
       30000000000n, // tip
     ]);
 
@@ -95,13 +95,13 @@ describe('Extrinsic', () => {
                 '0xd99ffe3e610ad234e1414bda5831395a6df9098bf80b01561ce89a5065ae89d5c10e1619c6c99131b0bea4fb73ef04d07c07770e2ae9df5c325c331769ccb300',
             },
             extra: [
-              null,
-              null,
-              null,
-              null,
+              {},
+              {},
+              {},
+              {},
               { tag: 'Mortal', value: { period: 1024n, phase: 186n } }, // mortality
               68, // nonce
-              null,
+              {},
               30000000000n, // tip
             ],
           },
