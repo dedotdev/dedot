@@ -1,4 +1,3 @@
-import knownSignedExtensions from './known';
-export { knownSignedExtensions };
-
-export { ExtraSignedExtension } from './ExtraSignedExtension';
+export * from './SignedExtension';
+export * from './known';
+export * from './ExtraSignedExtension';

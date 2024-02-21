@@ -491,4 +491,8 @@ export default class DelightfulApi<ChainApi extends GenericSubstrateApi = Substr
   get runtimeChain() {
     return ensurePresence(this.#runtimeChain);
   }
+
+  get options() {
+    return this.#options;
+  }
 }

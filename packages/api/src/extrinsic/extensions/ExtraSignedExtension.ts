@@ -1,7 +1,7 @@
 import { ISignedExtension, SignedExtension } from './SignedExtension';
 import { assert, ensurePresence, HexString } from '@delightfuldot/utils';
 import * as $ from '@delightfuldot/shape';
-import knownSignedExtensions from './known';
+import { knownSignedExtensions } from './known';
 import { SignerPayloadJSON, SignerPayloadRaw } from '@polkadot/types/types';
 import { objectSpread, u8aToHex } from '@polkadot/util';
 
@@ -48,7 +48,12 @@ export class ExtraSignedExtension extends SignedExtension<any[], any[]> {
 
   #getSignedExtensions() {
     return this.#signedExtensionDefs.map((extDef) => {
-      const Extension = knownSignedExtensions[extDef.ident as keyof typeof knownSignedExtensions];
+      const { signedExtensions: userSignedExtensions = {} } = this.api.options;
+
+      const Extension =
+        userSignedExtensions[extDef.ident as keyof typeof knownSignedExtensions] ||
+        knownSignedExtensions[extDef.ident as keyof typeof knownSignedExtensions];
+
       assert(Extension, `SignedExtension for ${extDef.ident} not found`);
 
       return new Extension(this.api, {

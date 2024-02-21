@@ -20,6 +20,8 @@ export interface PayloadOptions {
   // TODO support customize mortality
   // blockHash?: Uint8Array | HexString;
   // era?: HexString
+
+  [prop: string]: any;
 }
 export interface SignerOptions extends PayloadOptions {
   signer?: Signer;

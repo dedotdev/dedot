@@ -10,8 +10,9 @@ import { ChargeTransactionPayment } from './ChargeTransactionPayment';
 import { PrevalidateAttests } from './PrevalidateAttests';
 import { ChargeAssetTxPayment } from './ChargeAssetTxPayment';
 
-// TODO Supports more known extensions
-const knownSignedExtensions: Record<string, new (...args: any[]) => ISignedExtension> = {
+export type AnySignedExtension = new (...args: any[]) => ISignedExtension;
+
+export const knownSignedExtensions: Record<string, AnySignedExtension> = {
   CheckNonZeroSender,
   CheckSpecVersion,
   CheckTxVersion,
@@ -23,5 +24,3 @@ const knownSignedExtensions: Record<string, new (...args: any[]) => ISignedExten
   PrevalidateAttests,
   ChargeAssetTxPayment,
 };
-
-export default knownSignedExtensions;
