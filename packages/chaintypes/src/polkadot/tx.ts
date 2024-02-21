@@ -18,6 +18,7 @@ import type {
   Perbill,
   EthereumAddressLike,
   Data,
+  FixedU128,
 } from '@delightfuldot/codecs';
 import type {
   PolkadotRuntimeRuntimeCallLike,
@@ -36,6 +37,8 @@ import type {
   SpConsensusGrandpaEquivocationProof,
   PalletImOnlineHeartbeat,
   PalletImOnlineSr25519AppSr25519Signature,
+  PolkadotRuntimeCommonImplsVersionedLocatableAsset,
+  XcmVersionedMultiLocation,
   PalletConvictionVotingVoteAccountVote,
   PalletConvictionVotingConviction,
   PolkadotRuntimeOriginCaller,
@@ -45,7 +48,7 @@ import type {
   PolkadotRuntimeCommonClaimsEcdsaSignature,
   PolkadotRuntimeCommonClaimsStatementKind,
   PalletVestingVestingInfo,
-  PalletIdentityIdentityInfo,
+  PalletIdentitySimpleIdentityInfo,
   PalletIdentityBitFlags,
   PalletIdentityJudgement,
   PolkadotRuntimeProxyType,
@@ -62,24 +65,24 @@ import type {
   PalletNominationPoolsConfigOp004,
   PalletNominationPoolsClaimPermission,
   PalletNominationPoolsCommissionChangeRate,
-  PolkadotPrimitivesVstagingAsyncBackingParams,
-  PolkadotPrimitivesV5ExecutorParams,
-  PolkadotPrimitivesV5InherentData,
+  PolkadotPrimitivesV6AsyncBackingAsyncBackingParams,
+  PolkadotPrimitivesV6ExecutorParams,
+  PolkadotPrimitivesV6InherentData,
   PolkadotParachainPrimitivesPrimitivesId,
   PolkadotParachainPrimitivesPrimitivesValidationCode,
   PolkadotParachainPrimitivesPrimitivesHeadData,
   PolkadotParachainPrimitivesPrimitivesValidationCodeHash,
-  PolkadotPrimitivesV5PvfCheckStatement,
-  PolkadotPrimitivesV5ValidatorAppSignature,
+  PolkadotPrimitivesV6PvfCheckStatement,
+  PolkadotPrimitivesV6ValidatorAppSignature,
   PolkadotParachainPrimitivesPrimitivesHrmpChannelId,
-  PolkadotPrimitivesV5SlashingDisputeProof,
+  PolkadotPrimitivesV6SlashingDisputeProof,
   SpRuntimeMultiSigner,
-  XcmVersionedMultiLocation,
   XcmVersionedXcm,
   XcmVersionedMultiAssets,
   StagingXcmV3MultilocationMultiLocation,
   XcmV3WeightLimit,
   PolkadotRuntimeParachainsInclusionAggregateMessageOrigin,
+  SpConsensusBeefyEquivocationProof,
 } from './types';
 
 type ChainSubmittableExtrinsic<T extends IRuntimeTxCall = PolkadotRuntimeRuntimeCallLike> = Extrinsic<
@@ -441,6 +444,21 @@ export interface ChainTx extends GenericChainTx {
     >;
 
     /**
+     * See [`Pallet::ensure_updated`].
+     *
+     * @param hashes
+     **/
+    ensureUpdated: GenericTxCall<
+      (hashes: Array<H256>) => ChainSubmittableExtrinsic<{
+        pallet: 'Preimage';
+        palletCall: {
+          name: 'EnsureUpdated';
+          params: { hashes: Array<H256> };
+        };
+      }>
+    >;
+
+    /**
      * Generic pallet tx call
      **/
     [callName: string]: GenericTxCall<(...args: any[]) => ChainSubmittableExtrinsic>;
@@ -637,27 +655,6 @@ export interface ChainTx extends GenericChainTx {
     >;
 
     /**
-     * See [`Pallet::set_balance_deprecated`].
-     *
-     * @param who
-     * @param newFree
-     * @param oldReserved
-     **/
-    setBalanceDeprecated: GenericTxCall<
-      (
-        who: MultiAddressLike,
-        newFree: bigint,
-        oldReserved: bigint,
-      ) => ChainSubmittableExtrinsic<{
-        pallet: 'Balances';
-        palletCall: {
-          name: 'SetBalanceDeprecated';
-          params: { who: MultiAddressLike; newFree: bigint; oldReserved: bigint };
-        };
-      }>
-    >;
-
-    /**
      * See [`Pallet::force_transfer`].
      *
      * @param source
@@ -746,25 +743,6 @@ export interface ChainTx extends GenericChainTx {
         palletCall: {
           name: 'UpgradeAccounts';
           params: { who: Array<AccountId32Like> };
-        };
-      }>
-    >;
-
-    /**
-     * See [`Pallet::transfer`].
-     *
-     * @param dest
-     * @param value
-     **/
-    transfer: GenericTxCall<
-      (
-        dest: MultiAddressLike,
-        value: bigint,
-      ) => ChainSubmittableExtrinsic<{
-        pallet: 'Balances';
-        palletCall: {
-          name: 'Transfer';
-          params: { dest: MultiAddressLike; value: bigint };
         };
       }>
     >;
@@ -1395,19 +1373,19 @@ export interface ChainTx extends GenericChainTx {
     >;
 
     /**
-     * See [`Pallet::spend`].
+     * See [`Pallet::spend_local`].
      *
      * @param amount
      * @param beneficiary
      **/
-    spend: GenericTxCall<
+    spendLocal: GenericTxCall<
       (
         amount: bigint,
         beneficiary: MultiAddressLike,
       ) => ChainSubmittableExtrinsic<{
         pallet: 'Treasury';
         palletCall: {
-          name: 'Spend';
+          name: 'SpendLocal';
           params: { amount: bigint; beneficiary: MultiAddressLike };
         };
       }>
@@ -1424,6 +1402,79 @@ export interface ChainTx extends GenericChainTx {
         palletCall: {
           name: 'RemoveApproval';
           params: { proposalId: number };
+        };
+      }>
+    >;
+
+    /**
+     * See [`Pallet::spend`].
+     *
+     * @param assetKind
+     * @param amount
+     * @param beneficiary
+     * @param validFrom
+     **/
+    spend: GenericTxCall<
+      (
+        assetKind: PolkadotRuntimeCommonImplsVersionedLocatableAsset,
+        amount: bigint,
+        beneficiary: XcmVersionedMultiLocation,
+        validFrom: number | undefined,
+      ) => ChainSubmittableExtrinsic<{
+        pallet: 'Treasury';
+        palletCall: {
+          name: 'Spend';
+          params: {
+            assetKind: PolkadotRuntimeCommonImplsVersionedLocatableAsset;
+            amount: bigint;
+            beneficiary: XcmVersionedMultiLocation;
+            validFrom: number | undefined;
+          };
+        };
+      }>
+    >;
+
+    /**
+     * See [`Pallet::payout`].
+     *
+     * @param index
+     **/
+    payout: GenericTxCall<
+      (index: number) => ChainSubmittableExtrinsic<{
+        pallet: 'Treasury';
+        palletCall: {
+          name: 'Payout';
+          params: { index: number };
+        };
+      }>
+    >;
+
+    /**
+     * See [`Pallet::check_status`].
+     *
+     * @param index
+     **/
+    checkStatus: GenericTxCall<
+      (index: number) => ChainSubmittableExtrinsic<{
+        pallet: 'Treasury';
+        palletCall: {
+          name: 'CheckStatus';
+          params: { index: number };
+        };
+      }>
+    >;
+
+    /**
+     * See [`Pallet::void_spend`].
+     *
+     * @param index
+     **/
+    voidSpend: GenericTxCall<
+      (index: number) => ChainSubmittableExtrinsic<{
+        pallet: 'Treasury';
+        palletCall: {
+          name: 'VoidSpend';
+          params: { index: number };
         };
       }>
     >;
@@ -2124,11 +2175,11 @@ export interface ChainTx extends GenericChainTx {
      * @param info
      **/
     setIdentity: GenericTxCall<
-      (info: PalletIdentityIdentityInfo) => ChainSubmittableExtrinsic<{
+      (info: PalletIdentitySimpleIdentityInfo) => ChainSubmittableExtrinsic<{
         pallet: 'Identity';
         palletCall: {
           name: 'SetIdentity';
-          params: { info: PalletIdentityIdentityInfo };
+          params: { info: PalletIdentitySimpleIdentityInfo };
         };
       }>
     >;
@@ -3567,6 +3618,21 @@ export interface ChainTx extends GenericChainTx {
     >;
 
     /**
+     * See [`Pallet::adjust_pool_deposit`].
+     *
+     * @param poolId
+     **/
+    adjustPoolDeposit: GenericTxCall<
+      (poolId: number) => ChainSubmittableExtrinsic<{
+        pallet: 'NominationPools';
+        palletCall: {
+          name: 'AdjustPoolDeposit';
+          params: { poolId: number };
+        };
+      }>
+    >;
+
+    /**
      * Generic pallet tx call
      **/
     [callName: string]: GenericTxCall<(...args: any[]) => ChainSubmittableExtrinsic>;
@@ -4180,11 +4246,11 @@ export interface ChainTx extends GenericChainTx {
      * @param new_
      **/
     setAsyncBackingParams: GenericTxCall<
-      (new_: PolkadotPrimitivesVstagingAsyncBackingParams) => ChainSubmittableExtrinsic<{
+      (new_: PolkadotPrimitivesV6AsyncBackingAsyncBackingParams) => ChainSubmittableExtrinsic<{
         pallet: 'Configuration';
         palletCall: {
           name: 'SetAsyncBackingParams';
-          params: { new: PolkadotPrimitivesVstagingAsyncBackingParams };
+          params: { new: PolkadotPrimitivesV6AsyncBackingAsyncBackingParams };
         };
       }>
     >;
@@ -4195,11 +4261,11 @@ export interface ChainTx extends GenericChainTx {
      * @param new_
      **/
     setExecutorParams: GenericTxCall<
-      (new_: PolkadotPrimitivesV5ExecutorParams) => ChainSubmittableExtrinsic<{
+      (new_: PolkadotPrimitivesV6ExecutorParams) => ChainSubmittableExtrinsic<{
         pallet: 'Configuration';
         palletCall: {
           name: 'SetExecutorParams';
-          params: { new: PolkadotPrimitivesV5ExecutorParams };
+          params: { new: PolkadotPrimitivesV6ExecutorParams };
         };
       }>
     >;
@@ -4318,11 +4384,11 @@ export interface ChainTx extends GenericChainTx {
      * @param data
      **/
     enter: GenericTxCall<
-      (data: PolkadotPrimitivesV5InherentData) => ChainSubmittableExtrinsic<{
+      (data: PolkadotPrimitivesV6InherentData) => ChainSubmittableExtrinsic<{
         pallet: 'ParaInherent';
         palletCall: {
           name: 'Enter';
-          params: { data: PolkadotPrimitivesV5InherentData };
+          params: { data: PolkadotPrimitivesV6InherentData };
         };
       }>
     >;
@@ -4477,13 +4543,13 @@ export interface ChainTx extends GenericChainTx {
      **/
     includePvfCheckStatement: GenericTxCall<
       (
-        stmt: PolkadotPrimitivesV5PvfCheckStatement,
-        signature: PolkadotPrimitivesV5ValidatorAppSignature,
+        stmt: PolkadotPrimitivesV6PvfCheckStatement,
+        signature: PolkadotPrimitivesV6ValidatorAppSignature,
       ) => ChainSubmittableExtrinsic<{
         pallet: 'Paras';
         palletCall: {
           name: 'IncludePvfCheckStatement';
-          params: { stmt: PolkadotPrimitivesV5PvfCheckStatement; signature: PolkadotPrimitivesV5ValidatorAppSignature };
+          params: { stmt: PolkadotPrimitivesV6PvfCheckStatement; signature: PolkadotPrimitivesV6ValidatorAppSignature };
         };
       }>
     >;
@@ -4593,19 +4659,19 @@ export interface ChainTx extends GenericChainTx {
      * See [`Pallet::force_clean_hrmp`].
      *
      * @param para
-     * @param inbound
-     * @param outbound
+     * @param numInbound
+     * @param numOutbound
      **/
     forceCleanHrmp: GenericTxCall<
       (
         para: PolkadotParachainPrimitivesPrimitivesId,
-        inbound: number,
-        outbound: number,
+        numInbound: number,
+        numOutbound: number,
       ) => ChainSubmittableExtrinsic<{
         pallet: 'Hrmp';
         palletCall: {
           name: 'ForceCleanHrmp';
-          params: { para: PolkadotParachainPrimitivesPrimitivesId; inbound: number; outbound: number };
+          params: { para: PolkadotParachainPrimitivesPrimitivesId; numInbound: number; numOutbound: number };
         };
       }>
     >;
@@ -4688,6 +4754,50 @@ export interface ChainTx extends GenericChainTx {
     >;
 
     /**
+     * See [`Pallet::establish_system_channel`].
+     *
+     * @param sender
+     * @param recipient
+     **/
+    establishSystemChannel: GenericTxCall<
+      (
+        sender: PolkadotParachainPrimitivesPrimitivesId,
+        recipient: PolkadotParachainPrimitivesPrimitivesId,
+      ) => ChainSubmittableExtrinsic<{
+        pallet: 'Hrmp';
+        palletCall: {
+          name: 'EstablishSystemChannel';
+          params: {
+            sender: PolkadotParachainPrimitivesPrimitivesId;
+            recipient: PolkadotParachainPrimitivesPrimitivesId;
+          };
+        };
+      }>
+    >;
+
+    /**
+     * See [`Pallet::poke_channel_deposits`].
+     *
+     * @param sender
+     * @param recipient
+     **/
+    pokeChannelDeposits: GenericTxCall<
+      (
+        sender: PolkadotParachainPrimitivesPrimitivesId,
+        recipient: PolkadotParachainPrimitivesPrimitivesId,
+      ) => ChainSubmittableExtrinsic<{
+        pallet: 'Hrmp';
+        palletCall: {
+          name: 'PokeChannelDeposits';
+          params: {
+            sender: PolkadotParachainPrimitivesPrimitivesId;
+            recipient: PolkadotParachainPrimitivesPrimitivesId;
+          };
+        };
+      }>
+    >;
+
+    /**
      * Generic pallet tx call
      **/
     [callName: string]: GenericTxCall<(...args: any[]) => ChainSubmittableExtrinsic>;
@@ -4718,13 +4828,13 @@ export interface ChainTx extends GenericChainTx {
      **/
     reportDisputeLostUnsigned: GenericTxCall<
       (
-        disputeProof: PolkadotPrimitivesV5SlashingDisputeProof,
+        disputeProof: PolkadotPrimitivesV6SlashingDisputeProof,
         keyOwnerProof: SpSessionMembershipProof,
       ) => ChainSubmittableExtrinsic<{
         pallet: 'ParasSlashing';
         palletCall: {
           name: 'ReportDisputeLostUnsigned';
-          params: { disputeProof: PolkadotPrimitivesV5SlashingDisputeProof; keyOwnerProof: SpSessionMembershipProof };
+          params: { disputeProof: PolkadotPrimitivesV6SlashingDisputeProof; keyOwnerProof: SpSessionMembershipProof };
         };
       }>
     >;
@@ -5539,6 +5649,124 @@ export interface ChainTx extends GenericChainTx {
             index: number;
             weightLimit: SpWeightsWeightV2Weight;
           };
+        };
+      }>
+    >;
+
+    /**
+     * Generic pallet tx call
+     **/
+    [callName: string]: GenericTxCall<(...args: any[]) => ChainSubmittableExtrinsic>;
+  };
+  assetRate: {
+    /**
+     * See [`Pallet::create`].
+     *
+     * @param assetKind
+     * @param rate
+     **/
+    create: GenericTxCall<
+      (
+        assetKind: PolkadotRuntimeCommonImplsVersionedLocatableAsset,
+        rate: FixedU128,
+      ) => ChainSubmittableExtrinsic<{
+        pallet: 'AssetRate';
+        palletCall: {
+          name: 'Create';
+          params: { assetKind: PolkadotRuntimeCommonImplsVersionedLocatableAsset; rate: FixedU128 };
+        };
+      }>
+    >;
+
+    /**
+     * See [`Pallet::update`].
+     *
+     * @param assetKind
+     * @param rate
+     **/
+    update: GenericTxCall<
+      (
+        assetKind: PolkadotRuntimeCommonImplsVersionedLocatableAsset,
+        rate: FixedU128,
+      ) => ChainSubmittableExtrinsic<{
+        pallet: 'AssetRate';
+        palletCall: {
+          name: 'Update';
+          params: { assetKind: PolkadotRuntimeCommonImplsVersionedLocatableAsset; rate: FixedU128 };
+        };
+      }>
+    >;
+
+    /**
+     * See [`Pallet::remove`].
+     *
+     * @param assetKind
+     **/
+    remove: GenericTxCall<
+      (assetKind: PolkadotRuntimeCommonImplsVersionedLocatableAsset) => ChainSubmittableExtrinsic<{
+        pallet: 'AssetRate';
+        palletCall: {
+          name: 'Remove';
+          params: { assetKind: PolkadotRuntimeCommonImplsVersionedLocatableAsset };
+        };
+      }>
+    >;
+
+    /**
+     * Generic pallet tx call
+     **/
+    [callName: string]: GenericTxCall<(...args: any[]) => ChainSubmittableExtrinsic>;
+  };
+  beefy: {
+    /**
+     * See [`Pallet::report_equivocation`].
+     *
+     * @param equivocationProof
+     * @param keyOwnerProof
+     **/
+    reportEquivocation: GenericTxCall<
+      (
+        equivocationProof: SpConsensusBeefyEquivocationProof,
+        keyOwnerProof: SpSessionMembershipProof,
+      ) => ChainSubmittableExtrinsic<{
+        pallet: 'Beefy';
+        palletCall: {
+          name: 'ReportEquivocation';
+          params: { equivocationProof: SpConsensusBeefyEquivocationProof; keyOwnerProof: SpSessionMembershipProof };
+        };
+      }>
+    >;
+
+    /**
+     * See [`Pallet::report_equivocation_unsigned`].
+     *
+     * @param equivocationProof
+     * @param keyOwnerProof
+     **/
+    reportEquivocationUnsigned: GenericTxCall<
+      (
+        equivocationProof: SpConsensusBeefyEquivocationProof,
+        keyOwnerProof: SpSessionMembershipProof,
+      ) => ChainSubmittableExtrinsic<{
+        pallet: 'Beefy';
+        palletCall: {
+          name: 'ReportEquivocationUnsigned';
+          params: { equivocationProof: SpConsensusBeefyEquivocationProof; keyOwnerProof: SpSessionMembershipProof };
+        };
+      }>
+    >;
+
+    /**
+     * See [`Pallet::set_new_genesis`].
+     *
+     * @param delayInBlocks
+     **/
+    setNewGenesis: GenericTxCall<
+      (delayInBlocks: number) => ChainSubmittableExtrinsic<{
+        pallet: 'Beefy';
+        palletCall: {
+          name: 'SetNewGenesis';
+          params: { delayInBlocks: number };
         };
       }>
     >;
