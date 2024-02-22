@@ -28,6 +28,7 @@ import { hexAddPrefix, u8aToHex } from '@polkadot/util';
 
 export const KEEP_ALIVE_INTERVAL = 10_000; // in ms
 export const CATCH_ALL_METADATA_KEY: MetadataKey = `RAW_META/ALL`;
+export const SUPPORTED_METADATA_VERSIONS = [15, 14];
 
 /**
  * @name DelightfulApi
@@ -136,7 +137,7 @@ export default class DelightfulApi<ChainApi extends GenericSubstrateApi = Substr
       this.rpc.state.getRuntimeVersion(),
       this.rpc.system.chain(),
       this.rpc.system.properties(),
-      (await this.#shouldLoadPreloadMetadata()) ? this.rpc.state.getMetadata() : Promise.resolve(undefined),
+      (await this.#shouldLoadPreloadMetadata()) ? this.#fetchMetadata() : Promise.resolve(undefined),
     ]);
 
     this.#genesisHash = genesisHash;
@@ -185,27 +186,29 @@ export default class DelightfulApi<ChainApi extends GenericSubstrateApi = Substr
       }
     }
 
-    if (this.#localCache && this.#options.cacheMetadata) {
-      if (!metadata) {
-        try {
-          const cachedRawMetadata = await this.#localCache.getItem(metadataKey);
-          if (cachedRawMetadata) {
-            metadata = $Metadata.tryDecode(cachedRawMetadata);
-          }
-        } catch (e) {
-          console.error('Cannot decode raw metadata, try fetching fresh metadata from chain.', e);
-        } finally {
-          if (!metadata) {
-            metadata = await this.rpc.state.getMetadata();
-
-            shouldUpdateCache = true;
+    try {
+      if (this.#localCache && this.#options.cacheMetadata) {
+        if (!metadata) {
+          try {
+            const cachedRawMetadata = await this.#localCache.getItem(metadataKey);
+            if (cachedRawMetadata) {
+              metadata = $Metadata.tryDecode(cachedRawMetadata);
+            }
+          } catch (e) {
+            console.error('Cannot decode raw metadata, try fetching fresh metadata from chain.', e);
           }
         }
       }
+    } finally {
+      if (!metadata) {
+        metadata = await this.#fetchMetadata();
 
-      if (shouldUpdateCache) {
-        await this.#localCache.setItem(metadataKey, u8aToHex($Metadata.tryEncode(metadata)));
+        if (this.#options.cacheMetadata) shouldUpdateCache = true;
       }
+    }
+
+    if (shouldUpdateCache && this.#localCache) {
+      await this.#localCache.setItem(metadataKey, u8aToHex($Metadata.tryEncode(metadata)));
     }
 
     if (!metadata) {
@@ -213,6 +216,26 @@ export default class DelightfulApi<ChainApi extends GenericSubstrateApi = Substr
     }
 
     this.setMetadata(metadata);
+  }
+
+  async #fetchMetadata(): Promise<Metadata> {
+    // It makes sense to call metadata.metadataVersions to fetch the list of supported metadata versions first
+    // But for now, this approach could potentially help save/reduce one rpc call to the server in case the node support v15
+    // Question: Why not having a `metadata.metadataLatest` to fetch the latest version?
+    for (const version of SUPPORTED_METADATA_VERSIONS) {
+      try {
+        const rawMetadata = await this.call.metadata.metadataAtVersion(version);
+        if (!rawMetadata) continue;
+
+        return $Metadata.tryDecode(rawMetadata);
+      } catch {}
+    }
+
+    try {
+      return $Metadata.tryDecode(await this.call.metadata.metadata());
+    } catch {
+      return await this.rpc.state.getMetadata();
+    }
   }
 
   #subscribeRuntimeUpgrades() {
@@ -225,7 +248,7 @@ export default class DelightfulApi<ChainApi extends GenericSubstrateApi = Substr
       .subscribeRuntimeVersion(async (runtimeVersion: RuntimeVersion) => {
         if (runtimeVersion.specVersion !== this.#runtimeVersion?.specVersion) {
           this.#runtimeVersion = runtimeVersion;
-          const newMetadata = await this.rpc.state.getMetadata();
+          const newMetadata = await this.#fetchMetadata();
           await this.#setupMetadata(newMetadata);
         }
       })
@@ -476,28 +499,28 @@ export default class DelightfulApi<ChainApi extends GenericSubstrateApi = Substr
    * @description Genesis hash of connected blockchain node
    */
   get genesisHash() {
-    return ensurePresence(this.#genesisHash);
+    return this.#genesisHash;
   }
 
   /**
    * @description Runtime version of connected blockchain node
    */
   get runtimeVersion() {
-    return ensurePresence(this.#runtimeVersion);
+    return this.#runtimeVersion;
   }
 
   /**
    * @description Chain properties of connected blockchain node
    */
   get chainProperties() {
-    return ensurePresence(this.#chainProperties);
+    return this.#chainProperties;
   }
 
   /**
    * @description Runtime chain name of connected blockchain node
    */
   get runtimeChain() {
-    return ensurePresence(this.#runtimeChain);
+    return this.#runtimeChain;
   }
 
   get options() {

@@ -9,15 +9,20 @@ import { assert, calculateRuntimeApiHash, stringSnakeCase } from '@delightfuldot
 import { stringPascalCase, u8aConcat, u8aToHex } from '@polkadot/util';
 import { findRuntimeCallSpec } from '@delightfuldot/specs';
 
+export const FallbackRuntimeApis = [
+  ['0x37e397fc7c91f5e4', 2], // Metadata Api v2
+];
+
 export class RuntimeApiExecutor<ChainApi extends GenericSubstrateApi = GenericSubstrateApi> extends Executor<ChainApi> {
   execute(runtimeApi: string, method: string): GenericRuntimeApiMethod {
     runtimeApi = stringPascalCase(runtimeApi);
     const targetRuntimeApiHash = calculateRuntimeApiHash(runtimeApi);
-    const targetRuntimeApiVersion = this.api.runtimeVersion.apis
+    const runtimeApiVersions = this.api.runtimeVersion?.apis || FallbackRuntimeApis;
+    const targetRuntimeApiVersion = runtimeApiVersions
       .find(([supportedRuntimeApiHash]) => targetRuntimeApiHash === supportedRuntimeApiHash)
-      ?.at(1) as number;
+      ?.at(1) as number | undefined;
 
-    assert(targetRuntimeApiVersion, `Connected chain does not support runtime API: ${runtimeApi}`);
+    assert(typeof targetRuntimeApiVersion === 'number', `Connected chain does not support runtime API: ${runtimeApi}`);
 
     const callName = `${runtimeApi}_${stringSnakeCase(method)}`;
     const callSpec = findRuntimeCallSpec(callName, targetRuntimeApiVersion);
