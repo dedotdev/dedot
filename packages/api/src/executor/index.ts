@@ -5,3 +5,4 @@ export * from './StorageQueryExecutor';
 export * from './ErrorExecutor';
 export * from './EventExecutor';
 export * from './RuntimeCallExecutor';
+export * from './TxExecutor';

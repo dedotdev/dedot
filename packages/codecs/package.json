@@ -15,7 +15,8 @@
     "@delightfuldot/shape": "workspace:*",
     "@delightfuldot/utils": "workspace:*",
     "@polkadot/util": "^12.6.2",
-    "@polkadot/util-crypto": "^12.6.2"
+    "@polkadot/util-crypto": "^12.6.2",
+    "lodash.clonedeep": "^4.5.0"
   },
   "scripts": {
     "build": "tsc --project tsconfig.build.json && tsc --project tsconfig.build.cjs.json",

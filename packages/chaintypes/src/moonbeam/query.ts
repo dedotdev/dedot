@@ -6,11 +6,13 @@ import type {
   H256,
   Bytes,
   Digest,
+  Phase,
   FixedU128,
   Perbill,
   AccountId20,
   Percent,
   Data,
+  BytesLike,
   FixedBytes,
   H160,
   U256,
@@ -20,7 +22,6 @@ import type {
   FrameSupportDispatchPerDispatchClass,
   FrameSystemEventRecord,
   FrameSystemLastRuntimeUpgradeInfo,
-  FrameSystemPhase,
   CumulusPalletParachainSystemUnincludedSegmentAncestor,
   CumulusPalletParachainSystemUnincludedSegmentSegmentTracker,
   PolkadotPrimitivesV6PersistedValidationData,
@@ -200,7 +201,7 @@ export interface ChainStorage extends GenericChainStorage {
     /**
      * The execution phase of the block.
      **/
-    executionPhase: GenericStorageQuery<() => FrameSystemPhase | undefined>;
+    executionPhase: GenericStorageQuery<() => Phase | undefined>;
 
     /**
      * Generic pallet storage query
@@ -793,7 +794,7 @@ export interface ChainStorage extends GenericChainStorage {
      * MigrationState tracks the progress of a migration.
      * Maps name (Vec<u8>) -> whether or not migration has been completed (bool)
      **/
-    migrationState: GenericStorageQuery<(arg: Bytes) => boolean>;
+    migrationState: GenericStorageQuery<(arg: BytesLike) => boolean>;
 
     /**
      * Temporary value that is set to true at the beginning of the block during which the execution

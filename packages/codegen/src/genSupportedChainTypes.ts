@@ -24,7 +24,19 @@ const NETWORKS: NetworkInfo[] = [
   },
   {
     chain: 'moonbeam',
-    endpoint: 'wss://1rpc.io/glmr',
+    endpoint: 'wss://moonbeam.api.onfinality.io/public-ws',
+  },
+  {
+    chain: 'polkadotAssetHub',
+    endpoint: 'wss://polkadot-asset-hub-rpc.polkadot.io/',
+  },
+  {
+    chain: 'kusamaAssetHub',
+    endpoint: 'wss://kusama-asset-hub-rpc.polkadot.io/',
+  },
+  {
+    chain: 'rococoAssetHub',
+    endpoint: 'wss://rococo-asset-hub-rpc.polkadot.io/',
   },
 ];
 

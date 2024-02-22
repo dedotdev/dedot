@@ -1,15 +1,16 @@
 import { HttpProvider, WsProvider } from '@polkadot/rpc-provider';
 import { ProviderInterface } from '@polkadot/rpc-provider/types';
 import type { SubstrateApi } from '@delightfuldot/chaintypes';
-import { $Metadata, CodecRegistry, Hash, Metadata, MetadataLatest, RuntimeVersion } from '@delightfuldot/codecs';
+import { $Metadata, BlockHash, CodecRegistry, Hash, Metadata, MetadataLatest, RuntimeVersion } from '@delightfuldot/codecs';
 import { ChainProperties, GenericSubstrateApi, Unsub } from '@delightfuldot/types';
 import {
-  RuntimeCallExecutor,
   ConstantExecutor,
   ErrorExecutor,
   EventExecutor,
   RpcExecutor,
+  RuntimeCallExecutor,
   StorageQueryExecutor,
+  TxExecutor,
 } from './executor';
 import { newProxyChain } from './proxychain';
 import { ApiOptions, MetadataKey, NetworkEndpoint, NormalizedApiOptions } from './types';
@@ -353,6 +354,10 @@ export default class DelightfulApi<ChainApi extends GenericSubstrateApi = Substr
     return newProxyChain<ChainApi>({ executor: new StorageQueryExecutor(this) }) as ChainApi['query'];
   }
 
+  queryAt(blockHash: BlockHash): ChainApi['query'] {
+    return newProxyChain<ChainApi>({ executor: new StorageQueryExecutor(this, blockHash) }) as ChainApi['query'];
+  }
+
   /**
    * @description Entry-point for inspecting errors from metadata
    */
@@ -369,6 +374,14 @@ export default class DelightfulApi<ChainApi extends GenericSubstrateApi = Substr
 
   get call(): ChainApi['call'] {
     return newProxyChain<ChainApi>({ executor: new RuntimeCallExecutor(this) }) as ChainApi['call'];
+  }
+
+  callAt(blockHash: BlockHash): ChainApi['call'] {
+    return newProxyChain<ChainApi>({ executor: new RuntimeCallExecutor(this, blockHash) }) as ChainApi['call'];
+  }
+
+  get tx(): ChainApi['tx'] {
+    return newProxyChain<ChainApi>({ executor: new TxExecutor(this) }) as ChainApi['tx'];
   }
 
   /**
@@ -477,5 +490,9 @@ export default class DelightfulApi<ChainApi extends GenericSubstrateApi = Substr
    */
   get runtimeChain() {
     return ensurePresence(this.#runtimeChain);
+  }
+
+  get options() {
+    return this.#options;
   }
 }

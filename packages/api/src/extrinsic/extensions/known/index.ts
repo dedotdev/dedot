@@ -1,3 +1,4 @@
+import { ISignedExtension } from '../SignedExtension';
 import { CheckNonZeroSender } from './CheckNonZeroSender';
 import { CheckSpecVersion } from './CheckSpecVersion';
 import { CheckTxVersion } from './CheckTxVersion';
@@ -7,9 +8,11 @@ import { CheckNonce } from './CheckNonce';
 import { CheckWeight } from './CheckWeight';
 import { ChargeTransactionPayment } from './ChargeTransactionPayment';
 import { PrevalidateAttests } from './PrevalidateAttests';
-import { ISignedExtension } from '../SignedExtension';
+import { ChargeAssetTxPayment } from './ChargeAssetTxPayment';
 
-const knownSignedExtensions: Record<string, new (...args: any[]) => ISignedExtension> = {
+export type AnySignedExtension = new (...args: any[]) => ISignedExtension;
+
+export const knownSignedExtensions: Record<string, AnySignedExtension> = {
   CheckNonZeroSender,
   CheckSpecVersion,
   CheckTxVersion,
@@ -19,6 +22,5 @@ const knownSignedExtensions: Record<string, new (...args: any[]) => ISignedExten
   CheckWeight,
   ChargeTransactionPayment,
   PrevalidateAttests,
+  ChargeAssetTxPayment,
 };
-
-export default knownSignedExtensions;

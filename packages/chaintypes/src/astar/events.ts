@@ -2,6 +2,7 @@
 
 import type { GenericChainEvents, GenericPalletEvent } from '@delightfuldot/types';
 import type {
+  DispatchInfo,
   DispatchError,
   AccountId32,
   H256,
@@ -13,7 +14,6 @@ import type {
   FixedU64,
 } from '@delightfuldot/codecs';
 import type {
-  FrameSupportDispatchDispatchInfo,
   PalletMultisigTimepoint,
   AstarRuntimeProxyType,
   SpWeightsWeightV2Weight,
@@ -43,11 +43,7 @@ export interface ChainEvents extends GenericChainEvents {
     /**
      * An extrinsic completed successfully.
      **/
-    ExtrinsicSuccess: GenericPalletEvent<
-      'System',
-      'ExtrinsicSuccess',
-      { dispatchInfo: FrameSupportDispatchDispatchInfo }
-    >;
+    ExtrinsicSuccess: GenericPalletEvent<'System', 'ExtrinsicSuccess', { dispatchInfo: DispatchInfo }>;
 
     /**
      * An extrinsic failed.
@@ -55,7 +51,7 @@ export interface ChainEvents extends GenericChainEvents {
     ExtrinsicFailed: GenericPalletEvent<
       'System',
       'ExtrinsicFailed',
-      { dispatchError: DispatchError; dispatchInfo: FrameSupportDispatchDispatchInfo }
+      { dispatchError: DispatchError; dispatchInfo: DispatchInfo }
     >;
 
     /**
@@ -1561,6 +1557,144 @@ export interface ChainEvents extends GenericChainEvents {
      * A sudo just took place. \[result\]
      **/
     SudoAsDone: GenericPalletEvent<'Sudo', 'SudoAsDone', { sudoResult: Result<[], DispatchError> }>;
+
+    /**
+     * Generic pallet event
+     **/
+    [prop: string]: GenericPalletEvent;
+  };
+  staticPriceProvider: {
+    /**
+     * New static native currency price has been set.
+     **/
+    PriceSet: GenericPalletEvent<'StaticPriceProvider', 'PriceSet', { price: FixedU64 }>;
+
+    /**
+     * Generic pallet event
+     **/
+    [prop: string]: GenericPalletEvent;
+  };
+  dappStakingMigration: {
+    /**
+     * Number of entries migrated from v2 over to v3
+     **/
+    EntriesMigrated: GenericPalletEvent<'DappStakingMigration', 'EntriesMigrated', number>;
+
+    /**
+     * Number of entries deleted from v2
+     **/
+    EntriesDeleted: GenericPalletEvent<'DappStakingMigration', 'EntriesDeleted', number>;
+
+    /**
+     * Generic pallet event
+     **/
+    [prop: string]: GenericPalletEvent;
+  };
+  dappsStaking: {
+    /**
+     * Account has bonded and staked funds on a smart contract.
+     **/
+    BondAndStake: GenericPalletEvent<
+      'DappsStaking',
+      'BondAndStake',
+      [AccountId32, AstarPrimitivesDappStakingSmartContract, bigint]
+    >;
+
+    /**
+     * Account has unbonded & unstaked some funds. Unbonding process begins.
+     **/
+    UnbondAndUnstake: GenericPalletEvent<
+      'DappsStaking',
+      'UnbondAndUnstake',
+      [AccountId32, AstarPrimitivesDappStakingSmartContract, bigint]
+    >;
+
+    /**
+     * Account has fully withdrawn all staked amount from an unregistered contract.
+     **/
+    WithdrawFromUnregistered: GenericPalletEvent<
+      'DappsStaking',
+      'WithdrawFromUnregistered',
+      [AccountId32, AstarPrimitivesDappStakingSmartContract, bigint]
+    >;
+
+    /**
+     * Account has withdrawn unbonded funds.
+     **/
+    Withdrawn: GenericPalletEvent<'DappsStaking', 'Withdrawn', [AccountId32, bigint]>;
+
+    /**
+     * New contract added for staking.
+     **/
+    NewContract: GenericPalletEvent<
+      'DappsStaking',
+      'NewContract',
+      [AccountId32, AstarPrimitivesDappStakingSmartContract]
+    >;
+
+    /**
+     * Contract removed from dapps staking.
+     **/
+    ContractRemoved: GenericPalletEvent<
+      'DappsStaking',
+      'ContractRemoved',
+      [AccountId32, AstarPrimitivesDappStakingSmartContract]
+    >;
+
+    /**
+     * New dapps staking era. Distribute era rewards to contracts.
+     **/
+    NewDappStakingEra: GenericPalletEvent<'DappsStaking', 'NewDappStakingEra', number>;
+
+    /**
+     * Reward paid to staker or developer.
+     **/
+    Reward: GenericPalletEvent<
+      'DappsStaking',
+      'Reward',
+      [AccountId32, AstarPrimitivesDappStakingSmartContract, number, bigint]
+    >;
+
+    /**
+     * Maintenance mode has been enabled or disabled
+     **/
+    MaintenanceMode: GenericPalletEvent<'DappsStaking', 'MaintenanceMode', boolean>;
+
+    /**
+     * Reward handling modified
+     **/
+    RewardDestination: GenericPalletEvent<
+      'DappsStaking',
+      'RewardDestination',
+      [AccountId32, PalletDappsStakingRewardDestination]
+    >;
+
+    /**
+     * Nomination part has been transfered from one contract to another.
+     *
+     * \(staker account, origin smart contract, amount, target smart contract\)
+     **/
+    NominationTransfer: GenericPalletEvent<
+      'DappsStaking',
+      'NominationTransfer',
+      [AccountId32, AstarPrimitivesDappStakingSmartContract, bigint, AstarPrimitivesDappStakingSmartContract]
+    >;
+
+    /**
+     * Stale, unclaimed reward from an unregistered contract has been burned.
+     *
+     * \(developer account, smart contract, era, amount burned\)
+     **/
+    StaleRewardBurned: GenericPalletEvent<
+      'DappsStaking',
+      'StaleRewardBurned',
+      [AccountId32, AstarPrimitivesDappStakingSmartContract, number, bigint]
+    >;
+
+    /**
+     * Pallet is being decommissioned.
+     **/
+    Decommission: GenericPalletEvent<'DappsStaking', 'Decommission', null>;
 
     /**
      * Generic pallet event

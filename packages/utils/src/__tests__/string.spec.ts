@@ -1,5 +1,6 @@
 import { describe, it, expect } from 'vitest';
-import { shortenAddress, stringSnakeCase, trimOffUrlProtocol } from '../string';
+import { isZeroHash, shortenAddress, stringSnakeCase, trimOffUrlProtocol } from '../string';
+import { HexString } from '../types';
 
 describe('shortenAddress', () => {
   it.each(['', null, undefined])('should return empty string if input = %s', (input) => {
@@ -38,5 +39,17 @@ describe('stringSnakeCase', () => {
     { input: 'AnExampleWithPascalCase', expected: 'an_example_with_pascal_case' },
   ])('should turn camelCase or pascalCase string to snakeCase string', ({ input, expected }) => {
     expect(stringSnakeCase(input)).toEqual(expected);
+  });
+});
+
+describe('isZeroHash', () => {
+  it.each([
+    { input: '0x00000000', expected: true },
+    { input: '0x00', expected: true },
+    { input: '0x', expected: true },
+    { input: '0x00000001', expected: false },
+    { input: '0x11223344', expected: false },
+  ])('should check zero hash for $input', ({ input, expected }) => {
+    expect(isZeroHash(input as HexString)).toEqual(expected);
   });
 });

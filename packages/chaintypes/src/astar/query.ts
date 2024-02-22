@@ -6,10 +6,12 @@ import type {
   H256,
   Bytes,
   Digest,
+  Phase,
   AccountId32,
   Data,
   FixedBytes,
   FixedU128,
+  BytesLike,
   H160,
   U256,
   FixedU64,
@@ -19,7 +21,6 @@ import type {
   FrameSupportDispatchPerDispatchClass,
   FrameSystemEventRecord,
   FrameSystemLastRuntimeUpgradeInfo,
-  FrameSystemPhase,
   PalletIdentityRegistration,
   PalletIdentityRegistrarInfo,
   PalletMultisigMultisig,
@@ -193,7 +194,7 @@ export interface ChainStorage extends GenericChainStorage {
     /**
      * The execution phase of the block.
      **/
-    executionPhase: GenericStorageQuery<() => FrameSystemPhase | undefined>;
+    executionPhase: GenericStorageQuery<() => Phase | undefined>;
 
     /**
      * Generic pallet storage query
@@ -790,7 +791,7 @@ export interface ChainStorage extends GenericChainStorage {
     /**
      * The owner of a key. The key is the `KeyTypeId` + the encoded key.
      **/
-    keyOwner: GenericStorageQuery<(arg: [SpCoreCryptoKeyTypeId, Bytes]) => AccountId32 | undefined>;
+    keyOwner: GenericStorageQuery<(arg: [SpCoreCryptoKeyTypeId, BytesLike]) => AccountId32 | undefined>;
 
     /**
      * Generic pallet storage query

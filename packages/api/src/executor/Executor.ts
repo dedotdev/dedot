@@ -1,6 +1,6 @@
 import type { SubstrateApi } from '@delightfuldot/chaintypes';
 import { stringCamelCase } from '@polkadot/util';
-import { PalletDefLatest } from '@delightfuldot/codecs';
+import { BlockHash, PalletDefLatest } from '@delightfuldot/codecs';
 import { GenericSubstrateApi } from '@delightfuldot/types';
 import DelightfulApi from '../DelightfulApi';
 
@@ -10,12 +10,19 @@ import DelightfulApi from '../DelightfulApi';
  */
 export abstract class Executor<ChainApi extends GenericSubstrateApi = SubstrateApi> {
   readonly #api: DelightfulApi<ChainApi>;
-  constructor(api: DelightfulApi<ChainApi>) {
+  readonly #atBlockHash?: BlockHash;
+
+  constructor(api: DelightfulApi<ChainApi>, atBlockHash?: BlockHash) {
     this.#api = api;
+    this.#atBlockHash = atBlockHash;
   }
 
   get api(): DelightfulApi<ChainApi> {
     return this.#api;
+  }
+
+  get atBlockHash() {
+    return this.#atBlockHash;
   }
 
   get provider() {

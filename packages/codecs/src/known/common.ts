@@ -19,12 +19,14 @@ export type StorageData = $.Output<typeof $StorageData>;
 
 registerLooseCodecType({ $StorageKey, $StorageData });
 
-export const $Extrinsic = $.RawHex;
-export type Extrinsic = $.Input<typeof $Extrinsic>;
+export const $RawExtrinsic = $.RawHex;
+export type RawExtrinsic = $.Input<typeof $RawExtrinsic>;
 
 export const $Bytes = $.RawHex;
 export type BytesLike = $.Input<typeof $Bytes>;
 export type Bytes = HexString;
+
+registerLooseCodecType({ $Bytes });
 
 export type FixedBytes<Bytes extends number> = HexString; // TODO: add Unit8Array
 
