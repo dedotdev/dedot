@@ -4,7 +4,7 @@ import type { GenericRuntimeCalls, GenericRuntimeCall } from '@delightfuldot/typ
 import type {
   TransactionValidity,
   TransactionSource,
-  Bytes,
+  BytesLike,
   BlockHash,
   RuntimeVersion,
   Null,
@@ -37,7 +37,7 @@ export interface RuntimeCalls extends GenericRuntimeCalls {
      * @callname: TaggedTransactionQueue_validate_transaction
      **/
     validateTransaction: GenericRuntimeCall<
-      (source: TransactionSource, tx: Bytes, blockHash: BlockHash) => Promise<TransactionValidity>
+      (source: TransactionSource, tx: BytesLike, blockHash: BlockHash) => Promise<TransactionValidity>
     >;
 
     /**
@@ -116,7 +116,7 @@ export interface RuntimeCalls extends GenericRuntimeCalls {
      *
      * @callname: BlockBuilder_apply_extrinsic
      **/
-    applyExtrinsic: GenericRuntimeCall<(extrinsic: Bytes) => Promise<ApplyExtrinsicResult>>;
+    applyExtrinsic: GenericRuntimeCall<(extrinsic: BytesLike) => Promise<ApplyExtrinsicResult>>;
 
     /**
      *
@@ -183,7 +183,7 @@ export interface RuntimeCalls extends GenericRuntimeCalls {
      *
      * @callname: SessionKeys_decode_session_keys
      **/
-    decodeSessionKeys: GenericRuntimeCall<(encoded: Bytes) => Promise<Option<Array<[Array<number>, KeyTypeId]>>>>;
+    decodeSessionKeys: GenericRuntimeCall<(encoded: BytesLike) => Promise<Option<Array<[Array<number>, KeyTypeId]>>>>;
 
     /**
      * Generic runtime call
@@ -217,14 +217,14 @@ export interface RuntimeCalls extends GenericRuntimeCalls {
      *
      * @callname: TransactionPaymentApi_query_info
      **/
-    queryInfo: GenericRuntimeCall<(uxt: Bytes, len: number) => Promise<RuntimeDispatchInfo>>;
+    queryInfo: GenericRuntimeCall<(uxt: BytesLike, len: number) => Promise<RuntimeDispatchInfo>>;
 
     /**
      * The transaction fee details
      *
      * @callname: TransactionPaymentApi_query_fee_details
      **/
-    queryFeeDetails: GenericRuntimeCall<(uxt: Bytes, len: number) => Promise<FeeDetails>>;
+    queryFeeDetails: GenericRuntimeCall<(uxt: BytesLike, len: number) => Promise<FeeDetails>>;
 
     /**
      * Query the output of the current LengthToFee given some input

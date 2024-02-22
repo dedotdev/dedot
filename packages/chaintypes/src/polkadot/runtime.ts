@@ -9,7 +9,7 @@ import type {
   Option,
   OpaqueMetadata,
   ApplyExtrinsicResult,
-  Bytes,
+  BytesLike,
   CheckInherentsResult,
   InherentData,
   Extrinsic,
@@ -49,6 +49,8 @@ import type {
   ValidatorSet,
   BeefyEquivocationProof,
   ValidatorSetId,
+  BeefyAuthoritySet,
+  BeefyNextAuthoritySet,
   Result,
   MmrError,
   LeafIndex,
@@ -69,6 +71,7 @@ import type {
   RuntimeDispatchInfo,
   FeeDetails,
   Weight,
+  Text,
 } from '@delightfuldot/codecs';
 
 export interface RuntimeCalls extends GenericRuntimeCalls {
@@ -143,7 +146,7 @@ export interface RuntimeCalls extends GenericRuntimeCalls {
      *
      * @callname: BlockBuilder_apply_extrinsic
      **/
-    applyExtrinsic: GenericRuntimeCall<(extrinsic: Bytes) => Promise<ApplyExtrinsicResult>>;
+    applyExtrinsic: GenericRuntimeCall<(extrinsic: BytesLike) => Promise<ApplyExtrinsicResult>>;
 
     /**
      *
@@ -227,7 +230,7 @@ export interface RuntimeCalls extends GenericRuntimeCalls {
      * @callname: TaggedTransactionQueue_validate_transaction
      **/
     validateTransaction: GenericRuntimeCall<
-      (source: TransactionSource, tx: Bytes, blockHash: BlockHash) => Promise<TransactionValidity>
+      (source: TransactionSource, tx: BytesLike, blockHash: BlockHash) => Promise<TransactionValidity>
     >;
 
     /**
@@ -495,6 +498,30 @@ export interface RuntimeCalls extends GenericRuntimeCalls {
     [method: string]: GenericRuntimeCall;
   };
   /**
+   * @runtimeapi: BeefyMmrApi - 0x2a5e924655399e60
+   * @version: 1
+   **/
+  beefyMmrApi: {
+    /**
+     * Return the currently active BEEFY authority set proof.
+     *
+     * @callname: BeefyMmrApi_authority_set_proof
+     **/
+    authoritySetProof: GenericRuntimeCall<() => Promise<BeefyAuthoritySet>>;
+
+    /**
+     * Return the next/queued BEEFY authority set proof.
+     *
+     * @callname: BeefyMmrApi_next_authority_set_proof
+     **/
+    nextAuthoritySetProof: GenericRuntimeCall<() => Promise<BeefyNextAuthoritySet>>;
+
+    /**
+     * Generic runtime call
+     **/
+    [method: string]: GenericRuntimeCall;
+  };
+  /**
    * @runtimeapi: MmrApi - 0x91d5df18b0d2cf58
    * @version: 2
    **/
@@ -738,7 +765,7 @@ export interface RuntimeCalls extends GenericRuntimeCalls {
      *
      * @callname: SessionKeys_decode_session_keys
      **/
-    decodeSessionKeys: GenericRuntimeCall<(encoded: Bytes) => Promise<Option<Array<[Array<number>, KeyTypeId]>>>>;
+    decodeSessionKeys: GenericRuntimeCall<(encoded: BytesLike) => Promise<Option<Array<[Array<number>, KeyTypeId]>>>>;
 
     /**
      * Generic runtime call
@@ -772,14 +799,14 @@ export interface RuntimeCalls extends GenericRuntimeCalls {
      *
      * @callname: TransactionPaymentApi_query_info
      **/
-    queryInfo: GenericRuntimeCall<(uxt: Bytes, len: number) => Promise<RuntimeDispatchInfo>>;
+    queryInfo: GenericRuntimeCall<(uxt: BytesLike, len: number) => Promise<RuntimeDispatchInfo>>;
 
     /**
      * The transaction fee details
      *
      * @callname: TransactionPaymentApi_query_fee_details
      **/
-    queryFeeDetails: GenericRuntimeCall<(uxt: Bytes, len: number) => Promise<FeeDetails>>;
+    queryFeeDetails: GenericRuntimeCall<(uxt: BytesLike, len: number) => Promise<FeeDetails>>;
 
     /**
      * Query the output of the current LengthToFee given some input
@@ -810,14 +837,14 @@ export interface RuntimeCalls extends GenericRuntimeCalls {
      *
      * @callname: TransactionPaymentCallApi_query_call_info
      **/
-    queryCallInfo: GenericRuntimeCall<(call: Bytes, len: number) => Promise<RuntimeDispatchInfo>>;
+    queryCallInfo: GenericRuntimeCall<(call: BytesLike, len: number) => Promise<RuntimeDispatchInfo>>;
 
     /**
      * Query fee details of a given encoded `Call`.
      *
      * @callname: TransactionPaymentCallApi_query_call_fee_details
      **/
-    queryCallFeeDetails: GenericRuntimeCall<(call: Bytes, len: number) => Promise<FeeDetails>>;
+    queryCallFeeDetails: GenericRuntimeCall<(call: BytesLike, len: number) => Promise<FeeDetails>>;
 
     /**
      * Query the output of the current LengthToFee given some input
@@ -832,6 +859,39 @@ export interface RuntimeCalls extends GenericRuntimeCalls {
      * @callname: TransactionPaymentCallApi_query_weight_to_fee
      **/
     queryWeightToFee: GenericRuntimeCall<(weight: Weight) => Promise<Balance>>;
+
+    /**
+     * Generic runtime call
+     **/
+    [method: string]: GenericRuntimeCall;
+  };
+  /**
+   * @runtimeapi: GenesisBuilder - 0xfbc577b9d747efd6
+   * @version: 1
+   **/
+  genesisBuilder: {
+    /**
+     * Creates the default `GenesisConfig` and returns it as a JSON blob.
+     *
+     * This function instantiates the default `GenesisConfig` struct for the runtime and serializes it into a JSON
+     * blob. It returns a `Vec<u8>` containing the JSON representation of the default `GenesisConfig`.
+     *
+     * @callname: GenesisBuilder_create_default_config
+     **/
+    createDefaultConfig: GenericRuntimeCall<() => Promise<Array<number>>>;
+
+    /**
+     * Build `GenesisConfig` from a JSON blob not using any defaults and store it in the storage.
+     *
+     * This function deserializes the full `GenesisConfig` from the given JSON blob and puts it into the storage.
+     * If the provided JSON blob is incorrect or incomplete or the deserialization fails, an error is returned.
+     * It is recommended to log any errors encountered during the process.
+     *
+     * Please note that provided json blob must contain all `GenesisConfig` fields, no defaults will be used.
+     *
+     * @callname: GenesisBuilder_build_config
+     **/
+    buildConfig: GenericRuntimeCall<(json: Array<number>) => Promise<Result<Null, Text>>>;
 
     /**
      * Generic runtime call

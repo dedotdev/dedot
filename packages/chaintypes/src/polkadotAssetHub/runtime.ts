@@ -2,16 +2,63 @@
 
 import type { GenericRuntimeCalls, GenericRuntimeCall } from '@delightfuldot/types';
 import type {
+  RuntimeVersion,
+  Null,
+  Block,
+  Header,
   Option,
   OpaqueMetadata,
-  RuntimeDispatchInfo,
+  ApplyExtrinsicResult,
   BytesLike,
+  CheckInherentsResult,
+  InherentData,
+  Extrinsic,
+  TransactionValidity,
+  TransactionSource,
+  BlockHash,
+  KeyTypeId,
+  Nonce,
+  AccountId32Like,
+  RuntimeDispatchInfo,
   FeeDetails,
   Balance,
   Weight,
+  Result,
+  Text,
 } from '@delightfuldot/codecs';
 
 export interface RuntimeCalls extends GenericRuntimeCalls {
+  /**
+   * @runtimeapi: Core - 0xdf6acb689907609b
+   * @version: 4
+   **/
+  core: {
+    /**
+     * Returns the version of the runtime.
+     *
+     * @callname: Core_version
+     **/
+    version: GenericRuntimeCall<() => Promise<RuntimeVersion>>;
+
+    /**
+     * Execute the given block.
+     *
+     * @callname: Core_execute_block
+     **/
+    executeBlock: GenericRuntimeCall<(block: Block) => Promise<Null>>;
+
+    /**
+     * Initialize a block with the given header.
+     *
+     * @callname: Core_initialize_block
+     **/
+    initializeBlock: GenericRuntimeCall<(header: Header) => Promise<Null>>;
+
+    /**
+     * Generic runtime call
+     **/
+    [method: string]: GenericRuntimeCall;
+  };
   /**
    * @runtimeapi: Metadata - 0x37e397fc7c91f5e4
    * @version: 2
@@ -37,6 +84,125 @@ export interface RuntimeCalls extends GenericRuntimeCalls {
      * @callname: Metadata_metadata
      **/
     metadata: GenericRuntimeCall<() => Promise<OpaqueMetadata>>;
+
+    /**
+     * Generic runtime call
+     **/
+    [method: string]: GenericRuntimeCall;
+  };
+  /**
+   * @runtimeapi: BlockBuilder - 0x40fe3ad401f8959a
+   * @version: 6
+   **/
+  blockBuilder: {
+    /**
+     *
+     * @callname: BlockBuilder_apply_extrinsic
+     **/
+    applyExtrinsic: GenericRuntimeCall<(extrinsic: BytesLike) => Promise<ApplyExtrinsicResult>>;
+
+    /**
+     *
+     * @callname: BlockBuilder_check_inherents
+     **/
+    checkInherents: GenericRuntimeCall<(block: Block, data: InherentData) => Promise<CheckInherentsResult>>;
+
+    /**
+     *
+     * @callname: BlockBuilder_inherent_extrinsics
+     **/
+    inherentExtrinsics: GenericRuntimeCall<(inherent: InherentData) => Promise<Array<Extrinsic>>>;
+
+    /**
+     *
+     * @callname: BlockBuilder_finalize_block
+     **/
+    finalizeBlock: GenericRuntimeCall<() => Promise<Header>>;
+
+    /**
+     * Generic runtime call
+     **/
+    [method: string]: GenericRuntimeCall;
+  };
+  /**
+   * @runtimeapi: TaggedTransactionQueue - 0xd2bc9897eed08f15
+   * @version: 3
+   **/
+  taggedTransactionQueue: {
+    /**
+     * Validate the transaction.
+     *
+     * @callname: TaggedTransactionQueue_validate_transaction
+     **/
+    validateTransaction: GenericRuntimeCall<
+      (source: TransactionSource, tx: BytesLike, blockHash: BlockHash) => Promise<TransactionValidity>
+    >;
+
+    /**
+     * Generic runtime call
+     **/
+    [method: string]: GenericRuntimeCall;
+  };
+  /**
+   * @runtimeapi: OffchainWorkerApi - 0xf78b278be53f454c
+   * @version: 2
+   **/
+  offchainWorkerApi: {
+    /**
+     * Starts the off-chain task for given block header.
+     *
+     * @callname: OffchainWorkerApi_offchain_worker
+     **/
+    offchainWorker: GenericRuntimeCall<(header: Header) => Promise<Null>>;
+
+    /**
+     * Generic runtime call
+     **/
+    [method: string]: GenericRuntimeCall;
+  };
+  /**
+   * @runtimeapi: SessionKeys - 0xab3c0572291feb8b
+   * @version: 1
+   **/
+  sessionKeys: {
+    /**
+     * Generate a set of session keys with optionally using the given seed.
+     * The keys should be stored within the keystore exposed via runtime
+     * externalities.
+     *
+     * The seed needs to be a valid `utf8` string.
+     *
+     * Returns the concatenated SCALE encoded public keys.
+     *
+     * @callname: SessionKeys_generate_session_keys
+     **/
+    generateSessionKeys: GenericRuntimeCall<(seed: Option<Array<number>>) => Promise<Array<number>>>;
+
+    /**
+     * Decode the given public session key
+     *
+     * Returns the list of public raw public keys + key typ
+     *
+     * @callname: SessionKeys_decode_session_keys
+     **/
+    decodeSessionKeys: GenericRuntimeCall<(encoded: BytesLike) => Promise<Option<Array<[Array<number>, KeyTypeId]>>>>;
+
+    /**
+     * Generic runtime call
+     **/
+    [method: string]: GenericRuntimeCall;
+  };
+  /**
+   * @runtimeapi: AccountNonceApi - 0xbc9d89904f5b923f
+   * @version: 1
+   **/
+  accountNonceApi: {
+    /**
+     * The API to query account nonce (aka transaction index)
+     *
+     * @callname: AccountNonceApi_account_nonce
+     **/
+    accountNonce: GenericRuntimeCall<(accountId: AccountId32Like) => Promise<Nonce>>;
 
     /**
      * Generic runtime call
@@ -75,6 +241,77 @@ export interface RuntimeCalls extends GenericRuntimeCalls {
      * @callname: TransactionPaymentApi_query_weight_to_fee
      **/
     queryWeightToFee: GenericRuntimeCall<(weight: Weight) => Promise<Balance>>;
+
+    /**
+     * Generic runtime call
+     **/
+    [method: string]: GenericRuntimeCall;
+  };
+  /**
+   * @runtimeapi: TransactionPaymentCallApi - 0xf3ff14d5ab527059
+   * @version: 3
+   **/
+  transactionPaymentCallApi: {
+    /**
+     * Query information of a dispatch class, weight, and fee of a given encoded `Call`.
+     *
+     * @callname: TransactionPaymentCallApi_query_call_info
+     **/
+    queryCallInfo: GenericRuntimeCall<(call: BytesLike, len: number) => Promise<RuntimeDispatchInfo>>;
+
+    /**
+     * Query fee details of a given encoded `Call`.
+     *
+     * @callname: TransactionPaymentCallApi_query_call_fee_details
+     **/
+    queryCallFeeDetails: GenericRuntimeCall<(call: BytesLike, len: number) => Promise<FeeDetails>>;
+
+    /**
+     * Query the output of the current LengthToFee given some input
+     *
+     * @callname: TransactionPaymentCallApi_query_length_to_fee
+     **/
+    queryLengthToFee: GenericRuntimeCall<(length: number) => Promise<Balance>>;
+
+    /**
+     * Query the output of the current WeightToFee given some input
+     *
+     * @callname: TransactionPaymentCallApi_query_weight_to_fee
+     **/
+    queryWeightToFee: GenericRuntimeCall<(weight: Weight) => Promise<Balance>>;
+
+    /**
+     * Generic runtime call
+     **/
+    [method: string]: GenericRuntimeCall;
+  };
+  /**
+   * @runtimeapi: GenesisBuilder - 0xfbc577b9d747efd6
+   * @version: 1
+   **/
+  genesisBuilder: {
+    /**
+     * Creates the default `GenesisConfig` and returns it as a JSON blob.
+     *
+     * This function instantiates the default `GenesisConfig` struct for the runtime and serializes it into a JSON
+     * blob. It returns a `Vec<u8>` containing the JSON representation of the default `GenesisConfig`.
+     *
+     * @callname: GenesisBuilder_create_default_config
+     **/
+    createDefaultConfig: GenericRuntimeCall<() => Promise<Array<number>>>;
+
+    /**
+     * Build `GenesisConfig` from a JSON blob not using any defaults and store it in the storage.
+     *
+     * This function deserializes the full `GenesisConfig` from the given JSON blob and puts it into the storage.
+     * If the provided JSON blob is incorrect or incomplete or the deserialization fails, an error is returned.
+     * It is recommended to log any errors encountered during the process.
+     *
+     * Please note that provided json blob must contain all `GenesisConfig` fields, no defaults will be used.
+     *
+     * @callname: GenesisBuilder_build_config
+     **/
+    buildConfig: GenericRuntimeCall<(json: Array<number>) => Promise<Result<Null, Text>>>;
 
     /**
      * Generic runtime call

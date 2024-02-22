@@ -36,7 +36,7 @@ const SKIP_TYPES = [
 // This helps make the type name shorter
 const PATH_RM_INDEX_1 = ['generic', 'misc', 'pallet', 'traits', 'types'];
 
-export const BASIC_KNOWN_TYPES = ['BitSequence', 'Bytes', 'FixedBytes', 'FixedArray', 'Result'];
+export const BASIC_KNOWN_TYPES = ['BitSequence', 'Bytes', 'BytesLike', 'FixedBytes', 'FixedArray', 'Result'];
 const WRAPPER_TYPE_REGEX = /^(\w+)(<.*>)$/g;
 
 export class TypesGen {
