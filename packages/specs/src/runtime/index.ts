@@ -17,7 +17,7 @@ import { beefy } from './beefy';
 import { staking } from './staking';
 import { transactionPool } from './transactionPool';
 import { genesisBuilder } from './genesisBuilder';
-import { RuntimeApisSpec, RuntimeCallSpec, RuntimeApiSpec, RuntimeApiName } from '@delightfuldot/types';
+import { RuntimeApisSpec, RuntimeApiMethodSpec, RuntimeApiSpec, RuntimeApiName } from '@delightfuldot/types';
 import { blake2AsHex } from '@polkadot/util-crypto';
 import { stringSnakeCase } from '@delightfuldot/utils';
 
@@ -57,10 +57,10 @@ export const runtimeApiSpecs: RuntimeApiSpec[] = Object.keys(runtimeApisSpec)
   })
   .flat(2);
 
-export const runtimeCallSpecs: RuntimeCallSpec[] = runtimeApiSpecs
+export const runtimeCallSpecs: RuntimeApiMethodSpec[] = runtimeApiSpecs
   .map(({ methods, runtimeApiName, version }) => {
     return Object.keys(methods).map(
-      (methodName) => ({ ...methods[methodName], methodName, runtimeApiName, version }) as RuntimeCallSpec,
+      (methodName) => ({ ...methods[methodName], methodName, runtimeApiName, version }) as RuntimeApiMethodSpec,
     );
   })
   .flat();

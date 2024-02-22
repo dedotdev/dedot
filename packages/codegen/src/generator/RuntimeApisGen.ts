@@ -1,12 +1,12 @@
 import { TypesGen } from './TypesGen';
 import { findRuntimeApiSpec } from '@delightfuldot/specs';
-import { RuntimeCallSpec, RuntimeApiSpec } from '@delightfuldot/types';
+import { RuntimeApiMethodSpec, RuntimeApiSpec } from '@delightfuldot/types';
 import { beautifySourceCode, commentBlock, compileTemplate } from './utils';
 import { stringSnakeCase } from '@delightfuldot/utils';
 import { RpcGen } from './RpcGen';
 import { stringCamelCase } from '@polkadot/util';
 
-export class RuntimeCallsGen extends RpcGen {
+export class RuntimeApisGen extends RpcGen {
   constructor(
     readonly typesGen: TypesGen,
     readonly runtimeApis: [string, number][],
@@ -15,7 +15,7 @@ export class RuntimeCallsGen extends RpcGen {
   }
   generate() {
     this.typesGen.clearCache();
-    this.typesGen.typeImports.addKnownType('GenericRuntimeCalls', 'GenericRuntimeCall');
+    this.typesGen.typeImports.addKnownType('GenericRuntimeApis', 'GenericRuntimeApiMethod');
 
     const specsByModule = this.#runtimeApisSpecsByModule();
 
@@ -29,7 +29,7 @@ export class RuntimeCallsGen extends RpcGen {
             .map((methodName) => this.#generateMethodDef({ ...methods[methodName], runtimeApiName, methodName }))
             .join('\n')} 
             
-        ${commentBlock('Generic runtime call')}[method: string]: GenericRuntimeCall
+        ${commentBlock('Generic runtime api call')}[method: string]: GenericRuntimeApiMethod
         }`;
       });
     });
@@ -40,7 +40,7 @@ export class RuntimeCallsGen extends RpcGen {
     return beautifySourceCode(template({ importTypes, runtimeCallsOut }));
   }
 
-  #generateMethodDef(spec: RuntimeCallSpec) {
+  #generateMethodDef(spec: RuntimeApiMethodSpec) {
     const { docs = [], params, type, runtimeApiName, methodName } = spec;
 
     const callName = `${runtimeApiName}_${stringSnakeCase(methodName)}`;
@@ -59,7 +59,7 @@ export class RuntimeCallsGen extends RpcGen {
       docs,
       '\n',
       defaultDocs,
-    )}${methodName}: GenericRuntimeCall<(${paramsOut}) => Promise<${typeOut}>>`;
+    )}${methodName}: GenericRuntimeApiMethod<(${paramsOut}) => Promise<${typeOut}>>`;
   }
 
   #runtimeApisSpecsByModule(): Record<string, RuntimeApiSpec[]> {

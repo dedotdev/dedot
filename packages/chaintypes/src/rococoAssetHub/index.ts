@@ -6,7 +6,7 @@ import { ChainStorage } from './query';
 import { RpcCalls } from './rpc';
 import { ChainErrors } from './errors';
 import { ChainEvents } from './events';
-import { RuntimeCalls } from './runtime';
+import { RuntimeApis } from './runtime';
 import { ChainTx } from './tx';
 
 export * from './types';
@@ -18,6 +18,6 @@ export interface RococoAssetHubApi extends GenericSubstrateApi {
   query: ChainStorage;
   errors: ChainErrors;
   events: ChainEvents;
-  call: RuntimeCalls;
+  call: RuntimeApis;
   tx: ChainTx;
 }

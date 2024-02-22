@@ -1,14 +1,22 @@
 import { HttpProvider, WsProvider } from '@polkadot/rpc-provider';
 import { ProviderInterface } from '@polkadot/rpc-provider/types';
 import type { SubstrateApi } from '@delightfuldot/chaintypes';
-import { $Metadata, BlockHash, CodecRegistry, Hash, Metadata, MetadataLatest, RuntimeVersion } from '@delightfuldot/codecs';
+import {
+  $Metadata,
+  BlockHash,
+  CodecRegistry,
+  Hash,
+  Metadata,
+  MetadataLatest,
+  RuntimeVersion,
+} from '@delightfuldot/codecs';
 import { ChainProperties, GenericSubstrateApi, Unsub } from '@delightfuldot/types';
 import {
   ConstantExecutor,
   ErrorExecutor,
   EventExecutor,
   RpcExecutor,
-  RuntimeCallExecutor,
+  RuntimeApiExecutor,
   StorageQueryExecutor,
   TxExecutor,
 } from './executor';
@@ -373,11 +381,11 @@ export default class DelightfulApi<ChainApi extends GenericSubstrateApi = Substr
   }
 
   get call(): ChainApi['call'] {
-    return newProxyChain<ChainApi>({ executor: new RuntimeCallExecutor(this) }) as ChainApi['call'];
+    return newProxyChain<ChainApi>({ executor: new RuntimeApiExecutor(this) }) as ChainApi['call'];
   }
 
   callAt(blockHash: BlockHash): ChainApi['call'] {
-    return newProxyChain<ChainApi>({ executor: new RuntimeCallExecutor(this, blockHash) }) as ChainApi['call'];
+    return newProxyChain<ChainApi>({ executor: new RuntimeApiExecutor(this, blockHash) }) as ChainApi['call'];
   }
 
   get tx(): ChainApi['tx'] {

@@ -1,6 +1,6 @@
-import { RuntimeApisModule, RuntimeCallsSpec } from '@delightfuldot/types';
+import { RuntimeApisModule, RuntimeApiMethodsSpec } from '@delightfuldot/types';
 
-const V5_V10_SHARED: RuntimeCallsSpec = {
+const V5_V10_SHARED: RuntimeApiMethodsSpec = {
   validators: {
     docs: 'Get the current validators.',
     params: [],
@@ -249,7 +249,7 @@ const V5_V10_SHARED: RuntimeCallsSpec = {
   },
 };
 
-const V6_V10_SHARED: RuntimeCallsSpec = {
+const V6_V10_SHARED: RuntimeApiMethodsSpec = {
   minimumBackingVotes: {
     docs: [
       'Get the minimum number of backing votes for a parachain candidate.',
@@ -260,7 +260,7 @@ const V6_V10_SHARED: RuntimeCallsSpec = {
   },
 };
 
-const V7_V10_SHARED: RuntimeCallsSpec = {
+const V7_V10_SHARED: RuntimeApiMethodsSpec = {
   paraBackingState: {
     docs: 'Returns the state of parachain backing for a given para.',
     params: [
@@ -278,7 +278,7 @@ const V7_V10_SHARED: RuntimeCallsSpec = {
   },
 };
 
-const V8_V10_SHARED: RuntimeCallsSpec = {
+const V8_V10_SHARED: RuntimeApiMethodsSpec = {
   disabledValidators: {
     docs: 'Returns a list of all disabled validators at the given block.',
     params: [],
@@ -286,7 +286,7 @@ const V8_V10_SHARED: RuntimeCallsSpec = {
   },
 };
 
-const V9_V10_SHARED: RuntimeCallsSpec = {
+const V9_V10_SHARED: RuntimeApiMethodsSpec = {
   nodeFeatures: {
     docs: ['Get node features.', 'This is a staging method! Do not use on production runtimes!'],
     params: [],

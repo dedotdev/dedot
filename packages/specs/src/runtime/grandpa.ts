@@ -1,4 +1,4 @@
-import { RuntimeApisModule, RuntimeCallsSpec } from '@delightfuldot/types';
+import { RuntimeApisModule } from '@delightfuldot/types';
 
 /**
  * Ref: https://github.com/paritytech/polkadot-sdk/blob/ebcf0a0f1cab2d43718ba96d26e5687f4d14580a/substrate/primitives/consensus/grandpa/src/lib.rs#L483-L535
