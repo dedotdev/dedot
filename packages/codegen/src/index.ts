@@ -20,7 +20,7 @@ import { NetworkInfo } from './types';
 export async function generateTypesFromChain(network: NetworkInfo, endpoint: string, outDir: string) {
   const api = await DelightfulApi.create(endpoint);
   const { methods }: RpcMethods = await api.rpc.rpc.methods();
-  const { apis } = api.runtimeVersion;
+  const apis = api.runtimeVersion?.apis || [];
 
   await generateTypes(network, api.metadataLatest, methods, apis, outDir);
 

@@ -23,6 +23,7 @@ const KNOWN_PATHS: KnownPath[] = [
   'sp_runtime::TransactionalError',
   'frame_support::dispatch::DispatchInfo',
   'frame_system::Phase',
+  'sp_version::RuntimeVersion',
 
   'fp_account::AccountId20',
   'account::AccountId20',

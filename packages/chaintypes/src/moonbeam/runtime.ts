@@ -2,42 +2,71 @@
 
 import type { GenericRuntimeApis, GenericRuntimeApiMethod } from '@delightfuldot/types';
 import type {
-  TransactionValidity,
-  TransactionSource,
-  BytesLike,
-  BlockHash,
+  Result,
+  H256,
   RuntimeVersion,
-  Null,
-  Block,
   Header,
-  Option,
-  OpaqueMetadata,
-  ApplyExtrinsicResult,
-  CheckInherentsResult,
-  InherentData,
-  Extrinsic,
-  KeyTypeId,
-  Nonce,
-  AccountId32Like,
-  RuntimeDispatchInfo,
-  FeeDetails,
-  Balance,
-  Weight,
+  DispatchError,
+  Bytes,
+  BytesLike,
+  AccountId20Like,
+  H160,
+  U256,
+  Permill,
 } from '@delightfuldot/codecs';
+import type {
+  SpRuntimeTransactionValidityValidTransaction,
+  SpRuntimeTransactionValidityTransactionValidityError,
+  SpRuntimeTransactionValidityTransactionSource,
+  FpSelfContainedUncheckedExtrinsic,
+  SpConsensusSlotsSlot,
+  SpRuntimeBlock,
+  SpCoreOpaqueMetadata,
+  SpInherentsInherentData,
+  SpInherentsCheckInherentsResult,
+  SpCoreCryptoKeyTypeId,
+  EthereumTransactionTransactionV2,
+  MoonbeamRpcPrimitivesTxpoolTxPoolResponse,
+  EvmBackendBasic,
+  FpEvmExecutionInfoV2,
+  FpEvmExecutionInfoV2H160,
+  EthereumBlock,
+  EthereumReceiptReceiptV3,
+  FpRpcTransactionStatus,
+  PalletTransactionPaymentRuntimeDispatchInfo,
+  PalletTransactionPaymentFeeDetails,
+  SpWeightsWeightV2Weight,
+  NimbusPrimitivesNimbusCryptoPublic,
+  CumulusPrimitivesCoreCollationInfo,
+  SessionKeysPrimitivesVrfVrfCryptoPublic,
+} from './types';
 
 export interface RuntimeApis extends GenericRuntimeApis {
   /**
    * @runtimeapi: TaggedTransactionQueue - 0xd2bc9897eed08f15
-   * @version: 3
    **/
   taggedTransactionQueue: {
     /**
      * Validate the transaction.
      *
+     * This method is invoked by the transaction pool to learn details about given transaction.
+     * The implementation should make sure to verify the correctness of the transaction
+     * against current state. The given `block_hash` corresponds to the hash of the block
+     * that is used as current state.
+     *
+     * Note that this call may be performed by the pool multiple times and transactions
+     * might be verified in any possible order.
+     *
      * @callname: TaggedTransactionQueue_validate_transaction
      **/
     validateTransaction: GenericRuntimeApiMethod<
-      (source: TransactionSource, tx: BytesLike, blockHash: BlockHash) => Promise<TransactionValidity>
+      (
+        source: SpRuntimeTransactionValidityTransactionSource,
+        tx: FpSelfContainedUncheckedExtrinsic,
+        blockHash: H256,
+      ) => Promise<
+        Result<SpRuntimeTransactionValidityValidTransaction, SpRuntimeTransactionValidityTransactionValidityError>
+      >
     >;
 
     /**
@@ -46,8 +75,32 @@ export interface RuntimeApis extends GenericRuntimeApis {
     [method: string]: GenericRuntimeApiMethod;
   };
   /**
+   * @runtimeapi: UnincludedSegmentApi - 0xd0399cd053adda2b
+   **/
+  unincludedSegmentApi: {
+    /**
+     * Whether it is legal to extend the chain, assuming the given block is the most
+     * recently included one as-of the relay parent that will be built against, and
+     * the given slot.
+     *
+     * This should be consistent with the logic the runtime uses when validating blocks to
+     * avoid issues.
+     *
+     * When the unincluded segment is empty, i.e. `included_hash == at`, where at is the block
+     * whose state we are querying against, this must always return `true` as long as the slot
+     * is more recent than the included block itself.
+     *
+     * @callname: UnincludedSegmentApi_can_build_upon
+     **/
+    canBuildUpon: GenericRuntimeApiMethod<(includedHash: H256, slot: SpConsensusSlotsSlot) => Promise<boolean>>;
+
+    /**
+     * Generic runtime api call
+     **/
+    [method: string]: GenericRuntimeApiMethod;
+  };
+  /**
    * @runtimeapi: Core - 0xdf6acb689907609b
-   * @version: 4
    **/
   core: {
     /**
@@ -62,14 +115,14 @@ export interface RuntimeApis extends GenericRuntimeApis {
      *
      * @callname: Core_execute_block
      **/
-    executeBlock: GenericRuntimeApiMethod<(block: Block) => Promise<Null>>;
+    executeBlock: GenericRuntimeApiMethod<(block: SpRuntimeBlock) => Promise<[]>>;
 
     /**
      * Initialize a block with the given header.
      *
      * @callname: Core_initialize_block
      **/
-    initializeBlock: GenericRuntimeApiMethod<(header: Header) => Promise<Null>>;
+    initializeBlock: GenericRuntimeApiMethod<(header: Header) => Promise<[]>>;
 
     /**
      * Generic runtime api call
@@ -78,29 +131,33 @@ export interface RuntimeApis extends GenericRuntimeApis {
   };
   /**
    * @runtimeapi: Metadata - 0x37e397fc7c91f5e4
-   * @version: 2
    **/
   metadata: {
-    /**
-     * Returns the metadata at a given version.
-     *
-     * @callname: Metadata_metadata_at_version
-     **/
-    metadataAtVersion: GenericRuntimeApiMethod<(version: number) => Promise<Option<OpaqueMetadata>>>;
-
-    /**
-     * Returns the supported metadata versions.
-     *
-     * @callname: Metadata_metadata_versions
-     **/
-    metadataVersions: GenericRuntimeApiMethod<() => Promise<Array<number>>>;
-
     /**
      * Returns the metadata of a runtime.
      *
      * @callname: Metadata_metadata
      **/
-    metadata: GenericRuntimeApiMethod<() => Promise<OpaqueMetadata>>;
+    metadata: GenericRuntimeApiMethod<() => Promise<SpCoreOpaqueMetadata>>;
+
+    /**
+     * Returns the metadata at a given version.
+     *
+     * If the given `version` isn't supported, this will return `None`.
+     * Use [`Self::metadata_versions`] to find out about supported metadata version of the runtime.
+     *
+     * @callname: Metadata_metadata_at_version
+     **/
+    metadataAtVersion: GenericRuntimeApiMethod<(version: number) => Promise<SpCoreOpaqueMetadata | undefined>>;
+
+    /**
+     * Returns the supported metadata versions.
+     *
+     * This can be used to call `metadata_at_version`.
+     *
+     * @callname: Metadata_metadata_versions
+     **/
+    metadataVersions: GenericRuntimeApiMethod<() => Promise<Array<number>>>;
 
     /**
      * Generic runtime api call
@@ -109,32 +166,46 @@ export interface RuntimeApis extends GenericRuntimeApis {
   };
   /**
    * @runtimeapi: BlockBuilder - 0x40fe3ad401f8959a
-   * @version: 6
    **/
   blockBuilder: {
     /**
+     * Apply the given extrinsic.
+     *
+     * Returns an inclusion outcome which specifies if this extrinsic is included in
+     * this block or not.
      *
      * @callname: BlockBuilder_apply_extrinsic
      **/
-    applyExtrinsic: GenericRuntimeApiMethod<(extrinsic: BytesLike) => Promise<ApplyExtrinsicResult>>;
+    applyExtrinsic: GenericRuntimeApiMethod<
+      (
+        extrinsic: FpSelfContainedUncheckedExtrinsic,
+      ) => Promise<Result<Result<[], DispatchError>, SpRuntimeTransactionValidityTransactionValidityError>>
+    >;
 
     /**
-     *
-     * @callname: BlockBuilder_check_inherents
-     **/
-    checkInherents: GenericRuntimeApiMethod<(block: Block, data: InherentData) => Promise<CheckInherentsResult>>;
-
-    /**
-     *
-     * @callname: BlockBuilder_inherent_extrinsics
-     **/
-    inherentExtrinsics: GenericRuntimeApiMethod<(inherent: InherentData) => Promise<Array<Extrinsic>>>;
-
-    /**
+     * Finish the current block.
      *
      * @callname: BlockBuilder_finalize_block
      **/
     finalizeBlock: GenericRuntimeApiMethod<() => Promise<Header>>;
+
+    /**
+     * Generate inherent extrinsics. The inherent data will vary from chain to chain.
+     *
+     * @callname: BlockBuilder_inherent_extrinsics
+     **/
+    inherentExtrinsics: GenericRuntimeApiMethod<
+      (inherent: SpInherentsInherentData) => Promise<Array<FpSelfContainedUncheckedExtrinsic>>
+    >;
+
+    /**
+     * Check that the inherents are valid. The inherent data will vary from chain to chain.
+     *
+     * @callname: BlockBuilder_check_inherents
+     **/
+    checkInherents: GenericRuntimeApiMethod<
+      (block: SpRuntimeBlock, data: SpInherentsInherentData) => Promise<SpInherentsCheckInherentsResult>
+    >;
 
     /**
      * Generic runtime api call
@@ -143,7 +214,6 @@ export interface RuntimeApis extends GenericRuntimeApis {
   };
   /**
    * @runtimeapi: OffchainWorkerApi - 0xf78b278be53f454c
-   * @version: 2
    **/
   offchainWorkerApi: {
     /**
@@ -151,7 +221,7 @@ export interface RuntimeApis extends GenericRuntimeApis {
      *
      * @callname: OffchainWorkerApi_offchain_worker
      **/
-    offchainWorker: GenericRuntimeApiMethod<(header: Header) => Promise<Null>>;
+    offchainWorker: GenericRuntimeApiMethod<(header: Header) => Promise<[]>>;
 
     /**
      * Generic runtime api call
@@ -160,7 +230,6 @@ export interface RuntimeApis extends GenericRuntimeApis {
   };
   /**
    * @runtimeapi: SessionKeys - 0xab3c0572291feb8b
-   * @version: 1
    **/
   sessionKeys: {
     /**
@@ -174,17 +243,17 @@ export interface RuntimeApis extends GenericRuntimeApis {
      *
      * @callname: SessionKeys_generate_session_keys
      **/
-    generateSessionKeys: GenericRuntimeApiMethod<(seed: Option<Array<number>>) => Promise<Array<number>>>;
+    generateSessionKeys: GenericRuntimeApiMethod<(seed: BytesLike | undefined) => Promise<Bytes>>;
 
     /**
-     * Decode the given public session key
+     * Decode the given public session keys.
      *
-     * Returns the list of public raw public keys + key typ
+     * Returns the list of public raw public keys + key type.
      *
      * @callname: SessionKeys_decode_session_keys
      **/
     decodeSessionKeys: GenericRuntimeApiMethod<
-      (encoded: BytesLike) => Promise<Option<Array<[Array<number>, KeyTypeId]>>>
+      (encoded: BytesLike) => Promise<Array<[Bytes, SpCoreCryptoKeyTypeId]> | undefined>
     >;
 
     /**
@@ -194,15 +263,247 @@ export interface RuntimeApis extends GenericRuntimeApis {
   };
   /**
    * @runtimeapi: AccountNonceApi - 0xbc9d89904f5b923f
-   * @version: 1
    **/
   accountNonceApi: {
     /**
-     * The API to query account nonce (aka transaction index)
+     * Get current account nonce of given `AccountId`.
      *
      * @callname: AccountNonceApi_account_nonce
      **/
-    accountNonce: GenericRuntimeApiMethod<(accountId: AccountId32Like) => Promise<Nonce>>;
+    accountNonce: GenericRuntimeApiMethod<(account: AccountId20Like) => Promise<number>>;
+
+    /**
+     * Generic runtime api call
+     **/
+    [method: string]: GenericRuntimeApiMethod;
+  };
+  /**
+   * @runtimeapi: DebugRuntimeApi - 0xbd78255d4feeea1f
+   **/
+  debugRuntimeApi: {
+    /**
+     *
+     * @callname: DebugRuntimeApi_trace_transaction
+     **/
+    traceTransaction: GenericRuntimeApiMethod<
+      (
+        extrinsics: Array<FpSelfContainedUncheckedExtrinsic>,
+        transaction: EthereumTransactionTransactionV2,
+      ) => Promise<Result<[], DispatchError>>
+    >;
+
+    /**
+     *
+     * @callname: DebugRuntimeApi_trace_block
+     **/
+    traceBlock: GenericRuntimeApiMethod<
+      (
+        extrinsics: Array<FpSelfContainedUncheckedExtrinsic>,
+        knownTransactions: Array<H256>,
+      ) => Promise<Result<[], DispatchError>>
+    >;
+
+    /**
+     * Generic runtime api call
+     **/
+    [method: string]: GenericRuntimeApiMethod;
+  };
+  /**
+   * @runtimeapi: TxPoolRuntimeApi - 0xa33d43f58731ad84
+   **/
+  txPoolRuntimeApi: {
+    /**
+     *
+     * @callname: TxPoolRuntimeApi_extrinsic_filter
+     **/
+    extrinsicFilter: GenericRuntimeApiMethod<
+      (
+        xtReady: Array<FpSelfContainedUncheckedExtrinsic>,
+        xtFuture: Array<FpSelfContainedUncheckedExtrinsic>,
+      ) => Promise<MoonbeamRpcPrimitivesTxpoolTxPoolResponse>
+    >;
+
+    /**
+     * Generic runtime api call
+     **/
+    [method: string]: GenericRuntimeApiMethod;
+  };
+  /**
+   * @runtimeapi: EthereumRuntimeRPCApi - 0x582211f65bb14b89
+   **/
+  ethereumRuntimeRPCApi: {
+    /**
+     * Returns runtime defined pallet_evm::ChainId.
+     *
+     * @callname: EthereumRuntimeRPCApi_chain_id
+     **/
+    chainId: GenericRuntimeApiMethod<() => Promise<bigint>>;
+
+    /**
+     * Returns pallet_evm::Accounts by address.
+     *
+     * @callname: EthereumRuntimeRPCApi_account_basic
+     **/
+    accountBasic: GenericRuntimeApiMethod<(address: H160) => Promise<EvmBackendBasic>>;
+
+    /**
+     * Returns FixedGasPrice::min_gas_price
+     *
+     * @callname: EthereumRuntimeRPCApi_gas_price
+     **/
+    gasPrice: GenericRuntimeApiMethod<() => Promise<U256>>;
+
+    /**
+     * For a given account address, returns pallet_evm::AccountCodes.
+     *
+     * @callname: EthereumRuntimeRPCApi_account_code_at
+     **/
+    accountCodeAt: GenericRuntimeApiMethod<(address: H160) => Promise<Bytes>>;
+
+    /**
+     * Returns the converted FindAuthor::find_author authority id.
+     *
+     * @callname: EthereumRuntimeRPCApi_author
+     **/
+    author: GenericRuntimeApiMethod<() => Promise<H160>>;
+
+    /**
+     * For a given account address and index, returns pallet_evm::AccountStorages.
+     *
+     * @callname: EthereumRuntimeRPCApi_storage_at
+     **/
+    storageAt: GenericRuntimeApiMethod<(address: H160, index: U256) => Promise<H256>>;
+
+    /**
+     *
+     * @callname: EthereumRuntimeRPCApi_call
+     **/
+    call: GenericRuntimeApiMethod<
+      (
+        from: H160,
+        to: H160,
+        data: BytesLike,
+        value: U256,
+        gasLimit: U256,
+        maxFeePerGas: U256 | undefined,
+        maxPriorityFeePerGas: U256 | undefined,
+        nonce: U256 | undefined,
+        estimate: boolean,
+        accessList: Array<[H160, Array<H256>]> | undefined,
+      ) => Promise<Result<FpEvmExecutionInfoV2, DispatchError>>
+    >;
+
+    /**
+     *
+     * @callname: EthereumRuntimeRPCApi_create
+     **/
+    create: GenericRuntimeApiMethod<
+      (
+        from: H160,
+        data: BytesLike,
+        value: U256,
+        gasLimit: U256,
+        maxFeePerGas: U256 | undefined,
+        maxPriorityFeePerGas: U256 | undefined,
+        nonce: U256 | undefined,
+        estimate: boolean,
+        accessList: Array<[H160, Array<H256>]> | undefined,
+      ) => Promise<Result<FpEvmExecutionInfoV2H160, DispatchError>>
+    >;
+
+    /**
+     * Return the current block.
+     *
+     * @callname: EthereumRuntimeRPCApi_current_block
+     **/
+    currentBlock: GenericRuntimeApiMethod<() => Promise<EthereumBlock | undefined>>;
+
+    /**
+     * Return the current receipt.
+     *
+     * @callname: EthereumRuntimeRPCApi_current_receipts
+     **/
+    currentReceipts: GenericRuntimeApiMethod<() => Promise<Array<EthereumReceiptReceiptV3> | undefined>>;
+
+    /**
+     * Return the current transaction status.
+     *
+     * @callname: EthereumRuntimeRPCApi_current_transaction_statuses
+     **/
+    currentTransactionStatuses: GenericRuntimeApiMethod<() => Promise<Array<FpRpcTransactionStatus> | undefined>>;
+
+    /**
+     *
+     * @callname: EthereumRuntimeRPCApi_current_all
+     **/
+    currentAll: GenericRuntimeApiMethod<
+      () => Promise<
+        [
+          EthereumBlock | undefined,
+          Array<EthereumReceiptReceiptV3> | undefined,
+          Array<FpRpcTransactionStatus> | undefined,
+        ]
+      >
+    >;
+
+    /**
+     * Receives a `Vec<OpaqueExtrinsic>` and filters all the ethereum transactions.
+     *
+     * @callname: EthereumRuntimeRPCApi_extrinsic_filter
+     **/
+    extrinsicFilter: GenericRuntimeApiMethod<
+      (xts: Array<FpSelfContainedUncheckedExtrinsic>) => Promise<Array<EthereumTransactionTransactionV2>>
+    >;
+
+    /**
+     * Return the elasticity multiplier.
+     *
+     * @callname: EthereumRuntimeRPCApi_elasticity
+     **/
+    elasticity: GenericRuntimeApiMethod<() => Promise<Permill | undefined>>;
+
+    /**
+     * Used to determine if gas limit multiplier for non-transactional calls (eth_call/estimateGas)
+     * is supported.
+     *
+     * @callname: EthereumRuntimeRPCApi_gas_limit_multiplier_support
+     **/
+    gasLimitMultiplierSupport: GenericRuntimeApiMethod<() => Promise<[]>>;
+
+    /**
+     * Return the pending block.
+     *
+     * @callname: EthereumRuntimeRPCApi_pending_block
+     **/
+    pendingBlock: GenericRuntimeApiMethod<
+      (
+        xts: Array<FpSelfContainedUncheckedExtrinsic>,
+      ) => Promise<[EthereumBlock | undefined, Array<FpRpcTransactionStatus> | undefined]>
+    >;
+
+    /**
+     * initialize the pending block
+     *
+     * @callname: EthereumRuntimeRPCApi_initialize_pending_block
+     **/
+    initializePendingBlock: GenericRuntimeApiMethod<(header: Header) => Promise<[]>>;
+
+    /**
+     * Generic runtime api call
+     **/
+    [method: string]: GenericRuntimeApiMethod;
+  };
+  /**
+   * @runtimeapi: ConvertTransactionRuntimeApi - 0xe65b00e46cedd0aa
+   **/
+  convertTransactionRuntimeApi: {
+    /**
+     *
+     * @callname: ConvertTransactionRuntimeApi_convert_transaction
+     **/
+    convertTransaction: GenericRuntimeApiMethod<
+      (transaction: EthereumTransactionTransactionV2) => Promise<FpSelfContainedUncheckedExtrinsic>
+    >;
 
     /**
      * Generic runtime api call
@@ -211,36 +512,94 @@ export interface RuntimeApis extends GenericRuntimeApis {
   };
   /**
    * @runtimeapi: TransactionPaymentApi - 0x37c8bb1350a9a2a8
-   * @version: 4
    **/
   transactionPaymentApi: {
     /**
-     * The transaction info
      *
      * @callname: TransactionPaymentApi_query_info
      **/
-    queryInfo: GenericRuntimeApiMethod<(uxt: BytesLike, len: number) => Promise<RuntimeDispatchInfo>>;
+    queryInfo: GenericRuntimeApiMethod<
+      (uxt: FpSelfContainedUncheckedExtrinsic, len: number) => Promise<PalletTransactionPaymentRuntimeDispatchInfo>
+    >;
 
     /**
-     * The transaction fee details
      *
      * @callname: TransactionPaymentApi_query_fee_details
      **/
-    queryFeeDetails: GenericRuntimeApiMethod<(uxt: BytesLike, len: number) => Promise<FeeDetails>>;
+    queryFeeDetails: GenericRuntimeApiMethod<
+      (uxt: FpSelfContainedUncheckedExtrinsic, len: number) => Promise<PalletTransactionPaymentFeeDetails>
+    >;
 
     /**
-     * Query the output of the current LengthToFee given some input
-     *
-     * @callname: TransactionPaymentApi_query_length_to_fee
-     **/
-    queryLengthToFee: GenericRuntimeApiMethod<(length: number) => Promise<Balance>>;
-
-    /**
-     * Query the output of the current WeightToFee given some input
      *
      * @callname: TransactionPaymentApi_query_weight_to_fee
      **/
-    queryWeightToFee: GenericRuntimeApiMethod<(weight: Weight) => Promise<Balance>>;
+    queryWeightToFee: GenericRuntimeApiMethod<(weight: SpWeightsWeightV2Weight) => Promise<bigint>>;
+
+    /**
+     *
+     * @callname: TransactionPaymentApi_query_length_to_fee
+     **/
+    queryLengthToFee: GenericRuntimeApiMethod<(length: number) => Promise<bigint>>;
+
+    /**
+     * Generic runtime api call
+     **/
+    [method: string]: GenericRuntimeApiMethod;
+  };
+  /**
+   * @runtimeapi: NimbusApi - 0x2aa62120049dd2d2
+   **/
+  nimbusApi: {
+    /**
+     *
+     * @callname: NimbusApi_can_author
+     **/
+    canAuthor: GenericRuntimeApiMethod<
+      (author: NimbusPrimitivesNimbusCryptoPublic, relayParent: number, parentHeader: Header) => Promise<boolean>
+    >;
+
+    /**
+     * Generic runtime api call
+     **/
+    [method: string]: GenericRuntimeApiMethod;
+  };
+  /**
+   * @runtimeapi: CollectCollationInfo - 0xea93e3f16f3d6962
+   **/
+  collectCollationInfo: {
+    /**
+     * Collect information about a collation.
+     *
+     * The given `header` is the header of the built block for that
+     * we are collecting the collation info for.
+     *
+     * @callname: CollectCollationInfo_collect_collation_info
+     **/
+    collectCollationInfo: GenericRuntimeApiMethod<(header: Header) => Promise<CumulusPrimitivesCoreCollationInfo>>;
+
+    /**
+     * Generic runtime api call
+     **/
+    [method: string]: GenericRuntimeApiMethod;
+  };
+  /**
+   * @runtimeapi: VrfApi - 0xba8173bf23b2e6f8
+   **/
+  vrfApi: {
+    /**
+     *
+     * @callname: VrfApi_get_last_vrf_output
+     **/
+    getLastVrfOutput: GenericRuntimeApiMethod<() => Promise<H256 | undefined>>;
+
+    /**
+     *
+     * @callname: VrfApi_vrf_key_lookup
+     **/
+    vrfKeyLookup: GenericRuntimeApiMethod<
+      (nimbusId: NimbusPrimitivesNimbusCryptoPublic) => Promise<SessionKeysPrimitivesVrfVrfCryptoPublic | undefined>
+    >;
 
     /**
      * Generic runtime api call

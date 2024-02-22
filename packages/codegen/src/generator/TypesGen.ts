@@ -263,7 +263,6 @@ export class TypesGen {
   }
 
   #includedTypes(): Record<TypeId, NamedType> {
-    const { callTypeId } = this.registry.metadata!.extrinsic;
     const { types } = this.metadata;
     const pathsCount = new Map<string, Array<number>>();
     const typesWithPath = types.filter((one) => one.path.length > 0);

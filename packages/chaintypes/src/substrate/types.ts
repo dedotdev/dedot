@@ -103,7 +103,6 @@ export type KitchensinkRuntimeRuntimeEvent =
   | { pallet: 'ChildBounties'; palletEvent: PalletChildBountiesEvent }
   | { pallet: 'Referenda'; palletEvent: PalletReferendaEvent }
   | { pallet: 'Remark'; palletEvent: PalletRemarkEvent }
-  | { pallet: 'RootTesting'; palletEvent: PalletRootTestingEvent }
   | { pallet: 'ConvictionVoting'; palletEvent: PalletConvictionVotingEvent }
   | { pallet: 'Whitelist'; palletEvent: PalletWhitelistEvent }
   | { pallet: 'AllianceMotion'; palletEvent: PalletCollectiveEvent }
@@ -118,8 +117,7 @@ export type KitchensinkRuntimeRuntimeEvent =
   | { pallet: 'TxPause'; palletEvent: PalletTxPauseEvent }
   | { pallet: 'SafeMode'; palletEvent: PalletSafeModeEvent }
   | { pallet: 'Statement'; palletEvent: PalletStatementEvent }
-  | { pallet: 'Broker'; palletEvent: PalletBrokerEvent }
-  | { pallet: 'SkipFeelessPayment'; palletEvent: PalletSkipFeelessPaymentEvent };
+  | { pallet: 'Broker'; palletEvent: PalletBrokerEvent };
 
 /**
  * Event for the System pallet.
@@ -148,27 +146,11 @@ export type FrameSystemEvent =
   /**
    * On on-chain remark happened.
    **/
-  | { name: 'Remarked'; data: { sender: AccountId32; hash: H256 } }
-  /**
-   * A [`Task`] has started executing
-   **/
-  | { name: 'TaskStarted'; data: { task: KitchensinkRuntimeRuntimeTask } }
-  /**
-   * A [`Task`] has finished executing.
-   **/
-  | { name: 'TaskCompleted'; data: { task: KitchensinkRuntimeRuntimeTask } }
-  /**
-   * A [`Task`] failed during execution.
-   **/
-  | { name: 'TaskFailed'; data: { task: KitchensinkRuntimeRuntimeTask; err: DispatchError } };
+  | { name: 'Remarked'; data: { sender: AccountId32; hash: H256 } };
 
 export type FrameSupportDispatchDispatchClass = 'Normal' | 'Operational' | 'Mandatory';
 
 export type FrameSupportDispatchPays = 'Yes' | 'No';
-
-export type KitchensinkRuntimeRuntimeTask = { tag: 'TasksExample'; value: PalletExampleTasksTask };
-
-export type PalletExampleTasksTask = { tag: 'AddNumberIntoTotal'; value: { i: number } };
 
 /**
  * The `Event` enum of this pallet
@@ -427,9 +409,9 @@ export type PalletStakingPalletEvent =
    **/
   | { name: 'EraPaid'; data: { eraIndex: number; validatorPayout: bigint; remainder: bigint } }
   /**
-   * The nominator has been rewarded by this amount to this destination.
+   * The nominator has been rewarded by this amount.
    **/
-  | { name: 'Rewarded'; data: { stash: AccountId32; dest: PalletStakingRewardDestination; amount: bigint } }
+  | { name: 'Rewarded'; data: { stash: AccountId32; amount: bigint } }
   /**
    * A staker (validator or nominator) has been slashed by the given amount.
    **/
@@ -496,13 +478,6 @@ export type PalletStakingPalletEvent =
    * A new force era mode was set.
    **/
   | { name: 'ForceEra'; data: { mode: PalletStakingForcing } };
-
-export type PalletStakingRewardDestination =
-  | { tag: 'Staked' }
-  | { tag: 'Stash' }
-  | { tag: 'Controller' }
-  | { tag: 'Account'; value: AccountId32 }
-  | { tag: 'None' };
 
 export type PalletStakingValidatorPrefs = { commission: Perbill; blocked: boolean };
 
@@ -814,38 +789,7 @@ export type PalletTreasuryEvent =
   /**
    * The inactive funds of the pallet have been updated.
    **/
-  | { name: 'UpdatedInactive'; data: { reactivated: bigint; deactivated: bigint } }
-  /**
-   * A new asset spend proposal has been approved.
-   **/
-  | {
-      name: 'AssetSpendApproved';
-      data: {
-        index: number;
-        assetKind: number;
-        amount: bigint;
-        beneficiary: AccountId32;
-        validFrom: number;
-        expireAt: number;
-      };
-    }
-  /**
-   * An approved spend was voided.
-   **/
-  | { name: 'AssetSpendVoided'; data: { index: number } }
-  /**
-   * A payment happened.
-   **/
-  | { name: 'Paid'; data: { index: number; paymentId: [] } }
-  /**
-   * A payment failed and can be retried.
-   **/
-  | { name: 'PaymentFailed'; data: { index: number; paymentId: [] } }
-  /**
-   * A spend was processed and removed from the storage. It might have been successfully
-   * paid or it may have expired.
-   **/
-  | { name: 'SpendProcessed'; data: { index: number } };
+  | { name: 'UpdatedInactive'; data: { reactivated: bigint; deactivated: bigint } };
 
 /**
  * The `Event` enum of this pallet
@@ -998,50 +942,17 @@ export type KitchensinkRuntimeRuntime = {};
  **/
 export type PalletSudoEvent =
   /**
-   * A sudo call just took place.
+   * A sudo just took place. \[result\]
    **/
-  | {
-      name: 'Sudid';
-      data: {
-        /**
-         * The result of the call made by the sudo user.
-         **/
-        sudoResult: Result<[], DispatchError>;
-      };
-    }
+  | { name: 'Sudid'; data: { sudoResult: Result<[], DispatchError> } }
   /**
-   * The sudo key has been updated.
+   * The \[sudoer\] just switched identity; the old key is supplied if one existed.
    **/
-  | {
-      name: 'KeyChanged';
-      data: {
-        /**
-         * The old sudo key (if one was previously set).
-         **/
-        old?: AccountId32 | undefined;
-
-        /**
-         * The new sudo key (if one was set).
-         **/
-        new: AccountId32;
-      };
-    }
+  | { name: 'KeyChanged'; data: { oldSudoer?: AccountId32 | undefined } }
   /**
-   * The key was permanently removed.
+   * A sudo just took place. \[result\]
    **/
-  | { name: 'KeyRemoved' }
-  /**
-   * A [sudo_as](Pallet::sudo_as) call just took place.
-   **/
-  | {
-      name: 'SudoAsDone';
-      data: {
-        /**
-         * The result of the call made by the sudo user.
-         **/
-        sudoResult: Result<[], DispatchError>;
-      };
-    };
+  | { name: 'SudoAsDone'; data: { sudoResult: Result<[], DispatchError> } };
 
 /**
  * The `Event` enum of this pallet
@@ -1058,15 +969,15 @@ export type PalletImOnlineEvent =
   /**
    * At the end of the session, at least one validator was found to be offline.
    **/
-  | { name: 'SomeOffline'; data: { offline: Array<[AccountId32, SpStakingExposure]> } };
+  | { name: 'SomeOffline'; data: { offline: Array<[AccountId32, PalletStakingExposure]> } };
 
 export type PalletImOnlineSr25519AppSr25519Public = SpCoreSr25519Public;
 
 export type SpCoreSr25519Public = FixedBytes<32>;
 
-export type SpStakingExposure = { total: bigint; own: bigint; others: Array<SpStakingIndividualExposure> };
+export type PalletStakingExposure = { total: bigint; own: bigint; others: Array<PalletStakingIndividualExposure> };
 
-export type SpStakingIndividualExposure = { who: AccountId32; value: bigint };
+export type PalletStakingIndividualExposure = { who: AccountId32; value: bigint };
 
 /**
  * Events type.
@@ -1462,23 +1373,7 @@ export type PalletBountiesEvent =
   /**
    * A bounty expiry is extended.
    **/
-  | { name: 'BountyExtended'; data: { index: number } }
-  /**
-   * A bounty is approved.
-   **/
-  | { name: 'BountyApproved'; data: { index: number } }
-  /**
-   * A bounty curator is proposed.
-   **/
-  | { name: 'CuratorProposed'; data: { bountyId: number; curator: AccountId32 } }
-  /**
-   * A bounty curator is unassigned.
-   **/
-  | { name: 'CuratorUnassigned'; data: { bountyId: number } }
-  /**
-   * A bounty curator is accepted.
-   **/
-  | { name: 'CuratorAccepted'; data: { bountyId: number; curator: AccountId32 } };
+  | { name: 'BountyExtended'; data: { index: number } };
 
 /**
  * The `Event` enum of this pallet
@@ -2395,7 +2290,7 @@ export type PalletReferendaEvent =
       };
     }
   /**
-   * A deposit has been slashed.
+   * A deposit has been slashaed.
    **/
   | {
       name: 'DepositSlashed';
@@ -2676,8 +2571,7 @@ export type KitchensinkRuntimeRuntimeCall =
   | { pallet: 'Pov'; palletCall: FrameBenchmarkingPalletPovCall }
   | { pallet: 'TxPause'; palletCall: PalletTxPauseCall }
   | { pallet: 'SafeMode'; palletCall: PalletSafeModeCall }
-  | { pallet: 'Broker'; palletCall: PalletBrokerCall }
-  | { pallet: 'Mixnet'; palletCall: PalletMixnetCall };
+  | { pallet: 'Broker'; palletCall: PalletBrokerCall };
 
 export type KitchensinkRuntimeRuntimeCallLike =
   | { pallet: 'System'; palletCall: FrameSystemCallLike }
@@ -2740,8 +2634,7 @@ export type KitchensinkRuntimeRuntimeCallLike =
   | { pallet: 'Pov'; palletCall: FrameBenchmarkingPalletPovCallLike }
   | { pallet: 'TxPause'; palletCall: PalletTxPauseCallLike }
   | { pallet: 'SafeMode'; palletCall: PalletSafeModeCallLike }
-  | { pallet: 'Broker'; palletCall: PalletBrokerCallLike }
-  | { pallet: 'Mixnet'; palletCall: PalletMixnetCallLike };
+  | { pallet: 'Broker'; palletCall: PalletBrokerCallLike };
 
 /**
  * Contains a variant per dispatchable extrinsic that this pallet has.
@@ -2778,11 +2671,7 @@ export type FrameSystemCall =
   /**
    * See [`Pallet::remark_with_event`].
    **/
-  | { name: 'RemarkWithEvent'; params: { remark: Bytes } }
-  /**
-   * See [`Pallet::do_task`].
-   **/
-  | { name: 'DoTask'; params: { task: KitchensinkRuntimeRuntimeTask } };
+  | { name: 'RemarkWithEvent'; params: { remark: Bytes } };
 
 export type FrameSystemCallLike =
   /**
@@ -2816,11 +2705,7 @@ export type FrameSystemCallLike =
   /**
    * See [`Pallet::remark_with_event`].
    **/
-  | { name: 'RemarkWithEvent'; params: { remark: BytesLike } }
-  /**
-   * See [`Pallet::do_task`].
-   **/
-  | { name: 'DoTask'; params: { task: KitchensinkRuntimeRuntimeTask } };
+  | { name: 'RemarkWithEvent'; params: { remark: BytesLike } };
 
 /**
  * Contains a variant per dispatchable extrinsic that this pallet has.
@@ -3033,6 +2918,10 @@ export type PalletBalancesCall =
    **/
   | { name: 'TransferAllowDeath'; params: { dest: MultiAddress; value: bigint } }
   /**
+   * See [`Pallet::set_balance_deprecated`].
+   **/
+  | { name: 'SetBalanceDeprecated'; params: { who: MultiAddress; newFree: bigint; oldReserved: bigint } }
+  /**
    * See [`Pallet::force_transfer`].
    **/
   | { name: 'ForceTransfer'; params: { source: MultiAddress; dest: MultiAddress; value: bigint } }
@@ -3053,6 +2942,10 @@ export type PalletBalancesCall =
    **/
   | { name: 'UpgradeAccounts'; params: { who: Array<AccountId32> } }
   /**
+   * See [`Pallet::transfer`].
+   **/
+  | { name: 'Transfer'; params: { dest: MultiAddress; value: bigint } }
+  /**
    * See [`Pallet::force_set_balance`].
    **/
   | { name: 'ForceSetBalance'; params: { who: MultiAddress; newFree: bigint } };
@@ -3062,6 +2955,10 @@ export type PalletBalancesCallLike =
    * See [`Pallet::transfer_allow_death`].
    **/
   | { name: 'TransferAllowDeath'; params: { dest: MultiAddressLike; value: bigint } }
+  /**
+   * See [`Pallet::set_balance_deprecated`].
+   **/
+  | { name: 'SetBalanceDeprecated'; params: { who: MultiAddressLike; newFree: bigint; oldReserved: bigint } }
   /**
    * See [`Pallet::force_transfer`].
    **/
@@ -3082,6 +2979,10 @@ export type PalletBalancesCallLike =
    * See [`Pallet::upgrade_accounts`].
    **/
   | { name: 'UpgradeAccounts'; params: { who: Array<AccountId32Like> } }
+  /**
+   * See [`Pallet::transfer`].
+   **/
+  | { name: 'Transfer'; params: { dest: MultiAddressLike; value: bigint } }
   /**
    * See [`Pallet::force_set_balance`].
    **/
@@ -3290,7 +3191,7 @@ export type PalletStakingPalletCall =
   /**
    * See [`Pallet::chill_other`].
    **/
-  | { name: 'ChillOther'; params: { stash: AccountId32 } }
+  | { name: 'ChillOther'; params: { controller: AccountId32 } }
   /**
    * See [`Pallet::force_apply_min_commission`].
    **/
@@ -3298,15 +3199,7 @@ export type PalletStakingPalletCall =
   /**
    * See [`Pallet::set_min_commission`].
    **/
-  | { name: 'SetMinCommission'; params: { new: Perbill } }
-  /**
-   * See [`Pallet::payout_stakers_by_page`].
-   **/
-  | { name: 'PayoutStakersByPage'; params: { validatorStash: AccountId32; era: number; page: number } }
-  /**
-   * See [`Pallet::update_payee`].
-   **/
-  | { name: 'UpdatePayee'; params: { controller: AccountId32 } };
+  | { name: 'SetMinCommission'; params: { new: Perbill } };
 
 export type PalletStakingPalletCallLike =
   /**
@@ -3414,7 +3307,7 @@ export type PalletStakingPalletCallLike =
   /**
    * See [`Pallet::chill_other`].
    **/
-  | { name: 'ChillOther'; params: { stash: AccountId32Like } }
+  | { name: 'ChillOther'; params: { controller: AccountId32Like } }
   /**
    * See [`Pallet::force_apply_min_commission`].
    **/
@@ -3422,15 +3315,14 @@ export type PalletStakingPalletCallLike =
   /**
    * See [`Pallet::set_min_commission`].
    **/
-  | { name: 'SetMinCommission'; params: { new: Perbill } }
-  /**
-   * See [`Pallet::payout_stakers_by_page`].
-   **/
-  | { name: 'PayoutStakersByPage'; params: { validatorStash: AccountId32Like; era: number; page: number } }
-  /**
-   * See [`Pallet::update_payee`].
-   **/
-  | { name: 'UpdatePayee'; params: { controller: AccountId32Like } };
+  | { name: 'SetMinCommission'; params: { new: Perbill } };
+
+export type PalletStakingRewardDestination =
+  | { tag: 'Staked' }
+  | { tag: 'Stash' }
+  | { tag: 'Controller' }
+  | { tag: 'Account'; value: AccountId32 }
+  | { tag: 'None' };
 
 export type PalletStakingPalletConfigOp = { tag: 'Noop' } | { tag: 'Set'; value: bigint } | { tag: 'Remove' };
 
@@ -3468,12 +3360,9 @@ export type KitchensinkRuntimeSessionKeys = {
   babe: SpConsensusBabeAppPublic;
   imOnline: PalletImOnlineSr25519AppSr25519Public;
   authorityDiscovery: SpAuthorityDiscoveryAppPublic;
-  mixnet: SpMixnetAppPublic;
 };
 
 export type SpAuthorityDiscoveryAppPublic = SpCoreSr25519Public;
-
-export type SpMixnetAppPublic = SpCoreSr25519Public;
 
 /**
  * Contains a variant per dispatchable extrinsic that this pallet has.
@@ -3921,32 +3810,13 @@ export type PalletTreasuryCall =
    **/
   | { name: 'ApproveProposal'; params: { proposalId: number } }
   /**
-   * See [`Pallet::spend_local`].
+   * See [`Pallet::spend`].
    **/
-  | { name: 'SpendLocal'; params: { amount: bigint; beneficiary: MultiAddress } }
+  | { name: 'Spend'; params: { amount: bigint; beneficiary: MultiAddress } }
   /**
    * See [`Pallet::remove_approval`].
    **/
-  | { name: 'RemoveApproval'; params: { proposalId: number } }
-  /**
-   * See [`Pallet::spend`].
-   **/
-  | {
-      name: 'Spend';
-      params: { assetKind: number; amount: bigint; beneficiary: MultiAddress; validFrom?: number | undefined };
-    }
-  /**
-   * See [`Pallet::payout`].
-   **/
-  | { name: 'Payout'; params: { index: number } }
-  /**
-   * See [`Pallet::check_status`].
-   **/
-  | { name: 'CheckStatus'; params: { index: number } }
-  /**
-   * See [`Pallet::void_spend`].
-   **/
-  | { name: 'VoidSpend'; params: { index: number } };
+  | { name: 'RemoveApproval'; params: { proposalId: number } };
 
 export type PalletTreasuryCallLike =
   /**
@@ -3962,32 +3832,13 @@ export type PalletTreasuryCallLike =
    **/
   | { name: 'ApproveProposal'; params: { proposalId: number } }
   /**
-   * See [`Pallet::spend_local`].
+   * See [`Pallet::spend`].
    **/
-  | { name: 'SpendLocal'; params: { amount: bigint; beneficiary: MultiAddressLike } }
+  | { name: 'Spend'; params: { amount: bigint; beneficiary: MultiAddressLike } }
   /**
    * See [`Pallet::remove_approval`].
    **/
-  | { name: 'RemoveApproval'; params: { proposalId: number } }
-  /**
-   * See [`Pallet::spend`].
-   **/
-  | {
-      name: 'Spend';
-      params: { assetKind: number; amount: bigint; beneficiary: MultiAddressLike; validFrom?: number | undefined };
-    }
-  /**
-   * See [`Pallet::payout`].
-   **/
-  | { name: 'Payout'; params: { index: number } }
-  /**
-   * See [`Pallet::check_status`].
-   **/
-  | { name: 'CheckStatus'; params: { index: number } }
-  /**
-   * See [`Pallet::void_spend`].
-   **/
-  | { name: 'VoidSpend'; params: { index: number } };
+  | { name: 'RemoveApproval'; params: { proposalId: number } };
 
 /**
  * Contains a variant per dispatchable extrinsic that this pallet has.
@@ -4254,11 +4105,7 @@ export type PalletSudoCall =
   /**
    * See [`Pallet::sudo_as`].
    **/
-  | { name: 'SudoAs'; params: { who: MultiAddress; call: KitchensinkRuntimeRuntimeCall } }
-  /**
-   * See [`Pallet::remove_key`].
-   **/
-  | { name: 'RemoveKey' };
+  | { name: 'SudoAs'; params: { who: MultiAddress; call: KitchensinkRuntimeRuntimeCall } };
 
 export type PalletSudoCallLike =
   /**
@@ -4279,11 +4126,7 @@ export type PalletSudoCallLike =
   /**
    * See [`Pallet::sudo_as`].
    **/
-  | { name: 'SudoAs'; params: { who: MultiAddressLike; call: KitchensinkRuntimeRuntimeCallLike } }
-  /**
-   * See [`Pallet::remove_key`].
-   **/
-  | { name: 'RemoveKey' };
+  | { name: 'SudoAs'; params: { who: MultiAddressLike; call: KitchensinkRuntimeRuntimeCallLike } };
 
 /**
  * Contains a variant per dispatchable extrinsic that this pallet has.
@@ -4328,7 +4171,7 @@ export type PalletIdentityCall =
   /**
    * See [`Pallet::set_identity`].
    **/
-  | { name: 'SetIdentity'; params: { info: PalletIdentityLegacyIdentityInfo } }
+  | { name: 'SetIdentity'; params: { info: PalletIdentityIdentityInfo } }
   /**
    * See [`Pallet::set_subs`].
    **/
@@ -4356,7 +4199,7 @@ export type PalletIdentityCall =
   /**
    * See [`Pallet::set_fields`].
    **/
-  | { name: 'SetFields'; params: { index: number; fields: bigint } }
+  | { name: 'SetFields'; params: { index: number; fields: PalletIdentityBitFlags } }
   /**
    * See [`Pallet::provide_judgement`].
    **/
@@ -4393,7 +4236,7 @@ export type PalletIdentityCallLike =
   /**
    * See [`Pallet::set_identity`].
    **/
-  | { name: 'SetIdentity'; params: { info: PalletIdentityLegacyIdentityInfo } }
+  | { name: 'SetIdentity'; params: { info: PalletIdentityIdentityInfo } }
   /**
    * See [`Pallet::set_subs`].
    **/
@@ -4421,7 +4264,7 @@ export type PalletIdentityCallLike =
   /**
    * See [`Pallet::set_fields`].
    **/
-  | { name: 'SetFields'; params: { index: number; fields: bigint } }
+  | { name: 'SetFields'; params: { index: number; fields: PalletIdentityBitFlags } }
   /**
    * See [`Pallet::provide_judgement`].
    **/
@@ -4450,7 +4293,7 @@ export type PalletIdentityCallLike =
    **/
   | { name: 'QuitSub' };
 
-export type PalletIdentityLegacyIdentityInfo = {
+export type PalletIdentityIdentityInfo = {
   additional: Array<[Data, Data]>;
   display: Data;
   legal: Data;
@@ -4461,6 +4304,18 @@ export type PalletIdentityLegacyIdentityInfo = {
   image: Data;
   twitter: Data;
 };
+
+export type PalletIdentityBitFlags = bigint;
+
+export type PalletIdentityIdentityField =
+  | 'Display'
+  | 'Legal'
+  | 'Web'
+  | 'Riot'
+  | 'Email'
+  | 'PgpFingerprint'
+  | 'Image'
+  | 'Twitter';
 
 export type PalletIdentityJudgement =
   | { tag: 'Unknown' }
@@ -4769,11 +4624,7 @@ export type PalletVestingCall =
   /**
    * See [`Pallet::merge_schedules`].
    **/
-  | { name: 'MergeSchedules'; params: { schedule1Index: number; schedule2Index: number } }
-  /**
-   * See [`Pallet::force_remove_vesting_schedule`].
-   **/
-  | { name: 'ForceRemoveVestingSchedule'; params: { target: MultiAddress; scheduleIndex: number } };
+  | { name: 'MergeSchedules'; params: { schedule1Index: number; schedule2Index: number } };
 
 export type PalletVestingCallLike =
   /**
@@ -4798,11 +4649,7 @@ export type PalletVestingCallLike =
   /**
    * See [`Pallet::merge_schedules`].
    **/
-  | { name: 'MergeSchedules'; params: { schedule1Index: number; schedule2Index: number } }
-  /**
-   * See [`Pallet::force_remove_vesting_schedule`].
-   **/
-  | { name: 'ForceRemoveVestingSchedule'; params: { target: MultiAddressLike; scheduleIndex: number } };
+  | { name: 'MergeSchedules'; params: { schedule1Index: number; schedule2Index: number } };
 
 export type PalletVestingVestingInfo = { locked: bigint; perBlock: bigint; startingBlock: number };
 
@@ -4979,11 +4826,7 @@ export type PalletPreimageCall =
   /**
    * See [`Pallet::unrequest_preimage`].
    **/
-  | { name: 'UnrequestPreimage'; params: { hash: H256 } }
-  /**
-   * See [`Pallet::ensure_updated`].
-   **/
-  | { name: 'EnsureUpdated'; params: { hashes: Array<H256> } };
+  | { name: 'UnrequestPreimage'; params: { hash: H256 } };
 
 export type PalletPreimageCallLike =
   /**
@@ -5001,11 +4844,7 @@ export type PalletPreimageCallLike =
   /**
    * See [`Pallet::unrequest_preimage`].
    **/
-  | { name: 'UnrequestPreimage'; params: { hash: H256 } }
-  /**
-   * See [`Pallet::ensure_updated`].
-   **/
-  | { name: 'EnsureUpdated'; params: { hashes: Array<H256> } };
+  | { name: 'UnrequestPreimage'; params: { hash: H256 } };
 
 /**
  * Contains a variant per dispatchable extrinsic that this pallet has.
@@ -7134,23 +6973,15 @@ export type PalletRemarkCallLike =
  **/
 export type PalletRootTestingCall =
   /**
-   * See `Pallet::fill_block`.
+   * See [`Pallet::fill_block`].
    **/
-  | { name: 'FillBlock'; params: { ratio: Perbill } }
-  /**
-   * See `Pallet::trigger_defensive`.
-   **/
-  | { name: 'TriggerDefensive' };
+  { name: 'FillBlock'; params: { ratio: Perbill } };
 
 export type PalletRootTestingCallLike =
   /**
-   * See `Pallet::fill_block`.
+   * See [`Pallet::fill_block`].
    **/
-  | { name: 'FillBlock'; params: { ratio: Perbill } }
-  /**
-   * See `Pallet::trigger_defensive`.
-   **/
-  | { name: 'TriggerDefensive' };
+  { name: 'FillBlock'; params: { ratio: Perbill } };
 
 /**
  * Contains a variant per dispatchable extrinsic that this pallet has.
@@ -7546,18 +7377,7 @@ export type PalletNominationPoolsCall =
   /**
    * See [`Pallet::claim_commission`].
    **/
-  | { name: 'ClaimCommission'; params: { poolId: number } }
-  /**
-   * See [`Pallet::adjust_pool_deposit`].
-   **/
-  | { name: 'AdjustPoolDeposit'; params: { poolId: number } }
-  /**
-   * See [`Pallet::set_commission_claim_permission`].
-   **/
-  | {
-      name: 'SetCommissionClaimPermission';
-      params: { poolId: number; permission?: PalletNominationPoolsCommissionClaimPermission | undefined };
-    };
+  | { name: 'ClaimCommission'; params: { poolId: number } };
 
 export type PalletNominationPoolsCallLike =
   /**
@@ -7676,18 +7496,7 @@ export type PalletNominationPoolsCallLike =
   /**
    * See [`Pallet::claim_commission`].
    **/
-  | { name: 'ClaimCommission'; params: { poolId: number } }
-  /**
-   * See [`Pallet::adjust_pool_deposit`].
-   **/
-  | { name: 'AdjustPoolDeposit'; params: { poolId: number } }
-  /**
-   * See [`Pallet::set_commission_claim_permission`].
-   **/
-  | {
-      name: 'SetCommissionClaimPermission';
-      params: { poolId: number; permission?: PalletNominationPoolsCommissionClaimPermission | undefined };
-    };
+  | { name: 'ClaimCommission'; params: { poolId: number } };
 
 export type PalletNominationPoolsBondExtra = { tag: 'FreeBalance'; value: bigint } | { tag: 'Rewards' };
 
@@ -7708,10 +7517,6 @@ export type PalletNominationPoolsClaimPermission =
   | 'PermissionlessAll';
 
 export type PalletNominationPoolsCommissionChangeRate = { maxIncrease: Perbill; minDelay: number };
-
-export type PalletNominationPoolsCommissionClaimPermission =
-  | { tag: 'Permissionless' }
-  | { tag: 'Account'; value: AccountId32 };
 
 /**
  * Contains a variant per dispatchable extrinsic that this pallet has.
@@ -8264,38 +8069,6 @@ export type PalletBrokerRegionId = { begin: number; core: number; mask: PalletBr
 
 export type PalletBrokerFinality = 'Provisional' | 'Final';
 
-/**
- * Contains a variant per dispatchable extrinsic that this pallet has.
- **/
-export type PalletMixnetCall =
-  /**
-   * See `Pallet::register`.
-   **/
-  { name: 'Register'; params: { registration: PalletMixnetRegistration; signature: SpMixnetAppSignature } };
-
-export type PalletMixnetCallLike =
-  /**
-   * See `Pallet::register`.
-   **/
-  { name: 'Register'; params: { registration: PalletMixnetRegistration; signature: SpMixnetAppSignature } };
-
-export type PalletMixnetRegistration = {
-  blockNumber: number;
-  sessionIndex: number;
-  authorityIndex: number;
-  mixnode: PalletMixnetBoundedMixnode;
-};
-
-export type PalletMixnetBoundedMixnode = {
-  kxPublic: FixedBytes<32>;
-  peerId: FixedBytes<32>;
-  externalAddresses: Array<Bytes>;
-};
-
-export type SpMixnetAppSignature = SpCoreSr25519Signature;
-
-export type SpRuntimeBlakeTwo256 = {};
-
 export type PalletConvictionVotingTally = { ayes: bigint; nays: bigint; support: bigint };
 
 /**
@@ -8306,15 +8079,6 @@ export type PalletRemarkEvent =
    * Stored data off chain.
    **/
   { name: 'Stored'; data: { sender: AccountId32; contentHash: H256 } };
-
-/**
- * The `Event` enum of this pallet
- **/
-export type PalletRootTestingEvent =
-  /**
-   * Event dispatched when the trigger_defensive extrinsic is called.
-   **/
-  'DefensiveTestCall';
 
 /**
  * The `Event` enum of this pallet
@@ -8498,24 +8262,9 @@ export type PalletNominationPoolsEvent =
       data: { poolId: number; changeRate: PalletNominationPoolsCommissionChangeRate };
     }
   /**
-   * Pool commission claim permission has been updated.
-   **/
-  | {
-      name: 'PoolCommissionClaimPermissionUpdated';
-      data: { poolId: number; permission?: PalletNominationPoolsCommissionClaimPermission | undefined };
-    }
-  /**
    * Pool commission has been claimed.
    **/
-  | { name: 'PoolCommissionClaimed'; data: { poolId: number; commission: bigint } }
-  /**
-   * Topped up deficit in frozen ED of the reward pool.
-   **/
-  | { name: 'MinBalanceDeficitAdjusted'; data: { poolId: number; amount: bigint } }
-  /**
-   * Claimed excess frozen ED of af the reward pool.
-   **/
-  | { name: 'MinBalanceExcessAdjusted'; data: { poolId: number; amount: bigint } };
+  | { name: 'PoolCommissionClaimed'; data: { poolId: number; commission: bigint } };
 
 /**
  * The `Event` enum of this pallet
@@ -8588,7 +8337,7 @@ export type PalletReferendaEvent002 =
       };
     }
   /**
-   * A deposit has been slashed.
+   * A deposit has been slashaed.
    **/
   | {
       name: 'DepositSlashed';
@@ -9058,102 +8807,26 @@ export type PalletMessageQueueEvent =
    **/
   | {
       name: 'ProcessingFailed';
-      data: {
-        /**
-         * The `blake2_256` hash of the message.
-         **/
-        id: H256;
-
-        /**
-         * The queue of the message.
-         **/
-        origin: number;
-
-        /**
-         * The error that occurred.
-         *
-         * This error is pretty opaque. More fine-grained errors need to be emitted as events
-         * by the `MessageProcessor`.
-         **/
-        error: FrameSupportMessagesProcessMessageError;
-      };
+      data: { id: FixedBytes<32>; origin: number; error: FrameSupportMessagesProcessMessageError };
     }
   /**
    * Message is processed.
    **/
   | {
       name: 'Processed';
-      data: {
-        /**
-         * The `blake2_256` hash of the message.
-         **/
-        id: H256;
-
-        /**
-         * The queue of the message.
-         **/
-        origin: number;
-
-        /**
-         * How much weight was used to process the message.
-         **/
-        weightUsed: SpWeightsWeightV2Weight;
-
-        /**
-         * Whether the message was processed.
-         *
-         * Note that this does not mean that the underlying `MessageProcessor` was internally
-         * successful. It *solely* means that the MQ pallet will treat this as a success
-         * condition and discard the message. Any internal error needs to be emitted as events
-         * by the `MessageProcessor`.
-         **/
-        success: boolean;
-      };
+      data: { id: FixedBytes<32>; origin: number; weightUsed: SpWeightsWeightV2Weight; success: boolean };
     }
   /**
    * Message placed in overweight queue.
    **/
   | {
       name: 'OverweightEnqueued';
-      data: {
-        /**
-         * The `blake2_256` hash of the message.
-         **/
-        id: FixedBytes<32>;
-
-        /**
-         * The queue of the message.
-         **/
-        origin: number;
-
-        /**
-         * The page of the message.
-         **/
-        pageIndex: number;
-
-        /**
-         * The index of the message within the page.
-         **/
-        messageIndex: number;
-      };
+      data: { id: FixedBytes<32>; origin: number; pageIndex: number; messageIndex: number };
     }
   /**
    * This page was reaped.
    **/
-  | {
-      name: 'PageReaped';
-      data: {
-        /**
-         * The queue of the page.
-         **/
-        origin: number;
-
-        /**
-         * The index of the page.
-         **/
-        index: number;
-      };
-    };
+  | { name: 'PageReaped'; data: { origin: number; index: number } };
 
 export type FrameSupportMessagesProcessMessageError =
   | { tag: 'BadFormat' }
@@ -9837,15 +9510,6 @@ export type PalletBrokerEvent =
       };
     };
 
-/**
- * The `Event` enum of this pallet
- **/
-export type PalletSkipFeelessPaymentEvent =
-  /**
-   * A transaction fee was skipped.
-   **/
-  { name: 'FeeSkipped'; data: { who: AccountId32 } };
-
 export type FrameSystemLastRuntimeUpgradeInfo = { specVersion: number; specName: string };
 
 export type FrameSystemLimitsBlockWeights = {
@@ -9872,17 +9536,6 @@ export type FrameSystemLimitsBlockLength = { max: FrameSupportDispatchPerDispatc
 export type FrameSupportDispatchPerDispatchClassU32 = { normal: number; operational: number; mandatory: number };
 
 export type SpWeightsRuntimeDbWeight = { read: bigint; write: bigint };
-
-export type SpVersionRuntimeVersion = {
-  specName: string;
-  implName: string;
-  authoringVersion: number;
-  specVersion: number;
-  implVersion: number;
-  apis: Array<[FixedBytes<8>, number]>;
-  transactionVersion: number;
-  stateVersion: number;
-};
 
 /**
  * Error for the System pallet
@@ -9915,15 +9568,7 @@ export type FrameSystemError =
   /**
    * The origin filter prevent the call to be dispatched.
    **/
-  | 'CallFiltered'
-  /**
-   * The specified [`Task`] is not valid.
-   **/
-  | 'InvalidTask'
-  /**
-   * The specified [`Task`] failed during execution.
-   **/
-  | 'FailedTask';
+  | 'CallFiltered';
 
 /**
  * The `Error` enum of this pallet.
@@ -9945,7 +9590,7 @@ export type SpConsensusBabeDigestsPrimaryPreDigest = {
   vrfSignature: SpCoreSr25519VrfVrfSignature;
 };
 
-export type SpCoreSr25519VrfVrfSignature = { preOutput: FixedBytes<32>; proof: FixedBytes<64> };
+export type SpCoreSr25519VrfVrfSignature = { output: FixedBytes<32>; proof: FixedBytes<64> };
 
 export type SpConsensusBabeDigestsSecondaryPlainPreDigest = { authorityIndex: number; slot: SpConsensusSlotsSlot };
 
@@ -10013,32 +9658,19 @@ export type PalletBalancesIdAmount = { id: KitchensinkRuntimeRuntimeHoldReason; 
 
 export type KitchensinkRuntimeRuntimeHoldReason =
   | { tag: 'Contracts'; value: PalletContractsHoldReason }
-  | { tag: 'Preimage'; value: PalletPreimageHoldReason }
   | { tag: 'Nis'; value: PalletNisHoldReason }
   | { tag: 'NftFractionalization'; value: PalletNftFractionalizationHoldReason }
-  | { tag: 'TransactionStorage'; value: PalletTransactionStorageHoldReason }
   | { tag: 'SafeMode'; value: PalletSafeModeHoldReason };
 
 export type PalletContractsHoldReason = 'CodeUploadDepositReserve' | 'StorageDepositReserve';
-
-export type PalletPreimageHoldReason = 'Preimage';
 
 export type PalletNisHoldReason = 'NftReceipt';
 
 export type PalletNftFractionalizationHoldReason = 'Fractionalized';
 
-export type PalletTransactionStorageHoldReason = 'StorageFeeHold';
-
 export type PalletSafeModeHoldReason = 'EnterOrExtend';
 
-export type PalletBalancesIdAmountRuntimeFreezeReason = { id: KitchensinkRuntimeRuntimeFreezeReason; amount: bigint };
-
-export type KitchensinkRuntimeRuntimeFreezeReason = {
-  tag: 'NominationPools';
-  value: PalletNominationPoolsFreezeReason;
-};
-
-export type PalletNominationPoolsFreezeReason = 'PoolMinBalance';
+export type PalletBalancesIdAmount002 = { id: []; amount: bigint };
 
 /**
  * The `Error` enum of this pallet.
@@ -10171,7 +9803,7 @@ export type PalletStakingStakingLedger = {
   total: bigint;
   active: bigint;
   unlocking: Array<PalletStakingUnlockChunk>;
-  legacyClaimedRewards: Array<number>;
+  claimedRewards: Array<number>;
 };
 
 export type PalletStakingUnlockChunk = { value: bigint; era: number };
@@ -10179,10 +9811,6 @@ export type PalletStakingUnlockChunk = { value: bigint; era: number };
 export type PalletStakingNominations = { targets: Array<AccountId32>; submittedIn: number; suppressed: boolean };
 
 export type PalletStakingActiveEraInfo = { index: number; start?: bigint | undefined };
-
-export type SpStakingPagedExposureMetadata = { total: bigint; own: bigint; nominatorCount: number; pageCount: number };
-
-export type SpStakingExposurePage = { pageTotal: bigint; others: Array<SpStakingIndividualExposure> };
 
 export type PalletStakingEraRewardPoints = { total: number; individual: Array<[AccountId32, number]> };
 
@@ -10270,10 +9898,6 @@ export type PalletStakingPalletError =
    **/
   | 'AlreadyClaimed'
   /**
-   * No nominators exist on this page.
-   **/
-  | 'InvalidPage'
-  /**
    * Incorrect previous history depth input provided.
    **/
   | 'IncorrectHistoryDepth'
@@ -10314,11 +9938,7 @@ export type PalletStakingPalletError =
   /**
    * Some bound is not met.
    **/
-  | 'BoundNotMet'
-  /**
-   * Used when attempting to use deprecated controller account logic.
-   **/
-  | 'ControllerDeprecated';
+  | 'BoundNotMet';
 
 export type SpCoreCryptoKeyTypeId = FixedBytes<4>;
 
@@ -10688,20 +10308,6 @@ export type PalletGrandpaError =
 
 export type PalletTreasuryProposal = { proposer: AccountId32; value: bigint; beneficiary: AccountId32; bond: bigint };
 
-export type PalletTreasurySpendStatus = {
-  assetKind: number;
-  amount: bigint;
-  beneficiary: AccountId32;
-  validFrom: number;
-  expireAt: number;
-  status: PalletTreasuryPaymentState;
-};
-
-export type PalletTreasuryPaymentState =
-  | { tag: 'Pending' }
-  | { tag: 'Attempted'; value: { id: [] } }
-  | { tag: 'Failed' };
-
 export type FrameSupportPalletId = FixedBytes<8>;
 
 /**
@@ -10713,7 +10319,7 @@ export type PalletTreasuryError =
    **/
   | 'InsufficientProposersBalance'
   /**
-   * No proposal, bounty or spend at that index.
+   * No proposal or bounty at that index.
    **/
   | 'InvalidIndex'
   /**
@@ -10728,35 +10334,7 @@ export type PalletTreasuryError =
   /**
    * Proposal has not been approved.
    **/
-  | 'ProposalNotApproved'
-  /**
-   * The balance of the asset kind is not convertible to the balance of the native asset.
-   **/
-  | 'FailedToConvertBalance'
-  /**
-   * The spend has expired and cannot be claimed.
-   **/
-  | 'SpendExpired'
-  /**
-   * The spend is not yet eligible for payout.
-   **/
-  | 'EarlyPayout'
-  /**
-   * The payment has already been attempted.
-   **/
-  | 'AlreadyAttempted'
-  /**
-   * There was some issue with the mechanism of payment.
-   **/
-  | 'PayoutError'
-  /**
-   * The payout was not yet attempted/claimed.
-   **/
-  | 'NotAttempted'
-  /**
-   * The payment has neither failed nor succeeded yet.
-   **/
-  | 'Inconclusive';
+  | 'ProposalNotApproved';
 
 /**
  * The `Error` enum of this pallet.
@@ -10896,6 +10474,8 @@ export type PalletContractsEnvironmentTypeH256 = {};
 
 export type PalletContractsEnvironmentTypeBlakeTwo256 = {};
 
+export type SpRuntimeBlakeTwo256 = {};
+
 export type PalletContractsEnvironmentTypeU64 = {};
 
 export type PalletContractsEnvironmentTypeU32 = {};
@@ -10987,10 +10567,6 @@ export type PalletContractsError =
    **/
   | 'NoChainExtension'
   /**
-   * Failed to decode the XCM program.
-   **/
-  | 'XcmDecodeFailed'
-  /**
    * A contract with the same AccountId already exists.
    **/
   | 'DuplicateContract'
@@ -11067,11 +10643,11 @@ export type PalletContractsError =
   | 'CannotAddSelfAsDelegateDependency';
 
 /**
- * Error for the Sudo pallet.
+ * Error for the Sudo pallet
  **/
 export type PalletSudoError =
   /**
-   * Sender must be the Sudo account.
+   * Sender must be the Sudo account
    **/
   'RequireSudo';
 
@@ -11089,17 +10665,17 @@ export type PalletImOnlineError =
   | 'DuplicatedHeartbeat';
 
 export type SpStakingOffenceOffenceDetails = {
-  offender: [AccountId32, SpStakingExposure];
+  offender: [AccountId32, PalletStakingExposure];
   reporters: Array<AccountId32>;
 };
 
 export type PalletIdentityRegistration = {
   judgements: Array<[number, PalletIdentityJudgement]>;
   deposit: bigint;
-  info: PalletIdentityLegacyIdentityInfo;
+  info: PalletIdentityIdentityInfo;
 };
 
-export type PalletIdentityRegistrarInfo = { account: AccountId32; fee: bigint; fields: bigint };
+export type PalletIdentityRegistrarInfo = { account: AccountId32; fee: bigint; fields: PalletIdentityBitFlags };
 
 /**
  * The `Error` enum of this pallet.
@@ -11149,6 +10725,10 @@ export type PalletIdentityError =
    * The target is invalid.
    **/
   | 'InvalidTarget'
+  /**
+   * Too many additional fields.
+   **/
+  | 'TooManyFields'
   /**
    * Maximum amount of registrars reached. Cannot add any more.
    **/
@@ -11490,25 +11070,12 @@ export type PalletGluttonError =
    **/
   | 'InsaneLimit';
 
-export type PalletPreimageOldRequestStatus =
+export type PalletPreimageRequestStatus =
   | { tag: 'Unrequested'; value: { deposit: [AccountId32, bigint]; len: number } }
   | {
       tag: 'Requested';
       value: { deposit?: [AccountId32, bigint] | undefined; count: number; len?: number | undefined };
     };
-
-export type PalletPreimageRequestStatus =
-  | { tag: 'Unrequested'; value: { ticket: [AccountId32, FrameSupportTokensFungibleHoldConsideration]; len: number } }
-  | {
-      tag: 'Requested';
-      value: {
-        maybeTicket?: [AccountId32, FrameSupportTokensFungibleHoldConsideration] | undefined;
-        count: number;
-        maybeLen?: number | undefined;
-      };
-    };
-
-export type FrameSupportTokensFungibleHoldConsideration = bigint;
 
 /**
  * The `Error` enum of this pallet.
@@ -11537,15 +11104,7 @@ export type PalletPreimageError =
   /**
    * The preimage request cannot be removed since no outstanding requests exist.
    **/
-  | 'NotRequested'
-  /**
-   * More than `MAX_HASH_UPGRADE_BULK_COUNT` hashes were requested to be upgraded at once.
-   **/
-  | 'TooMany'
-  /**
-   * Too few hashes were requested to be upgraded (i.e. zero).
-   **/
-  | 'TooFew';
+  | 'NotRequested';
 
 export type PalletProxyProxyDefinition = {
   delegate: AccountId32;
@@ -11753,10 +11312,6 @@ export type PalletTipsError =
    * The tip hash is unknown.
    **/
   | 'UnknownTip'
-  /**
-   * The tip given was too generous.
-   **/
-  | 'MaxTipAmountExceeded'
   /**
    * The account attempting to retract the tip is not the finder of the tip.
    **/
@@ -12508,6 +12063,10 @@ export type PalletTransactionStorageTransactionInfo = {
  **/
 export type PalletTransactionStorageError =
   /**
+   * Insufficient account balance.
+   **/
+  | 'InsufficientFunds'
+  /**
    * Invalid configuration.
    **/
   | 'NotConfigured'
@@ -12884,7 +12443,7 @@ export type PalletAllianceError =
   /**
    * The account's identity does not have display field and website field.
    **/
-  | 'WithoutRequiredIdentityFields'
+  | 'WithoutIdentityDisplayAndWebsite'
   /**
    * The account's identity has no good judgement.
    **/
@@ -12946,7 +12505,6 @@ export type PalletNominationPoolsCommission = {
   max?: Perbill | undefined;
   changeRate?: PalletNominationPoolsCommissionChangeRate | undefined;
   throttleFrom?: number | undefined;
-  claimPermission?: PalletNominationPoolsCommissionClaimPermission | undefined;
 };
 
 export type PalletNominationPoolsPoolRoles = {
@@ -13012,9 +12570,9 @@ export type PalletNominationPoolsError =
   /**
    * The amount does not meet the minimum bond to either join or create a pool.
    *
-   * The depositor can never unbond to a value less than `Pallet::depositor_min_bond`. The
-   * caller does not have nominating permissions for the pool. Members can never unbond to a
-   * value below `MinJoinBond`.
+   * The depositor can never unbond to a value less than
+   * `Pallet::depositor_min_bond`. The caller does not have nominating
+   * permissions for the pool. Members can never unbond to a value below `MinJoinBond`.
    **/
   | { tag: 'MinimumBondNotMet' }
   /**
@@ -13106,11 +12664,7 @@ export type PalletNominationPoolsError =
   /**
    * Bonding extra is restricted to the exact pending reward amount.
    **/
-  | { tag: 'BondExtraRestricted' }
-  /**
-   * No imbalance in the ED deposit for the pool.
-   **/
-  | { tag: 'NothingToAdjust' };
+  | { tag: 'BondExtraRestricted' };
 
 export type PalletNominationPoolsDefensiveError =
   | 'NotEnoughSpaceInUnbondPool'
@@ -13398,11 +12952,7 @@ export type PalletMessageQueueError =
    *
    * This can change at any time and may resolve in the future by re-trying.
    **/
-  | 'QueuePaused'
-  /**
-   * Another call is in progress and needs to finish before this call can happen.
-   **/
-  | 'RecursiveDisallowed';
+  | 'QueuePaused';
 
 /**
  * The `Error` enum of this pallet.
@@ -13618,17 +13168,6 @@ export type PalletBrokerError =
    **/
   | 'InvalidConfig';
 
-/**
- * The `Error` enum of this pallet.
- **/
-export type PalletExampleTasksError =
-  /**
-   * The referenced task was not found.
-   **/
-  'NotFound';
-
-export type SpRuntimeUncheckedExtrinsic = Bytes;
-
 export type FrameSystemExtensionsCheckNonZeroSender = {};
 
 export type FrameSystemExtensionsCheckSpecVersion = {};
@@ -13644,3 +13183,199 @@ export type FrameSystemExtensionsCheckNonce = number;
 export type FrameSystemExtensionsCheckWeight = {};
 
 export type PalletAssetConversionTxPaymentChargeAssetTxPayment = { tip: bigint; assetId?: number | undefined };
+
+export type SpRuntimeBlock = { header: Header; extrinsics: Array<SpRuntimeUncheckedExtrinsic> };
+
+export type SpRuntimeUncheckedExtrinsic = Bytes;
+
+export type SpCoreOpaqueMetadata = Bytes;
+
+export type SpRuntimeTransactionValidityTransactionValidityError =
+  | { tag: 'Invalid'; value: SpRuntimeTransactionValidityInvalidTransaction }
+  | { tag: 'Unknown'; value: SpRuntimeTransactionValidityUnknownTransaction };
+
+export type SpRuntimeTransactionValidityInvalidTransaction =
+  | { tag: 'Call' }
+  | { tag: 'Payment' }
+  | { tag: 'Future' }
+  | { tag: 'Stale' }
+  | { tag: 'BadProof' }
+  | { tag: 'AncientBirthBlock' }
+  | { tag: 'ExhaustsResources' }
+  | { tag: 'Custom'; value: number }
+  | { tag: 'BadMandatory' }
+  | { tag: 'MandatoryValidation' }
+  | { tag: 'BadSigner' };
+
+export type SpRuntimeTransactionValidityUnknownTransaction =
+  | { tag: 'CannotLookup' }
+  | { tag: 'NoUnsignedValidator' }
+  | { tag: 'Custom'; value: number };
+
+export type SpInherentsInherentData = { data: Array<[FixedBytes<8>, Bytes]> };
+
+export type SpInherentsCheckInherentsResult = { okay: boolean; fatalError: boolean; errors: SpInherentsInherentData };
+
+export type SpRuntimeTransactionValidityTransactionSource = 'InBlock' | 'Local' | 'External';
+
+export type SpRuntimeTransactionValidityValidTransaction = {
+  priority: bigint;
+  requires: Array<Bytes>;
+  provides: Array<Bytes>;
+  longevity: bigint;
+  propagate: boolean;
+};
+
+export type SpStatementStoreRuntimeApiStatementSource = 'Chain' | 'Network' | 'Local';
+
+export type SpStatementStoreRuntimeApiValidStatement = { maxCount: number; maxSize: number };
+
+export type SpStatementStoreRuntimeApiInvalidStatement = 'BadProof' | 'NoProof' | 'InternalError';
+
+export type SpConsensusGrandpaOpaqueKeyOwnershipProof = Bytes;
+
+export type SpConsensusBabeBabeConfiguration = {
+  slotDuration: bigint;
+  epochLength: bigint;
+  c: [bigint, bigint];
+  authorities: Array<[SpConsensusBabeAppPublic, bigint]>;
+  randomness: FixedBytes<32>;
+  allowedSlots: SpConsensusBabeAllowedSlots;
+};
+
+export type SpConsensusBabeEpoch = {
+  epochIndex: bigint;
+  startSlot: SpConsensusSlotsSlot;
+  duration: bigint;
+  authorities: Array<[SpConsensusBabeAppPublic, bigint]>;
+  randomness: FixedBytes<32>;
+  config: SpConsensusBabeBabeEpochConfiguration;
+};
+
+export type SpConsensusBabeOpaqueKeyOwnershipProof = Bytes;
+
+export type PalletContractsPrimitivesContractResult = {
+  gasConsumed: SpWeightsWeightV2Weight;
+  gasRequired: SpWeightsWeightV2Weight;
+  storageDeposit: PalletContractsPrimitivesStorageDeposit;
+  debugMessage: Bytes;
+  result: Result<PalletContractsPrimitivesExecReturnValue, DispatchError>;
+  events?: Array<FrameSystemEventRecord> | undefined;
+};
+
+export type PalletContractsPrimitivesExecReturnValue = { flags: PalletContractsPrimitivesReturnFlags; data: Bytes };
+
+export type PalletContractsPrimitivesReturnFlags = { bits: number };
+
+export type PalletContractsPrimitivesStorageDeposit =
+  | { tag: 'Refund'; value: bigint }
+  | { tag: 'Charge'; value: bigint };
+
+export type PalletContractsPrimitivesCode = { tag: 'Upload'; value: Bytes } | { tag: 'Existing'; value: H256 };
+
+export type PalletContractsPrimitivesContractResultResult = {
+  gasConsumed: SpWeightsWeightV2Weight;
+  gasRequired: SpWeightsWeightV2Weight;
+  storageDeposit: PalletContractsPrimitivesStorageDeposit;
+  debugMessage: Bytes;
+  result: Result<PalletContractsPrimitivesInstantiateReturnValue, DispatchError>;
+  events?: Array<FrameSystemEventRecord> | undefined;
+};
+
+export type PalletContractsPrimitivesInstantiateReturnValue = {
+  result: PalletContractsPrimitivesExecReturnValue;
+  accountId: AccountId32;
+};
+
+export type PalletContractsPrimitivesCodeUploadReturnValue = { codeHash: H256; deposit: bigint };
+
+export type PalletContractsPrimitivesContractAccessError = 'DoesntExist' | 'KeyDecodingFailed' | 'MigrationInProgress';
+
+export type PalletTransactionPaymentRuntimeDispatchInfo = {
+  weight: SpWeightsWeightV2Weight;
+  class: FrameSupportDispatchDispatchClass;
+  partialFee: bigint;
+};
+
+export type PalletTransactionPaymentFeeDetails = {
+  inclusionFee?: PalletTransactionPaymentInclusionFee | undefined;
+  tip: bigint;
+};
+
+export type PalletTransactionPaymentInclusionFee = { baseFee: bigint; lenFee: bigint; adjustedWeightFee: bigint };
+
+export type SpMmrPrimitivesError =
+  | 'InvalidNumericOp'
+  | 'Push'
+  | 'GetRoot'
+  | 'Commit'
+  | 'GenerateProof'
+  | 'Verify'
+  | 'LeafNotFound'
+  | 'PalletNotIncluded'
+  | 'InvalidLeafIndex'
+  | 'InvalidBestKnownBlock';
+
+export type SpMmrPrimitivesEncodableOpaqueLeaf = Bytes;
+
+export type SpMmrPrimitivesProof = { leafIndices: Array<bigint>; leafCount: bigint; items: Array<H256> };
+
+export type KitchensinkRuntimeRuntimeError =
+  | { tag: 'System'; value: FrameSystemError }
+  | { tag: 'Utility'; value: PalletUtilityError }
+  | { tag: 'Babe'; value: PalletBabeError }
+  | { tag: 'Indices'; value: PalletIndicesError }
+  | { tag: 'Balances'; value: PalletBalancesError }
+  | { tag: 'ElectionProviderMultiPhase'; value: PalletElectionProviderMultiPhaseError }
+  | { tag: 'Staking'; value: PalletStakingPalletError }
+  | { tag: 'Session'; value: PalletSessionError }
+  | { tag: 'Democracy'; value: PalletDemocracyError }
+  | { tag: 'Council'; value: PalletCollectiveError }
+  | { tag: 'TechnicalCommittee'; value: PalletCollectiveError }
+  | { tag: 'Elections'; value: PalletElectionsPhragmenError }
+  | { tag: 'TechnicalMembership'; value: PalletMembershipError }
+  | { tag: 'Grandpa'; value: PalletGrandpaError }
+  | { tag: 'Treasury'; value: PalletTreasuryError }
+  | { tag: 'AssetRate'; value: PalletAssetRateError }
+  | { tag: 'Contracts'; value: PalletContractsError }
+  | { tag: 'Sudo'; value: PalletSudoError }
+  | { tag: 'ImOnline'; value: PalletImOnlineError }
+  | { tag: 'Identity'; value: PalletIdentityError }
+  | { tag: 'Society'; value: PalletSocietyError }
+  | { tag: 'Recovery'; value: PalletRecoveryError }
+  | { tag: 'Vesting'; value: PalletVestingError }
+  | { tag: 'Scheduler'; value: PalletSchedulerError }
+  | { tag: 'Glutton'; value: PalletGluttonError }
+  | { tag: 'Preimage'; value: PalletPreimageError }
+  | { tag: 'Proxy'; value: PalletProxyError }
+  | { tag: 'Multisig'; value: PalletMultisigError }
+  | { tag: 'Bounties'; value: PalletBountiesError }
+  | { tag: 'Tips'; value: PalletTipsError }
+  | { tag: 'Assets'; value: PalletAssetsError }
+  | { tag: 'PoolAssets'; value: PalletAssetsError }
+  | { tag: 'Lottery'; value: PalletLotteryError }
+  | { tag: 'Nis'; value: PalletNisError }
+  | { tag: 'Uniques'; value: PalletUniquesError }
+  | { tag: 'Nfts'; value: PalletNftsError }
+  | { tag: 'NftFractionalization'; value: PalletNftFractionalizationError }
+  | { tag: 'Salary'; value: PalletSalaryError }
+  | { tag: 'CoreFellowship'; value: PalletCoreFellowshipError }
+  | { tag: 'TransactionStorage'; value: PalletTransactionStorageError }
+  | { tag: 'VoterList'; value: PalletBagsListError }
+  | { tag: 'StateTrieMigration'; value: PalletStateTrieMigrationError }
+  | { tag: 'ChildBounties'; value: PalletChildBountiesError }
+  | { tag: 'Referenda'; value: PalletReferendaError }
+  | { tag: 'Remark'; value: PalletRemarkError }
+  | { tag: 'ConvictionVoting'; value: PalletConvictionVotingError }
+  | { tag: 'Whitelist'; value: PalletWhitelistError }
+  | { tag: 'AllianceMotion'; value: PalletCollectiveError }
+  | { tag: 'Alliance'; value: PalletAllianceError }
+  | { tag: 'NominationPools'; value: PalletNominationPoolsError }
+  | { tag: 'RankedPolls'; value: PalletReferendaError }
+  | { tag: 'RankedCollective'; value: PalletRankedCollectiveError }
+  | { tag: 'AssetConversion'; value: PalletAssetConversionError }
+  | { tag: 'FastUnstake'; value: PalletFastUnstakeError }
+  | { tag: 'MessageQueue'; value: PalletMessageQueueError }
+  | { tag: 'TxPause'; value: PalletTxPauseError }
+  | { tag: 'SafeMode'; value: PalletSafeModeError }
+  | { tag: 'Broker'; value: PalletBrokerError };

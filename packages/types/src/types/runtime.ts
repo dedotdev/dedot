@@ -1,12 +1,16 @@
+import { TypeId } from '@delightfuldot/codecs';
+
 export type RuntimeApiMethodParamSpec = {
   name: string;
   type: string;
+  typeId?: TypeId;
 };
 
 export type RuntimeApiMethodSpec = {
   docs?: string | string[];
   params: RuntimeApiMethodParamSpec[];
   type: string;
+  typeId?: TypeId;
   runtimeApiName?: string;
   methodName?: string;
   version?: number;

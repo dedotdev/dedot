@@ -18,6 +18,7 @@ import type {
   U256,
   FixedI64,
   Era,
+  Header,
 } from '@delightfuldot/codecs';
 
 export type FrameSystemAccountInfo = {
@@ -5911,17 +5912,6 @@ export type FrameSupportDispatchPerDispatchClassU32 = { normal: number; operatio
 
 export type SpWeightsRuntimeDbWeight = { read: bigint; write: bigint };
 
-export type SpVersionRuntimeVersion = {
-  specName: string;
-  implName: string;
-  authoringVersion: number;
-  specVersion: number;
-  implVersion: number;
-  apis: Array<[FixedBytes<8>, number]>;
-  transactionVersion: number;
-  stateVersion: number;
-};
-
 /**
  * Error for the System pallet
  **/
@@ -7891,8 +7881,6 @@ export type PalletRandomnessError =
   | 'RandomnessResultDNE'
   | 'RandomnessResultNotFilled';
 
-export type FpSelfContainedUncheckedExtrinsic = SpRuntimeUncheckedExtrinsic;
-
 export type AccountEthereumSignature = SpCoreEcdsaSignature;
 
 export type FrameSystemExtensionsCheckNonZeroSender = {};
@@ -7911,6 +7899,148 @@ export type FrameSystemExtensionsCheckWeight = {};
 
 export type PalletTransactionPaymentChargeTransactionPayment = bigint;
 
+export type MoonbeamRuntimeRuntime = {};
+
+export type SpRuntimeTransactionValidityTransactionSource = 'InBlock' | 'Local' | 'External';
+
+export type FpSelfContainedUncheckedExtrinsic = SpRuntimeUncheckedExtrinsic;
+
 export type SpRuntimeUncheckedExtrinsic = Bytes;
 
-export type MoonbeamRuntimeRuntime = {};
+export type SpRuntimeTransactionValidityValidTransaction = {
+  priority: bigint;
+  requires: Array<Bytes>;
+  provides: Array<Bytes>;
+  longevity: bigint;
+  propagate: boolean;
+};
+
+export type SpRuntimeTransactionValidityTransactionValidityError =
+  | { tag: 'Invalid'; value: SpRuntimeTransactionValidityInvalidTransaction }
+  | { tag: 'Unknown'; value: SpRuntimeTransactionValidityUnknownTransaction };
+
+export type SpRuntimeTransactionValidityInvalidTransaction =
+  | { tag: 'Call' }
+  | { tag: 'Payment' }
+  | { tag: 'Future' }
+  | { tag: 'Stale' }
+  | { tag: 'BadProof' }
+  | { tag: 'AncientBirthBlock' }
+  | { tag: 'ExhaustsResources' }
+  | { tag: 'Custom'; value: number }
+  | { tag: 'BadMandatory' }
+  | { tag: 'MandatoryValidation' }
+  | { tag: 'BadSigner' };
+
+export type SpRuntimeTransactionValidityUnknownTransaction =
+  | { tag: 'CannotLookup' }
+  | { tag: 'NoUnsignedValidator' }
+  | { tag: 'Custom'; value: number };
+
+export type SpConsensusSlotsSlot = bigint;
+
+export type SpRuntimeBlock = { header: Header; extrinsics: Array<FpSelfContainedUncheckedExtrinsic> };
+
+export type SpCoreOpaqueMetadata = Bytes;
+
+export type SpInherentsInherentData = { data: Array<[FixedBytes<8>, Bytes]> };
+
+export type SpInherentsCheckInherentsResult = { okay: boolean; fatalError: boolean; errors: SpInherentsInherentData };
+
+export type SpCoreCryptoKeyTypeId = FixedBytes<4>;
+
+export type MoonbeamRpcPrimitivesTxpoolTxPoolResponse = {
+  ready: Array<EthereumTransactionTransactionV2>;
+  future: Array<EthereumTransactionTransactionV2>;
+};
+
+export type EvmBackendBasic = { balance: U256; nonce: U256 };
+
+export type FpEvmExecutionInfoV2 = {
+  exitReason: EvmCoreErrorExitReason;
+  value: Bytes;
+  usedGas: FpEvmUsedGas;
+  weightInfo?: FpEvmWeightInfo | undefined;
+  logs: Array<EthereumLog>;
+};
+
+export type FpEvmUsedGas = { standard: U256; effective: U256 };
+
+export type FpEvmWeightInfo = {
+  refTimeLimit?: bigint | undefined;
+  proofSizeLimit?: bigint | undefined;
+  refTimeUsage?: bigint | undefined;
+  proofSizeUsage?: bigint | undefined;
+};
+
+export type FpEvmExecutionInfoV2H160 = {
+  exitReason: EvmCoreErrorExitReason;
+  value: H160;
+  usedGas: FpEvmUsedGas;
+  weightInfo?: FpEvmWeightInfo | undefined;
+  logs: Array<EthereumLog>;
+};
+
+export type PalletTransactionPaymentRuntimeDispatchInfo = {
+  weight: SpWeightsWeightV2Weight;
+  class: FrameSupportDispatchDispatchClass;
+  partialFee: bigint;
+};
+
+export type PalletTransactionPaymentFeeDetails = {
+  inclusionFee?: PalletTransactionPaymentInclusionFee | undefined;
+  tip: bigint;
+};
+
+export type PalletTransactionPaymentInclusionFee = { baseFee: bigint; lenFee: bigint; adjustedWeightFee: bigint };
+
+export type CumulusPrimitivesCoreCollationInfo = {
+  upwardMessages: Array<Bytes>;
+  horizontalMessages: Array<PolkadotCorePrimitivesOutboundHrmpMessage>;
+  newValidationCode?: PolkadotParachainPrimitivesPrimitivesValidationCode | undefined;
+  processedDownwardMessages: number;
+  hrmpWatermark: number;
+  headData: PolkadotParachainPrimitivesPrimitivesHeadData;
+};
+
+export type PolkadotParachainPrimitivesPrimitivesValidationCode = Bytes;
+
+export type MoonbeamRuntimeRuntimeError =
+  | { tag: 'System'; value: FrameSystemError }
+  | { tag: 'ParachainSystem'; value: CumulusPalletParachainSystemError }
+  | { tag: 'Balances'; value: PalletBalancesError }
+  | { tag: 'ParachainStaking'; value: PalletParachainStakingError }
+  | { tag: 'AuthorInherent'; value: PalletAuthorInherentError }
+  | { tag: 'AuthorMapping'; value: PalletAuthorMappingError }
+  | { tag: 'MoonbeamOrbiters'; value: PalletMoonbeamOrbitersError }
+  | { tag: 'Utility'; value: PalletUtilityError }
+  | { tag: 'Proxy'; value: PalletProxyError }
+  | { tag: 'MaintenanceMode'; value: PalletMaintenanceModeError }
+  | { tag: 'Identity'; value: PalletIdentityError }
+  | { tag: 'Migrations'; value: PalletMigrationsError }
+  | { tag: 'Multisig'; value: PalletMultisigError }
+  | { tag: 'Evm'; value: PalletEvmError }
+  | { tag: 'Ethereum'; value: PalletEthereumError }
+  | { tag: 'Scheduler'; value: PalletSchedulerError }
+  | { tag: 'Democracy'; value: PalletDemocracyError }
+  | { tag: 'Preimage'; value: PalletPreimageError }
+  | { tag: 'ConvictionVoting'; value: PalletConvictionVotingError }
+  | { tag: 'Referenda'; value: PalletReferendaError }
+  | { tag: 'Whitelist'; value: PalletWhitelistError }
+  | { tag: 'CouncilCollective'; value: PalletCollectiveError }
+  | { tag: 'TechCommitteeCollective'; value: PalletCollectiveError }
+  | { tag: 'TreasuryCouncilCollective'; value: PalletCollectiveError }
+  | { tag: 'OpenTechCommitteeCollective'; value: PalletCollectiveError }
+  | { tag: 'Treasury'; value: PalletTreasuryError }
+  | { tag: 'CrowdloanRewards'; value: PalletCrowdloanRewardsError }
+  | { tag: 'XcmpQueue'; value: CumulusPalletXcmpQueueError }
+  | { tag: 'CumulusXcm'; value: CumulusPalletXcmError }
+  | { tag: 'DmpQueue'; value: CumulusPalletDmpQueueError }
+  | { tag: 'PolkadotXcm'; value: PalletXcmError }
+  | { tag: 'Assets'; value: PalletAssetsError }
+  | { tag: 'AssetManager'; value: PalletAssetManagerError }
+  | { tag: 'XTokens'; value: OrmlXtokensModuleError }
+  | { tag: 'XcmTransactor'; value: PalletXcmTransactorError }
+  | { tag: 'LocalAssets'; value: PalletAssetsError }
+  | { tag: 'EthereumXcm'; value: PalletEthereumXcmError }
+  | { tag: 'Randomness'; value: PalletRandomnessError };

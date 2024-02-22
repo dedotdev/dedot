@@ -3,52 +3,58 @@
 import type { GenericRuntimeApis, GenericRuntimeApiMethod } from '@delightfuldot/types';
 import type {
   RuntimeVersion,
-  Null,
-  Block,
   Header,
-  Option,
-  OpaqueMetadata,
-  ApplyExtrinsicResult,
-  BytesLike,
-  CheckInherentsResult,
-  InherentData,
-  Extrinsic,
-  TransactionValidity,
-  TransactionSource,
-  BlockHash,
-  SetId,
-  OpaqueKeyOwnershipProof,
-  AccountId32Like,
-  AuthorityList,
-  GrandpaEquivocationProof,
-  Balance,
-  NpPoolId,
-  BabeConfiguration,
-  BabeEpoch,
-  Slot,
-  BabeEquivocationProof,
-  AccountId32,
-  Nonce,
-  RuntimeDispatchInfo,
-  FeeDetails,
-  Weight,
-  Location,
+  DispatchError,
   Result,
-  Hash,
-  MmrError,
-  LeafIndex,
-  TupleOfMmrEncodableOpaqueLeafsAndMmrBatchProof,
-  BlockNumberLike,
-  MmrEncodableOpaqueLeaf,
-  MmrBatchProof,
-  KeyTypeId,
-  Text,
+  H256,
+  AccountId32Like,
+  BytesLike,
+  Bytes,
+  AccountId32,
 } from '@delightfuldot/codecs';
+import type {
+  SpRuntimeBlock,
+  SpCoreOpaqueMetadata,
+  SpRuntimeTransactionValidityTransactionValidityError,
+  SpRuntimeUncheckedExtrinsic,
+  SpInherentsInherentData,
+  SpInherentsCheckInherentsResult,
+  SpRuntimeTransactionValidityValidTransaction,
+  SpRuntimeTransactionValidityTransactionSource,
+  SpStatementStoreRuntimeApiValidStatement,
+  SpStatementStoreRuntimeApiInvalidStatement,
+  SpStatementStoreRuntimeApiStatementSource,
+  SpStatementStoreStatement,
+  SpConsensusGrandpaAppPublic,
+  SpConsensusGrandpaEquivocationProof,
+  SpConsensusGrandpaOpaqueKeyOwnershipProof,
+  SpConsensusBabeBabeConfiguration,
+  SpConsensusSlotsSlot,
+  SpConsensusBabeEpoch,
+  SpConsensusBabeOpaqueKeyOwnershipProof,
+  SpConsensusBabeAppPublic,
+  SpConsensusSlotsEquivocationProof,
+  SpAuthorityDiscoveryAppPublic,
+  PalletContractsPrimitivesContractResult,
+  SpWeightsWeightV2Weight,
+  PalletContractsPrimitivesContractResultResult,
+  PalletContractsPrimitivesCode,
+  PalletContractsPrimitivesCodeUploadReturnValue,
+  PalletContractsWasmDeterminism,
+  PalletContractsPrimitivesContractAccessError,
+  PalletTransactionPaymentRuntimeDispatchInfo,
+  PalletTransactionPaymentFeeDetails,
+  PalletAssetConversionNativeOrAssetId,
+  KitchensinkRuntimeRuntimeCallLike,
+  SpMmrPrimitivesError,
+  SpMmrPrimitivesEncodableOpaqueLeaf,
+  SpMmrPrimitivesProof,
+  SpCoreCryptoKeyTypeId,
+} from './types';
 
 export interface RuntimeApis extends GenericRuntimeApis {
   /**
    * @runtimeapi: Core - 0xdf6acb689907609b
-   * @version: 4
    **/
   core: {
     /**
@@ -63,14 +69,14 @@ export interface RuntimeApis extends GenericRuntimeApis {
      *
      * @callname: Core_execute_block
      **/
-    executeBlock: GenericRuntimeApiMethod<(block: Block) => Promise<Null>>;
+    executeBlock: GenericRuntimeApiMethod<(block: SpRuntimeBlock) => Promise<[]>>;
 
     /**
      * Initialize a block with the given header.
      *
      * @callname: Core_initialize_block
      **/
-    initializeBlock: GenericRuntimeApiMethod<(header: Header) => Promise<Null>>;
+    initializeBlock: GenericRuntimeApiMethod<(header: Header) => Promise<[]>>;
 
     /**
      * Generic runtime api call
@@ -79,29 +85,33 @@ export interface RuntimeApis extends GenericRuntimeApis {
   };
   /**
    * @runtimeapi: Metadata - 0x37e397fc7c91f5e4
-   * @version: 2
    **/
   metadata: {
-    /**
-     * Returns the metadata at a given version.
-     *
-     * @callname: Metadata_metadata_at_version
-     **/
-    metadataAtVersion: GenericRuntimeApiMethod<(version: number) => Promise<Option<OpaqueMetadata>>>;
-
-    /**
-     * Returns the supported metadata versions.
-     *
-     * @callname: Metadata_metadata_versions
-     **/
-    metadataVersions: GenericRuntimeApiMethod<() => Promise<Array<number>>>;
-
     /**
      * Returns the metadata of a runtime.
      *
      * @callname: Metadata_metadata
      **/
-    metadata: GenericRuntimeApiMethod<() => Promise<OpaqueMetadata>>;
+    metadata: GenericRuntimeApiMethod<() => Promise<SpCoreOpaqueMetadata>>;
+
+    /**
+     * Returns the metadata at a given version.
+     *
+     * If the given `version` isn't supported, this will return `None`.
+     * Use [`Self::metadata_versions`] to find out about supported metadata version of the runtime.
+     *
+     * @callname: Metadata_metadata_at_version
+     **/
+    metadataAtVersion: GenericRuntimeApiMethod<(version: number) => Promise<SpCoreOpaqueMetadata | undefined>>;
+
+    /**
+     * Returns the supported metadata versions.
+     *
+     * This can be used to call `metadata_at_version`.
+     *
+     * @callname: Metadata_metadata_versions
+     **/
+    metadataVersions: GenericRuntimeApiMethod<() => Promise<Array<number>>>;
 
     /**
      * Generic runtime api call
@@ -110,32 +120,46 @@ export interface RuntimeApis extends GenericRuntimeApis {
   };
   /**
    * @runtimeapi: BlockBuilder - 0x40fe3ad401f8959a
-   * @version: 6
    **/
   blockBuilder: {
     /**
+     * Apply the given extrinsic.
+     *
+     * Returns an inclusion outcome which specifies if this extrinsic is included in
+     * this block or not.
      *
      * @callname: BlockBuilder_apply_extrinsic
      **/
-    applyExtrinsic: GenericRuntimeApiMethod<(extrinsic: BytesLike) => Promise<ApplyExtrinsicResult>>;
+    applyExtrinsic: GenericRuntimeApiMethod<
+      (
+        extrinsic: SpRuntimeUncheckedExtrinsic,
+      ) => Promise<Result<Result<[], DispatchError>, SpRuntimeTransactionValidityTransactionValidityError>>
+    >;
 
     /**
-     *
-     * @callname: BlockBuilder_check_inherents
-     **/
-    checkInherents: GenericRuntimeApiMethod<(block: Block, data: InherentData) => Promise<CheckInherentsResult>>;
-
-    /**
-     *
-     * @callname: BlockBuilder_inherent_extrinsics
-     **/
-    inherentExtrinsics: GenericRuntimeApiMethod<(inherent: InherentData) => Promise<Array<Extrinsic>>>;
-
-    /**
+     * Finish the current block.
      *
      * @callname: BlockBuilder_finalize_block
      **/
     finalizeBlock: GenericRuntimeApiMethod<() => Promise<Header>>;
+
+    /**
+     * Generate inherent extrinsics. The inherent data will vary from chain to chain.
+     *
+     * @callname: BlockBuilder_inherent_extrinsics
+     **/
+    inherentExtrinsics: GenericRuntimeApiMethod<
+      (inherent: SpInherentsInherentData) => Promise<Array<SpRuntimeUncheckedExtrinsic>>
+    >;
+
+    /**
+     * Check that the inherents are valid. The inherent data will vary from chain to chain.
+     *
+     * @callname: BlockBuilder_check_inherents
+     **/
+    checkInherents: GenericRuntimeApiMethod<
+      (block: SpRuntimeBlock, data: SpInherentsInherentData) => Promise<SpInherentsCheckInherentsResult>
+    >;
 
     /**
      * Generic runtime api call
@@ -144,16 +168,50 @@ export interface RuntimeApis extends GenericRuntimeApis {
   };
   /**
    * @runtimeapi: TaggedTransactionQueue - 0xd2bc9897eed08f15
-   * @version: 3
    **/
   taggedTransactionQueue: {
     /**
      * Validate the transaction.
      *
+     * This method is invoked by the transaction pool to learn details about given transaction.
+     * The implementation should make sure to verify the correctness of the transaction
+     * against current state. The given `block_hash` corresponds to the hash of the block
+     * that is used as current state.
+     *
+     * Note that this call may be performed by the pool multiple times and transactions
+     * might be verified in any possible order.
+     *
      * @callname: TaggedTransactionQueue_validate_transaction
      **/
     validateTransaction: GenericRuntimeApiMethod<
-      (source: TransactionSource, tx: BytesLike, blockHash: BlockHash) => Promise<TransactionValidity>
+      (
+        source: SpRuntimeTransactionValidityTransactionSource,
+        tx: SpRuntimeUncheckedExtrinsic,
+        blockHash: H256,
+      ) => Promise<
+        Result<SpRuntimeTransactionValidityValidTransaction, SpRuntimeTransactionValidityTransactionValidityError>
+      >
+    >;
+
+    /**
+     * Generic runtime api call
+     **/
+    [method: string]: GenericRuntimeApiMethod;
+  };
+  /**
+   * @runtimeapi: ValidateStatement - 0xbe9fb0c91a8046cf
+   **/
+  validateStatement: {
+    /**
+     * Validate the statement.
+     *
+     * @callname: ValidateStatement_validate_statement
+     **/
+    validateStatement: GenericRuntimeApiMethod<
+      (
+        source: SpStatementStoreRuntimeApiStatementSource,
+        statement: SpStatementStoreStatement,
+      ) => Promise<Result<SpStatementStoreRuntimeApiValidStatement, SpStatementStoreRuntimeApiInvalidStatement>>
     >;
 
     /**
@@ -163,7 +221,6 @@ export interface RuntimeApis extends GenericRuntimeApis {
   };
   /**
    * @runtimeapi: OffchainWorkerApi - 0xf78b278be53f454c
-   * @version: 2
    **/
   offchainWorkerApi: {
     /**
@@ -171,7 +228,7 @@ export interface RuntimeApis extends GenericRuntimeApis {
      *
      * @callname: OffchainWorkerApi_offchain_worker
      **/
-    offchainWorker: GenericRuntimeApiMethod<(header: Header) => Promise<Null>>;
+    offchainWorker: GenericRuntimeApiMethod<(header: Header) => Promise<[]>>;
 
     /**
      * Generic runtime api call
@@ -180,16 +237,8 @@ export interface RuntimeApis extends GenericRuntimeApis {
   };
   /**
    * @runtimeapi: GrandpaApi - 0xed99c5acb25eedf5
-   * @version: 3
    **/
   grandpaApi: {
-    /**
-     * Get current GRANDPA authority set id.
-     *
-     * @callname: GrandpaApi_current_set_id
-     **/
-    currentSetId: GenericRuntimeApiMethod<() => Promise<SetId>>;
-
     /**
      * Get the current GRANDPA authorities and weights. This should not change except
      * for when changes are scheduled and the corresponding delay has passed.
@@ -198,10 +247,27 @@ export interface RuntimeApis extends GenericRuntimeApis {
      * used to finalize descendants of this block (B+1, B+2, ...). The block B itself
      * is finalized by the authorities from block B-1.
      *
-     * @callname: GrandpaApi_generate_key_ownership_proof
+     * @callname: GrandpaApi_grandpa_authorities
      **/
-    generateKeyOwnershipProof: GenericRuntimeApiMethod<
-      (setId: SetId, authorityId: AccountId32Like) => Promise<Option<OpaqueKeyOwnershipProof>>
+    grandpaAuthorities: GenericRuntimeApiMethod<() => Promise<Array<[SpConsensusGrandpaAppPublic, bigint]>>>;
+
+    /**
+     * Submits an unsigned extrinsic to report an equivocation. The caller
+     * must provide the equivocation proof and a key ownership proof
+     * (should be obtained using `generate_key_ownership_proof`). The
+     * extrinsic will be unsigned and should only be accepted for local
+     * authorship (not to be broadcast to the network). This method returns
+     * `None` when creation of the extrinsic fails, e.g. if equivocation
+     * reporting is disabled for the given runtime (i.e. this method is
+     * hardcoded to return `None`). Only useful in an offchain context.
+     *
+     * @callname: GrandpaApi_submit_report_equivocation_unsigned_extrinsic
+     **/
+    submitReportEquivocationUnsignedExtrinsic: GenericRuntimeApiMethod<
+      (
+        equivocationProof: SpConsensusGrandpaEquivocationProof,
+        keyOwnerProof: SpConsensusGrandpaOpaqueKeyOwnershipProof,
+      ) => Promise<[] | undefined>
     >;
 
     /**
@@ -217,25 +283,21 @@ export interface RuntimeApis extends GenericRuntimeApis {
      * instead use indexed data through an offchain worker, not requiring
      * older states to be available.
      *
-     * @callname: GrandpaApi_grandpa_authorities
+     * @callname: GrandpaApi_generate_key_ownership_proof
      **/
-    grandpaAuthorities: GenericRuntimeApiMethod<() => Promise<AuthorityList>>;
+    generateKeyOwnershipProof: GenericRuntimeApiMethod<
+      (
+        setId: bigint,
+        authorityId: SpConsensusGrandpaAppPublic,
+      ) => Promise<SpConsensusGrandpaOpaqueKeyOwnershipProof | undefined>
+    >;
 
     /**
-     * Submits an unsigned extrinsic to report an equivocation. The caller
-     * must provide the equivocation proof and a key ownership proof
-     * (should be obtained using `generate_key_ownership_proof`). The
-     * extrinsic will be unsigned and should only be accepted for local
-     * authorship (not to be broadcast to the network). This method returns
-     * `None` when creation of the extrinsic fails, e.g. if equivocation
-     * reporting is disabled for the given runtime (i.e. this method is
-     * hardcoded to return `None`). Only useful in an offchain context.
+     * Get current GRANDPA authority set id.
      *
-     * @callname: GrandpaApi_submit_report_equivocation_unsigned_extrinsic
+     * @callname: GrandpaApi_current_set_id
      **/
-    submitReportEquivocationUnsignedExtrinsic: GenericRuntimeApiMethod<
-      (equivocationProof: GrandpaEquivocationProof, keyOwnerProof: OpaqueKeyOwnershipProof) => Promise<Option<Null>>
-    >;
+    currentSetId: GenericRuntimeApiMethod<() => Promise<bigint>>;
 
     /**
      * Generic runtime api call
@@ -244,7 +306,6 @@ export interface RuntimeApis extends GenericRuntimeApis {
   };
   /**
    * @runtimeapi: NominationPoolsApi - 0x17a6bc0d0062aeb3
-   * @version: 1
    **/
   nominationPoolsApi: {
     /**
@@ -252,21 +313,21 @@ export interface RuntimeApis extends GenericRuntimeApis {
      *
      * @callname: NominationPoolsApi_pending_rewards
      **/
-    pendingRewards: GenericRuntimeApiMethod<(who: AccountId32Like) => Promise<Balance>>;
+    pendingRewards: GenericRuntimeApiMethod<(who: AccountId32Like) => Promise<bigint>>;
 
     /**
      * Returns the equivalent balance of `points` for a given pool.
      *
      * @callname: NominationPoolsApi_points_to_balance
      **/
-    pointsToBalance: GenericRuntimeApiMethod<(poolId: NpPoolId, points: Balance) => Promise<Balance>>;
+    pointsToBalance: GenericRuntimeApiMethod<(poolId: number, points: bigint) => Promise<bigint>>;
 
     /**
      * Returns the equivalent points of `new_funds` for a given pool.
      *
      * @callname: NominationPoolsApi_balance_to_points
      **/
-    balanceToPoints: GenericRuntimeApiMethod<(poolId: NpPoolId, newFunds: Balance) => Promise<Balance>>;
+    balanceToPoints: GenericRuntimeApiMethod<(poolId: number, newFunds: bigint) => Promise<bigint>>;
 
     /**
      * Generic runtime api call
@@ -275,7 +336,6 @@ export interface RuntimeApis extends GenericRuntimeApis {
   };
   /**
    * @runtimeapi: StakingApi - 0x18ef58a3b67ba770
-   * @version: 1
    **/
   stakingApi: {
     /**
@@ -283,7 +343,7 @@ export interface RuntimeApis extends GenericRuntimeApis {
      *
      * @callname: StakingApi_nominations_quota
      **/
-    nominationsQuota: GenericRuntimeApiMethod<(balance: Balance) => Promise<number>>;
+    nominationsQuota: GenericRuntimeApiMethod<(balance: bigint) => Promise<number>>;
 
     /**
      * Generic runtime api call
@@ -292,7 +352,6 @@ export interface RuntimeApis extends GenericRuntimeApis {
   };
   /**
    * @runtimeapi: BabeApi - 0xcbca25e39f142387
-   * @version: 2
    **/
   babeApi: {
     /**
@@ -300,28 +359,29 @@ export interface RuntimeApis extends GenericRuntimeApis {
      *
      * @callname: BabeApi_configuration
      **/
-    configuration: GenericRuntimeApiMethod<() => Promise<BabeConfiguration>>;
-
-    /**
-     * Returns information regarding the current epoch.
-     *
-     * @callname: BabeApi_current_epoch
-     **/
-    currentEpoch: GenericRuntimeApiMethod<() => Promise<BabeEpoch>>;
+    configuration: GenericRuntimeApiMethod<() => Promise<SpConsensusBabeBabeConfiguration>>;
 
     /**
      * Returns the slot that started the current epoch.
      *
      * @callname: BabeApi_current_epoch_start
      **/
-    currentEpochStart: GenericRuntimeApiMethod<() => Promise<Slot>>;
+    currentEpochStart: GenericRuntimeApiMethod<() => Promise<SpConsensusSlotsSlot>>;
 
     /**
-     * Returns information regarding the next epoch (which was already previously announced).
+     * Returns information regarding the current epoch.
+     *
+     * @callname: BabeApi_current_epoch
+     **/
+    currentEpoch: GenericRuntimeApiMethod<() => Promise<SpConsensusBabeEpoch>>;
+
+    /**
+     * Returns information regarding the next epoch (which was already
+     * previously announced).
      *
      * @callname: BabeApi_next_epoch
      **/
-    nextEpoch: GenericRuntimeApiMethod<() => Promise<BabeEpoch>>;
+    nextEpoch: GenericRuntimeApiMethod<() => Promise<SpConsensusBabeEpoch>>;
 
     /**
      * Generates a proof of key ownership for the given authority in the
@@ -339,7 +399,10 @@ export interface RuntimeApis extends GenericRuntimeApis {
      * @callname: BabeApi_generate_key_ownership_proof
      **/
     generateKeyOwnershipProof: GenericRuntimeApiMethod<
-      (slot: Slot, authorityId: AccountId32Like) => Promise<Option<OpaqueKeyOwnershipProof>>
+      (
+        slot: SpConsensusSlotsSlot,
+        authorityId: SpConsensusBabeAppPublic,
+      ) => Promise<SpConsensusBabeOpaqueKeyOwnershipProof | undefined>
     >;
 
     /**
@@ -355,7 +418,10 @@ export interface RuntimeApis extends GenericRuntimeApis {
      * @callname: BabeApi_submit_report_equivocation_unsigned_extrinsic
      **/
     submitReportEquivocationUnsignedExtrinsic: GenericRuntimeApiMethod<
-      (equivocationProof: BabeEquivocationProof, keyOwnerProof: OpaqueKeyOwnershipProof) => Promise<Option<Null>>
+      (
+        equivocationProof: SpConsensusSlotsEquivocationProof,
+        keyOwnerProof: SpConsensusBabeOpaqueKeyOwnershipProof,
+      ) => Promise<[] | undefined>
     >;
 
     /**
@@ -365,7 +431,6 @@ export interface RuntimeApis extends GenericRuntimeApis {
   };
   /**
    * @runtimeapi: AuthorityDiscoveryApi - 0x687ad44ad37f03c2
-   * @version: 1
    **/
   authorityDiscoveryApi: {
     /**
@@ -373,7 +438,7 @@ export interface RuntimeApis extends GenericRuntimeApis {
      *
      * @callname: AuthorityDiscoveryApi_authorities
      **/
-    authorities: GenericRuntimeApiMethod<() => Promise<Array<AccountId32>>>;
+    authorities: GenericRuntimeApiMethod<() => Promise<Array<SpAuthorityDiscoveryAppPublic>>>;
 
     /**
      * Generic runtime api call
@@ -382,15 +447,14 @@ export interface RuntimeApis extends GenericRuntimeApis {
   };
   /**
    * @runtimeapi: AccountNonceApi - 0xbc9d89904f5b923f
-   * @version: 1
    **/
   accountNonceApi: {
     /**
-     * The API to query account nonce (aka transaction index)
+     * Get current account nonce of given `AccountId`.
      *
      * @callname: AccountNonceApi_account_nonce
      **/
-    accountNonce: GenericRuntimeApiMethod<(accountId: AccountId32Like) => Promise<Nonce>>;
+    accountNonce: GenericRuntimeApiMethod<(account: AccountId32Like) => Promise<number>>;
 
     /**
      * Generic runtime api call
@@ -399,7 +463,6 @@ export interface RuntimeApis extends GenericRuntimeApis {
   };
   /**
    * @runtimeapi: AssetsApi - 0x8453b50b22293977
-   * @version: 1
    **/
   assetsApi: {
     /**
@@ -407,7 +470,85 @@ export interface RuntimeApis extends GenericRuntimeApis {
      *
      * @callname: AssetsApi_account_balances
      **/
-    accountBalances: GenericRuntimeApiMethod<(account: AccountId32Like) => Promise<Array<[number, Balance]>>>;
+    accountBalances: GenericRuntimeApiMethod<(account: AccountId32Like) => Promise<Array<[number, bigint]>>>;
+
+    /**
+     * Generic runtime api call
+     **/
+    [method: string]: GenericRuntimeApiMethod;
+  };
+  /**
+   * @runtimeapi: ContractsApi - 0x68b66ba122c93fa7
+   **/
+  contractsApi: {
+    /**
+     * Perform a call from a specified account to a given contract.
+     *
+     * See [`crate::Pallet::bare_call`].
+     *
+     * @callname: ContractsApi_call
+     **/
+    call: GenericRuntimeApiMethod<
+      (
+        origin: AccountId32Like,
+        dest: AccountId32Like,
+        value: bigint,
+        gasLimit: SpWeightsWeightV2Weight | undefined,
+        storageDepositLimit: bigint | undefined,
+        inputData: BytesLike,
+      ) => Promise<PalletContractsPrimitivesContractResult>
+    >;
+
+    /**
+     * Instantiate a new contract.
+     *
+     * See `[crate::Pallet::bare_instantiate]`.
+     *
+     * @callname: ContractsApi_instantiate
+     **/
+    instantiate: GenericRuntimeApiMethod<
+      (
+        origin: AccountId32Like,
+        value: bigint,
+        gasLimit: SpWeightsWeightV2Weight | undefined,
+        storageDepositLimit: bigint | undefined,
+        code: PalletContractsPrimitivesCode,
+        data: BytesLike,
+        salt: BytesLike,
+      ) => Promise<PalletContractsPrimitivesContractResultResult>
+    >;
+
+    /**
+     * Upload new code without instantiating a contract from it.
+     *
+     * See [`crate::Pallet::bare_upload_code`].
+     *
+     * @callname: ContractsApi_upload_code
+     **/
+    uploadCode: GenericRuntimeApiMethod<
+      (
+        origin: AccountId32Like,
+        code: BytesLike,
+        storageDepositLimit: bigint | undefined,
+        determinism: PalletContractsWasmDeterminism,
+      ) => Promise<Result<PalletContractsPrimitivesCodeUploadReturnValue, DispatchError>>
+    >;
+
+    /**
+     * Query a given storage key in a given contract.
+     *
+     * Returns `Ok(Some(Vec<u8>))` if the storage value exists under the given key in the
+     * specified account and `Ok(None)` if it doesn't. If the account specified by the address
+     * doesn't exist, or doesn't have a contract then `Err` is returned.
+     *
+     * @callname: ContractsApi_get_storage
+     **/
+    getStorage: GenericRuntimeApiMethod<
+      (
+        address: AccountId32Like,
+        key: BytesLike,
+      ) => Promise<Result<Bytes | undefined, PalletContractsPrimitivesContractAccessError>>
+    >;
 
     /**
      * Generic runtime api call
@@ -416,74 +557,35 @@ export interface RuntimeApis extends GenericRuntimeApis {
   };
   /**
    * @runtimeapi: TransactionPaymentApi - 0x37c8bb1350a9a2a8
-   * @version: 4
    **/
   transactionPaymentApi: {
     /**
-     * The transaction info
      *
      * @callname: TransactionPaymentApi_query_info
      **/
-    queryInfo: GenericRuntimeApiMethod<(uxt: BytesLike, len: number) => Promise<RuntimeDispatchInfo>>;
+    queryInfo: GenericRuntimeApiMethod<
+      (uxt: SpRuntimeUncheckedExtrinsic, len: number) => Promise<PalletTransactionPaymentRuntimeDispatchInfo>
+    >;
 
     /**
-     * The transaction fee details
      *
      * @callname: TransactionPaymentApi_query_fee_details
      **/
-    queryFeeDetails: GenericRuntimeApiMethod<(uxt: BytesLike, len: number) => Promise<FeeDetails>>;
+    queryFeeDetails: GenericRuntimeApiMethod<
+      (uxt: SpRuntimeUncheckedExtrinsic, len: number) => Promise<PalletTransactionPaymentFeeDetails>
+    >;
 
     /**
-     * Query the output of the current LengthToFee given some input
-     *
-     * @callname: TransactionPaymentApi_query_length_to_fee
-     **/
-    queryLengthToFee: GenericRuntimeApiMethod<(length: number) => Promise<Balance>>;
-
-    /**
-     * Query the output of the current WeightToFee given some input
      *
      * @callname: TransactionPaymentApi_query_weight_to_fee
      **/
-    queryWeightToFee: GenericRuntimeApiMethod<(weight: Weight) => Promise<Balance>>;
+    queryWeightToFee: GenericRuntimeApiMethod<(weight: SpWeightsWeightV2Weight) => Promise<bigint>>;
 
     /**
-     * Generic runtime api call
-     **/
-    [method: string]: GenericRuntimeApiMethod;
-  };
-  /**
-   * @runtimeapi: TransactionPaymentCallApi - 0xf3ff14d5ab527059
-   * @version: 3
-   **/
-  transactionPaymentCallApi: {
-    /**
-     * Query information of a dispatch class, weight, and fee of a given encoded `Call`.
      *
-     * @callname: TransactionPaymentCallApi_query_call_info
+     * @callname: TransactionPaymentApi_query_length_to_fee
      **/
-    queryCallInfo: GenericRuntimeApiMethod<(call: BytesLike, len: number) => Promise<RuntimeDispatchInfo>>;
-
-    /**
-     * Query fee details of a given encoded `Call`.
-     *
-     * @callname: TransactionPaymentCallApi_query_call_fee_details
-     **/
-    queryCallFeeDetails: GenericRuntimeApiMethod<(call: BytesLike, len: number) => Promise<FeeDetails>>;
-
-    /**
-     * Query the output of the current LengthToFee given some input
-     *
-     * @callname: TransactionPaymentCallApi_query_length_to_fee
-     **/
-    queryLengthToFee: GenericRuntimeApiMethod<(length: number) => Promise<Balance>>;
-
-    /**
-     * Query the output of the current WeightToFee given some input
-     *
-     * @callname: TransactionPaymentCallApi_query_weight_to_fee
-     **/
-    queryWeightToFee: GenericRuntimeApiMethod<(weight: Weight) => Promise<Balance>>;
+    queryLengthToFee: GenericRuntimeApiMethod<(length: number) => Promise<bigint>>;
 
     /**
      * Generic runtime api call
@@ -492,31 +594,52 @@ export interface RuntimeApis extends GenericRuntimeApis {
   };
   /**
    * @runtimeapi: AssetConversionApi - 0x8a8047a53a8277ec
-   * @version: 1
    **/
   assetConversionApi: {
     /**
-     * Get pool reserves
+     * Provides a quote for [`Pallet::swap_tokens_for_exact_tokens`].
      *
-     * @callname: AssetConversionApi_get_reserves
-     **/
-    getReserves: GenericRuntimeApiMethod<(asset1: Location, asset2: Location) => Promise<Option<[Balance, Balance]>>>;
-
-    /**
-     * Quote price: exact tokens for tokens
-     *
-     * @callname: AssetConversionApi_quote_price_exact_tokens_for_tokens
-     **/
-    quotePriceExactTokensForTokens: GenericRuntimeApiMethod<
-      (asset1: Location, asset2: Location, amount: bigint, includeFee: boolean) => Promise<Option<Balance>>
-    >;
-
-    /**
+     * Note that the price may have changed by the time the transaction is executed.
+     * (Use `amount_in_max` to control slippage.)
      *
      * @callname: AssetConversionApi_quote_price_tokens_for_exact_tokens
      **/
     quotePriceTokensForExactTokens: GenericRuntimeApiMethod<
-      (asset1: Location, asset2: Location, amount: bigint, includeFee: boolean) => Promise<Option<Balance>>
+      (
+        asset1: PalletAssetConversionNativeOrAssetId,
+        asset2: PalletAssetConversionNativeOrAssetId,
+        amount: bigint,
+        includeFee: boolean,
+      ) => Promise<bigint | undefined>
+    >;
+
+    /**
+     * Provides a quote for [`Pallet::swap_exact_tokens_for_tokens`].
+     *
+     * Note that the price may have changed by the time the transaction is executed.
+     * (Use `amount_out_min` to control slippage.)
+     *
+     * @callname: AssetConversionApi_quote_price_exact_tokens_for_tokens
+     **/
+    quotePriceExactTokensForTokens: GenericRuntimeApiMethod<
+      (
+        asset1: PalletAssetConversionNativeOrAssetId,
+        asset2: PalletAssetConversionNativeOrAssetId,
+        amount: bigint,
+        includeFee: boolean,
+      ) => Promise<bigint | undefined>
+    >;
+
+    /**
+     * Returns the size of the liquidity pool for the given asset pair.
+     *
+     * @callname: AssetConversionApi_get_reserves
+     **/
+    getReserves: GenericRuntimeApiMethod<
+      (
+        asset1: PalletAssetConversionNativeOrAssetId,
+        asset2: PalletAssetConversionNativeOrAssetId,
+      ) => Promise<[bigint, bigint] | undefined>
     >;
 
     /**
@@ -525,8 +648,99 @@ export interface RuntimeApis extends GenericRuntimeApis {
     [method: string]: GenericRuntimeApiMethod;
   };
   /**
+   * @runtimeapi: TransactionPaymentCallApi - 0xf3ff14d5ab527059
+   **/
+  transactionPaymentCallApi: {
+    /**
+     * Query information of a dispatch class, weight, and fee of a given encoded `Call`.
+     *
+     * @callname: TransactionPaymentCallApi_query_call_info
+     **/
+    queryCallInfo: GenericRuntimeApiMethod<
+      (call: KitchensinkRuntimeRuntimeCallLike, len: number) => Promise<PalletTransactionPaymentRuntimeDispatchInfo>
+    >;
+
+    /**
+     * Query fee details of a given encoded `Call`.
+     *
+     * @callname: TransactionPaymentCallApi_query_call_fee_details
+     **/
+    queryCallFeeDetails: GenericRuntimeApiMethod<
+      (call: KitchensinkRuntimeRuntimeCallLike, len: number) => Promise<PalletTransactionPaymentFeeDetails>
+    >;
+
+    /**
+     * Query the output of the current `WeightToFee` given some input.
+     *
+     * @callname: TransactionPaymentCallApi_query_weight_to_fee
+     **/
+    queryWeightToFee: GenericRuntimeApiMethod<(weight: SpWeightsWeightV2Weight) => Promise<bigint>>;
+
+    /**
+     * Query the output of the current `LengthToFee` given some input.
+     *
+     * @callname: TransactionPaymentCallApi_query_length_to_fee
+     **/
+    queryLengthToFee: GenericRuntimeApiMethod<(length: number) => Promise<bigint>>;
+
+    /**
+     * Generic runtime api call
+     **/
+    [method: string]: GenericRuntimeApiMethod;
+  };
+  /**
+   * @runtimeapi: NftsApi - 0x899a250cbe84f250
+   **/
+  nftsApi: {
+    /**
+     *
+     * @callname: NftsApi_owner
+     **/
+    owner: GenericRuntimeApiMethod<(collection: number, item: number) => Promise<AccountId32 | undefined>>;
+
+    /**
+     *
+     * @callname: NftsApi_collection_owner
+     **/
+    collectionOwner: GenericRuntimeApiMethod<(collection: number) => Promise<AccountId32 | undefined>>;
+
+    /**
+     *
+     * @callname: NftsApi_attribute
+     **/
+    attribute: GenericRuntimeApiMethod<
+      (collection: number, item: number, key: BytesLike) => Promise<Bytes | undefined>
+    >;
+
+    /**
+     *
+     * @callname: NftsApi_custom_attribute
+     **/
+    customAttribute: GenericRuntimeApiMethod<
+      (account: AccountId32Like, collection: number, item: number, key: BytesLike) => Promise<Bytes | undefined>
+    >;
+
+    /**
+     *
+     * @callname: NftsApi_system_attribute
+     **/
+    systemAttribute: GenericRuntimeApiMethod<
+      (collection: number, item: number, key: BytesLike) => Promise<Bytes | undefined>
+    >;
+
+    /**
+     *
+     * @callname: NftsApi_collection_attribute
+     **/
+    collectionAttribute: GenericRuntimeApiMethod<(collection: number, key: BytesLike) => Promise<Bytes | undefined>>;
+
+    /**
+     * Generic runtime api call
+     **/
+    [method: string]: GenericRuntimeApiMethod;
+  };
+  /**
    * @runtimeapi: MmrApi - 0x91d5df18b0d2cf58
-   * @version: 2
    **/
   mmrApi: {
     /**
@@ -534,14 +748,14 @@ export interface RuntimeApis extends GenericRuntimeApis {
      *
      * @callname: MmrApi_mmr_root
      **/
-    mmrRoot: GenericRuntimeApiMethod<() => Promise<Result<Hash, MmrError>>>;
+    mmrRoot: GenericRuntimeApiMethod<() => Promise<Result<H256, SpMmrPrimitivesError>>>;
 
     /**
      * Return the number of MMR blocks in the chain.
      *
      * @callname: MmrApi_mmr_leaf_count
      **/
-    mmrLeafCount: GenericRuntimeApiMethod<() => Promise<Result<LeafIndex, MmrError>>>;
+    mmrLeafCount: GenericRuntimeApiMethod<() => Promise<Result<bigint, SpMmrPrimitivesError>>>;
 
     /**
      * Generate MMR proof for a series of block numbers. If `best_known_block_number = Some(n)`,
@@ -551,9 +765,9 @@ export interface RuntimeApis extends GenericRuntimeApis {
      **/
     generateProof: GenericRuntimeApiMethod<
       (
-        blockNumbers: Array<BlockNumberLike>,
-        bestKnownBlockNumber: Option<BlockNumberLike>,
-      ) => Promise<Result<TupleOfMmrEncodableOpaqueLeafsAndMmrBatchProof, MmrError>>
+        blockNumbers: Array<number>,
+        bestKnownBlockNumber: number | undefined,
+      ) => Promise<Result<[Array<SpMmrPrimitivesEncodableOpaqueLeaf>, SpMmrPrimitivesProof], SpMmrPrimitivesError>>
     >;
 
     /**
@@ -566,7 +780,10 @@ export interface RuntimeApis extends GenericRuntimeApis {
      * @callname: MmrApi_verify_proof
      **/
     verifyProof: GenericRuntimeApiMethod<
-      (leaves: Array<MmrEncodableOpaqueLeaf>, proof: MmrBatchProof) => Promise<Result<Null, MmrError>>
+      (
+        leaves: Array<SpMmrPrimitivesEncodableOpaqueLeaf>,
+        proof: SpMmrPrimitivesProof,
+      ) => Promise<Result<[], SpMmrPrimitivesError>>
     >;
 
     /**
@@ -581,7 +798,11 @@ export interface RuntimeApis extends GenericRuntimeApis {
      * @callname: MmrApi_verify_proof_stateless
      **/
     verifyProofStateless: GenericRuntimeApiMethod<
-      (root: Hash, leaves: Array<MmrEncodableOpaqueLeaf>, proof: MmrBatchProof) => Promise<Result<Null, MmrError>>
+      (
+        root: H256,
+        leaves: Array<SpMmrPrimitivesEncodableOpaqueLeaf>,
+        proof: SpMmrPrimitivesProof,
+      ) => Promise<Result<[], SpMmrPrimitivesError>>
     >;
 
     /**
@@ -591,7 +812,6 @@ export interface RuntimeApis extends GenericRuntimeApis {
   };
   /**
    * @runtimeapi: SessionKeys - 0xab3c0572291feb8b
-   * @version: 1
    **/
   sessionKeys: {
     /**
@@ -605,51 +825,18 @@ export interface RuntimeApis extends GenericRuntimeApis {
      *
      * @callname: SessionKeys_generate_session_keys
      **/
-    generateSessionKeys: GenericRuntimeApiMethod<(seed: Option<Array<number>>) => Promise<Array<number>>>;
+    generateSessionKeys: GenericRuntimeApiMethod<(seed: BytesLike | undefined) => Promise<Bytes>>;
 
     /**
-     * Decode the given public session key
+     * Decode the given public session keys.
      *
-     * Returns the list of public raw public keys + key typ
+     * Returns the list of public raw public keys + key type.
      *
      * @callname: SessionKeys_decode_session_keys
      **/
     decodeSessionKeys: GenericRuntimeApiMethod<
-      (encoded: BytesLike) => Promise<Option<Array<[Array<number>, KeyTypeId]>>>
+      (encoded: BytesLike) => Promise<Array<[Bytes, SpCoreCryptoKeyTypeId]> | undefined>
     >;
-
-    /**
-     * Generic runtime api call
-     **/
-    [method: string]: GenericRuntimeApiMethod;
-  };
-  /**
-   * @runtimeapi: GenesisBuilder - 0xfbc577b9d747efd6
-   * @version: 1
-   **/
-  genesisBuilder: {
-    /**
-     * Creates the default `GenesisConfig` and returns it as a JSON blob.
-     *
-     * This function instantiates the default `GenesisConfig` struct for the runtime and serializes it into a JSON
-     * blob. It returns a `Vec<u8>` containing the JSON representation of the default `GenesisConfig`.
-     *
-     * @callname: GenesisBuilder_create_default_config
-     **/
-    createDefaultConfig: GenericRuntimeApiMethod<() => Promise<Array<number>>>;
-
-    /**
-     * Build `GenesisConfig` from a JSON blob not using any defaults and store it in the storage.
-     *
-     * This function deserializes the full `GenesisConfig` from the given JSON blob and puts it into the storage.
-     * If the provided JSON blob is incorrect or incomplete or the deserialization fails, an error is returned.
-     * It is recommended to log any errors encountered during the process.
-     *
-     * Please note that provided json blob must contain all `GenesisConfig` fields, no defaults will be used.
-     *
-     * @callname: GenesisBuilder_build_config
-     **/
-    buildConfig: GenericRuntimeApiMethod<(json: Array<number>) => Promise<Result<Null, Text>>>;
 
     /**
      * Generic runtime api call

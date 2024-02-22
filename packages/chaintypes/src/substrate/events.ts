@@ -16,12 +16,10 @@ import type {
   Permill,
 } from '@delightfuldot/codecs';
 import type {
-  KitchensinkRuntimeRuntimeTask,
   FrameSupportTokensMiscBalanceStatus,
   PalletElectionProviderMultiPhaseElectionCompute,
   SpNposElectionsElectionScore,
   PalletElectionProviderMultiPhasePhase,
-  PalletStakingRewardDestination,
   PalletStakingValidatorPrefs,
   PalletStakingForcing,
   PalletDemocracyVoteThreshold,
@@ -30,7 +28,7 @@ import type {
   SpConsensusGrandpaAppPublic,
   PalletContractsOrigin,
   PalletImOnlineSr25519AppSr25519Public,
-  SpStakingExposure,
+  PalletStakingExposure,
   PalletSocietyGroupParams,
   KitchensinkRuntimeProxyType,
   PalletMultisigTimepoint,
@@ -49,7 +47,6 @@ import type {
   PalletAllianceUnscrupulousItem,
   PalletNominationPoolsPoolState,
   PalletNominationPoolsCommissionChangeRate,
-  PalletNominationPoolsCommissionClaimPermission,
   PalletRankedCollectiveTally,
   PalletRankedCollectiveVoteRecord,
   PalletAssetConversionNativeOrAssetId,
@@ -97,21 +94,6 @@ export interface ChainEvents extends GenericChainEvents {
      * On on-chain remark happened.
      **/
     Remarked: GenericPalletEvent<'System', 'Remarked', { sender: AccountId32; hash: H256 }>;
-
-    /**
-     * A [`Task`] has started executing
-     **/
-    TaskStarted: GenericPalletEvent<'System', 'TaskStarted', { task: KitchensinkRuntimeRuntimeTask }>;
-
-    /**
-     * A [`Task`] has finished executing.
-     **/
-    TaskCompleted: GenericPalletEvent<'System', 'TaskCompleted', { task: KitchensinkRuntimeRuntimeTask }>;
-
-    /**
-     * A [`Task`] failed during execution.
-     **/
-    TaskFailed: GenericPalletEvent<'System', 'TaskFailed', { task: KitchensinkRuntimeRuntimeTask; err: DispatchError }>;
 
     /**
      * Generic pallet event
@@ -418,13 +400,9 @@ export interface ChainEvents extends GenericChainEvents {
     EraPaid: GenericPalletEvent<'Staking', 'EraPaid', { eraIndex: number; validatorPayout: bigint; remainder: bigint }>;
 
     /**
-     * The nominator has been rewarded by this amount to this destination.
+     * The nominator has been rewarded by this amount.
      **/
-    Rewarded: GenericPalletEvent<
-      'Staking',
-      'Rewarded',
-      { stash: AccountId32; dest: PalletStakingRewardDestination; amount: bigint }
-    >;
+    Rewarded: GenericPalletEvent<'Staking', 'Rewarded', { stash: AccountId32; amount: bigint }>;
 
     /**
      * A staker (validator or nominator) has been slashed by the given amount.
@@ -954,43 +932,6 @@ export interface ChainEvents extends GenericChainEvents {
     UpdatedInactive: GenericPalletEvent<'Treasury', 'UpdatedInactive', { reactivated: bigint; deactivated: bigint }>;
 
     /**
-     * A new asset spend proposal has been approved.
-     **/
-    AssetSpendApproved: GenericPalletEvent<
-      'Treasury',
-      'AssetSpendApproved',
-      {
-        index: number;
-        assetKind: number;
-        amount: bigint;
-        beneficiary: AccountId32;
-        validFrom: number;
-        expireAt: number;
-      }
-    >;
-
-    /**
-     * An approved spend was voided.
-     **/
-    AssetSpendVoided: GenericPalletEvent<'Treasury', 'AssetSpendVoided', { index: number }>;
-
-    /**
-     * A payment happened.
-     **/
-    Paid: GenericPalletEvent<'Treasury', 'Paid', { index: number; paymentId: [] }>;
-
-    /**
-     * A payment failed and can be retried.
-     **/
-    PaymentFailed: GenericPalletEvent<'Treasury', 'PaymentFailed', { index: number; paymentId: [] }>;
-
-    /**
-     * A spend was processed and removed from the storage. It might have been successfully
-     * paid or it may have expired.
-     **/
-    SpendProcessed: GenericPalletEvent<'Treasury', 'SpendProcessed', { index: number }>;
-
-    /**
      * Generic pallet event
      **/
     [prop: string]: GenericPalletEvent;
@@ -1177,56 +1118,19 @@ export interface ChainEvents extends GenericChainEvents {
   };
   sudo: {
     /**
-     * A sudo call just took place.
+     * A sudo just took place. \[result\]
      **/
-    Sudid: GenericPalletEvent<
-      'Sudo',
-      'Sudid',
-      {
-        /**
-         * The result of the call made by the sudo user.
-         **/
-        sudoResult: Result<[], DispatchError>;
-      }
-    >;
+    Sudid: GenericPalletEvent<'Sudo', 'Sudid', { sudoResult: Result<[], DispatchError> }>;
 
     /**
-     * The sudo key has been updated.
+     * The \[sudoer\] just switched identity; the old key is supplied if one existed.
      **/
-    KeyChanged: GenericPalletEvent<
-      'Sudo',
-      'KeyChanged',
-      {
-        /**
-         * The old sudo key (if one was previously set).
-         **/
-        old?: AccountId32 | undefined;
-
-        /**
-         * The new sudo key (if one was set).
-         **/
-        new: AccountId32;
-      }
-    >;
+    KeyChanged: GenericPalletEvent<'Sudo', 'KeyChanged', { oldSudoer?: AccountId32 | undefined }>;
 
     /**
-     * The key was permanently removed.
+     * A sudo just took place. \[result\]
      **/
-    KeyRemoved: GenericPalletEvent<'Sudo', 'KeyRemoved', null>;
-
-    /**
-     * A [sudo_as](Pallet::sudo_as) call just took place.
-     **/
-    SudoAsDone: GenericPalletEvent<
-      'Sudo',
-      'SudoAsDone',
-      {
-        /**
-         * The result of the call made by the sudo user.
-         **/
-        sudoResult: Result<[], DispatchError>;
-      }
-    >;
+    SudoAsDone: GenericPalletEvent<'Sudo', 'SudoAsDone', { sudoResult: Result<[], DispatchError> }>;
 
     /**
      * Generic pallet event
@@ -1251,7 +1155,11 @@ export interface ChainEvents extends GenericChainEvents {
     /**
      * At the end of the session, at least one validator was found to be offline.
      **/
-    SomeOffline: GenericPalletEvent<'ImOnline', 'SomeOffline', { offline: Array<[AccountId32, SpStakingExposure]> }>;
+    SomeOffline: GenericPalletEvent<
+      'ImOnline',
+      'SomeOffline',
+      { offline: Array<[AccountId32, PalletStakingExposure]> }
+    >;
 
     /**
      * Generic pallet event
@@ -1767,26 +1675,6 @@ export interface ChainEvents extends GenericChainEvents {
      * A bounty expiry is extended.
      **/
     BountyExtended: GenericPalletEvent<'Bounties', 'BountyExtended', { index: number }>;
-
-    /**
-     * A bounty is approved.
-     **/
-    BountyApproved: GenericPalletEvent<'Bounties', 'BountyApproved', { index: number }>;
-
-    /**
-     * A bounty curator is proposed.
-     **/
-    CuratorProposed: GenericPalletEvent<'Bounties', 'CuratorProposed', { bountyId: number; curator: AccountId32 }>;
-
-    /**
-     * A bounty curator is unassigned.
-     **/
-    CuratorUnassigned: GenericPalletEvent<'Bounties', 'CuratorUnassigned', { bountyId: number }>;
-
-    /**
-     * A bounty curator is accepted.
-     **/
-    CuratorAccepted: GenericPalletEvent<'Bounties', 'CuratorAccepted', { bountyId: number; curator: AccountId32 }>;
 
     /**
      * Generic pallet event
@@ -3096,7 +2984,7 @@ export interface ChainEvents extends GenericChainEvents {
     >;
 
     /**
-     * A deposit has been slashed.
+     * A deposit has been slashaed.
      **/
     DepositSlashed: GenericPalletEvent<
       'Referenda',
@@ -3344,17 +3232,6 @@ export interface ChainEvents extends GenericChainEvents {
      * Stored data off chain.
      **/
     Stored: GenericPalletEvent<'Remark', 'Stored', { sender: AccountId32; contentHash: H256 }>;
-
-    /**
-     * Generic pallet event
-     **/
-    [prop: string]: GenericPalletEvent;
-  };
-  rootTesting: {
-    /**
-     * Event dispatched when the trigger_defensive extrinsic is called.
-     **/
-    DefensiveTestCall: GenericPalletEvent<'RootTesting', 'DefensiveTestCall', undefined>;
 
     /**
      * Generic pallet event
@@ -3675,39 +3552,12 @@ export interface ChainEvents extends GenericChainEvents {
     >;
 
     /**
-     * Pool commission claim permission has been updated.
-     **/
-    PoolCommissionClaimPermissionUpdated: GenericPalletEvent<
-      'NominationPools',
-      'PoolCommissionClaimPermissionUpdated',
-      { poolId: number; permission?: PalletNominationPoolsCommissionClaimPermission | undefined }
-    >;
-
-    /**
      * Pool commission has been claimed.
      **/
     PoolCommissionClaimed: GenericPalletEvent<
       'NominationPools',
       'PoolCommissionClaimed',
       { poolId: number; commission: bigint }
-    >;
-
-    /**
-     * Topped up deficit in frozen ED of the reward pool.
-     **/
-    MinBalanceDeficitAdjusted: GenericPalletEvent<
-      'NominationPools',
-      'MinBalanceDeficitAdjusted',
-      { poolId: number; amount: bigint }
-    >;
-
-    /**
-     * Claimed excess frozen ED of af the reward pool.
-     **/
-    MinBalanceExcessAdjusted: GenericPalletEvent<
-      'NominationPools',
-      'MinBalanceExcessAdjusted',
-      { poolId: number; amount: bigint }
     >;
 
     /**
@@ -3789,7 +3639,7 @@ export interface ChainEvents extends GenericChainEvents {
     >;
 
     /**
-     * A deposit has been slashed.
+     * A deposit has been slashaed.
      **/
     DepositSlashed: GenericPalletEvent<
       'RankedPolls',
@@ -4299,25 +4149,7 @@ export interface ChainEvents extends GenericChainEvents {
     ProcessingFailed: GenericPalletEvent<
       'MessageQueue',
       'ProcessingFailed',
-      {
-        /**
-         * The `blake2_256` hash of the message.
-         **/
-        id: H256;
-
-        /**
-         * The queue of the message.
-         **/
-        origin: number;
-
-        /**
-         * The error that occurred.
-         *
-         * This error is pretty opaque. More fine-grained errors need to be emitted as events
-         * by the `MessageProcessor`.
-         **/
-        error: FrameSupportMessagesProcessMessageError;
-      }
+      { id: FixedBytes<32>; origin: number; error: FrameSupportMessagesProcessMessageError }
     >;
 
     /**
@@ -4326,32 +4158,7 @@ export interface ChainEvents extends GenericChainEvents {
     Processed: GenericPalletEvent<
       'MessageQueue',
       'Processed',
-      {
-        /**
-         * The `blake2_256` hash of the message.
-         **/
-        id: H256;
-
-        /**
-         * The queue of the message.
-         **/
-        origin: number;
-
-        /**
-         * How much weight was used to process the message.
-         **/
-        weightUsed: SpWeightsWeightV2Weight;
-
-        /**
-         * Whether the message was processed.
-         *
-         * Note that this does not mean that the underlying `MessageProcessor` was internally
-         * successful. It *solely* means that the MQ pallet will treat this as a success
-         * condition and discard the message. Any internal error needs to be emitted as events
-         * by the `MessageProcessor`.
-         **/
-        success: boolean;
-      }
+      { id: FixedBytes<32>; origin: number; weightUsed: SpWeightsWeightV2Weight; success: boolean }
     >;
 
     /**
@@ -4360,47 +4167,13 @@ export interface ChainEvents extends GenericChainEvents {
     OverweightEnqueued: GenericPalletEvent<
       'MessageQueue',
       'OverweightEnqueued',
-      {
-        /**
-         * The `blake2_256` hash of the message.
-         **/
-        id: FixedBytes<32>;
-
-        /**
-         * The queue of the message.
-         **/
-        origin: number;
-
-        /**
-         * The page of the message.
-         **/
-        pageIndex: number;
-
-        /**
-         * The index of the message within the page.
-         **/
-        messageIndex: number;
-      }
+      { id: FixedBytes<32>; origin: number; pageIndex: number; messageIndex: number }
     >;
 
     /**
      * This page was reaped.
      **/
-    PageReaped: GenericPalletEvent<
-      'MessageQueue',
-      'PageReaped',
-      {
-        /**
-         * The queue of the page.
-         **/
-        origin: number;
-
-        /**
-         * The index of the page.
-         **/
-        index: number;
-      }
-    >;
+    PageReaped: GenericPalletEvent<'MessageQueue', 'PageReaped', { origin: number; index: number }>;
 
     /**
      * Generic pallet event
@@ -5136,17 +4909,6 @@ export interface ChainEvents extends GenericChainEvents {
         core: number;
       }
     >;
-
-    /**
-     * Generic pallet event
-     **/
-    [prop: string]: GenericPalletEvent;
-  };
-  skipFeelessPayment: {
-    /**
-     * A transaction fee was skipped.
-     **/
-    FeeSkipped: GenericPalletEvent<'SkipFeelessPayment', 'FeeSkipped', { who: AccountId32 }>;
 
     /**
      * Generic pallet event

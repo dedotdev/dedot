@@ -1,5 +1,6 @@
 import { generateTypes, generateTypesFromChain } from './index';
-import staticSubstrate, { rpc } from '@polkadot/types-support/metadata/static-substrate';
+import { rpc } from '@polkadot/types-support/metadata/static-substrate';
+import staticSubstrate from '@polkadot/types-support/metadata/v15/substrate-hex';
 import { $Metadata, CodecRegistry, Metadata, RuntimeVersion } from '@delightfuldot/codecs';
 import { NetworkInfo } from './types';
 import { DelightfulApi, ConstantExecutor } from 'delightfuldot';
@@ -37,6 +38,10 @@ const NETWORKS: NetworkInfo[] = [
   {
     chain: 'rococoAssetHub',
     endpoint: 'wss://rococo-asset-hub-rpc.polkadot.io/',
+  },
+  {
+    chain: 'aleph',
+    endpoint: 'wss://aleph-zero.api.onfinality.io/public-ws',
   },
 ];
 

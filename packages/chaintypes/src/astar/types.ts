@@ -1848,17 +1848,6 @@ export type FrameSupportDispatchPerDispatchClassU32 = { normal: number; operatio
 
 export type SpWeightsRuntimeDbWeight = { read: bigint; write: bigint };
 
-export type SpVersionRuntimeVersion = {
-  specName: string;
-  implName: string;
-  authoringVersion: number;
-  specVersion: number;
-  implVersion: number;
-  apis: Array<[FixedBytes<8>, number]>;
-  transactionVersion: number;
-  stateVersion: number;
-};
-
 /**
  * Error for the System pallet
  **/
