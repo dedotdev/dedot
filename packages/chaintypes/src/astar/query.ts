@@ -6,19 +6,21 @@ import type {
   H256,
   Bytes,
   Digest,
+  Phase,
   AccountId32,
   Data,
   FixedBytes,
   FixedU128,
+  BytesLike,
   H160,
   U256,
+  FixedU64,
 } from '@delightfuldot/codecs';
 import type {
   FrameSystemAccountInfo,
   FrameSupportDispatchPerDispatchClass,
   FrameSystemEventRecord,
   FrameSystemLastRuntimeUpgradeInfo,
-  FrameSystemPhase,
   PalletIdentityRegistration,
   PalletIdentityRegistrarInfo,
   PalletMultisigMultisig,
@@ -39,18 +41,24 @@ import type {
   PalletBalancesBalanceLock,
   PalletBalancesReserveData,
   PalletBalancesIdAmount,
+  PalletBalancesIdAmountRuntimeFreezeReason,
   PalletVestingVestingInfo,
   PalletVestingReleases,
-  PalletDappsStakingAccountLedger,
-  PalletDappsStakingRewardInfo,
-  PalletDappsStakingForcing,
-  AstarRuntimeSmartContract,
-  PalletDappsStakingDAppInfo,
-  PalletDappsStakingEraInfo,
-  PalletDappsStakingContractStakeInfo,
-  PalletDappsStakingStakerInfo,
-  PalletDappsStakingVersion,
-  PalletBlockRewardsHybridRewardDistributionConfig,
+  PalletInflationInflationConfiguration,
+  PalletInflationInflationParameters,
+  PalletDappStakingV3ProtocolState,
+  PalletDappStakingV3DAppInfo,
+  AstarPrimitivesDappStakingSmartContract,
+  PalletDappStakingV3AccountLedger,
+  PalletDappStakingV3SingularStakingInfo,
+  PalletDappStakingV3ContractStakeAmount,
+  PalletDappStakingV3EraInfo,
+  PalletDappStakingV3EraRewardSpan,
+  PalletDappStakingV3PeriodEndInfo,
+  PalletDappStakingV3TierParameters,
+  PalletDappStakingV3TiersConfiguration,
+  PalletDappStakingV3DAppTierRewards,
+  PalletDappStakingV3CleanupMarker,
   PalletAssetsAssetDetails,
   PalletAssetsAssetAccount,
   PalletAssetsApproval,
@@ -79,6 +87,15 @@ import type {
   PalletContractsWasmOwnerInfo,
   PalletContractsStorageContractInfo,
   PalletContractsStorageDeletionQueueManager,
+  PalletDappStakingMigrationMigrationState,
+  PalletDappsStakingAccountLedger,
+  PalletDappsStakingRewardInfo,
+  PalletDappsStakingForcing,
+  PalletDappsStakingDAppInfo,
+  PalletDappsStakingEraInfo,
+  PalletDappsStakingContractStakeInfo,
+  PalletDappsStakingStakerInfo,
+  PalletDappsStakingVersion,
 } from './types';
 
 export interface ChainStorage extends GenericChainStorage {
@@ -177,7 +194,7 @@ export interface ChainStorage extends GenericChainStorage {
     /**
      * The execution phase of the block.
      **/
-    executionPhase: GenericStorageQuery<() => FrameSystemPhase | undefined>;
+    executionPhase: GenericStorageQuery<() => Phase | undefined>;
 
     /**
      * Generic pallet storage query
@@ -506,7 +523,7 @@ export interface ChainStorage extends GenericChainStorage {
     /**
      * Freeze locks on account balances.
      **/
-    freezes: GenericStorageQuery<(arg: AccountId32Like) => Array<PalletBalancesIdAmount>>;
+    freezes: GenericStorageQuery<(arg: AccountId32Like) => Array<PalletBalancesIdAmountRuntimeFreezeReason>>;
 
     /**
      * Generic pallet storage query
@@ -531,78 +548,122 @@ export interface ChainStorage extends GenericChainStorage {
      **/
     [storage: string]: GenericStorageQuery;
   };
-  dappsStaking: {
+  inflation: {
     /**
-     * Denotes whether pallet is disabled (in maintenance mode) or not
+     * Active inflation configuration parameters.
+     * They describe current rewards, when inflation needs to be recalculated, etc.
      **/
-    palletDisabled: GenericStorageQuery<() => boolean>;
+    activeInflationConfig: GenericStorageQuery<() => PalletInflationInflationConfiguration>;
 
     /**
-     * General information about the staker (non-smart-contract specific).
+     * Static inflation parameters - used to calculate active inflation configuration at certain points in time.
      **/
-    ledger: GenericStorageQuery<(arg: AccountId32Like) => PalletDappsStakingAccountLedger>;
+    inflationParams: GenericStorageQuery<() => PalletInflationInflationParameters>;
 
     /**
-     * The current era index.
+     * Flag indicating whether on the first possible opportunity, recalculation of the inflation config should be done.
      **/
-    currentEra: GenericStorageQuery<() => number>;
-
-    /**
-     * Accumulator for block rewards during an era. It is reset at every new era
-     **/
-    blockRewardAccumulator: GenericStorageQuery<() => PalletDappsStakingRewardInfo>;
-
-    /**
-     * Mode of era forcing.
-     **/
-    forceEra: GenericStorageQuery<() => PalletDappsStakingForcing>;
-
-    /**
-     * Stores the block number of when the next era starts
-     **/
-    nextEraStartingBlock: GenericStorageQuery<() => number>;
-
-    /**
-     * Simple map where developer account points to their smart contract
-     **/
-    registeredDevelopers: GenericStorageQuery<(arg: AccountId32Like) => AstarRuntimeSmartContract | undefined>;
-
-    /**
-     * Simple map where smart contract points to basic info about it (e.g. developer address, state)
-     **/
-    registeredDapps: GenericStorageQuery<(arg: AstarRuntimeSmartContract) => PalletDappsStakingDAppInfo | undefined>;
-
-    /**
-     * General information about an era like TVL, total staked value, rewards.
-     **/
-    generalEraInfo: GenericStorageQuery<(arg: number) => PalletDappsStakingEraInfo | undefined>;
-
-    /**
-     * Staking information about contract in a particular era.
-     **/
-    contractEraStake: GenericStorageQuery<
-      (arg: [AstarRuntimeSmartContract, number]) => PalletDappsStakingContractStakeInfo | undefined
-    >;
-
-    /**
-     * Info about stakers stakes on particular contracts.
-     **/
-    generalStakerInfo: GenericStorageQuery<
-      (arg: [AccountId32Like, AstarRuntimeSmartContract]) => PalletDappsStakingStakerInfo
-    >;
-
-    /**
-     * Stores the current pallet storage version.
-     **/
-    storageVersion: GenericStorageQuery<() => PalletDappsStakingVersion>;
+    doRecalculation: GenericStorageQuery<() => number | undefined>;
 
     /**
      * Generic pallet storage query
      **/
     [storage: string]: GenericStorageQuery;
   };
-  blockReward: {
-    rewardDistributionConfigStorage: GenericStorageQuery<() => PalletBlockRewardsHybridRewardDistributionConfig>;
+  dappStaking: {
+    /**
+     * General information about dApp staking protocol state.
+     **/
+    activeProtocolState: GenericStorageQuery<() => PalletDappStakingV3ProtocolState>;
+
+    /**
+     * Counter for unique dApp identifiers.
+     **/
+    nextDAppId: GenericStorageQuery<() => number>;
+
+    /**
+     * Map of all dApps integrated into dApp staking protocol.
+     *
+     * Even though dApp is integrated, it does not mean it's still actively participating in dApp staking.
+     * It might have been unregistered at some point in history.
+     **/
+    integratedDApps: GenericStorageQuery<
+      (arg: AstarPrimitivesDappStakingSmartContract) => PalletDappStakingV3DAppInfo | undefined
+    >;
+
+    /**
+     * Counter for the related counted storage map
+     **/
+    counterForIntegratedDApps: GenericStorageQuery<() => number>;
+
+    /**
+     * General locked/staked information for each account.
+     **/
+    ledger: GenericStorageQuery<(arg: AccountId32Like) => PalletDappStakingV3AccountLedger>;
+
+    /**
+     * Information about how much each staker has staked for each smart contract in some period.
+     **/
+    stakerInfo: GenericStorageQuery<
+      (
+        arg: [AccountId32Like, AstarPrimitivesDappStakingSmartContract],
+      ) => PalletDappStakingV3SingularStakingInfo | undefined
+    >;
+
+    /**
+     * Information about how much has been staked on a smart contract in some era or period.
+     **/
+    contractStake: GenericStorageQuery<(arg: number) => PalletDappStakingV3ContractStakeAmount>;
+
+    /**
+     * General information about the current era.
+     **/
+    currentEraInfo: GenericStorageQuery<() => PalletDappStakingV3EraInfo>;
+
+    /**
+     * Information about rewards for each era.
+     *
+     * Since each entry is a 'span', covering up to `T::EraRewardSpanLength` entries, only certain era value keys can exist in storage.
+     * For the sake of simplicity, valid `era` keys are calculated as:
+     *
+     * era_key = era - (era % T::EraRewardSpanLength)
+     *
+     * This means that e.g. in case `EraRewardSpanLength = 8`, only era values 0, 8, 16, 24, etc. can exist in storage.
+     * Eras 1-7 will be stored in the same entry as era 0, eras 9-15 will be stored in the same entry as era 8, etc.
+     **/
+    eraRewards: GenericStorageQuery<(arg: number) => PalletDappStakingV3EraRewardSpan | undefined>;
+
+    /**
+     * Information about period's end.
+     **/
+    periodEnd: GenericStorageQuery<(arg: number) => PalletDappStakingV3PeriodEndInfo | undefined>;
+
+    /**
+     * Static tier parameters used to calculate tier configuration.
+     **/
+    staticTierParams: GenericStorageQuery<() => PalletDappStakingV3TierParameters>;
+
+    /**
+     * Tier configuration user for current & preceding eras.
+     **/
+    tierConfig: GenericStorageQuery<() => PalletDappStakingV3TiersConfiguration>;
+
+    /**
+     * Information about which tier a dApp belonged to in a specific era.
+     **/
+    dAppTiers: GenericStorageQuery<(arg: number) => PalletDappStakingV3DAppTierRewards | undefined>;
+
+    /**
+     * History cleanup marker - holds information about which DB entries should be cleaned up next, when applicable.
+     **/
+    historyCleanupMarker: GenericStorageQuery<() => PalletDappStakingV3CleanupMarker>;
+
+    /**
+     * Safeguard to prevent unwanted operations in production.
+     * Kept as a storage without extrinsic setter, so we can still enable it for some
+     * chain-fork debugging if required.
+     **/
+    safeguard: GenericStorageQuery<() => boolean>;
 
     /**
      * Generic pallet storage query
@@ -730,7 +791,7 @@ export interface ChainStorage extends GenericChainStorage {
     /**
      * The owner of a key. The key is the `KeyTypeId` + the encoded key.
      **/
-    keyOwner: GenericStorageQuery<(arg: [SpCoreCryptoKeyTypeId, Bytes]) => AccountId32 | undefined>;
+    keyOwner: GenericStorageQuery<(arg: [SpCoreCryptoKeyTypeId, BytesLike]) => AccountId32 | undefined>;
 
     /**
      * Generic pallet storage query
@@ -1094,6 +1155,107 @@ export interface ChainStorage extends GenericChainStorage {
      * The `AccountId` of the sudo key.
      **/
     key: GenericStorageQuery<() => AccountId32 | undefined>;
+
+    /**
+     * Generic pallet storage query
+     **/
+    [storage: string]: GenericStorageQuery;
+  };
+  staticPriceProvider: {
+    /**
+     * Current active native currency price.
+     **/
+    activePrice: GenericStorageQuery<() => FixedU64>;
+
+    /**
+     * Generic pallet storage query
+     **/
+    [storage: string]: GenericStorageQuery;
+  };
+  dappStakingMigration: {
+    /**
+     * Used to store the current migration state.
+     **/
+    migrationStateStorage: GenericStorageQuery<() => PalletDappStakingMigrationMigrationState>;
+
+    /**
+     * Generic pallet storage query
+     **/
+    [storage: string]: GenericStorageQuery;
+  };
+  dappsStaking: {
+    /**
+     * Denotes whether pallet is disabled (in maintenance mode) or not
+     **/
+    palletDisabled: GenericStorageQuery<() => boolean>;
+
+    /**
+     * Denotes whether pallet decommissioning has started or not.
+     **/
+    decommissionStarted: GenericStorageQuery<() => boolean>;
+
+    /**
+     * General information about the staker (non-smart-contract specific).
+     **/
+    ledger: GenericStorageQuery<(arg: AccountId32Like) => PalletDappsStakingAccountLedger>;
+
+    /**
+     * The current era index.
+     **/
+    currentEra: GenericStorageQuery<() => number>;
+
+    /**
+     * Accumulator for block rewards during an era. It is reset at every new era
+     **/
+    blockRewardAccumulator: GenericStorageQuery<() => PalletDappsStakingRewardInfo>;
+
+    /**
+     * Mode of era forcing.
+     **/
+    forceEra: GenericStorageQuery<() => PalletDappsStakingForcing>;
+
+    /**
+     * Stores the block number of when the next era starts
+     **/
+    nextEraStartingBlock: GenericStorageQuery<() => number>;
+
+    /**
+     * Simple map where developer account points to their smart contract
+     **/
+    registeredDevelopers: GenericStorageQuery<
+      (arg: AccountId32Like) => AstarPrimitivesDappStakingSmartContract | undefined
+    >;
+
+    /**
+     * Simple map where smart contract points to basic info about it (e.g. developer address, state)
+     **/
+    registeredDapps: GenericStorageQuery<
+      (arg: AstarPrimitivesDappStakingSmartContract) => PalletDappsStakingDAppInfo | undefined
+    >;
+
+    /**
+     * General information about an era like TVL, total staked value, rewards.
+     **/
+    generalEraInfo: GenericStorageQuery<(arg: number) => PalletDappsStakingEraInfo | undefined>;
+
+    /**
+     * Staking information about contract in a particular era.
+     **/
+    contractEraStake: GenericStorageQuery<
+      (arg: [AstarPrimitivesDappStakingSmartContract, number]) => PalletDappsStakingContractStakeInfo | undefined
+    >;
+
+    /**
+     * Info about stakers stakes on particular contracts.
+     **/
+    generalStakerInfo: GenericStorageQuery<
+      (arg: [AccountId32Like, AstarPrimitivesDappStakingSmartContract]) => PalletDappsStakingStakerInfo
+    >;
+
+    /**
+     * Stores the current pallet storage version.
+     **/
+    storageVersion: GenericStorageQuery<() => PalletDappsStakingVersion>;
 
     /**
      * Generic pallet storage query

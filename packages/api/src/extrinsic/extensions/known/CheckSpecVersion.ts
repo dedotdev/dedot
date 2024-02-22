@@ -1,16 +1,18 @@
 import { SignedExtension } from '../SignedExtension';
+import { numberToHex } from '@polkadot/util';
+import { SignerPayloadJSON } from '@polkadot/types/types';
 
 /**
  * @description Ensure the runtime version registered in the transaction is the same as at present.
  */
-export class CheckSpecVersion extends SignedExtension<null, number> {
+export class CheckSpecVersion extends SignedExtension<{}, number> {
   async init(): Promise<void> {
     this.additionalSigned = this.api.runtimeVersion.specVersion;
   }
 
-  toPayload() {
+  toPayload(): Partial<SignerPayloadJSON> {
     return {
-      specVersion: this.additionalSigned,
+      specVersion: numberToHex(this.additionalSigned),
     };
   }
 }

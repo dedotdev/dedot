@@ -40,7 +40,7 @@ export const $Era: $.Shape<EraLike, Era> = $.createShape({
       buffer.index++;
       return { tag: 'Immortal' };
     } else {
-      const encoded = BigInt(buffer.array[0] + (buffer.array[1] << 8));
+      const encoded = BigInt(buffer.array[buffer.index] + (buffer.array[buffer.index + 1] << 8));
       buffer.index += 2;
 
       const period = 2n << encoded % (1n << 4n);
@@ -52,9 +52,6 @@ export const $Era: $.Shape<EraLike, Era> = $.createShape({
         throw new Error('Invalid period and phase');
       }
     }
-  },
-  subAssert(state: $.AssertState): void {
-    // TODO implementation
   },
 });
 

@@ -270,44 +270,6 @@ export interface ChainConsts extends GenericChainConsts {
      **/
     [name: string]: any;
   };
-  beefy: {
-    /**
-     * The maximum number of authorities that can be added.
-     **/
-    maxAuthorities: number;
-
-    /**
-     * The maximum number of nominators for each validator.
-     **/
-    maxNominators: number;
-
-    /**
-     * The maximum number of entries to keep in the set id to session index mapping.
-     *
-     * Since the `SetIdSession` map is only used for validating equivocations this
-     * value should relate to the bonding duration of whatever staking system is
-     * being used (if any). If equivocation handling is not enabled then this value
-     * can be zero.
-     **/
-    maxSetIdSessionEntries: bigint;
-
-    /**
-     * Generic pallet constant
-     **/
-    [name: string]: any;
-  };
-  mmr: {
-    /**
-     * Generic pallet constant
-     **/
-    [name: string]: any;
-  };
-  beefyMmrLeaf: {
-    /**
-     * Generic pallet constant
-     **/
-    [name: string]: any;
-  };
   session: {
     /**
      * Generic pallet constant
@@ -1382,6 +1344,44 @@ export interface ChainConsts extends GenericChainConsts {
     [name: string]: any;
   };
   assetRate: {
+    /**
+     * Generic pallet constant
+     **/
+    [name: string]: any;
+  };
+  beefy: {
+    /**
+     * The maximum number of authorities that can be added.
+     **/
+    maxAuthorities: number;
+
+    /**
+     * The maximum number of nominators for each validator.
+     **/
+    maxNominators: number;
+
+    /**
+     * The maximum number of entries to keep in the set id to session index mapping.
+     *
+     * Since the `SetIdSession` map is only used for validating equivocations this
+     * value should relate to the bonding duration of whatever staking system is
+     * being used (if any). If equivocation handling is not enabled then this value
+     * can be zero.
+     **/
+    maxSetIdSessionEntries: bigint;
+
+    /**
+     * Generic pallet constant
+     **/
+    [name: string]: any;
+  };
+  mmr: {
+    /**
+     * Generic pallet constant
+     **/
+    [name: string]: any;
+  };
+  beefyMmrLeaf: {
     /**
      * Generic pallet constant
      **/

@@ -6,7 +6,6 @@ import type {
   Callback,
   GenericRpcCall,
   ExtrinsicOrHash,
-  TransactionStatus,
   EpochAuthorship,
   EncodedFinalityProofs,
   ReportedRoundStates,
@@ -30,6 +29,7 @@ import type {
 import type {
   Bytes,
   Hash,
+  TransactionStatus,
   VersionedFinalityProof,
   Option,
   SignedBlock,
@@ -46,6 +46,44 @@ import type {
 } from '@delightfuldot/codecs';
 
 export interface RpcCalls extends GenericRpcCalls {
+  archive: {
+    /**
+     * @rpcname: archive_unstable_body
+     **/
+    unstable_body: GenericRpcCall;
+
+    /**
+     * @rpcname: archive_unstable_call
+     **/
+    unstable_call: GenericRpcCall;
+
+    /**
+     * @rpcname: archive_unstable_finalizedHeight
+     **/
+    unstable_finalizedHeight: GenericRpcCall;
+
+    /**
+     * @rpcname: archive_unstable_genesisHash
+     **/
+    unstable_genesisHash: GenericRpcCall;
+
+    /**
+     * @rpcname: archive_unstable_hashByHeight
+     **/
+    unstable_hashByHeight: GenericRpcCall;
+
+    /**
+     * @rpcname: archive_unstable_header
+     **/
+    unstable_header: GenericRpcCall;
+
+    /**
+     * @rpcname: archive_unstable_storage
+     **/
+    unstable_storage: GenericRpcCall;
+
+    [method: string]: GenericRpcCall;
+  };
   author: {
     /**
      * Checks if the keystore has private keys for the given public key and key type. Returns `true` if a private key could be found.
@@ -760,14 +798,14 @@ export interface RpcCalls extends GenericRpcCalls {
 
     [method: string]: GenericRpcCall;
   };
-  transaction: {
+  transactionWatch: {
     /**
-     * @rpcname: transaction_unstable_submitAndWatch
+     * @rpcname: transactionWatch_unstable_submitAndWatch
      **/
     unstable_submitAndWatch: GenericRpcCall;
 
     /**
-     * @rpcname: transaction_unstable_unwatch
+     * @rpcname: transactionWatch_unstable_unwatch
      **/
     unstable_unwatch: GenericRpcCall;
 

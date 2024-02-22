@@ -106,6 +106,16 @@ export interface ChainErrors extends GenericChainErrors {
     NotRequested: GenericPalletError;
 
     /**
+     * More than `MAX_HASH_UPGRADE_BULK_COUNT` hashes were requested to be upgraded at once.
+     **/
+    TooMany: GenericPalletError;
+
+    /**
+     * Too few hashes were requested to be upgraded (i.e. zero).
+     **/
+    TooFew: GenericPalletError;
+
+    /**
      * Generic pallet error
      **/
     [error: string]: GenericPalletError;
@@ -455,7 +465,7 @@ export interface ChainErrors extends GenericChainErrors {
     InsufficientProposersBalance: GenericPalletError;
 
     /**
-     * No proposal or bounty at that index.
+     * No proposal, bounty or spend at that index.
      **/
     InvalidIndex: GenericPalletError;
 
@@ -474,6 +484,41 @@ export interface ChainErrors extends GenericChainErrors {
      * Proposal has not been approved.
      **/
     ProposalNotApproved: GenericPalletError;
+
+    /**
+     * The balance of the asset kind is not convertible to the balance of the native asset.
+     **/
+    FailedToConvertBalance: GenericPalletError;
+
+    /**
+     * The spend has expired and cannot be claimed.
+     **/
+    SpendExpired: GenericPalletError;
+
+    /**
+     * The spend is not yet eligible for payout.
+     **/
+    EarlyPayout: GenericPalletError;
+
+    /**
+     * The payment has already been attempted.
+     **/
+    AlreadyAttempted: GenericPalletError;
+
+    /**
+     * There was some issue with the mechanism of payment.
+     **/
+    PayoutError: GenericPalletError;
+
+    /**
+     * The payout was not yet attempted/claimed.
+     **/
+    NotAttempted: GenericPalletError;
+
+    /**
+     * The payment has neither failed nor succeeded yet.
+     **/
+    Inconclusive: GenericPalletError;
 
     /**
      * Generic pallet error
@@ -1163,9 +1208,9 @@ export interface ChainErrors extends GenericChainErrors {
     /**
      * The amount does not meet the minimum bond to either join or create a pool.
      *
-     * The depositor can never unbond to a value less than
-     * `Pallet::depositor_min_bond`. The caller does not have nominating
-     * permissions for the pool. Members can never unbond to a value below `MinJoinBond`.
+     * The depositor can never unbond to a value less than `Pallet::depositor_min_bond`. The
+     * caller does not have nominating permissions for the pool. Members can never unbond to a
+     * value below `MinJoinBond`.
      **/
     MinimumBondNotMet: GenericPalletError;
 
@@ -1280,6 +1325,11 @@ export interface ChainErrors extends GenericChainErrors {
      * Bonding extra is restricted to the exact pending reward amount.
      **/
     BondExtraRestricted: GenericPalletError;
+
+    /**
+     * No imbalance in the ED deposit for the pool.
+     **/
+    NothingToAdjust: GenericPalletError;
 
     /**
      * Generic pallet error
@@ -1689,6 +1739,11 @@ export interface ChainErrors extends GenericChainErrors {
      * The provided witness data is wrong.
      **/
     WrongWitness: GenericPalletError;
+
+    /**
+     * The channel between these two chains cannot be authorized.
+     **/
+    ChannelCreationNotAuthorized: GenericPalletError;
 
     /**
      * Generic pallet error
@@ -2195,6 +2250,48 @@ export interface ChainErrors extends GenericChainErrors {
      * This can change at any time and may resolve in the future by re-trying.
      **/
     QueuePaused: GenericPalletError;
+
+    /**
+     * Generic pallet error
+     **/
+    [error: string]: GenericPalletError;
+  };
+  assetRate: {
+    /**
+     * The given asset ID is unknown.
+     **/
+    UnknownAssetKind: GenericPalletError;
+
+    /**
+     * The given asset ID already has an assigned conversion rate and cannot be re-created.
+     **/
+    AlreadyExists: GenericPalletError;
+
+    /**
+     * Generic pallet error
+     **/
+    [error: string]: GenericPalletError;
+  };
+  beefy: {
+    /**
+     * A key ownership proof provided as part of an equivocation report is invalid.
+     **/
+    InvalidKeyOwnershipProof: GenericPalletError;
+
+    /**
+     * An equivocation proof provided as part of an equivocation report is invalid.
+     **/
+    InvalidEquivocationProof: GenericPalletError;
+
+    /**
+     * A given equivocation report is valid but already previously reported.
+     **/
+    DuplicateOffenceReport: GenericPalletError;
+
+    /**
+     * Submitted configuration is invalid.
+     **/
+    InvalidConfiguration: GenericPalletError;
 
     /**
      * Generic pallet error

@@ -2,6 +2,7 @@
 
 import type { GenericChainEvents, GenericPalletEvent } from '@delightfuldot/types';
 import type {
+  DispatchInfo,
   DispatchError,
   AccountId32,
   H256,
@@ -10,16 +11,17 @@ import type {
   Bytes,
   H160,
   U256,
+  FixedU64,
 } from '@delightfuldot/codecs';
 import type {
-  FrameSupportDispatchDispatchInfo,
   PalletMultisigTimepoint,
   AstarRuntimeProxyType,
   SpWeightsWeightV2Weight,
   FrameSupportTokensMiscBalanceStatus,
-  AstarRuntimeSmartContract,
-  PalletDappsStakingRewardDestination,
-  PalletBlockRewardsHybridRewardDistributionConfig,
+  PalletInflationInflationConfiguration,
+  PalletDappStakingV3Subperiod,
+  AstarPrimitivesDappStakingSmartContract,
+  PalletDappStakingV3ForcingType,
   XcmV3TraitsError,
   PolkadotParachainPrimitivesId,
   XcmV3TraitsOutcome,
@@ -33,6 +35,7 @@ import type {
   EthereumLog,
   EvmCoreErrorExitReason,
   PalletContractsOrigin,
+  PalletDappsStakingRewardDestination,
 } from './types';
 
 export interface ChainEvents extends GenericChainEvents {
@@ -40,11 +43,7 @@ export interface ChainEvents extends GenericChainEvents {
     /**
      * An extrinsic completed successfully.
      **/
-    ExtrinsicSuccess: GenericPalletEvent<
-      'System',
-      'ExtrinsicSuccess',
-      { dispatchInfo: FrameSupportDispatchDispatchInfo }
-    >;
+    ExtrinsicSuccess: GenericPalletEvent<'System', 'ExtrinsicSuccess', { dispatchInfo: DispatchInfo }>;
 
     /**
      * An extrinsic failed.
@@ -52,7 +51,7 @@ export interface ChainEvents extends GenericChainEvents {
     ExtrinsicFailed: GenericPalletEvent<
       'System',
       'ExtrinsicFailed',
-      { dispatchError: DispatchError; dispatchInfo: FrameSupportDispatchDispatchInfo }
+      { dispatchError: DispatchError; dispatchInfo: DispatchInfo }
     >;
 
     /**
@@ -489,89 +488,37 @@ export interface ChainEvents extends GenericChainEvents {
      **/
     [prop: string]: GenericPalletEvent;
   };
-  dappsStaking: {
+  inflation: {
     /**
-     * Account has bonded and staked funds on a smart contract.
+     * Inflation parameters have been force changed. This will have effect on the next inflation recalculation.
      **/
-    BondAndStake: GenericPalletEvent<'DappsStaking', 'BondAndStake', [AccountId32, AstarRuntimeSmartContract, bigint]>;
+    InflationParametersForceChanged: GenericPalletEvent<'Inflation', 'InflationParametersForceChanged', null>;
 
     /**
-     * Account has unbonded & unstaked some funds. Unbonding process begins.
+     * Inflation configuration has been force changed. This will have an immediate effect from this block.
      **/
-    UnbondAndUnstake: GenericPalletEvent<
-      'DappsStaking',
-      'UnbondAndUnstake',
-      [AccountId32, AstarRuntimeSmartContract, bigint]
+    InflationConfigurationForceChanged: GenericPalletEvent<
+      'Inflation',
+      'InflationConfigurationForceChanged',
+      { config: PalletInflationInflationConfiguration }
     >;
 
     /**
-     * Account has fully withdrawn all staked amount from an unregistered contract.
+     * Inflation recalculation has been forced.
      **/
-    WithdrawFromUnregistered: GenericPalletEvent<
-      'DappsStaking',
-      'WithdrawFromUnregistered',
-      [AccountId32, AstarRuntimeSmartContract, bigint]
+    ForcedInflationRecalculation: GenericPalletEvent<
+      'Inflation',
+      'ForcedInflationRecalculation',
+      { config: PalletInflationInflationConfiguration }
     >;
 
     /**
-     * Account has withdrawn unbonded funds.
+     * New inflation configuration has been set.
      **/
-    Withdrawn: GenericPalletEvent<'DappsStaking', 'Withdrawn', [AccountId32, bigint]>;
-
-    /**
-     * New contract added for staking.
-     **/
-    NewContract: GenericPalletEvent<'DappsStaking', 'NewContract', [AccountId32, AstarRuntimeSmartContract]>;
-
-    /**
-     * Contract removed from dapps staking.
-     **/
-    ContractRemoved: GenericPalletEvent<'DappsStaking', 'ContractRemoved', [AccountId32, AstarRuntimeSmartContract]>;
-
-    /**
-     * New dapps staking era. Distribute era rewards to contracts.
-     **/
-    NewDappStakingEra: GenericPalletEvent<'DappsStaking', 'NewDappStakingEra', number>;
-
-    /**
-     * Reward paid to staker or developer.
-     **/
-    Reward: GenericPalletEvent<'DappsStaking', 'Reward', [AccountId32, AstarRuntimeSmartContract, number, bigint]>;
-
-    /**
-     * Maintenance mode has been enabled or disabled
-     **/
-    MaintenanceMode: GenericPalletEvent<'DappsStaking', 'MaintenanceMode', boolean>;
-
-    /**
-     * Reward handling modified
-     **/
-    RewardDestination: GenericPalletEvent<
-      'DappsStaking',
-      'RewardDestination',
-      [AccountId32, PalletDappsStakingRewardDestination]
-    >;
-
-    /**
-     * Nomination part has been transfered from one contract to another.
-     *
-     * \(staker account, origin smart contract, amount, target smart contract\)
-     **/
-    NominationTransfer: GenericPalletEvent<
-      'DappsStaking',
-      'NominationTransfer',
-      [AccountId32, AstarRuntimeSmartContract, bigint, AstarRuntimeSmartContract]
-    >;
-
-    /**
-     * Stale, unclaimed reward from an unregistered contract has been burned.
-     *
-     * \(developer account, smart contract, era, amount burned\)
-     **/
-    StaleRewardBurned: GenericPalletEvent<
-      'DappsStaking',
-      'StaleRewardBurned',
-      [AccountId32, AstarRuntimeSmartContract, number, bigint]
+    NewInflationConfiguration: GenericPalletEvent<
+      'Inflation',
+      'NewInflationConfiguration',
+      { config: PalletInflationInflationConfiguration }
     >;
 
     /**
@@ -579,15 +526,151 @@ export interface ChainEvents extends GenericChainEvents {
      **/
     [prop: string]: GenericPalletEvent;
   };
-  blockReward: {
+  dappStaking: {
     /**
-     * Distribution configuration has been updated.
+     * Maintenance mode has been either enabled or disabled.
      **/
-    DistributionConfigurationChanged: GenericPalletEvent<
-      'BlockReward',
-      'DistributionConfigurationChanged',
-      PalletBlockRewardsHybridRewardDistributionConfig
+    MaintenanceMode: GenericPalletEvent<'DappStaking', 'MaintenanceMode', { enabled: boolean }>;
+
+    /**
+     * New era has started.
+     **/
+    NewEra: GenericPalletEvent<'DappStaking', 'NewEra', { era: number }>;
+
+    /**
+     * New subperiod has started.
+     **/
+    NewSubperiod: GenericPalletEvent<
+      'DappStaking',
+      'NewSubperiod',
+      { subperiod: PalletDappStakingV3Subperiod; number: number }
     >;
+
+    /**
+     * A smart contract has been registered for dApp staking
+     **/
+    DAppRegistered: GenericPalletEvent<
+      'DappStaking',
+      'DAppRegistered',
+      { owner: AccountId32; smartContract: AstarPrimitivesDappStakingSmartContract; dappId: number }
+    >;
+
+    /**
+     * dApp reward destination has been updated.
+     **/
+    DAppRewardDestinationUpdated: GenericPalletEvent<
+      'DappStaking',
+      'DAppRewardDestinationUpdated',
+      { smartContract: AstarPrimitivesDappStakingSmartContract; beneficiary?: AccountId32 | undefined }
+    >;
+
+    /**
+     * dApp owner has been changed.
+     **/
+    DAppOwnerChanged: GenericPalletEvent<
+      'DappStaking',
+      'DAppOwnerChanged',
+      { smartContract: AstarPrimitivesDappStakingSmartContract; newOwner: AccountId32 }
+    >;
+
+    /**
+     * dApp has been unregistered
+     **/
+    DAppUnregistered: GenericPalletEvent<
+      'DappStaking',
+      'DAppUnregistered',
+      { smartContract: AstarPrimitivesDappStakingSmartContract; era: number }
+    >;
+
+    /**
+     * Account has locked some amount into dApp staking.
+     **/
+    Locked: GenericPalletEvent<'DappStaking', 'Locked', { account: AccountId32; amount: bigint }>;
+
+    /**
+     * Account has started the unlocking process for some amount.
+     **/
+    Unlocking: GenericPalletEvent<'DappStaking', 'Unlocking', { account: AccountId32; amount: bigint }>;
+
+    /**
+     * Account has claimed unlocked amount, removing the lock from it.
+     **/
+    ClaimedUnlocked: GenericPalletEvent<'DappStaking', 'ClaimedUnlocked', { account: AccountId32; amount: bigint }>;
+
+    /**
+     * Account has relocked all of the unlocking chunks.
+     **/
+    Relock: GenericPalletEvent<'DappStaking', 'Relock', { account: AccountId32; amount: bigint }>;
+
+    /**
+     * Account has staked some amount on a smart contract.
+     **/
+    Stake: GenericPalletEvent<
+      'DappStaking',
+      'Stake',
+      { account: AccountId32; smartContract: AstarPrimitivesDappStakingSmartContract; amount: bigint }
+    >;
+
+    /**
+     * Account has unstaked some amount from a smart contract.
+     **/
+    Unstake: GenericPalletEvent<
+      'DappStaking',
+      'Unstake',
+      { account: AccountId32; smartContract: AstarPrimitivesDappStakingSmartContract; amount: bigint }
+    >;
+
+    /**
+     * Account has claimed some stake rewards.
+     **/
+    Reward: GenericPalletEvent<'DappStaking', 'Reward', { account: AccountId32; era: number; amount: bigint }>;
+
+    /**
+     * Bonus reward has been paid out to a loyal staker.
+     **/
+    BonusReward: GenericPalletEvent<
+      'DappStaking',
+      'BonusReward',
+      { account: AccountId32; smartContract: AstarPrimitivesDappStakingSmartContract; period: number; amount: bigint }
+    >;
+
+    /**
+     * dApp reward has been paid out to a beneficiary.
+     **/
+    DAppReward: GenericPalletEvent<
+      'DappStaking',
+      'DAppReward',
+      {
+        beneficiary: AccountId32;
+        smartContract: AstarPrimitivesDappStakingSmartContract;
+        tierId: number;
+        era: number;
+        amount: bigint;
+      }
+    >;
+
+    /**
+     * Account has unstaked funds from an unregistered smart contract
+     **/
+    UnstakeFromUnregistered: GenericPalletEvent<
+      'DappStaking',
+      'UnstakeFromUnregistered',
+      { account: AccountId32; smartContract: AstarPrimitivesDappStakingSmartContract; amount: bigint }
+    >;
+
+    /**
+     * Some expired stake entries have been removed from storage.
+     **/
+    ExpiredEntriesRemoved: GenericPalletEvent<
+      'DappStaking',
+      'ExpiredEntriesRemoved',
+      { account: AccountId32; count: number }
+    >;
+
+    /**
+     * Privileged origin has forced a new era and possibly a subperiod to start from next block.
+     **/
+    Force: GenericPalletEvent<'DappStaking', 'Force', { forcingType: PalletDappStakingV3ForcingType }>;
 
     /**
      * Generic pallet event
@@ -1474,6 +1557,144 @@ export interface ChainEvents extends GenericChainEvents {
      * A sudo just took place. \[result\]
      **/
     SudoAsDone: GenericPalletEvent<'Sudo', 'SudoAsDone', { sudoResult: ResultPayload<[], DispatchError> }>;
+
+    /**
+     * Generic pallet event
+     **/
+    [prop: string]: GenericPalletEvent;
+  };
+  staticPriceProvider: {
+    /**
+     * New static native currency price has been set.
+     **/
+    PriceSet: GenericPalletEvent<'StaticPriceProvider', 'PriceSet', { price: FixedU64 }>;
+
+    /**
+     * Generic pallet event
+     **/
+    [prop: string]: GenericPalletEvent;
+  };
+  dappStakingMigration: {
+    /**
+     * Number of entries migrated from v2 over to v3
+     **/
+    EntriesMigrated: GenericPalletEvent<'DappStakingMigration', 'EntriesMigrated', number>;
+
+    /**
+     * Number of entries deleted from v2
+     **/
+    EntriesDeleted: GenericPalletEvent<'DappStakingMigration', 'EntriesDeleted', number>;
+
+    /**
+     * Generic pallet event
+     **/
+    [prop: string]: GenericPalletEvent;
+  };
+  dappsStaking: {
+    /**
+     * Account has bonded and staked funds on a smart contract.
+     **/
+    BondAndStake: GenericPalletEvent<
+      'DappsStaking',
+      'BondAndStake',
+      [AccountId32, AstarPrimitivesDappStakingSmartContract, bigint]
+    >;
+
+    /**
+     * Account has unbonded & unstaked some funds. Unbonding process begins.
+     **/
+    UnbondAndUnstake: GenericPalletEvent<
+      'DappsStaking',
+      'UnbondAndUnstake',
+      [AccountId32, AstarPrimitivesDappStakingSmartContract, bigint]
+    >;
+
+    /**
+     * Account has fully withdrawn all staked amount from an unregistered contract.
+     **/
+    WithdrawFromUnregistered: GenericPalletEvent<
+      'DappsStaking',
+      'WithdrawFromUnregistered',
+      [AccountId32, AstarPrimitivesDappStakingSmartContract, bigint]
+    >;
+
+    /**
+     * Account has withdrawn unbonded funds.
+     **/
+    Withdrawn: GenericPalletEvent<'DappsStaking', 'Withdrawn', [AccountId32, bigint]>;
+
+    /**
+     * New contract added for staking.
+     **/
+    NewContract: GenericPalletEvent<
+      'DappsStaking',
+      'NewContract',
+      [AccountId32, AstarPrimitivesDappStakingSmartContract]
+    >;
+
+    /**
+     * Contract removed from dapps staking.
+     **/
+    ContractRemoved: GenericPalletEvent<
+      'DappsStaking',
+      'ContractRemoved',
+      [AccountId32, AstarPrimitivesDappStakingSmartContract]
+    >;
+
+    /**
+     * New dapps staking era. Distribute era rewards to contracts.
+     **/
+    NewDappStakingEra: GenericPalletEvent<'DappsStaking', 'NewDappStakingEra', number>;
+
+    /**
+     * Reward paid to staker or developer.
+     **/
+    Reward: GenericPalletEvent<
+      'DappsStaking',
+      'Reward',
+      [AccountId32, AstarPrimitivesDappStakingSmartContract, number, bigint]
+    >;
+
+    /**
+     * Maintenance mode has been enabled or disabled
+     **/
+    MaintenanceMode: GenericPalletEvent<'DappsStaking', 'MaintenanceMode', boolean>;
+
+    /**
+     * Reward handling modified
+     **/
+    RewardDestination: GenericPalletEvent<
+      'DappsStaking',
+      'RewardDestination',
+      [AccountId32, PalletDappsStakingRewardDestination]
+    >;
+
+    /**
+     * Nomination part has been transfered from one contract to another.
+     *
+     * \(staker account, origin smart contract, amount, target smart contract\)
+     **/
+    NominationTransfer: GenericPalletEvent<
+      'DappsStaking',
+      'NominationTransfer',
+      [AccountId32, AstarPrimitivesDappStakingSmartContract, bigint, AstarPrimitivesDappStakingSmartContract]
+    >;
+
+    /**
+     * Stale, unclaimed reward from an unregistered contract has been burned.
+     *
+     * \(developer account, smart contract, era, amount burned\)
+     **/
+    StaleRewardBurned: GenericPalletEvent<
+      'DappsStaking',
+      'StaleRewardBurned',
+      [AccountId32, AstarPrimitivesDappStakingSmartContract, number, bigint]
+    >;
+
+    /**
+     * Pallet is being decommissioned.
+     **/
+    Decommission: GenericPalletEvent<'DappsStaking', 'Decommission', null>;
 
     /**
      * Generic pallet event

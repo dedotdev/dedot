@@ -6,11 +6,13 @@ import type {
   H256,
   Bytes,
   Digest,
+  Phase,
   FixedBytes,
   AccountId32,
   FixedU128,
   Perbill,
   Percent,
+  BytesLike,
   EthereumAddressLike,
   EthereumAddress,
   Data,
@@ -21,7 +23,6 @@ import type {
   FrameSupportDispatchPerDispatchClass,
   FrameSystemEventRecord,
   FrameSystemLastRuntimeUpgradeInfo,
-  FrameSystemPhase,
   SpConsensusBabeAppPublic,
   SpConsensusSlotsSlot,
   SpConsensusBabeDigestsNextConfigDescriptor,
@@ -45,8 +46,6 @@ import type {
   PalletStakingSlashingSlashingSpans,
   PalletStakingSlashingSpanRecord,
   SpStakingOffenceOffenceDetails,
-  SpConsensusBeefyEcdsaCryptoPublic,
-  SpConsensusBeefyMmrBeefyAuthoritySet,
   StagingKusamaRuntimeSessionKeys,
   SpCoreCryptoKeyTypeId,
   PalletGrandpaStoredState,
@@ -147,6 +146,8 @@ import type {
   PolkadotRuntimeParachainsInclusionAggregateMessageOrigin,
   PalletMessageQueuePage,
   PolkadotRuntimeCommonImplsVersionedLocatableAsset,
+  SpConsensusBeefyEcdsaCryptoPublic,
+  SpConsensusBeefyMmrBeefyAuthoritySet,
 } from './types';
 
 export interface ChainStorage extends GenericChainStorage {
@@ -245,7 +246,7 @@ export interface ChainStorage extends GenericChainStorage {
     /**
      * The execution phase of the block.
      **/
-    executionPhase: GenericStorageQuery<() => FrameSystemPhase | undefined>;
+    executionPhase: GenericStorageQuery<() => Phase | undefined>;
 
     /**
      * Generic pallet storage query
@@ -784,91 +785,7 @@ export interface ChainStorage extends GenericChainStorage {
     /**
      * A vector of reports of the same kind that happened at the same time slot.
      **/
-    concurrentReportsIndex: GenericStorageQuery<(arg: [FixedBytes<16>, Bytes]) => Array<H256>>;
-
-    /**
-     * Generic pallet storage query
-     **/
-    [storage: string]: GenericStorageQuery;
-  };
-  beefy: {
-    /**
-     * The current authorities set
-     **/
-    authorities: GenericStorageQuery<() => Array<SpConsensusBeefyEcdsaCryptoPublic>>;
-
-    /**
-     * The current validator set id
-     **/
-    validatorSetId: GenericStorageQuery<() => bigint>;
-
-    /**
-     * Authorities set scheduled to be used with the next session
-     **/
-    nextAuthorities: GenericStorageQuery<() => Array<SpConsensusBeefyEcdsaCryptoPublic>>;
-
-    /**
-     * A mapping from BEEFY set ID to the index of the *most recent* session for which its
-     * members were responsible.
-     *
-     * This is only used for validating equivocation proofs. An equivocation proof must
-     * contains a key-ownership proof for a given session, therefore we need a way to tie
-     * together sessions and BEEFY set ids, i.e. we need to validate that a validator
-     * was the owner of a given key on a given session, and what the active set ID was
-     * during that session.
-     *
-     * TWOX-NOTE: `ValidatorSetId` is not under user control.
-     **/
-    setIdSession: GenericStorageQuery<(arg: bigint) => number | undefined>;
-
-    /**
-     * Block number where BEEFY consensus is enabled/started.
-     * By changing this (through privileged `set_new_genesis()`), BEEFY consensus is effectively
-     * restarted from the newly set block number.
-     **/
-    genesisBlock: GenericStorageQuery<() => number | undefined>;
-
-    /**
-     * Generic pallet storage query
-     **/
-    [storage: string]: GenericStorageQuery;
-  };
-  mmr: {
-    /**
-     * Latest MMR Root hash.
-     **/
-    rootHash: GenericStorageQuery<() => H256>;
-
-    /**
-     * Current size of the MMR (number of leaves).
-     **/
-    numberOfLeaves: GenericStorageQuery<() => bigint>;
-
-    /**
-     * Hashes of the nodes in the MMR.
-     *
-     * Note this collection only contains MMR peaks, the inner nodes (and leaves)
-     * are pruned and only stored in the Offchain DB.
-     **/
-    nodes: GenericStorageQuery<(arg: bigint) => H256 | undefined>;
-
-    /**
-     * Generic pallet storage query
-     **/
-    [storage: string]: GenericStorageQuery;
-  };
-  beefyMmrLeaf: {
-    /**
-     * Details of current BEEFY authority set.
-     **/
-    beefyAuthorities: GenericStorageQuery<() => SpConsensusBeefyMmrBeefyAuthoritySet>;
-
-    /**
-     * Details of next BEEFY authority set.
-     *
-     * This storage entry is used as cache for calls to `update_beefy_next_authority_set`.
-     **/
-    beefyNextAuthorities: GenericStorageQuery<() => SpConsensusBeefyMmrBeefyAuthoritySet>;
+    concurrentReportsIndex: GenericStorageQuery<(arg: [FixedBytes<16>, BytesLike]) => Array<H256>>;
 
     /**
      * Generic pallet storage query
@@ -915,7 +832,7 @@ export interface ChainStorage extends GenericChainStorage {
     /**
      * The owner of a key. The key is the `KeyTypeId` + the encoded key.
      **/
-    keyOwner: GenericStorageQuery<(arg: [SpCoreCryptoKeyTypeId, Bytes]) => AccountId32 | undefined>;
+    keyOwner: GenericStorageQuery<(arg: [SpCoreCryptoKeyTypeId, BytesLike]) => AccountId32 | undefined>;
 
     /**
      * Generic pallet storage query
@@ -2782,6 +2699,90 @@ export interface ChainStorage extends GenericChainStorage {
     conversionRateToNative: GenericStorageQuery<
       (arg: PolkadotRuntimeCommonImplsVersionedLocatableAsset) => FixedU128 | undefined
     >;
+
+    /**
+     * Generic pallet storage query
+     **/
+    [storage: string]: GenericStorageQuery;
+  };
+  beefy: {
+    /**
+     * The current authorities set
+     **/
+    authorities: GenericStorageQuery<() => Array<SpConsensusBeefyEcdsaCryptoPublic>>;
+
+    /**
+     * The current validator set id
+     **/
+    validatorSetId: GenericStorageQuery<() => bigint>;
+
+    /**
+     * Authorities set scheduled to be used with the next session
+     **/
+    nextAuthorities: GenericStorageQuery<() => Array<SpConsensusBeefyEcdsaCryptoPublic>>;
+
+    /**
+     * A mapping from BEEFY set ID to the index of the *most recent* session for which its
+     * members were responsible.
+     *
+     * This is only used for validating equivocation proofs. An equivocation proof must
+     * contains a key-ownership proof for a given session, therefore we need a way to tie
+     * together sessions and BEEFY set ids, i.e. we need to validate that a validator
+     * was the owner of a given key on a given session, and what the active set ID was
+     * during that session.
+     *
+     * TWOX-NOTE: `ValidatorSetId` is not under user control.
+     **/
+    setIdSession: GenericStorageQuery<(arg: bigint) => number | undefined>;
+
+    /**
+     * Block number where BEEFY consensus is enabled/started.
+     * By changing this (through privileged `set_new_genesis()`), BEEFY consensus is effectively
+     * restarted from the newly set block number.
+     **/
+    genesisBlock: GenericStorageQuery<() => number | undefined>;
+
+    /**
+     * Generic pallet storage query
+     **/
+    [storage: string]: GenericStorageQuery;
+  };
+  mmr: {
+    /**
+     * Latest MMR Root hash.
+     **/
+    rootHash: GenericStorageQuery<() => H256>;
+
+    /**
+     * Current size of the MMR (number of leaves).
+     **/
+    numberOfLeaves: GenericStorageQuery<() => bigint>;
+
+    /**
+     * Hashes of the nodes in the MMR.
+     *
+     * Note this collection only contains MMR peaks, the inner nodes (and leaves)
+     * are pruned and only stored in the Offchain DB.
+     **/
+    nodes: GenericStorageQuery<(arg: bigint) => H256 | undefined>;
+
+    /**
+     * Generic pallet storage query
+     **/
+    [storage: string]: GenericStorageQuery;
+  };
+  beefyMmrLeaf: {
+    /**
+     * Details of current BEEFY authority set.
+     **/
+    beefyAuthorities: GenericStorageQuery<() => SpConsensusBeefyMmrBeefyAuthoritySet>;
+
+    /**
+     * Details of next BEEFY authority set.
+     *
+     * This storage entry is used as cache for calls to `update_beefy_next_authority_set`.
+     **/
+    beefyNextAuthorities: GenericStorageQuery<() => SpConsensusBeefyMmrBeefyAuthoritySet>;
 
     /**
      * Generic pallet storage query

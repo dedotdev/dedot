@@ -42,12 +42,14 @@ export class PortableCodecRegistry {
     return type;
   }
 
-  findCodec(typeId: TypeId): $.AnyShape {
+  findCodec<I = unknown, O = I>(typeId: TypeId): $.Shape<I, O> {
     const typeDef = this.findType(typeId);
     if (typeDef && typeDef.path.length > 0) {
       try {
         const codecName = typeDef.path.at(-1)!;
         if (KNOWN_CODECS.includes(codecName)) {
+          // TODO Check codec structure matches with corresponding portable codec
+          // Preparing for customizing primitive codecs
           return this.#registry.findCodec(codecName);
         }
       } catch (e) {
@@ -56,17 +58,20 @@ export class PortableCodecRegistry {
     }
 
     if (this.#cache.has(typeId)) {
-      return this.#cache.get(typeId)!;
+      return this.#cache.get(typeId)! as $.Shape<I, O>;
     }
 
     // A placeholder codec for typeId so if this typeId is used in the `#createCodec`
     // the recursion will be resolved
-    this.#cache.set(typeId, $.Bytes);
+    this.#cache.set(
+      typeId,
+      $.deferred(() => this.#cache.get(typeId) || $.Bytes),
+    );
 
     const $codec = this.#createCodec(typeId);
     this.#cache.set(typeId, $codec);
 
-    return $codec;
+    return $codec as $.Shape<I, O>;
   }
 
   // Create codec for a portable type from its type definition
@@ -85,7 +90,7 @@ export class PortableCodecRegistry {
       const { fields } = value;
 
       if (fields.length === 0) {
-        return $.Null;
+        return $.Struct({});
       } else if (fields[0].name === undefined) {
         if (fields.length === 1) {
           return this.findCodec(fields[0]!.typeId);
@@ -107,7 +112,7 @@ export class PortableCodecRegistry {
       const { fields } = value;
 
       if (fields.length === 0) {
-        return $.Null;
+        return $.Tuple();
       } else if (fields.length === 1) {
         // wrapper
         return this.findCodec(fields[0]!);
@@ -140,7 +145,7 @@ export class PortableCodecRegistry {
       }
 
       if (members.length === 0) {
-        return $.never as any;
+        return $.Null;
       } else if (members.every((x) => x.fields.length === 0)) {
         const enumMembers: Record<number, string> = {};
         for (const { index, name } of members) {
@@ -223,25 +228,22 @@ export class PortableCodecRegistry {
       outerEnums: { eventEnumTypeId },
     } = this.#registry.metadata!;
 
-    const { path } = this.types[typeId];
-    const fullPath = path.join('::');
-
     if (typeId === eventEnumTypeId) {
       return {
         tagKey: 'pallet',
         valueKey: 'palletEvent',
-      };
-    } else if (fullPath.endsWith('::pallet::Event')) {
-      return {
-        tagKey: 'name',
-        valueKey: 'data',
       };
     } else if (typeId === callTypeId) {
       return {
         tagKey: 'pallet',
         valueKey: 'palletCall',
       };
-    } else if (fullPath.endsWith('::pallet::Call')) {
+    } else if (this.getPalletEventTypeIds().includes(typeId)) {
+      return {
+        tagKey: 'name',
+        valueKey: 'data',
+      };
+    } else if (this.getPalletCallTypeIds().includes(typeId)) {
       return {
         tagKey: 'name',
         valueKey: 'params',
@@ -252,5 +254,31 @@ export class PortableCodecRegistry {
       tagKey: 'tag',
       valueKey: 'value',
     };
+  }
+
+  getPalletCallTypeIds(): number[] {
+    const {
+      extrinsic: { callTypeId },
+    } = this.#registry.metadata!;
+
+    const callType = this.#registry.findPortableType(callTypeId);
+    if (callType.type.tag === 'Enum') {
+      return callType.type.value.members.map((m) => m.fields[0].typeId);
+    }
+
+    return [];
+  }
+
+  getPalletEventTypeIds(): number[] {
+    const {
+      outerEnums: { eventEnumTypeId },
+    } = this.#registry.metadata!;
+
+    const eventType = this.#registry.findPortableType(eventEnumTypeId);
+    if (eventType.type.tag === 'Enum') {
+      return eventType.type.value.members.map((m) => m.fields[0].typeId);
+    }
+
+    return [];
   }
 }

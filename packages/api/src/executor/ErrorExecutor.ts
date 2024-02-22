@@ -1,9 +1,9 @@
 import { GenericPalletError, GenericSubstrateApi } from '@delightfuldot/types';
 import { SubstrateApi } from '@delightfuldot/chaintypes';
 import { Executor } from './Executor';
-import { ModuleError } from '@delightfuldot/codecs';
+import { DispatchError, ModuleError } from '@delightfuldot/codecs';
 import { assert } from '@delightfuldot/utils';
-import { hexToU8a, stringPascalCase } from '@polkadot/util';
+import { hexToU8a, isHex, isNumber, isObject, stringPascalCase } from '@polkadot/util';
 
 /**
  * @name ErrorExecutor
@@ -24,7 +24,17 @@ export class ErrorExecutor<ChainApi extends GenericSubstrateApi = SubstrateApi> 
         pallet: targetPallet.name,
         palletIndex: targetPallet.index,
       },
-      is: ({ index, error }: ModuleError) => index === targetPallet.index && hexToU8a(error)[0] === errorDef.index,
+      is: (errorInfo: ModuleError | DispatchError) => {
+        if (isObject<DispatchError>(errorInfo) && errorInfo.tag === 'Module') {
+          errorInfo = errorInfo.value;
+        }
+
+        if (isObject<ModuleError>(errorInfo) && isNumber(errorInfo.index) && isHex(errorInfo.error)) {
+          return errorInfo.index === targetPallet.index && hexToU8a(errorInfo.error)[0] === errorDef.index;
+        }
+
+        return false;
+      },
     };
   }
 

@@ -7,3 +7,5 @@ export * from './babe';
 export * from './beefy';
 export * from './metadata';
 export * from './payment';
+export * from './transaction';
+export * from './frame_system';

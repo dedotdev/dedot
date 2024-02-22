@@ -1,11 +1,12 @@
 import * as $ from '@delightfuldot/shape';
-import * as Codecs from '../index';
-import { EnumTypeDef, ModuleError } from '../index';
+import * as Codecs from '../codecs';
+import { DispatchError, ModuleError } from '../codecs';
+import { PalletErrorMetadataLatest } from '../metadata/types';
 import { MetadataLatest, TypeId } from '../metadata';
 import { PortableCodecRegistry } from './PortableCodecRegistry';
 import { CodecType, knownCodecTypes, normalizeCodecName } from '../codectypes';
 import { PortableType } from '../metadata/scale-info';
-import { hexToU8a } from '@polkadot/util';
+import { hexToU8a, isObject } from '@polkadot/util';
 
 type KnownPath = string | RegExp;
 
@@ -20,6 +21,8 @@ const KNOWN_PATHS: KnownPath[] = [
   'sp_runtime::TokenError',
   'sp_arithmetic::ArithmeticError',
   'sp_runtime::TransactionalError',
+  'frame_support::dispatch::DispatchInfo',
+  'frame_system::Phase',
 
   'fp_account::AccountId20',
   'account::AccountId20',
@@ -49,8 +52,8 @@ export class CodecRegistry {
     if (metadata) this.setMetadata(metadata);
   }
 
-  findCodec(name: string): $.AnyShape {
-    return this.#findKnownCodec(name);
+  findCodec<I = unknown, O = I>(name: string): $.Shape<I, O> {
+    return this.#findKnownCodec<I, O>(name);
   }
 
   findCodecType(name: string): CodecType {
@@ -79,7 +82,7 @@ export class CodecRegistry {
     };
   }
 
-  #findKnownCodec(typeName: string): $.AnyShape {
+  #findKnownCodec<I = unknown, O = I>(typeName: string): $.Shape<I, O> {
     // @ts-ignore
     const $codec = this.#findKnownWrapperCodec(typeName) || Codecs[normalizeCodecName(typeName)] || $[typeName];
 
@@ -87,7 +90,14 @@ export class CodecRegistry {
       throw new Error(`Unsupported codec - ${typeName}`);
     }
 
-    return $codec as $.AnyShape;
+    // This only works with top-level $.deferred codecs
+    // We should make it work for nested $.deferred codecs as well
+    if ($codec.metadata && $codec.metadata[0].name === '$.deferred') {
+      const getShape = $codec.metadata[0].args![0] as (...args: any[]) => $.Shape<I, O>;
+      return $.deferred(() => getShape(this));
+    }
+
+    return $codec;
   }
 
   #findKnownWrapperCodec(typeName: string): $.AnyShape | undefined {
@@ -110,8 +120,8 @@ export class CodecRegistry {
     return KNOWN_PATHS.some((one) => joinedPath.match(one));
   }
 
-  findPortableCodec(typeId: TypeId): $.AnyShape {
-    return this.#portableCodecRegistry!.findCodec(typeId);
+  findPortableCodec<I = unknown, O = I>(typeId: TypeId): $.Shape<I, O> {
+    return this.#portableCodecRegistry!.findCodec<I, O>(typeId);
   }
 
   findPortableType(typeId: TypeId): PortableType {
@@ -133,8 +143,10 @@ export class CodecRegistry {
     return this.#portableCodecRegistry;
   }
 
-  // TODO add types, PalletErrorMetadataLatest
-  findMetaError(moduleError: ModuleError): EnumTypeDef['members'][0] | undefined {
+  findErrorMeta(errorInfo: ModuleError | DispatchError): PalletErrorMetadataLatest | undefined {
+    const moduleError =
+      isObject<DispatchError>(errorInfo) && errorInfo.tag === 'Module' ? errorInfo.value : (errorInfo as ModuleError);
+
     const targetPallet = this.metadata!.pallets.find((p) => p.index === moduleError.index);
     if (!targetPallet || !targetPallet.error) return;
 
@@ -144,6 +156,16 @@ export class CodecRegistry {
     const { tag, value } = def.type;
     if (tag !== 'Enum') return;
 
-    return value.members.find(({ index }) => index === hexToU8a(moduleError.error)[0]);
+    const errorDef = value.members.find(({ index }) => index === hexToU8a(moduleError.error)[0]);
+    if (!errorDef) return;
+
+    return {
+      ...errorDef,
+      fieldCodecs: errorDef.fields.map(({ typeId }) => this.findPortableCodec(typeId)),
+      pallet: targetPallet.name,
+      palletIndex: targetPallet.index,
+    };
   }
+
+  // findEventMeta() => PalletEventMetadataLatest
 }
