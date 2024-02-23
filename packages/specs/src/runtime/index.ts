@@ -53,7 +53,7 @@ export const runtimeApiSpecs: RuntimeApiSpec[] = Object.keys(runtimeApisSpec)
   })
   .flat(2);
 
-export const runtimeCallSpecs: RuntimeApiMethodSpec[] = runtimeApiSpecs
+export const runtimeApiMethodSpecs: RuntimeApiMethodSpec[] = runtimeApiSpecs
   .map(({ methods, runtimeApiName, version }) => {
     return Object.keys(methods).map(
       (methodName) => ({ ...methods[methodName], methodName, runtimeApiName, version }) as RuntimeApiMethodSpec,
@@ -67,8 +67,8 @@ export const findRuntimeApiSpec = (runtimeApiHash: string, version: number) => {
   return runtimeApiSpecs.find((one) => one.runtimeApiName === runtimeApiName && one.version === version);
 };
 
-export const findRuntimeCallSpec = (callName: string, version: number) => {
-  return runtimeCallSpecs.find(
+export const findRuntimeApiMethodSpec = (callName: string, version: number) => {
+  return runtimeApiMethodSpecs.find(
     (one) => `${one.runtimeApiName}_${stringSnakeCase(one.methodName)}` === callName && one.version === version,
   );
 };

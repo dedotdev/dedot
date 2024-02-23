@@ -7,7 +7,7 @@ import {
 } from '@delightfuldot/types';
 import { assert, calculateRuntimeApiHash, stringSnakeCase } from '@delightfuldot/utils';
 import { isNumber, stringPascalCase, u8aConcat, u8aToHex } from '@polkadot/util';
-import { findRuntimeCallSpec } from '@delightfuldot/specs';
+import { findRuntimeApiMethodSpec } from '@delightfuldot/specs';
 import { RuntimeApiMethodDefLatest } from '@delightfuldot/codecs';
 
 export const FallbackRuntimeApis = [
@@ -67,7 +67,7 @@ export class RuntimeApiExecutor<ChainApi extends GenericSubstrateApi = GenericSu
     const methodDef = this.#findRuntimeApiMethodDef(runtimeApi, method);
 
     if (methodDef) {
-      return this.#toRuntimeApiMethodSpec(runtimeApi, methodDef);
+      return this.#toMethodSpec(runtimeApi, methodDef);
     }
 
     return this.#findRuntimeApiMethodExternalSpec(runtimeApi, method);
@@ -85,7 +85,7 @@ export class RuntimeApiExecutor<ChainApi extends GenericSubstrateApi = GenericSu
     } catch {}
   }
 
-  #toRuntimeApiMethodSpec(runtimeApi: string, methodDef?: RuntimeApiMethodDefLatest): RuntimeApiMethodSpec | undefined {
+  #toMethodSpec(runtimeApi: string, methodDef?: RuntimeApiMethodDefLatest): RuntimeApiMethodSpec | undefined {
     if (!methodDef) return undefined;
 
     const { name, inputs, output, docs } = methodDef;
@@ -116,6 +116,6 @@ export class RuntimeApiExecutor<ChainApi extends GenericSubstrateApi = GenericSu
       return undefined;
     }
 
-    return findRuntimeCallSpec(`${runtimeApi}_${method}`, targetRuntimeApiVersion);
+    return findRuntimeApiMethodSpec(`${runtimeApi}_${method}`, targetRuntimeApiVersion);
   }
 }
