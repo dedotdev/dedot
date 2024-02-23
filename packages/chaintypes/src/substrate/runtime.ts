@@ -6,6 +6,8 @@ import type {
   Header,
   DispatchError,
   Result,
+  UncheckedExtrinsicLike,
+  UncheckedExtrinsic,
   H256,
   AccountId32Like,
   BytesLike,
@@ -16,7 +18,6 @@ import type {
   SpRuntimeBlock,
   SpCoreOpaqueMetadata,
   SpRuntimeTransactionValidityTransactionValidityError,
-  SpRuntimeUncheckedExtrinsic,
   SpInherentsInherentData,
   SpInherentsCheckInherentsResult,
   SpRuntimeTransactionValidityValidTransaction,
@@ -132,7 +133,7 @@ export interface RuntimeApis extends GenericRuntimeApis {
      **/
     applyExtrinsic: GenericRuntimeApiMethod<
       (
-        extrinsic: SpRuntimeUncheckedExtrinsic,
+        extrinsic: UncheckedExtrinsicLike,
       ) => Promise<Result<Result<[], DispatchError>, SpRuntimeTransactionValidityTransactionValidityError>>
     >;
 
@@ -149,7 +150,7 @@ export interface RuntimeApis extends GenericRuntimeApis {
      * @callname: BlockBuilder_inherent_extrinsics
      **/
     inherentExtrinsics: GenericRuntimeApiMethod<
-      (inherent: SpInherentsInherentData) => Promise<Array<SpRuntimeUncheckedExtrinsic>>
+      (inherent: SpInherentsInherentData) => Promise<Array<UncheckedExtrinsic>>
     >;
 
     /**
@@ -186,7 +187,7 @@ export interface RuntimeApis extends GenericRuntimeApis {
     validateTransaction: GenericRuntimeApiMethod<
       (
         source: SpRuntimeTransactionValidityTransactionSource,
-        tx: SpRuntimeUncheckedExtrinsic,
+        tx: UncheckedExtrinsicLike,
         blockHash: H256,
       ) => Promise<
         Result<SpRuntimeTransactionValidityValidTransaction, SpRuntimeTransactionValidityTransactionValidityError>
@@ -493,8 +494,8 @@ export interface RuntimeApis extends GenericRuntimeApis {
         origin: AccountId32Like,
         dest: AccountId32Like,
         value: bigint,
-        gasLimit: SpWeightsWeightV2Weight | undefined,
-        storageDepositLimit: bigint | undefined,
+        gasLimit?: SpWeightsWeightV2Weight | undefined,
+        storageDepositLimit?: bigint | undefined,
         inputData: BytesLike,
       ) => Promise<PalletContractsPrimitivesContractResult>
     >;
@@ -510,8 +511,8 @@ export interface RuntimeApis extends GenericRuntimeApis {
       (
         origin: AccountId32Like,
         value: bigint,
-        gasLimit: SpWeightsWeightV2Weight | undefined,
-        storageDepositLimit: bigint | undefined,
+        gasLimit?: SpWeightsWeightV2Weight | undefined,
+        storageDepositLimit?: bigint | undefined,
         code: PalletContractsPrimitivesCode,
         data: BytesLike,
         salt: BytesLike,
@@ -529,7 +530,7 @@ export interface RuntimeApis extends GenericRuntimeApis {
       (
         origin: AccountId32Like,
         code: BytesLike,
-        storageDepositLimit: bigint | undefined,
+        storageDepositLimit?: bigint | undefined,
         determinism: PalletContractsWasmDeterminism,
       ) => Promise<Result<PalletContractsPrimitivesCodeUploadReturnValue, DispatchError>>
     >;
@@ -564,7 +565,7 @@ export interface RuntimeApis extends GenericRuntimeApis {
      * @callname: TransactionPaymentApi_query_info
      **/
     queryInfo: GenericRuntimeApiMethod<
-      (uxt: SpRuntimeUncheckedExtrinsic, len: number) => Promise<PalletTransactionPaymentRuntimeDispatchInfo>
+      (uxt: UncheckedExtrinsicLike, len: number) => Promise<PalletTransactionPaymentRuntimeDispatchInfo>
     >;
 
     /**
@@ -572,7 +573,7 @@ export interface RuntimeApis extends GenericRuntimeApis {
      * @callname: TransactionPaymentApi_query_fee_details
      **/
     queryFeeDetails: GenericRuntimeApiMethod<
-      (uxt: SpRuntimeUncheckedExtrinsic, len: number) => Promise<PalletTransactionPaymentFeeDetails>
+      (uxt: UncheckedExtrinsicLike, len: number) => Promise<PalletTransactionPaymentFeeDetails>
     >;
 
     /**
@@ -766,7 +767,7 @@ export interface RuntimeApis extends GenericRuntimeApis {
     generateProof: GenericRuntimeApiMethod<
       (
         blockNumbers: Array<number>,
-        bestKnownBlockNumber: number | undefined,
+        bestKnownBlockNumber?: number | undefined,
       ) => Promise<Result<[Array<SpMmrPrimitivesEncodableOpaqueLeaf>, SpMmrPrimitivesProof], SpMmrPrimitivesError>>
     >;
 
@@ -825,7 +826,7 @@ export interface RuntimeApis extends GenericRuntimeApis {
      *
      * @callname: SessionKeys_generate_session_keys
      **/
-    generateSessionKeys: GenericRuntimeApiMethod<(seed: BytesLike | undefined) => Promise<Bytes>>;
+    generateSessionKeys: GenericRuntimeApiMethod<(seed?: BytesLike | undefined) => Promise<Bytes>>;
 
     /**
      * Decode the given public session keys.

@@ -25,6 +25,7 @@ import type {
   FixedU128,
   FixedI64,
   Era,
+  UncheckedExtrinsic,
 } from '@delightfuldot/codecs';
 
 export type FrameSystemAccountInfo = {
@@ -8936,9 +8937,7 @@ export type PolkadotRuntimeCommonClaimsPrevalidateAttests = {};
 
 export type PolkadotRuntimeRuntime = {};
 
-export type SpRuntimeBlock = { header: Header; extrinsics: Array<SpRuntimeUncheckedExtrinsic> };
-
-export type SpRuntimeUncheckedExtrinsic = Bytes;
+export type SpRuntimeBlock = { header: Header; extrinsics: Array<UncheckedExtrinsic> };
 
 export type SpCoreOpaqueMetadata = Bytes;
 

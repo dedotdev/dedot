@@ -14,8 +14,6 @@ import type {
   AccountId32Like,
 } from '@delightfuldot/codecs';
 import type {
-  SpConsensusSlotsSlotDuration,
-  SpConsensusAuraEd25519AppEd25519Public,
   SpRuntimeBlock,
   SpCoreOpaqueMetadata,
   SpRuntimeTransactionValidityTransactionValidityError,
@@ -23,42 +21,26 @@ import type {
   SpInherentsCheckInherentsResult,
   SpRuntimeTransactionValidityValidTransaction,
   SpRuntimeTransactionValidityTransactionSource,
+  SpConsensusSlotsSlotDuration,
+  SpConsensusAuraSr25519AppSr25519Public,
   SpCoreCryptoKeyTypeId,
   PalletTransactionPaymentRuntimeDispatchInfo,
   PalletTransactionPaymentFeeDetails,
   SpWeightsWeightV2Weight,
-  AssetHubPolkadotRuntimeRuntimeCallLike,
-  XcmVersionedMultiAssets,
-  AssetsCommonRuntimeApiFungiblesAccessError,
-  CumulusPrimitivesCoreCollationInfo,
+  PrimitivesAppPublic,
+  PrimitivesApiError,
+  PrimitivesSessionAuthorityData,
+  PrimitivesSessionCommittee,
+  PrimitivesSessionValidatorError,
+  PalletContractsPrimitivesContractResult,
+  PalletContractsPrimitivesContractResultResult,
+  PalletContractsPrimitivesCode,
+  PalletContractsPrimitivesCodeUploadReturnValue,
+  PalletContractsWasmDeterminism,
+  PalletContractsPrimitivesContractAccessError,
 } from './types';
 
 export interface RuntimeApis extends GenericRuntimeApis {
-  /**
-   * @runtimeapi: AuraApi - 0xdd718d5cc53262d4
-   **/
-  auraApi: {
-    /**
-     * Returns the slot duration for Aura.
-     *
-     * Currently, only the value provided by this type at genesis will be used.
-     *
-     * @callname: AuraApi_slot_duration
-     **/
-    slotDuration: GenericRuntimeApiMethod<() => Promise<SpConsensusSlotsSlotDuration>>;
-
-    /**
-     * Return the current set of authorities.
-     *
-     * @callname: AuraApi_authorities
-     **/
-    authorities: GenericRuntimeApiMethod<() => Promise<Array<SpConsensusAuraEd25519AppEd25519Public>>>;
-
-    /**
-     * Generic runtime api call
-     **/
-    [method: string]: GenericRuntimeApiMethod;
-  };
   /**
    * @runtimeapi: Core - 0xdf6acb689907609b
    **/
@@ -205,6 +187,31 @@ export interface RuntimeApis extends GenericRuntimeApis {
     [method: string]: GenericRuntimeApiMethod;
   };
   /**
+   * @runtimeapi: AuraApi - 0xdd718d5cc53262d4
+   **/
+  auraApi: {
+    /**
+     * Returns the slot duration for Aura.
+     *
+     * Currently, only the value provided by this type at genesis will be used.
+     *
+     * @callname: AuraApi_slot_duration
+     **/
+    slotDuration: GenericRuntimeApiMethod<() => Promise<SpConsensusSlotsSlotDuration>>;
+
+    /**
+     * Return the current set of authorities.
+     *
+     * @callname: AuraApi_authorities
+     **/
+    authorities: GenericRuntimeApiMethod<() => Promise<Array<SpConsensusAuraSr25519AppSr25519Public>>>;
+
+    /**
+     * Generic runtime api call
+     **/
+    [method: string]: GenericRuntimeApiMethod;
+  };
+  /**
    * @runtimeapi: OffchainWorkerApi - 0xf78b278be53f454c
    **/
   offchainWorkerApi: {
@@ -307,112 +314,183 @@ export interface RuntimeApis extends GenericRuntimeApis {
     [method: string]: GenericRuntimeApiMethod;
   };
   /**
-   * @runtimeapi: TransactionPaymentCallApi - 0xf3ff14d5ab527059
+   * @runtimeapi: AlephSessionApi - 0x2be3f75b696ad1f6
    **/
-  transactionPaymentCallApi: {
+  alephSessionApi: {
     /**
-     * Query information of a dispatch class, weight, and fee of a given encoded `Call`.
      *
-     * @callname: TransactionPaymentCallApi_query_call_info
+     * @callname: AlephSessionApi_next_session_authorities
      **/
-    queryCallInfo: GenericRuntimeApiMethod<
+    nextSessionAuthorities: GenericRuntimeApiMethod<
+      () => Promise<Result<Array<PrimitivesAppPublic>, PrimitivesApiError>>
+    >;
+
+    /**
+     *
+     * @callname: AlephSessionApi_authorities
+     **/
+    authorities: GenericRuntimeApiMethod<() => Promise<Array<PrimitivesAppPublic>>>;
+
+    /**
+     *
+     * @callname: AlephSessionApi_next_session_authority_data
+     **/
+    nextSessionAuthorityData: GenericRuntimeApiMethod<
+      () => Promise<Result<PrimitivesSessionAuthorityData, PrimitivesApiError>>
+    >;
+
+    /**
+     *
+     * @callname: AlephSessionApi_authority_data
+     **/
+    authorityData: GenericRuntimeApiMethod<() => Promise<PrimitivesSessionAuthorityData>>;
+
+    /**
+     *
+     * @callname: AlephSessionApi_session_period
+     **/
+    sessionPeriod: GenericRuntimeApiMethod<() => Promise<number>>;
+
+    /**
+     *
+     * @callname: AlephSessionApi_millisecs_per_block
+     **/
+    millisecsPerBlock: GenericRuntimeApiMethod<() => Promise<bigint>>;
+
+    /**
+     *
+     * @callname: AlephSessionApi_finality_version
+     **/
+    finalityVersion: GenericRuntimeApiMethod<() => Promise<number>>;
+
+    /**
+     *
+     * @callname: AlephSessionApi_next_session_finality_version
+     **/
+    nextSessionFinalityVersion: GenericRuntimeApiMethod<() => Promise<number>>;
+
+    /**
+     * Predict finality committee and block producers for the given session. `session` must be
+     * within the current era (current, in the staking context).
+     *
+     * If the active era `E` starts in the session `a`, and ends in session `b` then from
+     * session `a` to session `b-1` this function can answer question who will be in the
+     * committee in the era `E`. In the last session of the era `E` (`b`) this can be used to
+     * determine all of the sessions in the era `E+1`.
+     *
+     * @callname: AlephSessionApi_predict_session_committee
+     **/
+    predictSessionCommittee: GenericRuntimeApiMethod<
+      (session: number) => Promise<Result<PrimitivesSessionCommittee, PrimitivesSessionValidatorError>>
+    >;
+
+    /**
+     * Generic runtime api call
+     **/
+    [method: string]: GenericRuntimeApiMethod;
+  };
+  /**
+   * @runtimeapi: NominationPoolsApi - 0x17a6bc0d0062aeb3
+   **/
+  nominationPoolsApi: {
+    /**
+     * Returns the pending rewards for the member that the AccountId was given for.
+     *
+     * @callname: NominationPoolsApi_pending_rewards
+     **/
+    pendingRewards: GenericRuntimeApiMethod<(who: AccountId32Like) => Promise<bigint>>;
+
+    /**
+     * Returns the equivalent balance of `points` for a given pool.
+     *
+     * @callname: NominationPoolsApi_points_to_balance
+     **/
+    pointsToBalance: GenericRuntimeApiMethod<(poolId: number, points: bigint) => Promise<bigint>>;
+
+    /**
+     * Returns the equivalent points of `new_funds` for a given pool.
+     *
+     * @callname: NominationPoolsApi_balance_to_points
+     **/
+    balanceToPoints: GenericRuntimeApiMethod<(poolId: number, newFunds: bigint) => Promise<bigint>>;
+
+    /**
+     * Generic runtime api call
+     **/
+    [method: string]: GenericRuntimeApiMethod;
+  };
+  /**
+   * @runtimeapi: ContractsApi - 0x68b66ba122c93fa7
+   **/
+  contractsApi: {
+    /**
+     * Perform a call from a specified account to a given contract.
+     *
+     * See [`crate::Pallet::bare_call`].
+     *
+     * @callname: ContractsApi_call
+     **/
+    call: GenericRuntimeApiMethod<
       (
-        call: AssetHubPolkadotRuntimeRuntimeCallLike,
-        len: number,
-      ) => Promise<PalletTransactionPaymentRuntimeDispatchInfo>
+        origin: AccountId32Like,
+        dest: AccountId32Like,
+        value: bigint,
+        gasLimit?: SpWeightsWeightV2Weight | undefined,
+        storageDepositLimit?: bigint | undefined,
+        inputData: BytesLike,
+      ) => Promise<PalletContractsPrimitivesContractResult>
     >;
 
     /**
-     * Query fee details of a given encoded `Call`.
+     * Instantiate a new contract.
      *
-     * @callname: TransactionPaymentCallApi_query_call_fee_details
+     * See `[crate::Pallet::bare_instantiate]`.
+     *
+     * @callname: ContractsApi_instantiate
      **/
-    queryCallFeeDetails: GenericRuntimeApiMethod<
-      (call: AssetHubPolkadotRuntimeRuntimeCallLike, len: number) => Promise<PalletTransactionPaymentFeeDetails>
+    instantiate: GenericRuntimeApiMethod<
+      (
+        origin: AccountId32Like,
+        value: bigint,
+        gasLimit?: SpWeightsWeightV2Weight | undefined,
+        storageDepositLimit?: bigint | undefined,
+        code: PalletContractsPrimitivesCode,
+        data: BytesLike,
+        salt: BytesLike,
+      ) => Promise<PalletContractsPrimitivesContractResultResult>
     >;
 
     /**
-     * Query the output of the current `WeightToFee` given some input.
+     * Upload new code without instantiating a contract from it.
      *
-     * @callname: TransactionPaymentCallApi_query_weight_to_fee
-     **/
-    queryWeightToFee: GenericRuntimeApiMethod<(weight: SpWeightsWeightV2Weight) => Promise<bigint>>;
-
-    /**
-     * Query the output of the current `LengthToFee` given some input.
+     * See [`crate::Pallet::bare_upload_code`].
      *
-     * @callname: TransactionPaymentCallApi_query_length_to_fee
+     * @callname: ContractsApi_upload_code
      **/
-    queryLengthToFee: GenericRuntimeApiMethod<(length: number) => Promise<bigint>>;
-
-    /**
-     * Generic runtime api call
-     **/
-    [method: string]: GenericRuntimeApiMethod;
-  };
-  /**
-   * @runtimeapi: FungiblesApi - 0xde92b8a0426b9bf6
-   **/
-  fungiblesApi: {
-    /**
-     * Returns the list of all [`MultiAsset`] that an `AccountId` has.
-     *
-     * @callname: FungiblesApi_query_account_balances
-     **/
-    queryAccountBalances: GenericRuntimeApiMethod<
-      (account: AccountId32Like) => Promise<Result<XcmVersionedMultiAssets, AssetsCommonRuntimeApiFungiblesAccessError>>
+    uploadCode: GenericRuntimeApiMethod<
+      (
+        origin: AccountId32Like,
+        code: BytesLike,
+        storageDepositLimit?: bigint | undefined,
+        determinism: PalletContractsWasmDeterminism,
+      ) => Promise<Result<PalletContractsPrimitivesCodeUploadReturnValue, DispatchError>>
     >;
 
     /**
-     * Generic runtime api call
+     * Query a given storage key in a given contract.
+     *
+     * Returns `Ok(Some(Vec<u8>))` if the storage value exists under the given key in the
+     * specified account and `Ok(None)` if it doesn't. If the account specified by the address
+     * doesn't exist, or doesn't have a contract then `Err` is returned.
+     *
+     * @callname: ContractsApi_get_storage
      **/
-    [method: string]: GenericRuntimeApiMethod;
-  };
-  /**
-   * @runtimeapi: CollectCollationInfo - 0xea93e3f16f3d6962
-   **/
-  collectCollationInfo: {
-    /**
-     * Collect information about a collation.
-     *
-     * The given `header` is the header of the built block for that
-     * we are collecting the collation info for.
-     *
-     * @callname: CollectCollationInfo_collect_collation_info
-     **/
-    collectCollationInfo: GenericRuntimeApiMethod<(header: Header) => Promise<CumulusPrimitivesCoreCollationInfo>>;
-
-    /**
-     * Generic runtime api call
-     **/
-    [method: string]: GenericRuntimeApiMethod;
-  };
-  /**
-   * @runtimeapi: GenesisBuilder - 0xfbc577b9d747efd6
-   **/
-  genesisBuilder: {
-    /**
-     * Creates the default `GenesisConfig` and returns it as a JSON blob.
-     *
-     * This function instantiates the default `GenesisConfig` struct for the runtime and serializes it into a JSON
-     * blob. It returns a `Vec<u8>` containing the JSON representation of the default `GenesisConfig`.
-     *
-     * @callname: GenesisBuilder_create_default_config
-     **/
-    createDefaultConfig: GenericRuntimeApiMethod<() => Promise<Bytes>>;
-
-    /**
-     * Build `GenesisConfig` from a JSON blob not using any defaults and store it in the storage.
-     *
-     * This function deserializes the full `GenesisConfig` from the given JSON blob and puts it into the storage.
-     * If the provided JSON blob is incorrect or incomplete or the deserialization fails, an error is returned.
-     * It is recommended to log any errors encountered during the process.
-     *
-     * Please note that provided json blob must contain all `GenesisConfig` fields, no defaults will be used.
-     *
-     * @callname: GenesisBuilder_build_config
-     **/
-    buildConfig: GenericRuntimeApiMethod<(json: BytesLike) => Promise<Result<[], string>>>;
+    getStorage: GenericRuntimeApiMethod<
+      (
+        address: AccountId32Like,
+        key: BytesLike,
+      ) => Promise<Result<Bytes | undefined, PalletContractsPrimitivesContractAccessError>>
+    >;
 
     /**
      * Generic runtime api call

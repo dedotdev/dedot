@@ -26,6 +26,7 @@ import type {
   Result,
   FixedI64,
   Era,
+  UncheckedExtrinsic,
 } from '@delightfuldot/codecs';
 
 export type FrameSystemAccountInfo = {
@@ -10458,9 +10459,7 @@ export type PalletTransactionPaymentChargeTransactionPayment = bigint;
 
 export type StagingKusamaRuntimeRuntime = {};
 
-export type SpRuntimeBlock = { header: Header; extrinsics: Array<SpRuntimeUncheckedExtrinsic> };
-
-export type SpRuntimeUncheckedExtrinsic = Bytes;
+export type SpRuntimeBlock = { header: Header; extrinsics: Array<UncheckedExtrinsic> };
 
 export type SpCoreOpaqueMetadata = Bytes;
 
