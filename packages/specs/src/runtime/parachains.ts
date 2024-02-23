@@ -182,7 +182,7 @@ const V5_V10_SHARED: RuntimeApiMethodsSpec = {
         type: 'ValidatorSignature',
       },
     ],
-    type: 'Null',
+    type: '[]',
   },
   pvfsRequirePrecheck: {
     docs: 'Returns code hashes of PVFs that require pre-checking by validators in the active set.',
@@ -245,7 +245,7 @@ const V5_V10_SHARED: RuntimeApiMethodsSpec = {
         type: 'OpaqueKeyOwnershipProof',
       },
     ],
-    type: 'Option<Null>',
+    type: 'Option<[]>',
   },
 };
 

@@ -1,10 +1,10 @@
 import * as $ from '@delightfuldot/shape';
 import { $ConsensusEngineId, $Header } from './Header';
-import { $RawExtrinsic } from '../known/common';
+import { $RawBytes } from '../known/common';
 
 export const $Block = $.Struct({
   header: $Header,
-  extrinsics: $.Vec($RawExtrinsic),
+  extrinsics: $.Vec($RawBytes),
 });
 
 export type Block = $.Input<typeof $Block>;

@@ -1,4 +1,4 @@
-import { CodecRegistry } from '@delightfuldot/codecs';
+import { CodecRegistry } from '../registry';
 import * as $ from '@delightfuldot/shape';
 import { assert } from '@delightfuldot/utils';
 import { $ExtrinsicVersion } from './ExtrinsicVersion';

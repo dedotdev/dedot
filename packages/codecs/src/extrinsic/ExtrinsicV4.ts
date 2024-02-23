@@ -1,4 +1,4 @@
-import { CodecRegistry } from '@delightfuldot/codecs';
+import { CodecRegistry } from '../registry';
 import { HexString } from '@delightfuldot/utils';
 import { u8aToHex } from '@polkadot/util';
 
@@ -47,14 +47,5 @@ export class ExtrinsicV4<Address = any, Call = any, Signature = any, Extra = any
 
   attachSignature(signature: ExtrinsicSignatureV4<Address, Signature, Extra>) {
     this.#signature = signature;
-  }
-
-  toJSON() {
-    return {
-      version: this.version,
-      signed: this.signed,
-      signature: this.signature,
-      call: this.call,
-    };
   }
 }

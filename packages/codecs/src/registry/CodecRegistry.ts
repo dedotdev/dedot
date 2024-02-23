@@ -33,6 +33,7 @@ const KNOWN_PATHS: KnownPath[] = [
   'sp_runtime::generic::digest::Digest',
   'sp_runtime::generic::digest::DigestItem',
   'sp_runtime::generic::header::Header',
+  'sp_runtime::generic::unchecked_extrinsic::UncheckedExtrinsic',
 
   /^primitive_types::\w+$/,
   /^sp_arithmetic::per_things::\w+$/,
