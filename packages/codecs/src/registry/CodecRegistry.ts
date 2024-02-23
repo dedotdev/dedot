@@ -123,6 +123,7 @@ export class CodecRegistry {
       const $inner = typeName
         .slice(1, -1)
         .split(',')
+        .filter((x) => x)
         .map((one) => this.#findKnownCodec(one.trim()));
 
       return $.Tuple(...$inner);
