@@ -494,8 +494,8 @@ export interface RuntimeApis extends GenericRuntimeApis {
         origin: AccountId32Like,
         dest: AccountId32Like,
         value: bigint,
-        gasLimit?: SpWeightsWeightV2Weight | undefined,
-        storageDepositLimit?: bigint | undefined,
+        gasLimit: SpWeightsWeightV2Weight | undefined,
+        storageDepositLimit: bigint | undefined,
         inputData: BytesLike,
       ) => Promise<PalletContractsPrimitivesContractResult>
     >;
@@ -511,8 +511,8 @@ export interface RuntimeApis extends GenericRuntimeApis {
       (
         origin: AccountId32Like,
         value: bigint,
-        gasLimit?: SpWeightsWeightV2Weight | undefined,
-        storageDepositLimit?: bigint | undefined,
+        gasLimit: SpWeightsWeightV2Weight | undefined,
+        storageDepositLimit: bigint | undefined,
         code: PalletContractsPrimitivesCode,
         data: BytesLike,
         salt: BytesLike,
@@ -530,7 +530,7 @@ export interface RuntimeApis extends GenericRuntimeApis {
       (
         origin: AccountId32Like,
         code: BytesLike,
-        storageDepositLimit?: bigint | undefined,
+        storageDepositLimit: bigint | undefined,
         determinism: PalletContractsWasmDeterminism,
       ) => Promise<Result<PalletContractsPrimitivesCodeUploadReturnValue, DispatchError>>
     >;

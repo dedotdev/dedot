@@ -61,6 +61,10 @@ export class RuntimeApisGen extends RpcGen {
     return type.startsWith('Option<') || type.endsWith('| undefined');
   }
 
+  #isOptionalParam(params: { type: string }[], type: string, idx: number) {
+    return this.#isOptionalType(type) && params.slice(idx + 1).every(({ type }) => this.#isOptionalType(type));
+  }
+
   #generateMethodDefFromSpec(spec: RuntimeApiMethodSpec) {
     const { docs = [], params, type, runtimeApiName, methodName } = spec;
 
@@ -73,9 +77,10 @@ export class RuntimeApisGen extends RpcGen {
     });
 
     const paramsOut = params
-      .map((p) => ({ ...p, isOptional: this.#isOptionalType(p.type) }))
-      // TODO make sure the ? is put in a correct place
-      //  - A required parameter cannot follow an optional parameter
+      .map((param, idx) => ({
+        ...param,
+        isOptional: this.#isOptionalParam(params, param.type, idx),
+      }))
       .map(
         ({ name, type, isOptional }) =>
           `${stringCamelCase(name)}${isOptional ? '?' : ''}: ${this.getGeneratedTypeName(type)}`,
@@ -99,15 +104,19 @@ export class RuntimeApisGen extends RpcGen {
 
     const outputType = this.typesGen.generateType(output, 1, true);
     this.addTypeImport(outputType, false);
-    const typedInputs = inputs.map((input) => {
-      const type = this.typesGen.generateType(input.typeId, 1);
+    const typedInputs = inputs
+      .map((input, idx) => {
+        const type = this.typesGen.generateType(input.typeId, 1);
 
-      return {
+        return {
+          ...input,
+          type,
+        };
+      })
+      .map((input, idx, inputs) => ({
         ...input,
-        type,
-        isOptional: this.#isOptionalType(type),
-      };
-    });
+        isOptional: this.#isOptionalParam(inputs, input.type, idx),
+      }));
 
     this.addTypeImport(typedInputs.map((t) => t.type));
 
