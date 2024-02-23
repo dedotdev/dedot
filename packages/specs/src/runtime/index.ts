@@ -43,23 +43,31 @@ export const runtimeApiNames: RuntimeApiName[] = Object.values(runtimeApisSpec)
   .map((one) => Object.keys(one))
   .flat();
 
-export const runtimeApiSpecs: RuntimeApiSpec[] = Object.keys(runtimeApisSpec)
-  .map((module) => {
-    return Object.keys(runtimeApisSpec[module]).map((runtime) => {
-      return runtimeApisSpec[module][runtime].map(
-        (spec) => ({ ...spec, moduleName: module, runtimeApiName: runtime }) as RuntimeApiSpec,
-      );
-    });
-  })
-  .flat(2);
-
-export const runtimeApiMethodSpecs: RuntimeApiMethodSpec[] = runtimeApiSpecs
-  .map(({ methods, runtimeApiName, version }) => {
-    return Object.keys(methods).map(
-      (methodName) => ({ ...methods[methodName], methodName, runtimeApiName, version }) as RuntimeApiMethodSpec,
-    );
+export const runtimeApiSpecs: RuntimeApiSpec[] = Object.values(runtimeApisSpec)
+  .map((runtimeApisModule) => {
+    return extractRuntimeApiModules(runtimeApisModule);
   })
   .flat();
+
+export const runtimeApiMethodSpecs: RuntimeApiMethodSpec[] = runtimeApiSpecs.map(extractRuntimeApiSpec).flat();
+
+export function extractRuntimeApiModules(runtimeApisModule: Record<string, RuntimeApiSpec[]>): RuntimeApiSpec[] {
+  return Object.keys(runtimeApisModule)
+    .map((runtimeApiName) => {
+      return runtimeApisModule[runtimeApiName].map((spec) => ({ ...spec, runtimeApiName }));
+    })
+    .flat();
+}
+
+export function extractRuntimeApiSpec(runtimeApiSpec: RuntimeApiSpec): RuntimeApiMethodSpec[] {
+  const { runtimeApiName, version, methods } = runtimeApiSpec;
+  return Object.keys(methods).map((methodName) => ({
+    ...methods[methodName],
+    methodName,
+    runtimeApiName,
+    version,
+  }));
+}
 
 export const findRuntimeApiSpec = (runtimeApiHash: string, version: number) => {
   const runtimeApiName = runtimeApiNames.find((one) => blake2AsHex(one, 64) === runtimeApiHash);

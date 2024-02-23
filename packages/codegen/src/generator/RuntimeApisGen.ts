@@ -33,12 +33,11 @@ export class RuntimeApisGen extends RpcGen {
         }`;
       });
     } else {
-      const specsByModule = this.#runtimeApisSpecsByModule();
+      const specs = this.#runtimeApisSpecsByModule();
 
-      Object.values(specsByModule).forEach((specs) => {
-        specs.forEach(({ methods, runtimeApiName, runtimeApiHash, version }) => {
-          runtimeCallsOut += commentBlock(`@runtimeapi: ${runtimeApiName} - ${runtimeApiHash}`, `@version: ${version}`);
-          runtimeCallsOut += `${stringCamelCase(runtimeApiName!)}: {
+      specs.forEach(({ methods, runtimeApiName, runtimeApiHash, version }) => {
+        runtimeCallsOut += commentBlock(`@runtimeapi: ${runtimeApiName} - ${runtimeApiHash}`, `@version: ${version}`);
+        runtimeCallsOut += `${stringCamelCase(runtimeApiName!)}: {
             ${Object.keys(methods)
               .map((methodName) =>
                 this.#generateMethodDefFromSpec({ ...methods[methodName], runtimeApiName, methodName }),
@@ -47,7 +46,6 @@ export class RuntimeApisGen extends RpcGen {
               
             ${commentBlock('Generic runtime api call')}[method: string]: GenericRuntimeApiMethod
           }`;
-        });
       });
     }
 
@@ -63,16 +61,16 @@ export class RuntimeApisGen extends RpcGen {
     const callName = `${runtimeApiName}_${stringSnakeCase(methodName)}`;
     const defaultDocs = [`@callname: ${callName}`];
 
-    this.addTypeImport(type, false);
+    this.addTypeImport(type!, false);
     params.forEach(({ type }) => {
-      this.addTypeImport(type);
+      this.addTypeImport(type!);
     });
 
     const paramsOut = params
-      .map(({ name, type }) => `${stringCamelCase(name)}: ${this.getGeneratedTypeName(type)}`)
+      .map(({ name, type }) => `${stringCamelCase(name)}: ${this.getGeneratedTypeName(type!)}`)
       .join(', ');
 
-    const typeOut = this.getGeneratedTypeName(type, false);
+    const typeOut = this.getGeneratedTypeName(type!, false);
 
     return `${commentBlock(
       docs,
@@ -98,14 +96,12 @@ export class RuntimeApisGen extends RpcGen {
 
     const paramsOut = typedInputs.map(({ name, type }) => `${stringCamelCase(name)}: ${type}`).join(', ');
 
-    return `${commentBlock(
-      docs,
-      '\n',
-      defaultDocs,
-    )}${stringCamelCase(methodName)}: GenericRuntimeApiMethod<(${paramsOut}) => Promise<${outputType}>>`;
+    return `${commentBlock(docs, '\n', defaultDocs)}${stringCamelCase(
+      methodName,
+    )}: GenericRuntimeApiMethod<(${paramsOut}) => Promise<${outputType}>>`;
   }
 
-  #runtimeApisSpecsByModule(): Record<string, RuntimeApiSpec[]> {
+  #runtimeApisSpecsByModule(): RuntimeApiSpec[] {
     const specs = this.runtimeApis.map(([runtimeApiHash, version]) => {
       const runtimeApiSpec = findRuntimeApiSpec(runtimeApiHash, version);
 
@@ -117,24 +113,12 @@ export class RuntimeApisGen extends RpcGen {
       } as RuntimeApiSpec;
     });
 
-    return specs.reduce(
-      (o, spec) => {
-        if (!spec) {
-          return o;
-        }
+    return specs.reduce((o, spec) => {
+      if (!spec) {
+        return o;
+      }
 
-        const { moduleName } = spec;
-
-        if (!moduleName) {
-          return o;
-        }
-
-        return {
-          ...o,
-          [moduleName]: o[moduleName] ? [...o[moduleName], spec] : [spec],
-        };
-      },
-      {} as Record<string, RuntimeApiSpec[]>,
-    );
+      return [...o, spec];
+    }, [] as RuntimeApiSpec[]);
   }
 }
