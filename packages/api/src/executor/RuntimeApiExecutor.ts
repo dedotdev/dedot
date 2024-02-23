@@ -2,12 +2,12 @@ import { Executor } from './Executor';
 import {
   GenericRuntimeApiMethod,
   GenericSubstrateApi,
-  RuntimeApiMethodParamSpec,
   RuntimeApiMethodSpec,
+  RuntimeApiMethodParamSpec,
 } from '@delightfuldot/types';
 import { assert, calculateRuntimeApiHash, stringSnakeCase } from '@delightfuldot/utils';
 import { isNumber, stringPascalCase, u8aConcat, u8aToHex } from '@polkadot/util';
-import { findRuntimeApiMethodSpec } from '@delightfuldot/specs';
+import { extractRuntimeApiModules, extractRuntimeApiSpec, findRuntimeApiMethodSpec } from '@delightfuldot/specs';
 import { RuntimeApiMethodDefLatest } from '@delightfuldot/codecs';
 
 export const FallbackRuntimeApis = [
@@ -46,24 +46,38 @@ export class RuntimeApiExecutor<ChainApi extends GenericSubstrateApi = GenericSu
   }
 
   tryDecode(callSpec: RuntimeApiMethodSpec, raw: any) {
-    const { type, typeId } = callSpec;
+    const { type, typeId, codec, methodName, runtimeApiName } = callSpec;
+
+    assert(codec || typeId || type, `Cannot decode return data of ${runtimeApiName}_${methodName}: ${raw}`);
+
+    if (codec) {
+      return codec.tryDecode(raw);
+    }
 
     if (isNumber(typeId)) {
       return this.registry.findPortableCodec(typeId).tryDecode(raw);
     }
 
-    return this.registry.findCodec(type).tryDecode(raw);
+    return this.registry.findCodec(type!).tryDecode(raw);
   }
 
   tryEncode(paramSpec: RuntimeApiMethodParamSpec, value: any): Uint8Array {
-    const { type, typeId } = paramSpec;
+    const { type, typeId, codec, name } = paramSpec;
 
-    const $codec = isNumber(typeId) ? this.registry.findPortableCodec(typeId) : this.registry.findCodec(type);
+    assert(codec || typeId || type, `Cannot encode type ${name}${value}`);
+
+    const $codec =
+      codec || (isNumber(typeId) ? this.registry.findPortableCodec(typeId) : this.registry.findCodec(type!));
 
     return $codec.tryEncode(value);
   }
 
   #findRuntimeApiMethodSpec(runtimeApi: string, method: string): RuntimeApiMethodSpec | undefined {
+    const spec = this.#findRuntimeApiMethodUserDefinedSpec(runtimeApi, method);
+    if (spec) {
+      return spec;
+    }
+
     const methodDef = this.#findRuntimeApiMethodDef(runtimeApi, method);
 
     if (methodDef) {
@@ -104,7 +118,7 @@ export class RuntimeApiExecutor<ChainApi extends GenericSubstrateApi = GenericSu
     };
   }
 
-  #findRuntimeApiMethodExternalSpec(runtimeApi: string, method: string): RuntimeApiMethodSpec | undefined {
+  #findTargetRuntimeApiVersion(runtimeApi: string): number | undefined {
     const targetRuntimeApiHash = calculateRuntimeApiHash(runtimeApi);
 
     const runtimeApiVersions = this.api.runtimeVersion?.apis || FallbackRuntimeApis;
@@ -112,10 +126,37 @@ export class RuntimeApiExecutor<ChainApi extends GenericSubstrateApi = GenericSu
       .find(([supportedRuntimeApiHash]) => targetRuntimeApiHash === supportedRuntimeApiHash)
       ?.at(1) as number | undefined;
 
+    return targetRuntimeApiVersion;
+  }
+
+  #findRuntimeApiMethodExternalSpec(runtimeApi: string, method: string): RuntimeApiMethodSpec | undefined {
+    const targetRuntimeApiVersion = this.#findTargetRuntimeApiVersion(runtimeApi);
+
     if (!isNumber(targetRuntimeApiVersion)) {
       return undefined;
     }
 
     return findRuntimeApiMethodSpec(`${runtimeApi}_${method}`, targetRuntimeApiVersion);
+  }
+
+  #findRuntimeApiMethodUserDefinedSpec(runtimeApi: string, method: string): RuntimeApiMethodSpec | undefined {
+    const targetRuntimeApiVersion = this.#findTargetRuntimeApiVersion(runtimeApi);
+
+    if (!isNumber(targetRuntimeApiVersion)) {
+      return undefined;
+    }
+
+    const userDefinedRuntime = this.api.options.runtime;
+    if (!userDefinedRuntime) {
+      return undefined;
+    }
+
+    const runtimeApiMethodSpecs = extractRuntimeApiModules(userDefinedRuntime).map(extractRuntimeApiSpec).flat();
+
+    return runtimeApiMethodSpecs.find(
+      (one) =>
+        `${one.runtimeApiName}_${stringSnakeCase(one.methodName)}` === `${runtimeApi}_${method}` &&
+        targetRuntimeApiVersion === one.version,
+    );
   }
 }
