@@ -1,6 +1,7 @@
 import { SignedExtension } from '../SignedExtension';
-import { numberToHex, u8aToHex } from '@polkadot/util';
+import { numberToHex } from '@polkadot/util';
 import { SignerPayloadJSON } from '@polkadot/types/types';
+import { assert } from '@delightfuldot/utils';
 
 /**
  * @description Nonce check and increment to give replay protection for transactions.
@@ -11,13 +12,19 @@ export class CheckNonce extends SignedExtension<number> {
   }
 
   async #getNonce(): Promise<number> {
+    const { signerAddress } = this.options || {};
+
+    assert(signerAddress, 'Signer address not found');
+
     try {
-      const { nonce } = await this.api.query.system.account(this.options!.signerAddress!);
-      // TODO api.rpc.system.accountNextIndex, OR runtime api call
-      return nonce;
-    } catch (e) {
-      // ignore for now, TODO support other way to fetch account current nonce
-    }
+      return (await this.api.query.system.account(signerAddress)).nonce;
+    } catch {}
+
+    try {
+      return await this.api.call.accountNonceApi.accountNonce(signerAddress);
+    } catch {}
+
+    // TODO fallback to api.rpc.system.accountNextIndex if needed
 
     return 0;
   }
