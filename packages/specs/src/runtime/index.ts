@@ -1,10 +1,11 @@
+import { RuntimeApiMethodSpec, RuntimeApiName, RuntimeApiSpec, RuntimeApisSpec } from '@delightfuldot/types';
+import { blake2AsHex } from '@polkadot/util-crypto';
+import { stringSnakeCase } from '@delightfuldot/utils';
 import { discovery } from './discovery';
 import { babe } from './babe';
 import { metadata } from './metadata';
 import { core } from './core';
 import { system } from './system';
-import { assetConversion } from './assetConversion';
-import { assets } from './assets';
 import { payment } from './payment';
 import { blockBuilder } from './blockBuilder';
 import { grandpa } from './grandpa';
@@ -17,19 +18,14 @@ import { beefy } from './beefy';
 import { staking } from './staking';
 import { transactionPool } from './transactionPool';
 import { genesisBuilder } from './genesisBuilder';
-import { RuntimeApisSpec, RuntimeApiMethodSpec, RuntimeApiSpec, RuntimeApiName } from '@delightfuldot/types';
-import { blake2AsHex } from '@polkadot/util-crypto';
-import { stringSnakeCase } from '@delightfuldot/utils';
 
 export const runtimeApisSpec: RuntimeApisSpec = {
-  assetConversion,
   discovery,
   babe,
   metadata,
   payment,
   core,
   system,
-  assets,
   blockBuilder,
   grandpa,
   mmr,
