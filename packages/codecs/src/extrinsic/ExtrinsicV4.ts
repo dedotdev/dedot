@@ -1,6 +1,8 @@
 import { CodecRegistry } from '../registry';
 import { HexString } from '@delightfuldot/utils';
 import { u8aToHex } from '@polkadot/util';
+import { Hash } from '@delightfuldot/codecs/generic';
+import { blake2AsHex } from '@polkadot/util-crypto';
 
 export interface ExtrinsicSignatureV4<Address = any, Signature = any, Extra = any> {
   address: Address;
@@ -39,13 +41,41 @@ export class ExtrinsicV4<Address = any, Call = any, Signature = any, Extra = any
     return this.#call;
   }
 
-  get callRaw(): HexString {
+  get callU8a(): Uint8Array {
     const { callTypeId } = this.registry.metadata!.extrinsic;
     const $RuntimeCall = this.registry.findPortableCodec(callTypeId);
-    return u8aToHex($RuntimeCall.tryEncode(this.call));
+    return $RuntimeCall.tryEncode(this.call);
+  }
+
+  get callHex(): HexString {
+    return u8aToHex(this.callU8a);
+  }
+
+  get callLength() {
+    return this.callU8a.length;
   }
 
   attachSignature(signature: ExtrinsicSignatureV4<Address, Signature, Extra>) {
     this.#signature = signature;
+  }
+
+  get $Codec() {
+    return this.registry.findCodec<ExtrinsicV4<Address, Call, Signature, Extra>>('Extrinsic');
+  }
+
+  toU8a(): Uint8Array {
+    return this.$Codec.tryEncode(this);
+  }
+
+  toHex(): HexString {
+    return u8aToHex(this.toU8a());
+  }
+
+  get length(): number {
+    return this.toU8a().length;
+  }
+
+  get hash(): Hash {
+    return blake2AsHex(this.toU8a());
   }
 }
