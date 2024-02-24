@@ -17,6 +17,7 @@ import type {
   FixedU128,
   Era,
   Header,
+  UncheckedExtrinsic,
 } from '@delightfuldot/codecs';
 
 export type FrameSystemAccountInfo = {
@@ -6296,9 +6297,7 @@ export type AssetHubKusamaRuntimeRuntime = {};
 
 export type SpConsensusSlotsSlotDuration = bigint;
 
-export type SpRuntimeBlock = { header: Header; extrinsics: Array<SpRuntimeUncheckedExtrinsic> };
-
-export type SpRuntimeUncheckedExtrinsic = Bytes;
+export type SpRuntimeBlock = { header: Header; extrinsics: Array<UncheckedExtrinsic> };
 
 export type SpCoreOpaqueMetadata = Bytes;
 

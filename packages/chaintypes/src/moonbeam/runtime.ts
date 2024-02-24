@@ -243,7 +243,7 @@ export interface RuntimeApis extends GenericRuntimeApis {
      *
      * @callname: SessionKeys_generate_session_keys
      **/
-    generateSessionKeys: GenericRuntimeApiMethod<(seed: BytesLike | undefined) => Promise<Bytes>>;
+    generateSessionKeys: GenericRuntimeApiMethod<(seed?: BytesLike | undefined) => Promise<Bytes>>;
 
     /**
      * Decode the given public session keys.
@@ -389,7 +389,7 @@ export interface RuntimeApis extends GenericRuntimeApis {
         maxPriorityFeePerGas: U256 | undefined,
         nonce: U256 | undefined,
         estimate: boolean,
-        accessList: Array<[H160, Array<H256>]> | undefined,
+        accessList?: Array<[H160, Array<H256>]> | undefined,
       ) => Promise<Result<FpEvmExecutionInfoV2, DispatchError>>
     >;
 
@@ -407,7 +407,7 @@ export interface RuntimeApis extends GenericRuntimeApis {
         maxPriorityFeePerGas: U256 | undefined,
         nonce: U256 | undefined,
         estimate: boolean,
-        accessList: Array<[H160, Array<H256>]> | undefined,
+        accessList?: Array<[H160, Array<H256>]> | undefined,
       ) => Promise<Result<FpEvmExecutionInfoV2H160, DispatchError>>
     >;
 

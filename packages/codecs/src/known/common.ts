@@ -1,32 +1,54 @@
 import * as $ from '@delightfuldot/shape';
 import { HexString } from '@delightfuldot/utils';
 import { registerLooseCodecType } from '../codectypes';
+import { isString, isU8a, stringToHex, u8aToHex } from '@polkadot/util';
 
 export const $Text = $.str;
 export type Text = string;
 
-export const $StorageKey = $.RawHex;
+export const $StorageKey = $.PrefixedHex;
 export type StorageKeyLike = $.Input<typeof $StorageKey>;
 export type StorageKey = $.Output<typeof $StorageKey>;
 
-export const $PrefixedStorageKey = $.RawHex;
+export const $PrefixedStorageKey = $.PrefixedHex;
 export type PrefixedStorageKeyLike = $.Input<typeof $PrefixedStorageKey>;
 export type PrefixedStorageKey = $.Output<typeof $PrefixedStorageKey>;
 
-export const $StorageData = $.RawHex;
+export const $StorageData = $.PrefixedHex;
 export type StorageDataLike = $.Input<typeof $StorageData>;
 export type StorageData = $.Output<typeof $StorageData>;
 
-registerLooseCodecType({ $StorageKey, $StorageData });
+registerLooseCodecType({ $StorageKey, $StorageData, $PrefixedStorageKey });
 
-export const $RawExtrinsic = $.RawHex;
-export type RawExtrinsic = $.Input<typeof $RawExtrinsic>;
+export type RawBytesLike = HexString | Uint8Array;
+export type RawBytes = HexString;
+export const $RawBytes: $.Shape<RawBytesLike, RawBytes> = $.transform({
+  $base: $.RawHex,
+  encode: (value) => (isU8a(value) ? u8aToHex(value) : value),
+  decode: (value) => value,
+});
 
-export const $Bytes = $.RawHex;
-export type BytesLike = $.Input<typeof $Bytes>;
+export const $UncheckedExtrinsic = $RawBytes;
+export type UncheckedExtrinsicLike = $.Input<typeof $UncheckedExtrinsic>;
+export type UncheckedExtrinsic = $.Output<typeof $UncheckedExtrinsic>;
+
+export type BytesLike = HexString | string | Uint8Array;
 export type Bytes = HexString;
+export const $Bytes: $.Shape<BytesLike, Bytes> = $.transform({
+  $base: $.PrefixedHex,
+  encode: (value) => {
+    if (isString(value)) {
+      return stringToHex(value);
+    } else if (isU8a(value)) {
+      return u8aToHex(value);
+    }
 
-registerLooseCodecType({ $Bytes });
+    return value;
+  },
+  decode: (value) => value,
+});
+
+registerLooseCodecType({ $Bytes, $RawBytes, $UncheckedExtrinsic });
 
 export type FixedBytes<Bytes extends number> = HexString; // TODO: add Unit8Array
 

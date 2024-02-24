@@ -67,7 +67,7 @@ const V1_V2_SHARED: RuntimeApiMethodsSpec = {
         type: 'OpaqueKeyOwnershipProof',
       },
     ],
-    type: 'Option<Null>',
+    type: 'Option<[]>',
   },
 };
 

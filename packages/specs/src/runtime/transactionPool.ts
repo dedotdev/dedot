@@ -16,7 +16,7 @@ export const transactionPool: RuntimeApisModule = {
             },
             {
               name: 'tx',
-              type: 'Bytes',
+              type: 'RawBytes',
             },
             {
               name: 'blockHash',
@@ -39,7 +39,7 @@ export const transactionPool: RuntimeApisModule = {
             },
             {
               name: 'tx',
-              type: 'Extrinsic',
+              type: 'RawBytes',
             },
           ],
           type: 'TransactionValidity',
@@ -54,7 +54,7 @@ export const transactionPool: RuntimeApisModule = {
           params: [
             {
               name: 'tx',
-              type: 'Extrinsic',
+              type: 'RawBytes',
             },
           ],
           type: 'TransactionValidity',

@@ -18,6 +18,7 @@ import type {
   U256,
   FixedI64,
   Era,
+  UncheckedExtrinsic,
   Header,
 } from '@delightfuldot/codecs';
 
@@ -7903,9 +7904,7 @@ export type MoonbeamRuntimeRuntime = {};
 
 export type SpRuntimeTransactionValidityTransactionSource = 'InBlock' | 'Local' | 'External';
 
-export type FpSelfContainedUncheckedExtrinsic = SpRuntimeUncheckedExtrinsic;
-
-export type SpRuntimeUncheckedExtrinsic = Bytes;
+export type FpSelfContainedUncheckedExtrinsic = UncheckedExtrinsic;
 
 export type SpRuntimeTransactionValidityValidTransaction = {
   priority: bigint;

@@ -25,6 +25,7 @@ import type {
   Permill,
   FixedI64,
   Era,
+  UncheckedExtrinsic,
 } from '@delightfuldot/codecs';
 
 export type FrameSystemAccountInfo = {
@@ -13184,9 +13185,7 @@ export type FrameSystemExtensionsCheckWeight = {};
 
 export type PalletAssetConversionTxPaymentChargeAssetTxPayment = { tip: bigint; assetId?: number | undefined };
 
-export type SpRuntimeBlock = { header: Header; extrinsics: Array<SpRuntimeUncheckedExtrinsic> };
-
-export type SpRuntimeUncheckedExtrinsic = Bytes;
+export type SpRuntimeBlock = { header: Header; extrinsics: Array<UncheckedExtrinsic> };
 
 export type SpCoreOpaqueMetadata = Bytes;
 

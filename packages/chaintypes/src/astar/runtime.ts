@@ -3,13 +3,12 @@
 import type { GenericRuntimeApis, GenericRuntimeApiMethod } from '@delightfuldot/types';
 import type {
   RuntimeVersion,
-  Null,
   Block,
   Header,
   Option,
   OpaqueMetadata,
   ApplyExtrinsicResult,
-  BytesLike,
+  RawBytesLike,
   CheckInherentsResult,
   InherentData,
   Extrinsic,
@@ -22,6 +21,8 @@ import type {
   FeeDetails,
   Balance,
   Weight,
+  Bytes,
+  BytesLike,
   KeyTypeId,
 } from '@delightfuldot/codecs';
 
@@ -43,14 +44,14 @@ export interface RuntimeApis extends GenericRuntimeApis {
      *
      * @callname: Core_execute_block
      **/
-    executeBlock: GenericRuntimeApiMethod<(block: Block) => Promise<Null>>;
+    executeBlock: GenericRuntimeApiMethod<(block: Block) => Promise<[]>>;
 
     /**
      * Initialize a block with the given header.
      *
      * @callname: Core_initialize_block
      **/
-    initializeBlock: GenericRuntimeApiMethod<(header: Header) => Promise<Null>>;
+    initializeBlock: GenericRuntimeApiMethod<(header: Header) => Promise<[]>>;
 
     /**
      * Generic runtime api call
@@ -97,7 +98,7 @@ export interface RuntimeApis extends GenericRuntimeApis {
      *
      * @callname: BlockBuilder_apply_extrinsic
      **/
-    applyExtrinsic: GenericRuntimeApiMethod<(extrinsic: BytesLike) => Promise<ApplyExtrinsicResult>>;
+    applyExtrinsic: GenericRuntimeApiMethod<(extrinsic: RawBytesLike) => Promise<ApplyExtrinsicResult>>;
 
     /**
      *
@@ -133,7 +134,7 @@ export interface RuntimeApis extends GenericRuntimeApis {
      * @callname: TaggedTransactionQueue_validate_transaction
      **/
     validateTransaction: GenericRuntimeApiMethod<
-      (source: TransactionSource, tx: BytesLike, blockHash: BlockHash) => Promise<TransactionValidity>
+      (source: TransactionSource, tx: RawBytesLike, blockHash: BlockHash) => Promise<TransactionValidity>
     >;
 
     /**
@@ -151,7 +152,7 @@ export interface RuntimeApis extends GenericRuntimeApis {
      *
      * @callname: OffchainWorkerApi_offchain_worker
      **/
-    offchainWorker: GenericRuntimeApiMethod<(header: Header) => Promise<Null>>;
+    offchainWorker: GenericRuntimeApiMethod<(header: Header) => Promise<[]>>;
 
     /**
      * Generic runtime api call
@@ -185,14 +186,14 @@ export interface RuntimeApis extends GenericRuntimeApis {
      *
      * @callname: TransactionPaymentApi_query_info
      **/
-    queryInfo: GenericRuntimeApiMethod<(uxt: BytesLike, len: number) => Promise<RuntimeDispatchInfo>>;
+    queryInfo: GenericRuntimeApiMethod<(uxt: RawBytesLike, len: number) => Promise<RuntimeDispatchInfo>>;
 
     /**
      * The transaction fee details
      *
      * @callname: TransactionPaymentApi_query_fee_details
      **/
-    queryFeeDetails: GenericRuntimeApiMethod<(uxt: BytesLike, len: number) => Promise<FeeDetails>>;
+    queryFeeDetails: GenericRuntimeApiMethod<(uxt: RawBytesLike, len: number) => Promise<FeeDetails>>;
 
     /**
      * Query the output of the current LengthToFee given some input
@@ -223,14 +224,14 @@ export interface RuntimeApis extends GenericRuntimeApis {
      *
      * @callname: TransactionPaymentCallApi_query_call_info
      **/
-    queryCallInfo: GenericRuntimeApiMethod<(call: BytesLike, len: number) => Promise<RuntimeDispatchInfo>>;
+    queryCallInfo: GenericRuntimeApiMethod<(call: RawBytesLike, len: number) => Promise<RuntimeDispatchInfo>>;
 
     /**
      * Query fee details of a given encoded `Call`.
      *
      * @callname: TransactionPaymentCallApi_query_call_fee_details
      **/
-    queryCallFeeDetails: GenericRuntimeApiMethod<(call: BytesLike, len: number) => Promise<FeeDetails>>;
+    queryCallFeeDetails: GenericRuntimeApiMethod<(call: RawBytesLike, len: number) => Promise<FeeDetails>>;
 
     /**
      * Query the output of the current LengthToFee given some input
@@ -267,7 +268,7 @@ export interface RuntimeApis extends GenericRuntimeApis {
      *
      * @callname: SessionKeys_generate_session_keys
      **/
-    generateSessionKeys: GenericRuntimeApiMethod<(seed: Option<Array<number>>) => Promise<Array<number>>>;
+    generateSessionKeys: GenericRuntimeApiMethod<(seed?: Option<BytesLike>) => Promise<Bytes>>;
 
     /**
      * Decode the given public session key
@@ -276,9 +277,7 @@ export interface RuntimeApis extends GenericRuntimeApis {
      *
      * @callname: SessionKeys_decode_session_keys
      **/
-    decodeSessionKeys: GenericRuntimeApiMethod<
-      (encoded: BytesLike) => Promise<Option<Array<[Array<number>, KeyTypeId]>>>
-    >;
+    decodeSessionKeys: GenericRuntimeApiMethod<(encoded: BytesLike) => Promise<Option<Array<[Bytes, KeyTypeId]>>>>;
 
     /**
      * Generic runtime api call

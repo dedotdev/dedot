@@ -27,7 +27,7 @@ export class RuntimeApiExecutor<ChainApi extends GenericSubstrateApi = GenericSu
     const callFn: GenericRuntimeApiMethod = async (...args: any[]) => {
       const { params } = callSpec;
 
-      const formattedInputs = args.map((input, index) => this.tryEncode(params[index], input));
+      const formattedInputs = params.map((param, index) => this.tryEncode(param, args[index]));
       const bytes = u8aToHex(u8aConcat(...formattedInputs));
 
       const callArgs = [callName, bytes];

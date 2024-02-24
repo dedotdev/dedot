@@ -5,6 +5,7 @@ import { $Hash } from './Hash';
 import { registerLooseCodecType } from '../codectypes';
 
 export const $BlockNumber = $.withMetadata($.metadata('$BlockNumber'), $.u32);
+export type BlockNumber = number;
 
 export const $HeaderBlockNumber = $.compactU32.clone();
 
@@ -12,17 +13,13 @@ $HeaderBlockNumber.registerDecoder(
   (input) => isHex(input, -1, true),
   ($shape, input) =>
     hexToBn(input, {
+      // TODO make this more clear?
       // BlockNumber in $Header codec is a hex in BE format
       // So Le=false here is to support decode block number in $Header
       isLe: false,
       isNegative: false,
     }).toNumber(),
 );
-
-export type BlockNumberLike = number | HexString;
-export type BlockNumber = number;
-
-registerLooseCodecType({ $BlockNumber });
 
 export class ConsensusEngineId {
   id: HexString;

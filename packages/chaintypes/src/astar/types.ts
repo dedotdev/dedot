@@ -19,6 +19,7 @@ import type {
   MultiAddressLike,
   AccountId32Like,
   Permill,
+  UncheckedExtrinsic,
   Era,
 } from '@delightfuldot/codecs';
 
@@ -9049,7 +9050,7 @@ export type PalletDappsStakingPalletError =
    **/
   | 'ClaimForCallerAccount';
 
-export type FpSelfContainedUncheckedExtrinsic = SpRuntimeUncheckedExtrinsic;
+export type FpSelfContainedUncheckedExtrinsic = UncheckedExtrinsic;
 
 export type SpRuntimeMultiSignature =
   | { tag: 'Ed25519'; value: SpCoreEd25519Signature }
@@ -9075,5 +9076,3 @@ export type FrameSystemExtensionsCheckNonce = number;
 export type FrameSystemExtensionsCheckWeight = {};
 
 export type PalletTransactionPaymentChargeTransactionPayment = bigint;
-
-export type SpRuntimeUncheckedExtrinsic = Bytes;

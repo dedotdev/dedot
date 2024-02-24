@@ -6,6 +6,8 @@ import type {
   Header,
   DispatchError,
   Result,
+  UncheckedExtrinsicLike,
+  UncheckedExtrinsic,
   H256,
   Bytes,
   BytesLike,
@@ -17,7 +19,6 @@ import type {
   SpRuntimeBlock,
   SpCoreOpaqueMetadata,
   SpRuntimeTransactionValidityTransactionValidityError,
-  SpRuntimeUncheckedExtrinsic,
   SpInherentsInherentData,
   SpInherentsCheckInherentsResult,
   SpRuntimeTransactionValidityValidTransaction,
@@ -138,7 +139,7 @@ export interface RuntimeApis extends GenericRuntimeApis {
      **/
     applyExtrinsic: GenericRuntimeApiMethod<
       (
-        extrinsic: SpRuntimeUncheckedExtrinsic,
+        extrinsic: UncheckedExtrinsicLike,
       ) => Promise<Result<Result<[], DispatchError>, SpRuntimeTransactionValidityTransactionValidityError>>
     >;
 
@@ -155,7 +156,7 @@ export interface RuntimeApis extends GenericRuntimeApis {
      * @callname: BlockBuilder_inherent_extrinsics
      **/
     inherentExtrinsics: GenericRuntimeApiMethod<
-      (inherent: SpInherentsInherentData) => Promise<Array<SpRuntimeUncheckedExtrinsic>>
+      (inherent: SpInherentsInherentData) => Promise<Array<UncheckedExtrinsic>>
     >;
 
     /**
@@ -192,7 +193,7 @@ export interface RuntimeApis extends GenericRuntimeApis {
     validateTransaction: GenericRuntimeApiMethod<
       (
         source: SpRuntimeTransactionValidityTransactionSource,
-        tx: SpRuntimeUncheckedExtrinsic,
+        tx: UncheckedExtrinsicLike,
         blockHash: H256,
       ) => Promise<
         Result<SpRuntimeTransactionValidityValidTransaction, SpRuntimeTransactionValidityTransactionValidityError>
@@ -235,7 +236,7 @@ export interface RuntimeApis extends GenericRuntimeApis {
      *
      * @callname: SessionKeys_generate_session_keys
      **/
-    generateSessionKeys: GenericRuntimeApiMethod<(seed: BytesLike | undefined) => Promise<Bytes>>;
+    generateSessionKeys: GenericRuntimeApiMethod<(seed?: BytesLike | undefined) => Promise<Bytes>>;
 
     /**
      * Decode the given public session keys.
@@ -333,7 +334,7 @@ export interface RuntimeApis extends GenericRuntimeApis {
      * @callname: TransactionPaymentApi_query_info
      **/
     queryInfo: GenericRuntimeApiMethod<
-      (uxt: SpRuntimeUncheckedExtrinsic, len: number) => Promise<PalletTransactionPaymentRuntimeDispatchInfo>
+      (uxt: UncheckedExtrinsicLike, len: number) => Promise<PalletTransactionPaymentRuntimeDispatchInfo>
     >;
 
     /**
@@ -341,7 +342,7 @@ export interface RuntimeApis extends GenericRuntimeApis {
      * @callname: TransactionPaymentApi_query_fee_details
      **/
     queryFeeDetails: GenericRuntimeApiMethod<
-      (uxt: SpRuntimeUncheckedExtrinsic, len: number) => Promise<PalletTransactionPaymentFeeDetails>
+      (uxt: UncheckedExtrinsicLike, len: number) => Promise<PalletTransactionPaymentFeeDetails>
     >;
 
     /**

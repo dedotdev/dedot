@@ -15,7 +15,7 @@ export const genesisBuilder: RuntimeApisModule = {
             'blob. It returns a `Vec<u8>` containing the JSON representation of the default `GenesisConfig`.',
           ],
           params: [],
-          type: 'Array<u8>',
+          type: 'Bytes',
         },
         buildConfig: {
           docs: [
@@ -30,10 +30,10 @@ export const genesisBuilder: RuntimeApisModule = {
           params: [
             {
               name: 'json',
-              type: 'Array<u8>',
+              type: 'Bytes',
             },
           ],
-          type: 'Result<Null, Text>',
+          type: 'Result<[], Text>',
         },
       },
       version: 1,

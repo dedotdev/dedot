@@ -39,6 +39,24 @@ import type {
 } from '@delightfuldot/codecs';
 
 export interface RpcCalls extends GenericRpcCalls {
+  alephNode: {
+    /**
+     * @rpcname: alephNode_emergencyFinalize
+     **/
+    emergencyFinalize: GenericRpcCall;
+
+    /**
+     * @rpcname: alephNode_getBlockAuthor
+     **/
+    getBlockAuthor: GenericRpcCall;
+
+    /**
+     * @rpcname: alephNode_ready
+     **/
+    ready: GenericRpcCall;
+
+    [method: string]: GenericRpcCall;
+  };
   author: {
     /**
      * Checks if the keystore has private keys for the given public key and key type. Returns `true` if a private key could be found.
@@ -112,11 +130,6 @@ export interface RpcCalls extends GenericRpcCalls {
     unstable_call: GenericRpcCall;
 
     /**
-     * @rpcname: chainHead_unstable_continue
-     **/
-    unstable_continue: GenericRpcCall;
-
-    /**
      * @rpcname: chainHead_unstable_follow
      **/
     unstable_follow: GenericRpcCall;
@@ -132,9 +145,19 @@ export interface RpcCalls extends GenericRpcCalls {
     unstable_header: GenericRpcCall;
 
     /**
-     * @rpcname: chainHead_unstable_stopOperation
+     * @rpcname: chainHead_unstable_stopBody
      **/
-    unstable_stopOperation: GenericRpcCall;
+    unstable_stopBody: GenericRpcCall;
+
+    /**
+     * @rpcname: chainHead_unstable_stopCall
+     **/
+    unstable_stopCall: GenericRpcCall;
+
+    /**
+     * @rpcname: chainHead_unstable_stopStorage
+     **/
+    unstable_stopStorage: GenericRpcCall;
 
     /**
      * @rpcname: chainHead_unstable_storage
@@ -272,260 +295,6 @@ export interface RpcCalls extends GenericRpcCalls {
     getStorageSize: GenericRpcCall<
       (childStorageKey: PrefixedStorageKey, key: StorageKey, at?: BlockHash) => Promise<Option<number>>
     >;
-
-    [method: string]: GenericRpcCall;
-  };
-  eth: {
-    /**
-     * @rpcname: eth_accounts
-     **/
-    accounts: GenericRpcCall;
-
-    /**
-     * @rpcname: eth_blockNumber
-     **/
-    blockNumber: GenericRpcCall;
-
-    /**
-     * @rpcname: eth_call
-     **/
-    call: GenericRpcCall;
-
-    /**
-     * @rpcname: eth_chainId
-     **/
-    chainId: GenericRpcCall;
-
-    /**
-     * @rpcname: eth_coinbase
-     **/
-    coinbase: GenericRpcCall;
-
-    /**
-     * @rpcname: eth_estimateGas
-     **/
-    estimateGas: GenericRpcCall;
-
-    /**
-     * @rpcname: eth_feeHistory
-     **/
-    feeHistory: GenericRpcCall;
-
-    /**
-     * @rpcname: eth_gasPrice
-     **/
-    gasPrice: GenericRpcCall;
-
-    /**
-     * @rpcname: eth_getBalance
-     **/
-    getBalance: GenericRpcCall;
-
-    /**
-     * @rpcname: eth_getBlockByHash
-     **/
-    getBlockByHash: GenericRpcCall;
-
-    /**
-     * @rpcname: eth_getBlockByNumber
-     **/
-    getBlockByNumber: GenericRpcCall;
-
-    /**
-     * @rpcname: eth_getBlockReceipts
-     **/
-    getBlockReceipts: GenericRpcCall;
-
-    /**
-     * @rpcname: eth_getBlockTransactionCountByHash
-     **/
-    getBlockTransactionCountByHash: GenericRpcCall;
-
-    /**
-     * @rpcname: eth_getBlockTransactionCountByNumber
-     **/
-    getBlockTransactionCountByNumber: GenericRpcCall;
-
-    /**
-     * @rpcname: eth_getCode
-     **/
-    getCode: GenericRpcCall;
-
-    /**
-     * @rpcname: eth_getFilterChanges
-     **/
-    getFilterChanges: GenericRpcCall;
-
-    /**
-     * @rpcname: eth_getFilterLogs
-     **/
-    getFilterLogs: GenericRpcCall;
-
-    /**
-     * @rpcname: eth_getLogs
-     **/
-    getLogs: GenericRpcCall;
-
-    /**
-     * @rpcname: eth_getStorageAt
-     **/
-    getStorageAt: GenericRpcCall;
-
-    /**
-     * @rpcname: eth_getTransactionByBlockHashAndIndex
-     **/
-    getTransactionByBlockHashAndIndex: GenericRpcCall;
-
-    /**
-     * @rpcname: eth_getTransactionByBlockNumberAndIndex
-     **/
-    getTransactionByBlockNumberAndIndex: GenericRpcCall;
-
-    /**
-     * @rpcname: eth_getTransactionByHash
-     **/
-    getTransactionByHash: GenericRpcCall;
-
-    /**
-     * @rpcname: eth_getTransactionCount
-     **/
-    getTransactionCount: GenericRpcCall;
-
-    /**
-     * @rpcname: eth_getTransactionReceipt
-     **/
-    getTransactionReceipt: GenericRpcCall;
-
-    /**
-     * @rpcname: eth_getUncleByBlockHashAndIndex
-     **/
-    getUncleByBlockHashAndIndex: GenericRpcCall;
-
-    /**
-     * @rpcname: eth_getUncleByBlockNumberAndIndex
-     **/
-    getUncleByBlockNumberAndIndex: GenericRpcCall;
-
-    /**
-     * @rpcname: eth_getUncleCountByBlockHash
-     **/
-    getUncleCountByBlockHash: GenericRpcCall;
-
-    /**
-     * @rpcname: eth_getUncleCountByBlockNumber
-     **/
-    getUncleCountByBlockNumber: GenericRpcCall;
-
-    /**
-     * @rpcname: eth_getWork
-     **/
-    getWork: GenericRpcCall;
-
-    /**
-     * @rpcname: eth_hashrate
-     **/
-    hashrate: GenericRpcCall;
-
-    /**
-     * @rpcname: eth_maxPriorityFeePerGas
-     **/
-    maxPriorityFeePerGas: GenericRpcCall;
-
-    /**
-     * @rpcname: eth_mining
-     **/
-    mining: GenericRpcCall;
-
-    /**
-     * @rpcname: eth_newBlockFilter
-     **/
-    newBlockFilter: GenericRpcCall;
-
-    /**
-     * @rpcname: eth_newFilter
-     **/
-    newFilter: GenericRpcCall;
-
-    /**
-     * @rpcname: eth_newPendingTransactionFilter
-     **/
-    newPendingTransactionFilter: GenericRpcCall;
-
-    /**
-     * @rpcname: eth_protocolVersion
-     **/
-    protocolVersion: GenericRpcCall;
-
-    /**
-     * @rpcname: eth_sendRawTransaction
-     **/
-    sendRawTransaction: GenericRpcCall;
-
-    /**
-     * @rpcname: eth_sendTransaction
-     **/
-    sendTransaction: GenericRpcCall;
-
-    /**
-     * @rpcname: eth_submitHashrate
-     **/
-    submitHashrate: GenericRpcCall;
-
-    /**
-     * @rpcname: eth_submitWork
-     **/
-    submitWork: GenericRpcCall;
-
-    /**
-     * @rpcname: eth_subscribe
-     **/
-    subscribe: GenericRpcCall;
-
-    /**
-     * @rpcname: eth_syncing
-     **/
-    syncing: GenericRpcCall;
-
-    /**
-     * @rpcname: eth_uninstallFilter
-     **/
-    uninstallFilter: GenericRpcCall;
-
-    /**
-     * @rpcname: eth_unsubscribe
-     **/
-    unsubscribe: GenericRpcCall;
-
-    [method: string]: GenericRpcCall;
-  };
-  moon: {
-    /**
-     * @rpcname: moon_isBlockFinalized
-     **/
-    isBlockFinalized: GenericRpcCall;
-
-    /**
-     * @rpcname: moon_isTxFinalized
-     **/
-    isTxFinalized: GenericRpcCall;
-
-    [method: string]: GenericRpcCall;
-  };
-  net: {
-    /**
-     * @rpcname: net_listening
-     **/
-    listening: GenericRpcCall;
-
-    /**
-     * @rpcname: net_peerCount
-     **/
-    peerCount: GenericRpcCall;
-
-    /**
-     * @rpcname: net_version
-     **/
-    version: GenericRpcCall;
 
     [method: string]: GenericRpcCall;
   };
@@ -872,19 +641,6 @@ export interface RpcCalls extends GenericRpcCalls {
      * @rpcname: transaction_unstable_unwatch
      **/
     unstable_unwatch: GenericRpcCall;
-
-    [method: string]: GenericRpcCall;
-  };
-  web3: {
-    /**
-     * @rpcname: web3_clientVersion
-     **/
-    clientVersion: GenericRpcCall;
-
-    /**
-     * @rpcname: web3_sha3
-     **/
-    sha3: GenericRpcCall;
 
     [method: string]: GenericRpcCall;
   };

@@ -12,7 +12,7 @@ export const payment: RuntimeApisModule = {
           params: [
             {
               name: 'uxt',
-              type: 'Bytes',
+              type: 'RawBytes',
             },
             {
               name: 'len',
@@ -26,7 +26,7 @@ export const payment: RuntimeApisModule = {
           params: [
             {
               name: 'uxt',
-              type: 'Bytes',
+              type: 'RawBytes',
             },
             {
               name: 'len',
@@ -68,7 +68,7 @@ export const payment: RuntimeApisModule = {
           params: [
             {
               name: 'call',
-              type: 'Bytes',
+              type: 'RawBytes',
             },
             {
               name: 'len',
@@ -82,7 +82,7 @@ export const payment: RuntimeApisModule = {
           params: [
             {
               name: 'call',
-              type: 'Bytes',
+              type: 'RawBytes',
             },
             {
               name: 'len',

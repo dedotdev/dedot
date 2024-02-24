@@ -71,7 +71,7 @@ export const grandpa: RuntimeApisModule = {
               type: 'OpaqueKeyOwnershipProof',
             },
           ],
-          type: 'Option<Null>',
+          type: 'Option<[]>',
         },
       },
       version: 3,

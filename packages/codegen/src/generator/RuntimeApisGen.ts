@@ -55,6 +55,14 @@ export class RuntimeApisGen extends RpcGen {
     return beautifySourceCode(template({ importTypes, runtimeCallsOut }));
   }
 
+  #isOptionalType(type: string) {
+    return type.startsWith('Option<') || type.endsWith('| undefined');
+  }
+
+  #isOptionalParam(params: { type: string }[], type: string, idx: number) {
+    return this.#isOptionalType(type) && params.slice(idx + 1).every(({ type }) => this.#isOptionalType(type));
+  }
+
   #generateMethodDefFromSpec(spec: RuntimeApiMethodSpec) {
     const { docs = [], params, type, runtimeApiName, methodName } = spec;
 
@@ -67,7 +75,14 @@ export class RuntimeApisGen extends RpcGen {
     });
 
     const paramsOut = params
-      .map(({ name, type }) => `${stringCamelCase(name)}: ${this.getGeneratedTypeName(type!)}`)
+      .map((param, idx) => ({
+        ...param,
+        isOptional: this.#isOptionalParam(params, param.type, idx),
+      }))
+      .map(
+        ({ name, type, isOptional }) =>
+          `${stringCamelCase(name)}${isOptional ? '?' : ''}: ${this.getGeneratedTypeName(type)}`,
+      )
       .join(', ');
 
     const typeOut = this.getGeneratedTypeName(type!, false);
@@ -87,18 +102,31 @@ export class RuntimeApisGen extends RpcGen {
 
     const outputType = this.typesGen.generateType(output, 1, true);
     this.addTypeImport(outputType, false);
-    const typedInputs = inputs.map((input) => ({
-      ...input,
-      type: this.typesGen.generateType(input.typeId, 1),
-    }));
+    const typedInputs = inputs
+      .map((input, idx) => {
+        const type = this.typesGen.generateType(input.typeId, 1);
+
+        return {
+          ...input,
+          type,
+        };
+      })
+      .map((input, idx, inputs) => ({
+        ...input,
+        isOptional: this.#isOptionalParam(inputs, input.type, idx),
+      }));
 
     this.addTypeImport(typedInputs.map((t) => t.type));
 
-    const paramsOut = typedInputs.map(({ name, type }) => `${stringCamelCase(name)}: ${type}`).join(', ');
+    const paramsOut = typedInputs
+      .map(({ name, type, isOptional }) => `${stringCamelCase(name)}${isOptional ? '?' : ''}: ${type}`)
+      .join(', ');
 
-    return `${commentBlock(docs, '\n', defaultDocs)}${stringCamelCase(
-      methodName,
-    )}: GenericRuntimeApiMethod<(${paramsOut}) => Promise<${outputType}>>`;
+    return `${commentBlock(
+      docs,
+      '\n',
+      defaultDocs,
+    )}${stringCamelCase(methodName)}: GenericRuntimeApiMethod<(${paramsOut}) => Promise<${outputType}>>`;
   }
 
   #runtimeApisSpecsByModule(): RuntimeApiSpec[] {
