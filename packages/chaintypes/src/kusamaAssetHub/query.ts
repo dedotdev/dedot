@@ -79,9 +79,14 @@ import type {
 } from './types';
 
 export interface ChainStorage extends GenericChainStorage {
+  /**
+   * Pallet `System`'s storage queries
+   **/
   system: {
     /**
      * The full account information for a particular account ID.
+     *
+     * @param {AccountId32Like} arg
      **/
     account: GenericStorageQuery<(arg: AccountId32Like) => FrameSystemAccountInfo>;
 
@@ -102,11 +107,15 @@ export interface ChainStorage extends GenericChainStorage {
 
     /**
      * Map of block numbers to block hashes.
+     *
+     * @param {number} arg
      **/
     blockHash: GenericStorageQuery<(arg: number) => H256>;
 
     /**
      * Extrinsics data for the current block (maps an extrinsic's index to its data).
+     *
+     * @param {number} arg
      **/
     extrinsicData: GenericStorageQuery<(arg: number) => Bytes>;
 
@@ -152,6 +161,8 @@ export interface ChainStorage extends GenericChainStorage {
      * The value has the type `(BlockNumberFor<T>, EventIndex)` because if we used only just
      * the `EventIndex` then in case if the topic has the same contents on the next block
      * no notification will be triggered thus the event might be lost.
+     *
+     * @param {H256} arg
      **/
     eventTopics: GenericStorageQuery<(arg: H256) => Array<[number, number]>>;
 
@@ -181,6 +192,9 @@ export interface ChainStorage extends GenericChainStorage {
      **/
     [storage: string]: GenericStorageQuery;
   };
+  /**
+   * Pallet `ParachainSystem`'s storage queries
+   **/
   parachainSystem: {
     /**
      * Latest included block descendants the runtime accepted. In other words, these are
@@ -383,6 +397,9 @@ export interface ChainStorage extends GenericChainStorage {
      **/
     [storage: string]: GenericStorageQuery;
   };
+  /**
+   * Pallet `Timestamp`'s storage queries
+   **/
   timestamp: {
     /**
      * The current time for the current block.
@@ -402,6 +419,9 @@ export interface ChainStorage extends GenericChainStorage {
      **/
     [storage: string]: GenericStorageQuery;
   };
+  /**
+   * Pallet `ParachainInfo`'s storage queries
+   **/
   parachainInfo: {
     parachainId: GenericStorageQuery<() => PolkadotParachainPrimitivesPrimitivesId>;
 
@@ -410,6 +430,9 @@ export interface ChainStorage extends GenericChainStorage {
      **/
     [storage: string]: GenericStorageQuery;
   };
+  /**
+   * Pallet `Balances`'s storage queries
+   **/
   balances: {
     /**
      * The total units issued in the system.
@@ -446,27 +469,37 @@ export interface ChainStorage extends GenericChainStorage {
      * `frame_system` data alongside the account data contrary to storing account balances in the
      * `Balances` pallet, which uses a `StorageMap` to store balances data only.
      * NOTE: This is only used in the case that this pallet is used to store balances.
+     *
+     * @param {AccountId32Like} arg
      **/
     account: GenericStorageQuery<(arg: AccountId32Like) => PalletBalancesAccountData>;
 
     /**
      * Any liquidity locks on some account balances.
      * NOTE: Should only be accessed when setting, changing and freeing a lock.
+     *
+     * @param {AccountId32Like} arg
      **/
     locks: GenericStorageQuery<(arg: AccountId32Like) => Array<PalletBalancesBalanceLock>>;
 
     /**
      * Named reserves on some account balances.
+     *
+     * @param {AccountId32Like} arg
      **/
     reserves: GenericStorageQuery<(arg: AccountId32Like) => Array<PalletBalancesReserveData>>;
 
     /**
      * Holds on account balances.
+     *
+     * @param {AccountId32Like} arg
      **/
     holds: GenericStorageQuery<(arg: AccountId32Like) => Array<PalletBalancesIdAmount>>;
 
     /**
      * Freeze locks on account balances.
+     *
+     * @param {AccountId32Like} arg
      **/
     freezes: GenericStorageQuery<(arg: AccountId32Like) => Array<PalletBalancesIdAmount002>>;
 
@@ -475,6 +508,9 @@ export interface ChainStorage extends GenericChainStorage {
      **/
     [storage: string]: GenericStorageQuery;
   };
+  /**
+   * Pallet `TransactionPayment`'s storage queries
+   **/
   transactionPayment: {
     nextFeeMultiplier: GenericStorageQuery<() => FixedU128>;
     storageVersion: GenericStorageQuery<() => PalletTransactionPaymentReleases>;
@@ -484,6 +520,9 @@ export interface ChainStorage extends GenericChainStorage {
      **/
     [storage: string]: GenericStorageQuery;
   };
+  /**
+   * Pallet `Authorship`'s storage queries
+   **/
   authorship: {
     /**
      * Author of current block.
@@ -495,6 +534,9 @@ export interface ChainStorage extends GenericChainStorage {
      **/
     [storage: string]: GenericStorageQuery;
   };
+  /**
+   * Pallet `CollatorSelection`'s storage queries
+   **/
   collatorSelection: {
     /**
      * The invulnerable, permissioned collators. This list must be sorted.
@@ -509,6 +551,8 @@ export interface ChainStorage extends GenericChainStorage {
 
     /**
      * Last block authored by collator.
+     *
+     * @param {AccountId32Like} arg
      **/
     lastAuthoredBlock: GenericStorageQuery<(arg: AccountId32Like) => number>;
 
@@ -531,6 +575,9 @@ export interface ChainStorage extends GenericChainStorage {
      **/
     [storage: string]: GenericStorageQuery;
   };
+  /**
+   * Pallet `Session`'s storage queries
+   **/
   session: {
     /**
      * The current set of validators.
@@ -565,11 +612,15 @@ export interface ChainStorage extends GenericChainStorage {
 
     /**
      * The next session keys for a validator.
+     *
+     * @param {AccountId32Like} arg
      **/
     nextKeys: GenericStorageQuery<(arg: AccountId32Like) => AssetHubKusamaRuntimeSessionKeys | undefined>;
 
     /**
      * The owner of a key. The key is the `KeyTypeId` + the encoded key.
+     *
+     * @param {[SpCoreCryptoKeyTypeId, BytesLike]} arg
      **/
     keyOwner: GenericStorageQuery<(arg: [SpCoreCryptoKeyTypeId, BytesLike]) => AccountId32 | undefined>;
 
@@ -578,6 +629,9 @@ export interface ChainStorage extends GenericChainStorage {
      **/
     [storage: string]: GenericStorageQuery;
   };
+  /**
+   * Pallet `Aura`'s storage queries
+   **/
   aura: {
     /**
      * The current authority set.
@@ -596,6 +650,9 @@ export interface ChainStorage extends GenericChainStorage {
      **/
     [storage: string]: GenericStorageQuery;
   };
+  /**
+   * Pallet `AuraExt`'s storage queries
+   **/
   auraExt: {
     /**
      * Serves as cache for the authorities.
@@ -618,6 +675,9 @@ export interface ChainStorage extends GenericChainStorage {
      **/
     [storage: string]: GenericStorageQuery;
   };
+  /**
+   * Pallet `XcmpQueue`'s storage queries
+   **/
   xcmpQueue: {
     /**
      * Status of the inbound XCMP channels.
@@ -626,6 +686,8 @@ export interface ChainStorage extends GenericChainStorage {
 
     /**
      * Inbound aggregate XCMP messages. It can only be one per ParaId/block.
+     *
+     * @param {[PolkadotParachainPrimitivesPrimitivesId, number]} arg
      **/
     inboundXcmpMessages: GenericStorageQuery<(arg: [PolkadotParachainPrimitivesPrimitivesId, number]) => Bytes>;
 
@@ -641,11 +703,15 @@ export interface ChainStorage extends GenericChainStorage {
 
     /**
      * The messages outbound in a given XCMP channel.
+     *
+     * @param {[PolkadotParachainPrimitivesPrimitivesId, number]} arg
      **/
     outboundXcmpMessages: GenericStorageQuery<(arg: [PolkadotParachainPrimitivesPrimitivesId, number]) => Bytes>;
 
     /**
      * Any signal messages waiting to be sent.
+     *
+     * @param {PolkadotParachainPrimitivesPrimitivesId} arg
      **/
     signalMessages: GenericStorageQuery<(arg: PolkadotParachainPrimitivesPrimitivesId) => Bytes>;
 
@@ -659,6 +725,8 @@ export interface ChainStorage extends GenericChainStorage {
      *
      * These message stay in this storage map until they are manually dispatched via
      * `service_overweight`.
+     *
+     * @param {bigint} arg
      **/
     overweight: GenericStorageQuery<
       (arg: bigint) => [PolkadotParachainPrimitivesPrimitivesId, number, Bytes] | undefined
@@ -682,6 +750,8 @@ export interface ChainStorage extends GenericChainStorage {
 
     /**
      * The factor to multiply the base delivery fee by.
+     *
+     * @param {PolkadotParachainPrimitivesPrimitivesId} arg
      **/
     deliveryFeeFactor: GenericStorageQuery<(arg: PolkadotParachainPrimitivesPrimitivesId) => FixedU128>;
 
@@ -690,6 +760,9 @@ export interface ChainStorage extends GenericChainStorage {
      **/
     [storage: string]: GenericStorageQuery;
   };
+  /**
+   * Pallet `PolkadotXcm`'s storage queries
+   **/
   polkadotXcm: {
     /**
      * The latest available query index.
@@ -698,6 +771,8 @@ export interface ChainStorage extends GenericChainStorage {
 
     /**
      * The ongoing queries.
+     *
+     * @param {bigint} arg
      **/
     queries: GenericStorageQuery<(arg: bigint) => PalletXcmQueryStatus | undefined>;
 
@@ -706,6 +781,8 @@ export interface ChainStorage extends GenericChainStorage {
      *
      * Key is the blake2 256 hash of (origin, versioned `MultiAssets`) pair. Value is the number of
      * times this pair has been trapped (usually just 1 if it exists at all).
+     *
+     * @param {H256} arg
      **/
     assetTraps: GenericStorageQuery<(arg: H256) => number>;
 
@@ -717,17 +794,23 @@ export interface ChainStorage extends GenericChainStorage {
 
     /**
      * The Latest versions that we know various locations support.
+     *
+     * @param {[number, XcmVersionedMultiLocation]} arg
      **/
     supportedVersion: GenericStorageQuery<(arg: [number, XcmVersionedMultiLocation]) => number | undefined>;
 
     /**
      * All locations that we have requested version notifications from.
+     *
+     * @param {[number, XcmVersionedMultiLocation]} arg
      **/
     versionNotifiers: GenericStorageQuery<(arg: [number, XcmVersionedMultiLocation]) => bigint | undefined>;
 
     /**
      * The target locations that are subscribed to our version changes, as well as the most recent
      * of our versions we informed them of.
+     *
+     * @param {[number, XcmVersionedMultiLocation]} arg
      **/
     versionNotifyTargets: GenericStorageQuery<
       (arg: [number, XcmVersionedMultiLocation]) => [bigint, SpWeightsWeightV2Weight, number] | undefined
@@ -747,6 +830,8 @@ export interface ChainStorage extends GenericChainStorage {
 
     /**
      * Fungible assets which we know are locked on a remote chain.
+     *
+     * @param {[number, AccountId32Like, XcmVersionedAssetId]} arg
      **/
     remoteLockedFungibles: GenericStorageQuery<
       (arg: [number, AccountId32Like, XcmVersionedAssetId]) => PalletXcmRemoteLockedFungibleRecord | undefined
@@ -754,6 +839,8 @@ export interface ChainStorage extends GenericChainStorage {
 
     /**
      * Fungible assets which we know are locked on this chain.
+     *
+     * @param {AccountId32Like} arg
      **/
     lockedFungibles: GenericStorageQuery<
       (arg: AccountId32Like) => Array<[bigint, XcmVersionedMultiLocation]> | undefined
@@ -769,6 +856,9 @@ export interface ChainStorage extends GenericChainStorage {
      **/
     [storage: string]: GenericStorageQuery;
   };
+  /**
+   * Pallet `DmpQueue`'s storage queries
+   **/
   dmpQueue: {
     /**
      * The configuration.
@@ -782,11 +872,15 @@ export interface ChainStorage extends GenericChainStorage {
 
     /**
      * The queue pages.
+     *
+     * @param {number} arg
      **/
     pages: GenericStorageQuery<(arg: number) => Array<[number, Bytes]>>;
 
     /**
      * The overweight messages.
+     *
+     * @param {bigint} arg
      **/
     overweight: GenericStorageQuery<(arg: bigint) => [number, Bytes] | undefined>;
 
@@ -800,6 +894,9 @@ export interface ChainStorage extends GenericChainStorage {
      **/
     [storage: string]: GenericStorageQuery;
   };
+  /**
+   * Pallet `ToPolkadotXcmRouter`'s storage queries
+   **/
   toPolkadotXcmRouter: {
     /**
      * Bridge that we are using.
@@ -817,9 +914,14 @@ export interface ChainStorage extends GenericChainStorage {
      **/
     [storage: string]: GenericStorageQuery;
   };
+  /**
+   * Pallet `Multisig`'s storage queries
+   **/
   multisig: {
     /**
      * The set of open multisig operations.
+     *
+     * @param {[AccountId32Like, FixedBytes<32>]} arg
      **/
     multisigs: GenericStorageQuery<(arg: [AccountId32Like, FixedBytes<32>]) => PalletMultisigMultisig | undefined>;
 
@@ -828,15 +930,22 @@ export interface ChainStorage extends GenericChainStorage {
      **/
     [storage: string]: GenericStorageQuery;
   };
+  /**
+   * Pallet `Proxy`'s storage queries
+   **/
   proxy: {
     /**
      * The set of account proxies. Maps the account which has delegated to the accounts
      * which are being delegated to, together with the amount held on deposit.
+     *
+     * @param {AccountId32Like} arg
      **/
     proxies: GenericStorageQuery<(arg: AccountId32Like) => [Array<PalletProxyProxyDefinition>, bigint]>;
 
     /**
      * The announcements made by the proxy (key).
+     *
+     * @param {AccountId32Like} arg
      **/
     announcements: GenericStorageQuery<(arg: AccountId32Like) => [Array<PalletProxyAnnouncement>, bigint]>;
 
@@ -845,14 +954,21 @@ export interface ChainStorage extends GenericChainStorage {
      **/
     [storage: string]: GenericStorageQuery;
   };
+  /**
+   * Pallet `Assets`'s storage queries
+   **/
   assets: {
     /**
      * Details of an asset.
+     *
+     * @param {number} arg
      **/
     asset: GenericStorageQuery<(arg: number) => PalletAssetsAssetDetails | undefined>;
 
     /**
      * The holdings of a specific account for a specific asset.
+     *
+     * @param {[number, AccountId32Like]} arg
      **/
     account: GenericStorageQuery<(arg: [number, AccountId32Like]) => PalletAssetsAssetAccount | undefined>;
 
@@ -860,6 +976,8 @@ export interface ChainStorage extends GenericChainStorage {
      * Approved balance transfers. First balance is the amount approved for transfer. Second
      * is the amount of `T::Currency` reserved for storing this.
      * First key is the asset ID, second key is the owner and third key is the delegate.
+     *
+     * @param {[number, AccountId32Like, AccountId32Like]} arg
      **/
     approvals: GenericStorageQuery<
       (arg: [number, AccountId32Like, AccountId32Like]) => PalletAssetsApproval | undefined
@@ -867,6 +985,8 @@ export interface ChainStorage extends GenericChainStorage {
 
     /**
      * Metadata of an asset.
+     *
+     * @param {number} arg
      **/
     metadata: GenericStorageQuery<(arg: number) => PalletAssetsAssetMetadata>;
 
@@ -875,56 +995,79 @@ export interface ChainStorage extends GenericChainStorage {
      **/
     [storage: string]: GenericStorageQuery;
   };
+  /**
+   * Pallet `Uniques`'s storage queries
+   **/
   uniques: {
     /**
      * Details of a collection.
+     *
+     * @param {number} arg
      **/
     class: GenericStorageQuery<(arg: number) => PalletUniquesCollectionDetails | undefined>;
 
     /**
      * The collection, if any, of which an account is willing to take ownership.
+     *
+     * @param {AccountId32Like} arg
      **/
     ownershipAcceptance: GenericStorageQuery<(arg: AccountId32Like) => number | undefined>;
 
     /**
      * The items held by any given account; set out this way so that items owned by a single
      * account can be enumerated.
+     *
+     * @param {[AccountId32Like, number, number]} arg
      **/
     account: GenericStorageQuery<(arg: [AccountId32Like, number, number]) => [] | undefined>;
 
     /**
      * The collections owned by any given account; set out this way so that collections owned by
      * a single account can be enumerated.
+     *
+     * @param {[AccountId32Like, number]} arg
      **/
     classAccount: GenericStorageQuery<(arg: [AccountId32Like, number]) => [] | undefined>;
 
     /**
      * The items in existence and their ownership details.
+     *
+     * @param {[number, number]} arg
      **/
     asset: GenericStorageQuery<(arg: [number, number]) => PalletUniquesItemDetails | undefined>;
 
     /**
      * Metadata of a collection.
+     *
+     * @param {number} arg
      **/
     classMetadataOf: GenericStorageQuery<(arg: number) => PalletUniquesCollectionMetadata | undefined>;
 
     /**
      * Metadata of an item.
+     *
+     * @param {[number, number]} arg
      **/
     instanceMetadataOf: GenericStorageQuery<(arg: [number, number]) => PalletUniquesItemMetadata | undefined>;
 
     /**
      * Attributes of a collection.
+     *
+     * @param {[number, number | undefined, BytesLike]} arg
      **/
     attribute: GenericStorageQuery<(arg: [number, number | undefined, BytesLike]) => [Bytes, bigint] | undefined>;
 
     /**
      * Price of an asset instance.
+     *
+     * @param {[number, number]} arg
      **/
     itemPriceOf: GenericStorageQuery<(arg: [number, number]) => [bigint, AccountId32 | undefined] | undefined>;
 
     /**
      * Keeps track of the number of items a collection might have.
+     *
+     * @param {number} arg
      **/
     collectionMaxSupply: GenericStorageQuery<(arg: number) => number | undefined>;
 
@@ -933,32 +1076,45 @@ export interface ChainStorage extends GenericChainStorage {
      **/
     [storage: string]: GenericStorageQuery;
   };
+  /**
+   * Pallet `Nfts`'s storage queries
+   **/
   nfts: {
     /**
      * Details of a collection.
+     *
+     * @param {number} arg
      **/
     collection: GenericStorageQuery<(arg: number) => PalletNftsCollectionDetails | undefined>;
 
     /**
      * The collection, if any, of which an account is willing to take ownership.
+     *
+     * @param {AccountId32Like} arg
      **/
     ownershipAcceptance: GenericStorageQuery<(arg: AccountId32Like) => number | undefined>;
 
     /**
      * The items held by any given account; set out this way so that items owned by a single
      * account can be enumerated.
+     *
+     * @param {[AccountId32Like, number, number]} arg
      **/
     account: GenericStorageQuery<(arg: [AccountId32Like, number, number]) => [] | undefined>;
 
     /**
      * The collections owned by any given account; set out this way so that collections owned by
      * a single account can be enumerated.
+     *
+     * @param {[AccountId32Like, number]} arg
      **/
     collectionAccount: GenericStorageQuery<(arg: [AccountId32Like, number]) => [] | undefined>;
 
     /**
      * The items in existence and their ownership details.
      * Stores collection roles as per account.
+     *
+     * @param {[number, AccountId32Like]} arg
      **/
     collectionRoleOf: GenericStorageQuery<
       (arg: [number, AccountId32Like]) => PalletNftsBitFlagsCollectionRole | undefined
@@ -966,21 +1122,29 @@ export interface ChainStorage extends GenericChainStorage {
 
     /**
      * The items in existence and their ownership details.
+     *
+     * @param {[number, number]} arg
      **/
     item: GenericStorageQuery<(arg: [number, number]) => PalletNftsItemDetails | undefined>;
 
     /**
      * Metadata of a collection.
+     *
+     * @param {number} arg
      **/
     collectionMetadataOf: GenericStorageQuery<(arg: number) => PalletNftsCollectionMetadata | undefined>;
 
     /**
      * Metadata of an item.
+     *
+     * @param {[number, number]} arg
      **/
     itemMetadataOf: GenericStorageQuery<(arg: [number, number]) => PalletNftsItemMetadata | undefined>;
 
     /**
      * Attributes of a collection.
+     *
+     * @param {[number, number | undefined, PalletNftsAttributeNamespace, BytesLike]} arg
      **/
     attribute: GenericStorageQuery<
       (
@@ -990,11 +1154,15 @@ export interface ChainStorage extends GenericChainStorage {
 
     /**
      * A price of an item.
+     *
+     * @param {[number, number]} arg
      **/
     itemPriceOf: GenericStorageQuery<(arg: [number, number]) => [bigint, AccountId32 | undefined] | undefined>;
 
     /**
      * Item attribute approvals.
+     *
+     * @param {[number, number]} arg
      **/
     itemAttributesApprovalsOf: GenericStorageQuery<(arg: [number, number]) => Array<AccountId32>>;
 
@@ -1006,16 +1174,22 @@ export interface ChainStorage extends GenericChainStorage {
 
     /**
      * Handles all the pending swaps.
+     *
+     * @param {[number, number]} arg
      **/
     pendingSwapOf: GenericStorageQuery<(arg: [number, number]) => PalletNftsPendingSwap | undefined>;
 
     /**
      * Config of a collection.
+     *
+     * @param {number} arg
      **/
     collectionConfigOf: GenericStorageQuery<(arg: number) => PalletNftsCollectionConfig | undefined>;
 
     /**
      * Config of an item.
+     *
+     * @param {[number, number]} arg
      **/
     itemConfigOf: GenericStorageQuery<(arg: [number, number]) => PalletNftsItemConfig | undefined>;
 
@@ -1024,14 +1198,21 @@ export interface ChainStorage extends GenericChainStorage {
      **/
     [storage: string]: GenericStorageQuery;
   };
+  /**
+   * Pallet `ForeignAssets`'s storage queries
+   **/
   foreignAssets: {
     /**
      * Details of an asset.
+     *
+     * @param {StagingXcmV3MultilocationMultiLocation} arg
      **/
     asset: GenericStorageQuery<(arg: StagingXcmV3MultilocationMultiLocation) => PalletAssetsAssetDetails | undefined>;
 
     /**
      * The holdings of a specific account for a specific asset.
+     *
+     * @param {[StagingXcmV3MultilocationMultiLocation, AccountId32Like]} arg
      **/
     account: GenericStorageQuery<
       (arg: [StagingXcmV3MultilocationMultiLocation, AccountId32Like]) => PalletAssetsAssetAccount | undefined
@@ -1041,6 +1222,8 @@ export interface ChainStorage extends GenericChainStorage {
      * Approved balance transfers. First balance is the amount approved for transfer. Second
      * is the amount of `T::Currency` reserved for storing this.
      * First key is the asset ID, second key is the owner and third key is the delegate.
+     *
+     * @param {[StagingXcmV3MultilocationMultiLocation, AccountId32Like, AccountId32Like]} arg
      **/
     approvals: GenericStorageQuery<
       (
@@ -1050,6 +1233,8 @@ export interface ChainStorage extends GenericChainStorage {
 
     /**
      * Metadata of an asset.
+     *
+     * @param {StagingXcmV3MultilocationMultiLocation} arg
      **/
     metadata: GenericStorageQuery<(arg: StagingXcmV3MultilocationMultiLocation) => PalletAssetsAssetMetadata>;
 
@@ -1058,9 +1243,14 @@ export interface ChainStorage extends GenericChainStorage {
      **/
     [storage: string]: GenericStorageQuery;
   };
+  /**
+   * Pallet `NftFractionalization`'s storage queries
+   **/
   nftFractionalization: {
     /**
      * Keeps track of the corresponding NFT ID, asset ID and amount minted.
+     *
+     * @param {[number, number]} arg
      **/
     nftToAsset: GenericStorageQuery<(arg: [number, number]) => PalletNftFractionalizationDetails | undefined>;
 
@@ -1069,14 +1259,21 @@ export interface ChainStorage extends GenericChainStorage {
      **/
     [storage: string]: GenericStorageQuery;
   };
+  /**
+   * Pallet `PoolAssets`'s storage queries
+   **/
   poolAssets: {
     /**
      * Details of an asset.
+     *
+     * @param {number} arg
      **/
     asset: GenericStorageQuery<(arg: number) => PalletAssetsAssetDetails | undefined>;
 
     /**
      * The holdings of a specific account for a specific asset.
+     *
+     * @param {[number, AccountId32Like]} arg
      **/
     account: GenericStorageQuery<(arg: [number, AccountId32Like]) => PalletAssetsAssetAccount | undefined>;
 
@@ -1084,6 +1281,8 @@ export interface ChainStorage extends GenericChainStorage {
      * Approved balance transfers. First balance is the amount approved for transfer. Second
      * is the amount of `T::Currency` reserved for storing this.
      * First key is the asset ID, second key is the owner and third key is the delegate.
+     *
+     * @param {[number, AccountId32Like, AccountId32Like]} arg
      **/
     approvals: GenericStorageQuery<
       (arg: [number, AccountId32Like, AccountId32Like]) => PalletAssetsApproval | undefined
@@ -1091,6 +1290,8 @@ export interface ChainStorage extends GenericChainStorage {
 
     /**
      * Metadata of an asset.
+     *
+     * @param {number} arg
      **/
     metadata: GenericStorageQuery<(arg: number) => PalletAssetsAssetMetadata>;
 
@@ -1099,10 +1300,15 @@ export interface ChainStorage extends GenericChainStorage {
      **/
     [storage: string]: GenericStorageQuery;
   };
+  /**
+   * Pallet `AssetConversion`'s storage queries
+   **/
   assetConversion: {
     /**
      * Map from `PoolAssetId` to `PoolInfo`. This establishes whether a pool has been officially
      * created rather than people sending tokens directly to a pool's public account.
+     *
+     * @param {[StagingXcmV3MultilocationMultiLocation, StagingXcmV3MultilocationMultiLocation]} arg
      **/
     pools: GenericStorageQuery<
       (

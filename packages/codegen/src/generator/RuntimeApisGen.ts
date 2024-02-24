@@ -72,19 +72,16 @@ export class RuntimeApisGen extends RpcGen {
     const defaultDocs = [`@callname: ${callName}`];
 
     this.addTypeImport(type, false);
-    params.forEach(({ type }) => {
-      this.addTypeImport(type);
-    });
+    params.forEach(({ type }) => this.addTypeImport(type));
 
-    const paramsOut = params
-      .map((param, idx) => ({
-        ...param,
-        isOptional: this.#isOptionalParam(params, param.type, idx),
-      }))
-      .map(
-        ({ name, type, isOptional }) =>
-          `${stringCamelCase(name)}${isOptional ? '?' : ''}: ${this.getGeneratedTypeName(type)}`,
-      )
+    const typedParams = params.map((param, idx) => ({
+      ...param,
+      isOptional: this.#isOptionalParam(params, param.type, idx),
+      plainType: this.getGeneratedTypeName(param.type),
+    }));
+
+    const paramsOut = typedParams
+      .map(({ name, isOptional, plainType }) => `${stringCamelCase(name)}${isOptional ? '?' : ''}: ${plainType}`)
       .join(', ');
 
     const typeOut = this.getGeneratedTypeName(type, false);
@@ -93,6 +90,7 @@ export class RuntimeApisGen extends RpcGen {
       docs,
       '\n',
       defaultDocs,
+      typedParams.map(({ plainType, name }) => `@param {${plainType}} ${name}`),
     )}${methodName}: GenericRuntimeApiMethod<(${paramsOut}) => Promise<${typeOut}>>`;
   }
 
@@ -102,17 +100,13 @@ export class RuntimeApisGen extends RpcGen {
     const callName = `${runtimeApiName}_${stringSnakeCase(methodName)}`;
     const defaultDocs = [`@callname: ${callName}`];
 
-    const outputType = this.typesGen.generateType(output, 1, true);
-    this.addTypeImport(outputType, false);
+    const typeOut = this.typesGen.generateType(output, 1, true);
+    this.addTypeImport(typeOut, false);
     const typedInputs = inputs
-      .map((input, idx) => {
-        const type = this.typesGen.generateType(input.typeId, 1);
-
-        return {
-          ...input,
-          type,
-        };
-      })
+      .map((input, idx) => ({
+        ...input,
+        type: this.typesGen.generateType(input.typeId, 1),
+      }))
       .map((input, idx, inputs) => ({
         ...input,
         isOptional: this.#isOptionalParam(inputs, input.type, idx),
@@ -128,7 +122,8 @@ export class RuntimeApisGen extends RpcGen {
       docs,
       '\n',
       defaultDocs,
-    )}${stringCamelCase(methodName)}: GenericRuntimeApiMethod<(${paramsOut}) => Promise<${outputType}>>`;
+      typedInputs.map(({ type, name }) => `@param {${type}} ${name}`),
+    )}${stringCamelCase(methodName)}: GenericRuntimeApiMethod<(${paramsOut}) => Promise<${typeOut}>>`;
   }
 
   #runtimeApisSpecsByModule(): Record<string, RuntimeApiSpec[]> {

@@ -94,11 +94,14 @@ type ChainSubmittableExtrinsic<T extends IRuntimeTxCall = PolkadotRuntimeRuntime
   ISubmittableExtrinsic<ISubmittableResult<FrameSystemEventRecord>>;
 
 export interface ChainTx extends GenericChainTx {
+  /**
+   * Pallet `System`'s transaction calls
+   **/
   system: {
     /**
      * See [`Pallet::remark`].
      *
-     * @param remark
+     * @param {BytesLike} remark
      **/
     remark: GenericTxCall<
       (remark: BytesLike) => ChainSubmittableExtrinsic<{
@@ -113,7 +116,7 @@ export interface ChainTx extends GenericChainTx {
     /**
      * See [`Pallet::set_heap_pages`].
      *
-     * @param pages
+     * @param {bigint} pages
      **/
     setHeapPages: GenericTxCall<
       (pages: bigint) => ChainSubmittableExtrinsic<{
@@ -128,7 +131,7 @@ export interface ChainTx extends GenericChainTx {
     /**
      * See [`Pallet::set_code`].
      *
-     * @param code
+     * @param {BytesLike} code
      **/
     setCode: GenericTxCall<
       (code: BytesLike) => ChainSubmittableExtrinsic<{
@@ -143,7 +146,7 @@ export interface ChainTx extends GenericChainTx {
     /**
      * See [`Pallet::set_code_without_checks`].
      *
-     * @param code
+     * @param {BytesLike} code
      **/
     setCodeWithoutChecks: GenericTxCall<
       (code: BytesLike) => ChainSubmittableExtrinsic<{
@@ -158,7 +161,7 @@ export interface ChainTx extends GenericChainTx {
     /**
      * See [`Pallet::set_storage`].
      *
-     * @param items
+     * @param {Array<[BytesLike, BytesLike]>} items
      **/
     setStorage: GenericTxCall<
       (items: Array<[BytesLike, BytesLike]>) => ChainSubmittableExtrinsic<{
@@ -173,7 +176,7 @@ export interface ChainTx extends GenericChainTx {
     /**
      * See [`Pallet::kill_storage`].
      *
-     * @param keys
+     * @param {Array<BytesLike>} keys
      **/
     killStorage: GenericTxCall<
       (keys: Array<BytesLike>) => ChainSubmittableExtrinsic<{
@@ -188,8 +191,8 @@ export interface ChainTx extends GenericChainTx {
     /**
      * See [`Pallet::kill_prefix`].
      *
-     * @param prefix
-     * @param subkeys
+     * @param {BytesLike} prefix
+     * @param {number} subkeys
      **/
     killPrefix: GenericTxCall<
       (
@@ -207,7 +210,7 @@ export interface ChainTx extends GenericChainTx {
     /**
      * See [`Pallet::remark_with_event`].
      *
-     * @param remark
+     * @param {BytesLike} remark
      **/
     remarkWithEvent: GenericTxCall<
       (remark: BytesLike) => ChainSubmittableExtrinsic<{
@@ -224,14 +227,17 @@ export interface ChainTx extends GenericChainTx {
      **/
     [callName: string]: GenericTxCall<(...args: any[]) => ChainSubmittableExtrinsic>;
   };
+  /**
+   * Pallet `Scheduler`'s transaction calls
+   **/
   scheduler: {
     /**
      * See [`Pallet::schedule`].
      *
-     * @param when
-     * @param maybePeriodic
-     * @param priority
-     * @param call
+     * @param {number} when
+     * @param {[number, number] | undefined} maybePeriodic
+     * @param {number} priority
+     * @param {PolkadotRuntimeRuntimeCallLike} call
      **/
     schedule: GenericTxCall<
       (
@@ -256,8 +262,8 @@ export interface ChainTx extends GenericChainTx {
     /**
      * See [`Pallet::cancel`].
      *
-     * @param when
-     * @param index
+     * @param {number} when
+     * @param {number} index
      **/
     cancel: GenericTxCall<
       (
@@ -275,11 +281,11 @@ export interface ChainTx extends GenericChainTx {
     /**
      * See [`Pallet::schedule_named`].
      *
-     * @param id
-     * @param when
-     * @param maybePeriodic
-     * @param priority
-     * @param call
+     * @param {FixedBytes<32>} id
+     * @param {number} when
+     * @param {[number, number] | undefined} maybePeriodic
+     * @param {number} priority
+     * @param {PolkadotRuntimeRuntimeCallLike} call
      **/
     scheduleNamed: GenericTxCall<
       (
@@ -306,7 +312,7 @@ export interface ChainTx extends GenericChainTx {
     /**
      * See [`Pallet::cancel_named`].
      *
-     * @param id
+     * @param {FixedBytes<32>} id
      **/
     cancelNamed: GenericTxCall<
       (id: FixedBytes<32>) => ChainSubmittableExtrinsic<{
@@ -321,10 +327,10 @@ export interface ChainTx extends GenericChainTx {
     /**
      * See [`Pallet::schedule_after`].
      *
-     * @param after
-     * @param maybePeriodic
-     * @param priority
-     * @param call
+     * @param {number} after
+     * @param {[number, number] | undefined} maybePeriodic
+     * @param {number} priority
+     * @param {PolkadotRuntimeRuntimeCallLike} call
      **/
     scheduleAfter: GenericTxCall<
       (
@@ -349,11 +355,11 @@ export interface ChainTx extends GenericChainTx {
     /**
      * See [`Pallet::schedule_named_after`].
      *
-     * @param id
-     * @param after
-     * @param maybePeriodic
-     * @param priority
-     * @param call
+     * @param {FixedBytes<32>} id
+     * @param {number} after
+     * @param {[number, number] | undefined} maybePeriodic
+     * @param {number} priority
+     * @param {PolkadotRuntimeRuntimeCallLike} call
      **/
     scheduleNamedAfter: GenericTxCall<
       (
@@ -382,11 +388,14 @@ export interface ChainTx extends GenericChainTx {
      **/
     [callName: string]: GenericTxCall<(...args: any[]) => ChainSubmittableExtrinsic>;
   };
+  /**
+   * Pallet `Preimage`'s transaction calls
+   **/
   preimage: {
     /**
      * See [`Pallet::note_preimage`].
      *
-     * @param bytes
+     * @param {BytesLike} bytes
      **/
     notePreimage: GenericTxCall<
       (bytes: BytesLike) => ChainSubmittableExtrinsic<{
@@ -401,7 +410,7 @@ export interface ChainTx extends GenericChainTx {
     /**
      * See [`Pallet::unnote_preimage`].
      *
-     * @param hash
+     * @param {H256} hash
      **/
     unnotePreimage: GenericTxCall<
       (hash: H256) => ChainSubmittableExtrinsic<{
@@ -416,7 +425,7 @@ export interface ChainTx extends GenericChainTx {
     /**
      * See [`Pallet::request_preimage`].
      *
-     * @param hash
+     * @param {H256} hash
      **/
     requestPreimage: GenericTxCall<
       (hash: H256) => ChainSubmittableExtrinsic<{
@@ -431,7 +440,7 @@ export interface ChainTx extends GenericChainTx {
     /**
      * See [`Pallet::unrequest_preimage`].
      *
-     * @param hash
+     * @param {H256} hash
      **/
     unrequestPreimage: GenericTxCall<
       (hash: H256) => ChainSubmittableExtrinsic<{
@@ -446,7 +455,7 @@ export interface ChainTx extends GenericChainTx {
     /**
      * See [`Pallet::ensure_updated`].
      *
-     * @param hashes
+     * @param {Array<H256>} hashes
      **/
     ensureUpdated: GenericTxCall<
       (hashes: Array<H256>) => ChainSubmittableExtrinsic<{
@@ -463,12 +472,15 @@ export interface ChainTx extends GenericChainTx {
      **/
     [callName: string]: GenericTxCall<(...args: any[]) => ChainSubmittableExtrinsic>;
   };
+  /**
+   * Pallet `Babe`'s transaction calls
+   **/
   babe: {
     /**
      * See [`Pallet::report_equivocation`].
      *
-     * @param equivocationProof
-     * @param keyOwnerProof
+     * @param {SpConsensusSlotsEquivocationProof} equivocationProof
+     * @param {SpSessionMembershipProof} keyOwnerProof
      **/
     reportEquivocation: GenericTxCall<
       (
@@ -486,8 +498,8 @@ export interface ChainTx extends GenericChainTx {
     /**
      * See [`Pallet::report_equivocation_unsigned`].
      *
-     * @param equivocationProof
-     * @param keyOwnerProof
+     * @param {SpConsensusSlotsEquivocationProof} equivocationProof
+     * @param {SpSessionMembershipProof} keyOwnerProof
      **/
     reportEquivocationUnsigned: GenericTxCall<
       (
@@ -505,7 +517,7 @@ export interface ChainTx extends GenericChainTx {
     /**
      * See [`Pallet::plan_config_change`].
      *
-     * @param config
+     * @param {SpConsensusBabeDigestsNextConfigDescriptor} config
      **/
     planConfigChange: GenericTxCall<
       (config: SpConsensusBabeDigestsNextConfigDescriptor) => ChainSubmittableExtrinsic<{
@@ -522,11 +534,14 @@ export interface ChainTx extends GenericChainTx {
      **/
     [callName: string]: GenericTxCall<(...args: any[]) => ChainSubmittableExtrinsic>;
   };
+  /**
+   * Pallet `Timestamp`'s transaction calls
+   **/
   timestamp: {
     /**
      * See [`Pallet::set`].
      *
-     * @param now
+     * @param {bigint} now
      **/
     set: GenericTxCall<
       (now: bigint) => ChainSubmittableExtrinsic<{
@@ -543,11 +558,14 @@ export interface ChainTx extends GenericChainTx {
      **/
     [callName: string]: GenericTxCall<(...args: any[]) => ChainSubmittableExtrinsic>;
   };
+  /**
+   * Pallet `Indices`'s transaction calls
+   **/
   indices: {
     /**
      * See [`Pallet::claim`].
      *
-     * @param index
+     * @param {number} index
      **/
     claim: GenericTxCall<
       (index: number) => ChainSubmittableExtrinsic<{
@@ -562,8 +580,8 @@ export interface ChainTx extends GenericChainTx {
     /**
      * See [`Pallet::transfer`].
      *
-     * @param new_
-     * @param index
+     * @param {MultiAddressLike} new_
+     * @param {number} index
      **/
     transfer: GenericTxCall<
       (
@@ -581,7 +599,7 @@ export interface ChainTx extends GenericChainTx {
     /**
      * See [`Pallet::free`].
      *
-     * @param index
+     * @param {number} index
      **/
     free: GenericTxCall<
       (index: number) => ChainSubmittableExtrinsic<{
@@ -596,9 +614,9 @@ export interface ChainTx extends GenericChainTx {
     /**
      * See [`Pallet::force_transfer`].
      *
-     * @param new_
-     * @param index
-     * @param freeze
+     * @param {MultiAddressLike} new_
+     * @param {number} index
+     * @param {boolean} freeze
      **/
     forceTransfer: GenericTxCall<
       (
@@ -617,7 +635,7 @@ export interface ChainTx extends GenericChainTx {
     /**
      * See [`Pallet::freeze`].
      *
-     * @param index
+     * @param {number} index
      **/
     freeze: GenericTxCall<
       (index: number) => ChainSubmittableExtrinsic<{
@@ -634,12 +652,15 @@ export interface ChainTx extends GenericChainTx {
      **/
     [callName: string]: GenericTxCall<(...args: any[]) => ChainSubmittableExtrinsic>;
   };
+  /**
+   * Pallet `Balances`'s transaction calls
+   **/
   balances: {
     /**
      * See [`Pallet::transfer_allow_death`].
      *
-     * @param dest
-     * @param value
+     * @param {MultiAddressLike} dest
+     * @param {bigint} value
      **/
     transferAllowDeath: GenericTxCall<
       (
@@ -657,9 +678,9 @@ export interface ChainTx extends GenericChainTx {
     /**
      * See [`Pallet::force_transfer`].
      *
-     * @param source
-     * @param dest
-     * @param value
+     * @param {MultiAddressLike} source
+     * @param {MultiAddressLike} dest
+     * @param {bigint} value
      **/
     forceTransfer: GenericTxCall<
       (
@@ -678,8 +699,8 @@ export interface ChainTx extends GenericChainTx {
     /**
      * See [`Pallet::transfer_keep_alive`].
      *
-     * @param dest
-     * @param value
+     * @param {MultiAddressLike} dest
+     * @param {bigint} value
      **/
     transferKeepAlive: GenericTxCall<
       (
@@ -697,8 +718,8 @@ export interface ChainTx extends GenericChainTx {
     /**
      * See [`Pallet::transfer_all`].
      *
-     * @param dest
-     * @param keepAlive
+     * @param {MultiAddressLike} dest
+     * @param {boolean} keepAlive
      **/
     transferAll: GenericTxCall<
       (
@@ -716,8 +737,8 @@ export interface ChainTx extends GenericChainTx {
     /**
      * See [`Pallet::force_unreserve`].
      *
-     * @param who
-     * @param amount
+     * @param {MultiAddressLike} who
+     * @param {bigint} amount
      **/
     forceUnreserve: GenericTxCall<
       (
@@ -735,7 +756,7 @@ export interface ChainTx extends GenericChainTx {
     /**
      * See [`Pallet::upgrade_accounts`].
      *
-     * @param who
+     * @param {Array<AccountId32Like>} who
      **/
     upgradeAccounts: GenericTxCall<
       (who: Array<AccountId32Like>) => ChainSubmittableExtrinsic<{
@@ -750,8 +771,8 @@ export interface ChainTx extends GenericChainTx {
     /**
      * See [`Pallet::force_set_balance`].
      *
-     * @param who
-     * @param newFree
+     * @param {MultiAddressLike} who
+     * @param {bigint} newFree
      **/
     forceSetBalance: GenericTxCall<
       (
@@ -771,12 +792,15 @@ export interface ChainTx extends GenericChainTx {
      **/
     [callName: string]: GenericTxCall<(...args: any[]) => ChainSubmittableExtrinsic>;
   };
+  /**
+   * Pallet `Staking`'s transaction calls
+   **/
   staking: {
     /**
      * See [`Pallet::bond`].
      *
-     * @param value
-     * @param payee
+     * @param {bigint} value
+     * @param {PalletStakingRewardDestination} payee
      **/
     bond: GenericTxCall<
       (
@@ -794,7 +818,7 @@ export interface ChainTx extends GenericChainTx {
     /**
      * See [`Pallet::bond_extra`].
      *
-     * @param maxAdditional
+     * @param {bigint} maxAdditional
      **/
     bondExtra: GenericTxCall<
       (maxAdditional: bigint) => ChainSubmittableExtrinsic<{
@@ -809,7 +833,7 @@ export interface ChainTx extends GenericChainTx {
     /**
      * See [`Pallet::unbond`].
      *
-     * @param value
+     * @param {bigint} value
      **/
     unbond: GenericTxCall<
       (value: bigint) => ChainSubmittableExtrinsic<{
@@ -824,7 +848,7 @@ export interface ChainTx extends GenericChainTx {
     /**
      * See [`Pallet::withdraw_unbonded`].
      *
-     * @param numSlashingSpans
+     * @param {number} numSlashingSpans
      **/
     withdrawUnbonded: GenericTxCall<
       (numSlashingSpans: number) => ChainSubmittableExtrinsic<{
@@ -839,7 +863,7 @@ export interface ChainTx extends GenericChainTx {
     /**
      * See [`Pallet::validate`].
      *
-     * @param prefs
+     * @param {PalletStakingValidatorPrefs} prefs
      **/
     validate: GenericTxCall<
       (prefs: PalletStakingValidatorPrefs) => ChainSubmittableExtrinsic<{
@@ -854,7 +878,7 @@ export interface ChainTx extends GenericChainTx {
     /**
      * See [`Pallet::nominate`].
      *
-     * @param targets
+     * @param {Array<MultiAddressLike>} targets
      **/
     nominate: GenericTxCall<
       (targets: Array<MultiAddressLike>) => ChainSubmittableExtrinsic<{
@@ -882,7 +906,7 @@ export interface ChainTx extends GenericChainTx {
     /**
      * See [`Pallet::set_payee`].
      *
-     * @param payee
+     * @param {PalletStakingRewardDestination} payee
      **/
     setPayee: GenericTxCall<
       (payee: PalletStakingRewardDestination) => ChainSubmittableExtrinsic<{
@@ -910,7 +934,7 @@ export interface ChainTx extends GenericChainTx {
     /**
      * See [`Pallet::set_validator_count`].
      *
-     * @param new_
+     * @param {number} new_
      **/
     setValidatorCount: GenericTxCall<
       (new_: number) => ChainSubmittableExtrinsic<{
@@ -925,7 +949,7 @@ export interface ChainTx extends GenericChainTx {
     /**
      * See [`Pallet::increase_validator_count`].
      *
-     * @param additional
+     * @param {number} additional
      **/
     increaseValidatorCount: GenericTxCall<
       (additional: number) => ChainSubmittableExtrinsic<{
@@ -940,7 +964,7 @@ export interface ChainTx extends GenericChainTx {
     /**
      * See [`Pallet::scale_validator_count`].
      *
-     * @param factor
+     * @param {Percent} factor
      **/
     scaleValidatorCount: GenericTxCall<
       (factor: Percent) => ChainSubmittableExtrinsic<{
@@ -981,7 +1005,7 @@ export interface ChainTx extends GenericChainTx {
     /**
      * See [`Pallet::set_invulnerables`].
      *
-     * @param invulnerables
+     * @param {Array<AccountId32Like>} invulnerables
      **/
     setInvulnerables: GenericTxCall<
       (invulnerables: Array<AccountId32Like>) => ChainSubmittableExtrinsic<{
@@ -996,8 +1020,8 @@ export interface ChainTx extends GenericChainTx {
     /**
      * See [`Pallet::force_unstake`].
      *
-     * @param stash
-     * @param numSlashingSpans
+     * @param {AccountId32Like} stash
+     * @param {number} numSlashingSpans
      **/
     forceUnstake: GenericTxCall<
       (
@@ -1028,8 +1052,8 @@ export interface ChainTx extends GenericChainTx {
     /**
      * See [`Pallet::cancel_deferred_slash`].
      *
-     * @param era
-     * @param slashIndices
+     * @param {number} era
+     * @param {Array<number>} slashIndices
      **/
     cancelDeferredSlash: GenericTxCall<
       (
@@ -1047,8 +1071,8 @@ export interface ChainTx extends GenericChainTx {
     /**
      * See [`Pallet::payout_stakers`].
      *
-     * @param validatorStash
-     * @param era
+     * @param {AccountId32Like} validatorStash
+     * @param {number} era
      **/
     payoutStakers: GenericTxCall<
       (
@@ -1066,7 +1090,7 @@ export interface ChainTx extends GenericChainTx {
     /**
      * See [`Pallet::rebond`].
      *
-     * @param value
+     * @param {bigint} value
      **/
     rebond: GenericTxCall<
       (value: bigint) => ChainSubmittableExtrinsic<{
@@ -1081,8 +1105,8 @@ export interface ChainTx extends GenericChainTx {
     /**
      * See [`Pallet::reap_stash`].
      *
-     * @param stash
-     * @param numSlashingSpans
+     * @param {AccountId32Like} stash
+     * @param {number} numSlashingSpans
      **/
     reapStash: GenericTxCall<
       (
@@ -1100,7 +1124,7 @@ export interface ChainTx extends GenericChainTx {
     /**
      * See [`Pallet::kick`].
      *
-     * @param who
+     * @param {Array<MultiAddressLike>} who
      **/
     kick: GenericTxCall<
       (who: Array<MultiAddressLike>) => ChainSubmittableExtrinsic<{
@@ -1115,12 +1139,12 @@ export interface ChainTx extends GenericChainTx {
     /**
      * See [`Pallet::set_staking_configs`].
      *
-     * @param minNominatorBond
-     * @param minValidatorBond
-     * @param maxNominatorCount
-     * @param maxValidatorCount
-     * @param chillThreshold
-     * @param minCommission
+     * @param {PalletStakingPalletConfigOp} minNominatorBond
+     * @param {PalletStakingPalletConfigOp} minValidatorBond
+     * @param {PalletStakingPalletConfigOpU32} maxNominatorCount
+     * @param {PalletStakingPalletConfigOpU32} maxValidatorCount
+     * @param {PalletStakingPalletConfigOpPercent} chillThreshold
+     * @param {PalletStakingPalletConfigOpPerbill} minCommission
      **/
     setStakingConfigs: GenericTxCall<
       (
@@ -1149,7 +1173,7 @@ export interface ChainTx extends GenericChainTx {
     /**
      * See [`Pallet::chill_other`].
      *
-     * @param controller
+     * @param {AccountId32Like} controller
      **/
     chillOther: GenericTxCall<
       (controller: AccountId32Like) => ChainSubmittableExtrinsic<{
@@ -1164,7 +1188,7 @@ export interface ChainTx extends GenericChainTx {
     /**
      * See [`Pallet::force_apply_min_commission`].
      *
-     * @param validatorStash
+     * @param {AccountId32Like} validatorStash
      **/
     forceApplyMinCommission: GenericTxCall<
       (validatorStash: AccountId32Like) => ChainSubmittableExtrinsic<{
@@ -1179,7 +1203,7 @@ export interface ChainTx extends GenericChainTx {
     /**
      * See [`Pallet::set_min_commission`].
      *
-     * @param new_
+     * @param {Perbill} new_
      **/
     setMinCommission: GenericTxCall<
       (new_: Perbill) => ChainSubmittableExtrinsic<{
@@ -1196,12 +1220,15 @@ export interface ChainTx extends GenericChainTx {
      **/
     [callName: string]: GenericTxCall<(...args: any[]) => ChainSubmittableExtrinsic>;
   };
+  /**
+   * Pallet `Session`'s transaction calls
+   **/
   session: {
     /**
      * See [`Pallet::set_keys`].
      *
-     * @param keys
-     * @param proof
+     * @param {PolkadotRuntimeSessionKeys} keys
+     * @param {BytesLike} proof
      **/
     setKeys: GenericTxCall<
       (
@@ -1234,12 +1261,15 @@ export interface ChainTx extends GenericChainTx {
      **/
     [callName: string]: GenericTxCall<(...args: any[]) => ChainSubmittableExtrinsic>;
   };
+  /**
+   * Pallet `Grandpa`'s transaction calls
+   **/
   grandpa: {
     /**
      * See [`Pallet::report_equivocation`].
      *
-     * @param equivocationProof
-     * @param keyOwnerProof
+     * @param {SpConsensusGrandpaEquivocationProof} equivocationProof
+     * @param {SpSessionMembershipProof} keyOwnerProof
      **/
     reportEquivocation: GenericTxCall<
       (
@@ -1257,8 +1287,8 @@ export interface ChainTx extends GenericChainTx {
     /**
      * See [`Pallet::report_equivocation_unsigned`].
      *
-     * @param equivocationProof
-     * @param keyOwnerProof
+     * @param {SpConsensusGrandpaEquivocationProof} equivocationProof
+     * @param {SpSessionMembershipProof} keyOwnerProof
      **/
     reportEquivocationUnsigned: GenericTxCall<
       (
@@ -1276,8 +1306,8 @@ export interface ChainTx extends GenericChainTx {
     /**
      * See [`Pallet::note_stalled`].
      *
-     * @param delay
-     * @param bestFinalizedBlockNumber
+     * @param {number} delay
+     * @param {number} bestFinalizedBlockNumber
      **/
     noteStalled: GenericTxCall<
       (
@@ -1297,12 +1327,15 @@ export interface ChainTx extends GenericChainTx {
      **/
     [callName: string]: GenericTxCall<(...args: any[]) => ChainSubmittableExtrinsic>;
   };
+  /**
+   * Pallet `ImOnline`'s transaction calls
+   **/
   imOnline: {
     /**
      * See [`Pallet::heartbeat`].
      *
-     * @param heartbeat
-     * @param signature
+     * @param {PalletImOnlineHeartbeat} heartbeat
+     * @param {PalletImOnlineSr25519AppSr25519Signature} signature
      **/
     heartbeat: GenericTxCall<
       (
@@ -1322,12 +1355,15 @@ export interface ChainTx extends GenericChainTx {
      **/
     [callName: string]: GenericTxCall<(...args: any[]) => ChainSubmittableExtrinsic>;
   };
+  /**
+   * Pallet `Treasury`'s transaction calls
+   **/
   treasury: {
     /**
      * See [`Pallet::propose_spend`].
      *
-     * @param value
-     * @param beneficiary
+     * @param {bigint} value
+     * @param {MultiAddressLike} beneficiary
      **/
     proposeSpend: GenericTxCall<
       (
@@ -1345,7 +1381,7 @@ export interface ChainTx extends GenericChainTx {
     /**
      * See [`Pallet::reject_proposal`].
      *
-     * @param proposalId
+     * @param {number} proposalId
      **/
     rejectProposal: GenericTxCall<
       (proposalId: number) => ChainSubmittableExtrinsic<{
@@ -1360,7 +1396,7 @@ export interface ChainTx extends GenericChainTx {
     /**
      * See [`Pallet::approve_proposal`].
      *
-     * @param proposalId
+     * @param {number} proposalId
      **/
     approveProposal: GenericTxCall<
       (proposalId: number) => ChainSubmittableExtrinsic<{
@@ -1375,8 +1411,8 @@ export interface ChainTx extends GenericChainTx {
     /**
      * See [`Pallet::spend_local`].
      *
-     * @param amount
-     * @param beneficiary
+     * @param {bigint} amount
+     * @param {MultiAddressLike} beneficiary
      **/
     spendLocal: GenericTxCall<
       (
@@ -1394,7 +1430,7 @@ export interface ChainTx extends GenericChainTx {
     /**
      * See [`Pallet::remove_approval`].
      *
-     * @param proposalId
+     * @param {number} proposalId
      **/
     removeApproval: GenericTxCall<
       (proposalId: number) => ChainSubmittableExtrinsic<{
@@ -1409,10 +1445,10 @@ export interface ChainTx extends GenericChainTx {
     /**
      * See [`Pallet::spend`].
      *
-     * @param assetKind
-     * @param amount
-     * @param beneficiary
-     * @param validFrom
+     * @param {PolkadotRuntimeCommonImplsVersionedLocatableAsset} assetKind
+     * @param {bigint} amount
+     * @param {XcmVersionedMultiLocation} beneficiary
+     * @param {number | undefined} validFrom
      **/
     spend: GenericTxCall<
       (
@@ -1437,7 +1473,7 @@ export interface ChainTx extends GenericChainTx {
     /**
      * See [`Pallet::payout`].
      *
-     * @param index
+     * @param {number} index
      **/
     payout: GenericTxCall<
       (index: number) => ChainSubmittableExtrinsic<{
@@ -1452,7 +1488,7 @@ export interface ChainTx extends GenericChainTx {
     /**
      * See [`Pallet::check_status`].
      *
-     * @param index
+     * @param {number} index
      **/
     checkStatus: GenericTxCall<
       (index: number) => ChainSubmittableExtrinsic<{
@@ -1467,7 +1503,7 @@ export interface ChainTx extends GenericChainTx {
     /**
      * See [`Pallet::void_spend`].
      *
-     * @param index
+     * @param {number} index
      **/
     voidSpend: GenericTxCall<
       (index: number) => ChainSubmittableExtrinsic<{
@@ -1484,12 +1520,15 @@ export interface ChainTx extends GenericChainTx {
      **/
     [callName: string]: GenericTxCall<(...args: any[]) => ChainSubmittableExtrinsic>;
   };
+  /**
+   * Pallet `ConvictionVoting`'s transaction calls
+   **/
   convictionVoting: {
     /**
      * See [`Pallet::vote`].
      *
-     * @param pollIndex
-     * @param vote
+     * @param {number} pollIndex
+     * @param {PalletConvictionVotingVoteAccountVote} vote
      **/
     vote: GenericTxCall<
       (
@@ -1507,10 +1546,10 @@ export interface ChainTx extends GenericChainTx {
     /**
      * See [`Pallet::delegate`].
      *
-     * @param class_
-     * @param to
-     * @param conviction
-     * @param balance
+     * @param {number} class_
+     * @param {MultiAddressLike} to
+     * @param {PalletConvictionVotingConviction} conviction
+     * @param {bigint} balance
      **/
     delegate: GenericTxCall<
       (
@@ -1535,7 +1574,7 @@ export interface ChainTx extends GenericChainTx {
     /**
      * See [`Pallet::undelegate`].
      *
-     * @param class_
+     * @param {number} class_
      **/
     undelegate: GenericTxCall<
       (class_: number) => ChainSubmittableExtrinsic<{
@@ -1550,8 +1589,8 @@ export interface ChainTx extends GenericChainTx {
     /**
      * See [`Pallet::unlock`].
      *
-     * @param class_
-     * @param target
+     * @param {number} class_
+     * @param {MultiAddressLike} target
      **/
     unlock: GenericTxCall<
       (
@@ -1569,8 +1608,8 @@ export interface ChainTx extends GenericChainTx {
     /**
      * See [`Pallet::remove_vote`].
      *
-     * @param class_
-     * @param index
+     * @param {number | undefined} class_
+     * @param {number} index
      **/
     removeVote: GenericTxCall<
       (
@@ -1588,9 +1627,9 @@ export interface ChainTx extends GenericChainTx {
     /**
      * See [`Pallet::remove_other_vote`].
      *
-     * @param target
-     * @param class_
-     * @param index
+     * @param {MultiAddressLike} target
+     * @param {number} class_
+     * @param {number} index
      **/
     removeOtherVote: GenericTxCall<
       (
@@ -1611,13 +1650,16 @@ export interface ChainTx extends GenericChainTx {
      **/
     [callName: string]: GenericTxCall<(...args: any[]) => ChainSubmittableExtrinsic>;
   };
+  /**
+   * Pallet `Referenda`'s transaction calls
+   **/
   referenda: {
     /**
      * See [`Pallet::submit`].
      *
-     * @param proposalOrigin
-     * @param proposal
-     * @param enactmentMoment
+     * @param {PolkadotRuntimeOriginCaller} proposalOrigin
+     * @param {FrameSupportPreimagesBounded} proposal
+     * @param {FrameSupportScheduleDispatchTime} enactmentMoment
      **/
     submit: GenericTxCall<
       (
@@ -1640,7 +1682,7 @@ export interface ChainTx extends GenericChainTx {
     /**
      * See [`Pallet::place_decision_deposit`].
      *
-     * @param index
+     * @param {number} index
      **/
     placeDecisionDeposit: GenericTxCall<
       (index: number) => ChainSubmittableExtrinsic<{
@@ -1655,7 +1697,7 @@ export interface ChainTx extends GenericChainTx {
     /**
      * See [`Pallet::refund_decision_deposit`].
      *
-     * @param index
+     * @param {number} index
      **/
     refundDecisionDeposit: GenericTxCall<
       (index: number) => ChainSubmittableExtrinsic<{
@@ -1670,7 +1712,7 @@ export interface ChainTx extends GenericChainTx {
     /**
      * See [`Pallet::cancel`].
      *
-     * @param index
+     * @param {number} index
      **/
     cancel: GenericTxCall<
       (index: number) => ChainSubmittableExtrinsic<{
@@ -1685,7 +1727,7 @@ export interface ChainTx extends GenericChainTx {
     /**
      * See [`Pallet::kill`].
      *
-     * @param index
+     * @param {number} index
      **/
     kill: GenericTxCall<
       (index: number) => ChainSubmittableExtrinsic<{
@@ -1700,7 +1742,7 @@ export interface ChainTx extends GenericChainTx {
     /**
      * See [`Pallet::nudge_referendum`].
      *
-     * @param index
+     * @param {number} index
      **/
     nudgeReferendum: GenericTxCall<
       (index: number) => ChainSubmittableExtrinsic<{
@@ -1715,7 +1757,7 @@ export interface ChainTx extends GenericChainTx {
     /**
      * See [`Pallet::one_fewer_deciding`].
      *
-     * @param track
+     * @param {number} track
      **/
     oneFewerDeciding: GenericTxCall<
       (track: number) => ChainSubmittableExtrinsic<{
@@ -1730,7 +1772,7 @@ export interface ChainTx extends GenericChainTx {
     /**
      * See [`Pallet::refund_submission_deposit`].
      *
-     * @param index
+     * @param {number} index
      **/
     refundSubmissionDeposit: GenericTxCall<
       (index: number) => ChainSubmittableExtrinsic<{
@@ -1745,8 +1787,8 @@ export interface ChainTx extends GenericChainTx {
     /**
      * See [`Pallet::set_metadata`].
      *
-     * @param index
-     * @param maybeHash
+     * @param {number} index
+     * @param {H256 | undefined} maybeHash
      **/
     setMetadata: GenericTxCall<
       (
@@ -1766,11 +1808,14 @@ export interface ChainTx extends GenericChainTx {
      **/
     [callName: string]: GenericTxCall<(...args: any[]) => ChainSubmittableExtrinsic>;
   };
+  /**
+   * Pallet `Whitelist`'s transaction calls
+   **/
   whitelist: {
     /**
      * See [`Pallet::whitelist_call`].
      *
-     * @param callHash
+     * @param {H256} callHash
      **/
     whitelistCall: GenericTxCall<
       (callHash: H256) => ChainSubmittableExtrinsic<{
@@ -1785,7 +1830,7 @@ export interface ChainTx extends GenericChainTx {
     /**
      * See [`Pallet::remove_whitelisted_call`].
      *
-     * @param callHash
+     * @param {H256} callHash
      **/
     removeWhitelistedCall: GenericTxCall<
       (callHash: H256) => ChainSubmittableExtrinsic<{
@@ -1800,9 +1845,9 @@ export interface ChainTx extends GenericChainTx {
     /**
      * See [`Pallet::dispatch_whitelisted_call`].
      *
-     * @param callHash
-     * @param callEncodedLen
-     * @param callWeightWitness
+     * @param {H256} callHash
+     * @param {number} callEncodedLen
+     * @param {SpWeightsWeightV2Weight} callWeightWitness
      **/
     dispatchWhitelistedCall: GenericTxCall<
       (
@@ -1821,7 +1866,7 @@ export interface ChainTx extends GenericChainTx {
     /**
      * See [`Pallet::dispatch_whitelisted_call_with_preimage`].
      *
-     * @param call
+     * @param {PolkadotRuntimeRuntimeCallLike} call
      **/
     dispatchWhitelistedCallWithPreimage: GenericTxCall<
       (call: PolkadotRuntimeRuntimeCallLike) => ChainSubmittableExtrinsic<{
@@ -1838,12 +1883,15 @@ export interface ChainTx extends GenericChainTx {
      **/
     [callName: string]: GenericTxCall<(...args: any[]) => ChainSubmittableExtrinsic>;
   };
+  /**
+   * Pallet `Claims`'s transaction calls
+   **/
   claims: {
     /**
      * See [`Pallet::claim`].
      *
-     * @param dest
-     * @param ethereumSignature
+     * @param {AccountId32Like} dest
+     * @param {PolkadotRuntimeCommonClaimsEcdsaSignature} ethereumSignature
      **/
     claim: GenericTxCall<
       (
@@ -1861,10 +1909,10 @@ export interface ChainTx extends GenericChainTx {
     /**
      * See [`Pallet::mint_claim`].
      *
-     * @param who
-     * @param value
-     * @param vestingSchedule
-     * @param statement
+     * @param {EthereumAddressLike} who
+     * @param {bigint} value
+     * @param {[bigint, bigint, number] | undefined} vestingSchedule
+     * @param {PolkadotRuntimeCommonClaimsStatementKind | undefined} statement
      **/
     mintClaim: GenericTxCall<
       (
@@ -1889,9 +1937,9 @@ export interface ChainTx extends GenericChainTx {
     /**
      * See [`Pallet::claim_attest`].
      *
-     * @param dest
-     * @param ethereumSignature
-     * @param statement
+     * @param {AccountId32Like} dest
+     * @param {PolkadotRuntimeCommonClaimsEcdsaSignature} ethereumSignature
+     * @param {BytesLike} statement
      **/
     claimAttest: GenericTxCall<
       (
@@ -1914,7 +1962,7 @@ export interface ChainTx extends GenericChainTx {
     /**
      * See [`Pallet::attest`].
      *
-     * @param statement
+     * @param {BytesLike} statement
      **/
     attest: GenericTxCall<
       (statement: BytesLike) => ChainSubmittableExtrinsic<{
@@ -1929,9 +1977,9 @@ export interface ChainTx extends GenericChainTx {
     /**
      * See [`Pallet::move_claim`].
      *
-     * @param old
-     * @param new_
-     * @param maybePreclaim
+     * @param {EthereumAddressLike} old
+     * @param {EthereumAddressLike} new_
+     * @param {AccountId32Like | undefined} maybePreclaim
      **/
     moveClaim: GenericTxCall<
       (
@@ -1952,6 +2000,9 @@ export interface ChainTx extends GenericChainTx {
      **/
     [callName: string]: GenericTxCall<(...args: any[]) => ChainSubmittableExtrinsic>;
   };
+  /**
+   * Pallet `Vesting`'s transaction calls
+   **/
   vesting: {
     /**
      * See [`Pallet::vest`].
@@ -1969,7 +2020,7 @@ export interface ChainTx extends GenericChainTx {
     /**
      * See [`Pallet::vest_other`].
      *
-     * @param target
+     * @param {MultiAddressLike} target
      **/
     vestOther: GenericTxCall<
       (target: MultiAddressLike) => ChainSubmittableExtrinsic<{
@@ -1984,8 +2035,8 @@ export interface ChainTx extends GenericChainTx {
     /**
      * See [`Pallet::vested_transfer`].
      *
-     * @param target
-     * @param schedule
+     * @param {MultiAddressLike} target
+     * @param {PalletVestingVestingInfo} schedule
      **/
     vestedTransfer: GenericTxCall<
       (
@@ -2003,9 +2054,9 @@ export interface ChainTx extends GenericChainTx {
     /**
      * See [`Pallet::force_vested_transfer`].
      *
-     * @param source
-     * @param target
-     * @param schedule
+     * @param {MultiAddressLike} source
+     * @param {MultiAddressLike} target
+     * @param {PalletVestingVestingInfo} schedule
      **/
     forceVestedTransfer: GenericTxCall<
       (
@@ -2024,8 +2075,8 @@ export interface ChainTx extends GenericChainTx {
     /**
      * See [`Pallet::merge_schedules`].
      *
-     * @param schedule1Index
-     * @param schedule2Index
+     * @param {number} schedule1Index
+     * @param {number} schedule2Index
      **/
     mergeSchedules: GenericTxCall<
       (
@@ -2045,11 +2096,14 @@ export interface ChainTx extends GenericChainTx {
      **/
     [callName: string]: GenericTxCall<(...args: any[]) => ChainSubmittableExtrinsic>;
   };
+  /**
+   * Pallet `Utility`'s transaction calls
+   **/
   utility: {
     /**
      * See [`Pallet::batch`].
      *
-     * @param calls
+     * @param {Array<PolkadotRuntimeRuntimeCallLike>} calls
      **/
     batch: GenericTxCall<
       (calls: Array<PolkadotRuntimeRuntimeCallLike>) => ChainSubmittableExtrinsic<{
@@ -2064,8 +2118,8 @@ export interface ChainTx extends GenericChainTx {
     /**
      * See [`Pallet::as_derivative`].
      *
-     * @param index
-     * @param call
+     * @param {number} index
+     * @param {PolkadotRuntimeRuntimeCallLike} call
      **/
     asDerivative: GenericTxCall<
       (
@@ -2083,7 +2137,7 @@ export interface ChainTx extends GenericChainTx {
     /**
      * See [`Pallet::batch_all`].
      *
-     * @param calls
+     * @param {Array<PolkadotRuntimeRuntimeCallLike>} calls
      **/
     batchAll: GenericTxCall<
       (calls: Array<PolkadotRuntimeRuntimeCallLike>) => ChainSubmittableExtrinsic<{
@@ -2098,8 +2152,8 @@ export interface ChainTx extends GenericChainTx {
     /**
      * See [`Pallet::dispatch_as`].
      *
-     * @param asOrigin
-     * @param call
+     * @param {PolkadotRuntimeOriginCaller} asOrigin
+     * @param {PolkadotRuntimeRuntimeCallLike} call
      **/
     dispatchAs: GenericTxCall<
       (
@@ -2117,7 +2171,7 @@ export interface ChainTx extends GenericChainTx {
     /**
      * See [`Pallet::force_batch`].
      *
-     * @param calls
+     * @param {Array<PolkadotRuntimeRuntimeCallLike>} calls
      **/
     forceBatch: GenericTxCall<
       (calls: Array<PolkadotRuntimeRuntimeCallLike>) => ChainSubmittableExtrinsic<{
@@ -2132,8 +2186,8 @@ export interface ChainTx extends GenericChainTx {
     /**
      * See [`Pallet::with_weight`].
      *
-     * @param call
-     * @param weight
+     * @param {PolkadotRuntimeRuntimeCallLike} call
+     * @param {SpWeightsWeightV2Weight} weight
      **/
     withWeight: GenericTxCall<
       (
@@ -2153,11 +2207,14 @@ export interface ChainTx extends GenericChainTx {
      **/
     [callName: string]: GenericTxCall<(...args: any[]) => ChainSubmittableExtrinsic>;
   };
+  /**
+   * Pallet `Identity`'s transaction calls
+   **/
   identity: {
     /**
      * See [`Pallet::add_registrar`].
      *
-     * @param account
+     * @param {MultiAddressLike} account
      **/
     addRegistrar: GenericTxCall<
       (account: MultiAddressLike) => ChainSubmittableExtrinsic<{
@@ -2172,7 +2229,7 @@ export interface ChainTx extends GenericChainTx {
     /**
      * See [`Pallet::set_identity`].
      *
-     * @param info
+     * @param {PalletIdentitySimpleIdentityInfo} info
      **/
     setIdentity: GenericTxCall<
       (info: PalletIdentitySimpleIdentityInfo) => ChainSubmittableExtrinsic<{
@@ -2187,7 +2244,7 @@ export interface ChainTx extends GenericChainTx {
     /**
      * See [`Pallet::set_subs`].
      *
-     * @param subs
+     * @param {Array<[AccountId32Like, Data]>} subs
      **/
     setSubs: GenericTxCall<
       (subs: Array<[AccountId32Like, Data]>) => ChainSubmittableExtrinsic<{
@@ -2215,8 +2272,8 @@ export interface ChainTx extends GenericChainTx {
     /**
      * See [`Pallet::request_judgement`].
      *
-     * @param regIndex
-     * @param maxFee
+     * @param {number} regIndex
+     * @param {bigint} maxFee
      **/
     requestJudgement: GenericTxCall<
       (
@@ -2234,7 +2291,7 @@ export interface ChainTx extends GenericChainTx {
     /**
      * See [`Pallet::cancel_request`].
      *
-     * @param regIndex
+     * @param {number} regIndex
      **/
     cancelRequest: GenericTxCall<
       (regIndex: number) => ChainSubmittableExtrinsic<{
@@ -2249,8 +2306,8 @@ export interface ChainTx extends GenericChainTx {
     /**
      * See [`Pallet::set_fee`].
      *
-     * @param index
-     * @param fee
+     * @param {number} index
+     * @param {bigint} fee
      **/
     setFee: GenericTxCall<
       (
@@ -2268,8 +2325,8 @@ export interface ChainTx extends GenericChainTx {
     /**
      * See [`Pallet::set_account_id`].
      *
-     * @param index
-     * @param new_
+     * @param {number} index
+     * @param {MultiAddressLike} new_
      **/
     setAccountId: GenericTxCall<
       (
@@ -2287,8 +2344,8 @@ export interface ChainTx extends GenericChainTx {
     /**
      * See [`Pallet::set_fields`].
      *
-     * @param index
-     * @param fields
+     * @param {number} index
+     * @param {PalletIdentityBitFlags} fields
      **/
     setFields: GenericTxCall<
       (
@@ -2306,10 +2363,10 @@ export interface ChainTx extends GenericChainTx {
     /**
      * See [`Pallet::provide_judgement`].
      *
-     * @param regIndex
-     * @param target
-     * @param judgement
-     * @param identity
+     * @param {number} regIndex
+     * @param {MultiAddressLike} target
+     * @param {PalletIdentityJudgement} judgement
+     * @param {H256} identity
      **/
     provideJudgement: GenericTxCall<
       (
@@ -2329,7 +2386,7 @@ export interface ChainTx extends GenericChainTx {
     /**
      * See [`Pallet::kill_identity`].
      *
-     * @param target
+     * @param {MultiAddressLike} target
      **/
     killIdentity: GenericTxCall<
       (target: MultiAddressLike) => ChainSubmittableExtrinsic<{
@@ -2344,8 +2401,8 @@ export interface ChainTx extends GenericChainTx {
     /**
      * See [`Pallet::add_sub`].
      *
-     * @param sub
-     * @param data
+     * @param {MultiAddressLike} sub
+     * @param {Data} data
      **/
     addSub: GenericTxCall<
       (
@@ -2363,8 +2420,8 @@ export interface ChainTx extends GenericChainTx {
     /**
      * See [`Pallet::rename_sub`].
      *
-     * @param sub
-     * @param data
+     * @param {MultiAddressLike} sub
+     * @param {Data} data
      **/
     renameSub: GenericTxCall<
       (
@@ -2382,7 +2439,7 @@ export interface ChainTx extends GenericChainTx {
     /**
      * See [`Pallet::remove_sub`].
      *
-     * @param sub
+     * @param {MultiAddressLike} sub
      **/
     removeSub: GenericTxCall<
       (sub: MultiAddressLike) => ChainSubmittableExtrinsic<{
@@ -2412,13 +2469,16 @@ export interface ChainTx extends GenericChainTx {
      **/
     [callName: string]: GenericTxCall<(...args: any[]) => ChainSubmittableExtrinsic>;
   };
+  /**
+   * Pallet `Proxy`'s transaction calls
+   **/
   proxy: {
     /**
      * See [`Pallet::proxy`].
      *
-     * @param real
-     * @param forceProxyType
-     * @param call
+     * @param {MultiAddressLike} real
+     * @param {PolkadotRuntimeProxyType | undefined} forceProxyType
+     * @param {PolkadotRuntimeRuntimeCallLike} call
      **/
     proxy: GenericTxCall<
       (
@@ -2441,9 +2501,9 @@ export interface ChainTx extends GenericChainTx {
     /**
      * See [`Pallet::add_proxy`].
      *
-     * @param delegate
-     * @param proxyType
-     * @param delay
+     * @param {MultiAddressLike} delegate
+     * @param {PolkadotRuntimeProxyType} proxyType
+     * @param {number} delay
      **/
     addProxy: GenericTxCall<
       (
@@ -2462,9 +2522,9 @@ export interface ChainTx extends GenericChainTx {
     /**
      * See [`Pallet::remove_proxy`].
      *
-     * @param delegate
-     * @param proxyType
-     * @param delay
+     * @param {MultiAddressLike} delegate
+     * @param {PolkadotRuntimeProxyType} proxyType
+     * @param {number} delay
      **/
     removeProxy: GenericTxCall<
       (
@@ -2496,9 +2556,9 @@ export interface ChainTx extends GenericChainTx {
     /**
      * See [`Pallet::create_pure`].
      *
-     * @param proxyType
-     * @param delay
-     * @param index
+     * @param {PolkadotRuntimeProxyType} proxyType
+     * @param {number} delay
+     * @param {number} index
      **/
     createPure: GenericTxCall<
       (
@@ -2517,11 +2577,11 @@ export interface ChainTx extends GenericChainTx {
     /**
      * See [`Pallet::kill_pure`].
      *
-     * @param spawner
-     * @param proxyType
-     * @param index
-     * @param height
-     * @param extIndex
+     * @param {MultiAddressLike} spawner
+     * @param {PolkadotRuntimeProxyType} proxyType
+     * @param {number} index
+     * @param {number} height
+     * @param {number} extIndex
      **/
     killPure: GenericTxCall<
       (
@@ -2548,8 +2608,8 @@ export interface ChainTx extends GenericChainTx {
     /**
      * See [`Pallet::announce`].
      *
-     * @param real
-     * @param callHash
+     * @param {MultiAddressLike} real
+     * @param {H256} callHash
      **/
     announce: GenericTxCall<
       (
@@ -2567,8 +2627,8 @@ export interface ChainTx extends GenericChainTx {
     /**
      * See [`Pallet::remove_announcement`].
      *
-     * @param real
-     * @param callHash
+     * @param {MultiAddressLike} real
+     * @param {H256} callHash
      **/
     removeAnnouncement: GenericTxCall<
       (
@@ -2586,8 +2646,8 @@ export interface ChainTx extends GenericChainTx {
     /**
      * See [`Pallet::reject_announcement`].
      *
-     * @param delegate
-     * @param callHash
+     * @param {MultiAddressLike} delegate
+     * @param {H256} callHash
      **/
     rejectAnnouncement: GenericTxCall<
       (
@@ -2605,10 +2665,10 @@ export interface ChainTx extends GenericChainTx {
     /**
      * See [`Pallet::proxy_announced`].
      *
-     * @param delegate
-     * @param real
-     * @param forceProxyType
-     * @param call
+     * @param {MultiAddressLike} delegate
+     * @param {MultiAddressLike} real
+     * @param {PolkadotRuntimeProxyType | undefined} forceProxyType
+     * @param {PolkadotRuntimeRuntimeCallLike} call
      **/
     proxyAnnounced: GenericTxCall<
       (
@@ -2635,12 +2695,15 @@ export interface ChainTx extends GenericChainTx {
      **/
     [callName: string]: GenericTxCall<(...args: any[]) => ChainSubmittableExtrinsic>;
   };
+  /**
+   * Pallet `Multisig`'s transaction calls
+   **/
   multisig: {
     /**
      * See [`Pallet::as_multi_threshold_1`].
      *
-     * @param otherSignatories
-     * @param call
+     * @param {Array<AccountId32Like>} otherSignatories
+     * @param {PolkadotRuntimeRuntimeCallLike} call
      **/
     asMultiThreshold1: GenericTxCall<
       (
@@ -2658,11 +2721,11 @@ export interface ChainTx extends GenericChainTx {
     /**
      * See [`Pallet::as_multi`].
      *
-     * @param threshold
-     * @param otherSignatories
-     * @param maybeTimepoint
-     * @param call
-     * @param maxWeight
+     * @param {number} threshold
+     * @param {Array<AccountId32Like>} otherSignatories
+     * @param {PalletMultisigTimepoint | undefined} maybeTimepoint
+     * @param {PolkadotRuntimeRuntimeCallLike} call
+     * @param {SpWeightsWeightV2Weight} maxWeight
      **/
     asMulti: GenericTxCall<
       (
@@ -2689,11 +2752,11 @@ export interface ChainTx extends GenericChainTx {
     /**
      * See [`Pallet::approve_as_multi`].
      *
-     * @param threshold
-     * @param otherSignatories
-     * @param maybeTimepoint
-     * @param callHash
-     * @param maxWeight
+     * @param {number} threshold
+     * @param {Array<AccountId32Like>} otherSignatories
+     * @param {PalletMultisigTimepoint | undefined} maybeTimepoint
+     * @param {FixedBytes<32>} callHash
+     * @param {SpWeightsWeightV2Weight} maxWeight
      **/
     approveAsMulti: GenericTxCall<
       (
@@ -2720,10 +2783,10 @@ export interface ChainTx extends GenericChainTx {
     /**
      * See [`Pallet::cancel_as_multi`].
      *
-     * @param threshold
-     * @param otherSignatories
-     * @param timepoint
-     * @param callHash
+     * @param {number} threshold
+     * @param {Array<AccountId32Like>} otherSignatories
+     * @param {PalletMultisigTimepoint} timepoint
+     * @param {FixedBytes<32>} callHash
      **/
     cancelAsMulti: GenericTxCall<
       (
@@ -2750,12 +2813,15 @@ export interface ChainTx extends GenericChainTx {
      **/
     [callName: string]: GenericTxCall<(...args: any[]) => ChainSubmittableExtrinsic>;
   };
+  /**
+   * Pallet `Bounties`'s transaction calls
+   **/
   bounties: {
     /**
      * See [`Pallet::propose_bounty`].
      *
-     * @param value
-     * @param description
+     * @param {bigint} value
+     * @param {BytesLike} description
      **/
     proposeBounty: GenericTxCall<
       (
@@ -2773,7 +2839,7 @@ export interface ChainTx extends GenericChainTx {
     /**
      * See [`Pallet::approve_bounty`].
      *
-     * @param bountyId
+     * @param {number} bountyId
      **/
     approveBounty: GenericTxCall<
       (bountyId: number) => ChainSubmittableExtrinsic<{
@@ -2788,9 +2854,9 @@ export interface ChainTx extends GenericChainTx {
     /**
      * See [`Pallet::propose_curator`].
      *
-     * @param bountyId
-     * @param curator
-     * @param fee
+     * @param {number} bountyId
+     * @param {MultiAddressLike} curator
+     * @param {bigint} fee
      **/
     proposeCurator: GenericTxCall<
       (
@@ -2809,7 +2875,7 @@ export interface ChainTx extends GenericChainTx {
     /**
      * See [`Pallet::unassign_curator`].
      *
-     * @param bountyId
+     * @param {number} bountyId
      **/
     unassignCurator: GenericTxCall<
       (bountyId: number) => ChainSubmittableExtrinsic<{
@@ -2824,7 +2890,7 @@ export interface ChainTx extends GenericChainTx {
     /**
      * See [`Pallet::accept_curator`].
      *
-     * @param bountyId
+     * @param {number} bountyId
      **/
     acceptCurator: GenericTxCall<
       (bountyId: number) => ChainSubmittableExtrinsic<{
@@ -2839,8 +2905,8 @@ export interface ChainTx extends GenericChainTx {
     /**
      * See [`Pallet::award_bounty`].
      *
-     * @param bountyId
-     * @param beneficiary
+     * @param {number} bountyId
+     * @param {MultiAddressLike} beneficiary
      **/
     awardBounty: GenericTxCall<
       (
@@ -2858,7 +2924,7 @@ export interface ChainTx extends GenericChainTx {
     /**
      * See [`Pallet::claim_bounty`].
      *
-     * @param bountyId
+     * @param {number} bountyId
      **/
     claimBounty: GenericTxCall<
       (bountyId: number) => ChainSubmittableExtrinsic<{
@@ -2873,7 +2939,7 @@ export interface ChainTx extends GenericChainTx {
     /**
      * See [`Pallet::close_bounty`].
      *
-     * @param bountyId
+     * @param {number} bountyId
      **/
     closeBounty: GenericTxCall<
       (bountyId: number) => ChainSubmittableExtrinsic<{
@@ -2888,8 +2954,8 @@ export interface ChainTx extends GenericChainTx {
     /**
      * See [`Pallet::extend_bounty_expiry`].
      *
-     * @param bountyId
-     * @param remark
+     * @param {number} bountyId
+     * @param {BytesLike} remark
      **/
     extendBountyExpiry: GenericTxCall<
       (
@@ -2909,13 +2975,16 @@ export interface ChainTx extends GenericChainTx {
      **/
     [callName: string]: GenericTxCall<(...args: any[]) => ChainSubmittableExtrinsic>;
   };
+  /**
+   * Pallet `ChildBounties`'s transaction calls
+   **/
   childBounties: {
     /**
      * See [`Pallet::add_child_bounty`].
      *
-     * @param parentBountyId
-     * @param value
-     * @param description
+     * @param {number} parentBountyId
+     * @param {bigint} value
+     * @param {BytesLike} description
      **/
     addChildBounty: GenericTxCall<
       (
@@ -2934,10 +3003,10 @@ export interface ChainTx extends GenericChainTx {
     /**
      * See [`Pallet::propose_curator`].
      *
-     * @param parentBountyId
-     * @param childBountyId
-     * @param curator
-     * @param fee
+     * @param {number} parentBountyId
+     * @param {number} childBountyId
+     * @param {MultiAddressLike} curator
+     * @param {bigint} fee
      **/
     proposeCurator: GenericTxCall<
       (
@@ -2957,8 +3026,8 @@ export interface ChainTx extends GenericChainTx {
     /**
      * See [`Pallet::accept_curator`].
      *
-     * @param parentBountyId
-     * @param childBountyId
+     * @param {number} parentBountyId
+     * @param {number} childBountyId
      **/
     acceptCurator: GenericTxCall<
       (
@@ -2976,8 +3045,8 @@ export interface ChainTx extends GenericChainTx {
     /**
      * See [`Pallet::unassign_curator`].
      *
-     * @param parentBountyId
-     * @param childBountyId
+     * @param {number} parentBountyId
+     * @param {number} childBountyId
      **/
     unassignCurator: GenericTxCall<
       (
@@ -2995,9 +3064,9 @@ export interface ChainTx extends GenericChainTx {
     /**
      * See [`Pallet::award_child_bounty`].
      *
-     * @param parentBountyId
-     * @param childBountyId
-     * @param beneficiary
+     * @param {number} parentBountyId
+     * @param {number} childBountyId
+     * @param {MultiAddressLike} beneficiary
      **/
     awardChildBounty: GenericTxCall<
       (
@@ -3016,8 +3085,8 @@ export interface ChainTx extends GenericChainTx {
     /**
      * See [`Pallet::claim_child_bounty`].
      *
-     * @param parentBountyId
-     * @param childBountyId
+     * @param {number} parentBountyId
+     * @param {number} childBountyId
      **/
     claimChildBounty: GenericTxCall<
       (
@@ -3035,8 +3104,8 @@ export interface ChainTx extends GenericChainTx {
     /**
      * See [`Pallet::close_child_bounty`].
      *
-     * @param parentBountyId
-     * @param childBountyId
+     * @param {number} parentBountyId
+     * @param {number} childBountyId
      **/
     closeChildBounty: GenericTxCall<
       (
@@ -3056,12 +3125,15 @@ export interface ChainTx extends GenericChainTx {
      **/
     [callName: string]: GenericTxCall<(...args: any[]) => ChainSubmittableExtrinsic>;
   };
+  /**
+   * Pallet `ElectionProviderMultiPhase`'s transaction calls
+   **/
   electionProviderMultiPhase: {
     /**
      * See [`Pallet::submit_unsigned`].
      *
-     * @param rawSolution
-     * @param witness
+     * @param {PalletElectionProviderMultiPhaseRawSolution} rawSolution
+     * @param {PalletElectionProviderMultiPhaseSolutionOrSnapshotSize} witness
      **/
     submitUnsigned: GenericTxCall<
       (
@@ -3082,7 +3154,7 @@ export interface ChainTx extends GenericChainTx {
     /**
      * See [`Pallet::set_minimum_untrusted_score`].
      *
-     * @param maybeNextScore
+     * @param {SpNposElectionsElectionScore | undefined} maybeNextScore
      **/
     setMinimumUntrustedScore: GenericTxCall<
       (maybeNextScore: SpNposElectionsElectionScore | undefined) => ChainSubmittableExtrinsic<{
@@ -3097,7 +3169,7 @@ export interface ChainTx extends GenericChainTx {
     /**
      * See [`Pallet::set_emergency_election_result`].
      *
-     * @param supports
+     * @param {Array<[AccountId32Like, SpNposElectionsSupport]>} supports
      **/
     setEmergencyElectionResult: GenericTxCall<
       (supports: Array<[AccountId32Like, SpNposElectionsSupport]>) => ChainSubmittableExtrinsic<{
@@ -3112,7 +3184,7 @@ export interface ChainTx extends GenericChainTx {
     /**
      * See [`Pallet::submit`].
      *
-     * @param rawSolution
+     * @param {PalletElectionProviderMultiPhaseRawSolution} rawSolution
      **/
     submit: GenericTxCall<
       (rawSolution: PalletElectionProviderMultiPhaseRawSolution) => ChainSubmittableExtrinsic<{
@@ -3127,8 +3199,8 @@ export interface ChainTx extends GenericChainTx {
     /**
      * See [`Pallet::governance_fallback`].
      *
-     * @param maybeMaxVoters
-     * @param maybeMaxTargets
+     * @param {number | undefined} maybeMaxVoters
+     * @param {number | undefined} maybeMaxTargets
      **/
     governanceFallback: GenericTxCall<
       (
@@ -3148,11 +3220,14 @@ export interface ChainTx extends GenericChainTx {
      **/
     [callName: string]: GenericTxCall<(...args: any[]) => ChainSubmittableExtrinsic>;
   };
+  /**
+   * Pallet `VoterList`'s transaction calls
+   **/
   voterList: {
     /**
      * See [`Pallet::rebag`].
      *
-     * @param dislocated
+     * @param {MultiAddressLike} dislocated
      **/
     rebag: GenericTxCall<
       (dislocated: MultiAddressLike) => ChainSubmittableExtrinsic<{
@@ -3167,7 +3242,7 @@ export interface ChainTx extends GenericChainTx {
     /**
      * See [`Pallet::put_in_front_of`].
      *
-     * @param lighter
+     * @param {MultiAddressLike} lighter
      **/
     putInFrontOf: GenericTxCall<
       (lighter: MultiAddressLike) => ChainSubmittableExtrinsic<{
@@ -3182,8 +3257,8 @@ export interface ChainTx extends GenericChainTx {
     /**
      * See [`Pallet::put_in_front_of_other`].
      *
-     * @param heavier
-     * @param lighter
+     * @param {MultiAddressLike} heavier
+     * @param {MultiAddressLike} lighter
      **/
     putInFrontOfOther: GenericTxCall<
       (
@@ -3203,12 +3278,15 @@ export interface ChainTx extends GenericChainTx {
      **/
     [callName: string]: GenericTxCall<(...args: any[]) => ChainSubmittableExtrinsic>;
   };
+  /**
+   * Pallet `NominationPools`'s transaction calls
+   **/
   nominationPools: {
     /**
      * See [`Pallet::join`].
      *
-     * @param amount
-     * @param poolId
+     * @param {bigint} amount
+     * @param {number} poolId
      **/
     join: GenericTxCall<
       (
@@ -3226,7 +3304,7 @@ export interface ChainTx extends GenericChainTx {
     /**
      * See [`Pallet::bond_extra`].
      *
-     * @param extra
+     * @param {PalletNominationPoolsBondExtra} extra
      **/
     bondExtra: GenericTxCall<
       (extra: PalletNominationPoolsBondExtra) => ChainSubmittableExtrinsic<{
@@ -3254,8 +3332,8 @@ export interface ChainTx extends GenericChainTx {
     /**
      * See [`Pallet::unbond`].
      *
-     * @param memberAccount
-     * @param unbondingPoints
+     * @param {MultiAddressLike} memberAccount
+     * @param {bigint} unbondingPoints
      **/
     unbond: GenericTxCall<
       (
@@ -3273,8 +3351,8 @@ export interface ChainTx extends GenericChainTx {
     /**
      * See [`Pallet::pool_withdraw_unbonded`].
      *
-     * @param poolId
-     * @param numSlashingSpans
+     * @param {number} poolId
+     * @param {number} numSlashingSpans
      **/
     poolWithdrawUnbonded: GenericTxCall<
       (
@@ -3292,8 +3370,8 @@ export interface ChainTx extends GenericChainTx {
     /**
      * See [`Pallet::withdraw_unbonded`].
      *
-     * @param memberAccount
-     * @param numSlashingSpans
+     * @param {MultiAddressLike} memberAccount
+     * @param {number} numSlashingSpans
      **/
     withdrawUnbonded: GenericTxCall<
       (
@@ -3311,10 +3389,10 @@ export interface ChainTx extends GenericChainTx {
     /**
      * See [`Pallet::create`].
      *
-     * @param amount
-     * @param root
-     * @param nominator
-     * @param bouncer
+     * @param {bigint} amount
+     * @param {MultiAddressLike} root
+     * @param {MultiAddressLike} nominator
+     * @param {MultiAddressLike} bouncer
      **/
     create: GenericTxCall<
       (
@@ -3334,11 +3412,11 @@ export interface ChainTx extends GenericChainTx {
     /**
      * See [`Pallet::create_with_pool_id`].
      *
-     * @param amount
-     * @param root
-     * @param nominator
-     * @param bouncer
-     * @param poolId
+     * @param {bigint} amount
+     * @param {MultiAddressLike} root
+     * @param {MultiAddressLike} nominator
+     * @param {MultiAddressLike} bouncer
+     * @param {number} poolId
      **/
     createWithPoolId: GenericTxCall<
       (
@@ -3365,8 +3443,8 @@ export interface ChainTx extends GenericChainTx {
     /**
      * See [`Pallet::nominate`].
      *
-     * @param poolId
-     * @param validators
+     * @param {number} poolId
+     * @param {Array<AccountId32Like>} validators
      **/
     nominate: GenericTxCall<
       (
@@ -3384,8 +3462,8 @@ export interface ChainTx extends GenericChainTx {
     /**
      * See [`Pallet::set_state`].
      *
-     * @param poolId
-     * @param state
+     * @param {number} poolId
+     * @param {PalletNominationPoolsPoolState} state
      **/
     setState: GenericTxCall<
       (
@@ -3403,8 +3481,8 @@ export interface ChainTx extends GenericChainTx {
     /**
      * See [`Pallet::set_metadata`].
      *
-     * @param poolId
-     * @param metadata
+     * @param {number} poolId
+     * @param {BytesLike} metadata
      **/
     setMetadata: GenericTxCall<
       (
@@ -3422,12 +3500,12 @@ export interface ChainTx extends GenericChainTx {
     /**
      * See [`Pallet::set_configs`].
      *
-     * @param minJoinBond
-     * @param minCreateBond
-     * @param maxPools
-     * @param maxMembers
-     * @param maxMembersPerPool
-     * @param globalMaxCommission
+     * @param {PalletNominationPoolsConfigOp} minJoinBond
+     * @param {PalletNominationPoolsConfigOp} minCreateBond
+     * @param {PalletNominationPoolsConfigOpU32} maxPools
+     * @param {PalletNominationPoolsConfigOpU32} maxMembers
+     * @param {PalletNominationPoolsConfigOpU32} maxMembersPerPool
+     * @param {PalletNominationPoolsConfigOpPerbill} globalMaxCommission
      **/
     setConfigs: GenericTxCall<
       (
@@ -3456,10 +3534,10 @@ export interface ChainTx extends GenericChainTx {
     /**
      * See [`Pallet::update_roles`].
      *
-     * @param poolId
-     * @param newRoot
-     * @param newNominator
-     * @param newBouncer
+     * @param {number} poolId
+     * @param {PalletNominationPoolsConfigOp004} newRoot
+     * @param {PalletNominationPoolsConfigOp004} newNominator
+     * @param {PalletNominationPoolsConfigOp004} newBouncer
      **/
     updateRoles: GenericTxCall<
       (
@@ -3484,7 +3562,7 @@ export interface ChainTx extends GenericChainTx {
     /**
      * See [`Pallet::chill`].
      *
-     * @param poolId
+     * @param {number} poolId
      **/
     chill: GenericTxCall<
       (poolId: number) => ChainSubmittableExtrinsic<{
@@ -3499,8 +3577,8 @@ export interface ChainTx extends GenericChainTx {
     /**
      * See [`Pallet::bond_extra_other`].
      *
-     * @param member
-     * @param extra
+     * @param {MultiAddressLike} member
+     * @param {PalletNominationPoolsBondExtra} extra
      **/
     bondExtraOther: GenericTxCall<
       (
@@ -3518,7 +3596,7 @@ export interface ChainTx extends GenericChainTx {
     /**
      * See [`Pallet::set_claim_permission`].
      *
-     * @param permission
+     * @param {PalletNominationPoolsClaimPermission} permission
      **/
     setClaimPermission: GenericTxCall<
       (permission: PalletNominationPoolsClaimPermission) => ChainSubmittableExtrinsic<{
@@ -3533,7 +3611,7 @@ export interface ChainTx extends GenericChainTx {
     /**
      * See [`Pallet::claim_payout_other`].
      *
-     * @param other
+     * @param {AccountId32Like} other
      **/
     claimPayoutOther: GenericTxCall<
       (other: AccountId32Like) => ChainSubmittableExtrinsic<{
@@ -3548,8 +3626,8 @@ export interface ChainTx extends GenericChainTx {
     /**
      * See [`Pallet::set_commission`].
      *
-     * @param poolId
-     * @param newCommission
+     * @param {number} poolId
+     * @param {[Perbill, AccountId32Like] | undefined} newCommission
      **/
     setCommission: GenericTxCall<
       (
@@ -3567,8 +3645,8 @@ export interface ChainTx extends GenericChainTx {
     /**
      * See [`Pallet::set_commission_max`].
      *
-     * @param poolId
-     * @param maxCommission
+     * @param {number} poolId
+     * @param {Perbill} maxCommission
      **/
     setCommissionMax: GenericTxCall<
       (
@@ -3586,8 +3664,8 @@ export interface ChainTx extends GenericChainTx {
     /**
      * See [`Pallet::set_commission_change_rate`].
      *
-     * @param poolId
-     * @param changeRate
+     * @param {number} poolId
+     * @param {PalletNominationPoolsCommissionChangeRate} changeRate
      **/
     setCommissionChangeRate: GenericTxCall<
       (
@@ -3605,7 +3683,7 @@ export interface ChainTx extends GenericChainTx {
     /**
      * See [`Pallet::claim_commission`].
      *
-     * @param poolId
+     * @param {number} poolId
      **/
     claimCommission: GenericTxCall<
       (poolId: number) => ChainSubmittableExtrinsic<{
@@ -3620,7 +3698,7 @@ export interface ChainTx extends GenericChainTx {
     /**
      * See [`Pallet::adjust_pool_deposit`].
      *
-     * @param poolId
+     * @param {number} poolId
      **/
     adjustPoolDeposit: GenericTxCall<
       (poolId: number) => ChainSubmittableExtrinsic<{
@@ -3637,6 +3715,9 @@ export interface ChainTx extends GenericChainTx {
      **/
     [callName: string]: GenericTxCall<(...args: any[]) => ChainSubmittableExtrinsic>;
   };
+  /**
+   * Pallet `FastUnstake`'s transaction calls
+   **/
   fastUnstake: {
     /**
      * See [`Pallet::register_fast_unstake`].
@@ -3667,7 +3748,7 @@ export interface ChainTx extends GenericChainTx {
     /**
      * See [`Pallet::control`].
      *
-     * @param erasToCheck
+     * @param {number} erasToCheck
      **/
     control: GenericTxCall<
       (erasToCheck: number) => ChainSubmittableExtrinsic<{
@@ -3684,11 +3765,14 @@ export interface ChainTx extends GenericChainTx {
      **/
     [callName: string]: GenericTxCall<(...args: any[]) => ChainSubmittableExtrinsic>;
   };
+  /**
+   * Pallet `Configuration`'s transaction calls
+   **/
   configuration: {
     /**
      * See [`Pallet::set_validation_upgrade_cooldown`].
      *
-     * @param new_
+     * @param {number} new_
      **/
     setValidationUpgradeCooldown: GenericTxCall<
       (new_: number) => ChainSubmittableExtrinsic<{
@@ -3703,7 +3787,7 @@ export interface ChainTx extends GenericChainTx {
     /**
      * See [`Pallet::set_validation_upgrade_delay`].
      *
-     * @param new_
+     * @param {number} new_
      **/
     setValidationUpgradeDelay: GenericTxCall<
       (new_: number) => ChainSubmittableExtrinsic<{
@@ -3718,7 +3802,7 @@ export interface ChainTx extends GenericChainTx {
     /**
      * See [`Pallet::set_code_retention_period`].
      *
-     * @param new_
+     * @param {number} new_
      **/
     setCodeRetentionPeriod: GenericTxCall<
       (new_: number) => ChainSubmittableExtrinsic<{
@@ -3733,7 +3817,7 @@ export interface ChainTx extends GenericChainTx {
     /**
      * See [`Pallet::set_max_code_size`].
      *
-     * @param new_
+     * @param {number} new_
      **/
     setMaxCodeSize: GenericTxCall<
       (new_: number) => ChainSubmittableExtrinsic<{
@@ -3748,7 +3832,7 @@ export interface ChainTx extends GenericChainTx {
     /**
      * See [`Pallet::set_max_pov_size`].
      *
-     * @param new_
+     * @param {number} new_
      **/
     setMaxPovSize: GenericTxCall<
       (new_: number) => ChainSubmittableExtrinsic<{
@@ -3763,7 +3847,7 @@ export interface ChainTx extends GenericChainTx {
     /**
      * See [`Pallet::set_max_head_data_size`].
      *
-     * @param new_
+     * @param {number} new_
      **/
     setMaxHeadDataSize: GenericTxCall<
       (new_: number) => ChainSubmittableExtrinsic<{
@@ -3778,7 +3862,7 @@ export interface ChainTx extends GenericChainTx {
     /**
      * See [`Pallet::set_on_demand_cores`].
      *
-     * @param new_
+     * @param {number} new_
      **/
     setOnDemandCores: GenericTxCall<
       (new_: number) => ChainSubmittableExtrinsic<{
@@ -3793,7 +3877,7 @@ export interface ChainTx extends GenericChainTx {
     /**
      * See [`Pallet::set_on_demand_retries`].
      *
-     * @param new_
+     * @param {number} new_
      **/
     setOnDemandRetries: GenericTxCall<
       (new_: number) => ChainSubmittableExtrinsic<{
@@ -3808,7 +3892,7 @@ export interface ChainTx extends GenericChainTx {
     /**
      * See [`Pallet::set_group_rotation_frequency`].
      *
-     * @param new_
+     * @param {number} new_
      **/
     setGroupRotationFrequency: GenericTxCall<
       (new_: number) => ChainSubmittableExtrinsic<{
@@ -3823,7 +3907,7 @@ export interface ChainTx extends GenericChainTx {
     /**
      * See [`Pallet::set_paras_availability_period`].
      *
-     * @param new_
+     * @param {number} new_
      **/
     setParasAvailabilityPeriod: GenericTxCall<
       (new_: number) => ChainSubmittableExtrinsic<{
@@ -3838,7 +3922,7 @@ export interface ChainTx extends GenericChainTx {
     /**
      * See [`Pallet::set_scheduling_lookahead`].
      *
-     * @param new_
+     * @param {number} new_
      **/
     setSchedulingLookahead: GenericTxCall<
       (new_: number) => ChainSubmittableExtrinsic<{
@@ -3853,7 +3937,7 @@ export interface ChainTx extends GenericChainTx {
     /**
      * See [`Pallet::set_max_validators_per_core`].
      *
-     * @param new_
+     * @param {number | undefined} new_
      **/
     setMaxValidatorsPerCore: GenericTxCall<
       (new_: number | undefined) => ChainSubmittableExtrinsic<{
@@ -3868,7 +3952,7 @@ export interface ChainTx extends GenericChainTx {
     /**
      * See [`Pallet::set_max_validators`].
      *
-     * @param new_
+     * @param {number | undefined} new_
      **/
     setMaxValidators: GenericTxCall<
       (new_: number | undefined) => ChainSubmittableExtrinsic<{
@@ -3883,7 +3967,7 @@ export interface ChainTx extends GenericChainTx {
     /**
      * See [`Pallet::set_dispute_period`].
      *
-     * @param new_
+     * @param {number} new_
      **/
     setDisputePeriod: GenericTxCall<
       (new_: number) => ChainSubmittableExtrinsic<{
@@ -3898,7 +3982,7 @@ export interface ChainTx extends GenericChainTx {
     /**
      * See [`Pallet::set_dispute_post_conclusion_acceptance_period`].
      *
-     * @param new_
+     * @param {number} new_
      **/
     setDisputePostConclusionAcceptancePeriod: GenericTxCall<
       (new_: number) => ChainSubmittableExtrinsic<{
@@ -3913,7 +3997,7 @@ export interface ChainTx extends GenericChainTx {
     /**
      * See [`Pallet::set_no_show_slots`].
      *
-     * @param new_
+     * @param {number} new_
      **/
     setNoShowSlots: GenericTxCall<
       (new_: number) => ChainSubmittableExtrinsic<{
@@ -3928,7 +4012,7 @@ export interface ChainTx extends GenericChainTx {
     /**
      * See [`Pallet::set_n_delay_tranches`].
      *
-     * @param new_
+     * @param {number} new_
      **/
     setNDelayTranches: GenericTxCall<
       (new_: number) => ChainSubmittableExtrinsic<{
@@ -3943,7 +4027,7 @@ export interface ChainTx extends GenericChainTx {
     /**
      * See [`Pallet::set_zeroth_delay_tranche_width`].
      *
-     * @param new_
+     * @param {number} new_
      **/
     setZerothDelayTrancheWidth: GenericTxCall<
       (new_: number) => ChainSubmittableExtrinsic<{
@@ -3958,7 +4042,7 @@ export interface ChainTx extends GenericChainTx {
     /**
      * See [`Pallet::set_needed_approvals`].
      *
-     * @param new_
+     * @param {number} new_
      **/
     setNeededApprovals: GenericTxCall<
       (new_: number) => ChainSubmittableExtrinsic<{
@@ -3973,7 +4057,7 @@ export interface ChainTx extends GenericChainTx {
     /**
      * See [`Pallet::set_relay_vrf_modulo_samples`].
      *
-     * @param new_
+     * @param {number} new_
      **/
     setRelayVrfModuloSamples: GenericTxCall<
       (new_: number) => ChainSubmittableExtrinsic<{
@@ -3988,7 +4072,7 @@ export interface ChainTx extends GenericChainTx {
     /**
      * See [`Pallet::set_max_upward_queue_count`].
      *
-     * @param new_
+     * @param {number} new_
      **/
     setMaxUpwardQueueCount: GenericTxCall<
       (new_: number) => ChainSubmittableExtrinsic<{
@@ -4003,7 +4087,7 @@ export interface ChainTx extends GenericChainTx {
     /**
      * See [`Pallet::set_max_upward_queue_size`].
      *
-     * @param new_
+     * @param {number} new_
      **/
     setMaxUpwardQueueSize: GenericTxCall<
       (new_: number) => ChainSubmittableExtrinsic<{
@@ -4018,7 +4102,7 @@ export interface ChainTx extends GenericChainTx {
     /**
      * See [`Pallet::set_max_downward_message_size`].
      *
-     * @param new_
+     * @param {number} new_
      **/
     setMaxDownwardMessageSize: GenericTxCall<
       (new_: number) => ChainSubmittableExtrinsic<{
@@ -4033,7 +4117,7 @@ export interface ChainTx extends GenericChainTx {
     /**
      * See [`Pallet::set_max_upward_message_size`].
      *
-     * @param new_
+     * @param {number} new_
      **/
     setMaxUpwardMessageSize: GenericTxCall<
       (new_: number) => ChainSubmittableExtrinsic<{
@@ -4048,7 +4132,7 @@ export interface ChainTx extends GenericChainTx {
     /**
      * See [`Pallet::set_max_upward_message_num_per_candidate`].
      *
-     * @param new_
+     * @param {number} new_
      **/
     setMaxUpwardMessageNumPerCandidate: GenericTxCall<
       (new_: number) => ChainSubmittableExtrinsic<{
@@ -4063,7 +4147,7 @@ export interface ChainTx extends GenericChainTx {
     /**
      * See [`Pallet::set_hrmp_open_request_ttl`].
      *
-     * @param new_
+     * @param {number} new_
      **/
     setHrmpOpenRequestTtl: GenericTxCall<
       (new_: number) => ChainSubmittableExtrinsic<{
@@ -4078,7 +4162,7 @@ export interface ChainTx extends GenericChainTx {
     /**
      * See [`Pallet::set_hrmp_sender_deposit`].
      *
-     * @param new_
+     * @param {bigint} new_
      **/
     setHrmpSenderDeposit: GenericTxCall<
       (new_: bigint) => ChainSubmittableExtrinsic<{
@@ -4093,7 +4177,7 @@ export interface ChainTx extends GenericChainTx {
     /**
      * See [`Pallet::set_hrmp_recipient_deposit`].
      *
-     * @param new_
+     * @param {bigint} new_
      **/
     setHrmpRecipientDeposit: GenericTxCall<
       (new_: bigint) => ChainSubmittableExtrinsic<{
@@ -4108,7 +4192,7 @@ export interface ChainTx extends GenericChainTx {
     /**
      * See [`Pallet::set_hrmp_channel_max_capacity`].
      *
-     * @param new_
+     * @param {number} new_
      **/
     setHrmpChannelMaxCapacity: GenericTxCall<
       (new_: number) => ChainSubmittableExtrinsic<{
@@ -4123,7 +4207,7 @@ export interface ChainTx extends GenericChainTx {
     /**
      * See [`Pallet::set_hrmp_channel_max_total_size`].
      *
-     * @param new_
+     * @param {number} new_
      **/
     setHrmpChannelMaxTotalSize: GenericTxCall<
       (new_: number) => ChainSubmittableExtrinsic<{
@@ -4138,7 +4222,7 @@ export interface ChainTx extends GenericChainTx {
     /**
      * See [`Pallet::set_hrmp_max_parachain_inbound_channels`].
      *
-     * @param new_
+     * @param {number} new_
      **/
     setHrmpMaxParachainInboundChannels: GenericTxCall<
       (new_: number) => ChainSubmittableExtrinsic<{
@@ -4153,7 +4237,7 @@ export interface ChainTx extends GenericChainTx {
     /**
      * See [`Pallet::set_hrmp_channel_max_message_size`].
      *
-     * @param new_
+     * @param {number} new_
      **/
     setHrmpChannelMaxMessageSize: GenericTxCall<
       (new_: number) => ChainSubmittableExtrinsic<{
@@ -4168,7 +4252,7 @@ export interface ChainTx extends GenericChainTx {
     /**
      * See [`Pallet::set_hrmp_max_parachain_outbound_channels`].
      *
-     * @param new_
+     * @param {number} new_
      **/
     setHrmpMaxParachainOutboundChannels: GenericTxCall<
       (new_: number) => ChainSubmittableExtrinsic<{
@@ -4183,7 +4267,7 @@ export interface ChainTx extends GenericChainTx {
     /**
      * See [`Pallet::set_hrmp_max_message_num_per_candidate`].
      *
-     * @param new_
+     * @param {number} new_
      **/
     setHrmpMaxMessageNumPerCandidate: GenericTxCall<
       (new_: number) => ChainSubmittableExtrinsic<{
@@ -4198,7 +4282,7 @@ export interface ChainTx extends GenericChainTx {
     /**
      * See [`Pallet::set_pvf_voting_ttl`].
      *
-     * @param new_
+     * @param {number} new_
      **/
     setPvfVotingTtl: GenericTxCall<
       (new_: number) => ChainSubmittableExtrinsic<{
@@ -4213,7 +4297,7 @@ export interface ChainTx extends GenericChainTx {
     /**
      * See [`Pallet::set_minimum_validation_upgrade_delay`].
      *
-     * @param new_
+     * @param {number} new_
      **/
     setMinimumValidationUpgradeDelay: GenericTxCall<
       (new_: number) => ChainSubmittableExtrinsic<{
@@ -4228,7 +4312,7 @@ export interface ChainTx extends GenericChainTx {
     /**
      * See [`Pallet::set_bypass_consistency_check`].
      *
-     * @param new_
+     * @param {boolean} new_
      **/
     setBypassConsistencyCheck: GenericTxCall<
       (new_: boolean) => ChainSubmittableExtrinsic<{
@@ -4243,7 +4327,7 @@ export interface ChainTx extends GenericChainTx {
     /**
      * See [`Pallet::set_async_backing_params`].
      *
-     * @param new_
+     * @param {PolkadotPrimitivesV6AsyncBackingAsyncBackingParams} new_
      **/
     setAsyncBackingParams: GenericTxCall<
       (new_: PolkadotPrimitivesV6AsyncBackingAsyncBackingParams) => ChainSubmittableExtrinsic<{
@@ -4258,7 +4342,7 @@ export interface ChainTx extends GenericChainTx {
     /**
      * See [`Pallet::set_executor_params`].
      *
-     * @param new_
+     * @param {PolkadotPrimitivesV6ExecutorParams} new_
      **/
     setExecutorParams: GenericTxCall<
       (new_: PolkadotPrimitivesV6ExecutorParams) => ChainSubmittableExtrinsic<{
@@ -4273,7 +4357,7 @@ export interface ChainTx extends GenericChainTx {
     /**
      * See [`Pallet::set_on_demand_base_fee`].
      *
-     * @param new_
+     * @param {bigint} new_
      **/
     setOnDemandBaseFee: GenericTxCall<
       (new_: bigint) => ChainSubmittableExtrinsic<{
@@ -4288,7 +4372,7 @@ export interface ChainTx extends GenericChainTx {
     /**
      * See [`Pallet::set_on_demand_fee_variability`].
      *
-     * @param new_
+     * @param {Perbill} new_
      **/
     setOnDemandFeeVariability: GenericTxCall<
       (new_: Perbill) => ChainSubmittableExtrinsic<{
@@ -4303,7 +4387,7 @@ export interface ChainTx extends GenericChainTx {
     /**
      * See [`Pallet::set_on_demand_queue_max_size`].
      *
-     * @param new_
+     * @param {number} new_
      **/
     setOnDemandQueueMaxSize: GenericTxCall<
       (new_: number) => ChainSubmittableExtrinsic<{
@@ -4318,7 +4402,7 @@ export interface ChainTx extends GenericChainTx {
     /**
      * See [`Pallet::set_on_demand_target_queue_utilization`].
      *
-     * @param new_
+     * @param {Perbill} new_
      **/
     setOnDemandTargetQueueUtilization: GenericTxCall<
       (new_: Perbill) => ChainSubmittableExtrinsic<{
@@ -4333,7 +4417,7 @@ export interface ChainTx extends GenericChainTx {
     /**
      * See [`Pallet::set_on_demand_ttl`].
      *
-     * @param new_
+     * @param {number} new_
      **/
     setOnDemandTtl: GenericTxCall<
       (new_: number) => ChainSubmittableExtrinsic<{
@@ -4348,7 +4432,7 @@ export interface ChainTx extends GenericChainTx {
     /**
      * See [`Pallet::set_minimum_backing_votes`].
      *
-     * @param new_
+     * @param {number} new_
      **/
     setMinimumBackingVotes: GenericTxCall<
       (new_: number) => ChainSubmittableExtrinsic<{
@@ -4365,23 +4449,32 @@ export interface ChainTx extends GenericChainTx {
      **/
     [callName: string]: GenericTxCall<(...args: any[]) => ChainSubmittableExtrinsic>;
   };
+  /**
+   * Pallet `ParasShared`'s transaction calls
+   **/
   parasShared: {
     /**
      * Generic pallet tx call
      **/
     [callName: string]: GenericTxCall<(...args: any[]) => ChainSubmittableExtrinsic>;
   };
+  /**
+   * Pallet `ParaInclusion`'s transaction calls
+   **/
   paraInclusion: {
     /**
      * Generic pallet tx call
      **/
     [callName: string]: GenericTxCall<(...args: any[]) => ChainSubmittableExtrinsic>;
   };
+  /**
+   * Pallet `ParaInherent`'s transaction calls
+   **/
   paraInherent: {
     /**
      * See [`Pallet::enter`].
      *
-     * @param data
+     * @param {PolkadotPrimitivesV6InherentData} data
      **/
     enter: GenericTxCall<
       (data: PolkadotPrimitivesV6InherentData) => ChainSubmittableExtrinsic<{
@@ -4398,12 +4491,15 @@ export interface ChainTx extends GenericChainTx {
      **/
     [callName: string]: GenericTxCall<(...args: any[]) => ChainSubmittableExtrinsic>;
   };
+  /**
+   * Pallet `Paras`'s transaction calls
+   **/
   paras: {
     /**
      * See [`Pallet::force_set_current_code`].
      *
-     * @param para
-     * @param newCode
+     * @param {PolkadotParachainPrimitivesPrimitivesId} para
+     * @param {PolkadotParachainPrimitivesPrimitivesValidationCode} newCode
      **/
     forceSetCurrentCode: GenericTxCall<
       (
@@ -4424,8 +4520,8 @@ export interface ChainTx extends GenericChainTx {
     /**
      * See [`Pallet::force_set_current_head`].
      *
-     * @param para
-     * @param newHead
+     * @param {PolkadotParachainPrimitivesPrimitivesId} para
+     * @param {PolkadotParachainPrimitivesPrimitivesHeadData} newHead
      **/
     forceSetCurrentHead: GenericTxCall<
       (
@@ -4446,9 +4542,9 @@ export interface ChainTx extends GenericChainTx {
     /**
      * See [`Pallet::force_schedule_code_upgrade`].
      *
-     * @param para
-     * @param newCode
-     * @param relayParentNumber
+     * @param {PolkadotParachainPrimitivesPrimitivesId} para
+     * @param {PolkadotParachainPrimitivesPrimitivesValidationCode} newCode
+     * @param {number} relayParentNumber
      **/
     forceScheduleCodeUpgrade: GenericTxCall<
       (
@@ -4471,8 +4567,8 @@ export interface ChainTx extends GenericChainTx {
     /**
      * See [`Pallet::force_note_new_head`].
      *
-     * @param para
-     * @param newHead
+     * @param {PolkadotParachainPrimitivesPrimitivesId} para
+     * @param {PolkadotParachainPrimitivesPrimitivesHeadData} newHead
      **/
     forceNoteNewHead: GenericTxCall<
       (
@@ -4493,7 +4589,7 @@ export interface ChainTx extends GenericChainTx {
     /**
      * See [`Pallet::force_queue_action`].
      *
-     * @param para
+     * @param {PolkadotParachainPrimitivesPrimitivesId} para
      **/
     forceQueueAction: GenericTxCall<
       (para: PolkadotParachainPrimitivesPrimitivesId) => ChainSubmittableExtrinsic<{
@@ -4508,7 +4604,7 @@ export interface ChainTx extends GenericChainTx {
     /**
      * See [`Pallet::add_trusted_validation_code`].
      *
-     * @param validationCode
+     * @param {PolkadotParachainPrimitivesPrimitivesValidationCode} validationCode
      **/
     addTrustedValidationCode: GenericTxCall<
       (validationCode: PolkadotParachainPrimitivesPrimitivesValidationCode) => ChainSubmittableExtrinsic<{
@@ -4523,7 +4619,7 @@ export interface ChainTx extends GenericChainTx {
     /**
      * See [`Pallet::poke_unused_validation_code`].
      *
-     * @param validationCodeHash
+     * @param {PolkadotParachainPrimitivesPrimitivesValidationCodeHash} validationCodeHash
      **/
     pokeUnusedValidationCode: GenericTxCall<
       (validationCodeHash: PolkadotParachainPrimitivesPrimitivesValidationCodeHash) => ChainSubmittableExtrinsic<{
@@ -4538,8 +4634,8 @@ export interface ChainTx extends GenericChainTx {
     /**
      * See [`Pallet::include_pvf_check_statement`].
      *
-     * @param stmt
-     * @param signature
+     * @param {PolkadotPrimitivesV6PvfCheckStatement} stmt
+     * @param {PolkadotPrimitivesV6ValidatorAppSignature} signature
      **/
     includePvfCheckStatement: GenericTxCall<
       (
@@ -4557,8 +4653,8 @@ export interface ChainTx extends GenericChainTx {
     /**
      * See [`Pallet::force_set_most_recent_context`].
      *
-     * @param para
-     * @param context
+     * @param {PolkadotParachainPrimitivesPrimitivesId} para
+     * @param {number} context
      **/
     forceSetMostRecentContext: GenericTxCall<
       (
@@ -4578,11 +4674,14 @@ export interface ChainTx extends GenericChainTx {
      **/
     [callName: string]: GenericTxCall<(...args: any[]) => ChainSubmittableExtrinsic>;
   };
+  /**
+   * Pallet `Initializer`'s transaction calls
+   **/
   initializer: {
     /**
      * See [`Pallet::force_approve`].
      *
-     * @param upTo
+     * @param {number} upTo
      **/
     forceApprove: GenericTxCall<
       (upTo: number) => ChainSubmittableExtrinsic<{
@@ -4599,13 +4698,16 @@ export interface ChainTx extends GenericChainTx {
      **/
     [callName: string]: GenericTxCall<(...args: any[]) => ChainSubmittableExtrinsic>;
   };
+  /**
+   * Pallet `Hrmp`'s transaction calls
+   **/
   hrmp: {
     /**
      * See [`Pallet::hrmp_init_open_channel`].
      *
-     * @param recipient
-     * @param proposedMaxCapacity
-     * @param proposedMaxMessageSize
+     * @param {PolkadotParachainPrimitivesPrimitivesId} recipient
+     * @param {number} proposedMaxCapacity
+     * @param {number} proposedMaxMessageSize
      **/
     hrmpInitOpenChannel: GenericTxCall<
       (
@@ -4628,7 +4730,7 @@ export interface ChainTx extends GenericChainTx {
     /**
      * See [`Pallet::hrmp_accept_open_channel`].
      *
-     * @param sender
+     * @param {PolkadotParachainPrimitivesPrimitivesId} sender
      **/
     hrmpAcceptOpenChannel: GenericTxCall<
       (sender: PolkadotParachainPrimitivesPrimitivesId) => ChainSubmittableExtrinsic<{
@@ -4643,7 +4745,7 @@ export interface ChainTx extends GenericChainTx {
     /**
      * See [`Pallet::hrmp_close_channel`].
      *
-     * @param channelId
+     * @param {PolkadotParachainPrimitivesPrimitivesHrmpChannelId} channelId
      **/
     hrmpCloseChannel: GenericTxCall<
       (channelId: PolkadotParachainPrimitivesPrimitivesHrmpChannelId) => ChainSubmittableExtrinsic<{
@@ -4658,9 +4760,9 @@ export interface ChainTx extends GenericChainTx {
     /**
      * See [`Pallet::force_clean_hrmp`].
      *
-     * @param para
-     * @param numInbound
-     * @param numOutbound
+     * @param {PolkadotParachainPrimitivesPrimitivesId} para
+     * @param {number} numInbound
+     * @param {number} numOutbound
      **/
     forceCleanHrmp: GenericTxCall<
       (
@@ -4679,7 +4781,7 @@ export interface ChainTx extends GenericChainTx {
     /**
      * See [`Pallet::force_process_hrmp_open`].
      *
-     * @param channels
+     * @param {number} channels
      **/
     forceProcessHrmpOpen: GenericTxCall<
       (channels: number) => ChainSubmittableExtrinsic<{
@@ -4694,7 +4796,7 @@ export interface ChainTx extends GenericChainTx {
     /**
      * See [`Pallet::force_process_hrmp_close`].
      *
-     * @param channels
+     * @param {number} channels
      **/
     forceProcessHrmpClose: GenericTxCall<
       (channels: number) => ChainSubmittableExtrinsic<{
@@ -4709,8 +4811,8 @@ export interface ChainTx extends GenericChainTx {
     /**
      * See [`Pallet::hrmp_cancel_open_request`].
      *
-     * @param channelId
-     * @param openRequests
+     * @param {PolkadotParachainPrimitivesPrimitivesHrmpChannelId} channelId
+     * @param {number} openRequests
      **/
     hrmpCancelOpenRequest: GenericTxCall<
       (
@@ -4728,10 +4830,10 @@ export interface ChainTx extends GenericChainTx {
     /**
      * See [`Pallet::force_open_hrmp_channel`].
      *
-     * @param sender
-     * @param recipient
-     * @param maxCapacity
-     * @param maxMessageSize
+     * @param {PolkadotParachainPrimitivesPrimitivesId} sender
+     * @param {PolkadotParachainPrimitivesPrimitivesId} recipient
+     * @param {number} maxCapacity
+     * @param {number} maxMessageSize
      **/
     forceOpenHrmpChannel: GenericTxCall<
       (
@@ -4756,8 +4858,8 @@ export interface ChainTx extends GenericChainTx {
     /**
      * See [`Pallet::establish_system_channel`].
      *
-     * @param sender
-     * @param recipient
+     * @param {PolkadotParachainPrimitivesPrimitivesId} sender
+     * @param {PolkadotParachainPrimitivesPrimitivesId} recipient
      **/
     establishSystemChannel: GenericTxCall<
       (
@@ -4778,8 +4880,8 @@ export interface ChainTx extends GenericChainTx {
     /**
      * See [`Pallet::poke_channel_deposits`].
      *
-     * @param sender
-     * @param recipient
+     * @param {PolkadotParachainPrimitivesPrimitivesId} sender
+     * @param {PolkadotParachainPrimitivesPrimitivesId} recipient
      **/
     pokeChannelDeposits: GenericTxCall<
       (
@@ -4802,6 +4904,9 @@ export interface ChainTx extends GenericChainTx {
      **/
     [callName: string]: GenericTxCall<(...args: any[]) => ChainSubmittableExtrinsic>;
   };
+  /**
+   * Pallet `ParasDisputes`'s transaction calls
+   **/
   parasDisputes: {
     /**
      * See [`Pallet::force_unfreeze`].
@@ -4819,12 +4924,15 @@ export interface ChainTx extends GenericChainTx {
      **/
     [callName: string]: GenericTxCall<(...args: any[]) => ChainSubmittableExtrinsic>;
   };
+  /**
+   * Pallet `ParasSlashing`'s transaction calls
+   **/
   parasSlashing: {
     /**
      * See [`Pallet::report_dispute_lost_unsigned`].
      *
-     * @param disputeProof
-     * @param keyOwnerProof
+     * @param {PolkadotPrimitivesV6SlashingDisputeProof} disputeProof
+     * @param {SpSessionMembershipProof} keyOwnerProof
      **/
     reportDisputeLostUnsigned: GenericTxCall<
       (
@@ -4844,13 +4952,16 @@ export interface ChainTx extends GenericChainTx {
      **/
     [callName: string]: GenericTxCall<(...args: any[]) => ChainSubmittableExtrinsic>;
   };
+  /**
+   * Pallet `Registrar`'s transaction calls
+   **/
   registrar: {
     /**
      * See [`Pallet::register`].
      *
-     * @param id
-     * @param genesisHead
-     * @param validationCode
+     * @param {PolkadotParachainPrimitivesPrimitivesId} id
+     * @param {PolkadotParachainPrimitivesPrimitivesHeadData} genesisHead
+     * @param {PolkadotParachainPrimitivesPrimitivesValidationCode} validationCode
      **/
     register: GenericTxCall<
       (
@@ -4873,11 +4984,11 @@ export interface ChainTx extends GenericChainTx {
     /**
      * See [`Pallet::force_register`].
      *
-     * @param who
-     * @param deposit
-     * @param id
-     * @param genesisHead
-     * @param validationCode
+     * @param {AccountId32Like} who
+     * @param {bigint} deposit
+     * @param {PolkadotParachainPrimitivesPrimitivesId} id
+     * @param {PolkadotParachainPrimitivesPrimitivesHeadData} genesisHead
+     * @param {PolkadotParachainPrimitivesPrimitivesValidationCode} validationCode
      **/
     forceRegister: GenericTxCall<
       (
@@ -4904,7 +5015,7 @@ export interface ChainTx extends GenericChainTx {
     /**
      * See [`Pallet::deregister`].
      *
-     * @param id
+     * @param {PolkadotParachainPrimitivesPrimitivesId} id
      **/
     deregister: GenericTxCall<
       (id: PolkadotParachainPrimitivesPrimitivesId) => ChainSubmittableExtrinsic<{
@@ -4919,8 +5030,8 @@ export interface ChainTx extends GenericChainTx {
     /**
      * See [`Pallet::swap`].
      *
-     * @param id
-     * @param other
+     * @param {PolkadotParachainPrimitivesPrimitivesId} id
+     * @param {PolkadotParachainPrimitivesPrimitivesId} other
      **/
     swap: GenericTxCall<
       (
@@ -4938,7 +5049,7 @@ export interface ChainTx extends GenericChainTx {
     /**
      * See [`Pallet::remove_lock`].
      *
-     * @param para
+     * @param {PolkadotParachainPrimitivesPrimitivesId} para
      **/
     removeLock: GenericTxCall<
       (para: PolkadotParachainPrimitivesPrimitivesId) => ChainSubmittableExtrinsic<{
@@ -4966,7 +5077,7 @@ export interface ChainTx extends GenericChainTx {
     /**
      * See [`Pallet::add_lock`].
      *
-     * @param para
+     * @param {PolkadotParachainPrimitivesPrimitivesId} para
      **/
     addLock: GenericTxCall<
       (para: PolkadotParachainPrimitivesPrimitivesId) => ChainSubmittableExtrinsic<{
@@ -4981,8 +5092,8 @@ export interface ChainTx extends GenericChainTx {
     /**
      * See [`Pallet::schedule_code_upgrade`].
      *
-     * @param para
-     * @param newCode
+     * @param {PolkadotParachainPrimitivesPrimitivesId} para
+     * @param {PolkadotParachainPrimitivesPrimitivesValidationCode} newCode
      **/
     scheduleCodeUpgrade: GenericTxCall<
       (
@@ -5003,8 +5114,8 @@ export interface ChainTx extends GenericChainTx {
     /**
      * See [`Pallet::set_current_head`].
      *
-     * @param para
-     * @param newHead
+     * @param {PolkadotParachainPrimitivesPrimitivesId} para
+     * @param {PolkadotParachainPrimitivesPrimitivesHeadData} newHead
      **/
     setCurrentHead: GenericTxCall<
       (
@@ -5027,15 +5138,18 @@ export interface ChainTx extends GenericChainTx {
      **/
     [callName: string]: GenericTxCall<(...args: any[]) => ChainSubmittableExtrinsic>;
   };
+  /**
+   * Pallet `Slots`'s transaction calls
+   **/
   slots: {
     /**
      * See [`Pallet::force_lease`].
      *
-     * @param para
-     * @param leaser
-     * @param amount
-     * @param periodBegin
-     * @param periodCount
+     * @param {PolkadotParachainPrimitivesPrimitivesId} para
+     * @param {AccountId32Like} leaser
+     * @param {bigint} amount
+     * @param {number} periodBegin
+     * @param {number} periodCount
      **/
     forceLease: GenericTxCall<
       (
@@ -5062,7 +5176,7 @@ export interface ChainTx extends GenericChainTx {
     /**
      * See [`Pallet::clear_all_leases`].
      *
-     * @param para
+     * @param {PolkadotParachainPrimitivesPrimitivesId} para
      **/
     clearAllLeases: GenericTxCall<
       (para: PolkadotParachainPrimitivesPrimitivesId) => ChainSubmittableExtrinsic<{
@@ -5077,7 +5191,7 @@ export interface ChainTx extends GenericChainTx {
     /**
      * See [`Pallet::trigger_onboard`].
      *
-     * @param para
+     * @param {PolkadotParachainPrimitivesPrimitivesId} para
      **/
     triggerOnboard: GenericTxCall<
       (para: PolkadotParachainPrimitivesPrimitivesId) => ChainSubmittableExtrinsic<{
@@ -5094,12 +5208,15 @@ export interface ChainTx extends GenericChainTx {
      **/
     [callName: string]: GenericTxCall<(...args: any[]) => ChainSubmittableExtrinsic>;
   };
+  /**
+   * Pallet `Auctions`'s transaction calls
+   **/
   auctions: {
     /**
      * See [`Pallet::new_auction`].
      *
-     * @param duration
-     * @param leasePeriodIndex
+     * @param {number} duration
+     * @param {number} leasePeriodIndex
      **/
     newAuction: GenericTxCall<
       (
@@ -5117,11 +5234,11 @@ export interface ChainTx extends GenericChainTx {
     /**
      * See [`Pallet::bid`].
      *
-     * @param para
-     * @param auctionIndex
-     * @param firstSlot
-     * @param lastSlot
-     * @param amount
+     * @param {PolkadotParachainPrimitivesPrimitivesId} para
+     * @param {number} auctionIndex
+     * @param {number} firstSlot
+     * @param {number} lastSlot
+     * @param {bigint} amount
      **/
     bid: GenericTxCall<
       (
@@ -5163,16 +5280,19 @@ export interface ChainTx extends GenericChainTx {
      **/
     [callName: string]: GenericTxCall<(...args: any[]) => ChainSubmittableExtrinsic>;
   };
+  /**
+   * Pallet `Crowdloan`'s transaction calls
+   **/
   crowdloan: {
     /**
      * See [`Pallet::create`].
      *
-     * @param index
-     * @param cap
-     * @param firstPeriod
-     * @param lastPeriod
-     * @param end
-     * @param verifier
+     * @param {PolkadotParachainPrimitivesPrimitivesId} index
+     * @param {bigint} cap
+     * @param {number} firstPeriod
+     * @param {number} lastPeriod
+     * @param {number} end
+     * @param {SpRuntimeMultiSigner | undefined} verifier
      **/
     create: GenericTxCall<
       (
@@ -5201,9 +5321,9 @@ export interface ChainTx extends GenericChainTx {
     /**
      * See [`Pallet::contribute`].
      *
-     * @param index
-     * @param value
-     * @param signature
+     * @param {PolkadotParachainPrimitivesPrimitivesId} index
+     * @param {bigint} value
+     * @param {SpRuntimeMultiSignature | undefined} signature
      **/
     contribute: GenericTxCall<
       (
@@ -5226,8 +5346,8 @@ export interface ChainTx extends GenericChainTx {
     /**
      * See [`Pallet::withdraw`].
      *
-     * @param who
-     * @param index
+     * @param {AccountId32Like} who
+     * @param {PolkadotParachainPrimitivesPrimitivesId} index
      **/
     withdraw: GenericTxCall<
       (
@@ -5245,7 +5365,7 @@ export interface ChainTx extends GenericChainTx {
     /**
      * See [`Pallet::refund`].
      *
-     * @param index
+     * @param {PolkadotParachainPrimitivesPrimitivesId} index
      **/
     refund: GenericTxCall<
       (index: PolkadotParachainPrimitivesPrimitivesId) => ChainSubmittableExtrinsic<{
@@ -5260,7 +5380,7 @@ export interface ChainTx extends GenericChainTx {
     /**
      * See [`Pallet::dissolve`].
      *
-     * @param index
+     * @param {PolkadotParachainPrimitivesPrimitivesId} index
      **/
     dissolve: GenericTxCall<
       (index: PolkadotParachainPrimitivesPrimitivesId) => ChainSubmittableExtrinsic<{
@@ -5275,12 +5395,12 @@ export interface ChainTx extends GenericChainTx {
     /**
      * See [`Pallet::edit`].
      *
-     * @param index
-     * @param cap
-     * @param firstPeriod
-     * @param lastPeriod
-     * @param end
-     * @param verifier
+     * @param {PolkadotParachainPrimitivesPrimitivesId} index
+     * @param {bigint} cap
+     * @param {number} firstPeriod
+     * @param {number} lastPeriod
+     * @param {number} end
+     * @param {SpRuntimeMultiSigner | undefined} verifier
      **/
     edit: GenericTxCall<
       (
@@ -5309,8 +5429,8 @@ export interface ChainTx extends GenericChainTx {
     /**
      * See [`Pallet::add_memo`].
      *
-     * @param index
-     * @param memo
+     * @param {PolkadotParachainPrimitivesPrimitivesId} index
+     * @param {BytesLike} memo
      **/
     addMemo: GenericTxCall<
       (
@@ -5328,7 +5448,7 @@ export interface ChainTx extends GenericChainTx {
     /**
      * See [`Pallet::poke`].
      *
-     * @param index
+     * @param {PolkadotParachainPrimitivesPrimitivesId} index
      **/
     poke: GenericTxCall<
       (index: PolkadotParachainPrimitivesPrimitivesId) => ChainSubmittableExtrinsic<{
@@ -5343,8 +5463,8 @@ export interface ChainTx extends GenericChainTx {
     /**
      * See [`Pallet::contribute_all`].
      *
-     * @param index
-     * @param signature
+     * @param {PolkadotParachainPrimitivesPrimitivesId} index
+     * @param {SpRuntimeMultiSignature | undefined} signature
      **/
     contributeAll: GenericTxCall<
       (
@@ -5364,12 +5484,15 @@ export interface ChainTx extends GenericChainTx {
      **/
     [callName: string]: GenericTxCall<(...args: any[]) => ChainSubmittableExtrinsic>;
   };
+  /**
+   * Pallet `XcmPallet`'s transaction calls
+   **/
   xcmPallet: {
     /**
      * See [`Pallet::send`].
      *
-     * @param dest
-     * @param message
+     * @param {XcmVersionedMultiLocation} dest
+     * @param {XcmVersionedXcm} message
      **/
     send: GenericTxCall<
       (
@@ -5387,10 +5510,10 @@ export interface ChainTx extends GenericChainTx {
     /**
      * See [`Pallet::teleport_assets`].
      *
-     * @param dest
-     * @param beneficiary
-     * @param assets
-     * @param feeAssetItem
+     * @param {XcmVersionedMultiLocation} dest
+     * @param {XcmVersionedMultiLocation} beneficiary
+     * @param {XcmVersionedMultiAssets} assets
+     * @param {number} feeAssetItem
      **/
     teleportAssets: GenericTxCall<
       (
@@ -5415,10 +5538,10 @@ export interface ChainTx extends GenericChainTx {
     /**
      * See [`Pallet::reserve_transfer_assets`].
      *
-     * @param dest
-     * @param beneficiary
-     * @param assets
-     * @param feeAssetItem
+     * @param {XcmVersionedMultiLocation} dest
+     * @param {XcmVersionedMultiLocation} beneficiary
+     * @param {XcmVersionedMultiAssets} assets
+     * @param {number} feeAssetItem
      **/
     reserveTransferAssets: GenericTxCall<
       (
@@ -5443,8 +5566,8 @@ export interface ChainTx extends GenericChainTx {
     /**
      * See [`Pallet::execute`].
      *
-     * @param message
-     * @param maxWeight
+     * @param {XcmVersionedXcm} message
+     * @param {SpWeightsWeightV2Weight} maxWeight
      **/
     execute: GenericTxCall<
       (
@@ -5462,8 +5585,8 @@ export interface ChainTx extends GenericChainTx {
     /**
      * See [`Pallet::force_xcm_version`].
      *
-     * @param location
-     * @param version
+     * @param {StagingXcmV3MultilocationMultiLocation} location
+     * @param {number} version
      **/
     forceXcmVersion: GenericTxCall<
       (
@@ -5481,7 +5604,7 @@ export interface ChainTx extends GenericChainTx {
     /**
      * See [`Pallet::force_default_xcm_version`].
      *
-     * @param maybeXcmVersion
+     * @param {number | undefined} maybeXcmVersion
      **/
     forceDefaultXcmVersion: GenericTxCall<
       (maybeXcmVersion: number | undefined) => ChainSubmittableExtrinsic<{
@@ -5496,7 +5619,7 @@ export interface ChainTx extends GenericChainTx {
     /**
      * See [`Pallet::force_subscribe_version_notify`].
      *
-     * @param location
+     * @param {XcmVersionedMultiLocation} location
      **/
     forceSubscribeVersionNotify: GenericTxCall<
       (location: XcmVersionedMultiLocation) => ChainSubmittableExtrinsic<{
@@ -5511,7 +5634,7 @@ export interface ChainTx extends GenericChainTx {
     /**
      * See [`Pallet::force_unsubscribe_version_notify`].
      *
-     * @param location
+     * @param {XcmVersionedMultiLocation} location
      **/
     forceUnsubscribeVersionNotify: GenericTxCall<
       (location: XcmVersionedMultiLocation) => ChainSubmittableExtrinsic<{
@@ -5526,11 +5649,11 @@ export interface ChainTx extends GenericChainTx {
     /**
      * See [`Pallet::limited_reserve_transfer_assets`].
      *
-     * @param dest
-     * @param beneficiary
-     * @param assets
-     * @param feeAssetItem
-     * @param weightLimit
+     * @param {XcmVersionedMultiLocation} dest
+     * @param {XcmVersionedMultiLocation} beneficiary
+     * @param {XcmVersionedMultiAssets} assets
+     * @param {number} feeAssetItem
+     * @param {XcmV3WeightLimit} weightLimit
      **/
     limitedReserveTransferAssets: GenericTxCall<
       (
@@ -5557,11 +5680,11 @@ export interface ChainTx extends GenericChainTx {
     /**
      * See [`Pallet::limited_teleport_assets`].
      *
-     * @param dest
-     * @param beneficiary
-     * @param assets
-     * @param feeAssetItem
-     * @param weightLimit
+     * @param {XcmVersionedMultiLocation} dest
+     * @param {XcmVersionedMultiLocation} beneficiary
+     * @param {XcmVersionedMultiAssets} assets
+     * @param {number} feeAssetItem
+     * @param {XcmV3WeightLimit} weightLimit
      **/
     limitedTeleportAssets: GenericTxCall<
       (
@@ -5588,7 +5711,7 @@ export interface ChainTx extends GenericChainTx {
     /**
      * See [`Pallet::force_suspension`].
      *
-     * @param suspended
+     * @param {boolean} suspended
      **/
     forceSuspension: GenericTxCall<
       (suspended: boolean) => ChainSubmittableExtrinsic<{
@@ -5605,12 +5728,15 @@ export interface ChainTx extends GenericChainTx {
      **/
     [callName: string]: GenericTxCall<(...args: any[]) => ChainSubmittableExtrinsic>;
   };
+  /**
+   * Pallet `MessageQueue`'s transaction calls
+   **/
   messageQueue: {
     /**
      * See [`Pallet::reap_page`].
      *
-     * @param messageOrigin
-     * @param pageIndex
+     * @param {PolkadotRuntimeParachainsInclusionAggregateMessageOrigin} messageOrigin
+     * @param {number} pageIndex
      **/
     reapPage: GenericTxCall<
       (
@@ -5628,10 +5754,10 @@ export interface ChainTx extends GenericChainTx {
     /**
      * See [`Pallet::execute_overweight`].
      *
-     * @param messageOrigin
-     * @param page
-     * @param index
-     * @param weightLimit
+     * @param {PolkadotRuntimeParachainsInclusionAggregateMessageOrigin} messageOrigin
+     * @param {number} page
+     * @param {number} index
+     * @param {SpWeightsWeightV2Weight} weightLimit
      **/
     executeOverweight: GenericTxCall<
       (
@@ -5658,12 +5784,15 @@ export interface ChainTx extends GenericChainTx {
      **/
     [callName: string]: GenericTxCall<(...args: any[]) => ChainSubmittableExtrinsic>;
   };
+  /**
+   * Pallet `AssetRate`'s transaction calls
+   **/
   assetRate: {
     /**
      * See [`Pallet::create`].
      *
-     * @param assetKind
-     * @param rate
+     * @param {PolkadotRuntimeCommonImplsVersionedLocatableAsset} assetKind
+     * @param {FixedU128} rate
      **/
     create: GenericTxCall<
       (
@@ -5681,8 +5810,8 @@ export interface ChainTx extends GenericChainTx {
     /**
      * See [`Pallet::update`].
      *
-     * @param assetKind
-     * @param rate
+     * @param {PolkadotRuntimeCommonImplsVersionedLocatableAsset} assetKind
+     * @param {FixedU128} rate
      **/
     update: GenericTxCall<
       (
@@ -5700,7 +5829,7 @@ export interface ChainTx extends GenericChainTx {
     /**
      * See [`Pallet::remove`].
      *
-     * @param assetKind
+     * @param {PolkadotRuntimeCommonImplsVersionedLocatableAsset} assetKind
      **/
     remove: GenericTxCall<
       (assetKind: PolkadotRuntimeCommonImplsVersionedLocatableAsset) => ChainSubmittableExtrinsic<{
@@ -5717,12 +5846,15 @@ export interface ChainTx extends GenericChainTx {
      **/
     [callName: string]: GenericTxCall<(...args: any[]) => ChainSubmittableExtrinsic>;
   };
+  /**
+   * Pallet `Beefy`'s transaction calls
+   **/
   beefy: {
     /**
      * See [`Pallet::report_equivocation`].
      *
-     * @param equivocationProof
-     * @param keyOwnerProof
+     * @param {SpConsensusBeefyEquivocationProof} equivocationProof
+     * @param {SpSessionMembershipProof} keyOwnerProof
      **/
     reportEquivocation: GenericTxCall<
       (
@@ -5740,8 +5872,8 @@ export interface ChainTx extends GenericChainTx {
     /**
      * See [`Pallet::report_equivocation_unsigned`].
      *
-     * @param equivocationProof
-     * @param keyOwnerProof
+     * @param {SpConsensusBeefyEquivocationProof} equivocationProof
+     * @param {SpSessionMembershipProof} keyOwnerProof
      **/
     reportEquivocationUnsigned: GenericTxCall<
       (
@@ -5759,7 +5891,7 @@ export interface ChainTx extends GenericChainTx {
     /**
      * See [`Pallet::set_new_genesis`].
      *
-     * @param delayInBlocks
+     * @param {number} delayInBlocks
      **/
     setNewGenesis: GenericTxCall<
       (delayInBlocks: number) => ChainSubmittableExtrinsic<{

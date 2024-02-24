@@ -44,6 +44,7 @@ export interface RuntimeApis extends GenericRuntimeApis {
      * Execute the given block.
      *
      * @callname: Core_execute_block
+     * @param {Block} block
      **/
     executeBlock: GenericRuntimeApiMethod<(block: Block) => Promise<[]>>;
 
@@ -51,6 +52,7 @@ export interface RuntimeApis extends GenericRuntimeApis {
      * Initialize a block with the given header.
      *
      * @callname: Core_initialize_block
+     * @param {Header} header
      **/
     initializeBlock: GenericRuntimeApiMethod<(header: Header) => Promise<[]>>;
 
@@ -68,6 +70,7 @@ export interface RuntimeApis extends GenericRuntimeApis {
      * Returns the metadata at a given version.
      *
      * @callname: Metadata_metadata_at_version
+     * @param {number} version
      **/
     metadataAtVersion: GenericRuntimeApiMethod<(version: number) => Promise<Option<OpaqueMetadata>>>;
 
@@ -98,18 +101,22 @@ export interface RuntimeApis extends GenericRuntimeApis {
     /**
      *
      * @callname: BlockBuilder_apply_extrinsic
+     * @param {OpaqueExtrinsicLike} extrinsic
      **/
     applyExtrinsic: GenericRuntimeApiMethod<(extrinsic: OpaqueExtrinsicLike) => Promise<ApplyExtrinsicResult>>;
 
     /**
      *
      * @callname: BlockBuilder_check_inherents
+     * @param {Block} block
+     * @param {InherentData} data
      **/
     checkInherents: GenericRuntimeApiMethod<(block: Block, data: InherentData) => Promise<CheckInherentsResult>>;
 
     /**
      *
      * @callname: BlockBuilder_inherent_extrinsics
+     * @param {InherentData} inherent
      **/
     inherentExtrinsics: GenericRuntimeApiMethod<(inherent: InherentData) => Promise<Array<Extrinsic>>>;
 
@@ -133,6 +140,9 @@ export interface RuntimeApis extends GenericRuntimeApis {
      * Validate the transaction.
      *
      * @callname: TaggedTransactionQueue_validate_transaction
+     * @param {TransactionSource} source
+     * @param {OpaqueExtrinsicLike} tx
+     * @param {BlockHash} blockHash
      **/
     validateTransaction: GenericRuntimeApiMethod<
       (source: TransactionSource, tx: OpaqueExtrinsicLike, blockHash: BlockHash) => Promise<TransactionValidity>
@@ -152,6 +162,7 @@ export interface RuntimeApis extends GenericRuntimeApis {
      * Starts the off-chain task for given block header.
      *
      * @callname: OffchainWorkerApi_offchain_worker
+     * @param {Header} header
      **/
     offchainWorker: GenericRuntimeApiMethod<(header: Header) => Promise<[]>>;
 
@@ -169,6 +180,7 @@ export interface RuntimeApis extends GenericRuntimeApis {
      * The API to query account nonce (aka transaction index)
      *
      * @callname: AccountNonceApi_account_nonce
+     * @param {AccountId32Like} accountId
      **/
     accountNonce: GenericRuntimeApiMethod<(accountId: AccountId32Like) => Promise<Nonce>>;
 
@@ -186,6 +198,8 @@ export interface RuntimeApis extends GenericRuntimeApis {
      * The transaction info
      *
      * @callname: TransactionPaymentApi_query_info
+     * @param {OpaqueExtrinsicLike} uxt
+     * @param {number} len
      **/
     queryInfo: GenericRuntimeApiMethod<(uxt: OpaqueExtrinsicLike, len: number) => Promise<RuntimeDispatchInfo>>;
 
@@ -193,6 +207,8 @@ export interface RuntimeApis extends GenericRuntimeApis {
      * The transaction fee details
      *
      * @callname: TransactionPaymentApi_query_fee_details
+     * @param {OpaqueExtrinsicLike} uxt
+     * @param {number} len
      **/
     queryFeeDetails: GenericRuntimeApiMethod<(uxt: OpaqueExtrinsicLike, len: number) => Promise<FeeDetails>>;
 
@@ -200,6 +216,7 @@ export interface RuntimeApis extends GenericRuntimeApis {
      * Query the output of the current LengthToFee given some input
      *
      * @callname: TransactionPaymentApi_query_length_to_fee
+     * @param {number} length
      **/
     queryLengthToFee: GenericRuntimeApiMethod<(length: number) => Promise<Balance>>;
 
@@ -207,6 +224,7 @@ export interface RuntimeApis extends GenericRuntimeApis {
      * Query the output of the current WeightToFee given some input
      *
      * @callname: TransactionPaymentApi_query_weight_to_fee
+     * @param {Weight} weight
      **/
     queryWeightToFee: GenericRuntimeApiMethod<(weight: Weight) => Promise<Balance>>;
 
@@ -224,6 +242,8 @@ export interface RuntimeApis extends GenericRuntimeApis {
      * Query information of a dispatch class, weight, and fee of a given encoded `Call`.
      *
      * @callname: TransactionPaymentCallApi_query_call_info
+     * @param {RawBytesLike} call
+     * @param {number} len
      **/
     queryCallInfo: GenericRuntimeApiMethod<(call: RawBytesLike, len: number) => Promise<RuntimeDispatchInfo>>;
 
@@ -231,6 +251,8 @@ export interface RuntimeApis extends GenericRuntimeApis {
      * Query fee details of a given encoded `Call`.
      *
      * @callname: TransactionPaymentCallApi_query_call_fee_details
+     * @param {RawBytesLike} call
+     * @param {number} len
      **/
     queryCallFeeDetails: GenericRuntimeApiMethod<(call: RawBytesLike, len: number) => Promise<FeeDetails>>;
 
@@ -238,6 +260,7 @@ export interface RuntimeApis extends GenericRuntimeApis {
      * Query the output of the current LengthToFee given some input
      *
      * @callname: TransactionPaymentCallApi_query_length_to_fee
+     * @param {number} length
      **/
     queryLengthToFee: GenericRuntimeApiMethod<(length: number) => Promise<Balance>>;
 
@@ -245,6 +268,7 @@ export interface RuntimeApis extends GenericRuntimeApis {
      * Query the output of the current WeightToFee given some input
      *
      * @callname: TransactionPaymentCallApi_query_weight_to_fee
+     * @param {Weight} weight
      **/
     queryWeightToFee: GenericRuntimeApiMethod<(weight: Weight) => Promise<Balance>>;
 
@@ -268,6 +292,7 @@ export interface RuntimeApis extends GenericRuntimeApis {
      * Returns the concatenated SCALE encoded public keys.
      *
      * @callname: SessionKeys_generate_session_keys
+     * @param {Option<BytesLike>} seed
      **/
     generateSessionKeys: GenericRuntimeApiMethod<(seed?: Option<BytesLike>) => Promise<Bytes>>;
 
@@ -277,6 +302,7 @@ export interface RuntimeApis extends GenericRuntimeApis {
      * Returns the list of public raw public keys + key typ
      *
      * @callname: SessionKeys_decode_session_keys
+     * @param {BytesLike} encoded
      **/
     decodeSessionKeys: GenericRuntimeApiMethod<(encoded: BytesLike) => Promise<Option<Array<[Bytes, KeyTypeId]>>>>;
 

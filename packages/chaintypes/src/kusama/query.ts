@@ -151,9 +151,14 @@ import type {
 } from './types';
 
 export interface ChainStorage extends GenericChainStorage {
+  /**
+   * Pallet `System`'s storage queries
+   **/
   system: {
     /**
      * The full account information for a particular account ID.
+     *
+     * @param {AccountId32Like} arg
      **/
     account: GenericStorageQuery<(arg: AccountId32Like) => FrameSystemAccountInfo>;
 
@@ -174,11 +179,15 @@ export interface ChainStorage extends GenericChainStorage {
 
     /**
      * Map of block numbers to block hashes.
+     *
+     * @param {number} arg
      **/
     blockHash: GenericStorageQuery<(arg: number) => H256>;
 
     /**
      * Extrinsics data for the current block (maps an extrinsic's index to its data).
+     *
+     * @param {number} arg
      **/
     extrinsicData: GenericStorageQuery<(arg: number) => Bytes>;
 
@@ -224,6 +233,8 @@ export interface ChainStorage extends GenericChainStorage {
      * The value has the type `(BlockNumberFor<T>, EventIndex)` because if we used only just
      * the `EventIndex` then in case if the topic has the same contents on the next block
      * no notification will be triggered thus the event might be lost.
+     *
+     * @param {H256} arg
      **/
     eventTopics: GenericStorageQuery<(arg: H256) => Array<[number, number]>>;
 
@@ -253,6 +264,9 @@ export interface ChainStorage extends GenericChainStorage {
      **/
     [storage: string]: GenericStorageQuery;
   };
+  /**
+   * Pallet `Babe`'s storage queries
+   **/
   babe: {
     /**
      * Current epoch index.
@@ -319,6 +333,8 @@ export interface ChainStorage extends GenericChainStorage {
 
     /**
      * TWOX-NOTE: `SegmentIndex` is an increasing integer, so this is okay.
+     *
+     * @param {number} arg
      **/
     underConstruction: GenericStorageQuery<(arg: number) => Array<FixedBytes<32>>>;
 
@@ -383,6 +399,9 @@ export interface ChainStorage extends GenericChainStorage {
      **/
     [storage: string]: GenericStorageQuery;
   };
+  /**
+   * Pallet `Timestamp`'s storage queries
+   **/
   timestamp: {
     /**
      * The current time for the current block.
@@ -402,9 +421,14 @@ export interface ChainStorage extends GenericChainStorage {
      **/
     [storage: string]: GenericStorageQuery;
   };
+  /**
+   * Pallet `Indices`'s storage queries
+   **/
   indices: {
     /**
      * The lookup from index to account.
+     *
+     * @param {number} arg
      **/
     accounts: GenericStorageQuery<(arg: number) => [AccountId32, bigint, boolean] | undefined>;
 
@@ -413,6 +437,9 @@ export interface ChainStorage extends GenericChainStorage {
      **/
     [storage: string]: GenericStorageQuery;
   };
+  /**
+   * Pallet `Balances`'s storage queries
+   **/
   balances: {
     /**
      * The total units issued in the system.
@@ -449,27 +476,37 @@ export interface ChainStorage extends GenericChainStorage {
      * `frame_system` data alongside the account data contrary to storing account balances in the
      * `Balances` pallet, which uses a `StorageMap` to store balances data only.
      * NOTE: This is only used in the case that this pallet is used to store balances.
+     *
+     * @param {AccountId32Like} arg
      **/
     account: GenericStorageQuery<(arg: AccountId32Like) => PalletBalancesAccountData>;
 
     /**
      * Any liquidity locks on some account balances.
      * NOTE: Should only be accessed when setting, changing and freeing a lock.
+     *
+     * @param {AccountId32Like} arg
      **/
     locks: GenericStorageQuery<(arg: AccountId32Like) => Array<PalletBalancesBalanceLock>>;
 
     /**
      * Named reserves on some account balances.
+     *
+     * @param {AccountId32Like} arg
      **/
     reserves: GenericStorageQuery<(arg: AccountId32Like) => Array<PalletBalancesReserveData>>;
 
     /**
      * Holds on account balances.
+     *
+     * @param {AccountId32Like} arg
      **/
     holds: GenericStorageQuery<(arg: AccountId32Like) => Array<PalletBalancesIdAmount>>;
 
     /**
      * Freeze locks on account balances.
+     *
+     * @param {AccountId32Like} arg
      **/
     freezes: GenericStorageQuery<(arg: AccountId32Like) => Array<PalletBalancesIdAmountRuntimeFreezeReason>>;
 
@@ -478,6 +515,9 @@ export interface ChainStorage extends GenericChainStorage {
      **/
     [storage: string]: GenericStorageQuery;
   };
+  /**
+   * Pallet `TransactionPayment`'s storage queries
+   **/
   transactionPayment: {
     nextFeeMultiplier: GenericStorageQuery<() => FixedU128>;
     storageVersion: GenericStorageQuery<() => PalletTransactionPaymentReleases>;
@@ -487,6 +527,9 @@ export interface ChainStorage extends GenericChainStorage {
      **/
     [storage: string]: GenericStorageQuery;
   };
+  /**
+   * Pallet `Authorship`'s storage queries
+   **/
   authorship: {
     /**
      * Author of current block.
@@ -498,6 +541,9 @@ export interface ChainStorage extends GenericChainStorage {
      **/
     [storage: string]: GenericStorageQuery;
   };
+  /**
+   * Pallet `Staking`'s storage queries
+   **/
   staking: {
     /**
      * The ideal number of active validators.
@@ -520,6 +566,8 @@ export interface ChainStorage extends GenericChainStorage {
      * Map from all locked "stash" accounts to the controller account.
      *
      * TWOX-NOTE: SAFE since `AccountId` is a secure hash.
+     *
+     * @param {AccountId32Like} arg
      **/
     bonded: GenericStorageQuery<(arg: AccountId32Like) => AccountId32 | undefined>;
 
@@ -550,6 +598,8 @@ export interface ChainStorage extends GenericChainStorage {
      *
      * Note: All the reads and mutations to this storage *MUST* be done through the methods exposed
      * by [`StakingLedger`] to ensure data and lock consistency.
+     *
+     * @param {AccountId32Like} arg
      **/
     ledger: GenericStorageQuery<(arg: AccountId32Like) => PalletStakingStakingLedger | undefined>;
 
@@ -557,6 +607,8 @@ export interface ChainStorage extends GenericChainStorage {
      * Where the reward payment should be made. Keyed by stash.
      *
      * TWOX-NOTE: SAFE since `AccountId` is a secure hash.
+     *
+     * @param {AccountId32Like} arg
      **/
     payee: GenericStorageQuery<(arg: AccountId32Like) => PalletStakingRewardDestination>;
 
@@ -564,6 +616,8 @@ export interface ChainStorage extends GenericChainStorage {
      * The map from (wannabe) validator stash key to the preferences of that validator.
      *
      * TWOX-NOTE: SAFE since `AccountId` is a secure hash.
+     *
+     * @param {AccountId32Like} arg
      **/
     validators: GenericStorageQuery<(arg: AccountId32Like) => PalletStakingValidatorPrefs>;
 
@@ -599,6 +653,8 @@ export interface ChainStorage extends GenericChainStorage {
      * [`Call::chill_other`] dispatchable by anyone.
      *
      * TWOX-NOTE: SAFE since `AccountId` is a secure hash.
+     *
+     * @param {AccountId32Like} arg
      **/
     nominators: GenericStorageQuery<(arg: AccountId32Like) => PalletStakingNominations | undefined>;
 
@@ -635,6 +691,8 @@ export interface ChainStorage extends GenericChainStorage {
      *
      * Note: This tracks the starting session (i.e. session index when era start being active)
      * for the eras in `[CurrentEra - HISTORY_DEPTH, CurrentEra]`.
+     *
+     * @param {number} arg
      **/
     erasStartSessionIndex: GenericStorageQuery<(arg: number) => number | undefined>;
 
@@ -645,6 +703,8 @@ export interface ChainStorage extends GenericChainStorage {
      *
      * Is it removed after `HISTORY_DEPTH` eras.
      * If stakers hasn't been set or has been removed then empty exposure is returned.
+     *
+     * @param {[number, AccountId32Like]} arg
      **/
     erasStakers: GenericStorageQuery<(arg: [number, AccountId32Like]) => PalletStakingExposure>;
 
@@ -660,6 +720,8 @@ export interface ChainStorage extends GenericChainStorage {
      *
      * Is it removed after `HISTORY_DEPTH` eras.
      * If stakers hasn't been set or has been removed then empty exposure is returned.
+     *
+     * @param {[number, AccountId32Like]} arg
      **/
     erasStakersClipped: GenericStorageQuery<(arg: [number, AccountId32Like]) => PalletStakingExposure>;
 
@@ -669,6 +731,8 @@ export interface ChainStorage extends GenericChainStorage {
      * This is keyed first by the era index to allow bulk deletion and then the stash account.
      *
      * Is it removed after `HISTORY_DEPTH` eras.
+     *
+     * @param {[number, AccountId32Like]} arg
      **/
     erasValidatorPrefs: GenericStorageQuery<(arg: [number, AccountId32Like]) => PalletStakingValidatorPrefs>;
 
@@ -676,18 +740,24 @@ export interface ChainStorage extends GenericChainStorage {
      * The total validator era payout for the last `HISTORY_DEPTH` eras.
      *
      * Eras that haven't finished yet or has been removed doesn't have reward.
+     *
+     * @param {number} arg
      **/
     erasValidatorReward: GenericStorageQuery<(arg: number) => bigint | undefined>;
 
     /**
      * Rewards for the last `HISTORY_DEPTH` eras.
      * If reward hasn't been set or has been removed then 0 reward is returned.
+     *
+     * @param {number} arg
      **/
     erasRewardPoints: GenericStorageQuery<(arg: number) => PalletStakingEraRewardPoints>;
 
     /**
      * The total amount staked for the last `HISTORY_DEPTH` eras.
      * If total hasn't been set or has been removed then 0 stake is returned.
+     *
+     * @param {number} arg
      **/
     erasTotalStake: GenericStorageQuery<(arg: number) => bigint>;
 
@@ -711,6 +781,8 @@ export interface ChainStorage extends GenericChainStorage {
 
     /**
      * All unapplied slashes that are queued for later.
+     *
+     * @param {number} arg
      **/
     unappliedSlashes: GenericStorageQuery<(arg: number) => Array<PalletStakingUnappliedSlash>>;
 
@@ -725,22 +797,30 @@ export interface ChainStorage extends GenericChainStorage {
     /**
      * All slashing events on validators, mapped by era to the highest slash proportion
      * and slash value of the era.
+     *
+     * @param {[number, AccountId32Like]} arg
      **/
     validatorSlashInEra: GenericStorageQuery<(arg: [number, AccountId32Like]) => [Perbill, bigint] | undefined>;
 
     /**
      * All slashing events on nominators, mapped by era to the highest slash value of the era.
+     *
+     * @param {[number, AccountId32Like]} arg
      **/
     nominatorSlashInEra: GenericStorageQuery<(arg: [number, AccountId32Like]) => bigint | undefined>;
 
     /**
      * Slashing spans for stash accounts.
+     *
+     * @param {AccountId32Like} arg
      **/
     slashingSpans: GenericStorageQuery<(arg: AccountId32Like) => PalletStakingSlashingSlashingSpans | undefined>;
 
     /**
      * Records information about the maximum slash of a stash within a slashing span,
      * as well as how much reward has been paid out.
+     *
+     * @param {[AccountId32Like, number]} arg
      **/
     spanSlash: GenericStorageQuery<(arg: [AccountId32Like, number]) => PalletStakingSlashingSpanRecord>;
 
@@ -776,14 +856,21 @@ export interface ChainStorage extends GenericChainStorage {
      **/
     [storage: string]: GenericStorageQuery;
   };
+  /**
+   * Pallet `Offences`'s storage queries
+   **/
   offences: {
     /**
      * The primary structure that holds all offence records keyed by report identifiers.
+     *
+     * @param {H256} arg
      **/
     reports: GenericStorageQuery<(arg: H256) => SpStakingOffenceOffenceDetails | undefined>;
 
     /**
      * A vector of reports of the same kind that happened at the same time slot.
+     *
+     * @param {[FixedBytes<16>, BytesLike]} arg
      **/
     concurrentReportsIndex: GenericStorageQuery<(arg: [FixedBytes<16>, BytesLike]) => Array<H256>>;
 
@@ -792,6 +879,9 @@ export interface ChainStorage extends GenericChainStorage {
      **/
     [storage: string]: GenericStorageQuery;
   };
+  /**
+   * Pallet `Session`'s storage queries
+   **/
   session: {
     /**
      * The current set of validators.
@@ -826,11 +916,15 @@ export interface ChainStorage extends GenericChainStorage {
 
     /**
      * The next session keys for a validator.
+     *
+     * @param {AccountId32Like} arg
      **/
     nextKeys: GenericStorageQuery<(arg: AccountId32Like) => StagingKusamaRuntimeSessionKeys | undefined>;
 
     /**
      * The owner of a key. The key is the `KeyTypeId` + the encoded key.
+     *
+     * @param {[SpCoreCryptoKeyTypeId, BytesLike]} arg
      **/
     keyOwner: GenericStorageQuery<(arg: [SpCoreCryptoKeyTypeId, BytesLike]) => AccountId32 | undefined>;
 
@@ -839,6 +933,9 @@ export interface ChainStorage extends GenericChainStorage {
      **/
     [storage: string]: GenericStorageQuery;
   };
+  /**
+   * Pallet `Grandpa`'s storage queries
+   **/
   grandpa: {
     /**
      * State of the current authority set.
@@ -877,6 +974,8 @@ export interface ChainStorage extends GenericChainStorage {
      * during that session.
      *
      * TWOX-NOTE: `SetId` is not under user control.
+     *
+     * @param {bigint} arg
      **/
     setIdSession: GenericStorageQuery<(arg: bigint) => number | undefined>;
 
@@ -885,6 +984,9 @@ export interface ChainStorage extends GenericChainStorage {
      **/
     [storage: string]: GenericStorageQuery;
   };
+  /**
+   * Pallet `ImOnline`'s storage queries
+   **/
   imOnline: {
     /**
      * The block number after which it's ok to send heartbeats in the current
@@ -908,12 +1010,16 @@ export interface ChainStorage extends GenericChainStorage {
 
     /**
      * For each session index, we keep a mapping of `SessionIndex` and `AuthIndex`.
+     *
+     * @param {[number, number]} arg
      **/
     receivedHeartbeats: GenericStorageQuery<(arg: [number, number]) => boolean | undefined>;
 
     /**
      * For each session index, we keep a mapping of `ValidatorId<T>` to the
      * number of blocks authored by the given authority.
+     *
+     * @param {[number, AccountId32Like]} arg
      **/
     authoredBlocks: GenericStorageQuery<(arg: [number, AccountId32Like]) => number>;
 
@@ -922,6 +1028,9 @@ export interface ChainStorage extends GenericChainStorage {
      **/
     [storage: string]: GenericStorageQuery;
   };
+  /**
+   * Pallet `Treasury`'s storage queries
+   **/
   treasury: {
     /**
      * Number of proposals that have been made.
@@ -930,6 +1039,8 @@ export interface ChainStorage extends GenericChainStorage {
 
     /**
      * Proposals that have been made.
+     *
+     * @param {number} arg
      **/
     proposals: GenericStorageQuery<(arg: number) => PalletTreasuryProposal | undefined>;
 
@@ -950,6 +1061,8 @@ export interface ChainStorage extends GenericChainStorage {
 
     /**
      * Spends that have been approved and being processed.
+     *
+     * @param {number} arg
      **/
     spends: GenericStorageQuery<(arg: number) => PalletTreasurySpendStatus | undefined>;
 
@@ -958,10 +1071,15 @@ export interface ChainStorage extends GenericChainStorage {
      **/
     [storage: string]: GenericStorageQuery;
   };
+  /**
+   * Pallet `ConvictionVoting`'s storage queries
+   **/
   convictionVoting: {
     /**
      * All voting for a particular voter in a particular voting class. We store the balance for the
      * number of votes that we have recorded.
+     *
+     * @param {[AccountId32Like, number]} arg
      **/
     votingFor: GenericStorageQuery<(arg: [AccountId32Like, number]) => PalletConvictionVotingVoteVoting>;
 
@@ -969,6 +1087,8 @@ export interface ChainStorage extends GenericChainStorage {
      * The voting classes which have a non-zero lock requirement and the lock amounts which they
      * require. The actual amount locked on behalf of this pallet should always be the maximum of
      * this list.
+     *
+     * @param {AccountId32Like} arg
      **/
     classLocksFor: GenericStorageQuery<(arg: AccountId32Like) => Array<[number, bigint]>>;
 
@@ -977,6 +1097,9 @@ export interface ChainStorage extends GenericChainStorage {
      **/
     [storage: string]: GenericStorageQuery;
   };
+  /**
+   * Pallet `Referenda`'s storage queries
+   **/
   referenda: {
     /**
      * The next free referendum index, aka the number of referenda started so far.
@@ -985,6 +1108,8 @@ export interface ChainStorage extends GenericChainStorage {
 
     /**
      * Information concerning any given referendum.
+     *
+     * @param {number} arg
      **/
     referendumInfoFor: GenericStorageQuery<(arg: number) => PalletReferendaReferendumInfo | undefined>;
 
@@ -993,11 +1118,15 @@ export interface ChainStorage extends GenericChainStorage {
      * conviction-weighted approvals.
      *
      * This should be empty if `DecidingCount` is less than `TrackInfo::max_deciding`.
+     *
+     * @param {number} arg
      **/
     trackQueue: GenericStorageQuery<(arg: number) => Array<[number, bigint]>>;
 
     /**
      * The number of referenda being decided currently.
+     *
+     * @param {number} arg
      **/
     decidingCount: GenericStorageQuery<(arg: number) => number>;
 
@@ -1008,6 +1137,8 @@ export interface ChainStorage extends GenericChainStorage {
      *
      * Consider a garbage collection for a metadata of finished referendums to `unrequest` (remove)
      * large preimages.
+     *
+     * @param {number} arg
      **/
     metadataOf: GenericStorageQuery<(arg: number) => H256 | undefined>;
 
@@ -1016,33 +1147,51 @@ export interface ChainStorage extends GenericChainStorage {
      **/
     [storage: string]: GenericStorageQuery;
   };
+  /**
+   * Pallet `FellowshipCollective`'s storage queries
+   **/
   fellowshipCollective: {
     /**
      * The number of members in the collective who have at least the rank according to the index
      * of the vec.
+     *
+     * @param {number} arg
      **/
     memberCount: GenericStorageQuery<(arg: number) => number>;
 
     /**
      * The current members of the collective.
+     *
+     * @param {AccountId32Like} arg
      **/
     members: GenericStorageQuery<(arg: AccountId32Like) => PalletRankedCollectiveMemberRecord | undefined>;
 
     /**
      * The index of each ranks's member into the group of members who have at least that rank.
+     *
+     * @param {[number, AccountId32Like]} arg
      **/
     idToIndex: GenericStorageQuery<(arg: [number, AccountId32Like]) => number | undefined>;
 
     /**
      * The members in the collective by index. All indices in the range `0..MemberCount` will
      * return `Some`, however a member's index is not guaranteed to remain unchanged over time.
+     *
+     * @param {[number, number]} arg
      **/
     indexToId: GenericStorageQuery<(arg: [number, number]) => AccountId32 | undefined>;
 
     /**
      * Votes on a given proposal, if it is ongoing.
+     *
+     * @param {[number, AccountId32Like]} arg
      **/
     voting: GenericStorageQuery<(arg: [number, AccountId32Like]) => PalletRankedCollectiveVoteRecord | undefined>;
+
+    /**
+     *
+     * @param {number} arg
+     **/
     votingCleanup: GenericStorageQuery<(arg: number) => Bytes | undefined>;
 
     /**
@@ -1050,6 +1199,9 @@ export interface ChainStorage extends GenericChainStorage {
      **/
     [storage: string]: GenericStorageQuery;
   };
+  /**
+   * Pallet `FellowshipReferenda`'s storage queries
+   **/
   fellowshipReferenda: {
     /**
      * The next free referendum index, aka the number of referenda started so far.
@@ -1058,6 +1210,8 @@ export interface ChainStorage extends GenericChainStorage {
 
     /**
      * Information concerning any given referendum.
+     *
+     * @param {number} arg
      **/
     referendumInfoFor: GenericStorageQuery<(arg: number) => PalletReferendaReferendumInfoTally | undefined>;
 
@@ -1066,11 +1220,15 @@ export interface ChainStorage extends GenericChainStorage {
      * conviction-weighted approvals.
      *
      * This should be empty if `DecidingCount` is less than `TrackInfo::max_deciding`.
+     *
+     * @param {number} arg
      **/
     trackQueue: GenericStorageQuery<(arg: number) => Array<[number, number]>>;
 
     /**
      * The number of referenda being decided currently.
+     *
+     * @param {number} arg
      **/
     decidingCount: GenericStorageQuery<(arg: number) => number>;
 
@@ -1081,6 +1239,8 @@ export interface ChainStorage extends GenericChainStorage {
      *
      * Consider a garbage collection for a metadata of finished referendums to `unrequest` (remove)
      * large preimages.
+     *
+     * @param {number} arg
      **/
     metadataOf: GenericStorageQuery<(arg: number) => H256 | undefined>;
 
@@ -1089,7 +1249,14 @@ export interface ChainStorage extends GenericChainStorage {
      **/
     [storage: string]: GenericStorageQuery;
   };
+  /**
+   * Pallet `Whitelist`'s storage queries
+   **/
   whitelist: {
+    /**
+     *
+     * @param {H256} arg
+     **/
     whitelistedCall: GenericStorageQuery<(arg: H256) => [] | undefined>;
 
     /**
@@ -1097,7 +1264,14 @@ export interface ChainStorage extends GenericChainStorage {
      **/
     [storage: string]: GenericStorageQuery;
   };
+  /**
+   * Pallet `Claims`'s storage queries
+   **/
   claims: {
+    /**
+     *
+     * @param {EthereumAddressLike} arg
+     **/
     claims: GenericStorageQuery<(arg: EthereumAddressLike) => bigint | undefined>;
     total: GenericStorageQuery<() => bigint>;
 
@@ -1106,16 +1280,22 @@ export interface ChainStorage extends GenericChainStorage {
      * First balance is the total amount that should be held for vesting.
      * Second balance is how much should be unlocked per block.
      * The block number is when the vesting should start.
+     *
+     * @param {EthereumAddressLike} arg
      **/
     vesting: GenericStorageQuery<(arg: EthereumAddressLike) => [bigint, bigint, number] | undefined>;
 
     /**
      * The statement kind that must be signed, if any.
+     *
+     * @param {EthereumAddressLike} arg
      **/
     signing: GenericStorageQuery<(arg: EthereumAddressLike) => PolkadotRuntimeCommonClaimsStatementKind | undefined>;
 
     /**
      * Pre-claimed Ethereum accounts, by the Account ID that they are claimed to.
+     *
+     * @param {AccountId32Like} arg
      **/
     preclaims: GenericStorageQuery<(arg: AccountId32Like) => EthereumAddress | undefined>;
 
@@ -1124,17 +1304,24 @@ export interface ChainStorage extends GenericChainStorage {
      **/
     [storage: string]: GenericStorageQuery;
   };
+  /**
+   * Pallet `Identity`'s storage queries
+   **/
   identity: {
     /**
      * Information that is pertinent to identify the entity behind an account.
      *
      * TWOX-NOTE: OK ― `AccountId` is a secure hash.
+     *
+     * @param {AccountId32Like} arg
      **/
     identityOf: GenericStorageQuery<(arg: AccountId32Like) => PalletIdentityRegistration | undefined>;
 
     /**
      * The super-identity of an alternative "sub" identity together with its name, within that
      * context. If the account is not some other account's sub-identity, then just `None`.
+     *
+     * @param {AccountId32Like} arg
      **/
     superOf: GenericStorageQuery<(arg: AccountId32Like) => [AccountId32, Data] | undefined>;
 
@@ -1144,6 +1331,8 @@ export interface ChainStorage extends GenericChainStorage {
      * The first item is the deposit, the second is a vector of the accounts.
      *
      * TWOX-NOTE: OK ― `AccountId` is a secure hash.
+     *
+     * @param {AccountId32Like} arg
      **/
     subsOf: GenericStorageQuery<(arg: AccountId32Like) => [bigint, Array<AccountId32>]>;
 
@@ -1160,6 +1349,9 @@ export interface ChainStorage extends GenericChainStorage {
      **/
     [storage: string]: GenericStorageQuery;
   };
+  /**
+   * Pallet `Society`'s storage queries
+   **/
   society: {
     /**
      * The max number of members for the society at one time.
@@ -1189,11 +1381,15 @@ export interface ChainStorage extends GenericChainStorage {
 
     /**
      * The current members and their rank. Doesn't include `SuspendedMembers`.
+     *
+     * @param {AccountId32Like} arg
      **/
     members: GenericStorageQuery<(arg: AccountId32Like) => PalletSocietyMemberRecord | undefined>;
 
     /**
      * Information regarding rank-0 payouts, past and future.
+     *
+     * @param {AccountId32Like} arg
      **/
     payouts: GenericStorageQuery<(arg: AccountId32Like) => PalletSocietyPayoutRecord>;
 
@@ -1205,11 +1401,15 @@ export interface ChainStorage extends GenericChainStorage {
     /**
      * The current items in `Members` keyed by their unique index. Keys are densely populated
      * `0..MemberCount` (does not include `MemberCount`).
+     *
+     * @param {number} arg
      **/
     memberByIndex: GenericStorageQuery<(arg: number) => AccountId32 | undefined>;
 
     /**
      * The set of suspended members, with their old membership record.
+     *
+     * @param {AccountId32Like} arg
      **/
     suspendedMembers: GenericStorageQuery<(arg: AccountId32Like) => PalletSocietyMemberRecord | undefined>;
 
@@ -1222,6 +1422,11 @@ export interface ChainStorage extends GenericChainStorage {
      * The current bids, stored ordered by the value of the bid.
      **/
     bids: GenericStorageQuery<() => Array<PalletSocietyBid>>;
+
+    /**
+     *
+     * @param {AccountId32Like} arg
+     **/
     candidates: GenericStorageQuery<(arg: AccountId32Like) => PalletSocietyCandidacy | undefined>;
 
     /**
@@ -1231,11 +1436,15 @@ export interface ChainStorage extends GenericChainStorage {
 
     /**
      * Double map from Candidate -> Voter -> (Maybe) Vote.
+     *
+     * @param {[AccountId32Like, AccountId32Like]} arg
      **/
     votes: GenericStorageQuery<(arg: [AccountId32Like, AccountId32Like]) => PalletSocietyVote | undefined>;
 
     /**
      * Clear-cursor for Vote, map from Candidate -> (Maybe) Cursor.
+     *
+     * @param {AccountId32Like} arg
      **/
     voteClearCursor: GenericStorageQuery<(arg: AccountId32Like) => Bytes | undefined>;
 
@@ -1258,6 +1467,8 @@ export interface ChainStorage extends GenericChainStorage {
 
     /**
      * Votes for the defender, keyed by challenge round.
+     *
+     * @param {[number, AccountId32Like]} arg
      **/
     defenderVotes: GenericStorageQuery<(arg: [number, AccountId32Like]) => PalletSocietyVote | undefined>;
 
@@ -1266,9 +1477,14 @@ export interface ChainStorage extends GenericChainStorage {
      **/
     [storage: string]: GenericStorageQuery;
   };
+  /**
+   * Pallet `Recovery`'s storage queries
+   **/
   recovery: {
     /**
      * The set of recoverable accounts and their recovery configuration.
+     *
+     * @param {AccountId32Like} arg
      **/
     recoverable: GenericStorageQuery<(arg: AccountId32Like) => PalletRecoveryRecoveryConfig | undefined>;
 
@@ -1277,6 +1493,8 @@ export interface ChainStorage extends GenericChainStorage {
      *
      * First account is the account to be recovered, and the second account
      * is the user trying to recover the account.
+     *
+     * @param {[AccountId32Like, AccountId32Like]} arg
      **/
     activeRecoveries: GenericStorageQuery<
       (arg: [AccountId32Like, AccountId32Like]) => PalletRecoveryActiveRecovery | undefined
@@ -1286,6 +1504,8 @@ export interface ChainStorage extends GenericChainStorage {
      * The list of allowed proxy accounts.
      *
      * Map from the user who can access it to the recovered account.
+     *
+     * @param {AccountId32Like} arg
      **/
     proxy: GenericStorageQuery<(arg: AccountId32Like) => AccountId32 | undefined>;
 
@@ -1294,9 +1514,14 @@ export interface ChainStorage extends GenericChainStorage {
      **/
     [storage: string]: GenericStorageQuery;
   };
+  /**
+   * Pallet `Vesting`'s storage queries
+   **/
   vesting: {
     /**
      * Information regarding the vesting of a given account.
+     *
+     * @param {AccountId32Like} arg
      **/
     vesting: GenericStorageQuery<(arg: AccountId32Like) => Array<PalletVestingVestingInfo> | undefined>;
 
@@ -1312,11 +1537,16 @@ export interface ChainStorage extends GenericChainStorage {
      **/
     [storage: string]: GenericStorageQuery;
   };
+  /**
+   * Pallet `Scheduler`'s storage queries
+   **/
   scheduler: {
     incompleteSince: GenericStorageQuery<() => number | undefined>;
 
     /**
      * Items to be executed, indexed by the block number that they should be executed on.
+     *
+     * @param {number} arg
      **/
     agenda: GenericStorageQuery<(arg: number) => Array<PalletSchedulerScheduled | undefined>>;
 
@@ -1325,6 +1555,8 @@ export interface ChainStorage extends GenericChainStorage {
      *
      * For v3 -> v4 the previously unbounded identities are Blake2-256 hashed to form the v4
      * identities.
+     *
+     * @param {FixedBytes<32>} arg
      **/
     lookup: GenericStorageQuery<(arg: FixedBytes<32>) => [number, number] | undefined>;
 
@@ -1333,15 +1565,22 @@ export interface ChainStorage extends GenericChainStorage {
      **/
     [storage: string]: GenericStorageQuery;
   };
+  /**
+   * Pallet `Proxy`'s storage queries
+   **/
   proxy: {
     /**
      * The set of account proxies. Maps the account which has delegated to the accounts
      * which are being delegated to, together with the amount held on deposit.
+     *
+     * @param {AccountId32Like} arg
      **/
     proxies: GenericStorageQuery<(arg: AccountId32Like) => [Array<PalletProxyProxyDefinition>, bigint]>;
 
     /**
      * The announcements made by the proxy (key).
+     *
+     * @param {AccountId32Like} arg
      **/
     announcements: GenericStorageQuery<(arg: AccountId32Like) => [Array<PalletProxyAnnouncement>, bigint]>;
 
@@ -1350,9 +1589,14 @@ export interface ChainStorage extends GenericChainStorage {
      **/
     [storage: string]: GenericStorageQuery;
   };
+  /**
+   * Pallet `Multisig`'s storage queries
+   **/
   multisig: {
     /**
      * The set of open multisig operations.
+     *
+     * @param {[AccountId32Like, FixedBytes<32>]} arg
      **/
     multisigs: GenericStorageQuery<(arg: [AccountId32Like, FixedBytes<32>]) => PalletMultisigMultisig | undefined>;
 
@@ -1361,16 +1605,28 @@ export interface ChainStorage extends GenericChainStorage {
      **/
     [storage: string]: GenericStorageQuery;
   };
+  /**
+   * Pallet `Preimage`'s storage queries
+   **/
   preimage: {
     /**
      * The request status of a given hash.
+     *
+     * @param {H256} arg
      **/
     statusFor: GenericStorageQuery<(arg: H256) => PalletPreimageOldRequestStatus | undefined>;
 
     /**
      * The request status of a given hash.
+     *
+     * @param {H256} arg
      **/
     requestStatusFor: GenericStorageQuery<(arg: H256) => PalletPreimageRequestStatus | undefined>;
+
+    /**
+     *
+     * @param {[H256, number]} arg
+     **/
     preimageFor: GenericStorageQuery<(arg: [H256, number]) => Bytes | undefined>;
 
     /**
@@ -1378,6 +1634,9 @@ export interface ChainStorage extends GenericChainStorage {
      **/
     [storage: string]: GenericStorageQuery;
   };
+  /**
+   * Pallet `Bounties`'s storage queries
+   **/
   bounties: {
     /**
      * Number of bounty proposals that have been made.
@@ -1386,11 +1645,15 @@ export interface ChainStorage extends GenericChainStorage {
 
     /**
      * Bounties that have been made.
+     *
+     * @param {number} arg
      **/
     bounties: GenericStorageQuery<(arg: number) => PalletBountiesBounty | undefined>;
 
     /**
      * The description of each bounty.
+     *
+     * @param {number} arg
      **/
     bountyDescriptions: GenericStorageQuery<(arg: number) => Bytes | undefined>;
 
@@ -1404,6 +1667,9 @@ export interface ChainStorage extends GenericChainStorage {
      **/
     [storage: string]: GenericStorageQuery;
   };
+  /**
+   * Pallet `ChildBounties`'s storage queries
+   **/
   childBounties: {
     /**
      * Number of total child bounties.
@@ -1413,21 +1679,29 @@ export interface ChainStorage extends GenericChainStorage {
     /**
      * Number of child bounties per parent bounty.
      * Map of parent bounty index to number of child bounties.
+     *
+     * @param {number} arg
      **/
     parentChildBounties: GenericStorageQuery<(arg: number) => number>;
 
     /**
      * Child bounties that have been added.
+     *
+     * @param {[number, number]} arg
      **/
     childBounties: GenericStorageQuery<(arg: [number, number]) => PalletChildBountiesChildBounty | undefined>;
 
     /**
      * The description of each child-bounty.
+     *
+     * @param {number} arg
      **/
     childBountyDescriptions: GenericStorageQuery<(arg: number) => Bytes | undefined>;
 
     /**
      * The cumulative child-bounty curator fee for each parent bounty.
+     *
+     * @param {number} arg
      **/
     childrenCuratorFees: GenericStorageQuery<(arg: number) => bigint>;
 
@@ -1436,6 +1710,9 @@ export interface ChainStorage extends GenericChainStorage {
      **/
     [storage: string]: GenericStorageQuery;
   };
+  /**
+   * Pallet `ElectionProviderMultiPhase`'s storage queries
+   **/
   electionProviderMultiPhase: {
     /**
      * Internal counter for the number of rounds.
@@ -1511,6 +1788,8 @@ export interface ChainStorage extends GenericChainStorage {
      *
      * Twox note: the key of the map is an auto-incrementing index which users cannot inspect or
      * affect; we shouldn't need a cryptographically secure hasher.
+     *
+     * @param {number} arg
      **/
     signedSubmissionsMap: GenericStorageQuery<
       (arg: number) => PalletElectionProviderMultiPhaseSignedSignedSubmission | undefined
@@ -1529,6 +1808,9 @@ export interface ChainStorage extends GenericChainStorage {
      **/
     [storage: string]: GenericStorageQuery;
   };
+  /**
+   * Pallet `Nis`'s storage queries
+   **/
   nis: {
     /**
      * The totals of items and balances within each queue. Saves a lot of storage reads in the
@@ -1541,6 +1823,8 @@ export interface ChainStorage extends GenericChainStorage {
 
     /**
      * The queues of bids. Indexed by duration (in `Period`s).
+     *
+     * @param {number} arg
      **/
     queues: GenericStorageQuery<(arg: number) => Array<PalletNisBid>>;
 
@@ -1551,6 +1835,8 @@ export interface ChainStorage extends GenericChainStorage {
 
     /**
      * The currently outstanding receipts, indexed according to the order of creation.
+     *
+     * @param {number} arg
      **/
     receipts: GenericStorageQuery<(arg: number) => PalletNisReceiptRecord | undefined>;
 
@@ -1559,6 +1845,9 @@ export interface ChainStorage extends GenericChainStorage {
      **/
     [storage: string]: GenericStorageQuery;
   };
+  /**
+   * Pallet `NisCounterpartBalances`'s storage queries
+   **/
   nisCounterpartBalances: {
     /**
      * The total units issued in the system.
@@ -1595,27 +1884,37 @@ export interface ChainStorage extends GenericChainStorage {
      * `frame_system` data alongside the account data contrary to storing account balances in the
      * `Balances` pallet, which uses a `StorageMap` to store balances data only.
      * NOTE: This is only used in the case that this pallet is used to store balances.
+     *
+     * @param {AccountId32Like} arg
      **/
     account: GenericStorageQuery<(arg: AccountId32Like) => PalletBalancesAccountData>;
 
     /**
      * Any liquidity locks on some account balances.
      * NOTE: Should only be accessed when setting, changing and freeing a lock.
+     *
+     * @param {AccountId32Like} arg
      **/
     locks: GenericStorageQuery<(arg: AccountId32Like) => Array<PalletBalancesBalanceLock>>;
 
     /**
      * Named reserves on some account balances.
+     *
+     * @param {AccountId32Like} arg
      **/
     reserves: GenericStorageQuery<(arg: AccountId32Like) => Array<PalletBalancesReserveData>>;
 
     /**
      * Holds on account balances.
+     *
+     * @param {AccountId32Like} arg
      **/
     holds: GenericStorageQuery<(arg: AccountId32Like) => Array<PalletBalancesIdAmount>>;
 
     /**
      * Freeze locks on account balances.
+     *
+     * @param {AccountId32Like} arg
      **/
     freezes: GenericStorageQuery<(arg: AccountId32Like) => Array<PalletBalancesIdAmount003>>;
 
@@ -1624,11 +1923,16 @@ export interface ChainStorage extends GenericChainStorage {
      **/
     [storage: string]: GenericStorageQuery;
   };
+  /**
+   * Pallet `VoterList`'s storage queries
+   **/
   voterList: {
     /**
      * A single node, within some bag.
      *
      * Nodes store links forward and back within their respective bags.
+     *
+     * @param {AccountId32Like} arg
      **/
     listNodes: GenericStorageQuery<(arg: AccountId32Like) => PalletBagsListListNode | undefined>;
 
@@ -1641,6 +1945,8 @@ export interface ChainStorage extends GenericChainStorage {
      * A bag stored in storage.
      *
      * Stores a `Bag` struct, which stores head and tail pointers to itself.
+     *
+     * @param {bigint} arg
      **/
     listBags: GenericStorageQuery<(arg: bigint) => PalletBagsListListBag | undefined>;
 
@@ -1649,6 +1955,9 @@ export interface ChainStorage extends GenericChainStorage {
      **/
     [storage: string]: GenericStorageQuery;
   };
+  /**
+   * Pallet `NominationPools`'s storage queries
+   **/
   nominationPools: {
     /**
      * The sum of funds across all pools.
@@ -1704,6 +2013,8 @@ export interface ChainStorage extends GenericChainStorage {
      * Active members.
      *
      * TWOX-NOTE: SAFE since `AccountId` is a secure hash.
+     *
+     * @param {AccountId32Like} arg
      **/
     poolMembers: GenericStorageQuery<(arg: AccountId32Like) => PalletNominationPoolsPoolMember | undefined>;
 
@@ -1714,6 +2025,8 @@ export interface ChainStorage extends GenericChainStorage {
 
     /**
      * Storage for bonded pools.
+     *
+     * @param {number} arg
      **/
     bondedPools: GenericStorageQuery<(arg: number) => PalletNominationPoolsBondedPoolInner | undefined>;
 
@@ -1725,6 +2038,8 @@ export interface ChainStorage extends GenericChainStorage {
     /**
      * Reward pools. This is where there rewards for each pool accumulate. When a members payout is
      * claimed, the balance comes out fo the reward pool. Keyed by the bonded pools account.
+     *
+     * @param {number} arg
      **/
     rewardPools: GenericStorageQuery<(arg: number) => PalletNominationPoolsRewardPool | undefined>;
 
@@ -1736,6 +2051,8 @@ export interface ChainStorage extends GenericChainStorage {
     /**
      * Groups of unbonding pools. Each group of unbonding pools belongs to a
      * bonded pool, hence the name sub-pools. Keyed by the bonded pools account.
+     *
+     * @param {number} arg
      **/
     subPoolsStorage: GenericStorageQuery<(arg: number) => PalletNominationPoolsSubPools | undefined>;
 
@@ -1746,6 +2063,8 @@ export interface ChainStorage extends GenericChainStorage {
 
     /**
      * Metadata for the pool.
+     *
+     * @param {number} arg
      **/
     metadata: GenericStorageQuery<(arg: number) => Bytes>;
 
@@ -1764,6 +2083,8 @@ export interface ChainStorage extends GenericChainStorage {
      *
      * This is only used for slashing. In all other instances, the pool id is used, and the
      * accounts are deterministically derived from it.
+     *
+     * @param {AccountId32Like} arg
      **/
     reversePoolIdLookup: GenericStorageQuery<(arg: AccountId32Like) => number | undefined>;
 
@@ -1774,6 +2095,8 @@ export interface ChainStorage extends GenericChainStorage {
 
     /**
      * Map from a pool member account to their opted claim permission.
+     *
+     * @param {AccountId32Like} arg
      **/
     claimPermissions: GenericStorageQuery<(arg: AccountId32Like) => PalletNominationPoolsClaimPermission>;
 
@@ -1782,6 +2105,9 @@ export interface ChainStorage extends GenericChainStorage {
      **/
     [storage: string]: GenericStorageQuery;
   };
+  /**
+   * Pallet `FastUnstake`'s storage queries
+   **/
   fastUnstake: {
     /**
      * The current "head of the queue" being unstaked.
@@ -1794,6 +2120,8 @@ export interface ChainStorage extends GenericChainStorage {
      * The map of all accounts wishing to be unstaked.
      *
      * Keeps track of `AccountId` wishing to unstake and it's corresponding deposit.
+     *
+     * @param {AccountId32Like} arg
      **/
     queue: GenericStorageQuery<(arg: AccountId32Like) => bigint | undefined>;
 
@@ -1819,6 +2147,9 @@ export interface ChainStorage extends GenericChainStorage {
      **/
     [storage: string]: GenericStorageQuery;
   };
+  /**
+   * Pallet `Configuration`'s storage queries
+   **/
   configuration: {
     /**
      * The active configuration for the current session.
@@ -1847,6 +2178,9 @@ export interface ChainStorage extends GenericChainStorage {
      **/
     [storage: string]: GenericStorageQuery;
   };
+  /**
+   * Pallet `ParasShared`'s storage queries
+   **/
   parasShared: {
     /**
      * The current session index.
@@ -1875,9 +2209,14 @@ export interface ChainStorage extends GenericChainStorage {
      **/
     [storage: string]: GenericStorageQuery;
   };
+  /**
+   * Pallet `ParaInclusion`'s storage queries
+   **/
   paraInclusion: {
     /**
      * The latest bitfield for each validator, referred to by their index in the validator set.
+     *
+     * @param {PolkadotPrimitivesV6ValidatorIndex} arg
      **/
     availabilityBitfields: GenericStorageQuery<
       (
@@ -1887,6 +2226,8 @@ export interface ChainStorage extends GenericChainStorage {
 
     /**
      * Candidates pending availability by `ParaId`.
+     *
+     * @param {PolkadotParachainPrimitivesPrimitivesId} arg
      **/
     pendingAvailability: GenericStorageQuery<
       (
@@ -1896,6 +2237,8 @@ export interface ChainStorage extends GenericChainStorage {
 
     /**
      * The commitments of candidates pending availability, by `ParaId`.
+     *
+     * @param {PolkadotParachainPrimitivesPrimitivesId} arg
      **/
     pendingAvailabilityCommitments: GenericStorageQuery<
       (arg: PolkadotParachainPrimitivesPrimitivesId) => PolkadotPrimitivesV6CandidateCommitments | undefined
@@ -1906,6 +2249,9 @@ export interface ChainStorage extends GenericChainStorage {
      **/
     [storage: string]: GenericStorageQuery;
   };
+  /**
+   * Pallet `ParaInherent`'s storage queries
+   **/
   paraInherent: {
     /**
      * Whether the paras inherent was included within this block.
@@ -1927,6 +2273,9 @@ export interface ChainStorage extends GenericChainStorage {
      **/
     [storage: string]: GenericStorageQuery;
   };
+  /**
+   * Pallet `ParaScheduler`'s storage queries
+   **/
   paraScheduler: {
     /**
      * All the validator groups. One for each core. Indices are into `ActiveValidators` - not the
@@ -1980,12 +2329,17 @@ export interface ChainStorage extends GenericChainStorage {
      **/
     [storage: string]: GenericStorageQuery;
   };
+  /**
+   * Pallet `Paras`'s storage queries
+   **/
   paras: {
     /**
      * All currently active PVF pre-checking votes.
      *
      * Invariant:
      * - There are no PVF pre-checking votes that exists in list but not in the set and vice versa.
+     *
+     * @param {PolkadotParachainPrimitivesPrimitivesValidationCodeHash} arg
      **/
     pvfActiveVoteMap: GenericStorageQuery<
       (
@@ -2008,6 +2362,8 @@ export interface ChainStorage extends GenericChainStorage {
 
     /**
      * The current lifecycle of a all known Para IDs.
+     *
+     * @param {PolkadotParachainPrimitivesPrimitivesId} arg
      **/
     paraLifecycles: GenericStorageQuery<
       (arg: PolkadotParachainPrimitivesPrimitivesId) => PolkadotRuntimeParachainsParasParaLifecycle | undefined
@@ -2015,6 +2371,8 @@ export interface ChainStorage extends GenericChainStorage {
 
     /**
      * The head-data of every registered para.
+     *
+     * @param {PolkadotParachainPrimitivesPrimitivesId} arg
      **/
     heads: GenericStorageQuery<
       (arg: PolkadotParachainPrimitivesPrimitivesId) => PolkadotParachainPrimitivesPrimitivesHeadData | undefined
@@ -2022,6 +2380,8 @@ export interface ChainStorage extends GenericChainStorage {
 
     /**
      * The context (relay-chain block number) of the most recent parachain head.
+     *
+     * @param {PolkadotParachainPrimitivesPrimitivesId} arg
      **/
     mostRecentContext: GenericStorageQuery<(arg: PolkadotParachainPrimitivesPrimitivesId) => number | undefined>;
 
@@ -2029,6 +2389,8 @@ export interface ChainStorage extends GenericChainStorage {
      * The validation code hash of every live para.
      *
      * Corresponding code can be retrieved with [`CodeByHash`].
+     *
+     * @param {PolkadotParachainPrimitivesPrimitivesId} arg
      **/
     currentCodeHash: GenericStorageQuery<
       (
@@ -2041,6 +2403,8 @@ export interface ChainStorage extends GenericChainStorage {
      * became outdated.
      *
      * Corresponding code can be retrieved with [`CodeByHash`].
+     *
+     * @param {[PolkadotParachainPrimitivesPrimitivesId, number]} arg
      **/
     pastCodeHash: GenericStorageQuery<
       (
@@ -2052,6 +2416,8 @@ export interface ChainStorage extends GenericChainStorage {
      * Past code of parachains. The parachains themselves may not be registered anymore,
      * but we also keep their code on-chain for the same amount of time as outdated code
      * to keep it available for approval checkers.
+     *
+     * @param {PolkadotParachainPrimitivesPrimitivesId} arg
      **/
     pastCodeMeta: GenericStorageQuery<
       (arg: PolkadotParachainPrimitivesPrimitivesId) => PolkadotRuntimeParachainsParasParaPastCodeMeta
@@ -2071,6 +2437,8 @@ export interface ChainStorage extends GenericChainStorage {
      * The block number at which the planned code change is expected for a para.
      * The change will be applied after the first parablock for this ID included which executes
      * in the context of a relay chain block with a number >= `expected_at`.
+     *
+     * @param {PolkadotParachainPrimitivesPrimitivesId} arg
      **/
     futureCodeUpgrades: GenericStorageQuery<(arg: PolkadotParachainPrimitivesPrimitivesId) => number | undefined>;
 
@@ -2078,6 +2446,8 @@ export interface ChainStorage extends GenericChainStorage {
      * The actual future code hash of a para.
      *
      * Corresponding code can be retrieved with [`CodeByHash`].
+     *
+     * @param {PolkadotParachainPrimitivesPrimitivesId} arg
      **/
     futureCodeHash: GenericStorageQuery<
       (
@@ -2096,6 +2466,8 @@ export interface ChainStorage extends GenericChainStorage {
      *
      * NOTE that this field is used by parachains via merkle storage proofs, therefore changing
      * the format will require migration of parachains.
+     *
+     * @param {PolkadotParachainPrimitivesPrimitivesId} arg
      **/
     upgradeGoAheadSignal: GenericStorageQuery<
       (arg: PolkadotParachainPrimitivesPrimitivesId) => PolkadotPrimitivesV6UpgradeGoAhead | undefined
@@ -2111,6 +2483,8 @@ export interface ChainStorage extends GenericChainStorage {
      *
      * NOTE that this field is used by parachains via merkle storage proofs, therefore changing
      * the format will require migration of parachains.
+     *
+     * @param {PolkadotParachainPrimitivesPrimitivesId} arg
      **/
     upgradeRestrictionSignal: GenericStorageQuery<
       (arg: PolkadotParachainPrimitivesPrimitivesId) => PolkadotPrimitivesV6UpgradeRestriction | undefined
@@ -2133,6 +2507,8 @@ export interface ChainStorage extends GenericChainStorage {
 
     /**
      * The actions to perform during the start of a specific session index.
+     *
+     * @param {number} arg
      **/
     actionsQueue: GenericStorageQuery<(arg: number) => Array<PolkadotParachainPrimitivesPrimitivesId>>;
 
@@ -2141,6 +2517,8 @@ export interface ChainStorage extends GenericChainStorage {
      *
      * NOTE that after PVF pre-checking is enabled the para genesis arg will have it's code set
      * to empty. Instead, the code will be saved into the storage right away via `CodeByHash`.
+     *
+     * @param {PolkadotParachainPrimitivesPrimitivesId} arg
      **/
     upcomingParasGenesis: GenericStorageQuery<
       (arg: PolkadotParachainPrimitivesPrimitivesId) => PolkadotRuntimeParachainsParasParaGenesisArgs | undefined
@@ -2148,6 +2526,8 @@ export interface ChainStorage extends GenericChainStorage {
 
     /**
      * The number of reference on the validation code in [`CodeByHash`] storage.
+     *
+     * @param {PolkadotParachainPrimitivesPrimitivesValidationCodeHash} arg
      **/
     codeByHashRefs: GenericStorageQuery<(arg: PolkadotParachainPrimitivesPrimitivesValidationCodeHash) => number>;
 
@@ -2156,6 +2536,8 @@ export interface ChainStorage extends GenericChainStorage {
      *
      * This storage is consistent with [`FutureCodeHash`], [`CurrentCodeHash`] and
      * [`PastCodeHash`].
+     *
+     * @param {PolkadotParachainPrimitivesPrimitivesValidationCodeHash} arg
      **/
     codeByHash: GenericStorageQuery<
       (
@@ -2168,6 +2550,9 @@ export interface ChainStorage extends GenericChainStorage {
      **/
     [storage: string]: GenericStorageQuery;
   };
+  /**
+   * Pallet `Initializer`'s storage queries
+   **/
   initializer: {
     /**
      * Whether the parachains modules have been initialized within this block.
@@ -2197,9 +2582,14 @@ export interface ChainStorage extends GenericChainStorage {
      **/
     [storage: string]: GenericStorageQuery;
   };
+  /**
+   * Pallet `Dmp`'s storage queries
+   **/
   dmp: {
     /**
      * The downward messages addressed for a certain para.
+     *
+     * @param {PolkadotParachainPrimitivesPrimitivesId} arg
      **/
     downwardMessageQueues: GenericStorageQuery<
       (arg: PolkadotParachainPrimitivesPrimitivesId) => Array<PolkadotCorePrimitivesInboundDownwardMessage>
@@ -2213,11 +2603,15 @@ export interface ChainStorage extends GenericChainStorage {
      * - `prev_head`: is the previous head hash or zero if none.
      * - `B`: is the relay-chain block number in which a message was appended.
      * - `H(M)`: is the hash of the message being appended.
+     *
+     * @param {PolkadotParachainPrimitivesPrimitivesId} arg
      **/
     downwardMessageQueueHeads: GenericStorageQuery<(arg: PolkadotParachainPrimitivesPrimitivesId) => H256>;
 
     /**
      * The factor to multiply the base delivery fee by.
+     *
+     * @param {PolkadotParachainPrimitivesPrimitivesId} arg
      **/
     deliveryFeeFactor: GenericStorageQuery<(arg: PolkadotParachainPrimitivesPrimitivesId) => FixedU128>;
 
@@ -2226,6 +2620,9 @@ export interface ChainStorage extends GenericChainStorage {
      **/
     [storage: string]: GenericStorageQuery;
   };
+  /**
+   * Pallet `Hrmp`'s storage queries
+   **/
   hrmp: {
     /**
      * The set of pending HRMP open channel requests.
@@ -2234,6 +2631,8 @@ export interface ChainStorage extends GenericChainStorage {
      *
      * Invariant:
      * - There are no channels that exists in list but not in the set and vice versa.
+     *
+     * @param {PolkadotParachainPrimitivesPrimitivesHrmpChannelId} arg
      **/
     hrmpOpenChannelRequests: GenericStorageQuery<
       (
@@ -2246,6 +2645,8 @@ export interface ChainStorage extends GenericChainStorage {
      * This mapping tracks how many open channel requests are initiated by a given sender para.
      * Invariant: `HrmpOpenChannelRequests` should contain the same number of items that has
      * `(X, _)` as the number of `HrmpOpenChannelRequestCount` for `X`.
+     *
+     * @param {PolkadotParachainPrimitivesPrimitivesId} arg
      **/
     hrmpOpenChannelRequestCount: GenericStorageQuery<(arg: PolkadotParachainPrimitivesPrimitivesId) => number>;
 
@@ -2253,6 +2654,8 @@ export interface ChainStorage extends GenericChainStorage {
      * This mapping tracks how many open channel requests were accepted by a given recipient para.
      * Invariant: `HrmpOpenChannelRequests` should contain the same number of items `(_, X)` with
      * `confirmed` set to true, as the number of `HrmpAcceptedChannelRequestCount` for `X`.
+     *
+     * @param {PolkadotParachainPrimitivesPrimitivesId} arg
      **/
     hrmpAcceptedChannelRequestCount: GenericStorageQuery<(arg: PolkadotParachainPrimitivesPrimitivesId) => number>;
 
@@ -2264,6 +2667,8 @@ export interface ChainStorage extends GenericChainStorage {
      *
      * Invariant:
      * - There are no channels that exists in list but not in the set and vice versa.
+     *
+     * @param {PolkadotParachainPrimitivesPrimitivesHrmpChannelId} arg
      **/
     hrmpCloseChannelRequests: GenericStorageQuery<
       (arg: PolkadotParachainPrimitivesPrimitivesHrmpChannelId) => [] | undefined
@@ -2275,6 +2680,8 @@ export interface ChainStorage extends GenericChainStorage {
      * Invariant:
      * - each para `P` used here as a key should satisfy `Paras::is_valid_para(P)` within a
      * session.
+     *
+     * @param {PolkadotParachainPrimitivesPrimitivesId} arg
      **/
     hrmpWatermarks: GenericStorageQuery<(arg: PolkadotParachainPrimitivesPrimitivesId) => number | undefined>;
 
@@ -2282,6 +2689,8 @@ export interface ChainStorage extends GenericChainStorage {
      * HRMP channel data associated with each para.
      * Invariant:
      * - each participant in the channel should satisfy `Paras::is_valid_para(P)` within a session.
+     *
+     * @param {PolkadotParachainPrimitivesPrimitivesHrmpChannelId} arg
      **/
     hrmpChannels: GenericStorageQuery<
       (arg: PolkadotParachainPrimitivesPrimitivesHrmpChannelId) => PolkadotRuntimeParachainsHrmpHrmpChannel | undefined
@@ -2301,10 +2710,17 @@ export interface ChainStorage extends GenericChainStorage {
      * `HrmpChannels` as `(P, E)`.
      * - there should be no other dangling channels in `HrmpChannels`.
      * - the vectors are sorted.
+     *
+     * @param {PolkadotParachainPrimitivesPrimitivesId} arg
      **/
     hrmpIngressChannelsIndex: GenericStorageQuery<
       (arg: PolkadotParachainPrimitivesPrimitivesId) => Array<PolkadotParachainPrimitivesPrimitivesId>
     >;
+
+    /**
+     *
+     * @param {PolkadotParachainPrimitivesPrimitivesId} arg
+     **/
     hrmpEgressChannelsIndex: GenericStorageQuery<
       (arg: PolkadotParachainPrimitivesPrimitivesId) => Array<PolkadotParachainPrimitivesPrimitivesId>
     >;
@@ -2312,6 +2728,8 @@ export interface ChainStorage extends GenericChainStorage {
     /**
      * Storage for the messages for each channel.
      * Invariant: cannot be non-empty if the corresponding channel in `HrmpChannels` is `None`.
+     *
+     * @param {PolkadotParachainPrimitivesPrimitivesHrmpChannelId} arg
      **/
     hrmpChannelContents: GenericStorageQuery<
       (arg: PolkadotParachainPrimitivesPrimitivesHrmpChannelId) => Array<PolkadotCorePrimitivesInboundHrmpMessage>
@@ -2324,6 +2742,8 @@ export interface ChainStorage extends GenericChainStorage {
      * - The inner `Vec<ParaId>` cannot store two same `ParaId`.
      * - The outer vector is sorted ascending by block number and cannot store two items with the
      * same block number.
+     *
+     * @param {PolkadotParachainPrimitivesPrimitivesId} arg
      **/
     hrmpChannelDigests: GenericStorageQuery<
       (arg: PolkadotParachainPrimitivesPrimitivesId) => Array<[number, Array<PolkadotParachainPrimitivesPrimitivesId>]>
@@ -2334,6 +2754,9 @@ export interface ChainStorage extends GenericChainStorage {
      **/
     [storage: string]: GenericStorageQuery;
   };
+  /**
+   * Pallet `ParaSessionInfo`'s storage queries
+   **/
   paraSessionInfo: {
     /**
      * Assignment keys for the current session.
@@ -2351,16 +2774,22 @@ export interface ChainStorage extends GenericChainStorage {
      * Session information in a rolling window.
      * Should have an entry in range `EarliestStoredSession..=CurrentSessionIndex`.
      * Does not have any entries before the session index in the first session change notification.
+     *
+     * @param {number} arg
      **/
     sessions: GenericStorageQuery<(arg: number) => PolkadotPrimitivesV6SessionInfo | undefined>;
 
     /**
      * The validator account keys of the validators actively participating in parachain consensus.
+     *
+     * @param {number} arg
      **/
     accountKeys: GenericStorageQuery<(arg: number) => Array<AccountId32> | undefined>;
 
     /**
      * Executor parameter set for a given session index
+     *
+     * @param {number} arg
      **/
     sessionExecutorParams: GenericStorageQuery<(arg: number) => PolkadotPrimitivesV6ExecutorParams | undefined>;
 
@@ -2369,6 +2798,9 @@ export interface ChainStorage extends GenericChainStorage {
      **/
     [storage: string]: GenericStorageQuery;
   };
+  /**
+   * Pallet `ParasDisputes`'s storage queries
+   **/
   parasDisputes: {
     /**
      * The last pruned session, if any. All data stored by this module
@@ -2378,6 +2810,8 @@ export interface ChainStorage extends GenericChainStorage {
 
     /**
      * All ongoing or concluded disputes for the last several sessions.
+     *
+     * @param {[number, PolkadotCorePrimitivesCandidateHash]} arg
      **/
     disputes: GenericStorageQuery<
       (arg: [number, PolkadotCorePrimitivesCandidateHash]) => PolkadotPrimitivesV6DisputeState | undefined
@@ -2386,6 +2820,8 @@ export interface ChainStorage extends GenericChainStorage {
     /**
      * Backing votes stored for each dispute.
      * This storage is used for slashing.
+     *
+     * @param {[number, PolkadotCorePrimitivesCandidateHash]} arg
      **/
     backersOnDisputes: GenericStorageQuery<
       (arg: [number, PolkadotCorePrimitivesCandidateHash]) => Array<PolkadotPrimitivesV6ValidatorIndex> | undefined
@@ -2394,6 +2830,8 @@ export interface ChainStorage extends GenericChainStorage {
     /**
      * All included blocks on the chain, as well as the block number in this chain that
      * should be reverted back to if the candidate is disputed and determined to be invalid.
+     *
+     * @param {[number, PolkadotCorePrimitivesCandidateHash]} arg
      **/
     included: GenericStorageQuery<(arg: [number, PolkadotCorePrimitivesCandidateHash]) => number | undefined>;
 
@@ -2410,9 +2848,14 @@ export interface ChainStorage extends GenericChainStorage {
      **/
     [storage: string]: GenericStorageQuery;
   };
+  /**
+   * Pallet `ParasSlashing`'s storage queries
+   **/
   parasSlashing: {
     /**
      * Validators pending dispute slashes.
+     *
+     * @param {[number, PolkadotCorePrimitivesCandidateHash]} arg
      **/
     unappliedSlashes: GenericStorageQuery<
       (arg: [number, PolkadotCorePrimitivesCandidateHash]) => PolkadotPrimitivesV6SlashingPendingSlashes | undefined
@@ -2420,6 +2863,8 @@ export interface ChainStorage extends GenericChainStorage {
 
     /**
      * `ValidatorSetCount` per session.
+     *
+     * @param {number} arg
      **/
     validatorSetCounts: GenericStorageQuery<(arg: number) => number | undefined>;
 
@@ -2428,15 +2873,23 @@ export interface ChainStorage extends GenericChainStorage {
      **/
     [storage: string]: GenericStorageQuery;
   };
+  /**
+   * Pallet `ParaAssignmentProvider`'s storage queries
+   **/
   paraAssignmentProvider: {
     /**
      * Generic pallet storage query
      **/
     [storage: string]: GenericStorageQuery;
   };
+  /**
+   * Pallet `Registrar`'s storage queries
+   **/
   registrar: {
     /**
      * Pending swap operations.
+     *
+     * @param {PolkadotParachainPrimitivesPrimitivesId} arg
      **/
     pendingSwap: GenericStorageQuery<
       (arg: PolkadotParachainPrimitivesPrimitivesId) => PolkadotParachainPrimitivesPrimitivesId | undefined
@@ -2447,6 +2900,8 @@ export interface ChainStorage extends GenericChainStorage {
      *
      * The given account ID is responsible for registering the code and initial head data, but may
      * only do so if it isn't yet registered. (After that, it's up to governance to do so.)
+     *
+     * @param {PolkadotParachainPrimitivesPrimitivesId} arg
      **/
     paras: GenericStorageQuery<
       (arg: PolkadotParachainPrimitivesPrimitivesId) => PolkadotRuntimeCommonParasRegistrarParaInfo | undefined
@@ -2462,6 +2917,9 @@ export interface ChainStorage extends GenericChainStorage {
      **/
     [storage: string]: GenericStorageQuery;
   };
+  /**
+   * Pallet `Slots`'s storage queries
+   **/
   slots: {
     /**
      * Amounts held on deposit for each (possibly future) leased parachain.
@@ -2480,6 +2938,8 @@ export interface ChainStorage extends GenericChainStorage {
      * deposit for the non-existent chain currently, but is held at some point in the future.
      *
      * It is illegal for a `None` value to trail in the list.
+     *
+     * @param {PolkadotParachainPrimitivesPrimitivesId} arg
      **/
     leases: GenericStorageQuery<
       (arg: PolkadotParachainPrimitivesPrimitivesId) => Array<[AccountId32, bigint] | undefined>
@@ -2490,6 +2950,9 @@ export interface ChainStorage extends GenericChainStorage {
      **/
     [storage: string]: GenericStorageQuery;
   };
+  /**
+   * Pallet `Auctions`'s storage queries
+   **/
   auctions: {
     /**
      * Number of auctions started so far.
@@ -2508,6 +2971,8 @@ export interface ChainStorage extends GenericChainStorage {
     /**
      * Amounts currently reserved in the accounts of the bidders currently winning
      * (sub-)ranges.
+     *
+     * @param {[AccountId32Like, PolkadotParachainPrimitivesPrimitivesId]} arg
      **/
     reservedAmounts: GenericStorageQuery<
       (arg: [AccountId32Like, PolkadotParachainPrimitivesPrimitivesId]) => bigint | undefined
@@ -2517,6 +2982,8 @@ export interface ChainStorage extends GenericChainStorage {
      * The winning bids for each of the 10 ranges at each sample in the final Ending Period of
      * the current auction. The map's key is the 0-based index into the Sample Size. The
      * first sample of the ending period is 0; the last is `Sample Size - 1`.
+     *
+     * @param {number} arg
      **/
     winning: GenericStorageQuery<
       (
@@ -2529,9 +2996,14 @@ export interface ChainStorage extends GenericChainStorage {
      **/
     [storage: string]: GenericStorageQuery;
   };
+  /**
+   * Pallet `Crowdloan`'s storage queries
+   **/
   crowdloan: {
     /**
      * Info on all of the funds.
+     *
+     * @param {PolkadotParachainPrimitivesPrimitivesId} arg
      **/
     funds: GenericStorageQuery<
       (arg: PolkadotParachainPrimitivesPrimitivesId) => PolkadotRuntimeCommonCrowdloanFundInfo | undefined
@@ -2558,6 +3030,9 @@ export interface ChainStorage extends GenericChainStorage {
      **/
     [storage: string]: GenericStorageQuery;
   };
+  /**
+   * Pallet `StateTrieMigration`'s storage queries
+   **/
   stateTrieMigration: {
     /**
      * Migration progress.
@@ -2586,6 +3061,9 @@ export interface ChainStorage extends GenericChainStorage {
      **/
     [storage: string]: GenericStorageQuery;
   };
+  /**
+   * Pallet `XcmPallet`'s storage queries
+   **/
   xcmPallet: {
     /**
      * The latest available query index.
@@ -2594,6 +3072,8 @@ export interface ChainStorage extends GenericChainStorage {
 
     /**
      * The ongoing queries.
+     *
+     * @param {bigint} arg
      **/
     queries: GenericStorageQuery<(arg: bigint) => PalletXcmQueryStatus | undefined>;
 
@@ -2602,6 +3082,8 @@ export interface ChainStorage extends GenericChainStorage {
      *
      * Key is the blake2 256 hash of (origin, versioned `MultiAssets`) pair. Value is the number of
      * times this pair has been trapped (usually just 1 if it exists at all).
+     *
+     * @param {H256} arg
      **/
     assetTraps: GenericStorageQuery<(arg: H256) => number>;
 
@@ -2613,17 +3095,23 @@ export interface ChainStorage extends GenericChainStorage {
 
     /**
      * The Latest versions that we know various locations support.
+     *
+     * @param {[number, XcmVersionedMultiLocation]} arg
      **/
     supportedVersion: GenericStorageQuery<(arg: [number, XcmVersionedMultiLocation]) => number | undefined>;
 
     /**
      * All locations that we have requested version notifications from.
+     *
+     * @param {[number, XcmVersionedMultiLocation]} arg
      **/
     versionNotifiers: GenericStorageQuery<(arg: [number, XcmVersionedMultiLocation]) => bigint | undefined>;
 
     /**
      * The target locations that are subscribed to our version changes, as well as the most recent
      * of our versions we informed them of.
+     *
+     * @param {[number, XcmVersionedMultiLocation]} arg
      **/
     versionNotifyTargets: GenericStorageQuery<
       (arg: [number, XcmVersionedMultiLocation]) => [bigint, SpWeightsWeightV2Weight, number] | undefined
@@ -2643,6 +3131,8 @@ export interface ChainStorage extends GenericChainStorage {
 
     /**
      * Fungible assets which we know are locked on a remote chain.
+     *
+     * @param {[number, AccountId32Like, XcmVersionedAssetId]} arg
      **/
     remoteLockedFungibles: GenericStorageQuery<
       (arg: [number, AccountId32Like, XcmVersionedAssetId]) => PalletXcmRemoteLockedFungibleRecord | undefined
@@ -2650,6 +3140,8 @@ export interface ChainStorage extends GenericChainStorage {
 
     /**
      * Fungible assets which we know are locked on this chain.
+     *
+     * @param {AccountId32Like} arg
      **/
     lockedFungibles: GenericStorageQuery<
       (arg: AccountId32Like) => Array<[bigint, XcmVersionedMultiLocation]> | undefined
@@ -2665,9 +3157,14 @@ export interface ChainStorage extends GenericChainStorage {
      **/
     [storage: string]: GenericStorageQuery;
   };
+  /**
+   * Pallet `MessageQueue`'s storage queries
+   **/
   messageQueue: {
     /**
      * The index of the first and last (non-empty) pages.
+     *
+     * @param {PolkadotRuntimeParachainsInclusionAggregateMessageOrigin} arg
      **/
     bookStateFor: GenericStorageQuery<
       (arg: PolkadotRuntimeParachainsInclusionAggregateMessageOrigin) => PalletMessageQueueBookState
@@ -2680,6 +3177,8 @@ export interface ChainStorage extends GenericChainStorage {
 
     /**
      * The map of page indices to pages.
+     *
+     * @param {[PolkadotRuntimeParachainsInclusionAggregateMessageOrigin, number]} arg
      **/
     pages: GenericStorageQuery<
       (arg: [PolkadotRuntimeParachainsInclusionAggregateMessageOrigin, number]) => PalletMessageQueuePage | undefined
@@ -2690,11 +3189,16 @@ export interface ChainStorage extends GenericChainStorage {
      **/
     [storage: string]: GenericStorageQuery;
   };
+  /**
+   * Pallet `AssetRate`'s storage queries
+   **/
   assetRate: {
     /**
      * Maps an asset to its fixed point representation in the native balance.
      *
      * E.g. `native_amount = asset_amount * ConversionRateToNative::<T>::get(asset_kind)`
+     *
+     * @param {PolkadotRuntimeCommonImplsVersionedLocatableAsset} arg
      **/
     conversionRateToNative: GenericStorageQuery<
       (arg: PolkadotRuntimeCommonImplsVersionedLocatableAsset) => FixedU128 | undefined
@@ -2705,6 +3209,9 @@ export interface ChainStorage extends GenericChainStorage {
      **/
     [storage: string]: GenericStorageQuery;
   };
+  /**
+   * Pallet `Beefy`'s storage queries
+   **/
   beefy: {
     /**
      * The current authorities set
@@ -2732,6 +3239,8 @@ export interface ChainStorage extends GenericChainStorage {
      * during that session.
      *
      * TWOX-NOTE: `ValidatorSetId` is not under user control.
+     *
+     * @param {bigint} arg
      **/
     setIdSession: GenericStorageQuery<(arg: bigint) => number | undefined>;
 
@@ -2747,6 +3256,9 @@ export interface ChainStorage extends GenericChainStorage {
      **/
     [storage: string]: GenericStorageQuery;
   };
+  /**
+   * Pallet `Mmr`'s storage queries
+   **/
   mmr: {
     /**
      * Latest MMR Root hash.
@@ -2763,6 +3275,8 @@ export interface ChainStorage extends GenericChainStorage {
      *
      * Note this collection only contains MMR peaks, the inner nodes (and leaves)
      * are pruned and only stored in the Offchain DB.
+     *
+     * @param {bigint} arg
      **/
     nodes: GenericStorageQuery<(arg: bigint) => H256 | undefined>;
 
@@ -2771,6 +3285,9 @@ export interface ChainStorage extends GenericChainStorage {
      **/
     [storage: string]: GenericStorageQuery;
   };
+  /**
+   * Pallet `BeefyMmrLeaf`'s storage queries
+   **/
   beefyMmrLeaf: {
     /**
      * Details of current BEEFY authority set.

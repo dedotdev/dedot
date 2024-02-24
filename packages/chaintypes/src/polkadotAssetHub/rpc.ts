@@ -83,6 +83,8 @@ export interface RpcCalls extends GenericRpcCalls {
      * Checks if the keystore has private keys for the given public key and key type. Returns `true` if a private key could be found.
      *
      * @rpcname: author_hasKey
+     * @param {Bytes} publicKey
+     * @param {string} keyType
      **/
     hasKey: GenericRpcCall<(publicKey: Bytes, keyType: string) => Promise<boolean>>;
 
@@ -90,6 +92,7 @@ export interface RpcCalls extends GenericRpcCalls {
      * Checks if the keystore has private keys for the given session public keys. `session_keys` is the SCALE encoded session keys object from the runtime. Returns `true` iff all private keys could be found.
      *
      * @rpcname: author_hasSessionKeys
+     * @param {Bytes} sessionKeys
      **/
     hasSessionKeys: GenericRpcCall<(sessionKeys: Bytes) => Promise<boolean>>;
 
@@ -97,6 +100,9 @@ export interface RpcCalls extends GenericRpcCalls {
      * Insert a key into the keystore.
      *
      * @rpcname: author_insertKey
+     * @param {string} keyType
+     * @param {string} suri
+     * @param {Bytes} publicKey
      **/
     insertKey: GenericRpcCall<(keyType: string, suri: string, publicKey: Bytes) => Promise<void>>;
 
@@ -111,6 +117,7 @@ export interface RpcCalls extends GenericRpcCalls {
      * Remove given extrinsic from the pool and temporarily ban it to prevent reimporting.
      *
      * @rpcname: author_removeExtrinsic
+     * @param {Array<ExtrinsicOrHash>} bytesOrHash
      **/
     removeExtrinsic: GenericRpcCall<(bytesOrHash: Array<ExtrinsicOrHash>) => Promise<Array<Hash>>>;
 
@@ -125,6 +132,7 @@ export interface RpcCalls extends GenericRpcCalls {
      * Submit and subscribe to watch an extrinsic until unsubscribed
      *
      * @pubsub: author_extrinsicUpdate, author_submitAndWatchExtrinsic, author_unwatchExtrinsic
+     * @param {Bytes} extrinsic
      **/
     submitAndWatchExtrinsic: GenericRpcCall<
       (extrinsic: Bytes, callback: Callback<TransactionStatus>) => Promise<Unsub>
@@ -134,6 +142,7 @@ export interface RpcCalls extends GenericRpcCalls {
      * Submit hex-encoded extrinsic for inclusion in block.
      *
      * @rpcname: author_submitExtrinsic
+     * @param {Bytes} extrinsic
      **/
     submitExtrinsic: GenericRpcCall<(extrinsic: Bytes) => Promise<Hash>>;
 
@@ -192,6 +201,7 @@ export interface RpcCalls extends GenericRpcCalls {
      * Get header and body of a relay chain block
      *
      * @rpcname: chain_getBlock
+     * @param {BlockHash} at
      **/
     getBlock: GenericRpcCall<(at?: BlockHash) => Promise<Option<SignedBlock>>>;
 
@@ -199,6 +209,7 @@ export interface RpcCalls extends GenericRpcCalls {
      * Get the block hash for a specific block
      *
      * @rpcname: chain_getBlockHash
+     * @param {BlockNumber} blockNumber
      **/
     getBlockHash: GenericRpcCall<(blockNumber?: BlockNumber) => Promise<Option<BlockHash>>>;
 
@@ -213,6 +224,7 @@ export interface RpcCalls extends GenericRpcCalls {
      * Retrieves the header for a specific block
      *
      * @rpcname: chain_getHeader
+     * @param {BlockHash} at
      **/
     getHeader: GenericRpcCall<(at?: BlockHash) => Promise<Option<Header>>>;
 
@@ -245,6 +257,9 @@ export interface RpcCalls extends GenericRpcCalls {
      *
      * @rpcname: childstate_getKeys
      * @deprecated: Please use `getKeysPaged` with proper paging support
+     * @param {PrefixedStorageKey} childStorageKey
+     * @param {StorageKey} prefix
+     * @param {BlockHash} at
      **/
     getKeys: GenericRpcCall<
       (childStorageKey: PrefixedStorageKey, prefix: StorageKey, at?: BlockHash) => Promise<Array<StorageKey>>
@@ -256,6 +271,11 @@ export interface RpcCalls extends GenericRpcCalls {
      * If `start_key` is passed, return next keys in storage in lexicographic order.
      *
      * @rpcname: childstate_getKeysPaged
+     * @param {PrefixedStorageKey} childStorageKey
+     * @param {Option<StorageKey>} prefix
+     * @param {number} count
+     * @param {StorageKey} startKey
+     * @param {BlockHash} at
      **/
     getKeysPaged: GenericRpcCall<
       (
@@ -271,6 +291,9 @@ export interface RpcCalls extends GenericRpcCalls {
      * Returns a child storage entry at specific block's state.
      *
      * @rpcname: childstate_getStorage
+     * @param {PrefixedStorageKey} childStorageKey
+     * @param {StorageKey} key
+     * @param {BlockHash} at
      **/
     getStorage: GenericRpcCall<
       (childStorageKey: PrefixedStorageKey, key: StorageKey, at?: BlockHash) => Promise<Option<StorageData>>
@@ -280,6 +303,9 @@ export interface RpcCalls extends GenericRpcCalls {
      * Returns child storage entries for multiple keys at a specific block's state.
      *
      * @rpcname: childstate_getStorageEntries
+     * @param {PrefixedStorageKey} childStorageKey
+     * @param {Array<StorageKey>} keys
+     * @param {BlockHash} at
      **/
     getStorageEntries: GenericRpcCall<
       (
@@ -293,6 +319,9 @@ export interface RpcCalls extends GenericRpcCalls {
      * Returns the hash of a child storage entry at a block's state.
      *
      * @rpcname: childstate_getStorageHash
+     * @param {PrefixedStorageKey} childStorageKey
+     * @param {StorageKey} key
+     * @param {BlockHash} at
      **/
     getStorageHash: GenericRpcCall<
       (childStorageKey: PrefixedStorageKey, key: StorageKey, at?: BlockHash) => Promise<Option<Hash>>
@@ -302,6 +331,9 @@ export interface RpcCalls extends GenericRpcCalls {
      * Returns the size of a child storage entry at a block's state
      *
      * @rpcname: childstate_getStorageSize
+     * @param {PrefixedStorageKey} childStorageKey
+     * @param {StorageKey} key
+     * @param {BlockHash} at
      **/
     getStorageSize: GenericRpcCall<
       (childStorageKey: PrefixedStorageKey, key: StorageKey, at?: BlockHash) => Promise<Option<number>>
@@ -314,6 +346,8 @@ export interface RpcCalls extends GenericRpcCalls {
      * Get offchain local storage under given key and prefix.
      *
      * @rpcname: offchain_localStorageGet
+     * @param {StorageKind} kind
+     * @param {Bytes} key
      **/
     localStorageGet: GenericRpcCall<(kind: StorageKind, key: Bytes) => Promise<Option<Bytes>>>;
 
@@ -321,6 +355,9 @@ export interface RpcCalls extends GenericRpcCalls {
      * Set offchain local storage under given key and prefix.
      *
      * @rpcname: offchain_localStorageSet
+     * @param {StorageKind} kind
+     * @param {Bytes} key
+     * @param {Bytes} value
      **/
     localStorageSet: GenericRpcCall<(kind: StorageKind, key: Bytes, value: Bytes) => Promise<void>>;
 
@@ -331,6 +368,8 @@ export interface RpcCalls extends GenericRpcCalls {
      * Query the detailed fee of a given encoded extrinsic
      *
      * @rpcname: payment_queryFeeDetails
+     * @param {Bytes} extrinsic
+     * @param {BlockHash} at
      **/
     queryFeeDetails: GenericRpcCall<(extrinsic: Bytes, at?: BlockHash) => Promise<FeeDetails>>;
 
@@ -338,6 +377,8 @@ export interface RpcCalls extends GenericRpcCalls {
      * Retrieves the fee information for an encoded extrinsic
      *
      * @rpcname: payment_queryInfo
+     * @param {Bytes} extrinsic
+     * @param {BlockHash} at
      **/
     queryInfo: GenericRpcCall<(extrinsic: Bytes, at?: BlockHash) => Promise<RuntimeDispatchInfo>>;
 
@@ -358,6 +399,9 @@ export interface RpcCalls extends GenericRpcCalls {
      * Call a method from the runtime API at a block's state.
      *
      * @rpcname: state_call
+     * @param {string} method
+     * @param {Bytes} data
+     * @param {BlockHash} at
      **/
     call: GenericRpcCall<(method: string, data: Bytes, at?: BlockHash) => Promise<Bytes>>;
 
@@ -365,6 +409,9 @@ export interface RpcCalls extends GenericRpcCalls {
      * Returns proof of storage for child key entries at a specific block state.
      *
      * @rpcname: state_getChildReadProof
+     * @param {PrefixedStorageKey} childStorageKey
+     * @param {Array<StorageKey>} keys
+     * @param {BlockHash} at
      **/
     getChildReadProof: GenericRpcCall<
       (childStorageKey: PrefixedStorageKey, keys: Array<StorageKey>, at?: BlockHash) => Promise<ReadProof>
@@ -375,6 +422,8 @@ export interface RpcCalls extends GenericRpcCalls {
      *
      * @rpcname: state_getKeys
      * @deprecated: Please use `getKeysPaged` with proper paging support
+     * @param {StorageKey} prefix
+     * @param {BlockHash} at
      **/
     getKeys: GenericRpcCall<(prefix: StorageKey, at?: BlockHash) => Promise<Array<StorageKey>>>;
 
@@ -382,6 +431,10 @@ export interface RpcCalls extends GenericRpcCalls {
      * Returns the keys with prefix with pagination support. Up to `count` keys will be returned. If `start_key` is passed, return next keys in storage in lexicographic order.
      *
      * @rpcname: state_getKeysPaged
+     * @param {Option<StorageKey>} prefix
+     * @param {number} count
+     * @param {StorageKey} startKey
+     * @param {BlockHash} at
      **/
     getKeysPaged: GenericRpcCall<
       (prefix: Option<StorageKey>, count: number, startKey?: StorageKey, at?: BlockHash) => Promise<Array<StorageKey>>
@@ -391,6 +444,7 @@ export interface RpcCalls extends GenericRpcCalls {
      * Returns the runtime metadata
      *
      * @rpcname: state_getMetadata
+     * @param {BlockHash} at
      **/
     getMetadata: GenericRpcCall<(at?: BlockHash) => Promise<Metadata>>;
 
@@ -399,6 +453,8 @@ export interface RpcCalls extends GenericRpcCalls {
      *
      * @rpcname: state_getPairs
      * @deprecated: Please use `getKeysPaged` with proper paging support
+     * @param {StorageKey} prefix
+     * @param {BlockHash} at
      **/
     getPairs: GenericRpcCall<(prefix: StorageKey, at?: BlockHash) => Promise<Array<[StorageKey, StorageData]>>>;
 
@@ -406,6 +462,8 @@ export interface RpcCalls extends GenericRpcCalls {
      * Returns proof of storage entries at a specific block's state.
      *
      * @rpcname: state_getReadProof
+     * @param {Array<StorageKey>} keys
+     * @param {BlockHash} at
      **/
     getReadProof: GenericRpcCall<(keys: Array<StorageKey>, at?: BlockHash) => Promise<ReadProof>>;
 
@@ -420,6 +478,8 @@ export interface RpcCalls extends GenericRpcCalls {
      * Returns a storage entry at a specific block's state.
      *
      * @rpcname: state_getStorage
+     * @param {StorageKey} key
+     * @param {BlockHash} at
      **/
     getStorage: GenericRpcCall<(key: StorageKey, at?: BlockHash) => Promise<Option<StorageData>>>;
 
@@ -427,6 +487,8 @@ export interface RpcCalls extends GenericRpcCalls {
      * Returns the hash of a storage entry at a block's state.
      *
      * @rpcname: state_getStorageHash
+     * @param {StorageKey} key
+     * @param {BlockHash} at
      **/
     getStorageHash: GenericRpcCall<(key: StorageKey, at?: BlockHash) => Promise<Option<Hash>>>;
 
@@ -434,6 +496,8 @@ export interface RpcCalls extends GenericRpcCalls {
      * Returns the hash of a storage entry at a block's state.
      *
      * @rpcname: state_getStorageSize
+     * @param {StorageKey} key
+     * @param {BlockHash} at
      **/
     getStorageSize: GenericRpcCall<(key: StorageKey, at?: BlockHash) => Promise<Option<bigint>>>;
 
@@ -441,6 +505,9 @@ export interface RpcCalls extends GenericRpcCalls {
      * Query historical storage entries (by key) starting from a block given as the second parameter. NOTE: The first returned result contains the initial state of storage for all keys. Subsequent values in the vector represent changes to the previous state (diffs). WARNING: The time complexity of this query is O(|keys|*dist(block, hash)), and the memory complexity is O(dist(block, hash)) -- use with caution.
      *
      * @rpcname: state_queryStorage
+     * @param {Array<StorageKey>} keys
+     * @param {Hash} fromBlock
+     * @param {BlockHash} at
      **/
     queryStorage: GenericRpcCall<
       (keys: Array<StorageKey>, fromBlock: Hash, at?: BlockHash) => Promise<Array<StorageChangeSet>>
@@ -450,6 +517,8 @@ export interface RpcCalls extends GenericRpcCalls {
      * Query storage entries (by key) at a block hash given as the second parameter. NOTE: Each StorageChangeSet in the result corresponds to exactly one element -- the storage value under an input key at the input block hash.
      *
      * @rpcname: state_queryStorageAt
+     * @param {Array<StorageKey>} keys
+     * @param {BlockHash} at
      **/
     queryStorageAt: GenericRpcCall<(keys: Array<StorageKey>, at?: BlockHash) => Promise<Array<StorageChangeSet>>>;
 
@@ -464,6 +533,7 @@ export interface RpcCalls extends GenericRpcCalls {
      * Subscribes to storage changes for the provided keys
      *
      * @pubsub: state_storage, state_subscribeStorage, state_unsubscribeStorage
+     * @param {Array<StorageKey>} keys
      **/
     subscribeStorage: GenericRpcCall<(keys: Array<StorageKey>, callback: Callback<StorageChangeSet>) => Promise<Unsub>>;
 
@@ -471,6 +541,10 @@ export interface RpcCalls extends GenericRpcCalls {
      * The `traceBlock` RPC provides a way to trace the re-execution of a single block, collecting Spans and Events from both the client and the relevant WASM runtime.
      *
      * @rpcname: state_traceBlock
+     * @param {Hash} block
+     * @param {Option<string>} targets
+     * @param {Option<string>} storage_keys
+     * @param {Option<string>} methods
      **/
     traceBlock: GenericRpcCall<
       (
@@ -485,6 +559,7 @@ export interface RpcCalls extends GenericRpcCalls {
      * Check current migration state. This call is performed locally without submitting any transactions. Thus executing this won't change any state. Nonetheless it is a VERY costy call that should be only exposed to trusted peers.
      *
      * @rpcname: state_trieMigrationStatus
+     * @param {BlockHash} at
      **/
     trieMigrationStatus: GenericRpcCall<(at?: BlockHash) => Promise<MigrationStatusResult>>;
 
@@ -499,6 +574,7 @@ export interface RpcCalls extends GenericRpcCalls {
      * it fallbacks to query the index from the runtime (aka. state nonce).
      *
      * @rpcname: system_accountNextIndex
+     * @param {string} address
      **/
     accountNextIndex: GenericRpcCall<(address: string) => Promise<number>>;
 
@@ -510,6 +586,7 @@ export interface RpcCalls extends GenericRpcCalls {
      * `sync=debug,state=trace`
      *
      * @rpcname: system_addLogFilter
+     * @param {string} directives
      **/
     addLogFilter: GenericRpcCall<(directives: string) => Promise<void>>;
 
@@ -521,6 +598,7 @@ export interface RpcCalls extends GenericRpcCalls {
      * is an example of a valid, passing multiaddr with PeerId attached.
      *
      * @rpcname: system_addReservedPeer
+     * @param {string} peer
      **/
     addReservedPeer: GenericRpcCall<(peer: string) => Promise<void>>;
 
@@ -542,6 +620,8 @@ export interface RpcCalls extends GenericRpcCalls {
      * Dry run an extrinsic at a given block. Return SCALE encoded ApplyExtrinsicResult.
      *
      * @rpcname: system_dryRun
+     * @param {Bytes} extrinsic
+     * @param {BlockHash} at
      **/
     dryRun: GenericRpcCall<(extrinsic: Bytes, at?: BlockHash) => Promise<ApplyExtrinsicResult>>;
 
@@ -606,6 +686,7 @@ export interface RpcCalls extends GenericRpcCalls {
      * should encode only the PeerId e.g. `QmSk5HQbn6LhUwDiNMseVUjuRYhEtYj4aUZ6WfWoGURpdV`.
      *
      * @rpcname: system_removeReservedPeer
+     * @param {string} peerId
      **/
     removeReservedPeer: GenericRpcCall<(peerId: string) => Promise<void>>;
 

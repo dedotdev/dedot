@@ -14,9 +14,7 @@ export class QueryGen extends ApiGen {
     let defTypeOut = '';
     for (let pallet of pallets) {
       const storage = pallet.storage;
-      if (!storage) {
-        continue;
-      }
+      if (!storage) continue;
 
       const queries = storage.entries.map((one) => this.#generateEntry(one));
       const queryDefs = queries.map(
@@ -24,6 +22,7 @@ export class QueryGen extends ApiGen {
           `${commentBlock(docs)}${name}: GenericStorageQuery<(${keyType}) => ${valueType}>`,
       );
 
+      defTypeOut += commentBlock(`Pallet \`${pallet.name}\`'s storage queries`);
       defTypeOut += `${stringLowerFirst(pallet.name)}: {
         ${queryDefs.join(',\n')}
         
@@ -51,6 +50,10 @@ export class QueryGen extends ApiGen {
     }
 
     const isOptional = modifier === 'Optional';
+
+    if (keyType) {
+      docs.push('\n', `@param {${keyType}} arg`);
+    }
 
     return {
       name: normalizeName(name),

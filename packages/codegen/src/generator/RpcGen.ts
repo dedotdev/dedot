@@ -95,12 +95,18 @@ export class RpcGen extends ApiGen {
       this.addTypeImport(type, !!isScale);
     });
 
+    const typedParams = params.map((param) => ({
+      ...param,
+      plainType: this.getGeneratedTypeName(param.type, !!param.isScale),
+    }));
+
     const isSubscription = !!pubsub;
 
-    const paramsOut = params.map(
-      ({ name, type, isOptional, isScale }) =>
-        `${name}${isOptional ? '?' : ''}: ${this.getGeneratedTypeName(type, !!isScale)}`,
+    const paramsOut = typedParams.map(
+      ({ name, type, isOptional, isScale, plainType }) => `${name}${isOptional ? '?' : ''}: ${plainType}`,
     );
+
+    const paramsDoc = typedParams.map(({ name, plainType }) => `@param {${plainType}} ${name}`);
 
     const typeOut = this.getGeneratedTypeName(type, false);
 
@@ -109,11 +115,11 @@ export class RpcGen extends ApiGen {
       defaultDocs.unshift(`@pubsub: ${pubsub?.join(', ')}`);
 
       paramsOut.push(`callback: Callback<${typeOut}>`);
-      return `${commentBlock(docs, '\n', defaultDocs)}${method}: GenericRpcCall<(${paramsOut.join(
+      return `${commentBlock(docs, '\n', defaultDocs, paramsDoc)}${method}: GenericRpcCall<(${paramsOut.join(
         ', ',
       )}) => Promise<Unsub>>`;
     } else {
-      return `${commentBlock(docs, '\n', defaultDocs)}${method}: GenericRpcCall<(${paramsOut.join(
+      return `${commentBlock(docs, '\n', defaultDocs, paramsDoc)}${method}: GenericRpcCall<(${paramsOut.join(
         ', ',
       )}) => Promise<${typeOut}>>`;
     }

@@ -58,6 +58,9 @@ export interface RuntimeApis extends GenericRuntimeApis {
      * might be verified in any possible order.
      *
      * @callname: TaggedTransactionQueue_validate_transaction
+     * @param {SpRuntimeTransactionValidityTransactionSource} source
+     * @param {FpSelfContainedUncheckedExtrinsic} tx
+     * @param {H256} block_hash
      **/
     validateTransaction: GenericRuntimeApiMethod<
       (
@@ -91,6 +94,8 @@ export interface RuntimeApis extends GenericRuntimeApis {
      * is more recent than the included block itself.
      *
      * @callname: UnincludedSegmentApi_can_build_upon
+     * @param {H256} included_hash
+     * @param {SpConsensusSlotsSlot} slot
      **/
     canBuildUpon: GenericRuntimeApiMethod<(includedHash: H256, slot: SpConsensusSlotsSlot) => Promise<boolean>>;
 
@@ -114,6 +119,7 @@ export interface RuntimeApis extends GenericRuntimeApis {
      * Execute the given block.
      *
      * @callname: Core_execute_block
+     * @param {SpRuntimeBlock} block
      **/
     executeBlock: GenericRuntimeApiMethod<(block: SpRuntimeBlock) => Promise<[]>>;
 
@@ -121,6 +127,7 @@ export interface RuntimeApis extends GenericRuntimeApis {
      * Initialize a block with the given header.
      *
      * @callname: Core_initialize_block
+     * @param {Header} header
      **/
     initializeBlock: GenericRuntimeApiMethod<(header: Header) => Promise<[]>>;
 
@@ -147,6 +154,7 @@ export interface RuntimeApis extends GenericRuntimeApis {
      * Use [`Self::metadata_versions`] to find out about supported metadata version of the runtime.
      *
      * @callname: Metadata_metadata_at_version
+     * @param {number} version
      **/
     metadataAtVersion: GenericRuntimeApiMethod<(version: number) => Promise<SpCoreOpaqueMetadata | undefined>>;
 
@@ -175,6 +183,7 @@ export interface RuntimeApis extends GenericRuntimeApis {
      * this block or not.
      *
      * @callname: BlockBuilder_apply_extrinsic
+     * @param {FpSelfContainedUncheckedExtrinsic} extrinsic
      **/
     applyExtrinsic: GenericRuntimeApiMethod<
       (
@@ -193,6 +202,7 @@ export interface RuntimeApis extends GenericRuntimeApis {
      * Generate inherent extrinsics. The inherent data will vary from chain to chain.
      *
      * @callname: BlockBuilder_inherent_extrinsics
+     * @param {SpInherentsInherentData} inherent
      **/
     inherentExtrinsics: GenericRuntimeApiMethod<
       (inherent: SpInherentsInherentData) => Promise<Array<FpSelfContainedUncheckedExtrinsic>>
@@ -202,6 +212,8 @@ export interface RuntimeApis extends GenericRuntimeApis {
      * Check that the inherents are valid. The inherent data will vary from chain to chain.
      *
      * @callname: BlockBuilder_check_inherents
+     * @param {SpRuntimeBlock} block
+     * @param {SpInherentsInherentData} data
      **/
     checkInherents: GenericRuntimeApiMethod<
       (block: SpRuntimeBlock, data: SpInherentsInherentData) => Promise<SpInherentsCheckInherentsResult>
@@ -220,6 +232,7 @@ export interface RuntimeApis extends GenericRuntimeApis {
      * Starts the off-chain task for given block header.
      *
      * @callname: OffchainWorkerApi_offchain_worker
+     * @param {Header} header
      **/
     offchainWorker: GenericRuntimeApiMethod<(header: Header) => Promise<[]>>;
 
@@ -242,6 +255,7 @@ export interface RuntimeApis extends GenericRuntimeApis {
      * Returns the concatenated SCALE encoded public keys.
      *
      * @callname: SessionKeys_generate_session_keys
+     * @param {BytesLike | undefined} seed
      **/
     generateSessionKeys: GenericRuntimeApiMethod<(seed?: BytesLike | undefined) => Promise<Bytes>>;
 
@@ -251,6 +265,7 @@ export interface RuntimeApis extends GenericRuntimeApis {
      * Returns the list of public raw public keys + key type.
      *
      * @callname: SessionKeys_decode_session_keys
+     * @param {BytesLike} encoded
      **/
     decodeSessionKeys: GenericRuntimeApiMethod<
       (encoded: BytesLike) => Promise<Array<[Bytes, SpCoreCryptoKeyTypeId]> | undefined>
@@ -269,6 +284,7 @@ export interface RuntimeApis extends GenericRuntimeApis {
      * Get current account nonce of given `AccountId`.
      *
      * @callname: AccountNonceApi_account_nonce
+     * @param {AccountId20Like} account
      **/
     accountNonce: GenericRuntimeApiMethod<(account: AccountId20Like) => Promise<number>>;
 
@@ -284,6 +300,8 @@ export interface RuntimeApis extends GenericRuntimeApis {
     /**
      *
      * @callname: DebugRuntimeApi_trace_transaction
+     * @param {Array<FpSelfContainedUncheckedExtrinsic>} extrinsics
+     * @param {EthereumTransactionTransactionV2} transaction
      **/
     traceTransaction: GenericRuntimeApiMethod<
       (
@@ -295,6 +313,8 @@ export interface RuntimeApis extends GenericRuntimeApis {
     /**
      *
      * @callname: DebugRuntimeApi_trace_block
+     * @param {Array<FpSelfContainedUncheckedExtrinsic>} extrinsics
+     * @param {Array<H256>} known_transactions
      **/
     traceBlock: GenericRuntimeApiMethod<
       (
@@ -315,6 +335,8 @@ export interface RuntimeApis extends GenericRuntimeApis {
     /**
      *
      * @callname: TxPoolRuntimeApi_extrinsic_filter
+     * @param {Array<FpSelfContainedUncheckedExtrinsic>} xt_ready
+     * @param {Array<FpSelfContainedUncheckedExtrinsic>} xt_future
      **/
     extrinsicFilter: GenericRuntimeApiMethod<
       (
@@ -343,6 +365,7 @@ export interface RuntimeApis extends GenericRuntimeApis {
      * Returns pallet_evm::Accounts by address.
      *
      * @callname: EthereumRuntimeRPCApi_account_basic
+     * @param {H160} address
      **/
     accountBasic: GenericRuntimeApiMethod<(address: H160) => Promise<EvmBackendBasic>>;
 
@@ -357,6 +380,7 @@ export interface RuntimeApis extends GenericRuntimeApis {
      * For a given account address, returns pallet_evm::AccountCodes.
      *
      * @callname: EthereumRuntimeRPCApi_account_code_at
+     * @param {H160} address
      **/
     accountCodeAt: GenericRuntimeApiMethod<(address: H160) => Promise<Bytes>>;
 
@@ -371,12 +395,24 @@ export interface RuntimeApis extends GenericRuntimeApis {
      * For a given account address and index, returns pallet_evm::AccountStorages.
      *
      * @callname: EthereumRuntimeRPCApi_storage_at
+     * @param {H160} address
+     * @param {U256} index
      **/
     storageAt: GenericRuntimeApiMethod<(address: H160, index: U256) => Promise<H256>>;
 
     /**
      *
      * @callname: EthereumRuntimeRPCApi_call
+     * @param {H160} from
+     * @param {H160} to
+     * @param {BytesLike} data
+     * @param {U256} value
+     * @param {U256} gas_limit
+     * @param {U256 | undefined} max_fee_per_gas
+     * @param {U256 | undefined} max_priority_fee_per_gas
+     * @param {U256 | undefined} nonce
+     * @param {boolean} estimate
+     * @param {Array<[H160, Array<H256>]> | undefined} access_list
      **/
     call: GenericRuntimeApiMethod<
       (
@@ -396,6 +432,15 @@ export interface RuntimeApis extends GenericRuntimeApis {
     /**
      *
      * @callname: EthereumRuntimeRPCApi_create
+     * @param {H160} from
+     * @param {BytesLike} data
+     * @param {U256} value
+     * @param {U256} gas_limit
+     * @param {U256 | undefined} max_fee_per_gas
+     * @param {U256 | undefined} max_priority_fee_per_gas
+     * @param {U256 | undefined} nonce
+     * @param {boolean} estimate
+     * @param {Array<[H160, Array<H256>]> | undefined} access_list
      **/
     create: GenericRuntimeApiMethod<
       (
@@ -450,6 +495,7 @@ export interface RuntimeApis extends GenericRuntimeApis {
      * Receives a `Vec<OpaqueExtrinsic>` and filters all the ethereum transactions.
      *
      * @callname: EthereumRuntimeRPCApi_extrinsic_filter
+     * @param {Array<FpSelfContainedUncheckedExtrinsic>} xts
      **/
     extrinsicFilter: GenericRuntimeApiMethod<
       (xts: Array<FpSelfContainedUncheckedExtrinsic>) => Promise<Array<EthereumTransactionTransactionV2>>
@@ -474,6 +520,7 @@ export interface RuntimeApis extends GenericRuntimeApis {
      * Return the pending block.
      *
      * @callname: EthereumRuntimeRPCApi_pending_block
+     * @param {Array<FpSelfContainedUncheckedExtrinsic>} xts
      **/
     pendingBlock: GenericRuntimeApiMethod<
       (
@@ -485,6 +532,7 @@ export interface RuntimeApis extends GenericRuntimeApis {
      * initialize the pending block
      *
      * @callname: EthereumRuntimeRPCApi_initialize_pending_block
+     * @param {Header} header
      **/
     initializePendingBlock: GenericRuntimeApiMethod<(header: Header) => Promise<[]>>;
 
@@ -500,6 +548,7 @@ export interface RuntimeApis extends GenericRuntimeApis {
     /**
      *
      * @callname: ConvertTransactionRuntimeApi_convert_transaction
+     * @param {EthereumTransactionTransactionV2} transaction
      **/
     convertTransaction: GenericRuntimeApiMethod<
       (transaction: EthereumTransactionTransactionV2) => Promise<FpSelfContainedUncheckedExtrinsic>
@@ -517,6 +566,8 @@ export interface RuntimeApis extends GenericRuntimeApis {
     /**
      *
      * @callname: TransactionPaymentApi_query_info
+     * @param {FpSelfContainedUncheckedExtrinsic} uxt
+     * @param {number} len
      **/
     queryInfo: GenericRuntimeApiMethod<
       (uxt: FpSelfContainedUncheckedExtrinsic, len: number) => Promise<PalletTransactionPaymentRuntimeDispatchInfo>
@@ -525,6 +576,8 @@ export interface RuntimeApis extends GenericRuntimeApis {
     /**
      *
      * @callname: TransactionPaymentApi_query_fee_details
+     * @param {FpSelfContainedUncheckedExtrinsic} uxt
+     * @param {number} len
      **/
     queryFeeDetails: GenericRuntimeApiMethod<
       (uxt: FpSelfContainedUncheckedExtrinsic, len: number) => Promise<PalletTransactionPaymentFeeDetails>
@@ -533,12 +586,14 @@ export interface RuntimeApis extends GenericRuntimeApis {
     /**
      *
      * @callname: TransactionPaymentApi_query_weight_to_fee
+     * @param {SpWeightsWeightV2Weight} weight
      **/
     queryWeightToFee: GenericRuntimeApiMethod<(weight: SpWeightsWeightV2Weight) => Promise<bigint>>;
 
     /**
      *
      * @callname: TransactionPaymentApi_query_length_to_fee
+     * @param {number} length
      **/
     queryLengthToFee: GenericRuntimeApiMethod<(length: number) => Promise<bigint>>;
 
@@ -554,6 +609,9 @@ export interface RuntimeApis extends GenericRuntimeApis {
     /**
      *
      * @callname: NimbusApi_can_author
+     * @param {NimbusPrimitivesNimbusCryptoPublic} author
+     * @param {number} relay_parent
+     * @param {Header} parent_header
      **/
     canAuthor: GenericRuntimeApiMethod<
       (author: NimbusPrimitivesNimbusCryptoPublic, relayParent: number, parentHeader: Header) => Promise<boolean>
@@ -575,6 +633,7 @@ export interface RuntimeApis extends GenericRuntimeApis {
      * we are collecting the collation info for.
      *
      * @callname: CollectCollationInfo_collect_collation_info
+     * @param {Header} header
      **/
     collectCollationInfo: GenericRuntimeApiMethod<(header: Header) => Promise<CumulusPrimitivesCoreCollationInfo>>;
 
@@ -596,6 +655,7 @@ export interface RuntimeApis extends GenericRuntimeApis {
     /**
      *
      * @callname: VrfApi_vrf_key_lookup
+     * @param {NimbusPrimitivesNimbusCryptoPublic} nimbus_id
      **/
     vrfKeyLookup: GenericRuntimeApiMethod<
       (nimbusId: NimbusPrimitivesNimbusCryptoPublic) => Promise<SessionKeysPrimitivesVrfVrfCryptoPublic | undefined>
