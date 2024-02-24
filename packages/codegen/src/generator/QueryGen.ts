@@ -9,7 +9,7 @@ export class QueryGen extends ApiGen {
     const { pallets } = this.metadata;
 
     this.typesGen.clearCache();
-    this.typesGen.typeImports.addKnownType('GenericChainStorage', 'GenericStorageQuery');
+    this.typesGen.typeImports.addKnownType('GenericChainStorage', 'GenericStorageQuery', 'Callback');
 
     let defTypeOut = '';
     for (let pallet of pallets) {
@@ -50,14 +50,17 @@ export class QueryGen extends ApiGen {
     }
 
     const isOptional = modifier === 'Optional';
+    valueType = `${valueType}${isOptional ? ' | undefined' : ''}`;
 
+    docs.push('\n');
     if (keyType) {
-      docs.push('\n', `@param {${keyType}} arg`);
+      docs.push(`@param {${keyType}} arg`);
     }
+    docs.push(`@param {Callback<${valueType}>=} callback`);
 
     return {
       name: normalizeName(name),
-      valueType: `${valueType}${isOptional ? ' | undefined' : ''}`,
+      valueType,
       keyType: keyType ? `arg: ${keyType}` : '',
       docs,
     };
