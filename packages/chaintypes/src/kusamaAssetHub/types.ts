@@ -8,7 +8,7 @@ import type {
   AccountId32,
   FixedBytes,
   Bytes,
-  ResultPayload,
+  Result,
   Permill,
   BytesLike,
   MultiAddress,
@@ -16,6 +16,8 @@ import type {
   AccountId32Like,
   FixedU128,
   Era,
+  Header,
+  UncheckedExtrinsic,
 } from '@delightfuldot/codecs';
 
 export type FrameSystemAccountInfo = {
@@ -1036,7 +1038,7 @@ export type PalletUtilityEvent =
   /**
    * A call was dispatched.
    **/
-  | { name: 'DispatchedAs'; data: { result: ResultPayload<[], DispatchError> } };
+  | { name: 'DispatchedAs'; data: { result: Result<[], DispatchError> } };
 
 /**
  * The `Event` enum of this pallet
@@ -1068,7 +1070,7 @@ export type PalletMultisigEvent =
         timepoint: PalletMultisigTimepoint;
         multisig: AccountId32;
         callHash: FixedBytes<32>;
-        result: ResultPayload<[], DispatchError>;
+        result: Result<[], DispatchError>;
       };
     }
   /**
@@ -1093,7 +1095,7 @@ export type PalletProxyEvent =
   /**
    * A proxy was executed correctly, with the given.
    **/
-  | { name: 'ProxyExecuted'; data: { result: ResultPayload<[], DispatchError> } }
+  | { name: 'ProxyExecuted'; data: { result: Result<[], DispatchError> } }
   /**
    * A pure account has been created by new proxy with given
    * disambiguation index and proxy type.
@@ -2073,17 +2075,6 @@ export type FrameSystemLimitsBlockLength = { max: FrameSupportDispatchPerDispatc
 export type FrameSupportDispatchPerDispatchClassU32 = { normal: number; operational: number; mandatory: number };
 
 export type SpWeightsRuntimeDbWeight = { read: bigint; write: bigint };
-
-export type SpVersionRuntimeVersion = {
-  specName: string;
-  implName: string;
-  authoringVersion: number;
-  specVersion: number;
-  implVersion: number;
-  apis: Array<[FixedBytes<8>, number]>;
-  transactionVersion: number;
-  stateVersion: number;
-};
 
 /**
  * Error for the System pallet
@@ -6283,8 +6274,6 @@ export type PalletAssetConversionError =
    **/
   | 'CorrespondenceError';
 
-export type SpRuntimeUncheckedExtrinsic = Bytes;
-
 export type FrameSystemExtensionsCheckNonZeroSender = {};
 
 export type FrameSystemExtensionsCheckSpecVersion = {};
@@ -6305,3 +6294,92 @@ export type PalletAssetConversionTxPaymentChargeAssetTxPayment = {
 };
 
 export type AssetHubKusamaRuntimeRuntime = {};
+
+export type SpConsensusSlotsSlotDuration = bigint;
+
+export type SpRuntimeBlock = { header: Header; extrinsics: Array<UncheckedExtrinsic> };
+
+export type SpCoreOpaqueMetadata = Bytes;
+
+export type SpRuntimeTransactionValidityTransactionValidityError =
+  | { tag: 'Invalid'; value: SpRuntimeTransactionValidityInvalidTransaction }
+  | { tag: 'Unknown'; value: SpRuntimeTransactionValidityUnknownTransaction };
+
+export type SpRuntimeTransactionValidityInvalidTransaction =
+  | { tag: 'Call' }
+  | { tag: 'Payment' }
+  | { tag: 'Future' }
+  | { tag: 'Stale' }
+  | { tag: 'BadProof' }
+  | { tag: 'AncientBirthBlock' }
+  | { tag: 'ExhaustsResources' }
+  | { tag: 'Custom'; value: number }
+  | { tag: 'BadMandatory' }
+  | { tag: 'MandatoryValidation' }
+  | { tag: 'BadSigner' };
+
+export type SpRuntimeTransactionValidityUnknownTransaction =
+  | { tag: 'CannotLookup' }
+  | { tag: 'NoUnsignedValidator' }
+  | { tag: 'Custom'; value: number };
+
+export type SpInherentsInherentData = { data: Array<[FixedBytes<8>, Bytes]> };
+
+export type SpInherentsCheckInherentsResult = { okay: boolean; fatalError: boolean; errors: SpInherentsInherentData };
+
+export type SpRuntimeTransactionValidityTransactionSource = 'InBlock' | 'Local' | 'External';
+
+export type SpRuntimeTransactionValidityValidTransaction = {
+  priority: bigint;
+  requires: Array<Bytes>;
+  provides: Array<Bytes>;
+  longevity: bigint;
+  propagate: boolean;
+};
+
+export type PalletTransactionPaymentRuntimeDispatchInfo = {
+  weight: SpWeightsWeightV2Weight;
+  class: FrameSupportDispatchDispatchClass;
+  partialFee: bigint;
+};
+
+export type PalletTransactionPaymentFeeDetails = {
+  inclusionFee?: PalletTransactionPaymentInclusionFee | undefined;
+  tip: bigint;
+};
+
+export type PalletTransactionPaymentInclusionFee = { baseFee: bigint; lenFee: bigint; adjustedWeightFee: bigint };
+
+export type AssetsCommonRuntimeApiFungiblesAccessError = 'AssetIdConversionFailed' | 'AmountToBalanceConversionFailed';
+
+export type CumulusPrimitivesCoreCollationInfo = {
+  upwardMessages: Array<Bytes>;
+  horizontalMessages: Array<PolkadotCorePrimitivesOutboundHrmpMessage>;
+  newValidationCode?: PolkadotParachainPrimitivesPrimitivesValidationCode | undefined;
+  processedDownwardMessages: number;
+  hrmpWatermark: number;
+  headData: PolkadotParachainPrimitivesPrimitivesHeadData;
+};
+
+export type PolkadotParachainPrimitivesPrimitivesValidationCode = Bytes;
+
+export type AssetHubKusamaRuntimeRuntimeError =
+  | { tag: 'System'; value: FrameSystemError }
+  | { tag: 'ParachainSystem'; value: CumulusPalletParachainSystemError }
+  | { tag: 'Balances'; value: PalletBalancesError }
+  | { tag: 'CollatorSelection'; value: PalletCollatorSelectionError }
+  | { tag: 'Session'; value: PalletSessionError }
+  | { tag: 'XcmpQueue'; value: CumulusPalletXcmpQueueError }
+  | { tag: 'PolkadotXcm'; value: PalletXcmError }
+  | { tag: 'CumulusXcm'; value: CumulusPalletXcmError }
+  | { tag: 'DmpQueue'; value: CumulusPalletDmpQueueError }
+  | { tag: 'Utility'; value: PalletUtilityError }
+  | { tag: 'Multisig'; value: PalletMultisigError }
+  | { tag: 'Proxy'; value: PalletProxyError }
+  | { tag: 'Assets'; value: PalletAssetsError }
+  | { tag: 'Uniques'; value: PalletUniquesError }
+  | { tag: 'Nfts'; value: PalletNftsError }
+  | { tag: 'ForeignAssets'; value: PalletAssetsError }
+  | { tag: 'NftFractionalization'; value: PalletNftFractionalizationError }
+  | { tag: 'PoolAssets'; value: PalletAssetsError }
+  | { tag: 'AssetConversion'; value: PalletAssetConversionError };

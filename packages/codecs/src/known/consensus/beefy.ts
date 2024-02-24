@@ -1,4 +1,6 @@
 import * as $ from '@delightfuldot/shape';
+import { $AccountId32 } from '../../generic';
+import { $H256, $H512 } from '../../known';
 
 export const $BeefyPayloadId = $.FixedHex(2);
 
@@ -81,3 +83,92 @@ export const $VersionedFinalityProof = $.Enum({
 });
 
 export type VersionedFinalityProof = $.Input<typeof $VersionedFinalityProof>;
+
+/**
+ * A typedef for validator set id.
+ */
+export const $ValidatorSetId = $.u64;
+
+export type ValidatorSetId = $.Input<typeof $ValidatorSetId>;
+
+/**
+ * A set of BEEFY authorities, a.k.a. validators.
+ */
+export const $ValidatorSet = $.Struct({
+  /// Public keys of the validator set elements
+  validators: $.Vec($AccountId32),
+  /// Identifier of the validator set
+  id: $ValidatorSetId,
+});
+
+export type ValidatorSet = $.Input<typeof $ValidatorSet>;
+
+/**
+ * BEEFY vote message.
+ *
+ * A vote message is a direct vote created by a BEEFY node on every voting round
+ * and is gossiped to its peers.
+ */
+export const $VoteMessage = $.Struct({
+  /// Commit to information extracted from a finalized block
+  commitment: $Commitment,
+  /// Node authority id
+  id: $AccountId32,
+  /// Node signature
+  signature: $H512,
+});
+
+export type VoteMessage = $.Input<typeof $VoteMessage>;
+
+/**
+ * Proof of voter misbehavior on a given set id. Misbehavior/equivocation in
+ * BEEFY happens when a voter votes on the same round/block for different payloads.
+ * Proving is achieved by collecting the signed commitments of conflicting votes.
+ */
+export const $BeefyEquivocationProof = $.Struct({
+  /// The first vote in the equivocation.
+  first: $VoteMessage,
+  /// The second vote in the equivocation.
+  second: $VoteMessage,
+});
+
+export type BeefyEquivocationProof = $.Input<typeof $BeefyEquivocationProof>;
+
+/**
+ * Details of a BEEFY authority set.
+ */
+export const $BeefyAuthoritySet = $.Struct({
+  /// Id of the set.
+  ///
+  /// Id is required to correlate BEEFY signed commitments with the validator set.
+  /// Light Client can easily verify that the commitment witness it is getting is
+  /// produced by the latest validator set.
+  id: $ValidatorSetId,
+  /// Number of validators in the set.
+  ///
+  /// Some BEEFY Light Clients may use an interactive protocol to verify only a subset
+  /// of signatures. We put set length here, so that these clients can verify the minimal
+  /// number of required signatures.
+  len: $.u32,
+  /// Commitment(s) to BEEFY AuthorityIds.
+  ///
+  /// This is used by Light Clients to confirm that the commitments are signed by the correct
+  /// validator set. Light Clients using interactive protocol, might verify only subset of
+  /// signatures, hence don't require the full list here (will receive inclusion proofs).
+  ///
+  /// This could be Merkle Root Hash built from BEEFY ECDSA public keys and/or
+  /// polynomial commitment to the polynomial interpolating BLS public keys
+  /// which is used by APK proof based light clients to verify the validity
+  /// of aggregated BLS keys using APK proofs.
+  /// Multiple commitments can be tupled together.
+  keysetCommitment: $H256,
+});
+
+export type BeefyAuthoritySet = $.Input<typeof $BeefyAuthoritySet>;
+
+/**
+ * Details of the next BEEFY authority set.
+ */
+export const $BeefyNextAuthoritySet = $BeefyAuthoritySet;
+
+export type BeefyNextAuthoritySet = $.Input<typeof $BeefyNextAuthoritySet>;

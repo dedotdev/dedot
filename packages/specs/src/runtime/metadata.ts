@@ -1,12 +1,4 @@
-import { RuntimeCallsSpec, RuntimeApisModule } from '@delightfuldot/types';
-
-const V1_V2_SHARED: RuntimeCallsSpec = {
-  metadata: {
-    docs: 'Returns the metadata of a runtime.',
-    params: [],
-    type: 'OpaqueMetadata',
-  },
-};
+import { RuntimeApisModule } from '@delightfuldot/types';
 
 /**
  * Ref: https://github.com/paritytech/polkadot-sdk/blob/eaf1bc5633ebbacce97e4f167ebe1d0d268c4b24/substrate/primitives/api/src/lib.rs#L811-L827
@@ -30,13 +22,13 @@ export const metadata: RuntimeApisModule = {
           params: [],
           type: 'Array<u32>',
         },
-        ...V1_V2_SHARED,
+        metadata: {
+          docs: 'Returns the metadata of a runtime.',
+          params: [],
+          type: 'OpaqueMetadata',
+        },
       },
       version: 2,
-    },
-    {
-      methods: { ...V1_V2_SHARED },
-      version: 1,
     },
   ],
 };

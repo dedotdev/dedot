@@ -1,4 +1,4 @@
-import { Field } from './scale-info';
+import { Field } from './scale_info';
 import * as $ from '@delightfuldot/shape';
 
 export interface PalletItemMetadata {

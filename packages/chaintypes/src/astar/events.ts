@@ -6,7 +6,7 @@ import type {
   DispatchError,
   AccountId32,
   H256,
-  ResultPayload,
+  Result,
   FixedBytes,
   Bytes,
   H160,
@@ -109,7 +109,7 @@ export interface ChainEvents extends GenericChainEvents {
     /**
      * A call was dispatched.
      **/
-    DispatchedAs: GenericPalletEvent<'Utility', 'DispatchedAs', { result: ResultPayload<[], DispatchError> }>;
+    DispatchedAs: GenericPalletEvent<'Utility', 'DispatchedAs', { result: Result<[], DispatchError> }>;
 
     /**
      * Generic pallet event
@@ -223,7 +223,7 @@ export interface ChainEvents extends GenericChainEvents {
         timepoint: PalletMultisigTimepoint;
         multisig: AccountId32;
         callHash: FixedBytes<32>;
-        result: ResultPayload<[], DispatchError>;
+        result: Result<[], DispatchError>;
       }
     >;
 
@@ -245,7 +245,7 @@ export interface ChainEvents extends GenericChainEvents {
     /**
      * A proxy was executed correctly, with the given.
      **/
-    ProxyExecuted: GenericPalletEvent<'Proxy', 'ProxyExecuted', { result: ResultPayload<[], DispatchError> }>;
+    ProxyExecuted: GenericPalletEvent<'Proxy', 'ProxyExecuted', { result: Result<[], DispatchError> }>;
 
     /**
      * A pure account has been created by new proxy with given
@@ -1546,7 +1546,7 @@ export interface ChainEvents extends GenericChainEvents {
     /**
      * A sudo just took place. \[result\]
      **/
-    Sudid: GenericPalletEvent<'Sudo', 'Sudid', { sudoResult: ResultPayload<[], DispatchError> }>;
+    Sudid: GenericPalletEvent<'Sudo', 'Sudid', { sudoResult: Result<[], DispatchError> }>;
 
     /**
      * The \[sudoer\] just switched identity; the old key is supplied if one existed.
@@ -1556,7 +1556,7 @@ export interface ChainEvents extends GenericChainEvents {
     /**
      * A sudo just took place. \[result\]
      **/
-    SudoAsDone: GenericPalletEvent<'Sudo', 'SudoAsDone', { sudoResult: ResultPayload<[], DispatchError> }>;
+    SudoAsDone: GenericPalletEvent<'Sudo', 'SudoAsDone', { sudoResult: Result<[], DispatchError> }>;
 
     /**
      * Generic pallet event

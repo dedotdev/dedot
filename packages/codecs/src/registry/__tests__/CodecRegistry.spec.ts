@@ -64,6 +64,12 @@ describe('CodecRegistry', () => {
         expect(util.inspect(registry.findCodec('Vec<u32>'))).toEqual('$.array($.u32)');
         expect(util.inspect(registry.findCodec('Result<u32, bool>'))).toEqual('$.Result($.u32, $.bool)');
         expect(util.inspect(registry.findCodec('Array<u32>'))).toEqual('$.array($.u32)');
+        expect(util.inspect(registry.findCodec('Array<[u32, u32]>'))).toEqual('$.array($.tuple($.u32, $.u32))');
+        expect(util.inspect(registry.findCodec('[]'))).toEqual('$.tuple([])');
+        expect(util.inspect(registry.findCodec('[u32, bool]'))).toEqual('$.tuple($.u32, $.bool)');
+        expect(util.inspect(registry.findCodec('Array<Array<[u32, u32]>>'))).toEqual(
+          '$.array($.array($.tuple($.u32, $.u32)))',
+        );
       });
 
       it('should throws error for not existing codec', () => {

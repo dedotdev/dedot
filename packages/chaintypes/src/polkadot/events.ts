@@ -7,7 +7,7 @@ import type {
   AccountId32,
   H256,
   FixedBytes,
-  ResultPayload,
+  Result,
   Perbill,
   Bytes,
   EthereumAddress,
@@ -114,7 +114,7 @@ export interface ChainEvents extends GenericChainEvents {
     Dispatched: GenericPalletEvent<
       'Scheduler',
       'Dispatched',
-      { task: [number, number]; id?: FixedBytes<32> | undefined; result: ResultPayload<[], DispatchError> }
+      { task: [number, number]; id?: FixedBytes<32> | undefined; result: Result<[], DispatchError> }
     >;
 
     /**
@@ -944,10 +944,7 @@ export interface ChainEvents extends GenericChainEvents {
     WhitelistedCallDispatched: GenericPalletEvent<
       'Whitelist',
       'WhitelistedCallDispatched',
-      {
-        callHash: H256;
-        result: ResultPayload<FrameSupportDispatchPostDispatchInfo, SpRuntimeDispatchErrorWithPostInfo>;
-      }
+      { callHash: H256; result: Result<FrameSupportDispatchPostDispatchInfo, SpRuntimeDispatchErrorWithPostInfo> }
     >;
 
     /**
@@ -1017,7 +1014,7 @@ export interface ChainEvents extends GenericChainEvents {
     /**
      * A call was dispatched.
      **/
-    DispatchedAs: GenericPalletEvent<'Utility', 'DispatchedAs', { result: ResultPayload<[], DispatchError> }>;
+    DispatchedAs: GenericPalletEvent<'Utility', 'DispatchedAs', { result: Result<[], DispatchError> }>;
 
     /**
      * Generic pallet event
@@ -1105,7 +1102,7 @@ export interface ChainEvents extends GenericChainEvents {
     /**
      * A proxy was executed correctly, with the given.
      **/
-    ProxyExecuted: GenericPalletEvent<'Proxy', 'ProxyExecuted', { result: ResultPayload<[], DispatchError> }>;
+    ProxyExecuted: GenericPalletEvent<'Proxy', 'ProxyExecuted', { result: Result<[], DispatchError> }>;
 
     /**
      * A pure account has been created by new proxy with given
@@ -1175,7 +1172,7 @@ export interface ChainEvents extends GenericChainEvents {
         timepoint: PalletMultisigTimepoint;
         multisig: AccountId32;
         callHash: FixedBytes<32>;
-        result: ResultPayload<[], DispatchError>;
+        result: Result<[], DispatchError>;
       }
     >;
 
@@ -1529,11 +1526,7 @@ export interface ChainEvents extends GenericChainEvents {
     /**
      * A staker was unstaked.
      **/
-    Unstaked: GenericPalletEvent<
-      'FastUnstake',
-      'Unstaked',
-      { stash: AccountId32; result: ResultPayload<[], DispatchError> }
-    >;
+    Unstaked: GenericPalletEvent<'FastUnstake', 'Unstaked', { stash: AccountId32; result: Result<[], DispatchError> }>;
 
     /**
      * A staker was slashed for requesting fast-unstake whilst being exposed.
@@ -1972,7 +1965,7 @@ export interface ChainEvents extends GenericChainEvents {
     HandleBidResult: GenericPalletEvent<
       'Crowdloan',
       'HandleBidResult',
-      { paraId: PolkadotParachainPrimitivesPrimitivesId; result: ResultPayload<[], DispatchError> }
+      { paraId: PolkadotParachainPrimitivesPrimitivesId; result: Result<[], DispatchError> }
     >;
 
     /**

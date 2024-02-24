@@ -6,7 +6,7 @@ import type {
   DispatchInfo,
   DispatchError,
   AccountId32,
-  ResultPayload,
+  Result,
   FixedBytes,
   Perquintill,
   H160,
@@ -19,6 +19,7 @@ import type {
   MultiAddressLike,
   AccountId32Like,
   Permill,
+  UncheckedExtrinsic,
   Era,
 } from '@delightfuldot/codecs';
 
@@ -140,7 +141,7 @@ export type PalletUtilityEvent =
   /**
    * A call was dispatched.
    **/
-  | { name: 'DispatchedAs'; data: { result: ResultPayload<[], DispatchError> } };
+  | { name: 'DispatchedAs'; data: { result: Result<[], DispatchError> } };
 
 /**
  * The [event](https://docs.substrate.io/main-docs/build/events-errors/) emitted by this pallet.
@@ -218,7 +219,7 @@ export type PalletMultisigEvent =
         timepoint: PalletMultisigTimepoint;
         multisig: AccountId32;
         callHash: FixedBytes<32>;
-        result: ResultPayload<[], DispatchError>;
+        result: Result<[], DispatchError>;
       };
     }
   /**
@@ -243,7 +244,7 @@ export type PalletProxyEvent =
   /**
    * A proxy was executed correctly, with the given.
    **/
-  | { name: 'ProxyExecuted'; data: { result: ResultPayload<[], DispatchError> } }
+  | { name: 'ProxyExecuted'; data: { result: Result<[], DispatchError> } }
   /**
    * A pure account has been created by new proxy with given
    * disambiguation index and proxy type.
@@ -1642,7 +1643,7 @@ export type PalletSudoEvent =
   /**
    * A sudo just took place. \[result\]
    **/
-  | { name: 'Sudid'; data: { sudoResult: ResultPayload<[], DispatchError> } }
+  | { name: 'Sudid'; data: { sudoResult: Result<[], DispatchError> } }
   /**
    * The \[sudoer\] just switched identity; the old key is supplied if one existed.
    **/
@@ -1650,7 +1651,7 @@ export type PalletSudoEvent =
   /**
    * A sudo just took place. \[result\]
    **/
-  | { name: 'SudoAsDone'; data: { sudoResult: ResultPayload<[], DispatchError> } };
+  | { name: 'SudoAsDone'; data: { sudoResult: Result<[], DispatchError> } };
 
 /**
  * The [event](https://docs.substrate.io/main-docs/build/events-errors/) emitted by this pallet.
@@ -1847,17 +1848,6 @@ export type FrameSystemLimitsBlockLength = { max: FrameSupportDispatchPerDispatc
 export type FrameSupportDispatchPerDispatchClassU32 = { normal: number; operational: number; mandatory: number };
 
 export type SpWeightsRuntimeDbWeight = { read: bigint; write: bigint };
-
-export type SpVersionRuntimeVersion = {
-  specName: string;
-  implName: string;
-  authoringVersion: number;
-  specVersion: number;
-  implVersion: number;
-  apis: Array<[FixedBytes<8>, number]>;
-  transactionVersion: number;
-  stateVersion: number;
-};
 
 /**
  * Error for the System pallet
@@ -9060,7 +9050,7 @@ export type PalletDappsStakingPalletError =
    **/
   | 'ClaimForCallerAccount';
 
-export type FpSelfContainedUncheckedExtrinsic = SpRuntimeUncheckedExtrinsic;
+export type FpSelfContainedUncheckedExtrinsic = UncheckedExtrinsic;
 
 export type SpRuntimeMultiSignature =
   | { tag: 'Ed25519'; value: SpCoreEd25519Signature }
@@ -9086,5 +9076,3 @@ export type FrameSystemExtensionsCheckNonce = number;
 export type FrameSystemExtensionsCheckWeight = {};
 
 export type PalletTransactionPaymentChargeTransactionPayment = bigint;
-
-export type SpRuntimeUncheckedExtrinsic = Bytes;

@@ -30,7 +30,7 @@ import type {
   PalletBalancesBalanceLock,
   PalletBalancesReserveData,
   PalletBalancesIdAmount,
-  PalletBalancesIdAmountRuntimeFreezeReason,
+  PalletBalancesIdAmount002,
   PalletTransactionPaymentReleases,
   PalletElectionProviderMultiPhasePhase,
   PalletElectionProviderMultiPhaseReadySolution,
@@ -43,9 +43,7 @@ import type {
   PalletStakingValidatorPrefs,
   PalletStakingNominations,
   PalletStakingActiveEraInfo,
-  SpStakingExposure,
-  SpStakingPagedExposureMetadata,
-  SpStakingExposurePage,
+  PalletStakingExposure,
   PalletStakingEraRewardPoints,
   PalletStakingForcing,
   PalletStakingUnappliedSlash,
@@ -64,9 +62,7 @@ import type {
   PalletElectionsPhragmenVoter,
   PalletGrandpaStoredState,
   PalletGrandpaStoredPendingChange,
-  SpConsensusGrandpaAppPublic,
   PalletTreasuryProposal,
-  PalletTreasurySpendStatus,
   PalletContractsWasmCodeInfo,
   PalletContractsStorageContractInfo,
   PalletContractsStorageDeletionQueueManager,
@@ -88,7 +84,6 @@ import type {
   PalletVestingVestingInfo,
   PalletVestingReleases,
   PalletSchedulerScheduled,
-  PalletPreimageOldRequestStatus,
   PalletPreimageRequestStatus,
   PalletProxyProxyDefinition,
   PalletProxyAnnouncement,
@@ -158,8 +153,6 @@ import type {
   PalletBrokerContributionRecord,
   PalletBrokerPoolIoRecord,
   PalletBrokerInstaPoolHistoryRecord,
-  SpMixnetAppPublic,
-  PalletMixnetBoundedMixnode,
 } from './types';
 
 export interface ChainStorage extends GenericChainStorage {
@@ -397,15 +390,12 @@ export interface ChainStorage extends GenericChainStorage {
   };
   timestamp: {
     /**
-     * The current time for the current block.
+     * Current time for the current block.
      **/
     now: GenericStorageQuery<() => bigint>;
 
     /**
-     * Whether the timestamp has been updated in this block.
-     *
-     * This value is updated to `true` upon successful submission of a timestamp by a node.
-     * It is then checked at the end of each block execution in the `on_finalize` hook.
+     * Did the timestamp get updated in this block?
      **/
     didUpdate: GenericStorageQuery<() => boolean>;
 
@@ -494,7 +484,7 @@ export interface ChainStorage extends GenericChainStorage {
     /**
      * Freeze locks on account balances.
      **/
-    freezes: GenericStorageQuery<(arg: AccountId32Like) => Array<PalletBalancesIdAmountRuntimeFreezeReason>>;
+    freezes: GenericStorageQuery<(arg: AccountId32Like) => Array<PalletBalancesIdAmount002>>;
 
     /**
      * Generic pallet storage query
@@ -652,9 +642,6 @@ export interface ChainStorage extends GenericChainStorage {
 
     /**
      * Map from all (unlocked) "controller" accounts to the info regarding the staking.
-     *
-     * Note: All the reads and mutations to this storage *MUST* be done through the methods exposed
-     * by [`StakingLedger`] to ensure data and lock consistency.
      **/
     ledger: GenericStorageQuery<(arg: AccountId32Like) => PalletStakingStakingLedger | undefined>;
 
@@ -736,7 +723,7 @@ export interface ChainStorage extends GenericChainStorage {
     activeEra: GenericStorageQuery<() => PalletStakingActiveEraInfo | undefined>;
 
     /**
-     * The session index at which the era start for the last [`Config::HistoryDepth`] eras.
+     * The session index at which the era start for the last `HISTORY_DEPTH` eras.
      *
      * Note: This tracks the starting session (i.e. session index when era start being active)
      * for the eras in `[CurrentEra - HISTORY_DEPTH, CurrentEra]`.
@@ -748,97 +735,50 @@ export interface ChainStorage extends GenericChainStorage {
      *
      * This is keyed first by the era index to allow bulk deletion and then the stash account.
      *
-     * Is it removed after [`Config::HistoryDepth`] eras.
+     * Is it removed after `HISTORY_DEPTH` eras.
      * If stakers hasn't been set or has been removed then empty exposure is returned.
-     *
-     * Note: Deprecated since v14. Use `EraInfo` instead to work with exposures.
      **/
-    erasStakers: GenericStorageQuery<(arg: [number, AccountId32Like]) => SpStakingExposure>;
-
-    /**
-     * Summary of validator exposure at a given era.
-     *
-     * This contains the total stake in support of the validator and their own stake. In addition,
-     * it can also be used to get the number of nominators backing this validator and the number of
-     * exposure pages they are divided into. The page count is useful to determine the number of
-     * pages of rewards that needs to be claimed.
-     *
-     * This is keyed first by the era index to allow bulk deletion and then the stash account.
-     * Should only be accessed through `EraInfo`.
-     *
-     * Is it removed after [`Config::HistoryDepth`] eras.
-     * If stakers hasn't been set or has been removed then empty overview is returned.
-     **/
-    erasStakersOverview: GenericStorageQuery<
-      (arg: [number, AccountId32Like]) => SpStakingPagedExposureMetadata | undefined
-    >;
+    erasStakers: GenericStorageQuery<(arg: [number, AccountId32Like]) => PalletStakingExposure>;
 
     /**
      * Clipped Exposure of validator at era.
      *
-     * Note: This is deprecated, should be used as read-only and will be removed in the future.
-     * New `Exposure`s are stored in a paged manner in `ErasStakersPaged` instead.
-     *
      * This is similar to [`ErasStakers`] but number of nominators exposed is reduced to the
-     * `T::MaxExposurePageSize` biggest stakers.
+     * `T::MaxNominatorRewardedPerValidator` biggest stakers.
      * (Note: the field `total` and `own` of the exposure remains unchanged).
      * This is used to limit the i/o cost for the nominator payout.
      *
      * This is keyed fist by the era index to allow bulk deletion and then the stash account.
      *
-     * It is removed after [`Config::HistoryDepth`] eras.
+     * Is it removed after `HISTORY_DEPTH` eras.
      * If stakers hasn't been set or has been removed then empty exposure is returned.
-     *
-     * Note: Deprecated since v14. Use `EraInfo` instead to work with exposures.
      **/
-    erasStakersClipped: GenericStorageQuery<(arg: [number, AccountId32Like]) => SpStakingExposure>;
-
-    /**
-     * Paginated exposure of a validator at given era.
-     *
-     * This is keyed first by the era index to allow bulk deletion, then stash account and finally
-     * the page. Should only be accessed through `EraInfo`.
-     *
-     * This is cleared after [`Config::HistoryDepth`] eras.
-     **/
-    erasStakersPaged: GenericStorageQuery<
-      (arg: [number, AccountId32Like, number]) => SpStakingExposurePage | undefined
-    >;
-
-    /**
-     * History of claimed paged rewards by era and validator.
-     *
-     * This is keyed by era and validator stash which maps to the set of page indexes which have
-     * been claimed.
-     *
-     * It is removed after [`Config::HistoryDepth`] eras.
-     **/
-    claimedRewards: GenericStorageQuery<(arg: [number, AccountId32Like]) => Array<number>>;
+    erasStakersClipped: GenericStorageQuery<(arg: [number, AccountId32Like]) => PalletStakingExposure>;
 
     /**
      * Similar to `ErasStakers`, this holds the preferences of validators.
      *
      * This is keyed first by the era index to allow bulk deletion and then the stash account.
      *
-     * Is it removed after [`Config::HistoryDepth`] eras.
+     * Is it removed after `HISTORY_DEPTH` eras.
      **/
     erasValidatorPrefs: GenericStorageQuery<(arg: [number, AccountId32Like]) => PalletStakingValidatorPrefs>;
 
     /**
-     * The total validator era payout for the last [`Config::HistoryDepth`] eras.
+     * The total validator era payout for the last `HISTORY_DEPTH` eras.
      *
      * Eras that haven't finished yet or has been removed doesn't have reward.
      **/
     erasValidatorReward: GenericStorageQuery<(arg: number) => bigint | undefined>;
 
     /**
-     * Rewards for the last [`Config::HistoryDepth`] eras.
+     * Rewards for the last `HISTORY_DEPTH` eras.
      * If reward hasn't been set or has been removed then 0 reward is returned.
      **/
     erasRewardPoints: GenericStorageQuery<(arg: number) => PalletStakingEraRewardPoints>;
 
     /**
-     * The total amount staked for the last [`Config::HistoryDepth`] eras.
+     * The total amount staked for the last `HISTORY_DEPTH` eras.
      * If total hasn't been set or has been removed then 0 stake is returned.
      **/
     erasTotalStake: GenericStorageQuery<(arg: number) => bigint>;
@@ -1046,7 +986,7 @@ export interface ChainStorage extends GenericChainStorage {
 
     /**
      * General information concerning any proposal or referendum.
-     * The `Hash` refers to the preimage of the `Preimages` provider which can be a JSON
+     * The `PreimageHash` refers to the preimage of the `Preimages` provider which can be a JSON
      * dump or IPFS hash of a JSON file.
      *
      * Consider a garbage collection for a metadata of finished referendums to `unrequest` (remove)
@@ -1232,11 +1172,6 @@ export interface ChainStorage extends GenericChainStorage {
     setIdSession: GenericStorageQuery<(arg: bigint) => number | undefined>;
 
     /**
-     * The current list of authorities.
-     **/
-    authorities: GenericStorageQuery<() => Array<[SpConsensusGrandpaAppPublic, bigint]>>;
-
-    /**
      * Generic pallet storage query
      **/
     [storage: string]: GenericStorageQuery;
@@ -1261,16 +1196,6 @@ export interface ChainStorage extends GenericChainStorage {
      * Proposal indices that have been approved but not yet awarded.
      **/
     approvals: GenericStorageQuery<() => Array<number>>;
-
-    /**
-     * The count of spends that have been made.
-     **/
-    spendCount: GenericStorageQuery<() => number>;
-
-    /**
-     * Spends that have been approved and being processed.
-     **/
-    spends: GenericStorageQuery<(arg: number) => PalletTreasurySpendStatus | undefined>;
 
     /**
      * Generic pallet storage query
@@ -1704,12 +1629,7 @@ export interface ChainStorage extends GenericChainStorage {
     /**
      * The request status of a given hash.
      **/
-    statusFor: GenericStorageQuery<(arg: H256) => PalletPreimageOldRequestStatus | undefined>;
-
-    /**
-     * The request status of a given hash.
-     **/
-    requestStatusFor: GenericStorageQuery<(arg: H256) => PalletPreimageRequestStatus | undefined>;
+    statusFor: GenericStorageQuery<(arg: H256) => PalletPreimageRequestStatus | undefined>;
     preimageFor: GenericStorageQuery<(arg: [H256, number]) => Bytes | undefined>;
 
     /**
@@ -2287,7 +2207,7 @@ export interface ChainStorage extends GenericChainStorage {
 
     /**
      * The metadata is a general information concerning the referendum.
-     * The `Hash` refers to the preimage of the `Preimages` provider which can be a JSON
+     * The `PreimageHash` refers to the preimage of the `Preimages` provider which can be a JSON
      * dump or IPFS hash of a JSON file.
      *
      * Consider a garbage collection for a metadata of finished referendums to `unrequest` (remove)
@@ -2408,15 +2328,6 @@ export interface ChainStorage extends GenericChainStorage {
     [storage: string]: GenericStorageQuery;
   };
   nominationPools: {
-    /**
-     * The sum of funds across all pools.
-     *
-     * This might be lower but never higher than the sum of `total_balance` of all [`PoolMembers`]
-     * because calling `pool_withdraw_unbonded` might decrease the total stake of the pool's
-     * `bonded_account` without adjusting the pallet-internal `UnbondingPool`'s.
-     **/
-    totalValueLocked: GenericStorageQuery<() => bigint>;
-
     /**
      * Minimum amount to bond to join a pool.
      **/
@@ -2566,7 +2477,7 @@ export interface ChainStorage extends GenericChainStorage {
 
     /**
      * The metadata is a general information concerning the referendum.
-     * The `Hash` refers to the preimage of the `Preimages` provider which can be a JSON
+     * The `PreimageHash` refers to the preimage of the `Preimages` provider which can be a JSON
      * dump or IPFS hash of a JSON file.
      *
      * Consider a garbage collection for a metadata of finished referendums to `unrequest` (remove)
@@ -2830,54 +2741,6 @@ export interface ChainStorage extends GenericChainStorage {
      * Total InstaPool rewards for each Timeslice and the number of core parts which contributed.
      **/
     instaPoolHistory: GenericStorageQuery<(arg: number) => PalletBrokerInstaPoolHistoryRecord | undefined>;
-
-    /**
-     * Generic pallet storage query
-     **/
-    [storage: string]: GenericStorageQuery;
-  };
-  tasksExample: {
-    /**
-     * Some running total.
-     **/
-    total: GenericStorageQuery<() => [number, number]>;
-
-    /**
-     * Numbers to be added into the total.
-     **/
-    numbers: GenericStorageQuery<(arg: number) => number | undefined>;
-
-    /**
-     * Generic pallet storage query
-     **/
-    [storage: string]: GenericStorageQuery;
-  };
-  mixnet: {
-    /**
-     * Index of the current session. This may be offset relative to the session index tracked by
-     * eg `pallet_session`; mixnet session indices are independent.
-     **/
-    currentSessionIndex: GenericStorageQuery<() => number>;
-
-    /**
-     * Block in which the current session started.
-     **/
-    currentSessionStartBlock: GenericStorageQuery<() => number>;
-
-    /**
-     * Authority list for the next session.
-     **/
-    nextAuthorityIds: GenericStorageQuery<(arg: number) => SpMixnetAppPublic | undefined>;
-
-    /**
-     * Mixnode sets by session index. Only the mixnode sets for the previous, current, and next
-     * sessions are kept; older sets are discarded.
-     *
-     * The mixnodes in each set are keyed by authority index so we can easily check if an
-     * authority has registered a mixnode. The authority indices should only be used during
-     * registration; the authority indices for the very first session are made up.
-     **/
-    mixnodes: GenericStorageQuery<(arg: [number, number]) => PalletMixnetBoundedMixnode | undefined>;
 
     /**
      * Generic pallet storage query

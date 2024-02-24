@@ -1,5 +1,5 @@
 import { SignedExtension } from '../SignedExtension';
-import { numberToHex, u8aToHex } from '@polkadot/util';
+import { numberToHex } from '@polkadot/util';
 import { SignerPayloadJSON } from '@polkadot/types/types';
 
 /**
@@ -7,7 +7,7 @@ import { SignerPayloadJSON } from '@polkadot/types/types';
  */
 export class CheckTxVersion extends SignedExtension<{}, number> {
   async init(): Promise<void> {
-    this.additionalSigned = this.api.runtimeVersion.transactionVersion;
+    this.additionalSigned = this.api.runtimeVersion!.transactionVersion;
   }
 
   toPayload(): Partial<SignerPayloadJSON> {

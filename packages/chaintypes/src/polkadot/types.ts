@@ -7,7 +7,7 @@ import type {
   DispatchError,
   AccountId32,
   FixedBytes,
-  ResultPayload,
+  Result,
   Perbill,
   Bytes,
   BytesLike,
@@ -25,6 +25,7 @@ import type {
   FixedU128,
   FixedI64,
   Era,
+  UncheckedExtrinsic,
 } from '@delightfuldot/codecs';
 
 export type FrameSystemAccountInfo = {
@@ -144,7 +145,7 @@ export type PalletSchedulerEvent =
    **/
   | {
       name: 'Dispatched';
-      data: { task: [number, number]; id?: FixedBytes<32> | undefined; result: ResultPayload<[], DispatchError> };
+      data: { task: [number, number]; id?: FixedBytes<32> | undefined; result: Result<[], DispatchError> };
     }
   /**
    * The call for the provided hash was not found so the task has been aborted.
@@ -5336,7 +5337,7 @@ export type PalletWhitelistEvent =
       name: 'WhitelistedCallDispatched';
       data: {
         callHash: H256;
-        result: ResultPayload<FrameSupportDispatchPostDispatchInfo, SpRuntimeDispatchErrorWithPostInfo>;
+        result: Result<FrameSupportDispatchPostDispatchInfo, SpRuntimeDispatchErrorWithPostInfo>;
       };
     };
 
@@ -5401,7 +5402,7 @@ export type PalletUtilityEvent =
   /**
    * A call was dispatched.
    **/
-  | { name: 'DispatchedAs'; data: { result: ResultPayload<[], DispatchError> } };
+  | { name: 'DispatchedAs'; data: { result: Result<[], DispatchError> } };
 
 /**
  * The `Event` enum of this pallet
@@ -5456,7 +5457,7 @@ export type PalletProxyEvent =
   /**
    * A proxy was executed correctly, with the given.
    **/
-  | { name: 'ProxyExecuted'; data: { result: ResultPayload<[], DispatchError> } }
+  | { name: 'ProxyExecuted'; data: { result: Result<[], DispatchError> } }
   /**
    * A pure account has been created by new proxy with given
    * disambiguation index and proxy type.
@@ -5514,7 +5515,7 @@ export type PalletMultisigEvent =
         timepoint: PalletMultisigTimepoint;
         multisig: AccountId32;
         callHash: FixedBytes<32>;
-        result: ResultPayload<[], DispatchError>;
+        result: Result<[], DispatchError>;
       };
     }
   /**
@@ -5780,7 +5781,7 @@ export type PalletFastUnstakeEvent =
   /**
    * A staker was unstaked.
    **/
-  | { name: 'Unstaked'; data: { stash: AccountId32; result: ResultPayload<[], DispatchError> } }
+  | { name: 'Unstaked'; data: { stash: AccountId32; result: Result<[], DispatchError> } }
   /**
    * A staker was slashed for requesting fast-unstake whilst being exposed.
    **/
@@ -6132,7 +6133,7 @@ export type PolkadotRuntimeCommonCrowdloanPalletEvent =
    **/
   | {
       name: 'HandleBidResult';
-      data: { paraId: PolkadotParachainPrimitivesPrimitivesId; result: ResultPayload<[], DispatchError> };
+      data: { paraId: PolkadotParachainPrimitivesPrimitivesId; result: Result<[], DispatchError> };
     }
   /**
    * The configuration to a crowdloan has been edited.
@@ -6442,17 +6443,6 @@ export type FrameSystemLimitsBlockLength = { max: FrameSupportDispatchPerDispatc
 export type FrameSupportDispatchPerDispatchClassU32 = { normal: number; operational: number; mandatory: number };
 
 export type SpWeightsRuntimeDbWeight = { read: bigint; write: bigint };
-
-export type SpVersionRuntimeVersion = {
-  specName: string;
-  implName: string;
-  authoringVersion: number;
-  specVersion: number;
-  implVersion: number;
-  apis: Array<[FixedBytes<8>, number]>;
-  transactionVersion: number;
-  stateVersion: number;
-};
 
 /**
  * Error for the System pallet
@@ -8927,8 +8917,6 @@ export type PalletBeefyError =
 
 export type SpConsensusBeefyMmrBeefyAuthoritySet = { id: bigint; len: number; keysetCommitment: H256 };
 
-export type SpRuntimeUncheckedExtrinsic = Bytes;
-
 export type FrameSystemExtensionsCheckNonZeroSender = {};
 
 export type FrameSystemExtensionsCheckSpecVersion = {};
@@ -8948,3 +8936,246 @@ export type PalletTransactionPaymentChargeTransactionPayment = bigint;
 export type PolkadotRuntimeCommonClaimsPrevalidateAttests = {};
 
 export type PolkadotRuntimeRuntime = {};
+
+export type SpRuntimeBlock = { header: Header; extrinsics: Array<UncheckedExtrinsic> };
+
+export type SpCoreOpaqueMetadata = Bytes;
+
+export type SpRuntimeTransactionValidityTransactionValidityError =
+  | { tag: 'Invalid'; value: SpRuntimeTransactionValidityInvalidTransaction }
+  | { tag: 'Unknown'; value: SpRuntimeTransactionValidityUnknownTransaction };
+
+export type SpRuntimeTransactionValidityInvalidTransaction =
+  | { tag: 'Call' }
+  | { tag: 'Payment' }
+  | { tag: 'Future' }
+  | { tag: 'Stale' }
+  | { tag: 'BadProof' }
+  | { tag: 'AncientBirthBlock' }
+  | { tag: 'ExhaustsResources' }
+  | { tag: 'Custom'; value: number }
+  | { tag: 'BadMandatory' }
+  | { tag: 'MandatoryValidation' }
+  | { tag: 'BadSigner' };
+
+export type SpRuntimeTransactionValidityUnknownTransaction =
+  | { tag: 'CannotLookup' }
+  | { tag: 'NoUnsignedValidator' }
+  | { tag: 'Custom'; value: number };
+
+export type SpInherentsInherentData = { data: Array<[FixedBytes<8>, Bytes]> };
+
+export type SpInherentsCheckInherentsResult = { okay: boolean; fatalError: boolean; errors: SpInherentsInherentData };
+
+export type SpRuntimeTransactionValidityTransactionSource = 'InBlock' | 'Local' | 'External';
+
+export type SpRuntimeTransactionValidityValidTransaction = {
+  priority: bigint;
+  requires: Array<Bytes>;
+  provides: Array<Bytes>;
+  longevity: bigint;
+  propagate: boolean;
+};
+
+export type PolkadotPrimitivesV6GroupRotationInfo = {
+  sessionStartBlock: number;
+  groupRotationFrequency: number;
+  now: number;
+};
+
+export type PolkadotPrimitivesV6CoreState =
+  | { tag: 'Occupied'; value: PolkadotPrimitivesV6OccupiedCore }
+  | { tag: 'Scheduled'; value: PolkadotPrimitivesV6ScheduledCore }
+  | { tag: 'Free' };
+
+export type PolkadotPrimitivesV6OccupiedCore = {
+  nextUpOnAvailable?: PolkadotPrimitivesV6ScheduledCore | undefined;
+  occupiedSince: number;
+  timeOutAt: number;
+  nextUpOnTimeOut?: PolkadotPrimitivesV6ScheduledCore | undefined;
+  availability: BitSequence;
+  groupResponsible: PolkadotPrimitivesV6GroupIndex;
+  candidateHash: PolkadotCorePrimitivesCandidateHash;
+  candidateDescriptor: PolkadotPrimitivesV6CandidateDescriptor;
+};
+
+export type PolkadotPrimitivesV6ScheduledCore = {
+  paraId: PolkadotParachainPrimitivesPrimitivesId;
+  collator?: PolkadotPrimitivesV6CollatorAppPublic | undefined;
+};
+
+export type PolkadotPrimitivesV6OccupiedCoreAssumption = 'Included' | 'TimedOut' | 'Free';
+
+export type PolkadotPrimitivesV6PersistedValidationData = {
+  parentHead: PolkadotParachainPrimitivesPrimitivesHeadData;
+  relayParentNumber: number;
+  relayParentStorageRoot: H256;
+  maxPovSize: number;
+};
+
+export type PolkadotPrimitivesV6CandidateEvent =
+  | {
+      tag: 'CandidateBacked';
+      value: [
+        PolkadotPrimitivesV6CandidateReceipt,
+        PolkadotParachainPrimitivesPrimitivesHeadData,
+        PolkadotPrimitivesV6CoreIndex,
+        PolkadotPrimitivesV6GroupIndex,
+      ];
+    }
+  | {
+      tag: 'CandidateIncluded';
+      value: [
+        PolkadotPrimitivesV6CandidateReceipt,
+        PolkadotParachainPrimitivesPrimitivesHeadData,
+        PolkadotPrimitivesV6CoreIndex,
+        PolkadotPrimitivesV6GroupIndex,
+      ];
+    }
+  | {
+      tag: 'CandidateTimedOut';
+      value: [
+        PolkadotPrimitivesV6CandidateReceipt,
+        PolkadotParachainPrimitivesPrimitivesHeadData,
+        PolkadotPrimitivesV6CoreIndex,
+      ];
+    };
+
+export type PolkadotPrimitivesV6SlashingOpaqueKeyOwnershipProof = Bytes;
+
+export type PolkadotPrimitivesV6AsyncBackingBackingState = {
+  constraints: PolkadotPrimitivesV6AsyncBackingConstraints;
+  pendingAvailability: Array<PolkadotPrimitivesV6AsyncBackingCandidatePendingAvailability>;
+};
+
+export type PolkadotPrimitivesV6AsyncBackingConstraints = {
+  minRelayParentNumber: number;
+  maxPovSize: number;
+  maxCodeSize: number;
+  umpRemaining: number;
+  umpRemainingBytes: number;
+  maxUmpNumPerCandidate: number;
+  dmpRemainingMessages: Array<number>;
+  hrmpInbound: PolkadotPrimitivesV6AsyncBackingInboundHrmpLimitations;
+  hrmpChannelsOut: Array<
+    [PolkadotParachainPrimitivesPrimitivesId, PolkadotPrimitivesV6AsyncBackingOutboundHrmpChannelLimitations]
+  >;
+  maxHrmpNumPerCandidate: number;
+  requiredParent: PolkadotParachainPrimitivesPrimitivesHeadData;
+  validationCodeHash: PolkadotParachainPrimitivesPrimitivesValidationCodeHash;
+  upgradeRestriction?: PolkadotPrimitivesV6UpgradeRestriction | undefined;
+  futureValidationCode?: [number, PolkadotParachainPrimitivesPrimitivesValidationCodeHash] | undefined;
+};
+
+export type PolkadotPrimitivesV6AsyncBackingInboundHrmpLimitations = { validWatermarks: Array<number> };
+
+export type PolkadotPrimitivesV6AsyncBackingOutboundHrmpChannelLimitations = {
+  bytesRemaining: number;
+  messagesRemaining: number;
+};
+
+export type PolkadotPrimitivesV6AsyncBackingCandidatePendingAvailability = {
+  candidateHash: PolkadotCorePrimitivesCandidateHash;
+  descriptor: PolkadotPrimitivesV6CandidateDescriptor;
+  commitments: PolkadotPrimitivesV6CandidateCommitments;
+  relayParentNumber: number;
+  maxPovSize: number;
+};
+
+export type SpConsensusBeefyValidatorSet = { validators: Array<SpConsensusBeefyEcdsaCryptoPublic>; id: bigint };
+
+export type SpConsensusBeefyOpaqueKeyOwnershipProof = Bytes;
+
+export type SpMmrPrimitivesError =
+  | 'InvalidNumericOp'
+  | 'Push'
+  | 'GetRoot'
+  | 'Commit'
+  | 'GenerateProof'
+  | 'Verify'
+  | 'LeafNotFound'
+  | 'PalletNotIncluded'
+  | 'InvalidLeafIndex'
+  | 'InvalidBestKnownBlock';
+
+export type SpMmrPrimitivesEncodableOpaqueLeaf = Bytes;
+
+export type SpMmrPrimitivesProof = { leafIndices: Array<bigint>; leafCount: bigint; items: Array<H256> };
+
+export type SpConsensusGrandpaOpaqueKeyOwnershipProof = Bytes;
+
+export type SpConsensusBabeBabeConfiguration = {
+  slotDuration: bigint;
+  epochLength: bigint;
+  c: [bigint, bigint];
+  authorities: Array<[SpConsensusBabeAppPublic, bigint]>;
+  randomness: FixedBytes<32>;
+  allowedSlots: SpConsensusBabeAllowedSlots;
+};
+
+export type SpConsensusBabeEpoch = {
+  epochIndex: bigint;
+  startSlot: SpConsensusSlotsSlot;
+  duration: bigint;
+  authorities: Array<[SpConsensusBabeAppPublic, bigint]>;
+  randomness: FixedBytes<32>;
+  config: SpConsensusBabeBabeEpochConfiguration;
+};
+
+export type SpConsensusBabeOpaqueKeyOwnershipProof = Bytes;
+
+export type PalletTransactionPaymentRuntimeDispatchInfo = {
+  weight: SpWeightsWeightV2Weight;
+  class: FrameSupportDispatchDispatchClass;
+  partialFee: bigint;
+};
+
+export type PalletTransactionPaymentFeeDetails = {
+  inclusionFee?: PalletTransactionPaymentInclusionFee | undefined;
+  tip: bigint;
+};
+
+export type PalletTransactionPaymentInclusionFee = { baseFee: bigint; lenFee: bigint; adjustedWeightFee: bigint };
+
+export type PolkadotRuntimeRuntimeError =
+  | { tag: 'System'; value: FrameSystemError }
+  | { tag: 'Scheduler'; value: PalletSchedulerError }
+  | { tag: 'Preimage'; value: PalletPreimageError }
+  | { tag: 'Babe'; value: PalletBabeError }
+  | { tag: 'Indices'; value: PalletIndicesError }
+  | { tag: 'Balances'; value: PalletBalancesError }
+  | { tag: 'Staking'; value: PalletStakingPalletError }
+  | { tag: 'Session'; value: PalletSessionError }
+  | { tag: 'Grandpa'; value: PalletGrandpaError }
+  | { tag: 'ImOnline'; value: PalletImOnlineError }
+  | { tag: 'Treasury'; value: PalletTreasuryError }
+  | { tag: 'ConvictionVoting'; value: PalletConvictionVotingError }
+  | { tag: 'Referenda'; value: PalletReferendaError }
+  | { tag: 'Whitelist'; value: PalletWhitelistError }
+  | { tag: 'Claims'; value: PolkadotRuntimeCommonClaimsPalletError }
+  | { tag: 'Vesting'; value: PalletVestingError }
+  | { tag: 'Utility'; value: PalletUtilityError }
+  | { tag: 'Identity'; value: PalletIdentityError }
+  | { tag: 'Proxy'; value: PalletProxyError }
+  | { tag: 'Multisig'; value: PalletMultisigError }
+  | { tag: 'Bounties'; value: PalletBountiesError }
+  | { tag: 'ChildBounties'; value: PalletChildBountiesError }
+  | { tag: 'ElectionProviderMultiPhase'; value: PalletElectionProviderMultiPhaseError }
+  | { tag: 'VoterList'; value: PalletBagsListError }
+  | { tag: 'NominationPools'; value: PalletNominationPoolsError }
+  | { tag: 'FastUnstake'; value: PalletFastUnstakeError }
+  | { tag: 'Configuration'; value: PolkadotRuntimeParachainsConfigurationPalletError }
+  | { tag: 'ParaInclusion'; value: PolkadotRuntimeParachainsInclusionPalletError }
+  | { tag: 'ParaInherent'; value: PolkadotRuntimeParachainsParasInherentPalletError }
+  | { tag: 'Paras'; value: PolkadotRuntimeParachainsParasPalletError }
+  | { tag: 'Hrmp'; value: PolkadotRuntimeParachainsHrmpPalletError }
+  | { tag: 'ParasDisputes'; value: PolkadotRuntimeParachainsDisputesPalletError }
+  | { tag: 'ParasSlashing'; value: PolkadotRuntimeParachainsDisputesSlashingPalletError }
+  | { tag: 'Registrar'; value: PolkadotRuntimeCommonParasRegistrarPalletError }
+  | { tag: 'Slots'; value: PolkadotRuntimeCommonSlotsPalletError }
+  | { tag: 'Auctions'; value: PolkadotRuntimeCommonAuctionsPalletError }
+  | { tag: 'Crowdloan'; value: PolkadotRuntimeCommonCrowdloanPalletError }
+  | { tag: 'XcmPallet'; value: PalletXcmError }
+  | { tag: 'MessageQueue'; value: PalletMessageQueueError }
+  | { tag: 'AssetRate'; value: PalletAssetRateError }
+  | { tag: 'Beefy'; value: PalletBeefyError };

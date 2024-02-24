@@ -3,7 +3,7 @@ import DelightfulApi from '../DelightfulApi';
 import MockProvider from './MockProvider';
 import { SubstrateApi } from '@delightfuldot/chaintypes';
 import { stringCamelCase, stringPascalCase } from '@polkadot/util';
-import { RuntimeVersion } from '@delightfuldot/types';
+import { RuntimeVersion } from '@delightfuldot/codecs';
 
 describe('DelightfulApi', () => {
   it('should throws error for invalid endpoint', () => {
@@ -161,12 +161,8 @@ describe('DelightfulApi', () => {
       });
 
       it('should throws error if runtime not support or call spec not found', async () => {
-        expect(() => api.call.metadata.notFound()).toThrowError(
-          new Error('Runtime call spec not found for Metadata_not_found'),
-        );
-        expect(() => api.call.notFound.notFound()).toThrowError(
-          new Error('Connected chain does not support runtime API: NotFound'),
-        );
+        expect(() => api.call.metadata.notFound()).toThrowError('Runtime Api not found: Metadata_not_found');
+        expect(() => api.call.notFound.notFound()).toThrowError('Runtime Api not found: NotFound_not_found');
       });
     });
   });

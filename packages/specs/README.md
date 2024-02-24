@@ -1,3 +1,3 @@
 # @delightfuldot/specs
 
-Known specs for rpc, runtime calls 
+Known specs for rpc, runtime apis 

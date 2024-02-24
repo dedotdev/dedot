@@ -63,8 +63,4 @@ export interface ISubmittableExtrinsic<R extends ISubmittableResult = ISubmittab
   signAndSend(account: AddressOrPair, callback: Callback<R>): Promise<Unsub>;
 
   signAndSend(account: AddressOrPair, options: Partial<SignerOptions>, callback?: Callback<R>): Promise<Unsub>;
-
-  toHex(): HexString;
-
-  toU8a(): Uint8Array;
 }

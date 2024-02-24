@@ -5,7 +5,7 @@ import { PalletErrorMetadataLatest } from '../metadata/types';
 import { MetadataLatest, TypeId } from '../metadata';
 import { PortableCodecRegistry } from './PortableCodecRegistry';
 import { CodecType, knownCodecTypes, normalizeCodecName } from '../codectypes';
-import { PortableType } from '../metadata/scale-info';
+import { PortableType } from '../metadata/scale_info';
 import { hexToU8a, isObject } from '@polkadot/util';
 
 type KnownPath = string | RegExp;
@@ -23,6 +23,7 @@ const KNOWN_PATHS: KnownPath[] = [
   'sp_runtime::TransactionalError',
   'frame_support::dispatch::DispatchInfo',
   'frame_system::Phase',
+  'sp_version::RuntimeVersion',
 
   'fp_account::AccountId20',
   'account::AccountId20',
@@ -32,6 +33,7 @@ const KNOWN_PATHS: KnownPath[] = [
   'sp_runtime::generic::digest::Digest',
   'sp_runtime::generic::digest::DigestItem',
   'sp_runtime::generic::header::Header',
+  'sp_runtime::generic::unchecked_extrinsic::UncheckedExtrinsic',
 
   /^primitive_types::\w+$/,
   /^sp_arithmetic::per_things::\w+$/,
@@ -39,6 +41,7 @@ const KNOWN_PATHS: KnownPath[] = [
 ];
 
 const WRAPPER_TYPE_REGEX = /^(\w+)<(.*)>$/;
+const TUPLE_TYPE_REGEX = /^\[(.*)]$/;
 const KNOWN_WRAPPER_TYPES = ['Option', 'Vec', 'Result', 'Array'];
 
 /**
@@ -107,11 +110,24 @@ export class CodecRegistry {
       if (KNOWN_WRAPPER_TYPES.includes(wrapper)) {
         // @ts-ignore
         const $Wrapper = $[wrapper] as (...args: any[]) => $.AnyShape;
-        const $inners = inner.split(', ').map((one) => this.#findKnownCodec(one.trim()));
+
+        if (inner.match(TUPLE_TYPE_REGEX) || inner.match(WRAPPER_TYPE_REGEX)) {
+          return $Wrapper(this.#findKnownWrapperCodec(inner));
+        }
+
+        const $inners = inner.split(',').map((one) => this.#findKnownCodec(one.trim()));
         return $Wrapper(...$inners);
       }
 
       throw new Error(`Unknown wrapper type ${wrapper} from ${typeName}`);
+    } else if (typeName.match(TUPLE_TYPE_REGEX)) {
+      const $inner = typeName
+        .slice(1, -1)
+        .split(',')
+        .filter((x) => x)
+        .map((one) => this.#findKnownCodec(one.trim()));
+
+      return $.Tuple(...$inner);
     }
   }
 

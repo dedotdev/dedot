@@ -1,11 +1,20 @@
-import { PortableType, TypeId } from '@delightfuldot/codecs';
+import { $RawBytes, PortableType, TypeId } from '../codecs';
 import * as $ from '@delightfuldot/shape';
 import { EnumOptions } from '@delightfuldot/shape';
 import { normalizeName } from '@delightfuldot/utils';
 import { CodecRegistry } from './CodecRegistry';
 import { stringPascalCase } from '@polkadot/util';
 
-const KNOWN_CODECS = ['AccountId32', 'Header', 'Digest', 'DigestItem', 'Data', 'MultiAddress', 'Era'];
+const KNOWN_CODECS = [
+  'AccountId32',
+  'Header',
+  'Digest',
+  'DigestItem',
+  'Data',
+  'MultiAddress',
+  'Era',
+  'UncheckedExtrinsic',
+];
 
 /**
  * Codec registry for portable types from metadata
@@ -65,7 +74,7 @@ export class PortableCodecRegistry {
     // the recursion will be resolved
     this.#cache.set(
       typeId,
-      $.deferred(() => this.#cache.get(typeId) || $.Bytes),
+      $.deferred(() => this.#cache.get(typeId) || $RawBytes),
     );
 
     const $codec = this.#createCodec(typeId);

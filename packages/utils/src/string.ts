@@ -58,8 +58,8 @@ export const isNativeType = (type: string) => {
   });
 };
 
-export const stringSnakeCase = (input: string | undefined) => {
-  if (!input) return undefined;
+export const stringSnakeCase = (input?: string | undefined) => {
+  if (!input) return '';
   return stringCamelCase(input).replace(/[A-Z]/g, (letter) => `_${letter.toLowerCase()}`);
 };
 

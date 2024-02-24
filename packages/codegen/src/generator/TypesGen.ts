@@ -36,7 +36,7 @@ const SKIP_TYPES = [
 // This helps make the type name shorter
 const PATH_RM_INDEX_1 = ['generic', 'misc', 'pallet', 'traits', 'types'];
 
-export const BASIC_KNOWN_TYPES = ['BitSequence', 'Bytes', 'BytesLike', 'FixedBytes', 'FixedArray', 'ResultPayload'];
+export const BASIC_KNOWN_TYPES = ['BitSequence', 'Bytes', 'BytesLike', 'FixedBytes', 'FixedArray', 'Result'];
 const WRAPPER_TYPE_REGEX = /^(\w+)(<.*>)$/g;
 
 export class TypesGen {
@@ -168,7 +168,7 @@ export class TypesGen {
             const OkType = this.generateType(ok.fields[0].typeId, nestedLevel + 1, typeOut);
             const ErrType = this.generateType(err.fields[0].typeId, nestedLevel + 1, typeOut);
 
-            return `ResultPayload<${OkType}, ${ErrType}>`;
+            return `Result<${OkType}, ${ErrType}>`;
           }
         }
 
@@ -263,7 +263,6 @@ export class TypesGen {
   }
 
   #includedTypes(): Record<TypeId, NamedType> {
-    const { callTypeId } = this.registry.metadata!.extrinsic;
     const { types } = this.metadata;
     const pathsCount = new Map<string, Array<number>>();
     const typesWithPath = types.filter((one) => one.path.length > 0);

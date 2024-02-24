@@ -6,7 +6,7 @@ import {
   PalletTxMetadataLatest,
 } from '@delightfuldot/codecs';
 import { RpcCallSpec } from './rpc';
-import { RuntimeCallSpec } from './runtime';
+import { RuntimeApiMethodSpec } from './runtime';
 
 export * from './rpc';
 export * from './runtime';
@@ -59,16 +59,16 @@ export interface StorageQueryMethod<F extends AnyFunc = AnyFunc> {
 
 export type GenericStorageQuery<T extends AnyFunc = AnyFunc> = StorageQueryMethod<T> & {};
 
-export type GenericRuntimeCall<F extends AsyncMethod = AsyncMethod> = F & {
-  meta: RuntimeCallSpec;
+export type GenericRuntimeApiMethod<F extends AsyncMethod = AsyncMethod> = F & {
+  meta: RuntimeApiMethodSpec;
 };
 
-export interface GenericRuntime {
-  [method: string]: GenericRuntimeCall;
+export interface GenericRuntimeApi {
+  [method: string]: GenericRuntimeApiMethod;
 }
 
-export interface GenericRuntimeCalls {
-  [runtime: string]: GenericRuntime;
+export interface GenericRuntimeApis {
+  [runtime: string]: GenericRuntimeApi;
 }
 
 export interface GenericChainStorage {
@@ -121,6 +121,6 @@ export interface GenericSubstrateApi {
   query: GenericChainStorage;
   errors: GenericChainErrors;
   events: GenericChainEvents;
-  call: GenericRuntimeCalls;
+  call: GenericRuntimeApis;
   tx: GenericChainTx;
 }

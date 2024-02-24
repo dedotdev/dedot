@@ -15,7 +15,6 @@ import type {
   StorageKind,
   RpcMethods,
   ReadProof,
-  RuntimeVersion,
   StorageChangeSet,
   TraceBlockResponse,
   MigrationStatusResult,
@@ -42,6 +41,7 @@ import type {
   FeeDetails,
   RuntimeDispatchInfo,
   Metadata,
+  RuntimeVersion,
   ApplyExtrinsicResult,
 } from '@delightfuldot/codecs';
 

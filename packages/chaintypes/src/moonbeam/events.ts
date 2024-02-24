@@ -9,7 +9,7 @@ import type {
   FixedBytes,
   Percent,
   Perbill,
-  ResultPayload,
+  Result,
   Bytes,
   H160,
 } from '@delightfuldot/codecs';
@@ -735,7 +735,7 @@ export interface ChainEvents extends GenericChainEvents {
     /**
      * A call was dispatched.
      **/
-    DispatchedAs: GenericPalletEvent<'Utility', 'DispatchedAs', { result: ResultPayload<[], DispatchError> }>;
+    DispatchedAs: GenericPalletEvent<'Utility', 'DispatchedAs', { result: Result<[], DispatchError> }>;
 
     /**
      * Generic pallet event
@@ -746,7 +746,7 @@ export interface ChainEvents extends GenericChainEvents {
     /**
      * A proxy was executed correctly, with the given.
      **/
-    ProxyExecuted: GenericPalletEvent<'Proxy', 'ProxyExecuted', { result: ResultPayload<[], DispatchError> }>;
+    ProxyExecuted: GenericPalletEvent<'Proxy', 'ProxyExecuted', { result: Result<[], DispatchError> }>;
 
     /**
      * A pure account has been created by new proxy with given
@@ -979,7 +979,7 @@ export interface ChainEvents extends GenericChainEvents {
         timepoint: PalletMultisigTimepoint;
         multisig: AccountId20;
         callHash: FixedBytes<32>;
-        result: ResultPayload<[], DispatchError>;
+        result: Result<[], DispatchError>;
       }
     >;
 
@@ -1060,7 +1060,7 @@ export interface ChainEvents extends GenericChainEvents {
     Dispatched: GenericPalletEvent<
       'Scheduler',
       'Dispatched',
-      { task: [number, number]; id?: FixedBytes<32> | undefined; result: ResultPayload<[], DispatchError> }
+      { task: [number, number]; id?: FixedBytes<32> | undefined; result: Result<[], DispatchError> }
     >;
 
     /**
@@ -1597,10 +1597,7 @@ export interface ChainEvents extends GenericChainEvents {
     WhitelistedCallDispatched: GenericPalletEvent<
       'Whitelist',
       'WhitelistedCallDispatched',
-      {
-        callHash: H256;
-        result: ResultPayload<FrameSupportDispatchPostDispatchInfo, SpRuntimeDispatchErrorWithPostInfo>;
-      }
+      { callHash: H256; result: Result<FrameSupportDispatchPostDispatchInfo, SpRuntimeDispatchErrorWithPostInfo> }
     >;
 
     /**
@@ -1645,7 +1642,7 @@ export interface ChainEvents extends GenericChainEvents {
     Executed: GenericPalletEvent<
       'CouncilCollective',
       'Executed',
-      { proposalHash: H256; result: ResultPayload<[], DispatchError> }
+      { proposalHash: H256; result: Result<[], DispatchError> }
     >;
 
     /**
@@ -1654,7 +1651,7 @@ export interface ChainEvents extends GenericChainEvents {
     MemberExecuted: GenericPalletEvent<
       'CouncilCollective',
       'MemberExecuted',
-      { proposalHash: H256; result: ResultPayload<[], DispatchError> }
+      { proposalHash: H256; result: Result<[], DispatchError> }
     >;
 
     /**
@@ -1704,7 +1701,7 @@ export interface ChainEvents extends GenericChainEvents {
     Executed: GenericPalletEvent<
       'TechCommitteeCollective',
       'Executed',
-      { proposalHash: H256; result: ResultPayload<[], DispatchError> }
+      { proposalHash: H256; result: Result<[], DispatchError> }
     >;
 
     /**
@@ -1713,7 +1710,7 @@ export interface ChainEvents extends GenericChainEvents {
     MemberExecuted: GenericPalletEvent<
       'TechCommitteeCollective',
       'MemberExecuted',
-      { proposalHash: H256; result: ResultPayload<[], DispatchError> }
+      { proposalHash: H256; result: Result<[], DispatchError> }
     >;
 
     /**
@@ -1763,7 +1760,7 @@ export interface ChainEvents extends GenericChainEvents {
     Executed: GenericPalletEvent<
       'TreasuryCouncilCollective',
       'Executed',
-      { proposalHash: H256; result: ResultPayload<[], DispatchError> }
+      { proposalHash: H256; result: Result<[], DispatchError> }
     >;
 
     /**
@@ -1772,7 +1769,7 @@ export interface ChainEvents extends GenericChainEvents {
     MemberExecuted: GenericPalletEvent<
       'TreasuryCouncilCollective',
       'MemberExecuted',
-      { proposalHash: H256; result: ResultPayload<[], DispatchError> }
+      { proposalHash: H256; result: Result<[], DispatchError> }
     >;
 
     /**
@@ -1822,7 +1819,7 @@ export interface ChainEvents extends GenericChainEvents {
     Executed: GenericPalletEvent<
       'OpenTechCommitteeCollective',
       'Executed',
-      { proposalHash: H256; result: ResultPayload<[], DispatchError> }
+      { proposalHash: H256; result: Result<[], DispatchError> }
     >;
 
     /**
@@ -1831,7 +1828,7 @@ export interface ChainEvents extends GenericChainEvents {
     MemberExecuted: GenericPalletEvent<
       'OpenTechCommitteeCollective',
       'MemberExecuted',
-      { proposalHash: H256; result: ResultPayload<[], DispatchError> }
+      { proposalHash: H256; result: Result<[], DispatchError> }
     >;
 
     /**

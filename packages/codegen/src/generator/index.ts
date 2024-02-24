@@ -7,4 +7,4 @@ export * from './IndexGen';
 export * from './ErrorsGen';
 export * from './EventsGen';
 export * from './TxGen';
-export * from './RuntimeCallsGen';
+export * from './RuntimeApisGen';
