@@ -2,20 +2,19 @@ import * as $ from '@delightfuldot/shape';
 import { HexString } from '@delightfuldot/utils';
 import { registerLooseCodecType } from '../codectypes';
 import { isString, isU8a, stringToHex, u8aToHex } from '@polkadot/util';
-import { $OpaqueExtrinsic } from '@delightfuldot/codecs/known/runtime';
 
 export const $Text = $.str;
 export type Text = string;
 
-export const $StorageKey = $.PrefixedHex;
+export const $StorageKey = $.RawHex;
 export type StorageKeyLike = $.Input<typeof $StorageKey>;
 export type StorageKey = $.Output<typeof $StorageKey>;
 
-export const $PrefixedStorageKey = $.PrefixedHex;
+export const $PrefixedStorageKey = $.RawHex;
 export type PrefixedStorageKeyLike = $.Input<typeof $PrefixedStorageKey>;
 export type PrefixedStorageKey = $.Output<typeof $PrefixedStorageKey>;
 
-export const $StorageData = $.PrefixedHex;
+export const $StorageData = $.RawHex;
 export type StorageDataLike = $.Input<typeof $StorageData>;
 export type StorageData = $.Output<typeof $StorageData>;
 
