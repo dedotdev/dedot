@@ -7,7 +7,7 @@ import {
 } from '@delightfuldot/types';
 import { assert, calculateRuntimeApiHash, stringSnakeCase } from '@delightfuldot/utils';
 import { isNumber, stringPascalCase, u8aConcat, u8aToHex } from '@polkadot/util';
-import { extractRuntimeApiModules, extractRuntimeApiSpec, findRuntimeApiMethodSpec } from '@delightfuldot/specs';
+import { extractRuntimeApisModule, extractRuntimeApiSpec, findRuntimeApiMethodSpec } from '@delightfuldot/specs';
 import { RuntimeApiMethodDefLatest } from '@delightfuldot/codecs';
 
 export const FallbackRuntimeApis = [
@@ -50,15 +50,10 @@ export class RuntimeApiExecutor<ChainApi extends GenericSubstrateApi = GenericSu
 
     assert(codec || typeId || type, `Cannot decode return data of ${runtimeApiName}_${methodName}: ${raw}`);
 
-    if (codec) {
-      return codec.tryDecode(raw);
-    }
+    const $codec =
+      codec || (isNumber(typeId) ? this.registry.findPortableCodec(typeId) : this.registry.findCodec(type!));
 
-    if (isNumber(typeId)) {
-      return this.registry.findPortableCodec(typeId).tryDecode(raw);
-    }
-
-    return this.registry.findCodec(type!).tryDecode(raw);
+    return $codec.tryDecode(raw);
   }
 
   tryEncode(paramSpec: RuntimeApiMethodParamSpec, value: any): Uint8Array {
@@ -73,7 +68,14 @@ export class RuntimeApiExecutor<ChainApi extends GenericSubstrateApi = GenericSu
   }
 
   #findRuntimeApiMethodSpec(runtimeApi: string, method: string): RuntimeApiMethodSpec | undefined {
-    const spec = this.#findRuntimeApiMethodUserDefinedSpec(runtimeApi, method);
+    const targetRuntimeApiVersion = this.#findTargetRuntimeApiVersion(runtimeApi);
+
+    if (!isNumber(targetRuntimeApiVersion)) {
+      return undefined;
+    }
+
+    const spec = this.#findRuntimeApiMethodUserDefinedSpec(runtimeApi, method, targetRuntimeApiVersion);
+
     if (spec) {
       return spec;
     }
@@ -84,7 +86,7 @@ export class RuntimeApiExecutor<ChainApi extends GenericSubstrateApi = GenericSu
       return this.#toMethodSpec(runtimeApi, methodDef);
     }
 
-    return this.#findRuntimeApiMethodExternalSpec(runtimeApi, method);
+    return this.#findRuntimeApiMethodExternalSpec(runtimeApi, method, targetRuntimeApiVersion);
   }
 
   #findRuntimeApiMethodDef(runtimeApi: string, method: string): RuntimeApiMethodDefLatest | undefined {
@@ -129,29 +131,25 @@ export class RuntimeApiExecutor<ChainApi extends GenericSubstrateApi = GenericSu
     return targetRuntimeApiVersion;
   }
 
-  #findRuntimeApiMethodExternalSpec(runtimeApi: string, method: string): RuntimeApiMethodSpec | undefined {
-    const targetRuntimeApiVersion = this.#findTargetRuntimeApiVersion(runtimeApi);
-
-    if (!isNumber(targetRuntimeApiVersion)) {
-      return undefined;
-    }
-
+  #findRuntimeApiMethodExternalSpec(
+    runtimeApi: string,
+    method: string,
+    targetRuntimeApiVersion: number,
+  ): RuntimeApiMethodSpec | undefined {
     return findRuntimeApiMethodSpec(`${runtimeApi}_${method}`, targetRuntimeApiVersion);
   }
 
-  #findRuntimeApiMethodUserDefinedSpec(runtimeApi: string, method: string): RuntimeApiMethodSpec | undefined {
-    const targetRuntimeApiVersion = this.#findTargetRuntimeApiVersion(runtimeApi);
-
-    if (!isNumber(targetRuntimeApiVersion)) {
-      return undefined;
-    }
-
+  #findRuntimeApiMethodUserDefinedSpec(
+    runtimeApi: string,
+    method: string,
+    targetRuntimeApiVersion: number,
+  ): RuntimeApiMethodSpec | undefined {
     const userDefinedRuntime = this.api.options.runtime;
     if (!userDefinedRuntime) {
       return undefined;
     }
 
-    const runtimeApiMethodSpecs = extractRuntimeApiModules(userDefinedRuntime).map(extractRuntimeApiSpec).flat();
+    const runtimeApiMethodSpecs = extractRuntimeApisModule(userDefinedRuntime).map(extractRuntimeApiSpec).flat();
 
     return runtimeApiMethodSpecs.find(
       (one) =>

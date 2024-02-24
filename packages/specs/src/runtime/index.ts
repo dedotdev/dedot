@@ -39,19 +39,13 @@ export const runtimeApisSpec: RuntimeApisSpec = {
   genesisBuilder,
 };
 
-export const runtimeApiNames: RuntimeApiName[] = Object.values(runtimeApisSpec)
-  .map((one) => Object.keys(one))
-  .flat();
+export const runtimeApiNames: RuntimeApiName[] = Object.values(runtimeApisSpec).map(Object.keys).flat();
 
-export const runtimeApiSpecs: RuntimeApiSpec[] = Object.values(runtimeApisSpec)
-  .map((runtimeApisModule) => {
-    return extractRuntimeApiModules(runtimeApisModule);
-  })
-  .flat();
+export const runtimeApiSpecs: RuntimeApiSpec[] = Object.values(runtimeApisSpec).map(extractRuntimeApisModule).flat();
 
 export const runtimeApiMethodSpecs: RuntimeApiMethodSpec[] = runtimeApiSpecs.map(extractRuntimeApiSpec).flat();
 
-export function extractRuntimeApiModules(runtimeApisModule: Record<string, RuntimeApiSpec[]>): RuntimeApiSpec[] {
+export function extractRuntimeApisModule(runtimeApisModule: Record<string, RuntimeApiSpec[]>): RuntimeApiSpec[] {
   return Object.keys(runtimeApisModule)
     .map((runtimeApiName) => {
       return runtimeApisModule[runtimeApiName].map((spec) => ({ ...spec, runtimeApiName }));
