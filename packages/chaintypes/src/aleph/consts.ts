@@ -12,6 +12,9 @@ import type {
 } from './types';
 
 export interface ChainConsts extends GenericChainConsts {
+  /**
+   * Pallet `System`'s constants
+   **/
   system: {
     /**
      * Block & extrinsics weights: base values and limits.
@@ -52,12 +55,18 @@ export interface ChainConsts extends GenericChainConsts {
      **/
     [name: string]: any;
   };
+  /**
+   * Pallet `RandomnessCollectiveFlip`'s constants
+   **/
   randomnessCollectiveFlip: {
     /**
      * Generic pallet constant
      **/
     [name: string]: any;
   };
+  /**
+   * Pallet `Scheduler`'s constants
+   **/
   scheduler: {
     /**
      * The maximum weight that may be scheduled per block for any dispatchables.
@@ -78,12 +87,18 @@ export interface ChainConsts extends GenericChainConsts {
      **/
     [name: string]: any;
   };
+  /**
+   * Pallet `Aura`'s constants
+   **/
   aura: {
     /**
      * Generic pallet constant
      **/
     [name: string]: any;
   };
+  /**
+   * Pallet `Timestamp`'s constants
+   **/
   timestamp: {
     /**
      * The minimum period between blocks. Beware that this is different to the *expected*
@@ -98,6 +113,9 @@ export interface ChainConsts extends GenericChainConsts {
      **/
     [name: string]: any;
   };
+  /**
+   * Pallet `Balances`'s constants
+   **/
   balances: {
     /**
      * The minimum amount required to keep an account open. MUST BE GREATER THAN ZERO!
@@ -137,6 +155,9 @@ export interface ChainConsts extends GenericChainConsts {
      **/
     [name: string]: any;
   };
+  /**
+   * Pallet `TransactionPayment`'s constants
+   **/
   transactionPayment: {
     /**
      * A fee mulitplier for `Operational` extrinsics to compute "virtual tip" to boost their
@@ -168,12 +189,18 @@ export interface ChainConsts extends GenericChainConsts {
      **/
     [name: string]: any;
   };
+  /**
+   * Pallet `Authorship`'s constants
+   **/
   authorship: {
     /**
      * Generic pallet constant
      **/
     [name: string]: any;
   };
+  /**
+   * Pallet `Staking`'s constants
+   **/
   staking: {
     /**
      * Maximum number of nominations per nominator.
@@ -249,24 +276,36 @@ export interface ChainConsts extends GenericChainConsts {
      **/
     [name: string]: any;
   };
+  /**
+   * Pallet `History`'s constants
+   **/
   history: {
     /**
      * Generic pallet constant
      **/
     [name: string]: any;
   };
+  /**
+   * Pallet `Session`'s constants
+   **/
   session: {
     /**
      * Generic pallet constant
      **/
     [name: string]: any;
   };
+  /**
+   * Pallet `Aleph`'s constants
+   **/
   aleph: {
     /**
      * Generic pallet constant
      **/
     [name: string]: any;
   };
+  /**
+   * Pallet `Elections`'s constants
+   **/
   elections: {
     /**
      * The maximum number of winners that can be elected by this `ElectionProvider`
@@ -281,6 +320,9 @@ export interface ChainConsts extends GenericChainConsts {
      **/
     [name: string]: any;
   };
+  /**
+   * Pallet `Treasury`'s constants
+   **/
   treasury: {
     /**
      * Fraction of a proposal's value that should be bonded in order to place the proposal.
@@ -325,6 +367,9 @@ export interface ChainConsts extends GenericChainConsts {
      **/
     [name: string]: any;
   };
+  /**
+   * Pallet `Vesting`'s constants
+   **/
   vesting: {
     /**
      * The minimum amount transferred to call `vested_transfer`.
@@ -337,6 +382,9 @@ export interface ChainConsts extends GenericChainConsts {
      **/
     [name: string]: any;
   };
+  /**
+   * Pallet `Utility`'s constants
+   **/
   utility: {
     /**
      * The limit on the number of batched calls.
@@ -348,6 +396,9 @@ export interface ChainConsts extends GenericChainConsts {
      **/
     [name: string]: any;
   };
+  /**
+   * Pallet `Multisig`'s constants
+   **/
   multisig: {
     /**
      * The base amount of currency needed to reserve for creating a multisig execution or to
@@ -376,12 +427,18 @@ export interface ChainConsts extends GenericChainConsts {
      **/
     [name: string]: any;
   };
+  /**
+   * Pallet `Sudo`'s constants
+   **/
   sudo: {
     /**
      * Generic pallet constant
      **/
     [name: string]: any;
   };
+  /**
+   * Pallet `Contracts`'s constants
+   **/
   contracts: {
     /**
      * Cost schedule and limits.
@@ -448,6 +505,9 @@ export interface ChainConsts extends GenericChainConsts {
      **/
     [name: string]: any;
   };
+  /**
+   * Pallet `NominationPools`'s constants
+   **/
   nominationPools: {
     /**
      * The nomination pool's pallet id.
@@ -475,6 +535,9 @@ export interface ChainConsts extends GenericChainConsts {
      **/
     [name: string]: any;
   };
+  /**
+   * Pallet `Identity`'s constants
+   **/
   identity: {
     /**
      * The amount held on deposit for a registered identity
@@ -515,6 +578,9 @@ export interface ChainConsts extends GenericChainConsts {
      **/
     [name: string]: any;
   };
+  /**
+   * Pallet `CommitteeManagement`'s constants
+   **/
   committeeManagement: {
     /**
      * Nr of blocks in the session.

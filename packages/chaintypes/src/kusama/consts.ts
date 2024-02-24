@@ -12,6 +12,9 @@ import type {
 } from './types';
 
 export interface ChainConsts extends GenericChainConsts {
+  /**
+   * Pallet `System`'s constants
+   **/
   system: {
     /**
      * Block & extrinsics weights: base values and limits.
@@ -52,6 +55,9 @@ export interface ChainConsts extends GenericChainConsts {
      **/
     [name: string]: any;
   };
+  /**
+   * Pallet `Babe`'s constants
+   **/
   babe: {
     /**
      * The amount of time, in slots, that each epoch should last.
@@ -84,6 +90,9 @@ export interface ChainConsts extends GenericChainConsts {
      **/
     [name: string]: any;
   };
+  /**
+   * Pallet `Timestamp`'s constants
+   **/
   timestamp: {
     /**
      * The minimum period between blocks.
@@ -100,6 +109,9 @@ export interface ChainConsts extends GenericChainConsts {
      **/
     [name: string]: any;
   };
+  /**
+   * Pallet `Indices`'s constants
+   **/
   indices: {
     /**
      * The deposit needed for reserving an index.
@@ -111,6 +123,9 @@ export interface ChainConsts extends GenericChainConsts {
      **/
     [name: string]: any;
   };
+  /**
+   * Pallet `Balances`'s constants
+   **/
   balances: {
     /**
      * The minimum amount required to keep an account open. MUST BE GREATER THAN ZERO!
@@ -150,6 +165,9 @@ export interface ChainConsts extends GenericChainConsts {
      **/
     [name: string]: any;
   };
+  /**
+   * Pallet `TransactionPayment`'s constants
+   **/
   transactionPayment: {
     /**
      * A fee mulitplier for `Operational` extrinsics to compute "virtual tip" to boost their
@@ -181,12 +199,18 @@ export interface ChainConsts extends GenericChainConsts {
      **/
     [name: string]: any;
   };
+  /**
+   * Pallet `Authorship`'s constants
+   **/
   authorship: {
     /**
      * Generic pallet constant
      **/
     [name: string]: any;
   };
+  /**
+   * Pallet `Staking`'s constants
+   **/
   staking: {
     /**
      * Number of eras to keep in history.
@@ -257,24 +281,36 @@ export interface ChainConsts extends GenericChainConsts {
      **/
     [name: string]: any;
   };
+  /**
+   * Pallet `Offences`'s constants
+   **/
   offences: {
     /**
      * Generic pallet constant
      **/
     [name: string]: any;
   };
+  /**
+   * Pallet `Historical`'s constants
+   **/
   historical: {
     /**
      * Generic pallet constant
      **/
     [name: string]: any;
   };
+  /**
+   * Pallet `Session`'s constants
+   **/
   session: {
     /**
      * Generic pallet constant
      **/
     [name: string]: any;
   };
+  /**
+   * Pallet `Grandpa`'s constants
+   **/
   grandpa: {
     /**
      * Max Authorities in use
@@ -301,6 +337,9 @@ export interface ChainConsts extends GenericChainConsts {
      **/
     [name: string]: any;
   };
+  /**
+   * Pallet `ImOnline`'s constants
+   **/
   imOnline: {
     /**
      * A configuration for base priority of unsigned transactions.
@@ -315,12 +354,18 @@ export interface ChainConsts extends GenericChainConsts {
      **/
     [name: string]: any;
   };
+  /**
+   * Pallet `AuthorityDiscovery`'s constants
+   **/
   authorityDiscovery: {
     /**
      * Generic pallet constant
      **/
     [name: string]: any;
   };
+  /**
+   * Pallet `Treasury`'s constants
+   **/
   treasury: {
     /**
      * Fraction of a proposal's value that should be bonded in order to place the proposal.
@@ -370,6 +415,9 @@ export interface ChainConsts extends GenericChainConsts {
      **/
     [name: string]: any;
   };
+  /**
+   * Pallet `ConvictionVoting`'s constants
+   **/
   convictionVoting: {
     /**
      * The maximum number of concurrent votes an account may have.
@@ -392,6 +440,9 @@ export interface ChainConsts extends GenericChainConsts {
      **/
     [name: string]: any;
   };
+  /**
+   * Pallet `Referenda`'s constants
+   **/
   referenda: {
     /**
      * The minimum amount to be used as a deposit for a public referendum proposal.
@@ -426,12 +477,18 @@ export interface ChainConsts extends GenericChainConsts {
      **/
     [name: string]: any;
   };
+  /**
+   * Pallet `FellowshipCollective`'s constants
+   **/
   fellowshipCollective: {
     /**
      * Generic pallet constant
      **/
     [name: string]: any;
   };
+  /**
+   * Pallet `FellowshipReferenda`'s constants
+   **/
   fellowshipReferenda: {
     /**
      * The minimum amount to be used as a deposit for a public referendum proposal.
@@ -466,12 +523,18 @@ export interface ChainConsts extends GenericChainConsts {
      **/
     [name: string]: any;
   };
+  /**
+   * Pallet `Whitelist`'s constants
+   **/
   whitelist: {
     /**
      * Generic pallet constant
      **/
     [name: string]: any;
   };
+  /**
+   * Pallet `Claims`'s constants
+   **/
   claims: {
     prefix: Bytes;
 
@@ -480,6 +543,9 @@ export interface ChainConsts extends GenericChainConsts {
      **/
     [name: string]: any;
   };
+  /**
+   * Pallet `Utility`'s constants
+   **/
   utility: {
     /**
      * The limit on the number of batched calls.
@@ -491,6 +557,9 @@ export interface ChainConsts extends GenericChainConsts {
      **/
     [name: string]: any;
   };
+  /**
+   * Pallet `Identity`'s constants
+   **/
   identity: {
     /**
      * The amount held on deposit for a registered identity
@@ -531,6 +600,9 @@ export interface ChainConsts extends GenericChainConsts {
      **/
     [name: string]: any;
   };
+  /**
+   * Pallet `Society`'s constants
+   **/
   society: {
     /**
      * The societies's pallet id
@@ -584,6 +656,9 @@ export interface ChainConsts extends GenericChainConsts {
      **/
     [name: string]: any;
   };
+  /**
+   * Pallet `Recovery`'s constants
+   **/
   recovery: {
     /**
      * The base amount of currency needed to reserve for creating a recovery configuration.
@@ -628,6 +703,9 @@ export interface ChainConsts extends GenericChainConsts {
      **/
     [name: string]: any;
   };
+  /**
+   * Pallet `Vesting`'s constants
+   **/
   vesting: {
     /**
      * The minimum amount transferred to call `vested_transfer`.
@@ -640,6 +718,9 @@ export interface ChainConsts extends GenericChainConsts {
      **/
     [name: string]: any;
   };
+  /**
+   * Pallet `Scheduler`'s constants
+   **/
   scheduler: {
     /**
      * The maximum weight that may be scheduled per block for any dispatchables.
@@ -660,6 +741,9 @@ export interface ChainConsts extends GenericChainConsts {
      **/
     [name: string]: any;
   };
+  /**
+   * Pallet `Proxy`'s constants
+   **/
   proxy: {
     /**
      * The base amount of currency needed to reserve for creating a proxy.
@@ -709,6 +793,9 @@ export interface ChainConsts extends GenericChainConsts {
      **/
     [name: string]: any;
   };
+  /**
+   * Pallet `Multisig`'s constants
+   **/
   multisig: {
     /**
      * The base amount of currency needed to reserve for creating a multisig execution or to
@@ -737,12 +824,18 @@ export interface ChainConsts extends GenericChainConsts {
      **/
     [name: string]: any;
   };
+  /**
+   * Pallet `Preimage`'s constants
+   **/
   preimage: {
     /**
      * Generic pallet constant
      **/
     [name: string]: any;
   };
+  /**
+   * Pallet `Bounties`'s constants
+   **/
   bounties: {
     /**
      * The amount held on deposit for placing a bounty proposal.
@@ -799,6 +892,9 @@ export interface ChainConsts extends GenericChainConsts {
      **/
     [name: string]: any;
   };
+  /**
+   * Pallet `ChildBounties`'s constants
+   **/
   childBounties: {
     /**
      * Maximum number of child bounties that can be added to a parent bounty.
@@ -815,6 +911,9 @@ export interface ChainConsts extends GenericChainConsts {
      **/
     [name: string]: any;
   };
+  /**
+   * Pallet `ElectionProviderMultiPhase`'s constants
+   **/
   electionProviderMultiPhase: {
     /**
      * Duration of the unsigned phase.
@@ -908,6 +1007,9 @@ export interface ChainConsts extends GenericChainConsts {
      **/
     [name: string]: any;
   };
+  /**
+   * Pallet `Nis`'s constants
+   **/
   nis: {
     /**
      * The treasury's pallet id, used for deriving its sovereign account ID.
@@ -981,6 +1083,9 @@ export interface ChainConsts extends GenericChainConsts {
      **/
     [name: string]: any;
   };
+  /**
+   * Pallet `NisCounterpartBalances`'s constants
+   **/
   nisCounterpartBalances: {
     /**
      * The minimum amount required to keep an account open. MUST BE GREATER THAN ZERO!
@@ -1020,6 +1125,9 @@ export interface ChainConsts extends GenericChainConsts {
      **/
     [name: string]: any;
   };
+  /**
+   * Pallet `VoterList`'s constants
+   **/
   voterList: {
     /**
      * The list of thresholds separating the various bags.
@@ -1073,6 +1181,9 @@ export interface ChainConsts extends GenericChainConsts {
      **/
     [name: string]: any;
   };
+  /**
+   * Pallet `NominationPools`'s constants
+   **/
   nominationPools: {
     /**
      * The nomination pool's pallet id.
@@ -1100,6 +1211,9 @@ export interface ChainConsts extends GenericChainConsts {
      **/
     [name: string]: any;
   };
+  /**
+   * Pallet `FastUnstake`'s constants
+   **/
   fastUnstake: {
     /**
      * Deposit to take for unstaking, to make sure we're able to slash the it in order to cover
@@ -1112,42 +1226,63 @@ export interface ChainConsts extends GenericChainConsts {
      **/
     [name: string]: any;
   };
+  /**
+   * Pallet `ParachainsOrigin`'s constants
+   **/
   parachainsOrigin: {
     /**
      * Generic pallet constant
      **/
     [name: string]: any;
   };
+  /**
+   * Pallet `Configuration`'s constants
+   **/
   configuration: {
     /**
      * Generic pallet constant
      **/
     [name: string]: any;
   };
+  /**
+   * Pallet `ParasShared`'s constants
+   **/
   parasShared: {
     /**
      * Generic pallet constant
      **/
     [name: string]: any;
   };
+  /**
+   * Pallet `ParaInclusion`'s constants
+   **/
   paraInclusion: {
     /**
      * Generic pallet constant
      **/
     [name: string]: any;
   };
+  /**
+   * Pallet `ParaInherent`'s constants
+   **/
   paraInherent: {
     /**
      * Generic pallet constant
      **/
     [name: string]: any;
   };
+  /**
+   * Pallet `ParaScheduler`'s constants
+   **/
   paraScheduler: {
     /**
      * Generic pallet constant
      **/
     [name: string]: any;
   };
+  /**
+   * Pallet `Paras`'s constants
+   **/
   paras: {
     unsignedPriority: bigint;
 
@@ -1156,48 +1291,72 @@ export interface ChainConsts extends GenericChainConsts {
      **/
     [name: string]: any;
   };
+  /**
+   * Pallet `Initializer`'s constants
+   **/
   initializer: {
     /**
      * Generic pallet constant
      **/
     [name: string]: any;
   };
+  /**
+   * Pallet `Dmp`'s constants
+   **/
   dmp: {
     /**
      * Generic pallet constant
      **/
     [name: string]: any;
   };
+  /**
+   * Pallet `Hrmp`'s constants
+   **/
   hrmp: {
     /**
      * Generic pallet constant
      **/
     [name: string]: any;
   };
+  /**
+   * Pallet `ParaSessionInfo`'s constants
+   **/
   paraSessionInfo: {
     /**
      * Generic pallet constant
      **/
     [name: string]: any;
   };
+  /**
+   * Pallet `ParasDisputes`'s constants
+   **/
   parasDisputes: {
     /**
      * Generic pallet constant
      **/
     [name: string]: any;
   };
+  /**
+   * Pallet `ParasSlashing`'s constants
+   **/
   parasSlashing: {
     /**
      * Generic pallet constant
      **/
     [name: string]: any;
   };
+  /**
+   * Pallet `ParaAssignmentProvider`'s constants
+   **/
   paraAssignmentProvider: {
     /**
      * Generic pallet constant
      **/
     [name: string]: any;
   };
+  /**
+   * Pallet `Registrar`'s constants
+   **/
   registrar: {
     /**
      * The deposit to be paid to run a on-demand parachain.
@@ -1215,6 +1374,9 @@ export interface ChainConsts extends GenericChainConsts {
      **/
     [name: string]: any;
   };
+  /**
+   * Pallet `Slots`'s constants
+   **/
   slots: {
     /**
      * The number of blocks over which a single period lasts.
@@ -1231,6 +1393,9 @@ export interface ChainConsts extends GenericChainConsts {
      **/
     [name: string]: any;
   };
+  /**
+   * Pallet `Auctions`'s constants
+   **/
   auctions: {
     /**
      * The number of blocks over which an auction may be retroactively ended.
@@ -1251,6 +1416,9 @@ export interface ChainConsts extends GenericChainConsts {
      **/
     [name: string]: any;
   };
+  /**
+   * Pallet `Crowdloan`'s constants
+   **/
   crowdloan: {
     /**
      * `PalletId` for the crowdloan pallet. An appropriate value could be
@@ -1274,6 +1442,9 @@ export interface ChainConsts extends GenericChainConsts {
      **/
     [name: string]: any;
   };
+  /**
+   * Pallet `StateTrieMigration`'s constants
+   **/
   stateTrieMigration: {
     /**
      * Maximal number of bytes that a key can have.
@@ -1305,12 +1476,18 @@ export interface ChainConsts extends GenericChainConsts {
      **/
     [name: string]: any;
   };
+  /**
+   * Pallet `XcmPallet`'s constants
+   **/
   xcmPallet: {
     /**
      * Generic pallet constant
      **/
     [name: string]: any;
   };
+  /**
+   * Pallet `MessageQueue`'s constants
+   **/
   messageQueue: {
     /**
      * The size of the page; this implies the maximum message size which can be sent.
@@ -1342,12 +1519,18 @@ export interface ChainConsts extends GenericChainConsts {
      **/
     [name: string]: any;
   };
+  /**
+   * Pallet `AssetRate`'s constants
+   **/
   assetRate: {
     /**
      * Generic pallet constant
      **/
     [name: string]: any;
   };
+  /**
+   * Pallet `Beefy`'s constants
+   **/
   beefy: {
     /**
      * The maximum number of authorities that can be added.
@@ -1374,12 +1557,18 @@ export interface ChainConsts extends GenericChainConsts {
      **/
     [name: string]: any;
   };
+  /**
+   * Pallet `Mmr`'s constants
+   **/
   mmr: {
     /**
      * Generic pallet constant
      **/
     [name: string]: any;
   };
+  /**
+   * Pallet `BeefyMmrLeaf`'s constants
+   **/
   beefyMmrLeaf: {
     /**
      * Generic pallet constant

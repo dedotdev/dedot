@@ -3,6 +3,9 @@
 import type { GenericChainErrors, GenericPalletError } from '@delightfuldot/types';
 
 export interface ChainErrors extends GenericChainErrors {
+  /**
+   * Pallet `System`'s errors
+   **/
   system: {
     /**
      * The name of specification does not match between the current runtime
@@ -43,6 +46,9 @@ export interface ChainErrors extends GenericChainErrors {
      **/
     [error: string]: GenericPalletError;
   };
+  /**
+   * Pallet `Utility`'s errors
+   **/
   utility: {
     /**
      * Too many calls batched.
@@ -54,6 +60,9 @@ export interface ChainErrors extends GenericChainErrors {
      **/
     [error: string]: GenericPalletError;
   };
+  /**
+   * Pallet `Identity`'s errors
+   **/
   identity: {
     /**
      * Too many subs-accounts.
@@ -150,6 +159,9 @@ export interface ChainErrors extends GenericChainErrors {
      **/
     [error: string]: GenericPalletError;
   };
+  /**
+   * Pallet `Multisig`'s errors
+   **/
   multisig: {
     /**
      * Threshold must be 2 or greater.
@@ -226,6 +238,9 @@ export interface ChainErrors extends GenericChainErrors {
      **/
     [error: string]: GenericPalletError;
   };
+  /**
+   * Pallet `Proxy`'s errors
+   **/
   proxy: {
     /**
      * There are too many proxies registered or too many announcements pending.
@@ -272,6 +287,9 @@ export interface ChainErrors extends GenericChainErrors {
      **/
     [error: string]: GenericPalletError;
   };
+  /**
+   * Pallet `ParachainSystem`'s errors
+   **/
   parachainSystem: {
     /**
      * Attempt to upgrade validation function while existing upgrade pending.
@@ -319,6 +337,9 @@ export interface ChainErrors extends GenericChainErrors {
      **/
     [error: string]: GenericPalletError;
   };
+  /**
+   * Pallet `Balances`'s errors
+   **/
   balances: {
     /**
      * Vesting balance too high to send value.
@@ -375,6 +396,9 @@ export interface ChainErrors extends GenericChainErrors {
      **/
     [error: string]: GenericPalletError;
   };
+  /**
+   * Pallet `Vesting`'s errors
+   **/
   vesting: {
     /**
      * The account given is not vesting.
@@ -407,6 +431,9 @@ export interface ChainErrors extends GenericChainErrors {
      **/
     [error: string]: GenericPalletError;
   };
+  /**
+   * Pallet `Inflation`'s errors
+   **/
   inflation: {
     /**
      * Sum of all parts must be one whole (100%).
@@ -418,6 +445,9 @@ export interface ChainErrors extends GenericChainErrors {
      **/
     [error: string]: GenericPalletError;
   };
+  /**
+   * Pallet `DappStaking`'s errors
+   **/
   dappStaking: {
     /**
      * Pallet is disabled/in maintenance mode.
@@ -601,6 +631,9 @@ export interface ChainErrors extends GenericChainErrors {
      **/
     [error: string]: GenericPalletError;
   };
+  /**
+   * Pallet `Assets`'s errors
+   **/
   assets: {
     /**
      * Account balance must be greater than or equal to the transfer amount.
@@ -710,6 +743,9 @@ export interface ChainErrors extends GenericChainErrors {
      **/
     [error: string]: GenericPalletError;
   };
+  /**
+   * Pallet `CollatorSelection`'s errors
+   **/
   collatorSelection: {
     /**
      * Too many candidates
@@ -766,6 +802,9 @@ export interface ChainErrors extends GenericChainErrors {
      **/
     [error: string]: GenericPalletError;
   };
+  /**
+   * Pallet `Session`'s errors
+   **/
   session: {
     /**
      * Invalid ownership proof.
@@ -797,6 +836,9 @@ export interface ChainErrors extends GenericChainErrors {
      **/
     [error: string]: GenericPalletError;
   };
+  /**
+   * Pallet `XcmpQueue`'s errors
+   **/
   xcmpQueue: {
     /**
      * Failed to send XCM message.
@@ -828,6 +870,9 @@ export interface ChainErrors extends GenericChainErrors {
      **/
     [error: string]: GenericPalletError;
   };
+  /**
+   * Pallet `PolkadotXcm`'s errors
+   **/
   polkadotXcm: {
     /**
      * The desired destination was unreachable, generally because there is a no way of routing
@@ -937,12 +982,18 @@ export interface ChainErrors extends GenericChainErrors {
      **/
     [error: string]: GenericPalletError;
   };
+  /**
+   * Pallet `CumulusXcm`'s errors
+   **/
   cumulusXcm: {
     /**
      * Generic pallet error
      **/
     [error: string]: GenericPalletError;
   };
+  /**
+   * Pallet `DmpQueue`'s errors
+   **/
   dmpQueue: {
     /**
      * The message index given is unknown.
@@ -959,6 +1010,9 @@ export interface ChainErrors extends GenericChainErrors {
      **/
     [error: string]: GenericPalletError;
   };
+  /**
+   * Pallet `XcAssetConfig`'s errors
+   **/
   xcAssetConfig: {
     /**
      * Asset is already registered.
@@ -980,6 +1034,9 @@ export interface ChainErrors extends GenericChainErrors {
      **/
     [error: string]: GenericPalletError;
   };
+  /**
+   * Pallet `XTokens`'s errors
+   **/
   xTokens: {
     /**
      * Asset has no reserve location.
@@ -1084,6 +1141,9 @@ export interface ChainErrors extends GenericChainErrors {
      **/
     [error: string]: GenericPalletError;
   };
+  /**
+   * Pallet `EVM`'s errors
+   **/
   evm: {
     /**
      * Not enough balance to perform action
@@ -1145,6 +1205,9 @@ export interface ChainErrors extends GenericChainErrors {
      **/
     [error: string]: GenericPalletError;
   };
+  /**
+   * Pallet `Ethereum`'s errors
+   **/
   ethereum: {
     /**
      * Signature is invalid.
@@ -1161,6 +1224,9 @@ export interface ChainErrors extends GenericChainErrors {
      **/
     [error: string]: GenericPalletError;
   };
+  /**
+   * Pallet `DynamicEvmBaseFee`'s errors
+   **/
   dynamicEvmBaseFee: {
     /**
      * Specified value is outside of the allowed range.
@@ -1172,6 +1238,9 @@ export interface ChainErrors extends GenericChainErrors {
      **/
     [error: string]: GenericPalletError;
   };
+  /**
+   * Pallet `Contracts`'s errors
+   **/
   contracts: {
     /**
      * A new schedule must have a greater version than the current one.
@@ -1344,6 +1413,9 @@ export interface ChainErrors extends GenericChainErrors {
      **/
     [error: string]: GenericPalletError;
   };
+  /**
+   * Pallet `Sudo`'s errors
+   **/
   sudo: {
     /**
      * Sender must be the Sudo account
@@ -1355,6 +1427,9 @@ export interface ChainErrors extends GenericChainErrors {
      **/
     [error: string]: GenericPalletError;
   };
+  /**
+   * Pallet `StaticPriceProvider`'s errors
+   **/
   staticPriceProvider: {
     /**
      * Zero is invalid value for the price (hopefully).
@@ -1366,6 +1441,9 @@ export interface ChainErrors extends GenericChainErrors {
      **/
     [error: string]: GenericPalletError;
   };
+  /**
+   * Pallet `DappsStaking`'s errors
+   **/
   dappsStaking: {
     /**
      * Disabled

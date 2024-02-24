@@ -3,6 +3,9 @@
 import type { GenericChainErrors, GenericPalletError } from '@delightfuldot/types';
 
 export interface ChainErrors extends GenericChainErrors {
+  /**
+   * Pallet `System`'s errors
+   **/
   system: {
     /**
      * The name of specification does not match between the current runtime
@@ -43,6 +46,9 @@ export interface ChainErrors extends GenericChainErrors {
      **/
     [error: string]: GenericPalletError;
   };
+  /**
+   * Pallet `ParachainSystem`'s errors
+   **/
   parachainSystem: {
     /**
      * Attempt to upgrade validation function while existing upgrade pending.
@@ -90,6 +96,9 @@ export interface ChainErrors extends GenericChainErrors {
      **/
     [error: string]: GenericPalletError;
   };
+  /**
+   * Pallet `Balances`'s errors
+   **/
   balances: {
     /**
      * Vesting balance too high to send value.
@@ -146,6 +155,9 @@ export interface ChainErrors extends GenericChainErrors {
      **/
     [error: string]: GenericPalletError;
   };
+  /**
+   * Pallet `ParachainStaking`'s errors
+   **/
   parachainStaking: {
     DelegatorDNE: GenericPalletError;
     DelegatorDNEinTopNorBottom: GenericPalletError;
@@ -208,6 +220,9 @@ export interface ChainErrors extends GenericChainErrors {
      **/
     [error: string]: GenericPalletError;
   };
+  /**
+   * Pallet `AuthorInherent`'s errors
+   **/
   authorInherent: {
     /**
      * Author already set in block.
@@ -229,6 +244,9 @@ export interface ChainErrors extends GenericChainErrors {
      **/
     [error: string]: GenericPalletError;
   };
+  /**
+   * Pallet `AuthorMapping`'s errors
+   **/
   authorMapping: {
     /**
      * The association can't be cleared because it is not found.
@@ -275,6 +293,9 @@ export interface ChainErrors extends GenericChainErrors {
      **/
     [error: string]: GenericPalletError;
   };
+  /**
+   * Pallet `MoonbeamOrbiters`'s errors
+   **/
   moonbeamOrbiters: {
     /**
      * The collator is already added in orbiters program.
@@ -327,6 +348,9 @@ export interface ChainErrors extends GenericChainErrors {
      **/
     [error: string]: GenericPalletError;
   };
+  /**
+   * Pallet `Utility`'s errors
+   **/
   utility: {
     /**
      * Too many calls batched.
@@ -338,6 +362,9 @@ export interface ChainErrors extends GenericChainErrors {
      **/
     [error: string]: GenericPalletError;
   };
+  /**
+   * Pallet `Proxy`'s errors
+   **/
   proxy: {
     /**
      * There are too many proxies registered or too many announcements pending.
@@ -384,6 +411,9 @@ export interface ChainErrors extends GenericChainErrors {
      **/
     [error: string]: GenericPalletError;
   };
+  /**
+   * Pallet `MaintenanceMode`'s errors
+   **/
   maintenanceMode: {
     /**
      * The chain cannot enter maintenance mode because it is already in maintenance mode
@@ -400,6 +430,9 @@ export interface ChainErrors extends GenericChainErrors {
      **/
     [error: string]: GenericPalletError;
   };
+  /**
+   * Pallet `Identity`'s errors
+   **/
   identity: {
     /**
      * Too many subs-accounts.
@@ -496,6 +529,9 @@ export interface ChainErrors extends GenericChainErrors {
      **/
     [error: string]: GenericPalletError;
   };
+  /**
+   * Pallet `Migrations`'s errors
+   **/
   migrations: {
     /**
      * Missing preimage in original democracy storage
@@ -522,6 +558,9 @@ export interface ChainErrors extends GenericChainErrors {
      **/
     [error: string]: GenericPalletError;
   };
+  /**
+   * Pallet `Multisig`'s errors
+   **/
   multisig: {
     /**
      * Threshold must be 2 or greater.
@@ -598,6 +637,9 @@ export interface ChainErrors extends GenericChainErrors {
      **/
     [error: string]: GenericPalletError;
   };
+  /**
+   * Pallet `EVM`'s errors
+   **/
   evm: {
     /**
      * Not enough balance to perform action
@@ -669,6 +711,9 @@ export interface ChainErrors extends GenericChainErrors {
      **/
     [error: string]: GenericPalletError;
   };
+  /**
+   * Pallet `Ethereum`'s errors
+   **/
   ethereum: {
     /**
      * Signature is invalid.
@@ -685,6 +730,9 @@ export interface ChainErrors extends GenericChainErrors {
      **/
     [error: string]: GenericPalletError;
   };
+  /**
+   * Pallet `Scheduler`'s errors
+   **/
   scheduler: {
     /**
      * Failed to schedule a call
@@ -716,6 +764,9 @@ export interface ChainErrors extends GenericChainErrors {
      **/
     [error: string]: GenericPalletError;
   };
+  /**
+   * Pallet `Democracy`'s errors
+   **/
   democracy: {
     /**
      * Value too low
@@ -843,6 +894,9 @@ export interface ChainErrors extends GenericChainErrors {
      **/
     [error: string]: GenericPalletError;
   };
+  /**
+   * Pallet `Preimage`'s errors
+   **/
   preimage: {
     /**
      * Preimage is too large to store on-chain.
@@ -889,6 +943,9 @@ export interface ChainErrors extends GenericChainErrors {
      **/
     [error: string]: GenericPalletError;
   };
+  /**
+   * Pallet `ConvictionVoting`'s errors
+   **/
   convictionVoting: {
     /**
      * Poll is not ongoing.
@@ -956,6 +1013,9 @@ export interface ChainErrors extends GenericChainErrors {
      **/
     [error: string]: GenericPalletError;
   };
+  /**
+   * Pallet `Referenda`'s errors
+   **/
   referenda: {
     /**
      * Referendum is not ongoing.
@@ -1027,6 +1087,9 @@ export interface ChainErrors extends GenericChainErrors {
      **/
     [error: string]: GenericPalletError;
   };
+  /**
+   * Pallet `Whitelist`'s errors
+   **/
   whitelist: {
     /**
      * The preimage of the call hash could not be loaded.
@@ -1058,6 +1121,9 @@ export interface ChainErrors extends GenericChainErrors {
      **/
     [error: string]: GenericPalletError;
   };
+  /**
+   * Pallet `CouncilCollective`'s errors
+   **/
   councilCollective: {
     /**
      * Account is not a member
@@ -1119,6 +1185,9 @@ export interface ChainErrors extends GenericChainErrors {
      **/
     [error: string]: GenericPalletError;
   };
+  /**
+   * Pallet `TechCommitteeCollective`'s errors
+   **/
   techCommitteeCollective: {
     /**
      * Account is not a member
@@ -1180,6 +1249,9 @@ export interface ChainErrors extends GenericChainErrors {
      **/
     [error: string]: GenericPalletError;
   };
+  /**
+   * Pallet `TreasuryCouncilCollective`'s errors
+   **/
   treasuryCouncilCollective: {
     /**
      * Account is not a member
@@ -1241,6 +1313,9 @@ export interface ChainErrors extends GenericChainErrors {
      **/
     [error: string]: GenericPalletError;
   };
+  /**
+   * Pallet `OpenTechCommitteeCollective`'s errors
+   **/
   openTechCommitteeCollective: {
     /**
      * Account is not a member
@@ -1302,6 +1377,9 @@ export interface ChainErrors extends GenericChainErrors {
      **/
     [error: string]: GenericPalletError;
   };
+  /**
+   * Pallet `Treasury`'s errors
+   **/
   treasury: {
     /**
      * Proposer's balance is too low.
@@ -1369,6 +1447,9 @@ export interface ChainErrors extends GenericChainErrors {
      **/
     [error: string]: GenericPalletError;
   };
+  /**
+   * Pallet `CrowdloanRewards`'s errors
+   **/
   crowdloanRewards: {
     /**
      * User trying to associate a native identity with a relay chain identity for posterior
@@ -1455,6 +1536,9 @@ export interface ChainErrors extends GenericChainErrors {
      **/
     [error: string]: GenericPalletError;
   };
+  /**
+   * Pallet `XcmpQueue`'s errors
+   **/
   xcmpQueue: {
     /**
      * Failed to send XCM message.
@@ -1486,12 +1570,18 @@ export interface ChainErrors extends GenericChainErrors {
      **/
     [error: string]: GenericPalletError;
   };
+  /**
+   * Pallet `CumulusXcm`'s errors
+   **/
   cumulusXcm: {
     /**
      * Generic pallet error
      **/
     [error: string]: GenericPalletError;
   };
+  /**
+   * Pallet `DmpQueue`'s errors
+   **/
   dmpQueue: {
     /**
      * The message index given is unknown.
@@ -1508,6 +1598,9 @@ export interface ChainErrors extends GenericChainErrors {
      **/
     [error: string]: GenericPalletError;
   };
+  /**
+   * Pallet `PolkadotXcm`'s errors
+   **/
   polkadotXcm: {
     /**
      * The desired destination was unreachable, generally because there is a no way of routing
@@ -1617,6 +1710,9 @@ export interface ChainErrors extends GenericChainErrors {
      **/
     [error: string]: GenericPalletError;
   };
+  /**
+   * Pallet `Assets`'s errors
+   **/
   assets: {
     /**
      * Account balance must be greater than or equal to the transfer amount.
@@ -1726,6 +1822,9 @@ export interface ChainErrors extends GenericChainErrors {
      **/
     [error: string]: GenericPalletError;
   };
+  /**
+   * Pallet `AssetManager`'s errors
+   **/
   assetManager: {
     ErrorCreatingAsset: GenericPalletError;
     AssetAlreadyExists: GenericPalletError;
@@ -1741,6 +1840,9 @@ export interface ChainErrors extends GenericChainErrors {
      **/
     [error: string]: GenericPalletError;
   };
+  /**
+   * Pallet `XTokens`'s errors
+   **/
   xTokens: {
     /**
      * Asset has no reserve location.
@@ -1845,6 +1947,9 @@ export interface ChainErrors extends GenericChainErrors {
      **/
     [error: string]: GenericPalletError;
   };
+  /**
+   * Pallet `XcmTransactor`'s errors
+   **/
   xcmTransactor: {
     IndexAlreadyClaimed: GenericPalletError;
     UnclaimedIndex: GenericPalletError;
@@ -1879,6 +1984,9 @@ export interface ChainErrors extends GenericChainErrors {
      **/
     [error: string]: GenericPalletError;
   };
+  /**
+   * Pallet `LocalAssets`'s errors
+   **/
   localAssets: {
     /**
      * Account balance must be greater than or equal to the transfer amount.
@@ -1988,6 +2096,9 @@ export interface ChainErrors extends GenericChainErrors {
      **/
     [error: string]: GenericPalletError;
   };
+  /**
+   * Pallet `EthereumXcm`'s errors
+   **/
   ethereumXcm: {
     /**
      * Xcm to Ethereum execution is suspended
@@ -1999,6 +2110,9 @@ export interface ChainErrors extends GenericChainErrors {
      **/
     [error: string]: GenericPalletError;
   };
+  /**
+   * Pallet `Randomness`'s errors
+   **/
   randomness: {
     RequestCounterOverflowed: GenericPalletError;
     RequestFeeOverflowed: GenericPalletError;

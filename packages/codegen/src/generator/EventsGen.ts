@@ -22,6 +22,7 @@ export class EventsGen extends ApiGen {
       const eventDefs = this.#getEventDefs(eventTypeId);
       const flatMembers = eventDefs.every((d) => d.fields.length === 0);
 
+      defTypeOut += commentBlock(`Pallet \`${pallet.name}\`'s events`);
       defTypeOut += `${stringCamelCase(pallet.name)}: {
         ${eventDefs
           .map((def) => {
