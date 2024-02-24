@@ -1,6 +1,6 @@
 {
   "name": "delightfuldot",
-  "version": "0.0.1-alpha.19",
+  "version": "0.0.1-alpha.20",
   "description": "A fast & lightweight JavaScript/TypeScript client for Polkadot & Substrate",
   "author": "Thang X. Vu <thang@coongcrafts.io>",
   "homepage": "https://github.com/CoongCrafts/delightfuldot",
