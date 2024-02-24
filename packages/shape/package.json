@@ -1,6 +1,6 @@
 {
   "name": "@delightfuldot/shape",
-  "version": "0.0.1-alpha.17",
+  "version": "0.0.1-alpha.18",
   "description": "Basic codecs & shapes, extending existing subshape",
   "author": "Thang X. Vu <thang@coongcrafts.io>",
   "homepage": "https://github.com/CoongCrafts/delightfuldot/tree/main/packages/shape",
