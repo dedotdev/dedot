@@ -12,7 +12,7 @@ export const payment: RuntimeApisModule = {
           params: [
             {
               name: 'uxt',
-              type: 'RawBytes',
+              type: 'OpaqueExtrinsic',
             },
             {
               name: 'len',
@@ -26,7 +26,7 @@ export const payment: RuntimeApisModule = {
           params: [
             {
               name: 'uxt',
-              type: 'RawBytes',
+              type: 'OpaqueExtrinsic',
             },
             {
               name: 'len',

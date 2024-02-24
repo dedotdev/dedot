@@ -13,7 +13,7 @@ export const blockBuilder: RuntimeApisModule = {
           params: [
             {
               name: 'extrinsic',
-              type: 'RawBytes',
+              type: 'OpaqueExtrinsic',
             },
           ],
           type: 'ApplyExtrinsicResult',

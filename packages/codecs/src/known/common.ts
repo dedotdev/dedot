@@ -2,6 +2,7 @@ import * as $ from '@delightfuldot/shape';
 import { HexString } from '@delightfuldot/utils';
 import { registerLooseCodecType } from '../codectypes';
 import { isString, isU8a, stringToHex, u8aToHex } from '@polkadot/util';
+import { $OpaqueExtrinsic } from '@delightfuldot/codecs/known/runtime';
 
 export const $Text = $.str;
 export type Text = string;
@@ -28,10 +29,6 @@ export const $RawBytes: $.Shape<RawBytesLike, RawBytes> = $.transform({
   decode: (value) => value,
 });
 
-export const $UncheckedExtrinsic = $RawBytes;
-export type UncheckedExtrinsicLike = $.Input<typeof $UncheckedExtrinsic>;
-export type UncheckedExtrinsic = $.Output<typeof $UncheckedExtrinsic>;
-
 export type BytesLike = HexString | string | Uint8Array;
 export type Bytes = HexString;
 export const $Bytes: $.Shape<BytesLike, Bytes> = $.transform({
@@ -48,7 +45,7 @@ export const $Bytes: $.Shape<BytesLike, Bytes> = $.transform({
   decode: (value) => value,
 });
 
-registerLooseCodecType({ $Bytes, $RawBytes, $UncheckedExtrinsic });
+registerLooseCodecType({ $Bytes, $RawBytes });
 
 export type FixedBytes<Bytes extends number> = HexString; // TODO: add Unit8Array
 

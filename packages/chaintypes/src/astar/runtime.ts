@@ -8,7 +8,7 @@ import type {
   Option,
   OpaqueMetadata,
   ApplyExtrinsicResult,
-  RawBytesLike,
+  OpaqueExtrinsicLike,
   CheckInherentsResult,
   InherentData,
   Extrinsic,
@@ -21,6 +21,7 @@ import type {
   FeeDetails,
   Balance,
   Weight,
+  RawBytesLike,
   Bytes,
   BytesLike,
   KeyTypeId,
@@ -98,7 +99,7 @@ export interface RuntimeApis extends GenericRuntimeApis {
      *
      * @callname: BlockBuilder_apply_extrinsic
      **/
-    applyExtrinsic: GenericRuntimeApiMethod<(extrinsic: RawBytesLike) => Promise<ApplyExtrinsicResult>>;
+    applyExtrinsic: GenericRuntimeApiMethod<(extrinsic: OpaqueExtrinsicLike) => Promise<ApplyExtrinsicResult>>;
 
     /**
      *
@@ -134,7 +135,7 @@ export interface RuntimeApis extends GenericRuntimeApis {
      * @callname: TaggedTransactionQueue_validate_transaction
      **/
     validateTransaction: GenericRuntimeApiMethod<
-      (source: TransactionSource, tx: RawBytesLike, blockHash: BlockHash) => Promise<TransactionValidity>
+      (source: TransactionSource, tx: OpaqueExtrinsicLike, blockHash: BlockHash) => Promise<TransactionValidity>
     >;
 
     /**
@@ -186,14 +187,14 @@ export interface RuntimeApis extends GenericRuntimeApis {
      *
      * @callname: TransactionPaymentApi_query_info
      **/
-    queryInfo: GenericRuntimeApiMethod<(uxt: RawBytesLike, len: number) => Promise<RuntimeDispatchInfo>>;
+    queryInfo: GenericRuntimeApiMethod<(uxt: OpaqueExtrinsicLike, len: number) => Promise<RuntimeDispatchInfo>>;
 
     /**
      * The transaction fee details
      *
      * @callname: TransactionPaymentApi_query_fee_details
      **/
-    queryFeeDetails: GenericRuntimeApiMethod<(uxt: RawBytesLike, len: number) => Promise<FeeDetails>>;
+    queryFeeDetails: GenericRuntimeApiMethod<(uxt: OpaqueExtrinsicLike, len: number) => Promise<FeeDetails>>;
 
     /**
      * Query the output of the current LengthToFee given some input
