@@ -56,7 +56,7 @@ export class QueryGen extends ApiGen {
     if (keyType) {
       docs.push(`@param {${keyType}} arg`);
     }
-    docs.push(`@param {Callback<${valueType}>=} callback`);
+    docs.push(`@param {Callback<${valueType}> =} callback`);
 
     return {
       name: normalizeName(name),

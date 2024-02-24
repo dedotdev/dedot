@@ -107,28 +107,28 @@ export interface ChainStorage extends GenericChainStorage {
      * The full account information for a particular account ID.
      *
      * @param {AccountId32Like} arg
-     * @param {Callback<FrameSystemAccountInfo>=} callback
+     * @param {Callback<FrameSystemAccountInfo> =} callback
      **/
     account: GenericStorageQuery<(arg: AccountId32Like) => FrameSystemAccountInfo>;
 
     /**
      * Total extrinsics count for the current block.
      *
-     * @param {Callback<number | undefined>=} callback
+     * @param {Callback<number | undefined> =} callback
      **/
     extrinsicCount: GenericStorageQuery<() => number | undefined>;
 
     /**
      * The current weight for the block.
      *
-     * @param {Callback<FrameSupportDispatchPerDispatchClass>=} callback
+     * @param {Callback<FrameSupportDispatchPerDispatchClass> =} callback
      **/
     blockWeight: GenericStorageQuery<() => FrameSupportDispatchPerDispatchClass>;
 
     /**
      * Total length (in bytes) for all extrinsics put together, for the current block.
      *
-     * @param {Callback<number | undefined>=} callback
+     * @param {Callback<number | undefined> =} callback
      **/
     allExtrinsicsLen: GenericStorageQuery<() => number | undefined>;
 
@@ -136,7 +136,7 @@ export interface ChainStorage extends GenericChainStorage {
      * Map of block numbers to block hashes.
      *
      * @param {number} arg
-     * @param {Callback<H256>=} callback
+     * @param {Callback<H256> =} callback
      **/
     blockHash: GenericStorageQuery<(arg: number) => H256>;
 
@@ -144,28 +144,28 @@ export interface ChainStorage extends GenericChainStorage {
      * Extrinsics data for the current block (maps an extrinsic's index to its data).
      *
      * @param {number} arg
-     * @param {Callback<Bytes>=} callback
+     * @param {Callback<Bytes> =} callback
      **/
     extrinsicData: GenericStorageQuery<(arg: number) => Bytes>;
 
     /**
      * The current block number being processed. Set by `execute_block`.
      *
-     * @param {Callback<number>=} callback
+     * @param {Callback<number> =} callback
      **/
     number: GenericStorageQuery<() => number>;
 
     /**
      * Hash of the previous block.
      *
-     * @param {Callback<H256>=} callback
+     * @param {Callback<H256> =} callback
      **/
     parentHash: GenericStorageQuery<() => H256>;
 
     /**
      * Digest of the current block, also part of the block header.
      *
-     * @param {Callback<Digest>=} callback
+     * @param {Callback<Digest> =} callback
      **/
     digest: GenericStorageQuery<() => Digest>;
 
@@ -178,14 +178,14 @@ export interface ChainStorage extends GenericChainStorage {
      * Events have a large in-memory size. Box the events to not go out-of-memory
      * just in case someone still reads them from within the runtime.
      *
-     * @param {Callback<Array<FrameSystemEventRecord>>=} callback
+     * @param {Callback<Array<FrameSystemEventRecord>> =} callback
      **/
     events: GenericStorageQuery<() => Array<FrameSystemEventRecord>>;
 
     /**
      * The number of events in the `Events<T>` list.
      *
-     * @param {Callback<number>=} callback
+     * @param {Callback<number> =} callback
      **/
     eventCount: GenericStorageQuery<() => number>;
 
@@ -202,21 +202,21 @@ export interface ChainStorage extends GenericChainStorage {
      * no notification will be triggered thus the event might be lost.
      *
      * @param {H256} arg
-     * @param {Callback<Array<[number, number]>>=} callback
+     * @param {Callback<Array<[number, number]>> =} callback
      **/
     eventTopics: GenericStorageQuery<(arg: H256) => Array<[number, number]>>;
 
     /**
      * Stores the `spec_version` and `spec_name` of when the last runtime upgrade happened.
      *
-     * @param {Callback<FrameSystemLastRuntimeUpgradeInfo | undefined>=} callback
+     * @param {Callback<FrameSystemLastRuntimeUpgradeInfo | undefined> =} callback
      **/
     lastRuntimeUpgrade: GenericStorageQuery<() => FrameSystemLastRuntimeUpgradeInfo | undefined>;
 
     /**
      * True if we have upgraded so that `type RefCount` is `u32`. False (default) if not.
      *
-     * @param {Callback<boolean>=} callback
+     * @param {Callback<boolean> =} callback
      **/
     upgradedToU32RefCount: GenericStorageQuery<() => boolean>;
 
@@ -224,14 +224,14 @@ export interface ChainStorage extends GenericChainStorage {
      * True if we have upgraded so that AccountInfo contains three types of `RefCount`. False
      * (default) if not.
      *
-     * @param {Callback<boolean>=} callback
+     * @param {Callback<boolean> =} callback
      **/
     upgradedToTripleRefCount: GenericStorageQuery<() => boolean>;
 
     /**
      * The execution phase of the block.
      *
-     * @param {Callback<Phase | undefined>=} callback
+     * @param {Callback<Phase | undefined> =} callback
      **/
     executionPhase: GenericStorageQuery<() => Phase | undefined>;
 
@@ -250,7 +250,7 @@ export interface ChainStorage extends GenericChainStorage {
      * TWOX-NOTE: OK ― `AccountId` is a secure hash.
      *
      * @param {AccountId32Like} arg
-     * @param {Callback<PalletIdentityRegistration | undefined>=} callback
+     * @param {Callback<PalletIdentityRegistration | undefined> =} callback
      **/
     identityOf: GenericStorageQuery<(arg: AccountId32Like) => PalletIdentityRegistration | undefined>;
 
@@ -259,7 +259,7 @@ export interface ChainStorage extends GenericChainStorage {
      * context. If the account is not some other account's sub-identity, then just `None`.
      *
      * @param {AccountId32Like} arg
-     * @param {Callback<[AccountId32, Data] | undefined>=} callback
+     * @param {Callback<[AccountId32, Data] | undefined> =} callback
      **/
     superOf: GenericStorageQuery<(arg: AccountId32Like) => [AccountId32, Data] | undefined>;
 
@@ -271,7 +271,7 @@ export interface ChainStorage extends GenericChainStorage {
      * TWOX-NOTE: OK ― `AccountId` is a secure hash.
      *
      * @param {AccountId32Like} arg
-     * @param {Callback<[bigint, Array<AccountId32>]>=} callback
+     * @param {Callback<[bigint, Array<AccountId32>]> =} callback
      **/
     subsOf: GenericStorageQuery<(arg: AccountId32Like) => [bigint, Array<AccountId32>]>;
 
@@ -281,7 +281,7 @@ export interface ChainStorage extends GenericChainStorage {
      *
      * The index into this can be cast to `RegistrarIndex` to get a valid value.
      *
-     * @param {Callback<Array<PalletIdentityRegistrarInfo | undefined>>=} callback
+     * @param {Callback<Array<PalletIdentityRegistrarInfo | undefined>> =} callback
      **/
     registrars: GenericStorageQuery<() => Array<PalletIdentityRegistrarInfo | undefined>>;
 
@@ -297,14 +297,14 @@ export interface ChainStorage extends GenericChainStorage {
     /**
      * Current time for the current block.
      *
-     * @param {Callback<bigint>=} callback
+     * @param {Callback<bigint> =} callback
      **/
     now: GenericStorageQuery<() => bigint>;
 
     /**
      * Did the timestamp get updated in this block?
      *
-     * @param {Callback<boolean>=} callback
+     * @param {Callback<boolean> =} callback
      **/
     didUpdate: GenericStorageQuery<() => boolean>;
 
@@ -321,7 +321,7 @@ export interface ChainStorage extends GenericChainStorage {
      * The set of open multisig operations.
      *
      * @param {[AccountId32Like, FixedBytes<32>]} arg
-     * @param {Callback<PalletMultisigMultisig | undefined>=} callback
+     * @param {Callback<PalletMultisigMultisig | undefined> =} callback
      **/
     multisigs: GenericStorageQuery<(arg: [AccountId32Like, FixedBytes<32>]) => PalletMultisigMultisig | undefined>;
 
@@ -339,7 +339,7 @@ export interface ChainStorage extends GenericChainStorage {
      * which are being delegated to, together with the amount held on deposit.
      *
      * @param {AccountId32Like} arg
-     * @param {Callback<[Array<PalletProxyProxyDefinition>, bigint]>=} callback
+     * @param {Callback<[Array<PalletProxyProxyDefinition>, bigint]> =} callback
      **/
     proxies: GenericStorageQuery<(arg: AccountId32Like) => [Array<PalletProxyProxyDefinition>, bigint]>;
 
@@ -347,7 +347,7 @@ export interface ChainStorage extends GenericChainStorage {
      * The announcements made by the proxy (key).
      *
      * @param {AccountId32Like} arg
-     * @param {Callback<[Array<PalletProxyAnnouncement>, bigint]>=} callback
+     * @param {Callback<[Array<PalletProxyAnnouncement>, bigint]> =} callback
      **/
     announcements: GenericStorageQuery<(arg: AccountId32Like) => [Array<PalletProxyAnnouncement>, bigint]>;
 
@@ -368,7 +368,7 @@ export interface ChainStorage extends GenericChainStorage {
      *
      * [well_known_keys::CODE]: sp_core::storage::well_known_keys::CODE
      *
-     * @param {Callback<Bytes>=} callback
+     * @param {Callback<Bytes> =} callback
      **/
     pendingValidationCode: GenericStorageQuery<() => Bytes>;
 
@@ -379,7 +379,7 @@ export interface ChainStorage extends GenericChainStorage {
      * This will be cleared in `on_initialize` of each new block if no other pallet already set
      * the value.
      *
-     * @param {Callback<Bytes | undefined>=} callback
+     * @param {Callback<Bytes | undefined> =} callback
      **/
     newValidationCode: GenericStorageQuery<() => Bytes | undefined>;
 
@@ -388,21 +388,21 @@ export interface ChainStorage extends GenericChainStorage {
      * This value is expected to be set only once per block and it's never stored
      * in the trie.
      *
-     * @param {Callback<PolkadotPrimitivesV4PersistedValidationData | undefined>=} callback
+     * @param {Callback<PolkadotPrimitivesV4PersistedValidationData | undefined> =} callback
      **/
     validationData: GenericStorageQuery<() => PolkadotPrimitivesV4PersistedValidationData | undefined>;
 
     /**
      * Were the validation data set to notify the relay chain?
      *
-     * @param {Callback<boolean>=} callback
+     * @param {Callback<boolean> =} callback
      **/
     didSetValidationCode: GenericStorageQuery<() => boolean>;
 
     /**
      * The relay chain block number associated with the last parachain block.
      *
-     * @param {Callback<number>=} callback
+     * @param {Callback<number> =} callback
      **/
     lastRelayChainBlockNumber: GenericStorageQuery<() => number>;
 
@@ -415,7 +415,7 @@ export interface ChainStorage extends GenericChainStorage {
      * relay-chain. This value is ephemeral which means it doesn't hit the storage. This value is
      * set after the inherent.
      *
-     * @param {Callback<PolkadotPrimitivesV4UpgradeRestriction | undefined>=} callback
+     * @param {Callback<PolkadotPrimitivesV4UpgradeRestriction | undefined> =} callback
      **/
     upgradeRestrictionSignal: GenericStorageQuery<() => PolkadotPrimitivesV4UpgradeRestriction | undefined>;
 
@@ -427,7 +427,7 @@ export interface ChainStorage extends GenericChainStorage {
      *
      * This data is also absent from the genesis.
      *
-     * @param {Callback<SpTrieStorageProof | undefined>=} callback
+     * @param {Callback<SpTrieStorageProof | undefined> =} callback
      **/
     relayStateProof: GenericStorageQuery<() => SpTrieStorageProof | undefined>;
 
@@ -440,7 +440,7 @@ export interface ChainStorage extends GenericChainStorage {
      *
      * This data is also absent from the genesis.
      *
-     * @param {Callback<CumulusPalletParachainSystemRelayStateSnapshotMessagingStateSnapshot | undefined>=} callback
+     * @param {Callback<CumulusPalletParachainSystemRelayStateSnapshotMessagingStateSnapshot | undefined> =} callback
      **/
     relevantMessagingState: GenericStorageQuery<
       () => CumulusPalletParachainSystemRelayStateSnapshotMessagingStateSnapshot | undefined
@@ -454,7 +454,7 @@ export interface ChainStorage extends GenericChainStorage {
      *
      * This data is also absent from the genesis.
      *
-     * @param {Callback<PolkadotPrimitivesV4AbridgedHostConfiguration | undefined>=} callback
+     * @param {Callback<PolkadotPrimitivesV4AbridgedHostConfiguration | undefined> =} callback
      **/
     hostConfiguration: GenericStorageQuery<() => PolkadotPrimitivesV4AbridgedHostConfiguration | undefined>;
 
@@ -464,7 +464,7 @@ export interface ChainStorage extends GenericChainStorage {
      * This value is loaded before and saved after processing inbound downward messages carried
      * by the system inherent.
      *
-     * @param {Callback<CumulusPrimitivesParachainInherentMessageQueueChain>=} callback
+     * @param {Callback<CumulusPrimitivesParachainInherentMessageQueueChain> =} callback
      **/
     lastDmqMqcHead: GenericStorageQuery<() => CumulusPrimitivesParachainInherentMessageQueueChain>;
 
@@ -474,7 +474,7 @@ export interface ChainStorage extends GenericChainStorage {
      * This value is loaded before and saved after processing inbound downward messages carried
      * by the system inherent.
      *
-     * @param {Callback<Array<[PolkadotParachainPrimitivesId, CumulusPrimitivesParachainInherentMessageQueueChain]>>=} callback
+     * @param {Callback<Array<[PolkadotParachainPrimitivesId, CumulusPrimitivesParachainInherentMessageQueueChain]>> =} callback
      **/
     lastHrmpMqcHeads: GenericStorageQuery<
       () => Array<[PolkadotParachainPrimitivesId, CumulusPrimitivesParachainInherentMessageQueueChain]>
@@ -485,7 +485,7 @@ export interface ChainStorage extends GenericChainStorage {
      *
      * This will be cleared in `on_initialize` of each new block.
      *
-     * @param {Callback<number>=} callback
+     * @param {Callback<number> =} callback
      **/
     processedDownwardMessages: GenericStorageQuery<() => number>;
 
@@ -494,7 +494,7 @@ export interface ChainStorage extends GenericChainStorage {
      *
      * This will be cleared in `on_initialize` of each new block.
      *
-     * @param {Callback<number>=} callback
+     * @param {Callback<number> =} callback
      **/
     hrmpWatermark: GenericStorageQuery<() => number>;
 
@@ -503,7 +503,7 @@ export interface ChainStorage extends GenericChainStorage {
      *
      * This will be cleared in `on_initialize` of each new block.
      *
-     * @param {Callback<Array<PolkadotCorePrimitivesOutboundHrmpMessage>>=} callback
+     * @param {Callback<Array<PolkadotCorePrimitivesOutboundHrmpMessage>> =} callback
      **/
     hrmpOutboundMessages: GenericStorageQuery<() => Array<PolkadotCorePrimitivesOutboundHrmpMessage>>;
 
@@ -512,14 +512,14 @@ export interface ChainStorage extends GenericChainStorage {
      *
      * This will be cleared in `on_initialize` of each new block.
      *
-     * @param {Callback<Array<Bytes>>=} callback
+     * @param {Callback<Array<Bytes>> =} callback
      **/
     upwardMessages: GenericStorageQuery<() => Array<Bytes>>;
 
     /**
      * Upward messages that are still pending and not yet send to the relay chain.
      *
-     * @param {Callback<Array<Bytes>>=} callback
+     * @param {Callback<Array<Bytes>> =} callback
      **/
     pendingUpwardMessages: GenericStorageQuery<() => Array<Bytes>>;
 
@@ -527,7 +527,7 @@ export interface ChainStorage extends GenericChainStorage {
      * The number of HRMP messages we observed in `on_initialize` and thus used that number for
      * announcing the weight of `on_initialize` and `on_finalize`.
      *
-     * @param {Callback<number>=} callback
+     * @param {Callback<number> =} callback
      **/
     announcedHrmpMessagesPerCandidate: GenericStorageQuery<() => number>;
 
@@ -535,7 +535,7 @@ export interface ChainStorage extends GenericChainStorage {
      * The weight we reserve at the beginning of the block for processing XCMP messages. This
      * overrides the amount set in the Config trait.
      *
-     * @param {Callback<SpWeightsWeightV2Weight | undefined>=} callback
+     * @param {Callback<SpWeightsWeightV2Weight | undefined> =} callback
      **/
     reservedXcmpWeightOverride: GenericStorageQuery<() => SpWeightsWeightV2Weight | undefined>;
 
@@ -543,14 +543,14 @@ export interface ChainStorage extends GenericChainStorage {
      * The weight we reserve at the beginning of the block for processing DMP messages. This
      * overrides the amount set in the Config trait.
      *
-     * @param {Callback<SpWeightsWeightV2Weight | undefined>=} callback
+     * @param {Callback<SpWeightsWeightV2Weight | undefined> =} callback
      **/
     reservedDmpWeightOverride: GenericStorageQuery<() => SpWeightsWeightV2Weight | undefined>;
 
     /**
      * The next authorized upgrade, if there is one.
      *
-     * @param {Callback<CumulusPalletParachainSystemCodeUpgradeAuthorization | undefined>=} callback
+     * @param {Callback<CumulusPalletParachainSystemCodeUpgradeAuthorization | undefined> =} callback
      **/
     authorizedUpgrade: GenericStorageQuery<() => CumulusPalletParachainSystemCodeUpgradeAuthorization | undefined>;
 
@@ -559,7 +559,7 @@ export interface ChainStorage extends GenericChainStorage {
      *
      * See [`Pallet::set_custom_validation_head_data`] for more information.
      *
-     * @param {Callback<Bytes | undefined>=} callback
+     * @param {Callback<Bytes | undefined> =} callback
      **/
     customValidationHeadData: GenericStorageQuery<() => Bytes | undefined>;
 
@@ -574,7 +574,7 @@ export interface ChainStorage extends GenericChainStorage {
   parachainInfo: {
     /**
      *
-     * @param {Callback<PolkadotParachainPrimitivesId>=} callback
+     * @param {Callback<PolkadotParachainPrimitivesId> =} callback
      **/
     parachainId: GenericStorageQuery<() => PolkadotParachainPrimitivesId>;
 
@@ -589,13 +589,13 @@ export interface ChainStorage extends GenericChainStorage {
   transactionPayment: {
     /**
      *
-     * @param {Callback<FixedU128>=} callback
+     * @param {Callback<FixedU128> =} callback
      **/
     nextFeeMultiplier: GenericStorageQuery<() => FixedU128>;
 
     /**
      *
-     * @param {Callback<PalletTransactionPaymentReleases>=} callback
+     * @param {Callback<PalletTransactionPaymentReleases> =} callback
      **/
     storageVersion: GenericStorageQuery<() => PalletTransactionPaymentReleases>;
 
@@ -611,14 +611,14 @@ export interface ChainStorage extends GenericChainStorage {
     /**
      * The total units issued in the system.
      *
-     * @param {Callback<bigint>=} callback
+     * @param {Callback<bigint> =} callback
      **/
     totalIssuance: GenericStorageQuery<() => bigint>;
 
     /**
      * The total units of outstanding deactivated balance in the system.
      *
-     * @param {Callback<bigint>=} callback
+     * @param {Callback<bigint> =} callback
      **/
     inactiveIssuance: GenericStorageQuery<() => bigint>;
 
@@ -649,7 +649,7 @@ export interface ChainStorage extends GenericChainStorage {
      * NOTE: This is only used in the case that this pallet is used to store balances.
      *
      * @param {AccountId32Like} arg
-     * @param {Callback<PalletBalancesAccountData>=} callback
+     * @param {Callback<PalletBalancesAccountData> =} callback
      **/
     account: GenericStorageQuery<(arg: AccountId32Like) => PalletBalancesAccountData>;
 
@@ -658,7 +658,7 @@ export interface ChainStorage extends GenericChainStorage {
      * NOTE: Should only be accessed when setting, changing and freeing a lock.
      *
      * @param {AccountId32Like} arg
-     * @param {Callback<Array<PalletBalancesBalanceLock>>=} callback
+     * @param {Callback<Array<PalletBalancesBalanceLock>> =} callback
      **/
     locks: GenericStorageQuery<(arg: AccountId32Like) => Array<PalletBalancesBalanceLock>>;
 
@@ -666,7 +666,7 @@ export interface ChainStorage extends GenericChainStorage {
      * Named reserves on some account balances.
      *
      * @param {AccountId32Like} arg
-     * @param {Callback<Array<PalletBalancesReserveData>>=} callback
+     * @param {Callback<Array<PalletBalancesReserveData>> =} callback
      **/
     reserves: GenericStorageQuery<(arg: AccountId32Like) => Array<PalletBalancesReserveData>>;
 
@@ -674,7 +674,7 @@ export interface ChainStorage extends GenericChainStorage {
      * Holds on account balances.
      *
      * @param {AccountId32Like} arg
-     * @param {Callback<Array<PalletBalancesIdAmount>>=} callback
+     * @param {Callback<Array<PalletBalancesIdAmount>> =} callback
      **/
     holds: GenericStorageQuery<(arg: AccountId32Like) => Array<PalletBalancesIdAmount>>;
 
@@ -682,7 +682,7 @@ export interface ChainStorage extends GenericChainStorage {
      * Freeze locks on account balances.
      *
      * @param {AccountId32Like} arg
-     * @param {Callback<Array<PalletBalancesIdAmountRuntimeFreezeReason>>=} callback
+     * @param {Callback<Array<PalletBalancesIdAmountRuntimeFreezeReason>> =} callback
      **/
     freezes: GenericStorageQuery<(arg: AccountId32Like) => Array<PalletBalancesIdAmountRuntimeFreezeReason>>;
 
@@ -699,7 +699,7 @@ export interface ChainStorage extends GenericChainStorage {
      * Information regarding the vesting of a given account.
      *
      * @param {AccountId32Like} arg
-     * @param {Callback<Array<PalletVestingVestingInfo> | undefined>=} callback
+     * @param {Callback<Array<PalletVestingVestingInfo> | undefined> =} callback
      **/
     vesting: GenericStorageQuery<(arg: AccountId32Like) => Array<PalletVestingVestingInfo> | undefined>;
 
@@ -708,7 +708,7 @@ export interface ChainStorage extends GenericChainStorage {
      *
      * New networks start with latest version, as determined by the genesis build.
      *
-     * @param {Callback<PalletVestingReleases>=} callback
+     * @param {Callback<PalletVestingReleases> =} callback
      **/
     storageVersion: GenericStorageQuery<() => PalletVestingReleases>;
 
@@ -725,21 +725,21 @@ export interface ChainStorage extends GenericChainStorage {
      * Active inflation configuration parameters.
      * They describe current rewards, when inflation needs to be recalculated, etc.
      *
-     * @param {Callback<PalletInflationInflationConfiguration>=} callback
+     * @param {Callback<PalletInflationInflationConfiguration> =} callback
      **/
     activeInflationConfig: GenericStorageQuery<() => PalletInflationInflationConfiguration>;
 
     /**
      * Static inflation parameters - used to calculate active inflation configuration at certain points in time.
      *
-     * @param {Callback<PalletInflationInflationParameters>=} callback
+     * @param {Callback<PalletInflationInflationParameters> =} callback
      **/
     inflationParams: GenericStorageQuery<() => PalletInflationInflationParameters>;
 
     /**
      * Flag indicating whether on the first possible opportunity, recalculation of the inflation config should be done.
      *
-     * @param {Callback<number | undefined>=} callback
+     * @param {Callback<number | undefined> =} callback
      **/
     doRecalculation: GenericStorageQuery<() => number | undefined>;
 
@@ -755,14 +755,14 @@ export interface ChainStorage extends GenericChainStorage {
     /**
      * General information about dApp staking protocol state.
      *
-     * @param {Callback<PalletDappStakingV3ProtocolState>=} callback
+     * @param {Callback<PalletDappStakingV3ProtocolState> =} callback
      **/
     activeProtocolState: GenericStorageQuery<() => PalletDappStakingV3ProtocolState>;
 
     /**
      * Counter for unique dApp identifiers.
      *
-     * @param {Callback<number>=} callback
+     * @param {Callback<number> =} callback
      **/
     nextDAppId: GenericStorageQuery<() => number>;
 
@@ -773,7 +773,7 @@ export interface ChainStorage extends GenericChainStorage {
      * It might have been unregistered at some point in history.
      *
      * @param {AstarPrimitivesDappStakingSmartContract} arg
-     * @param {Callback<PalletDappStakingV3DAppInfo | undefined>=} callback
+     * @param {Callback<PalletDappStakingV3DAppInfo | undefined> =} callback
      **/
     integratedDApps: GenericStorageQuery<
       (arg: AstarPrimitivesDappStakingSmartContract) => PalletDappStakingV3DAppInfo | undefined
@@ -782,7 +782,7 @@ export interface ChainStorage extends GenericChainStorage {
     /**
      * Counter for the related counted storage map
      *
-     * @param {Callback<number>=} callback
+     * @param {Callback<number> =} callback
      **/
     counterForIntegratedDApps: GenericStorageQuery<() => number>;
 
@@ -790,7 +790,7 @@ export interface ChainStorage extends GenericChainStorage {
      * General locked/staked information for each account.
      *
      * @param {AccountId32Like} arg
-     * @param {Callback<PalletDappStakingV3AccountLedger>=} callback
+     * @param {Callback<PalletDappStakingV3AccountLedger> =} callback
      **/
     ledger: GenericStorageQuery<(arg: AccountId32Like) => PalletDappStakingV3AccountLedger>;
 
@@ -798,7 +798,7 @@ export interface ChainStorage extends GenericChainStorage {
      * Information about how much each staker has staked for each smart contract in some period.
      *
      * @param {[AccountId32Like, AstarPrimitivesDappStakingSmartContract]} arg
-     * @param {Callback<PalletDappStakingV3SingularStakingInfo | undefined>=} callback
+     * @param {Callback<PalletDappStakingV3SingularStakingInfo | undefined> =} callback
      **/
     stakerInfo: GenericStorageQuery<
       (
@@ -810,14 +810,14 @@ export interface ChainStorage extends GenericChainStorage {
      * Information about how much has been staked on a smart contract in some era or period.
      *
      * @param {number} arg
-     * @param {Callback<PalletDappStakingV3ContractStakeAmount>=} callback
+     * @param {Callback<PalletDappStakingV3ContractStakeAmount> =} callback
      **/
     contractStake: GenericStorageQuery<(arg: number) => PalletDappStakingV3ContractStakeAmount>;
 
     /**
      * General information about the current era.
      *
-     * @param {Callback<PalletDappStakingV3EraInfo>=} callback
+     * @param {Callback<PalletDappStakingV3EraInfo> =} callback
      **/
     currentEraInfo: GenericStorageQuery<() => PalletDappStakingV3EraInfo>;
 
@@ -833,7 +833,7 @@ export interface ChainStorage extends GenericChainStorage {
      * Eras 1-7 will be stored in the same entry as era 0, eras 9-15 will be stored in the same entry as era 8, etc.
      *
      * @param {number} arg
-     * @param {Callback<PalletDappStakingV3EraRewardSpan | undefined>=} callback
+     * @param {Callback<PalletDappStakingV3EraRewardSpan | undefined> =} callback
      **/
     eraRewards: GenericStorageQuery<(arg: number) => PalletDappStakingV3EraRewardSpan | undefined>;
 
@@ -841,21 +841,21 @@ export interface ChainStorage extends GenericChainStorage {
      * Information about period's end.
      *
      * @param {number} arg
-     * @param {Callback<PalletDappStakingV3PeriodEndInfo | undefined>=} callback
+     * @param {Callback<PalletDappStakingV3PeriodEndInfo | undefined> =} callback
      **/
     periodEnd: GenericStorageQuery<(arg: number) => PalletDappStakingV3PeriodEndInfo | undefined>;
 
     /**
      * Static tier parameters used to calculate tier configuration.
      *
-     * @param {Callback<PalletDappStakingV3TierParameters>=} callback
+     * @param {Callback<PalletDappStakingV3TierParameters> =} callback
      **/
     staticTierParams: GenericStorageQuery<() => PalletDappStakingV3TierParameters>;
 
     /**
      * Tier configuration user for current & preceding eras.
      *
-     * @param {Callback<PalletDappStakingV3TiersConfiguration>=} callback
+     * @param {Callback<PalletDappStakingV3TiersConfiguration> =} callback
      **/
     tierConfig: GenericStorageQuery<() => PalletDappStakingV3TiersConfiguration>;
 
@@ -863,14 +863,14 @@ export interface ChainStorage extends GenericChainStorage {
      * Information about which tier a dApp belonged to in a specific era.
      *
      * @param {number} arg
-     * @param {Callback<PalletDappStakingV3DAppTierRewards | undefined>=} callback
+     * @param {Callback<PalletDappStakingV3DAppTierRewards | undefined> =} callback
      **/
     dAppTiers: GenericStorageQuery<(arg: number) => PalletDappStakingV3DAppTierRewards | undefined>;
 
     /**
      * History cleanup marker - holds information about which DB entries should be cleaned up next, when applicable.
      *
-     * @param {Callback<PalletDappStakingV3CleanupMarker>=} callback
+     * @param {Callback<PalletDappStakingV3CleanupMarker> =} callback
      **/
     historyCleanupMarker: GenericStorageQuery<() => PalletDappStakingV3CleanupMarker>;
 
@@ -879,7 +879,7 @@ export interface ChainStorage extends GenericChainStorage {
      * Kept as a storage without extrinsic setter, so we can still enable it for some
      * chain-fork debugging if required.
      *
-     * @param {Callback<boolean>=} callback
+     * @param {Callback<boolean> =} callback
      **/
     safeguard: GenericStorageQuery<() => boolean>;
 
@@ -896,7 +896,7 @@ export interface ChainStorage extends GenericChainStorage {
      * Details of an asset.
      *
      * @param {bigint} arg
-     * @param {Callback<PalletAssetsAssetDetails | undefined>=} callback
+     * @param {Callback<PalletAssetsAssetDetails | undefined> =} callback
      **/
     asset: GenericStorageQuery<(arg: bigint) => PalletAssetsAssetDetails | undefined>;
 
@@ -904,7 +904,7 @@ export interface ChainStorage extends GenericChainStorage {
      * The holdings of a specific account for a specific asset.
      *
      * @param {[bigint, AccountId32Like]} arg
-     * @param {Callback<PalletAssetsAssetAccount | undefined>=} callback
+     * @param {Callback<PalletAssetsAssetAccount | undefined> =} callback
      **/
     account: GenericStorageQuery<(arg: [bigint, AccountId32Like]) => PalletAssetsAssetAccount | undefined>;
 
@@ -914,7 +914,7 @@ export interface ChainStorage extends GenericChainStorage {
      * First key is the asset ID, second key is the owner and third key is the delegate.
      *
      * @param {[bigint, AccountId32Like, AccountId32Like]} arg
-     * @param {Callback<PalletAssetsApproval | undefined>=} callback
+     * @param {Callback<PalletAssetsApproval | undefined> =} callback
      **/
     approvals: GenericStorageQuery<
       (arg: [bigint, AccountId32Like, AccountId32Like]) => PalletAssetsApproval | undefined
@@ -924,7 +924,7 @@ export interface ChainStorage extends GenericChainStorage {
      * Metadata of an asset.
      *
      * @param {bigint} arg
-     * @param {Callback<PalletAssetsAssetMetadata>=} callback
+     * @param {Callback<PalletAssetsAssetMetadata> =} callback
      **/
     metadata: GenericStorageQuery<(arg: bigint) => PalletAssetsAssetMetadata>;
 
@@ -940,7 +940,7 @@ export interface ChainStorage extends GenericChainStorage {
     /**
      * Author of current block.
      *
-     * @param {Callback<AccountId32 | undefined>=} callback
+     * @param {Callback<AccountId32 | undefined> =} callback
      **/
     author: GenericStorageQuery<() => AccountId32 | undefined>;
 
@@ -956,14 +956,14 @@ export interface ChainStorage extends GenericChainStorage {
     /**
      * The invulnerable, fixed collators.
      *
-     * @param {Callback<Array<AccountId32>>=} callback
+     * @param {Callback<Array<AccountId32>> =} callback
      **/
     invulnerables: GenericStorageQuery<() => Array<AccountId32>>;
 
     /**
      * The (community, limited) collation candidates.
      *
-     * @param {Callback<Array<PalletCollatorSelectionCandidateInfo>>=} callback
+     * @param {Callback<Array<PalletCollatorSelectionCandidateInfo>> =} callback
      **/
     candidates: GenericStorageQuery<() => Array<PalletCollatorSelectionCandidateInfo>>;
 
@@ -971,7 +971,7 @@ export interface ChainStorage extends GenericChainStorage {
      * Last block authored by collator.
      *
      * @param {AccountId32Like} arg
-     * @param {Callback<number>=} callback
+     * @param {Callback<number> =} callback
      **/
     lastAuthoredBlock: GenericStorageQuery<(arg: AccountId32Like) => number>;
 
@@ -980,7 +980,7 @@ export interface ChainStorage extends GenericChainStorage {
      *
      * This should ideally always be less than [`Config::MaxCandidates`] for weights to be correct.
      *
-     * @param {Callback<number>=} callback
+     * @param {Callback<number> =} callback
      **/
     desiredCandidates: GenericStorageQuery<() => number>;
 
@@ -989,14 +989,14 @@ export interface ChainStorage extends GenericChainStorage {
      *
      * When a collator calls `leave_intent` they immediately receive the deposit back.
      *
-     * @param {Callback<bigint>=} callback
+     * @param {Callback<bigint> =} callback
      **/
     candidacyBond: GenericStorageQuery<() => bigint>;
 
     /**
      * Destination account for slashed amount.
      *
-     * @param {Callback<AccountId32 | undefined>=} callback
+     * @param {Callback<AccountId32 | undefined> =} callback
      **/
     slashDestination: GenericStorageQuery<() => AccountId32 | undefined>;
 
@@ -1012,14 +1012,14 @@ export interface ChainStorage extends GenericChainStorage {
     /**
      * The current set of validators.
      *
-     * @param {Callback<Array<AccountId32>>=} callback
+     * @param {Callback<Array<AccountId32>> =} callback
      **/
     validators: GenericStorageQuery<() => Array<AccountId32>>;
 
     /**
      * Current index of the session.
      *
-     * @param {Callback<number>=} callback
+     * @param {Callback<number> =} callback
      **/
     currentIndex: GenericStorageQuery<() => number>;
 
@@ -1027,7 +1027,7 @@ export interface ChainStorage extends GenericChainStorage {
      * True if the underlying economic identities or weighting behind the validators
      * has changed in the queued validator set.
      *
-     * @param {Callback<boolean>=} callback
+     * @param {Callback<boolean> =} callback
      **/
     queuedChanged: GenericStorageQuery<() => boolean>;
 
@@ -1035,7 +1035,7 @@ export interface ChainStorage extends GenericChainStorage {
      * The queued keys for the next session. When the next session begins, these keys
      * will be used to determine the validator's session keys.
      *
-     * @param {Callback<Array<[AccountId32, AstarRuntimeSessionKeys]>>=} callback
+     * @param {Callback<Array<[AccountId32, AstarRuntimeSessionKeys]>> =} callback
      **/
     queuedKeys: GenericStorageQuery<() => Array<[AccountId32, AstarRuntimeSessionKeys]>>;
 
@@ -1046,7 +1046,7 @@ export interface ChainStorage extends GenericChainStorage {
      * disabled using binary search. It gets cleared when `on_session_ending` returns
      * a new set of identities.
      *
-     * @param {Callback<Array<number>>=} callback
+     * @param {Callback<Array<number>> =} callback
      **/
     disabledValidators: GenericStorageQuery<() => Array<number>>;
 
@@ -1054,7 +1054,7 @@ export interface ChainStorage extends GenericChainStorage {
      * The next session keys for a validator.
      *
      * @param {AccountId32Like} arg
-     * @param {Callback<AstarRuntimeSessionKeys | undefined>=} callback
+     * @param {Callback<AstarRuntimeSessionKeys | undefined> =} callback
      **/
     nextKeys: GenericStorageQuery<(arg: AccountId32Like) => AstarRuntimeSessionKeys | undefined>;
 
@@ -1062,7 +1062,7 @@ export interface ChainStorage extends GenericChainStorage {
      * The owner of a key. The key is the `KeyTypeId` + the encoded key.
      *
      * @param {[SpCoreCryptoKeyTypeId, BytesLike]} arg
-     * @param {Callback<AccountId32 | undefined>=} callback
+     * @param {Callback<AccountId32 | undefined> =} callback
      **/
     keyOwner: GenericStorageQuery<(arg: [SpCoreCryptoKeyTypeId, BytesLike]) => AccountId32 | undefined>;
 
@@ -1078,7 +1078,7 @@ export interface ChainStorage extends GenericChainStorage {
     /**
      * The current authority set.
      *
-     * @param {Callback<Array<SpConsensusAuraSr25519AppSr25519Public>>=} callback
+     * @param {Callback<Array<SpConsensusAuraSr25519AppSr25519Public>> =} callback
      **/
     authorities: GenericStorageQuery<() => Array<SpConsensusAuraSr25519AppSr25519Public>>;
 
@@ -1087,7 +1087,7 @@ export interface ChainStorage extends GenericChainStorage {
      *
      * This will be set in `on_initialize`.
      *
-     * @param {Callback<SpConsensusSlotsSlot>=} callback
+     * @param {Callback<SpConsensusSlotsSlot> =} callback
      **/
     currentSlot: GenericStorageQuery<() => SpConsensusSlotsSlot>;
 
@@ -1107,7 +1107,7 @@ export interface ChainStorage extends GenericChainStorage {
      * but we require the old authorities to verify the seal when validating a PoV. This will always
      * be updated to the latest AuRa authorities in `on_finalize`.
      *
-     * @param {Callback<Array<SpConsensusAuraSr25519AppSr25519Public>>=} callback
+     * @param {Callback<Array<SpConsensusAuraSr25519AppSr25519Public>> =} callback
      **/
     authorities: GenericStorageQuery<() => Array<SpConsensusAuraSr25519AppSr25519Public>>;
 
@@ -1123,7 +1123,7 @@ export interface ChainStorage extends GenericChainStorage {
     /**
      * Status of the inbound XCMP channels.
      *
-     * @param {Callback<Array<CumulusPalletXcmpQueueInboundChannelDetails>>=} callback
+     * @param {Callback<Array<CumulusPalletXcmpQueueInboundChannelDetails>> =} callback
      **/
     inboundXcmpStatus: GenericStorageQuery<() => Array<CumulusPalletXcmpQueueInboundChannelDetails>>;
 
@@ -1131,7 +1131,7 @@ export interface ChainStorage extends GenericChainStorage {
      * Inbound aggregate XCMP messages. It can only be one per ParaId/block.
      *
      * @param {[PolkadotParachainPrimitivesId, number]} arg
-     * @param {Callback<Bytes>=} callback
+     * @param {Callback<Bytes> =} callback
      **/
     inboundXcmpMessages: GenericStorageQuery<(arg: [PolkadotParachainPrimitivesId, number]) => Bytes>;
 
@@ -1143,7 +1143,7 @@ export interface ChainStorage extends GenericChainStorage {
      * case of the need to send a high-priority signal message this block.
      * The bool is true if there is a signal message waiting to be sent.
      *
-     * @param {Callback<Array<CumulusPalletXcmpQueueOutboundChannelDetails>>=} callback
+     * @param {Callback<Array<CumulusPalletXcmpQueueOutboundChannelDetails>> =} callback
      **/
     outboundXcmpStatus: GenericStorageQuery<() => Array<CumulusPalletXcmpQueueOutboundChannelDetails>>;
 
@@ -1151,7 +1151,7 @@ export interface ChainStorage extends GenericChainStorage {
      * The messages outbound in a given XCMP channel.
      *
      * @param {[PolkadotParachainPrimitivesId, number]} arg
-     * @param {Callback<Bytes>=} callback
+     * @param {Callback<Bytes> =} callback
      **/
     outboundXcmpMessages: GenericStorageQuery<(arg: [PolkadotParachainPrimitivesId, number]) => Bytes>;
 
@@ -1159,14 +1159,14 @@ export interface ChainStorage extends GenericChainStorage {
      * Any signal messages waiting to be sent.
      *
      * @param {PolkadotParachainPrimitivesId} arg
-     * @param {Callback<Bytes>=} callback
+     * @param {Callback<Bytes> =} callback
      **/
     signalMessages: GenericStorageQuery<(arg: PolkadotParachainPrimitivesId) => Bytes>;
 
     /**
      * The configuration which controls the dynamics of the outbound queue.
      *
-     * @param {Callback<CumulusPalletXcmpQueueQueueConfigData>=} callback
+     * @param {Callback<CumulusPalletXcmpQueueQueueConfigData> =} callback
      **/
     queueConfig: GenericStorageQuery<() => CumulusPalletXcmpQueueQueueConfigData>;
 
@@ -1177,14 +1177,14 @@ export interface ChainStorage extends GenericChainStorage {
      * `service_overweight`.
      *
      * @param {bigint} arg
-     * @param {Callback<[PolkadotParachainPrimitivesId, number, Bytes] | undefined>=} callback
+     * @param {Callback<[PolkadotParachainPrimitivesId, number, Bytes] | undefined> =} callback
      **/
     overweight: GenericStorageQuery<(arg: bigint) => [PolkadotParachainPrimitivesId, number, Bytes] | undefined>;
 
     /**
      * Counter for the related counted storage map
      *
-     * @param {Callback<number>=} callback
+     * @param {Callback<number> =} callback
      **/
     counterForOverweight: GenericStorageQuery<() => number>;
 
@@ -1192,14 +1192,14 @@ export interface ChainStorage extends GenericChainStorage {
      * The number of overweight messages ever recorded in `Overweight`. Also doubles as the next
      * available free overweight index.
      *
-     * @param {Callback<bigint>=} callback
+     * @param {Callback<bigint> =} callback
      **/
     overweightCount: GenericStorageQuery<() => bigint>;
 
     /**
      * Whether or not the XCMP queue is suspended from executing incoming XCMs or not.
      *
-     * @param {Callback<boolean>=} callback
+     * @param {Callback<boolean> =} callback
      **/
     queueSuspended: GenericStorageQuery<() => boolean>;
 
@@ -1215,7 +1215,7 @@ export interface ChainStorage extends GenericChainStorage {
     /**
      * The latest available query index.
      *
-     * @param {Callback<bigint>=} callback
+     * @param {Callback<bigint> =} callback
      **/
     queryCounter: GenericStorageQuery<() => bigint>;
 
@@ -1223,7 +1223,7 @@ export interface ChainStorage extends GenericChainStorage {
      * The ongoing queries.
      *
      * @param {bigint} arg
-     * @param {Callback<PalletXcmQueryStatus | undefined>=} callback
+     * @param {Callback<PalletXcmQueryStatus | undefined> =} callback
      **/
     queries: GenericStorageQuery<(arg: bigint) => PalletXcmQueryStatus | undefined>;
 
@@ -1234,7 +1234,7 @@ export interface ChainStorage extends GenericChainStorage {
      * times this pair has been trapped (usually just 1 if it exists at all).
      *
      * @param {H256} arg
-     * @param {Callback<number>=} callback
+     * @param {Callback<number> =} callback
      **/
     assetTraps: GenericStorageQuery<(arg: H256) => number>;
 
@@ -1242,7 +1242,7 @@ export interface ChainStorage extends GenericChainStorage {
      * Default version to encode XCM when latest version of destination is unknown. If `None`,
      * then the destinations whose XCM version is unknown are considered unreachable.
      *
-     * @param {Callback<number | undefined>=} callback
+     * @param {Callback<number | undefined> =} callback
      **/
     safeXcmVersion: GenericStorageQuery<() => number | undefined>;
 
@@ -1250,7 +1250,7 @@ export interface ChainStorage extends GenericChainStorage {
      * The Latest versions that we know various locations support.
      *
      * @param {[number, XcmVersionedMultiLocation]} arg
-     * @param {Callback<number | undefined>=} callback
+     * @param {Callback<number | undefined> =} callback
      **/
     supportedVersion: GenericStorageQuery<(arg: [number, XcmVersionedMultiLocation]) => number | undefined>;
 
@@ -1258,7 +1258,7 @@ export interface ChainStorage extends GenericChainStorage {
      * All locations that we have requested version notifications from.
      *
      * @param {[number, XcmVersionedMultiLocation]} arg
-     * @param {Callback<bigint | undefined>=} callback
+     * @param {Callback<bigint | undefined> =} callback
      **/
     versionNotifiers: GenericStorageQuery<(arg: [number, XcmVersionedMultiLocation]) => bigint | undefined>;
 
@@ -1267,7 +1267,7 @@ export interface ChainStorage extends GenericChainStorage {
      * of our versions we informed them of.
      *
      * @param {[number, XcmVersionedMultiLocation]} arg
-     * @param {Callback<[bigint, SpWeightsWeightV2Weight, number] | undefined>=} callback
+     * @param {Callback<[bigint, SpWeightsWeightV2Weight, number] | undefined> =} callback
      **/
     versionNotifyTargets: GenericStorageQuery<
       (arg: [number, XcmVersionedMultiLocation]) => [bigint, SpWeightsWeightV2Weight, number] | undefined
@@ -1278,14 +1278,14 @@ export interface ChainStorage extends GenericChainStorage {
      * the `u32` counter is the number of times that a send to the destination has been attempted,
      * which is used as a prioritization.
      *
-     * @param {Callback<Array<[XcmVersionedMultiLocation, number]>>=} callback
+     * @param {Callback<Array<[XcmVersionedMultiLocation, number]>> =} callback
      **/
     versionDiscoveryQueue: GenericStorageQuery<() => Array<[XcmVersionedMultiLocation, number]>>;
 
     /**
      * The current migration's stage, if any.
      *
-     * @param {Callback<PalletXcmVersionMigrationStage | undefined>=} callback
+     * @param {Callback<PalletXcmVersionMigrationStage | undefined> =} callback
      **/
     currentMigration: GenericStorageQuery<() => PalletXcmVersionMigrationStage | undefined>;
 
@@ -1293,7 +1293,7 @@ export interface ChainStorage extends GenericChainStorage {
      * Fungible assets which we know are locked on a remote chain.
      *
      * @param {[number, AccountId32Like, XcmVersionedAssetId]} arg
-     * @param {Callback<PalletXcmRemoteLockedFungibleRecord | undefined>=} callback
+     * @param {Callback<PalletXcmRemoteLockedFungibleRecord | undefined> =} callback
      **/
     remoteLockedFungibles: GenericStorageQuery<
       (arg: [number, AccountId32Like, XcmVersionedAssetId]) => PalletXcmRemoteLockedFungibleRecord | undefined
@@ -1303,7 +1303,7 @@ export interface ChainStorage extends GenericChainStorage {
      * Fungible assets which we know are locked on this chain.
      *
      * @param {AccountId32Like} arg
-     * @param {Callback<Array<[bigint, XcmVersionedMultiLocation]> | undefined>=} callback
+     * @param {Callback<Array<[bigint, XcmVersionedMultiLocation]> | undefined> =} callback
      **/
     lockedFungibles: GenericStorageQuery<
       (arg: AccountId32Like) => Array<[bigint, XcmVersionedMultiLocation]> | undefined
@@ -1312,7 +1312,7 @@ export interface ChainStorage extends GenericChainStorage {
     /**
      * Global suspension state of the XCM executor.
      *
-     * @param {Callback<boolean>=} callback
+     * @param {Callback<boolean> =} callback
      **/
     xcmExecutionSuspended: GenericStorageQuery<() => boolean>;
 
@@ -1328,14 +1328,14 @@ export interface ChainStorage extends GenericChainStorage {
     /**
      * The configuration.
      *
-     * @param {Callback<CumulusPalletDmpQueueConfigData>=} callback
+     * @param {Callback<CumulusPalletDmpQueueConfigData> =} callback
      **/
     configuration: GenericStorageQuery<() => CumulusPalletDmpQueueConfigData>;
 
     /**
      * The page index.
      *
-     * @param {Callback<CumulusPalletDmpQueuePageIndexData>=} callback
+     * @param {Callback<CumulusPalletDmpQueuePageIndexData> =} callback
      **/
     pageIndex: GenericStorageQuery<() => CumulusPalletDmpQueuePageIndexData>;
 
@@ -1343,7 +1343,7 @@ export interface ChainStorage extends GenericChainStorage {
      * The queue pages.
      *
      * @param {number} arg
-     * @param {Callback<Array<[number, Bytes]>>=} callback
+     * @param {Callback<Array<[number, Bytes]>> =} callback
      **/
     pages: GenericStorageQuery<(arg: number) => Array<[number, Bytes]>>;
 
@@ -1351,14 +1351,14 @@ export interface ChainStorage extends GenericChainStorage {
      * The overweight messages.
      *
      * @param {bigint} arg
-     * @param {Callback<[number, Bytes] | undefined>=} callback
+     * @param {Callback<[number, Bytes] | undefined> =} callback
      **/
     overweight: GenericStorageQuery<(arg: bigint) => [number, Bytes] | undefined>;
 
     /**
      * Counter for the related counted storage map
      *
-     * @param {Callback<number>=} callback
+     * @param {Callback<number> =} callback
      **/
     counterForOverweight: GenericStorageQuery<() => number>;
 
@@ -1377,7 +1377,7 @@ export interface ChainStorage extends GenericChainStorage {
      * like transferring an asset from this chain to another.
      *
      * @param {bigint} arg
-     * @param {Callback<XcmVersionedMultiLocation | undefined>=} callback
+     * @param {Callback<XcmVersionedMultiLocation | undefined> =} callback
      **/
     assetIdToLocation: GenericStorageQuery<(arg: bigint) => XcmVersionedMultiLocation | undefined>;
 
@@ -1387,7 +1387,7 @@ export interface ChainStorage extends GenericChainStorage {
      * the corresponding asset in which tokens should me minted.
      *
      * @param {XcmVersionedMultiLocation} arg
-     * @param {Callback<bigint | undefined>=} callback
+     * @param {Callback<bigint | undefined> =} callback
      **/
     assetLocationToId: GenericStorageQuery<(arg: XcmVersionedMultiLocation) => bigint | undefined>;
 
@@ -1398,7 +1398,7 @@ export interface ChainStorage extends GenericChainStorage {
      * Not all asset types are supported for payment. If value exists here, it means it is supported.
      *
      * @param {XcmVersionedMultiLocation} arg
-     * @param {Callback<bigint | undefined>=} callback
+     * @param {Callback<bigint | undefined> =} callback
      **/
     assetLocationUnitsPerSecond: GenericStorageQuery<(arg: XcmVersionedMultiLocation) => bigint | undefined>;
 
@@ -1414,21 +1414,21 @@ export interface ChainStorage extends GenericChainStorage {
     /**
      *
      * @param {H160} arg
-     * @param {Callback<Bytes>=} callback
+     * @param {Callback<Bytes> =} callback
      **/
     accountCodes: GenericStorageQuery<(arg: H160) => Bytes>;
 
     /**
      *
      * @param {H160} arg
-     * @param {Callback<PalletEvmCodeMetadata | undefined>=} callback
+     * @param {Callback<PalletEvmCodeMetadata | undefined> =} callback
      **/
     accountCodesMetadata: GenericStorageQuery<(arg: H160) => PalletEvmCodeMetadata | undefined>;
 
     /**
      *
      * @param {[H160, H256]} arg
-     * @param {Callback<H256>=} callback
+     * @param {Callback<H256> =} callback
      **/
     accountStorages: GenericStorageQuery<(arg: [H160, H256]) => H256>;
 
@@ -1444,7 +1444,7 @@ export interface ChainStorage extends GenericChainStorage {
     /**
      * Current building block's transactions and receipts.
      *
-     * @param {Callback<Array<[EthereumTransactionTransactionV2, FpRpcTransactionStatus, EthereumReceiptReceiptV3]>>=} callback
+     * @param {Callback<Array<[EthereumTransactionTransactionV2, FpRpcTransactionStatus, EthereumReceiptReceiptV3]>> =} callback
      **/
     pending: GenericStorageQuery<
       () => Array<[EthereumTransactionTransactionV2, FpRpcTransactionStatus, EthereumReceiptReceiptV3]>
@@ -1453,28 +1453,28 @@ export interface ChainStorage extends GenericChainStorage {
     /**
      * The current Ethereum block.
      *
-     * @param {Callback<EthereumBlock | undefined>=} callback
+     * @param {Callback<EthereumBlock | undefined> =} callback
      **/
     currentBlock: GenericStorageQuery<() => EthereumBlock | undefined>;
 
     /**
      * The current Ethereum receipts.
      *
-     * @param {Callback<Array<EthereumReceiptReceiptV3> | undefined>=} callback
+     * @param {Callback<Array<EthereumReceiptReceiptV3> | undefined> =} callback
      **/
     currentReceipts: GenericStorageQuery<() => Array<EthereumReceiptReceiptV3> | undefined>;
 
     /**
      * The current transaction statuses.
      *
-     * @param {Callback<Array<FpRpcTransactionStatus> | undefined>=} callback
+     * @param {Callback<Array<FpRpcTransactionStatus> | undefined> =} callback
      **/
     currentTransactionStatuses: GenericStorageQuery<() => Array<FpRpcTransactionStatus> | undefined>;
 
     /**
      *
      * @param {U256} arg
-     * @param {Callback<H256>=} callback
+     * @param {Callback<H256> =} callback
      **/
     blockHash: GenericStorageQuery<(arg: U256) => H256>;
 
@@ -1489,7 +1489,7 @@ export interface ChainStorage extends GenericChainStorage {
   dynamicEvmBaseFee: {
     /**
      *
-     * @param {Callback<U256>=} callback
+     * @param {Callback<U256> =} callback
      **/
     baseFeePerGas: GenericStorageQuery<() => U256>;
 
@@ -1506,7 +1506,7 @@ export interface ChainStorage extends GenericChainStorage {
      * A mapping from an original code hash to the original code, untouched by instrumentation.
      *
      * @param {H256} arg
-     * @param {Callback<Bytes | undefined>=} callback
+     * @param {Callback<Bytes | undefined> =} callback
      **/
     pristineCode: GenericStorageQuery<(arg: H256) => Bytes | undefined>;
 
@@ -1514,7 +1514,7 @@ export interface ChainStorage extends GenericChainStorage {
      * A mapping between an original code hash and instrumented wasm code, ready for execution.
      *
      * @param {H256} arg
-     * @param {Callback<PalletContractsWasmPrefabWasmModule | undefined>=} callback
+     * @param {Callback<PalletContractsWasmPrefabWasmModule | undefined> =} callback
      **/
     codeStorage: GenericStorageQuery<(arg: H256) => PalletContractsWasmPrefabWasmModule | undefined>;
 
@@ -1522,7 +1522,7 @@ export interface ChainStorage extends GenericChainStorage {
      * A mapping between an original code hash and its owner information.
      *
      * @param {H256} arg
-     * @param {Callback<PalletContractsWasmOwnerInfo | undefined>=} callback
+     * @param {Callback<PalletContractsWasmOwnerInfo | undefined> =} callback
      **/
     ownerInfoOf: GenericStorageQuery<(arg: H256) => PalletContractsWasmOwnerInfo | undefined>;
 
@@ -1550,7 +1550,7 @@ export interface ChainStorage extends GenericChainStorage {
      * Do not use it to determine the number of contracts. It won't be decremented if
      * a contract is destroyed.
      *
-     * @param {Callback<bigint>=} callback
+     * @param {Callback<bigint> =} callback
      **/
     nonce: GenericStorageQuery<() => bigint>;
 
@@ -1560,7 +1560,7 @@ export interface ChainStorage extends GenericChainStorage {
      * TWOX-NOTE: SAFE since `AccountId` is a secure hash.
      *
      * @param {AccountId32Like} arg
-     * @param {Callback<PalletContractsStorageContractInfo | undefined>=} callback
+     * @param {Callback<PalletContractsStorageContractInfo | undefined> =} callback
      **/
     contractInfoOf: GenericStorageQuery<(arg: AccountId32Like) => PalletContractsStorageContractInfo | undefined>;
 
@@ -1571,7 +1571,7 @@ export interface ChainStorage extends GenericChainStorage {
      * stored in said trie. Therefore this operation is performed lazily in `on_idle`.
      *
      * @param {number} arg
-     * @param {Callback<Bytes | undefined>=} callback
+     * @param {Callback<Bytes | undefined> =} callback
      **/
     deletionQueue: GenericStorageQuery<(arg: number) => Bytes | undefined>;
 
@@ -1579,13 +1579,13 @@ export interface ChainStorage extends GenericChainStorage {
      * A pair of monotonic counters used to track the latest contract marked for deletion
      * and the latest deleted contract in queue.
      *
-     * @param {Callback<PalletContractsStorageDeletionQueueManager>=} callback
+     * @param {Callback<PalletContractsStorageDeletionQueueManager> =} callback
      **/
     deletionQueueCounter: GenericStorageQuery<() => PalletContractsStorageDeletionQueueManager>;
 
     /**
      *
-     * @param {Callback<Bytes | undefined>=} callback
+     * @param {Callback<Bytes | undefined> =} callback
      **/
     migrationInProgress: GenericStorageQuery<() => Bytes | undefined>;
 
@@ -1601,7 +1601,7 @@ export interface ChainStorage extends GenericChainStorage {
     /**
      * The `AccountId` of the sudo key.
      *
-     * @param {Callback<AccountId32 | undefined>=} callback
+     * @param {Callback<AccountId32 | undefined> =} callback
      **/
     key: GenericStorageQuery<() => AccountId32 | undefined>;
 
@@ -1617,7 +1617,7 @@ export interface ChainStorage extends GenericChainStorage {
     /**
      * Current active native currency price.
      *
-     * @param {Callback<FixedU64>=} callback
+     * @param {Callback<FixedU64> =} callback
      **/
     activePrice: GenericStorageQuery<() => FixedU64>;
 
@@ -1633,7 +1633,7 @@ export interface ChainStorage extends GenericChainStorage {
     /**
      * Used to store the current migration state.
      *
-     * @param {Callback<PalletDappStakingMigrationMigrationState>=} callback
+     * @param {Callback<PalletDappStakingMigrationMigrationState> =} callback
      **/
     migrationStateStorage: GenericStorageQuery<() => PalletDappStakingMigrationMigrationState>;
 
@@ -1649,14 +1649,14 @@ export interface ChainStorage extends GenericChainStorage {
     /**
      * Denotes whether pallet is disabled (in maintenance mode) or not
      *
-     * @param {Callback<boolean>=} callback
+     * @param {Callback<boolean> =} callback
      **/
     palletDisabled: GenericStorageQuery<() => boolean>;
 
     /**
      * Denotes whether pallet decommissioning has started or not.
      *
-     * @param {Callback<boolean>=} callback
+     * @param {Callback<boolean> =} callback
      **/
     decommissionStarted: GenericStorageQuery<() => boolean>;
 
@@ -1664,35 +1664,35 @@ export interface ChainStorage extends GenericChainStorage {
      * General information about the staker (non-smart-contract specific).
      *
      * @param {AccountId32Like} arg
-     * @param {Callback<PalletDappsStakingAccountLedger>=} callback
+     * @param {Callback<PalletDappsStakingAccountLedger> =} callback
      **/
     ledger: GenericStorageQuery<(arg: AccountId32Like) => PalletDappsStakingAccountLedger>;
 
     /**
      * The current era index.
      *
-     * @param {Callback<number>=} callback
+     * @param {Callback<number> =} callback
      **/
     currentEra: GenericStorageQuery<() => number>;
 
     /**
      * Accumulator for block rewards during an era. It is reset at every new era
      *
-     * @param {Callback<PalletDappsStakingRewardInfo>=} callback
+     * @param {Callback<PalletDappsStakingRewardInfo> =} callback
      **/
     blockRewardAccumulator: GenericStorageQuery<() => PalletDappsStakingRewardInfo>;
 
     /**
      * Mode of era forcing.
      *
-     * @param {Callback<PalletDappsStakingForcing>=} callback
+     * @param {Callback<PalletDappsStakingForcing> =} callback
      **/
     forceEra: GenericStorageQuery<() => PalletDappsStakingForcing>;
 
     /**
      * Stores the block number of when the next era starts
      *
-     * @param {Callback<number>=} callback
+     * @param {Callback<number> =} callback
      **/
     nextEraStartingBlock: GenericStorageQuery<() => number>;
 
@@ -1700,7 +1700,7 @@ export interface ChainStorage extends GenericChainStorage {
      * Simple map where developer account points to their smart contract
      *
      * @param {AccountId32Like} arg
-     * @param {Callback<AstarPrimitivesDappStakingSmartContract | undefined>=} callback
+     * @param {Callback<AstarPrimitivesDappStakingSmartContract | undefined> =} callback
      **/
     registeredDevelopers: GenericStorageQuery<
       (arg: AccountId32Like) => AstarPrimitivesDappStakingSmartContract | undefined
@@ -1710,7 +1710,7 @@ export interface ChainStorage extends GenericChainStorage {
      * Simple map where smart contract points to basic info about it (e.g. developer address, state)
      *
      * @param {AstarPrimitivesDappStakingSmartContract} arg
-     * @param {Callback<PalletDappsStakingDAppInfo | undefined>=} callback
+     * @param {Callback<PalletDappsStakingDAppInfo | undefined> =} callback
      **/
     registeredDapps: GenericStorageQuery<
       (arg: AstarPrimitivesDappStakingSmartContract) => PalletDappsStakingDAppInfo | undefined
@@ -1720,7 +1720,7 @@ export interface ChainStorage extends GenericChainStorage {
      * General information about an era like TVL, total staked value, rewards.
      *
      * @param {number} arg
-     * @param {Callback<PalletDappsStakingEraInfo | undefined>=} callback
+     * @param {Callback<PalletDappsStakingEraInfo | undefined> =} callback
      **/
     generalEraInfo: GenericStorageQuery<(arg: number) => PalletDappsStakingEraInfo | undefined>;
 
@@ -1728,7 +1728,7 @@ export interface ChainStorage extends GenericChainStorage {
      * Staking information about contract in a particular era.
      *
      * @param {[AstarPrimitivesDappStakingSmartContract, number]} arg
-     * @param {Callback<PalletDappsStakingContractStakeInfo | undefined>=} callback
+     * @param {Callback<PalletDappsStakingContractStakeInfo | undefined> =} callback
      **/
     contractEraStake: GenericStorageQuery<
       (arg: [AstarPrimitivesDappStakingSmartContract, number]) => PalletDappsStakingContractStakeInfo | undefined
@@ -1738,7 +1738,7 @@ export interface ChainStorage extends GenericChainStorage {
      * Info about stakers stakes on particular contracts.
      *
      * @param {[AccountId32Like, AstarPrimitivesDappStakingSmartContract]} arg
-     * @param {Callback<PalletDappsStakingStakerInfo>=} callback
+     * @param {Callback<PalletDappsStakingStakerInfo> =} callback
      **/
     generalStakerInfo: GenericStorageQuery<
       (arg: [AccountId32Like, AstarPrimitivesDappStakingSmartContract]) => PalletDappsStakingStakerInfo
@@ -1747,7 +1747,7 @@ export interface ChainStorage extends GenericChainStorage {
     /**
      * Stores the current pallet storage version.
      *
-     * @param {Callback<PalletDappsStakingVersion>=} callback
+     * @param {Callback<PalletDappsStakingVersion> =} callback
      **/
     storageVersion: GenericStorageQuery<() => PalletDappsStakingVersion>;
 
