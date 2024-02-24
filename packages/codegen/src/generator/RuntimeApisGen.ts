@@ -33,7 +33,7 @@ export class RuntimeApisGen extends RpcGen {
         }`;
       });
     } else {
-      const specs = this.#runtimeApisSpecsByModule();
+      const specs = this.#targetRuntimeApiSpecs();
 
       specs.forEach(({ methods, runtimeApiName, runtimeApiHash, version }) => {
         runtimeCallsOut += commentBlock(`@runtimeapi: ${runtimeApiName} - ${runtimeApiHash}`, `@version: ${version}`);
@@ -59,8 +59,8 @@ export class RuntimeApisGen extends RpcGen {
     return type.startsWith('Option<') || type.endsWith('| undefined');
   }
 
-  #isOptionalParam(params: { type: string }[], type: string, idx: number) {
-    return this.#isOptionalType(type) && params.slice(idx + 1).every(({ type }) => this.#isOptionalType(type));
+  #isOptionalParam(params: { type?: string }[], type: string, idx: number) {
+    return this.#isOptionalType(type) && params.slice(idx + 1).every(({ type }) => this.#isOptionalType(type!));
   }
 
   #generateMethodDefFromSpec(spec: RuntimeApiMethodSpec) {
@@ -77,11 +77,11 @@ export class RuntimeApisGen extends RpcGen {
     const paramsOut = params
       .map((param, idx) => ({
         ...param,
-        isOptional: this.#isOptionalParam(params, param.type, idx),
+        isOptional: this.#isOptionalParam(params, param.type!, idx),
       }))
       .map(
         ({ name, type, isOptional }) =>
-          `${stringCamelCase(name)}${isOptional ? '?' : ''}: ${this.getGeneratedTypeName(type)}`,
+          `${stringCamelCase(name)}${isOptional ? '?' : ''}: ${this.getGeneratedTypeName(type!)}`,
       )
       .join(', ');
 
@@ -122,14 +122,12 @@ export class RuntimeApisGen extends RpcGen {
       .map(({ name, type, isOptional }) => `${stringCamelCase(name)}${isOptional ? '?' : ''}: ${type}`)
       .join(', ');
 
-    return `${commentBlock(
-      docs,
-      '\n',
-      defaultDocs,
-    )}${stringCamelCase(methodName)}: GenericRuntimeApiMethod<(${paramsOut}) => Promise<${outputType}>>`;
+    return `${commentBlock(docs, '\n', defaultDocs)}${stringCamelCase(
+      methodName,
+    )}: GenericRuntimeApiMethod<(${paramsOut}) => Promise<${outputType}>>`;
   }
 
-  #runtimeApisSpecsByModule(): RuntimeApiSpec[] {
+  #targetRuntimeApiSpecs(): RuntimeApiSpec[] {
     const specs = this.runtimeApis.map(([runtimeApiHash, version]) => {
       const runtimeApiSpec = findRuntimeApiSpec(runtimeApiHash, version);
 
