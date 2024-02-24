@@ -60,7 +60,7 @@ export class ExtrinsicV4<Address = any, Call = any, Signature = any, Extra = any
   }
 
   get $Codec() {
-    return this.registry.findCodec<ExtrinsicV4<Address, Call, Signature, Extra>>('Extrinsic');
+    return this.registry.findCodec('Extrinsic');
   }
 
   toU8a(): Uint8Array {
