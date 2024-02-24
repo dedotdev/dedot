@@ -177,6 +177,10 @@ export class TxExecutor<ChainApi extends GenericSubstrateApi = SubstrateApi> ext
         return u8aToHex(this.toU8a());
       }
 
+      length(): number {
+        return this.toU8a().length;
+      }
+
       get hash(): Hash {
         return blake2AsHex(this.toU8a());
       }

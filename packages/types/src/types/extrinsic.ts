@@ -67,4 +67,6 @@ export interface ISubmittableExtrinsic<R extends ISubmittableResult = ISubmittab
   toHex(): HexString;
 
   toU8a(): Uint8Array;
+
+  length(): number;
 }
