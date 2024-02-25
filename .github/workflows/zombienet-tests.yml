@@ -48,4 +48,4 @@ jobs:
       - name: Run test
         run: |
           export PATH=$(pwd):$PATH
-          ./zombienet-linux-x64 -p native test ./zombienet_tests/src/test-config.zndsl
+          ./zombienet-linux-x64 -p native test ./zombienet_tests/src/0001-valid-runtime-api.zndsl

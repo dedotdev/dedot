@@ -1,8 +1,8 @@
 Description: Small Network test
-Network: ./networks.toml
+Network: ./networks-config.toml
 Creds: config
 
 alice: is up
 bob: is up
 alice: reports node_roles is 4
-alice: ts-script ./scripts.ts within 200 seconds
+alice: ts-script ./0001-valid-runtime-api.ts within 200 seconds
