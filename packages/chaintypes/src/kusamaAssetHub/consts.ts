@@ -11,6 +11,9 @@ import type {
 } from './types';
 
 export interface ChainConsts extends GenericChainConsts {
+  /**
+   * Pallet `System`'s constants
+   **/
   system: {
     /**
      * Block & extrinsics weights: base values and limits.
@@ -51,12 +54,18 @@ export interface ChainConsts extends GenericChainConsts {
      **/
     [name: string]: any;
   };
+  /**
+   * Pallet `ParachainSystem`'s constants
+   **/
   parachainSystem: {
     /**
      * Generic pallet constant
      **/
     [name: string]: any;
   };
+  /**
+   * Pallet `Timestamp`'s constants
+   **/
   timestamp: {
     /**
      * The minimum period between blocks.
@@ -73,12 +82,18 @@ export interface ChainConsts extends GenericChainConsts {
      **/
     [name: string]: any;
   };
+  /**
+   * Pallet `ParachainInfo`'s constants
+   **/
   parachainInfo: {
     /**
      * Generic pallet constant
      **/
     [name: string]: any;
   };
+  /**
+   * Pallet `Balances`'s constants
+   **/
   balances: {
     /**
      * The minimum amount required to keep an account open. MUST BE GREATER THAN ZERO!
@@ -118,6 +133,9 @@ export interface ChainConsts extends GenericChainConsts {
      **/
     [name: string]: any;
   };
+  /**
+   * Pallet `TransactionPayment`'s constants
+   **/
   transactionPayment: {
     /**
      * A fee mulitplier for `Operational` extrinsics to compute "virtual tip" to boost their
@@ -149,72 +167,108 @@ export interface ChainConsts extends GenericChainConsts {
      **/
     [name: string]: any;
   };
+  /**
+   * Pallet `AssetTxPayment`'s constants
+   **/
   assetTxPayment: {
     /**
      * Generic pallet constant
      **/
     [name: string]: any;
   };
+  /**
+   * Pallet `Authorship`'s constants
+   **/
   authorship: {
     /**
      * Generic pallet constant
      **/
     [name: string]: any;
   };
+  /**
+   * Pallet `CollatorSelection`'s constants
+   **/
   collatorSelection: {
     /**
      * Generic pallet constant
      **/
     [name: string]: any;
   };
+  /**
+   * Pallet `Session`'s constants
+   **/
   session: {
     /**
      * Generic pallet constant
      **/
     [name: string]: any;
   };
+  /**
+   * Pallet `Aura`'s constants
+   **/
   aura: {
     /**
      * Generic pallet constant
      **/
     [name: string]: any;
   };
+  /**
+   * Pallet `AuraExt`'s constants
+   **/
   auraExt: {
     /**
      * Generic pallet constant
      **/
     [name: string]: any;
   };
+  /**
+   * Pallet `XcmpQueue`'s constants
+   **/
   xcmpQueue: {
     /**
      * Generic pallet constant
      **/
     [name: string]: any;
   };
+  /**
+   * Pallet `PolkadotXcm`'s constants
+   **/
   polkadotXcm: {
     /**
      * Generic pallet constant
      **/
     [name: string]: any;
   };
+  /**
+   * Pallet `CumulusXcm`'s constants
+   **/
   cumulusXcm: {
     /**
      * Generic pallet constant
      **/
     [name: string]: any;
   };
+  /**
+   * Pallet `DmpQueue`'s constants
+   **/
   dmpQueue: {
     /**
      * Generic pallet constant
      **/
     [name: string]: any;
   };
+  /**
+   * Pallet `ToPolkadotXcmRouter`'s constants
+   **/
   toPolkadotXcmRouter: {
     /**
      * Generic pallet constant
      **/
     [name: string]: any;
   };
+  /**
+   * Pallet `Utility`'s constants
+   **/
   utility: {
     /**
      * The limit on the number of batched calls.
@@ -226,6 +280,9 @@ export interface ChainConsts extends GenericChainConsts {
      **/
     [name: string]: any;
   };
+  /**
+   * Pallet `Multisig`'s constants
+   **/
   multisig: {
     /**
      * The base amount of currency needed to reserve for creating a multisig execution or to
@@ -254,6 +311,9 @@ export interface ChainConsts extends GenericChainConsts {
      **/
     [name: string]: any;
   };
+  /**
+   * Pallet `Proxy`'s constants
+   **/
   proxy: {
     /**
      * The base amount of currency needed to reserve for creating a proxy.
@@ -303,6 +363,9 @@ export interface ChainConsts extends GenericChainConsts {
      **/
     [name: string]: any;
   };
+  /**
+   * Pallet `Assets`'s constants
+   **/
   assets: {
     /**
      * Max number of items to destroy per `destroy_accounts` and `destroy_approvals` call.
@@ -348,6 +411,9 @@ export interface ChainConsts extends GenericChainConsts {
      **/
     [name: string]: any;
   };
+  /**
+   * Pallet `Uniques`'s constants
+   **/
   uniques: {
     /**
      * The basic amount of funds that must be reserved for collection.
@@ -395,6 +461,9 @@ export interface ChainConsts extends GenericChainConsts {
      **/
     [name: string]: any;
   };
+  /**
+   * Pallet `Nfts`'s constants
+   **/
   nfts: {
     /**
      * The basic amount of funds that must be reserved for collection.
@@ -472,6 +541,9 @@ export interface ChainConsts extends GenericChainConsts {
      **/
     [name: string]: any;
   };
+  /**
+   * Pallet `ForeignAssets`'s constants
+   **/
   foreignAssets: {
     /**
      * Max number of items to destroy per `destroy_accounts` and `destroy_approvals` call.
@@ -517,6 +589,9 @@ export interface ChainConsts extends GenericChainConsts {
      **/
     [name: string]: any;
   };
+  /**
+   * Pallet `NftFractionalization`'s constants
+   **/
   nftFractionalization: {
     /**
      * The deposit paid by the user locking an NFT. The deposit is returned to the original NFT
@@ -549,6 +624,9 @@ export interface ChainConsts extends GenericChainConsts {
      **/
     [name: string]: any;
   };
+  /**
+   * Pallet `PoolAssets`'s constants
+   **/
   poolAssets: {
     /**
      * Max number of items to destroy per `destroy_accounts` and `destroy_approvals` call.
@@ -594,6 +672,9 @@ export interface ChainConsts extends GenericChainConsts {
      **/
     [name: string]: any;
   };
+  /**
+   * Pallet `AssetConversion`'s constants
+   **/
   assetConversion: {
     /**
      * A % the liquidity providers will take of every swap. Represents 10ths of a percent.

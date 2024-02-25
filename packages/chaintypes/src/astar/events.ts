@@ -39,6 +39,9 @@ import type {
 } from './types';
 
 export interface ChainEvents extends GenericChainEvents {
+  /**
+   * Pallet `System`'s events
+   **/
   system: {
     /**
      * An extrinsic completed successfully.
@@ -79,6 +82,9 @@ export interface ChainEvents extends GenericChainEvents {
      **/
     [prop: string]: GenericPalletEvent;
   };
+  /**
+   * Pallet `Utility`'s events
+   **/
   utility: {
     /**
      * Batch of dispatches did not complete fully. Index of first failing dispatch given, as
@@ -116,6 +122,9 @@ export interface ChainEvents extends GenericChainEvents {
      **/
     [prop: string]: GenericPalletEvent;
   };
+  /**
+   * Pallet `Identity`'s events
+   **/
   identity: {
     /**
      * A name was set or reset (which will remove all judgements).
@@ -193,6 +202,9 @@ export interface ChainEvents extends GenericChainEvents {
      **/
     [prop: string]: GenericPalletEvent;
   };
+  /**
+   * Pallet `Multisig`'s events
+   **/
   multisig: {
     /**
      * A new multisig operation has begun.
@@ -241,6 +253,9 @@ export interface ChainEvents extends GenericChainEvents {
      **/
     [prop: string]: GenericPalletEvent;
   };
+  /**
+   * Pallet `Proxy`'s events
+   **/
   proxy: {
     /**
      * A proxy was executed correctly, with the given.
@@ -285,6 +300,9 @@ export interface ChainEvents extends GenericChainEvents {
      **/
     [prop: string]: GenericPalletEvent;
   };
+  /**
+   * Pallet `ParachainSystem`'s events
+   **/
   parachainSystem: {
     /**
      * The validation function has been scheduled to apply.
@@ -338,6 +356,9 @@ export interface ChainEvents extends GenericChainEvents {
      **/
     [prop: string]: GenericPalletEvent;
   };
+  /**
+   * Pallet `TransactionPayment`'s events
+   **/
   transactionPayment: {
     /**
      * A transaction fee `actual_fee`, of which `tip` was added to the minimum inclusion fee,
@@ -354,6 +375,9 @@ export interface ChainEvents extends GenericChainEvents {
      **/
     [prop: string]: GenericPalletEvent;
   };
+  /**
+   * Pallet `Balances`'s events
+   **/
   balances: {
     /**
      * An account was created with some free balance.
@@ -471,6 +495,9 @@ export interface ChainEvents extends GenericChainEvents {
      **/
     [prop: string]: GenericPalletEvent;
   };
+  /**
+   * Pallet `Vesting`'s events
+   **/
   vesting: {
     /**
      * The amount vested has been updated. This could indicate a change in funds available.
@@ -488,6 +515,9 @@ export interface ChainEvents extends GenericChainEvents {
      **/
     [prop: string]: GenericPalletEvent;
   };
+  /**
+   * Pallet `Inflation`'s events
+   **/
   inflation: {
     /**
      * Inflation parameters have been force changed. This will have effect on the next inflation recalculation.
@@ -526,6 +556,9 @@ export interface ChainEvents extends GenericChainEvents {
      **/
     [prop: string]: GenericPalletEvent;
   };
+  /**
+   * Pallet `DappStaking`'s events
+   **/
   dappStaking: {
     /**
      * Maintenance mode has been either enabled or disabled.
@@ -677,6 +710,9 @@ export interface ChainEvents extends GenericChainEvents {
      **/
     [prop: string]: GenericPalletEvent;
   };
+  /**
+   * Pallet `Assets`'s events
+   **/
   assets: {
     /**
      * Some asset class was created.
@@ -840,6 +876,9 @@ export interface ChainEvents extends GenericChainEvents {
      **/
     [prop: string]: GenericPalletEvent;
   };
+  /**
+   * Pallet `CollatorSelection`'s events
+   **/
   collatorSelection: {
     NewInvulnerables: GenericPalletEvent<'CollatorSelection', 'NewInvulnerables', Array<AccountId32>>;
     NewDesiredCandidates: GenericPalletEvent<'CollatorSelection', 'NewDesiredCandidates', number>;
@@ -853,6 +892,9 @@ export interface ChainEvents extends GenericChainEvents {
      **/
     [prop: string]: GenericPalletEvent;
   };
+  /**
+   * Pallet `Session`'s events
+   **/
   session: {
     /**
      * New session has happened. Note that the argument is the session index, not the
@@ -865,6 +907,9 @@ export interface ChainEvents extends GenericChainEvents {
      **/
     [prop: string]: GenericPalletEvent;
   };
+  /**
+   * Pallet `XcmpQueue`'s events
+   **/
   xcmpQueue: {
     /**
      * Some XCM was executed ok.
@@ -922,6 +967,9 @@ export interface ChainEvents extends GenericChainEvents {
      **/
     [prop: string]: GenericPalletEvent;
   };
+  /**
+   * Pallet `PolkadotXcm`'s events
+   **/
   polkadotXcm: {
     /**
      * Execution of an XCM message was attempted.
@@ -1193,6 +1241,9 @@ export interface ChainEvents extends GenericChainEvents {
      **/
     [prop: string]: GenericPalletEvent;
   };
+  /**
+   * Pallet `CumulusXcm`'s events
+   **/
   cumulusXcm: {
     /**
      * Downward message is invalid XCM.
@@ -1217,6 +1268,9 @@ export interface ChainEvents extends GenericChainEvents {
      **/
     [prop: string]: GenericPalletEvent;
   };
+  /**
+   * Pallet `DmpQueue`'s events
+   **/
   dmpQueue: {
     /**
      * Downward message is invalid XCM.
@@ -1274,6 +1328,9 @@ export interface ChainEvents extends GenericChainEvents {
      **/
     [prop: string]: GenericPalletEvent;
   };
+  /**
+   * Pallet `XcAssetConfig`'s events
+   **/
   xcAssetConfig: {
     /**
      * Registed mapping between asset type and asset Id.
@@ -1325,6 +1382,9 @@ export interface ChainEvents extends GenericChainEvents {
      **/
     [prop: string]: GenericPalletEvent;
   };
+  /**
+   * Pallet `XTokens`'s events
+   **/
   xTokens: {
     /**
      * Transferred `MultiAsset` with fee.
@@ -1345,6 +1405,9 @@ export interface ChainEvents extends GenericChainEvents {
      **/
     [prop: string]: GenericPalletEvent;
   };
+  /**
+   * Pallet `EVM`'s events
+   **/
   evm: {
     /**
      * Ethereum events from contracts.
@@ -1376,6 +1439,9 @@ export interface ChainEvents extends GenericChainEvents {
      **/
     [prop: string]: GenericPalletEvent;
   };
+  /**
+   * Pallet `Ethereum`'s events
+   **/
   ethereum: {
     /**
      * An ethereum transaction was successfully executed.
@@ -1391,6 +1457,9 @@ export interface ChainEvents extends GenericChainEvents {
      **/
     [prop: string]: GenericPalletEvent;
   };
+  /**
+   * Pallet `DynamicEvmBaseFee`'s events
+   **/
   dynamicEvmBaseFee: {
     /**
      * New `base fee per gas` value has been force-set.
@@ -1402,6 +1471,9 @@ export interface ChainEvents extends GenericChainEvents {
      **/
     [prop: string]: GenericPalletEvent;
   };
+  /**
+   * Pallet `Contracts`'s events
+   **/
   contracts: {
     /**
      * Contract deployed by address at the specified address.
@@ -1542,6 +1614,9 @@ export interface ChainEvents extends GenericChainEvents {
      **/
     [prop: string]: GenericPalletEvent;
   };
+  /**
+   * Pallet `Sudo`'s events
+   **/
   sudo: {
     /**
      * A sudo just took place. \[result\]
@@ -1563,6 +1638,9 @@ export interface ChainEvents extends GenericChainEvents {
      **/
     [prop: string]: GenericPalletEvent;
   };
+  /**
+   * Pallet `StaticPriceProvider`'s events
+   **/
   staticPriceProvider: {
     /**
      * New static native currency price has been set.
@@ -1574,6 +1652,9 @@ export interface ChainEvents extends GenericChainEvents {
      **/
     [prop: string]: GenericPalletEvent;
   };
+  /**
+   * Pallet `DappStakingMigration`'s events
+   **/
   dappStakingMigration: {
     /**
      * Number of entries migrated from v2 over to v3
@@ -1590,6 +1671,9 @@ export interface ChainEvents extends GenericChainEvents {
      **/
     [prop: string]: GenericPalletEvent;
   };
+  /**
+   * Pallet `DappsStaking`'s events
+   **/
   dappsStaking: {
     /**
      * Account has bonded and staked funds on a smart contract.

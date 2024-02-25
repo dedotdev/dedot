@@ -57,13 +57,16 @@ type ChainSubmittableExtrinsic<T extends IRuntimeTxCall = AstarRuntimeRuntimeCal
   ISubmittableExtrinsic<ISubmittableResult<FrameSystemEventRecord>>;
 
 export interface ChainTx extends GenericChainTx {
+  /**
+   * Pallet `System`'s transaction calls
+   **/
   system: {
     /**
      * Make some on-chain remark.
      *
      * - `O(1)`
      *
-     * @param remark
+     * @param {BytesLike} remark
      **/
     remark: GenericTxCall<
       (remark: BytesLike) => ChainSubmittableExtrinsic<{
@@ -78,7 +81,7 @@ export interface ChainTx extends GenericChainTx {
     /**
      * Set the number of pages in the WebAssembly environment's heap.
      *
-     * @param pages
+     * @param {bigint} pages
      **/
     setHeapPages: GenericTxCall<
       (pages: bigint) => ChainSubmittableExtrinsic<{
@@ -93,7 +96,7 @@ export interface ChainTx extends GenericChainTx {
     /**
      * Set the new runtime code.
      *
-     * @param code
+     * @param {BytesLike} code
      **/
     setCode: GenericTxCall<
       (code: BytesLike) => ChainSubmittableExtrinsic<{
@@ -108,7 +111,7 @@ export interface ChainTx extends GenericChainTx {
     /**
      * Set the new runtime code without doing any checks of the given `code`.
      *
-     * @param code
+     * @param {BytesLike} code
      **/
     setCodeWithoutChecks: GenericTxCall<
       (code: BytesLike) => ChainSubmittableExtrinsic<{
@@ -123,7 +126,7 @@ export interface ChainTx extends GenericChainTx {
     /**
      * Set some items of storage.
      *
-     * @param items
+     * @param {Array<[BytesLike, BytesLike]>} items
      **/
     setStorage: GenericTxCall<
       (items: Array<[BytesLike, BytesLike]>) => ChainSubmittableExtrinsic<{
@@ -138,7 +141,7 @@ export interface ChainTx extends GenericChainTx {
     /**
      * Kill some items from storage.
      *
-     * @param keys
+     * @param {Array<BytesLike>} keys
      **/
     killStorage: GenericTxCall<
       (keys: Array<BytesLike>) => ChainSubmittableExtrinsic<{
@@ -156,8 +159,8 @@ export interface ChainTx extends GenericChainTx {
      * **NOTE:** We rely on the Root origin to provide us the number of subkeys under
      * the prefix we are removing to accurately calculate the weight of this function.
      *
-     * @param prefix
-     * @param subkeys
+     * @param {BytesLike} prefix
+     * @param {number} subkeys
      **/
     killPrefix: GenericTxCall<
       (
@@ -175,7 +178,7 @@ export interface ChainTx extends GenericChainTx {
     /**
      * Make some on-chain remark and emit event.
      *
-     * @param remark
+     * @param {BytesLike} remark
      **/
     remarkWithEvent: GenericTxCall<
       (remark: BytesLike) => ChainSubmittableExtrinsic<{
@@ -192,6 +195,9 @@ export interface ChainTx extends GenericChainTx {
      **/
     [callName: string]: GenericTxCall<(...args: any[]) => ChainSubmittableExtrinsic>;
   };
+  /**
+   * Pallet `Utility`'s transaction calls
+   **/
   utility: {
     /**
      * Send a batch of dispatch calls.
@@ -213,7 +219,7 @@ export interface ChainTx extends GenericChainTx {
      * and the error of the failed call. If all were successful, then the `BatchCompleted`
      * event is deposited.
      *
-     * @param calls
+     * @param {Array<AstarRuntimeRuntimeCallLike>} calls
      **/
     batch: GenericTxCall<
       (calls: Array<AstarRuntimeRuntimeCallLike>) => ChainSubmittableExtrinsic<{
@@ -240,8 +246,8 @@ export interface ChainTx extends GenericChainTx {
      *
      * The dispatch origin for this call must be _Signed_.
      *
-     * @param index
-     * @param call
+     * @param {number} index
+     * @param {AstarRuntimeRuntimeCallLike} call
      **/
     asDerivative: GenericTxCall<
       (
@@ -271,7 +277,7 @@ export interface ChainTx extends GenericChainTx {
      * ## Complexity
      * - O(C) where C is the number of calls to be batched.
      *
-     * @param calls
+     * @param {Array<AstarRuntimeRuntimeCallLike>} calls
      **/
     batchAll: GenericTxCall<
       (calls: Array<AstarRuntimeRuntimeCallLike>) => ChainSubmittableExtrinsic<{
@@ -291,8 +297,8 @@ export interface ChainTx extends GenericChainTx {
      * ## Complexity
      * - O(1).
      *
-     * @param asOrigin
-     * @param call
+     * @param {AstarRuntimeOriginCaller} asOrigin
+     * @param {AstarRuntimeRuntimeCallLike} call
      **/
     dispatchAs: GenericTxCall<
       (
@@ -322,7 +328,7 @@ export interface ChainTx extends GenericChainTx {
      * ## Complexity
      * - O(C) where C is the number of calls to be batched.
      *
-     * @param calls
+     * @param {Array<AstarRuntimeRuntimeCallLike>} calls
      **/
     forceBatch: GenericTxCall<
       (calls: Array<AstarRuntimeRuntimeCallLike>) => ChainSubmittableExtrinsic<{
@@ -342,8 +348,8 @@ export interface ChainTx extends GenericChainTx {
      *
      * The dispatch origin for this call must be _Root_.
      *
-     * @param call
-     * @param weight
+     * @param {AstarRuntimeRuntimeCallLike} call
+     * @param {SpWeightsWeightV2Weight} weight
      **/
     withWeight: GenericTxCall<
       (
@@ -363,6 +369,9 @@ export interface ChainTx extends GenericChainTx {
      **/
     [callName: string]: GenericTxCall<(...args: any[]) => ChainSubmittableExtrinsic>;
   };
+  /**
+   * Pallet `Identity`'s transaction calls
+   **/
   identity: {
     /**
      * Add a registrar to the system.
@@ -376,7 +385,7 @@ export interface ChainTx extends GenericChainTx {
      * ## Complexity
      * - `O(R)` where `R` registrar-count (governance-bounded and code-bounded).
      *
-     * @param account
+     * @param {MultiAddressLike} account
      **/
     addRegistrar: GenericTxCall<
       (account: MultiAddressLike) => ChainSubmittableExtrinsic<{
@@ -405,7 +414,7 @@ export interface ChainTx extends GenericChainTx {
      * - where `X` additional-field-count (deposit-bounded and code-bounded)
      * - where `R` judgements-count (registrar-count-bounded)
      *
-     * @param info
+     * @param {PalletIdentityIdentityInfo} info
      **/
     setIdentity: GenericTxCall<
       (info: PalletIdentityIdentityInfo) => ChainSubmittableExtrinsic<{
@@ -433,7 +442,7 @@ export interface ChainTx extends GenericChainTx {
      * - where `P` old-subs-count (hard- and deposit-bounded).
      * - where `S` subs-count (hard- and deposit-bounded).
      *
-     * @param subs
+     * @param {Array<[AccountId32Like, Data]>} subs
      **/
     setSubs: GenericTxCall<
       (subs: Array<[AccountId32Like, Data]>) => ChainSubmittableExtrinsic<{
@@ -494,8 +503,8 @@ export interface ChainTx extends GenericChainTx {
      * - where `R` registrar-count (governance-bounded).
      * - where `X` additional-field-count (deposit-bounded and code-bounded).
      *
-     * @param regIndex
-     * @param maxFee
+     * @param {number} regIndex
+     * @param {bigint} maxFee
      **/
     requestJudgement: GenericTxCall<
       (
@@ -527,7 +536,7 @@ export interface ChainTx extends GenericChainTx {
      * - where `R` registrar-count (governance-bounded).
      * - where `X` additional-field-count (deposit-bounded and code-bounded).
      *
-     * @param regIndex
+     * @param {number} regIndex
      **/
     cancelRequest: GenericTxCall<
       (regIndex: number) => ChainSubmittableExtrinsic<{
@@ -552,8 +561,8 @@ export interface ChainTx extends GenericChainTx {
      * - `O(R)`.
      * - where `R` registrar-count (governance-bounded).
      *
-     * @param index
-     * @param fee
+     * @param {number} index
+     * @param {bigint} fee
      **/
     setFee: GenericTxCall<
       (
@@ -581,8 +590,8 @@ export interface ChainTx extends GenericChainTx {
      * - `O(R)`.
      * - where `R` registrar-count (governance-bounded).
      *
-     * @param index
-     * @param new_
+     * @param {number} index
+     * @param {MultiAddressLike} new_
      **/
     setAccountId: GenericTxCall<
       (
@@ -610,8 +619,8 @@ export interface ChainTx extends GenericChainTx {
      * - `O(R)`.
      * - where `R` registrar-count (governance-bounded).
      *
-     * @param index
-     * @param fields
+     * @param {number} index
+     * @param {PalletIdentityBitFlags} fields
      **/
     setFields: GenericTxCall<
       (
@@ -645,10 +654,10 @@ export interface ChainTx extends GenericChainTx {
      * - where `R` registrar-count (governance-bounded).
      * - where `X` additional-field-count (deposit-bounded and code-bounded).
      *
-     * @param regIndex
-     * @param target
-     * @param judgement
-     * @param identity
+     * @param {number} regIndex
+     * @param {MultiAddressLike} target
+     * @param {PalletIdentityJudgement} judgement
+     * @param {H256} identity
      **/
     provideJudgement: GenericTxCall<
       (
@@ -685,7 +694,7 @@ export interface ChainTx extends GenericChainTx {
      * - where `S` subs-count (hard- and deposit-bounded).
      * - where `X` additional-field-count (deposit-bounded and code-bounded).
      *
-     * @param target
+     * @param {MultiAddressLike} target
      **/
     killIdentity: GenericTxCall<
       (target: MultiAddressLike) => ChainSubmittableExtrinsic<{
@@ -706,8 +715,8 @@ export interface ChainTx extends GenericChainTx {
      * The dispatch origin for this call must be _Signed_ and the sender must have a registered
      * sub identity of `sub`.
      *
-     * @param sub
-     * @param data
+     * @param {MultiAddressLike} sub
+     * @param {Data} data
      **/
     addSub: GenericTxCall<
       (
@@ -728,8 +737,8 @@ export interface ChainTx extends GenericChainTx {
      * The dispatch origin for this call must be _Signed_ and the sender must have a registered
      * sub identity of `sub`.
      *
-     * @param sub
-     * @param data
+     * @param {MultiAddressLike} sub
+     * @param {Data} data
      **/
     renameSub: GenericTxCall<
       (
@@ -753,7 +762,7 @@ export interface ChainTx extends GenericChainTx {
      * The dispatch origin for this call must be _Signed_ and the sender must have a registered
      * sub identity of `sub`.
      *
-     * @param sub
+     * @param {MultiAddressLike} sub
      **/
     removeSub: GenericTxCall<
       (sub: MultiAddressLike) => ChainSubmittableExtrinsic<{
@@ -792,6 +801,9 @@ export interface ChainTx extends GenericChainTx {
      **/
     [callName: string]: GenericTxCall<(...args: any[]) => ChainSubmittableExtrinsic>;
   };
+  /**
+   * Pallet `Timestamp`'s transaction calls
+   **/
   timestamp: {
     /**
      * Set the current time.
@@ -810,7 +822,7 @@ export interface ChainTx extends GenericChainTx {
      * `on_finalize`)
      * - 1 event handler `on_timestamp_set`. Must be `O(1)`.
      *
-     * @param now
+     * @param {bigint} now
      **/
     set: GenericTxCall<
       (now: bigint) => ChainSubmittableExtrinsic<{
@@ -827,6 +839,9 @@ export interface ChainTx extends GenericChainTx {
      **/
     [callName: string]: GenericTxCall<(...args: any[]) => ChainSubmittableExtrinsic>;
   };
+  /**
+   * Pallet `Multisig`'s transaction calls
+   **/
   multisig: {
     /**
      * Immediately dispatch a multi-signature call using a single approval from the caller.
@@ -842,8 +857,8 @@ export interface ChainTx extends GenericChainTx {
      * ## Complexity
      * O(Z + C) where Z is the length of the call and C its execution weight.
      *
-     * @param otherSignatories
-     * @param call
+     * @param {Array<AccountId32Like>} otherSignatories
+     * @param {AstarRuntimeRuntimeCallLike} call
      **/
     asMultiThreshold1: GenericTxCall<
       (
@@ -899,11 +914,11 @@ export interface ChainTx extends GenericChainTx {
      * - Storage: inserts one item, value size bounded by `MaxSignatories`, with a deposit
      * taken for its lifetime of `DepositBase + threshold * DepositFactor`.
      *
-     * @param threshold
-     * @param otherSignatories
-     * @param maybeTimepoint
-     * @param call
-     * @param maxWeight
+     * @param {number} threshold
+     * @param {Array<AccountId32Like>} otherSignatories
+     * @param {PalletMultisigTimepoint | undefined} maybeTimepoint
+     * @param {AstarRuntimeRuntimeCallLike} call
+     * @param {SpWeightsWeightV2Weight} maxWeight
      **/
     asMulti: GenericTxCall<
       (
@@ -959,11 +974,11 @@ export interface ChainTx extends GenericChainTx {
      * - Storage: inserts one item, value size bounded by `MaxSignatories`, with a deposit
      * taken for its lifetime of `DepositBase + threshold * DepositFactor`.
      *
-     * @param threshold
-     * @param otherSignatories
-     * @param maybeTimepoint
-     * @param callHash
-     * @param maxWeight
+     * @param {number} threshold
+     * @param {Array<AccountId32Like>} otherSignatories
+     * @param {PalletMultisigTimepoint | undefined} maybeTimepoint
+     * @param {FixedBytes<32>} callHash
+     * @param {SpWeightsWeightV2Weight} maxWeight
      **/
     approveAsMulti: GenericTxCall<
       (
@@ -1010,10 +1025,10 @@ export interface ChainTx extends GenericChainTx {
      * - I/O: 1 read `O(S)`, one remove.
      * - Storage: removes one item.
      *
-     * @param threshold
-     * @param otherSignatories
-     * @param timepoint
-     * @param callHash
+     * @param {number} threshold
+     * @param {Array<AccountId32Like>} otherSignatories
+     * @param {PalletMultisigTimepoint} timepoint
+     * @param {FixedBytes<32>} callHash
      **/
     cancelAsMulti: GenericTxCall<
       (
@@ -1040,6 +1055,9 @@ export interface ChainTx extends GenericChainTx {
      **/
     [callName: string]: GenericTxCall<(...args: any[]) => ChainSubmittableExtrinsic>;
   };
+  /**
+   * Pallet `Proxy`'s transaction calls
+   **/
   proxy: {
     /**
      * Dispatch the given `call` from an account that the sender is authorised for through
@@ -1052,9 +1070,9 @@ export interface ChainTx extends GenericChainTx {
      * - `force_proxy_type`: Specify the exact proxy type to be used and checked for this call.
      * - `call`: The call to be made by the `real` account.
      *
-     * @param real
-     * @param forceProxyType
-     * @param call
+     * @param {MultiAddressLike} real
+     * @param {AstarRuntimeProxyType | undefined} forceProxyType
+     * @param {AstarRuntimeRuntimeCallLike} call
      **/
     proxy: GenericTxCall<
       (
@@ -1085,9 +1103,9 @@ export interface ChainTx extends GenericChainTx {
      * - `delay`: The announcement period required of the initial proxy. Will generally be
      * zero.
      *
-     * @param delegate
-     * @param proxyType
-     * @param delay
+     * @param {MultiAddressLike} delegate
+     * @param {AstarRuntimeProxyType} proxyType
+     * @param {number} delay
      **/
     addProxy: GenericTxCall<
       (
@@ -1112,9 +1130,9 @@ export interface ChainTx extends GenericChainTx {
      * - `proxy`: The account that the `caller` would like to remove as a proxy.
      * - `proxy_type`: The permissions currently enabled for the removed proxy account.
      *
-     * @param delegate
-     * @param proxyType
-     * @param delay
+     * @param {MultiAddressLike} delegate
+     * @param {AstarRuntimeProxyType} proxyType
+     * @param {number} delay
      **/
     removeProxy: GenericTxCall<
       (
@@ -1168,9 +1186,9 @@ export interface ChainTx extends GenericChainTx {
      *
      * Fails if there are insufficient funds to pay for deposit.
      *
-     * @param proxyType
-     * @param delay
-     * @param index
+     * @param {AstarRuntimeProxyType} proxyType
+     * @param {number} delay
+     * @param {number} index
      **/
     createPure: GenericTxCall<
       (
@@ -1204,11 +1222,11 @@ export interface ChainTx extends GenericChainTx {
      * Fails with `NoPermission` in case the caller is not a previously created pure
      * account whose `pure` call has corresponding parameters.
      *
-     * @param spawner
-     * @param proxyType
-     * @param index
-     * @param height
-     * @param extIndex
+     * @param {MultiAddressLike} spawner
+     * @param {AstarRuntimeProxyType} proxyType
+     * @param {number} index
+     * @param {number} height
+     * @param {number} extIndex
      **/
     killPure: GenericTxCall<
       (
@@ -1249,8 +1267,8 @@ export interface ChainTx extends GenericChainTx {
      * - `real`: The account that the proxy will make a call on behalf of.
      * - `call_hash`: The hash of the call to be made by the `real` account.
      *
-     * @param real
-     * @param callHash
+     * @param {MultiAddressLike} real
+     * @param {H256} callHash
      **/
     announce: GenericTxCall<
       (
@@ -1277,8 +1295,8 @@ export interface ChainTx extends GenericChainTx {
      * - `real`: The account that the proxy will make a call on behalf of.
      * - `call_hash`: The hash of the call to be made by the `real` account.
      *
-     * @param real
-     * @param callHash
+     * @param {MultiAddressLike} real
+     * @param {H256} callHash
      **/
     removeAnnouncement: GenericTxCall<
       (
@@ -1305,8 +1323,8 @@ export interface ChainTx extends GenericChainTx {
      * - `delegate`: The account that previously announced the call.
      * - `call_hash`: The hash of the call to be made.
      *
-     * @param delegate
-     * @param callHash
+     * @param {MultiAddressLike} delegate
+     * @param {H256} callHash
      **/
     rejectAnnouncement: GenericTxCall<
       (
@@ -1334,10 +1352,10 @@ export interface ChainTx extends GenericChainTx {
      * - `force_proxy_type`: Specify the exact proxy type to be used and checked for this call.
      * - `call`: The call to be made by the `real` account.
      *
-     * @param delegate
-     * @param real
-     * @param forceProxyType
-     * @param call
+     * @param {MultiAddressLike} delegate
+     * @param {MultiAddressLike} real
+     * @param {AstarRuntimeProxyType | undefined} forceProxyType
+     * @param {AstarRuntimeRuntimeCallLike} call
      **/
     proxyAnnounced: GenericTxCall<
       (
@@ -1364,6 +1382,9 @@ export interface ChainTx extends GenericChainTx {
      **/
     [callName: string]: GenericTxCall<(...args: any[]) => ChainSubmittableExtrinsic>;
   };
+  /**
+   * Pallet `ParachainSystem`'s transaction calls
+   **/
   parachainSystem: {
     /**
      * Set the current validation data.
@@ -1376,7 +1397,7 @@ export interface ChainTx extends GenericChainTx {
      * As a side effect, this function upgrades the current validation function
      * if the appropriate time has come.
      *
-     * @param data
+     * @param {CumulusPrimitivesParachainInherentParachainInherentData} data
      **/
     setValidationData: GenericTxCall<
       (data: CumulusPrimitivesParachainInherentParachainInherentData) => ChainSubmittableExtrinsic<{
@@ -1390,7 +1411,7 @@ export interface ChainTx extends GenericChainTx {
 
     /**
      *
-     * @param message
+     * @param {BytesLike} message
      **/
     sudoSendUpwardMessage: GenericTxCall<
       (message: BytesLike) => ChainSubmittableExtrinsic<{
@@ -1412,8 +1433,8 @@ export interface ChainTx extends GenericChainTx {
      *
      * This call requires Root origin.
      *
-     * @param codeHash
-     * @param checkVersion
+     * @param {H256} codeHash
+     * @param {boolean} checkVersion
      **/
     authorizeUpgrade: GenericTxCall<
       (
@@ -1439,7 +1460,7 @@ export interface ChainTx extends GenericChainTx {
      *
      * All origins are allowed.
      *
-     * @param code
+     * @param {BytesLike} code
      **/
     enactAuthorizedUpgrade: GenericTxCall<
       (code: BytesLike) => ChainSubmittableExtrinsic<{
@@ -1456,12 +1477,18 @@ export interface ChainTx extends GenericChainTx {
      **/
     [callName: string]: GenericTxCall<(...args: any[]) => ChainSubmittableExtrinsic>;
   };
+  /**
+   * Pallet `ParachainInfo`'s transaction calls
+   **/
   parachainInfo: {
     /**
      * Generic pallet tx call
      **/
     [callName: string]: GenericTxCall<(...args: any[]) => ChainSubmittableExtrinsic>;
   };
+  /**
+   * Pallet `Balances`'s transaction calls
+   **/
   balances: {
     /**
      * Transfer some liquid free balance to another account.
@@ -1472,8 +1499,8 @@ export interface ChainTx extends GenericChainTx {
      *
      * The dispatch origin for this call must be `Signed` by the transactor.
      *
-     * @param dest
-     * @param value
+     * @param {MultiAddressLike} dest
+     * @param {bigint} value
      **/
     transferAllowDeath: GenericTxCall<
       (
@@ -1496,9 +1523,9 @@ export interface ChainTx extends GenericChainTx {
      *
      * WARNING: This call is DEPRECATED! Use `force_set_balance` instead.
      *
-     * @param who
-     * @param newFree
-     * @param oldReserved
+     * @param {MultiAddressLike} who
+     * @param {bigint} newFree
+     * @param {bigint} oldReserved
      **/
     setBalanceDeprecated: GenericTxCall<
       (
@@ -1518,9 +1545,9 @@ export interface ChainTx extends GenericChainTx {
      * Exactly as `transfer_allow_death`, except the origin must be root and the source account
      * may be specified.
      *
-     * @param source
-     * @param dest
-     * @param value
+     * @param {MultiAddressLike} source
+     * @param {MultiAddressLike} dest
+     * @param {bigint} value
      **/
     forceTransfer: GenericTxCall<
       (
@@ -1544,8 +1571,8 @@ export interface ChainTx extends GenericChainTx {
      *
      * [`transfer_allow_death`]: struct.Pallet.html#method.transfer
      *
-     * @param dest
-     * @param value
+     * @param {MultiAddressLike} dest
+     * @param {bigint} value
      **/
     transferKeepAlive: GenericTxCall<
       (
@@ -1577,8 +1604,8 @@ export interface ChainTx extends GenericChainTx {
      * transfer everything except at least the existential deposit, which will guarantee to
      * keep the sender account alive (true).
      *
-     * @param dest
-     * @param keepAlive
+     * @param {MultiAddressLike} dest
+     * @param {boolean} keepAlive
      **/
     transferAll: GenericTxCall<
       (
@@ -1598,8 +1625,8 @@ export interface ChainTx extends GenericChainTx {
      *
      * Can only be called by ROOT.
      *
-     * @param who
-     * @param amount
+     * @param {MultiAddressLike} who
+     * @param {bigint} amount
      **/
     forceUnreserve: GenericTxCall<
       (
@@ -1624,7 +1651,7 @@ export interface ChainTx extends GenericChainTx {
      * be upgraded. (We let some not have to be upgraded just in order to allow for the
      * possibililty of churn).
      *
-     * @param who
+     * @param {Array<AccountId32Like>} who
      **/
     upgradeAccounts: GenericTxCall<
       (who: Array<AccountId32Like>) => ChainSubmittableExtrinsic<{
@@ -1641,8 +1668,8 @@ export interface ChainTx extends GenericChainTx {
      *
      * WARNING: DEPRECATED! Will be released in approximately 3 months.
      *
-     * @param dest
-     * @param value
+     * @param {MultiAddressLike} dest
+     * @param {bigint} value
      **/
     transfer: GenericTxCall<
       (
@@ -1662,8 +1689,8 @@ export interface ChainTx extends GenericChainTx {
      *
      * The dispatch origin for this call is `root`.
      *
-     * @param who
-     * @param newFree
+     * @param {MultiAddressLike} who
+     * @param {bigint} newFree
      **/
     forceSetBalance: GenericTxCall<
       (
@@ -1683,6 +1710,9 @@ export interface ChainTx extends GenericChainTx {
      **/
     [callName: string]: GenericTxCall<(...args: any[]) => ChainSubmittableExtrinsic>;
   };
+  /**
+   * Pallet `Vesting`'s transaction calls
+   **/
   vesting: {
     /**
      * Unlock any vested funds of the sender account.
@@ -1718,7 +1748,7 @@ export interface ChainTx extends GenericChainTx {
      * ## Complexity
      * - `O(1)`.
      *
-     * @param target
+     * @param {MultiAddressLike} target
      **/
     vestOther: GenericTxCall<
       (target: MultiAddressLike) => ChainSubmittableExtrinsic<{
@@ -1745,8 +1775,8 @@ export interface ChainTx extends GenericChainTx {
      * ## Complexity
      * - `O(1)`.
      *
-     * @param target
-     * @param schedule
+     * @param {MultiAddressLike} target
+     * @param {PalletVestingVestingInfo} schedule
      **/
     vestedTransfer: GenericTxCall<
       (
@@ -1777,9 +1807,9 @@ export interface ChainTx extends GenericChainTx {
      * ## Complexity
      * - `O(1)`.
      *
-     * @param source
-     * @param target
-     * @param schedule
+     * @param {MultiAddressLike} source
+     * @param {MultiAddressLike} target
+     * @param {PalletVestingVestingInfo} schedule
      **/
     forceVestedTransfer: GenericTxCall<
       (
@@ -1818,8 +1848,8 @@ export interface ChainTx extends GenericChainTx {
      * - `schedule1_index`: index of the first schedule to merge.
      * - `schedule2_index`: index of the second schedule to merge.
      *
-     * @param schedule1Index
-     * @param schedule2Index
+     * @param {number} schedule1Index
+     * @param {number} schedule2Index
      **/
     mergeSchedules: GenericTxCall<
       (
@@ -1839,6 +1869,9 @@ export interface ChainTx extends GenericChainTx {
      **/
     [callName: string]: GenericTxCall<(...args: any[]) => ChainSubmittableExtrinsic>;
   };
+  /**
+   * Pallet `Inflation`'s transaction calls
+   **/
   inflation: {
     /**
      * Used to force-set the inflation parameters.
@@ -1848,7 +1881,7 @@ export interface ChainTx extends GenericChainTx {
      *
      * Purpose of the call is testing & handling unforeseen circumstances.
      *
-     * @param params
+     * @param {PalletInflationInflationParameters} params
      **/
     forceSetInflationParams: GenericTxCall<
       (params: PalletInflationInflationParameters) => ChainSubmittableExtrinsic<{
@@ -1868,7 +1901,7 @@ export interface ChainTx extends GenericChainTx {
      *
      * Purpose of the call is testing & handling unforeseen circumstances.
      *
-     * @param nextEra
+     * @param {number} nextEra
      **/
     forceInflationRecalculation: GenericTxCall<
       (nextEra: number) => ChainSubmittableExtrinsic<{
@@ -1885,14 +1918,17 @@ export interface ChainTx extends GenericChainTx {
      **/
     [callName: string]: GenericTxCall<(...args: any[]) => ChainSubmittableExtrinsic>;
   };
+  /**
+   * Pallet `DappStaking`'s transaction calls
+   **/
   dappStaking: {
     /**
      * Wrapper around _legacy-like_ `unbond_and_unstake`.
      *
      * Used to support legacy Ledger users so they can start the unlocking process for their funds.
      *
-     * @param contractId
-     * @param value
+     * @param {AstarPrimitivesDappStakingSmartContract} contractId
+     * @param {bigint} value
      **/
     unbondAndUnstake: GenericTxCall<
       (
@@ -1927,7 +1963,7 @@ export interface ChainTx extends GenericChainTx {
      * Used to enable or disable maintenance mode.
      * Can only be called by manager origin.
      *
-     * @param enabled
+     * @param {boolean} enabled
      **/
     maintenanceMode: GenericTxCall<
       (enabled: boolean) => ChainSubmittableExtrinsic<{
@@ -1945,8 +1981,8 @@ export interface ChainTx extends GenericChainTx {
      * If successful, smart contract will be assigned a simple, unique numerical identifier.
      * Owner is set to be initial beneficiary & manager of the dApp.
      *
-     * @param owner
-     * @param smartContract
+     * @param {AccountId32Like} owner
+     * @param {AstarPrimitivesDappStakingSmartContract} smartContract
      **/
     register: GenericTxCall<
       (
@@ -1968,8 +2004,8 @@ export interface ChainTx extends GenericChainTx {
      * If set to `None`, rewards will be deposited to the dApp owner.
      * After this call, all existing & future rewards will be paid out to the beneficiary.
      *
-     * @param smartContract
-     * @param beneficiary
+     * @param {AstarPrimitivesDappStakingSmartContract} smartContract
+     * @param {AccountId32Like | undefined} beneficiary
      **/
     setDappRewardBeneficiary: GenericTxCall<
       (
@@ -1992,8 +2028,8 @@ export interface ChainTx extends GenericChainTx {
      * 1. when the dApp owner account is compromised, manager can change the owner to a new account
      * 2. if project wants to transfer ownership to a new account (DAO, multisig, etc.).
      *
-     * @param smartContract
-     * @param newOwner
+     * @param {AstarPrimitivesDappStakingSmartContract} smartContract
+     * @param {AccountId32Like} newOwner
      **/
     setDappOwner: GenericTxCall<
       (
@@ -2014,7 +2050,7 @@ export interface ChainTx extends GenericChainTx {
      *
      * Can be called by dApp staking manager origin.
      *
-     * @param smartContract
+     * @param {AstarPrimitivesDappStakingSmartContract} smartContract
      **/
     unregister: GenericTxCall<
       (smartContract: AstarPrimitivesDappStakingSmartContract) => ChainSubmittableExtrinsic<{
@@ -2034,7 +2070,7 @@ export interface ChainTx extends GenericChainTx {
      *
      * Locked amount can immediately be used for staking.
      *
-     * @param amount
+     * @param {bigint} amount
      **/
     lock: GenericTxCall<
       (amount: bigint) => ChainSubmittableExtrinsic<{
@@ -2053,7 +2089,7 @@ export interface ChainTx extends GenericChainTx {
      * If the amount is greater than the available amount for unlocking, everything is unlocked.
      * If the remaining locked amount would take the account below the minimum locked amount, everything is unlocked.
      *
-     * @param amount
+     * @param {bigint} amount
      **/
     unlock: GenericTxCall<
       (amount: bigint) => ChainSubmittableExtrinsic<{
@@ -2100,8 +2136,8 @@ export interface ChainTx extends GenericChainTx {
      *
      * Staked amount is only eligible for rewards from the next era onwards.
      *
-     * @param smartContract
-     * @param amount
+     * @param {AstarPrimitivesDappStakingSmartContract} smartContract
+     * @param {bigint} amount
      **/
     stake: GenericTxCall<
       (
@@ -2127,8 +2163,8 @@ export interface ChainTx extends GenericChainTx {
      * In case amount is unstaked during `Build&Earn` subperiod, first the `build_and_earn` is reduced,
      * and any spillover is subtracted from the `voting` amount.
      *
-     * @param smartContract
-     * @param amount
+     * @param {AstarPrimitivesDappStakingSmartContract} smartContract
+     * @param {bigint} amount
      **/
     unstake: GenericTxCall<
       (
@@ -2160,7 +2196,7 @@ export interface ChainTx extends GenericChainTx {
     /**
      * Used to claim bonus reward for a smart contract, if eligible.
      *
-     * @param smartContract
+     * @param {AstarPrimitivesDappStakingSmartContract} smartContract
      **/
     claimBonusReward: GenericTxCall<
       (smartContract: AstarPrimitivesDappStakingSmartContract) => ChainSubmittableExtrinsic<{
@@ -2175,8 +2211,8 @@ export interface ChainTx extends GenericChainTx {
     /**
      * Used to claim dApp reward for the specified era.
      *
-     * @param smartContract
-     * @param era
+     * @param {AstarPrimitivesDappStakingSmartContract} smartContract
+     * @param {number} era
      **/
     claimDappReward: GenericTxCall<
       (
@@ -2195,7 +2231,7 @@ export interface ChainTx extends GenericChainTx {
      * Used to unstake funds from a contract that was unregistered after an account staked on it.
      * This is required if staker wants to re-stake these funds on another active contract during the ongoing period.
      *
-     * @param smartContract
+     * @param {AstarPrimitivesDappStakingSmartContract} smartContract
      **/
     unstakeFromUnregistered: GenericTxCall<
       (smartContract: AstarPrimitivesDappStakingSmartContract) => ChainSubmittableExtrinsic<{
@@ -2233,7 +2269,7 @@ export interface ChainTx extends GenericChainTx {
      *
      * Can only be called by manager origin.
      *
-     * @param forcingType
+     * @param {PalletDappStakingV3ForcingType} forcingType
      **/
     force: GenericTxCall<
       (forcingType: PalletDappStakingV3ForcingType) => ChainSubmittableExtrinsic<{
@@ -2250,6 +2286,9 @@ export interface ChainTx extends GenericChainTx {
      **/
     [callName: string]: GenericTxCall<(...args: any[]) => ChainSubmittableExtrinsic>;
   };
+  /**
+   * Pallet `Assets`'s transaction calls
+   **/
   assets: {
     /**
      * Issue a new class of fungible assets from a public origin.
@@ -2272,9 +2311,9 @@ export interface ChainTx extends GenericChainTx {
      *
      * Weight: `O(1)`
      *
-     * @param id
-     * @param admin
-     * @param minBalance
+     * @param {bigint} id
+     * @param {MultiAddressLike} admin
+     * @param {bigint} minBalance
      **/
     create: GenericTxCall<
       (
@@ -2311,10 +2350,10 @@ export interface ChainTx extends GenericChainTx {
      *
      * Weight: `O(1)`
      *
-     * @param id
-     * @param owner
-     * @param isSufficient
-     * @param minBalance
+     * @param {bigint} id
+     * @param {MultiAddressLike} owner
+     * @param {boolean} isSufficient
+     * @param {bigint} minBalance
      **/
     forceCreate: GenericTxCall<
       (
@@ -2344,7 +2383,7 @@ export interface ChainTx extends GenericChainTx {
      *
      * The asset class must be frozen before calling `start_destroy`.
      *
-     * @param id
+     * @param {bigint} id
      **/
     startDestroy: GenericTxCall<
       (id: bigint) => ChainSubmittableExtrinsic<{
@@ -2370,7 +2409,7 @@ export interface ChainTx extends GenericChainTx {
      *
      * Each call emits the `Event::DestroyedAccounts` event.
      *
-     * @param id
+     * @param {bigint} id
      **/
     destroyAccounts: GenericTxCall<
       (id: bigint) => ChainSubmittableExtrinsic<{
@@ -2396,7 +2435,7 @@ export interface ChainTx extends GenericChainTx {
      *
      * Each call emits the `Event::DestroyedApprovals` event.
      *
-     * @param id
+     * @param {bigint} id
      **/
     destroyApprovals: GenericTxCall<
       (id: bigint) => ChainSubmittableExtrinsic<{
@@ -2420,7 +2459,7 @@ export interface ChainTx extends GenericChainTx {
      *
      * Each successful call emits the `Event::Destroyed` event.
      *
-     * @param id
+     * @param {bigint} id
      **/
     finishDestroy: GenericTxCall<
       (id: bigint) => ChainSubmittableExtrinsic<{
@@ -2446,9 +2485,9 @@ export interface ChainTx extends GenericChainTx {
      * Weight: `O(1)`
      * Modes: Pre-existing balance of `beneficiary`; Account pre-existence of `beneficiary`.
      *
-     * @param id
-     * @param beneficiary
-     * @param amount
+     * @param {bigint} id
+     * @param {MultiAddressLike} beneficiary
+     * @param {bigint} amount
      **/
     mint: GenericTxCall<
       (
@@ -2481,9 +2520,9 @@ export interface ChainTx extends GenericChainTx {
      * Weight: `O(1)`
      * Modes: Post-existence of `who`; Pre & post Zombie-status of `who`.
      *
-     * @param id
-     * @param who
-     * @param amount
+     * @param {bigint} id
+     * @param {MultiAddressLike} who
+     * @param {bigint} amount
      **/
     burn: GenericTxCall<
       (
@@ -2519,9 +2558,9 @@ export interface ChainTx extends GenericChainTx {
      * Modes: Pre-existence of `target`; Post-existence of sender; Account pre-existence of
      * `target`.
      *
-     * @param id
-     * @param target
-     * @param amount
+     * @param {bigint} id
+     * @param {MultiAddressLike} target
+     * @param {bigint} amount
      **/
     transfer: GenericTxCall<
       (
@@ -2557,9 +2596,9 @@ export interface ChainTx extends GenericChainTx {
      * Modes: Pre-existence of `target`; Post-existence of sender; Account pre-existence of
      * `target`.
      *
-     * @param id
-     * @param target
-     * @param amount
+     * @param {bigint} id
+     * @param {MultiAddressLike} target
+     * @param {bigint} amount
      **/
     transferKeepAlive: GenericTxCall<
       (
@@ -2596,10 +2635,10 @@ export interface ChainTx extends GenericChainTx {
      * Modes: Pre-existence of `dest`; Post-existence of `source`; Account pre-existence of
      * `dest`.
      *
-     * @param id
-     * @param source
-     * @param dest
-     * @param amount
+     * @param {bigint} id
+     * @param {MultiAddressLike} source
+     * @param {MultiAddressLike} dest
+     * @param {bigint} amount
      **/
     forceTransfer: GenericTxCall<
       (
@@ -2630,8 +2669,8 @@ export interface ChainTx extends GenericChainTx {
      *
      * Weight: `O(1)`
      *
-     * @param id
-     * @param who
+     * @param {bigint} id
+     * @param {MultiAddressLike} who
      **/
     freeze: GenericTxCall<
       (
@@ -2658,8 +2697,8 @@ export interface ChainTx extends GenericChainTx {
      *
      * Weight: `O(1)`
      *
-     * @param id
-     * @param who
+     * @param {bigint} id
+     * @param {MultiAddressLike} who
      **/
     thaw: GenericTxCall<
       (
@@ -2685,7 +2724,7 @@ export interface ChainTx extends GenericChainTx {
      *
      * Weight: `O(1)`
      *
-     * @param id
+     * @param {bigint} id
      **/
     freezeAsset: GenericTxCall<
       (id: bigint) => ChainSubmittableExtrinsic<{
@@ -2708,7 +2747,7 @@ export interface ChainTx extends GenericChainTx {
      *
      * Weight: `O(1)`
      *
-     * @param id
+     * @param {bigint} id
      **/
     thawAsset: GenericTxCall<
       (id: bigint) => ChainSubmittableExtrinsic<{
@@ -2732,8 +2771,8 @@ export interface ChainTx extends GenericChainTx {
      *
      * Weight: `O(1)`
      *
-     * @param id
-     * @param owner
+     * @param {bigint} id
+     * @param {MultiAddressLike} owner
      **/
     transferOwnership: GenericTxCall<
       (
@@ -2762,10 +2801,10 @@ export interface ChainTx extends GenericChainTx {
      *
      * Weight: `O(1)`
      *
-     * @param id
-     * @param issuer
-     * @param admin
-     * @param freezer
+     * @param {bigint} id
+     * @param {MultiAddressLike} issuer
+     * @param {MultiAddressLike} admin
+     * @param {MultiAddressLike} freezer
      **/
     setTeam: GenericTxCall<
       (
@@ -2800,10 +2839,10 @@ export interface ChainTx extends GenericChainTx {
      *
      * Weight: `O(1)`
      *
-     * @param id
-     * @param name
-     * @param symbol
-     * @param decimals
+     * @param {bigint} id
+     * @param {BytesLike} name
+     * @param {BytesLike} symbol
+     * @param {number} decimals
      **/
     setMetadata: GenericTxCall<
       (
@@ -2833,7 +2872,7 @@ export interface ChainTx extends GenericChainTx {
      *
      * Weight: `O(1)`
      *
-     * @param id
+     * @param {bigint} id
      **/
     clearMetadata: GenericTxCall<
       (id: bigint) => ChainSubmittableExtrinsic<{
@@ -2861,11 +2900,11 @@ export interface ChainTx extends GenericChainTx {
      *
      * Weight: `O(N + S)` where N and S are the length of the name and symbol respectively.
      *
-     * @param id
-     * @param name
-     * @param symbol
-     * @param decimals
-     * @param isFrozen
+     * @param {bigint} id
+     * @param {BytesLike} name
+     * @param {BytesLike} symbol
+     * @param {number} decimals
+     * @param {boolean} isFrozen
      **/
     forceSetMetadata: GenericTxCall<
       (
@@ -2896,7 +2935,7 @@ export interface ChainTx extends GenericChainTx {
      *
      * Weight: `O(1)`
      *
-     * @param id
+     * @param {bigint} id
      **/
     forceClearMetadata: GenericTxCall<
       (id: bigint) => ChainSubmittableExtrinsic<{
@@ -2932,14 +2971,14 @@ export interface ChainTx extends GenericChainTx {
      *
      * Weight: `O(1)`
      *
-     * @param id
-     * @param owner
-     * @param issuer
-     * @param admin
-     * @param freezer
-     * @param minBalance
-     * @param isSufficient
-     * @param isFrozen
+     * @param {bigint} id
+     * @param {MultiAddressLike} owner
+     * @param {MultiAddressLike} issuer
+     * @param {MultiAddressLike} admin
+     * @param {MultiAddressLike} freezer
+     * @param {bigint} minBalance
+     * @param {boolean} isSufficient
+     * @param {boolean} isFrozen
      **/
     forceAssetStatus: GenericTxCall<
       (
@@ -2991,9 +3030,9 @@ export interface ChainTx extends GenericChainTx {
      *
      * Weight: `O(1)`
      *
-     * @param id
-     * @param delegate
-     * @param amount
+     * @param {bigint} id
+     * @param {MultiAddressLike} delegate
+     * @param {bigint} amount
      **/
     approveTransfer: GenericTxCall<
       (
@@ -3024,8 +3063,8 @@ export interface ChainTx extends GenericChainTx {
      *
      * Weight: `O(1)`
      *
-     * @param id
-     * @param delegate
+     * @param {bigint} id
+     * @param {MultiAddressLike} delegate
      **/
     cancelApproval: GenericTxCall<
       (
@@ -3055,9 +3094,9 @@ export interface ChainTx extends GenericChainTx {
      *
      * Weight: `O(1)`
      *
-     * @param id
-     * @param owner
-     * @param delegate
+     * @param {bigint} id
+     * @param {MultiAddressLike} owner
+     * @param {MultiAddressLike} delegate
      **/
     forceCancelApproval: GenericTxCall<
       (
@@ -3093,10 +3132,10 @@ export interface ChainTx extends GenericChainTx {
      *
      * Weight: `O(1)`
      *
-     * @param id
-     * @param owner
-     * @param destination
-     * @param amount
+     * @param {bigint} id
+     * @param {MultiAddressLike} owner
+     * @param {MultiAddressLike} destination
+     * @param {bigint} amount
      **/
     transferApproved: GenericTxCall<
       (
@@ -3124,7 +3163,7 @@ export interface ChainTx extends GenericChainTx {
      *
      * Emits `Touched` event when successful.
      *
-     * @param id
+     * @param {bigint} id
      **/
     touch: GenericTxCall<
       (id: bigint) => ChainSubmittableExtrinsic<{
@@ -3148,8 +3187,8 @@ export interface ChainTx extends GenericChainTx {
      *
      * Emits `Refunded` event when successful.
      *
-     * @param id
-     * @param allowBurn
+     * @param {bigint} id
+     * @param {boolean} allowBurn
      **/
     refund: GenericTxCall<
       (
@@ -3178,8 +3217,8 @@ export interface ChainTx extends GenericChainTx {
      *
      * Emits `AssetMinBalanceChanged` event when successful.
      *
-     * @param id
-     * @param minBalance
+     * @param {bigint} id
+     * @param {bigint} minBalance
      **/
     setMinBalance: GenericTxCall<
       (
@@ -3206,8 +3245,8 @@ export interface ChainTx extends GenericChainTx {
      *
      * Emits `Touched` event when successful.
      *
-     * @param id
-     * @param who
+     * @param {bigint} id
+     * @param {MultiAddressLike} who
      **/
     touchOther: GenericTxCall<
       (
@@ -3234,8 +3273,8 @@ export interface ChainTx extends GenericChainTx {
      *
      * Emits `Refunded` event when successful.
      *
-     * @param id
-     * @param who
+     * @param {bigint} id
+     * @param {MultiAddressLike} who
      **/
     refundOther: GenericTxCall<
       (
@@ -3262,8 +3301,8 @@ export interface ChainTx extends GenericChainTx {
      *
      * Weight: `O(1)`
      *
-     * @param id
-     * @param who
+     * @param {bigint} id
+     * @param {MultiAddressLike} who
      **/
     block: GenericTxCall<
       (
@@ -3283,11 +3322,14 @@ export interface ChainTx extends GenericChainTx {
      **/
     [callName: string]: GenericTxCall<(...args: any[]) => ChainSubmittableExtrinsic>;
   };
+  /**
+   * Pallet `CollatorSelection`'s transaction calls
+   **/
   collatorSelection: {
     /**
      * Set the list of invulnerable (fixed) collators.
      *
-     * @param new_
+     * @param {Array<AccountId32Like>} new_
      **/
     setInvulnerables: GenericTxCall<
       (new_: Array<AccountId32Like>) => ChainSubmittableExtrinsic<{
@@ -3304,7 +3346,7 @@ export interface ChainTx extends GenericChainTx {
      * If lowering this number, then the number of running collators could be higher than this figure.
      * Aside from that edge case, there should be no other way to have more collators than the desired number.
      *
-     * @param max
+     * @param {number} max
      **/
     setDesiredCandidates: GenericTxCall<
       (max: number) => ChainSubmittableExtrinsic<{
@@ -3319,7 +3361,7 @@ export interface ChainTx extends GenericChainTx {
     /**
      * Set the candidacy bond amount.
      *
-     * @param bond
+     * @param {bigint} bond
      **/
     setCandidacyBond: GenericTxCall<
       (bond: bigint) => ChainSubmittableExtrinsic<{
@@ -3370,6 +3412,9 @@ export interface ChainTx extends GenericChainTx {
      **/
     [callName: string]: GenericTxCall<(...args: any[]) => ChainSubmittableExtrinsic>;
   };
+  /**
+   * Pallet `Session`'s transaction calls
+   **/
   session: {
     /**
      * Sets the session key(s) of the function caller to `keys`.
@@ -3382,8 +3427,8 @@ export interface ChainTx extends GenericChainTx {
      * - `O(1)`. Actual cost depends on the number of length of `T::Keys::key_ids()` which is
      * fixed.
      *
-     * @param keys
-     * @param proof
+     * @param {AstarRuntimeSessionKeys} keys
+     * @param {BytesLike} proof
      **/
     setKeys: GenericTxCall<
       (
@@ -3427,6 +3472,9 @@ export interface ChainTx extends GenericChainTx {
      **/
     [callName: string]: GenericTxCall<(...args: any[]) => ChainSubmittableExtrinsic>;
   };
+  /**
+   * Pallet `XcmpQueue`'s transaction calls
+   **/
   xcmpQueue: {
     /**
      * Services a single overweight XCM.
@@ -3443,8 +3491,8 @@ export interface ChainTx extends GenericChainTx {
      * Events:
      * - `OverweightServiced`: On success.
      *
-     * @param index
-     * @param weightLimit
+     * @param {bigint} index
+     * @param {SpWeightsWeightV2Weight} weightLimit
      **/
     serviceOverweight: GenericTxCall<
       (
@@ -3498,7 +3546,7 @@ export interface ChainTx extends GenericChainTx {
      * - `origin`: Must pass `Root`.
      * - `new`: Desired value for `QueueConfigData.suspend_value`
      *
-     * @param new_
+     * @param {number} new_
      **/
     updateSuspendThreshold: GenericTxCall<
       (new_: number) => ChainSubmittableExtrinsic<{
@@ -3517,7 +3565,7 @@ export interface ChainTx extends GenericChainTx {
      * - `origin`: Must pass `Root`.
      * - `new`: Desired value for `QueueConfigData.drop_threshold`
      *
-     * @param new_
+     * @param {number} new_
      **/
     updateDropThreshold: GenericTxCall<
       (new_: number) => ChainSubmittableExtrinsic<{
@@ -3536,7 +3584,7 @@ export interface ChainTx extends GenericChainTx {
      * - `origin`: Must pass `Root`.
      * - `new`: Desired value for `QueueConfigData.resume_threshold`
      *
-     * @param new_
+     * @param {number} new_
      **/
     updateResumeThreshold: GenericTxCall<
       (new_: number) => ChainSubmittableExtrinsic<{
@@ -3554,7 +3602,7 @@ export interface ChainTx extends GenericChainTx {
      * - `origin`: Must pass `Root`.
      * - `new`: Desired value for `QueueConfigData.threshold_weight`
      *
-     * @param new_
+     * @param {SpWeightsWeightV2Weight} new_
      **/
     updateThresholdWeight: GenericTxCall<
       (new_: SpWeightsWeightV2Weight) => ChainSubmittableExtrinsic<{
@@ -3573,7 +3621,7 @@ export interface ChainTx extends GenericChainTx {
      * - `origin`: Must pass `Root`.
      * - `new`: Desired value for `QueueConfigData.weight_restrict_decay`.
      *
-     * @param new_
+     * @param {SpWeightsWeightV2Weight} new_
      **/
     updateWeightRestrictDecay: GenericTxCall<
       (new_: SpWeightsWeightV2Weight) => ChainSubmittableExtrinsic<{
@@ -3592,7 +3640,7 @@ export interface ChainTx extends GenericChainTx {
      * - `origin`: Must pass `Root`.
      * - `new`: Desired value for `QueueConfigData.xcmp_max_individual_weight`.
      *
-     * @param new_
+     * @param {SpWeightsWeightV2Weight} new_
      **/
     updateXcmpMaxIndividualWeight: GenericTxCall<
       (new_: SpWeightsWeightV2Weight) => ChainSubmittableExtrinsic<{
@@ -3609,11 +3657,14 @@ export interface ChainTx extends GenericChainTx {
      **/
     [callName: string]: GenericTxCall<(...args: any[]) => ChainSubmittableExtrinsic>;
   };
+  /**
+   * Pallet `PolkadotXcm`'s transaction calls
+   **/
   polkadotXcm: {
     /**
      *
-     * @param dest
-     * @param message
+     * @param {XcmVersionedMultiLocation} dest
+     * @param {XcmVersionedXcm} message
      **/
     send: GenericTxCall<
       (
@@ -3645,10 +3696,10 @@ export interface ChainTx extends GenericChainTx {
      * - `fee_asset_item`: The index into `assets` of the item which should be used to pay
      * fees.
      *
-     * @param dest
-     * @param beneficiary
-     * @param assets
-     * @param feeAssetItem
+     * @param {XcmVersionedMultiLocation} dest
+     * @param {XcmVersionedMultiLocation} beneficiary
+     * @param {XcmVersionedMultiAssets} assets
+     * @param {number} feeAssetItem
      **/
     teleportAssets: GenericTxCall<
       (
@@ -3688,10 +3739,10 @@ export interface ChainTx extends GenericChainTx {
      * - `fee_asset_item`: The index into `assets` of the item which should be used to pay
      * fees.
      *
-     * @param dest
-     * @param beneficiary
-     * @param assets
-     * @param feeAssetItem
+     * @param {XcmVersionedMultiLocation} dest
+     * @param {XcmVersionedMultiLocation} beneficiary
+     * @param {XcmVersionedMultiAssets} assets
+     * @param {number} feeAssetItem
      **/
     reserveTransferAssets: GenericTxCall<
       (
@@ -3726,8 +3777,8 @@ export interface ChainTx extends GenericChainTx {
      * NOTE: A successful return to this does *not* imply that the `msg` was executed successfully
      * to completion; only that *some* of it was executed.
      *
-     * @param message
-     * @param maxWeight
+     * @param {XcmVersionedXcm} message
+     * @param {SpWeightsWeightV2Weight} maxWeight
      **/
     execute: GenericTxCall<
       (
@@ -3750,8 +3801,8 @@ export interface ChainTx extends GenericChainTx {
      * - `location`: The destination that is being described.
      * - `xcm_version`: The latest version of XCM that `location` supports.
      *
-     * @param location
-     * @param xcmVersion
+     * @param {XcmV3MultilocationMultiLocation} location
+     * @param {number} xcmVersion
      **/
     forceXcmVersion: GenericTxCall<
       (
@@ -3773,7 +3824,7 @@ export interface ChainTx extends GenericChainTx {
      * - `origin`: Must be an origin specified by AdminOrigin.
      * - `maybe_xcm_version`: The default XCM encoding version, or `None` to disable.
      *
-     * @param maybeXcmVersion
+     * @param {number | undefined} maybeXcmVersion
      **/
     forceDefaultXcmVersion: GenericTxCall<
       (maybeXcmVersion: number | undefined) => ChainSubmittableExtrinsic<{
@@ -3791,7 +3842,7 @@ export interface ChainTx extends GenericChainTx {
      * - `origin`: Must be an origin specified by AdminOrigin.
      * - `location`: The location to which we should subscribe for XCM version notifications.
      *
-     * @param location
+     * @param {XcmVersionedMultiLocation} location
      **/
     forceSubscribeVersionNotify: GenericTxCall<
       (location: XcmVersionedMultiLocation) => ChainSubmittableExtrinsic<{
@@ -3811,7 +3862,7 @@ export interface ChainTx extends GenericChainTx {
      * - `location`: The location to which we are currently subscribed for XCM version
      * notifications which we no longer desire.
      *
-     * @param location
+     * @param {XcmVersionedMultiLocation} location
      **/
     forceUnsubscribeVersionNotify: GenericTxCall<
       (location: XcmVersionedMultiLocation) => ChainSubmittableExtrinsic<{
@@ -3843,11 +3894,11 @@ export interface ChainTx extends GenericChainTx {
      * fees.
      * - `weight_limit`: The remote-side weight limit, if any, for the XCM fee purchase.
      *
-     * @param dest
-     * @param beneficiary
-     * @param assets
-     * @param feeAssetItem
-     * @param weightLimit
+     * @param {XcmVersionedMultiLocation} dest
+     * @param {XcmVersionedMultiLocation} beneficiary
+     * @param {XcmVersionedMultiAssets} assets
+     * @param {number} feeAssetItem
+     * @param {XcmV3WeightLimit} weightLimit
      **/
     limitedReserveTransferAssets: GenericTxCall<
       (
@@ -3890,11 +3941,11 @@ export interface ChainTx extends GenericChainTx {
      * fees.
      * - `weight_limit`: The remote-side weight limit, if any, for the XCM fee purchase.
      *
-     * @param dest
-     * @param beneficiary
-     * @param assets
-     * @param feeAssetItem
-     * @param weightLimit
+     * @param {XcmVersionedMultiLocation} dest
+     * @param {XcmVersionedMultiLocation} beneficiary
+     * @param {XcmVersionedMultiAssets} assets
+     * @param {number} feeAssetItem
+     * @param {XcmV3WeightLimit} weightLimit
      **/
     limitedTeleportAssets: GenericTxCall<
       (
@@ -3924,7 +3975,7 @@ export interface ChainTx extends GenericChainTx {
      * - `origin`: Must be an origin specified by AdminOrigin.
      * - `suspended`: `true` to suspend, `false` to resume.
      *
-     * @param suspended
+     * @param {boolean} suspended
      **/
     forceSuspension: GenericTxCall<
       (suspended: boolean) => ChainSubmittableExtrinsic<{
@@ -3941,18 +3992,24 @@ export interface ChainTx extends GenericChainTx {
      **/
     [callName: string]: GenericTxCall<(...args: any[]) => ChainSubmittableExtrinsic>;
   };
+  /**
+   * Pallet `CumulusXcm`'s transaction calls
+   **/
   cumulusXcm: {
     /**
      * Generic pallet tx call
      **/
     [callName: string]: GenericTxCall<(...args: any[]) => ChainSubmittableExtrinsic>;
   };
+  /**
+   * Pallet `DmpQueue`'s transaction calls
+   **/
   dmpQueue: {
     /**
      * Service a single overweight message.
      *
-     * @param index
-     * @param weightLimit
+     * @param {bigint} index
+     * @param {SpWeightsWeightV2Weight} weightLimit
      **/
     serviceOverweight: GenericTxCall<
       (
@@ -3972,14 +4029,17 @@ export interface ChainTx extends GenericChainTx {
      **/
     [callName: string]: GenericTxCall<(...args: any[]) => ChainSubmittableExtrinsic>;
   };
+  /**
+   * Pallet `XcAssetConfig`'s transaction calls
+   **/
   xcAssetConfig: {
     /**
      * Register new asset location to asset Id mapping.
      *
      * This makes the asset eligible for XCM interaction.
      *
-     * @param assetLocation
-     * @param assetId
+     * @param {XcmVersionedMultiLocation} assetLocation
+     * @param {bigint} assetId
      **/
     registerAssetLocation: GenericTxCall<
       (
@@ -3998,8 +4058,8 @@ export interface ChainTx extends GenericChainTx {
      * Change the amount of units we are charging per execution second
      * for a given AssetLocation.
      *
-     * @param assetLocation
-     * @param unitsPerSecond
+     * @param {XcmVersionedMultiLocation} assetLocation
+     * @param {bigint} unitsPerSecond
      **/
     setAssetUnitsPerSecond: GenericTxCall<
       (
@@ -4018,8 +4078,8 @@ export interface ChainTx extends GenericChainTx {
      * Change the xcm type mapping for a given asset Id.
      * The new asset type will inherit old `units per second` value.
      *
-     * @param newAssetLocation
-     * @param assetId
+     * @param {XcmVersionedMultiLocation} newAssetLocation
+     * @param {bigint} assetId
      **/
     changeExistingAssetLocation: GenericTxCall<
       (
@@ -4039,7 +4099,7 @@ export interface ChainTx extends GenericChainTx {
      *
      * The asset can still be interacted with via XCM but it cannot be used to pay for execution time.
      *
-     * @param assetLocation
+     * @param {XcmVersionedMultiLocation} assetLocation
      **/
     removePaymentAsset: GenericTxCall<
       (assetLocation: XcmVersionedMultiLocation) => ChainSubmittableExtrinsic<{
@@ -4054,7 +4114,7 @@ export interface ChainTx extends GenericChainTx {
     /**
      * Removes all information related to asset, removing it from XCM support.
      *
-     * @param assetId
+     * @param {bigint} assetId
      **/
     removeAsset: GenericTxCall<
       (assetId: bigint) => ChainSubmittableExtrinsic<{
@@ -4071,6 +4131,9 @@ export interface ChainTx extends GenericChainTx {
      **/
     [callName: string]: GenericTxCall<(...args: any[]) => ChainSubmittableExtrinsic>;
   };
+  /**
+   * Pallet `XTokens`'s transaction calls
+   **/
   xTokens: {
     /**
      * Transfer native currencies.
@@ -4086,10 +4149,10 @@ export interface ChainTx extends GenericChainTx {
      * by the network, and if the receiving chain would handle
      * messages correctly.
      *
-     * @param currencyId
-     * @param amount
-     * @param dest
-     * @param destWeightLimit
+     * @param {bigint} currencyId
+     * @param {bigint} amount
+     * @param {XcmVersionedMultiLocation} dest
+     * @param {XcmV3WeightLimit} destWeightLimit
      **/
     transfer: GenericTxCall<
       (
@@ -4125,9 +4188,9 @@ export interface ChainTx extends GenericChainTx {
      * by the network, and if the receiving chain would handle
      * messages correctly.
      *
-     * @param asset
-     * @param dest
-     * @param destWeightLimit
+     * @param {XcmVersionedMultiAsset} asset
+     * @param {XcmVersionedMultiLocation} dest
+     * @param {XcmV3WeightLimit} destWeightLimit
      **/
     transferMultiasset: GenericTxCall<
       (
@@ -4166,11 +4229,11 @@ export interface ChainTx extends GenericChainTx {
      * by the network, and if the receiving chain would handle
      * messages correctly.
      *
-     * @param currencyId
-     * @param amount
-     * @param fee
-     * @param dest
-     * @param destWeightLimit
+     * @param {bigint} currencyId
+     * @param {bigint} amount
+     * @param {bigint} fee
+     * @param {XcmVersionedMultiLocation} dest
+     * @param {XcmV3WeightLimit} destWeightLimit
      **/
     transferWithFee: GenericTxCall<
       (
@@ -4217,10 +4280,10 @@ export interface ChainTx extends GenericChainTx {
      * by the network, and if the receiving chain would handle
      * messages correctly.
      *
-     * @param asset
-     * @param fee
-     * @param dest
-     * @param destWeightLimit
+     * @param {XcmVersionedMultiAsset} asset
+     * @param {XcmVersionedMultiAsset} fee
+     * @param {XcmVersionedMultiLocation} dest
+     * @param {XcmV3WeightLimit} destWeightLimit
      **/
     transferMultiassetWithFee: GenericTxCall<
       (
@@ -4259,10 +4322,10 @@ export interface ChainTx extends GenericChainTx {
      * by the network, and if the receiving chain would handle
      * messages correctly.
      *
-     * @param currencies
-     * @param feeItem
-     * @param dest
-     * @param destWeightLimit
+     * @param {Array<[bigint, bigint]>} currencies
+     * @param {number} feeItem
+     * @param {XcmVersionedMultiLocation} dest
+     * @param {XcmV3WeightLimit} destWeightLimit
      **/
     transferMulticurrencies: GenericTxCall<
       (
@@ -4301,10 +4364,10 @@ export interface ChainTx extends GenericChainTx {
      * by the network, and if the receiving chain would handle
      * messages correctly.
      *
-     * @param assets
-     * @param feeItem
-     * @param dest
-     * @param destWeightLimit
+     * @param {XcmVersionedMultiAssets} assets
+     * @param {number} feeItem
+     * @param {XcmVersionedMultiLocation} dest
+     * @param {XcmV3WeightLimit} destWeightLimit
      **/
     transferMultiassets: GenericTxCall<
       (
@@ -4331,12 +4394,15 @@ export interface ChainTx extends GenericChainTx {
      **/
     [callName: string]: GenericTxCall<(...args: any[]) => ChainSubmittableExtrinsic>;
   };
+  /**
+   * Pallet `EVM`'s transaction calls
+   **/
   evm: {
     /**
      * Withdraw balance from EVM into currency/balances pallet.
      *
-     * @param address
-     * @param value
+     * @param {H160} address
+     * @param {bigint} value
      **/
     withdraw: GenericTxCall<
       (
@@ -4354,15 +4420,15 @@ export interface ChainTx extends GenericChainTx {
     /**
      * Issue an EVM call operation. This is similar to a message call transaction in Ethereum.
      *
-     * @param source
-     * @param target
-     * @param input
-     * @param value
-     * @param gasLimit
-     * @param maxFeePerGas
-     * @param maxPriorityFeePerGas
-     * @param nonce
-     * @param accessList
+     * @param {H160} source
+     * @param {H160} target
+     * @param {BytesLike} input
+     * @param {U256} value
+     * @param {bigint} gasLimit
+     * @param {U256} maxFeePerGas
+     * @param {U256 | undefined} maxPriorityFeePerGas
+     * @param {U256 | undefined} nonce
+     * @param {Array<[H160, Array<H256>]>} accessList
      **/
     call: GenericTxCall<
       (
@@ -4398,14 +4464,14 @@ export interface ChainTx extends GenericChainTx {
      * Issue an EVM create operation. This is similar to a contract creation transaction in
      * Ethereum.
      *
-     * @param source
-     * @param init
-     * @param value
-     * @param gasLimit
-     * @param maxFeePerGas
-     * @param maxPriorityFeePerGas
-     * @param nonce
-     * @param accessList
+     * @param {H160} source
+     * @param {BytesLike} init
+     * @param {U256} value
+     * @param {bigint} gasLimit
+     * @param {U256} maxFeePerGas
+     * @param {U256 | undefined} maxPriorityFeePerGas
+     * @param {U256 | undefined} nonce
+     * @param {Array<[H160, Array<H256>]>} accessList
      **/
     create: GenericTxCall<
       (
@@ -4438,15 +4504,15 @@ export interface ChainTx extends GenericChainTx {
     /**
      * Issue an EVM create2 operation.
      *
-     * @param source
-     * @param init
-     * @param salt
-     * @param value
-     * @param gasLimit
-     * @param maxFeePerGas
-     * @param maxPriorityFeePerGas
-     * @param nonce
-     * @param accessList
+     * @param {H160} source
+     * @param {BytesLike} init
+     * @param {H256} salt
+     * @param {U256} value
+     * @param {bigint} gasLimit
+     * @param {U256} maxFeePerGas
+     * @param {U256 | undefined} maxPriorityFeePerGas
+     * @param {U256 | undefined} nonce
+     * @param {Array<[H160, Array<H256>]>} accessList
      **/
     create2: GenericTxCall<
       (
@@ -4483,11 +4549,14 @@ export interface ChainTx extends GenericChainTx {
      **/
     [callName: string]: GenericTxCall<(...args: any[]) => ChainSubmittableExtrinsic>;
   };
+  /**
+   * Pallet `Ethereum`'s transaction calls
+   **/
   ethereum: {
     /**
      * Transact an Ethereum transaction.
      *
-     * @param transaction
+     * @param {EthereumTransactionTransactionV2} transaction
      **/
     transact: GenericTxCall<
       (transaction: EthereumTransactionTransactionV2) => ChainSubmittableExtrinsic<{
@@ -4504,12 +4573,15 @@ export interface ChainTx extends GenericChainTx {
      **/
     [callName: string]: GenericTxCall<(...args: any[]) => ChainSubmittableExtrinsic>;
   };
+  /**
+   * Pallet `DynamicEvmBaseFee`'s transaction calls
+   **/
   dynamicEvmBaseFee: {
     /**
      * `root-only` extrinsic to set the `base_fee_per_gas` value manually.
      * The specified value has to respect min & max limits configured in the runtime.
      *
-     * @param fee
+     * @param {U256} fee
      **/
     setBaseFeePerGas: GenericTxCall<
       (fee: U256) => ChainSubmittableExtrinsic<{
@@ -4526,15 +4598,18 @@ export interface ChainTx extends GenericChainTx {
      **/
     [callName: string]: GenericTxCall<(...args: any[]) => ChainSubmittableExtrinsic>;
   };
+  /**
+   * Pallet `Contracts`'s transaction calls
+   **/
   contracts: {
     /**
      * Deprecated version if [`Self::call`] for use in an in-storage `Call`.
      *
-     * @param dest
-     * @param value
-     * @param gasLimit
-     * @param storageDepositLimit
-     * @param data
+     * @param {MultiAddressLike} dest
+     * @param {bigint} value
+     * @param {bigint} gasLimit
+     * @param {bigint | undefined} storageDepositLimit
+     * @param {BytesLike} data
      **/
     callOldWeight: GenericTxCall<
       (
@@ -4561,12 +4636,12 @@ export interface ChainTx extends GenericChainTx {
     /**
      * Deprecated version if [`Self::instantiate_with_code`] for use in an in-storage `Call`.
      *
-     * @param value
-     * @param gasLimit
-     * @param storageDepositLimit
-     * @param code
-     * @param data
-     * @param salt
+     * @param {bigint} value
+     * @param {bigint} gasLimit
+     * @param {bigint | undefined} storageDepositLimit
+     * @param {BytesLike} code
+     * @param {BytesLike} data
+     * @param {BytesLike} salt
      **/
     instantiateWithCodeOldWeight: GenericTxCall<
       (
@@ -4595,12 +4670,12 @@ export interface ChainTx extends GenericChainTx {
     /**
      * Deprecated version if [`Self::instantiate`] for use in an in-storage `Call`.
      *
-     * @param value
-     * @param gasLimit
-     * @param storageDepositLimit
-     * @param codeHash
-     * @param data
-     * @param salt
+     * @param {bigint} value
+     * @param {bigint} gasLimit
+     * @param {bigint | undefined} storageDepositLimit
+     * @param {H256} codeHash
+     * @param {BytesLike} data
+     * @param {BytesLike} salt
      **/
     instantiateOldWeight: GenericTxCall<
       (
@@ -4648,9 +4723,9 @@ export interface ChainTx extends GenericChainTx {
      * only be instantiated by permissioned entities. The same is true when uploading
      * through [`Self::instantiate_with_code`].
      *
-     * @param code
-     * @param storageDepositLimit
-     * @param determinism
+     * @param {BytesLike} code
+     * @param {bigint | undefined} storageDepositLimit
+     * @param {PalletContractsWasmDeterminism} determinism
      **/
     uploadCode: GenericTxCall<
       (
@@ -4676,7 +4751,7 @@ export interface ChainTx extends GenericChainTx {
      * A code can only be removed by its original uploader (its owner) and only if it is
      * not used by any contract.
      *
-     * @param codeHash
+     * @param {H256} codeHash
      **/
     removeCode: GenericTxCall<
       (codeHash: H256) => ChainSubmittableExtrinsic<{
@@ -4700,8 +4775,8 @@ export interface ChainTx extends GenericChainTx {
      * that the contract address is no longer derived from its code hash after calling
      * this dispatchable.
      *
-     * @param dest
-     * @param codeHash
+     * @param {MultiAddressLike} dest
+     * @param {H256} codeHash
      **/
     setCode: GenericTxCall<
       (
@@ -4734,11 +4809,11 @@ export interface ChainTx extends GenericChainTx {
      * * If no account exists and the call value is not less than `existential_deposit`,
      * a regular account will be created and any value will be transferred.
      *
-     * @param dest
-     * @param value
-     * @param gasLimit
-     * @param storageDepositLimit
-     * @param data
+     * @param {MultiAddressLike} dest
+     * @param {bigint} value
+     * @param {SpWeightsWeightV2Weight} gasLimit
+     * @param {bigint | undefined} storageDepositLimit
+     * @param {BytesLike} data
      **/
     call: GenericTxCall<
       (
@@ -4790,12 +4865,12 @@ export interface ChainTx extends GenericChainTx {
      * - The `value` is transferred to the new account.
      * - The `deploy` function is executed in the context of the newly-created account.
      *
-     * @param value
-     * @param gasLimit
-     * @param storageDepositLimit
-     * @param code
-     * @param data
-     * @param salt
+     * @param {bigint} value
+     * @param {SpWeightsWeightV2Weight} gasLimit
+     * @param {bigint | undefined} storageDepositLimit
+     * @param {BytesLike} code
+     * @param {BytesLike} data
+     * @param {BytesLike} salt
      **/
     instantiateWithCode: GenericTxCall<
       (
@@ -4828,12 +4903,12 @@ export interface ChainTx extends GenericChainTx {
      * code deployment step. Instead, the `code_hash` of an on-chain deployed wasm binary
      * must be supplied.
      *
-     * @param value
-     * @param gasLimit
-     * @param storageDepositLimit
-     * @param codeHash
-     * @param data
-     * @param salt
+     * @param {bigint} value
+     * @param {SpWeightsWeightV2Weight} gasLimit
+     * @param {bigint | undefined} storageDepositLimit
+     * @param {H256} codeHash
+     * @param {BytesLike} data
+     * @param {BytesLike} salt
      **/
     instantiate: GenericTxCall<
       (
@@ -4865,7 +4940,7 @@ export interface ChainTx extends GenericChainTx {
      * for the chain. Note that while the migration is in progress, the pallet will also
      * leverage the `on_idle` hooks to run migration steps.
      *
-     * @param weightLimit
+     * @param {SpWeightsWeightV2Weight} weightLimit
      **/
     migrate: GenericTxCall<
       (weightLimit: SpWeightsWeightV2Weight) => ChainSubmittableExtrinsic<{
@@ -4882,6 +4957,9 @@ export interface ChainTx extends GenericChainTx {
      **/
     [callName: string]: GenericTxCall<(...args: any[]) => ChainSubmittableExtrinsic>;
   };
+  /**
+   * Pallet `Sudo`'s transaction calls
+   **/
   sudo: {
     /**
      * Authenticates the sudo key and dispatches a function call with `Root` origin.
@@ -4891,7 +4969,7 @@ export interface ChainTx extends GenericChainTx {
      * ## Complexity
      * - O(1).
      *
-     * @param call
+     * @param {AstarRuntimeRuntimeCallLike} call
      **/
     sudo: GenericTxCall<
       (call: AstarRuntimeRuntimeCallLike) => ChainSubmittableExtrinsic<{
@@ -4913,8 +4991,8 @@ export interface ChainTx extends GenericChainTx {
      * ## Complexity
      * - O(1).
      *
-     * @param call
-     * @param weight
+     * @param {AstarRuntimeRuntimeCallLike} call
+     * @param {SpWeightsWeightV2Weight} weight
      **/
     sudoUncheckedWeight: GenericTxCall<
       (
@@ -4938,7 +5016,7 @@ export interface ChainTx extends GenericChainTx {
      * ## Complexity
      * - O(1).
      *
-     * @param new_
+     * @param {MultiAddressLike} new_
      **/
     setKey: GenericTxCall<
       (new_: MultiAddressLike) => ChainSubmittableExtrinsic<{
@@ -4959,8 +5037,8 @@ export interface ChainTx extends GenericChainTx {
      * ## Complexity
      * - O(1).
      *
-     * @param who
-     * @param call
+     * @param {MultiAddressLike} who
+     * @param {AstarRuntimeRuntimeCallLike} call
      **/
     sudoAs: GenericTxCall<
       (
@@ -4980,13 +5058,16 @@ export interface ChainTx extends GenericChainTx {
      **/
     [callName: string]: GenericTxCall<(...args: any[]) => ChainSubmittableExtrinsic>;
   };
+  /**
+   * Pallet `StaticPriceProvider`'s transaction calls
+   **/
   staticPriceProvider: {
     /**
      * Privileged action used to set the active native currency price.
      *
      * This is a temporary solution before oracle is implemented & operational.
      *
-     * @param price
+     * @param {FixedU64} price
      **/
     forceSetPrice: GenericTxCall<
       (price: FixedU64) => ChainSubmittableExtrinsic<{
@@ -5003,6 +5084,9 @@ export interface ChainTx extends GenericChainTx {
      **/
     [callName: string]: GenericTxCall<(...args: any[]) => ChainSubmittableExtrinsic>;
   };
+  /**
+   * Pallet `DappStakingMigration`'s transaction calls
+   **/
   dappStakingMigration: {
     /**
      * Attempt to execute migration steps, consuming up to the specified amount of weight.
@@ -5012,7 +5096,7 @@ export interface ChainTx extends GenericChainTx {
      * This means that even if user specifies `Weight::zero()` as the limit,
      * the call will be charged & executed using the minimum allowed weight.
      *
-     * @param weightLimit
+     * @param {SpWeightsWeightV2Weight | undefined} weightLimit
      **/
     migrate: GenericTxCall<
       (weightLimit: SpWeightsWeightV2Weight | undefined) => ChainSubmittableExtrinsic<{
@@ -5029,6 +5113,9 @@ export interface ChainTx extends GenericChainTx {
      **/
     [callName: string]: GenericTxCall<(...args: any[]) => ChainSubmittableExtrinsic>;
   };
+  /**
+   * Pallet `DappsStaking`'s transaction calls
+   **/
   dappsStaking: {
     /**
      * Used to register contract for dapps staking.
@@ -5038,8 +5125,8 @@ export interface ChainTx extends GenericChainTx {
      *
      * As part of this call, `RegisterDeposit` will be reserved from devs account.
      *
-     * @param developer
-     * @param contractId
+     * @param {AccountId32Like} developer
+     * @param {AstarPrimitivesDappStakingSmartContract} contractId
      **/
     register: GenericTxCall<
       (
@@ -5062,7 +5149,7 @@ export interface ChainTx extends GenericChainTx {
      *
      * **Warning**: After this action ,contract can not be registered for dapps staking again.
      *
-     * @param contractId
+     * @param {AstarPrimitivesDappStakingSmartContract} contractId
      **/
     unregister: GenericTxCall<
       (contractId: AstarPrimitivesDappStakingSmartContract) => ChainSubmittableExtrinsic<{
@@ -5079,7 +5166,7 @@ export interface ChainTx extends GenericChainTx {
      *
      * Funds don't need to undergo the unbonding period - they are returned immediately to the staker's free balance.
      *
-     * @param contractId
+     * @param {AstarPrimitivesDappStakingSmartContract} contractId
      **/
     withdrawFromUnregistered: GenericTxCall<
       (contractId: AstarPrimitivesDappStakingSmartContract) => ChainSubmittableExtrinsic<{
@@ -5099,8 +5186,8 @@ export interface ChainTx extends GenericChainTx {
      *
      * The dispatch origin for this call must be _Signed_ by the staker's account.
      *
-     * @param contractId
-     * @param value
+     * @param {AstarPrimitivesDappStakingSmartContract} contractId
+     * @param {bigint} value
      **/
     bondAndStake: GenericTxCall<
       (
@@ -5125,8 +5212,8 @@ export interface ChainTx extends GenericChainTx {
      * In case remaining staked balance on contract is below minimum staking amount,
      * entire stake for that contract will be unstaked.
      *
-     * @param contractId
-     * @param value
+     * @param {AstarPrimitivesDappStakingSmartContract} contractId
+     * @param {bigint} value
      **/
     unbondAndUnstake: GenericTxCall<
       (
@@ -5165,9 +5252,9 @@ export interface ChainTx extends GenericChainTx {
      * check whether max number of unbonding chunks is exceeded.
      *
      *
-     * @param originContractId
-     * @param value
-     * @param targetContractId
+     * @param {AstarPrimitivesDappStakingSmartContract} originContractId
+     * @param {bigint} value
+     * @param {AstarPrimitivesDappStakingSmartContract} targetContractId
      **/
     nominationTransfer: GenericTxCall<
       (
@@ -5194,7 +5281,7 @@ export interface ChainTx extends GenericChainTx {
      * The rewards are always added to the staker's free balance (account) but depending on the reward destination configuration,
      * they might be immediately re-staked.
      *
-     * @param contractId
+     * @param {AstarPrimitivesDappStakingSmartContract} contractId
      **/
     claimStaker: GenericTxCall<
       (contractId: AstarPrimitivesDappStakingSmartContract) => ChainSubmittableExtrinsic<{
@@ -5211,8 +5298,8 @@ export interface ChainTx extends GenericChainTx {
      *
      * Call must ensure that the specified era is eligible for reward payout and that it hasn't already been paid out for the dapp.
      *
-     * @param contractId
-     * @param era
+     * @param {AstarPrimitivesDappStakingSmartContract} contractId
+     * @param {number} era
      **/
     claimDapp: GenericTxCall<
       (
@@ -5247,7 +5334,7 @@ export interface ChainTx extends GenericChainTx {
      *
      * The dispatch origin must be Root.
      *
-     * @param enableMaintenance
+     * @param {boolean} enableMaintenance
      **/
     maintenanceMode: GenericTxCall<
       (enableMaintenance: boolean) => ChainSubmittableExtrinsic<{
@@ -5265,7 +5352,7 @@ export interface ChainTx extends GenericChainTx {
      * User must be an active staker in order to use this call.
      * This will apply to all existing unclaimed rewards.
      *
-     * @param rewardDestination
+     * @param {PalletDappsStakingRewardDestination} rewardDestination
      **/
     setRewardDestination: GenericTxCall<
       (rewardDestination: PalletDappsStakingRewardDestination) => ChainSubmittableExtrinsic<{
@@ -5283,9 +5370,9 @@ export interface ChainTx extends GenericChainTx {
      *
      * The dispatch origin must be Root.
      *
-     * @param contract
-     * @param era
-     * @param contractStakeInfo
+     * @param {AstarPrimitivesDappStakingSmartContract} contract
+     * @param {number} era
+     * @param {PalletDappsStakingContractStakeInfo} contractStakeInfo
      **/
     setContractStakeInfo: GenericTxCall<
       (
@@ -5308,8 +5395,8 @@ export interface ChainTx extends GenericChainTx {
     /**
      * Used to burn unclaimed & stale rewards from an unregistered contract.
      *
-     * @param contractId
-     * @param era
+     * @param {AstarPrimitivesDappStakingSmartContract} contractId
+     * @param {number} era
      **/
     burnStaleReward: GenericTxCall<
       (
@@ -5330,8 +5417,8 @@ export interface ChainTx extends GenericChainTx {
      *
      * This call can only be used during the pallet decommission process.
      *
-     * @param staker
-     * @param contractId
+     * @param {AccountId32Like} staker
+     * @param {AstarPrimitivesDappStakingSmartContract} contractId
      **/
     claimStakerFor: GenericTxCall<
       (
@@ -5350,8 +5437,8 @@ export interface ChainTx extends GenericChainTx {
      * Used to set reward destination for staker rewards, for the given staker
      *
      *
-     * @param staker
-     * @param rewardDestination
+     * @param {AccountId32Like} staker
+     * @param {PalletDappsStakingRewardDestination} rewardDestination
      **/
     setRewardDestinationFor: GenericTxCall<
       (

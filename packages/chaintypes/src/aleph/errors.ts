@@ -3,6 +3,9 @@
 import type { GenericChainErrors, GenericPalletError } from '@delightfuldot/types';
 
 export interface ChainErrors extends GenericChainErrors {
+  /**
+   * Pallet `System`'s errors
+   **/
   system: {
     /**
      * The name of specification does not match between the current runtime
@@ -43,6 +46,9 @@ export interface ChainErrors extends GenericChainErrors {
      **/
     [error: string]: GenericPalletError;
   };
+  /**
+   * Pallet `Scheduler`'s errors
+   **/
   scheduler: {
     /**
      * Failed to schedule a call
@@ -74,6 +80,9 @@ export interface ChainErrors extends GenericChainErrors {
      **/
     [error: string]: GenericPalletError;
   };
+  /**
+   * Pallet `Balances`'s errors
+   **/
   balances: {
     /**
      * Vesting balance too high to send value.
@@ -130,6 +139,9 @@ export interface ChainErrors extends GenericChainErrors {
      **/
     [error: string]: GenericPalletError;
   };
+  /**
+   * Pallet `Staking`'s errors
+   **/
   staking: {
     /**
      * Not a controller account.
@@ -265,6 +277,9 @@ export interface ChainErrors extends GenericChainErrors {
      **/
     [error: string]: GenericPalletError;
   };
+  /**
+   * Pallet `Session`'s errors
+   **/
   session: {
     /**
      * Invalid ownership proof.
@@ -296,6 +311,9 @@ export interface ChainErrors extends GenericChainErrors {
      **/
     [error: string]: GenericPalletError;
   };
+  /**
+   * Pallet `Elections`'s errors
+   **/
   elections: {
     NotEnoughValidators: GenericPalletError;
     NotEnoughReservedValidators: GenericPalletError;
@@ -308,6 +326,9 @@ export interface ChainErrors extends GenericChainErrors {
      **/
     [error: string]: GenericPalletError;
   };
+  /**
+   * Pallet `Treasury`'s errors
+   **/
   treasury: {
     /**
      * Proposer's balance is too low.
@@ -340,6 +361,9 @@ export interface ChainErrors extends GenericChainErrors {
      **/
     [error: string]: GenericPalletError;
   };
+  /**
+   * Pallet `Vesting`'s errors
+   **/
   vesting: {
     /**
      * The account given is not vesting.
@@ -372,6 +396,9 @@ export interface ChainErrors extends GenericChainErrors {
      **/
     [error: string]: GenericPalletError;
   };
+  /**
+   * Pallet `Utility`'s errors
+   **/
   utility: {
     /**
      * Too many calls batched.
@@ -383,6 +410,9 @@ export interface ChainErrors extends GenericChainErrors {
      **/
     [error: string]: GenericPalletError;
   };
+  /**
+   * Pallet `Multisig`'s errors
+   **/
   multisig: {
     /**
      * Threshold must be 2 or greater.
@@ -459,6 +489,9 @@ export interface ChainErrors extends GenericChainErrors {
      **/
     [error: string]: GenericPalletError;
   };
+  /**
+   * Pallet `Sudo`'s errors
+   **/
   sudo: {
     /**
      * Sender must be the Sudo account
@@ -470,6 +503,9 @@ export interface ChainErrors extends GenericChainErrors {
      **/
     [error: string]: GenericPalletError;
   };
+  /**
+   * Pallet `Contracts`'s errors
+   **/
   contracts: {
     /**
      * Invalid schedule supplied, e.g. with zero weight of a basic operation.
@@ -647,6 +683,9 @@ export interface ChainErrors extends GenericChainErrors {
      **/
     [error: string]: GenericPalletError;
   };
+  /**
+   * Pallet `NominationPools`'s errors
+   **/
   nominationPools: {
     /**
      * A (bonded) pool id does not exist.
@@ -816,6 +855,9 @@ export interface ChainErrors extends GenericChainErrors {
      **/
     [error: string]: GenericPalletError;
   };
+  /**
+   * Pallet `Identity`'s errors
+   **/
   identity: {
     /**
      * Too many subs-accounts.
@@ -912,6 +954,9 @@ export interface ChainErrors extends GenericChainErrors {
      **/
     [error: string]: GenericPalletError;
   };
+  /**
+   * Pallet `CommitteeManagement`'s errors
+   **/
   committeeManagement: {
     /**
      * Raised in any scenario [`BanConfig`] is invalid

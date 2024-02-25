@@ -33,6 +33,9 @@ import type {
 } from './types';
 
 export interface ChainEvents extends GenericChainEvents {
+  /**
+   * Pallet `System`'s events
+   **/
   system: {
     /**
      * An extrinsic completed successfully.
@@ -78,6 +81,9 @@ export interface ChainEvents extends GenericChainEvents {
      **/
     [prop: string]: GenericPalletEvent;
   };
+  /**
+   * Pallet `ParachainSystem`'s events
+   **/
   parachainSystem: {
     /**
      * The validation function has been scheduled to apply.
@@ -126,6 +132,9 @@ export interface ChainEvents extends GenericChainEvents {
      **/
     [prop: string]: GenericPalletEvent;
   };
+  /**
+   * Pallet `Balances`'s events
+   **/
   balances: {
     /**
      * An account was created with some free balance.
@@ -248,6 +257,9 @@ export interface ChainEvents extends GenericChainEvents {
      **/
     [prop: string]: GenericPalletEvent;
   };
+  /**
+   * Pallet `TransactionPayment`'s events
+   **/
   transactionPayment: {
     /**
      * A transaction fee `actual_fee`, of which `tip` was added to the minimum inclusion fee,
@@ -264,6 +276,9 @@ export interface ChainEvents extends GenericChainEvents {
      **/
     [prop: string]: GenericPalletEvent;
   };
+  /**
+   * Pallet `AssetTxPayment`'s events
+   **/
   assetTxPayment: {
     /**
      * A transaction fee `actual_fee`, of which `tip` was added to the minimum inclusion fee,
@@ -285,6 +300,9 @@ export interface ChainEvents extends GenericChainEvents {
      **/
     [prop: string]: GenericPalletEvent;
   };
+  /**
+   * Pallet `CollatorSelection`'s events
+   **/
   collatorSelection: {
     /**
      * New Invulnerables were set.
@@ -366,6 +384,9 @@ export interface ChainEvents extends GenericChainEvents {
      **/
     [prop: string]: GenericPalletEvent;
   };
+  /**
+   * Pallet `Session`'s events
+   **/
   session: {
     /**
      * New session has happened. Note that the argument is the session index, not the
@@ -378,6 +399,9 @@ export interface ChainEvents extends GenericChainEvents {
      **/
     [prop: string]: GenericPalletEvent;
   };
+  /**
+   * Pallet `XcmpQueue`'s events
+   **/
   xcmpQueue: {
     /**
      * An HRMP message was sent to a sibling parachain.
@@ -389,6 +413,9 @@ export interface ChainEvents extends GenericChainEvents {
      **/
     [prop: string]: GenericPalletEvent;
   };
+  /**
+   * Pallet `PolkadotXcm`'s events
+   **/
   polkadotXcm: {
     /**
      * Execution of an XCM message was attempted.
@@ -647,6 +674,9 @@ export interface ChainEvents extends GenericChainEvents {
      **/
     [prop: string]: GenericPalletEvent;
   };
+  /**
+   * Pallet `CumulusXcm`'s events
+   **/
   cumulusXcm: {
     /**
      * Downward message is invalid XCM.
@@ -671,6 +701,9 @@ export interface ChainEvents extends GenericChainEvents {
      **/
     [prop: string]: GenericPalletEvent;
   };
+  /**
+   * Pallet `MessageQueue`'s events
+   **/
   messageQueue: {
     /**
      * Message discarded due to an error in the `MessageProcessor` (usually a format error).
@@ -786,6 +819,9 @@ export interface ChainEvents extends GenericChainEvents {
      **/
     [prop: string]: GenericPalletEvent;
   };
+  /**
+   * Pallet `Utility`'s events
+   **/
   utility: {
     /**
      * Batch of dispatches did not complete fully. Index of first failing dispatch given, as
@@ -823,6 +859,9 @@ export interface ChainEvents extends GenericChainEvents {
      **/
     [prop: string]: GenericPalletEvent;
   };
+  /**
+   * Pallet `Multisig`'s events
+   **/
   multisig: {
     /**
      * A new multisig operation has begun.
@@ -871,6 +910,9 @@ export interface ChainEvents extends GenericChainEvents {
      **/
     [prop: string]: GenericPalletEvent;
   };
+  /**
+   * Pallet `Proxy`'s events
+   **/
   proxy: {
     /**
      * A proxy was executed correctly, with the given.
@@ -915,6 +957,9 @@ export interface ChainEvents extends GenericChainEvents {
      **/
     [prop: string]: GenericPalletEvent;
   };
+  /**
+   * Pallet `Assets`'s events
+   **/
   assets: {
     /**
      * Some asset class was created.
@@ -1078,6 +1123,9 @@ export interface ChainEvents extends GenericChainEvents {
      **/
     [prop: string]: GenericPalletEvent;
   };
+  /**
+   * Pallet `Uniques`'s events
+   **/
   uniques: {
     /**
      * A `collection` was created.
@@ -1269,6 +1317,9 @@ export interface ChainEvents extends GenericChainEvents {
      **/
     [prop: string]: GenericPalletEvent;
   };
+  /**
+   * Pallet `Nfts`'s events
+   **/
   nfts: {
     /**
      * A `collection` was created.
@@ -1586,6 +1637,9 @@ export interface ChainEvents extends GenericChainEvents {
      **/
     [prop: string]: GenericPalletEvent;
   };
+  /**
+   * Pallet `ForeignAssets`'s events
+   **/
   foreignAssets: {
     /**
      * Some asset class was created.
@@ -1817,6 +1871,9 @@ export interface ChainEvents extends GenericChainEvents {
      **/
     [prop: string]: GenericPalletEvent;
   };
+  /**
+   * Pallet `NftFractionalization`'s events
+   **/
   nftFractionalization: {
     /**
      * An NFT was successfully fractionalized.
@@ -1841,6 +1898,9 @@ export interface ChainEvents extends GenericChainEvents {
      **/
     [prop: string]: GenericPalletEvent;
   };
+  /**
+   * Pallet `PoolAssets`'s events
+   **/
   poolAssets: {
     /**
      * Some asset class was created.
@@ -2004,6 +2064,9 @@ export interface ChainEvents extends GenericChainEvents {
      **/
     [prop: string]: GenericPalletEvent;
   };
+  /**
+   * Pallet `AssetConversion`'s events
+   **/
   assetConversion: {
     /**
      * A successful call of the `CretaPool` extrinsic will create this event.

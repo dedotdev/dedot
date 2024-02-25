@@ -27,6 +27,9 @@ import type {
 } from './types';
 
 export interface ChainEvents extends GenericChainEvents {
+  /**
+   * Pallet `System`'s events
+   **/
   system: {
     /**
      * An extrinsic completed successfully.
@@ -67,6 +70,9 @@ export interface ChainEvents extends GenericChainEvents {
      **/
     [prop: string]: GenericPalletEvent;
   };
+  /**
+   * Pallet `Scheduler`'s events
+   **/
   scheduler: {
     /**
      * Scheduled some task.
@@ -119,6 +125,9 @@ export interface ChainEvents extends GenericChainEvents {
      **/
     [prop: string]: GenericPalletEvent;
   };
+  /**
+   * Pallet `Balances`'s events
+   **/
   balances: {
     /**
      * An account was created with some free balance.
@@ -236,6 +245,9 @@ export interface ChainEvents extends GenericChainEvents {
      **/
     [prop: string]: GenericPalletEvent;
   };
+  /**
+   * Pallet `TransactionPayment`'s events
+   **/
   transactionPayment: {
     /**
      * A transaction fee `actual_fee`, of which `tip` was added to the minimum inclusion fee,
@@ -252,6 +264,9 @@ export interface ChainEvents extends GenericChainEvents {
      **/
     [prop: string]: GenericPalletEvent;
   };
+  /**
+   * Pallet `Staking`'s events
+   **/
   staking: {
     /**
      * The era payout has been set; the first balance is the validator-payout; the second is
@@ -348,6 +363,9 @@ export interface ChainEvents extends GenericChainEvents {
      **/
     [prop: string]: GenericPalletEvent;
   };
+  /**
+   * Pallet `Session`'s events
+   **/
   session: {
     /**
      * New session has happened. Note that the argument is the session index, not the
@@ -360,6 +378,9 @@ export interface ChainEvents extends GenericChainEvents {
      **/
     [prop: string]: GenericPalletEvent;
   };
+  /**
+   * Pallet `Aleph`'s events
+   **/
   aleph: {
     ChangeEmergencyFinalizer: GenericPalletEvent<'Aleph', 'ChangeEmergencyFinalizer', PrimitivesAppPublic>;
     ScheduleFinalityVersionChange: GenericPalletEvent<
@@ -374,6 +395,9 @@ export interface ChainEvents extends GenericChainEvents {
      **/
     [prop: string]: GenericPalletEvent;
   };
+  /**
+   * Pallet `Elections`'s events
+   **/
   elections: {
     /**
      * Committee for the next era has changed
@@ -389,6 +413,9 @@ export interface ChainEvents extends GenericChainEvents {
      **/
     [prop: string]: GenericPalletEvent;
   };
+  /**
+   * Pallet `Treasury`'s events
+   **/
   treasury: {
     /**
      * New proposal.
@@ -444,6 +471,9 @@ export interface ChainEvents extends GenericChainEvents {
      **/
     [prop: string]: GenericPalletEvent;
   };
+  /**
+   * Pallet `Vesting`'s events
+   **/
   vesting: {
     /**
      * The amount vested has been updated. This could indicate a change in funds available.
@@ -461,6 +491,9 @@ export interface ChainEvents extends GenericChainEvents {
      **/
     [prop: string]: GenericPalletEvent;
   };
+  /**
+   * Pallet `Utility`'s events
+   **/
   utility: {
     /**
      * Batch of dispatches did not complete fully. Index of first failing dispatch given, as
@@ -498,6 +531,9 @@ export interface ChainEvents extends GenericChainEvents {
      **/
     [prop: string]: GenericPalletEvent;
   };
+  /**
+   * Pallet `Multisig`'s events
+   **/
   multisig: {
     /**
      * A new multisig operation has begun.
@@ -546,6 +582,9 @@ export interface ChainEvents extends GenericChainEvents {
      **/
     [prop: string]: GenericPalletEvent;
   };
+  /**
+   * Pallet `Sudo`'s events
+   **/
   sudo: {
     /**
      * A sudo just took place. \[result\]
@@ -567,6 +606,9 @@ export interface ChainEvents extends GenericChainEvents {
      **/
     [prop: string]: GenericPalletEvent;
   };
+  /**
+   * Pallet `Contracts`'s events
+   **/
   contracts: {
     /**
      * Contract deployed by address at the specified address.
@@ -707,6 +749,9 @@ export interface ChainEvents extends GenericChainEvents {
      **/
     [prop: string]: GenericPalletEvent;
   };
+  /**
+   * Pallet `NominationPools`'s events
+   **/
   nominationPools: {
     /**
      * A pool has been created.
@@ -846,6 +891,9 @@ export interface ChainEvents extends GenericChainEvents {
      **/
     [prop: string]: GenericPalletEvent;
   };
+  /**
+   * Pallet `Identity`'s events
+   **/
   identity: {
     /**
      * A name was set or reset (which will remove all judgements).
@@ -923,6 +971,9 @@ export interface ChainEvents extends GenericChainEvents {
      **/
     [prop: string]: GenericPalletEvent;
   };
+  /**
+   * Pallet `CommitteeManagement`'s events
+   **/
   committeeManagement: {
     /**
      * Ban thresholds for the next era has changed

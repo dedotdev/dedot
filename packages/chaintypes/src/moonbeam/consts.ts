@@ -13,6 +13,9 @@ import type {
 } from './types';
 
 export interface ChainConsts extends GenericChainConsts {
+  /**
+   * Pallet `System`'s constants
+   **/
   system: {
     /**
      * Block & extrinsics weights: base values and limits.
@@ -53,12 +56,18 @@ export interface ChainConsts extends GenericChainConsts {
      **/
     [name: string]: any;
   };
+  /**
+   * Pallet `ParachainSystem`'s constants
+   **/
   parachainSystem: {
     /**
      * Generic pallet constant
      **/
     [name: string]: any;
   };
+  /**
+   * Pallet `Timestamp`'s constants
+   **/
   timestamp: {
     /**
      * The minimum period between blocks.
@@ -75,18 +84,27 @@ export interface ChainConsts extends GenericChainConsts {
      **/
     [name: string]: any;
   };
+  /**
+   * Pallet `ParachainInfo`'s constants
+   **/
   parachainInfo: {
     /**
      * Generic pallet constant
      **/
     [name: string]: any;
   };
+  /**
+   * Pallet `RootTesting`'s constants
+   **/
   rootTesting: {
     /**
      * Generic pallet constant
      **/
     [name: string]: any;
   };
+  /**
+   * Pallet `Balances`'s constants
+   **/
   balances: {
     /**
      * The minimum amount required to keep an account open. MUST BE GREATER THAN ZERO!
@@ -126,6 +144,9 @@ export interface ChainConsts extends GenericChainConsts {
      **/
     [name: string]: any;
   };
+  /**
+   * Pallet `TransactionPayment`'s constants
+   **/
   transactionPayment: {
     /**
      * A fee mulitplier for `Operational` extrinsics to compute "virtual tip" to boost their
@@ -157,6 +178,9 @@ export interface ChainConsts extends GenericChainConsts {
      **/
     [name: string]: any;
   };
+  /**
+   * Pallet `ParachainStaking`'s constants
+   **/
   parachainStaking: {
     /**
      * Minimum number of blocks per round
@@ -239,24 +263,36 @@ export interface ChainConsts extends GenericChainConsts {
      **/
     [name: string]: any;
   };
+  /**
+   * Pallet `AuthorInherent`'s constants
+   **/
   authorInherent: {
     /**
      * Generic pallet constant
      **/
     [name: string]: any;
   };
+  /**
+   * Pallet `AuthorFilter`'s constants
+   **/
   authorFilter: {
     /**
      * Generic pallet constant
      **/
     [name: string]: any;
   };
+  /**
+   * Pallet `AuthorMapping`'s constants
+   **/
   authorMapping: {
     /**
      * Generic pallet constant
      **/
     [name: string]: any;
   };
+  /**
+   * Pallet `MoonbeamOrbiters`'s constants
+   **/
   moonbeamOrbiters: {
     /**
      * Maximum number of orbiters per collator.
@@ -280,6 +316,9 @@ export interface ChainConsts extends GenericChainConsts {
      **/
     [name: string]: any;
   };
+  /**
+   * Pallet `Utility`'s constants
+   **/
   utility: {
     /**
      * The limit on the number of batched calls.
@@ -291,6 +330,9 @@ export interface ChainConsts extends GenericChainConsts {
      **/
     [name: string]: any;
   };
+  /**
+   * Pallet `Proxy`'s constants
+   **/
   proxy: {
     /**
      * The base amount of currency needed to reserve for creating a proxy.
@@ -340,12 +382,18 @@ export interface ChainConsts extends GenericChainConsts {
      **/
     [name: string]: any;
   };
+  /**
+   * Pallet `MaintenanceMode`'s constants
+   **/
   maintenanceMode: {
     /**
      * Generic pallet constant
      **/
     [name: string]: any;
   };
+  /**
+   * Pallet `Identity`'s constants
+   **/
   identity: {
     /**
      * The amount held on deposit for a registered identity
@@ -386,18 +434,27 @@ export interface ChainConsts extends GenericChainConsts {
      **/
     [name: string]: any;
   };
+  /**
+   * Pallet `Migrations`'s constants
+   **/
   migrations: {
     /**
      * Generic pallet constant
      **/
     [name: string]: any;
   };
+  /**
+   * Pallet `ProxyGenesisCompanion`'s constants
+   **/
   proxyGenesisCompanion: {
     /**
      * Generic pallet constant
      **/
     [name: string]: any;
   };
+  /**
+   * Pallet `Multisig`'s constants
+   **/
   multisig: {
     /**
      * The base amount of currency needed to reserve for creating a multisig execution or to
@@ -426,24 +483,36 @@ export interface ChainConsts extends GenericChainConsts {
      **/
     [name: string]: any;
   };
+  /**
+   * Pallet `EthereumChainId`'s constants
+   **/
   ethereumChainId: {
     /**
      * Generic pallet constant
      **/
     [name: string]: any;
   };
+  /**
+   * Pallet `EVM`'s constants
+   **/
   eVM: {
     /**
      * Generic pallet constant
      **/
     [name: string]: any;
   };
+  /**
+   * Pallet `Ethereum`'s constants
+   **/
   ethereum: {
     /**
      * Generic pallet constant
      **/
     [name: string]: any;
   };
+  /**
+   * Pallet `Scheduler`'s constants
+   **/
   scheduler: {
     /**
      * The maximum weight that may be scheduled per block for any dispatchables.
@@ -464,6 +533,9 @@ export interface ChainConsts extends GenericChainConsts {
      **/
     [name: string]: any;
   };
+  /**
+   * Pallet `Democracy`'s constants
+   **/
   democracy: {
     /**
      * The period between a proposal being approved and enacted.
@@ -542,12 +614,18 @@ export interface ChainConsts extends GenericChainConsts {
      **/
     [name: string]: any;
   };
+  /**
+   * Pallet `Preimage`'s constants
+   **/
   preimage: {
     /**
      * Generic pallet constant
      **/
     [name: string]: any;
   };
+  /**
+   * Pallet `ConvictionVoting`'s constants
+   **/
   convictionVoting: {
     /**
      * The maximum number of concurrent votes an account may have.
@@ -570,6 +648,9 @@ export interface ChainConsts extends GenericChainConsts {
      **/
     [name: string]: any;
   };
+  /**
+   * Pallet `Referenda`'s constants
+   **/
   referenda: {
     /**
      * The minimum amount to be used as a deposit for a public referendum proposal.
@@ -604,12 +685,18 @@ export interface ChainConsts extends GenericChainConsts {
      **/
     [name: string]: any;
   };
+  /**
+   * Pallet `Whitelist`'s constants
+   **/
   whitelist: {
     /**
      * Generic pallet constant
      **/
     [name: string]: any;
   };
+  /**
+   * Pallet `CouncilCollective`'s constants
+   **/
   councilCollective: {
     /**
      * The maximum weight of a dispatch call that can be proposed and executed.
@@ -621,6 +708,9 @@ export interface ChainConsts extends GenericChainConsts {
      **/
     [name: string]: any;
   };
+  /**
+   * Pallet `TechCommitteeCollective`'s constants
+   **/
   techCommitteeCollective: {
     /**
      * The maximum weight of a dispatch call that can be proposed and executed.
@@ -632,6 +722,9 @@ export interface ChainConsts extends GenericChainConsts {
      **/
     [name: string]: any;
   };
+  /**
+   * Pallet `TreasuryCouncilCollective`'s constants
+   **/
   treasuryCouncilCollective: {
     /**
      * The maximum weight of a dispatch call that can be proposed and executed.
@@ -643,6 +736,9 @@ export interface ChainConsts extends GenericChainConsts {
      **/
     [name: string]: any;
   };
+  /**
+   * Pallet `OpenTechCommitteeCollective`'s constants
+   **/
   openTechCommitteeCollective: {
     /**
      * The maximum weight of a dispatch call that can be proposed and executed.
@@ -654,6 +750,9 @@ export interface ChainConsts extends GenericChainConsts {
      **/
     [name: string]: any;
   };
+  /**
+   * Pallet `Treasury`'s constants
+   **/
   treasury: {
     /**
      * Fraction of a proposal's value that should be bonded in order to place the proposal.
@@ -703,6 +802,9 @@ export interface ChainConsts extends GenericChainConsts {
      **/
     [name: string]: any;
   };
+  /**
+   * Pallet `CrowdloanRewards`'s constants
+   **/
   crowdloanRewards: {
     /**
      * Percentage to be payed at initialization
@@ -727,30 +829,45 @@ export interface ChainConsts extends GenericChainConsts {
      **/
     [name: string]: any;
   };
+  /**
+   * Pallet `XcmpQueue`'s constants
+   **/
   xcmpQueue: {
     /**
      * Generic pallet constant
      **/
     [name: string]: any;
   };
+  /**
+   * Pallet `CumulusXcm`'s constants
+   **/
   cumulusXcm: {
     /**
      * Generic pallet constant
      **/
     [name: string]: any;
   };
+  /**
+   * Pallet `DmpQueue`'s constants
+   **/
   dmpQueue: {
     /**
      * Generic pallet constant
      **/
     [name: string]: any;
   };
+  /**
+   * Pallet `PolkadotXcm`'s constants
+   **/
   polkadotXcm: {
     /**
      * Generic pallet constant
      **/
     [name: string]: any;
   };
+  /**
+   * Pallet `Assets`'s constants
+   **/
   assets: {
     /**
      * Max number of items to destroy per `destroy_accounts` and `destroy_approvals` call.
@@ -796,6 +913,9 @@ export interface ChainConsts extends GenericChainConsts {
      **/
     [name: string]: any;
   };
+  /**
+   * Pallet `AssetManager`'s constants
+   **/
   assetManager: {
     /**
      * The basic amount of funds that must be reserved for a local asset.
@@ -807,6 +927,9 @@ export interface ChainConsts extends GenericChainConsts {
      **/
     [name: string]: any;
   };
+  /**
+   * Pallet `XTokens`'s constants
+   **/
   xTokens: {
     /**
      * Self chain location.
@@ -826,6 +949,9 @@ export interface ChainConsts extends GenericChainConsts {
      **/
     [name: string]: any;
   };
+  /**
+   * Pallet `XcmTransactor`'s constants
+   **/
   xcmTransactor: {
     /**
      * Self chain location.
@@ -844,6 +970,9 @@ export interface ChainConsts extends GenericChainConsts {
      **/
     [name: string]: any;
   };
+  /**
+   * Pallet `LocalAssets`'s constants
+   **/
   localAssets: {
     /**
      * Max number of items to destroy per `destroy_accounts` and `destroy_approvals` call.
@@ -889,18 +1018,27 @@ export interface ChainConsts extends GenericChainConsts {
      **/
     [name: string]: any;
   };
+  /**
+   * Pallet `EthereumXcm`'s constants
+   **/
   ethereumXcm: {
     /**
      * Generic pallet constant
      **/
     [name: string]: any;
   };
+  /**
+   * Pallet `Erc20XcmBridge`'s constants
+   **/
   erc20XcmBridge: {
     /**
      * Generic pallet constant
      **/
     [name: string]: any;
   };
+  /**
+   * Pallet `Randomness`'s constants
+   **/
   randomness: {
     /**
      * The amount that should be taken as a security deposit when requesting randomness.

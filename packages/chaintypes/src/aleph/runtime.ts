@@ -56,6 +56,7 @@ export interface RuntimeApis extends GenericRuntimeApis {
      * Execute the given block.
      *
      * @callname: Core_execute_block
+     * @param {SpRuntimeBlock} block
      **/
     executeBlock: GenericRuntimeApiMethod<(block: SpRuntimeBlock) => Promise<[]>>;
 
@@ -63,6 +64,7 @@ export interface RuntimeApis extends GenericRuntimeApis {
      * Initialize a block with the given header.
      *
      * @callname: Core_initialize_block
+     * @param {Header} header
      **/
     initializeBlock: GenericRuntimeApiMethod<(header: Header) => Promise<[]>>;
 
@@ -89,6 +91,7 @@ export interface RuntimeApis extends GenericRuntimeApis {
      * Use [`Self::metadata_versions`] to find out about supported metadata version of the runtime.
      *
      * @callname: Metadata_metadata_at_version
+     * @param {number} version
      **/
     metadataAtVersion: GenericRuntimeApiMethod<(version: number) => Promise<SpCoreOpaqueMetadata | undefined>>;
 
@@ -117,6 +120,7 @@ export interface RuntimeApis extends GenericRuntimeApis {
      * this block or not.
      *
      * @callname: BlockBuilder_apply_extrinsic
+     * @param {UncheckedExtrinsicLike} extrinsic
      **/
     applyExtrinsic: GenericRuntimeApiMethod<
       (
@@ -135,6 +139,7 @@ export interface RuntimeApis extends GenericRuntimeApis {
      * Generate inherent extrinsics. The inherent data will vary from chain to chain.
      *
      * @callname: BlockBuilder_inherent_extrinsics
+     * @param {SpInherentsInherentData} inherent
      **/
     inherentExtrinsics: GenericRuntimeApiMethod<
       (inherent: SpInherentsInherentData) => Promise<Array<UncheckedExtrinsic>>
@@ -144,6 +149,8 @@ export interface RuntimeApis extends GenericRuntimeApis {
      * Check that the inherents are valid. The inherent data will vary from chain to chain.
      *
      * @callname: BlockBuilder_check_inherents
+     * @param {SpRuntimeBlock} block
+     * @param {SpInherentsInherentData} data
      **/
     checkInherents: GenericRuntimeApiMethod<
       (block: SpRuntimeBlock, data: SpInherentsInherentData) => Promise<SpInherentsCheckInherentsResult>
@@ -170,6 +177,9 @@ export interface RuntimeApis extends GenericRuntimeApis {
      * might be verified in any possible order.
      *
      * @callname: TaggedTransactionQueue_validate_transaction
+     * @param {SpRuntimeTransactionValidityTransactionSource} source
+     * @param {UncheckedExtrinsicLike} tx
+     * @param {H256} block_hash
      **/
     validateTransaction: GenericRuntimeApiMethod<
       (
@@ -219,6 +229,7 @@ export interface RuntimeApis extends GenericRuntimeApis {
      * Starts the off-chain task for given block header.
      *
      * @callname: OffchainWorkerApi_offchain_worker
+     * @param {Header} header
      **/
     offchainWorker: GenericRuntimeApiMethod<(header: Header) => Promise<[]>>;
 
@@ -241,6 +252,7 @@ export interface RuntimeApis extends GenericRuntimeApis {
      * Returns the concatenated SCALE encoded public keys.
      *
      * @callname: SessionKeys_generate_session_keys
+     * @param {BytesLike | undefined} seed
      **/
     generateSessionKeys: GenericRuntimeApiMethod<(seed?: BytesLike | undefined) => Promise<Bytes>>;
 
@@ -250,6 +262,7 @@ export interface RuntimeApis extends GenericRuntimeApis {
      * Returns the list of public raw public keys + key type.
      *
      * @callname: SessionKeys_decode_session_keys
+     * @param {BytesLike} encoded
      **/
     decodeSessionKeys: GenericRuntimeApiMethod<
       (encoded: BytesLike) => Promise<Array<[Bytes, SpCoreCryptoKeyTypeId]> | undefined>
@@ -268,6 +281,7 @@ export interface RuntimeApis extends GenericRuntimeApis {
      * Get current account nonce of given `AccountId`.
      *
      * @callname: AccountNonceApi_account_nonce
+     * @param {AccountId32Like} account
      **/
     accountNonce: GenericRuntimeApiMethod<(account: AccountId32Like) => Promise<number>>;
 
@@ -283,6 +297,8 @@ export interface RuntimeApis extends GenericRuntimeApis {
     /**
      *
      * @callname: TransactionPaymentApi_query_info
+     * @param {UncheckedExtrinsicLike} uxt
+     * @param {number} len
      **/
     queryInfo: GenericRuntimeApiMethod<
       (uxt: UncheckedExtrinsicLike, len: number) => Promise<PalletTransactionPaymentRuntimeDispatchInfo>
@@ -291,6 +307,8 @@ export interface RuntimeApis extends GenericRuntimeApis {
     /**
      *
      * @callname: TransactionPaymentApi_query_fee_details
+     * @param {UncheckedExtrinsicLike} uxt
+     * @param {number} len
      **/
     queryFeeDetails: GenericRuntimeApiMethod<
       (uxt: UncheckedExtrinsicLike, len: number) => Promise<PalletTransactionPaymentFeeDetails>
@@ -299,12 +317,14 @@ export interface RuntimeApis extends GenericRuntimeApis {
     /**
      *
      * @callname: TransactionPaymentApi_query_weight_to_fee
+     * @param {SpWeightsWeightV2Weight} weight
      **/
     queryWeightToFee: GenericRuntimeApiMethod<(weight: SpWeightsWeightV2Weight) => Promise<bigint>>;
 
     /**
      *
      * @callname: TransactionPaymentApi_query_length_to_fee
+     * @param {number} length
      **/
     queryLengthToFee: GenericRuntimeApiMethod<(length: number) => Promise<bigint>>;
 
@@ -379,6 +399,7 @@ export interface RuntimeApis extends GenericRuntimeApis {
      * determine all of the sessions in the era `E+1`.
      *
      * @callname: AlephSessionApi_predict_session_committee
+     * @param {number} session
      **/
     predictSessionCommittee: GenericRuntimeApiMethod<
       (session: number) => Promise<Result<PrimitivesSessionCommittee, PrimitivesSessionValidatorError>>
@@ -397,6 +418,7 @@ export interface RuntimeApis extends GenericRuntimeApis {
      * Returns the pending rewards for the member that the AccountId was given for.
      *
      * @callname: NominationPoolsApi_pending_rewards
+     * @param {AccountId32Like} who
      **/
     pendingRewards: GenericRuntimeApiMethod<(who: AccountId32Like) => Promise<bigint>>;
 
@@ -404,6 +426,8 @@ export interface RuntimeApis extends GenericRuntimeApis {
      * Returns the equivalent balance of `points` for a given pool.
      *
      * @callname: NominationPoolsApi_points_to_balance
+     * @param {number} pool_id
+     * @param {bigint} points
      **/
     pointsToBalance: GenericRuntimeApiMethod<(poolId: number, points: bigint) => Promise<bigint>>;
 
@@ -411,6 +435,8 @@ export interface RuntimeApis extends GenericRuntimeApis {
      * Returns the equivalent points of `new_funds` for a given pool.
      *
      * @callname: NominationPoolsApi_balance_to_points
+     * @param {number} pool_id
+     * @param {bigint} new_funds
      **/
     balanceToPoints: GenericRuntimeApiMethod<(poolId: number, newFunds: bigint) => Promise<bigint>>;
 
@@ -429,6 +455,12 @@ export interface RuntimeApis extends GenericRuntimeApis {
      * See [`crate::Pallet::bare_call`].
      *
      * @callname: ContractsApi_call
+     * @param {AccountId32Like} origin
+     * @param {AccountId32Like} dest
+     * @param {bigint} value
+     * @param {SpWeightsWeightV2Weight | undefined} gas_limit
+     * @param {bigint | undefined} storage_deposit_limit
+     * @param {BytesLike} input_data
      **/
     call: GenericRuntimeApiMethod<
       (
@@ -447,6 +479,13 @@ export interface RuntimeApis extends GenericRuntimeApis {
      * See `[crate::Pallet::bare_instantiate]`.
      *
      * @callname: ContractsApi_instantiate
+     * @param {AccountId32Like} origin
+     * @param {bigint} value
+     * @param {SpWeightsWeightV2Weight | undefined} gas_limit
+     * @param {bigint | undefined} storage_deposit_limit
+     * @param {PalletContractsPrimitivesCode} code
+     * @param {BytesLike} data
+     * @param {BytesLike} salt
      **/
     instantiate: GenericRuntimeApiMethod<
       (
@@ -466,6 +505,10 @@ export interface RuntimeApis extends GenericRuntimeApis {
      * See [`crate::Pallet::bare_upload_code`].
      *
      * @callname: ContractsApi_upload_code
+     * @param {AccountId32Like} origin
+     * @param {BytesLike} code
+     * @param {bigint | undefined} storage_deposit_limit
+     * @param {PalletContractsWasmDeterminism} determinism
      **/
     uploadCode: GenericRuntimeApiMethod<
       (
@@ -484,6 +527,8 @@ export interface RuntimeApis extends GenericRuntimeApis {
      * doesn't exist, or doesn't have a contract then `Err` is returned.
      *
      * @callname: ContractsApi_get_storage
+     * @param {AccountId32Like} address
+     * @param {BytesLike} key
      **/
     getStorage: GenericRuntimeApiMethod<
       (

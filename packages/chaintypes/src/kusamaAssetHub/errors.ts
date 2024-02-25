@@ -3,6 +3,9 @@
 import type { GenericChainErrors, GenericPalletError } from '@delightfuldot/types';
 
 export interface ChainErrors extends GenericChainErrors {
+  /**
+   * Pallet `System`'s errors
+   **/
   system: {
     /**
      * The name of specification does not match between the current runtime
@@ -43,6 +46,9 @@ export interface ChainErrors extends GenericChainErrors {
      **/
     [error: string]: GenericPalletError;
   };
+  /**
+   * Pallet `ParachainSystem`'s errors
+   **/
   parachainSystem: {
     /**
      * Attempt to upgrade validation function while existing upgrade pending.
@@ -90,6 +96,9 @@ export interface ChainErrors extends GenericChainErrors {
      **/
     [error: string]: GenericPalletError;
   };
+  /**
+   * Pallet `Balances`'s errors
+   **/
   balances: {
     /**
      * Vesting balance too high to send value.
@@ -146,6 +155,9 @@ export interface ChainErrors extends GenericChainErrors {
      **/
     [error: string]: GenericPalletError;
   };
+  /**
+   * Pallet `CollatorSelection`'s errors
+   **/
   collatorSelection: {
     /**
      * The pallet has too many candidates.
@@ -197,6 +209,9 @@ export interface ChainErrors extends GenericChainErrors {
      **/
     [error: string]: GenericPalletError;
   };
+  /**
+   * Pallet `Session`'s errors
+   **/
   session: {
     /**
      * Invalid ownership proof.
@@ -228,6 +243,9 @@ export interface ChainErrors extends GenericChainErrors {
      **/
     [error: string]: GenericPalletError;
   };
+  /**
+   * Pallet `XcmpQueue`'s errors
+   **/
   xcmpQueue: {
     /**
      * Failed to send XCM message.
@@ -259,6 +277,9 @@ export interface ChainErrors extends GenericChainErrors {
      **/
     [error: string]: GenericPalletError;
   };
+  /**
+   * Pallet `PolkadotXcm`'s errors
+   **/
   polkadotXcm: {
     /**
      * The desired destination was unreachable, generally because there is a no way of routing
@@ -368,12 +389,18 @@ export interface ChainErrors extends GenericChainErrors {
      **/
     [error: string]: GenericPalletError;
   };
+  /**
+   * Pallet `CumulusXcm`'s errors
+   **/
   cumulusXcm: {
     /**
      * Generic pallet error
      **/
     [error: string]: GenericPalletError;
   };
+  /**
+   * Pallet `DmpQueue`'s errors
+   **/
   dmpQueue: {
     /**
      * The message index given is unknown.
@@ -390,6 +417,9 @@ export interface ChainErrors extends GenericChainErrors {
      **/
     [error: string]: GenericPalletError;
   };
+  /**
+   * Pallet `Utility`'s errors
+   **/
   utility: {
     /**
      * Too many calls batched.
@@ -401,6 +431,9 @@ export interface ChainErrors extends GenericChainErrors {
      **/
     [error: string]: GenericPalletError;
   };
+  /**
+   * Pallet `Multisig`'s errors
+   **/
   multisig: {
     /**
      * Threshold must be 2 or greater.
@@ -477,6 +510,9 @@ export interface ChainErrors extends GenericChainErrors {
      **/
     [error: string]: GenericPalletError;
   };
+  /**
+   * Pallet `Proxy`'s errors
+   **/
   proxy: {
     /**
      * There are too many proxies registered or too many announcements pending.
@@ -523,6 +559,9 @@ export interface ChainErrors extends GenericChainErrors {
      **/
     [error: string]: GenericPalletError;
   };
+  /**
+   * Pallet `Assets`'s errors
+   **/
   assets: {
     /**
      * Account balance must be greater than or equal to the transfer amount.
@@ -632,6 +671,9 @@ export interface ChainErrors extends GenericChainErrors {
      **/
     [error: string]: GenericPalletError;
   };
+  /**
+   * Pallet `Uniques`'s errors
+   **/
   uniques: {
     /**
      * The signing account has no permission to do the operation.
@@ -728,6 +770,9 @@ export interface ChainErrors extends GenericChainErrors {
      **/
     [error: string]: GenericPalletError;
   };
+  /**
+   * Pallet `Nfts`'s errors
+   **/
   nfts: {
     /**
      * The signing account has no permission to do the operation.
@@ -959,6 +1004,9 @@ export interface ChainErrors extends GenericChainErrors {
      **/
     [error: string]: GenericPalletError;
   };
+  /**
+   * Pallet `ForeignAssets`'s errors
+   **/
   foreignAssets: {
     /**
      * Account balance must be greater than or equal to the transfer amount.
@@ -1068,6 +1116,9 @@ export interface ChainErrors extends GenericChainErrors {
      **/
     [error: string]: GenericPalletError;
   };
+  /**
+   * Pallet `NftFractionalization`'s errors
+   **/
   nftFractionalization: {
     /**
      * Asset ID does not correspond to locked NFT.
@@ -1094,6 +1145,9 @@ export interface ChainErrors extends GenericChainErrors {
      **/
     [error: string]: GenericPalletError;
   };
+  /**
+   * Pallet `PoolAssets`'s errors
+   **/
   poolAssets: {
     /**
      * Account balance must be greater than or equal to the transfer amount.
@@ -1203,6 +1257,9 @@ export interface ChainErrors extends GenericChainErrors {
      **/
     [error: string]: GenericPalletError;
   };
+  /**
+   * Pallet `AssetConversion`'s errors
+   **/
   assetConversion: {
     /**
      * Provided assets are equal.

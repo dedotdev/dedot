@@ -3,6 +3,9 @@
 import type { GenericChainErrors, GenericPalletError } from '@delightfuldot/types';
 
 export interface ChainErrors extends GenericChainErrors {
+  /**
+   * Pallet `System`'s errors
+   **/
   system: {
     /**
      * The name of specification does not match between the current runtime
@@ -43,6 +46,9 @@ export interface ChainErrors extends GenericChainErrors {
      **/
     [error: string]: GenericPalletError;
   };
+  /**
+   * Pallet `Scheduler`'s errors
+   **/
   scheduler: {
     /**
      * Failed to schedule a call
@@ -74,6 +80,9 @@ export interface ChainErrors extends GenericChainErrors {
      **/
     [error: string]: GenericPalletError;
   };
+  /**
+   * Pallet `Preimage`'s errors
+   **/
   preimage: {
     /**
      * Preimage is too large to store on-chain.
@@ -120,6 +129,9 @@ export interface ChainErrors extends GenericChainErrors {
      **/
     [error: string]: GenericPalletError;
   };
+  /**
+   * Pallet `Babe`'s errors
+   **/
   babe: {
     /**
      * An equivocation proof provided as part of an equivocation report is invalid.
@@ -146,6 +158,9 @@ export interface ChainErrors extends GenericChainErrors {
      **/
     [error: string]: GenericPalletError;
   };
+  /**
+   * Pallet `Indices`'s errors
+   **/
   indices: {
     /**
      * The index was not already assigned.
@@ -177,6 +192,9 @@ export interface ChainErrors extends GenericChainErrors {
      **/
     [error: string]: GenericPalletError;
   };
+  /**
+   * Pallet `Balances`'s errors
+   **/
   balances: {
     /**
      * Vesting balance too high to send value.
@@ -233,6 +251,9 @@ export interface ChainErrors extends GenericChainErrors {
      **/
     [error: string]: GenericPalletError;
   };
+  /**
+   * Pallet `Staking`'s errors
+   **/
   staking: {
     /**
      * Not a controller account.
@@ -368,6 +389,9 @@ export interface ChainErrors extends GenericChainErrors {
      **/
     [error: string]: GenericPalletError;
   };
+  /**
+   * Pallet `Session`'s errors
+   **/
   session: {
     /**
      * Invalid ownership proof.
@@ -399,6 +423,9 @@ export interface ChainErrors extends GenericChainErrors {
      **/
     [error: string]: GenericPalletError;
   };
+  /**
+   * Pallet `Grandpa`'s errors
+   **/
   grandpa: {
     /**
      * Attempt to signal GRANDPA pause when the authority set isn't live
@@ -442,6 +469,9 @@ export interface ChainErrors extends GenericChainErrors {
      **/
     [error: string]: GenericPalletError;
   };
+  /**
+   * Pallet `ImOnline`'s errors
+   **/
   imOnline: {
     /**
      * Non existent public key.
@@ -458,6 +488,9 @@ export interface ChainErrors extends GenericChainErrors {
      **/
     [error: string]: GenericPalletError;
   };
+  /**
+   * Pallet `Treasury`'s errors
+   **/
   treasury: {
     /**
      * Proposer's balance is too low.
@@ -525,6 +558,9 @@ export interface ChainErrors extends GenericChainErrors {
      **/
     [error: string]: GenericPalletError;
   };
+  /**
+   * Pallet `ConvictionVoting`'s errors
+   **/
   convictionVoting: {
     /**
      * Poll is not ongoing.
@@ -592,6 +628,9 @@ export interface ChainErrors extends GenericChainErrors {
      **/
     [error: string]: GenericPalletError;
   };
+  /**
+   * Pallet `Referenda`'s errors
+   **/
   referenda: {
     /**
      * Referendum is not ongoing.
@@ -663,6 +702,9 @@ export interface ChainErrors extends GenericChainErrors {
      **/
     [error: string]: GenericPalletError;
   };
+  /**
+   * Pallet `Whitelist`'s errors
+   **/
   whitelist: {
     /**
      * The preimage of the call hash could not be loaded.
@@ -694,6 +736,9 @@ export interface ChainErrors extends GenericChainErrors {
      **/
     [error: string]: GenericPalletError;
   };
+  /**
+   * Pallet `Claims`'s errors
+   **/
   claims: {
     /**
      * Invalid Ethereum signature.
@@ -731,6 +776,9 @@ export interface ChainErrors extends GenericChainErrors {
      **/
     [error: string]: GenericPalletError;
   };
+  /**
+   * Pallet `Vesting`'s errors
+   **/
   vesting: {
     /**
      * The account given is not vesting.
@@ -763,6 +811,9 @@ export interface ChainErrors extends GenericChainErrors {
      **/
     [error: string]: GenericPalletError;
   };
+  /**
+   * Pallet `Utility`'s errors
+   **/
   utility: {
     /**
      * Too many calls batched.
@@ -774,6 +825,9 @@ export interface ChainErrors extends GenericChainErrors {
      **/
     [error: string]: GenericPalletError;
   };
+  /**
+   * Pallet `Identity`'s errors
+   **/
   identity: {
     /**
      * Too many subs-accounts.
@@ -870,6 +924,9 @@ export interface ChainErrors extends GenericChainErrors {
      **/
     [error: string]: GenericPalletError;
   };
+  /**
+   * Pallet `Proxy`'s errors
+   **/
   proxy: {
     /**
      * There are too many proxies registered or too many announcements pending.
@@ -916,6 +973,9 @@ export interface ChainErrors extends GenericChainErrors {
      **/
     [error: string]: GenericPalletError;
   };
+  /**
+   * Pallet `Multisig`'s errors
+   **/
   multisig: {
     /**
      * Threshold must be 2 or greater.
@@ -992,6 +1052,9 @@ export interface ChainErrors extends GenericChainErrors {
      **/
     [error: string]: GenericPalletError;
   };
+  /**
+   * Pallet `Bounties`'s errors
+   **/
   bounties: {
     /**
      * Proposer's balance is too low.
@@ -1054,6 +1117,9 @@ export interface ChainErrors extends GenericChainErrors {
      **/
     [error: string]: GenericPalletError;
   };
+  /**
+   * Pallet `ChildBounties`'s errors
+   **/
   childBounties: {
     /**
      * The parent bounty is not in active state.
@@ -1075,6 +1141,9 @@ export interface ChainErrors extends GenericChainErrors {
      **/
     [error: string]: GenericPalletError;
   };
+  /**
+   * Pallet `ElectionProviderMultiPhase`'s errors
+   **/
   electionProviderMultiPhase: {
     /**
      * Submission was too early.
@@ -1151,6 +1220,9 @@ export interface ChainErrors extends GenericChainErrors {
      **/
     [error: string]: GenericPalletError;
   };
+  /**
+   * Pallet `VoterList`'s errors
+   **/
   voterList: {
     /**
      * A error in the list interface implementation.
@@ -1162,6 +1234,9 @@ export interface ChainErrors extends GenericChainErrors {
      **/
     [error: string]: GenericPalletError;
   };
+  /**
+   * Pallet `NominationPools`'s errors
+   **/
   nominationPools: {
     /**
      * A (bonded) pool id does not exist.
@@ -1336,6 +1411,9 @@ export interface ChainErrors extends GenericChainErrors {
      **/
     [error: string]: GenericPalletError;
   };
+  /**
+   * Pallet `FastUnstake`'s errors
+   **/
   fastUnstake: {
     /**
      * The provided Controller account was not found.
@@ -1374,6 +1452,9 @@ export interface ChainErrors extends GenericChainErrors {
      **/
     [error: string]: GenericPalletError;
   };
+  /**
+   * Pallet `Configuration`'s errors
+   **/
   configuration: {
     /**
      * The new value for a configuration parameter is invalid.
@@ -1385,6 +1466,9 @@ export interface ChainErrors extends GenericChainErrors {
      **/
     [error: string]: GenericPalletError;
   };
+  /**
+   * Pallet `ParaInclusion`'s errors
+   **/
   paraInclusion: {
     /**
      * Validator indices are out of order or contains duplicates.
@@ -1541,6 +1625,9 @@ export interface ChainErrors extends GenericChainErrors {
      **/
     [error: string]: GenericPalletError;
   };
+  /**
+   * Pallet `ParaInherent`'s errors
+   **/
   paraInherent: {
     /**
      * Inclusion inherent called more than once per block.
@@ -1578,6 +1665,9 @@ export interface ChainErrors extends GenericChainErrors {
      **/
     [error: string]: GenericPalletError;
   };
+  /**
+   * Pallet `Paras`'s errors
+   **/
   paras: {
     /**
      * Para is not registered in our system.
@@ -1644,6 +1734,9 @@ export interface ChainErrors extends GenericChainErrors {
      **/
     [error: string]: GenericPalletError;
   };
+  /**
+   * Pallet `Hrmp`'s errors
+   **/
   hrmp: {
     /**
      * The sender tried to open a channel to themselves.
@@ -1750,6 +1843,9 @@ export interface ChainErrors extends GenericChainErrors {
      **/
     [error: string]: GenericPalletError;
   };
+  /**
+   * Pallet `ParasDisputes`'s errors
+   **/
   parasDisputes: {
     /**
      * Duplicate dispute statement sets provided.
@@ -1801,6 +1897,9 @@ export interface ChainErrors extends GenericChainErrors {
      **/
     [error: string]: GenericPalletError;
   };
+  /**
+   * Pallet `ParasSlashing`'s errors
+   **/
   parasSlashing: {
     /**
      * The key ownership proof is invalid.
@@ -1838,6 +1937,9 @@ export interface ChainErrors extends GenericChainErrors {
      **/
     [error: string]: GenericPalletError;
   };
+  /**
+   * Pallet `Registrar`'s errors
+   **/
   registrar: {
     /**
      * The ID is not registered.
@@ -1916,6 +2018,9 @@ export interface ChainErrors extends GenericChainErrors {
      **/
     [error: string]: GenericPalletError;
   };
+  /**
+   * Pallet `Slots`'s errors
+   **/
   slots: {
     /**
      * The parachain ID is not onboarding.
@@ -1932,6 +2037,9 @@ export interface ChainErrors extends GenericChainErrors {
      **/
     [error: string]: GenericPalletError;
   };
+  /**
+   * Pallet `Auctions`'s errors
+   **/
   auctions: {
     /**
      * This auction is already in progress.
@@ -1973,6 +2081,9 @@ export interface ChainErrors extends GenericChainErrors {
      **/
     [error: string]: GenericPalletError;
   };
+  /**
+   * Pallet `Crowdloan`'s errors
+   **/
   crowdloan: {
     /**
      * The current lease period is more than the first lease period.
@@ -2095,6 +2206,9 @@ export interface ChainErrors extends GenericChainErrors {
      **/
     [error: string]: GenericPalletError;
   };
+  /**
+   * Pallet `XcmPallet`'s errors
+   **/
   xcmPallet: {
     /**
      * The desired destination was unreachable, generally because there is a no way of routing
@@ -2204,6 +2318,9 @@ export interface ChainErrors extends GenericChainErrors {
      **/
     [error: string]: GenericPalletError;
   };
+  /**
+   * Pallet `MessageQueue`'s errors
+   **/
   messageQueue: {
     /**
      * Page is not reapable because it has items remaining to be processed and is not old
@@ -2256,6 +2373,9 @@ export interface ChainErrors extends GenericChainErrors {
      **/
     [error: string]: GenericPalletError;
   };
+  /**
+   * Pallet `AssetRate`'s errors
+   **/
   assetRate: {
     /**
      * The given asset ID is unknown.
@@ -2272,6 +2392,9 @@ export interface ChainErrors extends GenericChainErrors {
      **/
     [error: string]: GenericPalletError;
   };
+  /**
+   * Pallet `Beefy`'s errors
+   **/
   beefy: {
     /**
      * A key ownership proof provided as part of an equivocation report is invalid.

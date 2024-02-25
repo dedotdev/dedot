@@ -57,6 +57,9 @@ import type {
 } from './types';
 
 export interface ChainEvents extends GenericChainEvents {
+  /**
+   * Pallet `System`'s events
+   **/
   system: {
     /**
      * An extrinsic completed successfully.
@@ -97,6 +100,9 @@ export interface ChainEvents extends GenericChainEvents {
      **/
     [prop: string]: GenericPalletEvent;
   };
+  /**
+   * Pallet `Scheduler`'s events
+   **/
   scheduler: {
     /**
      * Scheduled some task.
@@ -149,6 +155,9 @@ export interface ChainEvents extends GenericChainEvents {
      **/
     [prop: string]: GenericPalletEvent;
   };
+  /**
+   * Pallet `Preimage`'s events
+   **/
   preimage: {
     /**
      * A preimage has been noted.
@@ -170,6 +179,9 @@ export interface ChainEvents extends GenericChainEvents {
      **/
     [prop: string]: GenericPalletEvent;
   };
+  /**
+   * Pallet `Indices`'s events
+   **/
   indices: {
     /**
      * A account index was assigned.
@@ -191,6 +203,9 @@ export interface ChainEvents extends GenericChainEvents {
      **/
     [prop: string]: GenericPalletEvent;
   };
+  /**
+   * Pallet `Balances`'s events
+   **/
   balances: {
     /**
      * An account was created with some free balance.
@@ -308,6 +323,9 @@ export interface ChainEvents extends GenericChainEvents {
      **/
     [prop: string]: GenericPalletEvent;
   };
+  /**
+   * Pallet `TransactionPayment`'s events
+   **/
   transactionPayment: {
     /**
      * A transaction fee `actual_fee`, of which `tip` was added to the minimum inclusion fee,
@@ -324,6 +342,9 @@ export interface ChainEvents extends GenericChainEvents {
      **/
     [prop: string]: GenericPalletEvent;
   };
+  /**
+   * Pallet `Staking`'s events
+   **/
   staking: {
     /**
      * The era payout has been set; the first balance is the validator-payout; the second is
@@ -434,6 +455,9 @@ export interface ChainEvents extends GenericChainEvents {
      **/
     [prop: string]: GenericPalletEvent;
   };
+  /**
+   * Pallet `Offences`'s events
+   **/
   offences: {
     /**
      * There is an offence reported of the given `kind` happened at the `session_index` and
@@ -447,6 +471,9 @@ export interface ChainEvents extends GenericChainEvents {
      **/
     [prop: string]: GenericPalletEvent;
   };
+  /**
+   * Pallet `Session`'s events
+   **/
   session: {
     /**
      * New session has happened. Note that the argument is the session index, not the
@@ -459,6 +486,9 @@ export interface ChainEvents extends GenericChainEvents {
      **/
     [prop: string]: GenericPalletEvent;
   };
+  /**
+   * Pallet `Grandpa`'s events
+   **/
   grandpa: {
     /**
      * New authority set has been applied.
@@ -484,6 +514,9 @@ export interface ChainEvents extends GenericChainEvents {
      **/
     [prop: string]: GenericPalletEvent;
   };
+  /**
+   * Pallet `ImOnline`'s events
+   **/
   imOnline: {
     /**
      * A new heartbeat was received from `AuthorityId`.
@@ -513,6 +546,9 @@ export interface ChainEvents extends GenericChainEvents {
      **/
     [prop: string]: GenericPalletEvent;
   };
+  /**
+   * Pallet `Treasury`'s events
+   **/
   treasury: {
     /**
      * New proposal.
@@ -605,6 +641,9 @@ export interface ChainEvents extends GenericChainEvents {
      **/
     [prop: string]: GenericPalletEvent;
   };
+  /**
+   * Pallet `ConvictionVoting`'s events
+   **/
   convictionVoting: {
     /**
      * An account has delegated their vote to another account. \[who, target\]
@@ -621,6 +660,9 @@ export interface ChainEvents extends GenericChainEvents {
      **/
     [prop: string]: GenericPalletEvent;
   };
+  /**
+   * Pallet `Referenda`'s events
+   **/
   referenda: {
     /**
      * A referendum has been submitted.
@@ -938,6 +980,9 @@ export interface ChainEvents extends GenericChainEvents {
      **/
     [prop: string]: GenericPalletEvent;
   };
+  /**
+   * Pallet `Whitelist`'s events
+   **/
   whitelist: {
     CallWhitelisted: GenericPalletEvent<'Whitelist', 'CallWhitelisted', { callHash: H256 }>;
     WhitelistedCallRemoved: GenericPalletEvent<'Whitelist', 'WhitelistedCallRemoved', { callHash: H256 }>;
@@ -952,6 +997,9 @@ export interface ChainEvents extends GenericChainEvents {
      **/
     [prop: string]: GenericPalletEvent;
   };
+  /**
+   * Pallet `Claims`'s events
+   **/
   claims: {
     /**
      * Someone claimed some DOTs.
@@ -967,6 +1015,9 @@ export interface ChainEvents extends GenericChainEvents {
      **/
     [prop: string]: GenericPalletEvent;
   };
+  /**
+   * Pallet `Vesting`'s events
+   **/
   vesting: {
     /**
      * The amount vested has been updated. This could indicate a change in funds available.
@@ -984,6 +1035,9 @@ export interface ChainEvents extends GenericChainEvents {
      **/
     [prop: string]: GenericPalletEvent;
   };
+  /**
+   * Pallet `Utility`'s events
+   **/
   utility: {
     /**
      * Batch of dispatches did not complete fully. Index of first failing dispatch given, as
@@ -1021,6 +1075,9 @@ export interface ChainEvents extends GenericChainEvents {
      **/
     [prop: string]: GenericPalletEvent;
   };
+  /**
+   * Pallet `Identity`'s events
+   **/
   identity: {
     /**
      * A name was set or reset (which will remove all judgements).
@@ -1098,6 +1155,9 @@ export interface ChainEvents extends GenericChainEvents {
      **/
     [prop: string]: GenericPalletEvent;
   };
+  /**
+   * Pallet `Proxy`'s events
+   **/
   proxy: {
     /**
      * A proxy was executed correctly, with the given.
@@ -1142,6 +1202,9 @@ export interface ChainEvents extends GenericChainEvents {
      **/
     [prop: string]: GenericPalletEvent;
   };
+  /**
+   * Pallet `Multisig`'s events
+   **/
   multisig: {
     /**
      * A new multisig operation has begun.
@@ -1190,6 +1253,9 @@ export interface ChainEvents extends GenericChainEvents {
      **/
     [prop: string]: GenericPalletEvent;
   };
+  /**
+   * Pallet `Bounties`'s events
+   **/
   bounties: {
     /**
      * New bounty proposal.
@@ -1255,6 +1321,9 @@ export interface ChainEvents extends GenericChainEvents {
      **/
     [prop: string]: GenericPalletEvent;
   };
+  /**
+   * Pallet `ChildBounties`'s events
+   **/
   childBounties: {
     /**
      * A child-bounty is added.
@@ -1289,6 +1358,9 @@ export interface ChainEvents extends GenericChainEvents {
      **/
     [prop: string]: GenericPalletEvent;
   };
+  /**
+   * Pallet `ElectionProviderMultiPhase`'s events
+   **/
   electionProviderMultiPhase: {
     /**
      * A solution was stored with the given compute.
@@ -1349,6 +1421,9 @@ export interface ChainEvents extends GenericChainEvents {
      **/
     [prop: string]: GenericPalletEvent;
   };
+  /**
+   * Pallet `VoterList`'s events
+   **/
   voterList: {
     /**
      * Moved an account from one bag to another.
@@ -1365,6 +1440,9 @@ export interface ChainEvents extends GenericChainEvents {
      **/
     [prop: string]: GenericPalletEvent;
   };
+  /**
+   * Pallet `NominationPools`'s events
+   **/
   nominationPools: {
     /**
      * A pool has been created.
@@ -1522,6 +1600,9 @@ export interface ChainEvents extends GenericChainEvents {
      **/
     [prop: string]: GenericPalletEvent;
   };
+  /**
+   * Pallet `FastUnstake`'s events
+   **/
   fastUnstake: {
     /**
      * A staker was unstaked.
@@ -1556,6 +1637,9 @@ export interface ChainEvents extends GenericChainEvents {
      **/
     [prop: string]: GenericPalletEvent;
   };
+  /**
+   * Pallet `ParaInclusion`'s events
+   **/
   paraInclusion: {
     /**
      * A candidate was backed. `[candidate, head_data]`
@@ -1612,6 +1696,9 @@ export interface ChainEvents extends GenericChainEvents {
      **/
     [prop: string]: GenericPalletEvent;
   };
+  /**
+   * Pallet `Paras`'s events
+   **/
   paras: {
     /**
      * Current code has been updated for a Para. `para_id`
@@ -1673,6 +1760,9 @@ export interface ChainEvents extends GenericChainEvents {
      **/
     [prop: string]: GenericPalletEvent;
   };
+  /**
+   * Pallet `Hrmp`'s events
+   **/
   hrmp: {
     /**
      * Open HRMP channel requested.
@@ -1763,6 +1853,9 @@ export interface ChainEvents extends GenericChainEvents {
      **/
     [prop: string]: GenericPalletEvent;
   };
+  /**
+   * Pallet `ParasDisputes`'s events
+   **/
   parasDisputes: {
     /**
      * A dispute has been initiated. \[candidate hash, dispute location\]
@@ -1796,6 +1889,9 @@ export interface ChainEvents extends GenericChainEvents {
      **/
     [prop: string]: GenericPalletEvent;
   };
+  /**
+   * Pallet `Registrar`'s events
+   **/
   registrar: {
     Registered: GenericPalletEvent<
       'Registrar',
@@ -1819,6 +1915,9 @@ export interface ChainEvents extends GenericChainEvents {
      **/
     [prop: string]: GenericPalletEvent;
   };
+  /**
+   * Pallet `Slots`'s events
+   **/
   slots: {
     /**
      * A new `[lease_period]` is beginning.
@@ -1848,6 +1947,9 @@ export interface ChainEvents extends GenericChainEvents {
      **/
     [prop: string]: GenericPalletEvent;
   };
+  /**
+   * Pallet `Auctions`'s events
+   **/
   auctions: {
     /**
      * An auction started. Provides its index and the block number where it will begin to
@@ -1915,6 +2017,9 @@ export interface ChainEvents extends GenericChainEvents {
      **/
     [prop: string]: GenericPalletEvent;
   };
+  /**
+   * Pallet `Crowdloan`'s events
+   **/
   crowdloan: {
     /**
      * Create a new crowdloaning campaign.
@@ -1996,6 +2101,9 @@ export interface ChainEvents extends GenericChainEvents {
      **/
     [prop: string]: GenericPalletEvent;
   };
+  /**
+   * Pallet `XcmPallet`'s events
+   **/
   xcmPallet: {
     /**
      * Execution of an XCM message was attempted.
@@ -2262,6 +2370,9 @@ export interface ChainEvents extends GenericChainEvents {
      **/
     [prop: string]: GenericPalletEvent;
   };
+  /**
+   * Pallet `MessageQueue`'s events
+   **/
   messageQueue: {
     /**
      * Message discarded due to an error in the `MessageProcessor` (usually a format error).
@@ -2318,6 +2429,9 @@ export interface ChainEvents extends GenericChainEvents {
      **/
     [prop: string]: GenericPalletEvent;
   };
+  /**
+   * Pallet `AssetRate`'s events
+   **/
   assetRate: {
     AssetRateCreated: GenericPalletEvent<
       'AssetRate',

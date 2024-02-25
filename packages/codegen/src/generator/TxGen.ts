@@ -1,7 +1,6 @@
 import { ApiGen } from '../generator';
 import { stringCamelCase, stringPascalCase } from '@polkadot/util';
 import { beautifySourceCode, commentBlock, compileTemplate, isReservedWord } from './utils';
-import { IRuntimeTxCall } from '@delightfuldot/types';
 
 export class TxGen extends ApiGen {
   generate() {
@@ -32,46 +31,47 @@ export class TxGen extends ApiGen {
 
       const { type } = types[pallet.calls];
 
-      if (type.tag === 'Enum') {
-        const isFlatEnum = type.value.members.every((m) => m.fields.length === 0);
+      if (type.tag !== 'Enum') continue;
 
-        const typedTxs = type.value.members
-          .map((one) => ({
-            functionName: stringCamelCase(one.name),
-            params: one.fields.map((f) => ({
-              name: stringCamelCase(f.name!),
-              normalizedName: this.#normalizeParamName(f.name!),
-              type: this.typesGen.generateType(f.typeId, 1),
-              docs: f.docs,
-            })),
-            docs: one.docs,
-          }))
-          .map((f) => {
-            return {
-              ...f,
-              callInput: this.#generateCallInput(
-                stringPascalCase(pallet.name),
-                stringPascalCase(f.functionName),
-                !isFlatEnum ? f.params.map((p) => `${p.name}: ${p.type}`) : undefined,
-              ),
-            };
-          });
+      const isFlatEnum = type.value.members.every((m) => m.fields.length === 0);
 
-        txDefsOut += `${stringCamelCase(pallet.name)}: {
-        ${typedTxs
-          .map(
-            ({ functionName, params, docs, callInput }) =>
-              `${commentBlock(
-                docs,
-                '\n',
-                params.map((p) => `@param ${p.normalizedName} ${p.docs}`),
-              )}${functionName}: GenericTxCall<(${params.map((p) => `${p.normalizedName}: ${p.type}`).join(', ')}) => ChainSubmittableExtrinsic<${callInput}>>`,
-          )
-          .join(',\n')}
-          
-        ${commentBlock('Generic pallet tx call')}[callName: string]: GenericTxCall<(...args: any[]) => ChainSubmittableExtrinsic>,
-      },`;
-      }
+      const typedTxs = type.value.members
+        .map((one) => ({
+          functionName: stringCamelCase(one.name),
+          params: one.fields.map((f) => ({
+            name: stringCamelCase(f.name!),
+            normalizedName: this.#normalizeParamName(f.name!),
+            type: this.typesGen.generateType(f.typeId, 1),
+            docs: f.docs,
+          })),
+          docs: one.docs,
+        }))
+        .map((f) => {
+          return {
+            ...f,
+            callInput: this.#generateCallInput(
+              stringPascalCase(pallet.name),
+              stringPascalCase(f.functionName),
+              !isFlatEnum ? f.params.map((p) => `${p.name}: ${p.type}`) : undefined,
+            ),
+          };
+        });
+
+      txDefsOut += commentBlock(`Pallet \`${pallet.name}\`'s transaction calls`);
+      txDefsOut += `${stringCamelCase(pallet.name)}: {
+          ${typedTxs
+            .map(
+              ({ functionName, params, docs, callInput }) =>
+                `${commentBlock(
+                  docs,
+                  '\n',
+                  params.map((p) => `@param {${p.type}} ${p.normalizedName} ${p.docs}`),
+                )}${functionName}: GenericTxCall<(${params.map((p) => `${p.normalizedName}: ${p.type}`).join(', ')}) => ChainSubmittableExtrinsic<${callInput}>>`,
+            )
+            .join(',\n')}
+            
+          ${commentBlock('Generic pallet tx call')}[callName: string]: GenericTxCall<(...args: any[]) => ChainSubmittableExtrinsic>,
+        },`;
     }
 
     const importTypes = this.typesGen.typeImports.toImports();

@@ -5,7 +5,7 @@ import { PalletErrorMetadataLatest } from '../metadata/types';
 import { MetadataLatest, TypeId } from '../metadata';
 import { PortableCodecRegistry } from './PortableCodecRegistry';
 import { CodecType, knownCodecTypes, normalizeCodecName } from '../codectypes';
-import { PortableType } from '../metadata/scale-info';
+import { PortableType } from '../metadata/scale_info';
 import { hexToU8a, isObject } from '@polkadot/util';
 
 type KnownPath = string | RegExp;

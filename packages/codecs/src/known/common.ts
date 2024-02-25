@@ -6,15 +6,15 @@ import { isString, isU8a, stringToHex, u8aToHex } from '@polkadot/util';
 export const $Text = $.str;
 export type Text = string;
 
-export const $StorageKey = $.PrefixedHex;
+export const $StorageKey = $.RawHex;
 export type StorageKeyLike = $.Input<typeof $StorageKey>;
 export type StorageKey = $.Output<typeof $StorageKey>;
 
-export const $PrefixedStorageKey = $.PrefixedHex;
+export const $PrefixedStorageKey = $.RawHex;
 export type PrefixedStorageKeyLike = $.Input<typeof $PrefixedStorageKey>;
 export type PrefixedStorageKey = $.Output<typeof $PrefixedStorageKey>;
 
-export const $StorageData = $.PrefixedHex;
+export const $StorageData = $.RawHex;
 export type StorageDataLike = $.Input<typeof $StorageData>;
 export type StorageData = $.Output<typeof $StorageData>;
 
@@ -27,10 +27,6 @@ export const $RawBytes: $.Shape<RawBytesLike, RawBytes> = $.transform({
   encode: (value) => (isU8a(value) ? u8aToHex(value) : value),
   decode: (value) => value,
 });
-
-export const $UncheckedExtrinsic = $RawBytes;
-export type UncheckedExtrinsicLike = $.Input<typeof $UncheckedExtrinsic>;
-export type UncheckedExtrinsic = $.Output<typeof $UncheckedExtrinsic>;
 
 export type BytesLike = HexString | string | Uint8Array;
 export type Bytes = HexString;
@@ -48,7 +44,7 @@ export const $Bytes: $.Shape<BytesLike, Bytes> = $.transform({
   decode: (value) => value,
 });
 
-registerLooseCodecType({ $Bytes, $RawBytes, $UncheckedExtrinsic });
+registerLooseCodecType({ $Bytes, $RawBytes });
 
 export type FixedBytes<Bytes extends number> = HexString; // TODO: add Unit8Array
 

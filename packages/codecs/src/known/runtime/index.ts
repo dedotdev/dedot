@@ -6,3 +6,4 @@ export * from './MultiAddress';
 export * from './TransactionValidity';
 export * from './RuntimeVersion';
 export * from './TransactionSource';
+export * from './OpaqueExtrinsic';

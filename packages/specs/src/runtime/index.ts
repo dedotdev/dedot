@@ -7,17 +7,17 @@ import { metadata } from './metadata';
 import { core } from './core';
 import { system } from './system';
 import { payment } from './payment';
-import { blockBuilder } from './blockBuilder';
+import { blockBuilder } from './block_builder';
 import { grandpa } from './grandpa';
 import { mmr } from './mmr';
-import { nominationPools } from './nominationPools';
+import { nominationPools } from './nomination_pools';
 import { offchain } from './offchain';
 import { session } from './session';
 import { parachains } from './parachains';
 import { beefy } from './beefy';
 import { staking } from './staking';
-import { transactionPool } from './transactionPool';
-import { genesisBuilder } from './genesisBuilder';
+import { transactionPool } from './transaction_pool';
+import { genesisBuilder } from './genesis_builder';
 
 export const runtimeApisSpec: RuntimeApisSpec = {
   discovery,

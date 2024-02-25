@@ -110,13 +110,13 @@ export class TxExecutor<ChainApi extends GenericSubstrateApi = SubstrateApi> ext
         let signature;
         if (isKeyringPair(fromAccount)) {
           signature = u8aToHex(
-            signRaw(fromAccount, extra.toRawPayload(this.callRaw).data as HexString, { withType: true }),
+            signRaw(fromAccount, extra.toRawPayload(this.callHex).data as HexString, { withType: true }),
           );
         } else if (signer?.signPayload) {
-          const result = await signer.signPayload(extra.toPayload(this.callRaw));
+          const result = await signer.signPayload(extra.toPayload(this.callHex));
           signature = result.signature;
         } else if (signer?.signRaw) {
-          const result = await signer.signRaw(extra.toRawPayload(this.callRaw));
+          const result = await signer.signRaw(extra.toRawPayload(this.callHex));
           signature = result.signature;
         } else {
           throw new Error('Signer not found. Cannot sign the extrinsic!');
@@ -163,22 +163,6 @@ export class TxExecutor<ChainApi extends GenericSubstrateApi = SubstrateApi> ext
         } else {
           return [objectSpread({}, partialOptions), callback];
         }
-      }
-
-      get $Codec() {
-        return this.registry.findCodec('Extrinsic');
-      }
-
-      toU8a() {
-        return this.$Codec.tryEncode(this);
-      }
-
-      toHex() {
-        return u8aToHex(this.toU8a());
-      }
-
-      get hash(): Hash {
-        return blake2AsHex(this.toU8a());
       }
 
       async dryRun(account: AddressOrPair, optionsOrHash?: Partial<SignerOptions> | BlockHash): Promise<DryRunResult> {
