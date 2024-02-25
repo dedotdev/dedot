@@ -15,7 +15,7 @@ export const offchain: RuntimeApisModule = {
               type: 'Header',
             },
           ],
-          type: 'Null',
+          type: '[]',
         },
       },
       version: 2,
@@ -23,14 +23,14 @@ export const offchain: RuntimeApisModule = {
     {
       methods: {
         offchainWorker: {
-          docs: 'Starts the off-chain task for given block header.',
+          docs: 'Starts the off-chain task for given block number.',
           params: [
             {
               name: 'number',
               type: 'BlockNumber',
             },
           ],
-          type: 'Null',
+          type: '[]',
         },
       },
       version: 1,

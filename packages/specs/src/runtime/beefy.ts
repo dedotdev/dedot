@@ -2,8 +2,8 @@ import { RuntimeApisModule } from '@delightfuldot/types';
 
 /**
  * Reference:
- * - BeefyApi: https://github.com/paritytech/polkadot-sdk/blob/21f1811c6600d8a7fe043592ff34dcb79284d583/substrate/frame/beefy-mmr/src/lib.rs#L226-L238
- * - BeefyMmrApi: https://github.com/paritytech/polkadot-sdk/blob/b371c3574190ace0d8dd89b7970a388ad3fa8a6a/substrate/primitives/consensus/beefy/src/lib.rs#L391-L412
+ * - BeefyApi: https://github.com/paritytech/polkadot-sdk/blob/b371c3574190ace0d8dd89b7970a388ad3fa8a6a/substrate/primitives/consensus/beefy/src/lib.rs#L391-L412
+ * - BeefyMmrApi: https://github.com/paritytech/polkadot-sdk/blob/21f1811c6600d8a7fe043592ff34dcb79284d583/substrate/frame/beefy-mmr/src/lib.rs#L226-L238
  */
 export const beefy: RuntimeApisModule = {
   BeefyApi: [
@@ -31,7 +31,7 @@ export const beefy: RuntimeApisModule = {
               type: 'OpaqueKeyOwnershipProof',
             },
           ],
-          type: 'Option<Null>',
+          type: 'Option<[]>',
         },
         generateKeyOwnershipProof: {
           docs: 'Generates a proof of key ownership for the given authority in the given set.',

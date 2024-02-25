@@ -1,6 +1,7 @@
 import * as $ from '@delightfuldot/shape';
 import { HexString } from '@delightfuldot/utils';
 import { registerLooseCodecType } from '../codectypes';
+import { isString, isU8a, stringToHex, u8aToHex } from '@polkadot/util';
 
 export const $Text = $.str;
 export type Text = string;
@@ -17,14 +18,33 @@ export const $StorageData = $.RawHex;
 export type StorageDataLike = $.Input<typeof $StorageData>;
 export type StorageData = $.Output<typeof $StorageData>;
 
-registerLooseCodecType({ $StorageKey, $StorageData });
+registerLooseCodecType({ $StorageKey, $StorageData, $PrefixedStorageKey });
 
-export const $Extrinsic = $.RawHex;
-export type Extrinsic = $.Input<typeof $Extrinsic>;
+export type RawBytesLike = HexString | Uint8Array;
+export type RawBytes = HexString;
+export const $RawBytes: $.Shape<RawBytesLike, RawBytes> = $.transform({
+  $base: $.RawHex,
+  encode: (value) => (isU8a(value) ? u8aToHex(value) : value),
+  decode: (value) => value,
+});
 
-export const $Bytes = $.RawHex;
-export type BytesLike = $.Input<typeof $Bytes>;
+export type BytesLike = HexString | string | Uint8Array;
 export type Bytes = HexString;
+export const $Bytes: $.Shape<BytesLike, Bytes> = $.transform({
+  $base: $.PrefixedHex,
+  encode: (value) => {
+    if (isString(value)) {
+      return stringToHex(value);
+    } else if (isU8a(value)) {
+      return u8aToHex(value);
+    }
+
+    return value;
+  },
+  decode: (value) => value,
+});
+
+registerLooseCodecType({ $Bytes, $RawBytes });
 
 export type FixedBytes<Bytes extends number> = HexString; // TODO: add Unit8Array
 

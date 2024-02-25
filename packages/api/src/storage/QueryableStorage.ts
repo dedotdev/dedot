@@ -44,9 +44,7 @@ export class QueryableStorage {
         const { type } = this.registry.findPortableType(keyTypeId);
 
         assert(type.tag === 'Tuple', 'Key type should be a tuple!');
-        if (type.tag === 'Tuple') {
-          keyTypeIds = type.value.fields;
-        }
+        keyTypeIds = type.value.fields;
       }
 
       const keyParts = keyTypeIds.map((keyId, index) => {

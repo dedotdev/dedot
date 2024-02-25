@@ -1,37 +1,31 @@
+import { RuntimeApiMethodSpec, RuntimeApiName, RuntimeApiSpec, RuntimeApisSpec } from '@delightfuldot/types';
+import { blake2AsHex } from '@polkadot/util-crypto';
+import { stringSnakeCase } from '@delightfuldot/utils';
 import { discovery } from './discovery';
 import { babe } from './babe';
 import { metadata } from './metadata';
 import { core } from './core';
 import { system } from './system';
-import { assetConversion } from './assetConversion';
-import { assets } from './assets';
 import { payment } from './payment';
-import { blockBuilder } from './blockBuilder';
+import { blockBuilder } from './block_builder';
 import { grandpa } from './grandpa';
 import { mmr } from './mmr';
-import { nominationPools } from './nominationPools';
+import { nominationPools } from './nomination_pools';
 import { offchain } from './offchain';
 import { session } from './session';
 import { parachains } from './parachains';
 import { beefy } from './beefy';
 import { staking } from './staking';
-import { transactionPool } from './transactionPool';
-import { nfts } from './nfts';
-import { mixnet } from './mixnet';
-import { genesisBuilder } from './genesisBuilder';
-import { RuntimeApisSpec, RuntimeCallSpec, RuntimeApiSpec, RuntimeApiName } from '@delightfuldot/types';
-import { blake2AsHex } from '@polkadot/util-crypto';
-import { stringSnakeCase } from '@delightfuldot/utils';
+import { transactionPool } from './transaction_pool';
+import { genesisBuilder } from './genesis_builder';
 
 export const runtimeApisSpec: RuntimeApisSpec = {
-  assetConversion,
   discovery,
   babe,
   metadata,
   payment,
   core,
   system,
-  assets,
   blockBuilder,
   grandpa,
   mmr,
@@ -42,9 +36,7 @@ export const runtimeApisSpec: RuntimeApisSpec = {
   beefy,
   staking,
   transactionPool,
-  nfts,
   genesisBuilder,
-  mixnet,
 };
 
 export const runtimeApiNames: RuntimeApiName[] = Object.values(runtimeApisSpec)
@@ -61,10 +53,10 @@ export const runtimeApiSpecs: RuntimeApiSpec[] = Object.keys(runtimeApisSpec)
   })
   .flat(2);
 
-export const runtimeCallSpecs: RuntimeCallSpec[] = runtimeApiSpecs
+export const runtimeApiMethodSpecs: RuntimeApiMethodSpec[] = runtimeApiSpecs
   .map(({ methods, runtimeApiName, version }) => {
     return Object.keys(methods).map(
-      (methodName) => ({ ...methods[methodName], methodName, runtimeApiName, version }) as RuntimeCallSpec,
+      (methodName) => ({ ...methods[methodName], methodName, runtimeApiName, version }) as RuntimeApiMethodSpec,
     );
   })
   .flat();
@@ -75,8 +67,8 @@ export const findRuntimeApiSpec = (runtimeApiHash: string, version: number) => {
   return runtimeApiSpecs.find((one) => one.runtimeApiName === runtimeApiName && one.version === version);
 };
 
-export const findRuntimeCallSpec = (callName: string, version: number) => {
-  return runtimeCallSpecs.find(
+export const findRuntimeApiMethodSpec = (callName: string, version: number) => {
+  return runtimeApiMethodSpecs.find(
     (one) => `${one.runtimeApiName}_${stringSnakeCase(one.methodName)}` === callName && one.version === version,
   );
 };

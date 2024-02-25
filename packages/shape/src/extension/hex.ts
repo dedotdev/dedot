@@ -1,7 +1,8 @@
 import { hexToU8a, u8aToHex } from '@polkadot/util';
 import { HexString } from '@delightfuldot/utils';
 import * as $ from 'subshape';
-import { AssertState, createShape, DecodeBuffer, EncodeBuffer, metadata, Shape } from 'subshape';
+import { DecodeBuffer, EncodeBuffer, metadata, Shape } from 'subshape';
+import { createShape } from './createShape';
 import { compactU32 } from './compact';
 
 const HEX_PREFIX = '0x';
@@ -32,8 +33,5 @@ export const PrefixedHex = createShape<HexString>({
     const value = buffer.array.subarray(buffer.index, buffer.index + length);
     buffer.index += length;
     return u8aToHex(value);
-  },
-  subAssert(state: AssertState): void {
-    // TODO to implement
   },
 });

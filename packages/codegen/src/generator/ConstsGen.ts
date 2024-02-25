@@ -18,6 +18,7 @@ export class ConstsGen extends ApiGen {
         docs: one.docs,
       }));
 
+      defTypeOut += commentBlock(`Pallet \`${pallet.name}\`'s constants`);
       defTypeOut += `${stringLowerFirst(pallet.name)}: {
         ${typedConstants.map(({ name, type, docs }) => `${commentBlock(docs)}${name}: ${type}`).join(',\n')}
           

@@ -9,14 +9,12 @@ export class QueryGen extends ApiGen {
     const { pallets } = this.metadata;
 
     this.typesGen.clearCache();
-    this.typesGen.typeImports.addKnownType('GenericChainStorage', 'GenericStorageQuery');
+    this.typesGen.typeImports.addKnownType('GenericChainStorage', 'GenericStorageQuery', 'Callback');
 
     let defTypeOut = '';
     for (let pallet of pallets) {
       const storage = pallet.storage;
-      if (!storage) {
-        continue;
-      }
+      if (!storage) continue;
 
       const queries = storage.entries.map((one) => this.#generateEntry(one));
       const queryDefs = queries.map(
@@ -24,6 +22,7 @@ export class QueryGen extends ApiGen {
           `${commentBlock(docs)}${name}: GenericStorageQuery<(${keyType}) => ${valueType}>`,
       );
 
+      defTypeOut += commentBlock(`Pallet \`${pallet.name}\`'s storage queries`);
       defTypeOut += `${stringLowerFirst(pallet.name)}: {
         ${queryDefs.join(',\n')}
         
@@ -51,10 +50,17 @@ export class QueryGen extends ApiGen {
     }
 
     const isOptional = modifier === 'Optional';
+    valueType = `${valueType}${isOptional ? ' | undefined' : ''}`;
+
+    docs.push('\n');
+    if (keyType) {
+      docs.push(`@param {${keyType}} arg`);
+    }
+    docs.push(`@param {Callback<${valueType}> =} callback`);
 
     return {
       name: normalizeName(name),
-      valueType: `${valueType}${isOptional ? ' | undefined' : ''}`,
+      valueType,
       keyType: keyType ? `arg: ${keyType}` : '',
       docs,
     };

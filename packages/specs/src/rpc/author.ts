@@ -88,5 +88,6 @@ export const author: RpcModuleSpec = {
     ],
     pubsub: ['author_extrinsicUpdate', 'author_submitAndWatchExtrinsic', 'author_unwatchExtrinsic'],
     type: 'TransactionStatus',
+    isScale: true,
   },
 };

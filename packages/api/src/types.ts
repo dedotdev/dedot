@@ -1,5 +1,6 @@
 import { ProviderInterface } from '@polkadot/rpc-provider/types';
 import { HexString } from '@delightfuldot/utils';
+import { AnySignedExtension } from './extrinsic';
 
 export type NetworkEndpoint = string;
 export type MetadataKey = `RAW_META/${string}`;
@@ -35,6 +36,10 @@ export interface ApiOptions {
    * If we supplied a raw-hex metadata to this option, it's a catch-all metadata.
    */
   metadata?: HexString | Record<MetadataKey, HexString>;
+  /**
+   * @description User-defined chain-specific signed extensions
+   */
+  signedExtensions?: Record<string, AnySignedExtension>;
 }
 
 export interface NormalizedApiOptions extends ApiOptions {

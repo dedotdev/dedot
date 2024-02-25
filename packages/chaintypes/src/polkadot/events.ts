@@ -2,6 +2,7 @@
 
 import type { GenericChainEvents, GenericPalletEvent } from '@delightfuldot/types';
 import type {
+  DispatchInfo,
   DispatchError,
   AccountId32,
   H256,
@@ -10,15 +11,18 @@ import type {
   Perbill,
   Bytes,
   EthereumAddress,
+  FixedU128,
 } from '@delightfuldot/codecs';
 import type {
-  FrameSupportDispatchDispatchInfo,
   FrameSupportTokensMiscBalanceStatus,
+  PalletStakingRewardDestination,
   PalletStakingValidatorPrefs,
   PalletStakingForcing,
   SpConsensusGrandpaAppPublic,
   PalletImOnlineSr25519AppSr25519Public,
   PalletStakingExposure,
+  PolkadotRuntimeCommonImplsVersionedLocatableAsset,
+  XcmVersionedMultiLocation,
   FrameSupportPreimagesBounded,
   PalletConvictionVotingTally,
   FrameSupportDispatchPostDispatchInfo,
@@ -30,10 +34,10 @@ import type {
   PalletElectionProviderMultiPhasePhase,
   PalletNominationPoolsPoolState,
   PalletNominationPoolsCommissionChangeRate,
-  PolkadotPrimitivesV5CandidateReceipt,
+  PolkadotPrimitivesV6CandidateReceipt,
   PolkadotParachainPrimitivesPrimitivesHeadData,
-  PolkadotPrimitivesV5CoreIndex,
-  PolkadotPrimitivesV5GroupIndex,
+  PolkadotPrimitivesV6CoreIndex,
+  PolkadotPrimitivesV6GroupIndex,
   PolkadotParachainPrimitivesPrimitivesId,
   PolkadotParachainPrimitivesPrimitivesValidationCodeHash,
   PolkadotParachainPrimitivesPrimitivesHrmpChannelId,
@@ -48,21 +52,19 @@ import type {
   XcmVersionedMultiAssets,
   XcmV3MultiassetMultiAssets,
   XcmV3TraitsError,
-  XcmVersionedMultiLocation,
   PolkadotRuntimeParachainsInclusionAggregateMessageOrigin,
   FrameSupportMessagesProcessMessageError,
 } from './types';
 
 export interface ChainEvents extends GenericChainEvents {
+  /**
+   * Pallet `System`'s events
+   **/
   system: {
     /**
      * An extrinsic completed successfully.
      **/
-    ExtrinsicSuccess: GenericPalletEvent<
-      'System',
-      'ExtrinsicSuccess',
-      { dispatchInfo: FrameSupportDispatchDispatchInfo }
-    >;
+    ExtrinsicSuccess: GenericPalletEvent<'System', 'ExtrinsicSuccess', { dispatchInfo: DispatchInfo }>;
 
     /**
      * An extrinsic failed.
@@ -70,7 +72,7 @@ export interface ChainEvents extends GenericChainEvents {
     ExtrinsicFailed: GenericPalletEvent<
       'System',
       'ExtrinsicFailed',
-      { dispatchError: DispatchError; dispatchInfo: FrameSupportDispatchDispatchInfo }
+      { dispatchError: DispatchError; dispatchInfo: DispatchInfo }
     >;
 
     /**
@@ -98,6 +100,9 @@ export interface ChainEvents extends GenericChainEvents {
      **/
     [prop: string]: GenericPalletEvent;
   };
+  /**
+   * Pallet `Scheduler`'s events
+   **/
   scheduler: {
     /**
      * Scheduled some task.
@@ -150,6 +155,9 @@ export interface ChainEvents extends GenericChainEvents {
      **/
     [prop: string]: GenericPalletEvent;
   };
+  /**
+   * Pallet `Preimage`'s events
+   **/
   preimage: {
     /**
      * A preimage has been noted.
@@ -171,6 +179,9 @@ export interface ChainEvents extends GenericChainEvents {
      **/
     [prop: string]: GenericPalletEvent;
   };
+  /**
+   * Pallet `Indices`'s events
+   **/
   indices: {
     /**
      * A account index was assigned.
@@ -192,6 +203,9 @@ export interface ChainEvents extends GenericChainEvents {
      **/
     [prop: string]: GenericPalletEvent;
   };
+  /**
+   * Pallet `Balances`'s events
+   **/
   balances: {
     /**
      * An account was created with some free balance.
@@ -309,6 +323,9 @@ export interface ChainEvents extends GenericChainEvents {
      **/
     [prop: string]: GenericPalletEvent;
   };
+  /**
+   * Pallet `TransactionPayment`'s events
+   **/
   transactionPayment: {
     /**
      * A transaction fee `actual_fee`, of which `tip` was added to the minimum inclusion fee,
@@ -325,6 +342,9 @@ export interface ChainEvents extends GenericChainEvents {
      **/
     [prop: string]: GenericPalletEvent;
   };
+  /**
+   * Pallet `Staking`'s events
+   **/
   staking: {
     /**
      * The era payout has been set; the first balance is the validator-payout; the second is
@@ -333,9 +353,13 @@ export interface ChainEvents extends GenericChainEvents {
     EraPaid: GenericPalletEvent<'Staking', 'EraPaid', { eraIndex: number; validatorPayout: bigint; remainder: bigint }>;
 
     /**
-     * The nominator has been rewarded by this amount.
+     * The nominator has been rewarded by this amount to this destination.
      **/
-    Rewarded: GenericPalletEvent<'Staking', 'Rewarded', { stash: AccountId32; amount: bigint }>;
+    Rewarded: GenericPalletEvent<
+      'Staking',
+      'Rewarded',
+      { stash: AccountId32; dest: PalletStakingRewardDestination; amount: bigint }
+    >;
 
     /**
      * A staker (validator or nominator) has been slashed by the given amount.
@@ -431,6 +455,9 @@ export interface ChainEvents extends GenericChainEvents {
      **/
     [prop: string]: GenericPalletEvent;
   };
+  /**
+   * Pallet `Offences`'s events
+   **/
   offences: {
     /**
      * There is an offence reported of the given `kind` happened at the `session_index` and
@@ -444,6 +471,9 @@ export interface ChainEvents extends GenericChainEvents {
      **/
     [prop: string]: GenericPalletEvent;
   };
+  /**
+   * Pallet `Session`'s events
+   **/
   session: {
     /**
      * New session has happened. Note that the argument is the session index, not the
@@ -456,6 +486,9 @@ export interface ChainEvents extends GenericChainEvents {
      **/
     [prop: string]: GenericPalletEvent;
   };
+  /**
+   * Pallet `Grandpa`'s events
+   **/
   grandpa: {
     /**
      * New authority set has been applied.
@@ -481,6 +514,9 @@ export interface ChainEvents extends GenericChainEvents {
      **/
     [prop: string]: GenericPalletEvent;
   };
+  /**
+   * Pallet `ImOnline`'s events
+   **/
   imOnline: {
     /**
      * A new heartbeat was received from `AuthorityId`.
@@ -510,6 +546,9 @@ export interface ChainEvents extends GenericChainEvents {
      **/
     [prop: string]: GenericPalletEvent;
   };
+  /**
+   * Pallet `Treasury`'s events
+   **/
   treasury: {
     /**
      * New proposal.
@@ -561,10 +600,50 @@ export interface ChainEvents extends GenericChainEvents {
     UpdatedInactive: GenericPalletEvent<'Treasury', 'UpdatedInactive', { reactivated: bigint; deactivated: bigint }>;
 
     /**
+     * A new asset spend proposal has been approved.
+     **/
+    AssetSpendApproved: GenericPalletEvent<
+      'Treasury',
+      'AssetSpendApproved',
+      {
+        index: number;
+        assetKind: PolkadotRuntimeCommonImplsVersionedLocatableAsset;
+        amount: bigint;
+        beneficiary: XcmVersionedMultiLocation;
+        validFrom: number;
+        expireAt: number;
+      }
+    >;
+
+    /**
+     * An approved spend was voided.
+     **/
+    AssetSpendVoided: GenericPalletEvent<'Treasury', 'AssetSpendVoided', { index: number }>;
+
+    /**
+     * A payment happened.
+     **/
+    Paid: GenericPalletEvent<'Treasury', 'Paid', { index: number; paymentId: bigint }>;
+
+    /**
+     * A payment failed and can be retried.
+     **/
+    PaymentFailed: GenericPalletEvent<'Treasury', 'PaymentFailed', { index: number; paymentId: bigint }>;
+
+    /**
+     * A spend was processed and removed from the storage. It might have been successfully
+     * paid or it may have expired.
+     **/
+    SpendProcessed: GenericPalletEvent<'Treasury', 'SpendProcessed', { index: number }>;
+
+    /**
      * Generic pallet event
      **/
     [prop: string]: GenericPalletEvent;
   };
+  /**
+   * Pallet `ConvictionVoting`'s events
+   **/
   convictionVoting: {
     /**
      * An account has delegated their vote to another account. \[who, target\]
@@ -581,6 +660,9 @@ export interface ChainEvents extends GenericChainEvents {
      **/
     [prop: string]: GenericPalletEvent;
   };
+  /**
+   * Pallet `Referenda`'s events
+   **/
   referenda: {
     /**
      * A referendum has been submitted.
@@ -898,6 +980,9 @@ export interface ChainEvents extends GenericChainEvents {
      **/
     [prop: string]: GenericPalletEvent;
   };
+  /**
+   * Pallet `Whitelist`'s events
+   **/
   whitelist: {
     CallWhitelisted: GenericPalletEvent<'Whitelist', 'CallWhitelisted', { callHash: H256 }>;
     WhitelistedCallRemoved: GenericPalletEvent<'Whitelist', 'WhitelistedCallRemoved', { callHash: H256 }>;
@@ -912,6 +997,9 @@ export interface ChainEvents extends GenericChainEvents {
      **/
     [prop: string]: GenericPalletEvent;
   };
+  /**
+   * Pallet `Claims`'s events
+   **/
   claims: {
     /**
      * Someone claimed some DOTs.
@@ -927,6 +1015,9 @@ export interface ChainEvents extends GenericChainEvents {
      **/
     [prop: string]: GenericPalletEvent;
   };
+  /**
+   * Pallet `Vesting`'s events
+   **/
   vesting: {
     /**
      * The amount vested has been updated. This could indicate a change in funds available.
@@ -944,6 +1035,9 @@ export interface ChainEvents extends GenericChainEvents {
      **/
     [prop: string]: GenericPalletEvent;
   };
+  /**
+   * Pallet `Utility`'s events
+   **/
   utility: {
     /**
      * Batch of dispatches did not complete fully. Index of first failing dispatch given, as
@@ -981,6 +1075,9 @@ export interface ChainEvents extends GenericChainEvents {
      **/
     [prop: string]: GenericPalletEvent;
   };
+  /**
+   * Pallet `Identity`'s events
+   **/
   identity: {
     /**
      * A name was set or reset (which will remove all judgements).
@@ -1058,6 +1155,9 @@ export interface ChainEvents extends GenericChainEvents {
      **/
     [prop: string]: GenericPalletEvent;
   };
+  /**
+   * Pallet `Proxy`'s events
+   **/
   proxy: {
     /**
      * A proxy was executed correctly, with the given.
@@ -1102,6 +1202,9 @@ export interface ChainEvents extends GenericChainEvents {
      **/
     [prop: string]: GenericPalletEvent;
   };
+  /**
+   * Pallet `Multisig`'s events
+   **/
   multisig: {
     /**
      * A new multisig operation has begun.
@@ -1150,6 +1253,9 @@ export interface ChainEvents extends GenericChainEvents {
      **/
     [prop: string]: GenericPalletEvent;
   };
+  /**
+   * Pallet `Bounties`'s events
+   **/
   bounties: {
     /**
      * New bounty proposal.
@@ -1191,10 +1297,33 @@ export interface ChainEvents extends GenericChainEvents {
     BountyExtended: GenericPalletEvent<'Bounties', 'BountyExtended', { index: number }>;
 
     /**
+     * A bounty is approved.
+     **/
+    BountyApproved: GenericPalletEvent<'Bounties', 'BountyApproved', { index: number }>;
+
+    /**
+     * A bounty curator is proposed.
+     **/
+    CuratorProposed: GenericPalletEvent<'Bounties', 'CuratorProposed', { bountyId: number; curator: AccountId32 }>;
+
+    /**
+     * A bounty curator is unassigned.
+     **/
+    CuratorUnassigned: GenericPalletEvent<'Bounties', 'CuratorUnassigned', { bountyId: number }>;
+
+    /**
+     * A bounty curator is accepted.
+     **/
+    CuratorAccepted: GenericPalletEvent<'Bounties', 'CuratorAccepted', { bountyId: number; curator: AccountId32 }>;
+
+    /**
      * Generic pallet event
      **/
     [prop: string]: GenericPalletEvent;
   };
+  /**
+   * Pallet `ChildBounties`'s events
+   **/
   childBounties: {
     /**
      * A child-bounty is added.
@@ -1229,6 +1358,9 @@ export interface ChainEvents extends GenericChainEvents {
      **/
     [prop: string]: GenericPalletEvent;
   };
+  /**
+   * Pallet `ElectionProviderMultiPhase`'s events
+   **/
   electionProviderMultiPhase: {
     /**
      * A solution was stored with the given compute.
@@ -1289,6 +1421,9 @@ export interface ChainEvents extends GenericChainEvents {
      **/
     [prop: string]: GenericPalletEvent;
   };
+  /**
+   * Pallet `VoterList`'s events
+   **/
   voterList: {
     /**
      * Moved an account from one bag to another.
@@ -1305,6 +1440,9 @@ export interface ChainEvents extends GenericChainEvents {
      **/
     [prop: string]: GenericPalletEvent;
   };
+  /**
+   * Pallet `NominationPools`'s events
+   **/
   nominationPools: {
     /**
      * A pool has been created.
@@ -1440,10 +1578,31 @@ export interface ChainEvents extends GenericChainEvents {
     >;
 
     /**
+     * Topped up deficit in frozen ED of the reward pool.
+     **/
+    MinBalanceDeficitAdjusted: GenericPalletEvent<
+      'NominationPools',
+      'MinBalanceDeficitAdjusted',
+      { poolId: number; amount: bigint }
+    >;
+
+    /**
+     * Claimed excess frozen ED of af the reward pool.
+     **/
+    MinBalanceExcessAdjusted: GenericPalletEvent<
+      'NominationPools',
+      'MinBalanceExcessAdjusted',
+      { poolId: number; amount: bigint }
+    >;
+
+    /**
      * Generic pallet event
      **/
     [prop: string]: GenericPalletEvent;
   };
+  /**
+   * Pallet `FastUnstake`'s events
+   **/
   fastUnstake: {
     /**
      * A staker was unstaked.
@@ -1478,6 +1637,9 @@ export interface ChainEvents extends GenericChainEvents {
      **/
     [prop: string]: GenericPalletEvent;
   };
+  /**
+   * Pallet `ParaInclusion`'s events
+   **/
   paraInclusion: {
     /**
      * A candidate was backed. `[candidate, head_data]`
@@ -1486,10 +1648,10 @@ export interface ChainEvents extends GenericChainEvents {
       'ParaInclusion',
       'CandidateBacked',
       [
-        PolkadotPrimitivesV5CandidateReceipt,
+        PolkadotPrimitivesV6CandidateReceipt,
         PolkadotParachainPrimitivesPrimitivesHeadData,
-        PolkadotPrimitivesV5CoreIndex,
-        PolkadotPrimitivesV5GroupIndex,
+        PolkadotPrimitivesV6CoreIndex,
+        PolkadotPrimitivesV6GroupIndex,
       ]
     >;
 
@@ -1500,10 +1662,10 @@ export interface ChainEvents extends GenericChainEvents {
       'ParaInclusion',
       'CandidateIncluded',
       [
-        PolkadotPrimitivesV5CandidateReceipt,
+        PolkadotPrimitivesV6CandidateReceipt,
         PolkadotParachainPrimitivesPrimitivesHeadData,
-        PolkadotPrimitivesV5CoreIndex,
-        PolkadotPrimitivesV5GroupIndex,
+        PolkadotPrimitivesV6CoreIndex,
+        PolkadotPrimitivesV6GroupIndex,
       ]
     >;
 
@@ -1514,9 +1676,9 @@ export interface ChainEvents extends GenericChainEvents {
       'ParaInclusion',
       'CandidateTimedOut',
       [
-        PolkadotPrimitivesV5CandidateReceipt,
+        PolkadotPrimitivesV6CandidateReceipt,
         PolkadotParachainPrimitivesPrimitivesHeadData,
-        PolkadotPrimitivesV5CoreIndex,
+        PolkadotPrimitivesV6CoreIndex,
       ]
     >;
 
@@ -1534,6 +1696,9 @@ export interface ChainEvents extends GenericChainEvents {
      **/
     [prop: string]: GenericPalletEvent;
   };
+  /**
+   * Pallet `Paras`'s events
+   **/
   paras: {
     /**
      * Current code has been updated for a Para. `para_id`
@@ -1595,53 +1760,92 @@ export interface ChainEvents extends GenericChainEvents {
      **/
     [prop: string]: GenericPalletEvent;
   };
+  /**
+   * Pallet `Hrmp`'s events
+   **/
   hrmp: {
     /**
      * Open HRMP channel requested.
-     * `[sender, recipient, proposed_max_capacity, proposed_max_message_size]`
      **/
     OpenChannelRequested: GenericPalletEvent<
       'Hrmp',
       'OpenChannelRequested',
-      [PolkadotParachainPrimitivesPrimitivesId, PolkadotParachainPrimitivesPrimitivesId, number, number]
+      {
+        sender: PolkadotParachainPrimitivesPrimitivesId;
+        recipient: PolkadotParachainPrimitivesPrimitivesId;
+        proposedMaxCapacity: number;
+        proposedMaxMessageSize: number;
+      }
     >;
 
     /**
      * An HRMP channel request sent by the receiver was canceled by either party.
-     * `[by_parachain, channel_id]`
      **/
     OpenChannelCanceled: GenericPalletEvent<
       'Hrmp',
       'OpenChannelCanceled',
-      [PolkadotParachainPrimitivesPrimitivesId, PolkadotParachainPrimitivesPrimitivesHrmpChannelId]
+      {
+        byParachain: PolkadotParachainPrimitivesPrimitivesId;
+        channelId: PolkadotParachainPrimitivesPrimitivesHrmpChannelId;
+      }
     >;
 
     /**
-     * Open HRMP channel accepted. `[sender, recipient]`
+     * Open HRMP channel accepted.
      **/
     OpenChannelAccepted: GenericPalletEvent<
       'Hrmp',
       'OpenChannelAccepted',
-      [PolkadotParachainPrimitivesPrimitivesId, PolkadotParachainPrimitivesPrimitivesId]
+      { sender: PolkadotParachainPrimitivesPrimitivesId; recipient: PolkadotParachainPrimitivesPrimitivesId }
     >;
 
     /**
-     * HRMP channel closed. `[by_parachain, channel_id]`
+     * HRMP channel closed.
      **/
     ChannelClosed: GenericPalletEvent<
       'Hrmp',
       'ChannelClosed',
-      [PolkadotParachainPrimitivesPrimitivesId, PolkadotParachainPrimitivesPrimitivesHrmpChannelId]
+      {
+        byParachain: PolkadotParachainPrimitivesPrimitivesId;
+        channelId: PolkadotParachainPrimitivesPrimitivesHrmpChannelId;
+      }
     >;
 
     /**
      * An HRMP channel was opened via Root origin.
-     * `[sender, recipient, proposed_max_capacity, proposed_max_message_size]`
      **/
     HrmpChannelForceOpened: GenericPalletEvent<
       'Hrmp',
       'HrmpChannelForceOpened',
-      [PolkadotParachainPrimitivesPrimitivesId, PolkadotParachainPrimitivesPrimitivesId, number, number]
+      {
+        sender: PolkadotParachainPrimitivesPrimitivesId;
+        recipient: PolkadotParachainPrimitivesPrimitivesId;
+        proposedMaxCapacity: number;
+        proposedMaxMessageSize: number;
+      }
+    >;
+
+    /**
+     * An HRMP channel was opened between two system chains.
+     **/
+    HrmpSystemChannelOpened: GenericPalletEvent<
+      'Hrmp',
+      'HrmpSystemChannelOpened',
+      {
+        sender: PolkadotParachainPrimitivesPrimitivesId;
+        recipient: PolkadotParachainPrimitivesPrimitivesId;
+        proposedMaxCapacity: number;
+        proposedMaxMessageSize: number;
+      }
+    >;
+
+    /**
+     * An HRMP channel's deposits were updated.
+     **/
+    OpenChannelDepositsUpdated: GenericPalletEvent<
+      'Hrmp',
+      'OpenChannelDepositsUpdated',
+      { sender: PolkadotParachainPrimitivesPrimitivesId; recipient: PolkadotParachainPrimitivesPrimitivesId }
     >;
 
     /**
@@ -1649,6 +1853,9 @@ export interface ChainEvents extends GenericChainEvents {
      **/
     [prop: string]: GenericPalletEvent;
   };
+  /**
+   * Pallet `ParasDisputes`'s events
+   **/
   parasDisputes: {
     /**
      * A dispute has been initiated. \[candidate hash, dispute location\]
@@ -1682,6 +1889,9 @@ export interface ChainEvents extends GenericChainEvents {
      **/
     [prop: string]: GenericPalletEvent;
   };
+  /**
+   * Pallet `Registrar`'s events
+   **/
   registrar: {
     Registered: GenericPalletEvent<
       'Registrar',
@@ -1705,6 +1915,9 @@ export interface ChainEvents extends GenericChainEvents {
      **/
     [prop: string]: GenericPalletEvent;
   };
+  /**
+   * Pallet `Slots`'s events
+   **/
   slots: {
     /**
      * A new `[lease_period]` is beginning.
@@ -1734,6 +1947,9 @@ export interface ChainEvents extends GenericChainEvents {
      **/
     [prop: string]: GenericPalletEvent;
   };
+  /**
+   * Pallet `Auctions`'s events
+   **/
   auctions: {
     /**
      * An auction started. Provides its index and the block number where it will begin to
@@ -1801,6 +2017,9 @@ export interface ChainEvents extends GenericChainEvents {
      **/
     [prop: string]: GenericPalletEvent;
   };
+  /**
+   * Pallet `Crowdloan`'s events
+   **/
   crowdloan: {
     /**
      * Create a new crowdloaning campaign.
@@ -1882,6 +2101,9 @@ export interface ChainEvents extends GenericChainEvents {
      **/
     [prop: string]: GenericPalletEvent;
   };
+  /**
+   * Pallet `XcmPallet`'s events
+   **/
   xcmPallet: {
     /**
      * Execution of an XCM message was attempted.
@@ -2148,6 +2370,9 @@ export interface ChainEvents extends GenericChainEvents {
      **/
     [prop: string]: GenericPalletEvent;
   };
+  /**
+   * Pallet `MessageQueue`'s events
+   **/
   messageQueue: {
     /**
      * Message discarded due to an error in the `MessageProcessor` (usually a format error).
@@ -2197,6 +2422,31 @@ export interface ChainEvents extends GenericChainEvents {
       'MessageQueue',
       'PageReaped',
       { origin: PolkadotRuntimeParachainsInclusionAggregateMessageOrigin; index: number }
+    >;
+
+    /**
+     * Generic pallet event
+     **/
+    [prop: string]: GenericPalletEvent;
+  };
+  /**
+   * Pallet `AssetRate`'s events
+   **/
+  assetRate: {
+    AssetRateCreated: GenericPalletEvent<
+      'AssetRate',
+      'AssetRateCreated',
+      { assetKind: PolkadotRuntimeCommonImplsVersionedLocatableAsset; rate: FixedU128 }
+    >;
+    AssetRateRemoved: GenericPalletEvent<
+      'AssetRate',
+      'AssetRateRemoved',
+      { assetKind: PolkadotRuntimeCommonImplsVersionedLocatableAsset }
+    >;
+    AssetRateUpdated: GenericPalletEvent<
+      'AssetRate',
+      'AssetRateUpdated',
+      { assetKind: PolkadotRuntimeCommonImplsVersionedLocatableAsset; old: FixedU128; new: FixedU128 }
     >;
 
     /**

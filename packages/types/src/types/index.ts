@@ -1,10 +1,17 @@
-import { Field, ModuleError } from '@delightfuldot/codecs';
-import * as $ from '@delightfuldot/shape';
+import {
+  DispatchError,
+  ModuleError,
+  PalletErrorMetadataLatest,
+  PalletEventMetadataLatest,
+  PalletTxMetadataLatest,
+} from '@delightfuldot/codecs';
 import { RpcCallSpec } from './rpc';
-import { RuntimeCallSpec } from './runtime';
+import { RuntimeApiMethodSpec } from './runtime';
 
 export * from './rpc';
 export * from './runtime';
+export * from './extrinsic';
+export * from './event';
 
 export type Append<T extends readonly unknown[], V> = [...T, V];
 export type AnyFunc = (...args: any[]) => any;
@@ -12,23 +19,8 @@ export type AsyncMethod = (...args: any[]) => Promise<any>;
 export type Unsub = () => Promise<boolean>;
 export type Callback<T> = (result: T) => Promise<void> | void;
 
-export interface PalletItemMetadata {
-  pallet: string;
-  palletIndex: number;
-  name: string;
-  fields: Field[];
-  fieldCodecs: $.AnyShape[];
-  index: number;
-  docs: string[];
-}
-
-export interface PalletErrorMetadataV14 extends PalletItemMetadata {}
-export interface PalletEventMetadataV14 extends PalletItemMetadata {}
-export interface PalletErrorMetadataLatest extends PalletErrorMetadataV14 {}
-export interface PalletEventMetadataLatest extends PalletEventMetadataV14 {}
-
 export interface GenericPalletError {
-  is: (moduleError: ModuleError) => boolean;
+  is: (moduleError: ModuleError | DispatchError) => boolean;
   meta: PalletErrorMetadataLatest;
 }
 
@@ -50,6 +42,16 @@ export interface GenericChainConsts {
   };
 }
 
+export type GenericTxCall<F extends AnyFunc = AnyFunc> = F & {
+  meta?: PalletTxMetadataLatest;
+};
+
+export interface GenericChainTx {
+  [pallet: string]: {
+    [callName: string]: GenericTxCall;
+  };
+}
+
 export interface StorageQueryMethod<F extends AnyFunc = AnyFunc> {
   (...args: Parameters<F>): Promise<ReturnType<F>>;
   (...args: Append<Parameters<F>, Callback<ReturnType<F>>>): Promise<Unsub>;
@@ -57,16 +59,16 @@ export interface StorageQueryMethod<F extends AnyFunc = AnyFunc> {
 
 export type GenericStorageQuery<T extends AnyFunc = AnyFunc> = StorageQueryMethod<T> & {};
 
-export type GenericRuntimeCall<F extends AsyncMethod = AsyncMethod> = F & {
-  meta: RuntimeCallSpec;
+export type GenericRuntimeApiMethod<F extends AsyncMethod = AsyncMethod> = F & {
+  meta: RuntimeApiMethodSpec;
 };
 
-export interface GenericRuntime {
-  [method: string]: GenericRuntimeCall;
+export interface GenericRuntimeApi {
+  [method: string]: GenericRuntimeApiMethod;
 }
 
-export interface GenericRuntimeCalls {
-  [runtime: string]: GenericRuntime;
+export interface GenericRuntimeApis {
+  [runtime: string]: GenericRuntimeApi;
 }
 
 export interface GenericChainStorage {
@@ -90,11 +92,11 @@ export interface PalletEvent<
   palletEvent: Data extends undefined
     ? EventName
     : Data extends null
-    ? { name: EventName }
-    : {
-        name: EventName;
-        data: Data;
-      };
+      ? { name: EventName }
+      : {
+          name: EventName;
+          data: Data;
+        };
 }
 
 export interface GenericPalletEvent<
@@ -119,7 +121,6 @@ export interface GenericSubstrateApi {
   query: GenericChainStorage;
   errors: GenericChainErrors;
   events: GenericChainEvents;
-  call: GenericRuntimeCalls;
-
-  // TODO tx, calls ...
+  call: GenericRuntimeApis;
+  tx: GenericChainTx;
 }

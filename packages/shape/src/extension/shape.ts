@@ -2,6 +2,7 @@ import { hexFixLength, hexToU8a, isBoolean, isHex, isNumber, isString } from '@p
 import * as $ from 'subshape';
 import { AnyShape, Decoder, Encoder, Predicate, Shape } from 'subshape';
 import cloneDeep from 'lodash.clonedeep';
+import { AssertState } from 'subshape/types/common/assert';
 
 declare module 'subshape' {
   export interface Decoder<T extends AnyShape = Shape<any>, I = any, O = any> {

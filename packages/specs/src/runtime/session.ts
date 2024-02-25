@@ -20,10 +20,10 @@ export const session: RuntimeApisModule = {
           params: [
             {
               name: 'seed',
-              type: 'Option<Array<u8>>',
+              type: 'Option<Bytes>',
             },
           ],
-          type: 'Array<u8>',
+          type: 'Bytes',
         },
         decodeSessionKeys: {
           docs: ['Decode the given public session key', '\n', 'Returns the list of public raw public keys + key typ'],
@@ -33,7 +33,7 @@ export const session: RuntimeApisModule = {
               type: 'Bytes',
             },
           ],
-          type: 'Option<Array<[Array<u8>, KeyTypeId]>>',
+          type: 'Option<Array<[Bytes, KeyTypeId]>>',
         },
       },
       version: 1,

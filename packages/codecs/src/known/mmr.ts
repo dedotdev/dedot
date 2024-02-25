@@ -75,8 +75,5 @@ export const $MmrEncodableOpaqueLeaf = $.PrefixedHex;
 export type MmrEncodableOpaqueLeaf = $.Input<typeof $MmrEncodableOpaqueLeaf>;
 
 //TODO: Handle nested tuple or wrapper types
-export const $TupleOfMmrEncodableOpaqueLeafsAndMmrBatchProof = $.Tuple($.Vec($MmrEncodableOpaqueLeaf), $MmrBatchProof);
-
-export type TupleOfMmrEncodableOpaqueLeafsAndMmrBatchProof = $.Input<
-  typeof $TupleOfMmrEncodableOpaqueLeafsAndMmrBatchProof
->;
+export const $GeneratedMmrProofResult = $.Tuple($.Vec($MmrEncodableOpaqueLeaf), $MmrBatchProof);
+export type GeneratedMmrProofResult = $.Input<typeof $GeneratedMmrProofResult>;

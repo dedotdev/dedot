@@ -1,4 +1,5 @@
-import { stringCamelCase } from '@polkadot/util';
+import { hexToU8a, isHex, stringCamelCase } from '@polkadot/util';
+import { HexString } from './types';
 
 export const shortenAddress = (address: string): string => {
   if (!address) {
@@ -57,7 +58,17 @@ export const isNativeType = (type: string) => {
   });
 };
 
-export const stringSnakeCase = (input: string | undefined) => {
-  if (!input) return undefined;
+export const stringSnakeCase = (input?: string | undefined) => {
+  if (!input) return '';
   return stringCamelCase(input).replace(/[A-Z]/g, (letter) => `_${letter.toLowerCase()}`);
+};
+
+/**
+ * Check if a hash is zero
+ * - isZeroHash('0x000000') returns `true`
+ * - isZeroHash('0x000001') returns `false`
+ * @param input
+ */
+export const isZeroHash = (input: HexString): boolean => {
+  return isHex(input) && hexToU8a(input).every((b) => b === 0);
 };

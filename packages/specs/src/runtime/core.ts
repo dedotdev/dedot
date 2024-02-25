@@ -20,7 +20,7 @@ export const core: RuntimeApisModule = {
               type: 'Block',
             },
           ],
-          type: 'Null',
+          type: '[]',
         },
         // Renamed at v2 (initialise_block)
         initializeBlock: {
@@ -31,7 +31,7 @@ export const core: RuntimeApisModule = {
               type: 'Header',
             },
           ],
-          type: 'Null',
+          type: '[]',
         },
       },
       version: 4,

@@ -32,7 +32,7 @@ export const mmr: RuntimeApisModule = {
               type: 'Option<BlockNumber>',
             },
           ],
-          type: 'Result<TupleOfMmrEncodableOpaqueLeafsAndMmrBatchProof, MmrError>',
+          type: 'Result<GeneratedMmrProofResult, MmrError>',
         },
         verifyProof: {
           docs: [
@@ -52,7 +52,7 @@ export const mmr: RuntimeApisModule = {
               type: 'MmrBatchProof',
             },
           ],
-          type: 'Result<Null, MmrError>',
+          type: 'Result<[], MmrError>',
         },
         verifyProofStateless: {
           docs: [
@@ -78,7 +78,7 @@ export const mmr: RuntimeApisModule = {
               type: 'MmrBatchProof',
             },
           ],
-          type: 'Result<Null, MmrError>',
+          type: 'Result<[], MmrError>',
         },
       },
       version: 2,

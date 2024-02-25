@@ -37,3 +37,12 @@ export const compileTemplate = (templateFileName: string) => {
 
   return handlebars.compile(fs.readFileSync(templateFilePath, 'utf8'));
 };
+
+// TODO add more reserved words
+const TS_RESERVED_WORDS = ['new', 'class'];
+
+/**
+ * Check if a word is TypeScript/JavaScript reserved
+ * @param word
+ */
+export const isReservedWord = (word: string) => TS_RESERVED_WORDS.includes(word);
