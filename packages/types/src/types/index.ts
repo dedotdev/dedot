@@ -4,7 +4,7 @@ import {
   PalletErrorMetadataLatest,
   PalletEventMetadataLatest,
   PalletTxMetadataLatest,
-} from '@delightfuldot/codecs';
+} from '@dedot/codecs';
 import { RpcCallSpec } from './rpc';
 import { RuntimeApiMethodSpec } from './runtime';
 

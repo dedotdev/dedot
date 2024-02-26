@@ -1,9 +1,9 @@
 import { generateTypes, generateTypesFromChain } from './index';
 import { rpc } from '@polkadot/types-support/metadata/static-substrate';
 import staticSubstrate from '@polkadot/types-support/metadata/v15/substrate-hex';
-import { $Metadata, CodecRegistry, Metadata, RuntimeVersion } from '@delightfuldot/codecs';
+import { $Metadata, CodecRegistry, Metadata, RuntimeVersion } from '@dedot/codecs';
 import { NetworkInfo } from './types';
-import { DelightfulApi, ConstantExecutor } from 'delightfuldot';
+import { DelightfulApi, ConstantExecutor } from 'dedot';
 
 const NETWORKS: NetworkInfo[] = [
   {

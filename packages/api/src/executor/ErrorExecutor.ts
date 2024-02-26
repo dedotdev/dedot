@@ -1,8 +1,8 @@
-import { GenericPalletError, GenericSubstrateApi } from '@delightfuldot/types';
-import { SubstrateApi } from '@delightfuldot/chaintypes';
+import { GenericPalletError, GenericSubstrateApi } from '@dedot/types';
+import { SubstrateApi } from '@dedot/chaintypes';
 import { Executor } from './Executor';
-import { DispatchError, ModuleError } from '@delightfuldot/codecs';
-import { assert } from '@delightfuldot/utils';
+import { DispatchError, ModuleError } from '@dedot/codecs';
+import { assert } from '@dedot/utils';
 import { hexToU8a, isHex, isNumber, isObject, stringPascalCase } from '@polkadot/util';
 
 /**

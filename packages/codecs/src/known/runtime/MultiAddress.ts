@@ -1,4 +1,4 @@
-import * as $ from '@delightfuldot/shape';
+import * as $ from '@dedot/shape';
 import { $AccountId32, AccountId32 } from '../../generic';
 import { registerLooseCodecType } from '../../codectypes';
 

@@ -1,6 +1,6 @@
 import { stringLowerFirst } from '@polkadot/util';
-import { StorageEntryLatest } from '@delightfuldot/codecs';
-import { normalizeName } from '@delightfuldot/utils';
+import { StorageEntryLatest } from '@dedot/codecs';
+import { normalizeName } from '@dedot/utils';
 import { ApiGen } from '../generator';
 import { beautifySourceCode, commentBlock, compileTemplate } from './utils';
 

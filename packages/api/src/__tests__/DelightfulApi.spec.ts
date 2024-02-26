@@ -1,9 +1,9 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { DelightfulApi } from '../client';
 import MockProvider from './MockProvider';
-import { SubstrateApi } from '@delightfuldot/chaintypes';
+import { SubstrateApi } from '@dedot/chaintypes';
 import { stringCamelCase, stringPascalCase } from '@polkadot/util';
-import { RuntimeVersion } from '@delightfuldot/codecs';
+import { RuntimeVersion } from '@dedot/codecs';
 
 describe('DelightfulApi', () => {
   it('should throws error for invalid endpoint', () => {

@@ -1,18 +1,18 @@
 {
-  "name": "@delightfuldot/shape",
+  "name": "@dedot/shape",
   "version": "0.0.1-alpha.20",
   "description": "Basic codecs & shapes, extending existing subshape",
   "author": "Thang X. Vu <thang@coongcrafts.io>",
-  "homepage": "https://github.com/CoongCrafts/delightfuldot/tree/main/packages/shape",
+  "homepage": "https://github.com/dedotdev/dedot/tree/main/packages/shape",
   "repository": {
     "directory": "packages/shape",
     "type": "git",
-    "url": "https://github.com/CoongCrafts/delightfuldot.git"
+    "url": "https://github.com/dedotdev/dedot.git"
   },
   "main": "src/index.ts",
   "type": "module",
   "dependencies": {
-    "@delightfuldot/utils": "workspace:*",
+    "@dedot/utils": "workspace:*",
     "@polkadot/util": "^12.6.2",
     "@polkadot/util-crypto": "^12.6.2",
     "lodash.clonedeep": "^4.5.0",

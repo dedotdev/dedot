@@ -1,13 +1,13 @@
 {
-  "name": "@delightfuldot/codegen",
+  "name": "@dedot/codegen",
   "version": "0.0.1-alpha.20",
   "description": "Generate types",
   "author": "Thang X. Vu <thang@coongcrafts.io>",
-  "homepage": "https://github.com/CoongCrafts/delightfuldot/tree/main/packages/codegen",
+  "homepage": "https://github.com/dedotdev/dedot/tree/main/packages/codegen",
   "repository": {
     "directory": "packages/codegen",
     "type": "git",
-    "url": "https://github.com/CoongCrafts/delightfuldot.git"
+    "url": "https://github.com/dedotdev/dedot.git"
   },
   "main": "src/index.ts",
   "type": "module",
@@ -16,12 +16,12 @@
     "clean": "rm -rf ./dist && rm -rf ./tsconfig.tsbuildinfo ./tsconfig.build.tsbuildinfo"
   },
   "dependencies": {
-    "@delightfuldot/codecs": "workspace:*",
-    "@delightfuldot/shape": "workspace:*",
-    "@delightfuldot/specs": "workspace:*",
-    "@delightfuldot/utils": "workspace:*",
+    "@dedot/codecs": "workspace:*",
+    "@dedot/shape": "workspace:*",
+    "@dedot/specs": "workspace:*",
+    "@dedot/utils": "workspace:*",
     "@polkadot/util": "^12.6.2",
-    "delightfuldot": "workspace:*",
+    "dedot": "workspace:*",
     "handlebars": "^4.7.8",
     "prettier": "^3.0.3"
   },

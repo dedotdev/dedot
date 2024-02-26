@@ -1,4 +1,4 @@
-import { DelightfulApi } from 'delightfuldot';
+import { DelightfulApi } from 'dedot';
 import * as fs from 'fs';
 import * as path from 'path';
 import * as process from 'process';
@@ -13,8 +13,8 @@ import {
   RuntimeApisGen,
   TxGen,
 } from './generator';
-import { RpcMethods } from '@delightfuldot/types';
-import { MetadataLatest } from '@delightfuldot/codecs';
+import { RpcMethods } from '@dedot/types';
+import { MetadataLatest } from '@dedot/codecs';
 import { NetworkInfo } from './types';
 
 export async function generateTypesFromChain(network: NetworkInfo, endpoint: string, outDir: string) {

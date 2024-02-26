@@ -1,3 +1,3 @@
-# @delightfuldot/codegen
+# @dedot/codegen
 
 Generate types

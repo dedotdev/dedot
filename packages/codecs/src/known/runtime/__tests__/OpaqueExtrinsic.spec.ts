@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { HexString } from '@delightfuldot/utils';
+import { HexString } from '@dedot/utils';
 import { $OpaqueExtrinsic } from '../OpaqueExtrinsic';
 import { hexToU8a } from '@polkadot/util';
 

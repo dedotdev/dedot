@@ -1,4 +1,4 @@
-import { RuntimeApisModule } from '@delightfuldot/types';
+import { RuntimeApisModule } from '@dedot/types';
 
 /**
  * Reference:

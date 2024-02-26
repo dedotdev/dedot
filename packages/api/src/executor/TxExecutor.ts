@@ -10,11 +10,11 @@ import {
   ISubmittableResult,
   SignerOptions,
   Unsub,
-} from '@delightfuldot/types';
-import { SubstrateApi } from '@delightfuldot/chaintypes';
-import { assert, HexString } from '@delightfuldot/utils';
+} from '@dedot/types';
+import { SubstrateApi } from '@dedot/chaintypes';
+import { assert, HexString } from '@dedot/utils';
 import { hexToU8a, isFunction, isHex, objectSpread, stringCamelCase, stringPascalCase, u8aToHex } from '@polkadot/util';
-import { BlockHash, Extrinsic, Hash, SignedBlock, TransactionStatus } from '@delightfuldot/codecs';
+import { BlockHash, Extrinsic, Hash, SignedBlock, TransactionStatus } from '@dedot/codecs';
 import { DelightfulApi } from '../client';
 import { IKeyringPair } from '@polkadot/types/types';
 import { ExtraSignedExtension, SubmittableResult } from '../extrinsic';

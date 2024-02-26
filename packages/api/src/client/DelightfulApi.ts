@@ -1,16 +1,8 @@
 import { HttpProvider, WsProvider } from '@polkadot/rpc-provider';
 import { ProviderInterface } from '@polkadot/rpc-provider/types';
-import type { SubstrateApi } from '@delightfuldot/chaintypes';
-import {
-  $Metadata,
-  BlockHash,
-  CodecRegistry,
-  Hash,
-  Metadata,
-  MetadataLatest,
-  RuntimeVersion,
-} from '@delightfuldot/codecs';
-import { ChainProperties, GenericSubstrateApi, Unsub } from '@delightfuldot/types';
+import type { SubstrateApi } from '@dedot/chaintypes';
+import { $Metadata, BlockHash, CodecRegistry, Hash, Metadata, MetadataLatest, RuntimeVersion } from '@dedot/codecs';
+import { ChainProperties, GenericSubstrateApi, Unsub } from '@dedot/types';
 import {
   ConstantExecutor,
   ErrorExecutor,
@@ -22,7 +14,7 @@ import {
 } from '../executor';
 import { newProxyChain } from '../proxychain';
 import { ApiOptions, MetadataKey, NetworkEndpoint, NormalizedApiOptions } from '../types';
-import { ensurePresence } from '@delightfuldot/utils';
+import { ensurePresence } from '@dedot/utils';
 import localforage from 'localforage';
 import { hexAddPrefix, u8aToHex } from '@polkadot/util';
 
@@ -36,8 +28,8 @@ export const SUPPORTED_METADATA_VERSIONS = [15, 14];
  *
  * ### Initialize API instance and interact with substrate-based network
  * ```typescript
- * import { DelightfulApi } from 'delightfuldot';
- * import { PolkadotApi } from '@delightfuldot/chaintypes/polkadot';
+ * import { DelightfulApi } from 'dedot';
+ * import { PolkadotApi } from '@dedot/chaintypes/polkadot';
  *
  * const run = async () => {
  *   const api = await DelightfulApi.new<PolkadotApi>('wss://rpc.polkadot.io');

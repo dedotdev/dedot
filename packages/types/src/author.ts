@@ -1,5 +1,5 @@
 import { SerdeEnum } from './serde';
-import { Bytes, Hash } from '@delightfuldot/codecs';
+import { Bytes, Hash } from '@dedot/codecs';
 import { registry } from './registry';
 
 /**

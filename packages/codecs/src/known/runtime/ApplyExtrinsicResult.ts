@@ -1,4 +1,4 @@
-import * as $ from '@delightfuldot/shape';
+import * as $ from '@dedot/shape';
 import { $DispatchError } from './DispatchError';
 import { $TransactionValidityError } from './TransactionValidityError';
 

@@ -1,5 +1,5 @@
-import * as $ from '@delightfuldot/shape';
-import { HexString } from '@delightfuldot/utils';
+import * as $ from '@dedot/shape';
+import { HexString } from '@dedot/utils';
 import { registerLooseCodecType } from '../codectypes';
 import { isString, isU8a, stringToHex, u8aToHex } from '@polkadot/util';
 

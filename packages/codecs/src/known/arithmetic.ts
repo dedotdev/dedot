@@ -1,4 +1,4 @@
-import * as $ from '@delightfuldot/shape';
+import * as $ from '@dedot/shape';
 
 export const $Percent = $.u8; // 0 -> 100u8
 export type Percent = number;

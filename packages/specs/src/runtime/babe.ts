@@ -1,4 +1,4 @@
-import { RuntimeApiMethodsSpec, RuntimeApisModule } from '@delightfuldot/types';
+import { RuntimeApiMethodsSpec, RuntimeApisModule } from '@dedot/types';
 
 const V1_V2_SHARED: RuntimeApiMethodsSpec = {
   currentEpoch: {

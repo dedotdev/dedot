@@ -1,6 +1,6 @@
-import { BlockHash, Bytes, FixedBytes, Option, StorageData, StorageKey } from '@delightfuldot/codecs';
+import { BlockHash, Bytes, FixedBytes, Option, StorageData, StorageKey } from '@dedot/codecs';
 import { registry } from './registry';
-import { SerdeEnum } from '@delightfuldot/types/serde';
+import { SerdeEnum } from '@dedot/types/serde';
 
 export interface ReadProof<Hash = BlockHash> {
   /**

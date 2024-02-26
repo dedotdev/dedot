@@ -1,8 +1,8 @@
 import { DelightfulApi } from '../../client';
-import { CodecRegistry, SignedExtensionDefLatest } from '@delightfuldot/codecs';
-import { ensurePresence } from '@delightfuldot/utils';
-import * as $ from '@delightfuldot/shape';
-import { PayloadOptions } from '@delightfuldot/types';
+import { CodecRegistry, SignedExtensionDefLatest } from '@dedot/codecs';
+import { ensurePresence } from '@dedot/utils';
+import * as $ from '@dedot/shape';
+import { PayloadOptions } from '@dedot/types';
 import { SignerPayloadJSON } from '@polkadot/types/types';
 
 export interface ISignedExtension {

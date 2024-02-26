@@ -1,8 +1,8 @@
 import './App.css';
 import { useState } from 'react';
-import { DelightfulApi } from 'delightfuldot';
+import { DelightfulApi } from 'dedot';
 import { useAsync } from 'react-use';
-import { PolkadotApi } from '@delightfuldot/chaintypes/polkadot';
+import { PolkadotApi } from '@dedot/chaintypes/polkadot';
 import { ApiPromise, WsProvider } from '@polkadot/api';
 
 const ENDPOINT = 'wss://rpc.polkadot.io';

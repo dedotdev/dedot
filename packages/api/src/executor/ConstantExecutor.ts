@@ -1,6 +1,6 @@
-import type { SubstrateApi } from '@delightfuldot/chaintypes';
+import type { SubstrateApi } from '@dedot/chaintypes';
 import { stringCamelCase } from '@polkadot/util';
-import { GenericSubstrateApi } from '@delightfuldot/types';
+import { GenericSubstrateApi } from '@dedot/types';
 import { Executor } from './Executor';
 
 /**

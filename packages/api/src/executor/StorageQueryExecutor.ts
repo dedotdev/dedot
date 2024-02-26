@@ -1,5 +1,5 @@
-import type { SubstrateApi } from '@delightfuldot/chaintypes';
-import { GenericSubstrateApi, StorageChangeSet } from '@delightfuldot/types';
+import type { SubstrateApi } from '@dedot/chaintypes';
+import { GenericSubstrateApi, StorageChangeSet } from '@dedot/types';
 import { Executor } from './Executor';
 import { QueryableStorage } from '../storage/QueryableStorage';
 import { isFunction } from '@polkadot/util';

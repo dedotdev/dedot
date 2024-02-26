@@ -1,4 +1,4 @@
-import { RuntimeApisModule, RuntimeApiMethodsSpec } from '@delightfuldot/types';
+import { RuntimeApisModule, RuntimeApiMethodsSpec } from '@dedot/types';
 
 const V5_V10_SHARED: RuntimeApiMethodsSpec = {
   validators: {

@@ -1,7 +1,7 @@
 import { SignedExtension } from '../SignedExtension';
 import { SignerPayloadJSON } from '@polkadot/types/types';
 import { bnToHex, u8aToHex } from '@polkadot/util';
-import { assert } from '@delightfuldot/utils';
+import { assert } from '@dedot/utils';
 
 /**
  * @name ChargeAssetTxPayment

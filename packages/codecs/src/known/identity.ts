@@ -1,4 +1,4 @@
-import * as $ from '@delightfuldot/shape';
+import * as $ from '@dedot/shape';
 
 // TODO create a custom codec for this!
 export const $Data = $.Enum({
@@ -43,4 +43,3 @@ export const $Data = $.Enum({
 });
 
 export type Data = $.Input<typeof $Data>;
-

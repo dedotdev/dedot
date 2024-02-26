@@ -1,4 +1,4 @@
-import * as $ from '@delightfuldot/shape';
+import * as $ from '@dedot/shape';
 import { $AccountId32, $BlockHash, $BlockNumber } from '../../generic';
 import { $H512 } from '../primitives';
 

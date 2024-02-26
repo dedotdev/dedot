@@ -1,8 +1,8 @@
-import type { SubstrateApi } from '@delightfuldot/chaintypes';
+import type { SubstrateApi } from '@dedot/chaintypes';
 import { isFunction, u8aToHex } from '@polkadot/util';
-import { findAliasRpcSpec, findRpcSpec } from '@delightfuldot/specs';
-import { GenericSubstrateApi, Unsub, RpcCallSpec, RpcParamSpec, GenericRpcCall } from '@delightfuldot/types';
-import { assert, isNativeType } from '@delightfuldot/utils';
+import { findAliasRpcSpec, findRpcSpec } from '@dedot/specs';
+import { GenericSubstrateApi, Unsub, RpcCallSpec, RpcParamSpec, GenericRpcCall } from '@dedot/types';
+import { assert, isNativeType } from '@dedot/utils';
 import { Executor } from './Executor';
 
 const isOptionalParam = (param: RpcParamSpec): boolean => {

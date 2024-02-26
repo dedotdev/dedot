@@ -31,7 +31,7 @@ const main = () => {
       pkgJson.module = './index.js';
       pkgJson.types = './index.d.ts';
 
-      if (pkgJson.name !== '@delightfuldot/chaintypes') {
+      if (pkgJson.name !== '@dedot/chaintypes') {
         pkgJson.exports = {
           '.': {
             import: {

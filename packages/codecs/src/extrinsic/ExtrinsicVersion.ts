@@ -1,5 +1,5 @@
-import * as $ from '@delightfuldot/shape';
-import { assert } from '@delightfuldot/utils';
+import * as $ from '@dedot/shape';
+import { assert } from '@dedot/utils';
 
 export const EXTRINSIC_FORMAT_VERSION = 4;
 

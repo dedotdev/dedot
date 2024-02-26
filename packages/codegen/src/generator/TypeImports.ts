@@ -1,9 +1,9 @@
 export class TypeImports {
   // Portable types from chain/metadata
   portableTypes: Set<string>;
-  // Known types that has a corresponding codec defined in @delightfuldot/codecs
+  // Known types that has a corresponding codec defined in @dedot/codecs
   codecTypes: Set<string>;
-  // Known types that're not codecs or chain/portable types defined in @delightfuldot/types
+  // Known types that're not codecs or chain/portable types defined in @dedot/types
   knownTypes: Set<string>;
   // External types to define explicitly
   outTypes: Set<string>;
@@ -26,8 +26,8 @@ export class TypeImports {
     // TODO generate outTypes!
 
     const toImports: [Set<string>, string][] = [
-      [this.knownTypes, '@delightfuldot/types'],
-      [this.codecTypes, '@delightfuldot/codecs'],
+      [this.knownTypes, '@dedot/types'],
+      [this.codecTypes, '@dedot/codecs'],
       [this.portableTypes, './types'],
     ];
 

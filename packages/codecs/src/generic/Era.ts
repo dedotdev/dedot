@@ -1,5 +1,5 @@
-import * as $ from '@delightfuldot/shape';
-import { max, min, nextPowerOfTwo, numOfTrailingZeroes } from '@delightfuldot/utils';
+import * as $ from '@dedot/shape';
+import { max, min, nextPowerOfTwo, numOfTrailingZeroes } from '@dedot/utils';
 
 /**
  * @description An era codec to describe the longevity of a transaction.

@@ -1,6 +1,6 @@
 import { hexToBn, hexToString, isHex } from '@polkadot/util';
-import * as $ from '@delightfuldot/shape';
-import { HexString } from '@delightfuldot/utils';
+import * as $ from '@dedot/shape';
+import { HexString } from '@dedot/utils';
 import { $Hash } from './Hash';
 import { registerLooseCodecType } from '../codectypes';
 

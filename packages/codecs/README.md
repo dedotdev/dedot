@@ -1,3 +1,3 @@
-# @delightfuldot/codecs
+# @dedot/codecs
 
 Known codecs

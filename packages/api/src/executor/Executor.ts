@@ -1,7 +1,7 @@
-import type { SubstrateApi } from '@delightfuldot/chaintypes';
+import type { SubstrateApi } from '@dedot/chaintypes';
 import { stringCamelCase } from '@polkadot/util';
-import { BlockHash, PalletDefLatest } from '@delightfuldot/codecs';
-import { GenericSubstrateApi } from '@delightfuldot/types';
+import { BlockHash, PalletDefLatest } from '@dedot/codecs';
+import { GenericSubstrateApi } from '@dedot/types';
 import { DelightfulApi } from '../client';
 
 /**

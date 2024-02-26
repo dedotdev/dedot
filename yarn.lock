@@ -344,50 +344,50 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@delightfuldot/chaintypes@workspace:*, @delightfuldot/chaintypes@workspace:packages/chaintypes":
+"@dedot/chaintypes@workspace:*, @dedot/chaintypes@workspace:packages/chaintypes":
   version: 0.0.0-use.local
-  resolution: "@delightfuldot/chaintypes@workspace:packages/chaintypes"
+  resolution: "@dedot/chaintypes@workspace:packages/chaintypes"
   dependencies:
-    "@delightfuldot/codecs": "workspace:*"
-    "@delightfuldot/shape": "workspace:*"
-    "@delightfuldot/types": "workspace:*"
-    "@delightfuldot/utils": "workspace:*"
+    "@dedot/codecs": "workspace:*"
+    "@dedot/shape": "workspace:*"
+    "@dedot/types": "workspace:*"
+    "@dedot/utils": "workspace:*"
     "@polkadot/util": ^12.6.2
   languageName: unknown
   linkType: soft
 
-"@delightfuldot/codecs@workspace:*, @delightfuldot/codecs@workspace:packages/codecs":
+"@dedot/codecs@workspace:*, @dedot/codecs@workspace:packages/codecs":
   version: 0.0.0-use.local
-  resolution: "@delightfuldot/codecs@workspace:packages/codecs"
+  resolution: "@dedot/codecs@workspace:packages/codecs"
   dependencies:
-    "@delightfuldot/shape": "workspace:*"
-    "@delightfuldot/utils": "workspace:*"
+    "@dedot/shape": "workspace:*"
+    "@dedot/utils": "workspace:*"
     "@polkadot/util": ^12.6.2
     "@polkadot/util-crypto": ^12.6.2
     lodash.clonedeep: ^4.5.0
   languageName: unknown
   linkType: soft
 
-"@delightfuldot/codegen@workspace:packages/codegen":
+"@dedot/codegen@workspace:packages/codegen":
   version: 0.0.0-use.local
-  resolution: "@delightfuldot/codegen@workspace:packages/codegen"
+  resolution: "@dedot/codegen@workspace:packages/codegen"
   dependencies:
-    "@delightfuldot/codecs": "workspace:*"
-    "@delightfuldot/shape": "workspace:*"
-    "@delightfuldot/specs": "workspace:*"
-    "@delightfuldot/utils": "workspace:*"
+    "@dedot/codecs": "workspace:*"
+    "@dedot/shape": "workspace:*"
+    "@dedot/specs": "workspace:*"
+    "@dedot/utils": "workspace:*"
     "@polkadot/util": ^12.6.2
-    delightfuldot: "workspace:*"
+    dedot: "workspace:*"
     handlebars: ^4.7.8
     prettier: ^3.0.3
   languageName: unknown
   linkType: soft
 
-"@delightfuldot/shape@workspace:*, @delightfuldot/shape@workspace:packages/shape":
+"@dedot/shape@workspace:*, @dedot/shape@workspace:packages/shape":
   version: 0.0.0-use.local
-  resolution: "@delightfuldot/shape@workspace:packages/shape"
+  resolution: "@dedot/shape@workspace:packages/shape"
   dependencies:
-    "@delightfuldot/utils": "workspace:*"
+    "@dedot/utils": "workspace:*"
     "@polkadot/util": ^12.6.2
     "@polkadot/util-crypto": ^12.6.2
     "@types/lodash.clonedeep": ^4.5.9
@@ -396,28 +396,28 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@delightfuldot/specs@workspace:*, @delightfuldot/specs@workspace:packages/specs":
+"@dedot/specs@workspace:*, @dedot/specs@workspace:packages/specs":
   version: 0.0.0-use.local
-  resolution: "@delightfuldot/specs@workspace:packages/specs"
+  resolution: "@dedot/specs@workspace:packages/specs"
   dependencies:
-    "@delightfuldot/types": "workspace:*"
+    "@dedot/types": "workspace:*"
   languageName: unknown
   linkType: soft
 
-"@delightfuldot/types@workspace:*, @delightfuldot/types@workspace:packages/types":
+"@dedot/types@workspace:*, @dedot/types@workspace:packages/types":
   version: 0.0.0-use.local
-  resolution: "@delightfuldot/types@workspace:packages/types"
+  resolution: "@dedot/types@workspace:packages/types"
   dependencies:
-    "@delightfuldot/codecs": "workspace:*"
-    "@delightfuldot/shape": "workspace:*"
-    "@delightfuldot/utils": "workspace:*"
+    "@dedot/codecs": "workspace:*"
+    "@dedot/shape": "workspace:*"
+    "@dedot/utils": "workspace:*"
     "@polkadot/util": ^12.6.2
   languageName: unknown
   linkType: soft
 
-"@delightfuldot/utils@workspace:*, @delightfuldot/utils@workspace:packages/utils":
+"@dedot/utils@workspace:*, @dedot/utils@workspace:packages/utils":
   version: 0.0.0-use.local
-  resolution: "@delightfuldot/utils@workspace:packages/utils"
+  resolution: "@dedot/utils@workspace:packages/utils"
   dependencies:
     "@polkadot/util": ^12.6.2
   languageName: unknown
@@ -3273,14 +3273,14 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "dapp@workspace:examples/dapp"
   dependencies:
-    "@delightfuldot/chaintypes": "workspace:*"
+    "@dedot/chaintypes": "workspace:*"
     "@polkadot/api": ^10.11.2
     "@types/react": ^18.2.43
     "@types/react-dom": ^18.2.17
     "@typescript-eslint/eslint-plugin": ^6.14.0
     "@typescript-eslint/parser": ^6.14.0
     "@vitejs/plugin-react": ^4.2.1
-    delightfuldot: "workspace:*"
+    dedot: "workspace:*"
     eslint: ^8.55.0
     eslint-plugin-react-hooks: ^4.6.0
     eslint-plugin-react-refresh: ^0.4.5
@@ -3366,6 +3366,44 @@ __metadata:
   languageName: node
   linkType: hard
 
+"dedot.dev@workspace:.":
+  version: 0.0.0-use.local
+  resolution: "dedot.dev@workspace:."
+  dependencies:
+    "@polkadot/types-support": ^10.11.2
+    "@trivago/prettier-plugin-sort-imports": ^4.1.1
+    happy-dom: ^13.1.4
+    husky: ^8.0.3
+    jsdom: ^23.2.0
+    lerna: ^7.4.2
+    prettier: ^3.0.3
+    prettier-plugin-organize-imports: ^3.2.3
+    ts-node: ^10.9.1
+    typescript: ^5.2.2
+    vite: ^5.0.11
+    vite-tsconfig-paths: ^4.2.1
+    vitest: ^0.34.6
+  languageName: unknown
+  linkType: soft
+
+"dedot@workspace:*, dedot@workspace:packages/api":
+  version: 0.0.0-use.local
+  resolution: "dedot@workspace:packages/api"
+  dependencies:
+    "@dedot/chaintypes": "workspace:*"
+    "@dedot/codecs": "workspace:*"
+    "@dedot/shape": "workspace:*"
+    "@dedot/specs": "workspace:*"
+    "@dedot/utils": "workspace:*"
+    "@polkadot/keyring": ^12.6.2
+    "@polkadot/rpc-provider": ^10.11.2
+    "@polkadot/types": ^10.11.2
+    "@polkadot/util": ^12.6.2
+    "@polkadot/util-crypto": ^12.6.2
+    localforage: ^1.10.0
+  languageName: unknown
+  linkType: soft
+
 "deep-eql@npm:^4.1.3":
   version: 4.1.3
   resolution: "deep-eql@npm:4.1.3"
@@ -3411,44 +3449,6 @@ __metadata:
   checksum: a51744d9b53c164ba9c0492471a1a2ffa0b6727451bdc89e31627fdf4adda9d51277cfcbfb20f0a6f08ccb3c436f341df3e92631a3440226d93a8971724771fd
   languageName: node
   linkType: hard
-
-"delightfuldot.dev@workspace:.":
-  version: 0.0.0-use.local
-  resolution: "delightfuldot.dev@workspace:."
-  dependencies:
-    "@polkadot/types-support": ^10.11.2
-    "@trivago/prettier-plugin-sort-imports": ^4.1.1
-    happy-dom: ^13.1.4
-    husky: ^8.0.3
-    jsdom: ^23.2.0
-    lerna: ^7.4.2
-    prettier: ^3.0.3
-    prettier-plugin-organize-imports: ^3.2.3
-    ts-node: ^10.9.1
-    typescript: ^5.2.2
-    vite: ^5.0.11
-    vite-tsconfig-paths: ^4.2.1
-    vitest: ^0.34.6
-  languageName: unknown
-  linkType: soft
-
-"delightfuldot@workspace:*, delightfuldot@workspace:packages/api":
-  version: 0.0.0-use.local
-  resolution: "delightfuldot@workspace:packages/api"
-  dependencies:
-    "@delightfuldot/chaintypes": "workspace:*"
-    "@delightfuldot/codecs": "workspace:*"
-    "@delightfuldot/shape": "workspace:*"
-    "@delightfuldot/specs": "workspace:*"
-    "@delightfuldot/utils": "workspace:*"
-    "@polkadot/keyring": ^12.6.2
-    "@polkadot/rpc-provider": ^10.11.2
-    "@polkadot/types": ^10.11.2
-    "@polkadot/util": ^12.6.2
-    "@polkadot/util-crypto": ^12.6.2
-    localforage: ^1.10.0
-  languageName: unknown
-  linkType: soft
 
 "deprecation@npm:^2.0.0":
   version: 2.3.1

@@ -1,4 +1,4 @@
-import * as $ from '@delightfuldot/shape';
+import * as $ from '@dedot/shape';
 
 export const $U128 = $.u128;
 export type U128 = $.Input<typeof $U128>; // bigint

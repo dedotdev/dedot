@@ -1,4 +1,4 @@
-import { HexString } from '@delightfuldot/utils';
+import { HexString } from '@dedot/utils';
 import { registry } from './registry';
 import { SerdeEnum } from './serde';
 

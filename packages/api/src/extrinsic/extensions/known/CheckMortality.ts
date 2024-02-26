@@ -1,6 +1,6 @@
 import { SignedExtension } from '../SignedExtension';
-import { EraLike, Hash, Header } from '@delightfuldot/codecs';
-import { assert, isZeroHash, min } from '@delightfuldot/utils';
+import { EraLike, Hash, Header } from '@dedot/codecs';
+import { assert, isZeroHash, min } from '@dedot/utils';
 import { numberToHex, u8aToHex } from '@polkadot/util';
 import { SignerPayloadJSON } from '@polkadot/types/types';
 

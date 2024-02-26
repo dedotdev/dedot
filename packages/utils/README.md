@@ -1,3 +1,3 @@
-# @delightfuldot/utils
+# @dedot/utils
 
-Useful utilities for delightful apis 
+Useful utilities for dedot apis 

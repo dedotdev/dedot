@@ -1,13 +1,13 @@
 {
-  "name": "@delightfuldot/chaintypes",
+  "name": "@dedot/chaintypes",
   "version": "0.0.1-alpha.20",
   "description": "Types for substrate-based chains",
   "author": "Thang X. Vu <thang@coongcrafts.io>",
-  "homepage": "https://github.com/CoongCrafts/delightfuldot/tree/main/packages/chaintypes",
+  "homepage": "https://github.com/dedotdev/dedot/tree/main/packages/chaintypes",
   "repository": {
     "directory": "packages/chaintypes",
     "type": "git",
-    "url": "https://github.com/CoongCrafts/delightfuldot.git"
+    "url": "https://github.com/dedotdev/dedot.git"
   },
   "main": "src/index.ts",
   "type": "module",
@@ -16,10 +16,10 @@
     "clean": "rm -rf ./dist && rm -rf ./tsconfig.tsbuildinfo ./tsconfig.build.tsbuildinfo"
   },
   "dependencies": {
-    "@delightfuldot/codecs": "workspace:*",
-    "@delightfuldot/shape": "workspace:*",
-    "@delightfuldot/types": "workspace:*",
-    "@delightfuldot/utils": "workspace:*",
+    "@dedot/codecs": "workspace:*",
+    "@dedot/shape": "workspace:*",
+    "@dedot/types": "workspace:*",
+    "@dedot/utils": "workspace:*",
     "@polkadot/util": "^12.6.2"
   },
   "publishConfig": {

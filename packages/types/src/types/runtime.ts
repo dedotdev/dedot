@@ -1,4 +1,4 @@
-import { TypeId } from '@delightfuldot/codecs';
+import { TypeId } from '@dedot/codecs';
 
 export type RuntimeApiMethodParamSpec = {
   name: string;

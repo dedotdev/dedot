@@ -1,7 +1,7 @@
 import { CodecRegistry } from '../registry';
-import { HexString } from '@delightfuldot/utils';
+import { HexString } from '@dedot/utils';
 import { u8aToHex } from '@polkadot/util';
-import { Hash } from '@delightfuldot/codecs/generic';
+import { Hash } from '@dedot/codecs/generic';
 import { blake2AsHex } from '@polkadot/util-crypto';
 
 export interface ExtrinsicSignatureV4<Address = any, Signature = any, Extra = any> {

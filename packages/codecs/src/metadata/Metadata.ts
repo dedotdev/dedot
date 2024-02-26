@@ -1,4 +1,4 @@
-import * as $ from '@delightfuldot/shape';
+import * as $ from '@dedot/shape';
 import { $MetadataV14 } from './v14';
 import {
   $MetadataV15,

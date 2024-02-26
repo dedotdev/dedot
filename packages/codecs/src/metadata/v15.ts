@@ -1,4 +1,4 @@
-import * as $ from '@delightfuldot/shape';
+import * as $ from '@dedot/shape';
 import { $PortableType, $TypeId } from './scale_info';
 import { $ConstantDefV14, $SignedExtensionDefV14, $StorageEntryV14, SignedExtensionDefV14 } from './v14';
 

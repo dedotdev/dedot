@@ -1,3 +1,3 @@
-# @delightfuldot/chaintypes
+# @dedot/chaintypes
 
 Types for substrate-based chains

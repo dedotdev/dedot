@@ -1,13 +1,13 @@
 {
-  "name": "@delightfuldot/specs",
+  "name": "@dedot/specs",
   "version": "0.0.1-alpha.20",
   "description": "Known specs for rpc, runtime calls",
   "author": "Thang X. Vu <thang@coongcrafts.io>",
-  "homepage": "https://github.com/CoongCrafts/delightfuldot/tree/main/packages/specs",
+  "homepage": "https://github.com/dedotdev/dedot/tree/main/packages/specs",
   "repository": {
     "directory": "packages/specs",
     "type": "git",
-    "url": "https://github.com/CoongCrafts/delightfuldot.git"
+    "url": "https://github.com/dedotdev/dedot.git"
   },
   "main": "src/index.ts",
   "type": "module",
@@ -16,7 +16,7 @@
     "clean": "rm -rf ./dist && rm -rf ./tsconfig.tsbuildinfo ./tsconfig.build.tsbuildinfo"
   },
   "dependencies": {
-    "@delightfuldot/types": "workspace:*"
+    "@dedot/types": "workspace:*"
   },
   "publishConfig": {
     "access": "public",

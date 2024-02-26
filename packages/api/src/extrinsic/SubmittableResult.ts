@@ -1,6 +1,6 @@
-import { IEventRecord, ISubmittableResult } from '@delightfuldot/types';
-import { DispatchError, DispatchInfo, Hash, TransactionStatus } from '@delightfuldot/codecs';
-import { FrameSystemEventRecord } from '@delightfuldot/chaintypes/substrate';
+import { IEventRecord, ISubmittableResult } from '@dedot/types';
+import { DispatchError, DispatchInfo, Hash, TransactionStatus } from '@dedot/codecs';
+import { FrameSystemEventRecord } from '@dedot/chaintypes/substrate';
 
 export interface SubmittableResultInputs<E extends IEventRecord = FrameSystemEventRecord> {
   events?: E[];
