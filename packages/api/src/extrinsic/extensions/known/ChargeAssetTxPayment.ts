@@ -1,16 +1,18 @@
 import { SignedExtension } from '../SignedExtension';
 import { SignerPayloadJSON } from '@polkadot/types/types';
 import { bnToHex, u8aToHex } from '@polkadot/util';
-import { assert, ensurePresence } from '@delightfuldot/utils';
+import { assert } from '@delightfuldot/utils';
 
 /**
  * @name ChargeAssetTxPayment
  */
 export class ChargeAssetTxPayment extends SignedExtension<{ tip: bigint; assetId?: number | object }> {
   async init(): Promise<void> {
+    const { tip, assetId } = this.payloadOptions;
+
     this.data = {
-      tip: this.payloadOptions.tip || 0n,
-      assetId: this.payloadOptions.assetId,
+      tip: tip || 0n,
+      assetId,
     };
   }
 
@@ -25,23 +27,24 @@ export class ChargeAssetTxPayment extends SignedExtension<{ tip: bigint; assetId
   }
 
   #encodeAssetId(assetId?: number | object) {
-    if (assetId === null || assetId === undefined || typeof assetId === 'number') {
-      return assetId;
+    if (assetId === null || assetId === undefined) {
+      return undefined;
     }
 
-    if (typeof assetId === 'object') {
-      return u8aToHex(this.$AssetId().tryEncode(assetId));
-    }
-
-    return assetId;
+    return u8aToHex(this.$AssetId().tryEncode(assetId));
   }
 
   $AssetId() {
     const extensionTypeDef = this.registry.findPortableType(this.signedExtensionDef.typeId);
     assert(extensionTypeDef.type.tag === 'Struct');
 
-    const assetIdTypeDef = extensionTypeDef.type.value.fields.find((f) => f.name === 'asset_id');
+    const assetIdTypeDef = extensionTypeDef.type.value.fields.find((f) => f.name === 'asset_id')!;
+    const $codec = this.registry.findPortableCodec(assetIdTypeDef.typeId);
+    const codecMetadata = $codec.metadata[0]!;
+    if (codecMetadata.name === '$.option') {
+      return codecMetadata.args![0]; // inner shape
+    }
 
-    return this.registry.findPortableCodec(ensurePresence(assetIdTypeDef).typeId);
+    return $codec;
   }
 }
