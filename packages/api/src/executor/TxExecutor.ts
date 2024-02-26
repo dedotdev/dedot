@@ -115,9 +115,6 @@ export class TxExecutor<ChainApi extends GenericSubstrateApi = SubstrateApi> ext
         } else if (signer?.signPayload) {
           const result = await signer.signPayload(extra.toPayload(this.callHex));
           signature = result.signature;
-        } else if (signer?.signRaw) {
-          const result = await signer.signRaw(extra.toRawPayload(this.callHex));
-          signature = result.signature;
         } else {
           throw new Error('Signer not found. Cannot sign the extrinsic!');
         }
