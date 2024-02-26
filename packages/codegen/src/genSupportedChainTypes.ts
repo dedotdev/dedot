@@ -43,6 +43,10 @@ const NETWORKS: NetworkInfo[] = [
     chain: 'aleph',
     endpoint: 'wss://aleph-zero.api.onfinality.io/public-ws',
   },
+  {
+    chain: 'westendAssetHub',
+    endpoint: 'wss://westend-asset-hub-rpc.polkadot.io',
+  },
 ];
 
 const OUT_DIR = 'packages/chaintypes/src';
