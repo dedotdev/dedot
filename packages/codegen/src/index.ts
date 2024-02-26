@@ -1,4 +1,4 @@
-import { DelightfulApi } from 'dedot';
+import { Dedot } from 'dedot';
 import * as fs from 'fs';
 import * as path from 'path';
 import * as process from 'process';
@@ -18,7 +18,7 @@ import { MetadataLatest } from '@dedot/codecs';
 import { NetworkInfo } from './types';
 
 export async function generateTypesFromChain(network: NetworkInfo, endpoint: string, outDir: string) {
-  const api = await DelightfulApi.create(endpoint);
+  const api = await Dedot.create(endpoint);
   const { methods }: RpcMethods = await api.rpc.rpc.methods();
   const apis = api.runtimeVersion?.apis || [];
 

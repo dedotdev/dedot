@@ -15,7 +15,7 @@ import { SubstrateApi } from '@dedot/chaintypes';
 import { assert, HexString } from '@dedot/utils';
 import { hexToU8a, isFunction, isHex, objectSpread, stringCamelCase, stringPascalCase, u8aToHex } from '@polkadot/util';
 import { BlockHash, Extrinsic, Hash, SignedBlock, TransactionStatus } from '@dedot/codecs';
-import { DelightfulApi } from '../client';
+import { Dedot } from '../client';
 import { IKeyringPair } from '@polkadot/types/types';
 import { ExtraSignedExtension, SubmittableResult } from '../extrinsic';
 import { SignOptions } from '@polkadot/keyring/types';
@@ -93,12 +93,12 @@ export class TxExecutor<ChainApi extends GenericSubstrateApi = SubstrateApi> ext
   }
 
   createExtrinsic(call: IRuntimeTxCall) {
-    const api = this.api as unknown as DelightfulApi<SubstrateApi>;
+    const api = this.api as unknown as Dedot<SubstrateApi>;
 
     class SubmittableExtrinsic extends Extrinsic implements ISubmittableExtrinsic {
       async sign(fromAccount: AddressOrPair, options?: Partial<SignerOptions>) {
         const address = isKeyringPair(fromAccount) ? fromAccount.address : fromAccount.toString();
-        const extra = new ExtraSignedExtension(api as unknown as DelightfulApi, {
+        const extra = new ExtraSignedExtension(api as unknown as Dedot, {
           signerAddress: address,
           payloadOptions: options,
         });

@@ -1,4 +1,4 @@
-# DelightfulDOT
+# dedot
 
 A fast & lightweight JS/TS client for Polkadot & Substrate
 

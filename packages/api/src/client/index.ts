@@ -1,1 +1,1 @@
-export * from './DelightfulApi';
+export * from './Dedot';

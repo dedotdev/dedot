@@ -3,7 +3,7 @@ import { rpc } from '@polkadot/types-support/metadata/static-substrate';
 import staticSubstrate from '@polkadot/types-support/metadata/v15/substrate-hex';
 import { $Metadata, CodecRegistry, Metadata, RuntimeVersion } from '@dedot/codecs';
 import { NetworkInfo } from './types';
-import { DelightfulApi, ConstantExecutor } from 'dedot';
+import { Dedot, ConstantExecutor } from 'dedot';
 
 const NETWORKS: NetworkInfo[] = [
   {
@@ -75,7 +75,7 @@ const getRuntimeVersion = (metadata: Metadata): RuntimeVersion => {
   const executor = new ConstantExecutor({
     registry,
     metadataLatest: metadata.latest,
-  } as unknown as DelightfulApi);
+  } as unknown as Dedot);
 
   return executor.execute('system', 'version') as RuntimeVersion;
 };

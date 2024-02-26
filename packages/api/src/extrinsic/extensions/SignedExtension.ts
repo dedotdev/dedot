@@ -1,4 +1,4 @@
-import { DelightfulApi } from '../../client';
+import { Dedot } from '../../client';
 import { CodecRegistry, SignedExtensionDefLatest } from '@dedot/codecs';
 import { ensurePresence } from '@dedot/utils';
 import * as $ from '@dedot/shape';
@@ -30,7 +30,7 @@ export abstract class SignedExtension<Data extends any = {}, AdditionalSigned ex
   additionalSigned: AdditionalSigned;
 
   constructor(
-    public api: DelightfulApi,
+    public api: Dedot,
     public options?: SignedExtensionOptions,
   ) {
     this.data = {} as unknown as Data;

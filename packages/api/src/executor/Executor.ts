@@ -2,22 +2,22 @@ import type { SubstrateApi } from '@dedot/chaintypes';
 import { stringCamelCase } from '@polkadot/util';
 import { BlockHash, PalletDefLatest } from '@dedot/codecs';
 import { GenericSubstrateApi } from '@dedot/types';
-import { DelightfulApi } from '../client';
+import { Dedot } from '../client';
 
 /**
  * @name Executor
  * @description Execution abstraction for a specific action
  */
 export abstract class Executor<ChainApi extends GenericSubstrateApi = SubstrateApi> {
-  readonly #api: DelightfulApi<ChainApi>;
+  readonly #api: Dedot<ChainApi>;
   readonly #atBlockHash?: BlockHash;
 
-  constructor(api: DelightfulApi<ChainApi>, atBlockHash?: BlockHash) {
+  constructor(api: Dedot<ChainApi>, atBlockHash?: BlockHash) {
     this.#api = api;
     this.#atBlockHash = atBlockHash;
   }
 
-  get api(): DelightfulApi<ChainApi> {
+  get api(): Dedot<ChainApi> {
     return this.#api;
   }
 

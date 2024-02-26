@@ -1,4 +1,4 @@
-# DelightfulDOT
+# dedot
 
 A fast & lightweight JavaScript/TypeScript client for [Polkadot](https://polkadot.network/) & [Substrate](https://substrate.io/)
 
@@ -35,11 +35,11 @@ npm i -D @dedot/chaintypes
 - Initialize the API client and start interacting with Polkadot network
 ```typescript
 // main.ts
-import { DelightfulApi } from 'dedot';
+import { Dedot } from 'dedot';
 import { PolkadotApi } from '@dedot/chaintypes';
 
 const run = async () => {
-  const api = await DelightfulApi.new<PolkadotApi>('wss://rpc.polkadot.io');
+  const api = await Dedot.new<PolkadotApi>('wss://rpc.polkadot.io');
 
   // Call rpc `state_getMetadata` to fetch raw scale-encoded metadata and decode it.
   const metadata = await api.rpc.state.getMetadata();
@@ -67,11 +67,12 @@ const run = async () => {
 run().catch(console.error);
 ```
 - You can also import `dedot` using `require`.
+
 ```js
 // main.js
-const { DelightfulApi } = require('dedot');
+const {Dedot} = require('dedot');
 // ...
-const api = await DelightfulApi.new('wss://rpc.polkadot.io');
+const api = await Dedot.new('wss://rpc.polkadot.io');
 ```
 ### Table of contents
 - [Status](#status)
@@ -116,24 +117,24 @@ npm i -D @dedot/chaintypes
 
 Initialize a `DelighfulApi` instance using the `ChainApi` interface for a target chain to enable types & APIs suggestion/autocompletion for that particular chain:
 ```typescript
-import { DelightfulApi } from 'dedot';
+import { Dedot } from 'dedot';
 import type { PolkadotApi, KusamaApi, MoonbeamApi, AstarApi } from '@dedot/chaintypes';
 
 // ...
 
-const polkadotApi = await DelightfulApi.new<PolkadotApi>('wss://rpc.polkadot.io');
+const polkadotApi = await Dedot.new<PolkadotApi>('wss://rpc.polkadot.io');
 console.log(await polkadotApi.query.babe.authorities());
 
-const kusamaApi = await DelightfulApi.new<KusamaApi>('wss://kusama-rpc.polkadot.io');
+const kusamaApi = await Dedot.new<KusamaApi>('wss://kusama-rpc.polkadot.io');
 console.log(await kusamaApi.query.society.memberCount());
 
-const moonbeamApi = await DelightfulApi.new<MoonbeamApi>('wss://wss.api.moonbeam.network');
+const moonbeamApi = await Dedot.new<MoonbeamApi>('wss://wss.api.moonbeam.network');
 console.log(await moonbeamApi.query.ethereumChainId.chainId());
 
-const astarApi = await DelightfulApi.new<AstarApi>('wss://rpc.astar.network');
+const astarApi = await Dedot.new<AstarApi>('wss://rpc.astar.network');
 console.log(await astarApi.query.dappsStaking.blockRewardAccumulator());
 
-const genericApi = await DelightfulApi.new('ws://localhost:9944');
+const genericApi = await Dedot.new('ws://localhost:9944');
 
 // ...
 ```
@@ -142,7 +143,7 @@ In alpha test version, we only support `ChainApi` interfaces for 4 networks (Pol
 
 ### Execute RPC Methods
 
-RPCs can be execute via `api.rpc` entry point. After creating a `DelightfulApi` instance with a `ChainApi` interface of the network you want to interact with, all RPC methods of the network will be exposed in the autocompletion/suggestion with format: `api.rpc.<module>.<methodName>`. E.g: you can find all supported RPC methods for Polkadot network [here](https://github.com/dedotdev/dedot/blob/main/packages/chaintypes/src/polkadot/rpc.ts), similarly for other networks as well.
+RPCs can be execute via `api.rpc` entry point. After creating a `Dedot` instance with a `ChainApi` interface of the network you want to interact with, all RPC methods of the network will be exposed in the autocompletion/suggestion with format: `api.rpc.<module>.<methodName>`. E.g: you can find all supported RPC methods for Polkadot network [here](https://github.com/dedotdev/dedot/blob/main/packages/chaintypes/src/polkadot/rpc.ts), similarly for other networks as well.
 
 Examples:
 ```typescript
