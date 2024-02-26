@@ -1,6 +1,6 @@
 {
   "name": "@dedot/codegen",
-  "version": "0.0.1-alpha.20",
+  "version": "0.0.1-alpha.21",
   "description": "Generate types",
   "author": "Thang X. Vu <thang@coongcrafts.io>",
   "homepage": "https://github.com/dedotdev/dedot/tree/main/packages/codegen",
