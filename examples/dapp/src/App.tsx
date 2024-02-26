@@ -2,7 +2,7 @@ import './App.css';
 import { useState } from 'react';
 import { Dedot } from 'dedot';
 import { useAsync } from 'react-use';
-import { PolkadotApi } from '@dedot/chaintypes/polkadot';
+import type { PolkadotApi } from '@dedot/chaintypes';
 import { ApiPromise, WsProvider } from '@polkadot/api';
 
 const ENDPOINT = 'wss://rpc.polkadot.io';

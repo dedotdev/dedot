@@ -36,7 +36,7 @@ npm i -D @dedot/chaintypes
 ```typescript
 // main.ts
 import { Dedot } from 'dedot';
-import { PolkadotApi } from '@dedot/chaintypes';
+import type { PolkadotApi } from '@dedot/chaintypes';
 
 const run = async () => {
   const api = await Dedot.new<PolkadotApi>('wss://rpc.polkadot.io');
@@ -70,7 +70,7 @@ run().catch(console.error);
 
 ```js
 // main.js
-const {Dedot} = require('dedot');
+const { Dedot } = require('dedot');
 // ...
 const api = await Dedot.new('wss://rpc.polkadot.io');
 ```
@@ -88,18 +88,18 @@ const api = await Dedot.new('wss://rpc.polkadot.io');
 
 ### Status
 
-| Feature | Status |
-| ----------- | ----------- |
-| Execute RPC (`api.rpc`) | ✅ |
-| Query on-chain storage (`api.query`) | ✅ |
-| Get runtime constants (`api.consts`) | ✅ |
-| Call runtime APIs (`api.call`) | ⏳ |
-| Transaction APIs (`api.tx`) | ⏳ |
-| Events (`api.events`) | ✅ |
-| Errors (`api.errors`) | ✅ |
-| Contract APIs | ⏳ |
-| Metadata v14 | ✅ |
-| Metadata v15 | ⏳ |
+| Feature                                               | Status |
+|-------------------------------------------------------| ----------- |
+| Execute RPC (`api.rpc`)                               | ✅ |
+| Query on-chain storage (`api.query`)                  | ✅ |
+| Get runtime constants (`api.consts`)                  | ✅ |
+| Runtime APIs (`api.call`)                             | ⏳ |
+| Transaction APIs (`api.tx`)                           | ⏳ |
+| Events (`api.events`)                                 | ✅ |
+| Errors (`api.errors`)                                 | ✅ |
+| Contract APIs                                         | ⏳ |
+| Metadata v14                                          | ✅ |
+| Metadata v15                                          | ✅ |
 | [RPC v2](https://github.com/dedotdev/dedot/issues/20) | ⏳ |
 
 ### Chain Types & APIs
