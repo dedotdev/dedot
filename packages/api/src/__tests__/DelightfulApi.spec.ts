@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import DelightfulApi from '../DelightfulApi';
+import { DelightfulApi } from '../client';
 import MockProvider from './MockProvider';
 import { SubstrateApi } from '@delightfuldot/chaintypes';
 import { stringCamelCase, stringPascalCase } from '@polkadot/util';

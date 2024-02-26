@@ -19,9 +19,9 @@ import {
   RuntimeApiExecutor,
   StorageQueryExecutor,
   TxExecutor,
-} from './executor';
-import { newProxyChain } from './proxychain';
-import { ApiOptions, MetadataKey, NetworkEndpoint, NormalizedApiOptions } from './types';
+} from '../executor';
+import { newProxyChain } from '../proxychain';
+import { ApiOptions, MetadataKey, NetworkEndpoint, NormalizedApiOptions } from '../types';
 import { ensurePresence } from '@delightfuldot/utils';
 import localforage from 'localforage';
 import { hexAddPrefix, u8aToHex } from '@polkadot/util';
@@ -68,7 +68,7 @@ export const SUPPORTED_METADATA_VERSIONS = [15, 14];
  * run().catch(console.error);
  * ```
  */
-export default class DelightfulApi<ChainApi extends GenericSubstrateApi = SubstrateApi> {
+export class DelightfulApi<ChainApi extends GenericSubstrateApi = SubstrateApi> {
   readonly #provider: ProviderInterface;
   readonly #registry: CodecRegistry;
   readonly #options: NormalizedApiOptions;

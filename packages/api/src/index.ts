@@ -1,4 +1,4 @@
-import DelightfulApi from './DelightfulApi';
+import { DelightfulApi } from './client';
 
 export type * from './types';
 export * from './executor';

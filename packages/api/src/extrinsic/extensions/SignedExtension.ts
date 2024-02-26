@@ -1,4 +1,4 @@
-import DelightfulApi from '../../DelightfulApi';
+import { DelightfulApi } from '../../client';
 import { CodecRegistry, SignedExtensionDefLatest } from '@delightfuldot/codecs';
 import { ensurePresence } from '@delightfuldot/utils';
 import * as $ from '@delightfuldot/shape';

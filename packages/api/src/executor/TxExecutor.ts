@@ -15,7 +15,7 @@ import { SubstrateApi } from '@delightfuldot/chaintypes';
 import { assert, HexString } from '@delightfuldot/utils';
 import { hexToU8a, isFunction, isHex, objectSpread, stringCamelCase, stringPascalCase, u8aToHex } from '@polkadot/util';
 import { BlockHash, Extrinsic, Hash, SignedBlock, TransactionStatus } from '@delightfuldot/codecs';
-import DelightfulApi from '../DelightfulApi';
+import { DelightfulApi } from '../client';
 import { IKeyringPair } from '@polkadot/types/types';
 import { ExtraSignedExtension, SubmittableResult } from '../extrinsic';
 import { SignOptions } from '@polkadot/keyring/types';
