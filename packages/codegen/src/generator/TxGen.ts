@@ -70,7 +70,7 @@ export class TxGen extends ApiGen {
             )
             .join(',\n')}
             
-          ${commentBlock('Generic pallet tx call')}[callName: string]: GenericTxCall<(...args: any[]) => ChainSubmittableExtrinsic>,
+          ${commentBlock('Generic pallet tx call')}[callName: string]: GenericTxCall<TxCall>,
         },`;
     }
 
@@ -78,9 +78,11 @@ export class TxGen extends ApiGen {
 
     // TODO make explicit separate type for Extra
     const defTypes = `
-    type ChainSubmittableExtrinsic<T extends IRuntimeTxCall = ${callTypeIn}> = 
+    export type ChainSubmittableExtrinsic<T extends IRuntimeTxCall = ${callTypeIn}> = 
         Extrinsic<${addressTypeIn}, T, ${signatureTypeIn}, any[]> &
         ISubmittableExtrinsic<ISubmittableResult<FrameSystemEventRecord>>
+        
+    export type TxCall = (...args: any[]) => ChainSubmittableExtrinsic;    
 `;
     const template = compileTemplate('tx.hbs');
 

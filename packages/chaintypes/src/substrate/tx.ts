@@ -97,7 +97,7 @@ import type {
   PalletBrokerFinality,
 } from './types';
 
-type ChainSubmittableExtrinsic<T extends IRuntimeTxCall = KitchensinkRuntimeRuntimeCallLike> = Extrinsic<
+export type ChainSubmittableExtrinsic<T extends IRuntimeTxCall = KitchensinkRuntimeRuntimeCallLike> = Extrinsic<
   MultiAddressLike,
   T,
   SpRuntimeMultiSignature,
@@ -105,7 +105,9 @@ type ChainSubmittableExtrinsic<T extends IRuntimeTxCall = KitchensinkRuntimeRunt
 > &
   ISubmittableExtrinsic<ISubmittableResult<FrameSystemEventRecord>>;
 
-export interface ChainTx extends GenericChainTx {
+export type TxCall = (...args: any[]) => ChainSubmittableExtrinsic;
+
+export interface ChainTx extends GenericChainTx<TxCall> {
   /**
    * Pallet `System`'s transaction calls
    **/
@@ -237,7 +239,7 @@ export interface ChainTx extends GenericChainTx {
     /**
      * Generic pallet tx call
      **/
-    [callName: string]: GenericTxCall<(...args: any[]) => ChainSubmittableExtrinsic>;
+    [callName: string]: GenericTxCall<TxCall>;
   };
   /**
    * Pallet `Utility`'s transaction calls
@@ -348,7 +350,7 @@ export interface ChainTx extends GenericChainTx {
     /**
      * Generic pallet tx call
      **/
-    [callName: string]: GenericTxCall<(...args: any[]) => ChainSubmittableExtrinsic>;
+    [callName: string]: GenericTxCall<TxCall>;
   };
   /**
    * Pallet `Babe`'s transaction calls
@@ -410,7 +412,7 @@ export interface ChainTx extends GenericChainTx {
     /**
      * Generic pallet tx call
      **/
-    [callName: string]: GenericTxCall<(...args: any[]) => ChainSubmittableExtrinsic>;
+    [callName: string]: GenericTxCall<TxCall>;
   };
   /**
    * Pallet `Timestamp`'s transaction calls
@@ -434,7 +436,7 @@ export interface ChainTx extends GenericChainTx {
     /**
      * Generic pallet tx call
      **/
-    [callName: string]: GenericTxCall<(...args: any[]) => ChainSubmittableExtrinsic>;
+    [callName: string]: GenericTxCall<TxCall>;
   };
   /**
    * Pallet `Indices`'s transaction calls
@@ -528,7 +530,7 @@ export interface ChainTx extends GenericChainTx {
     /**
      * Generic pallet tx call
      **/
-    [callName: string]: GenericTxCall<(...args: any[]) => ChainSubmittableExtrinsic>;
+    [callName: string]: GenericTxCall<TxCall>;
   };
   /**
    * Pallet `Balances`'s transaction calls
@@ -708,7 +710,7 @@ export interface ChainTx extends GenericChainTx {
     /**
      * Generic pallet tx call
      **/
-    [callName: string]: GenericTxCall<(...args: any[]) => ChainSubmittableExtrinsic>;
+    [callName: string]: GenericTxCall<TxCall>;
   };
   /**
    * Pallet `ElectionProviderMultiPhase`'s transaction calls
@@ -803,7 +805,7 @@ export interface ChainTx extends GenericChainTx {
     /**
      * Generic pallet tx call
      **/
-    [callName: string]: GenericTxCall<(...args: any[]) => ChainSubmittableExtrinsic>;
+    [callName: string]: GenericTxCall<TxCall>;
   };
   /**
    * Pallet `Staking`'s transaction calls
@@ -1231,7 +1233,7 @@ export interface ChainTx extends GenericChainTx {
     /**
      * Generic pallet tx call
      **/
-    [callName: string]: GenericTxCall<(...args: any[]) => ChainSubmittableExtrinsic>;
+    [callName: string]: GenericTxCall<TxCall>;
   };
   /**
    * Pallet `Session`'s transaction calls
@@ -1272,7 +1274,7 @@ export interface ChainTx extends GenericChainTx {
     /**
      * Generic pallet tx call
      **/
-    [callName: string]: GenericTxCall<(...args: any[]) => ChainSubmittableExtrinsic>;
+    [callName: string]: GenericTxCall<TxCall>;
   };
   /**
    * Pallet `Democracy`'s transaction calls
@@ -1594,7 +1596,7 @@ export interface ChainTx extends GenericChainTx {
     /**
      * Generic pallet tx call
      **/
-    [callName: string]: GenericTxCall<(...args: any[]) => ChainSubmittableExtrinsic>;
+    [callName: string]: GenericTxCall<TxCall>;
   };
   /**
    * Pallet `Council`'s transaction calls
@@ -1728,7 +1730,7 @@ export interface ChainTx extends GenericChainTx {
     /**
      * Generic pallet tx call
      **/
-    [callName: string]: GenericTxCall<(...args: any[]) => ChainSubmittableExtrinsic>;
+    [callName: string]: GenericTxCall<TxCall>;
   };
   /**
    * Pallet `TechnicalCommittee`'s transaction calls
@@ -1862,7 +1864,7 @@ export interface ChainTx extends GenericChainTx {
     /**
      * Generic pallet tx call
      **/
-    [callName: string]: GenericTxCall<(...args: any[]) => ChainSubmittableExtrinsic>;
+    [callName: string]: GenericTxCall<TxCall>;
   };
   /**
    * Pallet `Elections`'s transaction calls
@@ -1973,7 +1975,7 @@ export interface ChainTx extends GenericChainTx {
     /**
      * Generic pallet tx call
      **/
-    [callName: string]: GenericTxCall<(...args: any[]) => ChainSubmittableExtrinsic>;
+    [callName: string]: GenericTxCall<TxCall>;
   };
   /**
    * Pallet `TechnicalMembership`'s transaction calls
@@ -2089,7 +2091,7 @@ export interface ChainTx extends GenericChainTx {
     /**
      * Generic pallet tx call
      **/
-    [callName: string]: GenericTxCall<(...args: any[]) => ChainSubmittableExtrinsic>;
+    [callName: string]: GenericTxCall<TxCall>;
   };
   /**
    * Pallet `Grandpa`'s transaction calls
@@ -2155,7 +2157,7 @@ export interface ChainTx extends GenericChainTx {
     /**
      * Generic pallet tx call
      **/
-    [callName: string]: GenericTxCall<(...args: any[]) => ChainSubmittableExtrinsic>;
+    [callName: string]: GenericTxCall<TxCall>;
   };
   /**
    * Pallet `Treasury`'s transaction calls
@@ -2247,7 +2249,7 @@ export interface ChainTx extends GenericChainTx {
     /**
      * Generic pallet tx call
      **/
-    [callName: string]: GenericTxCall<(...args: any[]) => ChainSubmittableExtrinsic>;
+    [callName: string]: GenericTxCall<TxCall>;
   };
   /**
    * Pallet `AssetRate`'s transaction calls
@@ -2309,7 +2311,7 @@ export interface ChainTx extends GenericChainTx {
     /**
      * Generic pallet tx call
      **/
-    [callName: string]: GenericTxCall<(...args: any[]) => ChainSubmittableExtrinsic>;
+    [callName: string]: GenericTxCall<TxCall>;
   };
   /**
    * Pallet `Contracts`'s transaction calls
@@ -2590,7 +2592,7 @@ export interface ChainTx extends GenericChainTx {
     /**
      * Generic pallet tx call
      **/
-    [callName: string]: GenericTxCall<(...args: any[]) => ChainSubmittableExtrinsic>;
+    [callName: string]: GenericTxCall<TxCall>;
   };
   /**
    * Pallet `Sudo`'s transaction calls
@@ -2667,7 +2669,7 @@ export interface ChainTx extends GenericChainTx {
     /**
      * Generic pallet tx call
      **/
-    [callName: string]: GenericTxCall<(...args: any[]) => ChainSubmittableExtrinsic>;
+    [callName: string]: GenericTxCall<TxCall>;
   };
   /**
    * Pallet `ImOnline`'s transaction calls
@@ -2695,7 +2697,7 @@ export interface ChainTx extends GenericChainTx {
     /**
      * Generic pallet tx call
      **/
-    [callName: string]: GenericTxCall<(...args: any[]) => ChainSubmittableExtrinsic>;
+    [callName: string]: GenericTxCall<TxCall>;
   };
   /**
    * Pallet `Identity`'s transaction calls
@@ -2957,7 +2959,7 @@ export interface ChainTx extends GenericChainTx {
     /**
      * Generic pallet tx call
      **/
-    [callName: string]: GenericTxCall<(...args: any[]) => ChainSubmittableExtrinsic>;
+    [callName: string]: GenericTxCall<TxCall>;
   };
   /**
    * Pallet `Society`'s transaction calls
@@ -3301,7 +3303,7 @@ export interface ChainTx extends GenericChainTx {
     /**
      * Generic pallet tx call
      **/
-    [callName: string]: GenericTxCall<(...args: any[]) => ChainSubmittableExtrinsic>;
+    [callName: string]: GenericTxCall<TxCall>;
   };
   /**
    * Pallet `Recovery`'s transaction calls
@@ -3461,7 +3463,7 @@ export interface ChainTx extends GenericChainTx {
     /**
      * Generic pallet tx call
      **/
-    [callName: string]: GenericTxCall<(...args: any[]) => ChainSubmittableExtrinsic>;
+    [callName: string]: GenericTxCall<TxCall>;
   };
   /**
    * Pallet `Vesting`'s transaction calls
@@ -3557,7 +3559,7 @@ export interface ChainTx extends GenericChainTx {
     /**
      * Generic pallet tx call
      **/
-    [callName: string]: GenericTxCall<(...args: any[]) => ChainSubmittableExtrinsic>;
+    [callName: string]: GenericTxCall<TxCall>;
   };
   /**
    * Pallet `Scheduler`'s transaction calls
@@ -3718,7 +3720,7 @@ export interface ChainTx extends GenericChainTx {
     /**
      * Generic pallet tx call
      **/
-    [callName: string]: GenericTxCall<(...args: any[]) => ChainSubmittableExtrinsic>;
+    [callName: string]: GenericTxCall<TxCall>;
   };
   /**
    * Pallet `Glutton`'s transaction calls
@@ -3776,7 +3778,7 @@ export interface ChainTx extends GenericChainTx {
     /**
      * Generic pallet tx call
      **/
-    [callName: string]: GenericTxCall<(...args: any[]) => ChainSubmittableExtrinsic>;
+    [callName: string]: GenericTxCall<TxCall>;
   };
   /**
    * Pallet `Preimage`'s transaction calls
@@ -3845,7 +3847,7 @@ export interface ChainTx extends GenericChainTx {
     /**
      * Generic pallet tx call
      **/
-    [callName: string]: GenericTxCall<(...args: any[]) => ChainSubmittableExtrinsic>;
+    [callName: string]: GenericTxCall<TxCall>;
   };
   /**
    * Pallet `Proxy`'s transaction calls
@@ -4071,7 +4073,7 @@ export interface ChainTx extends GenericChainTx {
     /**
      * Generic pallet tx call
      **/
-    [callName: string]: GenericTxCall<(...args: any[]) => ChainSubmittableExtrinsic>;
+    [callName: string]: GenericTxCall<TxCall>;
   };
   /**
    * Pallet `Multisig`'s transaction calls
@@ -4189,7 +4191,7 @@ export interface ChainTx extends GenericChainTx {
     /**
      * Generic pallet tx call
      **/
-    [callName: string]: GenericTxCall<(...args: any[]) => ChainSubmittableExtrinsic>;
+    [callName: string]: GenericTxCall<TxCall>;
   };
   /**
    * Pallet `Bounties`'s transaction calls
@@ -4351,7 +4353,7 @@ export interface ChainTx extends GenericChainTx {
     /**
      * Generic pallet tx call
      **/
-    [callName: string]: GenericTxCall<(...args: any[]) => ChainSubmittableExtrinsic>;
+    [callName: string]: GenericTxCall<TxCall>;
   };
   /**
    * Pallet `Tips`'s transaction calls
@@ -4464,7 +4466,7 @@ export interface ChainTx extends GenericChainTx {
     /**
      * Generic pallet tx call
      **/
-    [callName: string]: GenericTxCall<(...args: any[]) => ChainSubmittableExtrinsic>;
+    [callName: string]: GenericTxCall<TxCall>;
   };
   /**
    * Pallet `Assets`'s transaction calls
@@ -5106,7 +5108,7 @@ export interface ChainTx extends GenericChainTx {
     /**
      * Generic pallet tx call
      **/
-    [callName: string]: GenericTxCall<(...args: any[]) => ChainSubmittableExtrinsic>;
+    [callName: string]: GenericTxCall<TxCall>;
   };
   /**
    * Pallet `PoolAssets`'s transaction calls
@@ -5748,7 +5750,7 @@ export interface ChainTx extends GenericChainTx {
     /**
      * Generic pallet tx call
      **/
-    [callName: string]: GenericTxCall<(...args: any[]) => ChainSubmittableExtrinsic>;
+    [callName: string]: GenericTxCall<TxCall>;
   };
   /**
    * Pallet `Lottery`'s transaction calls
@@ -5823,7 +5825,7 @@ export interface ChainTx extends GenericChainTx {
     /**
      * Generic pallet tx call
      **/
-    [callName: string]: GenericTxCall<(...args: any[]) => ChainSubmittableExtrinsic>;
+    [callName: string]: GenericTxCall<TxCall>;
   };
   /**
    * Pallet `Nis`'s transaction calls
@@ -5947,7 +5949,7 @@ export interface ChainTx extends GenericChainTx {
     /**
      * Generic pallet tx call
      **/
-    [callName: string]: GenericTxCall<(...args: any[]) => ChainSubmittableExtrinsic>;
+    [callName: string]: GenericTxCall<TxCall>;
   };
   /**
    * Pallet `Uniques`'s transaction calls
@@ -6491,7 +6493,7 @@ export interface ChainTx extends GenericChainTx {
     /**
      * Generic pallet tx call
      **/
-    [callName: string]: GenericTxCall<(...args: any[]) => ChainSubmittableExtrinsic>;
+    [callName: string]: GenericTxCall<TxCall>;
   };
   /**
    * Pallet `Nfts`'s transaction calls
@@ -7354,7 +7356,7 @@ export interface ChainTx extends GenericChainTx {
     /**
      * Generic pallet tx call
      **/
-    [callName: string]: GenericTxCall<(...args: any[]) => ChainSubmittableExtrinsic>;
+    [callName: string]: GenericTxCall<TxCall>;
   };
   /**
    * Pallet `NftFractionalization`'s transaction calls
@@ -7417,7 +7419,7 @@ export interface ChainTx extends GenericChainTx {
     /**
      * Generic pallet tx call
      **/
-    [callName: string]: GenericTxCall<(...args: any[]) => ChainSubmittableExtrinsic>;
+    [callName: string]: GenericTxCall<TxCall>;
   };
   /**
    * Pallet `Salary`'s transaction calls
@@ -7519,7 +7521,7 @@ export interface ChainTx extends GenericChainTx {
     /**
      * Generic pallet tx call
      **/
-    [callName: string]: GenericTxCall<(...args: any[]) => ChainSubmittableExtrinsic>;
+    [callName: string]: GenericTxCall<TxCall>;
   };
   /**
    * Pallet `CoreFellowship`'s transaction calls
@@ -7673,7 +7675,7 @@ export interface ChainTx extends GenericChainTx {
     /**
      * Generic pallet tx call
      **/
-    [callName: string]: GenericTxCall<(...args: any[]) => ChainSubmittableExtrinsic>;
+    [callName: string]: GenericTxCall<TxCall>;
   };
   /**
    * Pallet `TransactionStorage`'s transaction calls
@@ -7731,7 +7733,7 @@ export interface ChainTx extends GenericChainTx {
     /**
      * Generic pallet tx call
      **/
-    [callName: string]: GenericTxCall<(...args: any[]) => ChainSubmittableExtrinsic>;
+    [callName: string]: GenericTxCall<TxCall>;
   };
   /**
    * Pallet `VoterList`'s transaction calls
@@ -7789,7 +7791,7 @@ export interface ChainTx extends GenericChainTx {
     /**
      * Generic pallet tx call
      **/
-    [callName: string]: GenericTxCall<(...args: any[]) => ChainSubmittableExtrinsic>;
+    [callName: string]: GenericTxCall<TxCall>;
   };
   /**
    * Pallet `StateTrieMigration`'s transaction calls
@@ -7912,7 +7914,7 @@ export interface ChainTx extends GenericChainTx {
     /**
      * Generic pallet tx call
      **/
-    [callName: string]: GenericTxCall<(...args: any[]) => ChainSubmittableExtrinsic>;
+    [callName: string]: GenericTxCall<TxCall>;
   };
   /**
    * Pallet `ChildBounties`'s transaction calls
@@ -8062,7 +8064,7 @@ export interface ChainTx extends GenericChainTx {
     /**
      * Generic pallet tx call
      **/
-    [callName: string]: GenericTxCall<(...args: any[]) => ChainSubmittableExtrinsic>;
+    [callName: string]: GenericTxCall<TxCall>;
   };
   /**
    * Pallet `Referenda`'s transaction calls
@@ -8220,7 +8222,7 @@ export interface ChainTx extends GenericChainTx {
     /**
      * Generic pallet tx call
      **/
-    [callName: string]: GenericTxCall<(...args: any[]) => ChainSubmittableExtrinsic>;
+    [callName: string]: GenericTxCall<TxCall>;
   };
   /**
    * Pallet `Remark`'s transaction calls
@@ -8244,7 +8246,7 @@ export interface ChainTx extends GenericChainTx {
     /**
      * Generic pallet tx call
      **/
-    [callName: string]: GenericTxCall<(...args: any[]) => ChainSubmittableExtrinsic>;
+    [callName: string]: GenericTxCall<TxCall>;
   };
   /**
    * Pallet `RootTesting`'s transaction calls
@@ -8268,7 +8270,7 @@ export interface ChainTx extends GenericChainTx {
     /**
      * Generic pallet tx call
      **/
-    [callName: string]: GenericTxCall<(...args: any[]) => ChainSubmittableExtrinsic>;
+    [callName: string]: GenericTxCall<TxCall>;
   };
   /**
    * Pallet `ConvictionVoting`'s transaction calls
@@ -8398,7 +8400,7 @@ export interface ChainTx extends GenericChainTx {
     /**
      * Generic pallet tx call
      **/
-    [callName: string]: GenericTxCall<(...args: any[]) => ChainSubmittableExtrinsic>;
+    [callName: string]: GenericTxCall<TxCall>;
   };
   /**
    * Pallet `Whitelist`'s transaction calls
@@ -8473,7 +8475,7 @@ export interface ChainTx extends GenericChainTx {
     /**
      * Generic pallet tx call
      **/
-    [callName: string]: GenericTxCall<(...args: any[]) => ChainSubmittableExtrinsic>;
+    [callName: string]: GenericTxCall<TxCall>;
   };
   /**
    * Pallet `AllianceMotion`'s transaction calls
@@ -8607,7 +8609,7 @@ export interface ChainTx extends GenericChainTx {
     /**
      * Generic pallet tx call
      **/
-    [callName: string]: GenericTxCall<(...args: any[]) => ChainSubmittableExtrinsic>;
+    [callName: string]: GenericTxCall<TxCall>;
   };
   /**
    * Pallet `Alliance`'s transaction calls
@@ -8892,7 +8894,7 @@ export interface ChainTx extends GenericChainTx {
     /**
      * Generic pallet tx call
      **/
-    [callName: string]: GenericTxCall<(...args: any[]) => ChainSubmittableExtrinsic>;
+    [callName: string]: GenericTxCall<TxCall>;
   };
   /**
    * Pallet `NominationPools`'s transaction calls
@@ -9314,7 +9316,7 @@ export interface ChainTx extends GenericChainTx {
     /**
      * Generic pallet tx call
      **/
-    [callName: string]: GenericTxCall<(...args: any[]) => ChainSubmittableExtrinsic>;
+    [callName: string]: GenericTxCall<TxCall>;
   };
   /**
    * Pallet `RankedPolls`'s transaction calls
@@ -9472,7 +9474,7 @@ export interface ChainTx extends GenericChainTx {
     /**
      * Generic pallet tx call
      **/
-    [callName: string]: GenericTxCall<(...args: any[]) => ChainSubmittableExtrinsic>;
+    [callName: string]: GenericTxCall<TxCall>;
   };
   /**
    * Pallet `RankedCollective`'s transaction calls
@@ -9583,7 +9585,7 @@ export interface ChainTx extends GenericChainTx {
     /**
      * Generic pallet tx call
      **/
-    [callName: string]: GenericTxCall<(...args: any[]) => ChainSubmittableExtrinsic>;
+    [callName: string]: GenericTxCall<TxCall>;
   };
   /**
    * Pallet `AssetConversion`'s transaction calls
@@ -9744,7 +9746,7 @@ export interface ChainTx extends GenericChainTx {
     /**
      * Generic pallet tx call
      **/
-    [callName: string]: GenericTxCall<(...args: any[]) => ChainSubmittableExtrinsic>;
+    [callName: string]: GenericTxCall<TxCall>;
   };
   /**
    * Pallet `FastUnstake`'s transaction calls
@@ -9794,7 +9796,7 @@ export interface ChainTx extends GenericChainTx {
     /**
      * Generic pallet tx call
      **/
-    [callName: string]: GenericTxCall<(...args: any[]) => ChainSubmittableExtrinsic>;
+    [callName: string]: GenericTxCall<TxCall>;
   };
   /**
    * Pallet `MessageQueue`'s transaction calls
@@ -9845,7 +9847,7 @@ export interface ChainTx extends GenericChainTx {
     /**
      * Generic pallet tx call
      **/
-    [callName: string]: GenericTxCall<(...args: any[]) => ChainSubmittableExtrinsic>;
+    [callName: string]: GenericTxCall<TxCall>;
   };
   /**
    * Pallet `Pov`'s transaction calls
@@ -9876,7 +9878,7 @@ export interface ChainTx extends GenericChainTx {
     /**
      * Generic pallet tx call
      **/
-    [callName: string]: GenericTxCall<(...args: any[]) => ChainSubmittableExtrinsic>;
+    [callName: string]: GenericTxCall<TxCall>;
   };
   /**
    * Pallet `TxPause`'s transaction calls
@@ -9915,7 +9917,7 @@ export interface ChainTx extends GenericChainTx {
     /**
      * Generic pallet tx call
      **/
-    [callName: string]: GenericTxCall<(...args: any[]) => ChainSubmittableExtrinsic>;
+    [callName: string]: GenericTxCall<TxCall>;
   };
   /**
    * Pallet `SafeMode`'s transaction calls
@@ -10046,7 +10048,7 @@ export interface ChainTx extends GenericChainTx {
     /**
      * Generic pallet tx call
      **/
-    [callName: string]: GenericTxCall<(...args: any[]) => ChainSubmittableExtrinsic>;
+    [callName: string]: GenericTxCall<TxCall>;
   };
   /**
    * Pallet `Broker`'s transaction calls
@@ -10384,6 +10386,6 @@ export interface ChainTx extends GenericChainTx {
     /**
      * Generic pallet tx call
      **/
-    [callName: string]: GenericTxCall<(...args: any[]) => ChainSubmittableExtrinsic>;
+    [callName: string]: GenericTxCall<TxCall>;
   };
 }
