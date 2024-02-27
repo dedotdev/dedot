@@ -1,8 +1,8 @@
 import { isHex, isString, isU8a, u8aToHex } from '@polkadot/util';
 import { decodeAddress, encodeAddress } from '@polkadot/util-crypto';
 import type { Prefix } from '@polkadot/util-crypto/types';
-import * as $ from '@delightfuldot/shape';
-import { HexString } from '@delightfuldot/utils';
+import * as $ from '@dedot/shape';
+import { HexString } from '@dedot/utils';
 import { registerLooseCodecType } from '../codectypes';
 
 export const accountId32ToHex = (input: AccountId32Like): HexString => {

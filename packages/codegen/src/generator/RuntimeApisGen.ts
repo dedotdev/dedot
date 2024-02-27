@@ -1,11 +1,11 @@
 import { TypesGen } from './TypesGen';
-import { findRuntimeApiSpec } from '@delightfuldot/specs';
-import { RuntimeApiMethodSpec, RuntimeApiSpec } from '@delightfuldot/types';
+import { findRuntimeApiSpec } from '@dedot/specs';
+import { RuntimeApiMethodSpec, RuntimeApiSpec } from '@dedot/types';
 import { beautifySourceCode, commentBlock, compileTemplate } from './utils';
-import { calculateRuntimeApiHash, stringSnakeCase } from '@delightfuldot/utils';
+import { calculateRuntimeApiHash, stringSnakeCase } from '@dedot/utils';
 import { RpcGen } from './RpcGen';
 import { stringCamelCase } from '@polkadot/util';
-import { RuntimeApiMethodDefLatest } from '@delightfuldot/codecs';
+import { RuntimeApiMethodDefLatest } from '@dedot/codecs';
 
 export class RuntimeApisGen extends RpcGen {
   constructor(

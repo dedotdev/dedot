@@ -1,5 +1,5 @@
-import { TypeId } from '@delightfuldot/codecs';
-import { AnyShape } from '@delightfuldot/shape';
+import { TypeId } from '@dedot/codecs';
+import { AnyShape } from '@dedot/shape';
 
 export interface RuntimeApiMethodParamSpec {
   name: string;

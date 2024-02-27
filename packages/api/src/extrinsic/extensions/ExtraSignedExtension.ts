@@ -1,6 +1,6 @@
 import { ISignedExtension, SignedExtension } from './SignedExtension';
-import { assert, ensurePresence, HexString } from '@delightfuldot/utils';
-import * as $ from '@delightfuldot/shape';
+import { assert, ensurePresence, HexString } from '@dedot/utils';
+import * as $ from '@dedot/shape';
 import { knownSignedExtensions } from './known';
 import { SignerPayloadJSON, SignerPayloadRaw } from '@polkadot/types/types';
 import { objectSpread, u8aToHex } from '@polkadot/util';

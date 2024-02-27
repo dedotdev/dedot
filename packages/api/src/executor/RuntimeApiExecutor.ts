@@ -2,13 +2,14 @@ import { Executor } from './Executor';
 import {
   GenericRuntimeApiMethod,
   GenericSubstrateApi,
-  RuntimeApiMethodSpec,
   RuntimeApiMethodParamSpec,
-} from '@delightfuldot/types';
-import { assert, calculateRuntimeApiHash, stringSnakeCase } from '@delightfuldot/utils';
+  RuntimeApiMethodSpec,
+} from '@dedot/types';
+
+import { assert, calculateRuntimeApiHash, stringSnakeCase } from '@dedot/utils';
 import { isNumber, stringPascalCase, u8aConcat, u8aToHex } from '@polkadot/util';
-import { extractRuntimeApisModule, extractRuntimeApiSpec, findRuntimeApiMethodSpec } from '@delightfuldot/specs';
-import { RuntimeApiMethodDefLatest } from '@delightfuldot/codecs';
+import { RuntimeApiMethodDefLatest } from '@dedot/codecs';
+import { extractRuntimeApisModule, extractRuntimeApiSpec, findRuntimeApiMethodSpec } from '@dedot/specs';
 
 export const FallbackRuntimeApis = [
   ['0x37e397fc7c91f5e4', 2], // Metadata Api v2

@@ -1,4 +1,4 @@
-import * as $ from '@delightfuldot/shape';
+import * as $ from '@dedot/shape';
 
 export type TypeId = number;
 export const $TypeId: $.Shape<TypeId> = $.compactU32;

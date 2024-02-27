@@ -1,23 +1,23 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import DelightfulApi from '../DelightfulApi';
+import { Dedot } from '../client';
 import MockProvider from './MockProvider';
-import { SubstrateApi } from '@delightfuldot/chaintypes';
+import { SubstrateApi } from '@dedot/chaintypes';
 import { stringCamelCase, stringPascalCase } from '@polkadot/util';
-import { RuntimeVersion } from '@delightfuldot/codecs';
+import { RuntimeVersion } from '@dedot/codecs';
 
-describe('DelightfulApi', () => {
+describe('Dedot', () => {
   it('should throws error for invalid endpoint', () => {
     expect(async () => {
-      await DelightfulApi.new('invalid_endpoint');
+      await Dedot.new('invalid_endpoint');
     }).rejects.toThrowError(
       'Invalid network endpoint, a valid endpoint should start with `wss://`, `ws://`, `https://` or `http://`',
     );
   });
 
   describe('cache disabled', () => {
-    let api: DelightfulApi<SubstrateApi>;
+    let api: Dedot<SubstrateApi>;
     beforeEach(async () => {
-      api = await DelightfulApi.new({ provider: new MockProvider() });
+      api = await Dedot.new({ provider: new MockProvider() });
     });
 
     afterEach(async () => {
@@ -168,9 +168,9 @@ describe('DelightfulApi', () => {
   });
 
   describe('cache enabled', () => {
-    let api: DelightfulApi<SubstrateApi>;
+    let api: Dedot<SubstrateApi>;
     beforeEach(async () => {
-      api = await DelightfulApi.new({ provider: new MockProvider(), cacheMetadata: true });
+      api = await Dedot.new({ provider: new MockProvider(), cacheMetadata: true });
     });
 
     afterEach(async () => {
@@ -183,7 +183,7 @@ describe('DelightfulApi', () => {
     it('should load metadata from cache', async () => {
       const provider = new MockProvider();
       const providerSendSpy = vi.spyOn(provider, 'send');
-      const newApi = await DelightfulApi.new({ provider, cacheMetadata: true });
+      const newApi = await Dedot.new({ provider, cacheMetadata: true });
 
       expect(providerSendSpy).not.toBeCalledWith('state_getMetadata', []);
       expect(newApi.metadata).toBeDefined();
@@ -199,7 +199,7 @@ describe('DelightfulApi', () => {
       );
 
       const providerSendSpy = vi.spyOn(provider, 'send');
-      const newApi = await DelightfulApi.new({ provider, cacheMetadata: true });
+      const newApi = await Dedot.new({ provider, cacheMetadata: true });
 
       expect(providerSendSpy).toBeCalledWith('state_getMetadata', []);
       expect(newApi.metadata).toBeDefined();

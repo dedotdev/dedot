@@ -1,4 +1,4 @@
-import * as $ from '@delightfuldot/shape';
+import * as $ from '@dedot/shape';
 
 export const $Phase = $.Enum({
   ApplyExtrinsic: $.u32,

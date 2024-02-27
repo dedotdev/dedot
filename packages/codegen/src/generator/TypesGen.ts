@@ -1,8 +1,8 @@
 import { stringPascalCase } from '@polkadot/util';
-import { CodecRegistry, Field, MetadataLatest, PortableType, TypeId, TypeParam } from '@delightfuldot/codecs';
-import { isNativeType, normalizeName } from '@delightfuldot/utils';
+import { CodecRegistry, Field, MetadataLatest, PortableType, TypeId, TypeParam } from '@dedot/codecs';
+import { isNativeType, normalizeName } from '@dedot/utils';
 import { beautifySourceCode, commentBlock, compileTemplate } from './utils';
-import { registry } from '@delightfuldot/types';
+import { registry } from '@dedot/types';
 import { TypeImports } from './TypeImports';
 
 interface NamedType extends PortableType {

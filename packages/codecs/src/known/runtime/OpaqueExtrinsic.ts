@@ -1,5 +1,5 @@
-import * as $ from '@delightfuldot/shape';
-import { HexString, xToHex, xToU8a } from '@delightfuldot/utils';
+import * as $ from '@dedot/shape';
+import { HexString, xToHex, xToU8a } from '@dedot/utils';
 import { registerLooseCodecType } from '../../codectypes';
 
 // TODO docs!

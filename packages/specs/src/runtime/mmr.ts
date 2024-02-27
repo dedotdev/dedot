@@ -1,4 +1,4 @@
-import { RuntimeApisModule } from '@delightfuldot/types';
+import { RuntimeApisModule } from '@dedot/types';
 
 /**
  * Ref: https://github.com/paritytech/polkadot-sdk/blob/0e49ed72aa365475e30069a5c30e251a009fdacf/substrate/primitives/merkle-mountain-range/src/lib.rs#L423-L426

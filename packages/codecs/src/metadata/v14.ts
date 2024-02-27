@@ -1,4 +1,4 @@
-import * as $ from '@delightfuldot/shape';
+import * as $ from '@dedot/shape';
 import { $PortableType, $TypeId } from './scale_info';
 
 export const $Hasher = $.FlatEnum([

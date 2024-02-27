@@ -2,8 +2,8 @@ import { beforeEach, describe, expect, it } from 'vitest';
 import { $Metadata } from '../../metadata';
 import { CodecRegistry } from '../../registry';
 import staticSubstrateV14 from '@polkadot/types-support/metadata/v14/kusama-hex';
-import { AccountId32, Extrinsic } from '@delightfuldot/codecs';
-import * as $ from '@delightfuldot/shape';
+import { AccountId32, Extrinsic } from '@dedot/codecs';
+import * as $ from '@dedot/shape';
 import { u8aToHex } from '@polkadot/util';
 
 // Ref: https://github.com/polkadot-js/api/blob/3bdf49b0428a62f16b3222b9a31bfefa43c1ca55/packages/types/src/extrinsic/Extrinsic.spec.ts#L20-L49

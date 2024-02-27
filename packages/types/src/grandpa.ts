@@ -1,5 +1,5 @@
 import { registry } from './registry';
-import { Bytes } from '@delightfuldot/codecs';
+import { Bytes } from '@dedot/codecs';
 
 export interface Prevotes {
   currentWeight: number;

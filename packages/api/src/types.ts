@@ -1,5 +1,5 @@
 import { ProviderInterface } from '@polkadot/rpc-provider/types';
-import { HexString } from '@delightfuldot/utils';
+import { HexString } from '@dedot/utils';
 import { AnySignedExtension } from './extrinsic';
 import { RuntimeApiSpec } from '@delightfuldot/types';
 

@@ -1,5 +1,5 @@
 import { registry } from './registry';
-import { BlockHash, Bytes } from '@delightfuldot/codecs';
+import { BlockHash, Bytes } from '@dedot/codecs';
 
 /*
  * Retrieved MMR leaves and their proof.

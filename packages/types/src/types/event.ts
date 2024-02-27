@@ -1,4 +1,4 @@
-import { Phase, H256, Hash } from '@delightfuldot/codecs';
+import { Phase, H256, Hash } from '@dedot/codecs';
 
 export interface IRuntimeEvent {
   pallet: string;

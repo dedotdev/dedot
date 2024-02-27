@@ -1,8 +1,8 @@
 import { beforeEach, describe, expect, it } from 'vitest';
-import { $AccountId20, $AccountId32, $Hash, $Metadata, $MetadataV14, $StorageKey } from '@delightfuldot/codecs';
+import { $AccountId20, $AccountId32, $Hash, $Metadata, $MetadataV14, $StorageKey } from '@dedot/codecs';
 import staticSubstrate from '@polkadot/types-support/metadata/static-substrate';
 import { CodecRegistry } from '../CodecRegistry';
-import * as $ from '@delightfuldot/shape';
+import * as $ from '@dedot/shape';
 import * as util from 'util';
 
 describe('CodecRegistry', () => {

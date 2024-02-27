@@ -1,4 +1,4 @@
-import * as $ from '@delightfuldot/shape';
+import * as $ from '@dedot/shape';
 import * as Codecs from '../codecs';
 import { DispatchError, ModuleError } from '../codecs';
 import { PalletErrorMetadataLatest } from '../metadata/types';

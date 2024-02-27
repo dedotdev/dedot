@@ -1,4 +1,4 @@
-import * as $ from '@delightfuldot/shape';
+import * as $ from '@dedot/shape';
 import { $ConsensusEngineId, $Header } from './Header';
 import { $OpaqueExtrinsic } from '../known/runtime';
 

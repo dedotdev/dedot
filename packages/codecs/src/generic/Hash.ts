@@ -1,4 +1,4 @@
-import * as $ from '@delightfuldot/shape';
+import * as $ from '@dedot/shape';
 
 export const $Hash = $.FixedHex(32);
 export type Hash = $.Input<typeof $Hash>;

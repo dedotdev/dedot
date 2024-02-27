@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { $BlockNumber, $HeaderBlockNumber } from '../Header';
-import * as $ from '@delightfuldot/shape';
+import * as $ from '@dedot/shape';
 
 describe('Header', () => {
   describe('$BlockNumber', () => {

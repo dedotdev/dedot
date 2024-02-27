@@ -1,4 +1,4 @@
-import * as $ from '@delightfuldot/shape';
+import * as $ from '@dedot/shape';
 import { $AccountId32 } from '../../generic';
 import { $H256, $H512 } from '../../known';
 

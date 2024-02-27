@@ -20,15 +20,15 @@
     "noUnusedParameters": true,
     "noFallthroughCasesInSwitch": true,
     "paths": {
-      "@delightfuldot/chaintypes": ["../../packages/chaintypes/src"],
-      "@delightfuldot/chaintypes/*": ["../../packages/chaintypes/src/*"]
-    }
+      "@dedot/chaintypes": ["../../packages/chaintypes/src"],
+      "@dedot/chaintypes/*": ["../../packages/chaintypes/src/*"],
+    },
   },
   "include": ["src"],
   "references": [
     { "path": "./tsconfig.node.json" },
     {
-      "path": "../../packages/chaintypes/tsconfig.json"
-    }
-  ]
+      "path": "../../packages/chaintypes/tsconfig.json",
+    },
+  ],
 }

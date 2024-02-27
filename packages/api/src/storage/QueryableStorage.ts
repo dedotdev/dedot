@@ -1,4 +1,4 @@
-import { assert, HASHERS } from '@delightfuldot/utils';
+import { assert, HASHERS } from '@dedot/utils';
 import {
   $StorageData,
   CodecRegistry,
@@ -6,7 +6,7 @@ import {
   StorageDataLike,
   StorageEntryLatest,
   StorageKey,
-} from '@delightfuldot/codecs';
+} from '@dedot/codecs';
 import { hexToU8a, stringCamelCase, u8aConcat, u8aToHex } from '@polkadot/util';
 import { xxhashAsU8a } from '@polkadot/util-crypto';
 

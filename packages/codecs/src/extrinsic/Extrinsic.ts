@@ -1,6 +1,6 @@
 import { CodecRegistry } from '../registry';
-import * as $ from '@delightfuldot/shape';
-import { assert } from '@delightfuldot/utils';
+import * as $ from '@dedot/shape';
+import { assert } from '@dedot/utils';
 import { $ExtrinsicVersion } from './ExtrinsicVersion';
 import { ExtrinsicV4, ExtrinsicSignatureV4 } from './ExtrinsicV4';
 

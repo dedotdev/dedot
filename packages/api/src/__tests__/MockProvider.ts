@@ -5,8 +5,8 @@ import {
   ProviderInterfaceEmitted,
 } from '@polkadot/rpc-provider/types';
 import staticSubstrate from '@polkadot/types-support/metadata/static-substrate';
-import { AnyFunc, ChainProperties } from '@delightfuldot/types';
-import { RuntimeVersion } from '@delightfuldot/codecs';
+import { AnyFunc, ChainProperties } from '@dedot/types';
+import { RuntimeVersion } from '@dedot/codecs';
 
 export default class MockProvider implements ProviderInterface {
   rpcRequests: Record<string, AnyFunc> = {

@@ -1,4 +1,4 @@
-import * as $ from '@delightfuldot/shape';
+import * as $ from '@dedot/shape';
 
 export const $Weight = $.Struct({
   // The weight of computational time used based on some reference hardware.

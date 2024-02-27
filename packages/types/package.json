@@ -1,13 +1,13 @@
 {
-  "name": "@delightfuldot/types",
-  "version": "0.0.1-alpha.20",
+  "name": "@dedot/types",
+  "version": "0.0.1-alpha.23",
   "description": "Known types",
   "author": "Thang X. Vu <thang@coongcrafts.io>",
-  "homepage": "https://github.com/CoongCrafts/delightfuldot/tree/main/packages/types",
+  "homepage": "https://github.com/dedotdev/dedot/tree/main/packages/types",
   "repository": {
     "directory": "packages/types",
     "type": "git",
-    "url": "https://github.com/CoongCrafts/delightfuldot.git"
+    "url": "https://github.com/dedotdev/dedot.git"
   },
   "main": "src/index.ts",
   "type": "module",
@@ -16,9 +16,9 @@
     "clean": "rm -rf ./dist && rm -rf ./tsconfig.tsbuildinfo ./tsconfig.build.tsbuildinfo"
   },
   "dependencies": {
-    "@delightfuldot/codecs": "workspace:*",
-    "@delightfuldot/shape": "workspace:*",
-    "@delightfuldot/utils": "workspace:*",
+    "@dedot/codecs": "workspace:*",
+    "@dedot/shape": "workspace:*",
+    "@dedot/utils": "workspace:*",
     "@polkadot/util": "^12.6.2"
   },
   "publishConfig": {

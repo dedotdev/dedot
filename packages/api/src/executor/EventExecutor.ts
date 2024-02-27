@@ -1,8 +1,8 @@
-import { GenericPalletEvent, GenericSubstrateApi, PalletEvent } from '@delightfuldot/types';
-import { SubstrateApi } from '@delightfuldot/chaintypes';
+import { GenericPalletEvent, GenericSubstrateApi, PalletEvent } from '@dedot/types';
+import { SubstrateApi } from '@dedot/chaintypes';
 import { Executor } from './Executor';
 import { stringCamelCase, stringPascalCase } from '@polkadot/util';
-import { assert } from '@delightfuldot/utils';
+import { assert } from '@dedot/utils';
 
 /**
  * @name EventExecutor

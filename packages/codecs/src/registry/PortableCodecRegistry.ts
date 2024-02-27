@@ -1,7 +1,7 @@
 import { $RawBytes, PortableType, TypeId } from '../codecs';
-import * as $ from '@delightfuldot/shape';
-import { EnumOptions } from '@delightfuldot/shape';
-import { normalizeName } from '@delightfuldot/utils';
+import * as $ from '@dedot/shape';
+import { EnumOptions } from '@dedot/shape';
+import { normalizeName } from '@dedot/utils';
 import { CodecRegistry } from './CodecRegistry';
 import { stringPascalCase } from '@polkadot/util';
 

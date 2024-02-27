@@ -1,4 +1,4 @@
-import { RuntimeApisModule } from '@delightfuldot/types';
+import { RuntimeApisModule } from '@dedot/types';
 
 /**
  * Ref: https://github.com/paritytech/polkadot-sdk/blob/36957d676033b23b46edb66e6d7dcd13da11e19a/substrate/frame/transaction-payment/rpc/runtime-api/src/lib.rs#L26-L36

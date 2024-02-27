@@ -1,4 +1,4 @@
-import { RuntimeApisModule } from '@delightfuldot/types';
+import { RuntimeApisModule } from '@dedot/types';
 
 /**
  * Ref: https://github.com/paritytech/polkadot-sdk/blob/eaf1bc5633ebbacce97e4f167ebe1d0d268c4b24/substrate/primitives/api/src/lib.rs#L811-L827

@@ -1,13 +1,13 @@
 {
-  "name": "@delightfuldot/utils",
-  "version": "0.0.1-alpha.20",
-  "description": "Useful utilities for delightful apis",
+  "name": "@dedot/utils",
+  "version": "0.0.1-alpha.23",
+  "description": "Useful utilities for dedot apis",
   "author": "Thang X. Vu <thang@coongcrafts.io>",
-  "homepage": "https://github.com/CoongCrafts/delightfuldot/tree/main/packages/utils",
+  "homepage": "https://github.com/dedotdev/dedot/tree/main/packages/utils",
   "repository": {
     "directory": "packages/utils",
     "type": "git",
-    "url": "https://github.com/CoongCrafts/delightfuldot.git"
+    "url": "https://github.com/dedotdev/dedot.git"
   },
   "main": "src/index.ts",
   "type": "module",

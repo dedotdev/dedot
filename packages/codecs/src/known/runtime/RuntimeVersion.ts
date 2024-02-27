@@ -1,4 +1,4 @@
-import * as $ from '@delightfuldot/shape';
+import * as $ from '@dedot/shape';
 import { $Text } from '../../known';
 
 export const $ApiId = $.FixedHex(8);

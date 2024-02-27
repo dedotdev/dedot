@@ -1,7 +1,7 @@
 import { isHex, isU8a, u8aToHex } from '@polkadot/util';
 import { isEthereumAddress } from '@polkadot/util-crypto';
-import * as $ from '@delightfuldot/shape';
-import { HexString } from '@delightfuldot/utils';
+import * as $ from '@dedot/shape';
+import { HexString } from '@dedot/utils';
 import { registerLooseCodecType } from '../codectypes';
 
 export const accountId20ToHex = (input: AccountId20Like): HexString => {

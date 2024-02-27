@@ -1,6 +1,6 @@
-import { findAliasRpcSpec, findRpcSpec, isUnsubscribeMethod } from '@delightfuldot/specs';
-import { RpcCallSpec, RpcModuleName } from '@delightfuldot/types';
-import { isNativeType } from '@delightfuldot/utils';
+import { findAliasRpcSpec, findRpcSpec, isUnsubscribeMethod } from '@dedot/specs';
+import { RpcCallSpec, RpcModuleName } from '@dedot/types';
+import { isNativeType } from '@dedot/utils';
 import { ApiGen, TypesGen } from '../generator';
 import { beautifySourceCode, commentBlock, compileTemplate, TUPLE_TYPE_REGEX, WRAPPER_TYPE_REGEX } from './utils';
 

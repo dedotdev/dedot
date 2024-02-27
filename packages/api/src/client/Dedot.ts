@@ -1,16 +1,8 @@
 import { HttpProvider, WsProvider } from '@polkadot/rpc-provider';
 import { ProviderInterface } from '@polkadot/rpc-provider/types';
-import type { SubstrateApi } from '@delightfuldot/chaintypes';
-import {
-  $Metadata,
-  BlockHash,
-  CodecRegistry,
-  Hash,
-  Metadata,
-  MetadataLatest,
-  RuntimeVersion,
-} from '@delightfuldot/codecs';
-import { ChainProperties, GenericSubstrateApi, Unsub } from '@delightfuldot/types';
+import type { SubstrateApi } from '@dedot/chaintypes';
+import { $Metadata, BlockHash, CodecRegistry, Hash, Metadata, MetadataLatest, RuntimeVersion } from '@dedot/codecs';
+import { ChainProperties, GenericSubstrateApi, Unsub } from '@dedot/types';
 import {
   ConstantExecutor,
   ErrorExecutor,
@@ -19,10 +11,10 @@ import {
   RuntimeApiExecutor,
   StorageQueryExecutor,
   TxExecutor,
-} from './executor';
-import { newProxyChain } from './proxychain';
-import { ApiOptions, MetadataKey, NetworkEndpoint, NormalizedApiOptions } from './types';
-import { ensurePresence } from '@delightfuldot/utils';
+} from '../executor';
+import { newProxyChain } from '../proxychain';
+import { ApiOptions, MetadataKey, NetworkEndpoint, NormalizedApiOptions } from '../types';
+import { ensurePresence } from '@dedot/utils';
 import localforage from 'localforage';
 import { hexAddPrefix, u8aToHex } from '@polkadot/util';
 
@@ -31,16 +23,16 @@ export const CATCH_ALL_METADATA_KEY: MetadataKey = `RAW_META/ALL`;
 export const SUPPORTED_METADATA_VERSIONS = [15, 14];
 
 /**
- * @name DelightfulApi
+ * @name Dedot
  * @description Promised-based API Client for Polkadot & Substrate
  *
  * ### Initialize API instance and interact with substrate-based network
  * ```typescript
- * import { DelightfulApi } from 'delightfuldot';
- * import { PolkadotApi } from '@delightfuldot/chaintypes/polkadot';
+ * import { Dedot } from 'dedot';
+ * import { PolkadotApi } from '@dedot/chaintypes/polkadot';
  *
  * const run = async () => {
- *   const api = await DelightfulApi.new<PolkadotApi>('wss://rpc.polkadot.io');
+ *   const api = await Dedot.new<PolkadotApi>('wss://rpc.polkadot.io');
  *
  *   // Call rpc `state_getMetadata` to fetch raw scale-encoded metadata and decode it.
  *   const metadata = await api.rpc.state.getMetadata();
@@ -68,7 +60,7 @@ export const SUPPORTED_METADATA_VERSIONS = [15, 14];
  * run().catch(console.error);
  * ```
  */
-export default class DelightfulApi<ChainApi extends GenericSubstrateApi = SubstrateApi> {
+export class Dedot<ChainApi extends GenericSubstrateApi = SubstrateApi> {
   readonly #provider: ProviderInterface;
   readonly #registry: CodecRegistry;
   readonly #options: NormalizedApiOptions;
@@ -85,7 +77,7 @@ export default class DelightfulApi<ChainApi extends GenericSubstrateApi = Substr
   #healthTimer?: ReturnType<typeof setInterval>;
 
   /**
-   * Use factory methods (`create`, `new`) to create `DelightfulApi` instances.
+   * Use factory methods (`create`, `new`) to create `Dedot` instances.
    *
    * @param options
    * @protected
@@ -97,14 +89,14 @@ export default class DelightfulApi<ChainApi extends GenericSubstrateApi = Substr
   }
 
   /**
-   * Factory method to create a new DelightfulApi instance
+   * Factory method to create a new Dedot instance
    *
    * @param options
    */
   static async create<ChainApi extends GenericSubstrateApi = SubstrateApi>(
     options: ApiOptions | NetworkEndpoint,
-  ): Promise<DelightfulApi<ChainApi>> {
-    const api = new DelightfulApi<ChainApi>(options);
+  ): Promise<Dedot<ChainApi>> {
+    const api = new Dedot<ChainApi>(options);
 
     if (api.provider instanceof WsProvider) {
       await api.provider.isReady;
@@ -116,13 +108,13 @@ export default class DelightfulApi<ChainApi extends GenericSubstrateApi = Substr
   }
 
   /**
-   * Alias for __DelightfulApi.create__
+   * Alias for __Dedot.create__
    * @param options
    */
   static async new<ChainApi extends GenericSubstrateApi = SubstrateApi>(
     options: ApiOptions | NetworkEndpoint,
-  ): Promise<DelightfulApi<ChainApi>> {
-    return DelightfulApi.create(options);
+  ): Promise<Dedot<ChainApi>> {
+    return Dedot.create(options);
   }
 
   /**
@@ -156,7 +148,7 @@ export default class DelightfulApi<ChainApi extends GenericSubstrateApi = Substr
         // TODO add a custom driver to support nodejs
         this.#localCache = localforage.createInstance({
           driver: [localforage.INDEXEDDB, localforage.LOCALSTORAGE],
-          name: 'DelightfulApiCache',
+          name: 'DedotCache',
           storeName: 'LocalCache',
         });
 

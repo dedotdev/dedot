@@ -10,9 +10,9 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "@delightfuldot/chaintypes": "workspace:*",
+    "@dedot/chaintypes": "workspace:*",
     "@polkadot/api": "^10.11.2",
-    "delightfuldot": "workspace:*",
+    "dedot": "workspace:*",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-use": "^17.4.2"
