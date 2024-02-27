@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { Dedot } from '../client';
+import { Dedot } from '../Dedot';
 import MockProvider from './MockProvider';
 import { SubstrateApi } from '@dedot/chaintypes';
 import { stringCamelCase, stringPascalCase } from '@polkadot/util';
@@ -149,7 +149,7 @@ describe('Dedot', () => {
       });
     });
 
-    describe('call', () => {
+    describe('runtime apis call', () => {
       it('should works properly', async () => {
         const providerSend = vi.spyOn(api.provider, 'send');
 
