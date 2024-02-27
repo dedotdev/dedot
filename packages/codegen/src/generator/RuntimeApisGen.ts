@@ -40,7 +40,11 @@ export class RuntimeApisGen extends RpcGen {
         runtimeCallsOut += `${stringCamelCase(runtimeApiName!)}: {
             ${Object.keys(methods)
               .map((methodName) =>
-                this.#generateMethodDefFromSpec({ ...methods[methodName], runtimeApiName, methodName }),
+                this.#generateMethodDefFromSpec({
+                  ...methods[methodName],
+                  runtimeApiName,
+                  methodName,
+                }),
               )
               .join('\n')} 
               

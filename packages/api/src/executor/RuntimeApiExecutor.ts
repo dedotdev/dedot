@@ -1,11 +1,11 @@
-import { Executor } from './Executor';
-import {
+import type { AnyShape } from '@dedot/shape';
+import type {
   GenericRuntimeApiMethod,
   GenericSubstrateApi,
-  RuntimeApiMethodParamSpec,
   RuntimeApiMethodSpec,
+  RuntimeApiMethodParamSpec,
 } from '@dedot/types';
-
+import { Executor } from './Executor';
 import { assert, calculateRuntimeApiHash, stringSnakeCase } from '@dedot/utils';
 import { isNumber, stringPascalCase, u8aConcat, u8aToHex } from '@polkadot/util';
 import { RuntimeApiMethodDefLatest } from '@dedot/codecs';
@@ -17,11 +17,11 @@ export const FallbackRuntimeApis = [
 
 export class RuntimeApiExecutor<ChainApi extends GenericSubstrateApi = GenericSubstrateApi> extends Executor<ChainApi> {
   execute(runtimeApi: string, method: string): GenericRuntimeApiMethod {
-    runtimeApi = stringPascalCase(runtimeApi);
-    method = stringSnakeCase(method);
+    const runtimeApiName = stringPascalCase(runtimeApi);
+    const methodName = stringSnakeCase(method);
 
-    const callName = `${runtimeApi}_${method}`;
-    const callSpec = this.#findRuntimeApiMethodSpec(runtimeApi, method);
+    const callName = this.#callName({ runtimeApiName, methodName });
+    const callSpec = this.#findRuntimeApiMethodSpec(runtimeApiName, methodName);
 
     assert(callSpec, `Runtime Api not found: ${callName}`);
 
@@ -47,47 +47,49 @@ export class RuntimeApiExecutor<ChainApi extends GenericSubstrateApi = GenericSu
   }
 
   tryDecode(callSpec: RuntimeApiMethodSpec, raw: any) {
-    const { type, typeId, codec, methodName, runtimeApiName } = callSpec;
-
-    assert(codec || typeId || type, `Cannot decode return data of ${runtimeApiName}_${methodName}: ${raw}`);
-
-    const $codec =
-      codec || (isNumber(typeId) ? this.registry.findPortableCodec(typeId) : this.registry.findCodec(type!));
-
+    const $codec = this.#findCodec(callSpec, `Codec not found to decode respond data for ${this.#callName(callSpec)}`);
     return $codec.tryDecode(raw);
   }
 
   tryEncode(paramSpec: RuntimeApiMethodParamSpec, value: any): Uint8Array {
-    const { type, typeId, codec, name } = paramSpec;
-
-    assert(codec || typeId || type, `Cannot encode type ${name}${value}`);
-
-    const $codec =
-      codec || (isNumber(typeId) ? this.registry.findPortableCodec(typeId) : this.registry.findCodec(type!));
-
+    const $codec = this.#findCodec(paramSpec, `Codec not found to encode input for param ${paramSpec.name}`);
     return $codec.tryEncode(value);
   }
 
+  #findCodec(spec: { typeId?: number; type?: string; codec?: AnyShape }, error?: string): AnyShape {
+    const { codec, typeId, type } = spec;
+
+    if (codec) return codec;
+
+    if (isNumber(typeId)) {
+      return this.registry.findPortableCodec(typeId);
+    }
+
+    if (type) {
+      return this.registry.findCodec(type);
+    }
+
+    throw new Error(error || 'Codec not found');
+  }
+
+  #callName({ runtimeApiName, methodName }: Pick<RuntimeApiMethodSpec, 'runtimeApiName' | 'methodName'>): string {
+    return `${runtimeApiName}_${methodName}`;
+  }
+
   #findRuntimeApiMethodSpec(runtimeApi: string, method: string): RuntimeApiMethodSpec | undefined {
-    const targetRuntimeApiVersion = this.#findTargetRuntimeApiVersion(runtimeApi);
+    const targetVersion = this.#findTargetRuntimeApiVersion(runtimeApi);
 
-    if (!isNumber(targetRuntimeApiVersion)) {
-      return undefined;
-    }
+    if (!isNumber(targetVersion)) return undefined;
 
-    const spec = this.#findRuntimeApiMethodUserDefinedSpec(runtimeApi, method, targetRuntimeApiVersion);
-
-    if (spec) {
-      return spec;
-    }
+    const userDefinedSpec = this.#findUserDefinedSpec(runtimeApi, method, targetVersion);
+    if (userDefinedSpec) return userDefinedSpec;
 
     const methodDef = this.#findRuntimeApiMethodDef(runtimeApi, method);
-
     if (methodDef) {
       return this.#toMethodSpec(runtimeApi, methodDef);
     }
 
-    return this.#findRuntimeApiMethodExternalSpec(runtimeApi, method, targetRuntimeApiVersion);
+    return this.#findExternalSpec(runtimeApi, method, targetVersion);
   }
 
   #findRuntimeApiMethodDef(runtimeApi: string, method: string): RuntimeApiMethodDefLatest | undefined {
@@ -102,60 +104,54 @@ export class RuntimeApiExecutor<ChainApi extends GenericSubstrateApi = GenericSu
     } catch {}
   }
 
-  #toMethodSpec(runtimeApi: string, methodDef?: RuntimeApiMethodDefLatest): RuntimeApiMethodSpec | undefined {
-    if (!methodDef) return undefined;
-
+  #toMethodSpec(runtimeApi: string, methodDef: RuntimeApiMethodDefLatest): RuntimeApiMethodSpec {
     const { name, inputs, output, docs } = methodDef;
 
     return {
       docs,
       runtimeApiName: runtimeApi,
       methodName: name,
-      type: '', // TODO generate type name
       typeId: output,
       params: inputs.map(({ name, typeId }) => ({
         name,
-        type: '', // TODO generate type name
         typeId,
       })),
     };
   }
 
   #findTargetRuntimeApiVersion(runtimeApi: string): number | undefined {
-    const targetRuntimeApiHash = calculateRuntimeApiHash(runtimeApi);
-
+    const runtimeApiHash = calculateRuntimeApiHash(runtimeApi);
     const runtimeApiVersions = this.api.runtimeVersion?.apis || FallbackRuntimeApis;
-    const targetRuntimeApiVersion = runtimeApiVersions
-      .find(([supportedRuntimeApiHash]) => targetRuntimeApiHash === supportedRuntimeApiHash)
-      ?.at(1) as number | undefined;
 
-    return targetRuntimeApiVersion;
+    const foundVersion = runtimeApiVersions
+      .find(([supportedRuntimeApiHash]) => runtimeApiHash === supportedRuntimeApiHash)
+      ?.at(1);
+
+    return foundVersion as number | undefined;
   }
 
-  #findRuntimeApiMethodExternalSpec(
-    runtimeApi: string,
-    method: string,
+  #findExternalSpec(
+    runtimeApiName: string,
+    methodName: string,
     targetRuntimeApiVersion: number,
   ): RuntimeApiMethodSpec | undefined {
-    return findRuntimeApiMethodSpec(`${runtimeApi}_${method}`, targetRuntimeApiVersion);
+    return findRuntimeApiMethodSpec(this.#callName({ runtimeApiName, methodName }), targetRuntimeApiVersion);
   }
 
-  #findRuntimeApiMethodUserDefinedSpec(
+  #findUserDefinedSpec(
     runtimeApi: string,
     method: string,
-    targetRuntimeApiVersion: number,
+    runtimeApiVersion: number,
   ): RuntimeApiMethodSpec | undefined {
-    const userDefinedRuntime = this.api.options.runtime;
-    if (!userDefinedRuntime) {
-      return undefined;
-    }
+    const userDefinedSpecs = this.api.options.runtime;
+    if (!userDefinedSpecs) return undefined;
 
-    const runtimeApiMethodSpecs = extractRuntimeApisModule(userDefinedRuntime).map(extractRuntimeApiSpec).flat();
+    const methodSpecs = extractRuntimeApisModule(userDefinedSpecs).map(extractRuntimeApiSpec).flat();
 
-    return runtimeApiMethodSpecs.find(
-      (one) =>
-        `${one.runtimeApiName}_${stringSnakeCase(one.methodName)}` === `${runtimeApi}_${method}` &&
-        targetRuntimeApiVersion === one.version,
+    return methodSpecs.find(
+      ({ runtimeApiName, methodName, version }) =>
+        `${stringPascalCase(runtimeApiName!)}_${stringSnakeCase(methodName)}` === `${runtimeApi}_${method}` &&
+        runtimeApiVersion === version,
     );
   }
 }
