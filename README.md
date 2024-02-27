@@ -115,7 +115,7 @@ yarn add -D @dedot/chaintypes
 npm i -D @dedot/chaintypes
 ```
 
-Initialize a `DelighfulApi` instance using the `ChainApi` interface for a target chain to enable types & APIs suggestion/autocompletion for that particular chain:
+Initialize a `Dedot` instance using the `ChainApi` interface for a target chain to enable types & APIs suggestion/autocompletion for that particular chain:
 ```typescript
 import { Dedot } from 'dedot';
 import type { PolkadotApi, KusamaApi, MoonbeamApi, AstarApi } from '@dedot/chaintypes';
@@ -238,6 +238,12 @@ await api.query.system.events(async (eventRecords) => {
 ### Credit
 
 `dedot` take a lot of inspirations from project [@polkadot/api](https://github.com/polkadot-js/api). A big thank to all the maintainers/contributors of this awesome library.
+
+Proudly supported by Web3 Foundation Grants Program.
+<p align="left">
+  <img width="479" src="https://user-images.githubusercontent.com/6867026/227230786-0796214a-3e3f-42af-94e9-d4122c730b62.png">
+</p>
+
 
 ### License
 
