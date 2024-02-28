@@ -165,6 +165,46 @@ describe('Dedot', () => {
         expect(() => api.call.notFound.notFound()).toThrowError('Runtime Api not found: NotFound_not_found');
       });
     });
+
+    describe('custom runtime apis call', () => {
+      it('should works properly', async () => {
+        const $testParamCodec = {
+          tryDecode: vi.fn(),
+          tryEncode: vi.fn(),
+        };
+        const $mockCodec = {
+          tryDecode: vi.fn(),
+          tryEncode: vi.fn(),
+        };
+
+        api = await Dedot.create({
+          provider: new MockProvider(),
+          runtime: {
+            Metadata: [
+              {
+                methods: {
+                  testMethod: {
+                    params: [
+                      {
+                        name: 'testParam',
+                        codec: $testParamCodec,
+                      },
+                    ],
+                    codec: $mockCodec,
+                  },
+                },
+                version: 2,
+              },
+            ],
+          },
+        });
+
+        await api.call.metadata.testMethod();
+
+        expect($testParamCodec.tryEncode).toBeCalled();
+        expect($mockCodec.tryDecode).toBeCalled();
+      });
+    });
   });
 
   describe('cache enabled', () => {
