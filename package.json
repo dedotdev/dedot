@@ -18,7 +18,8 @@
     "postinstall": "husky install",
     "generate-package-info-file": "npx lerna exec --no-private -- node \\$LERNA_ROOT_PATH/scripts/generate-package-info-file.js",
     "copy-files-to-dist": "npx lerna exec --no-private -- node \\$LERNA_ROOT_PATH/scripts/copy-files-to-dist.js",
-    "gen-chaintypes": "npx ts-node ./packages/codegen/src/genSupportedChainTypes.ts"
+    "gen-chaintypes": "npx ts-node ./packages/codegen/src/genSupportedChainTypes.ts",
+    "cli": "yarn workspace @dedot/cli start"
   },
   "devDependencies": {
     "@polkadot/types-support": "^10.11.2",

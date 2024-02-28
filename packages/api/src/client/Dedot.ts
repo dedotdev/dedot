@@ -303,7 +303,7 @@ export class Dedot<ChainApi extends GenericSubstrateApi = SubstrateApi> {
     if (typeof options === 'string') {
       return { endpoint: options };
     } else {
-      let { metadata } = options;
+      let { metadata } = options || {};
       if (metadata && typeof metadata === 'string') {
         metadata = {
           [CATCH_ALL_METADATA_KEY]: hexAddPrefix(metadata),

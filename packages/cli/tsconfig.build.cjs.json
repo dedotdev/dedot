@@ -1,0 +1,13 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "outDir": "dist/cjs",
+    "module": "CommonJS"
+  },
+  "exclude": ["**/__tests__/*"],
+  "references": [
+    {
+      "path": "../codegen/tsconfig.json"
+    }
+  ]
+}

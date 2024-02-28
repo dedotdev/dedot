@@ -1,5 +1,5 @@
 import * as $ from '@dedot/shape';
-import { $Text } from '../../known';
+import { $Text } from '../common';
 
 export const $ApiId = $.FixedHex(8);
 
