@@ -1,7 +1,7 @@
 import { ProviderInterface } from '@polkadot/rpc-provider/types';
 import { HexString } from '@dedot/utils';
 import { AnySignedExtension } from './extrinsic';
-import { RuntimeApiSpec } from '@delightfuldot/types';
+import { RuntimeApiSpec } from '@dedot/types';
 
 export type NetworkEndpoint = string;
 export type MetadataKey = `RAW_META/${string}`;
