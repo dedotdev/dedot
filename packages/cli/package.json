@@ -1,6 +1,6 @@
 {
   "name": "@dedot/cli",
-  "version": "0.0.1",
+  "version": "0.0.0",
   "author": "Thang X. Vu <thang@coongcrafts.io>",
   "bin": {
     "dedot": "./bin/dedot",
@@ -18,6 +18,10 @@
   },
   "devDependencies": {
     "@types/yargs": "^17.0.32"
+  },
+  "publishConfig": {
+    "access": "public",
+    "directory": "dist"
   },
   "license": "Apache-2.0"
 }
