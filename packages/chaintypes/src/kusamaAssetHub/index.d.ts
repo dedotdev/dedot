@@ -10,7 +10,6 @@ import { RuntimeApis } from './runtime';
 import { ChainTx } from './tx';
 
 export * from './types';
-export * from './consts';
 
 export interface KusamaAssetHubApi extends GenericSubstrateApi {
   rpc: RpcCalls;

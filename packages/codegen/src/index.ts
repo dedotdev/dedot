@@ -38,15 +38,15 @@ export async function generateTypes(
   outDir: string = '.',
 ) {
   const dirPath = path.resolve(outDir, network.chain);
-  const defTypesFileName = path.join(dirPath, `types.ts`);
-  const constsTypesFileName = path.join(dirPath, `consts.ts`);
-  const queryTypesFileName = path.join(dirPath, `query.ts`);
-  const rpcCallsFileName = path.join(dirPath, `rpc.ts`);
-  const indexFileName = path.join(dirPath, `index.ts`);
-  const errorsFileName = path.join(dirPath, `errors.ts`);
-  const eventsFileName = path.join(dirPath, `events.ts`);
-  const runtimeApisFileName = path.join(dirPath, `runtime.ts`);
-  const txFileName = path.join(dirPath, `tx.ts`);
+  const defTypesFileName = path.join(dirPath, `types.d.ts`);
+  const constsTypesFileName = path.join(dirPath, `consts.d.ts`);
+  const queryTypesFileName = path.join(dirPath, `query.d.ts`);
+  const rpcCallsFileName = path.join(dirPath, `rpc.d.ts`);
+  const indexFileName = path.join(dirPath, `index.d.ts`);
+  const errorsFileName = path.join(dirPath, `errors.d.ts`);
+  const eventsFileName = path.join(dirPath, `events.d.ts`);
+  const runtimeApisFileName = path.join(dirPath, `runtime.d.ts`);
+  const txFileName = path.join(dirPath, `tx.d.ts`);
 
   if (!fs.existsSync(dirPath)) {
     fs.mkdirSync(dirPath, { recursive: true });

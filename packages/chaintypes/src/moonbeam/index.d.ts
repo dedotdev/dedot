@@ -10,9 +10,8 @@ import { RuntimeApis } from './runtime';
 import { ChainTx } from './tx';
 
 export * from './types';
-export * from './consts';
 
-export interface RococoAssetHubApi extends GenericSubstrateApi {
+export interface MoonbeamApi extends GenericSubstrateApi {
   rpc: RpcCalls;
   consts: ChainConsts;
   query: ChainStorage;
