@@ -59,6 +59,31 @@ const main = () => {
 
   // clean up
   fs.rmSync(path.join(currentDir, targetDir, 'tsconfig.build.cjs.tsbuildinfo'), { force: true });
+
+  // Resolve dirname conflict issue for cjs & esm
+  // TODO we should have a better way to handle this!!!
+  if (currentDir.endsWith('packages/codegen')) {
+    // remove unrelated files
+    const toRemove = ['generator/dirname.cjs', 'generator/dirname.d.cts', 'cjs/generator/dirname.mjs'];
+
+    toRemove.forEach((file) => fs.rmSync(path.resolve(currentDir, targetDir, file), { force: true }));
+
+    // change file names
+    fs.renameSync(
+      path.resolve(currentDir, targetDir, 'generator/dirname.mjs'),
+      path.resolve(currentDir, targetDir, 'generator/dirname.js'),
+    );
+
+    fs.renameSync(
+      path.resolve(currentDir, targetDir, 'generator/dirname.d.mts'),
+      path.resolve(currentDir, targetDir, 'generator/dirname.d.ts'),
+    );
+
+    fs.renameSync(
+      path.resolve(currentDir, targetDir, 'cjs/generator/dirname.cjs'),
+      path.resolve(currentDir, targetDir, 'cjs/generator/dirname.js'),
+    );
+  }
 };
 
 main();
