@@ -364,8 +364,8 @@ __metadata:
     "@types/yargs": ^17.0.32
     yargs: ^17.7.2
   bin:
-    dedot: ./cjs/index.js
-    djs: ./cjs/index.js
+    dedot: ./bin/dedot
+    djs: ./bin/dedot
   languageName: unknown
   linkType: soft
 
