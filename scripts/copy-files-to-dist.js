@@ -57,7 +57,9 @@ const main = () => {
     fs.writeFileSync(path.join(currentDir, targetDir, file), fileContent);
   });
 
-  fs.writeFileSync(path.join(currentDir, targetDir, 'cjs/package.json'), `{"type": "commonjs"}`);
+  if (!currentDir.endsWith('packages/chaintypes')) {
+    fs.writeFileSync(path.join(currentDir, targetDir, 'cjs/package.json'), `{"type": "commonjs"}`);
+  }
 
   // clean up
   fs.rmSync(path.join(currentDir, targetDir, 'tsconfig.build.cjs.tsbuildinfo'), { force: true });
