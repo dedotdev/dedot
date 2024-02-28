@@ -11,7 +11,6 @@
   "scripts": {
     "build": "tsc --project tsconfig.build.cjs.json && cp -R ./bin ./dist",
     "clean": "rm -rf ./dist && rm -rf ./tsconfig.tsbuildinfo ./tsconfig.build.cjs.tsbuildinfo && rm -rf ./src/codegen",
-    "test": "vitest --watch=false",
     "start": "ts-node src/index.ts"
   },
   "dependencies": {
