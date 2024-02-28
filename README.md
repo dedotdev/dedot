@@ -91,10 +91,10 @@ const api = await Dedot.new('wss://rpc.polkadot.io');
 | Feature                                               | Status |
 |-------------------------------------------------------| ----------- |
 | Execute RPC (`api.rpc`)                               | ✅ |
-| Query on-chain storage (`api.query`)                  | ✅ |
+| Query On-chain Storage (`api.query`)                  | ✅ |
 | Get runtime constants (`api.consts`)                  | ✅ |
-| Runtime APIs (`api.call`)                             | ⏳ |
-| Transaction APIs (`api.tx`)                           | ⏳ |
+| Runtime APIs (`api.call`)                             | ✅ |
+| Transaction APIs (`api.tx`)                           | ✅ |
 | Events (`api.events`)                                 | ✅ |
 | Errors (`api.errors`)                                 | ✅ |
 | Contract APIs                                         | ⏳ |
@@ -183,7 +183,7 @@ const existentialDeposit = api.consts.balances.existentialDeposit;
 
 ⏳ _coming soon_
 
-### Submit Transactions
+### Transaction APIs
 
 ⏳ _coming soon_
 
