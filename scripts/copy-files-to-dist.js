@@ -29,7 +29,9 @@ const main = () => {
       const pkgJson = JSON.parse(fileContent);
       pkgJson.main = './cjs/index.js';
 
-      if (pkgJson.name !== '@dedot/cli') {
+      if (pkgJson.name === '@dedot/cli') {
+        delete pkgJson.type;
+      } else {
         pkgJson.module = './index.js';
         pkgJson.types = './index.d.ts';
       }
