@@ -14,31 +14,33 @@ export const chaintypes: CommandModule<Args, Args> = {
   handler: async (yargs) => {
     const { wsUrl, output = '', chain = '' } = yargs;
 
-    const outputDir = path.resolve(output, './codegen');
+    console.log(`- Generating chaintypes via endpoint ${wsUrl!}`);
 
-    await generateTypesFromChain({ chain }, wsUrl!, outputDir);
+    const outDir = path.resolve(output, './codegen');
+    await generateTypesFromChain({ chain }, wsUrl!, outDir);
+
+    console.log(`- DONE! Output: ${outDir}`);
   },
   builder: (yargs) => {
-    return yargs
-      .option('wsUrl', {
-        type: 'string',
-        describe: 'Websocket Url to fetch metadata',
-        alias: 'w',
-      })
-      .option('file', {
-        type: 'string',
-        describe: 'Path to metadata file',
-        alias: 'f',
-      })
-      .option('output', {
-        type: 'string',
-        describe: 'Output folder to put generated files',
-        alias: 'o',
-      })
-      .option('chain', {
-        type: 'string',
-        describe: 'Chain name',
-        alias: 'c',
-      }); // TODO check to verify inputs
+    return (
+      yargs
+        .option('wsUrl', {
+          type: 'string',
+          describe: 'Websocket Url to fetch metadata',
+          alias: 'w',
+          default: 'ws://127.0.0.1:9944',
+        })
+        // TODO add file input
+        .option('output', {
+          type: 'string',
+          describe: 'Output folder to put generated files',
+          alias: 'o',
+        })
+        .option('chain', {
+          type: 'string',
+          describe: 'Chain name',
+          alias: 'c',
+        })
+    ); // TODO check to verify inputs
   },
 };

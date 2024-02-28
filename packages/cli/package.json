@@ -6,11 +6,13 @@
     "dedot": "./bin/dedot",
     "djs": "./bin/dedot"
   },
-  "main": "./dist/cjs/index.js",
+  "main": "src/index.ts",
+  "type": "module",
   "scripts": {
     "build": "tsc --project tsconfig.build.cjs.json && cp -R ./bin ./dist",
     "clean": "rm -rf ./dist && rm -rf ./tsconfig.tsbuildinfo ./tsconfig.build.cjs.tsbuildinfo && rm -rf ./src/codegen",
-    "test": "vitest --watch=false"
+    "test": "vitest --watch=false",
+    "start": "ts-node src/index.ts"
   },
   "dependencies": {
     "@dedot/codegen": "workspace:*",
