@@ -12,8 +12,9 @@
   "main": "src/index.ts",
   "type": "module",
   "scripts": {
-    "build": "tsc --project tsconfig.build.json && tsc --project tsconfig.build.cjs.json",
-    "clean": "rm -rf ./dist && rm -rf ./tsconfig.tsbuildinfo ./tsconfig.build.tsbuildinfo"
+    "build": "tsc --project tsconfig.build.json && yarn copy",
+    "clean": "rm -rf ./dist && rm -rf ./tsconfig.tsbuildinfo ./tsconfig.build.tsbuildinfo",
+    "copy": "cp -R ./src/* ./dist"
   },
   "dependencies": {
     "@dedot/codecs": "workspace:*",
