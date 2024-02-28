@@ -1,6 +1,7 @@
 import { ProviderInterface } from '@polkadot/rpc-provider/types';
 import { HexString } from '@dedot/utils';
 import { AnySignedExtension } from './extrinsic';
+import { RuntimeApiSpec } from '@delightfuldot/types';
 
 export type NetworkEndpoint = string;
 export type MetadataKey = `RAW_META/${string}`;
@@ -40,6 +41,8 @@ export interface ApiOptions {
    * @description User-defined chain-specific signed extensions
    */
   signedExtensions?: Record<string, AnySignedExtension>;
+
+  runtime?: Record<string, RuntimeApiSpec[]>;
 }
 
 export interface NormalizedApiOptions extends ApiOptions {

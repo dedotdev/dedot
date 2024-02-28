@@ -33,21 +33,23 @@ export class RuntimeApisGen extends RpcGen {
         }`;
       });
     } else {
-      const specsByModule = this.#runtimeApisSpecsByModule();
+      const specs = this.#targetRuntimeApiSpecs();
 
-      Object.values(specsByModule).forEach((specs) => {
-        specs.forEach(({ methods, runtimeApiName, runtimeApiHash, version }) => {
-          runtimeCallsOut += commentBlock(`@runtimeapi: ${runtimeApiName} - ${runtimeApiHash}`, `@version: ${version}`);
-          runtimeCallsOut += `${stringCamelCase(runtimeApiName!)}: {
+      specs.forEach(({ methods, runtimeApiName, runtimeApiHash, version }) => {
+        runtimeCallsOut += commentBlock(`@runtimeapi: ${runtimeApiName} - ${runtimeApiHash}`, `@version: ${version}`);
+        runtimeCallsOut += `${stringCamelCase(runtimeApiName!)}: {
             ${Object.keys(methods)
               .map((methodName) =>
-                this.#generateMethodDefFromSpec({ ...methods[methodName], runtimeApiName, methodName }),
+                this.#generateMethodDefFromSpec({
+                  ...methods[methodName],
+                  runtimeApiName,
+                  methodName,
+                }),
               )
               .join('\n')} 
               
             ${commentBlock('Generic runtime api call')}[method: string]: GenericRuntimeApiMethod
           }`;
-        });
       });
     }
 
@@ -61,8 +63,8 @@ export class RuntimeApisGen extends RpcGen {
     return type.startsWith('Option<') || type.endsWith('| undefined');
   }
 
-  #isOptionalParam(params: { type: string }[], type: string, idx: number) {
-    return this.#isOptionalType(type) && params.slice(idx + 1).every(({ type }) => this.#isOptionalType(type));
+  #isOptionalParam(params: { type?: string }[], type: string, idx: number) {
+    return this.#isOptionalType(type) && params.slice(idx + 1).every(({ type }) => this.#isOptionalType(type!));
   }
 
   #generateMethodDefFromSpec(spec: RuntimeApiMethodSpec) {
@@ -71,20 +73,20 @@ export class RuntimeApisGen extends RpcGen {
     const callName = `${runtimeApiName}_${stringSnakeCase(methodName)}`;
     const defaultDocs = [`@callname: ${callName}`];
 
-    this.addTypeImport(type, false);
-    params.forEach(({ type }) => this.addTypeImport(type));
+    this.addTypeImport(type!, false);
+    params.forEach(({ type }) => this.addTypeImport(type!));
 
     const typedParams = params.map((param, idx) => ({
       ...param,
-      isOptional: this.#isOptionalParam(params, param.type, idx),
-      plainType: this.getGeneratedTypeName(param.type),
+      isOptional: this.#isOptionalParam(params, param.type!, idx),
+      plainType: this.getGeneratedTypeName(param.type!),
     }));
 
     const paramsOut = typedParams
       .map(({ name, isOptional, plainType }) => `${stringCamelCase(name)}${isOptional ? '?' : ''}: ${plainType}`)
       .join(', ');
 
-    const typeOut = this.getGeneratedTypeName(type, false);
+    const typeOut = this.getGeneratedTypeName(type!, false);
 
     return `${commentBlock(
       docs,
@@ -126,7 +128,7 @@ export class RuntimeApisGen extends RpcGen {
     )}${stringCamelCase(methodName)}: GenericRuntimeApiMethod<(${paramsOut}) => Promise<${typeOut}>>`;
   }
 
-  #runtimeApisSpecsByModule(): Record<string, RuntimeApiSpec[]> {
+  #targetRuntimeApiSpecs(): RuntimeApiSpec[] {
     const specs = this.runtimeApis.map(([runtimeApiHash, version]) => {
       const runtimeApiSpec = findRuntimeApiSpec(runtimeApiHash, version);
 
@@ -138,24 +140,12 @@ export class RuntimeApisGen extends RpcGen {
       } as RuntimeApiSpec;
     });
 
-    return specs.reduce(
-      (o, spec) => {
-        if (!spec) {
-          return o;
-        }
+    return specs.reduce((o, spec) => {
+      if (!spec) {
+        return o;
+      }
 
-        const { moduleName } = spec;
-
-        if (!moduleName) {
-          return o;
-        }
-
-        return {
-          ...o,
-          [moduleName]: o[moduleName] ? [...o[moduleName], spec] : [spec],
-        };
-      },
-      {} as Record<string, RuntimeApiSpec[]>,
-    );
+      return [...o, spec];
+    }, [] as RuntimeApiSpec[]);
   }
 }

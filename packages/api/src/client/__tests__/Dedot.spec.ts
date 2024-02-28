@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { Dedot } from '../client';
+import { Dedot } from '../Dedot';
 import MockProvider from './MockProvider';
 import { SubstrateApi } from '@dedot/chaintypes';
 import { stringCamelCase, stringPascalCase } from '@polkadot/util';
@@ -149,7 +149,7 @@ describe('Dedot', () => {
       });
     });
 
-    describe('call', () => {
+    describe('runtime apis call', () => {
       it('should works properly', async () => {
         const providerSend = vi.spyOn(api.provider, 'send');
 
@@ -163,6 +163,46 @@ describe('Dedot', () => {
       it('should throws error if runtime not support or call spec not found', async () => {
         expect(() => api.call.metadata.notFound()).toThrowError('Runtime Api not found: Metadata_not_found');
         expect(() => api.call.notFound.notFound()).toThrowError('Runtime Api not found: NotFound_not_found');
+      });
+    });
+
+    describe('custom runtime apis call', () => {
+      it('should works properly', async () => {
+        const $testParamCodec = {
+          tryDecode: vi.fn(),
+          tryEncode: vi.fn(),
+        };
+        const $mockCodec = {
+          tryDecode: vi.fn(),
+          tryEncode: vi.fn(),
+        };
+
+        api = await Dedot.create({
+          provider: new MockProvider(),
+          runtime: {
+            Metadata: [
+              {
+                methods: {
+                  testMethod: {
+                    params: [
+                      {
+                        name: 'testParam',
+                        codec: $testParamCodec,
+                      },
+                    ],
+                    codec: $mockCodec,
+                  },
+                },
+                version: 2,
+              },
+            ],
+          },
+        });
+
+        await api.call.metadata.testMethod();
+
+        expect($testParamCodec.tryEncode).toBeCalled();
+        expect($mockCodec.tryDecode).toBeCalled();
       });
     });
   });

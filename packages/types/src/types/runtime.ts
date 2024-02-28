@@ -1,30 +1,32 @@
 import { TypeId } from '@dedot/codecs';
+import { AnyShape } from '@dedot/shape';
 
-export type RuntimeApiMethodParamSpec = {
+export interface RuntimeApiMethodParamSpec {
   name: string;
-  type: string;
+  type?: string;
   typeId?: TypeId;
-};
+  codec?: AnyShape;
+}
 
-export type RuntimeApiMethodSpec = {
+export interface RuntimeApiMethodSpec {
   docs?: string | string[];
   params: RuntimeApiMethodParamSpec[];
-  type: string;
+  type?: string;
   typeId?: TypeId;
+  codec?: AnyShape;
   runtimeApiName?: string;
   methodName?: string;
   version?: number;
   [prop: string]: any;
-};
+}
 
-export type RuntimeApiSpec = {
+export interface RuntimeApiSpec {
   methods: RuntimeApiMethodsSpec;
   version: number;
   runtimeApiName?: string;
-  moduleName?: string;
   runtimeApiHash?: string;
   [prop: string]: any;
-};
+}
 
 export type RuntimeApiMethodName = string;
 
