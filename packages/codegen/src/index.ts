@@ -1,7 +1,6 @@
 import { Dedot } from 'dedot';
 import * as fs from 'fs';
 import * as path from 'path';
-import * as process from 'process';
 import {
   ConstsGen,
   ErrorsGen,
@@ -9,18 +8,22 @@ import {
   IndexGen,
   QueryGen,
   RpcGen,
-  TypesGen,
   RuntimeApisGen,
   TxGen,
+  TypesGen,
 } from './generator';
 import { RpcMethods } from '@dedot/types';
 import { MetadataLatest } from '@dedot/codecs';
 import { NetworkInfo } from './types';
+import { stringCamelCase } from '@polkadot/util';
 
 export async function generateTypesFromChain(network: NetworkInfo, endpoint: string, outDir: string) {
   const api = await Dedot.create(endpoint);
   const { methods }: RpcMethods = await api.rpc.rpc.methods();
   const apis = api.runtimeVersion?.apis || [];
+  if (!network.chain) {
+    network.chain = stringCamelCase(api.runtimeVersion?.specName || api.runtimeChain || 'local');
+  }
 
   await generateTypes(network, api.metadataLatest, methods, apis, outDir);
 
@@ -34,7 +37,7 @@ export async function generateTypes(
   runtimeApis: any[],
   outDir: string = '.',
 ) {
-  const dirPath = path.resolve(process.cwd(), outDir, network.chain);
+  const dirPath = path.resolve(outDir, network.chain);
   const defTypesFileName = path.join(dirPath, `types.ts`);
   const constsTypesFileName = path.join(dirPath, `consts.ts`);
   const queryTypesFileName = path.join(dirPath, `query.ts`);
@@ -46,7 +49,7 @@ export async function generateTypes(
   const txFileName = path.join(dirPath, `tx.ts`);
 
   if (!fs.existsSync(dirPath)) {
-    fs.mkdirSync(dirPath);
+    fs.mkdirSync(dirPath, { recursive: true });
   }
 
   const typesGen = new TypesGen(metadata);

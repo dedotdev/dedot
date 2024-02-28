@@ -28,10 +28,13 @@ const main = () => {
     if (file === 'package.json') {
       const pkgJson = JSON.parse(fileContent);
       pkgJson.main = './cjs/index.js';
-      pkgJson.module = './index.js';
-      pkgJson.types = './index.d.ts';
 
-      if (pkgJson.name !== '@dedot/chaintypes') {
+      if (pkgJson.name !== '@dedot/cli') {
+        pkgJson.module = './index.js';
+        pkgJson.types = './index.d.ts';
+      }
+
+      if (!['@dedot/chaintypes', '@dedot/cli'].includes(pkgJson.name)) {
         pkgJson.exports = {
           '.': {
             import: {
