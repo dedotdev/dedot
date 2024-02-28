@@ -2,7 +2,7 @@ import * as $ from '@dedot/shape';
 import { $DispatchError } from './DispatchError';
 import { $TransactionValidityError } from './TransactionValidityError';
 
-export const $DispatchOutcome = $.Result($.Null, $DispatchError);
+export const $DispatchOutcome = $.Result($.Tuple(), $DispatchError);
 export type DispatchOutcome = $.Input<typeof $DispatchOutcome>;
 
 /**
