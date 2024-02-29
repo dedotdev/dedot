@@ -4,6 +4,7 @@ import MockProvider from './MockProvider';
 import { SubstrateApi } from '@dedot/chaintypes';
 import { stringCamelCase, stringPascalCase } from '@polkadot/util';
 import { RuntimeVersion } from '@dedot/codecs';
+import { AnyShape } from '@dedot/shape';
 
 describe('Dedot', () => {
   it('should throws error for invalid endpoint', () => {
@@ -187,10 +188,10 @@ describe('Dedot', () => {
                     params: [
                       {
                         name: 'testParam',
-                        codec: $testParamCodec,
+                        codec: $testParamCodec as unknown as AnyShape,
                       },
                     ],
-                    codec: $mockCodec,
+                    codec: $mockCodec as unknown as AnyShape,
                   },
                 },
                 version: 2,
@@ -199,9 +200,9 @@ describe('Dedot', () => {
           },
         });
 
-        await api.call.metadata.testMethod();
+        await api.call.metadata.testMethod('hello');
 
-        expect($testParamCodec.tryEncode).toBeCalled();
+        expect($testParamCodec.tryEncode).toBeCalledWith('hello');
         expect($mockCodec.tryDecode).toBeCalled();
       });
     });
