@@ -1,6 +1,5 @@
 import { RuntimeApiMethodSpec, RuntimeApiName, RuntimeApiSpec, RuntimeApisSpec } from '@dedot/types';
-import { blake2AsHex } from '@polkadot/util-crypto';
-import { stringSnakeCase } from '@dedot/utils';
+import { stringSnakeCase, blake2AsHex } from '@dedot/utils';
 import { discovery } from './discovery';
 import { babe } from './babe';
 import { metadata } from './metadata';

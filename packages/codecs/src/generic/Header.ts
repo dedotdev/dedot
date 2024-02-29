@@ -1,4 +1,4 @@
-import { hexToBn, hexToString, isHex } from '@polkadot/util';
+import { hexToString, isHex } from '@polkadot/util';
 import * as $ from '@dedot/shape';
 import { HexString } from '@dedot/utils';
 import { $Hash } from './Hash';
@@ -11,14 +11,10 @@ export const $HeaderBlockNumber = $.withMetadata($.metadata('$HeaderBlockNumber'
 
 $HeaderBlockNumber.registerDecoder(
   (input) => isHex(input, -1, true),
-  ($shape, input) =>
-    hexToBn(input, {
-      // TODO make this more clear?
-      // BlockNumber in $Header codec is a hex in BE format
-      // So Le=false here is to support decode block number in $Header
-      isLe: false,
-      isNegative: false,
-    }).toNumber(),
+  // TODO make this more clear?
+  // BlockNumber in $Header codec is a hex in BE format
+  // So Le=false here is to support decode block number in $Header
+  (_, input) => parseInt(input, 16),
 );
 
 export class ConsensusEngineId {

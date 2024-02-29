@@ -10,6 +10,7 @@
     "url": "https://github.com/dedotdev/dedot.git"
   },
   "main": "src/index.ts",
+  "sideEffects": false,
   "type": "module",
   "scripts": {
     "build": "tsc --project tsconfig.build.json && tsc --project tsconfig.build.cjs.json",
@@ -21,7 +22,9 @@
     "directory": "dist"
   },
   "dependencies": {
-    "@polkadot/util": "^12.6.2"
+    "@noble/hashes": "^1.3.3",
+    "@polkadot/util": "^12.6.2",
+    "@scure/base": "^1.1.5"
   },
   "license": "Apache-2.0"
 }

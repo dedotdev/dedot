@@ -1,5 +1,27 @@
 import * as $ from '@dedot/shape';
-import { max, min, nextPowerOfTwo, numOfTrailingZeroes } from '@dedot/utils';
+import { bnMax, bnMin } from '@dedot/utils';
+
+/**
+ * Returns the number of trailing zeros in the binary representation of `n`.
+ */
+export function numOfTrailingZeroes(n: bigint) {
+  let i = 0n;
+  while (!(n & 1n)) {
+    i++;
+    n >>= 1n; // /2n
+  }
+  return i;
+}
+
+/**
+ * Returns the smallest power of two greater than or equal to n.
+ */
+export function nextPowerOfTwo(n: bigint) {
+  let p = 1n;
+  while (n > p) p <<= 1n; // p *= 2n
+
+  return p;
+}
 
 /**
  * @description An era codec to describe the longevity of a transaction.
@@ -12,9 +34,9 @@ export const $Era: $.Shape<EraLike, Era> = $.createShape({
       input = input as MortalInputs;
 
       // Ref: https://github.com/paritytech/polkadot-sdk/blob/0e49ed72aa365475e30069a5c30e251a009fdacf/substrate/primitives/runtime/src/generic/era.rs#L65-L72
-      const adjustedPeriod = min(max(nextPowerOfTwo(input.period), 4n), 1n << 16n);
+      const adjustedPeriod = bnMin(bnMax(nextPowerOfTwo(input.period), 4n), 1n << 16n);
       const phase = input.current % adjustedPeriod;
-      const quantizeFactor = max(adjustedPeriod >> 12n, 1n);
+      const quantizeFactor = bnMax(adjustedPeriod >> 12n, 1n);
       const quantizedPhase = (phase / quantizeFactor) * quantizeFactor;
       input = { tag: 'Mortal', value: { period: adjustedPeriod, phase: quantizedPhase } };
     }
@@ -26,9 +48,9 @@ export const $Era: $.Shape<EraLike, Era> = $.createShape({
       if (input.tag === 'Immortal') {
         buffer.array[buffer.index++] = 0;
       } else if (input.tag === 'Mortal') {
-        const quantizeFactor = max(input.value.period >> 12n, 1n);
+        const quantizeFactor = bnMax(input.value.period >> 12n, 1n);
         const encoded =
-          min(max(numOfTrailingZeroes(input.value.period) - 1n, 1n), 15n) |
+          bnMin(bnMax(numOfTrailingZeroes(input.value.period) - 1n, 1n), 15n) |
           ((input.value.phase / quantizeFactor) << 4n);
         $.u16.subEncode(buffer, Number(encoded));
       }
@@ -44,7 +66,7 @@ export const $Era: $.Shape<EraLike, Era> = $.createShape({
       buffer.index += 2;
 
       const period = 2n << encoded % (1n << 4n);
-      const quantizeFactor = max(period >> 12n, 1n);
+      const quantizeFactor = bnMax(period >> 12n, 1n);
       const phase = (encoded >> 4n) * quantizeFactor;
       if (period >= 4n && phase < period) {
         return { tag: 'Mortal', value: { period, phase } };

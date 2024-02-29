@@ -8,7 +8,7 @@ import {
   StorageKey,
 } from '@dedot/codecs';
 import { hexToU8a, stringCamelCase, u8aConcat, u8aToHex } from '@polkadot/util';
-import { xxhashAsU8a } from '@polkadot/util-crypto';
+import { xxhashAsU8a } from '@dedot/utils';
 
 /**
  * @name QueryableStorage

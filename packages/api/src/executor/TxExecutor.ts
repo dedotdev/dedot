@@ -19,7 +19,7 @@ import { Dedot } from '../client';
 import { IKeyringPair } from '@polkadot/types/types';
 import { ExtraSignedExtension, SubmittableResult } from '../extrinsic';
 import { SignOptions } from '@polkadot/keyring/types';
-import { blake2AsHex, blake2AsU8a } from '@polkadot/util-crypto';
+import { blake2AsHex, blake2AsU8a } from '@dedot/utils';
 
 export function isKeyringPair(account: AddressOrPair): account is IKeyringPair {
   return isFunction((account as IKeyringPair).sign);

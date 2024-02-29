@@ -10,12 +10,12 @@
     "url": "https://github.com/dedotdev/dedot.git"
   },
   "main": "src/index.ts",
+  "sideEffects": false,
   "type": "module",
   "dependencies": {
     "@dedot/shape": "workspace:*",
     "@dedot/utils": "workspace:*",
     "@polkadot/util": "^12.6.2",
-    "@polkadot/util-crypto": "^12.6.2",
     "lodash.clonedeep": "^4.5.0"
   },
   "scripts": {

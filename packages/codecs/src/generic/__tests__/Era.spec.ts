@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { $Era } from '../Era';
+import { $Era, nextPowerOfTwo, numOfTrailingZeroes } from '../Era';
 
 /**
  * Ref: https://github.com/paritytech/polkadot-sdk/blob/0e49ed72aa365475e30069a5c30e251a009fdacf/substrate/primitives/runtime/src/generic/era.rs#L182-L232
@@ -41,5 +41,26 @@ describe('Era', () => {
     const e = $Era.tryEncode({ period: 32768n, current: 20000n });
     expect(e).toEqual(new Uint8Array([14 + (2500 % 16) * 16, 2500 / 16]));
     expect($Era.tryDecode(e)).toEqual({ tag: 'Mortal', value: { period: 32768n, phase: 20000n } });
+  });
+});
+
+describe('nextPowerOfTwo', () => {
+  it('should return next power of two', () => {
+    expect(nextPowerOfTwo(2n)).toEqual(2n);
+    expect(nextPowerOfTwo(3n)).toEqual(4n);
+    expect(nextPowerOfTwo(4n)).toEqual(4n);
+    expect(nextPowerOfTwo(5n)).toEqual(8n);
+    expect(nextPowerOfTwo(10n)).toEqual(16n);
+    expect(nextPowerOfTwo(16n)).toEqual(16n);
+    expect(nextPowerOfTwo(20n)).toEqual(32n);
+  });
+});
+describe('numOfTrailingZeroes', () => {
+  it('should return number of trailing zeros', () => {
+    expect(numOfTrailingZeroes(1n)).toEqual(0n); // 0b1
+    expect(numOfTrailingZeroes(2n)).toEqual(1n); // 0b10
+    expect(numOfTrailingZeroes(3n)).toEqual(0n); // 0b11
+    expect(numOfTrailingZeroes(4n)).toEqual(2n); // 0b100
+    expect(numOfTrailingZeroes(10n)).toEqual(1n); // 0b1010
   });
 });

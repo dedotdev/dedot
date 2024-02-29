@@ -1,6 +1,6 @@
 import { SignedExtension } from '../SignedExtension';
-import { bnToHex } from '@polkadot/util';
 import { SignerPayloadJSON } from '@polkadot/types/types';
+import { bnToHex } from '@dedot/utils';
 
 export class ChargeTransactionPayment extends SignedExtension<bigint> {
   async init(): Promise<void> {
@@ -9,7 +9,7 @@ export class ChargeTransactionPayment extends SignedExtension<bigint> {
 
   toPayload(): Partial<SignerPayloadJSON> {
     return {
-      tip: bnToHex(this.data, { isLe: false }),
+      tip: bnToHex(this.data),
     };
   }
 }

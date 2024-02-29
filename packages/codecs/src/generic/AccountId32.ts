@@ -1,8 +1,6 @@
 import { isHex, isString, isU8a, u8aToHex } from '@polkadot/util';
-import { decodeAddress, encodeAddress } from '@polkadot/util-crypto';
-import type { Prefix } from '@polkadot/util-crypto/types';
 import * as $ from '@dedot/shape';
-import { HexString } from '@dedot/utils';
+import { decodeAddress, encodeAddress, HexString, SS58FormatPrefix } from '@dedot/utils';
 import { registerLooseCodecType } from '../codectypes';
 
 export const accountId32ToHex = (input: AccountId32Like): HexString => {
@@ -26,7 +24,7 @@ export class AccountId32 {
     this.raw = accountId32ToHex(input);
   }
 
-  address(ss58Format?: Prefix) {
+  address(ss58Format?: SS58FormatPrefix) {
     return encodeAddress(this.raw, ss58Format);
   }
 

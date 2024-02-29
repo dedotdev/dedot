@@ -1,7 +1,7 @@
 import { SignedExtension } from '../SignedExtension';
 import { SignerPayloadJSON } from '@polkadot/types/types';
-import { bnToHex, u8aToHex } from '@polkadot/util';
-import { assert } from '@dedot/utils';
+import { u8aToHex } from '@polkadot/util';
+import { assert, bnToHex } from '@dedot/utils';
 
 /**
  * @name ChargeAssetTxPayment
@@ -20,7 +20,7 @@ export class ChargeAssetTxPayment extends SignedExtension<{ tip: bigint; assetId
     const { tip, assetId } = this.data;
 
     return {
-      tip: bnToHex(tip, { isLe: false }),
+      tip: bnToHex(tip),
       // @ts-ignore
       assetId: this.#encodeAssetId(assetId),
     };
