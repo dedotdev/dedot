@@ -1,6 +1,6 @@
 import * as $ from '@dedot/shape';
 import { $AccountId32 } from '../../generic';
-import { $H256, $H512 } from '../../known';
+import { $H256, $H512 } from '../primitives';
 
 export const $BeefyPayloadId = $.FixedHex(2);
 

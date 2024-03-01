@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it } from 'vitest';
-import { $AccountId20, $AccountId32, $Hash, $Metadata, $MetadataV14, $StorageKey } from '@dedot/codecs';
+import { $AccountId20, $AccountId32, $Hash, $Metadata, $MetadataV14, $StorageKey } from '../../codecs';
 import staticSubstrate from '@polkadot/types-support/metadata/static-substrate';
 import { CodecRegistry } from '../CodecRegistry';
 import * as $ from '@dedot/shape';

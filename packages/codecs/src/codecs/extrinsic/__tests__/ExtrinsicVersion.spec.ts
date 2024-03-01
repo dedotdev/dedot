@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { $ExtrinsicVersion, ExtrinsicVersion } from '../ExtrinsicVersion';
+import { $ExtrinsicVersion } from '../ExtrinsicVersion';
 import { u8aToHex } from '@polkadot/util';
 
 describe('ExtrinsicVersion', () => {

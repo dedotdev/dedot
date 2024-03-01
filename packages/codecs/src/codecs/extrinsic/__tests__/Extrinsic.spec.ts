@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it } from 'vitest';
 import { $Metadata } from '../../metadata';
-import { CodecRegistry } from '../../registry';
+import { CodecRegistry } from '../../../registry';
 import staticSubstrateV14 from '@polkadot/types-support/metadata/v14/kusama-hex';
 import { AccountId32, Extrinsic } from '@dedot/codecs';
 import * as $ from '@dedot/shape';

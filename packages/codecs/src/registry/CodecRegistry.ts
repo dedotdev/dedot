@@ -1,12 +1,9 @@
 import * as $ from '@dedot/shape';
-import * as Codecs from '../codecs';
-import { DispatchError, ModuleError } from '../codecs';
-import { PalletErrorMetadataLatest } from '../metadata/types';
-import { MetadataLatest, TypeId } from '../metadata';
-import { PortableCodecRegistry } from './PortableCodecRegistry';
-import { CodecType, knownCodecTypes, normalizeCodecName } from '../codectypes';
-import { PortableType } from '../metadata/scale_info';
 import { hexToU8a, isObject } from '@polkadot/util';
+import * as Codecs from '../codecs';
+import { DispatchError, ModuleError, PalletErrorMetadataLatest, MetadataLatest, TypeId, PortableType } from '../codecs';
+import { PortableCodecRegistry } from './PortableCodecRegistry';
+import { CodecType, knownCodecTypes, normalizeCodecName } from '../codecs/codectypes';
 
 type KnownPath = string | RegExp;
 

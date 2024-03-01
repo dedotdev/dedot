@@ -1,4 +1,4 @@
-import { CodecRegistry } from '../registry';
+import { CodecRegistry } from '../../registry';
 import * as $ from '@dedot/shape';
 import { assert } from '@dedot/utils';
 import { $ExtrinsicVersion } from './ExtrinsicVersion';
