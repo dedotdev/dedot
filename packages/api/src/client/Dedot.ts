@@ -15,8 +15,8 @@ import {
 import { newProxyChain } from '../proxychain';
 import { ApiOptions, MetadataKey, NetworkEndpoint, NormalizedApiOptions } from '../types';
 import { ensurePresence } from '@dedot/utils';
-import localforage from 'localforage';
 import { hexAddPrefix, u8aToHex } from '@polkadot/util';
+import { IStorage, LocalStorage } from '@dedot/storage';
 
 export const KEEP_ALIVE_INTERVAL = 10_000; // in ms
 export const CATCH_ALL_METADATA_KEY: MetadataKey = `RAW_META/ALL`;
@@ -71,7 +71,7 @@ export class Dedot<ChainApi extends GenericSubstrateApi = SubstrateApi> {
   #runtimeVersion?: RuntimeVersion;
   #chainProperties?: ChainProperties;
   #runtimeChain?: string;
-  #localCache?: LocalForage;
+  #localCache?: IStorage;
 
   #runtimeSubscriptionUnsub?: Unsub;
   #healthTimer?: ReturnType<typeof setInterval>;
@@ -142,25 +142,18 @@ export class Dedot<ChainApi extends GenericSubstrateApi = SubstrateApi> {
   }
 
   async #initializeLocalCache() {
+    if (!this.#options.cacheMetadata) return;
+
     // Initialize local cache
-    if (this.#options.cacheMetadata) {
-      try {
-        // TODO add a custom driver to support nodejs
-        this.#localCache = localforage.createInstance({
-          driver: [localforage.INDEXEDDB, localforage.LOCALSTORAGE],
-          name: 'DedotCache',
-          storeName: 'LocalCache',
-        });
+    if (this.#options.cacheStorage) {
+      this.#localCache = this.#options.cacheStorage;
+      return;
+    }
 
-        // Verify the storage is working
-        await this.#localCache.setItem('testKey', 'testValue');
-        await this.#localCache.removeItem('testKey');
-      } catch (e: any) {
-        this.#localCache = undefined;
-        this.#options.cacheMetadata = false;
-
-        console.error('Cannot initialize local cache in this environment, disable metadata caching');
-      }
+    try {
+      this.#localCache = new LocalStorage();
+    } catch {
+      throw new Error('localStorage is not available for caching, please provide a cacheStorage option');
     }
   }
 
@@ -182,7 +175,7 @@ export class Dedot<ChainApi extends GenericSubstrateApi = SubstrateApi> {
       if (this.#localCache && this.#options.cacheMetadata) {
         if (!metadata) {
           try {
-            const cachedRawMetadata = await this.#localCache.getItem(metadataKey);
+            const cachedRawMetadata = await this.#localCache.get(metadataKey);
             if (cachedRawMetadata) {
               metadata = $Metadata.tryDecode(cachedRawMetadata);
             }
@@ -200,7 +193,7 @@ export class Dedot<ChainApi extends GenericSubstrateApi = SubstrateApi> {
     }
 
     if (shouldUpdateCache && this.#localCache) {
-      await this.#localCache.setItem(metadataKey, u8aToHex($Metadata.tryEncode(metadata)));
+      await this.#localCache.set(metadataKey, u8aToHex($Metadata.tryEncode(metadata)));
     }
 
     if (!metadata) {

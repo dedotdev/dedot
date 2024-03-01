@@ -23,6 +23,9 @@
     },
     {
       "path": "../specs/tsconfig.json"
+    },
+    {
+      "path": "../storage/tsconfig.json"
     }
   ]
 }

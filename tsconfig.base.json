@@ -36,6 +36,8 @@
       "@dedot/types/*": ["../types/src/*"],
       "@dedot/utils": ["../utils/src"],
       "@dedot/utils/*": ["../utils/src/*"],
+      "@dedot/storage": ["../storage/src"],
+      "@dedot/storage/*": ["../storage/src/*"],
       "dedot": ["../api/src"],
       "dedot/*": ["../api/src/*"]
     }
