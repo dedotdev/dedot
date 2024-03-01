@@ -4,27 +4,27 @@
     "baseUrl": "./",
     "outDir": "dist",
     "rootDir": "src",
-    "declarationDir": "dist"
+    "declarationDir": "dist",
   },
   "include": ["src/**/*"],
   "references": [
     {
-      "path": "../utils/tsconfig.json"
+      "path": "../utils/tsconfig.json",
     },
     {
-      "path": "../shape/tsconfig.json"
+      "path": "../shape/tsconfig.json",
     },
     {
-      "path": "../codecs/tsconfig.json"
+      "path": "../codecs/tsconfig.json",
     },
     {
-      "path": "../types/tsconfig.json"
+      "path": "../types/tsconfig.json",
     },
     {
-      "path": "../chaintypes/tsconfig.json"
+      "path": "../chaintypes/tsconfig.json",
     },
     {
-      "path": "../specs/tsconfig.json"
-    }
-  ]
+      "path": "../storage/tsconfig.json",
+    },
+  ],
 }

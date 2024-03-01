@@ -2,6 +2,7 @@ import { ProviderInterface } from '@polkadot/rpc-provider/types';
 import { HexString } from '@dedot/utils';
 import { AnySignedExtension } from './extrinsic';
 import { RuntimeApiSpec } from '@dedot/types';
+import type { IStorage } from '@dedot/storage';
 
 export type NetworkEndpoint = string;
 export type MetadataKey = `RAW_META/${string}`;
@@ -22,6 +23,7 @@ export interface ApiOptions {
    * @default: false
    */
   cacheMetadata?: boolean;
+  cacheStorage?: IStorage;
   /**
    * @description Metadata is usually downloaded from chain via RPC upon API initialization,
    * We can supply the metadata directly via this option to skip the download metadata step.
