@@ -15,7 +15,7 @@ describe('Header', () => {
       expect($HeaderBlockNumber.tryDecode('0x1231da1')).toEqual(19078561);
     });
 
-    it('should not impact original $.u32 codec', () => {
+    it('should not impact original $compactU32 codec', () => {
       expect($.compactU32.tryDecode('0x3e1c3d00')).toEqual(1001231);
     });
   });

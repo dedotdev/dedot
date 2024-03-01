@@ -7,7 +7,7 @@ import { registerLooseCodecType } from '../codectypes';
 export const $BlockNumber = $.withMetadata($.metadata('$BlockNumber'), $.u32);
 export type BlockNumber = number;
 
-export const $HeaderBlockNumber = $.compactU32.clone();
+export const $HeaderBlockNumber = $.withMetadata($.metadata('$HeaderBlockNumber'), $.compactU32);
 
 $HeaderBlockNumber.registerDecoder(
   (input) => isHex(input, -1, true),
