@@ -1,4 +1,4 @@
-import { RuntimeApiMethodsSpec, RuntimeApisModule } from '@dedot/types';
+import { RuntimeApiMethodsSpec } from '@dedot/types';
 
 const V1_V2_SHARED: RuntimeApiMethodsSpec = {
   currentEpoch: {
@@ -74,29 +74,27 @@ const V1_V2_SHARED: RuntimeApiMethodsSpec = {
 /**
  * Ref: https://github.com/paritytech/polkadot-sdk/blob/1f023deab8d021c5bab08731e13aa12590ed4026/substrate/primitives/consensus/babe/src/lib.rs#L377-L427
  */
-export const babe: RuntimeApisModule = {
-  BabeApi: [
-    {
-      methods: {
-        configuration: {
-          docs: 'Return the configuration for BABE.',
-          params: [],
-          type: 'BabeConfiguration',
-        },
-        ...V1_V2_SHARED,
+export const BabeApi = [
+  {
+    methods: {
+      configuration: {
+        docs: 'Return the configuration for BABE.',
+        params: [],
+        type: 'BabeConfiguration',
       },
-      version: 2,
+      ...V1_V2_SHARED,
     },
-    {
-      methods: {
-        configuration: {
-          docs: 'Return the configuration for BABE. Version 1.',
-          params: [],
-          type: 'BabeConfigurationV1',
-        },
-        ...V1_V2_SHARED,
+    version: 2,
+  },
+  {
+    methods: {
+      configuration: {
+        docs: 'Return the configuration for BABE. Version 1.',
+        params: [],
+        type: 'BabeConfigurationV1',
       },
-      version: 1,
+      ...V1_V2_SHARED,
     },
-  ],
-};
+    version: 1,
+  },
+];

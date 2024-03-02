@@ -1,4 +1,4 @@
-import { RuntimeApisModule, RuntimeApiMethodsSpec } from '@dedot/types';
+import { RuntimeApiMethodsSpec, RuntimeApiSpec } from '@dedot/types';
 
 const V5_V10_SHARED: RuntimeApiMethodsSpec = {
   validators: {
@@ -297,30 +297,28 @@ const V9_V10_SHARED: RuntimeApiMethodsSpec = {
 /**
  * Ref https://github.com/paritytech/polkadot-sdk/blob/a84dd0dba58d51503b8942360aa4fb30a5a96af5/polkadot/primitives/src/runtime_api.rs#L129-L134
  */
-export const parachains: RuntimeApisModule = {
-  ParachainHost: [
-    { methods: { ...V5_V10_SHARED }, version: 5 },
-    { methods: { ...V6_V10_SHARED, ...V5_V10_SHARED }, version: 6 },
-    { methods: { ...V7_V10_SHARED, ...V6_V10_SHARED, ...V5_V10_SHARED }, version: 7 },
-    { methods: { ...V8_V10_SHARED, ...V7_V10_SHARED, ...V6_V10_SHARED, ...V5_V10_SHARED }, version: 8 },
-    {
-      methods: { ...V9_V10_SHARED, ...V8_V10_SHARED, ...V7_V10_SHARED, ...V6_V10_SHARED, ...V5_V10_SHARED },
-      version: 9,
-    },
-    {
-      methods: {
-        approvalVotingParams: {
-          docs: 'Approval voting configuration parameters',
-          params: [],
-          type: 'ApprovalVotingParams',
-        },
-        ...V5_V10_SHARED,
-        ...V6_V10_SHARED,
-        ...V7_V10_SHARED,
-        ...V8_V10_SHARED,
-        ...V9_V10_SHARED,
+export const ParachainHost: RuntimeApiSpec[] = [
+  { methods: { ...V5_V10_SHARED }, version: 5 },
+  { methods: { ...V6_V10_SHARED, ...V5_V10_SHARED }, version: 6 },
+  { methods: { ...V7_V10_SHARED, ...V6_V10_SHARED, ...V5_V10_SHARED }, version: 7 },
+  { methods: { ...V8_V10_SHARED, ...V7_V10_SHARED, ...V6_V10_SHARED, ...V5_V10_SHARED }, version: 8 },
+  {
+    methods: { ...V9_V10_SHARED, ...V8_V10_SHARED, ...V7_V10_SHARED, ...V6_V10_SHARED, ...V5_V10_SHARED },
+    version: 9,
+  },
+  {
+    methods: {
+      approvalVotingParams: {
+        docs: 'Approval voting configuration parameters',
+        params: [],
+        type: 'ApprovalVotingParams',
       },
-      version: 10,
+      ...V5_V10_SHARED,
+      ...V6_V10_SHARED,
+      ...V7_V10_SHARED,
+      ...V8_V10_SHARED,
+      ...V9_V10_SHARED,
     },
-  ],
-};
+    version: 10,
+  },
+];

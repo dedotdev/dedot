@@ -32,10 +32,4 @@ export type RuntimeApiMethodName = string;
 
 export type RuntimeApiName = string;
 
-export type ModuleName = string;
-
 export type RuntimeApiMethodsSpec = Record<RuntimeApiMethodName, RuntimeApiMethodSpec>;
-
-export type RuntimeApisModule = Record<RuntimeApiName, RuntimeApiSpec[]>;
-
-export type RuntimeApisSpec = Record<ModuleName, RuntimeApisModule>;
