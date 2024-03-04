@@ -1,4 +1,12 @@
+import * as $ from '@dedot/shape';
 import { RuntimeApiSpec } from '@dedot/types';
+import {
+  $AccountId32,
+  $SetId,
+  $OpaqueKeyOwnershipProof,
+  $AuthorityList,
+  $GrandpaEquivocationProof,
+} from '@dedot/codecs';
 
 /**
  * Ref: https://github.com/paritytech/polkadot-sdk/blob/ebcf0a0f1cab2d43718ba96d26e5687f4d14580a/substrate/primitives/consensus/grandpa/src/lib.rs#L483-L535
@@ -10,6 +18,7 @@ export const GrandpaApi: RuntimeApiSpec[] = [
         docs: 'Get current GRANDPA authority set id.',
         params: [],
         type: 'SetId',
+        codec: $SetId,
       },
       generateKeyOwnershipProof: {
         docs: [
@@ -24,13 +33,16 @@ export const GrandpaApi: RuntimeApiSpec[] = [
           {
             name: 'setId',
             type: 'SetId',
+            codec: $SetId,
           },
           {
             name: 'authorityId',
             type: 'AccountId32',
+            codec: $AccountId32,
           },
         ],
         type: 'Option<OpaqueKeyOwnershipProof>',
+        codec: $.Option($OpaqueKeyOwnershipProof),
       },
       grandpaAuthorities: {
         docs: [
@@ -48,6 +60,7 @@ export const GrandpaApi: RuntimeApiSpec[] = [
         ],
         params: [],
         type: 'AuthorityList',
+        codec: $AuthorityList,
       },
       submitReportEquivocationUnsignedExtrinsic: {
         docs: [
@@ -64,13 +77,16 @@ export const GrandpaApi: RuntimeApiSpec[] = [
           {
             name: 'equivocationProof',
             type: 'GrandpaEquivocationProof',
+            codec: $GrandpaEquivocationProof,
           },
           {
             name: 'keyOwnerProof',
             type: 'OpaqueKeyOwnershipProof',
+            codec: $OpaqueKeyOwnershipProof,
           },
         ],
         type: 'Option<[]>',
+        codec: $.Option($.Tuple()),
       },
     },
     version: 3,

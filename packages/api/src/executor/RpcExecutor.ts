@@ -85,10 +85,11 @@ export class RpcExecutor<ChainApi extends GenericSubstrateApi = SubstrateApi> ex
       return undefined;
     }
 
-    const { type, isScale } = callSpec;
+    const { type, isScale, codec } = callSpec;
 
     if (isScale) {
-      return this.registry.findCodec(type).tryDecode(raw);
+      assert(codec, 'Codec not found to decode response');
+      return codec.tryDecode(raw);
     }
 
     if (isNativeType(type)) {
@@ -99,14 +100,14 @@ export class RpcExecutor<ChainApi extends GenericSubstrateApi = SubstrateApi> ex
   }
 
   tryEncode(paramSpec: RpcParamSpec, value: any): any {
-    const { type, isScale, isOptional } = paramSpec;
+    const { isScale, codec, isOptional } = paramSpec;
     if (isScale) {
       if (isOptional && (value === undefined || value === null)) {
         return null;
       }
 
-      const $codec = this.registry.findCodec(type);
-      return u8aToHex($codec.tryEncode(value));
+      assert(codec, 'Codec not found to encode params');
+      return u8aToHex(codec.tryEncode(value));
     }
 
     // TODO generalize this!

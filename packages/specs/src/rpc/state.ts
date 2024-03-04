@@ -1,5 +1,6 @@
 import { RpcModuleSpec } from '@dedot/types';
 import { atBlockHashParam } from './shared';
+import { $Metadata } from '@dedot/codecs';
 
 export const state: RpcModuleSpec = {
   call: {
@@ -83,6 +84,7 @@ export const state: RpcModuleSpec = {
     ],
     type: 'Metadata',
     isScale: true,
+    codec: $Metadata,
   },
   getRuntimeVersion: {
     docs: 'Get the runtime version.',

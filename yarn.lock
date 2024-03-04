@@ -409,6 +409,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@dedot/specs@workspace:packages/specs"
   dependencies:
+    "@dedot/codecs": "workspace:*"
     "@dedot/types": "workspace:*"
   languageName: unknown
   linkType: soft

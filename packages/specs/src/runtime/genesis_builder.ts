@@ -1,4 +1,6 @@
+import * as $ from '@dedot/shape';
 import { RuntimeApiSpec } from '@dedot/types';
+import { $Bytes, $Text } from '@dedot/codecs';
 
 /**
  * Ref: https://github.com/paritytech/polkadot-sdk/blob/9a5d9a586e5a1c27bf29d3727b5edc89c59f0398/substrate/primitives/genesis-builder/src/lib.rs#L35-L45
@@ -15,6 +17,7 @@ export const GenesisBuilder: RuntimeApiSpec[] = [
         ],
         params: [],
         type: 'Bytes',
+        codec: $Bytes,
       },
       buildConfig: {
         docs: [
@@ -30,9 +33,11 @@ export const GenesisBuilder: RuntimeApiSpec[] = [
           {
             name: 'json',
             type: 'Bytes',
+            codec: $Bytes,
           },
         ],
         type: 'Result<[], Text>',
+        codec: $.Result($.Tuple(), $Text),
       },
     },
     version: 1,

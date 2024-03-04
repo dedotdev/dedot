@@ -1,4 +1,15 @@
+import * as $ from '@dedot/shape';
 import { RuntimeApiSpec } from '@dedot/types';
+import {
+  $AccountId32,
+  $BeefyAuthoritySet,
+  $BeefyEquivocationProof,
+  $BeefyNextAuthoritySet,
+  $BlockNumber,
+  $OpaqueKeyOwnershipProof,
+  $ValidatorSet,
+  $ValidatorSetId,
+} from '@dedot/codecs';
 
 /**
  * Reference:
@@ -12,11 +23,13 @@ export const BeefyApi: RuntimeApiSpec[] = [
         docs: 'Return the block number where BEEFY consensus is enabled/started',
         params: [],
         type: 'Option<BlockNumber>',
+        codec: $.Option($BlockNumber),
       },
       validatorSet: {
         docs: 'Return the current active BEEFY validator set',
         params: [],
         type: 'Option<ValidatorSet>',
+        codec: $.Option($ValidatorSet),
       },
       submitReportEquivocationUnsignedExtrinsic: {
         docs: 'Submits an unsigned extrinsic to report an equivocation.',
@@ -24,13 +37,16 @@ export const BeefyApi: RuntimeApiSpec[] = [
           {
             name: 'equivocationProof',
             type: 'BeefyEquivocationProof',
+            codec: $BeefyEquivocationProof,
           },
           {
             name: 'keyOwnerProof',
             type: 'OpaqueKeyOwnershipProof',
+            codec: $OpaqueKeyOwnershipProof,
           },
         ],
         type: 'Option<[]>',
+        codec: $.Option($.Tuple()),
       },
       generateKeyOwnershipProof: {
         docs: 'Generates a proof of key ownership for the given authority in the given set.',
@@ -38,13 +54,16 @@ export const BeefyApi: RuntimeApiSpec[] = [
           {
             name: 'setId',
             type: 'ValidatorSetId',
+            codec: $ValidatorSetId,
           },
           {
             name: 'authorityId',
             type: 'AccountId32',
+            codec: $AccountId32,
           },
         ],
         type: 'Option<OpaqueKeyOwnershipProof>',
+        codec: $.Option($OpaqueKeyOwnershipProof),
       },
     },
     version: 3,
@@ -58,11 +77,13 @@ export const BeefyMmrApi: RuntimeApiSpec[] = [
         docs: 'Return the currently active BEEFY authority set proof.',
         params: [],
         type: 'BeefyAuthoritySet',
+        codec: $BeefyAuthoritySet,
       },
       nextAuthoritySetProof: {
         docs: 'Return the next/queued BEEFY authority set proof.',
         params: [],
         type: 'BeefyNextAuthoritySet',
+        codec: $BeefyNextAuthoritySet,
       },
     },
     version: 1,

@@ -1,4 +1,6 @@
+import * as $ from '@dedot/shape';
 import { RuntimeApiSpec } from '@dedot/types';
+import { $Bytes, $KeyTypeId } from '@dedot/codecs';
 
 /**
  * Ref: https://github.com/paritytech/polkadot-sdk/blob/43415ef58c143b985e09015cd000dbd65f6d3997/substrate/primitives/session/src/runtime_api.rs#L21-L31
@@ -20,9 +22,11 @@ export const SessionKeys: RuntimeApiSpec[] = [
           {
             name: 'seed',
             type: 'Option<Bytes>',
+            codec: $.Option($Bytes),
           },
         ],
         type: 'Bytes',
+        codec: $Bytes,
       },
       decodeSessionKeys: {
         docs: ['Decode the given public session key', '\n', 'Returns the list of public raw public keys + key typ'],
@@ -30,9 +34,11 @@ export const SessionKeys: RuntimeApiSpec[] = [
           {
             name: 'encoded',
             type: 'Bytes',
+            codec: $Bytes,
           },
         ],
         type: 'Option<Array<[Bytes, KeyTypeId]>>',
+        codec: $.Option($.Array($.Tuple($Bytes, $KeyTypeId))),
       },
     },
     version: 1,

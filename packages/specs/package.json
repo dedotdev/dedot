@@ -17,6 +17,7 @@
     "clean": "rm -rf ./dist && rm -rf ./tsconfig.tsbuildinfo ./tsconfig.build.tsbuildinfo"
   },
   "dependencies": {
+    "@dedot/codecs": "workspace:*",
     "@dedot/types": "workspace:*"
   },
   "publishConfig": {

@@ -1,4 +1,5 @@
 import { RpcModuleSpec } from '@dedot/types';
+import { $ApplyExtrinsicResult } from '@dedot/codecs';
 
 export const system: RpcModuleSpec = {
   ///
@@ -178,6 +179,7 @@ export const system: RpcModuleSpec = {
     ],
     type: 'ApplyExtrinsicResult',
     isScale: true,
+    codec: $ApplyExtrinsicResult,
     alias: ['system_dryRunAt'],
   },
 };

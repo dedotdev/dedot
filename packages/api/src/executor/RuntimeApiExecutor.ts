@@ -69,10 +69,6 @@ export class RuntimeApiExecutor<ChainApi extends GenericSubstrateApi = GenericSu
       return this.registry.findPortableCodec(typeId);
     }
 
-    if (type) {
-      return this.registry.findCodec(type);
-    }
-
     throw new Error(error || 'Codec not found');
   }
 

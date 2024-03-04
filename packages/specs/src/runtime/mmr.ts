@@ -1,4 +1,14 @@
+import * as $ from '@dedot/shape';
 import { RuntimeApiSpec } from '@dedot/types';
+import {
+  $LeafIndex,
+  $Hash,
+  $MmrError,
+  $BlockNumber,
+  $GeneratedMmrProofResult,
+  $MmrEncodableOpaqueLeaf,
+  $MmrBatchProof,
+} from '@dedot/codecs';
 
 /**
  * Ref: https://github.com/paritytech/polkadot-sdk/blob/0e49ed72aa365475e30069a5c30e251a009fdacf/substrate/primitives/merkle-mountain-range/src/lib.rs#L423-L426
@@ -10,11 +20,13 @@ export const MmrApi: RuntimeApiSpec[] = [
         docs: 'Return the on-chain MMR root hash.',
         params: [],
         type: 'Result<Hash, MmrError>',
+        codec: $.Result($Hash, $MmrError),
       },
       mmrLeafCount: {
         docs: 'Return the number of MMR blocks in the chain.',
         params: [],
         type: 'Result<LeafIndex, MmrError>',
+        codec: $.Result($LeafIndex, $MmrError),
       },
       generateProof: {
         docs: [
@@ -25,13 +37,16 @@ export const MmrApi: RuntimeApiSpec[] = [
           {
             name: 'blockNumbers',
             type: 'Array<BlockNumber>',
+            codec: $.Array($BlockNumber),
           },
           {
             name: 'bestKnownBlockNumber',
             type: 'Option<BlockNumber>',
+            codec: $.Option($BlockNumber),
           },
         ],
         type: 'Result<GeneratedMmrProofResult, MmrError>',
+        codec: $.Result($GeneratedMmrProofResult, $MmrError),
       },
       verifyProof: {
         docs: [
@@ -45,13 +60,16 @@ export const MmrApi: RuntimeApiSpec[] = [
           {
             name: 'leaves',
             type: 'Array<MmrEncodableOpaqueLeaf>',
+            codec: $.Array($MmrEncodableOpaqueLeaf),
           },
           {
             name: 'proof',
             type: 'MmrBatchProof',
+            codec: $MmrBatchProof,
           },
         ],
         type: 'Result<[], MmrError>',
+        codec: $.Result($.Tuple(), $MmrError),
       },
       verifyProofStateless: {
         docs: [
@@ -67,17 +85,21 @@ export const MmrApi: RuntimeApiSpec[] = [
           {
             name: 'root',
             type: 'Hash',
+            codec: $Hash,
           },
           {
             name: 'leaves',
             type: 'Array<MmrEncodableOpaqueLeaf>',
+            codec: $.Array($MmrEncodableOpaqueLeaf),
           },
           {
             name: 'proof',
             type: 'MmrBatchProof',
+            codec: $MmrBatchProof,
           },
         ],
         type: 'Result<[], MmrError>',
+        codec: $.Result($.Tuple(), $MmrError),
       },
     },
     version: 2,
