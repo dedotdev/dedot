@@ -55,8 +55,8 @@ export const toRuntimeApiSpecs = (specs: Record<string, RuntimeApiSpec[]>): Runt
     .flat();
 };
 
-export const RuntimeApiNames: RuntimeApiName[] = Object.keys(RuntimeApis);
+export const getRuntimeApiNames = (): RuntimeApiName[] => Object.keys(RuntimeApis);
+export const getRuntimeApiSpecs = (): RuntimeApiSpec[] => toRuntimeApiSpecs(RuntimeApis);
 
-export const RuntimeApiSpecs: RuntimeApiSpec[] = toRuntimeApiSpecs(RuntimeApis);
-
-export const RuntimeApiMethodSpecs: RuntimeApiMethodSpec[] = RuntimeApiSpecs.map(toRuntimeApiMethods).flat();
+export const getRuntimeApiMethodSpecs = (): RuntimeApiMethodSpec[] =>
+  getRuntimeApiSpecs().map(toRuntimeApiMethods).flat();

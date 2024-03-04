@@ -1,5 +1,5 @@
 import { TypesGen } from './TypesGen';
-import { RuntimeApiNames, RuntimeApiSpecs } from '@dedot/specs';
+import { getRuntimeApiNames, getRuntimeApiSpecs } from '@dedot/specs';
 import { RuntimeApiMethodSpec, RuntimeApiSpec } from '@dedot/types';
 import { beautifySourceCode, commentBlock, compileTemplate } from './utils';
 import { calculateRuntimeApiHash, stringSnakeCase } from '@dedot/utils';
@@ -150,8 +150,8 @@ export class RuntimeApisGen extends RpcGen {
   }
 
   #findRuntimeApiSpec = (runtimeApiHash: string, version: number) => {
-    const runtimeApiName = RuntimeApiNames.find((one) => calculateRuntimeApiHash(one) === runtimeApiHash);
+    const runtimeApiName = getRuntimeApiNames().find((one) => calculateRuntimeApiHash(one) === runtimeApiHash);
 
-    return RuntimeApiSpecs.find((one) => one.runtimeApiName === runtimeApiName && one.version === version);
+    return getRuntimeApiSpecs().find((one) => one.runtimeApiName === runtimeApiName && one.version === version);
   };
 }
