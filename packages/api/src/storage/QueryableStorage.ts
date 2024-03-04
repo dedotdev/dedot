@@ -1,7 +1,7 @@
 import { assert, HASHERS } from '@dedot/utils';
 import {
   $StorageData,
-  CodecRegistry,
+  PortableRegistry,
   PalletDefLatest,
   StorageDataLike,
   StorageEntryLatest,
@@ -18,7 +18,7 @@ export class QueryableStorage {
   readonly pallet: PalletDefLatest;
   readonly storageEntry: StorageEntryLatest;
   constructor(
-    readonly registry: CodecRegistry,
+    readonly registry: PortableRegistry,
     readonly palletName: string,
     readonly storageItem: string,
   ) {
@@ -41,7 +41,7 @@ export class QueryableStorage {
 
       let keyTypeIds = [keyTypeId];
       if (hashers.length > 1) {
-        const { type } = this.registry.findPortableType(keyTypeId);
+        const { type } = this.registry.findType(keyTypeId);
 
         assert(type.tag === 'Tuple', 'Key type should be a tuple!');
         keyTypeIds = type.value.fields;
@@ -50,7 +50,7 @@ export class QueryableStorage {
       const keyParts = keyTypeIds.map((keyId, index) => {
         const input = extractedInputs[index];
         const hasher = HASHERS[hashers[index]];
-        const $keyCodec = this.registry.findPortableCodec(keyId);
+        const $keyCodec = this.registry.findCodec(keyId);
         return hasher($keyCodec.tryEncode(input));
       });
 
@@ -73,10 +73,10 @@ export class QueryableStorage {
       if (modifier === 'Optional') {
         return undefined;
       } else if (modifier === 'Default') {
-        return this.registry.findPortableCodec(valueTypeId).tryDecode(hexToU8a(defaultValue));
+        return this.registry.findCodec(valueTypeId).tryDecode(hexToU8a(defaultValue));
       }
     } else {
-      return this.registry.findPortableCodec(valueTypeId).tryDecode($StorageData.tryEncode(raw));
+      return this.registry.findCodec(valueTypeId).tryDecode($StorageData.tryEncode(raw));
     }
   }
 

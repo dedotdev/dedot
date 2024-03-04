@@ -1,4 +1,4 @@
-import { CodecRegistry } from '../../registry';
+import { PortableRegistry } from '../../registry';
 import { HexString, blake2AsHex } from '@dedot/utils';
 import { u8aToHex } from '@polkadot/util';
 import { Hash } from '../generic';
@@ -15,7 +15,7 @@ export class ExtrinsicV4<Address = any, Call = any, Signature = any, Extra = any
   #signature?: ExtrinsicSignatureV4<Address, Signature, Extra>;
 
   constructor(
-    public registry: CodecRegistry,
+    public registry: PortableRegistry,
     call: Call,
     signature?: ExtrinsicSignatureV4<Address, Signature, Extra>,
   ) {
@@ -42,7 +42,7 @@ export class ExtrinsicV4<Address = any, Call = any, Signature = any, Extra = any
 
   get callU8a(): Uint8Array {
     const { callTypeId } = this.registry.metadata!.extrinsic;
-    const $RuntimeCall = this.registry.findPortableCodec(callTypeId);
+    const $RuntimeCall = this.registry.findCodec(callTypeId);
     return $RuntimeCall.tryEncode(this.call);
   }
 

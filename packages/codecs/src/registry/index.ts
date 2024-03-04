@@ -1,2 +1,1 @@
-export * from './CodecRegistry';
-export * from './PortableCodecRegistry';
+export * from './PortableRegistry';

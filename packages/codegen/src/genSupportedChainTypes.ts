@@ -1,7 +1,7 @@
 import { generateTypes, generateTypesFromChain } from './index';
 import { rpc } from '@polkadot/types-support/metadata/static-substrate';
 import staticSubstrate from '@polkadot/types-support/metadata/v15/substrate-hex';
-import { $Metadata, CodecRegistry, Metadata, RuntimeVersion } from '@dedot/codecs';
+import { $Metadata, PortableRegistry, Metadata, RuntimeVersion } from '@dedot/codecs';
 import { NetworkInfo } from './types';
 import { Dedot, ConstantExecutor } from 'dedot';
 
@@ -71,7 +71,7 @@ async function run() {
 }
 
 const getRuntimeVersion = (metadata: Metadata): RuntimeVersion => {
-  const registry = new CodecRegistry(metadata.latest);
+  const registry = new PortableRegistry(metadata.latest);
   const executor = new ConstantExecutor({
     registry,
     metadataLatest: metadata.latest,

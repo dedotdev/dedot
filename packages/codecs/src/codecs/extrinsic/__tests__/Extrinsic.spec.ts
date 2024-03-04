@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it } from 'vitest';
 import { $Metadata } from '../../metadata';
-import { CodecRegistry } from '../../../registry';
+import { PortableRegistry } from '../../../registry';
 import staticSubstrateV14 from '@polkadot/types-support/metadata/v14/kusama-hex';
 import { AccountId32, Extrinsic } from '@dedot/codecs';
 import * as $ from '@dedot/shape';
@@ -25,10 +25,10 @@ const sampleTx =
   '0bc01eb1fc185f'; // value, 104.560 KSM
 
 describe('Extrinsic', () => {
-  let $Extrinsic: $.Shape<Extrinsic>, registry: CodecRegistry;
+  let $Extrinsic: $.Shape<Extrinsic>, registry: PortableRegistry;
   beforeEach(() => {
     const metadata = $Metadata.tryDecode(staticSubstrateV14);
-    registry = new CodecRegistry(metadata.latest);
+    registry = new PortableRegistry(metadata.latest);
 
     $Extrinsic = registry.$Extrinsic;
   });

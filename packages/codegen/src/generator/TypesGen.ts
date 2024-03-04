@@ -1,5 +1,5 @@
 import { stringPascalCase } from '@polkadot/util';
-import { CodecRegistry, Field, MetadataLatest, PortableType, TypeId, TypeParam } from '@dedot/codecs';
+import { PortableRegistry, Field, MetadataLatest, PortableType, TypeId, TypeParam } from '@dedot/codecs';
 import { isNativeType, normalizeName } from '@dedot/utils';
 import { beautifySourceCode, commentBlock, compileTemplate } from './utils';
 import { registry } from '@dedot/types';
@@ -46,12 +46,12 @@ export class TypesGen {
    * Types will be generated its definition out.
    */
   includedTypes: Record<TypeId, NamedType>;
-  registry: CodecRegistry;
+  registry: PortableRegistry;
   typeImports: TypeImports;
 
   constructor(metadata: MetadataLatest) {
     this.metadata = metadata;
-    this.registry = new CodecRegistry(this.metadata);
+    this.registry = new PortableRegistry(this.metadata);
     this.includedTypes = this.#includedTypes();
     this.typeImports = new TypeImports();
   }
@@ -199,7 +199,7 @@ export class TypesGen {
             }
           }
 
-          const { tagKey, valueKey } = this.registry.portableRegistry!.getEnumOptions(typeId);
+          const { tagKey, valueKey } = this.registry.getEnumOptions(typeId);
 
           return membersType
             .map(([keyName, valueType, docs]) => ({
@@ -366,7 +366,7 @@ export class TypesGen {
 
   #shouldGenerateTypeIn(id: TypeId) {
     const { callTypeId } = this.metadata.extrinsic;
-    const palletCallTypeIds = this.registry.portableRegistry!.getPalletCallTypeIds();
+    const palletCallTypeIds = this.registry.getPalletCallTypeIds();
 
     return callTypeId === id || palletCallTypeIds.includes(id);
   }

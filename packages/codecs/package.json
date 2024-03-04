@@ -11,6 +11,7 @@
   },
   "main": "src/index.ts",
   "type": "module",
+  "sideEffects": false,
   "dependencies": {
     "@dedot/shape": "workspace:*",
     "@dedot/utils": "workspace:*",

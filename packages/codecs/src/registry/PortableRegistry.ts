@@ -1,32 +1,56 @@
-import { $RawBytes, PortableType, TypeId } from '../codecs';
+import {
+  $AccountId20,
+  $AccountId32,
+  $Data,
+  $Digest,
+  $DigestItem,
+  $Era,
+  $EthereumAddress,
+  $Extrinsic,
+  $Header,
+  $MultiAddress,
+  $RawBytes,
+  $UncheckedExtrinsic,
+  DispatchError,
+  MetadataLatest,
+  ModuleError,
+  PalletErrorMetadataLatest,
+  PortableType,
+  TypeId,
+} from '../codecs';
 import * as $ from '@dedot/shape';
 import { EnumOptions } from '@dedot/shape';
 import { normalizeName } from '@dedot/utils';
-import { CodecRegistry } from './CodecRegistry';
-import { stringPascalCase } from '@polkadot/util';
+import { hexToU8a, isObject, stringPascalCase } from '@polkadot/util';
 
-const KNOWN_CODECS = [
-  'AccountId32',
-  'Header',
-  'Digest',
-  'DigestItem',
-  'Data',
-  'MultiAddress',
-  'Era',
-  'UncheckedExtrinsic',
-];
+const KNOWN_CODECS: Record<string, $.AnyShape> = {
+  'sp_core::crypto::AccountId32': $AccountId32,
+  'sp_runtime::generic::era::Era': $Era,
+  'sp_runtime::multiaddress::MultiAddress': $MultiAddress,
+
+  'fp_account::AccountId20': $AccountId20,
+  'account::AccountId20': $AccountId20,
+  'polkadot_runtime_common::claims::EthereumAddress': $EthereumAddress,
+  'sp_runtime::generic::unchecked_extrinsic::UncheckedExtrinsic': $UncheckedExtrinsic,
+
+  'pallet_identity::types::Data': $Data,
+  'sp_runtime::generic::digest::Digest': $Digest,
+  'sp_runtime::generic::digest::DigestItem': $DigestItem,
+  'sp_runtime::generic::header::Header': $Header,
+};
 
 /**
  * Codec registry for portable types from metadata
  */
-export class PortableCodecRegistry {
+export class PortableRegistry {
+  readonly #metadata: MetadataLatest;
   readonly types: Record<TypeId, PortableType>;
   readonly #cache: Map<TypeId, $.AnyShape>;
-  readonly #registry: CodecRegistry;
 
-  constructor(types: PortableType[] | Record<TypeId, PortableType>, registry: CodecRegistry) {
-    this.#registry = registry;
+  constructor(metadata: MetadataLatest) {
+    this.#metadata = metadata;
 
+    const { types } = metadata;
     if (Array.isArray(types)) {
       this.types = types.reduce(
         (o, one) => {
@@ -42,6 +66,38 @@ export class PortableCodecRegistry {
     this.#cache = new Map();
   }
 
+  get $Extrinsic() {
+    return $Extrinsic(this);
+  }
+
+  get metadata(): MetadataLatest {
+    return this.#metadata;
+  }
+
+  findErrorMeta(errorInfo: ModuleError | DispatchError): PalletErrorMetadataLatest | undefined {
+    const moduleError =
+      isObject<DispatchError>(errorInfo) && errorInfo.tag === 'Module' ? errorInfo.value : (errorInfo as ModuleError);
+
+    const targetPallet = this.metadata!.pallets.find((p) => p.index === moduleError.index);
+    if (!targetPallet || !targetPallet.error) return;
+
+    const def = this.metadata!.types[targetPallet.error];
+    if (!def) return;
+
+    const { tag, value } = def.type;
+    if (tag !== 'Enum') return;
+
+    const errorDef = value.members.find(({ index }) => index === hexToU8a(moduleError.error)[0]);
+    if (!errorDef) return;
+
+    return {
+      ...errorDef,
+      fieldCodecs: errorDef.fields.map(({ typeId }) => this.findCodec(typeId)),
+      pallet: targetPallet.name,
+      palletIndex: targetPallet.index,
+    };
+  }
+
   findType(typeId: TypeId): PortableType {
     const type = this.types[typeId];
     if (!type) {
@@ -55,11 +111,11 @@ export class PortableCodecRegistry {
     const typeDef = this.findType(typeId);
     if (typeDef && typeDef.path.length > 0) {
       try {
-        const codecName = typeDef.path.at(-1)!;
-        if (KNOWN_CODECS.includes(codecName)) {
+        const fullPath = typeDef.path.join('::');
+        if (!!KNOWN_CODECS[fullPath]) {
           // TODO Check codec structure matches with corresponding portable codec
           // Preparing for customizing primitive codecs
-          return this.#registry.findCodec(codecName);
+          return KNOWN_CODECS[fullPath] as $.Shape<I, O>;
         }
       } catch (e) {
         // ignore
@@ -235,7 +291,7 @@ export class PortableCodecRegistry {
     const {
       extrinsic: { callTypeId },
       outerEnums: { eventEnumTypeId },
-    } = this.#registry.metadata!;
+    } = this.metadata;
 
     if (typeId === eventEnumTypeId) {
       return {
@@ -268,9 +324,9 @@ export class PortableCodecRegistry {
   getPalletCallTypeIds(): number[] {
     const {
       extrinsic: { callTypeId },
-    } = this.#registry.metadata!;
+    } = this.metadata;
 
-    const callType = this.#registry.findPortableType(callTypeId);
+    const callType = this.findType(callTypeId);
     if (callType.type.tag === 'Enum') {
       return callType.type.value.members.map((m) => m.fields[0].typeId);
     }
@@ -281,9 +337,9 @@ export class PortableCodecRegistry {
   getPalletEventTypeIds(): number[] {
     const {
       outerEnums: { eventEnumTypeId },
-    } = this.#registry.metadata!;
+    } = this.metadata;
 
-    const eventType = this.#registry.findPortableType(eventEnumTypeId);
+    const eventType = this.findType(eventEnumTypeId);
     if (eventType.type.tag === 'Enum') {
       return eventType.type.value.members.map((m) => m.fields[0].typeId);
     }

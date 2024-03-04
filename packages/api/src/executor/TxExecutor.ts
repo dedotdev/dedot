@@ -84,7 +84,7 @@ export class TxExecutor<ChainApi extends GenericSubstrateApi = SubstrateApi> ext
 
     txCallFn.meta = {
       ...txCallDef,
-      fieldCodecs: txCallDef.fields.map(({ typeId }) => this.registry.findPortableCodec(typeId)),
+      fieldCodecs: txCallDef.fields.map(({ typeId }) => this.registry.findCodec(typeId)),
       pallet: targetPallet.name,
       palletIndex: targetPallet.index,
     };
@@ -120,7 +120,7 @@ export class TxExecutor<ChainApi extends GenericSubstrateApi = SubstrateApi> ext
         }
 
         const { signatureTypeId } = this.registry.metadata!.extrinsic;
-        const $Signature = this.registry.findPortableCodec(signatureTypeId);
+        const $Signature = this.registry.findCodec(signatureTypeId);
 
         this.attachSignature({
           address: address,
