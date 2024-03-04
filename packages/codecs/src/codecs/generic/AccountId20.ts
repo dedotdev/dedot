@@ -1,7 +1,6 @@
 import { isHex, isU8a, u8aToHex } from '@polkadot/util';
 import * as $ from '@dedot/shape';
 import { HexString, isEthereumAddress } from '@dedot/utils';
-import { registerLooseCodecType } from '../codectypes';
 
 export const accountId20ToHex = (input: AccountId20Like): HexString => {
   if (input instanceof AccountId20) {
@@ -42,5 +41,3 @@ export const $AccountId20: $.Shape<AccountId20Like, AccountId20> = $.instance(
 export class EthereumAddress extends AccountId20 {}
 export type EthereumAddressLike = AccountId20Like;
 export const $EthereumAddress: $.Shape<EthereumAddressLike, EthereumAddress> = $AccountId20;
-
-registerLooseCodecType({ $AccountId20, $EthereumAddress });

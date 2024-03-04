@@ -1,6 +1,5 @@
 import * as $ from '@dedot/shape';
 import { $AccountId32, AccountId32 } from '../../generic';
-import { registerLooseCodecType } from '../../codectypes';
 
 /**
  * A multi-format address wrapper for on-chain accounts.
@@ -32,5 +31,3 @@ export const $MultiAddress: $.Shape<MultiAddressLike, MultiAddress> = $.transfor
 
 export type MultiAddressLike = $.Input<typeof $MultiAddressBase> | string | AccountId32;
 export type MultiAddress = $.Output<typeof $MultiAddressBase>;
-
-registerLooseCodecType({ $MultiAddress });

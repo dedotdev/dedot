@@ -30,7 +30,7 @@ describe('Extrinsic', () => {
     const metadata = $Metadata.tryDecode(staticSubstrateV14);
     registry = new CodecRegistry(metadata.latest);
 
-    $Extrinsic = registry.findCodec<Extrinsic>('Extrinsic');
+    $Extrinsic = registry.$Extrinsic;
   });
 
   it('should decode sample extrinsic', () => {

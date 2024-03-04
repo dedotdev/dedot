@@ -8,7 +8,7 @@ import { ExtrinsicV4, ExtrinsicSignatureV4 } from './ExtrinsicV4';
 export class Extrinsic<A = any, C = any, S = any, E = any> extends ExtrinsicV4<A, C, S, E> {}
 export interface ExtrinsicSignature<A = any, S = any, E = any> extends ExtrinsicSignatureV4<A, S, E> {}
 
-export const $Extrinsic = $.deferred((registry?: CodecRegistry) => {
+export const $Extrinsic = (registry: CodecRegistry) => {
   assert(registry, 'CodecRegistry is required to compose $Extrinsic codec');
 
   const { callTypeId, addressTypeId, signatureTypeId, extraTypeId } = registry.metadata!.extrinsic;
@@ -27,7 +27,7 @@ export const $Extrinsic = $.deferred((registry?: CodecRegistry) => {
   const staticSize = $ExtrinsicVersion.staticSize + $ExtrinsicSignature.staticSize + $RuntimeCall.staticSize;
 
   const $BaseEx = $.createShape<Extrinsic>({
-    metadata: $.metadata('$Extrinsic'),
+    metadata: [],
     staticSize,
     subDecode(buffer: $.DecodeBuffer) {
       const { signed } = $ExtrinsicVersion.subDecode(buffer);
@@ -49,5 +49,5 @@ export const $Extrinsic = $.deferred((registry?: CodecRegistry) => {
     },
   });
 
-  return $.lenPrefixed($BaseEx);
-});
+  return $.withMetadata($.metadata('$Extrinsic'), $.lenPrefixed($BaseEx));
+};

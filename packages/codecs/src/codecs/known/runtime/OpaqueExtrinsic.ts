@@ -1,6 +1,5 @@
 import * as $ from '@dedot/shape';
 import { HexString, xToHex, xToU8a } from '@dedot/utils';
-import { registerLooseCodecType } from '../../codectypes';
 
 // TODO docs!
 export type OpaqueExtrinsicLike = HexString | string | Uint8Array;
@@ -31,5 +30,3 @@ export const $OpaqueExtrinsic = $.createShape<OpaqueExtrinsicLike, OpaqueExtrins
 export const $UncheckedExtrinsic = $OpaqueExtrinsic;
 export type UncheckedExtrinsicLike = $.Input<typeof $UncheckedExtrinsic>;
 export type UncheckedExtrinsic = $.Output<typeof $UncheckedExtrinsic>;
-
-registerLooseCodecType({ $OpaqueExtrinsic, $UncheckedExtrinsic });

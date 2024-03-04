@@ -2,7 +2,6 @@ import { hexToString, isHex } from '@polkadot/util';
 import * as $ from '@dedot/shape';
 import { HexString } from '@dedot/utils';
 import { $Hash } from './Hash';
-import { registerLooseCodecType } from '../codectypes';
 
 export const $BlockNumber = $.withMetadata($.metadata('$BlockNumber'), $.u32);
 export type BlockNumber = number;
@@ -51,8 +50,6 @@ export const $ConsensusEngineId: $.Shape<ConsensusEngineIdLike, ConsensusEngineI
     }
   },
 );
-
-registerLooseCodecType({ $ConsensusEngineId });
 
 /**
  * Digest item that is able to encode/decode 'system' digest items and

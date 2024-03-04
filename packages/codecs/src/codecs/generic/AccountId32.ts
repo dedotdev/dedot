@@ -1,7 +1,6 @@
 import { isHex, isString, isU8a, u8aToHex } from '@polkadot/util';
 import * as $ from '@dedot/shape';
 import { decodeAddress, encodeAddress, HexString, SS58FormatPrefix } from '@dedot/utils';
-import { registerLooseCodecType } from '../codectypes';
 
 export const accountId32ToHex = (input: AccountId32Like): HexString => {
   if (input instanceof AccountId32) {
@@ -40,5 +39,3 @@ export const $AccountId32: $.Shape<AccountId32Like, AccountId32> = $.instance(
   $.Tuple($.FixedHex(32)),
   (input) => [accountId32ToHex(input)],
 );
-
-registerLooseCodecType({ $AccountId32 });

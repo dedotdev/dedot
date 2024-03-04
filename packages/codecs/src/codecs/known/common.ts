@@ -1,6 +1,5 @@
 import * as $ from '@dedot/shape';
 import { HexString } from '@dedot/utils';
-import { registerLooseCodecType } from '../codectypes';
 import { isString, isU8a, stringToHex, u8aToHex } from '@polkadot/util';
 
 export const $Text = $.str;
@@ -17,8 +16,6 @@ export type PrefixedStorageKey = $.Output<typeof $PrefixedStorageKey>;
 export const $StorageData = $.RawHex;
 export type StorageDataLike = $.Input<typeof $StorageData>;
 export type StorageData = $.Output<typeof $StorageData>;
-
-registerLooseCodecType({ $StorageKey, $StorageData, $PrefixedStorageKey });
 
 export type RawBytesLike = HexString | Uint8Array;
 export type RawBytes = HexString;
@@ -43,8 +40,6 @@ export const $Bytes: $.Shape<BytesLike, Bytes> = $.transform({
   },
   decode: (value) => value,
 });
-
-registerLooseCodecType({ $Bytes, $RawBytes });
 
 export type FixedBytes<Bytes extends number> = HexString; // TODO: add Unit8Array
 
