@@ -3,6 +3,7 @@ import { RpcCallSpec, RpcModuleName } from '@dedot/types';
 import { isNativeType } from '@dedot/utils';
 import { ApiGen, TypesGen } from '../generator';
 import { beautifySourceCode, commentBlock, compileTemplate, TUPLE_TYPE_REGEX, WRAPPER_TYPE_REGEX } from './utils';
+import { findKnownCodecType } from './known_codecs';
 
 const HIDDEN_RPCS = [
   // Ref: https://github.com/paritytech/polkadot-sdk/blob/43415ef58c143b985e09015cd000dbd65f6d3997/substrate/client/rpc-servers/src/lib.rs#L152C9-L158
@@ -212,7 +213,7 @@ export class RpcGen extends ApiGen {
   }
 
   #getCodecType(type: string, toTypeIn = true) {
-    const { typeIn, typeOut } = this.registry.findCodecType(type);
+    const { typeIn, typeOut } = findKnownCodecType(type);
     return toTypeIn ? typeIn : typeOut;
   }
 }

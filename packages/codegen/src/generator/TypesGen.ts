@@ -4,6 +4,7 @@ import { isNativeType, normalizeName } from '@dedot/utils';
 import { beautifySourceCode, commentBlock, compileTemplate } from './utils';
 import { registry } from '@dedot/types';
 import { TypeImports } from './TypeImports';
+import { findKnownCodec, findKnownCodecType, isKnownCodecType } from './known_codecs';
 
 interface NamedType extends PortableType {
   name: string; // nameIn, ~ typeIn
@@ -128,7 +129,7 @@ export class TypesGen {
 
     switch (tag) {
       case 'Primitive':
-        const $codec = this.registry.findCodec(value.kind);
+        const $codec = findKnownCodec(value.kind);
 
         if ($codec.nativeType) {
           return $codec.nativeType;
@@ -305,8 +306,8 @@ export class TypesGen {
         let knownType = false;
         let name, nameOut;
 
-        if (this.registry.isKnownType(joinedPath)) {
-          const codecType = this.registry.findCodecType(path.at(-1)!);
+        if (isKnownCodecType(joinedPath)) {
+          const codecType = findKnownCodecType(path.at(-1)!);
           name = codecType.typeIn;
           nameOut = codecType.typeOut;
 
