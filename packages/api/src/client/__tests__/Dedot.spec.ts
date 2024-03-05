@@ -162,8 +162,8 @@ describe('Dedot', () => {
       });
 
       it('should throws error if runtime not support or call spec not found', async () => {
-        expect(() => api.call.metadata.notFound()).toThrowError('Runtime Api not found: Metadata_not_found');
-        expect(() => api.call.notFound.notFound()).toThrowError('Runtime Api not found: NotFound_not_found');
+        expect(() => api.call.metadata.notFound()).toThrowError('Runtime api spec not found for Metadata_not_found');
+        expect(() => api.call.notFound.notFound()).toThrowError('Runtime api spec not found for NotFound_not_found');
       });
     });
 
