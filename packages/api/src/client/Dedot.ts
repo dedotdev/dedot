@@ -1,7 +1,7 @@
-import { HttpProvider, WsProvider } from '@polkadot/rpc-provider';
+import { WsProvider } from '@polkadot/rpc-provider';
 import { ProviderInterface } from '@polkadot/rpc-provider/types';
 import type { SubstrateApi } from '@dedot/chaintypes';
-import { $Metadata, BlockHash, PortableRegistry, Hash, Metadata, MetadataLatest, RuntimeVersion } from '@dedot/codecs';
+import { $Metadata, BlockHash, Hash, Metadata, MetadataLatest, PortableRegistry, RuntimeVersion } from '@dedot/codecs';
 import { ChainProperties, GenericSubstrateApi, Unsub } from '@dedot/types';
 import {
   ConstantExecutor,
@@ -14,9 +14,9 @@ import {
 } from '../executor';
 import { newProxyChain } from '../proxychain';
 import { ApiOptions, MetadataKey, NetworkEndpoint, NormalizedApiOptions } from '../types';
-import { ensurePresence } from '@dedot/utils';
 import { hexAddPrefix, u8aToHex } from '@polkadot/util';
 import { IStorage, LocalStorage } from '@dedot/storage';
+import { assert } from '@dedot/utils';
 
 export const KEEP_ALIVE_INTERVAL = 10_000; // in ms
 export const CATCH_ALL_METADATA_KEY: MetadataKey = `RAW_META/ALL`;
@@ -309,17 +309,16 @@ export class Dedot<ChainApi extends GenericSubstrateApi = SubstrateApi> {
 
   #getProvider(): ProviderInterface {
     const { provider, endpoint } = this.#options;
-    if (provider) return provider;
+    if (provider) {
+      assert(provider.hasSubscriptions, 'Only supports RPC Provider can make subscription requests');
+      return provider;
+    }
 
     if (endpoint) {
       if (endpoint.startsWith('ws://') || endpoint.startsWith('wss://')) {
         return new WsProvider(endpoint);
-      } else if (endpoint.startsWith('http://') || endpoint.startsWith('https://')) {
-        return new HttpProvider(endpoint);
       } else {
-        throw new Error(
-          'Invalid network endpoint, a valid endpoint should start with `wss://`, `ws://`, `https://` or `http://`',
-        );
+        throw new Error('Invalid RPC network endpoint, a valid endpoint should start with `wss://`, `ws://`');
       }
     }
 
