@@ -1,4 +1,5 @@
 import { RpcModuleSpec } from '@dedot/types';
+import { $TransactionStatus } from '@dedot/codecs';
 
 export const author: RpcModuleSpec = {
   submitExtrinsic: {
@@ -89,5 +90,6 @@ export const author: RpcModuleSpec = {
     pubsub: ['author_extrinsicUpdate', 'author_submitAndWatchExtrinsic', 'author_unwatchExtrinsic'],
     type: 'TransactionStatus',
     isScale: true,
+    codec: $TransactionStatus,
   },
 };

@@ -11,10 +11,15 @@
   },
   "main": "src/index.ts",
   "type": "module",
+  "sideEffects": [
+    "./extension/shape.js",
+    "./extension/collection.js",
+    "./cjs/extension/shape.js",
+    "./cjs/extension/collection.js"
+  ],
   "dependencies": {
     "@dedot/utils": "workspace:*",
     "@polkadot/util": "^12.6.2",
-    "@polkadot/util-crypto": "^12.6.2",
     "subshape": "^0.14.0"
   },
   "scripts": {

@@ -1,5 +1,5 @@
 import { Dedot } from '../../client';
-import { CodecRegistry, SignedExtensionDefLatest } from '@dedot/codecs';
+import { PortableRegistry, SignedExtensionDefLatest } from '@dedot/codecs';
 import { ensurePresence } from '@dedot/utils';
 import * as $ from '@dedot/shape';
 import { PayloadOptions } from '@dedot/types';
@@ -13,7 +13,7 @@ export interface ISignedExtension {
   data: any;
   additionalSigned: any;
   init(): Promise<void>;
-  registry: CodecRegistry;
+  registry: PortableRegistry;
   toPayload(...additional: any[]): Partial<SignerPayloadJSON>;
 }
 
@@ -46,11 +46,11 @@ export abstract class SignedExtension<Data extends any = {}, AdditionalSigned ex
   }
 
   get dataCodec(): $.AnyShape {
-    return ensurePresence(this.api.registry.findPortableCodec(this.signedExtensionDef.typeId));
+    return ensurePresence(this.registry.findCodec(this.signedExtensionDef.typeId));
   }
 
   get additionalSignedCodec(): $.AnyShape {
-    return ensurePresence(this.api.registry.findPortableCodec(this.signedExtensionDef.additionalSigned));
+    return ensurePresence(this.registry.findCodec(this.signedExtensionDef.additionalSigned));
   }
 
   get registry() {

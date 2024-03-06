@@ -1,5 +1,4 @@
 import { HexString } from '@dedot/utils';
-import { registry } from './registry';
 import { SerdeEnum } from './serde';
 
 /**
@@ -25,7 +24,6 @@ export type ChainType = SerdeEnum<{
    */
   Custom: string;
 }>;
-registry.add('ChainType');
 
 export interface ChainProperties {
   isEthereum?: boolean;
@@ -34,7 +32,6 @@ export interface ChainProperties {
   tokenSymbol?: Array<string>;
   [prop: string]: unknown;
 }
-registry.add('ChainProperties');
 
 /**
  * Health struct returned by the RPC
@@ -44,7 +41,6 @@ export interface Health {
   isSyncing: boolean;
   shouldHavePeers: boolean;
 }
-registry.add('Health');
 
 /**
  * The state of the syncing of the node.
@@ -57,7 +53,6 @@ export interface SyncState {
   // Height of the highest block in the network.
   highestBlock: number;
 }
-registry.add('SyncState');
 
 /**
  * Network Peer information
@@ -72,7 +67,6 @@ export interface PeerInfo {
   // Peer best block number
   bestNumber: number;
 }
-registry.add('PeerInfo');
 
 /**
  * The role the node is running as
@@ -83,7 +77,5 @@ export type NodeRole = SerdeEnum<{
   // The node is an authority
   Authority: void;
 }>;
-registry.add('NodeRole');
 
 export type NetworkState = Record<string, unknown>;
-registry.add('NetworkState');

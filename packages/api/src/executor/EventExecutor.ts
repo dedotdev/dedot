@@ -55,7 +55,7 @@ export class EventExecutor<ChainApi extends GenericSubstrateApi = SubstrateApi> 
 
     return {
       ...eventDef,
-      fieldCodecs: eventDef.fields.map(({ typeId }) => this.registry.findPortableCodec(typeId)),
+      fieldCodecs: eventDef.fields.map(({ typeId }) => this.registry.findCodec(typeId)),
     };
   }
 }

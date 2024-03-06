@@ -19,7 +19,7 @@ import { Dedot } from '../client';
 import { IKeyringPair } from '@polkadot/types/types';
 import { ExtraSignedExtension, SubmittableResult } from '../extrinsic';
 import { SignOptions } from '@polkadot/keyring/types';
-import { blake2AsHex, blake2AsU8a } from '@polkadot/util-crypto';
+import { blake2AsHex, blake2AsU8a } from '@dedot/utils';
 
 export function isKeyringPair(account: AddressOrPair): account is IKeyringPair {
   return isFunction((account as IKeyringPair).sign);
@@ -84,7 +84,7 @@ export class TxExecutor<ChainApi extends GenericSubstrateApi = SubstrateApi> ext
 
     txCallFn.meta = {
       ...txCallDef,
-      fieldCodecs: txCallDef.fields.map(({ typeId }) => this.registry.findPortableCodec(typeId)),
+      fieldCodecs: txCallDef.fields.map(({ typeId }) => this.registry.findCodec(typeId)),
       pallet: targetPallet.name,
       palletIndex: targetPallet.index,
     };
@@ -120,7 +120,7 @@ export class TxExecutor<ChainApi extends GenericSubstrateApi = SubstrateApi> ext
         }
 
         const { signatureTypeId } = this.registry.metadata!.extrinsic;
-        const $Signature = this.registry.findPortableCodec(signatureTypeId);
+        const $Signature = this.registry.findCodec(signatureTypeId);
 
         this.attachSignature({
           address: address,

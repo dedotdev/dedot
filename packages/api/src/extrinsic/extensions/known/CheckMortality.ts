@@ -1,6 +1,6 @@
 import { SignedExtension } from '../SignedExtension';
 import { EraLike, Hash, Header } from '@dedot/codecs';
-import { assert, isZeroHash, min } from '@dedot/utils';
+import { assert, isZeroHash, bnMin } from '@dedot/utils';
 import { numberToHex, u8aToHex } from '@polkadot/util';
 import { SignerPayloadJSON } from '@polkadot/types/types';
 
@@ -52,7 +52,7 @@ export class CheckMortality extends SignedExtension<EraLike, Hash> {
 
   // Ref: https://github.com/polkadot-js/api/blob/3bdf49b0428a62f16b3222b9a31bfefa43c1ca55/packages/api-derive/src/tx/signingInfo.ts#L83-L93
   #calculateMortalLength() {
-    return min(
+    return bnMin(
       BigInt(this.#getConst<number>('system', 'blockHashCount') || FALLBACK_MAX_HASH_COUNT),
       BigInt(MORTAL_PERIOD) /
         BigInt(

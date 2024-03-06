@@ -10,6 +10,7 @@
     "url": "https://github.com/dedotdev/dedot.git"
   },
   "main": "src/index.ts",
+  "sideEffects": false,
   "type": "module",
   "scripts": {
     "build": "tsc --project tsconfig.build.json && yarn copy",

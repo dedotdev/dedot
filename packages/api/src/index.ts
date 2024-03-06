@@ -5,4 +5,4 @@ export * from './executor';
 export * from './extrinsic';
 
 export { Dedot };
-export { HttpProvider, ScProvider, WsProvider } from '@polkadot/rpc-provider';
+export { WsProvider } from '@polkadot/rpc-provider';

@@ -22,28 +22,26 @@ export class ExtraSignedExtension extends SignedExtension<any[], any[]> {
   }
 
   get dataCodec(): $.AnyShape {
-    const { extraTypeId } = this.api.metadataLatest.extrinsic;
+    const { extraTypeId } = this.registry.metadata.extrinsic;
 
-    return ensurePresence(this.registry.findPortableCodec(extraTypeId));
+    return ensurePresence(this.registry.findCodec(extraTypeId));
   }
 
   get additionalSignedCodec(): $.AnyShape {
-    const $AdditionalSignedCodecs = this.#signedExtensionDefs.map((se) =>
-      this.registry.findPortableCodec(se.additionalSigned),
-    );
+    const $AdditionalSignedCodecs = this.#signedExtensionDefs.map((se) => this.registry.findCodec(se.additionalSigned));
 
     return $.Tuple(...$AdditionalSignedCodecs);
   }
 
   get payloadCodec(): $.AnyShape {
-    const { callTypeId } = this.api.metadataLatest.extrinsic;
-    const $Call = this.registry.findPortableCodec(callTypeId);
+    const { callTypeId } = this.registry.metadata.extrinsic;
+    const $Call = this.registry.findCodec(callTypeId);
 
     return $.Tuple($Call, this.dataCodec, this.additionalSignedCodec);
   }
 
   get #signedExtensionDefs() {
-    return this.api.metadataLatest.extrinsic.signedExtensions;
+    return this.registry.metadata.extrinsic.signedExtensions;
   }
 
   #getSignedExtensions() {
@@ -65,7 +63,7 @@ export class ExtraSignedExtension extends SignedExtension<any[], any[]> {
 
   toPayload(call: HexString = '0x'): SignerPayloadJSON {
     const signedExtensions = this.#signedExtensions!.map((se) => se.identifier);
-    const { version } = this.api.registry.metadata!.extrinsic;
+    const { version } = this.registry.metadata.extrinsic;
 
     return objectSpread(
       { address: this.options!.signerAddress, signedExtensions, version, method: call },

@@ -1,7 +1,7 @@
 import { ProviderInterface } from '@polkadot/rpc-provider/types';
 import { HexString } from '@dedot/utils';
 import { AnySignedExtension } from './extrinsic';
-import { RuntimeApiSpec } from '@dedot/types';
+import { RuntimeApiName, RuntimeApiSpec } from '@dedot/types';
 import type { IStorage } from '@dedot/storage';
 
 export type NetworkEndpoint = string;
@@ -44,7 +44,7 @@ export interface ApiOptions {
    */
   signedExtensions?: Record<string, AnySignedExtension>;
 
-  runtime?: Record<string, RuntimeApiSpec[]>;
+  runtime?: Record<RuntimeApiName, RuntimeApiSpec[]>;
 }
 
 export interface NormalizedApiOptions extends ApiOptions {

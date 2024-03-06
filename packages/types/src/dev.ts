@@ -1,5 +1,3 @@
-import { registry } from './registry';
-
 /**
  * Statistics of a block returned by the `dev_getBlockStats` RPC.
  */
@@ -17,4 +15,3 @@ export interface BlockStats {
   // saves some complexity on the client side.
   numExtrinsics: number;
 }
-registry.add('BlockStats');

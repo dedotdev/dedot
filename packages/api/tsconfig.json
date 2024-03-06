@@ -24,6 +24,9 @@
       "path": "../chaintypes/tsconfig.json",
     },
     {
+      "path": "../specs/tsconfig.json",
+    },
+    {
       "path": "../storage/tsconfig.json",
     },
   ],

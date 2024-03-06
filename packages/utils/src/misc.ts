@@ -1,4 +1,4 @@
-import { blake2AsHex } from '@polkadot/util-crypto';
+import { blake2AsHex } from './hash';
 import { HexString } from './types';
 import { hexToU8a, isHex, isString, isU8a, stringToHex, stringToU8a, u8aToHex } from '@polkadot/util';
 

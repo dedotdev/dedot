@@ -1,7 +1,7 @@
 import { SignedExtension } from '../SignedExtension';
 import { SignerPayloadJSON } from '@polkadot/types/types';
-import { bnToHex, u8aToHex } from '@polkadot/util';
-import { assert } from '@dedot/utils';
+import { u8aToHex } from '@polkadot/util';
+import { assert, bnToHex } from '@dedot/utils';
 
 /**
  * @name ChargeAssetTxPayment
@@ -20,7 +20,7 @@ export class ChargeAssetTxPayment extends SignedExtension<{ tip: bigint; assetId
     const { tip, assetId } = this.data;
 
     return {
-      tip: bnToHex(tip, { isLe: false }),
+      tip: bnToHex(tip),
       // @ts-ignore
       assetId: this.#encodeAssetId(assetId),
     };
@@ -35,11 +35,11 @@ export class ChargeAssetTxPayment extends SignedExtension<{ tip: bigint; assetId
   }
 
   $AssetId() {
-    const extensionTypeDef = this.registry.findPortableType(this.signedExtensionDef.typeId);
+    const extensionTypeDef = this.registry.findType(this.signedExtensionDef.typeId);
     assert(extensionTypeDef.type.tag === 'Struct');
 
     const assetIdTypeDef = extensionTypeDef.type.value.fields.find((f) => f.name === 'asset_id')!;
-    const $codec = this.registry.findPortableCodec(assetIdTypeDef.typeId);
+    const $codec = this.registry.findCodec(assetIdTypeDef.typeId);
     const codecMetadata = $codec.metadata[0]!;
     if (codecMetadata.name === '$.option') {
       return codecMetadata.args![0]; // inner shape

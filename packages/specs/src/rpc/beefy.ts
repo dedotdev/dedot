@@ -1,4 +1,5 @@
 import { RpcModuleSpec } from '@dedot/types';
+import { $VersionedFinalityProof } from '@dedot/codecs';
 
 export const beefy: RpcModuleSpec = {
   getFinalizedHead: {
@@ -17,5 +18,6 @@ export const beefy: RpcModuleSpec = {
     pubsub: ['beefy_justifications', 'beefy_subscribeJustifications', 'beefy_unsubscribeJustifications'],
     type: 'VersionedFinalityProof',
     isScale: true,
+    codec: $VersionedFinalityProof,
   },
 };

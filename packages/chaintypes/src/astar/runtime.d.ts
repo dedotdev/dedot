@@ -11,7 +11,7 @@ import type {
   OpaqueExtrinsicLike,
   CheckInherentsResult,
   InherentData,
-  Extrinsic,
+  OpaqueExtrinsic,
   TransactionValidity,
   TransactionSource,
   BlockHash,
@@ -118,7 +118,7 @@ export interface RuntimeApis extends GenericRuntimeApis {
      * @callname: BlockBuilder_inherent_extrinsics
      * @param {InherentData} inherent
      **/
-    inherentExtrinsics: GenericRuntimeApiMethod<(inherent: InherentData) => Promise<Array<Extrinsic>>>;
+    inherentExtrinsics: GenericRuntimeApiMethod<(inherent: InherentData) => Promise<Array<OpaqueExtrinsic>>>;
 
     /**
      *

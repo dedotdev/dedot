@@ -10,9 +10,7 @@ describe('Dedot', () => {
   it('should throws error for invalid endpoint', () => {
     expect(async () => {
       await Dedot.new('invalid_endpoint');
-    }).rejects.toThrowError(
-      'Invalid network endpoint, a valid endpoint should start with `wss://`, `ws://`, `https://` or `http://`',
-    );
+    }).rejects.toThrowError('Invalid RPC network endpoint, a valid endpoint should start with `wss://`, `ws://`');
   });
 
   describe('cache disabled', () => {
@@ -162,8 +160,8 @@ describe('Dedot', () => {
       });
 
       it('should throws error if runtime not support or call spec not found', async () => {
-        expect(() => api.call.metadata.notFound()).toThrowError('Runtime Api not found: Metadata_not_found');
-        expect(() => api.call.notFound.notFound()).toThrowError('Runtime Api not found: NotFound_not_found');
+        expect(() => api.call.metadata.notFound()).toThrowError('Runtime api spec not found for Metadata_not_found');
+        expect(() => api.call.notFound.notFound()).toThrowError('Runtime api spec not found for NotFound_not_found');
       });
     });
 
