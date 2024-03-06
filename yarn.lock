@@ -9102,6 +9102,7 @@ __metadata:
   dependencies:
     "@dedot/codecs": "workspace:*"
     "@dedot/utils": "workspace:*"
+    "@polkadot/util": ^12.6.2
     dedot: "workspace:*"
   languageName: unknown
   linkType: soft
