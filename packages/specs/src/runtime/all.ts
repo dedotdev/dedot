@@ -5,17 +5,17 @@ import { Metadata } from './metadata';
 import { Core } from './core';
 import { AccountNonceApi } from './system';
 import { TransactionPaymentApi, TransactionPaymentCallApi } from './payment';
-import { BlockBuilder } from './block_builder';
+import { BlockBuilder } from './block-builder';
 import { GrandpaApi } from './grandpa';
 import { MmrApi } from './mmr';
-import { NominationPoolsApi } from './nomination_pools';
+import { NominationPoolsApi } from './nomination-pools';
 import { OffchainWorkerApi } from './offchain';
 import { SessionKeys } from './session';
 import { ParachainHost } from './parachains';
 import { BeefyApi, BeefyMmrApi } from './beefy';
 import { StakingApi } from './staking';
-import { TaggedTransactionQueue } from './transaction_pool';
-import { GenesisBuilder } from './genesis_builder';
+import { TaggedTransactionQueue } from './transaction-pool';
+import { GenesisBuilder } from './genesis-builder';
 
 export const RuntimeApis: Record<RuntimeApiName, RuntimeApiSpec[]> = {
   AuthorityDiscoveryApi,
