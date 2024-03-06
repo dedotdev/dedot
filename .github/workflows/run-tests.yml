@@ -4,6 +4,7 @@
 name: Run tests
 
 on:
+  push:
   pull_request:
   merge_group:
 
