@@ -1,0 +1,29 @@
+{
+  "name": "@dedot/cli",
+  "version": "0.0.1-alpha.26",
+  "author": "Thang X. Vu <thang@coongcrafts.io>",
+  "bin": {
+    "dedot": "./bin/dedot",
+    "djs": "./bin/dedot"
+  },
+  "main": "src/index.ts",
+  "sideEffects": false,
+  "type": "module",
+  "scripts": {
+    "build": "tsc --project tsconfig.build.cjs.json && cp -R ./bin ./dist",
+    "clean": "rm -rf ./dist && rm -rf ./tsconfig.tsbuildinfo ./tsconfig.build.cjs.tsbuildinfo && rm -rf ./src/codegen",
+    "start": "ts-node src/index.ts"
+  },
+  "dependencies": {
+    "@dedot/codegen": "workspace:*",
+    "yargs": "^17.7.2"
+  },
+  "devDependencies": {
+    "@types/yargs": "^17.0.32"
+  },
+  "publishConfig": {
+    "access": "public",
+    "directory": "dist"
+  },
+  "license": "Apache-2.0"
+}

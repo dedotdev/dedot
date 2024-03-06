@@ -1,21 +1,21 @@
 {
-  "name": "@delightfuldot/codecs",
-  "version": "0.0.1-alpha.20",
+  "name": "@dedot/codecs",
+  "version": "0.0.1-alpha.26",
   "description": "Known codecs",
   "author": "Thang X. Vu <thang@coongcrafts.io>",
-  "homepage": "https://github.com/CoongCrafts/delightfuldot/tree/main/packages/codecs",
+  "homepage": "https://github.com/dedotdev/dedot/tree/main/packages/codecs",
   "repository": {
     "directory": "packages/codecs",
     "type": "git",
-    "url": "https://github.com/CoongCrafts/delightfuldot.git"
+    "url": "https://github.com/dedotdev/dedot.git"
   },
   "main": "src/index.ts",
   "type": "module",
+  "sideEffects": false,
   "dependencies": {
-    "@delightfuldot/shape": "workspace:*",
-    "@delightfuldot/utils": "workspace:*",
+    "@dedot/shape": "workspace:*",
+    "@dedot/utils": "workspace:*",
     "@polkadot/util": "^12.6.2",
-    "@polkadot/util-crypto": "^12.6.2",
     "lodash.clonedeep": "^4.5.0"
   },
   "scripts": {

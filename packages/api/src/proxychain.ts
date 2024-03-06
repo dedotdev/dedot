@@ -1,4 +1,4 @@
-import { GenericSubstrateApi } from '@delightfuldot/types';
+import { GenericSubstrateApi } from '@dedot/types';
 import { Executor } from './executor';
 
 export interface Carrier<ChainApi extends GenericSubstrateApi> {

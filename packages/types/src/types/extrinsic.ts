@@ -1,14 +1,7 @@
-import {
-  ApplyExtrinsicResult,
-  BlockHash,
-  DispatchError,
-  DispatchInfo,
-  Hash,
-  TransactionStatus,
-} from '@delightfuldot/codecs';
+import { ApplyExtrinsicResult, BlockHash, DispatchError, DispatchInfo, Hash, TransactionStatus } from '@dedot/codecs';
 import { Callback, IEventRecord, Unsub } from './index';
 import { IKeyringPair, Signer } from '@polkadot/types/types';
-import { HexString } from '@delightfuldot/utils';
+import { HexString } from '@dedot/utils';
 
 export type AddressOrPair = IKeyringPair | string; // | AccountId32Like | MultiAddressLike;
 

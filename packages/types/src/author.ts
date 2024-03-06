@@ -1,6 +1,5 @@
 import { SerdeEnum } from './serde';
-import { Bytes, Hash } from '@delightfuldot/codecs';
-import { registry } from './registry';
+import { Bytes, Hash } from '@dedot/codecs';
 
 /**
  * RPC Extrinsic or hash
@@ -13,4 +12,3 @@ export type ExtrinsicOrHash = SerdeEnum<{
   // Raw extrinsic bytes.
   extrinsic: Bytes;
 }>;
-registry.add('ExtrinsicOrHash');

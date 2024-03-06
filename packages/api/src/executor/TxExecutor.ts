@@ -10,16 +10,16 @@ import {
   ISubmittableResult,
   SignerOptions,
   Unsub,
-} from '@delightfuldot/types';
-import { SubstrateApi } from '@delightfuldot/chaintypes';
-import { assert, HexString } from '@delightfuldot/utils';
+} from '@dedot/types';
+import { SubstrateApi } from '@dedot/chaintypes';
+import { assert, HexString } from '@dedot/utils';
 import { hexToU8a, isFunction, isHex, objectSpread, stringCamelCase, stringPascalCase, u8aToHex } from '@polkadot/util';
-import { BlockHash, Extrinsic, Hash, SignedBlock, TransactionStatus } from '@delightfuldot/codecs';
-import DelightfulApi from '../DelightfulApi';
+import { BlockHash, Extrinsic, Hash, SignedBlock, TransactionStatus } from '@dedot/codecs';
+import { Dedot } from '../client';
 import { IKeyringPair } from '@polkadot/types/types';
 import { ExtraSignedExtension, SubmittableResult } from '../extrinsic';
 import { SignOptions } from '@polkadot/keyring/types';
-import { blake2AsHex, blake2AsU8a } from '@polkadot/util-crypto';
+import { blake2AsHex, blake2AsU8a } from '@dedot/utils';
 
 export function isKeyringPair(account: AddressOrPair): account is IKeyringPair {
   return isFunction((account as IKeyringPair).sign);
@@ -47,15 +47,15 @@ export class TxExecutor<ChainApi extends GenericSubstrateApi = SubstrateApi> ext
   execute(pallet: string, functionName: string) {
     const targetPallet = this.getPallet(pallet);
 
-    assert(targetPallet.calls, 'Tx call type not found');
+    assert(targetPallet.calls, `Tx calls are not available for pallet ${targetPallet.name}`);
 
     const txType = this.metadata.types[targetPallet.calls]!;
 
-    assert(txType.type.tag === 'Enum', 'Tx type should be enum');
+    assert(txType.type.tag === 'Enum', 'Tx type defs should be enum');
 
     const isFlatEnum = txType.type.value.members.every((m) => m.fields.length === 0);
     const txCallDef = txType.type.value.members.find((m) => stringCamelCase(m.name) === functionName);
-    assert(txCallDef, 'Tx call not found');
+    assert(txCallDef, `Tx call spec not found for ${pallet}.${functionName}`);
 
     const txCallFn: GenericTxCall = (...args: any[]) => {
       let call: IRuntimeTxCall;
@@ -84,7 +84,7 @@ export class TxExecutor<ChainApi extends GenericSubstrateApi = SubstrateApi> ext
 
     txCallFn.meta = {
       ...txCallDef,
-      fieldCodecs: txCallDef.fields.map(({ typeId }) => this.registry.findPortableCodec(typeId)),
+      fieldCodecs: txCallDef.fields.map(({ typeId }) => this.registry.findCodec(typeId)),
       pallet: targetPallet.name,
       palletIndex: targetPallet.index,
     };
@@ -93,12 +93,12 @@ export class TxExecutor<ChainApi extends GenericSubstrateApi = SubstrateApi> ext
   }
 
   createExtrinsic(call: IRuntimeTxCall) {
-    const api = this.api as unknown as DelightfulApi<SubstrateApi>;
+    const api = this.api as unknown as Dedot<SubstrateApi>;
 
     class SubmittableExtrinsic extends Extrinsic implements ISubmittableExtrinsic {
       async sign(fromAccount: AddressOrPair, options?: Partial<SignerOptions>) {
         const address = isKeyringPair(fromAccount) ? fromAccount.address : fromAccount.toString();
-        const extra = new ExtraSignedExtension(api as unknown as DelightfulApi, {
+        const extra = new ExtraSignedExtension(api as unknown as Dedot, {
           signerAddress: address,
           payloadOptions: options,
         });
@@ -115,15 +115,12 @@ export class TxExecutor<ChainApi extends GenericSubstrateApi = SubstrateApi> ext
         } else if (signer?.signPayload) {
           const result = await signer.signPayload(extra.toPayload(this.callHex));
           signature = result.signature;
-        } else if (signer?.signRaw) {
-          const result = await signer.signRaw(extra.toRawPayload(this.callHex));
-          signature = result.signature;
         } else {
           throw new Error('Signer not found. Cannot sign the extrinsic!');
         }
 
         const { signatureTypeId } = this.registry.metadata!.extrinsic;
-        const $Signature = this.registry.findPortableCodec(signatureTypeId);
+        const $Signature = this.registry.findCodec(signatureTypeId);
 
         this.attachSignature({
           address: address,

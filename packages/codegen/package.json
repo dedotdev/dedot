@@ -1,27 +1,29 @@
 {
-  "name": "@delightfuldot/codegen",
-  "version": "0.0.1-alpha.20",
+  "name": "@dedot/codegen",
+  "version": "0.0.1-alpha.26",
   "description": "Generate types",
   "author": "Thang X. Vu <thang@coongcrafts.io>",
-  "homepage": "https://github.com/CoongCrafts/delightfuldot/tree/main/packages/codegen",
+  "homepage": "https://github.com/dedotdev/dedot/tree/main/packages/codegen",
   "repository": {
     "directory": "packages/codegen",
     "type": "git",
-    "url": "https://github.com/CoongCrafts/delightfuldot.git"
+    "url": "https://github.com/dedotdev/dedot.git"
   },
   "main": "src/index.ts",
+  "sideEffects": false,
   "type": "module",
   "scripts": {
-    "build": "tsc --project tsconfig.build.json && tsc --project tsconfig.build.cjs.json",
-    "clean": "rm -rf ./dist && rm -rf ./tsconfig.tsbuildinfo ./tsconfig.build.tsbuildinfo"
+    "build": "tsc --project tsconfig.build.json && tsc --project tsconfig.build.cjs.json && yarn copy",
+    "clean": "rm -rf ./dist && rm -rf ./tsconfig.tsbuildinfo ./tsconfig.build.tsbuildinfo",
+    "copy": "cp -R ./src/templates ./dist && cp -R ./src/templates ./dist/cjs"
   },
   "dependencies": {
-    "@delightfuldot/codecs": "workspace:*",
-    "@delightfuldot/shape": "workspace:*",
-    "@delightfuldot/specs": "workspace:*",
-    "@delightfuldot/utils": "workspace:*",
+    "@dedot/codecs": "workspace:*",
+    "@dedot/shape": "workspace:*",
+    "@dedot/specs": "workspace:*",
+    "@dedot/utils": "workspace:*",
     "@polkadot/util": "^12.6.2",
-    "delightfuldot": "workspace:*",
+    "dedot": "workspace:*",
     "handlebars": "^4.7.8",
     "prettier": "^3.0.3"
   },

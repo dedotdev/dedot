@@ -1,8 +1,8 @@
 import * as fs from 'fs';
 import handlebars from 'handlebars';
 import * as path from 'path';
-import * as process from 'process';
 import * as prettier from 'prettier';
+import { currentDirname } from './dirname';
 
 export const WRAPPER_TYPE_REGEX = /^(\w+)<(.*)>$/;
 export const TUPLE_TYPE_REGEX = /^\[(.*)]$/;
@@ -20,20 +20,14 @@ ${flatLines.map((line) => `* ${line.replaceAll(/\s+/g, ' ').trim()}`).join('\n')
   }
 };
 
-export const resolveFilePath = (relativePath: string | string[]) => {
-  relativePath = Array.isArray(relativePath) ? relativePath : [relativePath];
-
-  return path.resolve(process.cwd(), ...relativePath);
-};
-
 export const beautifySourceCode = async (source: string): Promise<string> => {
-  const prettierOptions = await prettier.resolveConfig(resolveFilePath('./.prettierrc.js'));
+  const prettierOptions = await prettier.resolveConfig(path.resolve(currentDirname(), '../../../../.prettierrc.js'));
 
   return prettier.format(source, { parser: 'babel-ts', ...prettierOptions });
 };
 
 export const compileTemplate = (templateFileName: string) => {
-  const templateFilePath = resolveFilePath(`packages/codegen/src/templates/${templateFileName}`);
+  const templateFilePath = path.resolve(currentDirname(), `../templates/${templateFileName}`);
 
   return handlebars.compile(fs.readFileSync(templateFilePath, 'utf8'));
 };

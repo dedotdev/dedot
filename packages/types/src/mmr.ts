@@ -1,5 +1,4 @@
-import { registry } from './registry';
-import { BlockHash, Bytes } from '@delightfuldot/codecs';
+import { BlockHash, Bytes } from '@dedot/codecs';
 
 /*
  * Retrieved MMR leaves and their proof.
@@ -12,5 +11,3 @@ export interface LeavesProof {
   // SCALE-encoded proof data. See [sp_mmr_primitives::Proof].
   proof: Bytes;
 }
-
-registry.add('LeavesProof');

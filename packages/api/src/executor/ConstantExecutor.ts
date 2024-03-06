@@ -1,6 +1,6 @@
-import type { SubstrateApi } from '@delightfuldot/chaintypes';
+import type { SubstrateApi } from '@dedot/chaintypes';
 import { stringCamelCase } from '@polkadot/util';
-import { GenericSubstrateApi } from '@delightfuldot/types';
+import { GenericSubstrateApi } from '@dedot/types';
 import { Executor } from './Executor';
 
 /**
@@ -17,7 +17,7 @@ export class ConstantExecutor<ChainApi extends GenericSubstrateApi = SubstrateAp
       throw new Error(`Constant ${constantName} not found in pallet ${pallet}`);
     }
 
-    const $codec = this.registry.findPortableCodec(constantDef.typeId);
+    const $codec = this.registry.findCodec(constantDef.typeId);
 
     return $codec.tryDecode(constantDef.value);
   }

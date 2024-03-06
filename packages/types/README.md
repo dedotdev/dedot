@@ -1,3 +1,3 @@
-# @delightfuldot/types
+# @dedot/types
 
 Known types 

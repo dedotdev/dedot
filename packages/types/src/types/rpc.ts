@@ -1,7 +1,10 @@
+import { AnyShape } from '@dedot/shape';
+
 export type RpcParamSpec = {
   docs?: string;
   name: string;
   type: string;
+  codec?: AnyShape;
   isScale?: boolean;
   isOptional?: boolean;
   [prop: string]: any;
@@ -15,6 +18,7 @@ export type RpcCallSpec = {
   alias?: string[];
   params: RpcParamSpec[];
   type: string;
+  codec?: AnyShape;
   isScale?: boolean;
   isUnsafe?: boolean;
   module?: string;

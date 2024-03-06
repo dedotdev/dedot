@@ -1,5 +1,5 @@
 import { stringLowerFirst } from '@polkadot/util';
-import { normalizeName } from '@delightfuldot/utils';
+import { normalizeName } from '@dedot/utils';
 import { ApiGen } from '../generator';
 import { beautifySourceCode, commentBlock, compileTemplate } from './utils';
 

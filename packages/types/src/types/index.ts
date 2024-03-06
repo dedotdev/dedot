@@ -4,7 +4,7 @@ import {
   PalletErrorMetadataLatest,
   PalletEventMetadataLatest,
   PalletTxMetadataLatest,
-} from '@delightfuldot/codecs';
+} from '@dedot/codecs';
 import { RpcCallSpec } from './rpc';
 import { RuntimeApiMethodSpec } from './runtime';
 
@@ -46,9 +46,9 @@ export type GenericTxCall<F extends AnyFunc = AnyFunc> = F & {
   meta?: PalletTxMetadataLatest;
 };
 
-export interface GenericChainTx {
+export interface GenericChainTx<TxCall extends AnyFunc = AnyFunc> {
   [pallet: string]: {
-    [callName: string]: GenericTxCall;
+    [callName: string]: GenericTxCall<TxCall>;
   };
 }
 

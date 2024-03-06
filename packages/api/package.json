@@ -1,26 +1,26 @@
 {
-  "name": "delightfuldot",
-  "version": "0.0.1-alpha.20",
+  "name": "dedot",
+  "version": "0.0.1-alpha.26",
   "description": "A fast & lightweight JavaScript/TypeScript client for Polkadot & Substrate",
   "author": "Thang X. Vu <thang@coongcrafts.io>",
-  "homepage": "https://github.com/CoongCrafts/delightfuldot",
+  "homepage": "https://github.com/dedotdev/dedot",
   "repository": {
     "directory": "packages/api",
     "type": "git",
-    "url": "https://github.com/CoongCrafts/delightfuldot.git"
+    "url": "https://github.com/dedotdev/dedot.git"
   },
   "main": "src/index.ts",
   "type": "module",
+  "sideEffects": false,
   "dependencies": {
-    "@delightfuldot/chaintypes": "workspace:*",
-    "@delightfuldot/codecs": "workspace:*",
-    "@delightfuldot/shape": "workspace:*",
-    "@delightfuldot/specs": "workspace:*",
-    "@delightfuldot/utils": "workspace:*",
+    "@dedot/chaintypes": "workspace:*",
+    "@dedot/codecs": "workspace:*",
+    "@dedot/shape": "workspace:*",
+    "@dedot/specs": "workspace:*",
+    "@dedot/storage": "workspace:*",
+    "@dedot/utils": "workspace:*",
     "@polkadot/rpc-provider": "^10.11.2",
-    "@polkadot/util": "^12.6.2",
-    "@polkadot/util-crypto": "^12.6.2",
-    "localforage": "^1.10.0"
+    "@polkadot/util": "^12.6.2"
   },
   "scripts": {
     "build": "tsc --project tsconfig.build.json && tsc --project tsconfig.build.cjs.json",

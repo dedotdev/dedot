@@ -1,8 +1,8 @@
-import type { SubstrateApi } from '@delightfuldot/chaintypes';
+import type { SubstrateApi } from '@dedot/chaintypes';
 import { isFunction, u8aToHex } from '@polkadot/util';
-import { findAliasRpcSpec, findRpcSpec } from '@delightfuldot/specs';
-import { GenericSubstrateApi, Unsub, RpcCallSpec, RpcParamSpec, GenericRpcCall } from '@delightfuldot/types';
-import { assert, isNativeType } from '@delightfuldot/utils';
+import { findAliasRpcSpec, findRpcSpec } from '@dedot/specs';
+import { GenericSubstrateApi, Unsub, RpcCallSpec, RpcParamSpec, GenericRpcCall } from '@dedot/types';
+import { assert, isNativeType } from '@dedot/utils';
 import { Executor } from './Executor';
 
 const isOptionalParam = (param: RpcParamSpec): boolean => {
@@ -85,10 +85,11 @@ export class RpcExecutor<ChainApi extends GenericSubstrateApi = SubstrateApi> ex
       return undefined;
     }
 
-    const { type, isScale } = callSpec;
+    const { type, isScale, codec } = callSpec;
 
     if (isScale) {
-      return this.registry.findCodec(type).tryDecode(raw);
+      assert(codec, 'Codec not found to decode response');
+      return codec.tryDecode(raw);
     }
 
     if (isNativeType(type)) {
@@ -99,14 +100,14 @@ export class RpcExecutor<ChainApi extends GenericSubstrateApi = SubstrateApi> ex
   }
 
   tryEncode(paramSpec: RpcParamSpec, value: any): any {
-    const { type, isScale, isOptional } = paramSpec;
+    const { isScale, codec, isOptional } = paramSpec;
     if (isScale) {
       if (isOptional && (value === undefined || value === null)) {
         return null;
       }
 
-      const $codec = this.registry.findCodec(type);
-      return u8aToHex($codec.tryEncode(value));
+      assert(codec, 'Codec not found to encode params');
+      return u8aToHex(codec.tryEncode(value));
     }
 
     // TODO generalize this!

@@ -1,5 +1,5 @@
 {
-  "name": "delightfuldot.dev",
+  "name": "dedot.dev",
   "private": true,
   "author": "Thang X. Vu <thang@coongcrafts.io>",
   "packageManager": "yarn@3.4.1",
@@ -20,6 +20,8 @@
     "generate-package-info-file": "npx lerna exec --no-private -- node \\$LERNA_ROOT_PATH/scripts/generate-package-info-file.js",
     "copy-files-to-dist": "npx lerna exec --no-private -- node \\$LERNA_ROOT_PATH/scripts/copy-files-to-dist.js",
     "gen-chaintypes": "npx ts-node ./packages/codegen/src/genSupportedChainTypes.ts",
+    "cli": "yarn workspace @dedot/cli start",
+    "publish:next": "yarn build && npx lerna publish prerelease --canary --preid next.$(git rev-parse --short=8 HEAD) --dist-tag next --force-publish --no-private --no-git-tag-version --yes",
     "zombienet-test-preps": "npx lerna exec --no-private -- node \\$LERNA_ROOT_PATH/scripts/zombienet-tests-preps.js"
   },
   "devDependencies": {
@@ -39,7 +41,6 @@
   },
   "resolutions": {
     "@polkadot/util": "^12.6.2",
-    "@polkadot/util-crypto": "^12.6.2",
     "@polkadot/types": "^10.11.2",
     "@polkadot/types-support": "^10.11.2"
   },

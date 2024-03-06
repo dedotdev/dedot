@@ -8,6 +8,9 @@
   "references": [
     {
       "path": "../types/tsconfig.json"
+    },
+    {
+      "path": "../codecs/tsconfig.json"
     }
   ]
 }

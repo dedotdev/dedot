@@ -1,7 +1,6 @@
-import { DelightfulApi } from 'delightfuldot';
+import { Dedot } from 'dedot';
 import * as fs from 'fs';
 import * as path from 'path';
-import * as process from 'process';
 import {
   ConstsGen,
   ErrorsGen,
@@ -9,18 +8,22 @@ import {
   IndexGen,
   QueryGen,
   RpcGen,
-  TypesGen,
   RuntimeApisGen,
   TxGen,
+  TypesGen,
 } from './generator';
-import { RpcMethods } from '@delightfuldot/types';
-import { MetadataLatest } from '@delightfuldot/codecs';
+import { RpcMethods } from '@dedot/types';
+import { MetadataLatest } from '@dedot/codecs';
 import { NetworkInfo } from './types';
+import { stringCamelCase } from '@polkadot/util';
 
 export async function generateTypesFromChain(network: NetworkInfo, endpoint: string, outDir: string) {
-  const api = await DelightfulApi.create(endpoint);
+  const api = await Dedot.create(endpoint);
   const { methods }: RpcMethods = await api.rpc.rpc.methods();
   const apis = api.runtimeVersion?.apis || [];
+  if (!network.chain) {
+    network.chain = stringCamelCase(api.runtimeVersion?.specName || api.runtimeChain || 'local');
+  }
 
   await generateTypes(network, api.metadataLatest, methods, apis, outDir);
 
@@ -34,19 +37,19 @@ export async function generateTypes(
   runtimeApis: any[],
   outDir: string = '.',
 ) {
-  const dirPath = path.resolve(process.cwd(), outDir, network.chain);
-  const defTypesFileName = path.join(dirPath, `types.ts`);
-  const constsTypesFileName = path.join(dirPath, `consts.ts`);
-  const queryTypesFileName = path.join(dirPath, `query.ts`);
-  const rpcCallsFileName = path.join(dirPath, `rpc.ts`);
-  const indexFileName = path.join(dirPath, `index.ts`);
-  const errorsFileName = path.join(dirPath, `errors.ts`);
-  const eventsFileName = path.join(dirPath, `events.ts`);
-  const runtimeApisFileName = path.join(dirPath, `runtime.ts`);
-  const txFileName = path.join(dirPath, `tx.ts`);
+  const dirPath = path.resolve(outDir, network.chain);
+  const defTypesFileName = path.join(dirPath, `types.d.ts`);
+  const constsTypesFileName = path.join(dirPath, `consts.d.ts`);
+  const queryTypesFileName = path.join(dirPath, `query.d.ts`);
+  const rpcCallsFileName = path.join(dirPath, `rpc.d.ts`);
+  const indexFileName = path.join(dirPath, `index.d.ts`);
+  const errorsFileName = path.join(dirPath, `errors.d.ts`);
+  const eventsFileName = path.join(dirPath, `events.d.ts`);
+  const runtimeApisFileName = path.join(dirPath, `runtime.d.ts`);
+  const txFileName = path.join(dirPath, `tx.d.ts`);
 
   if (!fs.existsSync(dirPath)) {
-    fs.mkdirSync(dirPath);
+    fs.mkdirSync(dirPath, { recursive: true });
   }
 
   const typesGen = new TypesGen(metadata);

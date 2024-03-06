@@ -1,6 +1,5 @@
-import { BlockHash, Bytes, FixedBytes, Option, StorageData, StorageKey } from '@delightfuldot/codecs';
-import { registry } from './registry';
-import { SerdeEnum } from '@delightfuldot/types/serde';
+import { BlockHash, Bytes, Option, StorageData, StorageKey } from '@dedot/codecs';
+import { SerdeEnum } from '@dedot/types/serde';
 
 export interface ReadProof<Hash = BlockHash> {
   /**
@@ -13,7 +12,6 @@ export interface ReadProof<Hash = BlockHash> {
    */
   proof: Array<Bytes>;
 }
-registry.add('ReadProof');
 
 /**
  * Storage change set
@@ -29,7 +27,6 @@ export interface StorageChangeSet<Hash = BlockHash> {
    */
   changes: Array<[StorageKey, StorageData | null]>;
 }
-registry.add('StorageChangeSet');
 
 /**
  * Container for all related spans and events for the block being traced.
@@ -105,7 +102,6 @@ export type TraceBlockResponse = SerdeEnum<{
   traceError: TraceError;
   blockTrace: BlockTrace;
 }>;
-registry.add('TraceBlockResponse');
 
 /**
  * Current state migration status.
@@ -120,4 +116,3 @@ export interface MigrationStatusResult {
   // Number of child items that we will iterate on.
   totalChild: bigint;
 }
-registry.add('MigrationStatusResult');

@@ -1,8 +1,8 @@
-import { GenericPalletEvent, GenericSubstrateApi, PalletEvent } from '@delightfuldot/types';
-import { SubstrateApi } from '@delightfuldot/chaintypes';
+import { GenericPalletEvent, GenericSubstrateApi, PalletEvent } from '@dedot/types';
+import { SubstrateApi } from '@dedot/chaintypes';
 import { Executor } from './Executor';
 import { stringCamelCase, stringPascalCase } from '@polkadot/util';
-import { assert } from '@delightfuldot/utils';
+import { assert } from '@dedot/utils';
 
 /**
  * @name EventExecutor
@@ -55,7 +55,7 @@ export class EventExecutor<ChainApi extends GenericSubstrateApi = SubstrateApi> 
 
     return {
       ...eventDef,
-      fieldCodecs: eventDef.fields.map(({ typeId }) => this.registry.findPortableCodec(typeId)),
+      fieldCodecs: eventDef.fields.map(({ typeId }) => this.registry.findCodec(typeId)),
     };
   }
 }

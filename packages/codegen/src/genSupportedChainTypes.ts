@@ -1,9 +1,9 @@
 import { generateTypes, generateTypesFromChain } from './index';
 import { rpc } from '@polkadot/types-support/metadata/static-substrate';
 import staticSubstrate from '@polkadot/types-support/metadata/v15/substrate-hex';
-import { $Metadata, CodecRegistry, Metadata, RuntimeVersion } from '@delightfuldot/codecs';
+import { $Metadata, PortableRegistry, Metadata, RuntimeVersion } from '@dedot/codecs';
 import { NetworkInfo } from './types';
-import { DelightfulApi, ConstantExecutor } from 'delightfuldot';
+import { Dedot, ConstantExecutor } from 'dedot';
 
 const NETWORKS: NetworkInfo[] = [
   {
@@ -43,6 +43,10 @@ const NETWORKS: NetworkInfo[] = [
     chain: 'aleph',
     endpoint: 'wss://aleph-zero.api.onfinality.io/public-ws',
   },
+  {
+    chain: 'westendAssetHub',
+    endpoint: 'wss://westend-asset-hub-rpc.polkadot.io',
+  },
 ];
 
 const OUT_DIR = 'packages/chaintypes/src';
@@ -67,11 +71,11 @@ async function run() {
 }
 
 const getRuntimeVersion = (metadata: Metadata): RuntimeVersion => {
-  const registry = new CodecRegistry(metadata.latest);
+  const registry = new PortableRegistry(metadata.latest);
   const executor = new ConstantExecutor({
     registry,
     metadataLatest: metadata.latest,
-  } as unknown as DelightfulApi);
+  } as unknown as Dedot);
 
   return executor.execute('system', 'version') as RuntimeVersion;
 };

@@ -1,5 +1,5 @@
 import { hexToU8a, u8aToHex } from '@polkadot/util';
-import { HexString } from '@delightfuldot/utils';
+import { HexString } from '@dedot/utils';
 import * as $ from 'subshape';
 import { DecodeBuffer, EncodeBuffer, metadata, Shape } from 'subshape';
 import { createShape } from './createShape';

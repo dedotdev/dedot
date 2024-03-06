@@ -1,4 +1,4 @@
-import { RpcCallSpec, RpcCallsSpec } from '@delightfuldot/types';
+import { RpcCallSpec, RpcCallsSpec } from '@dedot/types';
 import { babe } from './babe';
 import { beefy } from './beefy';
 import { childstate } from './childstate';
