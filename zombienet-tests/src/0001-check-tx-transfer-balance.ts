@@ -22,13 +22,15 @@ export const run = async (nodeName: any, networkInfo: any): Promise<void> => {
 
   const transferTx = api.tx.balances.transferKeepAlive(BOB, TEN_UNIT);
 
-  return new Promise((resolve) => {
-    transferTx.signAndSend(alice, async (result) => {
+  return new Promise(async (resolve) => {
+    const unsub = await transferTx.signAndSend(alice, async (result) => {
       console.log('Transaction status', result.status.tag);
       if (result.status.tag === 'InBlock') {
         const newBobBalance = (await api.query.system.account(BOB)).data.free;
         console.log('BOB - new balance', newBobBalance);
         assert(prevBobBalance + TEN_UNIT === newBobBalance, 'Incorrect BOB balance');
+
+        await unsub();
         resolve();
       }
     });

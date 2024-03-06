@@ -31,8 +31,8 @@ export const run = async (nodeName: any, networkInfo: any): Promise<void> => {
 
   const batchTx = api.tx.utility.batch([transferTx.call, remarkCall]);
 
-  return new Promise((resolve) => {
-    batchTx.signAndSend(alice, async ({ status, events }) => {
+  return new Promise(async (resolve) => {
+    const unsub = await batchTx.signAndSend(alice, async ({ status, events }) => {
       console.log('Transaction status', status.tag);
 
       if (status.tag === 'InBlock') {
@@ -57,6 +57,7 @@ export const run = async (nodeName: any, networkInfo: any): Promise<void> => {
           'Event Utility.ItemCompleted should be have 2 records',
         );
 
+        await unsub();
         resolve();
       }
     });
