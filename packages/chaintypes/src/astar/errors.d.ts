@@ -441,16 +441,6 @@ export interface ChainErrors extends GenericChainErrors {
     InvalidInflationParameters: GenericPalletError;
 
     /**
-     * Decommission is in progress so this call is not allowed.
-     **/
-    DecommissionInProgress: GenericPalletError;
-
-    /**
-     * Delegated claim call is not allowed if both the staker & caller are the same accounts.
-     **/
-    ClaimForCallerAccount: GenericPalletError;
-
-    /**
      * Generic pallet error
      **/
     [error: string]: GenericPalletError;

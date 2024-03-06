@@ -552,11 +552,6 @@ export interface ChainEvents extends GenericChainEvents {
     >;
 
     /**
-     * Pallet is being decommissioned.
-     **/
-    Decommission: GenericPalletEvent<'DappsStaking', 'Decommission', null>;
-
-    /**
      * Generic pallet event
      **/
     [prop: string]: GenericPalletEvent;
