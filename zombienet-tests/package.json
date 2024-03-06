@@ -1,0 +1,14 @@
+{
+  "name": "zombienet-tests",
+  "author": "Tung Vu <tung@coongcrafts.io>",
+  "private": true,
+  "dependencies": {
+    "@dedot/chaintypes": "workspace:*",
+    "@dedot/codecs": "workspace:*",
+    "@dedot/utils": "workspace:*",
+    "@polkadot/keyring": "^12.6.2",
+    "@polkadot/util": "^12.6.2",
+    "dedot": "workspace:*"
+  },
+  "license": "Apache-2.0"
+}

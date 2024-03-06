@@ -9095,3 +9095,16 @@ __metadata:
   checksum: 2cac84540f65c64ccc1683c267edce396b26b1e931aa429660aefac8fbe0188167b7aee815a3c22fa59a28a58d898d1a2b1825048f834d8d629f4c2a5d443801
   languageName: node
   linkType: hard
+
+"zombienet-tests@workspace:zombienet-tests":
+  version: 0.0.0-use.local
+  resolution: "zombienet-tests@workspace:zombienet-tests"
+  dependencies:
+    "@dedot/chaintypes": "workspace:*"
+    "@dedot/codecs": "workspace:*"
+    "@dedot/utils": "workspace:*"
+    "@polkadot/keyring": ^12.6.2
+    "@polkadot/util": ^12.6.2
+    dedot: "workspace:*"
+  languageName: unknown
+  linkType: soft

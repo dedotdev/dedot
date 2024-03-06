@@ -6,11 +6,17 @@ import type {
   Callback,
   GenericRpcCall,
   ExtrinsicOrHash,
+  EpochAuthorship,
+  EncodedFinalityProofs,
+  ReportedRoundStates,
+  JustificationNotification,
+  LeavesProof,
   StorageKind,
   RpcMethods,
   ReadProof,
   StorageChangeSet,
   TraceBlockResponse,
+  MigrationStatusResult,
   ChainType,
   Health,
   NodeRole,
@@ -23,6 +29,7 @@ import type {
   Bytes,
   Hash,
   TransactionStatus,
+  VersionedFinalityProof,
   Option,
   SignedBlock,
   BlockHash,
@@ -39,6 +46,44 @@ import type {
 } from '@dedot/codecs';
 
 export interface RpcCalls extends GenericRpcCalls {
+  archive: {
+    /**
+     * @rpcname: archive_unstable_body
+     **/
+    unstable_body: GenericRpcCall;
+
+    /**
+     * @rpcname: archive_unstable_call
+     **/
+    unstable_call: GenericRpcCall;
+
+    /**
+     * @rpcname: archive_unstable_finalizedHeight
+     **/
+    unstable_finalizedHeight: GenericRpcCall;
+
+    /**
+     * @rpcname: archive_unstable_genesisHash
+     **/
+    unstable_genesisHash: GenericRpcCall;
+
+    /**
+     * @rpcname: archive_unstable_hashByHeight
+     **/
+    unstable_hashByHeight: GenericRpcCall;
+
+    /**
+     * @rpcname: archive_unstable_header
+     **/
+    unstable_header: GenericRpcCall;
+
+    /**
+     * @rpcname: archive_unstable_storage
+     **/
+    unstable_storage: GenericRpcCall;
+
+    [method: string]: GenericRpcCall;
+  };
   author: {
     /**
      * Checks if the keystore has private keys for the given public key and key type. Returns `true` if a private key could be found.
@@ -109,6 +154,36 @@ export interface RpcCalls extends GenericRpcCalls {
 
     [method: string]: GenericRpcCall;
   };
+  babe: {
+    /**
+     * Returns data about which slots (primary or secondary) can be claimed in the current epoch with the keys in the keystore.
+     *
+     * @rpcname: babe_epochAuthorship
+     **/
+    epochAuthorship: GenericRpcCall<() => Promise<Record<string, EpochAuthorship>>>;
+
+    [method: string]: GenericRpcCall;
+  };
+  beefy: {
+    /**
+     * Returns hash of the latest BEEFY finalized block as seen by this client.
+     * The latest BEEFY block might not be available if the BEEFY gadget is not running
+     * in the network or if the client is still initializing or syncing with the network.
+     * In such case an error would be returned.
+     *
+     * @rpcname: beefy_getFinalizedHead
+     **/
+    getFinalizedHead: GenericRpcCall<() => Promise<Hash>>;
+
+    /**
+     * Returns the block most recently finalized by BEEFY, alongside its justification.
+     *
+     * @pubsub: beefy_justifications, beefy_subscribeJustifications, beefy_unsubscribeJustifications
+     **/
+    subscribeJustifications: GenericRpcCall<(callback: Callback<VersionedFinalityProof>) => Promise<Unsub>>;
+
+    [method: string]: GenericRpcCall;
+  };
   chainHead: {
     /**
      * @rpcname: chainHead_unstable_body
@@ -129,11 +204,6 @@ export interface RpcCalls extends GenericRpcCalls {
      * @rpcname: chainHead_unstable_follow
      **/
     unstable_follow: GenericRpcCall;
-
-    /**
-     * @rpcname: chainHead_unstable_genesisHash
-     **/
-    unstable_genesisHash: GenericRpcCall;
 
     /**
      * @rpcname: chainHead_unstable_header
@@ -159,6 +229,24 @@ export interface RpcCalls extends GenericRpcCalls {
      * @rpcname: chainHead_unstable_unpin
      **/
     unstable_unpin: GenericRpcCall;
+
+    [method: string]: GenericRpcCall;
+  };
+  chainSpec: {
+    /**
+     * @rpcname: chainSpec_v1_chainName
+     **/
+    v1_chainName: GenericRpcCall;
+
+    /**
+     * @rpcname: chainSpec_v1_genesisHash
+     **/
+    v1_genesisHash: GenericRpcCall;
+
+    /**
+     * @rpcname: chainSpec_v1_properties
+     **/
+    v1_properties: GenericRpcCall;
 
     [method: string]: GenericRpcCall;
   };
@@ -307,275 +395,96 @@ export interface RpcCalls extends GenericRpcCalls {
 
     [method: string]: GenericRpcCall;
   };
-  debug: {
+  grandpa: {
     /**
-     * @rpcname: debug_traceBlockByHash
+     * Prove finality for the given block number, returning the Justification for the last block in the set.
+     *
+     * @rpcname: grandpa_proveFinality
+     * @param {BlockNumber} blockNumber
      **/
-    traceBlockByHash: GenericRpcCall;
+    proveFinality: GenericRpcCall<(blockNumber: BlockNumber) => Promise<Option<EncodedFinalityProofs>>>;
 
     /**
-     * @rpcname: debug_traceBlockByNumber
+     * Returns the state of the current best round state as well as the ongoing background rounds
+     *
+     * @rpcname: grandpa_roundState
      **/
-    traceBlockByNumber: GenericRpcCall;
+    roundState: GenericRpcCall<() => Promise<ReportedRoundStates>>;
 
     /**
-     * @rpcname: debug_traceTransaction
+     * Returns the block most recently finalized by Grandpa, alongside side its justification.
+     *
+     * @pubsub: grandpa_justifications, grandpa_subscribeJustifications, grandpa_unsubscribeJustifications
      **/
-    traceTransaction: GenericRpcCall;
-
-    [method: string]: GenericRpcCall;
-  };
-  eth: {
-    /**
-     * @rpcname: eth_accounts
-     **/
-    accounts: GenericRpcCall;
-
-    /**
-     * @rpcname: eth_blockNumber
-     **/
-    blockNumber: GenericRpcCall;
-
-    /**
-     * @rpcname: eth_call
-     **/
-    call: GenericRpcCall;
-
-    /**
-     * @rpcname: eth_chainId
-     **/
-    chainId: GenericRpcCall;
-
-    /**
-     * @rpcname: eth_coinbase
-     **/
-    coinbase: GenericRpcCall;
-
-    /**
-     * @rpcname: eth_estimateGas
-     **/
-    estimateGas: GenericRpcCall;
-
-    /**
-     * @rpcname: eth_feeHistory
-     **/
-    feeHistory: GenericRpcCall;
-
-    /**
-     * @rpcname: eth_gasPrice
-     **/
-    gasPrice: GenericRpcCall;
-
-    /**
-     * @rpcname: eth_getBalance
-     **/
-    getBalance: GenericRpcCall;
-
-    /**
-     * @rpcname: eth_getBlockByHash
-     **/
-    getBlockByHash: GenericRpcCall;
-
-    /**
-     * @rpcname: eth_getBlockByNumber
-     **/
-    getBlockByNumber: GenericRpcCall;
-
-    /**
-     * @rpcname: eth_getBlockReceipts
-     **/
-    getBlockReceipts: GenericRpcCall;
-
-    /**
-     * @rpcname: eth_getBlockTransactionCountByHash
-     **/
-    getBlockTransactionCountByHash: GenericRpcCall;
-
-    /**
-     * @rpcname: eth_getBlockTransactionCountByNumber
-     **/
-    getBlockTransactionCountByNumber: GenericRpcCall;
-
-    /**
-     * @rpcname: eth_getCode
-     **/
-    getCode: GenericRpcCall;
-
-    /**
-     * @rpcname: eth_getFilterChanges
-     **/
-    getFilterChanges: GenericRpcCall;
-
-    /**
-     * @rpcname: eth_getFilterLogs
-     **/
-    getFilterLogs: GenericRpcCall;
-
-    /**
-     * @rpcname: eth_getLogs
-     **/
-    getLogs: GenericRpcCall;
-
-    /**
-     * @rpcname: eth_getStorageAt
-     **/
-    getStorageAt: GenericRpcCall;
-
-    /**
-     * @rpcname: eth_getTransactionByBlockHashAndIndex
-     **/
-    getTransactionByBlockHashAndIndex: GenericRpcCall;
-
-    /**
-     * @rpcname: eth_getTransactionByBlockNumberAndIndex
-     **/
-    getTransactionByBlockNumberAndIndex: GenericRpcCall;
-
-    /**
-     * @rpcname: eth_getTransactionByHash
-     **/
-    getTransactionByHash: GenericRpcCall;
-
-    /**
-     * @rpcname: eth_getTransactionCount
-     **/
-    getTransactionCount: GenericRpcCall;
-
-    /**
-     * @rpcname: eth_getTransactionReceipt
-     **/
-    getTransactionReceipt: GenericRpcCall;
-
-    /**
-     * @rpcname: eth_getUncleByBlockHashAndIndex
-     **/
-    getUncleByBlockHashAndIndex: GenericRpcCall;
-
-    /**
-     * @rpcname: eth_getUncleByBlockNumberAndIndex
-     **/
-    getUncleByBlockNumberAndIndex: GenericRpcCall;
-
-    /**
-     * @rpcname: eth_getUncleCountByBlockHash
-     **/
-    getUncleCountByBlockHash: GenericRpcCall;
-
-    /**
-     * @rpcname: eth_getUncleCountByBlockNumber
-     **/
-    getUncleCountByBlockNumber: GenericRpcCall;
-
-    /**
-     * @rpcname: eth_getWork
-     **/
-    getWork: GenericRpcCall;
-
-    /**
-     * @rpcname: eth_hashrate
-     **/
-    hashrate: GenericRpcCall;
-
-    /**
-     * @rpcname: eth_maxPriorityFeePerGas
-     **/
-    maxPriorityFeePerGas: GenericRpcCall;
-
-    /**
-     * @rpcname: eth_mining
-     **/
-    mining: GenericRpcCall;
-
-    /**
-     * @rpcname: eth_newBlockFilter
-     **/
-    newBlockFilter: GenericRpcCall;
-
-    /**
-     * @rpcname: eth_newFilter
-     **/
-    newFilter: GenericRpcCall;
-
-    /**
-     * @rpcname: eth_newPendingTransactionFilter
-     **/
-    newPendingTransactionFilter: GenericRpcCall;
-
-    /**
-     * @rpcname: eth_protocolVersion
-     **/
-    protocolVersion: GenericRpcCall;
-
-    /**
-     * @rpcname: eth_sendRawTransaction
-     **/
-    sendRawTransaction: GenericRpcCall;
-
-    /**
-     * @rpcname: eth_sendTransaction
-     **/
-    sendTransaction: GenericRpcCall;
-
-    /**
-     * @rpcname: eth_submitHashrate
-     **/
-    submitHashrate: GenericRpcCall;
-
-    /**
-     * @rpcname: eth_submitWork
-     **/
-    submitWork: GenericRpcCall;
-
-    /**
-     * @rpcname: eth_subscribe
-     **/
-    subscribe: GenericRpcCall;
-
-    /**
-     * @rpcname: eth_syncing
-     **/
-    syncing: GenericRpcCall;
-
-    /**
-     * @rpcname: eth_uninstallFilter
-     **/
-    uninstallFilter: GenericRpcCall;
-
-    /**
-     * @rpcname: eth_unsubscribe
-     **/
-    unsubscribe: GenericRpcCall;
+    subscribeJustifications: GenericRpcCall<(callback: Callback<JustificationNotification>) => Promise<Unsub>>;
 
     [method: string]: GenericRpcCall;
   };
-  moon: {
+  mmr: {
     /**
-     * @rpcname: moon_isBlockFinalized
+     * Generate an MMR proof for the given `block_numbers`.
+     *
+     * This method calls into a runtime with MMR pallet included and attempts to generate
+     * an MMR proof for the set of blocks that have the given `block_numbers` with the MMR root at
+     * `best_known_block_number`. `best_known_block_number` must be larger than all the
+     * `block_numbers` for the function to succeed.
+     *
+     * Optionally via `at`, a block hash at which the runtime should be queried can be specified.
+     * Optionally via `best_known_block_number`, the proof can be generated using the MMR's state
+     * at a specific best block. Note that if `best_known_block_number` is provided, then also
+     * specifying the block hash via `at` isn't super-useful here, unless you're generating proof
+     * using non-finalized blocks where there are several competing forks. That's because MMR state
+     * will be fixed to the state with `best_known_block_number`, which already points to
+     * some historical block.
+     *
+     * Returns the (full) leaves and a proof for these leaves (compact encoding, i.e. hash of
+     * the leaves). Both parameters are SCALE-encoded.
+     * The order of entries in the `leaves` field of the returned struct
+     * is the same as the order of the entries in `block_numbers` supplied
+     *
+     * @rpcname: mmr_generateProof
+     * @param {Array<BlockNumber>} blockNumbers
+     * @param {BlockNumber} bestKnownBlockNumber
+     * @param {BlockHash} at
      **/
-    isBlockFinalized: GenericRpcCall;
+    generateProof: GenericRpcCall<
+      (blockNumbers: Array<BlockNumber>, bestKnownBlockNumber?: BlockNumber, at?: BlockHash) => Promise<LeavesProof>
+    >;
 
     /**
-     * @rpcname: moon_isTxFinalized
+     * Get the MMR root hash for the current best block
+     *
+     * @rpcname: mmr_root
+     * @param {BlockHash} at
      **/
-    isTxFinalized: GenericRpcCall;
-
-    [method: string]: GenericRpcCall;
-  };
-  net: {
-    /**
-     * @rpcname: net_listening
-     **/
-    listening: GenericRpcCall;
+    root: GenericRpcCall<(at?: BlockHash) => Promise<Hash>>;
 
     /**
-     * @rpcname: net_peerCount
+     * Verify an MMR `proof`.
+     *
+     * This method calls into a runtime with MMR pallet included and attempts to verify
+     * an MMR proof.
+     *
+     * Returns `true` if the proof is valid, else returns the verification error.
+     *
+     * @rpcname: mmr_verifyProof
+     * @param {LeavesProof} proof
      **/
-    peerCount: GenericRpcCall;
+    verifyProof: GenericRpcCall<(proof: LeavesProof) => Promise<boolean>>;
 
     /**
-     * @rpcname: net_version
+     * Verify an MMR `proof` statelessly given an `mmr_root`.
+     *
+     * This method calls into a runtime with MMR pallet included and attempts to verify
+     * an MMR proof against a provided MMR root.
+     *
+     * Returns `true` if the proof is valid, else returns the verification error.
+     *
+     * @rpcname: mmr_verifyProofStateless
+     * @param {Hash} mmrRoot
+     * @param {LeavesProof} proof
      **/
-    version: GenericRpcCall;
+    verifyProofStateless: GenericRpcCall<(mmrRoot: Hash, proof: LeavesProof) => Promise<boolean>>;
 
     [method: string]: GenericRpcCall;
   };
@@ -793,6 +702,25 @@ export interface RpcCalls extends GenericRpcCalls {
       ) => Promise<TraceBlockResponse>
     >;
 
+    /**
+     * Check current migration state. This call is performed locally without submitting any transactions. Thus executing this won't change any state. Nonetheless it is a VERY costy call that should be only exposed to trusted peers.
+     *
+     * @rpcname: state_trieMigrationStatus
+     * @param {BlockHash} at
+     **/
+    trieMigrationStatus: GenericRpcCall<(at?: BlockHash) => Promise<MigrationStatusResult>>;
+
+    [method: string]: GenericRpcCall;
+  };
+  syncstate: {
+    /**
+     * Returns the JSON-serialized chainspec running the node, with a sync state.
+     *
+     * @rpcname: sync_state_genSyncSpec
+     * @param {boolean} raw
+     **/
+    genSyncSpec: GenericRpcCall<(raw: boolean) => Promise<Record<string, any>>>;
+
     [method: string]: GenericRpcCall;
   };
   system: {
@@ -960,55 +888,16 @@ export interface RpcCalls extends GenericRpcCalls {
 
     [method: string]: GenericRpcCall;
   };
-  trace: {
+  transactionWatch: {
     /**
-     * @rpcname: trace_filter
-     **/
-    filter: GenericRpcCall;
-
-    [method: string]: GenericRpcCall;
-  };
-  transaction: {
-    /**
-     * @rpcname: transaction_unstable_submitAndWatch
+     * @rpcname: transactionWatch_unstable_submitAndWatch
      **/
     unstable_submitAndWatch: GenericRpcCall;
 
     /**
-     * @rpcname: transaction_unstable_unwatch
+     * @rpcname: transactionWatch_unstable_unwatch
      **/
     unstable_unwatch: GenericRpcCall;
-
-    [method: string]: GenericRpcCall;
-  };
-  txpool: {
-    /**
-     * @rpcname: txpool_content
-     **/
-    content: GenericRpcCall;
-
-    /**
-     * @rpcname: txpool_inspect
-     **/
-    inspect: GenericRpcCall;
-
-    /**
-     * @rpcname: txpool_status
-     **/
-    status: GenericRpcCall;
-
-    [method: string]: GenericRpcCall;
-  };
-  web3: {
-    /**
-     * @rpcname: web3_clientVersion
-     **/
-    clientVersion: GenericRpcCall;
-
-    /**
-     * @rpcname: web3_sha3
-     **/
-    sha3: GenericRpcCall;
 
     [method: string]: GenericRpcCall;
   };

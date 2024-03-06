@@ -1,0 +1,52 @@
+name: E2E Zombienet Tests
+
+on:
+  pull_request:
+    branches: ["main"]
+  push:
+    branches: ["*"]
+
+
+jobs:
+  zombienet-tests:
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        node-version: [ 18.x ]
+
+    steps:
+      - uses: actions/checkout@v3
+      - name: Use Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v3
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: 'yarn'
+      - run: yarn install --immutable
+      - run: yarn build
+      - run: yarn zombienet-test-preps
+      - name: Download zombienet
+        run: |
+          curl -L -O https://github.com/paritytech/zombienet/releases/download/v1.3.92/zombienet-linux-x64
+          chmod +x zombienet-linux-x64
+      - name: Download polkadot
+        run: |
+          curl -L -O https://github.com/paritytech/polkadot-sdk/releases/download/polkadot-v1.7.0/polkadot
+          chmod +x polkadot
+      - name: Download polkadot execute worker
+        run: |
+          curl -L -O https://github.com/paritytech/polkadot-sdk/releases/download/polkadot-v1.7.0/polkadot-execute-worker
+          chmod +x polkadot-execute-worker
+      - name: Download polkadot prepare worker
+        run: |
+          curl -L -O https://github.com/paritytech/polkadot-sdk/releases/download/polkadot-v1.7.0/polkadot-prepare-worker
+          chmod +x polkadot-prepare-worker
+      - name: Download polkadot-parachain
+        run: |
+          curl -L -O https://github.com/paritytech/polkadot-sdk/releases/download/polkadot-v1.7.0/polkadot-parachain
+          chmod +x polkadot-parachain
+      - name: Run small network tests
+        run: |
+          export PATH=$(pwd):$PATH
+          export RUST_BACKTRACE=full
+          ./zombienet-linux-x64 -p native test ./zombienet-tests/src/0001-small-network.zndsl
