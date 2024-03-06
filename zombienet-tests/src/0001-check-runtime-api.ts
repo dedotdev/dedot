@@ -1,5 +1,5 @@
 import { Dedot } from 'dedot';
-import { assert, stringSnakeCase } from '@dedot/utils';
+import { assert } from '@dedot/utils';
 import { stringCamelCase } from '@polkadot/util';
 import { $Metadata, Metadata } from '@dedot/codecs';
 
@@ -14,7 +14,7 @@ export const run = async (nodeName: any, networkInfo: any) => {
   api.metadataLatest.apis.forEach(({ name, methods }) => {
     methods.forEach((method) => {
       const runtimeApi = stringCamelCase(name);
-      const methodName = stringSnakeCase(method.name);
+      const methodName = stringCamelCase(method.name);
 
       const call = api.call[runtimeApi][methodName];
       assert(typeof call === 'function', `Runtime call ${runtimeApi}.${methodName} should be a function`);
