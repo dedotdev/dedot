@@ -2,6 +2,7 @@ import { Dedot } from 'dedot';
 import { assert } from '@dedot/utils';
 import { cryptoWaitReady } from '@polkadot/util-crypto';
 import Keyring from '@polkadot/keyring';
+import { RococoApi } from '@dedot/chaintypes';
 
 const BOB = '5FHneW46xGXgs5mUiveU4sbTyGBzmstUspZC92UhjJM694ty';
 
@@ -12,7 +13,7 @@ export const run = async (nodeName: any, networkInfo: any): Promise<void> => {
 
   const { wsUri } = networkInfo.nodesByName[nodeName];
 
-  const api = await Dedot.new(wsUri);
+  const api = await Dedot.new<RococoApi>(wsUri);
 
   const prevBobBalance = (await api.query.system.account(BOB)).data.free;
   console.log('BOB - old balance', prevBobBalance);

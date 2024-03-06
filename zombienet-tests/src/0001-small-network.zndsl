@@ -8,3 +8,4 @@ alice: reports node_roles is 4
 alice: ts-script ./0001-check-runtime-api.ts within 200 seconds
 alice: ts-script ./0001-check-storage-query.ts within 200 seconds
 alice: ts-script ./0001-check-tx-transfer-balance.ts within 200 seconds
+alice: ts-script ./0001-check-tx-batch.ts within 200 seconds

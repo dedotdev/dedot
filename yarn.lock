@@ -9100,6 +9100,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "zombienet-tests@workspace:zombienet-tests"
   dependencies:
+    "@dedot/chaintypes": "workspace:*"
     "@dedot/codecs": "workspace:*"
     "@dedot/utils": "workspace:*"
     "@polkadot/keyring": ^12.6.2
