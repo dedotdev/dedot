@@ -46,8 +46,6 @@ const main = () => {
   }
 
   fs.writeFileSync(path.join(currentDir, targetDir, file), fileContent);
-
-  fs.writeFileSync(path.join(currentDir, targetDir, 'dist/cjs/package.json'), `{"type": "commonjs"}`);
 };
 
 main();

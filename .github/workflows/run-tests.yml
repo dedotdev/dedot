@@ -5,8 +5,7 @@ name: Run tests
 
 on:
   push:
-  pull_request:
-    branches: [ "main" ]
+  workflow_dispatch:
   merge_group:
 
 jobs:
