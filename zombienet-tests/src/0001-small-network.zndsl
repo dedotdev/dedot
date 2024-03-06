@@ -1,4 +1,4 @@
-Description: Small Network test
+Description: Small Network Tests
 Network: ./0001-small-network.json
 Creds: config
 
