@@ -9096,11 +9096,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"zombienet_tests@workspace:zombienet_tests":
+"zombienet-tests@workspace:zombienet-tests":
   version: 0.0.0-use.local
-  resolution: "zombienet_tests@workspace:zombienet_tests"
+  resolution: "zombienet-tests@workspace:zombienet-tests"
   dependencies:
-    delightfuldot: "workspace:*"
-    prettier: ^3.0.3
+    "@dedot/codecs": "workspace:*"
+    "@dedot/utils": "workspace:*"
+    dedot: "workspace:*"
   languageName: unknown
   linkType: soft

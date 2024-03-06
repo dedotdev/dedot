@@ -27,7 +27,7 @@ const main = () => {
     pkgJson.module = './dist/index.js';
     pkgJson.types = './dist/index.d.ts';
 
-    if (pkgJson.name !== '@delightfuldot/chaintypes') {
+    if (pkgJson.name !== '@dedot/chaintypes') {
       pkgJson.exports = {
         '.': {
           import: {
@@ -48,9 +48,6 @@ const main = () => {
   fs.writeFileSync(path.join(currentDir, targetDir, file), fileContent);
 
   fs.writeFileSync(path.join(currentDir, targetDir, 'dist/cjs/package.json'), `{"type": "commonjs"}`);
-
-  // clean up
-  // fs.rmSync(path.join(currentDir, targetDir, 'tsconfig.build.cjs.tsbuildinfo'), { force: true });
 };
 
 main();
