@@ -1,6 +1,6 @@
 # dedot
 
-A fast & lightweight JavaScript/TypeScript client for [Polkadot](https://polkadot.network/) & [Substrate](https://substrate.io/)
+A delightful JavaScript/TypeScript client for [Polkadot](https://polkadot.network/) & [Substrate](https://substrate.io/)
 
 <p align="left">
   <img src="https://img.shields.io/github/license/dedotdev/dedot?style=flat-square"/>
@@ -46,8 +46,7 @@ const run = async () => {
   console.log('Metadata:', metadata);
 
   // Query on-chain storage
-  const address = '14...';
-  const balance = await api.query.system.account(address);
+  const balance = await api.query.system.account(<address>);
   console.log('Balance:', balance);
 
 
@@ -58,7 +57,11 @@ const run = async () => {
 
   // Get pallet constants
   const ss58Prefix = api.consts.system.ss58Prefix;
-  console.log('Polkadot ss58Prefix:', ss58Prefix)
+  console.log('Polkadot ss58Prefix:', ss58Prefix);
+
+  // Call runtime api
+  const pendingRewards = await api.call.nominationPoolsApi.pendingRewards(<address>)
+  console.log('Pending rewards:', pendingRewards);
 
   // await unsub();
   // await api.disconnect();
@@ -80,8 +83,8 @@ const api = await Dedot.new('wss://rpc.polkadot.io');
 - [Execute RPC Methods](#execute-rpc-methods)
 - [Query On-chain Storage](#query-on-chain-storage)
 - [Constants](#constants)
-- [Runtime APIs ⏳](#runtime-apis)
-- [Submit Transactions ⏳](#submit-transactions)
+- [Runtime APIs](#runtime-apis)
+- [Submit Transactions ⏳](#transaction-apis)
 - [Events](#events)
 - [Errors](#errors)
 - [Credit](#credit)
@@ -139,11 +142,22 @@ const genericApi = await Dedot.new('ws://localhost:9944');
 // ...
 ```
 
-In alpha test version, we only support `ChainApi` interfaces for 4 networks (Polkadot, Kusama, Moonbeam & Astar), we plan to expand this list to support more Substrate-based blockchains in the near future.
+Supported `ChainApi` interfaces are defined [here](https://github.com/dedotdev/dedot/blob/main/packages/chaintypes/src/index.ts), you can also generate the `ChainApi` interface for the chain you want to connect with using `@dedot/cli`.
+
+```shell
+# Install @dedot/cli via yarn
+yarn add -D @dedot/cli
+
+# Or via npm
+npm i -D @dedot/cli
+
+# Generate ChainApi interface for Polkadot network via rpc endpoint: wss://rpc.polkadot.io
+npx dedot chaintypes -w wss://rpc.polkadot.io
+```
 
 ### Execute RPC Methods
 
-RPCs can be execute via `api.rpc` entry point. After creating a `Dedot` instance with a `ChainApi` interface of the network you want to interact with, all RPC methods of the network will be exposed in the autocompletion/suggestion with format: `api.rpc.<module>.<methodName>`. E.g: you can find all supported RPC methods for Polkadot network [here](https://github.com/dedotdev/dedot/blob/main/packages/chaintypes/src/polkadot/rpc.ts), similarly for other networks as well.
+RPCs can be executed via `api.rpc` entry point. After creating a `Dedot` instance with a `ChainApi` interface of the network you want to interact with, all RPC methods of the network will be exposed in the autocompletion/suggestion with format: `api.rpc.<module>.<methodName>`. E.g: you can find all supported RPC methods for Polkadot network [here](https://github.com/dedotdev/dedot/blob/main/packages/chaintypes/src/polkadot/rpc.d.ts), similarly for other networks as well.
 
 Examples:
 ```typescript
@@ -156,7 +170,7 @@ const result = await api.rpc.module.rpc_name('param1', 'param2');
 
 ### Query On-chain Storage
 
-On-chain storage can be query via `api.query` entry point. All the available storage entries for a chain are exposed in the `ChainApi` interface for that chain and can be execute with format: `api.query.<pallet>.<storgeEntry>`. E.g: You can find all the available storage queries of Polkadot network [here](https://github.com/dedotdev/dedot/blob/main/packages/chaintypes/src/polkadot/query.ts), similarly for other networks as well.
+On-chain storage can be queried via `api.query` entry point. All the available storage entries for a chain are exposed in the `ChainApi` interface for that chain and can be executed with format: `api.query.<pallet>.<storgeEntry>`. E.g: You can find all the available storage queries of Polkadot network [here](https://github.com/dedotdev/dedot/blob/main/packages/chaintypes/src/polkadot/query.d.ts), similarly for other networks as well.
 
 Examples:
 ```typescript
@@ -168,7 +182,7 @@ const events = await api.query.system.events();
 ```
 ### Constants
 
-Runtime constants (parameter types) are defined in metadata, and can be inspect via `api.consts` entry point with format: `api.consts.<pallet>.<constantName>`. All available constants are also exposed in the `ChainApi` interface. E.g: Available constants for Polkadot network is defined [here](https://github.com/dedotdev/dedot/blob/main/packages/chaintypes/src/polkadot/consts.ts), similarly for other networks.
+Runtime constants (parameter types) are defined in metadata, and can be inspected via `api.consts` entry point with format: `api.consts.<pallet>.<constantName>`. All available constants are also exposed in the `ChainApi` interface. E.g: Available constants for Polkadot network is defined [here](https://github.com/dedotdev/dedot/blob/main/packages/chaintypes/src/polkadot/consts.d.ts), similarly for other networks.
 
 Examples:
 ```typescript
@@ -181,7 +195,37 @@ const existentialDeposit = api.consts.balances.existentialDeposit;
 
 ### Runtime APIs
 
-⏳ _coming soon_
+The latest stable Metadata V15 now includes all the runtime apis type information. So for chains that are supported Metadata V15, we can now execute all available runtime apis with syntax `api.call.<runtimeApi>.<methodName>`, those apis are exposed in `ChainApi` interface. E.g: Runtime Apis for Polkadot network is defined [here](https://github.com/dedotdev/dedot/blob/main/packages/chaintypes/src/polkadot/runtime.d.ts), similarly for other network as well.
+
+Examples:
+```typescript
+// Get account nonce
+const nonce = await api.call.accountNonceApi.accountNonce(<address>);
+
+// Transaction payment query info
+const tx = api.tx.balances.transferKeepAlive(<address>, 2_000_000_000_000n);
+const queryInfo = await api.call.transactionPaymentApi.queryInfo(tx.toU8a(), tx.length);
+
+// Get runtime version
+const runtimeVersion = await api.call.core.version();
+```
+
+For chains that only support Metadata V14, we need to bring in the Runtime Api definitions when initializing the Dedot client instance to encode & decode the calls. You can find all supported Runtime Api definitions in [`@dedot/specs`](https://github.com/dedotdev/dedot/blob/60de0fed8ba19c67a7e174c6168a127fdbf6caef/packages/specs/src/runtime/all.ts#L21-L39) package.
+
+Examples:
+```typescript
+import { RuntimeApis } from '@dedot/specs';
+const api = await Dedot.new({ endpoint: 'wss://rpc.mynetwork.com', runtimeApis: RuntimeApis });
+
+// Or bring in only the Runtime Api definition that you want to interact with
+import { AccountNonceApi } from '@dedot/specs';
+const api = await Dedot.new({ endpoint: 'wss://rpc.mynetwork.com', runtimeApis: { AccountNonceApi } });
+
+// Get account nonce
+const nonce = await api.call.accountNonceApi.accountNonce(<address>);
+```
+
+You absolutely can define your own Runtime Api definition if you don't find it in the [supported list](https://github.com/dedotdev/dedot/blob/60de0fed8ba19c67a7e174c6168a127fdbf6caef/packages/specs/src/runtime/all.ts#L21-L39).
 
 ### Transaction APIs
 
@@ -189,7 +233,7 @@ const existentialDeposit = api.consts.balances.existentialDeposit;
 
 ### Events
 
-Events for each pallet emit during runtime operations and are defined in the medata. Available events are also exposed in `ChainApi` interface so we can get information of an event through syntax `api.events.<pallet>.<eventName>`. E.g: Events for Polkadot network can be found [here](https://github.com/dedotdev/dedot/blob/main/packages/chaintypes/src/polkadot/events.ts), similarly for other network as well.
+Events for each pallet emit during runtime operations and are defined in the medata. Available events are also exposed in `ChainApi` interface so we can get information of an event through syntax `api.events.<pallet>.<eventName>`. E.g: Events for Polkadot network can be found [here](https://github.com/dedotdev/dedot/blob/main/packages/chaintypes/src/polkadot/events.d.ts), similarly for other network as well.
 
 This `api.events` is helpful when we want quickly check if an event matches with an event that we're expecting in a list of events, the API also comes with type narrowing for the matched event, so event name & related data of the event are fully typed.
 
@@ -213,7 +257,7 @@ await api.query.system.events(async (eventRecords) => {
 
 ### Errors
 
-Pallet errors are thrown out when things go wrong in the runtime, those are defined in the metadata. Available errors for each pallet are also exposed in `ChainApi` interface, so we can get information an error through this syntax: `api.errors.<pallet>.<errorName>`. E.g: Available errors for Polkadot network can be found [here](https://github.com/dedotdev/dedot/blob/main/packages/chaintypes/src/polkadot/errors.ts).
+Pallet errors are thrown out when things go wrong in the runtime, those are defined in the metadata. Available errors for each pallet are also exposed in `ChainApi` interface, so we can get information an error through this syntax: `api.errors.<pallet>.<errorName>`. E.g: Available errors for Polkadot network can be found [here](https://github.com/dedotdev/dedot/blob/main/packages/chaintypes/src/polkadot/errors.d.ts).
 
 Similar to events API, this API is helpful when we want to check if an error maches with an error that we're expecting.
 
