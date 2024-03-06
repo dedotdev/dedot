@@ -2,9 +2,9 @@ import { stringPascalCase } from '@polkadot/util';
 import { PortableRegistry, Field, MetadataLatest, PortableType, TypeId, TypeParam } from '@dedot/codecs';
 import { isNativeType, normalizeName } from '@dedot/utils';
 import { beautifySourceCode, commentBlock, compileTemplate } from './utils';
-import { registry } from '@dedot/types';
+import { knownTypes } from './known-types';
 import { TypeImports } from './TypeImports';
-import { findKnownCodec, findKnownCodecType, isKnownCodecType } from './known_codecs';
+import { findKnownCodec, findKnownCodecType, isKnownCodecType } from './known-codecs';
 
 interface NamedType extends PortableType {
   name: string; // nameIn, ~ typeIn
@@ -507,7 +507,7 @@ export class TypesGen {
       return;
     }
 
-    if (registry.has(typeName)) {
+    if (knownTypes.includes(typeName)) {
       this.typeImports.addKnownType(typeName);
     } else {
       this.typeImports.addOutType(typeName);

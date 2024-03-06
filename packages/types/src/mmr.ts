@@ -1,4 +1,3 @@
-import { registry } from './registry';
 import { BlockHash, Bytes } from '@dedot/codecs';
 
 /*
@@ -12,5 +11,3 @@ export interface LeavesProof {
   // SCALE-encoded proof data. See [sp_mmr_primitives::Proof].
   proof: Bytes;
 }
-
-registry.add('LeavesProof');

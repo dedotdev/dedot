@@ -1,5 +1,3 @@
-import { registry } from './registry';
-
 /*
  * A type of supported crypto.
  */
@@ -17,5 +15,3 @@ export enum StorageKind {
   // that is re-run at block `N(hash2)`.
   LOCAL = 'LOCAL',
 }
-
-registry.add('StorageKind');
