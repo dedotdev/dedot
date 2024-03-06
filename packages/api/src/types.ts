@@ -44,7 +44,13 @@ export interface ApiOptions {
    */
   signedExtensions?: Record<string, AnySignedExtension>;
 
-  runtime?: Record<RuntimeApiName, RuntimeApiSpec[]>;
+  /**
+   * @description Custom runtime api definitions/specs
+   *
+   * You probably don't need to use this with the latest Metadata V15,
+   * unless you're connecting to a chain supports only Metadata V14
+   */
+  runtimeApis?: Record<RuntimeApiName, RuntimeApiSpec[]>;
 }
 
 export interface NormalizedApiOptions extends ApiOptions {

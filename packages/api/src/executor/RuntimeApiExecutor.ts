@@ -81,7 +81,7 @@ export class RuntimeApiExecutor<ChainApi extends GenericSubstrateApi = GenericSu
 
     if (!isNumber(targetVersion)) return undefined;
 
-    const userDefinedSpec = this.#findDefinedSpec(this.api.options.runtime, runtimeApi, method, targetVersion);
+    const userDefinedSpec = this.#findDefinedSpec(this.api.options.runtimeApis, runtimeApi, method, targetVersion);
     if (userDefinedSpec) return userDefinedSpec;
 
     const methodDef = this.#findRuntimeApiMethodDef(runtimeApi, method);

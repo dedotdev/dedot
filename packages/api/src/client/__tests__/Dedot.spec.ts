@@ -178,7 +178,7 @@ describe('Dedot', () => {
 
         api = await Dedot.create({
           provider: new MockProvider(),
-          runtime: {
+          runtimeApis: {
             Metadata: [
               {
                 methods: {
