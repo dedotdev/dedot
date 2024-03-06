@@ -1,4 +1,4 @@
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, expectTypeOf, it, vi } from 'vitest';
 import { Dedot } from '../Dedot';
 import MockProvider from './MockProvider';
 import { SubstrateApi } from '@dedot/chaintypes';
@@ -202,6 +202,27 @@ describe('Dedot', () => {
 
         expect($testParamCodec.tryEncode).toBeCalledWith('hello');
         expect($mockCodec.tryDecode).toBeCalled();
+      });
+    });
+
+    describe('tx calls', () => {
+      it('should be available', async () => {
+        api.metadataLatest.pallets.forEach((pallet) => {
+          if (!pallet.calls) return;
+          const calls = api.metadataLatest.types[pallet.calls];
+          if (calls.type.tag === 'Enum') {
+            calls.type.value.members.forEach((m) => {
+              const tx = api.tx[stringCamelCase(pallet.name)][stringCamelCase(m.name)];
+              expectTypeOf(tx).toBeFunction();
+              expect(tx).toHaveProperty(['meta']);
+            });
+          }
+        });
+      });
+
+      it('should throws error', async () => {
+        expect(() => api.tx.system.notFound()).toThrowError(`Tx call spec not found for system.notFound`);
+        expect(() => api.tx.notFound.notFound()).toThrowError(`Pallet not found: notFound`);
       });
     });
   });
