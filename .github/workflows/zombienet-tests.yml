@@ -39,7 +39,7 @@ jobs:
           
           curl -L -O https://github.com/paritytech/polkadot-sdk/releases/download/polkadot-v1.7.0/polkadot-parachain
           chmod +x polkadot-parachain
-      - name: Run small network tests
+      - name: Run tests on small network
         run: |
           export PATH=$(pwd):$PATH
           export RUST_BACKTRACE=full
