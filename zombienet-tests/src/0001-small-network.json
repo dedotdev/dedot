@@ -1,0 +1,41 @@
+{
+  "relaychain": {
+    "chain": "rococo-local",
+    "default_args": ["-lparachain=debug"],
+    "default_command": "polkadot",
+    "default_image": "docker.io/parity/polkadot:latest",
+    "nodes": [
+      {
+        "name": "alice",
+        "validator": true
+      },
+      {
+        "name": "bob",
+        "validator": true
+      }
+    ],
+    "genesis": {
+      "runtimeGenesis": {
+        "patch": {
+          "balances": {
+            "balances": [
+              ["5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY", 10000000000000000],
+              ["5FHneW46xGXgs5mUiveU4sbTyGBzmstUspZC92UhjJM694ty", 10000000000000000]
+            ]
+          }
+        }
+      }
+    }
+  },
+  "parachains": [
+    {
+      "id": 100,
+      "collator": {
+        "args": ["-lparachain=debug"],
+        "command": "polkadot-parachain",
+        "image": "docker.io/parity/polkadot-parachain:latest",
+        "name": "collator01"
+      }
+    }
+  ]
+}

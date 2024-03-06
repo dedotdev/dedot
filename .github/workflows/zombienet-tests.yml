@@ -8,7 +8,7 @@ on:
 
 
 jobs:
-  e2e-test:
+  zombienet-tests:
     runs-on: ubuntu-latest
 
     strategy:
@@ -48,4 +48,5 @@ jobs:
       - name: Run small network tests
         run: |
           export PATH=$(pwd):$PATH
+          export RUST_BACKTRACE=full
           ./zombienet-linux-x64 -p native test ./zombienet-tests/src/0001-small-network.zndsl

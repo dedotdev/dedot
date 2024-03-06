@@ -9,8 +9,7 @@ on:
   merge_group:
 
 jobs:
-  build:
-
+  unit-tests:
     runs-on: ubuntu-latest
 
     strategy:

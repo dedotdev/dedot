@@ -1,8 +1,9 @@
 Description: Small Network test
-Network: ./0001-small-network.toml
+Network: ./0001-small-network.json
 Creds: config
 
 alice: is up
 bob: is up
 alice: reports node_roles is 4
 alice: ts-script ./0001-check-runtime-api.ts within 200 seconds
+alice: ts-script ./0001-check-storage-query.ts within 200 seconds
