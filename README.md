@@ -231,7 +231,7 @@ You absolutely can define your own Runtime Api definition if you don't find it i
 
 Transaction apis are designed to be compatible with [`IKeyringPair`](https://github.com/polkadot-js/api/blob/3bdf49b0428a62f16b3222b9a31bfefa43c1ca55/packages/types/src/types/interfaces.ts#L15-L21) and [`Signer`](https://github.com/polkadot-js/api/blob/3bdf49b0428a62f16b3222b9a31bfefa43c1ca55/packages/types/src/types/extrinsic.ts#L135-L150) interfaces, so you can sign the transactions with accounts created by a [`Keyring`](https://github.com/polkadot-js/common/blob/22aab4a4e62944a2cf8c885f50be2c1b842813ec/packages/keyring/src/keyring.ts#L41-L40) or from any [Polkadot{.js}-based](https://github.com/polkadot-js/extension?tab=readme-ov-file#api-interface) wallet extensions.
 
-All transaction apis are exposed in `ChainApi` interface and can be access with syntax: `api.tx.<pallet>.<transactionName>`. E.g: Available transactions api for Polkadot network are defined [here](https://github.com/dedotdev/dedot/blob/516c5dd948ac89ef53644b7fb1f62df1727adadb/packages/chaintypes/src/polkadot/tx.d.ts), similarly for other networks as well.
+All transaction apis are exposed in `ChainApi` interface and can be access with syntax: `api.tx.<pallet>.<transactionName>`. E.g: Available transaction apis for Polkadot network are defined [here](https://github.com/dedotdev/dedot/blob/516c5dd948ac89ef53644b7fb1f62df1727adadb/packages/chaintypes/src/polkadot/tx.d.ts), similarly for other networks as well.
 
 Example 1: Sign transaction with a Keying account
 ```typescript
