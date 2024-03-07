@@ -12,10 +12,8 @@
   "main": "src/index.ts",
   "type": "module",
   "sideEffects": [
-    "./extension/shape.js",
-    "./extension/collection.js",
-    "./cjs/extension/shape.js",
-    "./cjs/extension/collection.js"
+    "./subshape.js",
+    "./cjs/subshape.js"
   ],
   "dependencies": {
     "@dedot/utils": "workspace:*",
