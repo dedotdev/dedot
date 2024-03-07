@@ -84,7 +84,7 @@ const api = await Dedot.new('wss://rpc.polkadot.io');
 - [Query On-chain Storage](#query-on-chain-storage)
 - [Constants](#constants)
 - [Runtime APIs](#runtime-apis)
-- [Submit Transactions ⏳](#transaction-apis)
+- [Submit Transactions](#transaction-apis)
 - [Events](#events)
 - [Errors](#errors)
 - [Credit](#credit)
@@ -195,14 +195,14 @@ const existentialDeposit = api.consts.balances.existentialDeposit;
 
 ### Runtime APIs
 
-The latest stable Metadata V15 now includes all the runtime apis type information. So for chains that are supported Metadata V15, we can now execute all available runtime apis with syntax `api.call.<runtimeApi>.<methodName>`, those apis are exposed in `ChainApi` interface. E.g: Runtime Apis for Polkadot network is defined [here](https://github.com/dedotdev/dedot/blob/main/packages/chaintypes/src/polkadot/runtime.d.ts), similarly for other network as well.
+The latest stable Metadata V15 now includes all the runtime apis type information. So for chains that are supported Metadata V15, we can now execute all available runtime apis with syntax `api.call.<runtimeApi>.<methodName>`, those apis are exposed in `ChainApi` interface. E.g: Runtime Apis for Polkadot network is defined [here](https://github.com/dedotdev/dedot/blob/main/packages/chaintypes/src/polkadot/runtime.d.ts), similarly for other networks as well.
 
 Examples:
 ```typescript
 // Get account nonce
 const nonce = await api.call.accountNonceApi.accountNonce(<address>);
 
-// Transaction payment query info
+// Query transaction payment info
 const tx = api.tx.balances.transferKeepAlive(<address>, 2_000_000_000_000n);
 const queryInfo = await api.call.transactionPaymentApi.queryInfo(tx.toU8a(), tx.length);
 
@@ -229,7 +229,75 @@ You absolutely can define your own Runtime Api definition if you don't find it i
 
 ### Transaction APIs
 
-⏳ _coming soon_
+Transaction apis are designed to be compatible with [`IKeyringPair`](https://github.com/polkadot-js/api/blob/3bdf49b0428a62f16b3222b9a31bfefa43c1ca55/packages/types/src/types/interfaces.ts#L15-L21) and [`Signer`](https://github.com/polkadot-js/api/blob/3bdf49b0428a62f16b3222b9a31bfefa43c1ca55/packages/types/src/types/extrinsic.ts#L135-L150) interfaces, so you can sign the transactions with accounts created by a [`Keyring`](https://github.com/polkadot-js/common/blob/22aab4a4e62944a2cf8c885f50be2c1b842813ec/packages/keyring/src/keyring.ts#L41-L40) or from any [Polkadot{.js}-based](https://github.com/polkadot-js/extension?tab=readme-ov-file#api-interface) wallet extensions.
+
+All transaction apis are exposed in `ChainApi` interface and can be access with syntax: `api.tx.<pallet>.<transactionName>`. E.g: Available transactions api for Polkadot network are defined [here](https://github.com/dedotdev/dedot/blob/516c5dd948ac89ef53644b7fb1f62df1727adadb/packages/chaintypes/src/polkadot/tx.d.ts), similarly for other networks as well.
+
+Example 1: Sign transaction with a Keying account
+```typescript
+import { cryptoWaitReady } from '@polkadot/util-crypto';
+import { Keyring } from '@polkadot/keyring';
+...
+await cryptoWaitReady();
+const keyring = new Keyring({ type: 'sr25519' });
+const alice = keyring.addFromUri('//Alice');
+
+const unsub = await api.tx.balances
+    .transferKeepAlive(<destAddress>, 2_000_000_000_000n)
+    .signAndSend(alice, async ({ status }) => {
+      console.log('Transaction status', status.tag);
+      if (status.tag === 'InBlock') {
+        console.log(`Transaction completed at block hash ${status.value}`);
+        await unsub();
+      }
+    });
+```
+
+Example 2: Sign transaction using `Signer` from Polkadot{.js} wallet extension
+```typescript
+const injected = await window.injectedWeb3['polkadot-js'].enable('A cool dapp');
+const account = (await injected.accounts.get())[0];
+const signer = injected.signer;
+
+const unsub = await api.tx.balances
+    .transferKeepAlive(<destAddress>, 2_000_000_000_000n)
+    .signAndSend(account.address, { signer }, async ({ status }) => {
+      console.log('Transaction status', status.tag);
+      if (status.tag === 'InBlock') {
+        console.log(`Transaction completed at block hash ${status.value}`);
+        await unsub();
+      }
+    });
+```
+
+Example 3: Submit a batch transaction
+```typescript
+import type { PolkadotRuntimeRuntimeCallLike } from '@dedot/chaintypes/polkadot';
+
+// Omit the detail for simplicity
+const account = ...;
+const signer = ...;
+
+const transferTx = api.tx.balances.transferKeepAlive(<destAddress>, 2_000_000_000_000n);
+const remarkCall: PolkadotRuntimeRuntimeCallLike = {
+  pallet: 'System',
+  palletCall: {
+    name: 'RemarkWithEvent',
+    params: {
+      remark: 'Hello Dedot!',
+    },
+  },
+};
+
+const unsub = api.tx.utility.batch([transferTx.call, remarkCall])
+    .signAndSend(account.address, { signer }, async ({ status }) => {
+      console.log('Transaction status', status.tag);
+      if (status.tag === 'InBlock') {
+        console.log(`Transaction completed at block hash ${status.value}`);
+        await unsub();
+      }
+    });
+```
 
 ### Events
 
