@@ -9,7 +9,7 @@ export class Extrinsic<A = any, C = any, S = any, E = any> extends ExtrinsicV4<A
 export interface ExtrinsicSignature<A = any, S = any, E = any> extends ExtrinsicSignatureV4<A, S, E> {}
 
 export const $Extrinsic = (registry: PortableRegistry) => {
-  assert(registry, 'CodecRegistry is required to compose $Extrinsic codec');
+  assert(registry, 'PortableRegistry is required to compose $Extrinsic codec');
 
   const { callTypeId, addressTypeId, signatureTypeId, extraTypeId } = registry.metadata!.extrinsic;
 
