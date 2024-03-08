@@ -299,6 +299,67 @@ const unsub = api.tx.utility.batch([transferTx.call, remarkCall])
     });
 ```
 
+<details>
+  <summary>Example 4: Teleport WND from Westend Asset Hub to Westend via XCM</summary>
+  
+```typescript
+import { WestendAssetHubApi, XcmVersionedLocation, XcmVersionedAssets, XcmV3WeightLimit } from '@dedot/chaintypes/westendAssetHub';
+import { AccountId32 } from '@dedot/codecs';
+
+const TWO_TOKENS = 2_000_000_000_000n;
+const destAddress = <bobAddress>;
+
+const api = await Dedot.new<WestendAssetHubApi>('...westend-assethub-rpc...');
+
+const dest: XcmVersionedLocation = {
+  tag: 'V3',
+  value: { parents: 1, interior: { tag: 'Here' } },
+};
+
+const beneficiary: XcmVersionedLocation = {
+  tag: 'V3',
+  value: {
+    parents: 0,
+    interior: {
+      tag: 'X1',
+      value: {
+        tag: 'AccountId32',
+        value: { id: new AccountId32(destAddress).raw },
+      },
+    },
+  },
+};
+
+const assets: XcmVersionedAssets = {
+  tag: 'V3',
+  value: [
+    {
+      id: {
+        tag: 'Concrete',
+        value: {
+          parents: 1,
+          interior: { tag: 'Here' },
+        },
+      },
+      fun: {
+        tag: 'Fungible',
+        value: TWO_TOKENS,
+      },
+    },
+  ],
+};
+
+const weight: XcmV3WeightLimit = { tag: 'Unlimited' };
+
+api.tx.polkadotXcm
+  .limitedTeleportAssets(dest, beneficiary, assets, 0, weight)
+  .signAndSend(alice, { signer, tip: 1_000_000n }, (result) => {
+    console.dir(result, { depth: null });
+  });
+```
+</details>
+
+
 ### Events
 
 Events for each pallet emit during runtime operations and are defined in the medata. Available events are also exposed in `ChainApi` interface so we can get information of an event through syntax `api.events.<pallet>.<eventName>`. E.g: Events for Polkadot network can be found [here](https://github.com/dedotdev/dedot/blob/main/packages/chaintypes/src/polkadot/events.d.ts), similarly for other network as well.
