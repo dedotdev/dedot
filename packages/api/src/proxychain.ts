@@ -6,6 +6,13 @@ export interface Carrier<ChainApi extends GenericSubstrateApi> {
   chain?: string[];
 }
 
+/**
+ * Create a chain of proxy objects
+ *
+ * @param carrier
+ * @param currentLevel
+ * @param maxLevel
+ */
 export const newProxyChain = <ChainApi extends GenericSubstrateApi>(
   carrier: Carrier<ChainApi>,
   currentLevel = 1,

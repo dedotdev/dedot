@@ -29,7 +29,7 @@ export const SUPPORTED_METADATA_VERSIONS = [15, 14];
  * ### Initialize API instance and interact with substrate-based network
  * ```typescript
  * import { Dedot } from 'dedot';
- * import { PolkadotApi } from '@dedot/chaintypes/polkadot';
+ * import type { PolkadotApi } from '@dedot/chaintypes/polkadot';
  *
  * const run = async () => {
  *   const api = await Dedot.new<PolkadotApi>('wss://rpc.polkadot.io');
@@ -387,6 +387,18 @@ export class Dedot<ChainApi extends GenericSubstrateApi = SubstrateApi> {
     return newProxyChain<ChainApi>({ executor: new EventExecutor(this) }) as ChainApi['events'];
   }
 
+  /**
+   * @description Entry-point for executing runtime api
+   *
+   * ```typescript
+   * // Get account nonce
+   * const nonce = await api.call.accountNonceApi.accountNonce(<address>);
+   *
+   * // Query transaction payment info
+   * const tx = api.tx.balances.transferKeepAlive(<address>, 2_000_000_000_000n);
+   * const queryInfo = await api.call.transactionPaymentApi.queryInfo(tx.toU8a(), tx.length);
+   * ```
+   */
   get call(): ChainApi['call'] {
     return newProxyChain<ChainApi>({ executor: new RuntimeApiExecutor(this) }) as ChainApi['call'];
   }
@@ -395,6 +407,17 @@ export class Dedot<ChainApi extends GenericSubstrateApi = SubstrateApi> {
     return newProxyChain<ChainApi>({ executor: new RuntimeApiExecutor(this, blockHash) }) as ChainApi['call'];
   }
 
+  /**
+   * @description Entry-point for executing on-chain transactions
+   *
+   * ```typescript
+   * // Make a transfer balance transaction
+   * api.tx.balances.transferKeepAlive(<address>, <amount>)
+   *    .signAndSend(<keyPair|address>, { signer }, ({ status }) => {
+   *      console.log('Transaction status', status.tag);
+   *    });
+   * ```
+   */
   get tx(): ChainApi['tx'] {
     return newProxyChain<ChainApi>({ executor: new TxExecutor(this) }) as ChainApi['tx'];
   }

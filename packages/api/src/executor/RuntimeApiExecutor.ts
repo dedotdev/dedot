@@ -19,6 +19,13 @@ export const FallbackRuntimeApis = [
 
 export const FallbackRuntimeApiSpecs = { Metadata };
 
+/**
+ * @name RuntimeApiExecutor
+ * @description Execute a runtime api call,
+ * runtime api definitions/specs are either from Metadata V15
+ * or defined externally when initializing `Dedot` instance
+ * via `ApiOptions.runtimeApis` option.
+ */
 export class RuntimeApiExecutor<ChainApi extends GenericSubstrateApi = GenericSubstrateApi> extends Executor<ChainApi> {
   execute(runtimeApi: string, method: string): GenericRuntimeApiMethod {
     const runtimeApiName = stringPascalCase(runtimeApi);
