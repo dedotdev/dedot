@@ -94,12 +94,12 @@ describe('Dedot', () => {
       it('should throws error if error not found', () => {
         expect(() => {
           // @ts-ignore
-          api.errors.palletName.notFound();
+          api.errors.palletName.notFound;
         }).toThrowError(new Error('Pallet not found: palletName'));
 
         expect(() => {
           // @ts-ignore
-          api.errors.system.notFound();
+          api.errors.system.notFound;
         }).toThrowError(new Error(`Error def not found for notFound`));
       });
     });
@@ -120,12 +120,12 @@ describe('Dedot', () => {
       it('should throws error if event not found', () => {
         expect(() => {
           // @ts-ignore
-          api.events.palletName.notFound();
+          api.events.palletName.notFound;
         }).toThrowError(new Error('Pallet not found: palletName'));
 
         expect(() => {
           // @ts-ignore
-          api.events.system.notFound();
+          api.events.system.notFound;
         }).toThrowError(new Error(`Event def not found for notFound`));
       });
     });
@@ -267,6 +267,42 @@ describe('Dedot', () => {
       expect(newApi.currentMetadataKey).toEqual(
         `RAW_META/0x0000000000000000000000000000000000000000000000000000000000000000/2`,
       );
+    });
+  });
+
+  describe('not throwOnUnknownApi', () => {
+    let api: Dedot<SubstrateApi>;
+    beforeEach(async () => {
+      api = await Dedot.new({ provider: new MockProvider(), throwOnUnknownApi: false });
+    });
+
+    afterEach(async () => {
+      api && (await api.disconnect());
+    });
+
+    it('should return undefined for unknown constants', () => {
+      expect(api.consts.palletName.notFound).toBeUndefined();
+      expect(api.consts.system.notFound).toBeUndefined();
+    });
+
+    it('should return undefined if storage query entry not found', () => {
+      expect(api.query.palletName.notFound).toBeUndefined();
+      expect(api.query.system.notFound).toBeUndefined();
+    });
+
+    it('should return undefined if event not found', () => {
+      expect(api.events.palletName.notFound).toBeUndefined();
+      expect(api.events.system.notFound).toBeUndefined();
+    });
+
+    it('should return undefined if error not found', () => {
+      expect(api.errors.palletName.notFound).toBeUndefined();
+      expect(api.errors.system.notFound).toBeUndefined();
+    });
+
+    it('should return undefined if tx not found', async () => {
+      expect(api.tx.system.notFound).toBeUndefined();
+      expect(api.tx.notFound.notFound).toBeUndefined();
     });
   });
 });

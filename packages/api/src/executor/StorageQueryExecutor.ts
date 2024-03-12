@@ -10,7 +10,7 @@ import { assert } from '@dedot/utils';
  * @description Execute a query to on-chain storage
  */
 export class StorageQueryExecutor<ChainApi extends GenericSubstrateApi = SubstrateApi> extends Executor<ChainApi> {
-  execute(pallet: string, storage: string): GenericStorageQuery {
+  doExecute(pallet: string, storage: string): GenericStorageQuery {
     const entry = new QueryableStorage(this.registry, pallet, storage);
 
     const queryFn: GenericStorageQuery = async (...args: any[]) => {

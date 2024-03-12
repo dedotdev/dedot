@@ -1,4 +1,4 @@
-import { assert, HASHERS } from '@dedot/utils';
+import { assert, HASHERS, UnknownApiError } from '@dedot/utils';
 import {
   $StorageData,
   PortableRegistry,
@@ -109,7 +109,7 @@ export class QueryableStorage {
       (p) => stringCamelCase(p.name) === stringCamelCase(this.palletName),
     )!;
 
-    assert(targetPallet, `Pallet not found: ${this.palletName}`);
+    assert(targetPallet, new UnknownApiError(`Pallet not found: ${this.palletName}`));
 
     return targetPallet;
   }
@@ -119,7 +119,7 @@ export class QueryableStorage {
       (entry) => stringCamelCase(entry.name) === stringCamelCase(this.storageItem),
     )!;
 
-    assert(targetEntry, `Storage item not found: ${this.storageItem}`);
+    assert(targetEntry, new UnknownApiError(`Storage item not found: ${this.storageItem}`));
 
     return targetEntry;
   }

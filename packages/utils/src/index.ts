@@ -1,4 +1,5 @@
 export * from './types.js';
+export * from './error.js';
 export * from './assert.js';
 export * from './string.js';
 export * from './bigint.js';

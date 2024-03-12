@@ -3,6 +3,7 @@ import { stringCamelCase } from '@polkadot/util';
 import { BlockHash, PalletDefLatest } from '@dedot/codecs';
 import { GenericSubstrateApi } from '@dedot/types';
 import { Dedot } from '../client/index.js';
+import { assert, UnknownApiError } from '@dedot/utils';
 
 /**
  * @name Executor
@@ -37,14 +38,25 @@ export abstract class Executor<ChainApi extends GenericSubstrateApi = SubstrateA
     return this.api.metadataLatest;
   }
 
-  getPallet(name: string, throwErr = true): PalletDefLatest {
+  getPallet(name: string): PalletDefLatest {
     const targetPallet = this.metadata.pallets.find((p) => stringCamelCase(p.name) === name);
-    if (!targetPallet && throwErr) {
-      throw new Error(`Pallet not found: ${name}`);
-    }
 
-    return targetPallet!;
+    assert(targetPallet, new UnknownApiError(`Pallet not found: ${name}`));
+
+    return targetPallet;
   }
 
-  abstract execute(...paths: string[]): unknown;
+  execute(...paths: string[]): unknown {
+    try {
+      return this.doExecute(...paths);
+    } catch (e: any) {
+      if (!this.api.options.throwOnUnknownApi && e instanceof UnknownApiError) {
+        return undefined;
+      }
+
+      throw e;
+    }
+  }
+
+  abstract doExecute(...paths: string[]): unknown;
 }

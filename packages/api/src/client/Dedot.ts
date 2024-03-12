@@ -294,7 +294,7 @@ export class Dedot<ChainApi extends GenericSubstrateApi = SubstrateApi> {
 
   #normalizeOptions(options: ApiOptions | NetworkEndpoint): NormalizedApiOptions {
     if (typeof options === 'string') {
-      return { endpoint: options };
+      return { ...this.#getDefaultOptions(), endpoint: options };
     } else {
       let { metadata } = options || {};
       if (metadata && typeof metadata === 'string') {
@@ -303,10 +303,15 @@ export class Dedot<ChainApi extends GenericSubstrateApi = SubstrateApi> {
         };
       }
 
-      return { ...options, metadata } as NormalizedApiOptions;
+      return { ...this.#getDefaultOptions(), ...options, metadata } as NormalizedApiOptions;
     }
   }
 
+  #getDefaultOptions(): Partial<NormalizedApiOptions> {
+    return {
+      throwOnUnknownApi: true,
+    };
+  }
   #getProvider(): ProviderInterface {
     const { provider, endpoint } = this.#options;
     if (provider) {

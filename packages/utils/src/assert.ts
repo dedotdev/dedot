@@ -1,9 +1,9 @@
-export function assert(condition: unknown, message?: string): asserts condition {
+export function assert(condition: unknown, message?: string | Error): asserts condition {
   if (condition) {
     return;
   }
 
-  throw new Error(message);
+  throwError(message);
 }
 
 /**
@@ -12,11 +12,15 @@ export function assert(condition: unknown, message?: string): asserts condition 
  * @param condition
  * @param message
  */
-export function assertFalse(condition: unknown, message?: string): asserts condition {
+export function assertFalse(condition: unknown, message?: string | Error): asserts condition {
   assert(!condition, message);
 }
 
-function throwError(message?: string): never {
+function throwError(message?: string | Error): never {
+  if (message instanceof Error) {
+    throw message;
+  }
+
   throw new Error(message);
 }
 
