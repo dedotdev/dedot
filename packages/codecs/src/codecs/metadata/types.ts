@@ -1,9 +1,13 @@
 import { Field } from './scale_info.js';
 import * as $ from '@dedot/shape';
+import { StorageEntryLatest } from '@dedot/codecs/codecs';
 
-export interface PalletItemMetadata {
+export interface PalletInfo {
   pallet: string;
   palletIndex: number;
+}
+
+export interface PalletItemMetadata extends PalletInfo {
   name: string;
   fields: Field[];
   fieldCodecs: $.AnyShape[];
@@ -22,3 +26,5 @@ export interface PalletTxMetadataV15 extends PalletTxMetadataV14 {}
 export interface PalletErrorMetadataLatest extends PalletErrorMetadataV15 {}
 export interface PalletEventMetadataLatest extends PalletEventMetadataV15 {}
 export interface PalletTxMetadataLatest extends PalletTxMetadataV15 {}
+
+export interface PalletStorageEntryMetadataLatest extends StorageEntryLatest, PalletInfo {}

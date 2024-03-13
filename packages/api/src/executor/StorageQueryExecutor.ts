@@ -48,13 +48,17 @@ export class StorageQueryExecutor<ChainApi extends GenericSubstrateApi = Substra
           callback(targetChanges.map((value) => entry.decodeValue(value[1])));
         });
       } else {
-        return (await Promise.all(encodedKeys.map((key) => this.api.rpc.state.getStorage(key, this.atBlockHash)))).map(
-          (result) => entry.decodeValue(result),
-        );
+        const queries = encodedKeys.map((key) => this.api.rpc.state.getStorage(key, this.atBlockHash));
+        return (await Promise.all(queries)).map((result) => entry.decodeValue(result));
       }
     };
 
     queryFn.multi = queryMultiFn;
+    queryFn.meta = {
+      pallet: entry.pallet.name,
+      palletIndex: entry.pallet.index,
+      ...entry.storageEntry,
+    };
 
     return queryFn;
   }

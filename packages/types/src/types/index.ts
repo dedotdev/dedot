@@ -3,6 +3,7 @@ import {
   ModuleError,
   PalletErrorMetadataLatest,
   PalletEventMetadataLatest,
+  PalletStorageEntryMetadataLatest,
   PalletTxMetadataLatest,
 } from '@dedot/codecs';
 import { RpcCallSpec } from './rpc.js';
@@ -64,6 +65,7 @@ export interface StorageMultiQueryMethod<F extends AnyFunc = AnyFunc> {
 
 export type GenericStorageQuery<T extends AnyFunc = AnyFunc> = StorageQueryMethod<T> & {
   multi: StorageMultiQueryMethod<T>;
+  meta: PalletStorageEntryMetadataLatest;
 };
 
 export type GenericRuntimeApiMethod<F extends AsyncMethod = AsyncMethod> = F & {
