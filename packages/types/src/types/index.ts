@@ -57,7 +57,14 @@ export interface StorageQueryMethod<F extends AnyFunc = AnyFunc> {
   (...args: Append<Parameters<F>, Callback<ReturnType<F>>>): Promise<Unsub>;
 }
 
-export type GenericStorageQuery<T extends AnyFunc = AnyFunc> = StorageQueryMethod<T> & {};
+export interface StorageMultiQueryMethod<F extends AnyFunc = AnyFunc> {
+  (args: Array<Parameters<F>[0]>): Promise<Array<ReturnType<F>>>;
+  (args: Array<Parameters<F>[0]>, callback: Callback<Array<ReturnType<F>>>): Promise<Unsub>;
+}
+
+export type GenericStorageQuery<T extends AnyFunc = AnyFunc> = StorageQueryMethod<T> & {
+  multi: StorageMultiQueryMethod<T>;
+};
 
 export type GenericRuntimeApiMethod<F extends AsyncMethod = AsyncMethod> = F & {
   meta: RuntimeApiMethodSpec;

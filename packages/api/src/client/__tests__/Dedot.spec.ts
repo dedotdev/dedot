@@ -61,6 +61,7 @@ describe('Dedot', () => {
         api.metadataLatest.pallets.forEach((pallet) => {
           pallet.storage?.entries.forEach((entry) => {
             expect(api.query[stringCamelCase(pallet.name)][stringCamelCase(entry.name)]).toBeDefined();
+            expect(api.query[stringCamelCase(pallet.name)][stringCamelCase(entry.name)].multi).toBeDefined();
           });
         });
       });

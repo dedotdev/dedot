@@ -1,18 +1,19 @@
 import type { SubstrateApi } from '@dedot/chaintypes';
-import { GenericSubstrateApi, StorageChangeSet } from '@dedot/types';
+import { GenericStorageQuery, GenericSubstrateApi, StorageChangeSet } from '@dedot/types';
 import { Executor } from './Executor.js';
 import { QueryableStorage } from '../storage/QueryableStorage.js';
 import { isFunction } from '@polkadot/util';
+import { assert } from '@dedot/utils';
 
 /**
  * @name StorageQueryExecutor
  * @description Execute a query to on-chain storage
  */
 export class StorageQueryExecutor<ChainApi extends GenericSubstrateApi = SubstrateApi> extends Executor<ChainApi> {
-  execute(pallet: string, storage: string) {
-    return async (...args: any[]) => {
-      const entry = new QueryableStorage(this.registry, pallet, storage);
+  execute(pallet: string, storage: string): GenericStorageQuery {
+    const entry = new QueryableStorage(this.registry, pallet, storage);
 
+    const queryFn: GenericStorageQuery = async (...args: any[]) => {
       const inArgs = args.slice();
       const lastArg = args.at(-1);
       const callback = isFunction(lastArg) ? inArgs.pop() : undefined;
@@ -30,5 +31,31 @@ export class StorageQueryExecutor<ChainApi extends GenericSubstrateApi = Substra
         return entry.decodeValue(result);
       }
     };
+
+    const queryMultiFn = async (...args: any[]) => {
+      const inArgs = args.slice();
+      const lastArg = args.at(-1);
+      const callback = isFunction(lastArg) ? inArgs.pop() : undefined;
+      const multiArgs = inArgs.at(0);
+      assert(Array.isArray(multiArgs), 'First param for multi query should be an array');
+      const encodedKeys = multiArgs.map((arg) => entry.encodeKey(arg));
+
+      // if a callback is passed, make a storage subscription and return an unsub function
+      if (callback) {
+        return await this.api.rpc.state.subscribeStorage(encodedKeys, (changeSet: StorageChangeSet) => {
+          const targetChanges = changeSet.changes.filter((change) => encodedKeys.includes(change[0]));
+
+          callback(targetChanges.map((value) => entry.decodeValue(value[1])));
+        });
+      } else {
+        return (await Promise.all(encodedKeys.map((key) => this.api.rpc.state.getStorage(key, this.atBlockHash)))).map(
+          (result) => entry.decodeValue(result),
+        );
+      }
+    };
+
+    queryFn.multi = queryMultiFn;
+
+    return queryFn;
   }
 }
