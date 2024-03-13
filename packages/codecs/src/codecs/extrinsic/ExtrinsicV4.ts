@@ -1,7 +1,7 @@
-import { PortableRegistry } from '../../registry';
+import { PortableRegistry } from '../../registry/index.js';
 import { HexString, blake2AsHex } from '@dedot/utils';
 import { u8aToHex } from '@polkadot/util';
-import { Hash } from '../generic';
+import { Hash } from '../generic/index.js';
 
 export interface ExtrinsicSignatureV4<Address = any, Signature = any, Extra = any> {
   address: Address;

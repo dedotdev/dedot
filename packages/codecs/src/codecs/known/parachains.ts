@@ -1,6 +1,6 @@
 import * as $ from '@dedot/shape';
-import { $AccountId32, $BlockNumber, $Hash } from '../generic';
-import { $H256, $H512 } from './primitives';
+import { $AccountId32, $BlockNumber, $Hash } from '../generic/index.js';
+import { $H256, $H512 } from './primitives.js';
 
 /**
  * Approval voting configuration parameters

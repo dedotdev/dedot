@@ -1,4 +1,4 @@
-import { Dedot } from '../../client';
+import { Dedot } from '../../client/index.js';
 import { PortableRegistry, SignedExtensionDefLatest } from '@dedot/codecs';
 import { ensurePresence } from '@dedot/utils';
 import * as $ from '@dedot/shape';

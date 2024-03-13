@@ -1,6 +1,6 @@
 import { ProviderInterface } from '@polkadot/rpc-provider/types';
 import { HexString } from '@dedot/utils';
-import { AnySignedExtension } from './extrinsic';
+import { AnySignedExtension } from './extrinsic/index.js';
 import { RuntimeApiName, RuntimeApiSpec } from '@dedot/types';
 import type { IStorage } from '@dedot/storage';
 

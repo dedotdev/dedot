@@ -1,7 +1,7 @@
 import { hexToString, isHex } from '@polkadot/util';
 import * as $ from '@dedot/shape';
 import { HexString } from '@dedot/utils';
-import { $Hash } from './Hash';
+import { $Hash } from './Hash.js';
 
 export const $BlockNumber = $.withMetadata($.metadata('$BlockNumber'), $.u32);
 export type BlockNumber = number;

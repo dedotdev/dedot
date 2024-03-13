@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { $Era, nextPowerOfTwo, numOfTrailingZeroes } from '../Era';
+import { $Era, nextPowerOfTwo, numOfTrailingZeroes } from '../Era.js';
 
 /**
  * Ref: https://github.com/paritytech/polkadot-sdk/blob/0e49ed72aa365475e30069a5c30e251a009fdacf/substrate/primitives/runtime/src/generic/era.rs#L182-L232

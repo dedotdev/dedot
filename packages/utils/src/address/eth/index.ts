@@ -1,2 +1,2 @@
-export * from './isEthereumAddress';
-export * from './isEthereumAddress';
+export * from './isEthereumAddress.js';
+export * from './isEthereumAddress.js';

@@ -1,5 +1,5 @@
-import { blake2AsU8a } from './blake2';
-import { xxhashAsU8a } from './xxhash';
+import { blake2AsU8a } from './blake2.js';
+import { xxhashAsU8a } from './xxhash.js';
 import { u8aConcat, u8aToU8a } from '@polkadot/util';
 
 export type HasherInput = string | Uint8Array;

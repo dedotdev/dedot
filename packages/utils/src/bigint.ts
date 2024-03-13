@@ -1,4 +1,4 @@
-import { HexString } from './types';
+import { HexString } from './types.js';
 
 /**
  * Return the bigger bigint value

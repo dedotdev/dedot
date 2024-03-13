@@ -1,8 +1,8 @@
 import { literalUnion, sizedArray, sizedUint8Array, tuple, uint8Array } from 'subshape';
-import { array, option } from '../extension';
+import { array, option } from '../extension/index.js';
 
-export * from './Struct';
-export * from './Enum';
+export * from './Struct.js';
+export * from './Enum.js';
 
 export const FlatEnum = literalUnion;
 

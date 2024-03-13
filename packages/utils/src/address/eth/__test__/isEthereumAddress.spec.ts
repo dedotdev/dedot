@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { describe, it, expect } from 'vitest';
-import { isEthereumAddress } from '../isEthereumAddress';
+import { isEthereumAddress } from '../isEthereumAddress.js';
 
 const ADDRESS = '0x00a329c0648769A73afAc7F9381E08FB43dBEA72';
 

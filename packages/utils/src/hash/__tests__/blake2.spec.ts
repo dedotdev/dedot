@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { blake2AsHex, blake2AsU8a } from '../blake2';
+import { blake2AsHex, blake2AsU8a } from '../blake2.js';
 import { hexToU8a } from '@polkadot/util';
 
 describe('blake2', () => {

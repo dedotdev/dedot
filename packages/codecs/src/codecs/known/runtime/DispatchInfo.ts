@@ -1,5 +1,5 @@
 import * as $ from '@dedot/shape';
-import { $DispatchClass, $Weight } from '../payment';
+import { $DispatchClass, $Weight } from '../payment.js';
 
 export const $Pays = $.FlatEnum(['Yes', 'No']);
 export type Pays = $.Output<typeof $Pays>;

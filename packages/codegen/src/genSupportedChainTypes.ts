@@ -1,8 +1,8 @@
-import { generateTypes, generateTypesFromChain } from './index';
+import { generateTypes, generateTypesFromChain } from './index.js';
 import { rpc } from '@polkadot/types-support/metadata/static-substrate';
 import staticSubstrate from '@polkadot/types-support/metadata/v15/substrate-hex';
 import { $Metadata, PortableRegistry, Metadata, RuntimeVersion } from '@dedot/codecs';
-import { NetworkInfo } from './types';
+import { NetworkInfo } from './types.js';
 import { Dedot, ConstantExecutor } from 'dedot';
 
 const NETWORKS: NetworkInfo[] = [

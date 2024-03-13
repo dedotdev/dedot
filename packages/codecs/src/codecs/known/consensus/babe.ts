@@ -1,5 +1,5 @@
 import * as $ from '@dedot/shape';
-import { $AccountId32, $Header } from '../../generic';
+import { $AccountId32, $Header } from '../../generic/index.js';
 
 /*
  * The weight of an authority.

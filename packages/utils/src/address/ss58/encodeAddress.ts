@@ -4,9 +4,9 @@
 
 import { u8aConcat } from '@polkadot/util';
 
-import { decodeAddress } from './decodeAddress';
-import { defaults } from './defaults';
-import { sshash } from './sshash';
+import { decodeAddress } from './decodeAddress.js';
+import { defaults } from './defaults.js';
+import { sshash } from './sshash.js';
 import { base58 } from '@scure/base';
 
 export function encodeAddress(key: string | Uint8Array, ss58Format: number = defaults.prefix): string {

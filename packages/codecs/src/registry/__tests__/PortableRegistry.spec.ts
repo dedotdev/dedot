@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it } from 'vitest';
-import { $Metadata } from '../../codecs';
+import { $Metadata } from '../../codecs/index.js';
 import staticSubstrate from '@polkadot/types-support/metadata/static-substrate';
-import { PortableRegistry } from '../PortableRegistry';
+import { PortableRegistry } from '../PortableRegistry.js';
 import * as $ from '@dedot/shape';
 import * as util from 'util';
 

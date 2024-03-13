@@ -1,7 +1,7 @@
 import type { SubstrateApi } from '@dedot/chaintypes';
 import { stringCamelCase } from '@polkadot/util';
 import { GenericSubstrateApi } from '@dedot/types';
-import { Executor } from './Executor';
+import { Executor } from './Executor.js';
 
 /**
  * @name ConstantExecutor

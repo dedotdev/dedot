@@ -3,7 +3,7 @@
 
 import { isHex } from '@polkadot/util';
 
-import { isEthereumChecksum } from './isEthereumChecksum';
+import { isEthereumChecksum } from './isEthereumChecksum.js';
 
 export function isEthereumAddress(address?: string): boolean {
   if (!address || address.length !== 42 || !isHex(address)) {

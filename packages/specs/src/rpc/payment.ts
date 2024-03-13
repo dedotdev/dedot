@@ -1,5 +1,5 @@
 import { RpcModuleSpec } from '@dedot/types';
-import { atBlockHashParam } from './shared';
+import { atBlockHashParam } from './shared.js';
 
 /**
  * Ref: https://github.com/paritytech/polkadot-sdk/blob/36957d676033b23b46edb66e6d7dcd13da11e19a/substrate/frame/transaction-payment/rpc/src/lib.rs#L38-L48

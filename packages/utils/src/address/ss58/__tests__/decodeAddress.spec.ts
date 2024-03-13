@@ -4,8 +4,8 @@
 import { describe, it, expect } from 'vitest';
 import { hexToU8a, stringToU8a, u8aToHex } from '@polkadot/util';
 
-import { ALICE_PUBLIC_SR } from './encodeAddress.spec';
-import { decodeAddress } from '../decodeAddress';
+import { ALICE_PUBLIC_SR } from './encodeAddress.spec.js';
+import { decodeAddress } from '../decodeAddress.js';
 
 describe('decodeAddress', (): void => {
   it('decodes an address', (): void => {

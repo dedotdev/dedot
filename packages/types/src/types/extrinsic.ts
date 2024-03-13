@@ -1,5 +1,5 @@
 import { ApplyExtrinsicResult, BlockHash, DispatchError, DispatchInfo, Hash, TransactionStatus } from '@dedot/codecs';
-import { Callback, IEventRecord, Unsub } from './index';
+import { Callback, IEventRecord, Unsub } from './index.js';
 import { IKeyringPair, Signer } from '@polkadot/types/types';
 import { HexString } from '@dedot/utils';
 

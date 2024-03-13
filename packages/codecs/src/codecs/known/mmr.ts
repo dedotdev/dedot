@@ -1,5 +1,5 @@
 import * as $ from '@dedot/shape';
-import { $Hash } from '../generic';
+import { $Hash } from '../generic/index.js';
 
 /**
  * A type to describe node position in the MMR (node index).

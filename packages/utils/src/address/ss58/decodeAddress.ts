@@ -4,9 +4,9 @@
 
 import { isHex, isU8a, u8aToU8a } from '@polkadot/util';
 
-import { checkAddressChecksum } from './checkAddressChecksum';
+import { checkAddressChecksum } from './checkAddressChecksum.js';
 import { base58 } from '@scure/base';
-import { defaults } from './defaults';
+import { defaults } from './defaults.js';
 
 export function decodeAddress(
   encoded?: string | Uint8Array | null,

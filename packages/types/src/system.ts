@@ -1,5 +1,5 @@
 import { HexString } from '@dedot/utils';
-import { SerdeEnum } from './serde';
+import { SerdeEnum } from './serde.js';
 
 /**
  * The type of a chain.

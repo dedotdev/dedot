@@ -1,6 +1,6 @@
 import * as $ from '@dedot/shape';
-import { $PortableType, $TypeId } from './scale_info';
-import { $ConstantDefV14, $SignedExtensionDefV14, $StorageEntryV14, SignedExtensionDefV14 } from './v14';
+import { $PortableType, $TypeId } from './scale_info.js';
+import { $ConstantDefV14, $SignedExtensionDefV14, $StorageEntryV14, SignedExtensionDefV14 } from './v14.js';
 
 export const $ConstantDefV15 = $ConstantDefV14;
 export type ConstantDefV15 = $.Input<typeof $ConstantDefV15>;

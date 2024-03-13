@@ -1,2 +1,2 @@
-export * from './rpc';
-export * from './runtime';
+export * from './rpc/index.js';
+export * from './runtime/index.js';

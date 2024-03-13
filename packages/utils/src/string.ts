@@ -1,5 +1,5 @@
 import { hexToU8a, isHex, stringCamelCase } from '@polkadot/util';
-import { HexString } from './types';
+import { HexString } from './types.js';
 
 export const shortenAddress = (address: string): string => {
   if (!address) {

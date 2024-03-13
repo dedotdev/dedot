@@ -1,2 +1,2 @@
-export * from './eth';
-export * from './ss58';
+export * from './eth/index.js';
+export * from './ss58/index.js';

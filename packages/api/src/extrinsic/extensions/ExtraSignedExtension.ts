@@ -1,7 +1,7 @@
-import { ISignedExtension, SignedExtension } from './SignedExtension';
+import { ISignedExtension, SignedExtension } from './SignedExtension.js';
 import { assert, ensurePresence, HexString } from '@dedot/utils';
 import * as $ from '@dedot/shape';
-import { knownSignedExtensions } from './known';
+import { knownSignedExtensions } from './known/index.js';
 import { SignerPayloadJSON, SignerPayloadRaw } from '@polkadot/types/types';
 import { objectSpread, u8aToHex } from '@polkadot/util';
 

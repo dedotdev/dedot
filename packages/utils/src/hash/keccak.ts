@@ -3,7 +3,7 @@
 // Original implementation: https://github.com/polkadot-js/common/blob/22aab4a4e62944a2cf8c885f50be2c1b842813ec/packages/util-crypto/src/keccak/asU8a.ts
 import { keccak_256 as keccak256, keccak_512 as keccak512 } from '@noble/hashes/sha3';
 import { u8aToHex, u8aToU8a } from '@polkadot/util';
-import { HexString } from '../types';
+import { HexString } from '../types.js';
 
 export function keccakAsU8a(data: string | Uint8Array, bitLength: 256 | 512 = 256): Uint8Array {
   const u8a = u8aToU8a(data);

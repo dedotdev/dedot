@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { bnMax, bnMin, bnToHex } from '../bigint';
+import { bnMax, bnMin, bnToHex } from '../bigint.js';
 
 describe('bigint', () => {
   describe('bnMax', () => {

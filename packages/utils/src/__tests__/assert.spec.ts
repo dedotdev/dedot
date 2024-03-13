@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { assert, assertFalse, ensurePresence } from '../assert';
+import { assert, assertFalse, ensurePresence } from '../assert.js';
 
 describe('assert', () => {
   it('should throw error', function () {

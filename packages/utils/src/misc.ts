@@ -1,5 +1,5 @@
-import { blake2AsHex } from './hash';
-import { HexString } from './types';
+import { blake2AsHex } from './hash/index.js';
+import { HexString } from './types.js';
 import { hexToU8a, isHex, isString, isU8a, stringToHex, stringToU8a, u8aToHex } from '@polkadot/util';
 
 export const calculateRuntimeApiHash = (runtimeApiName: string) => {

@@ -1,2 +1,2 @@
-export * from './IStorage';
-export * from './impl';
+export * from './IStorage.js';
+export * from './impl/index.js';

@@ -5,13 +5,13 @@ import {
   PalletEventMetadataLatest,
   PalletTxMetadataLatest,
 } from '@dedot/codecs';
-import { RpcCallSpec } from './rpc';
-import { RuntimeApiMethodSpec } from './runtime';
+import { RpcCallSpec } from './rpc.js';
+import { RuntimeApiMethodSpec } from './runtime.js';
 
-export * from './rpc';
-export * from './runtime';
-export * from './extrinsic';
-export * from './event';
+export * from './rpc.js';
+export * from './runtime.js';
+export * from './extrinsic.js';
+export * from './event.js';
 
 export type Append<T extends readonly unknown[], V> = [...T, V];
 export type AnyFunc = (...args: any[]) => any;

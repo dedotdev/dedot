@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { xxhashAsU8a, xxhashAsHex } from '../xxhash';
+import { xxhashAsU8a, xxhashAsHex } from '../xxhash.js';
 import { hexToU8a } from '@polkadot/util';
 
 describe('xxhash', () => {

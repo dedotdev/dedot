@@ -1,6 +1,6 @@
 import * as $ from '@dedot/shape';
 import { RpcModuleSpec } from '@dedot/types';
-import { atBlockHashParam } from './shared';
+import { atBlockHashParam } from './shared.js';
 import { $Header, $SignedBlock } from '@dedot/codecs';
 
 /**

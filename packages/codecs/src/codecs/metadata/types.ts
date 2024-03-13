@@ -1,4 +1,4 @@
-import { Field } from './scale_info';
+import { Field } from './scale_info.js';
 import * as $ from '@dedot/shape';
 
 export interface PalletItemMetadata {

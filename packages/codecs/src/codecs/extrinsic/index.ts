@@ -1,3 +1,3 @@
-export * from './ExtrinsicVersion';
-export * from './ExtrinsicV4';
-export * from './Extrinsic';
+export * from './ExtrinsicVersion.js';
+export * from './ExtrinsicV4.js';
+export * from './Extrinsic.js';
