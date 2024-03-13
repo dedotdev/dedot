@@ -1,4 +1,4 @@
-import { createShape as originCreateShape, Shape, AssertState } from 'subshape';
+import { createShape as originCreateShape, Shape } from '../subshape.js';
 
 const notImplemented = () => {
   throw new Error('subAssert is not implemented!');

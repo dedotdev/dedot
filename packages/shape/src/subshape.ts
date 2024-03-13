@@ -139,3 +139,5 @@ u32.nativeType = 'number';
 u16.nativeType = 'number';
 u8.nativeType = 'number';
 str.nativeType = 'string';
+
+export * from 'subshape';

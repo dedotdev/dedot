@@ -10,7 +10,7 @@ import {
   ShapeDecodeError,
   taggedUnion,
   variant,
-} from 'subshape';
+} from '../subshape.js';
 import { isHex, isObject, isString, stringCamelCase } from '@polkadot/util';
 
 export type IndexedEnumMember<V extends AnyShape> = { value?: V | null; index: number };

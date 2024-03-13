@@ -1,4 +1,4 @@
-import { array as originalArray, Shape } from 'subshape';
+import { array as originalArray, Shape } from '../subshape.js';
 
 function shouldDecodeArray(input: any) {
   return Array.isArray(input);
