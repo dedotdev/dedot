@@ -7,7 +7,7 @@ import {
   OutputObject,
   Shape,
   optionalField,
-} from 'subshape';
+} from '../subshape.js';
 
 function shouldDecodeObject(input: any) {
   if (isHex(input) || isU8a(input) || isString(input) || !isObject(input)) {

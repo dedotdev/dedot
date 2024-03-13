@@ -1,4 +1,4 @@
-import { option as originalOption, Shape } from 'subshape';
+import { option as originalOption, Shape } from '../subshape.js';
 import { isHex, isNull, isU8a, isUndefined } from '@polkadot/util';
 
 function shouldDecodeInner(input: any) {
@@ -23,3 +23,5 @@ export function option<SI, SO>($some: Shape<SI, SO>): Shape<SI | undefined, SO |
 
   return shaped;
 }
+
+export const Option = option;

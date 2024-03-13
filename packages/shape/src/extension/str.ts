@@ -1,4 +1,4 @@
-import { createShape, metadata, Shape, ShapeDecodeError } from 'subshape';
+import { createShape, metadata, Shape, ShapeDecodeError } from '../subshape.js';
 
 const textEncoder = new TextEncoder();
 const textDecoder = new TextDecoder();
