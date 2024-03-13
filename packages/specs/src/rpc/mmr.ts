@@ -1,5 +1,5 @@
 import { RpcModuleSpec } from '@dedot/types';
-import { atBlockHashParam } from './shared';
+import { atBlockHashParam } from './shared.js';
 
 export const mmr: RpcModuleSpec = {
   root: {

@@ -1,4 +1,4 @@
-import type { IStorage } from '../IStorage';
+import type { IStorage } from '../IStorage.js';
 
 const checkAvailability = () => {
   try {

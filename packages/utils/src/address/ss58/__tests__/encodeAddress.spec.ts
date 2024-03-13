@@ -1,7 +1,7 @@
 // Copyright 2017-2024 @polkadot/util-crypto authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 import { describe, it, expect } from 'vitest';
-import { encodeAddress } from '../encodeAddress';
+import { encodeAddress } from '../encodeAddress.js';
 
 // eslint-disable-next-line jest/no-export
 export const ALICE_PUBLIC_SR = new Uint8Array([

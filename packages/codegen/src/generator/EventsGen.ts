@@ -1,5 +1,5 @@
-import { ApiGen } from './ApiGen';
-import { beautifySourceCode, commentBlock, compileTemplate } from './utils';
+import { ApiGen } from './ApiGen.js';
+import { beautifySourceCode, commentBlock, compileTemplate } from './utils.js';
 import { stringCamelCase, stringPascalCase } from '@polkadot/util';
 import { EnumTypeDef, Field, TypeId } from '@dedot/codecs';
 import { assert } from '@dedot/utils';

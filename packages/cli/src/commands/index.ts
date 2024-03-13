@@ -1,1 +1,1 @@
-export * from './chaintypes';
+export * from './chaintypes.js';

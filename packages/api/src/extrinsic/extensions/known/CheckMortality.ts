@@ -1,4 +1,4 @@
-import { SignedExtension } from '../SignedExtension';
+import { SignedExtension } from '../SignedExtension.js';
 import { EraLike, Hash, Header } from '@dedot/codecs';
 import { assert, isZeroHash, bnMin } from '@dedot/utils';
 import { numberToHex, u8aToHex } from '@polkadot/util';

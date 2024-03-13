@@ -1,21 +1,21 @@
 import { RuntimeApiMethodSpec, RuntimeApiName, RuntimeApiSpec } from '@dedot/types';
-import { AuthorityDiscoveryApi } from './discovery';
-import { BabeApi } from './babe';
-import { Metadata } from './metadata';
-import { Core } from './core';
-import { AccountNonceApi } from './system';
-import { TransactionPaymentApi, TransactionPaymentCallApi } from './payment';
-import { BlockBuilder } from './block-builder';
-import { GrandpaApi } from './grandpa';
-import { MmrApi } from './mmr';
-import { NominationPoolsApi } from './nomination-pools';
-import { OffchainWorkerApi } from './offchain';
-import { SessionKeys } from './session';
-import { ParachainHost } from './parachains';
-import { BeefyApi, BeefyMmrApi } from './beefy';
-import { StakingApi } from './staking';
-import { TaggedTransactionQueue } from './transaction-pool';
-import { GenesisBuilder } from './genesis-builder';
+import { AuthorityDiscoveryApi } from './discovery.js';
+import { BabeApi } from './babe.js';
+import { Metadata } from './metadata.js';
+import { Core } from './core.js';
+import { AccountNonceApi } from './system.js';
+import { TransactionPaymentApi, TransactionPaymentCallApi } from './payment.js';
+import { BlockBuilder } from './block-builder.js';
+import { GrandpaApi } from './grandpa.js';
+import { MmrApi } from './mmr.js';
+import { NominationPoolsApi } from './nomination-pools.js';
+import { OffchainWorkerApi } from './offchain.js';
+import { SessionKeys } from './session.js';
+import { ParachainHost } from './parachains.js';
+import { BeefyApi, BeefyMmrApi } from './beefy.js';
+import { StakingApi } from './staking.js';
+import { TaggedTransactionQueue } from './transaction-pool.js';
+import { GenesisBuilder } from './genesis-builder.js';
 
 export const RuntimeApis: Record<RuntimeApiName, RuntimeApiSpec[]> = {
   AuthorityDiscoveryApi,

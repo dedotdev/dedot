@@ -7,7 +7,7 @@ import type {
   RuntimeApiName,
   RuntimeApiSpec,
 } from '@dedot/types';
-import { Executor } from './Executor';
+import { Executor } from './Executor.js';
 import { assert, calculateRuntimeApiHash, stringSnakeCase } from '@dedot/utils';
 import { isNumber, stringPascalCase, u8aConcat, u8aToHex } from '@polkadot/util';
 import { RuntimeApiMethodDefLatest } from '@dedot/codecs';

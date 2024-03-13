@@ -3,7 +3,7 @@ import { isFunction, u8aToHex } from '@polkadot/util';
 import { findAliasRpcSpec, findRpcSpec } from '@dedot/specs';
 import { GenericSubstrateApi, Unsub, RpcCallSpec, RpcParamSpec, GenericRpcCall } from '@dedot/types';
 import { assert, isNativeType } from '@dedot/utils';
-import { Executor } from './Executor';
+import { Executor } from './Executor.js';
 
 const isOptionalParam = (param: RpcParamSpec): boolean => {
   return param.isOptional || param.name.startsWith('Option<');

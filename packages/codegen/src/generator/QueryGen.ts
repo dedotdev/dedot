@@ -1,8 +1,8 @@
 import { stringLowerFirst } from '@polkadot/util';
 import { StorageEntryLatest } from '@dedot/codecs';
 import { normalizeName } from '@dedot/utils';
-import { ApiGen } from '../generator';
-import { beautifySourceCode, commentBlock, compileTemplate } from './utils';
+import { ApiGen } from '../generator/index.js';
+import { beautifySourceCode, commentBlock, compileTemplate } from './utils.js';
 
 export class QueryGen extends ApiGen {
   generate() {

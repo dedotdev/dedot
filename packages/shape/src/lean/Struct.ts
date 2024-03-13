@@ -1,5 +1,5 @@
 import { AnyShape, Expand, field, Input, optionalField, Output, Shape } from 'subshape';
-import { object } from '../extension';
+import { object } from '../extension/index.js';
 
 export type StructMembers<T extends AnyShape> = {
   [prop: string]: T;

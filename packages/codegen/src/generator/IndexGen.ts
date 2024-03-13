@@ -1,5 +1,5 @@
-import { beautifySourceCode, compileTemplate } from './utils';
-import { NetworkInfo } from '../types';
+import { beautifySourceCode, compileTemplate } from './utils.js';
+import { NetworkInfo } from '../types.js';
 import { stringPascalCase } from '@polkadot/util';
 
 export class IndexGen {

@@ -1,7 +1,7 @@
 import type { SubstrateApi } from '@dedot/chaintypes';
 import { GenericSubstrateApi, StorageChangeSet } from '@dedot/types';
-import { Executor } from './Executor';
-import { QueryableStorage } from '../storage/QueryableStorage';
+import { Executor } from './Executor.js';
+import { QueryableStorage } from '../storage/QueryableStorage.js';
 import { isFunction } from '@polkadot/util';
 
 /**

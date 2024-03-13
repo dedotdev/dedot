@@ -1,5 +1,5 @@
 import * as $ from '@dedot/shape';
-import { $BlockHash, $Hash } from '../generic';
+import { $BlockHash, $Hash } from '../generic/index.js';
 
 /**
  * Possible transaction status events.

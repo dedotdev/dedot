@@ -3,7 +3,7 @@
 // Original implementation: https://github.com/polkadot-js/common/blob/22aab4a4e62944a2cf8c885f50be2c1b842813ec/packages/util-crypto/src/blake2/asU8a.ts
 import { blake2b } from '@noble/hashes/blake2b';
 import { u8aToHex, u8aToU8a } from '@polkadot/util';
-import { HexString } from '../types';
+import { HexString } from '../types.js';
 
 export function blake2AsU8a(
   data: string | Uint8Array,

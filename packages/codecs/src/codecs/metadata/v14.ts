@@ -1,5 +1,5 @@
 import * as $ from '@dedot/shape';
-import { $PortableType, $TypeId } from './scale_info';
+import { $PortableType, $TypeId } from './scale_info.js';
 
 export const $Hasher = $.FlatEnum([
   'blake2_128',

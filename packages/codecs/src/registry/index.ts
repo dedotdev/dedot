@@ -1,1 +1,1 @@
-export * from './PortableRegistry';
+export * from './PortableRegistry.js';

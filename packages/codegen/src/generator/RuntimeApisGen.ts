@@ -1,9 +1,9 @@
-import { TypesGen } from './TypesGen';
+import { TypesGen } from './TypesGen.js';
 import { getRuntimeApiNames, getRuntimeApiSpecs } from '@dedot/specs';
 import { RuntimeApiMethodSpec, RuntimeApiSpec } from '@dedot/types';
-import { beautifySourceCode, commentBlock, compileTemplate } from './utils';
+import { beautifySourceCode, commentBlock, compileTemplate } from './utils.js';
 import { calculateRuntimeApiHash, stringSnakeCase } from '@dedot/utils';
-import { RpcGen } from './RpcGen';
+import { RpcGen } from './RpcGen.js';
 import { stringCamelCase } from '@polkadot/util';
 import { RuntimeApiMethodDefLatest } from '@dedot/codecs';
 

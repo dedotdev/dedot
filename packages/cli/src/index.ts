@@ -1,4 +1,4 @@
-import { dedot } from './dedot';
+import { dedot } from './dedot.js';
 
 export { dedot };
 

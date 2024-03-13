@@ -1,4 +1,4 @@
-import { Executor } from './Executor';
+import { Executor } from './Executor.js';
 import {
   AddressOrPair,
   Callback,
@@ -15,9 +15,9 @@ import { SubstrateApi } from '@dedot/chaintypes';
 import { assert, HexString } from '@dedot/utils';
 import { hexToU8a, isFunction, isHex, objectSpread, stringCamelCase, stringPascalCase, u8aToHex } from '@polkadot/util';
 import { BlockHash, Extrinsic, Hash, SignedBlock, TransactionStatus } from '@dedot/codecs';
-import { Dedot } from '../client';
+import { Dedot } from '../client/index.js';
 import { IKeyringPair } from '@polkadot/types/types';
-import { ExtraSignedExtension, SubmittableResult } from '../extrinsic';
+import { ExtraSignedExtension, SubmittableResult } from '../extrinsic/index.js';
 import { SignOptions } from '@polkadot/keyring/types';
 import { blake2AsHex, blake2AsU8a } from '@dedot/utils';
 

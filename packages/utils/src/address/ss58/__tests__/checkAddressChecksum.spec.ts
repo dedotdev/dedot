@@ -3,7 +3,7 @@
 
 import { describe, it, expect } from 'vitest';
 import { base58 } from '@scure/base';
-import { checkAddressChecksum } from '../checkAddressChecksum';
+import { checkAddressChecksum } from '../checkAddressChecksum.js';
 
 describe('checkAddressChecksum', (): void => {
   it('correctly extracts the info from a 1-byte-prefix address', (): void => {

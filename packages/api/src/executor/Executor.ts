@@ -2,7 +2,7 @@ import type { SubstrateApi } from '@dedot/chaintypes';
 import { stringCamelCase } from '@polkadot/util';
 import { BlockHash, PalletDefLatest } from '@dedot/codecs';
 import { GenericSubstrateApi } from '@dedot/types';
-import { Dedot } from '../client';
+import { Dedot } from '../client/index.js';
 
 /**
  * @name Executor

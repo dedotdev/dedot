@@ -11,9 +11,9 @@ import {
   RuntimeApiExecutor,
   StorageQueryExecutor,
   TxExecutor,
-} from '../executor';
-import { newProxyChain } from '../proxychain';
-import { ApiOptions, MetadataKey, NetworkEndpoint, NormalizedApiOptions } from '../types';
+} from '../executor/index.js';
+import { newProxyChain } from '../proxychain.js';
+import { ApiOptions, MetadataKey, NetworkEndpoint, NormalizedApiOptions } from '../types.js';
 import { hexAddPrefix, u8aToHex } from '@polkadot/util';
 import { IStorage, LocalStorage } from '@dedot/storage';
 import { assert } from '@dedot/utils';

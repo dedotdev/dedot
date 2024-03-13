@@ -1,1 +1,1 @@
-export * from './LocalStorage';
+export * from './LocalStorage.js';

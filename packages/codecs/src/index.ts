@@ -1,2 +1,2 @@
-export * from './codecs';
-export * from './registry';
+export * from './codecs/index.js';
+export * from './registry/index.js';

@@ -17,7 +17,7 @@ import {
   PalletErrorMetadataLatest,
   PortableType,
   TypeId,
-} from '../codecs';
+} from '../codecs/index.js';
 import * as $ from '@dedot/shape';
 import { EnumOptions } from '@dedot/shape';
 import { normalizeName } from '@dedot/utils';

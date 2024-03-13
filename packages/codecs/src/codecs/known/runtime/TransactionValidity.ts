@@ -1,5 +1,5 @@
 import * as $ from '@dedot/shape';
-import { $TransactionValidityError } from './TransactionValidityError';
+import { $TransactionValidityError } from './TransactionValidityError.js';
 
 /**
  * Priority for a transaction. Additive. Higher is better.

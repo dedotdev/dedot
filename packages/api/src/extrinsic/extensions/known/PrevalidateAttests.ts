@@ -1,4 +1,4 @@
-import { SignedExtension } from '../SignedExtension';
+import { SignedExtension } from '../SignedExtension.js';
 
 /**
  * @description Validate `attest` calls prior to execution.

@@ -1,6 +1,6 @@
 import * as $ from '@dedot/shape';
-import { $AccountId32, $BlockHash, $BlockNumber } from '../../generic';
-import { $H512 } from '../primitives';
+import { $AccountId32, $BlockHash, $BlockNumber } from '../../generic/index.js';
+import { $H512 } from '../primitives.js';
 
 /**
  * The monotonic identifier of a GRANDPA set of authorities.

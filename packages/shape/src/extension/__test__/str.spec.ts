@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import * as $ from '../..';
+import * as $ from '../../index.js';
 import { hexToU8a } from '@polkadot/util';
 
 describe('str', () => {

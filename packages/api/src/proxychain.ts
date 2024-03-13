@@ -1,5 +1,5 @@
 import { GenericSubstrateApi } from '@dedot/types';
-import { Executor } from './executor';
+import { Executor } from './executor/index.js';
 
 export interface Carrier<ChainApi extends GenericSubstrateApi> {
   executor: Executor<ChainApi>;

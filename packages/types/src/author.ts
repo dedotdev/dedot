@@ -1,4 +1,4 @@
-import { SerdeEnum } from './serde';
+import { SerdeEnum } from './serde.js';
 import { Bytes, Hash } from '@dedot/codecs';
 
 /**

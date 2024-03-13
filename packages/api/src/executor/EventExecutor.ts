@@ -1,6 +1,6 @@
 import { GenericPalletEvent, GenericSubstrateApi, PalletEvent } from '@dedot/types';
 import { SubstrateApi } from '@dedot/chaintypes';
-import { Executor } from './Executor';
+import { Executor } from './Executor.js';
 import { stringCamelCase, stringPascalCase } from '@polkadot/util';
 import { assert } from '@dedot/utils';
 

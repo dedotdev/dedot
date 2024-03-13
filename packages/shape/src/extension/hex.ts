@@ -1,8 +1,8 @@
 import { hexToU8a, u8aToHex } from '@polkadot/util';
 import { HexString } from '@dedot/utils';
 import { DecodeBuffer, EncodeBuffer, metadata, Shape, sizedUint8Array, hex } from 'subshape';
-import { createShape } from './createShape';
-import { compactU32 } from './compact';
+import { createShape } from './createShape.js';
+import { compactU32 } from './compact.js';
 
 const HEX_PREFIX = '0x';
 

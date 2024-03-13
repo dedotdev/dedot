@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { stringToU8a, u8aConcat } from '@polkadot/util';
-import { blake2AsU8a } from '../../hash/blake2';
+import { blake2AsU8a } from '../../hash/blake2.js';
 
 const SS58_PREFIX = stringToU8a('SS58PRE');
 

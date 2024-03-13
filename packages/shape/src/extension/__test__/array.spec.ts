@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import * as $ from '../..';
+import * as $ from '../../index.js';
 
 describe('array', () => {
   it('should decode plain array', () => {

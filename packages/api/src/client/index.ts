@@ -1,1 +1,1 @@
-export * from './Dedot';
+export * from './Dedot.js';

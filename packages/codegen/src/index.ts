@@ -11,10 +11,10 @@ import {
   RuntimeApisGen,
   TxGen,
   TypesGen,
-} from './generator';
+} from './generator/index.js';
 import { RpcMethods } from '@dedot/types';
 import { MetadataLatest } from '@dedot/codecs';
-import { NetworkInfo } from './types';
+import { NetworkInfo } from './types.js';
 import { stringCamelCase } from '@polkadot/util';
 
 export async function generateTypesFromChain(network: NetworkInfo, endpoint: string, outDir: string) {

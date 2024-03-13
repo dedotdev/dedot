@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, expectTypeOf, it, vi } from 'vitest';
-import { Dedot } from '../Dedot';
-import MockProvider from './MockProvider';
+import { Dedot } from '../Dedot.js';
+import MockProvider from './MockProvider.js';
 import { SubstrateApi } from '@dedot/chaintypes';
 import { stringCamelCase, stringPascalCase } from '@polkadot/util';
 import { RuntimeVersion } from '@dedot/codecs';

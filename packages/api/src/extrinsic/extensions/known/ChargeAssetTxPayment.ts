@@ -1,4 +1,4 @@
-import { SignedExtension } from '../SignedExtension';
+import { SignedExtension } from '../SignedExtension.js';
 import { SignerPayloadJSON } from '@polkadot/types/types';
 import { u8aToHex } from '@polkadot/util';
 import { assert, bnToHex } from '@dedot/utils';

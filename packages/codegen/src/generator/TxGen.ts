@@ -1,6 +1,6 @@
-import { ApiGen } from '../generator';
+import { ApiGen } from '../generator/index.js';
 import { stringCamelCase, stringPascalCase } from '@polkadot/util';
-import { beautifySourceCode, commentBlock, compileTemplate, isReservedWord } from './utils';
+import { beautifySourceCode, commentBlock, compileTemplate, isReservedWord } from './utils.js';
 
 export class TxGen extends ApiGen {
   generate() {

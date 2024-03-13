@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { u8aToHex } from '@polkadot/util';
-import * as $ from '../..';
+import * as $ from '../../index.js';
 
 describe('Result', () => {
   let $x: $.Shape<any, any>;

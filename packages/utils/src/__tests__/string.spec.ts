@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
-import { isZeroHash, shortenAddress, stringSnakeCase, trimOffUrlProtocol } from '../string';
-import { HexString } from '../types';
+import { isZeroHash, shortenAddress, stringSnakeCase, trimOffUrlProtocol } from '../string.js';
+import { HexString } from '../types.js';
 
 describe('shortenAddress', () => {
   it.each(['', null, undefined])('should return empty string if input = %s', (input) => {

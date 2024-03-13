@@ -1,6 +1,6 @@
 import * as $ from '@dedot/shape';
-import { $DispatchError } from './DispatchError';
-import { $TransactionValidityError } from './TransactionValidityError';
+import { $DispatchError } from './DispatchError.js';
+import { $TransactionValidityError } from './TransactionValidityError.js';
 
 export const $DispatchOutcome = $.Result($.Tuple(), $DispatchError);
 export type DispatchOutcome = $.Input<typeof $DispatchOutcome>;

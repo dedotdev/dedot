@@ -1,6 +1,6 @@
 import yargs from 'yargs';
 import { hideBin } from 'yargs/helpers';
-import { chaintypes } from './commands';
+import { chaintypes } from './commands/index.js';
 
 export const dedot = (): void => {
   yargs(hideBin(process.argv))

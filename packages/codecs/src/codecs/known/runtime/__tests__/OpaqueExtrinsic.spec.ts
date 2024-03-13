@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { HexString } from '@dedot/utils';
-import { $OpaqueExtrinsic } from '../OpaqueExtrinsic';
+import { $OpaqueExtrinsic } from '../OpaqueExtrinsic.js';
 import { hexToU8a } from '@polkadot/util';
 
 describe('OpaqueExtrinsic', () => {

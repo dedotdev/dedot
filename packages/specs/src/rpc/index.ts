@@ -1,18 +1,18 @@
 import { RpcCallSpec, RpcCallsSpec } from '@dedot/types';
-import { babe } from './babe';
-import { beefy } from './beefy';
-import { childstate } from './childstate';
-import { mmr } from './mmr';
-import { offchain } from './offchain';
-import { chain } from './chain';
-import { syncstate } from './syncstate';
-import { rpc } from './rpc';
-import { state } from './state';
-import { system } from './system';
-import { author } from './author';
-import { payment } from './payment';
-import { dev } from './dev';
-import { grandpa } from './grandpa';
+import { babe } from './babe.js';
+import { beefy } from './beefy.js';
+import { childstate } from './childstate.js';
+import { mmr } from './mmr.js';
+import { offchain } from './offchain.js';
+import { chain } from './chain.js';
+import { syncstate } from './syncstate.js';
+import { rpc } from './rpc.js';
+import { state } from './state.js';
+import { system } from './system.js';
+import { author } from './author.js';
+import { payment } from './payment.js';
+import { dev } from './dev.js';
+import { grandpa } from './grandpa.js';
 
 export const rpcCalls: RpcCallsSpec = {
   system,

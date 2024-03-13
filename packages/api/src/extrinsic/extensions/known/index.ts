@@ -1,14 +1,14 @@
-import { ISignedExtension } from '../SignedExtension';
-import { CheckNonZeroSender } from './CheckNonZeroSender';
-import { CheckSpecVersion } from './CheckSpecVersion';
-import { CheckTxVersion } from './CheckTxVersion';
-import { CheckGenesis } from './CheckGenesis';
-import { CheckMortality } from './CheckMortality';
-import { CheckNonce } from './CheckNonce';
-import { CheckWeight } from './CheckWeight';
-import { ChargeTransactionPayment } from './ChargeTransactionPayment';
-import { PrevalidateAttests } from './PrevalidateAttests';
-import { ChargeAssetTxPayment } from './ChargeAssetTxPayment';
+import { ISignedExtension } from '../SignedExtension.js';
+import { CheckNonZeroSender } from './CheckNonZeroSender.js';
+import { CheckSpecVersion } from './CheckSpecVersion.js';
+import { CheckTxVersion } from './CheckTxVersion.js';
+import { CheckGenesis } from './CheckGenesis.js';
+import { CheckMortality } from './CheckMortality.js';
+import { CheckNonce } from './CheckNonce.js';
+import { CheckWeight } from './CheckWeight.js';
+import { ChargeTransactionPayment } from './ChargeTransactionPayment.js';
+import { PrevalidateAttests } from './PrevalidateAttests.js';
+import { ChargeAssetTxPayment } from './ChargeAssetTxPayment.js';
 
 export type AnySignedExtension = new (...args: any[]) => ISignedExtension;
 

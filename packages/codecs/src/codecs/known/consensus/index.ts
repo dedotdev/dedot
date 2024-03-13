@@ -1,8 +1,8 @@
 import * as $ from '@dedot/shape';
 
-export * from './babe';
-export * from './beefy';
-export * from './grandpa';
+export * from './babe.js';
+export * from './beefy.js';
+export * from './grandpa.js';
 
 /*
  * An opaque type used to represent the key ownership proof at the runtime API

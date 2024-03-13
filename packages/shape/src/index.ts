@@ -1,4 +1,4 @@
-import './subshape';
+import './subshape.js';
 
-export * from './extension';
-export * from './lean';
+export * from './extension/index.js';
+export * from './lean/index.js';
