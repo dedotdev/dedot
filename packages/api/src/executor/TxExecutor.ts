@@ -12,7 +12,7 @@ import {
   Unsub,
 } from '@dedot/types';
 import { SubstrateApi } from '@dedot/chaintypes';
-import { assert, HexString } from '@dedot/utils';
+import { assert, HexString, UnknownApiError } from '@dedot/utils';
 import { hexToU8a, isFunction, isHex, objectSpread, stringCamelCase, stringPascalCase, u8aToHex } from '@polkadot/util';
 import { BlockHash, Extrinsic, Hash, SignedBlock, TransactionStatus } from '@dedot/codecs';
 import { Dedot } from '../client/index.js';
@@ -44,18 +44,18 @@ export function signRaw(signerPair: IKeyringPair, raw: HexString, options?: Sign
  * @description Execute a transaction instruction, returns a submittable extrinsic
  */
 export class TxExecutor<ChainApi extends GenericSubstrateApi = SubstrateApi> extends Executor<ChainApi> {
-  execute(pallet: string, functionName: string) {
+  doExecute(pallet: string, functionName: string) {
     const targetPallet = this.getPallet(pallet);
 
-    assert(targetPallet.calls, `Tx calls are not available for pallet ${targetPallet.name}`);
+    assert(targetPallet.calls, new UnknownApiError(`Tx calls are not available for pallet ${targetPallet.name}`));
 
     const txType = this.metadata.types[targetPallet.calls]!;
 
-    assert(txType.type.tag === 'Enum', 'Tx type defs should be enum');
+    assert(txType.type.tag === 'Enum', new UnknownApiError('Tx type defs should be enum'));
 
     const isFlatEnum = txType.type.value.members.every((m) => m.fields.length === 0);
     const txCallDef = txType.type.value.members.find((m) => stringCamelCase(m.name) === functionName);
-    assert(txCallDef, `Tx call spec not found for ${pallet}.${functionName}`);
+    assert(txCallDef, new UnknownApiError(`Tx call spec not found for ${pallet}.${functionName}`));
 
     const txCallFn: GenericTxCall = (...args: any[]) => {
       let call: IRuntimeTxCall;

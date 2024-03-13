@@ -51,6 +51,13 @@ export interface ApiOptions {
    * unless you're connecting to a chain supports only Metadata V14
    */
   runtimeApis?: Record<RuntimeApiName, RuntimeApiSpec[]>;
+  /**
+   * By default, an `UnknownApiError` error will be thrown out if an api is known (e.g: `api.query.pallet.unknown`) upon evaluation.
+   * When set this to `false`, the api evaluation will simply return `undefined`
+   *
+   * @default true
+   */
+  throwOnUnknownApi?: boolean;
 }
 
 export interface NormalizedApiOptions extends ApiOptions {

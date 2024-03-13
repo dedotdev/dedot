@@ -2,7 +2,7 @@ import type { SubstrateApi } from '@dedot/chaintypes';
 import { isFunction, u8aToHex } from '@polkadot/util';
 import { findAliasRpcSpec, findRpcSpec } from '@dedot/specs';
 import { GenericSubstrateApi, Unsub, RpcCallSpec, RpcParamSpec, GenericRpcCall } from '@dedot/types';
-import { assert, isNativeType } from '@dedot/utils';
+import { assert, isNativeType, UnknownApiError } from '@dedot/utils';
 import { Executor } from './Executor.js';
 
 const isOptionalParam = (param: RpcParamSpec): boolean => {
@@ -15,14 +15,14 @@ const isOptionalParam = (param: RpcParamSpec): boolean => {
  * if a spec is not found we execute an arbitrary rpc method
  */
 export class RpcExecutor<ChainApi extends GenericSubstrateApi = SubstrateApi> extends Executor<ChainApi> {
-  execute(section: string, method: string): GenericRpcCall {
+  doExecute(section: string, method: string): GenericRpcCall {
     const maybeRpcName = `${section}_${method}`;
     const callSpec = findRpcSpec(maybeRpcName) || findAliasRpcSpec(maybeRpcName);
     const rpcName = callSpec?.name || `${section}_${method}`;
     const isSubscription = !!callSpec?.pubsub;
 
     const fnRpc = async (...args: any[]): Promise<any> => {
-      assert(callSpec, 'Rpc spec not found');
+      assert(callSpec, new UnknownApiError('Rpc spec not found'));
       this.checkRpcInputs(callSpec, args);
 
       const { params } = callSpec;
@@ -34,7 +34,7 @@ export class RpcExecutor<ChainApi extends GenericSubstrateApi = SubstrateApi> ex
     };
 
     const fnSubRpc = async (...args: any[]): Promise<Unsub> => {
-      assert(callSpec, 'Rpc spec not found');
+      assert(callSpec, new UnknownApiError('Rpc spec not found'));
 
       const inArgs = args.slice();
       const callback = inArgs.pop();

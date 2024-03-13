@@ -8,7 +8,7 @@ import type {
   RuntimeApiSpec,
 } from '@dedot/types';
 import { Executor } from './Executor.js';
-import { assert, calculateRuntimeApiHash, stringSnakeCase } from '@dedot/utils';
+import { assert, calculateRuntimeApiHash, stringSnakeCase, UnknownApiError } from '@dedot/utils';
 import { isNumber, stringPascalCase, u8aConcat, u8aToHex } from '@polkadot/util';
 import { RuntimeApiMethodDefLatest } from '@dedot/codecs';
 import { Metadata, toRuntimeApiMethods, toRuntimeApiSpecs } from '@dedot/specs';
@@ -27,14 +27,14 @@ export const FallbackRuntimeApiSpecs = { Metadata };
  * via `ApiOptions.runtimeApis` option.
  */
 export class RuntimeApiExecutor<ChainApi extends GenericSubstrateApi = GenericSubstrateApi> extends Executor<ChainApi> {
-  execute(runtimeApi: string, method: string): GenericRuntimeApiMethod {
+  doExecute(runtimeApi: string, method: string): GenericRuntimeApiMethod {
     const runtimeApiName = stringPascalCase(runtimeApi);
     const methodName = stringSnakeCase(method);
 
     const callName = this.#callName({ runtimeApiName, methodName });
     const callSpec = this.#findRuntimeApiMethodSpec(runtimeApiName, methodName);
 
-    assert(callSpec, `Runtime api spec not found for ${callName}`);
+    assert(callSpec, new UnknownApiError(`Runtime api spec not found for ${callName}`));
 
     const callFn: GenericRuntimeApiMethod = async (...args: any[]) => {
       const { params } = callSpec;

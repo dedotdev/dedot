@@ -2,18 +2,18 @@ import { GenericPalletEvent, GenericSubstrateApi, PalletEvent } from '@dedot/typ
 import { SubstrateApi } from '@dedot/chaintypes';
 import { Executor } from './Executor.js';
 import { stringCamelCase, stringPascalCase } from '@polkadot/util';
-import { assert } from '@dedot/utils';
+import { assert, UnknownApiError } from '@dedot/utils';
 
 /**
  * @name EventExecutor
  * @description Find pallet event information from metadata
  */
 export class EventExecutor<ChainApi extends GenericSubstrateApi = SubstrateApi> extends Executor<ChainApi> {
-  execute(pallet: string, errorName: string): GenericPalletEvent<string, string> {
+  doExecute(pallet: string, errorName: string): GenericPalletEvent<string, string> {
     const targetPallet = this.getPallet(pallet);
 
     const eventTypeId = targetPallet.event;
-    assert(eventTypeId, `Not found event with id ${eventTypeId} in pallet ${pallet}`);
+    assert(eventTypeId, new UnknownApiError(`Not found event with id ${eventTypeId} in pallet ${pallet}`));
 
     const eventDef = this.#getEventDef(eventTypeId, errorName);
 
@@ -45,13 +45,13 @@ export class EventExecutor<ChainApi extends GenericSubstrateApi = SubstrateApi> 
 
   #getEventDef(eventTypeId: number, errorName: string) {
     const def = this.metadata.types[eventTypeId];
-    assert(def, `Event def not found for id ${eventTypeId}`);
+    assert(def, new UnknownApiError(`Event def not found for id ${eventTypeId}`));
 
     const { tag, value } = def.type;
-    assert(tag === 'Enum', `Event type should be an enum, found: ${tag}`);
+    assert(tag === 'Enum', new UnknownApiError(`Event type should be an enum, found: ${tag}`));
 
     const eventDef = value.members.find(({ name }) => stringPascalCase(name) === errorName);
-    assert(eventDef, `Event def not found for ${errorName}`);
+    assert(eventDef, new UnknownApiError(`Event def not found for ${errorName}`));
 
     return {
       ...eventDef,
