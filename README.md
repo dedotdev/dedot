@@ -91,19 +91,20 @@ const api = await Dedot.new('wss://rpc.polkadot.io');
 
 ### Status
 
-| Feature                                               | Status |
-|-------------------------------------------------------| ----------- |
-| Execute RPC (`api.rpc`)                               | ✅ |
-| Query On-chain Storage (`api.query`)                  | ✅ |
-| Get runtime constants (`api.consts`)                  | ✅ |
-| Runtime APIs (`api.call`)                             | ✅ |
-| Transaction APIs (`api.tx`)                           | ✅ |
-| Events (`api.events`)                                 | ✅ |
-| Errors (`api.errors`)                                 | ✅ |
-| Contract APIs                                         | ⏳ |
-| Metadata v14                                          | ✅ |
-| Metadata v15                                          | ✅ |
-| [RPC v2](https://github.com/dedotdev/dedot/issues/20) | ⏳ |
+| Feature                                                     | Status |
+|-------------------------------------------------------------|--------|
+| Execute RPC (`api.rpc`)                                     | ✅      |
+| Query On-chain Storage (`api.query`)                        | ✅      |
+| Get runtime constants (`api.consts`)                        | ✅      |
+| Runtime APIs (`api.call`)                                   | ✅      |
+| Transaction APIs (`api.tx`)                                 | ✅      |
+| Events (`api.events`)                                       | ✅      |
+| Errors (`api.errors`)                                       | ✅      |
+| Contract APIs                                               | ⏳      |
+| Metadata v14                                                | ✅      |
+| Metadata v15                                                | ✅      |
+| [RPC v2](https://github.com/dedotdev/dedot/issues/20)       | ⏳      |
+| [Extrinsic V5](https://github.com/dedotdev/dedot/issues/55) | ⏳      |
 
 ### Chain Types & APIs
 
