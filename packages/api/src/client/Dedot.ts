@@ -77,6 +77,7 @@ export class Dedot<ChainApi extends GenericSubstrateApi = SubstrateApi> {
   #runtimeSubscriptionUnsub?: Unsub;
   #healthTimer?: ReturnType<typeof setInterval>;
 
+  #ready: Promise<void>;
   /**
    * Use factory methods (`create`, `new`) to create `Dedot` instances.
    *
@@ -86,6 +87,7 @@ export class Dedot<ChainApi extends GenericSubstrateApi = SubstrateApi> {
   protected constructor(options: ApiOptions | NetworkEndpoint) {
     this.#options = this.#normalizeOptions(options);
     this.#provider = this.#getProvider();
+    this.#ready = this.#registerProviderEvents();
   }
 
   /**
@@ -97,14 +99,42 @@ export class Dedot<ChainApi extends GenericSubstrateApi = SubstrateApi> {
     options: ApiOptions | NetworkEndpoint,
   ): Promise<Dedot<ChainApi>> {
     const api = new Dedot<ChainApi>(options);
+    return api.untilReady().then(() => api);
+  }
 
-    if (api.provider instanceof WsProvider) {
-      await api.provider.isReady;
-    }
+  async untilReady(): Promise<void> {
+    await this.#ready;
+  }
 
-    await api.init();
+  #registerProviderEvents(): Promise<void> {
+    return new Promise<void>((resolve, reject) => {
+      const onConnect = () =>
+        this.#onConnected()
+          .then(resolve)
+          .catch((e) => this.#onError(e).then(reject).catch(reject));
 
-    return api;
+      if (this.provider.isConnected) {
+        onConnect().catch(console.error);
+      }
+
+      this.provider.on('connected', onConnect);
+      this.provider.on('disconnected', this.#onDisconnected.bind(this));
+      this.provider.on('error', this.#onError.bind(this));
+    });
+  }
+
+  async #onConnected() {
+    await this.#initialize();
+    // TODO emit connected
+  }
+
+  async #onDisconnected() {
+    await this.#unsubscribeUpdates();
+    // TODO emit disconnected
+  }
+
+  async #onError(e: Error) {
+    // TODO emit error
   }
 
   /**
@@ -120,7 +150,7 @@ export class Dedot<ChainApi extends GenericSubstrateApi = SubstrateApi> {
   /**
    * Initialize APIs before usage
    */
-  async init() {
+  async #initialize() {
     await this.#initializeLocalCache();
 
     // Fetching node information
@@ -464,6 +494,13 @@ export class Dedot<ChainApi extends GenericSubstrateApi = SubstrateApi> {
     this.#metadata = metadata;
     this.#metadataLatest = metadata.latest;
     this.#registry = new PortableRegistry(this.#metadataLatest);
+  }
+
+  /**
+   * @description Connect to blockchain node
+   */
+  async connect() {
+    await this.#provider.connect();
   }
 
   /**
