@@ -87,6 +87,7 @@ const api = await Dedot.new('wss://rpc.polkadot.io');
 - [Submit Transactions](#transaction-apis)
 - [Events](#events)
 - [Errors](#errors)
+- [`@polkadot/api` -> `dedot`](#migration-from-polkadotapi-to-dedot)
 - [Credit](#credit)
 
 ### Status
