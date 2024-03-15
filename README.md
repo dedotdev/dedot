@@ -87,6 +87,7 @@ const api = await Dedot.new('wss://rpc.polkadot.io');
 - [Submit Transactions](#transaction-apis)
 - [Events](#events)
 - [Errors](#errors)
+- [`@polkadot/api` -> `dedot`](#migration-from-polkadotapi-to-dedot)
 - [Credit](#credit)
 
 ### Status
@@ -408,6 +409,86 @@ await api.query.system.events(async (eventRecords) => {
 });
 // ...
 ```
+
+### Migration from `@polkadot/api` to `dedot`
+`dedot` is inspired by `@polkadot/api`, so both are sharing some common patterns and api styling (eg: api syntax `api.<type>.<module>.<section>`). Although we have experimented some other different api stylings but to our findings and development experience, we find that the api style of `@polkadot/api` is very intuiative and easy to use. We decide the use a similar api styling with `@polkadot/api`, this also helps the migration from `@polkadot/api` to `dedot` easier & faster. 
+
+While the api style are similar, but there're also some differences you might need to be aware of when switching to use `dedot`. 
+
+**Initialize api client**
+- `@polkadot/api`
+```typescript
+import { ApiPromise, WsProvider } from '@polkadot/api';
+
+const api = await ApiPromise.create({ provider: new WsProvider('wss://rpc.polkadot.io') });
+```
+- `dedot`
+```typescript
+import { Dedot } from 'dedot';
+import type { PolkadotApi } from '@dedot/chaintypes';
+
+const api = await Dedot.new<PolkadotApi>('wss://rpc.polkadot.io'); // or Dedot.create(...) if you prefer
+
+// OR you want to have a custom provider
+import { WsProvider } from 'dedot'
+const api = await Dedot.new<PolkadotApi>({ provider: new WsProvider('wss://rpc.polkadot.io') });
+```
+
+- Notes:
+  - Under the hood, a `WsProvider` will be created if you initialize `Dedot` directly with an rpc endpoint.
+  - `dedot` only supports provider can make subscription request (e.g: via Websocket).
+  - We recommend specifying the `ChainApi` interface (e.g: [`PolkadotApi`](https://github.com/dedotdev/dedot/blob/02d7bca4c3c3d12c9591ea43b3410daf8e5aacbb/packages/chaintypes/src/polkadot/index.d.ts) in the example above) of the chain that you want to interact with. This enable apis & types suggestion/autocompletion for that particular chain (via IntelliSense). If you don't specify a `ChainApi` interface, the default [`SubstrateApi`](https://github.com/dedotdev/dedot/blob/a762faf8f6af40d3e4ef163bd538b270a5ca31e8/packages/chaintypes/src/substrate/index.d.ts) interface will be used.
+
+**Type system**
+
+Unlike `@polkadot/api` where data are wrapped inside a [codec types](https://polkadot.js.org/docs/api/start/types.basics), so we always need to unwrap the data before using it (e.g: via `.unwrap()`, `.toNumber()`, `.toString()`, `.toJSON()` ...). `dedot` leverages the native TypeScript type system to represent scale-codec types, so you can use the data directly without extra handling/unwrapping. The table below is a mapping between scale-codec types and TypeScript types that we're using for `dedot`:
+
+
+| Scale Codec                                             | TypeScript (`dedot`)                                                                                                           |
+|---------------------------------------------------------|--------------------------------------------------------------------------------------------------------------------------------|
+| `u8`, `u16`, `u32`, `i8`, `i16`, `i32`                  | `number`                                                                                                                       |
+| `u64`, `u128`, `u256`, `i64`, `i128`, `i256`            | `bigint` (native [BigInt](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/BigInt), not bn.js) |
+| `bool`                                                  | `boolean` (true, false)                                                                                                        |
+| `Option<T>`                                             | `T \| undefined`                                                                                                               |
+| `Result<Ok, Err>`                                       | `{ isOk: true; isErr?: false; value: Ok } \| { isOk?: false; isErr: true; err: Err }`                                          |
+| `Vec<T>`                                                | `Array<T>`                                                                                                                     |
+| `str`                                                   | `string`                                                                                                                       |
+| Tuple: `(A, B)`, `()`                                   | `[A, B]`, `[]`                                                                                                                 |
+| Struct: `struct { field_1: u8, field_2: str }`          | `{ field_1: number, field_2: string}`                                                                                          |
+| Enum: `enum { Variant1(u8), Variant2(bool), Variant3 }` | `{ tag: 'Variant1', value: number } \| { tag: 'Variant2', value: boolean } \| { tag: 'Variant2' }`                             |
+| FlatEnum: `enum { Variant1, Variant2 }`                 | `'Variant1' \| 'Variant2'`                                                                                                     |
+
+E.g 1:
+```typescript
+const runtimeVersion = api.consts.system.version;
+
+// @polkadot/api
+const specName: string = runtimeVersion.toJSON().specName; // OR runtimeVersion.specName.toString()
+
+// dedot
+const specName: string = runtimeVersion.specName;
+```
+
+E.g 2: 
+```typescript
+const balance = await api.query.system.account(<address>);
+
+// @polkadot/api
+const freeBalance: bigint = balance.data.free.toBigInt();
+
+// dedot
+const freeBalance: bigint = balance.data.free;
+```
+
+E.g 3:
+```typescript
+// @polkadot/api
+const proposalBondMaximum: bigint | undefined = api.consts.treasury.proposalBondMaximum.unwrapOr(undefined)?.toBigInt();
+
+// dedot
+const proposalBondMaximum: bigint | undefined = api.consts.treasury.proposalBondMaximum;
+```
+
 
 ### Credit
 
