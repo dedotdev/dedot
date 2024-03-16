@@ -63,3 +63,5 @@ export interface ApiOptions {
 export interface NormalizedApiOptions extends ApiOptions {
   metadata?: Record<string, HexString>;
 }
+
+export type ApiEventNames = 'connected' | 'disconnected' | 'error' | 'ready';
