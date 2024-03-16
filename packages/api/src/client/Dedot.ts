@@ -13,10 +13,10 @@ import {
   TxExecutor,
 } from '../executor/index.js';
 import { newProxyChain } from '../proxychain.js';
-import { ApiOptions, MetadataKey, NetworkEndpoint, NormalizedApiOptions } from '../types.js';
+import { ApiEventNames, ApiOptions, MetadataKey, NetworkEndpoint, NormalizedApiOptions } from '../types.js';
 import { hexAddPrefix, u8aToHex } from '@polkadot/util';
 import { IStorage, LocalStorage } from '@dedot/storage';
-import { assert } from '@dedot/utils';
+import { assert, EventEmitter } from '@dedot/utils';
 
 export const KEEP_ALIVE_INTERVAL = 10_000; // in ms
 export const CATCH_ALL_METADATA_KEY: MetadataKey = `RAW_META/ALL`;
@@ -60,9 +60,10 @@ export const SUPPORTED_METADATA_VERSIONS = [15, 14];
  * run().catch(console.error);
  * ```
  */
-export class Dedot<ChainApi extends GenericSubstrateApi = SubstrateApi> {
+export class Dedot<ChainApi extends GenericSubstrateApi = SubstrateApi> extends EventEmitter<ApiEventNames> {
   readonly #provider: ProviderInterface;
   readonly #options: NormalizedApiOptions;
+  readonly #ready: Promise<void>;
 
   #registry?: PortableRegistry;
   #metadata?: Metadata;
@@ -77,7 +78,6 @@ export class Dedot<ChainApi extends GenericSubstrateApi = SubstrateApi> {
   #runtimeSubscriptionUnsub?: Unsub;
   #healthTimer?: ReturnType<typeof setInterval>;
 
-  #ready: Promise<void>;
   /**
    * Use factory methods (`create`, `new`) to create `Dedot` instances.
    *
@@ -85,9 +85,10 @@ export class Dedot<ChainApi extends GenericSubstrateApi = SubstrateApi> {
    * @protected
    */
   protected constructor(options: ApiOptions | NetworkEndpoint) {
+    super();
     this.#options = this.#normalizeOptions(options);
     this.#provider = this.#getProvider();
-    this.#ready = this.#registerProviderEvents();
+    this.#ready = this.#handleProviderEvents();
   }
 
   /**
@@ -102,49 +103,52 @@ export class Dedot<ChainApi extends GenericSubstrateApi = SubstrateApi> {
     return api.untilReady().then(() => api);
   }
 
-  async untilReady(): Promise<void> {
-    await this.#ready;
-  }
-
-  #registerProviderEvents(): Promise<void> {
-    return new Promise<void>((resolve, reject) => {
-      const onConnect = () =>
-        this.#onConnected()
-          .then(resolve)
-          .catch((e) => this.#onError(e).then(reject).catch(reject));
-
-      if (this.provider.isConnected) {
-        onConnect().catch(console.error);
-      }
-
-      this.provider.on('connected', onConnect);
-      this.provider.on('disconnected', this.#onDisconnected.bind(this));
-      this.provider.on('error', this.#onError.bind(this));
-    });
-  }
-
-  async #onConnected() {
-    await this.#initialize();
-    // TODO emit connected
-  }
-
-  async #onDisconnected() {
-    await this.#unsubscribeUpdates();
-    // TODO emit disconnected
-  }
-
-  async #onError(e: Error) {
-    // TODO emit error
-  }
-
   /**
    * Alias for __Dedot.create__
+   *
    * @param options
    */
   static async new<ChainApi extends GenericSubstrateApi = SubstrateApi>(
     options: ApiOptions | NetworkEndpoint,
   ): Promise<Dedot<ChainApi>> {
     return Dedot.create(options);
+  }
+
+  async untilReady(): Promise<void> {
+    await this.#ready;
+  }
+
+  #handleProviderEvents(): Promise<void> {
+    return new Promise<void>((resolve, reject) => {
+      const onConnect = () => {
+        this.#onConnected()
+          .then(resolve)
+          .catch((e) => this.#onError(e).finally(reject));
+      };
+
+      this.provider.on('connected', onConnect);
+      this.provider.on('disconnected', this.#onDisconnected.bind(this));
+      this.provider.on('error', this.#onError.bind(this));
+
+      if (this.provider.isConnected) {
+        onConnect();
+      }
+    });
+  }
+
+  async #onConnected() {
+    this.emit('connected');
+    await this.#initialize();
+    this.emit('ready');
+  }
+
+  async #onDisconnected() {
+    await this.#unsubscribeUpdates();
+    this.emit('disconnected');
+  }
+
+  async #onError(e: Error) {
+    this.emit('error', e);
   }
 
   /**
