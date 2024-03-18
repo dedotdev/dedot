@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { xxhashAsU8a, xxhashAsHex } from '../xxhash.js';
-import { hexToU8a } from '@polkadot/util';
+import { hexToU8a } from '../../hex.js';
 
 describe('xxhash', () => {
   it.each<{ input: [any, any]; output: string }>([

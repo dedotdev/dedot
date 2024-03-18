@@ -1,7 +1,7 @@
 // Copyright 2017-2024 @polkadot/util-crypto authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
-import { isHex } from '@polkadot/util';
+import { isHex } from '../../is.js';
 
 import { isEvmChecksum } from './isEvmChecksum.js';
 

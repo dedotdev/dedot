@@ -15,7 +15,7 @@ import {
 import { newProxyChain } from '../proxychain.js';
 import { ApiEventNames, ApiOptions, MetadataKey, NetworkEndpoint, NormalizedApiOptions } from '../types.js';
 import { IStorage, LocalStorage } from '@dedot/storage';
-import { assert, EventEmitter, hexAddPrefix, u8aToHex } from '@dedot/utils';
+import { assert, EventEmitter, u8aToHex } from '@dedot/utils';
 
 export const KEEP_ALIVE_INTERVAL = 10_000; // in ms
 export const CATCH_ALL_METADATA_KEY: MetadataKey = `RAW_META/ALL`;
@@ -332,7 +332,7 @@ export class Dedot<ChainApi extends GenericSubstrateApi = SubstrateApi> extends 
       let { metadata } = options || {};
       if (metadata && typeof metadata === 'string') {
         metadata = {
-          [CATCH_ALL_METADATA_KEY]: hexAddPrefix(metadata),
+          [CATCH_ALL_METADATA_KEY]: metadata,
         };
       }
 

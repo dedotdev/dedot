@@ -20,7 +20,6 @@ import {
   hexToU8a,
   isFunction,
   isHex,
-  objectSpread,
   stringCamelCase,
   stringPascalCase,
   u8aToHex,
@@ -169,7 +168,7 @@ export class TxExecutor<ChainApi extends GenericSubstrateApi = SubstrateApi> ext
         if (isFunction(partialOptions)) {
           return [{}, partialOptions];
         } else {
-          return [objectSpread({}, partialOptions), callback];
+          return [Object.assign({}, partialOptions), callback];
         }
       }
 

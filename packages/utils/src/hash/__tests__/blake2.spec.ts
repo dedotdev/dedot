@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { blake2AsHex, blake2AsU8a } from '../blake2.js';
-import { hexToU8a } from '@polkadot/util';
+import { hexToU8a } from '../../hex.js';
 
 describe('blake2', () => {
   it.each<{ input: [any, any, any]; output: string }>([

@@ -10,11 +10,11 @@ import type {
 import { Executor } from './Executor.js';
 import {
   assert,
-  calculateRuntimeApiHash,
+  calcRuntimeApiHash,
   isNumber,
   stringPascalCase,
   stringSnakeCase,
-  u8aConcat,
+  concatU8a,
   u8aToHex,
   UnknownApiError,
 } from '@dedot/utils';
@@ -48,7 +48,7 @@ export class RuntimeApiExecutor<ChainApi extends GenericSubstrateApi = GenericSu
       const { params } = callSpec;
 
       const formattedInputs = params.map((param, index) => this.tryEncode(param, args[index]));
-      const bytes = u8aToHex(u8aConcat(...formattedInputs));
+      const bytes = u8aToHex(concatU8a(...formattedInputs));
 
       const callArgs = [callName, bytes];
       if (this.atBlockHash) {
@@ -135,7 +135,7 @@ export class RuntimeApiExecutor<ChainApi extends GenericSubstrateApi = GenericSu
   }
 
   #findTargetRuntimeApiVersion(runtimeApi: string): number | undefined {
-    const runtimeApiHash = calculateRuntimeApiHash(runtimeApi);
+    const runtimeApiHash = calcRuntimeApiHash(runtimeApi);
     const runtimeApiVersions = this.api.runtimeVersion?.apis || FallbackRuntimeApis;
 
     const foundVersion = runtimeApiVersions

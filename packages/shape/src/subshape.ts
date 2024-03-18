@@ -1,4 +1,4 @@
-import { hexFixLength, hexToU8a, isBoolean, isHex, isNumber, isString } from '@dedot/utils';
+import { hexToU8a, isBoolean, isHex, isNumber, isString } from '@dedot/utils';
 import {
   AnyShape,
   bool,
@@ -68,8 +68,8 @@ Shape.prototype.tryDecode = function (input: any) {
     }
   }
 
-  if (isHex(input, -1, true)) {
-    input = hexToU8a(hexFixLength(input));
+  if (isHex(input)) {
+    input = hexToU8a(input);
   }
 
   return this.decode(input);

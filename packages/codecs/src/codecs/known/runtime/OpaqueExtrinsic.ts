@@ -1,5 +1,5 @@
 import * as $ from '@dedot/shape';
-import { HexString, xToHex, xToU8a } from '@dedot/utils';
+import { HexString, toU8a, u8aToHex } from '@dedot/utils';
 
 // TODO docs!
 export type OpaqueExtrinsicLike = HexString | string | Uint8Array;
@@ -9,7 +9,7 @@ export const $OpaqueExtrinsic = $.createShape<OpaqueExtrinsicLike, OpaqueExtrins
   metadata: $.metadata('$OpaqueExtrinsic'),
   staticSize: $.compactU32.staticSize,
   subEncode(buffer: $.EncodeBuffer, value): void {
-    const u8a = xToU8a(value);
+    const u8a = toU8a(value);
 
     // make sure the value if len-prefixed
     const buf = new $.EncodeBuffer($.compactU32.staticSize);
@@ -23,7 +23,7 @@ export const $OpaqueExtrinsic = $.createShape<OpaqueExtrinsicLike, OpaqueExtrins
 
     const value = buffer.array.subarray(buffer.index - lengthSize, buffer.index + length);
     buffer.index += length;
-    return xToHex(value);
+    return u8aToHex(value);
   },
 });
 

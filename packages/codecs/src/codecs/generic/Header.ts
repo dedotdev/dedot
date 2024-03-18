@@ -8,7 +8,7 @@ export type BlockNumber = number;
 export const $HeaderBlockNumber = $.withMetadata($.metadata('$HeaderBlockNumber'), $.compactU32);
 
 $HeaderBlockNumber.registerDecoder(
-  (input) => isHex(input, -1, true),
+  isHex,
   // TODO make this more clear?
   // BlockNumber in $Header codec is a hex in BE format
   // So Le=false here is to support decode block number in $Header

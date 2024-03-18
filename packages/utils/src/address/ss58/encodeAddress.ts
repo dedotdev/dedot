@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 // Original implementation: https://github.com/paritytech/polka-ui/blob/4858c094684769080f5811f32b081dd7780b0880/src/polkadot.js#L34
 
-import { u8aConcat } from '@polkadot/util';
+import { concatU8a } from '../../concat';
 
 import { decodeAddress } from './decodeAddress.js';
 import { sshash } from './sshash.js';
@@ -21,15 +21,15 @@ export function encodeAddress(key: string | Uint8Array, ss58Format: number = DEF
     throw new Error(`Expected a valid key to convert, with length ${ALLOWED_DECODED_LENGTHS.join(', ')}`);
   }
 
-  const input = u8aConcat(
+  const input = concatU8a(
     ss58Format < 64
-      ? [ss58Format]
-      : [
+      ? Uint8Array.from([ss58Format])
+      : Uint8Array.from([
           ((ss58Format & 0b0000_0000_1111_1100) >> 2) | 0b0100_0000,
           (ss58Format >> 8) | ((ss58Format & 0b0000_0000_0000_0011) << 6),
-        ],
+        ]),
     u8a,
   );
 
-  return base58.encode(u8aConcat(input, sshash(input).subarray(0, [32, 33].includes(u8a.length) ? 2 : 1)));
+  return base58.encode(concatU8a(input, sshash(input).subarray(0, [32, 33].includes(u8a.length) ? 2 : 1)));
 }

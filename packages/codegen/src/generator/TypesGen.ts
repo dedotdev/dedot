@@ -1,6 +1,6 @@
 import { PortableRegistry, Field, MetadataLatest, PortableType, TypeId, TypeParam } from '@dedot/codecs';
-import { isNativeType, normalizeName, stringPascalCase } from '@dedot/utils';
-import { beautifySourceCode, commentBlock, compileTemplate } from './utils.js';
+import { normalizeName, stringPascalCase } from '@dedot/utils';
+import { isNativeType, beautifySourceCode, commentBlock, compileTemplate } from './utils.js';
 import { knownTypes } from './known-types.js';
 import { TypeImports } from './TypeImports.js';
 import { findKnownCodec, findKnownCodecType, isKnownCodecType } from './known-codecs.js';

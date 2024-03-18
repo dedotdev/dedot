@@ -2,10 +2,10 @@
 // SPDX-License-Identifier: Apache-2.0
 // Original implementation: https://github.com/paritytech/polka-ui/blob/4858c094684769080f5811f32b081dd7780b0880/src/polkadot.js#L6
 
-import { isHex, isU8a, u8aToU8a } from '@polkadot/util';
-
+import { isHex, isU8a } from '../../is.js';
 import { checkAddressChecksum } from './checkAddressChecksum.js';
 import { base58 } from '@scure/base';
+import { toU8a } from '../../to.js';
 
 export const ALLOWED_ENCODED_LENGTHS: number[] = [3, 4, 6, 10, 35, 36, 37, 38];
 
@@ -19,7 +19,7 @@ export function decodeAddress(
   }
 
   if (isU8a(encoded) || isHex(encoded)) {
-    return u8aToU8a(encoded);
+    return toU8a(encoded);
   }
 
   try {

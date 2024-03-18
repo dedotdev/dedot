@@ -1,8 +1,14 @@
 import { findAliasRpcSpec, findRpcSpec, isUnsubscribeMethod } from '@dedot/specs';
 import { RpcCallSpec, RpcModuleName } from '@dedot/types';
-import { isNativeType } from '@dedot/utils';
 import { ApiGen, TypesGen } from '../generator/index.js';
-import { beautifySourceCode, commentBlock, compileTemplate, TUPLE_TYPE_REGEX, WRAPPER_TYPE_REGEX } from './utils.js';
+import {
+  isNativeType,
+  beautifySourceCode,
+  commentBlock,
+  compileTemplate,
+  TUPLE_TYPE_REGEX,
+  WRAPPER_TYPE_REGEX,
+} from './utils.js';
 import { findKnownCodecType } from './known-codecs.js';
 
 const HIDDEN_RPCS = [

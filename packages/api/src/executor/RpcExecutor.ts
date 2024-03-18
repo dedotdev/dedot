@@ -1,7 +1,7 @@
 import type { SubstrateApi } from '@dedot/chaintypes';
 import { findAliasRpcSpec, findRpcSpec } from '@dedot/specs';
 import { GenericRpcCall, GenericSubstrateApi, RpcCallSpec, RpcParamSpec, Unsub } from '@dedot/types';
-import { assert, isFunction, isNativeType, u8aToHex, UnknownApiError } from '@dedot/utils';
+import { assert, isFunction, u8aToHex, UnknownApiError } from '@dedot/utils';
 import { Executor } from './Executor.js';
 
 const isOptionalParam = (param: RpcParamSpec): boolean => {
@@ -84,15 +84,11 @@ export class RpcExecutor<ChainApi extends GenericSubstrateApi = SubstrateApi> ex
       return undefined;
     }
 
-    const { type, isScale, codec } = callSpec;
+    const { isScale, codec } = callSpec;
 
     if (isScale) {
       assert(codec, 'Codec not found to decode response');
       return codec.tryDecode(raw);
-    }
-
-    if (isNativeType(type)) {
-      return raw;
     }
 
     return raw;

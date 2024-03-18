@@ -170,11 +170,11 @@ describe('Dedot', () => {
       it('should works properly', async () => {
         const $testParamCodec = {
           tryDecode: vi.fn(),
-          tryEncode: vi.fn(),
+          tryEncode: vi.fn(() => new Uint8Array()),
         };
         const $mockCodec = {
           tryDecode: vi.fn(),
-          tryEncode: vi.fn(),
+          tryEncode: vi.fn(() => new Uint8Array()),
         };
 
         api = await Dedot.create({

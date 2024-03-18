@@ -1,4 +1,5 @@
 import { HexString } from './types.js';
+import { hexToU8a } from './hex.js';
 
 /**
  * Return the bigger bigint value
@@ -20,4 +21,8 @@ export function bnMin(a: bigint, b: bigint) {
  */
 export function bnToHex(n: bigint): HexString {
   return `0x${n.toString(16)}`;
+}
+
+export function bnToU8a(n: bigint): Uint8Array {
+  return hexToU8a(bnToHex(n));
 }

@@ -1,5 +1,5 @@
 import { ISignedExtension, SignedExtension } from './SignedExtension.js';
-import { assert, ensurePresence, HexString, objectSpread, u8aToHex } from '@dedot/utils';
+import { assert, ensurePresence, HexString, u8aToHex } from '@dedot/utils';
 import * as $ from '@dedot/shape';
 import { knownSignedExtensions } from './known/index.js';
 import { SignerPayloadJSON, SignerPayloadRaw } from '@polkadot/types/types';
@@ -64,7 +64,7 @@ export class ExtraSignedExtension extends SignedExtension<any[], any[]> {
     const signedExtensions = this.#signedExtensions!.map((se) => se.identifier);
     const { version } = this.registry.metadata.extrinsic;
 
-    return objectSpread(
+    return Object.assign(
       { address: this.options!.signerAddress, signedExtensions, version, method: call },
       ...this.#signedExtensions!.map((se) => se.toPayload()),
     ) as SignerPayloadJSON;
