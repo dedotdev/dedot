@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 // Original implementation: https://github.com/paritytech/polka-ui/blob/4858c094684769080f5811f32b081dd7780b0880/src/polkadot.js#L34
 
-import { concatU8a } from '../../concat';
+import { concatU8a } from '../../concat.js';
 
 import { decodeAddress } from './decodeAddress.js';
 import { sshash } from './sshash.js';
