@@ -1,6 +1,7 @@
 import {
   $AccountId20,
   $AccountId32,
+  $Bytes,
   $Data,
   $Digest,
   $DigestItem,
@@ -249,7 +250,7 @@ export class PortableRegistry {
     } else if (tag === 'Sequence') {
       const $inner = this.findCodec(type.value.typeParam);
       if ($inner === $.u8) {
-        return $.PrefixedHex;
+        return $Bytes;
       } else {
         return $.Vec($inner);
       }

@@ -1,5 +1,5 @@
 import * as $ from '@dedot/shape';
-import { HexString, isString, isU8a, stringToHex, u8aToHex } from '@dedot/utils';
+import { HexString, isU8a, toHex, u8aToHex } from '@dedot/utils';
 
 export const $Text = $.str;
 export type Text = string;
@@ -28,15 +28,7 @@ export type BytesLike = HexString | string | Uint8Array;
 export type Bytes = HexString;
 export const $Bytes: $.Shape<BytesLike, Bytes> = $.transform({
   $base: $.PrefixedHex,
-  encode: (value) => {
-    if (isString(value)) {
-      return stringToHex(value);
-    } else if (isU8a(value)) {
-      return u8aToHex(value);
-    }
-
-    return value;
-  },
+  encode: (value) => toHex(value),
   decode: (value) => value,
 });
 
