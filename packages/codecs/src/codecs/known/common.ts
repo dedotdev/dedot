@@ -1,6 +1,5 @@
 import * as $ from '@dedot/shape';
-import { HexString } from '@dedot/utils';
-import { isString, isU8a, stringToHex, u8aToHex } from '@polkadot/util';
+import { HexString, isString, isU8a, stringToHex, u8aToHex } from '@dedot/utils';
 
 export const $Text = $.str;
 export type Text = string;

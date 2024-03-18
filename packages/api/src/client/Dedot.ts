@@ -14,9 +14,8 @@ import {
 } from '../executor/index.js';
 import { newProxyChain } from '../proxychain.js';
 import { ApiEventNames, ApiOptions, MetadataKey, NetworkEndpoint, NormalizedApiOptions } from '../types.js';
-import { hexAddPrefix, u8aToHex } from '@polkadot/util';
 import { IStorage, LocalStorage } from '@dedot/storage';
-import { assert, EventEmitter } from '@dedot/utils';
+import { assert, EventEmitter, hexAddPrefix, u8aToHex } from '@dedot/utils';
 
 export const KEEP_ALIVE_INTERVAL = 10_000; // in ms
 export const CATCH_ALL_METADATA_KEY: MetadataKey = `RAW_META/ALL`;

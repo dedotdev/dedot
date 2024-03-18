@@ -1,5 +1,5 @@
 import { SignedExtension } from '../SignedExtension.js';
-import { numberToHex } from '@polkadot/util';
+import { numberToHex } from '@dedot/utils';
 import { SignerPayloadJSON } from '@polkadot/types/types';
 
 /**

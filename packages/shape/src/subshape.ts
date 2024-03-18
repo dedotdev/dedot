@@ -1,4 +1,4 @@
-import { hexFixLength, hexToU8a, isBoolean, isHex, isNumber, isString } from '@polkadot/util';
+import { hexFixLength, hexToU8a, isBoolean, isHex, isNumber, isString } from '@dedot/utils';
 import {
   AnyShape,
   bool,

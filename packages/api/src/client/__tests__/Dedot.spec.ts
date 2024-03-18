@@ -2,7 +2,7 @@ import { afterEach, beforeEach, describe, expect, expectTypeOf, it, vi } from 'v
 import { Dedot } from '../Dedot.js';
 import MockProvider from './MockProvider.js';
 import { SubstrateApi } from '@dedot/chaintypes';
-import { stringCamelCase, stringPascalCase } from '@polkadot/util';
+import { stringCamelCase, stringPascalCase } from '@dedot/utils';
 import { RuntimeVersion } from '@dedot/codecs';
 import { AnyShape } from '@dedot/shape';
 

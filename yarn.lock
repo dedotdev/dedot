@@ -352,7 +352,6 @@ __metadata:
     "@dedot/shape": "workspace:*"
     "@dedot/types": "workspace:*"
     "@dedot/utils": "workspace:*"
-    "@polkadot/util": ^12.6.2
   languageName: unknown
   linkType: soft
 
@@ -375,7 +374,6 @@ __metadata:
   dependencies:
     "@dedot/shape": "workspace:*"
     "@dedot/utils": "workspace:*"
-    "@polkadot/util": ^12.6.2
     lodash.clonedeep: ^4.5.0
   languageName: unknown
   linkType: soft
@@ -388,7 +386,6 @@ __metadata:
     "@dedot/shape": "workspace:*"
     "@dedot/specs": "workspace:*"
     "@dedot/utils": "workspace:*"
-    "@polkadot/util": ^12.6.2
     dedot: "workspace:*"
     handlebars: ^4.7.8
     prettier: ^3.0.3
@@ -400,7 +397,6 @@ __metadata:
   resolution: "@dedot/shape@workspace:packages/shape"
   dependencies:
     "@dedot/utils": "workspace:*"
-    "@polkadot/util": ^12.6.2
     subshape: ^0.14.0
   languageName: unknown
   linkType: soft
@@ -427,7 +423,6 @@ __metadata:
     "@dedot/codecs": "workspace:*"
     "@dedot/shape": "workspace:*"
     "@dedot/utils": "workspace:*"
-    "@polkadot/util": ^12.6.2
   languageName: unknown
   linkType: soft
 
@@ -3419,7 +3414,6 @@ __metadata:
     "@polkadot/keyring": ^12.6.2
     "@polkadot/rpc-provider": ^10.11.2
     "@polkadot/types": ^10.11.2
-    "@polkadot/util": ^12.6.2
   languageName: unknown
   linkType: soft
 
@@ -9156,7 +9150,6 @@ __metadata:
     "@dedot/codecs": "workspace:*"
     "@dedot/utils": "workspace:*"
     "@polkadot/keyring": ^12.6.2
-    "@polkadot/util": ^12.6.2
     dedot: "workspace:*"
   languageName: unknown
   linkType: soft

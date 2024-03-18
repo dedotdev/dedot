@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import * as $ from '../../index.js';
-import { u8aConcat, u8aToHex } from '@polkadot/util';
+import { u8aConcat, u8aToHex } from '@dedot/utils';
 
 describe('hex', () => {
   describe('FixedHex', () => {

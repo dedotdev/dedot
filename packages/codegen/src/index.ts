@@ -15,7 +15,7 @@ import {
 import { RpcMethods } from '@dedot/types';
 import { MetadataLatest } from '@dedot/codecs';
 import { NetworkInfo } from './types.js';
-import { stringCamelCase } from '@polkadot/util';
+import { stringCamelCase } from '@dedot/utils';
 
 export async function generateTypesFromChain(network: NetworkInfo, endpoint: string, outDir: string) {
   const api = await Dedot.create(endpoint);

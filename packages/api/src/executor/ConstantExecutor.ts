@@ -1,8 +1,7 @@
 import type { SubstrateApi } from '@dedot/chaintypes';
-import { stringCamelCase } from '@polkadot/util';
 import { GenericSubstrateApi } from '@dedot/types';
 import { Executor } from './Executor.js';
-import { assert, UnknownApiError } from '@dedot/utils';
+import { assert, UnknownApiError, stringCamelCase } from '@dedot/utils';
 
 /**
  * @name ConstantExecutor

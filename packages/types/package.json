@@ -19,8 +19,7 @@
   "dependencies": {
     "@dedot/codecs": "workspace:*",
     "@dedot/shape": "workspace:*",
-    "@dedot/utils": "workspace:*",
-    "@polkadot/util": "^12.6.2"
+    "@dedot/utils": "workspace:*"
   },
   "publishConfig": {
     "access": "public",

@@ -1,7 +1,6 @@
 import { SignedExtension } from '../SignedExtension.js';
-import { numberToHex } from '@polkadot/util';
 import { SignerPayloadJSON } from '@polkadot/types/types';
-import { assert } from '@dedot/utils';
+import { assert, numberToHex } from '@dedot/utils';
 
 /**
  * @description Nonce check and increment to give replay protection for transactions.

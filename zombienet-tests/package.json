@@ -7,7 +7,6 @@
     "@dedot/codecs": "workspace:*",
     "@dedot/utils": "workspace:*",
     "@polkadot/keyring": "^12.6.2",
-    "@polkadot/util": "^12.6.2",
     "dedot": "workspace:*"
   },
   "license": "Apache-2.0"

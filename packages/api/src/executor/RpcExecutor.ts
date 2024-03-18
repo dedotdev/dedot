@@ -1,8 +1,7 @@
 import type { SubstrateApi } from '@dedot/chaintypes';
-import { isFunction, u8aToHex } from '@polkadot/util';
 import { findAliasRpcSpec, findRpcSpec } from '@dedot/specs';
-import { GenericSubstrateApi, Unsub, RpcCallSpec, RpcParamSpec, GenericRpcCall } from '@dedot/types';
-import { assert, isNativeType, UnknownApiError } from '@dedot/utils';
+import { GenericRpcCall, GenericSubstrateApi, RpcCallSpec, RpcParamSpec, Unsub } from '@dedot/types';
+import { assert, isFunction, isNativeType, u8aToHex, UnknownApiError } from '@dedot/utils';
 import { Executor } from './Executor.js';
 
 const isOptionalParam = (param: RpcParamSpec): boolean => {

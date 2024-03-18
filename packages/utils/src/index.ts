@@ -7,3 +7,4 @@ export * from './hash/index.js';
 export * from './address/index.js';
 export * from './event/index.js';
 export * from './misc.js';
+export * from './reexports.js';

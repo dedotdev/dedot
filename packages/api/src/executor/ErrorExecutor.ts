@@ -2,8 +2,7 @@ import { GenericPalletError, GenericSubstrateApi } from '@dedot/types';
 import { SubstrateApi } from '@dedot/chaintypes';
 import { Executor } from './Executor.js';
 import { DispatchError, ModuleError } from '@dedot/codecs';
-import { assert, UnknownApiError } from '@dedot/utils';
-import { hexToU8a, isHex, isNumber, isObject, stringPascalCase } from '@polkadot/util';
+import { assert, hexToU8a, isHex, isNumber, isObject, stringPascalCase, UnknownApiError } from '@dedot/utils';
 
 /**
  * @name ErrorExecutor

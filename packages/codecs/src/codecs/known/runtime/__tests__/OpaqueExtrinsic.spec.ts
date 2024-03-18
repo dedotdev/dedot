@@ -1,7 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { HexString } from '@dedot/utils';
+import { HexString, hexToU8a } from '@dedot/utils';
 import { $OpaqueExtrinsic } from '../OpaqueExtrinsic.js';
-import { hexToU8a } from '@polkadot/util';
 
 describe('OpaqueExtrinsic', () => {
   const prefixedTx: HexString = '0x280403000b51d93fda8d01';

@@ -1,5 +1,4 @@
-import { hexToU8a, u8aToHex } from '@polkadot/util';
-import { HexString } from '@dedot/utils';
+import { HexString, hexToU8a, u8aToHex } from '@dedot/utils';
 import { constant, DecodeBuffer, metadata, Shape, withMetadata } from '../subshape.js';
 import { createShape } from './createShape.js';
 

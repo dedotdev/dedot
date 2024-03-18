@@ -12,14 +12,25 @@ import {
   Unsub,
 } from '@dedot/types';
 import { SubstrateApi } from '@dedot/chaintypes';
-import { assert, HexString, UnknownApiError } from '@dedot/utils';
-import { hexToU8a, isFunction, isHex, objectSpread, stringCamelCase, stringPascalCase, u8aToHex } from '@polkadot/util';
+import {
+  assert,
+  blake2AsHex,
+  blake2AsU8a,
+  HexString,
+  hexToU8a,
+  isFunction,
+  isHex,
+  objectSpread,
+  stringCamelCase,
+  stringPascalCase,
+  u8aToHex,
+  UnknownApiError,
+} from '@dedot/utils';
 import { BlockHash, Extrinsic, Hash, SignedBlock, TransactionStatus } from '@dedot/codecs';
 import { Dedot } from '../client/index.js';
 import { IKeyringPair } from '@polkadot/types/types';
 import { ExtraSignedExtension, SubmittableResult } from '../extrinsic/index.js';
 import { SignOptions } from '@polkadot/keyring/types';
-import { blake2AsHex, blake2AsU8a } from '@dedot/utils';
 
 export function isKeyringPair(account: AddressOrPair): account is IKeyringPair {
   return isFunction((account as IKeyringPair).sign);

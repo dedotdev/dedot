@@ -8,8 +8,16 @@ import type {
   RuntimeApiSpec,
 } from '@dedot/types';
 import { Executor } from './Executor.js';
-import { assert, calculateRuntimeApiHash, stringSnakeCase, UnknownApiError } from '@dedot/utils';
-import { isNumber, stringPascalCase, u8aConcat, u8aToHex } from '@polkadot/util';
+import {
+  assert,
+  calculateRuntimeApiHash,
+  isNumber,
+  stringPascalCase,
+  stringSnakeCase,
+  u8aConcat,
+  u8aToHex,
+  UnknownApiError,
+} from '@dedot/utils';
 import { RuntimeApiMethodDefLatest } from '@dedot/codecs';
 import { Metadata, toRuntimeApiMethods, toRuntimeApiSpecs } from '@dedot/specs';
 
