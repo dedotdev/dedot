@@ -5,18 +5,20 @@
 import { u8aConcat } from '@polkadot/util';
 
 import { decodeAddress } from './decodeAddress.js';
-import { defaults } from './defaults.js';
 import { sshash } from './sshash.js';
 import { base58 } from '@scure/base';
 
-export function encodeAddress(key: string | Uint8Array, ss58Format: number = defaults.prefix): string {
+export const DEFAULT_SUBSTRATE_ADDRESS_PREFIX: number = 42;
+export const ALLOWED_DECODED_LENGTHS: number[] = [1, 2, 4, 8, 32, 33];
+
+export function encodeAddress(key: string | Uint8Array, ss58Format: number = DEFAULT_SUBSTRATE_ADDRESS_PREFIX): string {
   // decode it, this means we can re-encode an address
   const u8a = decodeAddress(key);
 
   if (ss58Format < 0 || ss58Format > 16383 || [46, 47].includes(ss58Format)) {
     throw new Error('Out of range ss58Format specified');
-  } else if (!defaults.allowedDecodedLengths.includes(u8a.length)) {
-    throw new Error(`Expected a valid key to convert, with length ${defaults.allowedDecodedLengths.join(', ')}`);
+  } else if (!ALLOWED_DECODED_LENGTHS.includes(u8a.length)) {
+    throw new Error(`Expected a valid key to convert, with length ${ALLOWED_DECODED_LENGTHS.join(', ')}`);
   }
 
   const input = u8aConcat(

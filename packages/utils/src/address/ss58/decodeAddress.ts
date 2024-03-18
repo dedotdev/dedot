@@ -6,7 +6,8 @@ import { isHex, isU8a, u8aToU8a } from '@polkadot/util';
 
 import { checkAddressChecksum } from './checkAddressChecksum.js';
 import { base58 } from '@scure/base';
-import { defaults } from './defaults.js';
+
+export const ALLOWED_ENCODED_LENGTHS: number[] = [3, 4, 6, 10, 35, 36, 37, 38];
 
 export function decodeAddress(
   encoded?: string | Uint8Array | null,
@@ -24,7 +25,7 @@ export function decodeAddress(
   try {
     const decoded = base58.decode(encoded);
 
-    if (!defaults.allowedEncodedLengths.includes(decoded.length)) {
+    if (!ALLOWED_ENCODED_LENGTHS.includes(decoded.length)) {
       throw new Error('Invalid decoded address length');
     }
 
