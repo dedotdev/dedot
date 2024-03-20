@@ -3,23 +3,22 @@ import { u8aToHex, u8aToString } from '../u8a.js';
 describe('u8a', () => {
   describe('u8aToHex', () => {
     it.each([
-      [undefined, ''],
-      [null, ''],
-      [new Uint8Array(), ''],
-      [new Uint8Array([128, 0, 10]), '80000a'],
-      [new Uint8Array([0, 1, 0, 0, 0, 0, 0, 0]), '0001000000000000'],
-      [new Uint8Array([0x68, 0x65, 0x6c, 0x6c, 0x6f, 0x20, 0x77, 0x6f, 0x72, 0x6c, 0x64]), '68656c6c6f20776f726c64'],
-      [new Uint8Array([0x12, 0x34, 0x56, 0x78, 0x9a, 0xbc, 0xde, 0xf0]), '123456789abcdef0'],
+      [undefined, '0x'],
+      [null, '0x'],
+      [new Uint8Array(), '0x'],
+      [new Uint8Array([128, 0, 10]), '0x80000a'],
+      [new Uint8Array([0, 1, 0, 0, 0, 0, 0, 0]), '0x0001000000000000'],
+      [new Uint8Array([0x68, 0x65, 0x6c, 0x6c, 0x6f, 0x20, 0x77, 0x6f, 0x72, 0x6c, 0x64]), '0x68656c6c6f20776f726c64'],
+      [new Uint8Array([0x12, 0x34, 0x56, 0x78, 0x9a, 0xbc, 0xde, 0xf0]), '0x123456789abcdef0'],
       [
         new Uint8Array([
           0xff, 0xee, 0xdd, 0xcc, 0xbb, 0xaa, 0x99, 0x88, 0x77, 0x66, 0x55, 0x44, 0x33, 0x22, 0x11, 0x00,
         ]),
-        'ffeeddccbbaa99887766554433221100',
+        '0xffeeddccbbaa99887766554433221100',
       ],
-      [new Uint8Array([0x1a, 0x2b, 0x3c, 0x4d, 0x5e, 0x6f, 0x7a, 0x8b, 0x9c, 0xad]), '1a2b3c4d5e6f7a8b9cad'],
+      [new Uint8Array([0x1a, 0x2b, 0x3c, 0x4d, 0x5e, 0x6f, 0x7a, 0x8b, 0x9c, 0xad]), '0x1a2b3c4d5e6f7a8b9cad'],
     ])('should convert from %o to %o', (input, output) => {
-      expect(u8aToHex(input, false)).toEqual(output);
-      expect(u8aToHex(input)).toEqual('0x' + output);
+      expect(u8aToHex(input)).toEqual(output);
     });
   });
 

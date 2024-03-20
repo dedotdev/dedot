@@ -11,7 +11,7 @@ import { isHex } from './is.js';
  * @returns {Uint8Array} The Uint8Array representation of the hex string.
  */
 export function hexToU8a(input: HexString | string): Uint8Array {
-  return hexToBytes(input.startsWith('0x') ? input.substring(2) : input);
+  return hexToBytes(hexStripPrefix(input));
 }
 
 /**
@@ -28,10 +28,33 @@ export function hexToString(input: HexString | string): string {
  * Check if a hex is zero
  * - isZeroHash('0x000000') returns `true`
  * - isZeroHash('0x000001') returns `false`
- * @param input
+ *
+ * @param input {HexString}
  */
 export const isZeroHex = (input: HexString): boolean => {
   return isHex(input) && hexToU8a(input).every((b) => b === 0);
+};
+
+/**
+ * Add '0x' prefix to a hex string if it doesn't have one
+ *
+ * @param input {HexString}
+ */
+export const hexAddPrefix = (input?: HexString | string): HexString => {
+  if (!input) return '0x';
+
+  return (input.startsWith('0x') ? input : `0x${input}`) as HexString;
+};
+
+/**
+ * Remove '0x' prefix from a hex string if it has one
+ *
+ * @param input {HexString}
+ */
+export const hexStripPrefix = (input?: HexString | string): string => {
+  if (!input) return '';
+
+  return input.startsWith('0x') ? input.substring(2) : input;
 };
 
 // - TODO hexToNumber

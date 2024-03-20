@@ -5,10 +5,12 @@ import { isHex } from '../../is.js';
 
 import { isEvmChecksum } from './isEvmChecksum.js';
 
+export const EVM_ADDRESS_REGEX = /^(0x)?[a-fA-F0-9]{40}$/;
+
 export function isEvmAddress(address?: string): boolean {
   if (!address || address.length !== 42 || !isHex(address)) {
     return false;
-  } else if (/^(0x)?[0-9a-f]{40}$/.test(address) || /^(0x)?[0-9A-F]{40}$/.test(address)) {
+  } else if (EVM_ADDRESS_REGEX.test(address)) {
     return true;
   }
 

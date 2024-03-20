@@ -1,14 +1,14 @@
 import { HexString } from './types.js';
 import { bytesToHex } from '@noble/hashes/utils';
+import { hexAddPrefix } from '@dedot/utils/hex';
 
 /**
  * Convert a Uint8Array to a hex string
  */
-export function u8aToHex(input?: Uint8Array | null, isPrefixed = true): HexString {
-  const empty = isPrefixed ? '0x' : '';
-  if (!input) return empty as HexString;
+export function u8aToHex(input?: Uint8Array | null): HexString {
+  if (!input) return '0x';
 
-  return `${empty}${bytesToHex(input)}` as HexString;
+  return hexAddPrefix(bytesToHex(input));
 }
 
 const textDecoder = new TextDecoder('utf-8');
