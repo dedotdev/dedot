@@ -14,13 +14,10 @@
     "test": "npx lerna run --no-bail --verbose test",
     "prettify": "npx prettier --write \"{packages,scripts}/{**/*,*}.{js,ts,jsx,tsx,json,mjs}\"",
     "check-format": "npx prettier --check \"{packages,scripts}/{**/*,*}.{js,ts,jsx,tsx,json,mjs}\"",
-    "version": "yarn generate-package-info-file",
     "prepublishOnly": "yarn copy-files-to-dist",
     "postinstall": "husky install",
-    "generate-package-info-file": "npx lerna exec --no-private -- node \\$LERNA_ROOT_PATH/scripts/generate-package-info-file.js",
     "copy-files-to-dist": "npx lerna exec --no-private -- node \\$LERNA_ROOT_PATH/scripts/copy-files-to-dist.js",
     "fix-esm-path": "npx tsc-esm-fix --src=packages --ext=.js",
-    "gen-chaintypes": "npx ts-node ./packages/codegen/src/genSupportedChainTypes.ts",
     "cli": "yarn workspace @dedot/cli start",
     "publish:next": "yarn build && npx lerna publish prerelease --canary --preid next.$(git rev-parse --short=8 HEAD) --dist-tag next --force-publish --no-private --no-git-tag-version --yes",
     "zombienet-test-preps": "npx lerna exec --no-private -- node \\$LERNA_ROOT_PATH/scripts/zombienet-tests-preps.js"

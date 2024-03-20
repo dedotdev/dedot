@@ -6,8 +6,6 @@
     "rootDir": "src",
     "declarationDir": "dist",
     "paths": {
-      "@dedot/chaintypes": ["../packages/chaintypes/src"],
-      "@dedot/chaintypes/*": ["../packages/chaintypes/src/*"],
       "@dedot/codecs": ["../packages/codecs/src"],
       "@dedot/codecs/*": ["../packages/codecs/src/*"],
       "@dedot/utils": ["../packages/utils/src"],
@@ -23,9 +21,6 @@
     },
     {
       "path": "../packages/codecs/tsconfig.json",
-    },
-    {
-      "path": "../packages/chaintypes/tsconfig.json",
     },
     {
       "path": "../packages/api/tsconfig.json",

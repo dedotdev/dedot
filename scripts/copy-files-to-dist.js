@@ -36,7 +36,7 @@ const main = () => {
         pkgJson.types = './index.d.ts';
       }
 
-      if (!['@dedot/chaintypes', '@dedot/cli'].includes(pkgJson.name)) {
+      if (!['@dedot/cli'].includes(pkgJson.name)) {
         pkgJson.exports = {
           '.': {
             import: {
