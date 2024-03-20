@@ -14,30 +14,29 @@ import {
 } from './generator/index.js';
 import { RpcMethods } from '@dedot/types';
 import { MetadataLatest } from '@dedot/codecs';
-import { NetworkInfo } from './types.js';
 import { stringCamelCase } from '@dedot/utils';
 
-export async function generateTypesFromChain(network: NetworkInfo, endpoint: string, outDir: string) {
-  const api = await Dedot.create(endpoint);
+export async function generateTypesFromEndpoint(chain: string, endpoint: string, outDir?: string) {
+  const api = await Dedot.new(endpoint);
   const { methods }: RpcMethods = await api.rpc.rpc.methods();
   const apis = api.runtimeVersion?.apis || [];
-  if (!network.chain) {
-    network.chain = stringCamelCase(api.runtimeVersion?.specName || api.runtimeChain || 'local');
+  if (!chain) {
+    chain = stringCamelCase(api.runtimeVersion?.specName || api.runtimeChain || 'local');
   }
 
-  await generateTypes(network, api.metadataLatest, methods, apis, outDir);
+  await generateTypes(chain, api.metadataLatest, methods, apis, outDir);
 
   await api.disconnect();
 }
 
 export async function generateTypes(
-  network: NetworkInfo,
+  chain: string,
   metadata: MetadataLatest,
   rpcMethods: string[],
   runtimeApis: any[],
   outDir: string = '.',
 ) {
-  const dirPath = path.resolve(outDir, network.chain);
+  const dirPath = path.resolve(outDir, chain);
   const defTypesFileName = path.join(dirPath, `types.d.ts`);
   const constsTypesFileName = path.join(dirPath, `consts.d.ts`);
   const queryTypesFileName = path.join(dirPath, `query.d.ts`);
@@ -56,7 +55,7 @@ export async function generateTypes(
   const constsGen = new ConstsGen(typesGen);
   const queryGen = new QueryGen(typesGen);
   const rpcGen = new RpcGen(typesGen, rpcMethods);
-  const indexGen = new IndexGen(network);
+  const indexGen = new IndexGen(chain);
   const errorsGen = new ErrorsGen(typesGen);
   const eventsGen = new EventsGen(typesGen);
   const runtimeApisGen = new RuntimeApisGen(typesGen, runtimeApis);

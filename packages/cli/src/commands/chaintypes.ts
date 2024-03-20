@@ -1,6 +1,6 @@
 import * as path from 'path';
 import { CommandModule } from 'yargs';
-import { generateTypesFromChain } from '@dedot/codegen';
+import { generateTypesFromEndpoint } from '@dedot/codegen';
 
 type Args = {
   wsUrl?: string;
@@ -17,7 +17,7 @@ export const chaintypes: CommandModule<Args, Args> = {
     console.log(`- Generating chaintypes via endpoint ${wsUrl!}`);
 
     const outDir = path.resolve(output, './codegen');
-    await generateTypesFromChain({ chain }, wsUrl!, outDir);
+    await generateTypesFromEndpoint(chain, wsUrl!, outDir);
 
     console.log(`- DONE! Output: ${outDir}`);
   },

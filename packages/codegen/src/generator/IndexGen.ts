@@ -1,13 +1,11 @@
 import { beautifySourceCode, compileTemplate } from './utils.js';
-import { NetworkInfo } from '../types.js';
 import { stringPascalCase } from '@dedot/utils';
 
 export class IndexGen {
-  constructor(readonly networkInfo: NetworkInfo) {}
+  constructor(readonly chain: string) {}
 
   async generate() {
-    const { chain } = this.networkInfo;
-    const interfaceName = stringPascalCase(chain);
+    const interfaceName = stringPascalCase(this.chain);
 
     const template = compileTemplate('index.hbs');
 
