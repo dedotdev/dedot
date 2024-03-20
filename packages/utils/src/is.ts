@@ -37,6 +37,14 @@ export function isU8a(input: unknown): input is Uint8Array {
 }
 
 export const HEX_REGEX = /^0x[\da-fA-F]+$/;
-export function isHex(input: unknown): input is HexString {
-  return isString(input) && (input === '0x' || HEX_REGEX.test(input));
+
+/**
+ * Checks if the given input is a hex string.
+ *
+ * @param {unknown} input - The input to be checked.
+ * @param {boolean} [strict=false] - If true, the function also checks if the hex is of even length (padded hex).
+ * @returns {boolean} Returns true if the input is a hex string, false otherwise.
+ */
+export function isHex(input: unknown, strict?: boolean): input is HexString {
+  return isString(input) && (input === '0x' || HEX_REGEX.test(input)) && (!strict || input.length % 2 === 0);
 }

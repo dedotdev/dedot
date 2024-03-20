@@ -1,12 +1,24 @@
 import { HexString } from './types.js';
 import { bytesToHex } from '@noble/hashes/utils';
 
-export function u8aToHex(input: Uint8Array, isPrefixed = true): HexString {
-  return `${isPrefixed ? '0x' : ''}${bytesToHex(input)}` as HexString;
+/**
+ * Convert a Uint8Array to a hex string
+ */
+export function u8aToHex(input?: Uint8Array | null, isPrefixed = true): HexString {
+  const empty = isPrefixed ? '0x' : '';
+  if (!input) return empty as HexString;
+
+  return `${empty}${bytesToHex(input)}` as HexString;
 }
 
 const textDecoder = new TextDecoder('utf-8');
-export function u8aToString(input: Uint8Array): string {
+
+/**
+ * Convert a Uint8Array to a string
+ */
+export function u8aToString(input?: Uint8Array | null): string {
+  if (!input) return '';
+
   return textDecoder.decode(input);
 }
 

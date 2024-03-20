@@ -5,6 +5,14 @@ import { stringToHex, stringToU8a } from './string/index.js';
 import { u8aToHex } from './u8a.js';
 import { hexToU8a } from './hex.js';
 
+/**
+ * Converts the input to a hex string.
+ *
+ * @param {string | number | Uint8Array | HexString} input - The input to be converted to a hex string.
+ * This can be a string, number, Uint8Array, or a hex string.
+ * @returns {HexString} The hex string representation of the input.
+ * @throws {Error} Throws an error if the input type is not string, number, Uint8Array, or hex string.
+ */
 export function toHex(input: string | number | Uint8Array | HexString): HexString {
   if (isU8a(input)) {
     return u8aToHex(input);
@@ -19,6 +27,14 @@ export function toHex(input: string | number | Uint8Array | HexString): HexStrin
   throw new Error(`Invalid input type of: ${input}`);
 }
 
+/**
+ * Converts the input to a Uint8Array.
+ *
+ * @param {string | number | Uint8Array | HexString} input - The input to be converted to a Uint8Array.
+ * This can be a string, number, Uint8Array, or a hex string.
+ * @returns {Uint8Array} The Uint8Array representation of the input.
+ * @throws {Error} Throws an error if the input type is not string, number, Uint8Array, or hex string.
+ */
 export function toU8a(input: string | number | Uint8Array | HexString): Uint8Array {
   if (isU8a(input)) {
     return input;

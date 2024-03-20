@@ -16,13 +16,23 @@ export function bnMin(a: bigint, b: bigint) {
 }
 
 /**
- * Convert bigint to hex
- * @param n
+ * Return the absolute value of a bigint
  */
-export function bnToHex(n: bigint): HexString {
-  return `0x${n.toString(16)}`;
+export function bnAbs(n: bigint) {
+  return n < 0n ? -n : n;
 }
 
+/**
+ * Convert bigint to hex
+ */
+export function bnToHex(n: bigint): HexString {
+  const hex = bnAbs(n).toString(16);
+  return `0x${hex.length % 2 ? `0${hex}` : hex}`;
+}
+
+/**
+ * Convert bigint to Uint8Array
+ */
 export function bnToU8a(n: bigint): Uint8Array {
   return hexToU8a(bnToHex(n));
 }
