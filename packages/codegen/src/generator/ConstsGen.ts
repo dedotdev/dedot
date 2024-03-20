@@ -1,5 +1,4 @@
-import { stringLowerFirst } from '@polkadot/util';
-import { normalizeName } from '@dedot/utils';
+import { normalizeName, stringCamelCase } from '@dedot/utils';
 import { ApiGen } from '../generator/index.js';
 import { beautifySourceCode, commentBlock, compileTemplate } from './utils.js';
 
@@ -19,7 +18,7 @@ export class ConstsGen extends ApiGen {
       }));
 
       defTypeOut += commentBlock(`Pallet \`${pallet.name}\`'s constants`);
-      defTypeOut += `${stringLowerFirst(pallet.name)}: {
+      defTypeOut += `${stringCamelCase(pallet.name)}: {
         ${typedConstants.map(({ name, type, docs }) => `${commentBlock(docs)}${name}: ${type}`).join(',\n')}
           
         ${commentBlock('Generic pallet constant')}[name: string]: any,

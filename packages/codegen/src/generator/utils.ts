@@ -40,3 +40,32 @@ const TS_RESERVED_WORDS = ['new', 'class'];
  * @param word
  */
 export const isReservedWord = (word: string) => TS_RESERVED_WORDS.includes(word);
+
+const TS_PRIMITIVE_TYPES = [
+  'void',
+  'undefined',
+  'null',
+  'number',
+  'boolean',
+  'bigint',
+  'Map',
+  'Set',
+  'string',
+  'any',
+  'Array',
+  'Record',
+];
+
+/**
+ * Check if a type is native JS/TS type
+ * @param type
+ */
+export const isNativeType = (type: string) => {
+  return TS_PRIMITIVE_TYPES.some((one) => {
+    if (typeof one === 'string') {
+      return one === type;
+    } else {
+      return type.match(one);
+    }
+  });
+};

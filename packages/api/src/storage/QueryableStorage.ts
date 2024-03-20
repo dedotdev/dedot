@@ -7,8 +7,7 @@ import {
   StorageEntryLatest,
   StorageKey,
 } from '@dedot/codecs';
-import { hexToU8a, stringCamelCase, u8aConcat, u8aToHex } from '@polkadot/util';
-import { xxhashAsU8a } from '@dedot/utils';
+import { xxhashAsU8a, hexToU8a, stringCamelCase, concatU8a, u8aToHex } from '@dedot/utils';
 
 /**
  * @name QueryableStorage
@@ -29,7 +28,7 @@ export class QueryableStorage {
   encodeKey(keyInput?: any): StorageKey {
     const palletNameHash = xxhashAsU8a(this.pallet.name, 128);
     const storageItemHash = xxhashAsU8a(this.storageEntry.name, 128);
-    const prefixHash = u8aConcat(palletNameHash, storageItemHash);
+    const prefixHash = concatU8a(palletNameHash, storageItemHash);
 
     const { type } = this.storageEntry;
 
@@ -54,7 +53,7 @@ export class QueryableStorage {
         return hasher($keyCodec.tryEncode(input));
       });
 
-      return u8aToHex(u8aConcat(prefixHash, ...keyParts));
+      return u8aToHex(concatU8a(prefixHash, ...keyParts));
     }
 
     throw Error(`Invalid storage entry type: ${type}`);

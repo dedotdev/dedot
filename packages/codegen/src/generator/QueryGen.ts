@@ -1,6 +1,5 @@
-import { stringLowerFirst } from '@polkadot/util';
 import { StorageEntryLatest } from '@dedot/codecs';
-import { normalizeName } from '@dedot/utils';
+import { normalizeName, stringCamelCase } from '@dedot/utils';
 import { ApiGen } from '../generator/index.js';
 import { beautifySourceCode, commentBlock, compileTemplate } from './utils.js';
 
@@ -23,7 +22,7 @@ export class QueryGen extends ApiGen {
       );
 
       defTypeOut += commentBlock(`Pallet \`${pallet.name}\`'s storage queries`);
-      defTypeOut += `${stringLowerFirst(pallet.name)}: {
+      defTypeOut += `${stringCamelCase(pallet.name)}: {
         ${queryDefs.join(',\n')}
         
         ${commentBlock('Generic pallet storage query')}[storage: string]: GenericStorageQuery;

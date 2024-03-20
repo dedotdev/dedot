@@ -1,13 +1,12 @@
-import { isHex, isU8a, u8aToHex } from '@polkadot/util';
 import * as $ from '@dedot/shape';
-import { HexString, isEthereumAddress } from '@dedot/utils';
+import { HexString, isEvmAddress, isHex, isU8a, u8aToHex } from '@dedot/utils';
 
 export const accountId20ToHex = (input: AccountId20Like): HexString => {
   if (input instanceof AccountId20) {
     return input.raw;
   } else if (isU8a(input)) {
     return u8aToHex(input);
-  } else if (isHex(input) && isEthereumAddress(input)) {
+  } else if (isHex(input) && isEvmAddress(input)) {
     return input;
   }
 

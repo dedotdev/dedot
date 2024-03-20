@@ -11,7 +11,7 @@ import {
   taggedUnion,
   variant,
 } from '../subshape.js';
-import { isHex, isObject, isString, stringCamelCase } from '@polkadot/util';
+import { isHex, isObject, isString, stringCamelCase } from '@dedot/utils';
 
 export type IndexedEnumMember<V extends AnyShape> = { value?: V | null; index: number };
 

@@ -1,29 +1,19 @@
 import { blake2AsHex } from './hash/index.js';
 import { HexString } from './types.js';
-import { hexToU8a, isHex, isString, isU8a, stringToHex, stringToU8a, u8aToHex } from '@polkadot/util';
+import { stringCamelCase } from './string/index.js';
 
-export const calculateRuntimeApiHash = (runtimeApiName: string) => {
+/**
+ * Calculate runtime api hash
+ */
+export const calcRuntimeApiHash = (runtimeApiName: string): HexString => {
   return blake2AsHex(runtimeApiName, 64);
 };
 
-export const xToHex = (input: HexString | string | Uint8Array): HexString => {
-  if (isHex(input)) {
-    return input;
-  } else if (isString(input)) {
-    return stringToHex(input);
-  } else if (isU8a(input)) {
-    return u8aToHex(input);
-  }
-
-  return input;
-};
-
-export const xToU8a = (input: HexString | string | Uint8Array): Uint8Array => {
-  if (isHex(input)) {
-    return hexToU8a(input);
-  } else if (isString(input)) {
-    return stringToU8a(input);
-  }
-
-  return input;
-};
+/**
+ * Normalize object field's name from metadata
+ *
+ * Remove special characters (# => _)
+ */
+export function normalizeName(ident: string): string {
+  return stringCamelCase(ident.replace('#', '_'));
+}

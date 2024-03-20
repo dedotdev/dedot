@@ -4,7 +4,7 @@ import { PortableRegistry } from '../../../registry/index.js';
 import staticSubstrateV14 from '@polkadot/types-support/metadata/v14/kusama-hex';
 import { AccountId32, Extrinsic } from '@dedot/codecs';
 import * as $ from '@dedot/shape';
-import { u8aToHex } from '@polkadot/util';
+import { u8aToHex } from '@dedot/utils';
 
 // Ref: https://github.com/polkadot-js/api/blob/3bdf49b0428a62f16b3222b9a31bfefa43c1ca55/packages/types/src/extrinsic/Extrinsic.spec.ts#L20-L49
 const sampleTx =

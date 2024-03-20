@@ -3,8 +3,7 @@ import { $Metadata, MAGIC_NUMBER } from '@dedot/codecs';
 import staticSubstrateV13 from '@polkadot/types-support/metadata/v13/substrate-hex';
 import staticSubstrateV14 from '@polkadot/types-support/metadata/v14/substrate-hex';
 import staticSubstrateV15 from '@polkadot/types-support/metadata/v15/substrate-hex';
-import { hexToString, numberToHex } from '@polkadot/util';
-import { assert } from '@dedot/utils';
+import { assert, hexToString, numberToHex } from '@dedot/utils';
 
 describe('$Metadata', () => {
   it('should verify magic number', () => {

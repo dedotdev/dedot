@@ -2,7 +2,7 @@ import { afterEach, beforeEach, describe, expect, expectTypeOf, it, vi } from 'v
 import { Dedot } from '../Dedot.js';
 import MockProvider from './MockProvider.js';
 import { SubstrateApi } from '@dedot/chaintypes';
-import { stringCamelCase, stringPascalCase } from '@polkadot/util';
+import { stringCamelCase, stringPascalCase } from '@dedot/utils';
 import { RuntimeVersion } from '@dedot/codecs';
 import { AnyShape } from '@dedot/shape';
 
@@ -170,11 +170,11 @@ describe('Dedot', () => {
       it('should works properly', async () => {
         const $testParamCodec = {
           tryDecode: vi.fn(),
-          tryEncode: vi.fn(),
+          tryEncode: vi.fn(() => new Uint8Array()),
         };
         const $mockCodec = {
           tryDecode: vi.fn(),
-          tryEncode: vi.fn(),
+          tryEncode: vi.fn(() => new Uint8Array()),
         };
 
         api = await Dedot.create({

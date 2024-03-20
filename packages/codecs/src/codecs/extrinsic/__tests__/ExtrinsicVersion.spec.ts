@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { $ExtrinsicVersion } from '../ExtrinsicVersion.js';
-import { u8aToHex } from '@polkadot/util';
+import { u8aToHex } from '@dedot/utils';
 
 describe('ExtrinsicVersion', () => {
   describe('decode', () => {

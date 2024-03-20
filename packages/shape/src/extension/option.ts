@@ -1,5 +1,5 @@
 import { option as originalOption, Shape } from '../subshape.js';
-import { isHex, isNull, isU8a, isUndefined } from '@polkadot/util';
+import { isHex, isNull, isU8a, isUndefined } from '@dedot/utils';
 
 function shouldDecodeInner(input: any) {
   return !(isHex(input) || isU8a(input));

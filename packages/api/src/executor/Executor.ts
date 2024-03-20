@@ -1,9 +1,8 @@
 import type { SubstrateApi } from '@dedot/chaintypes';
-import { stringCamelCase } from '@polkadot/util';
 import { BlockHash, PalletDefLatest } from '@dedot/codecs';
 import { GenericSubstrateApi } from '@dedot/types';
 import { Dedot } from '../client/index.js';
-import { assert, UnknownApiError } from '@dedot/utils';
+import { assert, UnknownApiError, stringCamelCase } from '@dedot/utils';
 
 /**
  * @name Executor

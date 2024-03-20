@@ -1,8 +1,7 @@
 import { GenericPalletEvent, GenericSubstrateApi, PalletEvent } from '@dedot/types';
 import { SubstrateApi } from '@dedot/chaintypes';
 import { Executor } from './Executor.js';
-import { stringCamelCase, stringPascalCase } from '@polkadot/util';
-import { assert, UnknownApiError } from '@dedot/utils';
+import { assert, UnknownApiError, stringCamelCase, stringPascalCase } from '@dedot/utils';
 
 /**
  * @name EventExecutor

@@ -1,7 +1,6 @@
 import { SignedExtension } from '../SignedExtension.js';
 import { EraLike, Hash, Header } from '@dedot/codecs';
-import { assert, isZeroHash, bnMin } from '@dedot/utils';
-import { numberToHex, u8aToHex } from '@polkadot/util';
+import { assert, bnMin, isZeroHex, numberToHex, u8aToHex } from '@dedot/utils';
 import { SignerPayloadJSON } from '@polkadot/types/types';
 
 export const MAX_FINALITY_LAG: number = 5;
@@ -14,6 +13,7 @@ export const MORTAL_PERIOD: number = 5 * 60 * 1000;
  */
 export class CheckMortality extends SignedExtension<EraLike, Hash> {
   #signingHeader?: Header;
+
   async init() {
     this.#signingHeader = await this.#determineSigningHeader();
     this.data = { period: this.#calculateMortalLength(), current: BigInt(this.#signingHeader!.number) };
@@ -32,7 +32,7 @@ export class CheckMortality extends SignedExtension<EraLike, Hash> {
     const [currentHeader, finalizedHeader] = await Promise.all([
       Promise.resolve(header).then((header) => {
         const { parentHash } = header;
-        if (parentHash.length === 0 || isZeroHash(parentHash)) {
+        if (parentHash.length === 0 || isZeroHex(parentHash)) {
           return header;
         } else {
           return this.api.rpc.chain.getHeader(parentHash);

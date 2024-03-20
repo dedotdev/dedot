@@ -1,4 +1,4 @@
-import { isHex, isObject, isString, isU8a } from '@polkadot/util';
+import { isHex, isObject, isString, isU8a } from '@dedot/utils';
 import {
   AnyShape,
   InputObject,

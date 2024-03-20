@@ -1,8 +1,7 @@
 import { ApiGen } from './ApiGen.js';
 import { beautifySourceCode, commentBlock, compileTemplate } from './utils.js';
-import { stringCamelCase, stringPascalCase } from '@polkadot/util';
 import { EnumTypeDef, Field, TypeId } from '@dedot/codecs';
-import { assert } from '@dedot/utils';
+import { assert, stringCamelCase, stringPascalCase } from '@dedot/utils';
 
 export class EventsGen extends ApiGen {
   generate() {

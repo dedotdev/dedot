@@ -2,9 +2,8 @@ import { TypesGen } from './TypesGen.js';
 import { getRuntimeApiNames, getRuntimeApiSpecs } from '@dedot/specs';
 import { RuntimeApiMethodSpec, RuntimeApiSpec } from '@dedot/types';
 import { beautifySourceCode, commentBlock, compileTemplate } from './utils.js';
-import { calculateRuntimeApiHash, stringSnakeCase } from '@dedot/utils';
+import { calcRuntimeApiHash, stringSnakeCase, stringCamelCase } from '@dedot/utils';
 import { RpcGen } from './RpcGen.js';
-import { stringCamelCase } from '@polkadot/util';
 import { RuntimeApiMethodDefLatest } from '@dedot/codecs';
 
 export class RuntimeApisGen extends RpcGen {
@@ -25,7 +24,7 @@ export class RuntimeApisGen extends RpcGen {
       this.metadata.apis.forEach((runtimeApi) => {
         const { name: runtimeApiName, methods } = runtimeApi;
 
-        runtimeCallsOut += commentBlock(`@runtimeapi: ${runtimeApiName} - ${calculateRuntimeApiHash(runtimeApiName)}`);
+        runtimeCallsOut += commentBlock(`@runtimeapi: ${runtimeApiName} - ${calcRuntimeApiHash(runtimeApiName)}`);
         runtimeCallsOut += `${stringCamelCase(runtimeApiName)}: {
             ${methods.map((method) => this.#generateMethodDef(runtimeApiName, method)).join('\n')} 
               
@@ -150,7 +149,7 @@ export class RuntimeApisGen extends RpcGen {
   }
 
   #findRuntimeApiSpec = (runtimeApiHash: string, version: number) => {
-    const runtimeApiName = getRuntimeApiNames().find((one) => calculateRuntimeApiHash(one) === runtimeApiHash);
+    const runtimeApiName = getRuntimeApiNames().find((one) => calcRuntimeApiHash(one) === runtimeApiHash);
 
     return getRuntimeApiSpecs().find((one) => one.runtimeApiName === runtimeApiName && one.version === version);
   };

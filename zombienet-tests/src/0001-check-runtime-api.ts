@@ -1,6 +1,5 @@
 import { Dedot } from 'dedot';
-import { assert } from '@dedot/utils';
-import { stringCamelCase } from '@polkadot/util';
+import { assert, stringCamelCase } from '@dedot/utils';
 import { $Metadata, Metadata } from '@dedot/codecs';
 
 export const run = async (nodeName: any, networkInfo: any) => {

@@ -19,8 +19,7 @@
     "@dedot/specs": "workspace:*",
     "@dedot/storage": "workspace:*",
     "@dedot/utils": "workspace:*",
-    "@polkadot/rpc-provider": "^10.11.2",
-    "@polkadot/util": "^12.6.2"
+    "@polkadot/rpc-provider": "^10.11.2"
   },
   "scripts": {
     "build": "tsc --project tsconfig.build.json && tsc --project tsconfig.build.cjs.json",

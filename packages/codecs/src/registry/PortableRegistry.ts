@@ -1,6 +1,7 @@
 import {
   $AccountId20,
   $AccountId32,
+  $Bytes,
   $Data,
   $Digest,
   $DigestItem,
@@ -20,8 +21,7 @@ import {
 } from '../codecs/index.js';
 import * as $ from '@dedot/shape';
 import { EnumOptions } from '@dedot/shape';
-import { normalizeName } from '@dedot/utils';
-import { hexToU8a, isObject, stringPascalCase } from '@polkadot/util';
+import { normalizeName, hexToU8a, isObject, stringPascalCase } from '@dedot/utils';
 
 const KNOWN_CODECS: Record<string, $.AnyShape> = {
   'sp_core::crypto::AccountId32': $AccountId32,
@@ -250,7 +250,7 @@ export class PortableRegistry {
     } else if (tag === 'Sequence') {
       const $inner = this.findCodec(type.value.typeParam);
       if ($inner === $.u8) {
-        return $.PrefixedHex;
+        return $Bytes;
       } else {
         return $.Vec($inner);
       }

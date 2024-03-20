@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import * as $ from '../../index.js';
-import { u8aConcat, u8aToHex } from '@polkadot/util';
+import { concatU8a, u8aToHex } from '@dedot/utils';
 
 describe('hex', () => {
   describe('FixedHex', () => {
@@ -28,11 +28,11 @@ describe('hex', () => {
     it('should encode fixed hex', () => {
       const $prefixedHex = $.PrefixedHex;
       expect($prefixedHex.tryEncode('0x12121212')).toEqual(
-        u8aConcat($.compactU32.tryEncode(4), Uint8Array.from([18, 18, 18, 18])),
+        concatU8a($.compactU32.tryEncode(4), Uint8Array.from([18, 18, 18, 18])),
       );
 
       expect($prefixedHex.tryEncode('0x121212123434')).toEqual(
-        u8aConcat($.compactU32.tryEncode(6), Uint8Array.from([18, 18, 18, 18, 52, 52])),
+        concatU8a($.compactU32.tryEncode(6), Uint8Array.from([18, 18, 18, 18, 52, 52])),
       );
     });
   });

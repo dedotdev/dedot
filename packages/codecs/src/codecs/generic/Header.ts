@@ -1,6 +1,5 @@
-import { hexToString, isHex } from '@polkadot/util';
 import * as $ from '@dedot/shape';
-import { HexString } from '@dedot/utils';
+import { HexString, hexToString, isHex } from '@dedot/utils';
 import { $Hash } from './Hash.js';
 
 export const $BlockNumber = $.withMetadata($.metadata('$BlockNumber'), $.u32);
@@ -9,7 +8,7 @@ export type BlockNumber = number;
 export const $HeaderBlockNumber = $.withMetadata($.metadata('$HeaderBlockNumber'), $.compactU32);
 
 $HeaderBlockNumber.registerDecoder(
-  (input) => isHex(input, -1, true),
+  isHex,
   // TODO make this more clear?
   // BlockNumber in $Header codec is a hex in BE format
   // So Le=false here is to support decode block number in $Header

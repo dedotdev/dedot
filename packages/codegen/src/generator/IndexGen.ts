@@ -1,6 +1,6 @@
 import { beautifySourceCode, compileTemplate } from './utils.js';
 import { NetworkInfo } from '../types.js';
-import { stringPascalCase } from '@polkadot/util';
+import { stringPascalCase } from '@dedot/utils';
 
 export class IndexGen {
   constructor(readonly networkInfo: NetworkInfo) {}
