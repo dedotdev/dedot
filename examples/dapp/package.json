@@ -10,7 +10,7 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "@dedot/chaintypes": "workspace:*",
+    "@dedot/chaintypes": "0.0.1-next.b41b833f.0",
     "@polkadot/api": "^10.11.2",
     "dedot": "workspace:*",
     "react": "^18.2.0",

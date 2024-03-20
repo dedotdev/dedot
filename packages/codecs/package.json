@@ -14,8 +14,7 @@
   "sideEffects": false,
   "dependencies": {
     "@dedot/shape": "workspace:*",
-    "@dedot/utils": "workspace:*",
-    "lodash.clonedeep": "^4.5.0"
+    "@dedot/utils": "workspace:*"
   },
   "scripts": {
     "build": "tsc --project tsconfig.build.json && tsc --project tsconfig.build.cjs.json",

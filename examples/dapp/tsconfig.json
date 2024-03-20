@@ -19,16 +19,7 @@
     "noUnusedLocals": true,
     "noUnusedParameters": true,
     "noFallthroughCasesInSwitch": true,
-    "paths": {
-      "@dedot/chaintypes": ["../../packages/chaintypes/src"],
-      "@dedot/chaintypes/*": ["../../packages/chaintypes/src/*"],
-    },
   },
   "include": ["src"],
-  "references": [
-    { "path": "./tsconfig.node.json" },
-    {
-      "path": "../../packages/chaintypes/tsconfig.json",
-    },
-  ],
+  "references": [{ "path": "./tsconfig.node.json" }],
 }
