@@ -1457,6 +1457,18 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@polkadot/types-augment@npm:10.12.4":
+  version: 10.12.4
+  resolution: "@polkadot/types-augment@npm:10.12.4"
+  dependencies:
+    "@polkadot/types": "npm:10.12.4"
+    "@polkadot/types-codec": "npm:10.12.4"
+    "@polkadot/util": "npm:^12.6.2"
+    tslib: "npm:^2.6.2"
+  checksum: 10c0/ee8519edd8fab1c316399f0fded6cbee9537eeb40ff59c0b9e24ded5f55362194de0258949d110db9fe3c291d40b280a2bcf4fd1b0558773a74abb4bc174bb33
+  languageName: node
+  linkType: hard
+
 "@polkadot/types-codec@npm:10.11.2":
   version: 10.11.2
   resolution: "@polkadot/types-codec@npm:10.11.2"
@@ -1468,6 +1480,17 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@polkadot/types-codec@npm:10.12.4":
+  version: 10.12.4
+  resolution: "@polkadot/types-codec@npm:10.12.4"
+  dependencies:
+    "@polkadot/util": "npm:^12.6.2"
+    "@polkadot/x-bigint": "npm:^12.6.2"
+    tslib: "npm:^2.6.2"
+  checksum: 10c0/62b0b1ced0660f564f84583118cb351176dabfea61ff8ee394f3b43f5b23db97e4b9598a13f04e56e6aba864ed40457137568a71e38e35497c31e12b7e492564
+  languageName: node
+  linkType: hard
+
 "@polkadot/types-create@npm:10.11.2":
   version: 10.11.2
   resolution: "@polkadot/types-create@npm:10.11.2"
@@ -1476,6 +1499,17 @@ __metadata:
     "@polkadot/util": "npm:^12.6.2"
     tslib: "npm:^2.6.2"
   checksum: 10c0/74c81458700c1f88e3ae603e7d96bec09b87849f3c89aa36c0119e23f12dacea8a0db56c2ee59eb3073e168188340d8b91e329841bbd98fa9200d8a56986f576
+  languageName: node
+  linkType: hard
+
+"@polkadot/types-create@npm:10.12.4":
+  version: 10.12.4
+  resolution: "@polkadot/types-create@npm:10.12.4"
+  dependencies:
+    "@polkadot/types-codec": "npm:10.12.4"
+    "@polkadot/util": "npm:^12.6.2"
+    tslib: "npm:^2.6.2"
+  checksum: 10c0/5750b1aec60575530fbf08d3b2b79a4adbabd263c7ecd075bda19497807e751e9be8da9217c94833f1d43a611cbc0efc54114c25e805e5b77dcb2dd02db17d4e
   languageName: node
   linkType: hard
 
@@ -1493,29 +1527,29 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@polkadot/types-support@npm:^10.11.2":
-  version: 10.11.2
-  resolution: "@polkadot/types-support@npm:10.11.2"
+"@polkadot/types-support@npm:^10.12.4":
+  version: 10.12.4
+  resolution: "@polkadot/types-support@npm:10.12.4"
   dependencies:
     "@polkadot/util": "npm:^12.6.2"
     tslib: "npm:^2.6.2"
-  checksum: 10c0/78109a7a0fa3858696963566958f96e273153d71f326c8bf6f5b49373aa27f6cd5ceb4c4da0faf2680ad49487fe5db603a7e80962a2fe7d52b010bd56db7cbc9
+  checksum: 10c0/6c297cfc46d27492ea32cf7c3fcf3b2fd0d1211d82ccd169da61e6ab68c4f5d9b061cb8da5ed3d0766ae773f20fd649c0d64d6bc99862bc4b32fb941c1b9efd6
   languageName: node
   linkType: hard
 
-"@polkadot/types@npm:^10.11.2":
-  version: 10.11.2
-  resolution: "@polkadot/types@npm:10.11.2"
+"@polkadot/types@npm:^10.12.4":
+  version: 10.12.4
+  resolution: "@polkadot/types@npm:10.12.4"
   dependencies:
     "@polkadot/keyring": "npm:^12.6.2"
-    "@polkadot/types-augment": "npm:10.11.2"
-    "@polkadot/types-codec": "npm:10.11.2"
-    "@polkadot/types-create": "npm:10.11.2"
+    "@polkadot/types-augment": "npm:10.12.4"
+    "@polkadot/types-codec": "npm:10.12.4"
+    "@polkadot/types-create": "npm:10.12.4"
     "@polkadot/util": "npm:^12.6.2"
     "@polkadot/util-crypto": "npm:^12.6.2"
     rxjs: "npm:^7.8.1"
     tslib: "npm:^2.6.2"
-  checksum: 10c0/26a93ac19907e221cb00aef4106f90a7c9c74fe47951d4ccd899127bce30e176b9d17ba589f1370c74495faef469ef3dc3f9ffa482b31477b2d635b843d3fc78
+  checksum: 10c0/cb5a64522de6f8e5523aeedf348ed37338db11cc19f7502bc413f3c1d3128202d793cc3e47a9474cf66e3624b22cd80ed62413eb833e991a71a1ec5059161766
   languageName: node
   linkType: hard
 
@@ -1539,7 +1573,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@polkadot/util@npm:^12.6.2":
+"@polkadot/util@npm:12.6.2, @polkadot/util@npm:^12.6.2":
   version: 12.6.2
   resolution: "@polkadot/util@npm:12.6.2"
   dependencies:
