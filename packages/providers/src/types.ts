@@ -1,4 +1,4 @@
-import { EventEmitter } from '@dedot/utils';
+import type { IEventEmitter } from '@dedot/utils';
 
 export * from './json-rpc';
 
@@ -18,7 +18,7 @@ export type SubscriptionInput = {
 export type ConnectionStatus = 'connected' | 'disconnected' | 'reconnecting';
 export type ProviderEvent = ConnectionStatus | 'error';
 
-export interface JsonRpcProvider extends EventEmitter<ProviderEvent> {
+export interface JsonRpcProvider extends IEventEmitter<ProviderEvent> {
   status: ConnectionStatus;
   send<T = any>(method: string, params: any[]): Promise<T>;
   subscribe<T = any>(input: SubscriptionInput, callback: SubscriptionCallback<T>): Promise<Subscription>;

@@ -2,7 +2,13 @@ import { EventEmitter as EE } from 'eventemitter3';
 
 type HandlerFn = (...args: any[]) => void;
 
-export class EventEmitter<EventTypes extends string = string> {
+export interface IEventEmitter<EventTypes extends string = string> {
+  on(event: EventTypes, handler: HandlerFn): this;
+  once(event: EventTypes, handler: HandlerFn): this;
+  off(event: EventTypes, handler?: HandlerFn): this;
+}
+
+export class EventEmitter<EventTypes extends string = string> implements IEventEmitter<EventTypes> {
   #emitter: EE;
 
   constructor() {

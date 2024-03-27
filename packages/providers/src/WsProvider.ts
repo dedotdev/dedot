@@ -19,24 +19,24 @@ export interface WsProviderOptions {
   timeout?: number;
 }
 
-const DEFAULT_OPTIONS: Partial<WsProviderOptions> = {
+export const DEFAULT_OPTIONS: Partial<WsProviderOptions> = {
   retryDelayMs: 2_5000,
   timeout: 60_000,
 };
 
-type SubscriptionHandler = {
+export type SubscriptionHandler = {
   input: SubscriptionInput;
   callback: SubscriptionCallback;
 };
 
-interface WsRequestState {
+export interface WsRequestState {
   resolve: (value: any) => void;
   reject: (error: Error) => void;
   request: JsonRpcRequest;
   subscription?: SubscriptionHandler;
 }
 
-interface SubscriptionState {
+export interface SubscriptionState {
   input: SubscriptionInput;
   callback: SubscriptionCallback;
   subscription: Subscription;
