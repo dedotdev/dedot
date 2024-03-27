@@ -1,5 +1,5 @@
 import { WsProvider } from '@dedot/providers';
-import { assert } from '@dedot/utils';
+import { assert, isHex, isNumber } from '@dedot/utils';
 
 export const run = async (nodeName: any, networkInfo: any): Promise<void> => {
   const { wsUri: endpoint } = networkInfo.nodesByName[nodeName];
@@ -9,7 +9,7 @@ export const run = async (nodeName: any, networkInfo: any): Promise<void> => {
   await provider.untilReady();
 
   const hash = await provider.send('chain_getBlockHash', [0]);
-  assert(typeof hash === 'string', 'Expected a string value');
+  assert(isHex(hash), 'Expected a string value');
   console.log('genesis hash', hash);
 
   await provider.disconnect();
@@ -34,6 +34,9 @@ export const run = async (nodeName: any, networkInfo: any): Promise<void> => {
           reject(error);
         } else {
           console.log('New head', head);
+          assert(isHex(head.parentHash), 'Expected a string value');
+          assert(isNumber(parseInt(head.number, 16)), 'Expected a number value');
+
           resolve();
         }
       },
