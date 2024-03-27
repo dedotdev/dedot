@@ -401,7 +401,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@dedot/providers@workspace:^, @dedot/providers@workspace:packages/providers":
+"@dedot/providers@workspace:*, @dedot/providers@workspace:^, @dedot/providers@workspace:packages/providers":
   version: 0.0.0-use.local
   resolution: "@dedot/providers@workspace:packages/providers"
   dependencies:
@@ -9339,6 +9339,7 @@ __metadata:
   dependencies:
     "@dedot/chaintypes": "npm:0.0.1-alpha.35"
     "@dedot/codecs": "workspace:*"
+    "@dedot/providers": "workspace:*"
     "@dedot/utils": "workspace:*"
     "@polkadot/keyring": "npm:^12.6.2"
     dedot: "workspace:*"
