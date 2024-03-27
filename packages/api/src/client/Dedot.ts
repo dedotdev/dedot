@@ -496,6 +496,13 @@ export class Dedot<ChainApi extends GenericSubstrateApi = SubstrateApi> extends 
   }
 
   /**
+   * @description Connect to blockchain node
+   */
+  async connect() {
+    await this.#provider.connect();
+  }
+
+  /**
    * @description Disconnect to blockchain node
    */
   async disconnect() {

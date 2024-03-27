@@ -22,5 +22,6 @@ export interface JsonRpcProvider extends IEventEmitter<ProviderEvent> {
   status: ConnectionStatus;
   send<T = any>(method: string, params: any[]): Promise<T>;
   subscribe<T = any>(input: SubscriptionInput, callback: SubscriptionCallback<T>): Promise<Subscription>;
+  connect(): Promise<void>;
   disconnect(): Promise<void>;
 }

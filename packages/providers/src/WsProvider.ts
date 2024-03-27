@@ -14,12 +14,36 @@ import { assert, EventEmitter } from '@dedot/utils';
 import { WebSocket } from '@polkadot/x-ws';
 
 export interface WsProviderOptions {
+  /**
+   * The websocket endpoint to connect to
+   *
+   * @required
+   */
   endpoint: string;
+  /**
+   * Automatically connect to the websocket endpoint
+   *
+   * @default true
+   */
+  autoConnect?: boolean;
+  /**
+   * Delay in milliseconds before retrying to connect
+   * If the value is <= 0, retry will be disabled
+   *
+   * @default 2500
+   */
   retryDelayMs?: number;
+  /**
+   * Timeout in milliseconds for the request,
+   * an error will be thrown if the request takes longer than this value
+   *
+   * @default 60000
+   */
   timeout?: number;
 }
 
 export const DEFAULT_OPTIONS: Partial<WsProviderOptions> = {
+  autoConnect: true,
   retryDelayMs: 2_5000,
   timeout: 60_000,
 };
@@ -42,6 +66,10 @@ export interface SubscriptionState {
   subscription: Subscription;
 }
 
+/**
+ * @name WsProvider
+ * @description A JSON-RPC provider that connects to a WebSocket endpoint
+ */
 export class WsProvider extends EventEmitter<ProviderEvent> implements JsonRpcProvider {
   #status: ConnectionStatus;
   #options: Required<WsProviderOptions>;
@@ -49,7 +77,7 @@ export class WsProvider extends EventEmitter<ProviderEvent> implements JsonRpcPr
   #subscriptions: Record<string, SubscriptionState>;
   #pendingNotifications: Record<string, JsonRpcResponseNotification>;
   #ws?: WebSocket;
-  #ready: Promise<void>;
+  #ready?: Promise<void>;
 
   constructor(options: WsProviderOptions | string) {
     super();
@@ -60,19 +88,36 @@ export class WsProvider extends EventEmitter<ProviderEvent> implements JsonRpcPr
     this.#subscriptions = {};
     this.#pendingNotifications = {};
 
-    this.#ready = new Promise((resolve) => {
-      this.once('connected', resolve);
-    });
-
-    this.#connectAndRetry();
+    if (this.#options.autoConnect) {
+      this.#connectAndRetry();
+    }
   }
 
   untilReady(): Promise<void> {
-    return this.#ready;
+    return new Promise((resolve) => {
+      setInterval(() => {
+        this.#ready?.then(resolve);
+      });
+    });
+  }
+
+  async connect(): Promise<void> {
+    this.#connectAndRetry();
+    await this.untilReady();
+  }
+
+  get #shouldRetry() {
+    return this.#options.retryDelayMs > 0;
   }
 
   #connect() {
+    assert(!this.#ws, 'Websocket connection already exists');
+
     try {
+      this.#ready = new Promise((resolve) => {
+        this.once('connected', resolve);
+      });
+
       this.#ws = new WebSocket(this.#options.endpoint);
       this.#ws.onopen = this.#onSocketOpen;
       this.#ws.onclose = this.#onSocketClose;
@@ -86,44 +131,55 @@ export class WsProvider extends EventEmitter<ProviderEvent> implements JsonRpcPr
   }
 
   #connectAndRetry() {
+    assert(!this.#ws, 'Websocket connection already exists');
+
     try {
       this.#connect();
     } catch (e) {
+      if (!this.#shouldRetry) {
+        throw e;
+      }
+
       this.#retry();
     }
   }
 
   #retry() {
-    if (this.#options.retryDelayMs <= 0) return;
+    if (this.#shouldRetry) return;
 
     setTimeout(() => {
-      this.#status = 'reconnecting';
-      this.emit('reconnecting');
+      this.#setStatus('reconnecting');
 
       this.#connectAndRetry();
     }, this.#options.retryDelayMs);
   }
 
-  #onSocketOpen = (event: Event) => {
-    // TODO resubcribe to previous subscriptions if this is a reconnect
+  #setStatus(status: ConnectionStatus) {
+    this.#status = status;
+    this.emit(status);
+  }
 
-    this.#status = 'connected';
-    this.emit('connected');
+  #onSocketOpen = (event: Event) => {
+    // TODO re-subscribe to previous subscriptions if this is a reconnect
+
+    this.#setStatus('connected');
   };
 
+  #clearWs() {
+    if (!this.#ws) return;
+
+    this.#ws.onclose = null;
+    this.#ws.onerror = null;
+    this.#ws.onmessage = null;
+    this.#ws.onopen = null;
+    this.#ws = undefined;
+  }
+
   #onSocketClose = (event: CloseEvent) => {
-    if (this.#ws) {
-      this.#ws.onclose = null;
-      this.#ws.onerror = null;
-      this.#ws.onmessage = null;
-      this.#ws.onopen = null;
-      this.#ws = undefined;
-    }
+    this.#clearWs();
 
-    this.#status = 'disconnected';
-    this.emit('disconnected');
+    this.#setStatus('disconnected');
 
-    // TODO retry connect
     this.#retry();
   };
 
@@ -203,7 +259,10 @@ export class WsProvider extends EventEmitter<ProviderEvent> implements JsonRpcPr
 
   async disconnect(): Promise<void> {
     try {
-      this.#ws?.close(1000);
+      assert(this.#ws, 'Websocket connection does not exist');
+
+      this.#ws.close(1000);
+      this.#clearWs();
     } catch (error: any) {
       console.error('Error disconnecting from websocket', error);
       this.emit('error', error);
