@@ -6,6 +6,13 @@ export const run = async (nodeName: any, networkInfo: any): Promise<void> => {
 
   const provider = new WsProvider(endpoint);
 
+  try {
+    await provider.send('chain_getBlockHash', [0]);
+    throw new Error('Expected an error here!');
+  } catch (e: any) {
+    assert(e.message === 'Websocket connection is not connected');
+  }
+
   await provider.untilReady();
 
   const hash = await provider.send('chain_getBlockHash', [0]);
