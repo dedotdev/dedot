@@ -11,6 +11,16 @@ A delightful JavaScript/TypeScript client for [Polkadot](https://polkadot.networ
 _Note: The project is still in active development phase, the information on this page might be outdated. Feel free to raise an [issue](https://github.com/dedotdev/dedot/issues/new) if you run into any problems or want to share any ideas._
 
 ---
+### Features
+- ⏳ Small bundle size, tree-shakable (no more bn.js (⏳) or wasm-blob (✅) tight dependencies)
+- ✅ Built-in metadata caching mechanism
+- ✅ Types & APIs suggestions for each individual Substrate-based blockchain network ([@dedot/chaintypes](https://github.com/dedotdev/chaintypes))
+- ✅ Familiar api style with `@polkadot/api`, easy & fast migration!
+- ✅ Native TypeScript type system for scale-codec
+- ✅ Compatible with `@polkadot/extension`-based wallets
+- ⏳ Use the new JSON-RPC APIs ([v2](https://paritytech.github.io/json-rpc-interface-spec/introduction.html)) 
+- ✅ Support Metadata V14, V15 (latest)
+
 ### Have a quick taste
 
 Try `dedot` now on [CodeSandbox Playground](https://codesandbox.io/p/devbox/trydedot-th96cm?file=%2Fmain.ts%3A24%2C26) or follow the below steps to run it on your local environment.
