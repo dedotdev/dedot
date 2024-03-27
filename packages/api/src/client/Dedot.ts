@@ -1,5 +1,3 @@
-import { WsProvider } from '@polkadot/rpc-provider';
-import { ProviderInterface } from '@polkadot/rpc-provider/types';
 import type { SubstrateApi } from '@dedot/chaintypes';
 import { $Metadata, BlockHash, Hash, Metadata, MetadataLatest, PortableRegistry, RuntimeVersion } from '@dedot/codecs';
 import { ChainProperties, GenericSubstrateApi, Unsub } from '@dedot/types';
@@ -14,8 +12,9 @@ import {
 } from '../executor/index.js';
 import { newProxyChain } from '../proxychain.js';
 import { ApiEventNames, ApiOptions, MetadataKey, NetworkEndpoint, NormalizedApiOptions } from '../types.js';
-import { IStorage, LocalStorage } from '@dedot/storage';
+import { type IStorage, LocalStorage } from '@dedot/storage';
 import { assert, EventEmitter, u8aToHex } from '@dedot/utils';
+import { ConnectionStatus, type JsonRpcProvider, WsProvider } from '@dedot/providers';
 
 export const KEEP_ALIVE_INTERVAL = 10_000; // in ms
 export const CATCH_ALL_METADATA_KEY: MetadataKey = `RAW_META/ALL`;
@@ -60,7 +59,7 @@ export const SUPPORTED_METADATA_VERSIONS = [15, 14];
  * ```
  */
 export class Dedot<ChainApi extends GenericSubstrateApi = SubstrateApi> extends EventEmitter<ApiEventNames> {
-  readonly #provider: ProviderInterface;
+  readonly #provider: JsonRpcProvider;
   readonly #options: NormalizedApiOptions;
   readonly #ready: Promise<void>;
 
@@ -126,29 +125,30 @@ export class Dedot<ChainApi extends GenericSubstrateApi = SubstrateApi> extends 
       };
 
       this.provider.on('connected', onConnect);
-      this.provider.on('disconnected', this.#onDisconnected.bind(this));
-      this.provider.on('error', this.#onError.bind(this));
+      this.provider.on('disconnected', this.#onDisconnected);
+      this.provider.on('error', this.#onError);
+      // TODO reconnecting
 
-      if (this.provider.isConnected) {
+      if (this.provider.status === 'connected') {
         onConnect();
       }
     });
   }
 
-  async #onConnected() {
+  #onConnected = async () => {
     this.emit('connected');
     await this.#initialize();
     this.emit('ready');
-  }
+  };
 
-  async #onDisconnected() {
+  #onDisconnected = async () => {
     await this.#unsubscribeUpdates();
     this.emit('disconnected');
-  }
+  };
 
-  async #onError(e: Error) {
+  #onError = async (e: Error) => {
     this.emit('error', e);
-  }
+  };
 
   /**
    * Initialize APIs before usage
@@ -258,7 +258,7 @@ export class Dedot<ChainApi extends GenericSubstrateApi = SubstrateApi> extends 
 
   #subscribeRuntimeUpgrades() {
     // Disable runtime upgrades subscriptions if using a catch all metadata
-    if (this.#runtimeSubscriptionUnsub || !this.hasSubscriptions || this.hasCatchAllMetadata) {
+    if (this.#runtimeSubscriptionUnsub || this.hasCatchAllMetadata) {
       return;
     }
 
@@ -345,24 +345,20 @@ export class Dedot<ChainApi extends GenericSubstrateApi = SubstrateApi> extends 
       throwOnUnknownApi: true,
     };
   }
-  #getProvider(): ProviderInterface {
+  #getProvider(): JsonRpcProvider {
     const { provider, endpoint } = this.#options;
     if (provider) {
-      assert(provider.hasSubscriptions, 'Only supports RPC Provider can make subscription requests');
+      // assert(provider.hasSubscriptions, 'Only supports RPC Provider can make subscription requests');
       return provider;
     }
 
     if (endpoint) {
-      if (endpoint.startsWith('ws://') || endpoint.startsWith('wss://')) {
-        return new WsProvider(endpoint);
-      } else {
-        throw new Error('Invalid RPC network endpoint, a valid endpoint should start with `wss://`, `ws://`');
-      }
+      return new WsProvider(endpoint);
     }
 
     // TODO support light-client
 
-    return new WsProvider();
+    return new WsProvider('ws://localhost:9944');
   }
 
   /**
@@ -500,13 +496,6 @@ export class Dedot<ChainApi extends GenericSubstrateApi = SubstrateApi> extends 
   }
 
   /**
-   * @description Connect to blockchain node
-   */
-  async connect() {
-    await this.#provider.connect();
-  }
-
-  /**
    * @description Disconnect to blockchain node
    */
   async disconnect() {
@@ -523,17 +512,10 @@ export class Dedot<ChainApi extends GenericSubstrateApi = SubstrateApi> extends 
   }
 
   /**
-   * @description Check if current provider can make subscription request (e.: via WebSocket)
+   * @description Check connection status of the api instance
    */
-  get hasSubscriptions(): boolean {
-    return this.provider.hasSubscriptions;
-  }
-
-  /**
-   * @description Check if it's connected to the blockchain node
-   */
-  get isConnected(): boolean {
-    return this.provider.isConnected;
+  get status(): ConnectionStatus {
+    return this.provider.status;
   }
 
   /**

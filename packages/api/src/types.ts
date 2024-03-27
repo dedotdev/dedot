@@ -1,14 +1,14 @@
-import { ProviderInterface } from '@polkadot/rpc-provider/types';
-import { HexString } from '@dedot/utils';
-import { AnySignedExtension } from './extrinsic/index.js';
-import { RuntimeApiName, RuntimeApiSpec } from '@dedot/types';
+import type { HexString } from '@dedot/utils';
+import type { AnySignedExtension } from './extrinsic/index.js';
+import type { RuntimeApiName, RuntimeApiSpec } from '@dedot/types';
 import type { IStorage } from '@dedot/storage';
+import type { JsonRpcProvider } from '@dedot/providers';
 
 export type NetworkEndpoint = string;
 export type MetadataKey = `RAW_META/${string}`;
 
 export interface ApiOptions {
-  provider?: ProviderInterface;
+  provider?: JsonRpcProvider;
   /**
    * @description A `ProviderInterface` will be created based on the supplied endpoint.
    * If both `provider` and `endpoint` is provided, the `provider` will be used for connection.
