@@ -10,7 +10,9 @@ describe('Dedot', () => {
   it('should throws error for invalid endpoint', () => {
     expect(async () => {
       await Dedot.new('invalid_endpoint');
-    }).rejects.toThrowError('Invalid RPC network endpoint, a valid endpoint should start with `wss://`, `ws://`');
+    }).rejects.toThrowError(
+      'Invalid websocket endpoint invalid_endpoint, a valid endpoint should start with wss:// or ws://',
+    );
   });
 
   describe('cache disabled', () => {

@@ -1430,7 +1430,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@polkadot/rpc-provider@npm:10.11.2, @polkadot/rpc-provider@npm:^10.11.2":
+"@polkadot/rpc-provider@npm:10.11.2":
   version: 10.11.2
   resolution: "@polkadot/rpc-provider@npm:10.11.2"
   dependencies:
@@ -3480,7 +3480,6 @@ __metadata:
     "@dedot/storage": "workspace:*"
     "@dedot/utils": "workspace:*"
     "@polkadot/keyring": "npm:^12.6.2"
-    "@polkadot/rpc-provider": "npm:^10.11.2"
     "@polkadot/types": "npm:^10.11.2"
   languageName: unknown
   linkType: soft

@@ -1,14 +1,17 @@
-import {
-  ProviderInterface,
-  ProviderInterfaceCallback,
-  ProviderInterfaceEmitCb,
-  ProviderInterfaceEmitted,
-} from '@polkadot/rpc-provider/types';
 import staticSubstrate from '@polkadot/types-support/metadata/static-substrate';
 import { AnyFunc, ChainProperties } from '@dedot/types';
 import { RuntimeVersion } from '@dedot/codecs';
+import {
+  ConnectionStatus,
+  JsonRpcProvider,
+  ProviderEvent,
+  Subscription,
+  SubscriptionCallback,
+  SubscriptionInput,
+} from '@dedot/providers';
+import { EventEmitter } from '@dedot/utils';
 
-export default class MockProvider implements ProviderInterface {
+export default class MockProvider extends EventEmitter<ProviderEvent> implements JsonRpcProvider {
   rpcRequests: Record<string, AnyFunc> = {
     chain_getBlockHash: () => '0x0000000000000000000000000000000000000000000000000000000000000000',
     state_getRuntimeVersion: () => ({ specVersion: 1, specName: 'MockedSpec' }) as unknown as RuntimeVersion,
@@ -26,10 +29,6 @@ export default class MockProvider implements ProviderInterface {
     return Promise.resolve(undefined);
   }
 
-  on(type: ProviderInterfaceEmitted, sub: ProviderInterfaceEmitCb): () => void {
-    return function () {};
-  }
-
   async send<T = any>(method: string, params: unknown[], isCacheable?: boolean): Promise<T> {
     const result = this.rpcRequests[method];
     if (!result) {
@@ -39,34 +38,18 @@ export default class MockProvider implements ProviderInterface {
     return result(params) as T;
   }
 
-  async subscribe(
-    type: string,
-    method: string,
-    params: unknown[],
-    cb: ProviderInterfaceCallback,
-  ): Promise<number | string> {
-    return 1;
-  }
-
-  async unsubscribe(type: string, method: string, id: number | string): Promise<boolean> {
-    return Promise.resolve(false);
+  async subscribe<T = any>(input: SubscriptionInput, callback: SubscriptionCallback<T>): Promise<Subscription> {
+    return {
+      unsubscribe: async () => {},
+      subscriptionId: Math.random().toString(36).substring(2),
+    };
   }
 
   setRpcRequest(name: string, response: AnyFunc) {
     this.rpcRequests[name] = response;
   }
 
-  get hasSubscriptions() {
-    return true;
-  }
-  get isClonable(): boolean {
-    throw new Error('Not supported');
-  }
-  get isConnected() {
-    return true;
-  }
-
-  clone(): ProviderInterface {
-    throw new Error('Not supported');
+  get status(): ConnectionStatus {
+    return 'connected';
   }
 }
