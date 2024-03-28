@@ -12,6 +12,8 @@ import {
 import { EventEmitter } from '@dedot/utils';
 
 export default class MockProvider extends EventEmitter<ProviderEvent> implements JsonRpcProvider {
+  #status: ConnectionStatus = 'disconnected';
+
   rpcRequests: Record<string, AnyFunc> = {
     chain_getBlockHash: () => '0x0000000000000000000000000000000000000000000000000000000000000000',
     state_getRuntimeVersion: () => ({ specVersion: 1, specName: 'MockedSpec' }) as unknown as RuntimeVersion,
@@ -21,11 +23,18 @@ export default class MockProvider extends EventEmitter<ProviderEvent> implements
     state_call: () => '0x',
   };
 
+  setStatus(status: ConnectionStatus) {
+    this.#status = status;
+    this.emit(status);
+  }
+
   connect(): Promise<this> {
+    this.setStatus('connected');
     return Promise.resolve(this);
   }
 
   disconnect(): Promise<void> {
+    this.setStatus('disconnected');
     return Promise.resolve(undefined);
   }
 
@@ -50,6 +59,6 @@ export default class MockProvider extends EventEmitter<ProviderEvent> implements
   }
 
   get status(): ConnectionStatus {
-    return 'connected';
+    return this.#status;
   }
 }

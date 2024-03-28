@@ -81,7 +81,7 @@ export class Dedot<ChainApi extends GenericSubstrateApi = SubstrateApi> extends 
    * @param options
    * @protected
    */
-  protected constructor(options: ApiOptions | NetworkEndpoint) {
+  constructor(options: ApiOptions | NetworkEndpoint) {
     super();
     this.#options = this.#normalizeOptions(options);
     this.#provider = this.#getProvider();
