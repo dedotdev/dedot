@@ -191,6 +191,7 @@ export class WsProvider extends EventEmitter<ProviderEvent> implements JsonRpcPr
     this.#handlers = {};
     this.#subscriptions = {};
     this.#pendingNotifications = {};
+    this.clearEvents();
   }
 
   #onSocketClose = (event: CloseEvent) => {

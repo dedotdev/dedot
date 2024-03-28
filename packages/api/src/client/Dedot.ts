@@ -112,6 +112,7 @@ export class Dedot<ChainApi extends GenericSubstrateApi = SubstrateApi> extends 
   async #doConnect(): Promise<this> {
     this.provider.on('connected', this.#onConnected);
     this.provider.on('disconnected', this.#onDisconnected);
+    this.provider.on('reconnecting', this.#onReconnecting);
     this.provider.on('error', this.#onError);
 
     return new Promise<this>((resolve, reject) => {
@@ -135,6 +136,10 @@ export class Dedot<ChainApi extends GenericSubstrateApi = SubstrateApi> extends 
   #onDisconnected = async () => {
     await this.#unsubscribeUpdates();
     this.emit('disconnected');
+  };
+
+  #onReconnecting = async () => {
+    this.emit('reconnecting');
   };
 
   #onError = async (e: Error) => {
@@ -492,6 +497,7 @@ export class Dedot<ChainApi extends GenericSubstrateApi = SubstrateApi> extends 
    * @description Connect to blockchain node
    */
   async connect(): Promise<this> {
+    assert(this.status !== 'connected', 'Already connected!');
     return this.#doConnect();
   }
 
@@ -500,7 +506,6 @@ export class Dedot<ChainApi extends GenericSubstrateApi = SubstrateApi> extends 
    */
   async disconnect() {
     await this.#unsubscribeUpdates();
-
     await this.#provider.disconnect();
   }
 

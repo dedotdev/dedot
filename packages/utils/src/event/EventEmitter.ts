@@ -19,6 +19,10 @@ export class EventEmitter<EventTypes extends string = string> implements IEventE
     return this.#emitter.emit(event, ...args);
   }
 
+  protected clearEvents() {
+    this.#emitter.removeAllListeners();
+  }
+
   public on(event: EventTypes, handler: HandlerFn): this {
     this.#emitter.on(event, handler);
 

@@ -2,7 +2,7 @@ import type { HexString } from '@dedot/utils';
 import type { AnySignedExtension } from './extrinsic/index.js';
 import type { RuntimeApiName, RuntimeApiSpec } from '@dedot/types';
 import type { IStorage } from '@dedot/storage';
-import type { JsonRpcProvider } from '@dedot/providers';
+import type { JsonRpcProvider, ProviderEvent } from '@dedot/providers';
 
 export type NetworkEndpoint = string;
 export type MetadataKey = `RAW_META/${string}`;
@@ -64,4 +64,4 @@ export interface NormalizedApiOptions extends ApiOptions {
   metadata?: Record<string, HexString>;
 }
 
-export type ApiEventNames = 'connected' | 'disconnected' | 'error' | 'ready';
+export type ApiEventNames = ProviderEvent | 'ready';
