@@ -1,3 +1,6 @@
+// JSON-RPC v2 types
+// Specs: https://www.jsonrpc.org/specification
+
 export type JsonRpcRequestId = number;
 export interface JsonRpcV2 {
   id: JsonRpcRequestId;
@@ -21,6 +24,7 @@ export interface JsonRpcResponseSuccess<T = any> {
   result?: T;
 }
 
+// https://www.jsonrpc.org/specification#notification
 export interface JsonRpcResponseNotification<T = any> {
   jsonrpc: '2.0';
   method: string;

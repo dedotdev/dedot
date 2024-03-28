@@ -1,2 +1,2 @@
-export * from './types';
-export * from './WsProvider';
+export * from './types.js';
+export * from './ws/index.js';
