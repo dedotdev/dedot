@@ -13,7 +13,7 @@ export const run = async (nodeName: any, networkInfo: any): Promise<void> => {
     assert(e.message === 'Websocket connection is not connected');
   }
 
-  await provider.untilReady();
+  await provider.connect();
 
   const hash = await provider.send('chain_getBlockHash', [0]);
   assert(isHex(hash), 'Expected a string value');

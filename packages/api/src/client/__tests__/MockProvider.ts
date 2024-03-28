@@ -21,8 +21,8 @@ export default class MockProvider extends EventEmitter<ProviderEvent> implements
     state_call: () => '0x',
   };
 
-  connect(): Promise<void> {
-    return Promise.resolve(undefined);
+  connect(): Promise<this> {
+    return Promise.resolve(this);
   }
 
   disconnect(): Promise<void> {

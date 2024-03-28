@@ -21,12 +21,6 @@ export interface WsProviderOptions {
    */
   endpoint: string;
   /**
-   * Automatically connect to the websocket endpoint
-   *
-   * @default true
-   */
-  autoConnect?: boolean;
-  /**
    * Delay in milliseconds before retrying to connect
    * If the value is <= 0, retry will be disabled
    *
@@ -43,7 +37,6 @@ export interface WsProviderOptions {
 }
 
 export const DEFAULT_OPTIONS: Partial<WsProviderOptions> = {
-  autoConnect: true,
   retryDelayMs: 2500,
   timeout: 60_000,
 };
@@ -77,7 +70,6 @@ export class WsProvider extends EventEmitter<ProviderEvent> implements JsonRpcPr
   #subscriptions: Record<string, SubscriptionState>;
   #pendingNotifications: Record<string, JsonRpcResponseNotification>;
   #ws?: WebSocket;
-  #ready?: Promise<void>;
 
   constructor(options: WsProviderOptions | string) {
     super();
@@ -87,31 +79,33 @@ export class WsProvider extends EventEmitter<ProviderEvent> implements JsonRpcPr
     this.#handlers = {};
     this.#subscriptions = {};
     this.#pendingNotifications = {};
-
-    if (this.#options.autoConnect) {
-      this.#connectAndRetry();
-    }
   }
 
-  /**
-   * Wait until the provider/connection is ready,
-   * After this method resolves, it is ready to send requests
-   */
-  untilReady(): Promise<void> {
-    return new Promise((resolve) => {
-      const awaitInterval = setInterval(() => {
-        if (!this.#ready) return;
-
-        this.#ready.then(resolve);
-        clearInterval(awaitInterval);
-      });
-    });
-  }
-
-  async connect(): Promise<void> {
+  async connect(): Promise<this> {
     this.#connectAndRetry();
-    await this.untilReady();
+    return this.#untilReady();
   }
+
+  #untilReady = (): Promise<this> => {
+    return new Promise((resolve, reject) => {
+      const doResolve = () => {
+        resolve(this);
+        this.off('error', doReject);
+      };
+
+      const doReject = (error: Error) => {
+        reject(error);
+        this.off('connected', doResolve);
+      };
+
+      this.once('connected', doResolve);
+
+      // If we are not retrying, reject the promise if an error occurs
+      if (!this.#shouldRetry) {
+        this.once('error', doReject);
+      }
+    });
+  };
 
   get #shouldRetry() {
     return this.#options.retryDelayMs > 0;
@@ -126,10 +120,6 @@ export class WsProvider extends EventEmitter<ProviderEvent> implements JsonRpcPr
       this.#ws.onclose = this.#onSocketClose;
       this.#ws.onmessage = this.#onSocketMessage;
       this.#ws.onerror = this.#onSocketError;
-
-      this.#ready = new Promise((resolve) => {
-        this.once('connected', resolve);
-      });
     } catch (e: any) {
       console.error('Error connecting to websocket', e);
       this.emit('error', e);
@@ -201,7 +191,6 @@ export class WsProvider extends EventEmitter<ProviderEvent> implements JsonRpcPr
     this.#handlers = {};
     this.#subscriptions = {};
     this.#pendingNotifications = {};
-    this.#ready = undefined;
   }
 
   #onSocketClose = (event: CloseEvent) => {
