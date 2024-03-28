@@ -17,7 +17,7 @@ export * from './event.js';
 export type Append<T extends readonly unknown[], V> = [...T, V];
 export type AnyFunc = (...args: any[]) => any;
 export type AsyncMethod = (...args: any[]) => Promise<any>;
-export type Unsub = () => Promise<boolean>;
+export type Unsub = () => Promise<void>;
 export type Callback<T> = (result: T) => Promise<void> | void;
 
 export interface GenericPalletError {

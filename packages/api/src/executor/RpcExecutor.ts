@@ -50,18 +50,16 @@ export class RpcExecutor<ChainApi extends GenericSubstrateApi = SubstrateApi> ex
       };
 
       const { params, pubsub } = callSpec;
-      const formattedInputs = inArgs.map((input, index) => this.tryEncode(params[index], input));
-      const [subname, subscribe, unsubcribe] = pubsub!;
+      const formattedParams = inArgs.map((input, index) => this.tryEncode(params[index], input));
+      const [subname, subscribe, unsubscribe] = pubsub!;
 
-      const subscription = this.provider.subscribe(subname, subscribe, formattedInputs, onNewMessage);
+      const subscription = await this.provider.subscribe(
+        { subname, subscribe, params: formattedParams, unsubscribe },
+        onNewMessage,
+      );
 
       return async () => {
-        return subscription
-          .then((subscriptionId) => this.provider.unsubscribe(subname, unsubcribe, subscriptionId))
-          .catch((err) => {
-            console.error(err);
-            return false;
-          });
+        return subscription.unsubscribe().catch(console.error);
       };
     };
 

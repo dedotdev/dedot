@@ -36,6 +36,8 @@
       "@dedot/utils/*": ["../utils/src/*"],
       "@dedot/storage": ["../storage/src"],
       "@dedot/storage/*": ["../storage/src/*"],
+      "@dedot/providers": ["../providers/src"],
+      "@dedot/providers/*": ["../providers/src/*"],
       "dedot": ["../api/src"],
       "dedot/*": ["../api/src/*"]
     }
