@@ -59,7 +59,7 @@ export class RpcExecutor<ChainApi extends GenericSubstrateApi = SubstrateApi> ex
       );
 
       return async () => {
-        return subscription.unsubscribe().catch(console.error);
+        await subscription.unsubscribe();
       };
     };
 
