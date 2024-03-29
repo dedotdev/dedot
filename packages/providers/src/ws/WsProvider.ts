@@ -41,11 +41,6 @@ export const DEFAULT_OPTIONS: Partial<WsProviderOptions> = {
   timeout: 30_000,
 };
 
-export type SubscriptionHandler = {
-  input: SubscriptionInput;
-  callback: SubscriptionCallback;
-};
-
 export interface WsRequestState {
   resolve: (value: any) => void;
   reject: (error: Error) => void;
@@ -53,7 +48,7 @@ export interface WsRequestState {
   from: number; // when the request was sent
 }
 
-export interface SubscriptionState {
+export interface WsSubscriptionState {
   input: SubscriptionInput;
   callback: SubscriptionCallback;
   subscription: Subscription;
@@ -62,12 +57,37 @@ export interface SubscriptionState {
 /**
  * @name WsProvider
  * @description A JSON-RPC provider that connects to a WebSocket endpoint
+ * @example
+ * ```ts
+ * const provider = new WsProvider('wss://rpc.polkadot.io');
+ *
+ * await provider.connect();
+ *
+ * // Fetch the genesis hash
+ * const genesisHash = await provider.send('chain_getBlockHash', [0]);
+ * console.log(genesisHash);
+ *
+ * // Subscribe to runtimeVersion changes
+ * await provider.subscribe(
+ *   {
+ *     subname: 'chain_newHead',
+ *     subscribe: 'chain_subscribeNewHeads',
+ *     params: [],
+ *     unsubscribe: 'chain_unsubscribeNewHeads',
+ *   },
+ *   (error, newHead, subscription) => {
+ *     console.log('newHead', newHead);
+ *   },
+ * );
+ *
+ * await provider.disconnect();
+ * ```
  */
 export class WsProvider extends EventEmitter<ProviderEvent> implements JsonRpcProvider {
   #status: ConnectionStatus;
   #options: Required<WsProviderOptions>;
   #handlers: Record<JsonRpcRequestId, WsRequestState>;
-  #subscriptions: Record<string, SubscriptionState>;
+  #subscriptions: Record<string, WsSubscriptionState>;
   #pendingNotifications: Record<string, JsonRpcResponseNotification>;
   #ws?: WebSocket;
   #timeoutTimer?: ReturnType<typeof setInterval>;
@@ -84,10 +104,10 @@ export class WsProvider extends EventEmitter<ProviderEvent> implements JsonRpcPr
 
   async connect(): Promise<this> {
     this.#connectAndRetry();
-    return this.#untilReady();
+    return this.#untilConnected();
   }
 
-  #untilReady = (): Promise<this> => {
+  #untilConnected = (): Promise<this> => {
     return new Promise((resolve, reject) => {
       const doResolve = () => {
         resolve(this);
