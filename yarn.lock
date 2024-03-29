@@ -367,7 +367,17 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@dedot/codecs@npm:0.0.1-alpha.30, @dedot/codecs@workspace:*, @dedot/codecs@workspace:packages/codecs":
+"@dedot/codecs@npm:0.0.1-alpha.30":
+  version: 0.0.1-alpha.30
+  resolution: "@dedot/codecs@npm:0.0.1-alpha.30"
+  dependencies:
+    "@dedot/shape": "npm:0.0.1-alpha.30"
+    "@dedot/utils": "npm:0.0.1-alpha.30"
+  checksum: 10c0/674324cd1ea4119242a6fad8433248b5e4fcbc317b9f2016f84eb388d6abf0f644d7f6125594dc46c7440b18305301cad21b31f883416483b894b9d20d346969
+  languageName: node
+  linkType: hard
+
+"@dedot/codecs@workspace:*, @dedot/codecs@workspace:packages/codecs":
   version: 0.0.0-use.local
   resolution: "@dedot/codecs@workspace:packages/codecs"
   dependencies:
@@ -400,6 +410,16 @@ __metadata:
   languageName: unknown
   linkType: soft
 
+"@dedot/shape@npm:0.0.1-alpha.30":
+  version: 0.0.1-alpha.30
+  resolution: "@dedot/shape@npm:0.0.1-alpha.30"
+  dependencies:
+    "@dedot/utils": "npm:0.0.1-alpha.30"
+    subshape: "npm:^0.14.0"
+  checksum: 10c0/c815e8800a25fc9b0b28bc13a654f10e6dfefb3a39f981466598665b12bb6dd7ca1bb65a5b34b7697b4af520c73e5bba126d39c704e9a166ecb8e21f225d310f
+  languageName: node
+  linkType: hard
+
 "@dedot/shape@workspace:*, @dedot/shape@workspace:packages/shape":
   version: 0.0.0-use.local
   resolution: "@dedot/shape@workspace:packages/shape"
@@ -424,7 +444,18 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@dedot/types@npm:0.0.1-alpha.30, @dedot/types@workspace:*, @dedot/types@workspace:packages/types":
+"@dedot/types@npm:0.0.1-alpha.30":
+  version: 0.0.1-alpha.30
+  resolution: "@dedot/types@npm:0.0.1-alpha.30"
+  dependencies:
+    "@dedot/codecs": "npm:0.0.1-alpha.30"
+    "@dedot/shape": "npm:0.0.1-alpha.30"
+    "@dedot/utils": "npm:0.0.1-alpha.30"
+  checksum: 10c0/80b167c2686dec3d4cca5a442f3a2dc3e6e3fb17ae015b7bedfe523880d4c58e60a35e28c8fae7010b79891a982048bad3e36d47d8120efedcfffe5e57b2ac2e
+  languageName: node
+  linkType: hard
+
+"@dedot/types@workspace:*, @dedot/types@workspace:packages/types":
   version: 0.0.0-use.local
   resolution: "@dedot/types@workspace:packages/types"
   dependencies:
@@ -433,6 +464,17 @@ __metadata:
     "@dedot/utils": "workspace:*"
   languageName: unknown
   linkType: soft
+
+"@dedot/utils@npm:0.0.1-alpha.30":
+  version: 0.0.1-alpha.30
+  resolution: "@dedot/utils@npm:0.0.1-alpha.30"
+  dependencies:
+    "@noble/hashes": "npm:^1.3.3"
+    "@scure/base": "npm:^1.1.5"
+    eventemitter3: "npm:^5.0.1"
+  checksum: 10c0/688090c8e79fe81a04420d7e811d4709f7cb4a248114e2208e78ba46a1acb7b2eb29518c16ece84dbabdc4063855ac65fddd18885dda701034b36b6f1dc0b83f
+  languageName: node
+  linkType: hard
 
 "@dedot/utils@workspace:*, @dedot/utils@workspace:packages/utils":
   version: 0.0.0-use.local
