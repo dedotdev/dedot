@@ -8,7 +8,8 @@
   "type": "module",
   "scripts": {
     "build": "tsc --project tsconfig.build.json && tsc --project tsconfig.build.cjs.json",
-    "clean": "rm -rf ./dist && rm -rf ./tsconfig.tsbuildinfo ./tsconfig.build.tsbuildinfo"
+    "clean": "rm -rf ./dist && rm -rf ./tsconfig.tsbuildinfo ./tsconfig.build.tsbuildinfo",
+    "test": "vitest --watch=false"
   },
   "dependencies": {
     "@dedot/utils": "workspace:*",
@@ -18,5 +19,8 @@
     "access": "public",
     "directory": "dist"
   },
-  "license": "Apache-2.0"
+  "license": "Apache-2.0",
+  "devDependencies": {
+    "mock-socket": "^9.3.1"
+  }
 }

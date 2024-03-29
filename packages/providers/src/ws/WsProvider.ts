@@ -31,14 +31,14 @@ export interface WsProviderOptions {
    * Timeout in milliseconds for the request,
    * an error will be thrown if the request takes longer than this value
    *
-   * @default 60000
+   * @default 30000
    */
   timeout?: number;
 }
 
 export const DEFAULT_OPTIONS: Partial<WsProviderOptions> = {
   retryDelayMs: 2500,
-  timeout: 60_000,
+  timeout: 30_000,
 };
 
 export type SubscriptionHandler = {
@@ -50,7 +50,7 @@ export interface WsRequestState {
   resolve: (value: any) => void;
   reject: (error: Error) => void;
   request: JsonRpcRequest;
-  subscription?: SubscriptionHandler;
+  from: number; // when the request was sent
 }
 
 export interface SubscriptionState {
@@ -70,6 +70,7 @@ export class WsProvider extends EventEmitter<ProviderEvent> implements JsonRpcPr
   #subscriptions: Record<string, SubscriptionState>;
   #pendingNotifications: Record<string, JsonRpcResponseNotification>;
   #ws?: WebSocket;
+  #timeoutTimer?: ReturnType<typeof setInterval>;
 
   constructor(options: WsProviderOptions | string) {
     super();
@@ -120,6 +121,8 @@ export class WsProvider extends EventEmitter<ProviderEvent> implements JsonRpcPr
       this.#ws.onclose = this.#onSocketClose;
       this.#ws.onmessage = this.#onSocketMessage;
       this.#ws.onerror = this.#onSocketError;
+
+      this.#setupRequestTimeoutHandler();
     } catch (e: any) {
       console.error('Error connecting to websocket', e);
       this.emit('error', e);
@@ -186,12 +189,38 @@ export class WsProvider extends EventEmitter<ProviderEvent> implements JsonRpcPr
     this.#ws = undefined;
   }
 
+  #setupRequestTimeoutHandler() {
+    const timeout = this.#options.timeout;
+    if (timeout <= 0) return;
+
+    this.#clearTimeoutHandler();
+
+    this.#timeoutTimer = setInterval(() => {
+      const now = Date.now();
+
+      Object.values(this.#handlers).forEach(({ from, reject, request }) => {
+        if (now - from > timeout) {
+          reject(new Error(`Request timed out after ${timeout}ms`));
+          delete this.#handlers[request.id];
+        }
+      });
+    }, 5_000);
+  }
+
+  #clearTimeoutHandler() {
+    if (!this.#timeoutTimer) return;
+
+    clearInterval(this.#timeoutTimer);
+    this.#timeoutTimer = undefined;
+  }
+
   #cleanUp() {
     this.#clearWs();
     this.#handlers = {};
     this.#subscriptions = {};
     this.#pendingNotifications = {};
     this.clearEvents();
+    this.#clearTimeoutHandler();
   }
 
   #onSocketClose = (event: CloseEvent) => {
@@ -311,11 +340,12 @@ export class WsProvider extends EventEmitter<ProviderEvent> implements JsonRpcPr
       try {
         assert(this.#ws && this.#status === 'connected', 'Websocket connection is not connected');
 
-        const [id, request] = this.#prepareRequest(method, params);
-        this.#handlers[id] = {
+        const request = this.#prepareRequest(method, params);
+        this.#handlers[request.id] = {
           resolve,
           reject,
           request,
+          from: Date.now(),
         };
 
         this.#ws.send(JSON.stringify(request));
@@ -355,17 +385,14 @@ export class WsProvider extends EventEmitter<ProviderEvent> implements JsonRpcPr
   }
 
   #id: JsonRpcRequestId = 0;
-  #prepareRequest(method: string, params: any[]): [JsonRpcRequestId, JsonRpcRequest] {
+  #prepareRequest(method: string, params: any[]): JsonRpcRequest {
     const id = ++this.#id;
 
-    return [
+    return {
       id,
-      {
-        id,
-        jsonrpc: '2.0',
-        method,
-        params,
-      },
-    ];
+      jsonrpc: '2.0',
+      method,
+      params,
+    };
   }
 }

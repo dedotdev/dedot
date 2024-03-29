@@ -79,7 +79,6 @@ export class Dedot<ChainApi extends GenericSubstrateApi = SubstrateApi> extends 
    * Use factory methods (`create`, `new`) to create `Dedot` instances.
    *
    * @param options
-   * @protected
    */
   constructor(options: ApiOptions | NetworkEndpoint) {
     super();

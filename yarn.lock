@@ -407,6 +407,7 @@ __metadata:
   dependencies:
     "@dedot/utils": "workspace:*"
     "@polkadot/x-ws": "npm:^12.6.2"
+    mock-socket: "npm:^9.3.1"
   languageName: unknown
   linkType: soft
 
