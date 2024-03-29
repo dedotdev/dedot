@@ -10,6 +10,8 @@
       "@dedot/codecs/*": ["../packages/codecs/src/*"],
       "@dedot/utils": ["../packages/utils/src"],
       "@dedot/utils/*": ["../packages/utils/src/*"],
+      "@dedot/providers": ["../packages/providers/src"],
+      "@dedot/providers/*": ["../packages/providers/src/*"],
       "dedot": ["../packages/api/src"],
       "dedot/*": ["../packages/api/src/*"],
     },
@@ -21,6 +23,9 @@
     },
     {
       "path": "../packages/codecs/tsconfig.json",
+    },
+    {
+      "path": "../packages/providers/tsconfig.json",
     },
     {
       "path": "../packages/api/tsconfig.json",

@@ -401,6 +401,16 @@ __metadata:
   languageName: unknown
   linkType: soft
 
+"@dedot/providers@workspace:*, @dedot/providers@workspace:^, @dedot/providers@workspace:packages/providers":
+  version: 0.0.0-use.local
+  resolution: "@dedot/providers@workspace:packages/providers"
+  dependencies:
+    "@dedot/utils": "workspace:*"
+    "@polkadot/x-ws": "npm:^12.6.2"
+    mock-socket: "npm:^9.3.1"
+  languageName: unknown
+  linkType: soft
+
 "@dedot/shape@npm:0.0.1-next.70fc26c6.11+70fc26c":
   version: 0.0.1-next.70fc26c6.11
   resolution: "@dedot/shape@npm:0.0.1-next.70fc26c6.11"
@@ -1421,7 +1431,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@polkadot/rpc-provider@npm:10.11.2, @polkadot/rpc-provider@npm:^10.11.2":
+"@polkadot/rpc-provider@npm:10.11.2":
   version: 10.11.2
   resolution: "@polkadot/rpc-provider@npm:10.11.2"
   dependencies:
@@ -3465,12 +3475,12 @@ __metadata:
   dependencies:
     "@dedot/chaintypes": "npm:0.0.1-alpha.35"
     "@dedot/codecs": "workspace:*"
+    "@dedot/providers": "workspace:^"
     "@dedot/shape": "workspace:*"
     "@dedot/specs": "workspace:*"
     "@dedot/storage": "workspace:*"
     "@dedot/utils": "workspace:*"
     "@polkadot/keyring": "npm:^12.6.2"
-    "@polkadot/rpc-provider": "npm:^10.11.2"
     "@polkadot/types": "npm:^10.11.2"
   languageName: unknown
   linkType: soft
@@ -9330,6 +9340,7 @@ __metadata:
   dependencies:
     "@dedot/chaintypes": "npm:0.0.1-alpha.35"
     "@dedot/codecs": "workspace:*"
+    "@dedot/providers": "workspace:*"
     "@dedot/utils": "workspace:*"
     "@polkadot/keyring": "npm:^12.6.2"
     dedot: "workspace:*"
