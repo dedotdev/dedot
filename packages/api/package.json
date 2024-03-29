@@ -15,11 +15,11 @@
   "dependencies": {
     "@dedot/chaintypes": "0.0.1-alpha.35",
     "@dedot/codecs": "workspace:*",
+    "@dedot/providers": "workspace:^",
     "@dedot/shape": "workspace:*",
     "@dedot/specs": "workspace:*",
     "@dedot/storage": "workspace:*",
-    "@dedot/utils": "workspace:*",
-    "@polkadot/rpc-provider": "^10.11.2"
+    "@dedot/utils": "workspace:*"
   },
   "scripts": {
     "build": "tsc --project tsconfig.build.json && tsc --project tsconfig.build.cjs.json",

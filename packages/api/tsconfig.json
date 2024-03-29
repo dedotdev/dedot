@@ -26,5 +26,8 @@
     {
       "path": "../storage/tsconfig.json",
     },
+    {
+      "path": "../providers/tsconfig.json",
+    },
   ],
 }
