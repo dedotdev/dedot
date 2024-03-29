@@ -12,7 +12,7 @@ _Note: The project is still in active development phase, the information on this
 
 ---
 ### Features
-- ⏳ Small bundle size, tree-shakable (no more bn.js (⏳) or wasm-blob (✅) tight dependencies)
+- ✅ Small bundle size, tree-shakable (no more bn.js or wasm-blob tight dependencies)
 - ✅ Built-in metadata caching mechanism
 - ✅ Types & APIs suggestions for each individual Substrate-based blockchain network ([@dedot/chaintypes](https://github.com/dedotdev/chaintypes))
 - ✅ Familiar api style with `@polkadot/api`, easy & fast migration!
