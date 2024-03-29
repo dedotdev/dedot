@@ -20,6 +20,7 @@
     "fix-esm-path": "npx tsc-esm-fix --src=packages --ext=.js",
     "cli": "yarn workspace @dedot/cli start",
     "publish:next": "yarn build && npx lerna publish prerelease --canary --preid next.$(git rev-parse --short=8 HEAD) --dist-tag next --force-publish --no-private --no-git-tag-version --yes",
+    "publish:pre": "yarn build && npx lerna publish prerelease -m \"chore(release): publish %s\" --force-publish --no-private",
     "zombienet-test-preps": "npx lerna exec --no-private -- node \\$LERNA_ROOT_PATH/scripts/zombienet-tests-preps.js"
   },
   "devDependencies": {
