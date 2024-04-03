@@ -1,5 +1,6 @@
 import staticSubstrate from '@polkadot/types-support/metadata/static-substrate';
-import { AnyFunc, ChainProperties } from '@dedot/types';
+import { AnyFunc } from '@dedot/types';
+import { ChainProperties } from '@dedot/specs';
 import { RuntimeVersion } from '@dedot/codecs';
 import {
   ConnectionStatus,
