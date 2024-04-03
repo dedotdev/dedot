@@ -26,7 +26,7 @@ describe('Dedot', () => {
     });
 
     it('should create new api instance', async () => {
-      expect(api.rpc).toBeDefined();
+      expect(api.jsonrpc).toBeDefined();
       expect(api.query).toBeDefined();
       expect(api.events).toBeDefined();
       expect(api.errors).toBeDefined();

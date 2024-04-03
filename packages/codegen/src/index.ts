@@ -7,7 +7,6 @@ import {
   EventsGen,
   IndexGen,
   QueryGen,
-  RpcGen,
   JsonRpcGen,
   RuntimeApisGen,
   TxGen,
@@ -41,7 +40,6 @@ export async function generateTypes(
   const defTypesFileName = path.join(dirPath, `types.d.ts`);
   const constsTypesFileName = path.join(dirPath, `consts.d.ts`);
   const queryTypesFileName = path.join(dirPath, `query.d.ts`);
-  const rpcCallsFileName = path.join(dirPath, `rpc.d.ts`);
   const jsonRpcFileName = path.join(dirPath, `json-rpc.d.ts`);
   const indexFileName = path.join(dirPath, `index.d.ts`);
   const errorsFileName = path.join(dirPath, `errors.d.ts`);
@@ -56,7 +54,6 @@ export async function generateTypes(
   const typesGen = new TypesGen(metadata);
   const constsGen = new ConstsGen(typesGen);
   const queryGen = new QueryGen(typesGen);
-  const rpcGen = new RpcGen(typesGen, rpcMethods);
   const jsonRpcGen = new JsonRpcGen(typesGen, rpcMethods);
   const indexGen = new IndexGen(chain);
   const errorsGen = new ErrorsGen(typesGen);
@@ -67,7 +64,6 @@ export async function generateTypes(
   fs.writeFileSync(defTypesFileName, await typesGen.generate());
   fs.writeFileSync(errorsFileName, await errorsGen.generate());
   fs.writeFileSync(eventsFileName, await eventsGen.generate());
-  fs.writeFileSync(rpcCallsFileName, await rpcGen.generate());
   fs.writeFileSync(jsonRpcFileName, await jsonRpcGen.generate());
   fs.writeFileSync(queryTypesFileName, await queryGen.generate());
   fs.writeFileSync(constsTypesFileName, await constsGen.generate());

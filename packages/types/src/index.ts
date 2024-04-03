@@ -6,10 +6,8 @@ import {
   PalletStorageEntryMetadataLatest,
   PalletTxMetadataLatest,
 } from '@dedot/codecs';
-import { RpcCallSpec } from './rpc.js';
 import { RuntimeApiMethodSpec } from './runtime.js';
 
-export * from './rpc.js';
 export * from './runtime.js';
 export * from './extrinsic.js';
 export * from './event.js';
@@ -26,18 +24,6 @@ export type Overwrite<T, U> = DistributiveOmit<T, keyof U> & U;
 export interface GenericPalletError {
   is: (moduleError: ModuleError | DispatchError) => boolean;
   meta: PalletErrorMetadataLatest;
-}
-
-export type GenericRpcCall<F extends AsyncMethod = AsyncMethod> = F & {
-  meta?: RpcCallSpec;
-};
-
-export interface GenericRpcModule {
-  [method: string]: GenericRpcCall;
-}
-
-export interface GenericRpcCalls {
-  [module: string]: GenericRpcModule;
 }
 
 export interface GenericJsonRpcApis {
@@ -132,7 +118,6 @@ export type GenericChainEvents<
 > = Record<Pallet, Record<EventName, GenericPalletEvent<Pallet, EventName, Data>>>;
 
 export interface GenericSubstrateApi {
-  rpc: GenericRpcCalls;
   jsonrpc: GenericJsonRpcApis;
   consts: GenericChainConsts;
   query: GenericChainStorage;

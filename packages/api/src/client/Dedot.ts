@@ -6,7 +6,6 @@ import {
   ConstantExecutor,
   ErrorExecutor,
   EventExecutor,
-  RpcExecutor,
   JsonRpcExecutor,
   RuntimeApiExecutor,
   StorageQueryExecutor,
@@ -367,23 +366,18 @@ export class Dedot<ChainApi extends GenericSubstrateApi = SubstrateApi> extends 
   }
 
   /**
-   * @description Entry-point for executing RPCs to blockchain node.
+   * @description Entry-point for executing JSON-RPCs to blockchain node.
    *
    * ```typescript
    * // Subscribe to new heads
-   * api.rpc.chain.subscribeNewHeads((header) => {
+   * api.jsonrpc.chain_subscribeNewHeads((header) => {
    *   console.log(header);
    * });
    *
    * // Execute arbitrary rpc method: `module_rpc_name`
-   * const result = await api.rpc.module.rpc_name();
+   * const result = await api.jsonrpc.module_rpc_name();
    * ```
    */
-  get rpc(): ChainApi['rpc'] {
-    // TODO add executable carrier to support calling arbitrary rpc methods via api.rpc(<method>)
-    return newProxyChain<ChainApi>({ executor: new RpcExecutor(this) }) as ChainApi['rpc'];
-  }
-
   get jsonrpc(): ChainApi['jsonrpc'] {
     return newProxyChain<ChainApi>({ executor: new JsonRpcExecutor(this) }, 1, 2) as ChainApi['jsonrpc'];
   }
