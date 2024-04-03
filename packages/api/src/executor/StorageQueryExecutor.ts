@@ -21,13 +21,13 @@ export class StorageQueryExecutor<ChainApi extends GenericSubstrateApi = Substra
 
       // if a callback is passed, make a storage subscription and return an unsub function
       if (callback) {
-        return await this.api.rpc.state.subscribeStorage([encodedKey], (changeSet: StorageChangeSet) => {
+        return await this.api.jsonrpc.state_subscribeStorage([encodedKey], (changeSet: StorageChangeSet) => {
           const targetChange = changeSet.changes.find((change) => change[0] === encodedKey);
 
           targetChange && callback(entry.decodeValue(targetChange[1]));
         });
       } else {
-        const result = await this.api.rpc.state.getStorage(encodedKey, this.atBlockHash);
+        const result = await this.api.jsonrpc.state_getStorage(encodedKey, this.atBlockHash);
         return entry.decodeValue(result);
       }
     };
@@ -42,13 +42,13 @@ export class StorageQueryExecutor<ChainApi extends GenericSubstrateApi = Substra
 
       // if a callback is passed, make a storage subscription and return an unsub function
       if (callback) {
-        return await this.api.rpc.state.subscribeStorage(encodedKeys, (changeSet: StorageChangeSet) => {
+        return await this.api.jsonrpc.state_subscribeStorage(encodedKeys, (changeSet: StorageChangeSet) => {
           const targetChanges = changeSet.changes.filter((change) => encodedKeys.includes(change[0]));
 
           callback(targetChanges.map((value) => entry.decodeValue(value[1])));
         });
       } else {
-        const queries = encodedKeys.map((key) => this.api.rpc.state.getStorage(key, this.atBlockHash));
+        const queries = encodedKeys.map((key) => this.api.jsonrpc.state_getStorage(key, this.atBlockHash));
         return (await Promise.all(queries)).map((result) => entry.decodeValue(result));
       }
     };

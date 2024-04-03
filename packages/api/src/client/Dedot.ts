@@ -159,11 +159,12 @@ export class Dedot<ChainApi extends GenericSubstrateApi = SubstrateApi> extends 
     await this.#initializeLocalCache();
 
     // Fetching node information
+    // TODO using json-rpc v2
     let [genesisHash, runtimeVersion, chainName, chainProps, metadata] = await Promise.all([
-      this.rpc.chain.getBlockHash(0),
-      this.rpc.state.getRuntimeVersion(),
-      this.rpc.system.chain(),
-      this.rpc.system.properties(),
+      this.jsonrpc.chain_getBlockHash(0),
+      this.jsonrpc.state_getRuntimeVersion(),
+      this.jsonrpc.system_chain(),
+      this.jsonrpc.system_properties(),
       (await this.#shouldLoadPreloadMetadata()) ? this.#fetchMetadata() : Promise.resolve(undefined),
     ]);
 
@@ -256,7 +257,7 @@ export class Dedot<ChainApi extends GenericSubstrateApi = SubstrateApi> extends 
     try {
       return $Metadata.tryDecode(await this.call.metadata.metadata());
     } catch {
-      return await this.rpc.state.getMetadata();
+      return await this.jsonrpc.state_getMetadata();
     }
   }
 
@@ -266,8 +267,8 @@ export class Dedot<ChainApi extends GenericSubstrateApi = SubstrateApi> extends 
       return;
     }
 
-    this.rpc.state
-      .subscribeRuntimeVersion(async (runtimeVersion: RuntimeVersion) => {
+    this.jsonrpc
+      .state_subscribeRuntimeVersion(async (runtimeVersion: RuntimeVersion) => {
         if (runtimeVersion.specVersion !== this.#runtimeVersion?.specVersion) {
           this.#runtimeVersion = runtimeVersion;
           const newMetadata = await this.#fetchMetadata();
@@ -283,7 +284,7 @@ export class Dedot<ChainApi extends GenericSubstrateApi = SubstrateApi> extends 
     this.#unsubscribeHealth();
 
     this.#healthTimer = setInterval(() => {
-      this.rpc.system.health().catch(console.error);
+      this.jsonrpc.system_health().catch(console.error);
     }, KEEP_ALIVE_INTERVAL);
   }
 

@@ -19,7 +19,7 @@ import { stringCamelCase } from '@dedot/utils';
 
 export async function generateTypesFromEndpoint(chain: string, endpoint: string, outDir?: string) {
   const api = await Dedot.new(endpoint);
-  const { methods }: RpcMethods = await api.rpc.rpc.methods();
+  const { methods }: RpcMethods = await api.jsonrpc.rpc_methods();
   const apis = api.runtimeVersion?.apis || [];
   if (!chain) {
     chain = stringCamelCase(api.runtimeVersion?.specName || api.runtimeChain || 'local');

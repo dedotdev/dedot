@@ -136,17 +136,17 @@ describe('Dedot', () => {
       it('should call rpc methods', async () => {
         const providerSend = vi.spyOn(api.provider, 'send');
 
-        await api.rpc.state.getMetadata();
+        await api.jsonrpc.state_getMetadata();
         expect(providerSend).toBeCalledWith('state_getMetadata', []);
 
-        await api.rpc.state.getRuntimeVersion();
+        await api.jsonrpc.state_getRuntimeVersion();
         expect(providerSend).toBeCalledWith('state_getRuntimeVersion', []);
       });
 
       it('should call arbitrary rpc', async () => {
         const providerSend = vi.spyOn(api.provider, 'send').mockImplementation(() => vi.fn() as any);
 
-        await api.rpc.module.rpc_name('param_1', 'param_2');
+        await api.jsonrpc.module_rpc_name('param_1', 'param_2');
         expect(providerSend).toBeCalledWith('module_rpc_name', ['param_1', 'param_2']);
       });
     });

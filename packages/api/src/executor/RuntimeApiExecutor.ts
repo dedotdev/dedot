@@ -55,7 +55,7 @@ export class RuntimeApiExecutor<ChainApi extends GenericSubstrateApi = GenericSu
         callArgs.push(this.atBlockHash);
       }
 
-      const result = await this.api.rpc.state.call(...callArgs);
+      const result = await this.api.jsonrpc.state_call(...callArgs);
 
       return this.tryDecode(callSpec, result);
     };

@@ -173,8 +173,8 @@ export class TxExecutor<ChainApi extends GenericSubstrateApi = SubstrateApi> ext
       }
 
       async dryRun(account: AddressOrPair, optionsOrHash?: Partial<SignerOptions> | BlockHash): Promise<DryRunResult> {
-        const dryRunFn = api.rpc.system.dryRun;
-        assert(dryRunFn.meta, 'system_dryRun RPC does not supported!');
+        // TODO check if system_dryRun is available
+        const dryRunFn = api.jsonrpc.system_dryRun;
 
         if (isHex(optionsOrHash)) {
           return dryRunFn(this.toHex(), optionsOrHash);
@@ -191,12 +191,12 @@ export class TxExecutor<ChainApi extends GenericSubstrateApi = SubstrateApi> ext
         const txHash = this.hash;
 
         if (isSubscription) {
-          return api.rpc.author.submitAndWatchExtrinsic(this.toHex(), async (status: TransactionStatus) => {
+          return api.jsonrpc.author_submitAndWatchExtrinsic(this.toHex(), async (status: TransactionStatus) => {
             if (status.tag === 'InBlock' || status.tag === 'Finalized') {
               const blockHash: BlockHash = status.value;
 
               const [signedBlock, blockEvents] = await Promise.all([
-                api.rpc.chain.getBlock(blockHash),
+                api.jsonrpc.chain_getBlock(blockHash),
                 api.queryAt(blockHash).system.events(),
               ]);
 
@@ -216,7 +216,7 @@ export class TxExecutor<ChainApi extends GenericSubstrateApi = SubstrateApi> ext
             }
           });
         } else {
-          return api.rpc.author.submitExtrinsic(this.toHex());
+          return api.jsonrpc.author_submitExtrinsic(this.toHex());
         }
       }
     }
