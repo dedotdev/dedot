@@ -4,6 +4,7 @@ import { GenericSubstrateApi } from '@dedot/types';
 import { ChainConsts } from './consts';
 import { ChainStorage } from './query';
 import { RpcCalls } from './rpc';
+import { ChainJsonRpcApis } from './json-rpc';
 import { ChainErrors } from './errors';
 import { ChainEvents } from './events';
 import { RuntimeApis } from './runtime';
@@ -13,6 +14,7 @@ export * from './types';
 
 export interface {{{interfaceName}}}Api extends GenericSubstrateApi {
   rpc: RpcCalls;
+  jsonrpc: ChainJsonRpcApis;
   consts: ChainConsts;
   query: ChainStorage;
   errors: ChainErrors;

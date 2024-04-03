@@ -5,6 +5,7 @@ export class TypeImports {
   codecTypes: Set<string>;
   // Known types that're not codecs or chain/portable types defined in @dedot/types
   knownTypes: Set<string>;
+  specTypes: Set<string>;
   // External types to define explicitly
   outTypes: Set<string>;
 
@@ -12,6 +13,7 @@ export class TypeImports {
     this.portableTypes = new Set<string>();
     this.codecTypes = new Set<string>();
     this.knownTypes = new Set<string>();
+    this.specTypes = new Set<string>();
     this.outTypes = new Set<string>();
   }
 
@@ -19,6 +21,7 @@ export class TypeImports {
     this.portableTypes.clear();
     this.codecTypes.clear();
     this.knownTypes.clear();
+    this.specTypes.clear();
     this.outTypes.clear();
   }
 
@@ -27,6 +30,7 @@ export class TypeImports {
 
     const toImports: [Set<string>, string][] = [
       [this.knownTypes, '@dedot/types'],
+      [this.specTypes, '@dedot/specs'],
       [this.codecTypes, '@dedot/codecs'],
       [this.portableTypes, './types'],
     ];
@@ -54,6 +58,10 @@ export class TypeImports {
 
   addKnownType(...types: string[]) {
     types.forEach((one) => this.knownTypes.add(one));
+  }
+
+  addSpecType(...types: string[]) {
+    types.forEach((one) => this.specTypes.add(one));
   }
 
   addOutType(...types: string[]) {

@@ -8,11 +8,12 @@ import {
   IndexGen,
   QueryGen,
   RpcGen,
+  JsonRpcGen,
   RuntimeApisGen,
   TxGen,
   TypesGen,
 } from './generator/index.js';
-import { RpcMethods } from '@dedot/types';
+import { RpcMethods } from '@dedot/specs';
 import { MetadataLatest } from '@dedot/codecs';
 import { stringCamelCase } from '@dedot/utils';
 
@@ -41,6 +42,7 @@ export async function generateTypes(
   const constsTypesFileName = path.join(dirPath, `consts.d.ts`);
   const queryTypesFileName = path.join(dirPath, `query.d.ts`);
   const rpcCallsFileName = path.join(dirPath, `rpc.d.ts`);
+  const jsonRpcFileName = path.join(dirPath, `json-rpc.d.ts`);
   const indexFileName = path.join(dirPath, `index.d.ts`);
   const errorsFileName = path.join(dirPath, `errors.d.ts`);
   const eventsFileName = path.join(dirPath, `events.d.ts`);
@@ -55,6 +57,7 @@ export async function generateTypes(
   const constsGen = new ConstsGen(typesGen);
   const queryGen = new QueryGen(typesGen);
   const rpcGen = new RpcGen(typesGen, rpcMethods);
+  const jsonRpcGen = new JsonRpcGen(typesGen, rpcMethods);
   const indexGen = new IndexGen(chain);
   const errorsGen = new ErrorsGen(typesGen);
   const eventsGen = new EventsGen(typesGen);
@@ -65,6 +68,7 @@ export async function generateTypes(
   fs.writeFileSync(errorsFileName, await errorsGen.generate());
   fs.writeFileSync(eventsFileName, await eventsGen.generate());
   fs.writeFileSync(rpcCallsFileName, await rpcGen.generate());
+  fs.writeFileSync(jsonRpcFileName, await jsonRpcGen.generate());
   fs.writeFileSync(queryTypesFileName, await queryGen.generate());
   fs.writeFileSync(constsTypesFileName, await constsGen.generate());
   fs.writeFileSync(txFileName, await txGen.generate());

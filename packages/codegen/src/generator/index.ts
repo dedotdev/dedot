@@ -3,6 +3,7 @@ export * from './ApiGen.js';
 export * from './ConstsGen.js';
 export * from './QueryGen.js';
 export * from './RpcGen.js';
+export * from './JsonRpcGen.js';
 export * from './IndexGen.js';
 export * from './ErrorsGen.js';
 export * from './EventsGen.js';

@@ -1,11 +1,13 @@
 import type { SubstrateApi } from '@dedot/chaintypes';
 import { $Metadata, BlockHash, Hash, Metadata, MetadataLatest, PortableRegistry, RuntimeVersion } from '@dedot/codecs';
-import { ChainProperties, GenericSubstrateApi, Unsub } from '@dedot/types';
+import { GenericSubstrateApi, Unsub } from '@dedot/types';
+import { ChainProperties } from '@dedot/specs';
 import {
   ConstantExecutor,
   ErrorExecutor,
   EventExecutor,
   RpcExecutor,
+  JsonRpcExecutor,
   RuntimeApiExecutor,
   StorageQueryExecutor,
   TxExecutor,
@@ -112,6 +114,7 @@ export class Dedot<ChainApi extends GenericSubstrateApi = SubstrateApi> extends 
     this.provider.on('connected', this.#onConnected);
     this.provider.on('disconnected', this.#onDisconnected);
     this.provider.on('reconnecting', this.#onReconnecting);
+    this.provider.on('message', this.#onMessage);
     this.provider.on('error', this.#onError);
 
     return new Promise<this>((resolve, reject) => {
@@ -143,6 +146,10 @@ export class Dedot<ChainApi extends GenericSubstrateApi = SubstrateApi> extends 
 
   #onError = async (e: Error) => {
     this.emit('error', e);
+  };
+
+  #onMessage = async (data: any) => {
+    this.emit('message', data);
   };
 
   /**
@@ -374,6 +381,10 @@ export class Dedot<ChainApi extends GenericSubstrateApi = SubstrateApi> extends 
   get rpc(): ChainApi['rpc'] {
     // TODO add executable carrier to support calling arbitrary rpc methods via api.rpc(<method>)
     return newProxyChain<ChainApi>({ executor: new RpcExecutor(this) }) as ChainApi['rpc'];
+  }
+
+  get jsonrpc(): ChainApi['jsonrpc'] {
+    return newProxyChain<ChainApi>({ executor: new JsonRpcExecutor(this) }, 1, 2) as ChainApi['jsonrpc'];
   }
 
   /**
