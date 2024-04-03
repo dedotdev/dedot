@@ -18,8 +18,8 @@
   },
   "dependencies": {
     "@dedot/codecs": "workspace:*",
-    "@dedot/types": "workspace:*",
-    "@dedot/shape": "workspace:*"
+    "@dedot/shape": "workspace:*",
+    "@dedot/types": "workspace:*"
   },
   "publishConfig": {
     "access": "public",

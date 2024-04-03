@@ -434,6 +434,7 @@ __metadata:
   resolution: "@dedot/specs@workspace:packages/specs"
   dependencies:
     "@dedot/codecs": "workspace:*"
+    "@dedot/shape": "workspace:*"
     "@dedot/types": "workspace:*"
   languageName: unknown
   linkType: soft
