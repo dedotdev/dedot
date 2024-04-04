@@ -1,7 +1,6 @@
-import { PortableRegistry, Field, MetadataLatest, PortableType, TypeId, TypeParam } from '@dedot/codecs';
+import { Field, MetadataLatest, PortableRegistry, PortableType, TypeId, TypeParam } from '@dedot/codecs';
 import { normalizeName, stringPascalCase } from '@dedot/utils';
-import { isNativeType, beautifySourceCode, commentBlock, compileTemplate } from './utils.js';
-import { knownTypes } from './known-types.js';
+import { beautifySourceCode, commentBlock, compileTemplate, isNativeType } from './utils.js';
 import { TypeImports } from './TypeImports.js';
 import { findKnownCodec, findKnownCodecType, isKnownCodecType } from './known-codecs.js';
 
@@ -506,10 +505,6 @@ export class TypesGen {
       return;
     }
 
-    if (knownTypes.includes(typeName)) {
-      this.typeImports.addKnownType(typeName);
-    } else {
-      this.typeImports.addOutType(typeName);
-    }
+    this.typeImports.addOutType(typeName);
   }
 }
