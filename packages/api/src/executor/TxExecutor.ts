@@ -1,5 +1,5 @@
 import { Executor } from './Executor.js';
-import {
+import type {
   AddressOrPair,
   Callback,
   DryRunResult,
@@ -11,7 +11,7 @@ import {
   SignerOptions,
   Unsub,
 } from '@dedot/types';
-import { SubstrateApi } from '@dedot/chaintypes';
+import type { SubstrateApi } from '../chaintypes/index.js';
 import {
   assert,
   blake2AsHex,

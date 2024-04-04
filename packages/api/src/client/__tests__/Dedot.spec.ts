@@ -1,7 +1,7 @@
 import { afterEach, beforeEach, describe, expect, expectTypeOf, it, vi } from 'vitest';
 import { Dedot } from '../Dedot.js';
 import MockProvider from './MockProvider.js';
-import { SubstrateApi } from '@dedot/chaintypes';
+import type { SubstrateApi } from '../../chaintypes/index.js';
 import { stringCamelCase, stringPascalCase } from '@dedot/utils';
 import { RuntimeVersion } from '@dedot/codecs';
 import { AnyShape } from '@dedot/shape';

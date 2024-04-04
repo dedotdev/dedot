@@ -1,6 +1,6 @@
-import type { SubstrateApi } from '@dedot/chaintypes';
-import { GenericStorageQuery, GenericSubstrateApi } from '@dedot/types';
-import { StorageChangeSet } from '@dedot/specs';
+import type { SubstrateApi } from '../chaintypes/index.js';
+import type { GenericStorageQuery, GenericSubstrateApi } from '@dedot/types';
+import type { StorageChangeSet } from '@dedot/specs';
 import { Executor } from './Executor.js';
 import { QueryableStorage } from '../storage/QueryableStorage.js';
 import { assert, isFunction } from '@dedot/utils';

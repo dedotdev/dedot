@@ -13,12 +13,12 @@
   "type": "module",
   "sideEffects": false,
   "dependencies": {
-    "@dedot/chaintypes": "0.0.1-alpha.40",
     "@dedot/codecs": "workspace:*",
     "@dedot/providers": "workspace:^",
     "@dedot/shape": "workspace:*",
     "@dedot/specs": "workspace:*",
     "@dedot/storage": "workspace:*",
+    "@dedot/types": "workspace:*",
     "@dedot/utils": "workspace:*"
   },
   "scripts": {

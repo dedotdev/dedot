@@ -1,6 +1,6 @@
-import type { SubstrateApi } from '@dedot/chaintypes';
-import { BlockHash, PalletDefLatest } from '@dedot/codecs';
-import { GenericSubstrateApi } from '@dedot/types';
+import type { SubstrateApi } from '../chaintypes/index.js';
+import type { BlockHash, PalletDefLatest } from '@dedot/codecs';
+import type { GenericSubstrateApi } from '@dedot/types';
 import { Dedot } from '../client/index.js';
 import { assert, UnknownApiError, stringCamelCase } from '@dedot/utils';
 

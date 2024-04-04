@@ -1,4 +1,4 @@
-import type { SubstrateApi } from '@dedot/chaintypes';
+import type { SubstrateApi } from '../chaintypes/index.js';
 import { $Metadata, BlockHash, Hash, Metadata, MetadataLatest, PortableRegistry, RuntimeVersion } from '@dedot/codecs';
 import { GenericSubstrateApi, Unsub } from '@dedot/types';
 import { ChainProperties } from '@dedot/specs';

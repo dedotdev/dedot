@@ -1,6 +1,7 @@
-import type { SubstrateApi } from '@dedot/chaintypes';
+import type { SubstrateApi } from '../chaintypes/index.js';
+import type { AsyncMethod, GenericSubstrateApi, Unsub } from '@dedot/types';
+import type { Subscription } from '@dedot/providers';
 import { scaleResponses, subscriptionsInfo } from '@dedot/specs';
-import { AsyncMethod, GenericSubstrateApi, Unsub } from '@dedot/types';
 import { assert, isFunction } from '@dedot/utils';
 import { Executor } from './Executor.js';
 
@@ -23,13 +24,13 @@ export class JsonRpcExecutor<ChainApi extends GenericSubstrateApi = SubstrateApi
       const callback = inArgs.pop();
       assert(isFunction(callback), 'A callback is required for subscription');
 
-      const onNewMessage = (error?: Error | null, result?: unknown) => {
+      const onNewMessage = (error: Error | null, result: unknown, subscription: Subscription) => {
         if (error) {
           console.error(error);
           return;
         }
 
-        callback(this.tryDecode(rpcName, result));
+        callback(this.tryDecode(rpcName, result), subscription);
       };
 
       const [subname, unsubscribe] = subscriptionInfo;
