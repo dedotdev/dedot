@@ -1,4 +1,4 @@
-/*
+/**
  * Holds information about the `slot`'s that can be claimed by a given key.
  */
 export interface EpochAuthorship {

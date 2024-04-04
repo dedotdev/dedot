@@ -272,8 +272,8 @@ export class WsProvider extends EventEmitter<ProviderEvent> implements JsonRpcPr
 
   #onSocketMessage = (message: MessageEvent<string>) => {
     const data = JSON.parse(message.data) as any;
-    const isNotification = !data.id && data.method;
 
+    const isNotification = !data.id && data.method;
     if (isNotification) {
       this.#handleNotification(data);
     } else {
@@ -284,6 +284,11 @@ export class WsProvider extends EventEmitter<ProviderEvent> implements JsonRpcPr
   #handleResponse(response: JsonRpcResponse) {
     const { id, error, result } = response;
     const handler = this.#handlers[id];
+    if (!handler) {
+      console.error(`Received response with unknown id: ${id}`);
+      return;
+    }
+
     const { resolve, reject } = handler;
 
     if (error) {
@@ -301,6 +306,8 @@ export class WsProvider extends EventEmitter<ProviderEvent> implements JsonRpcPr
 
     const subkey = `${subname}::${subscriptionId}`;
     const substate = this.#subscriptions[subkey];
+
+    // TODO check if there is an handler exists for the subscription
     if (!substate) {
       this.#pendingNotifications[subkey] = response;
       return;

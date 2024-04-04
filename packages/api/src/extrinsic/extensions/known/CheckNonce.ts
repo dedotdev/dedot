@@ -23,7 +23,7 @@ export class CheckNonce extends SignedExtension<number> {
       return await this.api.call.accountNonceApi.accountNonce(signerAddress);
     } catch {}
 
-    // TODO fallback to api.rpc.system.accountNextIndex if needed
+    // TODO fallback to api.rpc.system_accountNextIndex if needed
 
     return 0;
   }

@@ -11,8 +11,8 @@ import { ChainTx } from './tx';
 
 export * from './types';
 
-export interface {{{interfaceName}}}Api extends GenericSubstrateApi {
-  jsonrpc: ChainJsonRpcApis;
+export interface SubstrateApi extends GenericSubstrateApi {
+  rpc: ChainJsonRpcApis;
   consts: ChainConsts;
   query: ChainStorage;
   errors: ChainErrors;

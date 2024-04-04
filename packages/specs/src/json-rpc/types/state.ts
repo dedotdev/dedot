@@ -1,5 +1,5 @@
 import { BlockHash, Bytes, Option, StorageData, StorageKey } from '@dedot/codecs';
-import { SerdeEnum } from '@dedot/types/serde';
+import { SerdeEnum } from './serde.js';
 
 export interface ReadProof<Hash = BlockHash> {
   /**

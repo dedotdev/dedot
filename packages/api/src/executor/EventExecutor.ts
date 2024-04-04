@@ -1,5 +1,5 @@
-import { GenericPalletEvent, GenericSubstrateApi, PalletEvent } from '@dedot/types';
-import { SubstrateApi } from '@dedot/chaintypes';
+import type { GenericPalletEvent, GenericSubstrateApi, PalletEvent } from '@dedot/types';
+import type { SubstrateApi } from '../chaintypes/index.js';
 import { Executor } from './Executor.js';
 import { assert, UnknownApiError, stringCamelCase, stringPascalCase } from '@dedot/utils';
 

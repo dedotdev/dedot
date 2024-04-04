@@ -1,6 +1,5 @@
 import { Expand } from '@dedot/shape';
 
-// @TODO include credit
 export type SerdeResult<O, E> = SerdeEnum<{ Ok: O; Err: E }>;
 
 export type SerdeEnum<T> = {

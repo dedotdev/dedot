@@ -10,7 +10,7 @@ export type Subscription = {
 export type SubscriptionCallback<T = any> = (error: Error | null, result: T | null, subscription: Subscription) => void;
 export type SubscriptionInput = {
   /**
-   * Subscription name, this value should be present in the notification response from the server/node
+   * Subscription/notification name, this value should be present in the notification response from the server/node
    */
   subname: string;
   /**

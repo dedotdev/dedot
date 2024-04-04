@@ -33,7 +33,7 @@ export const newProxyChain = <ChainApi extends GenericSubstrateApi>(
 
       chain.push(property.toString());
 
-      return newProxyChain<ChainApi>(target, currentLevel + 1);
+      return newProxyChain<ChainApi>(target, currentLevel + 1, maxLevel);
     },
   });
 };

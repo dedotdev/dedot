@@ -7,6 +7,9 @@
     },
     {
       "path": "../codecs/tsconfig.json"
+    },
+    {
+      "path": "../shape/tsconfig.json"
     }
   ]
 }

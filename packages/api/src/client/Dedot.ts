@@ -1,11 +1,12 @@
-import type { SubstrateApi } from '@dedot/chaintypes';
+import type { SubstrateApi } from '../chaintypes/index.js';
 import { $Metadata, BlockHash, Hash, Metadata, MetadataLatest, PortableRegistry, RuntimeVersion } from '@dedot/codecs';
-import { ChainProperties, GenericSubstrateApi, Unsub } from '@dedot/types';
+import { GenericSubstrateApi, Unsub } from '@dedot/types';
+import { ChainProperties } from '@dedot/specs';
 import {
   ConstantExecutor,
   ErrorExecutor,
   EventExecutor,
-  RpcExecutor,
+  JsonRpcExecutor,
   RuntimeApiExecutor,
   StorageQueryExecutor,
   TxExecutor,
@@ -152,11 +153,12 @@ export class Dedot<ChainApi extends GenericSubstrateApi = SubstrateApi> extends 
     await this.#initializeLocalCache();
 
     // Fetching node information
+    // TODO using json-rpc v2
     let [genesisHash, runtimeVersion, chainName, chainProps, metadata] = await Promise.all([
-      this.rpc.chain.getBlockHash(0),
-      this.rpc.state.getRuntimeVersion(),
-      this.rpc.system.chain(),
-      this.rpc.system.properties(),
+      this.rpc.chain_getBlockHash(0),
+      this.rpc.state_getRuntimeVersion(),
+      this.rpc.system_chain(),
+      this.rpc.system_properties(),
       (await this.#shouldLoadPreloadMetadata()) ? this.#fetchMetadata() : Promise.resolve(undefined),
     ]);
 
@@ -249,7 +251,7 @@ export class Dedot<ChainApi extends GenericSubstrateApi = SubstrateApi> extends 
     try {
       return $Metadata.tryDecode(await this.call.metadata.metadata());
     } catch {
-      return await this.rpc.state.getMetadata();
+      return await this.rpc.state_getMetadata();
     }
   }
 
@@ -259,8 +261,8 @@ export class Dedot<ChainApi extends GenericSubstrateApi = SubstrateApi> extends 
       return;
     }
 
-    this.rpc.state
-      .subscribeRuntimeVersion(async (runtimeVersion: RuntimeVersion) => {
+    this.rpc
+      .state_subscribeRuntimeVersion(async (runtimeVersion: RuntimeVersion) => {
         if (runtimeVersion.specVersion !== this.#runtimeVersion?.specVersion) {
           this.#runtimeVersion = runtimeVersion;
           const newMetadata = await this.#fetchMetadata();
@@ -276,7 +278,7 @@ export class Dedot<ChainApi extends GenericSubstrateApi = SubstrateApi> extends 
     this.#unsubscribeHealth();
 
     this.#healthTimer = setInterval(() => {
-      this.rpc.system.health().catch(console.error);
+      this.rpc.system_health().catch(console.error);
     }, KEEP_ALIVE_INTERVAL);
   }
 
@@ -359,21 +361,20 @@ export class Dedot<ChainApi extends GenericSubstrateApi = SubstrateApi> extends 
   }
 
   /**
-   * @description Entry-point for executing RPCs to blockchain node.
+   * @description Entry-point for executing JSON-RPCs to blockchain node.
    *
    * ```typescript
    * // Subscribe to new heads
-   * api.rpc.chain.subscribeNewHeads((header) => {
+   * api.rpc.chain_subscribeNewHeads((header) => {
    *   console.log(header);
    * });
    *
    * // Execute arbitrary rpc method: `module_rpc_name`
-   * const result = await api.rpc.module.rpc_name();
+   * const result = await api.rpc.module_rpc_name();
    * ```
    */
   get rpc(): ChainApi['rpc'] {
-    // TODO add executable carrier to support calling arbitrary rpc methods via api.rpc(<method>)
-    return newProxyChain<ChainApi>({ executor: new RpcExecutor(this) }) as ChainApi['rpc'];
+    return newProxyChain<ChainApi>({ executor: new JsonRpcExecutor(this) }, 1, 2) as ChainApi['rpc'];
   }
 
   /**

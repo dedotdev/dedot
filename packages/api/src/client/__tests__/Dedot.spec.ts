@@ -1,7 +1,7 @@
 import { afterEach, beforeEach, describe, expect, expectTypeOf, it, vi } from 'vitest';
 import { Dedot } from '../Dedot.js';
 import MockProvider from './MockProvider.js';
-import { SubstrateApi } from '@dedot/chaintypes';
+import type { SubstrateApi } from '../../chaintypes/index.js';
 import { stringCamelCase, stringPascalCase } from '@dedot/utils';
 import { RuntimeVersion } from '@dedot/codecs';
 import { AnyShape } from '@dedot/shape';
@@ -136,17 +136,17 @@ describe('Dedot', () => {
       it('should call rpc methods', async () => {
         const providerSend = vi.spyOn(api.provider, 'send');
 
-        await api.rpc.state.getMetadata();
+        await api.rpc.state_getMetadata();
         expect(providerSend).toBeCalledWith('state_getMetadata', []);
 
-        await api.rpc.state.getRuntimeVersion();
+        await api.rpc.state_getRuntimeVersion();
         expect(providerSend).toBeCalledWith('state_getRuntimeVersion', []);
       });
 
       it('should call arbitrary rpc', async () => {
         const providerSend = vi.spyOn(api.provider, 'send').mockImplementation(() => vi.fn() as any);
 
-        await api.rpc.module.rpc_name('param_1', 'param_2');
+        await api.rpc.module_rpc_name('param_1', 'param_2');
         expect(providerSend).toBeCalledWith('module_rpc_name', ['param_1', 'param_2']);
       });
     });

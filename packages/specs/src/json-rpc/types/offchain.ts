@@ -1,4 +1,4 @@
-/*
+/**
  * A type of supported crypto.
  */
 export enum StorageKind {
