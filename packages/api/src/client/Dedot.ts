@@ -113,7 +113,6 @@ export class Dedot<ChainApi extends GenericSubstrateApi = SubstrateApi> extends 
     this.provider.on('connected', this.#onConnected);
     this.provider.on('disconnected', this.#onDisconnected);
     this.provider.on('reconnecting', this.#onReconnecting);
-    this.provider.on('message', this.#onMessage);
     this.provider.on('error', this.#onError);
 
     return new Promise<this>((resolve, reject) => {
@@ -145,10 +144,6 @@ export class Dedot<ChainApi extends GenericSubstrateApi = SubstrateApi> extends 
 
   #onError = async (e: Error) => {
     this.emit('error', e);
-  };
-
-  #onMessage = async (data: any) => {
-    this.emit('message', data);
   };
 
   /**

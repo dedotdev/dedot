@@ -272,7 +272,6 @@ export class WsProvider extends EventEmitter<ProviderEvent> implements JsonRpcPr
 
   #onSocketMessage = (message: MessageEvent<string>) => {
     const data = JSON.parse(message.data) as any;
-    this.emit('message', data);
 
     const isNotification = !data.id && data.method;
     if (isNotification) {

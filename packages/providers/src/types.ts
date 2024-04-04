@@ -28,7 +28,7 @@ export type SubscriptionInput = {
 };
 
 export type ConnectionStatus = 'connected' | 'disconnected' | 'reconnecting';
-export type ProviderEvent = ConnectionStatus | 'error' | 'message'; // | 'timeout';
+export type ProviderEvent = ConnectionStatus | 'error'; // | 'timeout';
 
 export interface JsonRpcProvider extends IEventEmitter<ProviderEvent> {
   /**
