@@ -38,6 +38,7 @@ export class TypeImports {
     return toImports
       .filter(([_, module]) => !excludeModules.includes(module))
       .map(([types, module]) => this.#toImportLine(types, module))
+      .filter((line) => line.length > 0)
       .join('\n');
   }
 

@@ -16,7 +16,12 @@ import { RpcMethods } from '@dedot/specs';
 import { MetadataLatest } from '@dedot/codecs';
 import { stringCamelCase } from '@dedot/utils';
 
-export async function generateTypesFromEndpoint(chain: string, endpoint: string, outDir?: string) {
+export async function generateTypesFromEndpoint(
+  chain: string,
+  endpoint: string,
+  outDir?: string,
+  extension: string = 'd.ts',
+) {
   const api = await Dedot.new(endpoint);
   const { methods }: RpcMethods = await api.jsonrpc.rpc_methods();
   const apis = api.runtimeVersion?.apis || [];
@@ -24,7 +29,7 @@ export async function generateTypesFromEndpoint(chain: string, endpoint: string,
     chain = stringCamelCase(api.runtimeVersion?.specName || api.runtimeChain || 'local');
   }
 
-  await generateTypes(chain, api.metadataLatest, methods, apis, outDir);
+  await generateTypes(chain, api.metadataLatest, methods, apis, outDir, extension);
 
   await api.disconnect();
 }
@@ -35,17 +40,18 @@ export async function generateTypes(
   rpcMethods: string[],
   runtimeApis: any[],
   outDir: string = '.',
+  extension: string = 'd.ts',
 ) {
   const dirPath = path.resolve(outDir, chain);
-  const defTypesFileName = path.join(dirPath, `types.d.ts`);
-  const constsTypesFileName = path.join(dirPath, `consts.d.ts`);
-  const queryTypesFileName = path.join(dirPath, `query.d.ts`);
-  const jsonRpcFileName = path.join(dirPath, `json-rpc.d.ts`);
-  const indexFileName = path.join(dirPath, `index.d.ts`);
-  const errorsFileName = path.join(dirPath, `errors.d.ts`);
-  const eventsFileName = path.join(dirPath, `events.d.ts`);
-  const runtimeApisFileName = path.join(dirPath, `runtime.d.ts`);
-  const txFileName = path.join(dirPath, `tx.d.ts`);
+  const defTypesFileName = path.join(dirPath, `types.${extension}`);
+  const constsTypesFileName = path.join(dirPath, `consts.${extension}`);
+  const queryTypesFileName = path.join(dirPath, `query.${extension}`);
+  const jsonRpcFileName = path.join(dirPath, `json-rpc.${extension}`);
+  const indexFileName = path.join(dirPath, `index.${extension}`);
+  const errorsFileName = path.join(dirPath, `errors.${extension}`);
+  const eventsFileName = path.join(dirPath, `events.${extension}`);
+  const runtimeApisFileName = path.join(dirPath, `runtime.${extension}`);
+  const txFileName = path.join(dirPath, `tx.${extension}`);
 
   if (!fs.existsSync(dirPath)) {
     fs.mkdirSync(dirPath, { recursive: true });
