@@ -17,14 +17,14 @@ export class CheckMortality extends SignedExtension<EraLike, Hash> {
   async init() {
     this.#signingHeader = await this.#determineSigningHeader();
     this.data = { period: this.#calculateMortalLength(), current: BigInt(this.#signingHeader!.number) };
-    this.additionalSigned = (await this.api.jsonrpc.chain_getBlockHash(this.#signingHeader!.number))!;
+    this.additionalSigned = (await this.api.rpc.chain_getBlockHash(this.#signingHeader!.number))!;
   }
 
   // Ref: https://github.com/polkadot-js/api/blob/3bdf49b0428a62f16b3222b9a31bfefa43c1ca55/packages/api-derive/src/tx/signingInfo.ts#L34-L64
   async #determineSigningHeader(): Promise<Header> {
     const [header, finalizedHash] = await Promise.all([
-      this.api.jsonrpc.chain_getHeader(),
-      this.api.jsonrpc.chain_getFinalizedHead(),
+      this.api.rpc.chain_getHeader(),
+      this.api.rpc.chain_getFinalizedHead(),
     ]);
 
     assert(header, 'Current header not found');
@@ -35,10 +35,10 @@ export class CheckMortality extends SignedExtension<EraLike, Hash> {
         if (parentHash.length === 0 || isZeroHex(parentHash)) {
           return header;
         } else {
-          return this.api.jsonrpc.chain_getHeader(parentHash);
+          return this.api.rpc.chain_getHeader(parentHash);
         }
       }),
-      this.api.jsonrpc.chain_getHeader(finalizedHash),
+      this.api.rpc.chain_getHeader(finalizedHash),
     ]);
 
     assert(currentHeader, 'Cannot determine current header');

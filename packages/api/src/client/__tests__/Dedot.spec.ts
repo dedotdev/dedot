@@ -26,7 +26,7 @@ describe('Dedot', () => {
     });
 
     it('should create new api instance', async () => {
-      expect(api.jsonrpc).toBeDefined();
+      expect(api.rpc).toBeDefined();
       expect(api.query).toBeDefined();
       expect(api.events).toBeDefined();
       expect(api.errors).toBeDefined();
@@ -136,17 +136,17 @@ describe('Dedot', () => {
       it('should call rpc methods', async () => {
         const providerSend = vi.spyOn(api.provider, 'send');
 
-        await api.jsonrpc.state_getMetadata();
+        await api.rpc.state_getMetadata();
         expect(providerSend).toBeCalledWith('state_getMetadata', []);
 
-        await api.jsonrpc.state_getRuntimeVersion();
+        await api.rpc.state_getRuntimeVersion();
         expect(providerSend).toBeCalledWith('state_getRuntimeVersion', []);
       });
 
       it('should call arbitrary rpc', async () => {
         const providerSend = vi.spyOn(api.provider, 'send').mockImplementation(() => vi.fn() as any);
 
-        await api.jsonrpc.module_rpc_name('param_1', 'param_2');
+        await api.rpc.module_rpc_name('param_1', 'param_2');
         expect(providerSend).toBeCalledWith('module_rpc_name', ['param_1', 'param_2']);
       });
     });

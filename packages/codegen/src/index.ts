@@ -23,7 +23,7 @@ export async function generateTypesFromEndpoint(
   extension: string = 'd.ts',
 ) {
   const api = await Dedot.new(endpoint);
-  const { methods }: RpcMethods = await api.jsonrpc.rpc_methods();
+  const { methods }: RpcMethods = await api.rpc.rpc_methods();
   const apis = api.runtimeVersion?.apis || [];
   if (!chain) {
     chain = stringCamelCase(api.runtimeVersion?.specName || api.runtimeChain || 'local');

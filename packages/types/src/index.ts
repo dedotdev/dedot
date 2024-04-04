@@ -118,7 +118,7 @@ export type GenericChainEvents<
 > = Record<Pallet, Record<EventName, GenericPalletEvent<Pallet, EventName, Data>>>;
 
 export interface GenericSubstrateApi {
-  jsonrpc: GenericJsonRpcApis;
+  rpc: GenericJsonRpcApis;
   consts: GenericChainConsts;
   query: GenericChainStorage;
   errors: GenericChainErrors;

@@ -160,10 +160,10 @@ export class Dedot<ChainApi extends GenericSubstrateApi = SubstrateApi> extends 
     // Fetching node information
     // TODO using json-rpc v2
     let [genesisHash, runtimeVersion, chainName, chainProps, metadata] = await Promise.all([
-      this.jsonrpc.chain_getBlockHash(0),
-      this.jsonrpc.state_getRuntimeVersion(),
-      this.jsonrpc.system_chain(),
-      this.jsonrpc.system_properties(),
+      this.rpc.chain_getBlockHash(0),
+      this.rpc.state_getRuntimeVersion(),
+      this.rpc.system_chain(),
+      this.rpc.system_properties(),
       (await this.#shouldLoadPreloadMetadata()) ? this.#fetchMetadata() : Promise.resolve(undefined),
     ]);
 
@@ -256,7 +256,7 @@ export class Dedot<ChainApi extends GenericSubstrateApi = SubstrateApi> extends 
     try {
       return $Metadata.tryDecode(await this.call.metadata.metadata());
     } catch {
-      return await this.jsonrpc.state_getMetadata();
+      return await this.rpc.state_getMetadata();
     }
   }
 
@@ -266,7 +266,7 @@ export class Dedot<ChainApi extends GenericSubstrateApi = SubstrateApi> extends 
       return;
     }
 
-    this.jsonrpc
+    this.rpc
       .state_subscribeRuntimeVersion(async (runtimeVersion: RuntimeVersion) => {
         if (runtimeVersion.specVersion !== this.#runtimeVersion?.specVersion) {
           this.#runtimeVersion = runtimeVersion;
@@ -283,7 +283,7 @@ export class Dedot<ChainApi extends GenericSubstrateApi = SubstrateApi> extends 
     this.#unsubscribeHealth();
 
     this.#healthTimer = setInterval(() => {
-      this.jsonrpc.system_health().catch(console.error);
+      this.rpc.system_health().catch(console.error);
     }, KEEP_ALIVE_INTERVAL);
   }
 
@@ -370,16 +370,16 @@ export class Dedot<ChainApi extends GenericSubstrateApi = SubstrateApi> extends 
    *
    * ```typescript
    * // Subscribe to new heads
-   * api.jsonrpc.chain_subscribeNewHeads((header) => {
+   * api.rpc.chain_subscribeNewHeads((header) => {
    *   console.log(header);
    * });
    *
    * // Execute arbitrary rpc method: `module_rpc_name`
-   * const result = await api.jsonrpc.module_rpc_name();
+   * const result = await api.rpc.module_rpc_name();
    * ```
    */
-  get jsonrpc(): ChainApi['jsonrpc'] {
-    return newProxyChain<ChainApi>({ executor: new JsonRpcExecutor(this) }, 1, 2) as ChainApi['jsonrpc'];
+  get rpc(): ChainApi['rpc'] {
+    return newProxyChain<ChainApi>({ executor: new JsonRpcExecutor(this) }, 1, 2) as ChainApi['rpc'];
   }
 
   /**
