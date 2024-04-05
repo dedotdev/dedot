@@ -24,12 +24,12 @@ export async function generateTypesFromEndpoint(
 ) {
   const api = await Dedot.new(endpoint);
   const { methods }: RpcMethods = await api.rpc.rpc_methods();
-  const apis = api.runtimeVersion?.apis || [];
+  const apis = api.runtimeVersion.apis || {};
   if (!chain) {
-    chain = stringCamelCase(api.runtimeVersion?.specName || api.runtimeChain || 'local');
+    chain = stringCamelCase(api.runtimeVersion.specName || api.runtimeChain || 'local');
   }
 
-  await generateTypes(chain, api.metadataLatest, methods, apis, outDir, extension);
+  await generateTypes(chain, api.metadata.latest, methods, apis, outDir, extension);
 
   await api.disconnect();
 }
@@ -38,7 +38,7 @@ export async function generateTypes(
   chain: string,
   metadata: MetadataLatest,
   rpcMethods: string[],
-  runtimeApis: any[],
+  runtimeApis: Record<string, number>,
   outDir: string = '.',
   extension: string = 'd.ts',
 ) {

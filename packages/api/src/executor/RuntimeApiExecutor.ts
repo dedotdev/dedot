@@ -21,9 +21,7 @@ import {
 import { RuntimeApiMethodDefLatest } from '@dedot/codecs';
 import { Metadata, toRuntimeApiMethods, toRuntimeApiSpecs } from '@dedot/specs';
 
-export const FallbackRuntimeApis = [
-  ['0x37e397fc7c91f5e4', 2], // Metadata Api v2
-];
+export const FallbackRuntimeApis: Record<string, number> = { '0x37e397fc7c91f5e4': 2 };
 
 export const FallbackRuntimeApiSpecs = { Metadata };
 
@@ -136,13 +134,7 @@ export class RuntimeApiExecutor<ChainApi extends GenericSubstrateApi = GenericSu
 
   #findTargetRuntimeApiVersion(runtimeApi: string): number | undefined {
     const runtimeApiHash = calcRuntimeApiHash(runtimeApi);
-    const runtimeApiVersions = this.api.runtimeVersion?.apis || FallbackRuntimeApis;
-
-    const foundVersion = runtimeApiVersions
-      .find(([supportedRuntimeApiHash]) => runtimeApiHash === supportedRuntimeApiHash)
-      ?.at(1);
-
-    return foundVersion as number | undefined;
+    return this.api.runtimeVersion.apis[runtimeApiHash] || FallbackRuntimeApis[runtimeApiHash];
   }
 
   #findDefinedSpec(

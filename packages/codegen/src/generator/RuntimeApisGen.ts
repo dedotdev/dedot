@@ -17,7 +17,7 @@ import { findKnownCodecType } from './known-codecs.js';
 export class RuntimeApisGen extends ApiGen {
   constructor(
     readonly typesGen: TypesGen,
-    readonly runtimeApis: [string, number][],
+    readonly runtimeApis: Record<string, number>,
   ) {
     super(typesGen);
   }
@@ -136,7 +136,7 @@ export class RuntimeApisGen extends ApiGen {
   }
 
   #targetRuntimeApiSpecs(): RuntimeApiSpec[] {
-    const specs = this.runtimeApis.map(([runtimeApiHash, version]) => {
+    const specs = Object.entries(this.runtimeApis).map(([runtimeApiHash, version]) => {
       const runtimeApiSpec = this.#findRuntimeApiSpec(runtimeApiHash, version);
 
       if (!runtimeApiSpec) return;

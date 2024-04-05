@@ -1,7 +1,6 @@
 import type { SubstrateApi } from '../chaintypes/index.js';
 import { $Metadata, BlockHash, Hash, Metadata, MetadataLatest, PortableRegistry, RuntimeVersion } from '@dedot/codecs';
 import { GenericSubstrateApi, Unsub } from '@dedot/types';
-import { ChainProperties } from '@dedot/specs';
 import {
   ConstantExecutor,
   ErrorExecutor,
@@ -12,14 +11,28 @@ import {
   TxExecutor,
 } from '../executor/index.js';
 import { newProxyChain } from '../proxychain.js';
-import { ApiEventNames, ApiOptions, MetadataKey, NetworkEndpoint, NormalizedApiOptions } from '../types.js';
+import type {
+  ApiEventNames,
+  ApiOptions,
+  ISubstrateClient,
+  MetadataKey,
+  NetworkEndpoint,
+  NormalizedApiOptions,
+  SubstrateChainProperties,
+  SubstrateRuntimeVersion,
+} from '../types.js';
 import { type IStorage, LocalStorage } from '@dedot/storage';
-import { assert, EventEmitter, u8aToHex } from '@dedot/utils';
-import { ConnectionStatus, type JsonRpcProvider, WsProvider } from '@dedot/providers';
+import { assert, ensurePresence as _ensurePresence, EventEmitter, u8aToHex } from '@dedot/utils';
+import { type ConnectionStatus, type JsonRpcProvider, WsProvider } from '@dedot/providers';
 
 export const KEEP_ALIVE_INTERVAL = 10_000; // in ms
 export const CATCH_ALL_METADATA_KEY: MetadataKey = `RAW_META/ALL`;
 export const SUPPORTED_METADATA_VERSIONS = [15, 14];
+
+const MESSAGE: string = 'Make sure to call `.connect()` method first before using the API interfaces.';
+function ensurePresence<T>(value: T): NonNullable<T> {
+  return _ensurePresence(value, MESSAGE);
+}
 
 /**
  * @name Dedot
@@ -59,17 +72,19 @@ export const SUPPORTED_METADATA_VERSIONS = [15, 14];
  * run().catch(console.error);
  * ```
  */
-export class Dedot<ChainApi extends GenericSubstrateApi = SubstrateApi> extends EventEmitter<ApiEventNames> {
+export class Dedot<ChainApi extends GenericSubstrateApi = SubstrateApi>
+  extends EventEmitter<ApiEventNames>
+  implements ISubstrateClient<ChainApi>
+{
   readonly #provider: JsonRpcProvider;
   readonly #options: NormalizedApiOptions;
 
   #registry?: PortableRegistry;
   #metadata?: Metadata;
-  #metadataLatest?: MetadataLatest;
 
   #genesisHash?: Hash;
-  #runtimeVersion?: RuntimeVersion;
-  #chainProperties?: ChainProperties;
+  #runtimeVersion?: SubstrateRuntimeVersion;
+  #chainProperties?: SubstrateChainProperties;
   #runtimeChain?: string;
   #localCache?: IStorage;
 
@@ -163,9 +178,9 @@ export class Dedot<ChainApi extends GenericSubstrateApi = SubstrateApi> extends 
     ]);
 
     this.#genesisHash = genesisHash;
-    this.#runtimeVersion = runtimeVersion;
-    this.#chainProperties = chainProps;
     this.#runtimeChain = chainName;
+    this.#runtimeVersion = this.#toSubstrateRuntimeVersion(runtimeVersion);
+    this.#chainProperties = chainProps;
 
     await this.#setupMetadata(metadata);
     this.#subscribeUpdates();
@@ -264,7 +279,7 @@ export class Dedot<ChainApi extends GenericSubstrateApi = SubstrateApi> extends 
     this.rpc
       .state_subscribeRuntimeVersion(async (runtimeVersion: RuntimeVersion) => {
         if (runtimeVersion.specVersion !== this.#runtimeVersion?.specVersion) {
-          this.#runtimeVersion = runtimeVersion;
+          this.#runtimeVersion = this.#toSubstrateRuntimeVersion(runtimeVersion);
           const newMetadata = await this.#fetchMetadata();
           await this.#setupMetadata(newMetadata);
         }
@@ -272,6 +287,19 @@ export class Dedot<ChainApi extends GenericSubstrateApi = SubstrateApi> extends 
       .then((unsub) => {
         this.#runtimeSubscriptionUnsub = unsub;
       });
+  }
+
+  #toSubstrateRuntimeVersion(runtimeVersion: RuntimeVersion): SubstrateRuntimeVersion {
+    return {
+      ...runtimeVersion,
+      apis: runtimeVersion.apis.reduce(
+        (o, [name, version]) => {
+          o[name] = version;
+          return o;
+        },
+        {} as Record<string, number>,
+      ),
+    };
   }
 
   #subscribeHealth() {
@@ -465,22 +493,18 @@ export class Dedot<ChainApi extends GenericSubstrateApi = SubstrateApi> extends 
    * @description Codec registry
    */
   get registry() {
-    return this.#registry!;
+    return ensurePresence(this.#registry);
   }
 
   /**
    * @description Check if metadata is present
    */
   get hasMetadata(): boolean {
-    return !!this.#metadata && !!this.#metadataLatest;
+    return !!this.#metadata;
   }
 
   get metadata(): Metadata {
-    return this.#metadata!;
-  }
-
-  get metadataLatest(): MetadataLatest {
-    return this.#metadataLatest!;
+    return ensurePresence(this.#metadata);
   }
 
   /**
@@ -489,8 +513,7 @@ export class Dedot<ChainApi extends GenericSubstrateApi = SubstrateApi> extends 
    */
   setMetadata(metadata: Metadata) {
     this.#metadata = metadata;
-    this.#metadataLatest = metadata.latest;
-    this.#registry = new PortableRegistry(this.#metadataLatest);
+    this.#registry = new PortableRegistry(metadata.latest);
   }
 
   /**
@@ -507,6 +530,18 @@ export class Dedot<ChainApi extends GenericSubstrateApi = SubstrateApi> extends 
   async disconnect() {
     await this.#unsubscribeUpdates();
     await this.#provider.disconnect();
+    this.#cleanUp();
+  }
+
+  #cleanUp() {
+    this.#registry = undefined;
+    this.#metadata = undefined;
+
+    this.#genesisHash = undefined;
+    this.#runtimeVersion = undefined;
+    this.#chainProperties = undefined;
+    this.#runtimeChain = undefined;
+    this.#localCache = undefined;
   }
 
   /**
@@ -538,28 +573,28 @@ export class Dedot<ChainApi extends GenericSubstrateApi = SubstrateApi> extends 
    * @description Genesis hash of connected blockchain node
    */
   get genesisHash() {
-    return this.#genesisHash;
+    return ensurePresence(this.#genesisHash);
   }
 
   /**
    * @description Runtime version of connected blockchain node
    */
-  get runtimeVersion() {
-    return this.#runtimeVersion;
+  get runtimeVersion(): SubstrateRuntimeVersion {
+    return ensurePresence(this.#runtimeVersion);
   }
 
   /**
    * @description Chain properties of connected blockchain node
    */
   get chainProperties() {
-    return this.#chainProperties;
+    return ensurePresence(this.#chainProperties);
   }
 
   /**
    * @description Runtime chain name of connected blockchain node
    */
   get runtimeChain() {
-    return this.#runtimeChain;
+    return ensurePresence(this.#runtimeChain);
   }
 
   get options() {

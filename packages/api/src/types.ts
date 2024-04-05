@@ -1,9 +1,10 @@
-import type { HexString } from '@dedot/utils';
+import type { HexString, IEventEmitter } from '@dedot/utils';
 import type { AnySignedExtension } from './extrinsic/index.js';
-import type { RuntimeApiName, RuntimeApiSpec } from '@dedot/types';
+import type { RuntimeApiName, RuntimeApiSpec, GenericSubstrateApi } from '@dedot/types';
 import type { IStorage } from '@dedot/storage';
-import type { JsonRpcProvider, ProviderEvent } from '@dedot/providers';
+import type { JsonRpcProvider, ProviderEvent, ConnectionStatus } from '@dedot/providers';
 import { SubscriptionsInfo } from '@dedot/specs';
+import { BlockHash, Hash, Metadata, PortableRegistry } from '@dedot/codecs';
 
 export type NetworkEndpoint = string;
 export type MetadataKey = `RAW_META/${string}`;
@@ -67,3 +68,45 @@ export interface NormalizedApiOptions extends ApiOptions {
 }
 
 export type ApiEventNames = ProviderEvent | 'ready';
+
+export interface SubstrateRuntimeVersion {
+  specName: string;
+  implName: string;
+  specVersion: number;
+  implVersion: number;
+  apis: Record<string, number>;
+  transactionVersion: number;
+}
+
+export interface SubstrateChainProperties {
+  isEthereum?: boolean;
+  ss58Format?: number;
+  tokenDecimals?: number | Array<number>;
+  tokenSymbol?: string | Array<string>;
+  [prop: string]: any;
+}
+
+export interface ISubstrateClient<ChainApi extends GenericSubstrateApi> extends IEventEmitter<ApiEventNames> {
+  options: NormalizedApiOptions;
+  status: ConnectionStatus;
+  provider: JsonRpcProvider;
+  connect(): Promise<this>;
+  disconnect(): Promise<void>;
+
+  metadata: Metadata;
+  registry: PortableRegistry;
+  genesisHash: Hash;
+  runtimeChain: string;
+  runtimeVersion: SubstrateRuntimeVersion;
+  chainProperties: SubstrateChainProperties;
+
+  rpc: ChainApi['rpc'];
+  consts: ChainApi['consts'];
+  query: ChainApi['query'];
+  queryAt(blockHash: BlockHash): ChainApi['query'];
+  call: ChainApi['call'];
+  callAt(blockHash: BlockHash): ChainApi['call'];
+  tx: ChainApi['tx'];
+  events: ChainApi['events'];
+  errors: ChainApi['errors'];
+}

@@ -7,7 +7,7 @@ import { SignerPayloadJSON } from '@polkadot/types/types';
  */
 export class CheckTxVersion extends SignedExtension<{}, number> {
   async init(): Promise<void> {
-    this.additionalSigned = this.api.runtimeVersion!.transactionVersion;
+    this.additionalSigned = this.api.runtimeVersion.transactionVersion;
   }
 
   toPayload(): Partial<SignerPayloadJSON> {
