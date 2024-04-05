@@ -12,7 +12,7 @@ import type {
   PalletContractsEnvironment,
   PalletNftsBitFlagsPalletFeature,
   PalletReferendaTrackInfo,
-} from './types';
+} from './types.js';
 
 export interface ChainConsts extends GenericChainConsts {
   /**

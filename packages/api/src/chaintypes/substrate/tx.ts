@@ -95,7 +95,7 @@ import type {
   PalletBrokerRegionId,
   PalletBrokerCoreMask,
   PalletBrokerFinality,
-} from './types';
+} from './types.js';
 
 export type ChainSubmittableExtrinsic<T extends IRuntimeTxCall = KitchensinkRuntimeRuntimeCallLike> = Extrinsic<
   MultiAddressLike,

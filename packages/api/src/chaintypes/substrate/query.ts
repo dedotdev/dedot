@@ -153,7 +153,7 @@ import type {
   PalletBrokerContributionRecord,
   PalletBrokerPoolIoRecord,
   PalletBrokerInstaPoolHistoryRecord,
-} from './types';
+} from './types.js';
 
 export interface ChainStorage extends GenericChainStorage {
   /**
