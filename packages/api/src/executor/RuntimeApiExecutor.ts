@@ -134,7 +134,11 @@ export class RuntimeApiExecutor<ChainApi extends GenericSubstrateApi = GenericSu
 
   #findTargetRuntimeApiVersion(runtimeApi: string): number | undefined {
     const runtimeApiHash = calcRuntimeApiHash(runtimeApi);
-    return this.api.runtimeVersion.apis[runtimeApiHash] || FallbackRuntimeApis[runtimeApiHash];
+    try {
+      return this.api.runtimeVersion.apis[runtimeApiHash] || FallbackRuntimeApis[runtimeApiHash];
+    } catch {
+      return FallbackRuntimeApis[runtimeApiHash];
+    }
   }
 
   #findDefinedSpec(
