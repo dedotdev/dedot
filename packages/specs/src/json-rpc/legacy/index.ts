@@ -41,6 +41,8 @@ import {
   TraceBlockResponse,
 } from './types/index.js';
 
+export * from './types/index.js';
+
 export interface LegacyJsonRpcApis extends GenericJsonRpcApis {
   /**
    * Checks if the keystore has private keys for the given public key and key type. Returns `true` if a private key could be found.
