@@ -38,7 +38,6 @@ export class JsonRpcClient<ChainApi extends GenericSubstrateApi = SubstrateApi, 
   }
 
   connect(): Promise<this> {
-    assert(this.status !== 'connected', 'Already connected!');
     return this.#doConnect();
   }
 
@@ -49,16 +48,16 @@ export class JsonRpcClient<ChainApi extends GenericSubstrateApi = SubstrateApi, 
     this.provider.on('error', this.#onError);
 
     return new Promise<this>((resolve, reject) => {
+      // @ts-ignore
+      this.once('connected', () => {
+        resolve(this);
+      });
+
       if (this.status === 'connected') {
         this.#onConnected().catch(reject);
       } else {
         this.provider.connect().catch(reject);
       }
-
-      // @ts-ignore
-      this.once('connected', () => {
-        resolve(this);
-      });
     });
   }
 

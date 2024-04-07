@@ -461,7 +461,7 @@ export class Dedot<ChainApi extends GenericSubstrateApi = SubstrateApi>
    * @description Connect to blockchain node
    */
   async connect(): Promise<this> {
-    const [_, api] = await Promise.all([super.connect(), this.#doConnect()]);
+    const [api, _] = await Promise.all([this.#doConnect(), super.connect()]);
 
     return api;
   }
