@@ -1,7 +1,7 @@
 import type { SubstrateApi } from '../chaintypes/index.js';
 import type { AsyncMethod, GenericSubstrateApi, Unsub } from '@dedot/types';
 import type { Subscription } from '@dedot/providers';
-import { scaleResponses, subscriptionsInfo } from '@dedot/specs';
+import { scaledResponses, subscriptionsInfo } from '@dedot/specs';
 import { assert, isFunction } from '@dedot/utils';
 import { Executor } from './Executor.js';
 
@@ -54,7 +54,7 @@ export class JsonRpcExecutor<ChainApi extends GenericSubstrateApi = SubstrateApi
       return undefined;
     }
 
-    const $maybeCodec = scaleResponses[rpcName];
+    const $maybeCodec = scaledResponses[rpcName];
 
     if ($maybeCodec) {
       return $maybeCodec.tryDecode(raw);

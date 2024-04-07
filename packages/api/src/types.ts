@@ -1,15 +1,16 @@
 import type { HexString, IEventEmitter } from '@dedot/utils';
 import type { AnySignedExtension } from './extrinsic/index.js';
-import type { RuntimeApiName, RuntimeApiSpec, GenericSubstrateApi } from '@dedot/types';
+import type { GenericSubstrateApi, RuntimeApiName, RuntimeApiSpec } from '@dedot/types';
 import type { IStorage } from '@dedot/storage';
-import type { JsonRpcProvider, ProviderEvent, ConnectionStatus } from '@dedot/providers';
+import type { ConnectionStatus, JsonRpcProvider, ProviderEvent } from '@dedot/providers';
+import type { AnyShape } from '@dedot/shape';
 import { SubscriptionsInfo } from '@dedot/specs';
 import { BlockHash, Hash, Metadata, PortableRegistry } from '@dedot/codecs';
 
 export type NetworkEndpoint = string;
 export type MetadataKey = `RAW_META/${string}`;
 
-export interface ApiOptions {
+export interface JsonRpcClientOptions {
   provider?: JsonRpcProvider;
   /**
    * @description A `ProviderInterface` will be created based on the supplied endpoint.
@@ -18,12 +19,11 @@ export interface ApiOptions {
    * A valid endpoint should start with `wss://`, `ws://`, `https://` or `http://`
    */
   endpoint?: NetworkEndpoint;
-  /**
-   * @description Cache metadata in local storage for next time usage
-   * For now this only supports browser environments
-   *
-   * @default: false
-   */
+  subscriptions?: SubscriptionsInfo;
+  scaledResponses?: Record<string, AnyShape>;
+}
+
+export interface ApiOptions extends JsonRpcClientOptions {
   cacheMetadata?: boolean;
   cacheStorage?: IStorage;
   /**
@@ -60,14 +60,13 @@ export interface ApiOptions {
    * @default true
    */
   throwOnUnknownApi?: boolean;
-  subscriptions?: SubscriptionsInfo;
 }
 
 export interface NormalizedApiOptions extends ApiOptions {
   metadata?: Record<string, HexString>;
 }
 
-export type ApiEventNames = ProviderEvent | 'ready';
+export type ApiEvent = ProviderEvent | 'ready';
 
 export interface SubstrateRuntimeVersion {
   specName: string;
@@ -86,12 +85,20 @@ export interface SubstrateChainProperties {
   [prop: string]: any;
 }
 
-export interface ISubstrateClient<ChainApi extends GenericSubstrateApi> extends IEventEmitter<ApiEventNames> {
-  options: NormalizedApiOptions;
+export interface IJsonRpcClient<ChainApi extends GenericSubstrateApi, Events extends string = ProviderEvent>
+  extends IEventEmitter<Events> {
+  options: JsonRpcClientOptions;
   status: ConnectionStatus;
   provider: JsonRpcProvider;
   connect(): Promise<this>;
   disconnect(): Promise<void>;
+
+  rpc: ChainApi['rpc'];
+}
+
+export interface ISubstrateClient<ChainApi extends GenericSubstrateApi, Events extends string = ApiEvent>
+  extends IJsonRpcClient<ChainApi, Events> {
+  options: NormalizedApiOptions;
 
   metadata: Metadata;
   registry: PortableRegistry;
@@ -100,7 +107,6 @@ export interface ISubstrateClient<ChainApi extends GenericSubstrateApi> extends 
   runtimeVersion: SubstrateRuntimeVersion;
   chainProperties: SubstrateChainProperties;
 
-  rpc: ChainApi['rpc'];
   consts: ChainApi['consts'];
   query: ChainApi['query'];
   queryAt(blockHash: BlockHash): ChainApi['query'];

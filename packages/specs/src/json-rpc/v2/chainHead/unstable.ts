@@ -8,7 +8,7 @@ export interface ChainHeadUnstable extends GenericJsonRpcApis {
    *
    * @pubsub chainHead_unstable_followEvent, chainHead_unstable_follow, chainHead_unstable_unfollow
    */
-  chainHead_unstable_follow: (with_runtime: boolean, callback: Callback<FollowEvent>) => Promise<Unsub>;
+  chainHead_unstable_follow: (withRuntime: boolean, callback: Callback<FollowEvent>) => Promise<Unsub>;
   /**
    * Retrieves the body (list of transactions) of a pinned block.
    * This method should be seen as a complement to `chainHead_unstable_follow`,
