@@ -1,6 +1,6 @@
 import { Callback, GenericJsonRpcApis, Unsub } from '@dedot/types';
-import { Bytes, Hash } from '@dedot/codecs';
-import { ExtrinsicOrHash, TransactionStatus } from './types/index.js';
+import { Bytes, Hash, TransactionStatus } from '@dedot/codecs';
+import { ExtrinsicOrHash } from './types/index.js';
 
 export interface AuthorJsonRpcApis extends GenericJsonRpcApis {
   /**
