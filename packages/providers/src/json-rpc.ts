@@ -12,12 +12,14 @@ export interface JsonRpcRequest extends JsonRpcV2 {
   params: unknown[];
 }
 
+export interface JsonRpcErrorObject<D = any> {
+  code: number;
+  message: string;
+  data?: D;
+}
+
 export interface JsonRpcResponseError<D = any> {
-  error?: {
-    code: number;
-    message: string;
-    data?: D;
-  };
+  error?: JsonRpcErrorObject<D>;
 }
 
 export interface JsonRpcResponseSuccess<T = any> {

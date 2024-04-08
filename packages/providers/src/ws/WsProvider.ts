@@ -12,6 +12,7 @@ import {
 } from '../types.js';
 import { assert, EventEmitter } from '@dedot/utils';
 import { WebSocket } from '@polkadot/x-ws';
+import { JsonRpcError } from '../error.js';
 
 export interface WsProviderOptions {
   /**
@@ -292,7 +293,7 @@ export class WsProvider extends EventEmitter<ProviderEvent> implements JsonRpcPr
     const { resolve, reject } = handler;
 
     if (error) {
-      reject(new Error(`${error.code}: ${error.message}`));
+      reject(new JsonRpcError(error));
     } else {
       resolve(result);
     }
@@ -316,7 +317,7 @@ export class WsProvider extends EventEmitter<ProviderEvent> implements JsonRpcPr
     const { callback } = substate;
 
     if (error) {
-      callback(new Error(`${error.code}: ${error.message}`), null, substate.subscription);
+      callback(new JsonRpcError(error), null, substate.subscription);
     } else {
       callback(null, result, substate.subscription);
     }
