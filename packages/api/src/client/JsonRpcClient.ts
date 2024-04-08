@@ -19,6 +19,28 @@ export class JsonRpcClient<ChainApi extends GenericSubstrateApi = SubstrateApi, 
     this.#provider = this.#getProvider();
   }
 
+  /**
+   * Factory method to create a new JsonRpcClient instance
+   *
+   * @param options
+   */
+  static async create<ChainApi extends GenericSubstrateApi = SubstrateApi>(
+    options: JsonRpcClientOptions | NetworkEndpoint,
+  ): Promise<JsonRpcClient<ChainApi>> {
+    return new JsonRpcClient<ChainApi>(options).connect();
+  }
+
+  /**
+   * Alias for __JsonRpcClient.create__
+   *
+   * @param options
+   */
+  static async new<ChainApi extends GenericSubstrateApi = SubstrateApi>(
+    options: JsonRpcClientOptions | NetworkEndpoint,
+  ): Promise<JsonRpcClient<ChainApi>> {
+    return JsonRpcClient.create(options);
+  }
+
   get options(): JsonRpcClientOptions {
     return this.#options;
   }
