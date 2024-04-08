@@ -51,7 +51,7 @@ import type {
   SpMmrPrimitivesEncodableOpaqueLeaf,
   SpMmrPrimitivesProof,
   SpCoreCryptoKeyTypeId,
-} from './types';
+} from './types.js';
 
 export interface RuntimeApis extends GenericRuntimeApis {
   /**

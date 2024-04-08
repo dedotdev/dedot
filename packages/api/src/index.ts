@@ -3,7 +3,7 @@ export type * from './chaintypes/index.js';
 
 export * from './executor/index.js';
 export * from './extrinsic/index.js';
-export { Dedot } from './client/index.js';
+export { Dedot, JsonRpcClient } from './client/index.js';
 
 // Re-exports
 export { WsProvider } from '@dedot/providers';

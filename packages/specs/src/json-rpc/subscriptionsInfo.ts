@@ -12,4 +12,6 @@ export const subscriptionsInfo: SubscriptionsInfo = {
   chain_subscribeFinalizedHeads: ['chain_finalizedHead', 'chain_unsubscribeFinalizedHeads'],
   grandpa_subscribeJustifications: ['grandpa_justifications', 'grandpa_unsubscribeJustifications'],
   beefy_subscribeJustifications: ['beefy_justifications', 'beefy_unsubscribeJustifications'],
+  chainHead_unstable_follow: ['chainHead_unstable_followEvent', 'chainHead_unstable_unfollow'],
+  chainHead_v1_follow: ['chainHead_v1_followEvent', 'chainHead_v1_unfollow'],
 };

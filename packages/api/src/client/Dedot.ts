@@ -1,25 +1,38 @@
 import type { SubstrateApi } from '../chaintypes/index.js';
-import { $Metadata, BlockHash, Hash, Metadata, MetadataLatest, PortableRegistry, RuntimeVersion } from '@dedot/codecs';
+import { $Metadata, BlockHash, Hash, Metadata, PortableRegistry, RuntimeVersion } from '@dedot/codecs';
 import { GenericSubstrateApi, Unsub } from '@dedot/types';
-import { ChainProperties } from '@dedot/specs';
 import {
   ConstantExecutor,
   ErrorExecutor,
   EventExecutor,
-  JsonRpcExecutor,
   RuntimeApiExecutor,
   StorageQueryExecutor,
   TxExecutor,
 } from '../executor/index.js';
 import { newProxyChain } from '../proxychain.js';
-import { ApiEventNames, ApiOptions, MetadataKey, NetworkEndpoint, NormalizedApiOptions } from '../types.js';
+import type {
+  ApiEvent,
+  ApiOptions,
+  ISubstrateClient,
+  MetadataKey,
+  NetworkEndpoint,
+  NormalizedApiOptions,
+  SubstrateChainProperties,
+  SubstrateRuntimeVersion,
+} from '../types.js';
 import { type IStorage, LocalStorage } from '@dedot/storage';
-import { assert, EventEmitter, u8aToHex } from '@dedot/utils';
-import { ConnectionStatus, type JsonRpcProvider, WsProvider } from '@dedot/providers';
+import { ensurePresence as _ensurePresence, u8aToHex } from '@dedot/utils';
+import { JsonRpcClient } from './JsonRpcClient.js';
 
 export const KEEP_ALIVE_INTERVAL = 10_000; // in ms
 export const CATCH_ALL_METADATA_KEY: MetadataKey = `RAW_META/ALL`;
 export const SUPPORTED_METADATA_VERSIONS = [15, 14];
+
+const MESSAGE: string = 'Make sure to call `.connect()` method first before using the API interfaces.';
+
+function ensurePresence<T>(value: T): NonNullable<T> {
+  return _ensurePresence(value, MESSAGE);
+}
 
 /**
  * @name Dedot
@@ -59,17 +72,18 @@ export const SUPPORTED_METADATA_VERSIONS = [15, 14];
  * run().catch(console.error);
  * ```
  */
-export class Dedot<ChainApi extends GenericSubstrateApi = SubstrateApi> extends EventEmitter<ApiEventNames> {
-  readonly #provider: JsonRpcProvider;
+export class Dedot<ChainApi extends GenericSubstrateApi = SubstrateApi>
+  extends JsonRpcClient<ChainApi, ApiEvent>
+  implements ISubstrateClient<ChainApi, ApiEvent>
+{
   readonly #options: NormalizedApiOptions;
 
   #registry?: PortableRegistry;
   #metadata?: Metadata;
-  #metadataLatest?: MetadataLatest;
 
   #genesisHash?: Hash;
-  #runtimeVersion?: RuntimeVersion;
-  #chainProperties?: ChainProperties;
+  #runtimeVersion?: SubstrateRuntimeVersion;
+  #chainProperties?: SubstrateChainProperties;
   #runtimeChain?: string;
   #localCache?: IStorage;
 
@@ -82,9 +96,8 @@ export class Dedot<ChainApi extends GenericSubstrateApi = SubstrateApi> extends 
    * @param options
    */
   constructor(options: ApiOptions | NetworkEndpoint) {
-    super();
+    super(options);
     this.#options = this.#normalizeOptions(options);
-    this.#provider = this.#getProvider();
   }
 
   /**
@@ -110,18 +123,10 @@ export class Dedot<ChainApi extends GenericSubstrateApi = SubstrateApi> extends 
   }
 
   async #doConnect(): Promise<this> {
-    this.provider.on('connected', this.#onConnected);
-    this.provider.on('disconnected', this.#onDisconnected);
-    this.provider.on('reconnecting', this.#onReconnecting);
-    this.provider.on('error', this.#onError);
+    this.on('connected', this.#onConnected);
+    this.on('disconnected', this.#onDisconnected);
 
-    return new Promise<this>((resolve, reject) => {
-      if (this.status === 'connected') {
-        this.#onConnected().catch(reject);
-      } else {
-        this.provider.connect().catch(reject);
-      }
-
+    return new Promise<this>((resolve) => {
       this.once('ready', () => {
         resolve(this);
       });
@@ -129,21 +134,11 @@ export class Dedot<ChainApi extends GenericSubstrateApi = SubstrateApi> extends 
   }
 
   #onConnected = async () => {
-    this.emit('connected');
     await this.#initialize();
   };
 
   #onDisconnected = async () => {
     await this.#unsubscribeUpdates();
-    this.emit('disconnected');
-  };
-
-  #onReconnecting = async () => {
-    this.emit('reconnecting');
-  };
-
-  #onError = async (e: Error) => {
-    this.emit('error', e);
   };
 
   /**
@@ -163,9 +158,9 @@ export class Dedot<ChainApi extends GenericSubstrateApi = SubstrateApi> extends 
     ]);
 
     this.#genesisHash = genesisHash;
-    this.#runtimeVersion = runtimeVersion;
-    this.#chainProperties = chainProps;
     this.#runtimeChain = chainName;
+    this.#runtimeVersion = this.#toSubstrateRuntimeVersion(runtimeVersion);
+    this.#chainProperties = chainProps;
 
     await this.#setupMetadata(metadata);
     this.#subscribeUpdates();
@@ -264,7 +259,7 @@ export class Dedot<ChainApi extends GenericSubstrateApi = SubstrateApi> extends 
     this.rpc
       .state_subscribeRuntimeVersion(async (runtimeVersion: RuntimeVersion) => {
         if (runtimeVersion.specVersion !== this.#runtimeVersion?.specVersion) {
-          this.#runtimeVersion = runtimeVersion;
+          this.#runtimeVersion = this.#toSubstrateRuntimeVersion(runtimeVersion);
           const newMetadata = await this.#fetchMetadata();
           await this.#setupMetadata(newMetadata);
         }
@@ -272,6 +267,19 @@ export class Dedot<ChainApi extends GenericSubstrateApi = SubstrateApi> extends 
       .then((unsub) => {
         this.#runtimeSubscriptionUnsub = unsub;
       });
+  }
+
+  #toSubstrateRuntimeVersion(runtimeVersion: RuntimeVersion): SubstrateRuntimeVersion {
+    return {
+      ...runtimeVersion,
+      apis: runtimeVersion.apis.reduce(
+        (o, [name, version]) => {
+          o[name] = version;
+          return o;
+        },
+        {} as Record<string, number>,
+      ),
+    };
   }
 
   #subscribeHealth() {
@@ -343,38 +351,6 @@ export class Dedot<ChainApi extends GenericSubstrateApi = SubstrateApi> extends 
     return {
       throwOnUnknownApi: true,
     };
-  }
-  #getProvider(): JsonRpcProvider {
-    const { provider, endpoint } = this.#options;
-    if (provider) {
-      // assert(provider.hasSubscriptions, 'Only supports RPC Provider can make subscription requests');
-      return provider;
-    }
-
-    if (endpoint) {
-      return new WsProvider(endpoint);
-    }
-
-    // TODO support light-client
-
-    return new WsProvider('ws://127.0.0.1:9944');
-  }
-
-  /**
-   * @description Entry-point for executing JSON-RPCs to blockchain node.
-   *
-   * ```typescript
-   * // Subscribe to new heads
-   * api.rpc.chain_subscribeNewHeads((header) => {
-   *   console.log(header);
-   * });
-   *
-   * // Execute arbitrary rpc method: `module_rpc_name`
-   * const result = await api.rpc.module_rpc_name();
-   * ```
-   */
-  get rpc(): ChainApi['rpc'] {
-    return newProxyChain<ChainApi>({ executor: new JsonRpcExecutor(this) }, 1, 2) as ChainApi['rpc'];
   }
 
   /**
@@ -455,32 +431,21 @@ export class Dedot<ChainApi extends GenericSubstrateApi = SubstrateApi> extends 
   }
 
   /**
-   * @description Current provider for api connection
-   */
-  get provider() {
-    return this.#provider;
-  }
-
-  /**
    * @description Codec registry
    */
   get registry() {
-    return this.#registry!;
+    return ensurePresence(this.#registry);
   }
 
   /**
    * @description Check if metadata is present
    */
   get hasMetadata(): boolean {
-    return !!this.#metadata && !!this.#metadataLatest;
+    return !!this.#metadata;
   }
 
   get metadata(): Metadata {
-    return this.#metadata!;
-  }
-
-  get metadataLatest(): MetadataLatest {
-    return this.#metadataLatest!;
+    return ensurePresence(this.#metadata);
   }
 
   /**
@@ -489,16 +454,16 @@ export class Dedot<ChainApi extends GenericSubstrateApi = SubstrateApi> extends 
    */
   setMetadata(metadata: Metadata) {
     this.#metadata = metadata;
-    this.#metadataLatest = metadata.latest;
-    this.#registry = new PortableRegistry(this.#metadataLatest);
+    this.#registry = new PortableRegistry(metadata.latest);
   }
 
   /**
    * @description Connect to blockchain node
    */
   async connect(): Promise<this> {
-    assert(this.status !== 'connected', 'Already connected!');
-    return this.#doConnect();
+    const [api, _] = await Promise.all([this.#doConnect(), super.connect()]);
+
+    return api;
   }
 
   /**
@@ -506,7 +471,19 @@ export class Dedot<ChainApi extends GenericSubstrateApi = SubstrateApi> extends 
    */
   async disconnect() {
     await this.#unsubscribeUpdates();
-    await this.#provider.disconnect();
+    await super.disconnect();
+    this.#cleanUp();
+  }
+
+  #cleanUp() {
+    this.#registry = undefined;
+    this.#metadata = undefined;
+
+    this.#genesisHash = undefined;
+    this.#runtimeVersion = undefined;
+    this.#chainProperties = undefined;
+    this.#runtimeChain = undefined;
+    this.#localCache = undefined;
   }
 
   /**
@@ -514,13 +491,6 @@ export class Dedot<ChainApi extends GenericSubstrateApi = SubstrateApi> extends 
    */
   async clearCache() {
     await this.#localCache?.clear();
-  }
-
-  /**
-   * @description Check connection status of the api instance
-   */
-  get status(): ConnectionStatus {
-    return this.provider.status;
   }
 
   /**
@@ -538,28 +508,28 @@ export class Dedot<ChainApi extends GenericSubstrateApi = SubstrateApi> extends 
    * @description Genesis hash of connected blockchain node
    */
   get genesisHash() {
-    return this.#genesisHash;
+    return ensurePresence(this.#genesisHash);
   }
 
   /**
    * @description Runtime version of connected blockchain node
    */
-  get runtimeVersion() {
-    return this.#runtimeVersion;
+  get runtimeVersion(): SubstrateRuntimeVersion {
+    return ensurePresence(this.#runtimeVersion);
   }
 
   /**
    * @description Chain properties of connected blockchain node
    */
   get chainProperties() {
-    return this.#chainProperties;
+    return ensurePresence(this.#chainProperties);
   }
 
   /**
    * @description Runtime chain name of connected blockchain node
    */
   get runtimeChain() {
-    return this.#runtimeChain;
+    return ensurePresence(this.#runtimeChain);
   }
 
   get options() {

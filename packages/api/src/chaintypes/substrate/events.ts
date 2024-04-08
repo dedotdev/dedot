@@ -57,7 +57,7 @@ import type {
   PalletBrokerRegionId,
   PalletBrokerScheduleItem,
   PalletBrokerCoretimeInterfaceCoreAssignment,
-} from './types';
+} from './types.js';
 
 export interface ChainEvents extends GenericChainEvents {
   /**

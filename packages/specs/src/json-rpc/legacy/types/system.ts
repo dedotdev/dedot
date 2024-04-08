@@ -28,9 +28,9 @@ export type ChainType = SerdeEnum<{
 export interface ChainProperties {
   isEthereum?: boolean;
   ss58Format?: number;
-  tokenDecimals?: Array<number>;
-  tokenSymbol?: Array<string>;
-  [prop: string]: unknown;
+  tokenDecimals?: number | Array<number>;
+  tokenSymbol?: string | Array<string>;
+  [prop: string]: any;
 }
 
 /**

@@ -1,10 +1,10 @@
 import { afterEach, beforeEach, describe, expect, expectTypeOf, it, vi } from 'vitest';
 import { Dedot } from '../Dedot.js';
-import MockProvider from './MockProvider.js';
+import MockProvider, { MockedRuntimeVersion } from './MockProvider.js';
 import type { SubstrateApi } from '../../chaintypes/index.js';
+import type { RuntimeVersion } from '@dedot/codecs';
+import type { AnyShape } from '@dedot/shape';
 import { stringCamelCase, stringPascalCase } from '@dedot/utils';
-import { RuntimeVersion } from '@dedot/codecs';
-import { AnyShape } from '@dedot/shape';
 
 describe('Dedot', () => {
   it('should throws error for invalid endpoint', () => {
@@ -40,7 +40,7 @@ describe('Dedot', () => {
 
     describe('const', () => {
       it('should inspect constants', () => {
-        api.metadataLatest.pallets.forEach((pallet) => {
+        api.metadata.latest.pallets.forEach((pallet) => {
           pallet.constants.forEach((cnst) => {
             expect(() => api.consts[stringCamelCase(pallet.name)][stringCamelCase(cnst.name)]).not.toThrowError();
           });
@@ -60,7 +60,7 @@ describe('Dedot', () => {
 
     describe('storage query', () => {
       it('should query storage', () => {
-        api.metadataLatest.pallets.forEach((pallet) => {
+        api.metadata.latest.pallets.forEach((pallet) => {
           pallet.storage?.entries.forEach((entry) => {
             expect(api.query[stringCamelCase(pallet.name)][stringCamelCase(entry.name)]).toBeDefined();
             expect(api.query[stringCamelCase(pallet.name)][stringCamelCase(entry.name)].multi).toBeDefined();
@@ -82,9 +82,9 @@ describe('Dedot', () => {
 
     describe('errors', () => {
       it('should inspect errors', () => {
-        api.metadataLatest.pallets.forEach((pallet) => {
+        api.metadata.latest.pallets.forEach((pallet) => {
           if (!pallet.error) return;
-          const event = api.metadataLatest.types[pallet.error];
+          const event = api.metadata.latest.types[pallet.error];
           if (event.type.tag === 'Enum') {
             event.type.value.members.forEach((m) => {
               expect(api.errors[stringCamelCase(pallet.name)][stringPascalCase(m.name)]).toHaveProperty(['is']);
@@ -108,9 +108,9 @@ describe('Dedot', () => {
 
     describe('events', () => {
       it('should inspect events', () => {
-        api.metadataLatest.pallets.forEach((pallet) => {
+        api.metadata.latest.pallets.forEach((pallet) => {
           if (!pallet.event) return;
-          const event = api.metadataLatest.types[pallet.event];
+          const event = api.metadata.latest.types[pallet.event];
           if (event.type.tag === 'Enum') {
             event.type.value.members.forEach((m) => {
               expect(api.events[stringCamelCase(pallet.name)][stringPascalCase(m.name)]).toHaveProperty(['is']);
@@ -210,9 +210,9 @@ describe('Dedot', () => {
 
     describe('tx calls', () => {
       it('should be available', async () => {
-        api.metadataLatest.pallets.forEach((pallet) => {
+        api.metadata.latest.pallets.forEach((pallet) => {
           if (!pallet.calls) return;
-          const calls = api.metadataLatest.types[pallet.calls];
+          const calls = api.metadata.latest.types[pallet.calls];
           if (calls.type.tag === 'Enum') {
             calls.type.value.members.forEach((m) => {
               const tx = api.tx[stringCamelCase(pallet.name)][stringCamelCase(m.name)];
@@ -258,7 +258,7 @@ describe('Dedot', () => {
       // Upgrade runtime version
       provider.setRpcRequest(
         'state_getRuntimeVersion',
-        () => ({ specVersion: 2, specName: 'MockedSpec' }) as RuntimeVersion,
+        () => ({ ...MockedRuntimeVersion, specVersion: 2 }) as RuntimeVersion,
       );
 
       const providerSendSpy = vi.spyOn(provider, 'send');

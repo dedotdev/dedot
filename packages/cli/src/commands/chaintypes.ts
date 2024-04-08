@@ -28,8 +28,15 @@ export const chaintypes: CommandModule<Args, Args> = {
       const rpcMethods = rpc.methods;
       const metadata = $Metadata.tryDecode(metadataHex);
       const runtimeVersion = getRuntimeVersion(metadata);
+      const runtimeApis: Record<string, number> = runtimeVersion.apis.reduce(
+        (acc, [name, version]) => {
+          acc[name] = version;
+          return acc;
+        },
+        {} as Record<string, number>,
+      );
 
-      await generateTypes('substrate', metadata.latest, rpcMethods, runtimeVersion.apis, outDir, extension);
+      await generateTypes('substrate', metadata.latest, rpcMethods, runtimeApis, outDir, extension);
     } else {
       console.log(`- Generating chaintypes via endpoint ${wsUrl!}`);
       await generateTypesFromEndpoint(chain, wsUrl!, outDir, extension);

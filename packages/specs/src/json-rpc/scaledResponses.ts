@@ -8,7 +8,7 @@ import {
   $VersionedFinalityProof,
 } from '@dedot/codecs';
 
-export const scaleResponses: Record<string, AnyShape> = {
+export const scaledResponses: Record<string, AnyShape> = {
   system_dryRun: $ApplyExtrinsicResult,
   state_getMetadata: $Metadata,
   chain_getHeader: $Header,
