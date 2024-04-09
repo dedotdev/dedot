@@ -1,7 +1,6 @@
-import { RpcGroup } from './RpcGroup.js';
+import { JsonRpcGroup, JsonRpcGroupOptions } from './JsonRpcGroup.js';
 import { GenericSubstrateApi, Unsub } from '@dedot/types';
 import { SubstrateApi } from '../chaintypes/index.js';
-import { ISubstrateClient } from '../types.js';
 import {
   ChainHeadRuntimeVersion,
   FollowEvent,
@@ -13,7 +12,8 @@ import {
 } from '@dedot/specs';
 import { Subscription } from '@dedot/providers';
 import { BlockHash } from '@dedot/codecs';
-import { assert, ensurePresence, HexString } from '@dedot/utils';
+import { assert, ensurePresence, HexString, noop } from '@dedot/utils';
+import { IJsonRpcClient } from '../types.js';
 
 export type OperationId = string;
 export type OperationHandler = {
@@ -28,7 +28,7 @@ export type PinnedBlock = {
   runtime?: ChainHeadRuntimeVersion;
 };
 
-export class ChainHead<ChainApi extends GenericSubstrateApi = SubstrateApi> extends RpcGroup<ChainApi> {
+export class ChainHead<ChainApi extends GenericSubstrateApi = SubstrateApi> extends JsonRpcGroup<ChainApi> {
   #unsub?: Unsub;
   #subscriptionId?: string;
 
@@ -40,8 +40,8 @@ export class ChainHead<ChainApi extends GenericSubstrateApi = SubstrateApi> exte
   #bestHash?: BlockHash;
   #finalizedHash?: BlockHash;
 
-  constructor(api: ISubstrateClient<ChainApi>) {
-    super(api);
+  constructor(client: IJsonRpcClient<ChainApi>, options?: Partial<JsonRpcGroupOptions>) {
+    super(client, { prefix: 'chainHead', ...options });
     this.#handlers = {};
     this.#pendingOperations = {};
     this.#pinnedBlocks = [];
@@ -54,16 +54,13 @@ export class ChainHead<ChainApi extends GenericSubstrateApi = SubstrateApi> exte
     assert(!this.#subscriptionId, 'Already followed chain head. Please unfollow first.');
 
     return new Promise<void>(async (resolve) => {
-      this.#unsub = await this.api.rpc.chainHead_unstable_follow(
-        withRuntime,
-        (event: FollowEvent, subscription: Subscription) => {
-          this.#onFollowEvent(event, subscription);
+      this.#unsub = await this.exec('follow', withRuntime, (event: FollowEvent, subscription: Subscription) => {
+        this.#onFollowEvent(event, subscription);
 
-          if (event.event == 'initialized') {
-            resolve();
-          }
-        },
-      );
+        if (event.event == 'initialized') {
+          resolve();
+        }
+      });
     });
   }
 
@@ -89,7 +86,7 @@ export class ChainHead<ChainApi extends GenericSubstrateApi = SubstrateApi> exte
         const cutOffBlocks = this.#pinnedBlocks.splice(this.#pinnedBlocks.length - result.finalizedBlockHashes.length);
         const toUnpinHashes: HexString[] = [...result.prunedBlockHashes, ...cutOffBlocks.map(({ hash }) => hash)];
 
-        this.unpin(toUnpinHashes).catch(console.error);
+        this.unpin(toUnpinHashes).catch(noop);
         console.log('PinnedSize', this.#pinnedBlocks.length, 'Best Hash', this.#ensurePinnedHash());
         break;
       case 'stop':
@@ -142,7 +139,7 @@ export class ChainHead<ChainApi extends GenericSubstrateApi = SubstrateApi> exte
         break;
       }
       case 'operationWaitingForContinue': {
-        this.continue(result.operationId).catch(console.error);
+        this.continue(result.operationId).catch(noop);
         break;
       }
     }
@@ -188,7 +185,7 @@ export class ChainHead<ChainApi extends GenericSubstrateApi = SubstrateApi> exte
 
     if (cleanUp) {
       delete this.#handlers[result.operationId];
-      this.stopOperation(result.operationId).catch(console.error);
+      this.stopOperation(result.operationId).catch(noop);
     }
   }
 
@@ -259,10 +256,7 @@ export class ChainHead<ChainApi extends GenericSubstrateApi = SubstrateApi> exte
   async body(at?: BlockHash): Promise<Array<HexString>> {
     this.#ensureFollowed();
 
-    const resp: MethodResponse = await this.api.rpc.chainHead_unstable_body(
-      this.#subscriptionId,
-      this.#ensurePinnedHash(at),
-    );
+    const resp: MethodResponse = await this.exec('body', this.#subscriptionId, this.#ensurePinnedHash(at));
 
     return this.#awaitOperation(resp);
   }
@@ -273,7 +267,8 @@ export class ChainHead<ChainApi extends GenericSubstrateApi = SubstrateApi> exte
   async call(func: string, params: HexString = '0x', at?: BlockHash): Promise<HexString> {
     this.#ensureFollowed();
 
-    const resp: MethodResponse = await this.api.rpc.chainHead_unstable_call(
+    const resp: MethodResponse = await this.exec(
+      'call',
       this.#subscriptionId,
       this.#ensurePinnedHash(at),
       func,
@@ -289,7 +284,7 @@ export class ChainHead<ChainApi extends GenericSubstrateApi = SubstrateApi> exte
   async header(at?: BlockHash): Promise<HexString | null> {
     this.#ensureFollowed();
 
-    return await this.api.rpc.chainHead_unstable_header(this.#subscriptionId, this.#ensurePinnedHash(at));
+    return await this.exec('header', this.#subscriptionId, this.#ensurePinnedHash(at));
   }
 
   /**
@@ -300,7 +295,8 @@ export class ChainHead<ChainApi extends GenericSubstrateApi = SubstrateApi> exte
   async storage(items: Array<StorageQuery>, childTrie?: string | null, at?: BlockHash): Promise<Array<StorageResult>> {
     this.#ensureFollowed();
 
-    const resp: MethodResponse = await this.api.rpc.chainHead_unstable_storage(
+    const resp: MethodResponse = await this.exec(
+      'storage',
       this.#subscriptionId,
       this.#ensurePinnedHash(at),
       items,
@@ -316,7 +312,7 @@ export class ChainHead<ChainApi extends GenericSubstrateApi = SubstrateApi> exte
   async stopOperation(operationId: OperationId): Promise<void> {
     this.#ensureFollowed();
 
-    await this.api.rpc.chainHead_unstable_stopOperation(this.#subscriptionId, operationId);
+    await this.exec('stopOperation', this.#subscriptionId, operationId);
   }
 
   /**
@@ -325,7 +321,7 @@ export class ChainHead<ChainApi extends GenericSubstrateApi = SubstrateApi> exte
   async continue(operationId: OperationId): Promise<void> {
     this.#ensureFollowed();
 
-    await this.api.rpc.chainHead_unstable_continue(this.#subscriptionId, operationId);
+    await this.exec('continue', this.#subscriptionId, operationId);
   }
 
   /**
@@ -334,6 +330,6 @@ export class ChainHead<ChainApi extends GenericSubstrateApi = SubstrateApi> exte
   async unpin(hashes: BlockHash | BlockHash[]): Promise<void> {
     this.#ensureFollowed();
 
-    await this.api.rpc.chainHead_unstable_unpin(this.#subscriptionId, hashes);
+    await this.exec('unpin', this.#subscriptionId, hashes);
   }
 }
