@@ -26,7 +26,7 @@ export interface ChainHeadRuntimeVersion {
 
 export interface Initialized<Hash = BlockHash> extends NamedEvent {
   event: 'initialized';
-  finalizedBlockHash: Hash;
+  finalizedBlockHashes: Array<Hash>;
   finalizedBlockRuntime: RuntimeEvent | null;
 }
 
@@ -91,21 +91,26 @@ export interface Stop extends NamedEvent {
   event: 'stop';
 }
 
-export type FollowEvent<Hash = BlockHash> =
-  | Initialized<Hash>
-  | NewBlock<Hash>
-  | BestBlockChanged<Hash>
-  | Finalized<Hash>
+export type FollowOperationEvent =
   | OperationBodyDone
   | OperationCallDone
   | OperationStorageItems
   | OperationWaitingForContinue
   | OperationStorageDone
   | OperationInaccessible
-  | OperationError
+  | OperationError;
+
+export type FollowEvent<Hash = BlockHash> =
+  | Initialized<Hash>
+  | NewBlock<Hash>
+  | BestBlockChanged<Hash>
+  | Finalized<Hash>
+  | FollowOperationEvent
   | Stop;
 
-export type MethodResponse = { result: 'started'; operationId: string } | { result: 'limitReached' };
+export type MethodResponse =
+  | { result: 'started'; operationId: string; discardedItems?: number }
+  | { result: 'limitReached' };
 
 export interface StorageQuery<Key = string> {
   key: Key;

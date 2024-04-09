@@ -35,7 +35,7 @@ export interface ChainHeadUnstable extends GenericJsonRpcApis {
    * @param subscriptionId
    * @param blockHash
    */
-  chainHead_unstable_header: (subscriptionId: string, blockHash: BlockHash) => Promise<MethodResponse>;
+  chainHead_unstable_header: (subscriptionId: string, blockHash: BlockHash) => Promise<string | null>;
 
   /**
    * Returns storage entries at a specific block's state.
