@@ -1,9 +1,10 @@
 import type { SubstrateApi } from '../chaintypes/index.js';
-import type { GenericStorageQuery, GenericSubstrateApi } from '@dedot/types';
+import type { GenericStorageQuery, GenericSubstrateApi, Unsub } from '@dedot/types';
 import type { StorageChangeSet } from '@dedot/specs';
 import { Executor } from './Executor.js';
 import { QueryableStorage } from '../storage/QueryableStorage.js';
-import { assert, isFunction } from '@dedot/utils';
+import { assert, HexString, isFunction } from '@dedot/utils';
+import { BlockHash, Option, StorageData } from '@dedot/codecs';
 
 /**
  * @name StorageQueryExecutor
@@ -21,13 +22,13 @@ export class StorageQueryExecutor<ChainApi extends GenericSubstrateApi = Substra
 
       // if a callback is passed, make a storage subscription and return an unsub function
       if (callback) {
-        return await this.api.rpc.state_subscribeStorage([encodedKey], (changeSet: StorageChangeSet) => {
+        return await this.subscribeStorage([encodedKey], (changeSet: StorageChangeSet) => {
           const targetChange = changeSet.changes.find((change) => change[0] === encodedKey);
 
           targetChange && callback(entry.decodeValue(targetChange[1]));
         });
       } else {
-        const result = await this.api.rpc.state_getStorage(encodedKey, this.atBlockHash);
+        const result = await this.getStorage(encodedKey, this.atBlockHash);
         return entry.decodeValue(result);
       }
     };
@@ -61,5 +62,13 @@ export class StorageQueryExecutor<ChainApi extends GenericSubstrateApi = Substra
     };
 
     return queryFn;
+  }
+
+  protected getStorage(key: HexString, at?: BlockHash): Promise<Option<StorageData>> {
+    return this.api.rpc.state_getStorage(key, at);
+  }
+
+  protected subscribeStorage(keys: HexString[], cb: (changeSet: StorageChangeSet) => void): Promise<Unsub> {
+    return this.api.rpc.state_subscribeStorage(keys, cb);
   }
 }

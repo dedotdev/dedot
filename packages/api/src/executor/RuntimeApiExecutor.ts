@@ -17,13 +17,20 @@ import {
   concatU8a,
   u8aToHex,
   UnknownApiError,
+  HexString,
 } from '@dedot/utils';
-import { RuntimeApiMethodDefLatest } from '@dedot/codecs';
+import { BlockHash, RuntimeApiMethodDefLatest } from '@dedot/codecs';
 import { Metadata, toRuntimeApiMethods, toRuntimeApiSpecs } from '@dedot/specs';
 
 export const FallbackRuntimeApis: Record<string, number> = { '0x37e397fc7c91f5e4': 2 };
 
 export const FallbackRuntimeApiSpecs = { Metadata };
+
+export interface StateCallParams {
+  func: string;
+  params: HexString;
+  at?: BlockHash;
+}
 
 /**
  * @name RuntimeApiExecutor
@@ -48,12 +55,13 @@ export class RuntimeApiExecutor<ChainApi extends GenericSubstrateApi = GenericSu
       const formattedInputs = params.map((param, index) => this.tryEncode(param, args[index]));
       const bytes = u8aToHex(concatU8a(...formattedInputs));
 
-      const callArgs = [callName, bytes];
-      if (this.atBlockHash) {
-        callArgs.push(this.atBlockHash);
-      }
+      const callParams: StateCallParams = {
+        func: callName,
+        params: bytes,
+        at: this.atBlockHash,
+      };
 
-      const result = await this.api.rpc.state_call(...callArgs);
+      const result = await this.stateCall(callParams);
 
       return this.tryDecode(callSpec, result);
     };
@@ -61,6 +69,11 @@ export class RuntimeApiExecutor<ChainApi extends GenericSubstrateApi = GenericSu
     callFn.meta = callSpec;
 
     return callFn;
+  }
+
+  protected stateCall(callParams: StateCallParams): Promise<unknown> {
+    const { func, params, at } = callParams;
+    return this.api.rpc.state_call(func, params, at);
   }
 
   tryDecode(callSpec: RuntimeApiMethodSpec, raw: any) {
