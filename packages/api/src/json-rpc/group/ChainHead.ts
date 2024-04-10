@@ -11,7 +11,7 @@ import {
   StorageResult,
 } from '@dedot/specs';
 import { Subscription } from '@dedot/providers';
-import { BlockHash } from '@dedot/codecs';
+import { BlockHash, Option } from '@dedot/codecs';
 import { assert, ensurePresence, HexString, noop } from '@dedot/utils';
 import { IJsonRpcClient } from '../../types.js';
 
@@ -315,7 +315,7 @@ export class ChainHead extends JsonRpcGroup<ChainHeadEvent> {
   /**
    * chainHead_unstable_header
    */
-  async header(at?: BlockHash): Promise<HexString | null> {
+  async header(at?: BlockHash): Promise<Option<HexString>> {
     this.#ensureFollowed();
 
     return await this.send('header', this.#subscriptionId, this.#ensurePinnedHash(at));

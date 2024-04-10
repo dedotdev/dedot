@@ -1,6 +1,7 @@
 import { Callback, GenericJsonRpcApis, Unsub } from '@dedot/types';
 import { FollowEvent, MethodResponse, StorageQuery } from '../types/index.js';
-import { BlockHash } from '@dedot/codecs';
+import { BlockHash, Option } from '@dedot/codecs';
+import { HexString } from '@dedot/utils';
 
 export interface ChainHeadV1 extends GenericJsonRpcApis {
   /**
@@ -35,7 +36,7 @@ export interface ChainHeadV1 extends GenericJsonRpcApis {
    * @param subscriptionId
    * @param blockHash
    */
-  chainHead_v1_header: (subscriptionId: string, blockHash: BlockHash) => Promise<MethodResponse>;
+  chainHead_v1_header: (subscriptionId: string, blockHash: BlockHash) => Promise<Option<HexString>>;
 
   /**
    * Returns storage entries at a specific block's state.
