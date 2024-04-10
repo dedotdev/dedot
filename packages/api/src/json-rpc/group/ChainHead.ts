@@ -112,7 +112,7 @@ export class ChainHead extends JsonRpcGroup<ChainHeadEvent> {
 
         // TODO check again this logic
         // TODO logic to unpin more blocks in the queue
-        const cutOffBlocks = this.#pinnedBlocks.splice(this.#pinnedBlocks.length - result.finalizedBlockHashes.length);
+        const cutOffBlocks = this.#pinnedBlocks.splice(0, result.finalizedBlockHashes.length);
         const toUnpinHashes: HexString[] = [...result.prunedBlockHashes, ...cutOffBlocks.map(({ hash }) => hash)];
 
         this.unpin(toUnpinHashes).catch(noop);
@@ -184,10 +184,11 @@ export class ChainHead extends JsonRpcGroup<ChainHeadEvent> {
       if (this.#isPinnedHash(hash)) {
         return hash;
       } else {
-        throw new Error('Block hash is not pinned');
+        throw new Error(`Block hash ${hash} is not pinned`);
       }
     }
 
+    console.log('best', this.#bestHash, 'final', this.#finalizedHash);
     return ensurePresence(this.#bestHash || this.#finalizedHash);
   }
 
@@ -359,6 +360,7 @@ export class ChainHead extends JsonRpcGroup<ChainHeadEvent> {
    */
   async unpin(hashes: BlockHash | BlockHash[]): Promise<void> {
     this.#ensureFollowed();
+    console.log('UNPIN', hashes);
 
     await this.send('unpin', this.#subscriptionId, hashes);
   }
