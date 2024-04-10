@@ -1,6 +1,6 @@
 import { JsonRpcGroup, JsonRpcGroupOptions } from './JsonRpcGroup.js';
 import { Properties } from '@dedot/specs';
-import { IJsonRpcClient } from '../types.js';
+import { IJsonRpcClient } from '../../types.js';
 
 export class ChainSpec extends JsonRpcGroup {
   constructor(client: IJsonRpcClient, options?: Partial<JsonRpcGroupOptions>) {

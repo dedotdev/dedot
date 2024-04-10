@@ -1,3 +1,2 @@
-export * from './JsonRpcGroup.js';
-export * from './ChainSpec.js';
-export * from './ChainHead.js';
+export * from './JsonRpcClient.js';
+export * from './group/index.js';

@@ -1,6 +1,5 @@
 import { JsonRpcGroup, JsonRpcGroupOptions } from './JsonRpcGroup.js';
-import { GenericSubstrateApi, Unsub } from '@dedot/types';
-import { SubstrateApi } from '../chaintypes/index.js';
+import { Unsub } from '@dedot/types';
 import {
   ChainHeadRuntimeVersion,
   FollowEvent,
@@ -13,7 +12,7 @@ import {
 import { Subscription } from '@dedot/providers';
 import { BlockHash } from '@dedot/codecs';
 import { assert, ensurePresence, HexString, noop } from '@dedot/utils';
-import { IJsonRpcClient } from '../types.js';
+import { IJsonRpcClient } from '../../types.js';
 
 export type OperationId = string;
 export type OperationHandler = {

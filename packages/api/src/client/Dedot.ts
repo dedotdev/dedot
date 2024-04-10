@@ -22,7 +22,7 @@ import type {
 } from '../types.js';
 import { type IStorage, LocalStorage } from '@dedot/storage';
 import { ensurePresence as _ensurePresence, u8aToHex } from '@dedot/utils';
-import { JsonRpcClient } from './JsonRpcClient.js';
+import { JsonRpcClient } from '../json-rpc/index.js';
 
 export const KEEP_ALIVE_INTERVAL = 10_000; // in ms
 export const CATCH_ALL_METADATA_KEY: MetadataKey = `RAW_META/ALL`;
