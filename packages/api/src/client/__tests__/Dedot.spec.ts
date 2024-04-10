@@ -156,10 +156,10 @@ describe('Dedot', () => {
         const providerSend = vi.spyOn(api.provider, 'send');
 
         await api.call.metadata.metadata();
-        expect(providerSend).toBeCalledWith('state_call', ['Metadata_metadata', '0x']);
+        expect(providerSend).toBeCalledWith('state_call', ['Metadata_metadata', '0x', undefined]);
 
         await api.call.metadata.metadataAtVersion(14);
-        expect(providerSend).toBeCalledWith('state_call', ['Metadata_metadata_at_version', '0x0e000000']); // $.u32.decode(14) = '0x0e000000'
+        expect(providerSend).toBeCalledWith('state_call', ['Metadata_metadata_at_version', '0x0e000000', undefined]); // $.u32.decode(14) = '0x0e000000'
       });
 
       it('should throws error if runtime not support or call spec not found', async () => {
