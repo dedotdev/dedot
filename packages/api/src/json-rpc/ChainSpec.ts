@@ -4,18 +4,18 @@ import { IJsonRpcClient } from '../types.js';
 
 export class ChainSpec extends JsonRpcGroup {
   constructor(client: IJsonRpcClient, options?: Partial<JsonRpcGroupOptions>) {
-    super(client, { prefix: 'chainSpec', ...options });
+    super(client, { prefix: 'chainSpec', supportedVersions: ['unstable', 'v1'], ...options });
   }
 
   async chainName(): Promise<string> {
-    return this.exec('chainName');
+    return this.send('chainName');
   }
 
   async genesisHash(): Promise<string> {
-    return this.exec('genesisHash');
+    return this.send('genesisHash');
   }
 
   async properties(): Promise<Properties> {
-    return this.exec('properties');
+    return this.send('properties');
   }
 }

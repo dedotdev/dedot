@@ -43,7 +43,7 @@ export class ChainHead extends JsonRpcGroup<ChainHeadEvent> {
   #finalizedRuntime?: ChainHeadRuntimeVersion;
 
   constructor(client: IJsonRpcClient, options?: Partial<JsonRpcGroupOptions>) {
-    super(client, { prefix: 'chainHead', ...options });
+    super(client, { prefix: 'chainHead', supportedVersions: ['unstable', 'v1'], ...options });
     this.#handlers = {};
     this.#pendingOperations = {};
     this.#pinnedBlocks = [];
@@ -68,7 +68,7 @@ export class ChainHead extends JsonRpcGroup<ChainHeadEvent> {
     assert(!this.#subscriptionId, 'Already followed chain head. Please unfollow first.');
 
     return new Promise<void>(async (resolve) => {
-      this.#unsub = await this.exec('follow', withRuntime, (event: FollowEvent, subscription: Subscription) => {
+      this.#unsub = await this.send('follow', withRuntime, (event: FollowEvent, subscription: Subscription) => {
         this.#onFollowEvent(event, subscription);
 
         if (event.event == 'initialized') {
@@ -291,7 +291,7 @@ export class ChainHead extends JsonRpcGroup<ChainHeadEvent> {
   async body(at?: BlockHash): Promise<Array<HexString>> {
     this.#ensureFollowed();
 
-    const resp: MethodResponse = await this.exec('body', this.#subscriptionId, this.#ensurePinnedHash(at));
+    const resp: MethodResponse = await this.send('body', this.#subscriptionId, this.#ensurePinnedHash(at));
 
     return this.#awaitOperation(resp);
   }
@@ -302,7 +302,7 @@ export class ChainHead extends JsonRpcGroup<ChainHeadEvent> {
   async call(func: string, params: HexString = '0x', at?: BlockHash): Promise<HexString> {
     this.#ensureFollowed();
 
-    const resp: MethodResponse = await this.exec(
+    const resp: MethodResponse = await this.send(
       'call',
       this.#subscriptionId,
       this.#ensurePinnedHash(at),
@@ -319,7 +319,7 @@ export class ChainHead extends JsonRpcGroup<ChainHeadEvent> {
   async header(at?: BlockHash): Promise<HexString | null> {
     this.#ensureFollowed();
 
-    return await this.exec('header', this.#subscriptionId, this.#ensurePinnedHash(at));
+    return await this.send('header', this.#subscriptionId, this.#ensurePinnedHash(at));
   }
 
   /**
@@ -330,7 +330,7 @@ export class ChainHead extends JsonRpcGroup<ChainHeadEvent> {
   async storage(items: Array<StorageQuery>, childTrie?: string | null, at?: BlockHash): Promise<Array<StorageResult>> {
     this.#ensureFollowed();
 
-    const resp: MethodResponse = await this.exec(
+    const resp: MethodResponse = await this.send(
       'storage',
       this.#subscriptionId,
       this.#ensurePinnedHash(at),
@@ -347,7 +347,7 @@ export class ChainHead extends JsonRpcGroup<ChainHeadEvent> {
   async stopOperation(operationId: OperationId): Promise<void> {
     this.#ensureFollowed();
 
-    await this.exec('stopOperation', this.#subscriptionId, operationId);
+    await this.send('stopOperation', this.#subscriptionId, operationId);
   }
 
   /**
@@ -356,7 +356,7 @@ export class ChainHead extends JsonRpcGroup<ChainHeadEvent> {
   async continue(operationId: OperationId): Promise<void> {
     this.#ensureFollowed();
 
-    await this.exec('continue', this.#subscriptionId, operationId);
+    await this.send('continue', this.#subscriptionId, operationId);
   }
 
   /**
@@ -365,6 +365,6 @@ export class ChainHead extends JsonRpcGroup<ChainHeadEvent> {
   async unpin(hashes: BlockHash | BlockHash[]): Promise<void> {
     this.#ensureFollowed();
 
-    await this.exec('unpin', this.#subscriptionId, hashes);
+    await this.send('unpin', this.#subscriptionId, hashes);
   }
 }

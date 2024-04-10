@@ -3,13 +3,43 @@ import { RpcMethods } from '@dedot/specs';
 
 export type JsonRpcGroupVersion = 'unstable' | `v${number}`;
 export interface JsonRpcGroupOptions {
+  /**
+   * Prefix of the json-rpc group.
+   * E.g: chainHead, chainSpec, archive, etc.
+   *
+   * According to JSON-RPC v2 Spec: https://paritytech.github.io/json-rpc-interface-spec/grouping-functions-and-node-capabilities.html#grouping-functions-and-node-capabilities
+   */
   prefix: string;
-  version?: JsonRpcGroupVersion;
 
+  /**
+   * By default, the version is automatically detected from the available rpc-methods.
+   * If a fixed version is provided, it will be used instead.
+   */
+  fixedVersion?: JsonRpcGroupVersion;
+
+  /**
+   * List of rpc-methods to use for version detection.
+   * If not provided, the list will be fetched from the node.
+   * This is helpful when the node does not support `rpc_methods` method
+   * Or if we want to share the same rpc-methods list across multiple groups.
+   */
   rpcMethods?: string[];
-  // TODO max supported version
+
+  /**
+   * List of supported versions.
+   * If provided, the detected version must be in this list else an error will be thrown.
+   * This is helpful when we want to verify behaviour of new version before using/support it.
+   * If not provided, any detected version will be used.
+   */
+  supportedVersions?: JsonRpcGroupVersion[];
 }
 
+/**
+ * @name JsonRpcGroup
+ * A group of json-rpc methods with a common prefix.
+ *
+ * JSON-RPC V2: https://paritytech.github.io/json-rpc-interface-spec/grouping-functions-and-node-capabilities.html#grouping-functions-and-node-capabilities
+ */
 export class JsonRpcGroup<Event extends string = string> extends EventEmitter<Event> {
   #detectedVersion?: JsonRpcGroupVersion;
 
@@ -20,7 +50,7 @@ export class JsonRpcGroup<Event extends string = string> extends EventEmitter<Ev
     super();
   }
 
-  async exec<T = any>(method: string, ...params: any[]): Promise<T> {
+  async send<T = any>(method: string, ...params: any[]): Promise<T> {
     const rpcMethod = `${this.prefix}_${await this.version()}_${method}`;
     return this.client.rpc[rpcMethod](...params);
   }
@@ -30,10 +60,15 @@ export class JsonRpcGroup<Event extends string = string> extends EventEmitter<Ev
   }
 
   async version(): Promise<JsonRpcGroupVersion> {
-    const { version } = this.options;
-    if (version) return version;
+    const { fixedVersion, supportedVersions } = this.options;
+    if (fixedVersion) return fixedVersion;
 
-    return this.detectVersion();
+    const detectedVersion = await this.detectVersion();
+    if (supportedVersions && supportedVersions.length > 0 && !supportedVersions.includes(detectedVersion)) {
+      throw new Error(`Detected version ${detectedVersion} is not supported`);
+    }
+
+    return detectedVersion;
   }
 
   async detectVersion(): Promise<JsonRpcGroupVersion> {
