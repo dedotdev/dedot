@@ -28,7 +28,9 @@ export type PinnedBlock = {
   runtime?: ChainHeadRuntimeVersion;
 };
 
-export class ChainHead<ChainApi extends GenericSubstrateApi = SubstrateApi> extends JsonRpcGroup<ChainApi> {
+export type ChainHeadEvent = 'newBlock' | 'bestBlock' | 'finalizedBlock';
+
+export class ChainHead extends JsonRpcGroup<ChainHeadEvent> {
   #unsub?: Unsub;
   #subscriptionId?: string;
 
@@ -36,15 +38,27 @@ export class ChainHead<ChainApi extends GenericSubstrateApi = SubstrateApi> exte
   #pendingOperations: Record<OperationId, FollowOperationEvent[]>;
 
   #pinnedBlocks: Array<PinnedBlock>;
-  #finalizedRuntime?: ChainHeadRuntimeVersion;
   #bestHash?: BlockHash;
   #finalizedHash?: BlockHash;
+  #finalizedRuntime?: ChainHeadRuntimeVersion;
 
-  constructor(client: IJsonRpcClient<ChainApi>, options?: Partial<JsonRpcGroupOptions>) {
+  constructor(client: IJsonRpcClient, options?: Partial<JsonRpcGroupOptions>) {
     super(client, { prefix: 'chainHead', ...options });
     this.#handlers = {};
     this.#pendingOperations = {};
     this.#pinnedBlocks = [];
+  }
+
+  get runtimeVersion(): ChainHeadRuntimeVersion {
+    this.#ensureFollowed();
+
+    return this.#finalizedRuntime!;
+  }
+
+  get bestRuntimeVersion(): ChainHeadRuntimeVersion {
+    this.#ensureFollowed();
+
+    return this.#findRuntimeAt(this.#bestHash!)!;
   }
 
   /**
@@ -66,21 +80,37 @@ export class ChainHead<ChainApi extends GenericSubstrateApi = SubstrateApi> exte
 
   #onFollowEvent = (result: FollowEvent, subscription?: Subscription) => {
     switch (result.event) {
-      case 'initialized':
+      case 'initialized': {
         this.#subscriptionId = subscription!.subscriptionId;
         this.#pinnedBlocks = result.finalizedBlockHashes.map((hash) => ({ hash }));
         this.#finalizedRuntime = this.#extractRuntime(result.finalizedBlockRuntime)!;
         this.#bestHash = this.#finalizedHash = this.#pinnedBlocks.at(-1)!.hash;
 
         break;
-      case 'newBlock':
-        this.#pinnedBlocks.push({ hash: result.blockHash, runtime: this.#extractRuntime(result.newRuntime) });
+      }
+      case 'newBlock': {
+        const hash = result.blockHash;
+        const runtime = this.#extractRuntime(result.newRuntime);
+
+        this.#pinnedBlocks.push({ hash, runtime });
+
+        this.emit('newBlock', hash, runtime);
         break;
-      case 'bestBlockChanged':
+      }
+      case 'bestBlockChanged': {
         this.#bestHash = result.bestBlockHash;
+        this.emit('bestBlock', this.#bestHash, this.#findRuntimeAt(this.#bestHash));
         break;
-      case 'finalized':
+      }
+      case 'finalized': {
         this.#finalizedHash = result.finalizedBlockHashes.at(-1)!;
+        const finalizedRuntime = this.#findRuntimeAt(this.#finalizedHash)!;
+        if (finalizedRuntime) {
+          this.#finalizedRuntime = finalizedRuntime;
+        }
+
+        this.emit('finalizedBlock', this.#finalizedHash, this.#finalizedRuntime);
+
         // TODO check again this logic
         // TODO logic to unpin more blocks in the queue
         const cutOffBlocks = this.#pinnedBlocks.splice(this.#pinnedBlocks.length - result.finalizedBlockHashes.length);
@@ -89,6 +119,7 @@ export class ChainHead<ChainApi extends GenericSubstrateApi = SubstrateApi> exte
         this.unpin(toUnpinHashes).catch(noop);
         console.log('PinnedSize', this.#pinnedBlocks.length, 'Best Hash', this.#ensurePinnedHash());
         break;
+      }
       case 'stop':
         // TODO handle retry & recovery
         throw new Error('Subscription stopped!');
@@ -144,6 +175,10 @@ export class ChainHead<ChainApi extends GenericSubstrateApi = SubstrateApi> exte
       }
     }
   };
+
+  #findRuntimeAt(at: BlockHash): ChainHeadRuntimeVersion | undefined {
+    return this.#pinnedBlocks.find((block) => block.hash == at)?.runtime;
+  }
 
   #isPinnedHash(hash: BlockHash): boolean {
     return this.#pinnedBlocks.some((block) => block.hash == hash);

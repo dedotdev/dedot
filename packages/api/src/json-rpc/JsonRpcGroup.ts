@@ -1,22 +1,24 @@
-import { GenericSubstrateApi } from '@dedot/types';
-import { IJsonRpcClient, ISubstrateClient, JsonRpcClient, SubstrateApi } from 'dedot';
+import { EventEmitter, IJsonRpcClient } from 'dedot';
 import { RpcMethods } from '@dedot/specs';
 
 export type JsonRpcGroupVersion = 'unstable' | `v${number}`;
 export interface JsonRpcGroupOptions {
   prefix: string;
   version?: JsonRpcGroupVersion;
+
   rpcMethods?: string[];
   // TODO max supported version
 }
 
-export class JsonRpcGroup<ChainApi extends GenericSubstrateApi = SubstrateApi> {
+export class JsonRpcGroup<Event extends string = string> extends EventEmitter<Event> {
   #detectedVersion?: JsonRpcGroupVersion;
 
   constructor(
-    public client: IJsonRpcClient<ChainApi>,
+    public client: IJsonRpcClient,
     public options: JsonRpcGroupOptions,
-  ) {}
+  ) {
+    super();
+  }
 
   async exec<T = any>(method: string, ...params: any[]): Promise<T> {
     const rpcMethod = `${this.prefix}_${await this.version()}_${method}`;

@@ -85,8 +85,10 @@ export interface SubstrateChainProperties {
   [prop: string]: any;
 }
 
-export interface IJsonRpcClient<ChainApi extends GenericSubstrateApi, Events extends string = ProviderEvent>
-  extends IEventEmitter<Events> {
+export interface IJsonRpcClient<
+  ChainApi extends GenericSubstrateApi = GenericSubstrateApi,
+  Events extends string = ProviderEvent,
+> extends IEventEmitter<Events> {
   options: JsonRpcClientOptions;
   status: ConnectionStatus;
   provider: JsonRpcProvider;
@@ -96,8 +98,10 @@ export interface IJsonRpcClient<ChainApi extends GenericSubstrateApi, Events ext
   rpc: ChainApi['rpc'];
 }
 
-export interface ISubstrateClient<ChainApi extends GenericSubstrateApi, Events extends string = ApiEvent>
-  extends IJsonRpcClient<ChainApi, Events> {
+export interface ISubstrateClient<
+  ChainApi extends GenericSubstrateApi = GenericSubstrateApi,
+  Events extends string = ApiEvent,
+> extends IJsonRpcClient<ChainApi, Events> {
   options: NormalizedApiOptions;
 
   metadata: Metadata;

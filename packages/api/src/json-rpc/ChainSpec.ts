@@ -1,11 +1,9 @@
 import { JsonRpcGroup, JsonRpcGroupOptions } from './JsonRpcGroup.js';
-import { GenericSubstrateApi } from '@dedot/types';
-import { SubstrateApi } from '../chaintypes/index.js';
 import { Properties } from '@dedot/specs';
 import { IJsonRpcClient } from '../types.js';
 
-export class ChainSpec<ChainApi extends GenericSubstrateApi = SubstrateApi> extends JsonRpcGroup<ChainApi> {
-  constructor(client: IJsonRpcClient<ChainApi>, options?: Partial<JsonRpcGroupOptions>) {
+export class ChainSpec extends JsonRpcGroup {
+  constructor(client: IJsonRpcClient, options?: Partial<JsonRpcGroupOptions>) {
     super(client, { prefix: 'chainSpec', ...options });
   }
 
