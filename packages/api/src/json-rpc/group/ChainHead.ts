@@ -146,13 +146,9 @@ export class ChainHead extends JsonRpcGroup<ChainHeadEvent> {
         break;
       }
       case 'operationStorageDone': {
-        this.#handleOperationResponse(
-          result,
-          ({ resolve, storageResults }) => {
-            resolve(storageResults || []);
-          },
-          false,
-        );
+        this.#handleOperationResponse(result, ({ resolve, storageResults }) => {
+          resolve(storageResults || []);
+        });
         break;
       }
       case 'operationError': {
