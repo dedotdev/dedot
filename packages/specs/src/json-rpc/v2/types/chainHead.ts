@@ -1,11 +1,13 @@
 import { BlockHash } from '@dedot/codecs';
 
+export type OperationId = string;
+
 export interface NamedEvent {
   event: string;
 }
 
 export interface WithOperationId {
-  operationId: string;
+  operationId: OperationId;
 }
 
 export type RuntimeEvent =
@@ -109,7 +111,7 @@ export type FollowEvent<Hash = BlockHash> =
   | Stop;
 
 export type MethodResponse =
-  | { result: 'started'; operationId: string; discardedItems?: number }
+  | { result: 'started'; operationId: OperationId; discardedItems?: number }
   | { result: 'limitReached' };
 
 export interface StorageQuery<Key = string> {

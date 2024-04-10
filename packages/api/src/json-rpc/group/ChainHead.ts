@@ -5,6 +5,7 @@ import {
   FollowEvent,
   FollowOperationEvent,
   MethodResponse,
+  OperationId,
   RuntimeEvent,
   StorageQuery,
   StorageResult,
@@ -14,7 +15,6 @@ import { BlockHash } from '@dedot/codecs';
 import { assert, ensurePresence, HexString, noop } from '@dedot/utils';
 import { IJsonRpcClient } from '../../types.js';
 
-export type OperationId = string;
 export type OperationHandler = {
   operationId: OperationId;
   resolve: (result: any) => void;
