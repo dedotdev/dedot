@@ -1,10 +1,5 @@
 import { BlockHash } from '@dedot/codecs';
-
-export type OperationId = string;
-
-export interface NamedEvent {
-  event: string;
-}
+import { OperationId, NamedEvent } from './types.js';
 
 export interface WithOperationId {
   operationId: OperationId;
