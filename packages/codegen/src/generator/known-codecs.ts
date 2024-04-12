@@ -2,6 +2,7 @@ import * as $ from '@dedot/shape';
 import * as Codecs from '@dedot/codecs';
 import { AnyShape } from '@dedot/shape';
 import {
+  $AccountId,
   $AccountId20,
   $AccountId32,
   $Bytes,
@@ -60,6 +61,8 @@ const KNOWN_PATHS: KnownPath[] = [
   /^primitive_types::\w+$/,
   /^sp_arithmetic::per_things::\w+$/,
   /^sp_arithmetic::fixed_point::\w+$/,
+  'ink_primitives::types::Hash',
+  'ink_primitives::types::AccountId',
 ];
 
 const WRAPPER_TYPE_REGEX = /^(\w+)<(.*)>$/;
@@ -78,6 +81,7 @@ export const looseTypeCodecs: Record<string, AnyShape> = {
   $AccountId20,
   $EthereumAddress,
   $AccountId32,
+  $AccountId,
   $ConsensusEngineId,
   $StorageKey,
   $StorageData,

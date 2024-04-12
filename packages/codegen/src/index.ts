@@ -16,6 +16,8 @@ import { RpcMethods } from '@dedot/types';
 import { MetadataLatest } from '@dedot/codecs';
 import { stringCamelCase } from '@dedot/utils';
 
+export * from './generator/index.js';
+
 export async function generateTypesFromEndpoint(chain: string, endpoint: string, outDir?: string) {
   const api = await Dedot.new(endpoint);
   const { methods }: RpcMethods = await api.rpc.rpc.methods();

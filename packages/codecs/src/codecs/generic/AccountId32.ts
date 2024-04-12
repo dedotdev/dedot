@@ -42,8 +42,14 @@ export class AccountId32 {
 
 export type AccountId32Like = AccountId32 | string | HexString | Uint8Array;
 
+export type AccountIdLike = AccountId32 | string | HexString | Uint8Array;
+
 export const $AccountId32: $.Shape<AccountId32Like, AccountId32> = $.instance(
   AccountId32,
   $.Tuple($.FixedHex(32)),
   (input) => [accountId32ToHex(input)],
 );
+
+export const $AccountId = $AccountId32;
+
+export type AccountId = $.Input<typeof $AccountId>;

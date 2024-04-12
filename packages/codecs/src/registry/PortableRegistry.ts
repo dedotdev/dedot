@@ -288,6 +288,13 @@ export class PortableRegistry {
    * @param typeId
    */
   getEnumOptions(typeId: TypeId): EnumOptions {
+    if (!('extrinsic' in this.metadata)) {
+      return {
+        tagKey: 'tag',
+        valueKey: 'value',
+      };
+    }
+
     const {
       extrinsic: { callTypeId },
       outerEnums: { eventEnumTypeId },

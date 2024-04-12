@@ -1,0 +1,26 @@
+{
+  "name": "@dedot/contracts",
+  "version": "0.0.1-alpha.31",
+  "description": "JSON-RPC Providers",
+  "author": "Thang X. Vu <thang@coongcrafts.io>",
+  "main": "src/index.ts",
+  "sideEffects": false,
+  "type": "module",
+  "scripts": {
+    "build": "tsc --project tsconfig.build.json && tsc --project tsconfig.build.cjs.json",
+    "clean": "rm -rf ./dist && rm -rf ./tsconfig.tsbuildinfo ./tsconfig.build.tsbuildinfo",
+    "test": "vitest --watch=false"
+  },
+  "dependencies": {
+    "@dedot/codecs": "workspace:*",
+    "@dedot/codegen": "workspace:*",
+    "@dedot/utils": "workspace:*",
+    "@polkadot/keyring": "^12.6.2",
+    "dedot": "workspace:*"
+  },
+  "publishConfig": {
+    "access": "public",
+    "directory": "dist"
+  },
+  "license": "Apache-2.0"
+}

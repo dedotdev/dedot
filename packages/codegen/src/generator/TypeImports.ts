@@ -29,6 +29,7 @@ export class TypeImports {
       [this.knownTypes, '@dedot/types'],
       [this.codecTypes, '@dedot/codecs'],
       [this.portableTypes, './types'],
+      [this.outTypes, '../../types'],
     ];
 
     return toImports

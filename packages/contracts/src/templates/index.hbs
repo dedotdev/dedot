@@ -1,0 +1,8 @@
+import { GenericContractApi } from '../../types';
+import { ContractStorage } from './query';
+import { ContractExtrinsic } from './tx';
+
+export interface {{{contractName}}} extends GenericContractApi {
+  query: ContractStorage;
+  tx: ContractExtrinsic;
+}

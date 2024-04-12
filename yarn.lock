@@ -400,6 +400,18 @@ __metadata:
   languageName: unknown
   linkType: soft
 
+"@dedot/contracts@workspace:packages/contracts":
+  version: 0.0.0-use.local
+  resolution: "@dedot/contracts@workspace:packages/contracts"
+  dependencies:
+    "@dedot/codecs": "workspace:*"
+    "@dedot/codegen": "workspace:*"
+    "@dedot/utils": "workspace:*"
+    "@polkadot/keyring": "npm:^12.6.2"
+    dedot: "workspace:*"
+  languageName: unknown
+  linkType: soft
+
 "@dedot/providers@workspace:*, @dedot/providers@workspace:^, @dedot/providers@workspace:packages/providers":
   version: 0.0.0-use.local
   resolution: "@dedot/providers@workspace:packages/providers"
