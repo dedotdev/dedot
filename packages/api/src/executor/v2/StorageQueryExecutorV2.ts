@@ -20,15 +20,6 @@ export class StorageQueryExecutorV2<
     super(api, atBlockHash);
   }
 
-  async toBlockHash(hashOrSource?: HashOrSource): Promise<BlockHash | undefined> {
-    if (hashOrSource === 'best') return;
-    if (hashOrSource === 'finalized') {
-      return this.chainHead.finalizedHash as BlockHash;
-    }
-
-    return hashOrSource;
-  }
-
   protected override async getStorage(key: HexString, at?: HashOrSource): Promise<Option<StorageData>> {
     const hash = await this.toBlockHash(at);
     const result = await this.chainHead.storage([{ type: 'value', key }], undefined, hash);

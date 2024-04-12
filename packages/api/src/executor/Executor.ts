@@ -17,7 +17,13 @@ export abstract class Executor<ChainApi extends GenericSubstrateApi = SubstrateA
   async toBlockHash(hashOrSource?: HashOrSource): Promise<BlockHash | undefined> {
     if (hashOrSource === 'best') return;
     if (hashOrSource === 'finalized') {
-      return (await this.api.rpc.chain_getFinalizedHead()) as BlockHash;
+      // @ts-ignore TODO we need a better way / more organized way to archive this
+      if (this.chainHead) {
+        // @ts-ignore
+        return this.chainHead.finalizedHash as BlockHash;
+      } else {
+        return (await this.api.rpc.chain_getFinalizedHead()) as BlockHash;
+      }
     }
 
     return hashOrSource;
