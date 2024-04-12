@@ -2,21 +2,22 @@ import { Dedot } from 'dedot';
 import { Arg, ContractMessage, ContractMetadata } from '../types';
 import { AccountId32, MetadataLatest, PortableRegistry } from '@dedot/codecs';
 import { extractContractTypes } from '../utils';
+import { GenericSubstrateApi } from '@dedot/types';
 
-export default abstract class Executor {
-  readonly #api: Dedot;
+export default abstract class Executor<ChainApi extends GenericSubstrateApi> {
+  readonly #api: Dedot<ChainApi>;
   readonly #address: AccountId32;
   readonly #contractMetadata: ContractMetadata;
   readonly #registry: PortableRegistry;
 
-  constructor(api: Dedot, contractMetadata: ContractMetadata, address: AccountId32 | string) {
+  constructor(api: Dedot<ChainApi>, contractMetadata: ContractMetadata, address: AccountId32 | string) {
     this.#api = api;
     this.#contractMetadata = contractMetadata;
     this.#address = new AccountId32(address);
     this.#registry = new PortableRegistry({ types: extractContractTypes(contractMetadata) } as MetadataLatest);
   }
 
-  get api(): Dedot {
+  get api(): Dedot<ChainApi> {
     return this.#api;
   }
 

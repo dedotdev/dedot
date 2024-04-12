@@ -2,6 +2,6 @@
 
 {{{ importTypes }}}
 
-export interface ContractStorage extends GenericContractQuery {
+export interface ContractStorage<ChainApi extends GenericSubstrateApi> extends GenericContractQuery {
 {{{ queryCallsOut }}}
 }

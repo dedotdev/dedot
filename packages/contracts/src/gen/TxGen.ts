@@ -20,6 +20,7 @@ export class TxGen extends QueryGen {
       'ContractOptions',
       'ChainSubmittableExtrinsic',
     );
+    this.typesGen.typeImports.addKnownType('GenericSubstrateApi');
 
     const { messages } = this.contractMetadata.spec;
     const txMessages = messages.filter((one) => one.mutates);
@@ -30,7 +31,7 @@ export class TxGen extends QueryGen {
       txCallsOut += `${commentBlock(
         docs,
         '\n',
-        args.map((arg) => `@param {${this.typesGen.generateType(arg.type.type)}} ${stringCamelCase(arg.label)}`),
+        args.map((arg) => `@param {${this.typesGen.generateType(arg.type.type, 1)}} ${stringCamelCase(arg.label)}`),
         '\n',
         `@selector {${selector}}`,
       )}`;
@@ -50,9 +51,9 @@ export class TxGen extends QueryGen {
     args.forEach(({ type: { type } }) => this.importType(type));
 
     const paramsOut = args
-      .map(({ type: { type }, label }) => `${stringCamelCase(label)}: ${this.typesGen.generateType(type)}`)
+      .map(({ type: { type }, label }) => `${stringCamelCase(label)}: ${this.typesGen.generateType(type, 1)}`)
       .join(', ');
 
-    return `GenericContractTxCall<(${paramsOut ? `${paramsOut},` : ''} options: ContractOptions) => ChainSubmittableExtrinsic>`;
+    return `GenericContractTxCall<(${paramsOut ? `${paramsOut},` : ''} options: ContractOptions) => ChainSubmittableExtrinsic<ChainApi>>`;
   }
 }

@@ -2,6 +2,6 @@
 
 {{{ importTypes }}}
 
-export interface ContractExtrinsic extends GenericContractTx {
+export interface ContractExtrinsic<ChainApi extends GenericSubstrateApi> extends GenericContractTx {
 {{{ txCallsOut }}}
 }

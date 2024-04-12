@@ -1,10 +1,10 @@
 import Executor from './Executor';
 import { assert, concatU8a, hexToU8a, stringCamelCase, u8aToHex } from '@dedot/utils';
 import { GenericContractQueryCall, ContractMessage } from '../types';
-import { AccountId32 } from '@dedot/codecs';
 import { ContractOptions } from '../types';
+import { GenericSubstrateApi } from '@dedot/types';
 
-export class QueryExecutor extends Executor {
+export class QueryExecutor<ChainApi extends GenericSubstrateApi> extends Executor<ChainApi> {
   doExecute(message: string): GenericContractQueryCall {
     const messageMeta = this.#findMessage(message);
 
@@ -17,11 +17,8 @@ export class QueryExecutor extends Executor {
       let contractOptions: ContractOptions = {} as ContractOptions;
       for (let i = args.length; i < params.length; i += 1) {
         if (i === args.length) {
-          assert(params[i] instanceof AccountId32, 'Unexpected additional parameter');
           caller = params[i];
-        }
-        if (i === args.length + 1) {
-          assert(params[i] as ContractOptions, 'Unexpected additional parameter');
+        } else if (i === args.length + 1) {
           contractOptions = params[i];
         }
       }

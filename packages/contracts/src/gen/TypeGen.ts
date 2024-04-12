@@ -287,7 +287,7 @@ export class TypeGen {
     return typesWithPath.reduce(
       (o, type) => {
         const { path, id } = type;
-        const joinedPath = path.join();
+        const joinedPath = path.join('::');
         const suffix = typeSuffixes.get(id) || '';
 
         let knownType = false;

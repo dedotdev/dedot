@@ -1,10 +1,13 @@
-import { AnyFunc, AsyncMethod, ISubmittableExtrinsic, type ISubmittableResult } from '@dedot/types';
-import { type Extrinsic, Weight } from '@dedot/codecs';
-import type { FrameSystemEventRecord } from '@dedot/cli/codegen/substrateContractsNode';
+import { AnyFunc, AsyncMethod, GenericSubstrateApi } from '@dedot/types';
+import { Weight } from '@dedot/codecs';
 
-export type ChainSubmittableExtrinsic = Extrinsic & ISubmittableExtrinsic<ISubmittableResult<FrameSystemEventRecord>>;
+export type ContractResult<ChainApi extends GenericSubstrateApi> = Awaited<
+  ReturnType<ChainApi['call']['contractsApi']['call']>
+>;
 
-export type TxCall = (...args: any[]) => ChainSubmittableExtrinsic;
+export type ChainSubmittableExtrinsic<ChainApi extends GenericSubstrateApi> = ReturnType<
+  ChainApi['tx']['contracts']['call']
+>;
 
 export type ContractOptions = {
   value: bigint;
@@ -21,7 +24,7 @@ export type GenericContractQueryCall<F extends AsyncMethod = AsyncMethod> = F & 
   meta: ContractMessage;
 };
 
-export type GenericContractTxCall<F extends AnyFunc = TxCall> = F & {
+export type GenericContractTxCall<F extends AnyFunc = AnyFunc> = F & {
   meta: ContractMessage;
 };
 
@@ -52,7 +55,7 @@ export interface ContractSpec {
   docs: string[];
   environment: ContractEnvironment;
   events: any[];
-  langError: ContractLangError;
+  langError: ContractTypeInfo;
   messages: ContractMessage[];
 }
 
@@ -62,7 +65,7 @@ export interface ContractConstructor {
   docs: string[];
   label: string;
   payable: boolean;
-  returnType: ReturnType;
+  returnType: ContractTypeInfo;
   selector: string;
 }
 
@@ -93,62 +96,22 @@ export interface WasmOptSettings {
 
 export interface Arg {
   label: string;
-  type: Type;
+  type: ContractTypeInfo;
 }
 
-export interface Type {
-  displayName: string[];
-  type: number;
-}
-
-export interface ReturnType {
+export interface ContractTypeInfo {
   displayName: string[];
   type: number;
 }
 
 export interface ContractEnvironment {
-  accountId: AccountId;
-  balance: Balance;
-  blockNumber: BlockNumber;
-  chainExtension: ChainExtension;
-  hash: Hash;
+  accountId: ContractTypeInfo;
+  balance: ContractTypeInfo;
+  blockNumber: ContractTypeInfo;
+  chainExtension: ContractTypeInfo;
+  hash: ContractTypeInfo;
   maxEventTopics: number;
-  timestamp: Timestamp;
-}
-
-export interface AccountId {
-  displayName: string[];
-  type: number;
-}
-
-export interface Balance {
-  displayName: string[];
-  type: number;
-}
-
-export interface BlockNumber {
-  displayName: string[];
-  type: number;
-}
-
-export interface ChainExtension {
-  displayName: string[];
-  type: number;
-}
-
-export interface Hash {
-  displayName: string[];
-  type: number;
-}
-
-export interface Timestamp {
-  displayName: string[];
-  type: number;
-}
-
-export interface ContractLangError {
-  displayName: string[];
-  type: number;
+  timestamp: ContractTypeInfo;
 }
 
 export interface ContractMessage {
@@ -158,7 +121,7 @@ export interface ContractMessage {
   label: string;
   mutates: boolean;
   payable: boolean;
-  returnType: ReturnType;
+  returnType: ContractTypeInfo;
   selector: string;
 }
 
@@ -170,19 +133,19 @@ export interface ContractType {
 export interface ContractTypeDef {
   def: Def;
   path?: string[];
-  params?: Param[];
+  params?: ParamInfo[];
 }
 
 export interface Def {
-  composite?: Composite;
-  array?: Array;
+  composite?: CompositeType;
+  array?: ArrayType;
   primitive?: string;
-  sequence?: Sequence;
-  variant?: Variant;
+  sequence?: SequenceType;
+  variant?: VariantType;
   tuple?: number[];
 }
 
-export interface Composite {
+export interface CompositeType {
   fields: {
     type: number;
     typeName: string;
@@ -190,16 +153,16 @@ export interface Composite {
   }[];
 }
 
-export interface Array {
+export interface ArrayType {
   len: number;
   type: number;
 }
 
-export interface Sequence {
+export interface SequenceType {
   type: number;
 }
 
-export interface Variant {
+export interface VariantType {
   variants?: {
     index: number;
     name: string;
@@ -211,7 +174,7 @@ export interface Variant {
   }[];
 }
 
-export interface Param {
+export interface ParamInfo {
   name: string;
   type: number;
 }
@@ -220,6 +183,7 @@ export interface ContractStorage {
   root: {
     layout: {
       struct: {
+        //TODO: Write interface for fields when in needed
         fields: any[];
         name: string;
       };

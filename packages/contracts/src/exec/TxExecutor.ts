@@ -1,8 +1,9 @@
 import { assert, concatU8a, hexToU8a, stringCamelCase, u8aToHex } from '@dedot/utils';
 import Executor from './Executor';
 import { ContractOptions } from '../types';
+import { GenericSubstrateApi } from '@dedot/types';
 
-export class TxExecutor extends Executor {
+export class TxExecutor<ChainApi extends GenericSubstrateApi> extends Executor<ChainApi> {
   doExecute(message: string): any {
     const messageMeta = this.#findTxMessage(message);
 

@@ -23,9 +23,10 @@ export class QueryGen {
       'GenericContractQueryCall',
       'ContractOptions',
       'GenericContractResult',
+      'ContractResult',
     );
     this.typesGen.typeImports.addCodecType('AccountIdLike');
-    this.typesGen.typeImports.addPortableType('PalletContractsPrimitivesContractResult');
+    this.typesGen.typeImports.addKnownType('GenericSubstrateApi');
 
     const { messages } = this.contractMetadata.spec;
 
@@ -35,7 +36,7 @@ export class QueryGen {
       queryCallsOut += `${commentBlock(
         docs,
         '\n',
-        args.map((arg) => `@param {${this.typesGen.generateType(arg.type.type)}} ${stringCamelCase(arg.label)}`),
+        args.map((arg) => `@param {${this.typesGen.generateType(arg.type.type, 1)}} ${stringCamelCase(arg.label)}`),
         '\n',
         `@selector {${selector}}`,
       )}`;
@@ -57,12 +58,12 @@ export class QueryGen {
     args.forEach(({ type: { type } }) => this.importType(type));
 
     const paramsOut = args
-      .map(({ type: { type }, label }) => `${stringCamelCase(label)}: ${this.typesGen.generateType(type)}`)
+      .map(({ type: { type }, label }) => `${stringCamelCase(label)}: ${this.typesGen.generateType(type, 1)}`)
       .join(', ');
 
     const typeOut = this.typesGen.generateType(returnType.type, 0, true);
 
-    return `GenericContractQueryCall<(${paramsOut ? `${paramsOut},` : ''} caller?: AccountIdLike, options?: ContractOptions) => Promise<GenericContractResult<${typeOut}, PalletContractsPrimitivesContractResult>>>`;
+    return `GenericContractQueryCall<(${paramsOut ? `${paramsOut},` : ''} caller?: AccountIdLike, options?: ContractOptions) => Promise<GenericContractResult<${typeOut}, ContractResult<ChainApi>>>>`;
   }
 
   importType(typeId: number): any {
@@ -71,6 +72,7 @@ export class QueryGen {
 
     if (this.typesGen.includedTypes[type.id]) {
       this.typesGen.addTypeImport(this.typesGen.includedTypes[type.id].name);
+      return;
     }
     const { tag, value } = def;
 
