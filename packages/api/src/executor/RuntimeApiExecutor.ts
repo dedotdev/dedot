@@ -11,13 +11,13 @@ import { Executor } from './Executor.js';
 import {
   assert,
   calcRuntimeApiHash,
+  concatU8a,
+  HexString,
   isNumber,
   stringPascalCase,
   stringSnakeCase,
-  concatU8a,
   u8aToHex,
   UnknownApiError,
-  HexString,
 } from '@dedot/utils';
 import { BlockHash, RuntimeApiMethodDefLatest } from '@dedot/codecs';
 import { Metadata, toRuntimeApiMethods, toRuntimeApiSpecs } from '@dedot/specs';
@@ -58,7 +58,7 @@ export class RuntimeApiExecutor<ChainApi extends GenericSubstrateApi = GenericSu
       const callParams: StateCallParams = {
         func: callName,
         params: bytes,
-        at: this.atBlockHash,
+        at: await this.toBlockHash(this.hashOrSource),
       };
 
       const result = await this.stateCall(callParams);

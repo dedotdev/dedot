@@ -98,6 +98,11 @@ export interface IJsonRpcClient<
   rpc: ChainApi['rpc'];
 }
 
+export type HashOrSource =
+  | 'best' // best block hash
+  | 'finalized' // best finalized block hash
+  | BlockHash; // specific block hash
+
 export interface ISubstrateClient<
   ChainApi extends GenericSubstrateApi = GenericSubstrateApi,
   Events extends string = ApiEvent,
@@ -113,9 +118,9 @@ export interface ISubstrateClient<
 
   consts: ChainApi['consts'];
   query: ChainApi['query'];
-  queryAt(blockHash: BlockHash): ChainApi['query'];
+  queryAt(blockHash: HashOrSource): ChainApi['query'];
   call: ChainApi['call'];
-  callAt(blockHash: BlockHash): ChainApi['call'];
+  callAt(blockHash: HashOrSource): ChainApi['call'];
   tx: ChainApi['tx'];
   events: ChainApi['events'];
   errors: ChainApi['errors'];

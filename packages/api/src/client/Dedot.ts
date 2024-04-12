@@ -13,6 +13,7 @@ import { newProxyChain } from '../proxychain.js';
 import type {
   ApiEvent,
   ApiOptions,
+  HashOrSource,
   ISubstrateClient,
   MetadataKey,
   NetworkEndpoint,
@@ -377,7 +378,7 @@ export class Dedot<ChainApi extends GenericSubstrateApi = SubstrateApi>
     return newProxyChain<ChainApi>({ executor: new StorageQueryExecutor(this) }) as ChainApi['query'];
   }
 
-  queryAt(blockHash: BlockHash): ChainApi['query'] {
+  queryAt(blockHash: HashOrSource): ChainApi['query'] {
     return newProxyChain<ChainApi>({ executor: new StorageQueryExecutor(this, blockHash) }) as ChainApi['query'];
   }
 
@@ -411,7 +412,7 @@ export class Dedot<ChainApi extends GenericSubstrateApi = SubstrateApi>
     return newProxyChain<ChainApi>({ executor: new RuntimeApiExecutor(this) }) as ChainApi['call'];
   }
 
-  callAt(blockHash: BlockHash): ChainApi['call'] {
+  callAt(blockHash: HashOrSource): ChainApi['call'] {
     return newProxyChain<ChainApi>({ executor: new RuntimeApiExecutor(this, blockHash) }) as ChainApi['call'];
   }
 

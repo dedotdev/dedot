@@ -14,6 +14,7 @@ import type {
   ApiEvent,
   ApiOptions,
   ISubstrateClient,
+  HashOrSource,
   NetworkEndpoint,
   NormalizedApiOptions,
   SubstrateChainProperties,
@@ -304,7 +305,7 @@ export class DedotClient<ChainApi extends GenericSubstrateApi = SubstrateApi>
     return newProxyChain<ChainApi>({ executor: new StorageQueryExecutorV2(this, this.chainHead) }) as ChainApi['query'];
   }
 
-  queryAt(blockHash: BlockHash): ChainApi['query'] {
+  queryAt(blockHash: HashOrSource): ChainApi['query'] {
     return newProxyChain<ChainApi>({
       executor: new StorageQueryExecutorV2(this, this.chainHead, blockHash),
     }) as ChainApi['query'];

@@ -1,7 +1,6 @@
 import type { GenericSubstrateApi } from '@dedot/types';
 import { RuntimeApiExecutor, StateCallParams } from '../RuntimeApiExecutor.js';
-import { BlockHash } from '@dedot/codecs';
-import { ISubstrateClient } from '../../types.js';
+import { ISubstrateClient, HashOrSource } from '../../types.js';
 import { ChainHead } from '../../json-rpc/index.js';
 
 /**
@@ -13,7 +12,7 @@ export class RuntimeApiExecutorV2<
   constructor(
     api: ISubstrateClient<ChainApi>,
     public chainHead: ChainHead,
-    atBlockHash?: BlockHash,
+    atBlockHash?: HashOrSource,
   ) {
     super(api, atBlockHash);
   }

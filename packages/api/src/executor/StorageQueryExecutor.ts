@@ -1,10 +1,11 @@
 import type { SubstrateApi } from '../chaintypes/index.js';
-import type { GenericStorageQuery, GenericSubstrateApi, Unsub } from '@dedot/types';
+import type { Callback, GenericStorageQuery, GenericSubstrateApi, Unsub } from '@dedot/types';
 import type { StorageChangeSet } from '@dedot/specs';
 import { Executor } from './Executor.js';
 import { QueryableStorage } from '../storage/QueryableStorage.js';
 import { assert, HexString, isFunction } from '@dedot/utils';
-import { BlockHash, Option, StorageData } from '@dedot/codecs';
+import { Option, StorageData, StorageKey } from '@dedot/codecs';
+import { HashOrSource } from 'dedot/types';
 
 /**
  * @name StorageQueryExecutor
@@ -14,10 +15,16 @@ export class StorageQueryExecutor<ChainApi extends GenericSubstrateApi = Substra
   doExecute(pallet: string, storage: string): GenericStorageQuery {
     const entry = new QueryableStorage(this.registry, pallet, storage);
 
-    const queryFn: GenericStorageQuery = async (...args: any[]) => {
+    const extractArgs = (args: any[]): [any[], Callback | undefined] => {
       const inArgs = args.slice();
       const lastArg = args.at(-1);
       const callback = isFunction(lastArg) ? inArgs.pop() : undefined;
+
+      return [inArgs, callback];
+    };
+
+    const queryFn: GenericStorageQuery = async (...args: any[]) => {
+      const [inArgs, callback] = extractArgs(args);
       const encodedKey = entry.encodeKey(inArgs.at(0));
 
       // if a callback is passed, make a storage subscription and return an unsub function
@@ -28,15 +35,13 @@ export class StorageQueryExecutor<ChainApi extends GenericSubstrateApi = Substra
           targetChange && callback(entry.decodeValue(targetChange[1]));
         });
       } else {
-        const result = await this.getStorage(encodedKey, this.atBlockHash);
+        const result = await this.getStorage(encodedKey, this.hashOrSource);
         return entry.decodeValue(result);
       }
     };
 
     const queryMultiFn = async (...args: any[]) => {
-      const inArgs = args.slice();
-      const lastArg = args.at(-1);
-      const callback = isFunction(lastArg) ? inArgs.pop() : undefined;
+      const [inArgs, callback] = extractArgs(args);
       const multiArgs = inArgs.at(0);
       assert(Array.isArray(multiArgs), 'First param for multi query should be an array');
       const encodedKeys = multiArgs.map((arg) => entry.encodeKey(arg));
@@ -49,26 +54,43 @@ export class StorageQueryExecutor<ChainApi extends GenericSubstrateApi = Substra
           callback(targetChanges.map((value) => entry.decodeValue(value[1])));
         });
       } else {
-        const queries = encodedKeys.map((key) => this.api.rpc.state_getStorage(key, this.atBlockHash));
+        const queries = encodedKeys.map((key) => this.getStorage(key, this.hashOrSource));
         return (await Promise.all(queries)).map((result) => entry.decodeValue(result));
       }
     };
 
+    const key = (...args: any[]): StorageKey => {
+      const [inArgs] = extractArgs(args);
+      return entry.encodeKey(inArgs.at(0));
+    };
+
     queryFn.multi = queryMultiFn;
+    queryFn.key = key;
     queryFn.meta = {
       pallet: entry.pallet.name,
       palletIndex: entry.pallet.index,
       ...entry.storageEntry,
     };
 
+    // TODO keyPrefix
+    // TODO entries
+    // TODO keys
+    // TODO keysPaged
+
     return queryFn;
   }
 
-  protected getStorage(key: HexString, at?: BlockHash): Promise<Option<StorageData>> {
-    return this.api.rpc.state_getStorage(key, at);
+  protected async getStorage(key: HexString, at?: HashOrSource): Promise<Option<StorageData>> {
+    const hash = await this.toBlockHash(at);
+    return this.api.rpc.state_getStorage(key, hash);
   }
 
   protected subscribeStorage(keys: HexString[], cb: (changeSet: StorageChangeSet) => void): Promise<Unsub> {
+    // TODO support subscribe to finalized storage
+    if (this.hashOrSource === 'finalized') {
+      throw new Error('Subscribe to finalized storage is not supported');
+    }
+
     return this.api.rpc.state_subscribeStorage(keys, cb);
   }
 }

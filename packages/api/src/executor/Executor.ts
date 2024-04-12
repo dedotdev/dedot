@@ -2,27 +2,25 @@ import type { SubstrateApi } from '../chaintypes/index.js';
 import type { BlockHash, PalletDefLatest } from '@dedot/codecs';
 import type { GenericSubstrateApi } from '@dedot/types';
 import { assert, UnknownApiError, stringCamelCase } from '@dedot/utils';
-import { ISubstrateClient } from '../types.js';
+import { ISubstrateClient, HashOrSource } from '../types.js';
 
 /**
  * @name Executor
  * @description Execution abstraction for a specific action
  */
 export abstract class Executor<ChainApi extends GenericSubstrateApi = SubstrateApi> {
-  readonly #api: ISubstrateClient<ChainApi>;
-  readonly #atBlockHash?: BlockHash;
+  constructor(
+    public api: ISubstrateClient<ChainApi>,
+    public hashOrSource?: HashOrSource,
+  ) {}
 
-  constructor(api: ISubstrateClient<ChainApi>, atBlockHash?: BlockHash) {
-    this.#api = api;
-    this.#atBlockHash = atBlockHash;
-  }
+  async toBlockHash(hashOrSource?: HashOrSource): Promise<BlockHash | undefined> {
+    if (hashOrSource === 'best') return;
+    if (hashOrSource === 'finalized') {
+      return (await this.api.rpc.chain_getFinalizedHead()) as BlockHash;
+    }
 
-  get api(): ISubstrateClient<ChainApi> {
-    return this.#api;
-  }
-
-  get atBlockHash() {
-    return this.#atBlockHash;
+    return hashOrSource;
   }
 
   get provider() {
