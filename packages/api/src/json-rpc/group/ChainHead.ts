@@ -60,6 +60,18 @@ export class ChainHead extends JsonRpcGroup<ChainHeadEvent> {
     return this.#findRuntimeAt(this.#bestHash!)!;
   }
 
+  get finalizedHash(): BlockHash {
+    this.#ensureFollowed();
+
+    return this.#finalizedHash!;
+  }
+
+  get bestHash(): BlockHash {
+    this.#ensureFollowed();
+
+    return this.#bestHash!;
+  }
+
   /**
    * chainHead_unstable_follow
    */
@@ -97,18 +109,25 @@ export class ChainHead extends JsonRpcGroup<ChainHeadEvent> {
         break;
       }
       case 'bestBlockChanged': {
-        this.#bestHash = result.bestBlockHash;
-        this.emit('bestBlock', this.#bestHash, this.#findRuntimeAt(this.#bestHash));
+        const newBestHash = result.bestBlockHash;
+
+        if (this.#compareHashes(newBestHash, this.#bestHash!) > 0) {
+          this.#bestHash = newBestHash;
+          this.emit('bestBlock', this.#bestHash, this.#findRuntimeAt(this.#bestHash));
+        }
         break;
       }
       case 'finalized': {
-        this.#finalizedHash = result.finalizedBlockHashes.at(-1)!;
-        const finalizedRuntime = this.#findRuntimeAt(this.#finalizedHash)!;
-        if (finalizedRuntime) {
-          this.#finalizedRuntime = finalizedRuntime;
-        }
+        const newFinalizedHash = result.finalizedBlockHashes.at(-1)!;
 
-        this.emit('finalizedBlock', this.#finalizedHash, this.#finalizedRuntime);
+        if (this.#compareHashes(newFinalizedHash, this.#finalizedHash!) > 0) {
+          this.#finalizedHash = newFinalizedHash;
+          const finalizedRuntime = this.#findRuntimeAt(this.#finalizedHash)!;
+          if (finalizedRuntime) {
+            this.#finalizedRuntime = finalizedRuntime;
+          }
+          this.emit('finalizedBlock', this.#finalizedHash, finalizedRuntime);
+        }
 
         // TODO check again this logic
         // TODO logic to unpin more blocks in the queue
@@ -116,7 +135,6 @@ export class ChainHead extends JsonRpcGroup<ChainHeadEvent> {
         const toUnpinHashes: HexString[] = [...result.prunedBlockHashes, ...cutOffBlocks.map(({ hash }) => hash)];
 
         this.unpin(toUnpinHashes).catch(noop);
-        console.log('PinnedSize', this.#pinnedBlocks.length, 'Best Hash', this.#ensurePinnedHash());
         break;
       }
       case 'stop':
@@ -179,6 +197,26 @@ export class ChainHead extends JsonRpcGroup<ChainHeadEvent> {
     return this.#pinnedBlocks.some((block) => block.hash == hash);
   }
 
+  /**
+   * Compare two block hashes based on their position in the pinned blocks queue
+   *
+   * if return value 0, a == b
+   * if return value > 0, a comes after b in the queue
+   * if return value < 0, a comes before b in the queue
+   *
+   * @param a
+   * @param b
+   * @private
+   */
+  #compareHashes(a: BlockHash, b: BlockHash): number {
+    if (a == b) return 0;
+
+    const aIndex = this.#pinnedBlocks.findIndex((block) => block.hash == a);
+    const bIndex = this.#pinnedBlocks.findIndex((block) => block.hash == b);
+
+    return aIndex - bIndex;
+  }
+
   #ensurePinnedHash(hash?: BlockHash): BlockHash {
     if (hash) {
       if (this.#isPinnedHash(hash)) {
@@ -188,7 +226,6 @@ export class ChainHead extends JsonRpcGroup<ChainHeadEvent> {
       }
     }
 
-    console.log('best', this.#bestHash, 'final', this.#finalizedHash);
     return ensurePresence(this.#bestHash || this.#finalizedHash);
   }
 
@@ -360,7 +397,6 @@ export class ChainHead extends JsonRpcGroup<ChainHeadEvent> {
    */
   async unpin(hashes: BlockHash | BlockHash[]): Promise<void> {
     this.#ensureFollowed();
-    console.log('UNPIN', hashes);
 
     await this.send('unpin', this.#subscriptionId, hashes);
   }
