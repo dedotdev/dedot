@@ -1,4 +1,4 @@
-import type { SubstrateApi } from '@dedot/chaintypes';
+import type { SubstrateApi } from '../chaintypes/index.js';
 import { GenericSubstrateApi } from '@dedot/types';
 import { Executor } from './Executor.js';
 import { assert, UnknownApiError, stringCamelCase } from '@dedot/utils';

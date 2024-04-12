@@ -1,5 +1,6 @@
 import staticSubstrate from '@polkadot/types-support/metadata/static-substrate';
-import { AnyFunc, ChainProperties } from '@dedot/types';
+import { AnyFunc } from '@dedot/types';
+import { ChainProperties } from '@dedot/specs';
 import { RuntimeVersion } from '@dedot/codecs';
 import {
   ConnectionStatus,
@@ -11,12 +12,23 @@ import {
 } from '@dedot/providers';
 import { EventEmitter } from '@dedot/utils';
 
+export const MockedRuntimeVersion: RuntimeVersion = {
+  specName: 'mock-spec',
+  implName: 'mock-spec-impl',
+  authoringVersion: 0,
+  specVersion: 1,
+  implVersion: 0,
+  apis: [],
+  transactionVersion: 25,
+  stateVersion: 0,
+};
+
 export default class MockProvider extends EventEmitter<ProviderEvent> implements JsonRpcProvider {
   #status: ConnectionStatus = 'disconnected';
 
   rpcRequests: Record<string, AnyFunc> = {
     chain_getBlockHash: () => '0x0000000000000000000000000000000000000000000000000000000000000000',
-    state_getRuntimeVersion: () => ({ specVersion: 1, specName: 'MockedSpec' }) as unknown as RuntimeVersion,
+    state_getRuntimeVersion: () => MockedRuntimeVersion,
     system_chain: () => 'MockedChain',
     system_properties: () => ({ ss58Format: 42 }) as ChainProperties,
     state_getMetadata: () => staticSubstrate,

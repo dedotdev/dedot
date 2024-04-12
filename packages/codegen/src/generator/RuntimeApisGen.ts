@@ -1,17 +1,25 @@
 import { TypesGen } from './TypesGen.js';
 import { getRuntimeApiNames, getRuntimeApiSpecs } from '@dedot/specs';
 import { RuntimeApiMethodSpec, RuntimeApiSpec } from '@dedot/types';
-import { beautifySourceCode, commentBlock, compileTemplate } from './utils.js';
+import {
+  beautifySourceCode,
+  commentBlock,
+  compileTemplate,
+  isNativeType,
+  TUPLE_TYPE_REGEX,
+  WRAPPER_TYPE_REGEX,
+} from './utils.js';
 import { calcRuntimeApiHash, stringSnakeCase, stringCamelCase } from '@dedot/utils';
-import { RpcGen } from './RpcGen.js';
 import { RuntimeApiMethodDefLatest } from '@dedot/codecs';
+import { ApiGen } from './ApiGen.js';
+import { findKnownCodecType } from './known-codecs.js';
 
-export class RuntimeApisGen extends RpcGen {
+export class RuntimeApisGen extends ApiGen {
   constructor(
     readonly typesGen: TypesGen,
-    readonly runtimeApis: [string, number][],
+    readonly runtimeApis: Record<string, number>,
   ) {
-    super(typesGen, []);
+    super(typesGen);
   }
 
   generate() {
@@ -72,20 +80,20 @@ export class RuntimeApisGen extends RpcGen {
     const callName = `${runtimeApiName}_${stringSnakeCase(methodName)}`;
     const defaultDocs = [`@callname: ${callName}`];
 
-    this.addTypeImport(type!, false);
-    params.forEach(({ type }) => this.addTypeImport(type!));
+    this.#addTypeImport(type!, false);
+    params.forEach(({ type }) => this.#addTypeImport(type!));
 
     const typedParams = params.map((param, idx) => ({
       ...param,
       isOptional: this.#isOptionalParam(params, param.type!, idx),
-      plainType: this.getGeneratedTypeName(param.type!),
+      plainType: this.#getGeneratedTypeName(param.type!),
     }));
 
     const paramsOut = typedParams
       .map(({ name, isOptional, plainType }) => `${stringCamelCase(name)}${isOptional ? '?' : ''}: ${plainType}`)
       .join(', ');
 
-    const typeOut = this.getGeneratedTypeName(type!, false);
+    const typeOut = this.#getGeneratedTypeName(type!, false);
 
     return `${commentBlock(
       docs,
@@ -102,7 +110,7 @@ export class RuntimeApisGen extends RpcGen {
     const defaultDocs = [`@callname: ${callName}`];
 
     const typeOut = this.typesGen.generateType(output, 1, true);
-    this.addTypeImport(typeOut, false);
+    this.#addTypeImport(typeOut, false);
     const typedInputs = inputs
       .map((input, idx) => ({
         ...input,
@@ -113,7 +121,7 @@ export class RuntimeApisGen extends RpcGen {
         isOptional: this.#isOptionalParam(inputs, input.type, idx),
       }));
 
-    this.addTypeImport(typedInputs.map((t) => t.type));
+    this.#addTypeImport(typedInputs.map((t) => t.type));
 
     const paramsOut = typedInputs
       .map(({ name, type, isOptional }) => `${stringCamelCase(name)}${isOptional ? '?' : ''}: ${type}`)
@@ -128,7 +136,7 @@ export class RuntimeApisGen extends RpcGen {
   }
 
   #targetRuntimeApiSpecs(): RuntimeApiSpec[] {
-    const specs = this.runtimeApis.map(([runtimeApiHash, version]) => {
+    const specs = Object.entries(this.runtimeApis).map(([runtimeApiHash, version]) => {
       const runtimeApiSpec = this.#findRuntimeApiSpec(runtimeApiHash, version);
 
       if (!runtimeApiSpec) return;
@@ -153,4 +161,95 @@ export class RuntimeApisGen extends RpcGen {
 
     return getRuntimeApiSpecs().find((one) => one.runtimeApiName === runtimeApiName && one.version === version);
   };
+
+  // TODO check typeIn, typeOut if param type, or rpc type isScale
+  #addTypeImport(type: string | string[], toTypeIn = true) {
+    if (Array.isArray(type)) {
+      type.forEach((one) => this.#addTypeImport(one, toTypeIn));
+      return;
+    }
+
+    type = type.trim();
+
+    if (isNativeType(type)) {
+      return;
+    }
+
+    // Handle generic wrapper types
+    const matchArray = type.match(WRAPPER_TYPE_REGEX);
+    if (matchArray) {
+      const [_, $1, $2] = matchArray;
+      this.#addTypeImport($1, toTypeIn);
+
+      if ($2.match(WRAPPER_TYPE_REGEX) || $2.match(TUPLE_TYPE_REGEX)) {
+        this.#addTypeImport($2, toTypeIn);
+      } else {
+        this.#addTypeImport($2.split(','), toTypeIn);
+      }
+
+      return;
+    }
+
+    // Check tuple type
+    if (type.match(TUPLE_TYPE_REGEX)) {
+      this.#addTypeImport(type.slice(1, -1).split(','), toTypeIn);
+      return;
+    }
+
+    if (type.includes(' | ')) {
+      this.#addTypeImport(
+        type.split(' | ').map((one) => one.trim()),
+        toTypeIn,
+      );
+      return;
+    }
+
+    try {
+      const codecType = this.#getCodecType(type, toTypeIn);
+      if (isNativeType(codecType)) return;
+
+      this.typesGen.typeImports.addCodecType(codecType);
+      return;
+    } catch (e) {}
+
+    this.typesGen.addTypeImport(type);
+  }
+
+  #getGeneratedTypeName(type: string, toTypeIn = true): string {
+    try {
+      const matchArray = type.match(WRAPPER_TYPE_REGEX);
+      if (matchArray) {
+        const [_, $1, $2] = matchArray;
+        const wrapperTypeName = this.#getCodecType($1, toTypeIn);
+
+        if ($2.match(WRAPPER_TYPE_REGEX) || $2.match(TUPLE_TYPE_REGEX)) {
+          return `${wrapperTypeName}<${this.#getGeneratedTypeName($2, toTypeIn)}>`;
+        }
+
+        const innerTypeNames = $2
+          .split(',')
+          .map((one) => this.#getGeneratedTypeName(one.trim(), toTypeIn))
+          .join(', ');
+
+        return `${wrapperTypeName}<${innerTypeNames}>`;
+      } else if (type.match(TUPLE_TYPE_REGEX)) {
+        const innerTypeNames = type
+          .slice(1, -1)
+          .split(',')
+          .map((one) => this.#getGeneratedTypeName(one.trim(), toTypeIn))
+          .join(', ');
+
+        return `[${innerTypeNames}]`;
+      }
+
+      return this.#getCodecType(type, toTypeIn);
+    } catch (e) {}
+
+    return type;
+  }
+
+  #getCodecType(type: string, toTypeIn = true) {
+    const { typeIn, typeOut } = findKnownCodecType(type);
+    return toTypeIn ? typeIn : typeOut;
+  }
 }

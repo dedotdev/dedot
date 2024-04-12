@@ -1,7 +1,7 @@
-import { GenericPalletError, GenericSubstrateApi } from '@dedot/types';
-import { SubstrateApi } from '@dedot/chaintypes';
+import type { GenericPalletError, GenericSubstrateApi } from '@dedot/types';
+import type { SubstrateApi } from '../chaintypes/index.js';
+import type { DispatchError, ModuleError } from '@dedot/codecs';
 import { Executor } from './Executor.js';
-import { DispatchError, ModuleError } from '@dedot/codecs';
 import { assert, hexToU8a, isHex, isNumber, isObject, stringPascalCase, UnknownApiError } from '@dedot/utils';
 
 /**

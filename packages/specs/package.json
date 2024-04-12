@@ -18,6 +18,7 @@
   },
   "dependencies": {
     "@dedot/codecs": "workspace:*",
+    "@dedot/shape": "workspace:*",
     "@dedot/types": "workspace:*"
   },
   "publishConfig": {

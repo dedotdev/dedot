@@ -1,13 +1,16 @@
-import type { HexString } from '@dedot/utils';
+import type { HexString, IEventEmitter } from '@dedot/utils';
 import type { AnySignedExtension } from './extrinsic/index.js';
-import type { RuntimeApiName, RuntimeApiSpec } from '@dedot/types';
+import type { GenericSubstrateApi, RuntimeApiName, RuntimeApiSpec } from '@dedot/types';
 import type { IStorage } from '@dedot/storage';
-import type { JsonRpcProvider, ProviderEvent } from '@dedot/providers';
+import type { ConnectionStatus, JsonRpcProvider, ProviderEvent } from '@dedot/providers';
+import type { AnyShape } from '@dedot/shape';
+import { SubscriptionsInfo } from '@dedot/specs';
+import { BlockHash, Hash, Metadata, PortableRegistry } from '@dedot/codecs';
 
 export type NetworkEndpoint = string;
 export type MetadataKey = `RAW_META/${string}`;
 
-export interface ApiOptions {
+export interface JsonRpcClientOptions {
   provider?: JsonRpcProvider;
   /**
    * @description A `ProviderInterface` will be created based on the supplied endpoint.
@@ -16,12 +19,11 @@ export interface ApiOptions {
    * A valid endpoint should start with `wss://`, `ws://`, `https://` or `http://`
    */
   endpoint?: NetworkEndpoint;
-  /**
-   * @description Cache metadata in local storage for next time usage
-   * For now this only supports browser environments
-   *
-   * @default: false
-   */
+  subscriptions?: SubscriptionsInfo;
+  scaledResponses?: Record<string, AnyShape>;
+}
+
+export interface ApiOptions extends JsonRpcClientOptions {
   cacheMetadata?: boolean;
   cacheStorage?: IStorage;
   /**
@@ -64,4 +66,53 @@ export interface NormalizedApiOptions extends ApiOptions {
   metadata?: Record<string, HexString>;
 }
 
-export type ApiEventNames = ProviderEvent | 'ready';
+export type ApiEvent = ProviderEvent | 'ready';
+
+export interface SubstrateRuntimeVersion {
+  specName: string;
+  implName: string;
+  specVersion: number;
+  implVersion: number;
+  apis: Record<string, number>;
+  transactionVersion: number;
+}
+
+export interface SubstrateChainProperties {
+  isEthereum?: boolean;
+  ss58Format?: number;
+  tokenDecimals?: number | Array<number>;
+  tokenSymbol?: string | Array<string>;
+  [prop: string]: any;
+}
+
+export interface IJsonRpcClient<ChainApi extends GenericSubstrateApi, Events extends string = ProviderEvent>
+  extends IEventEmitter<Events> {
+  options: JsonRpcClientOptions;
+  status: ConnectionStatus;
+  provider: JsonRpcProvider;
+  connect(): Promise<this>;
+  disconnect(): Promise<void>;
+
+  rpc: ChainApi['rpc'];
+}
+
+export interface ISubstrateClient<ChainApi extends GenericSubstrateApi, Events extends string = ApiEvent>
+  extends IJsonRpcClient<ChainApi, Events> {
+  options: NormalizedApiOptions;
+
+  metadata: Metadata;
+  registry: PortableRegistry;
+  genesisHash: Hash;
+  runtimeChain: string;
+  runtimeVersion: SubstrateRuntimeVersion;
+  chainProperties: SubstrateChainProperties;
+
+  consts: ChainApi['consts'];
+  query: ChainApi['query'];
+  queryAt(blockHash: BlockHash): ChainApi['query'];
+  call: ChainApi['call'];
+  callAt(blockHash: BlockHash): ChainApi['call'];
+  tx: ChainApi['tx'];
+  events: ChainApi['events'];
+  errors: ChainApi['errors'];
+}

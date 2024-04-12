@@ -1,23 +1,46 @@
 import * as path from 'path';
 import { CommandModule } from 'yargs';
-import { generateTypesFromEndpoint } from '@dedot/codegen';
+import { generateTypes, generateTypesFromEndpoint } from '@dedot/codegen';
+import { $Metadata, Metadata, PortableRegistry, RuntimeVersion } from '@dedot/codecs';
+import { ConstantExecutor } from 'dedot';
+import staticSubstrate from '@polkadot/types-support/metadata/v15/substrate-hex';
+import { rpc } from '@polkadot/types-support/metadata/static-substrate';
 
 type Args = {
   wsUrl?: string;
   output?: string;
   chain?: string;
+  dts?: boolean;
 };
 
 export const chaintypes: CommandModule<Args, Args> = {
   command: 'chaintypes',
   describe: 'Generate chain types & APIs for a Substrate-based blockchain',
   handler: async (yargs) => {
-    const { wsUrl, output = '', chain = '' } = yargs;
+    const { wsUrl, output = '', chain = '', dts = true } = yargs;
 
-    console.log(`- Generating chaintypes via endpoint ${wsUrl!}`);
+    const outDir = path.resolve(output);
+    const extension = dts ? 'd.ts' : 'ts';
 
-    const outDir = path.resolve(output, './codegen');
-    await generateTypesFromEndpoint(chain, wsUrl!, outDir);
+    if (wsUrl === 'substrate') {
+      console.log(`- Generating generic chaintypes`);
+      const metadataHex = staticSubstrate;
+      const rpcMethods = rpc.methods;
+      const metadata = $Metadata.tryDecode(metadataHex);
+      const runtimeVersion = getRuntimeVersion(metadata);
+      const runtimeApis: Record<string, number> = runtimeVersion.apis.reduce(
+        (acc, [name, version]) => {
+          acc[name] = version;
+          return acc;
+        },
+        {} as Record<string, number>,
+      );
+
+      await generateTypes('substrate', metadata.latest, rpcMethods, runtimeApis, outDir, extension);
+    } else {
+      console.log(`- Generating chaintypes via endpoint ${wsUrl!}`);
+      await generateTypesFromEndpoint(chain, wsUrl!, outDir, extension);
+    }
 
     console.log(`- DONE! Output: ${outDir}`);
   },
@@ -41,6 +64,22 @@ export const chaintypes: CommandModule<Args, Args> = {
           describe: 'Chain name',
           alias: 'c',
         })
+        .option('dts', {
+          type: 'boolean',
+          describe: 'Generate d.ts files',
+          alias: 'd',
+          default: true,
+        })
     ); // TODO check to verify inputs
   },
+};
+
+const getRuntimeVersion = (metadata: Metadata): RuntimeVersion => {
+  const registry = new PortableRegistry(metadata.latest);
+  const executor = new ConstantExecutor({
+    registry,
+    metadataLatest: metadata.latest,
+  } as any);
+
+  return executor.execute('system', 'version') as RuntimeVersion;
 };

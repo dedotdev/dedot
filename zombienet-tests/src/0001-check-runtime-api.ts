@@ -10,7 +10,7 @@ export const run = async (nodeName: any, networkInfo: any) => {
   assert(api.metadata.version === 'V15', 'Metadata should be V15');
 
   // Checking if all apis specs are defined
-  api.metadataLatest.apis.forEach(({ name, methods }) => {
+  api.metadata.latest.apis.forEach(({ name, methods }) => {
     methods.forEach((method) => {
       const runtimeApi = stringCamelCase(name);
       const methodName = stringCamelCase(method.name);

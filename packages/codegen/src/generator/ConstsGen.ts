@@ -1,5 +1,5 @@
 import { normalizeName, stringCamelCase } from '@dedot/utils';
-import { ApiGen } from '../generator/index.js';
+import { ApiGen } from './ApiGen.js';
 import { beautifySourceCode, commentBlock, compileTemplate } from './utils.js';
 
 export class ConstsGen extends ApiGen {
