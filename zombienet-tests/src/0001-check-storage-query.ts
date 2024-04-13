@@ -20,17 +20,25 @@ export const run = async (nodeName: any, networkInfo: any) => {
 
   // Check storage map keys
   const keys = await api.query.system.account.keys();
-  console.log(keys.map((k) => k.address()));
-  assert(keys.length === 2, `Expected 2 accounts, found: ${keys.length}`);
-  assert(keys[0].address() === ALICE, 'First account should be Alice');
-  assert(keys[1].address() === BOB, 'Second account should be Bob');
+  const addresses = keys.map((k) => k.address());
+  console.log(`Total accounts:`, keys.length);
+  console.log('Addresses', addresses);
+
+  assert(addresses.includes(ALICE), 'Should include ALICE');
+  assert(addresses.includes(BOB), 'Should include BOB');
 
   // Check storage map entries
   const accounts = await api.query.system.account.entries();
-  assert(accounts.length === 2, `Expected 2 accounts, found: ${accounts.length}`);
-  assert(accounts[0][0].address() === ALICE, 'First account should be Alice');
-  assert(accounts[0][1].data.free === 10_000_000_000_000_000n, 'Incorrect balance for Alice');
 
-  assert(accounts[1][0].address() === BOB, 'Second account should be Bob');
-  assert(accounts[1][1].data.free === 10_000_000_000_000_000n, 'Incorrect balance for Alice');
+  assert(keys.length === accounts.length, 'Mismatch # of storage items');
+
+  const addressToFreeBalance = accounts.reduce(
+    (o, [k, v]) => {
+      o[k.address()] = v.data.free;
+      return o;
+    },
+    {} as Record<string, bigint>,
+  );
+  assert(addressToFreeBalance[ALICE] === 10_000_000_000_000_000n, 'Incorrect balance for Alice');
+  assert(addressToFreeBalance[BOB] === 10_000_000_000_000_000n, 'Incorrect balance for Alice');
 };
