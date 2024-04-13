@@ -23,7 +23,6 @@ export type ChainJsonRpcApis = Pick<
   | 'chainHead_unstable_header'
   | 'chainHead_unstable_stopOperation'
   | 'chainHead_unstable_storage'
-  | 'chainHead_unstable_unfollow'
   | 'chainHead_unstable_unpin'
   | 'chainSpec_v1_chainName'
   | 'chainSpec_v1_genesisHash'
