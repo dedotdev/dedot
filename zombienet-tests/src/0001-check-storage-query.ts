@@ -17,4 +17,19 @@ export const run = async (nodeName: any, networkInfo: any) => {
     console.log(`${name} balance`, balance);
     assert(balance.data.free === 10_000_000_000_000_000n, `Incorrect balance for ${name} - ${address}`);
   }
+
+  // Check storage map keys
+  const keys = await api.query.system.account.keys();
+  assert(keys.length === 2, 'Expected 2 accounts');
+  assert(keys[0].address() === ALICE, 'First account should be Alice');
+  assert(keys[1].address() === BOB, 'Second account should be Bob');
+
+  // Check storage map entries
+  const accounts = await api.query.system.account.entries();
+  assert(accounts.length === 2, 'Expected 2 accounts');
+  assert(accounts[0][0].address() === ALICE, 'First account should be Alice');
+  assert(accounts[0][1].data.free === 10_000_000_000_000_000n, 'Incorrect balance for Alice');
+
+  assert(accounts[1][0].address() === BOB, 'Second account should be Bob');
+  assert(accounts[1][1].data.free === 10_000_000_000_000_000n, 'Incorrect balance for Alice');
 };
