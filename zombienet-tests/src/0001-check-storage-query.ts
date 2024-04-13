@@ -20,13 +20,14 @@ export const run = async (nodeName: any, networkInfo: any) => {
 
   // Check storage map keys
   const keys = await api.query.system.account.keys();
-  assert(keys.length === 2, 'Expected 2 accounts');
+  console.log(keys.map((k) => k.address()));
+  assert(keys.length === 2, `Expected 2 accounts, found: ${keys.length}`);
   assert(keys[0].address() === ALICE, 'First account should be Alice');
   assert(keys[1].address() === BOB, 'Second account should be Bob');
 
   // Check storage map entries
   const accounts = await api.query.system.account.entries();
-  assert(accounts.length === 2, 'Expected 2 accounts');
+  assert(accounts.length === 2, `Expected 2 accounts, found: ${accounts.length}`);
   assert(accounts[0][0].address() === ALICE, 'First account should be Alice');
   assert(accounts[0][1].data.free === 10_000_000_000_000_000n, 'Incorrect balance for Alice');
 
