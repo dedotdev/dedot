@@ -2,13 +2,13 @@
 
 import type { GenericChainStorage, GenericStorageQuery, Callback } from '@dedot/types';
 import type {
+  AccountId32,
   AccountId32Like,
   H256,
   Bytes,
   Digest,
   Phase,
   FixedBytes,
-  AccountId32,
   FixedU128,
   Perbill,
   Percent,
@@ -166,7 +166,7 @@ export interface ChainStorage extends GenericChainStorage {
      * @param {AccountId32Like} arg
      * @param {Callback<FrameSystemAccountInfo> =} callback
      **/
-    account: GenericStorageQuery<(arg: AccountId32Like) => FrameSystemAccountInfo>;
+    account: GenericStorageQuery<(arg: AccountId32Like) => FrameSystemAccountInfo, AccountId32>;
 
     /**
      * Total extrinsics count for the current block.
@@ -195,7 +195,7 @@ export interface ChainStorage extends GenericChainStorage {
      * @param {number} arg
      * @param {Callback<H256> =} callback
      **/
-    blockHash: GenericStorageQuery<(arg: number) => H256>;
+    blockHash: GenericStorageQuery<(arg: number) => H256, number>;
 
     /**
      * Extrinsics data for the current block (maps an extrinsic's index to its data).
@@ -203,7 +203,7 @@ export interface ChainStorage extends GenericChainStorage {
      * @param {number} arg
      * @param {Callback<Bytes> =} callback
      **/
-    extrinsicData: GenericStorageQuery<(arg: number) => Bytes>;
+    extrinsicData: GenericStorageQuery<(arg: number) => Bytes, number>;
 
     /**
      * The current block number being processed. Set by `execute_block`.
@@ -261,7 +261,7 @@ export interface ChainStorage extends GenericChainStorage {
      * @param {H256} arg
      * @param {Callback<Array<[number, number]>> =} callback
      **/
-    eventTopics: GenericStorageQuery<(arg: H256) => Array<[number, number]>>;
+    eventTopics: GenericStorageQuery<(arg: H256) => Array<[number, number]>, H256>;
 
     /**
      * Stores the `spec_version` and `spec_name` of when the last runtime upgrade happened.
@@ -388,7 +388,7 @@ export interface ChainStorage extends GenericChainStorage {
      * @param {number} arg
      * @param {Callback<Array<FixedBytes<32>>> =} callback
      **/
-    underConstruction: GenericStorageQuery<(arg: number) => Array<FixedBytes<32>>>;
+    underConstruction: GenericStorageQuery<(arg: number) => Array<FixedBytes<32>>, number>;
 
     /**
      * Temporary value (cleared at block finalization) which is `Some`
@@ -514,7 +514,7 @@ export interface ChainStorage extends GenericChainStorage {
      * @param {number} arg
      * @param {Callback<[AccountId32, bigint, boolean] | undefined> =} callback
      **/
-    accounts: GenericStorageQuery<(arg: number) => [AccountId32, bigint, boolean] | undefined>;
+    accounts: GenericStorageQuery<(arg: number) => [AccountId32, bigint, boolean] | undefined, number>;
 
     /**
      * Generic pallet storage query
@@ -568,7 +568,7 @@ export interface ChainStorage extends GenericChainStorage {
      * @param {AccountId32Like} arg
      * @param {Callback<PalletBalancesAccountData> =} callback
      **/
-    account: GenericStorageQuery<(arg: AccountId32Like) => PalletBalancesAccountData>;
+    account: GenericStorageQuery<(arg: AccountId32Like) => PalletBalancesAccountData, AccountId32>;
 
     /**
      * Any liquidity locks on some account balances.
@@ -577,7 +577,7 @@ export interface ChainStorage extends GenericChainStorage {
      * @param {AccountId32Like} arg
      * @param {Callback<Array<PalletBalancesBalanceLock>> =} callback
      **/
-    locks: GenericStorageQuery<(arg: AccountId32Like) => Array<PalletBalancesBalanceLock>>;
+    locks: GenericStorageQuery<(arg: AccountId32Like) => Array<PalletBalancesBalanceLock>, AccountId32>;
 
     /**
      * Named reserves on some account balances.
@@ -585,7 +585,7 @@ export interface ChainStorage extends GenericChainStorage {
      * @param {AccountId32Like} arg
      * @param {Callback<Array<PalletBalancesReserveData>> =} callback
      **/
-    reserves: GenericStorageQuery<(arg: AccountId32Like) => Array<PalletBalancesReserveData>>;
+    reserves: GenericStorageQuery<(arg: AccountId32Like) => Array<PalletBalancesReserveData>, AccountId32>;
 
     /**
      * Holds on account balances.
@@ -593,7 +593,7 @@ export interface ChainStorage extends GenericChainStorage {
      * @param {AccountId32Like} arg
      * @param {Callback<Array<PalletBalancesIdAmount>> =} callback
      **/
-    holds: GenericStorageQuery<(arg: AccountId32Like) => Array<PalletBalancesIdAmount>>;
+    holds: GenericStorageQuery<(arg: AccountId32Like) => Array<PalletBalancesIdAmount>, AccountId32>;
 
     /**
      * Freeze locks on account balances.
@@ -601,7 +601,7 @@ export interface ChainStorage extends GenericChainStorage {
      * @param {AccountId32Like} arg
      * @param {Callback<Array<PalletBalancesIdAmount002>> =} callback
      **/
-    freezes: GenericStorageQuery<(arg: AccountId32Like) => Array<PalletBalancesIdAmount002>>;
+    freezes: GenericStorageQuery<(arg: AccountId32Like) => Array<PalletBalancesIdAmount002>, AccountId32>;
 
     /**
      * Generic pallet storage query
@@ -728,7 +728,8 @@ export interface ChainStorage extends GenericChainStorage {
      * @param {Callback<PalletElectionProviderMultiPhaseSignedSignedSubmission | undefined> =} callback
      **/
     signedSubmissionsMap: GenericStorageQuery<
-      (arg: number) => PalletElectionProviderMultiPhaseSignedSignedSubmission | undefined
+      (arg: number) => PalletElectionProviderMultiPhaseSignedSignedSubmission | undefined,
+      number
     >;
 
     /**
@@ -781,7 +782,7 @@ export interface ChainStorage extends GenericChainStorage {
      * @param {AccountId32Like} arg
      * @param {Callback<AccountId32 | undefined> =} callback
      **/
-    bonded: GenericStorageQuery<(arg: AccountId32Like) => AccountId32 | undefined>;
+    bonded: GenericStorageQuery<(arg: AccountId32Like) => AccountId32 | undefined, AccountId32>;
 
     /**
      * The minimum active bond to become and maintain the role of a nominator.
@@ -819,7 +820,7 @@ export interface ChainStorage extends GenericChainStorage {
      * @param {AccountId32Like} arg
      * @param {Callback<PalletStakingStakingLedger | undefined> =} callback
      **/
-    ledger: GenericStorageQuery<(arg: AccountId32Like) => PalletStakingStakingLedger | undefined>;
+    ledger: GenericStorageQuery<(arg: AccountId32Like) => PalletStakingStakingLedger | undefined, AccountId32>;
 
     /**
      * Where the reward payment should be made. Keyed by stash.
@@ -829,7 +830,7 @@ export interface ChainStorage extends GenericChainStorage {
      * @param {AccountId32Like} arg
      * @param {Callback<PalletStakingRewardDestination> =} callback
      **/
-    payee: GenericStorageQuery<(arg: AccountId32Like) => PalletStakingRewardDestination>;
+    payee: GenericStorageQuery<(arg: AccountId32Like) => PalletStakingRewardDestination, AccountId32>;
 
     /**
      * The map from (wannabe) validator stash key to the preferences of that validator.
@@ -839,7 +840,7 @@ export interface ChainStorage extends GenericChainStorage {
      * @param {AccountId32Like} arg
      * @param {Callback<PalletStakingValidatorPrefs> =} callback
      **/
-    validators: GenericStorageQuery<(arg: AccountId32Like) => PalletStakingValidatorPrefs>;
+    validators: GenericStorageQuery<(arg: AccountId32Like) => PalletStakingValidatorPrefs, AccountId32>;
 
     /**
      * Counter for the related counted storage map
@@ -881,7 +882,7 @@ export interface ChainStorage extends GenericChainStorage {
      * @param {AccountId32Like} arg
      * @param {Callback<PalletStakingNominations | undefined> =} callback
      **/
-    nominators: GenericStorageQuery<(arg: AccountId32Like) => PalletStakingNominations | undefined>;
+    nominators: GenericStorageQuery<(arg: AccountId32Like) => PalletStakingNominations | undefined, AccountId32>;
 
     /**
      * Counter for the related counted storage map
@@ -928,7 +929,7 @@ export interface ChainStorage extends GenericChainStorage {
      * @param {number} arg
      * @param {Callback<number | undefined> =} callback
      **/
-    erasStartSessionIndex: GenericStorageQuery<(arg: number) => number | undefined>;
+    erasStartSessionIndex: GenericStorageQuery<(arg: number) => number | undefined, number>;
 
     /**
      * Exposure of validator at era.
@@ -941,7 +942,7 @@ export interface ChainStorage extends GenericChainStorage {
      * @param {[number, AccountId32Like]} arg
      * @param {Callback<PalletStakingExposure> =} callback
      **/
-    erasStakers: GenericStorageQuery<(arg: [number, AccountId32Like]) => PalletStakingExposure>;
+    erasStakers: GenericStorageQuery<(arg: [number, AccountId32Like]) => PalletStakingExposure, [number, AccountId32]>;
 
     /**
      * Clipped Exposure of validator at era.
@@ -959,7 +960,10 @@ export interface ChainStorage extends GenericChainStorage {
      * @param {[number, AccountId32Like]} arg
      * @param {Callback<PalletStakingExposure> =} callback
      **/
-    erasStakersClipped: GenericStorageQuery<(arg: [number, AccountId32Like]) => PalletStakingExposure>;
+    erasStakersClipped: GenericStorageQuery<
+      (arg: [number, AccountId32Like]) => PalletStakingExposure,
+      [number, AccountId32]
+    >;
 
     /**
      * Similar to `ErasStakers`, this holds the preferences of validators.
@@ -971,7 +975,10 @@ export interface ChainStorage extends GenericChainStorage {
      * @param {[number, AccountId32Like]} arg
      * @param {Callback<PalletStakingValidatorPrefs> =} callback
      **/
-    erasValidatorPrefs: GenericStorageQuery<(arg: [number, AccountId32Like]) => PalletStakingValidatorPrefs>;
+    erasValidatorPrefs: GenericStorageQuery<
+      (arg: [number, AccountId32Like]) => PalletStakingValidatorPrefs,
+      [number, AccountId32]
+    >;
 
     /**
      * The total validator era payout for the last `HISTORY_DEPTH` eras.
@@ -981,7 +988,7 @@ export interface ChainStorage extends GenericChainStorage {
      * @param {number} arg
      * @param {Callback<bigint | undefined> =} callback
      **/
-    erasValidatorReward: GenericStorageQuery<(arg: number) => bigint | undefined>;
+    erasValidatorReward: GenericStorageQuery<(arg: number) => bigint | undefined, number>;
 
     /**
      * Rewards for the last `HISTORY_DEPTH` eras.
@@ -990,7 +997,7 @@ export interface ChainStorage extends GenericChainStorage {
      * @param {number} arg
      * @param {Callback<PalletStakingEraRewardPoints> =} callback
      **/
-    erasRewardPoints: GenericStorageQuery<(arg: number) => PalletStakingEraRewardPoints>;
+    erasRewardPoints: GenericStorageQuery<(arg: number) => PalletStakingEraRewardPoints, number>;
 
     /**
      * The total amount staked for the last `HISTORY_DEPTH` eras.
@@ -999,7 +1006,7 @@ export interface ChainStorage extends GenericChainStorage {
      * @param {number} arg
      * @param {Callback<bigint> =} callback
      **/
-    erasTotalStake: GenericStorageQuery<(arg: number) => bigint>;
+    erasTotalStake: GenericStorageQuery<(arg: number) => bigint, number>;
 
     /**
      * Mode of era forcing.
@@ -1031,7 +1038,7 @@ export interface ChainStorage extends GenericChainStorage {
      * @param {number} arg
      * @param {Callback<Array<PalletStakingUnappliedSlash>> =} callback
      **/
-    unappliedSlashes: GenericStorageQuery<(arg: number) => Array<PalletStakingUnappliedSlash>>;
+    unappliedSlashes: GenericStorageQuery<(arg: number) => Array<PalletStakingUnappliedSlash>, number>;
 
     /**
      * A mapping from still-bonded eras to the first session index of that era.
@@ -1050,7 +1057,10 @@ export interface ChainStorage extends GenericChainStorage {
      * @param {[number, AccountId32Like]} arg
      * @param {Callback<[Perbill, bigint] | undefined> =} callback
      **/
-    validatorSlashInEra: GenericStorageQuery<(arg: [number, AccountId32Like]) => [Perbill, bigint] | undefined>;
+    validatorSlashInEra: GenericStorageQuery<
+      (arg: [number, AccountId32Like]) => [Perbill, bigint] | undefined,
+      [number, AccountId32]
+    >;
 
     /**
      * All slashing events on nominators, mapped by era to the highest slash value of the era.
@@ -1058,7 +1068,10 @@ export interface ChainStorage extends GenericChainStorage {
      * @param {[number, AccountId32Like]} arg
      * @param {Callback<bigint | undefined> =} callback
      **/
-    nominatorSlashInEra: GenericStorageQuery<(arg: [number, AccountId32Like]) => bigint | undefined>;
+    nominatorSlashInEra: GenericStorageQuery<
+      (arg: [number, AccountId32Like]) => bigint | undefined,
+      [number, AccountId32]
+    >;
 
     /**
      * Slashing spans for stash accounts.
@@ -1066,7 +1079,10 @@ export interface ChainStorage extends GenericChainStorage {
      * @param {AccountId32Like} arg
      * @param {Callback<PalletStakingSlashingSlashingSpans | undefined> =} callback
      **/
-    slashingSpans: GenericStorageQuery<(arg: AccountId32Like) => PalletStakingSlashingSlashingSpans | undefined>;
+    slashingSpans: GenericStorageQuery<
+      (arg: AccountId32Like) => PalletStakingSlashingSlashingSpans | undefined,
+      AccountId32
+    >;
 
     /**
      * Records information about the maximum slash of a stash within a slashing span,
@@ -1075,7 +1091,10 @@ export interface ChainStorage extends GenericChainStorage {
      * @param {[AccountId32Like, number]} arg
      * @param {Callback<PalletStakingSlashingSpanRecord> =} callback
      **/
-    spanSlash: GenericStorageQuery<(arg: [AccountId32Like, number]) => PalletStakingSlashingSpanRecord>;
+    spanSlash: GenericStorageQuery<
+      (arg: [AccountId32Like, number]) => PalletStakingSlashingSpanRecord,
+      [AccountId32, number]
+    >;
 
     /**
      * The last planned session scheduled by the session pallet.
@@ -1166,7 +1185,7 @@ export interface ChainStorage extends GenericChainStorage {
      * @param {AccountId32Like} arg
      * @param {Callback<KitchensinkRuntimeSessionKeys | undefined> =} callback
      **/
-    nextKeys: GenericStorageQuery<(arg: AccountId32Like) => KitchensinkRuntimeSessionKeys | undefined>;
+    nextKeys: GenericStorageQuery<(arg: AccountId32Like) => KitchensinkRuntimeSessionKeys | undefined, AccountId32>;
 
     /**
      * The owner of a key. The key is the `KeyTypeId` + the encoded key.
@@ -1174,7 +1193,10 @@ export interface ChainStorage extends GenericChainStorage {
      * @param {[SpCoreCryptoKeyTypeId, BytesLike]} arg
      * @param {Callback<AccountId32 | undefined> =} callback
      **/
-    keyOwner: GenericStorageQuery<(arg: [SpCoreCryptoKeyTypeId, BytesLike]) => AccountId32 | undefined>;
+    keyOwner: GenericStorageQuery<
+      (arg: [SpCoreCryptoKeyTypeId, BytesLike]) => AccountId32 | undefined,
+      [SpCoreCryptoKeyTypeId, Bytes]
+    >;
 
     /**
      * Generic pallet storage query
@@ -1207,7 +1229,7 @@ export interface ChainStorage extends GenericChainStorage {
      * @param {number} arg
      * @param {Callback<[Array<AccountId32>, bigint] | undefined> =} callback
      **/
-    depositOf: GenericStorageQuery<(arg: number) => [Array<AccountId32>, bigint] | undefined>;
+    depositOf: GenericStorageQuery<(arg: number) => [Array<AccountId32>, bigint] | undefined, number>;
 
     /**
      * The next free referendum index, aka the number of referenda started so far.
@@ -1232,7 +1254,7 @@ export interface ChainStorage extends GenericChainStorage {
      * @param {number} arg
      * @param {Callback<PalletDemocracyReferendumInfo | undefined> =} callback
      **/
-    referendumInfoOf: GenericStorageQuery<(arg: number) => PalletDemocracyReferendumInfo | undefined>;
+    referendumInfoOf: GenericStorageQuery<(arg: number) => PalletDemocracyReferendumInfo | undefined, number>;
 
     /**
      * All votes for a particular voter. We store the balance for the number of votes that we
@@ -1243,7 +1265,7 @@ export interface ChainStorage extends GenericChainStorage {
      * @param {AccountId32Like} arg
      * @param {Callback<PalletDemocracyVoteVoting> =} callback
      **/
-    votingOf: GenericStorageQuery<(arg: AccountId32Like) => PalletDemocracyVoteVoting>;
+    votingOf: GenericStorageQuery<(arg: AccountId32Like) => PalletDemocracyVoteVoting, AccountId32>;
 
     /**
      * True if the last referendum tabled was submitted externally. False if it was a public
@@ -1270,7 +1292,7 @@ export interface ChainStorage extends GenericChainStorage {
      * @param {H256} arg
      * @param {Callback<[number, Array<AccountId32>] | undefined> =} callback
      **/
-    blacklist: GenericStorageQuery<(arg: H256) => [number, Array<AccountId32>] | undefined>;
+    blacklist: GenericStorageQuery<(arg: H256) => [number, Array<AccountId32>] | undefined, H256>;
 
     /**
      * Record of all proposals that have been subject to emergency cancellation.
@@ -1278,7 +1300,7 @@ export interface ChainStorage extends GenericChainStorage {
      * @param {H256} arg
      * @param {Callback<boolean> =} callback
      **/
-    cancellations: GenericStorageQuery<(arg: H256) => boolean>;
+    cancellations: GenericStorageQuery<(arg: H256) => boolean, H256>;
 
     /**
      * General information concerning any proposal or referendum.
@@ -1291,7 +1313,10 @@ export interface ChainStorage extends GenericChainStorage {
      * @param {PalletDemocracyMetadataOwner} arg
      * @param {Callback<H256 | undefined> =} callback
      **/
-    metadataOf: GenericStorageQuery<(arg: PalletDemocracyMetadataOwner) => H256 | undefined>;
+    metadataOf: GenericStorageQuery<
+      (arg: PalletDemocracyMetadataOwner) => H256 | undefined,
+      PalletDemocracyMetadataOwner
+    >;
 
     /**
      * Generic pallet storage query
@@ -1315,7 +1340,7 @@ export interface ChainStorage extends GenericChainStorage {
      * @param {H256} arg
      * @param {Callback<KitchensinkRuntimeRuntimeCall | undefined> =} callback
      **/
-    proposalOf: GenericStorageQuery<(arg: H256) => KitchensinkRuntimeRuntimeCall | undefined>;
+    proposalOf: GenericStorageQuery<(arg: H256) => KitchensinkRuntimeRuntimeCall | undefined, H256>;
 
     /**
      * Votes on a given proposal, if it is ongoing.
@@ -1323,7 +1348,7 @@ export interface ChainStorage extends GenericChainStorage {
      * @param {H256} arg
      * @param {Callback<PalletCollectiveVotes | undefined> =} callback
      **/
-    voting: GenericStorageQuery<(arg: H256) => PalletCollectiveVotes | undefined>;
+    voting: GenericStorageQuery<(arg: H256) => PalletCollectiveVotes | undefined, H256>;
 
     /**
      * Proposals so far.
@@ -1368,7 +1393,7 @@ export interface ChainStorage extends GenericChainStorage {
      * @param {H256} arg
      * @param {Callback<KitchensinkRuntimeRuntimeCall | undefined> =} callback
      **/
-    proposalOf: GenericStorageQuery<(arg: H256) => KitchensinkRuntimeRuntimeCall | undefined>;
+    proposalOf: GenericStorageQuery<(arg: H256) => KitchensinkRuntimeRuntimeCall | undefined, H256>;
 
     /**
      * Votes on a given proposal, if it is ongoing.
@@ -1376,7 +1401,7 @@ export interface ChainStorage extends GenericChainStorage {
      * @param {H256} arg
      * @param {Callback<PalletCollectiveVotes | undefined> =} callback
      **/
-    voting: GenericStorageQuery<(arg: H256) => PalletCollectiveVotes | undefined>;
+    voting: GenericStorageQuery<(arg: H256) => PalletCollectiveVotes | undefined, H256>;
 
     /**
      * Proposals so far.
@@ -1454,7 +1479,7 @@ export interface ChainStorage extends GenericChainStorage {
      * @param {AccountId32Like} arg
      * @param {Callback<PalletElectionsPhragmenVoter> =} callback
      **/
-    voting: GenericStorageQuery<(arg: AccountId32Like) => PalletElectionsPhragmenVoter>;
+    voting: GenericStorageQuery<(arg: AccountId32Like) => PalletElectionsPhragmenVoter, AccountId32>;
 
     /**
      * Generic pallet storage query
@@ -1539,7 +1564,7 @@ export interface ChainStorage extends GenericChainStorage {
      * @param {bigint} arg
      * @param {Callback<number | undefined> =} callback
      **/
-    setIdSession: GenericStorageQuery<(arg: bigint) => number | undefined>;
+    setIdSession: GenericStorageQuery<(arg: bigint) => number | undefined, bigint>;
 
     /**
      * Generic pallet storage query
@@ -1563,7 +1588,7 @@ export interface ChainStorage extends GenericChainStorage {
      * @param {number} arg
      * @param {Callback<PalletTreasuryProposal | undefined> =} callback
      **/
-    proposals: GenericStorageQuery<(arg: number) => PalletTreasuryProposal | undefined>;
+    proposals: GenericStorageQuery<(arg: number) => PalletTreasuryProposal | undefined, number>;
 
     /**
      * The amount which has been reported as inactive to Currency.
@@ -1596,7 +1621,7 @@ export interface ChainStorage extends GenericChainStorage {
      * @param {number} arg
      * @param {Callback<FixedU128 | undefined> =} callback
      **/
-    conversionRateToNative: GenericStorageQuery<(arg: number) => FixedU128 | undefined>;
+    conversionRateToNative: GenericStorageQuery<(arg: number) => FixedU128 | undefined, number>;
 
     /**
      * Generic pallet storage query
@@ -1613,7 +1638,7 @@ export interface ChainStorage extends GenericChainStorage {
      * @param {H256} arg
      * @param {Callback<Bytes | undefined> =} callback
      **/
-    pristineCode: GenericStorageQuery<(arg: H256) => Bytes | undefined>;
+    pristineCode: GenericStorageQuery<(arg: H256) => Bytes | undefined, H256>;
 
     /**
      * A mapping from a contract's code hash to its code info.
@@ -1621,7 +1646,7 @@ export interface ChainStorage extends GenericChainStorage {
      * @param {H256} arg
      * @param {Callback<PalletContractsWasmCodeInfo | undefined> =} callback
      **/
-    codeInfoOf: GenericStorageQuery<(arg: H256) => PalletContractsWasmCodeInfo | undefined>;
+    codeInfoOf: GenericStorageQuery<(arg: H256) => PalletContractsWasmCodeInfo | undefined, H256>;
 
     /**
      * This is a **monotonic** counter incremented on contract instantiation.
@@ -1659,7 +1684,10 @@ export interface ChainStorage extends GenericChainStorage {
      * @param {AccountId32Like} arg
      * @param {Callback<PalletContractsStorageContractInfo | undefined> =} callback
      **/
-    contractInfoOf: GenericStorageQuery<(arg: AccountId32Like) => PalletContractsStorageContractInfo | undefined>;
+    contractInfoOf: GenericStorageQuery<
+      (arg: AccountId32Like) => PalletContractsStorageContractInfo | undefined,
+      AccountId32
+    >;
 
     /**
      * Evicted contracts that await child trie deletion.
@@ -1670,7 +1698,7 @@ export interface ChainStorage extends GenericChainStorage {
      * @param {number} arg
      * @param {Callback<Bytes | undefined> =} callback
      **/
-    deletionQueue: GenericStorageQuery<(arg: number) => Bytes | undefined>;
+    deletionQueue: GenericStorageQuery<(arg: number) => Bytes | undefined, number>;
 
     /**
      * A pair of monotonic counters used to track the latest contract marked for deletion
@@ -1743,7 +1771,7 @@ export interface ChainStorage extends GenericChainStorage {
      * @param {[number, number]} arg
      * @param {Callback<boolean | undefined> =} callback
      **/
-    receivedHeartbeats: GenericStorageQuery<(arg: [number, number]) => boolean | undefined>;
+    receivedHeartbeats: GenericStorageQuery<(arg: [number, number]) => boolean | undefined, [number, number]>;
 
     /**
      * For each session index, we keep a mapping of `ValidatorId<T>` to the
@@ -1752,7 +1780,7 @@ export interface ChainStorage extends GenericChainStorage {
      * @param {[number, AccountId32Like]} arg
      * @param {Callback<number> =} callback
      **/
-    authoredBlocks: GenericStorageQuery<(arg: [number, AccountId32Like]) => number>;
+    authoredBlocks: GenericStorageQuery<(arg: [number, AccountId32Like]) => number, [number, AccountId32]>;
 
     /**
      * Generic pallet storage query
@@ -1792,7 +1820,7 @@ export interface ChainStorage extends GenericChainStorage {
      * @param {H256} arg
      * @param {Callback<SpStakingOffenceOffenceDetails | undefined> =} callback
      **/
-    reports: GenericStorageQuery<(arg: H256) => SpStakingOffenceOffenceDetails | undefined>;
+    reports: GenericStorageQuery<(arg: H256) => SpStakingOffenceOffenceDetails | undefined, H256>;
 
     /**
      * A vector of reports of the same kind that happened at the same time slot.
@@ -1800,7 +1828,10 @@ export interface ChainStorage extends GenericChainStorage {
      * @param {[FixedBytes<16>, BytesLike]} arg
      * @param {Callback<Array<H256>> =} callback
      **/
-    concurrentReportsIndex: GenericStorageQuery<(arg: [FixedBytes<16>, BytesLike]) => Array<H256>>;
+    concurrentReportsIndex: GenericStorageQuery<
+      (arg: [FixedBytes<16>, BytesLike]) => Array<H256>,
+      [FixedBytes<16>, Bytes]
+    >;
 
     /**
      * Generic pallet storage query
@@ -1837,7 +1868,7 @@ export interface ChainStorage extends GenericChainStorage {
      * @param {AccountId32Like} arg
      * @param {Callback<PalletIdentityRegistration | undefined> =} callback
      **/
-    identityOf: GenericStorageQuery<(arg: AccountId32Like) => PalletIdentityRegistration | undefined>;
+    identityOf: GenericStorageQuery<(arg: AccountId32Like) => PalletIdentityRegistration | undefined, AccountId32>;
 
     /**
      * The super-identity of an alternative "sub" identity together with its name, within that
@@ -1846,7 +1877,7 @@ export interface ChainStorage extends GenericChainStorage {
      * @param {AccountId32Like} arg
      * @param {Callback<[AccountId32, Data] | undefined> =} callback
      **/
-    superOf: GenericStorageQuery<(arg: AccountId32Like) => [AccountId32, Data] | undefined>;
+    superOf: GenericStorageQuery<(arg: AccountId32Like) => [AccountId32, Data] | undefined, AccountId32>;
 
     /**
      * Alternative "sub" identities of this account.
@@ -1858,7 +1889,7 @@ export interface ChainStorage extends GenericChainStorage {
      * @param {AccountId32Like} arg
      * @param {Callback<[bigint, Array<AccountId32>]> =} callback
      **/
-    subsOf: GenericStorageQuery<(arg: AccountId32Like) => [bigint, Array<AccountId32>]>;
+    subsOf: GenericStorageQuery<(arg: AccountId32Like) => [bigint, Array<AccountId32>], AccountId32>;
 
     /**
      * The set of registrars. Not expected to get very big as can only be added through a
@@ -1921,7 +1952,7 @@ export interface ChainStorage extends GenericChainStorage {
      * @param {AccountId32Like} arg
      * @param {Callback<PalletSocietyMemberRecord | undefined> =} callback
      **/
-    members: GenericStorageQuery<(arg: AccountId32Like) => PalletSocietyMemberRecord | undefined>;
+    members: GenericStorageQuery<(arg: AccountId32Like) => PalletSocietyMemberRecord | undefined, AccountId32>;
 
     /**
      * Information regarding rank-0 payouts, past and future.
@@ -1929,7 +1960,7 @@ export interface ChainStorage extends GenericChainStorage {
      * @param {AccountId32Like} arg
      * @param {Callback<PalletSocietyPayoutRecord> =} callback
      **/
-    payouts: GenericStorageQuery<(arg: AccountId32Like) => PalletSocietyPayoutRecord>;
+    payouts: GenericStorageQuery<(arg: AccountId32Like) => PalletSocietyPayoutRecord, AccountId32>;
 
     /**
      * The number of items in `Members` currently. (Doesn't include `SuspendedMembers`.)
@@ -1945,7 +1976,7 @@ export interface ChainStorage extends GenericChainStorage {
      * @param {number} arg
      * @param {Callback<AccountId32 | undefined> =} callback
      **/
-    memberByIndex: GenericStorageQuery<(arg: number) => AccountId32 | undefined>;
+    memberByIndex: GenericStorageQuery<(arg: number) => AccountId32 | undefined, number>;
 
     /**
      * The set of suspended members, with their old membership record.
@@ -1953,7 +1984,7 @@ export interface ChainStorage extends GenericChainStorage {
      * @param {AccountId32Like} arg
      * @param {Callback<PalletSocietyMemberRecord | undefined> =} callback
      **/
-    suspendedMembers: GenericStorageQuery<(arg: AccountId32Like) => PalletSocietyMemberRecord | undefined>;
+    suspendedMembers: GenericStorageQuery<(arg: AccountId32Like) => PalletSocietyMemberRecord | undefined, AccountId32>;
 
     /**
      * The number of rounds which have passed.
@@ -1974,7 +2005,7 @@ export interface ChainStorage extends GenericChainStorage {
      * @param {AccountId32Like} arg
      * @param {Callback<PalletSocietyCandidacy | undefined> =} callback
      **/
-    candidates: GenericStorageQuery<(arg: AccountId32Like) => PalletSocietyCandidacy | undefined>;
+    candidates: GenericStorageQuery<(arg: AccountId32Like) => PalletSocietyCandidacy | undefined, AccountId32>;
 
     /**
      * The current skeptic.
@@ -1989,7 +2020,10 @@ export interface ChainStorage extends GenericChainStorage {
      * @param {[AccountId32Like, AccountId32Like]} arg
      * @param {Callback<PalletSocietyVote | undefined> =} callback
      **/
-    votes: GenericStorageQuery<(arg: [AccountId32Like, AccountId32Like]) => PalletSocietyVote | undefined>;
+    votes: GenericStorageQuery<
+      (arg: [AccountId32Like, AccountId32Like]) => PalletSocietyVote | undefined,
+      [AccountId32, AccountId32]
+    >;
 
     /**
      * Clear-cursor for Vote, map from Candidate -> (Maybe) Cursor.
@@ -1997,7 +2031,7 @@ export interface ChainStorage extends GenericChainStorage {
      * @param {AccountId32Like} arg
      * @param {Callback<Bytes | undefined> =} callback
      **/
-    voteClearCursor: GenericStorageQuery<(arg: AccountId32Like) => Bytes | undefined>;
+    voteClearCursor: GenericStorageQuery<(arg: AccountId32Like) => Bytes | undefined, AccountId32>;
 
     /**
      * At the end of the claim period, this contains the most recently approved members (along with
@@ -2028,7 +2062,10 @@ export interface ChainStorage extends GenericChainStorage {
      * @param {[number, AccountId32Like]} arg
      * @param {Callback<PalletSocietyVote | undefined> =} callback
      **/
-    defenderVotes: GenericStorageQuery<(arg: [number, AccountId32Like]) => PalletSocietyVote | undefined>;
+    defenderVotes: GenericStorageQuery<
+      (arg: [number, AccountId32Like]) => PalletSocietyVote | undefined,
+      [number, AccountId32]
+    >;
 
     /**
      * Generic pallet storage query
@@ -2045,7 +2082,7 @@ export interface ChainStorage extends GenericChainStorage {
      * @param {AccountId32Like} arg
      * @param {Callback<PalletRecoveryRecoveryConfig | undefined> =} callback
      **/
-    recoverable: GenericStorageQuery<(arg: AccountId32Like) => PalletRecoveryRecoveryConfig | undefined>;
+    recoverable: GenericStorageQuery<(arg: AccountId32Like) => PalletRecoveryRecoveryConfig | undefined, AccountId32>;
 
     /**
      * Active recovery attempts.
@@ -2057,7 +2094,8 @@ export interface ChainStorage extends GenericChainStorage {
      * @param {Callback<PalletRecoveryActiveRecovery | undefined> =} callback
      **/
     activeRecoveries: GenericStorageQuery<
-      (arg: [AccountId32Like, AccountId32Like]) => PalletRecoveryActiveRecovery | undefined
+      (arg: [AccountId32Like, AccountId32Like]) => PalletRecoveryActiveRecovery | undefined,
+      [AccountId32, AccountId32]
     >;
 
     /**
@@ -2068,7 +2106,7 @@ export interface ChainStorage extends GenericChainStorage {
      * @param {AccountId32Like} arg
      * @param {Callback<AccountId32 | undefined> =} callback
      **/
-    proxy: GenericStorageQuery<(arg: AccountId32Like) => AccountId32 | undefined>;
+    proxy: GenericStorageQuery<(arg: AccountId32Like) => AccountId32 | undefined, AccountId32>;
 
     /**
      * Generic pallet storage query
@@ -2085,7 +2123,7 @@ export interface ChainStorage extends GenericChainStorage {
      * @param {AccountId32Like} arg
      * @param {Callback<Array<PalletVestingVestingInfo> | undefined> =} callback
      **/
-    vesting: GenericStorageQuery<(arg: AccountId32Like) => Array<PalletVestingVestingInfo> | undefined>;
+    vesting: GenericStorageQuery<(arg: AccountId32Like) => Array<PalletVestingVestingInfo> | undefined, AccountId32>;
 
     /**
      * Storage version of the pallet.
@@ -2117,7 +2155,7 @@ export interface ChainStorage extends GenericChainStorage {
      * @param {number} arg
      * @param {Callback<Array<PalletSchedulerScheduled | undefined>> =} callback
      **/
-    agenda: GenericStorageQuery<(arg: number) => Array<PalletSchedulerScheduled | undefined>>;
+    agenda: GenericStorageQuery<(arg: number) => Array<PalletSchedulerScheduled | undefined>, number>;
 
     /**
      * Lookup from a name to the block number and index of the task.
@@ -2128,7 +2166,7 @@ export interface ChainStorage extends GenericChainStorage {
      * @param {FixedBytes<32>} arg
      * @param {Callback<[number, number] | undefined> =} callback
      **/
-    lookup: GenericStorageQuery<(arg: FixedBytes<32>) => [number, number] | undefined>;
+    lookup: GenericStorageQuery<(arg: FixedBytes<32>) => [number, number] | undefined, FixedBytes<32>>;
 
     /**
      * Generic pallet storage query
@@ -2172,7 +2210,7 @@ export interface ChainStorage extends GenericChainStorage {
      * @param {number} arg
      * @param {Callback<FixedBytes<1024> | undefined> =} callback
      **/
-    trashData: GenericStorageQuery<(arg: number) => FixedBytes<1024> | undefined>;
+    trashData: GenericStorageQuery<(arg: number) => FixedBytes<1024> | undefined, number>;
 
     /**
      * The current number of entries in `TrashData`.
@@ -2196,14 +2234,14 @@ export interface ChainStorage extends GenericChainStorage {
      * @param {H256} arg
      * @param {Callback<PalletPreimageRequestStatus | undefined> =} callback
      **/
-    statusFor: GenericStorageQuery<(arg: H256) => PalletPreimageRequestStatus | undefined>;
+    statusFor: GenericStorageQuery<(arg: H256) => PalletPreimageRequestStatus | undefined, H256>;
 
     /**
      *
      * @param {[H256, number]} arg
      * @param {Callback<Bytes | undefined> =} callback
      **/
-    preimageFor: GenericStorageQuery<(arg: [H256, number]) => Bytes | undefined>;
+    preimageFor: GenericStorageQuery<(arg: [H256, number]) => Bytes | undefined, [H256, number]>;
 
     /**
      * Generic pallet storage query
@@ -2221,7 +2259,7 @@ export interface ChainStorage extends GenericChainStorage {
      * @param {AccountId32Like} arg
      * @param {Callback<[Array<PalletProxyProxyDefinition>, bigint]> =} callback
      **/
-    proxies: GenericStorageQuery<(arg: AccountId32Like) => [Array<PalletProxyProxyDefinition>, bigint]>;
+    proxies: GenericStorageQuery<(arg: AccountId32Like) => [Array<PalletProxyProxyDefinition>, bigint], AccountId32>;
 
     /**
      * The announcements made by the proxy (key).
@@ -2229,7 +2267,7 @@ export interface ChainStorage extends GenericChainStorage {
      * @param {AccountId32Like} arg
      * @param {Callback<[Array<PalletProxyAnnouncement>, bigint]> =} callback
      **/
-    announcements: GenericStorageQuery<(arg: AccountId32Like) => [Array<PalletProxyAnnouncement>, bigint]>;
+    announcements: GenericStorageQuery<(arg: AccountId32Like) => [Array<PalletProxyAnnouncement>, bigint], AccountId32>;
 
     /**
      * Generic pallet storage query
@@ -2246,7 +2284,10 @@ export interface ChainStorage extends GenericChainStorage {
      * @param {[AccountId32Like, FixedBytes<32>]} arg
      * @param {Callback<PalletMultisigMultisig | undefined> =} callback
      **/
-    multisigs: GenericStorageQuery<(arg: [AccountId32Like, FixedBytes<32>]) => PalletMultisigMultisig | undefined>;
+    multisigs: GenericStorageQuery<
+      (arg: [AccountId32Like, FixedBytes<32>]) => PalletMultisigMultisig | undefined,
+      [AccountId32, FixedBytes<32>]
+    >;
 
     /**
      * Generic pallet storage query
@@ -2270,7 +2311,7 @@ export interface ChainStorage extends GenericChainStorage {
      * @param {number} arg
      * @param {Callback<PalletBountiesBounty | undefined> =} callback
      **/
-    bounties: GenericStorageQuery<(arg: number) => PalletBountiesBounty | undefined>;
+    bounties: GenericStorageQuery<(arg: number) => PalletBountiesBounty | undefined, number>;
 
     /**
      * The description of each bounty.
@@ -2278,7 +2319,7 @@ export interface ChainStorage extends GenericChainStorage {
      * @param {number} arg
      * @param {Callback<Bytes | undefined> =} callback
      **/
-    bountyDescriptions: GenericStorageQuery<(arg: number) => Bytes | undefined>;
+    bountyDescriptions: GenericStorageQuery<(arg: number) => Bytes | undefined, number>;
 
     /**
      * Bounty indices that have been approved but not yet funded.
@@ -2304,7 +2345,7 @@ export interface ChainStorage extends GenericChainStorage {
      * @param {H256} arg
      * @param {Callback<PalletTipsOpenTip | undefined> =} callback
      **/
-    tips: GenericStorageQuery<(arg: H256) => PalletTipsOpenTip | undefined>;
+    tips: GenericStorageQuery<(arg: H256) => PalletTipsOpenTip | undefined, H256>;
 
     /**
      * Simple preimage lookup from the reason's hash to the original data. Again, has an
@@ -2313,7 +2354,7 @@ export interface ChainStorage extends GenericChainStorage {
      * @param {H256} arg
      * @param {Callback<Bytes | undefined> =} callback
      **/
-    reasons: GenericStorageQuery<(arg: H256) => Bytes | undefined>;
+    reasons: GenericStorageQuery<(arg: H256) => Bytes | undefined, H256>;
 
     /**
      * Generic pallet storage query
@@ -2330,7 +2371,7 @@ export interface ChainStorage extends GenericChainStorage {
      * @param {number} arg
      * @param {Callback<PalletAssetsAssetDetails | undefined> =} callback
      **/
-    asset: GenericStorageQuery<(arg: number) => PalletAssetsAssetDetails | undefined>;
+    asset: GenericStorageQuery<(arg: number) => PalletAssetsAssetDetails | undefined, number>;
 
     /**
      * The holdings of a specific account for a specific asset.
@@ -2338,7 +2379,10 @@ export interface ChainStorage extends GenericChainStorage {
      * @param {[number, AccountId32Like]} arg
      * @param {Callback<PalletAssetsAssetAccount | undefined> =} callback
      **/
-    account: GenericStorageQuery<(arg: [number, AccountId32Like]) => PalletAssetsAssetAccount | undefined>;
+    account: GenericStorageQuery<
+      (arg: [number, AccountId32Like]) => PalletAssetsAssetAccount | undefined,
+      [number, AccountId32]
+    >;
 
     /**
      * Approved balance transfers. First balance is the amount approved for transfer. Second
@@ -2349,7 +2393,8 @@ export interface ChainStorage extends GenericChainStorage {
      * @param {Callback<PalletAssetsApproval | undefined> =} callback
      **/
     approvals: GenericStorageQuery<
-      (arg: [number, AccountId32Like, AccountId32Like]) => PalletAssetsApproval | undefined
+      (arg: [number, AccountId32Like, AccountId32Like]) => PalletAssetsApproval | undefined,
+      [number, AccountId32, AccountId32]
     >;
 
     /**
@@ -2358,7 +2403,7 @@ export interface ChainStorage extends GenericChainStorage {
      * @param {number} arg
      * @param {Callback<PalletAssetsAssetMetadata> =} callback
      **/
-    metadata: GenericStorageQuery<(arg: number) => PalletAssetsAssetMetadata>;
+    metadata: GenericStorageQuery<(arg: number) => PalletAssetsAssetMetadata, number>;
 
     /**
      * Generic pallet storage query
@@ -2375,7 +2420,7 @@ export interface ChainStorage extends GenericChainStorage {
      * @param {number} arg
      * @param {Callback<PalletAssetsAssetDetails | undefined> =} callback
      **/
-    asset: GenericStorageQuery<(arg: number) => PalletAssetsAssetDetails | undefined>;
+    asset: GenericStorageQuery<(arg: number) => PalletAssetsAssetDetails | undefined, number>;
 
     /**
      * The holdings of a specific account for a specific asset.
@@ -2383,7 +2428,10 @@ export interface ChainStorage extends GenericChainStorage {
      * @param {[number, AccountId32Like]} arg
      * @param {Callback<PalletAssetsAssetAccount | undefined> =} callback
      **/
-    account: GenericStorageQuery<(arg: [number, AccountId32Like]) => PalletAssetsAssetAccount | undefined>;
+    account: GenericStorageQuery<
+      (arg: [number, AccountId32Like]) => PalletAssetsAssetAccount | undefined,
+      [number, AccountId32]
+    >;
 
     /**
      * Approved balance transfers. First balance is the amount approved for transfer. Second
@@ -2394,7 +2442,8 @@ export interface ChainStorage extends GenericChainStorage {
      * @param {Callback<PalletAssetsApproval | undefined> =} callback
      **/
     approvals: GenericStorageQuery<
-      (arg: [number, AccountId32Like, AccountId32Like]) => PalletAssetsApproval | undefined
+      (arg: [number, AccountId32Like, AccountId32Like]) => PalletAssetsApproval | undefined,
+      [number, AccountId32, AccountId32]
     >;
 
     /**
@@ -2403,7 +2452,7 @@ export interface ChainStorage extends GenericChainStorage {
      * @param {number} arg
      * @param {Callback<PalletAssetsAssetMetadata> =} callback
      **/
-    metadata: GenericStorageQuery<(arg: number) => PalletAssetsAssetMetadata>;
+    metadata: GenericStorageQuery<(arg: number) => PalletAssetsAssetMetadata, number>;
 
     /**
      * Generic pallet storage query
@@ -2437,7 +2486,7 @@ export interface ChainStorage extends GenericChainStorage {
      * @param {bigint} arg
      * @param {Callback<H256 | undefined> =} callback
      **/
-    nodes: GenericStorageQuery<(arg: bigint) => H256 | undefined>;
+    nodes: GenericStorageQuery<(arg: bigint) => H256 | undefined, bigint>;
 
     /**
      * Generic pallet storage query
@@ -2467,7 +2516,7 @@ export interface ChainStorage extends GenericChainStorage {
      * @param {AccountId32Like} arg
      * @param {Callback<[number, Array<[number, number]>]> =} callback
      **/
-    participants: GenericStorageQuery<(arg: AccountId32Like) => [number, Array<[number, number]>]>;
+    participants: GenericStorageQuery<(arg: AccountId32Like) => [number, Array<[number, number]>], AccountId32>;
 
     /**
      * Total number of tickets sold.
@@ -2485,7 +2534,7 @@ export interface ChainStorage extends GenericChainStorage {
      * @param {number} arg
      * @param {Callback<AccountId32 | undefined> =} callback
      **/
-    tickets: GenericStorageQuery<(arg: number) => AccountId32 | undefined>;
+    tickets: GenericStorageQuery<(arg: number) => AccountId32 | undefined, number>;
 
     /**
      * The calls stored in this pallet to be used in an active lottery if configured
@@ -2521,7 +2570,7 @@ export interface ChainStorage extends GenericChainStorage {
      * @param {number} arg
      * @param {Callback<Array<PalletNisBid>> =} callback
      **/
-    queues: GenericStorageQuery<(arg: number) => Array<PalletNisBid>>;
+    queues: GenericStorageQuery<(arg: number) => Array<PalletNisBid>, number>;
 
     /**
      * Summary information over the general state.
@@ -2536,7 +2585,7 @@ export interface ChainStorage extends GenericChainStorage {
      * @param {number} arg
      * @param {Callback<PalletNisReceiptRecord | undefined> =} callback
      **/
-    receipts: GenericStorageQuery<(arg: number) => PalletNisReceiptRecord | undefined>;
+    receipts: GenericStorageQuery<(arg: number) => PalletNisReceiptRecord | undefined, number>;
 
     /**
      * Generic pallet storage query
@@ -2553,7 +2602,7 @@ export interface ChainStorage extends GenericChainStorage {
      * @param {number} arg
      * @param {Callback<PalletUniquesCollectionDetails | undefined> =} callback
      **/
-    class: GenericStorageQuery<(arg: number) => PalletUniquesCollectionDetails | undefined>;
+    class: GenericStorageQuery<(arg: number) => PalletUniquesCollectionDetails | undefined, number>;
 
     /**
      * The collection, if any, of which an account is willing to take ownership.
@@ -2561,7 +2610,7 @@ export interface ChainStorage extends GenericChainStorage {
      * @param {AccountId32Like} arg
      * @param {Callback<number | undefined> =} callback
      **/
-    ownershipAcceptance: GenericStorageQuery<(arg: AccountId32Like) => number | undefined>;
+    ownershipAcceptance: GenericStorageQuery<(arg: AccountId32Like) => number | undefined, AccountId32>;
 
     /**
      * The items held by any given account; set out this way so that items owned by a single
@@ -2570,7 +2619,10 @@ export interface ChainStorage extends GenericChainStorage {
      * @param {[AccountId32Like, number, number]} arg
      * @param {Callback<[] | undefined> =} callback
      **/
-    account: GenericStorageQuery<(arg: [AccountId32Like, number, number]) => [] | undefined>;
+    account: GenericStorageQuery<
+      (arg: [AccountId32Like, number, number]) => [] | undefined,
+      [AccountId32, number, number]
+    >;
 
     /**
      * The collections owned by any given account; set out this way so that collections owned by
@@ -2579,7 +2631,7 @@ export interface ChainStorage extends GenericChainStorage {
      * @param {[AccountId32Like, number]} arg
      * @param {Callback<[] | undefined> =} callback
      **/
-    classAccount: GenericStorageQuery<(arg: [AccountId32Like, number]) => [] | undefined>;
+    classAccount: GenericStorageQuery<(arg: [AccountId32Like, number]) => [] | undefined, [AccountId32, number]>;
 
     /**
      * The items in existence and their ownership details.
@@ -2587,7 +2639,7 @@ export interface ChainStorage extends GenericChainStorage {
      * @param {[number, number]} arg
      * @param {Callback<PalletUniquesItemDetails | undefined> =} callback
      **/
-    asset: GenericStorageQuery<(arg: [number, number]) => PalletUniquesItemDetails | undefined>;
+    asset: GenericStorageQuery<(arg: [number, number]) => PalletUniquesItemDetails | undefined, [number, number]>;
 
     /**
      * Metadata of a collection.
@@ -2595,7 +2647,7 @@ export interface ChainStorage extends GenericChainStorage {
      * @param {number} arg
      * @param {Callback<PalletUniquesCollectionMetadata | undefined> =} callback
      **/
-    classMetadataOf: GenericStorageQuery<(arg: number) => PalletUniquesCollectionMetadata | undefined>;
+    classMetadataOf: GenericStorageQuery<(arg: number) => PalletUniquesCollectionMetadata | undefined, number>;
 
     /**
      * Metadata of an item.
@@ -2603,7 +2655,10 @@ export interface ChainStorage extends GenericChainStorage {
      * @param {[number, number]} arg
      * @param {Callback<PalletUniquesItemMetadata | undefined> =} callback
      **/
-    instanceMetadataOf: GenericStorageQuery<(arg: [number, number]) => PalletUniquesItemMetadata | undefined>;
+    instanceMetadataOf: GenericStorageQuery<
+      (arg: [number, number]) => PalletUniquesItemMetadata | undefined,
+      [number, number]
+    >;
 
     /**
      * Attributes of a collection.
@@ -2611,7 +2666,10 @@ export interface ChainStorage extends GenericChainStorage {
      * @param {[number, number | undefined, BytesLike]} arg
      * @param {Callback<[Bytes, bigint] | undefined> =} callback
      **/
-    attribute: GenericStorageQuery<(arg: [number, number | undefined, BytesLike]) => [Bytes, bigint] | undefined>;
+    attribute: GenericStorageQuery<
+      (arg: [number, number | undefined, BytesLike]) => [Bytes, bigint] | undefined,
+      [number, number | undefined, Bytes]
+    >;
 
     /**
      * Price of an asset instance.
@@ -2619,7 +2677,10 @@ export interface ChainStorage extends GenericChainStorage {
      * @param {[number, number]} arg
      * @param {Callback<[bigint, AccountId32 | undefined] | undefined> =} callback
      **/
-    itemPriceOf: GenericStorageQuery<(arg: [number, number]) => [bigint, AccountId32 | undefined] | undefined>;
+    itemPriceOf: GenericStorageQuery<
+      (arg: [number, number]) => [bigint, AccountId32 | undefined] | undefined,
+      [number, number]
+    >;
 
     /**
      * Keeps track of the number of items a collection might have.
@@ -2627,7 +2688,7 @@ export interface ChainStorage extends GenericChainStorage {
      * @param {number} arg
      * @param {Callback<number | undefined> =} callback
      **/
-    collectionMaxSupply: GenericStorageQuery<(arg: number) => number | undefined>;
+    collectionMaxSupply: GenericStorageQuery<(arg: number) => number | undefined, number>;
 
     /**
      * Generic pallet storage query
@@ -2644,7 +2705,7 @@ export interface ChainStorage extends GenericChainStorage {
      * @param {number} arg
      * @param {Callback<PalletNftsCollectionDetails | undefined> =} callback
      **/
-    collection: GenericStorageQuery<(arg: number) => PalletNftsCollectionDetails | undefined>;
+    collection: GenericStorageQuery<(arg: number) => PalletNftsCollectionDetails | undefined, number>;
 
     /**
      * The collection, if any, of which an account is willing to take ownership.
@@ -2652,7 +2713,7 @@ export interface ChainStorage extends GenericChainStorage {
      * @param {AccountId32Like} arg
      * @param {Callback<number | undefined> =} callback
      **/
-    ownershipAcceptance: GenericStorageQuery<(arg: AccountId32Like) => number | undefined>;
+    ownershipAcceptance: GenericStorageQuery<(arg: AccountId32Like) => number | undefined, AccountId32>;
 
     /**
      * The items held by any given account; set out this way so that items owned by a single
@@ -2661,7 +2722,10 @@ export interface ChainStorage extends GenericChainStorage {
      * @param {[AccountId32Like, number, number]} arg
      * @param {Callback<[] | undefined> =} callback
      **/
-    account: GenericStorageQuery<(arg: [AccountId32Like, number, number]) => [] | undefined>;
+    account: GenericStorageQuery<
+      (arg: [AccountId32Like, number, number]) => [] | undefined,
+      [AccountId32, number, number]
+    >;
 
     /**
      * The collections owned by any given account; set out this way so that collections owned by
@@ -2670,7 +2734,7 @@ export interface ChainStorage extends GenericChainStorage {
      * @param {[AccountId32Like, number]} arg
      * @param {Callback<[] | undefined> =} callback
      **/
-    collectionAccount: GenericStorageQuery<(arg: [AccountId32Like, number]) => [] | undefined>;
+    collectionAccount: GenericStorageQuery<(arg: [AccountId32Like, number]) => [] | undefined, [AccountId32, number]>;
 
     /**
      * The items in existence and their ownership details.
@@ -2680,7 +2744,8 @@ export interface ChainStorage extends GenericChainStorage {
      * @param {Callback<PalletNftsBitFlagsCollectionRole | undefined> =} callback
      **/
     collectionRoleOf: GenericStorageQuery<
-      (arg: [number, AccountId32Like]) => PalletNftsBitFlagsCollectionRole | undefined
+      (arg: [number, AccountId32Like]) => PalletNftsBitFlagsCollectionRole | undefined,
+      [number, AccountId32]
     >;
 
     /**
@@ -2689,7 +2754,7 @@ export interface ChainStorage extends GenericChainStorage {
      * @param {[number, number]} arg
      * @param {Callback<PalletNftsItemDetails | undefined> =} callback
      **/
-    item: GenericStorageQuery<(arg: [number, number]) => PalletNftsItemDetails | undefined>;
+    item: GenericStorageQuery<(arg: [number, number]) => PalletNftsItemDetails | undefined, [number, number]>;
 
     /**
      * Metadata of a collection.
@@ -2697,7 +2762,7 @@ export interface ChainStorage extends GenericChainStorage {
      * @param {number} arg
      * @param {Callback<PalletNftsCollectionMetadata | undefined> =} callback
      **/
-    collectionMetadataOf: GenericStorageQuery<(arg: number) => PalletNftsCollectionMetadata | undefined>;
+    collectionMetadataOf: GenericStorageQuery<(arg: number) => PalletNftsCollectionMetadata | undefined, number>;
 
     /**
      * Metadata of an item.
@@ -2705,7 +2770,10 @@ export interface ChainStorage extends GenericChainStorage {
      * @param {[number, number]} arg
      * @param {Callback<PalletNftsItemMetadata | undefined> =} callback
      **/
-    itemMetadataOf: GenericStorageQuery<(arg: [number, number]) => PalletNftsItemMetadata | undefined>;
+    itemMetadataOf: GenericStorageQuery<
+      (arg: [number, number]) => PalletNftsItemMetadata | undefined,
+      [number, number]
+    >;
 
     /**
      * Attributes of a collection.
@@ -2716,7 +2784,8 @@ export interface ChainStorage extends GenericChainStorage {
     attribute: GenericStorageQuery<
       (
         arg: [number, number | undefined, PalletNftsAttributeNamespace, BytesLike],
-      ) => [Bytes, PalletNftsAttributeDeposit] | undefined
+      ) => [Bytes, PalletNftsAttributeDeposit] | undefined,
+      [number, number | undefined, PalletNftsAttributeNamespace, Bytes]
     >;
 
     /**
@@ -2725,7 +2794,10 @@ export interface ChainStorage extends GenericChainStorage {
      * @param {[number, number]} arg
      * @param {Callback<[bigint, AccountId32 | undefined] | undefined> =} callback
      **/
-    itemPriceOf: GenericStorageQuery<(arg: [number, number]) => [bigint, AccountId32 | undefined] | undefined>;
+    itemPriceOf: GenericStorageQuery<
+      (arg: [number, number]) => [bigint, AccountId32 | undefined] | undefined,
+      [number, number]
+    >;
 
     /**
      * Item attribute approvals.
@@ -2733,7 +2805,7 @@ export interface ChainStorage extends GenericChainStorage {
      * @param {[number, number]} arg
      * @param {Callback<Array<AccountId32>> =} callback
      **/
-    itemAttributesApprovalsOf: GenericStorageQuery<(arg: [number, number]) => Array<AccountId32>>;
+    itemAttributesApprovalsOf: GenericStorageQuery<(arg: [number, number]) => Array<AccountId32>, [number, number]>;
 
     /**
      * Stores the `CollectionId` that is going to be used for the next collection.
@@ -2749,7 +2821,7 @@ export interface ChainStorage extends GenericChainStorage {
      * @param {[number, number]} arg
      * @param {Callback<PalletNftsPendingSwap | undefined> =} callback
      **/
-    pendingSwapOf: GenericStorageQuery<(arg: [number, number]) => PalletNftsPendingSwap | undefined>;
+    pendingSwapOf: GenericStorageQuery<(arg: [number, number]) => PalletNftsPendingSwap | undefined, [number, number]>;
 
     /**
      * Config of a collection.
@@ -2757,7 +2829,7 @@ export interface ChainStorage extends GenericChainStorage {
      * @param {number} arg
      * @param {Callback<PalletNftsCollectionConfig | undefined> =} callback
      **/
-    collectionConfigOf: GenericStorageQuery<(arg: number) => PalletNftsCollectionConfig | undefined>;
+    collectionConfigOf: GenericStorageQuery<(arg: number) => PalletNftsCollectionConfig | undefined, number>;
 
     /**
      * Config of an item.
@@ -2765,7 +2837,7 @@ export interface ChainStorage extends GenericChainStorage {
      * @param {[number, number]} arg
      * @param {Callback<PalletNftsItemConfig | undefined> =} callback
      **/
-    itemConfigOf: GenericStorageQuery<(arg: [number, number]) => PalletNftsItemConfig | undefined>;
+    itemConfigOf: GenericStorageQuery<(arg: [number, number]) => PalletNftsItemConfig | undefined, [number, number]>;
 
     /**
      * Generic pallet storage query
@@ -2782,7 +2854,10 @@ export interface ChainStorage extends GenericChainStorage {
      * @param {[number, number]} arg
      * @param {Callback<PalletNftFractionalizationDetails | undefined> =} callback
      **/
-    nftToAsset: GenericStorageQuery<(arg: [number, number]) => PalletNftFractionalizationDetails | undefined>;
+    nftToAsset: GenericStorageQuery<
+      (arg: [number, number]) => PalletNftFractionalizationDetails | undefined,
+      [number, number]
+    >;
 
     /**
      * Generic pallet storage query
@@ -2806,7 +2881,7 @@ export interface ChainStorage extends GenericChainStorage {
      * @param {AccountId32Like} arg
      * @param {Callback<PalletSalaryClaimantStatus | undefined> =} callback
      **/
-    claimant: GenericStorageQuery<(arg: AccountId32Like) => PalletSalaryClaimantStatus | undefined>;
+    claimant: GenericStorageQuery<(arg: AccountId32Like) => PalletSalaryClaimantStatus | undefined, AccountId32>;
 
     /**
      * Generic pallet storage query
@@ -2830,7 +2905,7 @@ export interface ChainStorage extends GenericChainStorage {
      * @param {AccountId32Like} arg
      * @param {Callback<PalletCoreFellowshipMemberStatus | undefined> =} callback
      **/
-    member: GenericStorageQuery<(arg: AccountId32Like) => PalletCoreFellowshipMemberStatus | undefined>;
+    member: GenericStorageQuery<(arg: AccountId32Like) => PalletCoreFellowshipMemberStatus | undefined, AccountId32>;
 
     /**
      * Some evidence together with the desired outcome for which it was presented.
@@ -2838,7 +2913,10 @@ export interface ChainStorage extends GenericChainStorage {
      * @param {AccountId32Like} arg
      * @param {Callback<[PalletCoreFellowshipWish, Bytes] | undefined> =} callback
      **/
-    memberEvidence: GenericStorageQuery<(arg: AccountId32Like) => [PalletCoreFellowshipWish, Bytes] | undefined>;
+    memberEvidence: GenericStorageQuery<
+      (arg: AccountId32Like) => [PalletCoreFellowshipWish, Bytes] | undefined,
+      AccountId32
+    >;
 
     /**
      * Generic pallet storage query
@@ -2855,7 +2933,10 @@ export interface ChainStorage extends GenericChainStorage {
      * @param {number} arg
      * @param {Callback<Array<PalletTransactionStorageTransactionInfo> | undefined> =} callback
      **/
-    transactions: GenericStorageQuery<(arg: number) => Array<PalletTransactionStorageTransactionInfo> | undefined>;
+    transactions: GenericStorageQuery<
+      (arg: number) => Array<PalletTransactionStorageTransactionInfo> | undefined,
+      number
+    >;
 
     /**
      * Count indexed chunks for each block.
@@ -2863,7 +2944,7 @@ export interface ChainStorage extends GenericChainStorage {
      * @param {number} arg
      * @param {Callback<number> =} callback
      **/
-    chunkCount: GenericStorageQuery<(arg: number) => number>;
+    chunkCount: GenericStorageQuery<(arg: number) => number, number>;
 
     /**
      * Storage fee per byte.
@@ -2917,7 +2998,7 @@ export interface ChainStorage extends GenericChainStorage {
      * @param {AccountId32Like} arg
      * @param {Callback<PalletBagsListListNode | undefined> =} callback
      **/
-    listNodes: GenericStorageQuery<(arg: AccountId32Like) => PalletBagsListListNode | undefined>;
+    listNodes: GenericStorageQuery<(arg: AccountId32Like) => PalletBagsListListNode | undefined, AccountId32>;
 
     /**
      * Counter for the related counted storage map
@@ -2934,7 +3015,7 @@ export interface ChainStorage extends GenericChainStorage {
      * @param {bigint} arg
      * @param {Callback<PalletBagsListListBag | undefined> =} callback
      **/
-    listBags: GenericStorageQuery<(arg: bigint) => PalletBagsListListBag | undefined>;
+    listBags: GenericStorageQuery<(arg: bigint) => PalletBagsListListBag | undefined, bigint>;
 
     /**
      * Generic pallet storage query
@@ -2996,7 +3077,7 @@ export interface ChainStorage extends GenericChainStorage {
      * @param {number} arg
      * @param {Callback<number> =} callback
      **/
-    parentChildBounties: GenericStorageQuery<(arg: number) => number>;
+    parentChildBounties: GenericStorageQuery<(arg: number) => number, number>;
 
     /**
      * Child bounties that have been added.
@@ -3004,7 +3085,10 @@ export interface ChainStorage extends GenericChainStorage {
      * @param {[number, number]} arg
      * @param {Callback<PalletChildBountiesChildBounty | undefined> =} callback
      **/
-    childBounties: GenericStorageQuery<(arg: [number, number]) => PalletChildBountiesChildBounty | undefined>;
+    childBounties: GenericStorageQuery<
+      (arg: [number, number]) => PalletChildBountiesChildBounty | undefined,
+      [number, number]
+    >;
 
     /**
      * The description of each child-bounty.
@@ -3012,7 +3096,7 @@ export interface ChainStorage extends GenericChainStorage {
      * @param {number} arg
      * @param {Callback<Bytes | undefined> =} callback
      **/
-    childBountyDescriptions: GenericStorageQuery<(arg: number) => Bytes | undefined>;
+    childBountyDescriptions: GenericStorageQuery<(arg: number) => Bytes | undefined, number>;
 
     /**
      * The cumulative child-bounty curator fee for each parent bounty.
@@ -3020,7 +3104,7 @@ export interface ChainStorage extends GenericChainStorage {
      * @param {number} arg
      * @param {Callback<bigint> =} callback
      **/
-    childrenCuratorFees: GenericStorageQuery<(arg: number) => bigint>;
+    childrenCuratorFees: GenericStorageQuery<(arg: number) => bigint, number>;
 
     /**
      * Generic pallet storage query
@@ -3044,7 +3128,7 @@ export interface ChainStorage extends GenericChainStorage {
      * @param {number} arg
      * @param {Callback<PalletReferendaReferendumInfo | undefined> =} callback
      **/
-    referendumInfoFor: GenericStorageQuery<(arg: number) => PalletReferendaReferendumInfo | undefined>;
+    referendumInfoFor: GenericStorageQuery<(arg: number) => PalletReferendaReferendumInfo | undefined, number>;
 
     /**
      * The sorted list of referenda ready to be decided but not yet being decided, ordered by
@@ -3055,7 +3139,7 @@ export interface ChainStorage extends GenericChainStorage {
      * @param {number} arg
      * @param {Callback<Array<[number, bigint]>> =} callback
      **/
-    trackQueue: GenericStorageQuery<(arg: number) => Array<[number, bigint]>>;
+    trackQueue: GenericStorageQuery<(arg: number) => Array<[number, bigint]>, number>;
 
     /**
      * The number of referenda being decided currently.
@@ -3063,7 +3147,7 @@ export interface ChainStorage extends GenericChainStorage {
      * @param {number} arg
      * @param {Callback<number> =} callback
      **/
-    decidingCount: GenericStorageQuery<(arg: number) => number>;
+    decidingCount: GenericStorageQuery<(arg: number) => number, number>;
 
     /**
      * The metadata is a general information concerning the referendum.
@@ -3076,7 +3160,7 @@ export interface ChainStorage extends GenericChainStorage {
      * @param {number} arg
      * @param {Callback<H256 | undefined> =} callback
      **/
-    metadataOf: GenericStorageQuery<(arg: number) => H256 | undefined>;
+    metadataOf: GenericStorageQuery<(arg: number) => H256 | undefined, number>;
 
     /**
      * Generic pallet storage query
@@ -3094,7 +3178,10 @@ export interface ChainStorage extends GenericChainStorage {
      * @param {[AccountId32Like, number]} arg
      * @param {Callback<PalletConvictionVotingVoteVoting> =} callback
      **/
-    votingFor: GenericStorageQuery<(arg: [AccountId32Like, number]) => PalletConvictionVotingVoteVoting>;
+    votingFor: GenericStorageQuery<
+      (arg: [AccountId32Like, number]) => PalletConvictionVotingVoteVoting,
+      [AccountId32, number]
+    >;
 
     /**
      * The voting classes which have a non-zero lock requirement and the lock amounts which they
@@ -3104,7 +3191,7 @@ export interface ChainStorage extends GenericChainStorage {
      * @param {AccountId32Like} arg
      * @param {Callback<Array<[number, bigint]>> =} callback
      **/
-    classLocksFor: GenericStorageQuery<(arg: AccountId32Like) => Array<[number, bigint]>>;
+    classLocksFor: GenericStorageQuery<(arg: AccountId32Like) => Array<[number, bigint]>, AccountId32>;
 
     /**
      * Generic pallet storage query
@@ -3120,7 +3207,7 @@ export interface ChainStorage extends GenericChainStorage {
      * @param {H256} arg
      * @param {Callback<[] | undefined> =} callback
      **/
-    whitelistedCall: GenericStorageQuery<(arg: H256) => [] | undefined>;
+    whitelistedCall: GenericStorageQuery<(arg: H256) => [] | undefined, H256>;
 
     /**
      * Generic pallet storage query
@@ -3144,7 +3231,7 @@ export interface ChainStorage extends GenericChainStorage {
      * @param {H256} arg
      * @param {Callback<KitchensinkRuntimeRuntimeCall | undefined> =} callback
      **/
-    proposalOf: GenericStorageQuery<(arg: H256) => KitchensinkRuntimeRuntimeCall | undefined>;
+    proposalOf: GenericStorageQuery<(arg: H256) => KitchensinkRuntimeRuntimeCall | undefined, H256>;
 
     /**
      * Votes on a given proposal, if it is ongoing.
@@ -3152,7 +3239,7 @@ export interface ChainStorage extends GenericChainStorage {
      * @param {H256} arg
      * @param {Callback<PalletCollectiveVotes | undefined> =} callback
      **/
-    voting: GenericStorageQuery<(arg: H256) => PalletCollectiveVotes | undefined>;
+    voting: GenericStorageQuery<(arg: H256) => PalletCollectiveVotes | undefined, H256>;
 
     /**
      * Proposals so far.
@@ -3205,7 +3292,7 @@ export interface ChainStorage extends GenericChainStorage {
      * @param {AccountId32Like} arg
      * @param {Callback<bigint | undefined> =} callback
      **/
-    depositOf: GenericStorageQuery<(arg: AccountId32Like) => bigint | undefined>;
+    depositOf: GenericStorageQuery<(arg: AccountId32Like) => bigint | undefined, AccountId32>;
 
     /**
      * Maps member type to members of each type.
@@ -3213,7 +3300,7 @@ export interface ChainStorage extends GenericChainStorage {
      * @param {PalletAllianceMemberRole} arg
      * @param {Callback<Array<AccountId32>> =} callback
      **/
-    members: GenericStorageQuery<(arg: PalletAllianceMemberRole) => Array<AccountId32>>;
+    members: GenericStorageQuery<(arg: PalletAllianceMemberRole) => Array<AccountId32>, PalletAllianceMemberRole>;
 
     /**
      * A set of members who gave a retirement notice. They can retire after the end of retirement
@@ -3222,7 +3309,7 @@ export interface ChainStorage extends GenericChainStorage {
      * @param {AccountId32Like} arg
      * @param {Callback<number | undefined> =} callback
      **/
-    retiringMembers: GenericStorageQuery<(arg: AccountId32Like) => number | undefined>;
+    retiringMembers: GenericStorageQuery<(arg: AccountId32Like) => number | undefined, AccountId32>;
 
     /**
      * The current list of accounts deemed unscrupulous. These accounts non grata cannot submit
@@ -3309,7 +3396,10 @@ export interface ChainStorage extends GenericChainStorage {
      * @param {AccountId32Like} arg
      * @param {Callback<PalletNominationPoolsPoolMember | undefined> =} callback
      **/
-    poolMembers: GenericStorageQuery<(arg: AccountId32Like) => PalletNominationPoolsPoolMember | undefined>;
+    poolMembers: GenericStorageQuery<
+      (arg: AccountId32Like) => PalletNominationPoolsPoolMember | undefined,
+      AccountId32
+    >;
 
     /**
      * Counter for the related counted storage map
@@ -3324,7 +3414,7 @@ export interface ChainStorage extends GenericChainStorage {
      * @param {number} arg
      * @param {Callback<PalletNominationPoolsBondedPoolInner | undefined> =} callback
      **/
-    bondedPools: GenericStorageQuery<(arg: number) => PalletNominationPoolsBondedPoolInner | undefined>;
+    bondedPools: GenericStorageQuery<(arg: number) => PalletNominationPoolsBondedPoolInner | undefined, number>;
 
     /**
      * Counter for the related counted storage map
@@ -3340,7 +3430,7 @@ export interface ChainStorage extends GenericChainStorage {
      * @param {number} arg
      * @param {Callback<PalletNominationPoolsRewardPool | undefined> =} callback
      **/
-    rewardPools: GenericStorageQuery<(arg: number) => PalletNominationPoolsRewardPool | undefined>;
+    rewardPools: GenericStorageQuery<(arg: number) => PalletNominationPoolsRewardPool | undefined, number>;
 
     /**
      * Counter for the related counted storage map
@@ -3356,7 +3446,7 @@ export interface ChainStorage extends GenericChainStorage {
      * @param {number} arg
      * @param {Callback<PalletNominationPoolsSubPools | undefined> =} callback
      **/
-    subPoolsStorage: GenericStorageQuery<(arg: number) => PalletNominationPoolsSubPools | undefined>;
+    subPoolsStorage: GenericStorageQuery<(arg: number) => PalletNominationPoolsSubPools | undefined, number>;
 
     /**
      * Counter for the related counted storage map
@@ -3371,7 +3461,7 @@ export interface ChainStorage extends GenericChainStorage {
      * @param {number} arg
      * @param {Callback<Bytes> =} callback
      **/
-    metadata: GenericStorageQuery<(arg: number) => Bytes>;
+    metadata: GenericStorageQuery<(arg: number) => Bytes, number>;
 
     /**
      * Counter for the related counted storage map
@@ -3396,7 +3486,7 @@ export interface ChainStorage extends GenericChainStorage {
      * @param {AccountId32Like} arg
      * @param {Callback<number | undefined> =} callback
      **/
-    reversePoolIdLookup: GenericStorageQuery<(arg: AccountId32Like) => number | undefined>;
+    reversePoolIdLookup: GenericStorageQuery<(arg: AccountId32Like) => number | undefined, AccountId32>;
 
     /**
      * Counter for the related counted storage map
@@ -3411,7 +3501,7 @@ export interface ChainStorage extends GenericChainStorage {
      * @param {AccountId32Like} arg
      * @param {Callback<PalletNominationPoolsClaimPermission> =} callback
      **/
-    claimPermissions: GenericStorageQuery<(arg: AccountId32Like) => PalletNominationPoolsClaimPermission>;
+    claimPermissions: GenericStorageQuery<(arg: AccountId32Like) => PalletNominationPoolsClaimPermission, AccountId32>;
 
     /**
      * Generic pallet storage query
@@ -3435,7 +3525,7 @@ export interface ChainStorage extends GenericChainStorage {
      * @param {number} arg
      * @param {Callback<PalletReferendaReferendumInfoTally | undefined> =} callback
      **/
-    referendumInfoFor: GenericStorageQuery<(arg: number) => PalletReferendaReferendumInfoTally | undefined>;
+    referendumInfoFor: GenericStorageQuery<(arg: number) => PalletReferendaReferendumInfoTally | undefined, number>;
 
     /**
      * The sorted list of referenda ready to be decided but not yet being decided, ordered by
@@ -3446,7 +3536,7 @@ export interface ChainStorage extends GenericChainStorage {
      * @param {number} arg
      * @param {Callback<Array<[number, number]>> =} callback
      **/
-    trackQueue: GenericStorageQuery<(arg: number) => Array<[number, number]>>;
+    trackQueue: GenericStorageQuery<(arg: number) => Array<[number, number]>, number>;
 
     /**
      * The number of referenda being decided currently.
@@ -3454,7 +3544,7 @@ export interface ChainStorage extends GenericChainStorage {
      * @param {number} arg
      * @param {Callback<number> =} callback
      **/
-    decidingCount: GenericStorageQuery<(arg: number) => number>;
+    decidingCount: GenericStorageQuery<(arg: number) => number, number>;
 
     /**
      * The metadata is a general information concerning the referendum.
@@ -3467,7 +3557,7 @@ export interface ChainStorage extends GenericChainStorage {
      * @param {number} arg
      * @param {Callback<H256 | undefined> =} callback
      **/
-    metadataOf: GenericStorageQuery<(arg: number) => H256 | undefined>;
+    metadataOf: GenericStorageQuery<(arg: number) => H256 | undefined, number>;
 
     /**
      * Generic pallet storage query
@@ -3485,7 +3575,7 @@ export interface ChainStorage extends GenericChainStorage {
      * @param {number} arg
      * @param {Callback<number> =} callback
      **/
-    memberCount: GenericStorageQuery<(arg: number) => number>;
+    memberCount: GenericStorageQuery<(arg: number) => number, number>;
 
     /**
      * The current members of the collective.
@@ -3493,7 +3583,7 @@ export interface ChainStorage extends GenericChainStorage {
      * @param {AccountId32Like} arg
      * @param {Callback<PalletRankedCollectiveMemberRecord | undefined> =} callback
      **/
-    members: GenericStorageQuery<(arg: AccountId32Like) => PalletRankedCollectiveMemberRecord | undefined>;
+    members: GenericStorageQuery<(arg: AccountId32Like) => PalletRankedCollectiveMemberRecord | undefined, AccountId32>;
 
     /**
      * The index of each ranks's member into the group of members who have at least that rank.
@@ -3501,7 +3591,7 @@ export interface ChainStorage extends GenericChainStorage {
      * @param {[number, AccountId32Like]} arg
      * @param {Callback<number | undefined> =} callback
      **/
-    idToIndex: GenericStorageQuery<(arg: [number, AccountId32Like]) => number | undefined>;
+    idToIndex: GenericStorageQuery<(arg: [number, AccountId32Like]) => number | undefined, [number, AccountId32]>;
 
     /**
      * The members in the collective by index. All indices in the range `0..MemberCount` will
@@ -3510,7 +3600,7 @@ export interface ChainStorage extends GenericChainStorage {
      * @param {[number, number]} arg
      * @param {Callback<AccountId32 | undefined> =} callback
      **/
-    indexToId: GenericStorageQuery<(arg: [number, number]) => AccountId32 | undefined>;
+    indexToId: GenericStorageQuery<(arg: [number, number]) => AccountId32 | undefined, [number, number]>;
 
     /**
      * Votes on a given proposal, if it is ongoing.
@@ -3518,14 +3608,17 @@ export interface ChainStorage extends GenericChainStorage {
      * @param {[number, AccountId32Like]} arg
      * @param {Callback<PalletRankedCollectiveVoteRecord | undefined> =} callback
      **/
-    voting: GenericStorageQuery<(arg: [number, AccountId32Like]) => PalletRankedCollectiveVoteRecord | undefined>;
+    voting: GenericStorageQuery<
+      (arg: [number, AccountId32Like]) => PalletRankedCollectiveVoteRecord | undefined,
+      [number, AccountId32]
+    >;
 
     /**
      *
      * @param {number} arg
      * @param {Callback<Bytes | undefined> =} callback
      **/
-    votingCleanup: GenericStorageQuery<(arg: number) => Bytes | undefined>;
+    votingCleanup: GenericStorageQuery<(arg: number) => Bytes | undefined, number>;
 
     /**
      * Generic pallet storage query
@@ -3546,7 +3639,8 @@ export interface ChainStorage extends GenericChainStorage {
     pools: GenericStorageQuery<
       (
         arg: [PalletAssetConversionNativeOrAssetId, PalletAssetConversionNativeOrAssetId],
-      ) => PalletAssetConversionPoolInfo | undefined
+      ) => PalletAssetConversionPoolInfo | undefined,
+      [PalletAssetConversionNativeOrAssetId, PalletAssetConversionNativeOrAssetId]
     >;
 
     /**
@@ -3583,7 +3677,7 @@ export interface ChainStorage extends GenericChainStorage {
      * @param {AccountId32Like} arg
      * @param {Callback<bigint | undefined> =} callback
      **/
-    queue: GenericStorageQuery<(arg: AccountId32Like) => bigint | undefined>;
+    queue: GenericStorageQuery<(arg: AccountId32Like) => bigint | undefined, AccountId32>;
 
     /**
      * Counter for the related counted storage map
@@ -3621,7 +3715,7 @@ export interface ChainStorage extends GenericChainStorage {
      * @param {number} arg
      * @param {Callback<PalletMessageQueueBookState> =} callback
      **/
-    bookStateFor: GenericStorageQuery<(arg: number) => PalletMessageQueueBookState>;
+    bookStateFor: GenericStorageQuery<(arg: number) => PalletMessageQueueBookState, number>;
 
     /**
      * The origin at which we should begin servicing.
@@ -3636,7 +3730,7 @@ export interface ChainStorage extends GenericChainStorage {
      * @param {[number, number]} arg
      * @param {Callback<PalletMessageQueuePage | undefined> =} callback
      **/
-    pages: GenericStorageQuery<(arg: [number, number]) => PalletMessageQueuePage | undefined>;
+    pages: GenericStorageQuery<(arg: [number, number]) => PalletMessageQueuePage | undefined, [number, number]>;
 
     /**
      * Generic pallet storage query
@@ -3692,7 +3786,7 @@ export interface ChainStorage extends GenericChainStorage {
      * @param {number} arg
      * @param {Callback<number | undefined> =} callback
      **/
-    map1M: GenericStorageQuery<(arg: number) => number | undefined>;
+    map1M: GenericStorageQuery<(arg: number) => number | undefined, number>;
 
     /**
      * A map with a maximum of 16M entries.
@@ -3700,35 +3794,35 @@ export interface ChainStorage extends GenericChainStorage {
      * @param {number} arg
      * @param {Callback<number | undefined> =} callback
      **/
-    map16M: GenericStorageQuery<(arg: number) => number | undefined>;
+    map16M: GenericStorageQuery<(arg: number) => number | undefined, number>;
 
     /**
      *
      * @param {[number, number]} arg
      * @param {Callback<number | undefined> =} callback
      **/
-    doubleMap1M: GenericStorageQuery<(arg: [number, number]) => number | undefined>;
+    doubleMap1M: GenericStorageQuery<(arg: [number, number]) => number | undefined, [number, number]>;
 
     /**
      *
      * @param {number} arg
      * @param {Callback<Array<number> | undefined> =} callback
      **/
-    unboundedMap: GenericStorageQuery<(arg: number) => Array<number> | undefined>;
+    unboundedMap: GenericStorageQuery<(arg: number) => Array<number> | undefined, number>;
 
     /**
      *
      * @param {number} arg
      * @param {Callback<Array<number> | undefined> =} callback
      **/
-    unboundedMap2: GenericStorageQuery<(arg: number) => Array<number> | undefined>;
+    unboundedMap2: GenericStorageQuery<(arg: number) => Array<number> | undefined, number>;
 
     /**
      *
      * @param {number} arg
      * @param {Callback<Array<number> | undefined> =} callback
      **/
-    unboundedMapTwox: GenericStorageQuery<(arg: number) => Array<number> | undefined>;
+    unboundedMapTwox: GenericStorageQuery<(arg: number) => Array<number> | undefined, number>;
 
     /**
      * Generic pallet storage query
@@ -3745,7 +3839,7 @@ export interface ChainStorage extends GenericChainStorage {
      * @param {[BytesLike, BytesLike]} arg
      * @param {Callback<[] | undefined> =} callback
      **/
-    pausedCalls: GenericStorageQuery<(arg: [BytesLike, BytesLike]) => [] | undefined>;
+    pausedCalls: GenericStorageQuery<(arg: [BytesLike, BytesLike]) => [] | undefined, [Bytes, Bytes]>;
 
     /**
      * Generic pallet storage query
@@ -3776,7 +3870,7 @@ export interface ChainStorage extends GenericChainStorage {
      * @param {[AccountId32Like, number]} arg
      * @param {Callback<bigint | undefined> =} callback
      **/
-    deposits: GenericStorageQuery<(arg: [AccountId32Like, number]) => bigint | undefined>;
+    deposits: GenericStorageQuery<(arg: [AccountId32Like, number]) => bigint | undefined, [AccountId32, number]>;
 
     /**
      * Generic pallet storage query
@@ -3829,7 +3923,8 @@ export interface ChainStorage extends GenericChainStorage {
      * @param {Callback<PalletBrokerAllowedRenewalRecord | undefined> =} callback
      **/
     allowedRenewals: GenericStorageQuery<
-      (arg: PalletBrokerAllowedRenewalId) => PalletBrokerAllowedRenewalRecord | undefined
+      (arg: PalletBrokerAllowedRenewalId) => PalletBrokerAllowedRenewalRecord | undefined,
+      PalletBrokerAllowedRenewalId
     >;
 
     /**
@@ -3838,7 +3933,10 @@ export interface ChainStorage extends GenericChainStorage {
      * @param {PalletBrokerRegionId} arg
      * @param {Callback<PalletBrokerRegionRecord | undefined> =} callback
      **/
-    regions: GenericStorageQuery<(arg: PalletBrokerRegionId) => PalletBrokerRegionRecord | undefined>;
+    regions: GenericStorageQuery<
+      (arg: PalletBrokerRegionId) => PalletBrokerRegionRecord | undefined,
+      PalletBrokerRegionId
+    >;
 
     /**
      * The work we plan on having each core do at a particular time in the future.
@@ -3846,7 +3944,10 @@ export interface ChainStorage extends GenericChainStorage {
      * @param {[number, number]} arg
      * @param {Callback<Array<PalletBrokerScheduleItem> | undefined> =} callback
      **/
-    workplan: GenericStorageQuery<(arg: [number, number]) => Array<PalletBrokerScheduleItem> | undefined>;
+    workplan: GenericStorageQuery<
+      (arg: [number, number]) => Array<PalletBrokerScheduleItem> | undefined,
+      [number, number]
+    >;
 
     /**
      * The current workload of each core. This gets updated with workplan as timeslices pass.
@@ -3854,7 +3955,7 @@ export interface ChainStorage extends GenericChainStorage {
      * @param {number} arg
      * @param {Callback<Array<PalletBrokerScheduleItem>> =} callback
      **/
-    workload: GenericStorageQuery<(arg: number) => Array<PalletBrokerScheduleItem>>;
+    workload: GenericStorageQuery<(arg: number) => Array<PalletBrokerScheduleItem>, number>;
 
     /**
      * Record of a single contribution to the Instantaneous Coretime Pool.
@@ -3863,7 +3964,8 @@ export interface ChainStorage extends GenericChainStorage {
      * @param {Callback<PalletBrokerContributionRecord | undefined> =} callback
      **/
     instaPoolContribution: GenericStorageQuery<
-      (arg: PalletBrokerRegionId) => PalletBrokerContributionRecord | undefined
+      (arg: PalletBrokerRegionId) => PalletBrokerContributionRecord | undefined,
+      PalletBrokerRegionId
     >;
 
     /**
@@ -3872,7 +3974,7 @@ export interface ChainStorage extends GenericChainStorage {
      * @param {number} arg
      * @param {Callback<PalletBrokerPoolIoRecord> =} callback
      **/
-    instaPoolIo: GenericStorageQuery<(arg: number) => PalletBrokerPoolIoRecord>;
+    instaPoolIo: GenericStorageQuery<(arg: number) => PalletBrokerPoolIoRecord, number>;
 
     /**
      * Total InstaPool rewards for each Timeslice and the number of core parts which contributed.
@@ -3880,7 +3982,7 @@ export interface ChainStorage extends GenericChainStorage {
      * @param {number} arg
      * @param {Callback<PalletBrokerInstaPoolHistoryRecord | undefined> =} callback
      **/
-    instaPoolHistory: GenericStorageQuery<(arg: number) => PalletBrokerInstaPoolHistoryRecord | undefined>;
+    instaPoolHistory: GenericStorageQuery<(arg: number) => PalletBrokerInstaPoolHistoryRecord | undefined, number>;
 
     /**
      * Generic pallet storage query

@@ -5,6 +5,7 @@ import {
   PalletEventMetadataLatest,
   PalletStorageEntryMetadataLatest,
   PalletTxMetadataLatest,
+  StorageKey,
 } from '@dedot/codecs';
 import { RuntimeApiMethodSpec } from './runtime.js';
 
@@ -16,7 +17,7 @@ export type Append<T extends readonly unknown[], V> = [...T, V];
 export type AnyFunc = (...args: any[]) => any;
 export type AsyncMethod = (...args: any[]) => Promise<any>;
 export type Unsub = () => Promise<void>;
-export type Callback<T> = (result: T) => Promise<void> | void;
+export type Callback<T = any> = (result: T) => Promise<void> | void;
 
 export type DistributiveOmit<T, K extends keyof any> = T extends any ? Omit<T, K> : never;
 export type Overwrite<T, U> = DistributiveOmit<T, keyof U> & U;
@@ -56,10 +57,24 @@ export interface StorageMultiQueryMethod<F extends AnyFunc = AnyFunc> {
   (args: Array<Parameters<F>[0]>, callback: Callback<Array<ReturnType<F>>>): Promise<Unsub>;
 }
 
-export type GenericStorageQuery<T extends AnyFunc = AnyFunc> = StorageQueryMethod<T> & {
+export interface PaginationOptions {
+  pageSize?: number;
+  startKey?: StorageKey;
+}
+
+export type GenericStorageQuery<
+  T extends AnyFunc = AnyFunc,
+  KeyTypeIn extends any = undefined,
+> = StorageQueryMethod<T> & {
   multi: StorageMultiQueryMethod<T>;
   meta: PalletStorageEntryMetadataLatest;
-};
+  rawKey: (...args: Parameters<T>) => StorageKey;
+} & (KeyTypeIn extends undefined
+    ? {}
+    : {
+        keys: (pagination?: PaginationOptions) => Promise<KeyTypeIn[]>;
+        entries: (pagination?: PaginationOptions) => Promise<Array<[KeyTypeIn, NonNullable<ReturnType<T>>]>>;
+      });
 
 export type GenericRuntimeApiMethod<F extends AsyncMethod = AsyncMethod> = F & {
   meta: RuntimeApiMethodSpec;
