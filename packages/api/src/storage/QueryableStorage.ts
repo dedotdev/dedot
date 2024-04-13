@@ -1,4 +1,4 @@
-import { assert, HASHERS, UnknownApiError } from '@dedot/utils';
+import { assert, HASHERS, hexAddPrefix, UnknownApiError } from '@dedot/utils';
 import {
   $StorageData,
   PortableRegistry,
@@ -6,8 +6,20 @@ import {
   StorageDataLike,
   StorageEntryLatest,
   StorageKey,
+  PrefixedStorageKey,
 } from '@dedot/codecs';
 import { xxhashAsU8a, hexToU8a, stringCamelCase, concatU8a, u8aToHex } from '@dedot/utils';
+
+// https://github.com/polkadot-js/api/blob/0982f68507942c5bf6f751f662804344e211b289/packages/types/src/primitive/StorageKey.ts#L29-L38
+const HASHER_INFO: Record<string, [hashLen: number, canDecodeKey: boolean]> = {
+  blake2_128: [16, false],
+  blake2_256: [32, false],
+  blake2_128Concat: [16, true],
+  twox128: [16, false],
+  twox256: [32, false],
+  twox64Concat: [8, true],
+  identity: [0, true],
+};
 
 /**
  * @name QueryableStorage
@@ -25,26 +37,45 @@ export class QueryableStorage {
     this.storageEntry = this.#getStorageEntry();
   }
 
-  encodeKey(keyInput?: any): StorageKey {
+  get prefixKey(): PrefixedStorageKey {
+    return u8aToHex(this.prefixKeyAsU8a);
+  }
+
+  get prefixKeyAsU8a(): Uint8Array {
     const palletNameHash = xxhashAsU8a(this.pallet.name, 128);
     const storageItemHash = xxhashAsU8a(this.storageEntry.name, 128);
-    const prefixHash = concatU8a(palletNameHash, storageItemHash);
+    return concatU8a(palletNameHash, storageItemHash);
+  }
 
+  #getStorageMapInfo(type: StorageEntryLatest['type']) {
+    assert(type.tag === 'Map');
+
+    const { hashers, keyTypeId } = type.value;
+
+    let keyTypeIds = [keyTypeId];
+    if (hashers.length > 1) {
+      const { type } = this.registry.findType(keyTypeId);
+
+      assert(type.tag === 'Tuple', 'Key type should be a tuple!');
+      keyTypeIds = type.value.fields;
+    }
+
+    return { hashers, keyTypeIds };
+  }
+
+  /**
+   * Encode plain key input to raw/bytes storage key
+   *
+   * @param keyInput
+   */
+  encodeKey(keyInput?: any): StorageKey {
     const { type } = this.storageEntry;
 
     if (type.tag === 'Plain') {
-      return u8aToHex(prefixHash);
+      return this.prefixKey;
     } else if (type.tag === 'Map') {
-      const { hashers, keyTypeId } = type.value;
+      const { hashers, keyTypeIds } = this.#getStorageMapInfo(type);
       const extractedInputs = this.#extractRequiredKeyInputs(keyInput, hashers.length);
-
-      let keyTypeIds = [keyTypeId];
-      if (hashers.length > 1) {
-        const { type } = this.registry.findType(keyTypeId);
-
-        assert(type.tag === 'Tuple', 'Key type should be a tuple!');
-        keyTypeIds = type.value.fields;
-      }
 
       const keyParts = keyTypeIds.map((keyId, index) => {
         const input = extractedInputs[index];
@@ -53,12 +84,57 @@ export class QueryableStorage {
         return hasher($keyCodec.tryEncode(input));
       });
 
-      return u8aToHex(concatU8a(prefixHash, ...keyParts));
+      return u8aToHex(concatU8a(this.prefixKeyAsU8a, ...keyParts));
     }
 
     throw Error(`Invalid storage entry type: ${type}`);
   }
 
+  /**
+   * Decode storage key to plain key input
+   * Only storage keys that hashed by `twox64Concat`, `blake2_128Concat`, or `identity` can be decoded
+   *
+   * @param key
+   */
+  decodeKey(key: StorageKey): any {
+    const { type } = this.storageEntry;
+
+    if (type.tag === 'Plain') {
+      return;
+    } else if (type.tag === 'Map') {
+      const prefix = this.prefixKey;
+      if (!key.startsWith(prefix)) {
+        throw new Error(`Storage key does not match this storage entry (${this.palletName}.${this.storageItem})`);
+      }
+
+      const { hashers, keyTypeIds } = this.#getStorageMapInfo(type);
+
+      let keyData = hexToU8a(hexAddPrefix(key.slice(prefix.length)));
+      const results = keyTypeIds.map((keyId, index) => {
+        const [hashLen, canDecode] = HASHER_INFO[hashers[index]];
+        if (!canDecode) throw new Error('Cannot decode storage key');
+
+        const $keyCodec = this.registry.findCodec(keyId);
+        keyData = keyData.slice(hashLen);
+
+        const result = $keyCodec.tryDecode(keyData);
+        const encoded = $keyCodec.tryEncode(result);
+        keyData = keyData.slice(encoded.length);
+
+        return result;
+      });
+
+      return hashers.length > 1 ? results : results[0];
+    }
+
+    throw Error(`Invalid storage entry type: ${type}`);
+  }
+
+  /**
+   * Decode raw/bytes storage data to plain value
+   *
+   * @param raw
+   */
   decodeValue(raw?: StorageDataLike | null): any {
     const {
       modifier,

@@ -78,7 +78,7 @@ const getRuntimeVersion = (metadata: Metadata): RuntimeVersion => {
   const registry = new PortableRegistry(metadata.latest);
   const executor = new ConstantExecutor({
     registry,
-    metadataLatest: metadata.latest,
+    metadata,
   } as any);
 
   return executor.execute('system', 'version') as RuntimeVersion;

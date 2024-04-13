@@ -86,8 +86,22 @@ export const Enum = <T extends AnyShape, A extends EnumMembers<T>>(
   return shaped;
 };
 
+// https://github.com/sindresorhus/is-plain-obj/blob/main/index.js
+function isPlainObject(value: any) {
+  if (typeof value !== 'object' || value === null) {
+    return false;
+  }
+
+  const prototype = Object.getPrototypeOf(value);
+  return (
+    (prototype === null || prototype === Object.prototype || Object.getPrototypeOf(prototype) === null) &&
+    !(Symbol.toStringTag in value) &&
+    !(Symbol.iterator in value)
+  );
+}
+
 const shouldDecodeSerdePlainValue = (input: any, { tagKey }: EnumOptions) => {
-  return (isString(input) && !isHex(input)) || (isObject(input) && !input[tagKey!]);
+  return (isString(input) && !isHex(input)) || (isPlainObject(input) && !input[tagKey!]);
 };
 
 const decodeSerdePlainValue = ($shape: Shape<any>, input: any, { tagKey, valueKey }: EnumOptions) => {

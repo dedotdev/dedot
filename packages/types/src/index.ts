@@ -57,12 +57,24 @@ export interface StorageMultiQueryMethod<F extends AnyFunc = AnyFunc> {
   (args: Array<Parameters<F>[0]>, callback: Callback<Array<ReturnType<F>>>): Promise<Unsub>;
 }
 
-export type GenericStorageQuery<T extends AnyFunc = AnyFunc> = StorageQueryMethod<T> & {
+export interface PaginationOptions {
+  pageSize?: number;
+  startKey?: StorageKey;
+}
+
+export type GenericStorageQuery<
+  T extends AnyFunc = AnyFunc,
+  KeyTypeIn extends any = undefined,
+> = StorageQueryMethod<T> & {
   multi: StorageMultiQueryMethod<T>;
   meta: PalletStorageEntryMetadataLatest;
-  key: (...args: Parameters<T>) => StorageKey;
-  // keyPrefix: (...args: Parameters<T>) => StorageKey;
-};
+  rawKey: (...args: Parameters<T>) => StorageKey;
+} & (KeyTypeIn extends undefined
+    ? {}
+    : {
+        keys: (pagination?: PaginationOptions) => Promise<KeyTypeIn[]>;
+        entries: (pagination?: PaginationOptions) => Promise<Array<[KeyTypeIn, NonNullable<ReturnType<T>>]>>;
+      });
 
 export type GenericRuntimeApiMethod<F extends AsyncMethod = AsyncMethod> = F & {
   meta: RuntimeApiMethodSpec;

@@ -16,10 +16,13 @@ export class QueryGen extends ApiGen {
       if (!storage) continue;
 
       const queries = storage.entries.map((one) => this.#generateEntry(one));
-      const queryDefs = queries.map(
-        ({ name, valueType, keyType, docs }) =>
-          `${commentBlock(docs)}${name}: GenericStorageQuery<(${keyType}) => ${valueType}>`,
-      );
+      const queryDefs = queries.map(({ name, valueType, keyType, docs, keyTypeOut }) => {
+        if (keyTypeOut) {
+          return `${commentBlock(docs)}${name}: GenericStorageQuery<(${keyType}) => ${valueType}, ${keyTypeOut}>`;
+        } else {
+          return `${commentBlock(docs)}${name}: GenericStorageQuery<(${keyType}) => ${valueType}>`;
+        }
+      });
 
       defTypeOut += commentBlock(`Pallet \`${pallet.name}\`'s storage queries`);
       defTypeOut += `${stringCamelCase(pallet.name)}: {
@@ -38,12 +41,13 @@ export class QueryGen extends ApiGen {
   #generateEntry(entry: StorageEntryLatest) {
     const { name, type, docs, modifier } = entry;
 
-    let valueType, keyType;
+    let valueType, keyTypeOut, keyTypeIn;
     if (type.tag === 'Plain') {
       valueType = this.typesGen.generateType(type.value.valueTypeId, 1, true);
     } else if (type.tag === 'Map') {
       valueType = this.typesGen.generateType(type.value.valueTypeId, 1, true);
-      keyType = this.typesGen.generateType(type.value.keyTypeId, 1);
+      keyTypeOut = this.typesGen.generateType(type.value.keyTypeId, 1, true);
+      keyTypeIn = this.typesGen.generateType(type.value.keyTypeId, 1);
     } else {
       throw Error('Invalid entry type!');
     }
@@ -52,15 +56,16 @@ export class QueryGen extends ApiGen {
     valueType = `${valueType}${isOptional ? ' | undefined' : ''}`;
 
     docs.push('\n');
-    if (keyType) {
-      docs.push(`@param {${keyType}} arg`);
+    if (keyTypeIn) {
+      docs.push(`@param {${keyTypeIn}} arg`);
     }
     docs.push(`@param {Callback<${valueType}> =} callback`);
 
     return {
       name: normalizeName(name),
       valueType,
-      keyType: keyType ? `arg: ${keyType}` : '',
+      keyType: keyTypeIn ? `arg: ${keyTypeIn}` : '',
+      keyTypeOut,
       docs,
     };
   }

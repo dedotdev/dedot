@@ -53,7 +53,7 @@ export abstract class Executor<ChainApi extends GenericSubstrateApi = SubstrateA
     try {
       return this.doExecute(...paths);
     } catch (e: any) {
-      if (!this.api.options.throwOnUnknownApi && e instanceof UnknownApiError) {
+      if (!this.api.options?.throwOnUnknownApi && e instanceof UnknownApiError) {
         return undefined;
       }
 
