@@ -139,6 +139,7 @@ export class ChainHead extends JsonRpcGroup<ChainHeadEvent> {
       }
       case 'stop':
         // TODO handle retry & recovery
+        // TODO reject all on-going operations
         throw new Error('Subscription stopped!');
       case 'operationBodyDone': {
         this.#handleOperationResponse(result, ({ resolve }) => {
@@ -357,10 +358,27 @@ export class ChainHead extends JsonRpcGroup<ChainHeadEvent> {
 
   /**
    * chainHead_unstable_storage
-   *
-   * TODO handle discardedItems
    */
   async storage(items: Array<StorageQuery>, childTrie?: string | null, at?: BlockHash): Promise<Array<StorageResult>> {
+    this.#ensureFollowed();
+
+    const results: Array<StorageResult> = [];
+
+    let queryItems = items;
+    while (queryItems.length > 0) {
+      const [newBatch, newDiscardedItems] = await this.#getStorage(queryItems, childTrie, at);
+      results.push(...newBatch);
+      queryItems = newDiscardedItems;
+    }
+
+    return results;
+  }
+
+  async #getStorage(
+    items: Array<StorageQuery>,
+    childTrie?: string | null,
+    at?: BlockHash,
+  ): Promise<[fetchedResults: Array<StorageResult>, discardedItems: Array<StorageQuery>]> {
     this.#ensureFollowed();
 
     const resp: MethodResponse = await this.send(
@@ -371,7 +389,12 @@ export class ChainHead extends JsonRpcGroup<ChainHeadEvent> {
       childTrie,
     );
 
-    return this.#awaitOperation(resp);
+    let discardedItems: Array<StorageQuery> = [];
+    if (resp.result === 'started' && resp.discardedItems && resp.discardedItems > 0) {
+      discardedItems = items.slice(items.length - resp.discardedItems);
+    }
+
+    return [await this.#awaitOperation(resp), discardedItems];
   }
 
   /**
