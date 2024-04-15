@@ -49,9 +49,9 @@ export class StorageQueryExecutor<ChainApi extends GenericSubstrateApi = Substra
 
       // if a callback is passed, make a storage subscription and return an unsub function
       if (callback) {
-        return await this.subscribeStorage([encodedKey], (changeSet: StorageChangeSet) => {
-          const targetChange = changeSet.changes.find((change) => change[0] === encodedKey);
-          targetChange && callback(entry.decodeValue(targetChange[1]));
+        return await this.subscribeStorage([encodedKey], (changes: Array<StorageData | undefined>) => {
+          if (changes.length === 0) return;
+          callback(entry.decodeValue(changes[0]));
         });
       } else {
         const results = await getStorage([encodedKey]);
@@ -67,9 +67,8 @@ export class StorageQueryExecutor<ChainApi extends GenericSubstrateApi = Substra
 
       // if a callback is passed, make a storage subscription and return an unsub function
       if (callback) {
-        return await this.subscribeStorage(encodedKeys, (changeSet: StorageChangeSet) => {
-          const targetChanges = changeSet.changes.filter((change) => encodedKeys.includes(change[0]));
-          targetChanges.length > 0 && callback(targetChanges.map((change) => entry.decodeValue(change[1])));
+        return await this.subscribeStorage(encodedKeys, (changes: Array<StorageData | undefined>) => {
+          callback(changes.map((change) => entry.decodeValue(change)));
         });
       } else {
         const result = await getStorage(encodedKeys);
@@ -135,12 +134,23 @@ export class StorageQueryExecutor<ChainApi extends GenericSubstrateApi = Substra
     );
   }
 
-  protected subscribeStorage(keys: StorageKey[], callback: Callback<StorageChangeSet>): Promise<Unsub> {
+
+  protected subscribeStorage(keys: StorageKey[], callback: Callback<Array<StorageData | undefined>>): Promise<Unsub> {
     // TODO support subscribe to finalized storage
     if (this.hashOrSource === 'finalized') {
       throw new Error('Subscribe to finalized storage is not supported');
     }
 
-    return this.api.rpc.state_subscribeStorage(keys, callback);
+    const lastChanges = {} as Record<StorageKey, StorageData | undefined>;
+
+    return this.api.rpc.state_subscribeStorage(keys, (changeSet: StorageChangeSet) => {
+      changeSet.changes.forEach(([key, value]) => {
+        if (lastChanges[key] !== value) {
+          lastChanges[key] = value ?? undefined;
+        }
+      });
+
+      return callback(keys.map((key) => lastChanges[key]));
+    });
   }
 }
