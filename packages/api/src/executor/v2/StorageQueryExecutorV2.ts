@@ -1,4 +1,4 @@
-import type { GenericSubstrateApi } from '@dedot/types';
+import type { Callback, GenericSubstrateApi } from '@dedot/types';
 import type { StorageChangeSet } from '@dedot/specs';
 import { StorageQueryExecutor } from '../StorageQueryExecutor.js';
 import { HexString } from '@dedot/utils';
@@ -40,7 +40,7 @@ export class StorageQueryExecutorV2<
     );
   }
 
-  protected override async subscribeStorage(keys: HexString[], cb: (changeSet: StorageChangeSet) => void) {
+  protected override async subscribeStorage(keys: HexString[], callback: Callback<Array<StorageData | undefined>>) {
     let initialHash: BlockHash = this.chainHead.bestHash;
     let eventToListen: ChainHeadEvent = 'bestBlock';
     if (this.hashOrSource === 'finalized') {
@@ -52,17 +52,17 @@ export class StorageQueryExecutorV2<
 
     const pull = async (hash: BlockHash) => {
       const results = await this.queryStorage(keys, hash);
-      const changes: Array<[HexString, StorageData]> = [];
+      let changed = false;
       keys.forEach((key) => {
         const newValue = results[key] as StorageData;
         if (latestChanges[key] === newValue) return;
 
-        changes.push([key, newValue]);
+        changed = true;
         latestChanges[key] = newValue;
       });
 
-      if (changes.length === 0) return;
-      cb({ block: hash, changes });
+      if (!changed) return;
+      callback(keys.map((key) => latestChanges[key]));
     };
 
     await pull(initialHash);
