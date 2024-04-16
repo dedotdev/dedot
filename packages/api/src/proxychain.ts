@@ -1,7 +1,7 @@
-import { GenericSubstrateApi } from '@dedot/types';
+import { GenericSubstrateApi, VersionedGenericSubstrateApi } from '@dedot/types';
 import { Executor } from './executor/index.js';
 
-export interface Carrier<ChainApi extends GenericSubstrateApi> {
+export interface Carrier<ChainApi extends VersionedGenericSubstrateApi> {
   executor: Executor<ChainApi>;
   chain?: string[];
 }
@@ -13,7 +13,7 @@ export interface Carrier<ChainApi extends GenericSubstrateApi> {
  * @param currentLevel
  * @param maxLevel
  */
-export const newProxyChain = <ChainApi extends GenericSubstrateApi>(
+export const newProxyChain = <ChainApi extends VersionedGenericSubstrateApi>(
   carrier: Carrier<ChainApi>,
   currentLevel = 1,
   maxLevel = 3,

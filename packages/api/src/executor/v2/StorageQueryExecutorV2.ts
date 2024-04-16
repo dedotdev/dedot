@@ -1,19 +1,18 @@
-import type { Callback, GenericSubstrateApi } from '@dedot/types';
-import type { StorageChangeSet } from '@dedot/specs';
+import type { Callback, RpcVersion, VersionedGenericSubstrateApi } from '@dedot/types';
 import { StorageQueryExecutor } from '../StorageQueryExecutor.js';
 import { HexString } from '@dedot/utils';
 import { BlockHash, Option, StorageData, StorageKey } from '@dedot/codecs';
-import { ISubstrateClient, HashOrSource } from '../../types.js';
+import { HashOrSource, ISubstrateClient } from '../../types.js';
 import { ChainHead, ChainHeadEvent } from '../../json-rpc/index.js';
 
 /**
  * @name StorageQueryExecutorV2
  */
 export class StorageQueryExecutorV2<
-  ChainApi extends GenericSubstrateApi = GenericSubstrateApi,
+  ChainApi extends VersionedGenericSubstrateApi = VersionedGenericSubstrateApi,
 > extends StorageQueryExecutor<ChainApi> {
   constructor(
-    api: ISubstrateClient<ChainApi>,
+    api: ISubstrateClient<ChainApi[RpcVersion]>,
     public chainHead: ChainHead,
     atBlockHash?: HashOrSource,
   ) {

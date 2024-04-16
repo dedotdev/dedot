@@ -1,16 +1,16 @@
-import type { GenericSubstrateApi } from '@dedot/types';
+import type { RpcVersion, VersionedGenericSubstrateApi } from '@dedot/types';
 import { RuntimeApiExecutor, StateCallParams } from '../RuntimeApiExecutor.js';
-import { ISubstrateClient, HashOrSource } from '../../types.js';
+import { HashOrSource, ISubstrateClient } from '../../types.js';
 import { ChainHead } from '../../json-rpc/index.js';
 
 /**
  * @name RuntimeApiExecutorV2
  */
 export class RuntimeApiExecutorV2<
-  ChainApi extends GenericSubstrateApi = GenericSubstrateApi,
+  ChainApi extends VersionedGenericSubstrateApi = VersionedGenericSubstrateApi,
 > extends RuntimeApiExecutor<ChainApi> {
   constructor(
-    api: ISubstrateClient<ChainApi>,
+    api: ISubstrateClient<ChainApi[RpcVersion]>,
     public chainHead: ChainHead,
     atBlockHash?: HashOrSource,
   ) {

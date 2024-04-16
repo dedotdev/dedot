@@ -11,6 +11,7 @@ const checkAvailability = () => {
 
 /**
  * A wrapper for localStorage
+ * TODO add prefix for keys to avoid conflicts
  */
 export class LocalStorage implements IStorage {
   constructor() {

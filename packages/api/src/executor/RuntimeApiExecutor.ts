@@ -1,11 +1,11 @@
 import type { AnyShape } from '@dedot/shape';
 import type {
   GenericRuntimeApiMethod,
-  GenericSubstrateApi,
   RuntimeApiMethodParamSpec,
   RuntimeApiMethodSpec,
   RuntimeApiName,
   RuntimeApiSpec,
+  VersionedGenericSubstrateApi,
 } from '@dedot/types';
 import { Executor } from './Executor.js';
 import {
@@ -39,7 +39,9 @@ export interface StateCallParams {
  * or defined externally when initializing `Dedot` instance
  * via `ApiOptions.runtimeApis` option.
  */
-export class RuntimeApiExecutor<ChainApi extends GenericSubstrateApi = GenericSubstrateApi> extends Executor<ChainApi> {
+export class RuntimeApiExecutor<
+  ChainApi extends VersionedGenericSubstrateApi = VersionedGenericSubstrateApi,
+> extends Executor<ChainApi> {
   doExecute(runtimeApi: string, method: string): GenericRuntimeApiMethod {
     const runtimeApiName = stringPascalCase(runtimeApi);
     const methodName = stringSnakeCase(method);

@@ -376,6 +376,7 @@ export class WsProvider extends EventEmitter<ProviderEvent> implements JsonRpcPr
           from: Date.now(),
         };
 
+        console.log(`>> RPC: ${request.method}`);
         this.#ws.send(JSON.stringify(request));
       } catch (e) {
         reject(e);

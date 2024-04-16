@@ -1,6 +1,6 @@
 import type { HexString, IEventEmitter } from '@dedot/utils';
 import type { AnySignedExtension } from './extrinsic/index.js';
-import type { GenericSubstrateApi, RuntimeApiName, RuntimeApiSpec } from '@dedot/types';
+import type { GenericSubstrateApi, RpcVersion, RuntimeApiName, RuntimeApiSpec } from '@dedot/types';
 import type { IStorage } from '@dedot/storage';
 import type { ConnectionStatus, JsonRpcProvider, ProviderEvent } from '@dedot/providers';
 import type { AnyShape } from '@dedot/shape';
@@ -107,6 +107,7 @@ export interface ISubstrateClient<
   ChainApi extends GenericSubstrateApi = GenericSubstrateApi,
   Events extends string = ApiEvent,
 > extends IJsonRpcClient<ChainApi, Events> {
+  rpcVersion: RpcVersion;
   options: NormalizedApiOptions;
 
   metadata: Metadata;

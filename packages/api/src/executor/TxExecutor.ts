@@ -3,15 +3,14 @@ import type {
   AddressOrPair,
   Callback,
   DryRunResult,
-  GenericSubstrateApi,
   GenericTxCall,
   IRuntimeTxCall,
   ISubmittableExtrinsic,
   ISubmittableResult,
   SignerOptions,
   Unsub,
+  VersionedGenericSubstrateApi,
 } from '@dedot/types';
-import type { SubstrateApi } from '../chaintypes/index.js';
 import {
   assert,
   blake2AsHex,
@@ -53,7 +52,9 @@ export function signRaw(signerPair: IKeyringPair, raw: HexString, options?: Sign
  * @name TxExecutor
  * @description Execute a transaction instruction, returns a submittable extrinsic
  */
-export class TxExecutor<ChainApi extends GenericSubstrateApi = SubstrateApi> extends Executor<ChainApi> {
+export class TxExecutor<
+  ChainApi extends VersionedGenericSubstrateApi = VersionedGenericSubstrateApi,
+> extends Executor<ChainApi> {
   doExecute(pallet: string, functionName: string) {
     const targetPallet = this.getPallet(pallet);
 
@@ -103,7 +104,7 @@ export class TxExecutor<ChainApi extends GenericSubstrateApi = SubstrateApi> ext
   }
 
   createExtrinsic(call: IRuntimeTxCall) {
-    const api = this.api as unknown as Dedot<SubstrateApi>;
+    const api = this.api as unknown as Dedot;
 
     class SubmittableExtrinsic extends Extrinsic implements ISubmittableExtrinsic {
       async sign(fromAccount: AddressOrPair, options?: Partial<SignerOptions>) {

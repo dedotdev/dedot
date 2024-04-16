@@ -1,5 +1,10 @@
-import type { SubstrateApi } from '../chaintypes/index.js';
-import type { Callback, GenericStorageQuery, GenericSubstrateApi, PaginationOptions, Unsub } from '@dedot/types';
+import type {
+  Callback,
+  GenericStorageQuery,
+  PaginationOptions,
+  Unsub,
+  VersionedGenericSubstrateApi,
+} from '@dedot/types';
 import type { StorageChangeSet } from '@dedot/specs';
 import { Executor } from './Executor.js';
 import { QueryableStorage } from '../storage/QueryableStorage.js';
@@ -14,7 +19,9 @@ const DEFAULT_ENTRIES_PAGE_SIZE = 250;
  * @name StorageQueryExecutor
  * @description Execute a query to on-chain storage
  */
-export class StorageQueryExecutor<ChainApi extends GenericSubstrateApi = SubstrateApi> extends Executor<ChainApi> {
+export class StorageQueryExecutor<
+  ChainApi extends VersionedGenericSubstrateApi = VersionedGenericSubstrateApi,
+> extends Executor<ChainApi> {
   doExecute(pallet: string, storage: string): GenericStorageQuery {
     const entry = new QueryableStorage(this.registry, pallet, storage);
 
@@ -133,7 +140,6 @@ export class StorageQueryExecutor<ChainApi extends GenericSubstrateApi = Substra
       {} as Record<StorageKey, Option<StorageData>>,
     );
   }
-
 
   protected subscribeStorage(keys: StorageKey[], callback: Callback<Array<StorageData | undefined>>): Promise<Unsub> {
     // TODO support subscribe to finalized storage

@@ -30,7 +30,7 @@ export interface LegacyJsonRpcApis
     StateJsonRpcApis,
     SyncStateJsonRpcApis,
     SystemJsonRpcApis,
-    GenericJsonRpcApis {
+    GenericJsonRpcApis<'legacy'> {
   /**
    * Retrieves the list of RPC methods that are exposed by the node
    *
