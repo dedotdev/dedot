@@ -1,9 +1,10 @@
-import { Dedot } from '../../client/index.js';
 import { PortableRegistry, SignedExtensionDefLatest } from '@dedot/codecs';
 import { ensurePresence } from '@dedot/utils';
 import * as $ from '@dedot/shape';
-import { PayloadOptions } from '@dedot/types';
+import { PayloadOptions, RpcVersion } from '@dedot/types';
 import { SignerPayloadJSON } from '@polkadot/types/types';
+import { ISubstrateClient } from '../../types.js';
+import { SubstrateApi } from '../../chaintypes/index.js';
 
 export interface ISignedExtension {
   identifier: string;
@@ -30,7 +31,7 @@ export abstract class SignedExtension<Data extends any = {}, AdditionalSigned ex
   additionalSigned: AdditionalSigned;
 
   constructor(
-    public api: Dedot,
+    public api: ISubstrateClient<SubstrateApi[RpcVersion]>,
     public options?: SignedExtensionOptions,
   ) {
     this.data = {} as unknown as Data;
