@@ -1,8 +1,6 @@
 import { Dedot } from 'dedot';
 import { cryptoWaitReady } from '@polkadot/util-crypto';
 import Keyring from '@polkadot/keyring';
-import { RococoApi } from '@dedot/chaintypes';
-import { RococoRuntimeRuntimeCallLike } from '@dedot/chaintypes/rococo';
 import { assert } from '@dedot/utils';
 
 const BOB = '5FHneW46xGXgs5mUiveU4sbTyGBzmstUspZC92UhjJM694ty';
@@ -14,12 +12,12 @@ export const run = async (nodeName: any, networkInfo: any): Promise<void> => {
 
   const { wsUri } = networkInfo.nodesByName[nodeName];
 
-  const api = await Dedot.new<RococoApi>(wsUri);
+  const api = await Dedot.new(wsUri);
 
   const TEN_UNIT = BigInt(10 * 1e12);
 
   const transferTx = api.tx.balances.transferKeepAlive(BOB, TEN_UNIT);
-  const remarkCall: RococoRuntimeRuntimeCallLike = {
+  const remarkCall = {
     pallet: 'System',
     palletCall: {
       name: 'RemarkWithEvent',
@@ -27,7 +25,7 @@ export const run = async (nodeName: any, networkInfo: any): Promise<void> => {
         remark: 'Hello World',
       },
     },
-  };
+  } as any;
 
   const batchTx = api.tx.utility.batch([transferTx.call, remarkCall]);
 

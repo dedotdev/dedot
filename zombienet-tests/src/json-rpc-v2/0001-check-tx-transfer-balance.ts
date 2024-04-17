@@ -1,4 +1,4 @@
-import { Dedot } from 'dedot';
+import { DedotClient } from 'dedot';
 import { assert } from '@dedot/utils';
 import { cryptoWaitReady } from '@polkadot/util-crypto';
 import Keyring from '@polkadot/keyring';
@@ -12,7 +12,7 @@ export const run = async (nodeName: any, networkInfo: any): Promise<void> => {
 
   const { wsUri } = networkInfo.nodesByName[nodeName];
 
-  const api = await Dedot.new(wsUri);
+  const api = await DedotClient.new(wsUri);
 
   const prevBobBalance = (await api.query.system.account(BOB)).data.free;
   console.log('BOB - old balance', prevBobBalance);
@@ -23,8 +23,8 @@ export const run = async (nodeName: any, networkInfo: any): Promise<void> => {
 
   return new Promise(async (resolve) => {
     const unsub = await transferTx.signAndSend(alice, async (result) => {
-      console.log('Transaction status', result.status.tag);
-      if (result.status.tag === 'InBlock') {
+      console.log('Transaction event', result.status.event);
+      if (result.status.event === 'bestChainBlockIncluded') {
         const newBobBalance = (await api.query.system.account(BOB)).data.free;
         console.log('BOB - new balance', newBobBalance);
         assert(prevBobBalance + TEN_UNIT === newBobBalance, 'Incorrect BOB balance');
