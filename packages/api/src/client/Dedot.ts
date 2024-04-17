@@ -454,7 +454,7 @@ export class Dedot<ChainApi extends GenericSubstrateApi = SubstrateApi>
    */
   setMetadata(metadata: Metadata) {
     this.#metadata = metadata;
-    this.#registry = new PortableRegistry(metadata.latest);
+    this.#registry = new PortableRegistry(metadata.latest, this.options.hasher);
   }
 
   /**

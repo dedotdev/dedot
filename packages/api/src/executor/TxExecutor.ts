@@ -201,7 +201,7 @@ export class TxExecutor<ChainApi extends GenericSubstrateApi = SubstrateApi> ext
               ]);
 
               const txIndex = (signedBlock as SignedBlock).block.extrinsics.findIndex(
-                (tx) => blake2AsHex(hexToU8a(tx as HexString)) === txHash,
+                (tx) => this.registry.hashAsHex(tx as HexString) === txHash,
               );
 
               assert(txIndex >= 0, 'Extrinsic not found!');
