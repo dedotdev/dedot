@@ -12,7 +12,7 @@ import {
 } from '@dedot/specs';
 import { Subscription } from '@dedot/providers';
 import { BlockHash, Option } from '@dedot/codecs';
-import { assert, ensurePresence, HexString, noop } from '@dedot/utils';
+import { assert, deferred, ensurePresence, HexString, noop } from '@dedot/utils';
 import { IJsonRpcClient } from '../../types.js';
 
 export type OperationHandler = {
@@ -78,15 +78,21 @@ export class ChainHead extends JsonRpcGroup<ChainHeadEvent> {
   async follow(withRuntime: boolean = true): Promise<void> {
     assert(!this.#subscriptionId, 'Already followed chain head. Please unfollow first.');
 
-    return new Promise<void>(async (resolve) => {
+    const defer = deferred<void>();
+
+    try {
       this.#unsub = await this.send('follow', withRuntime, (event: FollowEvent, subscription: Subscription) => {
         this.#onFollowEvent(event, subscription);
 
         if (event.event == 'initialized') {
-          resolve();
+          defer.resolve();
         }
       });
-    });
+    } catch (e: any) {
+      defer.reject(e);
+    }
+
+    return defer.promise;
   }
 
   #onFollowEvent = (result: FollowEvent, subscription?: Subscription) => {
@@ -296,7 +302,7 @@ export class ChainHead extends JsonRpcGroup<ChainHeadEvent> {
     assert(this.#subscriptionId, 'Please call the .follow() method before invoking any other methods in this group.');
   }
 
-  #awaitOperation<T = any>(resp: MethodResponse): Promise<any> {
+  #awaitOperation<T = any>(resp: MethodResponse): Promise<T> {
     if (resp.result === 'limitReached') {
       throw new Error('Limit reached');
     }
