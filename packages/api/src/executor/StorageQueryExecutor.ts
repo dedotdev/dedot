@@ -1,4 +1,5 @@
 import type {
+  AsyncMethod,
   Callback,
   GenericStorageQuery,
   PaginationOptions,
@@ -93,36 +94,37 @@ export class StorageQueryExecutor<
 
     const isMap = entry.storageEntry.type.tag === 'Map';
     if (isMap) {
-      const rawKeys = async (pagination?: PaginationOptions): Promise<StorageKey[]> => {
-        const pageSize = pagination?.pageSize || DEFAULT_KEYS_PAGE_SIZE;
-        const startKey = pagination?.startKey || entry.prefixKey;
-
-        return await this.api.rpc.state_getKeysPaged(
-          entry.prefixKey,
-          pageSize,
-          startKey,
-          await this.toBlockHash(this.hashOrSource),
-        );
-      };
-
-      const keys = async (pagination?: PaginationOptions): Promise<any[]> => {
-        const storageKeys = await rawKeys({ pageSize: DEFAULT_KEYS_PAGE_SIZE, ...pagination });
-        return storageKeys.map((key) => entry.decodeKey(key));
-      };
-
-      const entries = async (pagination?: PaginationOptions): Promise<Array<[any, any]>> => {
-        const storageKeys = await rawKeys({ pageSize: DEFAULT_ENTRIES_PAGE_SIZE, ...pagination });
-        const storageMap = await this.queryStorage(storageKeys, this.hashOrSource);
-        return storageKeys.map((key) => [entry.decodeKey(key), entry.decodeValue(storageMap[key])]);
-      };
-
-      // @ts-ignore
-      queryFn.keys = keys;
-      // @ts-ignore
-      queryFn.entries = entries;
+      Object.assign(queryFn, this.exposeStorageMapMethods(entry));
     }
 
     return queryFn;
+  }
+
+  protected exposeStorageMapMethods(entry: QueryableStorage): Record<string, AsyncMethod> {
+    const rawKeys = async (pagination?: PaginationOptions): Promise<StorageKey[]> => {
+      const pageSize = pagination?.pageSize || DEFAULT_KEYS_PAGE_SIZE;
+      const startKey = pagination?.startKey || entry.prefixKey;
+
+      return await this.api.rpc.state_getKeysPaged(
+        entry.prefixKey,
+        pageSize,
+        startKey,
+        await this.toBlockHash(this.hashOrSource),
+      );
+    };
+
+    const keys = async (pagination?: PaginationOptions): Promise<any[]> => {
+      const storageKeys = await rawKeys({ pageSize: DEFAULT_KEYS_PAGE_SIZE, ...pagination });
+      return storageKeys.map((key) => entry.decodeKey(key));
+    };
+
+    const entries = async (pagination?: PaginationOptions): Promise<Array<[any, any]>> => {
+      const storageKeys = await rawKeys({ pageSize: DEFAULT_ENTRIES_PAGE_SIZE, ...pagination });
+      const storageMap = await this.queryStorage(storageKeys, this.hashOrSource);
+      return storageKeys.map((key) => [entry.decodeKey(key), entry.decodeValue(storageMap[key])]);
+    };
+
+    return { keys, entries };
   }
 
   protected async queryStorage(

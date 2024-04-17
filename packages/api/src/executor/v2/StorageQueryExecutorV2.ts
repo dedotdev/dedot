@@ -1,9 +1,10 @@
-import type { Callback, RpcVersion, VersionedGenericSubstrateApi } from '@dedot/types';
+import type { AsyncMethod, Callback, PaginationOptions, RpcVersion, VersionedGenericSubstrateApi } from '@dedot/types';
 import { StorageQueryExecutor } from '../StorageQueryExecutor.js';
 import { HexString } from '@dedot/utils';
 import { BlockHash, Option, StorageData, StorageKey } from '@dedot/codecs';
 import { HashOrSource, ISubstrateClient } from '../../types.js';
 import { ChainHead, ChainHeadEvent } from '../../json-rpc/index.js';
+import { QueryableStorage } from 'dedot/storage/QueryableStorage';
 
 /**
  * @name StorageQueryExecutorV2
@@ -17,6 +18,18 @@ export class StorageQueryExecutorV2<
     atBlockHash?: HashOrSource,
   ) {
     super(api, atBlockHash);
+  }
+
+  protected override exposeStorageMapMethods(entry: QueryableStorage): Record<string, AsyncMethod> {
+    const entries = async (): Promise<Array<[any, any]>> => {
+      const results = await this.chainHead.storage([{ type: 'descendantsValues', key: entry.prefixKey }]);
+      return results.map(({ key, value }) => [
+        entry.decodeKey(key as HexString),
+        entry.decodeValue(value as HexString),
+      ]);
+    };
+
+    return { entries };
   }
 
   protected override async queryStorage(
