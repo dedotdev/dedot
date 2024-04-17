@@ -1,6 +1,7 @@
 import { JsonRpcGroup, JsonRpcGroupOptions } from './JsonRpcGroup.js';
 import { Properties } from '@dedot/specs';
 import { IJsonRpcClient } from '../../types.js';
+import { HexString } from '@dedot/utils';
 
 export class ChainSpec extends JsonRpcGroup {
   constructor(client: IJsonRpcClient, options?: Partial<JsonRpcGroupOptions>) {
@@ -11,7 +12,7 @@ export class ChainSpec extends JsonRpcGroup {
     return this.send('chainName');
   }
 
-  async genesisHash(): Promise<string> {
+  async genesisHash(): Promise<HexString> {
     return this.send('genesisHash');
   }
 

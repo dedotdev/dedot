@@ -119,9 +119,7 @@ export interface ISubstrateClient<
   metadata: Metadata;
   registry: PortableRegistry;
   genesisHash: Hash;
-  runtimeChain: string;
   runtimeVersion: SubstrateRuntimeVersion;
-  chainProperties: SubstrateChainProperties;
 
   consts: ChainApi['consts'];
   query: ChainApi['query'];

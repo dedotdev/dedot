@@ -40,8 +40,6 @@ export abstract class BaseSubstrateClient<ChainApi extends VersionedGenericSubst
 
   protected _genesisHash?: Hash;
   protected _runtimeVersion?: SubstrateRuntimeVersion;
-  protected _chainProperties?: SubstrateChainProperties;
-  protected _runtimeChain?: string;
 
   protected _localCache?: IStorage;
 
@@ -185,8 +183,6 @@ export abstract class BaseSubstrateClient<ChainApi extends VersionedGenericSubst
     this._metadata = undefined;
     this._genesisHash = undefined;
     this._runtimeVersion = undefined;
-    this._chainProperties = undefined;
-    this._runtimeChain = undefined;
     this._localCache = undefined;
   }
 
@@ -269,16 +265,8 @@ export abstract class BaseSubstrateClient<ChainApi extends VersionedGenericSubst
     return ensurePresence(this._genesisHash);
   }
 
-  get runtimeChain(): string {
-    return ensurePresence(this._runtimeChain);
-  }
-
   get runtimeVersion(): SubstrateRuntimeVersion {
     return ensurePresence(this._runtimeVersion);
-  }
-
-  get chainProperties(): SubstrateChainProperties {
-    return ensurePresence(this._chainProperties);
   }
 
   /**

@@ -1,13 +1,14 @@
 import type { SubstrateApi } from '../chaintypes/index.js';
-import { BlockHash, Metadata } from '@dedot/codecs';
+import { $H256, BlockHash, Metadata } from '@dedot/codecs';
 import { RpcV2, VersionedGenericSubstrateApi } from '@dedot/types';
 import { RuntimeApiExecutorV2, StorageQueryExecutorV2, TxExecutorV2 } from '../executor/index.js';
 import { newProxyChain } from '../proxychain.js';
 import type { ApiOptions, HashOrSource, NetworkEndpoint } from '../types.js';
-import { HexString } from '@dedot/utils';
+import { concatU8a, HexString, twox64Concat, u8aToHex, xxhashAsU8a } from '@dedot/utils';
 import { ChainHead, ChainSpec, Transaction } from '../json-rpc/index.js';
 import { BaseSubstrateClient, ensurePresence } from './BaseSubstrateClient.js';
 import { ChainHeadRuntimeVersion } from '@dedot/specs';
+import { u32 } from '@dedot/shape';
 
 /**
  * @name DedotClient
@@ -68,32 +69,35 @@ export class DedotClient<
    * Initialize APIs before usage
    */
   protected async doInitialize() {
-    const rpcMethods = (await this.rpc.rpc_methods()).methods;
+    const rpcMethods: string[] = (await this.rpc.rpc_methods()).methods;
 
-    this._chainSpec = new ChainSpec(this, { rpcMethods });
     this._chainHead = new ChainHead(this, { rpcMethods });
+    this._chainSpec = new ChainSpec(this, { rpcMethods });
     this._txBroadcaster = new Transaction(this, { rpcMethods });
 
     // Fetching node information
-    let [_, genesisHash, chainName, chainProps] = await Promise.all([
+    let [_, genesisHash, metadata] = await Promise.all([
       this.chainHead.follow(true),
-      this.chainSpec.genesisHash(),
-      this.chainSpec.chainName(),
-      this.chainSpec.properties(),
+      this.chainSpec.genesisHash().catch(() => undefined),
+      (await this.shouldLoadPreloadMetadata()) ? this.fetchMetadata() : Promise.resolve(undefined),
     ]);
 
-    this._genesisHash = genesisHash as HexString;
-    this._runtimeChain = chainName;
+    this._genesisHash = genesisHash || (await this.#getGenesisHashFallback());
     this._runtimeVersion = this.chainHead.runtimeVersion;
-    this._chainProperties = chainProps;
-
-    let metadata: Metadata | undefined;
-    if (await this.shouldLoadPreloadMetadata()) {
-      metadata = await this.fetchMetadata();
-    }
 
     await this.setupMetadata(metadata);
     this.subscribeRuntimeUpgrades();
+  }
+
+  async #getGenesisHashFallback(): Promise<HexString> {
+    const pallet = xxhashAsU8a('System', 128);
+    const item = xxhashAsU8a('BlockHash', 128);
+    const zeroBlockHeight = twox64Concat(u32.encode(0));
+
+    const key = u8aToHex(concatU8a(pallet, item, zeroBlockHeight));
+
+    const storageValue = await this.chainHead.storage([{ type: 'value', key }]);
+    return $H256.tryDecode(storageValue[0].value);
   }
 
   protected subscribeRuntimeUpgrades() {
