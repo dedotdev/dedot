@@ -80,8 +80,8 @@ export interface SubstrateRuntimeVersion {
 export interface SubstrateChainProperties {
   isEthereum?: boolean;
   ss58Format?: number;
-  tokenDecimals?: number | Array<number>;
-  tokenSymbol?: string | Array<string>;
+  tokenDecimals?: number | Array<number>; // TODO convert to Array<number>
+  tokenSymbol?: string | Array<string>; // TODO convert to Array<number>
   [prop: string]: any;
 }
 

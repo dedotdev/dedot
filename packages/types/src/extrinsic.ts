@@ -22,11 +22,11 @@ export interface SignerOptions extends PayloadOptions {
 
 export type DryRunResult = ApplyExtrinsicResult;
 
-export interface ISubmittableResult<EventRecord extends IEventRecord = IEventRecord> {
+export interface ISubmittableResult<EventRecord extends IEventRecord = IEventRecord, TxStatus extends any = any> {
   dispatchError?: DispatchError;
   dispatchInfo?: DispatchInfo;
   events: EventRecord[];
-  status: TransactionStatus;
+  status: TxStatus;
   txHash: Hash;
   txIndex?: number;
 }
@@ -43,8 +43,6 @@ export interface IRuntimeTxCall {
 }
 
 export interface ISubmittableExtrinsic<R extends ISubmittableResult = ISubmittableResult> {
-  dryRun(account: AddressOrPair, optionsOrHash?: Partial<SignerOptions> | BlockHash): Promise<DryRunResult>;
-
   send(): Promise<Hash>;
 
   send(callback: Callback<R>): Promise<Unsub>;
@@ -56,4 +54,9 @@ export interface ISubmittableExtrinsic<R extends ISubmittableResult = ISubmittab
   signAndSend(account: AddressOrPair, callback: Callback<R>): Promise<Unsub>;
 
   signAndSend(account: AddressOrPair, options: Partial<SignerOptions>, callback?: Callback<R>): Promise<Unsub>;
+}
+
+export interface ISubmittableExtrinsicLegacy<R extends ISubmittableResult = ISubmittableResult>
+  extends ISubmittableExtrinsic<R> {
+  dryRun(account: AddressOrPair, optionsOrHash?: Partial<SignerOptions> | BlockHash): Promise<DryRunResult>;
 }

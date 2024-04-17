@@ -1,18 +1,11 @@
 import type { SubstrateApi } from '../chaintypes/index.js';
 import { BlockHash, Metadata } from '@dedot/codecs';
 import { RpcV2, VersionedGenericSubstrateApi } from '@dedot/types';
-import {
-  ConstantExecutor,
-  ErrorExecutor,
-  EventExecutor,
-  RuntimeApiExecutorV2,
-  StorageQueryExecutorV2,
-  TxExecutor,
-} from '../executor/index.js';
+import { RuntimeApiExecutorV2, StorageQueryExecutorV2, TxExecutorV2 } from '../executor/index.js';
 import { newProxyChain } from '../proxychain.js';
 import type { ApiOptions, HashOrSource, NetworkEndpoint } from '../types.js';
 import { HexString } from '@dedot/utils';
-import { ChainHead, ChainSpec } from '../json-rpc/index.js';
+import { ChainHead, ChainSpec, Transaction } from '../json-rpc/index.js';
 import { BaseSubstrateClient, ensurePresence } from './BaseSubstrateClient.js';
 import { ChainHeadRuntimeVersion } from '@dedot/specs';
 
@@ -26,6 +19,7 @@ export class DedotClient<
 > extends BaseSubstrateClient<ChainApi> {
   _chainHead?: ChainHead;
   _chainSpec?: ChainSpec;
+  _txBroadcaster?: Transaction;
 
   /**
    * Use factory methods (`create`, `new`) to create `DedotClient` instances.
@@ -66,6 +60,10 @@ export class DedotClient<
     return ensurePresence(this._chainHead);
   }
 
+  get txBroadcaster() {
+    return ensurePresence(this._txBroadcaster);
+  }
+
   /**
    * Initialize APIs before usage
    */
@@ -74,6 +72,7 @@ export class DedotClient<
 
     this._chainSpec = new ChainSpec(this, { rpcMethods });
     this._chainHead = new ChainHead(this, { rpcMethods });
+    this._txBroadcaster = new Transaction(this, { rpcMethods });
 
     // Fetching node information
     let [_, genesisHash, chainName, chainProps] = await Promise.all([
@@ -129,6 +128,7 @@ export class DedotClient<
     super.cleanUp();
     this._chainHead = undefined;
     this._chainSpec = undefined;
+    this._txBroadcaster = undefined;
   }
 
   get query(): ChainApi[RpcV2]['query'] {
@@ -155,7 +155,7 @@ export class DedotClient<
     }) as ChainApi[RpcV2]['call'];
   }
 
-  // get tx(): ChainApi[RpcV2]['tx'] {
-  //   return newProxyChain<ChainApi>({ executor: new TxExecutor(this) }) as ChainApi[RpcV2]['tx'];
-  // }
+  get tx(): ChainApi[RpcV2]['tx'] {
+    return newProxyChain<ChainApi>({ executor: new TxExecutorV2(this) }) as ChainApi[RpcV2]['tx'];
+  }
 }
