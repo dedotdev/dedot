@@ -21,7 +21,17 @@ import {
 } from '../codecs/index.js';
 import * as $ from '@dedot/shape';
 import { EnumOptions } from '@dedot/shape';
-import { normalizeName, hexToU8a, isObject, stringPascalCase } from '@dedot/utils';
+import {
+  blake2_256,
+  HashFn,
+  HexString,
+  hexToU8a,
+  isObject,
+  isU8a,
+  normalizeName,
+  stringPascalCase,
+  u8aToHex,
+} from '@dedot/utils';
 
 const KNOWN_CODECS: Record<string, $.AnyShape> = {
   'sp_core::crypto::AccountId32': $AccountId32,
@@ -46,9 +56,11 @@ export class PortableRegistry {
   readonly #metadata: MetadataLatest;
   readonly types: Record<TypeId, PortableType>;
   readonly #cache: Map<TypeId, $.AnyShape>;
+  #hasher: HashFn;
 
-  constructor(metadata: MetadataLatest) {
+  constructor(metadata: MetadataLatest, hasher?: HashFn) {
     this.#metadata = metadata;
+    this.#hasher = hasher || blake2_256;
 
     const { types } = metadata;
     if (Array.isArray(types)) {
@@ -72,6 +84,22 @@ export class PortableRegistry {
 
   get metadata(): MetadataLatest {
     return this.#metadata;
+  }
+
+  hash(input: Uint8Array): Uint8Array {
+    return this.#hasher(input);
+  }
+
+  hashAsHex(input: Uint8Array | HexString): HexString {
+    if (isU8a(input)) {
+      return u8aToHex(this.hash(input));
+    } else {
+      return u8aToHex(this.hash(hexToU8a(input)));
+    }
+  }
+
+  setHasher(hasher: HashFn) {
+    this.#hasher = hasher;
   }
 
   findErrorMeta(errorInfo: ModuleError | DispatchError): PalletErrorMetadataLatest | undefined {
