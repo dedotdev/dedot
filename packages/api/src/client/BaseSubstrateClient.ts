@@ -139,7 +139,7 @@ export abstract class BaseSubstrateClient<ChainApi extends VersionedGenericSubst
 
   protected setMetadata(metadata: Metadata) {
     this._metadata = metadata;
-    this._registry = new PortableRegistry(metadata.latest);
+    this._registry = new PortableRegistry(metadata.latest, this.options.hasher);
   }
 
   get currentMetadataKey(): string {
