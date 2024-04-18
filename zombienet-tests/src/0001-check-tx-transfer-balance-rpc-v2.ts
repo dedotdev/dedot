@@ -23,7 +23,7 @@ export const run = async (nodeName: any, networkInfo: any): Promise<void> => {
 
   return new Promise(async (resolve) => {
     const unsub = await transferTx.signAndSend(alice, async (result) => {
-      console.log('[json-rpc-v2] Transaction event', result.status.event);
+      console.log('[json-rpc-v2] Transaction event', result.status);
       if (result.status.event === 'bestChainBlockIncluded') {
         const newBobBalance = (await api.query.system.account(BOB)).data.free;
         console.log('[json-rpc-v2] BOB - new balance', newBobBalance);
