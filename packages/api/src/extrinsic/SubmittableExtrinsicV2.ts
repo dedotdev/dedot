@@ -2,7 +2,7 @@ import { BlockHash, Hash } from '@dedot/codecs';
 import { BaseExtrinsic } from './BaseExtrinsic.js';
 import { type Callback, type IEventRecord, IRuntimeTxCall, ISubmittableResult, type Unsub } from '@dedot/types';
 import { DedotClient } from '../client/index.js';
-import { blake2AsHex, deferred, hexToU8a, noop } from '@dedot/utils';
+import { deferred, noop } from '@dedot/utils';
 import { SubmittableResult } from './SubmittableResult.js';
 import { TransactionEvent } from '@dedot/specs';
 
@@ -30,7 +30,8 @@ export class SubmittableExtrinsicV2 extends BaseExtrinsic {
       callback(new SubmittableResult({ status: { event: 'validated' }, txHash }));
     } else if (validateResult.isErr) {
       // TODO Add Invalid Transaction Error
-      throw new Error(`Invalid transaction: ${validateResult.err.tag}`);
+      console.error(validateResult.err);
+      throw new Error(`Invalid transaction: ${validateResult.err.tag} - ${validateResult.err.value.tag}`);
     }
 
     const operationId = await api.txBroadcaster.broadcast(txHex);
@@ -39,7 +40,7 @@ export class SubmittableExtrinsicV2 extends BaseExtrinsic {
       newHash: BlockHash,
     ): Promise<{ index: number; events: IEventRecord[] } | undefined> => {
       const txs = await api.chainHead.body(newHash);
-      const txIndex = txs.findIndex((tx) => blake2AsHex(hexToU8a(tx)) === txHash);
+      const txIndex = txs.findIndex((tx) => this.registry.hashAsHex(tx) === txHash);
       if (txIndex < 0) return;
 
       const events = await api.queryAt(newHash).system.events();
@@ -51,11 +52,15 @@ export class SubmittableExtrinsicV2 extends BaseExtrinsic {
       };
     };
 
+    let wasBestBlockIncluded: BlockHash | null = null;
+
     const checkBestBlockIncluded = async (newHash: BlockHash) => {
       const inBlock = await checkIsInBlock(newHash);
       if (!inBlock) return;
 
       const { index: txIndex, events } = inBlock;
+
+      wasBestBlockIncluded = newHash;
 
       callback(
         new SubmittableResult<IEventRecord, TransactionEvent>({
@@ -83,15 +88,29 @@ export class SubmittableExtrinsicV2 extends BaseExtrinsic {
       );
 
       api.chainHead.off('finalizedBlock', checkFinalizedBlockIncluded);
-      console.log('Transaction is included in the finalized block', newHash, 'index', txIndex);
+    };
+
+    const onBestChainChanged = async (newHash: BlockHash) => {
+      if (!wasBestBlockIncluded || wasBestBlockIncluded === newHash) return;
+
+      wasBestBlockIncluded = null;
+
+      callback(
+        new SubmittableResult<IEventRecord, TransactionEvent>({
+          status: { event: 'bestChainBlockIncluded', block: null },
+          txHash,
+        }),
+      );
     };
 
     api.chainHead.on('bestBlock', checkBestBlockIncluded);
     api.chainHead.on('finalizedBlock', checkFinalizedBlockIncluded);
+    api.chainHead.on('bestChainChanged', onBestChainChanged);
 
     return async () => {
       api.chainHead.off('bestBlock', checkBestBlockIncluded);
       api.chainHead.off('finalizedBlock', checkFinalizedBlockIncluded);
+      api.chainHead.off('bestChainChanged', onBestChainChanged);
       api.txBroadcaster.stop(operationId).catch(noop);
     };
   }
