@@ -24,6 +24,7 @@ export interface ChainHeadRuntimeVersion {
 export interface Initialized<Hash = BlockHash> extends NamedEvent {
   event: 'initialized';
   finalizedBlockHashes: Array<Hash>;
+  finalizedBlockHash?: Hash;
   finalizedBlockRuntime: RuntimeEvent | null;
 }
 

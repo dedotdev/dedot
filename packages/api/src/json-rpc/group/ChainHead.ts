@@ -105,7 +105,9 @@ export class ChainHead extends JsonRpcGroup<ChainHeadEvent> {
 
     switch (result.event) {
       case 'initialized': {
-        const { finalizedBlockHashes, finalizedBlockRuntime } = result;
+        const { finalizedBlockHashes = [], finalizedBlockHash, finalizedBlockRuntime } = result;
+        if (finalizedBlockHash) finalizedBlockHashes.push(finalizedBlockHash);
+
         this.#subscriptionId = subscription!.subscriptionId;
         this.#pinnedBlocks = finalizedBlockHashes.reverse().reduce(
           (o, hash, idx, arr) => {
