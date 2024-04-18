@@ -24,10 +24,15 @@ export type OperationHandler = {
 
 export type PinnedBlock = {
   hash: BlockHash;
+  parent: BlockHash | undefined;
   runtime?: ChainHeadRuntimeVersion;
 };
 
-export type ChainHeadEvent = 'newBlock' | 'bestBlock' | 'finalizedBlock';
+export type ChainHeadEvent =
+  | 'newBlock'
+  | 'bestBlock' // new best block
+  | 'finalizedBlock' // new best finalized block
+  | 'bestChainChanged'; // new best chain, a fork happened
 
 export class ChainHead extends JsonRpcGroup<ChainHeadEvent> {
   #unsub?: Unsub;
@@ -36,16 +41,16 @@ export class ChainHead extends JsonRpcGroup<ChainHeadEvent> {
   #handlers: Record<OperationId, OperationHandler>;
   #pendingOperations: Record<OperationId, FollowOperationEvent[]>;
 
-  #pinnedBlocks: Array<PinnedBlock>;
+  #pinnedBlocks: Record<BlockHash, PinnedBlock>;
   #bestHash?: BlockHash;
-  #finalizedHash?: BlockHash;
+  #finalizedHash?: BlockHash; // best finalized hash
   #finalizedRuntime?: ChainHeadRuntimeVersion;
 
   constructor(client: IJsonRpcClient, options?: Partial<JsonRpcGroupOptions>) {
     super(client, { prefix: 'chainHead', supportedVersions: ['unstable', 'v1'], ...options });
     this.#handlers = {};
     this.#pendingOperations = {};
-    this.#pinnedBlocks = [];
+    this.#pinnedBlocks = {};
   }
 
   get runtimeVersion(): ChainHeadRuntimeVersion {
@@ -98,49 +103,64 @@ export class ChainHead extends JsonRpcGroup<ChainHeadEvent> {
   #onFollowEvent = (result: FollowEvent, subscription?: Subscription) => {
     switch (result.event) {
       case 'initialized': {
+        const { finalizedBlockHashes, finalizedBlockRuntime } = result;
         this.#subscriptionId = subscription!.subscriptionId;
-        this.#pinnedBlocks = result.finalizedBlockHashes.map((hash) => ({ hash }));
-        this.#finalizedRuntime = this.#extractRuntime(result.finalizedBlockRuntime)!;
-        this.#bestHash = this.#finalizedHash = this.#pinnedBlocks.at(-1)!.hash;
+        this.#pinnedBlocks = finalizedBlockHashes.reverse().reduce(
+          (o, hash, idx, arr) => {
+            o[hash] = { hash, parent: arr.at(idx + 1) };
+            return o;
+          },
+          {} as Record<BlockHash, PinnedBlock>,
+        );
+        this.#finalizedRuntime = this.#extractRuntime(finalizedBlockRuntime)!;
+        this.#bestHash = this.#finalizedHash = finalizedBlockHashes.at(-1);
 
         break;
       }
       case 'newBlock': {
-        const hash = result.blockHash;
-        const runtime = this.#extractRuntime(result.newRuntime);
+        const { blockHash: hash, parentBlockHash: parent, newRuntime } = result;
+        const runtime = this.#extractRuntime(newRuntime);
 
-        this.#pinnedBlocks.push({ hash, runtime });
+        this.#pinnedBlocks[hash] = { hash, parent, runtime };
 
         this.emit('newBlock', hash, runtime);
         break;
       }
       case 'bestBlockChanged': {
-        const newBestHash = result.bestBlockHash;
+        const lastBestHash = this.#bestHash!;
+        const lastBestBlock = this.#pinnedBlocks[lastBestHash];
+        const { bestBlockHash: newBestHash } = result;
 
-        if (this.#compareHashes(newBestHash, this.#bestHash!) > 0) {
-          this.#bestHash = newBestHash;
-          this.emit('bestBlock', this.#bestHash, this.#findRuntimeAt(this.#bestHash));
+        this.#bestHash = newBestHash;
+        const newBestBlock = this.#pinnedBlocks[newBestHash];
+
+        // check if a fork happened, best chain changed
+        if (newBestBlock.parent !== lastBestHash && newBestBlock.parent === lastBestBlock.parent) {
+          this.emit('bestChainChanged', this.#bestHash, newBestBlock.runtime, newBestBlock);
+        } else {
+          // Something definitely went wrong here
         }
+
+        // emit best block event
+        this.emit('bestBlock', this.#bestHash, newBestBlock.runtime);
         break;
       }
       case 'finalized': {
-        const newFinalizedHash = result.finalizedBlockHashes.at(-1)!;
-
-        if (this.#compareHashes(newFinalizedHash, this.#finalizedHash!) > 0) {
-          this.#finalizedHash = newFinalizedHash;
-          const finalizedRuntime = this.#findRuntimeAt(this.#finalizedHash)!;
-          if (finalizedRuntime) {
-            this.#finalizedRuntime = finalizedRuntime;
-          }
-          this.emit('finalizedBlock', this.#finalizedHash, finalizedRuntime);
+        const { finalizedBlockHashes, prunedBlockHashes } = result;
+        this.#finalizedHash = finalizedBlockHashes.at(-1)!;
+        const finalizedRuntime = this.#findRuntimeAt(this.#finalizedHash)!;
+        if (finalizedRuntime) {
+          this.#finalizedRuntime = finalizedRuntime;
         }
 
-        // TODO check again this logic
-        // TODO logic to unpin more blocks in the queue
-        const cutOffBlocks = this.#pinnedBlocks.splice(0, result.finalizedBlockHashes.length);
-        const toUnpinHashes: HexString[] = [...result.prunedBlockHashes, ...cutOffBlocks.map(({ hash }) => hash)];
+        this.emit('finalizedBlock', this.#finalizedHash, finalizedRuntime);
 
-        this.unpin(toUnpinHashes).catch(noop);
+        // TODO check again this logic
+        // TODO update logic to unpin more blocks in the queue
+        // const cutOffBlocks = this.#pinnedBlocks[this.#finalizedHash].ancestors.splice(0, finalizedBlockHashes.length);
+        // const toUnpinHashes: HexString[] = [...prunedBlockHashes, ...cutOffBlocks];
+        //
+        // this.unpin(toUnpinHashes).catch(noop);
         break;
       }
       case 'stop':
@@ -196,32 +216,16 @@ export class ChainHead extends JsonRpcGroup<ChainHeadEvent> {
     }
   };
 
+  getPinnedBlock(hash: BlockHash): PinnedBlock | undefined {
+    return this.#pinnedBlocks[hash];
+  }
+
   #findRuntimeAt(at: BlockHash): ChainHeadRuntimeVersion | undefined {
-    return this.#pinnedBlocks.find((block) => block.hash == at)?.runtime;
+    return this.getPinnedBlock(at)?.runtime;
   }
 
   #isPinnedHash(hash: BlockHash): boolean {
-    return this.#pinnedBlocks.some((block) => block.hash == hash);
-  }
-
-  /**
-   * Compare two block hashes based on their position in the pinned blocks queue
-   *
-   * if return value 0, a == b
-   * if return value > 0, a comes after b in the queue
-   * if return value < 0, a comes before b in the queue
-   *
-   * @param a
-   * @param b
-   * @private
-   */
-  #compareHashes(a: BlockHash, b: BlockHash): number {
-    if (a == b) return 0;
-
-    const aIndex = this.#pinnedBlocks.findIndex((block) => block.hash == a);
-    const bIndex = this.#pinnedBlocks.findIndex((block) => block.hash == b);
-
-    return aIndex - bIndex;
+    return !!this.getPinnedBlock(hash);
   }
 
   #ensurePinnedHash(hash?: BlockHash): BlockHash {
@@ -292,7 +296,7 @@ export class ChainHead extends JsonRpcGroup<ChainHeadEvent> {
     this.#handlers = {};
     this.#pendingOperations = {};
 
-    this.#pinnedBlocks = [];
+    this.#pinnedBlocks = {};
     this.#bestHash = undefined;
     this.#finalizedHash = undefined;
     this.#finalizedRuntime = undefined;
