@@ -72,7 +72,7 @@ export class DedotClient<
     const rpcMethods: string[] = (await this.rpc.rpc_methods()).methods;
     console.dir(rpcMethods, { depth: null });
     console.dir(
-      rpcMethods.map((m) => m.startsWith('transaction')),
+      rpcMethods.filter((m) => m.startsWith('transaction')),
       { depth: null },
     );
 
