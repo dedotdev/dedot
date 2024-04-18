@@ -31,8 +31,8 @@ export type PinnedBlock = {
 export type ChainHeadEvent =
   | 'newBlock'
   | 'bestBlock' // new best block
-  | 'finalizedBlock' // new best finalized block
-  | 'bestChainChanged'; // new best chain, a fork happened
+  | 'finalizedBlock'; // new best finalized block
+// TODO handle: | 'bestChainChanged'; // new best chain, a fork happened
 
 export class ChainHead extends JsonRpcGroup<ChainHeadEvent> {
   #unsub?: Unsub;
@@ -101,8 +101,6 @@ export class ChainHead extends JsonRpcGroup<ChainHeadEvent> {
   }
 
   #onFollowEvent = (result: FollowEvent, subscription?: Subscription) => {
-    console.log('#onFollowEvent', result, subscription);
-
     switch (result.event) {
       case 'initialized': {
         const { finalizedBlockHashes = [], finalizedBlockHash, finalizedBlockRuntime } = result;
@@ -131,22 +129,8 @@ export class ChainHead extends JsonRpcGroup<ChainHeadEvent> {
         break;
       }
       case 'bestBlockChanged': {
-        const lastBestHash = this.#bestHash!;
-        const lastBestBlock = this.#pinnedBlocks[lastBestHash];
-        const { bestBlockHash: newBestHash } = result;
-
-        this.#bestHash = newBestHash;
-        const newBestBlock = this.#pinnedBlocks[newBestHash];
-
-        // check if a fork happened, best chain changed
-        if (newBestBlock.parent !== lastBestHash && newBestBlock.parent === lastBestBlock.parent) {
-          this.emit('bestChainChanged', this.#bestHash, newBestBlock.runtime, newBestBlock);
-        } else {
-          // Something definitely went wrong here
-        }
-
-        // emit best block event
-        this.emit('bestBlock', this.#bestHash, newBestBlock.runtime);
+        this.#bestHash = result.bestBlockHash;
+        this.emit('bestBlock', this.#bestHash, this.#findRuntimeAt(this.#bestHash));
         break;
       }
       case 'finalized': {

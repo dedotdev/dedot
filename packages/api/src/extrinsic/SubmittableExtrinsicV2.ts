@@ -34,8 +34,6 @@ export class SubmittableExtrinsicV2 extends BaseExtrinsic {
       throw new Error(`Invalid transaction: ${validateResult.err.tag} - ${validateResult.err.value.tag}`);
     }
 
-    const operationId = await api.txBroadcaster.broadcast(txHex);
-
     const checkIsInBlock = async (
       newHash: BlockHash,
     ): Promise<{ index: number; events: IEventRecord[] } | undefined> => {
@@ -52,15 +50,11 @@ export class SubmittableExtrinsicV2 extends BaseExtrinsic {
       };
     };
 
-    let wasBestBlockIncluded: BlockHash | null = null;
-
     const checkBestBlockIncluded = async (newHash: BlockHash) => {
       const inBlock = await checkIsInBlock(newHash);
       if (!inBlock) return;
 
       const { index: txIndex, events } = inBlock;
-
-      wasBestBlockIncluded = newHash;
 
       callback(
         new SubmittableResult<IEventRecord, TransactionEvent>({
@@ -90,28 +84,15 @@ export class SubmittableExtrinsicV2 extends BaseExtrinsic {
       api.chainHead.off('finalizedBlock', checkFinalizedBlockIncluded);
     };
 
-    const onBestChainChanged = async (newHash: BlockHash) => {
-      if (!wasBestBlockIncluded || wasBestBlockIncluded === newHash) return;
-
-      wasBestBlockIncluded = null;
-
-      callback(
-        new SubmittableResult<IEventRecord, TransactionEvent>({
-          status: { event: 'bestChainBlockIncluded', block: null },
-          txHash,
-        }),
-      );
-    };
-
     api.chainHead.on('bestBlock', checkBestBlockIncluded);
     api.chainHead.on('finalizedBlock', checkFinalizedBlockIncluded);
-    api.chainHead.on('bestChainChanged', onBestChainChanged);
+
+    const stopBroadcastFn = await api.txBroadcaster.broadcastTx(txHex);
 
     return async () => {
       api.chainHead.off('bestBlock', checkBestBlockIncluded);
       api.chainHead.off('finalizedBlock', checkFinalizedBlockIncluded);
-      api.chainHead.off('bestChainChanged', onBestChainChanged);
-      api.txBroadcaster.stop(operationId).catch(noop);
+      stopBroadcastFn().catch(noop);
     };
   }
 
