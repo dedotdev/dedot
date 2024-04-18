@@ -1,6 +1,6 @@
 import type { HashFn, HexString, IEventEmitter } from '@dedot/utils';
 import type { AnySignedExtension } from './extrinsic/index.js';
-import type { GenericSubstrateApi, RpcVersion, RuntimeApiName, RuntimeApiSpec } from '@dedot/types';
+import { GenericSubstrateApi, RpcVersion, RuntimeApiName, RuntimeApiSpec, Unsub } from '@dedot/types';
 import type { IStorage } from '@dedot/storage';
 import type { ConnectionStatus, JsonRpcProvider, ProviderEvent } from '@dedot/providers';
 import type { AnyShape } from '@dedot/shape';
@@ -129,4 +129,9 @@ export interface ISubstrateClient<
   tx: ChainApi['tx'];
   events: ChainApi['events'];
   errors: ChainApi['errors'];
+}
+
+export interface TxBroadcaster {
+  broadcastTx(tx: HexString): Promise<Unsub>;
+  supported(): Promise<boolean>;
 }

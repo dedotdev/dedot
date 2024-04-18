@@ -3,9 +3,9 @@ import { $H256, BlockHash, Metadata } from '@dedot/codecs';
 import { RpcV2, VersionedGenericSubstrateApi } from '@dedot/types';
 import { RuntimeApiExecutorV2, StorageQueryExecutorV2, TxExecutorV2 } from '../executor/index.js';
 import { newProxyChain } from '../proxychain.js';
-import type { ApiOptions, HashOrSource, NetworkEndpoint } from '../types.js';
-import { concatU8a, HexString, twox64Concat, u8aToHex, xxhashAsU8a } from '@dedot/utils';
-import { ChainHead, ChainSpec, Transaction } from '../json-rpc/index.js';
+import type { ApiOptions, HashOrSource, NetworkEndpoint, TxBroadcaster } from '../types.js';
+import { assert, concatU8a, HexString, twox64Concat, u8aToHex, xxhashAsU8a } from '@dedot/utils';
+import { ChainHead, ChainSpec, Transaction, TransactionWatch } from '../json-rpc/index.js';
 import { BaseSubstrateClient, ensurePresence } from './BaseSubstrateClient.js';
 import { ChainHeadRuntimeVersion } from '@dedot/specs';
 import { u32 } from '@dedot/shape';
@@ -20,7 +20,7 @@ export class DedotClient<
 > extends BaseSubstrateClient<ChainApi> {
   _chainHead?: ChainHead;
   _chainSpec?: ChainSpec;
-  _txBroadcaster?: Transaction;
+  _txBroadcaster?: TxBroadcaster;
 
   /**
    * Use factory methods (`create`, `new`) to create `DedotClient` instances.
@@ -62,7 +62,17 @@ export class DedotClient<
   }
 
   get txBroadcaster() {
-    return ensurePresence(this._txBroadcaster);
+    this.chainHead; // Ensure chain head is initialized
+    assert(this._txBroadcaster, 'JSON-RPC method to broadcast transactions is not supported by server/node.');
+    return this._txBroadcaster;
+  }
+
+  async #initializeTxBroadcaster(rpcMethods: string[]): Promise<TxBroadcaster | undefined> {
+    const tx = new Transaction(this, { rpcMethods });
+    if (await tx.supported()) return tx;
+
+    const txWatch = new TransactionWatch(this, { rpcMethods });
+    if (await txWatch.supported()) return txWatch;
   }
 
   /**
@@ -70,15 +80,10 @@ export class DedotClient<
    */
   protected override async doInitialize() {
     const rpcMethods: string[] = (await this.rpc.rpc_methods()).methods;
-    console.dir(rpcMethods, { depth: null });
-    console.dir(
-      rpcMethods.filter((m) => m.startsWith('transaction')),
-      { depth: null },
-    );
 
     this._chainHead = new ChainHead(this, { rpcMethods });
     this._chainSpec = new ChainSpec(this, { rpcMethods });
-    this._txBroadcaster = new Transaction(this, { rpcMethods });
+    this._txBroadcaster = await this.#initializeTxBroadcaster(rpcMethods);
 
     // Fetching node information
     let [_, genesisHash] = await Promise.all([

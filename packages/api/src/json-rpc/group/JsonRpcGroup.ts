@@ -51,6 +51,18 @@ export class JsonRpcGroup<Event extends string = string> extends EventEmitter<Ev
     super();
   }
 
+  async supported(): Promise<boolean> {
+    try {
+      const detectedVersion = await this.detectVersion();
+
+      const { supportedVersions } = this.options;
+      if (!supportedVersions || supportedVersions.length === 0) return true;
+      return supportedVersions.includes(detectedVersion);
+    } catch {}
+
+    return false;
+  }
+
   async send<T = any>(method: string, ...params: any[]): Promise<T> {
     const rpcMethod = `${this.prefix}_${await this.version()}_${method}`;
     return this.client.rpc[rpcMethod](...params);
