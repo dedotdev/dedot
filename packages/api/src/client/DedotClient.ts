@@ -76,14 +76,18 @@ export class DedotClient<
     this._txBroadcaster = new Transaction(this, { rpcMethods });
 
     // Fetching node information
-    let [_, genesisHash, metadata] = await Promise.all([
+    let [_, genesisHash] = await Promise.all([
       this.chainHead.follow(true),
       this.chainSpec.genesisHash().catch(() => undefined),
-      (await this.shouldLoadPreloadMetadata()) ? this.fetchMetadata() : Promise.resolve(undefined),
     ]);
 
     this._genesisHash = genesisHash || (await this.#getGenesisHashFallback());
     this._runtimeVersion = this.chainHead.runtimeVersion;
+
+    let metadata;
+    if (await this.shouldLoadPreloadMetadata()) {
+      metadata = await this.fetchMetadata();
+    }
 
     await this.setupMetadata(metadata);
     this.subscribeRuntimeUpgrades();
