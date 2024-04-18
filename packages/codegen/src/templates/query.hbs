@@ -2,6 +2,6 @@
 
 {{{ importTypes }}}
 
-export interface ChainStorage extends GenericChainStorage {
+export interface ChainStorage<Rv extends RpcVersion> extends GenericChainStorage<Rv> {
   {{{ defTypeOut }}}
 }

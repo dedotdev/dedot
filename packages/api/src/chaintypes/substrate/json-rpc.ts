@@ -97,6 +97,5 @@ export type ChainJsonRpcApis<Rv extends RpcVersion> = Pick<
   | 'system_unstable_networkState'
   | 'system_version'
   | 'transactionWatch_unstable_submitAndWatch'
-  | 'transactionWatch_unstable_unwatch'
 > &
   GenericJsonRpcApis<Rv>;

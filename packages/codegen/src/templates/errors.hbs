@@ -2,6 +2,6 @@
 
 {{{ importTypes }}}
 
-export interface ChainErrors extends GenericChainErrors {
+export interface ChainErrors<Rv extends RpcVersion> extends GenericChainErrors<Rv> {
   {{{ defTypeOut }}}
 }

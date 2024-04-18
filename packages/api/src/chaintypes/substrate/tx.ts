@@ -10,9 +10,11 @@ import type {
   RpcV2,
   ISubmittableExtrinsicLegacy,
 } from '@dedot/types';
+import type { TransactionEvent } from '@dedot/specs';
 import type {
   MultiAddressLike,
   Extrinsic,
+  TransactionStatus,
   BytesLike,
   AccountId32Like,
   Percent,
@@ -23,7 +25,6 @@ import type {
   FixedBytes,
   FixedU64,
   Perquintill,
-  TransactionStatus,
 } from '@dedot/codecs';
 import type {
   KitchensinkRuntimeRuntimeCallLike,
@@ -100,7 +101,6 @@ import type {
   PalletBrokerCoreMask,
   PalletBrokerFinality,
 } from './types.js';
-import { TransactionEvent } from '@dedot/specs';
 
 export type ChainSubmittableExtrinsic<
   Rv extends RpcVersion,
