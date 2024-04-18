@@ -68,7 +68,7 @@ export class DedotClient<
   /**
    * Initialize APIs before usage
    */
-  protected async doInitialize() {
+  protected override async doInitialize() {
     const rpcMethods: string[] = (await this.rpc.rpc_methods()).methods;
 
     this._chainHead = new ChainHead(this, { rpcMethods });
@@ -120,46 +120,46 @@ export class DedotClient<
     }
   };
 
-  protected async beforeDisconnect(): Promise<void> {
+  protected override async beforeDisconnect(): Promise<void> {
     this.unsubscribeRuntimeUpgrades();
   }
 
-  protected onDisconnected = async () => {
+  protected override onDisconnected = async () => {
     this.unsubscribeRuntimeUpgrades();
   };
 
-  protected cleanUp() {
+  protected override cleanUp() {
     super.cleanUp();
     this._chainHead = undefined;
     this._chainSpec = undefined;
     this._txBroadcaster = undefined;
   }
 
-  get query(): ChainApi[RpcV2]['query'] {
+  override get query(): ChainApi[RpcV2]['query'] {
     return newProxyChain<ChainApi>({
       executor: new StorageQueryExecutorV2(this, this.chainHead),
     }) as ChainApi[RpcV2]['query'];
   }
 
-  queryAt(blockHash: HashOrSource): ChainApi[RpcV2]['query'] {
+  override queryAt(blockHash: HashOrSource): ChainApi[RpcV2]['query'] {
     return newProxyChain<ChainApi>({
       executor: new StorageQueryExecutorV2(this, this.chainHead, blockHash),
     }) as ChainApi[RpcV2]['query'];
   }
 
-  get call(): ChainApi[RpcV2]['call'] {
+  override get call(): ChainApi[RpcV2]['call'] {
     return newProxyChain<ChainApi>({
       executor: new RuntimeApiExecutorV2(this, this.chainHead),
     }) as ChainApi[RpcV2]['call'];
   }
 
-  callAt(blockHash: BlockHash): ChainApi[RpcV2]['call'] {
+  override callAt(blockHash: BlockHash): ChainApi[RpcV2]['call'] {
     return newProxyChain<ChainApi>({
       executor: new RuntimeApiExecutorV2(this, this.chainHead, blockHash),
     }) as ChainApi[RpcV2]['call'];
   }
 
-  get tx(): ChainApi[RpcV2]['tx'] {
+  override get tx(): ChainApi[RpcV2]['tx'] {
     return newProxyChain<ChainApi>({ executor: new TxExecutorV2(this) }) as ChainApi[RpcV2]['tx'];
   }
 }

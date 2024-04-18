@@ -79,14 +79,14 @@ export class Dedot<ChainApi extends VersionedGenericSubstrateApi = SubstrateApi>
     return Dedot.create(options);
   }
 
-  onDisconnected = async () => {
+  override onDisconnected = async () => {
     await this.unsubscribeUpdates();
   };
 
   /**
    * Initialize APIs before usage
    */
-  async doInitialize() {
+  override async doInitialize() {
     // Fetching node information
     let [genesisHash, runtimeVersion, metadata] = await Promise.all([
       this.rpc.chain_getBlockHash(0),
@@ -169,25 +169,25 @@ export class Dedot<ChainApi extends VersionedGenericSubstrateApi = SubstrateApi>
     this.unsubscribeHealth();
   }
 
-  async beforeDisconnect() {
+  override async beforeDisconnect() {
     await this.unsubscribeUpdates();
   }
 
-  get query(): ChainApi[RpcLegacy]['query'] {
+  override get query(): ChainApi[RpcLegacy]['query'] {
     return newProxyChain<ChainApi>({ executor: new StorageQueryExecutor(this) }) as ChainApi[RpcLegacy]['query'];
   }
 
-  queryAt(blockHash: HashOrSource): ChainApi[RpcLegacy]['query'] {
+  override queryAt(blockHash: HashOrSource): ChainApi[RpcLegacy]['query'] {
     return newProxyChain<ChainApi>({
       executor: new StorageQueryExecutor(this, blockHash),
     }) as ChainApi[RpcLegacy]['query'];
   }
 
-  get call(): ChainApi[RpcLegacy]['call'] {
+  override get call(): ChainApi[RpcLegacy]['call'] {
     return newProxyChain<ChainApi>({ executor: new RuntimeApiExecutor(this) }) as ChainApi[RpcLegacy]['call'];
   }
 
-  callAt(blockHash: HashOrSource): ChainApi[RpcLegacy]['call'] {
+  override callAt(blockHash: HashOrSource): ChainApi[RpcLegacy]['call'] {
     return newProxyChain<ChainApi>({
       executor: new RuntimeApiExecutor(this, blockHash),
     }) as ChainApi[RpcLegacy]['call'];
@@ -204,7 +204,7 @@ export class Dedot<ChainApi extends VersionedGenericSubstrateApi = SubstrateApi>
    *    });
    * ```
    */
-  get tx(): ChainApi[RpcLegacy]['tx'] {
+  override get tx(): ChainApi[RpcLegacy]['tx'] {
     return newProxyChain<ChainApi>({ executor: new TxExecutor(this) }) as ChainApi[RpcLegacy]['tx'];
   }
 }

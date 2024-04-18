@@ -17,7 +17,7 @@ export class TxExecutorV2<
     assert(api.rpcVersion === 'v2', 'JsonRpcV2-based client is required');
   }
 
-  protected createExtrinsic(call: IRuntimeTxCall): any {
+  protected override createExtrinsic(call: IRuntimeTxCall): any {
     return new SubmittableExtrinsicV2(this.api as DedotClient, call);
   }
 }
