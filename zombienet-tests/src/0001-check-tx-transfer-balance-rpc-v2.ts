@@ -15,20 +15,20 @@ export const run = async (nodeName: any, networkInfo: any): Promise<void> => {
   const api = await DedotClient.new(wsUri);
 
   const prevBobBalance = (await api.query.system.account(BOB)).data.free;
-  console.log('[json-rpc-v2] BOB - old balance', prevBobBalance);
+  console.log('BOB - old balance', prevBobBalance);
 
   const TEN_UNIT = BigInt(10 * 1e12);
 
   const transferTx = api.tx.balances.transferKeepAlive(BOB, TEN_UNIT);
 
   return new Promise(async (resolve) => {
-    const unsub = await transferTx.signAndSend(alice, async (result) => {
-      console.log('[json-rpc-v2] Transaction event', result.status);
-      if (result.status.event === 'bestChainBlockIncluded') {
+    const unsub = await transferTx.signAndSend(alice, async ({ status }) => {
+      console.log('Transaction event', status);
+      if (status.event === 'bestChainBlockIncluded') {
         const newBobBalance = (await api.query.system.account(BOB)).data.free;
-        console.log('[json-rpc-v2] BOB - new balance', newBobBalance);
+        console.log('BOB - new balance', newBobBalance);
         assert(prevBobBalance + TEN_UNIT === newBobBalance, 'Incorrect BOB balance');
-
+      } else if (status.event === 'finalized') {
         await unsub();
         resolve();
       }
