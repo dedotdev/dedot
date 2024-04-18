@@ -1,5 +1,5 @@
 import type { SubstrateApi } from '../chaintypes/index.js';
-import { $H256, BlockHash, Metadata } from '@dedot/codecs';
+import { $H256, BlockHash } from '@dedot/codecs';
 import { RpcV2, VersionedGenericSubstrateApi } from '@dedot/types';
 import { RuntimeApiExecutorV2, StorageQueryExecutorV2, TxExecutorV2 } from '../executor/index.js';
 import { newProxyChain } from '../proxychain.js';
@@ -13,7 +13,8 @@ import { u32 } from '@dedot/shape';
 /**
  * @name DedotClient
  * @description New promised-based API Client for Polkadot & Substrate based on JSON-RPC V2
- * ```
+ *
+ * __Unstable, use with caution.__
  */
 export class DedotClient<
   ChainApi extends VersionedGenericSubstrateApi = SubstrateApi,

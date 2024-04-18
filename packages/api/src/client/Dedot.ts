@@ -8,7 +8,7 @@ import { BaseSubstrateClient, KEEP_ALIVE_INTERVAL } from './BaseSubstrateClient.
 
 /**
  * @name Dedot
- * @description Promised-based API Client for Polkadot & Substrate
+ * @description Promised-based API Client for Polkadot & Substrate based on legacy JSON-RPC
  *
  * Initialize API instance and interact with substrate-based network
  * ```typescript

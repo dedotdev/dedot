@@ -8,7 +8,8 @@ import {
   type SignerOptions,
   type Unsub,
 } from '@dedot/types';
-import { assert, blake2AsHex, HexString, hexToU8a, isHex, SubmittableResult } from 'dedot';
+import { assert, HexString, isHex } from '@dedot/utils';
+import { SubmittableResult } from './SubmittableResult.js';
 import { BaseExtrinsic } from './BaseExtrinsic.js';
 
 export class SubmittableExtrinsicLegacy extends BaseExtrinsic implements ISubmittableExtrinsicLegacy {

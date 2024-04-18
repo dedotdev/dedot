@@ -9,10 +9,10 @@ import {
   type SignerOptions,
   type Unsub,
 } from '@dedot/types';
-import { ISubstrateClient } from '../types.js';
+import { ISubstrateClient } from '../../types.js';
 import { isKeyringPair, signRaw } from './utils.js';
-import { SubstrateApi } from '../chaintypes/index.js';
-import { ExtraSignedExtension } from './extensions/index.js';
+import { SubstrateApi } from '../../chaintypes/index.js';
+import { ExtraSignedExtension } from '../extensions/index.js';
 import { HexString, isFunction, u8aToHex } from '@dedot/utils';
 
 export abstract class BaseExtrinsic extends Extrinsic implements ISubmittableExtrinsic {
