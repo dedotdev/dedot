@@ -70,7 +70,7 @@ export class DedotClient<
    */
   protected override async doInitialize() {
     const rpcMethods: string[] = (await this.rpc.rpc_methods()).methods;
-    console.log('rpcMethods', rpcMethods);
+    console.dir(rpcMethods, { depth: null });
 
     this._chainHead = new ChainHead(this, { rpcMethods });
     this._chainSpec = new ChainSpec(this, { rpcMethods });
