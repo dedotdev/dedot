@@ -11,6 +11,7 @@ import {
   StorageQueryExecutor,
   TxExecutor,
 } from '../executor/index.js';
+import { JsonRpcClient } from '../json-rpc/index.js';
 import { newProxyChain } from '../proxychain.js';
 import type {
   ApiEvent,
@@ -22,7 +23,6 @@ import type {
   SubstrateChainProperties,
   SubstrateRuntimeVersion,
 } from '../types.js';
-import { JsonRpcClient } from './JsonRpcClient.js';
 
 export const KEEP_ALIVE_INTERVAL = 10_000; // in ms
 export const CATCH_ALL_METADATA_KEY: MetadataKey = `RAW_META/ALL`;

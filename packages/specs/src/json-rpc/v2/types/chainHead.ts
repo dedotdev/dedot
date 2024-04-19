@@ -1,11 +1,8 @@
 import { BlockHash } from '@dedot/codecs';
-
-export interface NamedEvent {
-  event: string;
-}
+import { OperationId, NamedEvent } from './types.js';
 
 export interface WithOperationId {
-  operationId: string;
+  operationId: OperationId;
 }
 
 export type RuntimeEvent =
@@ -26,7 +23,8 @@ export interface ChainHeadRuntimeVersion {
 
 export interface Initialized<Hash = BlockHash> extends NamedEvent {
   event: 'initialized';
-  finalizedBlockHash: Hash;
+  finalizedBlockHashes: Array<Hash>;
+  finalizedBlockHash?: Hash;
   finalizedBlockRuntime: RuntimeEvent | null;
 }
 
@@ -91,21 +89,26 @@ export interface Stop extends NamedEvent {
   event: 'stop';
 }
 
-export type FollowEvent<Hash = BlockHash> =
-  | Initialized<Hash>
-  | NewBlock<Hash>
-  | BestBlockChanged<Hash>
-  | Finalized<Hash>
+export type FollowOperationEvent =
   | OperationBodyDone
   | OperationCallDone
   | OperationStorageItems
   | OperationWaitingForContinue
   | OperationStorageDone
   | OperationInaccessible
-  | OperationError
+  | OperationError;
+
+export type FollowEvent<Hash = BlockHash> =
+  | Initialized<Hash>
+  | NewBlock<Hash>
+  | BestBlockChanged<Hash>
+  | Finalized<Hash>
+  | FollowOperationEvent
   | Stop;
 
-export type MethodResponse = { result: 'started'; operationId: string } | { result: 'limitReached' };
+export type MethodResponse =
+  | { result: 'started'; operationId: OperationId; discardedItems?: number }
+  | { result: 'limitReached' };
 
 export interface StorageQuery<Key = string> {
   key: Key;
