@@ -1,8 +1,8 @@
 import { Field, MetadataLatest, PortableRegistry, PortableType, TypeId, TypeParam } from '@dedot/codecs';
 import { normalizeName, stringPascalCase } from '@dedot/utils';
-import { beautifySourceCode, commentBlock, compileTemplate, isNativeType } from './utils.js';
 import { TypeImports } from './TypeImports.js';
 import { findKnownCodec, findKnownCodecType, isKnownCodecType } from './known-codecs.js';
+import { beautifySourceCode, commentBlock, compileTemplate, isNativeType } from './utils.js';
 
 interface NamedType extends PortableType {
   name: string; // nameIn, ~ typeIn

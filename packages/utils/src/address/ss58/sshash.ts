@@ -1,9 +1,8 @@
 // Copyright 2017-2024 @polkadot/util-crypto authors & contributors
 // SPDX-License-Identifier: Apache-2.0
-
+import { concatU8a } from '../../concat.js';
 import { blake2AsU8a } from '../../hash/blake2.js';
 import { stringToU8a } from '../../string/index.js';
-import { concatU8a } from '../../concat.js';
 
 const SS58_PREFIX = stringToU8a('SS58PRE');
 

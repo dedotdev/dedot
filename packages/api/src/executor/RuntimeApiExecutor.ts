@@ -1,4 +1,6 @@
+import { RuntimeApiMethodDefLatest } from '@dedot/codecs';
 import type { AnyShape } from '@dedot/shape';
+import { Metadata, toRuntimeApiMethods, toRuntimeApiSpecs } from '@dedot/specs';
 import type {
   GenericRuntimeApiMethod,
   GenericSubstrateApi,
@@ -7,7 +9,6 @@ import type {
   RuntimeApiName,
   RuntimeApiSpec,
 } from '@dedot/types';
-import { Executor } from './Executor.js';
 import {
   assert,
   calcRuntimeApiHash,
@@ -18,8 +19,7 @@ import {
   u8aToHex,
   UnknownApiError,
 } from '@dedot/utils';
-import { RuntimeApiMethodDefLatest } from '@dedot/codecs';
-import { Metadata, toRuntimeApiMethods, toRuntimeApiSpecs } from '@dedot/specs';
+import { Executor } from './Executor.js';
 
 export const FallbackRuntimeApis: Record<string, number> = { '0x37e397fc7c91f5e4': 2 };
 

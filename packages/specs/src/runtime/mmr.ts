@@ -1,5 +1,3 @@
-import * as $ from '@dedot/shape';
-import { RuntimeApiSpec } from '@dedot/types';
 import {
   $LeafIndex,
   $Hash,
@@ -9,6 +7,8 @@ import {
   $MmrEncodableOpaqueLeaf,
   $MmrBatchProof,
 } from '@dedot/codecs';
+import * as $ from '@dedot/shape';
+import { RuntimeApiSpec } from '@dedot/types';
 
 /**
  * Ref: https://github.com/paritytech/polkadot-sdk/blob/0e49ed72aa365475e30069a5c30e251a009fdacf/substrate/primitives/merkle-mountain-range/src/lib.rs#L423-L426

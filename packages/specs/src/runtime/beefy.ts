@@ -1,5 +1,3 @@
-import * as $ from '@dedot/shape';
-import { RuntimeApiSpec } from '@dedot/types';
 import {
   $AccountId32,
   $BeefyAuthoritySet,
@@ -10,6 +8,8 @@ import {
   $ValidatorSet,
   $ValidatorSetId,
 } from '@dedot/codecs';
+import * as $ from '@dedot/shape';
+import { RuntimeApiSpec } from '@dedot/types';
 
 /**
  * Reference:

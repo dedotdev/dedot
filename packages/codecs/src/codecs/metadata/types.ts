@@ -1,6 +1,6 @@
 import * as $ from '@dedot/shape';
-import { Field } from './scale_info.js';
 import { StorageEntryLatest } from './Metadata.js';
+import { Field } from './scale_info.js';
 
 export interface PalletInfo {
   pallet: string;

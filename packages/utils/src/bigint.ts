@@ -1,5 +1,5 @@
-import { HexString } from './types.js';
 import { hexToU8a } from './hex.js';
+import { HexString } from './types.js';
 
 /**
  * Return the bigger bigint value

@@ -1,6 +1,6 @@
-import { SerdeEnum } from './serde.js';
 import { Hash } from '@dedot/codecs';
 import { HexString } from '@dedot/utils';
+import { SerdeEnum } from './serde.js';
 
 /**
  * RPC Extrinsic or hash

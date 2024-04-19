@@ -1,5 +1,5 @@
-import type { IEventRecord, ISubmittableResult } from '@dedot/types';
 import type { DispatchError, DispatchInfo, Hash, TransactionStatus } from '@dedot/codecs';
+import type { IEventRecord, ISubmittableResult } from '@dedot/types';
 import type { FrameSystemEventRecord } from '../chaintypes/index.js';
 
 export interface SubmittableResultInputs<E extends IEventRecord = FrameSystemEventRecord> {

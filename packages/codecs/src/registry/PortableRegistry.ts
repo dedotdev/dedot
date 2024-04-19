@@ -1,3 +1,16 @@
+import * as $ from '@dedot/shape';
+import { EnumOptions } from '@dedot/shape';
+import {
+  blake2_256,
+  HashFn,
+  HexString,
+  hexToU8a,
+  isObject,
+  isU8a,
+  normalizeName,
+  stringPascalCase,
+  u8aToHex,
+} from '@dedot/utils';
 import {
   $AccountId20,
   $AccountId32,
@@ -19,19 +32,6 @@ import {
   PortableType,
   TypeId,
 } from '../codecs/index.js';
-import * as $ from '@dedot/shape';
-import { EnumOptions } from '@dedot/shape';
-import {
-  blake2_256,
-  HashFn,
-  HexString,
-  hexToU8a,
-  isObject,
-  isU8a,
-  normalizeName,
-  stringPascalCase,
-  u8aToHex,
-} from '@dedot/utils';
 
 const KNOWN_CODECS: Record<string, $.AnyShape> = {
   'sp_core::crypto::AccountId32': $AccountId32,

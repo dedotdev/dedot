@@ -1,6 +1,6 @@
+import { $Bytes, $KeyTypeId } from '@dedot/codecs';
 import * as $ from '@dedot/shape';
 import { RuntimeApiSpec } from '@dedot/types';
-import { $Bytes, $KeyTypeId } from '@dedot/codecs';
 
 /**
  * Ref: https://github.com/paritytech/polkadot-sdk/blob/43415ef58c143b985e09015cd000dbd65f6d3997/substrate/primitives/session/src/runtime_api.rs#L21-L31

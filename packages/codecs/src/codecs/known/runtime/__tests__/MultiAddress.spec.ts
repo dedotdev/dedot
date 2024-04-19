@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { $MultiAddress } from '../MultiAddress.js';
 import { AccountId32 } from '../../../generic/index.js';
+import { $MultiAddress } from '../MultiAddress.js';
 
 describe('MultiAddress', () => {
   it('should decode from address & AccountId32', () => {

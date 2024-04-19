@@ -1,6 +1,6 @@
+import { $Bytes, $Text } from '@dedot/codecs';
 import * as $ from '@dedot/shape';
 import { RuntimeApiSpec } from '@dedot/types';
-import { $Bytes, $Text } from '@dedot/codecs';
 
 /**
  * Ref: https://github.com/paritytech/polkadot-sdk/blob/9a5d9a586e5a1c27bf29d3727b5edc89c59f0398/substrate/primitives/genesis-builder/src/lib.rs#L35-L45

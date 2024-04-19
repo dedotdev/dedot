@@ -1,3 +1,6 @@
+import { WebSocket } from '@polkadot/x-ws';
+import { assert, EventEmitter } from '@dedot/utils';
+import { JsonRpcError } from '../error.js';
 import {
   ConnectionStatus,
   JsonRpcProvider,
@@ -10,9 +13,6 @@ import {
   SubscriptionCallback,
   SubscriptionInput,
 } from '../types.js';
-import { assert, EventEmitter } from '@dedot/utils';
-import { WebSocket } from '@polkadot/x-ws';
-import { JsonRpcError } from '../error.js';
 
 export interface WsProviderOptions {
   /**

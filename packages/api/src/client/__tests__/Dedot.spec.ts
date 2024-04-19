@@ -1,10 +1,10 @@
-import { afterEach, beforeEach, describe, expect, expectTypeOf, it, vi } from 'vitest';
-import { Dedot } from '../Dedot.js';
-import MockProvider, { MockedRuntimeVersion } from './MockProvider.js';
-import type { SubstrateApi } from '../../chaintypes/index.js';
 import type { RuntimeVersion } from '@dedot/codecs';
 import type { AnyShape } from '@dedot/shape';
 import { stringCamelCase, stringPascalCase } from '@dedot/utils';
+import { afterEach, beforeEach, describe, expect, expectTypeOf, it, vi } from 'vitest';
+import type { SubstrateApi } from '../../chaintypes/index.js';
+import { Dedot } from '../Dedot.js';
+import MockProvider, { MockedRuntimeVersion } from './MockProvider.js';
 
 describe('Dedot', () => {
   it('should throws error for invalid endpoint', () => {

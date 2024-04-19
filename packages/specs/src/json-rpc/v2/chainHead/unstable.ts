@@ -1,6 +1,6 @@
+import { BlockHash } from '@dedot/codecs';
 import { Callback, GenericJsonRpcApis, Unsub } from '@dedot/types';
 import { FollowEvent, MethodResponse, StorageQuery } from '../types/index.js';
-import { BlockHash } from '@dedot/codecs';
 
 export interface ChainHeadUnstable extends GenericJsonRpcApis {
   /**

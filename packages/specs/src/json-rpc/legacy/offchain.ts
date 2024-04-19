@@ -1,6 +1,6 @@
+import { Bytes, Option } from '@dedot/codecs';
 import { GenericJsonRpcApis } from '@dedot/types';
 import { StorageKind } from './types/index.js';
-import { Bytes, Option } from '@dedot/codecs';
 
 export interface OffchainJsonRpcApis extends GenericJsonRpcApis {
   /**

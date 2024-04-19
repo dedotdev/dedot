@@ -1,5 +1,5 @@
-import { GenericJsonRpcApis } from '@dedot/types';
 import { BlockHash, Hash, Option, PrefixedStorageKey, StorageData, StorageKey } from '@dedot/codecs';
+import { GenericJsonRpcApis } from '@dedot/types';
 
 export interface ChildStateJsonRpcApis extends GenericJsonRpcApis {
   /**

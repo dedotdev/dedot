@@ -1,5 +1,5 @@
-import { RuntimeApiSpec } from '@dedot/types';
 import { $AccountId32, $Nonce } from '@dedot/codecs';
+import { RuntimeApiSpec } from '@dedot/types';
 
 /**
  * Ref: https://github.com/paritytech/polkadot-sdk/blob/6a29a70a927de1017b5c54626c88c3fa439aef48/substrate/frame/system/rpc/runtime-api/src/lib.rs#L26-L35

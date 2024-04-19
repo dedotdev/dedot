@@ -1,5 +1,4 @@
 import { GenericJsonRpcApis } from '@dedot/types';
-import { RpcMethods } from './types/index.js';
 import { AuthorJsonRpcApis } from './author.js';
 import { BabeJsonRpcApi } from './babe.js';
 import { BeefyJsonRpcApis } from './beefy.js';
@@ -13,6 +12,7 @@ import { PaymentJsonRpcApis } from './payment.js';
 import { StateJsonRpcApis } from './state.js';
 import { SyncStateJsonRpcApis } from './syncstate.js';
 import { SystemJsonRpcApis } from './system.js';
+import { RpcMethods } from './types/index.js';
 
 export * from './types/index.js';
 

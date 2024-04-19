@@ -1,6 +1,6 @@
 import { literalUnion, sizedArray, sizedUint8Array, tuple, uint8Array } from '../subshape.js';
-import { option } from './option.js';
 import { array } from './array.js';
+import { option } from './option.js';
 
 export const FlatEnum = literalUnion;
 export const Option = option;
