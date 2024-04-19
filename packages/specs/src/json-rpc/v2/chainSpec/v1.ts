@@ -4,6 +4,8 @@ import { Properties } from '../types/index.js';
 /**
  * chainSpec-prefixed JSON-RPC methods.
  *
+ * Ref: https://github.com/paritytech/polkadot-sdk/blob/7430f413503f8008fe60eb2e4ebd76d14af12ea9/substrate/client/rpc-spec-v2/src/chain_spec/api.rs#L25-L41
+ *
  * @version v1
  */
 export interface ChainSpecV1 extends GenericJsonRpcApis {
