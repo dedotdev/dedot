@@ -1,7 +1,7 @@
-import { SignedExtension } from '../SignedExtension.js';
+import { SignerPayloadJSON } from '@polkadot/types/types';
 import { EraLike, Hash, Header } from '@dedot/codecs';
 import { assert, bnMin, isZeroHex, numberToHex, u8aToHex } from '@dedot/utils';
-import { SignerPayloadJSON } from '@polkadot/types/types';
+import { SignedExtension } from '../SignedExtension.js';
 
 export const MAX_FINALITY_LAG: number = 5;
 export const FALLBACK_MAX_HASH_COUNT: number = 250;

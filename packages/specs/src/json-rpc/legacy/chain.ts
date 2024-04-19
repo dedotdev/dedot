@@ -1,5 +1,5 @@
-import { Callback, GenericJsonRpcApis, Unsub } from '@dedot/types';
 import { BlockHash, BlockNumber, Header, Option, SignedBlock } from '@dedot/codecs';
+import { Callback, GenericJsonRpcApis, Unsub } from '@dedot/types';
 
 export interface ChainJsonRpcApis extends GenericJsonRpcApis {
   /**

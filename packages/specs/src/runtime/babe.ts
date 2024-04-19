@@ -1,5 +1,3 @@
-import * as $ from '@dedot/shape';
-import { RuntimeApiMethodsSpec, RuntimeApiSpec } from '@dedot/types';
 import {
   $AccountId32,
   $BabeConfiguration,
@@ -9,6 +7,8 @@ import {
   $OpaqueKeyOwnershipProof,
   $Slot,
 } from '@dedot/codecs';
+import * as $ from '@dedot/shape';
+import { RuntimeApiMethodsSpec, RuntimeApiSpec } from '@dedot/types';
 
 const V1_V2_SHARED: RuntimeApiMethodsSpec = {
   currentEpoch: {

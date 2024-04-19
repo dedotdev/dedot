@@ -1,5 +1,5 @@
-import { HexString } from './types.js';
 import { hexAddPrefix, hexToU8a } from './hex.js';
+import { HexString } from './types.js';
 
 /**
  * Convert a number to a hex string

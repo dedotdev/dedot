@@ -1,5 +1,5 @@
-import { GenericJsonRpcApis } from '@dedot/types';
 import { BlockHash, Option } from '@dedot/codecs';
+import { GenericJsonRpcApis } from '@dedot/types';
 import { BlockStats } from './types/index.js';
 
 export interface DevJsonRpcApis extends GenericJsonRpcApis {

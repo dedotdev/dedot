@@ -1,6 +1,6 @@
+import { assert, stringCamelCase, stringPascalCase } from '@dedot/utils';
 import { ApiGen } from './ApiGen.js';
 import { beautifySourceCode, commentBlock, compileTemplate } from './utils.js';
-import { assert, stringCamelCase, stringPascalCase } from '@dedot/utils';
 
 export class ErrorsGen extends ApiGen {
   generate() {

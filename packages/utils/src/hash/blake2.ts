@@ -2,9 +2,9 @@
 // SPDX-License-Identifier: Apache-2.0
 // Original implementation: https://github.com/polkadot-js/common/blob/22aab4a4e62944a2cf8c885f50be2c1b842813ec/packages/util-crypto/src/blake2/asU8a.ts
 import { blake2b } from '@noble/hashes/blake2b';
-import { u8aToHex } from '../u8a.js';
-import { HexString } from '../types.js';
 import { toU8a } from '../to.js';
+import { HexString } from '../types.js';
+import { u8aToHex } from '../u8a.js';
 
 export function blake2AsU8a(
   data: string | Uint8Array,

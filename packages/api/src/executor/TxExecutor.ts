@@ -1,4 +1,6 @@
-import { Executor } from './Executor.js';
+import { SignOptions } from '@polkadot/keyring/types';
+import { IKeyringPair } from '@polkadot/types/types';
+import { BlockHash, Extrinsic, Hash, SignedBlock, TransactionStatus } from '@dedot/codecs';
 import type {
   AddressOrPair,
   Callback,
@@ -11,7 +13,6 @@ import type {
   SignerOptions,
   Unsub,
 } from '@dedot/types';
-import type { SubstrateApi } from '../chaintypes/index.js';
 import {
   assert,
   blake2AsHex,
@@ -25,11 +26,10 @@ import {
   u8aToHex,
   UnknownApiError,
 } from '@dedot/utils';
-import { BlockHash, Extrinsic, Hash, SignedBlock, TransactionStatus } from '@dedot/codecs';
+import type { SubstrateApi } from '../chaintypes/index.js';
 import { Dedot } from '../client/index.js';
-import { IKeyringPair } from '@polkadot/types/types';
 import { ExtraSignedExtension, SubmittableResult } from '../extrinsic/index.js';
-import { SignOptions } from '@polkadot/keyring/types';
+import { Executor } from './Executor.js';
 
 export function isKeyringPair(account: AddressOrPair): account is IKeyringPair {
   return isFunction((account as IKeyringPair).sign);

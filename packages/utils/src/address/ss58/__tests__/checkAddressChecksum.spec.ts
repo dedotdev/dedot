@@ -1,8 +1,7 @@
 // Copyright 2017-2024 @polkadot/util-crypto authors & contributors
 // SPDX-License-Identifier: Apache-2.0
-
-import { describe, it, expect } from 'vitest';
 import { base58 } from '@scure/base';
+import { describe, it, expect } from 'vitest';
 import { checkAddressChecksum } from '../checkAddressChecksum.js';
 
 describe('checkAddressChecksum', (): void => {

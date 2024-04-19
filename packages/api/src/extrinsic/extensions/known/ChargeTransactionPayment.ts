@@ -1,6 +1,6 @@
-import { SignedExtension } from '../SignedExtension.js';
 import { SignerPayloadJSON } from '@polkadot/types/types';
 import { bnToHex } from '@dedot/utils';
+import { SignedExtension } from '../SignedExtension.js';
 
 export class ChargeTransactionPayment extends SignedExtension<bigint> {
   async init(): Promise<void> {

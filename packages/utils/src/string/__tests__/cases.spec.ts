@@ -1,6 +1,5 @@
 // Copyright 2017-2024 @polkadot/util authors & contributors
 // SPDX-License-Identifier: Apache-2.0
-
 import { describe, it, expect } from 'vitest';
 import { stringCamelCase, stringUpperFirst, stringLowerFirst, stringSnakeCase } from '../cases.js';
 

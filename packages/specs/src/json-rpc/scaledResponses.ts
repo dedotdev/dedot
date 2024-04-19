@@ -1,4 +1,3 @@
-import { AnyShape } from '@dedot/shape';
 import {
   $ApplyExtrinsicResult,
   $Header,
@@ -7,6 +6,7 @@ import {
   $TransactionStatus,
   $VersionedFinalityProof,
 } from '@dedot/codecs';
+import { AnyShape } from '@dedot/shape';
 
 export const scaledResponses: Record<string, AnyShape> = {
   system_dryRun: $ApplyExtrinsicResult,

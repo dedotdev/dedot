@@ -1,5 +1,3 @@
-import * as $ from '@dedot/shape';
-import { RuntimeApiSpec } from '@dedot/types';
 import {
   $ApplyExtrinsicResult,
   $Block,
@@ -8,6 +6,8 @@ import {
   $InherentData,
   $OpaqueExtrinsic,
 } from '@dedot/codecs';
+import * as $ from '@dedot/shape';
+import { RuntimeApiSpec } from '@dedot/types';
 
 /**
  * Ref: https://github.com/paritytech/polkadot-sdk/blob/bc53b9a03a742f8b658806a01a7bf853cb9a86cd/substrate/primitives/block-builder/src/lib.rs#L25-L52

@@ -1,4 +1,3 @@
-import { assert, HASHERS, hexAddPrefix, UnknownApiError } from '@dedot/utils';
 import {
   $StorageData,
   PortableRegistry,
@@ -8,6 +7,7 @@ import {
   StorageKey,
   PrefixedStorageKey,
 } from '@dedot/codecs';
+import { assert, HASHERS, hexAddPrefix, UnknownApiError } from '@dedot/utils';
 import { xxhashAsU8a, hexToU8a, stringCamelCase, concatU8a, u8aToHex } from '@dedot/utils';
 
 // https://github.com/polkadot-js/api/blob/0982f68507942c5bf6f751f662804344e211b289/packages/types/src/primitive/StorageKey.ts#L29-L38

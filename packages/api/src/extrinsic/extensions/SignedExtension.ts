@@ -1,9 +1,9 @@
-import { Dedot } from '../../client/index.js';
+import { SignerPayloadJSON } from '@polkadot/types/types';
 import { PortableRegistry, SignedExtensionDefLatest } from '@dedot/codecs';
-import { ensurePresence } from '@dedot/utils';
 import * as $ from '@dedot/shape';
 import { PayloadOptions } from '@dedot/types';
-import { SignerPayloadJSON } from '@polkadot/types/types';
+import { ensurePresence } from '@dedot/utils';
+import { Dedot } from '../../client/index.js';
 
 export interface ISignedExtension {
   identifier: string;

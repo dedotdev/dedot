@@ -1,7 +1,7 @@
-import { HexString } from './types.js';
 import { hexToBytes } from '@noble/hashes/utils';
-import { u8aToString } from './u8a.js';
 import { isHex } from './is.js';
+import { HexString } from './types.js';
+import { u8aToString } from './u8a.js';
 
 /**
  * Converts a hex string to a Uint8Array.

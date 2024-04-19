@@ -1,6 +1,8 @@
-import type { SubstrateApi } from '../chaintypes/index.js';
 import { $Metadata, BlockHash, Hash, Metadata, PortableRegistry, RuntimeVersion } from '@dedot/codecs';
+import { type IStorage, LocalStorage } from '@dedot/storage';
 import { GenericSubstrateApi, Unsub } from '@dedot/types';
+import { ensurePresence as _ensurePresence, u8aToHex } from '@dedot/utils';
+import type { SubstrateApi } from '../chaintypes/index.js';
 import {
   ConstantExecutor,
   ErrorExecutor,
@@ -20,8 +22,6 @@ import type {
   SubstrateChainProperties,
   SubstrateRuntimeVersion,
 } from '../types.js';
-import { type IStorage, LocalStorage } from '@dedot/storage';
-import { ensurePresence as _ensurePresence, u8aToHex } from '@dedot/utils';
 import { JsonRpcClient } from './JsonRpcClient.js';
 
 export const KEEP_ALIVE_INTERVAL = 10_000; // in ms

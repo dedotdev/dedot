@@ -1,5 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { u8aToHex, u8aToString } from '../u8a.js';
+
 describe('u8a', () => {
   describe('u8aToHex', () => {
     it.each([

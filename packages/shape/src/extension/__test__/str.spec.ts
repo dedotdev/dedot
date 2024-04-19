@@ -1,6 +1,6 @@
+import { hexToU8a } from '@dedot/utils';
 import { describe, expect, it } from 'vitest';
 import * as $ from '../../index.js';
-import { hexToU8a } from '@dedot/utils';
 
 describe('str', () => {
   describe('FixedStr', () => {

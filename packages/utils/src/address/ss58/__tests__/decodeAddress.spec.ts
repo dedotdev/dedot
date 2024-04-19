@@ -1,13 +1,11 @@
 // Copyright 2017-2024 @polkadot/util-crypto authors & contributors
 // SPDX-License-Identifier: Apache-2.0
-
 import { describe, it, expect } from 'vitest';
 import { hexToU8a } from '../../../hex.js';
 import { stringToU8a } from '../../../string/index.js';
 import { u8aToHex } from '../../../u8a.js';
-
-import { ALICE_PUBLIC_SR } from './encodeAddress.spec.js';
 import { decodeAddress } from '../decodeAddress.js';
+import { ALICE_PUBLIC_SR } from './encodeAddress.spec.js';
 
 describe('decodeAddress', (): void => {
   it('decodes an address', (): void => {

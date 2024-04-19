@@ -1,6 +1,6 @@
+import { concatU8a, u8aToHex } from '@dedot/utils';
 import { describe, expect, it } from 'vitest';
 import * as $ from '../../index.js';
-import { concatU8a, u8aToHex } from '@dedot/utils';
 
 describe('hex', () => {
   describe('FixedHex', () => {

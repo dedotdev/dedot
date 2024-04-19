@@ -1,12 +1,10 @@
 // Copyright 2017-2024 @polkadot/util-crypto authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 // Original implementation: https://github.com/paritytech/polka-ui/blob/4858c094684769080f5811f32b081dd7780b0880/src/polkadot.js#L34
-
+import { base58 } from '@scure/base';
 import { concatU8a } from '../../concat.js';
-
 import { decodeAddress } from './decodeAddress.js';
 import { sshash } from './sshash.js';
-import { base58 } from '@scure/base';
 
 export const DEFAULT_SUBSTRATE_ADDRESS_PREFIX: number = 42;
 export const ALLOWED_DECODED_LENGTHS: number[] = [1, 2, 4, 8, 32, 33];

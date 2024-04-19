@@ -1,5 +1,5 @@
-import { MetadataV15 } from '../v15.js';
 import { MetadataV14 } from '../v14.js';
+import { MetadataV15 } from '../v15.js';
 
 export const toV15 = (metadataV14: MetadataV14): MetadataV15 => {
   const { types, pallets: palletsV14, extrinsic: extrinsicV14, runtimeType } = metadataV14;

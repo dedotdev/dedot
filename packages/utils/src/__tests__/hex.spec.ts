@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { HexString } from '../types.js';
 import { hexToString, hexToU8a, isZeroHex } from '../hex.js';
+import { HexString } from '../types.js';
 
 describe('hex', () => {
   describe('hexToU8a', () => {

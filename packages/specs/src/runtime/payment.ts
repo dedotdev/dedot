@@ -1,6 +1,6 @@
+import { $Balance, $FeeDetails, $OpaqueExtrinsic, $RawBytes, $RuntimeDispatchInfo, $Weight } from '@dedot/codecs';
 import * as $ from '@dedot/shape';
 import { RuntimeApiSpec } from '@dedot/types';
-import { $Balance, $FeeDetails, $OpaqueExtrinsic, $RawBytes, $RuntimeDispatchInfo, $Weight } from '@dedot/codecs';
 
 /**
  * Ref: https://github.com/paritytech/polkadot-sdk/blob/36957d676033b23b46edb66e6d7dcd13da11e19a/substrate/frame/transaction-payment/rpc/runtime-api/src/lib.rs#L26-L36

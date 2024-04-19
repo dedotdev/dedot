@@ -1,6 +1,6 @@
 import * as $ from '@dedot/shape';
-import { $ConsensusEngineId, $Header } from './Header.js';
 import { $OpaqueExtrinsic } from '../known/runtime/index.js';
+import { $ConsensusEngineId, $Header } from './Header.js';
 
 export const $Block = $.Struct({
   header: $Header,

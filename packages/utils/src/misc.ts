@@ -1,6 +1,6 @@
 import { blake2AsHex } from './hash/index.js';
-import { HexString } from './types.js';
 import { stringCamelCase } from './string/index.js';
+import { HexString } from './types.js';
 
 /**
  * Calculate runtime api hash

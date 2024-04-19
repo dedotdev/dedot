@@ -1,5 +1,3 @@
-import * as $ from '@dedot/shape';
-import { RuntimeApiSpec } from '@dedot/types';
 import {
   $AccountId32,
   $SetId,
@@ -7,6 +5,8 @@ import {
   $AuthorityList,
   $GrandpaEquivocationProof,
 } from '@dedot/codecs';
+import * as $ from '@dedot/shape';
+import { RuntimeApiSpec } from '@dedot/types';
 
 /**
  * Ref: https://github.com/paritytech/polkadot-sdk/blob/ebcf0a0f1cab2d43718ba96d26e5687f4d14580a/substrate/primitives/consensus/grandpa/src/lib.rs#L483-L535

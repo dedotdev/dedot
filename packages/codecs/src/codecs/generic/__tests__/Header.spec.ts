@@ -1,6 +1,6 @@
+import * as $ from '@dedot/shape';
 import { describe, expect, it } from 'vitest';
 import { $BlockNumber, $HeaderBlockNumber } from '../Header.js';
-import * as $ from '@dedot/shape';
 
 describe('Header', () => {
   describe('$BlockNumber', () => {

@@ -1,7 +1,7 @@
 import { HexString, hexToU8a, u8aToHex } from '@dedot/utils';
 import { DecodeBuffer, EncodeBuffer, metadata, Shape, sizedUint8Array, hex } from '../subshape.js';
-import { createShape } from './createShape.js';
 import { compactU32 } from './compact.js';
+import { createShape } from './createShape.js';
 
 const HEX_PREFIX = '0x';
 
