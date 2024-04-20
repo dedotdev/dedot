@@ -19,6 +19,7 @@
   },
   "dependencies": {
     "@dedot/codecs": "workspace:*",
+    "@dedot/contracts": "workspace:*",
     "@dedot/shape": "workspace:*",
     "@dedot/specs": "workspace:*",
     "@dedot/utils": "workspace:*",

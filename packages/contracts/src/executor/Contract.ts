@@ -1,10 +1,9 @@
-import { Dedot, SubstrateApi } from 'dedot';
 import { AccountId32 } from '@dedot/codecs';
-import { ContractMetadata, GenericContractApi } from '../types';
-import { QueryExecutor } from './QueryExecutor';
+import { ContractMetadata, GenericContractApi, GenericSubstrateApi } from '@dedot/types';
+import { Dedot, SubstrateApi } from 'dedot';
 import Executor from './Executor';
+import { QueryExecutor } from './QueryExecutor';
 import { TxExecutor } from './TxExecutor';
-import { GenericSubstrateApi } from '@dedot/types';
 
 export class Contract<ContractApi extends GenericContractApi, ChainApi extends GenericSubstrateApi = SubstrateApi> {
   api: Dedot<ChainApi>;

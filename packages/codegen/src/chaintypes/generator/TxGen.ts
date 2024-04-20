@@ -1,6 +1,6 @@
 import { stringCamelCase, stringPascalCase } from '@dedot/utils';
+import { beautifySourceCode, commentBlock, compileTemplate, isReservedWord } from '../../utils.js';
 import { ApiGen } from '../generator/index.js';
-import { beautifySourceCode, commentBlock, compileTemplate, isReservedWord } from './utils.js';
 
 export class TxGen extends ApiGen {
   generate() {

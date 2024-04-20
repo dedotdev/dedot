@@ -1,10 +1,8 @@
-import { TypeGen } from './TypeGen';
-import { ContractMetadata, ContractMessage } from '../types';
+import { normalizeContractTypeDef } from '@dedot/contracts';
+import { ContractMetadata, ContractMessage } from '@dedot/types';
 import { stringCamelCase } from '@dedot/utils';
-import { beautifySourceCode, commentBlock, compileTemplate } from '@dedot/codegen';
-import process from 'process';
-import path from 'path';
-import { normalizeContractTypeDef } from '../utils';
+import { beautifySourceCode, commentBlock, compileTemplate } from '../../utils';
+import { TypeGen } from './TypeGen';
 
 export class QueryGen {
   contractMetadata: ContractMetadata;
@@ -18,15 +16,15 @@ export class QueryGen {
   generate() {
     this.typesGen.clearCache();
 
-    this.typesGen.typeImports.addOutType(
+    this.typesGen.typeImports.addCodecType('AccountIdLike');
+    this.typesGen.typeImports.addKnownType(
+      'GenericSubstrateApi',
       'GenericContractQuery',
       'GenericContractQueryCall',
       'ContractOptions',
       'GenericContractResult',
       'ContractResult',
     );
-    this.typesGen.typeImports.addCodecType('AccountIdLike');
-    this.typesGen.typeImports.addKnownType('GenericSubstrateApi');
 
     const { messages } = this.contractMetadata.spec;
 
@@ -46,7 +44,7 @@ export class QueryGen {
     });
 
     const importTypes = this.typesGen.typeImports.toImports();
-    const template = compileTemplate('query.hbs', path.resolve(process.cwd(), 'packages/contracts/src/gen'));
+    const template = compileTemplate('contracts-query.hbs');
 
     return beautifySourceCode(template({ importTypes, queryCallsOut }));
   }

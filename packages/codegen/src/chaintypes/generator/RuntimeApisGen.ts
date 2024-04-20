@@ -2,9 +2,6 @@ import { RuntimeApiMethodDefLatest } from '@dedot/codecs';
 import { getRuntimeApiNames, getRuntimeApiSpecs } from '@dedot/specs';
 import { RuntimeApiMethodSpec, RuntimeApiSpec } from '@dedot/types';
 import { calcRuntimeApiHash, stringSnakeCase, stringCamelCase } from '@dedot/utils';
-import { ApiGen } from './ApiGen.js';
-import { TypesGen } from './TypesGen.js';
-import { findKnownCodecType } from './known-codecs.js';
 import {
   beautifySourceCode,
   commentBlock,
@@ -12,7 +9,10 @@ import {
   isNativeType,
   TUPLE_TYPE_REGEX,
   WRAPPER_TYPE_REGEX,
-} from './utils.js';
+} from '../../utils.js';
+import { ApiGen } from './ApiGen.js';
+import { TypesGen } from './TypesGen.js';
+import { findKnownCodecType } from './known-codecs.js';
 
 export class RuntimeApisGen extends ApiGen {
   constructor(

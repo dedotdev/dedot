@@ -1,5 +1,5 @@
-import { AnyFunc, AsyncMethod, GenericSubstrateApi } from '@dedot/types';
 import { Weight } from '@dedot/codecs';
+import { AnyFunc, AsyncMethod, GenericSubstrateApi } from '@dedot/types';
 
 export type ContractResult<ChainApi extends GenericSubstrateApi> = Awaited<
   ReturnType<ChainApi['call']['contractsApi']['call']>

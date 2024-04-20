@@ -1,13 +1,9 @@
-import { ContractMetadata } from '../types';
-import { TypeGen } from './TypeGen';
-import { QueryGen } from './QueryGen';
-import path from 'path';
+import { ContractMetadata } from '@dedot/types';
 import fs from 'fs';
-import process from 'process';
-import { TxGen } from './TxGen';
-import { IndexGen } from './IndexGen';
+import path from 'path';
+import { IndexGen, QueryGen, TxGen, TypeGen } from './generator/index.js';
 
-export async function generateContractTypesFromMetadata(metadata: ContractMetadata | string) {
+export async function generateContractTypesFromMetadata(metadata: ContractMetadata | string, outDir: string = '.') {
   let contractMetadata;
   if (typeof metadata === 'string') {
     contractMetadata = JSON.parse(metadata) as ContractMetadata;
@@ -15,7 +11,7 @@ export async function generateContractTypesFromMetadata(metadata: ContractMetada
     contractMetadata = metadata;
   }
 
-  const dirPath = path.resolve(process.cwd(), 'packages/contracts/src/typesgen', contractMetadata.contract.name);
+  const dirPath = path.resolve(outDir, contractMetadata.contract.name);
   const typesFileName = path.join(path.resolve(dirPath), `types.ts`);
   const queryTypesFileName = path.join(path.resolve(dirPath), `query.ts`);
   const txTypesFileName = path.join(path.resolve(dirPath), `tx.ts`);

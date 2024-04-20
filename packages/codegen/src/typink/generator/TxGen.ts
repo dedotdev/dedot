@@ -1,10 +1,8 @@
-import { ContractMessage, ContractMetadata } from '../types';
-import { TypeGen } from './TypeGen';
-import { beautifySourceCode, commentBlock, compileTemplate } from '@dedot/codegen';
+import { ContractMessage, ContractMetadata } from '@dedot/types';
 import { stringCamelCase } from '@dedot/utils';
-import path from 'path';
-import process from 'process';
+import { beautifySourceCode, commentBlock, compileTemplate } from '../../utils';
 import { QueryGen } from './QueryGen';
+import { TypeGen } from './TypeGen';
 
 export class TxGen extends QueryGen {
   constructor(contractMetadata: ContractMetadata, typeGen: TypeGen) {
@@ -14,13 +12,13 @@ export class TxGen extends QueryGen {
   generate() {
     this.typesGen.clearCache();
 
-    this.typesGen.typeImports.addOutType(
+    this.typesGen.typeImports.addKnownType(
+      'GenericSubstrateApi',
       'GenericContractTx',
       'GenericContractTxCall',
       'ContractOptions',
       'ChainSubmittableExtrinsic',
     );
-    this.typesGen.typeImports.addKnownType('GenericSubstrateApi');
 
     const { messages } = this.contractMetadata.spec;
     const txMessages = messages.filter((one) => one.mutates);
@@ -40,7 +38,7 @@ export class TxGen extends QueryGen {
     });
 
     const importTypes = this.typesGen.typeImports.toImports();
-    const template = compileTemplate('tx.hbs', path.resolve(process.cwd(), 'packages/contracts/src/gen'));
+    const template = compileTemplate('contracts-tx.hbs');
 
     return beautifySourceCode(template({ importTypes, txCallsOut }));
   }

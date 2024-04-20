@@ -1,8 +1,7 @@
-import Executor from './Executor';
-import { assert, concatU8a, hexToU8a, stringCamelCase, u8aToHex } from '@dedot/utils';
-import { GenericContractQueryCall, ContractMessage } from '../types';
-import { ContractOptions } from '../types';
+import { GenericContractQueryCall, ContractMessage, ContractOptions } from '@dedot/types';
 import { GenericSubstrateApi } from '@dedot/types';
+import { assert, concatU8a, hexToU8a, stringCamelCase, u8aToHex } from '@dedot/utils';
+import Executor from './Executor';
 
 export class QueryExecutor<ChainApi extends GenericSubstrateApi> extends Executor<ChainApi> {
   doExecute(message: string): GenericContractQueryCall {

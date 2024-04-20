@@ -26,8 +26,8 @@ export const beautifySourceCode = async (source: string): Promise<string> => {
   return prettier.format(source, { parser: 'babel-ts', ...prettierOptions });
 };
 
-export const compileTemplate = (templateFileName: string, dir?: string) => {
-  const templateFilePath = path.resolve(dir || currentDirname(), `../templates/${templateFileName}`);
+export const compileTemplate = (templateFileName: string) => {
+  const templateFilePath = path.resolve(currentDirname(), `./templates/${templateFileName}`);
 
   return handlebars.compile(fs.readFileSync(templateFilePath, 'utf8'));
 };

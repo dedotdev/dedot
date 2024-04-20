@@ -1,5 +1,5 @@
 import { stringPascalCase } from '@dedot/utils';
-import { beautifySourceCode, compileTemplate } from './utils.js';
+import { beautifySourceCode, compileTemplate } from '../../utils.js';
 
 export class IndexGen {
   constructor(readonly chain: string) {}

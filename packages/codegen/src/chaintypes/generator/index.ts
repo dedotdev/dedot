@@ -9,5 +9,4 @@ export * from './EventsGen.js';
 export * from './TxGen.js';
 export * from './RuntimeApisGen.js';
 export * from './TypeImports.js';
-export * from './utils.js';
 export * from './known-codecs.js';

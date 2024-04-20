@@ -392,6 +392,7 @@ __metadata:
   resolution: "@dedot/codegen@workspace:packages/codegen"
   dependencies:
     "@dedot/codecs": "workspace:*"
+    "@dedot/contracts": "workspace:*"
     "@dedot/shape": "workspace:*"
     "@dedot/specs": "workspace:*"
     "@dedot/utils": "workspace:*"
@@ -401,7 +402,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@dedot/contracts@workspace:packages/contracts":
+"@dedot/contracts@workspace:*, @dedot/contracts@workspace:packages/contracts":
   version: 0.0.0-use.local
   resolution: "@dedot/contracts@workspace:packages/contracts"
   dependencies:

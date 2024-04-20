@@ -1,8 +1,6 @@
-import { beautifySourceCode, compileTemplate } from '@dedot/codegen';
-import path from 'path';
-import process from 'process';
+import { ContractMetadata } from '@dedot/types';
 import { stringPascalCase } from '@dedot/utils';
-import { ContractMetadata } from '../types';
+import { beautifySourceCode, compileTemplate } from '../../utils';
 
 export class IndexGen {
   contractMetadata: ContractMetadata;
@@ -14,7 +12,7 @@ export class IndexGen {
   generate() {
     const contractName = stringPascalCase(this.contractMetadata.contract.name);
 
-    const template = compileTemplate('index.hbs', path.resolve(process.cwd(), 'packages/contracts/src/gen'));
+    const template = compileTemplate('contracts-index.hbs');
 
     return beautifySourceCode(template({ contractName }));
   }

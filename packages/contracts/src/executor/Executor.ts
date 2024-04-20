@@ -1,8 +1,8 @@
-import { Dedot } from 'dedot';
-import { Arg, ContractMessage, ContractMetadata } from '../types';
 import { AccountId32, MetadataLatest, PortableRegistry } from '@dedot/codecs';
-import { extractContractTypes } from '../utils';
+import { Arg, ContractMessage, ContractMetadata } from '@dedot/types';
 import { GenericSubstrateApi } from '@dedot/types';
+import { Dedot } from 'dedot';
+import { extractContractTypes } from '../utils';
 
 export default abstract class Executor<ChainApi extends GenericSubstrateApi> {
   readonly #api: Dedot<ChainApi>;

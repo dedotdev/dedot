@@ -12,6 +12,7 @@ import { RuntimeApiMethodSpec } from './runtime.js';
 export * from './runtime.js';
 export * from './extrinsic.js';
 export * from './event.js';
+export * from './contract.js';
 
 export type Append<T extends readonly unknown[], V> = [...T, V];
 export type AnyFunc = (...args: any[]) => any;
