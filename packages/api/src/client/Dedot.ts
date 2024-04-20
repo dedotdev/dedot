@@ -1,7 +1,7 @@
 import { $Metadata, BlockHash, Hash, Metadata, PortableRegistry, RuntimeVersion } from '@dedot/codecs';
 import { type IStorage, LocalStorage } from '@dedot/storage';
 import { GenericSubstrateApi, Unsub } from '@dedot/types';
-import { ensurePresence as _ensurePresence, u8aToHex } from '@dedot/utils';
+import { calcRuntimeApiHash, ensurePresence as _ensurePresence, u8aToHex } from '@dedot/utils';
 import type { SubstrateApi } from '../chaintypes/index.js';
 import {
   ConstantExecutor,
@@ -16,7 +16,7 @@ import { newProxyChain } from '../proxychain.js';
 import type {
   ApiEvent,
   ApiOptions,
-  ISubstrateApi,
+  ISubstrateClientAt,
   ISubstrateClient,
   MetadataKey,
   NetworkEndpoint,
@@ -27,6 +27,7 @@ import type {
 export const KEEP_ALIVE_INTERVAL = 10_000; // in ms
 export const CATCH_ALL_METADATA_KEY: MetadataKey = `RAW_META/ALL`;
 export const SUPPORTED_METADATA_VERSIONS = [15, 14];
+export const MetadataApiHash = calcRuntimeApiHash('Metadata'); // 0x37e397fc7c91f5e4
 
 const MESSAGE: string = 'Make sure to call `.connect()` method first before using the API interfaces.';
 
@@ -87,6 +88,7 @@ export class Dedot<ChainApi extends GenericSubstrateApi = SubstrateApi>
 
   #runtimeSubscriptionUnsub?: Unsub;
   #healthTimer?: ReturnType<typeof setInterval>;
+  #apiAtCache: Record<BlockHash, ISubstrateClientAt<any>> = {};
 
   /**
    * Use factory methods (`create`, `new`) to create `Dedot` instances.
@@ -223,8 +225,8 @@ export class Dedot<ChainApi extends GenericSubstrateApi = SubstrateApi>
   }
 
   async #fetchMetadata(at?: BlockHash, runtime?: SubstrateRuntimeVersion): Promise<Metadata> {
-    const metadataApiHash = '0x37e397fc7c91f5e4';
-    const supportedV2 = runtime ? runtime.apis[metadataApiHash] >= 2 : true;
+    // If there is no runtime, we assume that the node supports Metadata Api V2
+    const supportedV2 = runtime ? runtime.apis[MetadataApiHash] === 2 : true;
 
     if (supportedV2) {
       // It makes sense to call metadata.metadataVersions to fetch the list of supported metadata versions first
@@ -427,10 +429,16 @@ export class Dedot<ChainApi extends GenericSubstrateApi = SubstrateApi>
     return newProxyChain({ executor: new TxExecutor(this) }) as ChainApi['tx'];
   }
 
-  #atApiCache: Record<BlockHash, ISubstrateApi<any>> = {};
-
-  async at<ChainApiAt extends GenericSubstrateApi = ChainApi>(hash: BlockHash): Promise<ISubstrateApi<ChainApiAt>> {
-    if (this.#atApiCache[hash]) return this.#atApiCache[hash];
+  /**
+   * Create a new API instance at a specific block hash
+   * This is useful when we want to inspect the state of the chain at a specific block hash
+   *
+   * @param hash
+   */
+  async at<ChainApiAt extends GenericSubstrateApi = ChainApi>(
+    hash: BlockHash,
+  ): Promise<ISubstrateClientAt<ChainApiAt>> {
+    if (this.#apiAtCache[hash]) return this.#apiAtCache[hash];
 
     const targetVersion = await this.#getRuntimeVersion(hash);
 
@@ -449,7 +457,7 @@ export class Dedot<ChainApi extends GenericSubstrateApi = SubstrateApi>
       metadata,
       registry,
       rpc: this.rpc,
-    } as ISubstrateApi<ChainApiAt>;
+    } as ISubstrateClientAt<ChainApiAt>;
 
     api.consts = newProxyChain({ executor: new ConstantExecutor(api) }) as ChainApiAt['consts'];
     api.query = newProxyChain({ executor: new StorageQueryExecutor(api) }) as ChainApiAt['query'];
@@ -457,7 +465,7 @@ export class Dedot<ChainApi extends GenericSubstrateApi = SubstrateApi>
     api.events = newProxyChain({ executor: new EventExecutor(api) }) as ChainApiAt['events'];
     api.errors = newProxyChain({ executor: new ErrorExecutor(api) }) as ChainApiAt['errors'];
 
-    this.#atApiCache[hash] = api;
+    this.#apiAtCache[hash] = api;
 
     return api;
   }
@@ -514,7 +522,7 @@ export class Dedot<ChainApi extends GenericSubstrateApi = SubstrateApi>
     this.#genesisHash = undefined;
     this.#runtimeVersion = undefined;
     this.#localCache = undefined;
-    this.#atApiCache = {};
+    this.#apiAtCache = {};
   }
 
   /**
