@@ -436,7 +436,7 @@ export class Dedot<ChainApi extends GenericSubstrateApi = SubstrateApi>
   async at<ChainApiAt extends GenericSubstrateApi = ChainApi>(hash: BlockHash): Promise<ISubstrateApi<ChainApiAt>> {
     if (this.#atApiCache[hash]) return this.#atApiCache[hash];
 
-    const targetVersion = await this.#getRuntimeVersion();
+    const targetVersion = await this.#getRuntimeVersion(hash);
 
     let metadata = this.metadata;
     let registry = this.registry;
