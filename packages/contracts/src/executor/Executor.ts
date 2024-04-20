@@ -7,17 +7,10 @@ import { Dedot } from 'dedot';
 export default abstract class Executor<ChainApi extends GenericSubstrateApi> {
   readonly #api: Dedot<ChainApi>;
   readonly #address: AccountId32;
-  readonly #contractMetadata: ContractMetadata;
   readonly #registry: TypinkRegistry;
 
-  constructor(
-    api: Dedot<ChainApi>,
-    contractMetadata: ContractMetadata,
-    address: AccountId32 | string,
-    registry: TypinkRegistry,
-  ) {
+  constructor(api: Dedot<ChainApi>, address: AccountId32 | string, registry: TypinkRegistry) {
     this.#api = api;
-    this.#contractMetadata = contractMetadata;
     this.#address = new AccountId32(address);
     this.#registry = registry;
   }
@@ -27,7 +20,7 @@ export default abstract class Executor<ChainApi extends GenericSubstrateApi> {
   }
 
   get contractMetadata(): ContractMetadata {
-    return this.#contractMetadata;
+    return this.#registry.metadata;
   }
 
   get address(): AccountId32 {

@@ -26,15 +26,11 @@ export class Contract<ContractApi extends GenericContractApi, ChainApi extends G
   }
 
   get query(): ContractApi['query'] {
-    return newProxyChain<ChainApi>(
-      new QueryExecutor(this.#api, this.metadata, this.address, this.#registry),
-    ) as ContractApi['query'];
+    return newProxyChain<ChainApi>(new QueryExecutor(this.#api, this.address, this.#registry)) as ContractApi['query'];
   }
 
   get tx(): ContractApi['tx'] {
-    return newProxyChain<ChainApi>(
-      new TxExecutor(this.#api, this.metadata, this.address, this.#registry),
-    ) as ContractApi['query'];
+    return newProxyChain<ChainApi>(new TxExecutor(this.#api, this.address, this.#registry)) as ContractApi['query'];
   }
 }
 
