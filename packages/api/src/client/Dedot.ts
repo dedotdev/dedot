@@ -145,13 +145,9 @@ export class Dedot<ChainApi extends GenericSubstrateApi = SubstrateApi>
   async #initialize() {
     await this.#initializeLocalCache();
 
-    // Fetching node information
-    // TODO using json-rpc v2
-    let [genesisHash, runtimeVersion, chainName, chainProps, metadata] = await Promise.all([
+    let [genesisHash, runtimeVersion, metadata] = await Promise.all([
       this.rpc.chain_getBlockHash(0),
       this.#getRuntimeVersion(),
-      this.rpc.system_chain(),
-      this.rpc.system_properties(),
       (await this.#shouldLoadPreloadMetadata()) ? this.#fetchMetadata() : Promise.resolve(undefined),
     ]);
 
