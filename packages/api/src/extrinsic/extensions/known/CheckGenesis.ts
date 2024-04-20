@@ -1,7 +1,7 @@
-import { SignedExtension } from '../SignedExtension.js';
-import { Hash } from '@dedot/codecs';
 import { SignerPayloadJSON } from '@polkadot/types/types';
+import { Hash } from '@dedot/codecs';
 import { ensurePresence } from '@dedot/utils';
+import { SignedExtension } from '../SignedExtension.js';
 
 /**
  * @description Genesis hash check to provide replay protection between different networks.

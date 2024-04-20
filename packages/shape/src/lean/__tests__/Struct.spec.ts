@@ -1,6 +1,6 @@
+import { u8aToHex } from '@dedot/utils';
 import { describe, expect, it } from 'vitest';
 import * as $ from '../../index.js';
-import { u8aToHex } from '@dedot/utils';
 
 describe('Struct', () => {
   const $struct = $.Struct({

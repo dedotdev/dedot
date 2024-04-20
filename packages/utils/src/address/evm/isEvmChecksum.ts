@@ -1,10 +1,8 @@
 // Copyright 2017-2024 @polkadot/util-crypto authors & contributors
 // SPDX-License-Identifier: Apache-2.0
-
-import { u8aToHex } from '../../u8a.js';
-
 import { keccakAsU8a } from '../../hash/keccak.js';
 import { hexStripPrefix } from '../../hex.js';
+import { u8aToHex } from '../../u8a.js';
 
 function isInvalidChar(char: string, byte: number): boolean {
   return char !== (byte > 7 ? char.toUpperCase() : char.toLowerCase());

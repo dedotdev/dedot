@@ -1,6 +1,6 @@
+import { ApplyExtrinsicResult, BlockHash, Bytes } from '@dedot/codecs';
 import { GenericJsonRpcApis } from '@dedot/types';
 import { ChainProperties, ChainType, Health, NetworkState, NodeRole, PeerInfo, SyncState } from './types/index.js';
-import { ApplyExtrinsicResult, BlockHash, Bytes } from '@dedot/codecs';
 
 export interface SystemJsonRpcApis extends GenericJsonRpcApis {
   /**

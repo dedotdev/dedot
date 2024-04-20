@@ -1,6 +1,8 @@
-import type { SubstrateApi } from '../chaintypes/index.js';
 import { $Metadata, BlockHash, Hash, Metadata, PortableRegistry, RuntimeVersion } from '@dedot/codecs';
+import { type IStorage, LocalStorage } from '@dedot/storage';
 import { GenericSubstrateApi, Unsub } from '@dedot/types';
+import { ensurePresence as _ensurePresence, u8aToHex } from '@dedot/utils';
+import type { SubstrateApi } from '../chaintypes/index.js';
 import {
   ConstantExecutor,
   ErrorExecutor,
@@ -9,6 +11,7 @@ import {
   StorageQueryExecutor,
   TxExecutor,
 } from '../executor/index.js';
+import { JsonRpcClient } from '../json-rpc/index.js';
 import { newProxyChain } from '../proxychain.js';
 import type {
   ApiEvent,
@@ -20,9 +23,6 @@ import type {
   SubstrateChainProperties,
   SubstrateRuntimeVersion,
 } from '../types.js';
-import { type IStorage, LocalStorage } from '@dedot/storage';
-import { ensurePresence as _ensurePresence, u8aToHex } from '@dedot/utils';
-import { JsonRpcClient } from './JsonRpcClient.js';
 
 export const KEEP_ALIVE_INTERVAL = 10_000; // in ms
 export const CATCH_ALL_METADATA_KEY: MetadataKey = `RAW_META/ALL`;
@@ -454,7 +454,7 @@ export class Dedot<ChainApi extends GenericSubstrateApi = SubstrateApi>
    */
   setMetadata(metadata: Metadata) {
     this.#metadata = metadata;
-    this.#registry = new PortableRegistry(metadata.latest);
+    this.#registry = new PortableRegistry(metadata.latest, this.options.hasher);
   }
 
   /**

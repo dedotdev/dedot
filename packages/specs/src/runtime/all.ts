@@ -1,21 +1,21 @@
 import { RuntimeApiMethodSpec, RuntimeApiName, RuntimeApiSpec } from '@dedot/types';
-import { AuthorityDiscoveryApi } from './discovery.js';
 import { BabeApi } from './babe.js';
-import { Metadata } from './metadata.js';
-import { Core } from './core.js';
-import { AccountNonceApi } from './system.js';
-import { TransactionPaymentApi, TransactionPaymentCallApi } from './payment.js';
+import { BeefyApi, BeefyMmrApi } from './beefy.js';
 import { BlockBuilder } from './block-builder.js';
+import { Core } from './core.js';
+import { AuthorityDiscoveryApi } from './discovery.js';
+import { GenesisBuilder } from './genesis-builder.js';
 import { GrandpaApi } from './grandpa.js';
+import { Metadata } from './metadata.js';
 import { MmrApi } from './mmr.js';
 import { NominationPoolsApi } from './nomination-pools.js';
 import { OffchainWorkerApi } from './offchain.js';
-import { SessionKeys } from './session.js';
 import { ParachainHost } from './parachains.js';
-import { BeefyApi, BeefyMmrApi } from './beefy.js';
+import { TransactionPaymentApi, TransactionPaymentCallApi } from './payment.js';
+import { SessionKeys } from './session.js';
 import { StakingApi } from './staking.js';
+import { AccountNonceApi } from './system.js';
 import { TaggedTransactionQueue } from './transaction-pool.js';
-import { GenesisBuilder } from './genesis-builder.js';
 
 export const RuntimeApis: Record<RuntimeApiName, RuntimeApiSpec[]> = {
   AuthorityDiscoveryApi,

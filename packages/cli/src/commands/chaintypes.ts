@@ -1,10 +1,10 @@
+import { rpc } from '@polkadot/types-support/metadata/static-substrate';
+import staticSubstrate from '@polkadot/types-support/metadata/v15/substrate-hex';
+import { $Metadata, Metadata, PortableRegistry, RuntimeVersion } from '@dedot/codecs';
+import { generateTypes, generateTypesFromEndpoint } from '@dedot/codegen';
+import { ConstantExecutor } from 'dedot';
 import * as path from 'path';
 import { CommandModule } from 'yargs';
-import { generateTypes, generateTypesFromEndpoint } from '@dedot/codegen';
-import { $Metadata, Metadata, PortableRegistry, RuntimeVersion } from '@dedot/codecs';
-import { ConstantExecutor } from 'dedot';
-import staticSubstrate from '@polkadot/types-support/metadata/v15/substrate-hex';
-import { rpc } from '@polkadot/types-support/metadata/static-substrate';
 
 type Args = {
   wsUrl?: string;
@@ -78,7 +78,7 @@ const getRuntimeVersion = (metadata: Metadata): RuntimeVersion => {
   const registry = new PortableRegistry(metadata.latest);
   const executor = new ConstantExecutor({
     registry,
-    metadataLatest: metadata.latest,
+    metadata,
   } as any);
 
   return executor.execute('system', 'version') as RuntimeVersion;

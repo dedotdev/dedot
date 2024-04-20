@@ -1,5 +1,5 @@
-import { Callback, GenericJsonRpcApis, Unsub } from '@dedot/types';
 import { BlockNumber, Option } from '@dedot/codecs';
+import { Callback, GenericJsonRpcApis, Unsub } from '@dedot/types';
 import { EncodedFinalityProofs, JustificationNotification, ReportedRoundStates } from './types/index.js';
 
 export interface GrandpaJsonRpcApis extends GenericJsonRpcApis {

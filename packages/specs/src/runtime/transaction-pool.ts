@@ -1,5 +1,5 @@
-import { RuntimeApiSpec } from '@dedot/types';
 import { $BlockHash, $OpaqueExtrinsic, $TransactionSource, $TransactionValidity } from '@dedot/codecs';
+import { RuntimeApiSpec } from '@dedot/types';
 
 /**
  * Ref: https://github.com/paritytech/polkadot-sdk/blob/bc53b9a03a742f8b658806a01a7bf853cb9a86cd/substrate/primitives/transaction-pool/src/runtime_api.rs#L25-L30

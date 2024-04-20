@@ -1,6 +1,6 @@
+import { $BlockNumber, $Header } from '@dedot/codecs';
 import * as $ from '@dedot/shape';
 import { RuntimeApiSpec } from '@dedot/types';
-import { $BlockNumber, $Header } from '@dedot/codecs';
 
 /**
  * Ref: https://github.com/paritytech/polkadot-sdk/blob/bc53b9a03a742f8b658806a01a7bf853cb9a86cd/substrate/primitives/offchain/src/lib.rs#L25-L37

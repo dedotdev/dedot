@@ -1,5 +1,5 @@
-import { GenericJsonRpcApis } from '@dedot/types';
 import { BlockHash, BlockNumber, Hash } from '@dedot/codecs';
+import { GenericJsonRpcApis } from '@dedot/types';
 import { LeavesProof } from './types/index.js';
 
 export interface MmrJsonRpcApis extends GenericJsonRpcApis {

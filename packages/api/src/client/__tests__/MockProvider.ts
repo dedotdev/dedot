@@ -1,6 +1,4 @@
 import staticSubstrate from '@polkadot/types-support/metadata/static-substrate';
-import { AnyFunc } from '@dedot/types';
-import { ChainProperties } from '@dedot/specs';
 import { RuntimeVersion } from '@dedot/codecs';
 import {
   ConnectionStatus,
@@ -10,6 +8,8 @@ import {
   SubscriptionCallback,
   SubscriptionInput,
 } from '@dedot/providers';
+import { ChainProperties } from '@dedot/specs';
+import { AnyFunc } from '@dedot/types';
 import { EventEmitter } from '@dedot/utils';
 
 export const MockedRuntimeVersion: RuntimeVersion = {

@@ -1,5 +1,5 @@
-import { GenericJsonRpcApis } from '@dedot/types';
 import { BlockHash, Bytes, FeeDetails, RuntimeDispatchInfo } from '@dedot/codecs';
+import { GenericJsonRpcApis } from '@dedot/types';
 
 export interface PaymentJsonRpcApis extends GenericJsonRpcApis {
   /**

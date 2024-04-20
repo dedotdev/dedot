@@ -1,7 +1,7 @@
-import type { SubstrateApi } from '../chaintypes/index.js';
 import type { BlockHash, PalletDefLatest } from '@dedot/codecs';
 import type { GenericSubstrateApi } from '@dedot/types';
 import { assert, UnknownApiError, stringCamelCase } from '@dedot/utils';
+import type { SubstrateApi } from '../chaintypes/index.js';
 import { ISubstrateClient } from '../types.js';
 
 /**
@@ -49,7 +49,7 @@ export abstract class Executor<ChainApi extends GenericSubstrateApi = SubstrateA
     try {
       return this.doExecute(...paths);
     } catch (e: any) {
-      if (!this.api.options.throwOnUnknownApi && e instanceof UnknownApiError) {
+      if (!this.api.options?.throwOnUnknownApi && e instanceof UnknownApiError) {
         return undefined;
       }
 

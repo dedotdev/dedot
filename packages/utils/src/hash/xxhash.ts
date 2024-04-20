@@ -1,10 +1,10 @@
 // Copyright 2017-2024 @polkadot/util-crypto authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 // Original implementation: https://github.com/polkadot-js/common/blob/22aab4a4e62944a2cf8c885f50be2c1b842813ec/packages/util-crypto/src/xxhash/asU8a.ts
+import { toU8a } from '../to.js';
 import { HexString } from '../types.js';
 import { u8aToHex } from '../u8a.js';
 import { xxhash64 } from './xxhash64.js';
-import { toU8a } from '../to.js';
 
 export function xxhashAsU8a(
   data: string | Uint8Array,

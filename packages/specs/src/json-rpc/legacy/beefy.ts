@@ -1,5 +1,5 @@
-import { Callback, GenericJsonRpcApis, Unsub } from '@dedot/types';
 import { Hash, VersionedFinalityProof } from '@dedot/codecs';
+import { Callback, GenericJsonRpcApis, Unsub } from '@dedot/types';
 
 export interface BeefyJsonRpcApis extends GenericJsonRpcApis {
   /**

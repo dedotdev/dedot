@@ -1,6 +1,6 @@
 import { bytesToHex } from '@noble/hashes/utils';
-import { HexString } from './types.js';
 import { hexAddPrefix } from './hex.js';
+import { HexString } from './types.js';
 
 /**
  * Convert a Uint8Array to a hex string

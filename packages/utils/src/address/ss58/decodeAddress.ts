@@ -1,11 +1,10 @@
 // Copyright 2017-2024 @polkadot/util-crypto authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 // Original implementation: https://github.com/paritytech/polka-ui/blob/4858c094684769080f5811f32b081dd7780b0880/src/polkadot.js#L6
-
-import { isHex, isU8a } from '../../is.js';
-import { checkAddressChecksum } from './checkAddressChecksum.js';
 import { base58 } from '@scure/base';
+import { isHex, isU8a } from '../../is.js';
 import { toU8a } from '../../to.js';
+import { checkAddressChecksum } from './checkAddressChecksum.js';
 
 export const ALLOWED_ENCODED_LENGTHS: number[] = [3, 4, 6, 10, 35, 36, 37, 38];
 

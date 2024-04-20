@@ -1,6 +1,6 @@
+import { concatU8a } from '../concat.js';
 import { blake2AsU8a } from './blake2.js';
 import { xxhashAsU8a } from './xxhash.js';
-import { concatU8a } from '../concat.js';
 
 export type HashFn = (data: Uint8Array) => Uint8Array;
 export const blake2_128: HashFn = (data: Uint8Array) => blake2AsU8a(data, 128);

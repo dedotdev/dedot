@@ -1,4 +1,5 @@
 import * as $ from '@dedot/shape';
+import { toV15 } from './conversion/index.js';
 import { $MetadataV14 } from './v14.js';
 import {
   $MetadataV15,
@@ -12,7 +13,6 @@ import {
   RuntimeApiMethodDefV15,
   StorageEntryV15,
 } from './v15.js';
-import { toV15 } from './conversion/index.js';
 
 export const notSupportedCodec = (msg = 'Not supported!'): $.Shape<never> => {
   return $.createShape({

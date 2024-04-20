@@ -1,5 +1,5 @@
-import { describe, it, expect, beforeEach } from 'vitest';
 import { u8aToHex } from '@dedot/utils';
+import { describe, it, expect, beforeEach } from 'vitest';
 import * as $ from '../../index.js';
 
 describe('Result', () => {

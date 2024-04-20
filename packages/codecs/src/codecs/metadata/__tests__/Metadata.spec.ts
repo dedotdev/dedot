@@ -1,9 +1,9 @@
-import { describe, expect, expectTypeOf, it } from 'vitest';
-import { $Metadata, MAGIC_NUMBER } from '@dedot/codecs';
 import staticSubstrateV13 from '@polkadot/types-support/metadata/v13/substrate-hex';
 import staticSubstrateV14 from '@polkadot/types-support/metadata/v14/substrate-hex';
 import staticSubstrateV15 from '@polkadot/types-support/metadata/v15/substrate-hex';
+import { $Metadata, MAGIC_NUMBER } from '@dedot/codecs';
 import { assert, hexToString, numberToHex } from '@dedot/utils';
+import { describe, expect, expectTypeOf, it } from 'vitest';
 
 describe('$Metadata', () => {
   it('should verify magic number', () => {

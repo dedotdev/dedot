@@ -1,5 +1,3 @@
-import * as $ from '@dedot/shape';
-import { RuntimeApiMethodsSpec, RuntimeApiSpec } from '@dedot/types';
 import {
   $ApprovalVotingParams,
   $AsyncBackingParams,
@@ -32,6 +30,8 @@ import {
   $ValidatorId,
   $ValidatorSignature,
 } from '@dedot/codecs';
+import * as $ from '@dedot/shape';
+import { RuntimeApiMethodsSpec, RuntimeApiSpec } from '@dedot/types';
 
 const V5_V10_SHARED: RuntimeApiMethodsSpec = {
   validators: {

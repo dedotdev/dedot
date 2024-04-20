@@ -1,4 +1,3 @@
-import { Callback, GenericJsonRpcApis, Unsub } from '@dedot/types';
 import {
   BlockHash,
   Bytes,
@@ -10,6 +9,7 @@ import {
   StorageData,
   StorageKey,
 } from '@dedot/codecs';
+import { Callback, GenericJsonRpcApis, Unsub } from '@dedot/types';
 import { MigrationStatusResult, ReadProof, StorageChangeSet, TraceBlockResponse } from './types/index.js';
 
 export interface StateJsonRpcApis extends GenericJsonRpcApis {

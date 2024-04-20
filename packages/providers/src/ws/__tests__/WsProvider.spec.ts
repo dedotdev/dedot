@@ -1,7 +1,7 @@
-import { WsProvider } from '../WsProvider.js';
-import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
-import { Client, Server } from 'mock-socket';
 import { JsonRpcRequest, JsonRpcResponse } from '@dedot/providers';
+import { Client, Server } from 'mock-socket';
+import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
+import { WsProvider } from '../WsProvider.js';
 
 const FAKE_WS_URL = 'ws://127.0.0.1:9944';
 

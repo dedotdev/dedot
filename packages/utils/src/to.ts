@@ -1,9 +1,9 @@
-import { HexString } from './types.js';
+import { hexToU8a } from './hex.js';
 import { isHex, isNumber, isString, isU8a } from './is.js';
 import { numberToHex, numberToU8a } from './number.js';
 import { stringToHex, stringToU8a } from './string/index.js';
+import { HexString } from './types.js';
 import { u8aToHex } from './u8a.js';
-import { hexToU8a } from './hex.js';
 
 /**
  * Converts the input to a hex string.

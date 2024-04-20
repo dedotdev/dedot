@@ -1,14 +1,21 @@
+import { BlockHash, Option } from '@dedot/codecs';
 import { Callback, GenericJsonRpcApis, Unsub } from '@dedot/types';
+import { HexString } from '@dedot/utils';
 import { FollowEvent, MethodResponse, StorageQuery } from '../types/index.js';
-import { BlockHash } from '@dedot/codecs';
 
+/**
+ * chainHead-prefixed JSON-RPC methods.
+ *
+ * @version v1
+ */
 export interface ChainHeadV1 extends GenericJsonRpcApis {
   /**
    * Track the state of the head of the chain: the finalized, non-finalized, and best blocks.
    *
    * @pubsub chainHead_v1_followEvent, chainHead_v1_follow, chainHead_v1_unfollow
+   * @version v1
    */
-  chainHead_v1_follow: (with_runtime: boolean, callback: Callback<FollowEvent>) => Promise<Unsub>;
+  chainHead_v1_follow(with_runtime: boolean, callback: Callback<FollowEvent>): Promise<Unsub>;
   /**
    * Retrieves the body (list of transactions) of a pinned block.
    * This method should be seen as a complement to `chainHead_v1_follow`,
@@ -18,8 +25,9 @@ export interface ChainHeadV1 extends GenericJsonRpcApis {
    * Use `archive_unstable_body` if instead you want to retrieve the body of an arbitrary block.
    *
    * @rpcname chainHead_v1_body
+   * @version v1
    */
-  chainHead_v1_body: (subscriptionId: string, blockHash: BlockHash) => Promise<MethodResponse>;
+  chainHead_v1_body(subscriptionId: string, blockHash: BlockHash): Promise<MethodResponse>;
 
   /**
    * Retrieves the header of a pinned block.
@@ -34,8 +42,9 @@ export interface ChainHeadV1 extends GenericJsonRpcApis {
    * @rpcname chainHead_v1_header
    * @param subscriptionId
    * @param blockHash
+   * @version v1
    */
-  chainHead_v1_header: (subscriptionId: string, blockHash: BlockHash) => Promise<MethodResponse>;
+  chainHead_v1_header(subscriptionId: string, blockHash: BlockHash): Promise<Option<HexString>>;
 
   /**
    * Returns storage entries at a specific block's state.
@@ -45,13 +54,14 @@ export interface ChainHeadV1 extends GenericJsonRpcApis {
    * @param blockHash
    * @param items
    * @param childTrie
+   * @version v1
    */
-  chainHead_v1_storage: (
+  chainHead_v1_storage(
     subscriptionId: string,
     blockHash: BlockHash,
     items: Array<StorageQuery>,
     childTrie?: string | null,
-  ) => Promise<MethodResponse>;
+  ): Promise<MethodResponse>;
 
   /**
    * Call into the Runtime API at a specified block's state.
@@ -61,13 +71,14 @@ export interface ChainHeadV1 extends GenericJsonRpcApis {
    * @param blockHash
    * @param func
    * @param params
+   * @version v1
    */
-  chainHead_v1_call: (
+  chainHead_v1_call(
     subscriptionId: string,
     blockHash: BlockHash,
     func: string,
     params: string,
-  ) => Promise<MethodResponse>;
+  ): Promise<MethodResponse>;
 
   /**
    * Unpin a block or multiple blocks reported by the `follow` method.
@@ -80,8 +91,9 @@ export interface ChainHeadV1 extends GenericJsonRpcApis {
    * @rpcname chainHead_v1_unpin
    * @param subscriptionId
    * @param hashes
+   * @version v1
    */
-  chainHead_v1_unpin: (subscriptionId: string, hashes: BlockHash | BlockHash[]) => Promise<void>;
+  chainHead_v1_unpin(subscriptionId: string, hashes: BlockHash | BlockHash[]): Promise<void>;
 
   /**
    * Resumes a storage fetch started with `chainHead_storage` after it has generated an
@@ -90,8 +102,9 @@ export interface ChainHeadV1 extends GenericJsonRpcApis {
    * @rpcname chainHead_v1_continue
    * @param subscriptionId
    * @param operationId
+   * @version v1
    */
-  chainHead_v1_continue: (subscriptionId: string, operationId: string) => Promise<void>;
+  chainHead_v1_continue(subscriptionId: string, operationId: string): Promise<void>;
   /**
    * Stops an operation started with chainHead_v1_body, chainHead_v1_call, or
    * chainHead_v1_storage. If the operation was still in progress, this interrupts it. If
@@ -100,6 +113,7 @@ export interface ChainHeadV1 extends GenericJsonRpcApis {
    * @rpcname chainHead_v1_stopOperation
    * @param subscriptionId
    * @param operationId
+   * @version v1
    */
-  chainHead_v1_stopOperation: (subscriptionId: string, operationId: string) => Promise<void>;
+  chainHead_v1_stopOperation(subscriptionId: string, operationId: string): Promise<void>;
 }

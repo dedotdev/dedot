@@ -1,3 +1,6 @@
+import { MetadataLatest } from '@dedot/codecs';
+import { RpcMethods } from '@dedot/specs';
+import { stringCamelCase } from '@dedot/utils';
 import { Dedot } from 'dedot';
 import * as fs from 'fs';
 import * as path from 'path';
@@ -12,9 +15,6 @@ import {
   TxGen,
   TypesGen,
 } from './generator/index.js';
-import { RpcMethods } from '@dedot/specs';
-import { MetadataLatest } from '@dedot/codecs';
-import { stringCamelCase } from '@dedot/utils';
 
 export * from './generator/index.js';
 

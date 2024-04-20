@@ -1,11 +1,11 @@
-import type { HexString, IEventEmitter } from '@dedot/utils';
-import type { AnySignedExtension } from './extrinsic/index.js';
-import type { GenericSubstrateApi, RuntimeApiName, RuntimeApiSpec } from '@dedot/types';
-import type { IStorage } from '@dedot/storage';
+import { BlockHash, Hash, Metadata, PortableRegistry } from '@dedot/codecs';
 import type { ConnectionStatus, JsonRpcProvider, ProviderEvent } from '@dedot/providers';
 import type { AnyShape } from '@dedot/shape';
 import { SubscriptionsInfo } from '@dedot/specs';
-import { BlockHash, Hash, Metadata, PortableRegistry } from '@dedot/codecs';
+import type { IStorage } from '@dedot/storage';
+import type { GenericSubstrateApi, RuntimeApiName, RuntimeApiSpec } from '@dedot/types';
+import type { HashFn, HexString, IEventEmitter } from '@dedot/utils';
+import type { AnySignedExtension } from './extrinsic/index.js';
 
 export type NetworkEndpoint = string;
 export type MetadataKey = `RAW_META/${string}`;
@@ -60,6 +60,12 @@ export interface ApiOptions extends JsonRpcClientOptions {
    * @default true
    */
   throwOnUnknownApi?: boolean;
+  /**
+   * Customize hashing algorithm used
+   *
+   * @default blake2_256
+   */
+  hasher?: HashFn;
 }
 
 export interface NormalizedApiOptions extends ApiOptions {

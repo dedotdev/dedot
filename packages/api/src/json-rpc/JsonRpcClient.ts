@@ -1,9 +1,9 @@
-import { AsyncMethod, GenericSubstrateApi, Unsub } from '@dedot/types';
-import { IJsonRpcClient, JsonRpcClientOptions, NetworkEndpoint } from '../types.js';
-import { SubstrateApi } from '../chaintypes/index.js';
-import { assert, EventEmitter, isFunction } from '@dedot/utils';
 import { ConnectionStatus, JsonRpcProvider, ProviderEvent, Subscription, WsProvider } from '@dedot/providers';
 import { scaledResponses, subscriptionsInfo } from '@dedot/specs';
+import { AsyncMethod, GenericSubstrateApi, Unsub } from '@dedot/types';
+import { assert, EventEmitter, isFunction } from '@dedot/utils';
+import { SubstrateApi } from '../chaintypes/index.js';
+import { IJsonRpcClient, JsonRpcClientOptions, NetworkEndpoint } from '../types.js';
 
 export class JsonRpcClient<ChainApi extends GenericSubstrateApi = SubstrateApi, Events extends string = ProviderEvent>
   extends EventEmitter<Events>

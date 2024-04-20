@@ -1,5 +1,5 @@
-import { PortableRegistry } from '../../registry/index.js';
 import { HexString, blake2AsHex, u8aToHex } from '@dedot/utils';
+import { PortableRegistry } from '../../registry/index.js';
 import { Hash } from '../generic/index.js';
 
 export interface ExtrinsicSignatureV4<Address = any, Signature = any, Extra = any> {
@@ -74,6 +74,6 @@ export class ExtrinsicV4<Address = any, Call = any, Signature = any, Extra = any
   }
 
   get hash(): Hash {
-    return blake2AsHex(this.toU8a());
+    return this.registry.hashAsHex(this.toU8a());
   }
 }

@@ -1,8 +1,8 @@
-import { PortableRegistry } from '../../registry/index.js';
 import * as $ from '@dedot/shape';
 import { assert } from '@dedot/utils';
-import { $ExtrinsicVersion } from './ExtrinsicVersion.js';
+import { PortableRegistry } from '../../registry/index.js';
 import { ExtrinsicV4, ExtrinsicSignatureV4 } from './ExtrinsicV4.js';
+import { $ExtrinsicVersion } from './ExtrinsicVersion.js';
 
 // TODO extrinsic versioning
 export class Extrinsic<A = any, C = any, S = any, E = any> extends ExtrinsicV4<A, C, S, E> {}
