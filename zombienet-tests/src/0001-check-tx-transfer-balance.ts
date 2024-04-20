@@ -35,7 +35,8 @@ export const run = async (nodeName: any, networkInfo: any): Promise<void> => {
         const prevApiAt = await api.at(prevBlockHash);
         const prevBobBalanceAt = (await prevApiAt.query.system.account(BOB)).data.free;
 
-        assert(prevBobBalanceAt === prevBobBalance, 'Incorrect BOB balance at previous block');
+        console.log('BOB - old balance verified', prevBobBalanceAt);
+        assert(prevBobBalanceAt === prevBobBalance, `Incorrect BOB balance at previous block ${prevBlockNumber}`);
 
         await unsub();
         resolve();
