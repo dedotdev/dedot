@@ -1,8 +1,8 @@
 import type { RuntimeVersion } from '@dedot/codecs';
 import type { AnyShape } from '@dedot/shape';
-import { stringCamelCase, stringPascalCase } from '@dedot/utils';
+import * as $ from '@dedot/shape';
+import { stringCamelCase, stringPascalCase, u8aToHex } from '@dedot/utils';
 import { afterEach, beforeEach, describe, expect, expectTypeOf, it, vi } from 'vitest';
-import type { SubstrateApi } from '../../chaintypes/index.js';
 import { Dedot } from '../Dedot.js';
 import MockProvider, { MockedRuntimeVersion } from './MockProvider.js';
 
@@ -16,9 +16,10 @@ describe('Dedot', () => {
   });
 
   describe('cache disabled', () => {
-    let api: Dedot<SubstrateApi>;
+    let api: Dedot, provider: MockProvider;
     beforeEach(async () => {
-      api = await Dedot.new({ provider: new MockProvider() });
+      provider = new MockProvider();
+      api = await Dedot.new({ provider });
     });
 
     afterEach(async () => {
@@ -31,8 +32,7 @@ describe('Dedot', () => {
       expect(api.events).toBeDefined();
       expect(api.errors).toBeDefined();
       expect(api.consts).toBeDefined();
-      expect(api.hasMetadata).toEqual(true);
-      expect(api.metadata.metadataVersioned.tag).toEqual('V14');
+      expect(api.metadata.version).toEqual('V14');
       expect(api.currentMetadataKey).toEqual(
         `RAW_META/0x0000000000000000000000000000000000000000000000000000000000000000/1`,
       );
@@ -228,10 +228,71 @@ describe('Dedot', () => {
         expect(() => api.tx.notFound.notFound()).toThrowError(`Pallet not found: notFound`);
       });
     });
+
+    describe('create api instance at a specific block', () => {
+      it('should fetch runtime version for the block', async () => {
+        const providerSend = vi.spyOn(provider, 'send');
+        const _ = await api.at('0x12345678');
+
+        expect(providerSend).toBeCalledWith('state_getRuntimeVersion', ['0x12345678']);
+        // runtime version is not changing, so the metadata can be re-use
+        expect(providerSend).not.toBeCalledWith('state_call', [
+          'Metadata_metadata_at_version',
+          '0x0f000000',
+          '0x12345678',
+        ]);
+      });
+
+      it('should re-fetch metadata if runtime version is changing', async () => {
+        provider.setRpcRequest(
+          'state_getRuntimeVersion',
+          () => ({ ...MockedRuntimeVersion, specVersion: 0 }) as RuntimeVersion,
+        );
+
+        const providerSend = vi.spyOn(provider, 'send');
+        const _ = await api.at('0x12345678');
+
+        expect(providerSend).toBeCalledWith('state_getRuntimeVersion', ['0x12345678']);
+        expect(providerSend).toBeCalledWith('state_call', ['Metadata_metadata_at_version', '0x0f000000', '0x12345678']); // $.u32.decode(15) = '0x0f000000'
+        expect(providerSend).toBeCalledWith('state_call', ['Metadata_metadata_at_version', '0x0e000000', '0x12345678']); // $.u32.decode(15) = '0x0f000000'
+      });
+
+      it('should define valid props', async () => {
+        const apiAt = await api.at('0x12345678');
+
+        expect(apiAt.atBlockHash).toEqual('0x12345678');
+        expect(apiAt.options).toBeDefined();
+        expect(apiAt.runtimeVersion).toBeDefined();
+        expect(apiAt.registry).toBeDefined();
+        expect(apiAt.metadata.version).toEqual('V14');
+        expect(apiAt.rpc).toBeDefined();
+        expect(apiAt.query).toBeDefined();
+        expect(apiAt.events).toBeDefined();
+        expect(apiAt.errors).toBeDefined();
+        expect(apiAt.consts).toBeDefined();
+      });
+
+      it('should call/query api with block hash', async () => {
+        provider.setRpcRequest('state_getStorage', () => u8aToHex($.u32.encode(123)));
+
+        const providerSend = vi.spyOn(api.provider, 'send');
+
+        const atHash = '0x12345678';
+
+        const apiAt = await api.at(atHash);
+
+        const key = apiAt.query.system.number.rawKey();
+        await apiAt.query.system.number();
+        expect(providerSend).toBeCalledWith('state_getStorage', [key, atHash]);
+
+        await apiAt.call.metadata.metadata();
+        expect(providerSend).toBeCalledWith('state_call', ['Metadata_metadata', '0x', atHash]);
+      });
+    });
   });
 
   describe('cache enabled', () => {
-    let api: Dedot<SubstrateApi>;
+    let api: Dedot;
     beforeEach(async () => {
       api = await Dedot.new({ provider: new MockProvider(), cacheMetadata: true });
     });
@@ -273,7 +334,7 @@ describe('Dedot', () => {
   });
 
   describe('not throwOnUnknownApi', () => {
-    let api: Dedot<SubstrateApi>;
+    let api: Dedot;
     beforeEach(async () => {
       api = await Dedot.new({ provider: new MockProvider(), throwOnUnknownApi: false });
     });

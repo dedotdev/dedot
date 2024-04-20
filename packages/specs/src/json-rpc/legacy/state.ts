@@ -95,7 +95,7 @@ export interface StateJsonRpcApis extends GenericJsonRpcApis {
    *
    * @rpcname state_getRuntimeVersion
    **/
-  state_getRuntimeVersion: () => Promise<RuntimeVersion>;
+  state_getRuntimeVersion: (at?: BlockHash) => Promise<RuntimeVersion>;
 
   /**
    * Returns a storage entry at a specific block's state.

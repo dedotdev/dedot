@@ -11,6 +11,7 @@ import {
 import { ChainProperties } from '@dedot/specs';
 import { AnyFunc } from '@dedot/types';
 import { EventEmitter } from '@dedot/utils';
+import { FallbackRuntimeApis } from '../../executor/RuntimeApiExecutor.js';
 
 export const MockedRuntimeVersion: RuntimeVersion = {
   specName: 'mock-spec',
@@ -18,7 +19,8 @@ export const MockedRuntimeVersion: RuntimeVersion = {
   authoringVersion: 0,
   specVersion: 1,
   implVersion: 0,
-  apis: [],
+  // @ts-ignore
+  apis: [...Object.entries(FallbackRuntimeApis)],
   transactionVersion: 25,
   stateVersion: 0,
 };
@@ -33,6 +35,7 @@ export default class MockProvider extends EventEmitter<ProviderEvent> implements
     system_properties: () => ({ ss58Format: 42 }) as ChainProperties,
     state_getMetadata: () => staticSubstrate,
     state_call: () => '0x',
+    state_getStorage: () => '0x',
   };
 
   setStatus(status: ConnectionStatus) {

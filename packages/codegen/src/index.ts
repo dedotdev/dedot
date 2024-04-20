@@ -26,7 +26,7 @@ export async function generateTypesFromEndpoint(
   const { methods }: RpcMethods = await api.rpc.rpc_methods();
   const apis = api.runtimeVersion.apis || {};
   if (!chain) {
-    chain = stringCamelCase(api.runtimeVersion.specName || api.runtimeChain || 'local');
+    chain = stringCamelCase(api.runtimeVersion.specName || 'local');
   }
 
   await generateTypes(chain, api.metadata.latest, methods, apis, outDir, extension);

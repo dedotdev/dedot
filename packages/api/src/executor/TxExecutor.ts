@@ -3,6 +3,7 @@ import { IKeyringPair } from '@polkadot/types/types';
 import { BlockHash, Extrinsic, Hash, SignedBlock, TransactionStatus } from '@dedot/codecs';
 import type {
   AddressOrPair,
+  AsyncMethod,
   Callback,
   DryRunResult,
   GenericSubstrateApi,
@@ -15,7 +16,6 @@ import type {
 } from '@dedot/types';
 import {
   assert,
-  blake2AsHex,
   blake2AsU8a,
   HexString,
   hexToU8a,
@@ -26,10 +26,11 @@ import {
   u8aToHex,
   UnknownApiError,
 } from '@dedot/utils';
-import type { SubstrateApi } from '../chaintypes/index.js';
+import type { FrameSystemEventRecord, SubstrateApi } from '../chaintypes/index.js';
 import { Dedot } from '../client/index.js';
 import { ExtraSignedExtension, SubmittableResult } from '../extrinsic/index.js';
 import { Executor } from './Executor.js';
+import { StorageQueryExecutor } from './StorageQueryExecutor.js';
 
 export function isKeyringPair(account: AddressOrPair): account is IKeyringPair {
   return isFunction((account as IKeyringPair).sign);
@@ -103,6 +104,7 @@ export class TxExecutor<ChainApi extends GenericSubstrateApi = SubstrateApi> ext
   }
 
   createExtrinsic(call: IRuntimeTxCall) {
+    const txExecutor = this;
     const api = this.api as unknown as Dedot<SubstrateApi>;
 
     class SubmittableExtrinsic extends Extrinsic implements ISubmittableExtrinsic {
@@ -197,7 +199,7 @@ export class TxExecutor<ChainApi extends GenericSubstrateApi = SubstrateApi> ext
 
               const [signedBlock, blockEvents] = await Promise.all([
                 api.rpc.chain_getBlock(blockHash),
-                api.queryAt(blockHash).system.events(),
+                txExecutor.#getSystemEventsAt(blockHash),
               ]);
 
               const txIndex = (signedBlock as SignedBlock).block.extrinsics.findIndex(
@@ -222,5 +224,11 @@ export class TxExecutor<ChainApi extends GenericSubstrateApi = SubstrateApi> ext
     }
 
     return new SubmittableExtrinsic(api.registry, call);
+  }
+
+  async #getSystemEventsAt(hash: BlockHash): Promise<FrameSystemEventRecord[]> {
+    const executor = new StorageQueryExecutor<ChainApi>(this.api, hash);
+    const eventsQueryFn = executor.execute('system', 'events') as AsyncMethod<FrameSystemEventRecord[]>;
+    return eventsQueryFn();
   }
 }
