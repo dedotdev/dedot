@@ -9,24 +9,40 @@ const checkAvailability = () => {
   }
 };
 
+const DEFAULT_PREFIX: string = 'dedot:';
+
 /**
  * A wrapper for localStorage
  */
 export class LocalStorage implements IStorage {
-  constructor() {
+  constructor(public prefix: string = DEFAULT_PREFIX) {
     checkAvailability();
   }
 
   async clear(): Promise<void> {
-    localStorage.clear();
+    const length = localStorage.length;
+    const keysToRemove = [];
+
+    for (let idx = 0; idx < length; idx += 1) {
+      const key = localStorage.key(idx);
+      if (key?.startsWith(this.prefix)) {
+        keysToRemove.push(key);
+      }
+    }
+
+    keysToRemove.forEach((key) => localStorage.removeItem(key));
   }
 
   async get(key: string): Promise<string | null> {
-    return localStorage.getItem(key);
+    return localStorage.getItem(this.#getPrefixedKey(key));
+  }
+
+  #getPrefixedKey(key: string): string {
+    return key.startsWith(DEFAULT_PREFIX) ? key : `${this.prefix}${key}`;
   }
 
   async set(key: string, value: string): Promise<string> {
-    localStorage.setItem(key, value);
+    localStorage.setItem(this.#getPrefixedKey(key), value);
     return value;
   }
 
@@ -34,18 +50,18 @@ export class LocalStorage implements IStorage {
     const length = localStorage.length;
     const keys: string[] = [];
     for (let idx = 0; idx < length; idx += 1) {
-      const currentValue = localStorage.key(idx);
-      if (currentValue) keys.push(currentValue);
+      const key = localStorage.key(idx);
+      if (key?.startsWith(this.prefix)) keys.push(key.substring(this.prefix.length));
     }
 
     return keys;
   }
 
   async length(): Promise<number> {
-    return localStorage.length;
+    return (await this.keys()).length;
   }
 
   async remove(key: string): Promise<void> {
-    localStorage.removeItem(key);
+    localStorage.removeItem(this.#getPrefixedKey(key));
   }
 }
