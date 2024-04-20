@@ -34,7 +34,7 @@ export class QueryExecutor<ChainApi extends GenericSubstrateApi> extends Executo
         bytes,
       );
 
-      assert('value' in contractResult.result);
+      assert('value' in contractResult.result, 'There was a error!');
 
       return {
         data: this.tryDecode(messageMeta, contractResult.result.value.data),

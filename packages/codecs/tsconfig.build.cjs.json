@@ -11,6 +11,12 @@
     },
     {
       "path": "../shape/tsconfig.json"
+    },
+    {
+      "path": "../types/tsconfig.json",
+    },
+    {
+      "path": "../contracts/tsconfig.json",
     }
   ]
 }

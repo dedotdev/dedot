@@ -1,20 +1,25 @@
-import { AccountId32, MetadataLatest, PortableRegistry } from '@dedot/codecs';
+import { AccountId32 } from '@dedot/codecs';
+import { TypinkRegistry } from '@dedot/codecs/registry/TypinkRegistry';
 import { Arg, ContractMessage, ContractMetadata } from '@dedot/types';
 import { GenericSubstrateApi } from '@dedot/types';
 import { Dedot } from 'dedot';
-import { extractContractTypes } from '../utils';
 
 export default abstract class Executor<ChainApi extends GenericSubstrateApi> {
   readonly #api: Dedot<ChainApi>;
   readonly #address: AccountId32;
   readonly #contractMetadata: ContractMetadata;
-  readonly #registry: PortableRegistry;
+  readonly #registry: TypinkRegistry;
 
-  constructor(api: Dedot<ChainApi>, contractMetadata: ContractMetadata, address: AccountId32 | string) {
+  constructor(
+    api: Dedot<ChainApi>,
+    contractMetadata: ContractMetadata,
+    address: AccountId32 | string,
+    registry: TypinkRegistry,
+  ) {
     this.#api = api;
     this.#contractMetadata = contractMetadata;
     this.#address = new AccountId32(address);
-    this.#registry = new PortableRegistry({ types: extractContractTypes(contractMetadata) } as MetadataLatest);
+    this.#registry = registry;
   }
 
   get api(): Dedot<ChainApi> {
