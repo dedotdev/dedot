@@ -83,8 +83,6 @@ export class Dedot<ChainApi extends GenericSubstrateApi = SubstrateApi>
 
   #genesisHash?: Hash;
   #runtimeVersion?: SubstrateRuntimeVersion;
-  #chainProperties?: SubstrateChainProperties;
-  #runtimeChain?: string;
   #localCache?: IStorage;
 
   #runtimeSubscriptionUnsub?: Unsub;
@@ -158,9 +156,7 @@ export class Dedot<ChainApi extends GenericSubstrateApi = SubstrateApi>
     ]);
 
     this.#genesisHash = genesisHash;
-    this.#runtimeChain = chainName;
     this.#runtimeVersion = this.#toSubstrateRuntimeVersion(runtimeVersion);
-    this.#chainProperties = chainProps;
 
     await this.#setupMetadata(metadata);
     this.#subscribeUpdates();
@@ -377,10 +373,6 @@ export class Dedot<ChainApi extends GenericSubstrateApi = SubstrateApi>
     return newProxyChain<ChainApi>({ executor: new StorageQueryExecutor(this) }) as ChainApi['query'];
   }
 
-  queryAt(blockHash: BlockHash): ChainApi['query'] {
-    return newProxyChain<ChainApi>({ executor: new StorageQueryExecutor(this, blockHash) }) as ChainApi['query'];
-  }
-
   /**
    * @description Entry-point for inspecting errors from metadata
    */
@@ -409,10 +401,6 @@ export class Dedot<ChainApi extends GenericSubstrateApi = SubstrateApi>
    */
   get call(): ChainApi['call'] {
     return newProxyChain<ChainApi>({ executor: new RuntimeApiExecutor(this) }) as ChainApi['call'];
-  }
-
-  callAt(blockHash: BlockHash): ChainApi['call'] {
-    return newProxyChain<ChainApi>({ executor: new RuntimeApiExecutor(this, blockHash) }) as ChainApi['call'];
   }
 
   /**
@@ -481,8 +469,6 @@ export class Dedot<ChainApi extends GenericSubstrateApi = SubstrateApi>
 
     this.#genesisHash = undefined;
     this.#runtimeVersion = undefined;
-    this.#chainProperties = undefined;
-    this.#runtimeChain = undefined;
     this.#localCache = undefined;
   }
 
@@ -516,20 +502,6 @@ export class Dedot<ChainApi extends GenericSubstrateApi = SubstrateApi>
    */
   get runtimeVersion(): SubstrateRuntimeVersion {
     return ensurePresence(this.#runtimeVersion);
-  }
-
-  /**
-   * @description Chain properties of connected blockchain node
-   */
-  get chainProperties() {
-    return ensurePresence(this.#chainProperties);
-  }
-
-  /**
-   * @description Runtime chain name of connected blockchain node
-   */
-  get runtimeChain() {
-    return ensurePresence(this.#runtimeChain);
   }
 
   get options() {
