@@ -16,11 +16,11 @@ import { newProxyChain } from '../proxychain.js';
 import type {
   ApiEvent,
   ApiOptions,
+  ISubstrateApi,
   ISubstrateClient,
   MetadataKey,
   NetworkEndpoint,
   NormalizedApiOptions,
-  SubstrateChainProperties,
   SubstrateRuntimeVersion,
 } from '../types.js';
 
@@ -149,14 +149,14 @@ export class Dedot<ChainApi extends GenericSubstrateApi = SubstrateApi>
     // TODO using json-rpc v2
     let [genesisHash, runtimeVersion, chainName, chainProps, metadata] = await Promise.all([
       this.rpc.chain_getBlockHash(0),
-      this.rpc.state_getRuntimeVersion(),
+      this.#getRuntimeVersion(),
       this.rpc.system_chain(),
       this.rpc.system_properties(),
       (await this.#shouldLoadPreloadMetadata()) ? this.#fetchMetadata() : Promise.resolve(undefined),
     ]);
 
     this.#genesisHash = genesisHash;
-    this.#runtimeVersion = this.#toSubstrateRuntimeVersion(runtimeVersion);
+    this.#runtimeVersion = runtimeVersion;
 
     await this.#setupMetadata(metadata);
     this.#subscribeUpdates();
@@ -226,21 +226,26 @@ export class Dedot<ChainApi extends GenericSubstrateApi = SubstrateApi>
     this.setMetadata(metadata);
   }
 
-  async #fetchMetadata(): Promise<Metadata> {
-    // It makes sense to call metadata.metadataVersions to fetch the list of supported metadata versions first
-    // But for now, this approach could potentially help save/reduce one rpc call to the server in case the node support v15
-    // Question: Why not having a `metadata.metadataLatest` to fetch the latest version?
-    for (const version of SUPPORTED_METADATA_VERSIONS) {
-      try {
-        const rawMetadata = await this.call.metadata.metadataAtVersion(version);
-        if (!rawMetadata) continue;
+  async #fetchMetadata(at?: BlockHash, runtime?: SubstrateRuntimeVersion): Promise<Metadata> {
+    const metadataApiHash = '0x37e397fc7c91f5e4';
+    const supportedV2 = runtime ? runtime.apis[metadataApiHash] >= 2 : true;
 
-        return $Metadata.tryDecode(rawMetadata);
-      } catch {}
+    if (supportedV2) {
+      // It makes sense to call metadata.metadataVersions to fetch the list of supported metadata versions first
+      // But for now, this approach could potentially help save/reduce one rpc call to the server in case the node support v15
+      // Question: Why not having a `metadata.metadataLatest` to fetch the latest version?
+      for (const version of SUPPORTED_METADATA_VERSIONS) {
+        try {
+          const rawMetadata = await this.#callAt(at).metadata.metadataAtVersion(version);
+          if (!rawMetadata) continue;
+
+          return $Metadata.tryDecode(rawMetadata);
+        } catch {}
+      }
     }
 
     try {
-      return $Metadata.tryDecode(await this.call.metadata.metadata());
+      return $Metadata.tryDecode(await this.#callAt(at).metadata.metadata());
     } catch {
       return await this.rpc.state_getMetadata();
     }
@@ -263,6 +268,10 @@ export class Dedot<ChainApi extends GenericSubstrateApi = SubstrateApi>
       .then((unsub) => {
         this.#runtimeSubscriptionUnsub = unsub;
       });
+  }
+
+  async #getRuntimeVersion(at?: BlockHash): Promise<SubstrateRuntimeVersion> {
+    return this.#toSubstrateRuntimeVersion(await this.rpc.state_getRuntimeVersion(at));
   }
 
   #toSubstrateRuntimeVersion(runtimeVersion: RuntimeVersion): SubstrateRuntimeVersion {
@@ -358,7 +367,7 @@ export class Dedot<ChainApi extends GenericSubstrateApi = SubstrateApi>
    * ```
    */
   get consts(): ChainApi['consts'] {
-    return newProxyChain<ChainApi>({ executor: new ConstantExecutor(this) }) as ChainApi['consts'];
+    return newProxyChain({ executor: new ConstantExecutor(this) }) as ChainApi['consts'];
   }
 
   /**
@@ -370,21 +379,21 @@ export class Dedot<ChainApi extends GenericSubstrateApi = SubstrateApi>
    * ```
    */
   get query(): ChainApi['query'] {
-    return newProxyChain<ChainApi>({ executor: new StorageQueryExecutor(this) }) as ChainApi['query'];
+    return newProxyChain({ executor: new StorageQueryExecutor(this) }) as ChainApi['query'];
   }
 
   /**
    * @description Entry-point for inspecting errors from metadata
    */
   get errors(): ChainApi['errors'] {
-    return newProxyChain<ChainApi>({ executor: new ErrorExecutor(this) }) as ChainApi['errors'];
+    return newProxyChain({ executor: new ErrorExecutor(this) }) as ChainApi['errors'];
   }
 
   /**
    * @description Entry-point for inspecting events from metadata
    */
   get events(): ChainApi['events'] {
-    return newProxyChain<ChainApi>({ executor: new EventExecutor(this) }) as ChainApi['events'];
+    return newProxyChain({ executor: new EventExecutor(this) }) as ChainApi['events'];
   }
 
   /**
@@ -400,7 +409,11 @@ export class Dedot<ChainApi extends GenericSubstrateApi = SubstrateApi>
    * ```
    */
   get call(): ChainApi['call'] {
-    return newProxyChain<ChainApi>({ executor: new RuntimeApiExecutor(this) }) as ChainApi['call'];
+    return this.#callAt() as ChainApi['call'];
+  }
+
+  #callAt(at?: BlockHash): ChainApi['call'] {
+    return newProxyChain({ executor: new RuntimeApiExecutor(this, at) }) as ChainApi['call'];
   }
 
   /**
@@ -415,7 +428,42 @@ export class Dedot<ChainApi extends GenericSubstrateApi = SubstrateApi>
    * ```
    */
   get tx(): ChainApi['tx'] {
-    return newProxyChain<ChainApi>({ executor: new TxExecutor(this) }) as ChainApi['tx'];
+    return newProxyChain({ executor: new TxExecutor(this) }) as ChainApi['tx'];
+  }
+
+  #atApiCache: Record<BlockHash, ISubstrateApi<any>> = {};
+
+  async at<ChainApiAt extends GenericSubstrateApi = ChainApi>(hash: BlockHash): Promise<ISubstrateApi<ChainApiAt>> {
+    if (this.#atApiCache[hash]) return this.#atApiCache[hash];
+
+    const targetVersion = await this.#getRuntimeVersion();
+
+    let metadata = this.metadata;
+    let registry = this.registry;
+    if (targetVersion.specVersion !== this.runtimeVersion.specVersion) {
+      metadata = await this.#fetchMetadata(hash, targetVersion);
+      registry = new PortableRegistry(metadata.latest, this.options.hasher);
+    }
+
+    const api = {
+      atBlockHash: hash,
+      options: this.options,
+      genesisHash: this.genesisHash,
+      runtimeVersion: targetVersion,
+      metadata,
+      registry,
+      rpc: this.rpc,
+    } as ISubstrateApi<ChainApiAt>;
+
+    api.consts = newProxyChain({ executor: new ConstantExecutor(api) }) as ChainApiAt['consts'];
+    api.query = newProxyChain({ executor: new StorageQueryExecutor(api) }) as ChainApiAt['query'];
+    api.call = newProxyChain({ executor: new RuntimeApiExecutor(api) }) as ChainApiAt['call'];
+    api.events = newProxyChain({ executor: new EventExecutor(api) }) as ChainApiAt['events'];
+    api.errors = newProxyChain({ executor: new ErrorExecutor(api) }) as ChainApiAt['errors'];
+
+    this.#atApiCache[hash] = api;
+
+    return api;
   }
 
   /**
@@ -470,6 +518,7 @@ export class Dedot<ChainApi extends GenericSubstrateApi = SubstrateApi>
     this.#genesisHash = undefined;
     this.#runtimeVersion = undefined;
     this.#localCache = undefined;
+    this.#atApiCache = {};
   }
 
   /**

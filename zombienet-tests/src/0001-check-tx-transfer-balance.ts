@@ -1,8 +1,8 @@
-import { Dedot } from 'dedot';
-import { assert } from '@dedot/utils';
-import { cryptoWaitReady } from '@polkadot/util-crypto';
 import Keyring from '@polkadot/keyring';
+import { cryptoWaitReady } from '@polkadot/util-crypto';
 import { RococoApi } from '@dedot/chaintypes';
+import { assert } from '@dedot/utils';
+import { Dedot } from 'dedot';
 
 const BOB = '5FHneW46xGXgs5mUiveU4sbTyGBzmstUspZC92UhjJM694ty';
 
@@ -16,6 +16,7 @@ export const run = async (nodeName: any, networkInfo: any): Promise<void> => {
   const api = await Dedot.new<RococoApi>(wsUri);
 
   const prevBobBalance = (await api.query.system.account(BOB)).data.free;
+  const prevBlockNumber = await api.query.system.number();
   console.log('BOB - old balance', prevBobBalance);
 
   const TEN_UNIT = BigInt(10 * 1e12);
@@ -29,6 +30,12 @@ export const run = async (nodeName: any, networkInfo: any): Promise<void> => {
         const newBobBalance = (await api.query.system.account(BOB)).data.free;
         console.log('BOB - new balance', newBobBalance);
         assert(prevBobBalance + TEN_UNIT === newBobBalance, 'Incorrect BOB balance');
+
+        const prevBlockHash = await api.query.system.blockHash(prevBlockNumber);
+        const prevApiAt = await api.at(prevBlockHash);
+        const prevBobBalanceAt = (await prevApiAt.query.system.account(BOB)).data.free;
+
+        assert(prevBobBalanceAt === prevBobBalance, 'Incorrect BOB balance at previous block');
 
         await unsub();
         resolve();

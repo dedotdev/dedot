@@ -104,15 +104,17 @@ export interface IJsonRpcClient<ChainApi extends GenericSubstrateApi, Events ext
 
 export interface ISubstrateApi<ChainApi extends GenericSubstrateApi> {
   atBlockHash?: BlockHash;
-  runtimeVersion: SubstrateRuntimeVersion;
 
+  options: NormalizedApiOptions;
+  genesisHash: Hash;
+  runtimeVersion: SubstrateRuntimeVersion;
   metadata: Metadata;
   registry: PortableRegistry;
 
+  rpc: ChainApi['rpc'];
   consts: ChainApi['consts'];
   query: ChainApi['query'];
   call: ChainApi['call'];
-  tx: ChainApi['tx'];
   events: ChainApi['events'];
   errors: ChainApi['errors'];
 }
@@ -121,5 +123,6 @@ export interface ISubstrateClient<ChainApi extends GenericSubstrateApi, Events e
   extends IJsonRpcClient<ChainApi, Events>,
     ISubstrateApi<ChainApi> {
   options: NormalizedApiOptions;
-  genesisHash: Hash;
+  tx: ChainApi['tx'];
+  at<ChainApiAt extends GenericSubstrateApi = ChainApi>(hash: BlockHash): Promise<ISubstrateApi<ChainApiAt>>;
 }
