@@ -1,7 +1,6 @@
-import { GenericContractApi } from '../../types';
+import { GenericContractApi, GenericSubstrateApi } from '@dedot/types';
 import { ContractStorage } from './query';
 import { ContractExtrinsic } from './tx';
-import { GenericSubstrateApi } from '@dedot/types';
 import { SubstrateApi } from 'dedot';
 
 export interface {{{contractName}}}<ChainApi extends GenericSubstrateApi = SubstrateApi> extends GenericContractApi {
