@@ -17,3 +17,8 @@ export const calcRuntimeApiHash = (runtimeApiName: string): HexString => {
 export function normalizeName(ident: string): string {
   return stringCamelCase(ident.replace('#', '_'));
 }
+
+/**
+ * Simply does nothing
+ */
+export function noop() {}
