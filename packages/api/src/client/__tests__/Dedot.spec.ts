@@ -64,6 +64,20 @@ describe('Dedot', () => {
           pallet.storage?.entries.forEach((entry) => {
             expect(api.query[stringCamelCase(pallet.name)][stringCamelCase(entry.name)]).toBeDefined();
             expect(api.query[stringCamelCase(pallet.name)][stringCamelCase(entry.name)].multi).toBeDefined();
+            expect(api.query[stringCamelCase(pallet.name)][stringCamelCase(entry.name)].meta).toBeDefined();
+            expectTypeOf(api.query[stringCamelCase(pallet.name)][stringCamelCase(entry.name)].rawKey).toBeFunction();
+
+            if (entry.type.tag === 'Map') {
+              // @ts-ignore
+              expect(api.query[stringCamelCase(pallet.name)][stringCamelCase(entry.name)].keys).toBeDefined();
+              // @ts-ignore
+              expect(api.query[stringCamelCase(pallet.name)][stringCamelCase(entry.name)].entries).toBeDefined();
+            } else {
+              // @ts-ignore
+              expect(api.query[stringCamelCase(pallet.name)][stringCamelCase(entry.name)].keys).toBeUndefined();
+              // @ts-ignore
+              expect(api.query[stringCamelCase(pallet.name)][stringCamelCase(entry.name)].entries).toBeUndefined();
+            }
           });
         });
       });
@@ -286,7 +300,7 @@ describe('Dedot', () => {
 
         const key = apiAt.query.system.number.rawKey();
         await apiAt.query.system.number();
-        expect(providerSend).toBeCalledWith('state_getStorage', [key, atHash]);
+        expect(providerSend).toBeCalledWith('state_queryStorageAt', [[key], atHash]);
 
         await apiAt.call.metadata.metadata();
         expect(providerSend).toBeCalledWith('state_call', ['Metadata_metadata', '0x', atHash]);

@@ -36,6 +36,7 @@ export default class MockProvider extends EventEmitter<ProviderEvent> implements
     state_getMetadata: () => staticSubstrate,
     state_call: () => '0x',
     state_getStorage: () => '0x',
+    state_queryStorageAt: () => [{ block: '0x', changes: ['0x', '0x'] }],
   };
 
   setStatus(status: ConnectionStatus) {

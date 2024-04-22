@@ -1,4 +1,4 @@
-import { BlockHash, StorageData, StorageKey } from '@dedot/codecs';
+import { BlockHash, Option, StorageData, StorageKey } from '@dedot/codecs';
 import type { StorageChangeSet } from '@dedot/specs';
 import type { Callback, GenericStorageQuery, GenericSubstrateApi, PaginationOptions, Unsub } from '@dedot/types';
 import { assert, isFunction } from '@dedot/utils';
@@ -30,9 +30,16 @@ export class StorageQueryExecutor<ChainApi extends GenericSubstrateApi = Substra
       return entry.encodeKey(inArgs.at(0));
     };
 
-    const getStorage = async (key: StorageKey): Promise<any> => {
-      const raw = await this.getStorage(key, this.atBlockHash);
-      return entry.decodeValue(raw);
+    const getStorage = async (keys: StorageKey[]): Promise<Record<StorageKey, any>> => {
+      const results = await this.queryStorage(keys, this.atBlockHash);
+
+      return keys.reduce(
+        (o, key) => {
+          o[key] = entry.decodeValue(results[key]);
+          return o;
+        },
+        {} as Record<StorageKey, any>,
+      );
     };
 
     const queryFn: GenericStorageQuery = async (...args: any[]) => {
@@ -46,7 +53,8 @@ export class StorageQueryExecutor<ChainApi extends GenericSubstrateApi = Substra
           callback(entry.decodeValue(changes[0]));
         });
       } else {
-        return getStorage(encodedKey);
+        const results = await getStorage([encodedKey]);
+        return results[encodedKey];
       }
     };
 
@@ -62,7 +70,8 @@ export class StorageQueryExecutor<ChainApi extends GenericSubstrateApi = Substra
           callback(changes.map((change) => entry.decodeValue(change)));
         });
       } else {
-        return await Promise.all(encodedKeys.map(getStorage));
+        const result = await getStorage(encodedKeys);
+        return encodedKeys.map((key) => result[key]);
       }
     };
 
@@ -112,8 +121,16 @@ export class StorageQueryExecutor<ChainApi extends GenericSubstrateApi = Substra
     return queryFn;
   }
 
-  protected getStorage(key: StorageKey, at?: BlockHash): Promise<StorageData | undefined> {
-    return this.api.rpc.state_getStorage(key, at);
+  protected async queryStorage(keys: StorageKey[], hash?: BlockHash): Promise<Record<StorageKey, Option<StorageData>>> {
+    const changeSets: StorageChangeSet[] = await this.api.rpc.state_queryStorageAt(keys, hash);
+
+    return changeSets[0].changes.reduce(
+      (o, [key, value]) => {
+        o[key] = value ?? undefined;
+        return o;
+      },
+      {} as Record<StorageKey, Option<StorageData>>,
+    );
   }
 
   protected subscribeStorage(keys: StorageKey[], callback: Callback<Array<StorageData | undefined>>): Promise<Unsub> {
