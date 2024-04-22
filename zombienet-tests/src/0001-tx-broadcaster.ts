@@ -1,6 +1,6 @@
 import Keyring from '@polkadot/keyring';
 import { cryptoWaitReady } from '@polkadot/util-crypto';
-import { HexString, stringToHex } from '@dedot/utils';
+import { deferred, HexString, stringToHex } from '@dedot/utils';
 import { Dedot, Transaction, TransactionWatch } from 'dedot';
 
 const prepareRemarkTx = async (api: Dedot): Promise<{ rawTx: HexString; sender: string }> => {
@@ -37,6 +37,8 @@ export const run = async (nodeName: any, networkInfo: any): Promise<void> => {
 
   const unsub = await txBroadcaster.broadcastTx(rawTx);
 
+  const defer = deferred<void>();
+
   await api.query.system.events((events) => {
     events.forEach(({ event }) => {
       if (api.events.system.Remarked.is(event)) {
@@ -44,8 +46,11 @@ export const run = async (nodeName: any, networkInfo: any): Promise<void> => {
         if (sender.address() === senderAddress && api.registry.hashAsHex(stringToHex('Hello world')) === hash) {
           console.log('Remark event found, stop broadcasting now!');
           unsub();
+          defer.resolve();
         }
       }
     });
   });
+
+  return defer.promise;
 };
