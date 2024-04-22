@@ -74,6 +74,13 @@ export default class MockProvider extends EventEmitter<ProviderEvent> implements
     this.rpcRequests[name] = response;
   }
 
+  setRpcRequests(requests: Record<string, AnyFunc>) {
+    this.rpcRequests = {
+      ...this.rpcRequests,
+      ...requests,
+    };
+  }
+
   get status(): ConnectionStatus {
     return this.#status;
   }

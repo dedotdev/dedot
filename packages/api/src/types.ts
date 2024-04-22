@@ -3,7 +3,7 @@ import type { ConnectionStatus, JsonRpcProvider, ProviderEvent } from '@dedot/pr
 import type { AnyShape } from '@dedot/shape';
 import { SubscriptionsInfo } from '@dedot/specs';
 import type { IStorage } from '@dedot/storage';
-import type { GenericSubstrateApi, RuntimeApiName, RuntimeApiSpec } from '@dedot/types';
+import type { GenericSubstrateApi, RuntimeApiName, RuntimeApiSpec, Unsub } from '@dedot/types';
 import type { HashFn, HexString, IEventEmitter } from '@dedot/utils';
 import type { AnySignedExtension } from './extrinsic/index.js';
 
@@ -74,16 +74,13 @@ export interface SubstrateRuntimeVersion {
   transactionVersion: number;
 }
 
-export interface SubstrateChainProperties {
-  isEthereum?: boolean;
-  ss58Format?: number;
-  tokenDecimals?: number | Array<number>;
-  tokenSymbol?: string | Array<string>;
-  [prop: string]: any;
-}
-
-export interface IJsonRpcClient<ChainApi extends GenericSubstrateApi, Events extends string = ProviderEvent>
-  extends IEventEmitter<Events> {
+/**
+ * A generic interface for JSON-RPC clients
+ */
+export interface IJsonRpcClient<
+  ChainApi extends GenericSubstrateApi = GenericSubstrateApi,
+  Events extends string = ProviderEvent,
+> extends IEventEmitter<Events> {
   options: JsonRpcClientOptions;
   status: ConnectionStatus;
   provider: JsonRpcProvider;
@@ -93,7 +90,10 @@ export interface IJsonRpcClient<ChainApi extends GenericSubstrateApi, Events ext
   rpc: ChainApi['rpc'];
 }
 
-export interface ISubstrateClientAt<ChainApi extends GenericSubstrateApi> {
+/**
+ * A generic interface for Substrate clients at a specific block
+ */
+export interface ISubstrateClientAt<ChainApi extends GenericSubstrateApi = GenericSubstrateApi> {
   atBlockHash?: BlockHash;
 
   options: ApiOptions;
@@ -110,10 +110,33 @@ export interface ISubstrateClientAt<ChainApi extends GenericSubstrateApi> {
   errors: ChainApi['errors'];
 }
 
-export interface ISubstrateClient<ChainApi extends GenericSubstrateApi, Events extends string = ApiEvent>
-  extends IJsonRpcClient<ChainApi, Events>,
+/**
+ * A generic interface for Substrate clients
+ */
+export interface ISubstrateClient<
+  ChainApi extends GenericSubstrateApi = GenericSubstrateApi,
+  Events extends string = ApiEvent,
+> extends IJsonRpcClient<ChainApi, Events>,
     ISubstrateClientAt<ChainApi> {
   options: ApiOptions;
   tx: ChainApi['tx'];
   at<ChainApiAt extends GenericSubstrateApi = ChainApi>(hash: BlockHash): Promise<ISubstrateClientAt<ChainApiAt>>;
+}
+
+/**
+ * A generic interface for broadcasting transactions
+ */
+export interface TxBroadcaster {
+  /**
+   * Broadcast a transaction to the network
+   * @param tx
+   * @returns {Unsub} A function to stop broadcasting the transaction
+   */
+  broadcastTx(tx: HexString): Promise<Unsub>;
+
+  /**
+   * Check if this broadcaster is supported,
+   * We should check this before broadcasting a transaction
+   */
+  supported(): Promise<boolean>;
 }
