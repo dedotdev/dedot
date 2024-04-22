@@ -34,13 +34,8 @@ export interface ApiOptions extends JsonRpcClientOptions {
    *
    * If the `genesisHash` & `runtimeSpecVersion` of the supplied metadata key match with connected chain,
    * then use the provided metadata, else we fetch it anew from chain.
-   *
-   * Catch-all Metadata Key (`RAW_META/ALL`) will be used
-   * regardless of the `genesisHash` or `runtimeSpecVersion` of connected chain.
-   *
-   * If we supplied a raw-hex metadata to this option, it's a catch-all metadata.
    */
-  metadata?: HexString | Record<MetadataKey, HexString>;
+  metadata?: Record<MetadataKey, HexString>;
   /**
    * @description User-defined chain-specific signed extensions
    */
@@ -66,10 +61,6 @@ export interface ApiOptions extends JsonRpcClientOptions {
    * @default blake2_256
    */
   hasher?: HashFn;
-}
-
-export interface NormalizedApiOptions extends ApiOptions {
-  metadata?: Record<string, HexString>;
 }
 
 export type ApiEvent = ProviderEvent | 'ready';
@@ -105,7 +96,7 @@ export interface IJsonRpcClient<ChainApi extends GenericSubstrateApi, Events ext
 export interface ISubstrateClientAt<ChainApi extends GenericSubstrateApi> {
   atBlockHash?: BlockHash;
 
-  options: NormalizedApiOptions;
+  options: ApiOptions;
   genesisHash: Hash;
   runtimeVersion: SubstrateRuntimeVersion;
   metadata: Metadata;
@@ -122,7 +113,7 @@ export interface ISubstrateClientAt<ChainApi extends GenericSubstrateApi> {
 export interface ISubstrateClient<ChainApi extends GenericSubstrateApi, Events extends string = ApiEvent>
   extends IJsonRpcClient<ChainApi, Events>,
     ISubstrateClientAt<ChainApi> {
-  options: NormalizedApiOptions;
+  options: ApiOptions;
   tx: ChainApi['tx'];
   at<ChainApiAt extends GenericSubstrateApi = ChainApi>(hash: BlockHash): Promise<ISubstrateClientAt<ChainApiAt>>;
 }

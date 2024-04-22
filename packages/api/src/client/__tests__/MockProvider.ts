@@ -53,7 +53,7 @@ export default class MockProvider extends EventEmitter<ProviderEvent> implements
     return Promise.resolve(undefined);
   }
 
-  async send<T = any>(method: string, params: unknown[], isCacheable?: boolean): Promise<T> {
+  async send<T = any>(method: string, params: unknown[]): Promise<T> {
     const result = this.rpcRequests[method];
     if (!result) {
       throw new Error(`${method} not implemented`);

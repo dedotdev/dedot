@@ -281,6 +281,9 @@ describe('Dedot', () => {
 
         const apiAt = await api.at(atHash);
 
+        await apiAt.rpc.system_chain();
+        expect(providerSend).toBeCalledWith('system_chain', []);
+
         const key = apiAt.query.system.number.rawKey();
         await apiAt.query.system.number();
         expect(providerSend).toBeCalledWith('state_getStorage', [key, atHash]);
