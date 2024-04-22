@@ -51,6 +51,14 @@ const main = () => {
         };
       }
 
+      if (pkgJson.name === 'dedot') {
+        pkgJson.exports['./chaintypes'] = {
+          types: './chaintypes/index.d.ts',
+          import: './chaintypes/index.js',
+          require: './cjs/chaintypes/index.js',
+        };
+      }
+
       fileContent = JSON.stringify(pkgJson, null, 2);
     }
 
