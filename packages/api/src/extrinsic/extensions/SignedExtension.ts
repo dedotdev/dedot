@@ -7,8 +7,8 @@ import { Dedot } from '../../client/index.js';
 
 export interface ISignedExtension {
   identifier: string;
-  dataCodec: $.AnyShape;
-  additionalSignedCodec: $.AnyShape;
+  $Data: $.AnyShape;
+  $AdditionalSigned: $.AnyShape;
 
   data: any;
   additionalSigned: any;
@@ -45,11 +45,11 @@ export abstract class SignedExtension<Data extends any = {}, AdditionalSigned ex
     return this.signedExtensionDef.ident;
   }
 
-  get dataCodec(): $.AnyShape {
+  get $Data(): $.AnyShape {
     return ensurePresence(this.registry.findCodec(this.signedExtensionDef.typeId));
   }
 
-  get additionalSignedCodec(): $.AnyShape {
+  get $AdditionalSigned(): $.AnyShape {
     return ensurePresence(this.registry.findCodec(this.signedExtensionDef.additionalSigned));
   }
 

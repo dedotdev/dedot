@@ -20,23 +20,23 @@ export class ExtraSignedExtension extends SignedExtension<any[], any[]> {
     return 'ExtraSignedExtension';
   }
 
-  get dataCodec(): $.AnyShape {
+  get $Data(): $.AnyShape {
     const { extraTypeId } = this.registry.metadata.extrinsic;
 
     return ensurePresence(this.registry.findCodec(extraTypeId));
   }
 
-  get additionalSignedCodec(): $.AnyShape {
+  get $AdditionalSigned(): $.AnyShape {
     const $AdditionalSignedCodecs = this.#signedExtensionDefs.map((se) => this.registry.findCodec(se.additionalSigned));
 
     return $.Tuple(...$AdditionalSignedCodecs);
   }
 
-  get payloadCodec(): $.AnyShape {
+  get $Payload(): $.AnyShape {
     const { callTypeId } = this.registry.metadata.extrinsic;
     const $Call = this.registry.findCodec(callTypeId);
 
-    return $.Tuple($Call, this.dataCodec, this.additionalSignedCodec);
+    return $.Tuple($Call, this.$Data, this.$AdditionalSigned);
   }
 
   get #signedExtensionDefs() {
@@ -72,7 +72,7 @@ export class ExtraSignedExtension extends SignedExtension<any[], any[]> {
 
   toRawPayload(call: HexString = '0x'): SignerPayloadRaw {
     const payload = this.toPayload(call);
-    const $ToSignPayload = $.Tuple($.RawHex, this.dataCodec, this.additionalSignedCodec);
+    const $ToSignPayload = $.Tuple($.RawHex, this.$Data, this.$AdditionalSigned);
     const toSignPayload = [call, this.data, this.additionalSigned];
     const rawPayload = $ToSignPayload.tryEncode(toSignPayload);
 

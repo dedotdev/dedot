@@ -76,7 +76,7 @@ export class CheckMortality extends SignedExtension<EraLike, Hash> {
 
   toPayload(): Partial<SignerPayloadJSON> {
     return {
-      era: u8aToHex(this.dataCodec.tryEncode(this.data)),
+      era: u8aToHex(this.$Data.tryEncode(this.data)),
       blockHash: this.additionalSigned,
       blockNumber: numberToHex(this.#signingHeader!.number),
     };
