@@ -32,6 +32,8 @@ export const run = async (nodeName: any, networkInfo: any): Promise<any> => {
 
     const { rawTx, sender: senderAddress } = await prepareRemarkTx(api);
 
+    // @ts-ignore
+    console.log(`Broadcasting tx using ${txBroadcaster.prefix}-prefixed broadcaster`);
     const stopBroadcast = await txBroadcaster.broadcastTx(rawTx);
 
     const unsub = await api.query.system.events((events) => {
