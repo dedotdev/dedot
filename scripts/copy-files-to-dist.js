@@ -39,23 +39,21 @@ const main = () => {
       if (!['@dedot/cli'].includes(pkgJson.name)) {
         pkgJson.exports = {
           '.': {
-            import: {
-              types: './index.d.ts',
-              default: './index.js',
-            },
-            require: {
-              types: './index.d.ts',
-              default: './cjs/index.js',
-            },
+            types: './index.d.ts',
+            import: './index.js',
+            require: './cjs/index.js',
+            default: './index.js',
           },
         };
       }
 
+      // Export default/generic substrate chaintypes
       if (pkgJson.name === 'dedot') {
         pkgJson.exports['./chaintypes'] = {
           types: './chaintypes/index.d.ts',
           import: './chaintypes/index.js',
           require: './cjs/chaintypes/index.js',
+          default: './chaintypes/index.js',
         };
       }
 
