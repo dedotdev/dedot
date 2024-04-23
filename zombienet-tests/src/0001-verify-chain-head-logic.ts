@@ -9,8 +9,8 @@ import {
   $Metadata,
   QueryableStorage,
 } from 'dedot';
-import { FrameSystemAccountInfo, FrameSystemEventRecord } from 'dedot/chaintypes';
-import { ALICE, BOB } from './shared';
+import { FrameSystemAccountInfo } from 'dedot/chaintypes';
+import { ALICE, BOB } from './shared.js';
 
 export const run = async (nodeName: any, networkInfo: any): Promise<any> => {
   const { wsUri: endpoint } = networkInfo.nodesByName[nodeName];
