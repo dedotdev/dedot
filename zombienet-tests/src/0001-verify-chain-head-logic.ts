@@ -82,7 +82,7 @@ export const run = async (nodeName: any, networkInfo: any): Promise<any> => {
 
   console.log('chainHead_storage verified');
 
-  return await Promise.all(
+  await Promise.all(
     ['newBlock', 'bestBlock', 'finalizedBlock'].map((event) => {
       const defer = deferred<void>();
 
@@ -96,4 +96,16 @@ export const run = async (nodeName: any, networkInfo: any): Promise<any> => {
       return defer.promise;
     }),
   );
+
+  await chainHead.unfollow();
+
+  try {
+    chainHead.bestHash;
+    throw new Error('Should not reach here');
+  } catch (e: any) {
+    assert(
+      e.message === 'Please call the .follow() method before invoking any other methods in this group.',
+      'Wrong error message',
+    );
+  }
 };

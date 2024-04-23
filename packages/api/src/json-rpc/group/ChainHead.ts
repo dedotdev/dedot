@@ -304,6 +304,10 @@ export class ChainHead extends JsonRpcGroup<ChainHeadEvent> {
   }
 
   #cleanUp() {
+    this.off('newBlock');
+    this.off('bestBlock');
+    this.off('finalizedBlock');
+
     this.#subscriptionId = undefined;
     this.#unsub = undefined;
     this.#handlers = {};
