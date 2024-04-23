@@ -8,9 +8,12 @@ import {
   $,
   $Metadata,
   QueryableStorage,
+  AccountId32,
 } from 'dedot';
 import { FrameSystemAccountInfo } from 'dedot/chaintypes';
-import { ALICE, BOB } from './shared.js';
+
+const ALICE = '5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY';
+const BOB = '5FHneW46xGXgs5mUiveU4sbTyGBzmstUspZC92UhjJM694ty';
 
 export const run = async (nodeName: any, networkInfo: any): Promise<any> => {
   const { wsUri: endpoint } = networkInfo.nodesByName[nodeName];
@@ -62,15 +65,20 @@ export const run = async (nodeName: any, networkInfo: any): Promise<any> => {
     { type: 'value', key: bobBalanceRawKey },
   ]);
 
-  const balances: FrameSystemAccountInfo[] = results.map((result) =>
-    storageEntry.decodeValue(result.value as HexString),
-  );
+  const balances: [AccountId32, FrameSystemAccountInfo][] = results.map(({ key, value }) => [
+    storageEntry.decodeKey(key as HexString),
+    storageEntry.decodeValue(value as HexString),
+  ]);
 
   assert(balances.length === 2, 'Expected 2 balances');
-  assert(typeof balances[0].data.free === 'bigint', 'Incorrect balance type for Alice');
-  assert(typeof balances[1].data.free === 'bigint', 'Incorrect balance type for Bob');
-  console.log('Alice balance:', balances[0].data.free);
-  console.log('Bob balance:', balances[1].data.free);
+
+  assert(typeof balances[0][1].data.free === 'bigint', 'Incorrect balance type for Alice');
+  assert(typeof balances[1][1].data.free === 'bigint', 'Incorrect balance type for Bob');
+  console.log('Alice balance:', balances[0][1].data.free);
+  console.log('Bob balance:', balances[1][1].data.free);
+
+  assert(balances[0][0].address() === ALICE, `Incorrect Alice's address`);
+  assert(balances[1][0].address() === BOB, `Incorrect Bob's address`);
 
   console.log('chainHead_storage verified');
 
