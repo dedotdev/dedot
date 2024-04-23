@@ -80,6 +80,21 @@ export const run = async (nodeName: any, networkInfo: any): Promise<any> => {
   assert(balances[0][0].address() === ALICE, `Incorrect Alice's address`);
   assert(balances[1][0].address() === BOB, `Incorrect Bob's address`);
 
+  const rawAccounts = await chainHead.storage([{ type: 'descendantsValues', key: storageEntry.prefixKey }]);
+  const accounts: [AccountId32, FrameSystemAccountInfo][] = rawAccounts.map(({ key, value }) => [
+    storageEntry.decodeKey(key as HexString),
+    storageEntry.decodeValue(value as HexString),
+  ]);
+  console.log('Total accounts:', accounts.length);
+  assert(
+    accounts.some(([key]) => key.address() === ALICE),
+    'Should include Alice',
+  );
+  assert(
+    accounts.some(([key]) => key.address() === BOB),
+    'Should include Bob',
+  );
+
   console.log('chainHead_storage verified');
 
   await Promise.all(
