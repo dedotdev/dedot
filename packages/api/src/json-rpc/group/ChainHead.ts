@@ -71,7 +71,7 @@ export class ChainHead extends JsonRpcGroup<ChainHeadEvent> {
   get bestRuntimeVersion(): ChainHeadRuntimeVersion {
     this.#ensureFollowed();
 
-    return this.#findRuntimeAt(this.#bestHash!)!;
+    return this.#findRuntimeAt(this.#bestHash!) || this.runtimeVersion;
   }
 
   get finalizedHash(): BlockHash {
