@@ -12,8 +12,17 @@ import {
 } from '@dedot/specs';
 import { Unsub } from '@dedot/types';
 import { assert, Deferred, deferred, ensurePresence, HexString, noop } from '@dedot/utils';
-import { IJsonRpcClient } from '../../types.js';
-import { JsonRpcGroup, JsonRpcGroupOptions } from './JsonRpcGroup.js';
+import { IJsonRpcClient } from '../../../types.js';
+import { JsonRpcGroup, JsonRpcGroupOptions } from '../JsonRpcGroup.js';
+import {
+  ChainHeadBlockNotPinnedError,
+  ChainHeadError,
+  ChainHeadInvalidRuntimeError,
+  ChainHeadLimitReachedError,
+  ChainHeadOperationError,
+  ChainHeadOperationInaccessibleError,
+  ChainHeadStopError,
+} from './error.js';
 
 export type OperationHandler<T = any> = {
   operationId: OperationId;
@@ -174,7 +183,7 @@ export class ChainHead extends JsonRpcGroup<ChainHeadEvent> {
         // TODO handle smart retry & operation recovery
         // For now we'll reject all on-going operations
         Object.values(this.#handlers).forEach(({ defer }) => {
-          defer.reject(new Error('Subscription stopped!'));
+          defer.reject(new ChainHeadStopError('Subscription stopped!'));
         });
 
         this.#handlers = {};
@@ -211,14 +220,13 @@ export class ChainHead extends JsonRpcGroup<ChainHeadEvent> {
       }
       case 'operationError': {
         this.#handleOperationResponse(result, ({ defer }) => {
-          defer.reject(new Error(result.error));
+          defer.reject(new ChainHeadOperationError(result.error));
         });
         break;
       }
       case 'operationInaccessible': {
         this.#handleOperationResponse(result, ({ defer }) => {
-          // TODO retry this operation
-          defer.reject(new Error('Operation Inaccessible'));
+          defer.reject(new ChainHeadOperationInaccessibleError('Operation Inaccessible'));
         });
         break;
       }
@@ -246,7 +254,7 @@ export class ChainHead extends JsonRpcGroup<ChainHeadEvent> {
       if (this.#isPinnedHash(hash)) {
         return hash;
       } else {
-        throw new Error(`Block hash ${hash} is not pinned`);
+        throw new ChainHeadBlockNotPinnedError(`Block hash ${hash} is not pinned`);
       }
     }
 
@@ -276,8 +284,7 @@ export class ChainHead extends JsonRpcGroup<ChainHeadEvent> {
     handle(handler);
 
     if (cleanUp) {
-      delete this.#handlers[result.operationId];
-      this.stopOperation(result.operationId).catch(noop);
+      this.#cleanUpOperation(result.operationId);
     }
   }
 
@@ -288,8 +295,7 @@ export class ChainHead extends JsonRpcGroup<ChainHeadEvent> {
       return runtimeEvent.spec;
     } else {
       // TODO: handle invalid runtime
-      console.error(runtimeEvent);
-      throw new Error(`Invalid runtime: ${runtimeEvent.error}`);
+      throw new ChainHeadInvalidRuntimeError(runtimeEvent.error);
     }
   }
 
@@ -323,9 +329,31 @@ export class ChainHead extends JsonRpcGroup<ChainHeadEvent> {
     assert(this.#subscriptionId, 'Please call the .follow() method before invoking any other methods in this group.');
   }
 
+  #cleanUpOperation(operationId: OperationId) {
+    delete this.#handlers[operationId];
+    this.stopOperation(operationId).catch(noop);
+  }
+
+  async #awaitOperationWithRetry<T = any>(resp: MethodResponse, retry: () => Promise<T>): Promise<T> {
+    try {
+      return await this.#awaitOperation(resp);
+    } catch (e) {
+      if (resp.result === 'started') {
+        this.#cleanUpOperation(resp.operationId);
+      }
+
+      // TODO limit number of retry time
+      if (e instanceof ChainHeadError && e.shouldRetry) {
+        return retry();
+      }
+
+      throw e;
+    }
+  }
+
   #awaitOperation<T = any>(resp: MethodResponse): Promise<T> {
     if (resp.result === 'limitReached') {
-      throw new Error('Limit reached');
+      throw new ChainHeadLimitReachedError('Limit reached');
     }
 
     const defer = deferred<T>();
@@ -355,7 +383,7 @@ export class ChainHead extends JsonRpcGroup<ChainHeadEvent> {
 
     const resp: MethodResponse = await this.send('body', this.#subscriptionId, this.#ensurePinnedHash(at));
 
-    return this.#awaitOperation(resp);
+    return this.#awaitOperationWithRetry(resp, () => this.body(at));
   }
 
   /**
@@ -372,7 +400,7 @@ export class ChainHead extends JsonRpcGroup<ChainHeadEvent> {
       params,
     );
 
-    return this.#awaitOperation(resp);
+    return this.#awaitOperationWithRetry(resp, () => this.call(func, params, at));
   }
 
   /**
@@ -422,7 +450,19 @@ export class ChainHead extends JsonRpcGroup<ChainHeadEvent> {
       discardedItems = items.slice(items.length - resp.discardedItems);
     }
 
-    return [await this.#awaitOperation(resp), discardedItems];
+    try {
+      return [await this.#awaitOperation(resp), discardedItems];
+    } catch (e) {
+      if (resp.result === 'started') {
+        this.#cleanUpOperation(resp.operationId);
+      }
+
+      if (e instanceof ChainHeadError && e.shouldRetry) {
+        return this.#getStorage(items, childTrie, at);
+      }
+
+      throw e;
+    }
   }
 
   /**
