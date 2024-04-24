@@ -1,4 +1,5 @@
 import {
+  $AccountId,
   $AccountId20,
   $AccountId32,
   $Bytes,
@@ -7,6 +8,7 @@ import {
   $DigestItem,
   $Era,
   $EthereumAddress,
+  $Hash,
   $Header,
   $MultiAddress,
   $RawBytes,
@@ -32,6 +34,8 @@ const KNOWN_CODECS: Record<string, $.AnyShape> = {
   'sp_runtime::generic::digest::Digest': $Digest,
   'sp_runtime::generic::digest::DigestItem': $DigestItem,
   'sp_runtime::generic::header::Header': $Header,
+  'ink_primitives::types::Hash': $Hash,
+  'ink_primitives::types::AccountId': $AccountId,
 };
 
 export abstract class TypeRegistry {

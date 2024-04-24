@@ -1,4 +1,6 @@
+import { hexToU8a } from './hex';
 import { HexString } from './types.js';
+import { u8aEq } from './u8a';
 
 export function isNull(input: unknown): input is null {
   return input === null;
@@ -47,4 +49,19 @@ export const HEX_REGEX = /^0x[\da-fA-F]+$/;
  */
 export function isHex(input: unknown, strict?: boolean): input is HexString {
   return isString(input) && (input === '0x' || HEX_REGEX.test(input)) && (!strict || input.length % 2 === 0);
+}
+
+const WASM_MAGIC = new Uint8Array([0, 97, 115, 109]); // \0asm
+
+/**
+ * @Ref: https://github.com/polkadot-js/common/blob/master/packages/util/src/is/wasm.ts
+ */
+export function isWasm(input: unknown) {
+  if (typeof input === 'string') {
+    input = hexToU8a(input);
+
+    console.log(input);
+  }
+
+  return isU8a(input) && u8aEq(input.subarray(0, 4), WASM_MAGIC);
 }

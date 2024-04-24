@@ -1,4 +1,4 @@
-import { Weight } from '@dedot/codecs';
+import { BytesLike, Weight } from '@dedot/codecs';
 import { AnyFunc, AsyncMethod, GenericSubstrateApi } from '@dedot/types';
 
 export type ContractResult<ChainApi extends GenericSubstrateApi> = Awaited<
@@ -8,6 +8,10 @@ export type ContractResult<ChainApi extends GenericSubstrateApi> = Awaited<
 export type ChainSubmittableExtrinsic<ChainApi extends GenericSubstrateApi> = ReturnType<
   ChainApi['tx']['contracts']['call']
 >;
+
+export type ConstructorOptions = ContractOptions & {
+  salt: BytesLike | null;
+};
 
 export type ContractOptions = {
   value: bigint;
@@ -39,6 +43,7 @@ export interface GenericContractTx {
 export interface GenericContractApi {
   query: GenericContractQuery;
   tx: GenericContractTx;
+  constructor: GenericContractTx;
 }
 
 export interface ContractMetadata {
@@ -71,6 +76,7 @@ export interface ContractConstructor {
 
 export interface ContractSource {
   hash: string;
+  wasm?: string;
   language: string;
   compiler: string;
   buildInfo: BuildInfo;
