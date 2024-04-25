@@ -8,7 +8,7 @@ import {
   OperationInaccessible,
 } from '@dedot/specs';
 import { MockInstance } from '@vitest/spy';
-import { JsonRpcClient, numberToHex, stringToHex, SubstrateRuntimeVersion } from 'dedot';
+import { HexString, isNumber, JsonRpcClient, numberToHex, stringToHex, SubstrateRuntimeVersion } from 'dedot';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import MockProvider, { MockedRuntimeVersion } from '../../../client/__tests__/MockProvider';
 import { IJsonRpcClient } from '../../../types.js';
@@ -51,16 +51,50 @@ const newChainHeadSimulator = ({ numOfFinalizedBlocks = 15, provider }: Simulato
   let bestBlockHeight = -1;
   let newBlockHeight = -1;
 
-  const blockAtHeight = (height: number) => {
-    return {
-      hash: numberToHex(height),
-      parent: numberToHex(height - 1),
-    };
+  type BlockInfo = { height: number; hash: HexString; parent: HexString; forkCounter?: number };
+  const blockDb: Record<HexString, BlockInfo> = {}; // <height, {hash, parent}>
+  const forkCounter: Record<number, number> = {}; // <height, forkCount>
+
+  const findBlock = (height: number, forkCounter?: number): BlockInfo => {
+    const b = Object.values(blockDb).find((block) => block.height === height && block.forkCounter === forkCounter);
+    if (!b) throw new Error('Cannot find block');
+    return b;
   };
 
-  const newBlock = () => {
-    newBlockHeight += 1;
-    return blockAtHeight(newBlockHeight);
+  const newBlockAtHeight = (height: number, forkCounter?: number, parentForkCounter?: number): BlockInfo => {
+    if (height === 0) {
+      return {
+        height,
+        hash: '0x00' as HexString,
+        parent: '0x00' as HexString,
+      };
+    }
+
+    const suffix = isNumber(forkCounter) ? `-${forkCounter}` : '';
+    const hash = `${numberToHex(height)}${suffix}` as HexString;
+
+    if (blockDb[hash]) return blockDb[hash];
+
+    const parent: any = newBlockAtHeight(height - 1, parentForkCounter);
+
+    blockDb[hash] = {
+      height,
+      hash: hash as HexString,
+      parent: parent.hash as HexString,
+      forkCounter,
+    };
+
+    return blockDb[hash];
+  };
+
+  const newBlock = (fork = false, parentForkCounter?: number) => {
+    if (fork) {
+      forkCounter[newBlockHeight] = (forkCounter[newBlockHeight] || 0) + 1;
+      return newBlockAtHeight(newBlockHeight, forkCounter[newBlockHeight], parentForkCounter);
+    } else {
+      newBlockHeight += 1;
+      return newBlockAtHeight(newBlockHeight, undefined, parentForkCounter);
+    }
   };
 
   const initializedEvent = {
@@ -75,8 +109,15 @@ const newChainHeadSimulator = ({ numOfFinalizedBlocks = 15, provider }: Simulato
     return { ...mockedRuntime, specVersion: mockedRuntime.specVersion + 1 };
   };
 
-  const nextNewBlock = (withRuntime = false): NewBlock => {
-    const block = newBlock();
+  type NewNextBlock = {
+    fork?: boolean;
+    fromWhichParentFork?: number;
+    withRuntime?: boolean;
+  };
+
+  const nextNewBlock = (config?: NewNextBlock): NewBlock => {
+    const { fork = false, fromWhichParentFork, withRuntime = false } = config || {};
+    const block = newBlock(fork, fromWhichParentFork);
 
     return {
       event: 'newBlock',
@@ -87,36 +128,39 @@ const newChainHeadSimulator = ({ numOfFinalizedBlocks = 15, provider }: Simulato
   };
 
   // TODO simulate forks
-  const nextBestBlock = (): BestBlockChanged => {
-    console.log('nextBestBlock', newBlockHeight, bestBlockHeight);
+  const nextBestBlock = (forkCounter?: number): BestBlockChanged => {
     if (newBlockHeight <= bestBlockHeight) {
       throw new Error('No new block available');
     }
 
     bestBlockHeight += 1;
+    let block = findBlock(bestBlockHeight, forkCounter);
 
     return {
       event: 'bestBlockChanged',
-      bestBlockHash: blockAtHeight(bestBlockHeight).hash,
+      bestBlockHash: block.hash,
     };
   };
 
-  const nextFinalized = (): Finalized => {
-    console.log('nextFinalized', newBlockHeight, bestBlockHeight, finalizedHeight);
+  const nextFinalized = (forkCounter?: number): Finalized => {
     if (bestBlockHeight <= finalizedHeight) {
       throw new Error('No best block to finalize');
     }
 
     finalizedHeight += 1;
+    const block = findBlock(finalizedHeight, forkCounter);
+
+    // find other forked blocks at the same height for pruning
+    const prunedBlockHashes = Object.values(blockDb)
+      .filter((b) => b.height === finalizedHeight && b.forkCounter !== forkCounter)
+      .map((b) => b.hash);
+
+    prunedBlockHashes.forEach((hash) => delete blockDb[hash]);
 
     return {
       event: 'finalized',
-      finalizedBlockHashes: [
-        blockAtHeight(finalizedHeight - 2).hash,
-        blockAtHeight(finalizedHeight - 1).hash,
-        blockAtHeight(finalizedHeight).hash,
-      ],
-      prunedBlockHashes: [],
+      finalizedBlockHashes: [block.hash],
+      prunedBlockHashes: prunedBlockHashes,
     };
   };
 
@@ -242,7 +286,7 @@ describe('ChainHead', () => {
       });
 
       it('handle newBlock with runtime', async () => {
-        const newBlock: NewBlock = notify(simulator.subscriptionId, simulator.nextNewBlock(true));
+        const newBlock: NewBlock = notify(simulator.subscriptionId, simulator.nextNewBlock({ withRuntime: true }));
 
         await new Promise<void>((resolve) => {
           chainHead.on('newBlock', (blockHash, runtime) => {
@@ -258,7 +302,7 @@ describe('ChainHead', () => {
     describe('bestBlockChanged', () => {
       it('handle bestBlockChanged', async () => {
         notify(simulator.subscriptionId, simulator.nextNewBlock());
-        const newBlock2 = notify(simulator.subscriptionId, simulator.nextNewBlock(true));
+        const newBlock2 = notify(simulator.subscriptionId, simulator.nextNewBlock({ withRuntime: true }));
         notify(simulator.subscriptionId, simulator.nextNewBlock());
 
         const bestBlock1 = notify(simulator.subscriptionId, simulator.nextBestBlock());
@@ -293,8 +337,9 @@ describe('ChainHead', () => {
 
     describe('finalized', () => {
       it('handle finalized', async () => {
-        notify(simulator.subscriptionId, simulator.nextNewBlock());
-        const newBlock2 = notify(simulator.subscriptionId, simulator.nextNewBlock(true));
+        const newBlock1 = notify(simulator.subscriptionId, simulator.nextNewBlock());
+        notify(simulator.subscriptionId, simulator.nextNewBlock({ fork: true }));
+        const newBlock2 = notify(simulator.subscriptionId, simulator.nextNewBlock({ withRuntime: true }));
         notify(simulator.subscriptionId, simulator.nextNewBlock());
         notify(simulator.subscriptionId, simulator.nextNewBlock());
 
@@ -303,6 +348,7 @@ describe('ChainHead', () => {
 
         await new Promise<void>((resolve) => {
           const unsub = chainHead.on('finalizedBlock', (finalizedHash, runtime) => {
+            expect(finalizedHash).toEqual(newBlock1.blockHash);
             expect(finalizedHash).toEqual(finalized1.finalizedBlockHashes.at(-1));
             expect(chainHead.finalizedHash).toEqual(finalizedHash);
 
@@ -311,12 +357,12 @@ describe('ChainHead', () => {
           });
         });
 
-        // 4 new blocks on top of 15 initial blocks, unpin 4 blocks to maintain the queue size
+        // 4 new blocks on top of 15 initial blocks,  1 pruned block 0x0f-1, unpin 4 blocks to maintain the queue size
         await new Promise<void>((resolve) => {
           setTimeout(() => {
             expect(providerSend).toHaveBeenCalledWith('chainHead_v1_unpin', [
               simulator.subscriptionId,
-              ['0x00', '0x01', '0x02', '0x03'],
+              ['0x0f-1', '0x00', '0x01', '0x02', '0x03'],
             ]);
             resolve();
           }, 10);
@@ -349,6 +395,39 @@ describe('ChainHead', () => {
             expect(providerSend).toHaveBeenCalledWith('chainHead_v1_unpin', [
               simulator.subscriptionId,
               ['0x04', '0x05'],
+            ]);
+            resolve();
+          }, 10);
+        });
+      });
+
+      it('should finalize in favor of a fork chain', async () => {
+        notify(simulator.subscriptionId, simulator.nextNewBlock());
+        const newForkedBlock = notify(simulator.subscriptionId, simulator.nextNewBlock({ fork: true }));
+        notify(simulator.subscriptionId, simulator.nextNewBlock({ fromWhichParentFork: 1, withRuntime: true }));
+        notify(simulator.subscriptionId, simulator.nextNewBlock());
+        notify(simulator.subscriptionId, simulator.nextNewBlock());
+
+        notify(simulator.subscriptionId, simulator.nextBestBlock(1));
+        const finalized1 = notify(simulator.subscriptionId, simulator.nextFinalized(1));
+
+        await new Promise<void>((resolve) => {
+          const unsub = chainHead.on('finalizedBlock', (finalizedHash, runtime) => {
+            expect(finalizedHash).toEqual(newForkedBlock.blockHash);
+            expect(finalizedHash).toEqual(finalized1.finalizedBlockHashes.at(-1));
+            expect(chainHead.finalizedHash).toEqual(finalizedHash);
+
+            unsub();
+            resolve();
+          });
+        });
+
+        // 4 new blocks on top of 15 initial blocks, 1 pruned block 0x0f, unpin 5 blocks to maintain the queue size
+        await new Promise<void>((resolve) => {
+          setTimeout(() => {
+            expect(providerSend).toHaveBeenCalledWith('chainHead_v1_unpin', [
+              simulator.subscriptionId,
+              ['0x0f', '0x00', '0x01', '0x02', '0x03'],
             ]);
             resolve();
           }, 10);
