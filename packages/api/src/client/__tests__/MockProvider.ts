@@ -65,7 +65,7 @@ export default class MockProvider extends EventEmitter<ProviderEvent> implements
   }
 
   async send<T = any>(method: string, params: unknown[]): Promise<T> {
-    console.log('>> send', method);
+    console.log('>> send', method, JSON.stringify(params));
 
     const result = this.rpcRequests[method];
     if (!result) {
