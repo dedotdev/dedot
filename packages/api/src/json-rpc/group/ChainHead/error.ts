@@ -31,7 +31,7 @@ export class ChainHeadOperationError extends ChainHeadError {}
  * Ref: https://paritytech.github.io/json-rpc-interface-spec/api/chainHead_v1_storage.html#limitreached
  */
 export class ChainHeadLimitReachedError extends ChainHeadError {
-  shouldRetry = true;
+  // shouldRetry = true; TODO retry after a delayed?
 }
 
 /**

@@ -104,6 +104,7 @@ export class ChainHead extends JsonRpcGroup<ChainHeadEvent> {
     const defer = deferred<void>();
 
     try {
+      // TODO handle when a connection (Ws) is reconnect & this subscription is reinitialized, handle this similar to a StopEvent
       this.#unsub = await this.send('follow', true, (event: FollowEvent, subscription: Subscription) => {
         this.#onFollowEvent(event, subscription);
 
@@ -130,13 +131,17 @@ export class ChainHead extends JsonRpcGroup<ChainHeadEvent> {
           this.#queueSize = finalizedBlockHashes.length;
         }
 
-        this.#pinnedBlocks = finalizedBlockHashes.reverse().reduce(
-          (o, hash, idx, arr) => {
-            o[hash] = { hash, parent: arr.at(idx + 1) };
-            return o;
-          },
-          {} as Record<BlockHash, PinnedBlock>,
-        );
+        this.#pinnedBlocks = finalizedBlockHashes
+          .slice()
+          .reverse()
+          .reduce(
+            (o, hash, idx, arr) => {
+              o[hash] = { hash, parent: arr.at(idx + 1) };
+              return o;
+            },
+            {} as Record<BlockHash, PinnedBlock>,
+          );
+
         this.#finalizedRuntime = this.#extractRuntime(finalizedBlockRuntime)!;
         this.#bestHash = this.#finalizedHash = finalizedBlockHashes.at(-1);
 
@@ -170,9 +175,18 @@ export class ChainHead extends JsonRpcGroup<ChainHeadEvent> {
 
         const hashesToUnpin = [...prunedBlockHashes];
         if (this.#pinnedQueue.length > this.#queueSize) {
+          // if any pruned block is in the pinned queue, remove it
+          prunedBlockHashes.forEach((hash) => {
+            if (!this.#isPinnedHash(hash)) return;
+            delete this.#pinnedBlocks[hash];
+            const idx = this.#pinnedQueue.indexOf(hash);
+            if (idx >= 0) this.#pinnedQueue.splice(idx, 1);
+          });
+
+          // Unpin the oldest pinned blocks to maintain the queue size
           const numOfItemsToUnpin = this.#pinnedQueue.length - this.#queueSize;
           const queuedHashesToUnpin = this.#pinnedQueue.splice(0, numOfItemsToUnpin);
-          queuedHashesToUnpin.map((hash) => delete this.#pinnedBlocks[hash]);
+          queuedHashesToUnpin.forEach((hash) => delete this.#pinnedBlocks[hash]);
           hashesToUnpin.push(...queuedHashesToUnpin);
         }
 
@@ -186,7 +200,7 @@ export class ChainHead extends JsonRpcGroup<ChainHeadEvent> {
           defer.reject(new ChainHeadStopError('Subscription stopped!'));
         });
 
-        this.#handlers = {};
+        this.#cleanUp();
         break;
       }
       case 'operationBodyDone': {
@@ -338,10 +352,6 @@ export class ChainHead extends JsonRpcGroup<ChainHeadEvent> {
     try {
       return await this.#awaitOperation(resp);
     } catch (e) {
-      if (resp.result === 'started') {
-        this.#cleanUpOperation(resp.operationId);
-      }
-
       // TODO limit number of retry time
       if (e instanceof ChainHeadError && e.shouldRetry) {
         return retry();
@@ -414,15 +424,18 @@ export class ChainHead extends JsonRpcGroup<ChainHeadEvent> {
 
   /**
    * chainHead_storage
+   * TODO on a large number of items, best hash might change a long the way
+   *      we might ended up running query on a pruned block, we need to handle this
    */
   async storage(items: Array<StorageQuery>, childTrie?: string | null, at?: BlockHash): Promise<Array<StorageResult>> {
     this.#ensureFollowed();
 
+    const hash = this.#ensurePinnedHash(at);
     const results: Array<StorageResult> = [];
 
     let queryItems = items;
     while (queryItems.length > 0) {
-      const [newBatch, newDiscardedItems] = await this.#getStorage(queryItems, childTrie, at);
+      const [newBatch, newDiscardedItems] = await this.#getStorage(queryItems, childTrie, hash);
       results.push(...newBatch);
       queryItems = newDiscardedItems;
     }
@@ -453,10 +466,6 @@ export class ChainHead extends JsonRpcGroup<ChainHeadEvent> {
     try {
       return [await this.#awaitOperation(resp), discardedItems];
     } catch (e) {
-      if (resp.result === 'started') {
-        this.#cleanUpOperation(resp.operationId);
-      }
-
       if (e instanceof ChainHeadError && e.shouldRetry) {
         return this.#getStorage(items, childTrie, at);
       }
@@ -468,7 +477,7 @@ export class ChainHead extends JsonRpcGroup<ChainHeadEvent> {
   /**
    * chainHead_stopOperation
    */
-  async stopOperation(operationId: OperationId): Promise<void> {
+  protected async stopOperation(operationId: OperationId): Promise<void> {
     this.#ensureFollowed();
 
     await this.send('stopOperation', this.#subscriptionId, operationId);
@@ -477,7 +486,7 @@ export class ChainHead extends JsonRpcGroup<ChainHeadEvent> {
   /**
    * chainHead_continue
    */
-  async continue(operationId: OperationId): Promise<void> {
+  protected async continue(operationId: OperationId): Promise<void> {
     this.#ensureFollowed();
 
     await this.send('continue', this.#subscriptionId, operationId);

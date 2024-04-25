@@ -31,6 +31,8 @@ export default class MockProvider extends EventEmitter<ProviderEvent> implements
   rpcRequests: Record<string, AnyFunc> = {
     chain_getBlockHash: () => '0x0000000000000000000000000000000000000000000000000000000000000000',
     state_getRuntimeVersion: () => MockedRuntimeVersion,
+    state_subscribeRuntimeVersion: () => 'runtime-version-subscription-id',
+    state_unsubscribeRuntimeVersion: () => null,
     system_chain: () => 'MockedChain',
     system_properties: () => ({ ss58Format: 42 }) as ChainProperties,
     state_getMetadata: () => staticSubstrate,
@@ -38,6 +40,14 @@ export default class MockProvider extends EventEmitter<ProviderEvent> implements
     state_getStorage: () => '0x',
     state_queryStorageAt: () => [{ block: '0x', changes: ['0x', '0x'] }],
   };
+
+  #subscriptions: Record<
+    string,
+    {
+      callback: SubscriptionCallback;
+      subscription: Subscription;
+    }
+  > = {};
 
   setStatus(status: ConnectionStatus) {
     this.#status = status;
@@ -55,6 +65,8 @@ export default class MockProvider extends EventEmitter<ProviderEvent> implements
   }
 
   async send<T = any>(method: string, params: unknown[]): Promise<T> {
+    console.log('>> send', method);
+
     const result = this.rpcRequests[method];
     if (!result) {
       throw new Error(`${method} not implemented`);
@@ -64,10 +76,33 @@ export default class MockProvider extends EventEmitter<ProviderEvent> implements
   }
 
   async subscribe<T = any>(input: SubscriptionInput, callback: SubscriptionCallback<T>): Promise<Subscription> {
-    return {
-      unsubscribe: async () => {},
-      subscriptionId: Math.random().toString(36).substring(2),
+    const { subname, subscribe, params, unsubscribe } = input;
+    const subscriptionId = await this.send<string>(subscribe, params);
+
+    const subkey = `${subname}::${subscriptionId}`;
+
+    const subscription: Subscription = {
+      unsubscribe: async () => {
+        delete this.#subscriptions[subkey];
+        await this.send(unsubscribe, [subscriptionId]);
+      },
+      subscriptionId,
     };
+
+    this.#subscriptions[subscriptionId] = { callback, subscription };
+
+    return subscription;
+  }
+
+  notify(subscriptionId: string, data: Error | any) {
+    const { callback, subscription } = this.#subscriptions[subscriptionId];
+    if (callback) {
+      if (data instanceof Error) {
+        callback(data, undefined, subscription);
+      } else {
+        callback(null, data, subscription);
+      }
+    }
   }
 
   setRpcRequest(name: string, response: AnyFunc) {
