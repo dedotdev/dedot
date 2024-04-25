@@ -1,10 +1,11 @@
 import { EventEmitter as EE } from 'eventemitter3';
 
+type Unsub = () => void;
 type HandlerFn = (...args: any[]) => void;
 
 export interface IEventEmitter<EventTypes extends string = string> {
-  on(event: EventTypes, handler: HandlerFn): this;
-  once(event: EventTypes, handler: HandlerFn): this;
+  on(event: EventTypes, handler: HandlerFn): Unsub;
+  once(event: EventTypes, handler: HandlerFn): Unsub;
   off(event: EventTypes, handler?: HandlerFn): this;
 }
 
@@ -23,16 +24,20 @@ export class EventEmitter<EventTypes extends string = string> implements IEventE
     this.#emitter.removeAllListeners();
   }
 
-  public on(event: EventTypes, handler: HandlerFn): this {
+  public on(event: EventTypes, handler: HandlerFn): Unsub {
     this.#emitter.on(event, handler);
 
-    return this;
+    return () => {
+      this.off(event, handler);
+    };
   }
 
-  public once(event: EventTypes, handler: HandlerFn): this {
+  public once(event: EventTypes, handler: HandlerFn): Unsub {
     this.#emitter.once(event, handler);
 
-    return this;
+    return () => {
+      this.off(event, handler);
+    };
   }
 
   public off(event: EventTypes, handler?: HandlerFn): this {

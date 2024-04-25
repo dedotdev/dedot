@@ -11,3 +11,4 @@ alice: ts-script ./0001-check-tx-transfer-balance.ts within 100 seconds
 alice: ts-script ./0001-check-tx-batch.ts within 100 seconds
 alice: ts-script ./0001-check-ws-provider-connection.ts within 100 seconds
 alice: ts-script ./0001-tx-broadcaster.ts within 100 seconds
+alice: ts-script ./0001-verify-chain-head-logic.ts within 200 seconds
