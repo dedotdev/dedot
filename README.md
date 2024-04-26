@@ -18,8 +18,9 @@ _Note: The project is still in active development phase, the information on this
 - ✅ Familiar api style with `@polkadot/api`, easy & fast migration!
 - ✅ Native TypeScript type system for scale-codec
 - ✅ Compatible with `@polkadot/extension`-based wallets
-- ⏳ Use the new JSON-RPC APIs ([v2](https://paritytech.github.io/json-rpc-interface-spec/introduction.html)) 
 - ✅ Support Metadata V14, V15 (latest)
+- ⏳ Support both the legacy (✅) & [new](https://paritytech.github.io/json-rpc-interface-spec/introduction.html) (⏳) JSON-RPC APIs
+- ⏳ Support light clients ([smoldot](https://www.npmjs.com/package/smoldot))
 
 ### Have a quick taste
 
