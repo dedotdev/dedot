@@ -2,7 +2,7 @@
 
 {{{ importTypes }}}
 
-export interface RuntimeApis extends GenericRuntimeApis {
+export interface RuntimeApis<Rv extends RpcVersion> extends GenericRuntimeApis<Rv> {
 {{{ runtimeCallsOut }}}
 }
 

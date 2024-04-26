@@ -8,7 +8,7 @@ export class QueryGen extends ApiGen {
     const { pallets } = this.metadata;
 
     this.typesGen.clearCache();
-    this.typesGen.typeImports.addKnownType('GenericChainStorage', 'GenericStorageQuery', 'Callback');
+    this.typesGen.typeImports.addKnownType('GenericChainStorage', 'GenericStorageQuery', 'Callback', 'RpcVersion');
 
     let defTypeOut = '';
     for (let pallet of pallets) {
@@ -18,9 +18,9 @@ export class QueryGen extends ApiGen {
       const queries = storage.entries.map((one) => this.#generateEntry(one));
       const queryDefs = queries.map(({ name, valueType, keyType, docs, keyTypeOut }) => {
         if (keyTypeOut) {
-          return `${commentBlock(docs)}${name}: GenericStorageQuery<(${keyType}) => ${valueType}, ${keyTypeOut}>`;
+          return `${commentBlock(docs)}${name}: GenericStorageQuery<Rv, (${keyType}) => ${valueType}, ${keyTypeOut}>`;
         } else {
-          return `${commentBlock(docs)}${name}: GenericStorageQuery<(${keyType}) => ${valueType}>`;
+          return `${commentBlock(docs)}${name}: GenericStorageQuery<Rv, (${keyType}) => ${valueType}>`;
         }
       });
 
@@ -28,7 +28,7 @@ export class QueryGen extends ApiGen {
       defTypeOut += `${stringCamelCase(pallet.name)}: {
         ${queryDefs.join(',\n')}
         
-        ${commentBlock('Generic pallet storage query')}[storage: string]: GenericStorageQuery;
+        ${commentBlock('Generic pallet storage query')}[storage: string]: GenericStorageQuery<Rv>;
       },`;
     }
 

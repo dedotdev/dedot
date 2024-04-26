@@ -3,7 +3,7 @@ import type { ConnectionStatus, JsonRpcProvider, ProviderEvent } from '@dedot/pr
 import type { AnyShape } from '@dedot/shape';
 import { SubscriptionsInfo } from '@dedot/specs';
 import type { IStorage } from '@dedot/storage';
-import type { GenericSubstrateApi, RuntimeApiName, RuntimeApiSpec, Unsub } from '@dedot/types';
+import type { GenericSubstrateApi, RpcVersion, RuntimeApiName, RuntimeApiSpec, Unsub } from '@dedot/types';
 import type { HashFn, HexString, IEventEmitter } from '@dedot/utils';
 import type { AnySignedExtension } from './extrinsic/index.js';
 
@@ -95,6 +95,7 @@ export interface IJsonRpcClient<
  */
 export interface ISubstrateClientAt<ChainApi extends GenericSubstrateApi = GenericSubstrateApi> {
   atBlockHash?: BlockHash;
+  rpcVersion: RpcVersion;
 
   options: ApiOptions;
   genesisHash: Hash;

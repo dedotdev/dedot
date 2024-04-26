@@ -1,5 +1,5 @@
 import { BlockHash, PortableRegistry, RuntimeVersion } from '@dedot/codecs';
-import { GenericSubstrateApi, Unsub } from '@dedot/types';
+import { GenericSubstrateApi, RpcLegacy, Unsub, VersionedGenericSubstrateApi } from '@dedot/types';
 import type { SubstrateApi } from '../chaintypes/index.js';
 import {
   ConstantExecutor,
@@ -11,7 +11,9 @@ import {
 } from '../executor/index.js';
 import { newProxyChain } from '../proxychain.js';
 import type { ApiOptions, ISubstrateClientAt, NetworkEndpoint, SubstrateRuntimeVersion } from '../types.js';
-import { BaseSubstrateClient, KEEP_ALIVE_INTERVAL } from './BaseSubstrateClient.js';
+import { BaseSubstrateClient } from './BaseSubstrateClient.js';
+
+const KEEP_ALIVE_INTERVAL = 10_000; // in ms
 
 /**
  * @name Dedot
@@ -51,7 +53,7 @@ import { BaseSubstrateClient, KEEP_ALIVE_INTERVAL } from './BaseSubstrateClient.
  * run().catch(console.error);
  * ```
  */
-export class Dedot<ChainApi extends GenericSubstrateApi = SubstrateApi> extends BaseSubstrateClient<ChainApi> {
+export class Dedot<ChainApi extends VersionedGenericSubstrateApi = SubstrateApi> extends BaseSubstrateClient<ChainApi> {
   #runtimeSubscriptionUnsub?: Unsub;
   #healthTimer?: ReturnType<typeof setInterval>;
   #apiAtCache: Record<BlockHash, ISubstrateClientAt<any>> = {};
@@ -62,7 +64,7 @@ export class Dedot<ChainApi extends GenericSubstrateApi = SubstrateApi> extends 
    * @param options
    */
   constructor(options: ApiOptions | NetworkEndpoint) {
-    super(options);
+    super('legacy', options);
   }
 
   /**
@@ -70,7 +72,7 @@ export class Dedot<ChainApi extends GenericSubstrateApi = SubstrateApi> extends 
    *
    * @param options
    */
-  static async create<ChainApi extends GenericSubstrateApi = SubstrateApi>(
+  static async create<ChainApi extends VersionedGenericSubstrateApi = SubstrateApi>(
     options: ApiOptions | NetworkEndpoint,
   ): Promise<Dedot<ChainApi>> {
     return new Dedot<ChainApi>(options).connect();
@@ -81,7 +83,7 @@ export class Dedot<ChainApi extends GenericSubstrateApi = SubstrateApi> extends 
    *
    * @param options
    */
-  static async new<ChainApi extends GenericSubstrateApi = SubstrateApi>(
+  static async new<ChainApi extends VersionedGenericSubstrateApi = SubstrateApi>(
     options: ApiOptions | NetworkEndpoint,
   ): Promise<Dedot<ChainApi>> {
     return Dedot.create(options);
@@ -197,8 +199,8 @@ export class Dedot<ChainApi extends GenericSubstrateApi = SubstrateApi> extends 
    * console.log('ss58Prefix:', ss58Prefix)
    * ```
    */
-  get consts(): ChainApi['consts'] {
-    return newProxyChain({ executor: new ConstantExecutor(this) }) as ChainApi['consts'];
+  get consts(): ChainApi[RpcLegacy]['consts'] {
+    return newProxyChain({ executor: new ConstantExecutor(this) }) as ChainApi[RpcLegacy]['consts'];
   }
 
   /**
@@ -209,22 +211,22 @@ export class Dedot<ChainApi extends GenericSubstrateApi = SubstrateApi> extends 
    * console.log('Balance:', balance);
    * ```
    */
-  get query(): ChainApi['query'] {
-    return newProxyChain({ executor: new StorageQueryExecutor(this) }) as ChainApi['query'];
+  get query(): ChainApi[RpcLegacy]['query'] {
+    return newProxyChain({ executor: new StorageQueryExecutor(this) }) as ChainApi[RpcLegacy]['query'];
   }
 
   /**
    * @description Entry-point for inspecting errors from metadata
    */
-  get errors(): ChainApi['errors'] {
-    return newProxyChain({ executor: new ErrorExecutor(this) }) as ChainApi['errors'];
+  get errors(): ChainApi[RpcLegacy]['errors'] {
+    return newProxyChain({ executor: new ErrorExecutor(this) }) as ChainApi[RpcLegacy]['errors'];
   }
 
   /**
    * @description Entry-point for inspecting events from metadata
    */
-  get events(): ChainApi['events'] {
-    return newProxyChain({ executor: new EventExecutor(this) }) as ChainApi['events'];
+  get events(): ChainApi[RpcLegacy]['events'] {
+    return newProxyChain({ executor: new EventExecutor(this) }) as ChainApi[RpcLegacy]['events'];
   }
 
   /**
@@ -239,13 +241,13 @@ export class Dedot<ChainApi extends GenericSubstrateApi = SubstrateApi> extends 
    * const queryInfo = await api.call.transactionPaymentApi.queryInfo(tx.toU8a(), tx.length);
    * ```
    */
-  get call(): ChainApi['call'] {
+  get call(): ChainApi[RpcLegacy]['call'] {
     return this.callAt();
   }
 
   // For internal use with caution
-  protected override callAt(hash?: BlockHash): ChainApi['call'] {
-    return newProxyChain({ executor: new RuntimeApiExecutor(this, hash) }) as ChainApi['call'];
+  protected override callAt(hash?: BlockHash): ChainApi[RpcLegacy]['call'] {
+    return newProxyChain({ executor: new RuntimeApiExecutor(this, hash) }) as ChainApi[RpcLegacy]['call'];
   }
 
   /**
@@ -259,8 +261,8 @@ export class Dedot<ChainApi extends GenericSubstrateApi = SubstrateApi> extends 
    *    });
    * ```
    */
-  get tx(): ChainApi['tx'] {
-    return newProxyChain({ executor: new TxExecutor(this) }) as ChainApi['tx'];
+  get tx(): ChainApi[RpcLegacy]['tx'] {
+    return newProxyChain({ executor: new TxExecutor(this) }) as ChainApi[RpcLegacy]['tx'];
   }
 
   /**
@@ -269,7 +271,7 @@ export class Dedot<ChainApi extends GenericSubstrateApi = SubstrateApi> extends 
    *
    * @param hash
    */
-  async at<ChainApiAt extends GenericSubstrateApi = ChainApi>(
+  async at<ChainApiAt extends GenericSubstrateApi = ChainApi[RpcLegacy]>(
     hash: BlockHash,
   ): Promise<ISubstrateClientAt<ChainApiAt>> {
     if (this.#apiAtCache[hash]) return this.#apiAtCache[hash];

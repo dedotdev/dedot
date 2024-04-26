@@ -1,11 +1,14 @@
 import { ConnectionStatus, JsonRpcProvider, ProviderEvent, Subscription, WsProvider } from '@dedot/providers';
 import { scaledResponses, subscriptionsInfo } from '@dedot/specs';
-import { AsyncMethod, GenericSubstrateApi, Unsub } from '@dedot/types';
+import { AsyncMethod, GenericSubstrateApi, RpcVersion, Unsub } from '@dedot/types';
 import { assert, EventEmitter, isFunction } from '@dedot/utils';
 import { SubstrateApi } from '../chaintypes/index.js';
 import { IJsonRpcClient, JsonRpcClientOptions, NetworkEndpoint } from '../types.js';
 
-export class JsonRpcClient<ChainApi extends GenericSubstrateApi = SubstrateApi, Events extends string = ProviderEvent>
+export class JsonRpcClient<
+    ChainApi extends GenericSubstrateApi = SubstrateApi[RpcVersion],
+    Events extends string = ProviderEvent,
+  >
   extends EventEmitter<Events>
   implements IJsonRpcClient<ChainApi, Events>
 {
@@ -24,7 +27,7 @@ export class JsonRpcClient<ChainApi extends GenericSubstrateApi = SubstrateApi, 
    *
    * @param options
    */
-  static async create<ChainApi extends GenericSubstrateApi = SubstrateApi>(
+  static async create<ChainApi extends GenericSubstrateApi = SubstrateApi[RpcVersion]>(
     options: JsonRpcClientOptions | NetworkEndpoint,
   ): Promise<JsonRpcClient<ChainApi>> {
     return new JsonRpcClient<ChainApi>(options).connect();
@@ -35,7 +38,7 @@ export class JsonRpcClient<ChainApi extends GenericSubstrateApi = SubstrateApi, 
    *
    * @param options
    */
-  static async new<ChainApi extends GenericSubstrateApi = SubstrateApi>(
+  static async new<ChainApi extends GenericSubstrateApi = SubstrateApi[RpcVersion]>(
     options: JsonRpcClientOptions | NetworkEndpoint,
   ): Promise<JsonRpcClient<ChainApi>> {
     return JsonRpcClient.create(options);
