@@ -68,17 +68,20 @@ export type GenericStorageQuery<
   T extends AnyFunc = AnyFunc,
   KeyTypeOut extends any = undefined,
 > = StorageQueryMethod<T> & {
-  multi: StorageMultiQueryMethod<T>;
   meta: PalletStorageEntryMetadataLatest;
   rawKey: (...args: Parameters<T>) => StorageKey;
 } & (KeyTypeOut extends undefined
     ? {}
     : Rv extends RpcLegacy
       ? {
+          multi: StorageMultiQueryMethod<T>;
           keys: (pagination?: PaginationOptions) => Promise<KeyTypeOut[]>;
           entries: (pagination?: PaginationOptions) => Promise<Array<[KeyTypeOut, NonNullable<ReturnType<T>>]>>;
         }
-      : { entries: () => Promise<Array<[KeyTypeOut, NonNullable<ReturnType<T>>]>> });
+      : {
+          multi: StorageMultiQueryMethod<T>;
+          entries: () => Promise<Array<[KeyTypeOut, NonNullable<ReturnType<T>>]>>;
+        });
 
 export type GenericRuntimeApiMethod<_ extends RpcVersion = RpcVersion, F extends AsyncMethod = AsyncMethod> = F & {
   meta: RuntimeApiMethodSpec;

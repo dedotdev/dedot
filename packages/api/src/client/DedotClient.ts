@@ -1,10 +1,12 @@
 import { $H256, BlockHash } from '@dedot/codecs';
 import { u32 } from '@dedot/shape';
 import { ChainHeadRuntimeVersion } from '@dedot/specs';
-import { VersionedGenericSubstrateApi } from '@dedot/types';
+import { RpcV2, VersionedGenericSubstrateApi } from '@dedot/types';
 import { assert, concatU8a, HexString, twox64Concat, u8aToHex, xxhashAsU8a } from '@dedot/utils';
 import type { SubstrateApi } from '../chaintypes/index.js';
+import { RuntimeApiExecutorV2, StorageQueryExecutorV2 } from '../executor/index.js';
 import { ChainHead, ChainSpec, Transaction, TransactionWatch } from '../json-rpc/index.js';
+import { newProxyChain } from '../proxychain.js';
 import type { ApiOptions, NetworkEndpoint, TxBroadcaster } from '../types.js';
 import { BaseSubstrateClient, ensurePresence } from './BaseSubstrateClient.js';
 
@@ -153,4 +155,22 @@ export class DedotClient<
     this._chainSpec = undefined;
     this._txBroadcaster = undefined;
   }
+
+  override get query(): ChainApi[RpcV2]['query'] {
+    return newProxyChain({
+      executor: new StorageQueryExecutorV2(this, this.chainHead),
+    }) as ChainApi[RpcV2]['query'];
+  }
+
+  override get call(): ChainApi[RpcV2]['call'] {
+    return this.callAt();
+  }
+
+  protected override callAt(blockHash?: BlockHash): ChainApi[RpcV2]['call'] {
+    return newProxyChain({
+      executor: new RuntimeApiExecutorV2(this, this.chainHead, blockHash),
+    }) as ChainApi[RpcV2]['call'];
+  }
+
+  // TODO tx, at
 }

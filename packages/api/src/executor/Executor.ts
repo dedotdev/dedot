@@ -8,16 +8,13 @@ import { ISubstrateClientAt } from '../types.js';
  * @description Execution abstraction for a specific action
  */
 export abstract class Executor<ChainApi extends GenericSubstrateApi = GenericSubstrateApi> {
-  readonly #api: ISubstrateClientAt<ChainApi>;
   readonly #atBlockHash?: BlockHash;
 
-  constructor(api: ISubstrateClientAt<ChainApi>, atBlockHash?: BlockHash) {
-    this.#api = api;
+  constructor(
+    public api: ISubstrateClientAt<ChainApi>,
+    atBlockHash?: BlockHash,
+  ) {
     this.#atBlockHash = atBlockHash;
-  }
-
-  get api(): ISubstrateClientAt<ChainApi> {
-    return this.#api;
   }
 
   get atBlockHash() {
@@ -29,7 +26,7 @@ export abstract class Executor<ChainApi extends GenericSubstrateApi = GenericSub
   }
 
   get metadata() {
-    return this.api.metadata.latest;
+    return this.registry.metadata;
   }
 
   getPallet(name: string): PalletDefLatest {

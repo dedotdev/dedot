@@ -5,3 +5,6 @@ export * from './ErrorExecutor.js';
 export * from './EventExecutor.js';
 export * from './RuntimeApiExecutor.js';
 export * from './TxExecutor.js';
+
+export * from './v2/StorageQueryExecutorV2.js';
+export * from './v2/RuntimeApiExecutorV2.js';
