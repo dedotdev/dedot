@@ -133,7 +133,7 @@ export abstract class BaseSubstrateClient<ChainApi extends VersionedGenericSubst
     return this.getMetadataKey(this._runtimeVersion);
   }
 
-  protected async shouldLoadPreloadMetadata() {
+  protected async shouldPreloadMetadata() {
     if (this._options.metadata && Object.keys(this._options.metadata).length) {
       return false;
     }

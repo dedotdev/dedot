@@ -96,7 +96,7 @@ export class DedotClient<
     this._runtimeVersion = this.chainHead.bestRuntimeVersion;
 
     let metadata;
-    if (await this.shouldLoadPreloadMetadata()) {
+    if (await this.shouldPreloadMetadata()) {
       metadata = await this.fetchMetadata();
     }
 

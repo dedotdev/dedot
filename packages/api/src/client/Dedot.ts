@@ -104,7 +104,7 @@ export class Dedot<ChainApi extends VersionedGenericSubstrateApi = SubstrateApi>
     let [genesisHash, runtimeVersion, metadata] = await Promise.all([
       this.rpc.chain_getBlockHash(0),
       this.#getRuntimeVersion(),
-      (await this.shouldLoadPreloadMetadata()) ? this.fetchMetadata() : Promise.resolve(undefined),
+      (await this.shouldPreloadMetadata()) ? this.fetchMetadata() : Promise.resolve(undefined),
     ]);
 
     this._genesisHash = genesisHash;
