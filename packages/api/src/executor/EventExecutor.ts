@@ -1,13 +1,12 @@
 import type { GenericPalletEvent, GenericSubstrateApi, PalletEvent } from '@dedot/types';
-import { assert, UnknownApiError, stringCamelCase, stringPascalCase } from '@dedot/utils';
-import type { SubstrateApi } from '../chaintypes/index.js';
+import { assert, stringCamelCase, stringPascalCase, UnknownApiError } from '@dedot/utils';
 import { Executor } from './Executor.js';
 
 /**
  * @name EventExecutor
  * @description Find pallet event information from metadata
  */
-export class EventExecutor<ChainApi extends GenericSubstrateApi = SubstrateApi> extends Executor<ChainApi> {
+export class EventExecutor<ChainApi extends GenericSubstrateApi = GenericSubstrateApi> extends Executor<ChainApi> {
   doExecute(pallet: string, errorName: string): GenericPalletEvent<string, string> {
     const targetPallet = this.getPallet(pallet);
 

@@ -1,32 +1,34 @@
-import type { DispatchError, DispatchInfo, Hash, TransactionStatus } from '@dedot/codecs';
+import type { DispatchError, DispatchInfo, Hash } from '@dedot/codecs';
 import type { IEventRecord, ISubmittableResult } from '@dedot/types';
-import type { FrameSystemEventRecord } from '../chaintypes/index.js';
+import type { FrameSystemEventRecord } from '../../chaintypes/index.js';
 
-export interface SubmittableResultInputs<E extends IEventRecord = FrameSystemEventRecord> {
+export interface SubmittableResultInputs<E extends IEventRecord = FrameSystemEventRecord, TxStatus extends any = any> {
   events?: E[];
-  status: TransactionStatus;
+  status: TxStatus;
   txHash: Hash;
   txIndex?: number;
 }
 
-export class SubmittableResult<E extends IEventRecord = FrameSystemEventRecord> implements ISubmittableResult<E> {
+export class SubmittableResult<E extends IEventRecord = FrameSystemEventRecord, TxStatus extends any = any>
+  implements ISubmittableResult<E, TxStatus>
+{
+  status: TxStatus;
+  events: E[];
   dispatchInfo?: DispatchInfo;
   dispatchError?: DispatchError;
-  events: E[];
-  status: TransactionStatus;
   txHash: Hash;
   txIndex?: number;
 
-  constructor({ events, status, txHash, txIndex }: SubmittableResultInputs<E>) {
+  constructor({ events, status, txHash, txIndex }: SubmittableResultInputs<E, TxStatus>) {
     this.events = events || [];
     this.status = status;
     this.txHash = txHash;
     this.txIndex = txIndex;
 
-    [this.dispatchInfo, this.dispatchError] = this.#extractInfo();
+    [this.dispatchInfo, this.dispatchError] = this._extractDispatchInfo();
   }
 
-  #extractInfo(): [DispatchInfo | undefined, DispatchError | undefined] {
+  _extractDispatchInfo(): [DispatchInfo | undefined, DispatchError | undefined] {
     for (const { event } of this.events as FrameSystemEventRecord[]) {
       const { pallet, palletEvent } = event;
       if (pallet === 'System' && palletEvent.name === 'ExtrinsicFailed') {

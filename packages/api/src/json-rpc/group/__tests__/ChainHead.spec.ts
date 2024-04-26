@@ -13,9 +13,9 @@ import {
 import { MockInstance } from '@vitest/spy';
 import { HexString, isNumber, JsonRpcClient, numberToHex, stringToHex, SubstrateRuntimeVersion } from 'dedot';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import MockProvider, { MockedRuntimeVersion } from '../../../client/__tests__/MockProvider';
+import MockProvider, { MockedRuntimeVersion } from '../../../client/__tests__/MockProvider.js';
 import { IJsonRpcClient } from '../../../types.js';
-import { ChainHead } from '../ChainHead';
+import { ChainHead } from '../ChainHead/index.js';
 
 const mockedRuntime: ChainHeadRuntimeVersion = {
   ...MockedRuntimeVersion,

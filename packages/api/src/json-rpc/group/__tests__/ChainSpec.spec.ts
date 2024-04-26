@@ -1,9 +1,9 @@
 import { stringToHex } from '@dedot/utils';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import MockProvider from '../../../client/__tests__/MockProvider';
+import MockProvider from '../../../client/__tests__/MockProvider.js';
 import { IJsonRpcClient } from '../../../types.js';
-import { JsonRpcClient } from '../../JsonRpcClient';
-import { ChainSpec } from '../ChainSpec';
+import { JsonRpcClient } from '../../JsonRpcClient.js';
+import { ChainSpec } from '../ChainSpec.js';
 
 const rpcMethods = ['chainSpec_v1_chainName', 'chainSpec_v1_genesisHash', 'chainSpec_v1_properties'];
 

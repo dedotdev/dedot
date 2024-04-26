@@ -22,7 +22,7 @@ export class TxGen extends ApiGen {
     const signatureTypeIn = this.typesGen.generateType(signatureTypeId, 1);
 
     this.typesGen.typeImports.addPortableType('FrameSystemEventRecord');
-    this.typesGen.typeImports.addCodecType('Extrinsic');
+    this.typesGen.typeImports.addCodecType('Extrinsic', 'TransactionStatus');
     this.typesGen.addTypeImport([callTypeIn, addressTypeIn, signatureTypeIn]);
 
     let txDefsOut = '';
@@ -80,7 +80,7 @@ export class TxGen extends ApiGen {
     const defTypes = `
     export type ChainSubmittableExtrinsic<T extends IRuntimeTxCall = ${callTypeIn}> = 
         Extrinsic<${addressTypeIn}, T, ${signatureTypeIn}, any[]> &
-        ISubmittableExtrinsic<ISubmittableResult<FrameSystemEventRecord>>
+        ISubmittableExtrinsic<ISubmittableResult<FrameSystemEventRecord, TransactionStatus>>
         
     export type TxCall = (...args: any[]) => ChainSubmittableExtrinsic;    
 `;

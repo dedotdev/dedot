@@ -3,6 +3,7 @@ import { PortableRegistry, SignedExtensionDefLatest } from '@dedot/codecs';
 import * as $ from '@dedot/shape';
 import { PayloadOptions } from '@dedot/types';
 import { ensurePresence } from '@dedot/utils';
+import { ISubstrateClient } from 'dedot/types';
 import { Dedot } from '../../client/index.js';
 
 export interface ISignedExtension {
@@ -30,7 +31,7 @@ export abstract class SignedExtension<Data extends any = {}, AdditionalSigned ex
   additionalSigned: AdditionalSigned;
 
   constructor(
-    public api: Dedot,
+    public api: ISubstrateClient,
     public options?: SignedExtensionOptions,
   ) {
     this.data = {} as unknown as Data;
