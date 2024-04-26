@@ -1,14 +1,13 @@
 import type { BlockHash, PalletDefLatest } from '@dedot/codecs';
 import type { GenericSubstrateApi } from '@dedot/types';
 import { assert, stringCamelCase, UnknownApiError } from '@dedot/utils';
-import type { SubstrateApi } from '../chaintypes/index.js';
 import { ISubstrateClientAt } from '../types.js';
 
 /**
  * @name Executor
  * @description Execution abstraction for a specific action
  */
-export abstract class Executor<ChainApi extends GenericSubstrateApi = SubstrateApi> {
+export abstract class Executor<ChainApi extends GenericSubstrateApi = GenericSubstrateApi> {
   readonly #api: ISubstrateClientAt<ChainApi>;
   readonly #atBlockHash?: BlockHash;
 

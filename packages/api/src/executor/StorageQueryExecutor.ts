@@ -2,7 +2,6 @@ import { BlockHash, Option, StorageData, StorageKey } from '@dedot/codecs';
 import type { StorageChangeSet } from '@dedot/specs';
 import type { Callback, GenericStorageQuery, GenericSubstrateApi, PaginationOptions, Unsub } from '@dedot/types';
 import { assert, isFunction } from '@dedot/utils';
-import type { SubstrateApi } from '../chaintypes/index.js';
 import { QueryableStorage } from '../storage/QueryableStorage.js';
 import { Executor } from './Executor.js';
 
@@ -13,7 +12,9 @@ const DEFAULT_ENTRIES_PAGE_SIZE = 250;
  * @name StorageQueryExecutor
  * @description Execute a query to on-chain storage
  */
-export class StorageQueryExecutor<ChainApi extends GenericSubstrateApi = SubstrateApi> extends Executor<ChainApi> {
+export class StorageQueryExecutor<
+  ChainApi extends GenericSubstrateApi = GenericSubstrateApi,
+> extends Executor<ChainApi> {
   doExecute(pallet: string, storage: string): GenericStorageQuery {
     const entry = new QueryableStorage(this.registry, pallet, storage);
 

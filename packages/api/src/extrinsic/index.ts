@@ -1,2 +1,2 @@
 export * from './extensions/index.js';
-export * from './SubmittableResult.js';
+export * from './submittable/index.js';
