@@ -1,12 +1,10 @@
-import { Dedot } from 'dedot';
-import { assert, stringCamelCase } from '@dedot/utils';
 import { $Metadata, Metadata } from '@dedot/codecs';
+import { RpcVersion } from '@dedot/types';
+import { assert, stringCamelCase } from '@dedot/utils';
+import { Dedot, DedotClient, ISubstrateClient } from 'dedot';
+import { SubstrateApi } from 'dedot/chaintypes';
 
-export const run = async (nodeName: any, networkInfo: any) => {
-  const { wsUri } = networkInfo.nodesByName[nodeName];
-
-  const api = await Dedot.new(wsUri);
-
+const verifyRuntimeApi = async (api: ISubstrateClient<SubstrateApi[RpcVersion]>) => {
   assert(api.metadata.version === 'V15', 'Metadata should be V15');
 
   // Checking if all apis specs are defined
@@ -33,4 +31,14 @@ export const run = async (nodeName: any, networkInfo: any) => {
   const encodedMetadata = await api.call.metadata.metadataAtVersion(15);
   const metadata = $Metadata.tryDecode(encodedMetadata);
   assert(metadata instanceof Metadata, 'Invalid metadata instance');
+};
+
+export const run = async (nodeName: any, networkInfo: any) => {
+  const { wsUri } = networkInfo.nodesByName[nodeName];
+
+  const apiLegacy = await Dedot.new(wsUri);
+  await verifyRuntimeApi(apiLegacy);
+
+  const apiV2 = await DedotClient.new(wsUri);
+  await verifyRuntimeApi(apiV2);
 };
