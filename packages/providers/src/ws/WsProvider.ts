@@ -55,6 +55,9 @@ export interface WsSubscriptionState {
   subscription: Subscription;
 }
 
+// No resubscribe subscriptions these prefixes on reconnect
+const NO_RESUBSCRIBE_PREFIXES = ['author_', 'chainHead_', 'transactionWatch_'];
+
 /**
  * @name WsProvider
  * @description A JSON-RPC provider that connects to a WebSocket endpoint
@@ -188,6 +191,11 @@ export class WsProvider extends EventEmitter<ProviderEvent> implements JsonRpcPr
     // re-subscribe to previous subscriptions if this is a reconnect
     Object.keys(this.#subscriptions).forEach((subkey) => {
       const { input, callback, subscription } = this.#subscriptions[subkey];
+
+      if (NO_RESUBSCRIBE_PREFIXES.some((prefix) => input.subscribe.startsWith(prefix))) {
+        delete this.#subscriptions[subkey];
+        return;
+      }
 
       this.subscribe(input, callback).then((newsub) => {
         // Remove the old subscription record
