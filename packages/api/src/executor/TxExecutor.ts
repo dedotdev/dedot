@@ -10,10 +10,6 @@ import { Executor } from './Executor.js';
  * @description Execute a transaction instruction, returns a submittable extrinsic
  */
 export class TxExecutor<ChainApi extends GenericSubstrateApi = GenericSubstrateApi> extends Executor<ChainApi> {
-  constructor(api: ISubstrateClient<ChainApi>, atBlockHash?: BlockHash) {
-    super(api, atBlockHash);
-  }
-
   doExecute(pallet: string, functionName: string) {
     const targetPallet = this.getPallet(pallet);
 
