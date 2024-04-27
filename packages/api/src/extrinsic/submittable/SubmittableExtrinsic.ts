@@ -1,23 +1,16 @@
-import { BlockHash, Extrinsic, Hash, SignedBlock, TransactionStatus } from '@dedot/codecs';
+import { BlockHash, Hash, SignedBlock, TransactionStatus } from '@dedot/codecs';
 import {
   AddressOrPair,
-  AsyncMethod,
   Callback,
   DryRunResult,
-  IRuntimeTxCall,
   ISubmittableExtrinsicLegacy,
   ISubmittableResult,
   SignerOptions,
   Unsub,
 } from '@dedot/types';
-import { assert, HexString, isFunction, isHex, u8aToHex } from '@dedot/utils';
-import { BaseSubmittableExtrinsic } from 'dedot/extrinsic/submittable/BaseSubmittableExtrinsic';
-import type { FrameSystemEventRecord } from '../../chaintypes/index.js';
-import { StorageQueryExecutor } from '../../executor/index.js';
-import type { ISubstrateClient } from '../../types.js';
-import { ExtraSignedExtension } from '../extensions/index.js';
+import { assert, isHex } from '@dedot/utils';
+import { BaseSubmittableExtrinsic } from './BaseSubmittableExtrinsic.js';
 import { SubmittableResult } from './SubmittableResult.js';
-import { isKeyringPair, signRaw } from './utils.js';
 
 /**
  * @name SubmittableExtrinsic

@@ -1,4 +1,4 @@
-import { GenericSubstrateApi, IRuntimeTxCall, RpcVersion, VersionedGenericSubstrateApi } from '@dedot/types';
+import { IRuntimeTxCall, RpcVersion, VersionedGenericSubstrateApi } from '@dedot/types';
 import { assert } from '@dedot/utils';
 import { DedotClient } from '../../client/index.js';
 import { SubmittableExtrinsicV2 } from '../../extrinsic/index.js';
