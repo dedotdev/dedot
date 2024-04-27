@@ -9,11 +9,11 @@ import {
   StorageQuery,
 } from '@dedot/specs';
 import { MockInstance } from '@vitest/spy';
-import { JsonRpcClient } from 'dedot';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import MockProvider from '../../../client/__tests__/MockProvider.js';
 import { IJsonRpcClient } from '../../../types.js';
-import { ChainHead } from '../ChainHead/index.js';
+import { JsonRpcClient } from '../../JsonRpcClient.js';
+import { ChainHead, PinnedBlock } from '../ChainHead/index.js';
 import { newChainHeadSimulator } from './simulator.js';
 
 const MSG_CALL_FOLLOW_FIRST = 'Please call the .follow() method before invoking any other methods in this group.';
@@ -112,9 +112,9 @@ describe('ChainHead', () => {
         const newBlock: NewBlock = notify(simulator.subscriptionId, simulator.nextNewBlock());
 
         await new Promise<void>((resolve) => {
-          chainHead.on('newBlock', (blockHash, runtime) => {
-            expect(blockHash).toEqual(newBlock.blockHash);
-            expect(runtime).toBeUndefined();
+          chainHead.on('newBlock', (block: PinnedBlock) => {
+            expect(block.hash).toEqual(newBlock.blockHash);
+            expect(block.runtime).toBeUndefined();
             resolve();
           });
         });
@@ -124,10 +124,10 @@ describe('ChainHead', () => {
         const newBlock: NewBlock = notify(simulator.subscriptionId, simulator.nextNewBlock({ withRuntime: true }));
 
         await new Promise<void>((resolve) => {
-          chainHead.on('newBlock', (blockHash, runtime) => {
-            expect(blockHash).toEqual(newBlock.blockHash);
+          chainHead.on('newBlock', (block: PinnedBlock) => {
+            expect(block.hash).toEqual(newBlock.blockHash);
             // @ts-ignore
-            expect(runtime).toEqual(newBlock.newRuntime.spec);
+            expect(block.runtime).toEqual(newBlock.newRuntime.spec);
             resolve();
           });
         });
@@ -143,10 +143,10 @@ describe('ChainHead', () => {
         const bestBlock1 = notify(simulator.subscriptionId, simulator.nextBestBlock());
 
         await new Promise<void>((resolve) => {
-          const unsub = chainHead.on('bestBlock', (blockHash, runtime) => {
-            expect(blockHash).toEqual(bestBlock1.bestBlockHash);
-            expect(chainHead.bestHash).toEqual(blockHash);
-            expect(runtime).toBeUndefined();
+          const unsub = chainHead.on('bestBlock', (block) => {
+            expect(block.hash).toEqual(bestBlock1.bestBlockHash);
+            expect(chainHead.bestHash).toEqual(block.hash);
+            expect(block.runtime).toBeUndefined();
 
             unsub();
             resolve();
@@ -156,12 +156,12 @@ describe('ChainHead', () => {
         const bestBlock2 = notify(simulator.subscriptionId, simulator.nextBestBlock(), 10);
 
         await new Promise<void>((resolve) => {
-          const unsub = chainHead.on('bestBlock', (blockHash, runtime) => {
-            expect(blockHash).toEqual(bestBlock2.bestBlockHash);
-            expect(chainHead.bestHash).toEqual(blockHash);
+          const unsub = chainHead.on('bestBlock', (block) => {
+            expect(block.hash).toEqual(bestBlock2.bestBlockHash);
+            expect(chainHead.bestHash).toEqual(block.hash);
             // @ts-ignore
-            expect(newBlock2.newRuntime.spec).toEqual(runtime);
-            expect(chainHead.bestRuntimeVersion).toEqual(runtime);
+            expect(newBlock2.newRuntime.spec).toEqual(block.runtime);
+            expect(chainHead.bestRuntimeVersion).toEqual(block.runtime);
 
             unsub();
             resolve();
@@ -182,10 +182,10 @@ describe('ChainHead', () => {
         const finalized1 = notify(simulator.subscriptionId, simulator.nextFinalized());
 
         await new Promise<void>((resolve) => {
-          const unsub = chainHead.on('finalizedBlock', (finalizedHash, runtime) => {
-            expect(finalizedHash).toEqual(newBlock1.blockHash);
-            expect(finalizedHash).toEqual(finalized1.finalizedBlockHashes.at(-1));
-            expect(chainHead.finalizedHash).toEqual(finalizedHash);
+          const unsub = chainHead.on('finalizedBlock', (block: PinnedBlock) => {
+            expect(block.hash).toEqual(newBlock1.blockHash);
+            expect(block.hash).toEqual(finalized1.finalizedBlockHashes.at(-1));
+            expect(chainHead.finalizedHash).toEqual(block.hash);
 
             unsub();
             resolve();
@@ -213,11 +213,11 @@ describe('ChainHead', () => {
         notify(simulator.subscriptionId, finalized2);
 
         await new Promise<void>((resolve) => {
-          const unsub = chainHead.on('finalizedBlock', (finalizedHash, runtime) => {
-            expect(finalizedHash).toEqual(finalized2.finalizedBlockHashes.at(-1));
-            expect(chainHead.finalizedHash).toEqual(finalizedHash);
+          const unsub = chainHead.on('finalizedBlock', (block: PinnedBlock) => {
+            expect(block.hash).toEqual(finalized2.finalizedBlockHashes.at(-1));
+            expect(chainHead.finalizedHash).toEqual(block.hash);
             // @ts-ignore
-            expect(runtime).toEqual(newBlock2.newRuntime.spec);
+            expect(block.runtime).toEqual(newBlock2.newRuntime.spec);
 
             unsub();
             resolve();
@@ -247,10 +247,10 @@ describe('ChainHead', () => {
         const finalized1 = notify(simulator.subscriptionId, simulator.nextFinalized(1));
 
         await new Promise<void>((resolve) => {
-          const unsub = chainHead.on('finalizedBlock', (finalizedHash, runtime) => {
-            expect(finalizedHash).toEqual(newForkedBlock.blockHash);
-            expect(finalizedHash).toEqual(finalized1.finalizedBlockHashes.at(-1));
-            expect(chainHead.finalizedHash).toEqual(finalizedHash);
+          const unsub = chainHead.on('finalizedBlock', (block: PinnedBlock) => {
+            expect(block.hash).toEqual(newForkedBlock.blockHash);
+            expect(block.hash).toEqual(finalized1.finalizedBlockHashes.at(-1));
+            expect(chainHead.finalizedHash).toEqual(block.hash);
 
             unsub();
             resolve();

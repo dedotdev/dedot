@@ -1,11 +1,10 @@
 import { $H256, BlockHash } from '@dedot/codecs';
 import { u32 } from '@dedot/shape';
-import { ChainHeadRuntimeVersion } from '@dedot/specs';
-import { RpcLegacy, RpcV2, VersionedGenericSubstrateApi } from '@dedot/types';
+import { RpcV2, VersionedGenericSubstrateApi } from '@dedot/types';
 import { assert, concatU8a, HexString, noop, twox64Concat, u8aToHex, xxhashAsU8a } from '@dedot/utils';
 import type { SubstrateApi } from '../chaintypes/index.js';
-import { RuntimeApiExecutorV2, StorageQueryExecutorV2, TxExecutor, TxExecutorV2 } from '../executor/index.js';
-import { ChainHead, ChainSpec, Transaction, TransactionWatch } from '../json-rpc/index.js';
+import { RuntimeApiExecutorV2, StorageQueryExecutorV2, TxExecutorV2 } from '../executor/index.js';
+import { ChainHead, ChainSpec, PinnedBlock, Transaction, TransactionWatch } from '../json-rpc/index.js';
 import { newProxyChain } from '../proxychain.js';
 import type { ApiOptions, NetworkEndpoint, TxBroadcaster } from '../types.js';
 import { BaseSubstrateClient, ensurePresence } from './BaseSubstrateClient.js';
@@ -132,11 +131,11 @@ export class DedotClient<
     this.chainHead.off('bestBlock', this.onRuntimeUpgrade);
   }
 
-  protected onRuntimeUpgrade = async (_: BlockHash, newRuntime?: ChainHeadRuntimeVersion) => {
-    const runtimeUpgraded = newRuntime && newRuntime.specVersion !== this._runtimeVersion?.specVersion;
+  protected onRuntimeUpgrade = async (block: PinnedBlock) => {
+    const runtimeUpgraded = block.runtime && block.runtime.specVersion !== this._runtimeVersion?.specVersion;
     if (!runtimeUpgraded) return;
 
-    this._runtimeVersion = newRuntime;
+    this._runtimeVersion = block.runtime;
     const newMetadata = await this.fetchMetadata(undefined, this._runtimeVersion);
     await this.setupMetadata(newMetadata);
   };

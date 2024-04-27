@@ -165,13 +165,13 @@ export class ChainHead extends JsonRpcGroup<ChainHeadEvent> {
         this.#pinnedBlocks[hash] = { hash, parent, runtime, number: parentBlock.number + 1 };
         this.#pinnedQueue.push(hash);
 
-        this.emit('newBlock', hash, runtime);
+        this.emit('newBlock', this.#pinnedBlocks[hash]);
         break;
       }
       case 'bestBlockChanged': {
         // TODO detect bestChainChanged, the new bestBlockHash could lead to a fork
         this.#bestHash = result.bestBlockHash;
-        this.emit('bestBlock', this.#bestHash, this.#findRuntimeAt(this.#bestHash));
+        this.emit('bestBlock', this.getPinnedBlock(this.#bestHash));
         break;
       }
       case 'finalized': {
@@ -182,7 +182,7 @@ export class ChainHead extends JsonRpcGroup<ChainHeadEvent> {
           this.#finalizedRuntime = finalizedRuntime;
         }
 
-        this.emit('finalizedBlock', this.#finalizedHash, finalizedRuntime);
+        this.emit('finalizedBlock', this.getPinnedBlock(this.#finalizedHash));
 
         const hashesToUnpin = [...prunedBlockHashes];
         if (this.#pinnedQueue.length > this.#queueSize) {

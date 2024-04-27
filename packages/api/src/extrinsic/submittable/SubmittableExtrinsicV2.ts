@@ -1,14 +1,8 @@
 import type { BlockHash, Hash } from '@dedot/codecs';
-import type {
-  Callback,
-  IEventRecord,
-  IRuntimeTxCall,
-  ISubmittableResult,
-  TransactionStatusV2,
-  Unsub,
-} from '@dedot/types';
+import type { Callback, IEventRecord, IRuntimeTxCall, ISubmittableResult, TransactionStatusV2, Unsub } from '@dedot/types';
 import { deferred, noop } from '@dedot/utils';
 import { DedotClient } from '../../client/index.js';
+import { PinnedBlock } from '../../json-rpc/index.js';
 import { BaseSubmittableExtrinsic } from './BaseSubmittableExtrinsic.js';
 import { SubmittableResult } from './SubmittableResult.js';
 import { InvalidExtrinsicError } from './errors.js';
@@ -66,15 +60,15 @@ export class SubmittableExtrinsicV2 extends BaseSubmittableExtrinsic {
     };
 
     // TODO check for Retracted event
-    const checkBestBlockIncluded = async (newHash: BlockHash) => {
-      const inBlock = await checkIsInBlock(newHash);
+    const checkBestBlockIncluded = async (block: PinnedBlock) => {
+      const inBlock = await checkIsInBlock(block.hash);
       if (!inBlock) return;
 
       const { index: txIndex, events } = inBlock;
 
       callback(
         new SubmittableResult<IEventRecord, TransactionStatusV2>({
-          status: { tag: 'BestChainBlockIncluded', value: { blockHash: newHash, txIndex: txIndex } },
+          status: { tag: 'BestChainBlockIncluded', value: { blockHash: block.hash, txIndex: txIndex } },
           txHash,
           events,
           txIndex,
@@ -83,14 +77,14 @@ export class SubmittableExtrinsicV2 extends BaseSubmittableExtrinsic {
       api.chainHead.off('bestBlock', checkBestBlockIncluded);
     };
 
-    const checkFinalizedBlockIncluded = async (newHash: BlockHash) => {
-      const inBlock = await checkIsInBlock(newHash);
+    const checkFinalizedBlockIncluded = async (block: PinnedBlock) => {
+      const inBlock = await checkIsInBlock(block.hash);
       if (!inBlock) return;
       const { index: txIndex, events } = inBlock;
 
       callback(
         new SubmittableResult<IEventRecord, TransactionStatusV2>({
-          status: { tag: 'Finalized', value: { blockHash: newHash, txIndex: txIndex } },
+          status: { tag: 'Finalized', value: { blockHash: block.hash, txIndex: txIndex } },
           txHash,
           events,
           txIndex,
