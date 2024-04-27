@@ -1,10 +1,10 @@
 import { $H256, BlockHash } from '@dedot/codecs';
 import { u32 } from '@dedot/shape';
 import { ChainHeadRuntimeVersion } from '@dedot/specs';
-import { RpcV2, VersionedGenericSubstrateApi } from '@dedot/types';
+import { RpcLegacy, RpcV2, VersionedGenericSubstrateApi } from '@dedot/types';
 import { assert, concatU8a, HexString, noop, twox64Concat, u8aToHex, xxhashAsU8a } from '@dedot/utils';
 import type { SubstrateApi } from '../chaintypes/index.js';
-import { RuntimeApiExecutorV2, StorageQueryExecutorV2 } from '../executor/index.js';
+import { RuntimeApiExecutorV2, StorageQueryExecutorV2, TxExecutor, TxExecutorV2 } from '../executor/index.js';
 import { ChainHead, ChainSpec, Transaction, TransactionWatch } from '../json-rpc/index.js';
 import { newProxyChain } from '../proxychain.js';
 import type { ApiOptions, NetworkEndpoint, TxBroadcaster } from '../types.js';
@@ -172,5 +172,9 @@ export class DedotClient<
     }) as ChainApi[RpcV2]['call'];
   }
 
-  // TODO tx, at
+  override get tx(): ChainApi[RpcV2]['tx'] {
+    return newProxyChain({ executor: new TxExecutorV2(this) }) as ChainApi[RpcV2]['tx'];
+  }
+
+  // TODO api.at
 }

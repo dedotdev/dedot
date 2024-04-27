@@ -8,3 +8,4 @@ export * from './TxExecutor.js';
 
 export * from './v2/StorageQueryExecutorV2.js';
 export * from './v2/RuntimeApiExecutorV2.js';
+export * from './v2/TxExecutorV2.js';
