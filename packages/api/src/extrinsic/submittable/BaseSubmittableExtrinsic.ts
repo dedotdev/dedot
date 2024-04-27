@@ -10,8 +10,8 @@ import type {
   Unsub,
 } from '@dedot/types';
 import { HexString, isFunction, u8aToHex } from '@dedot/utils';
-import { StorageQueryExecutor } from 'dedot';
-import type { FrameSystemEventRecord } from 'dedot/chaintypes';
+import type { FrameSystemEventRecord } from '../../chaintypes/index.js';
+import { StorageQueryExecutor } from '../../executor/index.js';
 import { ISubstrateClient } from '../../types.js';
 import { ExtraSignedExtension } from '../extensions/index.js';
 import { isKeyringPair, signRaw } from './utils.js';
