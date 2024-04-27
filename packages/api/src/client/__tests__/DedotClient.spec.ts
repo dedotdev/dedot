@@ -1,4 +1,5 @@
 import staticSubstrateV15 from '@polkadot/types-support/metadata/v15/substrate-hex';
+import { ormlTokens } from '@polkadot/types/interfaces/definitions';
 import { $Metadata } from '@dedot/codecs';
 import type { AnyShape } from '@dedot/shape';
 import * as $ from '@dedot/shape';
@@ -52,12 +53,19 @@ describe('DedotClient', () => {
       });
 
       afterEach(async () => {
-        api && (await api.disconnect());
+        api && api.status !== 'disconnected' && (await api.disconnect());
       });
 
-      // Not fallback to chainHead_storage of chainSpec does not support
+      // TODO fallback to chainHead_storage of chainSpec does not support
 
       it('should create new api instance', async () => {
+        expect(providerSend).toBeCalledWith('chainHead_v1_call', [
+          simulator.subscriptionId,
+          api.chainHead.bestHash,
+          'Metadata_metadata_at_version',
+          '0x0f000000',
+        ]);
+
         expect(api.rpc).toBeDefined();
         expect(api.query).toBeDefined();
         expect(api.events).toBeDefined();
@@ -67,6 +75,12 @@ describe('DedotClient', () => {
         expect(api.currentMetadataKey).toEqual(
           `RAW_META/0x0000000000000000000000000000000000000000000000000000000000000000/1`,
         );
+      });
+
+      it('should unfollow chainHead on disconnect', async () => {
+        const providerSend = vi.spyOn(provider, 'send');
+        await api.disconnect();
+        expect(providerSend).toBeCalledWith('chainHead_v1_unfollow', [simulator.subscriptionId]);
       });
 
       describe('const', () => {
@@ -405,6 +419,36 @@ describe('DedotClient', () => {
       });
     });
 
+    describe('metadata options', () => {
+      it('should use provided metadata from options', async () => {
+        const api = await DedotClient.new({
+          provider,
+          metadata: {
+            'RAW_META/0x0000000000000000000000000000000000000000000000000000000000000000/1': staticSubstrateV15,
+          },
+        });
+
+        expect(providerSend).not.toBeCalledWith('chainHead_v1_call', [
+          simulator.subscriptionId,
+          api.chainHead.bestHash,
+          'Metadata_metadata_at_version',
+          '0x0f000000',
+        ]);
+
+        expect(api.rpc).toBeDefined();
+        expect(api.query).toBeDefined();
+        expect(api.events).toBeDefined();
+        expect(api.errors).toBeDefined();
+        expect(api.consts).toBeDefined();
+        expect(api.metadata.version).toEqual('V15');
+        expect(api.currentMetadataKey).toEqual(
+          `RAW_META/0x0000000000000000000000000000000000000000000000000000000000000000/1`,
+        );
+
+        await api.disconnect();
+      });
+    });
+
     describe('cache enabled', () => {
       let api: DedotClient;
       beforeEach(async () => {
@@ -436,41 +480,71 @@ describe('DedotClient', () => {
         expect(newApi.metadata).toEqual(api.metadata);
       });
 
-      it("should refetch metadata if it's outdated", async () => {
-        const nextMockedRuntime = { ...mockedRuntime, specVersion: mockedRuntime.specVersion + 1 };
-        const newProvider = new MockProvider();
-        const newProviderSend = vi.spyOn(newProvider, 'send');
-        const newSimulator = newChainHeadSimulator({ provider: newProvider, initialRuntime: nextMockedRuntime });
-        newSimulator.notify(newSimulator.initializedEvent);
+      describe("refetch metadata if it's outdated", async () => {
+        it('should look for metadata options first', async () => {
+          const nextMockedRuntime = { ...mockedRuntime, specVersion: mockedRuntime.specVersion + 1 };
+          const newProvider = new MockProvider();
+          const newProviderSend = vi.spyOn(newProvider, 'send');
+          const newSimulator = newChainHeadSimulator({ provider: newProvider, initialRuntime: nextMockedRuntime });
+          newSimulator.notify(newSimulator.initializedEvent);
 
-        newProvider.setRpcRequests({
-          chainHead_v1_call: () => ({ result: 'started', operationId: 'callMetadata01' }) as MethodResponse,
+          const newApi = await DedotClient.new({
+            provider: newProvider,
+            cacheMetadata: true,
+            metadata: {
+              'RAW_META/0x0000000000000000000000000000000000000000000000000000000000000000/2': staticSubstrateV15,
+            },
+          });
+
+          expect(newProviderSend).not.toBeCalledWith('chainHead_v1_call', [
+            newSimulator.subscriptionId,
+            newApi.chainHead.bestHash,
+            'Metadata_metadata_at_version',
+            '0x0f000000',
+          ]);
+
+          expect(newApi.metadata).toBeDefined();
+          expect(newApi.currentMetadataKey).toEqual(
+            `RAW_META/0x0000000000000000000000000000000000000000000000000000000000000000/2`,
+          );
         });
 
-        newSimulator.notify({
-          operationId: 'callMetadata01',
-          event: 'operationCallDone',
-          output: prefixedMetadataV15,
-        } as OperationCallDone);
+        it('should re-fetch from on-chain', async () => {
+          const nextMockedRuntime = { ...mockedRuntime, specVersion: mockedRuntime.specVersion + 1 };
+          const newProvider = new MockProvider();
+          const newProviderSend = vi.spyOn(newProvider, 'send');
+          const newSimulator = newChainHeadSimulator({ provider: newProvider, initialRuntime: nextMockedRuntime });
+          newSimulator.notify(newSimulator.initializedEvent);
 
-        const newApi = await DedotClient.new({ provider: newProvider, cacheMetadata: true });
+          newProvider.setRpcRequests({
+            chainHead_v1_call: () => ({ result: 'started', operationId: 'callMetadata01' }) as MethodResponse,
+          });
 
-        expect(newProviderSend).toBeCalledWith('chainHead_v1_call', [
-          newSimulator.subscriptionId,
-          newApi.chainHead.bestHash,
-          'Metadata_metadata_at_version',
-          '0x0f000000',
-        ]);
+          newSimulator.notify({
+            operationId: 'callMetadata01',
+            event: 'operationCallDone',
+            output: prefixedMetadataV15,
+          } as OperationCallDone);
 
-        expect(newProviderSend).toHaveBeenLastCalledWith('chainHead_v1_stopOperation', [
-          newSimulator.subscriptionId,
-          'callMetadata01',
-        ]);
+          const newApi = await DedotClient.new({ provider: newProvider, cacheMetadata: true });
 
-        expect(newApi.metadata).toBeDefined();
-        expect(newApi.currentMetadataKey).toEqual(
-          `RAW_META/0x0000000000000000000000000000000000000000000000000000000000000000/2`,
-        );
+          expect(newProviderSend).toBeCalledWith('chainHead_v1_call', [
+            newSimulator.subscriptionId,
+            newApi.chainHead.bestHash,
+            'Metadata_metadata_at_version',
+            '0x0f000000',
+          ]);
+
+          expect(newProviderSend).toHaveBeenLastCalledWith('chainHead_v1_stopOperation', [
+            newSimulator.subscriptionId,
+            'callMetadata01',
+          ]);
+
+          expect(newApi.metadata).toBeDefined();
+          expect(newApi.currentMetadataKey).toEqual(
+            `RAW_META/0x0000000000000000000000000000000000000000000000000000000000000000/2`,
+          );
+        });
       });
     });
 

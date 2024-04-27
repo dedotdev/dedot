@@ -2,7 +2,7 @@ import { $H256, BlockHash } from '@dedot/codecs';
 import { u32 } from '@dedot/shape';
 import { ChainHeadRuntimeVersion } from '@dedot/specs';
 import { RpcV2, VersionedGenericSubstrateApi } from '@dedot/types';
-import { assert, concatU8a, HexString, twox64Concat, u8aToHex, xxhashAsU8a } from '@dedot/utils';
+import { assert, concatU8a, HexString, noop, twox64Concat, u8aToHex, xxhashAsU8a } from '@dedot/utils';
 import type { SubstrateApi } from '../chaintypes/index.js';
 import { RuntimeApiExecutorV2, StorageQueryExecutorV2 } from '../executor/index.js';
 import { ChainHead, ChainSpec, Transaction, TransactionWatch } from '../json-rpc/index.js';
@@ -142,11 +142,11 @@ export class DedotClient<
   };
 
   protected override async beforeDisconnect(): Promise<void> {
-    this.unsubscribeRuntimeUpgrades();
+    await this.chainHead.unfollow();
   }
 
   protected override onDisconnected = async () => {
-    this.unsubscribeRuntimeUpgrades();
+    this.chainHead.unfollow().catch(noop);
   };
 
   protected override cleanUp() {
