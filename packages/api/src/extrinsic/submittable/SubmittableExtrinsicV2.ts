@@ -15,7 +15,7 @@ import { InvalidExtrinsicError } from './errors.js';
 
 /**
  * @name SubmittableExtrinsicV2
- * Submittable extrinsic based on JSON-RPC v2
+ * @description Submittable extrinsic based on JSON-RPC v2
  */
 export class SubmittableExtrinsicV2 extends BaseSubmittableExtrinsic {
   constructor(
@@ -74,7 +74,7 @@ export class SubmittableExtrinsicV2 extends BaseSubmittableExtrinsic {
 
       callback(
         new SubmittableResult<IEventRecord, TransactionStatusV2>({
-          status: { tag: 'BestChainBlockIncluded', value: { hash: newHash, index: txIndex } },
+          status: { tag: 'BestChainBlockIncluded', value: { blockHash: newHash, txIndex: txIndex } },
           txHash,
           events,
           txIndex,
@@ -90,7 +90,7 @@ export class SubmittableExtrinsicV2 extends BaseSubmittableExtrinsic {
 
       callback(
         new SubmittableResult<IEventRecord, TransactionStatusV2>({
-          status: { tag: 'Finalized', value: { hash: newHash, index: txIndex } },
+          status: { tag: 'Finalized', value: { blockHash: newHash, txIndex: txIndex } },
           txHash,
           events,
           txIndex,
@@ -101,6 +101,7 @@ export class SubmittableExtrinsicV2 extends BaseSubmittableExtrinsic {
     };
 
     const stopBroadcastFn = await api.txBroadcaster.broadcastTx(txHex);
+    // TODO introduce a `Broadcasting` status after calling broadcastTx
 
     api.chainHead.on('bestBlock', checkBestBlockIncluded);
     api.chainHead.on('finalizedBlock', checkFinalizedBlockIncluded);

@@ -38,9 +38,9 @@ export const run = async (nodeName: any, networkInfo: any): Promise<void> => {
       console.log('Transaction status', status.tag);
 
       if (status.tag === 'BestChainBlockIncluded') {
-        assert(isHex(status.value!.hash), 'Block hash should be hex');
-        assert(isNumber(status.value!.index), 'Tx index should be number');
-        assert(txIndex === status.value!.index, 'Mismatched tx index');
+        assert(isHex(status.value.blockHash), 'Block hash should be hex');
+        assert(isNumber(status.value.txIndex), 'Tx index should be number');
+        assert(txIndex === status.value.txIndex, 'Mismatched tx index');
 
         assert(
           events.some(({ event }) => api.events.balances.Transfer.is(event)),
@@ -67,9 +67,9 @@ export const run = async (nodeName: any, networkInfo: any): Promise<void> => {
       }
 
       if (status.tag === 'Finalized') {
-        assert(isHex(status.value.hash), 'Block hash should be hex');
-        assert(isNumber(status.value.index), 'Tx index should be number');
-        assert(txIndex === status.value.index, 'Mismatched tx index');
+        assert(isHex(status.value.blockHash), 'Block hash should be hex');
+        assert(isNumber(status.value.txIndex), 'Tx index should be number');
+        assert(txIndex === status.value.txIndex, 'Mismatched tx index');
 
         assert(blockIncluded, 'Finalized before block included');
         await unsub();

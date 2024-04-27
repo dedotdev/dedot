@@ -1,13 +1,13 @@
 import { BlockHash, Extrinsic, Hash } from '@dedot/codecs';
-import {
-  type AddressOrPair,
+import type {
+  AddressOrPair,
   AsyncMethod,
-  type Callback,
+  Callback,
   IRuntimeTxCall,
   ISubmittableExtrinsic,
   ISubmittableResult,
-  type SignerOptions,
-  type Unsub,
+  SignerOptions,
+  Unsub,
 } from '@dedot/types';
 import { HexString, isFunction, u8aToHex } from '@dedot/utils';
 import { StorageQueryExecutor } from 'dedot';
@@ -60,15 +60,12 @@ export abstract class BaseSubmittableExtrinsic extends Extrinsic implements ISub
   }
 
   signAndSend(account: AddressOrPair, options?: Partial<SignerOptions>): Promise<Hash>;
-
   signAndSend(account: AddressOrPair, callback: Callback<ISubmittableResult>): Promise<Unsub>;
-
   signAndSend(
     account: AddressOrPair,
     options: Partial<SignerOptions>,
     callback?: Callback<ISubmittableResult>,
   ): Promise<Unsub>;
-
   async signAndSend(
     fromAccount: AddressOrPair,
     partialOptions?: Partial<SignerOptions> | Callback<ISubmittableResult>,

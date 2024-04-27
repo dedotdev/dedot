@@ -68,5 +68,5 @@ export type TransactionStatusLegacy = TransactionStatus;
 export type TransactionStatusV2 =
   | { tag: 'Validated' } // emits after we validate the transaction via `call.taggedTransactionQueue.validateTransaction`
   | { tag: 'Broadcasted' } // emits after we submit the transaction via TxBroadcaster
-  | { tag: 'BestChainBlockIncluded'; value: { hash: HexString; index: number } | null }
-  | { tag: 'Finalized'; value: { hash: HexString; index: number } };
+  | { tag: 'BestChainBlockIncluded'; value: { blockHash: HexString; txIndex: number } } // | null - TODO detect Retracted event
+  | { tag: 'Finalized'; value: { blockHash: HexString; txIndex: number } };
