@@ -1,5 +1,12 @@
 import type { BlockHash, Hash } from '@dedot/codecs';
-import type { Callback, IEventRecord, IRuntimeTxCall, ISubmittableResult, TransactionStatusV2, Unsub } from '@dedot/types';
+import type {
+  Callback,
+  IEventRecord,
+  IRuntimeTxCall,
+  ISubmittableResult,
+  TransactionStatusV2,
+  Unsub,
+} from '@dedot/types';
 import { deferred, noop } from '@dedot/utils';
 import { DedotClient } from '../../client/index.js';
 import { PinnedBlock } from '../../json-rpc/index.js';
