@@ -1,4 +1,4 @@
-import { BlockHash, Option } from '@dedot/codecs';
+import { $Header, BlockHash, Option } from '@dedot/codecs';
 import { Subscription } from '@dedot/providers';
 import {
   ChainHeadRuntimeVersion,
@@ -11,7 +11,7 @@ import {
   StorageResult,
 } from '@dedot/specs';
 import { Unsub } from '@dedot/types';
-import { assert, Deferred, deferred, ensurePresence, HexString, noop } from '@dedot/utils';
+import { assert, Deferred, deferred, ensurePresence, HexString, noop, AsyncWorkerQueue } from '@dedot/utils';
 import { IJsonRpcClient } from '../../../types.js';
 import { JsonRpcGroup, JsonRpcGroupOptions } from '../JsonRpcGroup.js';
 import {
@@ -32,6 +32,7 @@ export type OperationHandler<T = any> = {
 
 export type PinnedBlock = {
   hash: BlockHash;
+  number: number;
   parent: BlockHash | undefined;
   runtime?: ChainHeadRuntimeVersion;
 };
@@ -61,6 +62,7 @@ export class ChainHead extends JsonRpcGroup<ChainHeadEvent> {
   #bestHash?: BlockHash;
   #finalizedHash?: BlockHash; // best finalized hash
   #finalizedRuntime?: ChainHeadRuntimeVersion;
+  #queue: AsyncWorkerQueue;
 
   constructor(client: IJsonRpcClient, options?: Partial<JsonRpcGroupOptions>) {
     super(client, { prefix: 'chainHead', supportedVersions: ['unstable', 'v1'], ...options });
@@ -69,6 +71,7 @@ export class ChainHead extends JsonRpcGroup<ChainHeadEvent> {
     this.#pinnedBlocks = {};
     this.#queueSize = MIN_QUEUE_SIZE;
     this.#pinnedQueue = [];
+    this.#queue = new AsyncWorkerQueue();
   }
 
   get runtimeVersion(): ChainHeadRuntimeVersion {
@@ -106,11 +109,13 @@ export class ChainHead extends JsonRpcGroup<ChainHeadEvent> {
     try {
       // TODO handle when a connection (Ws) is reconnect & this subscription is reinitialized, handle this similar to a StopEvent
       this.#unsub = await this.send('follow', true, (event: FollowEvent, subscription: Subscription) => {
-        this.#onFollowEvent(event, subscription);
+        this.#queue.enqueue(async () => {
+          await this.#onFollowEvent(event, subscription);
 
-        if (event.event == 'initialized') {
-          defer.resolve();
-        }
+          if (event.event == 'initialized') {
+            defer.resolve();
+          }
+        });
       });
     } catch (e: any) {
       defer.reject(e);
@@ -119,7 +124,7 @@ export class ChainHead extends JsonRpcGroup<ChainHeadEvent> {
     return defer.promise;
   }
 
-  #onFollowEvent = (result: FollowEvent, subscription?: Subscription) => {
+  #onFollowEvent = async (result: FollowEvent, subscription?: Subscription) => {
     switch (result.event) {
       case 'initialized': {
         const { finalizedBlockHashes = [], finalizedBlockHash, finalizedBlockRuntime } = result;
@@ -131,19 +136,24 @@ export class ChainHead extends JsonRpcGroup<ChainHeadEvent> {
           this.#queueSize = finalizedBlockHashes.length;
         }
 
-        this.#pinnedBlocks = finalizedBlockHashes
-          .slice()
-          .reverse()
-          .reduce(
-            (o, hash, idx, arr) => {
-              o[hash] = { hash, parent: arr.at(idx + 1) };
-              return o;
-            },
-            {} as Record<BlockHash, PinnedBlock>,
-          );
-
         this.#finalizedRuntime = this.#extractRuntime(finalizedBlockRuntime)!;
         this.#bestHash = this.#finalizedHash = finalizedBlockHashes.at(-1);
+
+        this.#pinnedBlocks = finalizedBlockHashes.reduce(
+          (o, hash, idx, arr) => {
+            o[hash] = { hash, parent: arr[idx - 1], number: idx };
+            return o;
+          },
+          {} as Record<BlockHash, PinnedBlock>,
+        );
+
+        const header = $Header.tryDecode(await this.header(finalizedBlockHashes[0]));
+        Object.values(this.#pinnedBlocks).forEach((b, idx) => {
+          b.number += header.number;
+          if (idx === 0) {
+            b.parent = header.parentHash;
+          }
+        });
 
         break;
       }
@@ -151,7 +161,8 @@ export class ChainHead extends JsonRpcGroup<ChainHeadEvent> {
         const { blockHash: hash, parentBlockHash: parent, newRuntime } = result;
         const runtime = this.#extractRuntime(newRuntime);
 
-        this.#pinnedBlocks[hash] = { hash, parent, runtime };
+        const parentBlock = this.getPinnedBlock(parent)!;
+        this.#pinnedBlocks[hash] = { hash, parent, runtime, number: parentBlock.number + 1 };
         this.#pinnedQueue.push(hash);
 
         this.emit('newBlock', hash, runtime);
@@ -337,6 +348,7 @@ export class ChainHead extends JsonRpcGroup<ChainHeadEvent> {
     this.#bestHash = undefined;
     this.#finalizedHash = undefined;
     this.#finalizedRuntime = undefined;
+    this.#queue = new AsyncWorkerQueue();
   }
 
   #ensureFollowed() {
