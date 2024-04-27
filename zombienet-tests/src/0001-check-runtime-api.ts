@@ -4,6 +4,8 @@ import { assert, stringCamelCase } from '@dedot/utils';
 import { Dedot, DedotClient, ISubstrateClient } from 'dedot';
 import { SubstrateApi } from 'dedot/chaintypes';
 
+const ALICE = '5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY';
+
 const verifyRuntimeApi = async (api: ISubstrateClient<SubstrateApi[RpcVersion]>) => {
   assert(api.metadata.version === 'V15', 'Metadata should be V15');
 
@@ -31,6 +33,10 @@ const verifyRuntimeApi = async (api: ISubstrateClient<SubstrateApi[RpcVersion]>)
   const encodedMetadata = await api.call.metadata.metadataAtVersion(15);
   const metadata = $Metadata.tryDecode(encodedMetadata);
   assert(metadata instanceof Metadata, 'Invalid metadata instance');
+
+  const nonce = await api.call.accountNonceApi.accountNonce(ALICE);
+  assert(typeof nonce === 'number', 'Invalid nonce');
+  console.log(`Alice's nonce:`, nonce);
 };
 
 export const run = async (nodeName: any, networkInfo: any) => {

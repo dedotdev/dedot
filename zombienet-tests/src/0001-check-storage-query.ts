@@ -1,5 +1,5 @@
-import { Dedot } from 'dedot';
 import { assert } from '@dedot/utils';
+import { Dedot } from 'dedot';
 
 const ALICE = '5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY';
 const BOB = '5FHneW46xGXgs5mUiveU4sbTyGBzmstUspZC92UhjJM694ty';
@@ -11,12 +11,18 @@ export const run = async (nodeName: any, networkInfo: any) => {
 
   const api = await Dedot.new(wsUri);
 
-  for (const name of Object.keys(addressesToCheck)) {
-    const address = addressesToCheck[name];
-    const balance = await api.query.system.account(address);
-    console.log(`${name} balance`, balance);
-    assert(balance.data.free === 10_000_000_000_000_000n, `Incorrect balance for ${name} - ${address}`);
-  }
+  const balances = await api.query.system.account.multi([ALICE, BOB]);
+
+  Object.entries(addressesToCheck).forEach(([name, address], idx) => {
+    (async () => {
+      const balance = await api.query.system.account(address);
+      console.log(`${name} balance`, balance);
+      assert(balance.data.free === 10_000_000_000_000_000n, `Incorrect balance for ${name} - ${address}`);
+
+      const balanceFromMulti = balances[idx];
+      assert(balanceFromMulti.data.free === balance.data.free, `Incorrect balance for ${name} from multi query`);
+    })();
+  });
 
   // Check storage map keys
   const keys = await api.query.system.account.keys();

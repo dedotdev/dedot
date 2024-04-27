@@ -13,7 +13,8 @@ export const run = async (nodeName: any, networkInfo: any): Promise<void> => {
 
   const { wsUri } = networkInfo.nodesByName[nodeName];
 
-  const api = await Dedot.new<RococoApi>(wsUri);
+  // TODO use RococoApi
+  const api = await Dedot.new(wsUri);
 
   const prevBobBalance = (await api.query.system.account(BOB)).data.free;
   const prevBlockNumber = await api.query.system.number();

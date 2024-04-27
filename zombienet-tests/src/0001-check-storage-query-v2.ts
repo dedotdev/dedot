@@ -11,17 +11,24 @@ export const run = async (nodeName: any, networkInfo: any) => {
 
   const api = await DedotClient.new(wsUri);
 
-  // TODO check multi query
-  for (const name of Object.keys(addressesToCheck)) {
-    const address = addressesToCheck[name];
-    const balance = await api.query.system.account(address);
-    console.log(`${name} balance`, balance);
-    assert(balance.data.free === 10_000_000_000_000_000n, `Incorrect balance for ${name} - ${address}`);
-  }
+  const balances = await api.query.system.account.multi([ALICE, BOB]);
+
+  Object.entries(addressesToCheck).forEach(([name, address], idx) => {
+    (async () => {
+      const balance = await api.query.system.account(address);
+      console.log(`${name} balance`, balance);
+      assert(balance.data.free === 10_000_000_000_000_000n, `Incorrect balance for ${name} - ${address}`);
+
+      const balanceFromMulti = balances[idx];
+      assert(balanceFromMulti.data.free === balance.data.free, `Incorrect balance for ${name} from multi query`);
+    })();
+  });
+
+  // @ts-ignore .keys() is not available in the new API
+  assert(api.query.system.account['keys'] === undefined, 'Method keys should not be available');
 
   // Check storage map entries
   const accounts = await api.query.system.account.entries();
-
   const addressToFreeBalance = accounts.reduce(
     (o, [k, v]) => {
       o[k.address()] = v.data.free;
