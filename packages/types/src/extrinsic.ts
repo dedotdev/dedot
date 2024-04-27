@@ -1,5 +1,6 @@
 import { IKeyringPair, Signer } from '@polkadot/types/types';
 import { ApplyExtrinsicResult, BlockHash, DispatchError, DispatchInfo, Hash, TransactionStatus } from '@dedot/codecs';
+import { HexString } from '@dedot/utils';
 import { Callback, IEventRecord, Unsub } from './index.js';
 
 export type AddressOrPair = IKeyringPair | string; // | AccountId32Like | MultiAddressLike;
@@ -60,3 +61,12 @@ export interface ISubmittableExtrinsicLegacy<R extends ISubmittableResult = ISub
   extends ISubmittableExtrinsic<R> {
   dryRun(account: AddressOrPair, optionsOrHash?: Partial<SignerOptions> | BlockHash): Promise<DryRunResult>;
 }
+
+export type TransactionStatusLegacy = TransactionStatus;
+
+// We want to mimic an enum type for the new transaction status
+export type TransactionStatusV2 =
+  | { tag: 'Validated' } // emits after we validate the transaction via `call.taggedTransactionQueue.validateTransaction`
+  | { tag: 'Broadcasted' } // emits after we submit the transaction via TxBroadcaster
+  | { tag: 'BestChainBlockIncluded'; value: { hash: HexString; index: number } | null }
+  | { tag: 'Finalized'; value: { hash: HexString; index: number } };

@@ -16,6 +16,8 @@ export class TxGen extends ApiGen {
       'RpcVersion',
       'RpcV2',
       'ISubmittableExtrinsicLegacy',
+      'TransactionStatusLegacy',
+      'TransactionStatusV2',
     );
 
     const { callTypeId, addressTypeId, signatureTypeId } = this.metadata.extrinsic;
@@ -24,9 +26,8 @@ export class TxGen extends ApiGen {
     const addressTypeIn = this.typesGen.generateType(addressTypeId, 1);
     const signatureTypeIn = this.typesGen.generateType(signatureTypeId, 1);
 
-    this.typesGen.typeImports.addSpecType('TransactionWatchEvent');
     this.typesGen.typeImports.addPortableType('FrameSystemEventRecord');
-    this.typesGen.typeImports.addCodecType('Extrinsic', 'TransactionStatus');
+    this.typesGen.typeImports.addCodecType('Extrinsic');
     this.typesGen.addTypeImport([callTypeIn, addressTypeIn, signatureTypeIn]);
 
     let txDefsOut = '';
@@ -85,8 +86,8 @@ export class TxGen extends ApiGen {
     export type ChainSubmittableExtrinsic<Rv extends RpcVersion, T extends IRuntimeTxCall = ${callTypeIn}> = 
         Extrinsic<${addressTypeIn}, T, ${signatureTypeIn}, any[]> &
         (Rv extends RpcV2
-          ? ISubmittableExtrinsic<ISubmittableResult<FrameSystemEventRecord, TransactionEvent>>
-          : ISubmittableExtrinsicLegacy<ISubmittableResult<FrameSystemEventRecord, TransactionStatus>>)
+          ? ISubmittableExtrinsic<ISubmittableResult<FrameSystemEventRecord, TransactionStatusV2>>
+          : ISubmittableExtrinsicLegacy<ISubmittableResult<FrameSystemEventRecord, TransactionStatusLegacy>>)
         
     export type TxCall<Rv extends RpcVersion> = (...args: any[]) => ChainSubmittableExtrinsic<Rv>;    
 `;
