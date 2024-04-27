@@ -39,10 +39,11 @@ export class SubmittableExtrinsic extends BaseSubmittableExtrinsic implements IS
   send(callback: Callback<ISubmittableResult>): Promise<Unsub>;
   async send(callback?: Callback<ISubmittableResult> | undefined): Promise<Hash | Unsub> {
     const isSubscription = !!callback;
+    const txHex = this.toHex();
     const txHash = this.hash;
 
     if (isSubscription) {
-      return this.api.rpc.author_submitAndWatchExtrinsic(this.toHex(), async (status: TransactionStatus) => {
+      return this.api.rpc.author_submitAndWatchExtrinsic(txHex, async (status: TransactionStatus) => {
         if (status.tag === 'InBlock' || status.tag === 'Finalized') {
           const blockHash: BlockHash = status.value;
 
@@ -51,10 +52,7 @@ export class SubmittableExtrinsic extends BaseSubmittableExtrinsic implements IS
             this._getSystemEventsAt(blockHash),
           ]);
 
-          const txIndex = (signedBlock as SignedBlock).block.extrinsics.findIndex(
-            (tx) => this.registry.hashAsHex(tx as HexString) === txHash,
-          );
-
+          const txIndex = (signedBlock as SignedBlock).block.extrinsics.indexOf(txHex);
           assert(txIndex >= 0, 'Extrinsic not found!');
 
           const events = blockEvents.filter(({ phase }) => phase.tag === 'ApplyExtrinsic' && phase.value === txIndex);
@@ -65,7 +63,7 @@ export class SubmittableExtrinsic extends BaseSubmittableExtrinsic implements IS
         }
       });
     } else {
-      return this.api.rpc.author_submitExtrinsic(this.toHex());
+      return this.api.rpc.author_submitExtrinsic(txHex);
     }
   }
 }
