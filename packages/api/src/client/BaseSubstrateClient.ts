@@ -1,6 +1,6 @@
 import { $Metadata, BlockHash, Hash, Metadata, PortableRegistry } from '@dedot/codecs';
 import { type IStorage, LocalStorage } from '@dedot/storage';
-import { GenericSubstrateApi } from '@dedot/types';
+import { GenericSubstrateApi, RpcVersion, VersionedGenericSubstrateApi } from '@dedot/types';
 import { calcRuntimeApiHash, ensurePresence as _ensurePresence, u8aToHex } from '@dedot/utils';
 import type { SubstrateApi } from '../chaintypes/index.js';
 import { ConstantExecutor, ErrorExecutor, EventExecutor } from '../executor/index.js';
@@ -17,9 +17,8 @@ import type {
   SubstrateRuntimeVersion,
 } from '../types.js';
 
-export const KEEP_ALIVE_INTERVAL = 10_000; // in ms
-export const SUPPORTED_METADATA_VERSIONS = [15, 14];
-export const MetadataApiHash = calcRuntimeApiHash('Metadata'); // 0x37e397fc7c91f5e4
+const SUPPORTED_METADATA_VERSIONS = [15, 14];
+const MetadataApiHash = calcRuntimeApiHash('Metadata'); // 0x37e397fc7c91f5e4
 
 const MESSAGE: string = 'Make sure to call `.connect()` method first before using the API interfaces.';
 
@@ -31,9 +30,9 @@ export function ensurePresence<T>(value: T): NonNullable<T> {
  * @name BaseSubstrateClient
  * @description Base & shared abstraction for Substrate API Clients
  */
-export abstract class BaseSubstrateClient<ChainApi extends GenericSubstrateApi = SubstrateApi>
-  extends JsonRpcClient<ChainApi, ApiEvent>
-  implements ISubstrateClient<ChainApi>
+export abstract class BaseSubstrateClient<ChainApi extends VersionedGenericSubstrateApi = SubstrateApi>
+  extends JsonRpcClient<ChainApi[RpcVersion], ApiEvent>
+  implements ISubstrateClient<ChainApi[RpcVersion]>
 {
   protected _options: ApiOptions;
 
@@ -45,7 +44,10 @@ export abstract class BaseSubstrateClient<ChainApi extends GenericSubstrateApi =
 
   protected _localCache?: IStorage;
 
-  protected constructor(options: JsonRpcClientOptions | NetworkEndpoint) {
+  protected constructor(
+    public rpcVersion: RpcVersion,
+    options: JsonRpcClientOptions | NetworkEndpoint,
+  ) {
     super(options);
     this._options = this.normalizeOptions(options);
   }
@@ -131,7 +133,7 @@ export abstract class BaseSubstrateClient<ChainApi extends GenericSubstrateApi =
     return this.getMetadataKey(this._runtimeVersion);
   }
 
-  protected async shouldLoadPreloadMetadata() {
+  protected async shouldPreloadMetadata() {
     if (this._options.metadata && Object.keys(this._options.metadata).length) {
       return false;
     }
@@ -270,36 +272,38 @@ export abstract class BaseSubstrateClient<ChainApi extends GenericSubstrateApi =
     return ensurePresence(this._runtimeVersion);
   }
 
-  get consts(): ChainApi['consts'] {
-    return newProxyChain<ChainApi>({ executor: new ConstantExecutor(this) }) as ChainApi['consts'];
+  get consts(): ChainApi[RpcVersion]['consts'] {
+    return newProxyChain({ executor: new ConstantExecutor(this) }) as ChainApi[RpcVersion]['consts'];
   }
 
-  get errors(): ChainApi['errors'] {
-    return newProxyChain<ChainApi>({ executor: new ErrorExecutor(this) }) as ChainApi['errors'];
+  get errors(): ChainApi[RpcVersion]['errors'] {
+    return newProxyChain({ executor: new ErrorExecutor(this) }) as ChainApi[RpcVersion]['errors'];
   }
 
-  get events(): ChainApi['events'] {
-    return newProxyChain<ChainApi>({ executor: new EventExecutor(this) }) as ChainApi['events'];
+  get events(): ChainApi[RpcVersion]['events'] {
+    return newProxyChain({ executor: new EventExecutor(this) }) as ChainApi[RpcVersion]['events'];
   }
 
-  get query(): ChainApi['query'] {
+  get query(): ChainApi[RpcVersion]['query'] {
     throw new Error('Unimplemented!');
   }
 
-  get call(): ChainApi['call'] {
+  get call(): ChainApi[RpcVersion]['call'] {
     return this.callAt();
   }
 
   // For internal use with caution
-  protected callAt(hash?: BlockHash): ChainApi['call'] {
+  protected callAt(hash?: BlockHash): ChainApi[RpcVersion]['call'] {
     throw new Error('Unimplemented!');
   }
 
-  get tx(): ChainApi['tx'] {
+  get tx(): ChainApi[RpcVersion]['tx'] {
     throw new Error('Unimplemented!');
   }
 
-  at<ChainApiAt extends GenericSubstrateApi = ChainApi>(hash: BlockHash): Promise<ISubstrateClientAt<ChainApiAt>> {
+  at<ChainApiAt extends GenericSubstrateApi = ChainApi[RpcVersion]>(
+    hash: BlockHash,
+  ): Promise<ISubstrateClientAt<ChainApiAt>> {
     throw new Error('Unimplemented!');
   }
 }

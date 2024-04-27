@@ -1,11 +1,11 @@
 import { BlockHash, Extrinsic, Hash, SignedBlock, TransactionStatus } from '@dedot/codecs';
-import type {
+import {
   AddressOrPair,
   AsyncMethod,
   Callback,
   DryRunResult,
   IRuntimeTxCall,
-  ISubmittableExtrinsic,
+  ISubmittableExtrinsicLegacy,
   ISubmittableResult,
   SignerOptions,
   Unsub,
@@ -22,7 +22,7 @@ import { isKeyringPair, signRaw } from './utils.js';
  * @name SubmittableExtrinsic
  * @description A wrapper around an Extrinsic that exposes methods to sign, send, and other utility around Extrinsic.
  */
-export class SubmittableExtrinsic extends Extrinsic implements ISubmittableExtrinsic {
+export class SubmittableExtrinsic extends Extrinsic implements ISubmittableExtrinsicLegacy {
   constructor(
     public api: ISubstrateClient,
     call: IRuntimeTxCall,

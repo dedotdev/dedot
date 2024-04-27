@@ -1,6 +1,13 @@
 import { BlockHash, Option, StorageData, StorageKey } from '@dedot/codecs';
 import type { StorageChangeSet } from '@dedot/specs';
-import type { Callback, GenericStorageQuery, GenericSubstrateApi, PaginationOptions, Unsub } from '@dedot/types';
+import type {
+  AsyncMethod,
+  Callback,
+  GenericStorageQuery,
+  GenericSubstrateApi,
+  PaginationOptions,
+  Unsub,
+} from '@dedot/types';
 import { assert, isFunction } from '@dedot/utils';
 import { QueryableStorage } from '../storage/QueryableStorage.js';
 import { Executor } from './Executor.js';
@@ -59,67 +66,61 @@ export class StorageQueryExecutor<
       }
     };
 
-    const queryMultiFn = async (...args: any[]): Promise<any> => {
-      const [inArgs, callback] = extractArgs(args);
-      const multiArgs = inArgs.at(0);
-      assert(Array.isArray(multiArgs), 'First param for multi query should be an array');
-      const encodedKeys = multiArgs.map((arg) => entry.encodeKey(arg));
-
-      // if a callback is passed, make a storage subscription and return an unsub function
-      if (callback) {
-        return await this.subscribeStorage(encodedKeys, (changes: Array<StorageData | undefined>) => {
-          callback(changes.map((change) => entry.decodeValue(change)));
-        });
-      } else {
-        const result = await getStorage(encodedKeys);
-        return encodedKeys.map((key) => result[key]);
-      }
-    };
-
     queryFn.rawKey = getStorageKey;
     queryFn.meta = {
       pallet: entry.pallet.name,
       palletIndex: entry.pallet.index,
       ...entry.storageEntry,
     };
-    queryFn.multi = queryMultiFn;
 
     const isMap = entry.storageEntry.type.tag === 'Map';
     if (isMap) {
-      const rawKeys = async (pagination?: PaginationOptions): Promise<StorageKey[]> => {
-        const pageSize = pagination?.pageSize || DEFAULT_KEYS_PAGE_SIZE;
-        const startKey = pagination?.startKey || entry.prefixKey;
+      const queryMultiFn = async (...args: any[]): Promise<any> => {
+        const [inArgs, callback] = extractArgs(args);
+        const multiArgs = inArgs.at(0);
+        assert(Array.isArray(multiArgs), 'First param for multi query should be an array');
+        const encodedKeys = multiArgs.map((arg) => entry.encodeKey(arg));
 
-        return await this.api.rpc.state_getKeysPaged(entry.prefixKey, pageSize, startKey, this.atBlockHash);
-      };
-
-      const keys = async (pagination?: PaginationOptions): Promise<any[]> => {
-        const storageKeys = await rawKeys({ pageSize: DEFAULT_KEYS_PAGE_SIZE, ...pagination });
-        return storageKeys.map((key) => entry.decodeKey(key));
-      };
-
-      const entries = async (pagination?: PaginationOptions): Promise<Array<[any, any]>> => {
-        const storageKeys = await rawKeys({ pageSize: DEFAULT_ENTRIES_PAGE_SIZE, ...pagination });
-
-        const changeSets: StorageChangeSet[] = await this.api.rpc.state_queryStorageAt(storageKeys, this.atBlockHash);
-        const changes = changeSets[0].changes.reduce(
-          (o, [key, value]) => {
-            o[key] = value;
-            return o;
-          },
-          {} as Record<StorageKey, StorageData | null>,
-        );
-
-        return storageKeys.map((key) => [entry.decodeKey(key), entry.decodeValue(changes[key])]);
+        // if a callback is passed, make a storage subscription and return an unsub function
+        if (callback) {
+          return await this.subscribeStorage(encodedKeys, (changes: Array<StorageData | undefined>) => {
+            callback(changes.map((change) => entry.decodeValue(change)));
+          });
+        } else {
+          const result = await getStorage(encodedKeys);
+          return encodedKeys.map((key) => result[key]);
+        }
       };
 
       // @ts-ignore
-      queryFn.keys = keys;
-      // @ts-ignore
-      queryFn.entries = entries;
+      queryFn.multi = queryMultiFn;
+
+      Object.assign(queryFn, this.exposeStorageMapMethods(entry));
     }
 
     return queryFn;
+  }
+
+  protected exposeStorageMapMethods(entry: QueryableStorage): Record<string, AsyncMethod> {
+    const rawKeys = async (pagination?: PaginationOptions): Promise<StorageKey[]> => {
+      const pageSize = pagination?.pageSize || DEFAULT_KEYS_PAGE_SIZE;
+      const startKey = pagination?.startKey || entry.prefixKey;
+
+      return await this.api.rpc.state_getKeysPaged(entry.prefixKey, pageSize, startKey, this.atBlockHash);
+    };
+
+    const keys = async (pagination?: PaginationOptions): Promise<any[]> => {
+      const storageKeys = await rawKeys({ pageSize: DEFAULT_KEYS_PAGE_SIZE, ...pagination });
+      return storageKeys.map((key) => entry.decodeKey(key));
+    };
+
+    const entries = async (pagination?: PaginationOptions): Promise<Array<[any, any]>> => {
+      const storageKeys = await rawKeys({ pageSize: DEFAULT_ENTRIES_PAGE_SIZE, ...pagination });
+      const storageMap = await this.queryStorage(storageKeys, this.atBlockHash);
+      return storageKeys.map((key) => [entry.decodeKey(key), entry.decodeValue(storageMap[key])]);
+    };
+
+    return { keys, entries };
   }
 
   protected async queryStorage(keys: StorageKey[], hash?: BlockHash): Promise<Record<StorageKey, Option<StorageData>>> {

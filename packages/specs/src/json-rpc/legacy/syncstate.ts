@@ -7,5 +7,5 @@ export interface SyncStateJsonRpcApis extends GenericJsonRpcApis {
    * @rpcname sync_state_genSyncSpec
    * @param {boolean} raw
    **/
-  syncstate_genSyncSpec: (raw: boolean) => Promise<Record<string, any>>;
+  sync_state_genSyncSpec: (raw: boolean) => Promise<Record<string, any>>;
 }

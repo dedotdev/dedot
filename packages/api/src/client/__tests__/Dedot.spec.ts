@@ -63,16 +63,19 @@ describe('Dedot', () => {
         api.metadata.latest.pallets.forEach((pallet) => {
           pallet.storage?.entries.forEach((entry) => {
             expect(api.query[stringCamelCase(pallet.name)][stringCamelCase(entry.name)]).toBeDefined();
-            expect(api.query[stringCamelCase(pallet.name)][stringCamelCase(entry.name)].multi).toBeDefined();
             expect(api.query[stringCamelCase(pallet.name)][stringCamelCase(entry.name)].meta).toBeDefined();
             expectTypeOf(api.query[stringCamelCase(pallet.name)][stringCamelCase(entry.name)].rawKey).toBeFunction();
 
             if (entry.type.tag === 'Map') {
               // @ts-ignore
+              expect(api.query[stringCamelCase(pallet.name)][stringCamelCase(entry.name)].multi).toBeDefined();
+              // @ts-ignore
               expect(api.query[stringCamelCase(pallet.name)][stringCamelCase(entry.name)].keys).toBeDefined();
               // @ts-ignore
               expect(api.query[stringCamelCase(pallet.name)][stringCamelCase(entry.name)].entries).toBeDefined();
             } else {
+              // @ts-ignore
+              expect(api.query[stringCamelCase(pallet.name)][stringCamelCase(entry.name)].multi).toBeUndefined();
               // @ts-ignore
               expect(api.query[stringCamelCase(pallet.name)][stringCamelCase(entry.name)].keys).toBeUndefined();
               // @ts-ignore

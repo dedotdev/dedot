@@ -1,7 +1,5 @@
 import {
-  BestBlockChanged,
   ChainHeadRuntimeVersion,
-  Finalized,
   MethodResponse,
   NewBlock,
   OperationCallDone,
@@ -11,170 +9,14 @@ import {
   StorageQuery,
 } from '@dedot/specs';
 import { MockInstance } from '@vitest/spy';
-import { HexString, isNumber, JsonRpcClient, numberToHex, stringToHex, SubstrateRuntimeVersion } from 'dedot';
+import { JsonRpcClient } from 'dedot';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import MockProvider, { MockedRuntimeVersion } from '../../../client/__tests__/MockProvider.js';
+import MockProvider from '../../../client/__tests__/MockProvider.js';
 import { IJsonRpcClient } from '../../../types.js';
 import { ChainHead } from '../ChainHead/index.js';
-
-const mockedRuntime: ChainHeadRuntimeVersion = {
-  ...MockedRuntimeVersion,
-  apis: MockedRuntimeVersion.apis.reduce(
-    (acc, [name, version]) => {
-      acc[name] = version;
-      return acc;
-    },
-    {} as Record<string, number>,
-  ),
-};
+import { newChainHeadSimulator } from './simulator.js';
 
 const MSG_CALL_FOLLOW_FIRST = 'Please call the .follow() method before invoking any other methods in this group.';
-
-const rpcMethods = [
-  'chainHead_v1_body',
-  'chainHead_v1_call',
-  'chainHead_v1_continue',
-  'chainHead_v1_follow',
-  'chainHead_v1_header',
-  'chainHead_v1_stopOperation',
-  'chainHead_v1_storage',
-  'chainHead_v1_unpin',
-  'chainHead_v1_unfollow',
-];
-
-type SimulatorConfig = {
-  numOfFinalizedBlocks?: number;
-  provider: MockProvider;
-};
-
-const newChainHeadSimulator = ({ numOfFinalizedBlocks = 15, provider }: SimulatorConfig) => {
-  let subscriptionId = stringToHex('followSubscription');
-
-  let finalizedHeight = -1;
-  let bestBlockHeight = -1;
-  let newBlockHeight = -1;
-
-  type BlockInfo = { height: number; hash: HexString; parent: HexString; forkCounter?: number };
-  const blockDb: Record<HexString, BlockInfo> = {}; // <height, {hash, parent}>
-  const forkCounter: Record<number, number> = {}; // <height, forkCount>
-
-  const findBlock = (height: number, forkCounter?: number): BlockInfo => {
-    const b = Object.values(blockDb).find((block) => block.height === height && block.forkCounter === forkCounter);
-    if (!b) throw new Error('Cannot find block');
-    return b;
-  };
-
-  const newBlockAtHeight = (height: number, forkCounter?: number, parentForkCounter?: number): BlockInfo => {
-    if (height === 0) {
-      return {
-        height,
-        hash: '0x00' as HexString,
-        parent: '0x00' as HexString,
-      };
-    }
-
-    const suffix = isNumber(forkCounter) ? `-${forkCounter}` : '';
-    const hash = `${numberToHex(height)}${suffix}` as HexString;
-
-    if (blockDb[hash]) return blockDb[hash];
-
-    const parent: any = newBlockAtHeight(height - 1, parentForkCounter);
-
-    blockDb[hash] = {
-      height,
-      hash: hash as HexString,
-      parent: parent.hash as HexString,
-      forkCounter,
-    };
-
-    return blockDb[hash];
-  };
-
-  const newBlock = (fork = false, parentForkCounter?: number) => {
-    if (fork) {
-      forkCounter[newBlockHeight] = (forkCounter[newBlockHeight] || 0) + 1;
-      return newBlockAtHeight(newBlockHeight, forkCounter[newBlockHeight], parentForkCounter);
-    } else {
-      newBlockHeight += 1;
-      return newBlockAtHeight(newBlockHeight, undefined, parentForkCounter);
-    }
-  };
-
-  const initializedEvent = {
-    event: 'initialized',
-    finalizedBlockHashes: [...Array(numOfFinalizedBlocks)].map(() => newBlock().hash),
-    finalizedBlockRuntime: { type: 'valid', spec: mockedRuntime },
-  };
-
-  finalizedHeight = bestBlockHeight = numOfFinalizedBlocks - 1;
-
-  const nextMockedRuntime = (): SubstrateRuntimeVersion => {
-    return { ...mockedRuntime, specVersion: mockedRuntime.specVersion + 1 };
-  };
-
-  type NewNextBlock = {
-    fork?: boolean;
-    fromWhichParentFork?: number;
-    withRuntime?: boolean;
-  };
-
-  const nextNewBlock = (config?: NewNextBlock): NewBlock => {
-    const { fork = false, fromWhichParentFork, withRuntime = false } = config || {};
-    const block = newBlock(fork, fromWhichParentFork);
-
-    return {
-      event: 'newBlock',
-      blockHash: block.hash,
-      parentBlockHash: block.parent,
-      newRuntime: withRuntime ? { type: 'valid', spec: nextMockedRuntime() } : null,
-    };
-  };
-
-  // TODO simulate forks
-  const nextBestBlock = (forkCounter?: number): BestBlockChanged => {
-    if (newBlockHeight <= bestBlockHeight) {
-      throw new Error('No new block available');
-    }
-
-    bestBlockHeight += 1;
-    let block = findBlock(bestBlockHeight, forkCounter);
-
-    return {
-      event: 'bestBlockChanged',
-      bestBlockHash: block.hash,
-    };
-  };
-
-  const nextFinalized = (forkCounter?: number): Finalized => {
-    if (bestBlockHeight <= finalizedHeight) {
-      throw new Error('No best block to finalize');
-    }
-
-    finalizedHeight += 1;
-    const block = findBlock(finalizedHeight, forkCounter);
-
-    // find other forked blocks at the same height for pruning
-    const prunedBlockHashes = Object.values(blockDb)
-      .filter((b) => b.height === finalizedHeight && b.forkCounter !== forkCounter)
-      .map((b) => b.hash);
-
-    prunedBlockHashes.forEach((hash) => delete blockDb[hash]);
-
-    return {
-      event: 'finalized',
-      finalizedBlockHashes: [block.hash],
-      prunedBlockHashes: prunedBlockHashes,
-    };
-  };
-
-  return {
-    subscriptionId,
-    initializedEvent,
-    nextNewBlock,
-    nextBestBlock,
-    nextFinalized,
-  };
-};
 
 describe('ChainHead', () => {
   let chainHead: ChainHead;
@@ -183,6 +25,7 @@ describe('ChainHead', () => {
   let providerSend: MockInstance;
   let providerSubscribe: MockInstance;
   let simulator: ReturnType<typeof newChainHeadSimulator>;
+  let initialRuntime: ChainHeadRuntimeVersion;
 
   const notify = (subscriptionId: string, data: Error | any, timeout = 0) => {
     setTimeout(() => {
@@ -197,19 +40,7 @@ describe('ChainHead', () => {
     client = new JsonRpcClient({ provider });
     chainHead = new ChainHead(client);
     simulator = newChainHeadSimulator({ provider });
-
-    provider.setRpcRequests({
-      rpc_methods: () => ({ methods: rpcMethods }),
-      chainHead_v1_follow: () => simulator.subscriptionId,
-      chainHead_v1_unfollow: () => null,
-      chainHead_v1_body: () => '0x',
-      chainHead_v1_call: () => '0x',
-      chainHead_v1_continue: () => '0x',
-      chainHead_v1_header: () => '0x',
-      chainHead_v1_storage: () => '0x',
-      chainHead_v1_stopOperation: () => '0x',
-      chainHead_v1_unpin: () => '0x',
-    });
+    initialRuntime = simulator.runtime;
 
     providerSend = vi.spyOn(provider, 'send');
     providerSubscribe = vi.spyOn(provider, 'subscribe');
@@ -232,8 +63,8 @@ describe('ChainHead', () => {
         expect.any(Function),
       );
 
-      expect(chainHead.runtimeVersion).toEqual(mockedRuntime);
-      expect(chainHead.bestRuntimeVersion).toEqual(mockedRuntime);
+      expect(chainHead.runtimeVersion).toEqual(initialRuntime);
+      expect(chainHead.bestRuntimeVersion).toEqual(initialRuntime);
       expect(chainHead.bestHash).toEqual('0x0e');
       expect(chainHead.finalizedHash).toEqual('0x0e');
     });

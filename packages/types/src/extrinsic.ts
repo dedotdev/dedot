@@ -1,5 +1,6 @@
 import { IKeyringPair, Signer } from '@polkadot/types/types';
 import { ApplyExtrinsicResult, BlockHash, DispatchError, DispatchInfo, Hash, TransactionStatus } from '@dedot/codecs';
+import { HexString } from '@dedot/utils';
 import { Callback, IEventRecord, Unsub } from './index.js';
 
 export type AddressOrPair = IKeyringPair | string; // | AccountId32Like | MultiAddressLike;
@@ -43,8 +44,6 @@ export interface IRuntimeTxCall {
 
 export interface ISubmittableExtrinsic<R extends ISubmittableResult = ISubmittableResult> {
   // TODO add payment info or fee estimation
-  dryRun(account: AddressOrPair, optionsOrHash?: Partial<SignerOptions> | BlockHash): Promise<DryRunResult>;
-
   send(): Promise<Hash>;
 
   send(callback: Callback<R>): Promise<Unsub>;
@@ -57,3 +56,17 @@ export interface ISubmittableExtrinsic<R extends ISubmittableResult = ISubmittab
 
   signAndSend(account: AddressOrPair, options: Partial<SignerOptions>, callback?: Callback<R>): Promise<Unsub>;
 }
+
+export interface ISubmittableExtrinsicLegacy<R extends ISubmittableResult = ISubmittableResult>
+  extends ISubmittableExtrinsic<R> {
+  dryRun(account: AddressOrPair, optionsOrHash?: Partial<SignerOptions> | BlockHash): Promise<DryRunResult>;
+}
+
+export type TransactionStatusLegacy = TransactionStatus;
+
+// We want to mimic an enum type for the new transaction status
+export type TransactionStatusV2 =
+  | { tag: 'Validated' } // emits after we validate the transaction via `call.taggedTransactionQueue.validateTransaction`
+  | { tag: 'Broadcasted' } // emits after we submit the transaction via TxBroadcaster
+  | { tag: 'BestChainBlockIncluded'; value: { hash: HexString; index: number } | null }
+  | { tag: 'Finalized'; value: { hash: HexString; index: number } };

@@ -13,6 +13,11 @@ export class TxGen extends ApiGen {
       'ISubmittableExtrinsic',
       'ISubmittableResult',
       'IRuntimeTxCall',
+      'RpcVersion',
+      'RpcV2',
+      'ISubmittableExtrinsicLegacy',
+      'TransactionStatusLegacy',
+      'TransactionStatusV2',
     );
 
     const { callTypeId, addressTypeId, signatureTypeId } = this.metadata.extrinsic;
@@ -22,7 +27,7 @@ export class TxGen extends ApiGen {
     const signatureTypeIn = this.typesGen.generateType(signatureTypeId, 1);
 
     this.typesGen.typeImports.addPortableType('FrameSystemEventRecord');
-    this.typesGen.typeImports.addCodecType('Extrinsic', 'TransactionStatus');
+    this.typesGen.typeImports.addCodecType('Extrinsic');
     this.typesGen.addTypeImport([callTypeIn, addressTypeIn, signatureTypeIn]);
 
     let txDefsOut = '';
@@ -66,11 +71,11 @@ export class TxGen extends ApiGen {
                   docs,
                   '\n',
                   params.map((p) => `@param {${p.type}} ${p.normalizedName} ${p.docs}`),
-                )}${functionName}: GenericTxCall<(${params.map((p) => `${p.normalizedName}: ${p.type}`).join(', ')}) => ChainSubmittableExtrinsic<${callInput}>>`,
+                )}${functionName}: GenericTxCall<Rv, (${params.map((p) => `${p.normalizedName}: ${p.type}`).join(', ')}) => ChainSubmittableExtrinsic<Rv, ${callInput}>>`,
             )
             .join(',\n')}
             
-          ${commentBlock('Generic pallet tx call')}[callName: string]: GenericTxCall<TxCall>,
+          ${commentBlock('Generic pallet tx call')}[callName: string]: GenericTxCall<Rv, TxCall<Rv>>,
         },`;
     }
 
@@ -78,11 +83,13 @@ export class TxGen extends ApiGen {
 
     // TODO make explicit separate type for Extra
     const defTypes = `
-    export type ChainSubmittableExtrinsic<T extends IRuntimeTxCall = ${callTypeIn}> = 
+    export type ChainSubmittableExtrinsic<Rv extends RpcVersion, T extends IRuntimeTxCall = ${callTypeIn}> = 
         Extrinsic<${addressTypeIn}, T, ${signatureTypeIn}, any[]> &
-        ISubmittableExtrinsic<ISubmittableResult<FrameSystemEventRecord, TransactionStatus>>
+        (Rv extends RpcV2
+          ? ISubmittableExtrinsic<ISubmittableResult<FrameSystemEventRecord, TransactionStatusV2>>
+          : ISubmittableExtrinsicLegacy<ISubmittableResult<FrameSystemEventRecord, TransactionStatusLegacy>>)
         
-    export type TxCall = (...args: any[]) => ChainSubmittableExtrinsic;    
+    export type TxCall<Rv extends RpcVersion> = (...args: any[]) => ChainSubmittableExtrinsic<Rv>;    
 `;
     const template = compileTemplate('tx.hbs');
 

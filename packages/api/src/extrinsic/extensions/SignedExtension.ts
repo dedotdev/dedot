@@ -4,7 +4,6 @@ import * as $ from '@dedot/shape';
 import { PayloadOptions } from '@dedot/types';
 import { ensurePresence } from '@dedot/utils';
 import { ISubstrateClient } from 'dedot/types';
-import { Dedot } from '../../client/index.js';
 
 export interface ISignedExtension {
   identifier: string;

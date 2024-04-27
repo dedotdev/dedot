@@ -1,5 +1,5 @@
 import { assert } from '@dedot/utils';
-import { Dedot } from 'dedot';
+import { DedotClient } from 'dedot';
 
 const ALICE = '5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY';
 const BOB = '5FHneW46xGXgs5mUiveU4sbTyGBzmstUspZC92UhjJM694ty';
@@ -9,7 +9,7 @@ const addressesToCheck: Record<string, string> = { ALICE, BOB };
 export const run = async (nodeName: any, networkInfo: any) => {
   const { wsUri } = networkInfo.nodesByName[nodeName];
 
-  const api = await Dedot.new(wsUri);
+  const api = await DedotClient.new(wsUri);
 
   const balances = await api.query.system.account.multi([ALICE, BOB]);
 
@@ -24,20 +24,11 @@ export const run = async (nodeName: any, networkInfo: any) => {
     })();
   });
 
-  // Check storage map keys
-  const keys = await api.query.system.account.keys();
-  const addresses = keys.map((k) => k.address());
-  console.log(`Total accounts:`, keys.length);
-  console.log('Addresses', addresses);
-
-  assert(addresses.includes(ALICE), 'Should include ALICE');
-  assert(addresses.includes(BOB), 'Should include BOB');
+  // @ts-ignore .keys() is not available in the new API
+  assert(api.query.system.account['keys'] === undefined, 'Method keys should not be available');
 
   // Check storage map entries
   const accounts = await api.query.system.account.entries();
-
-  assert(keys.length === accounts.length, 'Mismatch # of storage items');
-
   const addressToFreeBalance = accounts.reduce(
     (o, [k, v]) => {
       o[k.address()] = v.data.free;

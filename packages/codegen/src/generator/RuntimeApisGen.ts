@@ -24,7 +24,7 @@ export class RuntimeApisGen extends ApiGen {
 
   generate() {
     this.typesGen.clearCache();
-    this.typesGen.typeImports.addKnownType('GenericRuntimeApis', 'GenericRuntimeApiMethod');
+    this.typesGen.typeImports.addKnownType('GenericRuntimeApis', 'GenericRuntimeApiMethod', 'RpcVersion');
 
     let runtimeCallsOut = '';
 
@@ -36,7 +36,7 @@ export class RuntimeApisGen extends ApiGen {
         runtimeCallsOut += `${stringCamelCase(runtimeApiName)}: {
             ${methods.map((method) => this.#generateMethodDef(runtimeApiName, method)).join('\n')} 
               
-            ${commentBlock('Generic runtime api call')}[method: string]: GenericRuntimeApiMethod
+            ${commentBlock('Generic runtime api call')}[method: string]: GenericRuntimeApiMethod<Rv>
         }`;
       });
     } else {
@@ -55,7 +55,7 @@ export class RuntimeApisGen extends ApiGen {
               )
               .join('\n')} 
               
-            ${commentBlock('Generic runtime api call')}[method: string]: GenericRuntimeApiMethod
+            ${commentBlock('Generic runtime api call')}[method: string]: GenericRuntimeApiMethod<Rv>
           }`;
       });
     }
@@ -100,7 +100,7 @@ export class RuntimeApisGen extends ApiGen {
       '\n',
       defaultDocs,
       typedParams.map(({ plainType, name }) => `@param {${plainType}} ${name}`),
-    )}${methodName}: GenericRuntimeApiMethod<(${paramsOut}) => Promise<${typeOut}>>`;
+    )}${methodName}: GenericRuntimeApiMethod<Rv, (${paramsOut}) => Promise<${typeOut}>>`;
   }
 
   #generateMethodDef(runtimeApiName: string, methodDef: RuntimeApiMethodDefLatest) {
@@ -132,7 +132,7 @@ export class RuntimeApisGen extends ApiGen {
       '\n',
       defaultDocs,
       typedInputs.map(({ type, name }) => `@param {${type}} ${name}`),
-    )}${stringCamelCase(methodName)}: GenericRuntimeApiMethod<(${paramsOut}) => Promise<${typeOut}>>`;
+    )}${stringCamelCase(methodName)}: GenericRuntimeApiMethod<Rv, (${paramsOut}) => Promise<${typeOut}>>`;
   }
 
   #targetRuntimeApiSpecs(): RuntimeApiSpec[] {

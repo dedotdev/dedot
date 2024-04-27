@@ -7,7 +7,7 @@ import { Executor } from './Executor.js';
  * @description Find pallet event information from metadata
  */
 export class EventExecutor<ChainApi extends GenericSubstrateApi = GenericSubstrateApi> extends Executor<ChainApi> {
-  doExecute(pallet: string, errorName: string): GenericPalletEvent<string, string> {
+  doExecute(pallet: string, errorName: string): GenericPalletEvent {
     const targetPallet = this.getPallet(pallet);
 
     const eventTypeId = targetPallet.event;

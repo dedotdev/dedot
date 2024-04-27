@@ -7,6 +7,7 @@ bob: is up
 alice: reports node_roles is 4
 alice: ts-script ./0001-check-runtime-api.ts within 100 seconds
 alice: ts-script ./0001-check-storage-query.ts within 100 seconds
+alice: ts-script ./0001-check-storage-query-v2.ts within 100 seconds
 alice: ts-script ./0001-check-tx-transfer-balance.ts within 100 seconds
 alice: ts-script ./0001-check-tx-batch.ts within 100 seconds
 alice: ts-script ./0001-check-ws-provider-connection.ts within 100 seconds
