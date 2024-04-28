@@ -30,14 +30,11 @@ export type OperationHandler<T = any> = {
   storageResults?: Array<StorageResult>;
 };
 
-export type BlockState = 'finalized' | 'best' | 'new';
-
 export type PinnedBlock = {
   hash: BlockHash;
   number: number;
   parent: BlockHash | undefined;
   runtime?: ChainHeadRuntimeVersion;
-  state: BlockState;
 };
 
 export type ChainHeadEvent =
@@ -65,7 +62,7 @@ export class ChainHead extends JsonRpcGroup<ChainHeadEvent> {
   #bestHash?: BlockHash;
   #finalizedHash?: BlockHash; // best finalized hash
   #finalizedRuntime?: ChainHeadRuntimeVersion;
-  #queue: AsyncQueue;
+  #followResponseQueue: AsyncQueue;
 
   constructor(client: IJsonRpcClient, options?: Partial<JsonRpcGroupOptions>) {
     super(client, { prefix: 'chainHead', supportedVersions: ['unstable', 'v1'], ...options });
@@ -74,7 +71,7 @@ export class ChainHead extends JsonRpcGroup<ChainHeadEvent> {
     this.#pinnedBlocks = {};
     this.#queueSize = MIN_QUEUE_SIZE;
     this.#pinnedQueue = [];
-    this.#queue = new AsyncQueue();
+    this.#followResponseQueue = new AsyncQueue();
   }
 
   get runtimeVersion(): ChainHeadRuntimeVersion {
@@ -112,7 +109,7 @@ export class ChainHead extends JsonRpcGroup<ChainHeadEvent> {
     try {
       // TODO handle when a connection (Ws) is reconnect & this subscription is reinitialized, handle this similar to a StopEvent
       this.#unsub = await this.send('follow', true, (event: FollowEvent, subscription: Subscription) => {
-        this.#queue.enqueue(async () => {
+        this.#followResponseQueue.enqueue(async () => {
           await this.#onFollowEvent(event, subscription);
 
           if (event.event == 'initialized') {
@@ -144,7 +141,7 @@ export class ChainHead extends JsonRpcGroup<ChainHeadEvent> {
 
         this.#pinnedBlocks = finalizedBlockHashes.reduce(
           (o, hash, idx, arr) => {
-            o[hash] = { hash, parent: arr[idx - 1], number: idx, state: 'finalized' };
+            o[hash] = { hash, parent: arr[idx - 1], number: idx };
             return o;
           },
           {} as Record<BlockHash, PinnedBlock>,
@@ -165,10 +162,10 @@ export class ChainHead extends JsonRpcGroup<ChainHeadEvent> {
         const runtime = this.#extractRuntime(newRuntime);
 
         const parentBlock = this.getPinnedBlock(parent)!;
-        this.#pinnedBlocks[hash] = { hash, parent, runtime, number: parentBlock.number + 1, state: 'new' };
+        this.#pinnedBlocks[hash] = { hash, parent, runtime, number: parentBlock.number + 1 };
         this.#pinnedQueue.push(hash);
 
-        this.emit('newBlock', this.#pinnedBlocks[hash], this.#pinnedBlocks);
+        this.emit('newBlock', { ...this.#pinnedBlocks[hash] });
         break;
       }
       case 'bestBlockChanged': {
@@ -176,9 +173,8 @@ export class ChainHead extends JsonRpcGroup<ChainHeadEvent> {
         this.#bestHash = result.bestBlockHash;
 
         const block = this.getPinnedBlock(this.#bestHash)!;
-        block.state = 'best';
 
-        this.emit('bestBlock', block, this.#pinnedBlocks);
+        this.emit('bestBlock', block);
         break;
       }
       case 'finalized': {
@@ -189,17 +185,12 @@ export class ChainHead extends JsonRpcGroup<ChainHeadEvent> {
           this.#finalizedRuntime = finalizedRuntime;
         }
 
-        // Update finalized state
-        const finalizedBlockHeights: number[] = [];
-        finalizedBlockHashes.forEach((hash) => {
-          const block = this.getPinnedBlock(hash)!;
-          block.state = 'finalized';
-          finalizedBlockHeights.push(block.number);
-        });
+        this.emit('finalizedBlock', { ...this.getPinnedBlock(this.#finalizedHash) });
 
-        const bestFinalizedBlock = this.getPinnedBlock(this.#finalizedHash)!;
-        this.emit('finalizedBlock', bestFinalizedBlock, this.#pinnedBlocks);
-
+        const finalizedBlockHeights = finalizedBlockHashes.map((hash) => this.getPinnedBlock(hash)!.number);
+        // TODO check if there is any on-going operations on the pruned blocks, there are 2 options:
+        //      1. we can need to wait for the operation to complete before unpinning the block
+        //      2. or cancel them right away since if they are not needed anymore
         const hashesToUnpin = new Set([
           ...prunedBlockHashes,
           // Since we have the current finalized blocks,
@@ -210,16 +201,17 @@ export class ChainHead extends JsonRpcGroup<ChainHeadEvent> {
             .map((b) => b.hash),
         ]);
 
-        if (this.#pinnedQueue.length > this.#queueSize) {
-          // if any pruned block is in the pinned queue, remove it
-          hashesToUnpin.forEach((hash) => {
-            if (!this.#isPinnedHash(hash)) return;
-            delete this.#pinnedBlocks[hash];
-            const idx = this.#pinnedQueue.indexOf(hash);
-            if (idx >= 0) this.#pinnedQueue.splice(idx, 1);
-          });
+        // if any pruned block is in the pinned queue, remove it
+        hashesToUnpin.forEach((hash) => {
+          if (!this.#isPinnedHash(hash)) return;
+          delete this.#pinnedBlocks[hash];
+          const idx = this.#pinnedQueue.indexOf(hash);
+          if (idx >= 0) this.#pinnedQueue.splice(idx, 1);
+        });
 
-          // Unpin the oldest pinned blocks to maintain the queue size
+        // TODO we probably want to maintain this queue size only for finalized blocks
+        // Unpin the oldest pinned blocks to maintain the queue size
+        if (this.#pinnedQueue.length > this.#queueSize) {
           const numOfItemsToUnpin = this.#pinnedQueue.length - this.#queueSize;
           const queuedHashesToUnpin = this.#pinnedQueue.splice(0, numOfItemsToUnpin);
           queuedHashesToUnpin.forEach((hash) => {
@@ -376,7 +368,7 @@ export class ChainHead extends JsonRpcGroup<ChainHeadEvent> {
     this.#bestHash = undefined;
     this.#finalizedHash = undefined;
     this.#finalizedRuntime = undefined;
-    this.#queue.clear();
+    this.#followResponseQueue.clear();
   }
 
   #ensureFollowed() {
