@@ -1,1 +1,1 @@
-export * from './AsyncWorkerQueue.js';
+export * from 'src/queue/AsyncQueue.js';

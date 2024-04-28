@@ -3,11 +3,11 @@ import { Deferred, deferred, noop } from '@dedot/utils';
 export type WorkItem<T = any> = (...args: any[]) => Promise<T> | T;
 
 /**
- * @name AsyncWorkerQueue
+ * @name AsyncQueue
  * @description A queue to process async works in sequence,
  * only one work is processed at a time
  */
-export class AsyncWorkerQueue {
+export class AsyncQueue {
   _works: Array<{ work: WorkItem; defer: Deferred<any> }>;
   _working: boolean;
 
@@ -24,7 +24,15 @@ export class AsyncWorkerQueue {
     return defer.promise;
   }
 
-  async dequeue(): Promise<void> {
+  clear() {
+    this._works.forEach(({ defer }) => {
+      defer.reject(new Error('Queue cleaned'));
+    });
+
+    this._works = [];
+  }
+
+  protected async dequeue(): Promise<void> {
     if (this._working) return;
 
     const workItem = this._works.shift();

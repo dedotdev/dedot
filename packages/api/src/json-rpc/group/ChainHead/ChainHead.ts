@@ -11,7 +11,7 @@ import {
   StorageResult,
 } from '@dedot/specs';
 import { Unsub } from '@dedot/types';
-import { assert, Deferred, deferred, ensurePresence, HexString, noop, AsyncWorkerQueue } from '@dedot/utils';
+import { assert, Deferred, deferred, ensurePresence, HexString, noop, AsyncQueue } from '@dedot/utils';
 import { IJsonRpcClient } from '../../../types.js';
 import { JsonRpcGroup, JsonRpcGroupOptions } from '../JsonRpcGroup.js';
 import {
@@ -62,7 +62,7 @@ export class ChainHead extends JsonRpcGroup<ChainHeadEvent> {
   #bestHash?: BlockHash;
   #finalizedHash?: BlockHash; // best finalized hash
   #finalizedRuntime?: ChainHeadRuntimeVersion;
-  #queue: AsyncWorkerQueue;
+  #queue: AsyncQueue;
 
   constructor(client: IJsonRpcClient, options?: Partial<JsonRpcGroupOptions>) {
     super(client, { prefix: 'chainHead', supportedVersions: ['unstable', 'v1'], ...options });
@@ -71,7 +71,7 @@ export class ChainHead extends JsonRpcGroup<ChainHeadEvent> {
     this.#pinnedBlocks = {};
     this.#queueSize = MIN_QUEUE_SIZE;
     this.#pinnedQueue = [];
-    this.#queue = new AsyncWorkerQueue();
+    this.#queue = new AsyncQueue();
   }
 
   get runtimeVersion(): ChainHeadRuntimeVersion {
@@ -348,7 +348,7 @@ export class ChainHead extends JsonRpcGroup<ChainHeadEvent> {
     this.#bestHash = undefined;
     this.#finalizedHash = undefined;
     this.#finalizedRuntime = undefined;
-    this.#queue = new AsyncWorkerQueue();
+    this.#queue.clear();
   }
 
   #ensureFollowed() {
