@@ -30,7 +30,7 @@ export type OperationHandler<T = any> = {
   storageResults?: Array<StorageResult>;
 };
 
-export type BlockState = 'finalized' | 'best' | 'new' | 'pruned';
+export type BlockState = 'finalized' | 'best' | 'new';
 
 export type PinnedBlock = {
   hash: BlockHash;
@@ -189,25 +189,30 @@ export class ChainHead extends JsonRpcGroup<ChainHeadEvent> {
           this.#finalizedRuntime = finalizedRuntime;
         }
 
-        const block = this.getPinnedBlock(this.#finalizedHash)!;
-        block.state = 'finalized';
-
-        // Since we have the current finalized block,
-        // we can mark all the other blocks at the same height as pruned and unpin later
-        Object.values(this.#pinnedBlocks).forEach((b) => {
-          if (b.number === block.number && b.hash !== block.hash) {
-            b.state = 'pruned';
-          }
+        // Update finalized state
+        const finalizedBlockHeights: number[] = [];
+        finalizedBlockHashes.forEach((hash) => {
+          const block = this.getPinnedBlock(hash)!;
+          block.state = 'finalized';
+          finalizedBlockHeights.push(block.number);
         });
 
-        // TODO unpin pruned blocks
+        const bestFinalizedBlock = this.getPinnedBlock(this.#finalizedHash)!;
+        this.emit('finalizedBlock', bestFinalizedBlock, this.#pinnedBlocks);
 
-        this.emit('finalizedBlock', block, this.#pinnedBlocks);
+        const hashesToUnpin = new Set([
+          ...prunedBlockHashes,
+          // Since we have the current finalized blocks,
+          // we can mark all the other blocks at the same height as pruned and unpin all together with the reported pruned blocks
+          ...Object.values(this.#pinnedBlocks)
+            .filter((b) => finalizedBlockHeights.includes(b.number))
+            .filter((b) => !finalizedBlockHashes.includes(b.hash))
+            .map((b) => b.hash),
+        ]);
 
-        const hashesToUnpin = [...prunedBlockHashes];
         if (this.#pinnedQueue.length > this.#queueSize) {
           // if any pruned block is in the pinned queue, remove it
-          prunedBlockHashes.forEach((hash) => {
+          hashesToUnpin.forEach((hash) => {
             if (!this.#isPinnedHash(hash)) return;
             delete this.#pinnedBlocks[hash];
             const idx = this.#pinnedQueue.indexOf(hash);
@@ -217,11 +222,13 @@ export class ChainHead extends JsonRpcGroup<ChainHeadEvent> {
           // Unpin the oldest pinned blocks to maintain the queue size
           const numOfItemsToUnpin = this.#pinnedQueue.length - this.#queueSize;
           const queuedHashesToUnpin = this.#pinnedQueue.splice(0, numOfItemsToUnpin);
-          queuedHashesToUnpin.forEach((hash) => delete this.#pinnedBlocks[hash]);
-          hashesToUnpin.push(...queuedHashesToUnpin);
+          queuedHashesToUnpin.forEach((hash) => {
+            delete this.#pinnedBlocks[hash];
+            hashesToUnpin.add(hash);
+          });
         }
 
-        this.unpin(hashesToUnpin).catch(noop);
+        this.unpin([...hashesToUnpin]).catch(noop);
         break;
       }
       case 'stop': {

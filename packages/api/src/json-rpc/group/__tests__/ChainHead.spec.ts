@@ -192,7 +192,7 @@ describe('ChainHead', () => {
           });
         });
 
-        // 4 new blocks on top of 15 initial blocks,  1 pruned block 0x0f-1, unpin 4 blocks to maintain the queue size
+        // 4 new blocks on top of 15 initial blocks,  1 pruned block 0x0f-1, unpin 5 blocks to maintain the queue size
         await new Promise<void>((resolve) => {
           setTimeout(() => {
             expect(providerSend).toHaveBeenCalledWith('chainHead_v1_unpin', [
@@ -245,6 +245,41 @@ describe('ChainHead', () => {
 
         notify(simulator.subscriptionId, simulator.nextBestBlock(1));
         const finalized1 = notify(simulator.subscriptionId, simulator.nextFinalized(1));
+
+        await new Promise<void>((resolve) => {
+          const unsub = chainHead.on('finalizedBlock', (block: PinnedBlock) => {
+            expect(block.hash).toEqual(newForkedBlock.blockHash);
+            expect(block.hash).toEqual(finalized1.finalizedBlockHashes.at(-1));
+            expect(chainHead.finalizedHash).toEqual(block.hash);
+
+            unsub();
+            resolve();
+          });
+        });
+
+        // 4 new blocks on top of 15 initial blocks, 1 pruned block 0x0f, unpin 5 blocks to maintain the queue size
+        await new Promise<void>((resolve) => {
+          setTimeout(() => {
+            expect(providerSend).toHaveBeenCalledWith('chainHead_v1_unpin', [
+              simulator.subscriptionId,
+              ['0x0f', '0x00', '0x01', '0x02', '0x03'],
+            ]);
+            resolve();
+          }, 10);
+        });
+      });
+
+      it('should unpin block at the same height as finalized blocks', async () => {
+        notify(simulator.subscriptionId, simulator.nextNewBlock());
+        const newForkedBlock = notify(simulator.subscriptionId, simulator.nextNewBlock({ fork: true }));
+        notify(simulator.subscriptionId, simulator.nextNewBlock({ fromWhichParentFork: 1, withRuntime: true }));
+        notify(simulator.subscriptionId, simulator.nextNewBlock());
+        notify(simulator.subscriptionId, simulator.nextNewBlock());
+
+        notify(simulator.subscriptionId, simulator.nextBestBlock(1));
+        const finalized1 = notify(simulator.subscriptionId, simulator.nextFinalized(1, false));
+
+        expect(finalized1.prunedBlockHashes).toEqual([]);
 
         await new Promise<void>((resolve) => {
           const unsub = chainHead.on('finalizedBlock', (block: PinnedBlock) => {
