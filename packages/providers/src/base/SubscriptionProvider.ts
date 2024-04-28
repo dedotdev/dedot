@@ -106,7 +106,6 @@ export abstract class SubscriptionProvider extends EventEmitter<ProviderEvent> i
   }
 
   _handleNotification(response: JsonRpcResponseNotification) {
-    console.log('<< RPC NOTIFICATION:', JSON.stringify(response));
     const { method: subname, params } = response;
     const { subscription: subscriptionId, result, error } = params;
 
@@ -137,15 +136,6 @@ export abstract class SubscriptionProvider extends EventEmitter<ProviderEvent> i
         request,
         from: Date.now(),
       };
-
-      console.log(
-        '>> RPC',
-        method,
-        params
-          .map((p) => (isHex(p) ? shortenAddress(p) : p))
-          .map((p) => JSON.stringify(p))
-          .join(', '),
-      );
 
       await this.doSend(request);
     } catch (e: any) {
