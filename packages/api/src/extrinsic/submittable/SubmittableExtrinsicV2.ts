@@ -75,7 +75,7 @@ export class SubmittableExtrinsicV2 extends BaseSubmittableExtrinsic {
 
       callback(
         new SubmittableResult<IEventRecord, TransactionStatusV2>({
-          status: { tag: 'BestChainBlockIncluded', value: { blockHash: block.hash, txIndex: txIndex } },
+          status: { tag: 'BestChainBlockIncluded', value: { blockHash: block.hash, txIndex } },
           txHash,
           events,
           txIndex,
@@ -91,7 +91,7 @@ export class SubmittableExtrinsicV2 extends BaseSubmittableExtrinsic {
 
       callback(
         new SubmittableResult<IEventRecord, TransactionStatusV2>({
-          status: { tag: 'Finalized', value: { blockHash: block.hash, txIndex: txIndex } },
+          status: { tag: 'Finalized', value: { blockHash: block.hash, txIndex } },
           txHash,
           events,
           txIndex,
