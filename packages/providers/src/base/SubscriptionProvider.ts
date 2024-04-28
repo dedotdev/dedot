@@ -1,5 +1,5 @@
-import { JsonRpcError } from '@dedot/providers/error';
 import { deferred, Deferred, EventEmitter, isHex, shortenAddress } from '@dedot/utils';
+import { JsonRpcError } from '../error.js';
 import {
   ConnectionStatus,
   JsonRpcProvider,
@@ -11,7 +11,7 @@ import {
   Subscription,
   SubscriptionCallback,
   SubscriptionInput,
-} from './types.js';
+} from '../types.js';
 
 export interface RequestState<T = any> {
   defer: Deferred<T>;

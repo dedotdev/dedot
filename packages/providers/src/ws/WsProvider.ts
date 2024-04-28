@@ -1,6 +1,6 @@
 import { WebSocket } from '@polkadot/x-ws';
 import { assert } from '@dedot/utils';
-import { SubscriptionProvider } from '../SubscriptionProvider.js';
+import { SubscriptionProvider } from '../base/index.js';
 import { JsonRpcRequest } from '../types.js';
 
 export interface WsProviderOptions {

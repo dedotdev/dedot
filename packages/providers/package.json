@@ -21,6 +21,7 @@
   },
   "license": "Apache-2.0",
   "devDependencies": {
-    "mock-socket": "^9.3.1"
+    "mock-socket": "^9.3.1",
+    "smoldot": "^2.0.24"
   }
 }
