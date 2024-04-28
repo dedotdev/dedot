@@ -43,11 +43,12 @@ export class AsyncQueue {
     try {
       this._working = true;
       const result = await work(this);
+      this._working = false;
       defer.resolve(result);
     } catch (e: any) {
+      this._working = false;
       defer.reject(e);
     } finally {
-      this._working = false;
       this.dequeue().catch(noop);
     }
   }
