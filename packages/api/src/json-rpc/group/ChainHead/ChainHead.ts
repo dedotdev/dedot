@@ -165,16 +165,14 @@ export class ChainHead extends JsonRpcGroup<ChainHeadEvent> {
         this.#pinnedBlocks[hash] = { hash, parent, runtime, number: parentBlock.number + 1 };
         this.#pinnedQueue.push(hash);
 
-        this.emit('newBlock', { ...this.#pinnedBlocks[hash] });
+        this.emit('newBlock', this.#pinnedBlocks[hash]);
         break;
       }
       case 'bestBlockChanged': {
         // TODO detect bestChainChanged, the new bestBlockHash could lead to a fork
         this.#bestHash = result.bestBlockHash;
 
-        const block = this.getPinnedBlock(this.#bestHash)!;
-
-        this.emit('bestBlock', block);
+        this.emit('bestBlock', this.getPinnedBlock(this.#bestHash));
         break;
       }
       case 'finalized': {
@@ -185,7 +183,7 @@ export class ChainHead extends JsonRpcGroup<ChainHeadEvent> {
           this.#finalizedRuntime = finalizedRuntime;
         }
 
-        this.emit('finalizedBlock', { ...this.getPinnedBlock(this.#finalizedHash) });
+        this.emit('finalizedBlock', this.getPinnedBlock(this.#finalizedHash));
 
         const finalizedBlockHeights = finalizedBlockHashes.map((hash) => this.getPinnedBlock(hash)!.number);
         // TODO check if there is any on-going operations on the pruned blocks, there are 2 options:
