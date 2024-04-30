@@ -192,12 +192,11 @@ describe('ChainHead', () => {
           });
         });
 
-        // 4 new blocks on top of 15 initial blocks,  1 pruned block 0x0f-1, unpin 5 blocks to maintain the queue size
         await new Promise<void>((resolve) => {
           setTimeout(() => {
             expect(providerSend).toHaveBeenCalledWith('chainHead_v1_unpin', [
               simulator.subscriptionId,
-              ['0x0f-1', '0x00', '0x01', '0x02', '0x03'],
+              ['0x0f-1', '0x00', '0x01', '0x02', '0x03', '0x04', '0x05'],
             ]);
             resolve();
           }, 10);
@@ -227,10 +226,7 @@ describe('ChainHead', () => {
         // 2 new blocks comes in, unpin 2 blocks at the back to the queue to maintain the queue size
         await new Promise<void>((resolve) => {
           setTimeout(() => {
-            expect(providerSend).toHaveBeenCalledWith('chainHead_v1_unpin', [
-              simulator.subscriptionId,
-              ['0x04', '0x05'],
-            ]);
+            expect(providerSend).toHaveBeenCalledWith('chainHead_v1_unpin', [simulator.subscriptionId, ['0x06']]);
             resolve();
           }, 10);
         });
@@ -262,7 +258,7 @@ describe('ChainHead', () => {
           setTimeout(() => {
             expect(providerSend).toHaveBeenCalledWith('chainHead_v1_unpin', [
               simulator.subscriptionId,
-              ['0x0f', '0x00', '0x01', '0x02', '0x03'],
+              ['0x0f', '0x00', '0x01', '0x02', '0x03', '0x04', '0x05'],
             ]);
             resolve();
           }, 10);
@@ -297,7 +293,7 @@ describe('ChainHead', () => {
           setTimeout(() => {
             expect(providerSend).toHaveBeenCalledWith('chainHead_v1_unpin', [
               simulator.subscriptionId,
-              ['0x0f', '0x00', '0x01', '0x02', '0x03'],
+              ['0x0f', '0x00', '0x01', '0x02', '0x03', '0x04', '0x05'],
             ]);
             resolve();
           }, 10);

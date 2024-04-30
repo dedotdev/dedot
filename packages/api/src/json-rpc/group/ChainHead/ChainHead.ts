@@ -43,7 +43,7 @@ export type ChainHeadEvent =
   | 'finalizedBlock'; // new best finalized block
 // TODO handle: | 'bestChainChanged'; // new best chain, a fork happened
 
-export const MIN_QUEUE_SIZE = 10;
+export const MIN_FINALIZED_QUEUE_SIZE = 10; // finalized queue size
 
 export class ChainHead extends JsonRpcGroup<ChainHeadEvent> {
   #unsub?: Unsub;
@@ -52,11 +52,7 @@ export class ChainHead extends JsonRpcGroup<ChainHeadEvent> {
   #handlers: Record<OperationId, OperationHandler>;
   #pendingOperations: Record<OperationId, FollowOperationEvent[]>;
 
-  // For now we'll maintain the pinned block queue size equal to
-  // number of finalizedBlockHashes we receive in the `initialized` event
-  // Future: we can allow to adjust this queue size
-  #queueSize: number; // pinned blocks queue size
-  #pinnedQueue: Array<BlockHash>; // pinned blocks queue
+  #finalizedQueue: Array<BlockHash>;
   #pinnedBlocks: Record<BlockHash, PinnedBlock>;
 
   #bestHash?: BlockHash;
@@ -69,8 +65,7 @@ export class ChainHead extends JsonRpcGroup<ChainHeadEvent> {
     this.#handlers = {};
     this.#pendingOperations = {};
     this.#pinnedBlocks = {};
-    this.#queueSize = MIN_QUEUE_SIZE;
-    this.#pinnedQueue = [];
+    this.#finalizedQueue = [];
     this.#followResponseQueue = new AsyncQueue();
   }
 
@@ -131,10 +126,7 @@ export class ChainHead extends JsonRpcGroup<ChainHeadEvent> {
         if (finalizedBlockHash) finalizedBlockHashes.push(finalizedBlockHash);
 
         this.#subscriptionId = subscription!.subscriptionId;
-        this.#pinnedQueue = finalizedBlockHashes;
-        if (finalizedBlockHashes.length > MIN_QUEUE_SIZE) {
-          this.#queueSize = finalizedBlockHashes.length;
-        }
+        this.#finalizedQueue = finalizedBlockHashes;
 
         this.#finalizedRuntime = this.#extractRuntime(finalizedBlockRuntime)!;
         this.#bestHash = this.#finalizedHash = finalizedBlockHashes.at(-1);
@@ -163,7 +155,6 @@ export class ChainHead extends JsonRpcGroup<ChainHeadEvent> {
 
         const parentBlock = this.getPinnedBlock(parent)!;
         this.#pinnedBlocks[hash] = { hash, parent, runtime, number: parentBlock.number + 1 };
-        this.#pinnedQueue.push(hash);
 
         this.emit('newBlock', this.#pinnedBlocks[hash]);
         break;
@@ -183,12 +174,19 @@ export class ChainHead extends JsonRpcGroup<ChainHeadEvent> {
           this.#finalizedRuntime = finalizedRuntime;
         }
 
+        // push new finalized hashes into the queue, we'll adjust the size later if needed
+        finalizedBlockHashes.forEach((hash) => {
+          if (this.#finalizedQueue.includes(hash)) return;
+          this.#finalizedQueue.push(hash);
+        });
+
         this.emit('finalizedBlock', this.getPinnedBlock(this.#finalizedHash));
 
-        const finalizedBlockHeights = finalizedBlockHashes.map((hash) => this.getPinnedBlock(hash)!.number);
         // TODO check if there is any on-going operations on the pruned blocks, there are 2 options:
         //      1. we can need to wait for the operation to complete before unpinning the block
         //      2. or cancel them right away since if they are not needed anymore
+        // TODO find all descendants of the pruned blocks and unpin them as well
+        const finalizedBlockHeights = finalizedBlockHashes.map((hash) => this.getPinnedBlock(hash)!.number);
         const hashesToUnpin = new Set([
           ...prunedBlockHashes,
           // Since we have the current finalized blocks,
@@ -199,19 +197,15 @@ export class ChainHead extends JsonRpcGroup<ChainHeadEvent> {
             .map((b) => b.hash),
         ]);
 
-        // if any pruned block is in the pinned queue, remove it
         hashesToUnpin.forEach((hash) => {
           if (!this.#isPinnedHash(hash)) return;
           delete this.#pinnedBlocks[hash];
-          const idx = this.#pinnedQueue.indexOf(hash);
-          if (idx >= 0) this.#pinnedQueue.splice(idx, 1);
         });
 
-        // TODO we probably want to maintain this queue size only for finalized blocks
-        // Unpin the oldest pinned blocks to maintain the queue size
-        if (this.#pinnedQueue.length > this.#queueSize) {
-          const numOfItemsToUnpin = this.#pinnedQueue.length - this.#queueSize;
-          const queuedHashesToUnpin = this.#pinnedQueue.splice(0, numOfItemsToUnpin);
+        // Unpin the oldest finalized pinned blocks to maintain the queue size
+        if (this.#finalizedQueue.length > MIN_FINALIZED_QUEUE_SIZE) {
+          const numOfItemsToUnpin = this.#finalizedQueue.length - MIN_FINALIZED_QUEUE_SIZE;
+          const queuedHashesToUnpin = this.#finalizedQueue.splice(0, numOfItemsToUnpin);
           queuedHashesToUnpin.forEach((hash) => {
             delete this.#pinnedBlocks[hash];
             hashesToUnpin.add(hash);
@@ -527,6 +521,8 @@ export class ChainHead extends JsonRpcGroup<ChainHeadEvent> {
    */
   async unpin(hashes: BlockHash | BlockHash[]): Promise<void> {
     this.#ensureFollowed();
+
+    if (Array.isArray(hashes) && hashes.length === 0) return;
 
     await this.send('unpin', this.#subscriptionId, hashes);
   }
