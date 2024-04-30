@@ -28,6 +28,7 @@ export type OperationHandler<T = any> = {
   operationId: OperationId;
   defer: Deferred<T>;
   storageResults?: Array<StorageResult>;
+  hash: BlockHash; // block hash at which the operation is called
 };
 
 export type PinnedBlock = {
@@ -372,9 +373,9 @@ export class ChainHead extends JsonRpcGroup<ChainHeadEvent> {
     this.stopOperation(operationId).catch(noop);
   }
 
-  async #awaitOperationWithRetry<T = any>(resp: MethodResponse, retry: () => Promise<T>): Promise<T> {
+  async #awaitOperationWithRetry<T = any>(resp: MethodResponse, at: BlockHash, retry: () => Promise<T>): Promise<T> {
     try {
-      return await this.#awaitOperation(resp);
+      return await this.#awaitOperation(resp, at);
     } catch (e) {
       // TODO limit number of retry time
       if (e instanceof ChainHeadError && e.shouldRetry) {
@@ -385,7 +386,7 @@ export class ChainHead extends JsonRpcGroup<ChainHeadEvent> {
     }
   }
 
-  #awaitOperation<T = any>(resp: MethodResponse): Promise<T> {
+  #awaitOperation<T = any>(resp: MethodResponse, hash: BlockHash): Promise<T> {
     if (resp.result === 'limitReached') {
       throw new ChainHeadLimitReachedError('Limit reached');
     }
@@ -395,6 +396,7 @@ export class ChainHead extends JsonRpcGroup<ChainHeadEvent> {
     this.#handlers[resp.operationId] = {
       operationId: resp.operationId,
       defer,
+      hash,
     };
 
     // Resolve pending operations
@@ -415,9 +417,10 @@ export class ChainHead extends JsonRpcGroup<ChainHeadEvent> {
   async body(at?: BlockHash): Promise<Array<HexString>> {
     this.#ensureFollowed();
 
-    const resp: MethodResponse = await this.send('body', this.#subscriptionId, this.#ensurePinnedHash(at));
+    const hash = this.#ensurePinnedHash(at);
+    const resp: MethodResponse = await this.send('body', this.#subscriptionId, hash);
 
-    return this.#awaitOperationWithRetry(resp, () => this.body(at));
+    return this.#awaitOperationWithRetry(resp, hash, () => this.body(hash));
   }
 
   /**
@@ -426,15 +429,10 @@ export class ChainHead extends JsonRpcGroup<ChainHeadEvent> {
   async call(func: string, params: HexString = '0x', at?: BlockHash): Promise<HexString> {
     this.#ensureFollowed();
 
-    const resp: MethodResponse = await this.send(
-      'call',
-      this.#subscriptionId,
-      this.#ensurePinnedHash(at),
-      func,
-      params,
-    );
+    const hash = this.#ensurePinnedHash(at);
+    const resp: MethodResponse = await this.send('call', this.#subscriptionId, hash, func, params);
 
-    return this.#awaitOperationWithRetry(resp, () => this.call(func, params, at));
+    return this.#awaitOperationWithRetry(resp, hash, () => this.call(func, params, hash));
   }
 
   /**
@@ -459,7 +457,7 @@ export class ChainHead extends JsonRpcGroup<ChainHeadEvent> {
 
     let queryItems = items;
     while (queryItems.length > 0) {
-      const [newBatch, newDiscardedItems] = await this.#getStorage(queryItems, childTrie, hash);
+      const [newBatch, newDiscardedItems] = await this.#getStorage(queryItems, childTrie ?? null, hash);
       results.push(...newBatch);
       queryItems = newDiscardedItems;
     }
@@ -469,18 +467,12 @@ export class ChainHead extends JsonRpcGroup<ChainHeadEvent> {
 
   async #getStorage(
     items: Array<StorageQuery>,
-    childTrie?: string | null,
-    at?: BlockHash,
+    childTrie: string | null,
+    at: BlockHash,
   ): Promise<[fetchedResults: Array<StorageResult>, discardedItems: Array<StorageQuery>]> {
     this.#ensureFollowed();
 
-    const resp: MethodResponse = await this.send(
-      'storage',
-      this.#subscriptionId,
-      this.#ensurePinnedHash(at),
-      items,
-      childTrie,
-    );
+    const resp: MethodResponse = await this.send('storage', this.#subscriptionId, at, items, childTrie);
 
     let discardedItems: Array<StorageQuery> = [];
     if (resp.result === 'started' && resp.discardedItems && resp.discardedItems > 0) {
@@ -488,7 +480,7 @@ export class ChainHead extends JsonRpcGroup<ChainHeadEvent> {
     }
 
     try {
-      return [await this.#awaitOperation(resp), discardedItems];
+      return [await this.#awaitOperation(resp, at), discardedItems];
     } catch (e) {
       if (e instanceof ChainHeadError && e.shouldRetry) {
         return this.#getStorage(items, childTrie, at);
