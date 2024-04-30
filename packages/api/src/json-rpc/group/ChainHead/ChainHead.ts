@@ -10,7 +10,7 @@ import {
   StorageQuery,
   StorageResult,
 } from '@dedot/specs';
-import { Unsub } from '@dedot/types';
+import { AsyncMethod, Unsub } from '@dedot/types';
 import { assert, Deferred, deferred, ensurePresence, HexString, noop, AsyncQueue } from '@dedot/utils';
 import { IJsonRpcClient } from '../../../types.js';
 import { JsonRpcGroup, JsonRpcGroupOptions } from '../JsonRpcGroup.js';
@@ -22,6 +22,7 @@ import {
   ChainHeadOperationError,
   ChainHeadOperationInaccessibleError,
   ChainHeadStopError,
+  RetryStrategy,
 } from './error.js';
 
 export type OperationHandler<T = any> = {
@@ -60,6 +61,7 @@ export class ChainHead extends JsonRpcGroup<ChainHeadEvent> {
   #finalizedHash?: BlockHash; // best finalized hash
   #finalizedRuntime?: ChainHeadRuntimeVersion;
   #followResponseQueue: AsyncQueue;
+  #retryQueue: AsyncQueue;
 
   constructor(client: IJsonRpcClient, options?: Partial<JsonRpcGroupOptions>) {
     super(client, { prefix: 'chainHead', supportedVersions: ['unstable', 'v1'], ...options });
@@ -68,6 +70,7 @@ export class ChainHead extends JsonRpcGroup<ChainHeadEvent> {
     this.#pinnedBlocks = {};
     this.#finalizedQueue = [];
     this.#followResponseQueue = new AsyncQueue();
+    this.#retryQueue = new AsyncQueue();
   }
 
   get runtimeVersion(): ChainHeadRuntimeVersion {
@@ -362,6 +365,7 @@ export class ChainHead extends JsonRpcGroup<ChainHeadEvent> {
     this.#finalizedHash = undefined;
     this.#finalizedRuntime = undefined;
     this.#followResponseQueue.clear();
+    this.#retryQueue.clear();
   }
 
   #ensureFollowed() {
@@ -373,13 +377,35 @@ export class ChainHead extends JsonRpcGroup<ChainHeadEvent> {
     this.stopOperation(operationId).catch(noop);
   }
 
-  async #awaitOperationWithRetry<T = any>(resp: MethodResponse, at: BlockHash, retry: () => Promise<T>): Promise<T> {
+  async #performOperationWithRetry<T = any>(operation: () => Promise<T>): Promise<T> {
     try {
-      return await this.#awaitOperation(resp, at);
+      return await operation();
     } catch (e) {
-      // TODO limit number of retry time
-      if (e instanceof ChainHeadError && e.shouldRetry) {
-        return retry();
+      if (e instanceof ChainHeadError && e.retryStrategy) {
+        return this.#retryOperation(e.retryStrategy, operation);
+      }
+
+      throw e;
+    }
+  }
+
+  async #retryOperation(strategy: RetryStrategy, retry: AsyncMethod): Promise<any> {
+    try {
+      return await new Promise((resolve, reject) => {
+        setTimeout(() => {
+          if (strategy === RetryStrategy.NOW) {
+            retry().then(resolve).catch(reject);
+          } else if (strategy === RetryStrategy.QUEUED) {
+            this.#retryQueue.enqueue(retry).then(resolve).catch(reject);
+          } else {
+            throw new Error('Invalid retry strategy');
+          }
+        }); // retry again in the next tick
+      });
+    } catch (e: any) {
+      // retry again until success, TODO we might need to limit the number of retries
+      if (e instanceof ChainHeadError && e.retryStrategy) {
+        return this.#retryOperation(e.retryStrategy, retry);
       }
 
       throw e;
@@ -418,9 +444,13 @@ export class ChainHead extends JsonRpcGroup<ChainHeadEvent> {
     this.#ensureFollowed();
 
     const hash = this.#ensurePinnedHash(at);
-    const resp: MethodResponse = await this.send('body', this.#subscriptionId, hash);
+    const operation = async () => {
+      this.#ensureFollowed();
+      const resp: MethodResponse = await this.send('body', this.#subscriptionId, hash);
+      return this.#awaitOperation(resp, hash);
+    };
 
-    return this.#awaitOperationWithRetry(resp, hash, () => this.body(hash));
+    return this.#performOperationWithRetry(operation);
   }
 
   /**
@@ -430,9 +460,13 @@ export class ChainHead extends JsonRpcGroup<ChainHeadEvent> {
     this.#ensureFollowed();
 
     const hash = this.#ensurePinnedHash(at);
-    const resp: MethodResponse = await this.send('call', this.#subscriptionId, hash, func, params);
+    const operation = async () => {
+      this.#ensureFollowed();
+      const resp: MethodResponse = await this.send('call', this.#subscriptionId, hash, func, params);
+      return this.#awaitOperation(resp, hash);
+    };
 
-    return this.#awaitOperationWithRetry(resp, hash, () => this.call(func, params, hash));
+    return this.#performOperationWithRetry(operation);
   }
 
   /**
@@ -470,6 +504,16 @@ export class ChainHead extends JsonRpcGroup<ChainHeadEvent> {
     childTrie: string | null,
     at: BlockHash,
   ): Promise<[fetchedResults: Array<StorageResult>, discardedItems: Array<StorageQuery>]> {
+    const operation = () => this.#getStorageOperation(items, childTrie, at);
+
+    return this.#performOperationWithRetry(operation);
+  }
+
+  async #getStorageOperation(
+    items: Array<StorageQuery>,
+    childTrie: string | null,
+    at: BlockHash,
+  ): Promise<[fetchedResults: Array<StorageResult>, discardedItems: Array<StorageQuery>]> {
     this.#ensureFollowed();
 
     const resp: MethodResponse = await this.send('storage', this.#subscriptionId, at, items, childTrie);
@@ -479,15 +523,7 @@ export class ChainHead extends JsonRpcGroup<ChainHeadEvent> {
       discardedItems = items.slice(items.length - resp.discardedItems);
     }
 
-    try {
-      return [await this.#awaitOperation(resp, at), discardedItems];
-    } catch (e) {
-      if (e instanceof ChainHeadError && e.shouldRetry) {
-        return this.#getStorage(items, childTrie, at);
-      }
-
-      throw e;
-    }
+    return [await this.#awaitOperation(resp, at), discardedItems];
   }
 
   /**

@@ -482,7 +482,7 @@ describe('ChainHead', () => {
           simulator.subscriptionId,
           chainHead.bestHash,
           queries,
-          undefined,
+          null,
         ]);
         expect(providerSend).toHaveBeenLastCalledWith('chainHead_v1_stopOperation', [
           simulator.subscriptionId,
@@ -529,7 +529,7 @@ describe('ChainHead', () => {
           simulator.subscriptionId,
           chainHead.bestHash,
           queries,
-          undefined,
+          null,
         ]);
         expect(providerSend).toHaveBeenNthCalledWith(5, 'chainHead_v1_stopOperation', [
           simulator.subscriptionId,
@@ -540,7 +540,7 @@ describe('ChainHead', () => {
           simulator.subscriptionId,
           chainHead.bestHash,
           queries,
-          undefined,
+          null,
         ]);
 
         expect(providerSend).toHaveBeenLastCalledWith('chainHead_v1_stopOperation', [
@@ -605,7 +605,7 @@ describe('ChainHead', () => {
           simulator.subscriptionId,
           chainHead.bestHash,
           queries,
-          undefined,
+          null,
         ]);
 
         expect(providerSend).toHaveBeenNthCalledWith(5, 'chainHead_v1_stopOperation', [
@@ -617,7 +617,7 @@ describe('ChainHead', () => {
           simulator.subscriptionId,
           chainHead.bestHash,
           queries.slice(2),
-          undefined,
+          null,
         ]);
 
         expect(providerSend).toHaveBeenLastCalledWith('chainHead_v1_stopOperation', [
