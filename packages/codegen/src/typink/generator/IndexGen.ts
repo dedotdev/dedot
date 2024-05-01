@@ -1,11 +1,11 @@
-import { ContractMetadata } from '@dedot/types';
+import { ContractMetadataSupported } from '@dedot/types';
 import { stringPascalCase } from '@dedot/utils';
 import { beautifySourceCode, compileTemplate } from '../../utils';
 
 export class IndexGen {
-  contractMetadata: ContractMetadata;
+  contractMetadata: ContractMetadataSupported;
 
-  constructor(contractMetadata: ContractMetadata) {
+  constructor(contractMetadata: ContractMetadataSupported) {
     this.contractMetadata = contractMetadata;
   }
 

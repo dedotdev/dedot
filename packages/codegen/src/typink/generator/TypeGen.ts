@@ -1,6 +1,6 @@
 import { Field, TypeId, TypeParam } from '@dedot/codecs';
 import { extractContractTypes, normalizeContractTypeDef } from '@dedot/contracts';
-import { ContractMetadata } from '@dedot/types';
+import { ContractMetadataSupported } from '@dedot/types';
 import { assert, normalizeName, stringPascalCase } from '@dedot/utils';
 import { findKnownCodec, findKnownCodecType, isKnownCodecType } from '../../chaintypes/generator';
 import { BASIC_KNOWN_TYPES, NamedType, TypeImports } from '../../chaintypes/generator';
@@ -9,12 +9,12 @@ import { beautifySourceCode, compileTemplate, isNativeType, WRAPPER_TYPE_REGEX }
 const IGNORE_TYPES = ['Result', 'Option'];
 
 export class TypeGen {
-  contractMetadata: ContractMetadata;
+  contractMetadata: ContractMetadataSupported;
   includedTypes: Record<number, NamedType>;
   typeImports: TypeImports;
   typeCache: Record<string, string> = {};
 
-  constructor(contractMetadata: ContractMetadata) {
+  constructor(contractMetadata: ContractMetadataSupported) {
     this.contractMetadata = contractMetadata;
     this.includedTypes = this.#includeTypes();
     this.typeImports = new TypeImports();

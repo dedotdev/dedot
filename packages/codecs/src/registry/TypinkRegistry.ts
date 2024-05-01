@@ -1,18 +1,18 @@
 import { extractContractTypes } from '@dedot/contracts';
 import { EnumOptions } from '@dedot/shape';
-import { ContractMetadata } from '@dedot/types';
+import { ContractMetadataSupported } from '@dedot/types';
 import { TypeRegistry } from './TypeRegistry';
 
 export class TypinkRegistry extends TypeRegistry {
-  readonly #metadata: ContractMetadata;
+  readonly #metadata: ContractMetadataSupported;
 
-  constructor(metadata: ContractMetadata) {
+  constructor(metadata: ContractMetadataSupported) {
     super(extractContractTypes(metadata));
 
     this.#metadata = metadata;
   }
 
-  get metadata(): ContractMetadata {
+  get metadata(): ContractMetadataSupported {
     return this.#metadata;
   }
 

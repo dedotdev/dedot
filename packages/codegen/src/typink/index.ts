@@ -1,17 +1,26 @@
-import { ContractMetadata } from '@dedot/types';
+import { ContractMetadata, ContractMetadataSupported } from '@dedot/types';
 import fs from 'fs';
 import path from 'path';
 import { IndexGen, QueryGen, TxGen, TypeGen, ConstructorGen } from './generator/index.js';
 
-export async function generateContractTypesFromMetadata(metadata: ContractMetadata | string, outDir: string = '.') {
-  let contractMetadata = typeof metadata === 'string' ? (JSON.parse(metadata) as ContractMetadata) : metadata;
+export async function generateContractTypesFromMetadata(
+  metadata: ContractMetadataSupported | string,
+  contract?: string,
+  outDir: string = '.',
+  extension: string = 'd.ts',
+) {
+  let contractMetadata = typeof metadata === 'string' ? new ContractMetadata(metadata).metadata : metadata;
 
-  const dirPath = path.resolve(outDir, contractMetadata.contract.name);
-  const typesFileName = path.join(path.resolve(dirPath), `types.ts`);
-  const queryTypesFileName = path.join(path.resolve(dirPath), `query.ts`);
-  const txTypesFileName = path.join(path.resolve(dirPath), `tx.ts`);
-  const constructorTypesFileName = path.join(path.resolve(dirPath), `constructor.ts`);
-  const indexTypesFileName = path.join(path.resolve(dirPath), `index.ts`);
+  if (!contract) {
+    contract = contractMetadata.contract.name;
+  }
+
+  const dirPath = path.resolve(outDir, contract);
+  const typesFileName = path.join(dirPath, `types.${extension}`);
+  const queryTypesFileName = path.join(dirPath, `query.${extension}`);
+  const txTypesFileName = path.join(dirPath, `tx.${extension}`);
+  const constructorTypesFileName = path.join(dirPath, `constructor.${extension}`);
+  const indexTypesFileName = path.join(dirPath, `index.${extension}`);
 
   if (!fs.existsSync(dirPath)) {
     fs.mkdirSync(dirPath, { recursive: true });

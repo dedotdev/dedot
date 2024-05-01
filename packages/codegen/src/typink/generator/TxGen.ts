@@ -1,11 +1,11 @@
-import { ContractMessage, ContractMetadata } from '@dedot/types';
+import { ContractMessage, ContractMetadataSupported } from '@dedot/types';
 import { stringCamelCase } from '@dedot/utils';
 import { beautifySourceCode, commentBlock, compileTemplate } from '../../utils';
 import { QueryGen } from './QueryGen';
 import { TypeGen } from './TypeGen';
 
 export class TxGen extends QueryGen {
-  constructor(contractMetadata: ContractMetadata, typeGen: TypeGen) {
+  constructor(contractMetadata: ContractMetadataSupported, typeGen: TypeGen) {
     super(contractMetadata, typeGen);
   }
 

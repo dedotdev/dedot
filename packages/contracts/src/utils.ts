@@ -1,7 +1,7 @@
 import { PortableType, TypeDef } from '@dedot/codecs';
-import { ContractMetadata, Def } from '@dedot/types';
+import { ContractMetadataSupported, Def } from '@dedot/types';
 
-export const extractContractTypes = (contractMetadata: ContractMetadata): PortableType[] => {
+export const extractContractTypes = (contractMetadata: ContractMetadataSupported): PortableType[] => {
   const { types } = contractMetadata;
 
   return types.map(

@@ -1,67 +1,25 @@
-import { BytesLike, Weight } from '@dedot/codecs';
-import { AnyFunc, AsyncMethod, GenericSubstrateApi } from '@dedot/types';
+import { ContractMetadataV4 } from './v4';
+import { ContractMetadataV5 } from './v5';
 
-export type ContractResult<ChainApi extends GenericSubstrateApi> = Awaited<
-  ReturnType<ChainApi['call']['contractsApi']['call']>
->;
+export const enumVersions = ['V5', 'V4', 'V3', 'V2', 'V1'] as const;
 
-export type ChainSubmittableExtrinsic<ChainApi extends GenericSubstrateApi> = ReturnType<
-  ChainApi['tx']['contracts']['call']
->;
+export type ContractMetadataSupported = ContractMetadataV4 | ContractMetadataV5;
 
-export type ConstructorOptions = ContractOptions & {
-  salt: BytesLike | null;
-};
+export class ContractMetadata {
+  metadata: ContractMetadataSupported;
 
-export type ContractOptions = {
-  value: bigint;
-  gasLimit: Weight | undefined;
-  storageDepositLimit: bigint | undefined;
-};
+  constructor(rawMetadata: string) {
+    const jsonMetadata = JSON.parse(rawMetadata);
 
-export interface GenericContractResult<DecodedData, ContractResult> {
-  data: DecodedData;
-  result: ContractResult;
-}
+    const maybeVersion = enumVersions.find((o) => jsonMetadata[o]);
+    // This is for V1, V2, V3
+    if (maybeVersion) {
+      throw new Error(`Unsupported metadata version: ${maybeVersion}`);
+    }
 
-export type GenericContractQueryCall<F extends AsyncMethod = AsyncMethod> = F & {
-  meta: ContractMessage;
-};
-
-export type GenericContractTxCall<F extends AnyFunc = AnyFunc> = F & {
-  meta: ContractMessage;
-};
-
-export interface GenericContractQuery {
-  [method: string]: GenericContractQueryCall;
-}
-
-export interface GenericContractTx {
-  [method: string]: GenericContractTxCall;
-}
-
-export interface GenericContractApi {
-  query: GenericContractQuery;
-  tx: GenericContractTx;
-  constructor: GenericContractTx;
-}
-
-export interface ContractMetadata {
-  source: ContractSource;
-  contract: ContractInformation;
-  spec: ContractSpec;
-  storage: ContractStorage;
-  types: ContractType[];
-  version: string;
-}
-
-export interface ContractSpec {
-  constructors: ContractConstructor[];
-  docs: string[];
-  environment: ContractEnvironment;
-  events: any[];
-  langError: ContractTypeInfo;
-  messages: ContractMessage[];
+    // This is for V4, V5
+    this.metadata = jsonMetadata as ContractMetadataSupported;
+  }
 }
 
 export interface ContractConstructor {
