@@ -2,6 +2,7 @@ import {
   ChainHeadRuntimeVersion,
   MethodResponse,
   NewBlock,
+  OperationBodyDone,
   OperationCallDone,
   OperationInaccessible,
   OperationStorageDone,
@@ -310,12 +311,12 @@ describe('ChainHead', () => {
 
         notify(simulator.subscriptionId, {
           operationId: 'body01',
-          event: 'operationCallDone',
-          output: '0x1111',
-        } as OperationCallDone);
+          event: 'operationBodyDone',
+          value: ['0x1111'],
+        } as OperationBodyDone);
 
         const result = await chainHead.body();
-        expect(result).toEqual('0x1111');
+        expect(result).toEqual(['0x1111']);
 
         expect(providerSend).toHaveBeenNthCalledWith(4, 'chainHead_v1_body', [
           simulator.subscriptionId,
@@ -342,14 +343,14 @@ describe('ChainHead', () => {
           simulator.subscriptionId,
           {
             operationId: 'body02',
-            event: 'operationCallDone',
-            output: '0x1111',
-          } as OperationCallDone,
+            event: 'operationBodyDone',
+            value: ['0x1111'],
+          } as OperationBodyDone,
           10,
         );
 
         const result = await chainHead.body();
-        expect(result).toEqual('0x1111');
+        expect(result).toEqual(['0x1111']);
 
         expect(providerSend).toHaveBeenNthCalledWith(4, 'chainHead_v1_body', [
           simulator.subscriptionId,
@@ -365,6 +366,50 @@ describe('ChainHead', () => {
           chainHead.bestHash,
         ]);
         expect(providerSend).toHaveBeenLastCalledWith('chainHead_v1_stopOperation', [
+          simulator.subscriptionId,
+          'body02',
+        ]);
+      });
+
+      it('should retry on limit reached', async () => {
+        let count = 0;
+        provider.setRpcRequest('chainHead_v1_body', () => {
+          count += 1;
+          if (count > 2) {
+            return { result: 'started', operationId: 'body02' } as MethodResponse;
+          } else {
+            return { result: 'limitReached' } as MethodResponse;
+          }
+        });
+
+        notify(
+          simulator.subscriptionId,
+          {
+            operationId: 'body02',
+            event: 'operationBodyDone',
+            value: ['0x1111'],
+          } as OperationBodyDone,
+          10,
+        );
+
+        const result = await chainHead.body();
+        expect(result).toEqual(['0x1111']);
+
+        expect(providerSend).toHaveBeenNthCalledWith(4, 'chainHead_v1_body', [
+          simulator.subscriptionId,
+          chainHead.bestHash,
+        ]);
+        // 2 retries
+        expect(providerSend).toHaveBeenNthCalledWith(5, 'chainHead_v1_body', [
+          simulator.subscriptionId,
+          chainHead.bestHash,
+        ]);
+        expect(providerSend).toHaveBeenNthCalledWith(6, 'chainHead_v1_body', [
+          simulator.subscriptionId,
+          chainHead.bestHash,
+        ]);
+
+        expect(providerSend).toHaveBeenNthCalledWith(7, 'chainHead_v1_stopOperation', [
           simulator.subscriptionId,
           'body02',
         ]);
@@ -441,6 +486,56 @@ describe('ChainHead', () => {
           '0x',
         ]);
         expect(providerSend).toHaveBeenLastCalledWith('chainHead_v1_stopOperation', [
+          simulator.subscriptionId,
+          'call02',
+        ]);
+      });
+
+      it('should retry on limit reached', async () => {
+        let count = 0;
+        provider.setRpcRequest('chainHead_v1_call', () => {
+          count += 1;
+          if (count > 2) {
+            return { result: 'started', operationId: 'call02' } as MethodResponse;
+          } else {
+            return { result: 'limitReached' } as MethodResponse;
+          }
+        });
+
+        notify(
+          simulator.subscriptionId,
+          {
+            operationId: 'call02',
+            event: 'operationCallDone',
+            output: '0x1111',
+          } as OperationCallDone,
+          10,
+        );
+
+        const result = await chainHead.call('func', '0x');
+        expect(result).toEqual('0x1111');
+
+        expect(providerSend).toHaveBeenNthCalledWith(4, 'chainHead_v1_call', [
+          simulator.subscriptionId,
+          chainHead.bestHash,
+          'func',
+          '0x',
+        ]);
+        // 2 retries
+        expect(providerSend).toHaveBeenNthCalledWith(5, 'chainHead_v1_call', [
+          simulator.subscriptionId,
+          chainHead.bestHash,
+          'func',
+          '0x',
+        ]);
+        expect(providerSend).toHaveBeenNthCalledWith(6, 'chainHead_v1_call', [
+          simulator.subscriptionId,
+          chainHead.bestHash,
+          'func',
+          '0x',
+        ]);
+
+        expect(providerSend).toHaveBeenNthCalledWith(7, 'chainHead_v1_stopOperation', [
           simulator.subscriptionId,
           'call02',
         ]);
@@ -623,6 +718,69 @@ describe('ChainHead', () => {
         expect(providerSend).toHaveBeenLastCalledWith('chainHead_v1_stopOperation', [
           simulator.subscriptionId,
           'storage02',
+        ]);
+      });
+
+      it('should retry on limit reached', async () => {
+        const storageItems = [
+          { key: '0xkey01', value: '0xvalue01' },
+          { key: '0xkey02', value: '0xvalue02' },
+        ];
+
+        let count = 0;
+        provider.setRpcRequest('chainHead_v1_storage', () => {
+          count += 1;
+          if (count > 2) {
+            return { result: 'started', operationId: 'storage01' } as MethodResponse;
+          } else {
+            return { result: 'limitReached' } as MethodResponse;
+          }
+        });
+
+        notify(simulator.subscriptionId, {
+          operationId: 'storage01',
+          event: 'operationStorageItems',
+          items: storageItems,
+        } as OperationStorageItems);
+
+        notify(simulator.subscriptionId, {
+          operationId: 'storage01',
+          event: 'operationStorageDone',
+        } as OperationStorageDone);
+
+        const queries: StorageQuery[] = [
+          { key: '0xkey01', type: 'value' },
+          { key: '0xkey02', type: 'value' },
+        ];
+
+        const result = await chainHead.storage(queries);
+        expect(result).toEqual(storageItems);
+
+        expect(providerSend).toHaveBeenNthCalledWith(4, 'chainHead_v1_storage', [
+          simulator.subscriptionId,
+          chainHead.bestHash,
+          queries,
+          null,
+        ]);
+
+        // 2 retries
+        expect(providerSend).toHaveBeenNthCalledWith(5, 'chainHead_v1_storage', [
+          simulator.subscriptionId,
+          chainHead.bestHash,
+          queries,
+          null,
+        ]);
+
+        expect(providerSend).toHaveBeenNthCalledWith(6, 'chainHead_v1_storage', [
+          simulator.subscriptionId,
+          chainHead.bestHash,
+          queries,
+          null,
+        ]);
+
+        expect(providerSend).toHaveBeenLastCalledWith('chainHead_v1_stopOperation', [
+          simulator.subscriptionId,
+          'storage01',
         ]);
       });
     });
