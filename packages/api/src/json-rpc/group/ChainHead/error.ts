@@ -1,7 +1,12 @@
 import { DedotError } from '@dedot/utils';
 
+export enum RetryStrategy {
+  NOW = 'NOW', // Retry immediately
+  QUEUED = 'QUEUED', // Retry one by one via an async queue
+}
+
 export class ChainHeadError extends DedotError {
-  shouldRetry = false;
+  retryStrategy?: RetryStrategy | undefined;
 }
 
 /**
@@ -10,7 +15,7 @@ export class ChainHeadError extends DedotError {
  * Ref: https://paritytech.github.io/json-rpc-interface-spec/api/chainHead_v1_follow.html#operationinaccessible
  */
 export class ChainHeadOperationInaccessibleError extends ChainHeadError {
-  shouldRetry = true;
+  retryStrategy = RetryStrategy.NOW;
 }
 
 /**
@@ -31,7 +36,7 @@ export class ChainHeadOperationError extends ChainHeadError {}
  * Ref: https://paritytech.github.io/json-rpc-interface-spec/api/chainHead_v1_storage.html#limitreached
  */
 export class ChainHeadLimitReachedError extends ChainHeadError {
-  // shouldRetry = true; TODO retry after a delayed?
+  retryStrategy = RetryStrategy.QUEUED;
 }
 
 /**

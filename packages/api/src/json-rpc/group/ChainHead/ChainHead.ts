@@ -1,4 +1,4 @@
-import { BlockHash, Option } from '@dedot/codecs';
+import { $Header, BlockHash, Option } from '@dedot/codecs';
 import { Subscription } from '@dedot/providers';
 import {
   ChainHeadRuntimeVersion,
@@ -10,8 +10,8 @@ import {
   StorageQuery,
   StorageResult,
 } from '@dedot/specs';
-import { Unsub } from '@dedot/types';
-import { assert, Deferred, deferred, ensurePresence, HexString, noop } from '@dedot/utils';
+import { AsyncMethod, Unsub } from '@dedot/types';
+import { assert, Deferred, deferred, ensurePresence, HexString, noop, AsyncQueue } from '@dedot/utils';
 import { IJsonRpcClient } from '../../../types.js';
 import { JsonRpcGroup, JsonRpcGroupOptions } from '../JsonRpcGroup.js';
 import {
@@ -22,16 +22,19 @@ import {
   ChainHeadOperationError,
   ChainHeadOperationInaccessibleError,
   ChainHeadStopError,
+  RetryStrategy,
 } from './error.js';
 
 export type OperationHandler<T = any> = {
   operationId: OperationId;
   defer: Deferred<T>;
   storageResults?: Array<StorageResult>;
+  hash: BlockHash; // block hash at which the operation is called
 };
 
 export type PinnedBlock = {
   hash: BlockHash;
+  number: number;
   parent: BlockHash | undefined;
   runtime?: ChainHeadRuntimeVersion;
 };
@@ -42,7 +45,7 @@ export type ChainHeadEvent =
   | 'finalizedBlock'; // new best finalized block
 // TODO handle: | 'bestChainChanged'; // new best chain, a fork happened
 
-export const MIN_QUEUE_SIZE = 10;
+export const MIN_FINALIZED_QUEUE_SIZE = 10; // finalized queue size
 
 export class ChainHead extends JsonRpcGroup<ChainHeadEvent> {
   #unsub?: Unsub;
@@ -51,24 +54,23 @@ export class ChainHead extends JsonRpcGroup<ChainHeadEvent> {
   #handlers: Record<OperationId, OperationHandler>;
   #pendingOperations: Record<OperationId, FollowOperationEvent[]>;
 
-  // For now we'll maintain the pinned block queue size equal to
-  // number of finalizedBlockHashes we receive in the `initialized` event
-  // Future: we can allow to adjust this queue size
-  #queueSize: number; // pinned blocks queue size
-  #pinnedQueue: Array<BlockHash>; // pinned blocks queue
+  #finalizedQueue: Array<BlockHash>;
   #pinnedBlocks: Record<BlockHash, PinnedBlock>;
 
   #bestHash?: BlockHash;
   #finalizedHash?: BlockHash; // best finalized hash
   #finalizedRuntime?: ChainHeadRuntimeVersion;
+  #followResponseQueue: AsyncQueue;
+  #retryQueue: AsyncQueue;
 
   constructor(client: IJsonRpcClient, options?: Partial<JsonRpcGroupOptions>) {
     super(client, { prefix: 'chainHead', supportedVersions: ['unstable', 'v1'], ...options });
     this.#handlers = {};
     this.#pendingOperations = {};
     this.#pinnedBlocks = {};
-    this.#queueSize = MIN_QUEUE_SIZE;
-    this.#pinnedQueue = [];
+    this.#finalizedQueue = [];
+    this.#followResponseQueue = new AsyncQueue();
+    this.#retryQueue = new AsyncQueue();
   }
 
   get runtimeVersion(): ChainHeadRuntimeVersion {
@@ -106,11 +108,13 @@ export class ChainHead extends JsonRpcGroup<ChainHeadEvent> {
     try {
       // TODO handle when a connection (Ws) is reconnect & this subscription is reinitialized, handle this similar to a StopEvent
       this.#unsub = await this.send('follow', true, (event: FollowEvent, subscription: Subscription) => {
-        this.#onFollowEvent(event, subscription);
+        this.#followResponseQueue.enqueue(async () => {
+          await this.#onFollowEvent(event, subscription);
 
-        if (event.event == 'initialized') {
-          defer.resolve();
-        }
+          if (event.event == 'initialized') {
+            defer.resolve();
+          }
+        });
       });
     } catch (e: any) {
       defer.reject(e);
@@ -119,31 +123,33 @@ export class ChainHead extends JsonRpcGroup<ChainHeadEvent> {
     return defer.promise;
   }
 
-  #onFollowEvent = (result: FollowEvent, subscription?: Subscription) => {
+  #onFollowEvent = async (result: FollowEvent, subscription?: Subscription) => {
     switch (result.event) {
       case 'initialized': {
         const { finalizedBlockHashes = [], finalizedBlockHash, finalizedBlockRuntime } = result;
         if (finalizedBlockHash) finalizedBlockHashes.push(finalizedBlockHash);
 
         this.#subscriptionId = subscription!.subscriptionId;
-        this.#pinnedQueue = finalizedBlockHashes;
-        if (finalizedBlockHashes.length > MIN_QUEUE_SIZE) {
-          this.#queueSize = finalizedBlockHashes.length;
-        }
-
-        this.#pinnedBlocks = finalizedBlockHashes
-          .slice()
-          .reverse()
-          .reduce(
-            (o, hash, idx, arr) => {
-              o[hash] = { hash, parent: arr.at(idx + 1) };
-              return o;
-            },
-            {} as Record<BlockHash, PinnedBlock>,
-          );
+        this.#finalizedQueue = finalizedBlockHashes;
 
         this.#finalizedRuntime = this.#extractRuntime(finalizedBlockRuntime)!;
         this.#bestHash = this.#finalizedHash = finalizedBlockHashes.at(-1);
+
+        this.#pinnedBlocks = finalizedBlockHashes.reduce(
+          (o, hash, idx, arr) => {
+            o[hash] = { hash, parent: arr[idx - 1], number: idx };
+            return o;
+          },
+          {} as Record<BlockHash, PinnedBlock>,
+        );
+
+        const header = $Header.tryDecode(await this.header(finalizedBlockHashes[0]));
+        Object.values(this.#pinnedBlocks).forEach((b, idx) => {
+          b.number += header.number;
+          if (idx === 0) {
+            b.parent = header.parentHash;
+          }
+        });
 
         break;
       }
@@ -151,16 +157,17 @@ export class ChainHead extends JsonRpcGroup<ChainHeadEvent> {
         const { blockHash: hash, parentBlockHash: parent, newRuntime } = result;
         const runtime = this.#extractRuntime(newRuntime);
 
-        this.#pinnedBlocks[hash] = { hash, parent, runtime };
-        this.#pinnedQueue.push(hash);
+        const parentBlock = this.getPinnedBlock(parent)!;
+        this.#pinnedBlocks[hash] = { hash, parent, runtime, number: parentBlock.number + 1 };
 
-        this.emit('newBlock', hash, runtime);
+        this.emit('newBlock', this.#pinnedBlocks[hash]);
         break;
       }
       case 'bestBlockChanged': {
         // TODO detect bestChainChanged, the new bestBlockHash could lead to a fork
         this.#bestHash = result.bestBlockHash;
-        this.emit('bestBlock', this.#bestHash, this.#findRuntimeAt(this.#bestHash));
+
+        this.emit('bestBlock', this.getPinnedBlock(this.#bestHash));
         break;
       }
       case 'finalized': {
@@ -171,29 +178,49 @@ export class ChainHead extends JsonRpcGroup<ChainHeadEvent> {
           this.#finalizedRuntime = finalizedRuntime;
         }
 
-        this.emit('finalizedBlock', this.#finalizedHash, finalizedRuntime);
+        // push new finalized hashes into the queue, we'll adjust the size later if needed
+        finalizedBlockHashes.forEach((hash) => {
+          if (this.#finalizedQueue.includes(hash)) return;
+          this.#finalizedQueue.push(hash);
+        });
 
-        const hashesToUnpin = [...prunedBlockHashes];
-        if (this.#pinnedQueue.length > this.#queueSize) {
-          // if any pruned block is in the pinned queue, remove it
-          prunedBlockHashes.forEach((hash) => {
-            if (!this.#isPinnedHash(hash)) return;
+        this.emit('finalizedBlock', this.getPinnedBlock(this.#finalizedHash));
+
+        // TODO check if there is any on-going operations on the pruned blocks, there are 2 options:
+        //      1. we can need to wait for the operation to complete before unpinning the block
+        //      2. or cancel them right away since if they are not needed anymore
+        // TODO find all descendants of the pruned blocks and unpin them as well
+        const finalizedBlockHeights = finalizedBlockHashes.map((hash) => this.getPinnedBlock(hash)!.number);
+        const hashesToUnpin = new Set([
+          ...prunedBlockHashes,
+          // Since we have the current finalized blocks,
+          // we can mark all the other blocks at the same height as pruned and unpin all together with the reported pruned blocks
+          ...Object.values(this.#pinnedBlocks)
+            .filter((b) => finalizedBlockHeights.includes(b.number))
+            .filter((b) => !finalizedBlockHashes.includes(b.hash))
+            .map((b) => b.hash),
+        ]);
+
+        hashesToUnpin.forEach((hash) => {
+          if (!this.#isPinnedHash(hash)) return;
+          delete this.#pinnedBlocks[hash];
+        });
+
+        // Unpin the oldest finalized pinned blocks to maintain the queue size
+        if (this.#finalizedQueue.length > MIN_FINALIZED_QUEUE_SIZE) {
+          const numOfItemsToUnpin = this.#finalizedQueue.length - MIN_FINALIZED_QUEUE_SIZE;
+          const queuedHashesToUnpin = this.#finalizedQueue.splice(0, numOfItemsToUnpin);
+          queuedHashesToUnpin.forEach((hash) => {
             delete this.#pinnedBlocks[hash];
-            const idx = this.#pinnedQueue.indexOf(hash);
-            if (idx >= 0) this.#pinnedQueue.splice(idx, 1);
+            hashesToUnpin.add(hash);
           });
-
-          // Unpin the oldest pinned blocks to maintain the queue size
-          const numOfItemsToUnpin = this.#pinnedQueue.length - this.#queueSize;
-          const queuedHashesToUnpin = this.#pinnedQueue.splice(0, numOfItemsToUnpin);
-          queuedHashesToUnpin.forEach((hash) => delete this.#pinnedBlocks[hash]);
-          hashesToUnpin.push(...queuedHashesToUnpin);
         }
 
-        this.unpin(hashesToUnpin).catch(noop);
+        this.unpin([...hashesToUnpin]).catch(noop);
         break;
       }
       case 'stop': {
+        console.error('ChainHeadStopError');
         // TODO handle smart retry & operation recovery
         // For now we'll reject all on-going operations
         Object.values(this.#handlers).forEach(({ defer }) => {
@@ -337,6 +364,8 @@ export class ChainHead extends JsonRpcGroup<ChainHeadEvent> {
     this.#bestHash = undefined;
     this.#finalizedHash = undefined;
     this.#finalizedRuntime = undefined;
+    this.#followResponseQueue.clear();
+    this.#retryQueue.clear();
   }
 
   #ensureFollowed() {
@@ -348,20 +377,42 @@ export class ChainHead extends JsonRpcGroup<ChainHeadEvent> {
     this.stopOperation(operationId).catch(noop);
   }
 
-  async #awaitOperationWithRetry<T = any>(resp: MethodResponse, retry: () => Promise<T>): Promise<T> {
+  async #performOperationWithRetry<T = any>(operation: () => Promise<T>): Promise<T> {
     try {
-      return await this.#awaitOperation(resp);
+      return await operation();
     } catch (e) {
-      // TODO limit number of retry time
-      if (e instanceof ChainHeadError && e.shouldRetry) {
-        return retry();
+      if (e instanceof ChainHeadError && e.retryStrategy) {
+        return this.#retryOperation(e.retryStrategy, operation);
       }
 
       throw e;
     }
   }
 
-  #awaitOperation<T = any>(resp: MethodResponse): Promise<T> {
+  async #retryOperation(strategy: RetryStrategy, retry: AsyncMethod): Promise<any> {
+    try {
+      return await new Promise((resolve, reject) => {
+        setTimeout(() => {
+          if (strategy === RetryStrategy.NOW) {
+            retry().then(resolve).catch(reject);
+          } else if (strategy === RetryStrategy.QUEUED) {
+            this.#retryQueue.enqueue(retry).then(resolve).catch(reject);
+          } else {
+            throw new Error('Invalid retry strategy');
+          }
+        }); // retry again in the next tick
+      });
+    } catch (e: any) {
+      // retry again until success, TODO we might need to limit the number of retries
+      if (e instanceof ChainHeadError && e.retryStrategy) {
+        return this.#retryOperation(e.retryStrategy, retry);
+      }
+
+      throw e;
+    }
+  }
+
+  #awaitOperation<T = any>(resp: MethodResponse, hash: BlockHash): Promise<T> {
     if (resp.result === 'limitReached') {
       throw new ChainHeadLimitReachedError('Limit reached');
     }
@@ -371,6 +422,7 @@ export class ChainHead extends JsonRpcGroup<ChainHeadEvent> {
     this.#handlers[resp.operationId] = {
       operationId: resp.operationId,
       defer,
+      hash,
     };
 
     // Resolve pending operations
@@ -391,9 +443,14 @@ export class ChainHead extends JsonRpcGroup<ChainHeadEvent> {
   async body(at?: BlockHash): Promise<Array<HexString>> {
     this.#ensureFollowed();
 
-    const resp: MethodResponse = await this.send('body', this.#subscriptionId, this.#ensurePinnedHash(at));
+    const hash = this.#ensurePinnedHash(at);
+    const operation = async () => {
+      this.#ensureFollowed();
+      const resp: MethodResponse = await this.send('body', this.#subscriptionId, hash);
+      return this.#awaitOperation(resp, hash);
+    };
 
-    return this.#awaitOperationWithRetry(resp, () => this.body(at));
+    return this.#performOperationWithRetry(operation);
   }
 
   /**
@@ -402,15 +459,14 @@ export class ChainHead extends JsonRpcGroup<ChainHeadEvent> {
   async call(func: string, params: HexString = '0x', at?: BlockHash): Promise<HexString> {
     this.#ensureFollowed();
 
-    const resp: MethodResponse = await this.send(
-      'call',
-      this.#subscriptionId,
-      this.#ensurePinnedHash(at),
-      func,
-      params,
-    );
+    const hash = this.#ensurePinnedHash(at);
+    const operation = async () => {
+      this.#ensureFollowed();
+      const resp: MethodResponse = await this.send('call', this.#subscriptionId, hash, func, params);
+      return this.#awaitOperation(resp, hash);
+    };
 
-    return this.#awaitOperationWithRetry(resp, () => this.call(func, params, at));
+    return this.#performOperationWithRetry(operation);
   }
 
   /**
@@ -435,7 +491,7 @@ export class ChainHead extends JsonRpcGroup<ChainHeadEvent> {
 
     let queryItems = items;
     while (queryItems.length > 0) {
-      const [newBatch, newDiscardedItems] = await this.#getStorage(queryItems, childTrie, hash);
+      const [newBatch, newDiscardedItems] = await this.#getStorage(queryItems, childTrie ?? null, hash);
       results.push(...newBatch);
       queryItems = newDiscardedItems;
     }
@@ -445,33 +501,29 @@ export class ChainHead extends JsonRpcGroup<ChainHeadEvent> {
 
   async #getStorage(
     items: Array<StorageQuery>,
-    childTrie?: string | null,
-    at?: BlockHash,
+    childTrie: string | null,
+    at: BlockHash,
+  ): Promise<[fetchedResults: Array<StorageResult>, discardedItems: Array<StorageQuery>]> {
+    const operation = () => this.#getStorageOperation(items, childTrie, at);
+
+    return this.#performOperationWithRetry(operation);
+  }
+
+  async #getStorageOperation(
+    items: Array<StorageQuery>,
+    childTrie: string | null,
+    at: BlockHash,
   ): Promise<[fetchedResults: Array<StorageResult>, discardedItems: Array<StorageQuery>]> {
     this.#ensureFollowed();
 
-    const resp: MethodResponse = await this.send(
-      'storage',
-      this.#subscriptionId,
-      this.#ensurePinnedHash(at),
-      items,
-      childTrie,
-    );
+    const resp: MethodResponse = await this.send('storage', this.#subscriptionId, at, items, childTrie);
 
     let discardedItems: Array<StorageQuery> = [];
     if (resp.result === 'started' && resp.discardedItems && resp.discardedItems > 0) {
       discardedItems = items.slice(items.length - resp.discardedItems);
     }
 
-    try {
-      return [await this.#awaitOperation(resp), discardedItems];
-    } catch (e) {
-      if (e instanceof ChainHeadError && e.shouldRetry) {
-        return this.#getStorage(items, childTrie, at);
-      }
-
-      throw e;
-    }
+    return [await this.#awaitOperation(resp, at), discardedItems];
   }
 
   /**
@@ -497,6 +549,8 @@ export class ChainHead extends JsonRpcGroup<ChainHeadEvent> {
    */
   async unpin(hashes: BlockHash | BlockHash[]): Promise<void> {
     this.#ensureFollowed();
+
+    if (Array.isArray(hashes) && hashes.length === 0) return;
 
     await this.send('unpin', this.#subscriptionId, hashes);
   }

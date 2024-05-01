@@ -9,6 +9,7 @@ import {
   $Metadata,
   QueryableStorage,
   AccountId32,
+  PinnedBlock,
 } from 'dedot';
 import { FrameSystemAccountInfo } from 'dedot/chaintypes';
 
@@ -102,9 +103,9 @@ export const run = async (nodeName: any, networkInfo: any): Promise<any> => {
       const defer = deferred<void>();
 
       // @ts-ignore
-      chainHead.on(event, (newHash) => {
-        assert(newHash, `Received ${event} event with empty hash`);
-        console.log(`Received ${event} event with new hash: ${newHash}`);
+      chainHead.on(event, (block: PinnedBlock) => {
+        assert(block.hash, `Received ${event} event with empty hash`);
+        console.log(`Received ${event} event with new hash: ${block.hash}`);
         defer.resolve();
       });
 

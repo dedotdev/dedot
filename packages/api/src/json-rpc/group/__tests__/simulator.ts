@@ -150,7 +150,7 @@ export const newChainHeadSimulator = ({ numOfFinalizedBlocks = 15, provider, ini
     };
   };
 
-  const nextFinalized = (forkCounter?: number): Finalized => {
+  const nextFinalized = (forkCounter?: number, withPruned = true): Finalized => {
     if (bestBlockHeight <= finalizedHeight) {
       throw new Error('No best block to finalize');
     }
@@ -168,7 +168,7 @@ export const newChainHeadSimulator = ({ numOfFinalizedBlocks = 15, provider, ini
     return {
       event: 'finalized',
       finalizedBlockHashes: [block.hash],
-      prunedBlockHashes: prunedBlockHashes,
+      prunedBlockHashes: withPruned ? prunedBlockHashes : [],
     };
   };
 
