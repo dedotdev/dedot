@@ -1,4 +1,5 @@
 import { JsonRpcRequest } from '@dedot/providers';
+import { assert } from '@dedot/utils';
 import type { Chain } from 'smoldot';
 import { SubscriptionProvider } from '../base/index.js';
 
@@ -6,14 +7,25 @@ import { SubscriptionProvider } from '../base/index.js';
  * @name SmoldotProvider
  */
 export class SmoldotProvider extends SubscriptionProvider {
-  #chain: Chain;
+  #chain?: Promise<Chain>;
 
-  constructor(chain: Chain) {
+  constructor(chain: Chain | Promise<Chain>) {
     super();
-    this.#chain = chain;
+    this.setChain(chain);
+  }
+
+  chain(): Promise<Chain> {
+    assert(this.#chain, 'Smoldot chain is not available');
+    return this.#chain;
+  }
+
+  setChain(chain: Chain | Promise<Chain>) {
+    assert(this.status === 'disconnected', 'Smoldot chain cannot be changed while connected');
+    this.#chain = chain instanceof Promise ? chain : Promise.resolve(chain);
   }
 
   async connect(): Promise<this> {
+    await this.chain(); // make sure the chain promise is completely resolved
     this._setStatus('connected');
     this.#startPullingResponses();
 
@@ -22,16 +34,14 @@ export class SmoldotProvider extends SubscriptionProvider {
 
   #startPullingResponses() {
     (async () => {
-      // TODO handle disconnection & clean up properly
       while (true) {
         if (this.status === 'disconnected') break;
 
         try {
-          const rawResponse = await this.#chain.nextJsonRpcResponse();
+          const chain = await this.chain();
+          const rawResponse = await chain.nextJsonRpcResponse();
           this._onReceiveResponse(rawResponse);
         } catch (e: any) {
-          // TODO should we handle any specific errors from smoldot?
-          //     AlreadyDestroyedError, JsonRpcDisabledError, QueueFullError
           this.emit('error', e);
         }
       }
@@ -40,12 +50,12 @@ export class SmoldotProvider extends SubscriptionProvider {
 
   async disconnect(): Promise<void> {
     this._setStatus('disconnected');
-    // TODO how can we reconnect after disconnecting if we call `remove()` here?
-    this.#chain.remove();
+    (await this.chain()).remove();
+    this.#chain = undefined;
   }
 
   protected async doSend(request: JsonRpcRequest) {
-    console.log('>> RPC:', request.method);
-    this.#chain.sendJsonRpc(JSON.stringify(request));
+    const chain = await this.chain();
+    chain.sendJsonRpc(JSON.stringify(request));
   }
 }
