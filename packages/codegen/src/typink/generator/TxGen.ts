@@ -38,7 +38,7 @@ export class TxGen extends QueryGen {
     });
 
     const importTypes = this.typesGen.typeImports.toImports();
-    const template = compileTemplate('contracts-tx.hbs');
+    const template = compileTemplate('typink', 'contracts-tx.hbs');
 
     return beautifySourceCode(template({ importTypes, txCallsOut }));
   }

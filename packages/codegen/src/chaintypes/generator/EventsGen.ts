@@ -47,7 +47,7 @@ export class EventsGen extends ApiGen {
     }
 
     const importTypes = this.typesGen.typeImports.toImports();
-    const template = compileTemplate('events.hbs');
+    const template = compileTemplate('chaintypes', 'events.hbs');
 
     return beautifySourceCode(template({ importTypes, defTypeOut }));
   }

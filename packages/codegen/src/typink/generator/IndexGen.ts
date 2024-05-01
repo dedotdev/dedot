@@ -12,7 +12,7 @@ export class IndexGen {
   generate() {
     const contractName = stringPascalCase(this.contractMetadata.contract.name);
 
-    const template = compileTemplate('contracts-index.hbs');
+    const template = compileTemplate('typink', 'contracts-index.hbs');
 
     return beautifySourceCode(template({ contractName }));
   }

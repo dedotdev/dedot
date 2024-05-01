@@ -37,7 +37,7 @@ export class ConstructorGen extends QueryGen {
     });
 
     const importTypes = this.typesGen.typeImports.toImports();
-    const template = compileTemplate('contracts-constructor.hbs');
+    const template = compileTemplate('typink', 'contracts-constructor.hbs');
 
     return beautifySourceCode(template({ importTypes, constructorsOut }));
   }

@@ -33,7 +33,7 @@ export class QueryGen extends ApiGen {
     }
 
     const importTypes = this.typesGen.typeImports.toImports();
-    const template = compileTemplate('query.hbs');
+    const template = compileTemplate('chaintypes', 'query.hbs');
 
     return beautifySourceCode(template({ importTypes, defTypeOut }));
   }

@@ -44,7 +44,7 @@ export class QueryGen {
     });
 
     const importTypes = this.typesGen.typeImports.toImports();
-    const template = compileTemplate('contracts-query.hbs');
+    const template = compileTemplate('typink', 'contracts-query.hbs');
 
     return beautifySourceCode(template({ importTypes, queryCallsOut }));
   }

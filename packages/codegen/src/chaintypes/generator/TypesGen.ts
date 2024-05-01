@@ -70,7 +70,7 @@ export class TypesGen {
       });
 
     const importTypes = this.typeImports.toImports('./types');
-    const template = compileTemplate('types.hbs');
+    const template = compileTemplate('chaintypes', 'types.hbs');
 
     return beautifySourceCode(template({ importTypes, defTypeOut }));
   }

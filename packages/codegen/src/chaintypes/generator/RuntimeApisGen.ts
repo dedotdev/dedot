@@ -61,7 +61,7 @@ export class RuntimeApisGen extends ApiGen {
     }
 
     const importTypes = this.typesGen.typeImports.toImports();
-    const template = compileTemplate('runtime.hbs');
+    const template = compileTemplate('chaintypes', 'runtime.hbs');
 
     return beautifySourceCode(template({ importTypes, runtimeCallsOut }));
   }

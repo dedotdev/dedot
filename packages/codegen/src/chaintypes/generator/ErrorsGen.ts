@@ -29,7 +29,7 @@ export class ErrorsGen extends ApiGen {
     }
 
     const importTypes = this.typesGen.typeImports.toImports();
-    const template = compileTemplate('errors.hbs');
+    const template = compileTemplate('chaintypes', 'errors.hbs');
 
     return beautifySourceCode(template({ importTypes, defTypeOut }));
   }

@@ -7,7 +7,7 @@ export class IndexGen {
   async generate() {
     const interfaceName = stringPascalCase(this.chain);
 
-    const template = compileTemplate('index.hbs');
+    const template = compileTemplate('chaintypes', 'index.hbs');
 
     return beautifySourceCode(template({ interfaceName }));
   }

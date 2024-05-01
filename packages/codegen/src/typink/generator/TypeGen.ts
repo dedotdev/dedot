@@ -34,7 +34,7 @@ export class TypeGen {
       });
 
     const importTypes = this.typeImports.toImports('./types');
-    const template = compileTemplate('contracts.hbs');
+    const template = compileTemplate('typink', 'contracts.hbs');
 
     return beautifySourceCode(template({ importTypes, defTypeOut }));
   }

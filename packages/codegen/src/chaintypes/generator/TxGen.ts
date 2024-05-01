@@ -84,7 +84,7 @@ export class TxGen extends ApiGen {
         
     export type TxCall = (...args: any[]) => ChainSubmittableExtrinsic;    
 `;
-    const template = compileTemplate('tx.hbs');
+    const template = compileTemplate('chaintypes', 'tx.hbs');
 
     return beautifySourceCode(template({ importTypes, defTypes, txDefsOut }));
   }
