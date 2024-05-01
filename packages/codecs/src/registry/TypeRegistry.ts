@@ -1,3 +1,6 @@
+import * as $ from '@dedot/shape';
+import { EnumOptions } from '@dedot/shape';
+import { normalizeName, stringPascalCase } from '@dedot/utils';
 import {
   $AccountId,
   $AccountId20,
@@ -15,10 +18,7 @@ import {
   $UncheckedExtrinsic,
   PortableType,
   TypeId,
-} from '@dedot/codecs';
-import * as $ from '@dedot/shape';
-import { EnumOptions } from '@dedot/shape';
-import { normalizeName, stringPascalCase } from '@dedot/utils';
+} from '../codecs';
 
 const KNOWN_CODECS: Record<string, $.AnyShape> = {
   'sp_core::crypto::AccountId32': $AccountId32,

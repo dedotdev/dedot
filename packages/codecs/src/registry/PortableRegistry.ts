@@ -9,7 +9,7 @@ import {
   PortableType,
   TypeId,
 } from '../codecs/index.js';
-import { TypeRegistry } from './TypeRegistry';
+import { TypeRegistry } from './TypeRegistry.js';
 
 /**
  * Codec registry for portable types from metadata
