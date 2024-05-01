@@ -31,12 +31,12 @@ export interface SubscriptionState {
  * A base class for providers that support subscriptions (e.g: Websocket, Smoldot)
  */
 export abstract class SubscriptionProvider extends EventEmitter<ProviderEvent> implements JsonRpcProvider {
-  _status: ConnectionStatus;
-  _handlers: Record<JsonRpcRequestId, RequestState>;
-  _subscriptions: Record<string, SubscriptionState>;
-  _pendingNotifications: Record<string, JsonRpcResponseNotification>;
+  protected _status: ConnectionStatus;
+  protected _handlers: Record<JsonRpcRequestId, RequestState>;
+  protected _subscriptions: Record<string, SubscriptionState>;
+  protected _pendingNotifications: Record<string, JsonRpcResponseNotification>;
 
-  constructor() {
+  protected constructor() {
     super();
 
     this._status = 'disconnected';
