@@ -18,9 +18,9 @@ import { BaseSubstrateClient, ensurePresence } from './BaseSubstrateClient.js';
 export class DedotClient<
   ChainApi extends VersionedGenericSubstrateApi = SubstrateApi,
 > extends BaseSubstrateClient<ChainApi> {
-  _chainHead?: ChainHead;
-  _chainSpec?: ChainSpec;
-  _txBroadcaster?: TxBroadcaster;
+  protected _chainHead?: ChainHead;
+  protected _chainSpec?: ChainSpec;
+  protected _txBroadcaster?: TxBroadcaster;
 
   /**
    * Use factory methods (`create`, `new`) to create `DedotClient` instances.
