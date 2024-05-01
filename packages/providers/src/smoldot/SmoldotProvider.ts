@@ -48,6 +48,12 @@ export class SmoldotProvider extends SubscriptionProvider {
     })();
   }
 
+  /**
+   * Disconnect the provider & remove the chain
+   *
+   * To reconnect again, make sure set a new `smoldot.Chain` instance
+   * via `setChain` first & call `connect`
+   */
   async disconnect(): Promise<void> {
     this._setStatus('disconnected');
     (await this.chain()).remove();
