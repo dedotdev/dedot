@@ -62,6 +62,8 @@ export class SmoldotProvider extends SubscriptionProvider {
   }
 
   protected async doSend(request: JsonRpcRequest) {
+    assert(this.status === 'connected', 'The provider is not connected, please call .connect() first.');
+
     const chain = await this.chain();
     chain.sendJsonRpc(JSON.stringify(request));
   }
