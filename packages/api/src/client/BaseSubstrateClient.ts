@@ -1,10 +1,11 @@
 import { $Metadata, BlockHash, Hash, Metadata, PortableRegistry } from '@dedot/codecs';
+import { JsonRpcProvider } from '@dedot/providers';
 import { type IStorage, LocalStorage } from '@dedot/storage';
 import { GenericSubstrateApi, RpcVersion, VersionedGenericSubstrateApi } from '@dedot/types';
 import { calcRuntimeApiHash, ensurePresence as _ensurePresence, u8aToHex } from '@dedot/utils';
 import type { SubstrateApi } from '../chaintypes/index.js';
 import { ConstantExecutor, ErrorExecutor, EventExecutor } from '../executor/index.js';
-import { JsonRpcClient } from '../json-rpc/index.js';
+import { isJsonRpcProvider, JsonRpcClient } from '../json-rpc/index.js';
 import { newProxyChain } from '../proxychain.js';
 import type {
   ApiEvent,
@@ -45,15 +46,21 @@ export abstract class BaseSubstrateClient<ChainApi extends VersionedGenericSubst
 
   protected constructor(
     public rpcVersion: RpcVersion,
-    options: JsonRpcClientOptions,
+    options: JsonRpcClientOptions | JsonRpcProvider,
   ) {
     super(options);
     this._options = this.normalizeOptions(options);
   }
 
   /// --- Internal logics
-  protected normalizeOptions(options: ApiOptions): ApiOptions {
-    return { throwOnUnknownApi: true, ...options } as ApiOptions;
+  protected normalizeOptions(options: ApiOptions | JsonRpcProvider): ApiOptions {
+    const defaultOptions = { throwOnUnknownApi: true };
+
+    if (isJsonRpcProvider(options)) {
+      return { ...defaultOptions, provider: options };
+    } else {
+      return { ...defaultOptions, ...options } as ApiOptions;
+    }
   }
 
   protected async initializeLocalCache() {

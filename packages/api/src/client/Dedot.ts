@@ -1,4 +1,5 @@
 import { BlockHash, PortableRegistry, RuntimeVersion } from '@dedot/codecs';
+import type { JsonRpcProvider } from '@dedot/providers';
 import { GenericSubstrateApi, RpcLegacy, Unsub, VersionedGenericSubstrateApi } from '@dedot/types';
 import type { SubstrateApi } from '../chaintypes/index.js';
 import {
@@ -63,7 +64,7 @@ export class Dedot<ChainApi extends VersionedGenericSubstrateApi = SubstrateApi>
    *
    * @param options
    */
-  constructor(options: ApiOptions) {
+  constructor(options: ApiOptions | JsonRpcProvider) {
     super('legacy', options);
   }
 
@@ -73,7 +74,7 @@ export class Dedot<ChainApi extends VersionedGenericSubstrateApi = SubstrateApi>
    * @param options
    */
   static async create<ChainApi extends VersionedGenericSubstrateApi = SubstrateApi>(
-    options: ApiOptions,
+    options: ApiOptions | JsonRpcProvider,
   ): Promise<Dedot<ChainApi>> {
     return new Dedot<ChainApi>(options).connect();
   }
@@ -84,7 +85,7 @@ export class Dedot<ChainApi extends VersionedGenericSubstrateApi = SubstrateApi>
    * @param options
    */
   static async new<ChainApi extends VersionedGenericSubstrateApi = SubstrateApi>(
-    options: ApiOptions,
+    options: ApiOptions | JsonRpcProvider,
   ): Promise<Dedot<ChainApi>> {
     return Dedot.create(options);
   }

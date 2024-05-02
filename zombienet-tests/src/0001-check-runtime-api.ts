@@ -1,7 +1,7 @@
 import { $Metadata, Metadata } from '@dedot/codecs';
 import { RpcVersion } from '@dedot/types';
 import { assert, stringCamelCase } from '@dedot/utils';
-import { Dedot, DedotClient, ISubstrateClient } from 'dedot';
+import { Dedot, DedotClient, ISubstrateClient, WsProvider } from 'dedot';
 import { SubstrateApi } from 'dedot/chaintypes';
 
 const ALICE = '5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY';
@@ -42,9 +42,9 @@ const verifyRuntimeApi = async (api: ISubstrateClient<SubstrateApi[RpcVersion]>)
 export const run = async (nodeName: any, networkInfo: any) => {
   const { wsUri } = networkInfo.nodesByName[nodeName];
 
-  const apiLegacy = await Dedot.new(wsUri);
+  const apiLegacy = await Dedot.new(new WsProvider(wsUri));
   await verifyRuntimeApi(apiLegacy);
 
-  const apiV2 = await DedotClient.new(wsUri);
+  const apiV2 = await DedotClient.new(new WsProvider(wsUri));
   await verifyRuntimeApi(apiV2);
 };

@@ -3,7 +3,7 @@ import { cryptoWaitReady } from '@polkadot/util-crypto';
 import { RococoApi } from '@dedot/chaintypes';
 import { RococoRuntimeRuntimeCallLike } from '@dedot/chaintypes/rococo';
 import { assert, isHex, isNumber } from '@dedot/utils';
-import { Dedot, DedotClient } from 'dedot';
+import { Dedot, DedotClient, WsProvider } from 'dedot';
 
 const BOB = '5FHneW46xGXgs5mUiveU4sbTyGBzmstUspZC92UhjJM694ty';
 
@@ -15,7 +15,7 @@ export const run = async (nodeName: any, networkInfo: any): Promise<void> => {
   const { wsUri } = networkInfo.nodesByName[nodeName];
 
   // TODO use RococoApi
-  const api = await DedotClient.new(wsUri);
+  const api = await DedotClient.new(new WsProvider(wsUri));
 
   const TEN_UNIT = BigInt(10 * 1e12);
 

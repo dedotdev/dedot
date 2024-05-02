@@ -1,9 +1,20 @@
 import type { ConnectionStatus, JsonRpcProvider, ProviderEvent, Subscription } from '@dedot/providers';
 import { scaledResponses, subscriptionsInfo } from '@dedot/specs';
 import type { AsyncMethod, GenericSubstrateApi, RpcVersion, Unsub } from '@dedot/types';
-import { assert, EventEmitter, isFunction } from '@dedot/utils';
+import { assert, EventEmitter, isFunction, isString } from '@dedot/utils';
 import type { SubstrateApi } from '../chaintypes/index.js';
 import type { IJsonRpcClient, JsonRpcClientOptions } from '../types.js';
+
+export const isJsonRpcProvider = (provider: any): provider is JsonRpcProvider => {
+  return (
+    provider &&
+    isString(provider.status) &&
+    isFunction(provider.send) &&
+    isFunction(provider.subscribe) &&
+    isFunction(provider.connect) &&
+    isFunction(provider.disconnect)
+  );
+};
 
 export class JsonRpcClient<
     ChainApi extends GenericSubstrateApi = SubstrateApi[RpcVersion],
@@ -15,12 +26,18 @@ export class JsonRpcClient<
   readonly #options: JsonRpcClientOptions;
   readonly #provider: JsonRpcProvider;
 
-  constructor(options: JsonRpcClientOptions) {
+  constructor(options: JsonRpcClientOptions | JsonRpcProvider) {
     super();
-    assert(options.provider, 'A JsonRpcProvider is required');
 
-    this.#options = options;
-    this.#provider = options.provider;
+    if (isJsonRpcProvider(options)) {
+      this.#options = { provider: options };
+      this.#provider = options;
+    } else {
+      this.#options = options;
+      this.#provider = options.provider;
+    }
+
+    assert(this.#provider, 'A JsonRpcProvider is required');
   }
 
   /**
@@ -29,7 +46,7 @@ export class JsonRpcClient<
    * @param options
    */
   static async create<ChainApi extends GenericSubstrateApi = SubstrateApi[RpcVersion]>(
-    options: JsonRpcClientOptions,
+    options: JsonRpcClientOptions | JsonRpcProvider,
   ): Promise<JsonRpcClient<ChainApi>> {
     return new JsonRpcClient<ChainApi>(options).connect();
   }
@@ -40,7 +57,7 @@ export class JsonRpcClient<
    * @param options
    */
   static async new<ChainApi extends GenericSubstrateApi = SubstrateApi[RpcVersion]>(
-    options: JsonRpcClientOptions,
+    options: JsonRpcClientOptions | JsonRpcProvider,
   ): Promise<JsonRpcClient<ChainApi>> {
     return JsonRpcClient.create(options);
   }

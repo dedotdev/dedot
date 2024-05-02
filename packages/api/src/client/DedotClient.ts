@@ -1,4 +1,5 @@
 import { $H256, BlockHash } from '@dedot/codecs';
+import type { JsonRpcProvider } from '@dedot/providers';
 import { u32 } from '@dedot/shape';
 import { RpcV2, VersionedGenericSubstrateApi } from '@dedot/types';
 import { assert, concatU8a, HexString, noop, twox64Concat, u8aToHex, xxhashAsU8a } from '@dedot/utils';
@@ -27,7 +28,7 @@ export class DedotClient<
    *
    * @param options
    */
-  constructor(options: ApiOptions) {
+  constructor(options: ApiOptions | JsonRpcProvider) {
     super('v2', options);
   }
 
@@ -37,7 +38,7 @@ export class DedotClient<
    * @param options
    */
   static async create<ChainApi extends VersionedGenericSubstrateApi = SubstrateApi>(
-    options: ApiOptions,
+    options: ApiOptions | JsonRpcProvider,
   ): Promise<DedotClient<ChainApi>> {
     return new DedotClient<ChainApi>(options).connect();
   }
@@ -48,7 +49,7 @@ export class DedotClient<
    * @param options
    */
   static async new<ChainApi extends VersionedGenericSubstrateApi = SubstrateApi>(
-    options: ApiOptions,
+    options: ApiOptions | JsonRpcProvider,
   ): Promise<DedotClient<ChainApi>> {
     return DedotClient.create(options);
   }
