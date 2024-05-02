@@ -58,6 +58,7 @@ export class SmoldotProvider extends SubscriptionProvider {
     this._setStatus('disconnected');
     (await this.chain()).remove();
     this.#chain = undefined;
+    this._cleanUp();
   }
 
   protected async doSend(request: JsonRpcRequest) {

@@ -108,6 +108,7 @@ export class JsonRpcClient<
 
   async disconnect(): Promise<void> {
     await this.#provider.disconnect();
+    this.clearEvents();
   }
 
   #getProvider(): JsonRpcProvider {
