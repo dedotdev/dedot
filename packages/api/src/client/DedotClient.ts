@@ -6,7 +6,7 @@ import type { SubstrateApi } from '../chaintypes/index.js';
 import { RuntimeApiExecutorV2, StorageQueryExecutorV2, TxExecutorV2 } from '../executor/index.js';
 import { ChainHead, ChainSpec, PinnedBlock, Transaction, TransactionWatch } from '../json-rpc/index.js';
 import { newProxyChain } from '../proxychain.js';
-import type { ApiOptions, NetworkEndpoint, TxBroadcaster } from '../types.js';
+import type { ApiOptions, TxBroadcaster } from '../types.js';
 import { BaseSubstrateClient, ensurePresence } from './BaseSubstrateClient.js';
 
 /**
@@ -27,7 +27,7 @@ export class DedotClient<
    *
    * @param options
    */
-  constructor(options: ApiOptions | NetworkEndpoint) {
+  constructor(options: ApiOptions) {
     super('v2', options);
   }
 
@@ -37,7 +37,7 @@ export class DedotClient<
    * @param options
    */
   static async create<ChainApi extends VersionedGenericSubstrateApi = SubstrateApi>(
-    options: ApiOptions | NetworkEndpoint,
+    options: ApiOptions,
   ): Promise<DedotClient<ChainApi>> {
     return new DedotClient<ChainApi>(options).connect();
   }
@@ -48,7 +48,7 @@ export class DedotClient<
    * @param options
    */
   static async new<ChainApi extends VersionedGenericSubstrateApi = SubstrateApi>(
-    options: ApiOptions | NetworkEndpoint,
+    options: ApiOptions,
   ): Promise<DedotClient<ChainApi>> {
     return DedotClient.create(options);
   }

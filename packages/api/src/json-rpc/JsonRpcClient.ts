@@ -1,9 +1,9 @@
-import { ConnectionStatus, JsonRpcProvider, ProviderEvent, Subscription, WsProvider } from '@dedot/providers';
+import type { ConnectionStatus, JsonRpcProvider, ProviderEvent, Subscription } from '@dedot/providers';
 import { scaledResponses, subscriptionsInfo } from '@dedot/specs';
-import { AsyncMethod, GenericSubstrateApi, RpcVersion, Unsub } from '@dedot/types';
+import type { AsyncMethod, GenericSubstrateApi, RpcVersion, Unsub } from '@dedot/types';
 import { assert, EventEmitter, isFunction } from '@dedot/utils';
-import { SubstrateApi } from '../chaintypes/index.js';
-import { IJsonRpcClient, JsonRpcClientOptions, NetworkEndpoint } from '../types.js';
+import type { SubstrateApi } from '../chaintypes/index.js';
+import type { IJsonRpcClient, JsonRpcClientOptions } from '../types.js';
 
 export class JsonRpcClient<
     ChainApi extends GenericSubstrateApi = SubstrateApi[RpcVersion],
@@ -15,11 +15,12 @@ export class JsonRpcClient<
   readonly #options: JsonRpcClientOptions;
   readonly #provider: JsonRpcProvider;
 
-  constructor(options: JsonRpcClientOptions | NetworkEndpoint) {
+  constructor(options: JsonRpcClientOptions) {
     super();
+    assert(options.provider, 'A JsonRpcProvider is required');
 
-    this.#options = typeof options === 'string' ? { endpoint: options } : options;
-    this.#provider = this.#getProvider();
+    this.#options = options;
+    this.#provider = options.provider;
   }
 
   /**
@@ -28,7 +29,7 @@ export class JsonRpcClient<
    * @param options
    */
   static async create<ChainApi extends GenericSubstrateApi = SubstrateApi[RpcVersion]>(
-    options: JsonRpcClientOptions | NetworkEndpoint,
+    options: JsonRpcClientOptions,
   ): Promise<JsonRpcClient<ChainApi>> {
     return new JsonRpcClient<ChainApi>(options).connect();
   }
@@ -39,7 +40,7 @@ export class JsonRpcClient<
    * @param options
    */
   static async new<ChainApi extends GenericSubstrateApi = SubstrateApi[RpcVersion]>(
-    options: JsonRpcClientOptions | NetworkEndpoint,
+    options: JsonRpcClientOptions,
   ): Promise<JsonRpcClient<ChainApi>> {
     return JsonRpcClient.create(options);
   }
@@ -109,15 +110,6 @@ export class JsonRpcClient<
   async disconnect(): Promise<void> {
     await this.#provider.disconnect();
     this.clearEvents();
-  }
-
-  #getProvider(): JsonRpcProvider {
-    const { provider, endpoint } = this.#options;
-    if (provider) return provider;
-    if (endpoint) return new WsProvider(endpoint);
-
-    // TODO support light-client
-    return new WsProvider('ws://127.0.0.1:9944');
   }
 
   /**

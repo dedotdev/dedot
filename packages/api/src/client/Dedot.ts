@@ -10,7 +10,7 @@ import {
   TxExecutor,
 } from '../executor/index.js';
 import { newProxyChain } from '../proxychain.js';
-import type { ApiOptions, ISubstrateClientAt, NetworkEndpoint, SubstrateRuntimeVersion } from '../types.js';
+import type { ApiOptions, ISubstrateClientAt, SubstrateRuntimeVersion } from '../types.js';
 import { BaseSubstrateClient } from './BaseSubstrateClient.js';
 
 const KEEP_ALIVE_INTERVAL = 10_000; // in ms
@@ -63,7 +63,7 @@ export class Dedot<ChainApi extends VersionedGenericSubstrateApi = SubstrateApi>
    *
    * @param options
    */
-  constructor(options: ApiOptions | NetworkEndpoint) {
+  constructor(options: ApiOptions) {
     super('legacy', options);
   }
 
@@ -73,7 +73,7 @@ export class Dedot<ChainApi extends VersionedGenericSubstrateApi = SubstrateApi>
    * @param options
    */
   static async create<ChainApi extends VersionedGenericSubstrateApi = SubstrateApi>(
-    options: ApiOptions | NetworkEndpoint,
+    options: ApiOptions,
   ): Promise<Dedot<ChainApi>> {
     return new Dedot<ChainApi>(options).connect();
   }
@@ -84,7 +84,7 @@ export class Dedot<ChainApi extends VersionedGenericSubstrateApi = SubstrateApi>
    * @param options
    */
   static async new<ChainApi extends VersionedGenericSubstrateApi = SubstrateApi>(
-    options: ApiOptions | NetworkEndpoint,
+    options: ApiOptions,
   ): Promise<Dedot<ChainApi>> {
     return Dedot.create(options);
   }

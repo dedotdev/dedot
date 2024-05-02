@@ -6,6 +6,7 @@ import { JsonRpcRequest } from '../types.js';
 export interface WsProviderOptions {
   /**
    * The websocket endpoint to connect to
+   * A valid endpoint should start with `wss://`, `ws://`
    *
    * @required
    */

@@ -13,7 +13,6 @@ import type {
   ISubstrateClientAt,
   JsonRpcClientOptions,
   MetadataKey,
-  NetworkEndpoint,
   SubstrateRuntimeVersion,
 } from '../types.js';
 
@@ -46,20 +45,15 @@ export abstract class BaseSubstrateClient<ChainApi extends VersionedGenericSubst
 
   protected constructor(
     public rpcVersion: RpcVersion,
-    options: JsonRpcClientOptions | NetworkEndpoint,
+    options: JsonRpcClientOptions,
   ) {
     super(options);
     this._options = this.normalizeOptions(options);
   }
 
   /// --- Internal logics
-  protected normalizeOptions(options: ApiOptions | NetworkEndpoint): ApiOptions {
-    const defaultOptions = { throwOnUnknownApi: true };
-    if (typeof options === 'string') {
-      return { ...defaultOptions, endpoint: options };
-    } else {
-      return { ...defaultOptions, ...options } as ApiOptions;
-    }
+  protected normalizeOptions(options: ApiOptions): ApiOptions {
+    return { throwOnUnknownApi: true, ...options } as ApiOptions;
   }
 
   protected async initializeLocalCache() {
