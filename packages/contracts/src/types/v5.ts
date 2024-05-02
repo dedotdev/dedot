@@ -6,7 +6,7 @@ import {
   ContractStorage,
   ContractType,
   ContractTypeInfo,
-} from './metadata';
+} from './shared.js';
 
 export interface ContractMetadataV5 {
   source: ContractSource;
@@ -14,7 +14,7 @@ export interface ContractMetadataV5 {
   spec: ContractSpecV5;
   storage: ContractStorage;
   types: ContractType[];
-  version: string;
+  version: '5';
 }
 
 export interface ContractSpecV5 {

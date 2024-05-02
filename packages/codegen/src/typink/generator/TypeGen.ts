@@ -1,20 +1,20 @@
 import { Field, TypeId, TypeParam } from '@dedot/codecs';
-import { extractContractTypes, normalizeContractTypeDef } from '@dedot/contracts';
-import { ContractMetadataSupported } from '@dedot/types';
+import { ContractMetadata, extractContractTypes, normalizeContractTypeDef } from '@dedot/contracts';
 import { assert, normalizeName, stringPascalCase } from '@dedot/utils';
 import { findKnownCodec, findKnownCodecType, isKnownCodecType } from '../../chaintypes/generator';
-import { BASIC_KNOWN_TYPES, NamedType, TypeImports } from '../../chaintypes/generator';
+import { BASIC_KNOWN_TYPES, NamedType } from '../../chaintypes/generator';
 import { beautifySourceCode, compileTemplate, isNativeType, WRAPPER_TYPE_REGEX } from '../../utils';
+import { TypeImports } from './TypeImports';
 
 const IGNORE_TYPES = ['Result', 'Option'];
 
 export class TypeGen {
-  contractMetadata: ContractMetadataSupported;
+  contractMetadata: ContractMetadata;
   includedTypes: Record<number, NamedType>;
   typeImports: TypeImports;
   typeCache: Record<string, string> = {};
 
-  constructor(contractMetadata: ContractMetadataSupported) {
+  constructor(contractMetadata: ContractMetadata) {
     this.contractMetadata = contractMetadata;
     this.includedTypes = this.#includeTypes();
     this.typeImports = new TypeImports();
@@ -34,7 +34,7 @@ export class TypeGen {
       });
 
     const importTypes = this.typeImports.toImports('./types');
-    const template = compileTemplate('typink', 'contracts.hbs');
+    const template = compileTemplate('typink', 'types.hbs');
 
     return beautifySourceCode(template({ importTypes, defTypeOut }));
   }

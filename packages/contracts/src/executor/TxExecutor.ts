@@ -1,4 +1,4 @@
-import { ContractOptions } from '@dedot/types';
+import { ContractOptions } from '@dedot/contracts';
 import { GenericSubstrateApi } from '@dedot/types';
 import { assert, concatU8a, hexToU8a, stringCamelCase, u8aToHex } from '@dedot/utils';
 import Executor from './Executor';

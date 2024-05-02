@@ -1,7 +1,9 @@
-import { Hash, TypinkRegistry } from '@dedot/codecs';
-import { ConstructorOptions, ContractMessage, GenericSubstrateApi } from '@dedot/types';
+import { Hash } from '@dedot/codecs';
+import { ConstructorOptions, ContractConstructor } from '@dedot/contracts';
+import { GenericSubstrateApi } from '@dedot/types';
 import { assert, concatU8a, hexToU8a, isWasm, stringCamelCase, u8aToHex } from '@dedot/utils';
 import { Dedot } from 'dedot';
+import { TypinkRegistry } from '../TypinkRegistry';
 import Executor from './Executor';
 
 export class ConstructorExecutor<ChainApi extends GenericSubstrateApi> extends Executor<ChainApi> {
@@ -37,7 +39,7 @@ export class ConstructorExecutor<ChainApi extends GenericSubstrateApi> extends E
     return callFn;
   }
 
-  #findConstructorMeta(constructor: string): ContractMessage {
+  #findConstructorMeta(constructor: string): ContractConstructor | undefined {
     return this.contractMetadata.spec.constructors.find((one) => stringCamelCase(one.label) === constructor);
   }
 }

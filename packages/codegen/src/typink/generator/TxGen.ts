@@ -1,11 +1,11 @@
-import { ContractMessage, ContractMetadataSupported } from '@dedot/types';
+import { ContractMessage, ContractMetadata } from '@dedot/contracts';
 import { stringCamelCase } from '@dedot/utils';
 import { beautifySourceCode, commentBlock, compileTemplate } from '../../utils';
 import { QueryGen } from './QueryGen';
 import { TypeGen } from './TypeGen';
 
 export class TxGen extends QueryGen {
-  constructor(contractMetadata: ContractMetadataSupported, typeGen: TypeGen) {
+  constructor(contractMetadata: ContractMetadata, typeGen: TypeGen) {
     super(contractMetadata, typeGen);
   }
 
@@ -13,7 +13,6 @@ export class TxGen extends QueryGen {
     this.typesGen.clearCache();
 
     this.typesGen.typeImports.addKnownType(
-      'GenericSubstrateApi',
       'GenericContractTx',
       'GenericContractTxCall',
       'ContractOptions',
@@ -38,7 +37,7 @@ export class TxGen extends QueryGen {
     });
 
     const importTypes = this.typesGen.typeImports.toImports();
-    const template = compileTemplate('typink', 'contracts-tx.hbs');
+    const template = compileTemplate('typink', 'tx.hbs');
 
     return beautifySourceCode(template({ importTypes, txCallsOut }));
   }

@@ -1,7 +1,9 @@
 import { AccountId32 } from '@dedot/codecs';
-import { TypinkRegistry } from '@dedot/codecs';
-import { ContractMetadata, ContractMetadataSupported, GenericContractApi, GenericSubstrateApi } from '@dedot/types';
+import { GenericSubstrateApi } from '@dedot/types';
 import { Dedot, SubstrateApi } from 'dedot';
+import { TypinkRegistry } from '../TypinkRegistry';
+import { ContractMetadata, GenericContractApi } from '../types/index.js';
+import { parseRawMetadata } from '../utils';
 import Executor from './Executor';
 import { QueryExecutor } from './QueryExecutor';
 import { TxExecutor } from './TxExecutor';
@@ -10,18 +12,12 @@ export class Contract<ContractApi extends GenericContractApi, ChainApi extends G
   #api: Dedot<ChainApi>;
   #registry: TypinkRegistry;
   address: AccountId32;
-  metadata: ContractMetadataSupported;
+  metadata: ContractMetadata;
 
-  constructor(api: Dedot<ChainApi>, address: AccountId32 | string, metadata: ContractMetadataSupported | string) {
+  constructor(api: Dedot<ChainApi>, address: AccountId32 | string, metadata: ContractMetadata | string) {
     this.#api = api;
     this.address = new AccountId32(address);
-
-    if (typeof metadata === 'string') {
-      this.metadata = new ContractMetadata(metadata).metadata;
-    } else {
-      this.metadata = metadata;
-    }
-
+    this.metadata = typeof metadata === 'string' ? parseRawMetadata(metadata) : metadata;
     this.#registry = new TypinkRegistry(this.metadata);
   }
 

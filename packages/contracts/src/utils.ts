@@ -1,7 +1,7 @@
 import { PortableType, TypeDef } from '@dedot/codecs';
-import { ContractMetadataSupported, Def } from '@dedot/types';
+import { ContractMetadata, Def } from './types/index.js';
 
-export const extractContractTypes = (contractMetadata: ContractMetadataSupported): PortableType[] => {
+export const extractContractTypes = (contractMetadata: ContractMetadata): PortableType[] => {
   const { types } = contractMetadata;
 
   return types.map(
@@ -65,4 +65,25 @@ export const normalizeContractTypeDef = (def: Def) => {
   }
 
   return { tag, value } as TypeDef;
+};
+
+const UNSUPPORTED_VERSIONS = ['V3', 'V2', 'V1'] as const;
+
+const SUPPORTED_VERSIONS = ['5', '4'] as const;
+
+export const parseRawMetadata = (rawMetadata: string): ContractMetadata => {
+  const metadata = JSON.parse(rawMetadata);
+
+  // This is for V1, V2, V3
+  const unsupportedVersion = UNSUPPORTED_VERSIONS.find((o) => metadata[o]);
+  if (unsupportedVersion) {
+    throw new Error(`Unsupported metadata version: ${unsupportedVersion}`);
+  }
+
+  // This is for V4, V5
+  if (!SUPPORTED_VERSIONS.includes(metadata.version)) {
+    throw new Error(`Unsupported metadata version: ${metadata.version}`);
+  }
+
+  return metadata as ContractMetadata;
 };

@@ -18,13 +18,7 @@
       "path": "../codecs/tsconfig.json"
     },
     {
-      "path": "../specs/tsconfig.json"
-    },
-    {
       "path": "../utils/tsconfig.json"
     },
-    {
-      "path": "../codegen/tsconfig.json"
-    }
   ]
 }

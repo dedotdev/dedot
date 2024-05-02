@@ -18,7 +18,7 @@ import {
   $UncheckedExtrinsic,
   PortableType,
   TypeId,
-} from '../codecs';
+} from '../codecs/index.js';
 
 const KNOWN_CODECS: Record<string, $.AnyShape> = {
   'sp_core::crypto::AccountId32': $AccountId32,

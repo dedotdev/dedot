@@ -1,2 +1,2 @@
+export * from './TypeRegistry.js';
 export * from './PortableRegistry.js';
-export * from './TypinkRegistry.js';

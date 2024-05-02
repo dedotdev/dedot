@@ -1,23 +1,26 @@
-import { ContractMetadata, ContractMetadataSupported, GenericContractApi, GenericSubstrateApi } from '@dedot/types';
-import { Dedot, Hash, isWasm, TypinkRegistry } from 'dedot';
+import { ContractMetadata, GenericContractApi } from '@dedot/contracts';
+import { GenericSubstrateApi } from '@dedot/types';
+import { Dedot, Hash, isWasm } from 'dedot';
+import { TypinkRegistry } from '../TypinkRegistry';
+import { parseRawMetadata } from '../utils';
 import { ConstructorExecutor } from './ConstructorExecutor';
 import { newProxyChain } from './Contract';
 
 export class ContractDeployer<ContractApi extends GenericContractApi, ChainApi extends GenericSubstrateApi> {
   readonly #api: Dedot<ChainApi>;
-  readonly #metadata: ContractMetadataSupported;
+  readonly #metadata: ContractMetadata;
   readonly #registry: TypinkRegistry;
   #code?: Hash | Uint8Array | string;
 
-  constructor(api: Dedot<ChainApi>, metadata: ContractMetadataSupported | string) {
+  constructor(api: Dedot<ChainApi>, metadata: ContractMetadata | string) {
     this.#api = api;
-    this.#metadata = typeof metadata === 'string' ? new ContractMetadata(metadata).metadata : metadata;
+    this.#metadata = typeof metadata === 'string' ? parseRawMetadata(metadata) : metadata;
     this.#registry = new TypinkRegistry(this.#metadata);
   }
 
   static async create<ContractApi extends GenericContractApi, ChainApi extends GenericSubstrateApi>(
     api: Dedot<ChainApi>,
-    metadata: ContractMetadataSupported | string,
+    metadata: ContractMetadata | string,
     code?: Hash | Uint8Array | string,
   ): Promise<ContractDeployer<ContractApi, ChainApi>> {
     const deployer = new ContractDeployer<ContractApi, ChainApi>(api, metadata);

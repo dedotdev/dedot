@@ -13,9 +13,7 @@
   "type": "module",
   "sideEffects": false,
   "dependencies": {
-    "@dedot/contracts": "workspace:*",
     "@dedot/shape": "workspace:*",
-    "@dedot/types": "workspace:*",
     "@dedot/utils": "workspace:*"
   },
   "scripts": {

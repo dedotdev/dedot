@@ -1,27 +1,3 @@
-import { ContractMetadataV4 } from './v4';
-import { ContractMetadataV5 } from './v5';
-
-export const enumVersions = ['V5', 'V4', 'V3', 'V2', 'V1'] as const;
-
-export type ContractMetadataSupported = ContractMetadataV4 | ContractMetadataV5;
-
-export class ContractMetadata {
-  metadata: ContractMetadataSupported;
-
-  constructor(rawMetadata: string) {
-    const jsonMetadata = JSON.parse(rawMetadata);
-
-    const maybeVersion = enumVersions.find((o) => jsonMetadata[o]);
-    // This is for V1, V2, V3
-    if (maybeVersion) {
-      throw new Error(`Unsupported metadata version: ${maybeVersion}`);
-    }
-
-    // This is for V4, V5
-    this.metadata = jsonMetadata as ContractMetadataSupported;
-  }
-}
-
 export interface ContractConstructor {
   args: Arg[];
   default: boolean;
@@ -66,16 +42,6 @@ export interface Arg {
 export interface ContractTypeInfo {
   displayName: string[];
   type: number;
-}
-
-export interface ContractEnvironment {
-  accountId: ContractTypeInfo;
-  balance: ContractTypeInfo;
-  blockNumber: ContractTypeInfo;
-  chainExtension: ContractTypeInfo;
-  hash: ContractTypeInfo;
-  maxEventTopics: number;
-  timestamp: ContractTypeInfo;
 }
 
 export interface ContractMessage {

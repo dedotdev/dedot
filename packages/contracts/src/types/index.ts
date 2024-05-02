@@ -1,7 +1,12 @@
 import { BytesLike, Weight } from '@dedot/codecs';
-import { AnyFunc, AsyncMethod, ContractMessage, GenericSubstrateApi } from '@dedot/types';
+import { AnyFunc, AsyncMethod, GenericSubstrateApi } from '@dedot/types';
+import { ContractMessage } from './shared.js';
+import { ContractMetadataV4 } from './v4.js';
+import { ContractMetadataV5 } from './v5.js';
 
-export * from './metadata';
+export * from './shared.js';
+
+export type ContractMetadata = ContractMetadataV4 | ContractMetadataV5;
 
 export type ContractResult<ChainApi extends GenericSubstrateApi> = Awaited<
   ReturnType<ChainApi['call']['contractsApi']['call']>

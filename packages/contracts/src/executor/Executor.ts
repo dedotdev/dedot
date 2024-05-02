@@ -1,8 +1,9 @@
 import { AccountId32 } from '@dedot/codecs';
-import { TypinkRegistry } from '@dedot/codecs/registry/TypinkRegistry';
-import { Arg, ContractMessage, ContractMetadataSupported } from '@dedot/types';
+import { Arg, ContractMessage } from '@dedot/contracts';
 import { GenericSubstrateApi } from '@dedot/types';
 import { Dedot } from 'dedot';
+import { TypinkRegistry } from '../TypinkRegistry';
+import { ContractMetadata } from '../types';
 
 export default abstract class Executor<ChainApi extends GenericSubstrateApi> {
   readonly #api: Dedot<ChainApi>;
@@ -21,7 +22,7 @@ export default abstract class Executor<ChainApi extends GenericSubstrateApi> {
     return this.#api;
   }
 
-  get contractMetadata(): ContractMetadataSupported {
+  get contractMetadata(): ContractMetadata {
     return this.#registry.metadata;
   }
 

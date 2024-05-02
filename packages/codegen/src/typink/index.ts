@@ -1,15 +1,15 @@
-import { ContractMetadata, ContractMetadataSupported } from '@dedot/types';
+import { ContractMetadata, parseRawMetadata } from '@dedot/contracts';
 import fs from 'fs';
 import path from 'path';
 import { IndexGen, QueryGen, TxGen, TypeGen, ConstructorGen } from './generator/index.js';
 
 export async function generateContractTypesFromMetadata(
-  metadata: ContractMetadataSupported | string,
+  metadata: ContractMetadata | string,
   contract?: string,
   outDir: string = '.',
   extension: string = 'd.ts',
 ) {
-  let contractMetadata = typeof metadata === 'string' ? new ContractMetadata(metadata).metadata : metadata;
+  let contractMetadata = typeof metadata === 'string' ? parseRawMetadata(metadata) : metadata;
 
   if (!contract) {
     contract = contractMetadata.contract.name;
