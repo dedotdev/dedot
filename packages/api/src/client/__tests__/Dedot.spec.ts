@@ -1,4 +1,5 @@
 import type { RuntimeVersion } from '@dedot/codecs';
+import { WsProvider } from '@dedot/providers';
 import type { AnyShape } from '@dedot/shape';
 import * as $ from '@dedot/shape';
 import { stringCamelCase, stringPascalCase, u8aToHex } from '@dedot/utils';
@@ -9,7 +10,7 @@ import MockProvider, { MockedRuntimeVersion } from './MockProvider.js';
 describe('Dedot', () => {
   it('should throws error for invalid endpoint', () => {
     expect(async () => {
-      await Dedot.new('invalid_endpoint');
+      await Dedot.new(new WsProvider('invalid_endpoint'));
     }).rejects.toThrowError(
       'Invalid websocket endpoint invalid_endpoint, a valid endpoint should start with wss:// or ws://',
     );

@@ -1,10 +1,11 @@
 import { $Metadata, BlockHash, Hash, Metadata, PortableRegistry } from '@dedot/codecs';
+import type { JsonRpcProvider } from '@dedot/providers';
 import { type IStorage, LocalStorage } from '@dedot/storage';
 import { GenericSubstrateApi, RpcVersion, VersionedGenericSubstrateApi } from '@dedot/types';
 import { calcRuntimeApiHash, ensurePresence as _ensurePresence, u8aToHex } from '@dedot/utils';
 import type { SubstrateApi } from '../chaintypes/index.js';
 import { ConstantExecutor, ErrorExecutor, EventExecutor } from '../executor/index.js';
-import { JsonRpcClient } from '../json-rpc/index.js';
+import { isJsonRpcProvider, JsonRpcClient } from '../json-rpc/index.js';
 import { newProxyChain } from '../proxychain.js';
 import type {
   ApiEvent,
@@ -13,7 +14,6 @@ import type {
   ISubstrateClientAt,
   JsonRpcClientOptions,
   MetadataKey,
-  NetworkEndpoint,
   SubstrateRuntimeVersion,
 } from '../types.js';
 
@@ -46,17 +46,18 @@ export abstract class BaseSubstrateClient<ChainApi extends VersionedGenericSubst
 
   protected constructor(
     public rpcVersion: RpcVersion,
-    options: JsonRpcClientOptions | NetworkEndpoint,
+    options: JsonRpcClientOptions | JsonRpcProvider,
   ) {
     super(options);
     this._options = this.normalizeOptions(options);
   }
 
   /// --- Internal logics
-  protected normalizeOptions(options: ApiOptions | NetworkEndpoint): ApiOptions {
+  protected normalizeOptions(options: ApiOptions | JsonRpcProvider): ApiOptions {
     const defaultOptions = { throwOnUnknownApi: true };
-    if (typeof options === 'string') {
-      return { ...defaultOptions, endpoint: options };
+
+    if (isJsonRpcProvider(options)) {
+      return { ...defaultOptions, provider: options };
     } else {
       return { ...defaultOptions, ...options } as ApiOptions;
     }

@@ -1,6 +1,6 @@
 import { $Header, BlockHash, Option } from '@dedot/codecs';
-import { Subscription } from '@dedot/providers';
-import {
+import type { Subscription } from '@dedot/providers';
+import type {
   ChainHeadRuntimeVersion,
   FollowEvent,
   FollowOperationEvent,
@@ -10,10 +10,10 @@ import {
   StorageQuery,
   StorageResult,
 } from '@dedot/specs';
-import { AsyncMethod, Unsub } from '@dedot/types';
+import type { AsyncMethod, Unsub } from '@dedot/types';
 import { assert, Deferred, deferred, ensurePresence, HexString, noop, AsyncQueue } from '@dedot/utils';
-import { IJsonRpcClient } from '../../../types.js';
-import { JsonRpcGroup, JsonRpcGroupOptions } from '../JsonRpcGroup.js';
+import type { IJsonRpcClient } from '../../../types.js';
+import { JsonRpcGroup, type JsonRpcGroupOptions } from '../JsonRpcGroup.js';
 import {
   ChainHeadBlockNotPinnedError,
   ChainHeadError,

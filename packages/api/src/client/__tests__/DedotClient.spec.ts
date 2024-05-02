@@ -1,6 +1,6 @@
 import staticSubstrateV15 from '@polkadot/types-support/metadata/v15/substrate-hex';
-import { ormlTokens } from '@polkadot/types/interfaces/definitions';
 import { $Metadata } from '@dedot/codecs';
+import { WsProvider } from '@dedot/providers';
 import type { AnyShape } from '@dedot/shape';
 import * as $ from '@dedot/shape';
 import { MethodResponse, OperationCallDone } from '@dedot/specs';
@@ -18,7 +18,7 @@ const prefixedMetadataV15 = u8aToHex(
 describe('DedotClient', () => {
   it('should throws error for invalid endpoint', () => {
     expect(async () => {
-      await DedotClient.new('invalid_endpoint');
+      await DedotClient.new(new WsProvider('invalid_endpoint'));
     }).rejects.toThrowError(
       'Invalid websocket endpoint invalid_endpoint, a valid endpoint should start with wss:// or ws://',
     );

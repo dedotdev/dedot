@@ -10,6 +10,7 @@ import {
   QueryableStorage,
   AccountId32,
   PinnedBlock,
+  WsProvider,
 } from 'dedot';
 import { FrameSystemAccountInfo } from 'dedot/chaintypes';
 
@@ -17,9 +18,9 @@ const ALICE = '5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY';
 const BOB = '5FHneW46xGXgs5mUiveU4sbTyGBzmstUspZC92UhjJM694ty';
 
 export const run = async (nodeName: any, networkInfo: any): Promise<any> => {
-  const { wsUri: endpoint } = networkInfo.nodesByName[nodeName];
+  const { wsUri } = networkInfo.nodesByName[nodeName];
 
-  const client = await JsonRpcClient.new(endpoint);
+  const client = await JsonRpcClient.new(new WsProvider(wsUri));
   const chainHead = new ChainHead(client);
   await chainHead.follow();
 

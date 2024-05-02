@@ -7,18 +7,13 @@ import type { GenericSubstrateApi, RpcVersion, RuntimeApiName, RuntimeApiSpec, U
 import type { HashFn, HexString, IEventEmitter } from '@dedot/utils';
 import type { AnySignedExtension } from './extrinsic/index.js';
 
-export type NetworkEndpoint = string;
 export type MetadataKey = `RAW_META/${string}`;
 
 export interface JsonRpcClientOptions {
-  provider?: JsonRpcProvider;
   /**
-   * @description A `ProviderInterface` will be created based on the supplied endpoint.
-   * If both `provider` and `endpoint` is provided, the `provider` will be used for connection.
-   *
-   * A valid endpoint should start with `wss://`, `ws://`, `https://` or `http://`
+   * @description A JSON-RPC provider instance, it could be a `WsProvider` or `SmoldotProvider`
    */
-  endpoint?: NetworkEndpoint;
+  provider: JsonRpcProvider;
   subscriptions?: SubscriptionsInfo;
   scaledResponses?: Record<string, AnyShape>;
 }

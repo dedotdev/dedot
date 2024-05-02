@@ -1,7 +1,7 @@
 import { MetadataLatest } from '@dedot/codecs';
 import { RpcMethods } from '@dedot/specs';
 import { stringCamelCase } from '@dedot/utils';
-import { Dedot } from 'dedot';
+import { Dedot, WsProvider } from 'dedot';
 import * as fs from 'fs';
 import * as path from 'path';
 import {
@@ -22,7 +22,7 @@ export async function generateTypesFromEndpoint(
   outDir?: string,
   extension: string = 'd.ts',
 ) {
-  const api = await Dedot.new(endpoint);
+  const api = await Dedot.new(new WsProvider(endpoint));
   const { methods }: RpcMethods = await api.rpc.rpc_methods();
   const apis = api.runtimeVersion.apis || {};
   if (!chain) {

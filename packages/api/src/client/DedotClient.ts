@@ -1,4 +1,5 @@
 import { $H256, BlockHash } from '@dedot/codecs';
+import type { JsonRpcProvider } from '@dedot/providers';
 import { u32 } from '@dedot/shape';
 import { RpcV2, VersionedGenericSubstrateApi } from '@dedot/types';
 import { assert, concatU8a, HexString, noop, twox64Concat, u8aToHex, xxhashAsU8a } from '@dedot/utils';
@@ -6,7 +7,7 @@ import type { SubstrateApi } from '../chaintypes/index.js';
 import { RuntimeApiExecutorV2, StorageQueryExecutorV2, TxExecutorV2 } from '../executor/index.js';
 import { ChainHead, ChainSpec, PinnedBlock, Transaction, TransactionWatch } from '../json-rpc/index.js';
 import { newProxyChain } from '../proxychain.js';
-import type { ApiOptions, NetworkEndpoint, TxBroadcaster } from '../types.js';
+import type { ApiOptions, TxBroadcaster } from '../types.js';
 import { BaseSubstrateClient, ensurePresence } from './BaseSubstrateClient.js';
 
 /**
@@ -27,7 +28,7 @@ export class DedotClient<
    *
    * @param options
    */
-  constructor(options: ApiOptions | NetworkEndpoint) {
+  constructor(options: ApiOptions | JsonRpcProvider) {
     super('v2', options);
   }
 
@@ -37,7 +38,7 @@ export class DedotClient<
    * @param options
    */
   static async create<ChainApi extends VersionedGenericSubstrateApi = SubstrateApi>(
-    options: ApiOptions | NetworkEndpoint,
+    options: ApiOptions | JsonRpcProvider,
   ): Promise<DedotClient<ChainApi>> {
     return new DedotClient<ChainApi>(options).connect();
   }
@@ -48,7 +49,7 @@ export class DedotClient<
    * @param options
    */
   static async new<ChainApi extends VersionedGenericSubstrateApi = SubstrateApi>(
-    options: ApiOptions | NetworkEndpoint,
+    options: ApiOptions | JsonRpcProvider,
   ): Promise<DedotClient<ChainApi>> {
     return DedotClient.create(options);
   }
