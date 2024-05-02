@@ -225,7 +225,7 @@ export class WsProvider extends SubscriptionProvider {
 
     this._setStatus('disconnected');
 
-    // attempt to reconnect if the connection was closed manually (via .disconnect())
+    // attempt to reconnect if the connection was not closed manually (via .disconnect())
     const normalClosure = event.code === 1000;
     if (!normalClosure) {
       console.error(error.message);
