@@ -1,5 +1,5 @@
 import { $Metadata, BlockHash, Hash, Metadata, PortableRegistry } from '@dedot/codecs';
-import { JsonRpcProvider } from '@dedot/providers';
+import type { JsonRpcProvider } from '@dedot/providers';
 import { type IStorage, LocalStorage } from '@dedot/storage';
 import { GenericSubstrateApi, RpcVersion, VersionedGenericSubstrateApi } from '@dedot/types';
 import { calcRuntimeApiHash, ensurePresence as _ensurePresence, u8aToHex } from '@dedot/utils';
