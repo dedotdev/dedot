@@ -1,9 +1,9 @@
-import { ContractMetadata, GenericContractApi } from '@dedot/contracts';
 import { GenericSubstrateApi } from '@dedot/types';
 import { Dedot, Hash, isWasm } from 'dedot';
-import { newProxyChain } from './Contract.js';
+import { newProxyChain, ensureSupportContractsPallet } from './Contract.js';
 import { TypinkRegistry } from './TypinkRegistry.js';
 import { ConstructorExecutor } from './executor/index.js';
+import { ContractMetadata, GenericContractApi } from './types/index.js';
 import { parseRawMetadata } from './utils.js';
 
 export class ContractDeployer<ContractApi extends GenericContractApi, ChainApi extends GenericSubstrateApi> {
@@ -13,6 +13,8 @@ export class ContractDeployer<ContractApi extends GenericContractApi, ChainApi e
   #code?: Hash | Uint8Array | string;
 
   constructor(api: Dedot<ChainApi>, metadata: ContractMetadata | string) {
+    ensureSupportContractsPallet(api);
+
     this.#api = api;
     this.#metadata = typeof metadata === 'string' ? parseRawMetadata(metadata) : metadata;
     this.#registry = new TypinkRegistry(this.#metadata);

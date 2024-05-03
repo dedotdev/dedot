@@ -13,6 +13,8 @@ export class Contract<ContractApi extends GenericContractApi, ChainApi extends G
   readonly #metadata: ContractMetadata;
 
   constructor(api: Dedot<ChainApi>, address: AccountId32 | string, metadata: ContractMetadata | string) {
+    ensureSupportContractsPallet(api);
+
     this.#api = api;
     this.#address = new AccountId32(address);
     this.#metadata = typeof metadata === 'string' ? parseRawMetadata(metadata) : metadata;
@@ -46,4 +48,12 @@ export function newProxyChain<ChainApi extends GenericSubstrateApi>(carrier: Exe
       return target.doExecute(property.toString());
     },
   });
+}
+
+export function ensureSupportContractsPallet<ChainApi extends GenericSubstrateApi>(api: Dedot<ChainApi>) {
+  try {
+    api.call.contractsApi.call.meta && api.tx.contracts.call.meta;
+  } catch (e) {
+    throw new Error('This api does not support contracts pallet');
+  }
 }
