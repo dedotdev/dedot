@@ -1,4 +1,4 @@
-import { ContractOptions } from '@dedot/contracts';
+import { ContractMessage, ContractOptions } from '@dedot/contracts';
 import { GenericSubstrateApi } from '@dedot/types';
 import { assert, concatU8a, hexToU8a, stringCamelCase, u8aToHex } from '@dedot/utils';
 import { Executor } from './Executor.js';
@@ -32,7 +32,7 @@ export class TxExecutor<ChainApi extends GenericSubstrateApi> extends Executor<C
     return callFn;
   }
 
-  #findTxMessage(message: string) {
-    return this.contractMetadata.spec.messages.find((one) => one.mutates && stringCamelCase(one.label) === message);
+  #findTxMessage(message: string): ContractMessage | undefined {
+    return this.metadata.spec.messages.find((one) => one.mutates && stringCamelCase(one.label) === message);
   }
 }

@@ -42,7 +42,7 @@ export class TxGen extends QueryGen {
     return beautifySourceCode(template({ importTypes, txCallsOut }));
   }
 
-  #generateMethodDef(def: ContractMessage) {
+  #generateMethodDef(def: ContractMessage): string {
     const { args, returnType } = def;
 
     args.forEach(({ type: { type } }) => this.importType(type));

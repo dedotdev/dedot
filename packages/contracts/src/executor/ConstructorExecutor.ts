@@ -40,6 +40,6 @@ export class ConstructorExecutor<ChainApi extends GenericSubstrateApi> extends E
   }
 
   #findConstructorMeta(constructor: string): ContractConstructor | undefined {
-    return this.contractMetadata.spec.constructors.find((one) => stringCamelCase(one.label) === constructor);
+    return this.metadata.spec.constructors.find((one) => stringCamelCase(one.label) === constructor);
   }
 }

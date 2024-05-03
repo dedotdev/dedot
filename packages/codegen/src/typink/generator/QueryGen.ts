@@ -47,7 +47,7 @@ export class QueryGen {
     return beautifySourceCode(template({ importTypes, queryCallsOut }));
   }
 
-  #generateMethodDef(def: ContractMessage) {
+  #generateMethodDef(def: ContractMessage): string {
     const { args, returnType } = def;
 
     this.importType(returnType.type);

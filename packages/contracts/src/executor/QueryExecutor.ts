@@ -12,15 +12,8 @@ export class QueryExecutor<ChainApi extends GenericSubstrateApi> extends Executo
     const callFn: GenericContractQueryCall = async (...params: any) => {
       const { args } = messageMeta;
 
-      let caller = this.address;
-      let contractOptions: ContractOptions = {} as ContractOptions;
-      for (let i = args.length; i < params.length; i += 1) {
-        if (i === args.length) {
-          caller = params[i];
-        } else if (i === args.length + 1) {
-          contractOptions = params[i];
-        }
-      }
+      let caller = params[args.length] || this.address;
+      let contractOptions: ContractOptions = (params[args.length + 1] || {}) as ContractOptions;
 
       const formattedInputs = args.map((arg, index) => this.tryEncode(arg, params[index]));
       const bytes = u8aToHex(concatU8a(hexToU8a(messageMeta.selector), ...formattedInputs));
@@ -34,10 +27,14 @@ export class QueryExecutor<ChainApi extends GenericSubstrateApi> extends Executo
         bytes,
       );
 
-      assert('value' in contractResult.result, 'There was a error!');
+      if (contractResult.result.value) {
+        return {
+          data: this.tryDecode(messageMeta, contractResult.result.value.data),
+          result: contractResult,
+        };
+      }
 
       return {
-        data: this.tryDecode(messageMeta, contractResult.result.value.data),
         result: contractResult,
       };
     };
@@ -48,6 +45,6 @@ export class QueryExecutor<ChainApi extends GenericSubstrateApi> extends Executo
   }
 
   #findMessage(message: string): ContractMessage | undefined {
-    return this.contractMetadata.spec.messages.find((one) => stringCamelCase(one.label) === message);
+    return this.metadata.spec.messages.find((one) => stringCamelCase(one.label) === message);
   }
 }

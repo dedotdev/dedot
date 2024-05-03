@@ -20,45 +20,45 @@ export const normalizeContractTypeDef = (def: Def) => {
   let tag: string;
   let value: any;
 
-  if ('variant' in def) {
+  if (def.variant) {
     tag = 'Enum';
     value = {
       members:
-        def.variant?.variants?.map((variant) => ({
+        def.variant.variants?.map((variant) => ({
           fields: variant.fields?.map((fields) => ({ typeId: fields.type })) || [],
           index: variant.index,
           name: variant.name,
         })) || [],
     };
-  } else if ('tuple' in def) {
+  } else if (def.tuple) {
     tag = 'Tuple';
     value = {
       fields: def.tuple,
     };
-  } else if ('sequence' in def) {
+  } else if (def.sequence) {
     tag = 'Sequence';
     value = {
-      typeParam: def.sequence?.type,
+      typeParam: def.sequence.type,
     };
-  } else if ('composite' in def) {
+  } else if (def.composite) {
     tag = 'Struct';
     value = {
-      fields: def.composite?.fields.map((one) => ({
+      fields: def.composite.fields.map((one) => ({
         typeId: one.type,
         name: one.name,
         typeName: one.typeName,
       })),
     };
-  } else if ('primitive' in def) {
+  } else if (def.primitive) {
     tag = 'Primitive';
     value = {
       kind: def.primitive,
     };
-  } else if ('array' in def) {
+  } else if (def.array) {
     tag = 'SizedVec';
     value = {
-      len: def.array?.len,
-      typeParam: def.array?.type,
+      len: def.array.len,
+      typeParam: def.array.type,
     };
   } else {
     throw Error('Invalid contract type def');

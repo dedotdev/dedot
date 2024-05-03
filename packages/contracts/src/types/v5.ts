@@ -1,12 +1,5 @@
-import {
-  ContractConstructor,
-  ContractInformation,
-  ContractMessage,
-  ContractSource,
-  ContractStorage,
-  ContractType,
-  ContractTypeInfo,
-} from './shared.js';
+import { ContractInformation, ContractSource, ContractStorage, ContractType } from './shared.js';
+import { ContractEnvironmentV4, ContractEventV4, ContractSpecV4 } from './v4';
 
 export interface ContractMetadataV5 {
   source: ContractSource;
@@ -17,30 +10,16 @@ export interface ContractMetadataV5 {
   version: '5';
 }
 
-export interface ContractSpecV5 {
-  constructors: ContractConstructor[];
-  docs: string[];
+export interface ContractSpecV5 extends ContractSpecV4 {
   environment: ContractEnvironmentV5;
   events: ContractEventV5[];
-  langError: ContractTypeInfo;
-  messages: ContractMessage[];
 }
 
-export interface ContractEventV5 {
-  args: unknown[];
-  docs: string[];
-  label: string[];
+export interface ContractEventV5 extends ContractEventV4 {
   module_path: string;
   signature_topic: string;
 }
 
-export interface ContractEnvironmentV5 {
-  accountId: ContractTypeInfo;
-  balance: ContractTypeInfo;
-  blockNumber: ContractTypeInfo;
-  chainExtension: ContractTypeInfo;
-  hash: ContractTypeInfo;
-  maxEventTopics: number;
+export interface ContractEnvironmentV5 extends ContractEnvironmentV4 {
   staticBufferSize: number;
-  timestamp: ContractTypeInfo;
 }

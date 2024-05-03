@@ -22,17 +22,15 @@ export abstract class Executor<ChainApi extends GenericSubstrateApi> {
     return this.#api;
   }
 
-  get contractMetadata(): ContractMetadata {
+  get metadata(): ContractMetadata {
     return this.#registry.metadata;
   }
 
   get address(): AccountId32 | undefined {
-    if (this.#address) {
-      return this.#address;
-    }
+    return this.#address;
   }
 
-  get registry() {
+  get registry(): TypinkRegistry {
     return this.#registry;
   }
 

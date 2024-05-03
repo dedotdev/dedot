@@ -12,6 +12,8 @@ export type ContractResult<ChainApi extends GenericSubstrateApi> = Awaited<
   ReturnType<ChainApi['call']['contractsApi']['call']>
 >;
 
+// Now we are using this one for api.tx.contract.instantiate, api.tx.contract.instantiateWithCode and api.tx.contract.call
+// TODO: Write types for api.tx.contract.instantiate and api.tx.contract.instantiateWithCode
 export type ChainSubmittableExtrinsic<ChainApi extends GenericSubstrateApi> = ReturnType<
   ChainApi['tx']['contracts']['call']
 >;
@@ -27,7 +29,7 @@ export type ContractOptions = {
 };
 
 export interface GenericContractResult<DecodedData, ContractResult> {
-  data: DecodedData;
+  data?: DecodedData;
   result: ContractResult;
 }
 
