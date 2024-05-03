@@ -37,7 +37,7 @@ export class SubmittableExtrinsicV2 extends BaseSubmittableExtrinsic {
     const validateResult = await api.call.taggedTransactionQueue.validateTransaction(
       'External',
       txHex,
-      api.chainHead.bestHash,
+      await api.chainHead.bestHash(),
     );
 
     if (validateResult.isOk) {
