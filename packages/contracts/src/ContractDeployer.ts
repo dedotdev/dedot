@@ -1,10 +1,10 @@
 import { ContractMetadata, GenericContractApi } from '@dedot/contracts';
 import { GenericSubstrateApi } from '@dedot/types';
 import { Dedot, Hash, isWasm } from 'dedot';
-import { TypinkRegistry } from '../TypinkRegistry';
-import { parseRawMetadata } from '../utils';
-import { ConstructorExecutor } from './ConstructorExecutor';
 import { newProxyChain } from './Contract';
+import { TypinkRegistry } from './TypinkRegistry';
+import { ConstructorExecutor } from './executor/index.js';
+import { parseRawMetadata } from './utils';
 
 export class ContractDeployer<ContractApi extends GenericContractApi, ChainApi extends GenericSubstrateApi> {
   readonly #api: Dedot<ChainApi>;
@@ -45,6 +45,14 @@ export class ContractDeployer<ContractApi extends GenericContractApi, ChainApi e
     const codeInfo = await this.#api.query.contracts.codeInfoOf(code);
 
     return !!codeInfo;
+  }
+
+  get metadata(): ContractMetadata {
+    return this.#metadata;
+  }
+
+  get registry(): TypinkRegistry {
+    return this.#registry;
   }
 
   get tx(): ContractApi['constructor'] {

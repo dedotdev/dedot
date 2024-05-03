@@ -409,7 +409,6 @@ __metadata:
     "@dedot/codecs": "workspace:*"
     "@dedot/types": "workspace:*"
     "@dedot/utils": "workspace:*"
-    "@polkadot/keyring": "npm:^12.6.2"
     dedot: "workspace:*"
   languageName: unknown
   linkType: soft

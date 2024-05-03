@@ -4,7 +4,7 @@ import { GenericSubstrateApi } from '@dedot/types';
 import { assert, concatU8a, hexToU8a, isWasm, stringCamelCase, u8aToHex } from '@dedot/utils';
 import { Dedot } from 'dedot';
 import { TypinkRegistry } from '../TypinkRegistry';
-import Executor from './Executor';
+import { Executor } from './Executor';
 
 export class ConstructorExecutor<ChainApi extends GenericSubstrateApi> extends Executor<ChainApi> {
   readonly #code: Hash | Uint8Array | string;

@@ -5,7 +5,7 @@ import { Dedot } from 'dedot';
 import { TypinkRegistry } from '../TypinkRegistry';
 import { ContractMetadata } from '../types';
 
-export default abstract class Executor<ChainApi extends GenericSubstrateApi> {
+export abstract class Executor<ChainApi extends GenericSubstrateApi> {
   readonly #api: Dedot<ChainApi>;
   readonly #registry: TypinkRegistry;
   readonly #address?: AccountId32;

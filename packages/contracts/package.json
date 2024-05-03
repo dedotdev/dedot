@@ -14,7 +14,6 @@
     "@dedot/codecs": "workspace:*",
     "@dedot/types": "workspace:*",
     "@dedot/utils": "workspace:*",
-    "@polkadot/keyring": "^12.6.2",
     "dedot": "workspace:*"
   },
   "publishConfig": {
