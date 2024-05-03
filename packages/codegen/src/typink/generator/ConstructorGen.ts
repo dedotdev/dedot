@@ -1,8 +1,8 @@
 import { ContractConstructor, ContractMetadata } from '@dedot/contracts';
 import { stringCamelCase } from '@dedot/utils';
-import { beautifySourceCode, commentBlock, compileTemplate } from '../../utils';
-import { QueryGen } from './QueryGen';
-import { TypeGen } from './TypeGen';
+import { beautifySourceCode, commentBlock, compileTemplate } from '../../utils.js';
+import { QueryGen } from './QueryGen.js';
+import { TypeGen } from './TypeGen.js';
 
 export class ConstructorGen extends QueryGen {
   constructor(contractMetadata: ContractMetadata, typeGen: TypeGen) {

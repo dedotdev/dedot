@@ -1,10 +1,10 @@
 import { ContractMetadata, GenericContractApi } from '@dedot/contracts';
 import { GenericSubstrateApi } from '@dedot/types';
 import { Dedot, Hash, isWasm } from 'dedot';
-import { newProxyChain } from './Contract';
-import { TypinkRegistry } from './TypinkRegistry';
+import { newProxyChain } from './Contract.js';
+import { TypinkRegistry } from './TypinkRegistry.js';
 import { ConstructorExecutor } from './executor/index.js';
-import { parseRawMetadata } from './utils';
+import { parseRawMetadata } from './utils.js';
 
 export class ContractDeployer<ContractApi extends GenericContractApi, ChainApi extends GenericSubstrateApi> {
   readonly #api: Dedot<ChainApi>;

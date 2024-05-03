@@ -1,10 +1,10 @@
 import { Field, TypeId, TypeParam } from '@dedot/codecs';
 import { ContractMetadata, extractContractTypes, normalizeContractTypeDef } from '@dedot/contracts';
 import { assert, normalizeName, stringPascalCase } from '@dedot/utils';
-import { findKnownCodec, findKnownCodecType, isKnownCodecType } from '../../chaintypes/generator';
-import { BASIC_KNOWN_TYPES, NamedType } from '../../chaintypes/generator';
-import { beautifySourceCode, compileTemplate, isNativeType, WRAPPER_TYPE_REGEX } from '../../utils';
-import { TypeImports } from './TypeImports';
+import { findKnownCodec, findKnownCodecType, isKnownCodecType } from '../../chaintypes/generator/index.js';
+import { BASIC_KNOWN_TYPES, NamedType } from '../../chaintypes/generator/index.js';
+import { beautifySourceCode, compileTemplate, isNativeType, WRAPPER_TYPE_REGEX } from '../../utils.js';
+import { TypeImports } from './TypeImports.js';
 
 const IGNORE_TYPES = ['Result', 'Option'];
 

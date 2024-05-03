@@ -2,8 +2,8 @@ import { AccountId32 } from '@dedot/codecs';
 import { Arg, ContractMessage } from '@dedot/contracts';
 import { GenericSubstrateApi } from '@dedot/types';
 import { Dedot } from 'dedot';
-import { TypinkRegistry } from '../TypinkRegistry';
-import { ContractMetadata } from '../types';
+import { TypinkRegistry } from '../TypinkRegistry.js';
+import { ContractMetadata } from '../types/index.js';
 
 export abstract class Executor<ChainApi extends GenericSubstrateApi> {
   readonly #api: Dedot<ChainApi>;

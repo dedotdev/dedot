@@ -1,7 +1,7 @@
 import { normalizeContractTypeDef, ContractMessage, ContractMetadata } from '@dedot/contracts';
 import { stringCamelCase } from '@dedot/utils';
-import { beautifySourceCode, commentBlock, compileTemplate } from '../../utils';
-import { TypeGen } from './TypeGen';
+import { beautifySourceCode, commentBlock, compileTemplate } from '../../utils.js';
+import { TypeGen } from './TypeGen.js';
 
 export class QueryGen {
   contractMetadata: ContractMetadata;

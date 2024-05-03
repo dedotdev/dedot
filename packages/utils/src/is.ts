@@ -1,6 +1,6 @@
-import { hexToU8a } from './hex';
+import { hexToU8a } from './hex.js';
 import { HexString } from './types.js';
-import { u8aEq } from './u8a';
+import { u8aEq } from './u8a.js';
 
 export function isNull(input: unknown): input is null {
   return input === null;

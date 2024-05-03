@@ -1,6 +1,6 @@
 import { ContractMetadata } from '@dedot/contracts';
 import { stringPascalCase } from '@dedot/utils';
-import { beautifySourceCode, compileTemplate } from '../../utils';
+import { beautifySourceCode, compileTemplate } from '../../utils.js';
 
 export class IndexGen {
   contractMetadata: ContractMetadata;
