@@ -147,7 +147,7 @@ export class ChainHead extends JsonRpcGroup<ChainHeadEvent> {
           {} as Record<BlockHash, PinnedBlock>,
         );
 
-        const header = $Header.tryDecode(await this.#doHeader(finalizedBlockHashes[0]));
+        const header = $Header.tryDecode(await this.#getHeader(finalizedBlockHashes[0]));
         Object.values(this.#pinnedBlocks).forEach((b, idx) => {
           b.number += header.number;
           if (idx === 0) {
@@ -224,43 +224,47 @@ export class ChainHead extends JsonRpcGroup<ChainHeadEvent> {
         break;
       }
       case 'stop': {
-        // What to do?
-        // 1. Set the status to -> recovering
-        // 2. Any requests coming to the chainHead should be put in a queue OR waiting
+        // 1. First thing, set up the #recovering promise
+        // So any requests/operations coming to the chainHead should be put on waiting
+        // for the #recovering promise to resolve
         this.#recovering = deferred<void>();
         this.#subscriptionId = undefined;
 
-        // 3. Gather the information all the pending operations
-        // - Operations that's going on & waiting to receiving its operationId
-        // - Operations that's already received an operationId, is waiting for its data
-        // 4. Re-follow the chainHead & set the status to -> followed
-        // 5. Retry all the pending operations, reject if the operation is with a pruned block
-
+        // 2. Attempt to re-follow the chainHead
         this.#doFollow()
           .then(() => {
-            // 6. Fire all pending requests while the chainHead is recovering
+            // 3. Resolve the recovering promise
+            // This means to continue all pending requests while the chainHead started recovering mode at step 1.
             this.#recovering!.resolve();
 
+            // 4. Recover stale operations
+            // 4.1. Operations that's going on & waiting to receiving its operationId
+            //     will eventually get an `limitedReached` error for using a stale followSubscriptionId
+            //     these operation will automatically be recovered via the #retryQueue
+            //     after the chaiHead is re-followed & the #recovering promise is resolved
+            // 4.2. Operations that's already received an operationId, is waiting for its response
+            //     will not receive any data, we'll throw a ChainHeadStopError to trigger retrying via the #retryQueue
             Object.values(this.#handlers).forEach(({ defer, operationId }) => {
               defer.reject(new ChainHeadStopError('ChainHead subscription stopped!'));
               delete this.#handlers[operationId];
             });
           })
           .catch((e: any) => {
+            console.error(e);
             // TODO we should retry a few attempts
-            this.#recovering!.reject(e);
+            this.#recovering!.reject(new ChainHeadError('Cannot recover from stop event!'));
 
             Object.values(this.#handlers).forEach(({ defer, operationId }) => {
-              defer.reject(new ChainHeadError('ChainHead subscription stopped!'));
+              defer.reject(new ChainHeadError('Cannot recover from stop event!'));
               delete this.#handlers[operationId];
             });
           })
           .finally(() => {
+            // cleaning up
             waitFor().then(() => {
               this.#recovering = undefined;
             });
           });
-
         break;
       }
       case 'operationBodyDone': {
@@ -520,10 +524,10 @@ export class ChainHead extends JsonRpcGroup<ChainHeadEvent> {
   async header(at?: BlockHash): Promise<Option<HexString>> {
     await this.#ensureFollowed();
 
-    return this.#doHeader(this.#ensurePinnedHash(at));
+    return this.#getHeader(this.#ensurePinnedHash(at));
   }
 
-  async #doHeader(at: BlockHash): Promise<Option<HexString>> {
+  async #getHeader(at: BlockHash): Promise<Option<HexString>> {
     return await this.send('header', this.#subscriptionId, at);
   }
 
