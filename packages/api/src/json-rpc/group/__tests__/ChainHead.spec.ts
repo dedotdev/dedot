@@ -97,7 +97,6 @@ describe('ChainHead', () => {
       await expect(chainHead.body()).rejects.toThrow(MSG_CALL_FOLLOW_FIRST);
       await expect(chainHead.header()).rejects.toThrow(MSG_CALL_FOLLOW_FIRST);
       await expect(chainHead.storage([])).rejects.toThrow(MSG_CALL_FOLLOW_FIRST);
-      await expect(chainHead.unpin('0x01')).rejects.toThrow(MSG_CALL_FOLLOW_FIRST);
     });
   });
 
@@ -793,14 +792,6 @@ describe('ChainHead', () => {
           simulator.subscriptionId,
           await chainHead.bestHash(),
         ]);
-      });
-
-      it('calls unpin', async () => {
-        await chainHead.unpin('0x01');
-        await chainHead.unpin(['0x01', '0x02']);
-
-        expect(providerSend).toHaveBeenCalledWith('chainHead_v1_unpin', [simulator.subscriptionId, '0x01']);
-        expect(providerSend).toHaveBeenCalledWith('chainHead_v1_unpin', [simulator.subscriptionId, ['0x01', '0x02']]);
       });
     });
   });

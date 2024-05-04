@@ -577,6 +577,7 @@ export class ChainHead extends JsonRpcGroup<ChainHeadEvent> {
 
   /**
    * chainHead_stopOperation
+   * @protected
    */
   protected async stopOperation(operationId: OperationId): Promise<void> {
     await this.#ensureFollowed();
@@ -586,6 +587,7 @@ export class ChainHead extends JsonRpcGroup<ChainHeadEvent> {
 
   /**
    * chainHead_continue
+   * @protected
    */
   protected async continue(operationId: OperationId): Promise<void> {
     await this.#ensureFollowed();
@@ -595,6 +597,7 @@ export class ChainHead extends JsonRpcGroup<ChainHeadEvent> {
 
   /**
    * chainHead_unpin
+   * @protected
    */
   protected async unpin(hashes: BlockHash | BlockHash[]): Promise<void> {
     await this.#ensureFollowed();
