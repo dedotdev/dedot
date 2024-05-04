@@ -110,7 +110,8 @@ export class ChainHead extends JsonRpcGroup<ChainHeadEvent> {
     const defer = deferred<void>();
 
     try {
-      // TODO handle when a connection (Ws) is reconnect & this subscription is reinitialized, handle this similar to a StopEvent
+      this.#unsub && this.#unsub().catch(noop); // ensure unfollowed
+
       this.#unsub = await this.send('follow', true, (event: FollowEvent, subscription: Subscription) => {
         this.#followResponseQueue.enqueue(async () => {
           await this.#onFollowEvent(event, subscription);
@@ -228,7 +229,6 @@ export class ChainHead extends JsonRpcGroup<ChainHeadEvent> {
         // So any requests/operations coming to the chainHead should be put on waiting
         // for the #recovering promise to resolve
         this.#recovering = deferred<void>();
-        this.#subscriptionId = undefined;
 
         // 2. Attempt to re-follow the chainHead
         this.#doFollow()
@@ -241,7 +241,7 @@ export class ChainHead extends JsonRpcGroup<ChainHeadEvent> {
             // 4.1. Operations that's going on & waiting to receiving its operationId
             //     will eventually get an `limitedReached` error for using a stale followSubscriptionId
             //     these operation will automatically be recovered via the #retryQueue
-            //     after the chaiHead is re-followed & the #recovering promise is resolved
+            //     after the chainHead is re-followed & the #recovering promise is resolved
             // 4.2. Operations that's already received an operationId, is waiting for its response
             //     will not receive any data, we'll throw a ChainHeadStopError to trigger retrying via the #retryQueue
             Object.values(this.#handlers).forEach(({ defer, operationId }) => {
@@ -387,11 +387,6 @@ export class ChainHead extends JsonRpcGroup<ChainHeadEvent> {
     this.#cleanUp();
   }
 
-  async simulateStopEvent() {
-    this.#unsub && (await this.#unsub());
-    await this.#onFollowEvent({ event: 'stop' });
-  }
-
   #cleanUp() {
     this.off('newBlock');
     this.off('bestBlock');
@@ -488,12 +483,12 @@ export class ChainHead extends JsonRpcGroup<ChainHeadEvent> {
    */
   async body(at?: BlockHash): Promise<Array<HexString>> {
     await this.#ensureFollowed();
-
     const atHash = this.#ensurePinnedHash(at);
 
     const operation = async (): Promise<Array<HexString>> => {
       await this.#ensureFollowed();
       const hash = this.#ensurePinnedHash(atHash);
+
       const resp: MethodResponse = await this.send('body', this.#subscriptionId, hash);
       return this.#awaitOperation(resp, hash);
     };
@@ -506,11 +501,12 @@ export class ChainHead extends JsonRpcGroup<ChainHeadEvent> {
    */
   async call(func: string, params: HexString = '0x', at?: BlockHash): Promise<HexString> {
     await this.#ensureFollowed();
-
     const atHash = this.#ensurePinnedHash(at);
+
     const operation = async (): Promise<HexString> => {
       await this.#ensureFollowed();
       const hash = this.#ensurePinnedHash(atHash);
+
       const resp: MethodResponse = await this.send('call', this.#subscriptionId, hash, func, params);
       return this.#awaitOperation(resp, hash);
     };
@@ -600,7 +596,7 @@ export class ChainHead extends JsonRpcGroup<ChainHeadEvent> {
   /**
    * chainHead_unpin
    */
-  async unpin(hashes: BlockHash | BlockHash[]): Promise<void> {
+  protected async unpin(hashes: BlockHash | BlockHash[]): Promise<void> {
     await this.#ensureFollowed();
 
     if (Array.isArray(hashes) && hashes.length === 0) return;
