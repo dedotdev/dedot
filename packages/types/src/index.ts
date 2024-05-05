@@ -75,12 +75,13 @@ export type GenericStorageQuery<
     : Rv extends RpcLegacy
       ? {
           multi: StorageMultiQueryMethod<T>;
-          keys: (pagination?: PaginationOptions) => Promise<KeyTypeOut[]>;
-          entries: (pagination?: PaginationOptions) => Promise<Array<[KeyTypeOut, NonNullable<ReturnType<T>>]>>;
+          pagedKeys: (pagination?: PaginationOptions) => Promise<KeyTypeOut[]>;
+          pagedEntries: (pagination?: PaginationOptions) => Promise<Array<[KeyTypeOut, NonNullable<ReturnType<T>>]>>;
         }
       : {
           multi: StorageMultiQueryMethod<T>;
           entries: () => Promise<Array<[KeyTypeOut, NonNullable<ReturnType<T>>]>>;
+          // TODO support pagedKeys, pagedEntries via archive-prefix apis
         });
 
 export type GenericRuntimeApiMethod<_ extends RpcVersion = RpcVersion, F extends AsyncMethod = AsyncMethod> = F & {

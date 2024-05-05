@@ -71,16 +71,16 @@ describe('Dedot', () => {
               // @ts-ignore
               expect(api.query[stringCamelCase(pallet.name)][stringCamelCase(entry.name)].multi).toBeDefined();
               // @ts-ignore
-              expect(api.query[stringCamelCase(pallet.name)][stringCamelCase(entry.name)].keys).toBeDefined();
+              expect(api.query[stringCamelCase(pallet.name)][stringCamelCase(entry.name)].pagedKeys).toBeDefined();
               // @ts-ignore
-              expect(api.query[stringCamelCase(pallet.name)][stringCamelCase(entry.name)].entries).toBeDefined();
+              expect(api.query[stringCamelCase(pallet.name)][stringCamelCase(entry.name)].pagedEntries).toBeDefined();
             } else {
               // @ts-ignore
               expect(api.query[stringCamelCase(pallet.name)][stringCamelCase(entry.name)].multi).toBeUndefined();
               // @ts-ignore
-              expect(api.query[stringCamelCase(pallet.name)][stringCamelCase(entry.name)].keys).toBeUndefined();
+              expect(api.query[stringCamelCase(pallet.name)][stringCamelCase(entry.name)].pagedKeys).toBeUndefined();
               // @ts-ignore
-              expect(api.query[stringCamelCase(pallet.name)][stringCamelCase(entry.name)].entries).toBeUndefined();
+              expect(api.query[stringCamelCase(pallet.name)][stringCamelCase(entry.name)].pagedEntries).toBeUndefined();
             }
           });
         });

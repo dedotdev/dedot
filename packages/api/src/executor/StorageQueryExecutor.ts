@@ -109,18 +109,18 @@ export class StorageQueryExecutor<
       return await this.api.rpc.state_getKeysPaged(entry.prefixKey, pageSize, startKey, this.atBlockHash);
     };
 
-    const keys = async (pagination?: PaginationOptions): Promise<any[]> => {
+    const pagedKeys = async (pagination?: PaginationOptions): Promise<any[]> => {
       const storageKeys = await rawKeys({ pageSize: DEFAULT_KEYS_PAGE_SIZE, ...pagination });
       return storageKeys.map((key) => entry.decodeKey(key));
     };
 
-    const entries = async (pagination?: PaginationOptions): Promise<Array<[any, any]>> => {
+    const pagedEntries = async (pagination?: PaginationOptions): Promise<Array<[any, any]>> => {
       const storageKeys = await rawKeys({ pageSize: DEFAULT_ENTRIES_PAGE_SIZE, ...pagination });
       const storageMap = await this.queryStorage(storageKeys, this.atBlockHash);
       return storageKeys.map((key) => [entry.decodeKey(key), entry.decodeValue(storageMap[key])]);
     };
 
-    return { keys, entries };
+    return { pagedKeys, pagedEntries };
   }
 
   protected async queryStorage(keys: StorageKey[], hash?: BlockHash): Promise<Record<StorageKey, Option<StorageData>>> {

@@ -24,9 +24,6 @@ export const run = async (nodeName: any, networkInfo: any) => {
     })();
   });
 
-  // @ts-ignore .keys() is not available in the new API
-  assert(api.query.system.account['keys'] === undefined, 'Method keys should not be available');
-
   // Check storage map entries
   const accounts = await api.query.system.account.entries();
   const addressToFreeBalance = accounts.reduce(
