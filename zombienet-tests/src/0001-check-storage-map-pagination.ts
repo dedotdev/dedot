@@ -1,6 +1,11 @@
 import { assert } from '@dedot/utils';
 import { Dedot, WsProvider } from 'dedot';
 
+// @ts-ignore
+BigInt.prototype.toJSON = function () {
+  return this.toString();
+};
+
 export const run = async (nodeName: any, networkInfo: any) => {
   const { wsUri } = networkInfo.nodesByName[nodeName];
 
