@@ -72,7 +72,7 @@ export default class MockProvider extends EventEmitter<ProviderEvent> implements
       throw new Error(`${method} not implemented`);
     }
 
-    return result(params) as T;
+    return (await result(params)) as T;
   }
 
   async subscribe<T = any>(input: SubscriptionInput, callback: SubscriptionCallback<T>): Promise<Subscription> {

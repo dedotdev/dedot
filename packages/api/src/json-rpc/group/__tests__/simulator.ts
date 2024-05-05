@@ -1,4 +1,4 @@
-import { BestBlockChanged, ChainHeadRuntimeVersion, Finalized, NewBlock } from '@dedot/specs';
+import { BestBlockChanged, ChainHeadRuntimeVersion, Finalized, Initialized, NewBlock } from '@dedot/specs';
 import { HexString, isNumber, numberToHex, stringToHex } from '@dedot/utils';
 import { SubstrateRuntimeVersion } from 'dedot';
 import MockProvider, { MockedRuntimeVersion } from 'dedot/client/__tests__/MockProvider';
@@ -104,7 +104,7 @@ export const newChainHeadSimulator = ({ numOfFinalizedBlocks = 15, provider, ini
     }
   };
 
-  const initializedEvent = {
+  const initializedEvent: Initialized = {
     event: 'initialized',
     finalizedBlockHashes: [...Array(numOfFinalizedBlocks)].map(() => newBlock().hash),
     finalizedBlockRuntime: { type: 'valid', spec: runtime },
@@ -180,6 +180,42 @@ export const newChainHeadSimulator = ({ numOfFinalizedBlocks = 15, provider, ini
     return data;
   };
 
+  let stopCounter = 0;
+  const stop = (
+    updateInitialized = false,
+    after?: number,
+  ): { newSubscriptionId: HexString; initializedEvent: Initialized } => {
+    stopCounter += 1;
+    const newSubscriptionId = stringToHex('followSubscription' + stopCounter);
+
+    provider.setRpcRequests({
+      chainHead_v1_follow: () => newSubscriptionId,
+    });
+
+    notify({ event: 'stop' }, after);
+
+    const getInitializedEvent = (): Initialized => {
+      if (updateInitialized) {
+        const finalizedBlockHashes = [...Array(numOfFinalizedBlocks)].map(() => newBlock().hash);
+
+        console.log('finalizedBlockHashes', finalizedBlockHashes);
+
+        return {
+          event: 'initialized',
+          finalizedBlockHashes,
+          finalizedBlockRuntime: { type: 'valid', spec: nextMockedRuntime() },
+        };
+      }
+
+      return initializedEvent;
+    };
+
+    return {
+      newSubscriptionId,
+      initializedEvent: getInitializedEvent(),
+    };
+  };
+
   return {
     subscriptionId,
     runtime,
@@ -189,5 +225,6 @@ export const newChainHeadSimulator = ({ numOfFinalizedBlocks = 15, provider, ini
     nextFinalized,
     notify,
     rpcMethods,
+    stop,
   };
 };
