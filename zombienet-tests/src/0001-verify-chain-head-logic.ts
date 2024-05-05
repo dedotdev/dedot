@@ -24,10 +24,10 @@ export const run = async (nodeName: any, networkInfo: any): Promise<any> => {
   const chainHead = new ChainHead(client);
   await chainHead.follow();
 
-  assert(chainHead.bestHash, 'ChainHead.bestHash is not defined');
-  assert(chainHead.finalizedHash, 'ChainHead.bestHash is not defined');
-  assert(chainHead.runtimeVersion, 'ChainHead.runtimeVersion is not defined');
-  assert(chainHead.bestRuntimeVersion, 'ChainHead.bestRuntimeVersion is not defined');
+  assert(await chainHead.bestHash(), 'ChainHead.bestHash is not defined');
+  assert(await chainHead.finalizedHash(), 'ChainHead.bestHash is not defined');
+  assert(await chainHead.runtimeVersion(), 'ChainHead.runtimeVersion is not defined');
+  assert(await chainHead.bestRuntimeVersion(), 'ChainHead.bestRuntimeVersion is not defined');
 
   // verify chainHead_header
   const rawHeader = await chainHead.header();
@@ -36,8 +36,8 @@ export const run = async (nodeName: any, networkInfo: any): Promise<any> => {
   console.log('chainHead_header verified');
 
   // verify chainHead_call
-  const bestHash = chainHead.bestHash;
-  const bestRuntime = chainHead.bestRuntimeVersion;
+  const bestHash = await chainHead.bestHash();
+  const bestRuntime = await chainHead.bestRuntimeVersion();
   const rawRuntime = await chainHead.call('Core_version', '0x', bestHash);
   const fetchedRuntime = $RuntimeVersion.tryDecode(rawRuntime);
   assert(bestRuntime.specVersion === fetchedRuntime.specVersion, 'Spec version mismatch');
@@ -117,7 +117,7 @@ export const run = async (nodeName: any, networkInfo: any): Promise<any> => {
   await chainHead.unfollow();
 
   try {
-    chainHead.bestHash;
+    await chainHead.bestHash();
     throw new Error('Should not reach here');
   } catch (e: any) {
     assert(

@@ -23,7 +23,9 @@ export class ChainHeadOperationInaccessibleError extends ChainHeadError {
  *
  * Ref: https://paritytech.github.io/json-rpc-interface-spec/api/chainHead_v1_follow.html#stop
  */
-export class ChainHeadStopError extends ChainHeadError {}
+export class ChainHeadStopError extends ChainHeadError {
+  retryStrategy = RetryStrategy.QUEUED;
+}
 
 /**
  * Operation Error

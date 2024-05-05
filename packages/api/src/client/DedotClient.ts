@@ -93,7 +93,7 @@ export class DedotClient<
     ]);
 
     this._genesisHash = genesisHash || (await this.#getGenesisHashFallback());
-    this._runtimeVersion = this.chainHead.bestRuntimeVersion;
+    this._runtimeVersion = await this.chainHead.bestRuntimeVersion();
 
     let metadata;
     if (await this.shouldPreloadMetadata()) {

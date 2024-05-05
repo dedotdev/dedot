@@ -22,3 +22,15 @@ export function normalizeName(ident: string): string {
  * Simply does nothing
  */
 export function noop() {}
+
+/**
+ * Wait for a certain amount of time in milliseconds
+ * @param howLong
+ */
+export function waitFor(howLong?: number): Promise<void> {
+  return new Promise<void>((resolve) => {
+    setTimeout(() => {
+      resolve();
+    }, howLong);
+  });
+}

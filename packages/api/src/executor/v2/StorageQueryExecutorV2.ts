@@ -57,7 +57,7 @@ export class StorageQueryExecutorV2<
   }
 
   protected override async subscribeStorage(keys: HexString[], callback: Callback<Array<StorageData | undefined>>) {
-    let initialHash: BlockHash = this.chainHead.bestHash;
+    let initialHash: BlockHash = await this.chainHead.bestHash();
     let eventToListen: ChainHeadEvent = 'bestBlock';
 
     // TODO subscribe to finalized data source

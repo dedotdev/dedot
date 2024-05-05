@@ -61,7 +61,7 @@ describe('DedotClient', () => {
       it('should create new api instance', async () => {
         expect(providerSend).toBeCalledWith('chainHead_v1_call', [
           simulator.subscriptionId,
-          api.chainHead.bestHash,
+          await api.chainHead.bestHash(),
           'Metadata_metadata_at_version',
           '0x0f000000',
         ]);
@@ -225,7 +225,7 @@ describe('DedotClient', () => {
           await api.call.metadata.metadata();
           expect(providerSend).toBeCalledWith('chainHead_v1_call', [
             simulator.subscriptionId,
-            api.chainHead.bestHash,
+            await api.chainHead.bestHash(),
             'Metadata_metadata',
             '0x',
           ]);
@@ -247,7 +247,7 @@ describe('DedotClient', () => {
           await api.call.metadata.metadataAtVersion(14);
           expect(providerSend).toBeCalledWith('chainHead_v1_call', [
             simulator.subscriptionId,
-            api.chainHead.bestHash,
+            await api.chainHead.bestHash(),
             'Metadata_metadata_at_version',
             '0x0e000000',
           ]); // $.u32.decode(14) = '0x0e000000'
@@ -408,7 +408,7 @@ describe('DedotClient', () => {
         expect($mockCodec.tryDecode).toBeCalled();
         expect(providerSend).toBeCalledWith('chainHead_v1_call', [
           simulator.subscriptionId,
-          api.chainHead.bestHash,
+          await api.chainHead.bestHash(),
           'Metadata_test_method',
           '0x',
         ]);
@@ -430,7 +430,7 @@ describe('DedotClient', () => {
 
         expect(providerSend).not.toBeCalledWith('chainHead_v1_call', [
           simulator.subscriptionId,
-          api.chainHead.bestHash,
+          await api.chainHead.bestHash(),
           'Metadata_metadata_at_version',
           '0x0f000000',
         ]);
@@ -472,7 +472,7 @@ describe('DedotClient', () => {
 
         expect(newProviderSend).not.toBeCalledWith('chainHead_v1_call', [
           simulator.subscriptionId,
-          api.chainHead.bestHash,
+          await api.chainHead.bestHash(),
           'Metadata_metadata_at_version',
           '0x0f000000',
         ]);
@@ -498,7 +498,7 @@ describe('DedotClient', () => {
 
           expect(newProviderSend).not.toBeCalledWith('chainHead_v1_call', [
             newSimulator.subscriptionId,
-            newApi.chainHead.bestHash,
+            await newApi.chainHead.bestHash(),
             'Metadata_metadata_at_version',
             '0x0f000000',
           ]);
@@ -530,7 +530,7 @@ describe('DedotClient', () => {
 
           expect(newProviderSend).toBeCalledWith('chainHead_v1_call', [
             newSimulator.subscriptionId,
-            newApi.chainHead.bestHash,
+            await newApi.chainHead.bestHash(),
             'Metadata_metadata_at_version',
             '0x0f000000',
           ]);
