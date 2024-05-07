@@ -15,8 +15,8 @@ import type {
 } from '@dedot/codecs';
 import type { GenericRuntimeApiMethod, GenericRuntimeApis, RpcVersion } from '@dedot/types';
 import type {
+  FrameSupportTokensFungibleUnionOfNativeOrWithId,
   KitchensinkRuntimeRuntimeCallLike,
-  PalletAssetConversionNativeOrAssetId,
   PalletContractsPrimitivesCode,
   PalletContractsPrimitivesCodeUploadReturnValue,
   PalletContractsPrimitivesContractAccessError,
@@ -30,6 +30,10 @@ import type {
   SpConsensusBabeBabeConfiguration,
   SpConsensusBabeEpoch,
   SpConsensusBabeOpaqueKeyOwnershipProof,
+  SpConsensusBeefyEcdsaCryptoPublic,
+  SpConsensusBeefyEquivocationProof,
+  SpConsensusBeefyOpaqueKeyOwnershipProof,
+  SpConsensusBeefyValidatorSet,
   SpConsensusGrandpaAppPublic,
   SpConsensusGrandpaEquivocationProof,
   SpConsensusGrandpaOpaqueKeyOwnershipProof,
@@ -39,10 +43,14 @@ import type {
   SpCoreOpaqueMetadata,
   SpInherentsCheckInherentsResult,
   SpInherentsInherentData,
+  SpMixnetMixnode,
+  SpMixnetMixnodesErr,
+  SpMixnetSessionStatus,
   SpMmrPrimitivesEncodableOpaqueLeaf,
   SpMmrPrimitivesError,
   SpMmrPrimitivesProof,
   SpRuntimeBlock,
+  SpRuntimeExtrinsicInclusionMode,
   SpRuntimeTransactionValidityTransactionSource,
   SpRuntimeTransactionValidityTransactionValidityError,
   SpRuntimeTransactionValidityValidTransaction,
@@ -74,12 +82,12 @@ export interface RuntimeApis<Rv extends RpcVersion> extends GenericRuntimeApis<R
     executeBlock: GenericRuntimeApiMethod<Rv, (block: SpRuntimeBlock) => Promise<[]>>;
 
     /**
-     * Initialize a block with the given header.
+     * Initialize a block with the given header and return the runtime executive mode.
      *
      * @callname: Core_initialize_block
      * @param {Header} header
      **/
-    initializeBlock: GenericRuntimeApiMethod<Rv, (header: Header) => Promise<[]>>;
+    initializeBlock: GenericRuntimeApiMethod<Rv, (header: Header) => Promise<SpRuntimeExtrinsicInclusionMode>>;
 
     /**
      * Generic runtime api call
@@ -375,6 +383,15 @@ export interface RuntimeApis<Rv extends RpcVersion> extends GenericRuntimeApis<R
      * @param {bigint} balance
      **/
     nominationsQuota: GenericRuntimeApiMethod<Rv, (balance: bigint) => Promise<number>>;
+
+    /**
+     * Returns the page count of exposures for a validator in a given era.
+     *
+     * @callname: StakingApi_eras_stakers_page_count
+     * @param {number} era
+     * @param {AccountId32Like} account
+     **/
+    erasStakersPageCount: GenericRuntimeApiMethod<Rv, (era: number, account: AccountId32Like) => Promise<number>>;
 
     /**
      * Generic runtime api call
@@ -673,16 +690,16 @@ export interface RuntimeApis<Rv extends RpcVersion> extends GenericRuntimeApis<R
      * (Use `amount_in_max` to control slippage.)
      *
      * @callname: AssetConversionApi_quote_price_tokens_for_exact_tokens
-     * @param {PalletAssetConversionNativeOrAssetId} asset1
-     * @param {PalletAssetConversionNativeOrAssetId} asset2
+     * @param {FrameSupportTokensFungibleUnionOfNativeOrWithId} asset1
+     * @param {FrameSupportTokensFungibleUnionOfNativeOrWithId} asset2
      * @param {bigint} amount
      * @param {boolean} include_fee
      **/
     quotePriceTokensForExactTokens: GenericRuntimeApiMethod<
       Rv,
       (
-        asset1: PalletAssetConversionNativeOrAssetId,
-        asset2: PalletAssetConversionNativeOrAssetId,
+        asset1: FrameSupportTokensFungibleUnionOfNativeOrWithId,
+        asset2: FrameSupportTokensFungibleUnionOfNativeOrWithId,
         amount: bigint,
         includeFee: boolean,
       ) => Promise<bigint | undefined>
@@ -695,16 +712,16 @@ export interface RuntimeApis<Rv extends RpcVersion> extends GenericRuntimeApis<R
      * (Use `amount_out_min` to control slippage.)
      *
      * @callname: AssetConversionApi_quote_price_exact_tokens_for_tokens
-     * @param {PalletAssetConversionNativeOrAssetId} asset1
-     * @param {PalletAssetConversionNativeOrAssetId} asset2
+     * @param {FrameSupportTokensFungibleUnionOfNativeOrWithId} asset1
+     * @param {FrameSupportTokensFungibleUnionOfNativeOrWithId} asset2
      * @param {bigint} amount
      * @param {boolean} include_fee
      **/
     quotePriceExactTokensForTokens: GenericRuntimeApiMethod<
       Rv,
       (
-        asset1: PalletAssetConversionNativeOrAssetId,
-        asset2: PalletAssetConversionNativeOrAssetId,
+        asset1: FrameSupportTokensFungibleUnionOfNativeOrWithId,
+        asset2: FrameSupportTokensFungibleUnionOfNativeOrWithId,
         amount: bigint,
         includeFee: boolean,
       ) => Promise<bigint | undefined>
@@ -714,14 +731,14 @@ export interface RuntimeApis<Rv extends RpcVersion> extends GenericRuntimeApis<R
      * Returns the size of the liquidity pool for the given asset pair.
      *
      * @callname: AssetConversionApi_get_reserves
-     * @param {PalletAssetConversionNativeOrAssetId} asset1
-     * @param {PalletAssetConversionNativeOrAssetId} asset2
+     * @param {FrameSupportTokensFungibleUnionOfNativeOrWithId} asset1
+     * @param {FrameSupportTokensFungibleUnionOfNativeOrWithId} asset2
      **/
     getReserves: GenericRuntimeApiMethod<
       Rv,
       (
-        asset1: PalletAssetConversionNativeOrAssetId,
-        asset2: PalletAssetConversionNativeOrAssetId,
+        asset1: FrameSupportTokensFungibleUnionOfNativeOrWithId,
+        asset2: FrameSupportTokensFungibleUnionOfNativeOrWithId,
       ) => Promise<[bigint, bigint] | undefined>
     >;
 
@@ -827,12 +844,12 @@ export interface RuntimeApis<Rv extends RpcVersion> extends GenericRuntimeApis<R
      *
      * @callname: NftsApi_system_attribute
      * @param {number} collection
-     * @param {number} item
+     * @param {number | undefined} item
      * @param {BytesLike} key
      **/
     systemAttribute: GenericRuntimeApiMethod<
       Rv,
-      (collection: number, item: number, key: BytesLike) => Promise<Bytes | undefined>
+      (collection: number, item: number | undefined, key: BytesLike) => Promise<Bytes | undefined>
     >;
 
     /**
@@ -844,6 +861,76 @@ export interface RuntimeApis<Rv extends RpcVersion> extends GenericRuntimeApis<R
     collectionAttribute: GenericRuntimeApiMethod<
       Rv,
       (collection: number, key: BytesLike) => Promise<Bytes | undefined>
+    >;
+
+    /**
+     * Generic runtime api call
+     **/
+    [method: string]: GenericRuntimeApiMethod<Rv>;
+  };
+  /**
+   * @runtimeapi: BeefyApi - 0x49eaaf1b548a0cb0
+   **/
+  beefyApi: {
+    /**
+     * Return the block number where BEEFY consensus is enabled/started
+     *
+     * @callname: BeefyApi_beefy_genesis
+     **/
+    beefyGenesis: GenericRuntimeApiMethod<Rv, () => Promise<number | undefined>>;
+
+    /**
+     * Return the current active BEEFY validator set
+     *
+     * @callname: BeefyApi_validator_set
+     **/
+    validatorSet: GenericRuntimeApiMethod<Rv, () => Promise<SpConsensusBeefyValidatorSet | undefined>>;
+
+    /**
+     * Submits an unsigned extrinsic to report an equivocation. The caller
+     * must provide the equivocation proof and a key ownership proof
+     * (should be obtained using `generate_key_ownership_proof`). The
+     * extrinsic will be unsigned and should only be accepted for local
+     * authorship (not to be broadcast to the network). This method returns
+     * `None` when creation of the extrinsic fails, e.g. if equivocation
+     * reporting is disabled for the given runtime (i.e. this method is
+     * hardcoded to return `None`). Only useful in an offchain context.
+     *
+     * @callname: BeefyApi_submit_report_equivocation_unsigned_extrinsic
+     * @param {SpConsensusBeefyEquivocationProof} equivocation_proof
+     * @param {SpConsensusBeefyOpaqueKeyOwnershipProof} key_owner_proof
+     **/
+    submitReportEquivocationUnsignedExtrinsic: GenericRuntimeApiMethod<
+      Rv,
+      (
+        equivocationProof: SpConsensusBeefyEquivocationProof,
+        keyOwnerProof: SpConsensusBeefyOpaqueKeyOwnershipProof,
+      ) => Promise<[] | undefined>
+    >;
+
+    /**
+     * Generates a proof of key ownership for the given authority in the
+     * given set. An example usage of this module is coupled with the
+     * session historical module to prove that a given authority key is
+     * tied to a given staking identity during a specific session. Proofs
+     * of key ownership are necessary for submitting equivocation reports.
+     * NOTE: even though the API takes a `set_id` as parameter the current
+     * implementations ignores this parameter and instead relies on this
+     * method being called at the correct block height, i.e. any point at
+     * which the given set id is live on-chain. Future implementations will
+     * instead use indexed data through an offchain worker, not requiring
+     * older states to be available.
+     *
+     * @callname: BeefyApi_generate_key_ownership_proof
+     * @param {bigint} set_id
+     * @param {SpConsensusBeefyEcdsaCryptoPublic} authority_id
+     **/
+    generateKeyOwnershipProof: GenericRuntimeApiMethod<
+      Rv,
+      (
+        setId: bigint,
+        authorityId: SpConsensusBeefyEcdsaCryptoPublic,
+      ) => Promise<SpConsensusBeefyOpaqueKeyOwnershipProof | undefined>
     >;
 
     /**
@@ -933,6 +1020,59 @@ export interface RuntimeApis<Rv extends RpcVersion> extends GenericRuntimeApis<R
     [method: string]: GenericRuntimeApiMethod<Rv>;
   };
   /**
+   * @runtimeapi: MixnetApi - 0x6fd7c327202e4a8d
+   **/
+  mixnetApi: {
+    /**
+     * Get the index and phase of the current session.
+     *
+     * @callname: MixnetApi_session_status
+     **/
+    sessionStatus: GenericRuntimeApiMethod<Rv, () => Promise<SpMixnetSessionStatus>>;
+
+    /**
+     * Get the mixnode set for the previous session.
+     *
+     * @callname: MixnetApi_prev_mixnodes
+     **/
+    prevMixnodes: GenericRuntimeApiMethod<Rv, () => Promise<Result<Array<SpMixnetMixnode>, SpMixnetMixnodesErr>>>;
+
+    /**
+     * Get the mixnode set for the current session.
+     *
+     * @callname: MixnetApi_current_mixnodes
+     **/
+    currentMixnodes: GenericRuntimeApiMethod<Rv, () => Promise<Result<Array<SpMixnetMixnode>, SpMixnetMixnodesErr>>>;
+
+    /**
+     * Try to register a mixnode for the next session.
+     *
+     * If a registration extrinsic is submitted, `true` is returned. The caller should avoid
+     * calling `maybe_register` again for a few blocks, to give the submitted extrinsic a
+     * chance to get included.
+     *
+     * With the above exception, `maybe_register` is designed to be called every block. Most
+     * of the time it will not do anything, for example:
+     *
+     * - If it is not an appropriate time to submit a registration extrinsic.
+     * - If the local node has already registered a mixnode for the next session.
+     * - If the local node is not permitted to register a mixnode for the next session.
+     *
+     * `session_index` should match `session_status().current_index`; if it does not, `false`
+     * is returned immediately.
+     *
+     * @callname: MixnetApi_maybe_register
+     * @param {number} session_index
+     * @param {SpMixnetMixnode} mixnode
+     **/
+    maybeRegister: GenericRuntimeApiMethod<Rv, (sessionIndex: number, mixnode: SpMixnetMixnode) => Promise<boolean>>;
+
+    /**
+     * Generic runtime api call
+     **/
+    [method: string]: GenericRuntimeApiMethod<Rv>;
+  };
+  /**
    * @runtimeapi: SessionKeys - 0xab3c0572291feb8b
    **/
   sessionKeys: {
@@ -962,6 +1102,39 @@ export interface RuntimeApis<Rv extends RpcVersion> extends GenericRuntimeApis<R
       Rv,
       (encoded: BytesLike) => Promise<Array<[Bytes, SpCoreCryptoKeyTypeId]> | undefined>
     >;
+
+    /**
+     * Generic runtime api call
+     **/
+    [method: string]: GenericRuntimeApiMethod<Rv>;
+  };
+  /**
+   * @runtimeapi: GenesisBuilder - 0xfbc577b9d747efd6
+   **/
+  genesisBuilder: {
+    /**
+     * Creates the default `RuntimeGenesisConfig` and returns it as a JSON blob.
+     *
+     * This function instantiates the default `RuntimeGenesisConfig` struct for the runtime and serializes it into a JSON
+     * blob. It returns a `Vec<u8>` containing the JSON representation of the default `RuntimeGenesisConfig`.
+     *
+     * @callname: GenesisBuilder_create_default_config
+     **/
+    createDefaultConfig: GenericRuntimeApiMethod<Rv, () => Promise<Bytes>>;
+
+    /**
+     * Build `RuntimeGenesisConfig` from a JSON blob not using any defaults and store it in the storage.
+     *
+     * This function deserializes the full `RuntimeGenesisConfig` from the given JSON blob and puts it into the storage.
+     * If the provided JSON blob is incorrect or incomplete or the deserialization fails, an error is returned.
+     * It is recommended to log any errors encountered during the process.
+     *
+     * Please note that provided json blob must contain all `RuntimeGenesisConfig` fields, no defaults will be used.
+     *
+     * @callname: GenesisBuilder_build_config
+     * @param {BytesLike} json
+     **/
+    buildConfig: GenericRuntimeApiMethod<Rv, (json: BytesLike) => Promise<Result<[], string>>>;
 
     /**
      * Generic runtime api call

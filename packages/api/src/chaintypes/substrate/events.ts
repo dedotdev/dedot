@@ -19,11 +19,13 @@ import type {
   FrameSupportDispatchPostDispatchInfo,
   FrameSupportMessagesProcessMessageError,
   FrameSupportPreimagesBounded,
+  FrameSupportTokensFungibleUnionOfNativeOrWithId,
   FrameSupportTokensMiscBalanceStatus,
   KitchensinkRuntimeProxyType,
+  KitchensinkRuntimeRuntimeParametersKey,
+  KitchensinkRuntimeRuntimeParametersValue,
   PalletAllianceCid,
   PalletAllianceUnscrupulousItem,
-  PalletAssetConversionNativeOrAssetId,
   PalletBrokerCoretimeInterfaceCoreAssignment,
   PalletBrokerRegionId,
   PalletBrokerScheduleItem,
@@ -42,19 +44,21 @@ import type {
   PalletNftsPalletAttributes,
   PalletNftsPriceWithDirection,
   PalletNominationPoolsCommissionChangeRate,
+  PalletNominationPoolsCommissionClaimPermission,
   PalletNominationPoolsPoolState,
   PalletRankedCollectiveTally,
   PalletRankedCollectiveVoteRecord,
   PalletSafeModeExitReason,
   PalletSocietyGroupParams,
-  PalletStakingExposure,
   PalletStakingForcing,
+  PalletStakingRewardDestination,
   PalletStakingValidatorPrefs,
   PalletStateTrieMigrationError,
   PalletStateTrieMigrationMigrationCompute,
   SpConsensusGrandpaAppPublic,
   SpNposElectionsElectionScore,
   SpRuntimeDispatchErrorWithPostInfo,
+  SpStakingExposure,
   SpStatementStoreStatement,
   SpWeightsWeightV2Weight,
 } from './types.js';
@@ -98,6 +102,11 @@ export interface ChainEvents<Rv extends RpcVersion> extends GenericChainEvents<R
      * On on-chain remark happened.
      **/
     Remarked: GenericPalletEvent<Rv, 'System', 'Remarked', { sender: AccountId32; hash: H256 }>;
+
+    /**
+     * An upgrade was authorized.
+     **/
+    UpgradeAuthorized: GenericPalletEvent<Rv, 'System', 'UpgradeAuthorized', { codeHash: H256; checkVersion: boolean }>;
 
     /**
      * Generic pallet event
@@ -285,6 +294,11 @@ export interface ChainEvents<Rv extends RpcVersion> extends GenericChainEvents<R
     Thawed: GenericPalletEvent<Rv, 'Balances', 'Thawed', { who: AccountId32; amount: bigint }>;
 
     /**
+     * The `TotalIssuance` was forcefully changed.
+     **/
+    TotalIssuanceForced: GenericPalletEvent<Rv, 'Balances', 'TotalIssuanceForced', { old: bigint; new: bigint }>;
+
+    /**
      * Generic pallet event
      **/
     [prop: string]: GenericPalletEvent<Rv>;
@@ -441,9 +455,14 @@ export interface ChainEvents<Rv extends RpcVersion> extends GenericChainEvents<R
     >;
 
     /**
-     * The nominator has been rewarded by this amount.
+     * The nominator has been rewarded by this amount to this destination.
      **/
-    Rewarded: GenericPalletEvent<Rv, 'Staking', 'Rewarded', { stash: AccountId32; amount: bigint }>;
+    Rewarded: GenericPalletEvent<
+      Rv,
+      'Staking',
+      'Rewarded',
+      { stash: AccountId32; dest: PalletStakingRewardDestination; amount: bigint }
+    >;
 
     /**
      * A staker (validator or nominator) has been slashed by the given amount.
@@ -545,6 +564,11 @@ export interface ChainEvents<Rv extends RpcVersion> extends GenericChainEvents<R
      * A new force era mode was set.
      **/
     ForceEra: GenericPalletEvent<Rv, 'Staking', 'ForceEra', { mode: PalletStakingForcing }>;
+
+    /**
+     * Report of a controller batch deprecation.
+     **/
+    ControllerBatchDeprecated: GenericPalletEvent<Rv, 'Staking', 'ControllerBatchDeprecated', { failures: number }>;
 
     /**
      * Generic pallet event
@@ -1043,6 +1067,44 @@ export interface ChainEvents<Rv extends RpcVersion> extends GenericChainEvents<R
     >;
 
     /**
+     * A new asset spend proposal has been approved.
+     **/
+    AssetSpendApproved: GenericPalletEvent<
+      Rv,
+      'Treasury',
+      'AssetSpendApproved',
+      {
+        index: number;
+        assetKind: number;
+        amount: bigint;
+        beneficiary: AccountId32;
+        validFrom: number;
+        expireAt: number;
+      }
+    >;
+
+    /**
+     * An approved spend was voided.
+     **/
+    AssetSpendVoided: GenericPalletEvent<Rv, 'Treasury', 'AssetSpendVoided', { index: number }>;
+
+    /**
+     * A payment happened.
+     **/
+    Paid: GenericPalletEvent<Rv, 'Treasury', 'Paid', { index: number; paymentId: [] }>;
+
+    /**
+     * A payment failed and can be retried.
+     **/
+    PaymentFailed: GenericPalletEvent<Rv, 'Treasury', 'PaymentFailed', { index: number; paymentId: [] }>;
+
+    /**
+     * A spend was processed and removed from the storage. It might have been successfully
+     * paid or it may have expired.
+     **/
+    SpendProcessed: GenericPalletEvent<Rv, 'Treasury', 'SpendProcessed', { index: number }>;
+
+    /**
      * Generic pallet event
      **/
     [prop: string]: GenericPalletEvent<Rv>;
@@ -1248,19 +1310,59 @@ export interface ChainEvents<Rv extends RpcVersion> extends GenericChainEvents<R
    **/
   sudo: {
     /**
-     * A sudo just took place. \[result\]
+     * A sudo call just took place.
      **/
-    Sudid: GenericPalletEvent<Rv, 'Sudo', 'Sudid', { sudoResult: Result<[], DispatchError> }>;
+    Sudid: GenericPalletEvent<
+      Rv,
+      'Sudo',
+      'Sudid',
+      {
+        /**
+         * The result of the call made by the sudo user.
+         **/
+        sudoResult: Result<[], DispatchError>;
+      }
+    >;
 
     /**
-     * The \[sudoer\] just switched identity; the old key is supplied if one existed.
+     * The sudo key has been updated.
      **/
-    KeyChanged: GenericPalletEvent<Rv, 'Sudo', 'KeyChanged', { oldSudoer?: AccountId32 | undefined }>;
+    KeyChanged: GenericPalletEvent<
+      Rv,
+      'Sudo',
+      'KeyChanged',
+      {
+        /**
+         * The old sudo key (if one was previously set).
+         **/
+        old?: AccountId32 | undefined;
+
+        /**
+         * The new sudo key (if one was set).
+         **/
+        new: AccountId32;
+      }
+    >;
 
     /**
-     * A sudo just took place. \[result\]
+     * The key was permanently removed.
      **/
-    SudoAsDone: GenericPalletEvent<Rv, 'Sudo', 'SudoAsDone', { sudoResult: Result<[], DispatchError> }>;
+    KeyRemoved: GenericPalletEvent<Rv, 'Sudo', 'KeyRemoved', null>;
+
+    /**
+     * A [sudo_as](Pallet::sudo_as) call just took place.
+     **/
+    SudoAsDone: GenericPalletEvent<
+      Rv,
+      'Sudo',
+      'SudoAsDone',
+      {
+        /**
+         * The result of the call made by the sudo user.
+         **/
+        sudoResult: Result<[], DispatchError>;
+      }
+    >;
 
     /**
      * Generic pallet event
@@ -1293,7 +1395,7 @@ export interface ChainEvents<Rv extends RpcVersion> extends GenericChainEvents<R
       Rv,
       'ImOnline',
       'SomeOffline',
-      { offline: Array<[AccountId32, PalletStakingExposure]> }
+      { offline: Array<[AccountId32, SpStakingExposure]> }
     >;
 
     /**
@@ -1400,6 +1502,52 @@ export interface ChainEvents<Rv extends RpcVersion> extends GenericChainEvents<R
       'Identity',
       'SubIdentityRevoked',
       { sub: AccountId32; main: AccountId32; deposit: bigint }
+    >;
+
+    /**
+     * A username authority was added.
+     **/
+    AuthorityAdded: GenericPalletEvent<Rv, 'Identity', 'AuthorityAdded', { authority: AccountId32 }>;
+
+    /**
+     * A username authority was removed.
+     **/
+    AuthorityRemoved: GenericPalletEvent<Rv, 'Identity', 'AuthorityRemoved', { authority: AccountId32 }>;
+
+    /**
+     * A username was set for `who`.
+     **/
+    UsernameSet: GenericPalletEvent<Rv, 'Identity', 'UsernameSet', { who: AccountId32; username: Bytes }>;
+
+    /**
+     * A username was queued, but `who` must accept it prior to `expiration`.
+     **/
+    UsernameQueued: GenericPalletEvent<
+      Rv,
+      'Identity',
+      'UsernameQueued',
+      { who: AccountId32; username: Bytes; expiration: number }
+    >;
+
+    /**
+     * A queued username passed its expiration without being claimed and was removed.
+     **/
+    PreapprovalExpired: GenericPalletEvent<Rv, 'Identity', 'PreapprovalExpired', { whose: AccountId32 }>;
+
+    /**
+     * A username was set as a primary and can be looked up from `who`.
+     **/
+    PrimaryUsernameSet: GenericPalletEvent<Rv, 'Identity', 'PrimaryUsernameSet', { who: AccountId32; username: Bytes }>;
+
+    /**
+     * A dangling username (as in, a username corresponding to an account that has removed its
+     * identity) has been removed.
+     **/
+    DanglingUsernameRemoved: GenericPalletEvent<
+      Rv,
+      'Identity',
+      'DanglingUsernameRemoved',
+      { who: AccountId32; username: Bytes }
     >;
 
     /**
@@ -1618,6 +1766,26 @@ export interface ChainEvents<Rv extends RpcVersion> extends GenericChainEvents<R
     >;
 
     /**
+     * Set a retry configuration for some task.
+     **/
+    RetrySet: GenericPalletEvent<
+      Rv,
+      'Scheduler',
+      'RetrySet',
+      { task: [number, number]; id?: FixedBytes<32> | undefined; period: number; retries: number }
+    >;
+
+    /**
+     * Cancel a retry configuration for some task.
+     **/
+    RetryCancelled: GenericPalletEvent<
+      Rv,
+      'Scheduler',
+      'RetryCancelled',
+      { task: [number, number]; id?: FixedBytes<32> | undefined }
+    >;
+
+    /**
      * The call for the provided hash was not found so the task has been aborted.
      **/
     CallUnavailable: GenericPalletEvent<
@@ -1634,6 +1802,17 @@ export interface ChainEvents<Rv extends RpcVersion> extends GenericChainEvents<R
       Rv,
       'Scheduler',
       'PeriodicFailed',
+      { task: [number, number]; id?: FixedBytes<32> | undefined }
+    >;
+
+    /**
+     * The given task was unable to be retried since the agenda is full at that block or there
+     * was not enough weight to reschedule it.
+     **/
+    RetryFailed: GenericPalletEvent<
+      Rv,
+      'Scheduler',
+      'RetryFailed',
       { task: [number, number]; id?: FixedBytes<32> | undefined }
     >;
 
@@ -1878,6 +2057,26 @@ export interface ChainEvents<Rv extends RpcVersion> extends GenericChainEvents<R
      * A bounty expiry is extended.
      **/
     BountyExtended: GenericPalletEvent<Rv, 'Bounties', 'BountyExtended', { index: number }>;
+
+    /**
+     * A bounty is approved.
+     **/
+    BountyApproved: GenericPalletEvent<Rv, 'Bounties', 'BountyApproved', { index: number }>;
+
+    /**
+     * A bounty curator is proposed.
+     **/
+    CuratorProposed: GenericPalletEvent<Rv, 'Bounties', 'CuratorProposed', { bountyId: number; curator: AccountId32 }>;
+
+    /**
+     * A bounty curator is unassigned.
+     **/
+    CuratorUnassigned: GenericPalletEvent<Rv, 'Bounties', 'CuratorUnassigned', { bountyId: number }>;
+
+    /**
+     * A bounty curator is accepted.
+     **/
+    CuratorAccepted: GenericPalletEvent<Rv, 'Bounties', 'CuratorAccepted', { bountyId: number; curator: AccountId32 }>;
 
     /**
      * Generic pallet event
@@ -3042,6 +3241,11 @@ export interface ChainEvents<Rv extends RpcVersion> extends GenericChainEvents<R
     CycleStarted: GenericPalletEvent<Rv, 'Salary', 'CycleStarted', { index: number }>;
 
     /**
+     * A member swapped their account.
+     **/
+    Swapped: GenericPalletEvent<Rv, 'Salary', 'Swapped', { who: AccountId32; newWho: AccountId32 }>;
+
+    /**
      * Generic pallet event
      **/
     [prop: string]: GenericPalletEvent<Rv>;
@@ -3141,6 +3345,11 @@ export interface ChainEvents<Rv extends RpcVersion> extends GenericChainEvents<R
      * Pre-ranked account has been inducted at their current rank.
      **/
     Imported: GenericPalletEvent<Rv, 'CoreFellowship', 'Imported', { who: AccountId32; rank: number }>;
+
+    /**
+     * A member had its AccountId swapped.
+     **/
+    Swapped: GenericPalletEvent<Rv, 'CoreFellowship', 'Swapped', { who: AccountId32; newWho: AccountId32 }>;
 
     /**
      * Generic pallet event
@@ -3344,7 +3553,7 @@ export interface ChainEvents<Rv extends RpcVersion> extends GenericChainEvents<R
     >;
 
     /**
-     * A deposit has been slashaed.
+     * A deposit has been slashed.
      **/
     DepositSlashed: GenericPalletEvent<
       Rv,
@@ -3608,6 +3817,20 @@ export interface ChainEvents<Rv extends RpcVersion> extends GenericChainEvents<R
      * Stored data off chain.
      **/
     Stored: GenericPalletEvent<Rv, 'Remark', 'Stored', { sender: AccountId32; contentHash: H256 }>;
+
+    /**
+     * Generic pallet event
+     **/
+    [prop: string]: GenericPalletEvent<Rv>;
+  };
+  /**
+   * Pallet `RootTesting`'s events
+   **/
+  rootTesting: {
+    /**
+     * Event dispatched when the trigger_defensive extrinsic is called.
+     **/
+    DefensiveTestCall: GenericPalletEvent<Rv, 'RootTesting', 'DefensiveTestCall', undefined>;
 
     /**
      * Generic pallet event
@@ -3974,6 +4197,16 @@ export interface ChainEvents<Rv extends RpcVersion> extends GenericChainEvents<R
     >;
 
     /**
+     * Pool commission claim permission has been updated.
+     **/
+    PoolCommissionClaimPermissionUpdated: GenericPalletEvent<
+      Rv,
+      'NominationPools',
+      'PoolCommissionClaimPermissionUpdated',
+      { poolId: number; permission?: PalletNominationPoolsCommissionClaimPermission | undefined }
+    >;
+
+    /**
      * Pool commission has been claimed.
      **/
     PoolCommissionClaimed: GenericPalletEvent<
@@ -3981,6 +4214,26 @@ export interface ChainEvents<Rv extends RpcVersion> extends GenericChainEvents<R
       'NominationPools',
       'PoolCommissionClaimed',
       { poolId: number; commission: bigint }
+    >;
+
+    /**
+     * Topped up deficit in frozen ED of the reward pool.
+     **/
+    MinBalanceDeficitAdjusted: GenericPalletEvent<
+      Rv,
+      'NominationPools',
+      'MinBalanceDeficitAdjusted',
+      { poolId: number; amount: bigint }
+    >;
+
+    /**
+     * Claimed excess frozen ED of af the reward pool.
+     **/
+    MinBalanceExcessAdjusted: GenericPalletEvent<
+      Rv,
+      'NominationPools',
+      'MinBalanceExcessAdjusted',
+      { poolId: number; amount: bigint }
     >;
 
     /**
@@ -4068,7 +4321,7 @@ export interface ChainEvents<Rv extends RpcVersion> extends GenericChainEvents<R
     >;
 
     /**
-     * A deposit has been slashaed.
+     * A deposit has been slashed.
      **/
     DepositSlashed: GenericPalletEvent<
       Rv,
@@ -4355,6 +4608,16 @@ export interface ChainEvents<Rv extends RpcVersion> extends GenericChainEvents<R
     >;
 
     /**
+     * The member `who` had their `AccountId` changed to `new_who`.
+     **/
+    MemberExchanged: GenericPalletEvent<
+      Rv,
+      'RankedCollective',
+      'MemberExchanged',
+      { who: AccountId32; newWho: AccountId32 }
+    >;
+
+    /**
      * Generic pallet event
      **/
     [prop: string]: GenericPalletEvent<Rv>;
@@ -4380,7 +4643,7 @@ export interface ChainEvents<Rv extends RpcVersion> extends GenericChainEvents<R
          * The pool id associated with the pool. Note that the order of the assets may not be
          * the same as the order specified in the create pool extrinsic.
          **/
-        poolId: [PalletAssetConversionNativeOrAssetId, PalletAssetConversionNativeOrAssetId];
+        poolId: [FrameSupportTokensFungibleUnionOfNativeOrWithId, FrameSupportTokensFungibleUnionOfNativeOrWithId];
 
         /**
          * The account ID of the pool.
@@ -4416,7 +4679,7 @@ export interface ChainEvents<Rv extends RpcVersion> extends GenericChainEvents<R
         /**
          * The pool id of the pool that the liquidity was added to.
          **/
-        poolId: [PalletAssetConversionNativeOrAssetId, PalletAssetConversionNativeOrAssetId];
+        poolId: [FrameSupportTokensFungibleUnionOfNativeOrWithId, FrameSupportTokensFungibleUnionOfNativeOrWithId];
 
         /**
          * The amount of the first asset that was added to the pool.
@@ -4461,7 +4724,7 @@ export interface ChainEvents<Rv extends RpcVersion> extends GenericChainEvents<R
         /**
          * The pool id that the liquidity was removed from.
          **/
-        poolId: [PalletAssetConversionNativeOrAssetId, PalletAssetConversionNativeOrAssetId];
+        poolId: [FrameSupportTokensFungibleUnionOfNativeOrWithId, FrameSupportTokensFungibleUnionOfNativeOrWithId];
 
         /**
          * The amount of the first asset that was removed from the pool.
@@ -4510,11 +4773,31 @@ export interface ChainEvents<Rv extends RpcVersion> extends GenericChainEvents<R
         sendTo: AccountId32;
 
         /**
-         * The route of asset ids that the swap went through.
-         * E.g. A -> Dot -> B
+         * The amount of the first asset that was swapped.
          **/
-        path: Array<PalletAssetConversionNativeOrAssetId>;
+        amountIn: bigint;
 
+        /**
+         * The amount of the second asset that was received.
+         **/
+        amountOut: bigint;
+
+        /**
+         * The route of asset IDs with amounts that the swap went through.
+         * E.g. (A, amount_in) -> (Dot, amount_out) -> (B, amount_out)
+         **/
+        path: Array<[FrameSupportTokensFungibleUnionOfNativeOrWithId, bigint]>;
+      }
+    >;
+
+    /**
+     * Assets have been converted from one to another.
+     **/
+    SwapCreditExecuted: GenericPalletEvent<
+      Rv,
+      'AssetConversion',
+      'SwapCreditExecuted',
+      {
         /**
          * The amount of the first asset that was swapped.
          **/
@@ -4524,36 +4807,12 @@ export interface ChainEvents<Rv extends RpcVersion> extends GenericChainEvents<R
          * The amount of the second asset that was received.
          **/
         amountOut: bigint;
-      }
-    >;
-
-    /**
-     * An amount has been transferred from one account to another.
-     **/
-    Transfer: GenericPalletEvent<
-      Rv,
-      'AssetConversion',
-      'Transfer',
-      {
-        /**
-         * The account that the assets were transferred from.
-         **/
-        from: AccountId32;
 
         /**
-         * The account that the assets were transferred to.
+         * The route of asset IDs with amounts that the swap went through.
+         * E.g. (A, amount_in) -> (Dot, amount_out) -> (B, amount_out)
          **/
-        to: AccountId32;
-
-        /**
-         * The asset that was transferred.
-         **/
-        asset: PalletAssetConversionNativeOrAssetId;
-
-        /**
-         * The amount of the asset that was transferred.
-         **/
-        amount: bigint;
+        path: Array<[FrameSupportTokensFungibleUnionOfNativeOrWithId, bigint]>;
       }
     >;
 
@@ -4615,7 +4874,25 @@ export interface ChainEvents<Rv extends RpcVersion> extends GenericChainEvents<R
       Rv,
       'MessageQueue',
       'ProcessingFailed',
-      { id: FixedBytes<32>; origin: number; error: FrameSupportMessagesProcessMessageError }
+      {
+        /**
+         * The `blake2_256` hash of the message.
+         **/
+        id: H256;
+
+        /**
+         * The queue of the message.
+         **/
+        origin: number;
+
+        /**
+         * The error that occurred.
+         *
+         * This error is pretty opaque. More fine-grained errors need to be emitted as events
+         * by the `MessageProcessor`.
+         **/
+        error: FrameSupportMessagesProcessMessageError;
+      }
     >;
 
     /**
@@ -4625,7 +4902,32 @@ export interface ChainEvents<Rv extends RpcVersion> extends GenericChainEvents<R
       Rv,
       'MessageQueue',
       'Processed',
-      { id: FixedBytes<32>; origin: number; weightUsed: SpWeightsWeightV2Weight; success: boolean }
+      {
+        /**
+         * The `blake2_256` hash of the message.
+         **/
+        id: H256;
+
+        /**
+         * The queue of the message.
+         **/
+        origin: number;
+
+        /**
+         * How much weight was used to process the message.
+         **/
+        weightUsed: SpWeightsWeightV2Weight;
+
+        /**
+         * Whether the message was processed.
+         *
+         * Note that this does not mean that the underlying `MessageProcessor` was internally
+         * successful. It *solely* means that the MQ pallet will treat this as a success
+         * condition and discard the message. Any internal error needs to be emitted as events
+         * by the `MessageProcessor`.
+         **/
+        success: boolean;
+      }
     >;
 
     /**
@@ -4635,13 +4937,48 @@ export interface ChainEvents<Rv extends RpcVersion> extends GenericChainEvents<R
       Rv,
       'MessageQueue',
       'OverweightEnqueued',
-      { id: FixedBytes<32>; origin: number; pageIndex: number; messageIndex: number }
+      {
+        /**
+         * The `blake2_256` hash of the message.
+         **/
+        id: FixedBytes<32>;
+
+        /**
+         * The queue of the message.
+         **/
+        origin: number;
+
+        /**
+         * The page of the message.
+         **/
+        pageIndex: number;
+
+        /**
+         * The index of the message within the page.
+         **/
+        messageIndex: number;
+      }
     >;
 
     /**
      * This page was reaped.
      **/
-    PageReaped: GenericPalletEvent<Rv, 'MessageQueue', 'PageReaped', { origin: number; index: number }>;
+    PageReaped: GenericPalletEvent<
+      Rv,
+      'MessageQueue',
+      'PageReaped',
+      {
+        /**
+         * The queue of the page.
+         **/
+        origin: number;
+
+        /**
+         * The index of the page.
+         **/
+        index: number;
+      }
+    >;
 
     /**
      * Generic pallet event
@@ -4743,6 +5080,141 @@ export interface ChainEvents<Rv extends RpcVersion> extends GenericChainEvents<R
       'Statement',
       'NewStatement',
       { account: AccountId32; statement: SpStatementStoreStatement }
+    >;
+
+    /**
+     * Generic pallet event
+     **/
+    [prop: string]: GenericPalletEvent<Rv>;
+  };
+  /**
+   * Pallet `MultiBlockMigrations`'s events
+   **/
+  multiBlockMigrations: {
+    /**
+     * A Runtime upgrade started.
+     *
+     * Its end is indicated by `UpgradeCompleted` or `UpgradeFailed`.
+     **/
+    UpgradeStarted: GenericPalletEvent<
+      Rv,
+      'MultiBlockMigrations',
+      'UpgradeStarted',
+      {
+        /**
+         * The number of migrations that this upgrade contains.
+         *
+         * This can be used to design a progress indicator in combination with counting the
+         * `MigrationCompleted` and `MigrationSkipped` events.
+         **/
+        migrations: number;
+      }
+    >;
+
+    /**
+     * The current runtime upgrade completed.
+     *
+     * This implies that all of its migrations completed successfully as well.
+     **/
+    UpgradeCompleted: GenericPalletEvent<Rv, 'MultiBlockMigrations', 'UpgradeCompleted', null>;
+
+    /**
+     * Runtime upgrade failed.
+     *
+     * This is very bad and will require governance intervention.
+     **/
+    UpgradeFailed: GenericPalletEvent<Rv, 'MultiBlockMigrations', 'UpgradeFailed', null>;
+
+    /**
+     * A migration was skipped since it was already executed in the past.
+     **/
+    MigrationSkipped: GenericPalletEvent<
+      Rv,
+      'MultiBlockMigrations',
+      'MigrationSkipped',
+      {
+        /**
+         * The index of the skipped migration within the [`Config::Migrations`] list.
+         **/
+        index: number;
+      }
+    >;
+
+    /**
+     * A migration progressed.
+     **/
+    MigrationAdvanced: GenericPalletEvent<
+      Rv,
+      'MultiBlockMigrations',
+      'MigrationAdvanced',
+      {
+        /**
+         * The index of the migration within the [`Config::Migrations`] list.
+         **/
+        index: number;
+
+        /**
+         * The number of blocks that this migration took so far.
+         **/
+        took: number;
+      }
+    >;
+
+    /**
+     * A Migration completed.
+     **/
+    MigrationCompleted: GenericPalletEvent<
+      Rv,
+      'MultiBlockMigrations',
+      'MigrationCompleted',
+      {
+        /**
+         * The index of the migration within the [`Config::Migrations`] list.
+         **/
+        index: number;
+
+        /**
+         * The number of blocks that this migration took so far.
+         **/
+        took: number;
+      }
+    >;
+
+    /**
+     * A Migration failed.
+     *
+     * This implies that the whole upgrade failed and governance intervention is required.
+     **/
+    MigrationFailed: GenericPalletEvent<
+      Rv,
+      'MultiBlockMigrations',
+      'MigrationFailed',
+      {
+        /**
+         * The index of the migration within the [`Config::Migrations`] list.
+         **/
+        index: number;
+
+        /**
+         * The number of blocks that this migration took so far.
+         **/
+        took: number;
+      }
+    >;
+
+    /**
+     * The set of historical migrations has been cleared.
+     **/
+    HistoricCleared: GenericPalletEvent<
+      Rv,
+      'MultiBlockMigrations',
+      'HistoricCleared',
+      {
+        /**
+         * Should be passed to `clear_historic` in a successive call.
+         **/
+        nextCursor?: Bytes | undefined;
+      }
     >;
 
     /**
@@ -5421,6 +5893,56 @@ export interface ChainEvents<Rv extends RpcVersion> extends GenericChainEvents<R
         core: number;
       }
     >;
+
+    /**
+     * Generic pallet event
+     **/
+    [prop: string]: GenericPalletEvent<Rv>;
+  };
+  /**
+   * Pallet `Parameters`'s events
+   **/
+  parameters: {
+    /**
+     * A Parameter was set.
+     *
+     * Is also emitted when the value was not changed.
+     **/
+    Updated: GenericPalletEvent<
+      Rv,
+      'Parameters',
+      'Updated',
+      {
+        /**
+         * The key that was updated.
+         **/
+        key: KitchensinkRuntimeRuntimeParametersKey;
+
+        /**
+         * The old value before this call.
+         **/
+        oldValue?: KitchensinkRuntimeRuntimeParametersValue | undefined;
+
+        /**
+         * The new value after this call.
+         **/
+        newValue?: KitchensinkRuntimeRuntimeParametersValue | undefined;
+      }
+    >;
+
+    /**
+     * Generic pallet event
+     **/
+    [prop: string]: GenericPalletEvent<Rv>;
+  };
+  /**
+   * Pallet `SkipFeelessPayment`'s events
+   **/
+  skipFeelessPayment: {
+    /**
+     * A transaction fee was skipped.
+     **/
+    FeeSkipped: GenericPalletEvent<Rv, 'SkipFeelessPayment', 'FeeSkipped', { who: AccountId32 }>;
 
     /**
      * Generic pallet event
