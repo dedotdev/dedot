@@ -19,14 +19,17 @@ import type { Callback, GenericChainStorage, GenericStorageQuery, RpcVersion } f
 import type {
   FrameSupportDispatchPerDispatchClass,
   FrameSupportPreimagesBounded,
+  FrameSupportTokensFungibleUnionOfNativeOrWithId,
   FrameSystemAccountInfo,
+  FrameSystemCodeUpgradeAuthorization,
   FrameSystemEventRecord,
   FrameSystemLastRuntimeUpgradeInfo,
   KitchensinkRuntimeRuntimeCall,
+  KitchensinkRuntimeRuntimeParametersKey,
+  KitchensinkRuntimeRuntimeParametersValue,
   KitchensinkRuntimeSessionKeys,
   PalletAllianceCid,
   PalletAllianceMemberRole,
-  PalletAssetConversionNativeOrAssetId,
   PalletAssetConversionPoolInfo,
   PalletAssetsApproval,
   PalletAssetsAssetAccount,
@@ -37,7 +40,7 @@ import type {
   PalletBalancesAccountData,
   PalletBalancesBalanceLock,
   PalletBalancesIdAmount,
-  PalletBalancesIdAmount002,
+  PalletBalancesIdAmountRuntimeFreezeReason,
   PalletBalancesReserveData,
   PalletBountiesBounty,
   PalletBrokerAllowedRenewalId,
@@ -75,12 +78,15 @@ import type {
   PalletFastUnstakeUnstakeRequest,
   PalletGrandpaStoredPendingChange,
   PalletGrandpaStoredState,
+  PalletIdentityAuthorityProperties,
   PalletIdentityRegistrarInfo,
   PalletIdentityRegistration,
   PalletImOnlineSr25519AppSr25519Public,
   PalletLotteryLotteryConfig,
   PalletMessageQueueBookState,
   PalletMessageQueuePage,
+  PalletMigrationsMigrationCursor,
+  PalletMixnetBoundedMixnode,
   PalletMultisigMultisig,
   PalletNftFractionalizationDetails,
   PalletNftsAttributeDeposit,
@@ -101,6 +107,7 @@ import type {
   PalletNominationPoolsPoolMember,
   PalletNominationPoolsRewardPool,
   PalletNominationPoolsSubPools,
+  PalletPreimageOldRequestStatus,
   PalletPreimageRequestStatus,
   PalletProxyAnnouncement,
   PalletProxyProxyDefinition,
@@ -112,6 +119,7 @@ import type {
   PalletReferendaReferendumInfoTally,
   PalletSalaryClaimantStatus,
   PalletSalaryStatusType,
+  PalletSchedulerRetryConfig,
   PalletSchedulerScheduled,
   PalletSocietyBid,
   PalletSocietyCandidacy,
@@ -123,7 +131,6 @@ import type {
   PalletSocietyVote,
   PalletStakingActiveEraInfo,
   PalletStakingEraRewardPoints,
-  PalletStakingExposure,
   PalletStakingForcing,
   PalletStakingNominations,
   PalletStakingRewardDestination,
@@ -138,6 +145,7 @@ import type {
   PalletTransactionPaymentReleases,
   PalletTransactionStorageTransactionInfo,
   PalletTreasuryProposal,
+  PalletTreasurySpendStatus,
   PalletUniquesCollectionDetails,
   PalletUniquesCollectionMetadata,
   PalletUniquesItemDetails,
@@ -149,10 +157,17 @@ import type {
   SpConsensusBabeBabeEpochConfiguration,
   SpConsensusBabeDigestsNextConfigDescriptor,
   SpConsensusBabeDigestsPreDigest,
+  SpConsensusBeefyEcdsaCryptoPublic,
+  SpConsensusBeefyMmrBeefyAuthoritySet,
+  SpConsensusGrandpaAppPublic,
   SpConsensusSlotsSlot,
   SpCoreCryptoKeyTypeId,
+  SpMixnetAppPublic,
   SpNposElectionsElectionScore,
+  SpStakingExposure,
+  SpStakingExposurePage,
   SpStakingOffenceOffenceDetails,
+  SpStakingPagedExposureMetadata,
 } from './types.js';
 
 export interface ChainStorage<Rv extends RpcVersion> extends GenericChainStorage<Rv> {
@@ -174,6 +189,13 @@ export interface ChainStorage<Rv extends RpcVersion> extends GenericChainStorage
      * @param {Callback<number | undefined> =} callback
      **/
     extrinsicCount: GenericStorageQuery<Rv, () => number | undefined>;
+
+    /**
+     * Whether all inherents have been applied.
+     *
+     * @param {Callback<boolean> =} callback
+     **/
+    inherentsApplied: GenericStorageQuery<Rv, () => boolean>;
 
     /**
      * The current weight for the block.
@@ -291,6 +313,13 @@ export interface ChainStorage<Rv extends RpcVersion> extends GenericChainStorage
      * @param {Callback<Phase | undefined> =} callback
      **/
     executionPhase: GenericStorageQuery<Rv, () => Phase | undefined>;
+
+    /**
+     * `Some` if a code upgrade has been authorized.
+     *
+     * @param {Callback<FrameSystemCodeUpgradeAuthorization | undefined> =} callback
+     **/
+    authorizedUpgrade: GenericStorageQuery<Rv, () => FrameSystemCodeUpgradeAuthorization | undefined>;
 
     /**
      * Generic pallet storage query
@@ -470,14 +499,17 @@ export interface ChainStorage<Rv extends RpcVersion> extends GenericChainStorage
    **/
   timestamp: {
     /**
-     * Current time for the current block.
+     * The current time for the current block.
      *
      * @param {Callback<bigint> =} callback
      **/
     now: GenericStorageQuery<Rv, () => bigint>;
 
     /**
-     * Did the timestamp get updated in this block?
+     * Whether the timestamp has been updated in this block.
+     *
+     * This value is updated to `true` upon successful submission of a timestamp by a node.
+     * It is then checked at the end of each block execution in the `on_finalize` hook.
      *
      * @param {Callback<boolean> =} callback
      **/
@@ -599,9 +631,13 @@ export interface ChainStorage<Rv extends RpcVersion> extends GenericChainStorage
      * Freeze locks on account balances.
      *
      * @param {AccountId32Like} arg
-     * @param {Callback<Array<PalletBalancesIdAmount002>> =} callback
+     * @param {Callback<Array<PalletBalancesIdAmountRuntimeFreezeReason>> =} callback
      **/
-    freezes: GenericStorageQuery<Rv, (arg: AccountId32Like) => Array<PalletBalancesIdAmount002>, AccountId32>;
+    freezes: GenericStorageQuery<
+      Rv,
+      (arg: AccountId32Like) => Array<PalletBalancesIdAmountRuntimeFreezeReason>,
+      AccountId32
+    >;
 
     /**
      * Generic pallet storage query
@@ -665,6 +701,7 @@ export interface ChainStorage<Rv extends RpcVersion> extends GenericChainStorage
      * Snapshot data of the round.
      *
      * This is created at the beginning of the signed phase and cleared upon calling `elect`.
+     * Note: This storage type must only be mutated through [`SnapshotWrapper`].
      *
      * @param {Callback<PalletElectionProviderMultiPhaseRoundSnapshot | undefined> =} callback
      **/
@@ -674,6 +711,7 @@ export interface ChainStorage<Rv extends RpcVersion> extends GenericChainStorage
      * Desired number of targets to elect for this round.
      *
      * Only exists when [`Snapshot`] is present.
+     * Note: This storage type must only be mutated through [`SnapshotWrapper`].
      *
      * @param {Callback<number | undefined> =} callback
      **/
@@ -683,6 +721,7 @@ export interface ChainStorage<Rv extends RpcVersion> extends GenericChainStorage
      * The metadata of the [`RoundSnapshot`]
      *
      * Only exists when [`Snapshot`] is present.
+     * Note: This storage type must only be mutated through [`SnapshotWrapper`].
      *
      * @param {Callback<PalletElectionProviderMultiPhaseSolutionOrSnapshotSize | undefined> =} callback
      **/
@@ -818,6 +857,9 @@ export interface ChainStorage<Rv extends RpcVersion> extends GenericChainStorage
     /**
      * Map from all (unlocked) "controller" accounts to the info regarding the staking.
      *
+     * Note: All the reads and mutations to this storage *MUST* be done through the methods exposed
+     * by [`StakingLedger`] to ensure data and lock consistency.
+     *
      * @param {AccountId32Like} arg
      * @param {Callback<PalletStakingStakingLedger | undefined> =} callback
      **/
@@ -829,9 +871,9 @@ export interface ChainStorage<Rv extends RpcVersion> extends GenericChainStorage
      * TWOX-NOTE: SAFE since `AccountId` is a secure hash.
      *
      * @param {AccountId32Like} arg
-     * @param {Callback<PalletStakingRewardDestination> =} callback
+     * @param {Callback<PalletStakingRewardDestination | undefined> =} callback
      **/
-    payee: GenericStorageQuery<Rv, (arg: AccountId32Like) => PalletStakingRewardDestination, AccountId32>;
+    payee: GenericStorageQuery<Rv, (arg: AccountId32Like) => PalletStakingRewardDestination | undefined, AccountId32>;
 
     /**
      * The map from (wannabe) validator stash key to the preferences of that validator.
@@ -922,7 +964,7 @@ export interface ChainStorage<Rv extends RpcVersion> extends GenericChainStorage
     activeEra: GenericStorageQuery<Rv, () => PalletStakingActiveEraInfo | undefined>;
 
     /**
-     * The session index at which the era start for the last `HISTORY_DEPTH` eras.
+     * The session index at which the era start for the last [`Config::HistoryDepth`] eras.
      *
      * Note: This tracks the starting session (i.e. session index when era start being active)
      * for the eras in `[CurrentEra - HISTORY_DEPTH, CurrentEra]`.
@@ -937,46 +979,102 @@ export interface ChainStorage<Rv extends RpcVersion> extends GenericChainStorage
      *
      * This is keyed first by the era index to allow bulk deletion and then the stash account.
      *
-     * Is it removed after `HISTORY_DEPTH` eras.
+     * Is it removed after [`Config::HistoryDepth`] eras.
      * If stakers hasn't been set or has been removed then empty exposure is returned.
      *
+     * Note: Deprecated since v14. Use `EraInfo` instead to work with exposures.
+     *
      * @param {[number, AccountId32Like]} arg
-     * @param {Callback<PalletStakingExposure> =} callback
+     * @param {Callback<SpStakingExposure> =} callback
      **/
-    erasStakers: GenericStorageQuery<
+    erasStakers: GenericStorageQuery<Rv, (arg: [number, AccountId32Like]) => SpStakingExposure, [number, AccountId32]>;
+
+    /**
+     * Summary of validator exposure at a given era.
+     *
+     * This contains the total stake in support of the validator and their own stake. In addition,
+     * it can also be used to get the number of nominators backing this validator and the number of
+     * exposure pages they are divided into. The page count is useful to determine the number of
+     * pages of rewards that needs to be claimed.
+     *
+     * This is keyed first by the era index to allow bulk deletion and then the stash account.
+     * Should only be accessed through `EraInfo`.
+     *
+     * Is it removed after [`Config::HistoryDepth`] eras.
+     * If stakers hasn't been set or has been removed then empty overview is returned.
+     *
+     * @param {[number, AccountId32Like]} arg
+     * @param {Callback<SpStakingPagedExposureMetadata | undefined> =} callback
+     **/
+    erasStakersOverview: GenericStorageQuery<
       Rv,
-      (arg: [number, AccountId32Like]) => PalletStakingExposure,
+      (arg: [number, AccountId32Like]) => SpStakingPagedExposureMetadata | undefined,
       [number, AccountId32]
     >;
 
     /**
      * Clipped Exposure of validator at era.
      *
+     * Note: This is deprecated, should be used as read-only and will be removed in the future.
+     * New `Exposure`s are stored in a paged manner in `ErasStakersPaged` instead.
+     *
      * This is similar to [`ErasStakers`] but number of nominators exposed is reduced to the
-     * `T::MaxNominatorRewardedPerValidator` biggest stakers.
+     * `T::MaxExposurePageSize` biggest stakers.
      * (Note: the field `total` and `own` of the exposure remains unchanged).
      * This is used to limit the i/o cost for the nominator payout.
      *
      * This is keyed fist by the era index to allow bulk deletion and then the stash account.
      *
-     * Is it removed after `HISTORY_DEPTH` eras.
+     * It is removed after [`Config::HistoryDepth`] eras.
      * If stakers hasn't been set or has been removed then empty exposure is returned.
      *
+     * Note: Deprecated since v14. Use `EraInfo` instead to work with exposures.
+     *
      * @param {[number, AccountId32Like]} arg
-     * @param {Callback<PalletStakingExposure> =} callback
+     * @param {Callback<SpStakingExposure> =} callback
      **/
     erasStakersClipped: GenericStorageQuery<
       Rv,
-      (arg: [number, AccountId32Like]) => PalletStakingExposure,
+      (arg: [number, AccountId32Like]) => SpStakingExposure,
       [number, AccountId32]
     >;
+
+    /**
+     * Paginated exposure of a validator at given era.
+     *
+     * This is keyed first by the era index to allow bulk deletion, then stash account and finally
+     * the page. Should only be accessed through `EraInfo`.
+     *
+     * This is cleared after [`Config::HistoryDepth`] eras.
+     *
+     * @param {[number, AccountId32Like, number]} arg
+     * @param {Callback<SpStakingExposurePage | undefined> =} callback
+     **/
+    erasStakersPaged: GenericStorageQuery<
+      Rv,
+      (arg: [number, AccountId32Like, number]) => SpStakingExposurePage | undefined,
+      [number, AccountId32, number]
+    >;
+
+    /**
+     * History of claimed paged rewards by era and validator.
+     *
+     * This is keyed by era and validator stash which maps to the set of page indexes which have
+     * been claimed.
+     *
+     * It is removed after [`Config::HistoryDepth`] eras.
+     *
+     * @param {[number, AccountId32Like]} arg
+     * @param {Callback<Array<number>> =} callback
+     **/
+    claimedRewards: GenericStorageQuery<Rv, (arg: [number, AccountId32Like]) => Array<number>, [number, AccountId32]>;
 
     /**
      * Similar to `ErasStakers`, this holds the preferences of validators.
      *
      * This is keyed first by the era index to allow bulk deletion and then the stash account.
      *
-     * Is it removed after `HISTORY_DEPTH` eras.
+     * Is it removed after [`Config::HistoryDepth`] eras.
      *
      * @param {[number, AccountId32Like]} arg
      * @param {Callback<PalletStakingValidatorPrefs> =} callback
@@ -988,7 +1086,7 @@ export interface ChainStorage<Rv extends RpcVersion> extends GenericChainStorage
     >;
 
     /**
-     * The total validator era payout for the last `HISTORY_DEPTH` eras.
+     * The total validator era payout for the last [`Config::HistoryDepth`] eras.
      *
      * Eras that haven't finished yet or has been removed doesn't have reward.
      *
@@ -998,7 +1096,7 @@ export interface ChainStorage<Rv extends RpcVersion> extends GenericChainStorage
     erasValidatorReward: GenericStorageQuery<Rv, (arg: number) => bigint | undefined, number>;
 
     /**
-     * Rewards for the last `HISTORY_DEPTH` eras.
+     * Rewards for the last [`Config::HistoryDepth`] eras.
      * If reward hasn't been set or has been removed then 0 reward is returned.
      *
      * @param {number} arg
@@ -1007,7 +1105,7 @@ export interface ChainStorage<Rv extends RpcVersion> extends GenericChainStorage
     erasRewardPoints: GenericStorageQuery<Rv, (arg: number) => PalletStakingEraRewardPoints, number>;
 
     /**
-     * The total amount staked for the last `HISTORY_DEPTH` eras.
+     * The total amount staked for the last [`Config::HistoryDepth`] eras.
      * If total hasn't been set or has been removed then 0 stake is returned.
      *
      * @param {number} arg
@@ -1021,6 +1119,15 @@ export interface ChainStorage<Rv extends RpcVersion> extends GenericChainStorage
      * @param {Callback<PalletStakingForcing> =} callback
      **/
     forceEra: GenericStorageQuery<Rv, () => PalletStakingForcing>;
+
+    /**
+     * Maximum staked rewards, i.e. the percentage of the era inflation that
+     * is used for stake rewards.
+     * See [Era payout](./index.html#era-payout).
+     *
+     * @param {Callback<Percent | undefined> =} callback
+     **/
+    maxStakedRewards: GenericStorageQuery<Rv, () => Percent | undefined>;
 
     /**
      * The percentage of the slash that is distributed to reporters.
@@ -1319,7 +1426,7 @@ export interface ChainStorage<Rv extends RpcVersion> extends GenericChainStorage
 
     /**
      * General information concerning any proposal or referendum.
-     * The `PreimageHash` refers to the preimage of the `Preimages` provider which can be a JSON
+     * The `Hash` refers to the preimage of the `Preimages` provider which can be a JSON
      * dump or IPFS hash of a JSON file.
      *
      * Consider a garbage collection for a metadata of finished referendums to `unrequest` (remove)
@@ -1583,6 +1690,13 @@ export interface ChainStorage<Rv extends RpcVersion> extends GenericChainStorage
     setIdSession: GenericStorageQuery<Rv, (arg: bigint) => number | undefined, bigint>;
 
     /**
+     * The current list of authorities.
+     *
+     * @param {Callback<Array<[SpConsensusGrandpaAppPublic, bigint]>> =} callback
+     **/
+    authorities: GenericStorageQuery<Rv, () => Array<[SpConsensusGrandpaAppPublic, bigint]>>;
+
+    /**
      * Generic pallet storage query
      **/
     [storage: string]: GenericStorageQuery<Rv>;
@@ -1619,6 +1733,21 @@ export interface ChainStorage<Rv extends RpcVersion> extends GenericChainStorage
      * @param {Callback<Array<number>> =} callback
      **/
     approvals: GenericStorageQuery<Rv, () => Array<number>>;
+
+    /**
+     * The count of spends that have been made.
+     *
+     * @param {Callback<number> =} callback
+     **/
+    spendCount: GenericStorageQuery<Rv, () => number>;
+
+    /**
+     * Spends that have been approved and being processed.
+     *
+     * @param {number} arg
+     * @param {Callback<PalletTreasurySpendStatus | undefined> =} callback
+     **/
+    spends: GenericStorageQuery<Rv, (arg: number) => PalletTreasurySpendStatus | undefined, number>;
 
     /**
      * Generic pallet storage query
@@ -1857,6 +1986,30 @@ export interface ChainStorage<Rv extends RpcVersion> extends GenericChainStorage
     [storage: string]: GenericStorageQuery<Rv>;
   };
   /**
+   * Pallet `Historical`'s storage queries
+   **/
+  historical: {
+    /**
+     * Mapping from historical session indices to session-data root hash and validator count.
+     *
+     * @param {number} arg
+     * @param {Callback<[H256, number] | undefined> =} callback
+     **/
+    historicalSessions: GenericStorageQuery<Rv, (arg: number) => [H256, number] | undefined, number>;
+
+    /**
+     * The range of historical sessions we store. [first, last)
+     *
+     * @param {Callback<[number, number] | undefined> =} callback
+     **/
+    storedRange: GenericStorageQuery<Rv, () => [number, number] | undefined>;
+
+    /**
+     * Generic pallet storage query
+     **/
+    [storage: string]: GenericStorageQuery<Rv>;
+  };
+  /**
    * Pallet `RandomnessCollectiveFlip`'s storage queries
    **/
   randomnessCollectiveFlip: {
@@ -1879,14 +2032,19 @@ export interface ChainStorage<Rv extends RpcVersion> extends GenericChainStorage
    **/
   identity: {
     /**
-     * Information that is pertinent to identify the entity behind an account.
+     * Information that is pertinent to identify the entity behind an account. First item is the
+     * registration, second is the account's primary username.
      *
      * TWOX-NOTE: OK ― `AccountId` is a secure hash.
      *
      * @param {AccountId32Like} arg
-     * @param {Callback<PalletIdentityRegistration | undefined> =} callback
+     * @param {Callback<[PalletIdentityRegistration, Bytes | undefined] | undefined> =} callback
      **/
-    identityOf: GenericStorageQuery<Rv, (arg: AccountId32Like) => PalletIdentityRegistration | undefined, AccountId32>;
+    identityOf: GenericStorageQuery<
+      Rv,
+      (arg: AccountId32Like) => [PalletIdentityRegistration, Bytes | undefined] | undefined,
+      AccountId32
+    >;
 
     /**
      * The super-identity of an alternative "sub" identity together with its name, within that
@@ -1918,6 +2076,43 @@ export interface ChainStorage<Rv extends RpcVersion> extends GenericChainStorage
      * @param {Callback<Array<PalletIdentityRegistrarInfo | undefined>> =} callback
      **/
     registrars: GenericStorageQuery<Rv, () => Array<PalletIdentityRegistrarInfo | undefined>>;
+
+    /**
+     * A map of the accounts who are authorized to grant usernames.
+     *
+     * @param {AccountId32Like} arg
+     * @param {Callback<PalletIdentityAuthorityProperties | undefined> =} callback
+     **/
+    usernameAuthorities: GenericStorageQuery<
+      Rv,
+      (arg: AccountId32Like) => PalletIdentityAuthorityProperties | undefined,
+      AccountId32
+    >;
+
+    /**
+     * Reverse lookup from `username` to the `AccountId` that has registered it. The value should
+     * be a key in the `IdentityOf` map, but it may not if the user has cleared their identity.
+     *
+     * Multiple usernames may map to the same `AccountId`, but `IdentityOf` will only map to one
+     * primary username.
+     *
+     * @param {BytesLike} arg
+     * @param {Callback<AccountId32 | undefined> =} callback
+     **/
+    accountOfUsername: GenericStorageQuery<Rv, (arg: BytesLike) => AccountId32 | undefined, Bytes>;
+
+    /**
+     * Usernames that an authority has granted, but that the account controller has not confirmed
+     * that they want it. Used primarily in cases where the `AccountId` cannot provide a signature
+     * because they are a pure proxy, multisig, etc. In order to confirm it, they should call
+     * [`Call::accept_username`].
+     *
+     * First tuple item is the account and second is the acceptance deadline.
+     *
+     * @param {BytesLike} arg
+     * @param {Callback<[AccountId32, number] | undefined> =} callback
+     **/
+    pendingUsernames: GenericStorageQuery<Rv, (arg: BytesLike) => [AccountId32, number] | undefined, Bytes>;
 
     /**
      * Generic pallet storage query
@@ -2191,6 +2386,18 @@ export interface ChainStorage<Rv extends RpcVersion> extends GenericChainStorage
     agenda: GenericStorageQuery<Rv, (arg: number) => Array<PalletSchedulerScheduled | undefined>, number>;
 
     /**
+     * Retry configurations for items to be executed, indexed by task address.
+     *
+     * @param {[number, number]} arg
+     * @param {Callback<PalletSchedulerRetryConfig | undefined> =} callback
+     **/
+    retries: GenericStorageQuery<
+      Rv,
+      (arg: [number, number]) => PalletSchedulerRetryConfig | undefined,
+      [number, number]
+    >;
+
+    /**
      * Lookup from a name to the block number and index of the task.
      *
      * For v3 -> v4 the previously unbounded identities are Blake2-256 hashed to form the v4
@@ -2265,9 +2472,17 @@ export interface ChainStorage<Rv extends RpcVersion> extends GenericChainStorage
      * The request status of a given hash.
      *
      * @param {H256} arg
+     * @param {Callback<PalletPreimageOldRequestStatus | undefined> =} callback
+     **/
+    statusFor: GenericStorageQuery<Rv, (arg: H256) => PalletPreimageOldRequestStatus | undefined, H256>;
+
+    /**
+     * The request status of a given hash.
+     *
+     * @param {H256} arg
      * @param {Callback<PalletPreimageRequestStatus | undefined> =} callback
      **/
-    statusFor: GenericStorageQuery<Rv, (arg: H256) => PalletPreimageRequestStatus | undefined, H256>;
+    requestStatusFor: GenericStorageQuery<Rv, (arg: H256) => PalletPreimageRequestStatus | undefined, H256>;
 
     /**
      *
@@ -2506,6 +2721,62 @@ export interface ChainStorage<Rv extends RpcVersion> extends GenericChainStorage
     [storage: string]: GenericStorageQuery<Rv>;
   };
   /**
+   * Pallet `Beefy`'s storage queries
+   **/
+  beefy: {
+    /**
+     * The current authorities set
+     *
+     * @param {Callback<Array<SpConsensusBeefyEcdsaCryptoPublic>> =} callback
+     **/
+    authorities: GenericStorageQuery<Rv, () => Array<SpConsensusBeefyEcdsaCryptoPublic>>;
+
+    /**
+     * The current validator set id
+     *
+     * @param {Callback<bigint> =} callback
+     **/
+    validatorSetId: GenericStorageQuery<Rv, () => bigint>;
+
+    /**
+     * Authorities set scheduled to be used with the next session
+     *
+     * @param {Callback<Array<SpConsensusBeefyEcdsaCryptoPublic>> =} callback
+     **/
+    nextAuthorities: GenericStorageQuery<Rv, () => Array<SpConsensusBeefyEcdsaCryptoPublic>>;
+
+    /**
+     * A mapping from BEEFY set ID to the index of the *most recent* session for which its
+     * members were responsible.
+     *
+     * This is only used for validating equivocation proofs. An equivocation proof must
+     * contains a key-ownership proof for a given session, therefore we need a way to tie
+     * together sessions and BEEFY set ids, i.e. we need to validate that a validator
+     * was the owner of a given key on a given session, and what the active set ID was
+     * during that session.
+     *
+     * TWOX-NOTE: `ValidatorSetId` is not under user control.
+     *
+     * @param {bigint} arg
+     * @param {Callback<number | undefined> =} callback
+     **/
+    setIdSession: GenericStorageQuery<Rv, (arg: bigint) => number | undefined, bigint>;
+
+    /**
+     * Block number where BEEFY consensus is enabled/started.
+     * By changing this (through privileged `set_new_genesis()`), BEEFY consensus is effectively
+     * restarted from the newly set block number.
+     *
+     * @param {Callback<number | undefined> =} callback
+     **/
+    genesisBlock: GenericStorageQuery<Rv, () => number | undefined>;
+
+    /**
+     * Generic pallet storage query
+     **/
+    [storage: string]: GenericStorageQuery<Rv>;
+  };
+  /**
    * Pallet `Mmr`'s storage queries
    **/
   mmr: {
@@ -2533,6 +2804,31 @@ export interface ChainStorage<Rv extends RpcVersion> extends GenericChainStorage
      * @param {Callback<H256 | undefined> =} callback
      **/
     nodes: GenericStorageQuery<Rv, (arg: bigint) => H256 | undefined, bigint>;
+
+    /**
+     * Generic pallet storage query
+     **/
+    [storage: string]: GenericStorageQuery<Rv>;
+  };
+  /**
+   * Pallet `MmrLeaf`'s storage queries
+   **/
+  mmrLeaf: {
+    /**
+     * Details of current BEEFY authority set.
+     *
+     * @param {Callback<SpConsensusBeefyMmrBeefyAuthoritySet> =} callback
+     **/
+    beefyAuthorities: GenericStorageQuery<Rv, () => SpConsensusBeefyMmrBeefyAuthoritySet>;
+
+    /**
+     * Details of next BEEFY authority set.
+     *
+     * This storage entry is used as cache for calls to `update_beefy_next_authority_set`.
+     *
+     * @param {Callback<SpConsensusBeefyMmrBeefyAuthoritySet> =} callback
+     **/
+    beefyNextAuthorities: GenericStorageQuery<Rv, () => SpConsensusBeefyMmrBeefyAuthoritySet>;
 
     /**
      * Generic pallet storage query
@@ -3226,7 +3522,7 @@ export interface ChainStorage<Rv extends RpcVersion> extends GenericChainStorage
 
     /**
      * The metadata is a general information concerning the referendum.
-     * The `PreimageHash` refers to the preimage of the `Preimages` provider which can be a JSON
+     * The `Hash` refers to the preimage of the `Preimages` provider which can be a JSON
      * dump or IPFS hash of a JSON file.
      *
      * Consider a garbage collection for a metadata of finished referendums to `unrequest` (remove)
@@ -3412,6 +3708,17 @@ export interface ChainStorage<Rv extends RpcVersion> extends GenericChainStorage
    **/
   nominationPools: {
     /**
+     * The sum of funds across all pools.
+     *
+     * This might be lower but never higher than the sum of `total_balance` of all [`PoolMembers`]
+     * because calling `pool_withdraw_unbonded` might decrease the total stake of the pool's
+     * `bonded_account` without adjusting the pallet-internal `UnbondingPool`'s.
+     *
+     * @param {Callback<bigint> =} callback
+     **/
+    totalValueLocked: GenericStorageQuery<Rv, () => bigint>;
+
+    /**
      * Minimum amount to bond to join a pool.
      *
      * @param {Callback<bigint> =} callback
@@ -3502,7 +3809,7 @@ export interface ChainStorage<Rv extends RpcVersion> extends GenericChainStorage
 
     /**
      * Reward pools. This is where there rewards for each pool accumulate. When a members payout is
-     * claimed, the balance comes out fo the reward pool. Keyed by the bonded pools account.
+     * claimed, the balance comes out of the reward pool. Keyed by the bonded pools account.
      *
      * @param {number} arg
      * @param {Callback<PalletNominationPoolsRewardPool | undefined> =} callback
@@ -3557,8 +3864,8 @@ export interface ChainStorage<Rv extends RpcVersion> extends GenericChainStorage
     /**
      * A reverse lookup from the pool's account id to its id.
      *
-     * This is only used for slashing. In all other instances, the pool id is used, and the
-     * accounts are deterministically derived from it.
+     * This is only used for slashing and on automatic withdraw update. In all other instances, the
+     * pool id is used, and the accounts are deterministically derived from it.
      *
      * @param {AccountId32Like} arg
      * @param {Callback<number | undefined> =} callback
@@ -3629,7 +3936,7 @@ export interface ChainStorage<Rv extends RpcVersion> extends GenericChainStorage
 
     /**
      * The metadata is a general information concerning the referendum.
-     * The `PreimageHash` refers to the preimage of the `Preimages` provider which can be a JSON
+     * The `Hash` refers to the preimage of the `Preimages` provider which can be a JSON
      * dump or IPFS hash of a JSON file.
      *
      * Consider a garbage collection for a metadata of finished referendums to `unrequest` (remove)
@@ -3719,15 +4026,15 @@ export interface ChainStorage<Rv extends RpcVersion> extends GenericChainStorage
      * Map from `PoolAssetId` to `PoolInfo`. This establishes whether a pool has been officially
      * created rather than people sending tokens directly to a pool's public account.
      *
-     * @param {[PalletAssetConversionNativeOrAssetId, PalletAssetConversionNativeOrAssetId]} arg
+     * @param {[FrameSupportTokensFungibleUnionOfNativeOrWithId, FrameSupportTokensFungibleUnionOfNativeOrWithId]} arg
      * @param {Callback<PalletAssetConversionPoolInfo | undefined> =} callback
      **/
     pools: GenericStorageQuery<
       Rv,
       (
-        arg: [PalletAssetConversionNativeOrAssetId, PalletAssetConversionNativeOrAssetId],
+        arg: [FrameSupportTokensFungibleUnionOfNativeOrWithId, FrameSupportTokensFungibleUnionOfNativeOrWithId],
       ) => PalletAssetConversionPoolInfo | undefined,
-      [PalletAssetConversionNativeOrAssetId, PalletAssetConversionNativeOrAssetId]
+      [FrameSupportTokensFungibleUnionOfNativeOrWithId, FrameSupportTokensFungibleUnionOfNativeOrWithId]
     >;
 
     /**
@@ -3965,6 +4272,35 @@ export interface ChainStorage<Rv extends RpcVersion> extends GenericChainStorage
     [storage: string]: GenericStorageQuery<Rv>;
   };
   /**
+   * Pallet `MultiBlockMigrations`'s storage queries
+   **/
+  multiBlockMigrations: {
+    /**
+     * The currently active migration to run and its cursor.
+     *
+     * `None` indicates that no migration is running.
+     *
+     * @param {Callback<PalletMigrationsMigrationCursor | undefined> =} callback
+     **/
+    cursor: GenericStorageQuery<Rv, () => PalletMigrationsMigrationCursor | undefined>;
+
+    /**
+     * Set of all successfully executed migrations.
+     *
+     * This is used as blacklist, to not re-execute migrations that have not been removed from the
+     * codebase yet. Governance can regularly clear this out via `clear_historic`.
+     *
+     * @param {BytesLike} arg
+     * @param {Callback<[] | undefined> =} callback
+     **/
+    historic: GenericStorageQuery<Rv, (arg: BytesLike) => [] | undefined, Bytes>;
+
+    /**
+     * Generic pallet storage query
+     **/
+    [storage: string]: GenericStorageQuery<Rv>;
+  };
+  /**
    * Pallet `Broker`'s storage queries
    **/
   broker: {
@@ -4074,6 +4410,107 @@ export interface ChainStorage<Rv extends RpcVersion> extends GenericChainStorage
      * @param {Callback<PalletBrokerInstaPoolHistoryRecord | undefined> =} callback
      **/
     instaPoolHistory: GenericStorageQuery<Rv, (arg: number) => PalletBrokerInstaPoolHistoryRecord | undefined, number>;
+
+    /**
+     * Received core count change from the relay chain.
+     *
+     * @param {Callback<number | undefined> =} callback
+     **/
+    coreCountInbox: GenericStorageQuery<Rv, () => number | undefined>;
+
+    /**
+     * Generic pallet storage query
+     **/
+    [storage: string]: GenericStorageQuery<Rv>;
+  };
+  /**
+   * Pallet `TasksExample`'s storage queries
+   **/
+  tasksExample: {
+    /**
+     * Some running total.
+     *
+     * @param {Callback<[number, number]> =} callback
+     **/
+    total: GenericStorageQuery<Rv, () => [number, number]>;
+
+    /**
+     * Numbers to be added into the total.
+     *
+     * @param {number} arg
+     * @param {Callback<number | undefined> =} callback
+     **/
+    numbers: GenericStorageQuery<Rv, (arg: number) => number | undefined, number>;
+
+    /**
+     * Generic pallet storage query
+     **/
+    [storage: string]: GenericStorageQuery<Rv>;
+  };
+  /**
+   * Pallet `Mixnet`'s storage queries
+   **/
+  mixnet: {
+    /**
+     * Index of the current session. This may be offset relative to the session index tracked by
+     * eg `pallet_session`; mixnet session indices are independent.
+     *
+     * @param {Callback<number> =} callback
+     **/
+    currentSessionIndex: GenericStorageQuery<Rv, () => number>;
+
+    /**
+     * Block in which the current session started.
+     *
+     * @param {Callback<number> =} callback
+     **/
+    currentSessionStartBlock: GenericStorageQuery<Rv, () => number>;
+
+    /**
+     * Authority list for the next session.
+     *
+     * @param {number} arg
+     * @param {Callback<SpMixnetAppPublic | undefined> =} callback
+     **/
+    nextAuthorityIds: GenericStorageQuery<Rv, (arg: number) => SpMixnetAppPublic | undefined, number>;
+
+    /**
+     * Mixnode sets by session index. Only the mixnode sets for the previous, current, and next
+     * sessions are kept; older sets are discarded.
+     *
+     * The mixnodes in each set are keyed by authority index so we can easily check if an
+     * authority has registered a mixnode. The authority indices should only be used during
+     * registration; the authority indices for the very first session are made up.
+     *
+     * @param {[number, number]} arg
+     * @param {Callback<PalletMixnetBoundedMixnode | undefined> =} callback
+     **/
+    mixnodes: GenericStorageQuery<
+      Rv,
+      (arg: [number, number]) => PalletMixnetBoundedMixnode | undefined,
+      [number, number]
+    >;
+
+    /**
+     * Generic pallet storage query
+     **/
+    [storage: string]: GenericStorageQuery<Rv>;
+  };
+  /**
+   * Pallet `Parameters`'s storage queries
+   **/
+  parameters: {
+    /**
+     * Stored parameters.
+     *
+     * @param {KitchensinkRuntimeRuntimeParametersKey} arg
+     * @param {Callback<KitchensinkRuntimeRuntimeParametersValue | undefined> =} callback
+     **/
+    parameters: GenericStorageQuery<
+      Rv,
+      (arg: KitchensinkRuntimeRuntimeParametersKey) => KitchensinkRuntimeRuntimeParametersValue | undefined,
+      KitchensinkRuntimeRuntimeParametersKey
+    >;
 
     /**
      * Generic pallet storage query

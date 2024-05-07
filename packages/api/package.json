@@ -33,6 +33,6 @@
   "license": "Apache-2.0",
   "devDependencies": {
     "@polkadot/keyring": "^12.6.2",
-    "@polkadot/types": "^10.11.2"
+    "@polkadot/types": "^11.0.2"
   }
 }

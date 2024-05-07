@@ -104,6 +104,7 @@ export type KitchensinkRuntimeRuntimeEvent =
   | { pallet: 'ChildBounties'; palletEvent: PalletChildBountiesEvent }
   | { pallet: 'Referenda'; palletEvent: PalletReferendaEvent }
   | { pallet: 'Remark'; palletEvent: PalletRemarkEvent }
+  | { pallet: 'RootTesting'; palletEvent: PalletRootTestingEvent }
   | { pallet: 'ConvictionVoting'; palletEvent: PalletConvictionVotingEvent }
   | { pallet: 'Whitelist'; palletEvent: PalletWhitelistEvent }
   | { pallet: 'AllianceMotion'; palletEvent: PalletCollectiveEvent }
@@ -118,7 +119,10 @@ export type KitchensinkRuntimeRuntimeEvent =
   | { pallet: 'TxPause'; palletEvent: PalletTxPauseEvent }
   | { pallet: 'SafeMode'; palletEvent: PalletSafeModeEvent }
   | { pallet: 'Statement'; palletEvent: PalletStatementEvent }
-  | { pallet: 'Broker'; palletEvent: PalletBrokerEvent };
+  | { pallet: 'MultiBlockMigrations'; palletEvent: PalletMigrationsEvent }
+  | { pallet: 'Broker'; palletEvent: PalletBrokerEvent }
+  | { pallet: 'Parameters'; palletEvent: PalletParametersEvent }
+  | { pallet: 'SkipFeelessPayment'; palletEvent: PalletSkipFeelessPaymentEvent };
 
 /**
  * Event for the System pallet.
@@ -147,7 +151,11 @@ export type FrameSystemEvent =
   /**
    * On on-chain remark happened.
    **/
-  | { name: 'Remarked'; data: { sender: AccountId32; hash: H256 } };
+  | { name: 'Remarked'; data: { sender: AccountId32; hash: H256 } }
+  /**
+   * An upgrade was authorized.
+   **/
+  | { name: 'UpgradeAuthorized'; data: { codeHash: H256; checkVersion: boolean } };
 
 export type FrameSupportDispatchDispatchClass = 'Normal' | 'Operational' | 'Mandatory';
 
@@ -297,7 +305,11 @@ export type PalletBalancesEvent =
   /**
    * Some balance was thawed.
    **/
-  | { name: 'Thawed'; data: { who: AccountId32; amount: bigint } };
+  | { name: 'Thawed'; data: { who: AccountId32; amount: bigint } }
+  /**
+   * The `TotalIssuance` was forcefully changed.
+   **/
+  | { name: 'TotalIssuanceForced'; data: { old: bigint; new: bigint } };
 
 export type FrameSupportTokensMiscBalanceStatus = 'Free' | 'Reserved';
 
@@ -410,9 +422,9 @@ export type PalletStakingPalletEvent =
    **/
   | { name: 'EraPaid'; data: { eraIndex: number; validatorPayout: bigint; remainder: bigint } }
   /**
-   * The nominator has been rewarded by this amount.
+   * The nominator has been rewarded by this amount to this destination.
    **/
-  | { name: 'Rewarded'; data: { stash: AccountId32; amount: bigint } }
+  | { name: 'Rewarded'; data: { stash: AccountId32; dest: PalletStakingRewardDestination; amount: bigint } }
   /**
    * A staker (validator or nominator) has been slashed by the given amount.
    **/
@@ -478,7 +490,18 @@ export type PalletStakingPalletEvent =
   /**
    * A new force era mode was set.
    **/
-  | { name: 'ForceEra'; data: { mode: PalletStakingForcing } };
+  | { name: 'ForceEra'; data: { mode: PalletStakingForcing } }
+  /**
+   * Report of a controller batch deprecation.
+   **/
+  | { name: 'ControllerBatchDeprecated'; data: { failures: number } };
+
+export type PalletStakingRewardDestination =
+  | { tag: 'Staked' }
+  | { tag: 'Stash' }
+  | { tag: 'Controller' }
+  | { tag: 'Account'; value: AccountId32 }
+  | { tag: 'None' };
 
 export type PalletStakingValidatorPrefs = { commission: Perbill; blocked: boolean };
 
@@ -790,7 +813,38 @@ export type PalletTreasuryEvent =
   /**
    * The inactive funds of the pallet have been updated.
    **/
-  | { name: 'UpdatedInactive'; data: { reactivated: bigint; deactivated: bigint } };
+  | { name: 'UpdatedInactive'; data: { reactivated: bigint; deactivated: bigint } }
+  /**
+   * A new asset spend proposal has been approved.
+   **/
+  | {
+      name: 'AssetSpendApproved';
+      data: {
+        index: number;
+        assetKind: number;
+        amount: bigint;
+        beneficiary: AccountId32;
+        validFrom: number;
+        expireAt: number;
+      };
+    }
+  /**
+   * An approved spend was voided.
+   **/
+  | { name: 'AssetSpendVoided'; data: { index: number } }
+  /**
+   * A payment happened.
+   **/
+  | { name: 'Paid'; data: { index: number; paymentId: [] } }
+  /**
+   * A payment failed and can be retried.
+   **/
+  | { name: 'PaymentFailed'; data: { index: number; paymentId: [] } }
+  /**
+   * A spend was processed and removed from the storage. It might have been successfully
+   * paid or it may have expired.
+   **/
+  | { name: 'SpendProcessed'; data: { index: number } };
 
 /**
  * The `Event` enum of this pallet
@@ -943,17 +997,50 @@ export type KitchensinkRuntimeRuntime = {};
  **/
 export type PalletSudoEvent =
   /**
-   * A sudo just took place. \[result\]
+   * A sudo call just took place.
    **/
-  | { name: 'Sudid'; data: { sudoResult: Result<[], DispatchError> } }
+  | {
+      name: 'Sudid';
+      data: {
+        /**
+         * The result of the call made by the sudo user.
+         **/
+        sudoResult: Result<[], DispatchError>;
+      };
+    }
   /**
-   * The \[sudoer\] just switched identity; the old key is supplied if one existed.
+   * The sudo key has been updated.
    **/
-  | { name: 'KeyChanged'; data: { oldSudoer?: AccountId32 | undefined } }
+  | {
+      name: 'KeyChanged';
+      data: {
+        /**
+         * The old sudo key (if one was previously set).
+         **/
+        old?: AccountId32 | undefined;
+
+        /**
+         * The new sudo key (if one was set).
+         **/
+        new: AccountId32;
+      };
+    }
   /**
-   * A sudo just took place. \[result\]
+   * The key was permanently removed.
    **/
-  | { name: 'SudoAsDone'; data: { sudoResult: Result<[], DispatchError> } };
+  | { name: 'KeyRemoved' }
+  /**
+   * A [sudo_as](Pallet::sudo_as) call just took place.
+   **/
+  | {
+      name: 'SudoAsDone';
+      data: {
+        /**
+         * The result of the call made by the sudo user.
+         **/
+        sudoResult: Result<[], DispatchError>;
+      };
+    };
 
 /**
  * The `Event` enum of this pallet
@@ -970,15 +1057,15 @@ export type PalletImOnlineEvent =
   /**
    * At the end of the session, at least one validator was found to be offline.
    **/
-  | { name: 'SomeOffline'; data: { offline: Array<[AccountId32, PalletStakingExposure]> } };
+  | { name: 'SomeOffline'; data: { offline: Array<[AccountId32, SpStakingExposure]> } };
 
 export type PalletImOnlineSr25519AppSr25519Public = SpCoreSr25519Public;
 
 export type SpCoreSr25519Public = FixedBytes<32>;
 
-export type PalletStakingExposure = { total: bigint; own: bigint; others: Array<PalletStakingIndividualExposure> };
+export type SpStakingExposure = { total: bigint; own: bigint; others: Array<SpStakingIndividualExposure> };
 
-export type PalletStakingIndividualExposure = { who: AccountId32; value: bigint };
+export type SpStakingIndividualExposure = { who: AccountId32; value: bigint };
 
 /**
  * Events type.
@@ -1035,7 +1122,36 @@ export type PalletIdentityEvent =
    * A sub-identity was cleared, and the given deposit repatriated from the
    * main identity account to the sub-identity account.
    **/
-  | { name: 'SubIdentityRevoked'; data: { sub: AccountId32; main: AccountId32; deposit: bigint } };
+  | { name: 'SubIdentityRevoked'; data: { sub: AccountId32; main: AccountId32; deposit: bigint } }
+  /**
+   * A username authority was added.
+   **/
+  | { name: 'AuthorityAdded'; data: { authority: AccountId32 } }
+  /**
+   * A username authority was removed.
+   **/
+  | { name: 'AuthorityRemoved'; data: { authority: AccountId32 } }
+  /**
+   * A username was set for `who`.
+   **/
+  | { name: 'UsernameSet'; data: { who: AccountId32; username: Bytes } }
+  /**
+   * A username was queued, but `who` must accept it prior to `expiration`.
+   **/
+  | { name: 'UsernameQueued'; data: { who: AccountId32; username: Bytes; expiration: number } }
+  /**
+   * A queued username passed its expiration without being claimed and was removed.
+   **/
+  | { name: 'PreapprovalExpired'; data: { whose: AccountId32 } }
+  /**
+   * A username was set as a primary and can be looked up from `who`.
+   **/
+  | { name: 'PrimaryUsernameSet'; data: { who: AccountId32; username: Bytes } }
+  /**
+   * A dangling username (as in, a username corresponding to an account that has removed its
+   * identity) has been removed.
+   **/
+  | { name: 'DanglingUsernameRemoved'; data: { who: AccountId32; username: Bytes } };
 
 /**
  * The `Event` enum of this pallet
@@ -1183,6 +1299,17 @@ export type PalletSchedulerEvent =
       data: { task: [number, number]; id?: FixedBytes<32> | undefined; result: Result<[], DispatchError> };
     }
   /**
+   * Set a retry configuration for some task.
+   **/
+  | {
+      name: 'RetrySet';
+      data: { task: [number, number]; id?: FixedBytes<32> | undefined; period: number; retries: number };
+    }
+  /**
+   * Cancel a retry configuration for some task.
+   **/
+  | { name: 'RetryCancelled'; data: { task: [number, number]; id?: FixedBytes<32> | undefined } }
+  /**
    * The call for the provided hash was not found so the task has been aborted.
    **/
   | { name: 'CallUnavailable'; data: { task: [number, number]; id?: FixedBytes<32> | undefined } }
@@ -1190,6 +1317,11 @@ export type PalletSchedulerEvent =
    * The given task was unable to be renewed since the agenda is full at that block.
    **/
   | { name: 'PeriodicFailed'; data: { task: [number, number]; id?: FixedBytes<32> | undefined } }
+  /**
+   * The given task was unable to be retried since the agenda is full at that block or there
+   * was not enough weight to reschedule it.
+   **/
+  | { name: 'RetryFailed'; data: { task: [number, number]; id?: FixedBytes<32> | undefined } }
   /**
    * The given task can never be executed since it is overweight.
    **/
@@ -1374,7 +1506,23 @@ export type PalletBountiesEvent =
   /**
    * A bounty expiry is extended.
    **/
-  | { name: 'BountyExtended'; data: { index: number } };
+  | { name: 'BountyExtended'; data: { index: number } }
+  /**
+   * A bounty is approved.
+   **/
+  | { name: 'BountyApproved'; data: { index: number } }
+  /**
+   * A bounty curator is proposed.
+   **/
+  | { name: 'CuratorProposed'; data: { bountyId: number; curator: AccountId32 } }
+  /**
+   * A bounty curator is unassigned.
+   **/
+  | { name: 'CuratorUnassigned'; data: { bountyId: number } }
+  /**
+   * A bounty curator is accepted.
+   **/
+  | { name: 'CuratorAccepted'; data: { bountyId: number; curator: AccountId32 } };
 
 /**
  * The `Event` enum of this pallet
@@ -2023,7 +2171,11 @@ export type PalletSalaryEvent =
   /**
    * The next cycle begins.
    **/
-  | { name: 'CycleStarted'; data: { index: number } };
+  | { name: 'CycleStarted'; data: { index: number } }
+  /**
+   * A member swapped their account.
+   **/
+  | { name: 'Swapped'; data: { who: AccountId32; newWho: AccountId32 } };
 
 /**
  * The `Event` enum of this pallet
@@ -2098,7 +2250,11 @@ export type PalletCoreFellowshipEvent =
   /**
    * Pre-ranked account has been inducted at their current rank.
    **/
-  | { name: 'Imported'; data: { who: AccountId32; rank: number } };
+  | { name: 'Imported'; data: { who: AccountId32; rank: number } }
+  /**
+   * A member had its AccountId swapped.
+   **/
+  | { name: 'Swapped'; data: { who: AccountId32; newWho: AccountId32 } };
 
 export type PalletCoreFellowshipParamsType = {
   activeSalary: FixedArray<bigint, 9>;
@@ -2291,7 +2447,7 @@ export type PalletReferendaEvent =
       };
     }
   /**
-   * A deposit has been slashaed.
+   * A deposit has been slashed.
    **/
   | {
       name: 'DepositSlashed';
@@ -2545,6 +2701,7 @@ export type KitchensinkRuntimeRuntimeCall =
   | { pallet: 'Tips'; palletCall: PalletTipsCall }
   | { pallet: 'Assets'; palletCall: PalletAssetsCall }
   | { pallet: 'PoolAssets'; palletCall: PalletAssetsCall }
+  | { pallet: 'Beefy'; palletCall: PalletBeefyCall }
   | { pallet: 'Lottery'; palletCall: PalletLotteryCall }
   | { pallet: 'Nis'; palletCall: PalletNisCall }
   | { pallet: 'Uniques'; palletCall: PalletUniquesCall }
@@ -2572,7 +2729,10 @@ export type KitchensinkRuntimeRuntimeCall =
   | { pallet: 'Pov'; palletCall: FrameBenchmarkingPalletPovCall }
   | { pallet: 'TxPause'; palletCall: PalletTxPauseCall }
   | { pallet: 'SafeMode'; palletCall: PalletSafeModeCall }
-  | { pallet: 'Broker'; palletCall: PalletBrokerCall };
+  | { pallet: 'MultiBlockMigrations'; palletCall: PalletMigrationsCall }
+  | { pallet: 'Broker'; palletCall: PalletBrokerCall }
+  | { pallet: 'Mixnet'; palletCall: PalletMixnetCall }
+  | { pallet: 'Parameters'; palletCall: PalletParametersCall };
 
 export type KitchensinkRuntimeRuntimeCallLike =
   | { pallet: 'System'; palletCall: FrameSystemCallLike }
@@ -2608,6 +2768,7 @@ export type KitchensinkRuntimeRuntimeCallLike =
   | { pallet: 'Tips'; palletCall: PalletTipsCallLike }
   | { pallet: 'Assets'; palletCall: PalletAssetsCallLike }
   | { pallet: 'PoolAssets'; palletCall: PalletAssetsCallLike }
+  | { pallet: 'Beefy'; palletCall: PalletBeefyCallLike }
   | { pallet: 'Lottery'; palletCall: PalletLotteryCallLike }
   | { pallet: 'Nis'; palletCall: PalletNisCallLike }
   | { pallet: 'Uniques'; palletCall: PalletUniquesCallLike }
@@ -2635,134 +2796,339 @@ export type KitchensinkRuntimeRuntimeCallLike =
   | { pallet: 'Pov'; palletCall: FrameBenchmarkingPalletPovCallLike }
   | { pallet: 'TxPause'; palletCall: PalletTxPauseCallLike }
   | { pallet: 'SafeMode'; palletCall: PalletSafeModeCallLike }
-  | { pallet: 'Broker'; palletCall: PalletBrokerCallLike };
+  | { pallet: 'MultiBlockMigrations'; palletCall: PalletMigrationsCallLike }
+  | { pallet: 'Broker'; palletCall: PalletBrokerCallLike }
+  | { pallet: 'Mixnet'; palletCall: PalletMixnetCallLike }
+  | { pallet: 'Parameters'; palletCall: PalletParametersCallLike };
 
 /**
  * Contains a variant per dispatchable extrinsic that this pallet has.
  **/
 export type FrameSystemCall =
   /**
-   * See [`Pallet::remark`].
+   * Make some on-chain remark.
+   *
+   * Can be executed by every `origin`.
    **/
   | { name: 'Remark'; params: { remark: Bytes } }
   /**
-   * See [`Pallet::set_heap_pages`].
+   * Set the number of pages in the WebAssembly environment's heap.
    **/
   | { name: 'SetHeapPages'; params: { pages: bigint } }
   /**
-   * See [`Pallet::set_code`].
+   * Set the new runtime code.
    **/
   | { name: 'SetCode'; params: { code: Bytes } }
   /**
-   * See [`Pallet::set_code_without_checks`].
+   * Set the new runtime code without doing any checks of the given `code`.
+   *
+   * Note that runtime upgrades will not run if this is called with a not-increasing spec
+   * version!
    **/
   | { name: 'SetCodeWithoutChecks'; params: { code: Bytes } }
   /**
-   * See [`Pallet::set_storage`].
+   * Set some items of storage.
    **/
   | { name: 'SetStorage'; params: { items: Array<[Bytes, Bytes]> } }
   /**
-   * See [`Pallet::kill_storage`].
+   * Kill some items from storage.
    **/
   | { name: 'KillStorage'; params: { keys: Array<Bytes> } }
   /**
-   * See [`Pallet::kill_prefix`].
+   * Kill all storage items with a key that starts with the given prefix.
+   *
+   * **NOTE:** We rely on the Root origin to provide us the number of subkeys under
+   * the prefix we are removing to accurately calculate the weight of this function.
    **/
   | { name: 'KillPrefix'; params: { prefix: Bytes; subkeys: number } }
   /**
-   * See [`Pallet::remark_with_event`].
+   * Make some on-chain remark and emit event.
    **/
-  | { name: 'RemarkWithEvent'; params: { remark: Bytes } };
+  | { name: 'RemarkWithEvent'; params: { remark: Bytes } }
+  /**
+   * Authorize an upgrade to a given `code_hash` for the runtime. The runtime can be supplied
+   * later.
+   *
+   * This call requires Root origin.
+   **/
+  | { name: 'AuthorizeUpgrade'; params: { codeHash: H256 } }
+  /**
+   * Authorize an upgrade to a given `code_hash` for the runtime. The runtime can be supplied
+   * later.
+   *
+   * WARNING: This authorizes an upgrade that will take place without any safety checks, for
+   * example that the spec name remains the same and that the version number increases. Not
+   * recommended for normal use. Use `authorize_upgrade` instead.
+   *
+   * This call requires Root origin.
+   **/
+  | { name: 'AuthorizeUpgradeWithoutChecks'; params: { codeHash: H256 } }
+  /**
+   * Provide the preimage (runtime binary) `code` for an upgrade that has been authorized.
+   *
+   * If the authorization required a version check, this call will ensure the spec name
+   * remains unchanged and that the spec version has increased.
+   *
+   * Depending on the runtime's `OnSetCode` configuration, this function may directly apply
+   * the new `code` in the same block or attempt to schedule the upgrade.
+   *
+   * All origins are allowed.
+   **/
+  | { name: 'ApplyAuthorizedUpgrade'; params: { code: Bytes } };
 
 export type FrameSystemCallLike =
   /**
-   * See [`Pallet::remark`].
+   * Make some on-chain remark.
+   *
+   * Can be executed by every `origin`.
    **/
   | { name: 'Remark'; params: { remark: BytesLike } }
   /**
-   * See [`Pallet::set_heap_pages`].
+   * Set the number of pages in the WebAssembly environment's heap.
    **/
   | { name: 'SetHeapPages'; params: { pages: bigint } }
   /**
-   * See [`Pallet::set_code`].
+   * Set the new runtime code.
    **/
   | { name: 'SetCode'; params: { code: BytesLike } }
   /**
-   * See [`Pallet::set_code_without_checks`].
+   * Set the new runtime code without doing any checks of the given `code`.
+   *
+   * Note that runtime upgrades will not run if this is called with a not-increasing spec
+   * version!
    **/
   | { name: 'SetCodeWithoutChecks'; params: { code: BytesLike } }
   /**
-   * See [`Pallet::set_storage`].
+   * Set some items of storage.
    **/
   | { name: 'SetStorage'; params: { items: Array<[BytesLike, BytesLike]> } }
   /**
-   * See [`Pallet::kill_storage`].
+   * Kill some items from storage.
    **/
   | { name: 'KillStorage'; params: { keys: Array<BytesLike> } }
   /**
-   * See [`Pallet::kill_prefix`].
+   * Kill all storage items with a key that starts with the given prefix.
+   *
+   * **NOTE:** We rely on the Root origin to provide us the number of subkeys under
+   * the prefix we are removing to accurately calculate the weight of this function.
    **/
   | { name: 'KillPrefix'; params: { prefix: BytesLike; subkeys: number } }
   /**
-   * See [`Pallet::remark_with_event`].
+   * Make some on-chain remark and emit event.
    **/
-  | { name: 'RemarkWithEvent'; params: { remark: BytesLike } };
+  | { name: 'RemarkWithEvent'; params: { remark: BytesLike } }
+  /**
+   * Authorize an upgrade to a given `code_hash` for the runtime. The runtime can be supplied
+   * later.
+   *
+   * This call requires Root origin.
+   **/
+  | { name: 'AuthorizeUpgrade'; params: { codeHash: H256 } }
+  /**
+   * Authorize an upgrade to a given `code_hash` for the runtime. The runtime can be supplied
+   * later.
+   *
+   * WARNING: This authorizes an upgrade that will take place without any safety checks, for
+   * example that the spec name remains the same and that the version number increases. Not
+   * recommended for normal use. Use `authorize_upgrade` instead.
+   *
+   * This call requires Root origin.
+   **/
+  | { name: 'AuthorizeUpgradeWithoutChecks'; params: { codeHash: H256 } }
+  /**
+   * Provide the preimage (runtime binary) `code` for an upgrade that has been authorized.
+   *
+   * If the authorization required a version check, this call will ensure the spec name
+   * remains unchanged and that the spec version has increased.
+   *
+   * Depending on the runtime's `OnSetCode` configuration, this function may directly apply
+   * the new `code` in the same block or attempt to schedule the upgrade.
+   *
+   * All origins are allowed.
+   **/
+  | { name: 'ApplyAuthorizedUpgrade'; params: { code: BytesLike } };
 
 /**
  * Contains a variant per dispatchable extrinsic that this pallet has.
  **/
 export type PalletUtilityCall =
   /**
-   * See [`Pallet::batch`].
+   * Send a batch of dispatch calls.
+   *
+   * May be called from any origin except `None`.
+   *
+   * - `calls`: The calls to be dispatched from the same origin. The number of call must not
+   * exceed the constant: `batched_calls_limit` (available in constant metadata).
+   *
+   * If origin is root then the calls are dispatched without checking origin filter. (This
+   * includes bypassing `frame_system::Config::BaseCallFilter`).
+   *
+   * ## Complexity
+   * - O(C) where C is the number of calls to be batched.
+   *
+   * This will return `Ok` in all circumstances. To determine the success of the batch, an
+   * event is deposited. If a call failed and the batch was interrupted, then the
+   * `BatchInterrupted` event is deposited, along with the number of successful calls made
+   * and the error of the failed call. If all were successful, then the `BatchCompleted`
+   * event is deposited.
    **/
   | { name: 'Batch'; params: { calls: Array<KitchensinkRuntimeRuntimeCall> } }
   /**
-   * See [`Pallet::as_derivative`].
+   * Send a call through an indexed pseudonym of the sender.
+   *
+   * Filter from origin are passed along. The call will be dispatched with an origin which
+   * use the same filter as the origin of this call.
+   *
+   * NOTE: If you need to ensure that any account-based filtering is not honored (i.e.
+   * because you expect `proxy` to have been used prior in the call stack and you do not want
+   * the call restrictions to apply to any sub-accounts), then use `as_multi_threshold_1`
+   * in the Multisig pallet instead.
+   *
+   * NOTE: Prior to version *12, this was called `as_limited_sub`.
+   *
+   * The dispatch origin for this call must be _Signed_.
    **/
   | { name: 'AsDerivative'; params: { index: number; call: KitchensinkRuntimeRuntimeCall } }
   /**
-   * See [`Pallet::batch_all`].
+   * Send a batch of dispatch calls and atomically execute them.
+   * The whole transaction will rollback and fail if any of the calls failed.
+   *
+   * May be called from any origin except `None`.
+   *
+   * - `calls`: The calls to be dispatched from the same origin. The number of call must not
+   * exceed the constant: `batched_calls_limit` (available in constant metadata).
+   *
+   * If origin is root then the calls are dispatched without checking origin filter. (This
+   * includes bypassing `frame_system::Config::BaseCallFilter`).
+   *
+   * ## Complexity
+   * - O(C) where C is the number of calls to be batched.
    **/
   | { name: 'BatchAll'; params: { calls: Array<KitchensinkRuntimeRuntimeCall> } }
   /**
-   * See [`Pallet::dispatch_as`].
+   * Dispatches a function call with a provided origin.
+   *
+   * The dispatch origin for this call must be _Root_.
+   *
+   * ## Complexity
+   * - O(1).
    **/
   | { name: 'DispatchAs'; params: { asOrigin: KitchensinkRuntimeOriginCaller; call: KitchensinkRuntimeRuntimeCall } }
   /**
-   * See [`Pallet::force_batch`].
+   * Send a batch of dispatch calls.
+   * Unlike `batch`, it allows errors and won't interrupt.
+   *
+   * May be called from any origin except `None`.
+   *
+   * - `calls`: The calls to be dispatched from the same origin. The number of call must not
+   * exceed the constant: `batched_calls_limit` (available in constant metadata).
+   *
+   * If origin is root then the calls are dispatch without checking origin filter. (This
+   * includes bypassing `frame_system::Config::BaseCallFilter`).
+   *
+   * ## Complexity
+   * - O(C) where C is the number of calls to be batched.
    **/
   | { name: 'ForceBatch'; params: { calls: Array<KitchensinkRuntimeRuntimeCall> } }
   /**
-   * See [`Pallet::with_weight`].
+   * Dispatch a function call with a specified weight.
+   *
+   * This function does not check the weight of the call, and instead allows the
+   * Root origin to specify the weight of the call.
+   *
+   * The dispatch origin for this call must be _Root_.
    **/
   | { name: 'WithWeight'; params: { call: KitchensinkRuntimeRuntimeCall; weight: SpWeightsWeightV2Weight } };
 
 export type PalletUtilityCallLike =
   /**
-   * See [`Pallet::batch`].
+   * Send a batch of dispatch calls.
+   *
+   * May be called from any origin except `None`.
+   *
+   * - `calls`: The calls to be dispatched from the same origin. The number of call must not
+   * exceed the constant: `batched_calls_limit` (available in constant metadata).
+   *
+   * If origin is root then the calls are dispatched without checking origin filter. (This
+   * includes bypassing `frame_system::Config::BaseCallFilter`).
+   *
+   * ## Complexity
+   * - O(C) where C is the number of calls to be batched.
+   *
+   * This will return `Ok` in all circumstances. To determine the success of the batch, an
+   * event is deposited. If a call failed and the batch was interrupted, then the
+   * `BatchInterrupted` event is deposited, along with the number of successful calls made
+   * and the error of the failed call. If all were successful, then the `BatchCompleted`
+   * event is deposited.
    **/
   | { name: 'Batch'; params: { calls: Array<KitchensinkRuntimeRuntimeCallLike> } }
   /**
-   * See [`Pallet::as_derivative`].
+   * Send a call through an indexed pseudonym of the sender.
+   *
+   * Filter from origin are passed along. The call will be dispatched with an origin which
+   * use the same filter as the origin of this call.
+   *
+   * NOTE: If you need to ensure that any account-based filtering is not honored (i.e.
+   * because you expect `proxy` to have been used prior in the call stack and you do not want
+   * the call restrictions to apply to any sub-accounts), then use `as_multi_threshold_1`
+   * in the Multisig pallet instead.
+   *
+   * NOTE: Prior to version *12, this was called `as_limited_sub`.
+   *
+   * The dispatch origin for this call must be _Signed_.
    **/
   | { name: 'AsDerivative'; params: { index: number; call: KitchensinkRuntimeRuntimeCallLike } }
   /**
-   * See [`Pallet::batch_all`].
+   * Send a batch of dispatch calls and atomically execute them.
+   * The whole transaction will rollback and fail if any of the calls failed.
+   *
+   * May be called from any origin except `None`.
+   *
+   * - `calls`: The calls to be dispatched from the same origin. The number of call must not
+   * exceed the constant: `batched_calls_limit` (available in constant metadata).
+   *
+   * If origin is root then the calls are dispatched without checking origin filter. (This
+   * includes bypassing `frame_system::Config::BaseCallFilter`).
+   *
+   * ## Complexity
+   * - O(C) where C is the number of calls to be batched.
    **/
   | { name: 'BatchAll'; params: { calls: Array<KitchensinkRuntimeRuntimeCallLike> } }
   /**
-   * See [`Pallet::dispatch_as`].
+   * Dispatches a function call with a provided origin.
+   *
+   * The dispatch origin for this call must be _Root_.
+   *
+   * ## Complexity
+   * - O(1).
    **/
   | {
       name: 'DispatchAs';
       params: { asOrigin: KitchensinkRuntimeOriginCaller; call: KitchensinkRuntimeRuntimeCallLike };
     }
   /**
-   * See [`Pallet::force_batch`].
+   * Send a batch of dispatch calls.
+   * Unlike `batch`, it allows errors and won't interrupt.
+   *
+   * May be called from any origin except `None`.
+   *
+   * - `calls`: The calls to be dispatched from the same origin. The number of call must not
+   * exceed the constant: `batched_calls_limit` (available in constant metadata).
+   *
+   * If origin is root then the calls are dispatch without checking origin filter. (This
+   * includes bypassing `frame_system::Config::BaseCallFilter`).
+   *
+   * ## Complexity
+   * - O(C) where C is the number of calls to be batched.
    **/
   | { name: 'ForceBatch'; params: { calls: Array<KitchensinkRuntimeRuntimeCallLike> } }
   /**
-   * See [`Pallet::with_weight`].
+   * Dispatch a function call with a specified weight.
+   *
+   * This function does not check the weight of the call, and instead allows the
+   * Root origin to specify the weight of the call.
+   *
+   * The dispatch origin for this call must be _Root_.
    **/
   | { name: 'WithWeight'; params: { call: KitchensinkRuntimeRuntimeCallLike; weight: SpWeightsWeightV2Weight } };
 
@@ -2787,41 +3153,67 @@ export type SpCoreVoid = null;
  **/
 export type PalletBabeCall =
   /**
-   * See [`Pallet::report_equivocation`].
+   * Report authority equivocation/misbehavior. This method will verify
+   * the equivocation proof and validate the given key ownership proof
+   * against the extracted offender. If both are valid, the offence will
+   * be reported.
    **/
   | {
       name: 'ReportEquivocation';
       params: { equivocationProof: SpConsensusSlotsEquivocationProof; keyOwnerProof: SpSessionMembershipProof };
     }
   /**
-   * See [`Pallet::report_equivocation_unsigned`].
+   * Report authority equivocation/misbehavior. This method will verify
+   * the equivocation proof and validate the given key ownership proof
+   * against the extracted offender. If both are valid, the offence will
+   * be reported.
+   * This extrinsic must be called unsigned and it is expected that only
+   * block authors will call it (validated in `ValidateUnsigned`), as such
+   * if the block author is defined it will be defined as the equivocation
+   * reporter.
    **/
   | {
       name: 'ReportEquivocationUnsigned';
       params: { equivocationProof: SpConsensusSlotsEquivocationProof; keyOwnerProof: SpSessionMembershipProof };
     }
   /**
-   * See [`Pallet::plan_config_change`].
+   * Plan an epoch config change. The epoch config change is recorded and will be enacted on
+   * the next call to `enact_epoch_change`. The config will be activated one epoch after.
+   * Multiple calls to this method will replace any existing planned config change that had
+   * not been enacted yet.
    **/
   | { name: 'PlanConfigChange'; params: { config: SpConsensusBabeDigestsNextConfigDescriptor } };
 
 export type PalletBabeCallLike =
   /**
-   * See [`Pallet::report_equivocation`].
+   * Report authority equivocation/misbehavior. This method will verify
+   * the equivocation proof and validate the given key ownership proof
+   * against the extracted offender. If both are valid, the offence will
+   * be reported.
    **/
   | {
       name: 'ReportEquivocation';
       params: { equivocationProof: SpConsensusSlotsEquivocationProof; keyOwnerProof: SpSessionMembershipProof };
     }
   /**
-   * See [`Pallet::report_equivocation_unsigned`].
+   * Report authority equivocation/misbehavior. This method will verify
+   * the equivocation proof and validate the given key ownership proof
+   * against the extracted offender. If both are valid, the offence will
+   * be reported.
+   * This extrinsic must be called unsigned and it is expected that only
+   * block authors will call it (validated in `ValidateUnsigned`), as such
+   * if the block author is defined it will be defined as the equivocation
+   * reporter.
    **/
   | {
       name: 'ReportEquivocationUnsigned';
       params: { equivocationProof: SpConsensusSlotsEquivocationProof; keyOwnerProof: SpSessionMembershipProof };
     }
   /**
-   * See [`Pallet::plan_config_change`].
+   * Plan an epoch config change. The epoch config change is recorded and will be enacted on
+   * the next call to `enact_epoch_change`. The config will be activated one epoch after.
+   * Multiple calls to this method will replace any existing planned config change that had
+   * not been enacted yet.
    **/
   | { name: 'PlanConfigChange'; params: { config: SpConsensusBabeDigestsNextConfigDescriptor } };
 
@@ -2853,13 +3245,49 @@ export type SpConsensusBabeAllowedSlots =
  **/
 export type PalletTimestampCall =
   /**
-   * See [`Pallet::set`].
+   * Set the current time.
+   *
+   * This call should be invoked exactly once per block. It will panic at the finalization
+   * phase, if this call hasn't been invoked by that time.
+   *
+   * The timestamp should be greater than the previous one by the amount specified by
+   * [`Config::MinimumPeriod`].
+   *
+   * The dispatch origin for this call must be _None_.
+   *
+   * This dispatch class is _Mandatory_ to ensure it gets executed in the block. Be aware
+   * that changing the complexity of this call could result exhausting the resources in a
+   * block to execute any other calls.
+   *
+   * ## Complexity
+   * - `O(1)` (Note that implementations of `OnTimestampSet` must also be `O(1)`)
+   * - 1 storage read and 1 storage mutation (codec `O(1)` because of `DidUpdate::take` in
+   * `on_finalize`)
+   * - 1 event handler `on_timestamp_set`. Must be `O(1)`.
    **/
   { name: 'Set'; params: { now: bigint } };
 
 export type PalletTimestampCallLike =
   /**
-   * See [`Pallet::set`].
+   * Set the current time.
+   *
+   * This call should be invoked exactly once per block. It will panic at the finalization
+   * phase, if this call hasn't been invoked by that time.
+   *
+   * The timestamp should be greater than the previous one by the amount specified by
+   * [`Config::MinimumPeriod`].
+   *
+   * The dispatch origin for this call must be _None_.
+   *
+   * This dispatch class is _Mandatory_ to ensure it gets executed in the block. Be aware
+   * that changing the complexity of this call could result exhausting the resources in a
+   * block to execute any other calls.
+   *
+   * ## Complexity
+   * - `O(1)` (Note that implementations of `OnTimestampSet` must also be `O(1)`)
+   * - 1 storage read and 1 storage mutation (codec `O(1)` because of `DidUpdate::take` in
+   * `on_finalize`)
+   * - 1 event handler `on_timestamp_set`. Must be `O(1)`.
    **/
   { name: 'Set'; params: { now: bigint } };
 
@@ -2868,45 +3296,157 @@ export type PalletTimestampCallLike =
  **/
 export type PalletIndicesCall =
   /**
-   * See [`Pallet::claim`].
+   * Assign an previously unassigned index.
+   *
+   * Payment: `Deposit` is reserved from the sender account.
+   *
+   * The dispatch origin for this call must be _Signed_.
+   *
+   * - `index`: the index to be claimed. This must not be in use.
+   *
+   * Emits `IndexAssigned` if successful.
+   *
+   * ## Complexity
+   * - `O(1)`.
    **/
   | { name: 'Claim'; params: { index: number } }
   /**
-   * See [`Pallet::transfer`].
+   * Assign an index already owned by the sender to another account. The balance reservation
+   * is effectively transferred to the new account.
+   *
+   * The dispatch origin for this call must be _Signed_.
+   *
+   * - `index`: the index to be re-assigned. This must be owned by the sender.
+   * - `new`: the new owner of the index. This function is a no-op if it is equal to sender.
+   *
+   * Emits `IndexAssigned` if successful.
+   *
+   * ## Complexity
+   * - `O(1)`.
    **/
   | { name: 'Transfer'; params: { new: MultiAddress; index: number } }
   /**
-   * See [`Pallet::free`].
+   * Free up an index owned by the sender.
+   *
+   * Payment: Any previous deposit placed for the index is unreserved in the sender account.
+   *
+   * The dispatch origin for this call must be _Signed_ and the sender must own the index.
+   *
+   * - `index`: the index to be freed. This must be owned by the sender.
+   *
+   * Emits `IndexFreed` if successful.
+   *
+   * ## Complexity
+   * - `O(1)`.
    **/
   | { name: 'Free'; params: { index: number } }
   /**
-   * See [`Pallet::force_transfer`].
+   * Force an index to an account. This doesn't require a deposit. If the index is already
+   * held, then any deposit is reimbursed to its current owner.
+   *
+   * The dispatch origin for this call must be _Root_.
+   *
+   * - `index`: the index to be (re-)assigned.
+   * - `new`: the new owner of the index. This function is a no-op if it is equal to sender.
+   * - `freeze`: if set to `true`, will freeze the index so it cannot be transferred.
+   *
+   * Emits `IndexAssigned` if successful.
+   *
+   * ## Complexity
+   * - `O(1)`.
    **/
   | { name: 'ForceTransfer'; params: { new: MultiAddress; index: number; freeze: boolean } }
   /**
-   * See [`Pallet::freeze`].
+   * Freeze an index so it will always point to the sender account. This consumes the
+   * deposit.
+   *
+   * The dispatch origin for this call must be _Signed_ and the signing account must have a
+   * non-frozen account `index`.
+   *
+   * - `index`: the index to be frozen in place.
+   *
+   * Emits `IndexFrozen` if successful.
+   *
+   * ## Complexity
+   * - `O(1)`.
    **/
   | { name: 'Freeze'; params: { index: number } };
 
 export type PalletIndicesCallLike =
   /**
-   * See [`Pallet::claim`].
+   * Assign an previously unassigned index.
+   *
+   * Payment: `Deposit` is reserved from the sender account.
+   *
+   * The dispatch origin for this call must be _Signed_.
+   *
+   * - `index`: the index to be claimed. This must not be in use.
+   *
+   * Emits `IndexAssigned` if successful.
+   *
+   * ## Complexity
+   * - `O(1)`.
    **/
   | { name: 'Claim'; params: { index: number } }
   /**
-   * See [`Pallet::transfer`].
+   * Assign an index already owned by the sender to another account. The balance reservation
+   * is effectively transferred to the new account.
+   *
+   * The dispatch origin for this call must be _Signed_.
+   *
+   * - `index`: the index to be re-assigned. This must be owned by the sender.
+   * - `new`: the new owner of the index. This function is a no-op if it is equal to sender.
+   *
+   * Emits `IndexAssigned` if successful.
+   *
+   * ## Complexity
+   * - `O(1)`.
    **/
   | { name: 'Transfer'; params: { new: MultiAddressLike; index: number } }
   /**
-   * See [`Pallet::free`].
+   * Free up an index owned by the sender.
+   *
+   * Payment: Any previous deposit placed for the index is unreserved in the sender account.
+   *
+   * The dispatch origin for this call must be _Signed_ and the sender must own the index.
+   *
+   * - `index`: the index to be freed. This must be owned by the sender.
+   *
+   * Emits `IndexFreed` if successful.
+   *
+   * ## Complexity
+   * - `O(1)`.
    **/
   | { name: 'Free'; params: { index: number } }
   /**
-   * See [`Pallet::force_transfer`].
+   * Force an index to an account. This doesn't require a deposit. If the index is already
+   * held, then any deposit is reimbursed to its current owner.
+   *
+   * The dispatch origin for this call must be _Root_.
+   *
+   * - `index`: the index to be (re-)assigned.
+   * - `new`: the new owner of the index. This function is a no-op if it is equal to sender.
+   * - `freeze`: if set to `true`, will freeze the index so it cannot be transferred.
+   *
+   * Emits `IndexAssigned` if successful.
+   *
+   * ## Complexity
+   * - `O(1)`.
    **/
   | { name: 'ForceTransfer'; params: { new: MultiAddressLike; index: number; freeze: boolean } }
   /**
-   * See [`Pallet::freeze`].
+   * Freeze an index so it will always point to the sender account. This consumes the
+   * deposit.
+   *
+   * The dispatch origin for this call must be _Signed_ and the signing account must have a
+   * non-frozen account `index`.
+   *
+   * - `index`: the index to be frozen in place.
+   *
+   * Emits `IndexFrozen` if successful.
+   *
+   * ## Complexity
+   * - `O(1)`.
    **/
   | { name: 'Freeze'; params: { index: number } };
 
@@ -2915,86 +3455,175 @@ export type PalletIndicesCallLike =
  **/
 export type PalletBalancesCall =
   /**
-   * See [`Pallet::transfer_allow_death`].
+   * Transfer some liquid free balance to another account.
+   *
+   * `transfer_allow_death` will set the `FreeBalance` of the sender and receiver.
+   * If the sender's account is below the existential deposit as a result
+   * of the transfer, the account will be reaped.
+   *
+   * The dispatch origin for this call must be `Signed` by the transactor.
    **/
   | { name: 'TransferAllowDeath'; params: { dest: MultiAddress; value: bigint } }
   /**
-   * See [`Pallet::set_balance_deprecated`].
-   **/
-  | { name: 'SetBalanceDeprecated'; params: { who: MultiAddress; newFree: bigint; oldReserved: bigint } }
-  /**
-   * See [`Pallet::force_transfer`].
+   * Exactly as `transfer_allow_death`, except the origin must be root and the source account
+   * may be specified.
    **/
   | { name: 'ForceTransfer'; params: { source: MultiAddress; dest: MultiAddress; value: bigint } }
   /**
-   * See [`Pallet::transfer_keep_alive`].
+   * Same as the [`transfer_allow_death`] call, but with a check that the transfer will not
+   * kill the origin account.
+   *
+   * 99% of the time you want [`transfer_allow_death`] instead.
+   *
+   * [`transfer_allow_death`]: struct.Pallet.html#method.transfer
    **/
   | { name: 'TransferKeepAlive'; params: { dest: MultiAddress; value: bigint } }
   /**
-   * See [`Pallet::transfer_all`].
+   * Transfer the entire transferable balance from the caller account.
+   *
+   * NOTE: This function only attempts to transfer _transferable_ balances. This means that
+   * any locked, reserved, or existential deposits (when `keep_alive` is `true`), will not be
+   * transferred by this function. To ensure that this function results in a killed account,
+   * you might need to prepare the account by removing any reference counters, storage
+   * deposits, etc...
+   *
+   * The dispatch origin of this call must be Signed.
+   *
+   * - `dest`: The recipient of the transfer.
+   * - `keep_alive`: A boolean to determine if the `transfer_all` operation should send all
+   * of the funds the account has, causing the sender account to be killed (false), or
+   * transfer everything except at least the existential deposit, which will guarantee to
+   * keep the sender account alive (true).
    **/
   | { name: 'TransferAll'; params: { dest: MultiAddress; keepAlive: boolean } }
   /**
-   * See [`Pallet::force_unreserve`].
+   * Unreserve some balance from a user by force.
+   *
+   * Can only be called by ROOT.
    **/
   | { name: 'ForceUnreserve'; params: { who: MultiAddress; amount: bigint } }
   /**
-   * See [`Pallet::upgrade_accounts`].
+   * Upgrade a specified account.
+   *
+   * - `origin`: Must be `Signed`.
+   * - `who`: The account to be upgraded.
+   *
+   * This will waive the transaction fee if at least all but 10% of the accounts needed to
+   * be upgraded. (We let some not have to be upgraded just in order to allow for the
+   * possibililty of churn).
    **/
   | { name: 'UpgradeAccounts'; params: { who: Array<AccountId32> } }
   /**
-   * See [`Pallet::transfer`].
+   * Set the regular balance of a given account.
+   *
+   * The dispatch origin for this call is `root`.
    **/
-  | { name: 'Transfer'; params: { dest: MultiAddress; value: bigint } }
+  | { name: 'ForceSetBalance'; params: { who: MultiAddress; newFree: bigint } }
   /**
-   * See [`Pallet::force_set_balance`].
+   * Adjust the total issuance in a saturating way.
+   *
+   * Can only be called by root and always needs a positive `delta`.
+   *
+   * # Example
    **/
-  | { name: 'ForceSetBalance'; params: { who: MultiAddress; newFree: bigint } };
+  | { name: 'ForceAdjustTotalIssuance'; params: { direction: PalletBalancesAdjustmentDirection; delta: bigint } };
 
 export type PalletBalancesCallLike =
   /**
-   * See [`Pallet::transfer_allow_death`].
+   * Transfer some liquid free balance to another account.
+   *
+   * `transfer_allow_death` will set the `FreeBalance` of the sender and receiver.
+   * If the sender's account is below the existential deposit as a result
+   * of the transfer, the account will be reaped.
+   *
+   * The dispatch origin for this call must be `Signed` by the transactor.
    **/
   | { name: 'TransferAllowDeath'; params: { dest: MultiAddressLike; value: bigint } }
   /**
-   * See [`Pallet::set_balance_deprecated`].
-   **/
-  | { name: 'SetBalanceDeprecated'; params: { who: MultiAddressLike; newFree: bigint; oldReserved: bigint } }
-  /**
-   * See [`Pallet::force_transfer`].
+   * Exactly as `transfer_allow_death`, except the origin must be root and the source account
+   * may be specified.
    **/
   | { name: 'ForceTransfer'; params: { source: MultiAddressLike; dest: MultiAddressLike; value: bigint } }
   /**
-   * See [`Pallet::transfer_keep_alive`].
+   * Same as the [`transfer_allow_death`] call, but with a check that the transfer will not
+   * kill the origin account.
+   *
+   * 99% of the time you want [`transfer_allow_death`] instead.
+   *
+   * [`transfer_allow_death`]: struct.Pallet.html#method.transfer
    **/
   | { name: 'TransferKeepAlive'; params: { dest: MultiAddressLike; value: bigint } }
   /**
-   * See [`Pallet::transfer_all`].
+   * Transfer the entire transferable balance from the caller account.
+   *
+   * NOTE: This function only attempts to transfer _transferable_ balances. This means that
+   * any locked, reserved, or existential deposits (when `keep_alive` is `true`), will not be
+   * transferred by this function. To ensure that this function results in a killed account,
+   * you might need to prepare the account by removing any reference counters, storage
+   * deposits, etc...
+   *
+   * The dispatch origin of this call must be Signed.
+   *
+   * - `dest`: The recipient of the transfer.
+   * - `keep_alive`: A boolean to determine if the `transfer_all` operation should send all
+   * of the funds the account has, causing the sender account to be killed (false), or
+   * transfer everything except at least the existential deposit, which will guarantee to
+   * keep the sender account alive (true).
    **/
   | { name: 'TransferAll'; params: { dest: MultiAddressLike; keepAlive: boolean } }
   /**
-   * See [`Pallet::force_unreserve`].
+   * Unreserve some balance from a user by force.
+   *
+   * Can only be called by ROOT.
    **/
   | { name: 'ForceUnreserve'; params: { who: MultiAddressLike; amount: bigint } }
   /**
-   * See [`Pallet::upgrade_accounts`].
+   * Upgrade a specified account.
+   *
+   * - `origin`: Must be `Signed`.
+   * - `who`: The account to be upgraded.
+   *
+   * This will waive the transaction fee if at least all but 10% of the accounts needed to
+   * be upgraded. (We let some not have to be upgraded just in order to allow for the
+   * possibililty of churn).
    **/
   | { name: 'UpgradeAccounts'; params: { who: Array<AccountId32Like> } }
   /**
-   * See [`Pallet::transfer`].
+   * Set the regular balance of a given account.
+   *
+   * The dispatch origin for this call is `root`.
    **/
-  | { name: 'Transfer'; params: { dest: MultiAddressLike; value: bigint } }
+  | { name: 'ForceSetBalance'; params: { who: MultiAddressLike; newFree: bigint } }
   /**
-   * See [`Pallet::force_set_balance`].
+   * Adjust the total issuance in a saturating way.
+   *
+   * Can only be called by root and always needs a positive `delta`.
+   *
+   * # Example
    **/
-  | { name: 'ForceSetBalance'; params: { who: MultiAddressLike; newFree: bigint } };
+  | { name: 'ForceAdjustTotalIssuance'; params: { direction: PalletBalancesAdjustmentDirection; delta: bigint } };
+
+export type PalletBalancesAdjustmentDirection = 'Increase' | 'Decrease';
 
 /**
  * Contains a variant per dispatchable extrinsic that this pallet has.
  **/
 export type PalletElectionProviderMultiPhaseCall =
   /**
-   * See [`Pallet::submit_unsigned`].
+   * Submit a solution for the unsigned phase.
+   *
+   * The dispatch origin fo this call must be __none__.
+   *
+   * This submission is checked on the fly. Moreover, this unsigned solution is only
+   * validated when submitted to the pool from the **local** node. Effectively, this means
+   * that only active validators can submit this transaction when authoring a block (similar
+   * to an inherent).
+   *
+   * To prevent any incorrect solution (and thus wasted time/weight), this transaction will
+   * panic if the solution submitted by the validator is invalid in any way, effectively
+   * putting their authoring reward at risk.
+   *
+   * No deposit or reward is associated with this submission.
    **/
   | {
       name: 'SubmitUnsigned';
@@ -3004,19 +3633,41 @@ export type PalletElectionProviderMultiPhaseCall =
       };
     }
   /**
-   * See [`Pallet::set_minimum_untrusted_score`].
+   * Set a new value for `MinimumUntrustedScore`.
+   *
+   * Dispatch origin must be aligned with `T::ForceOrigin`.
+   *
+   * This check can be turned off by setting the value to `None`.
    **/
   | { name: 'SetMinimumUntrustedScore'; params: { maybeNextScore?: SpNposElectionsElectionScore | undefined } }
   /**
-   * See [`Pallet::set_emergency_election_result`].
+   * Set a solution in the queue, to be handed out to the client of this pallet in the next
+   * call to `ElectionProvider::elect`.
+   *
+   * This can only be set by `T::ForceOrigin`, and only when the phase is `Emergency`.
+   *
+   * The solution is not checked for any feasibility and is assumed to be trustworthy, as any
+   * feasibility check itself can in principle cause the election process to fail (due to
+   * memory/weight constrains).
    **/
   | { name: 'SetEmergencyElectionResult'; params: { supports: Array<[AccountId32, SpNposElectionsSupport]> } }
   /**
-   * See [`Pallet::submit`].
+   * Submit a solution for the signed phase.
+   *
+   * The dispatch origin fo this call must be __signed__.
+   *
+   * The solution is potentially queued, based on the claimed score and processed at the end
+   * of the signed phase.
+   *
+   * A deposit is reserved and recorded for the solution. Based on the outcome, the solution
+   * might be rewarded, slashed, or get all or a part of the deposit back.
    **/
   | { name: 'Submit'; params: { rawSolution: PalletElectionProviderMultiPhaseRawSolution } }
   /**
-   * See [`Pallet::governance_fallback`].
+   * Trigger the governance fallback.
+   *
+   * This can only be called when [`Phase::Emergency`] is enabled, as an alternative to
+   * calling [`Call::set_emergency_election_result`].
    **/
   | {
       name: 'GovernanceFallback';
@@ -3025,7 +3676,20 @@ export type PalletElectionProviderMultiPhaseCall =
 
 export type PalletElectionProviderMultiPhaseCallLike =
   /**
-   * See [`Pallet::submit_unsigned`].
+   * Submit a solution for the unsigned phase.
+   *
+   * The dispatch origin fo this call must be __none__.
+   *
+   * This submission is checked on the fly. Moreover, this unsigned solution is only
+   * validated when submitted to the pool from the **local** node. Effectively, this means
+   * that only active validators can submit this transaction when authoring a block (similar
+   * to an inherent).
+   *
+   * To prevent any incorrect solution (and thus wasted time/weight), this transaction will
+   * panic if the solution submitted by the validator is invalid in any way, effectively
+   * putting their authoring reward at risk.
+   *
+   * No deposit or reward is associated with this submission.
    **/
   | {
       name: 'SubmitUnsigned';
@@ -3035,19 +3699,41 @@ export type PalletElectionProviderMultiPhaseCallLike =
       };
     }
   /**
-   * See [`Pallet::set_minimum_untrusted_score`].
+   * Set a new value for `MinimumUntrustedScore`.
+   *
+   * Dispatch origin must be aligned with `T::ForceOrigin`.
+   *
+   * This check can be turned off by setting the value to `None`.
    **/
   | { name: 'SetMinimumUntrustedScore'; params: { maybeNextScore?: SpNposElectionsElectionScore | undefined } }
   /**
-   * See [`Pallet::set_emergency_election_result`].
+   * Set a solution in the queue, to be handed out to the client of this pallet in the next
+   * call to `ElectionProvider::elect`.
+   *
+   * This can only be set by `T::ForceOrigin`, and only when the phase is `Emergency`.
+   *
+   * The solution is not checked for any feasibility and is assumed to be trustworthy, as any
+   * feasibility check itself can in principle cause the election process to fail (due to
+   * memory/weight constrains).
    **/
   | { name: 'SetEmergencyElectionResult'; params: { supports: Array<[AccountId32Like, SpNposElectionsSupport]> } }
   /**
-   * See [`Pallet::submit`].
+   * Submit a solution for the signed phase.
+   *
+   * The dispatch origin fo this call must be __signed__.
+   *
+   * The solution is potentially queued, based on the claimed score and processed at the end
+   * of the signed phase.
+   *
+   * A deposit is reserved and recorded for the solution. Based on the outcome, the solution
+   * might be rewarded, slashed, or get all or a part of the deposit back.
    **/
   | { name: 'Submit'; params: { rawSolution: PalletElectionProviderMultiPhaseRawSolution } }
   /**
-   * See [`Pallet::governance_fallback`].
+   * Trigger the governance fallback.
+   *
+   * This can only be called when [`Phase::Emergency`] is enabled, as an alternative to
+   * calling [`Call::set_emergency_election_result`].
    **/
   | {
       name: 'GovernanceFallback';
@@ -3088,95 +3774,331 @@ export type SpNposElectionsSupport = { total: bigint; voters: Array<[AccountId32
  **/
 export type PalletStakingPalletCall =
   /**
-   * See [`Pallet::bond`].
+   * Take the origin account as a stash and lock up `value` of its balance. `controller` will
+   * be the account that controls it.
+   *
+   * `value` must be more than the `minimum_balance` specified by `T::Currency`.
+   *
+   * The dispatch origin for this call must be _Signed_ by the stash account.
+   *
+   * Emits `Bonded`.
+   * ## Complexity
+   * - Independent of the arguments. Moderate complexity.
+   * - O(1).
+   * - Three extra DB entries.
+   *
+   * NOTE: Two of the storage writes (`Self::bonded`, `Self::payee`) are _never_ cleaned
+   * unless the `origin` falls below _existential deposit_ and gets removed as dust.
    **/
   | { name: 'Bond'; params: { value: bigint; payee: PalletStakingRewardDestination } }
   /**
-   * See [`Pallet::bond_extra`].
+   * Add some extra amount that have appeared in the stash `free_balance` into the balance up
+   * for staking.
+   *
+   * The dispatch origin for this call must be _Signed_ by the stash, not the controller.
+   *
+   * Use this if there are additional funds in your stash account that you wish to bond.
+   * Unlike [`bond`](Self::bond) or [`unbond`](Self::unbond) this function does not impose
+   * any limitation on the amount that can be added.
+   *
+   * Emits `Bonded`.
+   *
+   * ## Complexity
+   * - Independent of the arguments. Insignificant complexity.
+   * - O(1).
    **/
   | { name: 'BondExtra'; params: { maxAdditional: bigint } }
   /**
-   * See [`Pallet::unbond`].
+   * Schedule a portion of the stash to be unlocked ready for transfer out after the bond
+   * period ends. If this leaves an amount actively bonded less than
+   * T::Currency::minimum_balance(), then it is increased to the full amount.
+   *
+   * The dispatch origin for this call must be _Signed_ by the controller, not the stash.
+   *
+   * Once the unlock period is done, you can call `withdraw_unbonded` to actually move
+   * the funds out of management ready for transfer.
+   *
+   * No more than a limited number of unlocking chunks (see `MaxUnlockingChunks`)
+   * can co-exists at the same time. If there are no unlocking chunks slots available
+   * [`Call::withdraw_unbonded`] is called to remove some of the chunks (if possible).
+   *
+   * If a user encounters the `InsufficientBond` error when calling this extrinsic,
+   * they should call `chill` first in order to free up their bonded funds.
+   *
+   * Emits `Unbonded`.
+   *
+   * See also [`Call::withdraw_unbonded`].
    **/
   | { name: 'Unbond'; params: { value: bigint } }
   /**
-   * See [`Pallet::withdraw_unbonded`].
+   * Remove any unlocked chunks from the `unlocking` queue from our management.
+   *
+   * This essentially frees up that balance to be used by the stash account to do whatever
+   * it wants.
+   *
+   * The dispatch origin for this call must be _Signed_ by the controller.
+   *
+   * Emits `Withdrawn`.
+   *
+   * See also [`Call::unbond`].
+   *
+   * ## Parameters
+   *
+   * - `num_slashing_spans` indicates the number of metadata slashing spans to clear when
+   * this call results in a complete removal of all the data related to the stash account.
+   * In this case, the `num_slashing_spans` must be larger or equal to the number of
+   * slashing spans associated with the stash account in the [`SlashingSpans`] storage type,
+   * otherwise the call will fail. The call weight is directly propotional to
+   * `num_slashing_spans`.
+   *
+   * ## Complexity
+   * O(S) where S is the number of slashing spans to remove
+   * NOTE: Weight annotation is the kill scenario, we refund otherwise.
    **/
   | { name: 'WithdrawUnbonded'; params: { numSlashingSpans: number } }
   /**
-   * See [`Pallet::validate`].
+   * Declare the desire to validate for the origin controller.
+   *
+   * Effects will be felt at the beginning of the next era.
+   *
+   * The dispatch origin for this call must be _Signed_ by the controller, not the stash.
    **/
   | { name: 'Validate'; params: { prefs: PalletStakingValidatorPrefs } }
   /**
-   * See [`Pallet::nominate`].
+   * Declare the desire to nominate `targets` for the origin controller.
+   *
+   * Effects will be felt at the beginning of the next era.
+   *
+   * The dispatch origin for this call must be _Signed_ by the controller, not the stash.
+   *
+   * ## Complexity
+   * - The transaction's complexity is proportional to the size of `targets` (N)
+   * which is capped at CompactAssignments::LIMIT (T::MaxNominations).
+   * - Both the reads and writes follow a similar pattern.
    **/
   | { name: 'Nominate'; params: { targets: Array<MultiAddress> } }
   /**
-   * See [`Pallet::chill`].
+   * Declare no desire to either validate or nominate.
+   *
+   * Effects will be felt at the beginning of the next era.
+   *
+   * The dispatch origin for this call must be _Signed_ by the controller, not the stash.
+   *
+   * ## Complexity
+   * - Independent of the arguments. Insignificant complexity.
+   * - Contains one read.
+   * - Writes are limited to the `origin` account key.
    **/
   | { name: 'Chill' }
   /**
-   * See [`Pallet::set_payee`].
+   * (Re-)set the payment target for a controller.
+   *
+   * Effects will be felt instantly (as soon as this function is completed successfully).
+   *
+   * The dispatch origin for this call must be _Signed_ by the controller, not the stash.
+   *
+   * ## Complexity
+   * - O(1)
+   * - Independent of the arguments. Insignificant complexity.
+   * - Contains a limited number of reads.
+   * - Writes are limited to the `origin` account key.
+   * ---------
    **/
   | { name: 'SetPayee'; params: { payee: PalletStakingRewardDestination } }
   /**
-   * See [`Pallet::set_controller`].
+   * (Re-)sets the controller of a stash to the stash itself. This function previously
+   * accepted a `controller` argument to set the controller to an account other than the
+   * stash itself. This functionality has now been removed, now only setting the controller
+   * to the stash, if it is not already.
+   *
+   * Effects will be felt instantly (as soon as this function is completed successfully).
+   *
+   * The dispatch origin for this call must be _Signed_ by the stash, not the controller.
+   *
+   * ## Complexity
+   * O(1)
+   * - Independent of the arguments. Insignificant complexity.
+   * - Contains a limited number of reads.
+   * - Writes are limited to the `origin` account key.
    **/
   | { name: 'SetController' }
   /**
-   * See [`Pallet::set_validator_count`].
+   * Sets the ideal number of validators.
+   *
+   * The dispatch origin must be Root.
+   *
+   * ## Complexity
+   * O(1)
    **/
   | { name: 'SetValidatorCount'; params: { new: number } }
   /**
-   * See [`Pallet::increase_validator_count`].
+   * Increments the ideal number of validators upto maximum of
+   * `ElectionProviderBase::MaxWinners`.
+   *
+   * The dispatch origin must be Root.
+   *
+   * ## Complexity
+   * Same as [`Self::set_validator_count`].
    **/
   | { name: 'IncreaseValidatorCount'; params: { additional: number } }
   /**
-   * See [`Pallet::scale_validator_count`].
+   * Scale up the ideal number of validators by a factor upto maximum of
+   * `ElectionProviderBase::MaxWinners`.
+   *
+   * The dispatch origin must be Root.
+   *
+   * ## Complexity
+   * Same as [`Self::set_validator_count`].
    **/
   | { name: 'ScaleValidatorCount'; params: { factor: Percent } }
   /**
-   * See [`Pallet::force_no_eras`].
+   * Force there to be no new eras indefinitely.
+   *
+   * The dispatch origin must be Root.
+   *
+   * # Warning
+   *
+   * The election process starts multiple blocks before the end of the era.
+   * Thus the election process may be ongoing when this is called. In this case the
+   * election will continue until the next era is triggered.
+   *
+   * ## Complexity
+   * - No arguments.
+   * - Weight: O(1)
    **/
   | { name: 'ForceNoEras' }
   /**
-   * See [`Pallet::force_new_era`].
+   * Force there to be a new era at the end of the next session. After this, it will be
+   * reset to normal (non-forced) behaviour.
+   *
+   * The dispatch origin must be Root.
+   *
+   * # Warning
+   *
+   * The election process starts multiple blocks before the end of the era.
+   * If this is called just before a new era is triggered, the election process may not
+   * have enough blocks to get a result.
+   *
+   * ## Complexity
+   * - No arguments.
+   * - Weight: O(1)
    **/
   | { name: 'ForceNewEra' }
   /**
-   * See [`Pallet::set_invulnerables`].
+   * Set the validators who cannot be slashed (if any).
+   *
+   * The dispatch origin must be Root.
    **/
   | { name: 'SetInvulnerables'; params: { invulnerables: Array<AccountId32> } }
   /**
-   * See [`Pallet::force_unstake`].
+   * Force a current staker to become completely unstaked, immediately.
+   *
+   * The dispatch origin must be Root.
+   *
+   * ## Parameters
+   *
+   * - `num_slashing_spans`: Refer to comments on [`Call::withdraw_unbonded`] for more
+   * details.
    **/
   | { name: 'ForceUnstake'; params: { stash: AccountId32; numSlashingSpans: number } }
   /**
-   * See [`Pallet::force_new_era_always`].
+   * Force there to be a new era at the end of sessions indefinitely.
+   *
+   * The dispatch origin must be Root.
+   *
+   * # Warning
+   *
+   * The election process starts multiple blocks before the end of the era.
+   * If this is called just before a new era is triggered, the election process may not
+   * have enough blocks to get a result.
    **/
   | { name: 'ForceNewEraAlways' }
   /**
-   * See [`Pallet::cancel_deferred_slash`].
+   * Cancel enactment of a deferred slash.
+   *
+   * Can be called by the `T::AdminOrigin`.
+   *
+   * Parameters: era and indices of the slashes for that era to kill.
    **/
   | { name: 'CancelDeferredSlash'; params: { era: number; slashIndices: Array<number> } }
   /**
-   * See [`Pallet::payout_stakers`].
+   * Pay out next page of the stakers behind a validator for the given era.
+   *
+   * - `validator_stash` is the stash account of the validator.
+   * - `era` may be any era between `[current_era - history_depth; current_era]`.
+   *
+   * The origin of this call must be _Signed_. Any account can call this function, even if
+   * it is not one of the stakers.
+   *
+   * The reward payout could be paged in case there are too many nominators backing the
+   * `validator_stash`. This call will payout unpaid pages in an ascending order. To claim a
+   * specific page, use `payout_stakers_by_page`.`
+   *
+   * If all pages are claimed, it returns an error `InvalidPage`.
    **/
   | { name: 'PayoutStakers'; params: { validatorStash: AccountId32; era: number } }
   /**
-   * See [`Pallet::rebond`].
+   * Rebond a portion of the stash scheduled to be unlocked.
+   *
+   * The dispatch origin must be signed by the controller.
+   *
+   * ## Complexity
+   * - Time complexity: O(L), where L is unlocking chunks
+   * - Bounded by `MaxUnlockingChunks`.
    **/
   | { name: 'Rebond'; params: { value: bigint } }
   /**
-   * See [`Pallet::reap_stash`].
+   * Remove all data structures concerning a staker/stash once it is at a state where it can
+   * be considered `dust` in the staking system. The requirements are:
+   *
+   * 1. the `total_balance` of the stash is below existential deposit.
+   * 2. or, the `ledger.total` of the stash is below existential deposit.
+   *
+   * The former can happen in cases like a slash; the latter when a fully unbonded account
+   * is still receiving staking rewards in `RewardDestination::Staked`.
+   *
+   * It can be called by anyone, as long as `stash` meets the above requirements.
+   *
+   * Refunds the transaction fees upon successful execution.
+   *
+   * ## Parameters
+   *
+   * - `num_slashing_spans`: Refer to comments on [`Call::withdraw_unbonded`] for more
+   * details.
    **/
   | { name: 'ReapStash'; params: { stash: AccountId32; numSlashingSpans: number } }
   /**
-   * See [`Pallet::kick`].
+   * Remove the given nominations from the calling validator.
+   *
+   * Effects will be felt at the beginning of the next era.
+   *
+   * The dispatch origin for this call must be _Signed_ by the controller, not the stash.
+   *
+   * - `who`: A list of nominator stash accounts who are nominating this validator which
+   * should no longer be nominating this validator.
+   *
+   * Note: Making this call only makes sense if you first set the validator preferences to
+   * block any further nominations.
    **/
   | { name: 'Kick'; params: { who: Array<MultiAddress> } }
   /**
-   * See [`Pallet::set_staking_configs`].
+   * Update the various staking configurations .
+   *
+   * * `min_nominator_bond`: The minimum active bond needed to be a nominator.
+   * * `min_validator_bond`: The minimum active bond needed to be a validator.
+   * * `max_nominator_count`: The max number of users who can be a nominator at once. When
+   * set to `None`, no limit is enforced.
+   * * `max_validator_count`: The max number of users who can be a validator at once. When
+   * set to `None`, no limit is enforced.
+   * * `chill_threshold`: The ratio of `max_nominator_count` or `max_validator_count` which
+   * should be filled in order for the `chill_other` transaction to work.
+   * * `min_commission`: The minimum amount of commission that each validators must maintain.
+   * This is checked only upon calling `validate`. Existing validators are not affected.
+   *
+   * RuntimeOrigin must be Root to call this function.
+   *
+   * NOTE: Existing nominators and validators will not be affected by this update.
+   * to kick people under the new limits, `chill_other` should be called.
    **/
   | {
       name: 'SetStakingConfigs';
@@ -3187,112 +4109,418 @@ export type PalletStakingPalletCall =
         maxValidatorCount: PalletStakingPalletConfigOpU32;
         chillThreshold: PalletStakingPalletConfigOpPercent;
         minCommission: PalletStakingPalletConfigOpPerbill;
+        maxStakedRewards: PalletStakingPalletConfigOpPercent;
       };
     }
   /**
-   * See [`Pallet::chill_other`].
+   * Declare a `controller` to stop participating as either a validator or nominator.
+   *
+   * Effects will be felt at the beginning of the next era.
+   *
+   * The dispatch origin for this call must be _Signed_, but can be called by anyone.
+   *
+   * If the caller is the same as the controller being targeted, then no further checks are
+   * enforced, and this function behaves just like `chill`.
+   *
+   * If the caller is different than the controller being targeted, the following conditions
+   * must be met:
+   *
+   * * `controller` must belong to a nominator who has become non-decodable,
+   *
+   * Or:
+   *
+   * * A `ChillThreshold` must be set and checked which defines how close to the max
+   * nominators or validators we must reach before users can start chilling one-another.
+   * * A `MaxNominatorCount` and `MaxValidatorCount` must be set which is used to determine
+   * how close we are to the threshold.
+   * * A `MinNominatorBond` and `MinValidatorBond` must be set and checked, which determines
+   * if this is a person that should be chilled because they have not met the threshold
+   * bond required.
+   *
+   * This can be helpful if bond requirements are updated, and we need to remove old users
+   * who do not satisfy these requirements.
    **/
-  | { name: 'ChillOther'; params: { controller: AccountId32 } }
+  | { name: 'ChillOther'; params: { stash: AccountId32 } }
   /**
-   * See [`Pallet::force_apply_min_commission`].
+   * Force a validator to have at least the minimum commission. This will not affect a
+   * validator who already has a commission greater than or equal to the minimum. Any account
+   * can call this.
    **/
   | { name: 'ForceApplyMinCommission'; params: { validatorStash: AccountId32 } }
   /**
-   * See [`Pallet::set_min_commission`].
+   * Sets the minimum amount of commission that each validators must maintain.
+   *
+   * This call has lower privilege requirements than `set_staking_config` and can be called
+   * by the `T::AdminOrigin`. Root can always call this.
    **/
-  | { name: 'SetMinCommission'; params: { new: Perbill } };
+  | { name: 'SetMinCommission'; params: { new: Perbill } }
+  /**
+   * Pay out a page of the stakers behind a validator for the given era and page.
+   *
+   * - `validator_stash` is the stash account of the validator.
+   * - `era` may be any era between `[current_era - history_depth; current_era]`.
+   * - `page` is the page index of nominators to pay out with value between 0 and
+   * `num_nominators / T::MaxExposurePageSize`.
+   *
+   * The origin of this call must be _Signed_. Any account can call this function, even if
+   * it is not one of the stakers.
+   *
+   * If a validator has more than [`Config::MaxExposurePageSize`] nominators backing
+   * them, then the list of nominators is paged, with each page being capped at
+   * [`Config::MaxExposurePageSize`.] If a validator has more than one page of nominators,
+   * the call needs to be made for each page separately in order for all the nominators
+   * backing a validator to receive the reward. The nominators are not sorted across pages
+   * and so it should not be assumed the highest staker would be on the topmost page and vice
+   * versa. If rewards are not claimed in [`Config::HistoryDepth`] eras, they are lost.
+   **/
+  | { name: 'PayoutStakersByPage'; params: { validatorStash: AccountId32; era: number; page: number } }
+  /**
+   * Migrates an account's `RewardDestination::Controller` to
+   * `RewardDestination::Account(controller)`.
+   *
+   * Effects will be felt instantly (as soon as this function is completed successfully).
+   *
+   * This will waive the transaction fee if the `payee` is successfully migrated.
+   **/
+  | { name: 'UpdatePayee'; params: { controller: AccountId32 } }
+  /**
+   * Updates a batch of controller accounts to their corresponding stash account if they are
+   * not the same. Ignores any controller accounts that do not exist, and does not operate if
+   * the stash and controller are already the same.
+   *
+   * Effects will be felt instantly (as soon as this function is completed successfully).
+   *
+   * The dispatch origin must be `T::AdminOrigin`.
+   **/
+  | { name: 'DeprecateControllerBatch'; params: { controllers: Array<AccountId32> } };
 
 export type PalletStakingPalletCallLike =
   /**
-   * See [`Pallet::bond`].
+   * Take the origin account as a stash and lock up `value` of its balance. `controller` will
+   * be the account that controls it.
+   *
+   * `value` must be more than the `minimum_balance` specified by `T::Currency`.
+   *
+   * The dispatch origin for this call must be _Signed_ by the stash account.
+   *
+   * Emits `Bonded`.
+   * ## Complexity
+   * - Independent of the arguments. Moderate complexity.
+   * - O(1).
+   * - Three extra DB entries.
+   *
+   * NOTE: Two of the storage writes (`Self::bonded`, `Self::payee`) are _never_ cleaned
+   * unless the `origin` falls below _existential deposit_ and gets removed as dust.
    **/
   | { name: 'Bond'; params: { value: bigint; payee: PalletStakingRewardDestination } }
   /**
-   * See [`Pallet::bond_extra`].
+   * Add some extra amount that have appeared in the stash `free_balance` into the balance up
+   * for staking.
+   *
+   * The dispatch origin for this call must be _Signed_ by the stash, not the controller.
+   *
+   * Use this if there are additional funds in your stash account that you wish to bond.
+   * Unlike [`bond`](Self::bond) or [`unbond`](Self::unbond) this function does not impose
+   * any limitation on the amount that can be added.
+   *
+   * Emits `Bonded`.
+   *
+   * ## Complexity
+   * - Independent of the arguments. Insignificant complexity.
+   * - O(1).
    **/
   | { name: 'BondExtra'; params: { maxAdditional: bigint } }
   /**
-   * See [`Pallet::unbond`].
+   * Schedule a portion of the stash to be unlocked ready for transfer out after the bond
+   * period ends. If this leaves an amount actively bonded less than
+   * T::Currency::minimum_balance(), then it is increased to the full amount.
+   *
+   * The dispatch origin for this call must be _Signed_ by the controller, not the stash.
+   *
+   * Once the unlock period is done, you can call `withdraw_unbonded` to actually move
+   * the funds out of management ready for transfer.
+   *
+   * No more than a limited number of unlocking chunks (see `MaxUnlockingChunks`)
+   * can co-exists at the same time. If there are no unlocking chunks slots available
+   * [`Call::withdraw_unbonded`] is called to remove some of the chunks (if possible).
+   *
+   * If a user encounters the `InsufficientBond` error when calling this extrinsic,
+   * they should call `chill` first in order to free up their bonded funds.
+   *
+   * Emits `Unbonded`.
+   *
+   * See also [`Call::withdraw_unbonded`].
    **/
   | { name: 'Unbond'; params: { value: bigint } }
   /**
-   * See [`Pallet::withdraw_unbonded`].
+   * Remove any unlocked chunks from the `unlocking` queue from our management.
+   *
+   * This essentially frees up that balance to be used by the stash account to do whatever
+   * it wants.
+   *
+   * The dispatch origin for this call must be _Signed_ by the controller.
+   *
+   * Emits `Withdrawn`.
+   *
+   * See also [`Call::unbond`].
+   *
+   * ## Parameters
+   *
+   * - `num_slashing_spans` indicates the number of metadata slashing spans to clear when
+   * this call results in a complete removal of all the data related to the stash account.
+   * In this case, the `num_slashing_spans` must be larger or equal to the number of
+   * slashing spans associated with the stash account in the [`SlashingSpans`] storage type,
+   * otherwise the call will fail. The call weight is directly propotional to
+   * `num_slashing_spans`.
+   *
+   * ## Complexity
+   * O(S) where S is the number of slashing spans to remove
+   * NOTE: Weight annotation is the kill scenario, we refund otherwise.
    **/
   | { name: 'WithdrawUnbonded'; params: { numSlashingSpans: number } }
   /**
-   * See [`Pallet::validate`].
+   * Declare the desire to validate for the origin controller.
+   *
+   * Effects will be felt at the beginning of the next era.
+   *
+   * The dispatch origin for this call must be _Signed_ by the controller, not the stash.
    **/
   | { name: 'Validate'; params: { prefs: PalletStakingValidatorPrefs } }
   /**
-   * See [`Pallet::nominate`].
+   * Declare the desire to nominate `targets` for the origin controller.
+   *
+   * Effects will be felt at the beginning of the next era.
+   *
+   * The dispatch origin for this call must be _Signed_ by the controller, not the stash.
+   *
+   * ## Complexity
+   * - The transaction's complexity is proportional to the size of `targets` (N)
+   * which is capped at CompactAssignments::LIMIT (T::MaxNominations).
+   * - Both the reads and writes follow a similar pattern.
    **/
   | { name: 'Nominate'; params: { targets: Array<MultiAddressLike> } }
   /**
-   * See [`Pallet::chill`].
+   * Declare no desire to either validate or nominate.
+   *
+   * Effects will be felt at the beginning of the next era.
+   *
+   * The dispatch origin for this call must be _Signed_ by the controller, not the stash.
+   *
+   * ## Complexity
+   * - Independent of the arguments. Insignificant complexity.
+   * - Contains one read.
+   * - Writes are limited to the `origin` account key.
    **/
   | { name: 'Chill' }
   /**
-   * See [`Pallet::set_payee`].
+   * (Re-)set the payment target for a controller.
+   *
+   * Effects will be felt instantly (as soon as this function is completed successfully).
+   *
+   * The dispatch origin for this call must be _Signed_ by the controller, not the stash.
+   *
+   * ## Complexity
+   * - O(1)
+   * - Independent of the arguments. Insignificant complexity.
+   * - Contains a limited number of reads.
+   * - Writes are limited to the `origin` account key.
+   * ---------
    **/
   | { name: 'SetPayee'; params: { payee: PalletStakingRewardDestination } }
   /**
-   * See [`Pallet::set_controller`].
+   * (Re-)sets the controller of a stash to the stash itself. This function previously
+   * accepted a `controller` argument to set the controller to an account other than the
+   * stash itself. This functionality has now been removed, now only setting the controller
+   * to the stash, if it is not already.
+   *
+   * Effects will be felt instantly (as soon as this function is completed successfully).
+   *
+   * The dispatch origin for this call must be _Signed_ by the stash, not the controller.
+   *
+   * ## Complexity
+   * O(1)
+   * - Independent of the arguments. Insignificant complexity.
+   * - Contains a limited number of reads.
+   * - Writes are limited to the `origin` account key.
    **/
   | { name: 'SetController' }
   /**
-   * See [`Pallet::set_validator_count`].
+   * Sets the ideal number of validators.
+   *
+   * The dispatch origin must be Root.
+   *
+   * ## Complexity
+   * O(1)
    **/
   | { name: 'SetValidatorCount'; params: { new: number } }
   /**
-   * See [`Pallet::increase_validator_count`].
+   * Increments the ideal number of validators upto maximum of
+   * `ElectionProviderBase::MaxWinners`.
+   *
+   * The dispatch origin must be Root.
+   *
+   * ## Complexity
+   * Same as [`Self::set_validator_count`].
    **/
   | { name: 'IncreaseValidatorCount'; params: { additional: number } }
   /**
-   * See [`Pallet::scale_validator_count`].
+   * Scale up the ideal number of validators by a factor upto maximum of
+   * `ElectionProviderBase::MaxWinners`.
+   *
+   * The dispatch origin must be Root.
+   *
+   * ## Complexity
+   * Same as [`Self::set_validator_count`].
    **/
   | { name: 'ScaleValidatorCount'; params: { factor: Percent } }
   /**
-   * See [`Pallet::force_no_eras`].
+   * Force there to be no new eras indefinitely.
+   *
+   * The dispatch origin must be Root.
+   *
+   * # Warning
+   *
+   * The election process starts multiple blocks before the end of the era.
+   * Thus the election process may be ongoing when this is called. In this case the
+   * election will continue until the next era is triggered.
+   *
+   * ## Complexity
+   * - No arguments.
+   * - Weight: O(1)
    **/
   | { name: 'ForceNoEras' }
   /**
-   * See [`Pallet::force_new_era`].
+   * Force there to be a new era at the end of the next session. After this, it will be
+   * reset to normal (non-forced) behaviour.
+   *
+   * The dispatch origin must be Root.
+   *
+   * # Warning
+   *
+   * The election process starts multiple blocks before the end of the era.
+   * If this is called just before a new era is triggered, the election process may not
+   * have enough blocks to get a result.
+   *
+   * ## Complexity
+   * - No arguments.
+   * - Weight: O(1)
    **/
   | { name: 'ForceNewEra' }
   /**
-   * See [`Pallet::set_invulnerables`].
+   * Set the validators who cannot be slashed (if any).
+   *
+   * The dispatch origin must be Root.
    **/
   | { name: 'SetInvulnerables'; params: { invulnerables: Array<AccountId32Like> } }
   /**
-   * See [`Pallet::force_unstake`].
+   * Force a current staker to become completely unstaked, immediately.
+   *
+   * The dispatch origin must be Root.
+   *
+   * ## Parameters
+   *
+   * - `num_slashing_spans`: Refer to comments on [`Call::withdraw_unbonded`] for more
+   * details.
    **/
   | { name: 'ForceUnstake'; params: { stash: AccountId32Like; numSlashingSpans: number } }
   /**
-   * See [`Pallet::force_new_era_always`].
+   * Force there to be a new era at the end of sessions indefinitely.
+   *
+   * The dispatch origin must be Root.
+   *
+   * # Warning
+   *
+   * The election process starts multiple blocks before the end of the era.
+   * If this is called just before a new era is triggered, the election process may not
+   * have enough blocks to get a result.
    **/
   | { name: 'ForceNewEraAlways' }
   /**
-   * See [`Pallet::cancel_deferred_slash`].
+   * Cancel enactment of a deferred slash.
+   *
+   * Can be called by the `T::AdminOrigin`.
+   *
+   * Parameters: era and indices of the slashes for that era to kill.
    **/
   | { name: 'CancelDeferredSlash'; params: { era: number; slashIndices: Array<number> } }
   /**
-   * See [`Pallet::payout_stakers`].
+   * Pay out next page of the stakers behind a validator for the given era.
+   *
+   * - `validator_stash` is the stash account of the validator.
+   * - `era` may be any era between `[current_era - history_depth; current_era]`.
+   *
+   * The origin of this call must be _Signed_. Any account can call this function, even if
+   * it is not one of the stakers.
+   *
+   * The reward payout could be paged in case there are too many nominators backing the
+   * `validator_stash`. This call will payout unpaid pages in an ascending order. To claim a
+   * specific page, use `payout_stakers_by_page`.`
+   *
+   * If all pages are claimed, it returns an error `InvalidPage`.
    **/
   | { name: 'PayoutStakers'; params: { validatorStash: AccountId32Like; era: number } }
   /**
-   * See [`Pallet::rebond`].
+   * Rebond a portion of the stash scheduled to be unlocked.
+   *
+   * The dispatch origin must be signed by the controller.
+   *
+   * ## Complexity
+   * - Time complexity: O(L), where L is unlocking chunks
+   * - Bounded by `MaxUnlockingChunks`.
    **/
   | { name: 'Rebond'; params: { value: bigint } }
   /**
-   * See [`Pallet::reap_stash`].
+   * Remove all data structures concerning a staker/stash once it is at a state where it can
+   * be considered `dust` in the staking system. The requirements are:
+   *
+   * 1. the `total_balance` of the stash is below existential deposit.
+   * 2. or, the `ledger.total` of the stash is below existential deposit.
+   *
+   * The former can happen in cases like a slash; the latter when a fully unbonded account
+   * is still receiving staking rewards in `RewardDestination::Staked`.
+   *
+   * It can be called by anyone, as long as `stash` meets the above requirements.
+   *
+   * Refunds the transaction fees upon successful execution.
+   *
+   * ## Parameters
+   *
+   * - `num_slashing_spans`: Refer to comments on [`Call::withdraw_unbonded`] for more
+   * details.
    **/
   | { name: 'ReapStash'; params: { stash: AccountId32Like; numSlashingSpans: number } }
   /**
-   * See [`Pallet::kick`].
+   * Remove the given nominations from the calling validator.
+   *
+   * Effects will be felt at the beginning of the next era.
+   *
+   * The dispatch origin for this call must be _Signed_ by the controller, not the stash.
+   *
+   * - `who`: A list of nominator stash accounts who are nominating this validator which
+   * should no longer be nominating this validator.
+   *
+   * Note: Making this call only makes sense if you first set the validator preferences to
+   * block any further nominations.
    **/
   | { name: 'Kick'; params: { who: Array<MultiAddressLike> } }
   /**
-   * See [`Pallet::set_staking_configs`].
+   * Update the various staking configurations .
+   *
+   * * `min_nominator_bond`: The minimum active bond needed to be a nominator.
+   * * `min_validator_bond`: The minimum active bond needed to be a validator.
+   * * `max_nominator_count`: The max number of users who can be a nominator at once. When
+   * set to `None`, no limit is enforced.
+   * * `max_validator_count`: The max number of users who can be a validator at once. When
+   * set to `None`, no limit is enforced.
+   * * `chill_threshold`: The ratio of `max_nominator_count` or `max_validator_count` which
+   * should be filled in order for the `chill_other` transaction to work.
+   * * `min_commission`: The minimum amount of commission that each validators must maintain.
+   * This is checked only upon calling `validate`. Existing validators are not affected.
+   *
+   * RuntimeOrigin must be Root to call this function.
+   *
+   * NOTE: Existing nominators and validators will not be affected by this update.
+   * to kick people under the new limits, `chill_other` should be called.
    **/
   | {
       name: 'SetStakingConfigs';
@@ -3303,27 +4531,90 @@ export type PalletStakingPalletCallLike =
         maxValidatorCount: PalletStakingPalletConfigOpU32;
         chillThreshold: PalletStakingPalletConfigOpPercent;
         minCommission: PalletStakingPalletConfigOpPerbill;
+        maxStakedRewards: PalletStakingPalletConfigOpPercent;
       };
     }
   /**
-   * See [`Pallet::chill_other`].
+   * Declare a `controller` to stop participating as either a validator or nominator.
+   *
+   * Effects will be felt at the beginning of the next era.
+   *
+   * The dispatch origin for this call must be _Signed_, but can be called by anyone.
+   *
+   * If the caller is the same as the controller being targeted, then no further checks are
+   * enforced, and this function behaves just like `chill`.
+   *
+   * If the caller is different than the controller being targeted, the following conditions
+   * must be met:
+   *
+   * * `controller` must belong to a nominator who has become non-decodable,
+   *
+   * Or:
+   *
+   * * A `ChillThreshold` must be set and checked which defines how close to the max
+   * nominators or validators we must reach before users can start chilling one-another.
+   * * A `MaxNominatorCount` and `MaxValidatorCount` must be set which is used to determine
+   * how close we are to the threshold.
+   * * A `MinNominatorBond` and `MinValidatorBond` must be set and checked, which determines
+   * if this is a person that should be chilled because they have not met the threshold
+   * bond required.
+   *
+   * This can be helpful if bond requirements are updated, and we need to remove old users
+   * who do not satisfy these requirements.
    **/
-  | { name: 'ChillOther'; params: { controller: AccountId32Like } }
+  | { name: 'ChillOther'; params: { stash: AccountId32Like } }
   /**
-   * See [`Pallet::force_apply_min_commission`].
+   * Force a validator to have at least the minimum commission. This will not affect a
+   * validator who already has a commission greater than or equal to the minimum. Any account
+   * can call this.
    **/
   | { name: 'ForceApplyMinCommission'; params: { validatorStash: AccountId32Like } }
   /**
-   * See [`Pallet::set_min_commission`].
+   * Sets the minimum amount of commission that each validators must maintain.
+   *
+   * This call has lower privilege requirements than `set_staking_config` and can be called
+   * by the `T::AdminOrigin`. Root can always call this.
    **/
-  | { name: 'SetMinCommission'; params: { new: Perbill } };
-
-export type PalletStakingRewardDestination =
-  | { tag: 'Staked' }
-  | { tag: 'Stash' }
-  | { tag: 'Controller' }
-  | { tag: 'Account'; value: AccountId32 }
-  | { tag: 'None' };
+  | { name: 'SetMinCommission'; params: { new: Perbill } }
+  /**
+   * Pay out a page of the stakers behind a validator for the given era and page.
+   *
+   * - `validator_stash` is the stash account of the validator.
+   * - `era` may be any era between `[current_era - history_depth; current_era]`.
+   * - `page` is the page index of nominators to pay out with value between 0 and
+   * `num_nominators / T::MaxExposurePageSize`.
+   *
+   * The origin of this call must be _Signed_. Any account can call this function, even if
+   * it is not one of the stakers.
+   *
+   * If a validator has more than [`Config::MaxExposurePageSize`] nominators backing
+   * them, then the list of nominators is paged, with each page being capped at
+   * [`Config::MaxExposurePageSize`.] If a validator has more than one page of nominators,
+   * the call needs to be made for each page separately in order for all the nominators
+   * backing a validator to receive the reward. The nominators are not sorted across pages
+   * and so it should not be assumed the highest staker would be on the topmost page and vice
+   * versa. If rewards are not claimed in [`Config::HistoryDepth`] eras, they are lost.
+   **/
+  | { name: 'PayoutStakersByPage'; params: { validatorStash: AccountId32Like; era: number; page: number } }
+  /**
+   * Migrates an account's `RewardDestination::Controller` to
+   * `RewardDestination::Account(controller)`.
+   *
+   * Effects will be felt instantly (as soon as this function is completed successfully).
+   *
+   * This will waive the transaction fee if the `payee` is successfully migrated.
+   **/
+  | { name: 'UpdatePayee'; params: { controller: AccountId32Like } }
+  /**
+   * Updates a batch of controller accounts to their corresponding stash account if they are
+   * not the same. Ignores any controller accounts that do not exist, and does not operate if
+   * the stash and controller are already the same.
+   *
+   * Effects will be felt instantly (as soon as this function is completed successfully).
+   *
+   * The dispatch origin must be `T::AdminOrigin`.
+   **/
+  | { name: 'DeprecateControllerBatch'; params: { controllers: Array<AccountId32Like> } };
 
 export type PalletStakingPalletConfigOp = { tag: 'Noop' } | { tag: 'Set'; value: bigint } | { tag: 'Remove' };
 
@@ -3338,21 +4629,59 @@ export type PalletStakingPalletConfigOpPerbill = { tag: 'Noop' } | { tag: 'Set';
  **/
 export type PalletSessionCall =
   /**
-   * See [`Pallet::set_keys`].
+   * Sets the session key(s) of the function caller to `keys`.
+   * Allows an account to set its session key prior to becoming a validator.
+   * This doesn't take effect until the next session.
+   *
+   * The dispatch origin of this function must be signed.
+   *
+   * ## Complexity
+   * - `O(1)`. Actual cost depends on the number of length of `T::Keys::key_ids()` which is
+   * fixed.
    **/
   | { name: 'SetKeys'; params: { keys: KitchensinkRuntimeSessionKeys; proof: Bytes } }
   /**
-   * See [`Pallet::purge_keys`].
+   * Removes any session key(s) of the function caller.
+   *
+   * This doesn't take effect until the next session.
+   *
+   * The dispatch origin of this function must be Signed and the account must be either be
+   * convertible to a validator ID using the chain's typical addressing system (this usually
+   * means being a controller account) or directly convertible into a validator ID (which
+   * usually means being a stash account).
+   *
+   * ## Complexity
+   * - `O(1)` in number of key types. Actual cost depends on the number of length of
+   * `T::Keys::key_ids()` which is fixed.
    **/
   | { name: 'PurgeKeys' };
 
 export type PalletSessionCallLike =
   /**
-   * See [`Pallet::set_keys`].
+   * Sets the session key(s) of the function caller to `keys`.
+   * Allows an account to set its session key prior to becoming a validator.
+   * This doesn't take effect until the next session.
+   *
+   * The dispatch origin of this function must be signed.
+   *
+   * ## Complexity
+   * - `O(1)`. Actual cost depends on the number of length of `T::Keys::key_ids()` which is
+   * fixed.
    **/
   | { name: 'SetKeys'; params: { keys: KitchensinkRuntimeSessionKeys; proof: BytesLike } }
   /**
-   * See [`Pallet::purge_keys`].
+   * Removes any session key(s) of the function caller.
+   *
+   * This doesn't take effect until the next session.
+   *
+   * The dispatch origin of this function must be Signed and the account must be either be
+   * convertible to a validator ID using the chain's typical addressing system (this usually
+   * means being a controller account) or directly convertible into a validator ID (which
+   * usually means being a stash account).
+   *
+   * ## Complexity
+   * - `O(1)` in number of key types. Actual cost depends on the number of length of
+   * `T::Keys::key_ids()` which is fixed.
    **/
   | { name: 'PurgeKeys' };
 
@@ -3361,166 +4690,562 @@ export type KitchensinkRuntimeSessionKeys = {
   babe: SpConsensusBabeAppPublic;
   imOnline: PalletImOnlineSr25519AppSr25519Public;
   authorityDiscovery: SpAuthorityDiscoveryAppPublic;
+  mixnet: SpMixnetAppPublic;
+  beefy: SpConsensusBeefyEcdsaCryptoPublic;
 };
 
 export type SpAuthorityDiscoveryAppPublic = SpCoreSr25519Public;
+
+export type SpMixnetAppPublic = SpCoreSr25519Public;
+
+export type SpConsensusBeefyEcdsaCryptoPublic = SpCoreEcdsaPublic;
+
+export type SpCoreEcdsaPublic = FixedBytes<33>;
 
 /**
  * Contains a variant per dispatchable extrinsic that this pallet has.
  **/
 export type PalletDemocracyCall =
   /**
-   * See [`Pallet::propose`].
+   * Propose a sensitive action to be taken.
+   *
+   * The dispatch origin of this call must be _Signed_ and the sender must
+   * have funds to cover the deposit.
+   *
+   * - `proposal_hash`: The hash of the proposal preimage.
+   * - `value`: The amount of deposit (must be at least `MinimumDeposit`).
+   *
+   * Emits `Proposed`.
    **/
   | { name: 'Propose'; params: { proposal: FrameSupportPreimagesBounded; value: bigint } }
   /**
-   * See [`Pallet::second`].
+   * Signals agreement with a particular proposal.
+   *
+   * The dispatch origin of this call must be _Signed_ and the sender
+   * must have funds to cover the deposit, equal to the original deposit.
+   *
+   * - `proposal`: The index of the proposal to second.
    **/
   | { name: 'Second'; params: { proposal: number } }
   /**
-   * See [`Pallet::vote`].
+   * Vote in a referendum. If `vote.is_aye()`, the vote is to enact the proposal;
+   * otherwise it is a vote to keep the status quo.
+   *
+   * The dispatch origin of this call must be _Signed_.
+   *
+   * - `ref_index`: The index of the referendum to vote for.
+   * - `vote`: The vote configuration.
    **/
   | { name: 'Vote'; params: { refIndex: number; vote: PalletDemocracyVoteAccountVote } }
   /**
-   * See [`Pallet::emergency_cancel`].
+   * Schedule an emergency cancellation of a referendum. Cannot happen twice to the same
+   * referendum.
+   *
+   * The dispatch origin of this call must be `CancellationOrigin`.
+   *
+   * -`ref_index`: The index of the referendum to cancel.
+   *
+   * Weight: `O(1)`.
    **/
   | { name: 'EmergencyCancel'; params: { refIndex: number } }
   /**
-   * See [`Pallet::external_propose`].
+   * Schedule a referendum to be tabled once it is legal to schedule an external
+   * referendum.
+   *
+   * The dispatch origin of this call must be `ExternalOrigin`.
+   *
+   * - `proposal_hash`: The preimage hash of the proposal.
    **/
   | { name: 'ExternalPropose'; params: { proposal: FrameSupportPreimagesBounded } }
   /**
-   * See [`Pallet::external_propose_majority`].
+   * Schedule a majority-carries referendum to be tabled next once it is legal to schedule
+   * an external referendum.
+   *
+   * The dispatch of this call must be `ExternalMajorityOrigin`.
+   *
+   * - `proposal_hash`: The preimage hash of the proposal.
+   *
+   * Unlike `external_propose`, blacklisting has no effect on this and it may replace a
+   * pre-scheduled `external_propose` call.
+   *
+   * Weight: `O(1)`
    **/
   | { name: 'ExternalProposeMajority'; params: { proposal: FrameSupportPreimagesBounded } }
   /**
-   * See [`Pallet::external_propose_default`].
+   * Schedule a negative-turnout-bias referendum to be tabled next once it is legal to
+   * schedule an external referendum.
+   *
+   * The dispatch of this call must be `ExternalDefaultOrigin`.
+   *
+   * - `proposal_hash`: The preimage hash of the proposal.
+   *
+   * Unlike `external_propose`, blacklisting has no effect on this and it may replace a
+   * pre-scheduled `external_propose` call.
+   *
+   * Weight: `O(1)`
    **/
   | { name: 'ExternalProposeDefault'; params: { proposal: FrameSupportPreimagesBounded } }
   /**
-   * See [`Pallet::fast_track`].
+   * Schedule the currently externally-proposed majority-carries referendum to be tabled
+   * immediately. If there is no externally-proposed referendum currently, or if there is one
+   * but it is not a majority-carries referendum then it fails.
+   *
+   * The dispatch of this call must be `FastTrackOrigin`.
+   *
+   * - `proposal_hash`: The hash of the current external proposal.
+   * - `voting_period`: The period that is allowed for voting on this proposal. Increased to
+   * Must be always greater than zero.
+   * For `FastTrackOrigin` must be equal or greater than `FastTrackVotingPeriod`.
+   * - `delay`: The number of block after voting has ended in approval and this should be
+   * enacted. This doesn't have a minimum amount.
+   *
+   * Emits `Started`.
+   *
+   * Weight: `O(1)`
    **/
   | { name: 'FastTrack'; params: { proposalHash: H256; votingPeriod: number; delay: number } }
   /**
-   * See [`Pallet::veto_external`].
+   * Veto and blacklist the external proposal hash.
+   *
+   * The dispatch origin of this call must be `VetoOrigin`.
+   *
+   * - `proposal_hash`: The preimage hash of the proposal to veto and blacklist.
+   *
+   * Emits `Vetoed`.
+   *
+   * Weight: `O(V + log(V))` where V is number of `existing vetoers`
    **/
   | { name: 'VetoExternal'; params: { proposalHash: H256 } }
   /**
-   * See [`Pallet::cancel_referendum`].
+   * Remove a referendum.
+   *
+   * The dispatch origin of this call must be _Root_.
+   *
+   * - `ref_index`: The index of the referendum to cancel.
+   *
+   * # Weight: `O(1)`.
    **/
   | { name: 'CancelReferendum'; params: { refIndex: number } }
   /**
-   * See [`Pallet::delegate`].
+   * Delegate the voting power (with some given conviction) of the sending account.
+   *
+   * The balance delegated is locked for as long as it's delegated, and thereafter for the
+   * time appropriate for the conviction's lock period.
+   *
+   * The dispatch origin of this call must be _Signed_, and the signing account must either:
+   * - be delegating already; or
+   * - have no voting activity (if there is, then it will need to be removed/consolidated
+   * through `reap_vote` or `unvote`).
+   *
+   * - `to`: The account whose voting the `target` account's voting power will follow.
+   * - `conviction`: The conviction that will be attached to the delegated votes. When the
+   * account is undelegated, the funds will be locked for the corresponding period.
+   * - `balance`: The amount of the account's balance to be used in delegating. This must not
+   * be more than the account's current balance.
+   *
+   * Emits `Delegated`.
+   *
+   * Weight: `O(R)` where R is the number of referendums the voter delegating to has
+   * voted on. Weight is charged as if maximum votes.
    **/
   | { name: 'Delegate'; params: { to: MultiAddress; conviction: PalletDemocracyConviction; balance: bigint } }
   /**
-   * See [`Pallet::undelegate`].
+   * Undelegate the voting power of the sending account.
+   *
+   * Tokens may be unlocked following once an amount of time consistent with the lock period
+   * of the conviction with which the delegation was issued.
+   *
+   * The dispatch origin of this call must be _Signed_ and the signing account must be
+   * currently delegating.
+   *
+   * Emits `Undelegated`.
+   *
+   * Weight: `O(R)` where R is the number of referendums the voter delegating to has
+   * voted on. Weight is charged as if maximum votes.
    **/
   | { name: 'Undelegate' }
   /**
-   * See [`Pallet::clear_public_proposals`].
+   * Clears all public proposals.
+   *
+   * The dispatch origin of this call must be _Root_.
+   *
+   * Weight: `O(1)`.
    **/
   | { name: 'ClearPublicProposals' }
   /**
-   * See [`Pallet::unlock`].
+   * Unlock tokens that have an expired lock.
+   *
+   * The dispatch origin of this call must be _Signed_.
+   *
+   * - `target`: The account to remove the lock on.
+   *
+   * Weight: `O(R)` with R number of vote of target.
    **/
   | { name: 'Unlock'; params: { target: MultiAddress } }
   /**
-   * See [`Pallet::remove_vote`].
+   * Remove a vote for a referendum.
+   *
+   * If:
+   * - the referendum was cancelled, or
+   * - the referendum is ongoing, or
+   * - the referendum has ended such that
+   * - the vote of the account was in opposition to the result; or
+   * - there was no conviction to the account's vote; or
+   * - the account made a split vote
+   * ...then the vote is removed cleanly and a following call to `unlock` may result in more
+   * funds being available.
+   *
+   * If, however, the referendum has ended and:
+   * - it finished corresponding to the vote of the account, and
+   * - the account made a standard vote with conviction, and
+   * - the lock period of the conviction is not over
+   * ...then the lock will be aggregated into the overall account's lock, which may involve
+   * *overlocking* (where the two locks are combined into a single lock that is the maximum
+   * of both the amount locked and the time is it locked for).
+   *
+   * The dispatch origin of this call must be _Signed_, and the signer must have a vote
+   * registered for referendum `index`.
+   *
+   * - `index`: The index of referendum of the vote to be removed.
+   *
+   * Weight: `O(R + log R)` where R is the number of referenda that `target` has voted on.
+   * Weight is calculated for the maximum number of vote.
    **/
   | { name: 'RemoveVote'; params: { index: number } }
   /**
-   * See [`Pallet::remove_other_vote`].
+   * Remove a vote for a referendum.
+   *
+   * If the `target` is equal to the signer, then this function is exactly equivalent to
+   * `remove_vote`. If not equal to the signer, then the vote must have expired,
+   * either because the referendum was cancelled, because the voter lost the referendum or
+   * because the conviction period is over.
+   *
+   * The dispatch origin of this call must be _Signed_.
+   *
+   * - `target`: The account of the vote to be removed; this account must have voted for
+   * referendum `index`.
+   * - `index`: The index of referendum of the vote to be removed.
+   *
+   * Weight: `O(R + log R)` where R is the number of referenda that `target` has voted on.
+   * Weight is calculated for the maximum number of vote.
    **/
   | { name: 'RemoveOtherVote'; params: { target: MultiAddress; index: number } }
   /**
-   * See [`Pallet::blacklist`].
+   * Permanently place a proposal into the blacklist. This prevents it from ever being
+   * proposed again.
+   *
+   * If called on a queued public or external proposal, then this will result in it being
+   * removed. If the `ref_index` supplied is an active referendum with the proposal hash,
+   * then it will be cancelled.
+   *
+   * The dispatch origin of this call must be `BlacklistOrigin`.
+   *
+   * - `proposal_hash`: The proposal hash to blacklist permanently.
+   * - `ref_index`: An ongoing referendum whose hash is `proposal_hash`, which will be
+   * cancelled.
+   *
+   * Weight: `O(p)` (though as this is an high-privilege dispatch, we assume it has a
+   * reasonable value).
    **/
   | { name: 'Blacklist'; params: { proposalHash: H256; maybeRefIndex?: number | undefined } }
   /**
-   * See [`Pallet::cancel_proposal`].
+   * Remove a proposal.
+   *
+   * The dispatch origin of this call must be `CancelProposalOrigin`.
+   *
+   * - `prop_index`: The index of the proposal to cancel.
+   *
+   * Weight: `O(p)` where `p = PublicProps::<T>::decode_len()`
    **/
   | { name: 'CancelProposal'; params: { propIndex: number } }
   /**
-   * See [`Pallet::set_metadata`].
+   * Set or clear a metadata of a proposal or a referendum.
+   *
+   * Parameters:
+   * - `origin`: Must correspond to the `MetadataOwner`.
+   * - `ExternalOrigin` for an external proposal with the `SuperMajorityApprove`
+   * threshold.
+   * - `ExternalDefaultOrigin` for an external proposal with the `SuperMajorityAgainst`
+   * threshold.
+   * - `ExternalMajorityOrigin` for an external proposal with the `SimpleMajority`
+   * threshold.
+   * - `Signed` by a creator for a public proposal.
+   * - `Signed` to clear a metadata for a finished referendum.
+   * - `Root` to set a metadata for an ongoing referendum.
+   * - `owner`: an identifier of a metadata owner.
+   * - `maybe_hash`: The hash of an on-chain stored preimage. `None` to clear a metadata.
    **/
   | { name: 'SetMetadata'; params: { owner: PalletDemocracyMetadataOwner; maybeHash?: H256 | undefined } };
 
 export type PalletDemocracyCallLike =
   /**
-   * See [`Pallet::propose`].
+   * Propose a sensitive action to be taken.
+   *
+   * The dispatch origin of this call must be _Signed_ and the sender must
+   * have funds to cover the deposit.
+   *
+   * - `proposal_hash`: The hash of the proposal preimage.
+   * - `value`: The amount of deposit (must be at least `MinimumDeposit`).
+   *
+   * Emits `Proposed`.
    **/
   | { name: 'Propose'; params: { proposal: FrameSupportPreimagesBounded; value: bigint } }
   /**
-   * See [`Pallet::second`].
+   * Signals agreement with a particular proposal.
+   *
+   * The dispatch origin of this call must be _Signed_ and the sender
+   * must have funds to cover the deposit, equal to the original deposit.
+   *
+   * - `proposal`: The index of the proposal to second.
    **/
   | { name: 'Second'; params: { proposal: number } }
   /**
-   * See [`Pallet::vote`].
+   * Vote in a referendum. If `vote.is_aye()`, the vote is to enact the proposal;
+   * otherwise it is a vote to keep the status quo.
+   *
+   * The dispatch origin of this call must be _Signed_.
+   *
+   * - `ref_index`: The index of the referendum to vote for.
+   * - `vote`: The vote configuration.
    **/
   | { name: 'Vote'; params: { refIndex: number; vote: PalletDemocracyVoteAccountVote } }
   /**
-   * See [`Pallet::emergency_cancel`].
+   * Schedule an emergency cancellation of a referendum. Cannot happen twice to the same
+   * referendum.
+   *
+   * The dispatch origin of this call must be `CancellationOrigin`.
+   *
+   * -`ref_index`: The index of the referendum to cancel.
+   *
+   * Weight: `O(1)`.
    **/
   | { name: 'EmergencyCancel'; params: { refIndex: number } }
   /**
-   * See [`Pallet::external_propose`].
+   * Schedule a referendum to be tabled once it is legal to schedule an external
+   * referendum.
+   *
+   * The dispatch origin of this call must be `ExternalOrigin`.
+   *
+   * - `proposal_hash`: The preimage hash of the proposal.
    **/
   | { name: 'ExternalPropose'; params: { proposal: FrameSupportPreimagesBounded } }
   /**
-   * See [`Pallet::external_propose_majority`].
+   * Schedule a majority-carries referendum to be tabled next once it is legal to schedule
+   * an external referendum.
+   *
+   * The dispatch of this call must be `ExternalMajorityOrigin`.
+   *
+   * - `proposal_hash`: The preimage hash of the proposal.
+   *
+   * Unlike `external_propose`, blacklisting has no effect on this and it may replace a
+   * pre-scheduled `external_propose` call.
+   *
+   * Weight: `O(1)`
    **/
   | { name: 'ExternalProposeMajority'; params: { proposal: FrameSupportPreimagesBounded } }
   /**
-   * See [`Pallet::external_propose_default`].
+   * Schedule a negative-turnout-bias referendum to be tabled next once it is legal to
+   * schedule an external referendum.
+   *
+   * The dispatch of this call must be `ExternalDefaultOrigin`.
+   *
+   * - `proposal_hash`: The preimage hash of the proposal.
+   *
+   * Unlike `external_propose`, blacklisting has no effect on this and it may replace a
+   * pre-scheduled `external_propose` call.
+   *
+   * Weight: `O(1)`
    **/
   | { name: 'ExternalProposeDefault'; params: { proposal: FrameSupportPreimagesBounded } }
   /**
-   * See [`Pallet::fast_track`].
+   * Schedule the currently externally-proposed majority-carries referendum to be tabled
+   * immediately. If there is no externally-proposed referendum currently, or if there is one
+   * but it is not a majority-carries referendum then it fails.
+   *
+   * The dispatch of this call must be `FastTrackOrigin`.
+   *
+   * - `proposal_hash`: The hash of the current external proposal.
+   * - `voting_period`: The period that is allowed for voting on this proposal. Increased to
+   * Must be always greater than zero.
+   * For `FastTrackOrigin` must be equal or greater than `FastTrackVotingPeriod`.
+   * - `delay`: The number of block after voting has ended in approval and this should be
+   * enacted. This doesn't have a minimum amount.
+   *
+   * Emits `Started`.
+   *
+   * Weight: `O(1)`
    **/
   | { name: 'FastTrack'; params: { proposalHash: H256; votingPeriod: number; delay: number } }
   /**
-   * See [`Pallet::veto_external`].
+   * Veto and blacklist the external proposal hash.
+   *
+   * The dispatch origin of this call must be `VetoOrigin`.
+   *
+   * - `proposal_hash`: The preimage hash of the proposal to veto and blacklist.
+   *
+   * Emits `Vetoed`.
+   *
+   * Weight: `O(V + log(V))` where V is number of `existing vetoers`
    **/
   | { name: 'VetoExternal'; params: { proposalHash: H256 } }
   /**
-   * See [`Pallet::cancel_referendum`].
+   * Remove a referendum.
+   *
+   * The dispatch origin of this call must be _Root_.
+   *
+   * - `ref_index`: The index of the referendum to cancel.
+   *
+   * # Weight: `O(1)`.
    **/
   | { name: 'CancelReferendum'; params: { refIndex: number } }
   /**
-   * See [`Pallet::delegate`].
+   * Delegate the voting power (with some given conviction) of the sending account.
+   *
+   * The balance delegated is locked for as long as it's delegated, and thereafter for the
+   * time appropriate for the conviction's lock period.
+   *
+   * The dispatch origin of this call must be _Signed_, and the signing account must either:
+   * - be delegating already; or
+   * - have no voting activity (if there is, then it will need to be removed/consolidated
+   * through `reap_vote` or `unvote`).
+   *
+   * - `to`: The account whose voting the `target` account's voting power will follow.
+   * - `conviction`: The conviction that will be attached to the delegated votes. When the
+   * account is undelegated, the funds will be locked for the corresponding period.
+   * - `balance`: The amount of the account's balance to be used in delegating. This must not
+   * be more than the account's current balance.
+   *
+   * Emits `Delegated`.
+   *
+   * Weight: `O(R)` where R is the number of referendums the voter delegating to has
+   * voted on. Weight is charged as if maximum votes.
    **/
   | { name: 'Delegate'; params: { to: MultiAddressLike; conviction: PalletDemocracyConviction; balance: bigint } }
   /**
-   * See [`Pallet::undelegate`].
+   * Undelegate the voting power of the sending account.
+   *
+   * Tokens may be unlocked following once an amount of time consistent with the lock period
+   * of the conviction with which the delegation was issued.
+   *
+   * The dispatch origin of this call must be _Signed_ and the signing account must be
+   * currently delegating.
+   *
+   * Emits `Undelegated`.
+   *
+   * Weight: `O(R)` where R is the number of referendums the voter delegating to has
+   * voted on. Weight is charged as if maximum votes.
    **/
   | { name: 'Undelegate' }
   /**
-   * See [`Pallet::clear_public_proposals`].
+   * Clears all public proposals.
+   *
+   * The dispatch origin of this call must be _Root_.
+   *
+   * Weight: `O(1)`.
    **/
   | { name: 'ClearPublicProposals' }
   /**
-   * See [`Pallet::unlock`].
+   * Unlock tokens that have an expired lock.
+   *
+   * The dispatch origin of this call must be _Signed_.
+   *
+   * - `target`: The account to remove the lock on.
+   *
+   * Weight: `O(R)` with R number of vote of target.
    **/
   | { name: 'Unlock'; params: { target: MultiAddressLike } }
   /**
-   * See [`Pallet::remove_vote`].
+   * Remove a vote for a referendum.
+   *
+   * If:
+   * - the referendum was cancelled, or
+   * - the referendum is ongoing, or
+   * - the referendum has ended such that
+   * - the vote of the account was in opposition to the result; or
+   * - there was no conviction to the account's vote; or
+   * - the account made a split vote
+   * ...then the vote is removed cleanly and a following call to `unlock` may result in more
+   * funds being available.
+   *
+   * If, however, the referendum has ended and:
+   * - it finished corresponding to the vote of the account, and
+   * - the account made a standard vote with conviction, and
+   * - the lock period of the conviction is not over
+   * ...then the lock will be aggregated into the overall account's lock, which may involve
+   * *overlocking* (where the two locks are combined into a single lock that is the maximum
+   * of both the amount locked and the time is it locked for).
+   *
+   * The dispatch origin of this call must be _Signed_, and the signer must have a vote
+   * registered for referendum `index`.
+   *
+   * - `index`: The index of referendum of the vote to be removed.
+   *
+   * Weight: `O(R + log R)` where R is the number of referenda that `target` has voted on.
+   * Weight is calculated for the maximum number of vote.
    **/
   | { name: 'RemoveVote'; params: { index: number } }
   /**
-   * See [`Pallet::remove_other_vote`].
+   * Remove a vote for a referendum.
+   *
+   * If the `target` is equal to the signer, then this function is exactly equivalent to
+   * `remove_vote`. If not equal to the signer, then the vote must have expired,
+   * either because the referendum was cancelled, because the voter lost the referendum or
+   * because the conviction period is over.
+   *
+   * The dispatch origin of this call must be _Signed_.
+   *
+   * - `target`: The account of the vote to be removed; this account must have voted for
+   * referendum `index`.
+   * - `index`: The index of referendum of the vote to be removed.
+   *
+   * Weight: `O(R + log R)` where R is the number of referenda that `target` has voted on.
+   * Weight is calculated for the maximum number of vote.
    **/
   | { name: 'RemoveOtherVote'; params: { target: MultiAddressLike; index: number } }
   /**
-   * See [`Pallet::blacklist`].
+   * Permanently place a proposal into the blacklist. This prevents it from ever being
+   * proposed again.
+   *
+   * If called on a queued public or external proposal, then this will result in it being
+   * removed. If the `ref_index` supplied is an active referendum with the proposal hash,
+   * then it will be cancelled.
+   *
+   * The dispatch origin of this call must be `BlacklistOrigin`.
+   *
+   * - `proposal_hash`: The proposal hash to blacklist permanently.
+   * - `ref_index`: An ongoing referendum whose hash is `proposal_hash`, which will be
+   * cancelled.
+   *
+   * Weight: `O(p)` (though as this is an high-privilege dispatch, we assume it has a
+   * reasonable value).
    **/
   | { name: 'Blacklist'; params: { proposalHash: H256; maybeRefIndex?: number | undefined } }
   /**
-   * See [`Pallet::cancel_proposal`].
+   * Remove a proposal.
+   *
+   * The dispatch origin of this call must be `CancelProposalOrigin`.
+   *
+   * - `prop_index`: The index of the proposal to cancel.
+   *
+   * Weight: `O(p)` where `p = PublicProps::<T>::decode_len()`
    **/
   | { name: 'CancelProposal'; params: { propIndex: number } }
   /**
-   * See [`Pallet::set_metadata`].
+   * Set or clear a metadata of a proposal or a referendum.
+   *
+   * Parameters:
+   * - `origin`: Must correspond to the `MetadataOwner`.
+   * - `ExternalOrigin` for an external proposal with the `SuperMajorityApprove`
+   * threshold.
+   * - `ExternalDefaultOrigin` for an external proposal with the `SuperMajorityAgainst`
+   * threshold.
+   * - `ExternalMajorityOrigin` for an external proposal with the `SimpleMajority`
+   * threshold.
+   * - `Signed` by a creator for a public proposal.
+   * - `Signed` to clear a metadata for a finished referendum.
+   * - `Root` to set a metadata for an ongoing referendum.
+   * - `owner`: an identifier of a metadata owner.
+   * - `maybe_hash`: The hash of an on-chain stored preimage. `None` to clear a metadata.
    **/
   | { name: 'SetMetadata'; params: { owner: PalletDemocracyMetadataOwner; maybeHash?: H256 | undefined } };
 
@@ -3538,30 +5263,114 @@ export type PalletDemocracyConviction =
  **/
 export type PalletCollectiveCall =
   /**
-   * See [`Pallet::set_members`].
+   * Set the collective's membership.
+   *
+   * - `new_members`: The new member list. Be nice to the chain and provide it sorted.
+   * - `prime`: The prime member whose vote sets the default.
+   * - `old_count`: The upper bound for the previous number of members in storage. Used for
+   * weight estimation.
+   *
+   * The dispatch of this call must be `SetMembersOrigin`.
+   *
+   * NOTE: Does not enforce the expected `MaxMembers` limit on the amount of members, but
+   * the weight estimations rely on it to estimate dispatchable weight.
+   *
+   * # WARNING:
+   *
+   * The `pallet-collective` can also be managed by logic outside of the pallet through the
+   * implementation of the trait [`ChangeMembers`].
+   * Any call to `set_members` must be careful that the member set doesn't get out of sync
+   * with other logic managing the member set.
+   *
+   * ## Complexity:
+   * - `O(MP + N)` where:
+   * - `M` old-members-count (code- and governance-bounded)
+   * - `N` new-members-count (code- and governance-bounded)
+   * - `P` proposals-count (code-bounded)
    **/
   | {
       name: 'SetMembers';
       params: { newMembers: Array<AccountId32>; prime?: AccountId32 | undefined; oldCount: number };
     }
   /**
-   * See [`Pallet::execute`].
+   * Dispatch a proposal from a member using the `Member` origin.
+   *
+   * Origin must be a member of the collective.
+   *
+   * ## Complexity:
+   * - `O(B + M + P)` where:
+   * - `B` is `proposal` size in bytes (length-fee-bounded)
+   * - `M` members-count (code-bounded)
+   * - `P` complexity of dispatching `proposal`
    **/
   | { name: 'Execute'; params: { proposal: KitchensinkRuntimeRuntimeCall; lengthBound: number } }
   /**
-   * See [`Pallet::propose`].
+   * Add a new proposal to either be voted on or executed directly.
+   *
+   * Requires the sender to be member.
+   *
+   * `threshold` determines whether `proposal` is executed directly (`threshold < 2`)
+   * or put up for voting.
+   *
+   * ## Complexity
+   * - `O(B + M + P1)` or `O(B + M + P2)` where:
+   * - `B` is `proposal` size in bytes (length-fee-bounded)
+   * - `M` is members-count (code- and governance-bounded)
+   * - branching is influenced by `threshold` where:
+   * - `P1` is proposal execution complexity (`threshold < 2`)
+   * - `P2` is proposals-count (code-bounded) (`threshold >= 2`)
    **/
   | { name: 'Propose'; params: { threshold: number; proposal: KitchensinkRuntimeRuntimeCall; lengthBound: number } }
   /**
-   * See [`Pallet::vote`].
+   * Add an aye or nay vote for the sender to the given proposal.
+   *
+   * Requires the sender to be a member.
+   *
+   * Transaction fees will be waived if the member is voting on any particular proposal
+   * for the first time and the call is successful. Subsequent vote changes will charge a
+   * fee.
+   * ## Complexity
+   * - `O(M)` where `M` is members-count (code- and governance-bounded)
    **/
   | { name: 'Vote'; params: { proposal: H256; index: number; approve: boolean } }
   /**
-   * See [`Pallet::disapprove_proposal`].
+   * Disapprove a proposal, close, and remove it from the system, regardless of its current
+   * state.
+   *
+   * Must be called by the Root origin.
+   *
+   * Parameters:
+   * * `proposal_hash`: The hash of the proposal that should be disapproved.
+   *
+   * ## Complexity
+   * O(P) where P is the number of max proposals
    **/
   | { name: 'DisapproveProposal'; params: { proposalHash: H256 } }
   /**
-   * See [`Pallet::close`].
+   * Close a vote that is either approved, disapproved or whose voting period has ended.
+   *
+   * May be called by any signed account in order to finish voting and close the proposal.
+   *
+   * If called before the end of the voting period it will only close the vote if it is
+   * has enough votes to be approved or disapproved.
+   *
+   * If called after the end of the voting period abstentions are counted as rejections
+   * unless there is a prime member set and the prime member cast an approval.
+   *
+   * If the close operation completes successfully with disapproval, the transaction fee will
+   * be waived. Otherwise execution of the approved operation will be charged to the caller.
+   *
+   * + `proposal_weight_bound`: The maximum amount of weight consumed by executing the closed
+   * proposal.
+   * + `length_bound`: The upper bound for the length of the proposal in storage. Checked via
+   * `storage::read` so it is `size_of::<u32>() == 4` larger than the pure length.
+   *
+   * ## Complexity
+   * - `O(B + M + P1 + P2)` where:
+   * - `B` is `proposal` size in bytes (length-fee-bounded)
+   * - `M` is members-count (code- and governance-bounded)
+   * - `P1` is the complexity of `proposal` preimage.
+   * - `P2` is proposal-count (code-bounded)
    **/
   | {
       name: 'Close';
@@ -3570,30 +5379,114 @@ export type PalletCollectiveCall =
 
 export type PalletCollectiveCallLike =
   /**
-   * See [`Pallet::set_members`].
+   * Set the collective's membership.
+   *
+   * - `new_members`: The new member list. Be nice to the chain and provide it sorted.
+   * - `prime`: The prime member whose vote sets the default.
+   * - `old_count`: The upper bound for the previous number of members in storage. Used for
+   * weight estimation.
+   *
+   * The dispatch of this call must be `SetMembersOrigin`.
+   *
+   * NOTE: Does not enforce the expected `MaxMembers` limit on the amount of members, but
+   * the weight estimations rely on it to estimate dispatchable weight.
+   *
+   * # WARNING:
+   *
+   * The `pallet-collective` can also be managed by logic outside of the pallet through the
+   * implementation of the trait [`ChangeMembers`].
+   * Any call to `set_members` must be careful that the member set doesn't get out of sync
+   * with other logic managing the member set.
+   *
+   * ## Complexity:
+   * - `O(MP + N)` where:
+   * - `M` old-members-count (code- and governance-bounded)
+   * - `N` new-members-count (code- and governance-bounded)
+   * - `P` proposals-count (code-bounded)
    **/
   | {
       name: 'SetMembers';
       params: { newMembers: Array<AccountId32Like>; prime?: AccountId32Like | undefined; oldCount: number };
     }
   /**
-   * See [`Pallet::execute`].
+   * Dispatch a proposal from a member using the `Member` origin.
+   *
+   * Origin must be a member of the collective.
+   *
+   * ## Complexity:
+   * - `O(B + M + P)` where:
+   * - `B` is `proposal` size in bytes (length-fee-bounded)
+   * - `M` members-count (code-bounded)
+   * - `P` complexity of dispatching `proposal`
    **/
   | { name: 'Execute'; params: { proposal: KitchensinkRuntimeRuntimeCallLike; lengthBound: number } }
   /**
-   * See [`Pallet::propose`].
+   * Add a new proposal to either be voted on or executed directly.
+   *
+   * Requires the sender to be member.
+   *
+   * `threshold` determines whether `proposal` is executed directly (`threshold < 2`)
+   * or put up for voting.
+   *
+   * ## Complexity
+   * - `O(B + M + P1)` or `O(B + M + P2)` where:
+   * - `B` is `proposal` size in bytes (length-fee-bounded)
+   * - `M` is members-count (code- and governance-bounded)
+   * - branching is influenced by `threshold` where:
+   * - `P1` is proposal execution complexity (`threshold < 2`)
+   * - `P2` is proposals-count (code-bounded) (`threshold >= 2`)
    **/
   | { name: 'Propose'; params: { threshold: number; proposal: KitchensinkRuntimeRuntimeCallLike; lengthBound: number } }
   /**
-   * See [`Pallet::vote`].
+   * Add an aye or nay vote for the sender to the given proposal.
+   *
+   * Requires the sender to be a member.
+   *
+   * Transaction fees will be waived if the member is voting on any particular proposal
+   * for the first time and the call is successful. Subsequent vote changes will charge a
+   * fee.
+   * ## Complexity
+   * - `O(M)` where `M` is members-count (code- and governance-bounded)
    **/
   | { name: 'Vote'; params: { proposal: H256; index: number; approve: boolean } }
   /**
-   * See [`Pallet::disapprove_proposal`].
+   * Disapprove a proposal, close, and remove it from the system, regardless of its current
+   * state.
+   *
+   * Must be called by the Root origin.
+   *
+   * Parameters:
+   * * `proposal_hash`: The hash of the proposal that should be disapproved.
+   *
+   * ## Complexity
+   * O(P) where P is the number of max proposals
    **/
   | { name: 'DisapproveProposal'; params: { proposalHash: H256 } }
   /**
-   * See [`Pallet::close`].
+   * Close a vote that is either approved, disapproved or whose voting period has ended.
+   *
+   * May be called by any signed account in order to finish voting and close the proposal.
+   *
+   * If called before the end of the voting period it will only close the vote if it is
+   * has enough votes to be approved or disapproved.
+   *
+   * If called after the end of the voting period abstentions are counted as rejections
+   * unless there is a prime member set and the prime member cast an approval.
+   *
+   * If the close operation completes successfully with disapproval, the transaction fee will
+   * be waived. Otherwise execution of the approved operation will be charged to the caller.
+   *
+   * + `proposal_weight_bound`: The maximum amount of weight consumed by executing the closed
+   * proposal.
+   * + `length_bound`: The upper bound for the length of the proposal in storage. Checked via
+   * `storage::read` so it is `size_of::<u32>() == 4` larger than the pure length.
+   *
+   * ## Complexity
+   * - `O(B + M + P1 + P2)` where:
+   * - `B` is `proposal` size in bytes (length-fee-bounded)
+   * - `M` is members-count (code- and governance-bounded)
+   * - `P1` is the complexity of `proposal` preimage.
+   * - `P2` is proposal-count (code-bounded)
    **/
   | {
       name: 'Close';
@@ -3605,53 +5498,209 @@ export type PalletCollectiveCallLike =
  **/
 export type PalletElectionsPhragmenCall =
   /**
-   * See [`Pallet::vote`].
+   * Vote for a set of candidates for the upcoming round of election. This can be called to
+   * set the initial votes, or update already existing votes.
+   *
+   * Upon initial voting, `value` units of `who`'s balance is locked and a deposit amount is
+   * reserved. The deposit is based on the number of votes and can be updated over time.
+   *
+   * The `votes` should:
+   * - not be empty.
+   * - be less than the number of possible candidates. Note that all current members and
+   * runners-up are also automatically candidates for the next round.
+   *
+   * If `value` is more than `who`'s free balance, then the maximum of the two is used.
+   *
+   * The dispatch origin of this call must be signed.
+   *
+   * ### Warning
+   *
+   * It is the responsibility of the caller to **NOT** place all of their balance into the
+   * lock and keep some for further operations.
    **/
   | { name: 'Vote'; params: { votes: Array<AccountId32>; value: bigint } }
   /**
-   * See [`Pallet::remove_voter`].
+   * Remove `origin` as a voter.
+   *
+   * This removes the lock and returns the deposit.
+   *
+   * The dispatch origin of this call must be signed and be a voter.
    **/
   | { name: 'RemoveVoter' }
   /**
-   * See [`Pallet::submit_candidacy`].
+   * Submit oneself for candidacy. A fixed amount of deposit is recorded.
+   *
+   * All candidates are wiped at the end of the term. They either become a member/runner-up,
+   * or leave the system while their deposit is slashed.
+   *
+   * The dispatch origin of this call must be signed.
+   *
+   * ### Warning
+   *
+   * Even if a candidate ends up being a member, they must call [`Call::renounce_candidacy`]
+   * to get their deposit back. Losing the spot in an election will always lead to a slash.
+   *
+   * The number of current candidates must be provided as witness data.
+   * ## Complexity
+   * O(C + log(C)) where C is candidate_count.
    **/
   | { name: 'SubmitCandidacy'; params: { candidateCount: number } }
   /**
-   * See [`Pallet::renounce_candidacy`].
+   * Renounce one's intention to be a candidate for the next election round. 3 potential
+   * outcomes exist:
+   *
+   * - `origin` is a candidate and not elected in any set. In this case, the deposit is
+   * unreserved, returned and origin is removed as a candidate.
+   * - `origin` is a current runner-up. In this case, the deposit is unreserved, returned and
+   * origin is removed as a runner-up.
+   * - `origin` is a current member. In this case, the deposit is unreserved and origin is
+   * removed as a member, consequently not being a candidate for the next round anymore.
+   * Similar to [`remove_member`](Self::remove_member), if replacement runners exists, they
+   * are immediately used. If the prime is renouncing, then no prime will exist until the
+   * next round.
+   *
+   * The dispatch origin of this call must be signed, and have one of the above roles.
+   * The type of renouncing must be provided as witness data.
+   *
+   * ## Complexity
+   * - Renouncing::Candidate(count): O(count + log(count))
+   * - Renouncing::Member: O(1)
+   * - Renouncing::RunnerUp: O(1)
    **/
   | { name: 'RenounceCandidacy'; params: { renouncing: PalletElectionsPhragmenRenouncing } }
   /**
-   * See [`Pallet::remove_member`].
+   * Remove a particular member from the set. This is effective immediately and the bond of
+   * the outgoing member is slashed.
+   *
+   * If a runner-up is available, then the best runner-up will be removed and replaces the
+   * outgoing member. Otherwise, if `rerun_election` is `true`, a new phragmen election is
+   * started, else, nothing happens.
+   *
+   * If `slash_bond` is set to true, the bond of the member being removed is slashed. Else,
+   * it is returned.
+   *
+   * The dispatch origin of this call must be root.
+   *
+   * Note that this does not affect the designated block number of the next election.
+   *
+   * ## Complexity
+   * - Check details of remove_and_replace_member() and do_phragmen().
    **/
   | { name: 'RemoveMember'; params: { who: MultiAddress; slashBond: boolean; rerunElection: boolean } }
   /**
-   * See [`Pallet::clean_defunct_voters`].
+   * Clean all voters who are defunct (i.e. they do not serve any purpose at all). The
+   * deposit of the removed voters are returned.
+   *
+   * This is an root function to be used only for cleaning the state.
+   *
+   * The dispatch origin of this call must be root.
+   *
+   * ## Complexity
+   * - Check is_defunct_voter() details.
    **/
   | { name: 'CleanDefunctVoters'; params: { numVoters: number; numDefunct: number } };
 
 export type PalletElectionsPhragmenCallLike =
   /**
-   * See [`Pallet::vote`].
+   * Vote for a set of candidates for the upcoming round of election. This can be called to
+   * set the initial votes, or update already existing votes.
+   *
+   * Upon initial voting, `value` units of `who`'s balance is locked and a deposit amount is
+   * reserved. The deposit is based on the number of votes and can be updated over time.
+   *
+   * The `votes` should:
+   * - not be empty.
+   * - be less than the number of possible candidates. Note that all current members and
+   * runners-up are also automatically candidates for the next round.
+   *
+   * If `value` is more than `who`'s free balance, then the maximum of the two is used.
+   *
+   * The dispatch origin of this call must be signed.
+   *
+   * ### Warning
+   *
+   * It is the responsibility of the caller to **NOT** place all of their balance into the
+   * lock and keep some for further operations.
    **/
   | { name: 'Vote'; params: { votes: Array<AccountId32Like>; value: bigint } }
   /**
-   * See [`Pallet::remove_voter`].
+   * Remove `origin` as a voter.
+   *
+   * This removes the lock and returns the deposit.
+   *
+   * The dispatch origin of this call must be signed and be a voter.
    **/
   | { name: 'RemoveVoter' }
   /**
-   * See [`Pallet::submit_candidacy`].
+   * Submit oneself for candidacy. A fixed amount of deposit is recorded.
+   *
+   * All candidates are wiped at the end of the term. They either become a member/runner-up,
+   * or leave the system while their deposit is slashed.
+   *
+   * The dispatch origin of this call must be signed.
+   *
+   * ### Warning
+   *
+   * Even if a candidate ends up being a member, they must call [`Call::renounce_candidacy`]
+   * to get their deposit back. Losing the spot in an election will always lead to a slash.
+   *
+   * The number of current candidates must be provided as witness data.
+   * ## Complexity
+   * O(C + log(C)) where C is candidate_count.
    **/
   | { name: 'SubmitCandidacy'; params: { candidateCount: number } }
   /**
-   * See [`Pallet::renounce_candidacy`].
+   * Renounce one's intention to be a candidate for the next election round. 3 potential
+   * outcomes exist:
+   *
+   * - `origin` is a candidate and not elected in any set. In this case, the deposit is
+   * unreserved, returned and origin is removed as a candidate.
+   * - `origin` is a current runner-up. In this case, the deposit is unreserved, returned and
+   * origin is removed as a runner-up.
+   * - `origin` is a current member. In this case, the deposit is unreserved and origin is
+   * removed as a member, consequently not being a candidate for the next round anymore.
+   * Similar to [`remove_member`](Self::remove_member), if replacement runners exists, they
+   * are immediately used. If the prime is renouncing, then no prime will exist until the
+   * next round.
+   *
+   * The dispatch origin of this call must be signed, and have one of the above roles.
+   * The type of renouncing must be provided as witness data.
+   *
+   * ## Complexity
+   * - Renouncing::Candidate(count): O(count + log(count))
+   * - Renouncing::Member: O(1)
+   * - Renouncing::RunnerUp: O(1)
    **/
   | { name: 'RenounceCandidacy'; params: { renouncing: PalletElectionsPhragmenRenouncing } }
   /**
-   * See [`Pallet::remove_member`].
+   * Remove a particular member from the set. This is effective immediately and the bond of
+   * the outgoing member is slashed.
+   *
+   * If a runner-up is available, then the best runner-up will be removed and replaces the
+   * outgoing member. Otherwise, if `rerun_election` is `true`, a new phragmen election is
+   * started, else, nothing happens.
+   *
+   * If `slash_bond` is set to true, the bond of the member being removed is slashed. Else,
+   * it is returned.
+   *
+   * The dispatch origin of this call must be root.
+   *
+   * Note that this does not affect the designated block number of the next election.
+   *
+   * ## Complexity
+   * - Check details of remove_and_replace_member() and do_phragmen().
    **/
   | { name: 'RemoveMember'; params: { who: MultiAddressLike; slashBond: boolean; rerunElection: boolean } }
   /**
-   * See [`Pallet::clean_defunct_voters`].
+   * Clean all voters who are defunct (i.e. they do not serve any purpose at all). The
+   * deposit of the removed voters are returned.
+   *
+   * This is an root function to be used only for cleaning the state.
+   *
+   * The dispatch origin of this call must be root.
+   *
+   * ## Complexity
+   * - Check is_defunct_voter() details.
    **/
   | { name: 'CleanDefunctVoters'; params: { numVoters: number; numDefunct: number } };
 
@@ -3665,61 +5714,99 @@ export type PalletElectionsPhragmenRenouncing =
  **/
 export type PalletMembershipCall =
   /**
-   * See [`Pallet::add_member`].
+   * Add a member `who` to the set.
+   *
+   * May only be called from `T::AddOrigin`.
    **/
   | { name: 'AddMember'; params: { who: MultiAddress } }
   /**
-   * See [`Pallet::remove_member`].
+   * Remove a member `who` from the set.
+   *
+   * May only be called from `T::RemoveOrigin`.
    **/
   | { name: 'RemoveMember'; params: { who: MultiAddress } }
   /**
-   * See [`Pallet::swap_member`].
+   * Swap out one member `remove` for another `add`.
+   *
+   * May only be called from `T::SwapOrigin`.
+   *
+   * Prime membership is *not* passed from `remove` to `add`, if extant.
    **/
   | { name: 'SwapMember'; params: { remove: MultiAddress; add: MultiAddress } }
   /**
-   * See [`Pallet::reset_members`].
+   * Change the membership to a new set, disregarding the existing membership. Be nice and
+   * pass `members` pre-sorted.
+   *
+   * May only be called from `T::ResetOrigin`.
    **/
   | { name: 'ResetMembers'; params: { members: Array<AccountId32> } }
   /**
-   * See [`Pallet::change_key`].
+   * Swap out the sending member for some other key `new`.
+   *
+   * May only be called from `Signed` origin of a current member.
+   *
+   * Prime membership is passed from the origin account to `new`, if extant.
    **/
   | { name: 'ChangeKey'; params: { new: MultiAddress } }
   /**
-   * See [`Pallet::set_prime`].
+   * Set the prime member. Must be a current member.
+   *
+   * May only be called from `T::PrimeOrigin`.
    **/
   | { name: 'SetPrime'; params: { who: MultiAddress } }
   /**
-   * See [`Pallet::clear_prime`].
+   * Remove the prime member if it exists.
+   *
+   * May only be called from `T::PrimeOrigin`.
    **/
   | { name: 'ClearPrime' };
 
 export type PalletMembershipCallLike =
   /**
-   * See [`Pallet::add_member`].
+   * Add a member `who` to the set.
+   *
+   * May only be called from `T::AddOrigin`.
    **/
   | { name: 'AddMember'; params: { who: MultiAddressLike } }
   /**
-   * See [`Pallet::remove_member`].
+   * Remove a member `who` from the set.
+   *
+   * May only be called from `T::RemoveOrigin`.
    **/
   | { name: 'RemoveMember'; params: { who: MultiAddressLike } }
   /**
-   * See [`Pallet::swap_member`].
+   * Swap out one member `remove` for another `add`.
+   *
+   * May only be called from `T::SwapOrigin`.
+   *
+   * Prime membership is *not* passed from `remove` to `add`, if extant.
    **/
   | { name: 'SwapMember'; params: { remove: MultiAddressLike; add: MultiAddressLike } }
   /**
-   * See [`Pallet::reset_members`].
+   * Change the membership to a new set, disregarding the existing membership. Be nice and
+   * pass `members` pre-sorted.
+   *
+   * May only be called from `T::ResetOrigin`.
    **/
   | { name: 'ResetMembers'; params: { members: Array<AccountId32Like> } }
   /**
-   * See [`Pallet::change_key`].
+   * Swap out the sending member for some other key `new`.
+   *
+   * May only be called from `Signed` origin of a current member.
+   *
+   * Prime membership is passed from the origin account to `new`, if extant.
    **/
   | { name: 'ChangeKey'; params: { new: MultiAddressLike } }
   /**
-   * See [`Pallet::set_prime`].
+   * Set the prime member. Must be a current member.
+   *
+   * May only be called from `T::PrimeOrigin`.
    **/
   | { name: 'SetPrime'; params: { who: MultiAddressLike } }
   /**
-   * See [`Pallet::clear_prime`].
+   * Remove the prime member if it exists.
+   *
+   * May only be called from `T::PrimeOrigin`.
    **/
   | { name: 'ClearPrime' };
 
@@ -3728,41 +5815,85 @@ export type PalletMembershipCallLike =
  **/
 export type PalletGrandpaCall =
   /**
-   * See [`Pallet::report_equivocation`].
+   * Report voter equivocation/misbehavior. This method will verify the
+   * equivocation proof and validate the given key ownership proof
+   * against the extracted offender. If both are valid, the offence
+   * will be reported.
    **/
   | {
       name: 'ReportEquivocation';
       params: { equivocationProof: SpConsensusGrandpaEquivocationProof; keyOwnerProof: SpSessionMembershipProof };
     }
   /**
-   * See [`Pallet::report_equivocation_unsigned`].
+   * Report voter equivocation/misbehavior. This method will verify the
+   * equivocation proof and validate the given key ownership proof
+   * against the extracted offender. If both are valid, the offence
+   * will be reported.
+   *
+   * This extrinsic must be called unsigned and it is expected that only
+   * block authors will call it (validated in `ValidateUnsigned`), as such
+   * if the block author is defined it will be defined as the equivocation
+   * reporter.
    **/
   | {
       name: 'ReportEquivocationUnsigned';
       params: { equivocationProof: SpConsensusGrandpaEquivocationProof; keyOwnerProof: SpSessionMembershipProof };
     }
   /**
-   * See [`Pallet::note_stalled`].
+   * Note that the current authority set of the GRANDPA finality gadget has stalled.
+   *
+   * This will trigger a forced authority set change at the beginning of the next session, to
+   * be enacted `delay` blocks after that. The `delay` should be high enough to safely assume
+   * that the block signalling the forced change will not be re-orged e.g. 1000 blocks.
+   * The block production rate (which may be slowed down because of finality lagging) should
+   * be taken into account when choosing the `delay`. The GRANDPA voters based on the new
+   * authority will start voting on top of `best_finalized_block_number` for new finalized
+   * blocks. `best_finalized_block_number` should be the highest of the latest finalized
+   * block of all validators of the new authority set.
+   *
+   * Only callable by root.
    **/
   | { name: 'NoteStalled'; params: { delay: number; bestFinalizedBlockNumber: number } };
 
 export type PalletGrandpaCallLike =
   /**
-   * See [`Pallet::report_equivocation`].
+   * Report voter equivocation/misbehavior. This method will verify the
+   * equivocation proof and validate the given key ownership proof
+   * against the extracted offender. If both are valid, the offence
+   * will be reported.
    **/
   | {
       name: 'ReportEquivocation';
       params: { equivocationProof: SpConsensusGrandpaEquivocationProof; keyOwnerProof: SpSessionMembershipProof };
     }
   /**
-   * See [`Pallet::report_equivocation_unsigned`].
+   * Report voter equivocation/misbehavior. This method will verify the
+   * equivocation proof and validate the given key ownership proof
+   * against the extracted offender. If both are valid, the offence
+   * will be reported.
+   *
+   * This extrinsic must be called unsigned and it is expected that only
+   * block authors will call it (validated in `ValidateUnsigned`), as such
+   * if the block author is defined it will be defined as the equivocation
+   * reporter.
    **/
   | {
       name: 'ReportEquivocationUnsigned';
       params: { equivocationProof: SpConsensusGrandpaEquivocationProof; keyOwnerProof: SpSessionMembershipProof };
     }
   /**
-   * See [`Pallet::note_stalled`].
+   * Note that the current authority set of the GRANDPA finality gadget has stalled.
+   *
+   * This will trigger a forced authority set change at the beginning of the next session, to
+   * be enacted `delay` blocks after that. The `delay` should be high enough to safely assume
+   * that the block signalling the forced change will not be re-orged e.g. 1000 blocks.
+   * The block production rate (which may be slowed down because of finality lagging) should
+   * be taken into account when choosing the `delay`. The GRANDPA voters based on the new
+   * authority will start voting on top of `best_finalized_block_number` for new finalized
+   * blocks. `best_finalized_block_number` should be the highest of the latest finalized
+   * block of all validators of the new authority set.
+   *
+   * Only callable by root.
    **/
   | { name: 'NoteStalled'; params: { delay: number; bestFinalizedBlockNumber: number } };
 
@@ -3799,76 +5930,446 @@ export type FinalityGrandpaPrecommit = { targetHash: H256; targetNumber: number 
  **/
 export type PalletTreasuryCall =
   /**
-   * See [`Pallet::propose_spend`].
+   * Put forward a suggestion for spending.
+   *
+   * ## Dispatch Origin
+   *
+   * Must be signed.
+   *
+   * ## Details
+   * A deposit proportional to the value is reserved and slashed if the proposal is rejected.
+   * It is returned once the proposal is awarded.
+   *
+   * ### Complexity
+   * - O(1)
+   *
+   * ## Events
+   *
+   * Emits [`Event::Proposed`] if successful.
    **/
   | { name: 'ProposeSpend'; params: { value: bigint; beneficiary: MultiAddress } }
   /**
-   * See [`Pallet::reject_proposal`].
+   * Reject a proposed spend.
+   *
+   * ## Dispatch Origin
+   *
+   * Must be [`Config::RejectOrigin`].
+   *
+   * ## Details
+   * The original deposit will be slashed.
+   *
+   * ### Complexity
+   * - O(1)
+   *
+   * ## Events
+   *
+   * Emits [`Event::Rejected`] if successful.
    **/
   | { name: 'RejectProposal'; params: { proposalId: number } }
   /**
-   * See [`Pallet::approve_proposal`].
+   * Approve a proposal.
+   *
+   * ## Dispatch Origin
+   *
+   * Must be [`Config::ApproveOrigin`].
+   *
+   * ## Details
+   *
+   * At a later time, the proposal will be allocated to the beneficiary and the original
+   * deposit will be returned.
+   *
+   * ### Complexity
+   * - O(1).
+   *
+   * ## Events
+   *
+   * No events are emitted from this dispatch.
    **/
   | { name: 'ApproveProposal'; params: { proposalId: number } }
   /**
-   * See [`Pallet::spend`].
+   * Propose and approve a spend of treasury funds.
+   *
+   * ## Dispatch Origin
+   *
+   * Must be [`Config::SpendOrigin`] with the `Success` value being at least `amount`.
+   *
+   * ### Details
+   * NOTE: For record-keeping purposes, the proposer is deemed to be equivalent to the
+   * beneficiary.
+   *
+   * ### Parameters
+   * - `amount`: The amount to be transferred from the treasury to the `beneficiary`.
+   * - `beneficiary`: The destination account for the transfer.
+   *
+   * ## Events
+   *
+   * Emits [`Event::SpendApproved`] if successful.
    **/
-  | { name: 'Spend'; params: { amount: bigint; beneficiary: MultiAddress } }
+  | { name: 'SpendLocal'; params: { amount: bigint; beneficiary: MultiAddress } }
   /**
-   * See [`Pallet::remove_approval`].
+   * Force a previously approved proposal to be removed from the approval queue.
+   *
+   * ## Dispatch Origin
+   *
+   * Must be [`Config::RejectOrigin`].
+   *
+   * ## Details
+   *
+   * The original deposit will no longer be returned.
+   *
+   * ### Parameters
+   * - `proposal_id`: The index of a proposal
+   *
+   * ### Complexity
+   * - O(A) where `A` is the number of approvals
+   *
+   * ### Errors
+   * - [`Error::ProposalNotApproved`]: The `proposal_id` supplied was not found in the
+   * approval queue, i.e., the proposal has not been approved. This could also mean the
+   * proposal does not exist altogether, thus there is no way it would have been approved
+   * in the first place.
    **/
-  | { name: 'RemoveApproval'; params: { proposalId: number } };
+  | { name: 'RemoveApproval'; params: { proposalId: number } }
+  /**
+   * Propose and approve a spend of treasury funds.
+   *
+   * ## Dispatch Origin
+   *
+   * Must be [`Config::SpendOrigin`] with the `Success` value being at least
+   * `amount` of `asset_kind` in the native asset. The amount of `asset_kind` is converted
+   * for assertion using the [`Config::BalanceConverter`].
+   *
+   * ## Details
+   *
+   * Create an approved spend for transferring a specific `amount` of `asset_kind` to a
+   * designated beneficiary. The spend must be claimed using the `payout` dispatchable within
+   * the [`Config::PayoutPeriod`].
+   *
+   * ### Parameters
+   * - `asset_kind`: An indicator of the specific asset class to be spent.
+   * - `amount`: The amount to be transferred from the treasury to the `beneficiary`.
+   * - `beneficiary`: The beneficiary of the spend.
+   * - `valid_from`: The block number from which the spend can be claimed. It can refer to
+   * the past if the resulting spend has not yet expired according to the
+   * [`Config::PayoutPeriod`]. If `None`, the spend can be claimed immediately after
+   * approval.
+   *
+   * ## Events
+   *
+   * Emits [`Event::AssetSpendApproved`] if successful.
+   **/
+  | {
+      name: 'Spend';
+      params: { assetKind: number; amount: bigint; beneficiary: MultiAddress; validFrom?: number | undefined };
+    }
+  /**
+   * Claim a spend.
+   *
+   * ## Dispatch Origin
+   *
+   * Must be signed.
+   *
+   * ## Details
+   *
+   * Spends must be claimed within some temporal bounds. A spend may be claimed within one
+   * [`Config::PayoutPeriod`] from the `valid_from` block.
+   * In case of a payout failure, the spend status must be updated with the `check_status`
+   * dispatchable before retrying with the current function.
+   *
+   * ### Parameters
+   * - `index`: The spend index.
+   *
+   * ## Events
+   *
+   * Emits [`Event::Paid`] if successful.
+   **/
+  | { name: 'Payout'; params: { index: number } }
+  /**
+   * Check the status of the spend and remove it from the storage if processed.
+   *
+   * ## Dispatch Origin
+   *
+   * Must be signed.
+   *
+   * ## Details
+   *
+   * The status check is a prerequisite for retrying a failed payout.
+   * If a spend has either succeeded or expired, it is removed from the storage by this
+   * function. In such instances, transaction fees are refunded.
+   *
+   * ### Parameters
+   * - `index`: The spend index.
+   *
+   * ## Events
+   *
+   * Emits [`Event::PaymentFailed`] if the spend payout has failed.
+   * Emits [`Event::SpendProcessed`] if the spend payout has succeed.
+   **/
+  | { name: 'CheckStatus'; params: { index: number } }
+  /**
+   * Void previously approved spend.
+   *
+   * ## Dispatch Origin
+   *
+   * Must be [`Config::RejectOrigin`].
+   *
+   * ## Details
+   *
+   * A spend void is only possible if the payout has not been attempted yet.
+   *
+   * ### Parameters
+   * - `index`: The spend index.
+   *
+   * ## Events
+   *
+   * Emits [`Event::AssetSpendVoided`] if successful.
+   **/
+  | { name: 'VoidSpend'; params: { index: number } };
 
 export type PalletTreasuryCallLike =
   /**
-   * See [`Pallet::propose_spend`].
+   * Put forward a suggestion for spending.
+   *
+   * ## Dispatch Origin
+   *
+   * Must be signed.
+   *
+   * ## Details
+   * A deposit proportional to the value is reserved and slashed if the proposal is rejected.
+   * It is returned once the proposal is awarded.
+   *
+   * ### Complexity
+   * - O(1)
+   *
+   * ## Events
+   *
+   * Emits [`Event::Proposed`] if successful.
    **/
   | { name: 'ProposeSpend'; params: { value: bigint; beneficiary: MultiAddressLike } }
   /**
-   * See [`Pallet::reject_proposal`].
+   * Reject a proposed spend.
+   *
+   * ## Dispatch Origin
+   *
+   * Must be [`Config::RejectOrigin`].
+   *
+   * ## Details
+   * The original deposit will be slashed.
+   *
+   * ### Complexity
+   * - O(1)
+   *
+   * ## Events
+   *
+   * Emits [`Event::Rejected`] if successful.
    **/
   | { name: 'RejectProposal'; params: { proposalId: number } }
   /**
-   * See [`Pallet::approve_proposal`].
+   * Approve a proposal.
+   *
+   * ## Dispatch Origin
+   *
+   * Must be [`Config::ApproveOrigin`].
+   *
+   * ## Details
+   *
+   * At a later time, the proposal will be allocated to the beneficiary and the original
+   * deposit will be returned.
+   *
+   * ### Complexity
+   * - O(1).
+   *
+   * ## Events
+   *
+   * No events are emitted from this dispatch.
    **/
   | { name: 'ApproveProposal'; params: { proposalId: number } }
   /**
-   * See [`Pallet::spend`].
+   * Propose and approve a spend of treasury funds.
+   *
+   * ## Dispatch Origin
+   *
+   * Must be [`Config::SpendOrigin`] with the `Success` value being at least `amount`.
+   *
+   * ### Details
+   * NOTE: For record-keeping purposes, the proposer is deemed to be equivalent to the
+   * beneficiary.
+   *
+   * ### Parameters
+   * - `amount`: The amount to be transferred from the treasury to the `beneficiary`.
+   * - `beneficiary`: The destination account for the transfer.
+   *
+   * ## Events
+   *
+   * Emits [`Event::SpendApproved`] if successful.
    **/
-  | { name: 'Spend'; params: { amount: bigint; beneficiary: MultiAddressLike } }
+  | { name: 'SpendLocal'; params: { amount: bigint; beneficiary: MultiAddressLike } }
   /**
-   * See [`Pallet::remove_approval`].
+   * Force a previously approved proposal to be removed from the approval queue.
+   *
+   * ## Dispatch Origin
+   *
+   * Must be [`Config::RejectOrigin`].
+   *
+   * ## Details
+   *
+   * The original deposit will no longer be returned.
+   *
+   * ### Parameters
+   * - `proposal_id`: The index of a proposal
+   *
+   * ### Complexity
+   * - O(A) where `A` is the number of approvals
+   *
+   * ### Errors
+   * - [`Error::ProposalNotApproved`]: The `proposal_id` supplied was not found in the
+   * approval queue, i.e., the proposal has not been approved. This could also mean the
+   * proposal does not exist altogether, thus there is no way it would have been approved
+   * in the first place.
    **/
-  | { name: 'RemoveApproval'; params: { proposalId: number } };
+  | { name: 'RemoveApproval'; params: { proposalId: number } }
+  /**
+   * Propose and approve a spend of treasury funds.
+   *
+   * ## Dispatch Origin
+   *
+   * Must be [`Config::SpendOrigin`] with the `Success` value being at least
+   * `amount` of `asset_kind` in the native asset. The amount of `asset_kind` is converted
+   * for assertion using the [`Config::BalanceConverter`].
+   *
+   * ## Details
+   *
+   * Create an approved spend for transferring a specific `amount` of `asset_kind` to a
+   * designated beneficiary. The spend must be claimed using the `payout` dispatchable within
+   * the [`Config::PayoutPeriod`].
+   *
+   * ### Parameters
+   * - `asset_kind`: An indicator of the specific asset class to be spent.
+   * - `amount`: The amount to be transferred from the treasury to the `beneficiary`.
+   * - `beneficiary`: The beneficiary of the spend.
+   * - `valid_from`: The block number from which the spend can be claimed. It can refer to
+   * the past if the resulting spend has not yet expired according to the
+   * [`Config::PayoutPeriod`]. If `None`, the spend can be claimed immediately after
+   * approval.
+   *
+   * ## Events
+   *
+   * Emits [`Event::AssetSpendApproved`] if successful.
+   **/
+  | {
+      name: 'Spend';
+      params: { assetKind: number; amount: bigint; beneficiary: MultiAddressLike; validFrom?: number | undefined };
+    }
+  /**
+   * Claim a spend.
+   *
+   * ## Dispatch Origin
+   *
+   * Must be signed.
+   *
+   * ## Details
+   *
+   * Spends must be claimed within some temporal bounds. A spend may be claimed within one
+   * [`Config::PayoutPeriod`] from the `valid_from` block.
+   * In case of a payout failure, the spend status must be updated with the `check_status`
+   * dispatchable before retrying with the current function.
+   *
+   * ### Parameters
+   * - `index`: The spend index.
+   *
+   * ## Events
+   *
+   * Emits [`Event::Paid`] if successful.
+   **/
+  | { name: 'Payout'; params: { index: number } }
+  /**
+   * Check the status of the spend and remove it from the storage if processed.
+   *
+   * ## Dispatch Origin
+   *
+   * Must be signed.
+   *
+   * ## Details
+   *
+   * The status check is a prerequisite for retrying a failed payout.
+   * If a spend has either succeeded or expired, it is removed from the storage by this
+   * function. In such instances, transaction fees are refunded.
+   *
+   * ### Parameters
+   * - `index`: The spend index.
+   *
+   * ## Events
+   *
+   * Emits [`Event::PaymentFailed`] if the spend payout has failed.
+   * Emits [`Event::SpendProcessed`] if the spend payout has succeed.
+   **/
+  | { name: 'CheckStatus'; params: { index: number } }
+  /**
+   * Void previously approved spend.
+   *
+   * ## Dispatch Origin
+   *
+   * Must be [`Config::RejectOrigin`].
+   *
+   * ## Details
+   *
+   * A spend void is only possible if the payout has not been attempted yet.
+   *
+   * ### Parameters
+   * - `index`: The spend index.
+   *
+   * ## Events
+   *
+   * Emits [`Event::AssetSpendVoided`] if successful.
+   **/
+  | { name: 'VoidSpend'; params: { index: number } };
 
 /**
  * Contains a variant per dispatchable extrinsic that this pallet has.
  **/
 export type PalletAssetRateCall =
   /**
-   * See [`Pallet::create`].
+   * Initialize a conversion rate to native balance for the given asset.
+   *
+   * ## Complexity
+   * - O(1)
    **/
   | { name: 'Create'; params: { assetKind: number; rate: FixedU128 } }
   /**
-   * See [`Pallet::update`].
+   * Update the conversion rate to native balance for the given asset.
+   *
+   * ## Complexity
+   * - O(1)
    **/
   | { name: 'Update'; params: { assetKind: number; rate: FixedU128 } }
   /**
-   * See [`Pallet::remove`].
+   * Remove an existing conversion rate to native balance for the given asset.
+   *
+   * ## Complexity
+   * - O(1)
    **/
   | { name: 'Remove'; params: { assetKind: number } };
 
 export type PalletAssetRateCallLike =
   /**
-   * See [`Pallet::create`].
+   * Initialize a conversion rate to native balance for the given asset.
+   *
+   * ## Complexity
+   * - O(1)
    **/
   | { name: 'Create'; params: { assetKind: number; rate: FixedU128 } }
   /**
-   * See [`Pallet::update`].
+   * Update the conversion rate to native balance for the given asset.
+   *
+   * ## Complexity
+   * - O(1)
    **/
   | { name: 'Update'; params: { assetKind: number; rate: FixedU128 } }
   /**
-   * See [`Pallet::remove`].
+   * Remove an existing conversion rate to native balance for the given asset.
+   *
+   * ## Complexity
+   * - O(1)
    **/
   | { name: 'Remove'; params: { assetKind: number } };
 
@@ -3877,7 +6378,7 @@ export type PalletAssetRateCallLike =
  **/
 export type PalletContractsCall =
   /**
-   * See [`Pallet::call_old_weight`].
+   * Deprecated version if [`Self::call`] for use in an in-storage `Call`.
    **/
   | {
       name: 'CallOldWeight';
@@ -3890,7 +6391,7 @@ export type PalletContractsCall =
       };
     }
   /**
-   * See [`Pallet::instantiate_with_code_old_weight`].
+   * Deprecated version if [`Self::instantiate_with_code`] for use in an in-storage `Call`.
    **/
   | {
       name: 'InstantiateWithCodeOldWeight';
@@ -3904,7 +6405,7 @@ export type PalletContractsCall =
       };
     }
   /**
-   * See [`Pallet::instantiate_old_weight`].
+   * Deprecated version if [`Self::instantiate`] for use in an in-storage `Call`.
    **/
   | {
       name: 'InstantiateOldWeight';
@@ -3918,22 +6419,72 @@ export type PalletContractsCall =
       };
     }
   /**
-   * See [`Pallet::upload_code`].
+   * Upload new `code` without instantiating a contract from it.
+   *
+   * If the code does not already exist a deposit is reserved from the caller
+   * and unreserved only when [`Self::remove_code`] is called. The size of the reserve
+   * depends on the size of the supplied `code`.
+   *
+   * If the code already exists in storage it will still return `Ok` and upgrades
+   * the in storage version to the current
+   * [`InstructionWeights::version`](InstructionWeights).
+   *
+   * - `determinism`: If this is set to any other value but [`Determinism::Enforced`] then
+   * the only way to use this code is to delegate call into it from an offchain execution.
+   * Set to [`Determinism::Enforced`] if in doubt.
+   *
+   * # Note
+   *
+   * Anyone can instantiate a contract from any uploaded code and thus prevent its removal.
+   * To avoid this situation a constructor could employ access control so that it can
+   * only be instantiated by permissioned entities. The same is true when uploading
+   * through [`Self::instantiate_with_code`].
+   *
+   * Use [`Determinism::Relaxed`] exclusively for non-deterministic code. If the uploaded
+   * code is deterministic, specifying [`Determinism::Relaxed`] will be disregarded and
+   * result in higher gas costs.
    **/
   | {
       name: 'UploadCode';
       params: { code: Bytes; storageDepositLimit?: bigint | undefined; determinism: PalletContractsWasmDeterminism };
     }
   /**
-   * See [`Pallet::remove_code`].
+   * Remove the code stored under `code_hash` and refund the deposit to its owner.
+   *
+   * A code can only be removed by its original uploader (its owner) and only if it is
+   * not used by any contract.
    **/
   | { name: 'RemoveCode'; params: { codeHash: H256 } }
   /**
-   * See [`Pallet::set_code`].
+   * Privileged function that changes the code of an existing contract.
+   *
+   * This takes care of updating refcounts and all other necessary operations. Returns
+   * an error if either the `code_hash` or `dest` do not exist.
+   *
+   * # Note
+   *
+   * This does **not** change the address of the contract in question. This means
+   * that the contract address is no longer derived from its code hash after calling
+   * this dispatchable.
    **/
   | { name: 'SetCode'; params: { dest: MultiAddress; codeHash: H256 } }
   /**
-   * See [`Pallet::call`].
+   * Makes a call to an account, optionally transferring some balance.
+   *
+   * # Parameters
+   *
+   * * `dest`: Address of the contract to call.
+   * * `value`: The balance to transfer from the `origin` to `dest`.
+   * * `gas_limit`: The gas limit enforced when executing the constructor.
+   * * `storage_deposit_limit`: The maximum amount of balance that can be charged from the
+   * caller to pay for the storage consumed.
+   * * `data`: The input data to pass to the contract.
+   *
+   * * If the account is a smart-contract account, the associated code will be
+   * executed and any value will be transferred.
+   * * If the account is a regular account, any value will be transferred.
+   * * If no account exists and the call value is not less than `existential_deposit`,
+   * a regular account will be created and any value will be transferred.
    **/
   | {
       name: 'Call';
@@ -3946,7 +6497,31 @@ export type PalletContractsCall =
       };
     }
   /**
-   * See [`Pallet::instantiate_with_code`].
+   * Instantiates a new contract from the supplied `code` optionally transferring
+   * some balance.
+   *
+   * This dispatchable has the same effect as calling [`Self::upload_code`] +
+   * [`Self::instantiate`]. Bundling them together provides efficiency gains. Please
+   * also check the documentation of [`Self::upload_code`].
+   *
+   * # Parameters
+   *
+   * * `value`: The balance to transfer from the `origin` to the newly created contract.
+   * * `gas_limit`: The gas limit enforced when executing the constructor.
+   * * `storage_deposit_limit`: The maximum amount of balance that can be charged/reserved
+   * from the caller to pay for the storage consumed.
+   * * `code`: The contract code to deploy in raw bytes.
+   * * `data`: The input data to pass to the contract constructor.
+   * * `salt`: Used for the address derivation. See [`Pallet::contract_address`].
+   *
+   * Instantiation is executed as follows:
+   *
+   * - The supplied `code` is deployed, and a `code_hash` is created for that code.
+   * - If the `code_hash` already exists on the chain the underlying `code` will be shared.
+   * - The destination address is computed based on the sender, code_hash and the salt.
+   * - The smart-contract account is created at the computed address.
+   * - The `value` is transferred to the new account.
+   * - The `deploy` function is executed in the context of the newly-created account.
    **/
   | {
       name: 'InstantiateWithCode';
@@ -3960,7 +6535,11 @@ export type PalletContractsCall =
       };
     }
   /**
-   * See [`Pallet::instantiate`].
+   * Instantiates a contract from a previously deployed wasm binary.
+   *
+   * This function is identical to [`Self::instantiate_with_code`] but without the
+   * code deployment step. Instead, the `code_hash` of an on-chain deployed wasm binary
+   * must be supplied.
    **/
   | {
       name: 'Instantiate';
@@ -3974,13 +6553,16 @@ export type PalletContractsCall =
       };
     }
   /**
-   * See [`Pallet::migrate`].
+   * When a migration is in progress, this dispatchable can be used to run migration steps.
+   * Calls that contribute to advancing the migration have their fees waived, as it's helpful
+   * for the chain. Note that while the migration is in progress, the pallet will also
+   * leverage the `on_idle` hooks to run migration steps.
    **/
   | { name: 'Migrate'; params: { weightLimit: SpWeightsWeightV2Weight } };
 
 export type PalletContractsCallLike =
   /**
-   * See [`Pallet::call_old_weight`].
+   * Deprecated version if [`Self::call`] for use in an in-storage `Call`.
    **/
   | {
       name: 'CallOldWeight';
@@ -3993,7 +6575,7 @@ export type PalletContractsCallLike =
       };
     }
   /**
-   * See [`Pallet::instantiate_with_code_old_weight`].
+   * Deprecated version if [`Self::instantiate_with_code`] for use in an in-storage `Call`.
    **/
   | {
       name: 'InstantiateWithCodeOldWeight';
@@ -4007,7 +6589,7 @@ export type PalletContractsCallLike =
       };
     }
   /**
-   * See [`Pallet::instantiate_old_weight`].
+   * Deprecated version if [`Self::instantiate`] for use in an in-storage `Call`.
    **/
   | {
       name: 'InstantiateOldWeight';
@@ -4021,7 +6603,30 @@ export type PalletContractsCallLike =
       };
     }
   /**
-   * See [`Pallet::upload_code`].
+   * Upload new `code` without instantiating a contract from it.
+   *
+   * If the code does not already exist a deposit is reserved from the caller
+   * and unreserved only when [`Self::remove_code`] is called. The size of the reserve
+   * depends on the size of the supplied `code`.
+   *
+   * If the code already exists in storage it will still return `Ok` and upgrades
+   * the in storage version to the current
+   * [`InstructionWeights::version`](InstructionWeights).
+   *
+   * - `determinism`: If this is set to any other value but [`Determinism::Enforced`] then
+   * the only way to use this code is to delegate call into it from an offchain execution.
+   * Set to [`Determinism::Enforced`] if in doubt.
+   *
+   * # Note
+   *
+   * Anyone can instantiate a contract from any uploaded code and thus prevent its removal.
+   * To avoid this situation a constructor could employ access control so that it can
+   * only be instantiated by permissioned entities. The same is true when uploading
+   * through [`Self::instantiate_with_code`].
+   *
+   * Use [`Determinism::Relaxed`] exclusively for non-deterministic code. If the uploaded
+   * code is deterministic, specifying [`Determinism::Relaxed`] will be disregarded and
+   * result in higher gas costs.
    **/
   | {
       name: 'UploadCode';
@@ -4032,15 +6637,42 @@ export type PalletContractsCallLike =
       };
     }
   /**
-   * See [`Pallet::remove_code`].
+   * Remove the code stored under `code_hash` and refund the deposit to its owner.
+   *
+   * A code can only be removed by its original uploader (its owner) and only if it is
+   * not used by any contract.
    **/
   | { name: 'RemoveCode'; params: { codeHash: H256 } }
   /**
-   * See [`Pallet::set_code`].
+   * Privileged function that changes the code of an existing contract.
+   *
+   * This takes care of updating refcounts and all other necessary operations. Returns
+   * an error if either the `code_hash` or `dest` do not exist.
+   *
+   * # Note
+   *
+   * This does **not** change the address of the contract in question. This means
+   * that the contract address is no longer derived from its code hash after calling
+   * this dispatchable.
    **/
   | { name: 'SetCode'; params: { dest: MultiAddressLike; codeHash: H256 } }
   /**
-   * See [`Pallet::call`].
+   * Makes a call to an account, optionally transferring some balance.
+   *
+   * # Parameters
+   *
+   * * `dest`: Address of the contract to call.
+   * * `value`: The balance to transfer from the `origin` to `dest`.
+   * * `gas_limit`: The gas limit enforced when executing the constructor.
+   * * `storage_deposit_limit`: The maximum amount of balance that can be charged from the
+   * caller to pay for the storage consumed.
+   * * `data`: The input data to pass to the contract.
+   *
+   * * If the account is a smart-contract account, the associated code will be
+   * executed and any value will be transferred.
+   * * If the account is a regular account, any value will be transferred.
+   * * If no account exists and the call value is not less than `existential_deposit`,
+   * a regular account will be created and any value will be transferred.
    **/
   | {
       name: 'Call';
@@ -4053,7 +6685,31 @@ export type PalletContractsCallLike =
       };
     }
   /**
-   * See [`Pallet::instantiate_with_code`].
+   * Instantiates a new contract from the supplied `code` optionally transferring
+   * some balance.
+   *
+   * This dispatchable has the same effect as calling [`Self::upload_code`] +
+   * [`Self::instantiate`]. Bundling them together provides efficiency gains. Please
+   * also check the documentation of [`Self::upload_code`].
+   *
+   * # Parameters
+   *
+   * * `value`: The balance to transfer from the `origin` to the newly created contract.
+   * * `gas_limit`: The gas limit enforced when executing the constructor.
+   * * `storage_deposit_limit`: The maximum amount of balance that can be charged/reserved
+   * from the caller to pay for the storage consumed.
+   * * `code`: The contract code to deploy in raw bytes.
+   * * `data`: The input data to pass to the contract constructor.
+   * * `salt`: Used for the address derivation. See [`Pallet::contract_address`].
+   *
+   * Instantiation is executed as follows:
+   *
+   * - The supplied `code` is deployed, and a `code_hash` is created for that code.
+   * - If the `code_hash` already exists on the chain the underlying `code` will be shared.
+   * - The destination address is computed based on the sender, code_hash and the salt.
+   * - The smart-contract account is created at the computed address.
+   * - The `value` is transferred to the new account.
+   * - The `deploy` function is executed in the context of the newly-created account.
    **/
   | {
       name: 'InstantiateWithCode';
@@ -4067,7 +6723,11 @@ export type PalletContractsCallLike =
       };
     }
   /**
-   * See [`Pallet::instantiate`].
+   * Instantiates a contract from a previously deployed wasm binary.
+   *
+   * This function is identical to [`Self::instantiate_with_code`] but without the
+   * code deployment step. Instead, the `code_hash` of an on-chain deployed wasm binary
+   * must be supplied.
    **/
   | {
       name: 'Instantiate';
@@ -4081,7 +6741,10 @@ export type PalletContractsCallLike =
       };
     }
   /**
-   * See [`Pallet::migrate`].
+   * When a migration is in progress, this dispatchable can be used to run migration steps.
+   * Calls that contribute to advancing the migration have their fees waived, as it's helpful
+   * for the chain. Note that while the migration is in progress, the pallet will also
+   * leverage the `on_idle` hooks to run migration steps.
    **/
   | { name: 'Migrate'; params: { weightLimit: SpWeightsWeightV2Weight } };
 
@@ -4092,49 +6755,79 @@ export type PalletContractsWasmDeterminism = 'Enforced' | 'Relaxed';
  **/
 export type PalletSudoCall =
   /**
-   * See [`Pallet::sudo`].
+   * Authenticates the sudo key and dispatches a function call with `Root` origin.
    **/
   | { name: 'Sudo'; params: { call: KitchensinkRuntimeRuntimeCall } }
   /**
-   * See [`Pallet::sudo_unchecked_weight`].
+   * Authenticates the sudo key and dispatches a function call with `Root` origin.
+   * This function does not check the weight of the call, and instead allows the
+   * Sudo user to specify the weight of the call.
+   *
+   * The dispatch origin for this call must be _Signed_.
    **/
   | { name: 'SudoUncheckedWeight'; params: { call: KitchensinkRuntimeRuntimeCall; weight: SpWeightsWeightV2Weight } }
   /**
-   * See [`Pallet::set_key`].
+   * Authenticates the current sudo key and sets the given AccountId (`new`) as the new sudo
+   * key.
    **/
   | { name: 'SetKey'; params: { new: MultiAddress } }
   /**
-   * See [`Pallet::sudo_as`].
+   * Authenticates the sudo key and dispatches a function call with `Signed` origin from
+   * a given account.
+   *
+   * The dispatch origin for this call must be _Signed_.
    **/
-  | { name: 'SudoAs'; params: { who: MultiAddress; call: KitchensinkRuntimeRuntimeCall } };
+  | { name: 'SudoAs'; params: { who: MultiAddress; call: KitchensinkRuntimeRuntimeCall } }
+  /**
+   * Permanently removes the sudo key.
+   *
+   * **This cannot be un-done.**
+   **/
+  | { name: 'RemoveKey' };
 
 export type PalletSudoCallLike =
   /**
-   * See [`Pallet::sudo`].
+   * Authenticates the sudo key and dispatches a function call with `Root` origin.
    **/
   | { name: 'Sudo'; params: { call: KitchensinkRuntimeRuntimeCallLike } }
   /**
-   * See [`Pallet::sudo_unchecked_weight`].
+   * Authenticates the sudo key and dispatches a function call with `Root` origin.
+   * This function does not check the weight of the call, and instead allows the
+   * Sudo user to specify the weight of the call.
+   *
+   * The dispatch origin for this call must be _Signed_.
    **/
   | {
       name: 'SudoUncheckedWeight';
       params: { call: KitchensinkRuntimeRuntimeCallLike; weight: SpWeightsWeightV2Weight };
     }
   /**
-   * See [`Pallet::set_key`].
+   * Authenticates the current sudo key and sets the given AccountId (`new`) as the new sudo
+   * key.
    **/
   | { name: 'SetKey'; params: { new: MultiAddressLike } }
   /**
-   * See [`Pallet::sudo_as`].
+   * Authenticates the sudo key and dispatches a function call with `Signed` origin from
+   * a given account.
+   *
+   * The dispatch origin for this call must be _Signed_.
    **/
-  | { name: 'SudoAs'; params: { who: MultiAddressLike; call: KitchensinkRuntimeRuntimeCallLike } };
+  | { name: 'SudoAs'; params: { who: MultiAddressLike; call: KitchensinkRuntimeRuntimeCallLike } }
+  /**
+   * Permanently removes the sudo key.
+   *
+   * **This cannot be un-done.**
+   **/
+  | { name: 'RemoveKey' };
 
 /**
  * Contains a variant per dispatchable extrinsic that this pallet has.
  **/
 export type PalletImOnlineCall =
   /**
-   * See [`Pallet::heartbeat`].
+   * ## Complexity:
+   * - `O(K)` where K is length of `Keys` (heartbeat.validators_len)
+   * - `O(K)`: decoding of length `K`
    **/
   {
     name: 'Heartbeat';
@@ -4143,7 +6836,9 @@ export type PalletImOnlineCall =
 
 export type PalletImOnlineCallLike =
   /**
-   * See [`Pallet::heartbeat`].
+   * ## Complexity:
+   * - `O(K)` where K is length of `Keys` (heartbeat.validators_len)
+   * - `O(K)`: decoding of length `K`
    **/
   {
     name: 'Heartbeat';
@@ -4166,135 +6861,469 @@ export type SpCoreSr25519Signature = FixedBytes<64>;
  **/
 export type PalletIdentityCall =
   /**
-   * See [`Pallet::add_registrar`].
+   * Add a registrar to the system.
+   *
+   * The dispatch origin for this call must be `T::RegistrarOrigin`.
+   *
+   * - `account`: the account of the registrar.
+   *
+   * Emits `RegistrarAdded` if successful.
    **/
   | { name: 'AddRegistrar'; params: { account: MultiAddress } }
   /**
-   * See [`Pallet::set_identity`].
+   * Set an account's identity information and reserve the appropriate deposit.
+   *
+   * If the account already has identity information, the deposit is taken as part payment
+   * for the new deposit.
+   *
+   * The dispatch origin for this call must be _Signed_.
+   *
+   * - `info`: The identity information.
+   *
+   * Emits `IdentitySet` if successful.
    **/
-  | { name: 'SetIdentity'; params: { info: PalletIdentityIdentityInfo } }
+  | { name: 'SetIdentity'; params: { info: PalletIdentityLegacyIdentityInfo } }
   /**
-   * See [`Pallet::set_subs`].
+   * Set the sub-accounts of the sender.
+   *
+   * Payment: Any aggregate balance reserved by previous `set_subs` calls will be returned
+   * and an amount `SubAccountDeposit` will be reserved for each item in `subs`.
+   *
+   * The dispatch origin for this call must be _Signed_ and the sender must have a registered
+   * identity.
+   *
+   * - `subs`: The identity's (new) sub-accounts.
    **/
   | { name: 'SetSubs'; params: { subs: Array<[AccountId32, Data]> } }
   /**
-   * See [`Pallet::clear_identity`].
+   * Clear an account's identity info and all sub-accounts and return all deposits.
+   *
+   * Payment: All reserved balances on the account are returned.
+   *
+   * The dispatch origin for this call must be _Signed_ and the sender must have a registered
+   * identity.
+   *
+   * Emits `IdentityCleared` if successful.
    **/
   | { name: 'ClearIdentity' }
   /**
-   * See [`Pallet::request_judgement`].
+   * Request a judgement from a registrar.
+   *
+   * Payment: At most `max_fee` will be reserved for payment to the registrar if judgement
+   * given.
+   *
+   * The dispatch origin for this call must be _Signed_ and the sender must have a
+   * registered identity.
+   *
+   * - `reg_index`: The index of the registrar whose judgement is requested.
+   * - `max_fee`: The maximum fee that may be paid. This should just be auto-populated as:
+   *
+   * ```nocompile
+   * Self::registrars().get(reg_index).unwrap().fee
+   * ```
+   *
+   * Emits `JudgementRequested` if successful.
    **/
   | { name: 'RequestJudgement'; params: { regIndex: number; maxFee: bigint } }
   /**
-   * See [`Pallet::cancel_request`].
+   * Cancel a previous request.
+   *
+   * Payment: A previously reserved deposit is returned on success.
+   *
+   * The dispatch origin for this call must be _Signed_ and the sender must have a
+   * registered identity.
+   *
+   * - `reg_index`: The index of the registrar whose judgement is no longer requested.
+   *
+   * Emits `JudgementUnrequested` if successful.
    **/
   | { name: 'CancelRequest'; params: { regIndex: number } }
   /**
-   * See [`Pallet::set_fee`].
+   * Set the fee required for a judgement to be requested from a registrar.
+   *
+   * The dispatch origin for this call must be _Signed_ and the sender must be the account
+   * of the registrar whose index is `index`.
+   *
+   * - `index`: the index of the registrar whose fee is to be set.
+   * - `fee`: the new fee.
    **/
   | { name: 'SetFee'; params: { index: number; fee: bigint } }
   /**
-   * See [`Pallet::set_account_id`].
+   * Change the account associated with a registrar.
+   *
+   * The dispatch origin for this call must be _Signed_ and the sender must be the account
+   * of the registrar whose index is `index`.
+   *
+   * - `index`: the index of the registrar whose fee is to be set.
+   * - `new`: the new account ID.
    **/
   | { name: 'SetAccountId'; params: { index: number; new: MultiAddress } }
   /**
-   * See [`Pallet::set_fields`].
+   * Set the field information for a registrar.
+   *
+   * The dispatch origin for this call must be _Signed_ and the sender must be the account
+   * of the registrar whose index is `index`.
+   *
+   * - `index`: the index of the registrar whose fee is to be set.
+   * - `fields`: the fields that the registrar concerns themselves with.
    **/
-  | { name: 'SetFields'; params: { index: number; fields: PalletIdentityBitFlags } }
+  | { name: 'SetFields'; params: { index: number; fields: bigint } }
   /**
-   * See [`Pallet::provide_judgement`].
+   * Provide a judgement for an account's identity.
+   *
+   * The dispatch origin for this call must be _Signed_ and the sender must be the account
+   * of the registrar whose index is `reg_index`.
+   *
+   * - `reg_index`: the index of the registrar whose judgement is being made.
+   * - `target`: the account whose identity the judgement is upon. This must be an account
+   * with a registered identity.
+   * - `judgement`: the judgement of the registrar of index `reg_index` about `target`.
+   * - `identity`: The hash of the [`IdentityInformationProvider`] for that the judgement is
+   * provided.
+   *
+   * Note: Judgements do not apply to a username.
+   *
+   * Emits `JudgementGiven` if successful.
    **/
   | {
       name: 'ProvideJudgement';
       params: { regIndex: number; target: MultiAddress; judgement: PalletIdentityJudgement; identity: H256 };
     }
   /**
-   * See [`Pallet::kill_identity`].
+   * Remove an account's identity and sub-account information and slash the deposits.
+   *
+   * Payment: Reserved balances from `set_subs` and `set_identity` are slashed and handled by
+   * `Slash`. Verification request deposits are not returned; they should be cancelled
+   * manually using `cancel_request`.
+   *
+   * The dispatch origin for this call must match `T::ForceOrigin`.
+   *
+   * - `target`: the account whose identity the judgement is upon. This must be an account
+   * with a registered identity.
+   *
+   * Emits `IdentityKilled` if successful.
    **/
   | { name: 'KillIdentity'; params: { target: MultiAddress } }
   /**
-   * See [`Pallet::add_sub`].
+   * Add the given account to the sender's subs.
+   *
+   * Payment: Balance reserved by a previous `set_subs` call for one sub will be repatriated
+   * to the sender.
+   *
+   * The dispatch origin for this call must be _Signed_ and the sender must have a registered
+   * sub identity of `sub`.
    **/
   | { name: 'AddSub'; params: { sub: MultiAddress; data: Data } }
   /**
-   * See [`Pallet::rename_sub`].
+   * Alter the associated name of the given sub-account.
+   *
+   * The dispatch origin for this call must be _Signed_ and the sender must have a registered
+   * sub identity of `sub`.
    **/
   | { name: 'RenameSub'; params: { sub: MultiAddress; data: Data } }
   /**
-   * See [`Pallet::remove_sub`].
+   * Remove the given account from the sender's subs.
+   *
+   * Payment: Balance reserved by a previous `set_subs` call for one sub will be repatriated
+   * to the sender.
+   *
+   * The dispatch origin for this call must be _Signed_ and the sender must have a registered
+   * sub identity of `sub`.
    **/
   | { name: 'RemoveSub'; params: { sub: MultiAddress } }
   /**
-   * See [`Pallet::quit_sub`].
+   * Remove the sender as a sub-account.
+   *
+   * Payment: Balance reserved by a previous `set_subs` call for one sub will be repatriated
+   * to the sender (*not* the original depositor).
+   *
+   * The dispatch origin for this call must be _Signed_ and the sender must have a registered
+   * super-identity.
+   *
+   * NOTE: This should not normally be used, but is provided in the case that the non-
+   * controller of an account is maliciously registered as a sub-account.
    **/
-  | { name: 'QuitSub' };
+  | { name: 'QuitSub' }
+  /**
+   * Add an `AccountId` with permission to grant usernames with a given `suffix` appended.
+   *
+   * The authority can grant up to `allocation` usernames. To top up their allocation, they
+   * should just issue (or request via governance) a new `add_username_authority` call.
+   **/
+  | { name: 'AddUsernameAuthority'; params: { authority: MultiAddress; suffix: Bytes; allocation: number } }
+  /**
+   * Remove `authority` from the username authorities.
+   **/
+  | { name: 'RemoveUsernameAuthority'; params: { authority: MultiAddress } }
+  /**
+   * Set the username for `who`. Must be called by a username authority.
+   *
+   * The authority must have an `allocation`. Users can either pre-sign their usernames or
+   * accept them later.
+   *
+   * Usernames must:
+   * - Only contain lowercase ASCII characters or digits.
+   * - When combined with the suffix of the issuing authority be _less than_ the
+   * `MaxUsernameLength`.
+   **/
+  | {
+      name: 'SetUsernameFor';
+      params: { who: MultiAddress; username: Bytes; signature?: SpRuntimeMultiSignature | undefined };
+    }
+  /**
+   * Accept a given username that an `authority` granted. The call must include the full
+   * username, as in `username.suffix`.
+   **/
+  | { name: 'AcceptUsername'; params: { username: Bytes } }
+  /**
+   * Remove an expired username approval. The username was approved by an authority but never
+   * accepted by the user and must now be beyond its expiration. The call must include the
+   * full username, as in `username.suffix`.
+   **/
+  | { name: 'RemoveExpiredApproval'; params: { username: Bytes } }
+  /**
+   * Set a given username as the primary. The username should include the suffix.
+   **/
+  | { name: 'SetPrimaryUsername'; params: { username: Bytes } }
+  /**
+   * Remove a username that corresponds to an account with no identity. Exists when a user
+   * gets a username but then calls `clear_identity`.
+   **/
+  | { name: 'RemoveDanglingUsername'; params: { username: Bytes } };
 
 export type PalletIdentityCallLike =
   /**
-   * See [`Pallet::add_registrar`].
+   * Add a registrar to the system.
+   *
+   * The dispatch origin for this call must be `T::RegistrarOrigin`.
+   *
+   * - `account`: the account of the registrar.
+   *
+   * Emits `RegistrarAdded` if successful.
    **/
   | { name: 'AddRegistrar'; params: { account: MultiAddressLike } }
   /**
-   * See [`Pallet::set_identity`].
+   * Set an account's identity information and reserve the appropriate deposit.
+   *
+   * If the account already has identity information, the deposit is taken as part payment
+   * for the new deposit.
+   *
+   * The dispatch origin for this call must be _Signed_.
+   *
+   * - `info`: The identity information.
+   *
+   * Emits `IdentitySet` if successful.
    **/
-  | { name: 'SetIdentity'; params: { info: PalletIdentityIdentityInfo } }
+  | { name: 'SetIdentity'; params: { info: PalletIdentityLegacyIdentityInfo } }
   /**
-   * See [`Pallet::set_subs`].
+   * Set the sub-accounts of the sender.
+   *
+   * Payment: Any aggregate balance reserved by previous `set_subs` calls will be returned
+   * and an amount `SubAccountDeposit` will be reserved for each item in `subs`.
+   *
+   * The dispatch origin for this call must be _Signed_ and the sender must have a registered
+   * identity.
+   *
+   * - `subs`: The identity's (new) sub-accounts.
    **/
   | { name: 'SetSubs'; params: { subs: Array<[AccountId32Like, Data]> } }
   /**
-   * See [`Pallet::clear_identity`].
+   * Clear an account's identity info and all sub-accounts and return all deposits.
+   *
+   * Payment: All reserved balances on the account are returned.
+   *
+   * The dispatch origin for this call must be _Signed_ and the sender must have a registered
+   * identity.
+   *
+   * Emits `IdentityCleared` if successful.
    **/
   | { name: 'ClearIdentity' }
   /**
-   * See [`Pallet::request_judgement`].
+   * Request a judgement from a registrar.
+   *
+   * Payment: At most `max_fee` will be reserved for payment to the registrar if judgement
+   * given.
+   *
+   * The dispatch origin for this call must be _Signed_ and the sender must have a
+   * registered identity.
+   *
+   * - `reg_index`: The index of the registrar whose judgement is requested.
+   * - `max_fee`: The maximum fee that may be paid. This should just be auto-populated as:
+   *
+   * ```nocompile
+   * Self::registrars().get(reg_index).unwrap().fee
+   * ```
+   *
+   * Emits `JudgementRequested` if successful.
    **/
   | { name: 'RequestJudgement'; params: { regIndex: number; maxFee: bigint } }
   /**
-   * See [`Pallet::cancel_request`].
+   * Cancel a previous request.
+   *
+   * Payment: A previously reserved deposit is returned on success.
+   *
+   * The dispatch origin for this call must be _Signed_ and the sender must have a
+   * registered identity.
+   *
+   * - `reg_index`: The index of the registrar whose judgement is no longer requested.
+   *
+   * Emits `JudgementUnrequested` if successful.
    **/
   | { name: 'CancelRequest'; params: { regIndex: number } }
   /**
-   * See [`Pallet::set_fee`].
+   * Set the fee required for a judgement to be requested from a registrar.
+   *
+   * The dispatch origin for this call must be _Signed_ and the sender must be the account
+   * of the registrar whose index is `index`.
+   *
+   * - `index`: the index of the registrar whose fee is to be set.
+   * - `fee`: the new fee.
    **/
   | { name: 'SetFee'; params: { index: number; fee: bigint } }
   /**
-   * See [`Pallet::set_account_id`].
+   * Change the account associated with a registrar.
+   *
+   * The dispatch origin for this call must be _Signed_ and the sender must be the account
+   * of the registrar whose index is `index`.
+   *
+   * - `index`: the index of the registrar whose fee is to be set.
+   * - `new`: the new account ID.
    **/
   | { name: 'SetAccountId'; params: { index: number; new: MultiAddressLike } }
   /**
-   * See [`Pallet::set_fields`].
+   * Set the field information for a registrar.
+   *
+   * The dispatch origin for this call must be _Signed_ and the sender must be the account
+   * of the registrar whose index is `index`.
+   *
+   * - `index`: the index of the registrar whose fee is to be set.
+   * - `fields`: the fields that the registrar concerns themselves with.
    **/
-  | { name: 'SetFields'; params: { index: number; fields: PalletIdentityBitFlags } }
+  | { name: 'SetFields'; params: { index: number; fields: bigint } }
   /**
-   * See [`Pallet::provide_judgement`].
+   * Provide a judgement for an account's identity.
+   *
+   * The dispatch origin for this call must be _Signed_ and the sender must be the account
+   * of the registrar whose index is `reg_index`.
+   *
+   * - `reg_index`: the index of the registrar whose judgement is being made.
+   * - `target`: the account whose identity the judgement is upon. This must be an account
+   * with a registered identity.
+   * - `judgement`: the judgement of the registrar of index `reg_index` about `target`.
+   * - `identity`: The hash of the [`IdentityInformationProvider`] for that the judgement is
+   * provided.
+   *
+   * Note: Judgements do not apply to a username.
+   *
+   * Emits `JudgementGiven` if successful.
    **/
   | {
       name: 'ProvideJudgement';
       params: { regIndex: number; target: MultiAddressLike; judgement: PalletIdentityJudgement; identity: H256 };
     }
   /**
-   * See [`Pallet::kill_identity`].
+   * Remove an account's identity and sub-account information and slash the deposits.
+   *
+   * Payment: Reserved balances from `set_subs` and `set_identity` are slashed and handled by
+   * `Slash`. Verification request deposits are not returned; they should be cancelled
+   * manually using `cancel_request`.
+   *
+   * The dispatch origin for this call must match `T::ForceOrigin`.
+   *
+   * - `target`: the account whose identity the judgement is upon. This must be an account
+   * with a registered identity.
+   *
+   * Emits `IdentityKilled` if successful.
    **/
   | { name: 'KillIdentity'; params: { target: MultiAddressLike } }
   /**
-   * See [`Pallet::add_sub`].
+   * Add the given account to the sender's subs.
+   *
+   * Payment: Balance reserved by a previous `set_subs` call for one sub will be repatriated
+   * to the sender.
+   *
+   * The dispatch origin for this call must be _Signed_ and the sender must have a registered
+   * sub identity of `sub`.
    **/
   | { name: 'AddSub'; params: { sub: MultiAddressLike; data: Data } }
   /**
-   * See [`Pallet::rename_sub`].
+   * Alter the associated name of the given sub-account.
+   *
+   * The dispatch origin for this call must be _Signed_ and the sender must have a registered
+   * sub identity of `sub`.
    **/
   | { name: 'RenameSub'; params: { sub: MultiAddressLike; data: Data } }
   /**
-   * See [`Pallet::remove_sub`].
+   * Remove the given account from the sender's subs.
+   *
+   * Payment: Balance reserved by a previous `set_subs` call for one sub will be repatriated
+   * to the sender.
+   *
+   * The dispatch origin for this call must be _Signed_ and the sender must have a registered
+   * sub identity of `sub`.
    **/
   | { name: 'RemoveSub'; params: { sub: MultiAddressLike } }
   /**
-   * See [`Pallet::quit_sub`].
+   * Remove the sender as a sub-account.
+   *
+   * Payment: Balance reserved by a previous `set_subs` call for one sub will be repatriated
+   * to the sender (*not* the original depositor).
+   *
+   * The dispatch origin for this call must be _Signed_ and the sender must have a registered
+   * super-identity.
+   *
+   * NOTE: This should not normally be used, but is provided in the case that the non-
+   * controller of an account is maliciously registered as a sub-account.
    **/
-  | { name: 'QuitSub' };
+  | { name: 'QuitSub' }
+  /**
+   * Add an `AccountId` with permission to grant usernames with a given `suffix` appended.
+   *
+   * The authority can grant up to `allocation` usernames. To top up their allocation, they
+   * should just issue (or request via governance) a new `add_username_authority` call.
+   **/
+  | { name: 'AddUsernameAuthority'; params: { authority: MultiAddressLike; suffix: BytesLike; allocation: number } }
+  /**
+   * Remove `authority` from the username authorities.
+   **/
+  | { name: 'RemoveUsernameAuthority'; params: { authority: MultiAddressLike } }
+  /**
+   * Set the username for `who`. Must be called by a username authority.
+   *
+   * The authority must have an `allocation`. Users can either pre-sign their usernames or
+   * accept them later.
+   *
+   * Usernames must:
+   * - Only contain lowercase ASCII characters or digits.
+   * - When combined with the suffix of the issuing authority be _less than_ the
+   * `MaxUsernameLength`.
+   **/
+  | {
+      name: 'SetUsernameFor';
+      params: { who: MultiAddressLike; username: BytesLike; signature?: SpRuntimeMultiSignature | undefined };
+    }
+  /**
+   * Accept a given username that an `authority` granted. The call must include the full
+   * username, as in `username.suffix`.
+   **/
+  | { name: 'AcceptUsername'; params: { username: BytesLike } }
+  /**
+   * Remove an expired username approval. The username was approved by an authority but never
+   * accepted by the user and must now be beyond its expiration. The call must include the
+   * full username, as in `username.suffix`.
+   **/
+  | { name: 'RemoveExpiredApproval'; params: { username: BytesLike } }
+  /**
+   * Set a given username as the primary. The username should include the suffix.
+   **/
+  | { name: 'SetPrimaryUsername'; params: { username: BytesLike } }
+  /**
+   * Remove a username that corresponds to an account with no identity. Exists when a user
+   * gets a username but then calls `clear_identity`.
+   **/
+  | { name: 'RemoveDanglingUsername'; params: { username: BytesLike } };
 
-export type PalletIdentityIdentityInfo = {
+export type PalletIdentityLegacyIdentityInfo = {
   additional: Array<[Data, Data]>;
   display: Data;
   legal: Data;
@@ -4306,18 +7335,6 @@ export type PalletIdentityIdentityInfo = {
   twitter: Data;
 };
 
-export type PalletIdentityBitFlags = bigint;
-
-export type PalletIdentityIdentityField =
-  | 'Display'
-  | 'Legal'
-  | 'Web'
-  | 'Riot'
-  | 'Email'
-  | 'PgpFingerprint'
-  | 'Image'
-  | 'Twitter';
-
 export type PalletIdentityJudgement =
   | { tag: 'Unknown' }
   | { tag: 'FeePaid'; value: bigint }
@@ -4327,44 +7344,126 @@ export type PalletIdentityJudgement =
   | { tag: 'LowQuality' }
   | { tag: 'Erroneous' };
 
+export type SpRuntimeMultiSignature =
+  | { tag: 'Ed25519'; value: SpCoreEd25519Signature }
+  | { tag: 'Sr25519'; value: SpCoreSr25519Signature }
+  | { tag: 'Ecdsa'; value: SpCoreEcdsaSignature };
+
+export type SpCoreEcdsaSignature = FixedBytes<65>;
+
 /**
  * Contains a variant per dispatchable extrinsic that this pallet has.
  **/
 export type PalletSocietyCall =
   /**
-   * See [`Pallet::bid`].
+   * A user outside of the society can make a bid for entry.
+   *
+   * Payment: The group's Candidate Deposit will be reserved for making a bid. It is returned
+   * when the bid becomes a member, or if the bid calls `unbid`.
+   *
+   * The dispatch origin for this call must be _Signed_.
+   *
+   * Parameters:
+   * - `value`: A one time payment the bid would like to receive when joining the society.
    **/
   | { name: 'Bid'; params: { value: bigint } }
   /**
-   * See [`Pallet::unbid`].
+   * A bidder can remove their bid for entry into society.
+   * By doing so, they will have their candidate deposit returned or
+   * they will unvouch their voucher.
+   *
+   * Payment: The bid deposit is unreserved if the user made a bid.
+   *
+   * The dispatch origin for this call must be _Signed_ and a bidder.
    **/
   | { name: 'Unbid' }
   /**
-   * See [`Pallet::vouch`].
+   * As a member, vouch for someone to join society by placing a bid on their behalf.
+   *
+   * There is no deposit required to vouch for a new bid, but a member can only vouch for
+   * one bid at a time. If the bid becomes a suspended candidate and ultimately rejected by
+   * the suspension judgement origin, the member will be banned from vouching again.
+   *
+   * As a vouching member, you can claim a tip if the candidate is accepted. This tip will
+   * be paid as a portion of the reward the member will receive for joining the society.
+   *
+   * The dispatch origin for this call must be _Signed_ and a member.
+   *
+   * Parameters:
+   * - `who`: The user who you would like to vouch for.
+   * - `value`: The total reward to be paid between you and the candidate if they become
+   * a member in the society.
+   * - `tip`: Your cut of the total `value` payout when the candidate is inducted into
+   * the society. Tips larger than `value` will be saturated upon payout.
    **/
   | { name: 'Vouch'; params: { who: MultiAddress; value: bigint; tip: bigint } }
   /**
-   * See [`Pallet::unvouch`].
+   * As a vouching member, unvouch a bid. This only works while vouched user is
+   * only a bidder (and not a candidate).
+   *
+   * The dispatch origin for this call must be _Signed_ and a vouching member.
+   *
+   * Parameters:
+   * - `pos`: Position in the `Bids` vector of the bid who should be unvouched.
    **/
   | { name: 'Unvouch' }
   /**
-   * See [`Pallet::vote`].
+   * As a member, vote on a candidate.
+   *
+   * The dispatch origin for this call must be _Signed_ and a member.
+   *
+   * Parameters:
+   * - `candidate`: The candidate that the member would like to bid on.
+   * - `approve`: A boolean which says if the candidate should be approved (`true`) or
+   * rejected (`false`).
    **/
   | { name: 'Vote'; params: { candidate: MultiAddress; approve: boolean } }
   /**
-   * See [`Pallet::defender_vote`].
+   * As a member, vote on the defender.
+   *
+   * The dispatch origin for this call must be _Signed_ and a member.
+   *
+   * Parameters:
+   * - `approve`: A boolean which says if the candidate should be
+   * approved (`true`) or rejected (`false`).
    **/
   | { name: 'DefenderVote'; params: { approve: boolean } }
   /**
-   * See [`Pallet::payout`].
+   * Transfer the first matured payout for the sender and remove it from the records.
+   *
+   * NOTE: This extrinsic needs to be called multiple times to claim multiple matured
+   * payouts.
+   *
+   * Payment: The member will receive a payment equal to their first matured
+   * payout to their free balance.
+   *
+   * The dispatch origin for this call must be _Signed_ and a member with
+   * payouts remaining.
    **/
   | { name: 'Payout' }
   /**
-   * See [`Pallet::waive_repay`].
+   * Repay the payment previously given to the member with the signed origin, remove any
+   * pending payments, and elevate them from rank 0 to rank 1.
    **/
   | { name: 'WaiveRepay'; params: { amount: bigint } }
   /**
-   * See [`Pallet::found_society`].
+   * Found the society.
+   *
+   * This is done as a discrete action in order to allow for the
+   * pallet to be included into a running chain and can only be done once.
+   *
+   * The dispatch origin for this call must be from the _FounderSetOrigin_.
+   *
+   * Parameters:
+   * - `founder` - The first member and head of the newly founded society.
+   * - `max_members` - The initial max number of members for the society.
+   * - `max_intake` - The maximum number of candidates per intake period.
+   * - `max_strikes`: The maximum number of strikes a member may get before they become
+   * suspended and may only be reinstated by the founder.
+   * - `candidate_deposit`: The deposit required to make a bid for membership of the group.
+   * - `rules` - The rules of this society concerning membership.
+   *
+   * Complexity: O(1)
    **/
   | {
       name: 'FoundSociety';
@@ -4378,88 +7477,209 @@ export type PalletSocietyCall =
       };
     }
   /**
-   * See [`Pallet::dissolve`].
+   * Dissolve the society and remove all members.
+   *
+   * The dispatch origin for this call must be Signed, and the signing account must be both
+   * the `Founder` and the `Head`. This implies that it may only be done when there is one
+   * member.
    **/
   | { name: 'Dissolve' }
   /**
-   * See [`Pallet::judge_suspended_member`].
+   * Allow suspension judgement origin to make judgement on a suspended member.
+   *
+   * If a suspended member is forgiven, we simply add them back as a member, not affecting
+   * any of the existing storage items for that member.
+   *
+   * If a suspended member is rejected, remove all associated storage items, including
+   * their payouts, and remove any vouched bids they currently have.
+   *
+   * The dispatch origin for this call must be Signed from the Founder.
+   *
+   * Parameters:
+   * - `who` - The suspended member to be judged.
+   * - `forgive` - A boolean representing whether the suspension judgement origin forgives
+   * (`true`) or rejects (`false`) a suspended member.
    **/
   | { name: 'JudgeSuspendedMember'; params: { who: MultiAddress; forgive: boolean } }
   /**
-   * See [`Pallet::set_parameters`].
+   * Change the maximum number of members in society and the maximum number of new candidates
+   * in a single intake period.
+   *
+   * The dispatch origin for this call must be Signed by the Founder.
+   *
+   * Parameters:
+   * - `max_members` - The maximum number of members for the society. This must be no less
+   * than the current number of members.
+   * - `max_intake` - The maximum number of candidates per intake period.
+   * - `max_strikes`: The maximum number of strikes a member may get before they become
+   * suspended and may only be reinstated by the founder.
+   * - `candidate_deposit`: The deposit required to make a bid for membership of the group.
    **/
   | {
       name: 'SetParameters';
       params: { maxMembers: number; maxIntake: number; maxStrikes: number; candidateDeposit: bigint };
     }
   /**
-   * See [`Pallet::punish_skeptic`].
+   * Punish the skeptic with a strike if they did not vote on a candidate. Callable by the
+   * candidate.
    **/
   | { name: 'PunishSkeptic' }
   /**
-   * See [`Pallet::claim_membership`].
+   * Transform an approved candidate into a member. Callable only by the
+   * the candidate, and only after the period for voting has ended.
    **/
   | { name: 'ClaimMembership' }
   /**
-   * See [`Pallet::bestow_membership`].
+   * Transform an approved candidate into a member. Callable only by the Signed origin of the
+   * Founder, only after the period for voting has ended and only when the candidate is not
+   * clearly rejected.
    **/
   | { name: 'BestowMembership'; params: { candidate: AccountId32 } }
   /**
-   * See [`Pallet::kick_candidate`].
+   * Remove the candidate's application from the society. Callable only by the Signed origin
+   * of the Founder, only after the period for voting has ended, and only when they do not
+   * have a clear approval.
+   *
+   * Any bid deposit is lost and voucher is banned.
    **/
   | { name: 'KickCandidate'; params: { candidate: AccountId32 } }
   /**
-   * See [`Pallet::resign_candidacy`].
+   * Remove the candidate's application from the society. Callable only by the candidate.
+   *
+   * Any bid deposit is lost and voucher is banned.
    **/
   | { name: 'ResignCandidacy' }
   /**
-   * See [`Pallet::drop_candidate`].
+   * Remove a `candidate`'s failed application from the society. Callable by any
+   * signed origin but only at the end of the subsequent round and only for
+   * a candidate with more rejections than approvals.
+   *
+   * The bid deposit is lost and the voucher is banned.
    **/
   | { name: 'DropCandidate'; params: { candidate: AccountId32 } }
   /**
-   * See [`Pallet::cleanup_candidacy`].
+   * Remove up to `max` stale votes for the given `candidate`.
+   *
+   * May be called by any Signed origin, but only after the candidate's candidacy is ended.
    **/
   | { name: 'CleanupCandidacy'; params: { candidate: AccountId32; max: number } }
   /**
-   * See [`Pallet::cleanup_challenge`].
+   * Remove up to `max` stale votes for the defender in the given `challenge_round`.
+   *
+   * May be called by any Signed origin, but only after the challenge round is ended.
    **/
   | { name: 'CleanupChallenge'; params: { challengeRound: number; max: number } };
 
 export type PalletSocietyCallLike =
   /**
-   * See [`Pallet::bid`].
+   * A user outside of the society can make a bid for entry.
+   *
+   * Payment: The group's Candidate Deposit will be reserved for making a bid. It is returned
+   * when the bid becomes a member, or if the bid calls `unbid`.
+   *
+   * The dispatch origin for this call must be _Signed_.
+   *
+   * Parameters:
+   * - `value`: A one time payment the bid would like to receive when joining the society.
    **/
   | { name: 'Bid'; params: { value: bigint } }
   /**
-   * See [`Pallet::unbid`].
+   * A bidder can remove their bid for entry into society.
+   * By doing so, they will have their candidate deposit returned or
+   * they will unvouch their voucher.
+   *
+   * Payment: The bid deposit is unreserved if the user made a bid.
+   *
+   * The dispatch origin for this call must be _Signed_ and a bidder.
    **/
   | { name: 'Unbid' }
   /**
-   * See [`Pallet::vouch`].
+   * As a member, vouch for someone to join society by placing a bid on their behalf.
+   *
+   * There is no deposit required to vouch for a new bid, but a member can only vouch for
+   * one bid at a time. If the bid becomes a suspended candidate and ultimately rejected by
+   * the suspension judgement origin, the member will be banned from vouching again.
+   *
+   * As a vouching member, you can claim a tip if the candidate is accepted. This tip will
+   * be paid as a portion of the reward the member will receive for joining the society.
+   *
+   * The dispatch origin for this call must be _Signed_ and a member.
+   *
+   * Parameters:
+   * - `who`: The user who you would like to vouch for.
+   * - `value`: The total reward to be paid between you and the candidate if they become
+   * a member in the society.
+   * - `tip`: Your cut of the total `value` payout when the candidate is inducted into
+   * the society. Tips larger than `value` will be saturated upon payout.
    **/
   | { name: 'Vouch'; params: { who: MultiAddressLike; value: bigint; tip: bigint } }
   /**
-   * See [`Pallet::unvouch`].
+   * As a vouching member, unvouch a bid. This only works while vouched user is
+   * only a bidder (and not a candidate).
+   *
+   * The dispatch origin for this call must be _Signed_ and a vouching member.
+   *
+   * Parameters:
+   * - `pos`: Position in the `Bids` vector of the bid who should be unvouched.
    **/
   | { name: 'Unvouch' }
   /**
-   * See [`Pallet::vote`].
+   * As a member, vote on a candidate.
+   *
+   * The dispatch origin for this call must be _Signed_ and a member.
+   *
+   * Parameters:
+   * - `candidate`: The candidate that the member would like to bid on.
+   * - `approve`: A boolean which says if the candidate should be approved (`true`) or
+   * rejected (`false`).
    **/
   | { name: 'Vote'; params: { candidate: MultiAddressLike; approve: boolean } }
   /**
-   * See [`Pallet::defender_vote`].
+   * As a member, vote on the defender.
+   *
+   * The dispatch origin for this call must be _Signed_ and a member.
+   *
+   * Parameters:
+   * - `approve`: A boolean which says if the candidate should be
+   * approved (`true`) or rejected (`false`).
    **/
   | { name: 'DefenderVote'; params: { approve: boolean } }
   /**
-   * See [`Pallet::payout`].
+   * Transfer the first matured payout for the sender and remove it from the records.
+   *
+   * NOTE: This extrinsic needs to be called multiple times to claim multiple matured
+   * payouts.
+   *
+   * Payment: The member will receive a payment equal to their first matured
+   * payout to their free balance.
+   *
+   * The dispatch origin for this call must be _Signed_ and a member with
+   * payouts remaining.
    **/
   | { name: 'Payout' }
   /**
-   * See [`Pallet::waive_repay`].
+   * Repay the payment previously given to the member with the signed origin, remove any
+   * pending payments, and elevate them from rank 0 to rank 1.
    **/
   | { name: 'WaiveRepay'; params: { amount: bigint } }
   /**
-   * See [`Pallet::found_society`].
+   * Found the society.
+   *
+   * This is done as a discrete action in order to allow for the
+   * pallet to be included into a running chain and can only be done once.
+   *
+   * The dispatch origin for this call must be from the _FounderSetOrigin_.
+   *
+   * Parameters:
+   * - `founder` - The first member and head of the newly founded society.
+   * - `max_members` - The initial max number of members for the society.
+   * - `max_intake` - The maximum number of candidates per intake period.
+   * - `max_strikes`: The maximum number of strikes a member may get before they become
+   * suspended and may only be reinstated by the founder.
+   * - `candidate_deposit`: The deposit required to make a bid for membership of the group.
+   * - `rules` - The rules of this society concerning membership.
+   *
+   * Complexity: O(1)
    **/
   | {
       name: 'FoundSociety';
@@ -4473,50 +7693,96 @@ export type PalletSocietyCallLike =
       };
     }
   /**
-   * See [`Pallet::dissolve`].
+   * Dissolve the society and remove all members.
+   *
+   * The dispatch origin for this call must be Signed, and the signing account must be both
+   * the `Founder` and the `Head`. This implies that it may only be done when there is one
+   * member.
    **/
   | { name: 'Dissolve' }
   /**
-   * See [`Pallet::judge_suspended_member`].
+   * Allow suspension judgement origin to make judgement on a suspended member.
+   *
+   * If a suspended member is forgiven, we simply add them back as a member, not affecting
+   * any of the existing storage items for that member.
+   *
+   * If a suspended member is rejected, remove all associated storage items, including
+   * their payouts, and remove any vouched bids they currently have.
+   *
+   * The dispatch origin for this call must be Signed from the Founder.
+   *
+   * Parameters:
+   * - `who` - The suspended member to be judged.
+   * - `forgive` - A boolean representing whether the suspension judgement origin forgives
+   * (`true`) or rejects (`false`) a suspended member.
    **/
   | { name: 'JudgeSuspendedMember'; params: { who: MultiAddressLike; forgive: boolean } }
   /**
-   * See [`Pallet::set_parameters`].
+   * Change the maximum number of members in society and the maximum number of new candidates
+   * in a single intake period.
+   *
+   * The dispatch origin for this call must be Signed by the Founder.
+   *
+   * Parameters:
+   * - `max_members` - The maximum number of members for the society. This must be no less
+   * than the current number of members.
+   * - `max_intake` - The maximum number of candidates per intake period.
+   * - `max_strikes`: The maximum number of strikes a member may get before they become
+   * suspended and may only be reinstated by the founder.
+   * - `candidate_deposit`: The deposit required to make a bid for membership of the group.
    **/
   | {
       name: 'SetParameters';
       params: { maxMembers: number; maxIntake: number; maxStrikes: number; candidateDeposit: bigint };
     }
   /**
-   * See [`Pallet::punish_skeptic`].
+   * Punish the skeptic with a strike if they did not vote on a candidate. Callable by the
+   * candidate.
    **/
   | { name: 'PunishSkeptic' }
   /**
-   * See [`Pallet::claim_membership`].
+   * Transform an approved candidate into a member. Callable only by the
+   * the candidate, and only after the period for voting has ended.
    **/
   | { name: 'ClaimMembership' }
   /**
-   * See [`Pallet::bestow_membership`].
+   * Transform an approved candidate into a member. Callable only by the Signed origin of the
+   * Founder, only after the period for voting has ended and only when the candidate is not
+   * clearly rejected.
    **/
   | { name: 'BestowMembership'; params: { candidate: AccountId32Like } }
   /**
-   * See [`Pallet::kick_candidate`].
+   * Remove the candidate's application from the society. Callable only by the Signed origin
+   * of the Founder, only after the period for voting has ended, and only when they do not
+   * have a clear approval.
+   *
+   * Any bid deposit is lost and voucher is banned.
    **/
   | { name: 'KickCandidate'; params: { candidate: AccountId32Like } }
   /**
-   * See [`Pallet::resign_candidacy`].
+   * Remove the candidate's application from the society. Callable only by the candidate.
+   *
+   * Any bid deposit is lost and voucher is banned.
    **/
   | { name: 'ResignCandidacy' }
   /**
-   * See [`Pallet::drop_candidate`].
+   * Remove a `candidate`'s failed application from the society. Callable by any
+   * signed origin but only at the end of the subsequent round and only for
+   * a candidate with more rejections than approvals.
+   *
+   * The bid deposit is lost and the voucher is banned.
    **/
   | { name: 'DropCandidate'; params: { candidate: AccountId32Like } }
   /**
-   * See [`Pallet::cleanup_candidacy`].
+   * Remove up to `max` stale votes for the given `candidate`.
+   *
+   * May be called by any Signed origin, but only after the candidate's candidacy is ended.
    **/
   | { name: 'CleanupCandidacy'; params: { candidate: AccountId32Like; max: number } }
   /**
-   * See [`Pallet::cleanup_challenge`].
+   * Remove up to `max` stale votes for the defender in the given `challenge_round`.
+   *
+   * May be called by any Signed origin, but only after the challenge round is ended.
    **/
   | { name: 'CleanupChallenge'; params: { challengeRound: number; max: number } };
 
@@ -4525,77 +7791,245 @@ export type PalletSocietyCallLike =
  **/
 export type PalletRecoveryCall =
   /**
-   * See [`Pallet::as_recovered`].
+   * Send a call through a recovered account.
+   *
+   * The dispatch origin for this call must be _Signed_ and registered to
+   * be able to make calls on behalf of the recovered account.
+   *
+   * Parameters:
+   * - `account`: The recovered account you want to make a call on-behalf-of.
+   * - `call`: The call you want to make with the recovered account.
    **/
   | { name: 'AsRecovered'; params: { account: MultiAddress; call: KitchensinkRuntimeRuntimeCall } }
   /**
-   * See [`Pallet::set_recovered`].
+   * Allow ROOT to bypass the recovery process and set an a rescuer account
+   * for a lost account directly.
+   *
+   * The dispatch origin for this call must be _ROOT_.
+   *
+   * Parameters:
+   * - `lost`: The "lost account" to be recovered.
+   * - `rescuer`: The "rescuer account" which can call as the lost account.
    **/
   | { name: 'SetRecovered'; params: { lost: MultiAddress; rescuer: MultiAddress } }
   /**
-   * See [`Pallet::create_recovery`].
+   * Create a recovery configuration for your account. This makes your account recoverable.
+   *
+   * Payment: `ConfigDepositBase` + `FriendDepositFactor` * #_of_friends balance
+   * will be reserved for storing the recovery configuration. This deposit is returned
+   * in full when the user calls `remove_recovery`.
+   *
+   * The dispatch origin for this call must be _Signed_.
+   *
+   * Parameters:
+   * - `friends`: A list of friends you trust to vouch for recovery attempts. Should be
+   * ordered and contain no duplicate values.
+   * - `threshold`: The number of friends that must vouch for a recovery attempt before the
+   * account can be recovered. Should be less than or equal to the length of the list of
+   * friends.
+   * - `delay_period`: The number of blocks after a recovery attempt is initialized that
+   * needs to pass before the account can be recovered.
    **/
   | { name: 'CreateRecovery'; params: { friends: Array<AccountId32>; threshold: number; delayPeriod: number } }
   /**
-   * See [`Pallet::initiate_recovery`].
+   * Initiate the process for recovering a recoverable account.
+   *
+   * Payment: `RecoveryDeposit` balance will be reserved for initiating the
+   * recovery process. This deposit will always be repatriated to the account
+   * trying to be recovered. See `close_recovery`.
+   *
+   * The dispatch origin for this call must be _Signed_.
+   *
+   * Parameters:
+   * - `account`: The lost account that you want to recover. This account needs to be
+   * recoverable (i.e. have a recovery configuration).
    **/
   | { name: 'InitiateRecovery'; params: { account: MultiAddress } }
   /**
-   * See [`Pallet::vouch_recovery`].
+   * Allow a "friend" of a recoverable account to vouch for an active recovery
+   * process for that account.
+   *
+   * The dispatch origin for this call must be _Signed_ and must be a "friend"
+   * for the recoverable account.
+   *
+   * Parameters:
+   * - `lost`: The lost account that you want to recover.
+   * - `rescuer`: The account trying to rescue the lost account that you want to vouch for.
+   *
+   * The combination of these two parameters must point to an active recovery
+   * process.
    **/
   | { name: 'VouchRecovery'; params: { lost: MultiAddress; rescuer: MultiAddress } }
   /**
-   * See [`Pallet::claim_recovery`].
+   * Allow a successful rescuer to claim their recovered account.
+   *
+   * The dispatch origin for this call must be _Signed_ and must be a "rescuer"
+   * who has successfully completed the account recovery process: collected
+   * `threshold` or more vouches, waited `delay_period` blocks since initiation.
+   *
+   * Parameters:
+   * - `account`: The lost account that you want to claim has been successfully recovered by
+   * you.
    **/
   | { name: 'ClaimRecovery'; params: { account: MultiAddress } }
   /**
-   * See [`Pallet::close_recovery`].
+   * As the controller of a recoverable account, close an active recovery
+   * process for your account.
+   *
+   * Payment: By calling this function, the recoverable account will receive
+   * the recovery deposit `RecoveryDeposit` placed by the rescuer.
+   *
+   * The dispatch origin for this call must be _Signed_ and must be a
+   * recoverable account with an active recovery process for it.
+   *
+   * Parameters:
+   * - `rescuer`: The account trying to rescue this recoverable account.
    **/
   | { name: 'CloseRecovery'; params: { rescuer: MultiAddress } }
   /**
-   * See [`Pallet::remove_recovery`].
+   * Remove the recovery process for your account. Recovered accounts are still accessible.
+   *
+   * NOTE: The user must make sure to call `close_recovery` on all active
+   * recovery attempts before calling this function else it will fail.
+   *
+   * Payment: By calling this function the recoverable account will unreserve
+   * their recovery configuration deposit.
+   * (`ConfigDepositBase` + `FriendDepositFactor` * #_of_friends)
+   *
+   * The dispatch origin for this call must be _Signed_ and must be a
+   * recoverable account (i.e. has a recovery configuration).
    **/
   | { name: 'RemoveRecovery' }
   /**
-   * See [`Pallet::cancel_recovered`].
+   * Cancel the ability to use `as_recovered` for `account`.
+   *
+   * The dispatch origin for this call must be _Signed_ and registered to
+   * be able to make calls on behalf of the recovered account.
+   *
+   * Parameters:
+   * - `account`: The recovered account you are able to call on-behalf-of.
    **/
   | { name: 'CancelRecovered'; params: { account: MultiAddress } };
 
 export type PalletRecoveryCallLike =
   /**
-   * See [`Pallet::as_recovered`].
+   * Send a call through a recovered account.
+   *
+   * The dispatch origin for this call must be _Signed_ and registered to
+   * be able to make calls on behalf of the recovered account.
+   *
+   * Parameters:
+   * - `account`: The recovered account you want to make a call on-behalf-of.
+   * - `call`: The call you want to make with the recovered account.
    **/
   | { name: 'AsRecovered'; params: { account: MultiAddressLike; call: KitchensinkRuntimeRuntimeCallLike } }
   /**
-   * See [`Pallet::set_recovered`].
+   * Allow ROOT to bypass the recovery process and set an a rescuer account
+   * for a lost account directly.
+   *
+   * The dispatch origin for this call must be _ROOT_.
+   *
+   * Parameters:
+   * - `lost`: The "lost account" to be recovered.
+   * - `rescuer`: The "rescuer account" which can call as the lost account.
    **/
   | { name: 'SetRecovered'; params: { lost: MultiAddressLike; rescuer: MultiAddressLike } }
   /**
-   * See [`Pallet::create_recovery`].
+   * Create a recovery configuration for your account. This makes your account recoverable.
+   *
+   * Payment: `ConfigDepositBase` + `FriendDepositFactor` * #_of_friends balance
+   * will be reserved for storing the recovery configuration. This deposit is returned
+   * in full when the user calls `remove_recovery`.
+   *
+   * The dispatch origin for this call must be _Signed_.
+   *
+   * Parameters:
+   * - `friends`: A list of friends you trust to vouch for recovery attempts. Should be
+   * ordered and contain no duplicate values.
+   * - `threshold`: The number of friends that must vouch for a recovery attempt before the
+   * account can be recovered. Should be less than or equal to the length of the list of
+   * friends.
+   * - `delay_period`: The number of blocks after a recovery attempt is initialized that
+   * needs to pass before the account can be recovered.
    **/
   | { name: 'CreateRecovery'; params: { friends: Array<AccountId32Like>; threshold: number; delayPeriod: number } }
   /**
-   * See [`Pallet::initiate_recovery`].
+   * Initiate the process for recovering a recoverable account.
+   *
+   * Payment: `RecoveryDeposit` balance will be reserved for initiating the
+   * recovery process. This deposit will always be repatriated to the account
+   * trying to be recovered. See `close_recovery`.
+   *
+   * The dispatch origin for this call must be _Signed_.
+   *
+   * Parameters:
+   * - `account`: The lost account that you want to recover. This account needs to be
+   * recoverable (i.e. have a recovery configuration).
    **/
   | { name: 'InitiateRecovery'; params: { account: MultiAddressLike } }
   /**
-   * See [`Pallet::vouch_recovery`].
+   * Allow a "friend" of a recoverable account to vouch for an active recovery
+   * process for that account.
+   *
+   * The dispatch origin for this call must be _Signed_ and must be a "friend"
+   * for the recoverable account.
+   *
+   * Parameters:
+   * - `lost`: The lost account that you want to recover.
+   * - `rescuer`: The account trying to rescue the lost account that you want to vouch for.
+   *
+   * The combination of these two parameters must point to an active recovery
+   * process.
    **/
   | { name: 'VouchRecovery'; params: { lost: MultiAddressLike; rescuer: MultiAddressLike } }
   /**
-   * See [`Pallet::claim_recovery`].
+   * Allow a successful rescuer to claim their recovered account.
+   *
+   * The dispatch origin for this call must be _Signed_ and must be a "rescuer"
+   * who has successfully completed the account recovery process: collected
+   * `threshold` or more vouches, waited `delay_period` blocks since initiation.
+   *
+   * Parameters:
+   * - `account`: The lost account that you want to claim has been successfully recovered by
+   * you.
    **/
   | { name: 'ClaimRecovery'; params: { account: MultiAddressLike } }
   /**
-   * See [`Pallet::close_recovery`].
+   * As the controller of a recoverable account, close an active recovery
+   * process for your account.
+   *
+   * Payment: By calling this function, the recoverable account will receive
+   * the recovery deposit `RecoveryDeposit` placed by the rescuer.
+   *
+   * The dispatch origin for this call must be _Signed_ and must be a
+   * recoverable account with an active recovery process for it.
+   *
+   * Parameters:
+   * - `rescuer`: The account trying to rescue this recoverable account.
    **/
   | { name: 'CloseRecovery'; params: { rescuer: MultiAddressLike } }
   /**
-   * See [`Pallet::remove_recovery`].
+   * Remove the recovery process for your account. Recovered accounts are still accessible.
+   *
+   * NOTE: The user must make sure to call `close_recovery` on all active
+   * recovery attempts before calling this function else it will fail.
+   *
+   * Payment: By calling this function the recoverable account will unreserve
+   * their recovery configuration deposit.
+   * (`ConfigDepositBase` + `FriendDepositFactor` * #_of_friends)
+   *
+   * The dispatch origin for this call must be _Signed_ and must be a
+   * recoverable account (i.e. has a recovery configuration).
    **/
   | { name: 'RemoveRecovery' }
   /**
-   * See [`Pallet::cancel_recovered`].
+   * Cancel the ability to use `as_recovered` for `account`.
+   *
+   * The dispatch origin for this call must be _Signed_ and registered to
+   * be able to make calls on behalf of the recovered account.
+   *
+   * Parameters:
+   * - `account`: The recovered account you are able to call on-behalf-of.
    **/
   | { name: 'CancelRecovered'; params: { account: MultiAddressLike } };
 
@@ -4604,53 +8038,197 @@ export type PalletRecoveryCallLike =
  **/
 export type PalletVestingCall =
   /**
-   * See [`Pallet::vest`].
+   * Unlock any vested funds of the sender account.
+   *
+   * The dispatch origin for this call must be _Signed_ and the sender must have funds still
+   * locked under this pallet.
+   *
+   * Emits either `VestingCompleted` or `VestingUpdated`.
+   *
+   * ## Complexity
+   * - `O(1)`.
    **/
   | { name: 'Vest' }
   /**
-   * See [`Pallet::vest_other`].
+   * Unlock any vested funds of a `target` account.
+   *
+   * The dispatch origin for this call must be _Signed_.
+   *
+   * - `target`: The account whose vested funds should be unlocked. Must have funds still
+   * locked under this pallet.
+   *
+   * Emits either `VestingCompleted` or `VestingUpdated`.
+   *
+   * ## Complexity
+   * - `O(1)`.
    **/
   | { name: 'VestOther'; params: { target: MultiAddress } }
   /**
-   * See [`Pallet::vested_transfer`].
+   * Create a vested transfer.
+   *
+   * The dispatch origin for this call must be _Signed_.
+   *
+   * - `target`: The account receiving the vested funds.
+   * - `schedule`: The vesting schedule attached to the transfer.
+   *
+   * Emits `VestingCreated`.
+   *
+   * NOTE: This will unlock all schedules through the current block.
+   *
+   * ## Complexity
+   * - `O(1)`.
    **/
   | { name: 'VestedTransfer'; params: { target: MultiAddress; schedule: PalletVestingVestingInfo } }
   /**
-   * See [`Pallet::force_vested_transfer`].
+   * Force a vested transfer.
+   *
+   * The dispatch origin for this call must be _Root_.
+   *
+   * - `source`: The account whose funds should be transferred.
+   * - `target`: The account that should be transferred the vested funds.
+   * - `schedule`: The vesting schedule attached to the transfer.
+   *
+   * Emits `VestingCreated`.
+   *
+   * NOTE: This will unlock all schedules through the current block.
+   *
+   * ## Complexity
+   * - `O(1)`.
    **/
   | {
       name: 'ForceVestedTransfer';
       params: { source: MultiAddress; target: MultiAddress; schedule: PalletVestingVestingInfo };
     }
   /**
-   * See [`Pallet::merge_schedules`].
+   * Merge two vesting schedules together, creating a new vesting schedule that unlocks over
+   * the highest possible start and end blocks. If both schedules have already started the
+   * current block will be used as the schedule start; with the caveat that if one schedule
+   * is finished by the current block, the other will be treated as the new merged schedule,
+   * unmodified.
+   *
+   * NOTE: If `schedule1_index == schedule2_index` this is a no-op.
+   * NOTE: This will unlock all schedules through the current block prior to merging.
+   * NOTE: If both schedules have ended by the current block, no new schedule will be created
+   * and both will be removed.
+   *
+   * Merged schedule attributes:
+   * - `starting_block`: `MAX(schedule1.starting_block, scheduled2.starting_block,
+   * current_block)`.
+   * - `ending_block`: `MAX(schedule1.ending_block, schedule2.ending_block)`.
+   * - `locked`: `schedule1.locked_at(current_block) + schedule2.locked_at(current_block)`.
+   *
+   * The dispatch origin for this call must be _Signed_.
+   *
+   * - `schedule1_index`: index of the first schedule to merge.
+   * - `schedule2_index`: index of the second schedule to merge.
    **/
-  | { name: 'MergeSchedules'; params: { schedule1Index: number; schedule2Index: number } };
+  | { name: 'MergeSchedules'; params: { schedule1Index: number; schedule2Index: number } }
+  /**
+   * Force remove a vesting schedule
+   *
+   * The dispatch origin for this call must be _Root_.
+   *
+   * - `target`: An account that has a vesting schedule
+   * - `schedule_index`: The vesting schedule index that should be removed
+   **/
+  | { name: 'ForceRemoveVestingSchedule'; params: { target: MultiAddress; scheduleIndex: number } };
 
 export type PalletVestingCallLike =
   /**
-   * See [`Pallet::vest`].
+   * Unlock any vested funds of the sender account.
+   *
+   * The dispatch origin for this call must be _Signed_ and the sender must have funds still
+   * locked under this pallet.
+   *
+   * Emits either `VestingCompleted` or `VestingUpdated`.
+   *
+   * ## Complexity
+   * - `O(1)`.
    **/
   | { name: 'Vest' }
   /**
-   * See [`Pallet::vest_other`].
+   * Unlock any vested funds of a `target` account.
+   *
+   * The dispatch origin for this call must be _Signed_.
+   *
+   * - `target`: The account whose vested funds should be unlocked. Must have funds still
+   * locked under this pallet.
+   *
+   * Emits either `VestingCompleted` or `VestingUpdated`.
+   *
+   * ## Complexity
+   * - `O(1)`.
    **/
   | { name: 'VestOther'; params: { target: MultiAddressLike } }
   /**
-   * See [`Pallet::vested_transfer`].
+   * Create a vested transfer.
+   *
+   * The dispatch origin for this call must be _Signed_.
+   *
+   * - `target`: The account receiving the vested funds.
+   * - `schedule`: The vesting schedule attached to the transfer.
+   *
+   * Emits `VestingCreated`.
+   *
+   * NOTE: This will unlock all schedules through the current block.
+   *
+   * ## Complexity
+   * - `O(1)`.
    **/
   | { name: 'VestedTransfer'; params: { target: MultiAddressLike; schedule: PalletVestingVestingInfo } }
   /**
-   * See [`Pallet::force_vested_transfer`].
+   * Force a vested transfer.
+   *
+   * The dispatch origin for this call must be _Root_.
+   *
+   * - `source`: The account whose funds should be transferred.
+   * - `target`: The account that should be transferred the vested funds.
+   * - `schedule`: The vesting schedule attached to the transfer.
+   *
+   * Emits `VestingCreated`.
+   *
+   * NOTE: This will unlock all schedules through the current block.
+   *
+   * ## Complexity
+   * - `O(1)`.
    **/
   | {
       name: 'ForceVestedTransfer';
       params: { source: MultiAddressLike; target: MultiAddressLike; schedule: PalletVestingVestingInfo };
     }
   /**
-   * See [`Pallet::merge_schedules`].
+   * Merge two vesting schedules together, creating a new vesting schedule that unlocks over
+   * the highest possible start and end blocks. If both schedules have already started the
+   * current block will be used as the schedule start; with the caveat that if one schedule
+   * is finished by the current block, the other will be treated as the new merged schedule,
+   * unmodified.
+   *
+   * NOTE: If `schedule1_index == schedule2_index` this is a no-op.
+   * NOTE: This will unlock all schedules through the current block prior to merging.
+   * NOTE: If both schedules have ended by the current block, no new schedule will be created
+   * and both will be removed.
+   *
+   * Merged schedule attributes:
+   * - `starting_block`: `MAX(schedule1.starting_block, scheduled2.starting_block,
+   * current_block)`.
+   * - `ending_block`: `MAX(schedule1.ending_block, schedule2.ending_block)`.
+   * - `locked`: `schedule1.locked_at(current_block) + schedule2.locked_at(current_block)`.
+   *
+   * The dispatch origin for this call must be _Signed_.
+   *
+   * - `schedule1_index`: index of the first schedule to merge.
+   * - `schedule2_index`: index of the second schedule to merge.
    **/
-  | { name: 'MergeSchedules'; params: { schedule1Index: number; schedule2Index: number } };
+  | { name: 'MergeSchedules'; params: { schedule1Index: number; schedule2Index: number } }
+  /**
+   * Force remove a vesting schedule
+   *
+   * The dispatch origin for this call must be _Root_.
+   *
+   * - `target`: An account that has a vesting schedule
+   * - `schedule_index`: The vesting schedule index that should be removed
+   **/
+  | { name: 'ForceRemoveVestingSchedule'; params: { target: MultiAddressLike; scheduleIndex: number } };
 
 export type PalletVestingVestingInfo = { locked: bigint; perBlock: bigint; startingBlock: number };
 
@@ -4659,7 +8237,7 @@ export type PalletVestingVestingInfo = { locked: bigint; perBlock: bigint; start
  **/
 export type PalletSchedulerCall =
   /**
-   * See [`Pallet::schedule`].
+   * Anonymously schedule a task.
    **/
   | {
       name: 'Schedule';
@@ -4671,11 +8249,11 @@ export type PalletSchedulerCall =
       };
     }
   /**
-   * See [`Pallet::cancel`].
+   * Cancel an anonymously scheduled task.
    **/
   | { name: 'Cancel'; params: { when: number; index: number } }
   /**
-   * See [`Pallet::schedule_named`].
+   * Schedule a named task.
    **/
   | {
       name: 'ScheduleNamed';
@@ -4688,11 +8266,11 @@ export type PalletSchedulerCall =
       };
     }
   /**
-   * See [`Pallet::cancel_named`].
+   * Cancel a named scheduled task.
    **/
   | { name: 'CancelNamed'; params: { id: FixedBytes<32> } }
   /**
-   * See [`Pallet::schedule_after`].
+   * Anonymously schedule a task after a delay.
    **/
   | {
       name: 'ScheduleAfter';
@@ -4704,7 +8282,7 @@ export type PalletSchedulerCall =
       };
     }
   /**
-   * See [`Pallet::schedule_named_after`].
+   * Schedule a named task after a delay.
    **/
   | {
       name: 'ScheduleNamedAfter';
@@ -4715,11 +8293,49 @@ export type PalletSchedulerCall =
         priority: number;
         call: KitchensinkRuntimeRuntimeCall;
       };
-    };
+    }
+  /**
+   * Set a retry configuration for a task so that, in case its scheduled run fails, it will
+   * be retried after `period` blocks, for a total amount of `retries` retries or until it
+   * succeeds.
+   *
+   * Tasks which need to be scheduled for a retry are still subject to weight metering and
+   * agenda space, same as a regular task. If a periodic task fails, it will be scheduled
+   * normally while the task is retrying.
+   *
+   * Tasks scheduled as a result of a retry for a periodic task are unnamed, non-periodic
+   * clones of the original task. Their retry configuration will be derived from the
+   * original task's configuration, but will have a lower value for `remaining` than the
+   * original `total_retries`.
+   **/
+  | { name: 'SetRetry'; params: { task: [number, number]; retries: number; period: number } }
+  /**
+   * Set a retry configuration for a named task so that, in case its scheduled run fails, it
+   * will be retried after `period` blocks, for a total amount of `retries` retries or until
+   * it succeeds.
+   *
+   * Tasks which need to be scheduled for a retry are still subject to weight metering and
+   * agenda space, same as a regular task. If a periodic task fails, it will be scheduled
+   * normally while the task is retrying.
+   *
+   * Tasks scheduled as a result of a retry for a periodic task are unnamed, non-periodic
+   * clones of the original task. Their retry configuration will be derived from the
+   * original task's configuration, but will have a lower value for `remaining` than the
+   * original `total_retries`.
+   **/
+  | { name: 'SetRetryNamed'; params: { id: FixedBytes<32>; retries: number; period: number } }
+  /**
+   * Removes the retry configuration of a task.
+   **/
+  | { name: 'CancelRetry'; params: { task: [number, number] } }
+  /**
+   * Cancel the retry configuration of a named task.
+   **/
+  | { name: 'CancelRetryNamed'; params: { id: FixedBytes<32> } };
 
 export type PalletSchedulerCallLike =
   /**
-   * See [`Pallet::schedule`].
+   * Anonymously schedule a task.
    **/
   | {
       name: 'Schedule';
@@ -4731,11 +8347,11 @@ export type PalletSchedulerCallLike =
       };
     }
   /**
-   * See [`Pallet::cancel`].
+   * Cancel an anonymously scheduled task.
    **/
   | { name: 'Cancel'; params: { when: number; index: number } }
   /**
-   * See [`Pallet::schedule_named`].
+   * Schedule a named task.
    **/
   | {
       name: 'ScheduleNamed';
@@ -4748,11 +8364,11 @@ export type PalletSchedulerCallLike =
       };
     }
   /**
-   * See [`Pallet::cancel_named`].
+   * Cancel a named scheduled task.
    **/
   | { name: 'CancelNamed'; params: { id: FixedBytes<32> } }
   /**
-   * See [`Pallet::schedule_after`].
+   * Anonymously schedule a task after a delay.
    **/
   | {
       name: 'ScheduleAfter';
@@ -4764,7 +8380,7 @@ export type PalletSchedulerCallLike =
       };
     }
   /**
-   * See [`Pallet::schedule_named_after`].
+   * Schedule a named task after a delay.
    **/
   | {
       name: 'ScheduleNamedAfter';
@@ -4775,36 +8391,100 @@ export type PalletSchedulerCallLike =
         priority: number;
         call: KitchensinkRuntimeRuntimeCallLike;
       };
-    };
+    }
+  /**
+   * Set a retry configuration for a task so that, in case its scheduled run fails, it will
+   * be retried after `period` blocks, for a total amount of `retries` retries or until it
+   * succeeds.
+   *
+   * Tasks which need to be scheduled for a retry are still subject to weight metering and
+   * agenda space, same as a regular task. If a periodic task fails, it will be scheduled
+   * normally while the task is retrying.
+   *
+   * Tasks scheduled as a result of a retry for a periodic task are unnamed, non-periodic
+   * clones of the original task. Their retry configuration will be derived from the
+   * original task's configuration, but will have a lower value for `remaining` than the
+   * original `total_retries`.
+   **/
+  | { name: 'SetRetry'; params: { task: [number, number]; retries: number; period: number } }
+  /**
+   * Set a retry configuration for a named task so that, in case its scheduled run fails, it
+   * will be retried after `period` blocks, for a total amount of `retries` retries or until
+   * it succeeds.
+   *
+   * Tasks which need to be scheduled for a retry are still subject to weight metering and
+   * agenda space, same as a regular task. If a periodic task fails, it will be scheduled
+   * normally while the task is retrying.
+   *
+   * Tasks scheduled as a result of a retry for a periodic task are unnamed, non-periodic
+   * clones of the original task. Their retry configuration will be derived from the
+   * original task's configuration, but will have a lower value for `remaining` than the
+   * original `total_retries`.
+   **/
+  | { name: 'SetRetryNamed'; params: { id: FixedBytes<32>; retries: number; period: number } }
+  /**
+   * Removes the retry configuration of a task.
+   **/
+  | { name: 'CancelRetry'; params: { task: [number, number] } }
+  /**
+   * Cancel the retry configuration of a named task.
+   **/
+  | { name: 'CancelRetryNamed'; params: { id: FixedBytes<32> } };
 
 /**
  * Contains a variant per dispatchable extrinsic that this pallet has.
  **/
 export type PalletGluttonCall =
   /**
-   * See [`Pallet::initialize_pallet`].
+   * Initialize the pallet. Should be called once, if no genesis state was provided.
+   *
+   * `current_count` is the current number of elements in `TrashData`. This can be set to
+   * `None` when the pallet is first initialized.
+   *
+   * Only callable by Root or `AdminOrigin`. A good default for `new_count` is `5_000`.
    **/
   | { name: 'InitializePallet'; params: { newCount: number; witnessCount?: number | undefined } }
   /**
-   * See [`Pallet::set_compute`].
+   * Set how much of the remaining `ref_time` weight should be consumed by `on_idle`.
+   *
+   * Only callable by Root or `AdminOrigin`.
    **/
   | { name: 'SetCompute'; params: { compute: FixedU64 } }
   /**
-   * See [`Pallet::set_storage`].
+   * Set how much of the remaining `proof_size` weight should be consumed by `on_idle`.
+   *
+   * `1.0` means that all remaining `proof_size` will be consumed. The PoV benchmarking
+   * results that are used here are likely an over-estimation. 100% intended consumption will
+   * therefore translate to less than 100% actual consumption.
+   *
+   * Only callable by Root or `AdminOrigin`.
    **/
   | { name: 'SetStorage'; params: { storage: FixedU64 } };
 
 export type PalletGluttonCallLike =
   /**
-   * See [`Pallet::initialize_pallet`].
+   * Initialize the pallet. Should be called once, if no genesis state was provided.
+   *
+   * `current_count` is the current number of elements in `TrashData`. This can be set to
+   * `None` when the pallet is first initialized.
+   *
+   * Only callable by Root or `AdminOrigin`. A good default for `new_count` is `5_000`.
    **/
   | { name: 'InitializePallet'; params: { newCount: number; witnessCount?: number | undefined } }
   /**
-   * See [`Pallet::set_compute`].
+   * Set how much of the remaining `ref_time` weight should be consumed by `on_idle`.
+   *
+   * Only callable by Root or `AdminOrigin`.
    **/
   | { name: 'SetCompute'; params: { compute: FixedU64 } }
   /**
-   * See [`Pallet::set_storage`].
+   * Set how much of the remaining `proof_size` weight should be consumed by `on_idle`.
+   *
+   * `1.0` means that all remaining `proof_size` will be consumed. The PoV benchmarking
+   * results that are used here are likely an over-estimation. 100% intended consumption will
+   * therefore translate to less than 100% actual consumption.
+   *
+   * Only callable by Root or `AdminOrigin`.
    **/
   | { name: 'SetStorage'; params: { storage: FixedU64 } };
 
@@ -4813,46 +8493,92 @@ export type PalletGluttonCallLike =
  **/
 export type PalletPreimageCall =
   /**
-   * See [`Pallet::note_preimage`].
+   * Register a preimage on-chain.
+   *
+   * If the preimage was previously requested, no fees or deposits are taken for providing
+   * the preimage. Otherwise, a deposit is taken proportional to the size of the preimage.
    **/
   | { name: 'NotePreimage'; params: { bytes: Bytes } }
   /**
-   * See [`Pallet::unnote_preimage`].
+   * Clear an unrequested preimage from the runtime storage.
+   *
+   * If `len` is provided, then it will be a much cheaper operation.
+   *
+   * - `hash`: The hash of the preimage to be removed from the store.
+   * - `len`: The length of the preimage of `hash`.
    **/
   | { name: 'UnnotePreimage'; params: { hash: H256 } }
   /**
-   * See [`Pallet::request_preimage`].
+   * Request a preimage be uploaded to the chain without paying any fees or deposits.
+   *
+   * If the preimage requests has already been provided on-chain, we unreserve any deposit
+   * a user may have paid, and take the control of the preimage out of their hands.
    **/
   | { name: 'RequestPreimage'; params: { hash: H256 } }
   /**
-   * See [`Pallet::unrequest_preimage`].
+   * Clear a previously made request for a preimage.
+   *
+   * NOTE: THIS MUST NOT BE CALLED ON `hash` MORE TIMES THAN `request_preimage`.
    **/
-  | { name: 'UnrequestPreimage'; params: { hash: H256 } };
+  | { name: 'UnrequestPreimage'; params: { hash: H256 } }
+  /**
+   * Ensure that the a bulk of pre-images is upgraded.
+   *
+   * The caller pays no fee if at least 90% of pre-images were successfully updated.
+   **/
+  | { name: 'EnsureUpdated'; params: { hashes: Array<H256> } };
 
 export type PalletPreimageCallLike =
   /**
-   * See [`Pallet::note_preimage`].
+   * Register a preimage on-chain.
+   *
+   * If the preimage was previously requested, no fees or deposits are taken for providing
+   * the preimage. Otherwise, a deposit is taken proportional to the size of the preimage.
    **/
   | { name: 'NotePreimage'; params: { bytes: BytesLike } }
   /**
-   * See [`Pallet::unnote_preimage`].
+   * Clear an unrequested preimage from the runtime storage.
+   *
+   * If `len` is provided, then it will be a much cheaper operation.
+   *
+   * - `hash`: The hash of the preimage to be removed from the store.
+   * - `len`: The length of the preimage of `hash`.
    **/
   | { name: 'UnnotePreimage'; params: { hash: H256 } }
   /**
-   * See [`Pallet::request_preimage`].
+   * Request a preimage be uploaded to the chain without paying any fees or deposits.
+   *
+   * If the preimage requests has already been provided on-chain, we unreserve any deposit
+   * a user may have paid, and take the control of the preimage out of their hands.
    **/
   | { name: 'RequestPreimage'; params: { hash: H256 } }
   /**
-   * See [`Pallet::unrequest_preimage`].
+   * Clear a previously made request for a preimage.
+   *
+   * NOTE: THIS MUST NOT BE CALLED ON `hash` MORE TIMES THAN `request_preimage`.
    **/
-  | { name: 'UnrequestPreimage'; params: { hash: H256 } };
+  | { name: 'UnrequestPreimage'; params: { hash: H256 } }
+  /**
+   * Ensure that the a bulk of pre-images is upgraded.
+   *
+   * The caller pays no fee if at least 90% of pre-images were successfully updated.
+   **/
+  | { name: 'EnsureUpdated'; params: { hashes: Array<H256> } };
 
 /**
  * Contains a variant per dispatchable extrinsic that this pallet has.
  **/
 export type PalletProxyCall =
   /**
-   * See [`Pallet::proxy`].
+   * Dispatch the given `call` from an account that the sender is authorised for through
+   * `add_proxy`.
+   *
+   * The dispatch origin for this call must be _Signed_.
+   *
+   * Parameters:
+   * - `real`: The account that the proxy will make a call on behalf of.
+   * - `force_proxy_type`: Specify the exact proxy type to be used and checked for this call.
+   * - `call`: The call to be made by the `real` account.
    **/
   | {
       name: 'Proxy';
@@ -4863,23 +8589,74 @@ export type PalletProxyCall =
       };
     }
   /**
-   * See [`Pallet::add_proxy`].
+   * Register a proxy account for the sender that is able to make calls on its behalf.
+   *
+   * The dispatch origin for this call must be _Signed_.
+   *
+   * Parameters:
+   * - `proxy`: The account that the `caller` would like to make a proxy.
+   * - `proxy_type`: The permissions allowed for this proxy account.
+   * - `delay`: The announcement period required of the initial proxy. Will generally be
+   * zero.
    **/
   | { name: 'AddProxy'; params: { delegate: MultiAddress; proxyType: KitchensinkRuntimeProxyType; delay: number } }
   /**
-   * See [`Pallet::remove_proxy`].
+   * Unregister a proxy account for the sender.
+   *
+   * The dispatch origin for this call must be _Signed_.
+   *
+   * Parameters:
+   * - `proxy`: The account that the `caller` would like to remove as a proxy.
+   * - `proxy_type`: The permissions currently enabled for the removed proxy account.
    **/
   | { name: 'RemoveProxy'; params: { delegate: MultiAddress; proxyType: KitchensinkRuntimeProxyType; delay: number } }
   /**
-   * See [`Pallet::remove_proxies`].
+   * Unregister all proxy accounts for the sender.
+   *
+   * The dispatch origin for this call must be _Signed_.
+   *
+   * WARNING: This may be called on accounts created by `pure`, however if done, then
+   * the unreserved fees will be inaccessible. **All access to this account will be lost.**
    **/
   | { name: 'RemoveProxies' }
   /**
-   * See [`Pallet::create_pure`].
+   * Spawn a fresh new account that is guaranteed to be otherwise inaccessible, and
+   * initialize it with a proxy of `proxy_type` for `origin` sender.
+   *
+   * Requires a `Signed` origin.
+   *
+   * - `proxy_type`: The type of the proxy that the sender will be registered as over the
+   * new account. This will almost always be the most permissive `ProxyType` possible to
+   * allow for maximum flexibility.
+   * - `index`: A disambiguation index, in case this is called multiple times in the same
+   * transaction (e.g. with `utility::batch`). Unless you're using `batch` you probably just
+   * want to use `0`.
+   * - `delay`: The announcement period required of the initial proxy. Will generally be
+   * zero.
+   *
+   * Fails with `Duplicate` if this has already been called in this transaction, from the
+   * same sender, with the same parameters.
+   *
+   * Fails if there are insufficient funds to pay for deposit.
    **/
   | { name: 'CreatePure'; params: { proxyType: KitchensinkRuntimeProxyType; delay: number; index: number } }
   /**
-   * See [`Pallet::kill_pure`].
+   * Removes a previously spawned pure proxy.
+   *
+   * WARNING: **All access to this account will be lost.** Any funds held in it will be
+   * inaccessible.
+   *
+   * Requires a `Signed` origin, and the sender account must have been created by a call to
+   * `pure` with corresponding parameters.
+   *
+   * - `spawner`: The account that originally called `pure` to create this account.
+   * - `index`: The disambiguation index originally passed to `pure`. Probably `0`.
+   * - `proxy_type`: The proxy type originally passed to `pure`.
+   * - `height`: The height of the chain when the call to `pure` was processed.
+   * - `ext_index`: The extrinsic index in which the call to `pure` was processed.
+   *
+   * Fails with `NoPermission` in case the caller is not a previously created pure
+   * account whose `pure` call has corresponding parameters.
    **/
   | {
       name: 'KillPure';
@@ -4892,19 +8669,61 @@ export type PalletProxyCall =
       };
     }
   /**
-   * See [`Pallet::announce`].
+   * Publish the hash of a proxy-call that will be made in the future.
+   *
+   * This must be called some number of blocks before the corresponding `proxy` is attempted
+   * if the delay associated with the proxy relationship is greater than zero.
+   *
+   * No more than `MaxPending` announcements may be made at any one time.
+   *
+   * This will take a deposit of `AnnouncementDepositFactor` as well as
+   * `AnnouncementDepositBase` if there are no other pending announcements.
+   *
+   * The dispatch origin for this call must be _Signed_ and a proxy of `real`.
+   *
+   * Parameters:
+   * - `real`: The account that the proxy will make a call on behalf of.
+   * - `call_hash`: The hash of the call to be made by the `real` account.
    **/
   | { name: 'Announce'; params: { real: MultiAddress; callHash: H256 } }
   /**
-   * See [`Pallet::remove_announcement`].
+   * Remove a given announcement.
+   *
+   * May be called by a proxy account to remove a call they previously announced and return
+   * the deposit.
+   *
+   * The dispatch origin for this call must be _Signed_.
+   *
+   * Parameters:
+   * - `real`: The account that the proxy will make a call on behalf of.
+   * - `call_hash`: The hash of the call to be made by the `real` account.
    **/
   | { name: 'RemoveAnnouncement'; params: { real: MultiAddress; callHash: H256 } }
   /**
-   * See [`Pallet::reject_announcement`].
+   * Remove the given announcement of a delegate.
+   *
+   * May be called by a target (proxied) account to remove a call that one of their delegates
+   * (`delegate`) has announced they want to execute. The deposit is returned.
+   *
+   * The dispatch origin for this call must be _Signed_.
+   *
+   * Parameters:
+   * - `delegate`: The account that previously announced the call.
+   * - `call_hash`: The hash of the call to be made.
    **/
   | { name: 'RejectAnnouncement'; params: { delegate: MultiAddress; callHash: H256 } }
   /**
-   * See [`Pallet::proxy_announced`].
+   * Dispatch the given `call` from an account that the sender is authorized for through
+   * `add_proxy`.
+   *
+   * Removes any corresponding announcement(s).
+   *
+   * The dispatch origin for this call must be _Signed_.
+   *
+   * Parameters:
+   * - `real`: The account that the proxy will make a call on behalf of.
+   * - `force_proxy_type`: Specify the exact proxy type to be used and checked for this call.
+   * - `call`: The call to be made by the `real` account.
    **/
   | {
       name: 'ProxyAnnounced';
@@ -4918,7 +8737,15 @@ export type PalletProxyCall =
 
 export type PalletProxyCallLike =
   /**
-   * See [`Pallet::proxy`].
+   * Dispatch the given `call` from an account that the sender is authorised for through
+   * `add_proxy`.
+   *
+   * The dispatch origin for this call must be _Signed_.
+   *
+   * Parameters:
+   * - `real`: The account that the proxy will make a call on behalf of.
+   * - `force_proxy_type`: Specify the exact proxy type to be used and checked for this call.
+   * - `call`: The call to be made by the `real` account.
    **/
   | {
       name: 'Proxy';
@@ -4929,26 +8756,77 @@ export type PalletProxyCallLike =
       };
     }
   /**
-   * See [`Pallet::add_proxy`].
+   * Register a proxy account for the sender that is able to make calls on its behalf.
+   *
+   * The dispatch origin for this call must be _Signed_.
+   *
+   * Parameters:
+   * - `proxy`: The account that the `caller` would like to make a proxy.
+   * - `proxy_type`: The permissions allowed for this proxy account.
+   * - `delay`: The announcement period required of the initial proxy. Will generally be
+   * zero.
    **/
   | { name: 'AddProxy'; params: { delegate: MultiAddressLike; proxyType: KitchensinkRuntimeProxyType; delay: number } }
   /**
-   * See [`Pallet::remove_proxy`].
+   * Unregister a proxy account for the sender.
+   *
+   * The dispatch origin for this call must be _Signed_.
+   *
+   * Parameters:
+   * - `proxy`: The account that the `caller` would like to remove as a proxy.
+   * - `proxy_type`: The permissions currently enabled for the removed proxy account.
    **/
   | {
       name: 'RemoveProxy';
       params: { delegate: MultiAddressLike; proxyType: KitchensinkRuntimeProxyType; delay: number };
     }
   /**
-   * See [`Pallet::remove_proxies`].
+   * Unregister all proxy accounts for the sender.
+   *
+   * The dispatch origin for this call must be _Signed_.
+   *
+   * WARNING: This may be called on accounts created by `pure`, however if done, then
+   * the unreserved fees will be inaccessible. **All access to this account will be lost.**
    **/
   | { name: 'RemoveProxies' }
   /**
-   * See [`Pallet::create_pure`].
+   * Spawn a fresh new account that is guaranteed to be otherwise inaccessible, and
+   * initialize it with a proxy of `proxy_type` for `origin` sender.
+   *
+   * Requires a `Signed` origin.
+   *
+   * - `proxy_type`: The type of the proxy that the sender will be registered as over the
+   * new account. This will almost always be the most permissive `ProxyType` possible to
+   * allow for maximum flexibility.
+   * - `index`: A disambiguation index, in case this is called multiple times in the same
+   * transaction (e.g. with `utility::batch`). Unless you're using `batch` you probably just
+   * want to use `0`.
+   * - `delay`: The announcement period required of the initial proxy. Will generally be
+   * zero.
+   *
+   * Fails with `Duplicate` if this has already been called in this transaction, from the
+   * same sender, with the same parameters.
+   *
+   * Fails if there are insufficient funds to pay for deposit.
    **/
   | { name: 'CreatePure'; params: { proxyType: KitchensinkRuntimeProxyType; delay: number; index: number } }
   /**
-   * See [`Pallet::kill_pure`].
+   * Removes a previously spawned pure proxy.
+   *
+   * WARNING: **All access to this account will be lost.** Any funds held in it will be
+   * inaccessible.
+   *
+   * Requires a `Signed` origin, and the sender account must have been created by a call to
+   * `pure` with corresponding parameters.
+   *
+   * - `spawner`: The account that originally called `pure` to create this account.
+   * - `index`: The disambiguation index originally passed to `pure`. Probably `0`.
+   * - `proxy_type`: The proxy type originally passed to `pure`.
+   * - `height`: The height of the chain when the call to `pure` was processed.
+   * - `ext_index`: The extrinsic index in which the call to `pure` was processed.
+   *
+   * Fails with `NoPermission` in case the caller is not a previously created pure
+   * account whose `pure` call has corresponding parameters.
    **/
   | {
       name: 'KillPure';
@@ -4961,19 +8839,61 @@ export type PalletProxyCallLike =
       };
     }
   /**
-   * See [`Pallet::announce`].
+   * Publish the hash of a proxy-call that will be made in the future.
+   *
+   * This must be called some number of blocks before the corresponding `proxy` is attempted
+   * if the delay associated with the proxy relationship is greater than zero.
+   *
+   * No more than `MaxPending` announcements may be made at any one time.
+   *
+   * This will take a deposit of `AnnouncementDepositFactor` as well as
+   * `AnnouncementDepositBase` if there are no other pending announcements.
+   *
+   * The dispatch origin for this call must be _Signed_ and a proxy of `real`.
+   *
+   * Parameters:
+   * - `real`: The account that the proxy will make a call on behalf of.
+   * - `call_hash`: The hash of the call to be made by the `real` account.
    **/
   | { name: 'Announce'; params: { real: MultiAddressLike; callHash: H256 } }
   /**
-   * See [`Pallet::remove_announcement`].
+   * Remove a given announcement.
+   *
+   * May be called by a proxy account to remove a call they previously announced and return
+   * the deposit.
+   *
+   * The dispatch origin for this call must be _Signed_.
+   *
+   * Parameters:
+   * - `real`: The account that the proxy will make a call on behalf of.
+   * - `call_hash`: The hash of the call to be made by the `real` account.
    **/
   | { name: 'RemoveAnnouncement'; params: { real: MultiAddressLike; callHash: H256 } }
   /**
-   * See [`Pallet::reject_announcement`].
+   * Remove the given announcement of a delegate.
+   *
+   * May be called by a target (proxied) account to remove a call that one of their delegates
+   * (`delegate`) has announced they want to execute. The deposit is returned.
+   *
+   * The dispatch origin for this call must be _Signed_.
+   *
+   * Parameters:
+   * - `delegate`: The account that previously announced the call.
+   * - `call_hash`: The hash of the call to be made.
    **/
   | { name: 'RejectAnnouncement'; params: { delegate: MultiAddressLike; callHash: H256 } }
   /**
-   * See [`Pallet::proxy_announced`].
+   * Dispatch the given `call` from an account that the sender is authorized for through
+   * `add_proxy`.
+   *
+   * Removes any corresponding announcement(s).
+   *
+   * The dispatch origin for this call must be _Signed_.
+   *
+   * Parameters:
+   * - `real`: The account that the proxy will make a call on behalf of.
+   * - `force_proxy_type`: Specify the exact proxy type to be used and checked for this call.
+   * - `call`: The call to be made by the `real` account.
    **/
   | {
       name: 'ProxyAnnounced';
@@ -4990,11 +8910,60 @@ export type PalletProxyCallLike =
  **/
 export type PalletMultisigCall =
   /**
-   * See [`Pallet::as_multi_threshold_1`].
+   * Immediately dispatch a multi-signature call using a single approval from the caller.
+   *
+   * The dispatch origin for this call must be _Signed_.
+   *
+   * - `other_signatories`: The accounts (other than the sender) who are part of the
+   * multi-signature, but do not participate in the approval process.
+   * - `call`: The call to be executed.
+   *
+   * Result is equivalent to the dispatched result.
+   *
+   * ## Complexity
+   * O(Z + C) where Z is the length of the call and C its execution weight.
    **/
   | { name: 'AsMultiThreshold1'; params: { otherSignatories: Array<AccountId32>; call: KitchensinkRuntimeRuntimeCall } }
   /**
-   * See [`Pallet::as_multi`].
+   * Register approval for a dispatch to be made from a deterministic composite account if
+   * approved by a total of `threshold - 1` of `other_signatories`.
+   *
+   * If there are enough, then dispatch the call.
+   *
+   * Payment: `DepositBase` will be reserved if this is the first approval, plus
+   * `threshold` times `DepositFactor`. It is returned once this dispatch happens or
+   * is cancelled.
+   *
+   * The dispatch origin for this call must be _Signed_.
+   *
+   * - `threshold`: The total number of approvals for this dispatch before it is executed.
+   * - `other_signatories`: The accounts (other than the sender) who can approve this
+   * dispatch. May not be empty.
+   * - `maybe_timepoint`: If this is the first approval, then this must be `None`. If it is
+   * not the first approval, then it must be `Some`, with the timepoint (block number and
+   * transaction index) of the first approval transaction.
+   * - `call`: The call to be executed.
+   *
+   * NOTE: Unless this is the final approval, you will generally want to use
+   * `approve_as_multi` instead, since it only requires a hash of the call.
+   *
+   * Result is equivalent to the dispatched result if `threshold` is exactly `1`. Otherwise
+   * on success, result is `Ok` and the result from the interior call, if it was executed,
+   * may be found in the deposited `MultisigExecuted` event.
+   *
+   * ## Complexity
+   * - `O(S + Z + Call)`.
+   * - Up to one balance-reserve or unreserve operation.
+   * - One passthrough operation, one insert, both `O(S)` where `S` is the number of
+   * signatories. `S` is capped by `MaxSignatories`, with weight being proportional.
+   * - One call encode & hash, both of complexity `O(Z)` where `Z` is tx-len.
+   * - One encode & hash, both of complexity `O(S)`.
+   * - Up to one binary search and insert (`O(logS + S)`).
+   * - I/O: 1 read `O(S)`, up to 1 mutate `O(S)`. Up to one remove.
+   * - One event.
+   * - The weight of the `call`.
+   * - Storage: inserts one item, value size bounded by `MaxSignatories`, with a deposit
+   * taken for its lifetime of `DepositBase + threshold * DepositFactor`.
    **/
   | {
       name: 'AsMulti';
@@ -5007,7 +8976,36 @@ export type PalletMultisigCall =
       };
     }
   /**
-   * See [`Pallet::approve_as_multi`].
+   * Register approval for a dispatch to be made from a deterministic composite account if
+   * approved by a total of `threshold - 1` of `other_signatories`.
+   *
+   * Payment: `DepositBase` will be reserved if this is the first approval, plus
+   * `threshold` times `DepositFactor`. It is returned once this dispatch happens or
+   * is cancelled.
+   *
+   * The dispatch origin for this call must be _Signed_.
+   *
+   * - `threshold`: The total number of approvals for this dispatch before it is executed.
+   * - `other_signatories`: The accounts (other than the sender) who can approve this
+   * dispatch. May not be empty.
+   * - `maybe_timepoint`: If this is the first approval, then this must be `None`. If it is
+   * not the first approval, then it must be `Some`, with the timepoint (block number and
+   * transaction index) of the first approval transaction.
+   * - `call_hash`: The hash of the call to be executed.
+   *
+   * NOTE: If this is the final approval, you will want to use `as_multi` instead.
+   *
+   * ## Complexity
+   * - `O(S)`.
+   * - Up to one balance-reserve or unreserve operation.
+   * - One passthrough operation, one insert, both `O(S)` where `S` is the number of
+   * signatories. `S` is capped by `MaxSignatories`, with weight being proportional.
+   * - One encode & hash, both of complexity `O(S)`.
+   * - Up to one binary search and insert (`O(logS + S)`).
+   * - I/O: 1 read `O(S)`, up to 1 mutate `O(S)`. Up to one remove.
+   * - One event.
+   * - Storage: inserts one item, value size bounded by `MaxSignatories`, with a deposit
+   * taken for its lifetime of `DepositBase + threshold * DepositFactor`.
    **/
   | {
       name: 'ApproveAsMulti';
@@ -5020,7 +9018,27 @@ export type PalletMultisigCall =
       };
     }
   /**
-   * See [`Pallet::cancel_as_multi`].
+   * Cancel a pre-existing, on-going multisig transaction. Any deposit reserved previously
+   * for this operation will be unreserved on success.
+   *
+   * The dispatch origin for this call must be _Signed_.
+   *
+   * - `threshold`: The total number of approvals for this dispatch before it is executed.
+   * - `other_signatories`: The accounts (other than the sender) who can approve this
+   * dispatch. May not be empty.
+   * - `timepoint`: The timepoint (block number and transaction index) of the first approval
+   * transaction for this dispatch.
+   * - `call_hash`: The hash of the call to be executed.
+   *
+   * ## Complexity
+   * - `O(S)`.
+   * - Up to one balance-reserve or unreserve operation.
+   * - One passthrough operation, one insert, both `O(S)` where `S` is the number of
+   * signatories. `S` is capped by `MaxSignatories`, with weight being proportional.
+   * - One encode & hash, both of complexity `O(S)`.
+   * - One event.
+   * - I/O: 1 read `O(S)`, one remove.
+   * - Storage: removes one item.
    **/
   | {
       name: 'CancelAsMulti';
@@ -5034,14 +9052,63 @@ export type PalletMultisigCall =
 
 export type PalletMultisigCallLike =
   /**
-   * See [`Pallet::as_multi_threshold_1`].
+   * Immediately dispatch a multi-signature call using a single approval from the caller.
+   *
+   * The dispatch origin for this call must be _Signed_.
+   *
+   * - `other_signatories`: The accounts (other than the sender) who are part of the
+   * multi-signature, but do not participate in the approval process.
+   * - `call`: The call to be executed.
+   *
+   * Result is equivalent to the dispatched result.
+   *
+   * ## Complexity
+   * O(Z + C) where Z is the length of the call and C its execution weight.
    **/
   | {
       name: 'AsMultiThreshold1';
       params: { otherSignatories: Array<AccountId32Like>; call: KitchensinkRuntimeRuntimeCallLike };
     }
   /**
-   * See [`Pallet::as_multi`].
+   * Register approval for a dispatch to be made from a deterministic composite account if
+   * approved by a total of `threshold - 1` of `other_signatories`.
+   *
+   * If there are enough, then dispatch the call.
+   *
+   * Payment: `DepositBase` will be reserved if this is the first approval, plus
+   * `threshold` times `DepositFactor`. It is returned once this dispatch happens or
+   * is cancelled.
+   *
+   * The dispatch origin for this call must be _Signed_.
+   *
+   * - `threshold`: The total number of approvals for this dispatch before it is executed.
+   * - `other_signatories`: The accounts (other than the sender) who can approve this
+   * dispatch. May not be empty.
+   * - `maybe_timepoint`: If this is the first approval, then this must be `None`. If it is
+   * not the first approval, then it must be `Some`, with the timepoint (block number and
+   * transaction index) of the first approval transaction.
+   * - `call`: The call to be executed.
+   *
+   * NOTE: Unless this is the final approval, you will generally want to use
+   * `approve_as_multi` instead, since it only requires a hash of the call.
+   *
+   * Result is equivalent to the dispatched result if `threshold` is exactly `1`. Otherwise
+   * on success, result is `Ok` and the result from the interior call, if it was executed,
+   * may be found in the deposited `MultisigExecuted` event.
+   *
+   * ## Complexity
+   * - `O(S + Z + Call)`.
+   * - Up to one balance-reserve or unreserve operation.
+   * - One passthrough operation, one insert, both `O(S)` where `S` is the number of
+   * signatories. `S` is capped by `MaxSignatories`, with weight being proportional.
+   * - One call encode & hash, both of complexity `O(Z)` where `Z` is tx-len.
+   * - One encode & hash, both of complexity `O(S)`.
+   * - Up to one binary search and insert (`O(logS + S)`).
+   * - I/O: 1 read `O(S)`, up to 1 mutate `O(S)`. Up to one remove.
+   * - One event.
+   * - The weight of the `call`.
+   * - Storage: inserts one item, value size bounded by `MaxSignatories`, with a deposit
+   * taken for its lifetime of `DepositBase + threshold * DepositFactor`.
    **/
   | {
       name: 'AsMulti';
@@ -5054,7 +9121,36 @@ export type PalletMultisigCallLike =
       };
     }
   /**
-   * See [`Pallet::approve_as_multi`].
+   * Register approval for a dispatch to be made from a deterministic composite account if
+   * approved by a total of `threshold - 1` of `other_signatories`.
+   *
+   * Payment: `DepositBase` will be reserved if this is the first approval, plus
+   * `threshold` times `DepositFactor`. It is returned once this dispatch happens or
+   * is cancelled.
+   *
+   * The dispatch origin for this call must be _Signed_.
+   *
+   * - `threshold`: The total number of approvals for this dispatch before it is executed.
+   * - `other_signatories`: The accounts (other than the sender) who can approve this
+   * dispatch. May not be empty.
+   * - `maybe_timepoint`: If this is the first approval, then this must be `None`. If it is
+   * not the first approval, then it must be `Some`, with the timepoint (block number and
+   * transaction index) of the first approval transaction.
+   * - `call_hash`: The hash of the call to be executed.
+   *
+   * NOTE: If this is the final approval, you will want to use `as_multi` instead.
+   *
+   * ## Complexity
+   * - `O(S)`.
+   * - Up to one balance-reserve or unreserve operation.
+   * - One passthrough operation, one insert, both `O(S)` where `S` is the number of
+   * signatories. `S` is capped by `MaxSignatories`, with weight being proportional.
+   * - One encode & hash, both of complexity `O(S)`.
+   * - Up to one binary search and insert (`O(logS + S)`).
+   * - I/O: 1 read `O(S)`, up to 1 mutate `O(S)`. Up to one remove.
+   * - One event.
+   * - Storage: inserts one item, value size bounded by `MaxSignatories`, with a deposit
+   * taken for its lifetime of `DepositBase + threshold * DepositFactor`.
    **/
   | {
       name: 'ApproveAsMulti';
@@ -5067,7 +9163,27 @@ export type PalletMultisigCallLike =
       };
     }
   /**
-   * See [`Pallet::cancel_as_multi`].
+   * Cancel a pre-existing, on-going multisig transaction. Any deposit reserved previously
+   * for this operation will be unreserved on success.
+   *
+   * The dispatch origin for this call must be _Signed_.
+   *
+   * - `threshold`: The total number of approvals for this dispatch before it is executed.
+   * - `other_signatories`: The accounts (other than the sender) who can approve this
+   * dispatch. May not be empty.
+   * - `timepoint`: The timepoint (block number and transaction index) of the first approval
+   * transaction for this dispatch.
+   * - `call_hash`: The hash of the call to be executed.
+   *
+   * ## Complexity
+   * - `O(S)`.
+   * - Up to one balance-reserve or unreserve operation.
+   * - One passthrough operation, one insert, both `O(S)` where `S` is the number of
+   * signatories. `S` is capped by `MaxSignatories`, with weight being proportional.
+   * - One encode & hash, both of complexity `O(S)`.
+   * - One event.
+   * - I/O: 1 read `O(S)`, one remove.
+   * - Storage: removes one item.
    **/
   | {
       name: 'CancelAsMulti';
@@ -5084,77 +9200,229 @@ export type PalletMultisigCallLike =
  **/
 export type PalletBountiesCall =
   /**
-   * See [`Pallet::propose_bounty`].
+   * Propose a new bounty.
+   *
+   * The dispatch origin for this call must be _Signed_.
+   *
+   * Payment: `TipReportDepositBase` will be reserved from the origin account, as well as
+   * `DataDepositPerByte` for each byte in `reason`. It will be unreserved upon approval,
+   * or slashed when rejected.
+   *
+   * - `curator`: The curator account whom will manage this bounty.
+   * - `fee`: The curator fee.
+   * - `value`: The total payment amount of this bounty, curator fee included.
+   * - `description`: The description of this bounty.
    **/
   | { name: 'ProposeBounty'; params: { value: bigint; description: Bytes } }
   /**
-   * See [`Pallet::approve_bounty`].
+   * Approve a bounty proposal. At a later time, the bounty will be funded and become active
+   * and the original deposit will be returned.
+   *
+   * May only be called from `T::SpendOrigin`.
+   *
+   * ## Complexity
+   * - O(1).
    **/
   | { name: 'ApproveBounty'; params: { bountyId: number } }
   /**
-   * See [`Pallet::propose_curator`].
+   * Propose a curator to a funded bounty.
+   *
+   * May only be called from `T::SpendOrigin`.
+   *
+   * ## Complexity
+   * - O(1).
    **/
   | { name: 'ProposeCurator'; params: { bountyId: number; curator: MultiAddress; fee: bigint } }
   /**
-   * See [`Pallet::unassign_curator`].
+   * Unassign curator from a bounty.
+   *
+   * This function can only be called by the `RejectOrigin` a signed origin.
+   *
+   * If this function is called by the `RejectOrigin`, we assume that the curator is
+   * malicious or inactive. As a result, we will slash the curator when possible.
+   *
+   * If the origin is the curator, we take this as a sign they are unable to do their job and
+   * they willingly give up. We could slash them, but for now we allow them to recover their
+   * deposit and exit without issue. (We may want to change this if it is abused.)
+   *
+   * Finally, the origin can be anyone if and only if the curator is "inactive". This allows
+   * anyone in the community to call out that a curator is not doing their due diligence, and
+   * we should pick a new curator. In this case the curator should also be slashed.
+   *
+   * ## Complexity
+   * - O(1).
    **/
   | { name: 'UnassignCurator'; params: { bountyId: number } }
   /**
-   * See [`Pallet::accept_curator`].
+   * Accept the curator role for a bounty.
+   * A deposit will be reserved from curator and refund upon successful payout.
+   *
+   * May only be called from the curator.
+   *
+   * ## Complexity
+   * - O(1).
    **/
   | { name: 'AcceptCurator'; params: { bountyId: number } }
   /**
-   * See [`Pallet::award_bounty`].
+   * Award bounty to a beneficiary account. The beneficiary will be able to claim the funds
+   * after a delay.
+   *
+   * The dispatch origin for this call must be the curator of this bounty.
+   *
+   * - `bounty_id`: Bounty ID to award.
+   * - `beneficiary`: The beneficiary account whom will receive the payout.
+   *
+   * ## Complexity
+   * - O(1).
    **/
   | { name: 'AwardBounty'; params: { bountyId: number; beneficiary: MultiAddress } }
   /**
-   * See [`Pallet::claim_bounty`].
+   * Claim the payout from an awarded bounty after payout delay.
+   *
+   * The dispatch origin for this call must be the beneficiary of this bounty.
+   *
+   * - `bounty_id`: Bounty ID to claim.
+   *
+   * ## Complexity
+   * - O(1).
    **/
   | { name: 'ClaimBounty'; params: { bountyId: number } }
   /**
-   * See [`Pallet::close_bounty`].
+   * Cancel a proposed or active bounty. All the funds will be sent to treasury and
+   * the curator deposit will be unreserved if possible.
+   *
+   * Only `T::RejectOrigin` is able to cancel a bounty.
+   *
+   * - `bounty_id`: Bounty ID to cancel.
+   *
+   * ## Complexity
+   * - O(1).
    **/
   | { name: 'CloseBounty'; params: { bountyId: number } }
   /**
-   * See [`Pallet::extend_bounty_expiry`].
+   * Extend the expiry time of an active bounty.
+   *
+   * The dispatch origin for this call must be the curator of this bounty.
+   *
+   * - `bounty_id`: Bounty ID to extend.
+   * - `remark`: additional information.
+   *
+   * ## Complexity
+   * - O(1).
    **/
   | { name: 'ExtendBountyExpiry'; params: { bountyId: number; remark: Bytes } };
 
 export type PalletBountiesCallLike =
   /**
-   * See [`Pallet::propose_bounty`].
+   * Propose a new bounty.
+   *
+   * The dispatch origin for this call must be _Signed_.
+   *
+   * Payment: `TipReportDepositBase` will be reserved from the origin account, as well as
+   * `DataDepositPerByte` for each byte in `reason`. It will be unreserved upon approval,
+   * or slashed when rejected.
+   *
+   * - `curator`: The curator account whom will manage this bounty.
+   * - `fee`: The curator fee.
+   * - `value`: The total payment amount of this bounty, curator fee included.
+   * - `description`: The description of this bounty.
    **/
   | { name: 'ProposeBounty'; params: { value: bigint; description: BytesLike } }
   /**
-   * See [`Pallet::approve_bounty`].
+   * Approve a bounty proposal. At a later time, the bounty will be funded and become active
+   * and the original deposit will be returned.
+   *
+   * May only be called from `T::SpendOrigin`.
+   *
+   * ## Complexity
+   * - O(1).
    **/
   | { name: 'ApproveBounty'; params: { bountyId: number } }
   /**
-   * See [`Pallet::propose_curator`].
+   * Propose a curator to a funded bounty.
+   *
+   * May only be called from `T::SpendOrigin`.
+   *
+   * ## Complexity
+   * - O(1).
    **/
   | { name: 'ProposeCurator'; params: { bountyId: number; curator: MultiAddressLike; fee: bigint } }
   /**
-   * See [`Pallet::unassign_curator`].
+   * Unassign curator from a bounty.
+   *
+   * This function can only be called by the `RejectOrigin` a signed origin.
+   *
+   * If this function is called by the `RejectOrigin`, we assume that the curator is
+   * malicious or inactive. As a result, we will slash the curator when possible.
+   *
+   * If the origin is the curator, we take this as a sign they are unable to do their job and
+   * they willingly give up. We could slash them, but for now we allow them to recover their
+   * deposit and exit without issue. (We may want to change this if it is abused.)
+   *
+   * Finally, the origin can be anyone if and only if the curator is "inactive". This allows
+   * anyone in the community to call out that a curator is not doing their due diligence, and
+   * we should pick a new curator. In this case the curator should also be slashed.
+   *
+   * ## Complexity
+   * - O(1).
    **/
   | { name: 'UnassignCurator'; params: { bountyId: number } }
   /**
-   * See [`Pallet::accept_curator`].
+   * Accept the curator role for a bounty.
+   * A deposit will be reserved from curator and refund upon successful payout.
+   *
+   * May only be called from the curator.
+   *
+   * ## Complexity
+   * - O(1).
    **/
   | { name: 'AcceptCurator'; params: { bountyId: number } }
   /**
-   * See [`Pallet::award_bounty`].
+   * Award bounty to a beneficiary account. The beneficiary will be able to claim the funds
+   * after a delay.
+   *
+   * The dispatch origin for this call must be the curator of this bounty.
+   *
+   * - `bounty_id`: Bounty ID to award.
+   * - `beneficiary`: The beneficiary account whom will receive the payout.
+   *
+   * ## Complexity
+   * - O(1).
    **/
   | { name: 'AwardBounty'; params: { bountyId: number; beneficiary: MultiAddressLike } }
   /**
-   * See [`Pallet::claim_bounty`].
+   * Claim the payout from an awarded bounty after payout delay.
+   *
+   * The dispatch origin for this call must be the beneficiary of this bounty.
+   *
+   * - `bounty_id`: Bounty ID to claim.
+   *
+   * ## Complexity
+   * - O(1).
    **/
   | { name: 'ClaimBounty'; params: { bountyId: number } }
   /**
-   * See [`Pallet::close_bounty`].
+   * Cancel a proposed or active bounty. All the funds will be sent to treasury and
+   * the curator deposit will be unreserved if possible.
+   *
+   * Only `T::RejectOrigin` is able to cancel a bounty.
+   *
+   * - `bounty_id`: Bounty ID to cancel.
+   *
+   * ## Complexity
+   * - O(1).
    **/
   | { name: 'CloseBounty'; params: { bountyId: number } }
   /**
-   * See [`Pallet::extend_bounty_expiry`].
+   * Extend the expiry time of an active bounty.
+   *
+   * The dispatch origin for this call must be the curator of this bounty.
+   *
+   * - `bounty_id`: Bounty ID to extend.
+   * - `remark`: additional information.
+   *
+   * ## Complexity
+   * - O(1).
    **/
   | { name: 'ExtendBountyExpiry'; params: { bountyId: number; remark: BytesLike } };
 
@@ -5163,53 +9431,231 @@ export type PalletBountiesCallLike =
  **/
 export type PalletTipsCall =
   /**
-   * See [`Pallet::report_awesome`].
+   * Report something `reason` that deserves a tip and claim any eventual the finder's fee.
+   *
+   * The dispatch origin for this call must be _Signed_.
+   *
+   * Payment: `TipReportDepositBase` will be reserved from the origin account, as well as
+   * `DataDepositPerByte` for each byte in `reason`.
+   *
+   * - `reason`: The reason for, or the thing that deserves, the tip; generally this will be
+   * a UTF-8-encoded URL.
+   * - `who`: The account which should be credited for the tip.
+   *
+   * Emits `NewTip` if successful.
+   *
+   * ## Complexity
+   * - `O(R)` where `R` length of `reason`.
+   * - encoding and hashing of 'reason'
    **/
   | { name: 'ReportAwesome'; params: { reason: Bytes; who: MultiAddress } }
   /**
-   * See [`Pallet::retract_tip`].
+   * Retract a prior tip-report from `report_awesome`, and cancel the process of tipping.
+   *
+   * If successful, the original deposit will be unreserved.
+   *
+   * The dispatch origin for this call must be _Signed_ and the tip identified by `hash`
+   * must have been reported by the signing account through `report_awesome` (and not
+   * through `tip_new`).
+   *
+   * - `hash`: The identity of the open tip for which a tip value is declared. This is formed
+   * as the hash of the tuple of the original tip `reason` and the beneficiary account ID.
+   *
+   * Emits `TipRetracted` if successful.
+   *
+   * ## Complexity
+   * - `O(1)`
+   * - Depends on the length of `T::Hash` which is fixed.
    **/
   | { name: 'RetractTip'; params: { hash: H256 } }
   /**
-   * See [`Pallet::tip_new`].
+   * Give a tip for something new; no finder's fee will be taken.
+   *
+   * The dispatch origin for this call must be _Signed_ and the signing account must be a
+   * member of the `Tippers` set.
+   *
+   * - `reason`: The reason for, or the thing that deserves, the tip; generally this will be
+   * a UTF-8-encoded URL.
+   * - `who`: The account which should be credited for the tip.
+   * - `tip_value`: The amount of tip that the sender would like to give. The median tip
+   * value of active tippers will be given to the `who`.
+   *
+   * Emits `NewTip` if successful.
+   *
+   * ## Complexity
+   * - `O(R + T)` where `R` length of `reason`, `T` is the number of tippers.
+   * - `O(T)`: decoding `Tipper` vec of length `T`. `T` is charged as upper bound given by
+   * `ContainsLengthBound`. The actual cost depends on the implementation of
+   * `T::Tippers`.
+   * - `O(R)`: hashing and encoding of reason of length `R`
    **/
   | { name: 'TipNew'; params: { reason: Bytes; who: MultiAddress; tipValue: bigint } }
   /**
-   * See [`Pallet::tip`].
+   * Declare a tip value for an already-open tip.
+   *
+   * The dispatch origin for this call must be _Signed_ and the signing account must be a
+   * member of the `Tippers` set.
+   *
+   * - `hash`: The identity of the open tip for which a tip value is declared. This is formed
+   * as the hash of the tuple of the hash of the original tip `reason` and the beneficiary
+   * account ID.
+   * - `tip_value`: The amount of tip that the sender would like to give. The median tip
+   * value of active tippers will be given to the `who`.
+   *
+   * Emits `TipClosing` if the threshold of tippers has been reached and the countdown period
+   * has started.
+   *
+   * ## Complexity
+   * - `O(T)` where `T` is the number of tippers. decoding `Tipper` vec of length `T`, insert
+   * tip and check closing, `T` is charged as upper bound given by `ContainsLengthBound`.
+   * The actual cost depends on the implementation of `T::Tippers`.
+   *
+   * Actually weight could be lower as it depends on how many tips are in `OpenTip` but it
+   * is weighted as if almost full i.e of length `T-1`.
    **/
   | { name: 'Tip'; params: { hash: H256; tipValue: bigint } }
   /**
-   * See [`Pallet::close_tip`].
+   * Close and payout a tip.
+   *
+   * The dispatch origin for this call must be _Signed_.
+   *
+   * The tip identified by `hash` must have finished its countdown period.
+   *
+   * - `hash`: The identity of the open tip for which a tip value is declared. This is formed
+   * as the hash of the tuple of the original tip `reason` and the beneficiary account ID.
+   *
+   * ## Complexity
+   * - : `O(T)` where `T` is the number of tippers. decoding `Tipper` vec of length `T`. `T`
+   * is charged as upper bound given by `ContainsLengthBound`. The actual cost depends on
+   * the implementation of `T::Tippers`.
    **/
   | { name: 'CloseTip'; params: { hash: H256 } }
   /**
-   * See [`Pallet::slash_tip`].
+   * Remove and slash an already-open tip.
+   *
+   * May only be called from `T::RejectOrigin`.
+   *
+   * As a result, the finder is slashed and the deposits are lost.
+   *
+   * Emits `TipSlashed` if successful.
+   *
+   * ## Complexity
+   * - O(1).
    **/
   | { name: 'SlashTip'; params: { hash: H256 } };
 
 export type PalletTipsCallLike =
   /**
-   * See [`Pallet::report_awesome`].
+   * Report something `reason` that deserves a tip and claim any eventual the finder's fee.
+   *
+   * The dispatch origin for this call must be _Signed_.
+   *
+   * Payment: `TipReportDepositBase` will be reserved from the origin account, as well as
+   * `DataDepositPerByte` for each byte in `reason`.
+   *
+   * - `reason`: The reason for, or the thing that deserves, the tip; generally this will be
+   * a UTF-8-encoded URL.
+   * - `who`: The account which should be credited for the tip.
+   *
+   * Emits `NewTip` if successful.
+   *
+   * ## Complexity
+   * - `O(R)` where `R` length of `reason`.
+   * - encoding and hashing of 'reason'
    **/
   | { name: 'ReportAwesome'; params: { reason: BytesLike; who: MultiAddressLike } }
   /**
-   * See [`Pallet::retract_tip`].
+   * Retract a prior tip-report from `report_awesome`, and cancel the process of tipping.
+   *
+   * If successful, the original deposit will be unreserved.
+   *
+   * The dispatch origin for this call must be _Signed_ and the tip identified by `hash`
+   * must have been reported by the signing account through `report_awesome` (and not
+   * through `tip_new`).
+   *
+   * - `hash`: The identity of the open tip for which a tip value is declared. This is formed
+   * as the hash of the tuple of the original tip `reason` and the beneficiary account ID.
+   *
+   * Emits `TipRetracted` if successful.
+   *
+   * ## Complexity
+   * - `O(1)`
+   * - Depends on the length of `T::Hash` which is fixed.
    **/
   | { name: 'RetractTip'; params: { hash: H256 } }
   /**
-   * See [`Pallet::tip_new`].
+   * Give a tip for something new; no finder's fee will be taken.
+   *
+   * The dispatch origin for this call must be _Signed_ and the signing account must be a
+   * member of the `Tippers` set.
+   *
+   * - `reason`: The reason for, or the thing that deserves, the tip; generally this will be
+   * a UTF-8-encoded URL.
+   * - `who`: The account which should be credited for the tip.
+   * - `tip_value`: The amount of tip that the sender would like to give. The median tip
+   * value of active tippers will be given to the `who`.
+   *
+   * Emits `NewTip` if successful.
+   *
+   * ## Complexity
+   * - `O(R + T)` where `R` length of `reason`, `T` is the number of tippers.
+   * - `O(T)`: decoding `Tipper` vec of length `T`. `T` is charged as upper bound given by
+   * `ContainsLengthBound`. The actual cost depends on the implementation of
+   * `T::Tippers`.
+   * - `O(R)`: hashing and encoding of reason of length `R`
    **/
   | { name: 'TipNew'; params: { reason: BytesLike; who: MultiAddressLike; tipValue: bigint } }
   /**
-   * See [`Pallet::tip`].
+   * Declare a tip value for an already-open tip.
+   *
+   * The dispatch origin for this call must be _Signed_ and the signing account must be a
+   * member of the `Tippers` set.
+   *
+   * - `hash`: The identity of the open tip for which a tip value is declared. This is formed
+   * as the hash of the tuple of the hash of the original tip `reason` and the beneficiary
+   * account ID.
+   * - `tip_value`: The amount of tip that the sender would like to give. The median tip
+   * value of active tippers will be given to the `who`.
+   *
+   * Emits `TipClosing` if the threshold of tippers has been reached and the countdown period
+   * has started.
+   *
+   * ## Complexity
+   * - `O(T)` where `T` is the number of tippers. decoding `Tipper` vec of length `T`, insert
+   * tip and check closing, `T` is charged as upper bound given by `ContainsLengthBound`.
+   * The actual cost depends on the implementation of `T::Tippers`.
+   *
+   * Actually weight could be lower as it depends on how many tips are in `OpenTip` but it
+   * is weighted as if almost full i.e of length `T-1`.
    **/
   | { name: 'Tip'; params: { hash: H256; tipValue: bigint } }
   /**
-   * See [`Pallet::close_tip`].
+   * Close and payout a tip.
+   *
+   * The dispatch origin for this call must be _Signed_.
+   *
+   * The tip identified by `hash` must have finished its countdown period.
+   *
+   * - `hash`: The identity of the open tip for which a tip value is declared. This is formed
+   * as the hash of the tuple of the original tip `reason` and the beneficiary account ID.
+   *
+   * ## Complexity
+   * - : `O(T)` where `T` is the number of tippers. decoding `Tipper` vec of length `T`. `T`
+   * is charged as upper bound given by `ContainsLengthBound`. The actual cost depends on
+   * the implementation of `T::Tippers`.
    **/
   | { name: 'CloseTip'; params: { hash: H256 } }
   /**
-   * See [`Pallet::slash_tip`].
+   * Remove and slash an already-open tip.
+   *
+   * May only be called from `T::RejectOrigin`.
+   *
+   * As a result, the finder is slashed and the deposits are lost.
+   *
+   * Emits `TipSlashed` if successful.
+   *
+   * ## Complexity
+   * - O(1).
    **/
   | { name: 'SlashTip'; params: { hash: H256 } };
 
@@ -5218,94 +9664,373 @@ export type PalletTipsCallLike =
  **/
 export type PalletAssetsCall =
   /**
-   * See [`Pallet::create`].
+   * Issue a new class of fungible assets from a public origin.
+   *
+   * This new asset class has no assets initially and its owner is the origin.
+   *
+   * The origin must conform to the configured `CreateOrigin` and have sufficient funds free.
+   *
+   * Funds of sender are reserved by `AssetDeposit`.
+   *
+   * Parameters:
+   * - `id`: The identifier of the new asset. This must not be currently in use to identify
+   * an existing asset.
+   * - `admin`: The admin of this class of assets. The admin is the initial address of each
+   * member of the asset class's admin team.
+   * - `min_balance`: The minimum balance of this new asset that any single account must
+   * have. If an account's balance is reduced below this, then it collapses to zero.
+   *
+   * Emits `Created` event when successful.
+   *
+   * Weight: `O(1)`
    **/
   | { name: 'Create'; params: { id: number; admin: MultiAddress; minBalance: bigint } }
   /**
-   * See [`Pallet::force_create`].
+   * Issue a new class of fungible assets from a privileged origin.
+   *
+   * This new asset class has no assets initially.
+   *
+   * The origin must conform to `ForceOrigin`.
+   *
+   * Unlike `create`, no funds are reserved.
+   *
+   * - `id`: The identifier of the new asset. This must not be currently in use to identify
+   * an existing asset.
+   * - `owner`: The owner of this class of assets. The owner has full superuser permissions
+   * over this asset, but may later change and configure the permissions using
+   * `transfer_ownership` and `set_team`.
+   * - `min_balance`: The minimum balance of this new asset that any single account must
+   * have. If an account's balance is reduced below this, then it collapses to zero.
+   *
+   * Emits `ForceCreated` event when successful.
+   *
+   * Weight: `O(1)`
    **/
   | { name: 'ForceCreate'; params: { id: number; owner: MultiAddress; isSufficient: boolean; minBalance: bigint } }
   /**
-   * See [`Pallet::start_destroy`].
+   * Start the process of destroying a fungible asset class.
+   *
+   * `start_destroy` is the first in a series of extrinsics that should be called, to allow
+   * destruction of an asset class.
+   *
+   * The origin must conform to `ForceOrigin` or must be `Signed` by the asset's `owner`.
+   *
+   * - `id`: The identifier of the asset to be destroyed. This must identify an existing
+   * asset.
+   *
+   * The asset class must be frozen before calling `start_destroy`.
    **/
   | { name: 'StartDestroy'; params: { id: number } }
   /**
-   * See [`Pallet::destroy_accounts`].
+   * Destroy all accounts associated with a given asset.
+   *
+   * `destroy_accounts` should only be called after `start_destroy` has been called, and the
+   * asset is in a `Destroying` state.
+   *
+   * Due to weight restrictions, this function may need to be called multiple times to fully
+   * destroy all accounts. It will destroy `RemoveItemsLimit` accounts at a time.
+   *
+   * - `id`: The identifier of the asset to be destroyed. This must identify an existing
+   * asset.
+   *
+   * Each call emits the `Event::DestroyedAccounts` event.
    **/
   | { name: 'DestroyAccounts'; params: { id: number } }
   /**
-   * See [`Pallet::destroy_approvals`].
+   * Destroy all approvals associated with a given asset up to the max (T::RemoveItemsLimit).
+   *
+   * `destroy_approvals` should only be called after `start_destroy` has been called, and the
+   * asset is in a `Destroying` state.
+   *
+   * Due to weight restrictions, this function may need to be called multiple times to fully
+   * destroy all approvals. It will destroy `RemoveItemsLimit` approvals at a time.
+   *
+   * - `id`: The identifier of the asset to be destroyed. This must identify an existing
+   * asset.
+   *
+   * Each call emits the `Event::DestroyedApprovals` event.
    **/
   | { name: 'DestroyApprovals'; params: { id: number } }
   /**
-   * See [`Pallet::finish_destroy`].
+   * Complete destroying asset and unreserve currency.
+   *
+   * `finish_destroy` should only be called after `start_destroy` has been called, and the
+   * asset is in a `Destroying` state. All accounts or approvals should be destroyed before
+   * hand.
+   *
+   * - `id`: The identifier of the asset to be destroyed. This must identify an existing
+   * asset.
+   *
+   * Each successful call emits the `Event::Destroyed` event.
    **/
   | { name: 'FinishDestroy'; params: { id: number } }
   /**
-   * See [`Pallet::mint`].
+   * Mint assets of a particular class.
+   *
+   * The origin must be Signed and the sender must be the Issuer of the asset `id`.
+   *
+   * - `id`: The identifier of the asset to have some amount minted.
+   * - `beneficiary`: The account to be credited with the minted assets.
+   * - `amount`: The amount of the asset to be minted.
+   *
+   * Emits `Issued` event when successful.
+   *
+   * Weight: `O(1)`
+   * Modes: Pre-existing balance of `beneficiary`; Account pre-existence of `beneficiary`.
    **/
   | { name: 'Mint'; params: { id: number; beneficiary: MultiAddress; amount: bigint } }
   /**
-   * See [`Pallet::burn`].
+   * Reduce the balance of `who` by as much as possible up to `amount` assets of `id`.
+   *
+   * Origin must be Signed and the sender should be the Manager of the asset `id`.
+   *
+   * Bails with `NoAccount` if the `who` is already dead.
+   *
+   * - `id`: The identifier of the asset to have some amount burned.
+   * - `who`: The account to be debited from.
+   * - `amount`: The maximum amount by which `who`'s balance should be reduced.
+   *
+   * Emits `Burned` with the actual amount burned. If this takes the balance to below the
+   * minimum for the asset, then the amount burned is increased to take it to zero.
+   *
+   * Weight: `O(1)`
+   * Modes: Post-existence of `who`; Pre & post Zombie-status of `who`.
    **/
   | { name: 'Burn'; params: { id: number; who: MultiAddress; amount: bigint } }
   /**
-   * See [`Pallet::transfer`].
+   * Move some assets from the sender account to another.
+   *
+   * Origin must be Signed.
+   *
+   * - `id`: The identifier of the asset to have some amount transferred.
+   * - `target`: The account to be credited.
+   * - `amount`: The amount by which the sender's balance of assets should be reduced and
+   * `target`'s balance increased. The amount actually transferred may be slightly greater in
+   * the case that the transfer would otherwise take the sender balance above zero but below
+   * the minimum balance. Must be greater than zero.
+   *
+   * Emits `Transferred` with the actual amount transferred. If this takes the source balance
+   * to below the minimum for the asset, then the amount transferred is increased to take it
+   * to zero.
+   *
+   * Weight: `O(1)`
+   * Modes: Pre-existence of `target`; Post-existence of sender; Account pre-existence of
+   * `target`.
    **/
   | { name: 'Transfer'; params: { id: number; target: MultiAddress; amount: bigint } }
   /**
-   * See [`Pallet::transfer_keep_alive`].
+   * Move some assets from the sender account to another, keeping the sender account alive.
+   *
+   * Origin must be Signed.
+   *
+   * - `id`: The identifier of the asset to have some amount transferred.
+   * - `target`: The account to be credited.
+   * - `amount`: The amount by which the sender's balance of assets should be reduced and
+   * `target`'s balance increased. The amount actually transferred may be slightly greater in
+   * the case that the transfer would otherwise take the sender balance above zero but below
+   * the minimum balance. Must be greater than zero.
+   *
+   * Emits `Transferred` with the actual amount transferred. If this takes the source balance
+   * to below the minimum for the asset, then the amount transferred is increased to take it
+   * to zero.
+   *
+   * Weight: `O(1)`
+   * Modes: Pre-existence of `target`; Post-existence of sender; Account pre-existence of
+   * `target`.
    **/
   | { name: 'TransferKeepAlive'; params: { id: number; target: MultiAddress; amount: bigint } }
   /**
-   * See [`Pallet::force_transfer`].
+   * Move some assets from one account to another.
+   *
+   * Origin must be Signed and the sender should be the Admin of the asset `id`.
+   *
+   * - `id`: The identifier of the asset to have some amount transferred.
+   * - `source`: The account to be debited.
+   * - `dest`: The account to be credited.
+   * - `amount`: The amount by which the `source`'s balance of assets should be reduced and
+   * `dest`'s balance increased. The amount actually transferred may be slightly greater in
+   * the case that the transfer would otherwise take the `source` balance above zero but
+   * below the minimum balance. Must be greater than zero.
+   *
+   * Emits `Transferred` with the actual amount transferred. If this takes the source balance
+   * to below the minimum for the asset, then the amount transferred is increased to take it
+   * to zero.
+   *
+   * Weight: `O(1)`
+   * Modes: Pre-existence of `dest`; Post-existence of `source`; Account pre-existence of
+   * `dest`.
    **/
   | { name: 'ForceTransfer'; params: { id: number; source: MultiAddress; dest: MultiAddress; amount: bigint } }
   /**
-   * See [`Pallet::freeze`].
+   * Disallow further unprivileged transfers of an asset `id` from an account `who`. `who`
+   * must already exist as an entry in `Account`s of the asset. If you want to freeze an
+   * account that does not have an entry, use `touch_other` first.
+   *
+   * Origin must be Signed and the sender should be the Freezer of the asset `id`.
+   *
+   * - `id`: The identifier of the asset to be frozen.
+   * - `who`: The account to be frozen.
+   *
+   * Emits `Frozen`.
+   *
+   * Weight: `O(1)`
    **/
   | { name: 'Freeze'; params: { id: number; who: MultiAddress } }
   /**
-   * See [`Pallet::thaw`].
+   * Allow unprivileged transfers to and from an account again.
+   *
+   * Origin must be Signed and the sender should be the Admin of the asset `id`.
+   *
+   * - `id`: The identifier of the asset to be frozen.
+   * - `who`: The account to be unfrozen.
+   *
+   * Emits `Thawed`.
+   *
+   * Weight: `O(1)`
    **/
   | { name: 'Thaw'; params: { id: number; who: MultiAddress } }
   /**
-   * See [`Pallet::freeze_asset`].
+   * Disallow further unprivileged transfers for the asset class.
+   *
+   * Origin must be Signed and the sender should be the Freezer of the asset `id`.
+   *
+   * - `id`: The identifier of the asset to be frozen.
+   *
+   * Emits `Frozen`.
+   *
+   * Weight: `O(1)`
    **/
   | { name: 'FreezeAsset'; params: { id: number } }
   /**
-   * See [`Pallet::thaw_asset`].
+   * Allow unprivileged transfers for the asset again.
+   *
+   * Origin must be Signed and the sender should be the Admin of the asset `id`.
+   *
+   * - `id`: The identifier of the asset to be thawed.
+   *
+   * Emits `Thawed`.
+   *
+   * Weight: `O(1)`
    **/
   | { name: 'ThawAsset'; params: { id: number } }
   /**
-   * See [`Pallet::transfer_ownership`].
+   * Change the Owner of an asset.
+   *
+   * Origin must be Signed and the sender should be the Owner of the asset `id`.
+   *
+   * - `id`: The identifier of the asset.
+   * - `owner`: The new Owner of this asset.
+   *
+   * Emits `OwnerChanged`.
+   *
+   * Weight: `O(1)`
    **/
   | { name: 'TransferOwnership'; params: { id: number; owner: MultiAddress } }
   /**
-   * See [`Pallet::set_team`].
+   * Change the Issuer, Admin and Freezer of an asset.
+   *
+   * Origin must be Signed and the sender should be the Owner of the asset `id`.
+   *
+   * - `id`: The identifier of the asset to be frozen.
+   * - `issuer`: The new Issuer of this asset.
+   * - `admin`: The new Admin of this asset.
+   * - `freezer`: The new Freezer of this asset.
+   *
+   * Emits `TeamChanged`.
+   *
+   * Weight: `O(1)`
    **/
   | { name: 'SetTeam'; params: { id: number; issuer: MultiAddress; admin: MultiAddress; freezer: MultiAddress } }
   /**
-   * See [`Pallet::set_metadata`].
+   * Set the metadata for an asset.
+   *
+   * Origin must be Signed and the sender should be the Owner of the asset `id`.
+   *
+   * Funds of sender are reserved according to the formula:
+   * `MetadataDepositBase + MetadataDepositPerByte * (name.len + symbol.len)` taking into
+   * account any already reserved funds.
+   *
+   * - `id`: The identifier of the asset to update.
+   * - `name`: The user friendly name of this asset. Limited in length by `StringLimit`.
+   * - `symbol`: The exchange symbol for this asset. Limited in length by `StringLimit`.
+   * - `decimals`: The number of decimals this asset uses to represent one unit.
+   *
+   * Emits `MetadataSet`.
+   *
+   * Weight: `O(1)`
    **/
   | { name: 'SetMetadata'; params: { id: number; name: Bytes; symbol: Bytes; decimals: number } }
   /**
-   * See [`Pallet::clear_metadata`].
+   * Clear the metadata for an asset.
+   *
+   * Origin must be Signed and the sender should be the Owner of the asset `id`.
+   *
+   * Any deposit is freed for the asset owner.
+   *
+   * - `id`: The identifier of the asset to clear.
+   *
+   * Emits `MetadataCleared`.
+   *
+   * Weight: `O(1)`
    **/
   | { name: 'ClearMetadata'; params: { id: number } }
   /**
-   * See [`Pallet::force_set_metadata`].
+   * Force the metadata for an asset to some value.
+   *
+   * Origin must be ForceOrigin.
+   *
+   * Any deposit is left alone.
+   *
+   * - `id`: The identifier of the asset to update.
+   * - `name`: The user friendly name of this asset. Limited in length by `StringLimit`.
+   * - `symbol`: The exchange symbol for this asset. Limited in length by `StringLimit`.
+   * - `decimals`: The number of decimals this asset uses to represent one unit.
+   *
+   * Emits `MetadataSet`.
+   *
+   * Weight: `O(N + S)` where N and S are the length of the name and symbol respectively.
    **/
   | {
       name: 'ForceSetMetadata';
       params: { id: number; name: Bytes; symbol: Bytes; decimals: number; isFrozen: boolean };
     }
   /**
-   * See [`Pallet::force_clear_metadata`].
+   * Clear the metadata for an asset.
+   *
+   * Origin must be ForceOrigin.
+   *
+   * Any deposit is returned.
+   *
+   * - `id`: The identifier of the asset to clear.
+   *
+   * Emits `MetadataCleared`.
+   *
+   * Weight: `O(1)`
    **/
   | { name: 'ForceClearMetadata'; params: { id: number } }
   /**
-   * See [`Pallet::force_asset_status`].
+   * Alter the attributes of a given asset.
+   *
+   * Origin must be `ForceOrigin`.
+   *
+   * - `id`: The identifier of the asset.
+   * - `owner`: The new Owner of this asset.
+   * - `issuer`: The new Issuer of this asset.
+   * - `admin`: The new Admin of this asset.
+   * - `freezer`: The new Freezer of this asset.
+   * - `min_balance`: The minimum balance of this new asset that any single account must
+   * have. If an account's balance is reduced below this, then it collapses to zero.
+   * - `is_sufficient`: Whether a non-zero balance of this asset is deposit of sufficient
+   * value to account for the state bloat associated with its balance storage. If set to
+   * `true`, then non-zero balances may be stored without a `consumer` reference (and thus
+   * an ED in the Balances pallet or whatever else is used to control user-account state
+   * growth).
+   * - `is_frozen`: Whether this asset class is frozen except for permissioned/admin
+   * instructions.
+   *
+   * Emits `AssetStatusChanged` with the identity of the asset.
+   *
+   * Weight: `O(1)`
    **/
   | {
       name: 'ForceAssetStatus';
@@ -5321,139 +10046,533 @@ export type PalletAssetsCall =
       };
     }
   /**
-   * See [`Pallet::approve_transfer`].
+   * Approve an amount of asset for transfer by a delegated third-party account.
+   *
+   * Origin must be Signed.
+   *
+   * Ensures that `ApprovalDeposit` worth of `Currency` is reserved from signing account
+   * for the purpose of holding the approval. If some non-zero amount of assets is already
+   * approved from signing account to `delegate`, then it is topped up or unreserved to
+   * meet the right value.
+   *
+   * NOTE: The signing account does not need to own `amount` of assets at the point of
+   * making this call.
+   *
+   * - `id`: The identifier of the asset.
+   * - `delegate`: The account to delegate permission to transfer asset.
+   * - `amount`: The amount of asset that may be transferred by `delegate`. If there is
+   * already an approval in place, then this acts additively.
+   *
+   * Emits `ApprovedTransfer` on success.
+   *
+   * Weight: `O(1)`
    **/
   | { name: 'ApproveTransfer'; params: { id: number; delegate: MultiAddress; amount: bigint } }
   /**
-   * See [`Pallet::cancel_approval`].
+   * Cancel all of some asset approved for delegated transfer by a third-party account.
+   *
+   * Origin must be Signed and there must be an approval in place between signer and
+   * `delegate`.
+   *
+   * Unreserves any deposit previously reserved by `approve_transfer` for the approval.
+   *
+   * - `id`: The identifier of the asset.
+   * - `delegate`: The account delegated permission to transfer asset.
+   *
+   * Emits `ApprovalCancelled` on success.
+   *
+   * Weight: `O(1)`
    **/
   | { name: 'CancelApproval'; params: { id: number; delegate: MultiAddress } }
   /**
-   * See [`Pallet::force_cancel_approval`].
+   * Cancel all of some asset approved for delegated transfer by a third-party account.
+   *
+   * Origin must be either ForceOrigin or Signed origin with the signer being the Admin
+   * account of the asset `id`.
+   *
+   * Unreserves any deposit previously reserved by `approve_transfer` for the approval.
+   *
+   * - `id`: The identifier of the asset.
+   * - `delegate`: The account delegated permission to transfer asset.
+   *
+   * Emits `ApprovalCancelled` on success.
+   *
+   * Weight: `O(1)`
    **/
   | { name: 'ForceCancelApproval'; params: { id: number; owner: MultiAddress; delegate: MultiAddress } }
   /**
-   * See [`Pallet::transfer_approved`].
+   * Transfer some asset balance from a previously delegated account to some third-party
+   * account.
+   *
+   * Origin must be Signed and there must be an approval in place by the `owner` to the
+   * signer.
+   *
+   * If the entire amount approved for transfer is transferred, then any deposit previously
+   * reserved by `approve_transfer` is unreserved.
+   *
+   * - `id`: The identifier of the asset.
+   * - `owner`: The account which previously approved for a transfer of at least `amount` and
+   * from which the asset balance will be withdrawn.
+   * - `destination`: The account to which the asset balance of `amount` will be transferred.
+   * - `amount`: The amount of assets to transfer.
+   *
+   * Emits `TransferredApproved` on success.
+   *
+   * Weight: `O(1)`
    **/
   | { name: 'TransferApproved'; params: { id: number; owner: MultiAddress; destination: MultiAddress; amount: bigint } }
   /**
-   * See [`Pallet::touch`].
+   * Create an asset account for non-provider assets.
+   *
+   * A deposit will be taken from the signer account.
+   *
+   * - `origin`: Must be Signed; the signer account must have sufficient funds for a deposit
+   * to be taken.
+   * - `id`: The identifier of the asset for the account to be created.
+   *
+   * Emits `Touched` event when successful.
    **/
   | { name: 'Touch'; params: { id: number } }
   /**
-   * See [`Pallet::refund`].
+   * Return the deposit (if any) of an asset account or a consumer reference (if any) of an
+   * account.
+   *
+   * The origin must be Signed.
+   *
+   * - `id`: The identifier of the asset for which the caller would like the deposit
+   * refunded.
+   * - `allow_burn`: If `true` then assets may be destroyed in order to complete the refund.
+   *
+   * Emits `Refunded` event when successful.
    **/
   | { name: 'Refund'; params: { id: number; allowBurn: boolean } }
   /**
-   * See [`Pallet::set_min_balance`].
+   * Sets the minimum balance of an asset.
+   *
+   * Only works if there aren't any accounts that are holding the asset or if
+   * the new value of `min_balance` is less than the old one.
+   *
+   * Origin must be Signed and the sender has to be the Owner of the
+   * asset `id`.
+   *
+   * - `id`: The identifier of the asset.
+   * - `min_balance`: The new value of `min_balance`.
+   *
+   * Emits `AssetMinBalanceChanged` event when successful.
    **/
   | { name: 'SetMinBalance'; params: { id: number; minBalance: bigint } }
   /**
-   * See [`Pallet::touch_other`].
+   * Create an asset account for `who`.
+   *
+   * A deposit will be taken from the signer account.
+   *
+   * - `origin`: Must be Signed by `Freezer` or `Admin` of the asset `id`; the signer account
+   * must have sufficient funds for a deposit to be taken.
+   * - `id`: The identifier of the asset for the account to be created.
+   * - `who`: The account to be created.
+   *
+   * Emits `Touched` event when successful.
    **/
   | { name: 'TouchOther'; params: { id: number; who: MultiAddress } }
   /**
-   * See [`Pallet::refund_other`].
+   * Return the deposit (if any) of a target asset account. Useful if you are the depositor.
+   *
+   * The origin must be Signed and either the account owner, depositor, or asset `Admin`. In
+   * order to burn a non-zero balance of the asset, the caller must be the account and should
+   * use `refund`.
+   *
+   * - `id`: The identifier of the asset for the account holding a deposit.
+   * - `who`: The account to refund.
+   *
+   * Emits `Refunded` event when successful.
    **/
   | { name: 'RefundOther'; params: { id: number; who: MultiAddress } }
   /**
-   * See [`Pallet::block`].
+   * Disallow further unprivileged transfers of an asset `id` to and from an account `who`.
+   *
+   * Origin must be Signed and the sender should be the Freezer of the asset `id`.
+   *
+   * - `id`: The identifier of the account's asset.
+   * - `who`: The account to be unblocked.
+   *
+   * Emits `Blocked`.
+   *
+   * Weight: `O(1)`
    **/
   | { name: 'Block'; params: { id: number; who: MultiAddress } };
 
 export type PalletAssetsCallLike =
   /**
-   * See [`Pallet::create`].
+   * Issue a new class of fungible assets from a public origin.
+   *
+   * This new asset class has no assets initially and its owner is the origin.
+   *
+   * The origin must conform to the configured `CreateOrigin` and have sufficient funds free.
+   *
+   * Funds of sender are reserved by `AssetDeposit`.
+   *
+   * Parameters:
+   * - `id`: The identifier of the new asset. This must not be currently in use to identify
+   * an existing asset.
+   * - `admin`: The admin of this class of assets. The admin is the initial address of each
+   * member of the asset class's admin team.
+   * - `min_balance`: The minimum balance of this new asset that any single account must
+   * have. If an account's balance is reduced below this, then it collapses to zero.
+   *
+   * Emits `Created` event when successful.
+   *
+   * Weight: `O(1)`
    **/
   | { name: 'Create'; params: { id: number; admin: MultiAddressLike; minBalance: bigint } }
   /**
-   * See [`Pallet::force_create`].
+   * Issue a new class of fungible assets from a privileged origin.
+   *
+   * This new asset class has no assets initially.
+   *
+   * The origin must conform to `ForceOrigin`.
+   *
+   * Unlike `create`, no funds are reserved.
+   *
+   * - `id`: The identifier of the new asset. This must not be currently in use to identify
+   * an existing asset.
+   * - `owner`: The owner of this class of assets. The owner has full superuser permissions
+   * over this asset, but may later change and configure the permissions using
+   * `transfer_ownership` and `set_team`.
+   * - `min_balance`: The minimum balance of this new asset that any single account must
+   * have. If an account's balance is reduced below this, then it collapses to zero.
+   *
+   * Emits `ForceCreated` event when successful.
+   *
+   * Weight: `O(1)`
    **/
   | { name: 'ForceCreate'; params: { id: number; owner: MultiAddressLike; isSufficient: boolean; minBalance: bigint } }
   /**
-   * See [`Pallet::start_destroy`].
+   * Start the process of destroying a fungible asset class.
+   *
+   * `start_destroy` is the first in a series of extrinsics that should be called, to allow
+   * destruction of an asset class.
+   *
+   * The origin must conform to `ForceOrigin` or must be `Signed` by the asset's `owner`.
+   *
+   * - `id`: The identifier of the asset to be destroyed. This must identify an existing
+   * asset.
+   *
+   * The asset class must be frozen before calling `start_destroy`.
    **/
   | { name: 'StartDestroy'; params: { id: number } }
   /**
-   * See [`Pallet::destroy_accounts`].
+   * Destroy all accounts associated with a given asset.
+   *
+   * `destroy_accounts` should only be called after `start_destroy` has been called, and the
+   * asset is in a `Destroying` state.
+   *
+   * Due to weight restrictions, this function may need to be called multiple times to fully
+   * destroy all accounts. It will destroy `RemoveItemsLimit` accounts at a time.
+   *
+   * - `id`: The identifier of the asset to be destroyed. This must identify an existing
+   * asset.
+   *
+   * Each call emits the `Event::DestroyedAccounts` event.
    **/
   | { name: 'DestroyAccounts'; params: { id: number } }
   /**
-   * See [`Pallet::destroy_approvals`].
+   * Destroy all approvals associated with a given asset up to the max (T::RemoveItemsLimit).
+   *
+   * `destroy_approvals` should only be called after `start_destroy` has been called, and the
+   * asset is in a `Destroying` state.
+   *
+   * Due to weight restrictions, this function may need to be called multiple times to fully
+   * destroy all approvals. It will destroy `RemoveItemsLimit` approvals at a time.
+   *
+   * - `id`: The identifier of the asset to be destroyed. This must identify an existing
+   * asset.
+   *
+   * Each call emits the `Event::DestroyedApprovals` event.
    **/
   | { name: 'DestroyApprovals'; params: { id: number } }
   /**
-   * See [`Pallet::finish_destroy`].
+   * Complete destroying asset and unreserve currency.
+   *
+   * `finish_destroy` should only be called after `start_destroy` has been called, and the
+   * asset is in a `Destroying` state. All accounts or approvals should be destroyed before
+   * hand.
+   *
+   * - `id`: The identifier of the asset to be destroyed. This must identify an existing
+   * asset.
+   *
+   * Each successful call emits the `Event::Destroyed` event.
    **/
   | { name: 'FinishDestroy'; params: { id: number } }
   /**
-   * See [`Pallet::mint`].
+   * Mint assets of a particular class.
+   *
+   * The origin must be Signed and the sender must be the Issuer of the asset `id`.
+   *
+   * - `id`: The identifier of the asset to have some amount minted.
+   * - `beneficiary`: The account to be credited with the minted assets.
+   * - `amount`: The amount of the asset to be minted.
+   *
+   * Emits `Issued` event when successful.
+   *
+   * Weight: `O(1)`
+   * Modes: Pre-existing balance of `beneficiary`; Account pre-existence of `beneficiary`.
    **/
   | { name: 'Mint'; params: { id: number; beneficiary: MultiAddressLike; amount: bigint } }
   /**
-   * See [`Pallet::burn`].
+   * Reduce the balance of `who` by as much as possible up to `amount` assets of `id`.
+   *
+   * Origin must be Signed and the sender should be the Manager of the asset `id`.
+   *
+   * Bails with `NoAccount` if the `who` is already dead.
+   *
+   * - `id`: The identifier of the asset to have some amount burned.
+   * - `who`: The account to be debited from.
+   * - `amount`: The maximum amount by which `who`'s balance should be reduced.
+   *
+   * Emits `Burned` with the actual amount burned. If this takes the balance to below the
+   * minimum for the asset, then the amount burned is increased to take it to zero.
+   *
+   * Weight: `O(1)`
+   * Modes: Post-existence of `who`; Pre & post Zombie-status of `who`.
    **/
   | { name: 'Burn'; params: { id: number; who: MultiAddressLike; amount: bigint } }
   /**
-   * See [`Pallet::transfer`].
+   * Move some assets from the sender account to another.
+   *
+   * Origin must be Signed.
+   *
+   * - `id`: The identifier of the asset to have some amount transferred.
+   * - `target`: The account to be credited.
+   * - `amount`: The amount by which the sender's balance of assets should be reduced and
+   * `target`'s balance increased. The amount actually transferred may be slightly greater in
+   * the case that the transfer would otherwise take the sender balance above zero but below
+   * the minimum balance. Must be greater than zero.
+   *
+   * Emits `Transferred` with the actual amount transferred. If this takes the source balance
+   * to below the minimum for the asset, then the amount transferred is increased to take it
+   * to zero.
+   *
+   * Weight: `O(1)`
+   * Modes: Pre-existence of `target`; Post-existence of sender; Account pre-existence of
+   * `target`.
    **/
   | { name: 'Transfer'; params: { id: number; target: MultiAddressLike; amount: bigint } }
   /**
-   * See [`Pallet::transfer_keep_alive`].
+   * Move some assets from the sender account to another, keeping the sender account alive.
+   *
+   * Origin must be Signed.
+   *
+   * - `id`: The identifier of the asset to have some amount transferred.
+   * - `target`: The account to be credited.
+   * - `amount`: The amount by which the sender's balance of assets should be reduced and
+   * `target`'s balance increased. The amount actually transferred may be slightly greater in
+   * the case that the transfer would otherwise take the sender balance above zero but below
+   * the minimum balance. Must be greater than zero.
+   *
+   * Emits `Transferred` with the actual amount transferred. If this takes the source balance
+   * to below the minimum for the asset, then the amount transferred is increased to take it
+   * to zero.
+   *
+   * Weight: `O(1)`
+   * Modes: Pre-existence of `target`; Post-existence of sender; Account pre-existence of
+   * `target`.
    **/
   | { name: 'TransferKeepAlive'; params: { id: number; target: MultiAddressLike; amount: bigint } }
   /**
-   * See [`Pallet::force_transfer`].
+   * Move some assets from one account to another.
+   *
+   * Origin must be Signed and the sender should be the Admin of the asset `id`.
+   *
+   * - `id`: The identifier of the asset to have some amount transferred.
+   * - `source`: The account to be debited.
+   * - `dest`: The account to be credited.
+   * - `amount`: The amount by which the `source`'s balance of assets should be reduced and
+   * `dest`'s balance increased. The amount actually transferred may be slightly greater in
+   * the case that the transfer would otherwise take the `source` balance above zero but
+   * below the minimum balance. Must be greater than zero.
+   *
+   * Emits `Transferred` with the actual amount transferred. If this takes the source balance
+   * to below the minimum for the asset, then the amount transferred is increased to take it
+   * to zero.
+   *
+   * Weight: `O(1)`
+   * Modes: Pre-existence of `dest`; Post-existence of `source`; Account pre-existence of
+   * `dest`.
    **/
   | { name: 'ForceTransfer'; params: { id: number; source: MultiAddressLike; dest: MultiAddressLike; amount: bigint } }
   /**
-   * See [`Pallet::freeze`].
+   * Disallow further unprivileged transfers of an asset `id` from an account `who`. `who`
+   * must already exist as an entry in `Account`s of the asset. If you want to freeze an
+   * account that does not have an entry, use `touch_other` first.
+   *
+   * Origin must be Signed and the sender should be the Freezer of the asset `id`.
+   *
+   * - `id`: The identifier of the asset to be frozen.
+   * - `who`: The account to be frozen.
+   *
+   * Emits `Frozen`.
+   *
+   * Weight: `O(1)`
    **/
   | { name: 'Freeze'; params: { id: number; who: MultiAddressLike } }
   /**
-   * See [`Pallet::thaw`].
+   * Allow unprivileged transfers to and from an account again.
+   *
+   * Origin must be Signed and the sender should be the Admin of the asset `id`.
+   *
+   * - `id`: The identifier of the asset to be frozen.
+   * - `who`: The account to be unfrozen.
+   *
+   * Emits `Thawed`.
+   *
+   * Weight: `O(1)`
    **/
   | { name: 'Thaw'; params: { id: number; who: MultiAddressLike } }
   /**
-   * See [`Pallet::freeze_asset`].
+   * Disallow further unprivileged transfers for the asset class.
+   *
+   * Origin must be Signed and the sender should be the Freezer of the asset `id`.
+   *
+   * - `id`: The identifier of the asset to be frozen.
+   *
+   * Emits `Frozen`.
+   *
+   * Weight: `O(1)`
    **/
   | { name: 'FreezeAsset'; params: { id: number } }
   /**
-   * See [`Pallet::thaw_asset`].
+   * Allow unprivileged transfers for the asset again.
+   *
+   * Origin must be Signed and the sender should be the Admin of the asset `id`.
+   *
+   * - `id`: The identifier of the asset to be thawed.
+   *
+   * Emits `Thawed`.
+   *
+   * Weight: `O(1)`
    **/
   | { name: 'ThawAsset'; params: { id: number } }
   /**
-   * See [`Pallet::transfer_ownership`].
+   * Change the Owner of an asset.
+   *
+   * Origin must be Signed and the sender should be the Owner of the asset `id`.
+   *
+   * - `id`: The identifier of the asset.
+   * - `owner`: The new Owner of this asset.
+   *
+   * Emits `OwnerChanged`.
+   *
+   * Weight: `O(1)`
    **/
   | { name: 'TransferOwnership'; params: { id: number; owner: MultiAddressLike } }
   /**
-   * See [`Pallet::set_team`].
+   * Change the Issuer, Admin and Freezer of an asset.
+   *
+   * Origin must be Signed and the sender should be the Owner of the asset `id`.
+   *
+   * - `id`: The identifier of the asset to be frozen.
+   * - `issuer`: The new Issuer of this asset.
+   * - `admin`: The new Admin of this asset.
+   * - `freezer`: The new Freezer of this asset.
+   *
+   * Emits `TeamChanged`.
+   *
+   * Weight: `O(1)`
    **/
   | {
       name: 'SetTeam';
       params: { id: number; issuer: MultiAddressLike; admin: MultiAddressLike; freezer: MultiAddressLike };
     }
   /**
-   * See [`Pallet::set_metadata`].
+   * Set the metadata for an asset.
+   *
+   * Origin must be Signed and the sender should be the Owner of the asset `id`.
+   *
+   * Funds of sender are reserved according to the formula:
+   * `MetadataDepositBase + MetadataDepositPerByte * (name.len + symbol.len)` taking into
+   * account any already reserved funds.
+   *
+   * - `id`: The identifier of the asset to update.
+   * - `name`: The user friendly name of this asset. Limited in length by `StringLimit`.
+   * - `symbol`: The exchange symbol for this asset. Limited in length by `StringLimit`.
+   * - `decimals`: The number of decimals this asset uses to represent one unit.
+   *
+   * Emits `MetadataSet`.
+   *
+   * Weight: `O(1)`
    **/
   | { name: 'SetMetadata'; params: { id: number; name: BytesLike; symbol: BytesLike; decimals: number } }
   /**
-   * See [`Pallet::clear_metadata`].
+   * Clear the metadata for an asset.
+   *
+   * Origin must be Signed and the sender should be the Owner of the asset `id`.
+   *
+   * Any deposit is freed for the asset owner.
+   *
+   * - `id`: The identifier of the asset to clear.
+   *
+   * Emits `MetadataCleared`.
+   *
+   * Weight: `O(1)`
    **/
   | { name: 'ClearMetadata'; params: { id: number } }
   /**
-   * See [`Pallet::force_set_metadata`].
+   * Force the metadata for an asset to some value.
+   *
+   * Origin must be ForceOrigin.
+   *
+   * Any deposit is left alone.
+   *
+   * - `id`: The identifier of the asset to update.
+   * - `name`: The user friendly name of this asset. Limited in length by `StringLimit`.
+   * - `symbol`: The exchange symbol for this asset. Limited in length by `StringLimit`.
+   * - `decimals`: The number of decimals this asset uses to represent one unit.
+   *
+   * Emits `MetadataSet`.
+   *
+   * Weight: `O(N + S)` where N and S are the length of the name and symbol respectively.
    **/
   | {
       name: 'ForceSetMetadata';
       params: { id: number; name: BytesLike; symbol: BytesLike; decimals: number; isFrozen: boolean };
     }
   /**
-   * See [`Pallet::force_clear_metadata`].
+   * Clear the metadata for an asset.
+   *
+   * Origin must be ForceOrigin.
+   *
+   * Any deposit is returned.
+   *
+   * - `id`: The identifier of the asset to clear.
+   *
+   * Emits `MetadataCleared`.
+   *
+   * Weight: `O(1)`
    **/
   | { name: 'ForceClearMetadata'; params: { id: number } }
   /**
-   * See [`Pallet::force_asset_status`].
+   * Alter the attributes of a given asset.
+   *
+   * Origin must be `ForceOrigin`.
+   *
+   * - `id`: The identifier of the asset.
+   * - `owner`: The new Owner of this asset.
+   * - `issuer`: The new Issuer of this asset.
+   * - `admin`: The new Admin of this asset.
+   * - `freezer`: The new Freezer of this asset.
+   * - `min_balance`: The minimum balance of this new asset that any single account must
+   * have. If an account's balance is reduced below this, then it collapses to zero.
+   * - `is_sufficient`: Whether a non-zero balance of this asset is deposit of sufficient
+   * value to account for the state bloat associated with its balance storage. If set to
+   * `true`, then non-zero balances may be stored without a `consumer` reference (and thus
+   * an ED in the Balances pallet or whatever else is used to control user-account state
+   * growth).
+   * - `is_frozen`: Whether this asset class is frozen except for permissioned/admin
+   * instructions.
+   *
+   * Emits `AssetStatusChanged` with the identity of the asset.
+   *
+   * Weight: `O(1)`
    **/
   | {
       name: 'ForceAssetStatus';
@@ -5469,85 +10588,346 @@ export type PalletAssetsCallLike =
       };
     }
   /**
-   * See [`Pallet::approve_transfer`].
+   * Approve an amount of asset for transfer by a delegated third-party account.
+   *
+   * Origin must be Signed.
+   *
+   * Ensures that `ApprovalDeposit` worth of `Currency` is reserved from signing account
+   * for the purpose of holding the approval. If some non-zero amount of assets is already
+   * approved from signing account to `delegate`, then it is topped up or unreserved to
+   * meet the right value.
+   *
+   * NOTE: The signing account does not need to own `amount` of assets at the point of
+   * making this call.
+   *
+   * - `id`: The identifier of the asset.
+   * - `delegate`: The account to delegate permission to transfer asset.
+   * - `amount`: The amount of asset that may be transferred by `delegate`. If there is
+   * already an approval in place, then this acts additively.
+   *
+   * Emits `ApprovedTransfer` on success.
+   *
+   * Weight: `O(1)`
    **/
   | { name: 'ApproveTransfer'; params: { id: number; delegate: MultiAddressLike; amount: bigint } }
   /**
-   * See [`Pallet::cancel_approval`].
+   * Cancel all of some asset approved for delegated transfer by a third-party account.
+   *
+   * Origin must be Signed and there must be an approval in place between signer and
+   * `delegate`.
+   *
+   * Unreserves any deposit previously reserved by `approve_transfer` for the approval.
+   *
+   * - `id`: The identifier of the asset.
+   * - `delegate`: The account delegated permission to transfer asset.
+   *
+   * Emits `ApprovalCancelled` on success.
+   *
+   * Weight: `O(1)`
    **/
   | { name: 'CancelApproval'; params: { id: number; delegate: MultiAddressLike } }
   /**
-   * See [`Pallet::force_cancel_approval`].
+   * Cancel all of some asset approved for delegated transfer by a third-party account.
+   *
+   * Origin must be either ForceOrigin or Signed origin with the signer being the Admin
+   * account of the asset `id`.
+   *
+   * Unreserves any deposit previously reserved by `approve_transfer` for the approval.
+   *
+   * - `id`: The identifier of the asset.
+   * - `delegate`: The account delegated permission to transfer asset.
+   *
+   * Emits `ApprovalCancelled` on success.
+   *
+   * Weight: `O(1)`
    **/
   | { name: 'ForceCancelApproval'; params: { id: number; owner: MultiAddressLike; delegate: MultiAddressLike } }
   /**
-   * See [`Pallet::transfer_approved`].
+   * Transfer some asset balance from a previously delegated account to some third-party
+   * account.
+   *
+   * Origin must be Signed and there must be an approval in place by the `owner` to the
+   * signer.
+   *
+   * If the entire amount approved for transfer is transferred, then any deposit previously
+   * reserved by `approve_transfer` is unreserved.
+   *
+   * - `id`: The identifier of the asset.
+   * - `owner`: The account which previously approved for a transfer of at least `amount` and
+   * from which the asset balance will be withdrawn.
+   * - `destination`: The account to which the asset balance of `amount` will be transferred.
+   * - `amount`: The amount of assets to transfer.
+   *
+   * Emits `TransferredApproved` on success.
+   *
+   * Weight: `O(1)`
    **/
   | {
       name: 'TransferApproved';
       params: { id: number; owner: MultiAddressLike; destination: MultiAddressLike; amount: bigint };
     }
   /**
-   * See [`Pallet::touch`].
+   * Create an asset account for non-provider assets.
+   *
+   * A deposit will be taken from the signer account.
+   *
+   * - `origin`: Must be Signed; the signer account must have sufficient funds for a deposit
+   * to be taken.
+   * - `id`: The identifier of the asset for the account to be created.
+   *
+   * Emits `Touched` event when successful.
    **/
   | { name: 'Touch'; params: { id: number } }
   /**
-   * See [`Pallet::refund`].
+   * Return the deposit (if any) of an asset account or a consumer reference (if any) of an
+   * account.
+   *
+   * The origin must be Signed.
+   *
+   * - `id`: The identifier of the asset for which the caller would like the deposit
+   * refunded.
+   * - `allow_burn`: If `true` then assets may be destroyed in order to complete the refund.
+   *
+   * Emits `Refunded` event when successful.
    **/
   | { name: 'Refund'; params: { id: number; allowBurn: boolean } }
   /**
-   * See [`Pallet::set_min_balance`].
+   * Sets the minimum balance of an asset.
+   *
+   * Only works if there aren't any accounts that are holding the asset or if
+   * the new value of `min_balance` is less than the old one.
+   *
+   * Origin must be Signed and the sender has to be the Owner of the
+   * asset `id`.
+   *
+   * - `id`: The identifier of the asset.
+   * - `min_balance`: The new value of `min_balance`.
+   *
+   * Emits `AssetMinBalanceChanged` event when successful.
    **/
   | { name: 'SetMinBalance'; params: { id: number; minBalance: bigint } }
   /**
-   * See [`Pallet::touch_other`].
+   * Create an asset account for `who`.
+   *
+   * A deposit will be taken from the signer account.
+   *
+   * - `origin`: Must be Signed by `Freezer` or `Admin` of the asset `id`; the signer account
+   * must have sufficient funds for a deposit to be taken.
+   * - `id`: The identifier of the asset for the account to be created.
+   * - `who`: The account to be created.
+   *
+   * Emits `Touched` event when successful.
    **/
   | { name: 'TouchOther'; params: { id: number; who: MultiAddressLike } }
   /**
-   * See [`Pallet::refund_other`].
+   * Return the deposit (if any) of a target asset account. Useful if you are the depositor.
+   *
+   * The origin must be Signed and either the account owner, depositor, or asset `Admin`. In
+   * order to burn a non-zero balance of the asset, the caller must be the account and should
+   * use `refund`.
+   *
+   * - `id`: The identifier of the asset for the account holding a deposit.
+   * - `who`: The account to refund.
+   *
+   * Emits `Refunded` event when successful.
    **/
   | { name: 'RefundOther'; params: { id: number; who: MultiAddressLike } }
   /**
-   * See [`Pallet::block`].
+   * Disallow further unprivileged transfers of an asset `id` to and from an account `who`.
+   *
+   * Origin must be Signed and the sender should be the Freezer of the asset `id`.
+   *
+   * - `id`: The identifier of the account's asset.
+   * - `who`: The account to be unblocked.
+   *
+   * Emits `Blocked`.
+   *
+   * Weight: `O(1)`
    **/
   | { name: 'Block'; params: { id: number; who: MultiAddressLike } };
 
 /**
  * Contains a variant per dispatchable extrinsic that this pallet has.
  **/
+export type PalletBeefyCall =
+  /**
+   * Report voter equivocation/misbehavior. This method will verify the
+   * equivocation proof and validate the given key ownership proof
+   * against the extracted offender. If both are valid, the offence
+   * will be reported.
+   **/
+  | {
+      name: 'ReportEquivocation';
+      params: { equivocationProof: SpConsensusBeefyEquivocationProof; keyOwnerProof: SpSessionMembershipProof };
+    }
+  /**
+   * Report voter equivocation/misbehavior. This method will verify the
+   * equivocation proof and validate the given key ownership proof
+   * against the extracted offender. If both are valid, the offence
+   * will be reported.
+   *
+   * This extrinsic must be called unsigned and it is expected that only
+   * block authors will call it (validated in `ValidateUnsigned`), as such
+   * if the block author is defined it will be defined as the equivocation
+   * reporter.
+   **/
+  | {
+      name: 'ReportEquivocationUnsigned';
+      params: { equivocationProof: SpConsensusBeefyEquivocationProof; keyOwnerProof: SpSessionMembershipProof };
+    }
+  /**
+   * Reset BEEFY consensus by setting a new BEEFY genesis at `delay_in_blocks` blocks in the
+   * future.
+   *
+   * Note: `delay_in_blocks` has to be at least 1.
+   **/
+  | { name: 'SetNewGenesis'; params: { delayInBlocks: number } };
+
+export type PalletBeefyCallLike =
+  /**
+   * Report voter equivocation/misbehavior. This method will verify the
+   * equivocation proof and validate the given key ownership proof
+   * against the extracted offender. If both are valid, the offence
+   * will be reported.
+   **/
+  | {
+      name: 'ReportEquivocation';
+      params: { equivocationProof: SpConsensusBeefyEquivocationProof; keyOwnerProof: SpSessionMembershipProof };
+    }
+  /**
+   * Report voter equivocation/misbehavior. This method will verify the
+   * equivocation proof and validate the given key ownership proof
+   * against the extracted offender. If both are valid, the offence
+   * will be reported.
+   *
+   * This extrinsic must be called unsigned and it is expected that only
+   * block authors will call it (validated in `ValidateUnsigned`), as such
+   * if the block author is defined it will be defined as the equivocation
+   * reporter.
+   **/
+  | {
+      name: 'ReportEquivocationUnsigned';
+      params: { equivocationProof: SpConsensusBeefyEquivocationProof; keyOwnerProof: SpSessionMembershipProof };
+    }
+  /**
+   * Reset BEEFY consensus by setting a new BEEFY genesis at `delay_in_blocks` blocks in the
+   * future.
+   *
+   * Note: `delay_in_blocks` has to be at least 1.
+   **/
+  | { name: 'SetNewGenesis'; params: { delayInBlocks: number } };
+
+export type SpConsensusBeefyEquivocationProof = {
+  first: SpConsensusBeefyVoteMessage;
+  second: SpConsensusBeefyVoteMessage;
+};
+
+export type SpConsensusBeefyEcdsaCryptoSignature = SpCoreEcdsaSignature;
+
+export type SpConsensusBeefyVoteMessage = {
+  commitment: SpConsensusBeefyCommitment;
+  id: SpConsensusBeefyEcdsaCryptoPublic;
+  signature: SpConsensusBeefyEcdsaCryptoSignature;
+};
+
+export type SpConsensusBeefyCommitment = {
+  payload: SpConsensusBeefyPayload;
+  blockNumber: number;
+  validatorSetId: bigint;
+};
+
+export type SpConsensusBeefyPayload = Array<[FixedBytes<2>, Bytes]>;
+
+/**
+ * Contains a variant per dispatchable extrinsic that this pallet has.
+ **/
 export type PalletLotteryCall =
   /**
-   * See [`Pallet::buy_ticket`].
+   * Buy a ticket to enter the lottery.
+   *
+   * This extrinsic acts as a passthrough function for `call`. In all
+   * situations where `call` alone would succeed, this extrinsic should
+   * succeed.
+   *
+   * If `call` is successful, then we will attempt to purchase a ticket,
+   * which may fail silently. To detect success of a ticket purchase, you
+   * should listen for the `TicketBought` event.
+   *
+   * This extrinsic must be called by a signed origin.
    **/
   | { name: 'BuyTicket'; params: { call: KitchensinkRuntimeRuntimeCall } }
   /**
-   * See [`Pallet::set_calls`].
+   * Set calls in storage which can be used to purchase a lottery ticket.
+   *
+   * This function only matters if you use the `ValidateCall` implementation
+   * provided by this pallet, which uses storage to determine the valid calls.
+   *
+   * This extrinsic must be called by the Manager origin.
    **/
   | { name: 'SetCalls'; params: { calls: Array<KitchensinkRuntimeRuntimeCall> } }
   /**
-   * See [`Pallet::start_lottery`].
+   * Start a lottery using the provided configuration.
+   *
+   * This extrinsic must be called by the `ManagerOrigin`.
+   *
+   * Parameters:
+   *
+   * * `price`: The cost of a single ticket.
+   * * `length`: How long the lottery should run for starting at the current block.
+   * * `delay`: How long after the lottery end we should wait before picking a winner.
+   * * `repeat`: If the lottery should repeat when completed.
    **/
   | { name: 'StartLottery'; params: { price: bigint; length: number; delay: number; repeat: boolean } }
   /**
-   * See [`Pallet::stop_repeat`].
+   * If a lottery is repeating, you can use this to stop the repeat.
+   * The lottery will continue to run to completion.
+   *
+   * This extrinsic must be called by the `ManagerOrigin`.
    **/
   | { name: 'StopRepeat' };
 
 export type PalletLotteryCallLike =
   /**
-   * See [`Pallet::buy_ticket`].
+   * Buy a ticket to enter the lottery.
+   *
+   * This extrinsic acts as a passthrough function for `call`. In all
+   * situations where `call` alone would succeed, this extrinsic should
+   * succeed.
+   *
+   * If `call` is successful, then we will attempt to purchase a ticket,
+   * which may fail silently. To detect success of a ticket purchase, you
+   * should listen for the `TicketBought` event.
+   *
+   * This extrinsic must be called by a signed origin.
    **/
   | { name: 'BuyTicket'; params: { call: KitchensinkRuntimeRuntimeCallLike } }
   /**
-   * See [`Pallet::set_calls`].
+   * Set calls in storage which can be used to purchase a lottery ticket.
+   *
+   * This function only matters if you use the `ValidateCall` implementation
+   * provided by this pallet, which uses storage to determine the valid calls.
+   *
+   * This extrinsic must be called by the Manager origin.
    **/
   | { name: 'SetCalls'; params: { calls: Array<KitchensinkRuntimeRuntimeCallLike> } }
   /**
-   * See [`Pallet::start_lottery`].
+   * Start a lottery using the provided configuration.
+   *
+   * This extrinsic must be called by the `ManagerOrigin`.
+   *
+   * Parameters:
+   *
+   * * `price`: The cost of a single ticket.
+   * * `length`: How long the lottery should run for starting at the current block.
+   * * `delay`: How long after the lottery end we should wait before picking a winner.
+   * * `repeat`: If the lottery should repeat when completed.
    **/
   | { name: 'StartLottery'; params: { price: bigint; length: number; delay: number; repeat: boolean } }
   /**
-   * See [`Pallet::stop_repeat`].
+   * If a lottery is repeating, you can use this to stop the repeat.
+   * The lottery will continue to run to completion.
+   *
+   * This extrinsic must be called by the `ManagerOrigin`.
    **/
   | { name: 'StopRepeat' };
 
@@ -5556,61 +10936,121 @@ export type PalletLotteryCallLike =
  **/
 export type PalletNisCall =
   /**
-   * See [`Pallet::place_bid`].
+   * Place a bid.
+   *
+   * Origin must be Signed, and account must have at least `amount` in free balance.
+   *
+   * - `amount`: The amount of the bid; these funds will be reserved, and if/when
+   * consolidated, removed. Must be at least `MinBid`.
+   * - `duration`: The number of periods before which the newly consolidated bid may be
+   * thawed. Must be greater than 1 and no more than `QueueCount`.
+   *
+   * Complexities:
+   * - `Queues[duration].len()` (just take max).
    **/
   | { name: 'PlaceBid'; params: { amount: bigint; duration: number } }
   /**
-   * See [`Pallet::retract_bid`].
+   * Retract a previously placed bid.
+   *
+   * Origin must be Signed, and the account should have previously issued a still-active bid
+   * of `amount` for `duration`.
+   *
+   * - `amount`: The amount of the previous bid.
+   * - `duration`: The duration of the previous bid.
    **/
   | { name: 'RetractBid'; params: { amount: bigint; duration: number } }
   /**
-   * See [`Pallet::fund_deficit`].
+   * Ensure we have sufficient funding for all potential payouts.
+   *
+   * - `origin`: Must be accepted by `FundOrigin`.
    **/
   | { name: 'FundDeficit' }
   /**
-   * See [`Pallet::thaw_private`].
+   * Reduce or remove an outstanding receipt, placing the according proportion of funds into
+   * the account of the owner.
+   *
+   * - `origin`: Must be Signed and the account must be the owner of the receipt `index` as
+   * well as any fungible counterpart.
+   * - `index`: The index of the receipt.
+   * - `portion`: If `Some`, then only the given portion of the receipt should be thawed. If
+   * `None`, then all of it should be.
    **/
   | { name: 'ThawPrivate'; params: { index: number; maybeProportion?: Perquintill | undefined } }
   /**
-   * See [`Pallet::thaw_communal`].
+   * Reduce or remove an outstanding receipt, placing the according proportion of funds into
+   * the account of the owner.
+   *
+   * - `origin`: Must be Signed and the account must be the owner of the fungible counterpart
+   * for receipt `index`.
+   * - `index`: The index of the receipt.
    **/
   | { name: 'ThawCommunal'; params: { index: number } }
   /**
-   * See [`Pallet::communify`].
+   * Make a private receipt communal and create fungible counterparts for its owner.
    **/
   | { name: 'Communify'; params: { index: number } }
   /**
-   * See [`Pallet::privatize`].
+   * Make a communal receipt private and burn fungible counterparts from its owner.
    **/
   | { name: 'Privatize'; params: { index: number } };
 
 export type PalletNisCallLike =
   /**
-   * See [`Pallet::place_bid`].
+   * Place a bid.
+   *
+   * Origin must be Signed, and account must have at least `amount` in free balance.
+   *
+   * - `amount`: The amount of the bid; these funds will be reserved, and if/when
+   * consolidated, removed. Must be at least `MinBid`.
+   * - `duration`: The number of periods before which the newly consolidated bid may be
+   * thawed. Must be greater than 1 and no more than `QueueCount`.
+   *
+   * Complexities:
+   * - `Queues[duration].len()` (just take max).
    **/
   | { name: 'PlaceBid'; params: { amount: bigint; duration: number } }
   /**
-   * See [`Pallet::retract_bid`].
+   * Retract a previously placed bid.
+   *
+   * Origin must be Signed, and the account should have previously issued a still-active bid
+   * of `amount` for `duration`.
+   *
+   * - `amount`: The amount of the previous bid.
+   * - `duration`: The duration of the previous bid.
    **/
   | { name: 'RetractBid'; params: { amount: bigint; duration: number } }
   /**
-   * See [`Pallet::fund_deficit`].
+   * Ensure we have sufficient funding for all potential payouts.
+   *
+   * - `origin`: Must be accepted by `FundOrigin`.
    **/
   | { name: 'FundDeficit' }
   /**
-   * See [`Pallet::thaw_private`].
+   * Reduce or remove an outstanding receipt, placing the according proportion of funds into
+   * the account of the owner.
+   *
+   * - `origin`: Must be Signed and the account must be the owner of the receipt `index` as
+   * well as any fungible counterpart.
+   * - `index`: The index of the receipt.
+   * - `portion`: If `Some`, then only the given portion of the receipt should be thawed. If
+   * `None`, then all of it should be.
    **/
   | { name: 'ThawPrivate'; params: { index: number; maybeProportion?: Perquintill | undefined } }
   /**
-   * See [`Pallet::thaw_communal`].
+   * Reduce or remove an outstanding receipt, placing the according proportion of funds into
+   * the account of the owner.
+   *
+   * - `origin`: Must be Signed and the account must be the owner of the fungible counterpart
+   * for receipt `index`.
+   * - `index`: The index of the receipt.
    **/
   | { name: 'ThawCommunal'; params: { index: number } }
   /**
-   * See [`Pallet::communify`].
+   * Make a private receipt communal and create fungible counterparts for its owner.
    **/
   | { name: 'Communify'; params: { index: number } }
   /**
-   * See [`Pallet::privatize`].
+   * Make a communal receipt private and burn fungible counterparts from its owner.
    **/
   | { name: 'Privatize'; params: { index: number } };
 
@@ -5619,73 +11059,272 @@ export type PalletNisCallLike =
  **/
 export type PalletUniquesCall =
   /**
-   * See [`Pallet::create`].
+   * Issue a new collection of non-fungible items from a public origin.
+   *
+   * This new collection has no items initially and its owner is the origin.
+   *
+   * The origin must conform to the configured `CreateOrigin` and have sufficient funds free.
+   *
+   * `ItemDeposit` funds of sender are reserved.
+   *
+   * Parameters:
+   * - `collection`: The identifier of the new collection. This must not be currently in use.
+   * - `admin`: The admin of this collection. The admin is the initial address of each
+   * member of the collection's admin team.
+   *
+   * Emits `Created` event when successful.
+   *
+   * Weight: `O(1)`
    **/
   | { name: 'Create'; params: { collection: number; admin: MultiAddress } }
   /**
-   * See [`Pallet::force_create`].
+   * Issue a new collection of non-fungible items from a privileged origin.
+   *
+   * This new collection has no items initially.
+   *
+   * The origin must conform to `ForceOrigin`.
+   *
+   * Unlike `create`, no funds are reserved.
+   *
+   * - `collection`: The identifier of the new item. This must not be currently in use.
+   * - `owner`: The owner of this collection of items. The owner has full superuser
+   * permissions
+   * over this item, but may later change and configure the permissions using
+   * `transfer_ownership` and `set_team`.
+   *
+   * Emits `ForceCreated` event when successful.
+   *
+   * Weight: `O(1)`
    **/
   | { name: 'ForceCreate'; params: { collection: number; owner: MultiAddress; freeHolding: boolean } }
   /**
-   * See [`Pallet::destroy`].
+   * Destroy a collection of fungible items.
+   *
+   * The origin must conform to `ForceOrigin` or must be `Signed` and the sender must be the
+   * owner of the `collection`.
+   *
+   * - `collection`: The identifier of the collection to be destroyed.
+   * - `witness`: Information on the items minted in the collection. This must be
+   * correct.
+   *
+   * Emits `Destroyed` event when successful.
+   *
+   * Weight: `O(n + m)` where:
+   * - `n = witness.items`
+   * - `m = witness.item_metadatas`
+   * - `a = witness.attributes`
    **/
   | { name: 'Destroy'; params: { collection: number; witness: PalletUniquesDestroyWitness } }
   /**
-   * See [`Pallet::mint`].
+   * Mint an item of a particular collection.
+   *
+   * The origin must be Signed and the sender must be the Issuer of the `collection`.
+   *
+   * - `collection`: The collection of the item to be minted.
+   * - `item`: The item value of the item to be minted.
+   * - `beneficiary`: The initial owner of the minted item.
+   *
+   * Emits `Issued` event when successful.
+   *
+   * Weight: `O(1)`
    **/
   | { name: 'Mint'; params: { collection: number; item: number; owner: MultiAddress } }
   /**
-   * See [`Pallet::burn`].
+   * Destroy a single item.
+   *
+   * Origin must be Signed and the signing account must be either:
+   * - the Admin of the `collection`;
+   * - the Owner of the `item`;
+   *
+   * - `collection`: The collection of the item to be burned.
+   * - `item`: The item of the item to be burned.
+   * - `check_owner`: If `Some` then the operation will fail with `WrongOwner` unless the
+   * item is owned by this value.
+   *
+   * Emits `Burned` with the actual amount burned.
+   *
+   * Weight: `O(1)`
+   * Modes: `check_owner.is_some()`.
    **/
   | { name: 'Burn'; params: { collection: number; item: number; checkOwner?: MultiAddress | undefined } }
   /**
-   * See [`Pallet::transfer`].
+   * Move an item from the sender account to another.
+   *
+   * This resets the approved account of the item.
+   *
+   * Origin must be Signed and the signing account must be either:
+   * - the Admin of the `collection`;
+   * - the Owner of the `item`;
+   * - the approved delegate for the `item` (in this case, the approval is reset).
+   *
+   * Arguments:
+   * - `collection`: The collection of the item to be transferred.
+   * - `item`: The item of the item to be transferred.
+   * - `dest`: The account to receive ownership of the item.
+   *
+   * Emits `Transferred`.
+   *
+   * Weight: `O(1)`
    **/
   | { name: 'Transfer'; params: { collection: number; item: number; dest: MultiAddress } }
   /**
-   * See [`Pallet::redeposit`].
+   * Reevaluate the deposits on some items.
+   *
+   * Origin must be Signed and the sender should be the Owner of the `collection`.
+   *
+   * - `collection`: The collection to be frozen.
+   * - `items`: The items of the collection whose deposits will be reevaluated.
+   *
+   * NOTE: This exists as a best-effort function. Any items which are unknown or
+   * in the case that the owner account does not have reservable funds to pay for a
+   * deposit increase are ignored. Generally the owner isn't going to call this on items
+   * whose existing deposit is less than the refreshed deposit as it would only cost them,
+   * so it's of little consequence.
+   *
+   * It will still return an error in the case that the collection is unknown of the signer
+   * is not permitted to call it.
+   *
+   * Weight: `O(items.len())`
    **/
   | { name: 'Redeposit'; params: { collection: number; items: Array<number> } }
   /**
-   * See [`Pallet::freeze`].
+   * Disallow further unprivileged transfer of an item.
+   *
+   * Origin must be Signed and the sender should be the Freezer of the `collection`.
+   *
+   * - `collection`: The collection of the item to be frozen.
+   * - `item`: The item of the item to be frozen.
+   *
+   * Emits `Frozen`.
+   *
+   * Weight: `O(1)`
    **/
   | { name: 'Freeze'; params: { collection: number; item: number } }
   /**
-   * See [`Pallet::thaw`].
+   * Re-allow unprivileged transfer of an item.
+   *
+   * Origin must be Signed and the sender should be the Freezer of the `collection`.
+   *
+   * - `collection`: The collection of the item to be thawed.
+   * - `item`: The item of the item to be thawed.
+   *
+   * Emits `Thawed`.
+   *
+   * Weight: `O(1)`
    **/
   | { name: 'Thaw'; params: { collection: number; item: number } }
   /**
-   * See [`Pallet::freeze_collection`].
+   * Disallow further unprivileged transfers for a whole collection.
+   *
+   * Origin must be Signed and the sender should be the Freezer of the `collection`.
+   *
+   * - `collection`: The collection to be frozen.
+   *
+   * Emits `CollectionFrozen`.
+   *
+   * Weight: `O(1)`
    **/
   | { name: 'FreezeCollection'; params: { collection: number } }
   /**
-   * See [`Pallet::thaw_collection`].
+   * Re-allow unprivileged transfers for a whole collection.
+   *
+   * Origin must be Signed and the sender should be the Admin of the `collection`.
+   *
+   * - `collection`: The collection to be thawed.
+   *
+   * Emits `CollectionThawed`.
+   *
+   * Weight: `O(1)`
    **/
   | { name: 'ThawCollection'; params: { collection: number } }
   /**
-   * See [`Pallet::transfer_ownership`].
+   * Change the Owner of a collection.
+   *
+   * Origin must be Signed and the sender should be the Owner of the `collection`.
+   *
+   * - `collection`: The collection whose owner should be changed.
+   * - `owner`: The new Owner of this collection. They must have called
+   * `set_accept_ownership` with `collection` in order for this operation to succeed.
+   *
+   * Emits `OwnerChanged`.
+   *
+   * Weight: `O(1)`
    **/
-  | { name: 'TransferOwnership'; params: { collection: number; owner: MultiAddress } }
+  | { name: 'TransferOwnership'; params: { collection: number; newOwner: MultiAddress } }
   /**
-   * See [`Pallet::set_team`].
+   * Change the Issuer, Admin and Freezer of a collection.
+   *
+   * Origin must be Signed and the sender should be the Owner of the `collection`.
+   *
+   * - `collection`: The collection whose team should be changed.
+   * - `issuer`: The new Issuer of this collection.
+   * - `admin`: The new Admin of this collection.
+   * - `freezer`: The new Freezer of this collection.
+   *
+   * Emits `TeamChanged`.
+   *
+   * Weight: `O(1)`
    **/
   | {
       name: 'SetTeam';
       params: { collection: number; issuer: MultiAddress; admin: MultiAddress; freezer: MultiAddress };
     }
   /**
-   * See [`Pallet::approve_transfer`].
+   * Approve an item to be transferred by a delegated third-party account.
+   *
+   * The origin must conform to `ForceOrigin` or must be `Signed` and the sender must be
+   * either the owner of the `item` or the admin of the collection.
+   *
+   * - `collection`: The collection of the item to be approved for delegated transfer.
+   * - `item`: The item of the item to be approved for delegated transfer.
+   * - `delegate`: The account to delegate permission to transfer the item.
+   *
+   * Important NOTE: The `approved` account gets reset after each transfer.
+   *
+   * Emits `ApprovedTransfer` on success.
+   *
+   * Weight: `O(1)`
    **/
   | { name: 'ApproveTransfer'; params: { collection: number; item: number; delegate: MultiAddress } }
   /**
-   * See [`Pallet::cancel_approval`].
+   * Cancel the prior approval for the transfer of an item by a delegate.
+   *
+   * Origin must be either:
+   * - the `Force` origin;
+   * - `Signed` with the signer being the Admin of the `collection`;
+   * - `Signed` with the signer being the Owner of the `item`;
+   *
+   * Arguments:
+   * - `collection`: The collection of the item of whose approval will be cancelled.
+   * - `item`: The item of the item of whose approval will be cancelled.
+   * - `maybe_check_delegate`: If `Some` will ensure that the given account is the one to
+   * which permission of transfer is delegated.
+   *
+   * Emits `ApprovalCancelled` on success.
+   *
+   * Weight: `O(1)`
    **/
   | {
       name: 'CancelApproval';
       params: { collection: number; item: number; maybeCheckDelegate?: MultiAddress | undefined };
     }
   /**
-   * See [`Pallet::force_item_status`].
+   * Alter the attributes of a given item.
+   *
+   * Origin must be `ForceOrigin`.
+   *
+   * - `collection`: The identifier of the item.
+   * - `owner`: The new Owner of this item.
+   * - `issuer`: The new Issuer of this item.
+   * - `admin`: The new Admin of this item.
+   * - `freezer`: The new Freezer of this item.
+   * - `free_holding`: Whether a deposit is taken for holding an item of this collection.
+   * - `is_frozen`: Whether this collection is frozen except for permissioned/admin
+   * instructions.
+   *
+   * Emits `ItemStatusChanged` with the identity of the item.
+   *
+   * Weight: `O(1)`
    **/
   | {
       name: 'ForceItemStatus';
@@ -5700,39 +11339,151 @@ export type PalletUniquesCall =
       };
     }
   /**
-   * See [`Pallet::set_attribute`].
+   * Set an attribute for a collection or item.
+   *
+   * Origin must be either `ForceOrigin` or Signed and the sender should be the Owner of the
+   * `collection`.
+   *
+   * If the origin is Signed, then funds of signer are reserved according to the formula:
+   * `MetadataDepositBase + DepositPerByte * (key.len + value.len)` taking into
+   * account any already reserved funds.
+   *
+   * - `collection`: The identifier of the collection whose item's metadata to set.
+   * - `maybe_item`: The identifier of the item whose metadata to set.
+   * - `key`: The key of the attribute.
+   * - `value`: The value to which to set the attribute.
+   *
+   * Emits `AttributeSet`.
+   *
+   * Weight: `O(1)`
    **/
   | { name: 'SetAttribute'; params: { collection: number; maybeItem?: number | undefined; key: Bytes; value: Bytes } }
   /**
-   * See [`Pallet::clear_attribute`].
+   * Clear an attribute for a collection or item.
+   *
+   * Origin must be either `ForceOrigin` or Signed and the sender should be the Owner of the
+   * `collection`.
+   *
+   * Any deposit is freed for the collection's owner.
+   *
+   * - `collection`: The identifier of the collection whose item's metadata to clear.
+   * - `maybe_item`: The identifier of the item whose metadata to clear.
+   * - `key`: The key of the attribute.
+   *
+   * Emits `AttributeCleared`.
+   *
+   * Weight: `O(1)`
    **/
   | { name: 'ClearAttribute'; params: { collection: number; maybeItem?: number | undefined; key: Bytes } }
   /**
-   * See [`Pallet::set_metadata`].
+   * Set the metadata for an item.
+   *
+   * Origin must be either `ForceOrigin` or Signed and the sender should be the Owner of the
+   * `collection`.
+   *
+   * If the origin is Signed, then funds of signer are reserved according to the formula:
+   * `MetadataDepositBase + DepositPerByte * data.len` taking into
+   * account any already reserved funds.
+   *
+   * - `collection`: The identifier of the collection whose item's metadata to set.
+   * - `item`: The identifier of the item whose metadata to set.
+   * - `data`: The general information of this item. Limited in length by `StringLimit`.
+   * - `is_frozen`: Whether the metadata should be frozen against further changes.
+   *
+   * Emits `MetadataSet`.
+   *
+   * Weight: `O(1)`
    **/
   | { name: 'SetMetadata'; params: { collection: number; item: number; data: Bytes; isFrozen: boolean } }
   /**
-   * See [`Pallet::clear_metadata`].
+   * Clear the metadata for an item.
+   *
+   * Origin must be either `ForceOrigin` or Signed and the sender should be the Owner of the
+   * `item`.
+   *
+   * Any deposit is freed for the collection's owner.
+   *
+   * - `collection`: The identifier of the collection whose item's metadata to clear.
+   * - `item`: The identifier of the item whose metadata to clear.
+   *
+   * Emits `MetadataCleared`.
+   *
+   * Weight: `O(1)`
    **/
   | { name: 'ClearMetadata'; params: { collection: number; item: number } }
   /**
-   * See [`Pallet::set_collection_metadata`].
+   * Set the metadata for a collection.
+   *
+   * Origin must be either `ForceOrigin` or `Signed` and the sender should be the Owner of
+   * the `collection`.
+   *
+   * If the origin is `Signed`, then funds of signer are reserved according to the formula:
+   * `MetadataDepositBase + DepositPerByte * data.len` taking into
+   * account any already reserved funds.
+   *
+   * - `collection`: The identifier of the item whose metadata to update.
+   * - `data`: The general information of this item. Limited in length by `StringLimit`.
+   * - `is_frozen`: Whether the metadata should be frozen against further changes.
+   *
+   * Emits `CollectionMetadataSet`.
+   *
+   * Weight: `O(1)`
    **/
   | { name: 'SetCollectionMetadata'; params: { collection: number; data: Bytes; isFrozen: boolean } }
   /**
-   * See [`Pallet::clear_collection_metadata`].
+   * Clear the metadata for a collection.
+   *
+   * Origin must be either `ForceOrigin` or `Signed` and the sender should be the Owner of
+   * the `collection`.
+   *
+   * Any deposit is freed for the collection's owner.
+   *
+   * - `collection`: The identifier of the collection whose metadata to clear.
+   *
+   * Emits `CollectionMetadataCleared`.
+   *
+   * Weight: `O(1)`
    **/
   | { name: 'ClearCollectionMetadata'; params: { collection: number } }
   /**
-   * See [`Pallet::set_accept_ownership`].
+   * Set (or reset) the acceptance of ownership for a particular account.
+   *
+   * Origin must be `Signed` and if `maybe_collection` is `Some`, then the signer must have a
+   * provider reference.
+   *
+   * - `maybe_collection`: The identifier of the collection whose ownership the signer is
+   * willing to accept, or if `None`, an indication that the signer is willing to accept no
+   * ownership transferal.
+   *
+   * Emits `OwnershipAcceptanceChanged`.
    **/
   | { name: 'SetAcceptOwnership'; params: { maybeCollection?: number | undefined } }
   /**
-   * See [`Pallet::set_collection_max_supply`].
+   * Set the maximum amount of items a collection could have.
+   *
+   * Origin must be either `ForceOrigin` or `Signed` and the sender should be the Owner of
+   * the `collection`.
+   *
+   * Note: This function can only succeed once per collection.
+   *
+   * - `collection`: The identifier of the collection to change.
+   * - `max_supply`: The maximum amount of items a collection could have.
+   *
+   * Emits `CollectionMaxSupplySet` event when successful.
    **/
   | { name: 'SetCollectionMaxSupply'; params: { collection: number; maxSupply: number } }
   /**
-   * See [`Pallet::set_price`].
+   * Set (or reset) the price for an item.
+   *
+   * Origin must be Signed and must be the owner of the asset `item`.
+   *
+   * - `collection`: The collection of the item.
+   * - `item`: The item to set the price for.
+   * - `price`: The price for the item. Pass `None`, to reset the price.
+   * - `buyer`: Restricts the buy operation to a specific account.
+   *
+   * Emits `ItemPriceSet` on success if the price is not `None`.
+   * Emits `ItemPriceRemoved` on success if the price is `None`.
    **/
   | {
       name: 'SetPrice';
@@ -5744,79 +11495,286 @@ export type PalletUniquesCall =
       };
     }
   /**
-   * See [`Pallet::buy_item`].
+   * Allows to buy an item if it's up for sale.
+   *
+   * Origin must be Signed and must not be the owner of the `item`.
+   *
+   * - `collection`: The collection of the item.
+   * - `item`: The item the sender wants to buy.
+   * - `bid_price`: The price the sender is willing to pay.
+   *
+   * Emits `ItemBought` on success.
    **/
   | { name: 'BuyItem'; params: { collection: number; item: number; bidPrice: bigint } };
 
 export type PalletUniquesCallLike =
   /**
-   * See [`Pallet::create`].
+   * Issue a new collection of non-fungible items from a public origin.
+   *
+   * This new collection has no items initially and its owner is the origin.
+   *
+   * The origin must conform to the configured `CreateOrigin` and have sufficient funds free.
+   *
+   * `ItemDeposit` funds of sender are reserved.
+   *
+   * Parameters:
+   * - `collection`: The identifier of the new collection. This must not be currently in use.
+   * - `admin`: The admin of this collection. The admin is the initial address of each
+   * member of the collection's admin team.
+   *
+   * Emits `Created` event when successful.
+   *
+   * Weight: `O(1)`
    **/
   | { name: 'Create'; params: { collection: number; admin: MultiAddressLike } }
   /**
-   * See [`Pallet::force_create`].
+   * Issue a new collection of non-fungible items from a privileged origin.
+   *
+   * This new collection has no items initially.
+   *
+   * The origin must conform to `ForceOrigin`.
+   *
+   * Unlike `create`, no funds are reserved.
+   *
+   * - `collection`: The identifier of the new item. This must not be currently in use.
+   * - `owner`: The owner of this collection of items. The owner has full superuser
+   * permissions
+   * over this item, but may later change and configure the permissions using
+   * `transfer_ownership` and `set_team`.
+   *
+   * Emits `ForceCreated` event when successful.
+   *
+   * Weight: `O(1)`
    **/
   | { name: 'ForceCreate'; params: { collection: number; owner: MultiAddressLike; freeHolding: boolean } }
   /**
-   * See [`Pallet::destroy`].
+   * Destroy a collection of fungible items.
+   *
+   * The origin must conform to `ForceOrigin` or must be `Signed` and the sender must be the
+   * owner of the `collection`.
+   *
+   * - `collection`: The identifier of the collection to be destroyed.
+   * - `witness`: Information on the items minted in the collection. This must be
+   * correct.
+   *
+   * Emits `Destroyed` event when successful.
+   *
+   * Weight: `O(n + m)` where:
+   * - `n = witness.items`
+   * - `m = witness.item_metadatas`
+   * - `a = witness.attributes`
    **/
   | { name: 'Destroy'; params: { collection: number; witness: PalletUniquesDestroyWitness } }
   /**
-   * See [`Pallet::mint`].
+   * Mint an item of a particular collection.
+   *
+   * The origin must be Signed and the sender must be the Issuer of the `collection`.
+   *
+   * - `collection`: The collection of the item to be minted.
+   * - `item`: The item value of the item to be minted.
+   * - `beneficiary`: The initial owner of the minted item.
+   *
+   * Emits `Issued` event when successful.
+   *
+   * Weight: `O(1)`
    **/
   | { name: 'Mint'; params: { collection: number; item: number; owner: MultiAddressLike } }
   /**
-   * See [`Pallet::burn`].
+   * Destroy a single item.
+   *
+   * Origin must be Signed and the signing account must be either:
+   * - the Admin of the `collection`;
+   * - the Owner of the `item`;
+   *
+   * - `collection`: The collection of the item to be burned.
+   * - `item`: The item of the item to be burned.
+   * - `check_owner`: If `Some` then the operation will fail with `WrongOwner` unless the
+   * item is owned by this value.
+   *
+   * Emits `Burned` with the actual amount burned.
+   *
+   * Weight: `O(1)`
+   * Modes: `check_owner.is_some()`.
    **/
   | { name: 'Burn'; params: { collection: number; item: number; checkOwner?: MultiAddressLike | undefined } }
   /**
-   * See [`Pallet::transfer`].
+   * Move an item from the sender account to another.
+   *
+   * This resets the approved account of the item.
+   *
+   * Origin must be Signed and the signing account must be either:
+   * - the Admin of the `collection`;
+   * - the Owner of the `item`;
+   * - the approved delegate for the `item` (in this case, the approval is reset).
+   *
+   * Arguments:
+   * - `collection`: The collection of the item to be transferred.
+   * - `item`: The item of the item to be transferred.
+   * - `dest`: The account to receive ownership of the item.
+   *
+   * Emits `Transferred`.
+   *
+   * Weight: `O(1)`
    **/
   | { name: 'Transfer'; params: { collection: number; item: number; dest: MultiAddressLike } }
   /**
-   * See [`Pallet::redeposit`].
+   * Reevaluate the deposits on some items.
+   *
+   * Origin must be Signed and the sender should be the Owner of the `collection`.
+   *
+   * - `collection`: The collection to be frozen.
+   * - `items`: The items of the collection whose deposits will be reevaluated.
+   *
+   * NOTE: This exists as a best-effort function. Any items which are unknown or
+   * in the case that the owner account does not have reservable funds to pay for a
+   * deposit increase are ignored. Generally the owner isn't going to call this on items
+   * whose existing deposit is less than the refreshed deposit as it would only cost them,
+   * so it's of little consequence.
+   *
+   * It will still return an error in the case that the collection is unknown of the signer
+   * is not permitted to call it.
+   *
+   * Weight: `O(items.len())`
    **/
   | { name: 'Redeposit'; params: { collection: number; items: Array<number> } }
   /**
-   * See [`Pallet::freeze`].
+   * Disallow further unprivileged transfer of an item.
+   *
+   * Origin must be Signed and the sender should be the Freezer of the `collection`.
+   *
+   * - `collection`: The collection of the item to be frozen.
+   * - `item`: The item of the item to be frozen.
+   *
+   * Emits `Frozen`.
+   *
+   * Weight: `O(1)`
    **/
   | { name: 'Freeze'; params: { collection: number; item: number } }
   /**
-   * See [`Pallet::thaw`].
+   * Re-allow unprivileged transfer of an item.
+   *
+   * Origin must be Signed and the sender should be the Freezer of the `collection`.
+   *
+   * - `collection`: The collection of the item to be thawed.
+   * - `item`: The item of the item to be thawed.
+   *
+   * Emits `Thawed`.
+   *
+   * Weight: `O(1)`
    **/
   | { name: 'Thaw'; params: { collection: number; item: number } }
   /**
-   * See [`Pallet::freeze_collection`].
+   * Disallow further unprivileged transfers for a whole collection.
+   *
+   * Origin must be Signed and the sender should be the Freezer of the `collection`.
+   *
+   * - `collection`: The collection to be frozen.
+   *
+   * Emits `CollectionFrozen`.
+   *
+   * Weight: `O(1)`
    **/
   | { name: 'FreezeCollection'; params: { collection: number } }
   /**
-   * See [`Pallet::thaw_collection`].
+   * Re-allow unprivileged transfers for a whole collection.
+   *
+   * Origin must be Signed and the sender should be the Admin of the `collection`.
+   *
+   * - `collection`: The collection to be thawed.
+   *
+   * Emits `CollectionThawed`.
+   *
+   * Weight: `O(1)`
    **/
   | { name: 'ThawCollection'; params: { collection: number } }
   /**
-   * See [`Pallet::transfer_ownership`].
+   * Change the Owner of a collection.
+   *
+   * Origin must be Signed and the sender should be the Owner of the `collection`.
+   *
+   * - `collection`: The collection whose owner should be changed.
+   * - `owner`: The new Owner of this collection. They must have called
+   * `set_accept_ownership` with `collection` in order for this operation to succeed.
+   *
+   * Emits `OwnerChanged`.
+   *
+   * Weight: `O(1)`
    **/
-  | { name: 'TransferOwnership'; params: { collection: number; owner: MultiAddressLike } }
+  | { name: 'TransferOwnership'; params: { collection: number; newOwner: MultiAddressLike } }
   /**
-   * See [`Pallet::set_team`].
+   * Change the Issuer, Admin and Freezer of a collection.
+   *
+   * Origin must be Signed and the sender should be the Owner of the `collection`.
+   *
+   * - `collection`: The collection whose team should be changed.
+   * - `issuer`: The new Issuer of this collection.
+   * - `admin`: The new Admin of this collection.
+   * - `freezer`: The new Freezer of this collection.
+   *
+   * Emits `TeamChanged`.
+   *
+   * Weight: `O(1)`
    **/
   | {
       name: 'SetTeam';
       params: { collection: number; issuer: MultiAddressLike; admin: MultiAddressLike; freezer: MultiAddressLike };
     }
   /**
-   * See [`Pallet::approve_transfer`].
+   * Approve an item to be transferred by a delegated third-party account.
+   *
+   * The origin must conform to `ForceOrigin` or must be `Signed` and the sender must be
+   * either the owner of the `item` or the admin of the collection.
+   *
+   * - `collection`: The collection of the item to be approved for delegated transfer.
+   * - `item`: The item of the item to be approved for delegated transfer.
+   * - `delegate`: The account to delegate permission to transfer the item.
+   *
+   * Important NOTE: The `approved` account gets reset after each transfer.
+   *
+   * Emits `ApprovedTransfer` on success.
+   *
+   * Weight: `O(1)`
    **/
   | { name: 'ApproveTransfer'; params: { collection: number; item: number; delegate: MultiAddressLike } }
   /**
-   * See [`Pallet::cancel_approval`].
+   * Cancel the prior approval for the transfer of an item by a delegate.
+   *
+   * Origin must be either:
+   * - the `Force` origin;
+   * - `Signed` with the signer being the Admin of the `collection`;
+   * - `Signed` with the signer being the Owner of the `item`;
+   *
+   * Arguments:
+   * - `collection`: The collection of the item of whose approval will be cancelled.
+   * - `item`: The item of the item of whose approval will be cancelled.
+   * - `maybe_check_delegate`: If `Some` will ensure that the given account is the one to
+   * which permission of transfer is delegated.
+   *
+   * Emits `ApprovalCancelled` on success.
+   *
+   * Weight: `O(1)`
    **/
   | {
       name: 'CancelApproval';
       params: { collection: number; item: number; maybeCheckDelegate?: MultiAddressLike | undefined };
     }
   /**
-   * See [`Pallet::force_item_status`].
+   * Alter the attributes of a given item.
+   *
+   * Origin must be `ForceOrigin`.
+   *
+   * - `collection`: The identifier of the item.
+   * - `owner`: The new Owner of this item.
+   * - `issuer`: The new Issuer of this item.
+   * - `admin`: The new Admin of this item.
+   * - `freezer`: The new Freezer of this item.
+   * - `free_holding`: Whether a deposit is taken for holding an item of this collection.
+   * - `is_frozen`: Whether this collection is frozen except for permissioned/admin
+   * instructions.
+   *
+   * Emits `ItemStatusChanged` with the identity of the item.
+   *
+   * Weight: `O(1)`
    **/
   | {
       name: 'ForceItemStatus';
@@ -5831,42 +11789,154 @@ export type PalletUniquesCallLike =
       };
     }
   /**
-   * See [`Pallet::set_attribute`].
+   * Set an attribute for a collection or item.
+   *
+   * Origin must be either `ForceOrigin` or Signed and the sender should be the Owner of the
+   * `collection`.
+   *
+   * If the origin is Signed, then funds of signer are reserved according to the formula:
+   * `MetadataDepositBase + DepositPerByte * (key.len + value.len)` taking into
+   * account any already reserved funds.
+   *
+   * - `collection`: The identifier of the collection whose item's metadata to set.
+   * - `maybe_item`: The identifier of the item whose metadata to set.
+   * - `key`: The key of the attribute.
+   * - `value`: The value to which to set the attribute.
+   *
+   * Emits `AttributeSet`.
+   *
+   * Weight: `O(1)`
    **/
   | {
       name: 'SetAttribute';
       params: { collection: number; maybeItem?: number | undefined; key: BytesLike; value: BytesLike };
     }
   /**
-   * See [`Pallet::clear_attribute`].
+   * Clear an attribute for a collection or item.
+   *
+   * Origin must be either `ForceOrigin` or Signed and the sender should be the Owner of the
+   * `collection`.
+   *
+   * Any deposit is freed for the collection's owner.
+   *
+   * - `collection`: The identifier of the collection whose item's metadata to clear.
+   * - `maybe_item`: The identifier of the item whose metadata to clear.
+   * - `key`: The key of the attribute.
+   *
+   * Emits `AttributeCleared`.
+   *
+   * Weight: `O(1)`
    **/
   | { name: 'ClearAttribute'; params: { collection: number; maybeItem?: number | undefined; key: BytesLike } }
   /**
-   * See [`Pallet::set_metadata`].
+   * Set the metadata for an item.
+   *
+   * Origin must be either `ForceOrigin` or Signed and the sender should be the Owner of the
+   * `collection`.
+   *
+   * If the origin is Signed, then funds of signer are reserved according to the formula:
+   * `MetadataDepositBase + DepositPerByte * data.len` taking into
+   * account any already reserved funds.
+   *
+   * - `collection`: The identifier of the collection whose item's metadata to set.
+   * - `item`: The identifier of the item whose metadata to set.
+   * - `data`: The general information of this item. Limited in length by `StringLimit`.
+   * - `is_frozen`: Whether the metadata should be frozen against further changes.
+   *
+   * Emits `MetadataSet`.
+   *
+   * Weight: `O(1)`
    **/
   | { name: 'SetMetadata'; params: { collection: number; item: number; data: BytesLike; isFrozen: boolean } }
   /**
-   * See [`Pallet::clear_metadata`].
+   * Clear the metadata for an item.
+   *
+   * Origin must be either `ForceOrigin` or Signed and the sender should be the Owner of the
+   * `item`.
+   *
+   * Any deposit is freed for the collection's owner.
+   *
+   * - `collection`: The identifier of the collection whose item's metadata to clear.
+   * - `item`: The identifier of the item whose metadata to clear.
+   *
+   * Emits `MetadataCleared`.
+   *
+   * Weight: `O(1)`
    **/
   | { name: 'ClearMetadata'; params: { collection: number; item: number } }
   /**
-   * See [`Pallet::set_collection_metadata`].
+   * Set the metadata for a collection.
+   *
+   * Origin must be either `ForceOrigin` or `Signed` and the sender should be the Owner of
+   * the `collection`.
+   *
+   * If the origin is `Signed`, then funds of signer are reserved according to the formula:
+   * `MetadataDepositBase + DepositPerByte * data.len` taking into
+   * account any already reserved funds.
+   *
+   * - `collection`: The identifier of the item whose metadata to update.
+   * - `data`: The general information of this item. Limited in length by `StringLimit`.
+   * - `is_frozen`: Whether the metadata should be frozen against further changes.
+   *
+   * Emits `CollectionMetadataSet`.
+   *
+   * Weight: `O(1)`
    **/
   | { name: 'SetCollectionMetadata'; params: { collection: number; data: BytesLike; isFrozen: boolean } }
   /**
-   * See [`Pallet::clear_collection_metadata`].
+   * Clear the metadata for a collection.
+   *
+   * Origin must be either `ForceOrigin` or `Signed` and the sender should be the Owner of
+   * the `collection`.
+   *
+   * Any deposit is freed for the collection's owner.
+   *
+   * - `collection`: The identifier of the collection whose metadata to clear.
+   *
+   * Emits `CollectionMetadataCleared`.
+   *
+   * Weight: `O(1)`
    **/
   | { name: 'ClearCollectionMetadata'; params: { collection: number } }
   /**
-   * See [`Pallet::set_accept_ownership`].
+   * Set (or reset) the acceptance of ownership for a particular account.
+   *
+   * Origin must be `Signed` and if `maybe_collection` is `Some`, then the signer must have a
+   * provider reference.
+   *
+   * - `maybe_collection`: The identifier of the collection whose ownership the signer is
+   * willing to accept, or if `None`, an indication that the signer is willing to accept no
+   * ownership transferal.
+   *
+   * Emits `OwnershipAcceptanceChanged`.
    **/
   | { name: 'SetAcceptOwnership'; params: { maybeCollection?: number | undefined } }
   /**
-   * See [`Pallet::set_collection_max_supply`].
+   * Set the maximum amount of items a collection could have.
+   *
+   * Origin must be either `ForceOrigin` or `Signed` and the sender should be the Owner of
+   * the `collection`.
+   *
+   * Note: This function can only succeed once per collection.
+   *
+   * - `collection`: The identifier of the collection to change.
+   * - `max_supply`: The maximum amount of items a collection could have.
+   *
+   * Emits `CollectionMaxSupplySet` event when successful.
    **/
   | { name: 'SetCollectionMaxSupply'; params: { collection: number; maxSupply: number } }
   /**
-   * See [`Pallet::set_price`].
+   * Set (or reset) the price for an item.
+   *
+   * Origin must be Signed and must be the owner of the asset `item`.
+   *
+   * - `collection`: The collection of the item.
+   * - `item`: The item to set the price for.
+   * - `price`: The price for the item. Pass `None`, to reset the price.
+   * - `buyer`: Restricts the buy operation to a specific account.
+   *
+   * Emits `ItemPriceSet` on success if the price is not `None`.
+   * Emits `ItemPriceRemoved` on success if the price is `None`.
    **/
   | {
       name: 'SetPrice';
@@ -5878,7 +11948,15 @@ export type PalletUniquesCallLike =
       };
     }
   /**
-   * See [`Pallet::buy_item`].
+   * Allows to buy an item if it's up for sale.
+   *
+   * Origin must be Signed and must not be the owner of the `item`.
+   *
+   * - `collection`: The collection of the item.
+   * - `item`: The item the sender wants to buy.
+   * - `bid_price`: The price the sender is willing to pay.
+   *
+   * Emits `ItemBought` on success.
    **/
   | { name: 'BuyItem'; params: { collection: number; item: number; bidPrice: bigint } };
 
@@ -5889,19 +11967,78 @@ export type PalletUniquesDestroyWitness = { items: number; itemMetadatas: number
  **/
 export type PalletNftsCall =
   /**
-   * See [`Pallet::create`].
+   * Issue a new collection of non-fungible items from a public origin.
+   *
+   * This new collection has no items initially and its owner is the origin.
+   *
+   * The origin must be Signed and the sender must have sufficient funds free.
+   *
+   * `CollectionDeposit` funds of sender are reserved.
+   *
+   * Parameters:
+   * - `admin`: The admin of this collection. The admin is the initial address of each
+   * member of the collection's admin team.
+   *
+   * Emits `Created` event when successful.
+   *
+   * Weight: `O(1)`
    **/
   | { name: 'Create'; params: { admin: MultiAddress; config: PalletNftsCollectionConfig } }
   /**
-   * See [`Pallet::force_create`].
+   * Issue a new collection of non-fungible items from a privileged origin.
+   *
+   * This new collection has no items initially.
+   *
+   * The origin must conform to `ForceOrigin`.
+   *
+   * Unlike `create`, no funds are reserved.
+   *
+   * - `owner`: The owner of this collection of items. The owner has full superuser
+   * permissions over this item, but may later change and configure the permissions using
+   * `transfer_ownership` and `set_team`.
+   *
+   * Emits `ForceCreated` event when successful.
+   *
+   * Weight: `O(1)`
    **/
   | { name: 'ForceCreate'; params: { owner: MultiAddress; config: PalletNftsCollectionConfig } }
   /**
-   * See [`Pallet::destroy`].
+   * Destroy a collection of fungible items.
+   *
+   * The origin must conform to `ForceOrigin` or must be `Signed` and the sender must be the
+   * owner of the `collection`.
+   *
+   * NOTE: The collection must have 0 items to be destroyed.
+   *
+   * - `collection`: The identifier of the collection to be destroyed.
+   * - `witness`: Information on the items minted in the collection. This must be
+   * correct.
+   *
+   * Emits `Destroyed` event when successful.
+   *
+   * Weight: `O(m + c + a)` where:
+   * - `m = witness.item_metadatas`
+   * - `c = witness.item_configs`
+   * - `a = witness.attributes`
    **/
   | { name: 'Destroy'; params: { collection: number; witness: PalletNftsDestroyWitness } }
   /**
-   * See [`Pallet::mint`].
+   * Mint an item of a particular collection.
+   *
+   * The origin must be Signed and the sender must comply with the `mint_settings` rules.
+   *
+   * - `collection`: The collection of the item to be minted.
+   * - `item`: An identifier of the new item.
+   * - `mint_to`: Account into which the item will be minted.
+   * - `witness_data`: When the mint type is `HolderOf(collection_id)`, then the owned
+   * item_id from that collection needs to be provided within the witness data object. If
+   * the mint price is set, then it should be additionally confirmed in the `witness_data`.
+   *
+   * Note: the deposit will be taken from the `origin` and not the `owner` of the `item`.
+   *
+   * Emits `Issued` event when successful.
+   *
+   * Weight: `O(1)`
    **/
   | {
       name: 'Mint';
@@ -5913,42 +12050,147 @@ export type PalletNftsCall =
       };
     }
   /**
-   * See [`Pallet::force_mint`].
+   * Mint an item of a particular collection from a privileged origin.
+   *
+   * The origin must conform to `ForceOrigin` or must be `Signed` and the sender must be the
+   * Issuer of the `collection`.
+   *
+   * - `collection`: The collection of the item to be minted.
+   * - `item`: An identifier of the new item.
+   * - `mint_to`: Account into which the item will be minted.
+   * - `item_config`: A config of the new item.
+   *
+   * Emits `Issued` event when successful.
+   *
+   * Weight: `O(1)`
    **/
   | {
       name: 'ForceMint';
       params: { collection: number; item: number; mintTo: MultiAddress; itemConfig: PalletNftsItemConfig };
     }
   /**
-   * See [`Pallet::burn`].
+   * Destroy a single item.
+   *
+   * The origin must conform to `ForceOrigin` or must be Signed and the signing account must
+   * be the owner of the `item`.
+   *
+   * - `collection`: The collection of the item to be burned.
+   * - `item`: The item to be burned.
+   *
+   * Emits `Burned`.
+   *
+   * Weight: `O(1)`
    **/
   | { name: 'Burn'; params: { collection: number; item: number } }
   /**
-   * See [`Pallet::transfer`].
+   * Move an item from the sender account to another.
+   *
+   * Origin must be Signed and the signing account must be either:
+   * - the Owner of the `item`;
+   * - the approved delegate for the `item` (in this case, the approval is reset).
+   *
+   * Arguments:
+   * - `collection`: The collection of the item to be transferred.
+   * - `item`: The item to be transferred.
+   * - `dest`: The account to receive ownership of the item.
+   *
+   * Emits `Transferred`.
+   *
+   * Weight: `O(1)`
    **/
   | { name: 'Transfer'; params: { collection: number; item: number; dest: MultiAddress } }
   /**
-   * See [`Pallet::redeposit`].
+   * Re-evaluate the deposits on some items.
+   *
+   * Origin must be Signed and the sender should be the Owner of the `collection`.
+   *
+   * - `collection`: The collection of the items to be reevaluated.
+   * - `items`: The items of the collection whose deposits will be reevaluated.
+   *
+   * NOTE: This exists as a best-effort function. Any items which are unknown or
+   * in the case that the owner account does not have reservable funds to pay for a
+   * deposit increase are ignored. Generally the owner isn't going to call this on items
+   * whose existing deposit is less than the refreshed deposit as it would only cost them,
+   * so it's of little consequence.
+   *
+   * It will still return an error in the case that the collection is unknown or the signer
+   * is not permitted to call it.
+   *
+   * Weight: `O(items.len())`
    **/
   | { name: 'Redeposit'; params: { collection: number; items: Array<number> } }
   /**
-   * See [`Pallet::lock_item_transfer`].
+   * Disallow further unprivileged transfer of an item.
+   *
+   * Origin must be Signed and the sender should be the Freezer of the `collection`.
+   *
+   * - `collection`: The collection of the item to be changed.
+   * - `item`: The item to become non-transferable.
+   *
+   * Emits `ItemTransferLocked`.
+   *
+   * Weight: `O(1)`
    **/
   | { name: 'LockItemTransfer'; params: { collection: number; item: number } }
   /**
-   * See [`Pallet::unlock_item_transfer`].
+   * Re-allow unprivileged transfer of an item.
+   *
+   * Origin must be Signed and the sender should be the Freezer of the `collection`.
+   *
+   * - `collection`: The collection of the item to be changed.
+   * - `item`: The item to become transferable.
+   *
+   * Emits `ItemTransferUnlocked`.
+   *
+   * Weight: `O(1)`
    **/
   | { name: 'UnlockItemTransfer'; params: { collection: number; item: number } }
   /**
-   * See [`Pallet::lock_collection`].
+   * Disallows specified settings for the whole collection.
+   *
+   * Origin must be Signed and the sender should be the Owner of the `collection`.
+   *
+   * - `collection`: The collection to be locked.
+   * - `lock_settings`: The settings to be locked.
+   *
+   * Note: it's possible to only lock(set) the setting, but not to unset it.
+   *
+   * Emits `CollectionLocked`.
+   *
+   * Weight: `O(1)`
    **/
   | { name: 'LockCollection'; params: { collection: number; lockSettings: PalletNftsBitFlags } }
   /**
-   * See [`Pallet::transfer_ownership`].
+   * Change the Owner of a collection.
+   *
+   * Origin must be Signed and the sender should be the Owner of the `collection`.
+   *
+   * - `collection`: The collection whose owner should be changed.
+   * - `owner`: The new Owner of this collection. They must have called
+   * `set_accept_ownership` with `collection` in order for this operation to succeed.
+   *
+   * Emits `OwnerChanged`.
+   *
+   * Weight: `O(1)`
    **/
-  | { name: 'TransferOwnership'; params: { collection: number; owner: MultiAddress } }
+  | { name: 'TransferOwnership'; params: { collection: number; newOwner: MultiAddress } }
   /**
-   * See [`Pallet::set_team`].
+   * Change the Issuer, Admin and Freezer of a collection.
+   *
+   * Origin must be either `ForceOrigin` or Signed and the sender should be the Owner of the
+   * `collection`.
+   *
+   * Note: by setting the role to `None` only the `ForceOrigin` will be able to change it
+   * after to `Some(account)`.
+   *
+   * - `collection`: The collection whose team should be changed.
+   * - `issuer`: The new Issuer of this collection.
+   * - `admin`: The new Admin of this collection.
+   * - `freezer`: The new Freezer of this collection.
+   *
+   * Emits `TeamChanged`.
+   *
+   * Weight: `O(1)`
    **/
   | {
       name: 'SetTeam';
@@ -5960,37 +12202,130 @@ export type PalletNftsCall =
       };
     }
   /**
-   * See [`Pallet::force_collection_owner`].
+   * Change the Owner of a collection.
+   *
+   * Origin must be `ForceOrigin`.
+   *
+   * - `collection`: The identifier of the collection.
+   * - `owner`: The new Owner of this collection.
+   *
+   * Emits `OwnerChanged`.
+   *
+   * Weight: `O(1)`
    **/
   | { name: 'ForceCollectionOwner'; params: { collection: number; owner: MultiAddress } }
   /**
-   * See [`Pallet::force_collection_config`].
+   * Change the config of a collection.
+   *
+   * Origin must be `ForceOrigin`.
+   *
+   * - `collection`: The identifier of the collection.
+   * - `config`: The new config of this collection.
+   *
+   * Emits `CollectionConfigChanged`.
+   *
+   * Weight: `O(1)`
    **/
   | { name: 'ForceCollectionConfig'; params: { collection: number; config: PalletNftsCollectionConfig } }
   /**
-   * See [`Pallet::approve_transfer`].
+   * Approve an item to be transferred by a delegated third-party account.
+   *
+   * Origin must be either `ForceOrigin` or Signed and the sender should be the Owner of the
+   * `item`.
+   *
+   * - `collection`: The collection of the item to be approved for delegated transfer.
+   * - `item`: The item to be approved for delegated transfer.
+   * - `delegate`: The account to delegate permission to transfer the item.
+   * - `maybe_deadline`: Optional deadline for the approval. Specified by providing the
+   * number of blocks after which the approval will expire
+   *
+   * Emits `TransferApproved` on success.
+   *
+   * Weight: `O(1)`
    **/
   | {
       name: 'ApproveTransfer';
       params: { collection: number; item: number; delegate: MultiAddress; maybeDeadline?: number | undefined };
     }
   /**
-   * See [`Pallet::cancel_approval`].
+   * Cancel one of the transfer approvals for a specific item.
+   *
+   * Origin must be either:
+   * - the `Force` origin;
+   * - `Signed` with the signer being the Owner of the `item`;
+   *
+   * Arguments:
+   * - `collection`: The collection of the item of whose approval will be cancelled.
+   * - `item`: The item of the collection of whose approval will be cancelled.
+   * - `delegate`: The account that is going to loose their approval.
+   *
+   * Emits `ApprovalCancelled` on success.
+   *
+   * Weight: `O(1)`
    **/
   | { name: 'CancelApproval'; params: { collection: number; item: number; delegate: MultiAddress } }
   /**
-   * See [`Pallet::clear_all_transfer_approvals`].
+   * Cancel all the approvals of a specific item.
+   *
+   * Origin must be either:
+   * - the `Force` origin;
+   * - `Signed` with the signer being the Owner of the `item`;
+   *
+   * Arguments:
+   * - `collection`: The collection of the item of whose approvals will be cleared.
+   * - `item`: The item of the collection of whose approvals will be cleared.
+   *
+   * Emits `AllApprovalsCancelled` on success.
+   *
+   * Weight: `O(1)`
    **/
   | { name: 'ClearAllTransferApprovals'; params: { collection: number; item: number } }
   /**
-   * See [`Pallet::lock_item_properties`].
+   * Disallows changing the metadata or attributes of the item.
+   *
+   * Origin must be either `ForceOrigin` or Signed and the sender should be the Admin
+   * of the `collection`.
+   *
+   * - `collection`: The collection if the `item`.
+   * - `item`: An item to be locked.
+   * - `lock_metadata`: Specifies whether the metadata should be locked.
+   * - `lock_attributes`: Specifies whether the attributes in the `CollectionOwner` namespace
+   * should be locked.
+   *
+   * Note: `lock_attributes` affects the attributes in the `CollectionOwner` namespace only.
+   * When the metadata or attributes are locked, it won't be possible the unlock them.
+   *
+   * Emits `ItemPropertiesLocked`.
+   *
+   * Weight: `O(1)`
    **/
   | {
       name: 'LockItemProperties';
       params: { collection: number; item: number; lockMetadata: boolean; lockAttributes: boolean };
     }
   /**
-   * See [`Pallet::set_attribute`].
+   * Set an attribute for a collection or item.
+   *
+   * Origin must be Signed and must conform to the namespace ruleset:
+   * - `CollectionOwner` namespace could be modified by the `collection` Admin only;
+   * - `ItemOwner` namespace could be modified by the `maybe_item` owner only. `maybe_item`
+   * should be set in that case;
+   * - `Account(AccountId)` namespace could be modified only when the `origin` was given a
+   * permission to do so;
+   *
+   * The funds of `origin` are reserved according to the formula:
+   * `AttributeDepositBase + DepositPerByte * (key.len + value.len)` taking into
+   * account any already reserved funds.
+   *
+   * - `collection`: The identifier of the collection whose item's metadata to set.
+   * - `maybe_item`: The identifier of the item whose metadata to set.
+   * - `namespace`: Attribute's namespace.
+   * - `key`: The key of the attribute.
+   * - `value`: The value to which to set the attribute.
+   *
+   * Emits `AttributeSet`.
+   *
+   * Weight: `O(1)`
    **/
   | {
       name: 'SetAttribute';
@@ -6003,7 +12338,23 @@ export type PalletNftsCall =
       };
     }
   /**
-   * See [`Pallet::force_set_attribute`].
+   * Force-set an attribute for a collection or item.
+   *
+   * Origin must be `ForceOrigin`.
+   *
+   * If the attribute already exists and it was set by another account, the deposit
+   * will be returned to the previous owner.
+   *
+   * - `set_as`: An optional owner of the attribute.
+   * - `collection`: The identifier of the collection whose item's metadata to set.
+   * - `maybe_item`: The identifier of the item whose metadata to set.
+   * - `namespace`: Attribute's namespace.
+   * - `key`: The key of the attribute.
+   * - `value`: The value to which to set the attribute.
+   *
+   * Emits `AttributeSet`.
+   *
+   * Weight: `O(1)`
    **/
   | {
       name: 'ForceSetAttribute';
@@ -6017,7 +12368,21 @@ export type PalletNftsCall =
       };
     }
   /**
-   * See [`Pallet::clear_attribute`].
+   * Clear an attribute for a collection or item.
+   *
+   * Origin must be either `ForceOrigin` or Signed and the sender should be the Owner of the
+   * attribute.
+   *
+   * Any deposit is freed for the collection's owner.
+   *
+   * - `collection`: The identifier of the collection whose item's metadata to clear.
+   * - `maybe_item`: The identifier of the item whose metadata to clear.
+   * - `namespace`: Attribute's namespace.
+   * - `key`: The key of the attribute.
+   *
+   * Emits `AttributeCleared`.
+   *
+   * Weight: `O(1)`
    **/
   | {
       name: 'ClearAttribute';
@@ -6029,11 +12394,28 @@ export type PalletNftsCall =
       };
     }
   /**
-   * See [`Pallet::approve_item_attributes`].
+   * Approve item's attributes to be changed by a delegated third-party account.
+   *
+   * Origin must be Signed and must be an owner of the `item`.
+   *
+   * - `collection`: A collection of the item.
+   * - `item`: The item that holds attributes.
+   * - `delegate`: The account to delegate permission to change attributes of the item.
+   *
+   * Emits `ItemAttributesApprovalAdded` on success.
    **/
   | { name: 'ApproveItemAttributes'; params: { collection: number; item: number; delegate: MultiAddress } }
   /**
-   * See [`Pallet::cancel_item_attributes_approval`].
+   * Cancel the previously provided approval to change item's attributes.
+   * All the previously set attributes by the `delegate` will be removed.
+   *
+   * Origin must be Signed and must be an owner of the `item`.
+   *
+   * - `collection`: Collection that the item is contained within.
+   * - `item`: The item that holds attributes.
+   * - `delegate`: The previously approved account to remove.
+   *
+   * Emits `ItemAttributesApprovalRemoved` on success.
    **/
   | {
       name: 'CancelItemAttributesApproval';
@@ -6045,35 +12427,122 @@ export type PalletNftsCall =
       };
     }
   /**
-   * See [`Pallet::set_metadata`].
+   * Set the metadata for an item.
+   *
+   * Origin must be either `ForceOrigin` or Signed and the sender should be the Admin of the
+   * `collection`.
+   *
+   * If the origin is Signed, then funds of signer are reserved according to the formula:
+   * `MetadataDepositBase + DepositPerByte * data.len` taking into
+   * account any already reserved funds.
+   *
+   * - `collection`: The identifier of the collection whose item's metadata to set.
+   * - `item`: The identifier of the item whose metadata to set.
+   * - `data`: The general information of this item. Limited in length by `StringLimit`.
+   *
+   * Emits `ItemMetadataSet`.
+   *
+   * Weight: `O(1)`
    **/
   | { name: 'SetMetadata'; params: { collection: number; item: number; data: Bytes } }
   /**
-   * See [`Pallet::clear_metadata`].
+   * Clear the metadata for an item.
+   *
+   * Origin must be either `ForceOrigin` or Signed and the sender should be the Admin of the
+   * `collection`.
+   *
+   * Any deposit is freed for the collection's owner.
+   *
+   * - `collection`: The identifier of the collection whose item's metadata to clear.
+   * - `item`: The identifier of the item whose metadata to clear.
+   *
+   * Emits `ItemMetadataCleared`.
+   *
+   * Weight: `O(1)`
    **/
   | { name: 'ClearMetadata'; params: { collection: number; item: number } }
   /**
-   * See [`Pallet::set_collection_metadata`].
+   * Set the metadata for a collection.
+   *
+   * Origin must be either `ForceOrigin` or `Signed` and the sender should be the Admin of
+   * the `collection`.
+   *
+   * If the origin is `Signed`, then funds of signer are reserved according to the formula:
+   * `MetadataDepositBase + DepositPerByte * data.len` taking into
+   * account any already reserved funds.
+   *
+   * - `collection`: The identifier of the item whose metadata to update.
+   * - `data`: The general information of this item. Limited in length by `StringLimit`.
+   *
+   * Emits `CollectionMetadataSet`.
+   *
+   * Weight: `O(1)`
    **/
   | { name: 'SetCollectionMetadata'; params: { collection: number; data: Bytes } }
   /**
-   * See [`Pallet::clear_collection_metadata`].
+   * Clear the metadata for a collection.
+   *
+   * Origin must be either `ForceOrigin` or `Signed` and the sender should be the Admin of
+   * the `collection`.
+   *
+   * Any deposit is freed for the collection's owner.
+   *
+   * - `collection`: The identifier of the collection whose metadata to clear.
+   *
+   * Emits `CollectionMetadataCleared`.
+   *
+   * Weight: `O(1)`
    **/
   | { name: 'ClearCollectionMetadata'; params: { collection: number } }
   /**
-   * See [`Pallet::set_accept_ownership`].
+   * Set (or reset) the acceptance of ownership for a particular account.
+   *
+   * Origin must be `Signed` and if `maybe_collection` is `Some`, then the signer must have a
+   * provider reference.
+   *
+   * - `maybe_collection`: The identifier of the collection whose ownership the signer is
+   * willing to accept, or if `None`, an indication that the signer is willing to accept no
+   * ownership transferal.
+   *
+   * Emits `OwnershipAcceptanceChanged`.
    **/
   | { name: 'SetAcceptOwnership'; params: { maybeCollection?: number | undefined } }
   /**
-   * See [`Pallet::set_collection_max_supply`].
+   * Set the maximum number of items a collection could have.
+   *
+   * Origin must be either `ForceOrigin` or `Signed` and the sender should be the Owner of
+   * the `collection`.
+   *
+   * - `collection`: The identifier of the collection to change.
+   * - `max_supply`: The maximum number of items a collection could have.
+   *
+   * Emits `CollectionMaxSupplySet` event when successful.
    **/
   | { name: 'SetCollectionMaxSupply'; params: { collection: number; maxSupply: number } }
   /**
-   * See [`Pallet::update_mint_settings`].
+   * Update mint settings.
+   *
+   * Origin must be either `ForceOrigin` or `Signed` and the sender should be the Issuer
+   * of the `collection`.
+   *
+   * - `collection`: The identifier of the collection to change.
+   * - `mint_settings`: The new mint settings.
+   *
+   * Emits `CollectionMintSettingsUpdated` event when successful.
    **/
   | { name: 'UpdateMintSettings'; params: { collection: number; mintSettings: PalletNftsMintSettings } }
   /**
-   * See [`Pallet::set_price`].
+   * Set (or reset) the price for an item.
+   *
+   * Origin must be Signed and must be the owner of the `item`.
+   *
+   * - `collection`: The collection of the item.
+   * - `item`: The item to set the price for.
+   * - `price`: The price for the item. Pass `None`, to reset the price.
+   * - `buyer`: Restricts the buy operation to a specific account.
+   *
+   * Emits `ItemPriceSet` on success if the price is not `None`.
+   * Emits `ItemPriceRemoved` on success if the price is `None`.
    **/
   | {
       name: 'SetPrice';
@@ -6085,15 +12554,44 @@ export type PalletNftsCall =
       };
     }
   /**
-   * See [`Pallet::buy_item`].
+   * Allows to buy an item if it's up for sale.
+   *
+   * Origin must be Signed and must not be the owner of the `item`.
+   *
+   * - `collection`: The collection of the item.
+   * - `item`: The item the sender wants to buy.
+   * - `bid_price`: The price the sender is willing to pay.
+   *
+   * Emits `ItemBought` on success.
    **/
   | { name: 'BuyItem'; params: { collection: number; item: number; bidPrice: bigint } }
   /**
-   * See [`Pallet::pay_tips`].
+   * Allows to pay the tips.
+   *
+   * Origin must be Signed.
+   *
+   * - `tips`: Tips array.
+   *
+   * Emits `TipSent` on every tip transfer.
    **/
   | { name: 'PayTips'; params: { tips: Array<PalletNftsItemTip> } }
   /**
-   * See [`Pallet::create_swap`].
+   * Register a new atomic swap, declaring an intention to send an `item` in exchange for
+   * `desired_item` from origin to target on the current blockchain.
+   * The target can execute the swap during the specified `duration` of blocks (if set).
+   * Additionally, the price could be set for the desired `item`.
+   *
+   * Origin must be Signed and must be an owner of the `item`.
+   *
+   * - `collection`: The collection of the item.
+   * - `item`: The item an owner wants to give.
+   * - `desired_collection`: The collection of the desired item.
+   * - `desired_item`: The desired item an owner wants to receive.
+   * - `maybe_price`: The price an owner is willing to pay or receive for the desired `item`.
+   * - `duration`: A deadline for the swap. Specified by providing the number of blocks
+   * after which the swap will expire.
+   *
+   * Emits `SwapCreated` on success.
    **/
   | {
       name: 'CreateSwap';
@@ -6107,11 +12605,30 @@ export type PalletNftsCall =
       };
     }
   /**
-   * See [`Pallet::cancel_swap`].
+   * Cancel an atomic swap.
+   *
+   * Origin must be Signed.
+   * Origin must be an owner of the `item` if the deadline hasn't expired.
+   *
+   * - `collection`: The collection of the item.
+   * - `item`: The item an owner wants to give.
+   *
+   * Emits `SwapCancelled` on success.
    **/
   | { name: 'CancelSwap'; params: { offeredCollection: number; offeredItem: number } }
   /**
-   * See [`Pallet::claim_swap`].
+   * Claim an atomic swap.
+   * This method executes a pending swap, that was created by a counterpart before.
+   *
+   * Origin must be Signed and must be an owner of the `item`.
+   *
+   * - `send_collection`: The collection of the item to be sent.
+   * - `send_item`: The item to be sent.
+   * - `receive_collection`: The collection of the item to be received.
+   * - `receive_item`: The item to be received.
+   * - `witness_price`: A price that was previously agreed on.
+   *
+   * Emits `SwapClaimed` on success.
    **/
   | {
       name: 'ClaimSwap';
@@ -6124,14 +12641,38 @@ export type PalletNftsCall =
       };
     }
   /**
-   * See [`Pallet::mint_pre_signed`].
+   * Mint an item by providing the pre-signed approval.
+   *
+   * Origin must be Signed.
+   *
+   * - `mint_data`: The pre-signed approval that consists of the information about the item,
+   * its metadata, attributes, who can mint it (`None` for anyone) and until what block
+   * number.
+   * - `signature`: The signature of the `data` object.
+   * - `signer`: The `data` object's signer. Should be an Issuer of the collection.
+   *
+   * Emits `Issued` on success.
+   * Emits `AttributeSet` if the attributes were provided.
+   * Emits `ItemMetadataSet` if the metadata was not empty.
    **/
   | {
       name: 'MintPreSigned';
       params: { mintData: PalletNftsPreSignedMint; signature: SpRuntimeMultiSignature; signer: AccountId32 };
     }
   /**
-   * See [`Pallet::set_attributes_pre_signed`].
+   * Set attributes for an item by providing the pre-signed approval.
+   *
+   * Origin must be Signed and must be an owner of the `data.item`.
+   *
+   * - `data`: The pre-signed approval that consists of the information about the item,
+   * attributes to update and until what block number.
+   * - `signature`: The signature of the `data` object.
+   * - `signer`: The `data` object's signer. Should be an Admin of the collection for the
+   * `CollectionOwner` namespace.
+   *
+   * Emits `AttributeSet` for each provided attribute.
+   * Emits `ItemAttributesApprovalAdded` if the approval wasn't set before.
+   * Emits `PreSignedAttributesSet` on success.
    **/
   | {
       name: 'SetAttributesPreSigned';
@@ -6140,19 +12681,78 @@ export type PalletNftsCall =
 
 export type PalletNftsCallLike =
   /**
-   * See [`Pallet::create`].
+   * Issue a new collection of non-fungible items from a public origin.
+   *
+   * This new collection has no items initially and its owner is the origin.
+   *
+   * The origin must be Signed and the sender must have sufficient funds free.
+   *
+   * `CollectionDeposit` funds of sender are reserved.
+   *
+   * Parameters:
+   * - `admin`: The admin of this collection. The admin is the initial address of each
+   * member of the collection's admin team.
+   *
+   * Emits `Created` event when successful.
+   *
+   * Weight: `O(1)`
    **/
   | { name: 'Create'; params: { admin: MultiAddressLike; config: PalletNftsCollectionConfig } }
   /**
-   * See [`Pallet::force_create`].
+   * Issue a new collection of non-fungible items from a privileged origin.
+   *
+   * This new collection has no items initially.
+   *
+   * The origin must conform to `ForceOrigin`.
+   *
+   * Unlike `create`, no funds are reserved.
+   *
+   * - `owner`: The owner of this collection of items. The owner has full superuser
+   * permissions over this item, but may later change and configure the permissions using
+   * `transfer_ownership` and `set_team`.
+   *
+   * Emits `ForceCreated` event when successful.
+   *
+   * Weight: `O(1)`
    **/
   | { name: 'ForceCreate'; params: { owner: MultiAddressLike; config: PalletNftsCollectionConfig } }
   /**
-   * See [`Pallet::destroy`].
+   * Destroy a collection of fungible items.
+   *
+   * The origin must conform to `ForceOrigin` or must be `Signed` and the sender must be the
+   * owner of the `collection`.
+   *
+   * NOTE: The collection must have 0 items to be destroyed.
+   *
+   * - `collection`: The identifier of the collection to be destroyed.
+   * - `witness`: Information on the items minted in the collection. This must be
+   * correct.
+   *
+   * Emits `Destroyed` event when successful.
+   *
+   * Weight: `O(m + c + a)` where:
+   * - `m = witness.item_metadatas`
+   * - `c = witness.item_configs`
+   * - `a = witness.attributes`
    **/
   | { name: 'Destroy'; params: { collection: number; witness: PalletNftsDestroyWitness } }
   /**
-   * See [`Pallet::mint`].
+   * Mint an item of a particular collection.
+   *
+   * The origin must be Signed and the sender must comply with the `mint_settings` rules.
+   *
+   * - `collection`: The collection of the item to be minted.
+   * - `item`: An identifier of the new item.
+   * - `mint_to`: Account into which the item will be minted.
+   * - `witness_data`: When the mint type is `HolderOf(collection_id)`, then the owned
+   * item_id from that collection needs to be provided within the witness data object. If
+   * the mint price is set, then it should be additionally confirmed in the `witness_data`.
+   *
+   * Note: the deposit will be taken from the `origin` and not the `owner` of the `item`.
+   *
+   * Emits `Issued` event when successful.
+   *
+   * Weight: `O(1)`
    **/
   | {
       name: 'Mint';
@@ -6164,42 +12764,147 @@ export type PalletNftsCallLike =
       };
     }
   /**
-   * See [`Pallet::force_mint`].
+   * Mint an item of a particular collection from a privileged origin.
+   *
+   * The origin must conform to `ForceOrigin` or must be `Signed` and the sender must be the
+   * Issuer of the `collection`.
+   *
+   * - `collection`: The collection of the item to be minted.
+   * - `item`: An identifier of the new item.
+   * - `mint_to`: Account into which the item will be minted.
+   * - `item_config`: A config of the new item.
+   *
+   * Emits `Issued` event when successful.
+   *
+   * Weight: `O(1)`
    **/
   | {
       name: 'ForceMint';
       params: { collection: number; item: number; mintTo: MultiAddressLike; itemConfig: PalletNftsItemConfig };
     }
   /**
-   * See [`Pallet::burn`].
+   * Destroy a single item.
+   *
+   * The origin must conform to `ForceOrigin` or must be Signed and the signing account must
+   * be the owner of the `item`.
+   *
+   * - `collection`: The collection of the item to be burned.
+   * - `item`: The item to be burned.
+   *
+   * Emits `Burned`.
+   *
+   * Weight: `O(1)`
    **/
   | { name: 'Burn'; params: { collection: number; item: number } }
   /**
-   * See [`Pallet::transfer`].
+   * Move an item from the sender account to another.
+   *
+   * Origin must be Signed and the signing account must be either:
+   * - the Owner of the `item`;
+   * - the approved delegate for the `item` (in this case, the approval is reset).
+   *
+   * Arguments:
+   * - `collection`: The collection of the item to be transferred.
+   * - `item`: The item to be transferred.
+   * - `dest`: The account to receive ownership of the item.
+   *
+   * Emits `Transferred`.
+   *
+   * Weight: `O(1)`
    **/
   | { name: 'Transfer'; params: { collection: number; item: number; dest: MultiAddressLike } }
   /**
-   * See [`Pallet::redeposit`].
+   * Re-evaluate the deposits on some items.
+   *
+   * Origin must be Signed and the sender should be the Owner of the `collection`.
+   *
+   * - `collection`: The collection of the items to be reevaluated.
+   * - `items`: The items of the collection whose deposits will be reevaluated.
+   *
+   * NOTE: This exists as a best-effort function. Any items which are unknown or
+   * in the case that the owner account does not have reservable funds to pay for a
+   * deposit increase are ignored. Generally the owner isn't going to call this on items
+   * whose existing deposit is less than the refreshed deposit as it would only cost them,
+   * so it's of little consequence.
+   *
+   * It will still return an error in the case that the collection is unknown or the signer
+   * is not permitted to call it.
+   *
+   * Weight: `O(items.len())`
    **/
   | { name: 'Redeposit'; params: { collection: number; items: Array<number> } }
   /**
-   * See [`Pallet::lock_item_transfer`].
+   * Disallow further unprivileged transfer of an item.
+   *
+   * Origin must be Signed and the sender should be the Freezer of the `collection`.
+   *
+   * - `collection`: The collection of the item to be changed.
+   * - `item`: The item to become non-transferable.
+   *
+   * Emits `ItemTransferLocked`.
+   *
+   * Weight: `O(1)`
    **/
   | { name: 'LockItemTransfer'; params: { collection: number; item: number } }
   /**
-   * See [`Pallet::unlock_item_transfer`].
+   * Re-allow unprivileged transfer of an item.
+   *
+   * Origin must be Signed and the sender should be the Freezer of the `collection`.
+   *
+   * - `collection`: The collection of the item to be changed.
+   * - `item`: The item to become transferable.
+   *
+   * Emits `ItemTransferUnlocked`.
+   *
+   * Weight: `O(1)`
    **/
   | { name: 'UnlockItemTransfer'; params: { collection: number; item: number } }
   /**
-   * See [`Pallet::lock_collection`].
+   * Disallows specified settings for the whole collection.
+   *
+   * Origin must be Signed and the sender should be the Owner of the `collection`.
+   *
+   * - `collection`: The collection to be locked.
+   * - `lock_settings`: The settings to be locked.
+   *
+   * Note: it's possible to only lock(set) the setting, but not to unset it.
+   *
+   * Emits `CollectionLocked`.
+   *
+   * Weight: `O(1)`
    **/
   | { name: 'LockCollection'; params: { collection: number; lockSettings: PalletNftsBitFlags } }
   /**
-   * See [`Pallet::transfer_ownership`].
+   * Change the Owner of a collection.
+   *
+   * Origin must be Signed and the sender should be the Owner of the `collection`.
+   *
+   * - `collection`: The collection whose owner should be changed.
+   * - `owner`: The new Owner of this collection. They must have called
+   * `set_accept_ownership` with `collection` in order for this operation to succeed.
+   *
+   * Emits `OwnerChanged`.
+   *
+   * Weight: `O(1)`
    **/
-  | { name: 'TransferOwnership'; params: { collection: number; owner: MultiAddressLike } }
+  | { name: 'TransferOwnership'; params: { collection: number; newOwner: MultiAddressLike } }
   /**
-   * See [`Pallet::set_team`].
+   * Change the Issuer, Admin and Freezer of a collection.
+   *
+   * Origin must be either `ForceOrigin` or Signed and the sender should be the Owner of the
+   * `collection`.
+   *
+   * Note: by setting the role to `None` only the `ForceOrigin` will be able to change it
+   * after to `Some(account)`.
+   *
+   * - `collection`: The collection whose team should be changed.
+   * - `issuer`: The new Issuer of this collection.
+   * - `admin`: The new Admin of this collection.
+   * - `freezer`: The new Freezer of this collection.
+   *
+   * Emits `TeamChanged`.
+   *
+   * Weight: `O(1)`
    **/
   | {
       name: 'SetTeam';
@@ -6211,37 +12916,130 @@ export type PalletNftsCallLike =
       };
     }
   /**
-   * See [`Pallet::force_collection_owner`].
+   * Change the Owner of a collection.
+   *
+   * Origin must be `ForceOrigin`.
+   *
+   * - `collection`: The identifier of the collection.
+   * - `owner`: The new Owner of this collection.
+   *
+   * Emits `OwnerChanged`.
+   *
+   * Weight: `O(1)`
    **/
   | { name: 'ForceCollectionOwner'; params: { collection: number; owner: MultiAddressLike } }
   /**
-   * See [`Pallet::force_collection_config`].
+   * Change the config of a collection.
+   *
+   * Origin must be `ForceOrigin`.
+   *
+   * - `collection`: The identifier of the collection.
+   * - `config`: The new config of this collection.
+   *
+   * Emits `CollectionConfigChanged`.
+   *
+   * Weight: `O(1)`
    **/
   | { name: 'ForceCollectionConfig'; params: { collection: number; config: PalletNftsCollectionConfig } }
   /**
-   * See [`Pallet::approve_transfer`].
+   * Approve an item to be transferred by a delegated third-party account.
+   *
+   * Origin must be either `ForceOrigin` or Signed and the sender should be the Owner of the
+   * `item`.
+   *
+   * - `collection`: The collection of the item to be approved for delegated transfer.
+   * - `item`: The item to be approved for delegated transfer.
+   * - `delegate`: The account to delegate permission to transfer the item.
+   * - `maybe_deadline`: Optional deadline for the approval. Specified by providing the
+   * number of blocks after which the approval will expire
+   *
+   * Emits `TransferApproved` on success.
+   *
+   * Weight: `O(1)`
    **/
   | {
       name: 'ApproveTransfer';
       params: { collection: number; item: number; delegate: MultiAddressLike; maybeDeadline?: number | undefined };
     }
   /**
-   * See [`Pallet::cancel_approval`].
+   * Cancel one of the transfer approvals for a specific item.
+   *
+   * Origin must be either:
+   * - the `Force` origin;
+   * - `Signed` with the signer being the Owner of the `item`;
+   *
+   * Arguments:
+   * - `collection`: The collection of the item of whose approval will be cancelled.
+   * - `item`: The item of the collection of whose approval will be cancelled.
+   * - `delegate`: The account that is going to loose their approval.
+   *
+   * Emits `ApprovalCancelled` on success.
+   *
+   * Weight: `O(1)`
    **/
   | { name: 'CancelApproval'; params: { collection: number; item: number; delegate: MultiAddressLike } }
   /**
-   * See [`Pallet::clear_all_transfer_approvals`].
+   * Cancel all the approvals of a specific item.
+   *
+   * Origin must be either:
+   * - the `Force` origin;
+   * - `Signed` with the signer being the Owner of the `item`;
+   *
+   * Arguments:
+   * - `collection`: The collection of the item of whose approvals will be cleared.
+   * - `item`: The item of the collection of whose approvals will be cleared.
+   *
+   * Emits `AllApprovalsCancelled` on success.
+   *
+   * Weight: `O(1)`
    **/
   | { name: 'ClearAllTransferApprovals'; params: { collection: number; item: number } }
   /**
-   * See [`Pallet::lock_item_properties`].
+   * Disallows changing the metadata or attributes of the item.
+   *
+   * Origin must be either `ForceOrigin` or Signed and the sender should be the Admin
+   * of the `collection`.
+   *
+   * - `collection`: The collection if the `item`.
+   * - `item`: An item to be locked.
+   * - `lock_metadata`: Specifies whether the metadata should be locked.
+   * - `lock_attributes`: Specifies whether the attributes in the `CollectionOwner` namespace
+   * should be locked.
+   *
+   * Note: `lock_attributes` affects the attributes in the `CollectionOwner` namespace only.
+   * When the metadata or attributes are locked, it won't be possible the unlock them.
+   *
+   * Emits `ItemPropertiesLocked`.
+   *
+   * Weight: `O(1)`
    **/
   | {
       name: 'LockItemProperties';
       params: { collection: number; item: number; lockMetadata: boolean; lockAttributes: boolean };
     }
   /**
-   * See [`Pallet::set_attribute`].
+   * Set an attribute for a collection or item.
+   *
+   * Origin must be Signed and must conform to the namespace ruleset:
+   * - `CollectionOwner` namespace could be modified by the `collection` Admin only;
+   * - `ItemOwner` namespace could be modified by the `maybe_item` owner only. `maybe_item`
+   * should be set in that case;
+   * - `Account(AccountId)` namespace could be modified only when the `origin` was given a
+   * permission to do so;
+   *
+   * The funds of `origin` are reserved according to the formula:
+   * `AttributeDepositBase + DepositPerByte * (key.len + value.len)` taking into
+   * account any already reserved funds.
+   *
+   * - `collection`: The identifier of the collection whose item's metadata to set.
+   * - `maybe_item`: The identifier of the item whose metadata to set.
+   * - `namespace`: Attribute's namespace.
+   * - `key`: The key of the attribute.
+   * - `value`: The value to which to set the attribute.
+   *
+   * Emits `AttributeSet`.
+   *
+   * Weight: `O(1)`
    **/
   | {
       name: 'SetAttribute';
@@ -6254,7 +13052,23 @@ export type PalletNftsCallLike =
       };
     }
   /**
-   * See [`Pallet::force_set_attribute`].
+   * Force-set an attribute for a collection or item.
+   *
+   * Origin must be `ForceOrigin`.
+   *
+   * If the attribute already exists and it was set by another account, the deposit
+   * will be returned to the previous owner.
+   *
+   * - `set_as`: An optional owner of the attribute.
+   * - `collection`: The identifier of the collection whose item's metadata to set.
+   * - `maybe_item`: The identifier of the item whose metadata to set.
+   * - `namespace`: Attribute's namespace.
+   * - `key`: The key of the attribute.
+   * - `value`: The value to which to set the attribute.
+   *
+   * Emits `AttributeSet`.
+   *
+   * Weight: `O(1)`
    **/
   | {
       name: 'ForceSetAttribute';
@@ -6268,7 +13082,21 @@ export type PalletNftsCallLike =
       };
     }
   /**
-   * See [`Pallet::clear_attribute`].
+   * Clear an attribute for a collection or item.
+   *
+   * Origin must be either `ForceOrigin` or Signed and the sender should be the Owner of the
+   * attribute.
+   *
+   * Any deposit is freed for the collection's owner.
+   *
+   * - `collection`: The identifier of the collection whose item's metadata to clear.
+   * - `maybe_item`: The identifier of the item whose metadata to clear.
+   * - `namespace`: Attribute's namespace.
+   * - `key`: The key of the attribute.
+   *
+   * Emits `AttributeCleared`.
+   *
+   * Weight: `O(1)`
    **/
   | {
       name: 'ClearAttribute';
@@ -6280,11 +13108,28 @@ export type PalletNftsCallLike =
       };
     }
   /**
-   * See [`Pallet::approve_item_attributes`].
+   * Approve item's attributes to be changed by a delegated third-party account.
+   *
+   * Origin must be Signed and must be an owner of the `item`.
+   *
+   * - `collection`: A collection of the item.
+   * - `item`: The item that holds attributes.
+   * - `delegate`: The account to delegate permission to change attributes of the item.
+   *
+   * Emits `ItemAttributesApprovalAdded` on success.
    **/
   | { name: 'ApproveItemAttributes'; params: { collection: number; item: number; delegate: MultiAddressLike } }
   /**
-   * See [`Pallet::cancel_item_attributes_approval`].
+   * Cancel the previously provided approval to change item's attributes.
+   * All the previously set attributes by the `delegate` will be removed.
+   *
+   * Origin must be Signed and must be an owner of the `item`.
+   *
+   * - `collection`: Collection that the item is contained within.
+   * - `item`: The item that holds attributes.
+   * - `delegate`: The previously approved account to remove.
+   *
+   * Emits `ItemAttributesApprovalRemoved` on success.
    **/
   | {
       name: 'CancelItemAttributesApproval';
@@ -6296,35 +13141,122 @@ export type PalletNftsCallLike =
       };
     }
   /**
-   * See [`Pallet::set_metadata`].
+   * Set the metadata for an item.
+   *
+   * Origin must be either `ForceOrigin` or Signed and the sender should be the Admin of the
+   * `collection`.
+   *
+   * If the origin is Signed, then funds of signer are reserved according to the formula:
+   * `MetadataDepositBase + DepositPerByte * data.len` taking into
+   * account any already reserved funds.
+   *
+   * - `collection`: The identifier of the collection whose item's metadata to set.
+   * - `item`: The identifier of the item whose metadata to set.
+   * - `data`: The general information of this item. Limited in length by `StringLimit`.
+   *
+   * Emits `ItemMetadataSet`.
+   *
+   * Weight: `O(1)`
    **/
   | { name: 'SetMetadata'; params: { collection: number; item: number; data: BytesLike } }
   /**
-   * See [`Pallet::clear_metadata`].
+   * Clear the metadata for an item.
+   *
+   * Origin must be either `ForceOrigin` or Signed and the sender should be the Admin of the
+   * `collection`.
+   *
+   * Any deposit is freed for the collection's owner.
+   *
+   * - `collection`: The identifier of the collection whose item's metadata to clear.
+   * - `item`: The identifier of the item whose metadata to clear.
+   *
+   * Emits `ItemMetadataCleared`.
+   *
+   * Weight: `O(1)`
    **/
   | { name: 'ClearMetadata'; params: { collection: number; item: number } }
   /**
-   * See [`Pallet::set_collection_metadata`].
+   * Set the metadata for a collection.
+   *
+   * Origin must be either `ForceOrigin` or `Signed` and the sender should be the Admin of
+   * the `collection`.
+   *
+   * If the origin is `Signed`, then funds of signer are reserved according to the formula:
+   * `MetadataDepositBase + DepositPerByte * data.len` taking into
+   * account any already reserved funds.
+   *
+   * - `collection`: The identifier of the item whose metadata to update.
+   * - `data`: The general information of this item. Limited in length by `StringLimit`.
+   *
+   * Emits `CollectionMetadataSet`.
+   *
+   * Weight: `O(1)`
    **/
   | { name: 'SetCollectionMetadata'; params: { collection: number; data: BytesLike } }
   /**
-   * See [`Pallet::clear_collection_metadata`].
+   * Clear the metadata for a collection.
+   *
+   * Origin must be either `ForceOrigin` or `Signed` and the sender should be the Admin of
+   * the `collection`.
+   *
+   * Any deposit is freed for the collection's owner.
+   *
+   * - `collection`: The identifier of the collection whose metadata to clear.
+   *
+   * Emits `CollectionMetadataCleared`.
+   *
+   * Weight: `O(1)`
    **/
   | { name: 'ClearCollectionMetadata'; params: { collection: number } }
   /**
-   * See [`Pallet::set_accept_ownership`].
+   * Set (or reset) the acceptance of ownership for a particular account.
+   *
+   * Origin must be `Signed` and if `maybe_collection` is `Some`, then the signer must have a
+   * provider reference.
+   *
+   * - `maybe_collection`: The identifier of the collection whose ownership the signer is
+   * willing to accept, or if `None`, an indication that the signer is willing to accept no
+   * ownership transferal.
+   *
+   * Emits `OwnershipAcceptanceChanged`.
    **/
   | { name: 'SetAcceptOwnership'; params: { maybeCollection?: number | undefined } }
   /**
-   * See [`Pallet::set_collection_max_supply`].
+   * Set the maximum number of items a collection could have.
+   *
+   * Origin must be either `ForceOrigin` or `Signed` and the sender should be the Owner of
+   * the `collection`.
+   *
+   * - `collection`: The identifier of the collection to change.
+   * - `max_supply`: The maximum number of items a collection could have.
+   *
+   * Emits `CollectionMaxSupplySet` event when successful.
    **/
   | { name: 'SetCollectionMaxSupply'; params: { collection: number; maxSupply: number } }
   /**
-   * See [`Pallet::update_mint_settings`].
+   * Update mint settings.
+   *
+   * Origin must be either `ForceOrigin` or `Signed` and the sender should be the Issuer
+   * of the `collection`.
+   *
+   * - `collection`: The identifier of the collection to change.
+   * - `mint_settings`: The new mint settings.
+   *
+   * Emits `CollectionMintSettingsUpdated` event when successful.
    **/
   | { name: 'UpdateMintSettings'; params: { collection: number; mintSettings: PalletNftsMintSettings } }
   /**
-   * See [`Pallet::set_price`].
+   * Set (or reset) the price for an item.
+   *
+   * Origin must be Signed and must be the owner of the `item`.
+   *
+   * - `collection`: The collection of the item.
+   * - `item`: The item to set the price for.
+   * - `price`: The price for the item. Pass `None`, to reset the price.
+   * - `buyer`: Restricts the buy operation to a specific account.
+   *
+   * Emits `ItemPriceSet` on success if the price is not `None`.
+   * Emits `ItemPriceRemoved` on success if the price is `None`.
    **/
   | {
       name: 'SetPrice';
@@ -6336,15 +13268,44 @@ export type PalletNftsCallLike =
       };
     }
   /**
-   * See [`Pallet::buy_item`].
+   * Allows to buy an item if it's up for sale.
+   *
+   * Origin must be Signed and must not be the owner of the `item`.
+   *
+   * - `collection`: The collection of the item.
+   * - `item`: The item the sender wants to buy.
+   * - `bid_price`: The price the sender is willing to pay.
+   *
+   * Emits `ItemBought` on success.
    **/
   | { name: 'BuyItem'; params: { collection: number; item: number; bidPrice: bigint } }
   /**
-   * See [`Pallet::pay_tips`].
+   * Allows to pay the tips.
+   *
+   * Origin must be Signed.
+   *
+   * - `tips`: Tips array.
+   *
+   * Emits `TipSent` on every tip transfer.
    **/
   | { name: 'PayTips'; params: { tips: Array<PalletNftsItemTip> } }
   /**
-   * See [`Pallet::create_swap`].
+   * Register a new atomic swap, declaring an intention to send an `item` in exchange for
+   * `desired_item` from origin to target on the current blockchain.
+   * The target can execute the swap during the specified `duration` of blocks (if set).
+   * Additionally, the price could be set for the desired `item`.
+   *
+   * Origin must be Signed and must be an owner of the `item`.
+   *
+   * - `collection`: The collection of the item.
+   * - `item`: The item an owner wants to give.
+   * - `desired_collection`: The collection of the desired item.
+   * - `desired_item`: The desired item an owner wants to receive.
+   * - `maybe_price`: The price an owner is willing to pay or receive for the desired `item`.
+   * - `duration`: A deadline for the swap. Specified by providing the number of blocks
+   * after which the swap will expire.
+   *
+   * Emits `SwapCreated` on success.
    **/
   | {
       name: 'CreateSwap';
@@ -6358,11 +13319,30 @@ export type PalletNftsCallLike =
       };
     }
   /**
-   * See [`Pallet::cancel_swap`].
+   * Cancel an atomic swap.
+   *
+   * Origin must be Signed.
+   * Origin must be an owner of the `item` if the deadline hasn't expired.
+   *
+   * - `collection`: The collection of the item.
+   * - `item`: The item an owner wants to give.
+   *
+   * Emits `SwapCancelled` on success.
    **/
   | { name: 'CancelSwap'; params: { offeredCollection: number; offeredItem: number } }
   /**
-   * See [`Pallet::claim_swap`].
+   * Claim an atomic swap.
+   * This method executes a pending swap, that was created by a counterpart before.
+   *
+   * Origin must be Signed and must be an owner of the `item`.
+   *
+   * - `send_collection`: The collection of the item to be sent.
+   * - `send_item`: The item to be sent.
+   * - `receive_collection`: The collection of the item to be received.
+   * - `receive_item`: The item to be received.
+   * - `witness_price`: A price that was previously agreed on.
+   *
+   * Emits `SwapClaimed` on success.
    **/
   | {
       name: 'ClaimSwap';
@@ -6375,14 +13355,38 @@ export type PalletNftsCallLike =
       };
     }
   /**
-   * See [`Pallet::mint_pre_signed`].
+   * Mint an item by providing the pre-signed approval.
+   *
+   * Origin must be Signed.
+   *
+   * - `mint_data`: The pre-signed approval that consists of the information about the item,
+   * its metadata, attributes, who can mint it (`None` for anyone) and until what block
+   * number.
+   * - `signature`: The signature of the `data` object.
+   * - `signer`: The `data` object's signer. Should be an Issuer of the collection.
+   *
+   * Emits `Issued` on success.
+   * Emits `AttributeSet` if the attributes were provided.
+   * Emits `ItemMetadataSet` if the metadata was not empty.
    **/
   | {
       name: 'MintPreSigned';
       params: { mintData: PalletNftsPreSignedMint; signature: SpRuntimeMultiSignature; signer: AccountId32Like };
     }
   /**
-   * See [`Pallet::set_attributes_pre_signed`].
+   * Set attributes for an item by providing the pre-signed approval.
+   *
+   * Origin must be Signed and must be an owner of the `data.item`.
+   *
+   * - `data`: The pre-signed approval that consists of the information about the item,
+   * attributes to update and until what block number.
+   * - `signature`: The signature of the `data` object.
+   * - `signer`: The `data` object's signer. Should be an Admin of the collection for the
+   * `CollectionOwner` namespace.
+   *
+   * Emits `AttributeSet` for each provided attribute.
+   * Emits `ItemAttributesApprovalAdded` if the approval wasn't set before.
+   * Emits `PreSignedAttributesSet` on success.
    **/
   | {
       name: 'SetAttributesPreSigned';
@@ -6438,13 +13442,6 @@ export type PalletNftsPreSignedMint = {
   mintPrice?: bigint | undefined;
 };
 
-export type SpRuntimeMultiSignature =
-  | { tag: 'Ed25519'; value: SpCoreEd25519Signature }
-  | { tag: 'Sr25519'; value: SpCoreSr25519Signature }
-  | { tag: 'Ecdsa'; value: SpCoreEcdsaSignature };
-
-export type SpCoreEcdsaSignature = FixedBytes<65>;
-
 export type PalletNftsPreSignedAttributes = {
   collection: number;
   item: number;
@@ -6458,20 +13455,67 @@ export type PalletNftsPreSignedAttributes = {
  **/
 export type PalletNftFractionalizationCall =
   /**
-   * See [`Pallet::fractionalize`].
+   * Lock the NFT and mint a new fungible asset.
+   *
+   * The dispatch origin for this call must be Signed.
+   * The origin must be the owner of the NFT they are trying to lock.
+   *
+   * `Deposit` funds of sender are reserved.
+   *
+   * - `nft_collection_id`: The ID used to identify the collection of the NFT.
+   * Is used within the context of `pallet_nfts`.
+   * - `nft_id`: The ID used to identify the NFT within the given collection.
+   * Is used within the context of `pallet_nfts`.
+   * - `asset_id`: The ID of the new asset. It must not exist.
+   * Is used within the context of `pallet_assets`.
+   * - `beneficiary`: The account that will receive the newly created asset.
+   * - `fractions`: The total issuance of the newly created asset class.
+   *
+   * Emits `NftFractionalized` event when successful.
    **/
   | {
       name: 'Fractionalize';
       params: { nftCollectionId: number; nftId: number; assetId: number; beneficiary: MultiAddress; fractions: bigint };
     }
   /**
-   * See [`Pallet::unify`].
+   * Burn the total issuance of the fungible asset and return (unlock) the locked NFT.
+   *
+   * The dispatch origin for this call must be Signed.
+   *
+   * `Deposit` funds will be returned to `asset_creator`.
+   *
+   * - `nft_collection_id`: The ID used to identify the collection of the NFT.
+   * Is used within the context of `pallet_nfts`.
+   * - `nft_id`: The ID used to identify the NFT within the given collection.
+   * Is used within the context of `pallet_nfts`.
+   * - `asset_id`: The ID of the asset being returned and destroyed. Must match
+   * the original ID of the created asset, corresponding to the NFT.
+   * Is used within the context of `pallet_assets`.
+   * - `beneficiary`: The account that will receive the unified NFT.
+   *
+   * Emits `NftUnified` event when successful.
    **/
   | { name: 'Unify'; params: { nftCollectionId: number; nftId: number; assetId: number; beneficiary: MultiAddress } };
 
 export type PalletNftFractionalizationCallLike =
   /**
-   * See [`Pallet::fractionalize`].
+   * Lock the NFT and mint a new fungible asset.
+   *
+   * The dispatch origin for this call must be Signed.
+   * The origin must be the owner of the NFT they are trying to lock.
+   *
+   * `Deposit` funds of sender are reserved.
+   *
+   * - `nft_collection_id`: The ID used to identify the collection of the NFT.
+   * Is used within the context of `pallet_nfts`.
+   * - `nft_id`: The ID used to identify the NFT within the given collection.
+   * Is used within the context of `pallet_nfts`.
+   * - `asset_id`: The ID of the new asset. It must not exist.
+   * Is used within the context of `pallet_assets`.
+   * - `beneficiary`: The account that will receive the newly created asset.
+   * - `fractions`: The total issuance of the newly created asset class.
+   *
+   * Emits `NftFractionalized` event when successful.
    **/
   | {
       name: 'Fractionalize';
@@ -6484,7 +13528,22 @@ export type PalletNftFractionalizationCallLike =
       };
     }
   /**
-   * See [`Pallet::unify`].
+   * Burn the total issuance of the fungible asset and return (unlock) the locked NFT.
+   *
+   * The dispatch origin for this call must be Signed.
+   *
+   * `Deposit` funds will be returned to `asset_creator`.
+   *
+   * - `nft_collection_id`: The ID used to identify the collection of the NFT.
+   * Is used within the context of `pallet_nfts`.
+   * - `nft_id`: The ID used to identify the NFT within the given collection.
+   * Is used within the context of `pallet_nfts`.
+   * - `asset_id`: The ID of the asset being returned and destroyed. Must match
+   * the original ID of the created asset, corresponding to the NFT.
+   * Is used within the context of `pallet_assets`.
+   * - `beneficiary`: The account that will receive the unified NFT.
+   *
+   * Emits `NftUnified` event when successful.
    **/
   | {
       name: 'Unify';
@@ -6496,61 +13555,113 @@ export type PalletNftFractionalizationCallLike =
  **/
 export type PalletSalaryCall =
   /**
-   * See [`Pallet::init`].
+   * Start the first payout cycle.
+   *
+   * - `origin`: A `Signed` origin of an account.
    **/
   | { name: 'Init' }
   /**
-   * See [`Pallet::bump`].
+   * Move to next payout cycle, assuming that the present block is now within that cycle.
+   *
+   * - `origin`: A `Signed` origin of an account.
    **/
   | { name: 'Bump' }
   /**
-   * See [`Pallet::induct`].
+   * Induct oneself into the payout system.
    **/
   | { name: 'Induct' }
   /**
-   * See [`Pallet::register`].
+   * Register for a payout.
+   *
+   * Will only work if we are in the first `RegistrationPeriod` blocks since the cycle
+   * started.
+   *
+   * - `origin`: A `Signed` origin of an account which is a member of `Members`.
    **/
   | { name: 'Register' }
   /**
-   * See [`Pallet::payout`].
+   * Request a payout.
+   *
+   * Will only work if we are after the first `RegistrationPeriod` blocks since the cycle
+   * started but by no more than `PayoutPeriod` blocks.
+   *
+   * - `origin`: A `Signed` origin of an account which is a member of `Members`.
    **/
   | { name: 'Payout' }
   /**
-   * See [`Pallet::payout_other`].
+   * Request a payout to a secondary account.
+   *
+   * Will only work if we are after the first `RegistrationPeriod` blocks since the cycle
+   * started but by no more than `PayoutPeriod` blocks.
+   *
+   * - `origin`: A `Signed` origin of an account which is a member of `Members`.
+   * - `beneficiary`: The account to receive payment.
    **/
   | { name: 'PayoutOther'; params: { beneficiary: AccountId32 } }
   /**
-   * See [`Pallet::check_payment`].
+   * Update a payment's status; if it failed, alter the state so the payment can be retried.
+   *
+   * This must be called within the same cycle as the failed payment. It will fail with
+   * `Event::NotCurrent` otherwise.
+   *
+   * - `origin`: A `Signed` origin of an account which is a member of `Members` who has
+   * received a payment this cycle.
    **/
   | { name: 'CheckPayment' };
 
 export type PalletSalaryCallLike =
   /**
-   * See [`Pallet::init`].
+   * Start the first payout cycle.
+   *
+   * - `origin`: A `Signed` origin of an account.
    **/
   | { name: 'Init' }
   /**
-   * See [`Pallet::bump`].
+   * Move to next payout cycle, assuming that the present block is now within that cycle.
+   *
+   * - `origin`: A `Signed` origin of an account.
    **/
   | { name: 'Bump' }
   /**
-   * See [`Pallet::induct`].
+   * Induct oneself into the payout system.
    **/
   | { name: 'Induct' }
   /**
-   * See [`Pallet::register`].
+   * Register for a payout.
+   *
+   * Will only work if we are in the first `RegistrationPeriod` blocks since the cycle
+   * started.
+   *
+   * - `origin`: A `Signed` origin of an account which is a member of `Members`.
    **/
   | { name: 'Register' }
   /**
-   * See [`Pallet::payout`].
+   * Request a payout.
+   *
+   * Will only work if we are after the first `RegistrationPeriod` blocks since the cycle
+   * started but by no more than `PayoutPeriod` blocks.
+   *
+   * - `origin`: A `Signed` origin of an account which is a member of `Members`.
    **/
   | { name: 'Payout' }
   /**
-   * See [`Pallet::payout_other`].
+   * Request a payout to a secondary account.
+   *
+   * Will only work if we are after the first `RegistrationPeriod` blocks since the cycle
+   * started but by no more than `PayoutPeriod` blocks.
+   *
+   * - `origin`: A `Signed` origin of an account which is a member of `Members`.
+   * - `beneficiary`: The account to receive payment.
    **/
   | { name: 'PayoutOther'; params: { beneficiary: AccountId32Like } }
   /**
-   * See [`Pallet::check_payment`].
+   * Update a payment's status; if it failed, alter the state so the payment can be retried.
+   *
+   * This must be called within the same cycle as the failed payment. It will fail with
+   * `Event::NotCurrent` otherwise.
+   *
+   * - `origin`: A `Signed` origin of an account which is a member of `Members` who has
+   * received a payment this cycle.
    **/
   | { name: 'CheckPayment' };
 
@@ -6559,77 +13670,171 @@ export type PalletSalaryCallLike =
  **/
 export type PalletCoreFellowshipCall =
   /**
-   * See [`Pallet::bump`].
+   * Bump the state of a member.
+   *
+   * This will demote a member whose `last_proof` is now beyond their rank's
+   * `demotion_period`.
+   *
+   * - `origin`: A `Signed` origin of an account.
+   * - `who`: A member account whose state is to be updated.
    **/
   | { name: 'Bump'; params: { who: AccountId32 } }
   /**
-   * See [`Pallet::set_params`].
+   * Set the parameters.
+   *
+   * - `origin`: An origin complying with `ParamsOrigin` or root.
+   * - `params`: The new parameters for the pallet.
    **/
   | { name: 'SetParams'; params: { params: PalletCoreFellowshipParamsType } }
   /**
-   * See [`Pallet::set_active`].
+   * Set whether a member is active or not.
+   *
+   * - `origin`: A `Signed` origin of a member's account.
+   * - `is_active`: `true` iff the member is active.
    **/
   | { name: 'SetActive'; params: { isActive: boolean } }
   /**
-   * See [`Pallet::approve`].
+   * Approve a member to continue at their rank.
+   *
+   * This resets `last_proof` to the current block, thereby delaying any automatic demotion.
+   *
+   * `who` must already be tracked by this pallet for this to have an effect.
+   *
+   * - `origin`: An origin which satisfies `ApproveOrigin` or root.
+   * - `who`: A member (i.e. of non-zero rank).
+   * - `at_rank`: The rank of member.
    **/
   | { name: 'Approve'; params: { who: AccountId32; atRank: number } }
   /**
-   * See [`Pallet::induct`].
+   * Introduce a new and unranked candidate (rank zero).
+   *
+   * - `origin`: An origin which satisfies `InductOrigin` or root.
+   * - `who`: The account ID of the candidate to be inducted and become a member.
    **/
   | { name: 'Induct'; params: { who: AccountId32 } }
   /**
-   * See [`Pallet::promote`].
+   * Increment the rank of a ranked and tracked account.
+   *
+   * - `origin`: An origin which satisfies `PromoteOrigin` with a `Success` result of
+   * `to_rank` or more or root.
+   * - `who`: The account ID of the member to be promoted to `to_rank`.
+   * - `to_rank`: One more than the current rank of `who`.
    **/
   | { name: 'Promote'; params: { who: AccountId32; toRank: number } }
   /**
-   * See [`Pallet::offboard`].
+   * Stop tracking a prior member who is now not a ranked member of the collective.
+   *
+   * - `origin`: A `Signed` origin of an account.
+   * - `who`: The ID of an account which was tracked in this pallet but which is now not a
+   * ranked member of the collective.
    **/
   | { name: 'Offboard'; params: { who: AccountId32 } }
   /**
-   * See [`Pallet::submit_evidence`].
+   * Provide evidence that a rank is deserved.
+   *
+   * This is free as long as no evidence for the forthcoming judgement is already submitted.
+   * Evidence is cleared after an outcome (either demotion, promotion of approval).
+   *
+   * - `origin`: A `Signed` origin of an inducted and ranked account.
+   * - `wish`: The stated desire of the member.
+   * - `evidence`: A dump of evidence to be considered. This should generally be either a
+   * Markdown-encoded document or a series of 32-byte hashes which can be found on a
+   * decentralised content-based-indexing system such as IPFS.
    **/
   | { name: 'SubmitEvidence'; params: { wish: PalletCoreFellowshipWish; evidence: Bytes } }
   /**
-   * See [`Pallet::import`].
+   * Introduce an already-ranked individual of the collective into this pallet. The rank may
+   * still be zero.
+   *
+   * This resets `last_proof` to the current block and `last_promotion` will be set to zero,
+   * thereby delaying any automatic demotion but allowing immediate promotion.
+   *
+   * - `origin`: A signed origin of a ranked, but not tracked, account.
    **/
   | { name: 'Import' };
 
 export type PalletCoreFellowshipCallLike =
   /**
-   * See [`Pallet::bump`].
+   * Bump the state of a member.
+   *
+   * This will demote a member whose `last_proof` is now beyond their rank's
+   * `demotion_period`.
+   *
+   * - `origin`: A `Signed` origin of an account.
+   * - `who`: A member account whose state is to be updated.
    **/
   | { name: 'Bump'; params: { who: AccountId32Like } }
   /**
-   * See [`Pallet::set_params`].
+   * Set the parameters.
+   *
+   * - `origin`: An origin complying with `ParamsOrigin` or root.
+   * - `params`: The new parameters for the pallet.
    **/
   | { name: 'SetParams'; params: { params: PalletCoreFellowshipParamsType } }
   /**
-   * See [`Pallet::set_active`].
+   * Set whether a member is active or not.
+   *
+   * - `origin`: A `Signed` origin of a member's account.
+   * - `is_active`: `true` iff the member is active.
    **/
   | { name: 'SetActive'; params: { isActive: boolean } }
   /**
-   * See [`Pallet::approve`].
+   * Approve a member to continue at their rank.
+   *
+   * This resets `last_proof` to the current block, thereby delaying any automatic demotion.
+   *
+   * `who` must already be tracked by this pallet for this to have an effect.
+   *
+   * - `origin`: An origin which satisfies `ApproveOrigin` or root.
+   * - `who`: A member (i.e. of non-zero rank).
+   * - `at_rank`: The rank of member.
    **/
   | { name: 'Approve'; params: { who: AccountId32Like; atRank: number } }
   /**
-   * See [`Pallet::induct`].
+   * Introduce a new and unranked candidate (rank zero).
+   *
+   * - `origin`: An origin which satisfies `InductOrigin` or root.
+   * - `who`: The account ID of the candidate to be inducted and become a member.
    **/
   | { name: 'Induct'; params: { who: AccountId32Like } }
   /**
-   * See [`Pallet::promote`].
+   * Increment the rank of a ranked and tracked account.
+   *
+   * - `origin`: An origin which satisfies `PromoteOrigin` with a `Success` result of
+   * `to_rank` or more or root.
+   * - `who`: The account ID of the member to be promoted to `to_rank`.
+   * - `to_rank`: One more than the current rank of `who`.
    **/
   | { name: 'Promote'; params: { who: AccountId32Like; toRank: number } }
   /**
-   * See [`Pallet::offboard`].
+   * Stop tracking a prior member who is now not a ranked member of the collective.
+   *
+   * - `origin`: A `Signed` origin of an account.
+   * - `who`: The ID of an account which was tracked in this pallet but which is now not a
+   * ranked member of the collective.
    **/
   | { name: 'Offboard'; params: { who: AccountId32Like } }
   /**
-   * See [`Pallet::submit_evidence`].
+   * Provide evidence that a rank is deserved.
+   *
+   * This is free as long as no evidence for the forthcoming judgement is already submitted.
+   * Evidence is cleared after an outcome (either demotion, promotion of approval).
+   *
+   * - `origin`: A `Signed` origin of an inducted and ranked account.
+   * - `wish`: The stated desire of the member.
+   * - `evidence`: A dump of evidence to be considered. This should generally be either a
+   * Markdown-encoded document or a series of 32-byte hashes which can be found on a
+   * decentralised content-based-indexing system such as IPFS.
    **/
   | { name: 'SubmitEvidence'; params: { wish: PalletCoreFellowshipWish; evidence: BytesLike } }
   /**
-   * See [`Pallet::import`].
+   * Introduce an already-ranked individual of the collective into this pallet. The rank may
+   * still be zero.
+   *
+   * This resets `last_proof` to the current block and `last_promotion` will be set to zero,
+   * thereby delaying any automatic demotion but allowing immediate promotion.
+   *
+   * - `origin`: A signed origin of a ranked, but not tracked, account.
    **/
   | { name: 'Import' };
 
@@ -6638,29 +13843,57 @@ export type PalletCoreFellowshipCallLike =
  **/
 export type PalletTransactionStorageCall =
   /**
-   * See [`Pallet::store`].
+   * Index and store data off chain. Minimum data size is 1 bytes, maximum is
+   * `MaxTransactionSize`. Data will be removed after `STORAGE_PERIOD` blocks, unless `renew`
+   * is called.
+   * ## Complexity
+   * - O(n*log(n)) of data size, as all data is pushed to an in-memory trie.
    **/
   | { name: 'Store'; params: { data: Bytes } }
   /**
-   * See [`Pallet::renew`].
+   * Renew previously stored data. Parameters are the block number that contains
+   * previous `store` or `renew` call and transaction index within that block.
+   * Transaction index is emitted in the `Stored` or `Renewed` event.
+   * Applies same fees as `store`.
+   * ## Complexity
+   * - O(1).
    **/
   | { name: 'Renew'; params: { block: number; index: number } }
   /**
-   * See [`Pallet::check_proof`].
+   * Check storage proof for block number `block_number() - StoragePeriod`.
+   * If such block does not exist the proof is expected to be `None`.
+   * ## Complexity
+   * - Linear w.r.t the number of indexed transactions in the proved block for random
+   * probing.
+   * There's a DB read for each transaction.
    **/
   | { name: 'CheckProof'; params: { proof: SpTransactionStorageProofTransactionStorageProof } };
 
 export type PalletTransactionStorageCallLike =
   /**
-   * See [`Pallet::store`].
+   * Index and store data off chain. Minimum data size is 1 bytes, maximum is
+   * `MaxTransactionSize`. Data will be removed after `STORAGE_PERIOD` blocks, unless `renew`
+   * is called.
+   * ## Complexity
+   * - O(n*log(n)) of data size, as all data is pushed to an in-memory trie.
    **/
   | { name: 'Store'; params: { data: BytesLike } }
   /**
-   * See [`Pallet::renew`].
+   * Renew previously stored data. Parameters are the block number that contains
+   * previous `store` or `renew` call and transaction index within that block.
+   * Transaction index is emitted in the `Stored` or `Renewed` event.
+   * Applies same fees as `store`.
+   * ## Complexity
+   * - O(1).
    **/
   | { name: 'Renew'; params: { block: number; index: number } }
   /**
-   * See [`Pallet::check_proof`].
+   * Check storage proof for block number `block_number() - StoragePeriod`.
+   * If such block does not exist the proof is expected to be `None`.
+   * ## Complexity
+   * - Linear w.r.t the number of indexed transactions in the proved block for random
+   * probing.
+   * There's a DB read for each transaction.
    **/
   | { name: 'CheckProof'; params: { proof: SpTransactionStorageProofTransactionStorageProof } };
 
@@ -6671,29 +13904,69 @@ export type SpTransactionStorageProofTransactionStorageProof = { chunk: Bytes; p
  **/
 export type PalletBagsListCall =
   /**
-   * See [`Pallet::rebag`].
+   * Declare that some `dislocated` account has, through rewards or penalties, sufficiently
+   * changed its score that it should properly fall into a different bag than its current
+   * one.
+   *
+   * Anyone can call this function about any potentially dislocated account.
+   *
+   * Will always update the stored score of `dislocated` to the correct score, based on
+   * `ScoreProvider`.
+   *
+   * If `dislocated` does not exists, it returns an error.
    **/
   | { name: 'Rebag'; params: { dislocated: MultiAddress } }
   /**
-   * See [`Pallet::put_in_front_of`].
+   * Move the caller's Id directly in front of `lighter`.
+   *
+   * The dispatch origin for this call must be _Signed_ and can only be called by the Id of
+   * the account going in front of `lighter`. Fee is payed by the origin under all
+   * circumstances.
+   *
+   * Only works if:
+   *
+   * - both nodes are within the same bag,
+   * - and `origin` has a greater `Score` than `lighter`.
    **/
   | { name: 'PutInFrontOf'; params: { lighter: MultiAddress } }
   /**
-   * See [`Pallet::put_in_front_of_other`].
+   * Same as [`Pallet::put_in_front_of`], but it can be called by anyone.
+   *
+   * Fee is paid by the origin under all circumstances.
    **/
   | { name: 'PutInFrontOfOther'; params: { heavier: MultiAddress; lighter: MultiAddress } };
 
 export type PalletBagsListCallLike =
   /**
-   * See [`Pallet::rebag`].
+   * Declare that some `dislocated` account has, through rewards or penalties, sufficiently
+   * changed its score that it should properly fall into a different bag than its current
+   * one.
+   *
+   * Anyone can call this function about any potentially dislocated account.
+   *
+   * Will always update the stored score of `dislocated` to the correct score, based on
+   * `ScoreProvider`.
+   *
+   * If `dislocated` does not exists, it returns an error.
    **/
   | { name: 'Rebag'; params: { dislocated: MultiAddressLike } }
   /**
-   * See [`Pallet::put_in_front_of`].
+   * Move the caller's Id directly in front of `lighter`.
+   *
+   * The dispatch origin for this call must be _Signed_ and can only be called by the Id of
+   * the account going in front of `lighter`. Fee is payed by the origin under all
+   * circumstances.
+   *
+   * Only works if:
+   *
+   * - both nodes are within the same bag,
+   * - and `origin` has a greater `Score` than `lighter`.
    **/
   | { name: 'PutInFrontOf'; params: { lighter: MultiAddressLike } }
   /**
-   * See [`Pallet::put_in_front_of_other`].
+   * Same as [`Pallet::put_in_front_of`], but it can be called by anyone.
+   *
+   * Fee is paid by the origin under all circumstances.
    **/
   | { name: 'PutInFrontOfOther'; params: { heavier: MultiAddressLike; lighter: MultiAddressLike } };
 
@@ -6702,11 +13975,33 @@ export type PalletBagsListCallLike =
  **/
 export type PalletStateTrieMigrationCall =
   /**
-   * See [`Pallet::control_auto_migration`].
+   * Control the automatic migration.
+   *
+   * The dispatch origin of this call must be [`Config::ControlOrigin`].
    **/
   | { name: 'ControlAutoMigration'; params: { maybeConfig?: PalletStateTrieMigrationMigrationLimits | undefined } }
   /**
-   * See [`Pallet::continue_migrate`].
+   * Continue the migration for the given `limits`.
+   *
+   * The dispatch origin of this call can be any signed account.
+   *
+   * This transaction has NO MONETARY INCENTIVES. calling it will not reward anyone. Albeit,
+   * Upon successful execution, the transaction fee is returned.
+   *
+   * The (potentially over-estimated) of the byte length of all the data read must be
+   * provided for up-front fee-payment and weighing. In essence, the caller is guaranteeing
+   * that executing the current `MigrationTask` with the given `limits` will not exceed
+   * `real_size_upper` bytes of read data.
+   *
+   * The `witness_task` is merely a helper to prevent the caller from being slashed or
+   * generally trigger a migration that they do not intend. This parameter is just a message
+   * from caller, saying that they believed `witness_task` was the last state of the
+   * migration, and they only wish for their transaction to do anything, if this assumption
+   * holds. In case `witness_task` does not match, the transaction fails.
+   *
+   * Based on the documentation of [`MigrationTask::migrate_until_exhaustion`], the
+   * recommended way of doing this is to pass a `limit` that only bounds `count`, as the
+   * `size` limit can always be overwritten.
    **/
   | {
       name: 'ContinueMigrate';
@@ -6717,19 +14012,35 @@ export type PalletStateTrieMigrationCall =
       };
     }
   /**
-   * See [`Pallet::migrate_custom_top`].
+   * Migrate the list of top keys by iterating each of them one by one.
+   *
+   * This does not affect the global migration process tracker ([`MigrationProcess`]), and
+   * should only be used in case any keys are leftover due to a bug.
    **/
   | { name: 'MigrateCustomTop'; params: { keys: Array<Bytes>; witnessSize: number } }
   /**
-   * See [`Pallet::migrate_custom_child`].
+   * Migrate the list of child keys by iterating each of them one by one.
+   *
+   * All of the given child keys must be present under one `child_root`.
+   *
+   * This does not affect the global migration process tracker ([`MigrationProcess`]), and
+   * should only be used in case any keys are leftover due to a bug.
    **/
   | { name: 'MigrateCustomChild'; params: { root: Bytes; childKeys: Array<Bytes>; totalSize: number } }
   /**
-   * See [`Pallet::set_signed_max_limits`].
+   * Set the maximum limit of the signed migration.
    **/
   | { name: 'SetSignedMaxLimits'; params: { limits: PalletStateTrieMigrationMigrationLimits } }
   /**
-   * See [`Pallet::force_set_progress`].
+   * Forcefully set the progress the running migration.
+   *
+   * This is only useful in one case: the next key to migrate is too big to be migrated with
+   * a signed account, in a parachain context, and we simply want to skip it. A reasonable
+   * example of this would be `:code:`, which is both very expensive to migrate, and commonly
+   * used, so probably it is already migrated.
+   *
+   * In case you mess things up, you can also, in principle, use this to reset the migration
+   * process.
    **/
   | {
       name: 'ForceSetProgress';
@@ -6738,11 +14049,33 @@ export type PalletStateTrieMigrationCall =
 
 export type PalletStateTrieMigrationCallLike =
   /**
-   * See [`Pallet::control_auto_migration`].
+   * Control the automatic migration.
+   *
+   * The dispatch origin of this call must be [`Config::ControlOrigin`].
    **/
   | { name: 'ControlAutoMigration'; params: { maybeConfig?: PalletStateTrieMigrationMigrationLimits | undefined } }
   /**
-   * See [`Pallet::continue_migrate`].
+   * Continue the migration for the given `limits`.
+   *
+   * The dispatch origin of this call can be any signed account.
+   *
+   * This transaction has NO MONETARY INCENTIVES. calling it will not reward anyone. Albeit,
+   * Upon successful execution, the transaction fee is returned.
+   *
+   * The (potentially over-estimated) of the byte length of all the data read must be
+   * provided for up-front fee-payment and weighing. In essence, the caller is guaranteeing
+   * that executing the current `MigrationTask` with the given `limits` will not exceed
+   * `real_size_upper` bytes of read data.
+   *
+   * The `witness_task` is merely a helper to prevent the caller from being slashed or
+   * generally trigger a migration that they do not intend. This parameter is just a message
+   * from caller, saying that they believed `witness_task` was the last state of the
+   * migration, and they only wish for their transaction to do anything, if this assumption
+   * holds. In case `witness_task` does not match, the transaction fails.
+   *
+   * Based on the documentation of [`MigrationTask::migrate_until_exhaustion`], the
+   * recommended way of doing this is to pass a `limit` that only bounds `count`, as the
+   * `size` limit can always be overwritten.
    **/
   | {
       name: 'ContinueMigrate';
@@ -6753,19 +14086,35 @@ export type PalletStateTrieMigrationCallLike =
       };
     }
   /**
-   * See [`Pallet::migrate_custom_top`].
+   * Migrate the list of top keys by iterating each of them one by one.
+   *
+   * This does not affect the global migration process tracker ([`MigrationProcess`]), and
+   * should only be used in case any keys are leftover due to a bug.
    **/
   | { name: 'MigrateCustomTop'; params: { keys: Array<BytesLike>; witnessSize: number } }
   /**
-   * See [`Pallet::migrate_custom_child`].
+   * Migrate the list of child keys by iterating each of them one by one.
+   *
+   * All of the given child keys must be present under one `child_root`.
+   *
+   * This does not affect the global migration process tracker ([`MigrationProcess`]), and
+   * should only be used in case any keys are leftover due to a bug.
    **/
   | { name: 'MigrateCustomChild'; params: { root: BytesLike; childKeys: Array<BytesLike>; totalSize: number } }
   /**
-   * See [`Pallet::set_signed_max_limits`].
+   * Set the maximum limit of the signed migration.
    **/
   | { name: 'SetSignedMaxLimits'; params: { limits: PalletStateTrieMigrationMigrationLimits } }
   /**
-   * See [`Pallet::force_set_progress`].
+   * Forcefully set the progress the running migration.
+   *
+   * This is only useful in one case: the next key to migrate is too big to be migrated with
+   * a signed account, in a parachain context, and we simply want to skip it. A reasonable
+   * example of this would be `:code:`, which is both very expensive to migrate, and commonly
+   * used, so probably it is already migrated.
+   *
+   * In case you mess things up, you can also, in principle, use this to reset the migration
+   * process.
    **/
   | {
       name: 'ForceSetProgress';
@@ -6792,70 +14141,340 @@ export type PalletStateTrieMigrationProgress =
  **/
 export type PalletChildBountiesCall =
   /**
-   * See [`Pallet::add_child_bounty`].
+   * Add a new child-bounty.
+   *
+   * The dispatch origin for this call must be the curator of parent
+   * bounty and the parent bounty must be in "active" state.
+   *
+   * Child-bounty gets added successfully & fund gets transferred from
+   * parent bounty to child-bounty account, if parent bounty has enough
+   * funds, else the call fails.
+   *
+   * Upper bound to maximum number of active child bounties that can be
+   * added are managed via runtime trait config
+   * [`Config::MaxActiveChildBountyCount`].
+   *
+   * If the call is success, the status of child-bounty is updated to
+   * "Added".
+   *
+   * - `parent_bounty_id`: Index of parent bounty for which child-bounty is being added.
+   * - `value`: Value for executing the proposal.
+   * - `description`: Text description for the child-bounty.
    **/
   | { name: 'AddChildBounty'; params: { parentBountyId: number; value: bigint; description: Bytes } }
   /**
-   * See [`Pallet::propose_curator`].
+   * Propose curator for funded child-bounty.
+   *
+   * The dispatch origin for this call must be curator of parent bounty.
+   *
+   * Parent bounty must be in active state, for this child-bounty call to
+   * work.
+   *
+   * Child-bounty must be in "Added" state, for processing the call. And
+   * state of child-bounty is moved to "CuratorProposed" on successful
+   * call completion.
+   *
+   * - `parent_bounty_id`: Index of parent bounty.
+   * - `child_bounty_id`: Index of child bounty.
+   * - `curator`: Address of child-bounty curator.
+   * - `fee`: payment fee to child-bounty curator for execution.
    **/
   | {
       name: 'ProposeCurator';
       params: { parentBountyId: number; childBountyId: number; curator: MultiAddress; fee: bigint };
     }
   /**
-   * See [`Pallet::accept_curator`].
+   * Accept the curator role for the child-bounty.
+   *
+   * The dispatch origin for this call must be the curator of this
+   * child-bounty.
+   *
+   * A deposit will be reserved from the curator and refund upon
+   * successful payout or cancellation.
+   *
+   * Fee for curator is deducted from curator fee of parent bounty.
+   *
+   * Parent bounty must be in active state, for this child-bounty call to
+   * work.
+   *
+   * Child-bounty must be in "CuratorProposed" state, for processing the
+   * call. And state of child-bounty is moved to "Active" on successful
+   * call completion.
+   *
+   * - `parent_bounty_id`: Index of parent bounty.
+   * - `child_bounty_id`: Index of child bounty.
    **/
   | { name: 'AcceptCurator'; params: { parentBountyId: number; childBountyId: number } }
   /**
-   * See [`Pallet::unassign_curator`].
+   * Unassign curator from a child-bounty.
+   *
+   * The dispatch origin for this call can be either `RejectOrigin`, or
+   * the curator of the parent bounty, or any signed origin.
+   *
+   * For the origin other than T::RejectOrigin and the child-bounty
+   * curator, parent bounty must be in active state, for this call to
+   * work. We allow child-bounty curator and T::RejectOrigin to execute
+   * this call irrespective of the parent bounty state.
+   *
+   * If this function is called by the `RejectOrigin` or the
+   * parent bounty curator, we assume that the child-bounty curator is
+   * malicious or inactive. As a result, child-bounty curator deposit is
+   * slashed.
+   *
+   * If the origin is the child-bounty curator, we take this as a sign
+   * that they are unable to do their job, and are willingly giving up.
+   * We could slash the deposit, but for now we allow them to unreserve
+   * their deposit and exit without issue. (We may want to change this if
+   * it is abused.)
+   *
+   * Finally, the origin can be anyone iff the child-bounty curator is
+   * "inactive". Expiry update due of parent bounty is used to estimate
+   * inactive state of child-bounty curator.
+   *
+   * This allows anyone in the community to call out that a child-bounty
+   * curator is not doing their due diligence, and we should pick a new
+   * one. In this case the child-bounty curator deposit is slashed.
+   *
+   * State of child-bounty is moved to Added state on successful call
+   * completion.
+   *
+   * - `parent_bounty_id`: Index of parent bounty.
+   * - `child_bounty_id`: Index of child bounty.
    **/
   | { name: 'UnassignCurator'; params: { parentBountyId: number; childBountyId: number } }
   /**
-   * See [`Pallet::award_child_bounty`].
+   * Award child-bounty to a beneficiary.
+   *
+   * The beneficiary will be able to claim the funds after a delay.
+   *
+   * The dispatch origin for this call must be the parent curator or
+   * curator of this child-bounty.
+   *
+   * Parent bounty must be in active state, for this child-bounty call to
+   * work.
+   *
+   * Child-bounty must be in active state, for processing the call. And
+   * state of child-bounty is moved to "PendingPayout" on successful call
+   * completion.
+   *
+   * - `parent_bounty_id`: Index of parent bounty.
+   * - `child_bounty_id`: Index of child bounty.
+   * - `beneficiary`: Beneficiary account.
    **/
   | { name: 'AwardChildBounty'; params: { parentBountyId: number; childBountyId: number; beneficiary: MultiAddress } }
   /**
-   * See [`Pallet::claim_child_bounty`].
+   * Claim the payout from an awarded child-bounty after payout delay.
+   *
+   * The dispatch origin for this call may be any signed origin.
+   *
+   * Call works independent of parent bounty state, No need for parent
+   * bounty to be in active state.
+   *
+   * The Beneficiary is paid out with agreed bounty value. Curator fee is
+   * paid & curator deposit is unreserved.
+   *
+   * Child-bounty must be in "PendingPayout" state, for processing the
+   * call. And instance of child-bounty is removed from the state on
+   * successful call completion.
+   *
+   * - `parent_bounty_id`: Index of parent bounty.
+   * - `child_bounty_id`: Index of child bounty.
    **/
   | { name: 'ClaimChildBounty'; params: { parentBountyId: number; childBountyId: number } }
   /**
-   * See [`Pallet::close_child_bounty`].
+   * Cancel a proposed or active child-bounty. Child-bounty account funds
+   * are transferred to parent bounty account. The child-bounty curator
+   * deposit may be unreserved if possible.
+   *
+   * The dispatch origin for this call must be either parent curator or
+   * `T::RejectOrigin`.
+   *
+   * If the state of child-bounty is `Active`, curator deposit is
+   * unreserved.
+   *
+   * If the state of child-bounty is `PendingPayout`, call fails &
+   * returns `PendingPayout` error.
+   *
+   * For the origin other than T::RejectOrigin, parent bounty must be in
+   * active state, for this child-bounty call to work. For origin
+   * T::RejectOrigin execution is forced.
+   *
+   * Instance of child-bounty is removed from the state on successful
+   * call completion.
+   *
+   * - `parent_bounty_id`: Index of parent bounty.
+   * - `child_bounty_id`: Index of child bounty.
    **/
   | { name: 'CloseChildBounty'; params: { parentBountyId: number; childBountyId: number } };
 
 export type PalletChildBountiesCallLike =
   /**
-   * See [`Pallet::add_child_bounty`].
+   * Add a new child-bounty.
+   *
+   * The dispatch origin for this call must be the curator of parent
+   * bounty and the parent bounty must be in "active" state.
+   *
+   * Child-bounty gets added successfully & fund gets transferred from
+   * parent bounty to child-bounty account, if parent bounty has enough
+   * funds, else the call fails.
+   *
+   * Upper bound to maximum number of active child bounties that can be
+   * added are managed via runtime trait config
+   * [`Config::MaxActiveChildBountyCount`].
+   *
+   * If the call is success, the status of child-bounty is updated to
+   * "Added".
+   *
+   * - `parent_bounty_id`: Index of parent bounty for which child-bounty is being added.
+   * - `value`: Value for executing the proposal.
+   * - `description`: Text description for the child-bounty.
    **/
   | { name: 'AddChildBounty'; params: { parentBountyId: number; value: bigint; description: BytesLike } }
   /**
-   * See [`Pallet::propose_curator`].
+   * Propose curator for funded child-bounty.
+   *
+   * The dispatch origin for this call must be curator of parent bounty.
+   *
+   * Parent bounty must be in active state, for this child-bounty call to
+   * work.
+   *
+   * Child-bounty must be in "Added" state, for processing the call. And
+   * state of child-bounty is moved to "CuratorProposed" on successful
+   * call completion.
+   *
+   * - `parent_bounty_id`: Index of parent bounty.
+   * - `child_bounty_id`: Index of child bounty.
+   * - `curator`: Address of child-bounty curator.
+   * - `fee`: payment fee to child-bounty curator for execution.
    **/
   | {
       name: 'ProposeCurator';
       params: { parentBountyId: number; childBountyId: number; curator: MultiAddressLike; fee: bigint };
     }
   /**
-   * See [`Pallet::accept_curator`].
+   * Accept the curator role for the child-bounty.
+   *
+   * The dispatch origin for this call must be the curator of this
+   * child-bounty.
+   *
+   * A deposit will be reserved from the curator and refund upon
+   * successful payout or cancellation.
+   *
+   * Fee for curator is deducted from curator fee of parent bounty.
+   *
+   * Parent bounty must be in active state, for this child-bounty call to
+   * work.
+   *
+   * Child-bounty must be in "CuratorProposed" state, for processing the
+   * call. And state of child-bounty is moved to "Active" on successful
+   * call completion.
+   *
+   * - `parent_bounty_id`: Index of parent bounty.
+   * - `child_bounty_id`: Index of child bounty.
    **/
   | { name: 'AcceptCurator'; params: { parentBountyId: number; childBountyId: number } }
   /**
-   * See [`Pallet::unassign_curator`].
+   * Unassign curator from a child-bounty.
+   *
+   * The dispatch origin for this call can be either `RejectOrigin`, or
+   * the curator of the parent bounty, or any signed origin.
+   *
+   * For the origin other than T::RejectOrigin and the child-bounty
+   * curator, parent bounty must be in active state, for this call to
+   * work. We allow child-bounty curator and T::RejectOrigin to execute
+   * this call irrespective of the parent bounty state.
+   *
+   * If this function is called by the `RejectOrigin` or the
+   * parent bounty curator, we assume that the child-bounty curator is
+   * malicious or inactive. As a result, child-bounty curator deposit is
+   * slashed.
+   *
+   * If the origin is the child-bounty curator, we take this as a sign
+   * that they are unable to do their job, and are willingly giving up.
+   * We could slash the deposit, but for now we allow them to unreserve
+   * their deposit and exit without issue. (We may want to change this if
+   * it is abused.)
+   *
+   * Finally, the origin can be anyone iff the child-bounty curator is
+   * "inactive". Expiry update due of parent bounty is used to estimate
+   * inactive state of child-bounty curator.
+   *
+   * This allows anyone in the community to call out that a child-bounty
+   * curator is not doing their due diligence, and we should pick a new
+   * one. In this case the child-bounty curator deposit is slashed.
+   *
+   * State of child-bounty is moved to Added state on successful call
+   * completion.
+   *
+   * - `parent_bounty_id`: Index of parent bounty.
+   * - `child_bounty_id`: Index of child bounty.
    **/
   | { name: 'UnassignCurator'; params: { parentBountyId: number; childBountyId: number } }
   /**
-   * See [`Pallet::award_child_bounty`].
+   * Award child-bounty to a beneficiary.
+   *
+   * The beneficiary will be able to claim the funds after a delay.
+   *
+   * The dispatch origin for this call must be the parent curator or
+   * curator of this child-bounty.
+   *
+   * Parent bounty must be in active state, for this child-bounty call to
+   * work.
+   *
+   * Child-bounty must be in active state, for processing the call. And
+   * state of child-bounty is moved to "PendingPayout" on successful call
+   * completion.
+   *
+   * - `parent_bounty_id`: Index of parent bounty.
+   * - `child_bounty_id`: Index of child bounty.
+   * - `beneficiary`: Beneficiary account.
    **/
   | {
       name: 'AwardChildBounty';
       params: { parentBountyId: number; childBountyId: number; beneficiary: MultiAddressLike };
     }
   /**
-   * See [`Pallet::claim_child_bounty`].
+   * Claim the payout from an awarded child-bounty after payout delay.
+   *
+   * The dispatch origin for this call may be any signed origin.
+   *
+   * Call works independent of parent bounty state, No need for parent
+   * bounty to be in active state.
+   *
+   * The Beneficiary is paid out with agreed bounty value. Curator fee is
+   * paid & curator deposit is unreserved.
+   *
+   * Child-bounty must be in "PendingPayout" state, for processing the
+   * call. And instance of child-bounty is removed from the state on
+   * successful call completion.
+   *
+   * - `parent_bounty_id`: Index of parent bounty.
+   * - `child_bounty_id`: Index of child bounty.
    **/
   | { name: 'ClaimChildBounty'; params: { parentBountyId: number; childBountyId: number } }
   /**
-   * See [`Pallet::close_child_bounty`].
+   * Cancel a proposed or active child-bounty. Child-bounty account funds
+   * are transferred to parent bounty account. The child-bounty curator
+   * deposit may be unreserved if possible.
+   *
+   * The dispatch origin for this call must be either parent curator or
+   * `T::RejectOrigin`.
+   *
+   * If the state of child-bounty is `Active`, curator deposit is
+   * unreserved.
+   *
+   * If the state of child-bounty is `PendingPayout`, call fails &
+   * returns `PendingPayout` error.
+   *
+   * For the origin other than T::RejectOrigin, parent bounty must be in
+   * active state, for this child-bounty call to work. For origin
+   * T::RejectOrigin execution is forced.
+   *
+   * Instance of child-bounty is removed from the state on successful
+   * call completion.
+   *
+   * - `parent_bounty_id`: Index of parent bounty.
+   * - `child_bounty_id`: Index of child bounty.
    **/
   | { name: 'CloseChildBounty'; params: { parentBountyId: number; childBountyId: number } };
 
@@ -6864,7 +14483,15 @@ export type PalletChildBountiesCallLike =
  **/
 export type PalletReferendaCall =
   /**
-   * See [`Pallet::submit`].
+   * Propose a referendum on a privileged action.
+   *
+   * - `origin`: must be `SubmitOrigin` and the account must have `SubmissionDeposit` funds
+   * available.
+   * - `proposal_origin`: The origin from which the proposal should be executed.
+   * - `proposal`: The proposal.
+   * - `enactment_moment`: The moment that the proposal should be enacted.
+   *
+   * Emits `Submitted`.
    **/
   | {
       name: 'Submit';
@@ -6875,41 +14502,95 @@ export type PalletReferendaCall =
       };
     }
   /**
-   * See [`Pallet::place_decision_deposit`].
+   * Post the Decision Deposit for a referendum.
+   *
+   * - `origin`: must be `Signed` and the account must have funds available for the
+   * referendum's track's Decision Deposit.
+   * - `index`: The index of the submitted referendum whose Decision Deposit is yet to be
+   * posted.
+   *
+   * Emits `DecisionDepositPlaced`.
    **/
   | { name: 'PlaceDecisionDeposit'; params: { index: number } }
   /**
-   * See [`Pallet::refund_decision_deposit`].
+   * Refund the Decision Deposit for a closed referendum back to the depositor.
+   *
+   * - `origin`: must be `Signed` or `Root`.
+   * - `index`: The index of a closed referendum whose Decision Deposit has not yet been
+   * refunded.
+   *
+   * Emits `DecisionDepositRefunded`.
    **/
   | { name: 'RefundDecisionDeposit'; params: { index: number } }
   /**
-   * See [`Pallet::cancel`].
+   * Cancel an ongoing referendum.
+   *
+   * - `origin`: must be the `CancelOrigin`.
+   * - `index`: The index of the referendum to be cancelled.
+   *
+   * Emits `Cancelled`.
    **/
   | { name: 'Cancel'; params: { index: number } }
   /**
-   * See [`Pallet::kill`].
+   * Cancel an ongoing referendum and slash the deposits.
+   *
+   * - `origin`: must be the `KillOrigin`.
+   * - `index`: The index of the referendum to be cancelled.
+   *
+   * Emits `Killed` and `DepositSlashed`.
    **/
   | { name: 'Kill'; params: { index: number } }
   /**
-   * See [`Pallet::nudge_referendum`].
+   * Advance a referendum onto its next logical state. Only used internally.
+   *
+   * - `origin`: must be `Root`.
+   * - `index`: the referendum to be advanced.
    **/
   | { name: 'NudgeReferendum'; params: { index: number } }
   /**
-   * See [`Pallet::one_fewer_deciding`].
+   * Advance a track onto its next logical state. Only used internally.
+   *
+   * - `origin`: must be `Root`.
+   * - `track`: the track to be advanced.
+   *
+   * Action item for when there is now one fewer referendum in the deciding phase and the
+   * `DecidingCount` is not yet updated. This means that we should either:
+   * - begin deciding another referendum (and leave `DecidingCount` alone); or
+   * - decrement `DecidingCount`.
    **/
   | { name: 'OneFewerDeciding'; params: { track: number } }
   /**
-   * See [`Pallet::refund_submission_deposit`].
+   * Refund the Submission Deposit for a closed referendum back to the depositor.
+   *
+   * - `origin`: must be `Signed` or `Root`.
+   * - `index`: The index of a closed referendum whose Submission Deposit has not yet been
+   * refunded.
+   *
+   * Emits `SubmissionDepositRefunded`.
    **/
   | { name: 'RefundSubmissionDeposit'; params: { index: number } }
   /**
-   * See [`Pallet::set_metadata`].
+   * Set or clear metadata of a referendum.
+   *
+   * Parameters:
+   * - `origin`: Must be `Signed` by a creator of a referendum or by anyone to clear a
+   * metadata of a finished referendum.
+   * - `index`: The index of a referendum to set or clear metadata for.
+   * - `maybe_hash`: The hash of an on-chain stored preimage. `None` to clear a metadata.
    **/
   | { name: 'SetMetadata'; params: { index: number; maybeHash?: H256 | undefined } };
 
 export type PalletReferendaCallLike =
   /**
-   * See [`Pallet::submit`].
+   * Propose a referendum on a privileged action.
+   *
+   * - `origin`: must be `SubmitOrigin` and the account must have `SubmissionDeposit` funds
+   * available.
+   * - `proposal_origin`: The origin from which the proposal should be executed.
+   * - `proposal`: The proposal.
+   * - `enactment_moment`: The moment that the proposal should be enacted.
+   *
+   * Emits `Submitted`.
    **/
   | {
       name: 'Submit';
@@ -6920,35 +14601,81 @@ export type PalletReferendaCallLike =
       };
     }
   /**
-   * See [`Pallet::place_decision_deposit`].
+   * Post the Decision Deposit for a referendum.
+   *
+   * - `origin`: must be `Signed` and the account must have funds available for the
+   * referendum's track's Decision Deposit.
+   * - `index`: The index of the submitted referendum whose Decision Deposit is yet to be
+   * posted.
+   *
+   * Emits `DecisionDepositPlaced`.
    **/
   | { name: 'PlaceDecisionDeposit'; params: { index: number } }
   /**
-   * See [`Pallet::refund_decision_deposit`].
+   * Refund the Decision Deposit for a closed referendum back to the depositor.
+   *
+   * - `origin`: must be `Signed` or `Root`.
+   * - `index`: The index of a closed referendum whose Decision Deposit has not yet been
+   * refunded.
+   *
+   * Emits `DecisionDepositRefunded`.
    **/
   | { name: 'RefundDecisionDeposit'; params: { index: number } }
   /**
-   * See [`Pallet::cancel`].
+   * Cancel an ongoing referendum.
+   *
+   * - `origin`: must be the `CancelOrigin`.
+   * - `index`: The index of the referendum to be cancelled.
+   *
+   * Emits `Cancelled`.
    **/
   | { name: 'Cancel'; params: { index: number } }
   /**
-   * See [`Pallet::kill`].
+   * Cancel an ongoing referendum and slash the deposits.
+   *
+   * - `origin`: must be the `KillOrigin`.
+   * - `index`: The index of the referendum to be cancelled.
+   *
+   * Emits `Killed` and `DepositSlashed`.
    **/
   | { name: 'Kill'; params: { index: number } }
   /**
-   * See [`Pallet::nudge_referendum`].
+   * Advance a referendum onto its next logical state. Only used internally.
+   *
+   * - `origin`: must be `Root`.
+   * - `index`: the referendum to be advanced.
    **/
   | { name: 'NudgeReferendum'; params: { index: number } }
   /**
-   * See [`Pallet::one_fewer_deciding`].
+   * Advance a track onto its next logical state. Only used internally.
+   *
+   * - `origin`: must be `Root`.
+   * - `track`: the track to be advanced.
+   *
+   * Action item for when there is now one fewer referendum in the deciding phase and the
+   * `DecidingCount` is not yet updated. This means that we should either:
+   * - begin deciding another referendum (and leave `DecidingCount` alone); or
+   * - decrement `DecidingCount`.
    **/
   | { name: 'OneFewerDeciding'; params: { track: number } }
   /**
-   * See [`Pallet::refund_submission_deposit`].
+   * Refund the Submission Deposit for a closed referendum back to the depositor.
+   *
+   * - `origin`: must be `Signed` or `Root`.
+   * - `index`: The index of a closed referendum whose Submission Deposit has not yet been
+   * refunded.
+   *
+   * Emits `SubmissionDepositRefunded`.
    **/
   | { name: 'RefundSubmissionDeposit'; params: { index: number } }
   /**
-   * See [`Pallet::set_metadata`].
+   * Set or clear metadata of a referendum.
+   *
+   * Parameters:
+   * - `origin`: Must be `Signed` by a creator of a referendum or by anyone to clear a
+   * metadata of a finished referendum.
+   * - `index`: The index of a referendum to set or clear metadata for.
+   * - `maybe_hash`: The hash of an on-chain stored preimage. `None` to clear a metadata.
    **/
   | { name: 'SetMetadata'; params: { index: number; maybeHash?: H256 | undefined } };
 
@@ -6959,13 +14686,13 @@ export type FrameSupportScheduleDispatchTime = { tag: 'At'; value: number } | { 
  **/
 export type PalletRemarkCall =
   /**
-   * See [`Pallet::store`].
+   * Index and store data off chain.
    **/
   { name: 'Store'; params: { remark: Bytes } };
 
 export type PalletRemarkCallLike =
   /**
-   * See [`Pallet::store`].
+   * Index and store data off chain.
    **/
   { name: 'Store'; params: { remark: BytesLike } };
 
@@ -6974,74 +14701,262 @@ export type PalletRemarkCallLike =
  **/
 export type PalletRootTestingCall =
   /**
-   * See [`Pallet::fill_block`].
+   * A dispatch that will fill the block weight up to the given ratio.
    **/
-  { name: 'FillBlock'; params: { ratio: Perbill } };
+  { name: 'FillBlock'; params: { ratio: Perbill } } | { name: 'TriggerDefensive' };
 
 export type PalletRootTestingCallLike =
   /**
-   * See [`Pallet::fill_block`].
+   * A dispatch that will fill the block weight up to the given ratio.
    **/
-  { name: 'FillBlock'; params: { ratio: Perbill } };
+  { name: 'FillBlock'; params: { ratio: Perbill } } | { name: 'TriggerDefensive' };
 
 /**
  * Contains a variant per dispatchable extrinsic that this pallet has.
  **/
 export type PalletConvictionVotingCall =
   /**
-   * See [`Pallet::vote`].
+   * Vote in a poll. If `vote.is_aye()`, the vote is to enact the proposal;
+   * otherwise it is a vote to keep the status quo.
+   *
+   * The dispatch origin of this call must be _Signed_.
+   *
+   * - `poll_index`: The index of the poll to vote for.
+   * - `vote`: The vote configuration.
+   *
+   * Weight: `O(R)` where R is the number of polls the voter has voted on.
    **/
   | { name: 'Vote'; params: { pollIndex: number; vote: PalletConvictionVotingVoteAccountVote } }
   /**
-   * See [`Pallet::delegate`].
+   * Delegate the voting power (with some given conviction) of the sending account for a
+   * particular class of polls.
+   *
+   * The balance delegated is locked for as long as it's delegated, and thereafter for the
+   * time appropriate for the conviction's lock period.
+   *
+   * The dispatch origin of this call must be _Signed_, and the signing account must either:
+   * - be delegating already; or
+   * - have no voting activity (if there is, then it will need to be removed through
+   * `remove_vote`).
+   *
+   * - `to`: The account whose voting the `target` account's voting power will follow.
+   * - `class`: The class of polls to delegate. To delegate multiple classes, multiple calls
+   * to this function are required.
+   * - `conviction`: The conviction that will be attached to the delegated votes. When the
+   * account is undelegated, the funds will be locked for the corresponding period.
+   * - `balance`: The amount of the account's balance to be used in delegating. This must not
+   * be more than the account's current balance.
+   *
+   * Emits `Delegated`.
+   *
+   * Weight: `O(R)` where R is the number of polls the voter delegating to has
+   * voted on. Weight is initially charged as if maximum votes, but is refunded later.
    **/
   | {
       name: 'Delegate';
       params: { class: number; to: MultiAddress; conviction: PalletConvictionVotingConviction; balance: bigint };
     }
   /**
-   * See [`Pallet::undelegate`].
+   * Undelegate the voting power of the sending account for a particular class of polls.
+   *
+   * Tokens may be unlocked following once an amount of time consistent with the lock period
+   * of the conviction with which the delegation was issued has passed.
+   *
+   * The dispatch origin of this call must be _Signed_ and the signing account must be
+   * currently delegating.
+   *
+   * - `class`: The class of polls to remove the delegation from.
+   *
+   * Emits `Undelegated`.
+   *
+   * Weight: `O(R)` where R is the number of polls the voter delegating to has
+   * voted on. Weight is initially charged as if maximum votes, but is refunded later.
    **/
   | { name: 'Undelegate'; params: { class: number } }
   /**
-   * See [`Pallet::unlock`].
+   * Remove the lock caused by prior voting/delegating which has expired within a particular
+   * class.
+   *
+   * The dispatch origin of this call must be _Signed_.
+   *
+   * - `class`: The class of polls to unlock.
+   * - `target`: The account to remove the lock on.
+   *
+   * Weight: `O(R)` with R number of vote of target.
    **/
   | { name: 'Unlock'; params: { class: number; target: MultiAddress } }
   /**
-   * See [`Pallet::remove_vote`].
+   * Remove a vote for a poll.
+   *
+   * If:
+   * - the poll was cancelled, or
+   * - the poll is ongoing, or
+   * - the poll has ended such that
+   * - the vote of the account was in opposition to the result; or
+   * - there was no conviction to the account's vote; or
+   * - the account made a split vote
+   * ...then the vote is removed cleanly and a following call to `unlock` may result in more
+   * funds being available.
+   *
+   * If, however, the poll has ended and:
+   * - it finished corresponding to the vote of the account, and
+   * - the account made a standard vote with conviction, and
+   * - the lock period of the conviction is not over
+   * ...then the lock will be aggregated into the overall account's lock, which may involve
+   * *overlocking* (where the two locks are combined into a single lock that is the maximum
+   * of both the amount locked and the time is it locked for).
+   *
+   * The dispatch origin of this call must be _Signed_, and the signer must have a vote
+   * registered for poll `index`.
+   *
+   * - `index`: The index of poll of the vote to be removed.
+   * - `class`: Optional parameter, if given it indicates the class of the poll. For polls
+   * which have finished or are cancelled, this must be `Some`.
+   *
+   * Weight: `O(R + log R)` where R is the number of polls that `target` has voted on.
+   * Weight is calculated for the maximum number of vote.
    **/
   | { name: 'RemoveVote'; params: { class?: number | undefined; index: number } }
   /**
-   * See [`Pallet::remove_other_vote`].
+   * Remove a vote for a poll.
+   *
+   * If the `target` is equal to the signer, then this function is exactly equivalent to
+   * `remove_vote`. If not equal to the signer, then the vote must have expired,
+   * either because the poll was cancelled, because the voter lost the poll or
+   * because the conviction period is over.
+   *
+   * The dispatch origin of this call must be _Signed_.
+   *
+   * - `target`: The account of the vote to be removed; this account must have voted for poll
+   * `index`.
+   * - `index`: The index of poll of the vote to be removed.
+   * - `class`: The class of the poll.
+   *
+   * Weight: `O(R + log R)` where R is the number of polls that `target` has voted on.
+   * Weight is calculated for the maximum number of vote.
    **/
   | { name: 'RemoveOtherVote'; params: { target: MultiAddress; class: number; index: number } };
 
 export type PalletConvictionVotingCallLike =
   /**
-   * See [`Pallet::vote`].
+   * Vote in a poll. If `vote.is_aye()`, the vote is to enact the proposal;
+   * otherwise it is a vote to keep the status quo.
+   *
+   * The dispatch origin of this call must be _Signed_.
+   *
+   * - `poll_index`: The index of the poll to vote for.
+   * - `vote`: The vote configuration.
+   *
+   * Weight: `O(R)` where R is the number of polls the voter has voted on.
    **/
   | { name: 'Vote'; params: { pollIndex: number; vote: PalletConvictionVotingVoteAccountVote } }
   /**
-   * See [`Pallet::delegate`].
+   * Delegate the voting power (with some given conviction) of the sending account for a
+   * particular class of polls.
+   *
+   * The balance delegated is locked for as long as it's delegated, and thereafter for the
+   * time appropriate for the conviction's lock period.
+   *
+   * The dispatch origin of this call must be _Signed_, and the signing account must either:
+   * - be delegating already; or
+   * - have no voting activity (if there is, then it will need to be removed through
+   * `remove_vote`).
+   *
+   * - `to`: The account whose voting the `target` account's voting power will follow.
+   * - `class`: The class of polls to delegate. To delegate multiple classes, multiple calls
+   * to this function are required.
+   * - `conviction`: The conviction that will be attached to the delegated votes. When the
+   * account is undelegated, the funds will be locked for the corresponding period.
+   * - `balance`: The amount of the account's balance to be used in delegating. This must not
+   * be more than the account's current balance.
+   *
+   * Emits `Delegated`.
+   *
+   * Weight: `O(R)` where R is the number of polls the voter delegating to has
+   * voted on. Weight is initially charged as if maximum votes, but is refunded later.
    **/
   | {
       name: 'Delegate';
       params: { class: number; to: MultiAddressLike; conviction: PalletConvictionVotingConviction; balance: bigint };
     }
   /**
-   * See [`Pallet::undelegate`].
+   * Undelegate the voting power of the sending account for a particular class of polls.
+   *
+   * Tokens may be unlocked following once an amount of time consistent with the lock period
+   * of the conviction with which the delegation was issued has passed.
+   *
+   * The dispatch origin of this call must be _Signed_ and the signing account must be
+   * currently delegating.
+   *
+   * - `class`: The class of polls to remove the delegation from.
+   *
+   * Emits `Undelegated`.
+   *
+   * Weight: `O(R)` where R is the number of polls the voter delegating to has
+   * voted on. Weight is initially charged as if maximum votes, but is refunded later.
    **/
   | { name: 'Undelegate'; params: { class: number } }
   /**
-   * See [`Pallet::unlock`].
+   * Remove the lock caused by prior voting/delegating which has expired within a particular
+   * class.
+   *
+   * The dispatch origin of this call must be _Signed_.
+   *
+   * - `class`: The class of polls to unlock.
+   * - `target`: The account to remove the lock on.
+   *
+   * Weight: `O(R)` with R number of vote of target.
    **/
   | { name: 'Unlock'; params: { class: number; target: MultiAddressLike } }
   /**
-   * See [`Pallet::remove_vote`].
+   * Remove a vote for a poll.
+   *
+   * If:
+   * - the poll was cancelled, or
+   * - the poll is ongoing, or
+   * - the poll has ended such that
+   * - the vote of the account was in opposition to the result; or
+   * - there was no conviction to the account's vote; or
+   * - the account made a split vote
+   * ...then the vote is removed cleanly and a following call to `unlock` may result in more
+   * funds being available.
+   *
+   * If, however, the poll has ended and:
+   * - it finished corresponding to the vote of the account, and
+   * - the account made a standard vote with conviction, and
+   * - the lock period of the conviction is not over
+   * ...then the lock will be aggregated into the overall account's lock, which may involve
+   * *overlocking* (where the two locks are combined into a single lock that is the maximum
+   * of both the amount locked and the time is it locked for).
+   *
+   * The dispatch origin of this call must be _Signed_, and the signer must have a vote
+   * registered for poll `index`.
+   *
+   * - `index`: The index of poll of the vote to be removed.
+   * - `class`: Optional parameter, if given it indicates the class of the poll. For polls
+   * which have finished or are cancelled, this must be `Some`.
+   *
+   * Weight: `O(R + log R)` where R is the number of polls that `target` has voted on.
+   * Weight is calculated for the maximum number of vote.
    **/
   | { name: 'RemoveVote'; params: { class?: number | undefined; index: number } }
   /**
-   * See [`Pallet::remove_other_vote`].
+   * Remove a vote for a poll.
+   *
+   * If the `target` is equal to the signer, then this function is exactly equivalent to
+   * `remove_vote`. If not equal to the signer, then the vote must have expired,
+   * either because the poll was cancelled, because the voter lost the poll or
+   * because the conviction period is over.
+   *
+   * The dispatch origin of this call must be _Signed_.
+   *
+   * - `target`: The account of the vote to be removed; this account must have voted for poll
+   * `index`.
+   * - `index`: The index of poll of the vote to be removed.
+   * - `class`: The class of the poll.
+   *
+   * Weight: `O(R + log R)` where R is the number of polls that `target` has voted on.
+   * Weight is calculated for the maximum number of vote.
    **/
   | { name: 'RemoveOtherVote'; params: { target: MultiAddressLike; class: number; index: number } };
 
@@ -7065,45 +14980,21 @@ export type PalletConvictionVotingConviction =
  * Contains a variant per dispatchable extrinsic that this pallet has.
  **/
 export type PalletWhitelistCall =
-  /**
-   * See [`Pallet::whitelist_call`].
-   **/
   | { name: 'WhitelistCall'; params: { callHash: H256 } }
-  /**
-   * See [`Pallet::remove_whitelisted_call`].
-   **/
   | { name: 'RemoveWhitelistedCall'; params: { callHash: H256 } }
-  /**
-   * See [`Pallet::dispatch_whitelisted_call`].
-   **/
   | {
       name: 'DispatchWhitelistedCall';
       params: { callHash: H256; callEncodedLen: number; callWeightWitness: SpWeightsWeightV2Weight };
     }
-  /**
-   * See [`Pallet::dispatch_whitelisted_call_with_preimage`].
-   **/
   | { name: 'DispatchWhitelistedCallWithPreimage'; params: { call: KitchensinkRuntimeRuntimeCall } };
 
 export type PalletWhitelistCallLike =
-  /**
-   * See [`Pallet::whitelist_call`].
-   **/
   | { name: 'WhitelistCall'; params: { callHash: H256 } }
-  /**
-   * See [`Pallet::remove_whitelisted_call`].
-   **/
   | { name: 'RemoveWhitelistedCall'; params: { callHash: H256 } }
-  /**
-   * See [`Pallet::dispatch_whitelisted_call`].
-   **/
   | {
       name: 'DispatchWhitelistedCall';
       params: { callHash: H256; callEncodedLen: number; callWeightWitness: SpWeightsWeightV2Weight };
     }
-  /**
-   * See [`Pallet::dispatch_whitelisted_call_with_preimage`].
-   **/
   | { name: 'DispatchWhitelistedCallWithPreimage'; params: { call: KitchensinkRuntimeRuntimeCallLike } };
 
 /**
@@ -7111,147 +15002,185 @@ export type PalletWhitelistCallLike =
  **/
 export type PalletAllianceCall =
   /**
-   * See [`Pallet::propose`].
+   * Add a new proposal to be voted on.
+   *
+   * Must be called by a Fellow.
    **/
   | { name: 'Propose'; params: { threshold: number; proposal: KitchensinkRuntimeRuntimeCall; lengthBound: number } }
   /**
-   * See [`Pallet::vote`].
+   * Add an aye or nay vote for the sender to the given proposal.
+   *
+   * Must be called by a Fellow.
    **/
   | { name: 'Vote'; params: { proposal: H256; index: number; approve: boolean } }
   /**
-   * See [`Pallet::init_members`].
+   * Initialize the Alliance, onboard fellows and allies.
+   *
+   * The Alliance must be empty, and the call must provide some founding members.
+   *
+   * Must be called by the Root origin.
    **/
   | { name: 'InitMembers'; params: { fellows: Array<AccountId32>; allies: Array<AccountId32> } }
   /**
-   * See [`Pallet::disband`].
+   * Disband the Alliance, remove all active members and unreserve deposits.
+   *
+   * Witness data must be set.
    **/
   | { name: 'Disband'; params: { witness: PalletAllianceDisbandWitness } }
   /**
-   * See [`Pallet::set_rule`].
+   * Set a new IPFS CID to the alliance rule.
    **/
   | { name: 'SetRule'; params: { rule: PalletAllianceCid } }
   /**
-   * See [`Pallet::announce`].
+   * Make an announcement of a new IPFS CID about alliance issues.
    **/
   | { name: 'Announce'; params: { announcement: PalletAllianceCid } }
   /**
-   * See [`Pallet::remove_announcement`].
+   * Remove an announcement.
    **/
   | { name: 'RemoveAnnouncement'; params: { announcement: PalletAllianceCid } }
   /**
-   * See [`Pallet::join_alliance`].
+   * Submit oneself for candidacy. A fixed deposit is reserved.
    **/
   | { name: 'JoinAlliance' }
   /**
-   * See [`Pallet::nominate_ally`].
+   * A Fellow can nominate someone to join the alliance as an Ally. There is no deposit
+   * required from the nominator or nominee.
    **/
   | { name: 'NominateAlly'; params: { who: MultiAddress } }
   /**
-   * See [`Pallet::elevate_ally`].
+   * Elevate an Ally to Fellow.
    **/
   | { name: 'ElevateAlly'; params: { ally: MultiAddress } }
   /**
-   * See [`Pallet::give_retirement_notice`].
+   * As a member, give a retirement notice and start a retirement period required to pass in
+   * order to retire.
    **/
   | { name: 'GiveRetirementNotice' }
   /**
-   * See [`Pallet::retire`].
+   * As a member, retire from the Alliance and unreserve the deposit.
+   *
+   * This can only be done once you have called `give_retirement_notice` and the
+   * `RetirementPeriod` has passed.
    **/
   | { name: 'Retire' }
   /**
-   * See [`Pallet::kick_member`].
+   * Kick a member from the Alliance and slash its deposit.
    **/
   | { name: 'KickMember'; params: { who: MultiAddress } }
   /**
-   * See [`Pallet::add_unscrupulous_items`].
+   * Add accounts or websites to the list of unscrupulous items.
    **/
   | { name: 'AddUnscrupulousItems'; params: { items: Array<PalletAllianceUnscrupulousItem> } }
   /**
-   * See [`Pallet::remove_unscrupulous_items`].
+   * Deem some items no longer unscrupulous.
    **/
   | { name: 'RemoveUnscrupulousItems'; params: { items: Array<PalletAllianceUnscrupulousItem> } }
   /**
-   * See [`Pallet::close`].
+   * Close a vote that is either approved, disapproved, or whose voting period has ended.
+   *
+   * Must be called by a Fellow.
    **/
   | {
       name: 'Close';
       params: { proposalHash: H256; index: number; proposalWeightBound: SpWeightsWeightV2Weight; lengthBound: number };
     }
   /**
-   * See [`Pallet::abdicate_fellow_status`].
+   * Abdicate one's position as a voting member and just be an Ally. May be used by Fellows
+   * who do not want to leave the Alliance but do not have the capacity to participate
+   * operationally for some time.
    **/
   | { name: 'AbdicateFellowStatus' };
 
 export type PalletAllianceCallLike =
   /**
-   * See [`Pallet::propose`].
+   * Add a new proposal to be voted on.
+   *
+   * Must be called by a Fellow.
    **/
   | { name: 'Propose'; params: { threshold: number; proposal: KitchensinkRuntimeRuntimeCallLike; lengthBound: number } }
   /**
-   * See [`Pallet::vote`].
+   * Add an aye or nay vote for the sender to the given proposal.
+   *
+   * Must be called by a Fellow.
    **/
   | { name: 'Vote'; params: { proposal: H256; index: number; approve: boolean } }
   /**
-   * See [`Pallet::init_members`].
+   * Initialize the Alliance, onboard fellows and allies.
+   *
+   * The Alliance must be empty, and the call must provide some founding members.
+   *
+   * Must be called by the Root origin.
    **/
   | { name: 'InitMembers'; params: { fellows: Array<AccountId32Like>; allies: Array<AccountId32Like> } }
   /**
-   * See [`Pallet::disband`].
+   * Disband the Alliance, remove all active members and unreserve deposits.
+   *
+   * Witness data must be set.
    **/
   | { name: 'Disband'; params: { witness: PalletAllianceDisbandWitness } }
   /**
-   * See [`Pallet::set_rule`].
+   * Set a new IPFS CID to the alliance rule.
    **/
   | { name: 'SetRule'; params: { rule: PalletAllianceCid } }
   /**
-   * See [`Pallet::announce`].
+   * Make an announcement of a new IPFS CID about alliance issues.
    **/
   | { name: 'Announce'; params: { announcement: PalletAllianceCid } }
   /**
-   * See [`Pallet::remove_announcement`].
+   * Remove an announcement.
    **/
   | { name: 'RemoveAnnouncement'; params: { announcement: PalletAllianceCid } }
   /**
-   * See [`Pallet::join_alliance`].
+   * Submit oneself for candidacy. A fixed deposit is reserved.
    **/
   | { name: 'JoinAlliance' }
   /**
-   * See [`Pallet::nominate_ally`].
+   * A Fellow can nominate someone to join the alliance as an Ally. There is no deposit
+   * required from the nominator or nominee.
    **/
   | { name: 'NominateAlly'; params: { who: MultiAddressLike } }
   /**
-   * See [`Pallet::elevate_ally`].
+   * Elevate an Ally to Fellow.
    **/
   | { name: 'ElevateAlly'; params: { ally: MultiAddressLike } }
   /**
-   * See [`Pallet::give_retirement_notice`].
+   * As a member, give a retirement notice and start a retirement period required to pass in
+   * order to retire.
    **/
   | { name: 'GiveRetirementNotice' }
   /**
-   * See [`Pallet::retire`].
+   * As a member, retire from the Alliance and unreserve the deposit.
+   *
+   * This can only be done once you have called `give_retirement_notice` and the
+   * `RetirementPeriod` has passed.
    **/
   | { name: 'Retire' }
   /**
-   * See [`Pallet::kick_member`].
+   * Kick a member from the Alliance and slash its deposit.
    **/
   | { name: 'KickMember'; params: { who: MultiAddressLike } }
   /**
-   * See [`Pallet::add_unscrupulous_items`].
+   * Add accounts or websites to the list of unscrupulous items.
    **/
   | { name: 'AddUnscrupulousItems'; params: { items: Array<PalletAllianceUnscrupulousItem> } }
   /**
-   * See [`Pallet::remove_unscrupulous_items`].
+   * Deem some items no longer unscrupulous.
    **/
   | { name: 'RemoveUnscrupulousItems'; params: { items: Array<PalletAllianceUnscrupulousItem> } }
   /**
-   * See [`Pallet::close`].
+   * Close a vote that is either approved, disapproved, or whose voting period has ended.
+   *
+   * Must be called by a Fellow.
    **/
   | {
       name: 'Close';
       params: { proposalHash: H256; index: number; proposalWeightBound: SpWeightsWeightV2Weight; lengthBound: number };
     }
   /**
-   * See [`Pallet::abdicate_fellow_status`].
+   * Abdicate one's position as a voting member and just be an Ally. May be used by Fellows
+   * who do not want to leave the Alliance but do not have the capacity to participate
+   * operationally for some time.
    **/
   | { name: 'AbdicateFellowStatus' };
 
@@ -7272,54 +15201,183 @@ export type PalletAllianceUnscrupulousItem =
  **/
 export type PalletNominationPoolsCall =
   /**
-   * See [`Pallet::join`].
+   * Stake funds with a pool. The amount to bond is transferred from the member to the
+   * pools account and immediately increases the pools bond.
+   *
+   * # Note
+   *
+   * * An account can only be a member of a single pool.
+   * * An account cannot join the same pool multiple times.
+   * * This call will *not* dust the member account, so the member must have at least
+   * `existential deposit + amount` in their account.
+   * * Only a pool with [`PoolState::Open`] can be joined
    **/
   | { name: 'Join'; params: { amount: bigint; poolId: number } }
   /**
-   * See [`Pallet::bond_extra`].
+   * Bond `extra` more funds from `origin` into the pool to which they already belong.
+   *
+   * Additional funds can come from either the free balance of the account, of from the
+   * accumulated rewards, see [`BondExtra`].
+   *
+   * Bonding extra funds implies an automatic payout of all pending rewards as well.
+   * See `bond_extra_other` to bond pending rewards of `other` members.
    **/
   | { name: 'BondExtra'; params: { extra: PalletNominationPoolsBondExtra } }
   /**
-   * See [`Pallet::claim_payout`].
+   * A bonded member can use this to claim their payout based on the rewards that the pool
+   * has accumulated since their last claimed payout (OR since joining if this is their first
+   * time claiming rewards). The payout will be transferred to the member's account.
+   *
+   * The member will earn rewards pro rata based on the members stake vs the sum of the
+   * members in the pools stake. Rewards do not "expire".
+   *
+   * See `claim_payout_other` to caim rewards on bahalf of some `other` pool member.
    **/
   | { name: 'ClaimPayout' }
   /**
-   * See [`Pallet::unbond`].
+   * Unbond up to `unbonding_points` of the `member_account`'s funds from the pool. It
+   * implicitly collects the rewards one last time, since not doing so would mean some
+   * rewards would be forfeited.
+   *
+   * Under certain conditions, this call can be dispatched permissionlessly (i.e. by any
+   * account).
+   *
+   * # Conditions for a permissionless dispatch.
+   *
+   * * The pool is blocked and the caller is either the root or bouncer. This is refereed to
+   * as a kick.
+   * * The pool is destroying and the member is not the depositor.
+   * * The pool is destroying, the member is the depositor and no other members are in the
+   * pool.
+   *
+   * ## Conditions for permissioned dispatch (i.e. the caller is also the
+   * `member_account`):
+   *
+   * * The caller is not the depositor.
+   * * The caller is the depositor, the pool is destroying and no other members are in the
+   * pool.
+   *
+   * # Note
+   *
+   * If there are too many unlocking chunks to unbond with the pool account,
+   * [`Call::pool_withdraw_unbonded`] can be called to try and minimize unlocking chunks.
+   * The [`StakingInterface::unbond`] will implicitly call [`Call::pool_withdraw_unbonded`]
+   * to try to free chunks if necessary (ie. if unbound was called and no unlocking chunks
+   * are available). However, it may not be possible to release the current unlocking chunks,
+   * in which case, the result of this call will likely be the `NoMoreChunks` error from the
+   * staking system.
    **/
   | { name: 'Unbond'; params: { memberAccount: MultiAddress; unbondingPoints: bigint } }
   /**
-   * See [`Pallet::pool_withdraw_unbonded`].
+   * Call `withdraw_unbonded` for the pools account. This call can be made by any account.
+   *
+   * This is useful if there are too many unlocking chunks to call `unbond`, and some
+   * can be cleared by withdrawing. In the case there are too many unlocking chunks, the user
+   * would probably see an error like `NoMoreChunks` emitted from the staking system when
+   * they attempt to unbond.
    **/
   | { name: 'PoolWithdrawUnbonded'; params: { poolId: number; numSlashingSpans: number } }
   /**
-   * See [`Pallet::withdraw_unbonded`].
+   * Withdraw unbonded funds from `member_account`. If no bonded funds can be unbonded, an
+   * error is returned.
+   *
+   * Under certain conditions, this call can be dispatched permissionlessly (i.e. by any
+   * account).
+   *
+   * # Conditions for a permissionless dispatch
+   *
+   * * The pool is in destroy mode and the target is not the depositor.
+   * * The target is the depositor and they are the only member in the sub pools.
+   * * The pool is blocked and the caller is either the root or bouncer.
+   *
+   * # Conditions for permissioned dispatch
+   *
+   * * The caller is the target and they are not the depositor.
+   *
+   * # Note
+   *
+   * If the target is the depositor, the pool will be destroyed.
    **/
   | { name: 'WithdrawUnbonded'; params: { memberAccount: MultiAddress; numSlashingSpans: number } }
   /**
-   * See [`Pallet::create`].
+   * Create a new delegation pool.
+   *
+   * # Arguments
+   *
+   * * `amount` - The amount of funds to delegate to the pool. This also acts of a sort of
+   * deposit since the pools creator cannot fully unbond funds until the pool is being
+   * destroyed.
+   * * `index` - A disambiguation index for creating the account. Likely only useful when
+   * creating multiple pools in the same extrinsic.
+   * * `root` - The account to set as [`PoolRoles::root`].
+   * * `nominator` - The account to set as the [`PoolRoles::nominator`].
+   * * `bouncer` - The account to set as the [`PoolRoles::bouncer`].
+   *
+   * # Note
+   *
+   * In addition to `amount`, the caller will transfer the existential deposit; so the caller
+   * needs at have at least `amount + existential_deposit` transferable.
    **/
   | { name: 'Create'; params: { amount: bigint; root: MultiAddress; nominator: MultiAddress; bouncer: MultiAddress } }
   /**
-   * See [`Pallet::create_with_pool_id`].
+   * Create a new delegation pool with a previously used pool id
+   *
+   * # Arguments
+   *
+   * same as `create` with the inclusion of
+   * * `pool_id` - `A valid PoolId.
    **/
   | {
       name: 'CreateWithPoolId';
       params: { amount: bigint; root: MultiAddress; nominator: MultiAddress; bouncer: MultiAddress; poolId: number };
     }
   /**
-   * See [`Pallet::nominate`].
+   * Nominate on behalf of the pool.
+   *
+   * The dispatch origin of this call must be signed by the pool nominator or the pool
+   * root role.
+   *
+   * This directly forward the call to the staking pallet, on behalf of the pool bonded
+   * account.
+   *
+   * # Note
+   *
+   * In addition to a `root` or `nominator` role of `origin`, pool's depositor needs to have
+   * at least `depositor_min_bond` in the pool to start nominating.
    **/
   | { name: 'Nominate'; params: { poolId: number; validators: Array<AccountId32> } }
   /**
-   * See [`Pallet::set_state`].
+   * Set a new state for the pool.
+   *
+   * If a pool is already in the `Destroying` state, then under no condition can its state
+   * change again.
+   *
+   * The dispatch origin of this call must be either:
+   *
+   * 1. signed by the bouncer, or the root role of the pool,
+   * 2. if the pool conditions to be open are NOT met (as described by `ok_to_be_open`), and
+   * then the state of the pool can be permissionlessly changed to `Destroying`.
    **/
   | { name: 'SetState'; params: { poolId: number; state: PalletNominationPoolsPoolState } }
   /**
-   * See [`Pallet::set_metadata`].
+   * Set a new metadata for the pool.
+   *
+   * The dispatch origin of this call must be signed by the bouncer, or the root role of the
+   * pool.
    **/
   | { name: 'SetMetadata'; params: { poolId: number; metadata: Bytes } }
   /**
-   * See [`Pallet::set_configs`].
+   * Update configurations for the nomination pools. The origin for this call must be
+   * Root.
+   *
+   * # Arguments
+   *
+   * * `min_join_bond` - Set [`MinJoinBond`].
+   * * `min_create_bond` - Set [`MinCreateBond`].
+   * * `max_pools` - Set [`MaxPools`].
+   * * `max_members` - Set [`MaxPoolMembers`].
+   * * `max_members_per_pool` - Set [`MaxPoolMembersPerPool`].
+   * * `global_max_commission` - Set [`GlobalMaxCommission`].
    **/
   | {
       name: 'SetConfigs';
@@ -7333,7 +15391,13 @@ export type PalletNominationPoolsCall =
       };
     }
   /**
-   * See [`Pallet::update_roles`].
+   * Update the roles of the pool.
+   *
+   * The root is the only entity that can change any of the roles, including itself,
+   * excluding the depositor, who can never change.
+   *
+   * It emits an event, notifying UIs of the role change. This event is quite relevant to
+   * most pool members and they should be informed of changes to pool roles.
    **/
   | {
       name: 'UpdateRoles';
@@ -7345,75 +15409,243 @@ export type PalletNominationPoolsCall =
       };
     }
   /**
-   * See [`Pallet::chill`].
+   * Chill on behalf of the pool.
+   *
+   * The dispatch origin of this call can be signed by the pool nominator or the pool
+   * root role, same as [`Pallet::nominate`].
+   *
+   * Under certain conditions, this call can be dispatched permissionlessly (i.e. by any
+   * account).
+   *
+   * # Conditions for a permissionless dispatch:
+   * * When pool depositor has less than `MinNominatorBond` staked, otherwise pool members
+   * are unable to unbond.
+   *
+   * # Conditions for permissioned dispatch:
+   * * The caller has a nominator or root role of the pool.
+   * This directly forward the call to the staking pallet, on behalf of the pool bonded
+   * account.
    **/
   | { name: 'Chill'; params: { poolId: number } }
   /**
-   * See [`Pallet::bond_extra_other`].
+   * `origin` bonds funds from `extra` for some pool member `member` into their respective
+   * pools.
+   *
+   * `origin` can bond extra funds from free balance or pending rewards when `origin ==
+   * other`.
+   *
+   * In the case of `origin != other`, `origin` can only bond extra pending rewards of
+   * `other` members assuming set_claim_permission for the given member is
+   * `PermissionlessAll` or `PermissionlessCompound`.
    **/
   | { name: 'BondExtraOther'; params: { member: MultiAddress; extra: PalletNominationPoolsBondExtra } }
   /**
-   * See [`Pallet::set_claim_permission`].
+   * Allows a pool member to set a claim permission to allow or disallow permissionless
+   * bonding and withdrawing.
+   *
+   * By default, this is `Permissioned`, which implies only the pool member themselves can
+   * claim their pending rewards. If a pool member wishes so, they can set this to
+   * `PermissionlessAll` to allow any account to claim their rewards and bond extra to the
+   * pool.
+   *
+   * # Arguments
+   *
+   * * `origin` - Member of a pool.
+   * * `actor` - Account to claim reward. // improve this
    **/
   | { name: 'SetClaimPermission'; params: { permission: PalletNominationPoolsClaimPermission } }
   /**
-   * See [`Pallet::claim_payout_other`].
+   * `origin` can claim payouts on some pool member `other`'s behalf.
+   *
+   * Pool member `other` must have a `PermissionlessAll` or `PermissionlessWithdraw` in order
+   * for this call to be successful.
    **/
   | { name: 'ClaimPayoutOther'; params: { other: AccountId32 } }
   /**
-   * See [`Pallet::set_commission`].
+   * Set the commission of a pool.
+   * Both a commission percentage and a commission payee must be provided in the `current`
+   * tuple. Where a `current` of `None` is provided, any current commission will be removed.
+   *
+   * - If a `None` is supplied to `new_commission`, existing commission will be removed.
    **/
   | { name: 'SetCommission'; params: { poolId: number; newCommission?: [Perbill, AccountId32] | undefined } }
   /**
-   * See [`Pallet::set_commission_max`].
+   * Set the maximum commission of a pool.
+   *
+   * - Initial max can be set to any `Perbill`, and only smaller values thereafter.
+   * - Current commission will be lowered in the event it is higher than a new max
+   * commission.
    **/
   | { name: 'SetCommissionMax'; params: { poolId: number; maxCommission: Perbill } }
   /**
-   * See [`Pallet::set_commission_change_rate`].
+   * Set the commission change rate for a pool.
+   *
+   * Initial change rate is not bounded, whereas subsequent updates can only be more
+   * restrictive than the current.
    **/
   | {
       name: 'SetCommissionChangeRate';
       params: { poolId: number; changeRate: PalletNominationPoolsCommissionChangeRate };
     }
   /**
-   * See [`Pallet::claim_commission`].
+   * Claim pending commission.
+   *
+   * The dispatch origin of this call must be signed by the `root` role of the pool. Pending
+   * commission is paid out and added to total claimed commission`. Total pending commission
+   * is reset to zero. the current.
    **/
-  | { name: 'ClaimCommission'; params: { poolId: number } };
+  | { name: 'ClaimCommission'; params: { poolId: number } }
+  /**
+   * Top up the deficit or withdraw the excess ED from the pool.
+   *
+   * When a pool is created, the pool depositor transfers ED to the reward account of the
+   * pool. ED is subject to change and over time, the deposit in the reward account may be
+   * insufficient to cover the ED deficit of the pool or vice-versa where there is excess
+   * deposit to the pool. This call allows anyone to adjust the ED deposit of the
+   * pool by either topping up the deficit or claiming the excess.
+   **/
+  | { name: 'AdjustPoolDeposit'; params: { poolId: number } }
+  /**
+   * Set or remove a pool's commission claim permission.
+   *
+   * Determines who can claim the pool's pending commission. Only the `Root` role of the pool
+   * is able to conifigure commission claim permissions.
+   **/
+  | {
+      name: 'SetCommissionClaimPermission';
+      params: { poolId: number; permission?: PalletNominationPoolsCommissionClaimPermission | undefined };
+    };
 
 export type PalletNominationPoolsCallLike =
   /**
-   * See [`Pallet::join`].
+   * Stake funds with a pool. The amount to bond is transferred from the member to the
+   * pools account and immediately increases the pools bond.
+   *
+   * # Note
+   *
+   * * An account can only be a member of a single pool.
+   * * An account cannot join the same pool multiple times.
+   * * This call will *not* dust the member account, so the member must have at least
+   * `existential deposit + amount` in their account.
+   * * Only a pool with [`PoolState::Open`] can be joined
    **/
   | { name: 'Join'; params: { amount: bigint; poolId: number } }
   /**
-   * See [`Pallet::bond_extra`].
+   * Bond `extra` more funds from `origin` into the pool to which they already belong.
+   *
+   * Additional funds can come from either the free balance of the account, of from the
+   * accumulated rewards, see [`BondExtra`].
+   *
+   * Bonding extra funds implies an automatic payout of all pending rewards as well.
+   * See `bond_extra_other` to bond pending rewards of `other` members.
    **/
   | { name: 'BondExtra'; params: { extra: PalletNominationPoolsBondExtra } }
   /**
-   * See [`Pallet::claim_payout`].
+   * A bonded member can use this to claim their payout based on the rewards that the pool
+   * has accumulated since their last claimed payout (OR since joining if this is their first
+   * time claiming rewards). The payout will be transferred to the member's account.
+   *
+   * The member will earn rewards pro rata based on the members stake vs the sum of the
+   * members in the pools stake. Rewards do not "expire".
+   *
+   * See `claim_payout_other` to caim rewards on bahalf of some `other` pool member.
    **/
   | { name: 'ClaimPayout' }
   /**
-   * See [`Pallet::unbond`].
+   * Unbond up to `unbonding_points` of the `member_account`'s funds from the pool. It
+   * implicitly collects the rewards one last time, since not doing so would mean some
+   * rewards would be forfeited.
+   *
+   * Under certain conditions, this call can be dispatched permissionlessly (i.e. by any
+   * account).
+   *
+   * # Conditions for a permissionless dispatch.
+   *
+   * * The pool is blocked and the caller is either the root or bouncer. This is refereed to
+   * as a kick.
+   * * The pool is destroying and the member is not the depositor.
+   * * The pool is destroying, the member is the depositor and no other members are in the
+   * pool.
+   *
+   * ## Conditions for permissioned dispatch (i.e. the caller is also the
+   * `member_account`):
+   *
+   * * The caller is not the depositor.
+   * * The caller is the depositor, the pool is destroying and no other members are in the
+   * pool.
+   *
+   * # Note
+   *
+   * If there are too many unlocking chunks to unbond with the pool account,
+   * [`Call::pool_withdraw_unbonded`] can be called to try and minimize unlocking chunks.
+   * The [`StakingInterface::unbond`] will implicitly call [`Call::pool_withdraw_unbonded`]
+   * to try to free chunks if necessary (ie. if unbound was called and no unlocking chunks
+   * are available). However, it may not be possible to release the current unlocking chunks,
+   * in which case, the result of this call will likely be the `NoMoreChunks` error from the
+   * staking system.
    **/
   | { name: 'Unbond'; params: { memberAccount: MultiAddressLike; unbondingPoints: bigint } }
   /**
-   * See [`Pallet::pool_withdraw_unbonded`].
+   * Call `withdraw_unbonded` for the pools account. This call can be made by any account.
+   *
+   * This is useful if there are too many unlocking chunks to call `unbond`, and some
+   * can be cleared by withdrawing. In the case there are too many unlocking chunks, the user
+   * would probably see an error like `NoMoreChunks` emitted from the staking system when
+   * they attempt to unbond.
    **/
   | { name: 'PoolWithdrawUnbonded'; params: { poolId: number; numSlashingSpans: number } }
   /**
-   * See [`Pallet::withdraw_unbonded`].
+   * Withdraw unbonded funds from `member_account`. If no bonded funds can be unbonded, an
+   * error is returned.
+   *
+   * Under certain conditions, this call can be dispatched permissionlessly (i.e. by any
+   * account).
+   *
+   * # Conditions for a permissionless dispatch
+   *
+   * * The pool is in destroy mode and the target is not the depositor.
+   * * The target is the depositor and they are the only member in the sub pools.
+   * * The pool is blocked and the caller is either the root or bouncer.
+   *
+   * # Conditions for permissioned dispatch
+   *
+   * * The caller is the target and they are not the depositor.
+   *
+   * # Note
+   *
+   * If the target is the depositor, the pool will be destroyed.
    **/
   | { name: 'WithdrawUnbonded'; params: { memberAccount: MultiAddressLike; numSlashingSpans: number } }
   /**
-   * See [`Pallet::create`].
+   * Create a new delegation pool.
+   *
+   * # Arguments
+   *
+   * * `amount` - The amount of funds to delegate to the pool. This also acts of a sort of
+   * deposit since the pools creator cannot fully unbond funds until the pool is being
+   * destroyed.
+   * * `index` - A disambiguation index for creating the account. Likely only useful when
+   * creating multiple pools in the same extrinsic.
+   * * `root` - The account to set as [`PoolRoles::root`].
+   * * `nominator` - The account to set as the [`PoolRoles::nominator`].
+   * * `bouncer` - The account to set as the [`PoolRoles::bouncer`].
+   *
+   * # Note
+   *
+   * In addition to `amount`, the caller will transfer the existential deposit; so the caller
+   * needs at have at least `amount + existential_deposit` transferable.
    **/
   | {
       name: 'Create';
       params: { amount: bigint; root: MultiAddressLike; nominator: MultiAddressLike; bouncer: MultiAddressLike };
     }
   /**
-   * See [`Pallet::create_with_pool_id`].
+   * Create a new delegation pool with a previously used pool id
+   *
+   * # Arguments
+   *
+   * same as `create` with the inclusion of
+   * * `pool_id` - `A valid PoolId.
    **/
   | {
       name: 'CreateWithPoolId';
@@ -7426,19 +15658,52 @@ export type PalletNominationPoolsCallLike =
       };
     }
   /**
-   * See [`Pallet::nominate`].
+   * Nominate on behalf of the pool.
+   *
+   * The dispatch origin of this call must be signed by the pool nominator or the pool
+   * root role.
+   *
+   * This directly forward the call to the staking pallet, on behalf of the pool bonded
+   * account.
+   *
+   * # Note
+   *
+   * In addition to a `root` or `nominator` role of `origin`, pool's depositor needs to have
+   * at least `depositor_min_bond` in the pool to start nominating.
    **/
   | { name: 'Nominate'; params: { poolId: number; validators: Array<AccountId32Like> } }
   /**
-   * See [`Pallet::set_state`].
+   * Set a new state for the pool.
+   *
+   * If a pool is already in the `Destroying` state, then under no condition can its state
+   * change again.
+   *
+   * The dispatch origin of this call must be either:
+   *
+   * 1. signed by the bouncer, or the root role of the pool,
+   * 2. if the pool conditions to be open are NOT met (as described by `ok_to_be_open`), and
+   * then the state of the pool can be permissionlessly changed to `Destroying`.
    **/
   | { name: 'SetState'; params: { poolId: number; state: PalletNominationPoolsPoolState } }
   /**
-   * See [`Pallet::set_metadata`].
+   * Set a new metadata for the pool.
+   *
+   * The dispatch origin of this call must be signed by the bouncer, or the root role of the
+   * pool.
    **/
   | { name: 'SetMetadata'; params: { poolId: number; metadata: BytesLike } }
   /**
-   * See [`Pallet::set_configs`].
+   * Update configurations for the nomination pools. The origin for this call must be
+   * Root.
+   *
+   * # Arguments
+   *
+   * * `min_join_bond` - Set [`MinJoinBond`].
+   * * `min_create_bond` - Set [`MinCreateBond`].
+   * * `max_pools` - Set [`MaxPools`].
+   * * `max_members` - Set [`MaxPoolMembers`].
+   * * `max_members_per_pool` - Set [`MaxPoolMembersPerPool`].
+   * * `global_max_commission` - Set [`GlobalMaxCommission`].
    **/
   | {
       name: 'SetConfigs';
@@ -7452,7 +15717,13 @@ export type PalletNominationPoolsCallLike =
       };
     }
   /**
-   * See [`Pallet::update_roles`].
+   * Update the roles of the pool.
+   *
+   * The root is the only entity that can change any of the roles, including itself,
+   * excluding the depositor, who can never change.
+   *
+   * It emits an event, notifying UIs of the role change. This event is quite relevant to
+   * most pool members and they should be informed of changes to pool roles.
    **/
   | {
       name: 'UpdateRoles';
@@ -7464,40 +15735,112 @@ export type PalletNominationPoolsCallLike =
       };
     }
   /**
-   * See [`Pallet::chill`].
+   * Chill on behalf of the pool.
+   *
+   * The dispatch origin of this call can be signed by the pool nominator or the pool
+   * root role, same as [`Pallet::nominate`].
+   *
+   * Under certain conditions, this call can be dispatched permissionlessly (i.e. by any
+   * account).
+   *
+   * # Conditions for a permissionless dispatch:
+   * * When pool depositor has less than `MinNominatorBond` staked, otherwise pool members
+   * are unable to unbond.
+   *
+   * # Conditions for permissioned dispatch:
+   * * The caller has a nominator or root role of the pool.
+   * This directly forward the call to the staking pallet, on behalf of the pool bonded
+   * account.
    **/
   | { name: 'Chill'; params: { poolId: number } }
   /**
-   * See [`Pallet::bond_extra_other`].
+   * `origin` bonds funds from `extra` for some pool member `member` into their respective
+   * pools.
+   *
+   * `origin` can bond extra funds from free balance or pending rewards when `origin ==
+   * other`.
+   *
+   * In the case of `origin != other`, `origin` can only bond extra pending rewards of
+   * `other` members assuming set_claim_permission for the given member is
+   * `PermissionlessAll` or `PermissionlessCompound`.
    **/
   | { name: 'BondExtraOther'; params: { member: MultiAddressLike; extra: PalletNominationPoolsBondExtra } }
   /**
-   * See [`Pallet::set_claim_permission`].
+   * Allows a pool member to set a claim permission to allow or disallow permissionless
+   * bonding and withdrawing.
+   *
+   * By default, this is `Permissioned`, which implies only the pool member themselves can
+   * claim their pending rewards. If a pool member wishes so, they can set this to
+   * `PermissionlessAll` to allow any account to claim their rewards and bond extra to the
+   * pool.
+   *
+   * # Arguments
+   *
+   * * `origin` - Member of a pool.
+   * * `actor` - Account to claim reward. // improve this
    **/
   | { name: 'SetClaimPermission'; params: { permission: PalletNominationPoolsClaimPermission } }
   /**
-   * See [`Pallet::claim_payout_other`].
+   * `origin` can claim payouts on some pool member `other`'s behalf.
+   *
+   * Pool member `other` must have a `PermissionlessAll` or `PermissionlessWithdraw` in order
+   * for this call to be successful.
    **/
   | { name: 'ClaimPayoutOther'; params: { other: AccountId32Like } }
   /**
-   * See [`Pallet::set_commission`].
+   * Set the commission of a pool.
+   * Both a commission percentage and a commission payee must be provided in the `current`
+   * tuple. Where a `current` of `None` is provided, any current commission will be removed.
+   *
+   * - If a `None` is supplied to `new_commission`, existing commission will be removed.
    **/
   | { name: 'SetCommission'; params: { poolId: number; newCommission?: [Perbill, AccountId32Like] | undefined } }
   /**
-   * See [`Pallet::set_commission_max`].
+   * Set the maximum commission of a pool.
+   *
+   * - Initial max can be set to any `Perbill`, and only smaller values thereafter.
+   * - Current commission will be lowered in the event it is higher than a new max
+   * commission.
    **/
   | { name: 'SetCommissionMax'; params: { poolId: number; maxCommission: Perbill } }
   /**
-   * See [`Pallet::set_commission_change_rate`].
+   * Set the commission change rate for a pool.
+   *
+   * Initial change rate is not bounded, whereas subsequent updates can only be more
+   * restrictive than the current.
    **/
   | {
       name: 'SetCommissionChangeRate';
       params: { poolId: number; changeRate: PalletNominationPoolsCommissionChangeRate };
     }
   /**
-   * See [`Pallet::claim_commission`].
+   * Claim pending commission.
+   *
+   * The dispatch origin of this call must be signed by the `root` role of the pool. Pending
+   * commission is paid out and added to total claimed commission`. Total pending commission
+   * is reset to zero. the current.
    **/
-  | { name: 'ClaimCommission'; params: { poolId: number } };
+  | { name: 'ClaimCommission'; params: { poolId: number } }
+  /**
+   * Top up the deficit or withdraw the excess ED from the pool.
+   *
+   * When a pool is created, the pool depositor transfers ED to the reward account of the
+   * pool. ED is subject to change and over time, the deposit in the reward account may be
+   * insufficient to cover the ED deficit of the pool or vice-versa where there is excess
+   * deposit to the pool. This call allows anyone to adjust the ED deposit of the
+   * pool by either topping up the deficit or claiming the excess.
+   **/
+  | { name: 'AdjustPoolDeposit'; params: { poolId: number } }
+  /**
+   * Set or remove a pool's commission claim permission.
+   *
+   * Determines who can claim the pool's pending commission. Only the `Root` role of the pool
+   * is able to conifigure commission claim permissions.
+   **/
+  | {
+      name: 'SetCommissionClaimPermission';
+      params: { poolId: number; permission?: PalletNominationPoolsCommissionClaimPermission | undefined };
+    };
 
 export type PalletNominationPoolsBondExtra = { tag: 'FreeBalance'; value: bigint } | { tag: 'Rewards' };
 
@@ -7519,80 +15862,201 @@ export type PalletNominationPoolsClaimPermission =
 
 export type PalletNominationPoolsCommissionChangeRate = { maxIncrease: Perbill; minDelay: number };
 
+export type PalletNominationPoolsCommissionClaimPermission =
+  | { tag: 'Permissionless' }
+  | { tag: 'Account'; value: AccountId32 };
+
 /**
  * Contains a variant per dispatchable extrinsic that this pallet has.
  **/
 export type PalletRankedCollectiveCall =
   /**
-   * See [`Pallet::add_member`].
+   * Introduce a new member.
+   *
+   * - `origin`: Must be the `AddOrigin`.
+   * - `who`: Account of non-member which will become a member.
+   *
+   * Weight: `O(1)`
    **/
   | { name: 'AddMember'; params: { who: MultiAddress } }
   /**
-   * See [`Pallet::promote_member`].
+   * Increment the rank of an existing member by one.
+   *
+   * - `origin`: Must be the `PromoteOrigin`.
+   * - `who`: Account of existing member.
+   *
+   * Weight: `O(1)`
    **/
   | { name: 'PromoteMember'; params: { who: MultiAddress } }
   /**
-   * See [`Pallet::demote_member`].
+   * Decrement the rank of an existing member by one. If the member is already at rank zero,
+   * then they are removed entirely.
+   *
+   * - `origin`: Must be the `DemoteOrigin`.
+   * - `who`: Account of existing member of rank greater than zero.
+   *
+   * Weight: `O(1)`, less if the member's index is highest in its rank.
    **/
   | { name: 'DemoteMember'; params: { who: MultiAddress } }
   /**
-   * See [`Pallet::remove_member`].
+   * Remove the member entirely.
+   *
+   * - `origin`: Must be the `RemoveOrigin`.
+   * - `who`: Account of existing member of rank greater than zero.
+   * - `min_rank`: The rank of the member or greater.
+   *
+   * Weight: `O(min_rank)`.
    **/
   | { name: 'RemoveMember'; params: { who: MultiAddress; minRank: number } }
   /**
-   * See [`Pallet::vote`].
+   * Add an aye or nay vote for the sender to the given proposal.
+   *
+   * - `origin`: Must be `Signed` by a member account.
+   * - `poll`: Index of a poll which is ongoing.
+   * - `aye`: `true` if the vote is to approve the proposal, `false` otherwise.
+   *
+   * Transaction fees are be waived if the member is voting on any particular proposal
+   * for the first time and the call is successful. Subsequent vote changes will charge a
+   * fee.
+   *
+   * Weight: `O(1)`, less if there was no previous vote on the poll by the member.
    **/
   | { name: 'Vote'; params: { poll: number; aye: boolean } }
   /**
-   * See [`Pallet::cleanup_poll`].
+   * Remove votes from the given poll. It must have ended.
+   *
+   * - `origin`: Must be `Signed` by any account.
+   * - `poll_index`: Index of a poll which is completed and for which votes continue to
+   * exist.
+   * - `max`: Maximum number of vote items from remove in this call.
+   *
+   * Transaction fees are waived if the operation is successful.
+   *
+   * Weight `O(max)` (less if there are fewer items to remove than `max`).
    **/
-  | { name: 'CleanupPoll'; params: { pollIndex: number; max: number } };
+  | { name: 'CleanupPoll'; params: { pollIndex: number; max: number } }
+  /**
+   * Exchanges a member with a new account and the same existing rank.
+   *
+   * - `origin`: Must be the `ExchangeOrigin`.
+   * - `who`: Account of existing member of rank greater than zero to be exchanged.
+   * - `new_who`: New Account of existing member of rank greater than zero to exchanged to.
+   **/
+  | { name: 'ExchangeMember'; params: { who: MultiAddress; newWho: MultiAddress } };
 
 export type PalletRankedCollectiveCallLike =
   /**
-   * See [`Pallet::add_member`].
+   * Introduce a new member.
+   *
+   * - `origin`: Must be the `AddOrigin`.
+   * - `who`: Account of non-member which will become a member.
+   *
+   * Weight: `O(1)`
    **/
   | { name: 'AddMember'; params: { who: MultiAddressLike } }
   /**
-   * See [`Pallet::promote_member`].
+   * Increment the rank of an existing member by one.
+   *
+   * - `origin`: Must be the `PromoteOrigin`.
+   * - `who`: Account of existing member.
+   *
+   * Weight: `O(1)`
    **/
   | { name: 'PromoteMember'; params: { who: MultiAddressLike } }
   /**
-   * See [`Pallet::demote_member`].
+   * Decrement the rank of an existing member by one. If the member is already at rank zero,
+   * then they are removed entirely.
+   *
+   * - `origin`: Must be the `DemoteOrigin`.
+   * - `who`: Account of existing member of rank greater than zero.
+   *
+   * Weight: `O(1)`, less if the member's index is highest in its rank.
    **/
   | { name: 'DemoteMember'; params: { who: MultiAddressLike } }
   /**
-   * See [`Pallet::remove_member`].
+   * Remove the member entirely.
+   *
+   * - `origin`: Must be the `RemoveOrigin`.
+   * - `who`: Account of existing member of rank greater than zero.
+   * - `min_rank`: The rank of the member or greater.
+   *
+   * Weight: `O(min_rank)`.
    **/
   | { name: 'RemoveMember'; params: { who: MultiAddressLike; minRank: number } }
   /**
-   * See [`Pallet::vote`].
+   * Add an aye or nay vote for the sender to the given proposal.
+   *
+   * - `origin`: Must be `Signed` by a member account.
+   * - `poll`: Index of a poll which is ongoing.
+   * - `aye`: `true` if the vote is to approve the proposal, `false` otherwise.
+   *
+   * Transaction fees are be waived if the member is voting on any particular proposal
+   * for the first time and the call is successful. Subsequent vote changes will charge a
+   * fee.
+   *
+   * Weight: `O(1)`, less if there was no previous vote on the poll by the member.
    **/
   | { name: 'Vote'; params: { poll: number; aye: boolean } }
   /**
-   * See [`Pallet::cleanup_poll`].
+   * Remove votes from the given poll. It must have ended.
+   *
+   * - `origin`: Must be `Signed` by any account.
+   * - `poll_index`: Index of a poll which is completed and for which votes continue to
+   * exist.
+   * - `max`: Maximum number of vote items from remove in this call.
+   *
+   * Transaction fees are waived if the operation is successful.
+   *
+   * Weight `O(max)` (less if there are fewer items to remove than `max`).
    **/
-  | { name: 'CleanupPoll'; params: { pollIndex: number; max: number } };
+  | { name: 'CleanupPoll'; params: { pollIndex: number; max: number } }
+  /**
+   * Exchanges a member with a new account and the same existing rank.
+   *
+   * - `origin`: Must be the `ExchangeOrigin`.
+   * - `who`: Account of existing member of rank greater than zero to be exchanged.
+   * - `new_who`: New Account of existing member of rank greater than zero to exchanged to.
+   **/
+  | { name: 'ExchangeMember'; params: { who: MultiAddressLike; newWho: MultiAddressLike } };
 
 /**
  * Pallet's callable functions.
  **/
 export type PalletAssetConversionCall =
   /**
-   * See [`Pallet::create_pool`].
+   * Creates an empty liquidity pool and an associated new `lp_token` asset
+   * (the id of which is returned in the `Event::PoolCreated` event).
+   *
+   * Once a pool is created, someone may [`Pallet::add_liquidity`] to it.
    **/
   | {
       name: 'CreatePool';
-      params: { asset1: PalletAssetConversionNativeOrAssetId; asset2: PalletAssetConversionNativeOrAssetId };
+      params: {
+        asset1: FrameSupportTokensFungibleUnionOfNativeOrWithId;
+        asset2: FrameSupportTokensFungibleUnionOfNativeOrWithId;
+      };
     }
   /**
-   * See [`Pallet::add_liquidity`].
+   * Provide liquidity into the pool of `asset1` and `asset2`.
+   * NOTE: an optimal amount of asset1 and asset2 will be calculated and
+   * might be different than the provided `amount1_desired`/`amount2_desired`
+   * thus you should provide the min amount you're happy to provide.
+   * Params `amount1_min`/`amount2_min` represent that.
+   * `mint_to` will be sent the liquidity tokens that represent this share of the pool.
+   *
+   * NOTE: when encountering an incorrect exchange rate and non-withdrawable pool liquidity,
+   * batch an atomic call with [`Pallet::add_liquidity`] and
+   * [`Pallet::swap_exact_tokens_for_tokens`] or [`Pallet::swap_tokens_for_exact_tokens`]
+   * calls to render the liquidity withdrawable and rectify the exchange rate.
+   *
+   * Once liquidity is added, someone may successfully call
+   * [`Pallet::swap_exact_tokens_for_tokens`] successfully.
    **/
   | {
       name: 'AddLiquidity';
       params: {
-        asset1: PalletAssetConversionNativeOrAssetId;
-        asset2: PalletAssetConversionNativeOrAssetId;
+        asset1: FrameSupportTokensFungibleUnionOfNativeOrWithId;
+        asset2: FrameSupportTokensFungibleUnionOfNativeOrWithId;
         amount1Desired: bigint;
         amount2Desired: bigint;
         amount1Min: bigint;
@@ -7601,13 +16065,15 @@ export type PalletAssetConversionCall =
       };
     }
   /**
-   * See [`Pallet::remove_liquidity`].
+   * Allows you to remove liquidity by providing the `lp_token_burn` tokens that will be
+   * burned in the process. With the usage of `amount1_min_receive`/`amount2_min_receive`
+   * it's possible to control the min amount of returned tokens you're happy with.
    **/
   | {
       name: 'RemoveLiquidity';
       params: {
-        asset1: PalletAssetConversionNativeOrAssetId;
-        asset2: PalletAssetConversionNativeOrAssetId;
+        asset1: FrameSupportTokensFungibleUnionOfNativeOrWithId;
+        asset2: FrameSupportTokensFungibleUnionOfNativeOrWithId;
         lpTokenBurn: bigint;
         amount1MinReceive: bigint;
         amount2MinReceive: bigint;
@@ -7615,12 +16081,17 @@ export type PalletAssetConversionCall =
       };
     }
   /**
-   * See [`Pallet::swap_exact_tokens_for_tokens`].
+   * Swap the exact amount of `asset1` into `asset2`.
+   * `amount_out_min` param allows you to specify the min amount of the `asset2`
+   * you're happy to receive.
+   *
+   * [`AssetConversionApi::quote_price_exact_tokens_for_tokens`] runtime call can be called
+   * for a quote.
    **/
   | {
       name: 'SwapExactTokensForTokens';
       params: {
-        path: Array<PalletAssetConversionNativeOrAssetId>;
+        path: Array<FrameSupportTokensFungibleUnionOfNativeOrWithId>;
         amountIn: bigint;
         amountOutMin: bigint;
         sendTo: AccountId32;
@@ -7628,12 +16099,17 @@ export type PalletAssetConversionCall =
       };
     }
   /**
-   * See [`Pallet::swap_tokens_for_exact_tokens`].
+   * Swap any amount of `asset1` to get the exact amount of `asset2`.
+   * `amount_in_max` param allows to specify the max amount of the `asset1`
+   * you're happy to provide.
+   *
+   * [`AssetConversionApi::quote_price_tokens_for_exact_tokens`] runtime call can be called
+   * for a quote.
    **/
   | {
       name: 'SwapTokensForExactTokens';
       params: {
-        path: Array<PalletAssetConversionNativeOrAssetId>;
+        path: Array<FrameSupportTokensFungibleUnionOfNativeOrWithId>;
         amountOut: bigint;
         amountInMax: bigint;
         sendTo: AccountId32;
@@ -7643,20 +16119,39 @@ export type PalletAssetConversionCall =
 
 export type PalletAssetConversionCallLike =
   /**
-   * See [`Pallet::create_pool`].
+   * Creates an empty liquidity pool and an associated new `lp_token` asset
+   * (the id of which is returned in the `Event::PoolCreated` event).
+   *
+   * Once a pool is created, someone may [`Pallet::add_liquidity`] to it.
    **/
   | {
       name: 'CreatePool';
-      params: { asset1: PalletAssetConversionNativeOrAssetId; asset2: PalletAssetConversionNativeOrAssetId };
+      params: {
+        asset1: FrameSupportTokensFungibleUnionOfNativeOrWithId;
+        asset2: FrameSupportTokensFungibleUnionOfNativeOrWithId;
+      };
     }
   /**
-   * See [`Pallet::add_liquidity`].
+   * Provide liquidity into the pool of `asset1` and `asset2`.
+   * NOTE: an optimal amount of asset1 and asset2 will be calculated and
+   * might be different than the provided `amount1_desired`/`amount2_desired`
+   * thus you should provide the min amount you're happy to provide.
+   * Params `amount1_min`/`amount2_min` represent that.
+   * `mint_to` will be sent the liquidity tokens that represent this share of the pool.
+   *
+   * NOTE: when encountering an incorrect exchange rate and non-withdrawable pool liquidity,
+   * batch an atomic call with [`Pallet::add_liquidity`] and
+   * [`Pallet::swap_exact_tokens_for_tokens`] or [`Pallet::swap_tokens_for_exact_tokens`]
+   * calls to render the liquidity withdrawable and rectify the exchange rate.
+   *
+   * Once liquidity is added, someone may successfully call
+   * [`Pallet::swap_exact_tokens_for_tokens`] successfully.
    **/
   | {
       name: 'AddLiquidity';
       params: {
-        asset1: PalletAssetConversionNativeOrAssetId;
-        asset2: PalletAssetConversionNativeOrAssetId;
+        asset1: FrameSupportTokensFungibleUnionOfNativeOrWithId;
+        asset2: FrameSupportTokensFungibleUnionOfNativeOrWithId;
         amount1Desired: bigint;
         amount2Desired: bigint;
         amount1Min: bigint;
@@ -7665,13 +16160,15 @@ export type PalletAssetConversionCallLike =
       };
     }
   /**
-   * See [`Pallet::remove_liquidity`].
+   * Allows you to remove liquidity by providing the `lp_token_burn` tokens that will be
+   * burned in the process. With the usage of `amount1_min_receive`/`amount2_min_receive`
+   * it's possible to control the min amount of returned tokens you're happy with.
    **/
   | {
       name: 'RemoveLiquidity';
       params: {
-        asset1: PalletAssetConversionNativeOrAssetId;
-        asset2: PalletAssetConversionNativeOrAssetId;
+        asset1: FrameSupportTokensFungibleUnionOfNativeOrWithId;
+        asset2: FrameSupportTokensFungibleUnionOfNativeOrWithId;
         lpTokenBurn: bigint;
         amount1MinReceive: bigint;
         amount2MinReceive: bigint;
@@ -7679,12 +16176,17 @@ export type PalletAssetConversionCallLike =
       };
     }
   /**
-   * See [`Pallet::swap_exact_tokens_for_tokens`].
+   * Swap the exact amount of `asset1` into `asset2`.
+   * `amount_out_min` param allows you to specify the min amount of the `asset2`
+   * you're happy to receive.
+   *
+   * [`AssetConversionApi::quote_price_exact_tokens_for_tokens`] runtime call can be called
+   * for a quote.
    **/
   | {
       name: 'SwapExactTokensForTokens';
       params: {
-        path: Array<PalletAssetConversionNativeOrAssetId>;
+        path: Array<FrameSupportTokensFungibleUnionOfNativeOrWithId>;
         amountIn: bigint;
         amountOutMin: bigint;
         sendTo: AccountId32Like;
@@ -7692,12 +16194,17 @@ export type PalletAssetConversionCallLike =
       };
     }
   /**
-   * See [`Pallet::swap_tokens_for_exact_tokens`].
+   * Swap any amount of `asset1` to get the exact amount of `asset2`.
+   * `amount_in_max` param allows to specify the max amount of the `asset1`
+   * you're happy to provide.
+   *
+   * [`AssetConversionApi::quote_price_tokens_for_exact_tokens`] runtime call can be called
+   * for a quote.
    **/
   | {
       name: 'SwapTokensForExactTokens';
       params: {
-        path: Array<PalletAssetConversionNativeOrAssetId>;
+        path: Array<FrameSupportTokensFungibleUnionOfNativeOrWithId>;
         amountOut: bigint;
         amountInMax: bigint;
         sendTo: AccountId32Like;
@@ -7705,36 +16212,144 @@ export type PalletAssetConversionCallLike =
       };
     };
 
-export type PalletAssetConversionNativeOrAssetId = { tag: 'Native' } | { tag: 'Asset'; value: number };
+export type FrameSupportTokensFungibleUnionOfNativeOrWithId = { tag: 'Native' } | { tag: 'WithId'; value: number };
 
 /**
  * Contains a variant per dispatchable extrinsic that this pallet has.
  **/
 export type PalletFastUnstakeCall =
   /**
-   * See [`Pallet::register_fast_unstake`].
+   * Register oneself for fast-unstake.
+   *
+   * ## Dispatch Origin
+   *
+   * The dispatch origin of this call must be *signed* by whoever is permitted to call
+   * unbond funds by the staking system. See [`Config::Staking`].
+   *
+   * ## Details
+   *
+   * The stash associated with the origin must have no ongoing unlocking chunks. If
+   * successful, this will fully unbond and chill the stash. Then, it will enqueue the stash
+   * to be checked in further blocks.
+   *
+   * If by the time this is called, the stash is actually eligible for fast-unstake, then
+   * they are guaranteed to remain eligible, because the call will chill them as well.
+   *
+   * If the check works, the entire staking data is removed, i.e. the stash is fully
+   * unstaked.
+   *
+   * If the check fails, the stash remains chilled and waiting for being unbonded as in with
+   * the normal staking system, but they lose part of their unbonding chunks due to consuming
+   * the chain's resources.
+   *
+   * ## Events
+   *
+   * Some events from the staking and currency system might be emitted.
    **/
   | { name: 'RegisterFastUnstake' }
   /**
-   * See [`Pallet::deregister`].
+   * Deregister oneself from the fast-unstake.
+   *
+   * ## Dispatch Origin
+   *
+   * The dispatch origin of this call must be *signed* by whoever is permitted to call
+   * unbond funds by the staking system. See [`Config::Staking`].
+   *
+   * ## Details
+   *
+   * This is useful if one is registered, they are still waiting, and they change their mind.
+   *
+   * Note that the associated stash is still fully unbonded and chilled as a consequence of
+   * calling [`Pallet::register_fast_unstake`]. Therefore, this should probably be followed
+   * by a call to `rebond` in the staking system.
+   *
+   * ## Events
+   *
+   * Some events from the staking and currency system might be emitted.
    **/
   | { name: 'Deregister' }
   /**
-   * See [`Pallet::control`].
+   * Control the operation of this pallet.
+   *
+   * ## Dispatch Origin
+   *
+   * The dispatch origin of this call must be [`Config::ControlOrigin`].
+   *
+   * ## Details
+   *
+   * Can set the number of eras to check per block, and potentially other admin work.
+   *
+   * ## Events
+   *
+   * No events are emitted from this dispatch.
    **/
   | { name: 'Control'; params: { erasToCheck: number } };
 
 export type PalletFastUnstakeCallLike =
   /**
-   * See [`Pallet::register_fast_unstake`].
+   * Register oneself for fast-unstake.
+   *
+   * ## Dispatch Origin
+   *
+   * The dispatch origin of this call must be *signed* by whoever is permitted to call
+   * unbond funds by the staking system. See [`Config::Staking`].
+   *
+   * ## Details
+   *
+   * The stash associated with the origin must have no ongoing unlocking chunks. If
+   * successful, this will fully unbond and chill the stash. Then, it will enqueue the stash
+   * to be checked in further blocks.
+   *
+   * If by the time this is called, the stash is actually eligible for fast-unstake, then
+   * they are guaranteed to remain eligible, because the call will chill them as well.
+   *
+   * If the check works, the entire staking data is removed, i.e. the stash is fully
+   * unstaked.
+   *
+   * If the check fails, the stash remains chilled and waiting for being unbonded as in with
+   * the normal staking system, but they lose part of their unbonding chunks due to consuming
+   * the chain's resources.
+   *
+   * ## Events
+   *
+   * Some events from the staking and currency system might be emitted.
    **/
   | { name: 'RegisterFastUnstake' }
   /**
-   * See [`Pallet::deregister`].
+   * Deregister oneself from the fast-unstake.
+   *
+   * ## Dispatch Origin
+   *
+   * The dispatch origin of this call must be *signed* by whoever is permitted to call
+   * unbond funds by the staking system. See [`Config::Staking`].
+   *
+   * ## Details
+   *
+   * This is useful if one is registered, they are still waiting, and they change their mind.
+   *
+   * Note that the associated stash is still fully unbonded and chilled as a consequence of
+   * calling [`Pallet::register_fast_unstake`]. Therefore, this should probably be followed
+   * by a call to `rebond` in the staking system.
+   *
+   * ## Events
+   *
+   * Some events from the staking and currency system might be emitted.
    **/
   | { name: 'Deregister' }
   /**
-   * See [`Pallet::control`].
+   * Control the operation of this pallet.
+   *
+   * ## Dispatch Origin
+   *
+   * The dispatch origin of this call must be [`Config::ControlOrigin`].
+   *
+   * ## Details
+   *
+   * Can set the number of eras to check per block, and potentially other admin work.
+   *
+   * ## Events
+   *
+   * No events are emitted from this dispatch.
    **/
   | { name: 'Control'; params: { erasToCheck: number } };
 
@@ -7743,11 +16358,23 @@ export type PalletFastUnstakeCallLike =
  **/
 export type PalletMessageQueueCall =
   /**
-   * See [`Pallet::reap_page`].
+   * Remove a page which has no more messages remaining to be processed or is stale.
    **/
   | { name: 'ReapPage'; params: { messageOrigin: number; pageIndex: number } }
   /**
-   * See [`Pallet::execute_overweight`].
+   * Execute an overweight message.
+   *
+   * Temporary processing errors will be propagated whereas permanent errors are treated
+   * as success condition.
+   *
+   * - `origin`: Must be `Signed`.
+   * - `message_origin`: The origin from which the message to be executed arrived.
+   * - `page`: The page in the queue in which the message to be executed is sitting.
+   * - `index`: The index into the queue of the message to be executed.
+   * - `weight_limit`: The maximum amount of weight allowed to be consumed in the execution
+   * of the message.
+   *
+   * Benchmark complexity considerations: O(index + weight_limit).
    **/
   | {
       name: 'ExecuteOverweight';
@@ -7756,11 +16383,23 @@ export type PalletMessageQueueCall =
 
 export type PalletMessageQueueCallLike =
   /**
-   * See [`Pallet::reap_page`].
+   * Remove a page which has no more messages remaining to be processed or is stale.
    **/
   | { name: 'ReapPage'; params: { messageOrigin: number; pageIndex: number } }
   /**
-   * See [`Pallet::execute_overweight`].
+   * Execute an overweight message.
+   *
+   * Temporary processing errors will be propagated whereas permanent errors are treated
+   * as success condition.
+   *
+   * - `origin`: Must be `Signed`.
+   * - `message_origin`: The origin from which the message to be executed arrived.
+   * - `page`: The page in the queue in which the message to be executed is sitting.
+   * - `index`: The index into the queue of the message to be executed.
+   * - `weight_limit`: The maximum amount of weight allowed to be consumed in the execution
+   * of the message.
+   *
+   * Benchmark complexity considerations: O(index + weight_limit).
    **/
   | {
       name: 'ExecuteOverweight';
@@ -7770,46 +16409,42 @@ export type PalletMessageQueueCallLike =
 /**
  * Contains a variant per dispatchable extrinsic that this pallet has.
  **/
-export type FrameBenchmarkingPalletPovCall =
-  /**
-   * See [`Pallet::emit_event`].
-   **/
-  | 'EmitEvent'
-  /**
-   * See [`Pallet::noop`].
-   **/
-  | 'Noop';
+export type FrameBenchmarkingPalletPovCall = 'EmitEvent' | 'Noop';
 
-export type FrameBenchmarkingPalletPovCallLike =
-  /**
-   * See [`Pallet::emit_event`].
-   **/
-  | 'EmitEvent'
-  /**
-   * See [`Pallet::noop`].
-   **/
-  | 'Noop';
+export type FrameBenchmarkingPalletPovCallLike = 'EmitEvent' | 'Noop';
 
 /**
  * Contains a variant per dispatchable extrinsic that this pallet has.
  **/
 export type PalletTxPauseCall =
   /**
-   * See [`Pallet::pause`].
+   * Pause a call.
+   *
+   * Can only be called by [`Config::PauseOrigin`].
+   * Emits an [`Event::CallPaused`] event on success.
    **/
   | { name: 'Pause'; params: { fullName: [Bytes, Bytes] } }
   /**
-   * See [`Pallet::unpause`].
+   * Un-pause a call.
+   *
+   * Can only be called by [`Config::UnpauseOrigin`].
+   * Emits an [`Event::CallUnpaused`] event on success.
    **/
   | { name: 'Unpause'; params: { ident: [Bytes, Bytes] } };
 
 export type PalletTxPauseCallLike =
   /**
-   * See [`Pallet::pause`].
+   * Pause a call.
+   *
+   * Can only be called by [`Config::PauseOrigin`].
+   * Emits an [`Event::CallPaused`] event on success.
    **/
   | { name: 'Pause'; params: { fullName: [BytesLike, BytesLike] } }
   /**
-   * See [`Pallet::unpause`].
+   * Un-pause a call.
+   *
+   * Can only be called by [`Config::UnpauseOrigin`].
+   * Emits an [`Event::CallUnpaused`] event on success.
    **/
   | { name: 'Unpause'; params: { ident: [BytesLike, BytesLike] } };
 
@@ -7818,230 +16453,619 @@ export type PalletTxPauseCallLike =
  **/
 export type PalletSafeModeCall =
   /**
-   * See [`Pallet::enter`].
+   * Enter safe-mode permissionlessly for [`Config::EnterDuration`] blocks.
+   *
+   * Reserves [`Config::EnterDepositAmount`] from the caller's account.
+   * Emits an [`Event::Entered`] event on success.
+   * Errors with [`Error::Entered`] if the safe-mode is already entered.
+   * Errors with [`Error::NotConfigured`] if the deposit amount is `None`.
    **/
   | { name: 'Enter' }
   /**
-   * See [`Pallet::force_enter`].
+   * Enter safe-mode by force for a per-origin configured number of blocks.
+   *
+   * Emits an [`Event::Entered`] event on success.
+   * Errors with [`Error::Entered`] if the safe-mode is already entered.
+   *
+   * Can only be called by the [`Config::ForceEnterOrigin`] origin.
    **/
   | { name: 'ForceEnter' }
   /**
-   * See [`Pallet::extend`].
+   * Extend the safe-mode permissionlessly for [`Config::ExtendDuration`] blocks.
+   *
+   * This accumulates on top of the current remaining duration.
+   * Reserves [`Config::ExtendDepositAmount`] from the caller's account.
+   * Emits an [`Event::Extended`] event on success.
+   * Errors with [`Error::Exited`] if the safe-mode is entered.
+   * Errors with [`Error::NotConfigured`] if the deposit amount is `None`.
+   *
+   * This may be called by any signed origin with [`Config::ExtendDepositAmount`] free
+   * currency to reserve. This call can be disabled for all origins by configuring
+   * [`Config::ExtendDepositAmount`] to `None`.
    **/
   | { name: 'Extend' }
   /**
-   * See [`Pallet::force_extend`].
+   * Extend the safe-mode by force for a per-origin configured number of blocks.
+   *
+   * Emits an [`Event::Extended`] event on success.
+   * Errors with [`Error::Exited`] if the safe-mode is inactive.
+   *
+   * Can only be called by the [`Config::ForceExtendOrigin`] origin.
    **/
   | { name: 'ForceExtend' }
   /**
-   * See [`Pallet::force_exit`].
+   * Exit safe-mode by force.
+   *
+   * Emits an [`Event::Exited`] with [`ExitReason::Force`] event on success.
+   * Errors with [`Error::Exited`] if the safe-mode is inactive.
+   *
+   * Note: `safe-mode` will be automatically deactivated by [`Pallet::on_initialize`] hook
+   * after the block height is greater than the [`EnteredUntil`] storage item.
+   * Emits an [`Event::Exited`] with [`ExitReason::Timeout`] event when deactivated in the
+   * hook.
    **/
   | { name: 'ForceExit' }
   /**
-   * See [`Pallet::force_slash_deposit`].
+   * Slash a deposit for an account that entered or extended safe-mode at a given
+   * historical block.
+   *
+   * This can only be called while safe-mode is entered.
+   *
+   * Emits a [`Event::DepositSlashed`] event on success.
+   * Errors with [`Error::Entered`] if safe-mode is entered.
+   *
+   * Can only be called by the [`Config::ForceDepositOrigin`] origin.
    **/
   | { name: 'ForceSlashDeposit'; params: { account: AccountId32; block: number } }
   /**
-   * See [`Pallet::release_deposit`].
+   * Permissionlessly release a deposit for an account that entered safe-mode at a
+   * given historical block.
+   *
+   * The call can be completely disabled by setting [`Config::ReleaseDelay`] to `None`.
+   * This cannot be called while safe-mode is entered and not until
+   * [`Config::ReleaseDelay`] blocks have passed since safe-mode was entered.
+   *
+   * Emits a [`Event::DepositReleased`] event on success.
+   * Errors with [`Error::Entered`] if the safe-mode is entered.
+   * Errors with [`Error::CannotReleaseYet`] if [`Config::ReleaseDelay`] block have not
+   * passed since safe-mode was entered. Errors with [`Error::NoDeposit`] if the payee has no
+   * reserved currency at the block specified.
    **/
   | { name: 'ReleaseDeposit'; params: { account: AccountId32; block: number } }
   /**
-   * See [`Pallet::force_release_deposit`].
+   * Force to release a deposit for an account that entered safe-mode at a given
+   * historical block.
+   *
+   * This can be called while safe-mode is still entered.
+   *
+   * Emits a [`Event::DepositReleased`] event on success.
+   * Errors with [`Error::Entered`] if safe-mode is entered.
+   * Errors with [`Error::NoDeposit`] if the payee has no reserved currency at the
+   * specified block.
+   *
+   * Can only be called by the [`Config::ForceDepositOrigin`] origin.
    **/
   | { name: 'ForceReleaseDeposit'; params: { account: AccountId32; block: number } };
 
 export type PalletSafeModeCallLike =
   /**
-   * See [`Pallet::enter`].
+   * Enter safe-mode permissionlessly for [`Config::EnterDuration`] blocks.
+   *
+   * Reserves [`Config::EnterDepositAmount`] from the caller's account.
+   * Emits an [`Event::Entered`] event on success.
+   * Errors with [`Error::Entered`] if the safe-mode is already entered.
+   * Errors with [`Error::NotConfigured`] if the deposit amount is `None`.
    **/
   | { name: 'Enter' }
   /**
-   * See [`Pallet::force_enter`].
+   * Enter safe-mode by force for a per-origin configured number of blocks.
+   *
+   * Emits an [`Event::Entered`] event on success.
+   * Errors with [`Error::Entered`] if the safe-mode is already entered.
+   *
+   * Can only be called by the [`Config::ForceEnterOrigin`] origin.
    **/
   | { name: 'ForceEnter' }
   /**
-   * See [`Pallet::extend`].
+   * Extend the safe-mode permissionlessly for [`Config::ExtendDuration`] blocks.
+   *
+   * This accumulates on top of the current remaining duration.
+   * Reserves [`Config::ExtendDepositAmount`] from the caller's account.
+   * Emits an [`Event::Extended`] event on success.
+   * Errors with [`Error::Exited`] if the safe-mode is entered.
+   * Errors with [`Error::NotConfigured`] if the deposit amount is `None`.
+   *
+   * This may be called by any signed origin with [`Config::ExtendDepositAmount`] free
+   * currency to reserve. This call can be disabled for all origins by configuring
+   * [`Config::ExtendDepositAmount`] to `None`.
    **/
   | { name: 'Extend' }
   /**
-   * See [`Pallet::force_extend`].
+   * Extend the safe-mode by force for a per-origin configured number of blocks.
+   *
+   * Emits an [`Event::Extended`] event on success.
+   * Errors with [`Error::Exited`] if the safe-mode is inactive.
+   *
+   * Can only be called by the [`Config::ForceExtendOrigin`] origin.
    **/
   | { name: 'ForceExtend' }
   /**
-   * See [`Pallet::force_exit`].
+   * Exit safe-mode by force.
+   *
+   * Emits an [`Event::Exited`] with [`ExitReason::Force`] event on success.
+   * Errors with [`Error::Exited`] if the safe-mode is inactive.
+   *
+   * Note: `safe-mode` will be automatically deactivated by [`Pallet::on_initialize`] hook
+   * after the block height is greater than the [`EnteredUntil`] storage item.
+   * Emits an [`Event::Exited`] with [`ExitReason::Timeout`] event when deactivated in the
+   * hook.
    **/
   | { name: 'ForceExit' }
   /**
-   * See [`Pallet::force_slash_deposit`].
+   * Slash a deposit for an account that entered or extended safe-mode at a given
+   * historical block.
+   *
+   * This can only be called while safe-mode is entered.
+   *
+   * Emits a [`Event::DepositSlashed`] event on success.
+   * Errors with [`Error::Entered`] if safe-mode is entered.
+   *
+   * Can only be called by the [`Config::ForceDepositOrigin`] origin.
    **/
   | { name: 'ForceSlashDeposit'; params: { account: AccountId32Like; block: number } }
   /**
-   * See [`Pallet::release_deposit`].
+   * Permissionlessly release a deposit for an account that entered safe-mode at a
+   * given historical block.
+   *
+   * The call can be completely disabled by setting [`Config::ReleaseDelay`] to `None`.
+   * This cannot be called while safe-mode is entered and not until
+   * [`Config::ReleaseDelay`] blocks have passed since safe-mode was entered.
+   *
+   * Emits a [`Event::DepositReleased`] event on success.
+   * Errors with [`Error::Entered`] if the safe-mode is entered.
+   * Errors with [`Error::CannotReleaseYet`] if [`Config::ReleaseDelay`] block have not
+   * passed since safe-mode was entered. Errors with [`Error::NoDeposit`] if the payee has no
+   * reserved currency at the block specified.
    **/
   | { name: 'ReleaseDeposit'; params: { account: AccountId32Like; block: number } }
   /**
-   * See [`Pallet::force_release_deposit`].
+   * Force to release a deposit for an account that entered safe-mode at a given
+   * historical block.
+   *
+   * This can be called while safe-mode is still entered.
+   *
+   * Emits a [`Event::DepositReleased`] event on success.
+   * Errors with [`Error::Entered`] if safe-mode is entered.
+   * Errors with [`Error::NoDeposit`] if the payee has no reserved currency at the
+   * specified block.
+   *
+   * Can only be called by the [`Config::ForceDepositOrigin`] origin.
    **/
   | { name: 'ForceReleaseDeposit'; params: { account: AccountId32Like; block: number } };
 
 /**
  * Contains a variant per dispatchable extrinsic that this pallet has.
  **/
+export type PalletMigrationsCall =
+  /**
+   * Allows root to set a cursor to forcefully start, stop or forward the migration process.
+   *
+   * Should normally not be needed and is only in place as emergency measure. Note that
+   * restarting the migration process in this manner will not call the
+   * [`MigrationStatusHandler::started`] hook or emit an `UpgradeStarted` event.
+   **/
+  | { name: 'ForceSetCursor'; params: { cursor?: PalletMigrationsMigrationCursor | undefined } }
+  /**
+   * Allows root to set an active cursor to forcefully start/forward the migration process.
+   *
+   * This is an edge-case version of [`Self::force_set_cursor`] that allows to set the
+   * `started_at` value to the next block number. Otherwise this would not be possible, since
+   * `force_set_cursor` takes an absolute block number. Setting `started_at` to `None`
+   * indicates that the current block number plus one should be used.
+   **/
+  | {
+      name: 'ForceSetActiveCursor';
+      params: { index: number; innerCursor?: Bytes | undefined; startedAt?: number | undefined };
+    }
+  /**
+   * Forces the onboarding of the migrations.
+   *
+   * This process happens automatically on a runtime upgrade. It is in place as an emergency
+   * measurement. The cursor needs to be `None` for this to succeed.
+   **/
+  | { name: 'ForceOnboardMbms' }
+  /**
+   * Clears the `Historic` set.
+   *
+   * `map_cursor` must be set to the last value that was returned by the
+   * `HistoricCleared` event. The first time `None` can be used. `limit` must be chosen in a
+   * way that will result in a sensible weight.
+   **/
+  | { name: 'ClearHistoric'; params: { selector: PalletMigrationsHistoricCleanupSelector } };
+
+export type PalletMigrationsCallLike =
+  /**
+   * Allows root to set a cursor to forcefully start, stop or forward the migration process.
+   *
+   * Should normally not be needed and is only in place as emergency measure. Note that
+   * restarting the migration process in this manner will not call the
+   * [`MigrationStatusHandler::started`] hook or emit an `UpgradeStarted` event.
+   **/
+  | { name: 'ForceSetCursor'; params: { cursor?: PalletMigrationsMigrationCursor | undefined } }
+  /**
+   * Allows root to set an active cursor to forcefully start/forward the migration process.
+   *
+   * This is an edge-case version of [`Self::force_set_cursor`] that allows to set the
+   * `started_at` value to the next block number. Otherwise this would not be possible, since
+   * `force_set_cursor` takes an absolute block number. Setting `started_at` to `None`
+   * indicates that the current block number plus one should be used.
+   **/
+  | {
+      name: 'ForceSetActiveCursor';
+      params: { index: number; innerCursor?: BytesLike | undefined; startedAt?: number | undefined };
+    }
+  /**
+   * Forces the onboarding of the migrations.
+   *
+   * This process happens automatically on a runtime upgrade. It is in place as an emergency
+   * measurement. The cursor needs to be `None` for this to succeed.
+   **/
+  | { name: 'ForceOnboardMbms' }
+  /**
+   * Clears the `Historic` set.
+   *
+   * `map_cursor` must be set to the last value that was returned by the
+   * `HistoricCleared` event. The first time `None` can be used. `limit` must be chosen in a
+   * way that will result in a sensible weight.
+   **/
+  | { name: 'ClearHistoric'; params: { selector: PalletMigrationsHistoricCleanupSelector } };
+
+export type PalletMigrationsMigrationCursor = { tag: 'Active'; value: PalletMigrationsActiveCursor } | { tag: 'Stuck' };
+
+export type PalletMigrationsActiveCursor = { index: number; innerCursor?: Bytes | undefined; startedAt: number };
+
+export type PalletMigrationsHistoricCleanupSelector =
+  | { tag: 'Specific'; value: Array<Bytes> }
+  | { tag: 'Wildcard'; value: { limit?: number | undefined; previousCursor?: Bytes | undefined } };
+
+/**
+ * Contains a variant per dispatchable extrinsic that this pallet has.
+ **/
 export type PalletBrokerCall =
   /**
-   * See [`Pallet::configure`].
+   * Configure the pallet.
+   *
+   * - `origin`: Must be Root or pass `AdminOrigin`.
+   * - `config`: The configuration for this pallet.
    **/
   | { name: 'Configure'; params: { config: PalletBrokerConfigRecord } }
   /**
-   * See [`Pallet::reserve`].
+   * Reserve a core for a workload.
+   *
+   * - `origin`: Must be Root or pass `AdminOrigin`.
+   * - `workload`: The workload which should be permanently placed on a core.
    **/
   | { name: 'Reserve'; params: { workload: Array<PalletBrokerScheduleItem> } }
   /**
-   * See [`Pallet::unreserve`].
+   * Cancel a reservation for a workload.
+   *
+   * - `origin`: Must be Root or pass `AdminOrigin`.
+   * - `item_index`: The index of the reservation. Usually this will also be the index of the
+   * core on which the reservation has been scheduled. However, it is possible that if
+   * other cores are reserved or unreserved in the same sale rotation that they won't
+   * correspond, so it's better to look up the core properly in the `Reservations` storage.
    **/
   | { name: 'Unreserve'; params: { itemIndex: number } }
   /**
-   * See [`Pallet::set_lease`].
+   * Reserve a core for a single task workload for a limited period.
+   *
+   * In the interlude and sale period where Bulk Coretime is sold for the period immediately
+   * after `until`, then the same workload may be renewed.
+   *
+   * - `origin`: Must be Root or pass `AdminOrigin`.
+   * - `task`: The workload which should be placed on a core.
+   * - `until`: The timeslice now earlier than which `task` should be placed as a workload on
+   * a core.
    **/
   | { name: 'SetLease'; params: { task: number; until: number } }
   /**
-   * See [`Pallet::start_sales`].
+   * Begin the Bulk Coretime sales rotation.
+   *
+   * - `origin`: Must be Root or pass `AdminOrigin`.
+   * - `initial_price`: The price of Bulk Coretime in the first sale.
+   * - `core_count`: The number of cores which can be allocated.
    **/
   | { name: 'StartSales'; params: { initialPrice: bigint; coreCount: number } }
   /**
-   * See [`Pallet::purchase`].
+   * Purchase Bulk Coretime in the ongoing Sale.
+   *
+   * - `origin`: Must be a Signed origin with at least enough funds to pay the current price
+   * of Bulk Coretime.
+   * - `price_limit`: An amount no more than which should be paid.
    **/
   | { name: 'Purchase'; params: { priceLimit: bigint } }
   /**
-   * See [`Pallet::renew`].
+   * Renew Bulk Coretime in the ongoing Sale or its prior Interlude Period.
+   *
+   * - `origin`: Must be a Signed origin with at least enough funds to pay the renewal price
+   * of the core.
+   * - `core`: The core which should be renewed.
    **/
   | { name: 'Renew'; params: { core: number } }
   /**
-   * See [`Pallet::transfer`].
+   * Transfer a Bulk Coretime Region to a new owner.
+   *
+   * - `origin`: Must be a Signed origin of the account which owns the Region `region_id`.
+   * - `region_id`: The Region whose ownership should change.
+   * - `new_owner`: The new owner for the Region.
    **/
   | { name: 'Transfer'; params: { regionId: PalletBrokerRegionId; newOwner: AccountId32 } }
   /**
-   * See [`Pallet::partition`].
+   * Split a Bulk Coretime Region into two non-overlapping Regions at a particular time into
+   * the region.
+   *
+   * - `origin`: Must be a Signed origin of the account which owns the Region `region_id`.
+   * - `region_id`: The Region which should be partitioned into two non-overlapping Regions.
+   * - `pivot`: The offset in time into the Region at which to make the split.
    **/
   | { name: 'Partition'; params: { regionId: PalletBrokerRegionId; pivot: number } }
   /**
-   * See [`Pallet::interlace`].
+   * Split a Bulk Coretime Region into two wholly-overlapping Regions with complementary
+   * interlace masks which together make up the original Region's interlace mask.
+   *
+   * - `origin`: Must be a Signed origin of the account which owns the Region `region_id`.
+   * - `region_id`: The Region which should become two interlaced Regions of incomplete
+   * regularity.
+   * - `pivot`: The interlace mask of one of the two new regions (the other is its partial
+   * complement).
    **/
   | { name: 'Interlace'; params: { regionId: PalletBrokerRegionId; pivot: PalletBrokerCoreMask } }
   /**
-   * See [`Pallet::assign`].
+   * Assign a Bulk Coretime Region to a task.
+   *
+   * - `origin`: Must be a Signed origin of the account which owns the Region `region_id`.
+   * - `region_id`: The Region which should be assigned to the task.
+   * - `task`: The task to assign.
+   * - `finality`: Indication of whether this assignment is final (in which case it may be
+   * eligible for renewal) or provisional (in which case it may be manipulated and/or
+   * reassigned at a later stage).
    **/
   | { name: 'Assign'; params: { regionId: PalletBrokerRegionId; task: number; finality: PalletBrokerFinality } }
   /**
-   * See [`Pallet::pool`].
+   * Place a Bulk Coretime Region into the Instantaneous Coretime Pool.
+   *
+   * - `origin`: Must be a Signed origin of the account which owns the Region `region_id`.
+   * - `region_id`: The Region which should be assigned to the Pool.
+   * - `payee`: The account which is able to collect any revenue due for the usage of this
+   * Coretime.
    **/
   | { name: 'Pool'; params: { regionId: PalletBrokerRegionId; payee: AccountId32; finality: PalletBrokerFinality } }
   /**
-   * See [`Pallet::claim_revenue`].
+   * Claim the revenue owed from inclusion in the Instantaneous Coretime Pool.
+   *
+   * - `origin`: Must be a Signed origin of the account which owns the Region `region_id`.
+   * - `region_id`: The Region which was assigned to the Pool.
+   * - `max_timeslices`: The maximum number of timeslices which should be processed. This may
+   * effect the weight of the call but should be ideally made equivalant to the length of
+   * the Region `region_id`. If it is less than this, then further dispatches will be
+   * required with the `region_id` which makes up any remainders of the region to be
+   * collected.
    **/
   | { name: 'ClaimRevenue'; params: { regionId: PalletBrokerRegionId; maxTimeslices: number } }
   /**
-   * See [`Pallet::purchase_credit`].
+   * Purchase credit for use in the Instantaneous Coretime Pool.
+   *
+   * - `origin`: Must be a Signed origin able to pay at least `amount`.
+   * - `amount`: The amount of credit to purchase.
+   * - `beneficiary`: The account on the Relay-chain which controls the credit (generally
+   * this will be the collator's hot wallet).
    **/
   | { name: 'PurchaseCredit'; params: { amount: bigint; beneficiary: AccountId32 } }
   /**
-   * See [`Pallet::drop_region`].
+   * Drop an expired Region from the chain.
+   *
+   * - `origin`: Can be any kind of origin.
+   * - `region_id`: The Region which has expired.
    **/
   | { name: 'DropRegion'; params: { regionId: PalletBrokerRegionId } }
   /**
-   * See [`Pallet::drop_contribution`].
+   * Drop an expired Instantaneous Pool Contribution record from the chain.
+   *
+   * - `origin`: Can be any kind of origin.
+   * - `region_id`: The Region identifying the Pool Contribution which has expired.
    **/
   | { name: 'DropContribution'; params: { regionId: PalletBrokerRegionId } }
   /**
-   * See [`Pallet::drop_history`].
+   * Drop an expired Instantaneous Pool History record from the chain.
+   *
+   * - `origin`: Can be any kind of origin.
+   * - `region_id`: The time of the Pool History record which has expired.
    **/
   | { name: 'DropHistory'; params: { when: number } }
   /**
-   * See [`Pallet::drop_renewal`].
+   * Drop an expired Allowed Renewal record from the chain.
+   *
+   * - `origin`: Can be any kind of origin.
+   * - `core`: The core to which the expired renewal refers.
+   * - `when`: The timeslice to which the expired renewal refers. This must have passed.
    **/
   | { name: 'DropRenewal'; params: { core: number; when: number } }
   /**
-   * See [`Pallet::request_core_count`].
+   * Request a change to the number of cores available for scheduling work.
+   *
+   * - `origin`: Must be Root or pass `AdminOrigin`.
+   * - `core_count`: The desired number of cores to be made available.
    **/
-  | { name: 'RequestCoreCount'; params: { coreCount: number } };
+  | { name: 'RequestCoreCount'; params: { coreCount: number } }
+  | { name: 'NotifyCoreCount'; params: { coreCount: number } };
 
 export type PalletBrokerCallLike =
   /**
-   * See [`Pallet::configure`].
+   * Configure the pallet.
+   *
+   * - `origin`: Must be Root or pass `AdminOrigin`.
+   * - `config`: The configuration for this pallet.
    **/
   | { name: 'Configure'; params: { config: PalletBrokerConfigRecord } }
   /**
-   * See [`Pallet::reserve`].
+   * Reserve a core for a workload.
+   *
+   * - `origin`: Must be Root or pass `AdminOrigin`.
+   * - `workload`: The workload which should be permanently placed on a core.
    **/
   | { name: 'Reserve'; params: { workload: Array<PalletBrokerScheduleItem> } }
   /**
-   * See [`Pallet::unreserve`].
+   * Cancel a reservation for a workload.
+   *
+   * - `origin`: Must be Root or pass `AdminOrigin`.
+   * - `item_index`: The index of the reservation. Usually this will also be the index of the
+   * core on which the reservation has been scheduled. However, it is possible that if
+   * other cores are reserved or unreserved in the same sale rotation that they won't
+   * correspond, so it's better to look up the core properly in the `Reservations` storage.
    **/
   | { name: 'Unreserve'; params: { itemIndex: number } }
   /**
-   * See [`Pallet::set_lease`].
+   * Reserve a core for a single task workload for a limited period.
+   *
+   * In the interlude and sale period where Bulk Coretime is sold for the period immediately
+   * after `until`, then the same workload may be renewed.
+   *
+   * - `origin`: Must be Root or pass `AdminOrigin`.
+   * - `task`: The workload which should be placed on a core.
+   * - `until`: The timeslice now earlier than which `task` should be placed as a workload on
+   * a core.
    **/
   | { name: 'SetLease'; params: { task: number; until: number } }
   /**
-   * See [`Pallet::start_sales`].
+   * Begin the Bulk Coretime sales rotation.
+   *
+   * - `origin`: Must be Root or pass `AdminOrigin`.
+   * - `initial_price`: The price of Bulk Coretime in the first sale.
+   * - `core_count`: The number of cores which can be allocated.
    **/
   | { name: 'StartSales'; params: { initialPrice: bigint; coreCount: number } }
   /**
-   * See [`Pallet::purchase`].
+   * Purchase Bulk Coretime in the ongoing Sale.
+   *
+   * - `origin`: Must be a Signed origin with at least enough funds to pay the current price
+   * of Bulk Coretime.
+   * - `price_limit`: An amount no more than which should be paid.
    **/
   | { name: 'Purchase'; params: { priceLimit: bigint } }
   /**
-   * See [`Pallet::renew`].
+   * Renew Bulk Coretime in the ongoing Sale or its prior Interlude Period.
+   *
+   * - `origin`: Must be a Signed origin with at least enough funds to pay the renewal price
+   * of the core.
+   * - `core`: The core which should be renewed.
    **/
   | { name: 'Renew'; params: { core: number } }
   /**
-   * See [`Pallet::transfer`].
+   * Transfer a Bulk Coretime Region to a new owner.
+   *
+   * - `origin`: Must be a Signed origin of the account which owns the Region `region_id`.
+   * - `region_id`: The Region whose ownership should change.
+   * - `new_owner`: The new owner for the Region.
    **/
   | { name: 'Transfer'; params: { regionId: PalletBrokerRegionId; newOwner: AccountId32Like } }
   /**
-   * See [`Pallet::partition`].
+   * Split a Bulk Coretime Region into two non-overlapping Regions at a particular time into
+   * the region.
+   *
+   * - `origin`: Must be a Signed origin of the account which owns the Region `region_id`.
+   * - `region_id`: The Region which should be partitioned into two non-overlapping Regions.
+   * - `pivot`: The offset in time into the Region at which to make the split.
    **/
   | { name: 'Partition'; params: { regionId: PalletBrokerRegionId; pivot: number } }
   /**
-   * See [`Pallet::interlace`].
+   * Split a Bulk Coretime Region into two wholly-overlapping Regions with complementary
+   * interlace masks which together make up the original Region's interlace mask.
+   *
+   * - `origin`: Must be a Signed origin of the account which owns the Region `region_id`.
+   * - `region_id`: The Region which should become two interlaced Regions of incomplete
+   * regularity.
+   * - `pivot`: The interlace mask of one of the two new regions (the other is its partial
+   * complement).
    **/
   | { name: 'Interlace'; params: { regionId: PalletBrokerRegionId; pivot: PalletBrokerCoreMask } }
   /**
-   * See [`Pallet::assign`].
+   * Assign a Bulk Coretime Region to a task.
+   *
+   * - `origin`: Must be a Signed origin of the account which owns the Region `region_id`.
+   * - `region_id`: The Region which should be assigned to the task.
+   * - `task`: The task to assign.
+   * - `finality`: Indication of whether this assignment is final (in which case it may be
+   * eligible for renewal) or provisional (in which case it may be manipulated and/or
+   * reassigned at a later stage).
    **/
   | { name: 'Assign'; params: { regionId: PalletBrokerRegionId; task: number; finality: PalletBrokerFinality } }
   /**
-   * See [`Pallet::pool`].
+   * Place a Bulk Coretime Region into the Instantaneous Coretime Pool.
+   *
+   * - `origin`: Must be a Signed origin of the account which owns the Region `region_id`.
+   * - `region_id`: The Region which should be assigned to the Pool.
+   * - `payee`: The account which is able to collect any revenue due for the usage of this
+   * Coretime.
    **/
   | { name: 'Pool'; params: { regionId: PalletBrokerRegionId; payee: AccountId32Like; finality: PalletBrokerFinality } }
   /**
-   * See [`Pallet::claim_revenue`].
+   * Claim the revenue owed from inclusion in the Instantaneous Coretime Pool.
+   *
+   * - `origin`: Must be a Signed origin of the account which owns the Region `region_id`.
+   * - `region_id`: The Region which was assigned to the Pool.
+   * - `max_timeslices`: The maximum number of timeslices which should be processed. This may
+   * effect the weight of the call but should be ideally made equivalant to the length of
+   * the Region `region_id`. If it is less than this, then further dispatches will be
+   * required with the `region_id` which makes up any remainders of the region to be
+   * collected.
    **/
   | { name: 'ClaimRevenue'; params: { regionId: PalletBrokerRegionId; maxTimeslices: number } }
   /**
-   * See [`Pallet::purchase_credit`].
+   * Purchase credit for use in the Instantaneous Coretime Pool.
+   *
+   * - `origin`: Must be a Signed origin able to pay at least `amount`.
+   * - `amount`: The amount of credit to purchase.
+   * - `beneficiary`: The account on the Relay-chain which controls the credit (generally
+   * this will be the collator's hot wallet).
    **/
   | { name: 'PurchaseCredit'; params: { amount: bigint; beneficiary: AccountId32Like } }
   /**
-   * See [`Pallet::drop_region`].
+   * Drop an expired Region from the chain.
+   *
+   * - `origin`: Can be any kind of origin.
+   * - `region_id`: The Region which has expired.
    **/
   | { name: 'DropRegion'; params: { regionId: PalletBrokerRegionId } }
   /**
-   * See [`Pallet::drop_contribution`].
+   * Drop an expired Instantaneous Pool Contribution record from the chain.
+   *
+   * - `origin`: Can be any kind of origin.
+   * - `region_id`: The Region identifying the Pool Contribution which has expired.
    **/
   | { name: 'DropContribution'; params: { regionId: PalletBrokerRegionId } }
   /**
-   * See [`Pallet::drop_history`].
+   * Drop an expired Instantaneous Pool History record from the chain.
+   *
+   * - `origin`: Can be any kind of origin.
+   * - `region_id`: The time of the Pool History record which has expired.
    **/
   | { name: 'DropHistory'; params: { when: number } }
   /**
-   * See [`Pallet::drop_renewal`].
+   * Drop an expired Allowed Renewal record from the chain.
+   *
+   * - `origin`: Can be any kind of origin.
+   * - `core`: The core to which the expired renewal refers.
+   * - `when`: The timeslice to which the expired renewal refers. This must have passed.
    **/
   | { name: 'DropRenewal'; params: { core: number; when: number } }
   /**
-   * See [`Pallet::request_core_count`].
+   * Request a change to the number of cores available for scheduling work.
+   *
+   * - `origin`: Must be Root or pass `AdminOrigin`.
+   * - `core_count`: The desired number of cores to be made available.
    **/
-  | { name: 'RequestCoreCount'; params: { coreCount: number } };
+  | { name: 'RequestCoreCount'; params: { coreCount: number } }
+  | { name: 'NotifyCoreCount'; params: { coreCount: number } };
 
 export type PalletBrokerConfigRecord = {
   advanceNotice: number;
@@ -8070,6 +17094,85 @@ export type PalletBrokerRegionId = { begin: number; core: number; mask: PalletBr
 
 export type PalletBrokerFinality = 'Provisional' | 'Final';
 
+/**
+ * Contains a variant per dispatchable extrinsic that this pallet has.
+ **/
+export type PalletMixnetCall =
+  /**
+   * Register a mixnode for the following session.
+   **/
+  { name: 'Register'; params: { registration: PalletMixnetRegistration; signature: SpMixnetAppSignature } };
+
+export type PalletMixnetCallLike =
+  /**
+   * Register a mixnode for the following session.
+   **/
+  { name: 'Register'; params: { registration: PalletMixnetRegistration; signature: SpMixnetAppSignature } };
+
+export type PalletMixnetRegistration = {
+  blockNumber: number;
+  sessionIndex: number;
+  authorityIndex: number;
+  mixnode: PalletMixnetBoundedMixnode;
+};
+
+export type PalletMixnetBoundedMixnode = {
+  kxPublic: FixedBytes<32>;
+  peerId: FixedBytes<32>;
+  externalAddresses: Array<Bytes>;
+};
+
+export type SpMixnetAppSignature = SpCoreSr25519Signature;
+
+/**
+ * Contains a variant per dispatchable extrinsic that this pallet has.
+ **/
+export type PalletParametersCall =
+  /**
+   * Set the value of a parameter.
+   *
+   * The dispatch origin of this call must be `AdminOrigin` for the given `key`. Values be
+   * deleted by setting them to `None`.
+   **/
+  { name: 'SetParameter'; params: { keyValue: KitchensinkRuntimeRuntimeParameters } };
+
+export type PalletParametersCallLike =
+  /**
+   * Set the value of a parameter.
+   *
+   * The dispatch origin of this call must be `AdminOrigin` for the given `key`. Values be
+   * deleted by setting them to `None`.
+   **/
+  { name: 'SetParameter'; params: { keyValue: KitchensinkRuntimeRuntimeParameters } };
+
+export type KitchensinkRuntimeRuntimeParameters =
+  | { tag: 'Storage'; value: KitchensinkRuntimeDynamicParamsStorageParameters }
+  | { tag: 'Contract'; value: KitchensinkRuntimeDynamicParamsContractsParameters };
+
+export type KitchensinkRuntimeDynamicParamsStorageParameters =
+  | { tag: 'BaseDeposit'; value: [KitchensinkRuntimeDynamicParamsStorageBaseDeposit, bigint | undefined] }
+  | { tag: 'ByteDeposit'; value: [KitchensinkRuntimeDynamicParamsStorageByteDeposit, bigint | undefined] };
+
+export type KitchensinkRuntimeDynamicParamsStorageBaseDeposit = {};
+
+export type KitchensinkRuntimeDynamicParamsStorageByteDeposit = {};
+
+export type KitchensinkRuntimeDynamicParamsContractsParameters =
+  | { tag: 'DepositPerItem'; value: [KitchensinkRuntimeDynamicParamsContractsDepositPerItem, bigint | undefined] }
+  | { tag: 'DepositPerByte'; value: [KitchensinkRuntimeDynamicParamsContractsDepositPerByte, bigint | undefined] }
+  | {
+      tag: 'DefaultDepositLimit';
+      value: [KitchensinkRuntimeDynamicParamsContractsDefaultDepositLimit, bigint | undefined];
+    };
+
+export type KitchensinkRuntimeDynamicParamsContractsDepositPerItem = {};
+
+export type KitchensinkRuntimeDynamicParamsContractsDepositPerByte = {};
+
+export type KitchensinkRuntimeDynamicParamsContractsDefaultDepositLimit = {};
+
+export type SpRuntimeBlakeTwo256 = {};
+
 export type PalletConvictionVotingTally = { ayes: bigint; nays: bigint; support: bigint };
 
 /**
@@ -8080,6 +17183,15 @@ export type PalletRemarkEvent =
    * Stored data off chain.
    **/
   { name: 'Stored'; data: { sender: AccountId32; contentHash: H256 } };
+
+/**
+ * The `Event` enum of this pallet
+ **/
+export type PalletRootTestingEvent =
+  /**
+   * Event dispatched when the trigger_defensive extrinsic is called.
+   **/
+  'DefensiveTestCall';
 
 /**
  * The `Event` enum of this pallet
@@ -8263,9 +17375,24 @@ export type PalletNominationPoolsEvent =
       data: { poolId: number; changeRate: PalletNominationPoolsCommissionChangeRate };
     }
   /**
+   * Pool commission claim permission has been updated.
+   **/
+  | {
+      name: 'PoolCommissionClaimPermissionUpdated';
+      data: { poolId: number; permission?: PalletNominationPoolsCommissionClaimPermission | undefined };
+    }
+  /**
    * Pool commission has been claimed.
    **/
-  | { name: 'PoolCommissionClaimed'; data: { poolId: number; commission: bigint } };
+  | { name: 'PoolCommissionClaimed'; data: { poolId: number; commission: bigint } }
+  /**
+   * Topped up deficit in frozen ED of the reward pool.
+   **/
+  | { name: 'MinBalanceDeficitAdjusted'; data: { poolId: number; amount: bigint } }
+  /**
+   * Claimed excess frozen ED of af the reward pool.
+   **/
+  | { name: 'MinBalanceExcessAdjusted'; data: { poolId: number; amount: bigint } };
 
 /**
  * The `Event` enum of this pallet
@@ -8338,7 +17465,7 @@ export type PalletReferendaEvent002 =
       };
     }
   /**
-   * A deposit has been slashaed.
+   * A deposit has been slashed.
    **/
   | {
       name: 'DepositSlashed';
@@ -8583,7 +17710,11 @@ export type PalletRankedCollectiveEvent =
         vote: PalletRankedCollectiveVoteRecord;
         tally: PalletRankedCollectiveTally;
       };
-    };
+    }
+  /**
+   * The member `who` had their `AccountId` changed to `new_who`.
+   **/
+  | { name: 'MemberExchanged'; data: { who: AccountId32; newWho: AccountId32 } };
 
 export type PalletRankedCollectiveVoteRecord = { tag: 'Aye'; value: number } | { tag: 'Nay'; value: number };
 
@@ -8606,7 +17737,7 @@ export type PalletAssetConversionEvent =
          * The pool id associated with the pool. Note that the order of the assets may not be
          * the same as the order specified in the create pool extrinsic.
          **/
-        poolId: [PalletAssetConversionNativeOrAssetId, PalletAssetConversionNativeOrAssetId];
+        poolId: [FrameSupportTokensFungibleUnionOfNativeOrWithId, FrameSupportTokensFungibleUnionOfNativeOrWithId];
 
         /**
          * The account ID of the pool.
@@ -8639,7 +17770,7 @@ export type PalletAssetConversionEvent =
         /**
          * The pool id of the pool that the liquidity was added to.
          **/
-        poolId: [PalletAssetConversionNativeOrAssetId, PalletAssetConversionNativeOrAssetId];
+        poolId: [FrameSupportTokensFungibleUnionOfNativeOrWithId, FrameSupportTokensFungibleUnionOfNativeOrWithId];
 
         /**
          * The amount of the first asset that was added to the pool.
@@ -8681,7 +17812,7 @@ export type PalletAssetConversionEvent =
         /**
          * The pool id that the liquidity was removed from.
          **/
-        poolId: [PalletAssetConversionNativeOrAssetId, PalletAssetConversionNativeOrAssetId];
+        poolId: [FrameSupportTokensFungibleUnionOfNativeOrWithId, FrameSupportTokensFungibleUnionOfNativeOrWithId];
 
         /**
          * The amount of the first asset that was removed from the pool.
@@ -8727,11 +17858,28 @@ export type PalletAssetConversionEvent =
         sendTo: AccountId32;
 
         /**
-         * The route of asset ids that the swap went through.
-         * E.g. A -> Dot -> B
+         * The amount of the first asset that was swapped.
          **/
-        path: Array<PalletAssetConversionNativeOrAssetId>;
+        amountIn: bigint;
 
+        /**
+         * The amount of the second asset that was received.
+         **/
+        amountOut: bigint;
+
+        /**
+         * The route of asset IDs with amounts that the swap went through.
+         * E.g. (A, amount_in) -> (Dot, amount_out) -> (B, amount_out)
+         **/
+        path: Array<[FrameSupportTokensFungibleUnionOfNativeOrWithId, bigint]>;
+      };
+    }
+  /**
+   * Assets have been converted from one to another.
+   **/
+  | {
+      name: 'SwapCreditExecuted';
+      data: {
         /**
          * The amount of the first asset that was swapped.
          **/
@@ -8741,33 +17889,12 @@ export type PalletAssetConversionEvent =
          * The amount of the second asset that was received.
          **/
         amountOut: bigint;
-      };
-    }
-  /**
-   * An amount has been transferred from one account to another.
-   **/
-  | {
-      name: 'Transfer';
-      data: {
-        /**
-         * The account that the assets were transferred from.
-         **/
-        from: AccountId32;
 
         /**
-         * The account that the assets were transferred to.
+         * The route of asset IDs with amounts that the swap went through.
+         * E.g. (A, amount_in) -> (Dot, amount_out) -> (B, amount_out)
          **/
-        to: AccountId32;
-
-        /**
-         * The asset that was transferred.
-         **/
-        asset: PalletAssetConversionNativeOrAssetId;
-
-        /**
-         * The amount of the asset that was transferred.
-         **/
-        amount: bigint;
+        path: Array<[FrameSupportTokensFungibleUnionOfNativeOrWithId, bigint]>;
       };
     };
 
@@ -8808,26 +17935,102 @@ export type PalletMessageQueueEvent =
    **/
   | {
       name: 'ProcessingFailed';
-      data: { id: FixedBytes<32>; origin: number; error: FrameSupportMessagesProcessMessageError };
+      data: {
+        /**
+         * The `blake2_256` hash of the message.
+         **/
+        id: H256;
+
+        /**
+         * The queue of the message.
+         **/
+        origin: number;
+
+        /**
+         * The error that occurred.
+         *
+         * This error is pretty opaque. More fine-grained errors need to be emitted as events
+         * by the `MessageProcessor`.
+         **/
+        error: FrameSupportMessagesProcessMessageError;
+      };
     }
   /**
    * Message is processed.
    **/
   | {
       name: 'Processed';
-      data: { id: FixedBytes<32>; origin: number; weightUsed: SpWeightsWeightV2Weight; success: boolean };
+      data: {
+        /**
+         * The `blake2_256` hash of the message.
+         **/
+        id: H256;
+
+        /**
+         * The queue of the message.
+         **/
+        origin: number;
+
+        /**
+         * How much weight was used to process the message.
+         **/
+        weightUsed: SpWeightsWeightV2Weight;
+
+        /**
+         * Whether the message was processed.
+         *
+         * Note that this does not mean that the underlying `MessageProcessor` was internally
+         * successful. It *solely* means that the MQ pallet will treat this as a success
+         * condition and discard the message. Any internal error needs to be emitted as events
+         * by the `MessageProcessor`.
+         **/
+        success: boolean;
+      };
     }
   /**
    * Message placed in overweight queue.
    **/
   | {
       name: 'OverweightEnqueued';
-      data: { id: FixedBytes<32>; origin: number; pageIndex: number; messageIndex: number };
+      data: {
+        /**
+         * The `blake2_256` hash of the message.
+         **/
+        id: FixedBytes<32>;
+
+        /**
+         * The queue of the message.
+         **/
+        origin: number;
+
+        /**
+         * The page of the message.
+         **/
+        pageIndex: number;
+
+        /**
+         * The index of the message within the page.
+         **/
+        messageIndex: number;
+      };
     }
   /**
    * This page was reaped.
    **/
-  | { name: 'PageReaped'; data: { origin: number; index: number } };
+  | {
+      name: 'PageReaped';
+      data: {
+        /**
+         * The queue of the page.
+         **/
+        origin: number;
+
+        /**
+         * The index of the page.
+         **/
+        index: number;
+      };
+    };
 
 export type FrameSupportMessagesProcessMessageError =
   | { tag: 'BadFormat' }
@@ -8921,6 +18124,117 @@ export type SpStatementStoreProof =
   | { tag: 'Ed25519'; value: { signature: FixedBytes<64>; signer: FixedBytes<32> } }
   | { tag: 'Secp256k1Ecdsa'; value: { signature: FixedBytes<65>; signer: FixedBytes<33> } }
   | { tag: 'OnChain'; value: { who: FixedBytes<32>; blockHash: FixedBytes<32>; eventIndex: bigint } };
+
+/**
+ * The `Event` enum of this pallet
+ **/
+export type PalletMigrationsEvent =
+  /**
+   * A Runtime upgrade started.
+   *
+   * Its end is indicated by `UpgradeCompleted` or `UpgradeFailed`.
+   **/
+  | {
+      name: 'UpgradeStarted';
+      data: {
+        /**
+         * The number of migrations that this upgrade contains.
+         *
+         * This can be used to design a progress indicator in combination with counting the
+         * `MigrationCompleted` and `MigrationSkipped` events.
+         **/
+        migrations: number;
+      };
+    }
+  /**
+   * The current runtime upgrade completed.
+   *
+   * This implies that all of its migrations completed successfully as well.
+   **/
+  | { name: 'UpgradeCompleted' }
+  /**
+   * Runtime upgrade failed.
+   *
+   * This is very bad and will require governance intervention.
+   **/
+  | { name: 'UpgradeFailed' }
+  /**
+   * A migration was skipped since it was already executed in the past.
+   **/
+  | {
+      name: 'MigrationSkipped';
+      data: {
+        /**
+         * The index of the skipped migration within the [`Config::Migrations`] list.
+         **/
+        index: number;
+      };
+    }
+  /**
+   * A migration progressed.
+   **/
+  | {
+      name: 'MigrationAdvanced';
+      data: {
+        /**
+         * The index of the migration within the [`Config::Migrations`] list.
+         **/
+        index: number;
+
+        /**
+         * The number of blocks that this migration took so far.
+         **/
+        took: number;
+      };
+    }
+  /**
+   * A Migration completed.
+   **/
+  | {
+      name: 'MigrationCompleted';
+      data: {
+        /**
+         * The index of the migration within the [`Config::Migrations`] list.
+         **/
+        index: number;
+
+        /**
+         * The number of blocks that this migration took so far.
+         **/
+        took: number;
+      };
+    }
+  /**
+   * A Migration failed.
+   *
+   * This implies that the whole upgrade failed and governance intervention is required.
+   **/
+  | {
+      name: 'MigrationFailed';
+      data: {
+        /**
+         * The index of the migration within the [`Config::Migrations`] list.
+         **/
+        index: number;
+
+        /**
+         * The number of blocks that this migration took so far.
+         **/
+        took: number;
+      };
+    }
+  /**
+   * The set of historical migrations has been cleared.
+   **/
+  | {
+      name: 'HistoricCleared';
+      data: {
+        /**
+         * Should be passed to `clear_historic` in a successive call.
+         **/
+        nextCursor?: Bytes | undefined;
+      };
+    };
 
 /**
  * The `Event` enum of this pallet
@@ -9511,7 +18825,73 @@ export type PalletBrokerEvent =
       };
     };
 
+/**
+ * The `Event` enum of this pallet
+ **/
+export type PalletParametersEvent =
+  /**
+   * A Parameter was set.
+   *
+   * Is also emitted when the value was not changed.
+   **/
+  {
+    name: 'Updated';
+    data: {
+      /**
+       * The key that was updated.
+       **/
+      key: KitchensinkRuntimeRuntimeParametersKey;
+
+      /**
+       * The old value before this call.
+       **/
+      oldValue?: KitchensinkRuntimeRuntimeParametersValue | undefined;
+
+      /**
+       * The new value after this call.
+       **/
+      newValue?: KitchensinkRuntimeRuntimeParametersValue | undefined;
+    };
+  };
+
+export type KitchensinkRuntimeRuntimeParametersKey =
+  | { tag: 'Storage'; value: KitchensinkRuntimeDynamicParamsStorageParametersKey }
+  | { tag: 'Contract'; value: KitchensinkRuntimeDynamicParamsContractsParametersKey };
+
+export type KitchensinkRuntimeDynamicParamsStorageParametersKey =
+  | { tag: 'BaseDeposit'; value: KitchensinkRuntimeDynamicParamsStorageBaseDeposit }
+  | { tag: 'ByteDeposit'; value: KitchensinkRuntimeDynamicParamsStorageByteDeposit };
+
+export type KitchensinkRuntimeDynamicParamsContractsParametersKey =
+  | { tag: 'DepositPerItem'; value: KitchensinkRuntimeDynamicParamsContractsDepositPerItem }
+  | { tag: 'DepositPerByte'; value: KitchensinkRuntimeDynamicParamsContractsDepositPerByte }
+  | { tag: 'DefaultDepositLimit'; value: KitchensinkRuntimeDynamicParamsContractsDefaultDepositLimit };
+
+export type KitchensinkRuntimeRuntimeParametersValue =
+  | { tag: 'Storage'; value: KitchensinkRuntimeDynamicParamsStorageParametersValue }
+  | { tag: 'Contract'; value: KitchensinkRuntimeDynamicParamsContractsParametersValue };
+
+export type KitchensinkRuntimeDynamicParamsStorageParametersValue =
+  | { tag: 'BaseDeposit'; value: bigint }
+  | { tag: 'ByteDeposit'; value: bigint };
+
+export type KitchensinkRuntimeDynamicParamsContractsParametersValue =
+  | { tag: 'DepositPerItem'; value: bigint }
+  | { tag: 'DepositPerByte'; value: bigint }
+  | { tag: 'DefaultDepositLimit'; value: bigint };
+
+/**
+ * The `Event` enum of this pallet
+ **/
+export type PalletSkipFeelessPaymentEvent =
+  /**
+   * A transaction fee was skipped.
+   **/
+  { name: 'FeeSkipped'; data: { who: AccountId32 } };
+
 export type FrameSystemLastRuntimeUpgradeInfo = { specVersion: number; specName: string };
+
+export type FrameSystemCodeUpgradeAuthorization = { codeHash: H256; checkVersion: boolean };
 
 export type FrameSystemLimitsBlockWeights = {
   baseBlock: SpWeightsWeightV2Weight;
@@ -9569,7 +18949,19 @@ export type FrameSystemError =
   /**
    * The origin filter prevent the call to be dispatched.
    **/
-  | 'CallFiltered';
+  | 'CallFiltered'
+  /**
+   * A multi-block migration is ongoing and prevents the current code from being replaced.
+   **/
+  | 'MultiBlockMigrationsOngoing'
+  /**
+   * No upgrade authorized.
+   **/
+  | 'NothingAuthorized'
+  /**
+   * The submitted code is not authorized.
+   **/
+  | 'Unauthorized';
 
 /**
  * The `Error` enum of this pallet.
@@ -9591,7 +18983,7 @@ export type SpConsensusBabeDigestsPrimaryPreDigest = {
   vrfSignature: SpCoreSr25519VrfVrfSignature;
 };
 
-export type SpCoreSr25519VrfVrfSignature = { output: FixedBytes<32>; proof: FixedBytes<64> };
+export type SpCoreSr25519VrfVrfSignature = { preOutput: FixedBytes<32>; proof: FixedBytes<64> };
 
 export type SpConsensusBabeDigestsSecondaryPlainPreDigest = { authorityIndex: number; slot: SpConsensusSlotsSlot };
 
@@ -9659,19 +19051,35 @@ export type PalletBalancesIdAmount = { id: KitchensinkRuntimeRuntimeHoldReason; 
 
 export type KitchensinkRuntimeRuntimeHoldReason =
   | { tag: 'Contracts'; value: PalletContractsHoldReason }
+  | { tag: 'Preimage'; value: PalletPreimageHoldReason }
   | { tag: 'Nis'; value: PalletNisHoldReason }
   | { tag: 'NftFractionalization'; value: PalletNftFractionalizationHoldReason }
+  | { tag: 'TransactionStorage'; value: PalletTransactionStorageHoldReason }
+  | { tag: 'StateTrieMigration'; value: PalletStateTrieMigrationHoldReason }
   | { tag: 'SafeMode'; value: PalletSafeModeHoldReason };
 
 export type PalletContractsHoldReason = 'CodeUploadDepositReserve' | 'StorageDepositReserve';
+
+export type PalletPreimageHoldReason = 'Preimage';
 
 export type PalletNisHoldReason = 'NftReceipt';
 
 export type PalletNftFractionalizationHoldReason = 'Fractionalized';
 
+export type PalletTransactionStorageHoldReason = 'StorageFeeHold';
+
+export type PalletStateTrieMigrationHoldReason = 'SlashForMigrate';
+
 export type PalletSafeModeHoldReason = 'EnterOrExtend';
 
-export type PalletBalancesIdAmount002 = { id: []; amount: bigint };
+export type PalletBalancesIdAmountRuntimeFreezeReason = { id: KitchensinkRuntimeRuntimeFreezeReason; amount: bigint };
+
+export type KitchensinkRuntimeRuntimeFreezeReason = {
+  tag: 'NominationPools';
+  value: PalletNominationPoolsFreezeReason;
+};
+
+export type PalletNominationPoolsFreezeReason = 'PoolMinBalance';
 
 /**
  * The `Error` enum of this pallet.
@@ -9710,13 +19118,21 @@ export type PalletBalancesError =
    **/
   | 'TooManyReserves'
   /**
-   * Number of holds exceed `MaxHolds`.
+   * Number of holds exceed `VariantCountOf<T::RuntimeHoldReason>`.
    **/
   | 'TooManyHolds'
   /**
    * Number of freezes exceed `MaxFreezes`.
    **/
-  | 'TooManyFreezes';
+  | 'TooManyFreezes'
+  /**
+   * The issuance cannot be modified since it is already deactivated.
+   **/
+  | 'IssuanceDeactivated'
+  /**
+   * The delta cannot be zero.
+   **/
+  | 'DeltaZero';
 
 export type PalletTransactionPaymentReleases = 'V1Ancient' | 'V2';
 
@@ -9797,14 +19213,18 @@ export type PalletElectionProviderMultiPhaseError =
   /**
    * Submitted solution has too many winners
    **/
-  | 'TooManyWinners';
+  | 'TooManyWinners'
+  /**
+   * Sumission was prepared for a different round.
+   **/
+  | 'PreDispatchDifferentRound';
 
 export type PalletStakingStakingLedger = {
   stash: AccountId32;
   total: bigint;
   active: bigint;
   unlocking: Array<PalletStakingUnlockChunk>;
-  claimedRewards: Array<number>;
+  legacyClaimedRewards: Array<number>;
 };
 
 export type PalletStakingUnlockChunk = { value: bigint; era: number };
@@ -9812,6 +19232,10 @@ export type PalletStakingUnlockChunk = { value: bigint; era: number };
 export type PalletStakingNominations = { targets: Array<AccountId32>; submittedIn: number; suppressed: boolean };
 
 export type PalletStakingActiveEraInfo = { index: number; start?: bigint | undefined };
+
+export type SpStakingPagedExposureMetadata = { total: bigint; own: bigint; nominatorCount: number; pageCount: number };
+
+export type SpStakingExposurePage = { pageTotal: bigint; others: Array<SpStakingIndividualExposure> };
 
 export type PalletStakingEraRewardPoints = { total: number; individual: Array<[AccountId32, number]> };
 
@@ -9899,6 +19323,10 @@ export type PalletStakingPalletError =
    **/
   | 'AlreadyClaimed'
   /**
+   * No nominators exist on this page.
+   **/
+  | 'InvalidPage'
+  /**
    * Incorrect previous history depth input provided.
    **/
   | 'IncorrectHistoryDepth'
@@ -9939,7 +19367,11 @@ export type PalletStakingPalletError =
   /**
    * Some bound is not met.
    **/
-  | 'BoundNotMet';
+  | 'BoundNotMet'
+  /**
+   * Used when attempting to use deprecated controller account logic.
+   **/
+  | 'ControllerDeprecated';
 
 export type SpCoreCryptoKeyTypeId = FixedBytes<4>;
 
@@ -10309,6 +19741,20 @@ export type PalletGrandpaError =
 
 export type PalletTreasuryProposal = { proposer: AccountId32; value: bigint; beneficiary: AccountId32; bond: bigint };
 
+export type PalletTreasurySpendStatus = {
+  assetKind: number;
+  amount: bigint;
+  beneficiary: AccountId32;
+  validFrom: number;
+  expireAt: number;
+  status: PalletTreasuryPaymentState;
+};
+
+export type PalletTreasuryPaymentState =
+  | { tag: 'Pending' }
+  | { tag: 'Attempted'; value: { id: [] } }
+  | { tag: 'Failed' };
+
 export type FrameSupportPalletId = FixedBytes<8>;
 
 /**
@@ -10320,7 +19766,7 @@ export type PalletTreasuryError =
    **/
   | 'InsufficientProposersBalance'
   /**
-   * No proposal or bounty at that index.
+   * No proposal, bounty or spend at that index.
    **/
   | 'InvalidIndex'
   /**
@@ -10335,7 +19781,35 @@ export type PalletTreasuryError =
   /**
    * Proposal has not been approved.
    **/
-  | 'ProposalNotApproved';
+  | 'ProposalNotApproved'
+  /**
+   * The balance of the asset kind is not convertible to the balance of the native asset.
+   **/
+  | 'FailedToConvertBalance'
+  /**
+   * The spend has expired and cannot be claimed.
+   **/
+  | 'SpendExpired'
+  /**
+   * The spend is not yet eligible for payout.
+   **/
+  | 'EarlyPayout'
+  /**
+   * The payment has already been attempted.
+   **/
+  | 'AlreadyAttempted'
+  /**
+   * There was some issue with the mechanism of payment.
+   **/
+  | 'PayoutError'
+  /**
+   * The payout was not yet attempted/claimed.
+   **/
+  | 'NotAttempted'
+  /**
+   * The payment has neither failed nor succeeded yet.
+   **/
+  | 'Inconclusive';
 
 /**
  * The `Error` enum of this pallet.
@@ -10348,7 +19822,11 @@ export type PalletAssetRateError =
   /**
    * The given asset ID already has an assigned conversion rate and cannot be re-created.
    **/
-  | 'AlreadyExists';
+  | 'AlreadyExists'
+  /**
+   * Overflow ocurred when calculating the inverse rate.
+   **/
+  | 'Overflow';
 
 export type PalletContractsWasmCodeInfo = {
   owner: AccountId32;
@@ -10379,12 +19857,7 @@ export type PalletContractsSchedule = {
 
 export type PalletContractsScheduleLimits = {
   eventTopics: number;
-  globals: number;
-  locals: number;
-  parameters: number;
   memoryPages: number;
-  tableSize: number;
-  brTableSize: number;
   subjectLen: number;
   payloadLen: number;
   runtimeMemory: number;
@@ -10454,8 +19927,8 @@ export type PalletContractsScheduleHostFnWeights = {
   reentranceCount: SpWeightsWeightV2Weight;
   accountReentranceCount: SpWeightsWeightV2Weight;
   instantiationNonce: SpWeightsWeightV2Weight;
-  addDelegateDependency: SpWeightsWeightV2Weight;
-  removeDelegateDependency: SpWeightsWeightV2Weight;
+  lockDelegateDependency: SpWeightsWeightV2Weight;
+  unlockDelegateDependency: SpWeightsWeightV2Weight;
 };
 
 export type PalletContractsEnvironment = {
@@ -10475,11 +19948,11 @@ export type PalletContractsEnvironmentTypeH256 = {};
 
 export type PalletContractsEnvironmentTypeBlakeTwo256 = {};
 
-export type SpRuntimeBlakeTwo256 = {};
-
 export type PalletContractsEnvironmentTypeU64 = {};
 
 export type PalletContractsEnvironmentTypeU32 = {};
+
+export type PalletContractsApiVersion = number;
 
 /**
  * The `Error` enum of this pallet.
@@ -10568,6 +20041,10 @@ export type PalletContractsError =
    **/
   | 'NoChainExtension'
   /**
+   * Failed to decode the XCM program.
+   **/
+  | 'XcmDecodeFailed'
+  /**
    * A contract with the same AccountId already exists.
    **/
   | 'DuplicateContract'
@@ -10644,11 +20121,11 @@ export type PalletContractsError =
   | 'CannotAddSelfAsDelegateDependency';
 
 /**
- * Error for the Sudo pallet
+ * Error for the Sudo pallet.
  **/
 export type PalletSudoError =
   /**
-   * Sender must be the Sudo account
+   * Sender must be the Sudo account.
    **/
   'RequireSudo';
 
@@ -10666,17 +20143,19 @@ export type PalletImOnlineError =
   | 'DuplicatedHeartbeat';
 
 export type SpStakingOffenceOffenceDetails = {
-  offender: [AccountId32, PalletStakingExposure];
+  offender: [AccountId32, SpStakingExposure];
   reporters: Array<AccountId32>;
 };
 
 export type PalletIdentityRegistration = {
   judgements: Array<[number, PalletIdentityJudgement]>;
   deposit: bigint;
-  info: PalletIdentityIdentityInfo;
+  info: PalletIdentityLegacyIdentityInfo;
 };
 
-export type PalletIdentityRegistrarInfo = { account: AccountId32; fee: bigint; fields: PalletIdentityBitFlags };
+export type PalletIdentityRegistrarInfo = { account: AccountId32; fee: bigint; fields: bigint };
+
+export type PalletIdentityAuthorityProperties = { suffix: Bytes; allocation: number };
 
 /**
  * The `Error` enum of this pallet.
@@ -10727,10 +20206,6 @@ export type PalletIdentityError =
    **/
   | 'InvalidTarget'
   /**
-   * Too many additional fields.
-   **/
-  | 'TooManyFields'
-  /**
    * Maximum amount of registrars reached. Cannot add any more.
    **/
   | 'TooManyRegistrars'
@@ -10753,7 +20228,43 @@ export type PalletIdentityError =
   /**
    * Error that occurs when there is an issue paying for judgement.
    **/
-  | 'JudgementPaymentFailed';
+  | 'JudgementPaymentFailed'
+  /**
+   * The provided suffix is too long.
+   **/
+  | 'InvalidSuffix'
+  /**
+   * The sender does not have permission to issue a username.
+   **/
+  | 'NotUsernameAuthority'
+  /**
+   * The authority cannot allocate any more usernames.
+   **/
+  | 'NoAllocation'
+  /**
+   * The signature on a username was not valid.
+   **/
+  | 'InvalidSignature'
+  /**
+   * Setting this username requires a signature, but none was provided.
+   **/
+  | 'RequiresSignature'
+  /**
+   * The username does not meet the requirements.
+   **/
+  | 'InvalidUsername'
+  /**
+   * The username is already taken.
+   **/
+  | 'UsernameTaken'
+  /**
+   * The requested username does not exist.
+   **/
+  | 'NoUsername'
+  /**
+   * The username cannot be forcefully removed because it can still be accepted.
+   **/
+  | 'NotExpired';
 
 export type PalletSocietyMemberRecord = {
   rank: number;
@@ -11031,6 +20542,8 @@ export type PalletSchedulerScheduled = {
   origin: KitchensinkRuntimeOriginCaller;
 };
 
+export type PalletSchedulerRetryConfig = { totalRetries: number; remaining: number; period: number };
+
 /**
  * The `Error` enum of this pallet.
  **/
@@ -11071,12 +20584,25 @@ export type PalletGluttonError =
    **/
   | 'InsaneLimit';
 
-export type PalletPreimageRequestStatus =
+export type PalletPreimageOldRequestStatus =
   | { tag: 'Unrequested'; value: { deposit: [AccountId32, bigint]; len: number } }
   | {
       tag: 'Requested';
       value: { deposit?: [AccountId32, bigint] | undefined; count: number; len?: number | undefined };
     };
+
+export type PalletPreimageRequestStatus =
+  | { tag: 'Unrequested'; value: { ticket: [AccountId32, FrameSupportTokensFungibleHoldConsideration]; len: number } }
+  | {
+      tag: 'Requested';
+      value: {
+        maybeTicket?: [AccountId32, FrameSupportTokensFungibleHoldConsideration] | undefined;
+        count: number;
+        maybeLen?: number | undefined;
+      };
+    };
+
+export type FrameSupportTokensFungibleHoldConsideration = bigint;
 
 /**
  * The `Error` enum of this pallet.
@@ -11105,7 +20631,15 @@ export type PalletPreimageError =
   /**
    * The preimage request cannot be removed since no outstanding requests exist.
    **/
-  | 'NotRequested';
+  | 'NotRequested'
+  /**
+   * More than `MAX_HASH_UPGRADE_BULK_COUNT` hashes were requested to be upgraded at once.
+   **/
+  | 'TooMany'
+  /**
+   * Too few hashes were requested to be upgraded (i.e. zero).
+   **/
+  | 'TooFew';
 
 export type PalletProxyProxyDefinition = {
   delegate: AccountId32;
@@ -11314,6 +20848,10 @@ export type PalletTipsError =
    **/
   | 'UnknownTip'
   /**
+   * The tip given was too generous.
+   **/
+  | 'MaxTipAmountExceeded'
+  /**
    * The account attempting to retract the tip is not the finder of the tip.
    **/
   | 'NotFinder'
@@ -11456,6 +20994,29 @@ export type PalletAssetsError =
    * Callback action resulted in error
    **/
   | 'CallbackFailed';
+
+/**
+ * The `Error` enum of this pallet.
+ **/
+export type PalletBeefyError =
+  /**
+   * A key ownership proof provided as part of an equivocation report is invalid.
+   **/
+  | 'InvalidKeyOwnershipProof'
+  /**
+   * An equivocation proof provided as part of an equivocation report is invalid.
+   **/
+  | 'InvalidEquivocationProof'
+  /**
+   * A given equivocation report is valid but already previously reported.
+   **/
+  | 'DuplicateOffenceReport'
+  /**
+   * Submitted configuration is invalid.
+   **/
+  | 'InvalidConfiguration';
+
+export type SpConsensusBeefyMmrBeefyAuthoritySet = { id: bigint; len: number; keysetCommitment: H256 };
 
 export type PalletLotteryLotteryConfig = {
   price: bigint;
@@ -12064,10 +21625,6 @@ export type PalletTransactionStorageTransactionInfo = {
  **/
 export type PalletTransactionStorageError =
   /**
-   * Insufficient account balance.
-   **/
-  | 'InsufficientFunds'
-  /**
    * Invalid configuration.
    **/
   | 'NotConfigured'
@@ -12329,7 +21886,7 @@ export type PalletConvictionVotingError =
   | 'AlreadyDelegating'
   /**
    * The account currently has votes attached to it and the operation cannot succeed until
-   * these are removed, either through `unvote` or `reap_vote`.
+   * these are removed through `remove_vote`.
    **/
   | 'AlreadyVoting'
   /**
@@ -12444,7 +22001,7 @@ export type PalletAllianceError =
   /**
    * The account's identity does not have display field and website field.
    **/
-  | 'WithoutIdentityDisplayAndWebsite'
+  | 'WithoutRequiredIdentityFields'
   /**
    * The account's identity has no good judgement.
    **/
@@ -12506,6 +22063,7 @@ export type PalletNominationPoolsCommission = {
   max?: Perbill | undefined;
   changeRate?: PalletNominationPoolsCommissionChangeRate | undefined;
   throttleFrom?: number | undefined;
+  claimPermission?: PalletNominationPoolsCommissionClaimPermission | undefined;
 };
 
 export type PalletNominationPoolsPoolRoles = {
@@ -12571,9 +22129,9 @@ export type PalletNominationPoolsError =
   /**
    * The amount does not meet the minimum bond to either join or create a pool.
    *
-   * The depositor can never unbond to a value less than
-   * `Pallet::depositor_min_bond`. The caller does not have nominating
-   * permissions for the pool. Members can never unbond to a value below `MinJoinBond`.
+   * The depositor can never unbond to a value less than `Pallet::depositor_min_bond`. The
+   * caller does not have nominating permissions for the pool. Members can never unbond to a
+   * value below `MinJoinBond`.
    **/
   | { tag: 'MinimumBondNotMet' }
   /**
@@ -12665,7 +22223,11 @@ export type PalletNominationPoolsError =
   /**
    * Bonding extra is restricted to the exact pending reward amount.
    **/
-  | { tag: 'BondExtraRestricted' };
+  | { tag: 'BondExtraRestricted' }
+  /**
+   * No imbalance in the ED deposit for the pool.
+   **/
+  | { tag: 'NothingToAdjust' };
 
 export type PalletNominationPoolsDefensiveError =
   | 'NotEnoughSpaceInUnbondPool'
@@ -12737,7 +22299,11 @@ export type PalletRankedCollectiveError =
   /**
    * The origin is not sufficiently privileged to do the operation.
    **/
-  | 'NoPermission';
+  | 'NoPermission'
+  /**
+   * The new member to exchange is the same as the old member
+   **/
+  | 'SameMember';
 
 export type PalletAssetConversionPoolInfo = { lpToken: number };
 
@@ -12746,13 +22312,9 @@ export type PalletAssetConversionPoolInfo = { lpToken: number };
  **/
 export type PalletAssetConversionError =
   /**
-   * Provided assets are equal.
+   * Provided asset pair is not supported for pool.
    **/
-  | 'EqualAssets'
-  /**
-   * Provided asset is not supported for pool.
-   **/
-  | 'UnsupportedAsset'
+  | 'InvalidAssetPair'
   /**
    * Pool already exists.
    **/
@@ -12821,10 +22383,6 @@ export type PalletAssetConversionError =
    **/
   | 'ZeroAmount'
   /**
-   * Insufficient liquidity in the pool.
-   **/
-  | 'InsufficientLiquidity'
-  /**
    * Calculated amount out is less than provided minimum amount.
    **/
   | 'ProvidedMinimumNotSufficientForSwap'
@@ -12833,17 +22391,9 @@ export type PalletAssetConversionError =
    **/
   | 'ProvidedMaximumNotSufficientForSwap'
   /**
-   * Only pools with native on one side are valid.
-   **/
-  | 'PoolMustContainNativeCurrency'
-  /**
    * The provided path must consists of 2 assets at least.
    **/
   | 'InvalidPath'
-  /**
-   * It was not possible to calculate path data.
-   **/
-  | 'PathError'
   /**
    * The provided path must consists of unique assets.
    **/
@@ -12853,11 +22403,9 @@ export type PalletAssetConversionError =
    **/
   | 'IncorrectPoolAssetId'
   /**
-   * Unable to find an element in an array/vec that should have one-to-one correspondence
-   * with another. For example, an array of assets constituting a `path` should have a
-   * corresponding array of `amounts` along the path.
+   * The destination account cannot exist with the swapped funds.
    **/
-  | 'CorrespondenceError';
+  | 'BelowMinimum';
 
 export type PalletFastUnstakeUnstakeRequest = { stashes: Array<[AccountId32, bigint]>; checked: Array<number> };
 
@@ -12953,7 +22501,11 @@ export type PalletMessageQueueError =
    *
    * This can change at any time and may resolve in the future by re-trying.
    **/
-  | 'QueuePaused';
+  | 'QueuePaused'
+  /**
+   * Another call is in progress and needs to finish before this call can happen.
+   **/
+  | 'RecursiveDisallowed';
 
 /**
  * The `Error` enum of this pallet.
@@ -13005,6 +22557,15 @@ export type PalletSafeModeError =
    * An error from the underlying `Currency`.
    **/
   | 'CurrencyError';
+
+/**
+ * The `Error` enum of this pallet.
+ **/
+export type PalletMigrationsError =
+  /**
+   * The operation cannot complete since some MBMs are ongoing.
+   **/
+  'Ongoing';
 
 export type PalletBrokerLeaseRecordItem = { until: number; task: number };
 
@@ -13169,6 +22730,15 @@ export type PalletBrokerError =
    **/
   | 'InvalidConfig';
 
+/**
+ * The `Error` enum of this pallet.
+ **/
+export type PalletExampleTasksError =
+  /**
+   * The referenced task was not found.
+   **/
+  'NotFound';
+
 export type FrameSystemExtensionsCheckNonZeroSender = {};
 
 export type FrameSystemExtensionsCheckSpecVersion = {};
@@ -13186,6 +22756,8 @@ export type FrameSystemExtensionsCheckWeight = {};
 export type PalletAssetConversionTxPaymentChargeAssetTxPayment = { tip: bigint; assetId?: number | undefined };
 
 export type SpRuntimeBlock = { header: Header; extrinsics: Array<UncheckedExtrinsic> };
+
+export type SpRuntimeExtrinsicInclusionMode = 'AllExtrinsics' | 'OnlyInherents';
 
 export type SpCoreOpaqueMetadata = Bytes;
 
@@ -13262,9 +22834,9 @@ export type PalletContractsPrimitivesContractResult = {
   events?: Array<FrameSystemEventRecord> | undefined;
 };
 
-export type PalletContractsPrimitivesExecReturnValue = { flags: PalletContractsPrimitivesReturnFlags; data: Bytes };
+export type PalletContractsPrimitivesExecReturnValue = { flags: PalletContractsUapiFlagsReturnFlags; data: Bytes };
 
-export type PalletContractsPrimitivesReturnFlags = { bits: number };
+export type PalletContractsUapiFlagsReturnFlags = { bits: number };
 
 export type PalletContractsPrimitivesStorageDeposit =
   | { tag: 'Refund'; value: bigint }
@@ -13303,6 +22875,10 @@ export type PalletTransactionPaymentFeeDetails = {
 
 export type PalletTransactionPaymentInclusionFee = { baseFee: bigint; lenFee: bigint; adjustedWeightFee: bigint };
 
+export type SpConsensusBeefyValidatorSet = { validators: Array<SpConsensusBeefyEcdsaCryptoPublic>; id: bigint };
+
+export type SpConsensusBeefyOpaqueKeyOwnershipProof = Bytes;
+
 export type SpMmrPrimitivesError =
   | 'InvalidNumericOp'
   | 'Push'
@@ -13318,6 +22894,14 @@ export type SpMmrPrimitivesError =
 export type SpMmrPrimitivesEncodableOpaqueLeaf = Bytes;
 
 export type SpMmrPrimitivesProof = { leafIndices: Array<bigint>; leafCount: bigint; items: Array<H256> };
+
+export type SpMixnetSessionStatus = { currentIndex: number; phase: SpMixnetSessionPhase };
+
+export type SpMixnetSessionPhase = 'CoverToCurrent' | 'RequestsToCurrent' | 'CoverToPrev' | 'DisconnectFromPrev';
+
+export type SpMixnetMixnode = { kxPublic: FixedBytes<32>; peerId: FixedBytes<32>; externalAddresses: Array<Bytes> };
+
+export type SpMixnetMixnodesErr = { tag: 'InsufficientRegistrations'; value: { num: number; min: number } };
 
 export type KitchensinkRuntimeRuntimeError =
   | { tag: 'System'; value: FrameSystemError }
@@ -13352,6 +22936,7 @@ export type KitchensinkRuntimeRuntimeError =
   | { tag: 'Tips'; value: PalletTipsError }
   | { tag: 'Assets'; value: PalletAssetsError }
   | { tag: 'PoolAssets'; value: PalletAssetsError }
+  | { tag: 'Beefy'; value: PalletBeefyError }
   | { tag: 'Lottery'; value: PalletLotteryError }
   | { tag: 'Nis'; value: PalletNisError }
   | { tag: 'Uniques'; value: PalletUniquesError }
@@ -13377,4 +22962,6 @@ export type KitchensinkRuntimeRuntimeError =
   | { tag: 'MessageQueue'; value: PalletMessageQueueError }
   | { tag: 'TxPause'; value: PalletTxPauseError }
   | { tag: 'SafeMode'; value: PalletSafeModeError }
-  | { tag: 'Broker'; value: PalletBrokerError };
+  | { tag: 'MultiBlockMigrations'; value: PalletMigrationsError }
+  | { tag: 'Broker'; value: PalletBrokerError }
+  | { tag: 'TasksExample'; value: PalletExampleTasksError };

@@ -11,7 +11,6 @@
   },
   "dependencies": {
     "@dedot/chaintypes": "0.0.1-alpha.40",
-    "@polkadot/api": "^10.11.2",
     "dedot": "workspace:*",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",

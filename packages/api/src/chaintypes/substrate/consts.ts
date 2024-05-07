@@ -4,8 +4,10 @@ import type { Bytes, FixedBytes, Perbill, Percent, Permill, Perquintill, Runtime
 import type { GenericChainConsts, RpcVersion } from '@dedot/types';
 import type {
   FrameSupportPalletId,
+  FrameSupportTokensFungibleUnionOfNativeOrWithId,
   FrameSystemLimitsBlockLength,
   FrameSystemLimitsBlockWeights,
+  PalletContractsApiVersion,
   PalletContractsEnvironment,
   PalletContractsSchedule,
   PalletNftsBitFlagsPalletFeature,
@@ -40,7 +42,7 @@ export interface ChainConsts<Rv extends RpcVersion> extends GenericChainConsts<R
     dbWeight: SpWeightsRuntimeDbWeight;
 
     /**
-     * Get the chain's current version.
+     * Get the chain's in-code version.
      **/
     version: RuntimeVersion;
 
@@ -112,10 +114,12 @@ export interface ChainConsts<Rv extends RpcVersion> extends GenericChainConsts<R
    **/
   timestamp: {
     /**
-     * The minimum period between blocks. Beware that this is different to the *expected*
-     * period that the block production apparatus provides. Your chosen consensus system will
-     * generally work with this to determine a sensible block time. e.g. For Aura, it will be
-     * double this period on default settings.
+     * The minimum period between blocks.
+     *
+     * Be aware that this is different to the *expected* period that the block production
+     * apparatus provides. Your chosen consensus system will generally work with this to
+     * determine a sensible block time. For example, in the Aura pallet it will be double this
+     * period on default settings.
      **/
     minimumPeriod: bigint;
 
@@ -175,11 +179,6 @@ export interface ChainConsts<Rv extends RpcVersion> extends GenericChainConsts<R
     maxReserves: number;
 
     /**
-     * The maximum number of holds that can exist on an account at any time.
-     **/
-    maxHolds: number;
-
-    /**
      * The maximum number of individual freeze locks that can exist on an account at any time.
      **/
     maxFreezes: number;
@@ -194,10 +193,10 @@ export interface ChainConsts<Rv extends RpcVersion> extends GenericChainConsts<R
    **/
   transactionPayment: {
     /**
-     * A fee mulitplier for `Operational` extrinsics to compute "virtual tip" to boost their
+     * A fee multiplier for `Operational` extrinsics to compute "virtual tip" to boost their
      * `priority`
      *
-     * This value is multipled by the `final_fee` to obtain a "virtual tip" that is later
+     * This value is multiplied by the `final_fee` to obtain a "virtual tip" that is later
      * added to a tip component in regular `priority` calculations.
      * It means that a `Normal` transaction can front-run a similarly-sized `Operational`
      * extrinsic (with no tip), by including a tip value greater than the virtual tip.
@@ -262,12 +261,6 @@ export interface ChainConsts<Rv extends RpcVersion> extends GenericChainConsts<R
     betterSignedThreshold: Perbill;
 
     /**
-     * The minimum amount of improvement to the solution score that defines a solution as
-     * "better" in the Unsigned phase.
-     **/
-    betterUnsignedThreshold: Perbill;
-
-    /**
      * The repeat threshold of the offchain worker.
      *
      * For example, if it is 5, that means that at least 5 blocks will elapse between attempts
@@ -311,11 +304,6 @@ export interface ChainConsts<Rv extends RpcVersion> extends GenericChainConsts<R
     signedRewardBase: bigint;
 
     /**
-     * Base deposit for a signed solution.
-     **/
-    signedDepositBase: bigint;
-
-    /**
      * Per-byte deposit for a signed solution.
      **/
     signedDepositByte: bigint;
@@ -352,8 +340,8 @@ export interface ChainConsts<Rv extends RpcVersion> extends GenericChainConsts<R
      * Following information is kept for eras in `[current_era -
      * HistoryDepth, current_era]`: `ErasStakers`, `ErasStakersClipped`,
      * `ErasValidatorPrefs`, `ErasValidatorReward`, `ErasRewardPoints`,
-     * `ErasTotalStake`, `ErasStartSessionIndex`,
-     * `StakingLedger.claimed_rewards`.
+     * `ErasTotalStake`, `ErasStartSessionIndex`, `ClaimedRewards`, `ErasStakersPaged`,
+     * `ErasStakersOverview`.
      *
      * Must be more than the number of eras delayed by session.
      * I.e. active era must always be in history. I.e. `active_era >
@@ -363,7 +351,7 @@ export interface ChainConsts<Rv extends RpcVersion> extends GenericChainConsts<R
      * this should be set to same value or greater as in storage.
      *
      * Note: `HistoryDepth` is used as the upper bound for the `BoundedVec`
-     * item `StakingLedger.claimed_rewards`. Setting this value lower than
+     * item `StakingLedger.legacy_claimed_rewards`. Setting this value lower than
      * the existing value can lead to inconsistencies in the
      * `StakingLedger` and will need to be handled properly in a migration.
      * The test `reducing_history_depth_abrupt` shows this effect.
@@ -389,12 +377,19 @@ export interface ChainConsts<Rv extends RpcVersion> extends GenericChainConsts<R
     slashDeferDuration: number;
 
     /**
-     * The maximum number of nominators rewarded for each validator.
+     * The maximum size of each `T::ExposurePage`.
      *
-     * For each validator only the `$MaxNominatorRewardedPerValidator` biggest stakers can
-     * claim their reward. This used to limit the i/o cost for the nominator payout.
+     * An `ExposurePage` is weakly bounded to a maximum of `MaxExposurePageSize`
+     * nominators.
+     *
+     * For older non-paged exposure, a reward payout was restricted to the top
+     * `MaxExposurePageSize` nominators. This is to limit the i/o cost for the
+     * nominator payout.
+     *
+     * Note: `MaxExposurePageSize` is used to bound `ClaimedRewards` and is unsafe to reduce
+     * without handling it in a migration.
      **/
-    maxNominatorRewardedPerValidator: number;
+    maxExposurePageSize: number;
 
     /**
      * The maximum number of `unlocking` chunks a [`StakingLedger`] can
@@ -691,6 +686,11 @@ export interface ChainConsts<Rv extends RpcVersion> extends GenericChainConsts<R
     maxApprovals: number;
 
     /**
+     * The period during which an approved treasury spend has to be claimed.
+     **/
+    payoutPeriod: number;
+
+    /**
      * Generic pallet constant
      **/
     [name: string]: any;
@@ -738,7 +738,7 @@ export interface ChainConsts<Rv extends RpcVersion> extends GenericChainConsts<R
 
     /**
      * The percentage of the storage deposit that should be held for using a code hash.
-     * Instantiating a contract, or calling [`chain_extension::Ext::add_delegate_dependency`]
+     * Instantiating a contract, or calling [`chain_extension::Ext::lock_delegate_dependency`]
      * protects the code from being removed. In order to prevent abuse these actions are
      * protected with a percentage of the code deposit.
      **/
@@ -760,7 +760,7 @@ export interface ChainConsts<Rv extends RpcVersion> extends GenericChainConsts<R
 
     /**
      * The maximum number of delegate_dependencies that a contract can lock with
-     * [`chain_extension::Ext::add_delegate_dependency`].
+     * [`chain_extension::Ext::lock_delegate_dependency`].
      **/
     maxDelegateDependencies: number;
 
@@ -789,6 +789,13 @@ export interface ChainConsts<Rv extends RpcVersion> extends GenericChainConsts<R
      * its type appears in the metadata. Only valid value is `()`.
      **/
     environment: PalletContractsEnvironment;
+
+    /**
+     * The version of the HostFn APIs that are available in the runtime.
+     *
+     * Only valid value is `()`.
+     **/
+    apiVersion: PalletContractsApiVersion;
 
     /**
      * Generic pallet constant
@@ -862,14 +869,14 @@ export interface ChainConsts<Rv extends RpcVersion> extends GenericChainConsts<R
    **/
   identity: {
     /**
-     * The amount held on deposit for a registered identity
+     * The amount held on deposit for a registered identity.
      **/
     basicDeposit: bigint;
 
     /**
-     * The amount held on deposit per additional field for a registered identity.
+     * The amount held on deposit per encoded byte for a registered identity.
      **/
-    fieldDeposit: bigint;
+    byteDeposit: bigint;
 
     /**
      * The amount held on deposit for a registered subaccount. This should account for the fact
@@ -884,16 +891,25 @@ export interface ChainConsts<Rv extends RpcVersion> extends GenericChainConsts<R
     maxSubAccounts: number;
 
     /**
-     * Maximum number of additional fields that may be stored in an ID. Needed to bound the I/O
-     * required to access an identity, but can be pretty high.
-     **/
-    maxAdditionalFields: number;
-
-    /**
      * Maxmimum number of registrars allowed in the system. Needed to bound the complexity
      * of, e.g., updating judgements.
      **/
     maxRegistrars: number;
+
+    /**
+     * The number of blocks within which a username grant must be accepted.
+     **/
+    pendingUsernameExpiration: number;
+
+    /**
+     * The maximum length of a suffix.
+     **/
+    maxSuffixLength: number;
+
+    /**
+     * The maximum length of a username, including its suffix and any system-added delimiters.
+     **/
+    maxUsernameLength: number;
 
     /**
      * Generic pallet constant
@@ -1228,9 +1244,14 @@ export interface ChainConsts<Rv extends RpcVersion> extends GenericChainConsts<R
     tipFindersFee: Percent;
 
     /**
-     * The amount held on deposit for placing a tip report.
+     * The non-zero amount held on deposit for placing a tip report.
      **/
     tipReportDepositBase: bigint;
+
+    /**
+     * The maximum amount for a single tip.
+     **/
+    maxTipAmount: bigint;
 
     /**
      * Generic pallet constant
@@ -1334,9 +1355,47 @@ export interface ChainConsts<Rv extends RpcVersion> extends GenericChainConsts<R
     [name: string]: any;
   };
   /**
+   * Pallet `Beefy`'s constants
+   **/
+  beefy: {
+    /**
+     * The maximum number of authorities that can be added.
+     **/
+    maxAuthorities: number;
+
+    /**
+     * The maximum number of nominators for each validator.
+     **/
+    maxNominators: number;
+
+    /**
+     * The maximum number of entries to keep in the set id to session index mapping.
+     *
+     * Since the `SetIdSession` map is only used for validating equivocations this
+     * value should relate to the bonding duration of whatever staking system is
+     * being used (if any). If equivocation handling is not enabled then this value
+     * can be zero.
+     **/
+    maxSetIdSessionEntries: bigint;
+
+    /**
+     * Generic pallet constant
+     **/
+    [name: string]: any;
+  };
+  /**
    * Pallet `Mmr`'s constants
    **/
   mmr: {
+    /**
+     * Generic pallet constant
+     **/
+    [name: string]: any;
+  };
+  /**
+   * Pallet `MmrLeaf`'s constants
+   **/
+  mmrLeaf: {
     /**
      * Generic pallet constant
      **/
@@ -1746,7 +1805,7 @@ export interface ChainConsts<Rv extends RpcVersion> extends GenericChainConsts<R
      * - [`frame_support::storage::StorageDoubleMap`]: 96 byte
      *
      * For more info see
-     * <https://www.shawntabrizi.com/substrate/querying-substrate-storage-via-rpc/>
+     * <https://www.shawntabrizi.com/blog/substrate/querying-substrate-storage-via-rpc/>
      **/
     maxKeyLen: number;
 
@@ -1937,6 +1996,11 @@ export interface ChainConsts<Rv extends RpcVersion> extends GenericChainConsts<R
     maxPointsToBalance: number;
 
     /**
+     * The maximum number of simultaneous unbonding chunks that can exist per member.
+     **/
+    maxUnbonding: number;
+
+    /**
      * Generic pallet constant
      **/
     [name: string]: any;
@@ -2002,6 +2066,11 @@ export interface ChainConsts<Rv extends RpcVersion> extends GenericChainConsts<R
     poolSetupFee: bigint;
 
     /**
+     * Asset class from [`Config::Assets`] used to pay the [`Config::PoolSetupFee`].
+     **/
+    poolSetupFeeAsset: FrameSupportTokensFungibleUnionOfNativeOrWithId;
+
+    /**
      * A fee to withdraw the liquidity.
      **/
     liquidityWithdrawalFee: Permill;
@@ -2020,11 +2089,6 @@ export interface ChainConsts<Rv extends RpcVersion> extends GenericChainConsts<R
      * The pallet's id, used for deriving its sovereign account ID.
      **/
     palletId: FrameSupportPalletId;
-
-    /**
-     * A setting to allow creating pools with both non-native assets.
-     **/
-    allowMultiAssetPools: boolean;
 
     /**
      * Generic pallet constant
@@ -2192,6 +2256,31 @@ export interface ChainConsts<Rv extends RpcVersion> extends GenericChainConsts<R
     [name: string]: any;
   };
   /**
+   * Pallet `MultiBlockMigrations`'s constants
+   **/
+  multiBlockMigrations: {
+    /**
+     * The maximal length of an encoded cursor.
+     *
+     * A good default needs to selected such that no migration will ever have a cursor with MEL
+     * above this limit. This is statically checked in `integrity_test`.
+     **/
+    cursorMaxLen: number;
+
+    /**
+     * The maximal length of an encoded identifier.
+     *
+     * A good default needs to selected such that no migration will ever have an identifier
+     * with MEL above this limit. This is statically checked in `integrity_test`.
+     **/
+    identifierMaxLen: number;
+
+    /**
+     * Generic pallet constant
+     **/
+    [name: string]: any;
+  };
+  /**
    * Pallet `Broker`'s constants
    **/
   broker: {
@@ -2215,6 +2304,98 @@ export interface ChainConsts<Rv extends RpcVersion> extends GenericChainConsts<R
      **/
     maxReservedCores: number;
 
+    /**
+     * Generic pallet constant
+     **/
+    [name: string]: any;
+  };
+  /**
+   * Pallet `TasksExample`'s constants
+   **/
+  tasksExample: {
+    /**
+     * Generic pallet constant
+     **/
+    [name: string]: any;
+  };
+  /**
+   * Pallet `Mixnet`'s constants
+   **/
+  mixnet: {
+    /**
+     * The maximum number of authorities per session.
+     **/
+    maxAuthorities: number;
+
+    /**
+     * The maximum size of one of a mixnode's external addresses.
+     **/
+    maxExternalAddressSize: number;
+
+    /**
+     * The maximum number of external addresses for a mixnode.
+     **/
+    maxExternalAddressesPerMixnode: number;
+
+    /**
+     * Length of the first phase of each session (`CoverToCurrent`), in blocks.
+     **/
+    numCoverToCurrentBlocks: number;
+
+    /**
+     * Length of the second phase of each session (`RequestsToCurrent`), in blocks.
+     **/
+    numRequestsToCurrentBlocks: number;
+
+    /**
+     * Length of the third phase of each session (`CoverToPrev`), in blocks.
+     **/
+    numCoverToPrevBlocks: number;
+
+    /**
+     * The number of "slack" blocks at the start of each session, during which
+     * [`maybe_register`](Pallet::maybe_register) will not attempt to post registration
+     * transactions.
+     **/
+    numRegisterStartSlackBlocks: number;
+
+    /**
+     * The number of "slack" blocks at the end of each session.
+     * [`maybe_register`](Pallet::maybe_register) will try to register before this slack
+     * period, but may post registration transactions during the slack period as a last
+     * resort.
+     **/
+    numRegisterEndSlackBlocks: number;
+
+    /**
+     * Priority of unsigned transactions used to register mixnodes.
+     **/
+    registrationPriority: bigint;
+
+    /**
+     * Minimum number of mixnodes. If there are fewer than this many mixnodes registered for a
+     * session, the mixnet will not be active during the session.
+     **/
+    minMixnodes: number;
+
+    /**
+     * Generic pallet constant
+     **/
+    [name: string]: any;
+  };
+  /**
+   * Pallet `Parameters`'s constants
+   **/
+  parameters: {
+    /**
+     * Generic pallet constant
+     **/
+    [name: string]: any;
+  };
+  /**
+   * Pallet `SkipFeelessPayment`'s constants
+   **/
+  skipFeelessPayment: {
     /**
      * Generic pallet constant
      **/

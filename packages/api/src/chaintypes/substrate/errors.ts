@@ -42,6 +42,21 @@ export interface ChainErrors<Rv extends RpcVersion> extends GenericChainErrors<R
     CallFiltered: GenericPalletError<Rv>;
 
     /**
+     * A multi-block migration is ongoing and prevents the current code from being replaced.
+     **/
+    MultiBlockMigrationsOngoing: GenericPalletError<Rv>;
+
+    /**
+     * No upgrade authorized.
+     **/
+    NothingAuthorized: GenericPalletError<Rv>;
+
+    /**
+     * The submitted code is not authorized.
+     **/
+    Unauthorized: GenericPalletError<Rv>;
+
+    /**
      * Generic pallet error
      **/
     [error: string]: GenericPalletError<Rv>;
@@ -168,7 +183,7 @@ export interface ChainErrors<Rv extends RpcVersion> extends GenericChainErrors<R
     TooManyReserves: GenericPalletError<Rv>;
 
     /**
-     * Number of holds exceed `MaxHolds`.
+     * Number of holds exceed `VariantCountOf<T::RuntimeHoldReason>`.
      **/
     TooManyHolds: GenericPalletError<Rv>;
 
@@ -176,6 +191,16 @@ export interface ChainErrors<Rv extends RpcVersion> extends GenericChainErrors<R
      * Number of freezes exceed `MaxFreezes`.
      **/
     TooManyFreezes: GenericPalletError<Rv>;
+
+    /**
+     * The issuance cannot be modified since it is already deactivated.
+     **/
+    IssuanceDeactivated: GenericPalletError<Rv>;
+
+    /**
+     * The delta cannot be zero.
+     **/
+    DeltaZero: GenericPalletError<Rv>;
 
     /**
      * Generic pallet error
@@ -255,6 +280,11 @@ export interface ChainErrors<Rv extends RpcVersion> extends GenericChainErrors<R
      * Submitted solution has too many winners
      **/
     TooManyWinners: GenericPalletError<Rv>;
+
+    /**
+     * Sumission was prepared for a different round.
+     **/
+    PreDispatchDifferentRound: GenericPalletError<Rv>;
 
     /**
      * Generic pallet error
@@ -343,6 +373,11 @@ export interface ChainErrors<Rv extends RpcVersion> extends GenericChainErrors<R
     AlreadyClaimed: GenericPalletError<Rv>;
 
     /**
+     * No nominators exist on this page.
+     **/
+    InvalidPage: GenericPalletError<Rv>;
+
+    /**
      * Incorrect previous history depth input provided.
      **/
     IncorrectHistoryDepth: GenericPalletError<Rv>;
@@ -393,6 +428,11 @@ export interface ChainErrors<Rv extends RpcVersion> extends GenericChainErrors<R
      * Some bound is not met.
      **/
     BoundNotMet: GenericPalletError<Rv>;
+
+    /**
+     * Used when attempting to use deprecated controller account logic.
+     **/
+    ControllerDeprecated: GenericPalletError<Rv>;
 
     /**
      * Generic pallet error
@@ -865,7 +905,7 @@ export interface ChainErrors<Rv extends RpcVersion> extends GenericChainErrors<R
     InsufficientProposersBalance: GenericPalletError<Rv>;
 
     /**
-     * No proposal or bounty at that index.
+     * No proposal, bounty or spend at that index.
      **/
     InvalidIndex: GenericPalletError<Rv>;
 
@@ -886,6 +926,41 @@ export interface ChainErrors<Rv extends RpcVersion> extends GenericChainErrors<R
     ProposalNotApproved: GenericPalletError<Rv>;
 
     /**
+     * The balance of the asset kind is not convertible to the balance of the native asset.
+     **/
+    FailedToConvertBalance: GenericPalletError<Rv>;
+
+    /**
+     * The spend has expired and cannot be claimed.
+     **/
+    SpendExpired: GenericPalletError<Rv>;
+
+    /**
+     * The spend is not yet eligible for payout.
+     **/
+    EarlyPayout: GenericPalletError<Rv>;
+
+    /**
+     * The payment has already been attempted.
+     **/
+    AlreadyAttempted: GenericPalletError<Rv>;
+
+    /**
+     * There was some issue with the mechanism of payment.
+     **/
+    PayoutError: GenericPalletError<Rv>;
+
+    /**
+     * The payout was not yet attempted/claimed.
+     **/
+    NotAttempted: GenericPalletError<Rv>;
+
+    /**
+     * The payment has neither failed nor succeeded yet.
+     **/
+    Inconclusive: GenericPalletError<Rv>;
+
+    /**
      * Generic pallet error
      **/
     [error: string]: GenericPalletError<Rv>;
@@ -903,6 +978,11 @@ export interface ChainErrors<Rv extends RpcVersion> extends GenericChainErrors<R
      * The given asset ID already has an assigned conversion rate and cannot be re-created.
      **/
     AlreadyExists: GenericPalletError<Rv>;
+
+    /**
+     * Overflow ocurred when calculating the inverse rate.
+     **/
+    Overflow: GenericPalletError<Rv>;
 
     /**
      * Generic pallet error
@@ -1015,6 +1095,11 @@ export interface ChainErrors<Rv extends RpcVersion> extends GenericChainErrors<R
     NoChainExtension: GenericPalletError<Rv>;
 
     /**
+     * Failed to decode the XCM program.
+     **/
+    XcmDecodeFailed: GenericPalletError<Rv>;
+
+    /**
      * A contract with the same AccountId already exists.
      **/
     DuplicateContract: GenericPalletError<Rv>;
@@ -1114,7 +1199,7 @@ export interface ChainErrors<Rv extends RpcVersion> extends GenericChainErrors<R
    **/
   sudo: {
     /**
-     * Sender must be the Sudo account
+     * Sender must be the Sudo account.
      **/
     RequireSudo: GenericPalletError<Rv>;
 
@@ -1202,11 +1287,6 @@ export interface ChainErrors<Rv extends RpcVersion> extends GenericChainErrors<R
     InvalidTarget: GenericPalletError<Rv>;
 
     /**
-     * Too many additional fields.
-     **/
-    TooManyFields: GenericPalletError<Rv>;
-
-    /**
      * Maximum amount of registrars reached. Cannot add any more.
      **/
     TooManyRegistrars: GenericPalletError<Rv>;
@@ -1235,6 +1315,51 @@ export interface ChainErrors<Rv extends RpcVersion> extends GenericChainErrors<R
      * Error that occurs when there is an issue paying for judgement.
      **/
     JudgementPaymentFailed: GenericPalletError<Rv>;
+
+    /**
+     * The provided suffix is too long.
+     **/
+    InvalidSuffix: GenericPalletError<Rv>;
+
+    /**
+     * The sender does not have permission to issue a username.
+     **/
+    NotUsernameAuthority: GenericPalletError<Rv>;
+
+    /**
+     * The authority cannot allocate any more usernames.
+     **/
+    NoAllocation: GenericPalletError<Rv>;
+
+    /**
+     * The signature on a username was not valid.
+     **/
+    InvalidSignature: GenericPalletError<Rv>;
+
+    /**
+     * Setting this username requires a signature, but none was provided.
+     **/
+    RequiresSignature: GenericPalletError<Rv>;
+
+    /**
+     * The username does not meet the requirements.
+     **/
+    InvalidUsername: GenericPalletError<Rv>;
+
+    /**
+     * The username is already taken.
+     **/
+    UsernameTaken: GenericPalletError<Rv>;
+
+    /**
+     * The requested username does not exist.
+     **/
+    NoUsername: GenericPalletError<Rv>;
+
+    /**
+     * The username cannot be forcefully removed because it can still be accepted.
+     **/
+    NotExpired: GenericPalletError<Rv>;
 
     /**
      * Generic pallet error
@@ -1624,6 +1749,16 @@ export interface ChainErrors<Rv extends RpcVersion> extends GenericChainErrors<R
     NotRequested: GenericPalletError<Rv>;
 
     /**
+     * More than `MAX_HASH_UPGRADE_BULK_COUNT` hashes were requested to be upgraded at once.
+     **/
+    TooMany: GenericPalletError<Rv>;
+
+    /**
+     * Too few hashes were requested to be upgraded (i.e. zero).
+     **/
+    TooFew: GenericPalletError<Rv>;
+
+    /**
      * Generic pallet error
      **/
     [error: string]: GenericPalletError<Rv>;
@@ -1839,6 +1974,11 @@ export interface ChainErrors<Rv extends RpcVersion> extends GenericChainErrors<R
      * The tip hash is unknown.
      **/
     UnknownTip: GenericPalletError<Rv>;
+
+    /**
+     * The tip given was too generous.
+     **/
+    MaxTipAmountExceeded: GenericPalletError<Rv>;
 
     /**
      * The account attempting to retract the tip is not the finder of the tip.
@@ -2078,6 +2218,35 @@ export interface ChainErrors<Rv extends RpcVersion> extends GenericChainErrors<R
      * Callback action resulted in error
      **/
     CallbackFailed: GenericPalletError<Rv>;
+
+    /**
+     * Generic pallet error
+     **/
+    [error: string]: GenericPalletError<Rv>;
+  };
+  /**
+   * Pallet `Beefy`'s errors
+   **/
+  beefy: {
+    /**
+     * A key ownership proof provided as part of an equivocation report is invalid.
+     **/
+    InvalidKeyOwnershipProof: GenericPalletError<Rv>;
+
+    /**
+     * An equivocation proof provided as part of an equivocation report is invalid.
+     **/
+    InvalidEquivocationProof: GenericPalletError<Rv>;
+
+    /**
+     * A given equivocation report is valid but already previously reported.
+     **/
+    DuplicateOffenceReport: GenericPalletError<Rv>;
+
+    /**
+     * Submitted configuration is invalid.
+     **/
+    InvalidConfiguration: GenericPalletError<Rv>;
 
     /**
      * Generic pallet error
@@ -2711,11 +2880,6 @@ export interface ChainErrors<Rv extends RpcVersion> extends GenericChainErrors<R
    **/
   transactionStorage: {
     /**
-     * Insufficient account balance.
-     **/
-    InsufficientFunds: GenericPalletError<Rv>;
-
-    /**
      * Invalid configuration.
      **/
     NotConfigured: GenericPalletError<Rv>;
@@ -2987,7 +3151,7 @@ export interface ChainErrors<Rv extends RpcVersion> extends GenericChainErrors<R
 
     /**
      * The account currently has votes attached to it and the operation cannot succeed until
-     * these are removed, either through `unvote` or `reap_vote`.
+     * these are removed through `remove_vote`.
      **/
     AlreadyVoting: GenericPalletError<Rv>;
 
@@ -3197,7 +3361,7 @@ export interface ChainErrors<Rv extends RpcVersion> extends GenericChainErrors<R
     /**
      * The account's identity does not have display field and website field.
      **/
-    WithoutIdentityDisplayAndWebsite: GenericPalletError<Rv>;
+    WithoutRequiredIdentityFields: GenericPalletError<Rv>;
 
     /**
      * The account's identity has no good judgement.
@@ -3303,9 +3467,9 @@ export interface ChainErrors<Rv extends RpcVersion> extends GenericChainErrors<R
     /**
      * The amount does not meet the minimum bond to either join or create a pool.
      *
-     * The depositor can never unbond to a value less than
-     * `Pallet::depositor_min_bond`. The caller does not have nominating
-     * permissions for the pool. Members can never unbond to a value below `MinJoinBond`.
+     * The depositor can never unbond to a value less than `Pallet::depositor_min_bond`. The
+     * caller does not have nominating permissions for the pool. Members can never unbond to a
+     * value below `MinJoinBond`.
      **/
     MinimumBondNotMet: GenericPalletError<Rv>;
 
@@ -3420,6 +3584,11 @@ export interface ChainErrors<Rv extends RpcVersion> extends GenericChainErrors<R
      * Bonding extra is restricted to the exact pending reward amount.
      **/
     BondExtraRestricted: GenericPalletError<Rv>;
+
+    /**
+     * No imbalance in the ED deposit for the pool.
+     **/
+    NothingToAdjust: GenericPalletError<Rv>;
 
     /**
      * Generic pallet error
@@ -3550,6 +3719,11 @@ export interface ChainErrors<Rv extends RpcVersion> extends GenericChainErrors<R
     NoPermission: GenericPalletError<Rv>;
 
     /**
+     * The new member to exchange is the same as the old member
+     **/
+    SameMember: GenericPalletError<Rv>;
+
+    /**
      * Generic pallet error
      **/
     [error: string]: GenericPalletError<Rv>;
@@ -3559,14 +3733,9 @@ export interface ChainErrors<Rv extends RpcVersion> extends GenericChainErrors<R
    **/
   assetConversion: {
     /**
-     * Provided assets are equal.
+     * Provided asset pair is not supported for pool.
      **/
-    EqualAssets: GenericPalletError<Rv>;
-
-    /**
-     * Provided asset is not supported for pool.
-     **/
-    UnsupportedAsset: GenericPalletError<Rv>;
+    InvalidAssetPair: GenericPalletError<Rv>;
 
     /**
      * Pool already exists.
@@ -3652,11 +3821,6 @@ export interface ChainErrors<Rv extends RpcVersion> extends GenericChainErrors<R
     ZeroAmount: GenericPalletError<Rv>;
 
     /**
-     * Insufficient liquidity in the pool.
-     **/
-    InsufficientLiquidity: GenericPalletError<Rv>;
-
-    /**
      * Calculated amount out is less than provided minimum amount.
      **/
     ProvidedMinimumNotSufficientForSwap: GenericPalletError<Rv>;
@@ -3667,19 +3831,9 @@ export interface ChainErrors<Rv extends RpcVersion> extends GenericChainErrors<R
     ProvidedMaximumNotSufficientForSwap: GenericPalletError<Rv>;
 
     /**
-     * Only pools with native on one side are valid.
-     **/
-    PoolMustContainNativeCurrency: GenericPalletError<Rv>;
-
-    /**
      * The provided path must consists of 2 assets at least.
      **/
     InvalidPath: GenericPalletError<Rv>;
-
-    /**
-     * It was not possible to calculate path data.
-     **/
-    PathError: GenericPalletError<Rv>;
 
     /**
      * The provided path must consists of unique assets.
@@ -3692,11 +3846,9 @@ export interface ChainErrors<Rv extends RpcVersion> extends GenericChainErrors<R
     IncorrectPoolAssetId: GenericPalletError<Rv>;
 
     /**
-     * Unable to find an element in an array/vec that should have one-to-one correspondence
-     * with another. For example, an array of assets constituting a `path` should have a
-     * corresponding array of `amounts` along the path.
+     * The destination account cannot exist with the swapped funds.
      **/
-    CorrespondenceError: GenericPalletError<Rv>;
+    BelowMinimum: GenericPalletError<Rv>;
 
     /**
      * Generic pallet error
@@ -3795,6 +3947,11 @@ export interface ChainErrors<Rv extends RpcVersion> extends GenericChainErrors<R
     QueuePaused: GenericPalletError<Rv>;
 
     /**
+     * Another call is in progress and needs to finish before this call can happen.
+     **/
+    RecursiveDisallowed: GenericPalletError<Rv>;
+
+    /**
      * Generic pallet error
      **/
     [error: string]: GenericPalletError<Rv>;
@@ -3862,6 +4019,20 @@ export interface ChainErrors<Rv extends RpcVersion> extends GenericChainErrors<R
      * An error from the underlying `Currency`.
      **/
     CurrencyError: GenericPalletError<Rv>;
+
+    /**
+     * Generic pallet error
+     **/
+    [error: string]: GenericPalletError<Rv>;
+  };
+  /**
+   * Pallet `MultiBlockMigrations`'s errors
+   **/
+  multiBlockMigrations: {
+    /**
+     * The operation cannot complete since some MBMs are ongoing.
+     **/
+    Ongoing: GenericPalletError<Rv>;
 
     /**
      * Generic pallet error
@@ -4014,6 +4185,20 @@ export interface ChainErrors<Rv extends RpcVersion> extends GenericChainErrors<R
      * The configuration could not be applied because it is invalid.
      **/
     InvalidConfig: GenericPalletError<Rv>;
+
+    /**
+     * Generic pallet error
+     **/
+    [error: string]: GenericPalletError<Rv>;
+  };
+  /**
+   * Pallet `TasksExample`'s errors
+   **/
+  tasksExample: {
+    /**
+     * The referenced task was not found.
+     **/
+    NotFound: GenericPalletError<Rv>;
 
     /**
      * Generic pallet error
