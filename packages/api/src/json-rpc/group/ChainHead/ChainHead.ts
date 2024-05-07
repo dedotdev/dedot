@@ -14,8 +14,10 @@ import type { AsyncMethod, Unsub } from '@dedot/types';
 import { assert, Deferred, deferred, ensurePresence, HexString, noop, AsyncQueue, waitFor } from '@dedot/utils';
 import type { IJsonRpcClient } from '../../../types.js';
 import { JsonRpcGroup, type JsonRpcGroupOptions } from '../JsonRpcGroup.js';
+import { BlockUsage } from './BlockUsage.js';
 import {
   ChainHeadBlockNotPinnedError,
+  ChainHeadBlockPrunedError,
   ChainHeadError,
   ChainHeadInvalidRuntimeError,
   ChainHeadLimitReachedError,
@@ -63,6 +65,7 @@ export class ChainHead extends JsonRpcGroup<ChainHeadEvent> {
   #followResponseQueue: AsyncQueue;
   #retryQueue: AsyncQueue;
   #recovering?: Deferred<void>;
+  #blockUsage: BlockUsage;
 
   constructor(client: IJsonRpcClient, options?: Partial<JsonRpcGroupOptions>) {
     super(client, { prefix: 'chainHead', supportedVersions: ['unstable', 'v1'], ...options });
@@ -72,6 +75,7 @@ export class ChainHead extends JsonRpcGroup<ChainHeadEvent> {
     this.#finalizedQueue = [];
     this.#followResponseQueue = new AsyncQueue();
     this.#retryQueue = new AsyncQueue();
+    this.#blockUsage = new BlockUsage();
   }
 
   async runtimeVersion(): Promise<ChainHeadRuntimeVersion> {
@@ -163,6 +167,8 @@ export class ChainHead extends JsonRpcGroup<ChainHeadEvent> {
         const runtime = this.#extractRuntime(newRuntime);
 
         const parentBlock = this.getPinnedBlock(parent)!;
+        assert(parentBlock, `Parent block not found for new block ${hash}`);
+
         this.#pinnedBlocks[hash] = { hash, parent, runtime, number: parentBlock.number + 1 };
 
         this.emit('newBlock', this.#pinnedBlocks[hash]);
@@ -191,10 +197,8 @@ export class ChainHead extends JsonRpcGroup<ChainHeadEvent> {
 
         this.emit('finalizedBlock', this.getPinnedBlock(this.#finalizedHash));
 
-        // TODO check if there is any on-going operations on the pruned blocks, there are 2 options:
-        //      1. we can need to wait for the operation to complete before unpinning the block
-        //      2. or cancel them right away since if they are not needed anymore
-        // TODO find all descendants of the pruned blocks and unpin them as well
+        // TODO should we find all descendants of the pruned blocks and unpin them as well?
+        //      that's probably a premature optimization
         const finalizedBlockHeights = finalizedBlockHashes.map((hash) => this.getPinnedBlock(hash)!.number);
         const hashesToUnpin = new Set([
           ...prunedBlockHashes,
@@ -206,6 +210,15 @@ export class ChainHead extends JsonRpcGroup<ChainHeadEvent> {
             .map((b) => b.hash),
         ]);
 
+        // TODO account for operations that haven't received its operationId yet
+        Object.values(this.#handlers).forEach(({ defer, hash, operationId }) => {
+          if (hashesToUnpin.has(hash)) {
+            defer.reject(new ChainHeadBlockPrunedError());
+            this.stopOperation(operationId).catch(noop);
+            delete this.#handlers[operationId];
+          }
+        });
+
         hashesToUnpin.forEach((hash) => {
           if (!this.#isPinnedHash(hash)) return;
           delete this.#pinnedBlocks[hash];
@@ -213,12 +226,22 @@ export class ChainHead extends JsonRpcGroup<ChainHeadEvent> {
 
         // Unpin the oldest finalized pinned blocks to maintain the queue size
         if (this.#finalizedQueue.length > MIN_FINALIZED_QUEUE_SIZE) {
-          const numOfItemsToUnpin = this.#finalizedQueue.length - MIN_FINALIZED_QUEUE_SIZE;
-          const queuedHashesToUnpin = this.#finalizedQueue.splice(0, numOfItemsToUnpin);
+          const finalizedQueue = this.#finalizedQueue.slice();
+          const numOfItemsToUnpin = finalizedQueue.length - MIN_FINALIZED_QUEUE_SIZE;
+          const queuedHashesToUnpin = finalizedQueue.splice(0, numOfItemsToUnpin);
+
           queuedHashesToUnpin.forEach((hash) => {
-            delete this.#pinnedBlocks[hash];
-            hashesToUnpin.add(hash);
+            // if the block is being used, we'll keep it pinned
+            // and recheck it later in the next finalized event
+            if (this.#blockUsage.usage(hash) > 0) {
+              finalizedQueue.unshift(hash);
+            } else {
+              delete this.#pinnedBlocks[hash];
+              hashesToUnpin.add(hash);
+            }
           });
+
+          this.#finalizedQueue = finalizedQueue;
         }
 
         this.unpin([...hashesToUnpin]).catch(noop);
@@ -403,6 +426,7 @@ export class ChainHead extends JsonRpcGroup<ChainHeadEvent> {
     this.#finalizedRuntime = undefined;
     this.#followResponseQueue.clear();
     this.#retryQueue.clear();
+    this.#blockUsage.clear();
   }
 
   async #ensureFollowed(): Promise<void> {
@@ -418,8 +442,10 @@ export class ChainHead extends JsonRpcGroup<ChainHeadEvent> {
     this.stopOperation(operationId).catch(noop);
   }
 
-  async #performOperationWithRetry<T = any>(operation: () => Promise<T>): Promise<T> {
+  async #performOperationWithRetry<T = any>(operation: () => Promise<T>, hash: BlockHash): Promise<T> {
     try {
+      this.#blockUsage.use(hash);
+
       return await operation();
     } catch (e) {
       if (e instanceof ChainHeadError && e.retryStrategy) {
@@ -427,6 +453,8 @@ export class ChainHead extends JsonRpcGroup<ChainHeadEvent> {
       }
 
       throw e;
+    } finally {
+      this.#blockUsage.release(hash);
     }
   }
 
@@ -483,17 +511,27 @@ export class ChainHead extends JsonRpcGroup<ChainHeadEvent> {
    */
   async body(at?: BlockHash): Promise<Array<HexString>> {
     await this.#ensureFollowed();
-    const atHash = this.#ensurePinnedHash(at);
+    const shouldRetryOnPrunedBlock = !at;
 
-    const operation = async (): Promise<Array<HexString>> => {
-      await this.#ensureFollowed();
-      const hash = this.#ensurePinnedHash(atHash);
+    try {
+      const atHash = this.#ensurePinnedHash(at);
 
-      const resp: MethodResponse = await this.send('body', this.#subscriptionId, hash);
-      return this.#awaitOperation(resp, hash);
-    };
+      const operation = async (): Promise<Array<HexString>> => {
+        await this.#ensureFollowed();
+        const hash = this.#ensurePinnedHash(atHash);
 
-    return this.#performOperationWithRetry(operation);
+        const resp: MethodResponse = await this.send('body', this.#subscriptionId, hash);
+        return this.#awaitOperation(resp, hash);
+      };
+
+      return await this.#performOperationWithRetry(operation, atHash);
+    } catch (e: any) {
+      if (e instanceof ChainHeadBlockPrunedError && shouldRetryOnPrunedBlock) {
+        return this.body();
+      }
+
+      throw e;
+    }
   }
 
   /**
@@ -501,17 +539,27 @@ export class ChainHead extends JsonRpcGroup<ChainHeadEvent> {
    */
   async call(func: string, params: HexString = '0x', at?: BlockHash): Promise<HexString> {
     await this.#ensureFollowed();
-    const atHash = this.#ensurePinnedHash(at);
+    const shouldRetryOnPrunedBlock = !at;
 
-    const operation = async (): Promise<HexString> => {
-      await this.#ensureFollowed();
-      const hash = this.#ensurePinnedHash(atHash);
+    try {
+      const atHash = this.#ensurePinnedHash(at);
 
-      const resp: MethodResponse = await this.send('call', this.#subscriptionId, hash, func, params);
-      return this.#awaitOperation(resp, hash);
-    };
+      const operation = async (): Promise<HexString> => {
+        await this.#ensureFollowed();
+        const hash = this.#ensurePinnedHash(atHash);
 
-    return this.#performOperationWithRetry(operation);
+        const resp: MethodResponse = await this.send('call', this.#subscriptionId, hash, func, params);
+        return this.#awaitOperation(resp, hash);
+      };
+
+      return await this.#performOperationWithRetry(operation, atHash);
+    } catch (e: any) {
+      if (e instanceof ChainHeadBlockPrunedError && shouldRetryOnPrunedBlock) {
+        return this.call(func, params);
+      }
+
+      throw e;
+    }
   }
 
   /**
@@ -529,23 +577,34 @@ export class ChainHead extends JsonRpcGroup<ChainHeadEvent> {
 
   /**
    * chainHead_storage
-   * TODO on a large number of items, best hash might change a long the way
-   *      we might ended up running query on a pruned block, we need to handle this
    */
   async storage(items: Array<StorageQuery>, childTrie?: string | null, at?: BlockHash): Promise<Array<StorageResult>> {
     await this.#ensureFollowed();
+    const shouldRetryOnPrunedBlock = !at;
 
     const hash = this.#ensurePinnedHash(at);
-    const results: Array<StorageResult> = [];
+    try {
+      this.#blockUsage.use(hash);
 
-    let queryItems = items;
-    while (queryItems.length > 0) {
-      const [newBatch, newDiscardedItems] = await this.#getStorage(queryItems, childTrie ?? null, hash);
-      results.push(...newBatch);
-      queryItems = newDiscardedItems;
+      const results: Array<StorageResult> = [];
+
+      let queryItems = items;
+      while (queryItems.length > 0) {
+        const [newBatch, newDiscardedItems] = await this.#getStorage(queryItems, childTrie ?? null, hash);
+        results.push(...newBatch);
+        queryItems = newDiscardedItems;
+      }
+
+      return results;
+    } catch (e) {
+      if (e instanceof ChainHeadBlockPrunedError && shouldRetryOnPrunedBlock) {
+        return this.storage(items, childTrie);
+      }
+
+      throw e;
+    } finally {
+      this.#blockUsage.release(hash);
     }
-
-    return results;
   }
 
   async #getStorage(
@@ -555,7 +614,7 @@ export class ChainHead extends JsonRpcGroup<ChainHeadEvent> {
   ): Promise<[fetchedResults: Array<StorageResult>, discardedItems: Array<StorageQuery>]> {
     const operation = () => this.#getStorageOperation(items, childTrie, this.#ensurePinnedHash(at));
 
-    return this.#performOperationWithRetry(operation);
+    return this.#performOperationWithRetry(operation, at);
   }
 
   async #getStorageOperation(

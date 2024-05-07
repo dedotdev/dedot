@@ -240,7 +240,7 @@ describe('ChainHead', () => {
         notify(simulator.subscriptionId, simulator.nextNewBlock());
         notify(simulator.subscriptionId, simulator.nextNewBlock());
 
-        notify(simulator.subscriptionId, simulator.nextBestBlock(1));
+        notify(simulator.subscriptionId, simulator.nextBestBlock(true, 1));
         const finalized1 = notify(simulator.subscriptionId, simulator.nextFinalized(1));
 
         await new Promise<void>((resolve) => {
@@ -273,7 +273,7 @@ describe('ChainHead', () => {
         notify(simulator.subscriptionId, simulator.nextNewBlock());
         notify(simulator.subscriptionId, simulator.nextNewBlock());
 
-        notify(simulator.subscriptionId, simulator.nextBestBlock(1));
+        notify(simulator.subscriptionId, simulator.nextBestBlock(true, 1));
         const finalized1 = notify(simulator.subscriptionId, simulator.nextFinalized(1, false));
 
         expect(finalized1.prunedBlockHashes).toEqual([]);
@@ -298,6 +298,373 @@ describe('ChainHead', () => {
             ]);
             resolve();
           }, 10);
+        });
+      });
+
+      describe('should not unpin block used by on-going operations', () => {
+        it('should work for chainHead_call', async () => {
+          provider.setRpcRequest(
+            'chainHead_v1_call',
+            () => ({ result: 'started', operationId: 'call01' }) as MethodResponse,
+          );
+
+          notify(simulator.subscriptionId, simulator.nextNewBlock());
+          notify(simulator.subscriptionId, simulator.nextNewBlock({ fork: true }));
+          notify(simulator.subscriptionId, simulator.nextNewBlock({ withRuntime: true }));
+          notify(simulator.subscriptionId, simulator.nextNewBlock());
+          notify(simulator.subscriptionId, simulator.nextNewBlock());
+
+          notify(simulator.subscriptionId, simulator.nextBestBlock());
+          const result = chainHead.call('func', '0x', '0x00');
+
+          notify(simulator.subscriptionId, simulator.nextFinalized());
+
+          await new Promise<void>((resolve) => {
+            setTimeout(() => {
+              expect(providerSend).toHaveBeenCalledWith('chainHead_v1_unpin', [
+                simulator.subscriptionId,
+                ['0x0f-1', '0x01', '0x02', '0x03', '0x04', '0x05'],
+              ]);
+              resolve();
+            }, 10);
+          });
+
+          notify(simulator.subscriptionId, {
+            operationId: 'call01',
+            event: 'operationCallDone',
+            output: '0x1111',
+          } as OperationCallDone);
+
+          await expect(result).resolves.toEqual('0x1111');
+
+          notify(simulator.subscriptionId, simulator.nextNewBlock());
+          notify(simulator.subscriptionId, simulator.nextBestBlock());
+          notify(simulator.subscriptionId, simulator.nextFinalized());
+
+          await new Promise<void>((resolve) => {
+            setTimeout(() => {
+              expect(providerSend).toHaveBeenCalledWith('chainHead_v1_unpin', [
+                simulator.subscriptionId,
+                ['0x00', '0x06'],
+              ]);
+              resolve();
+            }, 10);
+          });
+        });
+        it('should work for chainHead_body', async () => {
+          provider.setRpcRequest(
+            'chainHead_v1_body',
+            () => ({ result: 'started', operationId: 'body02' }) as MethodResponse,
+          );
+
+          notify(simulator.subscriptionId, simulator.nextNewBlock());
+          notify(simulator.subscriptionId, simulator.nextNewBlock({ fork: true }));
+          notify(simulator.subscriptionId, simulator.nextNewBlock({ withRuntime: true }));
+          notify(simulator.subscriptionId, simulator.nextNewBlock());
+          notify(simulator.subscriptionId, simulator.nextNewBlock());
+
+          notify(simulator.subscriptionId, simulator.nextBestBlock());
+          const result = chainHead.body('0x05');
+
+          notify(simulator.subscriptionId, simulator.nextFinalized());
+
+          await new Promise<void>((resolve) => {
+            setTimeout(() => {
+              expect(providerSend).toHaveBeenCalledWith('chainHead_v1_unpin', [
+                simulator.subscriptionId,
+                ['0x0f-1', '0x00', '0x01', '0x02', '0x03', '0x04'],
+              ]);
+              resolve();
+            }, 10);
+          });
+
+          notify(simulator.subscriptionId, simulator.nextNewBlock());
+          notify(simulator.subscriptionId, simulator.nextBestBlock());
+          notify(simulator.subscriptionId, simulator.nextFinalized());
+
+          await new Promise<void>((resolve) => {
+            setTimeout(() => {
+              expect(providerSend).toHaveBeenCalledWith('chainHead_v1_unpin', [simulator.subscriptionId, ['0x06']]);
+              resolve();
+            }, 10);
+          });
+
+          notify(simulator.subscriptionId, simulator.nextBestBlock());
+
+          notify(simulator.subscriptionId, {
+            operationId: 'body02',
+            event: 'operationBodyDone',
+            value: ['0x1111'],
+          } as OperationBodyDone);
+
+          await expect(result).resolves.toEqual(['0x1111']);
+
+          notify(simulator.subscriptionId, simulator.nextFinalized());
+
+          await new Promise<void>((resolve) => {
+            setTimeout(() => {
+              expect(providerSend).toHaveBeenCalledWith('chainHead_v1_unpin', [
+                simulator.subscriptionId,
+                ['0x05', '0x07'],
+              ]);
+              resolve();
+            }, 10);
+          });
+        });
+        it('should work for chainHead_storage', async () => {
+          const storageItems = [
+            { key: '0xkey01', value: '0xvalue01' },
+            { key: '0xkey02', value: '0xvalue02' },
+          ];
+
+          const queries: StorageQuery[] = [
+            { key: '0xkey01', type: 'value' },
+            { key: '0xkey02', type: 'value' },
+          ];
+
+          provider.setRpcRequest(
+            'chainHead_v1_storage',
+            () => ({ result: 'started', operationId: 'storage01' }) as MethodResponse,
+          );
+
+          notify(simulator.subscriptionId, simulator.nextNewBlock());
+          notify(simulator.subscriptionId, simulator.nextNewBlock({ fork: true }));
+          notify(simulator.subscriptionId, simulator.nextNewBlock({ withRuntime: true }));
+          notify(simulator.subscriptionId, simulator.nextNewBlock());
+          notify(simulator.subscriptionId, simulator.nextNewBlock());
+
+          notify(simulator.subscriptionId, simulator.nextBestBlock());
+          const result = chainHead.storage(queries, null, '0x02');
+
+          notify(simulator.subscriptionId, simulator.nextFinalized());
+
+          await new Promise<void>((resolve) => {
+            setTimeout(() => {
+              expect(providerSend).toHaveBeenCalledWith('chainHead_v1_unpin', [
+                simulator.subscriptionId,
+                ['0x0f-1', '0x00', '0x01', '0x03', '0x04', '0x05'],
+              ]);
+              resolve();
+            }, 10);
+          });
+
+          notify(simulator.subscriptionId, {
+            operationId: 'storage01',
+            event: 'operationStorageItems',
+            items: storageItems,
+          } as OperationStorageItems);
+
+          notify(simulator.subscriptionId, {
+            operationId: 'storage01',
+            event: 'operationStorageDone',
+          } as OperationStorageDone);
+
+          await expect(result).resolves.toEqual(storageItems);
+
+          notify(simulator.subscriptionId, simulator.nextNewBlock());
+          notify(simulator.subscriptionId, simulator.nextBestBlock());
+          notify(simulator.subscriptionId, simulator.nextFinalized());
+
+          await new Promise<void>((resolve) => {
+            setTimeout(() => {
+              expect(providerSend).toHaveBeenCalledWith('chainHead_v1_unpin', [
+                simulator.subscriptionId,
+                ['0x02', '0x06'],
+              ]);
+              resolve();
+            }, 10);
+          });
+        });
+      });
+
+      describe('should retry operations running on pruned block', () => {
+        it('should work for chainHead_call', async () => {
+          let counter = 0;
+          provider.setRpcRequest('chainHead_v1_call', () => {
+            counter += 1;
+            if (counter === 1) {
+              return { result: 'started', operationId: 'call01' } as MethodResponse;
+            } else {
+              return { result: 'started', operationId: 'call02' } as MethodResponse;
+            }
+          });
+
+          notify(simulator.subscriptionId, simulator.nextNewBlock());
+          notify(simulator.subscriptionId, simulator.nextNewBlock({ fork: true }));
+
+          notify(simulator.subscriptionId, simulator.nextNewBlock({ withRuntime: true }));
+          notify(simulator.subscriptionId, simulator.nextNewBlock());
+          notify(simulator.subscriptionId, simulator.nextNewBlock());
+
+          notify(simulator.subscriptionId, simulator.nextBestBlock());
+          await waitFor();
+
+          const result = chainHead.call('func', '0x');
+
+          notify(simulator.subscriptionId, simulator.nextBestBlock(false, 1));
+          notify(simulator.subscriptionId, simulator.nextFinalized(1));
+          await waitFor();
+
+          expect(providerSend).toHaveBeenCalledWith('chainHead_v1_call', [
+            simulator.subscriptionId,
+            '0x0f',
+            'func',
+            '0x',
+          ]);
+          expect(providerSend).toHaveBeenCalledWith('chainHead_v1_stopOperation', [simulator.subscriptionId, 'call01']);
+          expect(providerSend).toHaveBeenCalledWith('chainHead_v1_unpin', [
+            simulator.subscriptionId,
+            ['0x0f', '0x00', '0x01', '0x02', '0x03', '0x04', '0x05'],
+          ]);
+
+          notify(simulator.subscriptionId, {
+            operationId: 'call01',
+            event: 'operationCallDone',
+            output: '0x1111',
+          } as OperationCallDone);
+
+          notify(simulator.subscriptionId, {
+            operationId: 'call02',
+            event: 'operationCallDone',
+            output: '0x2222',
+          } as OperationCallDone);
+
+          await expect(result).resolves.toEqual('0x2222');
+
+          // retried with the new best block
+          expect(providerSend).toHaveBeenCalledWith('chainHead_v1_call', [
+            simulator.subscriptionId,
+            '0x0f-1',
+            'func',
+            '0x',
+          ]);
+
+          expect(providerSend).toHaveBeenCalledWith('chainHead_v1_stopOperation', [simulator.subscriptionId, 'call02']);
+        });
+        it('should work for chainHead_body', async () => {
+          let counter = 0;
+          provider.setRpcRequest('chainHead_v1_body', () => {
+            counter += 1;
+            if (counter === 1) {
+              return { result: 'started', operationId: 'body01' } as MethodResponse;
+            } else {
+              return { result: 'started', operationId: 'body02' } as MethodResponse;
+            }
+          });
+
+          notify(simulator.subscriptionId, simulator.nextNewBlock());
+          notify(simulator.subscriptionId, simulator.nextNewBlock({ fork: true }));
+
+          notify(simulator.subscriptionId, simulator.nextNewBlock({ withRuntime: true }));
+          notify(simulator.subscriptionId, simulator.nextNewBlock());
+          notify(simulator.subscriptionId, simulator.nextNewBlock());
+
+          notify(simulator.subscriptionId, simulator.nextBestBlock());
+          await waitFor();
+
+          const result = chainHead.body();
+
+          notify(simulator.subscriptionId, simulator.nextBestBlock(false, 1));
+          notify(simulator.subscriptionId, simulator.nextFinalized(1));
+          await waitFor();
+
+          expect(providerSend).toHaveBeenCalledWith('chainHead_v1_body', [simulator.subscriptionId, '0x0f']);
+          expect(providerSend).toHaveBeenCalledWith('chainHead_v1_stopOperation', [simulator.subscriptionId, 'body01']);
+          expect(providerSend).toHaveBeenCalledWith('chainHead_v1_unpin', [
+            simulator.subscriptionId,
+            ['0x0f', '0x00', '0x01', '0x02', '0x03', '0x04', '0x05'],
+          ]);
+
+          notify(simulator.subscriptionId, {
+            operationId: 'body02',
+            event: 'operationBodyDone',
+            value: ['0x1111'],
+          } as OperationBodyDone);
+
+          await expect(result).resolves.toEqual(['0x1111']);
+
+          // retried with the new best block
+          expect(providerSend).toHaveBeenCalledWith('chainHead_v1_body', [simulator.subscriptionId, '0x0f-1']);
+
+          expect(providerSend).toHaveBeenCalledWith('chainHead_v1_stopOperation', [simulator.subscriptionId, 'body02']);
+        });
+        it('should work for chainHead_storage', async () => {
+          const storageItems = [
+            { key: '0xkey01', value: '0xvalue01' },
+            { key: '0xkey02', value: '0xvalue02' },
+          ];
+
+          const queries: StorageQuery[] = [
+            { key: '0xkey01', type: 'value' },
+            { key: '0xkey02', type: 'value' },
+          ];
+
+          let counter = 0;
+          provider.setRpcRequest('chainHead_v1_storage', () => {
+            counter += 1;
+            if (counter === 1) {
+              return { result: 'started', operationId: 'storage01' } as MethodResponse;
+            } else {
+              return { result: 'started', operationId: 'storage02' } as MethodResponse;
+            }
+          });
+
+          notify(simulator.subscriptionId, simulator.nextNewBlock());
+          notify(simulator.subscriptionId, simulator.nextNewBlock({ fork: true }));
+
+          notify(simulator.subscriptionId, simulator.nextNewBlock({ withRuntime: true }));
+          notify(simulator.subscriptionId, simulator.nextNewBlock());
+          notify(simulator.subscriptionId, simulator.nextNewBlock());
+
+          notify(simulator.subscriptionId, simulator.nextBestBlock(true, 1));
+          await waitFor();
+
+          const result = chainHead.storage(queries);
+
+          notify(simulator.subscriptionId, simulator.nextBestBlock(false));
+          notify(simulator.subscriptionId, simulator.nextFinalized());
+          await waitFor();
+
+          expect(providerSend).toHaveBeenCalledWith('chainHead_v1_storage', [
+            simulator.subscriptionId,
+            '0x0f-1',
+            queries,
+            null,
+          ]);
+          expect(providerSend).toHaveBeenCalledWith('chainHead_v1_stopOperation', [
+            simulator.subscriptionId,
+            'storage01',
+          ]);
+          expect(providerSend).toHaveBeenCalledWith('chainHead_v1_unpin', [
+            simulator.subscriptionId,
+            ['0x0f-1', '0x00', '0x01', '0x02', '0x03', '0x04', '0x05'],
+          ]);
+
+          notify(simulator.subscriptionId, {
+            operationId: 'storage02',
+            event: 'operationStorageItems',
+            items: storageItems,
+          } as OperationStorageItems);
+
+          notify(simulator.subscriptionId, {
+            operationId: 'storage02',
+            event: 'operationStorageDone',
+          } as OperationStorageDone);
+
+          await expect(result).resolves.toEqual(storageItems);
+
+          // retried with the new best block
+          expect(providerSend).toHaveBeenCalledWith('chainHead_v1_storage', [
+            simulator.subscriptionId,
+            '0x0f',
+            queries,
+            null,
+          ]);
+
+          expect(providerSend).toHaveBeenCalledWith('chainHead_v1_stopOperation', [
+            simulator.subscriptionId,
+            'storage02',
+          ]);
         });
       });
     });

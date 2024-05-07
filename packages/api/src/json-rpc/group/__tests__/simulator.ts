@@ -136,12 +136,15 @@ export const newChainHeadSimulator = ({ numOfFinalizedBlocks = 15, provider, ini
   };
 
   // TODO simulate forks
-  const nextBestBlock = (forkCounter?: number): BestBlockChanged => {
+  const nextBestBlock = (increaseHeight = true, forkCounter?: number): BestBlockChanged => {
     if (newBlockHeight <= bestBlockHeight) {
       throw new Error('No new block available');
     }
 
-    bestBlockHeight += 1;
+    if (increaseHeight) {
+      bestBlockHeight += 1;
+    }
+
     let block = findBlock(bestBlockHeight, forkCounter);
 
     return {

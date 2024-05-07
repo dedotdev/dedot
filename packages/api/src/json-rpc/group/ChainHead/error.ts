@@ -48,3 +48,5 @@ export class ChainHeadLimitReachedError extends ChainHeadError {
 export class ChainHeadInvalidRuntimeError extends ChainHeadError {}
 
 export class ChainHeadBlockNotPinnedError extends ChainHeadError {}
+
+export class ChainHeadBlockPrunedError extends ChainHeadError {}
