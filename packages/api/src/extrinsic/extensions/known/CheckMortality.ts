@@ -1,6 +1,7 @@
 import { SignerPayloadJSON } from '@polkadot/types/types';
-import { EraLike, Hash, Header } from '@dedot/codecs';
+import { BlockHash, EraLike, Hash, Header } from '@dedot/codecs';
 import { assert, bnMin, isZeroHex, numberToHex, u8aToHex } from '@dedot/utils';
+import { DedotClient } from '../../../client/index.js';
 import { SignedExtension } from '../SignedExtension.js';
 
 export const MAX_FINALITY_LAG: number = 5;
@@ -8,20 +9,44 @@ export const FALLBACK_MAX_HASH_COUNT: number = 250;
 export const FALLBACK_PERIOD: number = 6 * 1000;
 export const MORTAL_PERIOD: number = 5 * 60 * 1000;
 
+interface SigningHeader {
+  hash: BlockHash;
+  number: number;
+}
+
 /**
  * @description Check for transaction mortality.
  */
 export class CheckMortality extends SignedExtension<EraLike, Hash> {
-  #signingHeader?: Header;
+  #signingHeader!: SigningHeader;
 
   async init() {
-    this.#signingHeader = await this.#determineSigningHeader();
-    this.data = { period: this.#calculateMortalLength(), current: BigInt(this.#signingHeader!.number) };
-    this.additionalSigned = (await this.api.rpc.chain_getBlockHash(this.#signingHeader!.number))!;
+    this.#signingHeader = await this.#getSigningHeader();
+    this.data = { period: this.#calculateMortalLength(), current: BigInt(this.#signingHeader.number) };
+    this.additionalSigned = this.#signingHeader.hash;
+  }
+
+  async #getSigningHeader(): Promise<SigningHeader> {
+    if (this.api.rpcVersion === 'v2') {
+      return this.#getSigningHeaderRpcV2();
+    }
+
+    return this.#getSigningHeaderViaLegacyRpc();
+  }
+
+  async #getSigningHeaderRpcV2(): Promise<SigningHeader> {
+    const api = this.api as DedotClient;
+    // TODO similar to the legacy, we should account for the case finality is lagging behind
+    const finalizedBlock = await api.chainHead.finalizedBlock();
+
+    return {
+      hash: finalizedBlock.hash,
+      number: finalizedBlock.number,
+    };
   }
 
   // Ref: https://github.com/polkadot-js/api/blob/3bdf49b0428a62f16b3222b9a31bfefa43c1ca55/packages/api-derive/src/tx/signingInfo.ts#L34-L64
-  async #determineSigningHeader(): Promise<Header> {
+  async #getSigningHeaderViaLegacyRpc(): Promise<SigningHeader> {
     const [header, finalizedHash] = await Promise.all([
       this.api.rpc.chain_getHeader(),
       this.api.rpc.chain_getFinalizedHead(),
@@ -44,10 +69,17 @@ export class CheckMortality extends SignedExtension<EraLike, Hash> {
     assert(currentHeader, 'Cannot determine current header');
 
     if (!finalizedHeader || currentHeader.number - finalizedHeader.number > MAX_FINALITY_LAG) {
-      return currentHeader;
+      return this.#toSigningHeader(currentHeader);
     }
 
-    return finalizedHeader;
+    return this.#toSigningHeader(finalizedHeader);
+  }
+
+  async #toSigningHeader(header: Header): Promise<SigningHeader> {
+    const { number } = header;
+    const hash = (await this.api.rpc.chain_getBlockHash(header.number))!;
+
+    return { hash, number };
   }
 
   // Ref: https://github.com/polkadot-js/api/blob/3bdf49b0428a62f16b3222b9a31bfefa43c1ca55/packages/api-derive/src/tx/signingInfo.ts#L83-L93
@@ -78,7 +110,7 @@ export class CheckMortality extends SignedExtension<EraLike, Hash> {
     return {
       era: u8aToHex(this.$Data.tryEncode(this.data)),
       blockHash: this.additionalSigned,
-      blockNumber: numberToHex(this.#signingHeader!.number),
+      blockNumber: numberToHex(this.#signingHeader.number),
     };
   }
 }

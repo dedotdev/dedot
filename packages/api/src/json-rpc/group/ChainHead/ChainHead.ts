@@ -102,6 +102,14 @@ export class ChainHead extends JsonRpcGroup<ChainHeadEvent> {
     return this.#bestHash!;
   }
 
+  async bestBlock(): Promise<PinnedBlock> {
+    return this.getPinnedBlock(await this.bestHash())!;
+  }
+
+  async finalizedBlock(): Promise<PinnedBlock> {
+    return this.getPinnedBlock(await this.finalizedHash())!;
+  }
+
   /**
    * chainHead_follow
    */
