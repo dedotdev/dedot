@@ -509,17 +509,27 @@ export class ChainHead extends JsonRpcGroup<ChainHeadEvent> {
    */
   async body(at?: BlockHash): Promise<Array<HexString>> {
     await this.#ensureFollowed();
-    const atHash = this.#ensurePinnedHash(at);
+    const shouldRetryOnPrunedBlock = !at;
 
-    const operation = async (): Promise<Array<HexString>> => {
-      await this.#ensureFollowed();
-      const hash = this.#ensurePinnedHash(atHash);
+    try {
+      const atHash = this.#ensurePinnedHash(at);
 
-      const resp: MethodResponse = await this.send('body', this.#subscriptionId, hash);
-      return this.#awaitOperation(resp, hash);
-    };
+      const operation = async (): Promise<Array<HexString>> => {
+        await this.#ensureFollowed();
+        const hash = this.#ensurePinnedHash(atHash);
 
-    return this.#performOperationWithRetry(operation, atHash);
+        const resp: MethodResponse = await this.send('body', this.#subscriptionId, hash);
+        return this.#awaitOperation(resp, hash);
+      };
+
+      return this.#performOperationWithRetry(operation, atHash);
+    } catch (e: any) {
+      if (e instanceof ChainHeadBlockPrunedError && shouldRetryOnPrunedBlock) {
+        return this.body();
+      }
+
+      throw e;
+    }
   }
 
   /**
@@ -527,17 +537,27 @@ export class ChainHead extends JsonRpcGroup<ChainHeadEvent> {
    */
   async call(func: string, params: HexString = '0x', at?: BlockHash): Promise<HexString> {
     await this.#ensureFollowed();
-    const atHash = this.#ensurePinnedHash(at);
+    const shouldRetryOnPrunedBlock = !at;
 
-    const operation = async (): Promise<HexString> => {
-      await this.#ensureFollowed();
-      const hash = this.#ensurePinnedHash(atHash);
+    try {
+      const atHash = this.#ensurePinnedHash(at);
 
-      const resp: MethodResponse = await this.send('call', this.#subscriptionId, hash, func, params);
-      return this.#awaitOperation(resp, hash);
-    };
+      const operation = async (): Promise<HexString> => {
+        await this.#ensureFollowed();
+        const hash = this.#ensurePinnedHash(atHash);
 
-    return this.#performOperationWithRetry(operation, atHash);
+        const resp: MethodResponse = await this.send('call', this.#subscriptionId, hash, func, params);
+        return this.#awaitOperation(resp, hash);
+      };
+
+      return this.#performOperationWithRetry(operation, atHash);
+    } catch (e: any) {
+      if (e instanceof ChainHeadBlockPrunedError && shouldRetryOnPrunedBlock) {
+        return this.call(func, params);
+      }
+
+      throw e;
+    }
   }
 
   /**
@@ -555,18 +575,14 @@ export class ChainHead extends JsonRpcGroup<ChainHeadEvent> {
 
   /**
    * chainHead_storage
-   * TODO on a large number of items, best hash might change a long the way
-   *      we might ended up running query on a pruned block, we need to handle this
    */
   async storage(items: Array<StorageQuery>, childTrie?: string | null, at?: BlockHash): Promise<Array<StorageResult>> {
     await this.#ensureFollowed();
-
-    const hash = this.#ensurePinnedHash(at);
-
     const shouldRetryOnPrunedBlock = !at;
 
+    const hash = this.#ensurePinnedHash(at);
     try {
-      this.#blockUsage.usage(hash);
+      this.#blockUsage.use(hash);
 
       const results: Array<StorageResult> = [];
 
@@ -580,7 +596,6 @@ export class ChainHead extends JsonRpcGroup<ChainHeadEvent> {
       return results;
     } catch (e) {
       if (e instanceof ChainHeadBlockPrunedError && shouldRetryOnPrunedBlock) {
-        // retry it again with the current best hash
         return this.storage(items, childTrie);
       }
 
