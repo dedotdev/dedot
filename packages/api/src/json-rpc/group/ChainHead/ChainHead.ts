@@ -232,7 +232,7 @@ export class ChainHead extends JsonRpcGroup<ChainHeadEvent> {
 
           queuedHashesToUnpin.forEach((hash) => {
             // if the block is being used, we'll keep it pinned
-            // and recheck it later and the next finalized event
+            // and recheck it later in the next finalized event
             if (this.#blockUsage.usage(hash) > 0) {
               finalizedQueue.unshift(hash);
             } else {
