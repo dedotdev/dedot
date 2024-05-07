@@ -210,9 +210,11 @@ export class ChainHead extends JsonRpcGroup<ChainHeadEvent> {
             .map((b) => b.hash),
         ]);
 
+        // TODO account for operations that haven't received its operationId yet
         Object.values(this.#handlers).forEach(({ defer, hash, operationId }) => {
           if (hashesToUnpin.has(hash)) {
             defer.reject(new ChainHeadBlockPrunedError());
+            this.stopOperation(operationId).catch(noop);
             delete this.#handlers[operationId];
           }
         });
@@ -522,7 +524,7 @@ export class ChainHead extends JsonRpcGroup<ChainHeadEvent> {
         return this.#awaitOperation(resp, hash);
       };
 
-      return this.#performOperationWithRetry(operation, atHash);
+      return await this.#performOperationWithRetry(operation, atHash);
     } catch (e: any) {
       if (e instanceof ChainHeadBlockPrunedError && shouldRetryOnPrunedBlock) {
         return this.body();
@@ -550,7 +552,7 @@ export class ChainHead extends JsonRpcGroup<ChainHeadEvent> {
         return this.#awaitOperation(resp, hash);
       };
 
-      return this.#performOperationWithRetry(operation, atHash);
+      return await this.#performOperationWithRetry(operation, atHash);
     } catch (e: any) {
       if (e instanceof ChainHeadBlockPrunedError && shouldRetryOnPrunedBlock) {
         return this.call(func, params);
