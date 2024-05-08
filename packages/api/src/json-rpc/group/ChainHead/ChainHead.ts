@@ -210,8 +210,9 @@ export class ChainHead extends JsonRpcGroup<ChainHeadEvent> {
         // TODO should we find all descendants of the pruned blocks and unpin them as well?
         //      that's probably a premature optimization
         const finalizedBlockHeights = finalizedBlockHashes.map((hash) => this.getPinnedBlock(hash)!.number);
+        const pinnedHashes = Object.keys(this.#pinnedBlocks);
         const hashesToUnpin = new Set([
-          ...prunedBlockHashes,
+          ...prunedBlockHashes.filter((hash) => pinnedHashes.includes(hash)),
           // Since we have the current finalized blocks,
           // we can mark all the other blocks at the same height as pruned and unpin all together with the reported pruned blocks
           ...Object.values(this.#pinnedBlocks)

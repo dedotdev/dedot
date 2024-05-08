@@ -209,7 +209,7 @@ describe('ChainHead', () => {
         const bestBlock2 = simulator.nextBestBlock();
         notify(simulator.subscriptionId, bestBlock2);
 
-        const finalized2 = simulator.nextFinalized();
+        const finalized2 = simulator.nextFinalized(undefined, ['0x0f-1']);
         notify(simulator.subscriptionId, finalized2);
 
         await new Promise<void>((resolve) => {
@@ -227,6 +227,7 @@ describe('ChainHead', () => {
         // 2 new blocks comes in, unpin 2 blocks at the back to the queue to maintain the queue size
         await new Promise<void>((resolve) => {
           setTimeout(() => {
+            expect(finalized2.prunedBlockHashes).to.includes('0x0f-1');
             expect(providerSend).toHaveBeenCalledWith('chainHead_v1_unpin', [simulator.subscriptionId, ['0x06']]);
             resolve();
           }, 10);
