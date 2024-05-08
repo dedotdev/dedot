@@ -11,7 +11,7 @@ import type {
   StorageResult,
 } from '@dedot/specs';
 import type { AsyncMethod, Unsub } from '@dedot/types';
-import { assert, Deferred, deferred, ensurePresence, HexString, noop, AsyncQueue, waitFor } from '@dedot/utils';
+import { assert, AsyncQueue, deferred, Deferred, ensurePresence, HexString, noop, waitFor } from '@dedot/utils';
 import type { IJsonRpcClient } from '../../../types.js';
 import { JsonRpcGroup, type JsonRpcGroupOptions } from '../JsonRpcGroup.js';
 import { BlockUsage } from './BlockUsage.js';
@@ -66,6 +66,7 @@ export class ChainHead extends JsonRpcGroup<ChainHeadEvent> {
   #retryQueue: AsyncQueue;
   #recovering?: Deferred<void>;
   #blockUsage: BlockUsage;
+  #cache: Map<string, any>;
 
   constructor(client: IJsonRpcClient, options?: Partial<JsonRpcGroupOptions>) {
     super(client, { prefix: 'chainHead', supportedVersions: ['unstable', 'v1'], ...options });
@@ -76,6 +77,7 @@ export class ChainHead extends JsonRpcGroup<ChainHeadEvent> {
     this.#followResponseQueue = new AsyncQueue();
     this.#retryQueue = new AsyncQueue();
     this.#blockUsage = new BlockUsage();
+    this.#cache = new Map();
   }
 
   async runtimeVersion(): Promise<ChainHeadRuntimeVersion> {
@@ -435,6 +437,7 @@ export class ChainHead extends JsonRpcGroup<ChainHeadEvent> {
     this.#followResponseQueue.clear();
     this.#retryQueue.clear();
     this.#blockUsage.clear();
+    this.#cache.clear();
   }
 
   async #ensureFollowed(): Promise<void> {
@@ -523,6 +526,10 @@ export class ChainHead extends JsonRpcGroup<ChainHeadEvent> {
 
     try {
       const atHash = this.#ensurePinnedHash(at);
+      const cacheKey = `${atHash}::body`;
+      if (this.#cache.has(cacheKey)) {
+        return this.#cache.get(cacheKey);
+      }
 
       const operation = async (): Promise<Array<HexString>> => {
         await this.#ensureFollowed();
@@ -532,7 +539,9 @@ export class ChainHead extends JsonRpcGroup<ChainHeadEvent> {
         return this.#awaitOperation(resp, hash);
       };
 
-      return await this.#performOperationWithRetry(operation, atHash);
+      const resp = await this.#performOperationWithRetry(operation, atHash);
+      this.#cache.set(cacheKey, resp);
+      return resp;
     } catch (e: any) {
       if (e instanceof ChainHeadBlockPrunedError && shouldRetryOnPrunedBlock) {
         return this.body();
@@ -551,6 +560,10 @@ export class ChainHead extends JsonRpcGroup<ChainHeadEvent> {
 
     try {
       const atHash = this.#ensurePinnedHash(at);
+      const cacheKey = `${atHash}::call::${func}::${params}`;
+      if (this.#cache.has(cacheKey)) {
+        return this.#cache.get(cacheKey);
+      }
 
       const operation = async (): Promise<HexString> => {
         await this.#ensureFollowed();
@@ -560,7 +573,9 @@ export class ChainHead extends JsonRpcGroup<ChainHeadEvent> {
         return this.#awaitOperation(resp, hash);
       };
 
-      return await this.#performOperationWithRetry(operation, atHash);
+      const resp = await this.#performOperationWithRetry(operation, atHash);
+      this.#cache.set(cacheKey, resp);
+      return resp;
     } catch (e: any) {
       if (e instanceof ChainHeadBlockPrunedError && shouldRetryOnPrunedBlock) {
         return this.call(func, params);
@@ -592,6 +607,12 @@ export class ChainHead extends JsonRpcGroup<ChainHeadEvent> {
 
     const hash = this.#ensurePinnedHash(at);
     try {
+      // JSON.stringify(items) might get big, we probably should do a twox hashing in such case
+      const cacheKey = `${hash}::storage::${JSON.stringify(items)}::${childTrie ?? null}`;
+      if (this.#cache.has(cacheKey)) {
+        return this.#cache.get(cacheKey);
+      }
+
       this.#blockUsage.use(hash);
 
       const results: Array<StorageResult> = [];
@@ -603,6 +624,7 @@ export class ChainHead extends JsonRpcGroup<ChainHeadEvent> {
         queryItems = newDiscardedItems;
       }
 
+      this.#cache.set(cacheKey, results);
       return results;
     } catch (e) {
       if (e instanceof ChainHeadBlockPrunedError && shouldRetryOnPrunedBlock) {
