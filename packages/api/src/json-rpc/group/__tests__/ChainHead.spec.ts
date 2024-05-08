@@ -1380,4 +1380,133 @@ describe('ChainHead', () => {
       ]);
     });
   });
+
+  describe('caching', () => {
+    beforeEach(async () => {
+      notify(simulator.subscriptionId, simulator.initializedEvent);
+
+      await chainHead.follow();
+    });
+
+    it('should should cache chainHead_header', async () => {
+      const bestHash = await chainHead.bestHash();
+      const h1 = await chainHead.header(bestHash);
+      const h2 = await chainHead.header(bestHash);
+      const h3 = await chainHead.header(bestHash);
+      expect(h1).toEqual(h2);
+      expect(h2).toEqual(h3);
+
+      expect(providerSend).toHaveBeenCalledTimes(4);
+      expect(providerSend).toHaveBeenNthCalledWith(4, 'chainHead_v1_header', [simulator.subscriptionId, bestHash]);
+    });
+    it('should should cache chainHead_body', async () => {
+      provider.setRpcRequest(
+        'chainHead_v1_body',
+        () => ({ result: 'started', operationId: 'body02' }) as MethodResponse,
+      );
+
+      notify(simulator.subscriptionId, {
+        operationId: 'body02',
+        event: 'operationBodyDone',
+        value: ['0x1111'],
+      } as OperationBodyDone);
+
+      const bestHash = await chainHead.bestHash();
+      const r1 = await chainHead.body(bestHash);
+      const r2 = await chainHead.body(bestHash);
+      const r3 = await chainHead.body(bestHash);
+
+      expect(r1).toEqual(r2);
+      expect(r2).toEqual(r3);
+      expect(r3).toEqual(['0x1111']);
+
+      expect(providerSend).toHaveBeenCalledTimes(5);
+      expect(providerSend).toHaveBeenNthCalledWith(4, 'chainHead_v1_body', [simulator.subscriptionId, bestHash]);
+      expect(providerSend).toHaveBeenNthCalledWith(5, 'chainHead_v1_stopOperation', [
+        simulator.subscriptionId,
+        'body02',
+      ]);
+    });
+    it('should should cache chainHead_call', async () => {
+      provider.setRpcRequest(
+        'chainHead_v1_call',
+        () => ({ result: 'started', operationId: 'call02' }) as MethodResponse,
+      );
+
+      notify(simulator.subscriptionId, {
+        operationId: 'call02',
+        event: 'operationCallDone',
+        output: '0x1111',
+      } as OperationCallDone);
+
+      const bestHash = await chainHead.bestHash();
+      const r1 = await chainHead.call('func', '0x', bestHash);
+      const r2 = await chainHead.call('func', '0x', bestHash);
+      const r3 = await chainHead.call('func', '0x', bestHash);
+
+      expect(r1).toEqual(r2);
+      expect(r2).toEqual(r3);
+      expect(r3).toEqual('0x1111');
+
+      expect(providerSend).toHaveBeenCalledTimes(5);
+      expect(providerSend).toHaveBeenNthCalledWith(4, 'chainHead_v1_call', [
+        simulator.subscriptionId,
+        bestHash,
+        'func',
+        '0x',
+      ]);
+      expect(providerSend).toHaveBeenNthCalledWith(5, 'chainHead_v1_stopOperation', [
+        simulator.subscriptionId,
+        'call02',
+      ]);
+    });
+    it('should should cache chainHead_storage', async () => {
+      const storageItems = [
+        { key: '0xkey01', value: '0xvalue01' },
+        { key: '0xkey02', value: '0xvalue02' },
+      ];
+
+      const queries: StorageQuery[] = [
+        { key: '0xkey01', type: 'value' },
+        { key: '0xkey02', type: 'value' },
+      ];
+
+      provider.setRpcRequest(
+        'chainHead_v1_storage',
+        () => ({ result: 'started', operationId: 'storage01' }) as MethodResponse,
+      );
+
+      notify(simulator.subscriptionId, {
+        operationId: 'storage01',
+        event: 'operationStorageItems',
+        items: storageItems,
+      } as OperationStorageItems);
+
+      notify(simulator.subscriptionId, {
+        operationId: 'storage01',
+        event: 'operationStorageDone',
+      } as OperationStorageDone);
+
+      const bestHash = await chainHead.bestHash();
+      const r1 = await chainHead.storage(queries, null, bestHash);
+      const r2 = await chainHead.storage(queries, null, bestHash);
+      const r3 = await chainHead.storage(queries, null, bestHash);
+
+      expect(r1).toEqual(r2);
+      expect(r2).toEqual(r3);
+      expect(r3).toEqual(storageItems);
+
+      expect(providerSend).toHaveBeenCalledTimes(5);
+      expect(providerSend).toHaveBeenNthCalledWith(4, 'chainHead_v1_storage', [
+        simulator.subscriptionId,
+        bestHash,
+        queries,
+        null,
+      ]);
+      expect(providerSend).toHaveBeenNthCalledWith(5, 'chainHead_v1_stopOperation', [
+        simulator.subscriptionId,
+        'storage01',
+      ]);
+    });
+  });
 });
