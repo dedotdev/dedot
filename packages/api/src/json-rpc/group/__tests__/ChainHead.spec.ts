@@ -1489,7 +1489,7 @@ describe('ChainHead', () => {
 
       const bestHash = await chainHead.bestHash();
       const r1 = await chainHead.storage(queries, null, bestHash);
-      const r2 = await chainHead.storage(queries, null, bestHash);
+      const r2 = await chainHead.storage(queries, undefined, bestHash);
       const r3 = await chainHead.storage(queries, null, bestHash);
 
       expect(r1).toEqual(r2);
