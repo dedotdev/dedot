@@ -1,9 +1,9 @@
 import { GenericSubstrateApi } from '@dedot/types';
 import { Dedot, Hash, isWasm } from 'dedot';
-import { newProxyChain, ensureSupportContractsPallet } from './Contract.js';
 import { TypinkRegistry } from './TypinkRegistry.js';
 import { ConstructorExecutor } from './executor/index.js';
 import { ContractMetadata, GenericContractApi } from './types/index.js';
+import { newProxyChain, ensureSupportContractsPallet } from './utils.js';
 import { parseRawMetadata } from './utils.js';
 
 export class ContractDeployer<ContractApi extends GenericContractApi, ChainApi extends GenericSubstrateApi> {

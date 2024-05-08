@@ -1,4 +1,7 @@
 import { PortableType, TypeDef } from '@dedot/codecs';
+import { GenericSubstrateApi } from '@dedot/types';
+import { Dedot } from 'dedot';
+import { Executor } from './executor';
 import { ContractMetadata, Def } from './types/index.js';
 
 export const extractContractTypes = (contractMetadata: ContractMetadata): PortableType[] => {
@@ -87,3 +90,19 @@ export const parseRawMetadata = (rawMetadata: string): ContractMetadata => {
 
   return metadata as ContractMetadata;
 };
+
+export function newProxyChain<ChainApi extends GenericSubstrateApi>(carrier: Executor<ChainApi>): unknown {
+  return new Proxy(carrier, {
+    get(target: Executor<ChainApi>, property: string | symbol): any {
+      return target.doExecute(property.toString());
+    },
+  });
+}
+
+export function ensureSupportContractsPallet<ChainApi extends GenericSubstrateApi>(api: Dedot<ChainApi>) {
+  try {
+    api.call.contractsApi.call.meta && api.tx.contracts.call.meta;
+  } catch (e) {
+    throw new Error('This api does not support contracts pallet');
+  }
+}
