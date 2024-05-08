@@ -153,7 +153,7 @@ export const newChainHeadSimulator = ({ numOfFinalizedBlocks = 15, provider, ini
     };
   };
 
-  const nextFinalized = (forkCounter?: number, withPruned = true): Finalized => {
+  const nextFinalized = (forkCounter?: number, withPruned: boolean | HexString[] = true): Finalized => {
     if (bestBlockHeight <= finalizedHeight) {
       throw new Error('No best block to finalize');
     }
@@ -162,16 +162,21 @@ export const newChainHeadSimulator = ({ numOfFinalizedBlocks = 15, provider, ini
     const block = findBlock(finalizedHeight, forkCounter);
 
     // find other forked blocks at the same height for pruning
-    const prunedBlockHashes = Object.values(blockDb)
+    let prunedBlockHashes = Object.values(blockDb)
       .filter((b) => b.height === finalizedHeight && b.forkCounter !== forkCounter)
       .map((b) => b.hash);
 
     prunedBlockHashes.forEach((hash) => delete blockDb[hash]);
+    if (!withPruned) {
+      prunedBlockHashes = [];
+    } else if (Array.isArray(withPruned)) {
+      prunedBlockHashes = prunedBlockHashes.concat(withPruned);
+    }
 
     return {
       event: 'finalized',
       finalizedBlockHashes: [block.hash],
-      prunedBlockHashes: withPruned ? prunedBlockHashes : [],
+      prunedBlockHashes,
     };
   };
 
