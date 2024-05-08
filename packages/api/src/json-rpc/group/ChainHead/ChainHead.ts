@@ -595,7 +595,16 @@ export class ChainHead extends JsonRpcGroup<ChainHeadEvent> {
   async header(at?: BlockHash): Promise<Option<HexString>> {
     await this.#ensureFollowed();
 
-    return this.#getHeader(this.#ensurePinnedHash(at));
+    const hash = this.#ensurePinnedHash(at);
+    const cacheKey = `${hash}::header`;
+
+    if (this.#cache.has(cacheKey)) {
+      return this.#cache.get(cacheKey);
+    }
+
+    const resp = await this.#getHeader(hash);
+    this.#cache.set(cacheKey, resp);
+    return resp;
   }
 
   async #getHeader(at: BlockHash): Promise<Option<HexString>> {
