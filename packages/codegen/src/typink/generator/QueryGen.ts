@@ -16,7 +16,7 @@ export class QueryGen {
     this.typesGen.clearCache();
 
     this.typesGen.typeImports.addCodecType('AccountIdLike');
-    this.typesGen.typeImports.addKnownType(
+    this.typesGen.typeImports.addContractType(
       'GenericContractQuery',
       'GenericContractQueryCall',
       'ContractOptions',
@@ -42,7 +42,7 @@ export class QueryGen {
     });
 
     const importTypes = this.typesGen.typeImports.toImports();
-    const template = compileTemplate('typink', 'query.hbs');
+    const template = compileTemplate('typink/templates/query.hbs');
 
     return beautifySourceCode(template({ importTypes, queryCallsOut }));
   }

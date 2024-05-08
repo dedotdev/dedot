@@ -26,7 +26,7 @@ export class ConstsGen extends ApiGen {
     }
 
     const importTypes = this.typesGen.typeImports.toImports();
-    const template = compileTemplate('chaintypes', 'consts.hbs');
+    const template = compileTemplate('chaintypes/templates/consts.hbs');
 
     return beautifySourceCode(template({ importTypes, defTypeOut }));
   }

@@ -2,7 +2,7 @@ import { Field, MetadataLatest, PortableRegistry, PortableType, TypeId, TypePara
 import { normalizeName, stringPascalCase } from '@dedot/utils';
 import { beautifySourceCode, commentBlock, compileTemplate, isNativeType } from '../../utils.js';
 import { TypeImports } from './TypeImports.js';
-import { findKnownCodec, findKnownCodecType, isKnownCodecType } from './known-codecs.js';
+import { checkKnownCodecType, findKnownCodec, findKnownCodecType } from './known-codecs.js';
 
 export interface NamedType extends PortableType {
   name: string; // nameIn, ~ typeIn
@@ -70,7 +70,7 @@ export class TypesGen {
       });
 
     const importTypes = this.typeImports.toImports('./types');
-    const template = compileTemplate('chaintypes', 'types.hbs');
+    const template = compileTemplate('chaintypes/templates/types.hbs');
 
     return beautifySourceCode(template({ importTypes, defTypeOut }));
   }
@@ -304,8 +304,10 @@ export class TypesGen {
         let knownType = false;
         let name, nameOut;
 
-        if (isKnownCodecType(joinedPath)) {
-          const codecType = findKnownCodecType(path.at(-1)!);
+        const [isKnownCodecType, codecName] = checkKnownCodecType(joinedPath);
+
+        if (isKnownCodecType) {
+          const codecType = findKnownCodecType(codecName);
           name = codecType.typeIn;
           nameOut = codecType.typeOut;
 

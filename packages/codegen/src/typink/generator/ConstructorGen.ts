@@ -12,7 +12,7 @@ export class ConstructorGen extends QueryGen {
   generate() {
     this.typesGen.clearCache();
 
-    this.typesGen.typeImports.addKnownType(
+    this.typesGen.typeImports.addContractType(
       'GenericContractTx',
       'GenericContractTxCall',
       'ConstructorOptions',
@@ -36,7 +36,7 @@ export class ConstructorGen extends QueryGen {
     });
 
     const importTypes = this.typesGen.typeImports.toImports();
-    const template = compileTemplate('typink', 'constructor.hbs');
+    const template = compileTemplate('typink/templates/constructor.hbs');
 
     return beautifySourceCode(template({ importTypes, constructorsOut }));
   }

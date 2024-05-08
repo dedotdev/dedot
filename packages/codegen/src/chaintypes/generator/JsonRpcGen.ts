@@ -53,7 +53,7 @@ export class JsonRpcGen extends ApiGen {
     const toExclude = Object.values(subscriptionsInfo).flat();
 
     const importTypes = this.typesGen.typeImports.toImports();
-    const template = compileTemplate('chaintypes', 'json-rpc.hbs');
+    const template = compileTemplate('chaintypes/templates/json-rpc.hbs');
     const jsonRpcMethods = this.rpcMethods
       .filter((one) => !ALIAS_RPCS.includes(one)) // exclude alias rpcs
       .filter((one) => !toExclude.includes(one)) // exclude unsubscribe methods

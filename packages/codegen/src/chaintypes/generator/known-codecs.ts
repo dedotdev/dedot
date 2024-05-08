@@ -1,6 +1,5 @@
 import * as Codecs from '@dedot/codecs';
 import {
-  $AccountId,
   $AccountId20,
   $AccountId32,
   $Bytes,
@@ -31,7 +30,7 @@ export const normalizeCodecName = (name: string | CodecName): CodecName => {
   return name.startsWith('$') ? (name as CodecName) : `$${name}`;
 };
 
-type KnownPath = string | RegExp;
+type KnownPath = string | RegExp | { path: string; codec: string };
 
 // Known paths for codecs (primitives) that are shared between
 // different substrate-based blockchains
@@ -62,7 +61,7 @@ const KNOWN_PATHS: KnownPath[] = [
   /^sp_arithmetic::per_things::\w+$/,
   /^sp_arithmetic::fixed_point::\w+$/,
   'ink_primitives::types::Hash',
-  'ink_primitives::types::AccountId',
+  { path: 'ink_primitives::types::AccountId', codec: 'AccountId32' },
 ];
 
 const WRAPPER_TYPE_REGEX = /^(\w+)<(.*)>$/;
@@ -81,7 +80,6 @@ export const looseTypeCodecs: Record<string, AnyShape> = {
   $AccountId20,
   $EthereumAddress,
   $AccountId32,
-  $AccountId,
   $ConsensusEngineId,
   $StorageKey,
   $StorageData,
@@ -162,7 +160,26 @@ export function findKnownWrapperCodec(typeName: string): $.AnyShape | undefined 
   }
 }
 
-export function isKnownCodecType(path: string | string[]) {
+export function checkKnownCodecType(path: string | string[]): [boolean, string] {
   const joinedPath = Array.isArray(path) ? path.join('::') : path;
-  return KNOWN_PATHS.some((one) => joinedPath.match(one));
+
+  const knownPath = KNOWN_PATHS.find((one) => {
+    if (typeof one === 'string') {
+      return one === joinedPath;
+    } else if (one instanceof RegExp) {
+      return one.test(joinedPath);
+    } else {
+      return one.path === joinedPath;
+    }
+  });
+
+  if (!knownPath) {
+    return [false, ''];
+  }
+
+  if (typeof knownPath === 'string' || knownPath instanceof RegExp) {
+    return [true, joinedPath.split('::').at(-1)!];
+  }
+
+  return [true, knownPath.codec];
 }

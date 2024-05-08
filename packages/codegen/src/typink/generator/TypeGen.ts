@@ -1,10 +1,10 @@
 import { Field, TypeId, TypeParam } from '@dedot/codecs';
 import { ContractMetadata, extractContractTypes, normalizeContractTypeDef } from '@dedot/contracts';
 import { assert, normalizeName, stringPascalCase } from '@dedot/utils';
-import { findKnownCodec, findKnownCodecType, isKnownCodecType } from '../../chaintypes/generator/index.js';
+import { TypeImports } from '../../chaintypes/generator/TypeImports.js';
+import { checkKnownCodecType, findKnownCodec, findKnownCodecType } from '../../chaintypes/generator/index.js';
 import { BASIC_KNOWN_TYPES, NamedType } from '../../chaintypes/generator/index.js';
 import { beautifySourceCode, compileTemplate, isNativeType, WRAPPER_TYPE_REGEX } from '../../utils.js';
-import { TypeImports } from './TypeImports.js';
 
 const IGNORE_TYPES = ['Result', 'Option'];
 
@@ -34,7 +34,7 @@ export class TypeGen {
       });
 
     const importTypes = this.typeImports.toImports('./types');
-    const template = compileTemplate('typink', 'types.hbs');
+    const template = compileTemplate('typink/templates/types.hbs');
 
     return beautifySourceCode(template({ importTypes, defTypeOut }));
   }
@@ -292,8 +292,10 @@ export class TypeGen {
         let knownType = false;
         let name, nameOut;
 
-        if (isKnownCodecType(joinedPath)) {
-          const codecType = findKnownCodecType(path.at(-1)!);
+        const [isKnownCodecType, codecName] = checkKnownCodecType(joinedPath);
+
+        if (isKnownCodecType) {
+          const codecType = findKnownCodecType(codecName);
           name = codecType.typeIn;
           nameOut = codecType.typeOut;
 

@@ -8,6 +8,7 @@ export class TypeImports {
   specTypes: Set<string>;
   // External types to define explicitly
   outTypes: Set<string>;
+  contractTypes: Set<string>;
 
   constructor() {
     this.portableTypes = new Set<string>();
@@ -15,6 +16,7 @@ export class TypeImports {
     this.knownTypes = new Set<string>();
     this.specTypes = new Set<string>();
     this.outTypes = new Set<string>();
+    this.contractTypes = new Set<string>();
   }
 
   clear() {
@@ -23,6 +25,7 @@ export class TypeImports {
     this.knownTypes.clear();
     this.specTypes.clear();
     this.outTypes.clear();
+    this.contractTypes.clear();
   }
 
   toImports(...excludeModules: string[]) {
@@ -32,6 +35,7 @@ export class TypeImports {
       [this.knownTypes, '@dedot/types'],
       [this.specTypes, '@dedot/specs'],
       [this.codecTypes, '@dedot/codecs'],
+      [this.contractTypes, '@dedot/contracts'],
       [this.portableTypes, './types'],
     ];
 
@@ -59,6 +63,10 @@ export class TypeImports {
 
   addKnownType(...types: string[]) {
     types.forEach((one) => this.knownTypes.add(one));
+  }
+
+  addContractType(...types: string[]) {
+    types.forEach((one) => this.contractTypes.add(one));
   }
 
   addSpecType(...types: string[]) {

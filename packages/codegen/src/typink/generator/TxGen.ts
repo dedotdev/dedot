@@ -12,7 +12,7 @@ export class TxGen extends QueryGen {
   generate() {
     this.typesGen.clearCache();
 
-    this.typesGen.typeImports.addKnownType(
+    this.typesGen.typeImports.addContractType(
       'GenericContractTx',
       'GenericContractTxCall',
       'ContractOptions',
@@ -37,7 +37,7 @@ export class TxGen extends QueryGen {
     });
 
     const importTypes = this.typesGen.typeImports.toImports();
-    const template = compileTemplate('typink', 'tx.hbs');
+    const template = compileTemplate('typink/templates/tx.hbs');
 
     return beautifySourceCode(template({ importTypes, txCallsOut }));
   }

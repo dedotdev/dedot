@@ -2,7 +2,6 @@ import * as $ from '@dedot/shape';
 import { EnumOptions } from '@dedot/shape';
 import { normalizeName, stringPascalCase } from '@dedot/utils';
 import {
-  $AccountId,
   $AccountId20,
   $AccountId32,
   $Bytes,
@@ -35,7 +34,7 @@ const KNOWN_CODECS: Record<string, $.AnyShape> = {
   'sp_runtime::generic::digest::DigestItem': $DigestItem,
   'sp_runtime::generic::header::Header': $Header,
   'ink_primitives::types::Hash': $Hash,
-  'ink_primitives::types::AccountId': $AccountId,
+  'ink_primitives::types::AccountId': $AccountId32,
 };
 
 export abstract class TypeRegistry {
