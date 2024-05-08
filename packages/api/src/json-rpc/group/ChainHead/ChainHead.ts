@@ -229,11 +229,6 @@ export class ChainHead extends JsonRpcGroup<ChainHeadEvent> {
           }
         });
 
-        hashesToUnpin.forEach((hash) => {
-          if (!this.#isPinnedHash(hash)) return;
-          delete this.#pinnedBlocks[hash];
-        });
-
         // Unpin the oldest finalized pinned blocks to maintain the queue size
         if (this.#finalizedQueue.length > MIN_FINALIZED_QUEUE_SIZE) {
           const finalizedQueue = this.#finalizedQueue.slice();
@@ -246,13 +241,22 @@ export class ChainHead extends JsonRpcGroup<ChainHeadEvent> {
             if (this.#blockUsage.usage(hash) > 0) {
               finalizedQueue.unshift(hash);
             } else {
-              delete this.#pinnedBlocks[hash];
               hashesToUnpin.add(hash);
             }
           });
 
           this.#finalizedQueue = finalizedQueue;
         }
+
+        hashesToUnpin.forEach((hash) => {
+          if (!this.#isPinnedHash(hash)) return;
+          delete this.#pinnedBlocks[hash];
+
+          // clear cache
+          Array.from(this.#cache.keys())
+            .filter((key) => key.startsWith(`${hash}::`))
+            .forEach((key) => this.#cache.delete(key));
+        });
 
         this.unpin([...hashesToUnpin]).catch(noop);
         break;
