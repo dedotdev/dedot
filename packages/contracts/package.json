@@ -1,7 +1,7 @@
 {
   "name": "@dedot/contracts",
   "version": "0.0.1-alpha.31",
-  "description": "JSON-RPC Providers",
+  "description": "Delightful ink! Contract APIs",
   "author": "Thang X. Vu <thang@coongcrafts.io>",
   "main": "src/index.ts",
   "sideEffects": false,
