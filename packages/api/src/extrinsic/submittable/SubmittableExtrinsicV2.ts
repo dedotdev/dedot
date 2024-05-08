@@ -118,7 +118,7 @@ export class SubmittableExtrinsicV2 extends BaseSubmittableExtrinsic {
     try {
       // If we do search body after submitting the transaction,
       // there is a slight chance that the tx is included inside a block emitted
-      // during the time we're waiting for the response of the broadcast-tx request
+      // during the time we're waiting for the response of the broadcastTx request
       // So we'll do body search a head of time for now!
       api.chainHead.on('bestBlock', checkBestBlockIncluded);
       api.chainHead.on('finalizedBlock', checkFinalizedBlockIncluded);
