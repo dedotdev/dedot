@@ -16,6 +16,8 @@ export const typink: CommandModule<Args, Args> = {
   handler: async (yargs) => {
     const { contract, output = '', metadata = '', dts = true } = yargs;
 
+    if (!metadata) return;
+
     const outDir = path.resolve(output);
     const metadataFile = path.resolve(metadata);
     const extension = dts ? 'd.ts' : 'ts';
@@ -32,7 +34,7 @@ export const typink: CommandModule<Args, Args> = {
     return yargs
       .option('metadata', {
         type: 'string',
-        describe: 'Path to contract metadata file',
+        describe: 'Path to contract metadata file (.json, .contract)',
         alias: 'm',
         requiresArg: true,
       })
