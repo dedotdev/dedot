@@ -9,12 +9,12 @@ export const TUPLE_TYPE_REGEX = /^\[(.*)]$/;
 
 export const commentBlock = (...docs: (string | string[])[]) => {
   const flatLines = docs.flat();
-  if (flatLines.length === 0) {
+  if (flatLines.length === 0 || !flatLines.find((o) => !!o)) {
     return '';
   } else {
     return `
 /**
-${flatLines.map((line) => `* ${line.replaceAll(/\s+/g, ' ').trim()}`).join('\n')}
+${flatLines.map((line) => (line ? `* ${line.replaceAll(/\s+/g, ' ').trim()}` : '')).join('\n')}
  **/
       `;
   }

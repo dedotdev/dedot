@@ -1,7 +1,7 @@
 import { ContractMetadata, parseRawMetadata } from '@dedot/contracts';
 import fs from 'fs';
 import path from 'path';
-import { IndexGen, QueryGen, TxGen, TypeGen, ConstructorGen } from './generator/index.js';
+import { IndexGen, QueryGen, TxGen, TypesGen, ConstructorGen } from './generator/index.js';
 
 export async function generateContractTypesFromMetadata(
   metadata: ContractMetadata | string,
@@ -26,7 +26,7 @@ export async function generateContractTypesFromMetadata(
     fs.mkdirSync(dirPath, { recursive: true });
   }
 
-  const typesGen = new TypeGen(contractMetadata);
+  const typesGen = new TypesGen(contractMetadata);
   const querysGen = new QueryGen(contractMetadata, typesGen);
   const txGen = new TxGen(contractMetadata, typesGen);
   const constructorGen = new ConstructorGen(contractMetadata, typesGen);

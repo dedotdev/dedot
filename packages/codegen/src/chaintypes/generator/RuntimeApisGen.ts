@@ -2,6 +2,7 @@ import { RuntimeApiMethodDefLatest } from '@dedot/codecs';
 import { getRuntimeApiNames, getRuntimeApiSpecs } from '@dedot/specs';
 import { RuntimeApiMethodSpec, RuntimeApiSpec } from '@dedot/types';
 import { calcRuntimeApiHash, stringSnakeCase, stringCamelCase } from '@dedot/utils';
+import { findKnownCodecType } from '../../shared/index.js';
 import {
   beautifySourceCode,
   commentBlock,
@@ -12,7 +13,6 @@ import {
 } from '../../utils.js';
 import { ApiGen } from './ApiGen.js';
 import { TypesGen } from './TypesGen.js';
-import { findKnownCodecType } from './known-codecs.js';
 
 export class RuntimeApisGen extends ApiGen {
   constructor(

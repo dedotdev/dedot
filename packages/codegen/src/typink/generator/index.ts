@@ -1,4 +1,4 @@
-export * from './TypeGen.js';
+export * from './TypesGen.js';
 export * from './QueryGen.js';
 export * from './TxGen.js';
 export * from './IndexGen.js';

@@ -1,43 +1,38 @@
-import { Field, TypeId, TypeParam } from '@dedot/codecs';
-import { ContractMetadata, extractContractTypes, normalizeContractTypeDef } from '@dedot/contracts';
-import { assert, normalizeName, stringPascalCase } from '@dedot/utils';
-import { TypeImports } from '../../chaintypes/generator/TypeImports.js';
-import { checkKnownCodecType, findKnownCodec, findKnownCodecType } from '../../chaintypes/generator/index.js';
-import { BASIC_KNOWN_TYPES, NamedType } from '../../chaintypes/generator/index.js';
-import { beautifySourceCode, compileTemplate, isNativeType, WRAPPER_TYPE_REGEX } from '../../utils.js';
+import { Field, PortableType, TypeId, TypeParam } from '@dedot/codecs';
+import { EnumOptions } from '@dedot/shape';
+import { normalizeName, stringPascalCase } from '@dedot/utils';
+import { commentBlock, isNativeType, WRAPPER_TYPE_REGEX } from '../utils.js';
+import { TypeImports } from './TypeImports.js';
+import { findKnownCodec } from './known-codecs.js';
 
-const IGNORE_TYPES = ['Result', 'Option'];
+export interface NamedType extends PortableType {
+  name: string; // nameIn, ~ typeIn
+  nameOut: string; // ~ typeOut
+  skip?: boolean;
+  knownType?: boolean;
+  suffix?: string;
+}
 
-export class TypeGen {
-  contractMetadata: ContractMetadata;
-  includedTypes: Record<number, NamedType>;
+export const BASIC_KNOWN_TYPES = ['BitSequence', 'Bytes', 'BytesLike', 'FixedBytes', 'FixedArray', 'Result'];
+
+export abstract class BaseTypesGen {
+  types: PortableType[];
+  includedTypes: Record<TypeId, NamedType>;
   typeImports: TypeImports;
-  typeCache: Record<string, string> = {};
 
-  constructor(contractMetadata: ContractMetadata) {
-    this.contractMetadata = contractMetadata;
-    this.includedTypes = this.#includeTypes();
+  protected constructor(types: PortableType[]) {
+    this.types = types;
+    this.includedTypes = {};
     this.typeImports = new TypeImports();
   }
 
-  generate(): Promise<string> {
-    let defTypeOut = '';
+  abstract includeTypes(): Record<TypeId, NamedType>;
 
-    Object.values(this.includedTypes)
-      .filter(({ skip, knownType }) => !(skip || knownType))
-      .forEach(({ name, nameOut, id }) => {
-        defTypeOut += `export type ${nameOut} = ${this.generateType(id, 0, true)};\n\n`;
+  abstract getEnumOptions(typeId: TypeId): EnumOptions;
 
-        if (this.#shouldGenerateTypeIn(id)) {
-          defTypeOut += `export type ${name} = ${this.generateType(id)};\n\n`;
-        }
-      });
+  abstract shouldGenerateTypeIn(id: TypeId): boolean;
 
-    const importTypes = this.typeImports.toImports('./types');
-    const template = compileTemplate('typink/templates/types.hbs');
-
-    return beautifySourceCode(template({ importTypes, defTypeOut }));
-  }
+  typeCache: Record<string, string> = {};
 
   clearCache() {
     this.typeCache = {};
@@ -78,55 +73,14 @@ export class TypeGen {
     return type;
   }
 
-  #removeGenericPart(typeName: string) {
-    if (typeName.match(WRAPPER_TYPE_REGEX)) {
-      return typeName.replace(WRAPPER_TYPE_REGEX, (_, $1) => $1);
-    } else {
-      return typeName;
-    }
-  }
-
-  addTypeImport(typeName: string | string[]) {
-    if (Array.isArray(typeName)) {
-      typeName.forEach((one) => this.addTypeImport(one));
-      return;
-    }
-
-    if (isNativeType(typeName)) {
-      return;
-    }
-
-    for (let type of Object.values(this.includedTypes)) {
-      if (type.skip) {
-        continue;
-      }
-
-      const { name, nameOut, knownType } = type;
-      if (name === typeName || nameOut === typeName) {
-        if (knownType) {
-          this.typeImports.addCodecType(typeName);
-        } else {
-          this.typeImports.addPortableType(typeName);
-        }
-
-        return;
-      }
-    }
-
-    if (BASIC_KNOWN_TYPES.includes(typeName)) {
-      this.typeImports.addCodecType(typeName);
-      return;
-    }
-  }
-
   #generateType(typeId: TypeId, nestedLevel = 0, typeOut = false): string {
-    const {
-      type: { def, path },
-    } = this.contractMetadata.types[typeId];
+    const def = this.types[typeId];
+    if (!def) {
+      throw new Error(`Type def not found ${JSON.stringify(def)}`);
+    }
 
-    assert(def, `Type def not found ${JSON.stringify(def)}`);
-
-    const { tag, value } = normalizeContractTypeDef(def);
+    const { type, path, docs } = def;
+    const { tag, value } = type;
 
     switch (tag) {
       case 'Primitive':
@@ -158,12 +112,12 @@ export class TypeGen {
 
       case 'Enum': {
         const { members } = value;
-        if (path!.join('::') === 'Option') {
+        if (path.join('::') === 'Option') {
           const some = members.find((one) => one.name === 'Some');
           if (some) {
             return `${this.generateType(some.fields[0].typeId, nestedLevel + 1, typeOut)} | undefined`;
           }
-        } else if (path!.join('::') === 'Result') {
+        } else if (path.join('::') === 'Result') {
           const ok = members.find((one) => one.name === 'Ok');
           const err = members.find((one) => one.name === 'Err');
           if (ok && err) {
@@ -177,34 +131,38 @@ export class TypeGen {
         if (members.length === 0) {
           return 'null';
         } else if (members.every((x) => x.fields.length === 0)) {
-          return members.map(({ name }) => `'${stringPascalCase(name)}'`).join(' | ');
+          return members.map(({ name, docs }) => `${commentBlock(docs)}'${stringPascalCase(name)}'`).join(' | ');
         } else {
-          const membersType: [key: string, value: string | null][] = [];
-          for (const { fields, name } of members) {
+          const membersType: [key: string, value: string | null, docs: string[]][] = [];
+          for (const { fields, name, docs } of members) {
             const keyName = stringPascalCase(name);
             if (fields.length === 0) {
-              membersType.push([keyName, null]);
+              membersType.push([keyName, null, docs]);
             } else if (fields[0]!.name === undefined) {
               const valueType =
                 fields.length === 1
                   ? this.generateType(fields[0].typeId, nestedLevel + 1, typeOut)
                   : `[${fields
-                      .map(({ typeId }) => `${this.generateType(typeId, nestedLevel + 1, typeOut)}`)
+                      .map(
+                        ({ typeId, docs }) =>
+                          `${commentBlock(docs)}${this.generateType(typeId, nestedLevel + 1, typeOut)}`,
+                      )
                       .join(', ')}]`;
-              membersType.push([keyName, valueType]);
+              membersType.push([keyName, valueType, docs]);
             } else {
-              membersType.push([keyName, this.generateObjectType(fields, nestedLevel + 1, typeOut)]);
+              membersType.push([keyName, this.generateObjectType(fields, nestedLevel + 1, typeOut), docs]);
             }
           }
 
-          const { tagKey, valueKey } = { tagKey: 'tag', valueKey: 'value' };
+          const { tagKey, valueKey } = this.getEnumOptions(typeId);
 
           return membersType
-            .map(([keyName, valueType]) => ({
+            .map(([keyName, valueType, docs]) => ({
               tag: `${tagKey}: '${keyName}'`,
               value: valueType ? `, ${valueKey}${this.#isOptionalType(valueType) ? '?' : ''}: ${valueType} ` : '',
+              docs,
             }))
-            .map(({ tag, value }) => `{ ${tag}${value} }`)
+            .map(({ tag, value, docs }) => `${commentBlock(docs)}{ ${tag}${value} }`)
             .join(' | ');
         }
       }
@@ -227,7 +185,7 @@ export class TypeGen {
       case 'Sequence':
       case 'SizedVec': {
         const fixedSize = tag === 'SizedVec' ? `${value.len}` : null;
-        const $innerType = normalizeContractTypeDef(this.contractMetadata.types[value.typeParam].type.def);
+        const $innerType = this.types[value.typeParam].type;
         if ($innerType.tag === 'Primitive' && $innerType.value.kind === 'u8') {
           return fixedSize ? `FixedBytes<${fixedSize}>` : typeOut ? 'Bytes' : 'BytesLike';
         } else {
@@ -241,96 +199,38 @@ export class TypeGen {
   }
 
   generateObjectType(fields: Field[], nestedLevel = 0, typeOut = false) {
-    const props = fields.map(({ typeId, name }) => {
+    const props = fields.map(({ typeId, name, docs }) => {
       const type = this.generateType(typeId, nestedLevel + 1, typeOut);
       return {
         name: normalizeName(name!),
         type,
         optional: this.#isOptionalType(type),
+        docs,
       };
     });
 
-    return `{${props.map(({ name, type, optional }) => `${name}${optional ? '?' : ''}: ${type}`).join(',\n')}}`;
+    return `{${props
+      .map(({ name, type, optional, docs }) => `${commentBlock(docs)}${name}${optional ? '?' : ''}: ${type}`)
+      .join(',\n')}}`;
   }
 
   #isOptionalType(type: string) {
     return type.endsWith('| undefined');
   }
 
-  #includeTypes(): Record<number, NamedType> {
-    const types = extractContractTypes(this.contractMetadata);
-    const typesWithPath = types.filter((one) => one.path.length > 0 && !IGNORE_TYPES.includes(one.path[0]));
-    const pathsCount = new Map<string, Array<number>>();
-    const typeSuffixes = new Map<TypeId, string>();
-    const skipIds: number[] = [];
-
-    typesWithPath.forEach(({ path, id }) => {
-      const joinedPath = path.join();
-      if (pathsCount.has(joinedPath)) {
-        const firstOccurrenceTypeId = pathsCount.get(joinedPath)![0];
-        const sameType = this.typeEql(firstOccurrenceTypeId, id);
-        if (sameType) {
-          skipIds.push(id);
-        } else {
-          pathsCount.get(joinedPath)!.push(id);
-          typeSuffixes.set(
-            id,
-            this.#extractDupTypeSuffix(id, firstOccurrenceTypeId, pathsCount.get(joinedPath)!.length),
-          );
-        }
-      } else {
-        pathsCount.set(joinedPath, [id]);
-      }
-    });
-
-    return typesWithPath.reduce(
-      (o, type) => {
-        const { path, id } = type;
-        const joinedPath = path.join('::');
-        const suffix = typeSuffixes.get(id) || '';
-
-        let knownType = false;
-        let name, nameOut;
-
-        const [isKnownCodecType, codecName] = checkKnownCodecType(joinedPath);
-
-        if (isKnownCodecType) {
-          const codecType = findKnownCodecType(codecName);
-          name = codecType.typeIn;
-          nameOut = codecType.typeOut;
-
-          knownType = true;
-        } else {
-          name = this.#cleanPath(path);
-        }
-
-        if (this.#shouldGenerateTypeIn(id)) {
-          nameOut = name;
-          name = name.endsWith('Like') ? name : `${name}Like`;
-        }
-
-        o[id] = {
-          name: `${name}${suffix}`,
-          nameOut: nameOut ? `${nameOut}${suffix}` : `${name}${suffix}`,
-          knownType,
-          skip: skipIds.includes(id),
-          ...type,
-        };
-
-        return o;
-      },
-      {} as Record<TypeId, NamedType>,
-    );
+  #removeGenericPart(typeName: string) {
+    if (typeName.match(WRAPPER_TYPE_REGEX)) {
+      return typeName.replace(WRAPPER_TYPE_REGEX, (_, $1) => $1);
+    } else {
+      return typeName;
+    }
   }
 
-  #shouldGenerateTypeIn(id: number) {
-    const { messages } = this.contractMetadata.spec;
-
-    return messages.some((message) => message.returnType.type === id);
-  }
-
-  #cleanPath(path: string[]) {
-    return path.map((one) => stringPascalCase(one)).join('');
+  cleanPath(path: string[]) {
+    return path
+      .map((one) => stringPascalCase(one))
+      .filter((one, idx, currentPath) => idx === 0 || one !== currentPath[idx - 1])
+      .join('');
   }
 
   eqlCache = new Map<string, boolean>();
@@ -348,9 +248,8 @@ export class TypeGen {
   #typeEql(idA: number, idB: number, lvl = 0): boolean {
     if (idA === idB) return true;
 
-    const types = extractContractTypes(this.contractMetadata);
-    const typeA = types[idA];
-    const typeB = types[idB];
+    const typeA = this.types[idA];
+    const typeB = this.types[idB];
 
     if (typeA.path.join('::') !== typeB.path.join('::')) return false;
 
@@ -417,15 +316,14 @@ export class TypeGen {
     );
   }
 
-  #extractDupTypeSuffix(dupTypeId: TypeId, originalTypeId: TypeId, dupCount: number) {
-    const types = extractContractTypes(this.contractMetadata);
-    const originalTypeParams = types[originalTypeId].params;
-    const dupTypeParams = types[dupTypeId].params;
+  extractDupTypeSuffix(dupTypeId: TypeId, originalTypeId: TypeId, dupCount: number) {
+    const originalTypeParams = this.types[originalTypeId].params;
+    const dupTypeParams = this.types[dupTypeId].params;
     const diffParam = dupTypeParams.find((one, idx) => !this.#eqlTypeParam(one, originalTypeParams[idx]));
 
     // TODO make sure these suffix is unique if a type is duplicated more than 2 times
     if (diffParam?.typeId) {
-      const diffType = types[diffParam.typeId];
+      const diffType = this.types[diffParam.typeId];
       if (diffType.path.length > 0) {
         return stringPascalCase(diffType.path.at(-1)!);
       } else if (diffType.type.tag === 'Primitive') {
@@ -435,5 +333,40 @@ export class TypeGen {
 
     // Last resort!
     return dupCount.toString().padStart(3, '0');
+  }
+
+  addTypeImport(typeName: string | string[]) {
+    if (Array.isArray(typeName)) {
+      typeName.forEach((one) => this.addTypeImport(one));
+      return;
+    }
+
+    if (isNativeType(typeName)) {
+      return;
+    }
+
+    for (let type of Object.values(this.includedTypes)) {
+      if (type.skip) {
+        continue;
+      }
+
+      const { name, nameOut, knownType } = type;
+      if (name === typeName || nameOut === typeName) {
+        if (knownType) {
+          this.typeImports.addCodecType(typeName);
+        } else {
+          this.typeImports.addPortableType(typeName);
+        }
+
+        return;
+      }
+    }
+
+    if (BASIC_KNOWN_TYPES.includes(typeName)) {
+      this.typeImports.addCodecType(typeName);
+      return;
+    }
+
+    this.typeImports.addOutType(typeName);
   }
 }

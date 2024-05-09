@@ -1,13 +1,13 @@
 import { normalizeContractTypeDef, ContractMessage, ContractMetadata } from '@dedot/contracts';
 import { stringCamelCase } from '@dedot/utils';
 import { beautifySourceCode, commentBlock, compileTemplate } from '../../utils.js';
-import { TypeGen } from './TypeGen.js';
+import { TypesGen } from './TypesGen.js';
 
 export class QueryGen {
   contractMetadata: ContractMetadata;
-  typesGen: TypeGen;
+  typesGen: TypesGen;
 
-  constructor(contractMetadata: ContractMetadata, typeGen: TypeGen) {
+  constructor(contractMetadata: ContractMetadata, typeGen: TypesGen) {
     this.contractMetadata = contractMetadata;
     this.typesGen = typeGen;
   }
@@ -15,7 +15,7 @@ export class QueryGen {
   generate() {
     this.typesGen.clearCache();
 
-    this.typesGen.typeImports.addCodecType('AccountIdLike');
+    this.typesGen.typeImports.addCodecType('AccountId32Like');
     this.typesGen.typeImports.addContractType(
       'GenericContractQuery',
       'GenericContractQueryCall',
