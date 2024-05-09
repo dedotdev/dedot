@@ -185,6 +185,12 @@ export class DedotClient<
     return newProxyChain({ executor: new TxExecutorV2(this) }) as ChainApi[RpcV2]['tx'];
   }
 
+  /**
+   * Get a new API instance at a specific block hash
+   * For now, this only supports pinned block hashes from the chain head
+   *
+   * @param hash
+   */
   async at<ChainApiAt extends GenericSubstrateApi = ChainApi[RpcV2]>(
     hash: BlockHash,
   ): Promise<ISubstrateClientAt<ChainApiAt>> {
