@@ -1,9 +1,9 @@
 import staticSubstrateV15 from '@polkadot/types-support/metadata/v15/substrate-hex';
-import { $Metadata } from '@dedot/codecs';
+import { $Metadata, $RuntimeVersion, type RuntimeVersion } from '@dedot/codecs';
 import { WsProvider } from '@dedot/providers';
 import type { AnyShape } from '@dedot/shape';
 import * as $ from '@dedot/shape';
-import { MethodResponse, OperationCallDone } from '@dedot/specs';
+import { MethodResponse, OperationCallDone, OperationStorageDone, OperationStorageItems } from '@dedot/specs';
 import { stringCamelCase, stringPascalCase, u8aToHex } from '@dedot/utils';
 import { MockInstance } from '@vitest/spy';
 import { afterEach, beforeEach, describe, expect, expectTypeOf, it, vi } from 'vitest';
@@ -264,98 +264,206 @@ describe('DedotClient', () => {
         });
       });
 
-      // describe('tx calls', () => {
-      //   it('should be available', async () => {
-      //     api.metadata.latest.pallets.forEach((pallet) => {
-      //       if (!pallet.calls) return;
-      //       const calls = api.metadata.latest.types[pallet.calls];
-      //       if (calls.type.tag === 'Enum') {
-      //         calls.type.value.members.forEach((m) => {
-      //           const tx = api.tx[stringCamelCase(pallet.name)][stringCamelCase(m.name)];
-      //           expectTypeOf(tx).toBeFunction();
-      //           expect(tx).toHaveProperty(['meta']);
-      //         });
-      //       }
-      //     });
-      //   });
-      //
-      //   it('should throws error', async () => {
-      //     expect(() => api.tx.system.notFound()).toThrowError(`Tx call spec not found for system.notFound`);
-      //     expect(() => api.tx.notFound.notFound()).toThrowError(`Pallet not found: notFound`);
-      //   });
-      // });
+      describe('tx calls', () => {
+        it('should be available', async () => {
+          api.metadata.latest.pallets.forEach((pallet) => {
+            if (!pallet.calls) return;
+            const calls = api.metadata.latest.types[pallet.calls];
+            if (calls.type.tag === 'Enum') {
+              calls.type.value.members.forEach((m) => {
+                const tx = api.tx[stringCamelCase(pallet.name)][stringCamelCase(m.name)];
+                expectTypeOf(tx).toBeFunction();
+                expect(tx).toHaveProperty(['meta']);
+              });
+            }
+          });
+        });
 
-      // describe('create api instance at a specific block', () => {
-      //   it('should fetch runtime version for the block', async () => {
-      //     const providerSend = vi.spyOn(provider, 'send');
-      //     const _ = await api.at('0x12345678');
-      //
-      //     expect(providerSend).toBeCalledWith('state_getRuntimeVersion', ['0x12345678']);
-      //     // runtime version is not changing, so the metadata can be re-use
-      //     expect(providerSend).not.toBeCalledWith('state_call', [
-      //       'Metadata_metadata_at_version',
-      //       '0x0f000000',
-      //       '0x12345678',
-      //     ]);
-      //   });
-      //
-      //   it('should re-fetch metadata if runtime version is changing', async () => {
-      //     provider.setRpcRequest(
-      //       'state_getRuntimeVersion',
-      //       () => ({ ...MockedRuntimeVersion, specVersion: 0 }) as RuntimeVersion,
-      //     );
-      //
-      //     const providerSend = vi.spyOn(provider, 'send');
-      //     const _ = await api.at('0x12345678');
-      //
-      //     expect(providerSend).toBeCalledWith('state_getRuntimeVersion', ['0x12345678']);
-      //     expect(providerSend).toBeCalledWith('state_call', [
-      //       'Metadata_metadata_at_version',
-      //       '0x0f000000',
-      //       '0x12345678',
-      //     ]); // $.u32.decode(15) = '0x0f000000'
-      //     expect(providerSend).toBeCalledWith('state_call', [
-      //       'Metadata_metadata_at_version',
-      //       '0x0e000000',
-      //       '0x12345678',
-      //     ]); // $.u32.decode(15) = '0x0f000000'
-      //   });
-      //
-      //   it('should define valid props', async () => {
-      //     const apiAt = await api.at('0x12345678');
-      //
-      //     expect(apiAt.atBlockHash).toEqual('0x12345678');
-      //     expect(apiAt.options).toBeDefined();
-      //     expect(apiAt.runtimeVersion).toBeDefined();
-      //     expect(apiAt.registry).toBeDefined();
-      //     expect(apiAt.metadata.version).toEqual('V14');
-      //     expect(apiAt.rpc).toBeDefined();
-      //     expect(apiAt.query).toBeDefined();
-      //     expect(apiAt.events).toBeDefined();
-      //     expect(apiAt.errors).toBeDefined();
-      //     expect(apiAt.consts).toBeDefined();
-      //   });
-      //
-      //   it('should call/query api with block hash', async () => {
-      //     provider.setRpcRequest('state_getStorage', () => u8aToHex($.u32.encode(123)));
-      //
-      //     const providerSend = vi.spyOn(api.provider, 'send');
-      //
-      //     const atHash = '0x12345678';
-      //
-      //     const apiAt = await api.at(atHash);
-      //
-      //     await apiAt.rpc.system_chain();
-      //     expect(providerSend).toBeCalledWith('system_chain', []);
-      //
-      //     const key = apiAt.query.system.number.rawKey();
-      //     await apiAt.query.system.number();
-      //     expect(providerSend).toBeCalledWith('state_queryStorageAt', [[key], atHash]);
-      //
-      //     await apiAt.call.metadata.metadata();
-      //     expect(providerSend).toBeCalledWith('state_call', ['Metadata_metadata', '0x', atHash]);
-      //   });
-      // });
+        it('should throws error', async () => {
+          expect(() => api.tx.system.notFound()).toThrowError(`Tx call spec not found for system.notFound`);
+          expect(() => api.tx.notFound.notFound()).toThrowError(`Pallet not found: notFound`);
+        });
+      });
+
+      describe('create api instance at a specific block', () => {
+        it('should fetch runtime version for the block', async () => {
+          const providerSend = vi.spyOn(provider, 'send');
+
+          provider.setRpcRequest(
+            'chainHead_v1_call',
+            () => ({ result: 'started', operationId: 'call03' }) as MethodResponse,
+          );
+
+          const newRuntime: RuntimeVersion = {
+            specName: 'mock-spec',
+            implName: 'mock-spec-impl',
+            authoringVersion: 0,
+            specVersion: 1,
+            implVersion: 0,
+            apis: [
+              ['0x37e397fc7c91f5e4', 2],
+              ['0xdf6acb689907609b', 4],
+            ],
+            transactionVersion: 25,
+            stateVersion: 0,
+          };
+
+          simulator.notify({
+            operationId: 'call03',
+            event: 'operationCallDone',
+            output: u8aToHex($RuntimeVersion.tryEncode(newRuntime)),
+          } as OperationCallDone);
+
+          const _ = await api.at('0x0d');
+
+          expect(providerSend).toBeCalledWith('chainHead_v1_call', [
+            simulator.subscriptionId,
+            '0x0d',
+            'Core_version',
+            '0x',
+          ]);
+
+          expect(providerSend).toHaveBeenLastCalledWith('chainHead_v1_stopOperation', [
+            simulator.subscriptionId,
+            'call03',
+          ]);
+        });
+
+        it('should re-fetch metadata if runtime version is changing', async () => {
+          const providerSend = vi.spyOn(provider, 'send');
+
+          let counter = 0;
+          provider.setRpcRequest('chainHead_v1_call', () => {
+            counter += 1;
+            return { result: 'started', operationId: `call${counter}` } as MethodResponse;
+          });
+
+          const newRuntime: RuntimeVersion = {
+            specName: 'mock-spec',
+            implName: 'mock-spec-impl',
+            authoringVersion: 0,
+            specVersion: 2,
+            implVersion: 0,
+            apis: [
+              ['0x37e397fc7c91f5e4', 2],
+              ['0xdf6acb689907609b', 4],
+            ],
+            transactionVersion: 25,
+            stateVersion: 0,
+          };
+
+          simulator.notify({
+            operationId: 'call1',
+            event: 'operationCallDone',
+            output: u8aToHex($RuntimeVersion.tryEncode(newRuntime)),
+          } as OperationCallDone);
+
+          simulator.notify(
+            {
+              operationId: 'call2',
+              event: 'operationCallDone',
+              output: prefixedMetadataV15,
+            } as OperationCallDone,
+            5,
+          );
+
+          const _ = await api.at('0x0d');
+
+          expect(providerSend).toBeCalledWith('chainHead_v1_call', [
+            simulator.subscriptionId,
+            '0x0d',
+            'Core_version',
+            '0x',
+          ]);
+
+          expect(providerSend).toBeCalledWith('chainHead_v1_stopOperation', [simulator.subscriptionId, 'call1']);
+
+          expect(providerSend).toBeCalledWith('chainHead_v1_call', [
+            simulator.subscriptionId,
+            '0x0d',
+            'Metadata_metadata_at_version',
+            '0x0f000000',
+          ]);
+
+          expect(providerSend).toBeCalledWith('chainHead_v1_stopOperation', [simulator.subscriptionId, 'call2']);
+        });
+
+        it('should define valid props', async () => {
+          const apiAt = await api.at('0x0e');
+
+          expect(apiAt.rpcVersion).toEqual('v2');
+          expect(apiAt.atBlockHash).toEqual('0x0e');
+          expect(apiAt.options).toBeDefined();
+          expect(apiAt.runtimeVersion).toBe(simulator.runtime);
+          expect(apiAt.registry).toBeDefined();
+          expect(apiAt.metadata.version).toEqual('V15');
+          expect(apiAt.rpc).toBeDefined();
+          expect(apiAt.query).toBeDefined();
+          expect(apiAt.events).toBeDefined();
+          expect(apiAt.errors).toBeDefined();
+          expect(apiAt.consts).toBeDefined();
+        });
+
+        it('should execute rpc', async () => {
+          const apiAt = await api.at('0x0e');
+
+          await apiAt.rpc.system_chain();
+          expect(providerSend).toBeCalledWith('system_chain', []);
+        });
+
+        it('should perform query & runtime api', async () => {
+          provider.setRpcRequests({
+            chainHead_v1_storage: () => ({ result: 'started', operationId: 'storage05' }) as MethodResponse,
+            chainHead_v1_call: () => ({ result: 'started', operationId: 'call05' }) as MethodResponse,
+          });
+
+          const hash = '0x0e';
+
+          const apiAt = await api.at(hash);
+          const key = apiAt.query.system.number.rawKey();
+
+          simulator.notify({
+            operationId: 'storage05',
+            event: 'operationStorageItems',
+            items: [{ key, value: u8aToHex($.u32.encode(42)) }],
+          } as OperationStorageItems);
+
+          simulator.notify({
+            operationId: 'storage05',
+            event: 'operationStorageDone',
+          } as OperationStorageDone);
+
+          await expect(apiAt.query.system.number()).resolves.toEqual(42);
+
+          expect(providerSend).toBeCalledWith('chainHead_v1_storage', [
+            simulator.subscriptionId,
+            hash,
+            [{ type: 'value', key }],
+            null,
+          ]);
+          expect(providerSend).toBeCalledWith('chainHead_v1_stopOperation', [simulator.subscriptionId, 'storage05']);
+
+          simulator.notify(
+            {
+              operationId: 'call05',
+              event: 'operationCallDone',
+              output: u8aToHex($.Array($.u32).tryEncode([14, 15])),
+            } as OperationCallDone,
+            5,
+          );
+
+          await expect(apiAt.call.metadata.metadataVersions()).resolves.toEqual([14, 15]);
+
+          expect(providerSend).toBeCalledWith('chainHead_v1_call', [
+            simulator.subscriptionId,
+            hash,
+            'Metadata_metadata_versions',
+            '0x',
+          ]);
+
+          expect(providerSend).toBeCalledWith('chainHead_v1_stopOperation', [simulator.subscriptionId, 'call05']);
+        });
+      });
     });
 
     describe('custom runtime apis call', () => {

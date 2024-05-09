@@ -26,13 +26,16 @@ type SimulatorConfig = {
 
 export const mockedRuntime: ChainHeadRuntimeVersion = {
   ...MockedRuntimeVersion,
-  apis: MockedRuntimeVersion.apis.reduce(
-    (acc, [name, version]) => {
-      acc[name] = version;
-      return acc;
-    },
-    {} as Record<string, number>,
-  ),
+  apis: {
+    ...MockedRuntimeVersion.apis.reduce(
+      (acc, [name, version]) => {
+        acc[name] = version;
+        return acc;
+      },
+      {} as Record<string, number>,
+    ),
+    '0xdf6acb689907609b': 4, // Core v4
+  },
 };
 
 export const newChainHeadSimulator = ({ numOfFinalizedBlocks = 15, provider, initialRuntime }: SimulatorConfig) => {
