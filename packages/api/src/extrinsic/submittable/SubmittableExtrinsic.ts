@@ -42,7 +42,7 @@ export class SubmittableExtrinsic extends BaseSubmittableExtrinsic implements IS
 
           const [signedBlock, blockEvents] = await Promise.all([
             this.api.rpc.chain_getBlock(blockHash),
-            this._getSystemEventsAt(blockHash),
+            this.getSystemEventsAt(blockHash),
           ]);
 
           const txIndex = (signedBlock as SignedBlock).block.extrinsics.indexOf(txHex);
