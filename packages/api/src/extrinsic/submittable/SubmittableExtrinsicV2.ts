@@ -43,7 +43,6 @@ export class SubmittableExtrinsicV2 extends BaseSubmittableExtrinsic {
     if (validateResult.isOk) {
       callback(new SubmittableResult({ status: { tag: 'Validated' }, txHash }));
     } else if (validateResult.isErr) {
-      // TODO improve this error message
       throw new InvalidExtrinsicError(
         `Invalid transaction: ${validateResult.err.tag} - ${validateResult.err.value.tag}`,
         validateResult,
@@ -84,6 +83,19 @@ export class SubmittableExtrinsicV2 extends BaseSubmittableExtrinsic {
       api.chainHead.off('bestBlock', checkBestBlockIncluded);
     };
 
+    // This whole thing is just to make sure
+    // that we're not calling stopBroadcastFn twice
+    let stopBroadcastFn: Unsub;
+    let stopped = false;
+    const stopBroadcast = () => {
+      if (stopped) return;
+
+      if (stopBroadcastFn) {
+        stopped = true;
+        stopBroadcastFn().catch(noop);
+      }
+    };
+
     const checkFinalizedBlockIncluded = async (block: PinnedBlock) => {
       const inBlock = await checkIsInBlock(block.hash);
       if (!inBlock) return;
@@ -99,19 +111,31 @@ export class SubmittableExtrinsicV2 extends BaseSubmittableExtrinsic {
       );
 
       api.chainHead.off('finalizedBlock', checkFinalizedBlockIncluded);
+      stopBroadcast();
     };
 
-    const stopBroadcastFn = await api.txBroadcaster.broadcastTx(txHex);
-    // TODO introduce a `Broadcasting` status after calling broadcastTx
+    try {
+      // If we do search body after submitting the transaction,
+      // there is a slight chance that the tx is included inside a block emitted
+      // during the time we're waiting for the response of the broadcastTx request
+      // So we'll do body search a head of time for now!
+      api.chainHead.on('bestBlock', checkBestBlockIncluded);
+      api.chainHead.on('finalizedBlock', checkFinalizedBlockIncluded);
 
-    api.chainHead.on('bestBlock', checkBestBlockIncluded);
-    api.chainHead.on('finalizedBlock', checkFinalizedBlockIncluded);
+      stopBroadcastFn = await api.txBroadcaster.broadcastTx(txHex);
+      // TODO should we introduce a `Broadcasting` status after calling broadcastTx?
 
-    return async () => {
+      return async () => {
+        api.chainHead.off('bestBlock', checkBestBlockIncluded);
+        api.chainHead.off('finalizedBlock', checkFinalizedBlockIncluded);
+        stopBroadcast();
+      };
+    } catch (e: any) {
       api.chainHead.off('bestBlock', checkBestBlockIncluded);
       api.chainHead.off('finalizedBlock', checkFinalizedBlockIncluded);
-      stopBroadcastFn().catch(noop);
-    };
+
+      throw e;
+    }
   }
 
   send(): Promise<Hash>;
