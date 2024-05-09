@@ -1,13 +1,20 @@
-import { $H256, BlockHash } from '@dedot/codecs';
+import { $H256, BlockHash, PortableRegistry } from '@dedot/codecs';
 import type { JsonRpcProvider } from '@dedot/providers';
 import { u32 } from '@dedot/shape';
-import { RpcV2, VersionedGenericSubstrateApi } from '@dedot/types';
+import { GenericSubstrateApi, RpcV2, VersionedGenericSubstrateApi } from '@dedot/types';
 import { assert, concatU8a, HexString, noop, twox64Concat, u8aToHex, xxhashAsU8a } from '@dedot/utils';
 import type { SubstrateApi } from '../chaintypes/index.js';
-import { RuntimeApiExecutorV2, StorageQueryExecutorV2, TxExecutorV2 } from '../executor/index.js';
+import {
+  ConstantExecutor,
+  ErrorExecutor,
+  EventExecutor,
+  RuntimeApiExecutorV2,
+  StorageQueryExecutorV2,
+  TxExecutorV2,
+} from '../executor/index.js';
 import { ChainHead, ChainSpec, PinnedBlock, Transaction, TransactionWatch } from '../json-rpc/index.js';
 import { newProxyChain } from '../proxychain.js';
-import type { ApiOptions, TxBroadcaster } from '../types.js';
+import type { ApiOptions, ISubstrateClientAt, SubstrateRuntimeVersion, TxBroadcaster } from '../types.js';
 import { BaseSubstrateClient, ensurePresence } from './BaseSubstrateClient.js';
 
 /**
@@ -22,6 +29,7 @@ export class DedotClient<
   protected _chainHead?: ChainHead;
   protected _chainSpec?: ChainSpec;
   protected _txBroadcaster?: TxBroadcaster;
+  #apiAtCache: Record<BlockHash, ISubstrateClientAt<any>> = {};
 
   /**
    * Use factory methods (`create`, `new`) to create `DedotClient` instances.
@@ -154,6 +162,7 @@ export class DedotClient<
     this._chainHead = undefined;
     this._chainSpec = undefined;
     this._txBroadcaster = undefined;
+    this.#apiAtCache = {};
   }
 
   override get query(): ChainApi[RpcV2]['query'] {
@@ -176,5 +185,46 @@ export class DedotClient<
     return newProxyChain({ executor: new TxExecutorV2(this) }) as ChainApi[RpcV2]['tx'];
   }
 
-  // TODO api.at
+  async at<ChainApiAt extends GenericSubstrateApi = ChainApi[RpcV2]>(
+    hash: BlockHash,
+  ): Promise<ISubstrateClientAt<ChainApiAt>> {
+    if (this.#apiAtCache[hash]) return this.#apiAtCache[hash];
+
+    const targetBlock = this.chainHead.getPinnedBlock(hash);
+    assert(targetBlock, 'Block is not pinned!');
+
+    let targetVersion = targetBlock.runtime as SubstrateRuntimeVersion;
+    if (!targetVersion) {
+      // fallback to fetching on-chain runtime if we can't find it in the block
+      targetVersion = this.toSubstrateRuntimeVersion(await this.callAt(hash).core.version());
+    }
+
+    let metadata = this.metadata;
+    let registry = this.registry;
+    if (targetVersion && targetVersion.specVersion !== this.runtimeVersion.specVersion) {
+      metadata = await this.fetchMetadata(hash, targetVersion);
+      registry = new PortableRegistry(metadata.latest, this.options.hasher);
+    }
+
+    const api = {
+      rpcVersion: 'v2',
+      atBlockHash: hash,
+      options: this.options,
+      genesisHash: this.genesisHash,
+      runtimeVersion: targetVersion,
+      metadata,
+      registry,
+      rpc: this.rpc,
+    } as ISubstrateClientAt<ChainApiAt>;
+
+    api.consts = newProxyChain({ executor: new ConstantExecutor(api) }) as ChainApiAt['consts'];
+    api.events = newProxyChain({ executor: new EventExecutor(api) }) as ChainApiAt['events'];
+    api.errors = newProxyChain({ executor: new ErrorExecutor(api) }) as ChainApiAt['errors'];
+    api.query = newProxyChain({ executor: new StorageQueryExecutorV2(api, this.chainHead) }) as ChainApiAt['query'];
+    api.call = newProxyChain({ executor: new RuntimeApiExecutorV2(api, this.chainHead) }) as ChainApiAt['call'];
+
+    this.#apiAtCache[hash] = api;
+
+    return api;
+  }
 }

@@ -1,4 +1,4 @@
-import { $Metadata, BlockHash, Hash, Metadata, PortableRegistry } from '@dedot/codecs';
+import { $Metadata, BlockHash, Hash, Metadata, PortableRegistry, RuntimeVersion } from '@dedot/codecs';
 import type { JsonRpcProvider } from '@dedot/providers';
 import { type IStorage, LocalStorage } from '@dedot/storage';
 import { GenericSubstrateApi, RpcVersion, VersionedGenericSubstrateApi } from '@dedot/types';
@@ -232,6 +232,19 @@ export abstract class BaseSubstrateClient<ChainApi extends VersionedGenericSubst
   protected async beforeDisconnect() {}
   protected async afterDisconnect() {
     this.cleanUp();
+  }
+
+  protected toSubstrateRuntimeVersion(runtimeVersion: RuntimeVersion): SubstrateRuntimeVersion {
+    return {
+      ...runtimeVersion,
+      apis: runtimeVersion.apis.reduce(
+        (o, [name, version]) => {
+          o[name] = version;
+          return o;
+        },
+        {} as Record<string, number>,
+      ),
+    };
   }
 
   /// --- Public APIs ---

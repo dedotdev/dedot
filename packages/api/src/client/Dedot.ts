@@ -128,7 +128,7 @@ export class Dedot<ChainApi extends VersionedGenericSubstrateApi = SubstrateApi>
     this.rpc
       .state_subscribeRuntimeVersion(async (runtimeVersion: RuntimeVersion) => {
         if (runtimeVersion.specVersion !== this.runtimeVersion?.specVersion) {
-          this._runtimeVersion = this.#toSubstrateRuntimeVersion(runtimeVersion);
+          this._runtimeVersion = this.toSubstrateRuntimeVersion(runtimeVersion);
           const newMetadata = await this.fetchMetadata(undefined, this._runtimeVersion);
           await this.setupMetadata(newMetadata);
         }
@@ -139,20 +139,7 @@ export class Dedot<ChainApi extends VersionedGenericSubstrateApi = SubstrateApi>
   }
 
   async #getRuntimeVersion(at?: BlockHash): Promise<SubstrateRuntimeVersion> {
-    return this.#toSubstrateRuntimeVersion(await this.rpc.state_getRuntimeVersion(at));
-  }
-
-  #toSubstrateRuntimeVersion(runtimeVersion: RuntimeVersion): SubstrateRuntimeVersion {
-    return {
-      ...runtimeVersion,
-      apis: runtimeVersion.apis.reduce(
-        (o, [name, version]) => {
-          o[name] = version;
-          return o;
-        },
-        {} as Record<string, number>,
-      ),
-    };
+    return this.toSubstrateRuntimeVersion(await this.rpc.state_getRuntimeVersion(at));
   }
 
   #subscribeHealth() {
