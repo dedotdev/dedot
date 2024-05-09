@@ -152,11 +152,19 @@ export class ChainHead extends JsonRpcGroup<ChainHeadEvent> {
         this.#finalizedQueue = finalizedBlockHashes;
 
         this.#finalizedRuntime = this.#extractRuntime(finalizedBlockRuntime)!;
+        assert(this.#finalizedRuntime, 'Invalid finalized runtime');
+
         this.#bestHash = this.#finalizedHash = finalizedBlockHashes.at(-1);
 
         this.#pinnedBlocks = finalizedBlockHashes.reduce(
           (o, hash, idx, arr) => {
             o[hash] = { hash, parent: arr[idx - 1], number: idx };
+
+            // assign finalized runtime to the current finalized block
+            if (idx === finalizedBlockHashes.length - 1) {
+              o[hash]['runtime'] = this.#finalizedRuntime;
+            }
+
             return o;
           },
           {} as Record<BlockHash, PinnedBlock>,
@@ -179,7 +187,13 @@ export class ChainHead extends JsonRpcGroup<ChainHeadEvent> {
         const parentBlock = this.getPinnedBlock(parent)!;
         assert(parentBlock, `Parent block not found for new block ${hash}`);
 
-        this.#pinnedBlocks[hash] = { hash, parent, runtime, number: parentBlock.number + 1 };
+        this.#pinnedBlocks[hash] = {
+          hash,
+          parent,
+          // if the runtime is not provided, we'll find it from the parent block
+          runtime: runtime || this.#findRuntimeAt(parent),
+          number: parentBlock.number + 1,
+        };
 
         this.emit('newBlock', this.#pinnedBlocks[hash]);
         break;
@@ -358,7 +372,16 @@ export class ChainHead extends JsonRpcGroup<ChainHeadEvent> {
   }
 
   #findRuntimeAt(at: BlockHash): ChainHeadRuntimeVersion | undefined {
-    return this.getPinnedBlock(at)?.runtime;
+    const block = this.getPinnedBlock(at);
+
+    if (!block) return undefined;
+
+    const runtime = block.runtime;
+    if (runtime) return runtime;
+
+    if (this.#finalizedQueue.includes(at)) return;
+
+    return this.#findRuntimeAt(block.parent!);
   }
 
   #isPinnedHash(hash: BlockHash): boolean {
@@ -409,10 +432,11 @@ export class ChainHead extends JsonRpcGroup<ChainHeadEvent> {
 
     if (runtimeEvent.type == 'valid') {
       return runtimeEvent.spec;
-    } else {
-      // TODO: handle invalid runtime
-      throw new ChainHeadInvalidRuntimeError(runtimeEvent.error);
     }
+
+    // If the runtime is invalid,
+    // we safely return an undefined runtime for now
+    console.error(runtimeEvent.error);
   }
 
   /**

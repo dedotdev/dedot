@@ -11,7 +11,6 @@ import type {
 } from '@dedot/types';
 import { HexString, isFunction, u8aToHex } from '@dedot/utils';
 import type { FrameSystemEventRecord } from '../../chaintypes/index.js';
-import { StorageQueryExecutor } from '../../executor/index.js';
 import { ISubstrateClient } from '../../types.js';
 import { ExtraSignedExtension } from '../extensions/index.js';
 import { isKeyringPair, signRaw } from './utils.js';
@@ -93,9 +92,8 @@ export abstract class BaseSubmittableExtrinsic extends Extrinsic implements ISub
     throw new Error('Unimplemented!');
   }
 
-  protected async _getSystemEventsAt(hash: BlockHash): Promise<FrameSystemEventRecord[]> {
-    const executor = new StorageQueryExecutor(this.api, hash);
-    const systemEventsFn = executor.execute('System', 'Events') as AsyncMethod<FrameSystemEventRecord[]>;
-    return systemEventsFn();
+  protected async getSystemEventsAt(hash: BlockHash): Promise<FrameSystemEventRecord[]> {
+    const atApi = await this.api.at(hash);
+    return await atApi.query.system.events();
   }
 }

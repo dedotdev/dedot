@@ -272,12 +272,13 @@ describe('Dedot', () => {
 
         expect(providerSend).toBeCalledWith('state_getRuntimeVersion', ['0x12345678']);
         expect(providerSend).toBeCalledWith('state_call', ['Metadata_metadata_at_version', '0x0f000000', '0x12345678']); // $.u32.decode(15) = '0x0f000000'
-        expect(providerSend).toBeCalledWith('state_call', ['Metadata_metadata_at_version', '0x0e000000', '0x12345678']); // $.u32.decode(15) = '0x0f000000'
+        expect(providerSend).toBeCalledWith('state_call', ['Metadata_metadata_at_version', '0x0e000000', '0x12345678']); // $.u32.decode(14) = '0x0e000000'
       });
 
       it('should define valid props', async () => {
         const apiAt = await api.at('0x12345678');
 
+        expect(apiAt.rpcVersion).toEqual('legacy');
         expect(apiAt.atBlockHash).toEqual('0x12345678');
         expect(apiAt.options).toBeDefined();
         expect(apiAt.runtimeVersion).toBeDefined();

@@ -115,7 +115,7 @@ describe('ChainHead', () => {
         await new Promise<void>((resolve) => {
           chainHead.on('newBlock', (block: PinnedBlock) => {
             expect(block.hash).toEqual(newBlock.blockHash);
-            expect(block.runtime).toBeUndefined();
+            expect(block.runtime).toBe(simulator.runtime);
             resolve();
           });
         });
@@ -147,7 +147,7 @@ describe('ChainHead', () => {
           const unsub = chainHead.on('bestBlock', async (block) => {
             expect(block.hash).toEqual(bestBlock1.bestBlockHash);
             expect(await chainHead.bestHash()).toEqual(block.hash);
-            expect(block.runtime).toBeUndefined();
+            expect(block.runtime).toBe(simulator.runtime);
 
             unsub();
             resolve();

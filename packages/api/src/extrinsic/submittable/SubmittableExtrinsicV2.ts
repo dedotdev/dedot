@@ -56,7 +56,7 @@ export class SubmittableExtrinsicV2 extends BaseSubmittableExtrinsic {
       const txIndex = txs.indexOf(txHex);
       if (txIndex < 0) return;
 
-      const events = await this._getSystemEventsAt(newHash);
+      const events = await this.getSystemEventsAt(newHash);
       const txEvents = events.filter(({ phase }) => phase.tag == 'ApplyExtrinsic' && phase.value === txIndex);
 
       return {
