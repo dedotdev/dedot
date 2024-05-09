@@ -43,7 +43,6 @@ export class SubmittableExtrinsicV2 extends BaseSubmittableExtrinsic {
     if (validateResult.isOk) {
       callback(new SubmittableResult({ status: { tag: 'Validated' }, txHash }));
     } else if (validateResult.isErr) {
-      // TODO improve this error message
       throw new InvalidExtrinsicError(
         `Invalid transaction: ${validateResult.err.tag} - ${validateResult.err.value.tag}`,
         validateResult,
@@ -135,9 +134,7 @@ export class SubmittableExtrinsicV2 extends BaseSubmittableExtrinsic {
       api.chainHead.off('bestBlock', checkBestBlockIncluded);
       api.chainHead.off('finalizedBlock', checkFinalizedBlockIncluded);
 
-      console.error(e);
-
-      throw new Error('Cannot broadcast transaction!');
+      throw e;
     }
   }
 
