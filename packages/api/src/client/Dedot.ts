@@ -287,6 +287,7 @@ export class Dedot<ChainApi extends VersionedGenericSubstrateApi = SubstrateApi>
     }
 
     const api = {
+      rpcVersion: 'legacy',
       atBlockHash: hash,
       options: this.options,
       genesisHash: this.genesisHash,
