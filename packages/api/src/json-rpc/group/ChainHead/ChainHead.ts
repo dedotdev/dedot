@@ -37,15 +37,15 @@ export type OperationHandler<T = any> = {
 export type PinnedBlock = {
   hash: BlockHash;
   number: number;
-  parent: BlockHash | undefined;
+  parent: BlockHash;
   runtime?: ChainHeadRuntimeVersion;
 };
 
 export type ChainHeadEvent =
   | 'newBlock'
   | 'bestBlock' // new best block
-  | 'finalizedBlock'; // new best finalized block
-// TODO handle: | 'bestChainChanged'; // new best chain, a fork happened
+  | 'finalizedBlock' // new best finalized block
+  | 'bestChainChanged'; // new best chain, a fork happened
 
 export const MIN_FINALIZED_QUEUE_SIZE = 10; // finalized queue size
 
@@ -105,11 +105,11 @@ export class ChainHead extends JsonRpcGroup<ChainHeadEvent> {
   }
 
   async bestBlock(): Promise<PinnedBlock> {
-    return this.getPinnedBlock(await this.bestHash())!;
+    return this.findBlock(await this.bestHash())!;
   }
 
   async finalizedBlock(): Promise<PinnedBlock> {
-    return this.getPinnedBlock(await this.finalizedHash())!;
+    return this.findBlock(await this.finalizedHash())!;
   }
 
   /**
@@ -184,7 +184,7 @@ export class ChainHead extends JsonRpcGroup<ChainHeadEvent> {
         const { blockHash: hash, parentBlockHash: parent, newRuntime } = result;
         const runtime = this.#extractRuntime(newRuntime);
 
-        const parentBlock = this.getPinnedBlock(parent)!;
+        const parentBlock = this.findBlock(parent)!;
         assert(parentBlock, `Parent block not found for new block ${hash}`);
 
         this.#pinnedBlocks[hash] = {
@@ -199,10 +199,17 @@ export class ChainHead extends JsonRpcGroup<ChainHeadEvent> {
         break;
       }
       case 'bestBlockChanged': {
-        // TODO detect bestChainChanged, the new bestBlockHash could lead to a fork
-        this.#bestHash = result.bestBlockHash;
+        const { bestBlockHash } = result;
+        const currentBestBlock = this.findBlock(this.#bestHash!)!;
+        const newBestBlock = this.findBlock(bestBlockHash)!;
 
-        this.emit('bestBlock', this.getPinnedBlock(this.#bestHash));
+        if (currentBestBlock.hash === newBestBlock.hash) return;
+
+        this.#bestHash = bestBlockHash;
+        const bestChainChanged = !this.#onTheSameChain(currentBestBlock, newBestBlock);
+
+        this.emit('bestBlock', newBestBlock, bestChainChanged);
+        if (bestChainChanged) this.emit('bestChainChanged', newBestBlock);
         break;
       }
       case 'finalized': {
@@ -219,11 +226,11 @@ export class ChainHead extends JsonRpcGroup<ChainHeadEvent> {
           this.#finalizedQueue.push(hash);
         });
 
-        this.emit('finalizedBlock', this.getPinnedBlock(this.#finalizedHash));
+        this.emit('finalizedBlock', this.findBlock(this.#finalizedHash));
 
         // TODO should we find all descendants of the pruned blocks and unpin them as well?
         //      that's probably a premature optimization
-        const finalizedBlockHeights = finalizedBlockHashes.map((hash) => this.getPinnedBlock(hash)!.number);
+        const finalizedBlockHeights = finalizedBlockHashes.map((hash) => this.findBlock(hash)!.number);
         const pinnedHashes = Object.keys(this.#pinnedBlocks);
         const hashesToUnpin = new Set([
           ...prunedBlockHashes.filter((hash) => pinnedHashes.includes(hash)),
@@ -367,12 +374,12 @@ export class ChainHead extends JsonRpcGroup<ChainHeadEvent> {
     }
   };
 
-  getPinnedBlock(hash: BlockHash): PinnedBlock | undefined {
+  findBlock(hash: BlockHash): PinnedBlock | undefined {
     return this.#pinnedBlocks[hash];
   }
 
   #findRuntimeAt(at: BlockHash): ChainHeadRuntimeVersion | undefined {
-    const block = this.getPinnedBlock(at);
+    const block = this.findBlock(at);
 
     if (!block) return undefined;
 
@@ -384,8 +391,20 @@ export class ChainHead extends JsonRpcGroup<ChainHeadEvent> {
     return this.#findRuntimeAt(block.parent!);
   }
 
+  #onTheSameChain(b1: PinnedBlock | undefined, b2: PinnedBlock | undefined): boolean {
+    if (!b1 || !b2) return false;
+
+    if (b1.number === b2.number) {
+      return b1.hash === b2.hash;
+    } else if (b1.number < b2.number) {
+      return this.#onTheSameChain(b1, this.findBlock(b2.parent));
+    } else {
+      return this.#onTheSameChain(this.findBlock(b1.parent), b2);
+    }
+  }
+
   #isPinnedHash(hash: BlockHash): boolean {
-    return !!this.getPinnedBlock(hash);
+    return !!this.findBlock(hash);
   }
 
   #ensurePinnedHash(hash?: BlockHash): BlockHash {
