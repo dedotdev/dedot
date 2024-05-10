@@ -3253,7 +3253,6 @@ __metadata:
     "@dedot/storage": "workspace:*"
     "@dedot/types": "workspace:*"
     "@dedot/utils": "workspace:*"
-    "@polkadot/keyring": "npm:^12.6.2"
     "@polkadot/types": "npm:^11.0.2"
   languageName: unknown
   linkType: soft

@@ -1,18 +1,20 @@
 import { BlockHash, Extrinsic, Hash } from '@dedot/codecs';
 import type {
   AddressOrPair,
-  AsyncMethod,
   Callback,
   IRuntimeTxCall,
   ISubmittableExtrinsic,
   ISubmittableResult,
+  RpcVersion,
   SignerOptions,
+  TxPaymentInfo,
   Unsub,
 } from '@dedot/types';
 import { HexString, isFunction, u8aToHex } from '@dedot/utils';
-import type { FrameSystemEventRecord } from '../../chaintypes/index.js';
-import { ISubstrateClient } from '../../types.js';
+import type { FrameSystemEventRecord, SubstrateApi } from '../../chaintypes/index.js';
+import type { ISubstrateClient, ISubstrateClientAt } from '../../types.js';
 import { ExtraSignedExtension } from '../extensions/index.js';
+import { fakeSigner } from './fakeSigner.js';
 import { isKeyringPair, signRaw } from './utils.js';
 
 export abstract class BaseSubmittableExtrinsic extends Extrinsic implements ISubmittableExtrinsic {
@@ -21,6 +23,15 @@ export abstract class BaseSubmittableExtrinsic extends Extrinsic implements ISub
     call: IRuntimeTxCall,
   ) {
     super(api.registry, call);
+  }
+
+  async paymentInfo(account: AddressOrPair, options?: Partial<Omit<SignerOptions, 'signer'>>): Promise<TxPaymentInfo> {
+    await this.sign(account, { ...options, signer: fakeSigner });
+
+    const txU8a = this.toU8a();
+
+    const api = this.api as ISubstrateClient<SubstrateApi[RpcVersion]>;
+    return api.call.transactionPaymentApi.queryInfo(txU8a, txU8a.length);
   }
 
   async sign(fromAccount: AddressOrPair, options?: Partial<SignerOptions>) {
@@ -36,9 +47,7 @@ export abstract class BaseSubmittableExtrinsic extends Extrinsic implements ISub
 
     let signature;
     if (isKeyringPair(fromAccount)) {
-      signature = u8aToHex(
-        signRaw(fromAccount, extra.toRawPayload(this.callHex).data as HexString, { withType: true }),
-      );
+      signature = u8aToHex(signRaw(fromAccount, extra.toRawPayload(this.callHex).data as HexString));
     } else if (signer?.signPayload) {
       const result = await signer.signPayload(extra.toPayload(this.callHex));
       signature = result.signature;
@@ -93,7 +102,7 @@ export abstract class BaseSubmittableExtrinsic extends Extrinsic implements ISub
   }
 
   protected async getSystemEventsAt(hash: BlockHash): Promise<FrameSystemEventRecord[]> {
-    const atApi = await this.api.at(hash);
+    const atApi = (await this.api.at(hash)) as ISubstrateClientAt<SubstrateApi[RpcVersion]>;
     return await atApi.query.system.events();
   }
 }
