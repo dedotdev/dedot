@@ -21,7 +21,6 @@ export class ConstructorExecutor<ChainApi extends GenericSubstrateApi> extends E
 
     const callFn = (...params: any) => {
       const { args } = constructorMeta;
-
       const { value, gasLimit, storageDepositLimit, salt } = params[args.length] as ConstructorOptions;
 
       const formattedInputs = args.map((arg, index) => this.tryEncode(arg, params[index]));

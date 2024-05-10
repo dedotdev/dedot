@@ -14,7 +14,7 @@ export const commentBlock = (...docs: (string | string[])[]) => {
   } else {
     return `
 /**
-${flatLines.map((line) => (line ? `* ${line.replaceAll(/\s+/g, ' ').trim()}` : '')).join('\n')}
+${flatLines.map((line) => `* ${line.replaceAll(/\s+/g, ' ').trim()}`).join('\n')}
  **/
       `;
   }

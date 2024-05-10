@@ -15,11 +15,10 @@ export class QueryGen {
   generate() {
     this.typesGen.clearCache();
 
-    this.typesGen.typeImports.addCodecType('AccountId32Like');
     this.typesGen.typeImports.addContractType(
       'GenericContractQuery',
       'GenericContractQueryCall',
-      'ContractOptions',
+      'ContractCallOptions',
       'GenericContractResult',
       'ContractResult',
     );
@@ -59,7 +58,7 @@ export class QueryGen {
 
     const typeOut = this.typesGen.generateType(returnType.type, 0, true);
 
-    return `GenericContractQueryCall<(${paramsOut ? `${paramsOut},` : ''} caller?: AccountIdLike, options?: ContractOptions) => Promise<GenericContractResult<${typeOut}, ContractResult<ChainApi>>>>`;
+    return `GenericContractQueryCall<(${paramsOut ? `${paramsOut},` : ''} options: ContractCallOptions) => Promise<GenericContractResult<${typeOut}, ContractResult<ChainApi>>>>`;
   }
 
   importType(typeId: number): any {

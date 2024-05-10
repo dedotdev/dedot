@@ -15,7 +15,7 @@ export class TxGen extends QueryGen {
     this.typesGen.typeImports.addContractType(
       'GenericContractTx',
       'GenericContractTxCall',
-      'ContractOptions',
+      'ContractTxOptions',
       'ChainSubmittableExtrinsic',
     );
 
@@ -51,6 +51,6 @@ export class TxGen extends QueryGen {
       .map(({ type: { type }, label }) => `${stringCamelCase(label)}: ${this.typesGen.generateType(type, 1)}`)
       .join(', ');
 
-    return `GenericContractTxCall<(${paramsOut ? `${paramsOut},` : ''} options: ContractOptions) => ChainSubmittableExtrinsic<ChainApi>>`;
+    return `GenericContractTxCall<(${paramsOut ? `${paramsOut},` : ''} options: ContractTxOptions) => ChainSubmittableExtrinsic<ChainApi>>`;
   }
 }

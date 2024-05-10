@@ -1,4 +1,4 @@
-import { BytesLike, Weight } from '@dedot/codecs';
+import { AccountId32Like, BytesLike, Weight } from '@dedot/codecs';
 import { AnyFunc, AsyncMethod, GenericSubstrateApi } from '@dedot/types';
 import { ContractMessage } from './shared.js';
 import { ContractMetadataV4 } from './v4.js';
@@ -22,16 +22,30 @@ export type ConstructorOptions = ContractOptions & {
   salt: BytesLike | null;
 };
 
-export type ContractOptions = {
-  value: bigint;
-  gasLimit: Weight | undefined;
-  storageDepositLimit: bigint | undefined;
+export type ContractCallOptions = ContractOptions & {
+  caller: AccountId32Like;
 };
 
-export interface GenericContractResult<DecodedData, ContractResult> {
-  data?: DecodedData;
-  result: ContractResult;
-}
+export type ContractTxOptions = ContractOptions & {
+  gasLimit: Weight;
+};
+
+export type ContractOptions = {
+  value: bigint;
+  gasLimit?: Weight | undefined;
+  storageDepositLimit?: bigint | undefined;
+};
+
+export type GenericContractResult<DecodedData, ContractResult> =
+  | {
+      isOk: true;
+      data: DecodedData;
+      contractResult: ContractResult;
+    }
+  | {
+      isOk: false;
+      contractResult: ContractResult;
+    };
 
 export type GenericContractQueryCall<F extends AsyncMethod = AsyncMethod> = F & {
   meta: ContractMessage;

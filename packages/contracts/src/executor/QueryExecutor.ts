@@ -1,4 +1,4 @@
-import { GenericContractQueryCall, ContractMessage, ContractOptions } from '@dedot/contracts';
+import { GenericContractQueryCall, ContractMessage, ContractOptions, ContractCallOptions } from '@dedot/contracts';
 import { GenericSubstrateApi } from '@dedot/types';
 import { assert, concatU8a, hexToU8a, stringCamelCase, u8aToHex } from '@dedot/utils';
 import { Executor } from './Executor.js';
@@ -11,9 +11,7 @@ export class QueryExecutor<ChainApi extends GenericSubstrateApi> extends Executo
 
     const callFn: GenericContractQueryCall = async (...params: any) => {
       const { args } = messageMeta;
-
-      let caller = params[args.length] || this.address;
-      let contractOptions: ContractOptions = (params[args.length + 1] || {}) as ContractOptions;
+      const { caller, value, gasLimit, storageDepositLimit } = params[args.length] as ContractCallOptions;
 
       const formattedInputs = args.map((arg, index) => this.tryEncode(arg, params[index]));
       const bytes = u8aToHex(concatU8a(hexToU8a(messageMeta.selector), ...formattedInputs));
@@ -21,21 +19,23 @@ export class QueryExecutor<ChainApi extends GenericSubstrateApi> extends Executo
       const contractResult = await this.api.call.contractsApi.call(
         caller,
         this.address,
-        contractOptions.value || 0n,
-        contractOptions.gasLimit,
-        contractOptions.storageDepositLimit,
+        value,
+        gasLimit,
+        storageDepositLimit,
         bytes,
       );
 
       if (contractResult.result.value) {
         return {
+          isOk: true,
           data: this.tryDecode(messageMeta, contractResult.result.value.data),
-          result: contractResult,
+          contractResult: contractResult,
         };
       }
 
       return {
-        result: contractResult,
+        isOk: false,
+        contractResult: contractResult,
       };
     };
 

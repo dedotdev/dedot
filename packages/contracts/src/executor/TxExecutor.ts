@@ -1,4 +1,4 @@
-import { ContractMessage, ContractOptions } from '@dedot/contracts';
+import { ContractMessage, ContractOptions, ContractTxOptions } from '@dedot/contracts';
 import { GenericSubstrateApi } from '@dedot/types';
 import { assert, concatU8a, hexToU8a, stringCamelCase, u8aToHex } from '@dedot/utils';
 import { Executor } from './Executor.js';
@@ -11,20 +11,12 @@ export class TxExecutor<ChainApi extends GenericSubstrateApi> extends Executor<C
 
     const callFn = (...params: any) => {
       const { args } = messageMeta;
-      let contractOptions: ContractOptions = params[args.length];
-
-      assert(contractOptions.gasLimit, 'gasLimit cannot be undefined');
+      const { value, gasLimit, storageDepositLimit } = params[args.length] as ContractTxOptions;
 
       const formattedInputs = args.map((arg, index) => this.tryEncode(arg, params[index]));
       const bytes = u8aToHex(concatU8a(hexToU8a(messageMeta.selector), ...formattedInputs));
 
-      return this.api.tx.contracts.call(
-        this.address,
-        contractOptions.value,
-        contractOptions.gasLimit,
-        contractOptions.storageDepositLimit,
-        bytes,
-      );
+      return this.api.tx.contracts.call(this.address, value, gasLimit, storageDepositLimit, bytes);
     };
 
     callFn.meta = messageMeta;
