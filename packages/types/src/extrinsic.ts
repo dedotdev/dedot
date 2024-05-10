@@ -1,5 +1,13 @@
 import { IKeyringPair, Signer } from '@polkadot/types/types';
-import { ApplyExtrinsicResult, BlockHash, DispatchError, DispatchInfo, Hash, TransactionStatus } from '@dedot/codecs';
+import {
+  ApplyExtrinsicResult,
+  BlockHash,
+  DispatchError,
+  DispatchInfo,
+  Hash,
+  RuntimeDispatchInfo,
+  TransactionStatus,
+} from '@dedot/codecs';
 import { HexString } from '@dedot/utils';
 import { Callback, IEventRecord, Unsub } from './index.js';
 
@@ -21,6 +29,7 @@ export interface SignerOptions extends PayloadOptions {
 }
 
 export type DryRunResult = ApplyExtrinsicResult;
+export type TxPaymentInfo = RuntimeDispatchInfo;
 
 export interface ISubmittableResult<EventRecord extends IEventRecord = IEventRecord, TxStatus extends any = any> {
   status: TxStatus;
@@ -43,7 +52,8 @@ export interface IRuntimeTxCall {
 }
 
 export interface ISubmittableExtrinsic<R extends ISubmittableResult = ISubmittableResult> {
-  // TODO add payment info or fee estimation
+  paymentInfo(account: AddressOrPair, options?: Partial<PayloadOptions>): Promise<TxPaymentInfo>;
+
   send(): Promise<Hash>;
 
   send(callback: Callback<R>): Promise<Unsub>;
