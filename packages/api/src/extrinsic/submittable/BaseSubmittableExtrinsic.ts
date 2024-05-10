@@ -1,10 +1,11 @@
 import { BlockHash, Extrinsic, Hash } from '@dedot/codecs';
-import type {
+import {
   AddressOrPair,
   Callback,
   IRuntimeTxCall,
   ISubmittableExtrinsic,
   ISubmittableResult,
+  PayloadOptions,
   RpcVersion,
   SignerOptions,
   TxPaymentInfo,
@@ -25,7 +26,7 @@ export abstract class BaseSubmittableExtrinsic extends Extrinsic implements ISub
     super(api.registry, call);
   }
 
-  async paymentInfo(account: AddressOrPair, options?: Partial<Omit<SignerOptions, 'signer'>>): Promise<TxPaymentInfo> {
+  async paymentInfo(account: AddressOrPair, options?: Partial<PayloadOptions>): Promise<TxPaymentInfo> {
     await this.sign(account, { ...options, signer: fakeSigner });
 
     const txU8a = this.toU8a();

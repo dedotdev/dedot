@@ -52,7 +52,7 @@ export interface IRuntimeTxCall {
 }
 
 export interface ISubmittableExtrinsic<R extends ISubmittableResult = ISubmittableResult> {
-  paymentInfo(account: AddressOrPair, options?: Partial<Omit<SignerOptions, 'signer'>>): Promise<TxPaymentInfo>;
+  paymentInfo(account: AddressOrPair, options?: Partial<PayloadOptions>): Promise<TxPaymentInfo>;
 
   send(): Promise<Hash>;
 
