@@ -36,12 +36,12 @@ export class SubmittableExtrinsicV2 extends BaseSubmittableExtrinsic {
     // validate the transaction
     // https://github.com/paritytech/json-rpc-interface-spec/issues/55#issuecomment-1609011150
     const finalizedHash = await this.api.chainHead.finalizedHash();
-    const apiAt = await api.at(finalizedHash);
-    const validateTx = () => {
-      return apiAt.call.taggedTransactionQueue.validateTransaction('External', txHex, finalizedHash);
+    const validateTx = async (hash: BlockHash) => {
+      const apiAt = await api.at(hash);
+      return apiAt.call.taggedTransactionQueue.validateTransaction('External', txHex, hash);
     };
 
-    const validateResult = await validateTx();
+    const validateResult = await validateTx(finalizedHash);
 
     if (validateResult.isOk) {
       callback(new SubmittableResult({ status: { tag: 'Validated' }, txHash }));
@@ -80,60 +80,63 @@ export class SubmittableExtrinsicV2 extends BaseSubmittableExtrinsic {
       searchQueue.clear();
     };
 
-    const startSearching = async (block: PinnedBlock): Promise<TxFound | undefined> => {
+    const startSearching = (block: PinnedBlock): Promise<TxFound | undefined> => {
       return searchQueue.enqueue(async () => {
         const found = await checkTxIsOnChain(block.hash);
         if (found) {
-          searchQueue.clear();
+          cancelCurrentSearch();
         }
 
         return found;
       });
     };
 
-    // TODO check for Retracted event
     const checkBestBlockIncluded = async (block: PinnedBlock, bestChainChanged: boolean) => {
-      let inBlock;
-      if (isSearching) {
-        if (bestChainChanged) {
-          cancelCurrentSearch();
-        }
-
-        inBlock = await startSearching(block);
+      if (bestChainChanged) {
+        if (isSearching) cancelCurrentSearch();
       } else {
-        if (txFound) {
-          if (bestChainChanged && txFound.blockHash !== block.hash) {
+        if (txFound) return;
+      }
+
+      try {
+        isSearching = true;
+        const inBlock = await startSearching(block);
+
+        if (!inBlock) {
+          if (txFound && bestChainChanged) {
+            txFound = undefined;
             callback(
               new SubmittableResult<IEventRecord, TransactionStatusV2>({
-                status: { tag: 'BestChainBlockIncluded', value: null },
+                status: { tag: 'NoLongerInBestChain' },
                 txHash,
               }),
             );
-          } else {
-            return;
           }
+
+          return;
         }
 
-        isSearching = true;
-        inBlock = await startSearching(block);
+        if (txFound && bestChainChanged) {
+          if (txFound.blockHash === inBlock.blockHash) return;
+        }
+
+        txFound = inBlock;
+
+        const { index: txIndex, events, blockHash } = inBlock;
+
+        callback(
+          new SubmittableResult<IEventRecord, TransactionStatusV2>({
+            status: { tag: 'BestChainBlockIncluded', value: { blockHash, txIndex } },
+            txHash,
+            events,
+            txIndex,
+          }),
+        );
+      } catch (e: any) {
+        console.error(e);
+      } finally {
+        isSearching = false;
       }
-
-      isSearching = false;
-
-      if (!inBlock) return;
-
-      txFound = inBlock;
-
-      const { index: txIndex, events } = inBlock;
-
-      callback(
-        new SubmittableResult<IEventRecord, TransactionStatusV2>({
-          status: { tag: 'BestChainBlockIncluded', value: { blockHash: block.hash, txIndex } },
-          txHash,
-          events,
-          txIndex,
-        }),
-      );
     };
 
     let txUnsub: Unsub;
@@ -153,11 +156,11 @@ export class SubmittableExtrinsicV2 extends BaseSubmittableExtrinsic {
     const checkFinalizedBlockIncluded = async (block: PinnedBlock) => {
       const inBlock = await checkTxIsOnChain(block.hash);
       if (inBlock) {
-        const { index: txIndex, events } = inBlock;
+        const { index: txIndex, events, blockHash } = inBlock;
 
         callback(
           new SubmittableResult<IEventRecord, TransactionStatusV2>({
-            status: { tag: 'Finalized', value: { blockHash: block.hash, txIndex } },
+            status: { tag: 'Finalized', value: { blockHash, txIndex } },
             txHash,
             events,
             txIndex,
@@ -166,7 +169,7 @@ export class SubmittableExtrinsicV2 extends BaseSubmittableExtrinsic {
       } else {
         // Revalidate the tx, just in-case it becomes invalid along the way
         // Context: https://github.com/paritytech/json-rpc-interface-spec/pull/107#issuecomment-1906008814
-        const validated = await validateTx();
+        const validated = await validateTx(block.hash);
         if (validated.isOk) return;
 
         callback(

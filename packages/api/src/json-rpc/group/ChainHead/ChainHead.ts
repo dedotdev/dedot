@@ -201,13 +201,13 @@ export class ChainHead extends JsonRpcGroup<ChainHeadEvent> {
       case 'bestBlockChanged': {
         const { bestBlockHash } = result;
         const currentBestBlock = this.findBlock(this.#bestHash!)!;
-        const newBestBlock = this.findBlock(bestBlockHash)!;
+        const newBestBlock = this.findBlock(bestBlockHash);
 
+        if (!newBestBlock) return;
         if (currentBestBlock.hash === newBestBlock.hash) return;
 
-        this.#bestHash = bestBlockHash;
         const bestChainChanged = !this.#onTheSameChain(currentBestBlock, newBestBlock);
-
+        this.#bestHash = bestBlockHash;
         this.emit('bestBlock', newBestBlock, bestChainChanged);
         if (bestChainChanged) this.emit('bestChainChanged', newBestBlock);
         break;
