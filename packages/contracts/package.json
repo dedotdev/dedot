@@ -1,0 +1,24 @@
+{
+  "name": "@dedot/contracts",
+  "version": "0.0.1-alpha.31",
+  "description": "Delightful ink! Contract APIs",
+  "author": "Thang X. Vu <thang@coongcrafts.io>",
+  "main": "src/index.ts",
+  "sideEffects": false,
+  "type": "module",
+  "scripts": {
+    "build": "tsc --project tsconfig.build.json && tsc --project tsconfig.build.cjs.json",
+    "clean": "rm -rf ./dist && rm -rf ./tsconfig.tsbuildinfo ./tsconfig.build.tsbuildinfo"
+  },
+  "dependencies": {
+    "@dedot/codecs": "workspace:*",
+    "@dedot/types": "workspace:*",
+    "@dedot/utils": "workspace:*",
+    "dedot": "workspace:*"
+  },
+  "publishConfig": {
+    "access": "public",
+    "directory": "dist"
+  },
+  "license": "Apache-2.0"
+}

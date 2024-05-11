@@ -390,6 +390,17 @@ __metadata:
   languageName: unknown
   linkType: soft
 
+"@dedot/contracts@workspace:packages/contracts":
+  version: 0.0.0-use.local
+  resolution: "@dedot/contracts@workspace:packages/contracts"
+  dependencies:
+    "@dedot/codecs": "workspace:*"
+    "@dedot/types": "workspace:*"
+    "@dedot/utils": "workspace:*"
+    dedot: "workspace:*"
+  languageName: unknown
+  linkType: soft
+
 "@dedot/providers@workspace:*, @dedot/providers@workspace:packages/providers":
   version: 0.0.0-use.local
   resolution: "@dedot/providers@workspace:packages/providers"
