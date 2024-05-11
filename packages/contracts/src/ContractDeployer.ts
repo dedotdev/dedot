@@ -1,12 +1,17 @@
-import { GenericSubstrateApi } from '@dedot/types';
+import { GenericSubstrateApi, RpcVersion } from '@dedot/types';
 import { ISubstrateClient, Hash } from 'dedot';
+import { SubstrateApi } from 'dedot/chaintypes';
 import { TypinkRegistry } from './TypinkRegistry.js';
-import { ConstructorExecutor } from './executor/index.js';
+import { ConstructorQueryExecutor } from './executor/ConstructorQueryExecutor';
+import { ConstructorTxExecutor } from './executor/index.js';
 import { ContractMetadata, GenericContractApi } from './types/index.js';
 import { newProxyChain, ensureSupportContractsPallet } from './utils.js';
 import { parseRawMetadata } from './utils.js';
 
-export class ContractDeployer<ContractApi extends GenericContractApi, ChainApi extends GenericSubstrateApi> {
+export class ContractDeployer<
+  ContractApi extends GenericContractApi,
+  ChainApi extends GenericSubstrateApi = SubstrateApi[RpcVersion],
+> {
   readonly #api: ISubstrateClient<ChainApi>;
   readonly #metadata: ContractMetadata;
   readonly #registry: TypinkRegistry;
@@ -33,9 +38,15 @@ export class ContractDeployer<ContractApi extends GenericContractApi, ChainApi e
     return this.#registry;
   }
 
-  get tx(): ContractApi['constructor'] {
+  get tx(): ContractApi['constructorTx'] {
     return newProxyChain<ChainApi>(
-      new ConstructorExecutor<ChainApi>(this.#api, this.#registry, this.#code),
-    ) as ContractApi['constructor'];
+      new ConstructorTxExecutor<ChainApi>(this.#api, this.#registry, this.#code),
+    ) as ContractApi['constructorTx'];
+  }
+
+  get query(): ContractApi['constructorQuery'] {
+    return newProxyChain<ChainApi>(
+      new ConstructorQueryExecutor<ChainApi>(this.#api, this.#registry, this.#code),
+    ) as ContractApi['constructorQuery'];
   }
 }

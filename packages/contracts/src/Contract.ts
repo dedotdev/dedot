@@ -1,12 +1,16 @@
 import { AccountId32 } from '@dedot/codecs';
-import { GenericSubstrateApi } from '@dedot/types';
+import { GenericSubstrateApi, RpcVersion } from '@dedot/types';
 import { ISubstrateClient } from 'dedot';
+import { SubstrateApi } from 'dedot/chaintypes';
 import { TypinkRegistry } from './TypinkRegistry.js';
 import { QueryExecutor, TxExecutor } from './executor/index.js';
 import { ContractMetadata, GenericContractApi } from './types/index.js';
 import { ensureSupportContractsPallet, newProxyChain, parseRawMetadata } from './utils.js';
 
-export class Contract<ContractApi extends GenericContractApi, ChainApi extends GenericSubstrateApi> {
+export class Contract<
+  ContractApi extends GenericContractApi,
+  ChainApi extends GenericSubstrateApi = SubstrateApi[RpcVersion],
+> {
   readonly #api: ISubstrateClient<ChainApi>;
   readonly #registry: TypinkRegistry;
   readonly #address: AccountId32;
@@ -38,6 +42,6 @@ export class Contract<ContractApi extends GenericContractApi, ChainApi extends G
   }
 
   get tx(): ContractApi['tx'] {
-    return newProxyChain<ChainApi>(new TxExecutor(this.#api, this.#registry, this.#address)) as ContractApi['query'];
+    return newProxyChain<ChainApi>(new TxExecutor(this.#api, this.#registry, this.#address)) as ContractApi['tx'];
   }
 }

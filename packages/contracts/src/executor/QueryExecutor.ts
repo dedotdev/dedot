@@ -4,12 +4,12 @@ import { GenericContractQueryCall, ContractMessage, ContractCallOptions } from '
 import { Executor } from './Executor.js';
 
 export class QueryExecutor<ChainApi extends GenericSubstrateApi> extends Executor<ChainApi> {
-  doExecute(message: string): GenericContractQueryCall {
+  doExecute(message: string) {
     const messageMeta = this.#findMessage(message);
 
     assert(messageMeta, `Query message not found: ${message}`);
 
-    const callFn: GenericContractQueryCall = async (...params: any) => {
+    const callFn: GenericContractQueryCall<ChainApi> = async (...params: any) => {
       const { args } = messageMeta;
       const { caller, value, gasLimit, storageDepositLimit } = params[args.length] as ContractCallOptions;
 

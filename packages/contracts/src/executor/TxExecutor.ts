@@ -1,15 +1,15 @@
 import { GenericSubstrateApi } from '@dedot/types';
 import { assert, concatU8a, hexToU8a, stringCamelCase, u8aToHex } from '@dedot/utils';
-import { ContractMessage, ContractTxOptions } from '../types/index.js';
+import { ContractMessage, ContractTxOptions, GenericContractTxCall } from '../types/index.js';
 import { Executor } from './Executor.js';
 
 export class TxExecutor<ChainApi extends GenericSubstrateApi> extends Executor<ChainApi> {
-  doExecute(message: string): any {
+  doExecute(message: string) {
     const messageMeta = this.#findTxMessage(message);
 
     assert(messageMeta, `Tx message not found: ${message}`);
 
-    const callFn = (...params: any) => {
+    const callFn: GenericContractTxCall<ChainApi> = (...params: any) => {
       const { args } = messageMeta;
       const { value, gasLimit, storageDepositLimit } = params[args.length] as ContractTxOptions;
 
