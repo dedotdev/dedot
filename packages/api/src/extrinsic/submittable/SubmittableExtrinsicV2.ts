@@ -75,16 +75,21 @@ export class SubmittableExtrinsicV2 extends BaseSubmittableExtrinsic {
     let isSearching = false;
     let searchQueue: AsyncQueue = new AsyncQueue();
 
-    const cancelCurrentSearch = () => {
-      // TODO properly cancel the search
+    // TODO 1. move the searching logic into a different utility
+    //      2. properly cancel the work by actually cancel the on-going operations
+    const cancelPendingSearch = () => {
       searchQueue.clear();
+    };
+
+    const cancelBodySearch = () => {
+      searchQueue.cancel();
     };
 
     const startSearching = (block: PinnedBlock): Promise<TxFound | undefined> => {
       return searchQueue.enqueue(async () => {
         const found = await checkTxIsOnChain(block.hash);
         if (found) {
-          cancelCurrentSearch();
+          cancelPendingSearch();
         }
 
         return found;
@@ -93,7 +98,11 @@ export class SubmittableExtrinsicV2 extends BaseSubmittableExtrinsic {
 
     const checkBestBlockIncluded = async (block: PinnedBlock, bestChainChanged: boolean) => {
       if (bestChainChanged) {
-        if (isSearching) cancelCurrentSearch();
+        if (isSearching) {
+          // if the best chain is changing, we cancel the current search
+          // and start searching on the current best chain
+          cancelBodySearch();
+        }
       } else {
         if (txFound) return;
       }
@@ -132,8 +141,8 @@ export class SubmittableExtrinsicV2 extends BaseSubmittableExtrinsic {
             txIndex,
           }),
         );
-      } catch (e: any) {
-        console.error(e);
+      } catch {
+        // ignore this!
       } finally {
         isSearching = false;
       }
@@ -193,10 +202,15 @@ export class SubmittableExtrinsicV2 extends BaseSubmittableExtrinsic {
     api.chainHead.on('bestBlock', checkBestBlockIncluded);
     api.chainHead.on('finalizedBlock', checkFinalizedBlockIncluded);
 
+    const stopTracking = () => {
+      api.chainHead.off('bestBlock', checkBestBlockIncluded);
+      api.chainHead.off('finalizedBlock', checkFinalizedBlockIncluded);
+
+      cancelBodySearch();
+    };
+
     try {
       stopBroadcastFn = await api.txBroadcaster.broadcastTx(txHex);
-
-      // TODO should we introduce a `Broadcasting` status after calling broadcastTx?
       callback(
         new SubmittableResult<IEventRecord, TransactionStatusV2>({
           status: { tag: 'Broadcasting' },
@@ -205,17 +219,13 @@ export class SubmittableExtrinsicV2 extends BaseSubmittableExtrinsic {
       );
 
       txUnsub = async () => {
-        api.chainHead.off('bestBlock', checkBestBlockIncluded);
-        api.chainHead.off('finalizedBlock', checkFinalizedBlockIncluded);
-        cancelCurrentSearch();
-
+        stopTracking();
         stopBroadcast();
       };
 
       return txUnsub;
     } catch (e: any) {
-      api.chainHead.off('bestBlock', checkBestBlockIncluded);
-      api.chainHead.off('finalizedBlock', checkFinalizedBlockIncluded);
+      stopTracking();
 
       throw e;
     }

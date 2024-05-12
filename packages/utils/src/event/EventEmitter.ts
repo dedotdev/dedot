@@ -13,8 +13,8 @@ const handlerWrapper = (handler: HandlerFn): HandlerFn => {
   return (...args: any[]) => {
     try {
       handler(...args);
-    } catch (e) {
-      console.error(e);
+    } catch {
+      // ignore this!
     }
   };
 };
