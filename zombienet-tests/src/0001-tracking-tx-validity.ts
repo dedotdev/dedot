@@ -26,6 +26,7 @@ export const run = async (nodeName: any, networkInfo: any): Promise<void> => {
             resolve();
           } else if (status.tag === 'Invalid') {
             invalidTx += 1;
+            assert(status.value.error === `Invalid Tx: Invalid - Stale`, 'Wrong invalid message');
             resolve();
           }
         });

@@ -41,15 +41,12 @@ export class SubmittableExtrinsicV2 extends BaseSubmittableExtrinsic {
       return apiAt.call.taggedTransactionQueue.validateTransaction('External', txHex, hash);
     };
 
-    const validateResult = await validateTx(finalizedHash);
+    const validation = await validateTx(finalizedHash);
 
-    if (validateResult.isOk) {
+    if (validation.isOk) {
       callback(new SubmittableResult({ status: { tag: 'Validated' }, txHash }));
-    } else if (validateResult.isErr) {
-      throw new InvalidTxError(
-        `Invalid Tx: ${validateResult.err.tag} - ${validateResult.err.value.tag}`,
-        validateResult,
-      );
+    } else if (validation.isErr) {
+      throw new InvalidTxError(`Invalid Tx: ${validation.err.tag} - ${validation.err.value.tag}`, validation);
     }
 
     const checkTxIsOnChain = async (blockHash: BlockHash): Promise<TxFound | undefined> => {
@@ -180,14 +177,14 @@ export class SubmittableExtrinsicV2 extends BaseSubmittableExtrinsic {
       } else {
         // Revalidate the tx, just in-case it becomes invalid along the way
         // Context: https://github.com/paritytech/json-rpc-interface-spec/pull/107#issuecomment-1906008814
-        const validated = await validateTx(block.hash);
-        if (validated.isOk) return;
+        const validation = await validateTx(block.hash);
+        if (validation.isOk) return;
 
         callback(
           new SubmittableResult<IEventRecord, TransactionStatusV2>({
             status: {
               tag: 'Invalid',
-              value: { error: `Invalid Tx: ${validated.err.tag} - ${validated.err.value.tag}` },
+              value: { error: `Invalid Tx: ${validation.err.tag} - ${validation.err.value.tag}` },
             },
             txHash,
           }),
