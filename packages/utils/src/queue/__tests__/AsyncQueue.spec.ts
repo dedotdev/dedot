@@ -1,3 +1,4 @@
+import { noop } from '@dedot/utils';
 import { describe, it, beforeEach, expect } from 'vitest';
 import { AsyncQueue } from '../AsyncQueue.js';
 
@@ -24,5 +25,41 @@ describe('AsyncQueue', () => {
     const final = await queue.enqueue(work);
 
     expect(final).toEqual(60);
+  });
+
+  it('should clear the queue', async () => {
+    const work = async () => 'result';
+
+    queue.enqueue(work).catch(noop);
+    queue.enqueue(work).catch(noop);
+    queue.enqueue(work).catch(noop);
+
+    expect(queue.size).toBe(2); // one work is in progress doesn't count
+
+    queue.clear();
+
+    expect(queue.size).toBe(0);
+  });
+
+  it('should cancel the current work', async () => {
+    const work = async () => new Promise((resolve) => setTimeout(() => resolve('result'), 100));
+    const resultPromise = queue.enqueue(work);
+    queue.cancelCurrentWork();
+
+    await expect(resultPromise).rejects.toThrow('Work cancelled');
+  });
+
+  it('should cancel the queue', async () => {
+    const work = async () => new Promise((resolve) => setTimeout(() => resolve('result'), 100));
+    const resultPromise = queue.enqueue(work);
+    queue.enqueue(work).catch(noop);
+    queue.enqueue(work).catch(noop);
+
+    expect(queue.size).toBe(2);
+
+    queue.cancel();
+
+    await expect(resultPromise).rejects.toThrow('Work cancelled');
+    expect(queue.size).toBe(0);
   });
 });

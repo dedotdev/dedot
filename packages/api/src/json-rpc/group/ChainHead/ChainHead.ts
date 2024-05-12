@@ -112,6 +112,24 @@ export class ChainHead extends JsonRpcGroup<ChainHeadEvent> {
     return this.findBlock(await this.finalizedHash())!;
   }
 
+  findBlock(hash: BlockHash): PinnedBlock | undefined {
+    return this.#pinnedBlocks[hash];
+  }
+
+  isPinned(hash: BlockHash): boolean {
+    return !!this.findBlock(hash);
+  }
+
+  /**
+   * chainHead_unfollow
+   */
+  async unfollow(): Promise<void> {
+    await this.#ensureFollowed();
+
+    this.#unsub && (await this.#unsub());
+    this.#cleanUp();
+  }
+
   /**
    * chainHead_follow
    */
@@ -127,13 +145,15 @@ export class ChainHead extends JsonRpcGroup<ChainHeadEvent> {
       this.#unsub && this.#unsub().catch(noop); // ensure unfollowed
 
       this.#unsub = await this.send('follow', true, (event: FollowEvent, subscription: Subscription) => {
-        this.#followResponseQueue.enqueue(async () => {
-          await this.#onFollowEvent(event, subscription);
+        this.#followResponseQueue
+          .enqueue(async () => {
+            await this.#onFollowEvent(event, subscription);
 
-          if (event.event == 'initialized') {
-            defer.resolve();
-          }
-        });
+            if (event.event == 'initialized') {
+              defer.resolve();
+            }
+          })
+          .catch(console.error); // print this out for logging purpose
       });
     } catch (e: any) {
       defer.reject(e);
@@ -271,7 +291,7 @@ export class ChainHead extends JsonRpcGroup<ChainHeadEvent> {
         }
 
         hashesToUnpin.forEach((hash) => {
-          if (!this.#isPinnedHash(hash)) return;
+          if (!this.isPinned(hash)) return;
           delete this.#pinnedBlocks[hash];
 
           // clear cache
@@ -374,10 +394,6 @@ export class ChainHead extends JsonRpcGroup<ChainHeadEvent> {
     }
   };
 
-  findBlock(hash: BlockHash): PinnedBlock | undefined {
-    return this.#pinnedBlocks[hash];
-  }
-
   #findRuntimeAt(at: BlockHash): ChainHeadRuntimeVersion | undefined {
     const block = this.findBlock(at);
 
@@ -403,13 +419,9 @@ export class ChainHead extends JsonRpcGroup<ChainHeadEvent> {
     }
   }
 
-  #isPinnedHash(hash: BlockHash): boolean {
-    return !!this.findBlock(hash);
-  }
-
   #ensurePinnedHash(hash?: BlockHash): BlockHash {
     if (hash) {
-      if (this.#isPinnedHash(hash)) {
+      if (this.isPinned(hash)) {
         return hash;
       } else {
         throw new ChainHeadBlockNotPinnedError(`Block hash ${hash} is not pinned`);
@@ -456,16 +468,6 @@ export class ChainHead extends JsonRpcGroup<ChainHeadEvent> {
     // If the runtime is invalid,
     // we safely return an undefined runtime for now
     console.error(runtimeEvent.error);
-  }
-
-  /**
-   * chainHead_unfollow
-   */
-  async unfollow(): Promise<void> {
-    await this.#ensureFollowed();
-
-    this.#unsub && (await this.#unsub());
-    this.#cleanUp();
   }
 
   #cleanUp() {

@@ -7,23 +7,12 @@ export type Deferred<T> = {
 };
 
 export function deferred<T>(): Deferred<T> {
-  let done = false;
   let resolve: (value: T) => void = noop;
   let reject: (error?: Error) => void = noop;
 
   const promise = new Promise<T>((_resolve, _reject) => {
-    resolve = (value: T) => {
-      if (done) return;
-
-      done = true;
-      _resolve(value);
-    };
-    reject = (error?: Error) => {
-      if (done) return;
-
-      done = true;
-      _reject(error);
-    };
+    resolve = _resolve;
+    reject = _reject;
   });
 
   return {

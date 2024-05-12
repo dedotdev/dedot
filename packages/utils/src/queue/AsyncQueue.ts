@@ -60,6 +60,10 @@ export class AsyncQueue {
     this._currentWork = undefined;
   }
 
+  get size() {
+    return this._works.length;
+  }
+
   protected async dequeue(): Promise<void> {
     if (this._working) return;
 
