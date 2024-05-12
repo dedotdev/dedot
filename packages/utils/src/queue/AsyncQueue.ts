@@ -9,9 +9,9 @@ type Work = { work: WorkItem; defer: Deferred<any> };
  * only one work is processed at a time
  */
 export class AsyncQueue {
-  _works: Array<Work>;
-  _working: boolean;
-  _currentWork?: Work;
+  protected _works: Array<Work>;
+  protected _working: boolean;
+  protected _currentWork?: Work;
 
   constructor() {
     this._works = [];
@@ -57,6 +57,7 @@ export class AsyncQueue {
     if (!this._currentWork) return;
 
     this._currentWork.defer.reject(new Error('Work cancelled'));
+    this._currentWork = undefined;
   }
 
   protected async dequeue(): Promise<void> {
@@ -76,6 +77,7 @@ export class AsyncQueue {
       this._working = false;
       defer.reject(e);
     } finally {
+      this._currentWork = undefined;
       this.dequeue().catch(noop);
     }
   }
