@@ -194,40 +194,30 @@ export class SubmittableExtrinsicV2 extends BaseSubmittableExtrinsic {
       txUnsub().catch(noop);
     };
 
-    // If we do search body after submitting the transaction,
-    // there is a slight chance that the tx is included inside a block emitted
-    // during the time we're waiting for the response of the broadcastTx request
-    // So we'll do body search a head of time for now!
-    api.chainHead.on('bestBlock', checkBestBlockIncluded);
-    api.chainHead.on('finalizedBlock', checkFinalizedBlockIncluded);
+    stopBroadcastFn = await api.txBroadcaster.broadcastTx(txHex);
+    callback(
+      new SubmittableResult<IEventRecord, TransactionStatusV2>({
+        status: { tag: 'Broadcasting' },
+        txHash,
+      }),
+    );
+
+    const stopBestBlockTrackingFn = api.chainHead.on('bestBlock', checkBestBlockIncluded);
+    const stopFinalizedBlockTrackingFn = api.chainHead.on('finalizedBlock', checkFinalizedBlockIncluded);
 
     const stopTracking = () => {
-      api.chainHead.off('bestBlock', checkBestBlockIncluded);
-      api.chainHead.off('finalizedBlock', checkFinalizedBlockIncluded);
+      stopBestBlockTrackingFn();
+      stopFinalizedBlockTrackingFn();
 
       cancelBodySearch();
     };
 
-    try {
-      stopBroadcastFn = await api.txBroadcaster.broadcastTx(txHex);
-      callback(
-        new SubmittableResult<IEventRecord, TransactionStatusV2>({
-          status: { tag: 'Broadcasting' },
-          txHash,
-        }),
-      );
-
-      txUnsub = async () => {
-        stopTracking();
-        stopBroadcast();
-      };
-
-      return txUnsub;
-    } catch (e: any) {
+    txUnsub = async () => {
       stopTracking();
+      stopBroadcast();
+    };
 
-      throw e;
-    }
+    return txUnsub;
   }
 
   send(): Promise<Hash>;
