@@ -34,6 +34,9 @@ export const run = async (nodeName: any, networkInfo: any): Promise<void> => {
     }),
   );
 
+  console.log('Finalized Tx:', finalizedTx);
+  console.log('Invalid Tx:', invalidTx);
+
   assert(finalizedTx === 1, 'Finalized Tx should be 1');
   assert(invalidTx === 3, 'Invalid Tx should be 3');
 };
