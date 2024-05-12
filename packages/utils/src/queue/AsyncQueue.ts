@@ -58,10 +58,15 @@ export class AsyncQueue {
 
     this._currentWork.defer.reject(new Error('Work cancelled'));
     this._currentWork = undefined;
+    this._working = false;
   }
 
   get size() {
     return this._works.length;
+  }
+
+  get isWorking() {
+    return this._working;
   }
 
   protected async dequeue(): Promise<void> {

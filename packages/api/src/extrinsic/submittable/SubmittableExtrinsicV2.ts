@@ -144,7 +144,9 @@ export class SubmittableExtrinsicV2 extends BaseSubmittableExtrinsic {
       } catch {
         // ignore this!
       } finally {
-        isSearching = false;
+        if (searchQueue.size === 0 && !searchQueue.isWorking) {
+          isSearching = false;
+        }
       }
     };
 
