@@ -59,8 +59,15 @@ export class EventEmitter<EventTypes extends string = string> implements IEventE
   }
 
   public off(event: EventTypes, handler?: HandlerFn): this {
-    const wrapper = handler ? this.#mapper.get(handler) : undefined;
-    this.#emitter.off(event, wrapper);
+    if (handler) {
+      const wrapper = this.#mapper.get(handler);
+      if (!wrapper) return this;
+
+      this.#emitter.off(event, wrapper);
+      this.#mapper.delete(handler);
+    } else {
+      this.#emitter.off(event);
+    }
 
     return this;
   }
