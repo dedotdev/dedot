@@ -5,4 +5,16 @@ Creds: config
 alice: is up
 bob: is up
 alice: reports node_roles is 4
+alice: ts-script ./0001-check-runtime-api.ts within 100 seconds
+alice: ts-script ./0001-check-storage-query.ts within 100 seconds
+alice: ts-script ./0001-check-storage-query-v2.ts within 100 seconds
+alice: ts-script ./0001-check-storage-map-pagination.ts within 200 seconds
+alice: ts-script ./0001-check-tx-transfer-balance.ts within 100 seconds
+alice: ts-script ./0001-check-tx-transfer-balance-v2.ts within 100 seconds
+alice: ts-script ./0001-check-tx-batch.ts within 100 seconds
+alice: ts-script ./0001-check-tx-batch-v2.ts within 100 seconds
+alice: ts-script ./0001-check-ws-provider-connection.ts within 100 seconds
+alice: ts-script ./0001-tx-broadcaster.ts within 100 seconds
+alice: ts-script ./0001-verify-chain-head-logic.ts within 200 seconds
+alice: ts-script ./0001-check-payment-info.ts within 200 seconds
 alice: ts-script ./0001-check-contract-api.ts within 200 seconds
