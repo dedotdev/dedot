@@ -4,7 +4,7 @@ import { Contract, ContractDeployer, parseRawMetadata } from '@dedot/contracts';
 import { assert, Dedot, SignedExtension, WsProvider } from 'dedot';
 import * as flipperRaw from '../flipper.json';
 
-export class StorageWeightReclaim extends SignedExtension {}
+class StorageWeightReclaim extends SignedExtension {}
 
 export const run = async (nodeName: any, networkInfo: any) => {
   await cryptoWaitReady();
@@ -16,7 +16,7 @@ export const run = async (nodeName: any, networkInfo: any) => {
     const api = await Dedot.new({
       provider: new WsProvider(wsUri),
       signedExtensions: {
-        StorageWeightReclaim: StorageWeightReclaim,
+        StorageWeightReclaim
       },
     });
 
