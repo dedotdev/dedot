@@ -9,23 +9,38 @@ export interface IEventEmitter<EventTypes extends string = string> {
   off(event: EventTypes, handler?: HandlerFn): this;
 }
 
+const handlerWrapper = (handler: HandlerFn): HandlerFn => {
+  return (...args: any[]) => {
+    try {
+      handler(...args);
+    } catch {
+      // ignore this!
+    }
+  };
+};
+
 export class EventEmitter<EventTypes extends string = string> implements IEventEmitter<EventTypes> {
   #emitter: EE;
+  #mapper: Map<HandlerFn, HandlerFn>;
 
   constructor() {
     this.#emitter = new EE();
+    this.#mapper = new Map();
   }
 
-  protected emit(event: EventTypes, ...args: any[]): boolean {
+  emit(event: EventTypes, ...args: any[]): boolean {
     return this.#emitter.emit(event, ...args);
   }
 
   protected clearEvents() {
     this.#emitter.removeAllListeners();
+    this.#mapper.clear();
   }
 
   public on(event: EventTypes, handler: HandlerFn): Unsub {
-    this.#emitter.on(event, handler);
+    const wrapper = handlerWrapper(handler);
+    this.#mapper.set(handler, wrapper);
+    this.#emitter.on(event, wrapper);
 
     return () => {
       this.off(event, handler);
@@ -33,7 +48,10 @@ export class EventEmitter<EventTypes extends string = string> implements IEventE
   }
 
   public once(event: EventTypes, handler: HandlerFn): Unsub {
-    this.#emitter.once(event, handler);
+    const wrapper = handlerWrapper(handler);
+    this.#mapper.set(handler, wrapper);
+
+    this.#emitter.once(event, wrapper);
 
     return () => {
       this.off(event, handler);
@@ -41,7 +59,15 @@ export class EventEmitter<EventTypes extends string = string> implements IEventE
   }
 
   public off(event: EventTypes, handler?: HandlerFn): this {
-    this.#emitter.off(event, handler);
+    if (handler) {
+      const wrapper = this.#mapper.get(handler);
+      if (!wrapper) return this;
+
+      this.#emitter.off(event, wrapper);
+      this.#mapper.delete(handler);
+    } else {
+      this.#emitter.off(event);
+    }
 
     return this;
   }

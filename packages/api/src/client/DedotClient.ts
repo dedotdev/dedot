@@ -196,7 +196,7 @@ export class DedotClient<
   ): Promise<ISubstrateClientAt<ChainApiAt>> {
     if (this.#apiAtCache[hash]) return this.#apiAtCache[hash];
 
-    const targetBlock = this.chainHead.getPinnedBlock(hash);
+    const targetBlock = this.chainHead.findBlock(hash);
     assert(targetBlock, 'Block is not pinned!');
 
     let targetVersion = targetBlock.runtime as SubstrateRuntimeVersion;

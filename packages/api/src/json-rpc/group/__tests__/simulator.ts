@@ -16,6 +16,8 @@ const rpcMethods = [
   'chainSpec_v1_chainName',
   'chainSpec_v1_genesisHash',
   'chainSpec_v1_properties',
+  'transaction_v1_broadcast',
+  'transaction_v1_stop',
 ];
 
 type SimulatorConfig = {
@@ -35,6 +37,7 @@ export const mockedRuntime: ChainHeadRuntimeVersion = {
       {} as Record<string, number>,
     ),
     '0xdf6acb689907609b': 4, // Core v4
+    '0xd2bc9897eed08f15': 3, // TaggedTransactionQueue v3
   },
 };
 
@@ -237,5 +240,6 @@ export const newChainHeadSimulator = ({ numOfFinalizedBlocks = 15, provider, ini
     notify,
     rpcMethods,
     stop,
+    blockDb,
   };
 };

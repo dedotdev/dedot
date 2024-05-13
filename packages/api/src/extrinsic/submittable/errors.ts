@@ -9,7 +9,7 @@ import type {
  * This throws out if the extrinsic is invalid
  * after verifying via `call.taggedTransactionQueue.validateTransaction`
  */
-export class InvalidExtrinsicError extends DedotError {
+export class InvalidTxError extends DedotError {
   constructor(
     message: string,
     public data: Result<
