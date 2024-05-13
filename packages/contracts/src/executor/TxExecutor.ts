@@ -11,7 +11,7 @@ export class TxExecutor<ChainApi extends GenericSubstrateApi> extends Executor<C
 
     const callFn: GenericContractTxCall<ChainApi> = (...params: any) => {
       const { args } = messageMeta;
-      const { value, gasLimit, storageDepositLimit } = params[args.length] as ContractTxOptions;
+      const { value = 0n, gasLimit, storageDepositLimit } = params[args.length] as ContractTxOptions;
 
       const formattedInputs = args.map((arg, index) => this.tryEncode(arg, params[index]));
       const bytes = u8aToHex(concatU8a(hexToU8a(messageMeta.selector), ...formattedInputs));

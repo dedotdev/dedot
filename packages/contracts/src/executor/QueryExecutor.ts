@@ -11,7 +11,7 @@ export class QueryExecutor<ChainApi extends GenericSubstrateApi> extends Executo
 
     const callFn: GenericContractQueryCall<ChainApi> = async (...params: any) => {
       const { args } = messageMeta;
-      const { caller, value, gasLimit, storageDepositLimit } = params[args.length] as ContractCallOptions;
+      const { caller, value = 0n, gasLimit, storageDepositLimit } = params[args.length] as ContractCallOptions;
 
       const formattedInputs = args.map((arg, index) => this.tryEncode(arg, params[index]));
       const bytes = u8aToHex(concatU8a(hexToU8a(messageMeta.selector), ...formattedInputs));

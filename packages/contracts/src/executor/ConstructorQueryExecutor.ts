@@ -11,7 +11,7 @@ export class ConstructorQueryExecutor<ChainApi extends GenericSubstrateApi> exte
 
     const callFn: GenericConstructorQueryCall<ChainApi> = (...params: any) => {
       const { args } = constructorMeta;
-      const { caller, value, gasLimit, storageDepositLimit, salt } = params[args.length] as ConstructorCallOptions;
+      const { caller, value = 0n, gasLimit, storageDepositLimit, salt } = params[args.length] as ConstructorCallOptions;
 
       const formattedInputs = args.map((arg, index) => this.tryEncode(arg, params[index]));
       const bytes = u8aToHex(concatU8a(hexToU8a(constructorMeta.selector), ...formattedInputs));

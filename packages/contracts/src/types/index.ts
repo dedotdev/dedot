@@ -30,7 +30,7 @@ export type ConstructorOptions = ContractOptions & {
 };
 
 export type ContractOptions = {
-  value: bigint;
+  value?: bigint;
   gasLimit?: Weight | undefined;
   storageDepositLimit?: bigint | undefined;
 };

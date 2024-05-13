@@ -21,7 +21,7 @@ export class ConstructorTxExecutor<ChainApi extends GenericSubstrateApi> extends
 
     const callFn: GenericConstructorTxCall<ChainApi> = (...params: any) => {
       const { args } = constructorMeta;
-      const { value, gasLimit, storageDepositLimit, salt } = params[args.length] as ConstructorOptions;
+      const { value = 0n, gasLimit, storageDepositLimit, salt } = params[args.length] as ConstructorOptions;
 
       const formattedInputs = args.map((arg, index) => this.tryEncode(arg, params[index]));
       const bytes = u8aToHex(concatU8a(hexToU8a(constructorMeta.selector), ...formattedInputs));
