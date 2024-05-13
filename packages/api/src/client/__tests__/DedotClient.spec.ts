@@ -3,8 +3,14 @@ import { $Metadata, $RuntimeVersion, type RuntimeVersion } from '@dedot/codecs';
 import { WsProvider } from '@dedot/providers';
 import type { AnyShape } from '@dedot/shape';
 import * as $ from '@dedot/shape';
-import { MethodResponse, OperationCallDone, OperationStorageDone, OperationStorageItems } from '@dedot/specs';
-import { stringCamelCase, stringPascalCase, u8aToHex } from '@dedot/utils';
+import {
+  MethodResponse,
+  OperationBodyDone,
+  OperationCallDone,
+  OperationStorageDone,
+  OperationStorageItems,
+} from '@dedot/specs';
+import { deferred, stringCamelCase, stringPascalCase, u8aToHex } from '@dedot/utils';
 import { MockInstance } from '@vitest/spy';
 import { afterEach, beforeEach, describe, expect, expectTypeOf, it, vi } from 'vitest';
 import { mockedRuntime, newChainHeadSimulator } from '../../json-rpc/group/__tests__/simulator.js';
@@ -282,6 +288,242 @@ describe('DedotClient', () => {
         it('should throws error', async () => {
           expect(() => api.tx.system.notFound()).toThrowError(`Tx call spec not found for system.notFound`);
           expect(() => api.tx.notFound.notFound()).toThrowError(`Pallet not found: notFound`);
+        });
+
+        describe('should tract tx status', () => {
+          beforeEach(() => {
+            let counter = 0;
+            provider.setRpcRequests({
+              transaction_v1_broadcast: () => 'tx01',
+              transaction_v1_stop: () => null,
+              chainHead_v1_body: (_, hash) => {
+                counter += 1;
+                return { result: 'started', operationId: `body${counter}` } as MethodResponse;
+              },
+              chainHead_v1_call: () => {
+                counter += 1;
+                return { result: 'started', operationId: `call${counter}` } as MethodResponse;
+              },
+              chainHead_v1_storage: () => {
+                counter += 1;
+                return { result: 'started', operationId: `storage${counter}` } as MethodResponse;
+              },
+            });
+          });
+
+          it('should valid tx', async () => {
+            simulator.notify({
+              operationId: 'call1',
+              event: 'operationCallDone',
+              output: '0x010003', // valid tx
+            } as OperationCallDone);
+
+            await expect(api.tx.system.remarkWithEvent('Hello World').send()).rejects.toThrowError(
+              'Invalid Tx: Invalid - Stale',
+            );
+          });
+
+          it('Finalized tx', async () => {
+            simulator.notify({
+              operationId: 'call1',
+              event: 'operationCallDone',
+              output:
+                '0x000080000000000000000490d43593c715fdd31c61141abd04a99fd6822c8558854ccde39a5684e7a56da27d850200003f0000000000000001', // valid tx
+            } as OperationCallDone);
+
+            const txHex = '0x3c0400072c48656c6c6f20576f726c64';
+            simulator.notify(
+              {
+                operationId: 'body2',
+                event: 'operationBodyDone',
+                value: ['0x01', '0x02', txHex], // valid tx
+              } as OperationBodyDone,
+              10,
+            );
+
+            simulator.notify(
+              {
+                operationId: 'storage3',
+                event: 'operationStorageDone',
+              } as OperationStorageDone,
+              15,
+            );
+
+            const remarkTx = api.tx.system.remarkWithEvent('Hello World');
+
+            simulator.notify(simulator.nextNewBlock());
+            simulator.notify(simulator.nextNewBlock());
+            simulator.notify(simulator.nextNewBlock());
+            simulator.notify(simulator.nextBestBlock(), 5);
+            simulator.notify(simulator.nextFinalized(), 20);
+
+            const defer = deferred<void>();
+            const statuses: string[] = [];
+
+            remarkTx.send(({ status }) => {
+              statuses.push(status.tag);
+              if (status.tag === 'Finalized') {
+                defer.resolve();
+              }
+            });
+
+            await defer.promise;
+
+            expect(statuses).toEqual(['Validated', 'Broadcasting', 'BestChainBlockIncluded', 'Finalized']);
+          });
+          it('Invalid tx', async () => {
+            simulator.notify({
+              operationId: 'call1',
+              event: 'operationCallDone',
+              output:
+                '0x000080000000000000000490d43593c715fdd31c61141abd04a99fd6822c8558854ccde39a5684e7a56da27d850200003f0000000000000001', // valid tx
+            } as OperationCallDone);
+
+            simulator.notify(
+              {
+                operationId: 'body2',
+                event: 'operationBodyDone',
+                value: ['0x01', '0x02'],
+              } as OperationBodyDone,
+              10,
+            );
+
+            simulator.notify(
+              {
+                operationId: 'call3',
+                event: 'operationCallDone',
+                output: '0x010003',
+              } as OperationCallDone,
+              20,
+            );
+
+            const remarkTx = api.tx.system.remarkWithEvent('Hello World');
+
+            simulator.notify(simulator.nextNewBlock());
+            simulator.notify(simulator.nextNewBlock());
+            simulator.notify(simulator.nextNewBlock());
+            simulator.notify(simulator.nextBestBlock(), 5);
+            simulator.notify(simulator.nextFinalized(), 15);
+
+            const defer = deferred<void>();
+            const statuses: string[] = [];
+
+            remarkTx.send(({ status }) => {
+              console.log(status);
+              statuses.push(status.tag);
+              if (status.tag === 'Invalid' && status.value.error === 'Invalid Tx: Invalid - Stale') {
+                defer.resolve();
+              }
+            });
+
+            await defer.promise;
+
+            expect(statuses).toEqual(['Validated', 'Broadcasting', 'Invalid']);
+          });
+          it('NoLongerInBestChain tx', async () => {
+            simulator.notify({
+              operationId: 'call1',
+              event: 'operationCallDone',
+              output:
+                '0x000080000000000000000490d43593c715fdd31c61141abd04a99fd6822c8558854ccde39a5684e7a56da27d850200003f0000000000000001', // valid tx
+            } as OperationCallDone);
+
+            const txHex = '0x3c0400072c48656c6c6f20576f726c64';
+            simulator.notify(
+              {
+                operationId: 'body2',
+                event: 'operationBodyDone',
+                value: ['0x01', '0x02', txHex], // valid tx
+              } as OperationBodyDone,
+              10,
+            );
+
+            simulator.notify(
+              {
+                operationId: 'storage3',
+                event: 'operationStorageDone',
+              } as OperationStorageDone,
+              12,
+            );
+
+            simulator.notify(
+              {
+                operationId: 'body4',
+                event: 'operationBodyDone',
+                value: ['0x01', '0x02', '0x03'],
+              } as OperationBodyDone,
+              35,
+            );
+
+            simulator.notify(
+              {
+                operationId: 'body5',
+                event: 'operationBodyDone',
+                value: ['0x01', '0x02', txHex],
+              } as OperationBodyDone,
+              45,
+            );
+
+            simulator.notify(
+              {
+                operationId: 'storage6',
+                event: 'operationStorageDone',
+              } as OperationStorageDone,
+              46,
+            );
+
+            simulator.notify(
+              {
+                operationId: 'call7',
+                event: 'operationCallDone',
+                output:
+                  '0x000080000000000000000490d43593c715fdd31c61141abd04a99fd6822c8558854ccde39a5684e7a56da27d850200003f0000000000000001', // valid tx
+              } as OperationCallDone,
+              47,
+            );
+
+            const remarkTx = api.tx.system.remarkWithEvent('Hello World');
+
+            simulator.notify(simulator.nextNewBlock()); // f
+            simulator.notify(simulator.nextNewBlock({ fork: true })); // f-1
+            simulator.notify(simulator.nextNewBlock()); // 10 -> f
+            simulator.notify(simulator.nextNewBlock({ fork: true, fromWhichParentFork: 1 })); // 10-1 -> f-1
+            simulator.notify(simulator.nextNewBlock());
+            simulator.notify(simulator.nextNewBlock());
+            simulator.notify(simulator.nextNewBlock());
+
+            simulator.notify(simulator.nextBestBlock(), 5);
+            simulator.notify(simulator.nextBestBlock(false, 1), 30);
+            simulator.notify(simulator.nextBestBlock(true, 1), 40);
+
+            simulator.notify(simulator.nextFinalized(1), 45);
+            simulator.notify(simulator.nextFinalized(1), 50);
+
+            const defer = deferred<void>();
+            const statuses: string[] = [];
+            let finalizedBlock;
+
+            remarkTx.send(({ status }) => {
+              console.log(status);
+              statuses.push(status.tag);
+              if (status.tag === 'Finalized') {
+                finalizedBlock = status.value;
+                defer.resolve();
+              }
+            });
+
+            await defer.promise;
+
+            expect(statuses).toEqual([
+              'Validated',
+              'Broadcasting',
+              'BestChainBlockIncluded',
+              'NoLongerInBestChain',
+              'BestChainBlockIncluded',
+              'Finalized',
+            ]);
+            expect(finalizedBlock).toEqual({ blockHash: '0x10-1', txIndex: 2 });
+          });
         });
       });
 
