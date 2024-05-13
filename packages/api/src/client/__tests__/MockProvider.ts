@@ -1,4 +1,4 @@
-import staticSubstrate from '@polkadot/types-support/metadata/static-substrate';
+import staticSubstrateV15 from '@polkadot/types-support/metadata/v15/substrate-hex';
 import { RuntimeVersion } from '@dedot/codecs';
 import {
   ConnectionStatus,
@@ -28,18 +28,23 @@ export const MockedRuntimeVersion: RuntimeVersion = {
 export default class MockProvider extends EventEmitter<ProviderEvent> implements JsonRpcProvider {
   #status: ConnectionStatus = 'disconnected';
 
-  rpcRequests: Record<string, AnyFunc> = {
-    chain_getBlockHash: () => '0x0000000000000000000000000000000000000000000000000000000000000000',
-    state_getRuntimeVersion: () => MockedRuntimeVersion,
-    state_subscribeRuntimeVersion: () => 'runtime-version-subscription-id',
-    state_unsubscribeRuntimeVersion: () => null,
-    system_chain: () => 'MockedChain',
-    system_properties: () => ({ ss58Format: 42 }) as ChainProperties,
-    state_getMetadata: () => staticSubstrate,
-    state_call: () => '0x',
-    state_getStorage: () => '0x',
-    state_queryStorageAt: () => [{ block: '0x', changes: ['0x', '0x'] }],
-  };
+  rpcRequests: Record<string, AnyFunc>;
+
+  constructor(mockedRuntimeVersion: RuntimeVersion = MockedRuntimeVersion) {
+    super();
+    this.rpcRequests = {
+      chain_getBlockHash: () => '0x0000000000000000000000000000000000000000000000000000000000000000',
+      state_getRuntimeVersion: () => mockedRuntimeVersion,
+      state_subscribeRuntimeVersion: () => 'runtime-version-subscription-id',
+      state_unsubscribeRuntimeVersion: () => null,
+      system_chain: () => 'MockedChain',
+      system_properties: () => ({ ss58Format: 42 }) as ChainProperties,
+      state_getMetadata: () => staticSubstrateV15,
+      state_call: () => '0x',
+      state_getStorage: () => '0x',
+      state_queryStorageAt: () => [{ block: '0x', changes: ['0x', '0x'] }],
+    };
+  }
 
   #subscriptions: Record<
     string,
