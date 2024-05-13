@@ -290,7 +290,7 @@ describe('DedotClient', () => {
           expect(() => api.tx.notFound.notFound()).toThrowError(`Pallet not found: notFound`);
         });
 
-        describe('should tract tx status', () => {
+        describe('should track tx status', () => {
           beforeEach(() => {
             let counter = 0;
             provider.setRpcRequests({
