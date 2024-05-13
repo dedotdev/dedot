@@ -29,13 +29,15 @@
   },
   "parachains": [
     {
-      "id": 100,
+      "id": 2000,
       "chain": "contracts-rococo-dev",
-      "collator": {
-        "args": ["-lparachain=debug"],
-        "command": "polkadot-parachain",
-        "name": "collator01"
-      }
+      "collator_groups": [
+        {
+          "count": 3,
+          "name": "collator",
+          "command": "polkadot-parachain"
+        }
+      ]
     }
   ]
 }
