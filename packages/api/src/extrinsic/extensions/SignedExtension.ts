@@ -3,7 +3,7 @@ import { PortableRegistry, SignedExtensionDefLatest } from '@dedot/codecs';
 import * as $ from '@dedot/shape';
 import { PayloadOptions } from '@dedot/types';
 import { ensurePresence } from '@dedot/utils';
-import { ISubstrateClient } from 'dedot/types';
+import { ISubstrateClient } from '../../types.js';
 
 export interface ISignedExtension {
   identifier: string;
