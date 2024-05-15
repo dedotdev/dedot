@@ -55,6 +55,30 @@ const main = () => {
           require: './cjs/chaintypes/index.js',
           default: './chaintypes/index.js',
         };
+        pkgJson.exports['./codecs'] = {
+          types: './subpaths/codecs/index.d.ts',
+          import: './subpaths/codecs/index.js',
+          require: './cjs/subpaths/codecs/index.js',
+          default: './subpaths/codecs/index.js',
+        };
+        pkgJson.exports['./types'] = {
+          types: './subpaths/types/index.d.ts',
+          import: './subpaths/types/index.js',
+          require: './cjs/subpaths/types/index.js',
+          default: './subpaths/types/index.js',
+        };
+        pkgJson.exports['./types/json-rpc'] = {
+          types: './subpaths/types/json-rpc/index.d.ts',
+          import: './subpaths/types/json-rpc/index.js',
+          require: './cjs/subpaths/types/json-rpc/index.js',
+          default: './subpaths/types/json-rpc/index.js',
+        };
+        pkgJson.exports['./runtime-specs'] = {
+          types: './subpaths/runtime-specs/index.d.ts',
+          import: './subpaths/runtime-specs/index.js',
+          require: './cjs/subpaths/runtime-specs/index.js',
+          default: './subpaths/runtime-specs/index.js',
+        };
       }
 
       if (pkgJson.name === '@dedot/types') {

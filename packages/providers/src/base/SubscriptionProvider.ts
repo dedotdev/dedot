@@ -13,13 +13,13 @@ import {
   SubscriptionInput,
 } from '../types.js';
 
-export interface RequestState<T = any> {
+interface RequestState<T = any> {
   defer: Deferred<T>;
   request: JsonRpcRequest;
   from: number; // when the request was sent
 }
 
-export interface SubscriptionState {
+interface SubscriptionState {
   input: SubscriptionInput;
   callback: SubscriptionCallback;
   subscription: Subscription;

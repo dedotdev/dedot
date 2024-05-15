@@ -8,7 +8,6 @@ export * from './json-rpc/index.js';
 export * from './client/index.js';
 
 // Re-exports
-export { WsProvider, SmoldotProvider } from '@dedot/providers';
 export * as $ from '@dedot/shape';
-export * from '@dedot/codecs';
+export * from '@dedot/providers';
 export * from '@dedot/utils';
