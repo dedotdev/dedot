@@ -88,6 +88,18 @@ const main = () => {
           require: './cjs/runtime-specs/index.js',
           default: './runtime-specs/index.js',
         };
+        pkgJson.exports['./utils'] = {
+          types: './utils/index.d.ts',
+          import: './utils/index.js',
+          require: './cjs/utils/index.js',
+          default: './utils/index.js',
+        };
+        pkgJson.exports['./shape'] = {
+          types: './shape/index.d.ts',
+          import: './shape/index.js',
+          require: './cjs/shape/index.js',
+          default: './shape/index.js',
+        };
       }
 
       if (pkgJson.name === '@dedot/types') {

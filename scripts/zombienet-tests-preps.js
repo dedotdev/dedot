@@ -67,6 +67,18 @@ const main = () => {
         require: './dist/cjs/runtime-specs/index.js',
         default: './dist/runtime-specs/index.js',
       };
+      pkgJson.exports['./utils'] = {
+        types: './dist/utils/index.d.ts',
+        import: './dist/utils/index.js',
+        require: './dist/cjs/utils/index.js',
+        default: './dist/utils/index.js',
+      };
+      pkgJson.exports['./shape'] = {
+        types: './dist/shape/index.d.ts',
+        import: './dist/shape/index.js',
+        require: './dist/cjs/shape/index.js',
+        default: './dist/shape/index.js',
+      };
     }
 
     fileContent = JSON.stringify(pkgJson, null, 2);
