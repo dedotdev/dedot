@@ -54,7 +54,7 @@ export class TypesGen {
     this.typeImports = new TypeImports();
   }
 
-  generate() {
+  generate(useSubPaths: boolean = false) {
     this.clearCache();
 
     let defTypeOut = '';
@@ -69,7 +69,7 @@ export class TypesGen {
         }
       });
 
-    const importTypes = this.typeImports.toImports('./types');
+    const importTypes = this.typeImports.toImports({ useSubPaths, excludeModules: ['./types'] });
     const template = compileTemplate('types.hbs');
 
     return beautifySourceCode(template({ importTypes, defTypeOut }));

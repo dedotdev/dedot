@@ -45,14 +45,14 @@ export class JsonRpcGen extends ApiGen {
     rpcMethods.sort();
   }
 
-  generate() {
+  generate(useSubPaths: boolean = false) {
     this.typesGen.clearCache();
     this.typesGen.typeImports.addKnownType('GenericJsonRpcApis', 'RpcVersion');
     this.typesGen.typeImports.addKnownJsonRpcType('JsonRpcApis');
 
     const toExclude = Object.values(subscriptionsInfo).flat();
 
-    const importTypes = this.typesGen.typeImports.toImports();
+    const importTypes = this.typesGen.typeImports.toImports({ useSubPaths });
     const template = compileTemplate('json-rpc.hbs');
     const jsonRpcMethods = this.rpcMethods
       .filter((one) => !ALIAS_RPCS.includes(one)) // exclude alias rpcs

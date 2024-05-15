@@ -1,3 +1,8 @@
+type ImportConfig = {
+  excludeModules?: string[];
+  useSubPaths?: boolean;
+};
+
 export class TypeImports {
   // Portable types from chain/metadata
   portableTypes: Set<string>;
@@ -25,13 +30,16 @@ export class TypeImports {
     this.outTypes.clear();
   }
 
-  toImports(...excludeModules: string[]) {
+  toImports(config?: ImportConfig) {
+    const { excludeModules = [], useSubPaths = false } = config || {};
+
     // TODO generate outTypes!
+    const prefix = useSubPaths ? '' : '@';
 
     const toImports: [Set<string>, string][] = [
-      [this.knownTypes, '@dedot/types'],
-      [this.knownJsonRpcTypes, '@dedot/types/json-rpc'],
-      [this.codecTypes, '@dedot/codecs'],
+      [this.knownTypes, `${prefix}dedot/types`],
+      [this.knownJsonRpcTypes, `${prefix}dedot/types/json-rpc`],
+      [this.codecTypes, `${prefix}dedot/codecs`],
       [this.portableTypes, './types'],
     ];
 

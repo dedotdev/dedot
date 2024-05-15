@@ -22,7 +22,7 @@ export class RuntimeApisGen extends ApiGen {
     super(typesGen);
   }
 
-  generate() {
+  generate(useSubPaths: boolean = false) {
     this.typesGen.clearCache();
     this.typesGen.typeImports.addKnownType('GenericRuntimeApis', 'GenericRuntimeApiMethod', 'RpcVersion');
 
@@ -60,7 +60,7 @@ export class RuntimeApisGen extends ApiGen {
       });
     }
 
-    const importTypes = this.typesGen.typeImports.toImports();
+    const importTypes = this.typesGen.typeImports.toImports({ useSubPaths });
     const template = compileTemplate('runtime.hbs');
 
     return beautifySourceCode(template({ importTypes, runtimeCallsOut }));

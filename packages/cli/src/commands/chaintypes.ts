@@ -11,13 +11,14 @@ type Args = {
   output?: string;
   chain?: string;
   dts?: boolean;
+  subpath?: boolean;
 };
 
 export const chaintypes: CommandModule<Args, Args> = {
   command: 'chaintypes',
   describe: 'Generate chain types & APIs for a Substrate-based blockchain',
   handler: async (yargs) => {
-    const { wsUrl, output = '', chain = '', dts = true } = yargs;
+    const { wsUrl, output = '', chain = '', dts = true, subpath = true } = yargs;
 
     const outDir = path.resolve(output);
     const extension = dts ? 'd.ts' : 'ts';
@@ -36,10 +37,10 @@ export const chaintypes: CommandModule<Args, Args> = {
         {} as Record<string, number>,
       );
 
-      await generateTypes('substrate', metadata.latest, rpcMethods, runtimeApis, outDir, extension);
+      await generateTypes('substrate', metadata.latest, rpcMethods, runtimeApis, outDir, extension, subpath);
     } else {
       console.log(`- Generating chaintypes via endpoint ${wsUrl!}`);
-      await generateTypesFromEndpoint(chain, wsUrl!, outDir, extension);
+      await generateTypesFromEndpoint(chain, wsUrl!, outDir, extension, subpath);
     }
 
     console.log(`- DONE! Output: ${outDir}`);
@@ -68,6 +69,12 @@ export const chaintypes: CommandModule<Args, Args> = {
           type: 'boolean',
           describe: 'Generate d.ts files',
           alias: 'd',
+          default: true,
+        })
+        .option('subpath', {
+          type: 'boolean',
+          describe: 'Using subpath for shared packages',
+          alias: 's',
           default: true,
         })
     ); // TODO check to verify inputs
