@@ -1,7 +1,7 @@
 import { BestBlockChanged, ChainHeadRuntimeVersion, Finalized, Initialized, NewBlock } from '@dedot/types/json-rpc';
 import { HexString, isNumber, numberToHex, stringToHex } from '@dedot/utils';
-import { SubstrateRuntimeVersion } from 'dedot';
-import MockProvider, { MockedRuntimeVersion } from 'dedot/client/__tests__/MockProvider';
+import MockProvider, { MockedRuntimeVersion } from '../../../client/__tests__/MockProvider';
+import { SubstrateRuntimeVersion } from '../../../types.js';
 
 const rpcMethods = [
   'chainHead_v1_body',

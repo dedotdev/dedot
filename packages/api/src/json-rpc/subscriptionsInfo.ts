@@ -1,4 +1,4 @@
-import { SubscriptionsInfo } from '../public-types.js';
+import { SubscriptionsInfo } from '../types.js';
 
 export const subscriptionsInfo: SubscriptionsInfo = {
   author_submitAndWatchExtrinsic: ['author_extrinsicUpdate', 'author_unwatchExtrinsic'],

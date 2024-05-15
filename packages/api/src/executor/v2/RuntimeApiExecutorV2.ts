@@ -2,7 +2,7 @@ import type { BlockHash } from '@dedot/codecs';
 import type { GenericSubstrateApi } from '@dedot/types';
 import { assert, HexString } from '@dedot/utils';
 import { ChainHead } from '../../json-rpc/index.js';
-import { ISubstrateClientAt } from '../../public-types.js';
+import { ISubstrateClientAt } from '../../types.js';
 import { RuntimeApiExecutor, StateCallParams } from '../RuntimeApiExecutor.js';
 
 /**

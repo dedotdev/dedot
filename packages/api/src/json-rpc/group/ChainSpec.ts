@@ -1,6 +1,6 @@
 import { Properties } from '@dedot/types/json-rpc';
 import { HexString } from '@dedot/utils';
-import { IJsonRpcClient } from '../../public-types.js';
+import { IJsonRpcClient } from '../../types.js';
 import { JsonRpcGroup, JsonRpcGroupOptions } from './JsonRpcGroup.js';
 
 export class ChainSpec extends JsonRpcGroup {

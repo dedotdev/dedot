@@ -333,6 +333,21 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@dedot/api@workspace:*, @dedot/api@workspace:packages/api":
+  version: 0.0.0-use.local
+  resolution: "@dedot/api@workspace:packages/api"
+  dependencies:
+    "@dedot/codecs": "workspace:*"
+    "@dedot/providers": "workspace:*"
+    "@dedot/runtime-specs": "workspace:*"
+    "@dedot/shape": "workspace:*"
+    "@dedot/storage": "workspace:*"
+    "@dedot/types": "workspace:*"
+    "@dedot/utils": "workspace:*"
+    "@polkadot/types": "npm:^11.0.2"
+  languageName: unknown
+  linkType: soft
+
 "@dedot/chaintypes@npm:0.0.1-alpha.40":
   version: 0.0.1-alpha.40
   resolution: "@dedot/chaintypes@npm:0.0.1-alpha.40"
@@ -3242,18 +3257,14 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"dedot@workspace:*, dedot@workspace:packages/api":
+"dedot@workspace:*, dedot@workspace:packages/dedot":
   version: 0.0.0-use.local
-  resolution: "dedot@workspace:packages/api"
+  resolution: "dedot@workspace:packages/dedot"
   dependencies:
+    "@dedot/api": "workspace:*"
     "@dedot/codecs": "workspace:*"
-    "@dedot/providers": "workspace:*"
     "@dedot/runtime-specs": "workspace:*"
-    "@dedot/shape": "workspace:*"
-    "@dedot/storage": "workspace:*"
     "@dedot/types": "workspace:*"
-    "@dedot/utils": "workspace:*"
-    "@polkadot/types": "npm:^11.0.2"
   languageName: unknown
   linkType: soft
 

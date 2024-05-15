@@ -1,5 +1,5 @@
 {
-  "name": "dedot",
+  "name": "@dedot/api",
   "version": "0.0.1-alpha.31",
   "description": "A delightful JavaScript/TypeScript client for Polkadot & Substrate",
   "author": "Thang X. Vu <thang@coongcrafts.io>",
@@ -36,26 +36,6 @@
       "types": "./src/chaintypes/index.ts",
       "import": "./src/chaintypes/index.ts",
       "default": "./src/chaintypes/index.ts"
-    },
-    "./codecs": {
-      "types": "./src/subpaths/codecs/index.ts",
-      "import": "./src/subpaths/codecs/index.ts",
-      "default": "./src/subpaths/codecs/index.ts"
-    },
-    "./types": {
-      "types": "./src/subpaths/types/index.ts",
-      "import": "./src/subpaths/types/index.ts",
-      "default": "./src/subpaths/types/index.ts"
-    },
-    "./types/json-rpc": {
-      "types": "./src/subpaths/types/json-rpc/index.ts",
-      "import": "./src/subpaths/types/json-rpc/index.ts",
-      "default": "./src/subpaths/types/json-rpc/index.ts"
-    },
-    "./runtime-specs": {
-      "types": "./src/subpaths/runtime-specs/index.ts",
-      "import": "./src/subpaths/runtime-specs/index.ts",
-      "default": "./src/subpaths/runtime-specs/index.ts"
     }
   },
   "publishConfig": {

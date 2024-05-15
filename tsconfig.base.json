@@ -38,8 +38,10 @@
       "@dedot/storage/*": ["../storage/src/*"],
       "@dedot/providers": ["../providers/src"],
       "@dedot/providers/*": ["../providers/src/*"],
-      "dedot": ["../api/src"],
-      "dedot/*": ["../api/src/*"]
+      "@dedot/api": ["../api/src"],
+      "@dedot/api/*": ["../api/src/*"],
+      "dedot": ["../dedot/src"],
+      "dedot/*": ["../dedot/src/*"]
     }
   }
 }

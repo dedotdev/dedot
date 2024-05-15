@@ -1,0 +1,56 @@
+{
+  "name": "dedot",
+  "version": "0.0.1-alpha.31",
+  "description": "A delightful JavaScript/TypeScript client for Polkadot & Substrate",
+  "author": "Thang X. Vu <thang@coongcrafts.io>",
+  "main": "src/index.ts",
+  "sideEffects": false,
+  "type": "module",
+  "scripts": {
+    "build": "tsc --project tsconfig.build.json && tsc --project tsconfig.build.cjs.json",
+    "clean": "rm -rf ./dist && rm -rf ./tsconfig.tsbuildinfo ./tsconfig.build.tsbuildinfo"
+  },
+  "dependencies": {
+    "@dedot/api": "workspace:*",
+    "@dedot/codecs": "workspace:*",
+    "@dedot/runtime-specs": "workspace:*",
+    "@dedot/types": "workspace:*"
+  },
+  "exports": {
+    ".": {
+      "types": "./src/index.ts",
+      "import": "./src/index.ts",
+      "default": "./src/index.ts"
+    },
+    "./chaintypes": {
+      "types": "./src/chaintypes/index.ts",
+      "import": "./src/chaintypes/index.ts",
+      "default": "./src/chaintypes/index.ts"
+    },
+    "./codecs": {
+      "types": "./src/codecs/index.ts",
+      "import": "./src/codecs/index.ts",
+      "default": "./src/codecs/index.ts"
+    },
+    "./types": {
+      "types": "./src/types/index.ts",
+      "import": "./src/types/index.ts",
+      "default": "./src/types/index.ts"
+    },
+    "./types/json-rpc": {
+      "types": "./src/types/json-rpc/index.ts",
+      "import": "./src/types/json-rpc/index.ts",
+      "default": "./src/types/json-rpc/index.ts"
+    },
+    "./runtime-specs": {
+      "types": "./src/runtime-specs/index.ts",
+      "import": "./src/runtime-specs/index.ts",
+      "default": "./src/runtime-specs/index.ts"
+    }
+  },
+  "publishConfig": {
+    "access": "public",
+    "directory": "dist"
+  },
+  "license": "Apache-2.0"
+}

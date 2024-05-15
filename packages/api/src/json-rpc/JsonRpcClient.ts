@@ -2,7 +2,7 @@ import type { ConnectionStatus, JsonRpcProvider, ProviderEvent, Subscription } f
 import type { AsyncMethod, GenericSubstrateApi, RpcVersion, Unsub } from '@dedot/types';
 import { assert, EventEmitter, isFunction, isString } from '@dedot/utils';
 import type { SubstrateApi } from '../chaintypes/index.js';
-import type { IJsonRpcClient, JsonRpcClientOptions } from '../public-types.js';
+import type { IJsonRpcClient, JsonRpcClientOptions } from '../types.js';
 import { scaledResponses } from './scaledResponses.js';
 import { subscriptionsInfo } from './subscriptionsInfo.js';
 
