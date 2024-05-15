@@ -9,7 +9,7 @@ import {
   OperationCallDone,
   OperationStorageDone,
   OperationStorageItems,
-} from '@dedot/specs';
+} from '@dedot/types/json-rpc';
 import { deferred, stringCamelCase, stringPascalCase, u8aToHex } from '@dedot/utils';
 import { MockInstance } from '@vitest/spy';
 import { afterEach, beforeEach, describe, expect, expectTypeOf, it, vi } from 'vitest';
@@ -409,7 +409,6 @@ describe('DedotClient', () => {
             const statuses: string[] = [];
 
             remarkTx.send(({ status }) => {
-              console.log(status);
               statuses.push(status.tag);
               if (status.tag === 'Invalid' && status.value.error === 'Invalid Tx: Invalid - Stale') {
                 defer.resolve();
@@ -504,7 +503,6 @@ describe('DedotClient', () => {
             let finalizedBlock;
 
             remarkTx.send(({ status }) => {
-              console.log(status);
               statuses.push(status.tag);
               if (status.tag === 'Finalized') {
                 finalizedBlock = status.value;

@@ -8,6 +8,12 @@
   "references": [
     {
       "path": "../codegen/tsconfig.json"
+    },
+    {
+      "path": "../codecs/tsconfig.json"
+    },
+    {
+      "path": "../api/tsconfig.json"
     }
   ]
 }

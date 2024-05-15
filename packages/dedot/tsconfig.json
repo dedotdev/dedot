@@ -1,0 +1,36 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "baseUrl": "./",
+    "outDir": "dist",
+    "rootDir": "src",
+    "declarationDir": "dist"
+  },
+  "include": ["src/**/*"],
+  "references": [
+    {
+      "path": "../codecs/tsconfig.json"
+    },
+    {
+      "path": "../types/tsconfig.json"
+    },
+    {
+      "path": "../runtime-specs/tsconfig.json"
+    },
+    {
+      "path": "../api/tsconfig.json"
+    },
+    {
+      "path": "../providers/tsconfig.json"
+    },
+    {
+      "path": "../shape/tsconfig.json"
+    },
+    {
+      "path": "../utils/tsconfig.json"
+    },
+    {
+      "path": "../cli/tsconfig.json"
+    }
+  ]
+}

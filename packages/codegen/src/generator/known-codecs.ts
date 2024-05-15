@@ -14,8 +14,8 @@ import {
   $StorageKey,
   $UncheckedExtrinsic,
 } from '@dedot/codecs';
-import * as $ from '@dedot/shape';
 import { AnyShape } from '@dedot/shape';
+import * as $ from '@dedot/shape';
 import { assert } from '@dedot/utils';
 
 export type CodecName = `$${string}`;

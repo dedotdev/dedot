@@ -1,7 +1,4 @@
-export type SubscribeMethod = string;
-export type UnsubscribeMethod = string;
-export type NotificationMethod = string;
-export type SubscriptionsInfo = Record<SubscribeMethod, [NotificationMethod, UnsubscribeMethod]>;
+import { SubscriptionsInfo } from '../types.js';
 
 export const subscriptionsInfo: SubscriptionsInfo = {
   author_submitAndWatchExtrinsic: ['author_extrinsicUpdate', 'author_unwatchExtrinsic'],

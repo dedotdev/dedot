@@ -1,5 +1,6 @@
-import { subscriptionsInfo } from '@dedot/specs';
-import { ApiGen, TypesGen } from '../generator/index.js';
+import { subscriptionsInfo } from '@dedot/api';
+import { ApiGen } from './ApiGen.js';
+import { TypesGen } from './TypesGen.js';
 import { beautifySourceCode, compileTemplate } from './utils.js';
 
 const HIDDEN_RPCS = [
@@ -45,14 +46,14 @@ export class JsonRpcGen extends ApiGen {
     rpcMethods.sort();
   }
 
-  generate() {
+  generate(useSubPaths: boolean = false) {
     this.typesGen.clearCache();
     this.typesGen.typeImports.addKnownType('GenericJsonRpcApis', 'RpcVersion');
-    this.typesGen.typeImports.addSpecType('JsonRpcApis');
+    this.typesGen.typeImports.addKnownJsonRpcType('JsonRpcApis');
 
     const toExclude = Object.values(subscriptionsInfo).flat();
 
-    const importTypes = this.typesGen.typeImports.toImports();
+    const importTypes = this.typesGen.typeImports.toImports({ useSubPaths });
     const template = compileTemplate('json-rpc.hbs');
     const jsonRpcMethods = this.rpcMethods
       .filter((one) => !ALIAS_RPCS.includes(one)) // exclude alias rpcs

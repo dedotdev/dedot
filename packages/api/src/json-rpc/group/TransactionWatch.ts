@@ -1,5 +1,5 @@
-import { TransactionWatchEvent } from '@dedot/specs';
 import { Callback, Unsub } from '@dedot/types';
+import { TransactionWatchEvent } from '@dedot/types/json-rpc';
 import { HexString, noop } from '@dedot/utils';
 import { IJsonRpcClient, TxBroadcaster } from '../../types.js';
 import { JsonRpcGroup, JsonRpcGroupOptions } from './JsonRpcGroup.js';

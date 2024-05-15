@@ -1,7 +1,8 @@
+import { Dedot } from '@dedot/api';
 import { MetadataLatest } from '@dedot/codecs';
-import { RpcMethods } from '@dedot/specs';
+import { WsProvider } from '@dedot/providers';
+import { RpcMethods } from '@dedot/types/json-rpc';
 import { stringCamelCase } from '@dedot/utils';
-import { Dedot, WsProvider } from 'dedot';
 import * as fs from 'fs';
 import * as path from 'path';
 import {
@@ -9,8 +10,8 @@ import {
   ErrorsGen,
   EventsGen,
   IndexGen,
-  QueryGen,
   JsonRpcGen,
+  QueryGen,
   RuntimeApisGen,
   TxGen,
   TypesGen,
@@ -21,6 +22,7 @@ export async function generateTypesFromEndpoint(
   endpoint: string,
   outDir?: string,
   extension: string = 'd.ts',
+  useSubPaths: boolean = false,
 ) {
   const api = await Dedot.new(new WsProvider(endpoint));
   const { methods }: RpcMethods = await api.rpc.rpc_methods();
@@ -29,7 +31,7 @@ export async function generateTypesFromEndpoint(
     chain = stringCamelCase(api.runtimeVersion.specName || 'local');
   }
 
-  await generateTypes(chain, api.metadata.latest, methods, apis, outDir, extension);
+  await generateTypes(chain, api.metadata.latest, methods, apis, outDir, extension, useSubPaths);
 
   await api.disconnect();
 }
@@ -41,6 +43,7 @@ export async function generateTypes(
   runtimeApis: Record<string, number>,
   outDir: string = '.',
   extension: string = 'd.ts',
+  useSubPaths: boolean = false,
 ) {
   const dirPath = path.resolve(outDir, chain);
   const defTypesFileName = path.join(dirPath, `types.${extension}`);
@@ -67,13 +70,13 @@ export async function generateTypes(
   const runtimeApisGen = new RuntimeApisGen(typesGen, runtimeApis);
   const txGen = new TxGen(typesGen);
 
-  fs.writeFileSync(defTypesFileName, await typesGen.generate());
-  fs.writeFileSync(errorsFileName, await errorsGen.generate());
-  fs.writeFileSync(eventsFileName, await eventsGen.generate());
-  fs.writeFileSync(jsonRpcFileName, await jsonRpcGen.generate());
-  fs.writeFileSync(queryTypesFileName, await queryGen.generate());
-  fs.writeFileSync(constsTypesFileName, await constsGen.generate());
-  fs.writeFileSync(txFileName, await txGen.generate());
-  fs.writeFileSync(indexFileName, await indexGen.generate());
-  fs.writeFileSync(runtimeApisFileName, await runtimeApisGen.generate());
+  fs.writeFileSync(defTypesFileName, await typesGen.generate(useSubPaths));
+  fs.writeFileSync(errorsFileName, await errorsGen.generate(useSubPaths));
+  fs.writeFileSync(eventsFileName, await eventsGen.generate(useSubPaths));
+  fs.writeFileSync(jsonRpcFileName, await jsonRpcGen.generate(useSubPaths));
+  fs.writeFileSync(queryTypesFileName, await queryGen.generate(useSubPaths));
+  fs.writeFileSync(constsTypesFileName, await constsGen.generate(useSubPaths));
+  fs.writeFileSync(txFileName, await txGen.generate(useSubPaths));
+  fs.writeFileSync(indexFileName, await indexGen.generate(useSubPaths));
+  fs.writeFileSync(runtimeApisFileName, await runtimeApisGen.generate(useSubPaths));
 }

@@ -1,4 +1,4 @@
-import { Properties } from '@dedot/specs';
+import { Properties } from '@dedot/types/json-rpc';
 import { HexString } from '@dedot/utils';
 import { IJsonRpcClient } from '../../types.js';
 import { JsonRpcGroup, JsonRpcGroupOptions } from './JsonRpcGroup.js';

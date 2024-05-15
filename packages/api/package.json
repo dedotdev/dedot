@@ -1,5 +1,5 @@
 {
-  "name": "dedot",
+  "name": "@dedot/api",
   "version": "0.0.1-alpha.31",
   "description": "A delightful JavaScript/TypeScript client for Polkadot & Substrate",
   "author": "Thang X. Vu <thang@coongcrafts.io>",
@@ -15,8 +15,8 @@
   "dependencies": {
     "@dedot/codecs": "workspace:*",
     "@dedot/providers": "workspace:*",
+    "@dedot/runtime-specs": "workspace:*",
     "@dedot/shape": "workspace:*",
-    "@dedot/specs": "workspace:*",
     "@dedot/storage": "workspace:*",
     "@dedot/types": "workspace:*",
     "@dedot/utils": "workspace:*"
@@ -25,6 +25,18 @@
     "build": "tsc --project tsconfig.build.json && tsc --project tsconfig.build.cjs.json",
     "clean": "rm -rf ./dist && rm -rf ./tsconfig.tsbuildinfo ./tsconfig.build.tsbuildinfo",
     "test": "vitest --watch=false"
+  },
+  "exports": {
+    ".": {
+      "types": "./src/index.ts",
+      "import": "./src/index.ts",
+      "default": "./src/index.ts"
+    },
+    "./chaintypes": {
+      "types": "./src/chaintypes/index.ts",
+      "import": "./src/chaintypes/index.ts",
+      "default": "./src/chaintypes/index.ts"
+    }
   },
   "publishConfig": {
     "access": "public",
