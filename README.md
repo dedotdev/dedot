@@ -19,8 +19,9 @@ _Note: The project is still in active development phase, the information on this
 - ✅ Native TypeScript type system for scale-codec
 - ✅ Compatible with `@polkadot/extension`-based wallets
 - ✅ Support Metadata V14, V15 (latest)
-- ⏳ Support both the legacy (✅) & [new](https://paritytech.github.io/json-rpc-interface-spec/introduction.html) (⏳) JSON-RPC APIs
-- ⏳ Support light clients ([smoldot](https://www.npmjs.com/package/smoldot))
+- ✅ Support both the legacy & [new](https://paritytech.github.io/json-rpc-interface-spec/introduction.html) JSON-RPC APIs
+- ✅ Support light clients (e.g: [smoldot](https://www.npmjs.com/package/smoldot))
+- ⏳ Typed Contract APIs
 
 ### Have a quick taste
 
@@ -46,14 +47,15 @@ npm i -D @dedot/chaintypes
 - Initialize the API client and start interacting with Polkadot network
 ```typescript
 // main.ts
-import { Dedot } from 'dedot';
+import { Dedot, WsProvider } from 'dedot';
 import type { PolkadotApi } from '@dedot/chaintypes';
 
 const run = async () => {
-  const api = await Dedot.new<PolkadotApi>('wss://rpc.polkadot.io');
+  const provider = new WsProvider('wss://rpc.polkadot.io');
+  const api = await Dedot.new<PolkadotApi>(provider);
 
   // Call rpc `state_getMetadata` to fetch raw scale-encoded metadata and decode it.
-  const metadata = await api.rpc.state.getMetadata();
+  const metadata = await api.rpc.state_getMetadata();
   console.log('Metadata:', metadata);
 
   // Query on-chain storage
@@ -84,9 +86,10 @@ run().catch(console.error);
 
 ```js
 // main.js
-const { Dedot } = require('dedot');
+const { Dedot, WsProvider } = require('dedot');
 // ...
-const api = await Dedot.new('wss://rpc.polkadot.io');
+const provider = new WsProvider('wss://rpc.polkadot.io');
+const api = await Dedot.new(provider);
 ```
 ### Table of contents
 - [Status](#status)
@@ -115,7 +118,7 @@ const api = await Dedot.new('wss://rpc.polkadot.io');
 | Contract APIs                                               | ⏳      |
 | Metadata v14                                                | ✅      |
 | Metadata v15                                                | ✅      |
-| [RPC v2](https://github.com/dedotdev/dedot/issues/20)       | ⏳      |
+| [RPC v2](https://github.com/dedotdev/dedot/issues/20)       | ✅      |
 | [Extrinsic V5](https://github.com/dedotdev/dedot/issues/55) | ⏳      |
 
 ### Chain Types & APIs
@@ -133,52 +136,46 @@ npm i -D @dedot/chaintypes
 
 Initialize a `Dedot` instance using the `ChainApi` interface for a target chain to enable types & APIs suggestion/autocompletion for that particular chain:
 ```typescript
-import { Dedot } from 'dedot';
+import { Dedot, WsProvider } from 'dedot';
 import type { PolkadotApi, KusamaApi, MoonbeamApi, AstarApi } from '@dedot/chaintypes';
 
 // ...
 
-const polkadotApi = await Dedot.new<PolkadotApi>('wss://rpc.polkadot.io');
+const polkadotApi = await Dedot.new<PolkadotApi>(new WsProvider('wss://rpc.polkadot.io'));
 console.log(await polkadotApi.query.babe.authorities());
 
-const kusamaApi = await Dedot.new<KusamaApi>('wss://kusama-rpc.polkadot.io');
+const kusamaApi = await Dedot.new<KusamaApi>(new WsProvider('wss://kusama-rpc.polkadot.io'));
 console.log(await kusamaApi.query.society.memberCount());
 
-const moonbeamApi = await Dedot.new<MoonbeamApi>('wss://wss.api.moonbeam.network');
+const moonbeamApi = await Dedot.new<MoonbeamApi>(new WsProvider('wss://wss.api.moonbeam.network'));
 console.log(await moonbeamApi.query.ethereumChainId.chainId());
 
-const astarApi = await Dedot.new<AstarApi>('wss://rpc.astar.network');
+const astarApi = await Dedot.new<AstarApi>(new WsProvider('wss://rpc.astar.network'));
 console.log(await astarApi.query.dappsStaking.blockRewardAccumulator());
 
-const genericApi = await Dedot.new('ws://localhost:9944');
+const genericApi = await Dedot.new(new WsProvider('ws://localhost:9944'));
 
 // ...
 ```
 
-Supported `ChainApi` interfaces are defined [here](https://github.com/dedotdev/dedot/blob/main/packages/chaintypes/src/index.ts), you can also generate the `ChainApi` interface for the chain you want to connect with using `@dedot/cli`.
+Supported `ChainApi` interfaces are defined [here](https://github.com/dedotdev/dedot/blob/main/packages/chaintypes/src/index.ts), you can also generate the `ChainApi` interface for the chain you want to connect with using `dedot` cli.
 
 ```shell
-# Install @dedot/cli via yarn
-yarn add -D @dedot/cli
-
-# Or via npm
-npm i -D @dedot/cli
-
 # Generate ChainApi interface for Polkadot network via rpc endpoint: wss://rpc.polkadot.io
 npx dedot chaintypes -w wss://rpc.polkadot.io
 ```
 
 ### Execute RPC Methods
 
-RPCs can be executed via `api.rpc` entry point. After creating a `Dedot` instance with a `ChainApi` interface of the network you want to interact with, all RPC methods of the network will be exposed in the autocompletion/suggestion with format: `api.rpc.<module>.<methodName>`. E.g: you can find all supported RPC methods for Polkadot network [here](https://github.com/dedotdev/dedot/blob/main/packages/chaintypes/src/polkadot/rpc.d.ts), similarly for other networks as well.
+RPCs can be executed via `api.rpc` entry point. After creating a `Dedot` instance with a `ChainApi` interface of the network you want to interact with, all RPC methods of the network will be exposed in the autocompletion/suggestion with format: `api.rpc.method_name(param1, param2, ...)`. E.g: you can find all supported RPC methods for Polkadot network [here](https://github.com/dedotdev/dedot/blob/main/packages/chaintypes/src/polkadot/rpc.d.ts), similarly for other networks as well.
 
 Examples:
 ```typescript
 // Call rpc: `state_getMetadata`
-const metadata = await api.rpc.state.getMetadata(); 
+const metadata = await api.rpc.state_getMetadata(); 
 
 // Call an arbitrary rpc: `module_rpc_name` with arguments ['param1', 'param2']
-const result = await api.rpc.module.rpc_name('param1', 'param2');
+const result = await api.rpc.module_rpc_name('param1', 'param2');
 ```
 
 ### Query On-chain Storage
@@ -223,16 +220,16 @@ const queryInfo = await api.call.transactionPaymentApi.queryInfo(tx.toU8a(), tx.
 const runtimeVersion = await api.call.core.version();
 ```
 
-For chains that only support Metadata V14, we need to bring in the Runtime Api definitions when initializing the Dedot client instance to encode & decode the calls. You can find all supported Runtime Api definitions in [`@dedot/runtime-specs`](https://github.com/dedotdev/dedot/blob/60de0fed8ba19c67a7e174c6168a127fdbf6caef/packages/runtime-specs/src/runtime/all.ts#L21-L39) package.
+For chains that only support Metadata V14, we need to bring in the Runtime Api definitions when initializing the Dedot client instance to encode & decode the calls. You can find all supported Runtime Api definitions in [`dedot/runtime-specs`](https://github.com/dedotdev/dedot/blob/60de0fed8ba19c67a7e174c6168a127fdbf6caef/packages/runtime-specs/src/runtime/all.ts#L21-L39) package.
 
 Examples:
 ```typescript
-import { RuntimeApis } from '@dedot/runtime-specs';
-const api = await Dedot.new({ endpoint: 'wss://rpc.mynetwork.com', runtimeApis: RuntimeApis });
+import { RuntimeApis } from 'dedot/runtime-specs';
+const api = await Dedot.new({ provider: new WsProvider('wss://rpc.mynetwork.com'), runtimeApis: RuntimeApis });
 
 // Or bring in only the Runtime Api definition that you want to interact with
-import { AccountNonceApi } from '@dedot/runtime-specs';
-const api = await Dedot.new({ endpoint: 'wss://rpc.mynetwork.com', runtimeApis: { AccountNonceApi } });
+import { AccountNonceApi } from 'dedot/runtime-specs';
+const api = await Dedot.new({ provider: new WsProvider('wss://rpc.mynetwork.com'), runtimeApis: { AccountNonceApi } });
 
 // Get account nonce
 const nonce = await api.call.accountNonceApi.accountNonce(<address>);
@@ -317,7 +314,7 @@ const unsub = api.tx.utility.batch([transferTx.call, remarkCall])
   
 ```typescript
 import { WestendAssetHubApi, XcmVersionedLocation, XcmVersionedAssets, XcmV3WeightLimit } from '@dedot/chaintypes/westendAssetHub';
-import { AccountId32 } from '@dedot/codecs';
+import { AccountId32 } from 'dedot/codecs';
 
 const TWO_TOKENS = 2_000_000_000_000n;
 const destAddress = <bobAddress>;
@@ -435,18 +432,16 @@ const api = await ApiPromise.create({ provider: new WsProvider('wss://rpc.polkad
 ```
 - `dedot`
 ```typescript
-import { Dedot } from 'dedot';
+import { Dedot, WsProvider } from 'dedot';
 import type { PolkadotApi } from '@dedot/chaintypes';
 
-const api = await Dedot.new<PolkadotApi>('wss://rpc.polkadot.io'); // or Dedot.create(...) if you prefer
+const api = await Dedot.new<PolkadotApi>(new WsProvider('wss://rpc.polkadot.io')); // or Dedot.create(...) if you prefer
 
-// OR you want to have a custom provider
-import { WsProvider } from 'dedot'
+// OR
 const api = await Dedot.new<PolkadotApi>({ provider: new WsProvider('wss://rpc.polkadot.io') });
 ```
 
 - Notes:
-  - Under the hood, a `WsProvider` will be created if you initialize `Dedot` directly with an rpc endpoint.
   - `dedot` only supports provider can make subscription request (e.g: via Websocket).
   - We recommend specifying the `ChainApi` interface (e.g: [`PolkadotApi`](https://github.com/dedotdev/dedot/blob/02d7bca4c3c3d12c9591ea43b3410daf8e5aacbb/packages/chaintypes/src/polkadot/index.d.ts) in the example above) of the chain that you want to interact with. This enable apis & types suggestion/autocompletion for that particular chain (via IntelliSense). If you don't specify a `ChainApi` interface, the default [`SubstrateApi`](https://github.com/dedotdev/dedot/blob/a762faf8f6af40d3e4ef163bd538b270a5ca31e8/packages/chaintypes/src/substrate/index.d.ts) interface will be used.
 
