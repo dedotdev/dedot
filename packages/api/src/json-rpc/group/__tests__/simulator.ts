@@ -1,4 +1,4 @@
-import { BestBlockChanged, ChainHeadRuntimeVersion, Finalized, Initialized, NewBlock } from '@dedot/specs';
+import { BestBlockChanged, ChainHeadRuntimeVersion, Finalized, Initialized, NewBlock } from '@dedot/types/json-rpc';
 import { HexString, isNumber, numberToHex, stringToHex } from '@dedot/utils';
 import { SubstrateRuntimeVersion } from 'dedot';
 import MockProvider, { MockedRuntimeVersion } from 'dedot/client/__tests__/MockProvider';

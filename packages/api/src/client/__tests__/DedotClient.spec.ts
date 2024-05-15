@@ -9,7 +9,7 @@ import {
   OperationCallDone,
   OperationStorageDone,
   OperationStorageItems,
-} from '@dedot/specs';
+} from '@dedot/types/json-rpc';
 import { deferred, stringCamelCase, stringPascalCase, u8aToHex } from '@dedot/utils';
 import { MockInstance } from '@vitest/spy';
 import { afterEach, beforeEach, describe, expect, expectTypeOf, it, vi } from 'vitest';

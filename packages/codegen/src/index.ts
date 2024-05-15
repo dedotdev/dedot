@@ -1,5 +1,5 @@
 import { MetadataLatest } from '@dedot/codecs';
-import { RpcMethods } from '@dedot/specs';
+import { RpcMethods } from '@dedot/types/json-rpc';
 import { stringCamelCase } from '@dedot/utils';
 import { Dedot, WsProvider } from 'dedot';
 import * as fs from 'fs';

@@ -57,6 +57,15 @@ const main = () => {
         };
       }
 
+      if (pkgJson.name === '@dedot/types') {
+        pkgJson.exports['./json-rpc'] = {
+          types: './json-rpc/index.d.ts',
+          import: './json-rpc/index.js',
+          require: './cjs/json-rpc/index.js',
+          default: './json-rpc/index.js',
+        };
+      }
+
       fileContent = JSON.stringify(pkgJson, null, 2);
     }
 

@@ -1,4 +1,4 @@
-import { subscriptionsInfo } from '@dedot/specs';
+import { subscriptionsInfo } from 'dedot';
 import { ApiGen, TypesGen } from '../generator/index.js';
 import { beautifySourceCode, compileTemplate } from './utils.js';
 

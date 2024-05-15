@@ -1,9 +1,10 @@
 import type { ConnectionStatus, JsonRpcProvider, ProviderEvent, Subscription } from '@dedot/providers';
-import { scaledResponses, subscriptionsInfo } from '@dedot/specs';
 import type { AsyncMethod, GenericSubstrateApi, RpcVersion, Unsub } from '@dedot/types';
 import { assert, EventEmitter, isFunction, isString } from '@dedot/utils';
 import type { SubstrateApi } from '../chaintypes/index.js';
 import type { IJsonRpcClient, JsonRpcClientOptions } from '../types.js';
+import { scaledResponses } from './scaledResponses.js';
+import { subscriptionsInfo } from './subscriptionsInfo.js';
 
 export const isJsonRpcProvider = (provider: any): provider is JsonRpcProvider => {
   return (

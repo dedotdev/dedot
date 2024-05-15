@@ -1,5 +1,6 @@
 import { $Header, BlockHash, Option } from '@dedot/codecs';
 import type { Subscription } from '@dedot/providers';
+import type { AsyncMethod, Unsub } from '@dedot/types';
 import type {
   ChainHeadRuntimeVersion,
   FollowEvent,
@@ -9,8 +10,7 @@ import type {
   RuntimeEvent,
   StorageQuery,
   StorageResult,
-} from '@dedot/specs';
-import type { AsyncMethod, Unsub } from '@dedot/types';
+} from '@dedot/types/json-rpc';
 import { assert, AsyncQueue, deferred, Deferred, ensurePresence, HexString, noop, waitFor } from '@dedot/utils';
 import type { IJsonRpcClient } from '../../../types.js';
 import { JsonRpcGroup, type JsonRpcGroupOptions } from '../JsonRpcGroup.js';

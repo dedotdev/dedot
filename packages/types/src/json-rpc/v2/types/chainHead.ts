@@ -85,7 +85,7 @@ export interface OperationError extends NamedEvent, WithOperationId {
   error: string;
 }
 
-export interface Stop extends NamedEvent {
+export interface ChainHeadStop extends NamedEvent {
   event: 'stop';
 }
 
@@ -104,7 +104,7 @@ export type FollowEvent<Hash = BlockHash> =
   | BestBlockChanged<Hash>
   | Finalized<Hash>
   | FollowOperationEvent
-  | Stop;
+  | ChainHeadStop;
 
 export type MethodResponse =
   | { result: 'started'; operationId: OperationId; discardedItems?: number }
