@@ -17,11 +17,10 @@ export const run = async (_nodeName: any, networkInfo: any) => {
 
   const { gasRequired } = await contractDeployer.query.new(true, {
     caller: alicePair.address,
-    value: 0n,
     salt: '0x',
   });
 
-  const constructorTx = contractDeployer.tx.new(true, { value: 0n, gasLimit: gasRequired, salt: '0x' });
+  const constructorTx = contractDeployer.tx.new(true, { gasLimit: gasRequired, salt: '0x' });
 
   const contractAddress: string = await new Promise(async (resolve) => {
     await constructorTx.signAndSend(alicePair, async ({ status, events }: any) => {
@@ -44,26 +43,24 @@ export const run = async (_nodeName: any, networkInfo: any) => {
   console.log('Contract address', contractAddress);
   const contract = new Contract(api, contractAddress, flipper);
 
-  const state = await contract.query.get({ caller: alicePair.address, value: 0n });
+  const state = await contract.query.get({ caller: alicePair.address });
   assert(state.isOk, 'Query should be successful');
   console.log('Initial value', state.data);
 
   console.log('Flipping...');
-  const { contractResult } = await contract.query.flip({ caller: alicePair.address, value: 0n });
+  const { contractResult } = await contract.query.flip({ caller: alicePair.address });
 
   const waitForFinish = await new Promise(async (resolve) => {
-    await contract.tx
-      .flip({ value: 0n, gasLimit: contractResult.gasRequired })
-      .signAndSend(alicePair, (result: any) => {
-        console.log('Transaction status', result.status.tag);
+    await contract.tx.flip({ gasLimit: contractResult.gasRequired }).signAndSend(alicePair, (result: any) => {
+      console.log('Transaction status', result.status.tag);
 
-        if (result.status.tag === 'InBlock') {
-          resolve(null);
-        }
-      });
+      if (result.status.tag === 'InBlock') {
+        resolve(null);
+      }
+    });
   });
 
-  const newState = await contract.query.get({ caller: alicePair.address, value: 0n });
+  const newState = await contract.query.get({ caller: alicePair.address });
   assert(newState.isOk, 'Query should be successful');
   console.log('New value', newState.data);
 
