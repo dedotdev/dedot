@@ -1,5 +1,5 @@
+import MockProvider from '@dedot/api/client/__tests__/MockProvider';
 import { Dedot } from 'dedot';
-import MockProvider from 'dedot/client/__tests__/MockProvider';
 import { beforeEach, describe, expect, it } from 'vitest';
 import { ContractDeployer } from '../ContractDeployer';
 import { FLIPPER, MockedRuntimeVersionWithContractsApi } from './Contract.spec';

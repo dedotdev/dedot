@@ -1,7 +1,8 @@
 import Keyring from '@polkadot/keyring';
 import { cryptoWaitReady } from '@polkadot/util-crypto';
-import { DedotClient, WsProvider } from 'dedot';
-import { assert, isHex, isNumber } from 'dedot/utils';
+import { WsProvider } from '@dedot/providers';
+import { assert, isHex, isNumber } from '@dedot/utils';
+import { DedotClient } from 'dedot';
 
 const BOB = '5FHneW46xGXgs5mUiveU4sbTyGBzmstUspZC92UhjJM694ty';
 

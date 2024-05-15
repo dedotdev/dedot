@@ -1,5 +1,6 @@
-import { Dedot, WsProvider } from 'dedot';
-import { assert } from 'dedot/utils';
+import { WsProvider } from '@dedot/providers';
+import { assert } from '@dedot/utils';
+import { Dedot } from 'dedot';
 
 const ALICE = '5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY';
 const BOB = '5FHneW46xGXgs5mUiveU4sbTyGBzmstUspZC92UhjJM694ty';

@@ -1,10 +1,11 @@
-import {Dedot, FallbackRuntimeApis, RuntimeVersion} from 'dedot';
-import MockProvider from 'dedot/client/__tests__/MockProvider';
+import {Dedot, FallbackRuntimeApis } from 'dedot';
 import {beforeEach, describe, expect, it, vi} from 'vitest';
 import { Contract } from '../Contract';
 // @ts-ignore
 import flipperRaw from './flipper.json' assert { type: "json" };
 import {parseRawMetadata} from "../utils";
+import {RuntimeVersion} from "@dedot/codecs";
+import MockProvider from "@dedot/api/client/__tests__/MockProvider";
 
 export const FLIPPER = parseRawMetadata(JSON.stringify(flipperRaw));
 export const ALICE = '5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY';
