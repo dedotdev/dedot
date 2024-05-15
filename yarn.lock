@@ -362,6 +362,8 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@dedot/cli@workspace:packages/cli"
   dependencies:
+    "@dedot/api": "workspace:*"
+    "@dedot/codecs": "workspace:*"
     "@dedot/codegen": "workspace:*"
     "@polkadot/types-support": "npm:^11.0.2"
     "@types/yargs": "npm:^17.0.32"
@@ -3271,6 +3273,9 @@ __metadata:
     "@dedot/shape": "workspace:*"
     "@dedot/types": "workspace:*"
     "@dedot/utils": "workspace:*"
+  bin:
+    dedot: ./bin/dedot
+    djs: ./bin/dedot
   languageName: unknown
   linkType: soft
 
