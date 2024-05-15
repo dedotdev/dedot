@@ -1,7 +1,7 @@
 import { stringToHex } from '@dedot/utils';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import MockProvider from '../../../client/__tests__/MockProvider.js';
-import { IJsonRpcClient } from '../../../types.js';
+import { IJsonRpcClient } from '../../../public-types.js';
 import { JsonRpcClient } from '../../JsonRpcClient.js';
 import { ChainSpec } from '../ChainSpec.js';
 

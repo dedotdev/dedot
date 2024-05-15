@@ -3,7 +3,7 @@ import type { AsyncMethod, Callback, GenericSubstrateApi } from '@dedot/types';
 import { assert, HexString } from '@dedot/utils';
 import { QueryableStorage } from 'dedot/storage/QueryableStorage';
 import { ChainHead, ChainHeadEvent } from '../../json-rpc/index.js';
-import { ISubstrateClientAt } from '../../types.js';
+import { ISubstrateClientAt } from '../../public-types.js';
 import { StorageQueryExecutor } from '../StorageQueryExecutor.js';
 
 /**

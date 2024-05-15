@@ -1,4 +1,4 @@
-export type * from './types.js';
+export type * from './public-types.js';
 
 export * from './storage/index.js';
 export * from './extrinsic/index.js';

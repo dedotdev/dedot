@@ -1,7 +1,7 @@
 import type { BlockHash, PalletDefLatest } from '@dedot/codecs';
 import type { GenericSubstrateApi } from '@dedot/types';
 import { assert, stringCamelCase, UnknownApiError } from '@dedot/utils';
-import { ISubstrateClientAt } from '../types.js';
+import { ISubstrateClientAt } from '../public-types.js';
 
 /**
  * @name Executor

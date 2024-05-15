@@ -13,7 +13,7 @@ import { waitFor } from '@dedot/utils';
 import { MockInstance } from '@vitest/spy';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import MockProvider from '../../../client/__tests__/MockProvider.js';
-import { IJsonRpcClient } from '../../../types.js';
+import { IJsonRpcClient } from '../../../public-types.js';
 import { JsonRpcClient } from '../../JsonRpcClient.js';
 import { ChainHead, PinnedBlock } from '../ChainHead/index.js';
 import { newChainHeadSimulator } from './simulator.js';

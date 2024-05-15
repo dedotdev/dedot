@@ -1,6 +1,6 @@
 import { RpcMethods } from '@dedot/types/json-rpc';
 import { EventEmitter } from '@dedot/utils';
-import { IJsonRpcClient } from '../../types.js';
+import { IJsonRpcClient } from '../../public-types.js';
 
 export type JsonRpcGroupVersion = 'unstable' | `v${number}`;
 export interface JsonRpcGroupOptions {

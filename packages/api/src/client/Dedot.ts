@@ -11,7 +11,7 @@ import {
   TxExecutor,
 } from '../executor/index.js';
 import { newProxyChain } from '../proxychain.js';
-import type { ApiOptions, ISubstrateClientAt, SubstrateRuntimeVersion } from '../types.js';
+import type { ApiOptions, ISubstrateClientAt, SubstrateRuntimeVersion } from '../public-types.js';
 import { BaseSubstrateClient } from './BaseSubstrateClient.js';
 
 const KEEP_ALIVE_INTERVAL = 10_000; // in ms

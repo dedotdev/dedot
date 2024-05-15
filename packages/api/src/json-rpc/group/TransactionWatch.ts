@@ -1,7 +1,7 @@
 import { Callback, Unsub } from '@dedot/types';
 import { TransactionWatchEvent } from '@dedot/types/json-rpc';
 import { HexString, noop } from '@dedot/utils';
-import { IJsonRpcClient, TxBroadcaster } from '../../types.js';
+import { IJsonRpcClient, TxBroadcaster } from '../../public-types.js';
 import { JsonRpcGroup, JsonRpcGroupOptions } from './JsonRpcGroup.js';
 
 export class TransactionWatch extends JsonRpcGroup implements TxBroadcaster {

@@ -13,7 +13,7 @@ import {
 } from '@dedot/types';
 import { HexString, isFunction, u8aToHex } from '@dedot/utils';
 import type { FrameSystemEventRecord, SubstrateApi } from '../../chaintypes/index.js';
-import type { ISubstrateClient, ISubstrateClientAt } from '../../types.js';
+import type { ISubstrateClient, ISubstrateClientAt } from '../../public-types.js';
 import { ExtraSignedExtension } from '../extensions/index.js';
 import { fakeSigner } from './fakeSigner.js';
 import { isKeyringPair, signRaw } from './utils.js';

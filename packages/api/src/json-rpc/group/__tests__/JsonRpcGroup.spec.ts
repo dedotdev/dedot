@@ -1,7 +1,7 @@
 import { JsonRpcClient } from 'dedot';
 import { describe, expect, it, beforeEach, vi } from 'vitest';
 import MockProvider from '../../../client/__tests__/MockProvider.js';
-import { IJsonRpcClient } from '../../../types.js';
+import { IJsonRpcClient } from '../../../public-types.js';
 import { JsonRpcGroup, JsonRpcGroupOptions } from '../JsonRpcGroup.js';
 
 const rpcMethods = ['test_unstable_method', 'test_unstable_anotherMethod'];

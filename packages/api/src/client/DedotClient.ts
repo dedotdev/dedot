@@ -14,7 +14,7 @@ import {
 } from '../executor/index.js';
 import { ChainHead, ChainSpec, PinnedBlock, Transaction, TransactionWatch } from '../json-rpc/index.js';
 import { newProxyChain } from '../proxychain.js';
-import type { ApiOptions, ISubstrateClientAt, SubstrateRuntimeVersion, TxBroadcaster } from '../types.js';
+import type { ApiOptions, ISubstrateClientAt, SubstrateRuntimeVersion, TxBroadcaster } from '../public-types.js';
 import { BaseSubstrateClient, ensurePresence } from './BaseSubstrateClient.js';
 
 /**

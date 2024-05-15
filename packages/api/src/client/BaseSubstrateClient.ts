@@ -15,7 +15,7 @@ import type {
   JsonRpcClientOptions,
   MetadataKey,
   SubstrateRuntimeVersion,
-} from '../types.js';
+} from '../public-types.js';
 
 const SUPPORTED_METADATA_VERSIONS = [15, 14];
 const MetadataApiHash = calcRuntimeApiHash('Metadata'); // 0x37e397fc7c91f5e4
