@@ -9044,10 +9044,6 @@ __metadata:
   resolution: "zombienet-tests@workspace:zombienet-tests"
   dependencies:
     "@dedot/chaintypes": "npm:0.0.1-alpha.40"
-    "@dedot/codecs": "workspace:*"
-    "@dedot/providers": "workspace:*"
-    "@dedot/types": "workspace:*"
-    "@dedot/utils": "workspace:*"
     "@polkadot/keyring": "npm:^12.6.2"
     dedot: "workspace:*"
   languageName: unknown
