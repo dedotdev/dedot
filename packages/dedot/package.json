@@ -12,6 +12,7 @@
   },
   "dependencies": {
     "@dedot/api": "workspace:*",
+    "@dedot/cli": "workspace:*",
     "@dedot/codecs": "workspace:*",
     "@dedot/runtime-specs": "workspace:*",
     "@dedot/shape": "workspace:*",
