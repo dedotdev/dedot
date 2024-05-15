@@ -1,9 +1,7 @@
 import Keyring from '@polkadot/keyring';
 import { cryptoWaitReady } from '@polkadot/util-crypto';
-import { RococoApi } from '@dedot/chaintypes';
-import { RococoRuntimeRuntimeCallLike } from '@dedot/chaintypes/rococo';
-import { assert, isHex, isNumber } from '@dedot/utils';
-import { Dedot, DedotClient, WsProvider } from 'dedot';
+import { DedotClient, WsProvider } from 'dedot';
+import { assert } from 'dedot/utils';
 
 export const run = async (nodeName: any, networkInfo: any): Promise<void> => {
   await cryptoWaitReady();

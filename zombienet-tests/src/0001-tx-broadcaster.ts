@@ -1,7 +1,7 @@
 import Keyring from '@polkadot/keyring';
 import { cryptoWaitReady } from '@polkadot/util-crypto';
-import { deferred, HexString, stringToHex } from '@dedot/utils';
 import { Dedot, Transaction, TransactionWatch, TxBroadcaster, WsProvider } from 'dedot';
+import { deferred, HexString, stringToHex } from 'dedot/utils';
 
 const prepareRemarkTx = async (api: Dedot): Promise<{ rawTx: HexString; sender: string }> => {
   await cryptoWaitReady();

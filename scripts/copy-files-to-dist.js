@@ -15,7 +15,7 @@ const main = () => {
     let filePath = path.resolve(currentDir, file);
 
     // Copy the root README.md if current dir is api
-    if (currentDir.endsWith('packages/api') && file === 'README.md') {
+    if (currentDir.endsWith('packages/dedot') && file === 'README.md') {
       filePath = path.resolve(currentDir, '../..', file);
     }
 
