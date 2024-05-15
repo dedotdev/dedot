@@ -47,6 +47,15 @@ const main = () => {
         };
       }
 
+      if (pkgJson.name === '@dedot/api') {
+        pkgJson.exports['./chaintypes'] = {
+          types: './chaintypes/index.d.ts',
+          import: './chaintypes/index.js',
+          require: './cjs/chaintypes/index.js',
+          default: './chaintypes/index.js',
+        };
+      }
+
       // Export default/generic substrate chaintypes
       if (pkgJson.name === 'dedot') {
         pkgJson.exports['./chaintypes'] = {
@@ -56,28 +65,28 @@ const main = () => {
           default: './chaintypes/index.js',
         };
         pkgJson.exports['./codecs'] = {
-          types: './subpaths/codecs/index.d.ts',
-          import: './subpaths/codecs/index.js',
-          require: './cjs/subpaths/codecs/index.js',
-          default: './subpaths/codecs/index.js',
+          types: './codecs/index.d.ts',
+          import: './codecs/index.js',
+          require: './cjs/codecs/index.js',
+          default: './codecs/index.js',
         };
         pkgJson.exports['./types'] = {
-          types: './subpaths/types/index.d.ts',
-          import: './subpaths/types/index.js',
-          require: './cjs/subpaths/types/index.js',
-          default: './subpaths/types/index.js',
+          types: './types/index.d.ts',
+          import: './types/index.js',
+          require: './cjs/types/index.js',
+          default: './types/index.js',
         };
         pkgJson.exports['./types/json-rpc'] = {
-          types: './subpaths/types/json-rpc/index.d.ts',
-          import: './subpaths/types/json-rpc/index.js',
-          require: './cjs/subpaths/types/json-rpc/index.js',
-          default: './subpaths/types/json-rpc/index.js',
+          types: './types/json-rpc/index.d.ts',
+          import: './types/json-rpc/index.js',
+          require: './cjs/types/json-rpc/index.js',
+          default: './types/json-rpc/index.js',
         };
         pkgJson.exports['./runtime-specs'] = {
-          types: './subpaths/runtime-specs/index.d.ts',
-          import: './subpaths/runtime-specs/index.js',
-          require: './cjs/subpaths/runtime-specs/index.js',
-          default: './subpaths/runtime-specs/index.js',
+          types: './runtime-specs/index.d.ts',
+          import: './runtime-specs/index.js',
+          require: './cjs/runtime-specs/index.js',
+          default: './runtime-specs/index.js',
         };
       }
 
