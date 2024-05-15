@@ -1,5 +1,4 @@
 import { TypeRegistry } from '@dedot/codecs';
-import { EnumOptions } from '@dedot/shape';
 import { ContractMetadata } from './types/index.js';
 import { extractContractTypes } from './utils.js';
 
@@ -14,12 +13,5 @@ export class TypinkRegistry extends TypeRegistry {
 
   get metadata(): ContractMetadata {
     return this.#metadata;
-  }
-
-  getEnumOptions(): EnumOptions {
-    return {
-      tagKey: 'tag',
-      valueKey: 'value',
-    };
   }
 }

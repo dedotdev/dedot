@@ -241,5 +241,10 @@ export abstract class TypeRegistry {
     throw Error(`Not support yet! ${JSON.stringify(def, null, 2)}`);
   };
 
-  abstract getEnumOptions(typeId: TypeId): EnumOptions;
+  getEnumOptions(_typeId: TypeId): EnumOptions {
+    return {
+      tagKey: 'tag',
+      valueKey: 'value',
+    };
+  }
 }

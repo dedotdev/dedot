@@ -86,7 +86,7 @@ export class PortableRegistry extends TypeRegistry {
    *
    * @param typeId
    */
-  getEnumOptions(typeId: TypeId): EnumOptions {
+  override getEnumOptions(typeId: TypeId): EnumOptions {
     const {
       extrinsic: { callTypeId },
       outerEnums: { eventEnumTypeId },
