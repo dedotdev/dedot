@@ -1,4 +1,4 @@
-import { stringPascalCase } from 'dedot/utils';
+import { stringPascalCase } from '@dedot/utils';
 import { beautifySourceCode, compileTemplate } from './utils.js';
 
 export class IndexGen {

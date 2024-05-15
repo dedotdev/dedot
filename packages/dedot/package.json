@@ -4,19 +4,25 @@
   "description": "A delightful JavaScript/TypeScript client for Polkadot & Substrate",
   "author": "Thang X. Vu <thang@coongcrafts.io>",
   "main": "src/index.ts",
+  "bin": {
+    "dedot": "./bin/dedot",
+    "djs": "./bin/dedot"
+  },
   "sideEffects": false,
   "type": "module",
   "scripts": {
-    "build": "tsc --project tsconfig.build.json && tsc --project tsconfig.build.cjs.json",
+    "build": "tsc --project tsconfig.build.json && tsc --project tsconfig.build.cjs.json && cp -R ./bin ./dist",
     "clean": "rm -rf ./dist && rm -rf ./tsconfig.tsbuildinfo ./tsconfig.build.tsbuildinfo"
   },
   "dependencies": {
     "@dedot/api": "workspace:*",
     "@dedot/cli": "workspace:*",
     "@dedot/codecs": "workspace:*",
+    "@dedot/providers": "workspace:*",
     "@dedot/runtime-specs": "workspace:*",
     "@dedot/shape": "workspace:*",
-    "@dedot/types": "workspace:*"
+    "@dedot/types": "workspace:*",
+    "@dedot/utils": "workspace:*"
   },
   "exports": {
     ".": {

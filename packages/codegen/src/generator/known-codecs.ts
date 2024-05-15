@@ -1,5 +1,4 @@
-import { $ } from 'dedot';
-import * as Codecs from 'dedot/codecs';
+import * as Codecs from '@dedot/codecs';
 import {
   $AccountId20,
   $AccountId32,
@@ -14,9 +13,10 @@ import {
   $StorageData,
   $StorageKey,
   $UncheckedExtrinsic,
-} from 'dedot/codecs';
-import { AnyShape } from 'dedot/shape';
-import { assert } from 'dedot/utils';
+} from '@dedot/codecs';
+import { AnyShape } from '@dedot/shape';
+import * as $ from '@dedot/shape';
+import { assert } from '@dedot/utils';
 
 export type CodecName = `$${string}`;
 export interface CodecType {

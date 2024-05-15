@@ -1,4 +1,4 @@
-import { normalizeName, stringCamelCase } from 'dedot/utils';
+import { normalizeName, stringCamelCase } from '@dedot/utils';
 import { ApiGen } from './ApiGen.js';
 import { beautifySourceCode, commentBlock, compileTemplate } from './utils.js';
 

@@ -1,4 +1,4 @@
-import { TypesGen } from '../generator/index.js';
+import { TypesGen } from './TypesGen.js';
 
 export abstract class ApiGen {
   constructor(readonly typesGen: TypesGen) {}

@@ -18,7 +18,13 @@
     "copy": "cp -R ./src/templates ./dist && cp -R ./src/templates ./dist/cjs"
   },
   "dependencies": {
-    "dedot": "workspace:*",
+    "@dedot/api": "workspace:*",
+    "@dedot/codecs": "workspace:*",
+    "@dedot/providers": "workspace:*",
+    "@dedot/runtime-specs": "workspace:*",
+    "@dedot/shape": "workspace:*",
+    "@dedot/types": "workspace:*",
+    "@dedot/utils": "workspace:*",
     "handlebars": "^4.7.7",
     "prettier": "^3.2.5"
   },

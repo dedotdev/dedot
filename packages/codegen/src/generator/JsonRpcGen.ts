@@ -1,5 +1,6 @@
-import { subscriptionsInfo } from 'dedot';
-import { ApiGen, TypesGen } from '../generator/index.js';
+import { subscriptionsInfo } from '@dedot/api';
+import { ApiGen } from './ApiGen.js';
+import { TypesGen } from './TypesGen.js';
 import { beautifySourceCode, compileTemplate } from './utils.js';
 
 const HIDDEN_RPCS = [

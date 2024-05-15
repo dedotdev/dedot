@@ -9,7 +9,25 @@
   "include": ["src/**/*"],
   "references": [
     {
-      "path": "../dedot/tsconfig.json"
+      "path": "../codecs/tsconfig.json"
+    },
+    {
+      "path": "../types/tsconfig.json"
+    },
+    {
+      "path": "../runtime-specs/tsconfig.json"
+    },
+    {
+      "path": "../api/tsconfig.json"
+    },
+    {
+      "path": "../providers/tsconfig.json"
+    },
+    {
+      "path": "../shape/tsconfig.json"
+    },
+    {
+      "path": "../utils/tsconfig.json"
     }
   ]
 }

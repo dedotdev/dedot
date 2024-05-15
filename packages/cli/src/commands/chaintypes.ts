@@ -1,8 +1,8 @@
 import { rpc } from '@polkadot/types-support/metadata/static-substrate';
 import staticSubstrate from '@polkadot/types-support/metadata/v15/substrate-hex';
+import { ConstantExecutor } from '@dedot/api';
 import { $Metadata, Metadata, PortableRegistry, RuntimeVersion } from '@dedot/codecs';
 import { generateTypes, generateTypesFromEndpoint } from '@dedot/codegen';
-import { ConstantExecutor } from 'dedot';
 import * as path from 'path';
 import { CommandModule } from 'yargs';
 
