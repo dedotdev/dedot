@@ -1,11 +1,11 @@
 {
-  "name": "@dedot/specs",
-  "version": "0.0.1-alpha.31",
-  "description": "Known specs for rpc, runtime calls",
+  "name": "@dedot/runtime-specs",
+  "version": "0.0.1-alpha.32",
+  "description": "Known specs runtime apis",
   "author": "Thang X. Vu <thang@coongcrafts.io>",
-  "homepage": "https://github.com/dedotdev/dedot/tree/main/packages/specs",
+  "homepage": "https://github.com/dedotdev/dedot/tree/main/packages/runtime-specs",
   "repository": {
-    "directory": "packages/specs",
+    "directory": "packages/runtime-specs",
     "type": "git",
     "url": "https://github.com/dedotdev/dedot.git"
   },

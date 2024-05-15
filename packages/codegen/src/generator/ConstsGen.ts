@@ -3,7 +3,7 @@ import { ApiGen } from './ApiGen.js';
 import { beautifySourceCode, commentBlock, compileTemplate } from './utils.js';
 
 export class ConstsGen extends ApiGen {
-  generate() {
+  generate(useSubPaths: boolean = false) {
     const { pallets } = this.metadata;
 
     this.typesGen.clearCache();
@@ -25,7 +25,7 @@ export class ConstsGen extends ApiGen {
       },`;
     }
 
-    const importTypes = this.typesGen.typeImports.toImports();
+    const importTypes = this.typesGen.typeImports.toImports({ useSubPaths });
     const template = compileTemplate('consts.hbs');
 
     return beautifySourceCode(template({ importTypes, defTypeOut }));

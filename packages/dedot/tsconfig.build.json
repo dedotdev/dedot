@@ -1,0 +1,30 @@
+{
+  "extends": "./tsconfig.json",
+  "exclude": ["**/__tests__/*"],
+  "references": [
+    {
+      "path": "../codecs/tsconfig.json"
+    },
+    {
+      "path": "../types/tsconfig.json"
+    },
+    {
+      "path": "../runtime-specs/tsconfig.json"
+    },
+    {
+      "path": "../api/tsconfig.json"
+    },
+    {
+      "path": "../providers/tsconfig.json"
+    },
+    {
+      "path": "../shape/tsconfig.json"
+    },
+    {
+      "path": "../utils/tsconfig.json"
+    },
+    {
+      "path": "../cli/tsconfig.json"
+    }
+  ]
+}

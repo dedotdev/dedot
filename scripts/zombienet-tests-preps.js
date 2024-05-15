@@ -27,18 +27,57 @@ const main = () => {
     pkgJson.module = './dist/index.js';
     pkgJson.types = './dist/index.d.ts';
 
-    if (pkgJson.name !== '@dedot/chaintypes') {
-      pkgJson.exports = {
-        '.': {
-          import: {
-            types: './dist/index.d.ts',
-            default: './dist/index.js',
-          },
-          require: {
-            types: './dist/index.d.ts',
-            default: './dist/cjs/index.js',
-          },
-        },
+    pkgJson.exports = {
+      '.': {
+        types: './dist/index.d.ts',
+        import: './dist/index.js',
+        require: './dist/cjs/index.js',
+        default: './dist/index.js',
+      },
+    };
+
+    if (pkgJson.name === 'dedot') {
+      pkgJson.exports['./chaintypes'] = {
+        types: './dist/chaintypes/index.d.ts',
+        import: './dist/chaintypes/index.js',
+        require: './dist/cjs/chaintypes/index.js',
+        default: './dist/chaintypes/index.js',
+      };
+      pkgJson.exports['./codecs'] = {
+        types: './dist/codecs/index.d.ts',
+        import: './dist/codecs/index.js',
+        require: './dist/cjs/codecs/index.js',
+        default: './dist/codecs/index.js',
+      };
+      pkgJson.exports['./types'] = {
+        types: './dist/types/index.d.ts',
+        import: './dist/types/index.js',
+        require: './dist/cjs/types/index.js',
+        default: './dist/types/index.js',
+      };
+      pkgJson.exports['./types/json-rpc'] = {
+        types: './dist/types/json-rpc/index.d.ts',
+        import: './dist/types/json-rpc/index.js',
+        require: './dist/cjs/types/json-rpc/index.js',
+        default: './dist/types/json-rpc/index.js',
+      };
+      pkgJson.exports['./runtime-specs'] = {
+        types: './dist/runtime-specs/index.d.ts',
+        import: './dist/runtime-specs/index.js',
+        require: './dist/cjs/runtime-specs/index.js',
+        default: './dist/runtime-specs/index.js',
+      };
+      pkgJson.exports['./utils'] = {
+        types: './dist/utils/index.d.ts',
+        import: './dist/utils/index.js',
+        require: './dist/cjs/utils/index.js',
+        default: './dist/utils/index.js',
+      };
+      pkgJson.exports['./shape'] = {
+        types: './dist/shape/index.d.ts',
+        import: './dist/shape/index.js',
+        require: './dist/cjs/shape/index.js',
+        default: './dist/shape/index.js',
       };
     }
 

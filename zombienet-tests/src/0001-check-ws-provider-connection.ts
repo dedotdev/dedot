@@ -1,5 +1,5 @@
-import { WsProvider } from '@dedot/providers';
-import { assert, isHex, isNumber } from '@dedot/utils';
+import { WsProvider } from 'dedot';
+import { assert, isHex, isNumber } from 'dedot/utils';
 
 export const run = async (nodeName: any, networkInfo: any): Promise<void> => {
   const { wsUri: endpoint } = networkInfo.nodesByName[nodeName];

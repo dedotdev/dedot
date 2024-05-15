@@ -1,6 +1,6 @@
 {
   "name": "@dedot/codegen",
-  "version": "0.0.1-alpha.31",
+  "version": "0.0.1-alpha.32",
   "description": "Generate types",
   "author": "Thang X. Vu <thang@coongcrafts.io>",
   "homepage": "https://github.com/dedotdev/dedot/tree/main/packages/codegen",
@@ -18,11 +18,13 @@
     "copy": "cp -R ./src/templates ./dist && cp -R ./src/templates ./dist/cjs"
   },
   "dependencies": {
+    "@dedot/api": "workspace:*",
     "@dedot/codecs": "workspace:*",
+    "@dedot/providers": "workspace:*",
+    "@dedot/runtime-specs": "workspace:*",
     "@dedot/shape": "workspace:*",
-    "@dedot/specs": "workspace:*",
+    "@dedot/types": "workspace:*",
     "@dedot/utils": "workspace:*",
-    "dedot": "workspace:*",
     "handlebars": "^4.7.7",
     "prettier": "^3.2.5"
   },

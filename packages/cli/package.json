@@ -1,6 +1,6 @@
 {
   "name": "@dedot/cli",
-  "version": "0.0.1-alpha.31",
+  "version": "0.0.1-alpha.32",
   "author": "Thang X. Vu <thang@coongcrafts.io>",
   "bin": {
     "dedot": "./bin/dedot",
@@ -15,6 +15,8 @@
     "start": "ts-node src/index.ts"
   },
   "dependencies": {
+    "@dedot/api": "workspace:*",
+    "@dedot/codecs": "workspace:*",
     "@dedot/codegen": "workspace:*",
     "@polkadot/types-support": "^11.0.2",
     "yargs": "^17.7.2"

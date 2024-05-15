@@ -1,6 +1,6 @@
 import { BlockHash, RuntimeApiMethodDefLatest } from '@dedot/codecs';
+import { Metadata, toRuntimeApiMethods, toRuntimeApiSpecs } from '@dedot/runtime-specs';
 import type { AnyShape } from '@dedot/shape';
-import { Metadata, toRuntimeApiMethods, toRuntimeApiSpecs } from '@dedot/specs';
 import type {
   GenericRuntimeApiMethod,
   GenericSubstrateApi,

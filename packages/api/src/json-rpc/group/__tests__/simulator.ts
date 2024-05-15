@@ -1,7 +1,7 @@
-import { BestBlockChanged, ChainHeadRuntimeVersion, Finalized, Initialized, NewBlock } from '@dedot/specs';
+import { BestBlockChanged, ChainHeadRuntimeVersion, Finalized, Initialized, NewBlock } from '@dedot/types/json-rpc';
 import { HexString, isNumber, numberToHex, stringToHex } from '@dedot/utils';
-import { SubstrateRuntimeVersion } from 'dedot';
-import MockProvider, { MockedRuntimeVersion } from 'dedot/client/__tests__/MockProvider';
+import MockProvider, { MockedRuntimeVersion } from '../../../client/__tests__/MockProvider.js';
+import { SubstrateRuntimeVersion } from '../../../types.js';
 
 const rpcMethods = [
   'chainHead_v1_body',
@@ -16,6 +16,8 @@ const rpcMethods = [
   'chainSpec_v1_chainName',
   'chainSpec_v1_genesisHash',
   'chainSpec_v1_properties',
+  'transaction_v1_broadcast',
+  'transaction_v1_stop',
 ];
 
 type SimulatorConfig = {
@@ -35,6 +37,7 @@ export const mockedRuntime: ChainHeadRuntimeVersion = {
       {} as Record<string, number>,
     ),
     '0xdf6acb689907609b': 4, // Core v4
+    '0xd2bc9897eed08f15': 3, // TaggedTransactionQueue v3
   },
 };
 
@@ -237,5 +240,6 @@ export const newChainHeadSimulator = ({ numOfFinalizedBlocks = 15, provider, ini
     notify,
     rpcMethods,
     stop,
+    blockDb,
   };
 };

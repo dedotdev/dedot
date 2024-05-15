@@ -15,7 +15,7 @@ const main = () => {
     let filePath = path.resolve(currentDir, file);
 
     // Copy the root README.md if current dir is api
-    if (currentDir.endsWith('packages/api') && file === 'README.md') {
+    if (currentDir.endsWith('packages/dedot') && file === 'README.md') {
       filePath = path.resolve(currentDir, '../..', file);
     }
 
@@ -47,6 +47,15 @@ const main = () => {
         };
       }
 
+      if (pkgJson.name === '@dedot/api') {
+        pkgJson.exports['./chaintypes'] = {
+          types: './chaintypes/index.d.ts',
+          import: './chaintypes/index.js',
+          require: './cjs/chaintypes/index.js',
+          default: './chaintypes/index.js',
+        };
+      }
+
       // Export default/generic substrate chaintypes
       if (pkgJson.name === 'dedot') {
         pkgJson.exports['./chaintypes'] = {
@@ -54,6 +63,51 @@ const main = () => {
           import: './chaintypes/index.js',
           require: './cjs/chaintypes/index.js',
           default: './chaintypes/index.js',
+        };
+        pkgJson.exports['./codecs'] = {
+          types: './codecs/index.d.ts',
+          import: './codecs/index.js',
+          require: './cjs/codecs/index.js',
+          default: './codecs/index.js',
+        };
+        pkgJson.exports['./types'] = {
+          types: './types/index.d.ts',
+          import: './types/index.js',
+          require: './cjs/types/index.js',
+          default: './types/index.js',
+        };
+        pkgJson.exports['./types/json-rpc'] = {
+          types: './types/json-rpc/index.d.ts',
+          import: './types/json-rpc/index.js',
+          require: './cjs/types/json-rpc/index.js',
+          default: './types/json-rpc/index.js',
+        };
+        pkgJson.exports['./runtime-specs'] = {
+          types: './runtime-specs/index.d.ts',
+          import: './runtime-specs/index.js',
+          require: './cjs/runtime-specs/index.js',
+          default: './runtime-specs/index.js',
+        };
+        pkgJson.exports['./utils'] = {
+          types: './utils/index.d.ts',
+          import: './utils/index.js',
+          require: './cjs/utils/index.js',
+          default: './utils/index.js',
+        };
+        pkgJson.exports['./shape'] = {
+          types: './shape/index.d.ts',
+          import: './shape/index.js',
+          require: './cjs/shape/index.js',
+          default: './shape/index.js',
+        };
+      }
+
+      if (pkgJson.name === '@dedot/types') {
+        pkgJson.exports['./json-rpc'] = {
+          types: './json-rpc/index.d.ts',
+          import: './json-rpc/index.js',
+          require: './cjs/json-rpc/index.js',
+          default: './json-rpc/index.js',
         };
       }
 

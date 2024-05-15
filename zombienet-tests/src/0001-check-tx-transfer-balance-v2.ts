@@ -1,9 +1,7 @@
 import Keyring from '@polkadot/keyring';
 import { cryptoWaitReady } from '@polkadot/util-crypto';
-import { RococoApi } from '@dedot/chaintypes';
-import { TransactionStatusV2 } from '@dedot/types';
-import { assert, isHex, isNumber } from '@dedot/utils';
-import { Dedot, DedotClient, WsProvider } from 'dedot';
+import { DedotClient, WsProvider } from 'dedot';
+import { assert, isHex, isNumber } from 'dedot/utils';
 
 const BOB = '5FHneW46xGXgs5mUiveU4sbTyGBzmstUspZC92UhjJM694ty';
 

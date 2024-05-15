@@ -8,8 +8,8 @@ import {
   SubscriptionCallback,
   SubscriptionInput,
 } from '@dedot/providers';
-import { ChainProperties } from '@dedot/specs';
 import { AnyFunc } from '@dedot/types';
+import { ChainProperties } from '@dedot/types/json-rpc';
 import { EventEmitter } from '@dedot/utils';
 import { FallbackRuntimeApis } from '../../executor/RuntimeApiExecutor.js';
 

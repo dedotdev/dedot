@@ -27,7 +27,7 @@ export interface WsProviderOptions {
   timeout?: number;
 }
 
-export const DEFAULT_OPTIONS: Partial<WsProviderOptions> = {
+const DEFAULT_OPTIONS: Partial<WsProviderOptions> = {
   retryDelayMs: 2500,
   timeout: 30_000,
 };

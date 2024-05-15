@@ -3,7 +3,7 @@ import { ApiGen } from '../generator/index.js';
 import { beautifySourceCode, commentBlock, compileTemplate, isReservedWord } from './utils.js';
 
 export class TxGen extends ApiGen {
-  generate() {
+  generate(useSubPaths: boolean = false) {
     const { pallets, types } = this.metadata;
 
     this.typesGen.clearCache();
@@ -79,7 +79,7 @@ export class TxGen extends ApiGen {
         },`;
     }
 
-    const importTypes = this.typesGen.typeImports.toImports();
+    const importTypes = this.typesGen.typeImports.toImports({ useSubPaths });
 
     // TODO make explicit separate type for Extra
     const defTypes = `

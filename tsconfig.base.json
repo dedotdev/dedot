@@ -28,8 +28,8 @@
       "@dedot/codegen/*": ["../codegen/src/*"],
       "@dedot/shape": ["../shape/src"],
       "@dedot/shape/*": ["../shape/src/*"],
-      "@dedot/specs": ["../specs/src"],
-      "@dedot/specs/*": ["../specs/src/*"],
+      "@dedot/runtime-specs": ["../runtime-specs/src"],
+      "@dedot/runtime-specs/*": ["../runtime-specs/src/*"],
       "@dedot/types": ["../types/src"],
       "@dedot/types/*": ["../types/src/*"],
       "@dedot/utils": ["../utils/src"],
@@ -38,8 +38,10 @@
       "@dedot/storage/*": ["../storage/src/*"],
       "@dedot/providers": ["../providers/src"],
       "@dedot/providers/*": ["../providers/src/*"],
-      "dedot": ["../api/src"],
-      "dedot/*": ["../api/src/*"]
+      "@dedot/api": ["../api/src"],
+      "@dedot/api/*": ["../api/src/*"],
+      "dedot": ["../dedot/src"],
+      "dedot/*": ["../dedot/src/*"]
     }
   }
 }

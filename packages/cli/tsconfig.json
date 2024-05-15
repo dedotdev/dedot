@@ -3,12 +3,18 @@
   "compilerOptions": {
     "baseUrl": "./",
     "outDir": "dist",
-    "rootDir": "src",
+    "rootDir": "src"
   },
   "include": ["src/**/*"],
   "references": [
     {
-      "path": "../codegen/tsconfig.json",
+      "path": "../codegen/tsconfig.json"
     },
-  ],
+    {
+      "path": "../codecs/tsconfig.json"
+    },
+    {
+      "path": "../api/tsconfig.json"
+    }
+  ]
 }

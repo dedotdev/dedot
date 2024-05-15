@@ -1,13 +1,16 @@
 import { BlockHash, Hash, Metadata, PortableRegistry } from '@dedot/codecs';
 import type { ConnectionStatus, JsonRpcProvider, ProviderEvent } from '@dedot/providers';
 import type { AnyShape } from '@dedot/shape';
-import { SubscriptionsInfo } from '@dedot/specs';
 import type { IStorage } from '@dedot/storage';
 import type { GenericSubstrateApi, RpcVersion, RuntimeApiName, RuntimeApiSpec, Unsub } from '@dedot/types';
 import type { HashFn, HexString, IEventEmitter } from '@dedot/utils';
 import type { AnySignedExtension } from './extrinsic/index.js';
 
 export type MetadataKey = `RAW_META/${string}`;
+export type SubscribeMethod = string;
+export type UnsubscribeMethod = string;
+export type NotificationMethod = string;
+export type SubscriptionsInfo = Record<SubscribeMethod, [NotificationMethod, UnsubscribeMethod]>;
 
 export interface JsonRpcClientOptions {
   /**

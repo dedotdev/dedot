@@ -1,8 +1,8 @@
-import { JsonRpcGroup, JsonRpcGroupOptions } from './JsonRpcGroup.js';
-import { IJsonRpcClient, TxBroadcaster } from '../../types.js';
-import { OperationId } from '@dedot/specs';
-import { assert, HexString } from '@dedot/utils';
 import { Unsub } from '@dedot/types';
+import { OperationId } from '@dedot/types/json-rpc';
+import { assert, HexString } from '@dedot/utils';
+import { IJsonRpcClient, TxBroadcaster } from '../../types.js';
+import { JsonRpcGroup, JsonRpcGroupOptions } from './JsonRpcGroup.js';
 
 export class Transaction extends JsonRpcGroup implements TxBroadcaster {
   constructor(client: IJsonRpcClient, options?: Partial<JsonRpcGroupOptions>) {

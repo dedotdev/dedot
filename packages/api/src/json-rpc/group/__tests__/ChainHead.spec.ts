@@ -8,7 +8,7 @@ import {
   OperationStorageDone,
   OperationStorageItems,
   StorageQuery,
-} from '@dedot/specs';
+} from '@dedot/types/json-rpc';
 import { waitFor } from '@dedot/utils';
 import { MockInstance } from '@vitest/spy';
 import { beforeEach, describe, expect, it, vi } from 'vitest';

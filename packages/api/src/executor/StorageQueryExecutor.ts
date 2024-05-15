@@ -1,5 +1,4 @@
 import { BlockHash, Option, StorageData, StorageKey } from '@dedot/codecs';
-import type { StorageChangeSet } from '@dedot/specs';
 import type {
   AsyncMethod,
   Callback,
@@ -8,6 +7,7 @@ import type {
   PaginationOptions,
   Unsub,
 } from '@dedot/types';
+import type { StorageChangeSet } from '@dedot/types/json-rpc';
 import { assert, isFunction } from '@dedot/utils';
 import { QueryableStorage } from '../storage/QueryableStorage.js';
 import { Executor } from './Executor.js';
