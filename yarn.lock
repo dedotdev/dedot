@@ -395,10 +395,6 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@dedot/codegen@workspace:packages/codegen"
   dependencies:
-    "@dedot/codecs": "workspace:*"
-    "@dedot/runtime-specs": "workspace:*"
-    "@dedot/shape": "workspace:*"
-    "@dedot/utils": "workspace:*"
     dedot: "workspace:*"
     handlebars: "npm:^4.7.7"
     prettier: "npm:^3.2.5"
@@ -3264,6 +3260,7 @@ __metadata:
     "@dedot/api": "workspace:*"
     "@dedot/codecs": "workspace:*"
     "@dedot/runtime-specs": "workspace:*"
+    "@dedot/shape": "workspace:*"
     "@dedot/types": "workspace:*"
   languageName: unknown
   linkType: soft

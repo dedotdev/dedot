@@ -1,7 +1,7 @@
-import { RuntimeApiMethodDefLatest } from '@dedot/codecs';
-import { getRuntimeApiNames, getRuntimeApiSpecs } from '@dedot/runtime-specs';
-import { RuntimeApiMethodSpec, RuntimeApiSpec } from '@dedot/types';
-import { calcRuntimeApiHash, stringSnakeCase, stringCamelCase } from '@dedot/utils';
+import { RuntimeApiMethodDefLatest } from 'dedot/codecs';
+import { getRuntimeApiNames, getRuntimeApiSpecs } from 'dedot/runtime-specs';
+import { RuntimeApiMethodSpec, RuntimeApiSpec } from 'dedot/types';
+import { calcRuntimeApiHash, stringSnakeCase, stringCamelCase } from 'dedot/utils';
 import { ApiGen } from './ApiGen.js';
 import { TypesGen } from './TypesGen.js';
 import { findKnownCodecType } from './known-codecs.js';

@@ -1,4 +1,4 @@
-import { assert, stringCamelCase, stringPascalCase } from '@dedot/utils';
+import { assert, stringCamelCase, stringPascalCase } from 'dedot/utils';
 import { ApiGen } from './ApiGen.js';
 import { beautifySourceCode, commentBlock, compileTemplate } from './utils.js';
 
