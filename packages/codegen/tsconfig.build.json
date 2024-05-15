@@ -12,7 +12,7 @@
       "path": "../codecs/tsconfig.json"
     },
     {
-      "path": "../specs/tsconfig.json"
+      "path": "../runtime-specs/tsconfig.json"
     },
     {
       "path": "../utils/tsconfig.json"

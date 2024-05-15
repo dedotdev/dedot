@@ -223,22 +223,22 @@ const queryInfo = await api.call.transactionPaymentApi.queryInfo(tx.toU8a(), tx.
 const runtimeVersion = await api.call.core.version();
 ```
 
-For chains that only support Metadata V14, we need to bring in the Runtime Api definitions when initializing the Dedot client instance to encode & decode the calls. You can find all supported Runtime Api definitions in [`@dedot/specs`](https://github.com/dedotdev/dedot/blob/60de0fed8ba19c67a7e174c6168a127fdbf6caef/packages/specs/src/runtime/all.ts#L21-L39) package.
+For chains that only support Metadata V14, we need to bring in the Runtime Api definitions when initializing the Dedot client instance to encode & decode the calls. You can find all supported Runtime Api definitions in [`@dedot/runtime-specs`](https://github.com/dedotdev/dedot/blob/60de0fed8ba19c67a7e174c6168a127fdbf6caef/packages/runtime-specs/src/runtime/all.ts#L21-L39) package.
 
 Examples:
 ```typescript
-import { RuntimeApis } from '@dedot/specs';
+import { RuntimeApis } from '@dedot/runtime-specs';
 const api = await Dedot.new({ endpoint: 'wss://rpc.mynetwork.com', runtimeApis: RuntimeApis });
 
 // Or bring in only the Runtime Api definition that you want to interact with
-import { AccountNonceApi } from '@dedot/specs';
+import { AccountNonceApi } from '@dedot/runtime-specs';
 const api = await Dedot.new({ endpoint: 'wss://rpc.mynetwork.com', runtimeApis: { AccountNonceApi } });
 
 // Get account nonce
 const nonce = await api.call.accountNonceApi.accountNonce(<address>);
 ```
 
-You absolutely can define your own Runtime Api definition if you don't find it in the [supported list](https://github.com/dedotdev/dedot/blob/60de0fed8ba19c67a7e174c6168a127fdbf6caef/packages/specs/src/runtime/all.ts#L21-L39).
+You absolutely can define your own Runtime Api definition if you don't find it in the [supported list](https://github.com/dedotdev/dedot/blob/60de0fed8ba19c67a7e174c6168a127fdbf6caef/packages/runtime-specs/src/runtime/all.ts#L21-L39).
 
 ### Transaction APIs
 

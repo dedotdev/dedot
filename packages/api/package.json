@@ -15,8 +15,8 @@
   "dependencies": {
     "@dedot/codecs": "workspace:*",
     "@dedot/providers": "workspace:*",
+    "@dedot/runtime-specs": "workspace:*",
     "@dedot/shape": "workspace:*",
-    "@dedot/specs": "workspace:*",
     "@dedot/storage": "workspace:*",
     "@dedot/types": "workspace:*",
     "@dedot/utils": "workspace:*"

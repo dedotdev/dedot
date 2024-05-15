@@ -15,7 +15,7 @@
       "path": "../types/tsconfig.json"
     },
     {
-      "path": "../specs/tsconfig.json"
+      "path": "../runtime-specs/tsconfig.json"
     },
     {
       "path": "../storage/tsconfig.json"

@@ -30,7 +30,7 @@ export class TypeImports {
 
     const toImports: [Set<string>, string][] = [
       [this.knownTypes, '@dedot/types'],
-      [this.specTypes, '@dedot/specs'],
+      [this.specTypes, '@dedot/runtime-specs'],
       [this.codecTypes, '@dedot/codecs'],
       [this.portableTypes, './types'],
     ];

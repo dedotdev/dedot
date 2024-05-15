@@ -19,8 +19,8 @@
   },
   "dependencies": {
     "@dedot/codecs": "workspace:*",
+    "@dedot/runtime-specs": "workspace:*",
     "@dedot/shape": "workspace:*",
-    "@dedot/specs": "workspace:*",
     "@dedot/utils": "workspace:*",
     "dedot": "workspace:*",
     "handlebars": "^4.7.7",

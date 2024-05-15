@@ -381,8 +381,8 @@ __metadata:
   resolution: "@dedot/codegen@workspace:packages/codegen"
   dependencies:
     "@dedot/codecs": "workspace:*"
+    "@dedot/runtime-specs": "workspace:*"
     "@dedot/shape": "workspace:*"
-    "@dedot/specs": "workspace:*"
     "@dedot/utils": "workspace:*"
     dedot: "workspace:*"
     handlebars: "npm:^4.7.7"
@@ -398,6 +398,16 @@ __metadata:
     "@polkadot/x-ws": "npm:^12.6.2"
     mock-socket: "npm:^9.3.1"
     smoldot: "npm:^2.0.25"
+  languageName: unknown
+  linkType: soft
+
+"@dedot/runtime-specs@workspace:*, @dedot/runtime-specs@workspace:packages/runtime-specs":
+  version: 0.0.0-use.local
+  resolution: "@dedot/runtime-specs@workspace:packages/runtime-specs"
+  dependencies:
+    "@dedot/codecs": "workspace:*"
+    "@dedot/shape": "workspace:*"
+    "@dedot/types": "workspace:*"
   languageName: unknown
   linkType: soft
 
@@ -417,16 +427,6 @@ __metadata:
   dependencies:
     "@dedot/utils": "workspace:*"
     subshape: "npm:^0.14.0"
-  languageName: unknown
-  linkType: soft
-
-"@dedot/specs@workspace:*, @dedot/specs@workspace:packages/specs":
-  version: 0.0.0-use.local
-  resolution: "@dedot/specs@workspace:packages/specs"
-  dependencies:
-    "@dedot/codecs": "workspace:*"
-    "@dedot/shape": "workspace:*"
-    "@dedot/types": "workspace:*"
   languageName: unknown
   linkType: soft
 
@@ -3248,8 +3248,8 @@ __metadata:
   dependencies:
     "@dedot/codecs": "workspace:*"
     "@dedot/providers": "workspace:*"
+    "@dedot/runtime-specs": "workspace:*"
     "@dedot/shape": "workspace:*"
-    "@dedot/specs": "workspace:*"
     "@dedot/storage": "workspace:*"
     "@dedot/types": "workspace:*"
     "@dedot/utils": "workspace:*"
