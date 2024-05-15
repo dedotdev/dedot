@@ -1,7 +1,9 @@
 import Keyring from '@polkadot/keyring';
 import { cryptoWaitReady } from '@polkadot/util-crypto';
 import { Contract, ContractDeployer, parseRawMetadata } from '@dedot/contracts';
-import { assert, Dedot, WsProvider } from 'dedot';
+import { WsProvider } from '@dedot/providers';
+import { assert } from '@dedot/utils';
+import { Dedot } from 'dedot';
 import * as flipperRaw from '../flipper.json';
 
 export const run = async (_nodeName: any, networkInfo: any) => {
