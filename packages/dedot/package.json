@@ -14,6 +14,7 @@
     "@dedot/api": "workspace:*",
     "@dedot/codecs": "workspace:*",
     "@dedot/runtime-specs": "workspace:*",
+    "@dedot/shape": "workspace:*",
     "@dedot/types": "workspace:*"
   },
   "exports": {
@@ -46,6 +47,16 @@
       "types": "./src/runtime-specs/index.ts",
       "import": "./src/runtime-specs/index.ts",
       "default": "./src/runtime-specs/index.ts"
+    },
+    "./utils": {
+      "types": "./src/utils/index.ts",
+      "import": "./src/utils/index.ts",
+      "default": "./src/utils/index.ts"
+    },
+    "./shape": {
+      "types": "./src/shape/index.ts",
+      "import": "./src/shape/index.ts",
+      "default": "./src/shape/index.ts"
     }
   },
   "publishConfig": {
