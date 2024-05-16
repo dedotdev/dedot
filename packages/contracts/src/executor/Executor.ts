@@ -1,7 +1,7 @@
+import { ISubstrateClient } from '@dedot/api';
+import { SubstrateApi } from '@dedot/api/chaintypes';
 import { AccountId32 } from '@dedot/codecs';
 import { GenericSubstrateApi, RpcVersion } from '@dedot/types';
-import { ISubstrateClient } from 'dedot';
-import { SubstrateApi } from 'dedot/chaintypes';
 import { TypinkRegistry } from '../TypinkRegistry.js';
 import { Arg, ContractMessage } from '../types/index.js';
 import { ContractMetadata } from '../types/index.js';

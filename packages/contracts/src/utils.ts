@@ -1,6 +1,6 @@
+import { ISubstrateClient } from '@dedot/api';
 import { PortableType, TypeDef } from '@dedot/codecs';
 import { GenericSubstrateApi } from '@dedot/types';
-import { ISubstrateClient } from 'dedot';
 import { Executor } from './executor';
 import { ContractMetadata, Def } from './types/index.js';
 

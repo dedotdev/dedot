@@ -1,10 +1,10 @@
-import {Dedot, FallbackRuntimeApis } from 'dedot';
-import {beforeEach, describe, expect, it, vi} from 'vitest';
+import { Dedot, FallbackRuntimeApis } from '@dedot/api';
+import { beforeEach, describe, expect, it } from 'vitest';
 import { Contract } from '../Contract';
 // @ts-ignore
-import flipperRaw from './flipper.json' assert { type: "json" };
-import {parseRawMetadata} from "../utils";
-import {RuntimeVersion} from "@dedot/codecs";
+import flipperRaw from './flipper.json' assert { type: 'json' };
+import { parseRawMetadata } from "../utils";
+import { RuntimeVersion } from "@dedot/codecs";
 import MockProvider from "@dedot/api/client/__tests__/MockProvider";
 
 export const FLIPPER = parseRawMetadata(JSON.stringify(flipperRaw));
@@ -29,7 +29,7 @@ describe('Contract', () => {
   describe('api support contracts pallet', () => {
     beforeEach(async () => {
       provider = new MockProvider(MockedRuntimeVersionWithContractsApi);
-      api = await Dedot.new({ provider });
+      api = await Dedot.new({provider});
       contract = new Contract(api, MOCK_ADDRESS, FLIPPER);
     })
 
@@ -39,15 +39,15 @@ describe('Contract', () => {
     });
 
     it('should throw error if message meta not found', () => {
-        expect(() => contract.tx.notFound).toThrowError('Tx message not found: notFound');
-        expect(() => contract.query.notFound).toThrowError('Query message not found: notFound');
-      });
-    })
+      expect(() => contract.tx.notFound).toThrowError('Tx message not found: notFound');
+      expect(() => contract.query.notFound).toThrowError('Query message not found: notFound');
+    });
+  })
 
   describe('api not support contracts pallet', () => {
     it('should throw error', async () => {
       provider = new MockProvider();
-      api = await Dedot.new({ provider });
+      api = await Dedot.new({provider});
       expect(() => new Contract(api, MOCK_ADDRESS, FLIPPER)).toThrowError('This api does not support contracts pallet');
     });
   })

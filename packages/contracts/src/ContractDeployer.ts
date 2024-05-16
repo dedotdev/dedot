@@ -1,7 +1,7 @@
+import { ISubstrateClient } from '@dedot/api';
+import { SubstrateApi } from '@dedot/api/chaintypes';
 import { Hash } from '@dedot/codecs';
 import { GenericSubstrateApi, RpcVersion } from '@dedot/types';
-import { ISubstrateClient } from 'dedot';
-import { SubstrateApi } from 'dedot/chaintypes';
 import { TypinkRegistry } from './TypinkRegistry.js';
 import { ConstructorQueryExecutor } from './executor/ConstructorQueryExecutor';
 import { ConstructorTxExecutor } from './executor/index.js';

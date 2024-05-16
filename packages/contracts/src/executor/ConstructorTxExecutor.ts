@@ -1,7 +1,7 @@
+import { ISubstrateClient } from '@dedot/api';
 import { Hash } from '@dedot/codecs';
 import { GenericSubstrateApi } from '@dedot/types';
 import { assert, concatU8a, hexToU8a, isWasm, stringCamelCase, u8aToHex } from '@dedot/utils';
-import { ISubstrateClient } from 'dedot';
 import { TypinkRegistry } from '../TypinkRegistry.js';
 import { ConstructorOptions, ContractConstructor, GenericConstructorTxCall } from '../types/index.js';
 import { Executor } from './Executor.js';
