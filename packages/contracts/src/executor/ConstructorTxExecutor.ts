@@ -1,5 +1,5 @@
 import { Hash } from '@dedot/codecs';
-import { GenericSubstrateApi, RpcVersion } from '@dedot/types';
+import { GenericSubstrateApi } from '@dedot/types';
 import { assert, concatU8a, hexToU8a, isWasm, stringCamelCase, u8aToHex } from '@dedot/utils';
 import { ISubstrateClient } from 'dedot';
 import { TypinkRegistry } from '../TypinkRegistry.js';

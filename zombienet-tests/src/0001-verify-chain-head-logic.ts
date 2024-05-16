@@ -1,9 +1,8 @@
-import { $Header, $RuntimeVersion, PortableRegistry, $Metadata, AccountId32 } from '@dedot/codecs';
-import { WsProvider } from '@dedot/providers';
-import * as $ from '@dedot/shape';
-import { assert, deferred, HexString } from '@dedot/utils';
-import { ChainHead, JsonRpcClient, QueryableStorage, PinnedBlock } from 'dedot';
+import { ChainHead, JsonRpcClient, QueryableStorage, PinnedBlock, WsProvider } from 'dedot';
 import { FrameSystemAccountInfo } from 'dedot/chaintypes';
+import { $Header, $RuntimeVersion, PortableRegistry, $Metadata, AccountId32 } from 'dedot/codecs';
+import * as $ from 'dedot/shape';
+import { assert, deferred, HexString } from 'dedot/utils';
 
 const ALICE = '5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY';
 const BOB = '5FHneW46xGXgs5mUiveU4sbTyGBzmstUspZC92UhjJM694ty';

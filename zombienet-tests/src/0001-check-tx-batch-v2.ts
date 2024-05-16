@@ -1,9 +1,8 @@
 import Keyring from '@polkadot/keyring';
 import { cryptoWaitReady } from '@polkadot/util-crypto';
 import { RococoRuntimeRuntimeCallLike } from '@dedot/chaintypes/rococo';
-import { WsProvider } from '@dedot/providers';
-import { assert, isHex, isNumber } from '@dedot/utils';
-import { DedotClient } from 'dedot';
+import { DedotClient, WsProvider } from 'dedot';
+import { assert, isHex, isNumber } from 'dedot/utils';
 
 const BOB = '5FHneW46xGXgs5mUiveU4sbTyGBzmstUspZC92UhjJM694ty';
 

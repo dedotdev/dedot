@@ -3,7 +3,16 @@
   "exclude": ["**/__tests__/*"],
   "references": [
     {
-      "path": "../dedot/tsconfig.json"
+      "path": "../api/tsconfig.json"
     },
+    {
+      "path": "../codecs/tsconfig.json"
+    },
+    {
+      "path": "../types/tsconfig.json"
+    },
+    {
+      "path": "../utils/tsconfig.json"
+    }
   ]
 }

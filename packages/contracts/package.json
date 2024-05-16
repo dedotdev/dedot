@@ -11,7 +11,10 @@
     "clean": "rm -rf ./dist && rm -rf ./tsconfig.tsbuildinfo ./tsconfig.build.tsbuildinfo"
   },
   "dependencies": {
-    "dedot": "workspace:*"
+    "@dedot/api": "workspace:*",
+    "@dedot/codecs": "workspace:*",
+    "@dedot/types": "workspace:*",
+    "@dedot/utils": "workspace:*"
   },
   "publishConfig": {
     "access": "public",

@@ -1,28 +1,28 @@
 import Keyring from '@polkadot/keyring';
 import { cryptoWaitReady } from '@polkadot/util-crypto';
-import { Contract, ContractDeployer, parseRawMetadata } from '@dedot/contracts';
-import { WsProvider } from '@dedot/providers';
-import { assert } from '@dedot/utils';
-import { Dedot } from 'dedot';
+import { Dedot, WsProvider } from 'dedot';
+import { Contract, ContractDeployer } from 'dedot/contracts';
+import { assert } from 'dedot/utils';
 import * as flipperRaw from '../flipper.json';
 
 export const run = async (_nodeName: any, networkInfo: any) => {
   await cryptoWaitReady();
 
   const alicePair = new Keyring({ type: 'sr25519' }).addFromUri('//Alice');
-  const flipper = parseRawMetadata(JSON.stringify(flipperRaw));
   const { wsUri } = networkInfo.nodesByName['collator-1'];
 
   const api = await Dedot.new(new WsProvider(wsUri));
 
-  const contractDeployer = new ContractDeployer(api, flipper, flipper.source.wasm!);
+  const flipper: string = JSON.stringify(flipperRaw);
+  const wasm = flipperRaw.source.wasm;
+  const deployer = new ContractDeployer(api, flipper, wasm);
 
-  const { gasRequired } = await contractDeployer.query.new(true, {
+  const { gasRequired } = await deployer.query.new(true, {
     caller: alicePair.address,
     salt: '0x',
   });
 
-  const constructorTx = contractDeployer.tx.new(true, { gasLimit: gasRequired, salt: '0x' });
+  const constructorTx = deployer.tx.new(true, { gasLimit: gasRequired, salt: '0x' });
 
   const contractAddress: string = await new Promise(async (resolve) => {
     await constructorTx.signAndSend(alicePair, async ({ status, events }: any) => {
@@ -42,7 +42,7 @@ export const run = async (_nodeName: any, networkInfo: any) => {
     });
   });
 
-  console.log('Contract address', contractAddress);
+  console.log('Deployed contract address', contractAddress);
   const contract = new Contract(api, contractAddress, flipper);
 
   const state = await contract.query.get({ caller: alicePair.address });
@@ -52,12 +52,12 @@ export const run = async (_nodeName: any, networkInfo: any) => {
   console.log('Flipping...');
   const { contractResult } = await contract.query.flip({ caller: alicePair.address });
 
-  const waitForFinish = await new Promise(async (resolve) => {
+  await new Promise<void>(async (resolve) => {
     await contract.tx.flip({ gasLimit: contractResult.gasRequired }).signAndSend(alicePair, (result: any) => {
       console.log('Transaction status', result.status.tag);
 
       if (result.status.tag === 'InBlock') {
-        resolve(null);
+        resolve();
       }
     });
   });

@@ -1,8 +1,7 @@
 import Keyring from '@polkadot/keyring';
 import { cryptoWaitReady } from '@polkadot/util-crypto';
-import { WsProvider } from '@dedot/providers';
-import { assert } from '@dedot/utils';
-import { DedotClient } from 'dedot';
+import { DedotClient, WsProvider } from 'dedot';
+import { assert } from 'dedot/utils';
 
 export const run = async (nodeName: any, networkInfo: any): Promise<void> => {
   await cryptoWaitReady();

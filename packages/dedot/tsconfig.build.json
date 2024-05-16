@@ -25,6 +25,9 @@
     },
     {
       "path": "../cli/tsconfig.json"
+    },
+    {
+      "path": "../contracts/tsconfig.json"
     }
   ]
 }

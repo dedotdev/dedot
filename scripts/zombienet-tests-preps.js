@@ -79,6 +79,12 @@ const main = () => {
         require: './dist/cjs/shape/index.js',
         default: './dist/shape/index.js',
       };
+      pkgJson.exports['./contracts'] = {
+        types: './dist/contracts/index.d.ts',
+        import: './dist/contracts/index.js',
+        require: './dist/cjs/contracts/index.js',
+        default: './dist/contracts/index.js',
+      };
     }
 
     fileContent = JSON.stringify(pkgJson, null, 2);

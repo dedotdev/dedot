@@ -100,6 +100,12 @@ const main = () => {
           require: './cjs/shape/index.js',
           default: './shape/index.js',
         };
+        pkgJson.exports['./contracts'] = {
+          types: './contracts/index.d.ts',
+          import: './contracts/index.js',
+          require: './cjs/contracts/index.js',
+          default: './contracts/index.js',
+        };
       }
 
       if (pkgJson.name === '@dedot/types') {

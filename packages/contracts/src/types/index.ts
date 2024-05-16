@@ -1,6 +1,6 @@
+import { SubstrateApi } from '@dedot/api/chaintypes';
 import { AccountId32Like, BytesLike, Weight } from '@dedot/codecs';
 import { AnyFunc, AsyncMethod, GenericSubstrateApi, RpcVersion } from '@dedot/types';
-import { SubstrateApi } from 'dedot/chaintypes';
 import { ContractConstructor, ContractMessage } from './shared.js';
 import { ContractMetadataV4 } from './v4.js';
 import { ContractMetadataV5 } from './v5.js';

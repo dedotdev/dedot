@@ -6,19 +6,14 @@
     "rootDir": "src",
     "declarationDir": "dist",
     "paths": {
-      "dedot": ["../packages/api/src"],
-      "dedot/*": ["../packages/api/src/*"],
-      "@dedot/contracts": ["../packages/contracts/src"],
-      "@dedot/contracts/*": ["../packages/contracts/src/*"]
-    },
+      "dedot": ["../packages/dedot/src"],
+      "dedot/*": ["../packages/dedot/src/*"]
+    }
   },
   "include": ["src/**/*"],
   "references": [
     {
-      "path": "../packages/contracts/tsconfig.json",
-    },
-    {
-      "path": "../packages/dedot/tsconfig.json",
-    },
-  ],
+      "path": "../packages/dedot/tsconfig.json"
+    }
+  ]
 }

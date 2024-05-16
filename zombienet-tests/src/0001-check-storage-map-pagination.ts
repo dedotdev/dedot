@@ -1,6 +1,5 @@
-import { WsProvider } from '@dedot/providers';
-import { assert } from '@dedot/utils';
-import { Dedot } from 'dedot';
+import { Dedot, WsProvider } from 'dedot';
+import { assert } from 'dedot/utils';
 
 // @ts-ignore
 BigInt.prototype.toJSON = function () {

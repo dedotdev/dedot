@@ -358,6 +358,15 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@dedot/chaintypes@npm:0.0.1-alpha.83":
+  version: 0.0.1-alpha.83
+  resolution: "@dedot/chaintypes@npm:0.0.1-alpha.83"
+  dependencies:
+    dedot: "npm:0.0.1-alpha.32"
+  checksum: 10c0/ca6538829187e99d69bdadcd66a9759aee3cb54e5d34ef8502940afbc5d3b90d10dc12e84f9a73189b8aa01cced70a9bff9721f9ac474955f16d23152a5e7d14
+  languageName: node
+  linkType: hard
+
 "@dedot/cli@workspace:*, @dedot/cli@workspace:packages/cli":
   version: 0.0.0-use.local
   resolution: "@dedot/cli@workspace:packages/cli"
@@ -413,7 +422,10 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@dedot/contracts@workspace:packages/contracts"
   dependencies:
-    dedot: "workspace:*"
+    "@dedot/api": "workspace:*"
+    "@dedot/codecs": "workspace:*"
+    "@dedot/types": "workspace:*"
+    "@dedot/utils": "workspace:*"
   languageName: unknown
   linkType: soft
 
@@ -3269,13 +3281,14 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"dedot@workspace:*, dedot@workspace:packages/dedot":
+"dedot@npm:0.0.1-alpha.32, dedot@workspace:*, dedot@workspace:packages/dedot":
   version: 0.0.0-use.local
   resolution: "dedot@workspace:packages/dedot"
   dependencies:
     "@dedot/api": "workspace:*"
     "@dedot/cli": "workspace:*"
     "@dedot/codecs": "workspace:*"
+    "@dedot/contracts": "workspace:*"
     "@dedot/providers": "workspace:*"
     "@dedot/runtime-specs": "workspace:*"
     "@dedot/shape": "workspace:*"
@@ -9065,7 +9078,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "zombienet-tests@workspace:zombienet-tests"
   dependencies:
-    "@dedot/contracts": "workspace:*"
+    "@dedot/chaintypes": "npm:0.0.1-alpha.83"
     "@polkadot/keyring": "npm:^12.6.2"
     dedot: "workspace:*"
   languageName: unknown

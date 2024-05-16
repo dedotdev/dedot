@@ -1,9 +1,8 @@
-import { $Metadata, Metadata } from '@dedot/codecs';
-import { WsProvider } from '@dedot/providers';
-import { RpcVersion } from '@dedot/types';
-import { assert, stringCamelCase } from '@dedot/utils';
-import { Dedot, DedotClient, ISubstrateClient } from 'dedot';
+import { Dedot, DedotClient, ISubstrateClient, WsProvider } from 'dedot';
 import { SubstrateApi } from 'dedot/chaintypes';
+import { $Metadata, Metadata } from 'dedot/codecs';
+import { RpcVersion } from 'dedot/types';
+import { assert, stringCamelCase } from 'dedot/utils';
 
 const ALICE = '5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY';
 
