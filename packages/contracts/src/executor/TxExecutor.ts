@@ -1,7 +1,7 @@
 import { GenericSubstrateApi } from '@dedot/types';
-import { assert, concatU8a, hexToU8a, stringCamelCase, u8aToHex } from '@dedot/utils';
-import { normalizeLabel } from 'src/utils';
+import { assert, concatU8a, hexToU8a, u8aToHex } from '@dedot/utils';
 import { ContractMessage, ContractTxOptions, GenericContractTxCall } from '../types/index.js';
+import { normalizeLabel } from '../utils.js';
 import { Executor } from './Executor.js';
 
 export class TxExecutor<ChainApi extends GenericSubstrateApi> extends Executor<ChainApi> {

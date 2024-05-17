@@ -1,10 +1,10 @@
 import { ISubstrateClient } from '@dedot/api';
 import { Hash } from '@dedot/codecs';
 import { GenericSubstrateApi } from '@dedot/types';
-import { assert, concatU8a, HexString, hexToU8a, isWasm, stringCamelCase, u8aToHex } from '@dedot/utils';
-import { normalizeLabel } from 'src/utils';
+import { assert, concatU8a, HexString, hexToU8a, isWasm, u8aToHex } from '@dedot/utils';
 import { TypinkRegistry } from '../TypinkRegistry.js';
 import { ConstructorTxOptions, ContractConstructorMessage, GenericConstructorTxCall } from '../types/index.js';
+import { normalizeLabel } from '../utils.js';
 import { Executor } from './Executor.js';
 
 export class ConstructorTxExecutor<ChainApi extends GenericSubstrateApi> extends Executor<ChainApi> {

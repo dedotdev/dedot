@@ -1,8 +1,8 @@
 import { PalletContractsPrimitivesContractResult } from '@dedot/api/chaintypes';
 import { GenericSubstrateApi } from '@dedot/types';
-import { assert, concatU8a, hexToU8a, stringCamelCase, u8aToHex } from '@dedot/utils';
-import { normalizeLabel } from 'src/utils';
-import { GenericContractQueryCall, ContractMessage, ContractCallOptions } from '../types/index.js';
+import { assert, concatU8a, hexToU8a, u8aToHex } from '@dedot/utils';
+import { ContractCallOptions, ContractMessage, GenericContractQueryCall } from '../types/index.js';
+import { normalizeLabel } from '../utils.js';
 import { Executor } from './Executor.js';
 
 export class QueryExecutor<ChainApi extends GenericSubstrateApi> extends Executor<ChainApi> {
