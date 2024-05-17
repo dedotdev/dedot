@@ -13,15 +13,17 @@ export const run = async (_nodeName: any, networkInfo: any) => {
 
   const flipper: string = JSON.stringify(flipperRaw);
   const wasm = flipperRaw.source.wasm;
+  const caller = alicePair.address;
 
   const verifyContracts = async (api: ISubstrateClient) => {
     const deployer = new ContractDeployer(api, flipper, wasm);
+    const salt = stringToHex(api.rpcVersion);
     const { gasRequired } = await deployer.query.new(true, {
-      caller: alicePair.address,
-      salt: stringToHex(api.rpcVersion),
+      caller,
+      salt,
     });
 
-    const constructorTx = deployer.tx.new(true, { gasLimit: gasRequired, salt: '0x' });
+    const constructorTx = deployer.tx.new(true, { gasLimit: gasRequired, salt });
 
     const contractAddress: string = await new Promise(async (resolve) => {
       await constructorTx.signAndSend(alicePair, async ({ status, events }: any) => {
@@ -44,12 +46,12 @@ export const run = async (_nodeName: any, networkInfo: any) => {
     console.log(`[${api.rpcVersion}] Deployed contract address`, contractAddress);
     const contract = new Contract(api, contractAddress, flipper);
 
-    const state = await contract.query.get({ caller: alicePair.address });
+    const state = await contract.query.get({ caller });
     assert(state.isOk, 'Query should be successful');
     console.log(`[${api.rpcVersion}] Initial value`, state.data);
 
     console.log(`[${api.rpcVersion}] Flipping...`);
-    const { contractResult } = await contract.query.flip({ caller: alicePair.address });
+    const { contractResult } = await contract.query.flip({ caller });
 
     await new Promise<void>(async (resolve) => {
       await contract.tx.flip({ gasLimit: contractResult.gasRequired }).signAndSend(alicePair, ({ status }: any) => {
@@ -61,7 +63,7 @@ export const run = async (_nodeName: any, networkInfo: any) => {
       });
     });
 
-    const newState = await contract.query.get({ caller: alicePair.address });
+    const newState = await contract.query.get({ caller });
     assert(newState.isOk, 'Query should be successful');
     console.log(`[${api.rpcVersion}] New value`, newState.data);
 
