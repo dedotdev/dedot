@@ -28,7 +28,7 @@ export const normalizeContractTypeDef = (def: Def) => {
     value = {
       members:
         def.variant.variants?.map((variant) => ({
-          fields: variant.fields?.map((fields) => ({ typeId: fields.type })) || [],
+          fields: variant.fields?.map((fields) => ({ typeId: fields.type, typeName: fields.typeName })) || [],
           index: variant.index,
           name: variant.name,
         })) || [],
