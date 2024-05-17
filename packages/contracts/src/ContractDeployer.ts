@@ -3,7 +3,7 @@ import { SubstrateApi } from '@dedot/api/chaintypes';
 import { Hash } from '@dedot/codecs';
 import { GenericSubstrateApi, RpcVersion } from '@dedot/types';
 import { TypinkRegistry } from './TypinkRegistry.js';
-import { ConstructorQueryExecutor } from './executor/ConstructorQueryExecutor';
+import { ConstructorQueryExecutor } from './executor/ConstructorQueryExecutor.js';
 import { ConstructorTxExecutor } from './executor/index.js';
 import { ContractMetadata, GenericContractApi } from './types/index.js';
 import { newProxyChain, ensureSupportContractsPallet } from './utils.js';

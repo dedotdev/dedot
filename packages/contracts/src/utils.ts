@@ -2,7 +2,7 @@ import { ISubstrateClient } from '@dedot/api';
 import { PortableType, TypeDef } from '@dedot/codecs';
 import { GenericSubstrateApi } from '@dedot/types';
 import { stringCamelCase } from '@dedot/utils';
-import { Executor } from './executor';
+import { Executor } from './executor/index.js';
 import { ContractMetadata, ContractTypeDef } from './types/index.js';
 
 export const extractContractTypes = (contractMetadata: ContractMetadata): PortableType[] => {

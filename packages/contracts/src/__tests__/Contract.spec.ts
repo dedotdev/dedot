@@ -2,8 +2,8 @@ import { Dedot, FallbackRuntimeApis } from '@dedot/api';
 import MockProvider from '@dedot/api/client/__tests__/MockProvider';
 import { RuntimeVersion } from '@dedot/codecs';
 import { beforeEach, describe, expect, it } from 'vitest';
-import { Contract } from '../Contract';
-import { FLIPPER_CONTRACT_METADATA, PSP22_CONTRACT_METADATA, RANDOM_CONTRACT_ADDRESS } from './contracts-metadata';
+import { Contract } from '../Contract.js';
+import { FLIPPER_CONTRACT_METADATA, PSP22_CONTRACT_METADATA, RANDOM_CONTRACT_ADDRESS } from './contracts-metadata.js';
 
 export const MockedRuntimeVersionWithContractsApi: RuntimeVersion = {
   specName: 'mock-spec',

@@ -1,5 +1,5 @@
 import { ContractInformation, ContractSource, ContractStorage, ContractType } from './shared.js';
-import { ContractEnvironmentV4, ContractEventV4, ContractSpecV4 } from './v4';
+import { ContractEnvironmentV4, ContractEventV4, ContractSpecV4 } from './v4.js';
 
 export interface ContractMetadataV5 {
   source: ContractSource;

@@ -1,9 +1,9 @@
 import { Dedot } from '@dedot/api';
 import MockProvider from '@dedot/api/client/__tests__/MockProvider';
 import { beforeEach, describe, expect, it } from 'vitest';
-import { ContractDeployer } from '../ContractDeployer';
-import { MockedRuntimeVersionWithContractsApi } from './Contract.spec';
-import { FLIPPER_CONTRACT_METADATA, PSP22_CONTRACT_METADATA } from './contracts-metadata';
+import { ContractDeployer } from '../ContractDeployer.js';
+import { MockedRuntimeVersionWithContractsApi } from './Contract.spec.js';
+import { FLIPPER_CONTRACT_METADATA, PSP22_CONTRACT_METADATA } from './contracts-metadata.js';
 
 describe('ContractDeployer', () => {
   let api: Dedot, provider: MockProvider, flipper: ContractDeployer, psp22: ContractDeployer;

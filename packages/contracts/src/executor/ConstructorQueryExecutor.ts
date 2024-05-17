@@ -2,7 +2,7 @@ import { PalletContractsPrimitivesCode } from '@dedot/api/chaintypes';
 import { GenericSubstrateApi } from '@dedot/types';
 import { assert, concatU8a, hexToU8a, isWasm, u8aToHex } from '@dedot/utils';
 import { ConstructorCallOptions, GenericConstructorQueryCall } from '../types/index.js';
-import { ConstructorTxExecutor } from './ConstructorTxExecutor';
+import { ConstructorTxExecutor } from './ConstructorTxExecutor.js';
 
 export class ConstructorQueryExecutor<ChainApi extends GenericSubstrateApi> extends ConstructorTxExecutor<ChainApi> {
   doExecute(constructor: string) {

@@ -1,7 +1,7 @@
 import * as util from 'node:util';
 import { beforeEach, describe, expect, it } from 'vitest';
-import { TypinkRegistry } from '../TypinkRegistry';
-import { FLIPPER_CONTRACT_METADATA } from './contracts-metadata';
+import { TypinkRegistry } from '../TypinkRegistry.js';
+import { FLIPPER_CONTRACT_METADATA } from './contracts-metadata.js';
 
 describe('TypinkRegistry', () => {
   describe('with metadata', () => {
