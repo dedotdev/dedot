@@ -2,6 +2,7 @@ import { ISubstrateClient } from '@dedot/api';
 import { Hash } from '@dedot/codecs';
 import { GenericSubstrateApi } from '@dedot/types';
 import { assert, concatU8a, HexString, hexToU8a, isWasm, stringCamelCase, u8aToHex } from '@dedot/utils';
+import { normalizeLabel } from 'src/utils';
 import { TypinkRegistry } from '../TypinkRegistry.js';
 import { ConstructorTxOptions, ContractConstructorMessage, GenericConstructorTxCall } from '../types/index.js';
 import { Executor } from './Executor.js';
@@ -40,6 +41,6 @@ export class ConstructorTxExecutor<ChainApi extends GenericSubstrateApi> extends
   }
 
   protected findConstructorMeta(constructor: string): ContractConstructorMessage | undefined {
-    return this.metadata.spec.constructors.find((one) => stringCamelCase(one.label) === constructor);
+    return this.metadata.spec.constructors.find((one) => normalizeLabel(one.label) === constructor);
   }
 }

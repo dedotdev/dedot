@@ -1,6 +1,7 @@
 import { PalletContractsPrimitivesContractResult } from '@dedot/api/chaintypes';
 import { GenericSubstrateApi } from '@dedot/types';
 import { assert, concatU8a, hexToU8a, stringCamelCase, u8aToHex } from '@dedot/utils';
+import { normalizeLabel } from 'src/utils';
 import { GenericContractQueryCall, ContractMessage, ContractCallOptions } from '../types/index.js';
 import { Executor } from './Executor.js';
 
@@ -47,6 +48,6 @@ export class QueryExecutor<ChainApi extends GenericSubstrateApi> extends Executo
   }
 
   protected findMessage(message: string): ContractMessage | undefined {
-    return this.metadata.spec.messages.find((one) => stringCamelCase(one.label) === message);
+    return this.metadata.spec.messages.find((one) => normalizeLabel(one.label) === message);
   }
 }

@@ -1,6 +1,7 @@
 import { ISubstrateClient } from '@dedot/api';
 import { PortableType, TypeDef } from '@dedot/codecs';
 import { GenericSubstrateApi } from '@dedot/types';
+import { stringCamelCase } from '@dedot/utils';
 import { Executor } from './executor';
 import { ContractMetadata, ContractTypeDef } from './types/index.js';
 
@@ -105,4 +106,9 @@ export function ensureSupportContractsPallet<ChainApi extends GenericSubstrateAp
   } catch {
     throw new Error('Contracts pallet is not available');
   }
+}
+
+export function normalizeLabel(label?: string): string {
+  if (!label) return '';
+  return stringCamelCase(label.replaceAll('::', '_'));
 }

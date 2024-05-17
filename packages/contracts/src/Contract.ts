@@ -8,7 +8,7 @@ import { ContractMetadata, GenericContractApi } from './types/index.js';
 import { ensureSupportContractsPallet, newProxyChain, parseRawMetadata } from './utils.js';
 
 export class Contract<
-  ContractApi extends GenericContractApi,
+  ContractApi extends GenericContractApi = GenericContractApi,
   ChainApi extends GenericSubstrateApi = SubstrateApi[RpcVersion],
 > {
   readonly #api: ISubstrateClient<ChainApi>;

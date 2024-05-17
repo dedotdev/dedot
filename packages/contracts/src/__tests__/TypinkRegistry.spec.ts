@@ -1,14 +1,14 @@
 import * as util from 'node:util';
 import { beforeEach, describe, expect, it } from 'vitest';
 import { TypinkRegistry } from '../TypinkRegistry';
-import { FLIPPER } from './Contract.spec';
+import { FLIPPER_CONTRACT_METADATA } from './contracts-metadata';
 
 describe('TypinkRegistry', () => {
   describe('with metadata', () => {
     let registry: TypinkRegistry;
 
     beforeEach(() => {
-      registry = new TypinkRegistry(FLIPPER);
+      registry = new TypinkRegistry(FLIPPER_CONTRACT_METADATA);
     });
 
     it('should have metadata', () => {

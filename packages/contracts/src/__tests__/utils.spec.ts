@@ -1,7 +1,7 @@
 import { TypeDef } from '@dedot/codecs';
 import { describe, expect, it } from 'vitest';
 import { ContractTypeDef} from '../types';
-import {extractContractTypes, normalizeContractTypeDef, parseRawMetadata} from '../utils';
+import { extractContractTypes, normalizeContractTypeDef, normalizeLabel, parseRawMetadata } from '../utils';
 // @ts-ignore
 import flipperRaw from './flipper.json' assert { type: "json" };
 
@@ -98,6 +98,32 @@ describe('utils', () => {
       expect(result[0]).toHaveProperty('params');
       expect(result[0]).toHaveProperty('path');
       expect(result[0]).toHaveProperty('docs');
+    });
+  });
+
+  describe('normalizeLabel', () => {
+    it('returns empty string for undefined input', () => {
+      expect(normalizeLabel()).toBe('');
+    });
+
+    it('returns camelCase string for input with double colons', () => {
+      expect(normalizeLabel('Test::Label')).toBe('testLabel');
+      expect(normalizeLabel('PSP22::balance_of')).toBe('psp22BalanceOf');
+      expect(normalizeLabel('PSP22::transfer_from')).toBe('psp22TransferFrom');
+      expect(normalizeLabel('CodeHash::code_hash')).toBe('codeHashCodeHash');
+      expect(normalizeLabel('Ownable::owner')).toBe('ownableOwner');
+    });
+
+    it('returns camelCase string for input with underscores', () => {
+      expect(normalizeLabel('Test_Label')).toBe('testLabel');
+    });
+
+    it('returns camelCase string for input with spaces', () => {
+      expect(normalizeLabel('Test Label')).toBe('testLabel');
+    });
+
+    it('returns camelCase string for input with mixed characters', () => {
+      expect(normalizeLabel('Test_Label::Another Label')).toBe('testLabelAnotherLabel');
     });
   });
 });

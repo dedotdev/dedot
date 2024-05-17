@@ -1,15 +1,9 @@
 import { Dedot, FallbackRuntimeApis } from '@dedot/api';
+import MockProvider from '@dedot/api/client/__tests__/MockProvider';
+import { RuntimeVersion } from '@dedot/codecs';
 import { beforeEach, describe, expect, it } from 'vitest';
 import { Contract } from '../Contract';
-// @ts-ignore
-import flipperRaw from './flipper.json' assert { type: 'json' };
-import { parseRawMetadata } from "../utils";
-import { RuntimeVersion } from "@dedot/codecs";
-import MockProvider from "@dedot/api/client/__tests__/MockProvider";
-
-export const FLIPPER = parseRawMetadata(JSON.stringify(flipperRaw));
-export const ALICE = '5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY';
-export const MOCK_ADDRESS = '5GpTe4rrVUcZbndCc6HGNCLNfs84R9xaQ9FhPYXQFUZqMVZn'
+import { FLIPPER_CONTRACT_METADATA, PSP22_CONTRACT_METADATA, RANDOM_CONTRACT_ADDRESS } from './contracts-metadata';
 
 export const MockedRuntimeVersionWithContractsApi: RuntimeVersion = {
   specName: 'mock-spec',
@@ -17,38 +11,71 @@ export const MockedRuntimeVersionWithContractsApi: RuntimeVersion = {
   authoringVersion: 0,
   specVersion: 1,
   implVersion: 0,
-  // @ts-ignore
-  apis: [...Object.entries(FallbackRuntimeApis), ['0x68b66ba122c93fa7', 2]],
+  apis: [
+    // @ts-ignore
+    ...Object.entries(FallbackRuntimeApis),
+    // @ts-ignore
+    ['0x68b66ba122c93fa7', 2], // ContractsApi v2
+  ],
   transactionVersion: 25,
   stateVersion: 0,
 };
 
 describe('Contract', () => {
-  let api: Dedot, provider: MockProvider, contract: Contract<any>;
+  let api: Dedot, provider: MockProvider, flipper: Contract, psp22: Contract;
 
   describe('api support contracts pallet', () => {
     beforeEach(async () => {
       provider = new MockProvider(MockedRuntimeVersionWithContractsApi);
-      api = await Dedot.new({provider});
-      contract = new Contract(api, MOCK_ADDRESS, FLIPPER);
-    })
+      api = await Dedot.new({ provider });
+      flipper = new Contract(api, RANDOM_CONTRACT_ADDRESS, FLIPPER_CONTRACT_METADATA);
+      psp22 = new Contract(api, RANDOM_CONTRACT_ADDRESS, PSP22_CONTRACT_METADATA);
+    });
 
     it('should found contracts messages meta', () => {
-      expect(contract.tx.flip.meta).toBeDefined();
-      expect(contract.query.get.meta).toBeDefined();
+      expect(flipper.tx.flip.meta).toBeDefined();
+      expect(flipper.query.get.meta).toBeDefined();
+
+      expect(psp22.query.psp22BalanceOf.meta).toBeDefined();
+      expect(psp22.query.psp22TransferFrom.meta).toBeDefined();
+      expect(psp22.query.psp22Transfer.meta).toBeDefined();
+      expect(psp22.query.psp22Approve.meta).toBeDefined();
+      expect(psp22.query.psp22TotalSupply.meta).toBeDefined();
+      expect(psp22.query.psp22IncreaseAllowance.meta).toBeDefined();
+      expect(psp22.query.psp22DecreaseAllowance.meta).toBeDefined();
+      expect(psp22.query.psp22Allowance.meta).toBeDefined();
+      expect(psp22.query.psp22MetadataTokenDecimals.meta).toBeDefined();
+      expect(psp22.query.psp22MetadataTokenName.meta).toBeDefined();
+      expect(psp22.query.psp22MetadataTokenSymbol.meta).toBeDefined();
+
+      expect(psp22.tx.psp22TransferFrom.meta).toBeDefined();
+      expect(psp22.tx.psp22Transfer.meta).toBeDefined();
+      expect(psp22.tx.psp22Approve.meta).toBeDefined();
+      expect(psp22.tx.psp22IncreaseAllowance.meta).toBeDefined();
+      expect(psp22.tx.psp22DecreaseAllowance.meta).toBeDefined();
+      expect(() => psp22.tx.psp22BalanceOf).toThrowError(`Tx message not found: psp22BalanceOf`);
+      expect(() => psp22.tx.psp22TotalSupply).toThrowError(`Tx message not found: psp22TotalSupply`);
+      expect(() => psp22.tx.psp22Allowance).toThrowError(`Tx message not found: psp22Allowance`);
+      expect(() => psp22.tx.psp22MetadataTokenDecimals).toThrowError(
+        `Tx message not found: psp22MetadataTokenDecimals`,
+      );
+      expect(() => psp22.tx.psp22MetadataTokenName).toThrowError(`Tx message not found: psp22MetadataTokenName`);
+      expect(() => psp22.tx.psp22MetadataTokenSymbol).toThrowError(`Tx message not found: psp22MetadataTokenSymbol`);
     });
 
     it('should throw error if message meta not found', () => {
-      expect(() => contract.tx.notFound).toThrowError('Tx message not found: notFound');
-      expect(() => contract.query.notFound).toThrowError('Query message not found: notFound');
+      expect(() => flipper.tx.notFound).toThrowError('Tx message not found: notFound');
+      expect(() => flipper.query.notFound).toThrowError('Query message not found: notFound');
     });
-  })
+  });
 
   describe('api not support contracts pallet', () => {
     it('should throw error', async () => {
       provider = new MockProvider();
-      api = await Dedot.new({provider});
-      expect(() => new Contract(api, MOCK_ADDRESS, FLIPPER)).toThrowError('Contracts pallet is not available');
+      api = await Dedot.new({ provider });
+      expect(() => new Contract(api, RANDOM_CONTRACT_ADDRESS, FLIPPER_CONTRACT_METADATA)).toThrowError(
+        'Contracts pallet is not available',
+      );
     });
-  })
+  });
 });

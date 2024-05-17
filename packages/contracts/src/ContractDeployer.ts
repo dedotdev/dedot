@@ -10,7 +10,7 @@ import { newProxyChain, ensureSupportContractsPallet } from './utils.js';
 import { parseRawMetadata } from './utils.js';
 
 export class ContractDeployer<
-  ContractApi extends GenericContractApi,
+  ContractApi extends GenericContractApi = GenericContractApi,
   ChainApi extends GenericSubstrateApi = SubstrateApi[RpcVersion],
 > {
   readonly #api: ISubstrateClient<ChainApi>;
