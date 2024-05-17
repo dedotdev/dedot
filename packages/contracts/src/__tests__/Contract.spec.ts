@@ -48,7 +48,7 @@ describe('Contract', () => {
     it('should throw error', async () => {
       provider = new MockProvider();
       api = await Dedot.new({provider});
-      expect(() => new Contract(api, MOCK_ADDRESS, FLIPPER)).toThrowError('This api does not support contracts pallet');
+      expect(() => new Contract(api, MOCK_ADDRESS, FLIPPER)).toThrowError('Contracts pallet is not available');
     });
   })
 });

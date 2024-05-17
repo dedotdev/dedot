@@ -1,3 +1,4 @@
+import { PalletContractsPrimitivesContractResult } from '@dedot/api/chaintypes';
 import { GenericSubstrateApi } from '@dedot/types';
 import { assert, concatU8a, hexToU8a, stringCamelCase, u8aToHex } from '@dedot/utils';
 import { GenericContractQueryCall, ContractMessage, ContractCallOptions } from '../types/index.js';
@@ -5,18 +6,19 @@ import { Executor } from './Executor.js';
 
 export class QueryExecutor<ChainApi extends GenericSubstrateApi> extends Executor<ChainApi> {
   doExecute(message: string) {
-    const messageMeta = this.#findMessage(message);
+    const meta = this.findMessage(message);
+    assert(meta, `Query message not found: ${message}`);
 
-    assert(messageMeta, `Query message not found: ${message}`);
-
-    const callFn: GenericContractQueryCall<ChainApi> = async (...params: any) => {
-      const { args } = messageMeta;
-      const { caller, value = 0n, gasLimit, storageDepositLimit } = params[args.length] as ContractCallOptions;
+    const callFn: GenericContractQueryCall<ChainApi> = async (...params: any[]) => {
+      // TODO verify number of arguments/params & call options presence
+      const { args } = meta;
+      const callOptions = params[args.length] as ContractCallOptions;
+      const { caller, value = 0n, gasLimit, storageDepositLimit } = callOptions;
 
       const formattedInputs = args.map((arg, index) => this.tryEncode(arg, params[index]));
-      const bytes = u8aToHex(concatU8a(hexToU8a(messageMeta.selector), ...formattedInputs));
+      const bytes = u8aToHex(concatU8a(hexToU8a(meta.selector), ...formattedInputs));
 
-      const contractResult = await this.api.call.contractsApi.call(
+      const contractResult: PalletContractsPrimitivesContractResult = await this.api.call.contractsApi.call(
         caller,
         this.address,
         value,
@@ -25,10 +27,10 @@ export class QueryExecutor<ChainApi extends GenericSubstrateApi> extends Executo
         bytes,
       );
 
-      if (contractResult.result.value) {
+      if (contractResult.result.isOk) {
         return {
           isOk: true,
-          data: this.tryDecode(messageMeta, contractResult.result.value.data),
+          data: this.tryDecode(meta, contractResult.result.value.data),
           contractResult: contractResult,
         };
       }
@@ -39,12 +41,12 @@ export class QueryExecutor<ChainApi extends GenericSubstrateApi> extends Executo
       };
     };
 
-    callFn.meta = messageMeta;
+    callFn.meta = meta;
 
     return callFn;
   }
 
-  #findMessage(message: string): ContractMessage | undefined {
+  protected findMessage(message: string): ContractMessage | undefined {
     return this.metadata.spec.messages.find((one) => stringCamelCase(one.label) === message);
   }
 }

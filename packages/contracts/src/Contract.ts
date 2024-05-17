@@ -1,6 +1,6 @@
 import { ISubstrateClient } from '@dedot/api';
 import { SubstrateApi } from '@dedot/api/chaintypes';
-import { AccountId32 } from '@dedot/codecs';
+import { AccountId32, AccountId32Like } from '@dedot/codecs';
 import { GenericSubstrateApi, RpcVersion } from '@dedot/types';
 import { TypinkRegistry } from './TypinkRegistry.js';
 import { QueryExecutor, TxExecutor } from './executor/index.js';
@@ -16,7 +16,7 @@ export class Contract<
   readonly #address: AccountId32;
   readonly #metadata: ContractMetadata;
 
-  constructor(api: ISubstrateClient<ChainApi>, address: AccountId32 | string, metadata: ContractMetadata | string) {
+  constructor(api: ISubstrateClient<ChainApi>, address: AccountId32Like, metadata: ContractMetadata | string) {
     ensureSupportContractsPallet(api);
 
     this.#api = api;

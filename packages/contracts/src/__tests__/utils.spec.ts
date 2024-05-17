@@ -1,6 +1,6 @@
 import { TypeDef } from '@dedot/codecs';
 import { describe, expect, it } from 'vitest';
-import { Def} from '../types';
+import { ContractTypeDef} from '../types';
 import {extractContractTypes, normalizeContractTypeDef, parseRawMetadata} from '../utils';
 // @ts-ignore
 import flipperRaw from './flipper.json' assert { type: "json" };
@@ -8,7 +8,7 @@ import flipperRaw from './flipper.json' assert { type: "json" };
 describe('utils', () => {
   describe('normalizeContractTypeDef', () => {
     it('returns correct TypeDef for variant def', () => {
-      const def: Def = {
+      const def: ContractTypeDef = {
         variant: {
           variants: [
             {
@@ -41,7 +41,7 @@ describe('utils', () => {
     });
 
     it('returns correct TypeDef for tuple def', () => {
-      const def: Def = { tuple: [1, 2] };
+      const def: ContractTypeDef = { tuple: [1, 2] };
       const result = normalizeContractTypeDef(def) as TypeDef & { tag: 'Tuple' };
 
       expect(result.tag).toBe('Tuple');
@@ -49,7 +49,7 @@ describe('utils', () => {
     });
 
     it('returns correct TypeDef for sequence def', () => {
-      const def: Def = { sequence: { type: 1 } };
+      const def: ContractTypeDef = { sequence: { type: 1 } };
       const result = normalizeContractTypeDef(def) as TypeDef & { tag: 'Sequence' };
 
       expect(result.tag).toEqual('Sequence');
@@ -57,7 +57,7 @@ describe('utils', () => {
     });
 
     it('returns correct TypeDef for composite def', () => {
-      const def: Def = { composite: { fields: [{ name: 'test', type: 1, typeName: 'Test' }] } };
+      const def: ContractTypeDef = { composite: { fields: [{ name: 'test', type: 1, typeName: 'Test' }] } };
       const result = normalizeContractTypeDef(def) as TypeDef & { tag: 'Struct' };
 
       expect(result.tag).toBe('Struct');
@@ -67,7 +67,7 @@ describe('utils', () => {
     });
 
     it('returns correct TypeDef for primitive def', () => {
-      const def: Def = { primitive: 'u8' };
+      const def: ContractTypeDef = { primitive: 'u8' };
       const result = normalizeContractTypeDef(def) as TypeDef & { tag: 'Primitive' };
 
       expect(result.tag).toBe('Primitive');
@@ -75,7 +75,7 @@ describe('utils', () => {
     });
 
     it('returns correct TypeDef for array def', () => {
-      const def: Def = { array: { len: 5, type: 1 } };
+      const def: ContractTypeDef = { array: { len: 5, type: 1 } };
       const result = normalizeContractTypeDef(def) as TypeDef & { tag: 'SizedVec' };
 
       expect(result.tag).toBe('SizedVec');
@@ -84,7 +84,7 @@ describe('utils', () => {
 
     it('throws error for invalid def', () => {
       const def = { invalid: {} };
-      expect(() => normalizeContractTypeDef(def as Def)).toThrow();
+      expect(() => normalizeContractTypeDef(def as ContractTypeDef)).toThrow();
     });
   });
   describe('extractContractTypes', () => {

@@ -1,5 +1,5 @@
 import {
-  ContractConstructor,
+  ContractConstructorMessage,
   ContractInformation,
   ContractMessage,
   ContractSource,
@@ -18,7 +18,7 @@ export interface ContractMetadataV4 {
 }
 
 export interface ContractSpecV4 {
-  constructors: ContractConstructor[];
+  constructors: ContractConstructorMessage[];
   docs: string[];
   environment: ContractEnvironmentV4;
   events: ContractEventV4[];

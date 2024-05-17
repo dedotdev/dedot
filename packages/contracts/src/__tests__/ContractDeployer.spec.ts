@@ -20,8 +20,8 @@ describe('ContractDeployer', () => {
     });
 
     it('should throw if constructor meta not found', () => {
-      expect(() => contractDeployer.tx.notFound()).toThrowError('Constructor not found: notFound');
-      expect(() => contractDeployer.query.notFound()).toThrowError('Constructor not found: notFound');
+      expect(() => contractDeployer.tx.notFound()).toThrowError('Constructor message not found: notFound');
+      expect(() => contractDeployer.query.notFound()).toThrowError('Constructor message not found: notFound');
     });
   });
 
@@ -30,7 +30,7 @@ describe('ContractDeployer', () => {
       provider = new MockProvider();
       api = await Dedot.new({ provider });
       expect(() => new ContractDeployer(api, FLIPPER, FLIPPER.source.hash)).toThrowError(
-        'This api does not support contracts pallet',
+        'Contracts pallet is not available',
       );
     });
   });

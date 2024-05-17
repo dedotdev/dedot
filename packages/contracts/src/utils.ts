@@ -2,7 +2,7 @@ import { ISubstrateClient } from '@dedot/api';
 import { PortableType, TypeDef } from '@dedot/codecs';
 import { GenericSubstrateApi } from '@dedot/types';
 import { Executor } from './executor';
-import { ContractMetadata, Def } from './types/index.js';
+import { ContractMetadata, ContractTypeDef } from './types/index.js';
 
 export const extractContractTypes = (contractMetadata: ContractMetadata): PortableType[] => {
   const { types } = contractMetadata;
@@ -19,7 +19,7 @@ export const extractContractTypes = (contractMetadata: ContractMetadata): Portab
   );
 };
 
-export const normalizeContractTypeDef = (def: Def) => {
+export const normalizeContractTypeDef = (def: ContractTypeDef): TypeDef => {
   let tag: string;
   let value: any;
 
@@ -64,7 +64,7 @@ export const normalizeContractTypeDef = (def: Def) => {
       typeParam: def.array.type,
     };
   } else {
-    throw Error('Invalid contract type def');
+    throw Error(`Invalid contract type def: ${JSON.stringify(def)}`);
   }
 
   return { tag, value } as TypeDef;
@@ -101,8 +101,8 @@ export function newProxyChain<ChainApi extends GenericSubstrateApi>(carrier: Exe
 
 export function ensureSupportContractsPallet<ChainApi extends GenericSubstrateApi>(api: ISubstrateClient<ChainApi>) {
   try {
-    api.call.contractsApi.call.meta && api.tx.contracts.call.meta;
-  } catch (e) {
-    throw new Error('This api does not support contracts pallet');
+    !!api.call.contractsApi.call.meta && !!api.tx.contracts.call.meta;
+  } catch {
+    throw new Error('Contracts pallet is not available');
   }
 }

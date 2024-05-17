@@ -1,13 +1,3 @@
-export interface ContractConstructor {
-  args: Arg[];
-  default: boolean;
-  docs: string[];
-  label: string;
-  payable: boolean;
-  returnType: ContractTypeInfo;
-  selector: string;
-}
-
 export interface ContractSource {
   hash: string;
   wasm?: string;
@@ -34,7 +24,7 @@ export interface WasmOptSettings {
   optimizationPasses: string;
 }
 
-export interface Arg {
+export interface ContractMessageArg {
   label: string;
   type: ContractTypeInfo;
 }
@@ -44,8 +34,18 @@ export interface ContractTypeInfo {
   type: number;
 }
 
+export interface ContractConstructorMessage {
+  args: ContractMessageArg[];
+  default: boolean;
+  docs: string[];
+  label: string;
+  payable: boolean;
+  returnType: ContractTypeInfo;
+  selector: string;
+}
+
 export interface ContractMessage {
-  args: Arg[];
+  args: ContractMessageArg[];
   default: boolean;
   docs: string[];
   label: string;
@@ -57,16 +57,14 @@ export interface ContractMessage {
 
 export interface ContractType {
   id: number;
-  type: ContractTypeDef;
+  type: {
+    def: ContractTypeDef;
+    path?: string[];
+    params?: ParamInfo[];
+  };
 }
 
 export interface ContractTypeDef {
-  def: Def;
-  path?: string[];
-  params?: ParamInfo[];
-}
-
-export interface Def {
   composite?: CompositeType;
   array?: ArrayType;
   primitive?: string;

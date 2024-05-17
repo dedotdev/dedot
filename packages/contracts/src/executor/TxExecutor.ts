@@ -5,26 +5,27 @@ import { Executor } from './Executor.js';
 
 export class TxExecutor<ChainApi extends GenericSubstrateApi> extends Executor<ChainApi> {
   doExecute(message: string) {
-    const messageMeta = this.#findTxMessage(message);
+    const meta = this.findTxMessage(message);
+    assert(meta, `Tx message not found: ${message}`);
 
-    assert(messageMeta, `Tx message not found: ${message}`);
-
-    const callFn: GenericContractTxCall<ChainApi> = (...params: any) => {
-      const { args } = messageMeta;
-      const { value = 0n, gasLimit, storageDepositLimit } = params[args.length] as ContractTxOptions;
+    const callFn: GenericContractTxCall<ChainApi> = (...params: any[]) => {
+      // TODO verify number of arguments/params & call options presence
+      const { args } = meta;
+      const txCallOptions = params[args.length] as ContractTxOptions;
+      const { value = 0n, gasLimit, storageDepositLimit } = txCallOptions;
 
       const formattedInputs = args.map((arg, index) => this.tryEncode(arg, params[index]));
-      const bytes = u8aToHex(concatU8a(hexToU8a(messageMeta.selector), ...formattedInputs));
+      const bytes = u8aToHex(concatU8a(hexToU8a(meta.selector), ...formattedInputs));
 
       return this.api.tx.contracts.call(this.address, value, gasLimit, storageDepositLimit, bytes);
     };
 
-    callFn.meta = messageMeta;
+    callFn.meta = meta;
 
     return callFn;
   }
 
-  #findTxMessage(message: string): ContractMessage | undefined {
+  protected findTxMessage(message: string): ContractMessage | undefined {
     return this.metadata.spec.messages.find((one) => one.mutates && stringCamelCase(one.label) === message);
   }
 }

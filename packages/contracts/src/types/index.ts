@@ -1,7 +1,7 @@
 import { SubstrateApi } from '@dedot/api/chaintypes';
 import { AccountId32Like, BytesLike, Weight } from '@dedot/codecs';
 import { AnyFunc, AsyncMethod, GenericSubstrateApi, RpcVersion } from '@dedot/types';
-import { ContractConstructor, ContractMessage } from './shared.js';
+import { ContractConstructorMessage, ContractMessage } from './shared.js';
 import { ContractMetadataV4 } from './v4.js';
 import { ContractMetadataV5 } from './v5.js';
 
@@ -9,91 +9,44 @@ export * from './shared.js';
 
 export type ContractMetadata = ContractMetadataV4 | ContractMetadataV5;
 
-export type ConstructorCallOptions = ConstructorOptions & {
-  caller: AccountId32Like;
-};
-
-export type ContractCallOptions = ContractOptions & {
-  caller: AccountId32Like;
-};
-
-export type ConstructorTxOptions = ConstructorOptions & {
-  gasLimit: Weight;
-};
-
-export type ContractTxOptions = ContractOptions & {
-  gasLimit: Weight;
-};
-
-export type ConstructorOptions = ContractOptions & {
-  salt: BytesLike | null;
-};
-
-export type ContractOptions = {
+export type CallOptions = {
   value?: bigint;
   gasLimit?: Weight | undefined;
   storageDepositLimit?: bigint | undefined;
 };
 
-export type GenericContractResult<DecodedData, ContractResult> =
-  | {
-      isOk: true;
-      data: DecodedData;
-      contractResult: ContractResult;
-    }
-  | {
-      isOk: false;
-      contractResult: ContractResult;
-    };
+export type ConstructorCallOptions = CallOptions & {
+  salt: BytesLike;
+  caller: AccountId32Like;
+};
 
-export type ContractResult<ChainApi extends GenericSubstrateApi> = Awaited<
-  ReturnType<ChainApi['call']['contractsApi']['call']>
->;
+export type ConstructorTxOptions = CallOptions & {
+  salt: BytesLike;
+  gasLimit: Weight;
+};
 
-// Now we are using this one for api.tx.contract.instantiate, api.tx.contract.instantiateWithCode and api.tx.contract.call
-// TODO: Write types for api.tx.contract.instantiate and api.tx.contract.instantiateWithCode
-export type ChainSubmittableExtrinsic<ChainApi extends GenericSubstrateApi> = ReturnType<
-  ChainApi['tx']['contracts']['call']
->;
+export type ContractCallOptions = CallOptions & {
+  caller: AccountId32Like;
+};
 
-export type InstantiateWithCodeSubmittableExtrinsic<ChainApi extends GenericSubstrateApi> = ReturnType<
-  ChainApi['tx']['contracts']['instantiateWithCode']
->;
+export type ContractTxOptions = CallOptions & {
+  gasLimit: Weight;
+};
 
-export type InstantiateSubmittableExtrinsic<ChainApi extends GenericSubstrateApi> = ReturnType<
-  ChainApi['tx']['contracts']['instantiate']
->;
-
-export type GenericConstructorSubmittableExtrinsic<ChainApi extends GenericSubstrateApi> =
-  | InstantiateSubmittableExtrinsic<ChainApi>
-  | InstantiateWithCodeSubmittableExtrinsic<ChainApi>;
-
-export type GenericContractQueryCall<
-  ChainApi extends GenericSubstrateApi,
-  F extends AsyncMethod = (...args: any) => Promise<GenericContractResult<unknown, ContractResult<ChainApi>>>,
-> = F & {
+export type GenericContractQueryCall<_ extends GenericSubstrateApi, F extends AsyncMethod = AsyncMethod> = F & {
   meta: ContractMessage;
 };
 
-export type GenericContractTxCall<
-  ChainApi extends GenericSubstrateApi,
-  F extends AnyFunc = (...args: any[]) => ChainSubmittableExtrinsic<ChainApi>,
-> = F & {
+export type GenericContractTxCall<_ extends GenericSubstrateApi, F extends AnyFunc = AnyFunc> = F & {
   meta: ContractMessage;
 };
 
-export type GenericConstructorQueryCall<
-  ChainApi extends GenericSubstrateApi,
-  F extends AsyncMethod = (...args: any) => Promise<ContractResult<ChainApi>>,
-> = F & {
-  meta: ContractConstructor;
+export type GenericConstructorQueryCall<_ extends GenericSubstrateApi, F extends AsyncMethod = AsyncMethod> = F & {
+  meta: ContractConstructorMessage;
 };
 
-export type GenericConstructorTxCall<
-  ChainApi extends GenericSubstrateApi,
-  F extends AnyFunc = (...args: any[]) => ChainSubmittableExtrinsic<ChainApi>,
-> = F & {
-  meta: ContractConstructor;
+export type GenericConstructorTxCall<_ extends GenericSubstrateApi, F extends AnyFunc = AnyFunc> = F & {
+  meta: ContractConstructorMessage;
 };
 
 export interface GenericContractQuery<ChainApi extends GenericSubstrateApi> {

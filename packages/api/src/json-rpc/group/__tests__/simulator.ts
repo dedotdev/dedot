@@ -212,8 +212,6 @@ export const newChainHeadSimulator = ({ numOfFinalizedBlocks = 15, provider, ini
       if (updateInitialized) {
         const finalizedBlockHashes = [...Array(numOfFinalizedBlocks)].map(() => newBlock().hash);
 
-        console.log('finalizedBlockHashes', finalizedBlockHashes);
-
         return {
           event: 'initialized',
           finalizedBlockHashes,

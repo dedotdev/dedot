@@ -3,7 +3,7 @@ import { SubstrateApi } from '@dedot/api/chaintypes';
 import { AccountId32 } from '@dedot/codecs';
 import { GenericSubstrateApi, RpcVersion } from '@dedot/types';
 import { TypinkRegistry } from '../TypinkRegistry.js';
-import { Arg, ContractMessage } from '../types/index.js';
+import { ContractMessageArg, ContractMessage } from '../types/index.js';
 import { ContractMetadata } from '../types/index.js';
 
 export abstract class Executor<ChainApi extends GenericSubstrateApi = SubstrateApi[RpcVersion]> {
@@ -11,7 +11,7 @@ export abstract class Executor<ChainApi extends GenericSubstrateApi = SubstrateA
   readonly #registry: TypinkRegistry;
   readonly #address?: AccountId32;
 
-  constructor(api: ISubstrateClient<ChainApi>, registry: TypinkRegistry, address?: AccountId32 | string) {
+  constructor(api: ISubstrateClient<ChainApi>, registry: TypinkRegistry, address?: AccountId32) {
     this.#api = api;
     this.#registry = registry;
     if (address) {
@@ -37,7 +37,7 @@ export abstract class Executor<ChainApi extends GenericSubstrateApi = SubstrateA
 
   abstract doExecute(...paths: string[]): unknown;
 
-  tryEncode(param: Arg, value: any) {
+  tryEncode(param: ContractMessageArg, value: any) {
     const { type } = param.type;
 
     const $codec = this.registry.findCodec(type);
@@ -45,10 +45,10 @@ export abstract class Executor<ChainApi extends GenericSubstrateApi = SubstrateA
     return $codec.tryEncode(value);
   }
 
-  tryDecode(messageMeta: ContractMessage, raw: any) {
+  tryDecode(meta: ContractMessage, raw: any) {
     const {
       returnType: { type },
-    } = messageMeta;
+    } = meta;
 
     const $codec = this.registry.findCodec(type);
 
