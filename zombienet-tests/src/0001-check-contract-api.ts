@@ -2,7 +2,7 @@ import Keyring from '@polkadot/keyring';
 import { cryptoWaitReady } from '@polkadot/util-crypto';
 import { Dedot, DedotClient, ISubstrateClient, WsProvider } from 'dedot';
 import { Contract, ContractDeployer } from 'dedot/contracts';
-import { assert } from 'dedot/utils';
+import { assert, stringToHex } from 'dedot/utils';
 import * as flipperRaw from '../flipper.json';
 
 export const run = async (_nodeName: any, networkInfo: any) => {
@@ -18,7 +18,7 @@ export const run = async (_nodeName: any, networkInfo: any) => {
     const deployer = new ContractDeployer(api, flipper, wasm);
     const { gasRequired } = await deployer.query.new(true, {
       caller: alicePair.address,
-      salt: '0x',
+      salt: stringToHex(api.rpcVersion),
     });
 
     const constructorTx = deployer.tx.new(true, { gasLimit: gasRequired, salt: '0x' });
