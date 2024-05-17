@@ -1,3 +1,3 @@
 # @dedot/contracts
 
-Dedot api-contracts
+Delightful ink! Contract APIs
