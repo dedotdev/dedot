@@ -1,7 +1,6 @@
-import { ChainHead, JsonRpcClient, QueryableStorage, PinnedBlock, WsProvider } from 'dedot';
+import { ChainHead, JsonRpcClient, $, QueryableStorage, PinnedBlock, WsProvider } from 'dedot';
 import { FrameSystemAccountInfo } from 'dedot/chaintypes';
 import { $Header, $RuntimeVersion, PortableRegistry, $Metadata, AccountId32 } from 'dedot/codecs';
-import * as $ from 'dedot/shape';
 import { assert, deferred, HexString } from 'dedot/utils';
 
 const ALICE = '5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY';
