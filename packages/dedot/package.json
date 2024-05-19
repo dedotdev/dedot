@@ -18,6 +18,7 @@
     "@dedot/api": "workspace:*",
     "@dedot/cli": "workspace:*",
     "@dedot/codecs": "workspace:*",
+    "@dedot/contracts": "workspace:*",
     "@dedot/providers": "workspace:*",
     "@dedot/runtime-specs": "workspace:*",
     "@dedot/shape": "workspace:*",
@@ -64,6 +65,11 @@
       "types": "./src/shape/index.ts",
       "import": "./src/shape/index.ts",
       "default": "./src/shape/index.ts"
+    },
+    "./contracts": {
+      "types": "./src/contracts/index.ts",
+      "import": "./src/contracts/index.ts",
+      "default": "./src/contracts/index.ts"
     }
   },
   "publishConfig": {

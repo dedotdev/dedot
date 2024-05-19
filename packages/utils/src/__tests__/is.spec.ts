@@ -10,6 +10,7 @@ import {
   isString,
   isU8a,
   isUndefined,
+  isWasm,
 } from '../is.js';
 
 describe('is', () => {
@@ -138,6 +139,35 @@ describe('is', () => {
 
     it('returns false for hex string input with odd length in strict mode', () => {
       expect(isHex('0x123', true)).toBe(false);
+    });
+  });
+
+  describe('isWasm', () => {
+    it('returns true for valid wasm input', () => {
+      const wasmInput = new Uint8Array([0, 97, 115, 109, 1, 2, 3, 4]);
+      expect(isWasm(wasmInput)).toBe(true);
+    });
+
+    it('returns true for valid wasm input in hex format', () => {
+      const wasmInput = '0x0061736d01020304';
+      expect(isWasm(wasmInput)).toBe(true);
+    });
+
+    it('returns false for non-wasm input', () => {
+      const nonWasmInput = new Uint8Array([1, 2, 3, 4]);
+      expect(isWasm(nonWasmInput)).toBe(false);
+    });
+
+    it('returns false for non-wasm input in hex format', () => {
+      const nonWasmInput = '0x01020304';
+      expect(isWasm(nonWasmInput)).toBe(false);
+    });
+
+    it('returns false for non-Uint8Array and non-string input', () => {
+      expect(isWasm(123)).toBe(false);
+      expect(isWasm({})).toBe(false);
+      expect(isWasm(null)).toBe(false);
+      expect(isWasm(undefined)).toBe(false);
     });
   });
 });

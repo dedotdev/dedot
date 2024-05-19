@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { u8aToHex, u8aToString } from '../u8a.js';
+import { u8aEq, u8aToHex, u8aToString } from '../u8a.js';
 
 describe('u8a', () => {
   describe('u8aToHex', () => {
@@ -44,6 +44,32 @@ describe('u8a', () => {
       ],
     ])('should convert from %o to %o', (input, output) => {
       expect(u8aToString(input)).toEqual(output);
+    });
+  });
+
+  describe('u8aEq', () => {
+    it('should return true for two identical Uint8Arrays', () => {
+      const array1 = new Uint8Array([1, 2, 3]);
+      const array2 = new Uint8Array([1, 2, 3]);
+      expect(u8aEq(array1, array2)).toEqual(true);
+    });
+
+    it('should return false for two different Uint8Arrays', () => {
+      const array1 = new Uint8Array([1, 2, 3]);
+      const array2 = new Uint8Array([4, 5, 6]);
+      expect(u8aEq(array1, array2)).toEqual(false);
+    });
+
+    it('should return false for two Uint8Arrays of different lengths', () => {
+      const array1 = new Uint8Array([1, 2, 3]);
+      const array2 = new Uint8Array([1, 2, 3, 4]);
+      expect(u8aEq(array1, array2)).toEqual(false);
+    });
+
+    it('should return true for two empty Uint8Arrays', () => {
+      const array1 = new Uint8Array();
+      const array2 = new Uint8Array();
+      expect(u8aEq(array1, array2)).toEqual(true);
     });
   });
 });

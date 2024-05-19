@@ -25,7 +25,7 @@ jobs:
       - run: yarn zombienet-test-preps
       - name: Download executables
         run: |
-          curl -L -O https://github.com/paritytech/zombienet/releases/download/v1.3.92/zombienet-linux-x64
+          curl -L -O https://github.com/paritytech/zombienet/releases/download/v1.3.102/zombienet-linux-x64
           chmod +x zombienet-linux-x64
           
           curl -L -O https://github.com/paritytech/polkadot-sdk/releases/download/polkadot-v1.7.0/polkadot

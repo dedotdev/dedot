@@ -1,6 +1,6 @@
-import { RpcVersion, TxPaymentInfo } from '@dedot/types';
 import { Dedot, DedotClient, ISubstrateClient, WsProvider } from 'dedot';
 import { SubstrateApi } from 'dedot/chaintypes';
+import { RpcVersion, TxPaymentInfo } from 'dedot/types';
 import { assert } from 'dedot/utils';
 
 const ALICE = '5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY';

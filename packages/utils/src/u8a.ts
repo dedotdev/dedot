@@ -24,3 +24,14 @@ export function u8aToString(input?: Uint8Array | null): string {
 
 // - TODO u8aToNumber
 // - TODO u8aToBigInt
+
+/**
+ * Compare two Uint8Arrays for equality
+ */
+export function u8aEq(a: Uint8Array, b: Uint8Array) {
+  if (a.length !== b.length) {
+    return false;
+  }
+
+  return a.every((byte, index) => b[index] === byte);
+}

@@ -3,7 +3,7 @@
   "author": "Tung Vu <tung@coongcrafts.io>",
   "private": true,
   "dependencies": {
-    "@dedot/chaintypes": "0.0.1-alpha.40",
+    "@dedot/chaintypes": "0.0.1-alpha.83",
     "@polkadot/keyring": "^12.6.2",
     "dedot": "workspace:*"
   },

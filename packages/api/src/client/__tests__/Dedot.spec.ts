@@ -33,7 +33,7 @@ describe('Dedot', () => {
       expect(api.events).toBeDefined();
       expect(api.errors).toBeDefined();
       expect(api.consts).toBeDefined();
-      expect(api.metadata.version).toEqual('V14');
+      expect(api.metadata.version).toEqual('V15');
       expect(api.currentMetadataKey).toEqual(
         `RAW_META/0x0000000000000000000000000000000000000000000000000000000000000000/1`,
       );
@@ -283,7 +283,7 @@ describe('Dedot', () => {
         expect(apiAt.options).toBeDefined();
         expect(apiAt.runtimeVersion).toBeDefined();
         expect(apiAt.registry).toBeDefined();
-        expect(apiAt.metadata.version).toEqual('V14');
+        expect(apiAt.metadata.version).toEqual('V15');
         expect(apiAt.rpc).toBeDefined();
         expect(apiAt.query).toBeDefined();
         expect(apiAt.events).toBeDefined();

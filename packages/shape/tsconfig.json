@@ -4,12 +4,12 @@
     "baseUrl": ".",
     "outDir": "dist",
     "rootDir": "src",
-    "declarationDir": "dist",
+    "declarationDir": "dist"
   },
   "include": ["src/**/*"],
   "references": [
     {
-      "path": "../utils/tsconfig.json",
-    },
-  ],
+      "path": "../utils/tsconfig.json"
+    }
+  ]
 }
