@@ -1,7 +1,7 @@
 import { subscriptionsInfo } from '@dedot/api';
+import { beautifySourceCode, compileTemplate } from '../../utils.js';
 import { ApiGen } from './ApiGen.js';
 import { TypesGen } from './TypesGen.js';
-import { beautifySourceCode, compileTemplate } from './utils.js';
 
 const HIDDEN_RPCS = [
   // Ref: https://github.com/paritytech/polkadot-sdk/blob/43415ef58c143b985e09015cd000dbd65f6d3997/substrate/client/rpc-servers/src/lib.rs#L152C9-L158
@@ -54,7 +54,7 @@ export class JsonRpcGen extends ApiGen {
     const toExclude = Object.values(subscriptionsInfo).flat();
 
     const importTypes = this.typesGen.typeImports.toImports({ useSubPaths });
-    const template = compileTemplate('json-rpc.hbs');
+    const template = compileTemplate('chaintypes/templates/json-rpc.hbs');
     const jsonRpcMethods = this.rpcMethods
       .filter((one) => !ALIAS_RPCS.includes(one)) // exclude alias rpcs
       .filter((one) => !toExclude.includes(one)) // exclude unsubscribe methods

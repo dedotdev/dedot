@@ -9,7 +9,7 @@ export const TUPLE_TYPE_REGEX = /^\[(.*)]$/;
 
 export const commentBlock = (...docs: (string | string[])[]) => {
   const flatLines = docs.flat();
-  if (flatLines.length === 0) {
+  if (flatLines.length === 0 || !flatLines.find((o) => !!o)) {
     return '';
   } else {
     return `
@@ -26,8 +26,8 @@ export const beautifySourceCode = async (source: string): Promise<string> => {
   return prettier.format(source, { parser: 'babel-ts', ...prettierOptions });
 };
 
-export const compileTemplate = (templateFileName: string) => {
-  const templateFilePath = path.resolve(currentDirname(), `../templates/${templateFileName}`);
+export const compileTemplate = (templateFile: string) => {
+  const templateFilePath = path.resolve(currentDirname(), templateFile);
 
   return handlebars.compile(fs.readFileSync(templateFilePath, 'utf8'));
 };

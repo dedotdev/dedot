@@ -1,6 +1,6 @@
 import { normalizeName, stringCamelCase } from '@dedot/utils';
+import { beautifySourceCode, commentBlock, compileTemplate } from '../../utils.js';
 import { ApiGen } from './ApiGen.js';
-import { beautifySourceCode, commentBlock, compileTemplate } from './utils.js';
 
 export class ConstsGen extends ApiGen {
   generate(useSubPaths: boolean = false) {
@@ -26,7 +26,7 @@ export class ConstsGen extends ApiGen {
     }
 
     const importTypes = this.typesGen.typeImports.toImports({ useSubPaths });
-    const template = compileTemplate('consts.hbs');
+    const template = compileTemplate('chaintypes/templates/consts.hbs');
 
     return beautifySourceCode(template({ importTypes, defTypeOut }));
   }

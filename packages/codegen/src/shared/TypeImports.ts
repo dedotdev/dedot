@@ -13,6 +13,8 @@ export class TypeImports {
   knownJsonRpcTypes: Set<string>;
   // External types to define explicitly
   outTypes: Set<string>;
+  // Know types defined in @dedot/contracts
+  contractTypes: Set<string>;
 
   constructor() {
     this.portableTypes = new Set<string>();
@@ -20,6 +22,7 @@ export class TypeImports {
     this.knownTypes = new Set<string>();
     this.knownJsonRpcTypes = new Set<string>();
     this.outTypes = new Set<string>();
+    this.contractTypes = new Set<string>();
   }
 
   clear() {
@@ -28,6 +31,7 @@ export class TypeImports {
     this.knownTypes.clear();
     this.knownJsonRpcTypes.clear();
     this.outTypes.clear();
+    this.contractTypes.clear();
   }
 
   toImports(config?: ImportConfig) {
@@ -40,6 +44,7 @@ export class TypeImports {
       [this.knownTypes, `${prefix}dedot/types`],
       [this.knownJsonRpcTypes, `${prefix}dedot/types/json-rpc`],
       [this.codecTypes, `${prefix}dedot/codecs`],
+      [this.contractTypes, `${prefix}dedot/contracts`],
       [this.portableTypes, './types'],
     ];
 
@@ -75,5 +80,9 @@ export class TypeImports {
 
   addOutType(...types: string[]) {
     types.forEach((one) => this.outTypes.add(one));
+  }
+
+  addContractType(...types: string[]) {
+    types.forEach((one) => this.contractTypes.add(one));
   }
 }

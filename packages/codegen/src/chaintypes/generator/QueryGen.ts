@@ -1,7 +1,7 @@
 import { StorageEntryLatest } from '@dedot/codecs';
 import { normalizeName, stringCamelCase } from '@dedot/utils';
+import { beautifySourceCode, commentBlock, compileTemplate } from '../../utils.js';
 import { ApiGen } from './ApiGen.js';
-import { beautifySourceCode, commentBlock, compileTemplate } from './utils.js';
 
 export class QueryGen extends ApiGen {
   generate(useSubPaths: boolean = false) {
@@ -33,7 +33,7 @@ export class QueryGen extends ApiGen {
     }
 
     const importTypes = this.typesGen.typeImports.toImports({ useSubPaths });
-    const template = compileTemplate('query.hbs');
+    const template = compileTemplate('chaintypes/templates/query.hbs');
 
     return beautifySourceCode(template({ importTypes, defTypeOut }));
   }

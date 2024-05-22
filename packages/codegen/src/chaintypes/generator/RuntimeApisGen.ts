@@ -2,9 +2,7 @@ import { RuntimeApiMethodDefLatest } from '@dedot/codecs';
 import { getRuntimeApiNames, getRuntimeApiSpecs } from '@dedot/runtime-specs';
 import { RuntimeApiMethodSpec, RuntimeApiSpec } from '@dedot/types';
 import { calcRuntimeApiHash, stringSnakeCase, stringCamelCase } from '@dedot/utils';
-import { ApiGen } from './ApiGen.js';
-import { TypesGen } from './TypesGen.js';
-import { findKnownCodecType } from './known-codecs.js';
+import { findKnownCodecType } from '../../shared/index.js';
 import {
   beautifySourceCode,
   commentBlock,
@@ -12,7 +10,9 @@ import {
   isNativeType,
   TUPLE_TYPE_REGEX,
   WRAPPER_TYPE_REGEX,
-} from './utils.js';
+} from '../../utils.js';
+import { ApiGen } from './ApiGen.js';
+import { TypesGen } from './TypesGen.js';
 
 export class RuntimeApisGen extends ApiGen {
   constructor(
@@ -61,7 +61,7 @@ export class RuntimeApisGen extends ApiGen {
     }
 
     const importTypes = this.typesGen.typeImports.toImports({ useSubPaths });
-    const template = compileTemplate('runtime.hbs');
+    const template = compileTemplate('chaintypes/templates/runtime.hbs');
 
     return beautifySourceCode(template({ importTypes, runtimeCallsOut }));
   }

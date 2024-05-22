@@ -1,10 +1,11 @@
-import { Field, MetadataLatest, PortableRegistry, PortableType, TypeId, TypeParam } from '@dedot/codecs';
+import { Field, PortableType, TypeId, TypeParam } from '@dedot/codecs';
+import { EnumOptions } from '@dedot/shape';
 import { normalizeName, stringPascalCase } from '@dedot/utils';
+import { commentBlock, isNativeType, WRAPPER_TYPE_REGEX } from '../utils.js';
 import { TypeImports } from './TypeImports.js';
-import { findKnownCodec, findKnownCodecType, isKnownCodecType } from './known-codecs.js';
-import { beautifySourceCode, commentBlock, compileTemplate, isNativeType } from './utils.js';
+import { findKnownCodec } from './known-codecs.js';
 
-interface NamedType extends PortableType {
+export interface NamedType extends PortableType {
   name: string; // nameIn, ~ typeIn
   nameOut: string; // ~ typeOut
   skip?: boolean;
@@ -12,68 +13,24 @@ interface NamedType extends PortableType {
   suffix?: string;
 }
 
-// Skip generate types for these
-// as we do have native types for them
-const SKIP_TYPES = [
-  'BoundedBTreeMap',
-  'BoundedBTreeSet',
-  'BoundedVec',
-  'Box',
-  'BTreeMap',
-  'BTreeSet',
-  'Cow',
-  'Option',
-  'Range',
-  'RangeInclusive',
-  'Result',
-  'WeakBoundedVec',
-  'WrapperKeepOpaque',
-  'WrapperOpaque',
-];
-
-// These are common & generic types, so we'll remove these from all paths at index 1
-// This helps make the type name shorter
-const PATH_RM_INDEX_1 = ['generic', 'misc', 'pallet', 'traits', 'types'];
-
 export const BASIC_KNOWN_TYPES = ['BitSequence', 'Bytes', 'BytesLike', 'FixedBytes', 'FixedArray', 'Result'];
-const WRAPPER_TYPE_REGEX = /^(\w+)(<.*>)$/g;
 
-export class TypesGen {
-  metadata: MetadataLatest;
-  /**
-   * Types will be generated its definition out.
-   */
+export abstract class BaseTypesGen {
+  types: PortableType[];
   includedTypes: Record<TypeId, NamedType>;
-  registry: PortableRegistry;
   typeImports: TypeImports;
 
-  constructor(metadata: MetadataLatest) {
-    this.metadata = metadata;
-    this.registry = new PortableRegistry(this.metadata);
-    this.includedTypes = this.#includedTypes();
+  protected constructor(types: PortableType[]) {
+    this.types = types;
+    this.includedTypes = {};
     this.typeImports = new TypeImports();
   }
 
-  generate(useSubPaths: boolean = false) {
-    this.clearCache();
+  abstract includeTypes(): Record<TypeId, NamedType>;
 
-    let defTypeOut = '';
+  abstract getEnumOptions(typeId: TypeId): EnumOptions;
 
-    Object.values(this.includedTypes)
-      .filter(({ skip, knownType }) => !(skip || knownType))
-      .forEach(({ name, nameOut, id, docs }) => {
-        defTypeOut += `${commentBlock(docs)}export type ${nameOut} = ${this.generateType(id, 0, true)};\n\n`;
-
-        if (this.#shouldGenerateTypeIn(id)) {
-          defTypeOut += `export type ${name} = ${this.generateType(id)};\n\n`;
-        }
-      });
-
-    const importTypes = this.typeImports.toImports({ useSubPaths, excludeModules: ['./types'] });
-    const template = compileTemplate('types.hbs');
-
-    return beautifySourceCode(template({ importTypes, defTypeOut }));
-  }
+  abstract shouldGenerateTypeIn(id: TypeId): boolean;
 
   typeCache: Record<string, string> = {};
 
@@ -117,7 +74,7 @@ export class TypesGen {
   }
 
   #generateType(typeId: TypeId, nestedLevel = 0, typeOut = false): string {
-    const def = this.metadata.types[typeId];
+    const def = this.types[typeId];
     if (!def) {
       throw new Error(`Type def not found ${JSON.stringify(def)}`);
     }
@@ -197,7 +154,7 @@ export class TypesGen {
             }
           }
 
-          const { tagKey, valueKey } = this.registry.getEnumOptions(typeId);
+          const { tagKey, valueKey } = this.getEnumOptions(typeId);
 
           return membersType
             .map(([keyName, valueType, docs]) => ({
@@ -228,7 +185,7 @@ export class TypesGen {
       case 'Sequence':
       case 'SizedVec': {
         const fixedSize = tag === 'SizedVec' ? `${value.len}` : null;
-        const $innerType = this.metadata.types[value.typeParam].type;
+        const $innerType = this.types[value.typeParam].type;
         if ($innerType.tag === 'Primitive' && $innerType.value.kind === 'u8') {
           return fixedSize ? `FixedBytes<${fixedSize}>` : typeOut ? 'Bytes' : 'BytesLike';
         } else {
@@ -261,82 +218,6 @@ export class TypesGen {
     return type.endsWith('| undefined');
   }
 
-  #includedTypes(): Record<TypeId, NamedType> {
-    const { types } = this.metadata;
-    const pathsCount = new Map<string, Array<number>>();
-    const typesWithPath = types.filter((one) => one.path.length > 0);
-    const skipIds: TypeId[] = [];
-    const typeSuffixes = new Map<TypeId, string>();
-
-    typesWithPath.forEach(({ path, id }) => {
-      const joinedPath = path.join('::');
-      if (pathsCount.has(joinedPath)) {
-        // We compare 2 types with the same path here,
-        //  if they are the same type -> skip the current one, keep the first occurrence
-        //  if they are not the same type but has the same path -> we'll try to calculate & add a suffix for the current type name
-        const firstOccurrenceTypeId = pathsCount.get(joinedPath)![0];
-        const sameType = this.typeEql(firstOccurrenceTypeId, id);
-        if (sameType) {
-          skipIds.push(id);
-        } else {
-          pathsCount.get(joinedPath)!.push(id);
-          typeSuffixes.set(
-            id,
-            this.#extractDupTypeSuffix(id, firstOccurrenceTypeId, pathsCount.get(joinedPath)!.length),
-          );
-        }
-      } else {
-        pathsCount.set(joinedPath, [id]);
-      }
-    });
-
-    return typesWithPath.reduce(
-      (o, type) => {
-        const { path, id } = type;
-        const joinedPath = path.join('::');
-
-        if (SKIP_TYPES.includes(joinedPath) || SKIP_TYPES.includes(path.at(-1)!)) {
-          return o;
-        }
-
-        const suffix = typeSuffixes.get(id) || '';
-
-        let knownType = false;
-        let name, nameOut;
-
-        if (isKnownCodecType(joinedPath)) {
-          const codecType = findKnownCodecType(path.at(-1)!);
-          name = codecType.typeIn;
-          nameOut = codecType.typeOut;
-
-          knownType = true;
-        } else if (PATH_RM_INDEX_1.includes(path[1])) {
-          const newPath = path.slice();
-          newPath.splice(1, 1);
-          name = this.#cleanPath(newPath);
-        } else {
-          name = this.#cleanPath(path);
-        }
-
-        if (this.#shouldGenerateTypeIn(id)) {
-          nameOut = name;
-          name = name.endsWith('Like') ? name : `${name}Like`;
-        }
-
-        o[id] = {
-          name: `${name}${suffix}`,
-          nameOut: nameOut ? `${nameOut}${suffix}` : `${name}${suffix}`,
-          knownType,
-          skip: skipIds.includes(id),
-          ...type,
-        };
-
-        return o;
-      },
-      {} as Record<TypeId, NamedType>,
-    );
-  }
-
   #removeGenericPart(typeName: string) {
     if (typeName.match(WRAPPER_TYPE_REGEX)) {
       return typeName.replace(WRAPPER_TYPE_REGEX, (_, $1) => $1);
@@ -345,28 +226,11 @@ export class TypesGen {
     }
   }
 
-  /**
-   * @description Remove duplicated part of the path
-   *
-   * Example:
-   * ["pallet_staking", "pallet", "pallet", "Event"]
-   * => ["pallet_staking", "pallet", "Event"]
-   *
-   * @param path
-   * @private
-   */
-  #cleanPath(path: string[]) {
+  cleanPath(path: string[]) {
     return path
       .map((one) => stringPascalCase(one))
       .filter((one, idx, currentPath) => idx === 0 || one !== currentPath[idx - 1])
       .join('');
-  }
-
-  #shouldGenerateTypeIn(id: TypeId) {
-    const { callTypeId } = this.metadata.extrinsic;
-    const palletCallTypeIds = this.registry.getPalletCallTypeIds();
-
-    return callTypeId === id || palletCallTypeIds.includes(id);
   }
 
   eqlCache = new Map<string, boolean>();
@@ -384,9 +248,8 @@ export class TypesGen {
   #typeEql(idA: number, idB: number, lvl = 0): boolean {
     if (idA === idB) return true;
 
-    const { types } = this.metadata;
-    const typeA = types[idA];
-    const typeB = types[idB];
+    const typeA = this.types[idA];
+    const typeB = this.types[idB];
 
     if (typeA.path.join('::') !== typeB.path.join('::')) return false;
 
@@ -453,15 +316,14 @@ export class TypesGen {
     );
   }
 
-  #extractDupTypeSuffix(dupTypeId: TypeId, originalTypeId: TypeId, dupCount: number) {
-    const { types } = this.metadata;
-    const originalTypeParams = types[originalTypeId].params;
-    const dupTypeParams = types[dupTypeId].params;
+  extractDupTypeSuffix(dupTypeId: TypeId, originalTypeId: TypeId, dupCount: number) {
+    const originalTypeParams = this.types[originalTypeId].params;
+    const dupTypeParams = this.types[dupTypeId].params;
     const diffParam = dupTypeParams.find((one, idx) => !this.#eqlTypeParam(one, originalTypeParams[idx]));
 
     // TODO make sure these suffix is unique if a type is duplicated more than 2 times
     if (diffParam?.typeId) {
-      const diffType = types[diffParam.typeId];
+      const diffType = this.types[diffParam.typeId];
       if (diffType.path.length > 0) {
         return stringPascalCase(diffType.path.at(-1)!);
       } else if (diffType.type.tag === 'Primitive') {

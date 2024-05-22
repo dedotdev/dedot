@@ -1,6 +1,6 @@
 import { stringCamelCase, stringPascalCase } from '@dedot/utils';
+import { beautifySourceCode, commentBlock, compileTemplate, isReservedWord } from '../../utils.js';
 import { ApiGen } from '../generator/index.js';
-import { beautifySourceCode, commentBlock, compileTemplate, isReservedWord } from './utils.js';
 
 export class TxGen extends ApiGen {
   generate(useSubPaths: boolean = false) {
@@ -91,7 +91,7 @@ export class TxGen extends ApiGen {
         
     export type TxCall<Rv extends RpcVersion> = (...args: any[]) => ChainSubmittableExtrinsic<Rv>;    
 `;
-    const template = compileTemplate('tx.hbs');
+    const template = compileTemplate('chaintypes/templates/tx.hbs');
 
     return beautifySourceCode(template({ importTypes, defTypes, txDefsOut }));
   }

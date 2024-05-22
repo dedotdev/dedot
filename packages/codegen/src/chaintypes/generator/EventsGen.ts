@@ -1,7 +1,7 @@
 import { EnumTypeDef, Field, TypeId } from '@dedot/codecs';
 import { assert, stringCamelCase, stringPascalCase } from '@dedot/utils';
+import { beautifySourceCode, commentBlock, compileTemplate } from '../../utils.js';
 import { ApiGen } from './ApiGen.js';
-import { beautifySourceCode, commentBlock, compileTemplate } from './utils.js';
 
 export class EventsGen extends ApiGen {
   generate(useSubPaths: boolean = false) {
@@ -47,7 +47,7 @@ export class EventsGen extends ApiGen {
     }
 
     const importTypes = this.typesGen.typeImports.toImports({ useSubPaths });
-    const template = compileTemplate('events.hbs');
+    const template = compileTemplate('chaintypes/templates/events.hbs');
 
     return beautifySourceCode(template({ importTypes, defTypeOut }));
   }
