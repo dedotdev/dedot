@@ -11,10 +11,12 @@ export class QueryExecutor<ChainApi extends GenericSubstrateApi> extends Executo
     assert(meta, `Query message not found: ${message}`);
 
     const callFn: GenericContractQueryCall<ChainApi> = async (...params: any[]) => {
-      // TODO verify number of arguments/params & call options presence
       const { args } = meta;
+      assert(params.length === args.length + 1, `Expected ${args.length + 1} arguments, got ${params.length}`);
+
       const callOptions = params[args.length] as ContractCallOptions;
       const { caller, value = 0n, gasLimit, storageDepositLimit } = callOptions;
+      assert(caller, 'Expected a valid caller address in ContractCallOptions');
 
       const formattedInputs = args.map((arg, index) => this.tryEncode(arg, params[index]));
       const bytes = u8aToHex(concatU8a(hexToU8a(meta.selector), ...formattedInputs));

@@ -10,10 +10,12 @@ export class TxExecutor<ChainApi extends GenericSubstrateApi> extends Executor<C
     assert(meta, `Tx message not found: ${message}`);
 
     const callFn: GenericContractTxCall<ChainApi> = (...params: any[]) => {
-      // TODO verify number of arguments/params & call options presence
       const { args } = meta;
+      assert(params.length === args.length + 1, `Expected ${args.length + 1} arguments, got ${params.length}`);
+
       const txCallOptions = params[args.length] as ContractTxOptions;
       const { value = 0n, gasLimit, storageDepositLimit } = txCallOptions;
+      assert(gasLimit, 'Expected a gas limit in ContractTxOptions');
 
       const formattedInputs = args.map((arg, index) => this.tryEncode(arg, params[index]));
       const bytes = u8aToHex(concatU8a(hexToU8a(meta.selector), ...formattedInputs));
