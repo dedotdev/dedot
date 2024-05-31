@@ -21,7 +21,7 @@ export class QueryExecutor<ChainApi extends GenericSubstrateApi> extends Executo
       const formattedInputs = args.map((arg, index) => this.tryEncode(arg, params[index]));
       const bytes = u8aToHex(concatU8a(hexToU8a(meta.selector), ...formattedInputs));
 
-      const contractResult: PalletContractsPrimitivesContractResult = await this.api.call.contractsApi.call(
+      const contractResult = await this.api.call.contractsApi.call(
         caller,
         this.address,
         value,

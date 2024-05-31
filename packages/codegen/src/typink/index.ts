@@ -1,7 +1,7 @@
 import { ContractMetadata, parseRawMetadata } from '@dedot/contracts';
 import fs from 'fs';
 import path from 'path';
-import { IndexGen, QueryGen, TxGen, TypesGen, ConstructorGen } from './generator/index.js';
+import { IndexGen, QueryGen, TxGen, TypesGen, ConstructorTxGen, ConstructorQueryGen } from './generator/index.js';
 
 export async function generateContractTypesFromMetadata(
   metadata: ContractMetadata | string,
@@ -12,15 +12,14 @@ export async function generateContractTypesFromMetadata(
 ) {
   let contractMetadata = typeof metadata === 'string' ? parseRawMetadata(metadata) : metadata;
 
-  if (!contract) {
-    contract = contractMetadata.contract.name;
-  }
+  contract = contract || contractMetadata.contract.name;
 
   const dirPath = path.resolve(outDir, contract);
   const typesFileName = path.join(dirPath, `types.${extension}`);
   const queryTypesFileName = path.join(dirPath, `query.${extension}`);
   const txTypesFileName = path.join(dirPath, `tx.${extension}`);
-  const constructorTypesFileName = path.join(dirPath, `constructor.${extension}`);
+  const constructorTxTypesFileName = path.join(dirPath, `constructor-tx.${extension}`);
+  const constructorQueryTypesFileName = path.join(dirPath, `constructor-query.${extension}`);
   const indexTypesFileName = path.join(dirPath, `index.${extension}`);
 
   if (!fs.existsSync(dirPath)) {
@@ -28,14 +27,16 @@ export async function generateContractTypesFromMetadata(
   }
 
   const typesGen = new TypesGen(contractMetadata);
-  const querysGen = new QueryGen(contractMetadata, typesGen);
+  const queryGen = new QueryGen(contractMetadata, typesGen);
   const txGen = new TxGen(contractMetadata, typesGen);
-  const constructorGen = new ConstructorGen(contractMetadata, typesGen);
+  const constructorTxGen = new ConstructorTxGen(contractMetadata, typesGen);
+  const constructorQueryGen = new ConstructorQueryGen(contractMetadata, typesGen);
   const indexGen = new IndexGen(contractMetadata);
 
   fs.writeFileSync(typesFileName, await typesGen.generate(useSubPaths));
-  fs.writeFileSync(queryTypesFileName, await querysGen.generate(useSubPaths));
+  fs.writeFileSync(queryTypesFileName, await queryGen.generate(useSubPaths));
   fs.writeFileSync(txTypesFileName, await txGen.generate(useSubPaths));
-  fs.writeFileSync(constructorTypesFileName, await constructorGen.generate(useSubPaths));
+  fs.writeFileSync(constructorQueryTypesFileName, await constructorQueryGen.generate(useSubPaths));
+  fs.writeFileSync(constructorTxTypesFileName, await constructorTxGen.generate(useSubPaths));
   fs.writeFileSync(indexTypesFileName, await indexGen.generate(useSubPaths));
 }

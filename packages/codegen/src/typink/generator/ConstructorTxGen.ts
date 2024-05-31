@@ -4,7 +4,7 @@ import { beautifySourceCode, commentBlock, compileTemplate } from '../../utils.j
 import { QueryGen } from './QueryGen.js';
 import { TypesGen } from './TypesGen.js';
 
-export class ConstructorGen extends QueryGen {
+export class ConstructorTxGen extends QueryGen {
   constructor(contractMetadata: ContractMetadata, typeGen: TypesGen) {
     super(contractMetadata, typeGen);
   }
@@ -13,10 +13,10 @@ export class ConstructorGen extends QueryGen {
     this.typesGen.clearCache();
 
     this.typesGen.typeImports.addContractType(
-      'GenericContractTx',
-      'GenericContractTxCall',
-      'ConstructorOptions',
-      'ChainSubmittableExtrinsic',
+      'GenericConstructorTx',
+      'GenericConstructorTxCall',
+      'ConstructorTxOptions',
+      'GenericConstructorSubmittableExtrinsic',
     );
 
     const { constructors } = this.contractMetadata.spec;
@@ -36,7 +36,7 @@ export class ConstructorGen extends QueryGen {
     });
 
     const importTypes = this.typesGen.typeImports.toImports({ useSubPaths });
-    const template = compileTemplate('typink/templates/constructor.hbs');
+    const template = compileTemplate('typink/templates/constructor-tx.hbs');
 
     return beautifySourceCode(template({ importTypes, constructorsOut }));
   }
@@ -50,6 +50,6 @@ export class ConstructorGen extends QueryGen {
       .map(({ type: { type }, label }) => `${stringCamelCase(label)}: ${this.typesGen.generateType(type, 1)}`)
       .join(', ');
 
-    return `GenericContractTxCall<(${paramsOut ? `${paramsOut},` : ''} options: ConstructorOptions) => ChainSubmittableExtrinsic<ChainApi>>`;
+    return `GenericConstructorTxCall<ChainApi, (${paramsOut && `${paramsOut},`} options: ConstructorTxOptions) => GenericConstructorSubmittableExtrinsic<ChainApi>>`;
   }
 }

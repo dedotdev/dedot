@@ -58,7 +58,7 @@ export class QueryGen {
 
     const typeOut = this.typesGen.generateType(returnType.type, 0, true);
 
-    return `GenericContractQueryCall<(${paramsOut ? `${paramsOut},` : ''} options: ContractCallOptions) => Promise<GenericContractResult<${typeOut}, ContractResult<ChainApi>>>>`;
+    return `GenericContractQueryCall<ChainApi, (${paramsOut && `${paramsOut},`} options: ContractCallOptions) => Promise<GenericContractResult<${typeOut}, ContractResult<ChainApi>>>>`;
   }
 
   importType(typeId: number): any {

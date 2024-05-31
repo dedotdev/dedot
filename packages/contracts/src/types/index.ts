@@ -7,6 +7,41 @@ import { ContractMetadataV5 } from './v5.js';
 
 export * from './shared.js';
 
+export type GenericContractResult<DecodedData, ContractResult> =
+  | {
+      isOk: true;
+      data: DecodedData;
+      contractResult: ContractResult;
+    }
+  | {
+      isOk: false;
+      contractResult: ContractResult;
+    };
+
+export type ContractResult<ChainApi extends GenericSubstrateApi> = Awaited<
+  ReturnType<ChainApi['call']['contractsApi']['call']>
+>;
+
+export type ConstructorResult<ChainApi extends GenericSubstrateApi> = Awaited<
+  ReturnType<ChainApi['call']['contractsApi']['instantiate']>
+>;
+
+export type ChainSubmittableExtrinsic<ChainApi extends GenericSubstrateApi> = ReturnType<
+  ChainApi['tx']['contracts']['call']
+>;
+
+export type InstantiateWithCodeSubmittableExtrinsic<ChainApi extends GenericSubstrateApi> = ReturnType<
+  ChainApi['tx']['contracts']['instantiateWithCode']
+>;
+
+export type InstantiateSubmittableExtrinsic<ChainApi extends GenericSubstrateApi> = ReturnType<
+  ChainApi['tx']['contracts']['instantiate']
+>;
+
+export type GenericConstructorSubmittableExtrinsic<ChainApi extends GenericSubstrateApi> =
+  | InstantiateSubmittableExtrinsic<ChainApi>
+  | InstantiateWithCodeSubmittableExtrinsic<ChainApi>;
+
 export type ContractMetadata = ContractMetadataV4 | ContractMetadataV5;
 
 export type CallOptions = {
@@ -33,19 +68,31 @@ export type ContractTxOptions = CallOptions & {
   gasLimit: Weight;
 };
 
-export type GenericContractQueryCall<_ extends GenericSubstrateApi, F extends AsyncMethod = AsyncMethod> = F & {
+export type GenericContractQueryCall<
+  ChainApi extends GenericSubstrateApi,
+  F extends AsyncMethod = (...args: any[]) => Promise<GenericContractResult<unknown, ContractResult<ChainApi>>>,
+> = F & {
   meta: ContractMessage;
 };
 
-export type GenericContractTxCall<_ extends GenericSubstrateApi, F extends AnyFunc = AnyFunc> = F & {
+export type GenericContractTxCall<
+  ChainApi extends GenericSubstrateApi,
+  F extends AnyFunc = (...args: any[]) => ChainSubmittableExtrinsic<ChainApi>,
+> = F & {
   meta: ContractMessage;
 };
 
-export type GenericConstructorQueryCall<_ extends GenericSubstrateApi, F extends AsyncMethod = AsyncMethod> = F & {
+export type GenericConstructorQueryCall<
+  ChainApi extends GenericSubstrateApi,
+  F extends AsyncMethod = (...args: any[]) => Promise<ConstructorResult<ChainApi>>,
+> = F & {
   meta: ContractConstructorMessage;
 };
 
-export type GenericConstructorTxCall<_ extends GenericSubstrateApi, F extends AnyFunc = AnyFunc> = F & {
+export type GenericConstructorTxCall<
+  ChainApi extends GenericSubstrateApi,
+  F extends AnyFunc = (...args: any[]) => GenericConstructorSubmittableExtrinsic<ChainApi>,
+> = F & {
   meta: ContractConstructorMessage;
 };
 

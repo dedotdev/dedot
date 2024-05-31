@@ -3,6 +3,6 @@
 import { GenericSubstrateApi } from '@dedot/types';
 {{{ importTypes }}}
 
-export interface ContractConstructor<ChainApi extends GenericSubstrateApi> extends GenericContractTx {
+export interface ConstructorQuery<ChainApi extends GenericSubstrateApi> extends GenericConstructorQuery<ChainApi> {
     {{{ constructorsOut }}}
 }

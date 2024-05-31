@@ -16,7 +16,7 @@ export class ConstructorTxExecutor<ChainApi extends GenericSubstrateApi> extends
   }
 
   doExecute(constructor: string) {
-    const meta = this.findConstructorMeta(constructor);
+    const meta = this.#findConstructorMeta(constructor);
     assert(meta, `Constructor message not found: ${constructor}`);
 
     const callFn: GenericConstructorTxCall<ChainApi> = (...params: any[]) => {
@@ -43,7 +43,7 @@ export class ConstructorTxExecutor<ChainApi extends GenericSubstrateApi> extends
     return callFn;
   }
 
-  protected findConstructorMeta(constructor: string): ContractConstructorMessage | undefined {
+  #findConstructorMeta(constructor: string): ContractConstructorMessage | undefined {
     return this.metadata.spec.constructors.find((one) => normalizeLabel(one.label) === constructor);
   }
 }
