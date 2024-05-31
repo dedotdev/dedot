@@ -3,7 +3,11 @@ import { EnumOptions } from '@dedot/shape';
 import { normalizeName, stringPascalCase } from '@dedot/utils';
 import { commentBlock, isNativeType, WRAPPER_TYPE_REGEX } from '../utils.js';
 import { TypeImports } from './TypeImports.js';
-import { findKnownCodec } from './known-codecs.js';
+import { checkKnownCodecType, findKnownCodec, findKnownCodecType } from './known-codecs.js';
+
+// These are common & generic types, so we'll remove these from all paths at index 1
+// This helps make the type name shorter
+const PATH_RM_INDEX_1 = ['generic', 'misc', 'pallet', 'traits', 'types'];
 
 export interface NamedType extends PortableType {
   name: string; // nameIn, ~ typeIn
@@ -19,16 +23,14 @@ export abstract class BaseTypesGen {
   types: PortableType[];
   includedTypes: Record<TypeId, NamedType>;
   typeImports: TypeImports;
+  skipTypes: string[];
 
   protected constructor(types: PortableType[]) {
     this.types = types;
     this.includedTypes = {};
     this.typeImports = new TypeImports();
+    this.skipTypes = [];
   }
-
-  abstract includeTypes(): Record<TypeId, NamedType>;
-
-  abstract getEnumOptions(typeId: TypeId): EnumOptions;
 
   abstract shouldGenerateTypeIn(id: TypeId): boolean;
 
@@ -37,6 +39,83 @@ export abstract class BaseTypesGen {
   clearCache() {
     this.typeCache = {};
     this.typeImports.clear();
+  }
+
+  includeTypes(): Record<TypeId, NamedType> {
+    const pathsCount = new Map<string, Array<number>>();
+    const typesWithPath = this.types.filter((one) => one.path.length > 0);
+    const skipIds: TypeId[] = [];
+    const typeSuffixes = new Map<TypeId, string>();
+
+    typesWithPath.forEach(({ path, id }) => {
+      const joinedPath = path.join('::');
+      if (pathsCount.has(joinedPath)) {
+        // We compare 2 types with the same path here,
+        //  if they are the same type -> skip the current one, keep the first occurrence
+        //  if they are not the same type but has the same path -> we'll try to calculate & add a suffix for the current type name
+        const firstOccurrenceTypeId = pathsCount.get(joinedPath)![0];
+        const sameType = this.typeEql(firstOccurrenceTypeId, id);
+        if (sameType) {
+          skipIds.push(id);
+        } else {
+          pathsCount.get(joinedPath)!.push(id);
+          typeSuffixes.set(
+            id,
+            this.extractDupTypeSuffix(id, firstOccurrenceTypeId, pathsCount.get(joinedPath)!.length),
+          );
+        }
+      } else {
+        pathsCount.set(joinedPath, [id]);
+      }
+    });
+
+    return typesWithPath.reduce(
+      (o, type) => {
+        const { path, id } = type;
+        const joinedPath = path.join('::');
+
+        if (this.skipTypes.includes(joinedPath) || this.skipTypes.includes(path.at(-1)!)) {
+          return o;
+        }
+
+        const suffix = typeSuffixes.get(id) || '';
+
+        let knownType = false;
+        let name, nameOut;
+
+        const [isKnownCodecType, codecName] = checkKnownCodecType(joinedPath);
+
+        if (isKnownCodecType) {
+          const codecType = findKnownCodecType(codecName);
+          name = codecType.typeIn;
+          nameOut = codecType.typeOut;
+
+          knownType = true;
+        } else if (PATH_RM_INDEX_1.includes(path[1])) {
+          const newPath = path.slice();
+          newPath.splice(1, 1);
+          name = this.cleanPath(newPath);
+        } else {
+          name = this.cleanPath(path);
+        }
+
+        if (this.shouldGenerateTypeIn(id)) {
+          nameOut = name;
+          name = name.endsWith('Like') ? name : `${name}Like`;
+        }
+
+        o[id] = {
+          name: `${name}${suffix}`,
+          nameOut: nameOut ? `${nameOut}${suffix}` : `${name}${suffix}`,
+          knownType,
+          skip: skipIds.includes(id),
+          ...type,
+        };
+
+        return o;
+      },
+      {} as Record<TypeId, NamedType>,
+    );
   }
 
   generateType(typeId: TypeId, nestedLevel = 0, typeOut = false): string {
@@ -368,5 +447,9 @@ export abstract class BaseTypesGen {
     }
 
     this.typeImports.addOutType(typeName);
+  }
+
+  getEnumOptions(_typeId: TypeId): EnumOptions {
+    return { tagKey: 'tag', valueKey: 'value' };
   }
 }
