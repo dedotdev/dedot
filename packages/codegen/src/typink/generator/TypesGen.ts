@@ -14,7 +14,7 @@ export class TypesGen extends BaseTypesGen {
     this.includedTypes = this.includeTypes();
   }
 
-  generate(): Promise<string> {
+  generate(useSubPaths: boolean = false): Promise<string> {
     let defTypeOut = '';
 
     Object.values(this.includedTypes)
@@ -27,7 +27,7 @@ export class TypesGen extends BaseTypesGen {
         }
       });
 
-    const importTypes = this.typeImports.toImports({ excludeModules: ['./types'] });
+    const importTypes = this.typeImports.toImports({ excludeModules: ['./types'], useSubPaths });
     const template = compileTemplate('typink/templates/types.hbs');
 
     return beautifySourceCode(template({ importTypes, defTypeOut }));

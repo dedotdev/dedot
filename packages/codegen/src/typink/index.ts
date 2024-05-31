@@ -8,6 +8,7 @@ export async function generateContractTypesFromMetadata(
   contract?: string,
   outDir: string = '.',
   extension: string = 'd.ts',
+  useSubPaths: boolean = false,
 ) {
   let contractMetadata = typeof metadata === 'string' ? parseRawMetadata(metadata) : metadata;
 
@@ -32,9 +33,9 @@ export async function generateContractTypesFromMetadata(
   const constructorGen = new ConstructorGen(contractMetadata, typesGen);
   const indexGen = new IndexGen(contractMetadata);
 
-  fs.writeFileSync(typesFileName, await typesGen.generate());
-  fs.writeFileSync(queryTypesFileName, await querysGen.generate());
-  fs.writeFileSync(txTypesFileName, await txGen.generate());
-  fs.writeFileSync(constructorTypesFileName, await constructorGen.generate());
-  fs.writeFileSync(indexTypesFileName, await indexGen.generate());
+  fs.writeFileSync(typesFileName, await typesGen.generate(useSubPaths));
+  fs.writeFileSync(queryTypesFileName, await querysGen.generate(useSubPaths));
+  fs.writeFileSync(txTypesFileName, await txGen.generate(useSubPaths));
+  fs.writeFileSync(constructorTypesFileName, await constructorGen.generate(useSubPaths));
+  fs.writeFileSync(indexTypesFileName, await indexGen.generate(useSubPaths));
 }

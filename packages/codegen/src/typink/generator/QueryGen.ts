@@ -12,7 +12,7 @@ export class QueryGen {
     this.typesGen = typeGen;
   }
 
-  generate() {
+  generate(useSubPaths: boolean = false) {
     this.typesGen.clearCache();
 
     this.typesGen.typeImports.addContractType(
@@ -40,7 +40,7 @@ export class QueryGen {
       this.#generateMethodDef(queryDef);
     });
 
-    const importTypes = this.typesGen.typeImports.toImports();
+    const importTypes = this.typesGen.typeImports.toImports({ useSubPaths });
     const template = compileTemplate('typink/templates/query.hbs');
 
     return beautifySourceCode(template({ importTypes, queryCallsOut }));

@@ -9,7 +9,7 @@ export class TxGen extends QueryGen {
     super(contractMetadata, typeGen);
   }
 
-  generate() {
+  generate(useSubPaths: boolean = false) {
     this.typesGen.clearCache();
 
     this.typesGen.typeImports.addContractType(
@@ -36,7 +36,7 @@ export class TxGen extends QueryGen {
       this.#generateMethodDef(txDef);
     });
 
-    const importTypes = this.typesGen.typeImports.toImports();
+    const importTypes = this.typesGen.typeImports.toImports({ useSubPaths });
     const template = compileTemplate('typink/templates/tx.hbs');
 
     return beautifySourceCode(template({ importTypes, txCallsOut }));
