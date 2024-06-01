@@ -1,4 +1,10 @@
-import { normalizeContractTypeDef, ContractMessage, ContractMetadata } from '@dedot/contracts';
+import {
+  normalizeContractTypeDef,
+  ContractMetadata,
+  Message,
+  normalizeLabel,
+  ContractMessageArg,
+} from '@dedot/contracts';
 import { stringCamelCase } from '@dedot/utils';
 import { beautifySourceCode, commentBlock, compileTemplate } from '../../utils.js';
 import { TypesGen } from './TypesGen.js';
@@ -19,46 +25,53 @@ export class QueryGen {
       'GenericContractQuery',
       'GenericContractQueryCall',
       'ContractCallOptions',
-      'GenericContractResult',
+      'GenericContractCallResult',
       'ContractResult',
     );
 
     const { messages } = this.contractMetadata.spec;
 
-    let queryCallsOut = '';
-    messages.forEach((queryDef) => {
-      const { label, docs, selector, args } = queryDef;
-      queryCallsOut += `${commentBlock(
-        docs,
-        '\n',
-        args.map((arg) => `@param {${this.typesGen.generateType(arg.type.type, 1)}} ${stringCamelCase(arg.label)}`),
-        '\n',
-        `@selector {${selector}}`,
-      )}`;
-      queryCallsOut += `${stringCamelCase(label.replaceAll('::', '_'))}: ${this.#generateMethodDef(queryDef)};\n\n`;
-
-      this.#generateMethodDef(queryDef);
-    });
-
+    const queryCallsOut = this.doGenerate(messages);
     const importTypes = this.typesGen.typeImports.toImports({ useSubPaths });
     const template = compileTemplate('typink/templates/query.hbs');
 
     return beautifySourceCode(template({ importTypes, queryCallsOut }));
   }
 
-  #generateMethodDef(def: ContractMessage): string {
+  doGenerate(messages: Message[]) {
+    let callsOut = '';
+
+    messages.forEach((messageDef) => {
+      const { label, docs, selector, args } = messageDef;
+      callsOut += `${commentBlock(
+        docs,
+        '\n',
+        args.map((arg) => `@param {${this.typesGen.generateType(arg.type.type, 1)}} ${stringCamelCase(arg.label)}`),
+        '\n',
+        `@selector {${selector}}`,
+      )}`;
+      callsOut += `${normalizeLabel(label)}: ${this.generateMethodDef(messageDef)};\n\n`;
+    });
+
+    return callsOut;
+  }
+
+  generateMethodDef(def: Message): string {
     const { args, returnType } = def;
 
     this.importType(returnType.type);
     args.forEach(({ type: { type } }) => this.importType(type));
 
-    const paramsOut = args
-      .map(({ type: { type }, label }) => `${stringCamelCase(label)}: ${this.typesGen.generateType(type, 1)}`)
-      .join(', ');
-
+    const paramsOut = this.generateParamsOut(args);
     const typeOut = this.typesGen.generateType(returnType.type, 0, true);
 
-    return `GenericContractQueryCall<ChainApi, (${paramsOut && `${paramsOut},`} options: ContractCallOptions) => Promise<GenericContractResult<${typeOut}, ContractResult<ChainApi>>>>`;
+    return `GenericContractQueryCall<ChainApi, (${paramsOut && `${paramsOut},`} options: ContractCallOptions) => Promise<GenericContractCallResult<${typeOut}, ContractResult<ChainApi>>>>`;
+  }
+
+  generateParamsOut(args: ContractMessageArg[]) {
+    return args
+      .map(({ type: { type }, label }) => `${stringCamelCase(label)}: ${this.typesGen.generateType(type, 1)}`)
+      .join(', ');
   }
 
   importType(typeId: number): any {

@@ -6,7 +6,7 @@ import { Executor } from './Executor.js';
 
 export class TxExecutor<ChainApi extends GenericSubstrateApi> extends Executor<ChainApi> {
   doExecute(message: string) {
-    const meta = this.findTxMessage(message);
+    const meta = this.#findTxMessage(message);
     assert(meta, `Tx message not found: ${message}`);
 
     const callFn: GenericContractTxCall<ChainApi> = (...params: any[]) => {
@@ -28,7 +28,7 @@ export class TxExecutor<ChainApi extends GenericSubstrateApi> extends Executor<C
     return callFn;
   }
 
-  protected findTxMessage(message: string): ContractMessage | undefined {
+  #findTxMessage(message: string): ContractMessage | undefined {
     return this.metadata.spec.messages.find((one) => one.mutates && normalizeLabel(one.label) === message);
   }
 }

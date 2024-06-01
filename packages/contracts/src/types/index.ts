@@ -7,15 +7,15 @@ import { ContractMetadataV5 } from './v5.js';
 
 export * from './shared.js';
 
-export type GenericContractResult<DecodedData, ContractResult> =
+export type GenericContractCallResult<DecodedData, ContractResult> =
   | {
       isOk: true;
       data: DecodedData;
-      contractResult: ContractResult;
+      rawResult: ContractResult;
     }
   | {
       isOk: false;
-      contractResult: ContractResult;
+      rawResult: ContractResult;
     };
 
 export type ContractResult<ChainApi extends GenericSubstrateApi> = Awaited<
@@ -70,7 +70,7 @@ export type ContractTxOptions = CallOptions & {
 
 export type GenericContractQueryCall<
   ChainApi extends GenericSubstrateApi,
-  F extends AsyncMethod = (...args: any[]) => Promise<GenericContractResult<unknown, ContractResult<ChainApi>>>,
+  F extends AsyncMethod = (...args: any[]) => Promise<GenericContractCallResult<unknown, ContractResult<ChainApi>>>,
 > = F & {
   meta: ContractMessage;
 };
