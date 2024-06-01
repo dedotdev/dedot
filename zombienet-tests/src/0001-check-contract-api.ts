@@ -51,10 +51,10 @@ export const run = async (_nodeName: any, networkInfo: any) => {
     console.log(`[${api.rpcVersion}] Initial value`, state.data);
 
     console.log(`[${api.rpcVersion}] Flipping...`);
-    const { contractResult } = await contract.query.flip({ caller });
+    const { rawResult } = await contract.query.flip({ caller });
 
     await new Promise<void>(async (resolve) => {
-      await contract.tx.flip({ gasLimit: contractResult.gasRequired }).signAndSend(alicePair, ({ status }: any) => {
+      await contract.tx.flip({ gasLimit: rawResult.gasRequired }).signAndSend(alicePair, ({ status }: any) => {
         console.log(`[${api.rpcVersion}] Transaction status`, status.tag);
 
         if (status.tag === 'Finalized') {
