@@ -344,7 +344,7 @@ __metadata:
     "@dedot/storage": "workspace:*"
     "@dedot/types": "workspace:*"
     "@dedot/utils": "workspace:*"
-    "@polkadot/types": "npm:^11.0.2"
+    "@polkadot/types": "npm:^11.2.1"
   languageName: unknown
   linkType: soft
 
@@ -374,7 +374,7 @@ __metadata:
     "@dedot/api": "workspace:*"
     "@dedot/codecs": "workspace:*"
     "@dedot/codegen": "workspace:*"
-    "@polkadot/types-support": "npm:^11.0.2"
+    "@polkadot/types-support": "npm:^11.2.1"
     "@types/yargs": "npm:^17.0.32"
     yargs: "npm:^17.7.2"
   bin:
@@ -1370,63 +1370,63 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@polkadot/types-augment@npm:11.0.2":
-  version: 11.0.2
-  resolution: "@polkadot/types-augment@npm:11.0.2"
+"@polkadot/types-augment@npm:11.2.1":
+  version: 11.2.1
+  resolution: "@polkadot/types-augment@npm:11.2.1"
   dependencies:
-    "@polkadot/types": "npm:11.0.2"
-    "@polkadot/types-codec": "npm:11.0.2"
+    "@polkadot/types": "npm:11.2.1"
+    "@polkadot/types-codec": "npm:11.2.1"
     "@polkadot/util": "npm:^12.6.2"
     tslib: "npm:^2.6.2"
-  checksum: 10c0/6eebea226e72f7b00763c150684f550d65d90be9d21924d682b0dbf07d269c3df1017ef9bbd92c2beee92b093245c50b3728cfa2f8acd520c626bfc8103c8e4e
+  checksum: 10c0/eb7e8e370037dbb0301fbafe80d9355153d929f247f75c2206b1cc4f6e035d30bda546af73b60b810c09ba133505de06b03de11b23243b2ea70e74491b1a5b5d
   languageName: node
   linkType: hard
 
-"@polkadot/types-codec@npm:11.0.2":
-  version: 11.0.2
-  resolution: "@polkadot/types-codec@npm:11.0.2"
+"@polkadot/types-codec@npm:11.2.1":
+  version: 11.2.1
+  resolution: "@polkadot/types-codec@npm:11.2.1"
   dependencies:
     "@polkadot/util": "npm:^12.6.2"
     "@polkadot/x-bigint": "npm:^12.6.2"
     tslib: "npm:^2.6.2"
-  checksum: 10c0/3e841e8bd485ac2eeb2d4bdf32df1f2426d10164cf3ef8d02341fef4d7252b6465bccb06615daf2e4ed23997f220e5c0a3f8969402807d8d6e56348685a84c7e
+  checksum: 10c0/a5e65e8350800eb0d4278c821bc811ae37918be24bbbb67dd9db956cf3251e6f4adcf48b50ffe044e0366a2dd08c0983254e67c4b7f9e8c698fc5469d20ea5c0
   languageName: node
   linkType: hard
 
-"@polkadot/types-create@npm:11.0.2":
-  version: 11.0.2
-  resolution: "@polkadot/types-create@npm:11.0.2"
+"@polkadot/types-create@npm:11.2.1":
+  version: 11.2.1
+  resolution: "@polkadot/types-create@npm:11.2.1"
   dependencies:
-    "@polkadot/types-codec": "npm:11.0.2"
+    "@polkadot/types-codec": "npm:11.2.1"
     "@polkadot/util": "npm:^12.6.2"
     tslib: "npm:^2.6.2"
-  checksum: 10c0/542416efd7836b06104a00172771bbfb54c8e953fa929eeb33df2b6200dbd8f9194eeafc91a67af614755d629a99e851742de24ea75b17d407d1ef2cb7504b21
+  checksum: 10c0/a9fa6ddc4b4c70d68d096503488bde59d5593d64a91596de38f41fb02d2fd5a8df4e283c201dd07731094efa2d05ff1f401963ec34ec3d43bb13e76be56a19b1
   languageName: node
   linkType: hard
 
-"@polkadot/types-support@npm:^11.0.2":
-  version: 11.0.2
-  resolution: "@polkadot/types-support@npm:11.0.2"
+"@polkadot/types-support@npm:^11.2.1":
+  version: 11.2.1
+  resolution: "@polkadot/types-support@npm:11.2.1"
   dependencies:
     "@polkadot/util": "npm:^12.6.2"
     tslib: "npm:^2.6.2"
-  checksum: 10c0/ac8c799aaff015cd22351bc6ed2ea55fb86aba5944779d888a083ff75d7b56cef7d2deb606c768bcedb2478e11cb78e2b92cb6814441adc331c26e43210cbd11
+  checksum: 10c0/9c6a2f1f6d5a5bdc30e51a7a27294c4c9debcb51dbae23e5b9c8bedfe33d024eca3d3ff4b4c94ba5ec7cb687c57b2ef1dac634ad7f5064eb8c2d30a465341086
   languageName: node
   linkType: hard
 
-"@polkadot/types@npm:^11.0.2":
-  version: 11.0.2
-  resolution: "@polkadot/types@npm:11.0.2"
+"@polkadot/types@npm:^11.2.1":
+  version: 11.2.1
+  resolution: "@polkadot/types@npm:11.2.1"
   dependencies:
     "@polkadot/keyring": "npm:^12.6.2"
-    "@polkadot/types-augment": "npm:11.0.2"
-    "@polkadot/types-codec": "npm:11.0.2"
-    "@polkadot/types-create": "npm:11.0.2"
+    "@polkadot/types-augment": "npm:11.2.1"
+    "@polkadot/types-codec": "npm:11.2.1"
+    "@polkadot/types-create": "npm:11.2.1"
     "@polkadot/util": "npm:^12.6.2"
     "@polkadot/util-crypto": "npm:^12.6.2"
     rxjs: "npm:^7.8.1"
     tslib: "npm:^2.6.2"
-  checksum: 10c0/d6f9f458367f7bf84266abacbe72d9620aa02ad59ad30f213f39f12c2d0ee078160ee1e02fa6cc583f95988e32083afcea1f0000050e68bc3b0eb6f3c2bcbf0e
+  checksum: 10c0/2754f81b06421747632c1deef011698323673c8769cc6b9af8bfdd368a5a3c011fec442ee405bea81ac0834af78fc360645c3c4071250224ffeba2950d1f2d54
   languageName: node
   linkType: hard
 

@@ -23,9 +23,11 @@ export class CheckMetadataHash extends SignedExtension<{ mode: CheckMetadataHash
   }
 
   toPayload(): Partial<SignerPayloadJSON> {
+    // Ref: https://github.com/paritytech/polkadot-sdk/blob/8dbe4ee80734bba6644c7e5f879a363ce7c0a19f/substrate/frame/metadata-hash-extension/src/lib.rs#L55-L58
+    let enabled = this.data.mode === 'Enabled';
     return {
-      // @ts-ignore
-      metadataHash: this.payloadOptions.metadataHash,
+      mode: enabled ? 1 : 0, // 0 -> disabled, 1 -> enabled
+      metadataHash: this.additionalSigned,
     };
   }
 }
