@@ -17,6 +17,7 @@ export interface PayloadOptions {
   nonce?: number;
   tip?: bigint;
   assetId?: number | object; // TODO support generic types
+  metadataHash?: HexString; // If empty -> disabled, if not empty -> enabled
 
   // TODO support customize mortality
   // blockHash?: Uint8Array | HexString;
