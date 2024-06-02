@@ -16,7 +16,7 @@ export class IndexGen {
     const contractName = stringPascalCase(`${this.contractMetadata.contract.name}_${SUFFIX}`);
 
     const typeImports = new TypeImports();
-    typeImports.addKnownType('GenericSubstrateApi', 'RpcLegacy', 'RpcV2', 'RpcVersion');
+    typeImports.addKnownType('VersionedGenericSubstrateApi', 'RpcVersion');
     typeImports.addContractType('GenericContractApi');
 
     const importTypes = typeImports.toImports({ useSubPaths });

@@ -20,7 +20,7 @@ export class ConstructorQueryExecutor<ChainApi extends GenericSubstrateApi> exte
     const meta = this.#findConstructorMeta(constructor);
     assert(meta, `Constructor message not found: ${constructor}`);
 
-    const callFn: GenericConstructorQueryCall<ChainApi> = (...params: any): Promise<any> => {
+    const callFn: GenericConstructorQueryCall<ChainApi> = (...params: any[]) => {
       const { args } = meta;
       assert(params.length === args.length + 1, `Expected ${args.length + 1} arguments, got ${params.length}`);
 
