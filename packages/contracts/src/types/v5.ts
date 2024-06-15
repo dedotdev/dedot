@@ -7,6 +7,8 @@ export interface ContractMetadataV5 {
   spec: ContractSpecV5;
   storage: ContractStorage;
   types: ContractType[];
+	// This is a numberic field in v5 metadata, but it is a string in v4 metadata
+	// TODO: Verify this!
   version: '5';
 }
 
@@ -17,7 +19,7 @@ export interface ContractSpecV5 extends ContractSpecV4 {
 
 export interface ContractEventV5 extends ContractEventV4 {
   module_path: string;
-  signature_topic: string;
+  signature_topic?: string | null;
 }
 
 export interface ContractEnvironmentV5 extends ContractEnvironmentV4 {
