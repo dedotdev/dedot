@@ -2,10 +2,14 @@ import { SubstrateApi } from '@dedot/api/chaintypes';
 import { AccountId32Like, BytesLike, Weight } from '@dedot/codecs';
 import { AnyFunc, AsyncMethod, GenericSubstrateApi, RpcVersion } from '@dedot/types';
 import { ContractConstructorMessage, ContractMessage } from './shared.js';
-import { ContractMetadataV4 } from './v4.js';
-import { ContractMetadataV5 } from './v5.js';
+import { ContractEventV4, ContractMetadataV4 } from './v4.js';
+import { ContractEventV5, ContractMetadataV5 } from './v5.js';
 
 export * from './shared.js';
+
+export type ContractEventMeta = ContractEventV4 | ContractEventV5;
+
+export type ContractMetadata = ContractMetadataV4 | ContractMetadataV5;
 
 export type GenericContractCallResult<DecodedData, ContractResult> =
   | {
@@ -41,8 +45,6 @@ export type InstantiateSubmittableExtrinsic<ChainApi extends GenericSubstrateApi
 export type GenericConstructorSubmittableExtrinsic<ChainApi extends GenericSubstrateApi> =
   | InstantiateSubmittableExtrinsic<ChainApi>
   | InstantiateWithCodeSubmittableExtrinsic<ChainApi>;
-
-export type ContractMetadata = ContractMetadataV4 | ContractMetadataV5;
 
 export type CallOptions = {
   value?: bigint;
@@ -112,9 +114,29 @@ export interface GenericConstructorTx<ChainApi extends GenericSubstrateApi> {
   [method: string]: GenericConstructorTxCall<ChainApi>;
 }
 
+export type ContractEvent<EventName extends string = string, Data extends any = any> = Data extends undefined
+  ? {
+      name: EventName;
+    }
+  : {
+      name: EventName;
+      data: Data;
+    };
+
+export interface GenericContractEvent<EventName extends string = string, Data extends any = any> {
+  is: (event: ContractEvent) => event is ContractEvent<EventName, Data>;
+  as: (event: ContractEvent) => ContractEvent<EventName, Data> | undefined;
+  meta: ContractEventMeta;
+}
+
+export interface GenericContractEvents<_ extends GenericSubstrateApi> {
+  [event: string]: GenericContractEvent;
+}
+
 export interface GenericContractApi<ChainApi extends GenericSubstrateApi = SubstrateApi[RpcVersion]> {
   query: GenericContractQuery<ChainApi>;
   tx: GenericContractTx<ChainApi>;
   constructorQuery: GenericConstructorQuery<ChainApi>;
   constructorTx: GenericConstructorTx<ChainApi>;
+  events: GenericContractEvents<ChainApi>;
 }

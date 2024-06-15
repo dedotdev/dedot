@@ -6,10 +6,12 @@ import { ContractQuery } from './query';
 import { ContractTx } from './tx';
 import { ConstructorQuery } from './constructor-query';
 import { ConstructorTx } from './constructor-tx';
+import { ContractEvents } from './events';
 
 export interface {{{contractName}}}<ChainApi extends VersionedGenericSubstrateApi = SubstrateApi> extends GenericContractApi<ChainApi[RpcVersion]> {
     query: ContractQuery<ChainApi[RpcVersion]>;
     tx: ContractTx<ChainApi[RpcVersion]>;
     constructorQuery: ConstructorQuery<ChainApi[RpcVersion]>;
     constructorTx: ConstructorTx<ChainApi[RpcVersion]>;
+    events: ContractEvents<ChainApi[RpcVersion]>;
 }
