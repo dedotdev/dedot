@@ -3,7 +3,7 @@ import { SubstrateApi } from '@dedot/api/chaintypes';
 import { AccountId32, AccountId32Like } from '@dedot/codecs';
 import { GenericSubstrateApi, RpcVersion } from '@dedot/types';
 import { TypinkRegistry } from './TypinkRegistry.js';
-import { QueryExecutor, TxExecutor } from './executor/index.js';
+import { EventExecutor, QueryExecutor, TxExecutor } from './executor/index.js';
 import { ContractMetadata, GenericContractApi } from './types/index.js';
 import { ensureSupportContractsPallet, newProxyChain, parseRawMetadata } from './utils.js';
 
@@ -44,4 +44,9 @@ export class Contract<
   get tx(): ContractApi['tx'] {
     return newProxyChain<ChainApi>(new TxExecutor(this.#api, this.#registry, this.#address)) as ContractApi['tx'];
   }
+
+  get events(): ContractApi['events'] {
+    return newProxyChain<ChainApi>(new EventExecutor(this.#api, this.#registry, this.#address)) as ContractApi['events'];
+  }
+
 }
