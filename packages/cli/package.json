@@ -1,6 +1,6 @@
 {
   "name": "@dedot/cli",
-  "version": "0.0.1-alpha.33",
+  "version": "0.0.1-alpha.34",
   "author": "Thang X. Vu <thang@coongcrafts.io>",
   "bin": {
     "dedot": "./bin/dedot",
