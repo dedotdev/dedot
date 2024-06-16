@@ -1,7 +1,7 @@
 import { BlockHash, Option, StorageData, StorageKey } from '@dedot/codecs';
 import type { AsyncMethod, Callback, GenericSubstrateApi } from '@dedot/types';
 import { assert, HexString } from '@dedot/utils';
-import { ChainHead, ChainHeadEvent } from '../../json-rpc/index.js';
+import { ChainHead, ChainHeadEvent, PinnedBlock } from '../../json-rpc/index.js';
 import { QueryableStorage } from '../../storage/QueryableStorage.js';
 import { ISubstrateClientAt } from '../../types.js';
 import { StorageQueryExecutor } from '../StorageQueryExecutor.js';
@@ -57,7 +57,7 @@ export class StorageQueryExecutorV2<
   }
 
   protected override async subscribeStorage(keys: HexString[], callback: Callback<Array<StorageData | undefined>>) {
-    let initialHash: BlockHash = await this.chainHead.bestHash();
+    let best: PinnedBlock = await this.chainHead.bestBlock();
     let eventToListen: ChainHeadEvent = 'bestBlock';
 
     // TODO subscribe to finalized data source
@@ -66,7 +66,7 @@ export class StorageQueryExecutorV2<
 
     const latestChanges: Record<HexString, StorageData> = {};
 
-    const pull = async (hash: BlockHash) => {
+    const pull = async ({ hash }: PinnedBlock) => {
       const results = await this.queryStorage(keys, hash);
       let changed = false;
       keys.forEach((key) => {
@@ -81,7 +81,7 @@ export class StorageQueryExecutorV2<
       callback(keys.map((key) => latestChanges[key]));
     };
 
-    await pull(initialHash);
+    await pull(best);
 
     const unsub = this.chainHead.on(eventToListen, pull);
 
