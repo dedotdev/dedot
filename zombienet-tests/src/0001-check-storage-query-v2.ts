@@ -35,4 +35,25 @@ export const run = async (nodeName: any, networkInfo: any) => {
   );
   assert(addressToFreeBalance[ALICE] === 10_000_000_000_000_000n, 'Incorrect balance for Alice');
   assert(addressToFreeBalance[BOB] === 10_000_000_000_000_000n, 'Incorrect balance for Alice');
+
+  await new Promise<void>(async (resolve, reject) => {
+    let counter = 0;
+    let lastBlockNumber: number | undefined;
+
+    const unsub = await api.query.system.number(async (blockNumber) => {
+      if (lastBlockNumber) {
+        assert(blockNumber === lastBlockNumber + 1, 'Block number should be increasing');
+      }
+
+      console.log(`Current block number: ${blockNumber}`);
+
+      lastBlockNumber = blockNumber;
+      counter += 1;
+      if (counter >= 5) {
+        await unsub();
+        await api.disconnect();
+        resolve();
+      }
+    });
+  });
 };
