@@ -1,4 +1,4 @@
-import { Dedot, FallbackRuntimeApis } from '@dedot/api';
+import { LegacyClient, FallbackRuntimeApis } from '@dedot/api';
 import MockProvider from '@dedot/api/client/__tests__/MockProvider';
 import { RuntimeVersion } from '@dedot/codecs';
 import { beforeEach, describe, expect, it } from 'vitest';
@@ -22,12 +22,12 @@ export const MockedRuntimeVersionWithContractsApi: RuntimeVersion = {
 };
 
 describe('Contract', () => {
-  let api: Dedot, provider: MockProvider, flipper: Contract, psp22: Contract;
+  let api: LegacyClient, provider: MockProvider, flipper: Contract, psp22: Contract;
 
   describe('api support contracts pallet', () => {
     beforeEach(async () => {
       provider = new MockProvider(MockedRuntimeVersionWithContractsApi);
-      api = await Dedot.new({ provider });
+      api = await LegacyClient.new({ provider });
       flipper = new Contract(api, RANDOM_CONTRACT_ADDRESS, FLIPPER_CONTRACT_METADATA);
       psp22 = new Contract(api, RANDOM_CONTRACT_ADDRESS, PSP22_CONTRACT_METADATA);
     });
@@ -72,7 +72,7 @@ describe('Contract', () => {
   describe('api not support contracts pallet', () => {
     it('should throw error', async () => {
       provider = new MockProvider();
-      api = await Dedot.new({ provider });
+      api = await LegacyClient.new({ provider });
       expect(() => new Contract(api, RANDOM_CONTRACT_ADDRESS, FLIPPER_CONTRACT_METADATA)).toThrowError(
         'Contracts pallet is not available',
       );

@@ -4,23 +4,23 @@ import type { AnyShape } from '@dedot/shape';
 import * as $ from '@dedot/shape';
 import { stringCamelCase, stringPascalCase, u8aToHex } from '@dedot/utils';
 import { afterEach, beforeEach, describe, expect, expectTypeOf, it, vi } from 'vitest';
-import { Dedot } from '../Dedot.js';
+import { LegacyClient } from '../LegacyClient.js';
 import MockProvider, { MockedRuntimeVersion } from './MockProvider.js';
 
-describe('Dedot', () => {
+describe('LegacyClient', () => {
   it('should throws error for invalid endpoint', () => {
     expect(async () => {
-      await Dedot.new(new WsProvider('invalid_endpoint'));
+      await LegacyClient.new(new WsProvider('invalid_endpoint'));
     }).rejects.toThrowError(
       'Invalid websocket endpoint invalid_endpoint, a valid endpoint should start with wss:// or ws://',
     );
   });
 
   describe('cache disabled', () => {
-    let api: Dedot, provider: MockProvider;
+    let api: LegacyClient, provider: MockProvider;
     beforeEach(async () => {
       provider = new MockProvider();
-      api = await Dedot.new({ provider });
+      api = await LegacyClient.new({ provider });
     });
 
     afterEach(async () => {
@@ -197,7 +197,7 @@ describe('Dedot', () => {
           tryEncode: vi.fn(() => new Uint8Array()),
         };
 
-        api = await Dedot.create({
+        api = await LegacyClient.create({
           provider: new MockProvider(),
           runtimeApis: {
             Metadata: [
@@ -314,9 +314,9 @@ describe('Dedot', () => {
   });
 
   describe('cache enabled', () => {
-    let api: Dedot;
+    let api: LegacyClient;
     beforeEach(async () => {
-      api = await Dedot.new({ provider: new MockProvider(), cacheMetadata: true });
+      api = await LegacyClient.new({ provider: new MockProvider(), cacheMetadata: true });
     });
 
     afterEach(async () => {
@@ -329,7 +329,7 @@ describe('Dedot', () => {
     it('should load metadata from cache', async () => {
       const provider = new MockProvider();
       const providerSendSpy = vi.spyOn(provider, 'send');
-      const newApi = await Dedot.new({ provider, cacheMetadata: true });
+      const newApi = await LegacyClient.new({ provider, cacheMetadata: true });
 
       expect(providerSendSpy).not.toBeCalledWith('state_getMetadata', []);
       expect(newApi.metadata).toBeDefined();
@@ -345,7 +345,7 @@ describe('Dedot', () => {
       );
 
       const providerSendSpy = vi.spyOn(provider, 'send');
-      const newApi = await Dedot.new({ provider, cacheMetadata: true });
+      const newApi = await LegacyClient.new({ provider, cacheMetadata: true });
 
       expect(providerSendSpy).toBeCalledWith('state_getMetadata', []);
       expect(newApi.metadata).toBeDefined();
@@ -356,9 +356,9 @@ describe('Dedot', () => {
   });
 
   describe('not throwOnUnknownApi', () => {
-    let api: Dedot;
+    let api: LegacyClient;
     beforeEach(async () => {
-      api = await Dedot.new({ provider: new MockProvider(), throwOnUnknownApi: false });
+      api = await LegacyClient.new({ provider: new MockProvider(), throwOnUnknownApi: false });
     });
 
     afterEach(async () => {

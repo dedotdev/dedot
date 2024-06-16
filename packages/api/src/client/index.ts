@@ -1,2 +1,2 @@
-export * from './Dedot.js';
+export * from './LegacyClient.js';
 export * from './DedotClient.js';

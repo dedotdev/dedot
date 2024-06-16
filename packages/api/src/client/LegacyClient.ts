@@ -17,7 +17,7 @@ import { BaseSubstrateClient } from './BaseSubstrateClient.js';
 const KEEP_ALIVE_INTERVAL = 10_000; // in ms
 
 /**
- * @name Dedot
+ * @name LegacyClient
  * @description Promised-based API Client for Polkadot & Substrate
  *
  * Initialize API instance and interact with substrate-based network
@@ -54,7 +54,9 @@ const KEEP_ALIVE_INTERVAL = 10_000; // in ms
  * run().catch(console.error);
  * ```
  */
-export class Dedot<ChainApi extends VersionedGenericSubstrateApi = SubstrateApi> extends BaseSubstrateClient<ChainApi> {
+export class LegacyClient<
+  ChainApi extends VersionedGenericSubstrateApi = SubstrateApi,
+> extends BaseSubstrateClient<ChainApi> {
   #runtimeSubscriptionUnsub?: Unsub;
   #healthTimer?: ReturnType<typeof setInterval>;
   #apiAtCache: Record<BlockHash, ISubstrateClientAt<any>> = {};
@@ -75,8 +77,8 @@ export class Dedot<ChainApi extends VersionedGenericSubstrateApi = SubstrateApi>
    */
   static async create<ChainApi extends VersionedGenericSubstrateApi = SubstrateApi>(
     options: ApiOptions | JsonRpcProvider,
-  ): Promise<Dedot<ChainApi>> {
-    return new Dedot<ChainApi>(options).connect();
+  ): Promise<LegacyClient<ChainApi>> {
+    return new LegacyClient<ChainApi>(options).connect();
   }
 
   /**
@@ -86,8 +88,8 @@ export class Dedot<ChainApi extends VersionedGenericSubstrateApi = SubstrateApi>
    */
   static async new<ChainApi extends VersionedGenericSubstrateApi = SubstrateApi>(
     options: ApiOptions | JsonRpcProvider,
-  ): Promise<Dedot<ChainApi>> {
-    return Dedot.create(options);
+  ): Promise<LegacyClient<ChainApi>> {
+    return LegacyClient.create(options);
   }
 
   protected override onDisconnected = async () => {

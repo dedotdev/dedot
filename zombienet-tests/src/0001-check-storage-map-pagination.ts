@@ -1,4 +1,4 @@
-import { Dedot, WsProvider } from 'dedot';
+import { LegacyClient, WsProvider } from 'dedot';
 import { assert } from 'dedot/utils';
 
 // @ts-ignore
@@ -9,7 +9,7 @@ BigInt.prototype.toJSON = function () {
 export const run = async (nodeName: any, networkInfo: any) => {
   const { wsUri } = networkInfo.nodesByName[nodeName];
 
-  const api = await Dedot.new(new WsProvider(wsUri));
+  const api = await LegacyClient.new(new WsProvider(wsUri));
 
   // Verify pagedKeys
   const firstBatch = await api.query.system.account.pagedKeys({ pageSize: 2 });
