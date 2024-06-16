@@ -19,7 +19,7 @@ _Note: The project is still in active development phase, the information on this
 - ✅ Native TypeScript type system for scale-codec
 - ✅ Compatible with `@polkadot/extension`-based wallets
 - ✅ Support Metadata V14, V15 (latest)
-- ✅ Support both the legacy & [new](https://paritytech.github.io/json-rpc-interface-spec/introduction.html) JSON-RPC APIs
+- ✅ Build on top of both the [new](https://paritytech.github.io/json-rpc-interface-spec/introduction.html) & legacy (deprecated soon) JSON-RPC Apis
 - ✅ Support light clients (e.g: [smoldot](https://www.npmjs.com/package/smoldot))
 - ⏳ Typed Contract APIs
 
@@ -91,6 +91,15 @@ const { DedotClient, WsProvider } = require('dedot');
 const provider = new WsProvider('wss://rpc.polkadot.io');
 const api = await DedotClient.new(provider);
 ```
+
+- If the JSON-RPC server doesn't support new JSON-RPC Apis, you can connect using the `LegacyClient` which using the legacy JSON-RPC Apis.
+```typescript
+import { LegacyClient, WsProvider } from 'dedot';
+
+const provider = new WsProvider('wss://rpc.polkadot.io');
+const api = await LegacyClient.new(provider);
+```
+
 ### Table of contents
 - [Status](#status)
 - [Chain Types & APIs](#chain-types--apis)
