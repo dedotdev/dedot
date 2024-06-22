@@ -13,8 +13,9 @@ export interface ConstructorTx<ChainApi extends GenericSubstrateApi> extends Gen
    * Creates a new flipper smart contract initialized with the given value.
    *
    * @param {boolean} initValue
+   * @param {ConstructorTxOptions} options
    *
-   * @selector {0x9bae9d5e}
+   * @selector 0x9bae9d5e
    **/
   new: GenericConstructorTxCall<
     ChainApi,
@@ -24,8 +25,9 @@ export interface ConstructorTx<ChainApi extends GenericSubstrateApi> extends Gen
   /**
    * Creates a new flipper smart contract initialized to `false`.
    *
+   * @param {ConstructorTxOptions} options
    *
-   * @selector {0x61ef7e3e}
+   * @selector 0x61ef7e3e
    **/
   newDefault: GenericConstructorTxCall<
     ChainApi,

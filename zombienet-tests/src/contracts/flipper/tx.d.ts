@@ -12,8 +12,9 @@ export interface ContractTx<ChainApi extends GenericSubstrateApi> extends Generi
   /**
    * Flips the current value of the Flipper's boolean.
    *
+   * @param {ContractTxOptions} options
    *
-   * @selector {0x633aa551}
+   * @selector 0x633aa551
    **/
   flip: GenericContractTxCall<ChainApi, (options: ContractTxOptions) => ContractSubmittableExtrinsic<ChainApi>>;
 }
