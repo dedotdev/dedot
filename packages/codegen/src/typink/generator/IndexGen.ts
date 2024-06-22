@@ -18,6 +18,7 @@ export class IndexGen {
     const typeImports = new TypeImports();
     typeImports.addKnownType('VersionedGenericSubstrateApi', 'RpcVersion');
     typeImports.addContractType('GenericContractApi');
+    typeImports.addChainType('SubstrateApi');
 
     const importTypes = typeImports.toImports({ useSubPaths });
     const template = compileTemplate('typink/templates/index.hbs');
