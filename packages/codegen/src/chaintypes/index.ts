@@ -1,4 +1,4 @@
-import { Dedot } from '@dedot/api';
+import { LegacyClient } from '@dedot/api';
 import { MetadataLatest } from '@dedot/codecs';
 import { WsProvider } from '@dedot/providers';
 import { RpcMethods } from '@dedot/types/json-rpc';
@@ -24,7 +24,7 @@ export async function generateTypesFromEndpoint(
   extension: string = 'd.ts',
   useSubPaths: boolean = false,
 ) {
-  const api = await Dedot.new(new WsProvider(endpoint));
+  const api = await LegacyClient.new(new WsProvider(endpoint));
   const { methods }: RpcMethods = await api.rpc.rpc_methods();
   const apis = api.runtimeVersion.apis || {};
   if (!chain) {

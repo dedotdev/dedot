@@ -329,7 +329,7 @@ import { AccountId32 } from 'dedot/codecs';
 const TWO_TOKENS = 2_000_000_000_000n;
 const destAddress = <bobAddress>;
 
-const api = await Dedot.new<WestendAssetHubApi>('...westend-assethub-rpc...');
+const api = await DedotClient.new<WestendAssetHubApi>('...westend-assethub-rpc...');
 
 const dest: XcmVersionedLocation = {
   tag: 'V3',
@@ -446,10 +446,10 @@ const api = await ApiPromise.create({ provider: new WsProvider('wss://rpc.polkad
 import { DedotClient, WsProvider } from 'dedot';
 import type { PolkadotApi } from '@dedot/chaintypes';
 
-const api = await DedotClient.new<PolkadotApi>(new WsProvider('wss://rpc.polkadot.io')); // or Dedot.create(...) if you prefer
+const api = await DedotClient.new<PolkadotApi>(new WsProvider('wss://rpc.polkadot.io')); // or DedotClient.create(...) if you prefer
 
 // OR
-const api = await DedotClient.new<PolkadotApi>({provider: new WsProvider('wss://rpc.polkadot.io')});
+const api = await DedotClient.new<PolkadotApi>({ provider: new WsProvider('wss://rpc.polkadot.io') });
 ```
 
 - Notes:

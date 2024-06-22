@@ -28,7 +28,7 @@ export const run = async (_nodeName: any, networkInfo: any) => {
 
     const contractAddress: string = await new Promise(async (resolve) => {
       await constructorTx.signAndSend(alicePair, async ({ status, events }: any) => {
-        console.log(`[${api.rpcVersion}] Transaction status`, status.tag);
+        console.log(`[${api.rpcVersion}] Transaction status:`, status.tag);
 
         if (status.tag === 'Finalized') {
           assert(
@@ -49,14 +49,14 @@ export const run = async (_nodeName: any, networkInfo: any) => {
 
     const state = await contract.query.get({ caller });
     assert(state.isOk && state.data.isOk, 'Query should be successful');
-    console.log(`[${api.rpcVersion}] Initial value`, state.data.value);
+    console.log(`[${api.rpcVersion}] Initial value:`, state.data.value);
 
     console.log(`[${api.rpcVersion}] Flipping...`);
     const { raw } = await contract.query.flip({ caller });
 
     await new Promise<void>(async (resolve) => {
       await contract.tx.flip({ gasLimit: raw.gasRequired }).signAndSend(alicePair, ({ status }: any) => {
-        console.log(`[${api.rpcVersion}] Transaction status`, status.tag);
+        console.log(`[${api.rpcVersion}] Transaction status:`, status.tag);
 
         if (status.tag === 'Finalized') {
           resolve();
@@ -66,7 +66,7 @@ export const run = async (_nodeName: any, networkInfo: any) => {
 
     const newState = await contract.query.get({ caller });
     assert(newState.isOk && newState.data.isOk, 'Query should be successful');
-    console.log(`[${api.rpcVersion}] New value`, newState.data.value);
+    console.log(`[${api.rpcVersion}] New value:`, newState.data.value);
 
     assert(state.data.value !== newState.data.value, 'State should be changed');
   };
