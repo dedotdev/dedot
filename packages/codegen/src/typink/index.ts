@@ -3,7 +3,7 @@ import fs from 'fs';
 import path from 'path';
 import { IndexGen, QueryGen, TxGen, TypesGen, ConstructorTxGen, ConstructorQueryGen } from './generator/index.js';
 
-export async function generateContractTypesFromMetadata(
+export async function generateContractTypes(
   metadata: ContractMetadata | string,
   contract?: string,
   outDir: string = '.',
