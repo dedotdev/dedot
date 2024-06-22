@@ -17,7 +17,7 @@ export class TxGen extends QueryGen {
     const { messages } = this.contractMetadata.spec;
     const txMessages = messages.filter((one) => one.mutates);
 
-    const txCallsOut = this.doGenerate(txMessages);
+    const txCallsOut = this.doGenerate(txMessages, 'ContractTxOptions');
     const importTypes = this.typesGen.typeImports.toImports({ useSubPaths });
     const template = compileTemplate('typink/templates/tx.hbs');
 

@@ -16,7 +16,7 @@ export class ConstructorTxGen extends QueryGen {
 
     const { constructors } = this.contractMetadata.spec;
 
-    const constructorsOut = this.doGenerate(constructors);
+    const constructorsOut = this.doGenerate(constructors, 'ConstructorTxOptions');
     const importTypes = this.typesGen.typeImports.toImports({ useSubPaths });
     const template = compileTemplate('typink/templates/constructor-tx.hbs');
 
