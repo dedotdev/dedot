@@ -3,10 +3,10 @@ import { PalletContractsPrimitivesCode } from '@dedot/api/chaintypes';
 import { Hash } from '@dedot/codecs';
 import { GenericSubstrateApi } from '@dedot/types';
 import { assert, concatU8a, HexString, hexToU8a, isWasm, u8aToHex } from '@dedot/utils';
-import { TypinkRegistry } from '../TypinkRegistry';
+import { TypinkRegistry } from '../TypinkRegistry.js';
 import { ConstructorCallOptions, ContractConstructorMessage, GenericConstructorQueryCall } from '../types/index.js';
-import { normalizeLabel } from '../utils';
-import { Executor } from './Executor';
+import { normalizeLabel } from '../utils.js';
+import { Executor } from './Executor.js';
 
 export class ConstructorQueryExecutor<ChainApi extends GenericSubstrateApi> extends Executor<ChainApi> {
   protected readonly code: Hash | Uint8Array | HexString | string;
