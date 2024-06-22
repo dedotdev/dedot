@@ -27,7 +27,7 @@ export class QueryGen {
       'GenericContractQueryCall',
       'ContractCallOptions',
       'GenericContractCallResult',
-      'ContractResult',
+      'ContractCallResult',
     );
 
     const { messages } = this.contractMetadata.spec;
@@ -66,7 +66,7 @@ export class QueryGen {
     const paramsOut = this.generateParamsOut(args);
     const typeOut = this.typesGen.generateType(returnType.type, 0, true);
 
-    return `GenericContractQueryCall<ChainApi, (${paramsOut && `${paramsOut},`} options: ContractCallOptions) => Promise<GenericContractCallResult<${typeOut}, ContractResult<ChainApi>>>>`;
+    return `GenericContractQueryCall<ChainApi, (${paramsOut && `${paramsOut},`} options: ContractCallOptions) => Promise<GenericContractCallResult<${typeOut}, ContractCallResult<ChainApi>>>>`;
   }
 
   generateParamsOut(args: ContractMessageArg[]) {

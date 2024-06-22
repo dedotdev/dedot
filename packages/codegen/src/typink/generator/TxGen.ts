@@ -11,7 +11,7 @@ export class TxGen extends QueryGen {
       'GenericContractTx',
       'GenericContractTxCall',
       'ContractTxOptions',
-      'ChainSubmittableExtrinsic',
+      'ContractSubmittableExtrinsic',
     );
 
     const { messages } = this.contractMetadata.spec;
@@ -31,6 +31,6 @@ export class TxGen extends QueryGen {
 
     const paramsOut = this.generateParamsOut(args);
 
-    return `GenericContractTxCall<ChainApi, (${paramsOut && `${paramsOut},`} options: ContractTxOptions) => ChainSubmittableExtrinsic<ChainApi>>`;
+    return `GenericContractTxCall<ChainApi, (${paramsOut && `${paramsOut},`} options: ContractTxOptions) => ContractSubmittableExtrinsic<ChainApi>>`;
   }
 }

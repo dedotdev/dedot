@@ -21,7 +21,7 @@ ${flatLines.map((line) => `* ${line.replaceAll(/\s+/g, ' ').trim()}`).join('\n')
 };
 
 export const beautifySourceCode = async (source: string): Promise<string> => {
-  const prettierOptions = await prettier.resolveConfig(path.resolve(currentDirname(), '../../../../.prettierrc.js'));
+  const prettierOptions = await prettier.resolveConfig(path.resolve(currentDirname(), '../../../.prettierrc.cjs'));
 
   return prettier.format(source, { parser: 'babel-ts', ...prettierOptions });
 };

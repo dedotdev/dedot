@@ -11,7 +11,7 @@ export class ConstructorTxGen extends QueryGen {
       'GenericConstructorTx',
       'GenericConstructorTxCall',
       'ConstructorTxOptions',
-      'GenericConstructorSubmittableExtrinsic',
+      'GenericInstantiateSubmittableExtrinsic',
     );
 
     const { constructors } = this.contractMetadata.spec;
@@ -30,6 +30,6 @@ export class ConstructorTxGen extends QueryGen {
 
     const paramsOut = this.generateParamsOut(args);
 
-    return `GenericConstructorTxCall<ChainApi, (${paramsOut && `${paramsOut},`} options: ConstructorTxOptions) => GenericConstructorSubmittableExtrinsic<ChainApi>>`;
+    return `GenericConstructorTxCall<ChainApi, (${paramsOut && `${paramsOut},`} options: ConstructorTxOptions) => GenericInstantiateSubmittableExtrinsic<ChainApi>>`;
   }
 }

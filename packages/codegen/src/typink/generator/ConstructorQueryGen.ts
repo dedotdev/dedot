@@ -11,7 +11,7 @@ export class ConstructorQueryGen extends QueryGen {
       'GenericConstructorQuery',
       'GenericConstructorQueryCall',
       'ConstructorCallOptions',
-      'ConstructorResult',
+      'ContractInstantiateResult',
     );
 
     const { constructors } = this.contractMetadata.spec;
@@ -30,6 +30,6 @@ export class ConstructorQueryGen extends QueryGen {
 
     const paramsOut = this.generateParamsOut(args);
 
-    return `GenericConstructorQueryCall<ChainApi, (${paramsOut && `${paramsOut},`} options: ConstructorCallOptions) => Promise<ConstructorResult<ChainApi>>>`;
+    return `GenericConstructorQueryCall<ChainApi, (${paramsOut && `${paramsOut},`} options: ConstructorCallOptions) => Promise<ContractInstantiateResult<ChainApi>>>`;
   }
 }
