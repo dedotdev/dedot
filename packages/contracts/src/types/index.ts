@@ -1,6 +1,6 @@
 import { SubstrateApi } from '@dedot/api/chaintypes';
 import { AccountId32Like, BytesLike, DispatchError, Weight } from '@dedot/codecs';
-import { AnyFunc, AsyncMethod, GenericSubstrateApi, RpcVersion } from '@dedot/types';
+import { AnyFunc, AsyncMethod, GenericSubstrateApi, RpcVersion, VersionedGenericSubstrateApi } from '@dedot/types';
 import { ContractConstructorMessage, ContractMessage } from './shared.js';
 import { ContractMetadataV4 } from './v4.js';
 import { ContractMetadataV5 } from './v5.js';
@@ -112,9 +112,9 @@ export interface GenericConstructorTx<ChainApi extends GenericSubstrateApi> {
   [method: string]: GenericConstructorTxCall<ChainApi>;
 }
 
-export interface GenericContractApi<ChainApi extends GenericSubstrateApi = SubstrateApi[RpcVersion]> {
-  query: GenericContractQuery<ChainApi>;
-  tx: GenericContractTx<ChainApi>;
-  constructorQuery: GenericConstructorQuery<ChainApi>;
-  constructorTx: GenericConstructorTx<ChainApi>;
+export interface GenericContractApi<ChainApi extends VersionedGenericSubstrateApi = SubstrateApi> {
+  query: GenericContractQuery<ChainApi[RpcVersion]>;
+  tx: GenericContractTx<ChainApi[RpcVersion]>;
+  constructorQuery: GenericConstructorQuery<ChainApi[RpcVersion]>;
+  constructorTx: GenericConstructorTx<ChainApi[RpcVersion]>;
 }
