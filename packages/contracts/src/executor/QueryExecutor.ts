@@ -1,3 +1,4 @@
+import type { PalletContractsPrimitivesContractResult } from '@dedot/api/chaintypes';
 import { GenericSubstrateApi } from '@dedot/types';
 import { assert, concatU8a, hexToU8a, u8aToHex } from '@dedot/utils';
 import { ContractCallOptions, ContractMessage, GenericContractQueryCall } from '../types/index.js';
@@ -20,7 +21,7 @@ export class QueryExecutor<ChainApi extends GenericSubstrateApi> extends Executo
       const formattedInputs = args.map((arg, index) => this.tryEncode(arg, params[index]));
       const bytes = u8aToHex(concatU8a(hexToU8a(meta.selector), ...formattedInputs));
 
-      const contractResult = await this.api.call.contractsApi.call(
+      const raw: PalletContractsPrimitivesContractResult = await this.api.call.contractsApi.call(
         caller,
         this.address,
         value,
@@ -29,16 +30,19 @@ export class QueryExecutor<ChainApi extends GenericSubstrateApi> extends Executo
         bytes,
       );
 
-      return contractResult.result.isOk
-        ? {
-            isOk: true,
-            data: this.tryDecode(meta, contractResult.result.value.data),
-            rawResult: contractResult,
-          }
-        : {
-            isOk: false,
-            rawResult: contractResult,
-          };
+      return (
+        raw.result.isOk
+          ? {
+              isOk: true,
+              data: this.tryDecode(meta, raw.result.value.data),
+              raw,
+            }
+          : {
+              isOk: false,
+              err: raw.result.err,
+              raw,
+            }
+      ) as any;
     };
 
     callFn.meta = meta;
