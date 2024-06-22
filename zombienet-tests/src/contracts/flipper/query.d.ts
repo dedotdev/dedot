@@ -15,8 +15,9 @@ export interface ContractQuery<ChainApi extends GenericSubstrateApi> extends Gen
   /**
    * Flips the current value of the Flipper's boolean.
    *
+   * @param {ContractCallOptions} options
    *
-   * @selector {0x633aa551}
+   * @selector 0x633aa551
    **/
   flip: GenericContractQueryCall<
     ChainApi,
@@ -28,8 +29,9 @@ export interface ContractQuery<ChainApi extends GenericSubstrateApi> extends Gen
   /**
    * Returns the current value of the Flipper's boolean.
    *
+   * @param {ContractCallOptions} options
    *
-   * @selector {0x2f865bd9}
+   * @selector 0x2f865bd9
    **/
   get: GenericContractQueryCall<
     ChainApi,

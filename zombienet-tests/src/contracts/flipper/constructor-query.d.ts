@@ -13,8 +13,9 @@ export interface ConstructorQuery<ChainApi extends GenericSubstrateApi> extends 
    * Creates a new flipper smart contract initialized with the given value.
    *
    * @param {boolean} initValue
+   * @param {ConstructorCallOptions} options
    *
-   * @selector {0x9bae9d5e}
+   * @selector 0x9bae9d5e
    **/
   new: GenericConstructorQueryCall<
     ChainApi,
@@ -24,8 +25,9 @@ export interface ConstructorQuery<ChainApi extends GenericSubstrateApi> extends 
   /**
    * Creates a new flipper smart contract initialized to `false`.
    *
+   * @param {ConstructorCallOptions} options
    *
-   * @selector {0x61ef7e3e}
+   * @selector 0x61ef7e3e
    **/
   newDefault: GenericConstructorQueryCall<
     ChainApi,

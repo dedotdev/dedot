@@ -32,14 +32,14 @@ export class QueryGen {
 
     const { messages } = this.contractMetadata.spec;
 
-    const queryCallsOut = this.doGenerate(messages);
+    const queryCallsOut = this.doGenerate(messages, 'ContractCallOptions');
     const importTypes = this.typesGen.typeImports.toImports({ useSubPaths });
     const template = compileTemplate('typink/templates/query.hbs');
 
     return beautifySourceCode(template({ importTypes, queryCallsOut }));
   }
 
-  doGenerate(messages: Message[]) {
+  doGenerate(messages: Message[], optionsTypeName?: string) {
     let callsOut = '';
 
     messages.forEach((messageDef) => {
@@ -48,8 +48,9 @@ export class QueryGen {
         docs,
         '\n',
         args.map((arg) => `@param {${this.typesGen.generateType(arg.type.type, 1)}} ${stringCamelCase(arg.label)}`),
+        optionsTypeName ? `@param {${optionsTypeName}} options` : '',
         '\n',
-        `@selector {${selector}}`,
+        `@selector ${selector}`,
       )}`;
       callsOut += `${normalizeLabel(label)}: ${this.generateMethodDef(messageDef)};\n\n`;
     });

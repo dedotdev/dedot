@@ -16,7 +16,7 @@ export class ConstructorQueryGen extends QueryGen {
 
     const { constructors } = this.contractMetadata.spec;
 
-    const constructorsOut = this.doGenerate(constructors);
+    const constructorsOut = this.doGenerate(constructors, 'ConstructorCallOptions');
     const importTypes = this.typesGen.typeImports.toImports({ useSubPaths });
     const template = compileTemplate('typink/templates/constructor-query.hbs');
 
