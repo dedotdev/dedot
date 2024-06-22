@@ -49,7 +49,7 @@ export class TypeImports {
       [this.knownJsonRpcTypes, `${prefix}dedot/types/json-rpc`],
       [this.codecTypes, `${prefix}dedot/codecs`],
       [this.contractTypes, `${prefix}dedot/contracts`],
-      [this.chainTypes, prefix ? '@dedot/api/chaintypes' : 'dedot/contracts'],
+      [this.chainTypes, prefix ? '@dedot/api/chaintypes' : 'dedot/chaintypes'],
       [this.portableTypes, './types'],
     ];
 
