@@ -3,7 +3,7 @@ import type {
   GenericConstructorTx,
   GenericConstructorTxCall,
   ConstructorTxOptions,
-  GenericConstructorSubmittableExtrinsic,
+  GenericInstantiateSubmittableExtrinsic,
 } from 'dedot/contracts';
 import type { GenericSubstrateApi } from 'dedot/types';
 
@@ -17,7 +17,7 @@ export interface ConstructorTx<ChainApi extends GenericSubstrateApi> extends Gen
    **/
   new: GenericConstructorTxCall<
     ChainApi,
-    (initValue: boolean, options: ConstructorTxOptions) => GenericConstructorSubmittableExtrinsic<ChainApi>
+    (initValue: boolean, options: ConstructorTxOptions) => GenericInstantiateSubmittableExtrinsic<ChainApi>
   >;
 
   /**
@@ -28,6 +28,6 @@ export interface ConstructorTx<ChainApi extends GenericSubstrateApi> extends Gen
    **/
   newDefault: GenericConstructorTxCall<
     ChainApi,
-    (options: ConstructorTxOptions) => GenericConstructorSubmittableExtrinsic<ChainApi>
+    (options: ConstructorTxOptions) => GenericInstantiateSubmittableExtrinsic<ChainApi>
   >;
 }

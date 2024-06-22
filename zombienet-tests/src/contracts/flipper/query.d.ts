@@ -5,7 +5,7 @@ import type {
   GenericContractQueryCall,
   ContractCallOptions,
   GenericContractCallResult,
-  ContractResult,
+  ContractCallResult,
 } from 'dedot/contracts';
 import type { GenericSubstrateApi } from 'dedot/types';
 import type { InkPrimitivesLangError } from './types';
@@ -21,7 +21,7 @@ export interface ContractQuery<ChainApi extends GenericSubstrateApi> extends Gen
     ChainApi,
     (
       options: ContractCallOptions,
-    ) => Promise<GenericContractCallResult<Result<[], InkPrimitivesLangError>, ContractResult<ChainApi>>>
+    ) => Promise<GenericContractCallResult<Result<[], InkPrimitivesLangError>, ContractCallResult<ChainApi>>>
   >;
 
   /**
@@ -34,6 +34,6 @@ export interface ContractQuery<ChainApi extends GenericSubstrateApi> extends Gen
     ChainApi,
     (
       options: ContractCallOptions,
-    ) => Promise<GenericContractCallResult<Result<boolean, InkPrimitivesLangError>, ContractResult<ChainApi>>>
+    ) => Promise<GenericContractCallResult<Result<boolean, InkPrimitivesLangError>, ContractCallResult<ChainApi>>>
   >;
 }

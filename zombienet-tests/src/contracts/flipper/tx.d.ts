@@ -3,7 +3,7 @@ import type {
   GenericContractTx,
   GenericContractTxCall,
   ContractTxOptions,
-  ChainSubmittableExtrinsic,
+  ContractSubmittableExtrinsic,
 } from 'dedot/contracts';
 import type { GenericSubstrateApi } from 'dedot/types';
 
@@ -14,5 +14,5 @@ export interface ContractTx<ChainApi extends GenericSubstrateApi> extends Generi
    *
    * @selector {0x633aa551}
    **/
-  flip: GenericContractTxCall<ChainApi, (options: ContractTxOptions) => ChainSubmittableExtrinsic<ChainApi>>;
+  flip: GenericContractTxCall<ChainApi, (options: ContractTxOptions) => ContractSubmittableExtrinsic<ChainApi>>;
 }
