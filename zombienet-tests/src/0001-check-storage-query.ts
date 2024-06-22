@@ -1,4 +1,4 @@
-import { Dedot, WsProvider } from 'dedot';
+import { LegacyClient, WsProvider } from 'dedot';
 import { assert } from 'dedot/utils';
 
 const ALICE = '5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY';
@@ -9,7 +9,7 @@ const addressesToCheck: Record<string, string> = { ALICE, BOB };
 export const run = async (nodeName: any, networkInfo: any) => {
   const { wsUri } = networkInfo.nodesByName[nodeName];
 
-  const api = await Dedot.new(new WsProvider(wsUri));
+  const api = await LegacyClient.new(new WsProvider(wsUri));
 
   const balances = await api.query.system.account.multi([ALICE, BOB]);
 

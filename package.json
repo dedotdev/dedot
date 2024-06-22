@@ -40,8 +40,8 @@
     "vitest": "^1.6.0"
   },
   "resolutions": {
-    "@polkadot/types": "^11.0.2",
-    "@polkadot/types-support": "^11.0.2"
+    "@polkadot/types": "^11.2.1",
+    "@polkadot/types-support": "^11.2.1"
   },
   "license": "Apache-2.0"
 }

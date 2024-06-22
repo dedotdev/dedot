@@ -2,6 +2,7 @@ import { ISignedExtension } from '../SignedExtension.js';
 import { ChargeAssetTxPayment } from './ChargeAssetTxPayment.js';
 import { ChargeTransactionPayment } from './ChargeTransactionPayment.js';
 import { CheckGenesis } from './CheckGenesis.js';
+import { CheckMetadataHash } from './CheckMetadataHash.js';
 import { CheckMortality } from './CheckMortality.js';
 import { CheckNonZeroSender } from './CheckNonZeroSender.js';
 import { CheckNonce } from './CheckNonce.js';
@@ -23,4 +24,5 @@ export const knownSignedExtensions: Record<string, AnySignedExtension> = {
   ChargeTransactionPayment,
   PrevalidateAttests,
   ChargeAssetTxPayment,
+  CheckMetadataHash,
 };

@@ -1,4 +1,4 @@
-import { Dedot, DedotClient, ISubstrateClient, WsProvider } from 'dedot';
+import { LegacyClient, DedotClient, ISubstrateClient, WsProvider } from 'dedot';
 import { SubstrateApi } from 'dedot/chaintypes';
 import { RpcVersion, TxPaymentInfo } from 'dedot/types';
 import { assert } from 'dedot/utils';
@@ -13,7 +13,7 @@ export const run = async (nodeName: any, networkInfo: any) => {
     return api.tx.balances.transferKeepAlive(ALICE, BigInt(10 * 1e12)).paymentInfo(BOB);
   };
 
-  const apiV1 = await Dedot.new(new WsProvider(wsUri));
+  const apiV1 = await LegacyClient.new(new WsProvider(wsUri));
   const paymentInfoV1 = await getPaymentInfo(apiV1);
 
   console.log('[API-V1] Payment Info', paymentInfoV1);

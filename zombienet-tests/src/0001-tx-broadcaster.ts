@@ -1,9 +1,9 @@
 import Keyring from '@polkadot/keyring';
 import { cryptoWaitReady } from '@polkadot/util-crypto';
-import { Dedot, Transaction, TransactionWatch, TxBroadcaster, WsProvider } from 'dedot';
+import { LegacyClient, Transaction, TransactionWatch, TxBroadcaster, WsProvider } from 'dedot';
 import { deferred, HexString, stringToHex } from 'dedot/utils';
 
-const prepareRemarkTx = async (api: Dedot): Promise<{ rawTx: HexString; sender: string }> => {
+const prepareRemarkTx = async (api: LegacyClient): Promise<{ rawTx: HexString; sender: string }> => {
   await cryptoWaitReady();
   const keyring = new Keyring({ type: 'sr25519' });
   const alice = keyring.addFromUri('//Alice');
@@ -20,7 +20,7 @@ const prepareRemarkTx = async (api: Dedot): Promise<{ rawTx: HexString; sender: 
 export const run = async (nodeName: any, networkInfo: any): Promise<any> => {
   const { wsUri } = networkInfo.nodesByName[nodeName];
 
-  const api = await Dedot.new(new WsProvider(wsUri));
+  const api = await LegacyClient.new(new WsProvider(wsUri));
 
   const broadcastUntilRemark = async (txBroadcaster: TxBroadcaster) => {
     const defer = deferred<void>();
