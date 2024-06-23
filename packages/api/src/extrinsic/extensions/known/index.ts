@@ -10,6 +10,7 @@ import { CheckSpecVersion } from './CheckSpecVersion.js';
 import { CheckTxVersion } from './CheckTxVersion.js';
 import { CheckWeight } from './CheckWeight.js';
 import { PrevalidateAttests } from './PrevalidateAttests.js';
+import { StorageWeightReclaim } from './StorageWeightReclaim.js';
 
 export type AnySignedExtension = new (...args: any[]) => ISignedExtension;
 
@@ -25,4 +26,5 @@ export const knownSignedExtensions: Record<string, AnySignedExtension> = {
   PrevalidateAttests,
   ChargeAssetTxPayment,
   CheckMetadataHash,
+  StorageWeightReclaim,
 };
