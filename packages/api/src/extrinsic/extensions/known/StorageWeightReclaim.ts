@@ -1,6 +1,6 @@
 import { SignedExtension } from '../SignedExtension.js';
 
 /**
- * @description Block resource (weight) limit check.
+ * @description Storage weight reclaim mechanism.
  */
 export class StorageWeightReclaim extends SignedExtension {}
