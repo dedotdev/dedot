@@ -3,6 +3,7 @@ import { TypeRegistry } from '@dedot/codecs';
 import { assert, hexToU8a, stringCamelCase, stringPascalCase } from '@dedot/utils';
 import { ContractEvent, ContractEventMeta, ContractMetadata } from './types/index.js';
 import { extractContractTypes } from './utils.js';
+import * as $ from '@dedot/shape'
 
 export class TypinkRegistry extends TypeRegistry {
   readonly #metadata: ContractMetadata;
@@ -44,7 +45,7 @@ export class TypinkRegistry extends TypeRegistry {
     const event = this.#metadata.spec.events[index];
     assert(event, `Event index not found: ${index.toString()}`);
 
-    return this.#tryDecode(event, data.subarray(1));
+    return this.#tryDecodeEvent(event, data.subarray(1));
   }
 
   #decodeEventV5(eventRecord: FrameSystemEventRecord): ContractEvent {
@@ -59,33 +60,32 @@ export class TypinkRegistry extends TypeRegistry {
       const potentialEvents = this.#metadata.spec.events.filter((one) => !one.signature_topic);
       assert(potentialEvents.length === 1, 'Unable to determine event!');
 
-      return this.#tryDecode(potentialEvents[0], data);
+      return this.#tryDecodeEvent(potentialEvents[0], data);
     }
 
     const event = this.#metadata.spec.events.find((one) => one.signature_topic === signatureTopic);
     assert(event, `Unable to determine event!`);
 
-    return this.#tryDecode(event, data);
+    return this.#tryDecodeEvent(event, data);
   }
 
-  #tryDecode(eventMeta: ContractEventMeta, raw: Uint8Array): ContractEvent {
+  #tryDecodeEvent(eventMeta: ContractEventMeta, raw: Uint8Array): ContractEvent {
     const { args, label } = eventMeta;
 
-    let offset = 0;
-    const data = args.reduce((_data, arg) => {
+    const eventCodecFrame = args.reduce((frame, arg) => {
       const {
         label,
         type: { type },
       } = arg;
 
       const $codec = this.findCodec(type);
-      const value = $codec.tryDecode(raw.subarray(offset));
+      Object.assign(frame, { [stringCamelCase(label)]: $codec });
 
-      offset += $codec.tryEncode(value).length;
-      Object.assign(_data, { [stringCamelCase(label)]: value });
-
-      return _data;
+      return frame;
     }, {} as any);
+
+    const $eventCodec = $.Struct(eventCodecFrame);
+    const data = $eventCodec.decode(raw);
 
     return args.length ? { name: stringPascalCase(label), data } : ({ name: stringPascalCase(label) } as ContractEvent);
   }
