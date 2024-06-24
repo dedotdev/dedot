@@ -54,17 +54,17 @@ export class TypinkRegistry extends TypeRegistry {
 
     const data = hexToU8a(eventRecord.event.palletEvent.data.data);
     const signatureTopic = eventRecord.topics.at(0);
+    
+    let event: ContractEventMeta | undefined;
+    event = signatureTopic && this.#metadata.spec.events.find((one) => one.signature_topic === signatureTopic);
 
     // TODO: Handle multiple anonymous events
-    if (!signatureTopic) {
-      const potentialEvents = this.#metadata.spec.events.filter((one) => !one.signature_topic);
+    if (!event) {
+      const potentialEvents = this.#metadata.spec.events.filter((one) => !one.signature_topic || one.args.filter(arg => arg.indexed).length === eventRecord.topics.length);
       assert(potentialEvents.length === 1, 'Unable to determine event!');
 
-      return this.#tryDecodeEvent(potentialEvents[0], data);
+      event = potentialEvents[0]
     }
-
-    const event = this.#metadata.spec.events.find((one) => one.signature_topic === signatureTopic);
-    assert(event, `Unable to determine event!`);
 
     return this.#tryDecodeEvent(event, data);
   }
