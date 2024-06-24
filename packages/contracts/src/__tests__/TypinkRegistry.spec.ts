@@ -1,19 +1,20 @@
 import * as util from 'node:util';
 import { beforeEach, describe, expect, it } from 'vitest';
 import { TypinkRegistry } from '../TypinkRegistry.js';
-import { FLIPPER_CONTRACT_METADATA } from './contracts-metadata.js';
+import { FLIPPER_CONTRACT_METADATA_V4 } from './contracts-metadata.js';
 
 describe('TypinkRegistry', () => {
   describe('with metadata', () => {
     let registry: TypinkRegistry;
 
     beforeEach(() => {
-      registry = new TypinkRegistry(FLIPPER_CONTRACT_METADATA);
+      registry = new TypinkRegistry(FLIPPER_CONTRACT_METADATA_V4);
     });
 
     it('should have metadata', () => {
       expect(registry.metadata).toBeDefined();
     });
+
 
     describe('findCodec', () => {
       it('should find existing codec', () => {
