@@ -55,7 +55,7 @@ export const run = async (_nodeName: any, networkInfo: any) => {
     const { raw } = await contract.query.flip({ caller });
 
     await new Promise<void>(async (resolve) => {
-      await contract.tx.flip({ gasLimit: contractResult.gasRequired }).signAndSend(alicePair, ({ status }: any) => {
+      await contract.tx.flip({ gasLimit: raw.gasRequired }).signAndSend(alicePair, ({ status }: any) => {
         console.log(`[${api.rpcVersion}] Transaction status`, status.type);
 
         if (status.type === 'Finalized') {
