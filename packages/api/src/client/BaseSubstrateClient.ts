@@ -30,9 +30,9 @@ export function ensurePresence<T>(value: T): NonNullable<T> {
  * @name BaseSubstrateClient
  * @description Base & shared abstraction for Substrate API Clients
  */
-export abstract class BaseSubstrateClient<ChainApi extends VersionedGenericSubstrateApi = SubstrateApi>
-  extends JsonRpcClient<ChainApi[RpcVersion], ApiEvent>
-  implements ISubstrateClient<ChainApi[RpcVersion]>
+export abstract class BaseSubstrateClient<ChainApi extends GenericSubstrateApi = GenericSubstrateApi>
+  extends JsonRpcClient<ChainApi, ApiEvent>
+  implements ISubstrateClient<ChainApi>
 {
   protected _options: ApiOptions;
 
@@ -286,38 +286,36 @@ export abstract class BaseSubstrateClient<ChainApi extends VersionedGenericSubst
     return ensurePresence(this._runtimeVersion);
   }
 
-  get consts(): ChainApi[RpcVersion]['consts'] {
-    return newProxyChain({ executor: new ConstantExecutor(this) }) as ChainApi[RpcVersion]['consts'];
+  get consts(): ChainApi['consts'] {
+    return newProxyChain({ executor: new ConstantExecutor(this) }) as ChainApi['consts'];
   }
 
-  get errors(): ChainApi[RpcVersion]['errors'] {
-    return newProxyChain({ executor: new ErrorExecutor(this) }) as ChainApi[RpcVersion]['errors'];
+  get errors(): ChainApi['errors'] {
+    return newProxyChain({ executor: new ErrorExecutor(this) }) as ChainApi['errors'];
   }
 
-  get events(): ChainApi[RpcVersion]['events'] {
-    return newProxyChain({ executor: new EventExecutor(this) }) as ChainApi[RpcVersion]['events'];
+  get events(): ChainApi['events'] {
+    return newProxyChain({ executor: new EventExecutor(this) }) as ChainApi['events'];
   }
 
-  get query(): ChainApi[RpcVersion]['query'] {
+  get query(): ChainApi['query'] {
     throw new Error('Unimplemented!');
   }
 
-  get call(): ChainApi[RpcVersion]['call'] {
+  get call(): ChainApi['call'] {
     return this.callAt();
   }
 
   // For internal use with caution
-  protected callAt(hash?: BlockHash): ChainApi[RpcVersion]['call'] {
+  protected callAt(hash?: BlockHash): ChainApi['call'] {
     throw new Error('Unimplemented!');
   }
 
-  get tx(): ChainApi[RpcVersion]['tx'] {
+  get tx(): ChainApi['tx'] {
     throw new Error('Unimplemented!');
   }
 
-  at<ChainApiAt extends GenericSubstrateApi = ChainApi[RpcVersion]>(
-    hash: BlockHash,
-  ): Promise<ISubstrateClientAt<ChainApiAt>> {
+  at<ChainApiAt extends GenericSubstrateApi = ChainApi>(hash: BlockHash): Promise<ISubstrateClientAt<ChainApiAt>> {
     throw new Error('Unimplemented!');
   }
 }
