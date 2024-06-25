@@ -1,12 +1,13 @@
 import yargs from 'yargs';
 import { hideBin } from 'yargs/helpers';
-import { chaintypes } from './commands/index.js';
+import { chaintypes, typink } from './commands/index.js';
 
 export const dedot = (): void => {
   yargs(hideBin(process.argv))
     .scriptName('dedot')
     .showHelpOnFail(true)
     .command(chaintypes)
+    .command(typink)
     .help('help', 'Show help instructions')
     .alias('h', 'help')
     .alias('v', 'version')

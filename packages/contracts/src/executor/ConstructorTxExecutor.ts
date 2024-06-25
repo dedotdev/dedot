@@ -16,14 +16,17 @@ export class ConstructorTxExecutor<ChainApi extends GenericSubstrateApi> extends
   }
 
   doExecute(constructor: string) {
-    const meta = this.findConstructorMeta(constructor);
+    const meta = this.#findConstructorMeta(constructor);
     assert(meta, `Constructor message not found: ${constructor}`);
 
     const callFn: GenericConstructorTxCall<ChainApi> = (...params: any[]) => {
-      // TODO verify number of arguments/params & call options presence
       const { args } = meta;
+      assert(params.length === args.length + 1, `Expected ${args.length + 1} arguments, got ${params.length}`);
+
       const txCallOptions = params[args.length] as ConstructorTxOptions;
       const { value = 0n, gasLimit, storageDepositLimit, salt } = txCallOptions;
+      assert(gasLimit, 'Expected a gas limit in ConstructorTxOptions');
+      assert(salt, 'Expected a salt in ConstructorTxOptions');
 
       const formattedInputs = args.map((arg, index) => this.tryEncode(arg, params[index]));
       const bytes = u8aToHex(concatU8a(hexToU8a(meta.selector), ...formattedInputs));
@@ -40,7 +43,7 @@ export class ConstructorTxExecutor<ChainApi extends GenericSubstrateApi> extends
     return callFn;
   }
 
-  protected findConstructorMeta(constructor: string): ContractConstructorMessage | undefined {
+  #findConstructorMeta(constructor: string): ContractConstructorMessage | undefined {
     return this.metadata.spec.constructors.find((one) => normalizeLabel(one.label) === constructor);
   }
 }

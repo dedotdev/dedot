@@ -26,7 +26,7 @@ const KEEP_ALIVE_INTERVAL = 10_000; // in ms
  * import type { PolkadotApi } from '@dedot/chaintypes/polkadot';
  *
  * const run = async () => {
- *   const api = await Dedot.new<PolkadotApi>('wss://rpc.polkadot.io');
+ *   const api = await LegacyClient.new<PolkadotApi>('wss://rpc.polkadot.io');
  *
  *   // Call rpc `state_getMetadata` to fetch raw scale-encoded metadata and decode it.
  *   const metadata = await api.rpc.state.getMetadata();
@@ -82,7 +82,7 @@ export class LegacyClient<
   }
 
   /**
-   * Alias for __Dedot.create__
+   * Alias for __LegacyClient.create__
    *
    * @param options
    */

@@ -15,7 +15,7 @@
   "scripts": {
     "build": "tsc --project tsconfig.build.json && tsc --project tsconfig.build.cjs.json && yarn copy",
     "clean": "rm -rf ./dist && rm -rf ./tsconfig.tsbuildinfo ./tsconfig.build.tsbuildinfo",
-    "copy": "cp -R ./src/templates ./dist && cp -R ./src/templates ./dist/cjs"
+    "copy": "cp -R ./src/chaintypes/templates ./dist/chaintypes && cp -R ./src/chaintypes/templates ./dist/cjs/chaintypes && cp -R ./src/typink/templates ./dist/typink && cp -R ./src/typink/templates ./dist/cjs/typink"
   },
   "dependencies": {
     "@dedot/api": "workspace:*",
