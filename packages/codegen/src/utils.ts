@@ -9,7 +9,7 @@ export const TUPLE_TYPE_REGEX = /^\[(.*)]$/;
 
 export const commentBlock = (...docs: (string | string[])[]) => {
   const flatLines = docs.flat();
-  if (flatLines.length === 0 || !flatLines.find((o) => !!o)) {
+  if (flatLines.length === 0 || !flatLines.some((o) => !!o)) {
     return '';
   } else {
     return `

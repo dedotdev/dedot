@@ -19,12 +19,8 @@ export class TypesGen extends BaseTypesGen {
 
     Object.values(this.includedTypes)
       .filter(({ skip, knownType }) => !(skip || knownType))
-      .forEach(({ name, nameOut, id }) => {
+      .forEach(({ nameOut, id }) => {
         defTypeOut += `export type ${nameOut} = ${this.generateType(id, 0, true)};\n\n`;
-
-        if (this.shouldGenerateTypeIn(id)) {
-          defTypeOut += `export type ${name} = ${this.generateType(id)};\n\n`;
-        }
       });
 
     const importTypes = this.typeImports.toImports({ excludeModules: ['./types'], useSubPaths });
@@ -33,9 +29,7 @@ export class TypesGen extends BaseTypesGen {
     return beautifySourceCode(template({ importTypes, defTypeOut }));
   }
 
-  shouldGenerateTypeIn(id: number) {
-    const { messages } = this.contractMetadata.spec;
-
-    return messages.some((message) => message.returnType.type === id);
+  shouldGenerateTypeIn(_id: number) {
+    return false;
   }
 }
