@@ -28,8 +28,4 @@ export class TypesGen extends BaseTypesGen {
 
     return beautifySourceCode(template({ importTypes, defTypeOut }));
   }
-
-  shouldGenerateTypeIn(_id: number) {
-    return false;
-  }
 }

@@ -32,7 +32,9 @@ export abstract class BaseTypesGen {
     this.skipTypes = [];
   }
 
-  abstract shouldGenerateTypeIn(id: TypeId): boolean;
+  shouldGenerateTypeIn(_id: TypeId): boolean {
+    return false;
+  }
 
   typeCache: Record<string, string> = {};
 

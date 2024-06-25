@@ -55,7 +55,7 @@ export class TypesGen extends BaseTypesGen {
     return beautifySourceCode(template({ importTypes, defTypeOut }));
   }
 
-  shouldGenerateTypeIn(id: TypeId) {
+  override shouldGenerateTypeIn(id: TypeId) {
     const { callTypeId } = this.metadata.extrinsic;
     const palletCallTypeIds = this.registry.getPalletCallTypeIds();
 
