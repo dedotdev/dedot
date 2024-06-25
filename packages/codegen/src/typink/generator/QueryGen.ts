@@ -1,7 +1,7 @@
 import {
   normalizeContractTypeDef,
   ContractMetadata,
-  Message,
+  ContractMessage,
   normalizeLabel,
   ContractMessageArg,
 } from '@dedot/contracts';
@@ -39,7 +39,7 @@ export class QueryGen {
     return beautifySourceCode(template({ importTypes, queryCallsOut }));
   }
 
-  doGenerate(messages: Message[], optionsTypeName?: string) {
+  doGenerate(messages: ContractMessage[], optionsTypeName?: string) {
     let callsOut = '';
 
     messages.forEach((messageDef) => {
@@ -58,7 +58,7 @@ export class QueryGen {
     return callsOut;
   }
 
-  generateMethodDef(def: Message): string {
+  generateMethodDef(def: ContractMessage): string {
     const { args, returnType } = def;
 
     this.importType(returnType.type);

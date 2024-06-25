@@ -1,4 +1,4 @@
-import { Message } from '@dedot/contracts';
+import { ContractMessage } from '@dedot/contracts';
 import { beautifySourceCode, compileTemplate } from '../../utils.js';
 import { QueryGen } from './QueryGen.js';
 
@@ -24,7 +24,7 @@ export class TxGen extends QueryGen {
     return beautifySourceCode(template({ importTypes, txCallsOut }));
   }
 
-  override generateMethodDef(def: Message): string {
+  override generateMethodDef(def: ContractMessage): string {
     const { args } = def;
 
     args.forEach(({ type: { type } }) => this.importType(type));

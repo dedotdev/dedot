@@ -1,7 +1,7 @@
 import { SubstrateApi } from '@dedot/api/chaintypes';
 import { AccountId32Like, BytesLike, DispatchError, Weight } from '@dedot/codecs';
 import { AnyFunc, AsyncMethod, GenericSubstrateApi, RpcVersion, VersionedGenericSubstrateApi } from '@dedot/types';
-import { ContractConstructorMessage, ContractMessage } from './shared.js';
+import { ContractConstructorMessage, ContractCallMessage } from './shared.js';
 import { ContractMetadataV4 } from './v4.js';
 import { ContractMetadataV5 } from './v5.js';
 
@@ -72,14 +72,14 @@ export type GenericContractQueryCall<
   ChainApi extends GenericSubstrateApi,
   F extends AsyncMethod = (...args: any[]) => Promise<GenericContractCallResult<any, ContractCallResult<ChainApi>>>,
 > = F & {
-  meta: ContractMessage;
+  meta: ContractCallMessage;
 };
 
 export type GenericContractTxCall<
   ChainApi extends GenericSubstrateApi,
   F extends AnyFunc = (...args: any[]) => ContractSubmittableExtrinsic<ChainApi>,
 > = F & {
-  meta: ContractMessage;
+  meta: ContractCallMessage;
 };
 
 export type GenericConstructorQueryCall<

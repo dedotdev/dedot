@@ -34,7 +34,7 @@ export interface ContractTypeInfo {
   type: number;
 }
 
-export interface Message {
+export interface ContractMessage {
   args: ContractMessageArg[];
   default: boolean;
   docs: string[];
@@ -44,9 +44,9 @@ export interface Message {
   selector: string;
 }
 
-export interface ContractConstructorMessage extends Message {}
+export interface ContractConstructorMessage extends ContractMessage {}
 
-export interface ContractMessage extends Message {
+export interface ContractCallMessage extends ContractMessage {
   mutates: boolean;
 }
 
