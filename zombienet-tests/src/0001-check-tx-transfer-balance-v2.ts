@@ -25,8 +25,8 @@ export const run = async (nodeName: any, networkInfo: any): Promise<void> => {
   return new Promise(async (resolve) => {
     let blockIncluded: boolean = false;
     const unsub = await transferTx.signAndSend(alice, async ({ status, txIndex }) => {
-      console.log('Transaction status', status.tag);
-      if (status.tag === 'BestChainBlockIncluded') {
+      console.log('Transaction status', status.type);
+      if (status.type === 'BestChainBlockIncluded') {
         assert(isHex(status.value.blockHash), 'Block hash should be hex');
         assert(isNumber(status.value.txIndex), 'Tx index should be number');
         assert(txIndex === status.value.txIndex, 'Mismatched tx index');
@@ -37,7 +37,7 @@ export const run = async (nodeName: any, networkInfo: any): Promise<void> => {
         blockIncluded = true;
       }
 
-      if (status.tag === 'Finalized') {
+      if (status.type === 'Finalized') {
         assert(isHex(status.value.blockHash), 'Block hash should be hex');
         assert(isNumber(status.value.txIndex), 'Tx index should be number');
         assert(txIndex === status.value.txIndex, 'Mismatched tx index');

@@ -18,7 +18,7 @@ export class ConstructorQueryExecutor<ChainApi extends GenericSubstrateApi> exte
       const formattedInputs = args.map((arg, index) => this.tryEncode(arg, params[index]));
       const bytes = u8aToHex(concatU8a(hexToU8a(meta.selector), ...formattedInputs));
       const code = {
-        tag: isWasm(this.code) ? 'Upload' : 'Existing',
+        type: isWasm(this.code) ? 'Upload' : 'Existing',
         value: this.code,
       } as PalletContractsPrimitivesCode;
 

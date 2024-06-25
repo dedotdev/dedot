@@ -247,7 +247,7 @@ export class LegacyClient<
    * // Make a transfer balance transaction
    * api.tx.balances.transferKeepAlive(<address>, <amount>)
    *    .signAndSend(<keyPair|address>, { signer }, ({ status }) => {
-   *      console.log('Transaction status', status.tag);
+   *      console.log('Transaction status', status.type);
    *    });
    * ```
    */

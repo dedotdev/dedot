@@ -37,7 +37,7 @@ export class SubmittableExtrinsic extends BaseSubmittableExtrinsic implements IS
 
     if (isSubscription) {
       return this.api.rpc.author_submitAndWatchExtrinsic(txHex, async (status: TransactionStatus) => {
-        if (status.tag === 'InBlock' || status.tag === 'Finalized') {
+        if (status.type === 'InBlock' || status.type === 'Finalized') {
           const blockHash: BlockHash = status.value;
 
           const [signedBlock, blockEvents] = await Promise.all([
@@ -48,7 +48,7 @@ export class SubmittableExtrinsic extends BaseSubmittableExtrinsic implements IS
           const txIndex = (signedBlock as SignedBlock).block.extrinsics.indexOf(txHex);
           assert(txIndex >= 0, 'Extrinsic not found!');
 
-          const events = blockEvents.filter(({ phase }) => phase.tag === 'ApplyExtrinsic' && phase.value === txIndex);
+          const events = blockEvents.filter(({ phase }) => phase.type === 'ApplyExtrinsic' && phase.value === txIndex);
 
           return callback(new SubmittableResult({ status, txHash, events, txIndex }));
         } else {

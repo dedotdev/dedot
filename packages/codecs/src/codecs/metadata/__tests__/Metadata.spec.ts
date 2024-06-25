@@ -22,9 +22,9 @@ describe('$Metadata', () => {
     expect(version).toEqual('V14');
     expect(versionNumber).toEqual(14);
 
-    expect(metadataVersioned.tag).toEqual('V14');
+    expect(metadataVersioned.type).toEqual('V14');
 
-    assert(metadataVersioned.tag === 'V14');
+    assert(metadataVersioned.type === 'V14');
     expectTypeOf(metadataVersioned.value.pallets).toBeArray();
     expectTypeOf(metadataVersioned.value.types).toBeArray();
     expectTypeOf(metadataVersioned.value.extrinsic).toBeObject();
@@ -38,9 +38,9 @@ describe('$Metadata', () => {
     expect(metadata.versionNumber).toEqual(15);
 
     const { metadataVersioned } = metadata;
-    expect(metadataVersioned.tag).toEqual('V15');
+    expect(metadataVersioned.type).toEqual('V15');
 
-    assert(metadataVersioned.tag === 'V15');
+    assert(metadataVersioned.type === 'V15');
     expectTypeOf(metadataVersioned.value.pallets).toBeArray();
     expectTypeOf(metadataVersioned.value.types).toBeArray();
     expectTypeOf(metadataVersioned.value.extrinsic).toBeObject();

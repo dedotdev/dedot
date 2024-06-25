@@ -50,7 +50,7 @@ export class PortableRegistry extends TypeRegistry {
 
   findErrorMeta(errorInfo: ModuleError | DispatchError): PalletErrorMetadataLatest | undefined {
     const moduleError =
-      isObject<DispatchError>(errorInfo) && errorInfo.tag === 'Module' ? errorInfo.value : (errorInfo as ModuleError);
+      isObject<DispatchError>(errorInfo) && errorInfo.type === 'Module' ? errorInfo.value : (errorInfo as ModuleError);
 
     const targetPallet = this.metadata!.pallets.find((p) => p.index === moduleError.index);
     if (!targetPallet || !targetPallet.error) return;
@@ -58,8 +58,8 @@ export class PortableRegistry extends TypeRegistry {
     const def = this.metadata!.types[targetPallet.error];
     if (!def) return;
 
-    const { tag, value } = def.typeDef;
-    if (tag !== 'Enum') return;
+    const { type, value } = def.typeDef;
+    if (type !== 'Enum') return;
 
     const errorDef = value.members.find(({ index }) => index === hexToU8a(moduleError.error)[0]);
     if (!errorDef) return;
@@ -123,7 +123,7 @@ export class PortableRegistry extends TypeRegistry {
     }
 
     return {
-      tagKey: 'tag',
+      tagKey: 'type',
       valueKey: 'value',
     };
   }
@@ -132,7 +132,7 @@ export class PortableRegistry extends TypeRegistry {
     try {
       const eventType = this.findType(typeId);
 
-      if (eventType.typeDef.tag === 'Enum') {
+      if (eventType.typeDef.type === 'Enum') {
         return eventType.typeDef.value.members.map((m) => m.fields[0].typeId);
       }
     } catch {

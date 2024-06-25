@@ -44,9 +44,9 @@ export class SubmittableExtrinsicV2 extends BaseSubmittableExtrinsic {
     const validation = await validateTx(finalizedHash);
 
     if (validation.isOk) {
-      callback(new SubmittableResult({ status: { tag: 'Validated' }, txHash }));
+      callback(new SubmittableResult({ status: { type: 'Validated' }, txHash }));
     } else if (validation.isErr) {
-      throw new InvalidTxError(`Invalid Tx: ${validation.err.tag} - ${validation.err.value.tag}`, validation);
+      throw new InvalidTxError(`Invalid Tx: ${validation.err.type} - ${validation.err.value.type}`, validation);
     }
 
     const checkTxIsOnChain = async (blockHash: BlockHash): Promise<TxFound | undefined> => {
@@ -59,7 +59,7 @@ export class SubmittableExtrinsicV2 extends BaseSubmittableExtrinsic {
       }
 
       const events = await this.getSystemEventsAt(blockHash);
-      const txEvents = events.filter(({ phase }) => phase.tag == 'ApplyExtrinsic' && phase.value === txIndex);
+      const txEvents = events.filter(({ phase }) => phase.type == 'ApplyExtrinsic' && phase.value === txIndex);
 
       return {
         blockHash,
@@ -113,7 +113,7 @@ export class SubmittableExtrinsicV2 extends BaseSubmittableExtrinsic {
             txFound = undefined;
             callback(
               new SubmittableResult<IEventRecord, TransactionStatusV2>({
-                status: { tag: 'NoLongerInBestChain' },
+                status: { type: 'NoLongerInBestChain' },
                 txHash,
               }),
             );
@@ -132,7 +132,7 @@ export class SubmittableExtrinsicV2 extends BaseSubmittableExtrinsic {
 
         callback(
           new SubmittableResult<IEventRecord, TransactionStatusV2>({
-            status: { tag: 'BestChainBlockIncluded', value: { blockHash, txIndex } },
+            status: { type: 'BestChainBlockIncluded', value: { blockHash, txIndex } },
             txHash,
             events,
             txIndex,
@@ -168,7 +168,7 @@ export class SubmittableExtrinsicV2 extends BaseSubmittableExtrinsic {
 
         callback(
           new SubmittableResult<IEventRecord, TransactionStatusV2>({
-            status: { tag: 'Finalized', value: { blockHash, txIndex } },
+            status: { type: 'Finalized', value: { blockHash, txIndex } },
             txHash,
             events,
             txIndex,
@@ -183,8 +183,8 @@ export class SubmittableExtrinsicV2 extends BaseSubmittableExtrinsic {
         callback(
           new SubmittableResult<IEventRecord, TransactionStatusV2>({
             status: {
-              tag: 'Invalid',
-              value: { error: `Invalid Tx: ${validation.err.tag} - ${validation.err.value.tag}` },
+              type: 'Invalid',
+              value: { error: `Invalid Tx: ${validation.err.type} - ${validation.err.value.type}` },
             },
             txHash,
           }),
@@ -197,7 +197,7 @@ export class SubmittableExtrinsicV2 extends BaseSubmittableExtrinsic {
     stopBroadcastFn = await api.txBroadcaster.broadcastTx(txHex);
     callback(
       new SubmittableResult<IEventRecord, TransactionStatusV2>({
-        status: { tag: 'Broadcasting' },
+        status: { type: 'Broadcasting' },
         txHash,
       }),
     );
@@ -233,10 +233,10 @@ export class SubmittableExtrinsicV2 extends BaseSubmittableExtrinsic {
       try {
         // TODO handle timeout for this with the Drop status, just in-case we somehow can't find the tx in any block
         const unsub = await this.#send(({ status, txHash }) => {
-          if (status.tag === 'BestChainBlockIncluded' || status.tag === 'Finalized') {
+          if (status.type === 'BestChainBlockIncluded' || status.type === 'Finalized') {
             defer.resolve(txHash);
             unsub().catch(noop);
-          } else if (status.tag === 'Invalid' || status.tag === 'Drop') {
+          } else if (status.type === 'Invalid' || status.type === 'Drop') {
             defer.reject(new Error(status.value.error));
             unsub().catch(noop);
           }

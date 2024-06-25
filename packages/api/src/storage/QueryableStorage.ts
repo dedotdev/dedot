@@ -48,7 +48,7 @@ export class QueryableStorage {
   }
 
   #getStorageMapInfo(storageType: StorageEntryLatest['storageType']) {
-    assert(storageType.tag === 'Map');
+    assert(storageType.type === 'Map');
 
     const { hashers, keyTypeId } = storageType.value;
 
@@ -56,7 +56,7 @@ export class QueryableStorage {
     if (hashers.length > 1) {
       const { typeDef } = this.registry.findType(keyTypeId);
 
-      assert(typeDef.tag === 'Tuple', 'Key type should be a tuple!');
+      assert(typeDef.type === 'Tuple', 'Key type should be a tuple!');
       keyTypeIds = typeDef.value.fields;
     }
 
@@ -71,9 +71,9 @@ export class QueryableStorage {
   encodeKey(keyInput?: any): StorageKey {
     const { storageType } = this.storageEntry;
 
-    if (storageType.tag === 'Plain') {
+    if (storageType.type === 'Plain') {
       return this.prefixKey;
-    } else if (storageType.tag === 'Map') {
+    } else if (storageType.type === 'Map') {
       const { hashers, keyTypeIds } = this.#getStorageMapInfo(storageType);
       const extractedInputs = this.#extractRequiredKeyInputs(keyInput, hashers.length);
 
@@ -99,9 +99,9 @@ export class QueryableStorage {
   decodeKey(key: StorageKey): any {
     const { storageType } = this.storageEntry;
 
-    if (storageType.tag === 'Plain') {
+    if (storageType.type === 'Plain') {
       return;
-    } else if (storageType.tag === 'Map') {
+    } else if (storageType.type === 'Map') {
       const prefix = this.prefixKey;
       if (!key.startsWith(prefix)) {
         throw new Error(`Storage key does not match this storage entry (${this.palletName}.${this.storageItem})`);

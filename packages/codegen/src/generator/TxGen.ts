@@ -36,7 +36,7 @@ export class TxGen extends ApiGen {
 
       const { typeDef } = types[pallet.calls];
 
-      if (typeDef.tag !== 'Enum') continue;
+      if (typeDef.type !== 'Enum') continue;
 
       const isFlatEnum = typeDef.value.members.every((m) => m.fields.length === 0);
 

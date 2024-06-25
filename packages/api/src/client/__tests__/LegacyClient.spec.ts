@@ -67,7 +67,7 @@ describe('LegacyClient', () => {
             expect(api.query[stringCamelCase(pallet.name)][stringCamelCase(entry.name)].meta).toBeDefined();
             expectTypeOf(api.query[stringCamelCase(pallet.name)][stringCamelCase(entry.name)].rawKey).toBeFunction();
 
-            if (entry.storageType.tag === 'Map') {
+            if (entry.storageType.type === 'Map') {
               // @ts-ignore
               expect(api.query[stringCamelCase(pallet.name)][stringCamelCase(entry.name)].multi).toBeDefined();
               // @ts-ignore
@@ -103,7 +103,7 @@ describe('LegacyClient', () => {
         api.metadata.latest.pallets.forEach((pallet) => {
           if (!pallet.error) return;
           const event = api.metadata.latest.types[pallet.error];
-          if (event.typeDef.tag === 'Enum') {
+          if (event.typeDef.type === 'Enum') {
             event.typeDef.value.members.forEach((m) => {
               expect(api.errors[stringCamelCase(pallet.name)][stringPascalCase(m.name)]).toHaveProperty(['is']);
             });
@@ -129,7 +129,7 @@ describe('LegacyClient', () => {
         api.metadata.latest.pallets.forEach((pallet) => {
           if (!pallet.event) return;
           const event = api.metadata.latest.types[pallet.event];
-          if (event.typeDef.tag === 'Enum') {
+          if (event.typeDef.type === 'Enum') {
             event.typeDef.value.members.forEach((m) => {
               expect(api.events[stringCamelCase(pallet.name)][stringPascalCase(m.name)]).toHaveProperty(['is']);
             });
@@ -231,7 +231,7 @@ describe('LegacyClient', () => {
         api.metadata.latest.pallets.forEach((pallet) => {
           if (!pallet.calls) return;
           const calls = api.metadata.latest.types[pallet.calls];
-          if (calls.typeDef.tag === 'Enum') {
+          if (calls.typeDef.type === 'Enum') {
             calls.typeDef.value.members.forEach((m) => {
               const tx = api.tx[stringCamelCase(pallet.name)][stringCamelCase(m.name)];
               expectTypeOf(tx).toBeFunction();

@@ -42,9 +42,9 @@ export class QueryGen extends ApiGen {
     const { name, storageType, docs, modifier } = entry;
 
     let valueType, keyTypeOut, keyTypeIn;
-    if (storageType.tag === 'Plain') {
+    if (storageType.type === 'Plain') {
       valueType = this.typesGen.generateType(storageType.value.valueTypeId, 1, true);
-    } else if (storageType.tag === 'Map') {
+    } else if (storageType.type === 'Map') {
       valueType = this.typesGen.generateType(storageType.value.valueTypeId, 1, true);
       keyTypeOut = this.typesGen.generateType(storageType.value.keyTypeId, 1, true);
       keyTypeIn = this.typesGen.generateType(storageType.value.keyTypeId, 1);

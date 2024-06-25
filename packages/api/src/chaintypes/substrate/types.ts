@@ -407,10 +407,10 @@ export type PalletElectionProviderMultiPhaseElectionCompute =
 export type SpNposElectionsElectionScore = { minimalStake: bigint; sumStake: bigint; sumStakeSquared: bigint };
 
 export type PalletElectionProviderMultiPhasePhase =
-  | { tag: 'Off' }
-  | { tag: 'Signed' }
-  | { tag: 'Unsigned'; value: [boolean, number] }
-  | { tag: 'Emergency' };
+  | { type: 'Off' }
+  | { type: 'Signed' }
+  | { type: 'Unsigned'; value: [boolean, number] }
+  | { type: 'Emergency' };
 
 /**
  * The `Event` enum of this pallet
@@ -497,11 +497,11 @@ export type PalletStakingPalletEvent =
   | { name: 'ControllerBatchDeprecated'; data: { failures: number } };
 
 export type PalletStakingRewardDestination =
-  | { tag: 'Staked' }
-  | { tag: 'Stash' }
-  | { tag: 'Controller' }
-  | { tag: 'Account'; value: AccountId32 }
-  | { tag: 'None' };
+  | { type: 'Staked' }
+  | { type: 'Stash' }
+  | { type: 'Controller' }
+  | { type: 'Account'; value: AccountId32 }
+  | { type: 'None' };
 
 export type PalletStakingValidatorPrefs = { commission: Perbill; blocked: boolean };
 
@@ -637,15 +637,15 @@ export type PalletDemocracyEvent =
 export type PalletDemocracyVoteThreshold = 'SuperMajorityApprove' | 'SuperMajorityAgainst' | 'SimpleMajority';
 
 export type PalletDemocracyVoteAccountVote =
-  | { tag: 'Standard'; value: { vote: PalletDemocracyVote; balance: bigint } }
-  | { tag: 'Split'; value: { aye: bigint; nay: bigint } };
+  | { type: 'Standard'; value: { vote: PalletDemocracyVote; balance: bigint } }
+  | { type: 'Split'; value: { aye: bigint; nay: bigint } };
 
 export type PalletDemocracyVote = number;
 
 export type PalletDemocracyMetadataOwner =
-  | { tag: 'External' }
-  | { tag: 'Proposal'; value: number }
-  | { tag: 'Referendum'; value: number };
+  | { type: 'External' }
+  | { type: 'Proposal'; value: number }
+  | { type: 'Referendum'; value: number };
 
 /**
  * The `Event` enum of this pallet
@@ -988,7 +988,7 @@ export type PalletContractsEvent =
    **/
   | { name: 'StorageDepositTransferredAndReleased'; data: { from: AccountId32; to: AccountId32; amount: bigint } };
 
-export type PalletContractsOrigin = { tag: 'Root' } | { tag: 'Signed'; value: AccountId32 };
+export type PalletContractsOrigin = { type: 'Root' } | { type: 'Signed'; value: AccountId32 };
 
 export type KitchensinkRuntimeRuntime = {};
 
@@ -2125,16 +2125,16 @@ export type PalletNftsEvent =
     };
 
 export type PalletNftsAttributeNamespace =
-  | { tag: 'Pallet' }
-  | { tag: 'CollectionOwner' }
-  | { tag: 'ItemOwner' }
-  | { tag: 'Account'; value: AccountId32 };
+  | { type: 'Pallet' }
+  | { type: 'CollectionOwner' }
+  | { type: 'ItemOwner' }
+  | { type: 'Account'; value: AccountId32 };
 
 export type PalletNftsPriceWithDirection = { amount: bigint; direction: PalletNftsPriceDirection };
 
 export type PalletNftsPriceDirection = 'Send' | 'Receive';
 
-export type PalletNftsPalletAttributes = { tag: 'UsedToClaim'; value: number } | { tag: 'TransferDisabled' };
+export type PalletNftsPalletAttributes = { type: 'UsedToClaim'; value: number } | { type: 'TransferDisabled' };
 
 /**
  * The `Event` enum of this pallet
@@ -2663,9 +2663,9 @@ export type PalletReferendaEvent =
     };
 
 export type FrameSupportPreimagesBounded =
-  | { tag: 'Legacy'; value: { hash: H256 } }
-  | { tag: 'Inline'; value: Bytes }
-  | { tag: 'Lookup'; value: { hash: H256; len: number } };
+  | { type: 'Legacy'; value: { hash: H256 } }
+  | { type: 'Inline'; value: Bytes }
+  | { type: 'Lookup'; value: { hash: H256; len: number } };
 
 export type KitchensinkRuntimeRuntimeCall =
   | { pallet: 'System'; palletCall: FrameSystemCall }
@@ -3133,18 +3133,21 @@ export type PalletUtilityCallLike =
   | { name: 'WithWeight'; params: { call: KitchensinkRuntimeRuntimeCallLike; weight: SpWeightsWeightV2Weight } };
 
 export type KitchensinkRuntimeOriginCaller =
-  | { tag: 'System'; value: FrameSupportDispatchRawOrigin }
-  | { tag: 'Council'; value: PalletCollectiveRawOrigin }
-  | { tag: 'TechnicalCommittee'; value: PalletCollectiveRawOrigin }
-  | { tag: 'AllianceMotion'; value: PalletCollectiveRawOrigin }
-  | { tag: 'Void'; value: SpCoreVoid };
+  | { type: 'System'; value: FrameSupportDispatchRawOrigin }
+  | { type: 'Council'; value: PalletCollectiveRawOrigin }
+  | { type: 'TechnicalCommittee'; value: PalletCollectiveRawOrigin }
+  | { type: 'AllianceMotion'; value: PalletCollectiveRawOrigin }
+  | { type: 'Void'; value: SpCoreVoid };
 
-export type FrameSupportDispatchRawOrigin = { tag: 'Root' } | { tag: 'Signed'; value: AccountId32 } | { tag: 'None' };
+export type FrameSupportDispatchRawOrigin =
+  | { type: 'Root' }
+  | { type: 'Signed'; value: AccountId32 }
+  | { type: 'None' };
 
 export type PalletCollectiveRawOrigin =
-  | { tag: 'Members'; value: [number, number] }
-  | { tag: 'Member'; value: AccountId32 }
-  | { tag: 'Phantom' };
+  | { type: 'Members'; value: [number, number] }
+  | { type: 'Member'; value: AccountId32 }
+  | { type: 'Phantom' };
 
 export type SpCoreVoid = null;
 
@@ -3231,7 +3234,7 @@ export type SpConsensusSlotsSlot = bigint;
 export type SpSessionMembershipProof = { session: number; trieNodes: Array<Bytes>; validatorCount: number };
 
 export type SpConsensusBabeDigestsNextConfigDescriptor = {
-  tag: 'V1';
+  type: 'V1';
   value: { c: [bigint, bigint]; allowedSlots: SpConsensusBabeAllowedSlots };
 };
 
@@ -4616,13 +4619,19 @@ export type PalletStakingPalletCallLike =
    **/
   | { name: 'DeprecateControllerBatch'; params: { controllers: Array<AccountId32Like> } };
 
-export type PalletStakingPalletConfigOp = { tag: 'Noop' } | { tag: 'Set'; value: bigint } | { tag: 'Remove' };
+export type PalletStakingPalletConfigOp = { type: 'Noop' } | { type: 'Set'; value: bigint } | { type: 'Remove' };
 
-export type PalletStakingPalletConfigOpU32 = { tag: 'Noop' } | { tag: 'Set'; value: number } | { tag: 'Remove' };
+export type PalletStakingPalletConfigOpU32 = { type: 'Noop' } | { type: 'Set'; value: number } | { type: 'Remove' };
 
-export type PalletStakingPalletConfigOpPercent = { tag: 'Noop' } | { tag: 'Set'; value: Percent } | { tag: 'Remove' };
+export type PalletStakingPalletConfigOpPercent =
+  | { type: 'Noop' }
+  | { type: 'Set'; value: Percent }
+  | { type: 'Remove' };
 
-export type PalletStakingPalletConfigOpPerbill = { tag: 'Noop' } | { tag: 'Set'; value: Perbill } | { tag: 'Remove' };
+export type PalletStakingPalletConfigOpPerbill =
+  | { type: 'Noop' }
+  | { type: 'Set'; value: Perbill }
+  | { type: 'Remove' };
 
 /**
  * Contains a variant per dispatchable extrinsic that this pallet has.
@@ -5705,9 +5714,9 @@ export type PalletElectionsPhragmenCallLike =
   | { name: 'CleanDefunctVoters'; params: { numVoters: number; numDefunct: number } };
 
 export type PalletElectionsPhragmenRenouncing =
-  | { tag: 'Member' }
-  | { tag: 'RunnerUp' }
-  | { tag: 'Candidate'; value: number };
+  | { type: 'Member' }
+  | { type: 'RunnerUp' }
+  | { type: 'Candidate'; value: number };
 
 /**
  * Contains a variant per dispatchable extrinsic that this pallet has.
@@ -5900,8 +5909,8 @@ export type PalletGrandpaCallLike =
 export type SpConsensusGrandpaEquivocationProof = { setId: bigint; equivocation: SpConsensusGrandpaEquivocation };
 
 export type SpConsensusGrandpaEquivocation =
-  | { tag: 'Prevote'; value: FinalityGrandpaEquivocation }
-  | { tag: 'Precommit'; value: FinalityGrandpaEquivocationPrecommit };
+  | { type: 'Prevote'; value: FinalityGrandpaEquivocation }
+  | { type: 'Precommit'; value: FinalityGrandpaEquivocationPrecommit };
 
 export type FinalityGrandpaEquivocation = {
   roundNumber: bigint;
@@ -7336,18 +7345,18 @@ export type PalletIdentityLegacyIdentityInfo = {
 };
 
 export type PalletIdentityJudgement =
-  | { tag: 'Unknown' }
-  | { tag: 'FeePaid'; value: bigint }
-  | { tag: 'Reasonable' }
-  | { tag: 'KnownGood' }
-  | { tag: 'OutOfDate' }
-  | { tag: 'LowQuality' }
-  | { tag: 'Erroneous' };
+  | { type: 'Unknown' }
+  | { type: 'FeePaid'; value: bigint }
+  | { type: 'Reasonable' }
+  | { type: 'KnownGood' }
+  | { type: 'OutOfDate' }
+  | { type: 'LowQuality' }
+  | { type: 'Erroneous' };
 
 export type SpRuntimeMultiSignature =
-  | { tag: 'Ed25519'; value: SpCoreEd25519Signature }
-  | { tag: 'Sr25519'; value: SpCoreSr25519Signature }
-  | { tag: 'Ecdsa'; value: SpCoreEcdsaSignature };
+  | { type: 'Ed25519'; value: SpCoreEd25519Signature }
+  | { type: 'Sr25519'; value: SpCoreSr25519Signature }
+  | { type: 'Ecdsa'; value: SpCoreEcdsaSignature };
 
 export type SpCoreEcdsaSignature = FixedBytes<65>;
 
@@ -13416,7 +13425,7 @@ export type PalletNftsMintSettings = {
   defaultItemSettings: PalletNftsBitFlagsItemSetting;
 };
 
-export type PalletNftsMintType = { tag: 'Issuer' } | { tag: 'Public' } | { tag: 'HolderOf'; value: number };
+export type PalletNftsMintType = { type: 'Issuer' } | { type: 'Public' } | { type: 'HolderOf'; value: number };
 
 export type PalletNftsBitFlagsItemSetting = bigint;
 
@@ -14132,9 +14141,9 @@ export type PalletStateTrieMigrationMigrationTask = {
 };
 
 export type PalletStateTrieMigrationProgress =
-  | { tag: 'ToStart' }
-  | { tag: 'LastKey'; value: Bytes }
-  | { tag: 'Complete' };
+  | { type: 'ToStart' }
+  | { type: 'LastKey'; value: Bytes }
+  | { type: 'Complete' };
 
 /**
  * Contains a variant per dispatchable extrinsic that this pallet has.
@@ -14679,7 +14688,7 @@ export type PalletReferendaCallLike =
    **/
   | { name: 'SetMetadata'; params: { index: number; maybeHash?: H256 | undefined } };
 
-export type FrameSupportScheduleDispatchTime = { tag: 'At'; value: number } | { tag: 'After'; value: number };
+export type FrameSupportScheduleDispatchTime = { type: 'At'; value: number } | { type: 'After'; value: number };
 
 /**
  * Contains a variant per dispatchable extrinsic that this pallet has.
@@ -14961,9 +14970,9 @@ export type PalletConvictionVotingCallLike =
   | { name: 'RemoveOtherVote'; params: { target: MultiAddressLike; class: number; index: number } };
 
 export type PalletConvictionVotingVoteAccountVote =
-  | { tag: 'Standard'; value: { vote: PalletConvictionVotingVote; balance: bigint } }
-  | { tag: 'Split'; value: { aye: bigint; nay: bigint } }
-  | { tag: 'SplitAbstain'; value: { aye: bigint; nay: bigint; abstain: bigint } };
+  | { type: 'Standard'; value: { vote: PalletConvictionVotingVote; balance: bigint } }
+  | { type: 'Split'; value: { aye: bigint; nay: bigint } }
+  | { type: 'SplitAbstain'; value: { aye: bigint; nay: bigint; abstain: bigint } };
 
 export type PalletConvictionVotingVote = number;
 
@@ -15193,8 +15202,8 @@ export type PalletAllianceVersion = 'V0' | 'V1';
 export type PalletAllianceMultihash = { code: bigint; digest: Bytes };
 
 export type PalletAllianceUnscrupulousItem =
-  | { tag: 'AccountId'; value: AccountId32 }
-  | { tag: 'Website'; value: Bytes };
+  | { type: 'AccountId'; value: AccountId32 }
+  | { type: 'Website'; value: Bytes };
 
 /**
  * Contains a variant per dispatchable extrinsic that this pallet has.
@@ -15842,17 +15851,23 @@ export type PalletNominationPoolsCallLike =
       params: { poolId: number; permission?: PalletNominationPoolsCommissionClaimPermission | undefined };
     };
 
-export type PalletNominationPoolsBondExtra = { tag: 'FreeBalance'; value: bigint } | { tag: 'Rewards' };
+export type PalletNominationPoolsBondExtra = { type: 'FreeBalance'; value: bigint } | { type: 'Rewards' };
 
 export type PalletNominationPoolsPoolState = 'Open' | 'Blocked' | 'Destroying';
 
-export type PalletNominationPoolsConfigOp = { tag: 'Noop' } | { tag: 'Set'; value: bigint } | { tag: 'Remove' };
+export type PalletNominationPoolsConfigOp = { type: 'Noop' } | { type: 'Set'; value: bigint } | { type: 'Remove' };
 
-export type PalletNominationPoolsConfigOpU32 = { tag: 'Noop' } | { tag: 'Set'; value: number } | { tag: 'Remove' };
+export type PalletNominationPoolsConfigOpU32 = { type: 'Noop' } | { type: 'Set'; value: number } | { type: 'Remove' };
 
-export type PalletNominationPoolsConfigOpPerbill = { tag: 'Noop' } | { tag: 'Set'; value: Perbill } | { tag: 'Remove' };
+export type PalletNominationPoolsConfigOpPerbill =
+  | { type: 'Noop' }
+  | { type: 'Set'; value: Perbill }
+  | { type: 'Remove' };
 
-export type PalletNominationPoolsConfigOp004 = { tag: 'Noop' } | { tag: 'Set'; value: AccountId32 } | { tag: 'Remove' };
+export type PalletNominationPoolsConfigOp004 =
+  | { type: 'Noop' }
+  | { type: 'Set'; value: AccountId32 }
+  | { type: 'Remove' };
 
 export type PalletNominationPoolsClaimPermission =
   | 'Permissioned'
@@ -15863,8 +15878,8 @@ export type PalletNominationPoolsClaimPermission =
 export type PalletNominationPoolsCommissionChangeRate = { maxIncrease: Perbill; minDelay: number };
 
 export type PalletNominationPoolsCommissionClaimPermission =
-  | { tag: 'Permissionless' }
-  | { tag: 'Account'; value: AccountId32 };
+  | { type: 'Permissionless' }
+  | { type: 'Account'; value: AccountId32 };
 
 /**
  * Contains a variant per dispatchable extrinsic that this pallet has.
@@ -16212,7 +16227,7 @@ export type PalletAssetConversionCallLike =
       };
     };
 
-export type FrameSupportTokensFungibleUnionOfNativeOrWithId = { tag: 'Native' } | { tag: 'WithId'; value: number };
+export type FrameSupportTokensFungibleUnionOfNativeOrWithId = { type: 'Native' } | { type: 'WithId'; value: number };
 
 /**
  * Contains a variant per dispatchable extrinsic that this pallet has.
@@ -16720,13 +16735,15 @@ export type PalletMigrationsCallLike =
    **/
   | { name: 'ClearHistoric'; params: { selector: PalletMigrationsHistoricCleanupSelector } };
 
-export type PalletMigrationsMigrationCursor = { tag: 'Active'; value: PalletMigrationsActiveCursor } | { tag: 'Stuck' };
+export type PalletMigrationsMigrationCursor =
+  | { type: 'Active'; value: PalletMigrationsActiveCursor }
+  | { type: 'Stuck' };
 
 export type PalletMigrationsActiveCursor = { index: number; innerCursor?: Bytes | undefined; startedAt: number };
 
 export type PalletMigrationsHistoricCleanupSelector =
-  | { tag: 'Specific'; value: Array<Bytes> }
-  | { tag: 'Wildcard'; value: { limit?: number | undefined; previousCursor?: Bytes | undefined } };
+  | { type: 'Specific'; value: Array<Bytes> }
+  | { type: 'Wildcard'; value: { limit?: number | undefined; previousCursor?: Bytes | undefined } };
 
 /**
  * Contains a variant per dispatchable extrinsic that this pallet has.
@@ -17086,9 +17103,9 @@ export type PalletBrokerScheduleItem = {
 export type PalletBrokerCoreMask = FixedBytes<10>;
 
 export type PalletBrokerCoretimeInterfaceCoreAssignment =
-  | { tag: 'Idle' }
-  | { tag: 'Pool' }
-  | { tag: 'Task'; value: number };
+  | { type: 'Idle' }
+  | { type: 'Pool' }
+  | { type: 'Task'; value: number };
 
 export type PalletBrokerRegionId = { begin: number; core: number; mask: PalletBrokerCoreMask };
 
@@ -17146,22 +17163,22 @@ export type PalletParametersCallLike =
   { name: 'SetParameter'; params: { keyValue: KitchensinkRuntimeRuntimeParameters } };
 
 export type KitchensinkRuntimeRuntimeParameters =
-  | { tag: 'Storage'; value: KitchensinkRuntimeDynamicParamsStorageParameters }
-  | { tag: 'Contract'; value: KitchensinkRuntimeDynamicParamsContractsParameters };
+  | { type: 'Storage'; value: KitchensinkRuntimeDynamicParamsStorageParameters }
+  | { type: 'Contract'; value: KitchensinkRuntimeDynamicParamsContractsParameters };
 
 export type KitchensinkRuntimeDynamicParamsStorageParameters =
-  | { tag: 'BaseDeposit'; value: [KitchensinkRuntimeDynamicParamsStorageBaseDeposit, bigint | undefined] }
-  | { tag: 'ByteDeposit'; value: [KitchensinkRuntimeDynamicParamsStorageByteDeposit, bigint | undefined] };
+  | { type: 'BaseDeposit'; value: [KitchensinkRuntimeDynamicParamsStorageBaseDeposit, bigint | undefined] }
+  | { type: 'ByteDeposit'; value: [KitchensinkRuntimeDynamicParamsStorageByteDeposit, bigint | undefined] };
 
 export type KitchensinkRuntimeDynamicParamsStorageBaseDeposit = {};
 
 export type KitchensinkRuntimeDynamicParamsStorageByteDeposit = {};
 
 export type KitchensinkRuntimeDynamicParamsContractsParameters =
-  | { tag: 'DepositPerItem'; value: [KitchensinkRuntimeDynamicParamsContractsDepositPerItem, bigint | undefined] }
-  | { tag: 'DepositPerByte'; value: [KitchensinkRuntimeDynamicParamsContractsDepositPerByte, bigint | undefined] }
+  | { type: 'DepositPerItem'; value: [KitchensinkRuntimeDynamicParamsContractsDepositPerItem, bigint | undefined] }
+  | { type: 'DepositPerByte'; value: [KitchensinkRuntimeDynamicParamsContractsDepositPerByte, bigint | undefined] }
   | {
-      tag: 'DefaultDepositLimit';
+      type: 'DefaultDepositLimit';
       value: [KitchensinkRuntimeDynamicParamsContractsDefaultDepositLimit, bigint | undefined];
     };
 
@@ -17716,7 +17733,7 @@ export type PalletRankedCollectiveEvent =
    **/
   | { name: 'MemberExchanged'; data: { who: AccountId32; newWho: AccountId32 } };
 
-export type PalletRankedCollectiveVoteRecord = { tag: 'Aye'; value: number } | { tag: 'Nay'; value: number };
+export type PalletRankedCollectiveVoteRecord = { type: 'Aye'; value: number } | { type: 'Nay'; value: number };
 
 /**
  * The `Event` enum of this pallet
@@ -18033,11 +18050,11 @@ export type PalletMessageQueueEvent =
     };
 
 export type FrameSupportMessagesProcessMessageError =
-  | { tag: 'BadFormat' }
-  | { tag: 'Corrupt' }
-  | { tag: 'Unsupported' }
-  | { tag: 'Overweight'; value: SpWeightsWeightV2Weight }
-  | { tag: 'Yield' };
+  | { type: 'BadFormat' }
+  | { type: 'Corrupt' }
+  | { type: 'Unsupported' }
+  | { type: 'Overweight'; value: SpWeightsWeightV2Weight }
+  | { type: 'Yield' };
 
 /**
  * The `Event` enum of this pallet
@@ -18120,10 +18137,10 @@ export type SpStatementStoreStatement = {
 };
 
 export type SpStatementStoreProof =
-  | { tag: 'Sr25519'; value: { signature: FixedBytes<64>; signer: FixedBytes<32> } }
-  | { tag: 'Ed25519'; value: { signature: FixedBytes<64>; signer: FixedBytes<32> } }
-  | { tag: 'Secp256k1Ecdsa'; value: { signature: FixedBytes<65>; signer: FixedBytes<33> } }
-  | { tag: 'OnChain'; value: { who: FixedBytes<32>; blockHash: FixedBytes<32>; eventIndex: bigint } };
+  | { type: 'Sr25519'; value: { signature: FixedBytes<64>; signer: FixedBytes<32> } }
+  | { type: 'Ed25519'; value: { signature: FixedBytes<64>; signer: FixedBytes<32> } }
+  | { type: 'Secp256k1Ecdsa'; value: { signature: FixedBytes<65>; signer: FixedBytes<33> } }
+  | { type: 'OnChain'; value: { who: FixedBytes<32>; blockHash: FixedBytes<32>; eventIndex: bigint } };
 
 /**
  * The `Event` enum of this pallet
@@ -18855,30 +18872,30 @@ export type PalletParametersEvent =
   };
 
 export type KitchensinkRuntimeRuntimeParametersKey =
-  | { tag: 'Storage'; value: KitchensinkRuntimeDynamicParamsStorageParametersKey }
-  | { tag: 'Contract'; value: KitchensinkRuntimeDynamicParamsContractsParametersKey };
+  | { type: 'Storage'; value: KitchensinkRuntimeDynamicParamsStorageParametersKey }
+  | { type: 'Contract'; value: KitchensinkRuntimeDynamicParamsContractsParametersKey };
 
 export type KitchensinkRuntimeDynamicParamsStorageParametersKey =
-  | { tag: 'BaseDeposit'; value: KitchensinkRuntimeDynamicParamsStorageBaseDeposit }
-  | { tag: 'ByteDeposit'; value: KitchensinkRuntimeDynamicParamsStorageByteDeposit };
+  | { type: 'BaseDeposit'; value: KitchensinkRuntimeDynamicParamsStorageBaseDeposit }
+  | { type: 'ByteDeposit'; value: KitchensinkRuntimeDynamicParamsStorageByteDeposit };
 
 export type KitchensinkRuntimeDynamicParamsContractsParametersKey =
-  | { tag: 'DepositPerItem'; value: KitchensinkRuntimeDynamicParamsContractsDepositPerItem }
-  | { tag: 'DepositPerByte'; value: KitchensinkRuntimeDynamicParamsContractsDepositPerByte }
-  | { tag: 'DefaultDepositLimit'; value: KitchensinkRuntimeDynamicParamsContractsDefaultDepositLimit };
+  | { type: 'DepositPerItem'; value: KitchensinkRuntimeDynamicParamsContractsDepositPerItem }
+  | { type: 'DepositPerByte'; value: KitchensinkRuntimeDynamicParamsContractsDepositPerByte }
+  | { type: 'DefaultDepositLimit'; value: KitchensinkRuntimeDynamicParamsContractsDefaultDepositLimit };
 
 export type KitchensinkRuntimeRuntimeParametersValue =
-  | { tag: 'Storage'; value: KitchensinkRuntimeDynamicParamsStorageParametersValue }
-  | { tag: 'Contract'; value: KitchensinkRuntimeDynamicParamsContractsParametersValue };
+  | { type: 'Storage'; value: KitchensinkRuntimeDynamicParamsStorageParametersValue }
+  | { type: 'Contract'; value: KitchensinkRuntimeDynamicParamsContractsParametersValue };
 
 export type KitchensinkRuntimeDynamicParamsStorageParametersValue =
-  | { tag: 'BaseDeposit'; value: bigint }
-  | { tag: 'ByteDeposit'; value: bigint };
+  | { type: 'BaseDeposit'; value: bigint }
+  | { type: 'ByteDeposit'; value: bigint };
 
 export type KitchensinkRuntimeDynamicParamsContractsParametersValue =
-  | { tag: 'DepositPerItem'; value: bigint }
-  | { tag: 'DepositPerByte'; value: bigint }
-  | { tag: 'DefaultDepositLimit'; value: bigint };
+  | { type: 'DepositPerItem'; value: bigint }
+  | { type: 'DepositPerByte'; value: bigint }
+  | { type: 'DefaultDepositLimit'; value: bigint };
 
 /**
  * The `Event` enum of this pallet
@@ -18973,9 +18990,9 @@ export type PalletUtilityError =
   'TooManyCalls';
 
 export type SpConsensusBabeDigestsPreDigest =
-  | { tag: 'Primary'; value: SpConsensusBabeDigestsPrimaryPreDigest }
-  | { tag: 'SecondaryPlain'; value: SpConsensusBabeDigestsSecondaryPlainPreDigest }
-  | { tag: 'SecondaryVRF'; value: SpConsensusBabeDigestsSecondaryVRFPreDigest };
+  | { type: 'Primary'; value: SpConsensusBabeDigestsPrimaryPreDigest }
+  | { type: 'SecondaryPlain'; value: SpConsensusBabeDigestsSecondaryPlainPreDigest }
+  | { type: 'SecondaryVRF'; value: SpConsensusBabeDigestsSecondaryVRFPreDigest };
 
 export type SpConsensusBabeDigestsPrimaryPreDigest = {
   authorityIndex: number;
@@ -19050,13 +19067,13 @@ export type PalletBalancesReserveData = { id: FixedBytes<8>; amount: bigint };
 export type PalletBalancesIdAmount = { id: KitchensinkRuntimeRuntimeHoldReason; amount: bigint };
 
 export type KitchensinkRuntimeRuntimeHoldReason =
-  | { tag: 'Contracts'; value: PalletContractsHoldReason }
-  | { tag: 'Preimage'; value: PalletPreimageHoldReason }
-  | { tag: 'Nis'; value: PalletNisHoldReason }
-  | { tag: 'NftFractionalization'; value: PalletNftFractionalizationHoldReason }
-  | { tag: 'TransactionStorage'; value: PalletTransactionStorageHoldReason }
-  | { tag: 'StateTrieMigration'; value: PalletStateTrieMigrationHoldReason }
-  | { tag: 'SafeMode'; value: PalletSafeModeHoldReason };
+  | { type: 'Contracts'; value: PalletContractsHoldReason }
+  | { type: 'Preimage'; value: PalletPreimageHoldReason }
+  | { type: 'Nis'; value: PalletNisHoldReason }
+  | { type: 'NftFractionalization'; value: PalletNftFractionalizationHoldReason }
+  | { type: 'TransactionStorage'; value: PalletTransactionStorageHoldReason }
+  | { type: 'StateTrieMigration'; value: PalletStateTrieMigrationHoldReason }
+  | { type: 'SafeMode'; value: PalletSafeModeHoldReason };
 
 export type PalletContractsHoldReason = 'CodeUploadDepositReserve' | 'StorageDepositReserve';
 
@@ -19075,7 +19092,7 @@ export type PalletSafeModeHoldReason = 'EnterOrExtend';
 export type PalletBalancesIdAmountRuntimeFreezeReason = { id: KitchensinkRuntimeRuntimeFreezeReason; amount: bigint };
 
 export type KitchensinkRuntimeRuntimeFreezeReason = {
-  tag: 'NominationPools';
+  type: 'NominationPools';
   value: PalletNominationPoolsFreezeReason;
 };
 
@@ -19401,8 +19418,8 @@ export type PalletSessionError =
   | 'NoAccount';
 
 export type PalletDemocracyReferendumInfo =
-  | { tag: 'Ongoing'; value: PalletDemocracyReferendumStatus }
-  | { tag: 'Finished'; value: { approved: boolean; end: number } };
+  | { type: 'Ongoing'; value: PalletDemocracyReferendumStatus }
+  | { type: 'Finished'; value: { approved: boolean; end: number } };
 
 export type PalletDemocracyReferendumStatus = {
   end: number;
@@ -19416,7 +19433,7 @@ export type PalletDemocracyTally = { ayes: bigint; nays: bigint; turnout: bigint
 
 export type PalletDemocracyVoteVoting =
   | {
-      tag: 'Direct';
+      type: 'Direct';
       value: {
         votes: Array<[number, PalletDemocracyVoteAccountVote]>;
         delegations: PalletDemocracyDelegations;
@@ -19424,7 +19441,7 @@ export type PalletDemocracyVoteVoting =
       };
     }
   | {
-      tag: 'Delegating';
+      type: 'Delegating';
       value: {
         balance: bigint;
         target: AccountId32;
@@ -19692,10 +19709,10 @@ export type PalletMembershipError =
   | 'TooManyMembers';
 
 export type PalletGrandpaStoredState =
-  | { tag: 'Live' }
-  | { tag: 'PendingPause'; value: { scheduledAt: number; delay: number } }
-  | { tag: 'Paused' }
-  | { tag: 'PendingResume'; value: { scheduledAt: number; delay: number } };
+  | { type: 'Live' }
+  | { type: 'PendingPause'; value: { scheduledAt: number; delay: number } }
+  | { type: 'Paused' }
+  | { type: 'PendingResume'; value: { scheduledAt: number; delay: number } };
 
 export type PalletGrandpaStoredPendingChange = {
   scheduledAt: number;
@@ -19751,9 +19768,9 @@ export type PalletTreasurySpendStatus = {
 };
 
 export type PalletTreasuryPaymentState =
-  | { tag: 'Pending' }
-  | { tag: 'Attempted'; value: { id: [] } }
-  | { tag: 'Failed' };
+  | { type: 'Pending' }
+  | { type: 'Attempted'; value: { id: [] } }
+  | { type: 'Failed' };
 
 export type FrameSupportPalletId = FixedBytes<8>;
 
@@ -20279,7 +20296,7 @@ export type PalletSocietyPayoutRecord = { paid: bigint; payouts: Array<[number, 
 
 export type PalletSocietyBid = { who: AccountId32; kind: PalletSocietyBidKind; value: bigint };
 
-export type PalletSocietyBidKind = { tag: 'Deposit'; value: bigint } | { tag: 'Vouch'; value: [AccountId32, bigint] };
+export type PalletSocietyBidKind = { type: 'Deposit'; value: bigint } | { type: 'Vouch'; value: [AccountId32, bigint] };
 
 export type PalletSocietyCandidacy = {
   round: number;
@@ -20585,16 +20602,16 @@ export type PalletGluttonError =
   | 'InsaneLimit';
 
 export type PalletPreimageOldRequestStatus =
-  | { tag: 'Unrequested'; value: { deposit: [AccountId32, bigint]; len: number } }
+  | { type: 'Unrequested'; value: { deposit: [AccountId32, bigint]; len: number } }
   | {
-      tag: 'Requested';
+      type: 'Requested';
       value: { deposit?: [AccountId32, bigint] | undefined; count: number; len?: number | undefined };
     };
 
 export type PalletPreimageRequestStatus =
-  | { tag: 'Unrequested'; value: { ticket: [AccountId32, FrameSupportTokensFungibleHoldConsideration]; len: number } }
+  | { type: 'Unrequested'; value: { ticket: [AccountId32, FrameSupportTokensFungibleHoldConsideration]; len: number } }
   | {
-      tag: 'Requested';
+      type: 'Requested';
       value: {
         maybeTicket?: [AccountId32, FrameSupportTokensFungibleHoldConsideration] | undefined;
         count: number;
@@ -20764,12 +20781,12 @@ export type PalletBountiesBounty = {
 };
 
 export type PalletBountiesBountyStatus =
-  | { tag: 'Proposed' }
-  | { tag: 'Approved' }
-  | { tag: 'Funded' }
-  | { tag: 'CuratorProposed'; value: { curator: AccountId32 } }
-  | { tag: 'Active'; value: { curator: AccountId32; updateDue: number } }
-  | { tag: 'PendingPayout'; value: { curator: AccountId32; beneficiary: AccountId32; unlockAt: number } };
+  | { type: 'Proposed' }
+  | { type: 'Approved' }
+  | { type: 'Funded' }
+  | { type: 'CuratorProposed'; value: { curator: AccountId32 } }
+  | { type: 'Active'; value: { curator: AccountId32; updateDue: number } }
+  | { type: 'PendingPayout'; value: { curator: AccountId32; beneficiary: AccountId32; unlockAt: number } };
 
 /**
  * The `Error` enum of this pallet.
@@ -20891,11 +20908,11 @@ export type PalletAssetsAssetAccount = {
 export type PalletAssetsAccountStatus = 'Liquid' | 'Frozen' | 'Blocked';
 
 export type PalletAssetsExistenceReason =
-  | { tag: 'Consumer' }
-  | { tag: 'Sufficient' }
-  | { tag: 'DepositHeld'; value: bigint }
-  | { tag: 'DepositRefunded' }
-  | { tag: 'DepositFrom'; value: [AccountId32, bigint] };
+  | { type: 'Consumer' }
+  | { type: 'Sufficient' }
+  | { type: 'DepositHeld'; value: bigint }
+  | { type: 'DepositRefunded' }
+  | { type: 'DepositFrom'; value: [AccountId32, bigint] };
 
 export type PalletAssetsApproval = { amount: bigint; deposit: bigint };
 
@@ -21506,9 +21523,9 @@ export type PalletSalaryStatusType = {
 export type PalletSalaryClaimantStatus = { lastActive: number; status: PalletSalaryClaimState };
 
 export type PalletSalaryClaimState =
-  | { tag: 'Nothing' }
-  | { tag: 'Registered'; value: bigint }
-  | { tag: 'Attempted'; value: { registered?: bigint | undefined; id: []; amount: bigint } };
+  | { type: 'Nothing' }
+  | { type: 'Registered'; value: bigint }
+  | { type: 'Attempted'; value: { registered?: bigint | undefined; id: []; amount: bigint } };
 
 /**
  * The `Error` enum of this pallet.
@@ -21703,10 +21720,10 @@ export type PalletChildBountiesChildBounty = {
 };
 
 export type PalletChildBountiesChildBountyStatus =
-  | { tag: 'Added' }
-  | { tag: 'CuratorProposed'; value: { curator: AccountId32 } }
-  | { tag: 'Active'; value: { curator: AccountId32 } }
-  | { tag: 'PendingPayout'; value: { curator: AccountId32; beneficiary: AccountId32; unlockAt: number } };
+  | { type: 'Added' }
+  | { type: 'CuratorProposed'; value: { curator: AccountId32 } }
+  | { type: 'Active'; value: { curator: AccountId32 } }
+  | { type: 'PendingPayout'; value: { curator: AccountId32; beneficiary: AccountId32; unlockAt: number } };
 
 /**
  * The `Error` enum of this pallet.
@@ -21726,12 +21743,12 @@ export type PalletChildBountiesError =
   | 'TooManyChildBounties';
 
 export type PalletReferendaReferendumInfo =
-  | { tag: 'Ongoing'; value: PalletReferendaReferendumStatus }
-  | { tag: 'Approved'; value: [number, PalletReferendaDeposit | undefined, PalletReferendaDeposit | undefined] }
-  | { tag: 'Rejected'; value: [number, PalletReferendaDeposit | undefined, PalletReferendaDeposit | undefined] }
-  | { tag: 'Cancelled'; value: [number, PalletReferendaDeposit | undefined, PalletReferendaDeposit | undefined] }
-  | { tag: 'TimedOut'; value: [number, PalletReferendaDeposit | undefined, PalletReferendaDeposit | undefined] }
-  | { tag: 'Killed'; value: number };
+  | { type: 'Ongoing'; value: PalletReferendaReferendumStatus }
+  | { type: 'Approved'; value: [number, PalletReferendaDeposit | undefined, PalletReferendaDeposit | undefined] }
+  | { type: 'Rejected'; value: [number, PalletReferendaDeposit | undefined, PalletReferendaDeposit | undefined] }
+  | { type: 'Cancelled'; value: [number, PalletReferendaDeposit | undefined, PalletReferendaDeposit | undefined] }
+  | { type: 'TimedOut'; value: [number, PalletReferendaDeposit | undefined, PalletReferendaDeposit | undefined] }
+  | { type: 'Killed'; value: number };
 
 export type PalletReferendaReferendumStatus = {
   track: number;
@@ -21764,9 +21781,9 @@ export type PalletReferendaTrackInfo = {
 };
 
 export type PalletReferendaCurve =
-  | { tag: 'LinearDecreasing'; value: { length: Perbill; floor: Perbill; ceil: Perbill } }
-  | { tag: 'SteppedDecreasing'; value: { begin: Perbill; end: Perbill; step: Perbill; period: Perbill } }
-  | { tag: 'Reciprocal'; value: { factor: FixedI64; xOffset: FixedI64; yOffset: FixedI64 } };
+  | { type: 'LinearDecreasing'; value: { length: Perbill; floor: Perbill; ceil: Perbill } }
+  | { type: 'SteppedDecreasing'; value: { begin: Perbill; end: Perbill; step: Perbill; period: Perbill } }
+  | { type: 'Reciprocal'; value: { factor: FixedI64; xOffset: FixedI64; yOffset: FixedI64 } };
 
 /**
  * The `Error` enum of this pallet.
@@ -21839,8 +21856,8 @@ export type PalletRemarkError =
   | 'BadContext';
 
 export type PalletConvictionVotingVoteVoting =
-  | { tag: 'Casting'; value: PalletConvictionVotingVoteCasting }
-  | { tag: 'Delegating'; value: PalletConvictionVotingVoteDelegating };
+  | { type: 'Casting'; value: PalletConvictionVotingVoteCasting }
+  | { type: 'Delegating'; value: PalletConvictionVotingVoteDelegating };
 
 export type PalletConvictionVotingVoteCasting = {
   votes: Array<[number, PalletConvictionVotingVoteAccountVote]>;
@@ -22237,12 +22254,12 @@ export type PalletNominationPoolsDefensiveError =
   | 'BondedStashKilledPrematurely';
 
 export type PalletReferendaReferendumInfoTally =
-  | { tag: 'Ongoing'; value: PalletReferendaReferendumStatusTally }
-  | { tag: 'Approved'; value: [number, PalletReferendaDeposit | undefined, PalletReferendaDeposit | undefined] }
-  | { tag: 'Rejected'; value: [number, PalletReferendaDeposit | undefined, PalletReferendaDeposit | undefined] }
-  | { tag: 'Cancelled'; value: [number, PalletReferendaDeposit | undefined, PalletReferendaDeposit | undefined] }
-  | { tag: 'TimedOut'; value: [number, PalletReferendaDeposit | undefined, PalletReferendaDeposit | undefined] }
-  | { tag: 'Killed'; value: number };
+  | { type: 'Ongoing'; value: PalletReferendaReferendumStatusTally }
+  | { type: 'Approved'; value: [number, PalletReferendaDeposit | undefined, PalletReferendaDeposit | undefined] }
+  | { type: 'Rejected'; value: [number, PalletReferendaDeposit | undefined, PalletReferendaDeposit | undefined] }
+  | { type: 'Cancelled'; value: [number, PalletReferendaDeposit | undefined, PalletReferendaDeposit | undefined] }
+  | { type: 'TimedOut'; value: [number, PalletReferendaDeposit | undefined, PalletReferendaDeposit | undefined] }
+  | { type: 'Killed'; value: number };
 
 export type PalletReferendaReferendumStatusTally = {
   track: number;
@@ -22595,8 +22612,8 @@ export type PalletBrokerAllowedRenewalId = { core: number; when: number };
 export type PalletBrokerAllowedRenewalRecord = { price: bigint; completion: PalletBrokerCompletionStatus };
 
 export type PalletBrokerCompletionStatus =
-  | { tag: 'Partial'; value: PalletBrokerCoreMask }
-  | { tag: 'Complete'; value: Array<PalletBrokerScheduleItem> };
+  | { type: 'Partial'; value: PalletBrokerCoreMask }
+  | { type: 'Complete'; value: Array<PalletBrokerScheduleItem> };
 
 export type PalletBrokerRegionRecord = { end: number; owner: AccountId32; paid?: bigint | undefined };
 
@@ -22762,26 +22779,26 @@ export type SpRuntimeExtrinsicInclusionMode = 'AllExtrinsics' | 'OnlyInherents';
 export type SpCoreOpaqueMetadata = Bytes;
 
 export type SpRuntimeTransactionValidityTransactionValidityError =
-  | { tag: 'Invalid'; value: SpRuntimeTransactionValidityInvalidTransaction }
-  | { tag: 'Unknown'; value: SpRuntimeTransactionValidityUnknownTransaction };
+  | { type: 'Invalid'; value: SpRuntimeTransactionValidityInvalidTransaction }
+  | { type: 'Unknown'; value: SpRuntimeTransactionValidityUnknownTransaction };
 
 export type SpRuntimeTransactionValidityInvalidTransaction =
-  | { tag: 'Call' }
-  | { tag: 'Payment' }
-  | { tag: 'Future' }
-  | { tag: 'Stale' }
-  | { tag: 'BadProof' }
-  | { tag: 'AncientBirthBlock' }
-  | { tag: 'ExhaustsResources' }
-  | { tag: 'Custom'; value: number }
-  | { tag: 'BadMandatory' }
-  | { tag: 'MandatoryValidation' }
-  | { tag: 'BadSigner' };
+  | { type: 'Call' }
+  | { type: 'Payment' }
+  | { type: 'Future' }
+  | { type: 'Stale' }
+  | { type: 'BadProof' }
+  | { type: 'AncientBirthBlock' }
+  | { type: 'ExhaustsResources' }
+  | { type: 'Custom'; value: number }
+  | { type: 'BadMandatory' }
+  | { type: 'MandatoryValidation' }
+  | { type: 'BadSigner' };
 
 export type SpRuntimeTransactionValidityUnknownTransaction =
-  | { tag: 'CannotLookup' }
-  | { tag: 'NoUnsignedValidator' }
-  | { tag: 'Custom'; value: number };
+  | { type: 'CannotLookup' }
+  | { type: 'NoUnsignedValidator' }
+  | { type: 'Custom'; value: number };
 
 export type SpInherentsInherentData = { data: Array<[FixedBytes<8>, Bytes]> };
 
@@ -22839,10 +22856,10 @@ export type PalletContractsPrimitivesExecReturnValue = { flags: PalletContractsU
 export type PalletContractsUapiFlagsReturnFlags = { bits: number };
 
 export type PalletContractsPrimitivesStorageDeposit =
-  | { tag: 'Refund'; value: bigint }
-  | { tag: 'Charge'; value: bigint };
+  | { type: 'Refund'; value: bigint }
+  | { type: 'Charge'; value: bigint };
 
-export type PalletContractsPrimitivesCode = { tag: 'Upload'; value: Bytes } | { tag: 'Existing'; value: H256 };
+export type PalletContractsPrimitivesCode = { type: 'Upload'; value: Bytes } | { type: 'Existing'; value: H256 };
 
 export type PalletContractsPrimitivesContractResultResult = {
   gasConsumed: SpWeightsWeightV2Weight;
@@ -22901,7 +22918,7 @@ export type SpMixnetSessionPhase = 'CoverToCurrent' | 'RequestsToCurrent' | 'Cov
 
 export type SpMixnetMixnode = { kxPublic: FixedBytes<32>; peerId: FixedBytes<32>; externalAddresses: Array<Bytes> };
 
-export type SpMixnetMixnodesErr = { tag: 'InsufficientRegistrations'; value: { num: number; min: number } };
+export type SpMixnetMixnodesErr = { type: 'InsufficientRegistrations'; value: { num: number; min: number } };
 
 export type KitchensinkRuntimeRuntimeError =
   | { pallet: 'System'; palletError: FrameSystemError }

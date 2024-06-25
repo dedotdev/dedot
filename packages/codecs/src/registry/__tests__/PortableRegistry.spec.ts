@@ -34,17 +34,17 @@ describe('PortableRegistry', () => {
       it('should find existing codec type', () => {
         expect(registry.findType(1)).toMatchObject({
           id: 1,
-          typeDef: { tag: 'SizedVec', value: { len: 32, typeParam: 2 } },
+          typeDef: { type: 'SizedVec', value: { len: 32, typeParam: 2 } },
         });
 
         expect(registry.findType(2)).toMatchObject({
           id: 2,
-          typeDef: { tag: 'Primitive', value: { kind: 'u8' } },
+          typeDef: { type: 'Primitive', value: { kind: 'u8' } },
         });
 
         expect(registry.findType(4)).toMatchObject({
           id: 4,
-          typeDef: { tag: 'Primitive', value: { kind: 'u32' } },
+          typeDef: { type: 'Primitive', value: { kind: 'u32' } },
         });
       });
 

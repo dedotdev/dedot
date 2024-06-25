@@ -29,9 +29,9 @@ describe('utils', () => {
         },
       };
 
-      const result = normalizeContractTypeDef(def) as TypeDef & { tag: 'Enum' };
+      const result = normalizeContractTypeDef(def) as TypeDef & { type:  'Enum' };
 
-      expect(result.tag).toBe('Enum');
+      expect(result.type).toBe('Enum');
       expect(result.value.members[0].name).toEqual('Contains value');
       expect(result.value.members[0].fields[0].typeId).toEqual(12);
       expect(result.value.members[0].fields[0].typeName).toEqual('String');
@@ -42,25 +42,25 @@ describe('utils', () => {
 
     it('returns correct TypeDef for tuple def', () => {
       const def: ContractTypeDef = { tuple: [1, 2] };
-      const result = normalizeContractTypeDef(def) as TypeDef & { tag: 'Tuple' };
+      const result = normalizeContractTypeDef(def) as TypeDef & { type:  'Tuple' };
 
-      expect(result.tag).toBe('Tuple');
+      expect(result.type).toBe('Tuple');
       expect(result.value.fields).toEqual([1, 2]);
     });
 
     it('returns correct TypeDef for sequence def', () => {
       const def: ContractTypeDef = { sequence: { type: 1 } };
-      const result = normalizeContractTypeDef(def) as TypeDef & { tag: 'Sequence' };
+      const result = normalizeContractTypeDef(def) as TypeDef & { type:  'Sequence' };
 
-      expect(result.tag).toEqual('Sequence');
+      expect(result.type).toEqual('Sequence');
       expect(result.value.typeParam).toEqual(1);
     });
 
     it('returns correct TypeDef for composite def', () => {
       const def: ContractTypeDef = { composite: { fields: [{ name: 'test', type: 1, typeName: 'Test' }] } };
-      const result = normalizeContractTypeDef(def) as TypeDef & { tag: 'Struct' };
+      const result = normalizeContractTypeDef(def) as TypeDef & { type:  'Struct' };
 
-      expect(result.tag).toBe('Struct');
+      expect(result.type).toBe('Struct');
       expect(result.value.fields[0].name).toEqual('test');
       expect(result.value.fields[0].typeId).toEqual(1);
       expect(result.value.fields[0].typeName).toEqual('Test');
@@ -68,17 +68,17 @@ describe('utils', () => {
 
     it('returns correct TypeDef for primitive def', () => {
       const def: ContractTypeDef = { primitive: 'u8' };
-      const result = normalizeContractTypeDef(def) as TypeDef & { tag: 'Primitive' };
+      const result = normalizeContractTypeDef(def) as TypeDef & { type:  'Primitive' };
 
-      expect(result.tag).toBe('Primitive');
+      expect(result.type).toBe('Primitive');
       expect(result.value.kind).toEqual('u8');
     });
 
     it('returns correct TypeDef for array def', () => {
       const def: ContractTypeDef = { array: { len: 5, type: 1 } };
-      const result = normalizeContractTypeDef(def) as TypeDef & { tag: 'SizedVec' };
+      const result = normalizeContractTypeDef(def) as TypeDef & { type:  'SizedVec' };
 
-      expect(result.tag).toBe('SizedVec');
+      expect(result.type).toBe('SizedVec');
       expect(result.value.len).toBe(5);
     });
 

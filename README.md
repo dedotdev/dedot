@@ -265,8 +265,8 @@ const alice = keyring.addFromUri('//Alice');
 const unsub = await api.tx.balances
     .transferKeepAlive(<destAddress>, 2_000_000_000_000n)
     .signAndSend(alice, async ({ status }) => {
-      console.log('Transaction status', status.tag);
-      if (status.tag === 'InBlock') {
+      console.log('Transaction status', status.type);
+      if (status.type === 'InBlock') {
         console.log(`Transaction completed at block hash ${status.value}`);
         await unsub();
       }
@@ -282,8 +282,8 @@ const signer = injected.signer;
 const unsub = await api.tx.balances
     .transferKeepAlive(<destAddress>, 2_000_000_000_000n)
     .signAndSend(account.address, { signer }, async ({ status }) => {
-      console.log('Transaction status', status.tag);
-      if (status.tag === 'InBlock') {
+      console.log('Transaction status', status.type);
+      if (status.type === 'InBlock') {
         console.log(`Transaction completed at block hash ${status.value}`);
         await unsub();
       }
@@ -311,8 +311,8 @@ const remarkCall: PolkadotRuntimeRuntimeCallLike = {
 
 const unsub = api.tx.utility.batch([transferTx.call, remarkCall])
     .signAndSend(account.address, { signer }, async ({ status }) => {
-      console.log('Transaction status', status.tag);
-      if (status.tag === 'InBlock') {
+      console.log('Transaction status', status.type);
+      if (status.type === 'InBlock') {
         console.log(`Transaction completed at block hash ${status.value}`);
         await unsub();
       }
@@ -332,18 +332,18 @@ const destAddress = <bobAddress>;
 const api = await Dedot.new<WestendAssetHubApi>('...westend-assethub-rpc...');
 
 const dest: XcmVersionedLocation = {
-  tag: 'V3',
-  value: { parents: 1, interior: { tag: 'Here' } },
+  type: 'V3',
+  value: { parents: 1, interior: { type: 'Here' } },
 };
 
 const beneficiary: XcmVersionedLocation = {
-  tag: 'V3',
+  type: 'V3',
   value: {
     parents: 0,
     interior: {
-      tag: 'X1',
+      type: 'X1',
       value: {
-        tag: 'AccountId32',
+        type: 'AccountId32',
         value: { id: new AccountId32(destAddress).raw },
       },
     },
@@ -351,25 +351,25 @@ const beneficiary: XcmVersionedLocation = {
 };
 
 const assets: XcmVersionedAssets = {
-  tag: 'V3',
+  type: 'V3',
   value: [
     {
       id: {
-        tag: 'Concrete',
+        type: 'Concrete',
         value: {
           parents: 1,
-          interior: { tag: 'Here' },
+          interior: { type: 'Here' },
         },
       },
       fun: {
-        tag: 'Fungible',
+        type: 'Fungible',
         value: TWO_TOKENS,
       },
     },
   ],
 };
 
-const weight: XcmV3WeightLimit = { tag: 'Unlimited' };
+const weight: XcmV3WeightLimit = { type: 'Unlimited' };
 
 api.tx.polkadotXcm
   .limitedTeleportAssets(dest, beneficiary, assets, 0, weight)
@@ -417,7 +417,7 @@ await api.query.system.events(async (eventRecords) => {
   for (const tx of eventRecords) {
     if (api.events.system.ExtrinsicFailed.is(tx.event)) {
       const { dispatchError } = tx.event.palletEvent.data;
-      if (dispatchError.tag === 'Module' && api.errors.assets.AlreadyExists.is(dispatchError.value)) {
+      if (dispatchError.type === 'Module' && api.errors.assets.AlreadyExists.is(dispatchError.value)) {
         console.log('Assets.AlreadyExists error occurred!');
       } else {
         console.log('Other error occurred', dispatchError);
@@ -472,7 +472,7 @@ Unlike `@polkadot/api` where data are wrapped inside a [codec types](https://pol
 | `str`                                                   | `string`                                                                                                                       |
 | Tuple: `(A, B)`, `()`                                   | `[A, B]`, `[]`                                                                                                                 |
 | Struct: `struct { field_1: u8, field_2: str }`          | `{ field_1: number, field_2: string}`                                                                                          |
-| Enum: `enum { Variant1(u8), Variant2(bool), Variant3 }` | `{ tag: 'Variant1', value: number } \| { tag: 'Variant2', value: boolean } \| { tag: 'Variant2' }`                             |
+| Enum: `enum { Variant1(u8), Variant2(bool), Variant3 }` | `{ type: 'Variant1', value: number } \| { type: 'Variant2', value: boolean } \| { type:  'Variant2' }`                             |
 | FlatEnum: `enum { Variant1, Variant2 }`                 | `'Variant1' \| 'Variant2'`                                                                                                     |
 
 E.g 1:

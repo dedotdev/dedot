@@ -86,11 +86,11 @@ export class Metadata {
   }
 
   get version() {
-    return this.metadataVersioned.tag;
+    return this.metadataVersioned.type;
   }
 
   get latest(): MetadataLatest {
-    const currentVersion = this.metadataVersioned.tag;
+    const currentVersion = this.metadataVersioned.type;
     if (currentVersion === 'V15') {
       return this.metadataVersioned.value;
     } else if (currentVersion === 'V14') {

@@ -56,8 +56,8 @@ export class EventsGen extends ApiGen {
     const def = this.metadata.types[typeId];
     assert(def, `Event def not found for id ${typeId}`);
 
-    const { tag, value } = def.typeDef;
-    assert(tag === 'Enum', 'Invalid pallet event type!');
+    const { type, value } = def.typeDef;
+    assert(type === 'Enum', 'Invalid pallet event type!');
 
     return value.members;
   }

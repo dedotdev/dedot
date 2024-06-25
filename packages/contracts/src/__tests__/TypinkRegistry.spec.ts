@@ -33,7 +33,7 @@ describe('TypinkRegistry', () => {
       it('should find existing codec type', () => {
         expect(registry.findType(10)).toMatchObject({
           id: 10,
-          typeDef: { tag: 'Primitive', value: { kind: 'u64' } },
+          typeDef: { type: 'Primitive', value: { kind: 'u64' } },
         });
       });
 
