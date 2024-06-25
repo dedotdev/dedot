@@ -107,10 +107,10 @@ export abstract class TypeRegistry {
       throw new Error(`Type id not found ${typeId}`);
     }
 
-    const { type, path } = def;
-    const { tag, value } = type;
+    const { typeDef, path } = def;
+    const { type, value } = typeDef;
 
-    if (tag === 'Struct') {
+    if (type === 'Struct') {
       const { fields } = value;
 
       if (fields.length === 0) {
@@ -132,7 +132,7 @@ export abstract class TypeRegistry {
           ),
         );
       }
-    } else if (tag === 'Tuple') {
+    } else if (type === 'Tuple') {
       const { fields } = value;
 
       if (fields.length === 0) {
@@ -143,7 +143,7 @@ export abstract class TypeRegistry {
       } else {
         return $.Tuple(...fields.map((x) => this.findCodec(x)));
       }
-    } else if (tag === 'Enum') {
+    } else if (type === 'Enum') {
       const { members } = value;
 
       // Handle optional field
@@ -206,22 +206,22 @@ export abstract class TypeRegistry {
         }
         return $.Enum(enumMembers, this.getEnumOptions(typeId));
       }
-    } else if (tag === 'Sequence') {
-      const $inner = this.findCodec(type.value.typeParam);
+    } else if (type === 'Sequence') {
+      const $inner = this.findCodec(typeDef.value.typeParam);
       if ($inner === $.u8) {
         return $Bytes;
       } else {
         return $.Vec($inner);
       }
-    } else if (tag === 'SizedVec') {
-      const $inner = this.findCodec(type.value.typeParam);
+    } else if (type === 'SizedVec') {
+      const $inner = this.findCodec(typeDef.value.typeParam);
       if ($inner === $.u8) {
-        return $.FixedHex(type.value.len);
+        return $.FixedHex(typeDef.value.len);
       } else {
-        return $.SizedVec($inner, type.value.len);
+        return $.SizedVec($inner, typeDef.value.len);
       }
-    } else if (tag === 'Primitive') {
-      const kind = type.value.kind;
+    } else if (type === 'Primitive') {
+      const kind = typeDef.value.kind;
       if (kind === 'char') {
         return $.str;
       }
@@ -232,9 +232,9 @@ export abstract class TypeRegistry {
       }
 
       return $codec;
-    } else if (tag === 'Compact') {
-      return $.compact(this.findCodec(type.value.typeParam));
-    } else if (tag === 'BitSequence') {
+    } else if (type === 'Compact') {
+      return $.compact(this.findCodec(typeDef.value.typeParam));
+    } else if (type === 'BitSequence') {
       return $.bitSequence;
     }
 
@@ -243,7 +243,7 @@ export abstract class TypeRegistry {
 
   getEnumOptions(_typeId: TypeId): EnumOptions {
     return {
-      tagKey: 'tag',
+      tagKey: 'type',
       valueKey: 'value',
     };
   }

@@ -14,7 +14,7 @@ export const $Hasher = $.FlatEnum([
 export const $StorageEntryV14 = $.Struct({
   name: $.str,
   modifier: $.FlatEnum(['Optional', 'Default']),
-  type: $.Enum({
+  storageType: $.Enum({
     Plain: $.Struct({ valueTypeId: $TypeId }),
     Map: $.Struct({
       hashers: $.Vec($Hasher),

@@ -77,16 +77,16 @@ export class QueryGen {
   }
 
   importType(typeId: number): any {
-    const type = this.contractMetadata.types[typeId];
-    const def = normalizeContractTypeDef(this.contractMetadata.types[typeId].type.def);
+    const contractType = this.contractMetadata.types[typeId];
+    const typeDef = normalizeContractTypeDef(this.contractMetadata.types[typeId].type.def);
 
-    if (this.typesGen.includedTypes[type.id]) {
-      this.typesGen.addTypeImport(this.typesGen.includedTypes[type.id].name);
+    if (this.typesGen.includedTypes[contractType.id]) {
+      this.typesGen.addTypeImport(this.typesGen.includedTypes[contractType.id].name);
       return;
     }
-    const { tag, value } = def;
+    const { type, value } = typeDef;
 
-    switch (tag) {
+    switch (type) {
       case 'Compact':
       case 'Primitive':
       case 'BitSequence':

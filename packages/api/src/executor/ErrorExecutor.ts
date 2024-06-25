@@ -23,7 +23,7 @@ export class ErrorExecutor<ChainApi extends GenericSubstrateApi = GenericSubstra
         palletIndex: targetPallet.index,
       },
       is: (errorInfo: ModuleError | DispatchError) => {
-        if (isObject<DispatchError>(errorInfo) && errorInfo.tag === 'Module') {
+        if (isObject<DispatchError>(errorInfo) && errorInfo.type === 'Module') {
           errorInfo = errorInfo.value;
         }
 
@@ -40,8 +40,8 @@ export class ErrorExecutor<ChainApi extends GenericSubstrateApi = GenericSubstra
     const def = this.metadata.types[errorTypeId];
     assert(def, new UnknownApiError(`Error def not found for id ${errorTypeId}`));
 
-    const { tag, value } = def.type;
-    assert(tag === 'Enum', new UnknownApiError(`Error type should be an enum, found: ${tag}`));
+    const { type, value } = def.typeDef;
+    assert(type === 'Enum', new UnknownApiError(`Error type should be an enum, found: ${type}`));
 
     const errorDef = value.members.find(({ name }) => stringPascalCase(name) === errorName);
     assert(errorDef, new UnknownApiError(`Error def not found for ${errorName}`));

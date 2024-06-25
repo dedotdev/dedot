@@ -12,29 +12,29 @@ describe('Enum', () => {
   });
 
   it('should encode plain value', () => {
-    expect(u8aToHex($e.tryEncode({ tag: 'Val1' }))).toEqual('0x00');
-    expect(u8aToHex($e.tryEncode({ tag: 'Val2', value: 123 }))).toEqual('0x01' + '7b');
-    expect(u8aToHex($e.tryEncode({ tag: 'Val3', value: 'DelightfulDOT' }))).toEqual(
+    expect(u8aToHex($e.tryEncode({ type: 'Val1' }))).toEqual('0x00');
+    expect(u8aToHex($e.tryEncode({ type: 'Val2', value: 123 }))).toEqual('0x01' + '7b');
+    expect(u8aToHex($e.tryEncode({ type: 'Val3', value: 'DelightfulDOT' }))).toEqual(
       '0x02' + '3444656c6967687466756c444f54',
     );
-    expect(u8aToHex($e.tryEncode({ tag: 'Val4' }))).toEqual('0x03');
-    expect(u8aToHex($e.tryEncode({ tag: 'Val5', value: 123 }))).toEqual('0x0a' + '7b000000');
+    expect(u8aToHex($e.tryEncode({ type: 'Val4' }))).toEqual('0x03');
+    expect(u8aToHex($e.tryEncode({ type: 'Val5', value: 123 }))).toEqual('0x0a' + '7b000000');
   });
 
   it('should decode raw value', () => {
-    expect($e.tryDecode('0x00')).toEqual({ tag: 'Val1' });
-    expect($e.tryDecode('0x01' + '7b')).toEqual({ tag: 'Val2', value: 123 });
-    expect($e.tryDecode('0x02' + '3444656c6967687466756c444f54')).toEqual({ tag: 'Val3', value: 'DelightfulDOT' });
-    expect($e.tryDecode('0x03')).toEqual({ tag: 'Val4' });
-    expect($e.tryDecode('0x0a' + '7b000000')).toEqual({ tag: 'Val5', value: 123 });
+    expect($e.tryDecode('0x00')).toEqual({ type: 'Val1' });
+    expect($e.tryDecode('0x01' + '7b')).toEqual({ type: 'Val2', value: 123 });
+    expect($e.tryDecode('0x02' + '3444656c6967687466756c444f54')).toEqual({ type: 'Val3', value: 'DelightfulDOT' });
+    expect($e.tryDecode('0x03')).toEqual({ type: 'Val4' });
+    expect($e.tryDecode('0x0a' + '7b000000')).toEqual({ type: 'Val5', value: 123 });
   });
 
   it('should decode serde plain value', () => {
     // Ref: https://serde.rs/enum-representations.html#enum-representations
-    expect($e.tryDecode('val1')).toEqual({ tag: 'Val1' });
-    expect($e.tryDecode({ val2: 10 })).toEqual({ tag: 'Val2', value: 10 });
-    expect($e.tryDecode({ val3: 'Hello World' })).toEqual({ tag: 'Val3', value: 'Hello World' });
-    expect($e.tryDecode('val4')).toEqual({ tag: 'Val4' });
-    expect($e.tryDecode({ val5: 100_000_000 })).toEqual({ tag: 'Val5', value: 100_000_000 });
+    expect($e.tryDecode('val1')).toEqual({ type: 'Val1' });
+    expect($e.tryDecode({ val2: 10 })).toEqual({ type: 'Val2', value: 10 });
+    expect($e.tryDecode({ val3: 'Hello World' })).toEqual({ type: 'Val3', value: 'Hello World' });
+    expect($e.tryDecode('val4')).toEqual({ type: 'Val4' });
+    expect($e.tryDecode({ val5: 100_000_000 })).toEqual({ type: 'Val5', value: 100_000_000 });
   });
 });

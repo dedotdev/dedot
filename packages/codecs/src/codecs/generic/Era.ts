@@ -38,16 +38,16 @@ export const $Era: $.Shape<EraLike, Era> = $.createShape({
       const phase = input.current % adjustedPeriod;
       const quantizeFactor = bnMax(adjustedPeriod >> 12n, 1n);
       const quantizedPhase = (phase / quantizeFactor) * quantizeFactor;
-      input = { tag: 'Mortal', value: { period: adjustedPeriod, phase: quantizedPhase } };
+      input = { type: 'Mortal', value: { period: adjustedPeriod, phase: quantizedPhase } };
     }
 
-    if (input.hasOwnProperty('tag')) {
+    if (input.hasOwnProperty('type')) {
       input = input as Era;
 
       // Ref: https://github.com/paritytech/polkadot-sdk/blob/0e49ed72aa365475e30069a5c30e251a009fdacf/substrate/primitives/runtime/src/generic/era.rs#L104-L112
-      if (input.tag === 'Immortal') {
+      if (input.type === 'Immortal') {
         buffer.array[buffer.index++] = 0;
-      } else if (input.tag === 'Mortal') {
+      } else if (input.type === 'Mortal') {
         const quantizeFactor = bnMax(input.value.period >> 12n, 1n);
         const encoded =
           bnMin(bnMax(numOfTrailingZeroes(input.value.period) - 1n, 1n), 15n) |
@@ -60,7 +60,7 @@ export const $Era: $.Shape<EraLike, Era> = $.createShape({
     // Ref: https://github.com/paritytech/polkadot-sdk/blob/0e49ed72aa365475e30069a5c30e251a009fdacf/substrate/primitives/runtime/src/generic/era.rs#L119-L134
     if (buffer.array[buffer.index] === 0) {
       buffer.index++;
-      return { tag: 'Immortal' };
+      return { type: 'Immortal' };
     } else {
       const encoded = BigInt(buffer.array[buffer.index] + (buffer.array[buffer.index + 1] << 8));
       buffer.index += 2;
@@ -69,7 +69,7 @@ export const $Era: $.Shape<EraLike, Era> = $.createShape({
       const quantizeFactor = bnMax(period >> 12n, 1n);
       const phase = (encoded >> 4n) * quantizeFactor;
       if (period >= 4n && phase < period) {
-        return { tag: 'Mortal', value: { period, phase } };
+        return { type: 'Mortal', value: { period, phase } };
       } else {
         throw new Error('Invalid period and phase');
       }
@@ -78,5 +78,5 @@ export const $Era: $.Shape<EraLike, Era> = $.createShape({
 });
 
 export type MortalInputs = { period: bigint; current: bigint };
-export type Era = { tag: 'Immortal' } | { tag: 'Mortal'; value: { period: bigint; phase: bigint } };
+export type Era = { type: 'Immortal' } | { type: 'Mortal'; value: { period: bigint; phase: bigint } };
 export type EraLike = Era | MortalInputs;

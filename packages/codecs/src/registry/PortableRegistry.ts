@@ -50,7 +50,7 @@ export class PortableRegistry extends TypeRegistry {
 
   findErrorMeta(errorInfo: ModuleError | DispatchError): PalletErrorMetadataLatest | undefined {
     const moduleError =
-      isObject<DispatchError>(errorInfo) && errorInfo.tag === 'Module' ? errorInfo.value : (errorInfo as ModuleError);
+      isObject<DispatchError>(errorInfo) && errorInfo.type === 'Module' ? errorInfo.value : (errorInfo as ModuleError);
 
     const targetPallet = this.metadata!.pallets.find((p) => p.index === moduleError.index);
     if (!targetPallet || !targetPallet.error) return;
@@ -58,8 +58,8 @@ export class PortableRegistry extends TypeRegistry {
     const def = this.metadata!.types[targetPallet.error];
     if (!def) return;
 
-    const { tag, value } = def.type;
-    if (tag !== 'Enum') return;
+    const { type, value } = def.typeDef;
+    if (type !== 'Enum') return;
 
     const errorDef = value.members.find(({ index }) => index === hexToU8a(moduleError.error)[0]);
     if (!errorDef) return;
@@ -89,7 +89,7 @@ export class PortableRegistry extends TypeRegistry {
   override getEnumOptions(typeId: TypeId): EnumOptions {
     const {
       extrinsic: { callTypeId },
-      outerEnums: { eventEnumTypeId },
+      outerEnums: { eventEnumTypeId, errorEnumTypeId },
     } = this.metadata;
 
     if (typeId === eventEnumTypeId) {
@@ -102,12 +102,20 @@ export class PortableRegistry extends TypeRegistry {
         tagKey: 'pallet',
         valueKey: 'palletCall',
       };
-    } else if (this.getPalletEventTypeIds().includes(typeId)) {
+    } else if (typeId === errorEnumTypeId) {
+      return {
+        tagKey: 'pallet',
+        valueKey: 'palletError',
+      };
+    } else if (
+      this.getFieldTypeIdsFromEnum(eventEnumTypeId).includes(typeId) ||
+      this.getFieldTypeIdsFromEnum(errorEnumTypeId).includes(typeId)
+    ) {
       return {
         tagKey: 'name',
         valueKey: 'data',
       };
-    } else if (this.getPalletCallTypeIds().includes(typeId)) {
+    } else if (this.getFieldTypeIdsFromEnum(callTypeId).includes(typeId)) {
       return {
         tagKey: 'name',
         valueKey: 'params',
@@ -115,32 +123,21 @@ export class PortableRegistry extends TypeRegistry {
     }
 
     return {
-      tagKey: 'tag',
+      tagKey: 'type',
       valueKey: 'value',
     };
   }
 
-  getPalletCallTypeIds(): number[] {
-    const {
-      extrinsic: { callTypeId },
-    } = this.metadata;
+  getFieldTypeIdsFromEnum(typeId: TypeId): number[] {
+    try {
+      const eventType = this.findType(typeId);
 
-    const callType = this.findType(callTypeId);
-    if (callType.type.tag === 'Enum') {
-      return callType.type.value.members.map((m) => m.fields[0].typeId);
-    }
-
-    return [];
-  }
-
-  getPalletEventTypeIds(): number[] {
-    const {
-      outerEnums: { eventEnumTypeId },
-    } = this.metadata;
-
-    const eventType = this.findType(eventEnumTypeId);
-    if (eventType.type.tag === 'Enum') {
-      return eventType.type.value.members.map((m) => m.fields[0].typeId);
+      if (eventType.typeDef.type === 'Enum') {
+        return eventType.typeDef.value.members.map((m) => m.fields[0].typeId);
+      }
+    } catch {
+      // In-case of metadata v14, we don't have an explicit type for RuntimeError
+      // For now, we just ignore the error and return an empty array
     }
 
     return [];

@@ -12,7 +12,7 @@ export const extractContractTypes = (contractMetadata: ContractMetadata): Portab
     ({ type, id }) =>
       ({
         id,
-        type: normalizeContractTypeDef(type.def),
+        typeDef: normalizeContractTypeDef(type.def),
         params: [],
         path: type?.path || [],
         docs: [],
@@ -21,11 +21,11 @@ export const extractContractTypes = (contractMetadata: ContractMetadata): Portab
 };
 
 export const normalizeContractTypeDef = (def: ContractTypeDef): TypeDef => {
-  let tag: string;
+  let type: string;
   let value: any;
 
   if (def.variant) {
-    tag = 'Enum';
+    type = 'Enum';
     value = {
       members:
         def.variant.variants?.map((variant) => ({
@@ -35,17 +35,17 @@ export const normalizeContractTypeDef = (def: ContractTypeDef): TypeDef => {
         })) || [],
     };
   } else if (def.tuple) {
-    tag = 'Tuple';
+    type = 'Tuple';
     value = {
       fields: def.tuple,
     };
   } else if (def.sequence) {
-    tag = 'Sequence';
+    type = 'Sequence';
     value = {
       typeParam: def.sequence.type,
     };
   } else if (def.composite) {
-    tag = 'Struct';
+    type = 'Struct';
     value = {
       fields: def.composite.fields.map((one) => ({
         typeId: one.type,
@@ -54,12 +54,12 @@ export const normalizeContractTypeDef = (def: ContractTypeDef): TypeDef => {
       })),
     };
   } else if (def.primitive) {
-    tag = 'Primitive';
+    type = 'Primitive';
     value = {
       kind: def.primitive,
     };
   } else if (def.array) {
-    tag = 'SizedVec';
+    type = 'SizedVec';
     value = {
       len: def.array.len,
       typeParam: def.array.type,
@@ -68,7 +68,7 @@ export const normalizeContractTypeDef = (def: ContractTypeDef): TypeDef => {
     throw Error(`Invalid contract type def: ${JSON.stringify(def)}`);
   }
 
-  return { tag, value } as TypeDef;
+  return { type, value } as TypeDef;
 };
 
 const UNSUPPORTED_VERSIONS = ['V3', 'V2', 'V1'] as const;

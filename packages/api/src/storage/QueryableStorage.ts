@@ -47,17 +47,17 @@ export class QueryableStorage {
     return concatU8a(palletNameHash, storageItemHash);
   }
 
-  #getStorageMapInfo(type: StorageEntryLatest['type']) {
-    assert(type.tag === 'Map');
+  #getStorageMapInfo(storageType: StorageEntryLatest['storageType']) {
+    assert(storageType.type === 'Map');
 
-    const { hashers, keyTypeId } = type.value;
+    const { hashers, keyTypeId } = storageType.value;
 
     let keyTypeIds = [keyTypeId];
     if (hashers.length > 1) {
-      const { type } = this.registry.findType(keyTypeId);
+      const { typeDef } = this.registry.findType(keyTypeId);
 
-      assert(type.tag === 'Tuple', 'Key type should be a tuple!');
-      keyTypeIds = type.value.fields;
+      assert(typeDef.type === 'Tuple', 'Key type should be a tuple!');
+      keyTypeIds = typeDef.value.fields;
     }
 
     return { hashers, keyTypeIds };
@@ -69,12 +69,12 @@ export class QueryableStorage {
    * @param keyInput
    */
   encodeKey(keyInput?: any): StorageKey {
-    const { type } = this.storageEntry;
+    const { storageType } = this.storageEntry;
 
-    if (type.tag === 'Plain') {
+    if (storageType.type === 'Plain') {
       return this.prefixKey;
-    } else if (type.tag === 'Map') {
-      const { hashers, keyTypeIds } = this.#getStorageMapInfo(type);
+    } else if (storageType.type === 'Map') {
+      const { hashers, keyTypeIds } = this.#getStorageMapInfo(storageType);
       const extractedInputs = this.#extractRequiredKeyInputs(keyInput, hashers.length);
 
       const keyParts = keyTypeIds.map((keyId, index) => {
@@ -87,7 +87,7 @@ export class QueryableStorage {
       return u8aToHex(concatU8a(this.prefixKeyAsU8a, ...keyParts));
     }
 
-    throw Error(`Invalid storage entry type: ${type}`);
+    throw Error(`Invalid storage entry type: ${JSON.stringify(storageType)}`);
   }
 
   /**
@@ -97,17 +97,17 @@ export class QueryableStorage {
    * @param key
    */
   decodeKey(key: StorageKey): any {
-    const { type } = this.storageEntry;
+    const { storageType } = this.storageEntry;
 
-    if (type.tag === 'Plain') {
+    if (storageType.type === 'Plain') {
       return;
-    } else if (type.tag === 'Map') {
+    } else if (storageType.type === 'Map') {
       const prefix = this.prefixKey;
       if (!key.startsWith(prefix)) {
         throw new Error(`Storage key does not match this storage entry (${this.palletName}.${this.storageItem})`);
       }
 
-      const { hashers, keyTypeIds } = this.#getStorageMapInfo(type);
+      const { hashers, keyTypeIds } = this.#getStorageMapInfo(storageType);
 
       let keyData = hexToU8a(hexAddPrefix(key.slice(prefix.length)));
       const results = keyTypeIds.map((keyId, index) => {
@@ -127,7 +127,7 @@ export class QueryableStorage {
       return hashers.length > 1 ? results : results[0];
     }
 
-    throw Error(`Invalid storage entry type: ${type}`);
+    throw Error(`Invalid storage entry type: ${JSON.stringify(storageType)}`);
   }
 
   /**
@@ -138,7 +138,7 @@ export class QueryableStorage {
   decodeValue(raw?: StorageDataLike | null): any {
     const {
       modifier,
-      type: {
+      storageType: {
         value: { valueTypeId },
       },
       default: defaultValue,

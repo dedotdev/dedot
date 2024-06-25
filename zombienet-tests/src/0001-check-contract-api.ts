@@ -32,9 +32,9 @@ export const run = async (_nodeName: any, networkInfo: any) => {
 
     const contractAddress: string = await new Promise(async (resolve, reject) => {
       await constructorTx.signAndSend(alicePair, async ({ status, events }) => {
-        console.log(`[${api.rpcVersion}] Transaction status:`, status.tag);
+        console.log(`[${api.rpcVersion}] Transaction status:`, status.type);
 
-        if (status.tag === 'Finalized') {
+        if (status.type === 'Finalized') {
           const instantiatedEvent = events.find(({ event }) => api.events.contracts.Instantiated.is(event));
 
           assert(instantiatedEvent, 'Event Contracts.Instantiated should be available');
@@ -64,9 +64,9 @@ export const run = async (_nodeName: any, networkInfo: any) => {
 
     await new Promise<void>(async (resolve) => {
       await contract.tx.flip({ gasLimit: raw.gasRequired }).signAndSend(alicePair, ({ status }: any) => {
-        console.log(`[${api.rpcVersion}] Transaction status:`, status.tag);
+        console.log(`[${api.rpcVersion}] Transaction status`, status.type);
 
-        if (status.tag === 'Finalized') {
+        if (status.type === 'Finalized') {
           resolve();
         }
       });

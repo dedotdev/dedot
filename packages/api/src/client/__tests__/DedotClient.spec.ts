@@ -120,7 +120,7 @@ describe('DedotClient', () => {
               // @ts-ignore
               expect(api.query[stringCamelCase(pallet.name)][stringCamelCase(entry.name)].keys).toBeUndefined();
 
-              if (entry.type.tag === 'Map') {
+              if (entry.storageType.type === 'Map') {
                 // @ts-ignore
                 expect(api.query[stringCamelCase(pallet.name)][stringCamelCase(entry.name)].multi).toBeDefined();
                 // @ts-ignore
@@ -152,8 +152,8 @@ describe('DedotClient', () => {
           api.metadata.latest.pallets.forEach((pallet) => {
             if (!pallet.error) return;
             const event = api.metadata.latest.types[pallet.error];
-            if (event.type.tag === 'Enum') {
-              event.type.value.members.forEach((m) => {
+            if (event.typeDef.type === 'Enum') {
+              event.typeDef.value.members.forEach((m) => {
                 expect(api.errors[stringCamelCase(pallet.name)][stringPascalCase(m.name)]).toHaveProperty(['is']);
               });
             }
@@ -178,8 +178,8 @@ describe('DedotClient', () => {
           api.metadata.latest.pallets.forEach((pallet) => {
             if (!pallet.event) return;
             const event = api.metadata.latest.types[pallet.event];
-            if (event.type.tag === 'Enum') {
-              event.type.value.members.forEach((m) => {
+            if (event.typeDef.type === 'Enum') {
+              event.typeDef.value.members.forEach((m) => {
                 expect(api.events[stringCamelCase(pallet.name)][stringPascalCase(m.name)]).toHaveProperty(['is']);
               });
             }
@@ -275,8 +275,8 @@ describe('DedotClient', () => {
           api.metadata.latest.pallets.forEach((pallet) => {
             if (!pallet.calls) return;
             const calls = api.metadata.latest.types[pallet.calls];
-            if (calls.type.tag === 'Enum') {
-              calls.type.value.members.forEach((m) => {
+            if (calls.typeDef.type === 'Enum') {
+              calls.typeDef.value.members.forEach((m) => {
                 const tx = api.tx[stringCamelCase(pallet.name)][stringCamelCase(m.name)];
                 expectTypeOf(tx).toBeFunction();
                 expect(tx).toHaveProperty(['meta']);
@@ -361,8 +361,8 @@ describe('DedotClient', () => {
             const statuses: string[] = [];
 
             remarkTx.send(({ status }) => {
-              statuses.push(status.tag);
-              if (status.tag === 'Finalized') {
+              statuses.push(status.type);
+              if (status.type === 'Finalized') {
                 defer.resolve();
               }
             });
@@ -409,8 +409,8 @@ describe('DedotClient', () => {
             const statuses: string[] = [];
 
             remarkTx.send(({ status }) => {
-              statuses.push(status.tag);
-              if (status.tag === 'Invalid' && status.value.error === 'Invalid Tx: Invalid - Stale') {
+              statuses.push(status.type);
+              if (status.type === 'Invalid' && status.value.error === 'Invalid Tx: Invalid - Stale') {
                 defer.resolve();
               }
             });
@@ -503,8 +503,8 @@ describe('DedotClient', () => {
             let finalizedBlock;
 
             remarkTx.send(({ status }) => {
-              statuses.push(status.tag);
-              if (status.tag === 'Finalized') {
+              statuses.push(status.type);
+              if (status.type === 'Finalized') {
                 finalizedBlock = status.value;
                 defer.resolve();
               }

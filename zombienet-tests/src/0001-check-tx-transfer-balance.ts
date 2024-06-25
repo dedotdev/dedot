@@ -25,8 +25,8 @@ export const run = async (nodeName: any, networkInfo: any): Promise<void> => {
 
   return new Promise(async (resolve) => {
     const unsub = await transferTx.signAndSend(alice, async (result) => {
-      console.log('Transaction status', result.status.tag);
-      if (result.status.tag === 'InBlock') {
+      console.log('Transaction status', result.status.type);
+      if (result.status.type === 'InBlock') {
         const newBobBalance = (await api.query.system.account(BOB)).data.free;
         console.log('BOB - new balance', newBobBalance);
         assert(prevBobBalance + TEN_UNIT === newBobBalance, 'Incorrect BOB balance');

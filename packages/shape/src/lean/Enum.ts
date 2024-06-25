@@ -22,24 +22,24 @@ export type EnumMembers<V extends AnyShape> = {
 export type InputEnumShape<V extends AnyShape, A extends EnumMembers<V>> = Expand<
   {
     [K in keyof A]: A[K] extends AnyShape
-      ? { tag: K; value: Input<A[K]> }
+      ? { type: K; value: Input<A[K]> }
       : A[K] extends IndexedEnumMember<V>
         ? A[K]['value'] extends AnyShape
-          ? { tag: K; value: Input<A[K]['value']> }
-          : { tag: K }
-        : { tag: K };
+          ? { type: K; value: Input<A[K]['value']> }
+          : { type: K }
+        : { type: K };
   }[keyof A]
 >;
 
 export type OutputEnumShape<V extends AnyShape, A extends EnumMembers<V>> = Expand<
   {
     [K in keyof A]: A[K] extends AnyShape
-      ? { tag: K; value: Output<A[K]> }
+      ? { type: K; value: Output<A[K]> }
       : A[K] extends IndexedEnumMember<V>
         ? A[K]['value'] extends AnyShape
-          ? { tag: K; value: Output<A[K]['value']> }
-          : { tag: K }
-        : { tag: K };
+          ? { type: K; value: Output<A[K]['value']> }
+          : { type: K }
+        : { type: K };
   }[keyof A]
 >;
 
@@ -53,7 +53,7 @@ export const Enum = <T extends AnyShape, A extends EnumMembers<T>>(
   members: A,
   options?: EnumOptions,
 ): Shape<InputEnumShape<T, A>, OutputEnumShape<T, A>> => {
-  const tagKey = options?.tagKey || 'tag';
+  const tagKey = options?.tagKey || 'type';
   const valueKey = options?.valueKey || 'value';
 
   const enumMembers: Record<number, AnyVariant> = {};
