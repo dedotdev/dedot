@@ -58,7 +58,7 @@ export class PortableRegistry extends TypeRegistry {
     const def = this.metadata!.types[targetPallet.error];
     if (!def) return;
 
-    const { tag, value } = def.type;
+    const { tag, value } = def.typeDef;
     if (tag !== 'Enum') return;
 
     const errorDef = value.members.find(({ index }) => index === hexToU8a(moduleError.error)[0]);
@@ -129,10 +129,15 @@ export class PortableRegistry extends TypeRegistry {
   }
 
   getFieldTypeIdsFromEnum(typeId: TypeId): number[] {
-    const eventType = this.findType(typeId);
+    try {
+      const eventType = this.findType(typeId);
 
-    if (eventType.type.tag === 'Enum') {
-      return eventType.type.value.members.map((m) => m.fields[0].typeId);
+      if (eventType.typeDef.tag === 'Enum') {
+        return eventType.typeDef.value.members.map((m) => m.fields[0].typeId);
+      }
+    } catch {
+      // In-case of metadata v14, we don't have an explicit type for RuntimeError
+      // For now, we just ignore the error and return an empty array
     }
 
     return [];

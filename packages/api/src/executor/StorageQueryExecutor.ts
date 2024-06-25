@@ -73,7 +73,7 @@ export class StorageQueryExecutor<
       ...entry.storageEntry,
     };
 
-    const isMap = entry.storageEntry.type.tag === 'Map';
+    const isMap = entry.storageEntry.storageType.tag === 'Map';
     if (isMap) {
       const queryMultiFn = async (...args: any[]): Promise<any> => {
         const [inArgs, callback] = extractArgs(args);

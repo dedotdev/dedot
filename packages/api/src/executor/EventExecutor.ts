@@ -45,7 +45,7 @@ export class EventExecutor<ChainApi extends GenericSubstrateApi = GenericSubstra
     const def = this.metadata.types[eventTypeId];
     assert(def, new UnknownApiError(`Event def not found for id ${eventTypeId}`));
 
-    const { tag, value } = def.type;
+    const { tag, value } = def.typeDef;
     assert(tag === 'Enum', new UnknownApiError(`Event type should be an enum, found: ${tag}`));
 
     const eventDef = value.members.find(({ name }) => stringPascalCase(name) === errorName);

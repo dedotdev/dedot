@@ -67,7 +67,7 @@ export const $PortableType = $.Struct({
   id: $.compact($.u32),
   path: $.Vec($.str),
   params: $.Vec($TypeParam),
-  type: $TypeDef,
+  typeDef: $TypeDef,
   docs: $.Vec($.str),
 });
 

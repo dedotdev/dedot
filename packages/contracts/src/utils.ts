@@ -12,7 +12,7 @@ export const extractContractTypes = (contractMetadata: ContractMetadata): Portab
     ({ type, id }) =>
       ({
         id,
-        type: normalizeContractTypeDef(type.def),
+        typeDef: normalizeContractTypeDef(type.def),
         params: [],
         path: type?.path || [],
         docs: [],

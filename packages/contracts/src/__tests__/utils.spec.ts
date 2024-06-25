@@ -94,7 +94,7 @@ describe('utils', () => {
       const result = extractContractTypes(parseRawMetadata(JSON.stringify(flipperRaw)));
       expect(result).toHaveLength(flipper.types.length);
       expect(result[0]).toHaveProperty('id', flipper.types[0].id);
-      expect(result[0]).toHaveProperty('type');
+      expect(result[0]).toHaveProperty('typeDef');
       expect(result[0]).toHaveProperty('params');
       expect(result[0]).toHaveProperty('path');
       expect(result[0]).toHaveProperty('docs');

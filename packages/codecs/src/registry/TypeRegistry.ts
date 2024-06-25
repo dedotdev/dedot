@@ -107,8 +107,8 @@ export abstract class TypeRegistry {
       throw new Error(`Type id not found ${typeId}`);
     }
 
-    const { type, path } = def;
-    const { tag, value } = type;
+    const { typeDef, path } = def;
+    const { tag, value } = typeDef;
 
     if (tag === 'Struct') {
       const { fields } = value;
@@ -207,21 +207,21 @@ export abstract class TypeRegistry {
         return $.Enum(enumMembers, this.getEnumOptions(typeId));
       }
     } else if (tag === 'Sequence') {
-      const $inner = this.findCodec(type.value.typeParam);
+      const $inner = this.findCodec(typeDef.value.typeParam);
       if ($inner === $.u8) {
         return $Bytes;
       } else {
         return $.Vec($inner);
       }
     } else if (tag === 'SizedVec') {
-      const $inner = this.findCodec(type.value.typeParam);
+      const $inner = this.findCodec(typeDef.value.typeParam);
       if ($inner === $.u8) {
-        return $.FixedHex(type.value.len);
+        return $.FixedHex(typeDef.value.len);
       } else {
-        return $.SizedVec($inner, type.value.len);
+        return $.SizedVec($inner, typeDef.value.len);
       }
     } else if (tag === 'Primitive') {
-      const kind = type.value.kind;
+      const kind = typeDef.value.kind;
       if (kind === 'char') {
         return $.str;
       }
@@ -233,7 +233,7 @@ export abstract class TypeRegistry {
 
       return $codec;
     } else if (tag === 'Compact') {
-      return $.compact(this.findCodec(type.value.typeParam));
+      return $.compact(this.findCodec(typeDef.value.typeParam));
     } else if (tag === 'BitSequence') {
       return $.bitSequence;
     }

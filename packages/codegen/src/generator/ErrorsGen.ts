@@ -38,7 +38,7 @@ export class ErrorsGen extends ApiGen {
     const def = this.metadata.types[errorTypeId];
     assert(def, `Error def not found for id ${errorTypeId}`);
 
-    const { tag, value } = def.type;
+    const { tag, value } = def.typeDef;
     assert(tag === 'Enum', `Invalid pallet error type!`);
 
     return value.members;

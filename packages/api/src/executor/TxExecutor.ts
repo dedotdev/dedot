@@ -17,10 +17,10 @@ export class TxExecutor<ChainApi extends GenericSubstrateApi = GenericSubstrateA
 
     const txType = this.metadata.types[targetPallet.calls]!;
 
-    assert(txType.type.tag === 'Enum', new UnknownApiError('Tx type defs should be enum'));
+    assert(txType.typeDef.tag === 'Enum', new UnknownApiError('Tx type defs should be enum'));
 
-    const isFlatEnum = txType.type.value.members.every((m) => m.fields.length === 0);
-    const txCallDef = txType.type.value.members.find((m) => stringCamelCase(m.name) === functionName);
+    const isFlatEnum = txType.typeDef.value.members.every((m) => m.fields.length === 0);
+    const txCallDef = txType.typeDef.value.members.find((m) => stringCamelCase(m.name) === functionName);
     assert(txCallDef, new UnknownApiError(`Tx call spec not found for ${pallet}.${functionName}`));
 
     const txCallFn: GenericTxCall = (...args: any[]) => {

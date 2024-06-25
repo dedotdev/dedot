@@ -34,13 +34,13 @@ export class TxGen extends ApiGen {
     for (let pallet of pallets) {
       if (pallet.calls === undefined) continue;
 
-      const { type } = types[pallet.calls];
+      const { typeDef } = types[pallet.calls];
 
-      if (type.tag !== 'Enum') continue;
+      if (typeDef.tag !== 'Enum') continue;
 
-      const isFlatEnum = type.value.members.every((m) => m.fields.length === 0);
+      const isFlatEnum = typeDef.value.members.every((m) => m.fields.length === 0);
 
-      const typedTxs = type.value.members
+      const typedTxs = typeDef.value.members
         .map((one) => ({
           functionName: stringCamelCase(one.name),
           params: one.fields.map((f) => ({

@@ -122,8 +122,8 @@ export class TypesGen {
       throw new Error(`Type def not found ${JSON.stringify(def)}`);
     }
 
-    const { type, path, docs } = def;
-    const { tag, value } = type;
+    const { typeDef, path, docs } = def;
+    const { tag, value } = typeDef;
 
     switch (tag) {
       case 'Primitive':
@@ -228,7 +228,7 @@ export class TypesGen {
       case 'Sequence':
       case 'SizedVec': {
         const fixedSize = tag === 'SizedVec' ? `${value.len}` : null;
-        const $innerType = this.metadata.types[value.typeParam].type;
+        const $innerType = this.metadata.types[value.typeParam].typeDef;
         if ($innerType.tag === 'Primitive' && $innerType.value.kind === 'u8') {
           return fixedSize ? `FixedBytes<${fixedSize}>` : typeOut ? 'Bytes' : 'BytesLike';
         } else {
@@ -390,8 +390,8 @@ export class TypesGen {
 
     if (typeA.path.join('::') !== typeB.path.join('::')) return false;
 
-    const { type: defA, params: paramsA } = typeA;
-    const { type: defB, params: paramsB } = typeB;
+    const { typeDef: defA, params: paramsA } = typeA;
+    const { typeDef: defB, params: paramsB } = typeB;
 
     if (!this.#eqlArray(paramsA, paramsB, (valA, valB) => this.#eqlTypeParam(valA, valB))) {
       return false;
@@ -464,8 +464,8 @@ export class TypesGen {
       const diffType = types[diffParam.typeId];
       if (diffType.path.length > 0) {
         return stringPascalCase(diffType.path.at(-1)!);
-      } else if (diffType.type.tag === 'Primitive') {
-        return stringPascalCase(diffType.type.value.kind);
+      } else if (diffType.typeDef.tag === 'Primitive') {
+        return stringPascalCase(diffType.typeDef.value.kind);
       }
     }
 

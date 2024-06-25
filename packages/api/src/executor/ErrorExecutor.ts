@@ -40,7 +40,7 @@ export class ErrorExecutor<ChainApi extends GenericSubstrateApi = GenericSubstra
     const def = this.metadata.types[errorTypeId];
     assert(def, new UnknownApiError(`Error def not found for id ${errorTypeId}`));
 
-    const { tag, value } = def.type;
+    const { tag, value } = def.typeDef;
     assert(tag === 'Enum', new UnknownApiError(`Error type should be an enum, found: ${tag}`));
 
     const errorDef = value.members.find(({ name }) => stringPascalCase(name) === errorName);
