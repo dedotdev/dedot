@@ -89,7 +89,7 @@ export class PortableRegistry extends TypeRegistry {
   override getEnumOptions(typeId: TypeId): EnumOptions {
     const {
       extrinsic: { callTypeId },
-      outerEnums: { eventEnumTypeId },
+      outerEnums: { eventEnumTypeId, errorEnumTypeId },
     } = this.metadata;
 
     if (typeId === eventEnumTypeId) {
@@ -102,12 +102,20 @@ export class PortableRegistry extends TypeRegistry {
         tagKey: 'pallet',
         valueKey: 'palletCall',
       };
-    } else if (this.getPalletEventTypeIds().includes(typeId)) {
+    } else if (typeId === errorEnumTypeId) {
+      return {
+        tagKey: 'pallet',
+        valueKey: 'palletError',
+      };
+    } else if (
+      this.getFieldTypeIdsFromEnum(eventEnumTypeId).includes(typeId) ||
+      this.getFieldTypeIdsFromEnum(errorEnumTypeId).includes(typeId)
+    ) {
       return {
         tagKey: 'name',
         valueKey: 'data',
       };
-    } else if (this.getPalletCallTypeIds().includes(typeId)) {
+    } else if (this.getFieldTypeIdsFromEnum(callTypeId).includes(typeId)) {
       return {
         tagKey: 'name',
         valueKey: 'params',
@@ -120,25 +128,9 @@ export class PortableRegistry extends TypeRegistry {
     };
   }
 
-  getPalletCallTypeIds(): number[] {
-    const {
-      extrinsic: { callTypeId },
-    } = this.metadata;
+  getFieldTypeIdsFromEnum(typeId: TypeId): number[] {
+    const eventType = this.findType(typeId);
 
-    const callType = this.findType(callTypeId);
-    if (callType.type.tag === 'Enum') {
-      return callType.type.value.members.map((m) => m.fields[0].typeId);
-    }
-
-    return [];
-  }
-
-  getPalletEventTypeIds(): number[] {
-    const {
-      outerEnums: { eventEnumTypeId },
-    } = this.metadata;
-
-    const eventType = this.findType(eventEnumTypeId);
     if (eventType.type.tag === 'Enum') {
       return eventType.type.value.members.map((m) => m.fields[0].typeId);
     }

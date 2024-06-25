@@ -364,7 +364,7 @@ export class TypesGen {
 
   #shouldGenerateTypeIn(id: TypeId) {
     const { callTypeId } = this.metadata.extrinsic;
-    const palletCallTypeIds = this.registry.getPalletCallTypeIds();
+    const palletCallTypeIds = this.registry.getFieldTypeIdsFromEnum(callTypeId);
 
     return callTypeId === id || palletCallTypeIds.includes(id);
   }
