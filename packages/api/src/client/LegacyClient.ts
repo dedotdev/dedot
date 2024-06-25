@@ -54,9 +54,9 @@ const KEEP_ALIVE_INTERVAL = 10_000; // in ms
  * run().catch(console.error);
  * ```
  */
-export class LegacyClient<
-  ChainApi extends VersionedGenericSubstrateApi = SubstrateApi,
-> extends BaseSubstrateClient<ChainApi> {
+export class LegacyClient<ChainApi extends VersionedGenericSubstrateApi = SubstrateApi> // prettier-end-here
+  extends BaseSubstrateClient<ChainApi[RpcLegacy]>
+{
   #runtimeSubscriptionUnsub?: Unsub;
   #healthTimer?: ReturnType<typeof setInterval>;
   #apiAtCache: Record<BlockHash, ISubstrateClientAt<any>> = {};

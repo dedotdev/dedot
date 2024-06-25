@@ -28,8 +28,8 @@ describe('Contract', () => {
     beforeEach(async () => {
       provider = new MockProvider(MockedRuntimeVersionWithContractsApi);
       api = await LegacyClient.new({ provider });
-      flipper = new Contract(api, RANDOM_CONTRACT_ADDRESS, FLIPPER_CONTRACT_METADATA);
-      psp22 = new Contract(api, RANDOM_CONTRACT_ADDRESS, PSP22_CONTRACT_METADATA);
+      flipper = new Contract(api, FLIPPER_CONTRACT_METADATA, RANDOM_CONTRACT_ADDRESS);
+      psp22 = new Contract(api, PSP22_CONTRACT_METADATA, RANDOM_CONTRACT_ADDRESS);
     });
 
     it('should found contracts messages meta', () => {
@@ -73,7 +73,7 @@ describe('Contract', () => {
     it('should throw error', async () => {
       provider = new MockProvider();
       api = await LegacyClient.new({ provider });
-      expect(() => new Contract(api, RANDOM_CONTRACT_ADDRESS, FLIPPER_CONTRACT_METADATA)).toThrowError(
+      expect(() => new Contract(api, FLIPPER_CONTRACT_METADATA, RANDOM_CONTRACT_ADDRESS)).toThrowError(
         'Contracts pallet is not available',
       );
     });
