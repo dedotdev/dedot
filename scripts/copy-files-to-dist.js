@@ -134,24 +134,24 @@ const main = () => {
   // TODO we should have a better way to handle this!!!
   if (currentDir.endsWith('packages/codegen')) {
     // remove unrelated files
-    const toRemove = ['generator/dirname.cjs', 'generator/dirname.d.cts', 'cjs/generator/dirname.mjs'];
+    const toRemove = ['dirname.cjs', 'dirname.d.cts', 'cjs/dirname.mjs'];
 
     toRemove.forEach((file) => fs.rmSync(path.resolve(currentDir, targetDir, file), { force: true }));
 
     // change file names
     fs.renameSync(
-      path.resolve(currentDir, targetDir, 'generator/dirname.mjs'),
-      path.resolve(currentDir, targetDir, 'generator/dirname.js'),
+      path.resolve(currentDir, targetDir, 'dirname.mjs'),
+      path.resolve(currentDir, targetDir, 'dirname.js'),
     );
 
     fs.renameSync(
-      path.resolve(currentDir, targetDir, 'generator/dirname.d.mts'),
-      path.resolve(currentDir, targetDir, 'generator/dirname.d.ts'),
+      path.resolve(currentDir, targetDir, 'dirname.d.mts'),
+      path.resolve(currentDir, targetDir, 'dirname.d.ts'),
     );
 
     fs.renameSync(
-      path.resolve(currentDir, targetDir, 'cjs/generator/dirname.cjs'),
-      path.resolve(currentDir, targetDir, 'cjs/generator/dirname.js'),
+      path.resolve(currentDir, targetDir, 'cjs/dirname.cjs'),
+      path.resolve(currentDir, targetDir, 'cjs/dirname.js'),
     );
   }
 };

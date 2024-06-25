@@ -3,7 +3,7 @@ export interface ContractSource {
   wasm?: string;
   language: string;
   compiler: string;
-  buildInfo: BuildInfo;
+  build_info: BuildInfo;
 }
 
 export interface ContractInformation {
@@ -13,15 +13,15 @@ export interface ContractInformation {
 }
 
 export interface BuildInfo {
-  buildMode: string;
-  cargoContractVersion: string;
-  rustToolchain: string;
-  wasmOptSettings: WasmOptSettings;
+  build_mode: string;
+  cargo_contract_version: string;
+  rust_toolchain: string;
+  wasm_opt_settings: WasmOptSettings;
 }
 
 export interface WasmOptSettings {
-  keepDebugSymbols: boolean;
-  optimizationPasses: string;
+  keep_debug_symbols: boolean;
+  optimization_passes: string;
 }
 
 export interface ContractMessageArg {
@@ -34,7 +34,7 @@ export interface ContractTypeInfo {
   type: number;
 }
 
-export interface ContractConstructorMessage {
+export interface ContractMessage {
   args: ContractMessageArg[];
   default: boolean;
   docs: string[];
@@ -44,15 +44,10 @@ export interface ContractConstructorMessage {
   selector: string;
 }
 
-export interface ContractMessage {
-  args: ContractMessageArg[];
-  default: boolean;
-  docs: string[];
-  label: string;
+export interface ContractConstructorMessage extends ContractMessage {}
+
+export interface ContractCallMessage extends ContractMessage {
   mutates: boolean;
-  payable: boolean;
-  returnType: ContractTypeInfo;
-  selector: string;
 }
 
 export interface ContractType {

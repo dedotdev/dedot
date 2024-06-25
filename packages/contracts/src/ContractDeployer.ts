@@ -1,28 +1,18 @@
 import { ISubstrateClient } from '@dedot/api';
-import { SubstrateApi } from '@dedot/api/chaintypes';
 import { Hash } from '@dedot/codecs';
-import { GenericSubstrateApi, RpcVersion } from '@dedot/types';
 import { TypinkRegistry } from './TypinkRegistry.js';
 import { ConstructorQueryExecutor } from './executor/ConstructorQueryExecutor.js';
 import { ConstructorTxExecutor } from './executor/index.js';
 import { ContractMetadata, GenericContractApi } from './types/index.js';
-import { newProxyChain, ensureSupportContractsPallet } from './utils.js';
-import { parseRawMetadata } from './utils.js';
+import { ensureSupportContractsPallet, newProxyChain, parseRawMetadata } from './utils.js';
 
-export class ContractDeployer<
-  ContractApi extends GenericContractApi = GenericContractApi,
-  ChainApi extends GenericSubstrateApi = SubstrateApi[RpcVersion],
-> {
-  readonly #api: ISubstrateClient<ChainApi>;
+export class ContractDeployer<ContractApi extends GenericContractApi = GenericContractApi> {
+  readonly #api: ISubstrateClient;
   readonly #metadata: ContractMetadata;
   readonly #registry: TypinkRegistry;
   readonly #code: Hash | Uint8Array | string;
 
-  constructor(
-    api: ISubstrateClient<ChainApi>,
-    metadata: ContractMetadata | string,
-    codeHashOrWasm: Hash | Uint8Array | string,
-  ) {
+  constructor(api: ISubstrateClient, metadata: ContractMetadata | string, codeHashOrWasm: Hash | Uint8Array | string) {
     ensureSupportContractsPallet(api);
 
     this.#api = api;
@@ -40,14 +30,14 @@ export class ContractDeployer<
   }
 
   get tx(): ContractApi['constructorTx'] {
-    return newProxyChain<ChainApi>(
-      new ConstructorTxExecutor<ChainApi>(this.#api, this.#registry, this.#code),
+    return newProxyChain(
+      new ConstructorTxExecutor(this.#api, this.#registry, this.#code),
     ) as ContractApi['constructorTx'];
   }
 
   get query(): ContractApi['constructorQuery'] {
-    return newProxyChain<ChainApi>(
-      new ConstructorQueryExecutor<ChainApi>(this.#api, this.#registry, this.#code),
+    return newProxyChain(
+      new ConstructorQueryExecutor(this.#api, this.#registry, this.#code),
     ) as ContractApi['constructorQuery'];
   }
 }
