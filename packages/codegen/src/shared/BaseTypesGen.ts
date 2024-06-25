@@ -455,6 +455,6 @@ export abstract class BaseTypesGen {
   }
 
   getEnumOptions(_typeId: TypeId): EnumOptions {
-    return { tagKey: 'tag', valueKey: 'value' };
+    return { tagKey: 'type', valueKey: 'value' };
   }
 }
