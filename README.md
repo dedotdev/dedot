@@ -20,8 +20,8 @@ _Note: The project is still in active development phase, the information on this
 - ✅ Compatible with `@polkadot/extension`-based wallets
 - ✅ Support Metadata V14, V15 (latest)
 - ✅ Build on top of both the [new](https://paritytech.github.io/json-rpc-interface-spec/introduction.html) & legacy (deprecated soon) JSON-RPC APIs
-- ✅ Support light clients (e.g: [smoldot](https://www.npmjs.com/package/smoldot))
-- ⏳ Typed Contract APIs
+- ✅ Support light clients (e.g: [smoldot](https://www.npmjs.com/package/smoldot)) (_docs coming soon_)
+- ✅ Typed Contract APIs (_docs coming soon_)
 
 ### Have a quick taste
 
@@ -124,7 +124,7 @@ const api = await LegacyClient.new(provider);
 | Transaction APIs (`api.tx`)                                 | ✅      |
 | Events (`api.events`)                                       | ✅      |
 | Errors (`api.errors`)                                       | ✅      |
-| Contract APIs                                               | ⏳      |
+| Contract APIs                                               | ✅      |
 | Metadata v14                                                | ✅      |
 | Metadata v15                                                | ✅      |
 | [RPC v2](https://github.com/dedotdev/dedot/issues/20)       | ✅      |
