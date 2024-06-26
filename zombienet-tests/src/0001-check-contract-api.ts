@@ -2,10 +2,11 @@ import Keyring from '@polkadot/keyring';
 import { cryptoWaitReady } from '@polkadot/util-crypto';
 import { RpcVersion } from '@dedot/types';
 import { DedotClient, ISubstrateClient, LegacyClient, WsProvider } from 'dedot';
-import { SubstrateApi } from 'dedot/chaintypes';
-import { Contract, ContractDeployer } from 'dedot/contracts';
+import { FrameSystemEventRecord, SubstrateApi } from 'dedot/chaintypes';
+import { Contract, ContractDeployer, ContractMetadata, parseRawMetadata } from 'dedot/contracts';
 import { assert, stringToHex } from 'dedot/utils';
-import * as flipperRaw from '../flipper.json';
+import * as flipperV4Raw from '../flipper_v4.json';
+import * as flipperV5Raw from '../flipper_v5.json';
 import { FlipperContractApi } from './contracts/flipper';
 
 export const run = async (_nodeName: any, networkInfo: any) => {
@@ -14,11 +15,12 @@ export const run = async (_nodeName: any, networkInfo: any) => {
   const alicePair = new Keyring({ type: 'sr25519' }).addFromUri('//Alice');
   const { wsUri } = networkInfo.nodesByName['collator-1'];
 
-  const flipper: string = JSON.stringify(flipperRaw);
-  const wasm = flipperRaw.source.wasm;
   const caller = alicePair.address;
+  const flipperV4 = parseRawMetadata(JSON.stringify(flipperV4Raw));
+  const flipperV5 = parseRawMetadata(JSON.stringify(flipperV5Raw));
 
-  const verifyContracts = async (api: ISubstrateClient<SubstrateApi[RpcVersion]>) => {
+  const verifyContracts = async (api: ISubstrateClient<SubstrateApi[RpcVersion]>, flipper: ContractMetadata) => {
+    const wasm = flipper.source.wasm!;
     const deployer = new ContractDeployer<FlipperContractApi>(api, flipper, wasm);
     const salt = stringToHex(api.rpcVersion);
 
@@ -63,10 +65,16 @@ export const run = async (_nodeName: any, networkInfo: any) => {
     const { raw } = await contract.query.flip({ caller });
 
     await new Promise<void>(async (resolve) => {
-      await contract.tx.flip({ gasLimit: raw.gasRequired }).signAndSend(alicePair, ({ status }: any) => {
+      await contract.tx.flip({ gasLimit: raw.gasRequired }).signAndSend(alicePair, ({ status, events }: any) => {
         console.log(`[${api.rpcVersion}] Transaction status`, status.type);
 
         if (status.type === 'Finalized') {
+          const contractEventRecords = events.filter((eventRecord: FrameSystemEventRecord) => api.events.contracts.ContractEmitted.is(eventRecord.event))
+          
+          assert(contractEventRecords.length > 0, "Should emit at least one event emitted!");
+
+          assert(contractEventRecords.some((eventRecord: FrameSystemEventRecord) => contract.events.Flipped.is(contract.decodeEvent(eventRecord)!)), "Should have at least a Flipped events emitted")
+          
           resolve();
         }
       });
@@ -81,9 +89,11 @@ export const run = async (_nodeName: any, networkInfo: any) => {
 
   console.log('Checking via legacy API');
   const apiLegacy = await LegacyClient.new(new WsProvider(wsUri));
-  await verifyContracts(apiLegacy);
+  await verifyContracts(apiLegacy, flipperV4);
+  await verifyContracts(apiLegacy, flipperV5);
 
   console.log('Checking via new API');
   const apiV2 = await DedotClient.new(new WsProvider(wsUri));
-  await verifyContracts(apiV2);
+  await verifyContracts(apiV2, flipperV4);
+  await verifyContracts(apiV2, flipperV5);
 };
