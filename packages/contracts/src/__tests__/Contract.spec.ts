@@ -141,12 +141,12 @@ describe('Contract', () => {
 
       it('should decode properly', () => {
         const contractEmittedEventRecord =
-          '0x00010000000803f2773dba008bbe3bb76fa8cb89fddb534b4e81dcaf52faaf94190a89ab3d3b04080001040a39b5ca0b8b3a5172476100ae7b9168b269cc91d5648efe180c75d935d3e886';
+          '0x00010000000803c9ea3bd36943af3e70dfbdefe0a7ac6af85f912260c15074917071183e9732570c0000010400466c69707065723a3a466c6970706564000000000000000000000000000000';
         const eventRecord = api.registry.findCodec(19).tryDecode(contractEmittedEventRecord) as FrameSystemEventRecord;
 
         const decodedEvent = flipper.decodeEvent(eventRecord);
 
-        expect(decodedEvent).toEqual({ name: 'Flipped', data: { old: true, new: false } });
+        expect(decodedEvent).toEqual({ name: 'Flipped', data: { old: false, new: true } });
       });
     });
   });
