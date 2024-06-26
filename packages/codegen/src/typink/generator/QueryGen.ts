@@ -1,7 +1,7 @@
 import {
   normalizeContractTypeDef,
   ContractMetadata,
-  Message,
+  ContractMessage,
   normalizeLabel,
   ContractMessageArg,
 } from '@dedot/contracts';
@@ -21,24 +21,25 @@ export class QueryGen {
   generate(useSubPaths: boolean = false) {
     this.typesGen.clearCache();
 
+    this.typesGen.typeImports.addKnownType('GenericSubstrateApi');
     this.typesGen.typeImports.addContractType(
       'GenericContractQuery',
       'GenericContractQueryCall',
       'ContractCallOptions',
       'GenericContractCallResult',
-      'ContractResult',
+      'ContractCallResult',
     );
 
     const { messages } = this.contractMetadata.spec;
 
-    const queryCallsOut = this.doGenerate(messages);
+    const queryCallsOut = this.doGenerate(messages, 'ContractCallOptions');
     const importTypes = this.typesGen.typeImports.toImports({ useSubPaths });
     const template = compileTemplate('typink/templates/query.hbs');
 
     return beautifySourceCode(template({ importTypes, queryCallsOut }));
   }
 
-  doGenerate(messages: Message[]) {
+  doGenerate(messages: ContractMessage[], optionsTypeName?: string) {
     let callsOut = '';
 
     messages.forEach((messageDef) => {
@@ -47,8 +48,9 @@ export class QueryGen {
         docs,
         '\n',
         args.map((arg) => `@param {${this.typesGen.generateType(arg.type.type, 1)}} ${stringCamelCase(arg.label)}`),
+        optionsTypeName ? `@param {${optionsTypeName}} options` : '',
         '\n',
-        `@selector {${selector}}`,
+        `@selector ${selector}`,
       )}`;
       callsOut += `${normalizeLabel(label)}: ${this.generateMethodDef(messageDef)};\n\n`;
     });
@@ -56,7 +58,7 @@ export class QueryGen {
     return callsOut;
   }
 
-  generateMethodDef(def: Message): string {
+  generateMethodDef(def: ContractMessage): string {
     const { args, returnType } = def;
 
     this.importType(returnType.type);
@@ -65,7 +67,7 @@ export class QueryGen {
     const paramsOut = this.generateParamsOut(args);
     const typeOut = this.typesGen.generateType(returnType.type, 0, true);
 
-    return `GenericContractQueryCall<ChainApi, (${paramsOut && `${paramsOut},`} options: ContractCallOptions) => Promise<GenericContractCallResult<${typeOut}, ContractResult<ChainApi>>>>`;
+    return `GenericContractQueryCall<ChainApi, (${paramsOut && `${paramsOut},`} options: ContractCallOptions) => Promise<GenericContractCallResult<${typeOut}, ContractCallResult<ChainApi>>>>`;
   }
 
   generateParamsOut(args: ContractMessageArg[]) {
@@ -75,16 +77,16 @@ export class QueryGen {
   }
 
   importType(typeId: number): any {
-    const type = this.contractMetadata.types[typeId];
-    const def = normalizeContractTypeDef(this.contractMetadata.types[typeId].type.def);
+    const contractType = this.contractMetadata.types[typeId];
+    const typeDef = normalizeContractTypeDef(this.contractMetadata.types[typeId].type.def);
 
-    if (this.typesGen.includedTypes[type.id]) {
-      this.typesGen.addTypeImport(this.typesGen.includedTypes[type.id].name);
+    if (this.typesGen.includedTypes[contractType.id]) {
+      this.typesGen.addTypeImport(this.typesGen.includedTypes[contractType.id].name);
       return;
     }
-    const { tag, value } = def;
+    const { type, value } = typeDef;
 
-    switch (tag) {
+    switch (type) {
       case 'Compact':
       case 'Primitive':
       case 'BitSequence':

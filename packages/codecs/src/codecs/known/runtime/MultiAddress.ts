@@ -21,7 +21,7 @@ export const $MultiAddress: $.Shape<MultiAddressLike, MultiAddress> = $.transfor
   $base: $MultiAddressBase,
   encode: (value): $.Input<typeof $MultiAddressBase> => {
     if (typeof value === 'string' || value instanceof AccountId32) {
-      return { tag: 'Id', value };
+      return { type: 'Id', value };
     }
 
     return value;

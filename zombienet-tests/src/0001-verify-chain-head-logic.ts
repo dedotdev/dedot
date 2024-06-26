@@ -35,6 +35,7 @@ export const run = async (nodeName: any, networkInfo: any): Promise<any> => {
   // verify chainHead_body
   const rawMetadata = await chainHead.call('Metadata_metadata_at_version', '0x0f000000', bestHash);
   const metadata = $.Option($.lenPrefixed($Metadata)).tryDecode(rawMetadata)!;
+  console.log('Signed Extensions', metadata.latest.extrinsic.signedExtensions);
   const txs = await chainHead.body(bestHash);
   const registry = new PortableRegistry(metadata.latest);
 

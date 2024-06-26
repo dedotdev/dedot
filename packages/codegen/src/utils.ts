@@ -9,7 +9,7 @@ export const TUPLE_TYPE_REGEX = /^\[(.*)]$/;
 
 export const commentBlock = (...docs: (string | string[])[]) => {
   const flatLines = docs.flat();
-  if (flatLines.length === 0 || !flatLines.find((o) => !!o)) {
+  if (flatLines.length === 0 || !flatLines.some((o) => !!o)) {
     return '';
   } else {
     return `
@@ -21,7 +21,7 @@ ${flatLines.map((line) => `* ${line.replaceAll(/\s+/g, ' ').trim()}`).join('\n')
 };
 
 export const beautifySourceCode = async (source: string): Promise<string> => {
-  const prettierOptions = await prettier.resolveConfig(path.resolve(currentDirname(), '../../../../.prettierrc.js'));
+  const prettierOptions = await prettier.resolveConfig(path.resolve(currentDirname(), '../../../.prettierrc.cjs'));
 
   return prettier.format(source, { parser: 'babel-ts', ...prettierOptions });
 };

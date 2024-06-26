@@ -1,6 +1,6 @@
 import Keyring from '@polkadot/keyring';
 import { cryptoWaitReady } from '@polkadot/util-crypto';
-import { Dedot, WsProvider } from 'dedot';
+import { LegacyClient, WsProvider } from 'dedot';
 import { assert } from 'dedot/utils';
 
 const BOB = '5FHneW46xGXgs5mUiveU4sbTyGBzmstUspZC92UhjJM694ty';
@@ -13,7 +13,7 @@ export const run = async (nodeName: any, networkInfo: any): Promise<void> => {
   const { wsUri } = networkInfo.nodesByName[nodeName];
 
   // TODO use RococoApi
-  const api = await Dedot.new(new WsProvider(wsUri));
+  const api = await LegacyClient.new(new WsProvider(wsUri));
 
   const prevBobBalance = (await api.query.system.account(BOB)).data.free;
   const prevBlockNumber = await api.query.system.number();
@@ -25,8 +25,8 @@ export const run = async (nodeName: any, networkInfo: any): Promise<void> => {
 
   return new Promise(async (resolve) => {
     const unsub = await transferTx.signAndSend(alice, async (result) => {
-      console.log('Transaction status', result.status.tag);
-      if (result.status.tag === 'InBlock') {
+      console.log('Transaction status', result.status.type);
+      if (result.status.type === 'InBlock') {
         const newBobBalance = (await api.query.system.account(BOB)).data.free;
         console.log('BOB - new balance', newBobBalance);
         assert(prevBobBalance + TEN_UNIT === newBobBalance, 'Incorrect BOB balance');

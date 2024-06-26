@@ -19,10 +19,10 @@ export const run = async (nodeName: any, networkInfo: any): Promise<void> => {
     [...Array(4)].map(() => {
       return new Promise<void>((resolve) => {
         api.tx.system.remarkWithEvent('Hello World').signAndSend(alice, ({ status }) => {
-          if (status.tag === 'Finalized') {
+          if (status.type === 'Finalized') {
             finalizedTx += 1;
             resolve();
-          } else if (status.tag === 'Invalid') {
+          } else if (status.type === 'Invalid') {
             invalidTx += 1;
             assert(status.value.error === `Invalid Tx: Invalid - Stale`, 'Wrong invalid message');
             resolve();

@@ -1,7 +1,7 @@
 import Keyring from '@polkadot/keyring';
 import { cryptoWaitReady } from '@polkadot/util-crypto';
 import { RococoRuntimeRuntimeCallLike } from '@dedot/chaintypes/rococo';
-import { Dedot, WsProvider } from 'dedot';
+import { LegacyClient, WsProvider } from 'dedot';
 import { assert } from 'dedot/utils';
 
 const BOB = '5FHneW46xGXgs5mUiveU4sbTyGBzmstUspZC92UhjJM694ty';
@@ -14,7 +14,7 @@ export const run = async (nodeName: any, networkInfo: any): Promise<void> => {
   const { wsUri } = networkInfo.nodesByName[nodeName];
 
   // TODO use RococoApi
-  const api = await Dedot.new(new WsProvider(wsUri));
+  const api = await LegacyClient.new(new WsProvider(wsUri));
 
   const TEN_UNIT = BigInt(10 * 1e12);
 
@@ -33,9 +33,9 @@ export const run = async (nodeName: any, networkInfo: any): Promise<void> => {
 
   return new Promise(async (resolve) => {
     const unsub = await batchTx.signAndSend(alice, async ({ status, events }) => {
-      console.log('Transaction status', status.tag);
+      console.log('Transaction status', status.type);
 
-      if (status.tag === 'InBlock') {
+      if (status.type === 'InBlock') {
         assert(
           events.some(({ event }) => api.events.balances.Transfer.is(event)),
           'Event Balance.Transfer should be available',

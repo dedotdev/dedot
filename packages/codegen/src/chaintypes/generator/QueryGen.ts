@@ -39,15 +39,15 @@ export class QueryGen extends ApiGen {
   }
 
   #generateEntry(entry: StorageEntryLatest) {
-    const { name, type, docs, modifier } = entry;
+    const { name, storageType, docs, modifier } = entry;
 
     let valueType, keyTypeOut, keyTypeIn;
-    if (type.tag === 'Plain') {
-      valueType = this.typesGen.generateType(type.value.valueTypeId, 1, true);
-    } else if (type.tag === 'Map') {
-      valueType = this.typesGen.generateType(type.value.valueTypeId, 1, true);
-      keyTypeOut = this.typesGen.generateType(type.value.keyTypeId, 1, true);
-      keyTypeIn = this.typesGen.generateType(type.value.keyTypeId, 1);
+    if (storageType.type === 'Plain') {
+      valueType = this.typesGen.generateType(storageType.value.valueTypeId, 1, true);
+    } else if (storageType.type === 'Map') {
+      valueType = this.typesGen.generateType(storageType.value.valueTypeId, 1, true);
+      keyTypeOut = this.typesGen.generateType(storageType.value.keyTypeId, 1, true);
+      keyTypeIn = this.typesGen.generateType(storageType.value.keyTypeId, 1);
     } else {
       throw Error('Invalid entry type!');
     }

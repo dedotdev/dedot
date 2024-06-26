@@ -1,6 +1,6 @@
 {
   "name": "@dedot/cli",
-  "version": "0.0.1-alpha.32",
+  "version": "0.0.1-alpha.34",
   "author": "Thang X. Vu <thang@coongcrafts.io>",
   "bin": {
     "dedot": "./bin/dedot",
@@ -18,7 +18,7 @@
     "@dedot/api": "workspace:*",
     "@dedot/codecs": "workspace:*",
     "@dedot/codegen": "workspace:*",
-    "@polkadot/types-support": "^11.0.2",
+    "@polkadot/types-support": "^12.0.1",
     "yargs": "^17.7.2"
   },
   "devDependencies": {

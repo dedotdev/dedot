@@ -15,6 +15,8 @@ export class TypeImports {
   outTypes: Set<string>;
   // Know types defined in @dedot/contracts
   contractTypes: Set<string>;
+  // Know types defined in @dedot/api/chaintypes or dedot/chaintypes
+  chainTypes: Set<string>;
 
   constructor() {
     this.portableTypes = new Set<string>();
@@ -23,6 +25,7 @@ export class TypeImports {
     this.knownJsonRpcTypes = new Set<string>();
     this.outTypes = new Set<string>();
     this.contractTypes = new Set<string>();
+    this.chainTypes = new Set<string>();
   }
 
   clear() {
@@ -32,6 +35,7 @@ export class TypeImports {
     this.knownJsonRpcTypes.clear();
     this.outTypes.clear();
     this.contractTypes.clear();
+    this.chainTypes.clear();
   }
 
   toImports(config?: ImportConfig) {
@@ -45,6 +49,7 @@ export class TypeImports {
       [this.knownJsonRpcTypes, `${prefix}dedot/types/json-rpc`],
       [this.codecTypes, `${prefix}dedot/codecs`],
       [this.contractTypes, `${prefix}dedot/contracts`],
+      [this.chainTypes, prefix ? '@dedot/api/chaintypes' : 'dedot/chaintypes'],
       [this.portableTypes, './types'],
     ];
 
@@ -84,5 +89,9 @@ export class TypeImports {
 
   addContractType(...types: string[]) {
     types.forEach((one) => this.contractTypes.add(one));
+  }
+
+  addChainType(...types: string[]) {
+    types.forEach((one) => this.chainTypes.add(one));
   }
 }

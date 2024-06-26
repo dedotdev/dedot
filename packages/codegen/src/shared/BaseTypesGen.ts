@@ -32,7 +32,9 @@ export abstract class BaseTypesGen {
     this.skipTypes = [];
   }
 
-  abstract shouldGenerateTypeIn(id: TypeId): boolean;
+  shouldGenerateTypeIn(_id: TypeId): boolean {
+    return false;
+  }
 
   typeCache: Record<string, string> = {};
 
@@ -158,10 +160,10 @@ export abstract class BaseTypesGen {
       throw new Error(`Type def not found ${JSON.stringify(def)}`);
     }
 
-    const { type, path, docs } = def;
-    const { tag, value } = type;
+    const { typeDef, path, docs } = def;
+    const { type, value } = typeDef;
 
-    switch (tag) {
+    switch (type) {
       case 'Primitive':
         const $codec = findKnownCodec(value.kind);
 
@@ -237,11 +239,11 @@ export abstract class BaseTypesGen {
 
           return membersType
             .map(([keyName, valueType, docs]) => ({
-              tag: `${tagKey}: '${keyName}'`,
+              type: `${tagKey}: '${keyName}'`,
               value: valueType ? `, ${valueKey}${this.#isOptionalType(valueType) ? '?' : ''}: ${valueType} ` : '',
               docs,
             }))
-            .map(({ tag, value, docs }) => `${commentBlock(docs)}{ ${tag}${value} }`)
+            .map(({ type, value, docs }) => `${commentBlock(docs)}{ ${type}${value} }`)
             .join(' | ');
         }
       }
@@ -263,9 +265,9 @@ export abstract class BaseTypesGen {
         return this.generateType(value.typeParam, nestedLevel + 1, typeOut);
       case 'Sequence':
       case 'SizedVec': {
-        const fixedSize = tag === 'SizedVec' ? `${value.len}` : null;
-        const $innerType = this.types[value.typeParam].type;
-        if ($innerType.tag === 'Primitive' && $innerType.value.kind === 'u8') {
+        const fixedSize = type === 'SizedVec' ? `${value.len}` : null;
+        const $innerType = this.types[value.typeParam].typeDef;
+        if ($innerType.type === 'Primitive' && $innerType.value.kind === 'u8') {
           return fixedSize ? `FixedBytes<${fixedSize}>` : typeOut ? 'Bytes' : 'BytesLike';
         } else {
           const innerType = this.generateType(value.typeParam, nestedLevel + 1, typeOut);
@@ -273,7 +275,7 @@ export abstract class BaseTypesGen {
         }
       }
       default:
-        throw new Error(`Invalid type! ${tag}`);
+        throw new Error(`Invalid type! ${type}`);
     }
   }
 
@@ -332,37 +334,40 @@ export abstract class BaseTypesGen {
 
     if (typeA.path.join('::') !== typeB.path.join('::')) return false;
 
-    const { type: defA, params: paramsA } = typeA;
-    const { type: defB, params: paramsB } = typeB;
+    const { typeDef: defA, params: paramsA } = typeA;
+    const { typeDef: defB, params: paramsB } = typeB;
 
     if (!this.#eqlArray(paramsA, paramsB, (valA, valB) => this.#eqlTypeParam(valA, valB))) {
       return false;
     }
 
-    if (defA.tag !== defB.tag) return false;
-    if (defA.tag === 'BitSequence') return true;
+    if (defA.type !== defB.type) return false;
+    if (defA.type === 'BitSequence') return true;
 
-    if (defA.tag === 'Primitive' && defB.tag === 'Primitive') {
+    if (defA.type === 'Primitive' && defB.type === 'Primitive') {
       return defA.value.kind === defB.value.kind;
     }
 
-    if ((defA.tag === 'Compact' && defB.tag === 'Compact') || (defA.tag === 'Sequence' && defB.tag === 'Sequence')) {
+    if (
+      (defA.type === 'Compact' && defB.type === 'Compact') ||
+      (defA.type === 'Sequence' && defB.type === 'Sequence')
+    ) {
       return this.typeEql(defA.value.typeParam, defB.value.typeParam, lvl + 1);
     }
 
-    if (defA.tag === 'SizedVec' && defB.tag === 'SizedVec') {
+    if (defA.type === 'SizedVec' && defB.type === 'SizedVec') {
       return defA.value.len === defB.value.len && this.typeEql(defA.value.typeParam, defB.value.typeParam, lvl + 1);
     }
 
-    if (defA.tag === 'Tuple' && defB.tag === 'Tuple') {
+    if (defA.type === 'Tuple' && defB.type === 'Tuple') {
       return this.#eqlArray(defA.value.fields, defB.value.fields, (val1, val2) => this.typeEql(val1, val2, lvl + 1));
     }
 
-    if (defA.tag === 'Struct' && defB.tag === 'Struct') {
+    if (defA.type === 'Struct' && defB.type === 'Struct') {
       return this.#eqlFields(defA.value.fields, defB.value.fields, lvl);
     }
 
-    if (defA.tag === 'Enum' && defB.tag === 'Enum') {
+    if (defA.type === 'Enum' && defB.type === 'Enum') {
       return this.#eqlArray(
         defA.value.members,
         defB.value.members,
@@ -405,8 +410,8 @@ export abstract class BaseTypesGen {
       const diffType = this.types[diffParam.typeId];
       if (diffType.path.length > 0) {
         return stringPascalCase(diffType.path.at(-1)!);
-      } else if (diffType.type.tag === 'Primitive') {
-        return stringPascalCase(diffType.type.value.kind);
+      } else if (diffType.typeDef.type === 'Primitive') {
+        return stringPascalCase(diffType.typeDef.value.kind);
       }
     }
 
@@ -450,6 +455,6 @@ export abstract class BaseTypesGen {
   }
 
   getEnumOptions(_typeId: TypeId): EnumOptions {
-    return { tagKey: 'tag', valueKey: 'value' };
+    return { tagKey: 'type', valueKey: 'value' };
   }
 }

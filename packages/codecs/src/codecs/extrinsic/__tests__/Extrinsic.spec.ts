@@ -38,11 +38,11 @@ describe('Extrinsic', () => {
 
     expect(ex.version).toEqual(4);
     expect(ex.signed).toEqual(true);
-    expect(ex.signature?.address.tag).toEqual('Id');
+    expect(ex.signature?.address.type).toEqual('Id');
     expect(ex.signature?.address.value.raw).toEqual(
       '0xfcc4910cb536b4333db4bccb40e2cf6427b4766518e754b91e70c97e4a87dbb3',
     );
-    expect(ex.signature?.signature.tag).toEqual('Ed25519');
+    expect(ex.signature?.signature.type).toEqual('Ed25519');
     expect(ex.signature?.signature.value).toEqual(
       '0xd99ffe3e610ad234e1414bda5831395a6df9098bf80b01561ce89a5065ae89d5c10e1619c6c99131b0bea4fb73ef04d07c07770e2ae9df5c325c331769ccb300',
     );
@@ -51,7 +51,7 @@ describe('Extrinsic', () => {
       {},
       {},
       {},
-      { tag: 'Mortal', value: { period: 1024n, phase: 186n } }, // mortality
+      { type: 'Mortal', value: { period: 1024n, phase: 186n } }, // mortality
       68, // nonce
       {},
       30000000000n, // tip
@@ -63,7 +63,7 @@ describe('Extrinsic', () => {
         name: 'TransferAllowDeath',
         params: {
           dest: {
-            tag: 'Id',
+            type: 'Id',
             value: new AccountId32('0x495e1e506f266418af07fa0c5c108dd436f2faa59fe7d9e54403779f5bbd7718'),
           },
           value: 104560923320000n,
@@ -90,7 +90,7 @@ describe('Extrinsic', () => {
           {
             address: new AccountId32('0xfcc4910cb536b4333db4bccb40e2cf6427b4766518e754b91e70c97e4a87dbb3').address(),
             signature: {
-              tag: 'Ed25519',
+              type: 'Ed25519',
               value:
                 '0xd99ffe3e610ad234e1414bda5831395a6df9098bf80b01561ce89a5065ae89d5c10e1619c6c99131b0bea4fb73ef04d07c07770e2ae9df5c325c331769ccb300',
             },
@@ -99,7 +99,7 @@ describe('Extrinsic', () => {
               {},
               {},
               {},
-              { tag: 'Mortal', value: { period: 1024n, phase: 186n } }, // mortality
+              { type: 'Mortal', value: { period: 1024n, phase: 186n } }, // mortality
               68, // nonce
               {},
               30000000000n, // tip

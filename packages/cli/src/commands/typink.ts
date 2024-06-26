@@ -1,4 +1,4 @@
-import { generateContractTypesFromMetadata } from '@dedot/codegen';
+import { generateContractTypes } from '@dedot/codegen';
 import { assert } from '@dedot/utils';
 import * as fs from 'node:fs';
 import * as path from 'path';
@@ -14,7 +14,7 @@ type Args = {
 
 export const typink: CommandModule<Args, Args> = {
   command: 'typink',
-  describe: 'Generate contract types & APIs for a Substrate-based blockchain',
+  describe: 'Generate types & APIs for a ink! smart contracts',
   handler: async (yargs) => {
     const { contract, output = '', metadata, dts = true, subpath = true } = yargs;
 
@@ -27,7 +27,8 @@ export const typink: CommandModule<Args, Args> = {
     const rawMetadata = fs.readFileSync(metadataFile, 'utf-8');
 
     console.log(`- Generating contract types via metadata ${metadata}`);
-    await generateContractTypesFromMetadata(rawMetadata, contract, outDir, extension, subpath);
+
+    await generateContractTypes(rawMetadata, contract, outDir, extension, subpath);
 
     console.log(`- DONE! Output: ${outDir}`);
   },

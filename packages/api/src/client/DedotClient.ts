@@ -23,9 +23,9 @@ import { BaseSubstrateClient, ensurePresence } from './BaseSubstrateClient.js';
  *
  * __Unstable, use with caution.__
  */
-export class DedotClient<
-  ChainApi extends VersionedGenericSubstrateApi = SubstrateApi,
-> extends BaseSubstrateClient<ChainApi> {
+export class DedotClient<ChainApi extends VersionedGenericSubstrateApi = SubstrateApi> // prettier-end-here
+  extends BaseSubstrateClient<ChainApi[RpcV2]>
+{
   protected _chainHead?: ChainHead;
   protected _chainSpec?: ChainSpec;
   protected _txBroadcaster?: TxBroadcaster;

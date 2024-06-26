@@ -6,16 +6,17 @@ export class ConstructorQueryGen extends QueryGen {
   generate(useSubPaths: boolean = false) {
     this.typesGen.clearCache();
 
+    this.typesGen.typeImports.addKnownType('GenericSubstrateApi');
     this.typesGen.typeImports.addContractType(
       'GenericConstructorQuery',
       'GenericConstructorQueryCall',
       'ConstructorCallOptions',
-      'ConstructorResult',
+      'ContractInstantiateResult',
     );
 
     const { constructors } = this.contractMetadata.spec;
 
-    const constructorsOut = this.doGenerate(constructors);
+    const constructorsOut = this.doGenerate(constructors, 'ConstructorCallOptions');
     const importTypes = this.typesGen.typeImports.toImports({ useSubPaths });
     const template = compileTemplate('typink/templates/constructor-query.hbs');
 
@@ -29,6 +30,6 @@ export class ConstructorQueryGen extends QueryGen {
 
     const paramsOut = this.generateParamsOut(args);
 
-    return `GenericConstructorQueryCall<ChainApi, (${paramsOut && `${paramsOut},`} options: ConstructorCallOptions) => Promise<ConstructorResult<ChainApi>>>`;
+    return `GenericConstructorQueryCall<ChainApi, (${paramsOut && `${paramsOut},`} options: ConstructorCallOptions) => Promise<ContractInstantiateResult<ChainApi>>>`;
   }
 }

@@ -17,7 +17,7 @@ import { BaseSubstrateClient } from './BaseSubstrateClient.js';
 const KEEP_ALIVE_INTERVAL = 10_000; // in ms
 
 /**
- * @name Dedot
+ * @name LegacyClient
  * @description Promised-based API Client for Polkadot & Substrate
  *
  * Initialize API instance and interact with substrate-based network
@@ -26,7 +26,7 @@ const KEEP_ALIVE_INTERVAL = 10_000; // in ms
  * import type { PolkadotApi } from '@dedot/chaintypes/polkadot';
  *
  * const run = async () => {
- *   const api = await Dedot.new<PolkadotApi>('wss://rpc.polkadot.io');
+ *   const api = await LegacyClient.new<PolkadotApi>('wss://rpc.polkadot.io');
  *
  *   // Call rpc `state_getMetadata` to fetch raw scale-encoded metadata and decode it.
  *   const metadata = await api.rpc.state.getMetadata();
@@ -54,7 +54,9 @@ const KEEP_ALIVE_INTERVAL = 10_000; // in ms
  * run().catch(console.error);
  * ```
  */
-export class Dedot<ChainApi extends VersionedGenericSubstrateApi = SubstrateApi> extends BaseSubstrateClient<ChainApi> {
+export class LegacyClient<ChainApi extends VersionedGenericSubstrateApi = SubstrateApi> // prettier-end-here
+  extends BaseSubstrateClient<ChainApi[RpcLegacy]>
+{
   #runtimeSubscriptionUnsub?: Unsub;
   #healthTimer?: ReturnType<typeof setInterval>;
   #apiAtCache: Record<BlockHash, ISubstrateClientAt<any>> = {};
@@ -75,19 +77,19 @@ export class Dedot<ChainApi extends VersionedGenericSubstrateApi = SubstrateApi>
    */
   static async create<ChainApi extends VersionedGenericSubstrateApi = SubstrateApi>(
     options: ApiOptions | JsonRpcProvider,
-  ): Promise<Dedot<ChainApi>> {
-    return new Dedot<ChainApi>(options).connect();
+  ): Promise<LegacyClient<ChainApi>> {
+    return new LegacyClient<ChainApi>(options).connect();
   }
 
   /**
-   * Alias for __Dedot.create__
+   * Alias for __LegacyClient.create__
    *
    * @param options
    */
   static async new<ChainApi extends VersionedGenericSubstrateApi = SubstrateApi>(
     options: ApiOptions | JsonRpcProvider,
-  ): Promise<Dedot<ChainApi>> {
-    return Dedot.create(options);
+  ): Promise<LegacyClient<ChainApi>> {
+    return LegacyClient.create(options);
   }
 
   protected override onDisconnected = async () => {
@@ -245,7 +247,7 @@ export class Dedot<ChainApi extends VersionedGenericSubstrateApi = SubstrateApi>
    * // Make a transfer balance transaction
    * api.tx.balances.transferKeepAlive(<address>, <amount>)
    *    .signAndSend(<keyPair|address>, { signer }, ({ status }) => {
-   *      console.log('Transaction status', status.tag);
+   *      console.log('Transaction status', status.type);
    *    });
    * ```
    */

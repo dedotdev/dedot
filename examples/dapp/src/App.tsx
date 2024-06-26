@@ -1,15 +1,15 @@
 import { useState } from 'react';
 import { useAsync } from 'react-use';
-import { Dedot, WsProvider } from 'dedot';
+import { LegacyClient, WsProvider } from 'dedot';
 import './App.css';
 
 const ENDPOINT = 'wss://rpc.polkadot.io';
 
 function App() {
-  const [api, setApi] = useState<Dedot>();
+  const [api, setApi] = useState<LegacyClient>();
   useAsync(async () => {
     console.time('init api took');
-    setApi(await Dedot.new({ provider: new WsProvider(ENDPOINT), cacheMetadata: true }));
+    setApi(await LegacyClient.new({ provider: new WsProvider(ENDPOINT), cacheMetadata: true }));
     console.timeEnd('init api took');
   });
 

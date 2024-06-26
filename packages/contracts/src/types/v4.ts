@@ -2,7 +2,7 @@ import {
   ContractConstructorMessage,
   ContractEventArg,
   ContractInformation,
-  ContractMessage,
+  ContractCallMessage,
   ContractSource,
   ContractStorage,
   ContractType,
@@ -24,7 +24,7 @@ export interface ContractSpecV4 {
   environment: ContractEnvironmentV4;
   events: ContractEventV4[];
   lang_error: ContractTypeInfo;
-  messages: ContractMessage[];
+  messages: ContractCallMessage[];
 }
 
 export interface ContractEventV4 {

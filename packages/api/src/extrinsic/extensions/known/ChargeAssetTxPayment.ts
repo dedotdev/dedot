@@ -35,9 +35,9 @@ export class ChargeAssetTxPayment extends SignedExtension<{ tip: bigint; assetId
 
   $AssetId() {
     const extensionTypeDef = this.registry.findType(this.signedExtensionDef.typeId);
-    assert(extensionTypeDef.type.tag === 'Struct');
+    assert(extensionTypeDef.typeDef.type === 'Struct');
 
-    const assetIdTypeDef = extensionTypeDef.type.value.fields.find((f) => f.name === 'asset_id')!;
+    const assetIdTypeDef = extensionTypeDef.typeDef.value.fields.find((f) => f.name === 'asset_id')!;
     const $codec = this.registry.findCodec(assetIdTypeDef.typeId);
     const codecMetadata = $codec.metadata[0]!;
     if (codecMetadata.name === '$.option') {

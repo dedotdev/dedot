@@ -11,7 +11,7 @@ import {
   ConstructorQueryGen,
 } from './generator/index.js';
 
-export async function generateContractTypesFromMetadata(
+export async function generateContractTypes(
   metadata: ContractMetadata | string,
   contract?: string,
   outDir: string = '.',

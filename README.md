@@ -19,7 +19,7 @@ _Note: The project is still in active development phase, the information on this
 - ✅ Native TypeScript type system for scale-codec
 - ✅ Compatible with `@polkadot/extension`-based wallets
 - ✅ Support Metadata V14, V15 (latest)
-- ✅ Support both the legacy & [new](https://paritytech.github.io/json-rpc-interface-spec/introduction.html) JSON-RPC APIs
+- ✅ Build on top of both the [new](https://paritytech.github.io/json-rpc-interface-spec/introduction.html) & legacy (deprecated soon) JSON-RPC APIs
 - ✅ Support light clients (e.g: [smoldot](https://www.npmjs.com/package/smoldot))
 - ⏳ Typed Contract APIs
 
@@ -47,12 +47,12 @@ npm i -D @dedot/chaintypes
 - Initialize the API client and start interacting with Polkadot network
 ```typescript
 // main.ts
-import { Dedot, WsProvider } from 'dedot';
+import { DedotClient, WsProvider } from 'dedot';
 import type { PolkadotApi } from '@dedot/chaintypes';
 
 const run = async () => {
   const provider = new WsProvider('wss://rpc.polkadot.io');
-  const api = await Dedot.new<PolkadotApi>(provider);
+  const api = await DedotClient.new<PolkadotApi>(provider);
 
   // Call rpc `state_getMetadata` to fetch raw scale-encoded metadata and decode it.
   const metadata = await api.rpc.state_getMetadata();
@@ -86,11 +86,20 @@ run().catch(console.error);
 
 ```js
 // main.js
-const { Dedot, WsProvider } = require('dedot');
+const { DedotClient, WsProvider } = require('dedot');
 // ...
 const provider = new WsProvider('wss://rpc.polkadot.io');
-const api = await Dedot.new(provider);
+const api = await DedotClient.new(provider);
 ```
+
+- If the JSON-RPC server doesn't support [new](https://paritytech.github.io/json-rpc-interface-spec/introduction.html) JSON-RPC APIs yet, you can connect using the `LegacyClient` which build on top of the legacy JSON-RPC APIs.
+```typescript
+import { LegacyClient, WsProvider } from 'dedot';
+
+const provider = new WsProvider('wss://rpc.polkadot.io');
+const api = await LegacyClient.new(provider);
+```
+
 ### Table of contents
 - [Status](#status)
 - [Chain Types & APIs](#chain-types--apis)
@@ -134,26 +143,27 @@ yarn add -D @dedot/chaintypes
 npm i -D @dedot/chaintypes
 ```
 
-Initialize a `Dedot` instance using the `ChainApi` interface for a target chain to enable types & APIs suggestion/autocompletion for that particular chain:
+Initialize a `DedotClient` instance using the `ChainApi` interface for a target chain to enable types & APIs suggestion/autocompletion for that particular chain:
+
 ```typescript
-import { Dedot, WsProvider } from 'dedot';
+import { DedotClient, WsProvider } from 'dedot';
 import type { PolkadotApi, KusamaApi, MoonbeamApi, AstarApi } from '@dedot/chaintypes';
 
 // ...
 
-const polkadotApi = await Dedot.new<PolkadotApi>(new WsProvider('wss://rpc.polkadot.io'));
+const polkadotApi = await DedotClient.new<PolkadotApi>(new WsProvider('wss://rpc.polkadot.io'));
 console.log(await polkadotApi.query.babe.authorities());
 
-const kusamaApi = await Dedot.new<KusamaApi>(new WsProvider('wss://kusama-rpc.polkadot.io'));
+const kusamaApi = await DedotClient.new<KusamaApi>(new WsProvider('wss://kusama-rpc.polkadot.io'));
 console.log(await kusamaApi.query.society.memberCount());
 
-const moonbeamApi = await Dedot.new<MoonbeamApi>(new WsProvider('wss://wss.api.moonbeam.network'));
+const moonbeamApi = await DedotClient.new<MoonbeamApi>(new WsProvider('wss://wss.api.moonbeam.network'));
 console.log(await moonbeamApi.query.ethereumChainId.chainId());
 
-const astarApi = await Dedot.new<AstarApi>(new WsProvider('wss://rpc.astar.network'));
+const astarApi = await DedotClient.new<AstarApi>(new WsProvider('wss://rpc.astar.network'));
 console.log(await astarApi.query.dappsStaking.blockRewardAccumulator());
 
-const genericApi = await Dedot.new(new WsProvider('ws://localhost:9944'));
+const genericApi = await DedotClient.new(new WsProvider('ws://localhost:9944'));
 
 // ...
 ```
@@ -220,16 +230,16 @@ const queryInfo = await api.call.transactionPaymentApi.queryInfo(tx.toU8a(), tx.
 const runtimeVersion = await api.call.core.version();
 ```
 
-For chains that only support Metadata V14, we need to bring in the Runtime Api definitions when initializing the Dedot client instance to encode & decode the calls. You can find all supported Runtime Api definitions in [`dedot/runtime-specs`](https://github.com/dedotdev/dedot/blob/60de0fed8ba19c67a7e174c6168a127fdbf6caef/packages/runtime-specs/src/runtime/all.ts#L21-L39) package.
+For chains that only support Metadata V14, we need to bring in the Runtime Api definitions when initializing the DedotClient instance to encode & decode the calls. You can find all supported Runtime Api definitions in [`dedot/runtime-specs`](https://github.com/dedotdev/dedot/blob/60de0fed8ba19c67a7e174c6168a127fdbf6caef/packages/runtime-specs/src/runtime/all.ts#L21-L39) package.
 
 Examples:
 ```typescript
 import { RuntimeApis } from 'dedot/runtime-specs';
-const api = await Dedot.new({ provider: new WsProvider('wss://rpc.mynetwork.com'), runtimeApis: RuntimeApis });
+const api = await DedotClient.new({ provider: new WsProvider('wss://rpc.mynetwork.com'), runtimeApis: RuntimeApis });
 
 // Or bring in only the Runtime Api definition that you want to interact with
 import { AccountNonceApi } from 'dedot/runtime-specs';
-const api = await Dedot.new({ provider: new WsProvider('wss://rpc.mynetwork.com'), runtimeApis: { AccountNonceApi } });
+const api = await DedotClient.new({ provider: new WsProvider('wss://rpc.mynetwork.com'), runtimeApis: { AccountNonceApi } });
 
 // Get account nonce
 const nonce = await api.call.accountNonceApi.accountNonce(<address>);
@@ -255,8 +265,8 @@ const alice = keyring.addFromUri('//Alice');
 const unsub = await api.tx.balances
     .transferKeepAlive(<destAddress>, 2_000_000_000_000n)
     .signAndSend(alice, async ({ status }) => {
-      console.log('Transaction status', status.tag);
-      if (status.tag === 'InBlock') {
+      console.log('Transaction status', status.type);
+      if (status.type === 'InBlock') {
         console.log(`Transaction completed at block hash ${status.value}`);
         await unsub();
       }
@@ -272,8 +282,8 @@ const signer = injected.signer;
 const unsub = await api.tx.balances
     .transferKeepAlive(<destAddress>, 2_000_000_000_000n)
     .signAndSend(account.address, { signer }, async ({ status }) => {
-      console.log('Transaction status', status.tag);
-      if (status.tag === 'InBlock') {
+      console.log('Transaction status', status.type);
+      if (status.type === 'InBlock') {
         console.log(`Transaction completed at block hash ${status.value}`);
         await unsub();
       }
@@ -301,8 +311,8 @@ const remarkCall: PolkadotRuntimeRuntimeCallLike = {
 
 const unsub = api.tx.utility.batch([transferTx.call, remarkCall])
     .signAndSend(account.address, { signer }, async ({ status }) => {
-      console.log('Transaction status', status.tag);
-      if (status.tag === 'InBlock') {
+      console.log('Transaction status', status.type);
+      if (status.type === 'InBlock') {
         console.log(`Transaction completed at block hash ${status.value}`);
         await unsub();
       }
@@ -319,21 +329,21 @@ import { AccountId32 } from 'dedot/codecs';
 const TWO_TOKENS = 2_000_000_000_000n;
 const destAddress = <bobAddress>;
 
-const api = await Dedot.new<WestendAssetHubApi>('...westend-assethub-rpc...');
+const api = await DedotClient.new<WestendAssetHubApi>('...westend-assethub-rpc...');
 
 const dest: XcmVersionedLocation = {
-  tag: 'V3',
-  value: { parents: 1, interior: { tag: 'Here' } },
+  type: 'V3',
+  value: { parents: 1, interior: { type: 'Here' } },
 };
 
 const beneficiary: XcmVersionedLocation = {
-  tag: 'V3',
+  type: 'V3',
   value: {
     parents: 0,
     interior: {
-      tag: 'X1',
+      type: 'X1',
       value: {
-        tag: 'AccountId32',
+        type: 'AccountId32',
         value: { id: new AccountId32(destAddress).raw },
       },
     },
@@ -341,25 +351,25 @@ const beneficiary: XcmVersionedLocation = {
 };
 
 const assets: XcmVersionedAssets = {
-  tag: 'V3',
+  type: 'V3',
   value: [
     {
       id: {
-        tag: 'Concrete',
+        type: 'Concrete',
         value: {
           parents: 1,
-          interior: { tag: 'Here' },
+          interior: { type: 'Here' },
         },
       },
       fun: {
-        tag: 'Fungible',
+        type: 'Fungible',
         value: TWO_TOKENS,
       },
     },
   ],
 };
 
-const weight: XcmV3WeightLimit = { tag: 'Unlimited' };
+const weight: XcmV3WeightLimit = { type: 'Unlimited' };
 
 api.tx.polkadotXcm
   .limitedTeleportAssets(dest, beneficiary, assets, 0, weight)
@@ -407,7 +417,7 @@ await api.query.system.events(async (eventRecords) => {
   for (const tx of eventRecords) {
     if (api.events.system.ExtrinsicFailed.is(tx.event)) {
       const { dispatchError } = tx.event.palletEvent.data;
-      if (dispatchError.tag === 'Module' && api.errors.assets.AlreadyExists.is(dispatchError.value)) {
+      if (dispatchError.type === 'Module' && api.errors.assets.AlreadyExists.is(dispatchError.value)) {
         console.log('Assets.AlreadyExists error occurred!');
       } else {
         console.log('Other error occurred', dispatchError);
@@ -431,14 +441,15 @@ import { ApiPromise, WsProvider } from '@polkadot/api';
 const api = await ApiPromise.create({ provider: new WsProvider('wss://rpc.polkadot.io') });
 ```
 - `dedot`
+
 ```typescript
-import { Dedot, WsProvider } from 'dedot';
+import { DedotClient, WsProvider } from 'dedot';
 import type { PolkadotApi } from '@dedot/chaintypes';
 
-const api = await Dedot.new<PolkadotApi>(new WsProvider('wss://rpc.polkadot.io')); // or Dedot.create(...) if you prefer
+const api = await DedotClient.new<PolkadotApi>(new WsProvider('wss://rpc.polkadot.io')); // or DedotClient.create(...) if you prefer
 
 // OR
-const api = await Dedot.new<PolkadotApi>({ provider: new WsProvider('wss://rpc.polkadot.io') });
+const api = await DedotClient.new<PolkadotApi>({ provider: new WsProvider('wss://rpc.polkadot.io') });
 ```
 
 - Notes:
@@ -461,7 +472,7 @@ Unlike `@polkadot/api` where data are wrapped inside a [codec types](https://pol
 | `str`                                                   | `string`                                                                                                                       |
 | Tuple: `(A, B)`, `()`                                   | `[A, B]`, `[]`                                                                                                                 |
 | Struct: `struct { field_1: u8, field_2: str }`          | `{ field_1: number, field_2: string}`                                                                                          |
-| Enum: `enum { Variant1(u8), Variant2(bool), Variant3 }` | `{ tag: 'Variant1', value: number } \| { tag: 'Variant2', value: boolean } \| { tag: 'Variant2' }`                             |
+| Enum: `enum { Variant1(u8), Variant2(bool), Variant3 }` | `{ type: 'Variant1', value: number } \| { type: 'Variant2', value: boolean } \| { type:  'Variant2' }`                             |
 | FlatEnum: `enum { Variant1, Variant2 }`                 | `'Variant1' \| 'Variant2'`                                                                                                     |
 
 E.g 1:

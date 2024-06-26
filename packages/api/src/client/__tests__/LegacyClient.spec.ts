@@ -4,23 +4,23 @@ import type { AnyShape } from '@dedot/shape';
 import * as $ from '@dedot/shape';
 import { stringCamelCase, stringPascalCase, u8aToHex } from '@dedot/utils';
 import { afterEach, beforeEach, describe, expect, expectTypeOf, it, vi } from 'vitest';
-import { Dedot } from '../Dedot.js';
+import { LegacyClient } from '../LegacyClient.js';
 import MockProvider, { MockedRuntimeVersion } from './MockProvider.js';
 
-describe('Dedot', () => {
+describe('LegacyClient', () => {
   it('should throws error for invalid endpoint', () => {
     expect(async () => {
-      await Dedot.new(new WsProvider('invalid_endpoint'));
+      await LegacyClient.new(new WsProvider('invalid_endpoint'));
     }).rejects.toThrowError(
       'Invalid websocket endpoint invalid_endpoint, a valid endpoint should start with wss:// or ws://',
     );
   });
 
   describe('cache disabled', () => {
-    let api: Dedot, provider: MockProvider;
+    let api: LegacyClient, provider: MockProvider;
     beforeEach(async () => {
       provider = new MockProvider();
-      api = await Dedot.new({ provider });
+      api = await LegacyClient.new({ provider });
     });
 
     afterEach(async () => {
@@ -67,7 +67,7 @@ describe('Dedot', () => {
             expect(api.query[stringCamelCase(pallet.name)][stringCamelCase(entry.name)].meta).toBeDefined();
             expectTypeOf(api.query[stringCamelCase(pallet.name)][stringCamelCase(entry.name)].rawKey).toBeFunction();
 
-            if (entry.type.tag === 'Map') {
+            if (entry.storageType.type === 'Map') {
               // @ts-ignore
               expect(api.query[stringCamelCase(pallet.name)][stringCamelCase(entry.name)].multi).toBeDefined();
               // @ts-ignore
@@ -103,8 +103,8 @@ describe('Dedot', () => {
         api.metadata.latest.pallets.forEach((pallet) => {
           if (!pallet.error) return;
           const event = api.metadata.latest.types[pallet.error];
-          if (event.type.tag === 'Enum') {
-            event.type.value.members.forEach((m) => {
+          if (event.typeDef.type === 'Enum') {
+            event.typeDef.value.members.forEach((m) => {
               expect(api.errors[stringCamelCase(pallet.name)][stringPascalCase(m.name)]).toHaveProperty(['is']);
             });
           }
@@ -129,8 +129,8 @@ describe('Dedot', () => {
         api.metadata.latest.pallets.forEach((pallet) => {
           if (!pallet.event) return;
           const event = api.metadata.latest.types[pallet.event];
-          if (event.type.tag === 'Enum') {
-            event.type.value.members.forEach((m) => {
+          if (event.typeDef.type === 'Enum') {
+            event.typeDef.value.members.forEach((m) => {
               expect(api.events[stringCamelCase(pallet.name)][stringPascalCase(m.name)]).toHaveProperty(['is']);
             });
           }
@@ -197,7 +197,7 @@ describe('Dedot', () => {
           tryEncode: vi.fn(() => new Uint8Array()),
         };
 
-        api = await Dedot.create({
+        api = await LegacyClient.create({
           provider: new MockProvider(),
           runtimeApis: {
             Metadata: [
@@ -231,8 +231,8 @@ describe('Dedot', () => {
         api.metadata.latest.pallets.forEach((pallet) => {
           if (!pallet.calls) return;
           const calls = api.metadata.latest.types[pallet.calls];
-          if (calls.type.tag === 'Enum') {
-            calls.type.value.members.forEach((m) => {
+          if (calls.typeDef.type === 'Enum') {
+            calls.typeDef.value.members.forEach((m) => {
               const tx = api.tx[stringCamelCase(pallet.name)][stringCamelCase(m.name)];
               expectTypeOf(tx).toBeFunction();
               expect(tx).toHaveProperty(['meta']);
@@ -314,9 +314,9 @@ describe('Dedot', () => {
   });
 
   describe('cache enabled', () => {
-    let api: Dedot;
+    let api: LegacyClient;
     beforeEach(async () => {
-      api = await Dedot.new({ provider: new MockProvider(), cacheMetadata: true });
+      api = await LegacyClient.new({ provider: new MockProvider(), cacheMetadata: true });
     });
 
     afterEach(async () => {
@@ -329,7 +329,7 @@ describe('Dedot', () => {
     it('should load metadata from cache', async () => {
       const provider = new MockProvider();
       const providerSendSpy = vi.spyOn(provider, 'send');
-      const newApi = await Dedot.new({ provider, cacheMetadata: true });
+      const newApi = await LegacyClient.new({ provider, cacheMetadata: true });
 
       expect(providerSendSpy).not.toBeCalledWith('state_getMetadata', []);
       expect(newApi.metadata).toBeDefined();
@@ -345,7 +345,7 @@ describe('Dedot', () => {
       );
 
       const providerSendSpy = vi.spyOn(provider, 'send');
-      const newApi = await Dedot.new({ provider, cacheMetadata: true });
+      const newApi = await LegacyClient.new({ provider, cacheMetadata: true });
 
       expect(providerSendSpy).toBeCalledWith('state_getMetadata', []);
       expect(newApi.metadata).toBeDefined();
@@ -356,9 +356,9 @@ describe('Dedot', () => {
   });
 
   describe('not throwOnUnknownApi', () => {
-    let api: Dedot;
+    let api: LegacyClient;
     beforeEach(async () => {
-      api = await Dedot.new({ provider: new MockProvider(), throwOnUnknownApi: false });
+      api = await LegacyClient.new({ provider: new MockProvider(), throwOnUnknownApi: false });
     });
 
     afterEach(async () => {
