@@ -29,19 +29,19 @@ Try `dedot` now on [CodeSandbox Playground](https://codesandbox.io/p/devbox/tryd
 - Install `dedot` package
 ```shell
 # via yarn
-yarn add dedot
+yarn add dedot@latest
 
 # via npm
-npm i dedot
+npm i dedot@latest
 ```
 
 - Install `@dedot/chaintypes` package for chain types & APIs suggestion. Skip this step if you don't use TypeScript.
 ```shell
 # via yarn
-yarn add -D @dedot/chaintypes
+yarn add -D @dedot/chaintypes@latest
 
 # via npm
-npm i -D @dedot/chaintypes
+npm i -D @dedot/chaintypes@latest
 ```
 
 - Initialize the API client and start interacting with Polkadot network
