@@ -3,7 +3,7 @@
   "version": "0.0.1-alpha.36",
   "description": "A delightful JavaScript/TypeScript client for Polkadot & Substrate",
   "author": "Thang X. Vu <thang@coongcrafts.io>",
-  "homepage": "https://github.com/dedotdev/dedot",
+  "homepage": "https://github.com/dedotdev/dedot/tree/main/packages/api",
   "repository": {
     "directory": "packages/api",
     "type": "git",
