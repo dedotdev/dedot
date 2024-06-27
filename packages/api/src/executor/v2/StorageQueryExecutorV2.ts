@@ -64,21 +64,21 @@ export class StorageQueryExecutorV2<
     // initialHash = this.chainHead.finalizedHash;
     // eventToListen = 'finalizedBlock';
 
-    const latestChanges: Record<HexString, StorageData> = {};
+    const latestChanges: Map<HexString, StorageData | undefined> = new Map();
 
     const pull = async ({ hash }: PinnedBlock) => {
       const results = await this.queryStorage(keys, hash);
       let changed = false;
       keys.forEach((key) => {
         const newValue = results[key] as StorageData;
-        if (latestChanges[key] === newValue) return;
+        if (latestChanges.size > 0 && latestChanges.get(key) === newValue) return;
 
         changed = true;
-        latestChanges[key] = newValue;
+        latestChanges.set(key, newValue);
       });
 
       if (!changed) return;
-      callback(keys.map((key) => latestChanges[key]));
+      callback(keys.map((key) => latestChanges.get(key)));
     };
 
     await pull(best);

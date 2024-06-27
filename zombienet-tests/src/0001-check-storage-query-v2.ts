@@ -36,6 +36,16 @@ export const run = async (nodeName: any, networkInfo: any) => {
   assert(addressToFreeBalance[ALICE] === 10_000_000_000_000_000n, 'Incorrect balance for Alice');
   assert(addressToFreeBalance[BOB] === 10_000_000_000_000_000n, 'Incorrect balance for Alice');
 
+  // Verify empty storage subscription
+  const UNKNOWN_ADDRESS: string = '5GL1n2H9fkCc6K6d87L5MV3WkzWnQz4mbb9HMSNk89CpjrMv';
+  await new Promise<void>(async (resolve) => {
+    await api.query.system.account(UNKNOWN_ADDRESS, (balance) => {
+      assert(balance.data.free === 0n, 'Incorrect balance for unknown account');
+      assert(balance.nonce === 0, 'Incorrect nonce for unknown account');
+      resolve();
+    });
+  });
+
   await new Promise<void>(async (resolve, reject) => {
     let counter = 0;
     let lastBlockNumber: number | undefined;
