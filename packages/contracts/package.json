@@ -3,6 +3,12 @@
   "version": "0.0.1-alpha.36",
   "description": "Delightful ink! Contract APIs",
   "author": "Tung Vu <tung@coongcrafts.io>",
+  "homepage": "https://github.com/dedotdev/dedot/tree/main/packages/contracts",
+  "repository": {
+    "directory": "packages/contracts",
+    "type": "git",
+    "url": "https://github.com/dedotdev/dedot.git"
+  },
   "main": "src/index.ts",
   "sideEffects": false,
   "type": "module",
