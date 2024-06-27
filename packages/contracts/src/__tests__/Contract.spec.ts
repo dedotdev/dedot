@@ -116,6 +116,7 @@ describe('Contract', () => {
 
         const decodedEvent = flipper.decodeEvent(eventRecord);
 
+        expect(flipper.events.Flipped.is(decodedEvent!)).toEqual(true);
         expect(decodedEvent).toEqual({ name: 'Flipped', data: { old: false, new: true } });
       });
 
@@ -146,6 +147,7 @@ describe('Contract', () => {
 
         const decodedEvent = flipper.decodeEvent(eventRecord);
 
+        expect(flipper.events.Flipped.is(decodedEvent!)).toEqual(true);
         expect(decodedEvent).toEqual({ name: 'Flipped', data: { old: false, new: true } });
       });
     });

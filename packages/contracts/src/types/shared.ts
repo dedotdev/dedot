@@ -115,9 +115,7 @@ export interface ContractStorage {
   };
 }
 
-export interface ContractEventArg {
+export interface ContractEventArg extends ContractMessageArg {
   docs: string[];
   indexed: boolean;
-  label: string;
-  type: ContractTypeInfo;
 }
