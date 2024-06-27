@@ -59,8 +59,9 @@ export class TypinkRegistry extends TypeRegistry {
     event = signatureTopic && this.#metadata.spec.events.find((one) => one.signature_topic === signatureTopic);
 
     // TODO: Handle multiple anonymous events
+    // If `event` does not exist, it means it's an anonymous event that does not contain a signature topic in the metadata.
     if (!event) {
-      const potentialEvents = this.#metadata.spec.events.filter((one) => !one.signature_topic || one.args.filter(arg => arg.indexed).length === eventRecord.topics.length);
+      const potentialEvents = this.#metadata.spec.events.filter((one) => !one.signature_topic && one.args.filter(arg => arg.indexed).length === eventRecord.topics.length);
       assert(potentialEvents.length === 1, 'Unable to determine event!');
 
       event = potentialEvents[0]
