@@ -119,7 +119,7 @@ const api = await LegacyClient.new(provider);
 
 Each Substrate-based blockchain has their own set of data types & APIs to interact with, so being aware of those types & APIs when working with a blockchain will greatly improve the overall development experience. `dedot` exposes TypeScript's types & APIs for each individual Substrate-based blockchain, we recommend using TypeScript for your project to have the best experience.
 
-Types & APIs for each Substrate-based blockchains are defined in package [`@dedot/chaintypes`](https://github.com/dedotdev/dedot/tree/main/packages/chaintypes):
+Types & APIs for each Substrate-based blockchains are defined in package [`@dedot/chaintypes`](https://github.com/dedotdev/chaintypes):
 ```shell
 # via yarn
 yarn add -D @dedot/chaintypes@latest
