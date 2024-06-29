@@ -5,6 +5,7 @@ A delightful JavaScript/TypeScript client for [Polkadot](https://polkadot.networ
 <p align="left">
   <img src="https://img.shields.io/github/license/dedotdev/dedot?style=flat-square"/>
   <img src="https://img.shields.io/github/actions/workflow/status/dedotdev/dedot/run-tests.yml?label=unit%20tests&style=flat-square"/>
+  <img src="https://img.shields.io/github/actions/workflow/status/dedotdev/dedot/zombienet-tests.yml?label=e2e%20tests&style=flat-square"/>
   <img src="https://img.shields.io/github/package-json/v/dedotdev/dedot?filename=packages%2Fapi%2Fpackage.json&style=flat-square"/>
 </p>
 
