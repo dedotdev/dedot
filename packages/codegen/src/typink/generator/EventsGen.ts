@@ -16,7 +16,7 @@ export class EventsGen extends QueryGen {
       const { docs, label } = event;
       const isV5 = 'signature_topic' in event;
 
-      eventsOut += `${commentBlock(docs, '\n', isV5 && event.signature_topic ? `@signature_topic: ${event.signature_topic}` : '- Anonymous event')}`;
+      eventsOut += `${commentBlock(docs, '\n', isV5 ? event.signature_topic ? `@signature_topic: ${event.signature_topic}` : '- Anonymous event' : '')}`;
       eventsOut += `${stringPascalCase(label)}: ${this.#generateEventDef(event)};\n\n`;
     });
 
