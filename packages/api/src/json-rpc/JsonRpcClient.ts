@@ -1,4 +1,4 @@
-import type { ConnectionStatus, JsonRpcProvider, ProviderEvent, Subscription } from '@dedot/providers';
+import type { ConnectionStatus, JsonRpcProvider, ProviderEvent, JsonRpcSubscription } from '@dedot/providers';
 import type { AsyncMethod, GenericSubstrateApi, RpcVersion, Unsub, VersionedGenericSubstrateApi } from '@dedot/types';
 import { assert, EventEmitter, isFunction, isString } from '@dedot/utils';
 import type { SubstrateApi } from '../chaintypes/index.js';
@@ -171,7 +171,7 @@ export class JsonRpcClient<
       const callback = inArgs.pop();
       assert(isFunction(callback), 'A callback is required for subscription');
 
-      const onNewMessage = (error: Error | null, result: unknown, subscription: Subscription) => {
+      const onNewMessage = (error: Error | null, result: unknown, subscription: JsonRpcSubscription) => {
         if (error) {
           console.error(error);
           return;

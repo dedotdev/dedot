@@ -1,5 +1,5 @@
 import { $Header, BlockHash, Option } from '@dedot/codecs';
-import type { Subscription } from '@dedot/providers';
+import type { JsonRpcSubscription } from '@dedot/providers';
 import type { AsyncMethod, Unsub } from '@dedot/types';
 import type {
   ChainHeadRuntimeVersion,
@@ -144,7 +144,7 @@ export class ChainHead extends JsonRpcGroup<ChainHeadEvent> {
     try {
       this.#unsub && this.#unsub().catch(noop); // ensure unfollowed
 
-      this.#unsub = await this.send('follow', true, (event: FollowEvent, subscription: Subscription) => {
+      this.#unsub = await this.send('follow', true, (event: FollowEvent, subscription: JsonRpcSubscription) => {
         this.#followResponseQueue
           .enqueue(async () => {
             await this.#onFollowEvent(event, subscription);
@@ -162,7 +162,7 @@ export class ChainHead extends JsonRpcGroup<ChainHeadEvent> {
     return defer.promise;
   }
 
-  #onFollowEvent = async (result: FollowEvent, subscription?: Subscription) => {
+  #onFollowEvent = async (result: FollowEvent, subscription?: JsonRpcSubscription) => {
     switch (result.event) {
       case 'initialized': {
         const { finalizedBlockHashes = [], finalizedBlockHash, finalizedBlockRuntime } = result;
