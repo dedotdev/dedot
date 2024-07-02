@@ -1,4 +1,4 @@
-import { literalUnion, sizedArray, sizedUint8Array, tuple, uint8Array } from '../subshape.js';
+import { literalUnion, sizedArray, sizedUint8Array, tuple, uint8Array } from '../deshape.js';
 import { array } from './array.js';
 import { option } from './option.js';
 

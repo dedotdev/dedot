@@ -1,4 +1,4 @@
-import { AssertState, createShape, metadata, Shape, ShapeDecodeError, ShapeEncodeError } from '../subshape.js';
+import { AssertState, createShape, metadata, Shape, ShapeDecodeError, ShapeEncodeError } from '../deshape.js';
 
 export type Result<OK, KO> = { isOk: true; isErr?: false; value: OK } | { isOk?: false; isErr: true; err: KO };
 
