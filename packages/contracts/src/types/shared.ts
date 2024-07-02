@@ -114,3 +114,8 @@ export interface ContractStorage {
     root_key: string;
   };
 }
+
+export interface ContractEventArg extends ContractMessageArg {
+  docs: string[];
+  indexed: boolean;
+}

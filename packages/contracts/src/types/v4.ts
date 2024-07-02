@@ -1,5 +1,6 @@
 import {
   ContractConstructorMessage,
+  ContractEventArg,
   ContractInformation,
   ContractCallMessage,
   ContractSource,
@@ -27,9 +28,9 @@ export interface ContractSpecV4 {
 }
 
 export interface ContractEventV4 {
-  args: unknown[];
+  args: ContractEventArg[];
   docs: string[];
-  label: string[];
+  label: string;
 }
 
 export interface ContractEnvironmentV4 {

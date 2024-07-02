@@ -3,7 +3,7 @@ import { describe, expect, it } from 'vitest';
 import { ContractTypeDef} from '../types/index.js';
 import { extractContractTypes, normalizeContractTypeDef, normalizeLabel, parseRawMetadata } from '../utils.js';
 // @ts-ignore
-import flipperRaw from './flipper.json' assert { type: "json" };
+import flipperRaw from './flipper_v4.json' assert { type: "json" };
 
 describe('utils', () => {
   describe('normalizeContractTypeDef', () => {

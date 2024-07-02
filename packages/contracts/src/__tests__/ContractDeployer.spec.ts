@@ -3,7 +3,7 @@ import MockProvider from '@dedot/api/client/__tests__/MockProvider';
 import { beforeEach, describe, expect, it } from 'vitest';
 import { ContractDeployer } from '../ContractDeployer.js';
 import { MockedRuntimeVersionWithContractsApi } from './Contract.spec.js';
-import { FLIPPER_CONTRACT_METADATA, PSP22_CONTRACT_METADATA } from './contracts-metadata.js';
+import { FLIPPER_CONTRACT_METADATA_V4, PSP22_CONTRACT_METADATA } from './contracts-metadata.js';
 
 describe('ContractDeployer', () => {
   let api: LegacyClient, provider: MockProvider, flipper: ContractDeployer, psp22: ContractDeployer;
@@ -12,7 +12,7 @@ describe('ContractDeployer', () => {
     beforeEach(async () => {
       provider = new MockProvider(MockedRuntimeVersionWithContractsApi);
       api = await LegacyClient.new({ provider });
-      flipper = new ContractDeployer(api, FLIPPER_CONTRACT_METADATA, FLIPPER_CONTRACT_METADATA.source.hash);
+      flipper = new ContractDeployer(api, FLIPPER_CONTRACT_METADATA_V4, FLIPPER_CONTRACT_METADATA_V4.source.hash);
       psp22 = new ContractDeployer(api, PSP22_CONTRACT_METADATA, PSP22_CONTRACT_METADATA.source.hash);
     });
 
@@ -34,7 +34,7 @@ describe('ContractDeployer', () => {
       provider = new MockProvider();
       api = await LegacyClient.new({ provider });
       expect(
-        () => new ContractDeployer(api, FLIPPER_CONTRACT_METADATA, FLIPPER_CONTRACT_METADATA.source.hash),
+        () => new ContractDeployer(api, FLIPPER_CONTRACT_METADATA_V4, FLIPPER_CONTRACT_METADATA_V4.source.hash),
       ).toThrowError('Contracts pallet is not available');
     });
   });

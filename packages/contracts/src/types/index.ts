@@ -2,10 +2,12 @@ import { SubstrateApi } from '@dedot/api/chaintypes';
 import { AccountId32Like, BytesLike, DispatchError, Weight } from '@dedot/codecs';
 import { AnyFunc, AsyncMethod, GenericSubstrateApi, RpcVersion, VersionedGenericSubstrateApi } from '@dedot/types';
 import { ContractCallMessage, ContractConstructorMessage } from './shared.js';
-import { ContractMetadataV4 } from './v4.js';
-import { ContractMetadataV5 } from './v5.js';
+import { ContractEventV4, ContractMetadataV4 } from './v4.js';
+import { ContractEventV5, ContractMetadataV5 } from './v5.js';
 
 export * from './shared.js';
+
+export type ContractEventMeta = ContractEventV4 | ContractEventV5;
 
 export type GenericContractCallResult<DecodedData, ContractResult> = (
   | {
@@ -112,6 +114,25 @@ export interface GenericConstructorTx<ChainApi extends GenericSubstrateApi> {
   [method: string]: GenericConstructorTxCall<ChainApi>;
 }
 
+export type ContractEvent<EventName extends string = string, Data extends any = any> = Data extends undefined
+  ? {
+      name: EventName;
+    }
+  : {
+      name: EventName;
+      data: Data;
+    };
+
+export interface GenericContractEvent<EventName extends string = string, Data extends any = any> {
+  is: (event: ContractEvent) => event is ContractEvent<EventName, Data>;
+  as: (event: ContractEvent) => ContractEvent<EventName, Data> | undefined;
+  meta: ContractEventMeta;
+}
+
+export interface GenericContractEvents<_ extends GenericSubstrateApi> {
+  [event: string]: GenericContractEvent;
+}
+
 export interface GenericContractApi<
   Rv extends RpcVersion = RpcVersion,
   ChainApi extends VersionedGenericSubstrateApi = SubstrateApi,
@@ -120,4 +141,5 @@ export interface GenericContractApi<
   tx: GenericContractTx<ChainApi[Rv]>;
   constructorQuery: GenericConstructorQuery<ChainApi[Rv]>;
   constructorTx: GenericConstructorTx<ChainApi[Rv]>;
+  events: GenericContractEvents<ChainApi[Rv]>;
 }
