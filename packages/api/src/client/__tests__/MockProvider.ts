@@ -4,9 +4,9 @@ import {
   ConnectionStatus,
   JsonRpcProvider,
   ProviderEvent,
-  Subscription,
-  SubscriptionCallback,
-  SubscriptionInput,
+  JsonRpcSubscription,
+  JsonRpcSubscriptionCallback,
+  JsonRpcSubscriptionInput,
 } from '@dedot/providers';
 import { AnyFunc } from '@dedot/types';
 import { ChainProperties } from '@dedot/types/json-rpc';
@@ -49,8 +49,8 @@ export default class MockProvider extends EventEmitter<ProviderEvent> implements
   #subscriptions: Record<
     string,
     {
-      callback: SubscriptionCallback;
-      subscription: Subscription;
+      callback: JsonRpcSubscriptionCallback;
+      subscription: JsonRpcSubscription;
     }
   > = {};
 
@@ -78,13 +78,16 @@ export default class MockProvider extends EventEmitter<ProviderEvent> implements
     return (await result(params)) as T;
   }
 
-  async subscribe<T = any>(input: SubscriptionInput, callback: SubscriptionCallback<T>): Promise<Subscription> {
+  async subscribe<T = any>(
+    input: JsonRpcSubscriptionInput,
+    callback: JsonRpcSubscriptionCallback<T>,
+  ): Promise<JsonRpcSubscription> {
     const { subname, subscribe, params, unsubscribe } = input;
     const subscriptionId = await this.send<string>(subscribe, params);
 
     const subkey = `${subname}::${subscriptionId}`;
 
-    const subscription: Subscription = {
+    const subscription: JsonRpcSubscription = {
       unsubscribe: async () => {
         delete this.#subscriptions[subkey];
         await this.send(unsubscribe, [subscriptionId]);

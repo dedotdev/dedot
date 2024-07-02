@@ -2,13 +2,18 @@ import type { IEventEmitter } from '@dedot/utils';
 
 export * from './json-rpc.js';
 
-export type Subscription = {
+export type JsonRpcSubscription = {
   unsubscribe: () => Promise<void>;
   subscriptionId: string;
 };
 
-export type SubscriptionCallback<T = any> = (error: Error | null, result: T | null, subscription: Subscription) => void;
-export type SubscriptionInput = {
+export type JsonRpcSubscriptionCallback<T = any> = (
+  error: Error | null,
+  result: T | null,
+  subscription: JsonRpcSubscription,
+) => void;
+
+export type JsonRpcSubscriptionInput = {
   /**
    * Subscription/notification name, this value should be present in the notification response from the server/node
    */
@@ -52,7 +57,10 @@ export interface JsonRpcProvider extends IEventEmitter<ProviderEvent> {
    * @param input
    * @param callback
    */
-  subscribe<T = any>(input: SubscriptionInput, callback: SubscriptionCallback<T>): Promise<Subscription>;
+  subscribe<T = any>(
+    input: JsonRpcSubscriptionInput,
+    callback: JsonRpcSubscriptionCallback<T>,
+  ): Promise<JsonRpcSubscription>;
 
   /**
    * Connect to the provider
