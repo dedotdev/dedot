@@ -1,5 +1,5 @@
 import { HexString, hexToU8a, u8aToHex } from '@dedot/utils';
-import { constant, DecodeBuffer, metadata, Shape, withMetadata } from '../subshape.js';
+import { constant, DecodeBuffer, metadata, Shape, withMetadata } from '../deshape.js';
 import { createShape } from './createShape.js';
 
 export const RawHex: Shape<HexString> = createShape({

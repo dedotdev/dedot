@@ -21,9 +21,9 @@ import {
   u32,
   u64,
   u8,
-} from 'subshape';
+} from 'deshape';
 
-declare module 'subshape' {
+declare module 'deshape' {
   export interface Decoder<T extends AnyShape = Shape<any>, I = any, O = any> {
     (shape: T, input: I): O;
   }
@@ -140,4 +140,4 @@ u16.nativeType = 'number';
 u8.nativeType = 'number';
 str.nativeType = 'string';
 
-export * from 'subshape';
+export * from 'deshape';

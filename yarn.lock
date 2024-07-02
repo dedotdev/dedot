@@ -671,7 +671,7 @@ __metadata:
   resolution: "@dedot/shape@workspace:packages/shape"
   dependencies:
     "@dedot/utils": "workspace:*"
-    subshape: "npm:^0.14.0"
+    deshape: "npm:^0.0.1"
   languageName: unknown
   linkType: soft
 
@@ -3817,6 +3817,13 @@ __metadata:
   version: 0.4.1
   resolution: "depseek@npm:0.4.1"
   checksum: 10c0/1313fba818793a5be4514c95f8770cbbe45cf6e746b629166115d0a380b3ccd2a4577355a928063daecec303e488cc414d1279938dd4d4521a57304746f0e892
+  languageName: node
+  linkType: hard
+
+"deshape@npm:^0.0.1":
+  version: 0.0.1
+  resolution: "deshape@npm:0.0.1"
+  checksum: 10c0/f736741f697f51e0772c792d369311a922c5d726f046a11f70fc8c40a6972aed5332c093ddd840c8244fa66ee0cf6a214e2f3e89fd1e64324fb344a2c4dda1a7
   languageName: node
   linkType: hard
 

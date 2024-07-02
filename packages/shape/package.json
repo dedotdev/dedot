@@ -17,7 +17,7 @@
   ],
   "dependencies": {
     "@dedot/utils": "workspace:*",
-    "subshape": "^0.14.0"
+    "deshape": "^0.0.1"
   },
   "scripts": {
     "build": "tsc --project tsconfig.build.json && tsc --project tsconfig.build.cjs.json",
