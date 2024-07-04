@@ -9,7 +9,7 @@ import {
 } from '../types/index.js';
 import { normalizeLabel } from '../utils.js';
 import { Executor } from './Executor.js';
-import { ContractDispatchError, ContractLangError } from 'src/errors.js';
+import { ContractDispatchError, ContractLangError } from '../errors.js';
 
 export class QueryExecutor<ChainApi extends GenericSubstrateApi> extends Executor<ChainApi> {
   doExecute(message: string) {
