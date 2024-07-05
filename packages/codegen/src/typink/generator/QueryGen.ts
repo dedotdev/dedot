@@ -65,7 +65,10 @@ export class QueryGen {
     args.forEach(({ type: { type } }) => this.importType(type));
 
     const paramsOut = this.generateParamsOut(args);
-    const typeOut = this.typesGen.generateType(returnType.type, 0, true);
+    const typeOutRaw = this.typesGen.generateType(returnType.type, 0, true);
+
+    // Unwrap langError result
+    const typeOut = typeOutRaw.match(/^(\w+)<(.*), (.*)>$/)!.at(2);
 
     return `GenericContractQueryCall<ChainApi, (${paramsOut && `${paramsOut},`} options: ContractCallOptions) => Promise<GenericContractCallResult<${typeOut}, ContractCallResult<ChainApi>>>>`;
   }
