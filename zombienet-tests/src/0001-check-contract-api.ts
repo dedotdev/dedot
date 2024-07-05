@@ -56,8 +56,7 @@ export const run = async (_nodeName: any, networkInfo: any) => {
     const contract = new Contract<FlipperContractApi>(api, flipper, contractAddress);
 
     const state = await contract.query.get({ caller });
-    assert(state.isOk && state.data.isOk, 'Query should be successful');
-    console.log(`[${api.rpcVersion}] Initial value:`, state.data.value);
+    console.log(`[${api.rpcVersion}] Initial value:`, state.data);
 
     console.log(`[${api.rpcVersion}] Flipping...`);
 
@@ -81,10 +80,9 @@ export const run = async (_nodeName: any, networkInfo: any) => {
     });
 
     const newState = await contract.query.get({ caller });
-    assert(newState.isOk && newState.data.isOk, 'Query should be successful');
-    console.log(`[${api.rpcVersion}] New value:`, newState.data.value);
+    console.log(`[${api.rpcVersion}] New value:`, newState.data);
 
-    assert(state.data.value !== newState.data.value, 'State should be changed');
+    assert(state.data !== newState.data, 'State should be changed');
   };
 
   console.log('Checking via legacy API');
