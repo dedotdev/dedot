@@ -12,8 +12,8 @@
   "main": "src/index.ts",
   "type": "module",
   "sideEffects": [
-    "./subshape.js",
-    "./cjs/subshape.js"
+    "./deshape.js",
+    "./cjs/deshape.js"
   ],
   "dependencies": {
     "@dedot/utils": "workspace:*",
