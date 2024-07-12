@@ -37,11 +37,11 @@
     "tsc-esm-fix": "^2.20.27",
     "typescript": "5.4.5",
     "vite-tsconfig-paths": "^4.3.2",
-    "vitest": "^1.6.0"
+    "vitest": "^2.0.2"
   },
   "resolutions": {
-    "@polkadot/types": "^12.0.1",
-    "@polkadot/types-support": "^12.0.1"
+    "@polkadot/types": "^12.1.1",
+    "@polkadot/types-support": "^12.1.1"
   },
   "license": "Apache-2.0"
 }
