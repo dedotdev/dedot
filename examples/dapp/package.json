@@ -10,7 +10,7 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "@dedot/chaintypes": "0.0.1-alpha.40",
+    "@dedot/chaintypes": "0.0.1-alpha.149",
     "dedot": "workspace:*",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
@@ -26,6 +26,6 @@
     "eslint-plugin-react-hooks": "^4.6.2",
     "eslint-plugin-react-refresh": "^0.4.7",
     "typescript": "^5.5.2",
-    "vite": "^5.3.1"
+    "vite": "^5.3.2"
   }
 }

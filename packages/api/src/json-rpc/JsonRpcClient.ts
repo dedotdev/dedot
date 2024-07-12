@@ -1,5 +1,5 @@
-import type { ConnectionStatus, JsonRpcProvider, ProviderEvent, Subscription } from '@dedot/providers';
-import type { AsyncMethod, GenericSubstrateApi, RpcVersion, Unsub } from '@dedot/types';
+import type { ConnectionStatus, JsonRpcProvider, ProviderEvent, JsonRpcSubscription } from '@dedot/providers';
+import type { AsyncMethod, GenericSubstrateApi, RpcVersion, Unsub, VersionedGenericSubstrateApi } from '@dedot/types';
 import { assert, EventEmitter, isFunction, isString } from '@dedot/utils';
 import type { SubstrateApi } from '../chaintypes/index.js';
 import type { IJsonRpcClient, JsonRpcClientOptions } from '../types.js';
@@ -18,11 +18,11 @@ export const isJsonRpcProvider = (provider: any): provider is JsonRpcProvider =>
 };
 
 export class JsonRpcClient<
-    ChainApi extends GenericSubstrateApi = SubstrateApi[RpcVersion],
+    ChainApi extends VersionedGenericSubstrateApi = SubstrateApi, // prettier-end-here
     Events extends string = ProviderEvent,
   >
   extends EventEmitter<Events>
-  implements IJsonRpcClient<ChainApi, Events>
+  implements IJsonRpcClient<ChainApi[RpcVersion], Events>
 {
   readonly #options: JsonRpcClientOptions;
   readonly #provider: JsonRpcProvider;
@@ -46,7 +46,7 @@ export class JsonRpcClient<
    *
    * @param options
    */
-  static async create<ChainApi extends GenericSubstrateApi = SubstrateApi[RpcVersion]>(
+  static async create<ChainApi extends VersionedGenericSubstrateApi = SubstrateApi>(
     options: JsonRpcClientOptions | JsonRpcProvider,
   ): Promise<JsonRpcClient<ChainApi>> {
     return new JsonRpcClient<ChainApi>(options).connect();
@@ -57,7 +57,7 @@ export class JsonRpcClient<
    *
    * @param options
    */
-  static async new<ChainApi extends GenericSubstrateApi = SubstrateApi[RpcVersion]>(
+  static async new<ChainApi extends VersionedGenericSubstrateApi = SubstrateApi>(
     options: JsonRpcClientOptions | JsonRpcProvider,
   ): Promise<JsonRpcClient<ChainApi>> {
     return JsonRpcClient.create(options);
@@ -146,14 +146,14 @@ export class JsonRpcClient<
    * const result = await client.rpc.module_rpc_name();
    * ```
    */
-  get rpc(): ChainApi['rpc'] {
+  get rpc(): ChainApi[RpcVersion]['rpc'] {
     return new Proxy<JsonRpcClient<ChainApi, Events>>(this, {
       get(target, property: string | symbol, receiver: any): any {
         const rpcMethod = property.toString();
 
         return target.#doExecute(rpcMethod);
       },
-    }) as unknown as ChainApi['rpc'];
+    }) as unknown as ChainApi[RpcVersion]['rpc'];
   }
 
   #doExecute(rpcName: string): AsyncMethod {
@@ -171,7 +171,7 @@ export class JsonRpcClient<
       const callback = inArgs.pop();
       assert(isFunction(callback), 'A callback is required for subscription');
 
-      const onNewMessage = (error: Error | null, result: unknown, subscription: Subscription) => {
+      const onNewMessage = (error: Error | null, result: unknown, subscription: JsonRpcSubscription) => {
         if (error) {
           console.error(error);
           return;

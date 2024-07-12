@@ -1,9 +1,9 @@
 {
   "name": "@dedot/api",
-  "version": "0.0.1-alpha.34",
+  "version": "0.0.1-alpha.39",
   "description": "A delightful JavaScript/TypeScript client for Polkadot & Substrate",
   "author": "Thang X. Vu <thang@coongcrafts.io>",
-  "homepage": "https://github.com/dedotdev/dedot",
+  "homepage": "https://github.com/dedotdev/dedot/tree/main/packages/api",
   "repository": {
     "directory": "packages/api",
     "type": "git",
@@ -44,6 +44,6 @@
   },
   "license": "Apache-2.0",
   "devDependencies": {
-    "@polkadot/types": "^12.0.1"
+    "@polkadot/types": "^12.1.1"
   }
 }

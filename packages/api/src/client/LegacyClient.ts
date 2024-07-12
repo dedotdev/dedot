@@ -55,7 +55,7 @@ const KEEP_ALIVE_INTERVAL = 10_000; // in ms
  * ```
  */
 export class LegacyClient<ChainApi extends VersionedGenericSubstrateApi = SubstrateApi> // prettier-end-here
-  extends BaseSubstrateClient<ChainApi[RpcLegacy]>
+  extends BaseSubstrateClient<RpcLegacy, ChainApi>
 {
   #runtimeSubscriptionUnsub?: Unsub;
   #healthTimer?: ReturnType<typeof setInterval>;

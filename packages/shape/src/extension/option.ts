@@ -1,5 +1,5 @@
 import { isHex, isNull, isU8a, isUndefined } from '@dedot/utils';
-import { option as originalOption, Shape } from '../subshape.js';
+import { option as originalOption, Shape } from '../deshape.js';
 
 function shouldDecodeInner(input: any) {
   return !(isHex(input) || isU8a(input));

@@ -11,7 +11,7 @@ import {
   ShapeDecodeError,
   taggedUnion,
   variant,
-} from '../subshape.js';
+} from '../deshape.js';
 
 export type IndexedEnumMember<V extends AnyShape> = { value?: V | null; index: number };
 

@@ -8,9 +8,9 @@ import {
   JsonRpcResponse,
   JsonRpcResponseNotification,
   ProviderEvent,
-  Subscription,
-  SubscriptionCallback,
-  SubscriptionInput,
+  JsonRpcSubscription,
+  JsonRpcSubscriptionCallback,
+  JsonRpcSubscriptionInput,
 } from '../types.js';
 
 interface RequestState<T = any> {
@@ -20,9 +20,9 @@ interface RequestState<T = any> {
 }
 
 interface SubscriptionState {
-  input: SubscriptionInput;
-  callback: SubscriptionCallback;
-  subscription: Subscription;
+  input: JsonRpcSubscriptionInput;
+  callback: JsonRpcSubscriptionCallback;
+  subscription: JsonRpcSubscription;
 }
 
 /**
@@ -145,13 +145,16 @@ export abstract class SubscriptionProvider extends EventEmitter<ProviderEvent> i
     return defer.promise;
   }
 
-  async subscribe<T = any>(input: SubscriptionInput, callback: SubscriptionCallback<T>): Promise<Subscription> {
+  async subscribe<T = any>(
+    input: JsonRpcSubscriptionInput,
+    callback: JsonRpcSubscriptionCallback<T>,
+  ): Promise<JsonRpcSubscription> {
     const { subname, subscribe, params, unsubscribe } = input;
     const subscriptionId = await this.send<string>(subscribe, params);
 
     const subkey = `${subname}::${subscriptionId}`;
 
-    const subscription: Subscription = {
+    const subscription: JsonRpcSubscription = {
       unsubscribe: async () => {
         delete this._subscriptions[subkey];
         await this.send(unsubscribe, [subscriptionId]);

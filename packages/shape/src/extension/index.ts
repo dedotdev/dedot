@@ -1,4 +1,4 @@
-export * from '../subshape.js';
+export * from '../deshape.js';
 export { object } from './object.js';
 export { array } from './array.js';
 export { option } from './option.js';

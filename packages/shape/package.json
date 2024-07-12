@@ -1,6 +1,6 @@
 {
   "name": "@dedot/shape",
-  "version": "0.0.1-alpha.34",
+  "version": "0.0.1-alpha.39",
   "description": "Basic codecs & shapes, extending existing subshape",
   "author": "Thang X. Vu <thang@coongcrafts.io>",
   "homepage": "https://github.com/dedotdev/dedot/tree/main/packages/shape",
@@ -12,12 +12,12 @@
   "main": "src/index.ts",
   "type": "module",
   "sideEffects": [
-    "./subshape.js",
-    "./cjs/subshape.js"
+    "./deshape.js",
+    "./cjs/deshape.js"
   ],
   "dependencies": {
     "@dedot/utils": "workspace:*",
-    "subshape": "^0.14.0"
+    "deshape": "^0.0.1"
   },
   "scripts": {
     "build": "tsc --project tsconfig.build.json && tsc --project tsconfig.build.cjs.json",
