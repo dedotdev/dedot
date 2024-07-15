@@ -1,7 +1,7 @@
 import * as $ from '@dedot/shape';
+import { HexString, stringToU8a } from '@dedot/utils';
 
-// TODO create a custom codec for this!
-export const $Data = $.Enum({
+export const $DataRaw = $.Enum({
   None: null,
   Raw0: $.FixedStr(0),
   Raw1: $.FixedStr(1),
@@ -42,4 +42,39 @@ export const $Data = $.Enum({
   ShaThree256: $.FixedHex(32),
 });
 
-export type Data = $.Input<typeof $Data>;
+export type DataRaw = $.Output<typeof $DataRaw>;
+
+export type Data =
+  | { type: 'None' }
+  | { type: 'Raw'; value: string }
+  | { type: 'BlakeTwo256'; value: HexString }
+  | { type: 'Sha256'; value: HexString }
+  | { type: 'Keccak256'; value: HexString }
+  | { type: 'ShaThree256'; value: HexString };
+
+export const $Data: $.Shape<Data, Data> = $.transform({
+  $base: $DataRaw,
+  encode: (input): $.Input<typeof $DataRaw> => {
+    if (input.type === 'Raw') {
+      const bytes = stringToU8a(input.value);
+
+      return {
+        type: `Raw${bytes.length}`,
+        value: input.value,
+      } as DataRaw;
+    }
+
+    return input;
+  },
+  decode: (input): Data => {
+    if (input.type.startsWith('Raw')) {
+      return {
+        type: 'Raw',
+        // @ts-ignore
+        value: input.value,
+      } as Data;
+    }
+
+    return input as Data;
+  },
+});
