@@ -24,7 +24,7 @@
     "@dedot/api": "workspace:*",
     "@dedot/codecs": "workspace:*",
     "@dedot/codegen": "workspace:*",
-    "@polkadot/types-support": "^12.1.1",
+    "@polkadot/types-support": "^12.2.1",
     "yargs": "^17.7.2"
   },
   "devDependencies": {
