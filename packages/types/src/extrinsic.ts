@@ -73,8 +73,6 @@ export interface ISubmittableExtrinsicLegacy<R extends ISubmittableResult = ISub
   dryRun(account: AddressOrPair, optionsOrHash?: Partial<SignerOptions> | BlockHash): Promise<DryRunResult>;
 }
 
-export type TransactionStatusLegacy = TransactionStatus;
-
 // We want to mimic an enum type for the new transaction status
 export type TransactionStatusV2 =
   | { type: 'Validated' } // emits after we validate the transaction via `call.taggedTransactionQueue.validateTransaction`
@@ -83,4 +81,5 @@ export type TransactionStatusV2 =
   | { type: 'NoLongerInBestChain' }
   | { type: 'Finalized'; value: { blockHash: HexString; txIndex: number } }
   | { type: 'Invalid'; value: { error: string } }
-  | { type: 'Drop'; value: { error: string } };
+  | { type: 'Drop'; value: { error: string } }
+  | { type: 'Error'; value: { error: string } };

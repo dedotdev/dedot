@@ -23,7 +23,6 @@ import type {
   ISubmittableResult,
   RpcV2,
   RpcVersion,
-  TransactionStatusLegacy,
   TransactionStatusV2,
 } from '@dedot/types';
 import type {
@@ -115,7 +114,7 @@ export type ChainSubmittableExtrinsic<
 > = Extrinsic<MultiAddressLike, T, SpRuntimeMultiSignature, any[]> &
   (Rv extends RpcV2
     ? ISubmittableExtrinsic<ISubmittableResult<FrameSystemEventRecord, TransactionStatusV2>>
-    : ISubmittableExtrinsicLegacy<ISubmittableResult<FrameSystemEventRecord, TransactionStatusLegacy>>);
+    : ISubmittableExtrinsicLegacy<ISubmittableResult<FrameSystemEventRecord, TransactionStatusV2>>);
 
 export type TxCall<Rv extends RpcVersion> = (...args: any[]) => ChainSubmittableExtrinsic<Rv>;
 
