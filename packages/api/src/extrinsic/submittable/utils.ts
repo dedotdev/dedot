@@ -21,7 +21,7 @@ export function signRaw(signerPair: IKeyringPair, raw: HexString): Uint8Array {
 }
 
 /**
- * Convert transaction status v1 to v2
+ * Convert transaction status to transaction event
  *
  * Ref: https://github.com/paritytech/polkadot-sdk/blob/98a364fe6e7abf10819f5fddd3de0588f7c38700/substrate/client/rpc-spec-v2/src/transaction/transaction.rs#L132-L159
  * @param txStatus
