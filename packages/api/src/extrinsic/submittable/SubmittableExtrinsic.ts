@@ -11,6 +11,7 @@ import {
 import { assert, isHex } from '@dedot/utils';
 import { BaseSubmittableExtrinsic } from './BaseSubmittableExtrinsic.js';
 import { SubmittableResult } from './SubmittableResult.js';
+import { toTransactionEvent } from './utils.js';
 
 /**
  * @name SubmittableExtrinsic
@@ -36,9 +37,9 @@ export class SubmittableExtrinsic extends BaseSubmittableExtrinsic implements IS
     const txHash = this.hash;
 
     if (isSubscription) {
-      return this.api.rpc.author_submitAndWatchExtrinsic(txHex, async (status: TransactionStatus) => {
-        if (status.type === 'InBlock' || status.type === 'Finalized') {
-          const blockHash: BlockHash = status.value;
+      return this.api.rpc.author_submitAndWatchExtrinsic(txHex, async (txStatus: TransactionStatus) => {
+        if (txStatus.type === 'InBlock' || txStatus.type === 'Finalized') {
+          const blockHash: BlockHash = txStatus.value;
 
           const [signedBlock, blockEvents] = await Promise.all([
             this.api.rpc.chain_getBlock(blockHash),
@@ -50,8 +51,10 @@ export class SubmittableExtrinsic extends BaseSubmittableExtrinsic implements IS
 
           const events = blockEvents.filter(({ phase }) => phase.type === 'ApplyExtrinsic' && phase.value === txIndex);
 
+          const status = toTransactionEvent(txStatus, txIndex);
           return callback(new SubmittableResult({ status, txHash, events, txIndex }));
         } else {
+          const status = toTransactionEvent(txStatus);
           return callback(new SubmittableResult({ status, txHash }));
         }
       });

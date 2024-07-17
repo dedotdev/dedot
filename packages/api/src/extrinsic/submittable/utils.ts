@@ -1,6 +1,7 @@
 import { IKeyringPair } from '@polkadot/types/types';
-import type { AddressOrPair } from '@dedot/types';
-import { blake2AsU8a, HexString, hexToU8a, isFunction } from '@dedot/utils';
+import { TransactionStatus } from '@dedot/codecs';
+import type { AddressOrPair, TransactionEvent } from '@dedot/types';
+import { assert, blake2AsU8a, HexString, hexToU8a, isFunction } from '@dedot/utils';
 
 export function isKeyringPair(account: AddressOrPair): account is IKeyringPair {
   return isFunction((account as IKeyringPair).sign);
@@ -17,4 +18,69 @@ export function signRaw(signerPair: IKeyringPair, raw: HexString): Uint8Array {
   const toSignRaw = u8a.length > 256 ? blake2AsU8a(u8a, 256) : u8a;
 
   return signerPair.sign(toSignRaw, { withType: true });
+}
+
+/**
+ * Convert transaction status to transaction event
+ *
+ * Ref: https://github.com/paritytech/polkadot-sdk/blob/98a364fe6e7abf10819f5fddd3de0588f7c38700/substrate/client/rpc-spec-v2/src/transaction/transaction.rs#L132-L159
+ * @param txStatus
+ * @param txIndex
+ */
+export function toTransactionEvent(txStatus: TransactionStatus, txIndex?: number): TransactionEvent {
+  switch (txStatus.type) {
+    case 'Ready':
+    case 'Future':
+      return { type: 'Validated' };
+    case 'Broadcast':
+      return { type: 'Broadcasting' };
+    case 'Retracted':
+      return { type: 'NoLongerInBestChain' };
+    case 'InBlock':
+      assert(txIndex, 'TxIndex is required');
+      return {
+        type: 'BestChainBlockIncluded',
+        value: {
+          blockHash: txStatus.value,
+          txIndex,
+        },
+      };
+    case 'Finalized':
+      assert(txIndex, 'TxIndex is required');
+      return {
+        type: 'Finalized',
+        value: {
+          blockHash: txStatus.value,
+          txIndex,
+        },
+      };
+    case 'FinalityTimeout':
+      return {
+        type: 'Drop',
+        value: {
+          error: 'Maximum number of finality watchers has been reached',
+        },
+      };
+    case 'Dropped':
+      return {
+        type: 'Drop',
+        value: {
+          error: 'Extrinsic dropped from the pool due to exceeding limits',
+        },
+      };
+    case 'Usurped':
+      return {
+        type: 'Invalid',
+        value: {
+          error: 'Extrinsic was rendered invalid by another extrinsic',
+        },
+      };
+    case 'Invalid':
+      return {
+        type: 'Invalid',
+        value: {
+          error: 'Extrinsic marked as invalid',
+        },
+      };
+  }
 }
