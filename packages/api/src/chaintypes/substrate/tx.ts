@@ -23,7 +23,7 @@ import type {
   ISubmittableResult,
   RpcV2,
   RpcVersion,
-  TransactionEvent,
+  TxStatus,
 } from '@dedot/types';
 import type {
   FrameSupportPreimagesBounded,
@@ -113,8 +113,8 @@ export type ChainSubmittableExtrinsic<
   T extends IRuntimeTxCall = KitchensinkRuntimeRuntimeCallLike,
 > = Extrinsic<MultiAddressLike, T, SpRuntimeMultiSignature, any[]> &
   (Rv extends RpcV2
-    ? ISubmittableExtrinsic<ISubmittableResult<FrameSystemEventRecord, TransactionEvent>>
-    : ISubmittableExtrinsicLegacy<ISubmittableResult<FrameSystemEventRecord, TransactionEvent>>);
+    ? ISubmittableExtrinsic<ISubmittableResult<FrameSystemEventRecord, TxStatus>>
+    : ISubmittableExtrinsicLegacy<ISubmittableResult<FrameSystemEventRecord, TxStatus>>);
 
 export type TxCall<Rv extends RpcVersion> = (...args: any[]) => ChainSubmittableExtrinsic<Rv>;
 

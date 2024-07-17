@@ -1,5 +1,5 @@
 import type { BlockHash, Hash } from '@dedot/codecs';
-import type { Callback, IEventRecord, IRuntimeTxCall, ISubmittableResult, TransactionEvent, Unsub } from '@dedot/types';
+import type { Callback, IEventRecord, IRuntimeTxCall, ISubmittableResult, TxStatus, Unsub } from '@dedot/types';
 import { AsyncQueue, deferred, noop } from '@dedot/utils';
 import { DedotClient } from '../../client/index.js';
 import { PinnedBlock } from '../../json-rpc/index.js';
@@ -21,7 +21,7 @@ export class SubmittableExtrinsicV2 extends BaseSubmittableExtrinsic {
     super(api, call);
   }
 
-  async #send(callback: Callback<ISubmittableResult<IEventRecord, TransactionEvent>>): Promise<Unsub> {
+  async #send(callback: Callback<ISubmittableResult<IEventRecord, TxStatus>>): Promise<Unsub> {
     const api = this.api;
     const txHex = this.toHex();
     const txHash = this.hash;
@@ -105,7 +105,7 @@ export class SubmittableExtrinsicV2 extends BaseSubmittableExtrinsic {
           if (txFound && bestChainChanged) {
             txFound = undefined;
             callback(
-              new SubmittableResult<IEventRecord, TransactionEvent>({
+              new SubmittableResult<IEventRecord, TxStatus>({
                 status: { type: 'NoLongerInBestChain' },
                 txHash,
               }),
@@ -124,7 +124,7 @@ export class SubmittableExtrinsicV2 extends BaseSubmittableExtrinsic {
         const { index: txIndex, events, blockHash } = inBlock;
 
         callback(
-          new SubmittableResult<IEventRecord, TransactionEvent>({
+          new SubmittableResult<IEventRecord, TxStatus>({
             status: { type: 'BestChainBlockIncluded', value: { blockHash, txIndex } },
             txHash,
             events,
@@ -160,7 +160,7 @@ export class SubmittableExtrinsicV2 extends BaseSubmittableExtrinsic {
         const { index: txIndex, events, blockHash } = inBlock;
 
         callback(
-          new SubmittableResult<IEventRecord, TransactionEvent>({
+          new SubmittableResult<IEventRecord, TxStatus>({
             status: { type: 'Finalized', value: { blockHash, txIndex } },
             txHash,
             events,
@@ -174,7 +174,7 @@ export class SubmittableExtrinsicV2 extends BaseSubmittableExtrinsic {
         if (validation.isOk) return;
 
         callback(
-          new SubmittableResult<IEventRecord, TransactionEvent>({
+          new SubmittableResult<IEventRecord, TxStatus>({
             status: {
               type: 'Invalid',
               value: { error: `Invalid Tx: ${validation.err.type} - ${validation.err.value.type}` },
@@ -189,7 +189,7 @@ export class SubmittableExtrinsicV2 extends BaseSubmittableExtrinsic {
 
     stopBroadcastFn = await api.txBroadcaster.broadcastTx(txHex);
     callback(
-      new SubmittableResult<IEventRecord, TransactionEvent>({
+      new SubmittableResult<IEventRecord, TxStatus>({
         status: { type: 'Broadcasting' },
         txHash,
       }),
