@@ -78,8 +78,7 @@ export type TransactionEvent =
   | { type: 'Validated' } // emits after we validate the transaction via `call.taggedTransactionQueue.validateTransaction`
   | { type: 'Broadcasting' } // emits after we submit the transaction via TxBroadcaster
   | { type: 'BestChainBlockIncluded'; value: { blockHash: HexString; txIndex: number } }
-  | { type: 'NoLongerInBestChain' }
+  | { type: 'NoLongerInBestChain' } // similar to Retracted
   | { type: 'Finalized'; value: { blockHash: HexString; txIndex: number } }
   | { type: 'Invalid'; value: { error: string } }
-  | { type: 'Drop'; value: { error: string } }
-  | { type: 'Error'; value: { error: string } };
+  | { type: 'Drop'; value: { error: string } };
