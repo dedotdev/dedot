@@ -36,17 +36,19 @@ type KnownPath = string | RegExp | { path: string; codec: string };
 // different substrate-based blockchains
 const KNOWN_PATHS: KnownPath[] = [
   'sp_core::crypto::AccountId32',
-  'sp_runtime::generic::era::Era',
   'sp_runtime::multiaddress::MultiAddress',
   /^sp_runtime::DispatchError$/,
   'sp_runtime::ModuleError',
   'sp_runtime::TokenError',
   'sp_arithmetic::ArithmeticError',
   'sp_runtime::TransactionalError',
-  'frame_support::dispatch::DispatchInfo',
-  'frame_system::Phase',
   'sp_version::RuntimeVersion',
+  'sp_runtime::generic::era::Era',
 
+  /^sp_arithmetic::per_things::\w+$/,
+  /^sp_arithmetic::fixed_point::\w+$/,
+  'ink_primitives::types::Hash',
+  { path: 'ink_primitives::types::AccountId', codec: 'AccountId32' },
   'fp_account::AccountId20',
   'account::AccountId20',
   'polkadot_runtime_common::claims::EthereumAddress',
@@ -57,11 +59,12 @@ const KNOWN_PATHS: KnownPath[] = [
   'sp_runtime::generic::header::Header',
   'sp_runtime::generic::unchecked_extrinsic::UncheckedExtrinsic',
 
+  // Get error when remove these type when use compact metadata
+  /*
+  'frame_system::Phase',
   /^primitive_types::\w+$/,
-  /^sp_arithmetic::per_things::\w+$/,
-  /^sp_arithmetic::fixed_point::\w+$/,
-  'ink_primitives::types::Hash',
-  { path: 'ink_primitives::types::AccountId', codec: 'AccountId32' },
+  'frame_support::dispatch::DispatchInfo',
+  */
 ];
 
 const WRAPPER_TYPE_REGEX = /^(\w+)<(.*)>$/;

@@ -15,7 +15,7 @@ export class TxExecutor<ChainApi extends GenericSubstrateApi = GenericSubstrateA
 
     assert(targetPallet.calls, new UnknownApiError(`Tx calls are not available for pallet ${targetPallet.name}`));
 
-    const txType = this.metadata.types[targetPallet.calls]!;
+    const txType = this.metadata.types.find(one => one.id === targetPallet.calls)!;
 
     assert(txType.typeDef.type === 'Enum', new UnknownApiError('Tx type defs should be enum'));
 
