@@ -11,7 +11,7 @@ import {
 import { assert, isHex } from '@dedot/utils';
 import { BaseSubmittableExtrinsic } from './BaseSubmittableExtrinsic.js';
 import { SubmittableResult } from './SubmittableResult.js';
-import { toTransactionStatusV2 } from './utils.js';
+import { toTransactionEvent } from './utils.js';
 
 /**
  * @name SubmittableExtrinsic
@@ -51,10 +51,10 @@ export class SubmittableExtrinsic extends BaseSubmittableExtrinsic implements IS
 
           const events = blockEvents.filter(({ phase }) => phase.type === 'ApplyExtrinsic' && phase.value === txIndex);
 
-          const status = toTransactionStatusV2(txStatus, txIndex);
+          const status = toTransactionEvent(txStatus, txIndex);
           return callback(new SubmittableResult({ status, txHash, events, txIndex }));
         } else {
-          const status = toTransactionStatusV2(txStatus);
+          const status = toTransactionEvent(txStatus);
           return callback(new SubmittableResult({ status, txHash }));
         }
       });

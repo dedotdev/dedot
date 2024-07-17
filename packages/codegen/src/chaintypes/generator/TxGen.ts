@@ -16,7 +16,7 @@ export class TxGen extends ApiGen {
       'RpcVersion',
       'RpcV2',
       'ISubmittableExtrinsicLegacy',
-      'TransactionStatusV2',
+      'TransactionEvent',
     );
 
     const { callTypeId, addressTypeId, signatureTypeId } = this.metadata.extrinsic;
@@ -85,8 +85,8 @@ export class TxGen extends ApiGen {
     export type ChainSubmittableExtrinsic<Rv extends RpcVersion, T extends IRuntimeTxCall = ${callTypeIn}> = 
         Extrinsic<${addressTypeIn}, T, ${signatureTypeIn}, any[]> &
         (Rv extends RpcV2
-          ? ISubmittableExtrinsic<ISubmittableResult<FrameSystemEventRecord, TransactionStatusV2>>
-          : ISubmittableExtrinsicLegacy<ISubmittableResult<FrameSystemEventRecord, TransactionStatusV2>>)
+          ? ISubmittableExtrinsic<ISubmittableResult<FrameSystemEventRecord, TransactionEvent>>
+          : ISubmittableExtrinsicLegacy<ISubmittableResult<FrameSystemEventRecord, TransactionEvent>>)
         
     export type TxCall<Rv extends RpcVersion> = (...args: any[]) => ChainSubmittableExtrinsic<Rv>;    
 `;

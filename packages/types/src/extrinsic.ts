@@ -74,7 +74,7 @@ export interface ISubmittableExtrinsicLegacy<R extends ISubmittableResult = ISub
 }
 
 // We want to mimic an enum type for the new transaction status
-export type TransactionStatusV2 =
+export type TransactionEvent =
   | { type: 'Validated' } // emits after we validate the transaction via `call.taggedTransactionQueue.validateTransaction`
   | { type: 'Broadcasting' } // emits after we submit the transaction via TxBroadcaster
   | { type: 'BestChainBlockIncluded'; value: { blockHash: HexString; txIndex: number } }

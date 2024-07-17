@@ -1,6 +1,6 @@
 import { IKeyringPair } from '@polkadot/types/types';
 import { TransactionStatus } from '@dedot/codecs';
-import type { AddressOrPair, TransactionStatusV2 } from '@dedot/types';
+import type { AddressOrPair, TransactionEvent } from '@dedot/types';
 import { assert, blake2AsU8a, HexString, hexToU8a, isFunction } from '@dedot/utils';
 
 export function isKeyringPair(account: AddressOrPair): account is IKeyringPair {
@@ -27,7 +27,7 @@ export function signRaw(signerPair: IKeyringPair, raw: HexString): Uint8Array {
  * @param txStatus
  * @param txIndex
  */
-export function toTransactionStatusV2(txStatus: TransactionStatus, txIndex?: number): TransactionStatusV2 {
+export function toTransactionEvent(txStatus: TransactionStatus, txIndex?: number): TransactionEvent {
   switch (txStatus.type) {
     case 'Ready':
     case 'Future':
