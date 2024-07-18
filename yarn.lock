@@ -3849,7 +3849,7 @@ __metadata:
     prettier: "npm:^3.3.3"
     prettier-plugin-organize-imports: "npm:^3.2.4"
     ts-node: "npm:^10.9.2"
-    tsc-esm-fix: "npm:^2.20.27"
+    tsc-esm-fix: "npm:^3.0.0"
     typescript: "npm:5.4.5"
     vite-tsconfig-paths: "npm:^4.3.2"
     vitest: "npm:^2.0.3"
@@ -4578,7 +4578,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"fast-glob@npm:^3.2.9, fast-glob@npm:^3.3.0":
+"fast-glob@npm:^3.2.9, fast-glob@npm:^3.3.2":
   version: 3.3.2
   resolution: "fast-glob@npm:3.3.2"
   dependencies:
@@ -5082,19 +5082,6 @@ __metadata:
     merge2: "npm:^1.4.1"
     slash: "npm:^3.0.0"
   checksum: 10c0/b39511b4afe4bd8a7aead3a27c4ade2b9968649abab0a6c28b1a90141b96ca68ca5db1302f7c7bd29eab66bf51e13916b8e0a3d0ac08f75e1e84a39b35691189
-  languageName: node
-  linkType: hard
-
-"globby@npm:^13.2.2":
-  version: 13.2.2
-  resolution: "globby@npm:13.2.2"
-  dependencies:
-    dir-glob: "npm:^3.0.1"
-    fast-glob: "npm:^3.3.0"
-    ignore: "npm:^5.2.4"
-    merge2: "npm:^1.4.1"
-    slash: "npm:^4.0.0"
-  checksum: 10c0/a8d7cc7cbe5e1b2d0f81d467bbc5bc2eac35f74eaded3a6c85fc26d7acc8e6de22d396159db8a2fc340b8a342e74cac58de8f4aee74146d3d146921a76062664
   languageName: node
   linkType: hard
 
@@ -6337,13 +6324,6 @@ __metadata:
   version: 2.0.14
   resolution: "mdn-data@npm:2.0.14"
   checksum: 10c0/67241f8708c1e665a061d2b042d2d243366e93e5bf1f917693007f6d55111588b952dcbfd3ea9c2d0969fb754aad81b30fdcfdcc24546495fc3b24336b28d4bd
-  languageName: node
-  linkType: hard
-
-"meow@npm:^12.1.1":
-  version: 12.1.1
-  resolution: "meow@npm:12.1.1"
-  checksum: 10c0/a125ca99a32e2306e2f4cbe651a0d27f6eb67918d43a075f6e80b35e9bf372ebf0fc3a9fbc201cbbc9516444b6265fb3c9f80c5b7ebd32f548aa93eb7c28e088
   languageName: node
   linkType: hard
 
@@ -8296,13 +8276,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"slash@npm:^4.0.0":
-  version: 4.0.0
-  resolution: "slash@npm:4.0.0"
-  checksum: 10c0/b522ca75d80d107fd30d29df0549a7b2537c83c4c4ecd12cd7d4ea6c8aaca2ab17ada002e7a1d78a9d736a0261509f26ea5b489082ee443a3a810586ef8eff18
-  languageName: node
-  linkType: hard
-
 "smart-buffer@npm:^4.2.0":
   version: 4.2.0
   resolution: "smart-buffer@npm:4.2.0"
@@ -8921,19 +8894,18 @@ __metadata:
   languageName: node
   linkType: hard
 
-"tsc-esm-fix@npm:^2.20.27":
-  version: 2.20.27
-  resolution: "tsc-esm-fix@npm:2.20.27"
+"tsc-esm-fix@npm:^3.0.0":
+  version: 3.0.0
+  resolution: "tsc-esm-fix@npm:3.0.0"
   dependencies:
     depseek: "npm:^0.4.1"
+    fast-glob: "npm:^3.3.2"
     fs-extra: "npm:^11.2.0"
-    globby: "npm:^13.2.2"
     json5: "npm:^2.2.3"
-    meow: "npm:^12.1.1"
-    tslib: "npm:^2.6.2"
+    type-flag: "npm:^3.0.0"
   bin:
-    tsc-esm-fix: target/es6/cli.mjs
-  checksum: 10c0/324bc73063219af1a9fb1c3a020925020884397527fac41a03f399c0de348928aac442882a40d1748ac4f9e39e0ba841941b53a2520d77f08d9300744a01646b
+    tsc-esm-fix: target/esm/cli.mjs
+  checksum: 10c0/81617a7777b2fd239c86eef27b1597c1194c539f76d5985f4507b84574ef0c93a9e4b76532c0882b20b92a0c4b805b12cff6aafc6da04da740770879a1ef4189
   languageName: node
   linkType: hard
 
@@ -9028,6 +9000,13 @@ __metadata:
   version: 0.8.1
   resolution: "type-fest@npm:0.8.1"
   checksum: 10c0/dffbb99329da2aa840f506d376c863bd55f5636f4741ad6e65e82f5ce47e6914108f44f340a0b74009b0cb5d09d6752ae83203e53e98b1192cf80ecee5651636
+  languageName: node
+  linkType: hard
+
+"type-flag@npm:^3.0.0":
+  version: 3.0.0
+  resolution: "type-flag@npm:3.0.0"
+  checksum: 10c0/b1015d4eb18cd85432fa3bcd0228149dd6893a9c1360a2ad619f79b72e19acfb648a932e2a9ccf2e2db0f0c4b86385bd886a3364e221afb116424e0ae6d1b1ba
   languageName: node
   linkType: hard
 
