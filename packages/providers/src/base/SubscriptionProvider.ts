@@ -34,7 +34,7 @@ export abstract class SubscriptionProvider extends EventEmitter<ProviderEvent> i
   protected _status: ConnectionStatus;
   protected _handlers: Record<JsonRpcRequestId, RequestState>;
   protected _subscriptions: Record<string, SubscriptionState>;
-  protected _pendingNotifications: Record<string, JsonRpcResponseNotification>;
+  protected _pendingNotifications: Record<string, JsonRpcResponseNotification[]>;
 
   protected constructor() {
     super();
@@ -113,8 +113,14 @@ export abstract class SubscriptionProvider extends EventEmitter<ProviderEvent> i
     const substate = this._subscriptions[subkey];
 
     // TODO check if there is an handler exists for the subscription
+    // TODO track if the subkey was existed before and has already been canceled
+    //      we'll ignore those pending notifications
     if (!substate) {
-      this._pendingNotifications[subkey] = response;
+      if (!this._pendingNotifications[subkey]) {
+        this._pendingNotifications[subkey] = [];
+      }
+
+      this._pendingNotifications[subkey].push(response);
       return;
     }
 
@@ -170,7 +176,10 @@ export abstract class SubscriptionProvider extends EventEmitter<ProviderEvent> i
 
     // Handle pending notifications
     if (this._pendingNotifications[subkey]) {
-      this._handleNotification(this._pendingNotifications[subkey]);
+      this._pendingNotifications[subkey].forEach((notification) => {
+        this._handleNotification(notification);
+      });
+
       delete this._pendingNotifications[subkey];
     }
 
