@@ -65,16 +65,27 @@ export const run = async (_nodeName: any, networkInfo: any) => {
     const { raw } = await contract.query.flip({ caller });
 
     await new Promise<void>(async (resolve) => {
-      await contract.tx.flip({ gasLimit: raw.gasRequired }).signAndSend(alicePair, ({ status, events }: any) => {
+      await contract.tx.flip({ gasLimit: raw.gasRequired }).signAndSend(alicePair, ({ status, events }) => {
         console.log(`[${api.rpcVersion}] Transaction status`, status.type);
 
         if (status.type === 'Finalized') {
-          const contractEventRecords = events.filter((eventRecord: FrameSystemEventRecord) => api.events.contracts.ContractEmitted.is(eventRecord.event))
-          
-          assert(contractEventRecords.length > 0, "Should emit at least one event emitted!");
+          const contractEventRecords = events.filter((eventRecord: FrameSystemEventRecord) =>
+            api.events.contracts.ContractEmitted.is(eventRecord.event),
+          );
 
-          assert(contractEventRecords.some((eventRecord: FrameSystemEventRecord) => contract.events.Flipped.is(contract.decodeEvent(eventRecord)!)), "Should have at least a Flipped events emitted")
-          
+          assert(contractEventRecords.length > 0, 'Should emit at least one event emitted!');
+
+          const flippedEvent = contractEventRecords
+            .map((e) => contract.decodeEvent(e))
+            .find((e) => contract.events.Flipped.is(e));
+
+          if (flippedEvent && contract.events.Flipped.is(flippedEvent)) {
+            assert(flippedEvent.data.new === false, 'New value should be false');
+            assert(flippedEvent.data.old === true, 'Old value should be true');
+          } else {
+            assert(flippedEvent, 'Flipped event should be emitted');
+          }
+
           resolve();
         }
       });
