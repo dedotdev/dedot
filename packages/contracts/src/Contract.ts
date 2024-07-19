@@ -1,10 +1,10 @@
 import { ISubstrateClient } from '@dedot/api';
 import { AccountId32, AccountId32Like } from '@dedot/codecs';
+import { IEventRecord } from '@dedot/types';
 import { TypinkRegistry } from './TypinkRegistry.js';
 import { EventExecutor, QueryExecutor, TxExecutor } from './executor/index.js';
 import { ContractEvent, ContractMetadata, GenericContractApi } from './types/index.js';
 import { ensureSupportContractsPallet, newProxyChain, parseRawMetadata } from './utils.js';
-import { FrameSystemEventRecord } from '@dedot/api/chaintypes/index.js';
 
 export class Contract<ContractApi extends GenericContractApi = GenericContractApi> {
   readonly #api: ISubstrateClient;
@@ -21,8 +21,8 @@ export class Contract<ContractApi extends GenericContractApi = GenericContractAp
     this.#registry = new TypinkRegistry(this.#metadata);
   }
 
-  decodeEvent(eventRecord: FrameSystemEventRecord): ContractEvent | undefined {
-      return this.#registry.decodeEvent(eventRecord);
+  decodeEvent(eventRecord: IEventRecord): ContractEvent {
+    return this.#registry.decodeEvent(eventRecord);
   }
 
   get metadata(): ContractMetadata {

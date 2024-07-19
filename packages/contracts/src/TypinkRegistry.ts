@@ -1,9 +1,20 @@
-import { FrameSystemEventRecord } from '@dedot/api/chaintypes/index.js';
-import { TypeRegistry } from '@dedot/codecs';
+import { AccountId32, Bytes, TypeRegistry } from '@dedot/codecs';
+import * as $ from '@dedot/shape';
+import { IEventRecord, IRuntimeEvent } from '@dedot/types';
 import { assert, hexToU8a, stringCamelCase, stringPascalCase } from '@dedot/utils';
 import { ContractEvent, ContractEventMeta, ContractMetadata } from './types/index.js';
 import { extractContractTypes } from './utils.js';
-import * as $ from '@dedot/shape'
+
+interface ContractEmittedEvent extends IRuntimeEvent {
+  pallet: 'Contracts';
+  palletEvent: {
+    name: 'ContractEmitted';
+    data: {
+      contract: AccountId32;
+      data: Bytes;
+    };
+  };
+}
 
 export class TypinkRegistry extends TypeRegistry {
   readonly #metadata: ContractMetadata;
@@ -18,9 +29,7 @@ export class TypinkRegistry extends TypeRegistry {
     return this.#metadata;
   }
 
-  decodeEvent(eventRecord: FrameSystemEventRecord): ContractEvent | undefined {
-    assert(this.#isContractEmittedEvent(eventRecord), 'Event Record is not valid!');
-
+  decodeEvent(eventRecord: IEventRecord): ContractEvent {
     if (this.#metadata.version === '4') {
       return this.#decodeEventV4(eventRecord);
     } else {
@@ -29,14 +38,13 @@ export class TypinkRegistry extends TypeRegistry {
     }
   }
 
-  #isContractEmittedEvent(eventRecord: FrameSystemEventRecord): eventRecord is FrameSystemEventRecord & {
-    event: { pallet: 'Contracts'; palletEvent: { name: 'ContractEmitted'; data: { data: any } } };
-  } {
-    return eventRecord.event.pallet === 'Contracts' && eventRecord.event.palletEvent.name === 'ContractEmitted';
+  #isContractEmittedEvent(eventRecord: IRuntimeEvent): eventRecord is ContractEmittedEvent {
+    // @ts-ignore
+    return eventRecord.pallet === 'Contracts' && eventRecord.palletEvent.name === 'ContractEmitted';
   }
 
-  #decodeEventV4(eventRecord: FrameSystemEventRecord): ContractEvent {
-    assert(this.#isContractEmittedEvent(eventRecord), 'Event Record is not valid!');
+  #decodeEventV4(eventRecord: IEventRecord): ContractEvent {
+    assert(this.#isContractEmittedEvent(eventRecord.event), 'Event Record is not valid!');
 
     const data = hexToU8a(eventRecord.event.palletEvent.data.data);
     const index = data.at(0);
@@ -48,26 +56,31 @@ export class TypinkRegistry extends TypeRegistry {
     return this.#tryDecodeEvent(event, data.subarray(1));
   }
 
-  #decodeEventV5(eventRecord: FrameSystemEventRecord): ContractEvent {
+  #decodeEventV5(eventRecord: IEventRecord): ContractEvent {
     assert(this.#metadata.version == '5', 'Invalid metadata version!');
-    assert(this.#isContractEmittedEvent(eventRecord), 'Event Record is not valid!');
+    assert(this.#isContractEmittedEvent(eventRecord.event), 'Event Record is not valid!');
 
     const data = hexToU8a(eventRecord.event.palletEvent.data.data);
     const signatureTopic = eventRecord.topics.at(0);
-    
-    let event: ContractEventMeta | undefined;
-    event = signatureTopic && this.#metadata.spec.events.find((one) => one.signature_topic === signatureTopic);
 
-    // TODO: Handle multiple anonymous events
-    // If `event` does not exist, it means it's an anonymous event that does not contain a signature topic in the metadata.
-    if (!event) {
-      const potentialEvents = this.#metadata.spec.events.filter((one) => !one.signature_topic && one.args.filter(arg => arg.indexed).length === eventRecord.topics.length);
-      assert(potentialEvents.length === 1, 'Unable to determine event!');
-
-      event = potentialEvents[0]
+    let eventMeta: ContractEventMeta | undefined;
+    if (signatureTopic) {
+      eventMeta = this.#metadata.spec.events.find((one) => one.signature_topic === signatureTopic);
     }
 
-    return this.#tryDecodeEvent(event, data);
+    // TODO: Handle multiple anonymous events
+    // If `event` does not exist, it means it's an anonymous event
+    // that does not contain a signature topic in the metadata.
+    if (!eventMeta) {
+      const potentialEvents = this.#metadata.spec.events.filter(
+        (one) => !one.signature_topic && one.args.filter((arg) => arg.indexed).length === eventRecord.topics.length,
+      );
+
+      assert(potentialEvents.length === 1, 'Unable to determine event!');
+      eventMeta = potentialEvents[0];
+    }
+
+    return this.#tryDecodeEvent(eventMeta, data);
   }
 
   #tryDecodeEvent(eventMeta: ContractEventMeta, raw: Uint8Array): ContractEvent {
@@ -87,7 +100,8 @@ export class TypinkRegistry extends TypeRegistry {
 
     const $eventCodec = $.Struct(eventCodecFrame);
     const data = $eventCodec.decode(raw);
+    const name = stringPascalCase(label);
 
-    return args.length ? { name: stringPascalCase(label), data } : ({ name: stringPascalCase(label) } as ContractEvent);
+    return args.length ? { name, data } : { name };
   }
 }
