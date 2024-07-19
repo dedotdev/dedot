@@ -30,23 +30,23 @@ export const run = async (_nodeName: any, networkInfo: any) => {
       salt,
     });
 
-    const constructorTx = deployer.tx.new(true, { gasLimit: gasRequired, salt });
-
     const contractAddress: string = await new Promise(async (resolve) => {
-      await constructorTx.signAndSend(alicePair, async ({ status, events }) => {
-        console.log(`[${api.rpcVersion}] Transaction status:`, status.type);
+      await deployer.tx
+        .new(true, { gasLimit: gasRequired, salt })
+        .signAndSend(alicePair, async ({ status, events }) => {
+          console.log(`[${api.rpcVersion}] Transaction status:`, status.type);
 
-        if (status.type === 'Finalized') {
-          const instantiatedEvent = events
-            .map(({ event }) => event) // prettier-end-here
-            .find(api.events.contracts.Instantiated.is); // narrow down the type for type suggestions
+          if (status.type === 'Finalized') {
+            const instantiatedEvent = events
+              .map(({ event }) => event) // prettier-end-here
+              .find(api.events.contracts.Instantiated.is); // narrow down the type for type suggestions
 
-          assert(instantiatedEvent, 'Event Contracts.Instantiated should be available');
+            assert(instantiatedEvent, 'Event Contracts.Instantiated should be available');
 
-          const contractAddress = instantiatedEvent.palletEvent.data.contract.address();
-          resolve(contractAddress);
-        }
-      });
+            const contractAddress = instantiatedEvent.palletEvent.data.contract.address();
+            resolve(contractAddress);
+          }
+        });
     });
 
     console.log(`[${api.rpcVersion}] Deployed contract address`, contractAddress);
