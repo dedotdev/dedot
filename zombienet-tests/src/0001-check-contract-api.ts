@@ -2,7 +2,7 @@ import Keyring from '@polkadot/keyring';
 import { cryptoWaitReady } from '@polkadot/util-crypto';
 import { RpcVersion } from '@dedot/types';
 import { DedotClient, ISubstrateClient, LegacyClient, WsProvider } from 'dedot';
-import { FrameSystemEventRecord, SubstrateApi } from 'dedot/chaintypes';
+import { SubstrateApi } from 'dedot/chaintypes';
 import { Contract, ContractDeployer, ContractMetadata, parseRawMetadata } from 'dedot/contracts';
 import { assert, stringToHex } from 'dedot/utils';
 import * as flipperV4Raw from '../flipper_v4.json';
@@ -32,22 +32,19 @@ export const run = async (_nodeName: any, networkInfo: any) => {
 
     const constructorTx = deployer.tx.new(true, { gasLimit: gasRequired, salt });
 
-    const contractAddress: string = await new Promise(async (resolve, reject) => {
+    const contractAddress: string = await new Promise(async (resolve) => {
       await constructorTx.signAndSend(alicePair, async ({ status, events }) => {
         console.log(`[${api.rpcVersion}] Transaction status:`, status.type);
 
         if (status.type === 'Finalized') {
-          const instantiatedEvent = events.find(({ event }) => api.events.contracts.Instantiated.is(event));
+          const instantiatedEvent = events
+            .map(({ event }) => event) // prettier-end-here
+            .find(api.events.contracts.Instantiated.is); // narrow down the type for type suggestions
 
           assert(instantiatedEvent, 'Event Contracts.Instantiated should be available');
 
-          // narrow down the type for type suggestions
-          if (api.events.contracts.Instantiated.is(instantiatedEvent.event)) {
-            const contractAddress = instantiatedEvent.event.palletEvent.data.contract.address();
-            resolve(contractAddress);
-          } else {
-            reject();
-          }
+          const contractAddress = instantiatedEvent.palletEvent.data.contract.address();
+          resolve(contractAddress);
         }
       });
     });
@@ -69,22 +66,17 @@ export const run = async (_nodeName: any, networkInfo: any) => {
         console.log(`[${api.rpcVersion}] Transaction status`, status.type);
 
         if (status.type === 'Finalized') {
-          const contractEventRecords = events.filter((eventRecord: FrameSystemEventRecord) =>
-            api.events.contracts.ContractEmitted.is(eventRecord.event),
-          );
+          const contractEventRecords = events.filter((r) => api.events.contracts.ContractEmitted.is(r.event));
 
           assert(contractEventRecords.length > 0, 'Should emit at least one event emitted!');
 
           const flippedEvent = contractEventRecords
             .map((e) => contract.decodeEvent(e))
-            .find((e) => contract.events.Flipped.is(e));
+            .find(contract.events.Flipped.is);
 
-          if (flippedEvent && contract.events.Flipped.is(flippedEvent)) {
-            assert(flippedEvent.data.new === false, 'New value should be false');
-            assert(flippedEvent.data.old === true, 'Old value should be true');
-          } else {
-            assert(flippedEvent, 'Flipped event should be emitted');
-          }
+          assert(flippedEvent, 'Flipped event should be emitted');
+          assert(flippedEvent.data.new === false, 'New value should be false');
+          assert(flippedEvent.data.old === true, 'Old value should be true');
 
           resolve();
         }
