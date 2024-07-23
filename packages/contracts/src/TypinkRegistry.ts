@@ -1,7 +1,7 @@
 import { AccountId32, Bytes, TypeRegistry } from '@dedot/codecs';
 import * as $ from '@dedot/shape';
 import { IEventRecord, IRuntimeEvent } from '@dedot/types';
-import { assert, hexToU8a, stringCamelCase, stringPascalCase } from '@dedot/utils';
+import { DedotError, assert, hexToU8a, stringCamelCase, stringPascalCase } from '@dedot/utils';
 import { ContractEvent, ContractEventMeta, ContractMetadata } from './types/index.js';
 import { extractContractTypes } from './utils.js';
 
@@ -30,11 +30,15 @@ export class TypinkRegistry extends TypeRegistry {
   }
 
   decodeEvent(eventRecord: IEventRecord): ContractEvent {
-    if (this.#metadata.version === '4') {
-      return this.#decodeEventV4(eventRecord);
-    } else {
-      // Latest version
-      return this.#decodeEventV5(eventRecord);
+    const { version } = this.#metadata;
+
+    switch (version) {
+      case 5:
+        return this.#decodeEventV5(eventRecord);
+      case '4':
+        return this.#decodeEventV4(eventRecord);
+      default:
+        throw new DedotError('Unsupported metadata version!');
     }
   }
 
@@ -44,6 +48,7 @@ export class TypinkRegistry extends TypeRegistry {
   }
 
   #decodeEventV4(eventRecord: IEventRecord): ContractEvent {
+    assert(this.#metadata.version === '4', 'Invalid metadata version!');
     assert(this.#isContractEmittedEvent(eventRecord.event), 'Event Record is not valid!');
 
     const data = hexToU8a(eventRecord.event.palletEvent.data.data);
@@ -57,7 +62,7 @@ export class TypinkRegistry extends TypeRegistry {
   }
 
   #decodeEventV5(eventRecord: IEventRecord): ContractEvent {
-    assert(this.#metadata.version == '5', 'Invalid metadata version!');
+    assert(this.#metadata.version === 5, 'Invalid metadata version!');
     assert(this.#isContractEmittedEvent(eventRecord.event), 'Event Record is not valid!');
 
     const data = hexToU8a(eventRecord.event.palletEvent.data.data);
