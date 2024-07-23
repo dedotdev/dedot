@@ -45,27 +45,31 @@ export const run = async (nodeName: any, networkInfo: any): Promise<void> => {
   };
 
   return new Promise(async (resolve) => {
-    const unsub = await api.tx.system
+    const remarkWithEventTx = await api.tx.system
       .remarkWithEvent('Hello Dedot')
-      .signAndSend(alice.address, { signer: alterSigner }, async ({ status, events, dispatchInfo }) => {
-        console.log('Transaction status', status.type);
+      .sign(alice.address, { signer: alterSigner });
 
-        if (status.type === 'Finalized') {
-          const remarkEvent = events.map(({ event }) => event).find(api.events.system.Remarked.is);
-          const txFreePaidEvent = events
-            .map(({ event }) => event)
-            .find(api.events.transactionPayment.TransactionFeePaid.is);
+    assert(remarkWithEventTx.signature, 'Tx signature should be available');
 
-          assert(
-            remarkEvent && remarkEvent.pallet === 'System' && remarkEvent.palletEvent.name === 'Remarked',
-            'System.Remarked event should be emitted',
-          );
+    const unsub = await remarkWithEventTx.send(async ({ status, events, dispatchInfo }) => {
+      console.log('Transaction status', status.type);
 
-          assert(txFreePaidEvent && txFreePaidEvent.palletEvent.data.tip === tip, 'Tip value is not correct');
+      if (status.type === 'Finalized') {
+        const remarkEvent = events.map(({ event }) => event).find(api.events.system.Remarked.is);
+        const txFreePaidEvent = events
+          .map(({ event }) => event)
+          .find(api.events.transactionPayment.TransactionFeePaid.is);
 
-          await unsub();
-          resolve();
-        }
-      });
+        assert(
+          remarkEvent && remarkEvent.pallet === 'System' && remarkEvent.palletEvent.name === 'Remarked',
+          'System.Remarked event should be emitted',
+        );
+
+        assert(txFreePaidEvent && txFreePaidEvent.palletEvent.data.tip === tip, 'Tip value is not correct');
+
+        await unsub();
+        resolve();
+      }
+    });
   });
 };
