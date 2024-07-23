@@ -49,6 +49,8 @@ export const run = async (nodeName: any, networkInfo: any): Promise<void> => {
       .remarkWithEvent('Hello Dedot')
       .sign(alice.address, { signer: alterSigner });
 
+    console.log('signature', remarkWithEventTx.signature);
+
     assert(remarkWithEventTx.signature, 'Tx signature should be available');
     assert(remarkWithEventTx.signature.extra.includes(tip), 'Tx extra data should include tip');
 
