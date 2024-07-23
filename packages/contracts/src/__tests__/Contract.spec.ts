@@ -2,12 +2,13 @@ import { LegacyClient, FallbackRuntimeApis } from '@dedot/api';
 import { FrameSystemEventRecord } from '@dedot/api/chaintypes/index.js';
 import MockProvider from '@dedot/api/client/__tests__/MockProvider';
 import { RuntimeVersion } from '@dedot/codecs';
-import { ContractMetadataV5 } from 'src/types/v5.js';
 import { beforeEach, describe, expect, it } from 'vitest';
 import { Contract } from '../Contract.js';
 import {
   FLIPPER_CONTRACT_METADATA_V4,
   FLIPPER_CONTRACT_METADATA_V5,
+  FLIPPER_CONTRACT_METADATA_V5_NO_SIGNATURE_TOPIC,
+  FLIPPER_CONTRACT_METADATA_V5_NO_SIGNATURE_TOPIC_INDEXED_FIELDS,
   PSP22_CONTRACT_METADATA,
   RANDOM_CONTRACT_ADDRESS,
 } from './contracts-metadata.js';
@@ -105,11 +106,35 @@ describe('Contract', () => {
     });
 
     describe('decodeEventV5', () => {
-      beforeEach(async () => {
-        flipper = new Contract(api, FLIPPER_CONTRACT_METADATA_V5, RANDOM_CONTRACT_ADDRESS);
+      it('should decode if can detect anonymous event meta', () => {
+        flipper = new Contract(api, FLIPPER_CONTRACT_METADATA_V5_NO_SIGNATURE_TOPIC, RANDOM_CONTRACT_ADDRESS);
+
+        const contractEmittedEventRecord =
+          '0x000100000008037e00d4cc806c1d91d5caccb5f933511d3270761ec5fb68bc6ab01ebe727fe6db08010000';
+        const eventRecord = api.registry.findCodec(19).tryDecode(contractEmittedEventRecord) as FrameSystemEventRecord;
+
+        const decodedEvent = flipper.decodeEvent(eventRecord);
+
+        expect(flipper.events.Flipped.is(decodedEvent!)).toEqual(true);
+        expect(decodedEvent).toEqual({ name: 'Flipped', data: { old: true, new: false } });
+      });
+
+      it('should decode if can detect anoymous event meta has indexed fields', () => {
+        flipper = new Contract(api, FLIPPER_CONTRACT_METADATA_V5_NO_SIGNATURE_TOPIC_INDEXED_FIELDS, RANDOM_CONTRACT_ADDRESS);
+
+        const contractEmittedEventRecord =
+          '0x000100000008035b5507db890cba8d6ecc300104b80f4506d9d973276f6c8ff5b370347ce011af0800010800000000000000000000000000000000000000000000000000000000000000000100000000000000000000000000000000000000000000000000000000000000';
+        const eventRecord = api.registry.findCodec(19).tryDecode(contractEmittedEventRecord) as FrameSystemEventRecord;
+
+        const decodedEvent = flipper.decodeEvent(eventRecord);
+
+        expect(flipper.events.Flipped.is(decodedEvent!)).toEqual(true);
+        expect(decodedEvent).toEqual({ name: 'Flipped', data: { old: false, new: true } });
       });
 
       it('should decode properly', () => {
+        flipper = new Contract(api, FLIPPER_CONTRACT_METADATA_V5, RANDOM_CONTRACT_ADDRESS);
+
         const contractEmittedEventRecord =
           '0x00010000000803f2773dba008bbe3bb76fa8cb89fddb534b4e81dcaf52faaf94190a89ab3d3b04080001040a39b5ca0b8b3a5172476100ae7b9168b269cc91d5648efe180c75d935d3e886';
         const eventRecord = api.registry.findCodec(19).tryDecode(contractEmittedEventRecord) as FrameSystemEventRecord;
@@ -121,11 +146,7 @@ describe('Contract', () => {
       });
 
       it('should throw error if cannot determine the event meta', () => {
-        const mockFlipper = structuredClone(FLIPPER_CONTRACT_METADATA_V5) as ContractMetadataV5;
-        mockFlipper.spec.events.at(0)!.signature_topic = null;
-        mockFlipper.spec.events.push(mockFlipper.spec.events.at(0)!);
-
-        flipper = new Contract(api, mockFlipper, RANDOM_CONTRACT_ADDRESS);
+        flipper = new Contract(api, FLIPPER_CONTRACT_METADATA_V5_NO_SIGNATURE_TOPIC, RANDOM_CONTRACT_ADDRESS);
 
         const contractEmittedEventRecord =
           '0x00010000000803f2773dba008bbe3bb76fa8cb89fddb534b4e81dcaf52faaf94190a89ab3d3b04080001040a39b5ca0b8b3a5172476100ae7b9168b269cc91d5648efe180c75d935d3e886';
