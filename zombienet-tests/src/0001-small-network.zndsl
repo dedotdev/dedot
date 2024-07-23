@@ -19,3 +19,4 @@ alice: ts-script ./0001-verify-chain-head-logic.ts within 200 seconds
 alice: ts-script ./0001-check-payment-info.ts within 200 seconds
 alice: ts-script ./0001-tracking-tx-validity.ts within 200 seconds
 alice: ts-script ./0001-check-contract-api.ts within 500 seconds
+alice: ts-script ./0001-check-tx-alter-payload.ts within 200 seconds

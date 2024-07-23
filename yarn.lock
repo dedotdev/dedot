@@ -9809,6 +9809,7 @@ __metadata:
   dependencies:
     "@dedot/chaintypes": "npm:0.0.1-alpha.83"
     "@polkadot/keyring": "npm:^13.0.2"
+    "@polkadot/types": "npm:^12.2.1"
     dedot: "workspace:*"
   languageName: unknown
   linkType: soft
