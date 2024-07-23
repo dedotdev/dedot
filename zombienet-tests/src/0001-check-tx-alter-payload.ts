@@ -1,8 +1,9 @@
 import Keyring from '@polkadot/keyring';
-import { SignerPayloadJSON, SignerResult } from '@polkadot/types/types';
+import { SignerResult } from '@polkadot/types/types';
 import { cryptoWaitReady } from '@polkadot/util-crypto';
+import { ExtrinsicSignature } from '@dedot/codecs';
 import { assert, u8aToHex } from '@dedot/utils';
-import { LegacyClient, WsProvider } from 'dedot';
+import { $, LegacyClient, WsProvider } from 'dedot';
 
 const BOB = '5FHneW46xGXgs5mUiveU4sbTyGBzmstUspZC92UhjJM694ty';
 
@@ -23,12 +24,21 @@ export const run = async (nodeName: any, networkInfo: any): Promise<void> => {
       // Proving that the original tx payload is already alter to add the tip
       const transferTx = await api.tx.system.remarkWithEvent('Hello Dedot').sign(alice, { tip });
 
-      const { signatureTypeId } = api.registry.metadata!.extrinsic;
-      const $Signature = api.registry.findCodec(signatureTypeId);
+      const { addressTypeId, signatureTypeId, extraTypeId } = api.registry.metadata!.extrinsic;
+
+      const $Address = api.registry.findCodec<any>(addressTypeId);
+      const $Signature = api.registry.findCodec<any>(signatureTypeId);
+      const $Extra = api.registry.findCodec<any>(extraTypeId);
+
+      const $ExtrinsicSignature: $.Shape<ExtrinsicSignature> = $.Struct({
+        address: $Address,
+        signature: $Signature,
+        extra: $Extra,
+      });
 
       return {
         id: Date.now(),
-        signature: u8aToHex($Signature.tryEncode(transferTx.signature)),
+        signature: u8aToHex($ExtrinsicSignature.tryEncode(transferTx.signature)),
         signedTransaction: transferTx.toHex(),
       };
     },
