@@ -6,7 +6,8 @@
   "workspaces": [
     "packages/*",
     "examples/*",
-    "zombienet-tests"
+    "zombienet-tests",
+    "docs"
   ],
   "scripts": {
     "build": "yarn clean && npx lerna run build --no-private",
