@@ -1,3 +1,4 @@
+import { SubstrateRuntimeVersion } from '@dedot/api';
 import type { RuntimeVersion } from '@dedot/codecs';
 import { WsProvider } from '@dedot/providers';
 import type { AnyShape } from '@dedot/shape';
@@ -352,6 +353,32 @@ describe('LegacyClient', () => {
       expect(newApi.currentMetadataKey).toEqual(
         `RAW_META/0x0000000000000000000000000000000000000000000000000000000000000000/2`,
       );
+    });
+
+    it('should emit runtimeUpgraded event', async () => {
+      const provider = new MockProvider();
+      const newApi = await LegacyClient.new({ provider, cacheMetadata: true });
+
+      const originalRuntime = newApi.runtimeVersion;
+      const nextRuntime = { ...MockedRuntimeVersion, specVersion: originalRuntime.specVersion + 1 } as RuntimeVersion;
+
+      setTimeout(() => {
+        provider.notify('runtime-version-subscription-id', nextRuntime);
+      }, 100);
+
+      await new Promise<void>((resolve, reject) => {
+        newApi.on('runtimeUpgraded', (newRuntime: SubstrateRuntimeVersion) => {
+          try {
+            expect(nextRuntime.specVersion).toEqual(newRuntime.specVersion);
+            resolve();
+          } catch (e) {
+            reject(e);
+          }
+        });
+      });
+
+      expect(nextRuntime.specVersion).toEqual(newApi.runtimeVersion.specVersion);
+      expect(nextRuntime.specVersion).toEqual(originalRuntime.specVersion + 1);
     });
   });
 
