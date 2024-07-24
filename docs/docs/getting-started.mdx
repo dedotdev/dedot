@@ -1,0 +1,54 @@
+---
+sidebar_position: 2
+---
+# Getting Started
+
+## Installation
+
+import Tabs from '@theme/Tabs';
+import TabItem from '@theme/TabItem';
+
+<Tabs>
+  <TabItem value="npm" label="npm" default>
+    ```bash
+    npm i dedot
+
+    npm i -D @dedot/chaintypes
+    ```
+  </TabItem>
+  <TabItem value="yarn" label="yarn">
+    ```shell
+    yarn add dedot
+
+    yarn add -D @dedot/chaintypes
+    ```
+  </TabItem>
+  <TabItem value="pnpm" label="pnpm">
+    ```shell
+    pnpm add dedot
+
+    pnpm add -D @dedot/chaintypes
+    ```
+  </TabItem>
+</Tabs>
+
+
+## Instantiate `DedotClient`
+### Websocket endpoint (`WsProvider`)
+```typescript
+  import { DedotClient, WsProvider } from 'dedot';
+  import type { PolkadotApi } from '@dedot/chaintypes';
+
+  const provider = new WsProvider('wss://rpc.polkadot.io');
+  const api = await DedotClient.new<PolkadotApi>(provider);
+
+  // Call rpc `state_getMetadata` to fetch raw scale-encoded metadata and decode it.
+  const metadata = await api.rpc.state_getMetadata();
+  console.log('Metadata:', metadata);
+
+  // Query on-chain storage
+  const balance = await api.query.system.account(<address>);
+  console.log('Balance:', balance);
+```
+### Smoldot (`SmoldotProvider`)
+
