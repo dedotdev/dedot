@@ -37,13 +37,14 @@ const config: Config = {
           sidebarPath: './sidebars.ts',
           // Please change this to your repo.
           // Remove this to remove the "edit this page" links.
-          editUrl: 'https://github.com/facebook/docusaurus/tree/main/packages/create-docusaurus/templates/shared/',
+          editUrl: 'https://github.com/dedotdev/dedot/tree/main/docs',
         },
         blog: {
           showReadingTime: true,
+          blogSidebarTitle: 'Recent blog posts',
           // Please change this to your repo.
           // Remove this to remove the "edit this page" links.
-          editUrl: 'https://github.com/facebook/docusaurus/tree/main/packages/create-docusaurus/templates/shared/',
+          editUrl: 'https://github.com/dedotdev/dedot/tree/main/docs',
         },
         theme: {
           customCss: './src/css/custom.css',
@@ -75,8 +76,8 @@ const config: Config = {
         { to: '/blog', label: 'Blog', position: 'right' },
         {
           href: 'https://github.com/dedotdev/dedot',
-          label: 'GitHub',
           position: 'right',
+          className: 'navbar-github-link',
         },
       ],
     },
