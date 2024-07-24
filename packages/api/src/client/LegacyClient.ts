@@ -131,6 +131,9 @@ export class LegacyClient<ChainApi extends VersionedGenericSubstrateApi = Substr
       .state_subscribeRuntimeVersion(async (runtimeVersion: RuntimeVersion) => {
         if (runtimeVersion.specVersion !== this.runtimeVersion?.specVersion) {
           this._runtimeVersion = this.toSubstrateRuntimeVersion(runtimeVersion);
+
+          this.emit('runtimeUpgraded', this._runtimeVersion);
+
           const newMetadata = await this.fetchMetadata(undefined, this._runtimeVersion);
           await this.setupMetadata(newMetadata);
         }

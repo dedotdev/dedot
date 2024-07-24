@@ -1,4 +1,5 @@
 import staticSubstrateV15 from '@polkadot/types-support/metadata/v15/substrate-hex';
+import { SubstrateRuntimeVersion } from '@dedot/api';
 import { $Metadata, $RuntimeVersion, type RuntimeVersion } from '@dedot/codecs';
 import { WsProvider } from '@dedot/providers';
 import type { AnyShape } from '@dedot/shape';
@@ -10,7 +11,7 @@ import {
   OperationStorageDone,
   OperationStorageItems,
 } from '@dedot/types/json-rpc';
-import { deferred, stringCamelCase, stringPascalCase, u8aToHex } from '@dedot/utils';
+import { assert, deferred, stringCamelCase, stringPascalCase, u8aToHex } from '@dedot/utils';
 import { MockInstance } from '@vitest/spy';
 import { afterEach, beforeEach, describe, expect, expectTypeOf, it, vi } from 'vitest';
 import { mockedRuntime, newChainHeadSimulator } from '../../json-rpc/group/__tests__/simulator.js';
@@ -892,6 +893,35 @@ describe('DedotClient', () => {
           expect(newApi.currentMetadataKey).toEqual(
             `RAW_META/0x0000000000000000000000000000000000000000000000000000000000000000/2`,
           );
+        });
+
+        it('should emit runtimeUpgrade event', async () => {
+          const newSimulator = newChainHeadSimulator({ provider });
+          newSimulator.notify(newSimulator.initializedEvent);
+          const originalRuntime = newSimulator.runtime;
+
+          const newApi = await DedotClient.new({ provider, cacheMetadata: true });
+
+          const newBlock = newSimulator.nextNewBlock({ withRuntime: true });
+          newSimulator.notify(newBlock, 100);
+          newSimulator.notify(newSimulator.nextBestBlock(), 150);
+
+          assert(newBlock.newRuntime!.type === 'valid');
+
+          await new Promise<void>((resolve, reject) => {
+            newApi.on('runtimeUpgraded', (newRuntime: SubstrateRuntimeVersion) => {
+              try {
+                // @ts-ignore
+                expect(newBlock.newRuntime!.spec).toEqual(newRuntime);
+                resolve();
+              } catch (e) {
+                reject(e);
+              }
+            });
+          });
+
+          expect(originalRuntime.specVersion + 1).toEqual(newBlock.newRuntime!.spec.specVersion);
+          expect(originalRuntime.specVersion + 1).toEqual(newApi.runtimeVersion.specVersion);
         });
       });
     });

@@ -61,7 +61,7 @@ export interface ApiOptions extends JsonRpcClientOptions {
   hasher?: HashFn;
 }
 
-export type ApiEvent = ProviderEvent | 'ready';
+export type ApiEvent = ProviderEvent | 'ready' | 'runtimeUpgraded';
 
 export interface SubstrateRuntimeVersion {
   specName: string;
