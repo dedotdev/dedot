@@ -11,7 +11,7 @@ import {
   TxPaymentInfo,
   Unsub,
 } from '@dedot/types';
-import { HexString, isFunction, u8aToHex } from '@dedot/utils';
+import { DedotError, HexString, isFunction, toHex, u8aToHex } from '@dedot/utils';
 import type { FrameSystemEventRecord, SubstrateApi } from '../../chaintypes/index.js';
 import type { ISubstrateClient, ISubstrateClientAt } from '../../types.js';
 import { ExtraSignedExtension } from '../extensions/index.js';
@@ -19,6 +19,8 @@ import { fakeSigner } from './fakeSigner.js';
 import { isKeyringPair, signRaw } from './utils.js';
 
 export abstract class BaseSubmittableExtrinsic extends Extrinsic implements ISubmittableExtrinsic {
+  #alterTx?: HexString;
+
   constructor(
     public api: ISubstrateClient,
     call: IRuntimeTxCall,
@@ -46,12 +48,14 @@ export abstract class BaseSubmittableExtrinsic extends Extrinsic implements ISub
 
     const { signer } = options || {};
 
-    let signature;
+    let signature: HexString, alteredTx: HexString | Uint8Array | undefined;
     if (isKeyringPair(fromAccount)) {
       signature = u8aToHex(signRaw(fromAccount, extra.toRawPayload(this.callHex).data as HexString));
     } else if (signer?.signPayload) {
       const result = await signer.signPayload(extra.toPayload(this.callHex));
+
       signature = result.signature;
+      alteredTx = result.signedTransaction;
     } else {
       throw new Error('Signer not found. Cannot sign the extrinsic!');
     }
@@ -64,6 +68,14 @@ export abstract class BaseSubmittableExtrinsic extends Extrinsic implements ISub
       signature: $Signature.tryDecode(signature),
       extra: extra.data,
     });
+
+    // If the tx payload are altered from signer
+    // We'll need to validate the altered tx
+    // and broadcast it instead of the original tx
+    if (alteredTx) {
+      this.#validateSignedTx(alteredTx);
+      this.#alterTx = toHex(alteredTx);
+    }
 
     return this;
   }
@@ -105,5 +117,30 @@ export abstract class BaseSubmittableExtrinsic extends Extrinsic implements ISub
   protected async getSystemEventsAt(hash: BlockHash): Promise<FrameSystemEventRecord[]> {
     const atApi = (await this.api.at(hash)) as ISubstrateClientAt<SubstrateApi[RpcVersion]>;
     return await atApi.query.system.events();
+  }
+
+  toHex(): HexString {
+    return this.#alterTx || super.toHex();
+  }
+
+  /**
+   * Validate a raw signed transaction coming from signer
+   * We need to make sure the tx is signed and call-data is intact/not-changing
+   *
+   * @param tx
+   * @private
+   */
+  #validateSignedTx(tx: HexString | Uint8Array) {
+    const alteredTx = this.$Codec.tryDecode(tx);
+
+    // The alter tx should be signed
+    if (!alteredTx.signed) {
+      throw new DedotError('Altered transaction from signer is not signed');
+    }
+
+    // Signer's not allow the change the call data
+    if (alteredTx.callHex !== this.callHex) {
+      throw new DedotError('Call data does not match, signer is not allowed to change tx call data.');
+    }
   }
 }

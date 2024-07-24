@@ -7,8 +7,11 @@
   },
   "dependencies": {
     "@dedot/chaintypes": "0.0.1-alpha.83",
-    "@polkadot/keyring": "^12.6.2",
+    "@polkadot/keyring": "^13.0.2",
     "dedot": "workspace:*"
+  },
+  "devDependencies": {
+    "@polkadot/types": "^12.2.1"
   },
   "license": "Apache-2.0"
 }

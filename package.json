@@ -25,23 +25,23 @@
     "gen:chaintypes-substrate": "yarn cli chaintypes -w substrate -o ./packages/api/src/chaintypes -d=false -s=false && yarn fix-esm-path"
   },
   "devDependencies": {
-    "@polkadot/types-support": "^12.0.1",
+    "@polkadot/types-support": "^12.2.1",
     "@trivago/prettier-plugin-sort-imports": "^4.3.0",
     "happy-dom": "^14.12.3",
     "husky": "^9.0.11",
     "jsdom": "^24.1.0",
     "lerna": "7.4.2",
-    "prettier": "^3.3.2",
+    "prettier": "^3.3.3",
     "prettier-plugin-organize-imports": "^3.2.4",
     "ts-node": "^10.9.2",
     "tsc-esm-fix": "^2.20.27",
     "typescript": "5.4.5",
     "vite-tsconfig-paths": "^4.3.2",
-    "vitest": "^1.6.0"
+    "vitest": "^2.0.3"
   },
   "resolutions": {
-    "@polkadot/types": "^12.0.1",
-    "@polkadot/types-support": "^12.0.1"
+    "@polkadot/types": "^12.2.1",
+    "@polkadot/types-support": "^12.2.1"
   },
   "license": "Apache-2.0"
 }

@@ -35,7 +35,7 @@ export const run = async (nodeName: any, networkInfo: any): Promise<void> => {
     const unsub = await batchTx.signAndSend(alice, async ({ status, events }) => {
       console.log('Transaction status', status.type);
 
-      if (status.type === 'InBlock') {
+      if (status.type === 'BestChainBlockIncluded') {
         assert(
           events.some(({ event }) => api.events.balances.Transfer.is(event)),
           'Event Balance.Transfer should be available',

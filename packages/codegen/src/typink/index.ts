@@ -1,7 +1,15 @@
 import { ContractMetadata, parseRawMetadata } from '@dedot/contracts';
 import fs from 'fs';
 import path from 'path';
-import { IndexGen, QueryGen, TxGen, TypesGen, ConstructorTxGen, ConstructorQueryGen } from './generator/index.js';
+import {
+  IndexGen,
+  QueryGen,
+  EventsGen,
+  TxGen,
+  TypesGen,
+  ConstructorTxGen,
+  ConstructorQueryGen,
+} from './generator/index.js';
 
 export async function generateContractTypes(
   metadata: ContractMetadata | string,
@@ -20,6 +28,7 @@ export async function generateContractTypes(
   const txTypesFileName = path.join(dirPath, `tx.${extension}`);
   const constructorTxTypesFileName = path.join(dirPath, `constructor-tx.${extension}`);
   const constructorQueryTypesFileName = path.join(dirPath, `constructor-query.${extension}`);
+  const eventsTypesFile = path.join(dirPath, `events.${extension}`);
   const indexTypesFileName = path.join(dirPath, `index.${extension}`);
 
   if (!fs.existsSync(dirPath)) {
@@ -31,6 +40,7 @@ export async function generateContractTypes(
   const txGen = new TxGen(contractMetadata, typesGen);
   const constructorTxGen = new ConstructorTxGen(contractMetadata, typesGen);
   const constructorQueryGen = new ConstructorQueryGen(contractMetadata, typesGen);
+  const eventsGen = new EventsGen(contractMetadata, typesGen);
   const indexGen = new IndexGen(contractMetadata);
 
   fs.writeFileSync(typesFileName, await typesGen.generate(useSubPaths));
@@ -38,5 +48,6 @@ export async function generateContractTypes(
   fs.writeFileSync(txTypesFileName, await txGen.generate(useSubPaths));
   fs.writeFileSync(constructorQueryTypesFileName, await constructorQueryGen.generate(useSubPaths));
   fs.writeFileSync(constructorTxTypesFileName, await constructorTxGen.generate(useSubPaths));
+  fs.writeFileSync(eventsTypesFile, await eventsGen.generate(useSubPaths));
   fs.writeFileSync(indexTypesFileName, await indexGen.generate(useSubPaths));
 }
