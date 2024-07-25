@@ -714,6 +714,15 @@ describe('DedotClient', () => {
           simulator.notify(newBlock, 100);
           simulator.notify(simulator.nextBestBlock(), 150);
 
+          simulator.notify(
+            {
+              operationId: 'call01',
+              event: 'operationCallDone',
+              output: prefixedMetadataV15,
+            } as OperationCallDone,
+            200,
+          );
+
           assert(newBlock.newRuntime!.type === 'valid');
 
           await new Promise<void>((resolve, reject) => {
