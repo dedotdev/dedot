@@ -24,7 +24,7 @@ export interface SignerOptions extends PayloadOptions {
 export type DryRunResult = ApplyExtrinsicResult;
 export type TxPaymentInfo = RuntimeDispatchInfo;
 
-export interface ISubmittableResult<EventRecord extends IEventRecord = IEventRecord, TxStatus extends any = any> {
+export interface ISubmittableResult<EventRecord extends IEventRecord = IEventRecord> {
   status: TxStatus;
   events: EventRecord[];
   dispatchError?: DispatchError;
