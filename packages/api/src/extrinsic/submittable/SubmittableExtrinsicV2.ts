@@ -21,7 +21,7 @@ export class SubmittableExtrinsicV2 extends BaseSubmittableExtrinsic {
     super(api, call);
   }
 
-  async #send(callback: Callback<ISubmittableResult<IEventRecord, TxStatus>>): Promise<Unsub> {
+  async #send(callback: Callback<ISubmittableResult>): Promise<Unsub> {
     const api = this.api;
     const txHex = this.toHex();
     const txHash = this.hash;
@@ -105,7 +105,7 @@ export class SubmittableExtrinsicV2 extends BaseSubmittableExtrinsic {
           if (txFound && bestChainChanged) {
             txFound = undefined;
             callback(
-              new SubmittableResult<IEventRecord, TxStatus>({
+              new SubmittableResult<IEventRecord>({
                 status: { type: 'NoLongerInBestChain' },
                 txHash,
               }),
@@ -124,7 +124,7 @@ export class SubmittableExtrinsicV2 extends BaseSubmittableExtrinsic {
         const { index: txIndex, events, blockHash } = inBlock;
 
         callback(
-          new SubmittableResult<IEventRecord, TxStatus>({
+          new SubmittableResult<IEventRecord>({
             status: { type: 'BestChainBlockIncluded', value: { blockHash, txIndex } },
             txHash,
             events,
@@ -160,7 +160,7 @@ export class SubmittableExtrinsicV2 extends BaseSubmittableExtrinsic {
         const { index: txIndex, events, blockHash } = inBlock;
 
         callback(
-          new SubmittableResult<IEventRecord, TxStatus>({
+          new SubmittableResult<IEventRecord>({
             status: { type: 'Finalized', value: { blockHash, txIndex } },
             txHash,
             events,
@@ -174,7 +174,7 @@ export class SubmittableExtrinsicV2 extends BaseSubmittableExtrinsic {
         if (validation.isOk) return;
 
         callback(
-          new SubmittableResult<IEventRecord, TxStatus>({
+          new SubmittableResult<IEventRecord>({
             status: {
               type: 'Invalid',
               value: { error: `Invalid Tx: ${validation.err.type} - ${validation.err.value.type}` },
@@ -189,7 +189,7 @@ export class SubmittableExtrinsicV2 extends BaseSubmittableExtrinsic {
 
     stopBroadcastFn = await api.txBroadcaster.broadcastTx(txHex);
     callback(
-      new SubmittableResult<IEventRecord, TxStatus>({
+      new SubmittableResult<IEventRecord>({
         status: { type: 'Broadcasting' },
         txHash,
       }),
