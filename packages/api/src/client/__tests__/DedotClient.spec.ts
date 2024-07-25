@@ -11,7 +11,7 @@ import {
   OperationStorageDone,
   OperationStorageItems,
 } from '@dedot/types/json-rpc';
-import { assert, deferred, stringCamelCase, stringPascalCase, u8aToHex, waitFor } from '@dedot/utils';
+import { assert, deferred, stringCamelCase, stringPascalCase, u8aToHex } from '@dedot/utils';
 import { MockInstance } from '@vitest/spy';
 import { afterEach, beforeEach, describe, expect, expectTypeOf, it, vi } from 'vitest';
 import { mockedRuntime, newChainHeadSimulator } from '../../json-rpc/group/__tests__/simulator.js';
