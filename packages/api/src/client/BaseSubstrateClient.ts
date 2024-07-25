@@ -2,7 +2,7 @@ import { $Metadata, BlockHash, Hash, Metadata, PortableRegistry, RuntimeVersion 
 import type { JsonRpcProvider } from '@dedot/providers';
 import { type IStorage, LocalStorage } from '@dedot/storage';
 import { GenericSubstrateApi, RpcVersion, VersionedGenericSubstrateApi } from '@dedot/types';
-import { calcRuntimeApiHash, ensurePresence as _ensurePresence, u8aToHex } from '@dedot/utils';
+import { calcRuntimeApiHash, deferred, Deferred, ensurePresence as _ensurePresence, u8aToHex } from '@dedot/utils';
 import type { SubstrateApi } from '../chaintypes/index.js';
 import { ConstantExecutor, ErrorExecutor, EventExecutor } from '../executor/index.js';
 import { isJsonRpcProvider, JsonRpcClient } from '../json-rpc/index.js';
@@ -46,6 +46,7 @@ export abstract class BaseSubstrateClient<
   protected _runtimeVersion?: SubstrateRuntimeVersion;
 
   protected _localCache?: IStorage;
+  protected _runtimeUpgrading?: Deferred<void>;
 
   protected constructor(
     public rpcVersion: RpcVersion,
@@ -250,6 +251,26 @@ export abstract class BaseSubstrateClient<
     };
   }
 
+  protected startRuntimeUpgrade() {
+    this._runtimeUpgrading = deferred<void>();
+  }
+
+  protected doneRuntimeUpgrade() {
+    if (!this._runtimeUpgrading) return;
+
+    this._runtimeUpgrading.resolve();
+
+    setTimeout(() => {
+      this._runtimeUpgrading = undefined;
+    });
+  }
+
+  protected async ensureRuntimeUpgraded() {
+    if (!this._runtimeUpgrading) return;
+
+    await this._runtimeUpgrading.promise;
+  }
+
   /// --- Public APIs ---
   /**
    * @description Connect to blockchain node
@@ -287,6 +308,11 @@ export abstract class BaseSubstrateClient<
 
   get runtimeVersion(): SubstrateRuntimeVersion {
     return ensurePresence(this._runtimeVersion);
+  }
+
+  async getRuntimeVersion(): Promise<SubstrateRuntimeVersion> {
+    await this.ensureRuntimeUpgraded();
+    return this.runtimeVersion;
   }
 
   get consts(): ChainApi[Rv]['consts'] {

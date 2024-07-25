@@ -120,6 +120,15 @@ export interface ISubstrateClient<
   options: ApiOptions;
   tx: ChainApi['tx'];
   at<ChainApiAt extends GenericSubstrateApi = ChainApi>(hash: BlockHash): Promise<ISubstrateClientAt<ChainApiAt>>;
+
+  /**
+   * Get current version of the runtime
+   * This is similar to `.runtimeVersion` but also ensure
+   * the corresponding metadata of this runtime version is downloaded & setup.
+   *
+   * This is helpful when you want to check runtime version to prepare for runtime upgrade
+   */
+  getRuntimeVersion(): Promise<SubstrateRuntimeVersion>;
 }
 
 /**
