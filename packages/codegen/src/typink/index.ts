@@ -41,7 +41,7 @@ export async function generateContractTypes(
   const constructorTxGen = new ConstructorTxGen(contractMetadata, typesGen);
   const constructorQueryGen = new ConstructorQueryGen(contractMetadata, typesGen);
   const eventsGen = new EventsGen(contractMetadata, typesGen);
-  const indexGen = new IndexGen(contractMetadata);
+  const indexGen = new IndexGen(contractMetadata, typesGen);
 
   fs.writeFileSync(typesFileName, await typesGen.generate(useSubPaths));
   fs.writeFileSync(queryTypesFileName, await queryGen.generate(useSubPaths));

@@ -14,6 +14,14 @@ export type GenericContractCallResult<DecodedData, ContractResult> = {
   raw: ContractResult;
 };
 
+export type GenericConstructorCallResult<DecodedData, ContractResult> = {
+  data: DecodedData;
+  raw: ContractResult;
+
+  // Address of the contract will be instantiated
+  address: AccountId32Like;
+};
+
 export type ContractCallResult<ChainApi extends GenericSubstrateApi> = Awaited<
   ReturnType<ChainApi['call']['contractsApi']['call']>
 >;
@@ -80,7 +88,9 @@ export type GenericContractTxCall<
 
 export type GenericConstructorQueryCall<
   ChainApi extends GenericSubstrateApi,
-  F extends AsyncMethod = (...args: any[]) => Promise<ContractInstantiateResult<ChainApi>>,
+  F extends AsyncMethod = (
+    ...args: any[]
+  ) => Promise<GenericConstructorCallResult<any, ContractInstantiateResult<ChainApi>>>,
 > = F & {
   meta: ContractConstructorMessage;
 };
@@ -127,6 +137,8 @@ export interface GenericContractEvents<_ extends GenericSubstrateApi> {
   [event: string]: GenericContractEvent;
 }
 
+export type GenericInkLangError = 'CouldNotReadInput' | any;
+
 export interface GenericContractApi<
   Rv extends RpcVersion = RpcVersion,
   ChainApi extends VersionedGenericSubstrateApi = SubstrateApi,
@@ -136,4 +148,9 @@ export interface GenericContractApi<
   constructorQuery: GenericConstructorQuery<ChainApi[Rv]>;
   constructorTx: GenericConstructorTx<ChainApi[Rv]>;
   events: GenericContractEvents<ChainApi[Rv]>;
+
+  types: {
+    LangError: GenericInkLangError;
+    ChainApi: ChainApi[Rv];
+  };
 }

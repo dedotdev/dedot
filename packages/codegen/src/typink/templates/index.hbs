@@ -13,4 +13,9 @@ export interface {{{contractName}}}<Rv extends RpcVersion = RpcV2, ChainApi exte
     constructorQuery: ConstructorQuery<ChainApi[Rv]>;
     constructorTx: ConstructorTx<ChainApi[Rv]>;
     events: ContractEvents<ChainApi[Rv]>;
+
+    types: {
+      LangError: {{{langErrorName}}};
+      ChainApi: ChainApi[Rv];
+    };
 }

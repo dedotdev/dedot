@@ -3,7 +3,7 @@ import { SubstrateApi } from '@dedot/api/chaintypes';
 import { AccountId32 } from '@dedot/codecs';
 import { GenericSubstrateApi, RpcVersion } from '@dedot/types';
 import { TypinkRegistry } from '../TypinkRegistry.js';
-import { ContractMessageArg, ContractCallMessage } from '../types/index.js';
+import { ContractMessageArg, ContractMessage } from '../types/index.js';
 import { ContractMetadata } from '../types/index.js';
 
 export abstract class Executor<ChainApi extends GenericSubstrateApi = SubstrateApi[RpcVersion]> {
@@ -45,7 +45,7 @@ export abstract class Executor<ChainApi extends GenericSubstrateApi = SubstrateA
     return $codec.tryEncode(value);
   }
 
-  tryDecode(meta: ContractCallMessage, raw: any) {
+  tryDecode(meta: ContractMessage, raw: any) {
     const {
       returnType: { type },
     } = meta;
