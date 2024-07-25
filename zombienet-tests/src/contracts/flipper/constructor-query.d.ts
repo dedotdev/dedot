@@ -3,6 +3,7 @@
 import type {
   ConstructorCallOptions,
   ContractInstantiateResult,
+  GenericConstructorCallResult,
   GenericConstructorQuery,
   GenericConstructorQueryCall,
 } from 'dedot/contracts';
@@ -19,7 +20,10 @@ export interface ConstructorQuery<ChainApi extends GenericSubstrateApi> extends 
    **/
   new: GenericConstructorQueryCall<
     ChainApi,
-    (initValue: boolean, options: ConstructorCallOptions) => Promise<ContractInstantiateResult<ChainApi>>
+    (
+      initValue: boolean,
+      options: ConstructorCallOptions,
+    ) => Promise<GenericConstructorCallResult<[], ContractInstantiateResult<ChainApi>>>
   >;
 
   /**
@@ -31,6 +35,6 @@ export interface ConstructorQuery<ChainApi extends GenericSubstrateApi> extends 
    **/
   newDefault: GenericConstructorQueryCall<
     ChainApi,
-    (options: ConstructorCallOptions) => Promise<ContractInstantiateResult<ChainApi>>
+    (options: ConstructorCallOptions) => Promise<GenericConstructorCallResult<[], ContractInstantiateResult<ChainApi>>>
   >;
 }

@@ -8,6 +8,7 @@ import { ConstructorTx } from './constructor-tx';
 import { ContractEvents } from './events';
 import { ContractQuery } from './query';
 import { ContractTx } from './tx';
+import type { InkPrimitivesLangError } from './types';
 
 export interface FlipperContractApi<
   Rv extends RpcVersion = RpcV2,
@@ -18,4 +19,9 @@ export interface FlipperContractApi<
   constructorQuery: ConstructorQuery<ChainApi[Rv]>;
   constructorTx: ConstructorTx<ChainApi[Rv]>;
   events: ContractEvents<ChainApi[Rv]>;
+
+  types: {
+    LangError: InkPrimitivesLangError;
+    ChainApi: ChainApi[Rv];
+  };
 }

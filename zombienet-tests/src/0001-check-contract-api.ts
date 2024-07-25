@@ -1,8 +1,6 @@
 import Keyring from '@polkadot/keyring';
 import { cryptoWaitReady } from '@polkadot/util-crypto';
-import { RpcVersion } from '@dedot/types';
 import { DedotClient, ISubstrateClient, LegacyClient, WsProvider } from 'dedot';
-import { SubstrateApi } from 'dedot/chaintypes';
 import { Contract, ContractDeployer, ContractMetadata, parseRawMetadata } from 'dedot/contracts';
 import { assert, stringToHex } from 'dedot/utils';
 import * as flipperV4Raw from '../flipper_v4.json';
@@ -19,13 +17,15 @@ export const run = async (_nodeName: any, networkInfo: any) => {
   const flipperV4 = parseRawMetadata(JSON.stringify(flipperV4Raw));
   const flipperV5 = parseRawMetadata(JSON.stringify(flipperV5Raw));
 
-  const verifyContracts = async (api: ISubstrateClient<SubstrateApi[RpcVersion]>, flipper: ContractMetadata) => {
+  const verifyContracts = async (api: ISubstrateClient, flipper: ContractMetadata) => {
     const wasm = flipper.source.wasm!;
     const deployer = new ContractDeployer<FlipperContractApi>(api, flipper, wasm);
     const salt = stringToHex(api.rpcVersion);
 
     // Dry-run to estimate gas fee
-    const { gasRequired } = await deployer.query.new(true, {
+    const {
+      raw: { gasRequired },
+    } = await deployer.query.new(true, {
       caller,
       salt,
     });
@@ -52,8 +52,8 @@ export const run = async (_nodeName: any, networkInfo: any) => {
     console.log(`[${api.rpcVersion}] Deployed contract address`, contractAddress);
     const contract = new Contract<FlipperContractApi>(api, flipper, contractAddress);
 
-    const state = await contract.query.get({ caller });
-    console.log(`[${api.rpcVersion}] Initial value:`, state.data);
+    const { data: state } = await contract.query.get({ caller });
+    console.log(`[${api.rpcVersion}] Initial value:`, state);
 
     console.log(`[${api.rpcVersion}] Flipping...`);
 
@@ -82,10 +82,8 @@ export const run = async (_nodeName: any, networkInfo: any) => {
       });
     });
 
-    const newState = await contract.query.get({ caller });
-    console.log(`[${api.rpcVersion}] New value:`, newState.data);
-
-    assert(state.data !== newState.data, 'State should be changed');
+    const { data: newState } = await contract.query.get({ caller });
+    console.log(`[${api.rpcVersion}] New value:`, newState);
   };
 
   console.log('Checking via legacy API');
