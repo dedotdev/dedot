@@ -25,7 +25,7 @@
     "gen:chaintypes-substrate": "yarn cli chaintypes -w substrate -o ./packages/api/src/chaintypes -d=false -s=false && yarn fix-esm-path"
   },
   "devDependencies": {
-    "@polkadot/types-support": "^12.2.1",
+    "@polkadot/types-support": "^12.2.2",
     "@trivago/prettier-plugin-sort-imports": "^4.3.0",
     "happy-dom": "^14.12.3",
     "husky": "^9.0.11",
