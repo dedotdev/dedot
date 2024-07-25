@@ -144,10 +144,10 @@ export class DedotClient<ChainApi extends VersionedGenericSubstrateApi = Substra
 
     this._runtimeVersion = block.runtime;
 
-    this.emit('runtimeUpgraded', this._runtimeVersion);
-
     const newMetadata = await this.fetchMetadata(undefined, this._runtimeVersion);
     await this.setupMetadata(newMetadata);
+
+    this.emit('runtimeUpgraded', this._runtimeVersion);
 
     this.doneRuntimeUpgrade();
   };

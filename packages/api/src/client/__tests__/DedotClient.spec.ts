@@ -11,7 +11,7 @@ import {
   OperationStorageDone,
   OperationStorageItems,
 } from '@dedot/types/json-rpc';
-import { assert, deferred, stringCamelCase, stringPascalCase, u8aToHex, waitFor } from '@dedot/utils';
+import { assert, deferred, stringCamelCase, stringPascalCase, u8aToHex } from '@dedot/utils';
 import { MockInstance } from '@vitest/spy';
 import { afterEach, beforeEach, describe, expect, expectTypeOf, it, vi } from 'vitest';
 import { mockedRuntime, newChainHeadSimulator } from '../../json-rpc/group/__tests__/simulator.js';
@@ -713,6 +713,15 @@ describe('DedotClient', () => {
           const newBlock = simulator.nextNewBlock({ withRuntime: true });
           simulator.notify(newBlock, 100);
           simulator.notify(simulator.nextBestBlock(), 150);
+
+          simulator.notify(
+            {
+              operationId: 'call01',
+              event: 'operationCallDone',
+              output: prefixedMetadataV15,
+            } as OperationCallDone,
+            200,
+          );
 
           assert(newBlock.newRuntime!.type === 'valid');
 
