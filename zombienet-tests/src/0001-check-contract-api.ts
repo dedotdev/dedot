@@ -1,6 +1,8 @@
 import Keyring from '@polkadot/keyring';
 import { cryptoWaitReady } from '@polkadot/util-crypto';
+import { RpcVersion } from '@dedot/types';
 import { DedotClient, ISubstrateClient, LegacyClient, WsProvider } from 'dedot';
+import { SubstrateApi } from 'dedot/chaintypes';
 import {
   Contract,
   ContractDeployer,
@@ -26,7 +28,7 @@ export const run = async (_nodeName: any, networkInfo: any) => {
   const flipperV4 = parseRawMetadata(JSON.stringify(flipperV4Raw));
   const flipperV5 = parseRawMetadata(JSON.stringify(flipperV5Raw));
 
-  const verifyContracts = async (api: ISubstrateClient, flipper: ContractMetadata) => {
+  const verifyContracts = async (api: ISubstrateClient<SubstrateApi[RpcVersion]>, flipper: ContractMetadata) => {
     const wasm = flipper.source.wasm!;
     const deployer = new ContractDeployer<FlipperContractApi>(api, flipper, wasm);
     const salt = stringToHex(api.rpcVersion);
