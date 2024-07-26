@@ -1,8 +1,17 @@
 import Keyring from '@polkadot/keyring';
 import { cryptoWaitReady } from '@polkadot/util-crypto';
 import { DedotClient, ISubstrateClient, LegacyClient, WsProvider } from 'dedot';
-import { Contract, ContractDeployer, ContractMetadata, parseRawMetadata } from 'dedot/contracts';
-import { assert, stringToHex } from 'dedot/utils';
+import {
+  Contract,
+  ContractDeployer,
+  ContractMetadata,
+  isContractDispatchError,
+  isContractInstantiateDispatchError,
+  isContractInstantiateLangError,
+  isContractLangError,
+  parseRawMetadata,
+} from 'dedot/contracts';
+import { DedotError, assert, assertFalse, deferred, stringToHex } from 'dedot/utils';
 import * as flipperV4Raw from '../flipper_v4.json';
 import * as flipperV5Raw from '../flipper_v5.json';
 import { FlipperContractApi } from './contracts/flipper';
@@ -84,6 +93,35 @@ export const run = async (_nodeName: any, networkInfo: any) => {
 
     const { data: newState } = await contract.query.get({ caller });
     console.log(`[${api.rpcVersion}] New value:`, newState);
+
+    // If re-create a contract with same salt, DispatchError throw!
+    try {
+      await deployer.query.new(true, { caller, salt });
+    } catch (e: any) {
+      assert(isContractInstantiateDispatchError(e), 'Should throw ContractInstantiateDispatchError!');
+    }
+
+    // If input parameters is not in correct format, LangError throw!
+    try {
+      deployer.query.basedOnSeed('0x_error', { caller, salt: '0x' });
+    } catch (e: any) {
+      assert(isContractInstantiateLangError(e), 'Should throw ContractInstantiateLangError!');
+    }
+
+    // If caller's balance is zero, DispatchError throw!
+    try {
+      const caller = new Keyring({ type: 'sr25519' }).addFromUri('//EmptyBalances').address;
+      await contract.query.flip({ caller });
+    } catch (e: any) {
+      assert(isContractDispatchError(e), 'Should throw ContractDispatchError!');
+    }
+
+    // If input parameters is not in correct format, LangError throw!
+    try {
+      contract.query.flipWithSeed('0x_error', { caller });
+    } catch (e: any) {
+      assert(isContractLangError(e), 'Should throw ContractLangError!');
+    }
   };
 
   console.log('Checking via legacy API');
@@ -96,3 +134,11 @@ export const run = async (_nodeName: any, networkInfo: any) => {
   await verifyContracts(apiV2, flipperV4);
   await verifyContracts(apiV2, flipperV5);
 };
+
+async function shouldThrow(fn: (...args: any[]) => Promise, errFn: (e: DedotError) => boolean) {
+  try {
+    await fn();
+  } catch (e: any) {
+    assert(errFn, 'Should throw!');
+  }
+}
