@@ -4,9 +4,14 @@ import { Hash } from '@dedot/codecs';
 import { Result } from '@dedot/shape';
 import { GenericSubstrateApi } from '@dedot/types';
 import { assert, concatU8a, HexString, hexToU8a, isWasm, u8aToHex } from '@dedot/utils';
-import { ContractInstantiateDispatchError, ContractInstantiateLangError } from '../errors.js';
 import { TypinkRegistry } from '../TypinkRegistry.js';
-import { ConstructorCallOptions, ContractConstructorMessage, GenericConstructorQueryCall } from '../types/index.js';
+import { ContractInstantiateDispatchError, ContractInstantiateLangError } from '../errors.js';
+import {
+  ConstructorCallOptions,
+  ContractConstructorMessage,
+  GenericConstructorCallResult,
+  GenericConstructorQueryCall,
+} from '../types/index.js';
 import { normalizeLabel } from '../utils.js';
 import { Executor } from './Executor.js';
 
@@ -48,13 +53,13 @@ export class ConstructorQueryExecutor<ChainApi extends GenericSubstrateApi> exte
         salt,
       );
 
-      if (!raw.result.isOk) {
+      if (raw.result.isErr) {
         throw new ContractInstantiateDispatchError(raw.result.err, raw);
       }
 
       const data = this.tryDecode(meta, raw.result.value.result.data) as Result<any, any>;
 
-      if (!data.isOk) {
+      if (data.isErr) {
         throw new ContractInstantiateLangError(data.err, raw);
       }
 
@@ -62,7 +67,7 @@ export class ConstructorQueryExecutor<ChainApi extends GenericSubstrateApi> exte
         raw,
         data: data.value,
         address: raw.result.value.accountId,
-      } as any;
+      } as GenericConstructorCallResult;
     };
 
     callFn.meta = meta;

@@ -2,14 +2,15 @@ import type { PalletContractsPrimitivesContractResult } from '@dedot/api/chainty
 import { Result } from '@dedot/codecs';
 import { GenericSubstrateApi } from '@dedot/types';
 import { assert, concatU8a, hexToU8a, u8aToHex } from '@dedot/utils';
+import { ContractDispatchError, ContractLangError } from '../errors.js';
 import {
   ContractCallOptions,
   ContractCallMessage,
   GenericContractQueryCall,
+  GenericContractCallResult,
 } from '../types/index.js';
 import { normalizeLabel } from '../utils.js';
 import { Executor } from './Executor.js';
-import { ContractDispatchError, ContractLangError } from '../errors.js';
 
 export class QueryExecutor<ChainApi extends GenericSubstrateApi> extends Executor<ChainApi> {
   doExecute(message: string) {
@@ -36,20 +37,20 @@ export class QueryExecutor<ChainApi extends GenericSubstrateApi> extends Executo
         bytes,
       );
 
-      if (!raw.result.isOk) {
+      if (raw.result.isErr) {
         throw new ContractDispatchError(raw.result.err, raw);
       }
 
       const data = this.tryDecode(meta, raw.result.value.data) as Result<any, any>;
-    
-      if (!data.isOk) {
-        throw new ContractLangError(data.err, raw)
+
+      if (data.isErr) {
+        throw new ContractLangError(data.err, raw);
       }
 
       return {
         data: data.value,
         raw,
-      } as any;
+      } as GenericContractCallResult;
     };
 
     callFn.meta = meta;
