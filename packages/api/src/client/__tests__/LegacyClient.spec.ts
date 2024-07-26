@@ -1,8 +1,10 @@
+import staticSubstrateV15 from '@polkadot/types-support/metadata/v15/substrate-hex';
+import { SubstrateRuntimeVersion } from '@dedot/api';
 import type { RuntimeVersion } from '@dedot/codecs';
 import { WsProvider } from '@dedot/providers';
 import type { AnyShape } from '@dedot/shape';
 import * as $ from '@dedot/shape';
-import { stringCamelCase, stringPascalCase, u8aToHex } from '@dedot/utils';
+import { HexString, stringCamelCase, stringPascalCase, u8aToHex } from '@dedot/utils';
 import { afterEach, beforeEach, describe, expect, expectTypeOf, it, vi } from 'vitest';
 import { LegacyClient } from '../LegacyClient.js';
 import MockProvider, { MockedRuntimeVersion } from './MockProvider.js';
@@ -309,6 +311,59 @@ describe('LegacyClient', () => {
 
         await apiAt.call.metadata.metadata();
         expect(providerSend).toBeCalledWith('state_call', ['Metadata_metadata', '0x', atHash]);
+      });
+    });
+
+    describe('runtime versions', () => {
+      it('should emit runtimeUpgraded event', async () => {
+        const originalRuntime = api.runtimeVersion;
+        const nextRuntime = { ...MockedRuntimeVersion, specVersion: originalRuntime.specVersion + 1 } as RuntimeVersion;
+
+        setTimeout(() => {
+          provider.notify('runtime-version-subscription-id', nextRuntime);
+        }, 100);
+
+        await new Promise<void>((resolve, reject) => {
+          api.on('runtimeUpgraded', (newRuntime: SubstrateRuntimeVersion) => {
+            try {
+              expect(nextRuntime.specVersion).toEqual(newRuntime.specVersion);
+              resolve();
+            } catch (e) {
+              reject(e);
+            }
+          });
+        });
+
+        expect(nextRuntime.specVersion).toEqual(api.runtimeVersion.specVersion);
+        expect(nextRuntime.specVersion).toEqual(originalRuntime.specVersion + 1);
+      });
+
+      it('getRuntimeVersion should return the latest version', async () => {
+        provider.setRpcRequests({
+          state_call: async (params) => {
+            return new Promise<HexString>((resolve) => {
+              setTimeout(() => {
+                if (params[0] === 'Metadata_metadata_at_version') {
+                  resolve(staticSubstrateV15);
+                } else {
+                  resolve('0x');
+                }
+              }, 300);
+            });
+          },
+        });
+
+        const originalRuntime = api.runtimeVersion;
+        const nextRuntime = { ...MockedRuntimeVersion, specVersion: originalRuntime.specVersion + 1 } as RuntimeVersion;
+        provider.notify('runtime-version-subscription-id', nextRuntime);
+
+        const newVersion = await new Promise<SubstrateRuntimeVersion>((resolve) => {
+          setTimeout(async () => {
+            resolve(await api.getRuntimeVersion());
+          }, 100);
+        });
+
+        expect(originalRuntime.specVersion + 1).toEqual(newVersion.specVersion);
       });
     });
   });

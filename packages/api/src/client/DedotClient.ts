@@ -136,17 +136,20 @@ export class DedotClient<ChainApi extends VersionedGenericSubstrateApi = Substra
     this.chainHead.on('bestBlock', this.onRuntimeUpgrade);
   }
 
-  protected unsubscribeRuntimeUpgrades() {
-    this.chainHead.off('bestBlock', this.onRuntimeUpgrade);
-  }
-
   protected onRuntimeUpgrade = async (block: PinnedBlock) => {
     const runtimeUpgraded = block.runtime && block.runtime.specVersion !== this._runtimeVersion?.specVersion;
     if (!runtimeUpgraded) return;
 
+    this.startRuntimeUpgrade();
+
     this._runtimeVersion = block.runtime;
+
     const newMetadata = await this.fetchMetadata(undefined, this._runtimeVersion);
     await this.setupMetadata(newMetadata);
+
+    this.emit('runtimeUpgraded', this._runtimeVersion);
+
+    this.doneRuntimeUpgrade();
   };
 
   protected override async beforeDisconnect(): Promise<void> {

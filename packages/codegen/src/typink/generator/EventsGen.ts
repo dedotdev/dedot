@@ -1,7 +1,7 @@
 import { ContractEventArg, ContractEventMeta } from '@dedot/contracts';
 import { stringCamelCase, stringPascalCase } from '@dedot/utils';
-import { beautifySourceCode, commentBlock, compileTemplate } from '../../utils';
-import { QueryGen } from './QueryGen';
+import { beautifySourceCode, commentBlock, compileTemplate } from '../../utils.js';
+import { QueryGen } from './QueryGen.js';
 
 export class EventsGen extends QueryGen {
   generate(useSubPaths: boolean = false) {
