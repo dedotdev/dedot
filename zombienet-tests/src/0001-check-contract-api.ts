@@ -11,7 +11,7 @@ import {
   isContractLangError,
   parseRawMetadata,
 } from 'dedot/contracts';
-import { DedotError, assert, assertFalse, deferred, stringToHex } from 'dedot/utils';
+import { assert, stringToHex } from 'dedot/utils';
 import * as flipperV4Raw from '../flipper_v4.json';
 import * as flipperV5Raw from '../flipper_v5.json';
 import { FlipperContractApi } from './contracts/flipper';
