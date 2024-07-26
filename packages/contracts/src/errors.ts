@@ -98,17 +98,17 @@ export function isContractLangError<ContractApi extends GenericContractApi = Gen
 export function isContractInstantiateExecutionError<ContractApi extends GenericContractApi = GenericContractApi>(
   e: Error,
 ): e is ContractInstantiateExecutionError<ContractApi> {
-  return e instanceof ContractExecutionError;
+  return e instanceof ContractInstantiateExecutionError;
 }
 
 export function isContractInstantiateDispatchError<ContractApi extends GenericContractApi = GenericContractApi>(
   e: Error,
 ): e is ContractInstantiateDispatchError<ContractApi> {
-  return e instanceof ContractDispatchError;
+  return e instanceof ContractInstantiateDispatchError;
 }
 
 export function isContractInstantiateLangError<ContractApi extends GenericContractApi = GenericContractApi>(
   e: Error,
 ): e is ContractInstantiateLangError<ContractApi> {
-  return e instanceof ContractLangError;
+  return e instanceof ContractInstantiateLangError;
 }

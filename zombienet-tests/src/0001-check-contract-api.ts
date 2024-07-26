@@ -103,7 +103,7 @@ export const run = async (_nodeName: any, networkInfo: any) => {
 
     // If input parameters is not in correct format, LangError throw!
     try {
-      deployer.query.basedOnSeed('0x_error', { caller, salt: '0x' });
+      await deployer.query.basedOnSeed('0x_error', { caller, salt: '0x' });
     } catch (e: any) {
       assert(isContractInstantiateLangError(e), 'Should throw ContractInstantiateLangError!');
     }
@@ -118,7 +118,7 @@ export const run = async (_nodeName: any, networkInfo: any) => {
 
     // If input parameters is not in correct format, LangError throw!
     try {
-      contract.query.flipWithSeed('0x_error', { caller });
+      await contract.query.flipWithSeed('0x_error', { caller });
     } catch (e: any) {
       assert(isContractLangError(e), 'Should throw ContractLangError!');
     }
@@ -134,11 +134,3 @@ export const run = async (_nodeName: any, networkInfo: any) => {
   await verifyContracts(apiV2, flipperV4);
   await verifyContracts(apiV2, flipperV5);
 };
-
-async function shouldThrow(fn: (...args: any[]) => Promise, errFn: (e: DedotError) => boolean) {
-  try {
-    await fn();
-  } catch (e: any) {
-    assert(errFn, 'Should throw!');
-  }
-}
