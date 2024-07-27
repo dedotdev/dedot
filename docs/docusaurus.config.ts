@@ -1,5 +1,6 @@
 import { themes as prismThemes } from 'prism-react-renderer';
 import type * as Preset from '@docusaurus/preset-classic';
+import npm2yarn from '@docusaurus/remark-plugin-npm2yarn';
 import type { Config } from '@docusaurus/types';
 
 const config: Config = {
@@ -38,6 +39,7 @@ const config: Config = {
           // Please change this to your repo.
           // Remove this to remove the "edit this page" links.
           editUrl: 'https://github.com/dedotdev/dedot/tree/main/docs',
+          remarkPlugins: [[npm2yarn, { sync: true }]],
         },
         blog: {
           showReadingTime: true,
@@ -45,6 +47,7 @@ const config: Config = {
           // Please change this to your repo.
           // Remove this to remove the "edit this page" links.
           editUrl: 'https://github.com/dedotdev/dedot/tree/main/docs',
+          remarkPlugins: [[npm2yarn, { sync: true }]],
         },
         theme: {
           customCss: './src/css/custom.css',
@@ -86,8 +89,9 @@ const config: Config = {
       copyright: `Copyright © ${new Date().getFullYear()} Dedot`,
     },
     prism: {
+      additionalLanguages: ['bash', 'diff', 'json', 'scss'],
       theme: prismThemes.oneLight,
-      darkTheme: prismThemes.oneDark,
+      darkTheme: prismThemes.vsDark,
     },
   } satisfies Preset.ThemeConfig,
 };

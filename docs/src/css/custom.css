@@ -4,6 +4,8 @@
  * work well for content-centric websites.
  */
 
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap');
+
 /* You can override the default Infima variables here. */
 :root {
   --ifm-color-primary: #742fa2;
@@ -15,10 +17,22 @@
   --ifm-color-primary-lightest: #9546c9;
   --ifm-code-font-size: 95%;
   --docusaurus-highlighted-code-line-bg: rgba(0, 0, 0, 0.1);
+  --ifm-global-radius: none;
+  --ifm-tabs-padding-vertical: 0.5rem;
+
+  --ifm-color-emphasis-300: #e2e2e3;
+
+  --ifm-font-family-base: "Inter", ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+  font-optical-sizing: auto;
+  font-variation-settings: "slnt" 0;
+  --ifm-font-weight-bold: 600;
+  --ifm-button-border-radius: 4px;
+
+  text-underline-offset: 4px;
 }
 
 /* For readability concerns, you should choose a lighter palette in dark mode. */
-[data-theme='dark'] {
+html[data-theme='dark'] {
   --ifm-color-primary: #b064e3;
   --ifm-color-primary-dark: #a248de;
   --ifm-color-primary-darker: #9b3adb;
@@ -28,6 +42,8 @@
   --ifm-color-primary-lightest: #dab7f2;
   --ifm-background-color: #1b1b1f;
   --docusaurus-highlighted-code-line-bg: rgba(0, 0, 0, 0.3);
+
+  --ifm-color-emphasis-200: #2e2e32;
 }
 
 .main-wrapper {
@@ -45,7 +61,7 @@
   .navbar-github-link {
     padding-left: 18px;
     margin-left: 10px;
-    border-left: 1px solid var(--ifm-color-emphasis-300);
+    border-left: 1px solid var(--ifm-color-emphasis-200);
 
     &:after {
       background-image: url("data:image/svg+xml;charset=utf-8,%3Csvg viewBox='0 0 24 24' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath fill='%23fff' d='M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12'/%3E%3C/svg%3E");
@@ -90,4 +106,41 @@
       }
     }
   }
+}
+/**--- TABS ---**/
+.tabs {
+  font-weight: var(--ifm-font-weight-semibold);
+  border-bottom: 1px solid var(--ifm-color-emphasis-200);
+  margin-bottom: -1rem;
+}
+
+/**--- Menu ---**/
+.menu__link {
+  font-size: 0.9rem;
+  border-radius: 0;
+}
+
+/**--- HEADING ---**/
+h1 {
+  --ifm-h1-font-size: 2rem !important;
+}
+
+h2 {
+  --ifm-h2-font-size: 1.5rem !important;
+}
+
+h3 {
+  --ifm-h3-font-size: 1.25rem !important;
+}
+
+.pagination-nav__link {
+  border-color: var(--ifm-color-emphasis-200);
+}
+
+.pagination-nav__sublabel {
+  font-size: 12px;
+}
+
+.pagination-nav__label {
+  &:after, &:before { display: none; }
 }
