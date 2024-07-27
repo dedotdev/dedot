@@ -2,6 +2,7 @@ import { themes as prismThemes } from 'prism-react-renderer';
 import type * as Preset from '@docusaurus/preset-classic';
 import npm2yarn from '@docusaurus/remark-plugin-npm2yarn';
 import type { Config } from '@docusaurus/types';
+import path from 'path';
 
 const config: Config = {
   title: 'Dedot',
@@ -29,6 +30,37 @@ const config: Config = {
     defaultLocale: 'en',
     locales: ['en'],
   },
+
+  plugins: [
+    [
+      'docusaurus-plugin-typedoc-api',
+      {
+        projectRoot: path.join(__dirname, '..'),
+        tsconfigName: 'tsconfig.typedoc.json',
+        packages: [
+          'packages/dedot',
+          'packages/api',
+          'packages/codecs',
+          'packages/codegen',
+          'packages/contracts',
+          'packages/providers',
+          'packages/runtime-specs',
+          'packages/shape',
+          'packages/storage',
+          'packages/types',
+          'packages/utils',
+        ],
+        sortPackages: (a, d) => {
+          // Render dedot package on top!
+          if (a.packageName === 'dedot') {
+            return -1;
+          }
+
+          return a.packageName.localeCompare(d.packageName);
+        },
+      },
+    ],
+  ],
 
   presets: [
     [
@@ -76,6 +108,7 @@ const config: Config = {
           position: 'right',
           label: 'Docs',
         },
+        { to: '/api', label: 'API', position: 'right' },
         { to: '/blog', label: 'Blog', position: 'right' },
         {
           href: 'https://github.com/dedotdev/dedot',
