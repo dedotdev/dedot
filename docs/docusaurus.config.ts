@@ -32,6 +32,7 @@ const config: Config = {
   },
 
   plugins: [
+    'docusaurus-plugin-sass',
     [
       'docusaurus-plugin-typedoc-api',
       {
@@ -82,7 +83,7 @@ const config: Config = {
           remarkPlugins: [[npm2yarn, { sync: true }]],
         },
         theme: {
-          customCss: './src/css/custom.css',
+          customCss: './src/css/custom.scss',
         },
       } satisfies Preset.Options,
     ],
