@@ -1,17 +1,15 @@
 import type { DispatchError, DispatchInfo, Hash } from '@dedot/codecs';
-import type { IEventRecord, ISubmittableResult } from '@dedot/types';
+import type { IEventRecord, ISubmittableResult, TxStatus } from '@dedot/types';
 import type { FrameSystemEventRecord } from '../../chaintypes/index.js';
 
-export interface SubmittableResultInputs<E extends IEventRecord = FrameSystemEventRecord, TxStatus extends any = any> {
+export interface SubmittableResultInputs<E extends IEventRecord = FrameSystemEventRecord> {
   events?: E[];
   status: TxStatus;
   txHash: Hash;
   txIndex?: number;
 }
 
-export class SubmittableResult<E extends IEventRecord = FrameSystemEventRecord, TxStatus extends any = any>
-  implements ISubmittableResult<E, TxStatus>
-{
+export class SubmittableResult<E extends IEventRecord = FrameSystemEventRecord> implements ISubmittableResult<E> {
   status: TxStatus;
   events: E[];
   dispatchInfo?: DispatchInfo;
@@ -19,7 +17,7 @@ export class SubmittableResult<E extends IEventRecord = FrameSystemEventRecord, 
   txHash: Hash;
   txIndex?: number;
 
-  constructor({ events, status, txHash, txIndex }: SubmittableResultInputs<E, TxStatus>) {
+  constructor({ events, status, txHash, txIndex }: SubmittableResultInputs<E>) {
     this.events = events || [];
     this.status = status;
     this.txHash = txHash;

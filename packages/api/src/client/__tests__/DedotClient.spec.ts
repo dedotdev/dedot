@@ -1,4 +1,5 @@
 import staticSubstrateV15 from '@polkadot/types-support/metadata/v15/substrate-hex';
+import { SubstrateRuntimeVersion } from '@dedot/api';
 import { $Metadata, $RuntimeVersion, type RuntimeVersion } from '@dedot/codecs';
 import { WsProvider } from '@dedot/providers';
 import type { AnyShape } from '@dedot/shape';
@@ -10,7 +11,7 @@ import {
   OperationStorageDone,
   OperationStorageItems,
 } from '@dedot/types/json-rpc';
-import { deferred, stringCamelCase, stringPascalCase, u8aToHex } from '@dedot/utils';
+import { assert, deferred, stringCamelCase, stringPascalCase, u8aToHex } from '@dedot/utils';
 import { MockInstance } from '@vitest/spy';
 import { afterEach, beforeEach, describe, expect, expectTypeOf, it, vi } from 'vitest';
 import { mockedRuntime, newChainHeadSimulator } from '../../json-rpc/group/__tests__/simulator.js';
@@ -702,6 +703,77 @@ describe('DedotClient', () => {
           ]);
 
           expect(providerSend).toBeCalledWith('chainHead_v1_stopOperation', [simulator.subscriptionId, 'call05']);
+        });
+      });
+
+      describe('runtime versions', () => {
+        it('should emit runtimeUpgrade event', async () => {
+          const originalRuntime = simulator.runtime;
+
+          const newBlock = simulator.nextNewBlock({ withRuntime: true });
+          simulator.notify(newBlock, 100);
+          simulator.notify(simulator.nextBestBlock(), 150);
+
+          simulator.notify(
+            {
+              operationId: 'call01',
+              event: 'operationCallDone',
+              output: prefixedMetadataV15,
+            } as OperationCallDone,
+            200,
+          );
+
+          assert(newBlock.newRuntime!.type === 'valid');
+
+          await new Promise<void>((resolve, reject) => {
+            api.on('runtimeUpgraded', (newRuntime: SubstrateRuntimeVersion) => {
+              try {
+                // @ts-ignore
+                expect(newBlock.newRuntime!.spec).toEqual(newRuntime);
+                resolve();
+              } catch (e) {
+                reject(e);
+              }
+            });
+          });
+
+          expect(originalRuntime.specVersion + 1).toEqual(newBlock.newRuntime!.spec.specVersion);
+          expect(originalRuntime.specVersion + 1).toEqual(api.runtimeVersion.specVersion);
+        });
+
+        it('getRuntimeVersion should return the latest version', async () => {
+          provider.setRpcRequests({
+            chainHead_v1_call: () => ({ result: 'started', operationId: 'call02' }) as MethodResponse,
+          });
+
+          const newBlock = simulator.nextNewBlock({ withRuntime: true });
+          simulator.notify(newBlock, 100);
+          simulator.notify(simulator.nextBestBlock(), 150);
+
+          simulator.notify(
+            {
+              operationId: 'call02',
+              event: 'operationCallDone',
+              output: prefixedMetadataV15,
+            } as OperationCallDone,
+            500,
+          );
+
+          const oldVersion = api.runtimeVersion;
+          const newVersion = await new Promise<SubstrateRuntimeVersion>((resolve) => {
+            setTimeout(async () => {
+              resolve(await api.getRuntimeVersion());
+            }, 200);
+          });
+
+          expect(oldVersion.specVersion + 1).toEqual(newVersion.specVersion);
+
+          expect(providerSend).toBeCalledWith('chainHead_v1_call', [
+            simulator.subscriptionId,
+            newBlock.blockHash,
+            'Metadata_metadata_at_version',
+            '0x0f000000',
+          ]);
         });
       });
     });
