@@ -128,24 +128,4 @@ Dedot is currently in alpha testing phase, so it's ready for your experiments an
 - Documentations & example dapps
 - And a lot more on the road map to help building a fully-fledge client.
 
-## Who we are?
-We are small team that falls in love with Polkadot technology and believe in the vision of a decentralization future.
-- We've started contributing from 2022 and since then we have secured 2 W3F Grants to building open source for Polkadot:
-    - The [1st grant](https://grants.web3.foundation/applications/coong_wallet) is to build [`Coong Wallet`](https://github.com/CoongCrafts/coong-wallet), a website-based wallet that's compatible with `@polkadot/extension` APIs and works seamlessly on both desktop and mobile.
-    - The [2nd grant](https://grants.web3.foundation/applications/delightfuldot) is to fund the initial phase of [`dedot`](https://github.com/dedotdev/dedot) (formerly named DelightfulDOT)
-- We're also the [1st prize winner](https://x.com/dotinvietnam/status/1740678795286495512) of Polkadot Hackathon Vietnam 2023 with [`InSpace`](https://inspace.ink), an on-chain community launcher via ink! smart contracts.
-- Thang ([@sinzii](https://github.com/sinzii)), our lead developer, is a PBA 5 graduate in Singapore.
-
-## We need your feedback and supports
-We can't build this alone without community feedback and support. We would greatly appreciate it if you could give [`dedot`](https://github.com/dedotdev/dedot) a try and let us know what you like or dislike about it.
-
-Aside from the initial funding from the W3F Grants Program, we've been self-funding `dedot` to work on some crucial integrations, such as the new JSON-RPC specs or Typed Contracts APIs, ... We're now seeking for community feedback and asking for funding from the treasury to continue the development of `dedot` to bring the dapps development DX of Polkadot ecosystem to the next level. We hope to have your all supports. Thank you very much!
-
-Please let us know if you have any feedback by respond to this thread or post a discussion, raise an issue in the [dedot](https://github.com/dedotdev/dedot) repository
-
-We'd love to connect everyone as well
-- Repository: [dedotdev/dedot](https://github.com/dedotdev/dedot)
-- Twitter / X: [@realsinzii](https://x.com/realsinzii)
-- Telegram: @realsinzii
-- Discord: @sinzii
 
