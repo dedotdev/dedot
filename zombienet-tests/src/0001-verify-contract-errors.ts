@@ -29,13 +29,41 @@ export const run = async (_nodeName: any, networkInfo: any) => {
   const verifyContracts = async (api: ISubstrateClient, flipper: ContractMetadata) => {
     const wasm = flipper.source.wasm!;
     const deployer = new ContractDeployer<FlipperContractApi>(api, flipper, wasm);
-    const salt = stringToHex(api.rpcVersion);
+
+    // Avoid to use same salt with previous tests.
+    const timestamp = await api.query.timestamp.now();
+    const salt = stringToHex(`${api.rpcVersion}_${timestamp}`);
+
     const blank = '0x0000000000000000000000000000000000000000000000000000000000000000';
 
     const { data } = await deployer.query.fromSeed(blank, { caller, salt });
     assert(data.isErr && data.err === 'ZeroSum', 'Expected to throw error!');
-    
-    const contractAddress = await deployFlipper(api, flipper, salt);
+
+    const {
+      raw: { gasRequired },
+    } = await deployer.query.new(true, {
+      caller,
+      salt,
+    });
+
+    const contractAddress: string = await new Promise(async (resolve) => {
+      await deployer.tx
+        .new(true, { gasLimit: gasRequired, salt })
+        .signAndSend(alicePair, async ({ status, events }) => {
+          console.log(`[${api.rpcVersion}] Transaction status:`, status.type);
+
+          if (status.type === 'Finalized') {
+            const instantiatedEvent = events
+              .map(({ event }) => event) // prettier-end-here
+              .find(api.events.contracts.Instantiated.is); // narrow down the type for type suggestions
+
+            assert(instantiatedEvent, 'Event Contracts.Instantiated should be available');
+
+            const contractAddress = instantiatedEvent.palletEvent.data.contract.address();
+            resolve(contractAddress);
+          }
+        });
+    });
     const contract = new Contract<FlipperContractApi>(api, flipper, contractAddress);
 
     const { data: info } = await contract.query.flipWithSeed(blank, { caller });
@@ -64,7 +92,8 @@ export const run = async (_nodeName: any, networkInfo: any) => {
       const contract = new Contract<FlipperContractApi>(api, flipper, alicePair.addressRaw);
       await contract.query.flip({ caller });
 
-      throw new Error('Expected to throw error!'); } catch (e: any) {
+      throw new Error('Expected to throw error!');
+    } catch (e: any) {
       assert(isContractDispatchError(e), 'Should throw ContractDispatchError!');
     }
 
@@ -83,43 +112,9 @@ export const run = async (_nodeName: any, networkInfo: any) => {
   await verifyContracts(apiLegacy, flipperV4);
   await verifyContracts(apiLegacy, flipperV5);
 
+
   console.log('Checking via new API');
   const apiV2 = await DedotClient.new(new WsProvider(wsUri));
   await verifyContracts(apiV2, flipperV4);
   await verifyContracts(apiV2, flipperV5);
-};
-
-const deployFlipper = async (api: ISubstrateClient, flipper: ContractMetadata, salt: string) => {
-  const alicePair = new Keyring({ type: 'sr25519' }).addFromUri('//Alice');
-  const caller = alicePair.address;
-
-  const wasm = flipper.source.wasm!;
-  const deployer = new ContractDeployer<FlipperContractApi>(api, flipper, wasm);
-
-  // Dry-run to estimate gas fee
-  const {
-    raw: { gasRequired },
-  } = await deployer.query.new(true, {
-    caller,
-    salt,
-  });
-
-  const contractAddress: string = await new Promise(async (resolve) => {
-    await deployer.tx.new(true, { gasLimit: gasRequired, salt }).signAndSend(alicePair, async ({ status, events }) => {
-      console.log(`[${api.rpcVersion}] Transaction status:`, status.type);
-
-      if (status.type === 'Finalized') {
-        const instantiatedEvent = events
-          .map(({ event }) => event) // prettier-end-here
-          .find(api.events.contracts.Instantiated.is); // narrow down the type for type suggestions
-
-        assert(instantiatedEvent, 'Event Contracts.Instantiated should be available');
-
-        const contractAddress = instantiatedEvent.palletEvent.data.contract.address();
-        resolve(contractAddress);
-      }
-    });
-  });
-
-  return contractAddress;
 };

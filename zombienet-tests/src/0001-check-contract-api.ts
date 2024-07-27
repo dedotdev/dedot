@@ -1,16 +1,10 @@
 import Keyring from '@polkadot/keyring';
 import { cryptoWaitReady } from '@polkadot/util-crypto';
-import { RpcVersion } from '@dedot/types';
 import { DedotClient, ISubstrateClient, LegacyClient, WsProvider } from 'dedot';
-import { SubstrateApi } from 'dedot/chaintypes';
 import {
   Contract,
   ContractDeployer,
   ContractMetadata,
-  isContractDispatchError,
-  isContractInstantiateDispatchError,
-  isContractInstantiateLangError,
-  isContractLangError,
   parseRawMetadata,
 } from 'dedot/contracts';
 import { assert, stringToHex } from 'dedot/utils';
@@ -31,7 +25,10 @@ export const run = async (_nodeName: any, networkInfo: any) => {
   const verifyContracts = async (api: ISubstrateClient, flipper: ContractMetadata) => {
     const wasm = flipper.source.wasm!;
     const deployer = new ContractDeployer<FlipperContractApi>(api, flipper, wasm);
-    const salt = stringToHex(api.rpcVersion);
+
+    // Avoid to use same salt with previous tests.
+    const timestamp = await api.query.timestamp.now();
+    const salt = stringToHex(`${api.rpcVersion}_${timestamp}`);
 
     // Dry-run to estimate gas fee
     const {
@@ -96,44 +93,7 @@ export const run = async (_nodeName: any, networkInfo: any) => {
     const { data: newState } = await contract.query.get({ caller });
     console.log(`[${api.rpcVersion}] New value:`, newState);
 
-    assert(state === newState, 'State should be changed');
-
-    // If re-create a contract with same salt, DispatchError throw!
-    try {
-      await deployer.query.new(true, { caller, salt });
-
-      throw new Error('Expected to throw error!');
-    } catch (e: any) {
-      assert(isContractInstantiateDispatchError(e), 'Should throw ContractInstantiateDispatchError!');
-    }
-
-    // If input parameters is not in correct format, LangError throw!
-    try {
-      await deployer.query.basedOnSeed('0x_error', { caller, salt: '0x' });
-
-      throw new Error('Expected to throw error!');
-    } catch (e: any) {
-      assert(isContractInstantiateLangError(e), 'Should throw ContractInstantiateLangError!');
-    }
-
-    // If caller's balance is zero, DispatchError throw!
-    try {
-      const contract = new Contract<FlipperContractApi>(api, flipper, alicePair.addressRaw);
-      await contract.query.flip({ caller });
-
-      throw new Error('Expected to throw error!');
-    } catch (e: any) {
-      assert(isContractDispatchError(e), 'Should throw ContractDispatchError!');
-    }
-
-    // If input parameters is not in correct format, LangError throw!
-    try {
-      await contract.query.flipWithSeed('0x_error', { caller });
-
-      throw new Error('Expected to throw error!');
-    } catch (e: any) {
-      assert(isContractLangError(e), 'Should throw ContractLangError!');
-    }
+    assert(state !== newState, 'State should be changed');
   };
 
   console.log('Checking via legacy API');
