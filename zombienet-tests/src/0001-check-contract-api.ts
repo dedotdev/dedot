@@ -17,7 +17,6 @@ import { assert, stringToHex } from 'dedot/utils';
 import * as flipperV4Raw from '../flipper_v4.json';
 import * as flipperV5Raw from '../flipper_v5.json';
 import { FlipperContractApi } from './contracts/flipper';
-import { deployFlipper } from './shared';
 
 export const run = async (_nodeName: any, networkInfo: any) => {
   await cryptoWaitReady();
@@ -29,12 +28,37 @@ export const run = async (_nodeName: any, networkInfo: any) => {
   const flipperV4 = parseRawMetadata(JSON.stringify(flipperV4Raw));
   const flipperV5 = parseRawMetadata(JSON.stringify(flipperV5Raw));
 
-  const verifyContracts = async (api: ISubstrateClient<SubstrateApi[RpcVersion]>, flipper: ContractMetadata) => {
+  const verifyContracts = async (api: ISubstrateClient, flipper: ContractMetadata) => {
     const wasm = flipper.source.wasm!;
     const deployer = new ContractDeployer<FlipperContractApi>(api, flipper, wasm);
     const salt = stringToHex(api.rpcVersion);
 
-    const contractAddress = await deployFlipper(api, flipper, salt);
+    // Dry-run to estimate gas fee
+    const {
+      raw: { gasRequired },
+    } = await deployer.query.new(true, {
+      caller,
+      salt,
+    });
+
+    const contractAddress: string = await new Promise(async (resolve) => {
+      await deployer.tx
+        .new(true, { gasLimit: gasRequired, salt })
+        .signAndSend(alicePair, async ({ status, events }) => {
+          console.log(`[${api.rpcVersion}] Transaction status:`, status.type);
+
+          if (status.type === 'Finalized') {
+            const instantiatedEvent = events
+              .map(({ event }) => event) // prettier-end-here
+              .find(api.events.contracts.Instantiated.is); // narrow down the type for type suggestions
+
+            assert(instantiatedEvent, 'Event Contracts.Instantiated should be available');
+
+            const contractAddress = instantiatedEvent.palletEvent.data.contract.address();
+            resolve(contractAddress);
+          }
+        });
+    });
 
     console.log(`[${api.rpcVersion}] Deployed contract address`, contractAddress);
     const contract = new Contract<FlipperContractApi>(api, flipper, contractAddress);
@@ -72,13 +96,13 @@ export const run = async (_nodeName: any, networkInfo: any) => {
     const { data: newState } = await contract.query.get({ caller });
     console.log(`[${api.rpcVersion}] New value:`, newState);
 
-    assert(state === newState, "State should be changed")
+    assert(state === newState, 'State should be changed');
 
     // If re-create a contract with same salt, DispatchError throw!
     try {
       await deployer.query.new(true, { caller, salt });
 
-      throw new Error('Expected to throw error!')
+      throw new Error('Expected to throw error!');
     } catch (e: any) {
       assert(isContractInstantiateDispatchError(e), 'Should throw ContractInstantiateDispatchError!');
     }
@@ -87,7 +111,7 @@ export const run = async (_nodeName: any, networkInfo: any) => {
     try {
       await deployer.query.basedOnSeed('0x_error', { caller, salt: '0x' });
 
-      throw new Error('Expected to throw error!')
+      throw new Error('Expected to throw error!');
     } catch (e: any) {
       assert(isContractInstantiateLangError(e), 'Should throw ContractInstantiateLangError!');
     }
@@ -97,7 +121,7 @@ export const run = async (_nodeName: any, networkInfo: any) => {
       const contract = new Contract<FlipperContractApi>(api, flipper, alicePair.addressRaw);
       await contract.query.flip({ caller });
 
-      throw new Error('Expected to throw error!')
+      throw new Error('Expected to throw error!');
     } catch (e: any) {
       assert(isContractDispatchError(e), 'Should throw ContractDispatchError!');
     }
@@ -106,7 +130,7 @@ export const run = async (_nodeName: any, networkInfo: any) => {
     try {
       await contract.query.flipWithSeed('0x_error', { caller });
 
-      throw new Error('Expected to throw error!')
+      throw new Error('Expected to throw error!');
     } catch (e: any) {
       assert(isContractLangError(e), 'Should throw ContractLangError!');
     }
