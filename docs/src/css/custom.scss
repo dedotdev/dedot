@@ -167,3 +167,9 @@ html.blog-wrapper {
     margin-left: 2rem;
   }
 }
+
+html[data-theme='dark'] {
+  footer.footer {
+    --ifm-footer-background-color: var(--ifm-navbar-background-color);
+  }
+}
