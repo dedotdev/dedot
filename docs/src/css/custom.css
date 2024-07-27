@@ -144,3 +144,10 @@ h3 {
 .pagination-nav__label {
   &:after, &:before { display: none; }
 }
+
+html.blog-wrapper {
+  .main-wrapper > .container {
+    width: auto !important;
+    max-width: none !important;
+  }
+}
