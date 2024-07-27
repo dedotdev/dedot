@@ -41,9 +41,9 @@ export interface ConstructorTx<ChainApi extends GenericSubstrateApi> extends Gen
    * @param {Hash} seed
    * @param {ConstructorTxOptions} options
    *
-   * @selector 0x0d1ef0e6
+   * @selector 0x6d4cae81
    **/
-  basedOnSeed: GenericConstructorTxCall<
+  fromSeed: GenericConstructorTxCall<
     ChainApi,
     (seed: Hash, options: ConstructorTxOptions) => GenericInstantiateSubmittableExtrinsic<ChainApi>
   >;
