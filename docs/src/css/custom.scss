@@ -173,3 +173,7 @@ html[data-theme='dark'] {
     --ifm-footer-background-color: var(--ifm-navbar-background-color);
   }
 }
+
+footer.tsd-footer {
+  display: none;
+}
