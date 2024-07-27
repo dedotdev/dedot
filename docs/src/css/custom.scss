@@ -151,3 +151,19 @@ html.blog-wrapper {
     max-width: none !important;
   }
 }
+
+
+@media (max-width: 700px) {
+  .pagination-nav {
+    grid-template-columns: repeat(1, 1fr);
+  }
+
+  .pagination-nav__link--prev {
+    margin-right: 2rem;
+  }
+
+  .pagination-nav__link--next {
+    grid-column: auto;
+    margin-left: 2rem;
+  }
+}
