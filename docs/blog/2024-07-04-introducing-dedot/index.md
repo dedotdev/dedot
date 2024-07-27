@@ -19,8 +19,8 @@ Dapps have always been a crucial part of any blockchain ecosystem, providing use
 
 However, through our development experience, benchmarking, and profiling, we discovered that `@polkadot/api` has several limitations that may hinder developers from creating optimal dapps for the Polkadot ecosystem.
 
-## Limitations of Polkadot.js API (`@polkadot/api` or `pjs`)
-###  Large bundle-size (`wasm` & `bn.js` & unused type defs)
+## Limitations of [Polkadot.js API](https://github.com/polkadot-js/api) (aka `@polkadot/api`)
+###  Large bundle-size
 
 I believe any developer using `@polkadot/api` to build their dapps will recognize this issue firsthand. `@polkadot/api` has tight dependencies on wasm-blob (crypto utilities) and `bn.js` for handling BigInt numbers. Additionally, it comes with a large number of [type defs](https://github.com/polkadot-js/api/tree/master/packages/types/src/interfaces) by default, even if the dapp doesn't use most of those APIs or information. This makes the entire bundle size of dapps quite large, resulting in a poor user experience as users have to wait longer before they can start interacting with the dapp.
 
@@ -55,7 +55,7 @@ In an attempt to verify how much impact `dedot` could make in term of memory con
 
 ![subwallet-on-dedot-pjs.png](subwallet-on-dedot-pjs.png)
 
-### Types & APIs suggestion/auto-complete for individual Substrate-based chains.
+### Types & APIs suggestion/auto-complete for individual Substrate-based chains
 With the latest changes in metadata v14 and v15. We can now have access to most of the available types & APIs that's exposed by the runtime. We were able to convert/generate those Types & APIs information encoded inside the metadata into plain TypeScript Types & APIs. So dapp developers can now being aware of all available Types & APIs for any particular Substrate-based blockchain that they're working on. E.g for Polkadot runtime: [types](https://github.com/dedotdev/chaintypes/blob/main/packages/chaintypes/src/polkadot/types.d.ts), [tx](https://github.com/dedotdev/chaintypes/blob/main/packages/chaintypes/src/polkadot/tx.d.ts), [runtime-apis](https://github.com/dedotdev/chaintypes/blob/main/packages/chaintypes/src/polkadot/runtime.d.ts), [storage queries](https://github.com/dedotdev/chaintypes/blob/main/packages/chaintypes/src/polkadot/query.d.ts), [constants](https://github.com/dedotdev/chaintypes/blob/main/packages/chaintypes/src/polkadot/consts.d.ts), ...
 
 We're maintaining a package named [`@dedot/chaintypes`](https://github.com/dedotdev/chaintypes/tree/main/packages/chaintypes/src) with a goal to maintaining Types & APIs for all of Substrate-based blockchains in the ecosystem. So dapp developers can just install the package and pick which ever the `ChainApi` that they want to interact with.
@@ -134,7 +134,7 @@ We are small team that falls in love with Polkadot technology and believe in the
     - The [1st grant](https://grants.web3.foundation/applications/coong_wallet) is to build [`Coong Wallet`](https://github.com/CoongCrafts/coong-wallet), a website-based wallet that's compatible with `@polkadot/extension` APIs and works seamlessly on both desktop and mobile.
     - The [2nd grant](https://grants.web3.foundation/applications/delightfuldot) is to fund the initial phase of [`dedot`](https://github.com/dedotdev/dedot) (formerly named DelightfulDOT)
 - We're also the [1st prize winner](https://x.com/dotinvietnam/status/1740678795286495512) of Polkadot Hackathon Vietnam 2023 with [`InSpace`](https://inspace.ink), an on-chain community launcher via ink! smart contracts.
-- Thang (@sinzii), our lead developer, is a PBA 5 graduate in Singapore.
+- Thang ([@sinzii](https://github.com/sinzii)), our lead developer, is a PBA 5 graduate in Singapore.
 
 ## We need your feedback and supports
 We can't build this alone without community feedback and support. We would greatly appreciate it if you could give [`dedot`](https://github.com/dedotdev/dedot) a try and let us know what you like or dislike about it.
