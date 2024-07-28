@@ -12,11 +12,12 @@ export class EventsGen extends QueryGen {
 
     let eventsOut = '';
 
+    const isV5 = this.contractMetadata.version === 5;
+
     events.forEach((event: ContractEventMeta) => {
       const { docs, label } = event;
-      const isV5 = 'signature_topic' in event;
 
-      eventsOut += `${commentBlock(docs, '\n', isV5 ? event.signature_topic ? `@signature_topic: ${event.signature_topic}` : '- Anonymous event' : '')}`;
+      eventsOut += `${commentBlock(docs, '\n', isV5 ? ('signature_topic' in event ? `@signature_topic: ${event.signature_topic}` : '- Anonymous event') : '')}`;
       eventsOut += `${stringPascalCase(label)}: ${this.#generateEventDef(event)};\n\n`;
     });
 
@@ -40,7 +41,7 @@ export class EventsGen extends QueryGen {
     return args
       .map(
         ({ type: { type }, label, docs, indexed }) =>
-          `${commentBlock(docs, '\n', `@indexed: ${indexed}`)}${stringCamelCase(label)}: ${this.typesGen.generateType(type, 1)}`,
+          `${commentBlock(docs, '\n', `@indexed: ${indexed}`)}${stringCamelCase(label)}: ${this.typesGen.generateType(type, 1, true)}`,
       )
       .join(', ');
   }
