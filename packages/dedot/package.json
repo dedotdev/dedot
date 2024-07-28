@@ -1,6 +1,6 @@
 {
   "name": "dedot",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "A delightful JavaScript/TypeScript client for Polkadot & Substrate",
   "author": "Thang X. Vu <thang@coongcrafts.io>",
   "homepage": "https://github.com/dedotdev/dedot",
