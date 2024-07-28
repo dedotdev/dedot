@@ -11,8 +11,8 @@
   },
   "main": "src/index.ts",
   "bin": {
-    "dedot": "./bin/dedot",
-    "djs": "./bin/dedot"
+    "dedot": "./bin/dedot.mjs",
+    "djs": "./bin/dedot.mjs"
   },
   "sideEffects": false,
   "type": "module",
