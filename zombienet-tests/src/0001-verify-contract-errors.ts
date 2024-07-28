@@ -39,31 +39,7 @@ export const run = async (_nodeName: any, networkInfo: any) => {
     const { data } = await deployer.query.fromSeed(blank, { caller, salt });
     assert(data.isErr && data.err === 'ZeroSum', 'Expected to throw error!');
 
-    const {
-      raw: { gasRequired },
-    } = await deployer.query.new(true, {
-      caller,
-      salt,
-    });
-
-    const contractAddress: string = await new Promise(async (resolve) => {
-      await deployer.tx
-        .new(true, { gasLimit: gasRequired, salt })
-        .signAndSend(alicePair, async ({ status, events }) => {
-          console.log(`[${api.rpcVersion}] Transaction status:`, status.type);
-
-          if (status.type === 'Finalized') {
-            const instantiatedEvent = events
-              .map(({ event }) => event) // prettier-end-here
-              .find(api.events.contracts.Instantiated.is); // narrow down the type for type suggestions
-
-            assert(instantiatedEvent, 'Event Contracts.Instantiated should be available');
-
-            const contractAddress = instantiatedEvent.palletEvent.data.contract.address();
-            resolve(contractAddress);
-          }
-        });
-    });
+    const contractAddress = await deployFlipper(api, flipper, salt);
     const contract = new Contract<FlipperContractApi>(api, flipper, contractAddress);
 
     const { data: info } = await contract.query.flipWithSeed(blank, { caller });
@@ -112,9 +88,43 @@ export const run = async (_nodeName: any, networkInfo: any) => {
   await verifyContracts(apiLegacy, flipperV4);
   await verifyContracts(apiLegacy, flipperV5);
 
-
   console.log('Checking via new API');
   const apiV2 = await DedotClient.new(new WsProvider(wsUri));
   await verifyContracts(apiV2, flipperV4);
   await verifyContracts(apiV2, flipperV5);
+};
+
+const deployFlipper = async (api: ISubstrateClient, flipper: ContractMetadata, salt: string) => {
+  const alicePair = new Keyring({ type: 'sr25519' }).addFromUri('//Alice');
+  const caller = alicePair.address;
+
+  const wasm = flipper.source.wasm!;
+  const deployer = new ContractDeployer<FlipperContractApi>(api, flipper, wasm);
+
+  // Dry-run to estimate gas fee
+  const {
+    raw: { gasRequired },
+  } = await deployer.query.new(true, {
+    caller,
+    salt,
+  });
+
+  const contractAddress: string = await new Promise(async (resolve) => {
+    await deployer.tx.new(true, { gasLimit: gasRequired, salt }).signAndSend(alicePair, async ({ status, events }) => {
+      console.log(`[${api.rpcVersion}] Transaction status:`, status.type);
+
+      if (status.type === 'Finalized') {
+        const instantiatedEvent = events
+          .map(({ event }) => event) // prettier-end-here
+          .find(api.events.contracts.Instantiated.is); // narrow down the type for type suggestions
+
+        assert(instantiatedEvent, 'Event Contracts.Instantiated should be available');
+
+        const contractAddress = instantiatedEvent.palletEvent.data.contract.address();
+        resolve(contractAddress);
+      }
+    });
+  });
+
+  return contractAddress;
 };
