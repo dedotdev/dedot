@@ -20,6 +20,7 @@
   "dependencies": {
     "@dedot/api": "workspace:*",
     "@dedot/codecs": "workspace:*",
+    "@dedot/contracts": "workspace:*",
     "@dedot/providers": "workspace:*",
     "@dedot/runtime-specs": "workspace:*",
     "@dedot/shape": "workspace:*",
