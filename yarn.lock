@@ -2154,8 +2154,8 @@ __metadata:
     "@types/yargs": "npm:^17.0.32"
     yargs: "npm:^17.7.2"
   bin:
-    dedot: ./bin/dedot
-    djs: ./bin/dedot
+    dedot: ./bin/dedot.mjs
+    djs: ./bin/dedot.mjs
   languageName: unknown
   linkType: soft
 
@@ -2228,6 +2228,7 @@ __metadata:
   dependencies:
     "@dedot/api": "workspace:*"
     "@dedot/codecs": "workspace:*"
+    "@dedot/contracts": "workspace:*"
     "@dedot/providers": "workspace:*"
     "@dedot/runtime-specs": "workspace:*"
     "@dedot/shape": "workspace:*"
@@ -8090,8 +8091,8 @@ __metadata:
     "@dedot/types": "workspace:*"
     "@dedot/utils": "workspace:*"
   bin:
-    dedot: ./bin/dedot
-    djs: ./bin/dedot
+    dedot: ./bin/dedot.mjs
+    djs: ./bin/dedot.mjs
   languageName: unknown
   linkType: soft
 

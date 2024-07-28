@@ -47,11 +47,12 @@ export const normalizeContractTypeDef = (def: ContractTypeDef): TypeDef => {
   } else if (def.composite) {
     type = 'Struct';
     value = {
-      fields: def.composite.fields.map((one) => ({
-        typeId: one.type,
-        name: one.name,
-        typeName: one.typeName,
-      })),
+      fields:
+        def.composite.fields?.map((one) => ({
+          typeId: one.type,
+          name: one.name,
+          typeName: one.typeName,
+        })) || [],
     };
   } else if (def.primitive) {
     type = 'Primitive';
