@@ -69,7 +69,7 @@ export interface ContractTypeDef {
 }
 
 export interface CompositeType {
-  fields: {
+  fields?: {
     type: number;
     typeName: string;
     name?: string;
