@@ -1,3 +1,4 @@
+import { Signer } from '@polkadot/types/types';
 import { BlockHash, Hash, Metadata, PortableRegistry } from '@dedot/codecs';
 import type { ConnectionStatus, JsonRpcProvider, ProviderEvent } from '@dedot/providers';
 import type { AnyShape } from '@dedot/shape';
@@ -59,6 +60,10 @@ export interface ApiOptions extends JsonRpcClientOptions {
    * @default blake2_256
    */
   hasher?: HashFn;
+  /**
+   * A signer instance to use for signing transactions
+   */
+  signer?: Signer;
 }
 
 export type ApiEvent = ProviderEvent | 'ready' | 'runtimeUpgraded';
@@ -129,6 +134,13 @@ export interface ISubstrateClient<
    * This is helpful when you want to check runtime version to prepare for runtime upgrade
    */
   getRuntimeVersion(): Promise<SubstrateRuntimeVersion>;
+
+  /**
+   * Update the signer instance for signing transactions
+   *
+   * @param signer
+   */
+  setSigner(signer?: Signer): void;
 }
 
 /**
