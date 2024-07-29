@@ -10,6 +10,7 @@ export class ConstructorQueryGen extends QueryGen {
     this.typesGen.typeImports.addContractType(
       'GenericConstructorQuery',
       'GenericConstructorQueryCall',
+      'GenericConstructorCallResult',
       'ConstructorCallOptions',
       'ContractInstantiateResult',
     );
@@ -24,12 +25,16 @@ export class ConstructorQueryGen extends QueryGen {
   }
 
   override generateMethodDef(def: ContractConstructorMessage): string {
-    const { args } = def;
+    const { args, returnType } = def;
 
     args.forEach(({ type: { type } }) => this.importType(type));
 
     const paramsOut = this.generateParamsOut(args);
+    const typeOutRaw = this.typesGen.generateType(returnType.type, 0, true);
 
-    return `GenericConstructorQueryCall<ChainApi, (${paramsOut && `${paramsOut},`} options: ConstructorCallOptions) => Promise<ContractInstantiateResult<ChainApi>>>`;
+    // Unwrap langError result
+    const typeOut = typeOutRaw.match(/^(\w+)<(.*), (.*)>$/)!.at(2);
+
+    return `GenericConstructorQueryCall<ChainApi, (${paramsOut && `${paramsOut},`} options: ConstructorCallOptions) => Promise<GenericConstructorCallResult<${typeOut}, ContractInstantiateResult<ChainApi>>>>`;
   }
 }

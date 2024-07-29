@@ -1,9 +1,9 @@
 import Keyring from '@polkadot/keyring';
 import { cryptoWaitReady } from '@polkadot/util-crypto';
-import { RpcVersion } from '@dedot/types';
 import { DedotClient, ISubstrateClient, LegacyClient, WsProvider } from 'dedot';
 import { SubstrateApi } from 'dedot/chaintypes';
 import { Contract, ContractDeployer, ContractMetadata, parseRawMetadata } from 'dedot/contracts';
+import { RpcVersion } from 'dedot/types';
 import { assert, stringToHex } from 'dedot/utils';
 import * as flipperV4Raw from '../flipper_v4.json';
 import * as flipperV5Raw from '../flipper_v5.json';
@@ -22,10 +22,15 @@ export const run = async (_nodeName: any, networkInfo: any) => {
   const verifyContracts = async (api: ISubstrateClient<SubstrateApi[RpcVersion]>, flipper: ContractMetadata) => {
     const wasm = flipper.source.wasm!;
     const deployer = new ContractDeployer<FlipperContractApi>(api, flipper, wasm);
-    const salt = stringToHex(api.rpcVersion);
+
+    // Avoid to use same salt with previous tests.
+    const timestamp = await api.query.timestamp.now();
+    const salt = stringToHex(`${api.rpcVersion}_${timestamp}`);
 
     // Dry-run to estimate gas fee
-    const { gasRequired } = await deployer.query.new(true, {
+    const {
+      raw: { gasRequired },
+    } = await deployer.query.new(true, {
       caller,
       salt,
     });
@@ -52,9 +57,8 @@ export const run = async (_nodeName: any, networkInfo: any) => {
     console.log(`[${api.rpcVersion}] Deployed contract address`, contractAddress);
     const contract = new Contract<FlipperContractApi>(api, flipper, contractAddress);
 
-    const state = await contract.query.get({ caller });
-    assert(state.isOk && state.data.isOk, 'Query should be successful');
-    console.log(`[${api.rpcVersion}] Initial value:`, state.data.value);
+    const { data: state } = await contract.query.get({ caller });
+    console.log(`[${api.rpcVersion}] Initial value:`, state);
 
     console.log(`[${api.rpcVersion}] Flipping...`);
 
@@ -83,11 +87,10 @@ export const run = async (_nodeName: any, networkInfo: any) => {
       });
     });
 
-    const newState = await contract.query.get({ caller });
-    assert(newState.isOk && newState.data.isOk, 'Query should be successful');
-    console.log(`[${api.rpcVersion}] New value:`, newState.data.value);
+    const { data: newState } = await contract.query.get({ caller });
+    console.log(`[${api.rpcVersion}] New value:`, newState);
 
-    assert(state.data.value !== newState.data.value, 'State should be changed');
+    assert(state !== newState, 'State should be changed');
   };
 
   console.log('Checking via legacy API');

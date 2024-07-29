@@ -1,5 +1,5 @@
 import { SubstrateApi } from '@dedot/api/chaintypes';
-import { AccountId32Like, BytesLike, DispatchError, Weight } from '@dedot/codecs';
+import { AccountId32, AccountId32Like, BytesLike, Weight } from '@dedot/codecs';
 import { AnyFunc, AsyncMethod, GenericSubstrateApi, RpcVersion, VersionedGenericSubstrateApi } from '@dedot/types';
 import { ContractCallMessage, ContractConstructorMessage } from './shared.js';
 import { ContractEventV4, ContractMetadataV4 } from './v4.js';
@@ -9,16 +9,17 @@ export * from './shared.js';
 
 export type ContractEventMeta = ContractEventV4 | ContractEventV5;
 
-export type GenericContractCallResult<DecodedData, ContractResult> = (
-  | {
-      isOk: true;
-      data: DecodedData;
-    }
-  | {
-      isOk: false;
-      err: DispatchError;
-    }
-) & { raw: ContractResult };
+export type GenericContractCallResult<DecodedData = any, ContractResult = any> = {
+  data: DecodedData;
+  raw: ContractResult;
+};
+
+export type GenericConstructorCallResult<DecodedData = any, ContractResult = any> = {
+  data: DecodedData;
+  raw: ContractResult;
+
+  address: AccountId32; // Address of the contract will be instantiated
+};
 
 export type ContractCallResult<ChainApi extends GenericSubstrateApi> = Awaited<
   ReturnType<ChainApi['call']['contractsApi']['call']>
@@ -86,7 +87,9 @@ export type GenericContractTxCall<
 
 export type GenericConstructorQueryCall<
   ChainApi extends GenericSubstrateApi,
-  F extends AsyncMethod = (...args: any[]) => Promise<ContractInstantiateResult<ChainApi>>,
+  F extends AsyncMethod = (
+    ...args: any[]
+  ) => Promise<GenericConstructorCallResult<any, ContractInstantiateResult<ChainApi>>>,
 > = F & {
   meta: ContractConstructorMessage;
 };
@@ -133,6 +136,8 @@ export interface GenericContractEvents<_ extends GenericSubstrateApi> {
   [event: string]: GenericContractEvent;
 }
 
+export type GenericInkLangError = 'CouldNotReadInput' | any;
+
 export interface GenericContractApi<
   Rv extends RpcVersion = RpcVersion,
   ChainApi extends VersionedGenericSubstrateApi = SubstrateApi,
@@ -142,4 +147,9 @@ export interface GenericContractApi<
   constructorQuery: GenericConstructorQuery<ChainApi[Rv]>;
   constructorTx: GenericConstructorTx<ChainApi[Rv]>;
   events: GenericContractEvents<ChainApi[Rv]>;
+
+  types: {
+    LangError: GenericInkLangError;
+    ChainApi: ChainApi[Rv];
+  };
 }
