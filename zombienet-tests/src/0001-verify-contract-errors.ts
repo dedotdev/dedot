@@ -7,7 +7,9 @@ import {
   ContractDeployer,
   ContractMetadata,
   isContractDispatchError,
+  isContractExecutionError,
   isContractInstantiateDispatchError,
+  isContractInstantiateError,
   isContractInstantiateLangError,
   isContractLangError,
   parseRawMetadata,
@@ -53,7 +55,7 @@ export const run = async (_nodeName: any, networkInfo: any) => {
 
       throw new Error('Expected to throw error!');
     } catch (e: any) {
-      console.error(e);
+      assert(isContractInstantiateError(e), 'Should throw ContractInstantiateError!');
       assert(isContractInstantiateDispatchError(e), 'Should throw ContractInstantiateDispatchError!');
     }
 
@@ -63,7 +65,7 @@ export const run = async (_nodeName: any, networkInfo: any) => {
 
       throw new Error('Expected to throw error!');
     } catch (e: any) {
-      console.error(e);
+      assert(isContractInstantiateError(e), 'Should throw ContractInstantiateError!');
       assert(isContractInstantiateLangError(e), 'Should throw ContractInstantiateLangError!');
     }
 
@@ -74,7 +76,7 @@ export const run = async (_nodeName: any, networkInfo: any) => {
 
       throw new Error('Expected to throw error!');
     } catch (e: any) {
-      console.error(e);
+      assert(isContractExecutionError(e), 'Should throw ContractExecutionError!');
       assert(isContractDispatchError(e), 'Should throw ContractDispatchError!');
     }
 
@@ -84,7 +86,7 @@ export const run = async (_nodeName: any, networkInfo: any) => {
 
       throw new Error('Expected to throw error!');
     } catch (e: any) {
-      console.error(e);
+      assert(isContractExecutionError(e), 'Should throw ContractExecutionError!');
       assert(isContractLangError(e), 'Should throw ContractLangError!');
     }
   };
