@@ -6,6 +6,7 @@ import { QueryGen } from './QueryGen.js';
 export class EventsGen extends QueryGen {
   generate(useSubPaths: boolean = false) {
     this.typesGen.clearCache();
+    this.typesGen.typeImports.addKnownType('GenericSubstrateApi');
     this.typesGen.typeImports.addContractType('GenericContractEvents', 'GenericContractEvent');
 
     const { events } = this.contractMetadata.spec;
