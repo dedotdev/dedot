@@ -41,7 +41,7 @@ export class ContractInstantiateDispatchError<
   /**
    * The error that occurred during the dispatch phase.
    */
-  err: DispatchError;
+  dispatchError: DispatchError;
 
   /**
    * Constructs a new `ContractInstantiateDispatchError` instance.
@@ -51,7 +51,7 @@ export class ContractInstantiateDispatchError<
    */
   constructor(err: DispatchError, raw: ContractInstantiateResult<ContractApi['types']['ChainApi']>) {
     super(raw);
-    this.err = err;
+    this.dispatchError = err;
   }
 }
 
@@ -71,7 +71,7 @@ export class ContractInstantiateLangError<
   /**
    * The language-specific error that occurred during the instantiation.
    */
-  err: ContractApi['types']['LangError'];
+  langError: ContractApi['types']['LangError'];
 
   /**
    * Constructs a new `ContractInstantiateLangError` instance.
@@ -84,7 +84,7 @@ export class ContractInstantiateLangError<
     raw: ContractInstantiateResult<ContractApi['types']['ChainApi']>,
   ) {
     super(raw);
-    this.err = err;
+    this.langError = err;
   }
 }
 
@@ -127,7 +127,7 @@ export class ContractDispatchError<
   /**
    * The error that occurred during the dispatch phase.
    */
-  err: DispatchError;
+  dispatchError: DispatchError;
 
   /**
    * Constructs a new `ContractDispatchError` instance.
@@ -137,7 +137,7 @@ export class ContractDispatchError<
    */
   constructor(err: DispatchError, raw: ContractCallResult<ContractApi['types']['ChainApi']>) {
     super(raw);
-    this.err = err;
+    this.dispatchError = err;
   }
 }
 
@@ -157,7 +157,7 @@ export class ContractLangError<
   /**
    * The language-specific error that occurred during the execution.
    */
-  err: ContractApi['types']['LangError'];
+  langError: ContractApi['types']['LangError'];
 
   /**
    * Constructs a new `ContractLangError` instance.
@@ -167,7 +167,7 @@ export class ContractLangError<
    */
   constructor(err: ContractApi['types']['LangError'], raw: ContractCallResult<ContractApi['types']['ChainApi']>) {
     super(raw);
-    this.err = err;
+    this.langError = err;
   }
 }
 

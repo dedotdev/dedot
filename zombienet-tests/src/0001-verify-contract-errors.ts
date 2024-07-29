@@ -57,6 +57,7 @@ export const run = async (_nodeName: any, networkInfo: any) => {
     } catch (e: any) {
       assert(isContractInstantiateError(e), 'Should throw ContractInstantiateError!');
       assert(isContractInstantiateDispatchError(e), 'Should throw ContractInstantiateDispatchError!');
+      console.log('DispatchError', e.dispatchError);
     }
 
     // If input parameters is not in correct format, should be throwing LangError
@@ -67,6 +68,7 @@ export const run = async (_nodeName: any, networkInfo: any) => {
     } catch (e: any) {
       assert(isContractInstantiateError(e), 'Should throw ContractInstantiateError!');
       assert(isContractInstantiateLangError(e), 'Should throw ContractInstantiateLangError!');
+      console.log('LangError', e.langError);
     }
 
     // If caller's balance is zero, should be throwing DispatchError
@@ -78,6 +80,7 @@ export const run = async (_nodeName: any, networkInfo: any) => {
     } catch (e: any) {
       assert(isContractExecutionError(e), 'Should throw ContractExecutionError!');
       assert(isContractDispatchError(e), 'Should throw ContractDispatchError!');
+      console.log('DispatchError', e.dispatchError);
     }
 
     // If input parameters is not in correct format, should be throwing LangError
@@ -88,6 +91,7 @@ export const run = async (_nodeName: any, networkInfo: any) => {
     } catch (e: any) {
       assert(isContractExecutionError(e), 'Should throw ContractExecutionError!');
       assert(isContractLangError(e), 'Should throw ContractLangError!');
+      console.log('LangError', e.langError);
     }
   };
 
