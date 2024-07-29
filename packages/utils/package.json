@@ -1,6 +1,6 @@
 {
   "name": "@dedot/utils",
-  "version": "0.1.1",
+  "version": "0.2.0",
   "description": "Useful utilities for dedot apis",
   "author": "Thang X. Vu <thang@coongcrafts.io>",
   "homepage": "https://github.com/dedotdev/dedot/tree/main/packages/utils",
