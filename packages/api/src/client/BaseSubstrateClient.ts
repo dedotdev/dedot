@@ -1,3 +1,4 @@
+import { Signer } from '@polkadot/types/types';
 import { $Metadata, BlockHash, Hash, Metadata, PortableRegistry, RuntimeVersion } from '@dedot/codecs';
 import type { JsonRpcProvider } from '@dedot/providers';
 import { type IStorage, LocalStorage } from '@dedot/storage';
@@ -346,5 +347,9 @@ export abstract class BaseSubstrateClient<
 
   at<ChainApiAt extends GenericSubstrateApi = ChainApi[Rv]>(hash: BlockHash): Promise<ISubstrateClientAt<ChainApiAt>> {
     throw new Error('Unimplemented!');
+  }
+
+  setSigner(signer?: Signer): void {
+    this._options.signer = signer;
   }
 }
