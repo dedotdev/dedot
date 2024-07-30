@@ -1,3 +1,4 @@
+import { PalletEventMetadataLatest } from '@dedot/codecs';
 import type { GenericPalletEvent, GenericSubstrateApi, IEventRecord, PalletEvent } from '@dedot/types';
 import { assert, stringCamelCase, stringPascalCase, UnknownApiError } from '@dedot/utils';
 import { Executor } from './Executor.js';
@@ -49,15 +50,17 @@ export class EventExecutor<ChainApi extends GenericSubstrateApi = GenericSubstra
       }
     };
 
+    const meta: PalletEventMetadataLatest = {
+      ...eventDef,
+      pallet: targetPallet.name,
+      palletIndex: targetPallet.index,
+    };
+
     return {
       is,
       find,
       filter,
-      meta: {
-        ...eventDef,
-        pallet: targetPallet.name,
-        palletIndex: targetPallet.index,
-      },
+      meta,
     };
   }
 

@@ -6,9 +6,9 @@ import { Executor } from './Executor.js';
 
 export class EventExecutor<ChainApi extends GenericSubstrateApi> extends Executor<ChainApi> {
   doExecute(eventName: string): GenericContractEvent {
-    const eventMeta = this.#findEventMeta(eventName);
+    const meta = this.#findEventMeta(eventName);
 
-    assert(eventMeta, 'Contract event metadata not found!');
+    assert(meta, 'Contract event metadata not found!');
 
     const is = (event: IEventRecord | ContractEvent): event is ContractEvent => {
       if (isEventRecord(event)) {
@@ -22,16 +22,11 @@ export class EventExecutor<ChainApi extends GenericSubstrateApi> extends Executo
       return event.name === eventName;
     };
 
-    const decodeEvents = (events: IEventRecord[]): ContractEvent[] => {
-      const records = events.filter(this.api.events.contracts.ContractEmitted.is);
-      return records.map((e) => this.registry.decodeEvent(e));
-    };
-
     const find = (events: IEventRecord[] | ContractEvent[]): ContractEvent | undefined => {
       if (!events || events.length === 0) return undefined;
 
       if (isEventRecord(events[0])) {
-        return decodeEvents(events as IEventRecord[]).find(is);
+        return this.registry.decodeEvents(events as IEventRecord[]).find(is);
       } else {
         return (events as ContractEvent[]).find(is);
       }
@@ -39,7 +34,7 @@ export class EventExecutor<ChainApi extends GenericSubstrateApi> extends Executo
 
     const filter = (events: IEventRecord[] | ContractEvent[]): ContractEvent[] => {
       if (isEventRecord(events[0])) {
-        return decodeEvents(events as IEventRecord[]).filter(is);
+        return this.registry.decodeEvents(events as IEventRecord[]).filter(is);
       } else {
         return (events as ContractEvent[]).filter(is);
       }
@@ -49,7 +44,7 @@ export class EventExecutor<ChainApi extends GenericSubstrateApi> extends Executo
       is,
       find,
       filter,
-      meta: eventMeta,
+      meta,
     };
   }
 
