@@ -24,9 +24,10 @@ export const run = async (nodeName: any, networkInfo: any): Promise<void> => {
   const transferTx = api.tx.balances.transferKeepAlive(BOB, TEN_UNIT);
 
   return new Promise(async (resolve) => {
-    const unsub = await transferTx.signAndSend(alice, async (result) => {
-      console.log('Transaction status', result.status.type);
-      if (result.status.type === 'BestChainBlockIncluded') {
+    const unsub = await transferTx.signAndSend(alice, async ({ status }) => {
+      console.log('Transaction status', status);
+
+      if (status.type === 'Finalized') {
         const newBobBalance = (await api.query.system.account(BOB)).data.free;
         console.log('BOB - new balance', newBobBalance);
         assert(prevBobBalance + TEN_UNIT === newBobBalance, 'Incorrect BOB balance');
