@@ -5,7 +5,9 @@ import { ContractQuery } from './query';
 import { ContractTx } from './tx';
 import { ConstructorQuery } from './constructor-query';
 import { ConstructorTx } from './constructor-tx';
-import { ContractEvents } from './events'
+import { ContractEvents } from './events';
+
+export * from './types';
 
 export interface {{{contractName}}}<Rv extends RpcVersion = RpcV2, ChainApi extends VersionedGenericSubstrateApi = SubstrateApi> extends GenericContractApi<Rv, ChainApi> {
     query: ContractQuery<ChainApi[Rv]>;

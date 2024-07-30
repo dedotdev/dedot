@@ -10,6 +10,8 @@ import { ContractQuery } from './query';
 import { ContractTx } from './tx';
 import type { InkPrimitivesLangError } from './types';
 
+export * from './types';
+
 export interface FlipperContractApi<
   Rv extends RpcVersion = RpcV2,
   ChainApi extends VersionedGenericSubstrateApi = SubstrateApi,
