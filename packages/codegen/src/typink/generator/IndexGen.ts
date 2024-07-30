@@ -12,21 +12,20 @@ export class IndexGen {
 
   constructor(contractMetadata: ContractMetadata, typesGen: TypesGen) {
     this.contractMetadata = contractMetadata;
-    this.typesGen = typesGen
+    this.typesGen = typesGen;
   }
 
   generate(useSubPaths: boolean = false) {
     const contractName = stringPascalCase(`${this.contractMetadata.contract.name}_${SUFFIX}`);
 
-    const langErrorId = this.contractMetadata.spec.lang_error.type
-    const langErrorName = this.typesGen.cleanPath(this.contractMetadata.types[langErrorId].type.path!)
+    const langErrorId = this.contractMetadata.spec.lang_error.type;
+    const langErrorName = this.typesGen.cleanPath(this.contractMetadata.types[langErrorId].type.path!);
 
     const typeImports = new TypeImports();
     typeImports.addKnownType('VersionedGenericSubstrateApi', 'RpcVersion', 'RpcV2');
     typeImports.addContractType('GenericContractApi');
     typeImports.addChainType('SubstrateApi');
-    typeImports.addPortableType(langErrorName)
-
+    typeImports.addPortableType(langErrorName);
 
     const importTypes = typeImports.toImports({ useSubPaths });
     const template = compileTemplate('typink/templates/index.hbs');

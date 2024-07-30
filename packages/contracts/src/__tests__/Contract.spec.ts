@@ -120,7 +120,11 @@ describe('Contract', () => {
       });
 
       it('should decode if can detect anoymous event meta has indexed fields', () => {
-        flipper = new Contract(api, FLIPPER_CONTRACT_METADATA_V5_NO_SIGNATURE_TOPIC_INDEXED_FIELDS, RANDOM_CONTRACT_ADDRESS);
+        flipper = new Contract(
+          api,
+          FLIPPER_CONTRACT_METADATA_V5_NO_SIGNATURE_TOPIC_INDEXED_FIELDS,
+          RANDOM_CONTRACT_ADDRESS,
+        );
 
         const contractEmittedEventRecord =
           '0x000100000008035b5507db890cba8d6ecc300104b80f4506d9d973276f6c8ff5b370347ce011af0800010800000000000000000000000000000000000000000000000000000000000000000100000000000000000000000000000000000000000000000000000000000000';

@@ -15,7 +15,6 @@ describe('TypinkRegistry', () => {
       expect(registry.metadata).toBeDefined();
     });
 
-
     describe('findCodec', () => {
       it('should find existing codec', () => {
         expect(util.inspect(registry.findCodec(1))).toEqual(
