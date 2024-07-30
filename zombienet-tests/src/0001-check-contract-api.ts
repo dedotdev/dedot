@@ -44,7 +44,21 @@ export const run = async (_nodeName: any, networkInfo: any) => {
           if (status.type === 'Finalized') {
             const instantiatedEvent = api.events.contracts.Instantiated.find(events);
 
+            const instantiatedEvent2 = events
+              .map(({ event }) => event) // prettier-end-here
+              .find(api.events.contracts.Instantiated.is); // narrow down the type for type suggestions
+
+            const instantiatedEvent3 = events.find(api.events.contracts.Instantiated.is)!.event; // narrow down the type for type suggestions
+
             assert(instantiatedEvent, 'Event Contracts.Instantiated should be available');
+            assert(
+              JSON.stringify(instantiatedEvent) === JSON.stringify(instantiatedEvent2),
+              'Incorrect instantiated event 2',
+            );
+            assert(
+              JSON.stringify(instantiatedEvent) === JSON.stringify(instantiatedEvent3),
+              'Incorrect instantiated event 3',
+            );
 
             const contractAddress = instantiatedEvent.palletEvent.data.contract.address();
             resolve(contractAddress);
@@ -72,15 +86,26 @@ export const run = async (_nodeName: any, networkInfo: any) => {
           const flippedEvents1 = contract.events.Flipped.filter(events);
 
           const contractEvents = contract.decodeEvents(events);
-          const flippedEvent2 = contract.events.Flipped.find(contractEvents);
           const flippedEvents2 = contract.events.Flipped.filter(contractEvents);
+
+          const flippedEvent2 = contract.events.Flipped.find(contractEvents);
+          const flippedEvent3 = contractEvents.find(contract.events.Flipped.is);
+          const flippedEvent4 = contract.decodeEvent(events.find(contract.events.Flipped.is)!);
 
           assert(
             JSON.stringify(flippedEvent1) === JSON.stringify(flippedEvent2), // prettier-end-here
-            'Incorrect flipped event',
+            'Incorrect flipped event 2',
           );
           assert(
-            JSON.stringify([flippedEvent1]) === JSON.stringify(flippedEvents1),
+            JSON.stringify(flippedEvent1) === JSON.stringify(flippedEvent3), // prettier-end-here
+            'Incorrect flipped event 3',
+          );
+          assert(
+            JSON.stringify(flippedEvent1) === JSON.stringify(flippedEvent4), // prettier-end-here
+            'Incorrect flipped event 4',
+          );
+          assert(
+            JSON.stringify([flippedEvent1]) === JSON.stringify(flippedEvents1), // prettier-end-here
             'Incorrect flipped event filter 1',
           );
           assert(
