@@ -50,8 +50,9 @@ export class SubmittableExtrinsic extends BaseSubmittableExtrinsic implements IS
           assert(txIndex >= 0, 'Extrinsic not found!');
 
           const events = blockEvents.filter(({ phase }) => phase.type === 'ApplyExtrinsic' && phase.value === txIndex);
+          const blockNumber = (signedBlock as SignedBlock).block.header.number;
 
-          const status = toTxStatus(txStatus, txIndex);
+          const status = toTxStatus(txStatus, { txIndex, blockNumber });
           return callback(new SubmittableResult({ status, txHash, events, txIndex }));
         } else {
           const status = toTxStatus(txStatus);
