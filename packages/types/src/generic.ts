@@ -7,6 +7,7 @@ import {
   PalletTxMetadataLatest,
   StorageKey,
 } from '@dedot/codecs';
+import { IEventRecord } from '@dedot/types/event';
 import { RuntimeApiMethodSpec } from './runtime.js';
 
 export type Append<T extends readonly unknown[], V> = [...T, V];
@@ -126,8 +127,9 @@ export interface GenericPalletEvent<
   EventName extends string = string,
   Data extends any = any,
 > {
-  is: (event: PalletEvent) => event is PalletEvent<Pallet, EventName, Data>;
-  as: (event: PalletEvent) => PalletEvent<Pallet, EventName, Data> | undefined;
+  is: (event: IEventRecord | PalletEvent) => event is PalletEvent<Pallet, EventName, Data>;
+  find: (events: IEventRecord[] | PalletEvent[]) => PalletEvent<Pallet, EventName, Data> | undefined;
+  filter: (events: IEventRecord[] | PalletEvent[]) => PalletEvent<Pallet, EventName, Data>[];
   meta: PalletEventMetadataLatest;
 }
 

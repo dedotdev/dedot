@@ -42,9 +42,7 @@ export const run = async (_nodeName: any, networkInfo: any) => {
           console.log(`[${api.rpcVersion}] Transaction status:`, status.type);
 
           if (status.type === 'Finalized') {
-            const instantiatedEvent = events
-              .map(({ event }) => event) // prettier-end-here
-              .find(api.events.contracts.Instantiated.is); // narrow down the type for type suggestions
+            const instantiatedEvent = api.events.contracts.Instantiated.find(events);
 
             assert(instantiatedEvent, 'Event Contracts.Instantiated should be available');
 
@@ -70,13 +68,7 @@ export const run = async (_nodeName: any, networkInfo: any) => {
         console.log(`[${api.rpcVersion}] Transaction status`, status.type);
 
         if (status.type === 'Finalized') {
-          const contractEventRecords = events.filter((r) => api.events.contracts.ContractEmitted.is(r.event));
-
-          assert(contractEventRecords.length > 0, 'Should emit at least one event emitted!');
-
-          const flippedEvent = contractEventRecords
-            .map((e) => contract.decodeEvent(e))
-            .find(contract.events.Flipped.is);
+          const flippedEvent = contract.events.Flipped.find(events);
 
           assert(flippedEvent, 'Flipped event should be emitted');
           assert(flippedEvent.data.new === false, 'New value should be false');

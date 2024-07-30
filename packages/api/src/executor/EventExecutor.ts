@@ -1,6 +1,7 @@
-import type { GenericPalletEvent, GenericSubstrateApi, PalletEvent } from '@dedot/types';
+import type { GenericPalletEvent, GenericSubstrateApi, IEventRecord, PalletEvent } from '@dedot/types';
 import { assert, stringCamelCase, stringPascalCase, UnknownApiError } from '@dedot/utils';
 import { Executor } from './Executor.js';
+import { isEventRecord } from './utils.js';
 
 /**
  * @name EventExecutor
@@ -15,7 +16,11 @@ export class EventExecutor<ChainApi extends GenericSubstrateApi = GenericSubstra
 
     const eventDef = this.#getEventDef(eventTypeId, errorName);
 
-    const is = (event: PalletEvent): event is PalletEvent => {
+    const is = (event: IEventRecord | PalletEvent): event is PalletEvent => {
+      if (isEventRecord(event)) {
+        event = event.event;
+      }
+
       const palletCheck = stringCamelCase(event.pallet) === pallet;
       if (typeof event.palletEvent === 'string') {
         return palletCheck && stringPascalCase(event.palletEvent) === errorName;
@@ -26,13 +31,28 @@ export class EventExecutor<ChainApi extends GenericSubstrateApi = GenericSubstra
       return false;
     };
 
-    const as = (event: PalletEvent): PalletEvent | undefined => {
-      return is(event) ? event : undefined;
+    const find = (events: IEventRecord[] | PalletEvent[]): PalletEvent | undefined => {
+      if (!events || events.length === 0) return undefined;
+
+      if (isEventRecord(events[0])) {
+        return (events as IEventRecord[]).map(({ event }) => event).find(is);
+      } else {
+        return (events as PalletEvent[]).find(is);
+      }
+    };
+
+    const filter = (events: IEventRecord[] | PalletEvent[]): PalletEvent[] => {
+      if (isEventRecord(events[0])) {
+        return (events as IEventRecord[]).map(({ event }) => event).filter(is);
+      } else {
+        return (events as PalletEvent[]).filter(is);
+      }
     };
 
     return {
       is,
-      as,
+      find,
+      filter,
       meta: {
         ...eventDef,
         pallet: targetPallet.name,

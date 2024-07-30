@@ -18,7 +18,9 @@
   },
   "dependencies": {
     "@dedot/codecs": "workspace:*",
-    "@dedot/shape": "workspace:*",
+    "@dedot/shape": "workspace:*"
+  },
+  "devDependencies": {
     "@dedot/utils": "workspace:*"
   },
   "exports": {
