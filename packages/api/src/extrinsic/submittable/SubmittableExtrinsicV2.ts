@@ -7,7 +7,7 @@ import { BaseSubmittableExtrinsic } from './BaseSubmittableExtrinsic.js';
 import { SubmittableResult } from './SubmittableResult.js';
 import { InvalidTxError } from './errors.js';
 
-type TxFound = { blockHash: BlockHash; index: number; events: IEventRecord[] };
+type TxFound = { blockHash: BlockHash; blockNumber: number; index: number; events: IEventRecord[] };
 
 /**
  * @name SubmittableExtrinsicV2
@@ -45,10 +45,12 @@ export class SubmittableExtrinsicV2 extends BaseSubmittableExtrinsic {
     const checkTxIsOnChain = async (blockHash: BlockHash): Promise<TxFound | undefined> => {
       if (blockHash === finalizedHash) return;
 
+      const block = api.chainHead.findBlock(blockHash)!;
       const txs = await api.chainHead.body(blockHash);
       const txIndex = txs.indexOf(txHex);
+
       if (txIndex < 0) {
-        return checkTxIsOnChain(api.chainHead.findBlock(blockHash)!.parent);
+        return checkTxIsOnChain(block.parent);
       }
 
       const events = await this.getSystemEventsAt(blockHash);
@@ -56,6 +58,7 @@ export class SubmittableExtrinsicV2 extends BaseSubmittableExtrinsic {
 
       return {
         blockHash,
+        blockNumber: block.number,
         index: txIndex,
         events: txEvents,
       };
@@ -121,11 +124,11 @@ export class SubmittableExtrinsicV2 extends BaseSubmittableExtrinsic {
 
         txFound = inBlock;
 
-        const { index: txIndex, events, blockHash } = inBlock;
+        const { index: txIndex, events, blockHash, blockNumber } = inBlock;
 
         callback(
           new SubmittableResult<IEventRecord>({
-            status: { type: 'BestChainBlockIncluded', value: { blockHash, txIndex } },
+            status: { type: 'BestChainBlockIncluded', value: { blockHash, blockNumber, txIndex } },
             txHash,
             events,
             txIndex,
@@ -157,11 +160,11 @@ export class SubmittableExtrinsicV2 extends BaseSubmittableExtrinsic {
     const checkFinalizedBlockIncluded = async (block: PinnedBlock) => {
       const inBlock = await checkTxIsOnChain(block.hash);
       if (inBlock) {
-        const { index: txIndex, events, blockHash } = inBlock;
+        const { index: txIndex, events, blockHash, blockNumber } = inBlock;
 
         callback(
           new SubmittableResult<IEventRecord>({
-            status: { type: 'Finalized', value: { blockHash, txIndex } },
+            status: { type: 'Finalized', value: { blockHash, blockNumber, txIndex } },
             txHash,
             events,
             txIndex,
