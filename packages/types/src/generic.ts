@@ -7,7 +7,7 @@ import {
   PalletTxMetadataLatest,
   StorageKey,
 } from '@dedot/codecs';
-import { IEventRecord } from '@dedot/types/event';
+import { IEventRecord } from './event.js';
 import { RuntimeApiMethodSpec } from './runtime.js';
 
 export type Append<T extends readonly unknown[], V> = [...T, V];

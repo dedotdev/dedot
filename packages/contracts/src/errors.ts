@@ -1,6 +1,6 @@
 import { DispatchError } from '@dedot/codecs';
 import { DedotError } from '@dedot/utils';
-import { ContractCallResult, ContractInstantiateResult, GenericContractApi } from './types';
+import { ContractCallResult, ContractInstantiateResult, GenericContractApi } from './types/index.js';
 
 /**
  * Represents an error that occurred during the instantiation of a smart contract.
