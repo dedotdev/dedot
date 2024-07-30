@@ -68,11 +68,29 @@ export const run = async (_nodeName: any, networkInfo: any) => {
         console.log(`[${api.rpcVersion}] Transaction status`, status.type);
 
         if (status.type === 'Finalized') {
-          const flippedEvent = contract.events.Flipped.find(events);
+          const flippedEvent1 = contract.events.Flipped.find(events);
+          const flippedEvents1 = contract.events.Flipped.filter(events);
 
-          assert(flippedEvent, 'Flipped event should be emitted');
-          assert(flippedEvent.data.new === false, 'New value should be false');
-          assert(flippedEvent.data.old === true, 'Old value should be true');
+          const contractEvents = contract.decodeEvents(events);
+          const flippedEvent2 = contract.events.Flipped.find(contractEvents);
+          const flippedEvents2 = contract.events.Flipped.filter(contractEvents);
+
+          assert(
+            JSON.stringify(flippedEvent1) === JSON.stringify(flippedEvent2), // prettier-end-here
+            'Incorrect flipped event',
+          );
+          assert(
+            JSON.stringify([flippedEvent1]) === JSON.stringify(flippedEvents1),
+            'Incorrect flipped event filter 1',
+          );
+          assert(
+            JSON.stringify(flippedEvents2) === JSON.stringify(flippedEvents1), // prettier-end-here
+            'Incorrect flipped event filter 2',
+          );
+
+          assert(flippedEvent1, 'Flipped event should be emitted');
+          assert(flippedEvent1.data.new === false, 'New value should be false');
+          assert(flippedEvent1.data.old === true, 'Old value should be true');
 
           resolve();
         }
