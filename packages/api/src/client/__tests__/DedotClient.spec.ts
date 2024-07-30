@@ -523,8 +523,8 @@ describe('DedotClient', () => {
 
             simulator.notify(simulator.nextNewBlock()); // f
             simulator.notify(simulator.nextNewBlock({ fork: true })); // f-1
-            simulator.notify(simulator.nextNewBlock()); // 10 -> f
-            simulator.notify(simulator.nextNewBlock({ fork: true, fromWhichParentFork: 1 })); // 10-1 -> f-1
+            simulator.notify(simulator.nextNewBlock()); // 0x10 -> f
+            simulator.notify(simulator.nextNewBlock({ fork: true, fromWhichParentFork: 1 })); // 0x10-1 -> f-1
             simulator.notify(simulator.nextNewBlock());
             simulator.notify(simulator.nextNewBlock());
             simulator.notify(simulator.nextNewBlock());
@@ -558,7 +558,7 @@ describe('DedotClient', () => {
               'BestChainBlockIncluded',
               'Finalized',
             ]);
-            expect(finalizedBlock).toEqual({ blockHash: '0x10-1', txIndex: 2 });
+            expect(finalizedBlock).toEqual({ blockHash: '0x10-1', blockNumber: 16, txIndex: 2 });
           });
         });
       });
