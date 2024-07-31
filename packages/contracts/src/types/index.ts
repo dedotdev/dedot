@@ -16,17 +16,25 @@ export * from './shared.js';
 
 export type ContractEventMeta = ContractEventV4 | ContractEventV5;
 
-export type GenericContractCallResult<DecodedData = any, ContractResult = any> = {
-  data: DecodedData;
-  raw: ContractResult;
+/**
+ * Flags used by a contract to customize exit behaviour.
+ * Ref: https://github.com/paritytech/polkadot-sdk/blob/d2fd53645654d3b8e12cbf735b67b93078d70113/substrate/frame/contracts/uapi/src/flags.rs#L23-L26
+ */
+export type ReturnFlags = {
+  bits: number;
+  revert: boolean; // 0x0000_0001
 };
 
-export type GenericConstructorCallResult<DecodedData = any, ContractResult = any> = {
+export interface GenericContractCallResult<DecodedData = any, ContractResult = any> {
   data: DecodedData;
   raw: ContractResult;
+  flags: ReturnFlags;
+}
 
+export interface GenericConstructorCallResult<DecodedData = any, ContractResult = any>
+  extends GenericContractCallResult<DecodedData, ContractResult> {
   address: AccountId32; // Address of the contract will be instantiated
-};
+}
 
 export type ContractCallResult<ChainApi extends GenericSubstrateApi> = Awaited<
   ReturnType<ChainApi['call']['contractsApi']['call']>

@@ -1,6 +1,7 @@
 import { DispatchError } from '@dedot/codecs';
-import { DedotError } from '@dedot/utils';
-import { ContractCallResult, ContractInstantiateResult, GenericContractApi } from './types/index.js';
+import { DedotError, assert } from '@dedot/utils';
+import { ContractCallResult, ContractInstantiateResult, GenericContractApi, ReturnFlags } from './types/index.js';
+import { toReturnFlags } from './utils.js';
 
 /**
  * Represents an error that occurred during the instantiation of a smart contract.
@@ -72,6 +73,10 @@ export class ContractInstantiateLangError<
    * The language-specific error that occurred during the instantiation.
    */
   langError: ContractApi['types']['LangError'];
+  /**
+   * Decoded `ReturnFlags` from contract call result.
+   */
+  flags: ReturnFlags;
 
   /**
    * Constructs a new `ContractInstantiateLangError` instance.
@@ -83,8 +88,11 @@ export class ContractInstantiateLangError<
     err: ContractApi['types']['LangError'],
     raw: ContractInstantiateResult<ContractApi['types']['ChainApi']>,
   ) {
+    assert(raw.result.isOk, 'Should not throw DispatchError!');
+
     super(raw);
     this.langError = err;
+    this.flags = toReturnFlags(raw.result.value.result.flags.bits);
   }
 }
 
@@ -158,6 +166,10 @@ export class ContractLangError<
    * The language-specific error that occurred during the execution.
    */
   langError: ContractApi['types']['LangError'];
+  /**
+   * Decoded `ReturnFlags` from contract call result.
+   */
+  flags: ReturnFlags;
 
   /**
    * Constructs a new `ContractLangError` instance.
@@ -166,8 +178,11 @@ export class ContractLangError<
    * @param raw - The raw result of the contract call.
    */
   constructor(err: ContractApi['types']['LangError'], raw: ContractCallResult<ContractApi['types']['ChainApi']>) {
+    assert(raw.result.isOk, 'Should not throw DispatchError!');
+
     super(raw);
     this.langError = err;
+    this.flags = toReturnFlags(raw.result.value.flags.bits);
   }
 }
 

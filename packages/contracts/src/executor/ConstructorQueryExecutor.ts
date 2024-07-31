@@ -12,7 +12,7 @@ import {
   GenericConstructorCallResult,
   GenericConstructorQueryCall,
 } from '../types/index.js';
-import { normalizeLabel } from '../utils.js';
+import { normalizeLabel, toReturnFlags } from '../utils.js';
 import { Executor } from './Executor.js';
 
 export class ConstructorQueryExecutor<ChainApi extends GenericSubstrateApi> extends Executor<ChainApi> {
@@ -63,10 +63,13 @@ export class ConstructorQueryExecutor<ChainApi extends GenericSubstrateApi> exte
         throw new ContractInstantiateLangError(data.err, raw);
       }
 
+      const bits = raw.result.value.result.flags.bits;
+
       return {
-        raw,
         data: data.value,
+        raw,
         address: raw.result.value.accountId,
+        flags: toReturnFlags(bits),
       } as GenericConstructorCallResult;
     };
 

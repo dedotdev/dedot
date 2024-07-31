@@ -9,7 +9,7 @@ import {
   GenericContractQueryCall,
   GenericContractCallResult,
 } from '../types/index.js';
-import { normalizeLabel } from '../utils.js';
+import { normalizeLabel, toReturnFlags } from '../utils.js';
 import { Executor } from './Executor.js';
 
 export class QueryExecutor<ChainApi extends GenericSubstrateApi> extends Executor<ChainApi> {
@@ -47,9 +47,12 @@ export class QueryExecutor<ChainApi extends GenericSubstrateApi> extends Executo
         throw new ContractLangError(data.err, raw);
       }
 
+      const bits = raw.result.value.flags.bits;
+
       return {
         data: data.value,
         raw,
+        flags: toReturnFlags(bits),
       } as GenericContractCallResult;
     };
 

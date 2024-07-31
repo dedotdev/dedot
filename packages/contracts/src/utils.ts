@@ -3,7 +3,7 @@ import { PortableType, TypeDef } from '@dedot/codecs';
 import { GenericSubstrateApi } from '@dedot/types';
 import { stringCamelCase } from '@dedot/utils';
 import { Executor } from './executor/index.js';
-import { ContractMetadata, ContractTypeDef } from './types/index.js';
+import { ContractMetadata, ContractTypeDef, ReturnFlags } from './types/index.js';
 
 export const extractContractTypes = (contractMetadata: ContractMetadata): PortableType[] => {
   const { types } = contractMetadata;
@@ -112,4 +112,14 @@ export function ensureSupportContractsPallet<ChainApi extends GenericSubstrateAp
 export function normalizeLabel(label?: string): string {
   if (!label) return '';
   return stringCamelCase(label.replaceAll('::', '_'));
+}
+
+// https://github.com/paritytech/polkadot-sdk/blob/d2fd53645654d3b8e12cbf735b67b93078d70113/substrate/frame/contracts/uapi/src/flags.rs#L23-L26
+const REVERT_FLAG: number = 1;
+
+export function toReturnFlags(bits: number): ReturnFlags {
+  return {
+    bits,
+    revert: bits === REVERT_FLAG,
+  };
 }

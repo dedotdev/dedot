@@ -46,8 +46,9 @@ export const run = async (_nodeName: any, networkInfo: any) => {
     const contractAddress = await deployFlipper(api, flipper, salt);
     const contract = new Contract<FlipperContractApi>(api, flipper, contractAddress);
 
-    const { data: info } = await contract.query.flipWithSeed(blank, { caller });
+    const { data: info, flags } = await contract.query.flipWithSeed(blank, { caller });
     assert(info.isErr && info.err === 'ZeroSum', 'Should get ZeroSum error here');
+    assert(flags.bits === 1 && flags.revert === true, 'Should get Revert flag here');
 
     // If re-create a contract with same salt, should be throwing DispatchError
     try {
@@ -57,6 +58,7 @@ export const run = async (_nodeName: any, networkInfo: any) => {
     } catch (e: any) {
       assert(isContractInstantiateError(e), 'Should throw ContractInstantiateError!');
       assert(isContractInstantiateDispatchError(e), 'Should throw ContractInstantiateDispatchError!');
+
       console.log('DispatchError', e.dispatchError);
     }
 
@@ -68,6 +70,8 @@ export const run = async (_nodeName: any, networkInfo: any) => {
     } catch (e: any) {
       assert(isContractInstantiateError(e), 'Should throw ContractInstantiateError!');
       assert(isContractInstantiateLangError(e), 'Should throw ContractInstantiateLangError!');
+      assert(e.flags.revert === true && e.flags.bits === 1, 'Should get Revert flag here!');
+
       console.log('LangError', e.langError);
     }
 
@@ -91,6 +95,8 @@ export const run = async (_nodeName: any, networkInfo: any) => {
     } catch (e: any) {
       assert(isContractExecutionError(e), 'Should throw ContractExecutionError!');
       assert(isContractLangError(e), 'Should throw ContractLangError!');
+      assert(e.flags.revert === true && e.flags.bits === 1, 'Should get Revert flag here!');
+
       console.log('LangError', e.langError);
     }
   };
