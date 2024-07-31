@@ -9,13 +9,13 @@ import { isEventRecord } from './utils.js';
  * @description Find pallet event information from metadata
  */
 export class EventExecutor<ChainApi extends GenericSubstrateApi = GenericSubstrateApi> extends Executor<ChainApi> {
-  doExecute(pallet: string, errorName: string): GenericPalletEvent {
+  doExecute(pallet: string, eventName: string): GenericPalletEvent {
     const targetPallet = this.getPallet(pallet);
 
     const eventTypeId = targetPallet.event;
     assert(eventTypeId, new UnknownApiError(`Not found event with id ${eventTypeId} in pallet ${pallet}`));
 
-    const eventDef = this.#getEventDef(eventTypeId, errorName);
+    const eventDef = this.#getEventDef(eventTypeId, eventName);
 
     const is = (event: IEventRecord | PalletEvent): event is PalletEvent => {
       if (isEventRecord(event)) {
@@ -24,9 +24,9 @@ export class EventExecutor<ChainApi extends GenericSubstrateApi = GenericSubstra
 
       const palletCheck = stringCamelCase(event.pallet) === pallet;
       if (typeof event.palletEvent === 'string') {
-        return palletCheck && stringPascalCase(event.palletEvent) === errorName;
+        return palletCheck && stringPascalCase(event.palletEvent) === eventName;
       } else if (typeof event.palletEvent === 'object') {
-        return palletCheck && stringPascalCase(event.palletEvent.name) === errorName;
+        return palletCheck && stringPascalCase(event.palletEvent.name) === eventName;
       }
 
       return false;
