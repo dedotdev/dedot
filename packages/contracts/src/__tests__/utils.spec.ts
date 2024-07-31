@@ -1,12 +1,7 @@
 import { TypeDef } from '@dedot/codecs';
 import { describe, expect, it } from 'vitest';
 import { ContractTypeDef, ReturnFlags } from '../types/index.js';
-import {
-  extractContractTypes,
-  normalizeContractTypeDef,
-  normalizeLabel,
-  toReturnFlags,
-} from '../utils.js';
+import { extractContractTypes, normalizeContractTypeDef, normalizeLabel, toReturnFlags } from '../utils.js';
 import { FLIPPER_CONTRACT_METADATA_V4 } from './contracts-metadata.js';
 
 describe('utils', () => {
@@ -135,6 +130,7 @@ describe('utils', () => {
     it('should works properly', () => {
       expect(toReturnFlags(0)).toEqual({ bits: 0, revert: false } as ReturnFlags);
       expect(toReturnFlags(1)).toEqual({ bits: 1, revert: true } as ReturnFlags);
+      expect(toReturnFlags(2)).toEqual({ bits: 2, revert: false } as ReturnFlags);
     });
   });
 });

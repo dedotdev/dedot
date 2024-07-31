@@ -1,4 +1,4 @@
-import { DispatchError, PalletErrorMetadataLatest } from '@dedot/codecs';
+import { DispatchError } from '@dedot/codecs';
 import { DedotError } from '@dedot/utils';
 import { ContractCallResult, ContractInstantiateResult, GenericContractApi, ReturnFlags } from './types';
 
@@ -79,6 +79,7 @@ export class ContractInstantiateLangError<
    *
    * @param err - The `LangError` that occurred during the instantiation phase.
    * @param raw - The raw result of the contract instantiation.
+   * @param flags - The `ReturnFlags` is decoded `flags` that returned in results.
    */
   constructor(
     err: ContractApi['types']['LangError'],
@@ -168,6 +169,7 @@ export class ContractLangError<
    *
    * @param err - The `LangError` that occurred during the execution phase.
    * @param raw - The raw result of the contract call.
+   * @param flags - The `ReturnFlags` is decoded `flags` that returned in results.
    */
   constructor(
     err: ContractApi['types']['LangError'],
