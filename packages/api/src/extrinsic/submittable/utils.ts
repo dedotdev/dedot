@@ -20,14 +20,16 @@ export function signRaw(signerPair: IKeyringPair, raw: HexString): Uint8Array {
   return signerPair.sign(toSignRaw, { withType: true });
 }
 
+type TxInfo = { txIndex: number; blockNumber: number };
+
 /**
  * Convert transaction status to transaction event
  *
  * Ref: https://github.com/paritytech/polkadot-sdk/blob/98a364fe6e7abf10819f5fddd3de0588f7c38700/substrate/client/rpc-spec-v2/src/transaction/transaction.rs#L132-L159
  * @param txStatus
- * @param txIndex
+ * @param txInfo
  */
-export function toTxStatus(txStatus: TransactionStatus, txIndex?: number): TxStatus {
+export function toTxStatus(txStatus: TransactionStatus, txInfo?: TxInfo): TxStatus {
   switch (txStatus.type) {
     case 'Ready':
     case 'Future':
@@ -37,21 +39,21 @@ export function toTxStatus(txStatus: TransactionStatus, txIndex?: number): TxSta
     case 'Retracted':
       return { type: 'NoLongerInBestChain' };
     case 'InBlock':
-      assert(txIndex, 'TxIndex is required');
+      assert(txInfo, 'TxInfo is required');
       return {
         type: 'BestChainBlockIncluded',
         value: {
           blockHash: txStatus.value,
-          txIndex,
+          ...txInfo,
         },
       };
     case 'Finalized':
-      assert(txIndex, 'TxIndex is required');
+      assert(txInfo, 'TxInfo is required');
       return {
         type: 'Finalized',
         value: {
           blockHash: txStatus.value,
-          txIndex,
+          ...txInfo,
         },
       };
     case 'FinalityTimeout':

@@ -28,6 +28,7 @@ export const run = async (nodeName: any, networkInfo: any): Promise<void> => {
       console.log('Transaction status', status.type);
       if (status.type === 'BestChainBlockIncluded') {
         assert(isHex(status.value.blockHash), 'Block hash should be hex');
+        assert(isNumber(status.value.blockNumber), 'Block number should be number');
         assert(isNumber(status.value.txIndex), 'Tx index should be number');
         assert(txIndex === status.value.txIndex, 'Mismatched tx index');
 
@@ -39,6 +40,7 @@ export const run = async (nodeName: any, networkInfo: any): Promise<void> => {
 
       if (status.type === 'Finalized') {
         assert(isHex(status.value.blockHash), 'Block hash should be hex');
+        assert(isNumber(status.value.blockNumber), 'Block number should be number');
         assert(isNumber(status.value.txIndex), 'Tx index should be number');
         assert(txIndex === status.value.txIndex, 'Mismatched tx index');
 
