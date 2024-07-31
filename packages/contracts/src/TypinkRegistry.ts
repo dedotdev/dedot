@@ -29,6 +29,12 @@ export class TypinkRegistry extends TypeRegistry {
     return this.#metadata;
   }
 
+  decodeEvents(records: IEventRecord[]): ContractEvent[] {
+    return records
+      .filter(({ event }) => this.#isContractEmittedEvent(event)) // prettier-end-here
+      .map((record) => this.decodeEvent(record));
+  }
+
   decodeEvent(eventRecord: IEventRecord): ContractEvent {
     const { version } = this.#metadata;
 
@@ -42,9 +48,9 @@ export class TypinkRegistry extends TypeRegistry {
     }
   }
 
-  #isContractEmittedEvent(eventRecord: IRuntimeEvent): eventRecord is ContractEmittedEvent {
+  #isContractEmittedEvent(event: IRuntimeEvent): event is ContractEmittedEvent {
     // @ts-ignore
-    return eventRecord.pallet === 'Contracts' && eventRecord.palletEvent.name === 'ContractEmitted';
+    return event.pallet === 'Contracts' && event.palletEvent.name === 'ContractEmitted';
   }
 
   #decodeEventV4(eventRecord: IEventRecord): ContractEvent {

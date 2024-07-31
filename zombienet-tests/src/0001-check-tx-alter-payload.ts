@@ -52,10 +52,8 @@ export const run = async (nodeName: any, networkInfo: any): Promise<void> => {
         console.log('Transaction status', status.type);
 
         if (status.type === 'Finalized') {
-          const remarkEvent = events.map(({ event }) => event).find(api.events.system.Remarked.is);
-          const txFreePaidEvent = events
-            .map(({ event }) => event)
-            .find(api.events.transactionPayment.TransactionFeePaid.is);
+          const remarkEvent = api.events.system.Remarked.find(events);
+          const txFreePaidEvent = api.events.transactionPayment.TransactionFeePaid.find(events);
 
           assert(
             remarkEvent && remarkEvent.pallet === 'System' && remarkEvent.palletEvent.name === 'Remarked',

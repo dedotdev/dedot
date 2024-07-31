@@ -35,27 +35,24 @@ export const run = async (nodeName: any, networkInfo: any): Promise<void> => {
     const unsub = await batchTx.signAndSend(alice, async ({ status, events }) => {
       console.log('Transaction status', status.type);
 
-      if (status.type === 'BestChainBlockIncluded') {
+      if (status.type === 'Finalized') {
+        assert(api.events.system.ExtrinsicSuccess.find(events), 'Event System.ExtrinsicSuccess should be available');
+        assert(api.events.system.Remarked.find(events), 'Event System.Remarked should be available');
+        assert(api.events.utility.BatchCompleted.find(events), 'Event Utility.BatchCompleted should be available');
         assert(
-          events.some(({ event }) => api.events.balances.Transfer.is(event)),
-          'Event Balance.Transfer should be available',
-        );
-        assert(
-          events.some(({ event }) => api.events.system.ExtrinsicSuccess.is(event)),
-          'Event System.ExtrinsicSuccess should be available',
-        );
-        assert(
-          events.some(({ event }) => api.events.system.Remarked.is(event)),
-          'Event System.Remarked should be available',
-        );
-        assert(
-          events.some(({ event }) => api.events.utility.BatchCompleted.is(event)),
-          'Event Utility.BatchCompleted should be available',
-        );
-        assert(
-          events.filter(({ event }) => api.events.utility.ItemCompleted.is(event)).length === 2,
+          api.events.utility.ItemCompleted.filter(events).length === 2,
           'Event Utility.ItemCompleted should be have 2 records',
         );
+
+        const transferEvent1 = api.events.balances.Transfer.find(events);
+        const transferEvent2 = api.events.balances.Transfer.find(events.map((e) => e.event));
+        const transferEvents1 = api.events.balances.Transfer.filter(events);
+        const transferEvents2 = api.events.balances.Transfer.filter(events.map((e) => e.event));
+
+        assert(transferEvent1, 'Event Balance.Transfer should be available');
+        assert(JSON.stringify(transferEvent1) === JSON.stringify(transferEvent2), 'Incorrect transfer event');
+        assert(JSON.stringify(transferEvents1) === JSON.stringify(transferEvents2), 'Incorrect transfer events 1');
+        assert(JSON.stringify([transferEvent1]) === JSON.stringify(transferEvents1), 'Incorrect transfer events 2');
 
         await unsub();
         resolve();

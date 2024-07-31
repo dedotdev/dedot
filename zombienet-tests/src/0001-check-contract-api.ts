@@ -42,11 +42,23 @@ export const run = async (_nodeName: any, networkInfo: any) => {
           console.log(`[${api.rpcVersion}] Transaction status:`, status.type);
 
           if (status.type === 'Finalized') {
-            const instantiatedEvent = events
+            const instantiatedEvent = api.events.contracts.Instantiated.find(events);
+
+            const instantiatedEvent2 = events
               .map(({ event }) => event) // prettier-end-here
               .find(api.events.contracts.Instantiated.is); // narrow down the type for type suggestions
 
+            const instantiatedEvent3 = events.find(api.events.contracts.Instantiated.is)!.event; // narrow down the type for type suggestions
+
             assert(instantiatedEvent, 'Event Contracts.Instantiated should be available');
+            assert(
+              JSON.stringify(instantiatedEvent) === JSON.stringify(instantiatedEvent2),
+              'Incorrect instantiated event 2',
+            );
+            assert(
+              JSON.stringify(instantiatedEvent) === JSON.stringify(instantiatedEvent3),
+              'Incorrect instantiated event 3',
+            );
 
             const contractAddress = instantiatedEvent.palletEvent.data.contract.address();
             resolve(contractAddress);
@@ -70,17 +82,40 @@ export const run = async (_nodeName: any, networkInfo: any) => {
         console.log(`[${api.rpcVersion}] Transaction status`, status.type);
 
         if (status.type === 'Finalized') {
-          const contractEventRecords = events.filter((r) => api.events.contracts.ContractEmitted.is(r.event));
+          const flippedEvent1 = contract.events.Flipped.find(events);
+          const flippedEvents1 = contract.events.Flipped.filter(events);
 
-          assert(contractEventRecords.length > 0, 'Should emit at least one event emitted!');
+          const contractEvents = contract.decodeEvents(events);
+          const flippedEvents2 = contract.events.Flipped.filter(contractEvents);
 
-          const flippedEvent = contractEventRecords
-            .map((e) => contract.decodeEvent(e))
-            .find(contract.events.Flipped.is);
+          const flippedEvent2 = contract.events.Flipped.find(contractEvents);
+          const flippedEvent3 = contractEvents.find(contract.events.Flipped.is);
+          const flippedEvent4 = contract.decodeEvent(events.find(contract.events.Flipped.is)!);
 
-          assert(flippedEvent, 'Flipped event should be emitted');
-          assert(flippedEvent.data.new === false, 'New value should be false');
-          assert(flippedEvent.data.old === true, 'Old value should be true');
+          assert(
+            JSON.stringify(flippedEvent1) === JSON.stringify(flippedEvent2), // prettier-end-here
+            'Incorrect flipped event 2',
+          );
+          assert(
+            JSON.stringify(flippedEvent1) === JSON.stringify(flippedEvent3), // prettier-end-here
+            'Incorrect flipped event 3',
+          );
+          assert(
+            JSON.stringify(flippedEvent1) === JSON.stringify(flippedEvent4), // prettier-end-here
+            'Incorrect flipped event 4',
+          );
+          assert(
+            JSON.stringify([flippedEvent1]) === JSON.stringify(flippedEvents1), // prettier-end-here
+            'Incorrect flipped event filter 1',
+          );
+          assert(
+            JSON.stringify(flippedEvents2) === JSON.stringify(flippedEvents1), // prettier-end-here
+            'Incorrect flipped event filter 2',
+          );
+
+          assert(flippedEvent1, 'Flipped event should be emitted');
+          assert(flippedEvent1.data.new === false, 'New value should be false');
+          assert(flippedEvent1.data.old === true, 'Old value should be true');
 
           resolve();
         }

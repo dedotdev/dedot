@@ -37,17 +37,17 @@ export const run = async (nodeName: any, networkInfo: any): Promise<any> => {
     const stopBroadcast = await txBroadcaster.broadcastTx(rawTx);
 
     const unsub = await api.query.system.events((events) => {
-      events.forEach(({ event }) => {
-        if (api.events.system.Remarked.is(event)) {
-          const { sender, hash } = event.palletEvent.data;
-          if (sender.address() === senderAddress && api.registry.hashAsHex(stringToHex('Hello world')) === hash) {
-            console.log('Remark event found, stop broadcasting now!');
-            stopBroadcast();
-            unsub();
-            defer.resolve();
-          }
+      const remarkEvent = api.events.system.Remarked.find(events);
+
+      if (remarkEvent) {
+        const { sender, hash } = remarkEvent.palletEvent.data;
+        if (sender.address() === senderAddress && api.registry.hashAsHex(stringToHex('Hello world')) === hash) {
+          console.log('Remark event found, stop broadcasting now!');
+          stopBroadcast();
+          unsub();
+          defer.resolve();
         }
-      });
+      }
     });
 
     return defer.promise;
