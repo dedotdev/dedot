@@ -57,8 +57,7 @@ export const run = async (_nodeName: any, networkInfo: any) => {
     console.log(`[${api.rpcVersion}] Deployed contract address`, contractAddress);
     const contract = new Contract<FlipperContractApi>(api, flipper, contractAddress);
 
-    const { data: state, flags } = await contract.query.get({ caller });
-    assert(flags.bits === 0 && flags.revert === false, 'Should not revert if query successfully!')
+    const { data: state } = await contract.query.get({ caller });
 
     console.log(`[${api.rpcVersion}] Initial value:`, state);
     console.log(`[${api.rpcVersion}] Flipping...`);
@@ -88,9 +87,10 @@ export const run = async (_nodeName: any, networkInfo: any) => {
       });
     });
 
-    const { data: newState } = await contract.query.get({ caller });
+    const { data: newState, flags } = await contract.query.get({ caller });
     console.log(`[${api.rpcVersion}] New value:`, newState);
 
+    assert(flags.bits === 0 && flags.revert === false, 'Should not get Revert flag if call success!')
     assert(state !== newState, 'State should be changed');
   };
 
