@@ -2,6 +2,8 @@ import { LegacyClient, FallbackRuntimeApis } from '@dedot/api';
 import { FrameSystemEventRecord } from '@dedot/api/chaintypes/index.js';
 import MockProvider from '@dedot/api/client/__tests__/MockProvider';
 import { RuntimeVersion } from '@dedot/codecs';
+import { ContractEvent } from '@dedot/contracts';
+import { IEventRecord } from '@dedot/types';
 import { beforeEach, describe, expect, it } from 'vitest';
 import { Contract } from '../Contract.js';
 import {
@@ -95,6 +97,18 @@ describe('Contract', () => {
       flipper = new Contract(api, FLIPPER_CONTRACT_METADATA_V5, RANDOM_CONTRACT_ADDRESS);
     });
 
+    const verifyFlipperEvent = (event: ContractEvent) => {
+      expect(flipper.events.Flipped.is(event)).toEqual(true);
+      expect(flipper.events.Flipped.filter([event])).toEqual([event]);
+      expect(flipper.events.Flipped.find([event])).toEqual(event);
+    };
+
+    const verifyFlipperEventRecord = (record: IEventRecord, decodedEvent: ContractEvent) => {
+      expect(flipper.events.Flipped.is(record)).toEqual(true);
+      expect(flipper.events.Flipped.filter([record])).toEqual([decodedEvent]);
+      expect(flipper.events.Flipped.find([record])).toEqual(decodedEvent);
+    };
+
     it('should throw error if eventRecord is not ContractEmitted palletEvent', () => {
       const notContractEmittedEventRecordHex =
         '0x00010000000408d43593c715fdd31c61141abd04a99fd6822c8558854ccde39a5684e7a56da27d7bd1726000000000000000000000000000';
@@ -115,12 +129,17 @@ describe('Contract', () => {
 
         const decodedEvent = flipper.decodeEvent(eventRecord);
 
-        expect(flipper.events.Flipped.is(decodedEvent!)).toEqual(true);
+        verifyFlipperEvent(decodedEvent);
+        verifyFlipperEventRecord(eventRecord, decodedEvent);
         expect(decodedEvent).toEqual({ name: 'Flipped', data: { old: true, new: false } });
       });
 
       it('should decode if can detect anoymous event meta has indexed fields', () => {
-        flipper = new Contract(api, FLIPPER_CONTRACT_METADATA_V5_NO_SIGNATURE_TOPIC_INDEXED_FIELDS, RANDOM_CONTRACT_ADDRESS);
+        flipper = new Contract(
+          api,
+          FLIPPER_CONTRACT_METADATA_V5_NO_SIGNATURE_TOPIC_INDEXED_FIELDS,
+          RANDOM_CONTRACT_ADDRESS,
+        );
 
         const contractEmittedEventRecord =
           '0x000100000008035b5507db890cba8d6ecc300104b80f4506d9d973276f6c8ff5b370347ce011af0800010800000000000000000000000000000000000000000000000000000000000000000100000000000000000000000000000000000000000000000000000000000000';
@@ -128,7 +147,8 @@ describe('Contract', () => {
 
         const decodedEvent = flipper.decodeEvent(eventRecord);
 
-        expect(flipper.events.Flipped.is(decodedEvent!)).toEqual(true);
+        verifyFlipperEvent(decodedEvent);
+        verifyFlipperEventRecord(eventRecord, decodedEvent);
         expect(decodedEvent).toEqual({ name: 'Flipped', data: { old: false, new: true } });
       });
 
@@ -141,7 +161,8 @@ describe('Contract', () => {
 
         const decodedEvent = flipper.decodeEvent(eventRecord);
 
-        expect(flipper.events.Flipped.is(decodedEvent!)).toEqual(true);
+        verifyFlipperEvent(decodedEvent);
+        verifyFlipperEventRecord(eventRecord, decodedEvent);
         expect(decodedEvent).toEqual({ name: 'Flipped', data: { old: false, new: true } });
       });
 
@@ -168,7 +189,8 @@ describe('Contract', () => {
 
         const decodedEvent = flipper.decodeEvent(eventRecord);
 
-        expect(flipper.events.Flipped.is(decodedEvent!)).toEqual(true);
+        verifyFlipperEvent(decodedEvent);
+        verifyFlipperEventRecord(eventRecord, decodedEvent);
         expect(decodedEvent).toEqual({ name: 'Flipped', data: { old: false, new: true } });
       });
     });

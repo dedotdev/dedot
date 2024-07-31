@@ -1,6 +1,13 @@
 import { SubstrateApi } from '@dedot/api/chaintypes';
 import { AccountId32, AccountId32Like, BytesLike, Weight } from '@dedot/codecs';
-import { AnyFunc, AsyncMethod, GenericSubstrateApi, RpcVersion, VersionedGenericSubstrateApi } from '@dedot/types';
+import {
+  AnyFunc,
+  AsyncMethod,
+  GenericSubstrateApi,
+  IEventRecord,
+  RpcVersion,
+  VersionedGenericSubstrateApi,
+} from '@dedot/types';
 import { ContractCallMessage, ContractConstructorMessage } from './shared.js';
 import { ContractEventV4, ContractMetadataV4 } from './v4.js';
 import { ContractEventV5, ContractMetadataV5 } from './v5.js';
@@ -131,8 +138,9 @@ export type ContractEvent<EventName extends string = string, Data extends any = 
     };
 
 export interface GenericContractEvent<EventName extends string = string, Data extends any = any> {
-  is: (event: ContractEvent) => event is ContractEvent<EventName, Data>;
-  as: (event: ContractEvent) => ContractEvent<EventName, Data> | undefined;
+  is: (event: IEventRecord | ContractEvent) => event is ContractEvent<EventName, Data>;
+  find: (events: IEventRecord[] | ContractEvent[]) => ContractEvent<EventName, Data> | undefined;
+  filter: (events: IEventRecord[] | ContractEvent[]) => ContractEvent<EventName, Data>[];
   meta: ContractEventMeta;
 }
 

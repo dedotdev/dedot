@@ -1,6 +1,6 @@
 import { DispatchError } from '@dedot/codecs';
 import { DedotError, assert } from '@dedot/utils';
-import { ContractCallResult, ContractInstantiateResult, GenericContractApi, ReturnFlags } from './types';
+import { ContractCallResult, ContractInstantiateResult, GenericContractApi, ReturnFlags } from './types/index.js';
 import { toReturnFlags } from './utils';
 
 /**
@@ -74,7 +74,7 @@ export class ContractInstantiateLangError<
    */
   langError: ContractApi['types']['LangError'];
   /**
-   * Decoded `flags` that returned in result.   
+   * Decoded `flags` that returned in result.
    */
   returnFlags: ReturnFlags;
 
@@ -167,7 +167,7 @@ export class ContractLangError<
    */
   langError: ContractApi['types']['LangError'];
   /**
-   * Decoded `flags` that returned in result.   
+   * Decoded `flags` that returned in result.
    */
   returnFlags: ReturnFlags;
 
