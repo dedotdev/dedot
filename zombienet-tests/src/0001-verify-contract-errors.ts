@@ -57,6 +57,7 @@ export const run = async (_nodeName: any, networkInfo: any) => {
     } catch (e: any) {
       assert(isContractInstantiateError(e), 'Should throw ContractInstantiateError!');
       assert(isContractInstantiateDispatchError(e), 'Should throw ContractInstantiateDispatchError!');
+
       console.log('DispatchError', e.dispatchError);
     }
 
@@ -68,6 +69,8 @@ export const run = async (_nodeName: any, networkInfo: any) => {
     } catch (e: any) {
       assert(isContractInstantiateError(e), 'Should throw ContractInstantiateError!');
       assert(isContractInstantiateLangError(e), 'Should throw ContractInstantiateLangError!');
+      assert(e.returnFlags.revert === true && e.returnFlags.bits === 1, 'Should revert call!')
+
       console.log('LangError', e.langError);
     }
 
@@ -91,6 +94,8 @@ export const run = async (_nodeName: any, networkInfo: any) => {
     } catch (e: any) {
       assert(isContractExecutionError(e), 'Should throw ContractExecutionError!');
       assert(isContractLangError(e), 'Should throw ContractLangError!');
+      assert(e.returnFlags.revert === true && e.returnFlags.bits === 1, 'Should revert call!')
+
       console.log('LangError', e.langError);
     }
   };

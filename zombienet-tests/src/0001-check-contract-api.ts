@@ -57,9 +57,10 @@ export const run = async (_nodeName: any, networkInfo: any) => {
     console.log(`[${api.rpcVersion}] Deployed contract address`, contractAddress);
     const contract = new Contract<FlipperContractApi>(api, flipper, contractAddress);
 
-    const { data: state } = await contract.query.get({ caller });
-    console.log(`[${api.rpcVersion}] Initial value:`, state);
+    const { data: state, flags } = await contract.query.get({ caller });
+    assert(flags.bits === 0 && flags.revert === false, 'Should not revert if query successfully!')
 
+    console.log(`[${api.rpcVersion}] Initial value:`, state);
     console.log(`[${api.rpcVersion}] Flipping...`);
 
     // Dry-run to estimate gas fee
