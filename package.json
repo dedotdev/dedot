@@ -36,7 +36,7 @@
     "tsc-esm-fix": "^2.20.27",
     "typescript": "5.4.5",
     "vite-tsconfig-paths": "^4.3.2",
-    "vitest": "^2.0.4"
+    "vitest": "^2.0.5"
   },
   "resolutions": {
     "@polkadot/types": "^12.2.3",
