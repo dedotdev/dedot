@@ -58,19 +58,18 @@ export class ConstructorQueryExecutor<ChainApi extends GenericSubstrateApi> exte
       }
 
       const data = this.tryDecode(meta, raw.result.value.result.data) as Result<any, any>;
-      const bits = raw.result.value.result.flags.bits;
-
-      const flags = toReturnFlags(bits);
 
       if (data.isErr) {
-        throw new ContractInstantiateLangError(data.err, raw, flags);
+        throw new ContractInstantiateLangError(data.err, raw);
       }
+
+      const bits = raw.result.value.result.flags.bits;
 
       return {
         data: data.value,
         raw,
         address: raw.result.value.accountId,
-        flags,
+        flags: toReturnFlags(bits),
       } as GenericConstructorCallResult;
     };
 

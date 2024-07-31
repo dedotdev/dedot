@@ -1,6 +1,7 @@
 import { DispatchError } from '@dedot/codecs';
-import { DedotError } from '@dedot/utils';
+import { DedotError, assert } from '@dedot/utils';
 import { ContractCallResult, ContractInstantiateResult, GenericContractApi, ReturnFlags } from './types';
+import { toReturnFlags } from './utils';
 
 /**
  * Represents an error that occurred during the instantiation of a smart contract.
@@ -72,6 +73,9 @@ export class ContractInstantiateLangError<
    * The language-specific error that occurred during the instantiation.
    */
   langError: ContractApi['types']['LangError'];
+  /**
+   * Decoded `flags` that returned in result.   
+   */
   returnFlags: ReturnFlags;
 
   /**
@@ -79,16 +83,16 @@ export class ContractInstantiateLangError<
    *
    * @param err - The `LangError` that occurred during the instantiation phase.
    * @param raw - The raw result of the contract instantiation.
-   * @param flags - The `ReturnFlags` is decoded `flags` that returned in results.
    */
   constructor(
     err: ContractApi['types']['LangError'],
     raw: ContractInstantiateResult<ContractApi['types']['ChainApi']>,
-    flags: ReturnFlags,
   ) {
+    assert(raw.result.isOk, 'Should not throw DispatchError!')
+
     super(raw);
     this.langError = err;
-    this.returnFlags = flags;
+    this.returnFlags = toReturnFlags(raw.result.value!.result.flags.bits);
   }
 }
 
@@ -162,6 +166,9 @@ export class ContractLangError<
    * The language-specific error that occurred during the execution.
    */
   langError: ContractApi['types']['LangError'];
+  /**
+   * Decoded `flags` that returned in result.   
+   */
   returnFlags: ReturnFlags;
 
   /**
@@ -169,16 +176,16 @@ export class ContractLangError<
    *
    * @param err - The `LangError` that occurred during the execution phase.
    * @param raw - The raw result of the contract call.
-   * @param flags - The `ReturnFlags` is decoded `flags` that returned in results.
    */
   constructor(
     err: ContractApi['types']['LangError'],
     raw: ContractCallResult<ContractApi['types']['ChainApi']>,
-    flags: ReturnFlags,
   ) {
+    assert(raw.result.isOk, 'Should not throw DispatchError!')
+
     super(raw);
     this.langError = err;
-    this.returnFlags = flags;
+    this.returnFlags = toReturnFlags(raw.result.value.flags.bits);
   }
 }
 

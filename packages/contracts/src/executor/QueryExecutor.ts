@@ -42,18 +42,17 @@ export class QueryExecutor<ChainApi extends GenericSubstrateApi> extends Executo
       }
 
       const data = this.tryDecode(meta, raw.result.value.data) as Result<any, any>;
-      const bits = raw.result.value.flags.bits;
-
-      const flags = toReturnFlags(bits);
 
       if (data.isErr) {
-        throw new ContractLangError(data.err, raw, flags);
+        throw new ContractLangError(data.err, raw);
       }
+
+      const bits = raw.result.value.flags.bits;
 
       return {
         data: data.value,
         raw,
-        flags,
+        flags: toReturnFlags(bits),
       } as GenericContractCallResult;
     };
 
