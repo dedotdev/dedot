@@ -9,17 +9,21 @@ export * from './shared.js';
 
 export type ContractEventMeta = ContractEventV4 | ContractEventV5;
 
-export type GenericContractCallResult<DecodedData = any, ContractResult = any> = {
-  data: DecodedData;
-  raw: ContractResult;
+export type ReturnFlags = {
+  bits: number;
+  revert: boolean;
 };
 
-export type GenericConstructorCallResult<DecodedData = any, ContractResult = any> = {
+export interface GenericContractCallResult<DecodedData = any, ContractResult = any> {
   data: DecodedData;
   raw: ContractResult;
+  flags: ReturnFlags;
+}
 
+export interface GenericConstructorCallResult<DecodedData = any, ContractResult = any>
+  extends GenericContractCallResult<DecodedData, ContractResult> {
   address: AccountId32; // Address of the contract will be instantiated
-};
+}
 
 export type ContractCallResult<ChainApi extends GenericSubstrateApi> = Awaited<
   ReturnType<ChainApi['call']['contractsApi']['call']>

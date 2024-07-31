@@ -12,7 +12,7 @@ import {
   GenericConstructorCallResult,
   GenericConstructorQueryCall,
 } from '../types/index.js';
-import { normalizeLabel } from '../utils.js';
+import { normalizeLabel, toReturnFlags } from '../utils.js';
 import { Executor } from './Executor.js';
 
 export class ConstructorQueryExecutor<ChainApi extends GenericSubstrateApi> extends Executor<ChainApi> {
@@ -58,15 +58,19 @@ export class ConstructorQueryExecutor<ChainApi extends GenericSubstrateApi> exte
       }
 
       const data = this.tryDecode(meta, raw.result.value.result.data) as Result<any, any>;
+      const bits = raw.result.value.result.flags.bits;
+
+      const flags = toReturnFlags(bits);
 
       if (data.isErr) {
-        throw new ContractInstantiateLangError(data.err, raw);
+        throw new ContractInstantiateLangError(data.err, raw, flags);
       }
 
       return {
-        raw,
         data: data.value,
+        raw,
         address: raw.result.value.accountId,
+        flags,
       } as GenericConstructorCallResult;
     };
 

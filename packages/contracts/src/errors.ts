@@ -1,6 +1,6 @@
-import { DispatchError } from '@dedot/codecs';
+import { DispatchError, PalletErrorMetadataLatest } from '@dedot/codecs';
 import { DedotError } from '@dedot/utils';
-import { ContractCallResult, ContractInstantiateResult, GenericContractApi } from './types';
+import { ContractCallResult, ContractInstantiateResult, GenericContractApi, ReturnFlags } from './types';
 
 /**
  * Represents an error that occurred during the instantiation of a smart contract.
@@ -72,6 +72,7 @@ export class ContractInstantiateLangError<
    * The language-specific error that occurred during the instantiation.
    */
   langError: ContractApi['types']['LangError'];
+  returnFlags: ReturnFlags;
 
   /**
    * Constructs a new `ContractInstantiateLangError` instance.
@@ -82,9 +83,11 @@ export class ContractInstantiateLangError<
   constructor(
     err: ContractApi['types']['LangError'],
     raw: ContractInstantiateResult<ContractApi['types']['ChainApi']>,
+    flags: ReturnFlags,
   ) {
     super(raw);
     this.langError = err;
+    this.returnFlags = flags;
   }
 }
 
@@ -158,6 +161,7 @@ export class ContractLangError<
    * The language-specific error that occurred during the execution.
    */
   langError: ContractApi['types']['LangError'];
+  returnFlags: ReturnFlags;
 
   /**
    * Constructs a new `ContractLangError` instance.
@@ -165,9 +169,14 @@ export class ContractLangError<
    * @param err - The `LangError` that occurred during the execution phase.
    * @param raw - The raw result of the contract call.
    */
-  constructor(err: ContractApi['types']['LangError'], raw: ContractCallResult<ContractApi['types']['ChainApi']>) {
+  constructor(
+    err: ContractApi['types']['LangError'],
+    raw: ContractCallResult<ContractApi['types']['ChainApi']>,
+    flags: ReturnFlags,
+  ) {
     super(raw);
     this.langError = err;
+    this.returnFlags = flags;
   }
 }
 
