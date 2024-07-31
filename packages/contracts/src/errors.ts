@@ -1,7 +1,7 @@
 import { DispatchError } from '@dedot/codecs';
 import { DedotError, assert } from '@dedot/utils';
 import { ContractCallResult, ContractInstantiateResult, GenericContractApi, ReturnFlags } from './types/index.js';
-import { toReturnFlags } from './utils';
+import { toReturnFlags } from './utils.js';
 
 /**
  * Represents an error that occurred during the instantiation of a smart contract.
@@ -74,9 +74,9 @@ export class ContractInstantiateLangError<
    */
   langError: ContractApi['types']['LangError'];
   /**
-   * Decoded `flags` that returned in result.
+   * Decoded `ReturnFlags` from contract call result.
    */
-  returnFlags: ReturnFlags;
+  flags: ReturnFlags;
 
   /**
    * Constructs a new `ContractInstantiateLangError` instance.
@@ -88,11 +88,11 @@ export class ContractInstantiateLangError<
     err: ContractApi['types']['LangError'],
     raw: ContractInstantiateResult<ContractApi['types']['ChainApi']>,
   ) {
-    assert(raw.result.isOk, 'Should not throw DispatchError!')
+    assert(raw.result.isOk, 'Should not throw DispatchError!');
 
     super(raw);
     this.langError = err;
-    this.returnFlags = toReturnFlags(raw.result.value!.result.flags.bits);
+    this.flags = toReturnFlags(raw.result.value.result.flags.bits);
   }
 }
 
@@ -167,9 +167,9 @@ export class ContractLangError<
    */
   langError: ContractApi['types']['LangError'];
   /**
-   * Decoded `flags` that returned in result.
+   * Decoded `ReturnFlags` from contract call result.
    */
-  returnFlags: ReturnFlags;
+  flags: ReturnFlags;
 
   /**
    * Constructs a new `ContractLangError` instance.
@@ -177,15 +177,12 @@ export class ContractLangError<
    * @param err - The `LangError` that occurred during the execution phase.
    * @param raw - The raw result of the contract call.
    */
-  constructor(
-    err: ContractApi['types']['LangError'],
-    raw: ContractCallResult<ContractApi['types']['ChainApi']>,
-  ) {
-    assert(raw.result.isOk, 'Should not throw DispatchError!')
+  constructor(err: ContractApi['types']['LangError'], raw: ContractCallResult<ContractApi['types']['ChainApi']>) {
+    assert(raw.result.isOk, 'Should not throw DispatchError!');
 
     super(raw);
     this.langError = err;
-    this.returnFlags = toReturnFlags(raw.result.value.flags.bits);
+    this.flags = toReturnFlags(raw.result.value.flags.bits);
   }
 }
 
