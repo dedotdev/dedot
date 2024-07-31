@@ -12,6 +12,7 @@ A delightful JavaScript/TypeScript client for [Polkadot](https://polkadot.networ
 _Note: The project is still in active development phase, the information on this page might be outdated. Feel free to raise an [issue](https://github.com/dedotdev/dedot/issues/new) if you run into any problems or want to share any ideas._
 
 ---
+
 ### Features
 - ✅ Small bundle size, tree-shakable (no more bn.js or wasm-blob tight dependencies)
 - ✅ Built-in metadata caching mechanism
@@ -32,19 +33,19 @@ Try `dedot` now on [CodeSandbox Playground](https://codesandbox.io/p/devbox/tryd
 - Install `dedot` package
 ```shell
 # via yarn
-yarn add dedot@latest
+yarn add dedot
 
 # via npm
-npm i dedot@latest
+npm i dedot
 ```
 
 - Install `@dedot/chaintypes` package for chain types & APIs suggestion. Skip this step if you don't use TypeScript.
 ```shell
 # via yarn
-yarn add -D @dedot/chaintypes@latest
+yarn add -D @dedot/chaintypes
 
 # via npm
-npm i -D @dedot/chaintypes@latest
+npm i -D @dedot/chaintypes
 ```
 
 - Initialize the API client and start interacting with Polkadot network
@@ -104,7 +105,6 @@ const api = await LegacyClient.new(provider);
 ```
 
 ### Table of contents
-- [Status](#status)
 - [Chain Types & APIs](#chain-types--apis)
 - [Execute RPC Methods](#execute-rpc-methods)
 - [Query On-chain Storage](#query-on-chain-storage)
@@ -123,10 +123,10 @@ Each Substrate-based blockchain has their own set of data types & APIs to intera
 Types & APIs for each Substrate-based blockchains are defined in package [`@dedot/chaintypes`](https://github.com/dedotdev/chaintypes):
 ```shell
 # via yarn
-yarn add -D @dedot/chaintypes@latest
+yarn add -D @dedot/chaintypes
 
 # via npm
-npm i -D @dedot/chaintypes@latest
+npm i -D @dedot/chaintypes
 ```
 
 Initialize a `DedotClient` instance using the `ChainApi` interface for a target chain to enable types & APIs suggestion/autocompletion for that particular chain:
@@ -253,7 +253,7 @@ const unsub = await api.tx.balances
     .signAndSend(alice, async ({ status }) => {
       console.log('Transaction status', status.type);
       if (status.type === 'BestChainBlockIncluded') { // or status.type === 'Finalized'
-        console.log(`Transaction completed at block hash ${status.value}`);
+        console.log(`Transaction completed at block hash ${status.value.blockHash}`);
         await unsub();
       }
     });
@@ -270,7 +270,7 @@ const unsub = await api.tx.balances
     .signAndSend(account.address, { signer }, async ({ status }) => {
       console.log('Transaction status', status.type);
       if (status.type === 'BestChainBlockIncluded') { // or status.type === 'Finalized'
-        console.log(`Transaction completed at block hash ${status.value}`);
+        console.log(`Transaction completed at block hash ${status.value.blockHash}`);
         await unsub();
       }
     });
@@ -299,7 +299,7 @@ const unsub = api.tx.utility.batch([transferTx.call, remarkCall])
     .signAndSend(account.address, { signer }, async ({ status }) => {
       console.log('Transaction status', status.type);
       if (status.type === 'BestChainBlockIncluded') { // or status.type === 'Finalized'
-        console.log(`Transaction completed at block hash ${status.value}`);
+        console.log(`Transaction completed at block hash ${status.value.blockHash}`);
         await unsub();
       }
     });
@@ -377,9 +377,7 @@ Example to list new accounts created in each block:
 // ...
 const ss58Prefix = api.consts.system.ss58Prefix;
 await api.query.system.events(async (eventRecords) => {
-  const newAccountEvents = eventRecords
-    .map(({ event }) => api.events.system.NewAccount.as(event))
-    .filter((one) => one);
+  const newAccountEvents = api.events.system.NewAccount.filter(eventRecords);
 
   console.log(newAccountEvents.length, 'account(s) was created in block', await api.query.system.number());
 
