@@ -24,7 +24,8 @@ export async function generateTypesFromEndpoint(
   extension: string = 'd.ts',
   useSubPaths: boolean = false,
 ) {
-  const api = await LegacyClient.new(new WsProvider(endpoint));
+  // Immediately throw error if cannot connect to provider for the first time.
+  const api = await LegacyClient.new(new WsProvider({ endpoint, retryDelayMs: 0, timeout: 0 }));
   const { methods }: RpcMethods = await api.rpc.rpc_methods();
   const apis = api.runtimeVersion.apis || {};
   if (!chain) {

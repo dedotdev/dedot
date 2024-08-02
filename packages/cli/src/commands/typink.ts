@@ -1,6 +1,7 @@
 import { generateContractTypes } from '@dedot/codegen';
 import { assert } from '@dedot/utils';
 import * as fs from 'node:fs';
+import ora from 'ora';
 import * as path from 'path';
 import { CommandModule } from 'yargs';
 
@@ -24,13 +25,24 @@ export const typink: CommandModule<Args, Args> = {
     const metadataFile = path.resolve(metadata);
     const extension = dts ? 'd.ts' : 'ts';
 
-    const rawMetadata = fs.readFileSync(metadataFile, 'utf-8');
+    const spinner = ora().start();
 
-    console.log(`- Generating contract types via metadata ${metadata}`);
+    spinner.text = `Parsing metadata via file ${metadata}`;
+    try {
+      const rawMetadata = fs.readFileSync(metadataFile, 'utf-8');
+      spinner.succeed(`Parsed metadata via file ${metadata}`);
+      spinner.text = `Generating contract types via metadata ${metadata}`;
+      await generateContractTypes(rawMetadata, contract, outDir, extension, subpath);
+      spinner.succeed(`Generated contract types via metadata ${metadata}`);
+      spinner.stop();
 
-    await generateContractTypes(rawMetadata, contract, outDir, extension, subpath);
+      console.log(`🚀 Output: ${outDir}`);
+    } catch (e) {
+      spinner.stop();
 
-    console.log(`- DONE! Output: ${outDir}`);
+      console.error(`✖ ${(e as Error).message}`);
+      spinner.fail(`Failed to generate contract types via metadata ${metadata}`);
+    }
   },
   builder: (yargs) => {
     return yargs

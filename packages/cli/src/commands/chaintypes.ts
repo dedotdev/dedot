@@ -3,6 +3,7 @@ import staticSubstrate from '@polkadot/types-support/metadata/v15/substrate-hex'
 import { ConstantExecutor } from '@dedot/api';
 import { $Metadata, Metadata, PortableRegistry, RuntimeVersion } from '@dedot/codecs';
 import { generateTypes, generateTypesFromEndpoint } from '@dedot/codegen';
+import ora from 'ora';
 import * as path from 'path';
 import { CommandModule } from 'yargs';
 
@@ -23,8 +24,10 @@ export const chaintypes: CommandModule<Args, Args> = {
     const outDir = path.resolve(output);
     const extension = dts ? 'd.ts' : 'ts';
 
+    const spinner = ora().start();
+
     if (wsUrl === 'substrate') {
-      console.log(`- Generating generic chaintypes`);
+      spinner.text = 'Generating generic chaintypes';
       const metadataHex = staticSubstrate;
       const rpcMethods = rpc.methods;
       const metadata = $Metadata.tryDecode(metadataHex);
@@ -38,12 +41,22 @@ export const chaintypes: CommandModule<Args, Args> = {
       );
 
       await generateTypes('substrate', metadata.latest, rpcMethods, runtimeApis, outDir, extension, subpath);
+      spinner.succeed('Generic chaintypes generated!');
+
+      console.log(`🚀 Output: ${outDir}`);
     } else {
-      console.log(`- Generating chaintypes via endpoint ${wsUrl!}`);
-      await generateTypesFromEndpoint(chain, wsUrl!, outDir, extension, subpath);
+      try {
+        spinner.text = `Generating chaintypes via endpoint ${wsUrl}`;
+        await generateTypesFromEndpoint(chain, wsUrl!, outDir, extension, subpath);
+        spinner.succeed(`Generic chaintypes via endpoint ${wsUrl} generated!`);
+      
+        console.log(`🚀 Output: ${outDir}`);
+      } catch {
+        spinner.fail(`Failed to generate chaintypes via endpoint ${wsUrl}`) 
+      }
     }
 
-    console.log(`- DONE! Output: ${outDir}`);
+    spinner.stop();
   },
   builder: (yargs) => {
     return (
@@ -54,7 +67,6 @@ export const chaintypes: CommandModule<Args, Args> = {
           alias: 'w',
           default: 'ws://127.0.0.1:9944',
         })
-        // TODO add file input
         .option('output', {
           type: 'string',
           describe: 'Output folder to put generated files',
