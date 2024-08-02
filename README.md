@@ -639,9 +639,8 @@ Whenever running into these errors, Dedot will throw an Error containing specifi
 
 ```typescript
 import {
-  isContractDispatchError,
-  isContractInstantiateDispatchError,
-  isContractInstantiateLangError, isContractLangError
+  isContractInstantiateDispatchError, isContractInstantiateLangError,
+  isContractDispatchError, isContractLangError
 } from "dedot/contracts";
 import { FlipperContractApi } from "./flipper";
 
