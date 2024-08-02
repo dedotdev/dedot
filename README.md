@@ -187,8 +187,7 @@ const metadata = await api.rpc.state_getMetadata();
 const result = await api.rpc.module_rpc_name('param1', 'param2');
 ```
 
-For advanced users who want to interact directly server/node via raw JSON-RPC APIs, you use a
-light-weight `JsonRpcClient` for this purpose without having to use `DedotClient` or `LegacyClient`.
+For advanced users who want to interact directly server/node via raw JSON-RPC APIs, you can use a light-weight `JsonRpcClient` for this purpose without having to use `DedotClient` or `LegacyClient`.
 
 ```typescript
 import { JsonRpcClient, WsProvider } from 'dedot';
