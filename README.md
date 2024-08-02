@@ -39,7 +39,7 @@ Delightful JavaScript/TypeScript client for [Polkadot](https://polkadot.network/
 - [Submit Transactions](#transaction-apis)
 - [Events](#events)
 - [Errors](#errors)
-- [Interact with ink! Contracts](#interact-with-ink-smart-contracts)
+- [Interact with ink! Smart Contracts](#interact-with-ink-smart-contracts)
 - [`@polkadot/api` -> `dedot`](#migration-from-polkadotapi-to-dedot)
 - [Packages Structure](#packages-structure)
 - [Credit](#credit)
@@ -176,7 +176,7 @@ npx dedot chaintypes -w wss://rpc.polkadot.io
 
 ### Execute JSON-RPC Methods
 
-RPCs can be executed via `api.rpc` entry point. After creating a `Dedot` instance with a `ChainApi` interface of the network you want to interact with, all RPC methods of the network will be exposed in the autocompletion/suggestion with format: `api.rpc.method_name(param1, param2, ...)`. E.g: you can find all supported RPC methods for Polkadot network [here](https://github.com/dedotdev/chaintypes/blob/main/packages/chaintypes/src/polkadot/json-rpc.d.ts), similarly for other networks as well.
+RPCs can be executed via `api.rpc` entry point. After creating a `DedotClient` instance with a `ChainApi` interface of the network you want to interact with, all RPC methods of the network will be exposed in the autocompletion/suggestion with format: `api.rpc.method_name(param1, param2, ...)`. E.g: you can find all supported RPC methods for Polkadot network [here](https://github.com/dedotdev/chaintypes/blob/main/packages/chaintypes/src/polkadot/json-rpc.d.ts), similarly for other networks as well.
 
 Examples:
 
@@ -457,9 +457,8 @@ await api.query.system.events(async (eventRecords) => {
 Dedot offers type-safe APIs to interact with ink! smart contracts. Primitives to work with contracts are exposed in `dedot/contract` package.
 
 #### Generate Types & APIs from contract metadata
-Before interacting with a contract, you need to generate Types & APIs from the contract metadata to interact with.
+Before interacting with a contract, you need to generate Types & APIs from the contract metadata to interact with. You can do that using `dedot` cli:
 
-You can do that using `dedot` cli:
 ```shell
 dedot typink -m ./path/to/metadata.json # or metadata.contract
 
@@ -467,7 +466,7 @@ dedot typink -m ./path/to/metadata.json # or metadata.contract
 dedot typink -m ./path/to/metadata.json -o ./where/to-put/generated-types
 ```
 After running the command, Types & APIs of the contract will be generated. 
-E.g: if the contract's name is `flipper`, the Types & APIs will be put in a folder named `flipper`, the entry-point interface for the contract will be `FlipperContractApi` in `flipper/index.d.ts` file.
+E.g: if the contract's name is `flipper`, the Types & APIs will be put in a folder named `flipper`, the entry-point interface for the contract will be `FlipperContractApi` in `flipper/index.d.ts` file. An example of Types & APIs for flipper contract can be found [here](https://github.com/dedotdev/dedot/tree/main/zombienet-tests/src/contracts/flipper).
 
 #### Deploy contracts
 
@@ -515,6 +514,7 @@ await deployer.tx.new(true, { gasLimit: gasRequired, salt })
 ```
 
 In case the contract constructor returning a `Result<Self, Error>`, you can also check the see if the instantiation get any errors before submitting the transaction.
+
 ```typescript
 const { data } = await deployer.query.new(true, { caller: ALICE, salt })
 if (data.isErr) {
@@ -523,6 +523,7 @@ if (data.isErr) {
   // submitting the transaction
 }
 ```
+
 An example of this case can be found [here](https://github.com/dedotdev/dedot/blob/005ac48f5dcc5259da4a20fd5e87e4990bd773b3/zombienet-tests/src/0001-verify-contract-errors.ts#L43-L44).
 
 #### Query contracts
@@ -633,7 +634,7 @@ await client.query.system.events((events) => {
 
 #### Handling errors
 
-Interacting with a contract often resulting in errors at runtime level (DispatchError) or contract-level (LangError). 
+Interacting with a contract often resulting in errors at runtime level ([DispatchError](https://docs.rs/frame-support/latest/frame_support/pallet_prelude/enum.DispatchError.html)) or contract-level ([LangError](https://use.ink/4.x/faq/migrating-from-ink-3-to-4#add-support-for-language-level-errors-langerror)). 
 Whenever running into these errors, Dedot will throw an Error containing specific context about the problem so developers can handle this accordingly.
 
 ```typescript
@@ -662,7 +663,7 @@ try {
     console.log('LangError', langError);
   }
 
-  // Other type of error
+  // Other errors ...
 }
 
 try {
@@ -682,6 +683,8 @@ try {
     const { langError, raw } = e;
     console.log('LangError', langError);
   }
+
+  // Other errors ...
 }
 ```
 
