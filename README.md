@@ -112,14 +112,13 @@ run().catch(console.error);
 
 ```js
 // main.js
-const {DedotClient, WsProvider} = require('dedot');
+const { DedotClient, WsProvider } = require('dedot');
 // ...
 const provider = new WsProvider('wss://rpc.polkadot.io');
 const api = await DedotClient.new(provider);
 ```
 
-- If the JSON-RPC server doesn't support [new](https://paritytech.github.io/json-rpc-interface-spec/introduction.html)
-  JSON-RPC APIs yet, you can connect using the `LegacyClient` which build on top of the legacy JSON-RPC APIs.
+- If the JSON-RPC server doesn't support [new](https://paritytech.github.io/json-rpc-interface-spec/introduction.html) JSON-RPC APIs yet, you can connect using the `LegacyClient` which build on top of the legacy JSON-RPC APIs.
 
 ```typescript
 import { LegacyClient, WsProvider } from 'dedot';
