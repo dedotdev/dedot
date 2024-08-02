@@ -645,9 +645,12 @@ import {
 } from "dedot/contracts";
 import { FlipperContractApi } from "./flipper";
 
+const ALICE = '...';
+const salt = '0x...';
+
 try {
   // Dry-run contract construction
-  const dryRun = await deployer.query.new(true, {caller: ALICE, salt})
+  const dryRun = await deployer.query.new(true, { caller: ALICE, salt })
 
   // ...
 } catch (e: any) {
@@ -668,7 +671,7 @@ try {
 
 try {
   // Dry-run mutable contract message
-  const dryRun = await contract.query.flip({caller: ALICE})
+  const dryRun = await contract.query.flip({ caller: ALICE })
 
   // ...
 } catch (e: any) {
