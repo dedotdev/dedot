@@ -27,6 +27,7 @@
   font-variation-settings: "slnt" 0;
   --ifm-font-weight-bold: 600;
   --ifm-button-border-radius: 4px;
+  --ifm-code-border-radius: 4px;
 
   text-underline-offset: 4px;
 }
@@ -48,8 +49,8 @@ html[data-theme='dark'] {
 
 .main-wrapper {
   max-width: 1400px;
-  width: 1400px;
-  align-self: center;
+  width: 100%;
+  margin: 0 auto;
 }
 
 .navbar {
