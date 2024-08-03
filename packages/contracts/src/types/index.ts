@@ -69,12 +69,12 @@ export type CallOptions = {
 };
 
 export type ConstructorCallOptions = CallOptions & {
-  salt: BytesLike;
+  salt?: BytesLike;
   caller: AccountId32Like;
 };
 
 export type ConstructorTxOptions = CallOptions & {
-  salt: BytesLike;
+  salt?: BytesLike;
   gasLimit: Weight;
 };
 
