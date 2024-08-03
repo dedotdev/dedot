@@ -1,7 +1,7 @@
 // Copyright 2017-2024 @polkadot/util authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 import { describe, it, expect } from 'vitest';
-import { stringCamelCase, stringUpperFirst, stringLowerFirst, stringSnakeCase } from '../cases.js';
+import { stringCamelCase, stringUpperFirst, stringLowerFirst, stringSnakeCase, stringDashCase } from '../cases.js';
 
 describe('cases', () => {
   describe('stringCamelCase', (): void => {
@@ -93,6 +93,16 @@ describe('cases', () => {
       { input: 'AnExampleWithPascalCase', expected: 'an_example_with_pascal_case' },
     ])('should turn camelCase or pascalCase string to snakeCase string', ({ input, expected }) => {
       expect(stringSnakeCase(input)).toEqual(expected);
+    });
+  });
+
+  describe('stringDashCase', () => {
+    it.each([
+      { input: 'anExampleWithCamelCase', expected: 'an-example-with-camel-case' },
+      { input: 'AnExampleWithPascalCase', expected: 'an-example-with-pascal-case' },
+      { input: 'an example with normal case', expected: 'an-example-with-normal-case' },
+    ])('should turn camelCase or pascalCase or normalCase string to dashCase string', ({ input, expected }) => {
+      expect(stringDashCase(input)).toEqual(expected);
     });
   });
 });

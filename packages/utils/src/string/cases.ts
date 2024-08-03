@@ -85,6 +85,12 @@ export const stringSnakeCase = (input?: string | null) => {
   return stringCamelCase(input).replace(/[A-Z]/g, (letter) => `_${letter.toLowerCase()}`);
 };
 
+export const stringDashCase = (input?: string | null) => {
+  if (!input) return '';
+
+  return stringSnakeCase(input).replaceAll(/_/g, '-')
+}
+
 export const stringLowerFirst = (input?: string | null) => {
   if (!input) return '';
 
