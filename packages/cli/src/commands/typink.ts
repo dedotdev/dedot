@@ -27,16 +27,18 @@ export const typink: CommandModule<Args, Args> = {
 
     const spinner = ora().start();
 
-    spinner.text = `Parsing metadata via file ${metadata}`;
     try {
+      spinner.text = `Parsing metadata via file ${metadata}`;
       const rawMetadata = fs.readFileSync(metadataFile, 'utf-8');
       spinner.succeed(`Parsed metadata via file ${metadata}`);
+
       spinner.text = `Generating contract types via metadata ${metadata}`;
       await generateContractTypes(rawMetadata, contract, outDir, extension, subpath);
       spinner.succeed(`Generated contract types via metadata ${metadata}`);
-      spinner.stop();
 
       console.log(`🚀 Output: ${outDir}`);
+
+      spinner.stop();
     } catch (e) {
       spinner.stop();
 

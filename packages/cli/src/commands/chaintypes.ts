@@ -49,47 +49,48 @@ export const chaintypes: CommandModule<Args, Args> = {
         spinner.text = `Generating chaintypes via endpoint ${wsUrl}`;
         await generateTypesFromEndpoint(chain, wsUrl!, outDir, extension, subpath);
         spinner.succeed(`Generic chaintypes via endpoint ${wsUrl} generated!`);
-      
+
         console.log(`🚀 Output: ${outDir}`);
-      } catch {
-        spinner.fail(`Failed to generate chaintypes via endpoint ${wsUrl}`) 
+      } catch (e) {
+        spinner.stop();
+
+        console.error(`✖ ${(e as Error).message}`);
+        spinner.fail(`Failed to generate chaintypes via endpoint ${wsUrl}`);
       }
     }
 
     spinner.stop();
   },
   builder: (yargs) => {
-    return (
-      yargs
-        .option('wsUrl', {
-          type: 'string',
-          describe: 'Websocket Url to fetch metadata',
-          alias: 'w',
-          default: 'ws://127.0.0.1:9944',
-        })
-        .option('output', {
-          type: 'string',
-          describe: 'Output folder to put generated files',
-          alias: 'o',
-        })
-        .option('chain', {
-          type: 'string',
-          describe: 'Chain name',
-          alias: 'c',
-        })
-        .option('dts', {
-          type: 'boolean',
-          describe: 'Generate d.ts files',
-          alias: 'd',
-          default: true,
-        })
-        .option('subpath', {
-          type: 'boolean',
-          describe: 'Using subpath for shared packages',
-          alias: 's',
-          default: true,
-        })
-    ); // TODO check to verify inputs
+    return yargs
+      .option('wsUrl', {
+        type: 'string',
+        describe: 'Websocket Url to fetch metadata',
+        alias: 'w',
+        default: 'ws://127.0.0.1:9944',
+      })
+      .option('output', {
+        type: 'string',
+        describe: 'Output folder to put generated files',
+        alias: 'o',
+      })
+      .option('chain', {
+        type: 'string',
+        describe: 'Chain name',
+        alias: 'c',
+      })
+      .option('dts', {
+        type: 'boolean',
+        describe: 'Generate d.ts files',
+        alias: 'd',
+        default: true,
+      })
+      .option('subpath', {
+        type: 'boolean',
+        describe: 'Using subpath for shared packages',
+        alias: 's',
+        default: true,
+      }); // TODO check to verify inputs
   },
 };
 
