@@ -31,6 +31,7 @@ Delightful JavaScript/TypeScript client for [Polkadot](https://polkadot.network/
 ### Table of contents
 
 - [Getting started](#getting-started)
+- [Example Dapps & Scripts](#example-dapps--scripts)
 - [Chain Types & APIs](#chain-types--apis)
 - [Execute JSON-RPC Methods](#execute-json-rpc-methods)
 - [Query On-chain Storage](#query-on-chain-storage)
@@ -44,9 +45,16 @@ Delightful JavaScript/TypeScript client for [Polkadot](https://polkadot.network/
 - [Packages Structure](#packages-structure)
 - [Credit](#credit)
 
+### Example Dapps & Scripts
+- Try Dedot! - https://try.dedot.dev - [Source Code](https://github.com/dedotdev/trydedot)
+- Tiny Url - https://link.dedot.dev - [Source Code](https://github.com/dedotdev/link)
+- [Simple Playground Script](https://stackblitz.com/edit/try-dedot?file=main.ts&view=editor)
+- [Interact with PSP22 ink! Contract](https://stackblitz.com/edit/psp22-dedot?file=main.ts&view=editor)
+- Add yours?
+
 ### Getting started
 
-Try `dedot` now on [CodeSandbox Playground](https://codesandbox.io/p/devbox/trydedot-th96cm?file=%2Fmain.ts%3A24%2C26) or follow the below steps to install Dedot to your projects.
+Follow the below steps to install Dedot to your project.
 
 - Install `dedot` package
 
@@ -187,7 +195,7 @@ const metadata = await api.rpc.state_getMetadata();
 const result = await api.rpc.module_rpc_name('param1', 'param2');
 ```
 
-For advanced users who want to interact directly server/node via raw JSON-RPC APIs, you can use a light-weight `JsonRpcClient` for this purpose without having to use `DedotClient` or `LegacyClient`.
+For advanced users who want to interact directly with server/node via raw JSON-RPC APIs, you can use a light-weight `JsonRpcClient` for this purpose without having to use `DedotClient` or `LegacyClient`.
 
 ```typescript
 import { JsonRpcClient, WsProvider } from 'dedot';
