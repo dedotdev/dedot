@@ -101,9 +101,11 @@ export abstract class BaseTypesGen {
           name = this.cleanPath(path);
         }
 
-        if (this.shouldGenerateTypeIn(id)) {
+        if (!knownType && this.shouldGenerateTypeIn(id)) {
           nameOut = name;
           name = name.endsWith('Like') ? name : `${name}Like`;
+
+          console.log(name, nameOut)
         }
 
         o[id] = {
