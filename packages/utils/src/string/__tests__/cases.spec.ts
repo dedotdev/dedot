@@ -11,7 +11,7 @@ describe('cases', () => {
 
     it('works correctly with whitespace leading or trailing string', () => {
       expect(stringCamelCase('  Foo_bar-baz-Extra  ')).toBe('fooBarBazExtra');
-    })
+    });
 
     it('works correctly for String (class', (): void => {
       expect(stringCamelCase(String('Foo_bar-baz---test-_ spaced....Extra'))).toBe('fooBarBazTestSpacedExtra');
@@ -69,8 +69,8 @@ describe('cases', () => {
     });
 
     it('works correctly with whitespace leading string', () => {
-      expect(stringLowerFirst('  ABC')).toBe('aBC');
-    })
+      expect(stringLowerFirst('  ABC    ')).toBe('aBC');
+    });
   });
 
   describe('stringUpperFirst', (): void => {
@@ -95,8 +95,8 @@ describe('cases', () => {
     });
 
     it('works correctly with whitespace leading string', () => {
-      expect(stringUpperFirst('  aBC')).toBe('ABC');
-    })
+      expect(stringUpperFirst('  aBC  ')).toBe('ABC');
+    });
   });
 
   describe('stringSnakeCase', () => {
@@ -104,9 +104,12 @@ describe('cases', () => {
       { input: 'anExampleWithCamelCase', expected: 'an_example_with_camel_case' },
       { input: 'AnExampleWithPascalCase', expected: 'an_example_with_pascal_case' },
       { input: '   AnExampleWithPascalCase   ', expected: 'an_example_with_pascal_case' },
-    ])('should turn camelCase or pascalCase or whitespace-leading-trailing string to snakeCase string', ({ input, expected }) => {
-      expect(stringSnakeCase(input)).toEqual(expected);
-    });
+    ])(
+      'should turn camelCase or pascalCase or whitespace-leading-trailing string to snakeCase string',
+      ({ input, expected }) => {
+        expect(stringSnakeCase(input)).toEqual(expected);
+      },
+    );
   });
 
   describe('stringDashCase', () => {
@@ -115,8 +118,11 @@ describe('cases', () => {
       { input: 'AnExampleWithPascalCase', expected: 'an-example-with-pascal-case' },
       { input: 'an example with normal case', expected: 'an-example-with-normal-case' },
       { input: '   an example with normal case   ', expected: 'an-example-with-normal-case' },
-    ])('should turn camelCase or pascalCase or normalCase or whitespace-leading-trailing string to dashCase string', ({ input, expected }) => {
-      expect(stringDashCase(input)).toEqual(expected);
-    });
+    ])(
+      'should turn camelCase or pascalCase or normalCase or whitespace-leading-trailing string to dashCase string',
+      ({ input, expected }) => {
+        expect(stringDashCase(input)).toEqual(expected);
+      },
+    );
   });
 });

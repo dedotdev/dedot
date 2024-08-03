@@ -88,13 +88,15 @@ export const stringSnakeCase = (input?: string | null) => {
 export const stringDashCase = (input?: string | null) => {
   if (!input) return '';
 
-  return stringCamelCase(input).replaceAll(/[A-Z]/g, (letter) => `-${letter}`).toLowerCase();
-}
+  return stringCamelCase(input)
+    .replaceAll(/[A-Z]/g, (letter) => `-${letter}`)
+    .toLowerCase();
+};
 
 export const stringLowerFirst = (input?: string | null) => {
   if (!input) return '';
 
-  input = input.trim()
+  input = input.trim();
 
   return CC_TO_LO[input.charCodeAt(0)] + input.slice(1);
 };
@@ -102,7 +104,7 @@ export const stringLowerFirst = (input?: string | null) => {
 export const stringUpperFirst = (input?: string | null) => {
   if (!input) return '';
 
-  input = input.trim()
+  input = input.trim();
 
   return CC_TO_UP[input.charCodeAt(0)] + input.slice(1);
 };
