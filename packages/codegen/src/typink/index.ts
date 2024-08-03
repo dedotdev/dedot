@@ -21,6 +21,7 @@ export async function generateContractTypes(
   let contractMetadata = typeof metadata === 'string' ? parseRawMetadata(metadata) : metadata;
 
   contract = contract || contractMetadata.contract.name;
+  contract = contract.trim().toLowerCase().replaceAll(/\s+/g, '-');
 
   const dirPath = path.resolve(outDir, contract);
   const typesFileName = path.join(dirPath, `types.${extension}`);
