@@ -43,7 +43,14 @@ export const run = async (_nodeName: any, networkInfo: any) => {
     const { data } = await deployer.query.fromSeed(blank, { caller, salt });
     assert(data.isErr && data.err === 'ZeroSum', 'Should get ZeroSum error here');
 
+    // with empty salt
+    const contractAddressWithEmptySalt = await deployFlipper(api, flipper);
+
+    // with customized salt
     const contractAddress = await deployFlipper(api, flipper, salt);
+
+    assert(contractAddressWithEmptySalt != contractAddress, 'Should deploy 2 different contracts using different salt');
+
     const contract = new Contract<FlipperContractApi>(api, flipper, contractAddress);
 
     const { data: info, flags } = await contract.query.flipWithSeed(blank, { caller });
@@ -115,7 +122,7 @@ export const run = async (_nodeName: any, networkInfo: any) => {
 const deployFlipper = async (
   api: ISubstrateClient<SubstrateApi[RpcVersion]>,
   flipper: ContractMetadata,
-  salt: string,
+  salt?: string,
 ): Promise<string> => {
   const alicePair = new Keyring({ type: 'sr25519' }).addFromUri('//Alice');
   const caller = alicePair.address;

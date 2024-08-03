@@ -3,7 +3,17 @@ import { PalletContractsPrimitivesCode, PalletContractsPrimitivesContractResultR
 import { Hash } from '@dedot/codecs';
 import { Result } from '@dedot/shape';
 import { GenericSubstrateApi } from '@dedot/types';
-import { assert, concatU8a, HexString, hexToU8a, isWasm, u8aToHex } from '@dedot/utils';
+import {
+  assert,
+  assertFalse,
+  concatU8a,
+  HexString,
+  hexToU8a,
+  isNull,
+  isUndefined,
+  isWasm,
+  u8aToHex,
+} from '@dedot/utils';
 import { TypinkRegistry } from '../TypinkRegistry.js';
 import { ContractInstantiateDispatchError, ContractInstantiateLangError } from '../errors.js';
 import {
@@ -32,9 +42,9 @@ export class ConstructorQueryExecutor<ChainApi extends GenericSubstrateApi> exte
       assert(params.length === args.length + 1, `Expected ${args.length + 1} arguments, got ${params.length}`);
 
       const callOptions = params[args.length] as ConstructorCallOptions;
-      const { caller, value = 0n, gasLimit, storageDepositLimit, salt } = callOptions;
+      const { caller, value = 0n, gasLimit, storageDepositLimit, salt = '0x' } = callOptions;
       assert(caller, 'Expected a valid caller address in ConstructorCallOptions');
-      assert(salt, 'Expected a salt in ConstructorCallOptions');
+      assertFalse(isNull(salt) || isUndefined(salt), 'Expected a salt in ConstructorCallOptions');
 
       const formattedInputs = args.map((arg, index) => this.tryEncode(arg, params[index]));
       const bytes = u8aToHex(concatU8a(hexToU8a(meta.selector), ...formattedInputs));
