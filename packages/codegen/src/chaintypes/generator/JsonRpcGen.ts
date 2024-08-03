@@ -46,7 +46,7 @@ export class JsonRpcGen extends ApiGen {
     rpcMethods.sort();
   }
 
-  generate(useSubPaths: boolean = false) {
+  generate(useSubPaths: boolean = false, exposeRpc: boolean = false) {
     this.typesGen.clearCache();
     this.typesGen.typeImports.addKnownType('GenericJsonRpcApis', 'RpcVersion');
     this.typesGen.typeImports.addKnownJsonRpcType('JsonRpcApis');
@@ -61,6 +61,6 @@ export class JsonRpcGen extends ApiGen {
       .map((one) => `'${one}'`)
       .join(' | ');
 
-    return beautifySourceCode(template({ importTypes, jsonRpcMethods }));
+    return beautifySourceCode(template({ importTypes, jsonRpcMethods, exposeRpc }));
   }
 }
