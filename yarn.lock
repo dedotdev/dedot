@@ -582,7 +582,6 @@ __metadata:
     "@dedot/shape": "workspace:*"
     "@dedot/types": "workspace:*"
     "@dedot/utils": "workspace:*"
-    "@polkadot-api/wasm-executor": "npm:^0.1.1"
     handlebars: "npm:^4.7.8"
     prettier: "npm:^3.3.3"
   languageName: unknown
