@@ -492,10 +492,12 @@ const deployer = new ContractDeployer<FlipperContractApi>(client, flipperMetadat
 
 const ALICE = '5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY'; // Alice
 
-// Dry run the constructor call for validation and gas estimation
-const salt = stringToHex('random-salt'); // random salt to prevent duplication
+// Some random salt to prevent duplication issue
+// Salt is optional, you can skip this to use an empty salt 
+const salt = stringToHex('random-salt'); 
 
-// An error will be thrown out if there's a DispatchError or LangError (contract level error)
+// Dry run the constructor call for validation and gas estimation
+// An Error will be thrown out if there's a DispatchError or LangError (contract level error)
 // More on this in the handling error section below
 const dryRun = await deployer.query.new(true, { caller: ALICE, salt })
 const { raw: { gasRequired } } = dryRun;
@@ -643,11 +645,10 @@ import {
 import { FlipperContractApi } from "./flipper";
 
 const ALICE = '...';
-const salt = '0x...';
 
 try {
   // Dry-run contract construction
-  const dryRun = await deployer.query.new(true, { caller: ALICE, salt })
+  const dryRun = await deployer.query.new(true, { caller: ALICE })
 
   // ...
 } catch (e: any) {
