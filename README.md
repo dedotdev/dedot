@@ -493,13 +493,15 @@ const deployer = new ContractDeployer<FlipperContractApi>(client, flipperMetadat
 const ALICE = '5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY'; // Alice
 
 // Dry run the constructor call for validation and gas estimation
+const salt = stringToHex('random-salt'); // random salt to prevent duplication
+
 // An error will be thrown out if there's a DispatchError or LangError (contract level error)
 // More on this in the handling error section below
-const dryRun = await deployer.query.new(true, { caller: ALICE })
+const dryRun = await deployer.query.new(true, { caller: ALICE, salt })
 const { raw: { gasRequired } } = dryRun;
 
 // Submitting the transaction to instanciate the contract
-await deployer.tx.new(true, { gasLimit: gasRequired })
+await deployer.tx.new(true, { gasLimit: gasRequired, salt })
   .signAndSend(ALICE, ({ status, events}) => {
     if (status.type === 'BestChainBlockIncluded' || status.type === 'Finalized') {
       // fully-typed event
@@ -512,7 +514,7 @@ await deployer.tx.new(true, { gasLimit: gasRequired })
 In case the contract constructor returning a `Result<Self, Error>`, you can also check the see if the instantiation get any errors before submitting the transaction.
 
 ```typescript
-const { data } = await deployer.query.new(true, { caller: ALICE })
+const { data } = await deployer.query.new(true, { caller: ALICE, salt })
 if (data.isErr) {
   console.log('Contract instantiation returning an error:', data.err);
 } else {
@@ -641,10 +643,11 @@ import {
 import { FlipperContractApi } from "./flipper";
 
 const ALICE = '...';
+const salt = '0x...';
 
 try {
   // Dry-run contract construction
-  const dryRun = await deployer.query.new(true, { caller: ALICE })
+  const dryRun = await deployer.query.new(true, { caller: ALICE, salt })
 
   // ...
 } catch (e: any) {
