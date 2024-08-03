@@ -69,8 +69,8 @@ export interface ISubmittableExtrinsicLegacy<R extends ISubmittableResult = ISub
 export type TxStatus =
   | { type: 'Validated' } // emits after we validate the transaction via `call.taggedTransactionQueue.validateTransaction`
   | { type: 'Broadcasting' } // emits after we submit the transaction via TxBroadcaster
-  | { type: 'BestChainBlockIncluded'; value: { blockHash: HexString; txIndex: number } }
+  | { type: 'BestChainBlockIncluded'; value: { blockHash: HexString; blockNumber: number; txIndex: number } }
   | { type: 'NoLongerInBestChain' } // similar to Retracted
-  | { type: 'Finalized'; value: { blockHash: HexString; txIndex: number } }
+  | { type: 'Finalized'; value: { blockHash: HexString; blockNumber: number; txIndex: number } }
   | { type: 'Invalid'; value: { error: string } }
   | { type: 'Drop'; value: { error: string } };

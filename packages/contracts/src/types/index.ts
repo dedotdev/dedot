@@ -1,6 +1,13 @@
 import { SubstrateApi } from '@dedot/api/chaintypes';
-import { AccountId32Like, BytesLike, DispatchError, Weight } from '@dedot/codecs';
-import { AnyFunc, AsyncMethod, GenericSubstrateApi, RpcVersion, VersionedGenericSubstrateApi } from '@dedot/types';
+import { AccountId32, AccountId32Like, BytesLike, Weight } from '@dedot/codecs';
+import {
+  AnyFunc,
+  AsyncMethod,
+  GenericSubstrateApi,
+  IEventRecord,
+  RpcVersion,
+  VersionedGenericSubstrateApi,
+} from '@dedot/types';
 import { ContractCallMessage, ContractConstructorMessage } from './shared.js';
 import { ContractEventV4, ContractMetadataV4 } from './v4.js';
 import { ContractEventV5, ContractMetadataV5 } from './v5.js';
@@ -9,16 +16,25 @@ export * from './shared.js';
 
 export type ContractEventMeta = ContractEventV4 | ContractEventV5;
 
-export type GenericContractCallResult<DecodedData, ContractResult> = (
-  | {
-      isOk: true;
-      data: DecodedData;
-    }
-  | {
-      isOk: false;
-      err: DispatchError;
-    }
-) & { raw: ContractResult };
+/**
+ * Flags used by a contract to customize exit behaviour.
+ * Ref: https://github.com/paritytech/polkadot-sdk/blob/d2fd53645654d3b8e12cbf735b67b93078d70113/substrate/frame/contracts/uapi/src/flags.rs#L23-L26
+ */
+export type ReturnFlags = {
+  bits: number;
+  revert: boolean; // 0x0000_0001
+};
+
+export interface GenericContractCallResult<DecodedData = any, ContractResult = any> {
+  data: DecodedData;
+  raw: ContractResult;
+  flags: ReturnFlags;
+}
+
+export interface GenericConstructorCallResult<DecodedData = any, ContractResult = any>
+  extends GenericContractCallResult<DecodedData, ContractResult> {
+  address: AccountId32; // Address of the contract will be instantiated
+}
 
 export type ContractCallResult<ChainApi extends GenericSubstrateApi> = Awaited<
   ReturnType<ChainApi['call']['contractsApi']['call']>
@@ -53,12 +69,12 @@ export type CallOptions = {
 };
 
 export type ConstructorCallOptions = CallOptions & {
-  salt: BytesLike;
+  salt?: BytesLike;
   caller: AccountId32Like;
 };
 
 export type ConstructorTxOptions = CallOptions & {
-  salt: BytesLike;
+  salt?: BytesLike;
   gasLimit: Weight;
 };
 
@@ -86,7 +102,9 @@ export type GenericContractTxCall<
 
 export type GenericConstructorQueryCall<
   ChainApi extends GenericSubstrateApi,
-  F extends AsyncMethod = (...args: any[]) => Promise<ContractInstantiateResult<ChainApi>>,
+  F extends AsyncMethod = (
+    ...args: any[]
+  ) => Promise<GenericConstructorCallResult<any, ContractInstantiateResult<ChainApi>>>,
 > = F & {
   meta: ContractConstructorMessage;
 };
@@ -124,14 +142,17 @@ export type ContractEvent<EventName extends string = string, Data extends any = 
     };
 
 export interface GenericContractEvent<EventName extends string = string, Data extends any = any> {
-  is: (event: ContractEvent) => event is ContractEvent<EventName, Data>;
-  as: (event: ContractEvent) => ContractEvent<EventName, Data> | undefined;
+  is: (event: IEventRecord | ContractEvent) => event is ContractEvent<EventName, Data>;
+  find: (events: IEventRecord[] | ContractEvent[]) => ContractEvent<EventName, Data> | undefined;
+  filter: (events: IEventRecord[] | ContractEvent[]) => ContractEvent<EventName, Data>[];
   meta: ContractEventMeta;
 }
 
 export interface GenericContractEvents<_ extends GenericSubstrateApi> {
   [event: string]: GenericContractEvent;
 }
+
+export type GenericInkLangError = 'CouldNotReadInput' | any;
 
 export interface GenericContractApi<
   Rv extends RpcVersion = RpcVersion,
@@ -142,4 +163,9 @@ export interface GenericContractApi<
   constructorQuery: GenericConstructorQuery<ChainApi[Rv]>;
   constructorTx: GenericConstructorTx<ChainApi[Rv]>;
   events: GenericContractEvents<ChainApi[Rv]>;
+
+  types: {
+    LangError: GenericInkLangError;
+    ChainApi: ChainApi[Rv];
+  };
 }

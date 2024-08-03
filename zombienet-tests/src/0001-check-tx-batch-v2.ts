@@ -34,31 +34,20 @@ export const run = async (nodeName: any, networkInfo: any): Promise<void> => {
   return new Promise(async (resolve) => {
     let blockIncluded = false;
     const unsub = await batchTx.signAndSend(alice, async ({ status, txIndex, events }) => {
-      console.log('Transaction status', status.type);
+      console.log('Transaction status', status);
 
       if (status.type === 'BestChainBlockIncluded') {
         assert(isHex(status.value.blockHash), 'Block hash should be hex');
+        assert(isNumber(status.value.blockNumber), 'Block number should be number');
         assert(isNumber(status.value.txIndex), 'Tx index should be number');
         assert(txIndex === status.value.txIndex, 'Mismatched tx index');
 
+        assert(api.events.balances.Transfer.find(events), 'Event Balance.Transfer should be available');
+        assert(api.events.system.ExtrinsicSuccess.find(events), 'Event System.ExtrinsicSuccess should be available');
+        assert(api.events.system.Remarked.find(events), 'Event System.Remarked should be available');
+        assert(api.events.utility.BatchCompleted.find(events), 'Event Utility.BatchCompleted should be available');
         assert(
-          events.some(({ event }) => api.events.balances.Transfer.is(event)),
-          'Event Balance.Transfer should be available',
-        );
-        assert(
-          events.some(({ event }) => api.events.system.ExtrinsicSuccess.is(event)),
-          'Event System.ExtrinsicSuccess should be available',
-        );
-        assert(
-          events.some(({ event }) => api.events.system.Remarked.is(event)),
-          'Event System.Remarked should be available',
-        );
-        assert(
-          events.some(({ event }) => api.events.utility.BatchCompleted.is(event)),
-          'Event Utility.BatchCompleted should be available',
-        );
-        assert(
-          events.filter(({ event }) => api.events.utility.ItemCompleted.is(event)).length === 2,
+          api.events.utility.ItemCompleted.filter(events).length === 2,
           'Event Utility.ItemCompleted should be have 2 records',
         );
 
@@ -67,6 +56,7 @@ export const run = async (nodeName: any, networkInfo: any): Promise<void> => {
 
       if (status.type === 'Finalized') {
         assert(isHex(status.value.blockHash), 'Block hash should be hex');
+        assert(isNumber(status.value.blockNumber), 'Block number should be number');
         assert(isNumber(status.value.txIndex), 'Tx index should be number');
         assert(txIndex === status.value.txIndex, 'Mismatched tx index');
 

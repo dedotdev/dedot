@@ -1,6 +1,6 @@
 # dedot
 
-A delightful JavaScript/TypeScript client for [Polkadot](https://polkadot.network/) & [Substrate](https://substrate.io/)
+Delightful JavaScript/TypeScript client for [Polkadot](https://polkadot.network/) & [Substrate](https://substrate.io/)
 
 <p align="left">
   <img src="https://img.shields.io/github/license/dedotdev/dedot?style=flat-square"/>
@@ -9,45 +9,67 @@ A delightful JavaScript/TypeScript client for [Polkadot](https://polkadot.networ
   <img src="https://img.shields.io/github/package-json/v/dedotdev/dedot?filename=packages%2Fapi%2Fpackage.json&style=flat-square"/>
 </p>
 
-_Note: The project is still in active development phase, the information on this page might be outdated. Feel free to raise an [issue](https://github.com/dedotdev/dedot/issues/new) if you run into any problems or want to share any ideas._
-
 ---
+
 ### Features
+
 - ✅ Small bundle size, tree-shakable (no more bn.js or wasm-blob tight dependencies)
-- ✅ Built-in metadata caching mechanism
-- ✅ Types & APIs suggestions for each individual Substrate-based blockchain network ([@dedot/chaintypes](https://github.com/dedotdev/chaintypes))
-- ✅ Familiar api style with `@polkadot/api`, easy & fast migration!
-- ✅ Native TypeScript type system for scale-codec
+- ✅ Types & APIs suggestions for each individual Substrate-based blockchain
+  network ([@dedot/chaintypes](https://github.com/dedotdev/chaintypes))
+- ✅ Familiar api style with `@polkadot/api`, [easy & fast migration!](#migration-from-polkadotapi-to-dedot)
+- ✅ Native [TypeScript type system](#type-system) for scale-codec
 - ✅ Compatible with `@polkadot/extension`-based wallets
 - ✅ Support Metadata V14, V15 (latest)
-- ✅ Build on top of both the [new](https://paritytech.github.io/json-rpc-interface-spec/introduction.html) & legacy (deprecated soon) JSON-RPC APIs
+- ✅ Built-in metadata caching mechanism
+- ✅ Build on top of both the [new](https://paritytech.github.io/json-rpc-interface-spec/introduction.html) & legacy (
+  deprecated soon) JSON-RPC APIs
 - ✅ Support light clients (e.g: [smoldot](https://www.npmjs.com/package/smoldot)) (_docs coming soon_)
-- ✅ Typed Contract APIs (_docs coming soon_)
-- ✅ Fully-typed low-level JSON-RPC client (_docs coming soon_)
+- ✅ [Typed Contract APIs](#interact-with-ink-smart-contracts)
+- ✅ Fully-typed low-level [JSON-RPC client](#execute-json-rpc-methods)
 - ⏳ [Compact Metadata](https://github.com/dedotdev/dedot/issues/45)
 
-### Have a quick taste
+### Table of contents
 
-Try `dedot` now on [CodeSandbox Playground](https://codesandbox.io/p/devbox/trydedot-th96cm?file=%2Fmain.ts%3A24%2C26) or follow the below steps to run it on your local environment.
+- [Getting started](#getting-started)
+- [Chain Types & APIs](#chain-types--apis)
+- [Execute JSON-RPC Methods](#execute-json-rpc-methods)
+- [Query On-chain Storage](#query-on-chain-storage)
+- [Constants](#constants)
+- [Runtime APIs](#runtime-apis)
+- [Submit Transactions](#transaction-apis)
+- [Events](#events)
+- [Errors](#errors)
+- [Interact with ink! Smart Contracts](#interact-with-ink-smart-contracts)
+- [`@polkadot/api` -> `dedot`](#migration-from-polkadotapi-to-dedot)
+- [Packages Structure](#packages-structure)
+- [Credit](#credit)
+
+### Getting started
+
+Try `dedot` now on [CodeSandbox Playground](https://codesandbox.io/p/devbox/trydedot-th96cm?file=%2Fmain.ts%3A24%2C26) or follow the below steps to install Dedot to your projects.
+
 - Install `dedot` package
+
 ```shell
 # via yarn
-yarn add dedot@latest
+yarn add dedot
 
 # via npm
-npm i dedot@latest
+npm i dedot
 ```
 
 - Install `@dedot/chaintypes` package for chain types & APIs suggestion. Skip this step if you don't use TypeScript.
+
 ```shell
 # via yarn
-yarn add -D @dedot/chaintypes@latest
+yarn add -D @dedot/chaintypes
 
 # via npm
-npm i -D @dedot/chaintypes@latest
+npm i -D @dedot/chaintypes
 ```
 
-- Initialize the API client and start interacting with Polkadot network
+- Initialize `DedotClient` and start interacting with Polkadot network
+
 ```typescript
 // main.ts
 import { DedotClient, WsProvider } from 'dedot';
@@ -85,6 +107,7 @@ const run = async () => {
 
 run().catch(console.error);
 ```
+
 - You can also import `dedot` using `require`.
 
 ```js
@@ -96,6 +119,7 @@ const api = await DedotClient.new(provider);
 ```
 
 - If the JSON-RPC server doesn't support [new](https://paritytech.github.io/json-rpc-interface-spec/introduction.html) JSON-RPC APIs yet, you can connect using the `LegacyClient` which build on top of the legacy JSON-RPC APIs.
+
 ```typescript
 import { LegacyClient, WsProvider } from 'dedot';
 
@@ -103,33 +127,21 @@ const provider = new WsProvider('wss://rpc.polkadot.io');
 const api = await LegacyClient.new(provider);
 ```
 
-### Table of contents
-- [Status](#status)
-- [Chain Types & APIs](#chain-types--apis)
-- [Execute RPC Methods](#execute-rpc-methods)
-- [Query On-chain Storage](#query-on-chain-storage)
-- [Constants](#constants)
-- [Runtime APIs](#runtime-apis)
-- [Submit Transactions](#transaction-apis)
-- [Events](#events)
-- [Errors](#errors)
-- [`@polkadot/api` -> `dedot`](#migration-from-polkadotapi-to-dedot)
-- [Credit](#credit)
-
 ### Chain Types & APIs
 
 Each Substrate-based blockchain has their own set of data types & APIs to interact with, so being aware of those types & APIs when working with a blockchain will greatly improve the overall development experience. `dedot` exposes TypeScript's types & APIs for each individual Substrate-based blockchain, we recommend using TypeScript for your project to have the best experience.
 
 Types & APIs for each Substrate-based blockchains are defined in package [`@dedot/chaintypes`](https://github.com/dedotdev/chaintypes):
+
 ```shell
 # via yarn
-yarn add -D @dedot/chaintypes@latest
+yarn add -D @dedot/chaintypes
 
 # via npm
-npm i -D @dedot/chaintypes@latest
+npm i -D @dedot/chaintypes
 ```
 
-Initialize a `DedotClient` instance using the `ChainApi` interface for a target chain to enable types & APIs suggestion/autocompletion for that particular chain:
+Initialize `DedotClient` instance using the `ChainApi` interface for a target chain to enable types & APIs suggestion/autocompletion for that particular chain:
 
 ```typescript
 import { DedotClient, WsProvider } from 'dedot';
@@ -161,11 +173,12 @@ Supported `ChainApi` interfaces are defined [here](https://github.com/dedotdev/c
 npx dedot chaintypes -w wss://rpc.polkadot.io
 ```
 
-### Execute RPC Methods
+### Execute JSON-RPC Methods
 
-RPCs can be executed via `api.rpc` entry point. After creating a `Dedot` instance with a `ChainApi` interface of the network you want to interact with, all RPC methods of the network will be exposed in the autocompletion/suggestion with format: `api.rpc.method_name(param1, param2, ...)`. E.g: you can find all supported RPC methods for Polkadot network [here](https://github.com/dedotdev/chaintypes/blob/main/packages/chaintypes/src/polkadot/json-rpc.d.ts), similarly for other networks as well.
+RPCs can be executed via `api.rpc` entry point. After creating a `DedotClient` instance with a `ChainApi` interface of the network you want to interact with, all RPC methods of the network will be exposed in the autocompletion/suggestion with format: `api.rpc.method_name(param1, param2, ...)`. E.g: you can find all supported RPC methods for Polkadot network [here](https://github.com/dedotdev/chaintypes/blob/main/packages/chaintypes/src/polkadot/json-rpc.d.ts), similarly for other networks as well.
 
 Examples:
+
 ```typescript
 // Call rpc: `state_getMetadata`
 const metadata = await api.rpc.state_getMetadata(); 
@@ -174,11 +187,25 @@ const metadata = await api.rpc.state_getMetadata();
 const result = await api.rpc.module_rpc_name('param1', 'param2');
 ```
 
+For advanced users who want to interact directly server/node via raw JSON-RPC APIs, you can use a light-weight `JsonRpcClient` for this purpose without having to use `DedotClient` or `LegacyClient`.
+
+```typescript
+import { JsonRpcClient, WsProvider } from 'dedot';
+import type { PolkadotApi } from '@dedot/chaintypes';
+
+const provider = new WsProvider('wss://rpc.polkadot.io');
+const client = await JsonRpcClient.new<PolkadotApi>(provider);
+const chain = await client.rpc.system_chain();
+
+// ...
+```
+
 ### Query On-chain Storage
 
 On-chain storage can be queried via `api.query` entry point. All the available storage entries for a chain are exposed in the `ChainApi` interface for that chain and can be executed with format: `api.query.<pallet>.<storgeEntry>`. E.g: You can find all the available storage queries of Polkadot network [here](https://github.com/dedotdev/chaintypes/blob/main/packages/chaintypes/src/polkadot/query.d.ts), similarly for other networks as well.
 
 Examples:
+
 ```typescript
 // Query account balance
 const balance = await api.query.system.account(<address>);
@@ -186,11 +213,13 @@ const balance = await api.query.system.account(<address>);
 // Get all events of current block
 const events = await api.query.system.events();
 ```
+
 ### Constants
 
 Runtime constants (parameter types) are defined in metadata, and can be inspected via `api.consts` entry point with format: `api.consts.<pallet>.<constantName>`. All available constants are also exposed in the `ChainApi` interface. E.g: Available constants for Polkadot network is defined [here](https://github.com/dedotdev/chaintypes/blob/main/packages/chaintypes/src/polkadot/consts.d.ts), similarly for other networks.
 
 Examples:
+
 ```typescript
 // Get runtime version
 const runtimeVersion = api.consts.system.version;
@@ -204,6 +233,7 @@ const existentialDeposit = api.consts.balances.existentialDeposit;
 The latest stable Metadata V15 now includes all the runtime apis type information. So for chains that are supported Metadata V15, we can now execute all available runtime apis with syntax `api.call.<runtimeApi>.<methodName>`, those apis are exposed in `ChainApi` interface. E.g: Runtime Apis for Polkadot network is defined [here](https://github.com/dedotdev/chaintypes/blob/main/packages/chaintypes/src/polkadot/runtime.d.ts), similarly for other networks as well.
 
 Examples:
+
 ```typescript
 // Get account nonce
 const nonce = await api.call.accountNonceApi.accountNonce(<address>);
@@ -219,8 +249,10 @@ const runtimeVersion = await api.call.core.version();
 For chains that only support Metadata V14, we need to bring in the Runtime Api definitions when initializing the DedotClient instance to encode & decode the calls. You can find all supported Runtime Api definitions in [`dedot/runtime-specs`](https://github.com/dedotdev/dedot/blob/fefe71cf4a04d1433841f5cfc8400a1e2a8db112/packages/runtime-specs/src/all.ts#L21-L39) package.
 
 Examples:
+
 ```typescript
 import { RuntimeApis } from 'dedot/runtime-specs';
+
 const api = await DedotClient.new({ provider: new WsProvider('wss://rpc.mynetwork.com'), runtimeApis: RuntimeApis });
 
 // Or bring in only the Runtime Api definition that you want to interact with
@@ -240,10 +272,13 @@ Transaction apis are designed to be compatible with [`IKeyringPair`](https://git
 All transaction apis are exposed in `ChainApi` interface and can be access with syntax: `api.tx.<pallet>.<transactionName>`. E.g: Available transaction apis for Polkadot network are defined [here](https://github.com/dedotdev/chaintypes/blob/main/packages/chaintypes/src/polkadot/tx.d.ts), similarly for other networks as well.
 
 Example 1: Sign transaction with a Keying account
+
 ```typescript
 import { cryptoWaitReady } from '@polkadot/util-crypto';
 import { Keyring } from '@polkadot/keyring';
-...
+
+// ...
+
 await cryptoWaitReady();
 const keyring = new Keyring({ type: 'sr25519' });
 const alice = keyring.addFromUri('//Alice');
@@ -253,13 +288,14 @@ const unsub = await api.tx.balances
     .signAndSend(alice, async ({ status }) => {
       console.log('Transaction status', status.type);
       if (status.type === 'BestChainBlockIncluded') { // or status.type === 'Finalized'
-        console.log(`Transaction completed at block hash ${status.value}`);
+        console.log(`Transaction completed at block hash ${status.value.blockHash}`);
         await unsub();
       }
     });
 ```
 
 Example 2: Sign transaction using `Signer` from Polkadot{.js} wallet extension
+
 ```typescript
 const injected = await window.injectedWeb3['polkadot-js'].enable('A cool dapp');
 const account = (await injected.accounts.get())[0];
@@ -270,13 +306,14 @@ const unsub = await api.tx.balances
     .signAndSend(account.address, { signer }, async ({ status }) => {
       console.log('Transaction status', status.type);
       if (status.type === 'BestChainBlockIncluded') { // or status.type === 'Finalized'
-        console.log(`Transaction completed at block hash ${status.value}`);
+        console.log(`Transaction completed at block hash ${status.value.blockHash}`);
         await unsub();
       }
     });
 ```
 
 Example 3: Submit a batch transaction
+
 ```typescript
 import type { PolkadotRuntimeRuntimeCallLike } from '@dedot/chaintypes/polkadot';
 
@@ -299,7 +336,7 @@ const unsub = api.tx.utility.batch([transferTx.call, remarkCall])
     .signAndSend(account.address, { signer }, async ({ status }) => {
       console.log('Transaction status', status.type);
       if (status.type === 'BestChainBlockIncluded') { // or status.type === 'Finalized'
-        console.log(`Transaction completed at block hash ${status.value}`);
+        console.log(`Transaction completed at block hash ${status.value.blockHash}`);
         await unsub();
       }
     });
@@ -363,8 +400,8 @@ api.tx.polkadotXcm
     console.dir(result, { depth: null });
   });
 ```
-</details>
 
+</details>
 
 ### Events
 
@@ -373,13 +410,12 @@ Events for each pallet emit during runtime operations and are defined in the med
 This `api.events` is helpful when we want quickly check if an event matches with an event that we're expecting in a list of events, the API also comes with type narrowing for the matched event, so event name & related data of the event are fully typed.
 
 Example to list new accounts created in each block:
+
 ```typescript
 // ...
 const ss58Prefix = api.consts.system.ss58Prefix;
 await api.query.system.events(async (eventRecords) => {
-  const newAccountEvents = eventRecords
-    .map(({ event }) => api.events.system.NewAccount.as(event))
-    .filter((one) => one);
+  const newAccountEvents = api.events.system.NewAccount.filter(eventRecords);
 
   console.log(newAccountEvents.length, 'account(s) was created in block', await api.query.system.number());
 
@@ -397,6 +433,7 @@ Pallet errors are thrown out when things go wrong in the runtime, those are defi
 Similar to events API, this API is helpful when we want to check if an error maches with an error that we're expecting.
 
 Example if an error is `AlreadyExists` from `Assets` pallet:
+
 ```typescript
 // ...
 await api.query.system.events(async (eventRecords) => {
@@ -414,18 +451,259 @@ await api.query.system.events(async (eventRecords) => {
 // ...
 ```
 
+### Interact with ink! Smart Contracts
+Dedot offers type-safe APIs to interact with ink! smart contracts. Primitives to work with contracts are exposed in `dedot/contract` package.
+
+#### Generate Types & APIs from contract metadata
+Before interacting with a contract, you need to generate Types & APIs from the contract metadata to interact with. You can do that using `dedot` cli:
+
+```shell
+dedot typink -m ./path/to/metadata.json # or metadata.contract
+
+# use option -o to customize folder to put generated types
+dedot typink -m ./path/to/metadata.json -o ./where/to-put/generated-types
+```
+After running the command, Types & APIs of the contract will be generated. 
+E.g: if the contract's name is `flipper`, the Types & APIs will be put in a folder named `flipper`, the entry-point interface for the contract will be `FlipperContractApi` in `flipper/index.d.ts` file. An example of Types & APIs for flipper contract can be found [here](https://github.com/dedotdev/dedot/tree/main/zombienet-tests/src/contracts/flipper).
+
+#### Deploy contracts
+
+Whether it's to deploy a contract from a wasm code or using an existing wasm code hash. You can do it using the `ContractDeployer`.
+
+```typescript
+import { DedotClient, WsProvider } from 'dedot';
+import { ContractDeployer } from 'dedot/contract';
+import { stringToHex } from 'dedot/utils'
+import { FlipperContractApi } from './flipper';
+import flipperMetadata from './flipper.json' assert { type: 'json' };
+
+// instanciate an api client
+const client = await DedotClient.new(new WsProvider('...'));
+
+// load contract wasm or prepare a wasm codeHash
+const wasm = '0x...';
+const existingCodeHash = '0x...' // uploaded wasm
+
+// create a ContractDeployer instance
+const deployer = new ContractDeployer<FlipperContractApi>(client, flipperMetadata, wasm);
+
+// OR from existingCodeHash
+// const deployer = new ContractDeployer<FlipperContractApi>(client, flipperMetadata, existingCodeHash);
+
+const ALICE = '5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY'; // Alice
+
+// Some random salt to prevent duplication issue
+// Salt is optional, you can skip this to use an empty salt 
+const salt = stringToHex('random-salt'); 
+
+// Dry run the constructor call for validation and gas estimation
+// An Error will be thrown out if there's a DispatchError or LangError (contract level error)
+// More on this in the handling error section below
+const dryRun = await deployer.query.new(true, { caller: ALICE, salt })
+const { raw: { gasRequired } } = dryRun;
+
+// Submitting the transaction to instanciate the contract
+await deployer.tx.new(true, { gasLimit: gasRequired, salt })
+  .signAndSend(ALICE, ({ status, events}) => {
+    if (status.type === 'BestChainBlockIncluded' || status.type === 'Finalized') {
+      // fully-typed event
+      const instantiatedEvent = client.events.contracts.Instantiated.find(events);
+      const contractAddress = instantiatedEvent.palletEvent.data.contract.address();
+    }    
+  });
+```
+
+In case the contract constructor returning a `Result<Self, Error>`, you can also check the see if the instantiation get any errors before submitting the transaction.
+
+```typescript
+const { data } = await deployer.query.new(true, { caller: ALICE, salt })
+if (data.isErr) {
+  console.log('Contract instantiation returning an error:', data.err);
+} else {
+  // submitting the transaction
+}
+```
+
+An example of this case can be found [here](https://github.com/dedotdev/dedot/blob/005ac48f5dcc5259da4a20fd5e87e4990bd773b3/zombienet-tests/src/0001-verify-contract-errors.ts#L43-L44).
+
+#### Query contracts
+
+The `Contract` interface will be using to interact with a contract with syntax `contract.query.<message>`.
+
+```typescript
+import { Contract } from 'dedot/contract';
+import { FlipperContractApi } from './flipper';
+import flipperMetadata from './flipper.json' assert { type: 'json' };
+
+// ... initializing DedotClient
+
+const ALICE = '5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY'; // Alice
+const contractAddress = '...';
+
+// create a contract instace from its metadata & address
+const contract = new Contract<FlipperContractApi>(client, flipperMetadata, contractAddress);
+
+// Making call to get the current value of the flipper contract
+const result = await contract.query.get({ caller: ALICE });
+
+// Typescipt can inspect the type of value as `boolean` with the support of FlipperContractApi interface
+const value: boolean = result.data;
+
+// You can also have access to the detailed/raw result of the call
+const rawResult = result.raw;
+```
+
+#### Submitting transactions
+
+Similarly to query contracts, the `Contract` interface will also be using to submitting transactions with syntax: `contract.tx.<message>`
+
+```typescript
+import { Contract } from 'dedot/contract';
+import { FlipperContractApi } from './flipper';
+import flipperMetadata from './flipper.json' assert { type: 'json' };
+
+// ... initializing DedotClient
+
+const ALICE = '5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY'; // Alice
+const contractAddress = '...';
+
+// create a contract instace from its metadata & address
+const contract = new Contract<FlipperContractApi>(client, flipperMetadata, contractAddress);
+
+// Dry-run the call for validation and gas estimation
+const { data, raw } = await contract.query.flip({ caller: ALICE });
+
+// Check if the message return a `Result<Data, Error>`
+// Skip this check if the message returning raw Data
+if (data.isErr) {
+  console.log('Cannot make transaction due to error:', data.err);
+}
+
+// Submitting the transaction after passing validation
+await contract.tx.flip({ gasLimit: raw.gasRequired })
+  .signAndSend(ALICE, ({ status, events }) => {
+    if (status.type === 'BestChainBlockIncluded' || status.type === 'Finalized') {
+      // fully-typed event
+      const flippedEvent = contract.events.Flipped.find(events);
+      console.log('Old value', flippedEvent.data.old);
+      console.log('New value', flippedEvent.data.new);
+    }
+  })
+
+```
+
+#### Contract events
+
+The `Contract` interface also have APIs to help you work with contract events easily and smoothly.
+
+```typescript
+import { ContractEvent } from 'dedot/contract';
+
+// Initialize Contract instance
+const contract = new Contract<FlipperContractApi>(client, flipperMetadata, contractAddress);
+
+// Extracting contract events from transaction events
+await contract.tx.flip({ gasLimit: raw.gasRequired })
+  .signAndSend(ALICE, ({ status, events }) => {
+    if (status.type === 'BestChainBlockIncluded' || status.type === 'Finalized') {
+      // fully-typed event
+      const flippedEvent = contract.events.Flipped.find(events);
+      console.log('Old value', flippedEvent.data.old);
+      console.log('New value', flippedEvent.data.new);
+      
+      // an array of Flipped event
+      const flippedEvents = contract.events.Flipped.filter(events);
+      
+      // Get all contract events from current transactions
+      const contractEvents: ContractEvent[] = contract.decodeEvents(events);
+      
+      // Another way to get the Flipper event
+      const flippedEvent2 = contractEvents.find(contract.events.Flipped.is);
+    }
+  });
+
+// Extracting contract events from system events
+await client.query.system.events((events) => {
+  // fully-typed event
+  const flippedEvent = contract.events.Flipped.find(events);
+  
+  // get all events of this contract from current block
+  const contractEvents: ContractEvent[] = contract.decodeEvents(events);
+})
+```
+
+#### Handling errors
+
+Interacting with a contract often resulting in errors at runtime level ([DispatchError](https://docs.rs/frame-support/latest/frame_support/pallet_prelude/enum.DispatchError.html)) or contract-level ([LangError](https://use.ink/4.x/faq/migrating-from-ink-3-to-4#add-support-for-language-level-errors-langerror)). 
+Whenever running into these errors, Dedot will throw an Error containing specific context about the problem so developers can handle this accordingly.
+
+```typescript
+import {
+  isContractInstantiateDispatchError, isContractInstantiateLangError,
+  isContractDispatchError, isContractLangError
+} from "dedot/contracts";
+import { FlipperContractApi } from "./flipper";
+
+const ALICE = '...';
+
+try {
+  // Dry-run contract construction
+  const dryRun = await deployer.query.new(true, { caller: ALICE })
+
+  // ...
+} catch (e: any) {
+  if (isContractInstantiateDispatchError<FlipperContractApi>(e)) {
+    // Getting a runtime level error (e.g: Module error, Overflow error ...)
+    const { dispatchError, raw } = e;
+    const errorMeta = client.registy.findErrorMeta(dispatchError);
+    // ...
+  }
+
+  if (isContractInstantiateLangError<FlipperContractApi>(e)) {
+    const { langError, raw } = e;
+    console.log('LangError', langError);
+  }
+
+  // Other errors ...
+}
+
+try {
+  // Dry-run mutable contract message
+  const dryRun = await contract.query.flip({ caller: ALICE })
+
+  // ...
+} catch (e: any) {
+  if (isContractDispatchError<FlipperContractApi>(e)) {
+    // Getting a runtime level error (e.g: Module error, Overflow error ...)
+    const { dispatchError, raw } = e;
+    const errorMeta = client.registy.findErrorMeta(dispatchError);
+    // ...
+  }
+
+  if (isContractLangError<FlipperContractApi>(e)) {
+    const { langError, raw } = e;
+    console.log('LangError', langError);
+  }
+
+  // Other errors ...
+}
+```
+
 ### Migration from `@polkadot/api` to `dedot`
 `dedot` is inspired by `@polkadot/api`, so both are sharing some common patterns and api styling (eg: api syntax `api.<type>.<module>.<section>`). Although we have experimented some other different api stylings but to our findings and development experience, we find that the api style of `@polkadot/api` is very intuiative and easy to use. We decide the use a similar api styling with `@polkadot/api`, this also helps the migration from `@polkadot/api` to `dedot` easier & faster. 
 
 While the api style are similar, but there're also some differences you might need to be aware of when switching to use `dedot`. 
 
-**Initialize api client**
+#### Initialize api client
+
 - `@polkadot/api`
+
 ```typescript
 import { ApiPromise, WsProvider } from '@polkadot/api';
 
 const api = await ApiPromise.create({ provider: new WsProvider('wss://rpc.polkadot.io') });
 ```
+
 - `dedot`
 
 ```typescript
@@ -443,7 +721,7 @@ const api = await DedotClient.new<PolkadotApi>({ provider: new WsProvider('wss:/
   - We recommend specifying the `ChainApi` interface (e.g: [`PolkadotApi`](https://github.com/dedotdev/chaintypes/blob/main/packages/chaintypes/src/polkadot/index.d.ts) in the example above) of the chain that you want to interact with. This enable apis & types suggestion/autocompletion for that particular chain (via IntelliSense). If you don't specify a `ChainApi` interface, the default [`SubstrateApi`](https://github.com/dedotdev/dedot/blob/a762faf8f6af40d3e4ef163bd538b270a5ca31e8/packages/chaintypes/src/substrate/index.d.ts) interface will be used.
   - `WsProvider` from `dedot` and `@polkadot/api` are different, they cannot be used interchangeable.
 
-**Type system**
+#### Type system
 
 Unlike `@polkadot/api` where data are wrapped inside a [codec types](https://polkadot.js.org/docs/api/start/types.basics), so we always need to unwrap the data before using it (e.g: via `.unwrap()`, `.toNumber()`, `.toString()`, `.toJSON()` ...). `dedot` leverages the native TypeScript type system to represent scale-codec types, so you can use the data directly without extra handling/unwrapping. The table below is a mapping between scale-codec types and TypeScript types that we're using for `dedot`:
 
@@ -459,10 +737,11 @@ Unlike `@polkadot/api` where data are wrapped inside a [codec types](https://pol
 | `str`                                                   | `string`                                                                                                                       |
 | Tuple: `(A, B)`, `()`                                   | `[A, B]`, `[]`                                                                                                                 |
 | Struct: `struct { field_1: u8, field_2: str }`          | `{ field_1: number, field_2: string}`                                                                                          |
-| Enum: `enum { Variant1(u8), Variant2(bool), Variant3 }` | `{ type: 'Variant1', value: number } \| { type: 'Variant2', value: boolean } \| { type:  'Variant2' }`                             |
+| Enum: `enum { Variant1(u8), Variant2(bool), Variant3 }` | `{ type: 'Variant1', value: number } \| { type: 'Variant2', value: boolean } \| { type:  'Variant2' }`                         |
 | FlatEnum: `enum { Variant1, Variant2 }`                 | `'Variant1' \| 'Variant2'`                                                                                                     |
 
 E.g 1:
+
 ```typescript
 const runtimeVersion = api.consts.system.version;
 
@@ -473,7 +752,8 @@ const specName: string = runtimeVersion.toJSON().specName; // OR runtimeVersion.
 const specName: string = runtimeVersion.specName;
 ```
 
-E.g 2: 
+E.g 2:
+
 ```typescript
 const balance = await api.query.system.account(<address>);
 
@@ -485,6 +765,7 @@ const freeBalance: bigint = balance.data.free;
 ```
 
 E.g 3:
+
 ```typescript
 // @polkadot/api
 const proposalBondMaximum: bigint | undefined = api.consts.treasury.proposalBondMaximum.unwrapOr(undefined)?.toBigInt();
@@ -492,6 +773,23 @@ const proposalBondMaximum: bigint | undefined = api.consts.treasury.proposalBond
 // dedot
 const proposalBondMaximum: bigint | undefined = api.consts.treasury.proposalBondMaximum;
 ```
+
+### Packages Structure
+
+| Package name                                                                               | Description                                                                   |
+|--------------------------------------------------------------------------------------------|-------------------------------------------------------------------------------|
+| [@dedot/api](https://github.com/dedotdev/dedot/tree/main/packages/api)                     | High-level abstraction apis (clients, API executors...)                       |
+| [@dedot/providers](https://github.com/dedotdev/dedot/tree/main/packages/providers)         | Providers for connection to JSON-RPC servers (WsProvider, SmoldotProvider)    |
+| [@dedot/types](https://github.com/dedotdev/dedot/tree/main/packages/types)                 | Generic shared types across the packages                                      |
+| [@dedot/runtime-specs](https://github.com/dedotdev/dedot/tree/main/packages/runtime-specs) | Explicit Runtime API definitions to use for chains only supports Metadata V14 |
+| [@dedot/shape](https://github.com/dedotdev/dedot/tree/main/packages/shape)                 | Basic codecs/shapes for scale-codec encode/decode                             |
+| [@dedot/contracts](https://github.com/dedotdev/dedot/tree/main/packages/contracts)         | APIs to interact with ink! smart contracts                                    |
+| [@dedot/codecs](https://github.com/dedotdev/dedot/tree/main/packages/codecs)               | Known codecs for generic purposes ($Metadata, $AccountId32, $Extrinsic ...)   |
+| [@dedot/utils](https://github.com/dedotdev/dedot/tree/main/packages/utils)                 | Useful utility functions                                                      |
+| [@dedot/storage](https://github.com/dedotdev/dedot/tree/main/packages/storage)             | Storage API for different purposes (caching, ...)                             |
+| [@dedot/codegen](https://github.com/dedotdev/dedot/tree/main/packages/codegen)             | Types & APIs generation engine for chaintypes & ink! smart contracts          |
+| [@dedot/cli](https://github.com/dedotdev/dedot/tree/main/packages/cli)                     | Dedot's CLI                                                                   |
+| [dedot](https://github.com/dedotdev/dedot/tree/main/packages/dedot)                        | Umbrella package re-exporting API from other packages                         |
 
 
 ### Credit
@@ -502,7 +800,6 @@ Proudly supported by Web3 Foundation Grants Program.
 <p align="left">
   <img width="479" src="https://user-images.githubusercontent.com/6867026/227230786-0796214a-3e3f-42af-94e9-d4122c730b62.png">
 </p>
-
 
 ### License
 

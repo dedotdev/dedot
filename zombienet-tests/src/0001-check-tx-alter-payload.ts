@@ -1,11 +1,9 @@
 import Keyring from '@polkadot/keyring';
-import { SignerResult } from '@polkadot/types/types';
+import { Signer, SignerResult } from '@polkadot/types/types';
 import { cryptoWaitReady } from '@polkadot/util-crypto';
 import { ExtrinsicSignature } from '@dedot/codecs';
 import { assert, u8aToHex } from '@dedot/utils';
 import { $, LegacyClient, WsProvider } from 'dedot';
-
-const BOB = '5FHneW46xGXgs5mUiveU4sbTyGBzmstUspZC92UhjJM694ty';
 
 export const run = async (nodeName: any, networkInfo: any): Promise<void> => {
   await cryptoWaitReady();
@@ -44,32 +42,37 @@ export const run = async (nodeName: any, networkInfo: any): Promise<void> => {
     },
   };
 
-  return new Promise(async (resolve) => {
-    const remarkWithEventTx = await api.tx.system
-      .remarkWithEvent('Hello Dedot')
-      .sign(alice.address, { signer: alterSigner });
+  const verifySigner = (signer?: Signer) => {
+    return new Promise<void>(async (resolve) => {
+      const remarkWithEventTx = await api.tx.system.remarkWithEvent('Hello Dedot').sign(alice.address, { signer });
 
-    assert(remarkWithEventTx.signature, 'Tx signature should be available');
+      assert(remarkWithEventTx.signature, 'Tx signature should be available');
 
-    const unsub = await remarkWithEventTx.send(async ({ status, events, dispatchInfo }) => {
-      console.log('Transaction status', status.type);
+      const unsub = await remarkWithEventTx.send(async ({ status, events, dispatchInfo }) => {
+        console.log('Transaction status', status.type);
 
-      if (status.type === 'Finalized') {
-        const remarkEvent = events.map(({ event }) => event).find(api.events.system.Remarked.is);
-        const txFreePaidEvent = events
-          .map(({ event }) => event)
-          .find(api.events.transactionPayment.TransactionFeePaid.is);
+        if (status.type === 'Finalized') {
+          const remarkEvent = api.events.system.Remarked.find(events);
+          const txFreePaidEvent = api.events.transactionPayment.TransactionFeePaid.find(events);
 
-        assert(
-          remarkEvent && remarkEvent.pallet === 'System' && remarkEvent.palletEvent.name === 'Remarked',
-          'System.Remarked event should be emitted',
-        );
+          assert(
+            remarkEvent && remarkEvent.pallet === 'System' && remarkEvent.palletEvent.name === 'Remarked',
+            'System.Remarked event should be emitted',
+          );
 
-        assert(txFreePaidEvent && txFreePaidEvent.palletEvent.data.tip === tip, 'Tip value is not correct');
+          assert(txFreePaidEvent && txFreePaidEvent.palletEvent.data.tip === tip, 'Tip value is not correct');
 
-        await unsub();
-        resolve();
-      }
+          await unsub();
+          resolve();
+        }
+      });
     });
-  });
+  };
+
+  // sign tx via custom signer option
+  await verifySigner(alterSigner);
+
+  // sign tx via global signer via ApiOptions
+  api.setSigner(alterSigner);
+  await verifySigner();
 };

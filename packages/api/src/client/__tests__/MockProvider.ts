@@ -30,7 +30,10 @@ export default class MockProvider extends EventEmitter<ProviderEvent> implements
 
   rpcRequests: Record<string, AnyFunc>;
 
-  constructor(mockedRuntimeVersion: RuntimeVersion = MockedRuntimeVersion, metadata: OpaqueMetadata = staticSubstrateV15) {
+  constructor(
+    mockedRuntimeVersion: RuntimeVersion = MockedRuntimeVersion,
+    metadata: OpaqueMetadata = staticSubstrateV15,
+  ) {
     super();
     this.rpcRequests = {
       chain_getBlockHash: () => '0x0000000000000000000000000000000000000000000000000000000000000000',

@@ -27,11 +27,10 @@
     "docs:start": "yarn workspace @dedot/docs start"
   },
   "devDependencies": {
-    "@polkadot/types-support": "^12.2.1",
+    "@polkadot/types-support": "^12.2.3",
     "@trivago/prettier-plugin-sort-imports": "^4.3.0",
     "happy-dom": "^14.12.3",
-    "husky": "^9.0.11",
-    "jsdom": "^24.1.0",
+    "husky": "^9.1.4",
     "lerna": "7.4.2",
     "prettier": "^3.3.3",
     "prettier-plugin-organize-imports": "^3.2.4",
@@ -39,11 +38,11 @@
     "tsc-esm-fix": "^2.20.27",
     "typescript": "5.4.5",
     "vite-tsconfig-paths": "^4.3.2",
-    "vitest": "^2.0.3"
+    "vitest": "^2.0.5"
   },
   "resolutions": {
-    "@polkadot/types": "^12.2.1",
-    "@polkadot/types-support": "^12.2.1"
+    "@polkadot/types": "^12.2.3",
+    "@polkadot/types-support": "^12.2.3"
   },
   "license": "Apache-2.0"
 }

@@ -1,8 +1,15 @@
 import type { PalletContractsPrimitivesContractResult } from '@dedot/api/chaintypes';
+import { Result } from '@dedot/codecs';
 import { GenericSubstrateApi } from '@dedot/types';
 import { assert, concatU8a, hexToU8a, u8aToHex } from '@dedot/utils';
-import { ContractCallOptions, ContractCallMessage, GenericContractQueryCall } from '../types/index.js';
-import { normalizeLabel } from '../utils.js';
+import { ContractDispatchError, ContractLangError } from '../errors.js';
+import {
+  ContractCallOptions,
+  ContractCallMessage,
+  GenericContractQueryCall,
+  GenericContractCallResult,
+} from '../types/index.js';
+import { normalizeLabel, toReturnFlags } from '../utils.js';
 import { Executor } from './Executor.js';
 
 export class QueryExecutor<ChainApi extends GenericSubstrateApi> extends Executor<ChainApi> {
@@ -30,19 +37,23 @@ export class QueryExecutor<ChainApi extends GenericSubstrateApi> extends Executo
         bytes,
       );
 
-      return (
-        raw.result.isOk
-          ? {
-              isOk: true,
-              data: this.tryDecode(meta, raw.result.value.data),
-              raw,
-            }
-          : {
-              isOk: false,
-              err: raw.result.err,
-              raw,
-            }
-      ) as any;
+      if (raw.result.isErr) {
+        throw new ContractDispatchError(raw.result.err, raw);
+      }
+
+      const data = this.tryDecode(meta, raw.result.value.data) as Result<any, any>;
+
+      if (data.isErr) {
+        throw new ContractLangError(data.err, raw);
+      }
+
+      const bits = raw.result.value.flags.bits;
+
+      return {
+        data: data.value,
+        raw,
+        flags: toReturnFlags(bits),
+      } as GenericContractCallResult;
     };
 
     callFn.meta = meta;

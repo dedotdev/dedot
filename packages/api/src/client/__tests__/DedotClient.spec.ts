@@ -1,5 +1,7 @@
 import staticSubstrateV15 from '@polkadot/types-support/metadata/v15/substrate-hex';
+import { Signer } from '@polkadot/types/types';
 import { SubstrateRuntimeVersion } from '@dedot/api';
+import { fakeSigner } from '@dedot/api/extrinsic/submittable/fakeSigner';
 import { $Metadata, $RuntimeVersion, type RuntimeVersion } from '@dedot/codecs';
 import { WsProvider } from '@dedot/providers';
 import type { AnyShape } from '@dedot/shape';
@@ -291,6 +293,41 @@ describe('DedotClient', () => {
           expect(() => api.tx.notFound.notFound()).toThrowError(`Pallet not found: notFound`);
         });
 
+        describe('signer should works', () => {
+          const ALICE = '5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY';
+          let signer: Signer;
+
+          beforeEach(() => {
+            signer = {
+              signPayload: vi.fn().mockImplementation(fakeSigner.signPayload!),
+            };
+
+            provider.setRpcRequests({
+              chainHead_v1_storage: () => ({ result: 'started', operationId: 'storage01' }) as MethodResponse,
+            });
+
+            simulator.notify(
+              {
+                operationId: 'storage01',
+                event: 'operationStorageDone',
+              } as OperationStorageDone,
+              15,
+            );
+          });
+
+          it('should call custom signer via tx', async () => {
+            await api.tx.system.remarkWithEvent('Hello World').sign(ALICE, { signer });
+            expect(signer.signPayload).toBeCalled();
+          });
+
+          it('should call signer via ApiOptions', async () => {
+            api.setSigner(signer);
+
+            await api.tx.system.remarkWithEvent('Hello World').sign(ALICE);
+            expect(signer.signPayload).toBeCalled();
+          });
+        });
+
         describe('should track tx status', () => {
           beforeEach(() => {
             let counter = 0;
@@ -486,8 +523,8 @@ describe('DedotClient', () => {
 
             simulator.notify(simulator.nextNewBlock()); // f
             simulator.notify(simulator.nextNewBlock({ fork: true })); // f-1
-            simulator.notify(simulator.nextNewBlock()); // 10 -> f
-            simulator.notify(simulator.nextNewBlock({ fork: true, fromWhichParentFork: 1 })); // 10-1 -> f-1
+            simulator.notify(simulator.nextNewBlock()); // 0x10 -> f
+            simulator.notify(simulator.nextNewBlock({ fork: true, fromWhichParentFork: 1 })); // 0x10-1 -> f-1
             simulator.notify(simulator.nextNewBlock());
             simulator.notify(simulator.nextNewBlock());
             simulator.notify(simulator.nextNewBlock());
@@ -521,7 +558,7 @@ describe('DedotClient', () => {
               'BestChainBlockIncluded',
               'Finalized',
             ]);
-            expect(finalizedBlock).toEqual({ blockHash: '0x10-1', txIndex: 2 });
+            expect(finalizedBlock).toEqual({ blockHash: '0x10-1', blockNumber: 16, txIndex: 2 });
           });
         });
       });

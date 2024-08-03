@@ -1,3 +1,4 @@
+import { Signer } from '@polkadot/types/types';
 import { BlockHash, Extrinsic, Hash } from '@dedot/codecs';
 import {
   AddressOrPair,
@@ -46,7 +47,7 @@ export abstract class BaseSubmittableExtrinsic extends Extrinsic implements ISub
 
     await extra.init();
 
-    const { signer } = options || {};
+    const signer = this.#getSigner(options);
 
     let signature: HexString, alteredTx: HexString | Uint8Array | undefined;
     if (isKeyringPair(fromAccount)) {
@@ -142,5 +143,9 @@ export abstract class BaseSubmittableExtrinsic extends Extrinsic implements ISub
     if (alteredTx.callHex !== this.callHex) {
       throw new DedotError('Call data does not match, signer is not allowed to change tx call data.');
     }
+  }
+
+  #getSigner(options?: Partial<SignerOptions>): Signer | undefined {
+    return options?.signer || this.api.options.signer;
   }
 }
