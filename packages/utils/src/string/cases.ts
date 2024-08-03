@@ -88,17 +88,21 @@ export const stringSnakeCase = (input?: string | null) => {
 export const stringDashCase = (input?: string | null) => {
   if (!input) return '';
 
-  return stringSnakeCase(input).replaceAll(/_/g, '-')
+  return stringCamelCase(input).replaceAll(/[A-Z]/g, (letter) => `-${letter}`).toLowerCase();
 }
 
 export const stringLowerFirst = (input?: string | null) => {
   if (!input) return '';
+
+  input = input.trim()
 
   return CC_TO_LO[input.charCodeAt(0)] + input.slice(1);
 };
 
 export const stringUpperFirst = (input?: string | null) => {
   if (!input) return '';
+
+  input = input.trim()
 
   return CC_TO_UP[input.charCodeAt(0)] + input.slice(1);
 };
