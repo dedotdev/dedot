@@ -33,34 +33,32 @@ export const chaintypes: CommandModule<Args, Args> = {
     const spinner = ora().start();
 
     let metadataHex: HexString | undefined;
-    let rpcMethods: string[] | undefined;
+    let rpcMethods: string[] = [];
     try {
       if (metadataFile) {
-        spinner.text = `Parsing metadata file ${metadataFile}`;
+        spinner.text = `Parsing metadata file ${metadataFile}...`;
         metadataHex = fs.readFileSync(metadataFile, 'utf-8').trim() as HexString;
-        rpcMethods = [];
         spinner.succeed(`Parsed metadata file ${metadataFile}`);
       } else if (runtimeFile) {
-        spinner.text = `Parsing runtime file ${runtimeFile}`;
-        const u8aMetadata = hexToU8a(getMetadataFromRuntime("0x" + fs.readFileSync(runtimeFile).toString('hex') as HexString))
+        spinner.text = `Parsing runtime file ${runtimeFile} to get metadata...`;
 
-        // Because this metadataHex has compactInt prefixed for it length, we need to get rid of it.
+        const u8aMetadata = hexToU8a(getMetadataFromRuntime("0x" + fs.readFileSync(runtimeFile).toString('hex') as HexString))
+        // Because this u8aMetadata has compactInt prefixed for it length, we need to get rid of it.
         const length = $.compactU32.tryDecode(u8aMetadata);
         const offset = $.compactU32.tryEncode(length).length;
 
         metadataHex = u8aToHex(u8aMetadata.subarray(offset));
-        rpcMethods = [];
 
-        spinner.succeed(`Parsed metadata file ${runtimeFile}`);
+        spinner.succeed(`Parsed runtime file ${runtimeFile}`);
       } else if (wsUrl === 'substrate') {
-        spinner.text = 'Parsing static substrate generic chaintypes';
+        spinner.text = 'Parsing static substrate generic chaintypes...';
         metadataHex = staticSubstrate;
         rpcMethods = rpc.methods;
         spinner.succeed(`Parsed static substrate generic chaintypes`);
       }
 
-      if (metadataHex && rpcMethods) {
-        spinner.text = 'Generating generic chaintypes';
+      if (metadataHex) {
+        spinner.text = 'Decoding metadata...';
         const metadata = $Metadata.tryDecode(metadataHex);
         const runtimeVersion = getRuntimeVersion(metadata);
         const chainName = chain || stringCamelCase(runtimeVersion.specName || 'local');
@@ -71,7 +69,9 @@ export const chaintypes: CommandModule<Args, Args> = {
           },
           {} as Record<string, number>,
         );
+        spinner.succeed('Metadata decoded!');
 
+        spinner.text = 'Generating generic chaintypes...';
         await generateTypes(chainName, metadata.latest, rpcMethods, runtimeApis, outDir, extension, subpath, rpcMethods.length === 0);
         spinner.succeed('Generic chaintypes generated!');
 
