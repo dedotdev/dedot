@@ -43,13 +43,18 @@ export const run = async (_nodeName: any, networkInfo: any) => {
     const { data } = await deployer.query.fromSeed(blank, { caller, salt });
     assert(data.isErr && data.err === 'ZeroSum', 'Should get ZeroSum error here');
 
-    // with empty salt
-    const contractAddressWithEmptySalt = await deployFlipper(api, flipper);
-
     // with customized salt
     const contractAddress = await deployFlipper(api, flipper, salt);
 
-    assert(contractAddressWithEmptySalt != contractAddress, 'Should deploy 2 different contracts using different salt');
+    // Only verify this with one version of the client to prevent code duplication issue.
+    if (api.rpcVersion === 'v2') {
+      // with empty salt
+      const contractAddressWithEmptySalt = await deployFlipper(api, flipper);
+      assert(
+        contractAddressWithEmptySalt != contractAddress,
+        'Should deploy 2 different contracts using different salt',
+      );
+    }
 
     const contract = new Contract<FlipperContractApi>(api, flipper, contractAddress);
 
