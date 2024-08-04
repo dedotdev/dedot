@@ -134,20 +134,9 @@ const main = () => {
   // TODO we should have a better way to handle this!!!
   if (currentDir.endsWith('packages/codegen')) {
     // remove unrelated files
-    const toRemove = ['dirname.cjs', 'dirname.d.cts', 'cjs/dirname.mjs'];
+    const toRemove = ['dirname.cjs', 'dirname.d.cts', 'cjs/dirname.js'];
 
     toRemove.forEach((file) => fs.rmSync(path.resolve(currentDir, targetDir, file), { force: true }));
-
-    // change file names
-    fs.renameSync(
-      path.resolve(currentDir, targetDir, 'dirname.mjs'),
-      path.resolve(currentDir, targetDir, 'dirname.js'),
-    );
-
-    fs.renameSync(
-      path.resolve(currentDir, targetDir, 'dirname.d.mts'),
-      path.resolve(currentDir, targetDir, 'dirname.d.ts'),
-    );
 
     fs.renameSync(
       path.resolve(currentDir, targetDir, 'cjs/dirname.cjs'),
