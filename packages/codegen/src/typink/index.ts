@@ -1,7 +1,8 @@
 import { ContractMetadata, parseRawMetadata } from '@dedot/contracts';
-import { stringDashCase } from '@dedot/utils';
+import { stringDashCase, stringPascalCase } from '@dedot/utils';
 import fs from 'fs';
 import path from 'path';
+import { GeneratedResult } from '../types.js';
 import {
   IndexGen,
   QueryGen,
@@ -18,12 +19,11 @@ export async function generateContractTypes(
   outDir: string = '.',
   extension: string = 'd.ts',
   useSubPaths: boolean = false,
-) {
+): Promise<GeneratedResult> {
   let contractMetadata = typeof metadata === 'string' ? parseRawMetadata(metadata) : metadata;
+  const contractName = contract || contractMetadata.contract.name;
 
-  contract = stringDashCase(contract || contractMetadata.contract.name);
-
-  const dirPath = path.resolve(outDir, contract);
+  const dirPath = path.resolve(outDir, stringDashCase(contractName));
   const typesFileName = path.join(dirPath, `types.${extension}`);
   const queryTypesFileName = path.join(dirPath, `query.${extension}`);
   const txTypesFileName = path.join(dirPath, `tx.${extension}`);
@@ -36,13 +36,15 @@ export async function generateContractTypes(
     fs.mkdirSync(dirPath, { recursive: true });
   }
 
+  const interfaceName = `${stringPascalCase(`${contractName}`)}ContractApi`;
+
   const typesGen = new TypesGen(contractMetadata);
   const queryGen = new QueryGen(contractMetadata, typesGen);
   const txGen = new TxGen(contractMetadata, typesGen);
   const constructorTxGen = new ConstructorTxGen(contractMetadata, typesGen);
   const constructorQueryGen = new ConstructorQueryGen(contractMetadata, typesGen);
   const eventsGen = new EventsGen(contractMetadata, typesGen);
-  const indexGen = new IndexGen(contractMetadata, typesGen);
+  const indexGen = new IndexGen(interfaceName, contractMetadata, typesGen);
 
   fs.writeFileSync(typesFileName, await typesGen.generate(useSubPaths));
   fs.writeFileSync(queryTypesFileName, await queryGen.generate(useSubPaths));
@@ -51,4 +53,6 @@ export async function generateContractTypes(
   fs.writeFileSync(constructorTxTypesFileName, await constructorTxGen.generate(useSubPaths));
   fs.writeFileSync(eventsTypesFile, await eventsGen.generate(useSubPaths));
   fs.writeFileSync(indexTypesFileName, await indexGen.generate(useSubPaths));
+
+  return { interfaceName };
 }

@@ -25,6 +25,7 @@
     "@dedot/codecs": "workspace:*",
     "@dedot/codegen": "workspace:*",
     "@polkadot/types-support": "^12.2.3",
+    "ora": "^8.0.1",
     "yargs": "^17.7.2"
   },
   "devDependencies": {
