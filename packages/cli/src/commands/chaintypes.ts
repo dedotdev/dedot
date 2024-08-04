@@ -2,7 +2,7 @@ import { rpc } from '@polkadot/types-support/metadata/static-substrate';
 import staticSubstrate from '@polkadot/types-support/metadata/v15/substrate-hex';
 import { ConstantExecutor } from '@dedot/api';
 import { $Metadata, Metadata, PortableRegistry, RuntimeVersion } from '@dedot/codecs';
-import { generateTypes, generateTypesFromEndpoint } from '@dedot/codegen';
+import { GeneratedResult, generateTypes, generateTypesFromEndpoint } from '@dedot/codegen';
 import ora from 'ora';
 import * as path from 'path';
 import { CommandModule } from 'yargs';
@@ -28,7 +28,7 @@ export const chaintypes: CommandModule<Args, Args> = {
     const shouldGenerateGenericTypes = chain === 'substrate';
 
     try {
-      let interfaceName;
+      let generatedResult: GeneratedResult;
 
       if (shouldGenerateGenericTypes) {
         spinner.text = 'Generating Substrate generic chaintypes';
@@ -45,7 +45,7 @@ export const chaintypes: CommandModule<Args, Args> = {
           {} as Record<string, number>,
         );
 
-        interfaceName = await generateTypes(
+        generatedResult = await generateTypes(
           chain || 'substrate',
           metadata.latest,
           rpcMethods,
@@ -58,12 +58,12 @@ export const chaintypes: CommandModule<Args, Args> = {
         spinner.succeed('Generated Substrate generic chaintypes');
       } else {
         spinner.text = `Generating chaintypes via endpoint: ${wsUrl}`;
-        interfaceName = await generateTypesFromEndpoint(chain, wsUrl!, outDir, extension, subpath);
+        generatedResult = await generateTypesFromEndpoint(chain, wsUrl!, outDir, extension, subpath);
         spinner.succeed(`Generated chaintypes via endpoint: ${wsUrl}`);
       }
 
       console.log(`  ➡ Output directory: file://${outDir}`);
-      console.log(`  ➡ ChainApi interface: ${interfaceName}`);
+      console.log(`  ➡ ChainApi interface: ${generatedResult.interfaceName}`);
       console.log('🌈 Done!');
     } catch (e) {
       if (shouldGenerateGenericTypes) {

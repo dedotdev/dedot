@@ -34,7 +34,7 @@ export const typink: CommandModule<Args, Args> = {
       spinner.succeed(`Parsed contract metadata file: ${metadata}`);
 
       spinner.text = 'Generating contract Types & APIs';
-      const interfaceName = await generateContractTypes(contractMetadata, contract, outDir, extension, subpath);
+      const { interfaceName } = await generateContractTypes(contractMetadata, contract, outDir, extension, subpath);
       spinner.succeed('Generated contract Types & APIs');
 
       console.log(`  ➡ Output directory: file://${outDir}`);

@@ -2,6 +2,7 @@ import { ContractMetadata, parseRawMetadata } from '@dedot/contracts';
 import { stringDashCase, stringPascalCase } from '@dedot/utils';
 import fs from 'fs';
 import path from 'path';
+import { GeneratedResult } from '../types.js';
 import {
   IndexGen,
   QueryGen,
@@ -18,7 +19,7 @@ export async function generateContractTypes(
   outDir: string = '.',
   extension: string = 'd.ts',
   useSubPaths: boolean = false,
-): Promise<string> {
+): Promise<GeneratedResult> {
   let contractMetadata = typeof metadata === 'string' ? parseRawMetadata(metadata) : metadata;
   const contractName = contract || contractMetadata.contract.name;
 
@@ -53,5 +54,5 @@ export async function generateContractTypes(
   fs.writeFileSync(eventsTypesFile, await eventsGen.generate(useSubPaths));
   fs.writeFileSync(indexTypesFileName, await indexGen.generate(useSubPaths));
 
-  return interfaceName;
+  return { interfaceName };
 }

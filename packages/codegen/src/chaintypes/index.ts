@@ -5,6 +5,7 @@ import { RpcMethods } from '@dedot/types/json-rpc';
 import { stringDashCase, stringPascalCase } from '@dedot/utils';
 import * as fs from 'fs';
 import * as path from 'path';
+import { GeneratedResult } from '../types.js';
 import {
   ConstsGen,
   ErrorsGen,
@@ -23,7 +24,7 @@ export async function generateTypesFromEndpoint(
   outDir?: string,
   extension: string = 'd.ts',
   useSubPaths: boolean = false,
-): Promise<string> {
+): Promise<GeneratedResult> {
   // Immediately throw error if cannot connect to provider for the first time.
   const api = await LegacyClient.new(new WsProvider({ endpoint, retryDelayMs: 0, timeout: 0 }));
   const { methods }: RpcMethods = await api.rpc.rpc_methods();
@@ -31,11 +32,11 @@ export async function generateTypesFromEndpoint(
 
   chain = chain || api.runtimeVersion.specName || 'local';
 
-  const interfaceName = await generateTypes(chain, api.metadata.latest, methods, apis, outDir, extension, useSubPaths);
+  const result = await generateTypes(chain, api.metadata.latest, methods, apis, outDir, extension, useSubPaths);
 
   await api.disconnect();
 
-  return interfaceName;
+  return result;
 }
 
 export async function generateTypes(
@@ -46,7 +47,7 @@ export async function generateTypes(
   outDir: string = '.',
   extension: string = 'd.ts',
   useSubPaths: boolean = false,
-): Promise<string> {
+): Promise<GeneratedResult> {
   const dirPath = path.resolve(outDir, stringDashCase(chain));
   const defTypesFileName = path.join(dirPath, `types.${extension}`);
   const constsTypesFileName = path.join(dirPath, `consts.${extension}`);
@@ -84,5 +85,5 @@ export async function generateTypes(
   fs.writeFileSync(indexFileName, await indexGen.generate(useSubPaths));
   fs.writeFileSync(runtimeApisFileName, await runtimeApisGen.generate(useSubPaths));
 
-  return interfaceName;
+  return { interfaceName };
 }
