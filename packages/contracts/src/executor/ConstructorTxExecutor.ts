@@ -1,7 +1,17 @@
 import { ISubstrateClient } from '@dedot/api';
 import { Hash } from '@dedot/codecs';
 import { GenericSubstrateApi } from '@dedot/types';
-import { assert, concatU8a, HexString, hexToU8a, isWasm, u8aToHex } from '@dedot/utils';
+import {
+  assert,
+  assertFalse,
+  concatU8a,
+  HexString,
+  hexToU8a,
+  isNull,
+  isUndefined,
+  isWasm,
+  u8aToHex,
+} from '@dedot/utils';
 import { TypinkRegistry } from '../TypinkRegistry.js';
 import { ConstructorTxOptions, ContractConstructorMessage, GenericConstructorTxCall } from '../types/index.js';
 import { normalizeLabel } from '../utils.js';
@@ -24,9 +34,9 @@ export class ConstructorTxExecutor<ChainApi extends GenericSubstrateApi> extends
       assert(params.length === args.length + 1, `Expected ${args.length + 1} arguments, got ${params.length}`);
 
       const txCallOptions = params[args.length] as ConstructorTxOptions;
-      const { value = 0n, gasLimit, storageDepositLimit, salt } = txCallOptions;
+      const { value = 0n, gasLimit, storageDepositLimit, salt = '0x' } = txCallOptions;
       assert(gasLimit, 'Expected a gas limit in ConstructorTxOptions');
-      assert(salt, 'Expected a salt in ConstructorTxOptions');
+      assertFalse(isNull(salt) || isUndefined(salt), 'Expected a salt in ConstructorCallOptions');
 
       const formattedInputs = args.map((arg, index) => this.tryEncode(arg, params[index]));
       const bytes = u8aToHex(concatU8a(hexToU8a(meta.selector), ...formattedInputs));

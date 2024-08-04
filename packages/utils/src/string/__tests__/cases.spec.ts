@@ -1,12 +1,16 @@
 // Copyright 2017-2024 @polkadot/util authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 import { describe, it, expect } from 'vitest';
-import { stringCamelCase, stringUpperFirst, stringLowerFirst, stringSnakeCase } from '../cases.js';
+import { stringCamelCase, stringUpperFirst, stringLowerFirst, stringSnakeCase, stringDashCase } from '../cases.js';
 
 describe('cases', () => {
   describe('stringCamelCase', (): void => {
     it('works correctly', (): void => {
       expect(stringCamelCase('Snake_case-...SomethingSomething    spaced')).toBe('snakeCaseSomethingSomethingSpaced');
+    });
+
+    it('works correctly with whitespace leading or trailing string', () => {
+      expect(stringCamelCase('  Foo_bar-baz-Extra  ')).toBe('fooBarBazExtra');
     });
 
     it('works correctly for String (class', (): void => {
@@ -63,6 +67,10 @@ describe('cases', () => {
     it('returns null as empty', (): void => {
       expect(stringLowerFirst(null)).toBe('');
     });
+
+    it('works correctly with whitespace leading string', () => {
+      expect(stringLowerFirst('  ABC    ')).toBe('aBC');
+    });
   });
 
   describe('stringUpperFirst', (): void => {
@@ -85,14 +93,36 @@ describe('cases', () => {
     it('returns null as empty', (): void => {
       expect(stringUpperFirst(null)).toBe('');
     });
+
+    it('works correctly with whitespace leading string', () => {
+      expect(stringUpperFirst('  aBC  ')).toBe('ABC');
+    });
   });
 
   describe('stringSnakeCase', () => {
     it.each([
       { input: 'anExampleWithCamelCase', expected: 'an_example_with_camel_case' },
       { input: 'AnExampleWithPascalCase', expected: 'an_example_with_pascal_case' },
-    ])('should turn camelCase or pascalCase string to snakeCase string', ({ input, expected }) => {
-      expect(stringSnakeCase(input)).toEqual(expected);
-    });
+      { input: '   AnExampleWithPascalCase   ', expected: 'an_example_with_pascal_case' },
+    ])(
+      'should turn camelCase or pascalCase or whitespace-leading-trailing string to snakeCase string',
+      ({ input, expected }) => {
+        expect(stringSnakeCase(input)).toEqual(expected);
+      },
+    );
+  });
+
+  describe('stringDashCase', () => {
+    it.each([
+      { input: 'anExampleWithCamelCase', expected: 'an-example-with-camel-case' },
+      { input: 'AnExampleWithPascalCase', expected: 'an-example-with-pascal-case' },
+      { input: 'an example with normal case', expected: 'an-example-with-normal-case' },
+      { input: '   an example with normal case   ', expected: 'an-example-with-normal-case' },
+    ])(
+      'should turn camelCase or pascalCase or normalCase or whitespace-leading-trailing string to dashCase string',
+      ({ input, expected }) => {
+        expect(stringDashCase(input)).toEqual(expected);
+      },
+    );
   });
 });

@@ -1,4 +1,5 @@
 import { ContractMetadata, parseRawMetadata } from '@dedot/contracts';
+import { stringDashCase } from '@dedot/utils';
 import fs from 'fs';
 import path from 'path';
 import {
@@ -20,7 +21,7 @@ export async function generateContractTypes(
 ) {
   let contractMetadata = typeof metadata === 'string' ? parseRawMetadata(metadata) : metadata;
 
-  contract = contract || contractMetadata.contract.name;
+  contract = stringDashCase(contract || contractMetadata.contract.name);
 
   const dirPath = path.resolve(outDir, contract);
   const typesFileName = path.join(dirPath, `types.${extension}`);
