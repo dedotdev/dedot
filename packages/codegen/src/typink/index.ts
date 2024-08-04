@@ -20,10 +20,9 @@ export async function generateContractTypes(
   useSubPaths: boolean = false,
 ): Promise<string> {
   let contractMetadata = typeof metadata === 'string' ? parseRawMetadata(metadata) : metadata;
+  const contractName = contract || contractMetadata.contract.name;
 
-  contract = stringDashCase(contract || contractMetadata.contract.name);
-
-  const dirPath = path.resolve(outDir, contract);
+  const dirPath = path.resolve(outDir, stringDashCase(contractName));
   const typesFileName = path.join(dirPath, `types.${extension}`);
   const queryTypesFileName = path.join(dirPath, `query.${extension}`);
   const txTypesFileName = path.join(dirPath, `tx.${extension}`);
@@ -36,7 +35,7 @@ export async function generateContractTypes(
     fs.mkdirSync(dirPath, { recursive: true });
   }
 
-  const interfaceName = stringPascalCase(`${contract}_ContractApi`);
+  const interfaceName = `${stringPascalCase(`${contractName}`)}ContractApi`;
 
   const typesGen = new TypesGen(contractMetadata);
   const queryGen = new QueryGen(contractMetadata, typesGen);

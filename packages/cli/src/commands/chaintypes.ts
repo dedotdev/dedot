@@ -17,7 +17,7 @@ type Args = {
 
 export const chaintypes: CommandModule<Args, Args> = {
   command: 'chaintypes',
-  describe: 'Generate chain types & APIs for a Substrate-based blockchain',
+  describe: 'Generate chain Types & APIs for Substrate-based chains',
   handler: async (yargs) => {
     const { wsUrl, output = '', chain = '', dts = true, subpath = true } = yargs;
 
@@ -25,38 +25,54 @@ export const chaintypes: CommandModule<Args, Args> = {
     const extension = dts ? 'd.ts' : 'ts';
 
     const spinner = ora().start();
+    const shouldGenerateGenericTypes = chain === 'substrate';
 
-    if (wsUrl === 'substrate') {
-      spinner.text = 'Generating generic chaintypes';
-      const metadataHex = staticSubstrate;
-      const rpcMethods = rpc.methods;
-      const metadata = $Metadata.tryDecode(metadataHex);
-      const runtimeVersion = getRuntimeVersion(metadata);
-      const runtimeApis: Record<string, number> = runtimeVersion.apis.reduce(
-        (acc, [name, version]) => {
-          acc[name] = version;
-          return acc;
-        },
-        {} as Record<string, number>,
-      );
+    try {
+      let interfaceName;
 
-      await generateTypes('substrate', metadata.latest, rpcMethods, runtimeApis, outDir, extension, subpath);
-      spinner.succeed('Generic chaintypes generated!');
+      if (shouldGenerateGenericTypes) {
+        spinner.text = 'Generating Substrate generic chaintypes';
 
-      console.log(`🚀 Output: ${outDir}`);
-    } else {
-      try {
-        spinner.text = `Generating chaintypes via endpoint ${wsUrl}`;
-        await generateTypesFromEndpoint(chain, wsUrl!, outDir, extension, subpath);
-        spinner.succeed(`Generic chaintypes via endpoint ${wsUrl} generated!`);
+        const metadataHex = staticSubstrate;
+        const rpcMethods = rpc.methods;
+        const metadata = $Metadata.tryDecode(metadataHex);
+        const runtimeVersion = getRuntimeVersion(metadata);
+        const runtimeApis: Record<string, number> = runtimeVersion.apis.reduce(
+          (acc, [name, version]) => {
+            acc[name] = version;
+            return acc;
+          },
+          {} as Record<string, number>,
+        );
 
-        console.log(`🚀 Output: ${outDir}`);
-      } catch (e) {
-        spinner.stop();
+        interfaceName = await generateTypes(
+          chain || 'substrate',
+          metadata.latest,
+          rpcMethods,
+          runtimeApis,
+          outDir,
+          extension,
+          subpath,
+        );
 
-        console.error(`✖ ${(e as Error).message}`);
-        spinner.fail(`Failed to generate chaintypes via endpoint ${wsUrl}`);
+        spinner.succeed('Generated Substrate generic chaintypes');
+      } else {
+        spinner.text = `Generating chaintypes via endpoint: ${wsUrl}`;
+        interfaceName = await generateTypesFromEndpoint(chain, wsUrl!, outDir, extension, subpath);
+        spinner.succeed(`Generated chaintypes via endpoint: ${wsUrl}`);
       }
+
+      console.log(`  ➡ Output directory: file://${outDir}`);
+      console.log(`  ➡ ChainApi interface: ${interfaceName}`);
+      console.log('🌈 Done!');
+    } catch (e) {
+      if (shouldGenerateGenericTypes) {
+        spinner.fail(`Failed to generate Substrate generic chaintypes`);
+      } else {
+        spinner.fail(`Failed to generate chaintypes via endpoint: ${wsUrl}`);
+      }
+
+      console.error(e);
     }
 
     spinner.stop();
@@ -65,7 +81,7 @@ export const chaintypes: CommandModule<Args, Args> = {
     return yargs
       .option('wsUrl', {
         type: 'string',
-        describe: 'Websocket Url to fetch metadata',
+        describe: 'Websocket URL to fetch metadata',
         alias: 'w',
         default: 'ws://127.0.0.1:9944',
       })
@@ -76,7 +92,7 @@ export const chaintypes: CommandModule<Args, Args> = {
       })
       .option('chain', {
         type: 'string',
-        describe: 'Chain name',
+        describe: 'Custom chain name',
         alias: 'c',
       })
       .option('dts', {
@@ -87,7 +103,7 @@ export const chaintypes: CommandModule<Args, Args> = {
       })
       .option('subpath', {
         type: 'boolean',
-        describe: 'Using subpath for shared packages',
+        describe: 'Using subpath for shared packages (e.g: dedot/types)',
         alias: 's',
         default: true,
       }); // TODO check to verify inputs
