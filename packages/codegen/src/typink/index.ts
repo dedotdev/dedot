@@ -1,5 +1,5 @@
 import { ContractMetadata, parseRawMetadata } from '@dedot/contracts';
-import { stringDashCase } from '@dedot/utils';
+import { stringDashCase, stringPascalCase } from '@dedot/utils';
 import fs from 'fs';
 import path from 'path';
 import {
@@ -18,7 +18,7 @@ export async function generateContractTypes(
   outDir: string = '.',
   extension: string = 'd.ts',
   useSubPaths: boolean = false,
-) {
+): Promise<string> {
   let contractMetadata = typeof metadata === 'string' ? parseRawMetadata(metadata) : metadata;
 
   contract = stringDashCase(contract || contractMetadata.contract.name);
@@ -36,13 +36,15 @@ export async function generateContractTypes(
     fs.mkdirSync(dirPath, { recursive: true });
   }
 
+  const interfaceName = stringPascalCase(`${contract}_ContractApi`);
+
   const typesGen = new TypesGen(contractMetadata);
   const queryGen = new QueryGen(contractMetadata, typesGen);
   const txGen = new TxGen(contractMetadata, typesGen);
   const constructorTxGen = new ConstructorTxGen(contractMetadata, typesGen);
   const constructorQueryGen = new ConstructorQueryGen(contractMetadata, typesGen);
   const eventsGen = new EventsGen(contractMetadata, typesGen);
-  const indexGen = new IndexGen(contractMetadata, typesGen);
+  const indexGen = new IndexGen(interfaceName, contractMetadata, typesGen);
 
   fs.writeFileSync(typesFileName, await typesGen.generate(useSubPaths));
   fs.writeFileSync(queryTypesFileName, await queryGen.generate(useSubPaths));
@@ -51,4 +53,6 @@ export async function generateContractTypes(
   fs.writeFileSync(constructorTxTypesFileName, await constructorTxGen.generate(useSubPaths));
   fs.writeFileSync(eventsTypesFile, await eventsGen.generate(useSubPaths));
   fs.writeFileSync(indexTypesFileName, await indexGen.generate(useSubPaths));
+
+  return interfaceName;
 }
