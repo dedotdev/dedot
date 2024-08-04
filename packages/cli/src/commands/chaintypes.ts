@@ -17,7 +17,7 @@ type Args = {
 
 export const chaintypes: CommandModule<Args, Args> = {
   command: 'chaintypes',
-  describe: 'Generate chain Types & APIs for Substrate-based chains',
+  describe: 'Generate Types & APIs for Substrate-based chains',
   handler: async (yargs) => {
     const { wsUrl, output = '', chain = '', dts = true, subpath = true } = yargs;
 
@@ -25,7 +25,7 @@ export const chaintypes: CommandModule<Args, Args> = {
     const extension = dts ? 'd.ts' : 'ts';
 
     const spinner = ora().start();
-    const shouldGenerateGenericTypes = chain === 'substrate';
+    const shouldGenerateGenericTypes = wsUrl === 'substrate';
 
     try {
       let generatedResult: GeneratedResult;
