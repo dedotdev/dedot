@@ -2,7 +2,7 @@ import * as fs from 'fs';
 import handlebars from 'handlebars';
 import * as path from 'path';
 import * as prettier from 'prettier';
-import { currentDirname } from './dirname';
+import { currentDirname } from './dirname.js';
 
 export const WRAPPER_TYPE_REGEX = /^(\w+)<(.*)>$/;
 export const TUPLE_TYPE_REGEX = /^\[(.*)]$/;
