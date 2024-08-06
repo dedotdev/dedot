@@ -8,6 +8,7 @@ export const dedot = (): void => {
     .showHelpOnFail(true)
     .command(chaintypes)
     .command(typink)
+    .version(false)
     .help('help', 'Show help instructions')
     .alias('h', 'help')
     .alias('v', 'version')

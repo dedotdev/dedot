@@ -9,7 +9,7 @@ import { ContractEvents } from './events';
 
 export * from './types';
 
-export interface {{{contractName}}}<Rv extends RpcVersion = RpcV2, ChainApi extends VersionedGenericSubstrateApi = SubstrateApi> extends GenericContractApi<Rv, ChainApi> {
+export interface {{{interfaceName}}}<Rv extends RpcVersion = RpcV2, ChainApi extends VersionedGenericSubstrateApi = SubstrateApi> extends GenericContractApi<Rv, ChainApi> {
     query: ContractQuery<ChainApi[Rv]>;
     tx: ContractTx<ChainApi[Rv]>;
     constructorQuery: ConstructorQuery<ChainApi[Rv]>;

@@ -28,12 +28,11 @@ const main = () => {
     if (file === 'package.json') {
       const pkgJson = JSON.parse(fileContent);
       pkgJson.main = './cjs/index.js';
+      pkgJson.module = './index.js';
+      pkgJson.types = './index.d.ts';
 
       if (pkgJson.name === '@dedot/cli') {
-        delete pkgJson.type;
-      } else {
-        pkgJson.module = './index.js';
-        pkgJson.types = './index.d.ts';
+        pkgJson.main = './index.js';
       }
 
       if (!['@dedot/cli'].includes(pkgJson.name)) {
@@ -123,7 +122,8 @@ const main = () => {
     fs.writeFileSync(path.join(currentDir, targetDir, file), fileContent);
   });
 
-  if (!currentDir.endsWith('packages/chaintypes')) {
+  const withCjsBuild = ['packages/chaintypes', 'packages/cli'].some((pkg) => currentDir.endsWith(pkg));
+  if (!withCjsBuild) {
     fs.writeFileSync(path.join(currentDir, targetDir, 'cjs/package.json'), `{"type": "commonjs"}`);
   }
 
@@ -134,20 +134,9 @@ const main = () => {
   // TODO we should have a better way to handle this!!!
   if (currentDir.endsWith('packages/codegen')) {
     // remove unrelated files
-    const toRemove = ['dirname.cjs', 'dirname.d.cts', 'cjs/dirname.mjs'];
+    const toRemove = ['dirname.cjs', 'dirname.d.cts', 'cjs/dirname.js'];
 
     toRemove.forEach((file) => fs.rmSync(path.resolve(currentDir, targetDir, file), { force: true }));
-
-    // change file names
-    fs.renameSync(
-      path.resolve(currentDir, targetDir, 'dirname.mjs'),
-      path.resolve(currentDir, targetDir, 'dirname.js'),
-    );
-
-    fs.renameSync(
-      path.resolve(currentDir, targetDir, 'dirname.d.mts'),
-      path.resolve(currentDir, targetDir, 'dirname.d.ts'),
-    );
 
     fs.renameSync(
       path.resolve(currentDir, targetDir, 'cjs/dirname.cjs'),

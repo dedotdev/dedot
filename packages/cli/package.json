@@ -1,6 +1,6 @@
 {
   "name": "@dedot/cli",
-  "version": "0.3.0",
+  "version": "0.4.1",
   "author": "Thang X. Vu <thang@coongcrafts.io>",
   "homepage": "https://github.com/dedotdev/dedot/tree/main/packages/cli",
   "repository": {
@@ -16,8 +16,8 @@
   "sideEffects": false,
   "type": "module",
   "scripts": {
-    "build": "tsc --project tsconfig.build.cjs.json && cp -R ./bin ./dist",
-    "clean": "rm -rf ./dist && rm -rf ./tsconfig.tsbuildinfo ./tsconfig.build.cjs.tsbuildinfo && rm -rf ./src/codegen",
+    "build": "tsc --project tsconfig.build.json && cp -R ./bin ./dist",
+    "clean": "rm -rf ./dist && rm -rf ./tsconfig.tsbuildinfo ./tsconfig.build.tsbuildinfo",
     "start": "ts-node src/index.ts"
   },
   "dependencies": {

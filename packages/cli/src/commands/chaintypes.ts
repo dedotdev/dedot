@@ -2,12 +2,12 @@ import { rpc } from '@polkadot/types-support/metadata/static-substrate';
 import staticSubstrate from '@polkadot/types-support/metadata/v15/substrate-hex';
 import { ConstantExecutor } from '@dedot/api';
 import { $Metadata, Metadata, PortableRegistry, RuntimeVersion } from '@dedot/codecs';
-import { generateTypes, generateTypesFromEndpoint } from '@dedot/codegen';
 import * as $ from '@dedot/shape';
 import { HexString, hexToU8a, stringCamelCase, u8aToHex } from '@dedot/utils';
 import { getMetadataFromRuntime } from '@polkadot-api/wasm-executor';
 import * as fs from 'fs';
 import ora from 'ora';
+import { GeneratedResult, generateTypes, generateTypesFromEndpoint } from '@dedot/codegen';
 import * as path from 'path';
 import { CommandModule } from 'yargs';
 
@@ -23,7 +23,7 @@ type Args = {
 
 export const chaintypes: CommandModule<Args, Args> = {
   command: 'chaintypes',
-  describe: 'Generate chain types & APIs for a Substrate-based blockchain',
+  describe: 'Generate Types & APIs for Substrate-based chains',
   handler: async (yargs) => {
     const { wsUrl, runtimeFile, metadataFile, output = '', chain = '', dts = true, subpath = true } = yargs;
 
@@ -31,28 +31,35 @@ export const chaintypes: CommandModule<Args, Args> = {
     const extension = dts ? 'd.ts' : 'ts';
 
     const spinner = ora().start();
+    const shouldGenerateGenericTypes = wsUrl === 'substrate';
 
     let metadataHex: HexString | undefined;
     let rpcMethods: string[] = [];
+    let shouldExposeAllMethod: boolean = false;
+    let generatedResult: GeneratedResult;
+
     try {
       if (metadataFile) {
         spinner.text = `Parsing metadata file ${metadataFile}...`;
         metadataHex = fs.readFileSync(metadataFile, 'utf-8').trim() as HexString;
+        shouldExposeAllMethod = true;
         spinner.succeed(`Parsed metadata file ${metadataFile}`);
       } else if (runtimeFile) {
+
         spinner.text = `Parsing runtime file ${runtimeFile} to get metadata...`;
 
         const u8aMetadata = hexToU8a(
-          getMetadataFromRuntime(('0x' + fs.readFileSync(runtimeFile).toString('hex')) as HexString),
+            getMetadataFromRuntime(('0x' + fs.readFileSync(runtimeFile).toString('hex')) as HexString),
         );
         // Because this u8aMetadata has compactInt prefixed for it length, we need to get rid of it.
         const length = $.compactU32.tryDecode(u8aMetadata);
         const offset = $.compactU32.tryEncode(length).length;
 
         metadataHex = u8aToHex(u8aMetadata.subarray(offset));
+        shouldExposeAllMethod = true;
 
         spinner.succeed(`Parsed runtime file ${runtimeFile}`);
-      } else if (wsUrl === 'substrate') {
+      } else if (shouldGenerateGenericTypes) {
         spinner.text = 'Parsing static substrate generic chaintypes...';
         metadataHex = staticSubstrate;
         rpcMethods = rpc.methods;
@@ -63,7 +70,6 @@ export const chaintypes: CommandModule<Args, Args> = {
         spinner.text = 'Decoding metadata...';
         const metadata = $Metadata.tryDecode(metadataHex);
         const runtimeVersion = getRuntimeVersion(metadata);
-        const chainName = chain || stringCamelCase(runtimeVersion.specName || 'local');
         const runtimeApis: Record<string, number> = runtimeVersion.apis.reduce(
           (acc, [name, version]) => {
             acc[name] = version;
@@ -71,55 +77,60 @@ export const chaintypes: CommandModule<Args, Args> = {
           },
           {} as Record<string, number>,
         );
-        spinner.succeed('Metadata decoded!');
+        spinner.succeed('Decoded metadata!')
 
-        spinner.text = 'Generating generic chaintypes...';
-        await generateTypes(
-          chainName,
+        spinner.text = 'Generating Substrate generic chaintypes';
+        generatedResult = await generateTypes(
+          chain || stringCamelCase(runtimeVersion.specName) || 'substrate',
           metadata.latest,
           rpcMethods,
           runtimeApis,
           outDir,
           extension,
           subpath,
-          rpcMethods.length === 0,
+            shouldExposeAllMethod,
         );
-        spinner.succeed('Generic chaintypes generated!');
 
-        console.log(`🚀 Output: ${outDir}`);
+        spinner.succeed('Generated Substrate generic chaintypes');
       } else {
-        spinner.text = `Generating chaintypes via endpoint ${wsUrl}`;
-        await generateTypesFromEndpoint(chain, wsUrl!, outDir, extension, subpath);
-        spinner.succeed(`Generic chaintypes via endpoint ${wsUrl} generated!`);
-
-        console.log(`🚀 Output: ${outDir}`);
+        spinner.text = `Generating chaintypes via endpoint: ${wsUrl}`;
+        generatedResult = await generateTypesFromEndpoint(chain, wsUrl!, outDir, extension, subpath);
+        spinner.succeed(`Generated chaintypes via endpoint: ${wsUrl}`);
       }
 
-      spinner.stop();
+      console.log(`  ➡ Output directory: file://${outDir}`);
+      console.log(`  ➡ ChainApi interface: ${generatedResult.interfaceName}`);
+      console.log('🌈 Done!');
     } catch (e) {
-      spinner.stop();
+      if (shouldGenerateGenericTypes) {
+        spinner.fail(`Failed to generate Substrate generic chaintypes`);
+      } else {
+        spinner.fail(`Failed to generate chaintypes via endpoint: ${wsUrl}`);
+      }
 
-      console.error(`✖ ${(e as Error).message}`);
-      spinner.fail(`Failed to generate chaintypes!`);
+      console.error(e);
     }
+
+    spinner.stop();
   },
   builder: (yargs) => {
     return yargs
       .option('wsUrl', {
         type: 'string',
-        describe: 'Websocket Url to fetch metadata',
+        describe: 'Websocket URL to fetch metadata',
         alias: 'w',
+        default: 'ws://127.0.0.1:9944',
       })
-      .option('runtimeFile', {
-        type: 'string',
-        describe: 'Runtime file to fetch metadata (.wasm)',
-        alias: 'r',
-      })
-      .option('metadataFile', {
-        type: 'string',
-        describe: 'Encoded metadata file to fetch metadata (.scale)',
-        alias: 'm',
-      })
+        .option('runtimeFile', {
+          type: 'string',
+          describe: 'Runtime file to fetch metadata (.wasm)',
+          alias: 'r',
+        })
+        .option('metadataFile', {
+          type: 'string',
+          describe: 'Encoded metadata file to fetch metadata (.scale)',
+          alias: 'm',
+        })
       .option('output', {
         type: 'string',
         describe: 'Output folder to put generated files',
@@ -127,7 +138,7 @@ export const chaintypes: CommandModule<Args, Args> = {
       })
       .option('chain', {
         type: 'string',
-        describe: 'Chain name',
+        describe: 'Custom chain name',
         alias: 'c',
       })
       .option('dts', {
@@ -138,24 +149,23 @@ export const chaintypes: CommandModule<Args, Args> = {
       })
       .option('subpath', {
         type: 'boolean',
-        describe: 'Using subpath for shared packages',
+        describe: 'Using subpath for shared packages (e.g: dedot/types)',
         alias: 's',
         default: true,
-      })
-      .check((argv) => {
-        const inputs = ['wsUrl', 'runtimeFile', 'metadataFile'];
-        const providedInputs = inputs.filter((input) => argv[input]);
+      }) .check((argv) => {
+          const inputs = ['wsUrl', 'runtimeFile', 'metadataFile'];
+          const providedInputs = inputs.filter((input) => argv[input]);
 
-        if (providedInputs.length > 1) {
-          throw new Error(`Please provide only one of the following options: ${inputs.join(', ')}`);
-        }
+          if (providedInputs.length > 1) {
+            throw new Error(`Please provide only one of the following options: ${inputs.join(', ')}`);
+          }
 
-        if (providedInputs.length === 0) {
-          throw new Error(`Please provide one of the following options: ${inputs.join(', ')}`);
-        }
+          if (providedInputs.length === 0) {
+            throw new Error(`Please provide one of the following options: ${inputs.join(', ')}`);
+          }
 
-        return true;
-      }); // TODO check to verify inputs
+          return true;
+        }); // TODO check to verify inputs
   },
 };
 
