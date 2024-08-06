@@ -79,15 +79,15 @@ export const chaintypes: CommandModule<Args, Args> = {
 
         spinner.text = 'Generating Substrate generic chaintypes';
         generatedResult = await generateTypes(
-          chain || stringCamelCase(runtimeVersion.specName) || 'substrate',
+          chain || stringCamelCase(runtimeVersion.specName) || (shouldGenerateGenericTypes ? 'substrate' : 'local'),
           metadata.latest,
           rpcMethods,
           runtimeApis,
           outDir,
           extension,
           subpath,
-          // Should generate expose all rpc methods
-          rpcMethods.length === 0,
+          // Should expose all rpc methods
+          !rpcMethods.length,
         );
 
         spinner.succeed('Generated Substrate generic chaintypes');
