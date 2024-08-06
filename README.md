@@ -2,12 +2,19 @@
 
 Delightful JavaScript/TypeScript client for [Polkadot](https://polkadot.network/) & [Substrate](https://substrate.io/)
 
-<p align="left">
-  <img src="https://img.shields.io/github/license/dedotdev/dedot?style=flat-square"/>
-  <img src="https://img.shields.io/github/actions/workflow/status/dedotdev/dedot/run-tests.yml?label=unit%20tests&style=flat-square"/>
-  <img src="https://img.shields.io/github/actions/workflow/status/dedotdev/dedot/zombienet-tests.yml?label=e2e%20tests&style=flat-square"/>
-  <img src="https://img.shields.io/github/package-json/v/dedotdev/dedot?filename=packages%2Fapi%2Fpackage.json&style=flat-square"/>
-</p>
+![Version][ico-version]
+![Unit test][ico-unit-test]
+![E2E test][ico-e2e-test]
+![License][ico-license]
+[![Chat on Telegram][ico-telegram]][link-telegram]
+
+[ico-telegram]: https://img.shields.io/badge/Dedot-2CA5E0.svg?style=flat-square&logo=telegram&label=Telegram
+[ico-unit-test]: https://img.shields.io/github/actions/workflow/status/dedotdev/dedot/run-tests.yml?label=unit%20tests&style=flat-square
+[ico-e2e-test]: https://img.shields.io/github/actions/workflow/status/dedotdev/dedot/zombienet-tests.yml?label=e2e%20tests&style=flat-square
+[ico-version]: https://img.shields.io/github/package-json/v/dedotdev/dedot?filename=packages%2Fapi%2Fpackage.json&style=flat-square
+[ico-license]: https://img.shields.io/github/license/dedotdev/dedot?style=flat-square
+
+[link-telegram]: https://t.me/+edmxW2Lsmm02ODll
 
 ---
 
@@ -812,4 +819,5 @@ Proudly supported by Web3 Foundation Grants Program.
 ### License
 
 [Apache-2.0](https://github.com/dedotdev/dedot/blob/main/LICENSE)
+
 
