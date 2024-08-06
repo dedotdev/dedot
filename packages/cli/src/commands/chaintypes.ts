@@ -3,6 +3,10 @@ import staticSubstrate from '@polkadot/types-support/metadata/v15/substrate-hex'
 import { ConstantExecutor } from '@dedot/api';
 import { $Metadata, Metadata, PortableRegistry, RuntimeVersion } from '@dedot/codecs';
 import { GeneratedResult, generateTypes, generateTypesFromEndpoint } from '@dedot/codegen';
+import * as $ from '@dedot/shape';
+import { HexString, hexToU8a, stringCamelCase, u8aToHex } from '@dedot/utils';
+import { getMetadataFromRuntime } from '@polkadot-api/wasm-executor';
+import * as fs from 'fs';
 import ora from 'ora';
 import * as path from 'path';
 import { CommandModule } from 'yargs';
@@ -13,13 +17,15 @@ type Args = {
   chain?: string;
   dts?: boolean;
   subpath?: boolean;
+  runtimeFile?: string;
+  metadataFile?: string;
 };
 
 export const chaintypes: CommandModule<Args, Args> = {
   command: 'chaintypes',
   describe: 'Generate Types & APIs for Substrate-based chains',
   handler: async (yargs) => {
-    const { wsUrl, output = '', chain = '', dts = true, subpath = true } = yargs;
+    const { wsUrl, runtimeFile, metadataFile, output = '', chain = '', dts = true, subpath = true } = yargs;
 
     const outDir = path.resolve(output);
     const extension = dts ? 'd.ts' : 'ts';
@@ -27,14 +33,39 @@ export const chaintypes: CommandModule<Args, Args> = {
     const spinner = ora().start();
     const shouldGenerateGenericTypes = wsUrl === 'substrate';
 
+    let metadataHex: HexString | undefined;
+    let rpcMethods: string[] = [];
+    let generatedResult: GeneratedResult;
+
     try {
-      let generatedResult: GeneratedResult;
+      if (metadataFile) {
+        spinner.text = `Parsing metadata file ${metadataFile}...`;
+        metadataHex = fs.readFileSync(metadataFile, 'utf-8').trim() as HexString;
+        spinner.succeed(`Parsed metadata file ${metadataFile}`);
+      } else if (runtimeFile) {
+        spinner.text = `Parsing runtime file ${runtimeFile} to get metadata...`;
 
-      if (shouldGenerateGenericTypes) {
-        spinner.text = 'Generating Substrate generic chaintypes';
+        const u8aMetadata = hexToU8a(
+          getMetadataFromRuntime(('0x' + fs.readFileSync(runtimeFile).toString('hex')) as HexString),
+        );
+        // Because this u8aMetadata has compactInt prefixed for it length, we need to get rid of it.
+        const length = $.compactU32.tryDecode(u8aMetadata);
+        const offset = $.compactU32.tryEncode(length).length;
 
-        const metadataHex = staticSubstrate;
-        const rpcMethods = rpc.methods;
+        metadataHex = u8aToHex(u8aMetadata.subarray(offset));
+
+        spinner.succeed(`Parsed runtime file ${runtimeFile}`);
+      } else if (shouldGenerateGenericTypes) {
+        spinner.text = 'Parsing static substrate generic chaintypes...';
+
+        metadataHex = staticSubstrate;
+        rpcMethods = rpc.methods;
+
+        spinner.succeed(`Parsed static substrate generic chaintypes`);
+      }
+
+      if (metadataHex) {
+        spinner.text = 'Decoding metadata...';
         const metadata = $Metadata.tryDecode(metadataHex);
         const runtimeVersion = getRuntimeVersion(metadata);
         const runtimeApis: Record<string, number> = runtimeVersion.apis.reduce(
@@ -44,15 +75,19 @@ export const chaintypes: CommandModule<Args, Args> = {
           },
           {} as Record<string, number>,
         );
+        spinner.succeed('Decoded metadata!');
 
+        spinner.text = 'Generating Substrate generic chaintypes';
         generatedResult = await generateTypes(
-          chain || 'substrate',
+          chain || stringCamelCase(runtimeVersion.specName) || (shouldGenerateGenericTypes ? 'substrate' : 'local'),
           metadata.latest,
           rpcMethods,
           runtimeApis,
           outDir,
           extension,
           subpath,
+          // Should expose all rpc methods
+          !rpcMethods.length,
         );
 
         spinner.succeed('Generated Substrate generic chaintypes');
@@ -68,6 +103,10 @@ export const chaintypes: CommandModule<Args, Args> = {
     } catch (e) {
       if (shouldGenerateGenericTypes) {
         spinner.fail(`Failed to generate Substrate generic chaintypes`);
+      } else if (runtimeFile) {
+        spinner.fail(`Failed to generate chaintypes via runtime file: ${runtimeFile}`);
+      } else if (metadataFile) {
+        spinner.fail(`Failed to generate chaintypes via metadata file: ${metadataFile}`);
       } else {
         spinner.fail(`Failed to generate chaintypes via endpoint: ${wsUrl}`);
       }
@@ -83,7 +122,16 @@ export const chaintypes: CommandModule<Args, Args> = {
         type: 'string',
         describe: 'Websocket URL to fetch metadata',
         alias: 'w',
-        default: 'ws://127.0.0.1:9944',
+      })
+      .option('runtimeFile', {
+        type: 'string',
+        describe: 'Runtime file to fetch metadata (.wasm)',
+        alias: 'r',
+      })
+      .option('metadataFile', {
+        type: 'string',
+        describe: 'Encoded metadata file to fetch metadata (.scale)',
+        alias: 'm',
       })
       .option('output', {
         type: 'string',
@@ -106,6 +154,20 @@ export const chaintypes: CommandModule<Args, Args> = {
         describe: 'Using subpath for shared packages (e.g: dedot/types)',
         alias: 's',
         default: true,
+      })
+      .check((argv) => {
+        const inputs = ['wsUrl', 'runtimeFile', 'metadataFile'];
+        const providedInputs = inputs.filter((input) => argv[input]);
+
+        if (providedInputs.length > 1) {
+          throw new Error(`Please provide only one of the following options: ${inputs.join(', ')}`);
+        }
+
+        if (providedInputs.length === 0) {
+          throw new Error(`Please provide one of the following options: ${inputs.join(', ')}`);
+        }
+
+        return true;
       }); // TODO check to verify inputs
   },
 };
