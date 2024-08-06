@@ -2,8 +2,8 @@ import { rpc } from '@polkadot/types-support/metadata/static-substrate';
 import staticSubstrate from '@polkadot/types-support/metadata/v15/substrate-hex';
 import { ConstantExecutor } from '@dedot/api';
 import { $Metadata, Metadata, PortableRegistry, RuntimeVersion } from '@dedot/codecs';
-import * as $ from '@dedot/shape'
 import { generateTypes, generateTypesFromEndpoint } from '@dedot/codegen';
+import * as $ from '@dedot/shape';
 import { HexString, hexToU8a, stringCamelCase, u8aToHex } from '@dedot/utils';
 import { getMetadataFromRuntime } from '@polkadot-api/wasm-executor';
 import * as fs from 'fs';
@@ -42,7 +42,9 @@ export const chaintypes: CommandModule<Args, Args> = {
       } else if (runtimeFile) {
         spinner.text = `Parsing runtime file ${runtimeFile} to get metadata...`;
 
-        const u8aMetadata = hexToU8a(getMetadataFromRuntime("0x" + fs.readFileSync(runtimeFile).toString('hex') as HexString))
+        const u8aMetadata = hexToU8a(
+          getMetadataFromRuntime(('0x' + fs.readFileSync(runtimeFile).toString('hex')) as HexString),
+        );
         // Because this u8aMetadata has compactInt prefixed for it length, we need to get rid of it.
         const length = $.compactU32.tryDecode(u8aMetadata);
         const offset = $.compactU32.tryEncode(length).length;
@@ -72,7 +74,16 @@ export const chaintypes: CommandModule<Args, Args> = {
         spinner.succeed('Metadata decoded!');
 
         spinner.text = 'Generating generic chaintypes...';
-        await generateTypes(chainName, metadata.latest, rpcMethods, runtimeApis, outDir, extension, subpath, rpcMethods.length === 0);
+        await generateTypes(
+          chainName,
+          metadata.latest,
+          rpcMethods,
+          runtimeApis,
+          outDir,
+          extension,
+          subpath,
+          rpcMethods.length === 0,
+        );
         spinner.succeed('Generic chaintypes generated!');
 
         console.log(`🚀 Output: ${outDir}`);
