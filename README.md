@@ -2,10 +2,10 @@
 
 Delightful JavaScript/TypeScript client for [Polkadot](https://polkadot.network/) & [Substrate](https://substrate.io/)
 
-![License][ico-license]
+![Version][ico-version]
 ![Unit test][ico-unit-test]
 ![E2E test][ico-e2e-test]
-![Version][ico-version]
+![License][ico-license]
 [![Chat on Telegram][ico-telegram]][link-telegram]
 
 [ico-telegram]: https://img.shields.io/badge/Dedot-2CA5E0.svg?style=flat-square&logo=telegram&label=Telegram
