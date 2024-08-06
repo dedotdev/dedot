@@ -2,12 +2,12 @@ import { rpc } from '@polkadot/types-support/metadata/static-substrate';
 import staticSubstrate from '@polkadot/types-support/metadata/v15/substrate-hex';
 import { ConstantExecutor } from '@dedot/api';
 import { $Metadata, Metadata, PortableRegistry, RuntimeVersion } from '@dedot/codecs';
+import { GeneratedResult, generateTypes, generateTypesFromEndpoint } from '@dedot/codegen';
 import * as $ from '@dedot/shape';
 import { HexString, hexToU8a, stringCamelCase, u8aToHex } from '@dedot/utils';
 import { getMetadataFromRuntime } from '@polkadot-api/wasm-executor';
 import * as fs from 'fs';
 import ora from 'ora';
-import { GeneratedResult, generateTypes, generateTypesFromEndpoint } from '@dedot/codegen';
 import * as path from 'path';
 import { CommandModule } from 'yargs';
 
@@ -35,34 +35,32 @@ export const chaintypes: CommandModule<Args, Args> = {
 
     let metadataHex: HexString | undefined;
     let rpcMethods: string[] = [];
-    let shouldExposeAllMethod: boolean = false;
     let generatedResult: GeneratedResult;
 
     try {
       if (metadataFile) {
         spinner.text = `Parsing metadata file ${metadataFile}...`;
         metadataHex = fs.readFileSync(metadataFile, 'utf-8').trim() as HexString;
-        shouldExposeAllMethod = true;
         spinner.succeed(`Parsed metadata file ${metadataFile}`);
       } else if (runtimeFile) {
-
         spinner.text = `Parsing runtime file ${runtimeFile} to get metadata...`;
 
         const u8aMetadata = hexToU8a(
-            getMetadataFromRuntime(('0x' + fs.readFileSync(runtimeFile).toString('hex')) as HexString),
+          getMetadataFromRuntime(('0x' + fs.readFileSync(runtimeFile).toString('hex')) as HexString),
         );
         // Because this u8aMetadata has compactInt prefixed for it length, we need to get rid of it.
         const length = $.compactU32.tryDecode(u8aMetadata);
         const offset = $.compactU32.tryEncode(length).length;
 
         metadataHex = u8aToHex(u8aMetadata.subarray(offset));
-        shouldExposeAllMethod = true;
 
         spinner.succeed(`Parsed runtime file ${runtimeFile}`);
       } else if (shouldGenerateGenericTypes) {
         spinner.text = 'Parsing static substrate generic chaintypes...';
+
         metadataHex = staticSubstrate;
         rpcMethods = rpc.methods;
+
         spinner.succeed(`Parsed static substrate generic chaintypes`);
       }
 
@@ -77,7 +75,7 @@ export const chaintypes: CommandModule<Args, Args> = {
           },
           {} as Record<string, number>,
         );
-        spinner.succeed('Decoded metadata!')
+        spinner.succeed('Decoded metadata!');
 
         spinner.text = 'Generating Substrate generic chaintypes';
         generatedResult = await generateTypes(
@@ -88,7 +86,8 @@ export const chaintypes: CommandModule<Args, Args> = {
           outDir,
           extension,
           subpath,
-            shouldExposeAllMethod,
+          // Should generate expose all rpc methods
+          rpcMethods.length === 0,
         );
 
         spinner.succeed('Generated Substrate generic chaintypes');
@@ -104,6 +103,10 @@ export const chaintypes: CommandModule<Args, Args> = {
     } catch (e) {
       if (shouldGenerateGenericTypes) {
         spinner.fail(`Failed to generate Substrate generic chaintypes`);
+      } else if (runtimeFile) {
+        spinner.fail(`Failed to generate chaintypes via runtime file: ${runtimeFile}`);
+      } else if (metadataFile) {
+        spinner.fail(`Failed to generate chaintypes via metadata file: ${metadataFile}`);
       } else {
         spinner.fail(`Failed to generate chaintypes via endpoint: ${wsUrl}`);
       }
@@ -119,18 +122,17 @@ export const chaintypes: CommandModule<Args, Args> = {
         type: 'string',
         describe: 'Websocket URL to fetch metadata',
         alias: 'w',
-        default: 'ws://127.0.0.1:9944',
       })
-        .option('runtimeFile', {
-          type: 'string',
-          describe: 'Runtime file to fetch metadata (.wasm)',
-          alias: 'r',
-        })
-        .option('metadataFile', {
-          type: 'string',
-          describe: 'Encoded metadata file to fetch metadata (.scale)',
-          alias: 'm',
-        })
+      .option('runtimeFile', {
+        type: 'string',
+        describe: 'Runtime file to fetch metadata (.wasm)',
+        alias: 'r',
+      })
+      .option('metadataFile', {
+        type: 'string',
+        describe: 'Encoded metadata file to fetch metadata (.scale)',
+        alias: 'm',
+      })
       .option('output', {
         type: 'string',
         describe: 'Output folder to put generated files',
@@ -152,20 +154,21 @@ export const chaintypes: CommandModule<Args, Args> = {
         describe: 'Using subpath for shared packages (e.g: dedot/types)',
         alias: 's',
         default: true,
-      }) .check((argv) => {
-          const inputs = ['wsUrl', 'runtimeFile', 'metadataFile'];
-          const providedInputs = inputs.filter((input) => argv[input]);
+      })
+      .check((argv) => {
+        const inputs = ['wsUrl', 'runtimeFile', 'metadataFile'];
+        const providedInputs = inputs.filter((input) => argv[input]);
 
-          if (providedInputs.length > 1) {
-            throw new Error(`Please provide only one of the following options: ${inputs.join(', ')}`);
-          }
+        if (providedInputs.length > 1) {
+          throw new Error(`Please provide only one of the following options: ${inputs.join(', ')}`);
+        }
 
-          if (providedInputs.length === 0) {
-            throw new Error(`Please provide one of the following options: ${inputs.join(', ')}`);
-          }
+        if (providedInputs.length === 0) {
+          throw new Error(`Please provide one of the following options: ${inputs.join(', ')}`);
+        }
 
-          return true;
-        }); // TODO check to verify inputs
+        return true;
+      }); // TODO check to verify inputs
   },
 };
 
