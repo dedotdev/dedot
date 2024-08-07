@@ -44,17 +44,15 @@ export class TypesGen extends BaseTypesGen {
 
         const result = args.reduce((a, { type: { type: typeId } }) => a || this.#typeDependOn(typeId, id), false);
 
-        if (result) {
-          return true;
-        }
+        if (result) return true;
       }
-
       return false;
     };
 
     return idInParameters(messages) || idInParameters(constructors);
   }
 
+  // Find out does typeA depends on typeB
   #typeDependOn(typeA: TypeId, typeB: TypeId): boolean {
     if (typeA === typeB) return true;
 
