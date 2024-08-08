@@ -27,8 +27,6 @@ export class TxGen extends QueryGen {
   override generateMethodDef(def: ContractMessage): string {
     const { args } = def;
 
-    args.forEach(({ type: { type } }) => this.importType(type));
-
     const paramsOut = this.generateParamsOut(args);
 
     return `GenericContractTxCall<ChainApi, (${paramsOut && `${paramsOut},`} options: ContractTxOptions) => ContractSubmittableExtrinsic<ChainApi>>`;

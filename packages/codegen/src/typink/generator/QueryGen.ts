@@ -1,5 +1,4 @@
 import {
-  normalizeContractTypeDef,
   ContractMetadata,
   ContractMessage,
   normalizeLabel,
@@ -61,9 +60,6 @@ export class QueryGen {
   generateMethodDef(def: ContractMessage): string {
     const { args, returnType } = def;
 
-    this.importType(returnType.type);
-    args.forEach(({ type: { type } }) => this.importType(type));
-
     const paramsOut = this.generateParamsOut(args);
     const typeOutRaw = this.typesGen.generateType(returnType.type, 0, true);
 
@@ -77,33 +73,5 @@ export class QueryGen {
     return args
       .map(({ type: { type }, label }) => `${stringCamelCase(label)}: ${this.typesGen.generateType(type, 1)}`)
       .join(', ');
-  }
-
-  importType(typeId: number): any {
-    const contractType = this.contractMetadata.types[typeId];
-    const typeDef = normalizeContractTypeDef(this.contractMetadata.types[typeId].type.def);
-
-    if (this.typesGen.includedTypes[contractType.id]) {
-      this.typesGen.addTypeImport(this.typesGen.includedTypes[contractType.id].name);
-      return;
-    }
-    const { type, value } = typeDef;
-
-    switch (type) {
-      case 'Compact':
-      case 'Primitive':
-      case 'BitSequence':
-        return;
-      case 'Struct':
-        return value.fields.forEach(({ typeId }) => this.importType(typeId));
-      case 'Enum':
-        return value.members.forEach(({ fields }) => fields.map(({ typeId }) => this.importType(typeId)).flat());
-      case 'Tuple':
-        return value.fields.forEach((typeId) => this.importType(typeId));
-      case 'SizedVec':
-        return this.importType(value.typeParam);
-      case 'Sequence':
-        return this.importType(value.typeParam);
-    }
   }
 }

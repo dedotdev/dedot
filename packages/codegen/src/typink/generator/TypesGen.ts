@@ -24,7 +24,6 @@ export class TypesGen extends BaseTypesGen {
         defTypeOut += `export type ${nameOut} = ${this.generateType(id, 0, true)};\n\n`;
 
         if (this.shouldGenerateTypeIn(id)) {
-          console.log(id);
           defTypeOut += `export type ${name} = ${this.generateType(id, 0)};\n\n`;
         }
       });
@@ -40,12 +39,14 @@ export class TypesGen extends BaseTypesGen {
 
     const idInParameters = (messages: ContractMessage[]) => {
       for (let message of messages) {
-        const { args } = message;
+        const isIn = message.args.reduce( // prettier-end-here
+          (a, { type: { type: typeId } }) => a || this.#typeDependOn(typeId, id),
+          false,
+        );
 
-        const result = args.reduce((a, { type: { type: typeId } }) => a || this.#typeDependOn(typeId, id), false);
-
-        if (result) return true;
+        if (isIn) return true;
       }
+
       return false;
     };
 
