@@ -1,0 +1,18 @@
+{
+  "compilerOptions": {
+    "noEmit": true
+  },
+  "include": [
+    "packages/dedot",
+    "packages/api",
+    "packages/codecs",
+    "packages/codegen",
+    "packages/contracts",
+    "packages/providers",
+    "packages/runtime-specs",
+    "packages/shape",
+    "packages/storage",
+    "packages/types",
+    "packages/utils"
+  ]
+}

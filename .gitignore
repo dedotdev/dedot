@@ -31,3 +31,10 @@ dist-ssr
 !.yarn/sdks
 !.yarn/versions
 /codegen
+
+# Production
+/build
+
+# Generated files
+.docusaurus
+.cache-loader
