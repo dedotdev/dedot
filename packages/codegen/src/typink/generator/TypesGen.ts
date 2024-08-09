@@ -39,7 +39,8 @@ export class TypesGen extends BaseTypesGen {
 
     const idInParameters = (messages: ContractMessage[]) => {
       for (let message of messages) {
-        const isIn = message.args.reduce( // prettier-end-here
+        // prettier-ignore
+        const isIn = message.args.reduce(
           (a, { type: { type: typeId } }) => a || this.#typeDependOn(typeId, id),
           false,
         );
@@ -61,18 +62,24 @@ export class TypesGen extends BaseTypesGen {
     const defA = normalizeContractTypeDef(types[typeA].type.def);
     const { type, value } = defA;
 
+    // prettier-ignore
     switch (type) {
       case 'Struct':
-        return value.fields.reduce((a, { typeId }) => a || this.#typeDependOn(typeId, typeB), false);
+        return value.fields.reduce(
+          (a, { typeId }) => a || this.#typeDependOn(typeId, typeB),
+          false,
+        );
       case 'Enum':
         return value.members.reduce(
           (a, { fields }) => a || fields.reduce((a, { typeId }) => a || this.#typeDependOn(typeId, typeB), false),
           false,
         );
       case 'Tuple':
-        return value.fields.reduce((a, typeId) => a || this.#typeDependOn(typeId, typeB), false);
+        return value.fields.reduce(
+          (a, typeId) => a || this.#typeDependOn(typeId, typeB),
+          false,
+        );
       case 'Sequence':
-        return this.#typeDependOn(value.typeParam, typeB);
       case 'SizedVec':
         return this.#typeDependOn(value.typeParam, typeB);
       case 'Primitive':
