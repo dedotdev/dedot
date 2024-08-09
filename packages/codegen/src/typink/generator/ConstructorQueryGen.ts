@@ -27,8 +27,6 @@ export class ConstructorQueryGen extends QueryGen {
   override generateMethodDef(def: ContractConstructorMessage): string {
     const { args, returnType } = def;
 
-    args.forEach(({ type: { type } }) => this.importType(type));
-
     const paramsOut = this.generateParamsOut(args);
     const typeOutRaw = this.typesGen.generateType(returnType.type, 0, true);
 

@@ -24,11 +24,7 @@ export class ConstructorTxGen extends QueryGen {
   }
 
   override generateMethodDef(def: ContractConstructorMessage): string {
-    const { args } = def;
-
-    args.forEach(({ type: { type } }) => this.importType(type));
-
-    const paramsOut = this.generateParamsOut(args);
+    const paramsOut = this.generateParamsOut(def.args);
 
     return `GenericConstructorTxCall<ChainApi, (${paramsOut && `${paramsOut},`} options: ConstructorTxOptions) => GenericInstantiateSubmittableExtrinsic<ChainApi>>`;
   }
