@@ -27,7 +27,7 @@
     "docs:start": "yarn workspace @dedot/docs start"
   },
   "devDependencies": {
-    "@polkadot/types-support": "^12.2.3",
+    "@polkadot/types-support": "^12.3.1",
     "@trivago/prettier-plugin-sort-imports": "^4.3.0",
     "happy-dom": "^14.12.3",
     "husky": "^9.1.4",
@@ -41,8 +41,8 @@
     "vitest": "^2.0.5"
   },
   "resolutions": {
-    "@polkadot/types": "^12.2.3",
-    "@polkadot/types-support": "^12.2.3"
+    "@polkadot/types": "^12.3.1",
+    "@polkadot/types-support": "^12.3.1"
   },
   "license": "Apache-2.0"
 }
