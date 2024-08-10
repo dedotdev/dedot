@@ -1,15 +1,10 @@
-import { rpc } from '@polkadot/types-support/metadata/static-substrate';
-import staticSubstrate from '@polkadot/types-support/metadata/v15/substrate-hex';
-import { ConstantExecutor } from '@dedot/api';
-import { $Metadata, Metadata, PortableRegistry, RuntimeVersion } from '@dedot/codecs';
 import { GeneratedResult, generateTypes, generateTypesFromEndpoint } from '@dedot/codegen';
-import * as $ from '@dedot/shape';
-import { HexString, hexToU8a, stringCamelCase, u8aToHex } from '@dedot/utils';
-import { getMetadataFromRuntime } from '@polkadot-api/wasm-executor';
-import * as fs from 'fs';
+import { stringCamelCase, stringPascalCase } from '@dedot/utils';
 import ora from 'ora';
 import * as path from 'path';
 import { CommandModule } from 'yargs';
+import { parseMetadataFromRaw, parseMetadataFromWasm, parseStaticSubstrate } from './utils';
+import { ParsedResult } from './types';
 
 type Args = {
   wsUrl?: string;
@@ -32,54 +27,32 @@ export const chaintypes: CommandModule<Args, Args> = {
 
     const spinner = ora().start();
     const shouldGenerateGenericTypes = wsUrl === 'substrate';
-
-    let metadataHex: HexString | undefined;
-    let rpcMethods: string[] = [];
     let generatedResult: GeneratedResult;
+    let parsedResult: ParsedResult | undefined;
 
     try {
       if (metadataFile) {
         spinner.text = `Parsing metadata file ${metadataFile}...`;
-        metadataHex = fs.readFileSync(metadataFile, 'utf-8').trim() as HexString;
+        parsedResult = await parseMetadataFromRaw(metadataFile);
         spinner.succeed(`Parsed metadata file ${metadataFile}`);
       } else if (runtimeFile) {
         spinner.text = `Parsing runtime file ${runtimeFile} to get metadata...`;
-
-        const u8aMetadata = hexToU8a(
-          getMetadataFromRuntime(('0x' + fs.readFileSync(runtimeFile).toString('hex')) as HexString),
-        );
-        // Because this u8aMetadata has compactInt prefixed for it length, we need to get rid of it.
-        const length = $.compactU32.tryDecode(u8aMetadata);
-        const offset = $.compactU32.tryEncode(length).length;
-
-        metadataHex = u8aToHex(u8aMetadata.subarray(offset));
-
+        parsedResult = await parseMetadataFromWasm(runtimeFile);
         spinner.succeed(`Parsed runtime file ${runtimeFile}`);
       } else if (shouldGenerateGenericTypes) {
         spinner.text = 'Parsing static substrate generic chaintypes...';
-
-        metadataHex = staticSubstrate;
-        rpcMethods = rpc.methods;
-
+        parsedResult = await parseStaticSubstrate();
         spinner.succeed(`Parsed static substrate generic chaintypes`);
       }
 
-      if (metadataHex) {
-        spinner.text = 'Decoding metadata...';
-        const metadata = $Metadata.tryDecode(metadataHex);
-        const runtimeVersion = getRuntimeVersion(metadata);
-        const runtimeApis: Record<string, number> = runtimeVersion.apis.reduce(
-          (acc, [name, version]) => {
-            acc[name] = version;
-            return acc;
-          },
-          {} as Record<string, number>,
-        );
-        spinner.succeed('Decoded metadata!');
+      if (parsedResult) {
+        const { metadata, runtimeVersion, runtimeApis, rpcMethods } = parsedResult;
+        const chainName =
+          chain || stringCamelCase(runtimeVersion.specName) || (shouldGenerateGenericTypes ? 'substrate' : 'local');
 
-        spinner.text = 'Generating Substrate generic chaintypes';
+        spinner.text = `Generating ${stringPascalCase(chainName)} generic chaintypes`;
         generatedResult = await generateTypes(
-          chain || stringCamelCase(runtimeVersion.specName) || (shouldGenerateGenericTypes ? 'substrate' : 'local'),
+          chainName,
           metadata.latest,
           rpcMethods,
           runtimeApis,
@@ -90,14 +63,14 @@ export const chaintypes: CommandModule<Args, Args> = {
           !rpcMethods.length,
         );
 
-        spinner.succeed('Generated Substrate generic chaintypes');
+        spinner.succeed(`Generated ${stringPascalCase(chainName)} generic chaintypes`);
       } else {
         spinner.text = `Generating chaintypes via endpoint: ${wsUrl}`;
         generatedResult = await generateTypesFromEndpoint(chain, wsUrl!, outDir, extension, subpath);
         spinner.succeed(`Generated chaintypes via endpoint: ${wsUrl}`);
       }
 
-      console.log(`  ➡ Output directory: file://${outDir}`);
+      console.log(`  ➡ Output directory: file://${outDir}`);  
       console.log(`  ➡ ChainApi interface: ${generatedResult.interfaceName}`);
       console.log('🌈 Done!');
     } catch (e) {
@@ -170,14 +143,4 @@ export const chaintypes: CommandModule<Args, Args> = {
         return true;
       }); // TODO check to verify inputs
   },
-};
-
-const getRuntimeVersion = (metadata: Metadata): RuntimeVersion => {
-  const registry = new PortableRegistry(metadata.latest);
-  const executor = new ConstantExecutor({
-    registry,
-    metadata,
-  } as any);
-
-  return executor.execute('system', 'version') as RuntimeVersion;
 };
