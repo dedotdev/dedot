@@ -54,5 +54,5 @@ export async function generateContractTypes(
   fs.writeFileSync(eventsTypesFile, await eventsGen.generate(useSubPaths));
   fs.writeFileSync(indexTypesFileName, await indexGen.generate(useSubPaths));
 
-  return { interfaceName };
+  return { interfaceName, dirPath };
 }
