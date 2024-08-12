@@ -3,8 +3,8 @@ import { stringCamelCase, stringPascalCase } from '@dedot/utils';
 import ora from 'ora';
 import * as path from 'path';
 import { CommandModule } from 'yargs';
-import { parseMetadataFromRaw, parseMetadataFromWasm, parseStaticSubstrate } from './utils';
-import { ParsedResult } from './types';
+import { ParsedResult } from './types.js';
+import { parseMetadataFromRaw, parseMetadataFromWasm, parseStaticSubstrate } from './utils.js';
 
 type Args = {
   wsUrl?: string;
@@ -12,15 +12,15 @@ type Args = {
   chain?: string;
   dts?: boolean;
   subpath?: boolean;
-  runtimeFile?: string;
-  metadataFile?: string;
+  wasm?: string;
+  metadata?: string;
 };
 
 export const chaintypes: CommandModule<Args, Args> = {
   command: 'chaintypes',
   describe: 'Generate Types & APIs for Substrate-based chains',
   handler: async (yargs) => {
-    const { wsUrl, runtimeFile, metadataFile, output = '', chain = '', dts = true, subpath = true } = yargs;
+    const { wsUrl, wasm, metadata, output = '', chain = '', dts = true, subpath = true } = yargs;
 
     const outDir = path.resolve(output);
     const extension = dts ? 'd.ts' : 'ts';
@@ -31,14 +31,14 @@ export const chaintypes: CommandModule<Args, Args> = {
     let parsedResult: ParsedResult | undefined;
 
     try {
-      if (metadataFile) {
-        spinner.text = `Parsing metadata file ${metadataFile}...`;
-        parsedResult = await parseMetadataFromRaw(metadataFile);
-        spinner.succeed(`Parsed metadata file ${metadataFile}`);
-      } else if (runtimeFile) {
-        spinner.text = `Parsing runtime file ${runtimeFile} to get metadata...`;
-        parsedResult = await parseMetadataFromWasm(runtimeFile);
-        spinner.succeed(`Parsed runtime file ${runtimeFile}`);
+      if (metadata) {
+        spinner.text = `Parsing metadata file ${metadata}...`;
+        parsedResult = await parseMetadataFromRaw(metadata);
+        spinner.succeed(`Parsed metadata file ${metadata}`);
+      } else if (wasm) {
+        spinner.text = `Parsing runtime wasm file ${wasm}`;
+        parsedResult = await parseMetadataFromWasm(wasm);
+        spinner.succeed(`Parsed runtime wasm file ${wasm}`);
       } else if (shouldGenerateGenericTypes) {
         spinner.text = 'Parsing static substrate generic chaintypes...';
         parsedResult = await parseStaticSubstrate();
@@ -59,8 +59,6 @@ export const chaintypes: CommandModule<Args, Args> = {
           outDir,
           extension,
           subpath,
-          // Should expose all rpc methods
-          !rpcMethods.length,
         );
 
         spinner.succeed(`Generated ${stringPascalCase(chainName)} generic chaintypes`);
@@ -70,16 +68,16 @@ export const chaintypes: CommandModule<Args, Args> = {
         spinner.succeed(`Generated chaintypes via endpoint: ${wsUrl}`);
       }
 
-      console.log(`  ➡ Output directory: file://${generatedResult.dirPath}`);  
+      console.log(`  ➡ Output directory: file://${generatedResult.dirPath}`);
       console.log(`  ➡ ChainApi interface: ${generatedResult.interfaceName}`);
       console.log('🌈 Done!');
     } catch (e) {
       if (shouldGenerateGenericTypes) {
         spinner.fail(`Failed to generate Substrate generic chaintypes`);
-      } else if (runtimeFile) {
-        spinner.fail(`Failed to generate chaintypes via runtime file: ${runtimeFile}`);
-      } else if (metadataFile) {
-        spinner.fail(`Failed to generate chaintypes via metadata file: ${metadataFile}`);
+      } else if (wasm) {
+        spinner.fail(`Failed to generate chaintypes via runtime wasm file: ${wasm}`);
+      } else if (metadata) {
+        spinner.fail(`Failed to generate chaintypes via metadata file: ${metadata}`);
       } else {
         spinner.fail(`Failed to generate chaintypes via endpoint: ${wsUrl}`);
       }
@@ -96,14 +94,14 @@ export const chaintypes: CommandModule<Args, Args> = {
         describe: 'Websocket URL to fetch metadata',
         alias: 'w',
       })
-      .option('runtimeFile', {
+      .option('wasm', {
         type: 'string',
-        describe: 'Runtime file to fetch metadata (.wasm)',
+        describe: 'Runtime wasm file to fetch metadata (.wasm)',
         alias: 'r',
       })
-      .option('metadataFile', {
+      .option('metadata', {
         type: 'string',
-        describe: 'Encoded metadata file to fetch metadata (.scale)',
+        describe: 'Raw encoded metadata file (.scale)',
         alias: 'm',
       })
       .option('output', {
@@ -129,7 +127,7 @@ export const chaintypes: CommandModule<Args, Args> = {
         default: true,
       })
       .check((argv) => {
-        const inputs = ['wsUrl', 'runtimeFile', 'metadataFile'];
+        const inputs = ['wsUrl', 'wasm', 'metadata'];
         const providedInputs = inputs.filter((input) => argv[input]);
 
         if (providedInputs.length > 1) {

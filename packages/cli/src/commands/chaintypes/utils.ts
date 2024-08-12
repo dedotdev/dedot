@@ -6,7 +6,7 @@ import * as $ from '@dedot/shape';
 import { HexString, hexToU8a, u8aToHex } from '@dedot/utils';
 import { getMetadataFromRuntime } from '@polkadot-api/wasm-executor';
 import * as fs from 'fs';
-import { DecodedResult, ParsedResult } from './types';
+import { DecodedMetadataInfo, ParsedResult } from './types.js';
 
 export const getRuntimeVersion = (metadata: Metadata): RuntimeVersion => {
   const registry = new PortableRegistry(metadata.latest);
@@ -18,7 +18,7 @@ export const getRuntimeVersion = (metadata: Metadata): RuntimeVersion => {
   return executor.execute('system', 'version') as RuntimeVersion;
 };
 
-export const decodeMetadata = (metadataHex: HexString): DecodedResult => {
+export const decodeMetadata = (metadataHex: HexString): DecodedMetadataInfo => {
   const metadata = $Metadata.tryDecode(metadataHex);
   const runtimeVersion = getRuntimeVersion(metadata);
   const runtimeApis: Record<string, number> = runtimeVersion.apis.reduce(

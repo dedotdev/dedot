@@ -47,7 +47,6 @@ export async function generateTypes(
   outDir: string = '.',
   extension: string = 'd.ts',
   useSubPaths: boolean = false,
-  exposeAllRpc: boolean = false
 ): Promise<GeneratedResult> {
   const dirPath = path.resolve(outDir, stringDashCase(chain));
   const defTypesFileName = path.join(dirPath, `types.${extension}`);
@@ -79,7 +78,7 @@ export async function generateTypes(
   fs.writeFileSync(defTypesFileName, await typesGen.generate(useSubPaths));
   fs.writeFileSync(errorsFileName, await errorsGen.generate(useSubPaths));
   fs.writeFileSync(eventsFileName, await eventsGen.generate(useSubPaths));
-  fs.writeFileSync(jsonRpcFileName, await jsonRpcGen.generate(useSubPaths, exposeAllRpc));
+  fs.writeFileSync(jsonRpcFileName, await jsonRpcGen.generate(useSubPaths));
   fs.writeFileSync(queryTypesFileName, await queryGen.generate(useSubPaths));
   fs.writeFileSync(constsTypesFileName, await constsGen.generate(useSubPaths));
   fs.writeFileSync(txFileName, await txGen.generate(useSubPaths));

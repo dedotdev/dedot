@@ -42,11 +42,14 @@ export class JsonRpcGen extends ApiGen {
     readonly rpcMethods: string[],
   ) {
     super(typesGen);
-    HIDDEN_RPCS.filter((one) => !rpcMethods.includes(one)).forEach((one) => rpcMethods.push(one));
-    rpcMethods.sort();
+
+    if (rpcMethods.length > 0) {
+      HIDDEN_RPCS.filter((one) => !rpcMethods.includes(one)).forEach((one) => rpcMethods.push(one));
+      rpcMethods.sort();
+    }
   }
 
-  generate(useSubPaths: boolean = false, exposeAllRpc: boolean = false) {
+  generate(useSubPaths: boolean = false) {
     this.typesGen.clearCache();
     this.typesGen.typeImports.addKnownType('GenericJsonRpcApis', 'RpcVersion');
     this.typesGen.typeImports.addKnownJsonRpcType('JsonRpcApis');
@@ -61,6 +64,6 @@ export class JsonRpcGen extends ApiGen {
       .map((one) => `'${one}'`)
       .join(' | ');
 
-    return beautifySourceCode(template({ importTypes, jsonRpcMethods, exposeAllRpc }));
+    return beautifySourceCode(template({ importTypes, jsonRpcMethods }));
   }
 }
