@@ -68,7 +68,7 @@ export const chaintypes: CommandModule<Args, Args> = {
         spinner.succeed(`Generated chaintypes via endpoint: ${wsUrl}`);
       }
 
-      console.log(`  ➡ Output directory: file://${generatedResult.dirPath}`);
+      console.log(`  ➡ Output directory: file://${generatedResult.outputFolder}`);
       console.log(`  ➡ ChainApi interface: ${generatedResult.interfaceName}`);
       console.log('🌈 Done!');
     } catch (e) {
