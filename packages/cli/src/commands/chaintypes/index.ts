@@ -141,6 +141,6 @@ export const chaintypes: CommandModule<Args, Args> = {
         }
 
         return true;
-      }); // TODO check to verify inputs
+      });
   },
 };
