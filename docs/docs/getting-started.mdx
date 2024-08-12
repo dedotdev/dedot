@@ -1,0 +1,50 @@
+---
+sidebar_position: 2
+---
+# Getting Started
+
+Install Dedot to your project and start connecting to blockchain networks
+
+## Installation
+
+### Install `dedot` packages
+
+Dedot provides an umbrella package called `dedot`
+
+```bash npm2yarn
+npm i dedot
+```
+
+Each Substrate-based blockchain has their own set of Data Types & APIs to interact with, so being aware of those Types & APIs when working with a blockchain will greatly improve the overall development experience. Dedot exposes TypeScript's Types & APIs for each individual Substrate-based blockchain, we recommend using TypeScript for your project to have the best experience.
+
+Types & APIs for each Substrate-based blockchains are defined in package [@dedot/chaintypes](https://github.com/dedotdev/chaintypes):
+
+```bash npm2yarn
+npm i -D @dedot/chaintypes
+```
+
+### Typescript setup
+Typescript with `moduleResolution: bundlder`
+
+Next, let's connect to Polkadot & Substrate-based chains.
+
+## Connect to network
+
+### Instantiate `DedotClient`
+#### Websocket endpoint (`WsProvider`)
+```typescript
+  import { DedotClient, WsProvider } from 'dedot';
+  import type { PolkadotApi } from '@dedot/chaintypes';
+
+  const provider = new WsProvider('wss://rpc.polkadot.io');
+  const api = await DedotClient.new<PolkadotApi>(provider);
+
+  // Call rpc `state_getMetadata` to fetch raw scale-encoded metadata and decode it.
+  const metadata = await api.rpc.state_getMetadata();
+  console.log('Metadata:', metadata);
+
+  // Query on-chain storage
+  const balance = await api.query.system.account(<address>);
+  console.log('Balance:', balance);
+```
+#### Smoldot (`SmoldotProvider`)
