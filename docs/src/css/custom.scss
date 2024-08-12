@@ -178,3 +178,8 @@ html[data-theme='dark'] {
 footer.tsd-footer {
   display: none;
 }
+
+.menu__list-item-collapsible, .menu__link, .menu__caret {
+  border-radius: 0;
+}
+

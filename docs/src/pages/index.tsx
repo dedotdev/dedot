@@ -16,8 +16,16 @@ function HomepageHeader() {
         </Heading>
         <p className='hero__subtitle'>{siteConfig.tagline}</p>
         <div className={styles.buttons}>
-          <Link className='button button--secondary button--lg' to='/docs/intro'>
+          <Link className='button button--secondary' to='/docs/getting-started'>
             Getting started 🚀
+          </Link>
+
+          <Link className='button button--secondary' to='/docs/introduction'>
+            Why Dedot?
+          </Link>
+
+          <Link className='button button--secondary' to='https://github.com/dedotdev/dedot'>
+            Github
           </Link>
         </div>
       </div>
