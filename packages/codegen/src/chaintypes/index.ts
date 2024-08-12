@@ -85,5 +85,5 @@ export async function generateTypes(
   fs.writeFileSync(indexFileName, await indexGen.generate(useSubPaths));
   fs.writeFileSync(runtimeApisFileName, await runtimeApisGen.generate(useSubPaths));
 
-  return { interfaceName };
+  return { interfaceName, outputFolder: dirPath };
 }

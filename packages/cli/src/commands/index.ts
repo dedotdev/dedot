@@ -1,2 +1,2 @@
-export * from './chaintypes.js';
+export * from './chaintypes/index.js';
 export * from './typink.js';
