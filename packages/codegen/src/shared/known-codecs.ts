@@ -13,7 +13,6 @@ import {
   $StorageData,
   $StorageKey,
   $UncheckedExtrinsic,
-  $Hash,
 } from '@dedot/codecs';
 import * as $ from '@dedot/shape';
 import { AnyShape } from '@dedot/shape';
@@ -91,7 +90,6 @@ export const looseTypeCodecs: Record<string, AnyShape> = {
   $OpaqueExtrinsic,
   $UncheckedExtrinsic,
   $Era,
-  $Hash,
 };
 
 export function findKnownCodecType(name: string): CodecType {
