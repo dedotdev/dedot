@@ -3,7 +3,7 @@
   "author": "Tung Vu <tung@coongcrafts.io>",
   "private": true,
   "scripts": {
-    "gen-flipper-typink": "yarn cli typink -m ./zombienet-tests/flipper.json -o ./zombienet-tests/contracts"
+    "gen-flipper-typink": "yarn cli typink -m ./zombienet-tests/flipper_v5.json -o ./zombienet-tests/src/contracts"
   },
   "dependencies": {
     "@dedot/chaintypes": "*",
