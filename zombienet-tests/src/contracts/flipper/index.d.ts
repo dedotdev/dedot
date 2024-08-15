@@ -2,7 +2,7 @@
 
 import type { SubstrateApi } from 'dedot/chaintypes';
 import type { GenericContractApi } from 'dedot/contracts';
-import type { RpcV2, RpcVersion, VersionedGenericSubstrateApi } from 'dedot/types';
+import type { RpcVersion, VersionedGenericSubstrateApi } from 'dedot/types';
 import { ConstructorQuery } from './constructor-query';
 import { ConstructorTx } from './constructor-tx';
 import { ContractEvents } from './events';
@@ -13,7 +13,7 @@ import type { InkPrimitivesLangError } from './types';
 export * from './types';
 
 export interface FlipperContractApi<
-  Rv extends RpcVersion = RpcV2,
+  Rv extends RpcVersion = RpcVersion,
   ChainApi extends VersionedGenericSubstrateApi = SubstrateApi,
 > extends GenericContractApi<Rv, ChainApi> {
   query: ContractQuery<ChainApi[Rv]>;

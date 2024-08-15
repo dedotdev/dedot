@@ -28,8 +28,8 @@ import { Executor } from './Executor.js';
 export class ConstructorQueryExecutor<ChainApi extends GenericSubstrateApi> extends Executor<ChainApi> {
   protected readonly code: Hash | Uint8Array | HexString | string;
 
-  constructor(api: ISubstrateClient<ChainApi>, registry: TypinkRegistry, code: Hash | Uint8Array | string) {
-    super(api, registry);
+  constructor(client: ISubstrateClient<ChainApi>, registry: TypinkRegistry, code: Hash | Uint8Array | string) {
+    super(client, registry);
     this.code = code;
   }
 
@@ -53,7 +53,7 @@ export class ConstructorQueryExecutor<ChainApi extends GenericSubstrateApi> exte
         value: this.code,
       } as PalletContractsPrimitivesCode;
 
-      const raw: PalletContractsPrimitivesContractResultResult = await this.api.call.contractsApi.instantiate(
+      const raw: PalletContractsPrimitivesContractResultResult = await this.client.call.contractsApi.instantiate(
         caller,
         value,
         gasLimit,

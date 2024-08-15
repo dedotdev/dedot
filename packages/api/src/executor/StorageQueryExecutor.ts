@@ -106,7 +106,7 @@ export class StorageQueryExecutor<
       const pageSize = pagination?.pageSize || DEFAULT_KEYS_PAGE_SIZE;
       const startKey = pagination?.startKey || entry.prefixKey;
 
-      return await this.api.rpc.state_getKeysPaged(entry.prefixKey, pageSize, startKey, this.atBlockHash);
+      return await this.client.rpc.state_getKeysPaged(entry.prefixKey, pageSize, startKey, this.atBlockHash);
     };
 
     const pagedKeys = async (pagination?: PaginationOptions): Promise<any[]> => {
@@ -124,7 +124,7 @@ export class StorageQueryExecutor<
   }
 
   protected async queryStorage(keys: StorageKey[], hash?: BlockHash): Promise<Record<StorageKey, Option<StorageData>>> {
-    const changeSets: StorageChangeSet[] = await this.api.rpc.state_queryStorageAt(keys, hash);
+    const changeSets: StorageChangeSet[] = await this.client.rpc.state_queryStorageAt(keys, hash);
 
     return changeSets[0].changes.reduce(
       (o, [key, value]) => {
@@ -138,7 +138,7 @@ export class StorageQueryExecutor<
   protected subscribeStorage(keys: StorageKey[], callback: Callback<Array<StorageData | undefined>>): Promise<Unsub> {
     const lastChanges = {} as Record<StorageKey, StorageData | undefined>;
 
-    return this.api.rpc.state_subscribeStorage(keys, (changeSet: StorageChangeSet) => {
+    return this.client.rpc.state_subscribeStorage(keys, (changeSet: StorageChangeSet) => {
       changeSet.changes.forEach(([key, value]) => {
         if (lastChanges[key] !== value) {
           lastChanges[key] = value ?? undefined;

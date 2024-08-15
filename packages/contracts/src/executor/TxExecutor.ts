@@ -20,7 +20,7 @@ export class TxExecutor<ChainApi extends GenericSubstrateApi> extends Executor<C
       const formattedInputs = args.map((arg, index) => this.tryEncode(arg, params[index]));
       const bytes = u8aToHex(concatU8a(hexToU8a(meta.selector), ...formattedInputs));
 
-      return this.api.tx.contracts.call(this.address, value, gasLimit, storageDepositLimit, bytes);
+      return this.client.tx.contracts.call(this.address, value, gasLimit, storageDepositLimit, bytes);
     };
 
     callFn.meta = meta;
