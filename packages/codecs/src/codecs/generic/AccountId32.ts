@@ -38,6 +38,10 @@ export class AccountId32 {
   toJSON() {
     return this.address();
   }
+
+  eq(other: AccountId32Like): boolean {
+    return this.raw === new AccountId32(other).raw;
+  }
 }
 
 export type AccountId32Like = AccountId32 | string | HexString | Uint8Array;
