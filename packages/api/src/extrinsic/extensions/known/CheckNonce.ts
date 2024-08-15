@@ -16,11 +16,11 @@ export class CheckNonce extends SignedExtension<number> {
     assert(signerAddress, 'Signer address not found');
 
     try {
-      return (await this.api.query.system.account(signerAddress)).nonce;
+      return (await this.client.query.system.account(signerAddress)).nonce;
     } catch {}
 
     try {
-      return await this.api.call.accountNonceApi.accountNonce(signerAddress);
+      return await this.client.call.accountNonceApi.accountNonce(signerAddress);
     } catch {}
 
     // TODO fallback to api.rpc.system_accountNextIndex if needed

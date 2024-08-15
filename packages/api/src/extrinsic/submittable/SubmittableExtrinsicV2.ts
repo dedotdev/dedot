@@ -15,20 +15,20 @@ type TxFound = { blockHash: BlockHash; blockNumber: number; index: number; event
  */
 export class SubmittableExtrinsicV2 extends BaseSubmittableExtrinsic {
   constructor(
-    public api: DedotClient,
+    public client: DedotClient,
     call: IRuntimeTxCall,
   ) {
-    super(api, call);
+    super(client, call);
   }
 
   async #send(callback: Callback<ISubmittableResult>): Promise<Unsub> {
-    const api = this.api;
+    const api = this.client;
     const txHex = this.toHex();
     const txHash = this.hash;
 
     // validate the transaction
     // https://github.com/paritytech/json-rpc-interface-spec/issues/55#issuecomment-1609011150
-    const finalizedHash = await this.api.chainHead.finalizedHash();
+    const finalizedHash = await this.client.chainHead.finalizedHash();
     const validateTx = async (hash: BlockHash) => {
       const apiAt = await api.at(hash);
       return apiAt.call.taggedTransactionQueue.validateTransaction('External', txHex, hash);

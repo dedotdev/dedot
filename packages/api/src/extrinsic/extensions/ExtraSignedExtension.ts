@@ -45,7 +45,7 @@ export class ExtraSignedExtension extends SignedExtension<any[], any[]> {
 
   #getSignedExtensions() {
     return this.#signedExtensionDefs.map((extDef) => {
-      const { signedExtensions: userSignedExtensions = {} } = this.api.options;
+      const { signedExtensions: userSignedExtensions = {} } = this.client.options;
 
       const Extension =
         userSignedExtensions[extDef.ident as keyof typeof knownSignedExtensions] ||
@@ -53,7 +53,7 @@ export class ExtraSignedExtension extends SignedExtension<any[], any[]> {
 
       assert(Extension, `SignedExtension for ${extDef.ident} not found`);
 
-      return new Extension(this.api, {
+      return new Extension(this.client, {
         ...ensurePresence(this.options),
         def: extDef,
       });

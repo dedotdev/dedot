@@ -20,8 +20,8 @@ import { Executor } from './Executor.js';
 export class ConstructorTxExecutor<ChainApi extends GenericSubstrateApi> extends Executor<ChainApi> {
   protected readonly code: Hash | Uint8Array | HexString | string;
 
-  constructor(api: ISubstrateClient<ChainApi>, registry: TypinkRegistry, code: Hash | Uint8Array | string) {
-    super(api, registry);
+  constructor(client: ISubstrateClient<ChainApi>, registry: TypinkRegistry, code: Hash | Uint8Array | string) {
+    super(client, registry);
     this.code = code;
   }
 
@@ -42,9 +42,23 @@ export class ConstructorTxExecutor<ChainApi extends GenericSubstrateApi> extends
       const bytes = u8aToHex(concatU8a(hexToU8a(meta.selector), ...formattedInputs));
 
       if (isWasm(this.code)) {
-        return this.api.tx.contracts.instantiateWithCode(value, gasLimit, storageDepositLimit, this.code, bytes, salt);
+        return this.client.tx.contracts.instantiateWithCode(
+          value,
+          gasLimit,
+          storageDepositLimit,
+          this.code,
+          bytes,
+          salt,
+        );
       } else {
-        return this.api.tx.contracts.instantiate(value, gasLimit, storageDepositLimit, this.code, bytes, salt);
+        return this.client.tx.contracts.instantiate(
+          value, // prettier-end-here
+          gasLimit,
+          storageDepositLimit,
+          this.code,
+          bytes,
+          salt,
+        );
       }
     };
 

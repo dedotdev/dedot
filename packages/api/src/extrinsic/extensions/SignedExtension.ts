@@ -30,7 +30,7 @@ export abstract class SignedExtension<Data extends any = {}, AdditionalSigned ex
   additionalSigned: AdditionalSigned;
 
   constructor(
-    public api: ISubstrateClient,
+    public client: ISubstrateClient,
     public options?: SignedExtensionOptions,
   ) {
     this.data = {} as unknown as Data;
@@ -54,7 +54,7 @@ export abstract class SignedExtension<Data extends any = {}, AdditionalSigned ex
   }
 
   get registry() {
-    return this.api.registry;
+    return this.client.registry;
   }
 
   get signedExtensionDef() {

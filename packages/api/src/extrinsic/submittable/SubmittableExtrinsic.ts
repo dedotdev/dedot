@@ -19,7 +19,7 @@ import { toTxStatus } from './utils.js';
  */
 export class SubmittableExtrinsic extends BaseSubmittableExtrinsic implements ISubmittableExtrinsicLegacy {
   async dryRun(account: AddressOrPair, optionsOrHash?: Partial<SignerOptions> | BlockHash): Promise<DryRunResult> {
-    const dryRunFn = this.api.rpc.system_dryRun;
+    const dryRunFn = this.client.rpc.system_dryRun;
 
     if (isHex(optionsOrHash)) {
       return dryRunFn(this.toHex(), optionsOrHash);
@@ -37,12 +37,12 @@ export class SubmittableExtrinsic extends BaseSubmittableExtrinsic implements IS
     const txHash = this.hash;
 
     if (isSubscription) {
-      return this.api.rpc.author_submitAndWatchExtrinsic(txHex, async (txStatus: TransactionStatus) => {
+      return this.client.rpc.author_submitAndWatchExtrinsic(txHex, async (txStatus: TransactionStatus) => {
         if (txStatus.type === 'InBlock' || txStatus.type === 'Finalized') {
           const blockHash: BlockHash = txStatus.value;
 
           const [signedBlock, blockEvents] = await Promise.all([
-            this.api.rpc.chain_getBlock(blockHash),
+            this.client.rpc.chain_getBlock(blockHash),
             this.getSystemEventsAt(blockHash),
           ]);
 
@@ -60,7 +60,7 @@ export class SubmittableExtrinsic extends BaseSubmittableExtrinsic implements IS
         }
       });
     } else {
-      return this.api.rpc.author_submitExtrinsic(txHex);
+      return this.client.rpc.author_submitExtrinsic(txHex);
     }
   }
 }

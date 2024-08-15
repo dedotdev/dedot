@@ -23,10 +23,10 @@ export abstract class BaseSubmittableExtrinsic extends Extrinsic implements ISub
   #alterTx?: HexString;
 
   constructor(
-    public api: ISubstrateClient,
+    public client: ISubstrateClient,
     call: IRuntimeTxCall,
   ) {
-    super(api.registry, call);
+    super(client.registry, call);
   }
 
   async paymentInfo(account: AddressOrPair, options?: Partial<PayloadOptions>): Promise<TxPaymentInfo> {
@@ -34,13 +34,13 @@ export abstract class BaseSubmittableExtrinsic extends Extrinsic implements ISub
 
     const txU8a = this.toU8a();
 
-    const api = this.api as ISubstrateClient<SubstrateApi[RpcVersion]>;
+    const api = this.client as ISubstrateClient<SubstrateApi[RpcVersion]>;
     return api.call.transactionPaymentApi.queryInfo(txU8a, txU8a.length);
   }
 
   async sign(fromAccount: AddressOrPair, options?: Partial<SignerOptions>) {
     const address = isKeyringPair(fromAccount) ? fromAccount.address : fromAccount.toString();
-    const extra = new ExtraSignedExtension(this.api, {
+    const extra = new ExtraSignedExtension(this.client, {
       signerAddress: address,
       payloadOptions: options,
     });
@@ -116,7 +116,7 @@ export abstract class BaseSubmittableExtrinsic extends Extrinsic implements ISub
   }
 
   protected async getSystemEventsAt(hash: BlockHash): Promise<FrameSystemEventRecord[]> {
-    const atApi = (await this.api.at(hash)) as ISubstrateClientAt<SubstrateApi[RpcVersion]>;
+    const atApi = (await this.client.at(hash)) as ISubstrateClientAt<SubstrateApi[RpcVersion]>;
     return await atApi.query.system.events();
   }
 
@@ -146,6 +146,6 @@ export abstract class BaseSubmittableExtrinsic extends Extrinsic implements ISub
   }
 
   #getSigner(options?: Partial<SignerOptions>): Signer | undefined {
-    return options?.signer || this.api.options.signer;
+    return options?.signer || this.client.options.signer;
   }
 }

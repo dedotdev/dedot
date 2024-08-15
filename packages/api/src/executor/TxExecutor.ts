@@ -59,6 +59,6 @@ export class TxExecutor<ChainApi extends GenericSubstrateApi = GenericSubstrateA
   }
 
   protected createExtrinsic(call: IRuntimeTxCall): any {
-    return new SubmittableExtrinsic(this.api as ISubstrateClient<ChainApi>, call);
+    return new SubmittableExtrinsic(this.client as ISubstrateClient<ChainApi>, call);
   }
 }

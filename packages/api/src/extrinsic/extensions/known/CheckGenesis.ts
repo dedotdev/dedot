@@ -8,7 +8,7 @@ import { SignedExtension } from '../SignedExtension.js';
  */
 export class CheckGenesis extends SignedExtension<{}, Hash> {
   async init() {
-    this.additionalSigned = ensurePresence(this.api.genesisHash);
+    this.additionalSigned = ensurePresence(this.client.genesisHash);
   }
 
   toPayload(): Partial<SignerPayloadJSON> {
