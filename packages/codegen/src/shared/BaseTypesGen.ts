@@ -24,12 +24,14 @@ export abstract class BaseTypesGen {
   includedTypes: Record<TypeId, NamedType>;
   typeImports: TypeImports;
   skipTypes: string[];
+  knownTypes: Map<TypeId, string>;
 
-  protected constructor(types: PortableType[]) {
+  protected constructor(types: PortableType[], skipTypes: string[] = []) {
     this.types = types;
-    this.includedTypes = {};
+    this.skipTypes = skipTypes;
+    this.knownTypes = new Map<TypeId, string>();
     this.typeImports = new TypeImports();
-    this.skipTypes = [];
+    this.includedTypes = {};
   }
 
   shouldGenerateTypeIn(_id: TypeId): boolean {
@@ -71,6 +73,15 @@ export abstract class BaseTypesGen {
       }
     });
 
+    typesWithPath.map((type) => {
+      const { path, id } = type;
+      const joinedPath = path.join('::');
+      const [knownType, codecName] = checkKnownCodecType(joinedPath);
+      if (!knownType) return;
+
+      this.knownTypes.set(id, codecName);
+    });
+
     return typesWithPath.reduce(
       (o, type) => {
         const { path, id } = type;
@@ -82,17 +93,15 @@ export abstract class BaseTypesGen {
 
         const suffix = typeSuffixes.get(id) || '';
 
-        let knownType = false;
         let name, nameOut;
 
-        const [isKnownCodecType, codecName] = checkKnownCodecType(joinedPath);
+        const knownCodecName = this.knownTypes.get(id);
+        const knownType = !!knownCodecName;
 
-        if (isKnownCodecType) {
-          const codecType = findKnownCodecType(codecName);
+        if (knownType) {
+          const codecType = findKnownCodecType(knownCodecName);
           name = codecType.typeIn;
           nameOut = codecType.typeOut;
-
-          knownType = true;
         } else if (PATH_RM_INDEX_1.includes(path[1])) {
           const newPath = path.slice();
           newPath.splice(1, 1);

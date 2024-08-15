@@ -6,12 +6,8 @@ import { beautifySourceCode, compileTemplate } from '../../utils.js';
 const SKIP_TYPES = ['Result', 'Option'];
 
 export class TypesGen extends BaseTypesGen {
-  contractMetadata: ContractMetadata;
-
-  constructor(contractMetadata: ContractMetadata) {
-    super(extractContractTypes(contractMetadata));
-    this.contractMetadata = contractMetadata;
-    this.skipTypes = SKIP_TYPES;
+  constructor(public contractMetadata: ContractMetadata) {
+    super(extractContractTypes(contractMetadata), SKIP_TYPES);
     this.includedTypes = this.includeTypes();
   }
 
@@ -51,7 +47,36 @@ export class TypesGen extends BaseTypesGen {
       return false;
     };
 
-    return idInParameters(messages) || idInParameters(constructors);
+    return (idInParameters(messages) || idInParameters(constructors)) && this.#includeKnownTypes(id);
+  }
+
+  #includeKnownTypes(typeA: TypeId): boolean {
+    if (this.knownTypes.has(typeA)) return true;
+
+    const { types } = this.contractMetadata;
+    const defA = normalizeContractTypeDef(types[typeA].type.def);
+    const { type, value } = defA;
+
+    switch (type) {
+      case 'Struct':
+        return value.fields.some(({ typeId }) => this.#includeKnownTypes(typeId));
+      case 'Enum':
+        return value.members.some(({ fields }) => fields.some(({ typeId }) => this.#includeKnownTypes(typeId)));
+      case 'Tuple':
+        return value.fields.some((typeId) => this.#includeKnownTypes(typeId));
+      case 'Sequence':
+      case 'SizedVec':
+        const $innerType = this.types[value.typeParam].typeDef;
+        if ($innerType.type === 'Primitive' && $innerType.value.kind === 'u8') {
+          return true; // ByteLikes
+        } else {
+          return this.#includeKnownTypes(value.typeParam);
+        }
+      case 'Primitive':
+      case 'Compact':
+      case 'BitSequence':
+        return false;
+    }
   }
 
   // Find out does typeA depends on typeB
