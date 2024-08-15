@@ -6,6 +6,7 @@ export enum RetryStrategy {
 }
 
 export class ChainHeadError extends DedotError {
+  name = 'ChainHeadError';
   retryStrategy?: RetryStrategy | undefined;
 }
 
@@ -15,6 +16,7 @@ export class ChainHeadError extends DedotError {
  * Ref: https://paritytech.github.io/json-rpc-interface-spec/api/chainHead_v1_follow.html#operationinaccessible
  */
 export class ChainHeadOperationInaccessibleError extends ChainHeadError {
+  name = 'ChainHeadOperationInaccessibleError';
   retryStrategy = RetryStrategy.NOW;
 }
 
@@ -24,6 +26,7 @@ export class ChainHeadOperationInaccessibleError extends ChainHeadError {
  * Ref: https://paritytech.github.io/json-rpc-interface-spec/api/chainHead_v1_follow.html#stop
  */
 export class ChainHeadStopError extends ChainHeadError {
+  name = 'ChainHeadStopError';
   retryStrategy = RetryStrategy.QUEUED;
 }
 
@@ -31,13 +34,16 @@ export class ChainHeadStopError extends ChainHeadError {
  * Operation Error
  * Ref: https://paritytech.github.io/json-rpc-interface-spec/api/chainHead_v1_follow.html#operationerror
  */
-export class ChainHeadOperationError extends ChainHeadError {}
+export class ChainHeadOperationError extends ChainHeadError {
+  name = 'ChainHeadOperationError';
+}
 
 /**
  * Limit Reached Error
  * Ref: https://paritytech.github.io/json-rpc-interface-spec/api/chainHead_v1_storage.html#limitreached
  */
 export class ChainHeadLimitReachedError extends ChainHeadError {
+  name = 'ChainHeadLimitReachedError';
   retryStrategy = RetryStrategy.QUEUED;
 }
 
@@ -45,8 +51,14 @@ export class ChainHeadLimitReachedError extends ChainHeadError {
  * Invalid Runtime Error
  * Ref: https://paritytech.github.io/json-rpc-interface-spec/api/chainHead_v1_storage.html#limitreached
  */
-export class ChainHeadInvalidRuntimeError extends ChainHeadError {}
+export class ChainHeadInvalidRuntimeError extends ChainHeadError {
+  name = 'ChainHeadInvalidRuntimeError';
+}
 
-export class ChainHeadBlockNotPinnedError extends ChainHeadError {}
+export class ChainHeadBlockNotPinnedError extends ChainHeadError {
+  name = 'ChainHeadBlockNotPinnedError';
+}
 
-export class ChainHeadBlockPrunedError extends ChainHeadError {}
+export class ChainHeadBlockPrunedError extends ChainHeadError {
+  name = 'ChainHeadBlockPrunedError';
+}
