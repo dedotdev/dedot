@@ -7,15 +7,16 @@ import { ContractEvent, ContractMetadata, GenericContractApi } from './types/ind
 import { ensureSupportContractsPallet, newProxyChain, parseRawMetadata } from './utils.js';
 
 export class Contract<ContractApi extends GenericContractApi = GenericContractApi> {
-  readonly #api: ISubstrateClient;
   readonly #registry: TypinkRegistry;
   readonly #address: AccountId32;
   readonly #metadata: ContractMetadata;
 
-  constructor(api: ISubstrateClient, metadata: ContractMetadata | string, address: AccountId32Like) {
-    ensureSupportContractsPallet(api);
-
-    this.#api = api;
+  constructor(
+    readonly client: ISubstrateClient<ContractApi['types']['ChainApi']>,
+    metadata: ContractMetadata | string,
+    address: AccountId32Like,
+  ) {
+    ensureSupportContractsPallet(client);
     this.#address = new AccountId32(address);
     this.#metadata = typeof metadata === 'string' ? parseRawMetadata(metadata) : metadata;
     this.#registry = new TypinkRegistry(this.#metadata);
@@ -42,14 +43,14 @@ export class Contract<ContractApi extends GenericContractApi = GenericContractAp
   }
 
   get query(): ContractApi['query'] {
-    return newProxyChain(new QueryExecutor(this.#api, this.#registry, this.#address)) as ContractApi['query'];
+    return newProxyChain(new QueryExecutor(this.client, this.#registry, this.#address)) as ContractApi['query'];
   }
 
   get tx(): ContractApi['tx'] {
-    return newProxyChain(new TxExecutor(this.#api, this.#registry, this.#address)) as ContractApi['tx'];
+    return newProxyChain(new TxExecutor(this.client, this.#registry, this.#address)) as ContractApi['tx'];
   }
 
   get events(): ContractApi['events'] {
-    return newProxyChain(new EventExecutor(this.#api, this.#registry, this.#address)) as ContractApi['events'];
+    return newProxyChain(new EventExecutor(this.client, this.#registry, this.#address)) as ContractApi['events'];
   }
 }
