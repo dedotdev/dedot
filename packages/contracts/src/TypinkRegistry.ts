@@ -1,4 +1,4 @@
-import { AccountId32, Bytes, TypeRegistry } from '@dedot/codecs';
+import { AccountId32, AccountId32Like, Bytes, TypeRegistry } from '@dedot/codecs';
 import * as $ from '@dedot/shape';
 import { IEventRecord, IRuntimeEvent } from '@dedot/types';
 import { DedotError, assert, hexToU8a, stringCamelCase, stringPascalCase } from '@dedot/utils';
@@ -29,13 +29,15 @@ export class TypinkRegistry extends TypeRegistry {
     return this.#metadata;
   }
 
-  decodeEvents(records: IEventRecord[]): ContractEvent[] {
+  decodeEvents(records: IEventRecord[], contract?: AccountId32Like): ContractEvent[] {
     return records
-      .filter(({ event }) => this.#isContractEmittedEvent(event)) // prettier-end-here
-      .map((record) => this.decodeEvent(record));
+      .filter(({ event }) => this.#isContractEmittedEvent(event, contract)) // prettier-end-here
+      .map((record) => this.decodeEvent(record, contract));
   }
 
-  decodeEvent(eventRecord: IEventRecord): ContractEvent {
+  decodeEvent(eventRecord: IEventRecord, contract?: AccountId32Like): ContractEvent {
+    assert(this.#isContractEmittedEvent(eventRecord.event, contract), 'Invalid ContractEmitted Event');
+
     const { version } = this.#metadata;
 
     switch (version) {
@@ -48,14 +50,30 @@ export class TypinkRegistry extends TypeRegistry {
     }
   }
 
-  #isContractEmittedEvent(event: IRuntimeEvent): event is ContractEmittedEvent {
-    // @ts-ignore
-    return event.pallet === 'Contracts' && event.palletEvent.name === 'ContractEmitted';
+  #isContractEmittedEvent(event: IRuntimeEvent, contract?: AccountId32Like): event is ContractEmittedEvent {
+    const eventMatched =
+      event.pallet === 'Contracts' &&
+      typeof event.palletEvent === 'object' &&
+      event.palletEvent.name === 'ContractEmitted';
+
+    if (!eventMatched) return false;
+
+    if (contract) {
+      // @ts-ignore
+      const emittedContract = event.palletEvent.data?.contract;
+      if (emittedContract instanceof AccountId32) {
+        return emittedContract.eq(contract);
+      } else {
+        return false;
+      }
+    }
+
+    return true;
   }
 
   #decodeEventV4(eventRecord: IEventRecord): ContractEvent {
     assert(this.#metadata.version === '4', 'Invalid metadata version!');
-    assert(this.#isContractEmittedEvent(eventRecord.event), 'Event Record is not valid!');
+    assert(this.#isContractEmittedEvent(eventRecord.event), 'Invalid ContractEmitted Event');
 
     const data = hexToU8a(eventRecord.event.palletEvent.data.data);
     const index = data.at(0);
@@ -69,7 +87,7 @@ export class TypinkRegistry extends TypeRegistry {
 
   #decodeEventV5(eventRecord: IEventRecord): ContractEvent {
     assert(this.#metadata.version === 5, 'Invalid metadata version!');
-    assert(this.#isContractEmittedEvent(eventRecord.event), 'Event Record is not valid!');
+    assert(this.#isContractEmittedEvent(eventRecord.event), 'Invalid ContractEmitted Event');
 
     const data = hexToU8a(eventRecord.event.palletEvent.data.data);
     const signatureTopic = eventRecord.topics.at(0);

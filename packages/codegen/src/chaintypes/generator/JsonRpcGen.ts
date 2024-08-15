@@ -42,8 +42,11 @@ export class JsonRpcGen extends ApiGen {
     readonly rpcMethods: string[],
   ) {
     super(typesGen);
-    HIDDEN_RPCS.filter((one) => !rpcMethods.includes(one)).forEach((one) => rpcMethods.push(one));
-    rpcMethods.sort();
+
+    if (rpcMethods.length > 0) {
+      HIDDEN_RPCS.filter((one) => !rpcMethods.includes(one)).forEach((one) => rpcMethods.push(one));
+      rpcMethods.sort();
+    }
   }
 
   generate(useSubPaths: boolean = false) {

@@ -2,9 +2,10 @@ import { LegacyClient } from '@dedot/api';
 import { MetadataLatest } from '@dedot/codecs';
 import { WsProvider } from '@dedot/providers';
 import { RpcMethods } from '@dedot/types/json-rpc';
-import { stringCamelCase } from '@dedot/utils';
+import { stringDashCase, stringPascalCase } from '@dedot/utils';
 import * as fs from 'fs';
 import * as path from 'path';
+import { GeneratedResult } from '../types.js';
 import {
   ConstsGen,
   ErrorsGen,
@@ -23,17 +24,19 @@ export async function generateTypesFromEndpoint(
   outDir?: string,
   extension: string = 'd.ts',
   useSubPaths: boolean = false,
-) {
-  const api = await LegacyClient.new(new WsProvider(endpoint));
+): Promise<GeneratedResult> {
+  // Immediately throw error if cannot connect to provider for the first time.
+  const api = await LegacyClient.new(new WsProvider({ endpoint, retryDelayMs: 0, timeout: 0 }));
   const { methods }: RpcMethods = await api.rpc.rpc_methods();
   const apis = api.runtimeVersion.apis || {};
-  if (!chain) {
-    chain = stringCamelCase(api.runtimeVersion.specName || 'local');
-  }
 
-  await generateTypes(chain, api.metadata.latest, methods, apis, outDir, extension, useSubPaths);
+  chain = chain || api.runtimeVersion.specName || 'local';
+
+  const result = await generateTypes(chain, api.metadata.latest, methods, apis, outDir, extension, useSubPaths);
 
   await api.disconnect();
+
+  return result;
 }
 
 export async function generateTypes(
@@ -44,8 +47,8 @@ export async function generateTypes(
   outDir: string = '.',
   extension: string = 'd.ts',
   useSubPaths: boolean = false,
-) {
-  const dirPath = path.resolve(outDir, chain);
+): Promise<GeneratedResult> {
+  const dirPath = path.resolve(outDir, stringDashCase(chain));
   const defTypesFileName = path.join(dirPath, `types.${extension}`);
   const constsTypesFileName = path.join(dirPath, `consts.${extension}`);
   const queryTypesFileName = path.join(dirPath, `query.${extension}`);
@@ -60,11 +63,13 @@ export async function generateTypes(
     fs.mkdirSync(dirPath, { recursive: true });
   }
 
+  const interfaceName = `${stringPascalCase(chain)}Api`;
+
   const typesGen = new TypesGen(metadata);
   const constsGen = new ConstsGen(typesGen);
   const queryGen = new QueryGen(typesGen);
   const jsonRpcGen = new JsonRpcGen(typesGen, rpcMethods);
-  const indexGen = new IndexGen(chain);
+  const indexGen = new IndexGen(interfaceName);
   const errorsGen = new ErrorsGen(typesGen);
   const eventsGen = new EventsGen(typesGen);
   const runtimeApisGen = new RuntimeApisGen(typesGen, runtimeApis);
@@ -79,4 +84,6 @@ export async function generateTypes(
   fs.writeFileSync(txFileName, await txGen.generate(useSubPaths));
   fs.writeFileSync(indexFileName, await indexGen.generate(useSubPaths));
   fs.writeFileSync(runtimeApisFileName, await runtimeApisGen.generate(useSubPaths));
+
+  return { interfaceName, outputFolder: dirPath };
 }

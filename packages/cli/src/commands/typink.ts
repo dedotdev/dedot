@@ -1,6 +1,8 @@
 import { generateContractTypes } from '@dedot/codegen';
+import { parseRawMetadata } from '@dedot/contracts';
 import { assert } from '@dedot/utils';
 import * as fs from 'node:fs';
+import ora from 'ora';
 import * as path from 'path';
 import { CommandModule } from 'yargs';
 
@@ -14,7 +16,7 @@ type Args = {
 
 export const typink: CommandModule<Args, Args> = {
   command: 'typink',
-  describe: 'Generate types & APIs for a ink! smart contracts',
+  describe: 'Generate Types & APIs for ink! smart contracts',
   handler: async (yargs) => {
     const { contract, output = '', metadata, dts = true, subpath = true } = yargs;
 
@@ -24,13 +26,34 @@ export const typink: CommandModule<Args, Args> = {
     const metadataFile = path.resolve(metadata);
     const extension = dts ? 'd.ts' : 'ts';
 
-    const rawMetadata = fs.readFileSync(metadataFile, 'utf-8');
+    const spinner = ora().start();
 
-    console.log(`- Generating contract types via metadata ${metadata}`);
+    try {
+      spinner.text = `Parsing contract metadata file: ${metadata}`;
+      const contractMetadata = parseRawMetadata(fs.readFileSync(metadataFile, 'utf-8'));
+      spinner.succeed(`Parsed contract metadata file: ${metadata}`);
 
-    await generateContractTypes(rawMetadata, contract, outDir, extension, subpath);
+      spinner.text = 'Generating contract Types & APIs';
+      const { interfaceName, outputFolder } = await generateContractTypes(
+        contractMetadata,
+        contract,
+        outDir,
+        extension,
+        subpath,
+      );
+      spinner.succeed('Generated contract Types & APIs');
 
-    console.log(`- DONE! Output: ${outDir}`);
+      console.log(`  ➡ Output directory: file://${outputFolder}`);
+      console.log(`  ➡ ContractApi interface: ${interfaceName}`);
+      console.log('🌈 Done!');
+
+      spinner.stop();
+    } catch (e) {
+      spinner.stop();
+
+      spinner.fail(`Failed to generate contract Types & APIs using metadata file: ${metadata}`);
+      console.error(e);
+    }
   },
   builder: (yargs) => {
     return yargs
@@ -47,7 +70,7 @@ export const typink: CommandModule<Args, Args> = {
       })
       .option('contract', {
         type: 'string',
-        describe: 'Contract name',
+        describe: 'Custom contract name, default is contract name from metadata',
         alias: 'c',
       })
       .option('dts', {
@@ -58,7 +81,7 @@ export const typink: CommandModule<Args, Args> = {
       })
       .option('subpath', {
         type: 'boolean',
-        describe: 'Using subpath for shared packages',
+        describe: 'Using subpath for shared packages (e.g: dedot/contracts)',
         alias: 's',
         default: true,
       });

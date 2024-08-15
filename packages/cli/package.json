@@ -1,6 +1,6 @@
 {
   "name": "@dedot/cli",
-  "version": "0.3.0",
+  "version": "0.4.1",
   "author": "Thang X. Vu <thang@coongcrafts.io>",
   "homepage": "https://github.com/dedotdev/dedot/tree/main/packages/cli",
   "repository": {
@@ -16,19 +16,21 @@
   "sideEffects": false,
   "type": "module",
   "scripts": {
-    "build": "tsc --project tsconfig.build.cjs.json && cp -R ./bin ./dist",
-    "clean": "rm -rf ./dist && rm -rf ./tsconfig.tsbuildinfo ./tsconfig.build.cjs.tsbuildinfo && rm -rf ./src/codegen",
+    "build": "tsc --project tsconfig.build.json && cp -R ./bin ./dist",
+    "clean": "rm -rf ./dist && rm -rf ./tsconfig.tsbuildinfo ./tsconfig.build.tsbuildinfo",
     "start": "ts-node src/index.ts"
   },
   "dependencies": {
     "@dedot/api": "workspace:*",
     "@dedot/codecs": "workspace:*",
     "@dedot/codegen": "workspace:*",
-    "@polkadot/types-support": "^12.2.3",
+    "@polkadot-api/wasm-executor": "^0.1.1",
+    "@polkadot/types-support": "^12.3.1",
+    "ora": "^8.0.1",
     "yargs": "^17.7.2"
   },
   "devDependencies": {
-    "@types/yargs": "^17.0.32"
+    "@types/yargs": "^17.0.33"
   },
   "publishConfig": {
     "access": "public",

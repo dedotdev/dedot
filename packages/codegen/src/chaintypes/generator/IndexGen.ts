@@ -1,12 +1,11 @@
-import { stringPascalCase } from '@dedot/utils';
 import { TypeImports } from '../../shared/index.js';
 import { beautifySourceCode, compileTemplate } from '../../utils.js';
 
 export class IndexGen {
-  constructor(readonly chain: string) {}
+  constructor(public readonly interfaceName: string) {}
 
   async generate(useSubPaths: boolean = false) {
-    const interfaceName = stringPascalCase(this.chain);
+    const interfaceName = this.interfaceName;
 
     const typeImports = new TypeImports();
     typeImports.addKnownType('GenericSubstrateApi', 'RpcLegacy', 'RpcV2', 'RpcVersion');

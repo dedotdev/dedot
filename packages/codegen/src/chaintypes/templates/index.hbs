@@ -11,7 +11,7 @@ import { ChainTx } from './tx';
 
 export * from './types';
 
-export interface Versioned{{{interfaceName}}}Api<Rv extends RpcVersion> extends GenericSubstrateApi<Rv> {
+export interface Versioned{{{interfaceName}}}<Rv extends RpcVersion> extends GenericSubstrateApi<Rv> {
   rpc: ChainJsonRpcApis<Rv>;
   consts: ChainConsts<Rv>;
   query: ChainStorage<Rv>;
@@ -21,7 +21,7 @@ export interface Versioned{{{interfaceName}}}Api<Rv extends RpcVersion> extends 
   tx: ChainTx<Rv>;
 }
 
-export interface {{{interfaceName}}}Api {
-  legacy: Versioned{{{interfaceName}}}Api<RpcLegacy>;
-  v2: Versioned{{{interfaceName}}}Api<RpcV2>;
+export interface {{{interfaceName}}} {
+  legacy: Versioned{{{interfaceName}}}<RpcLegacy>;
+  v2: Versioned{{{interfaceName}}}<RpcV2>;
 }

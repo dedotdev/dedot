@@ -2,12 +2,19 @@
 
 Delightful JavaScript/TypeScript client for [Polkadot](https://polkadot.network/) & [Substrate](https://substrate.io/)
 
-<p align="left">
-  <img src="https://img.shields.io/github/license/dedotdev/dedot?style=flat-square"/>
-  <img src="https://img.shields.io/github/actions/workflow/status/dedotdev/dedot/run-tests.yml?label=unit%20tests&style=flat-square"/>
-  <img src="https://img.shields.io/github/actions/workflow/status/dedotdev/dedot/zombienet-tests.yml?label=e2e%20tests&style=flat-square"/>
-  <img src="https://img.shields.io/github/package-json/v/dedotdev/dedot?filename=packages%2Fapi%2Fpackage.json&style=flat-square"/>
-</p>
+![Version][ico-version]
+![Unit test][ico-unit-test]
+![E2E test][ico-e2e-test]
+![License][ico-license]
+[![Chat on Telegram][ico-telegram]][link-telegram]
+
+[ico-telegram]: https://img.shields.io/badge/Dedot-2CA5E0.svg?style=flat-square&logo=telegram&label=Telegram
+[ico-unit-test]: https://img.shields.io/github/actions/workflow/status/dedotdev/dedot/run-tests.yml?label=unit%20tests&style=flat-square
+[ico-e2e-test]: https://img.shields.io/github/actions/workflow/status/dedotdev/dedot/zombienet-tests.yml?label=e2e%20tests&style=flat-square
+[ico-version]: https://img.shields.io/github/package-json/v/dedotdev/dedot?filename=packages%2Fapi%2Fpackage.json&style=flat-square
+[ico-license]: https://img.shields.io/github/license/dedotdev/dedot?style=flat-square
+
+[link-telegram]: https://t.me/+edmxW2Lsmm02ODll
 
 ---
 
@@ -31,6 +38,7 @@ Delightful JavaScript/TypeScript client for [Polkadot](https://polkadot.network/
 ### Table of contents
 
 - [Getting started](#getting-started)
+- [Example Dapps & Scripts](#example-dapps--scripts)
 - [Chain Types & APIs](#chain-types--apis)
 - [Execute JSON-RPC Methods](#execute-json-rpc-methods)
 - [Query On-chain Storage](#query-on-chain-storage)
@@ -44,9 +52,16 @@ Delightful JavaScript/TypeScript client for [Polkadot](https://polkadot.network/
 - [Packages Structure](#packages-structure)
 - [Credit](#credit)
 
+### Example Dapps & Scripts
+- Try Dedot! - https://try.dedot.dev - [Source Code](https://github.com/dedotdev/trydedot)
+- Tiny Url - https://link.dedot.dev - [Source Code](https://github.com/dedotdev/link)
+- [Simple Playground Script](https://stackblitz.com/edit/try-dedot?file=main.ts&view=editor)
+- [Interact with PSP22 ink! Contract](https://stackblitz.com/edit/psp22-dedot?file=main.ts&view=editor)
+- Add yours?
+
 ### Getting started
 
-Try `dedot` now on [CodeSandbox Playground](https://codesandbox.io/p/devbox/trydedot-th96cm?file=%2Fmain.ts%3A24%2C26) or follow the below steps to install Dedot to your projects.
+Follow the below steps to install Dedot to your project.
 
 - Install `dedot` package
 
@@ -187,7 +202,7 @@ const metadata = await api.rpc.state_getMetadata();
 const result = await api.rpc.module_rpc_name('param1', 'param2');
 ```
 
-For advanced users who want to interact directly server/node via raw JSON-RPC APIs, you can use a light-weight `JsonRpcClient` for this purpose without having to use `DedotClient` or `LegacyClient`.
+For advanced users who want to interact directly with server/node via raw JSON-RPC APIs, you can use a light-weight `JsonRpcClient` for this purpose without having to use `DedotClient` or `LegacyClient`.
 
 ```typescript
 import { JsonRpcClient, WsProvider } from 'dedot';
@@ -804,4 +819,5 @@ Proudly supported by Web3 Foundation Grants Program.
 ### License
 
 [Apache-2.0](https://github.com/dedotdev/dedot/blob/main/LICENSE)
+
 

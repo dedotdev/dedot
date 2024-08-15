@@ -1,4 +1,4 @@
 #!/usr/bin/env node
-import { dedot } from '../cjs/index.js';
+import { dedot } from '../index.js';
 
 dedot();
