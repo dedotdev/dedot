@@ -30,8 +30,8 @@ export abstract class SignedExtension<Data extends any = {}, AdditionalSigned ex
   additionalSigned: AdditionalSigned;
 
   constructor(
-    public client: ISubstrateClient,
-    public options?: SignedExtensionOptions,
+    readonly client: ISubstrateClient,
+    readonly options?: SignedExtensionOptions,
   ) {
     this.data = {} as unknown as Data;
     this.additionalSigned = [] as unknown as AdditionalSigned;

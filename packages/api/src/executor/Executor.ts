@@ -11,7 +11,7 @@ export abstract class Executor<ChainApi extends GenericSubstrateApi = GenericSub
   readonly #atBlockHash?: BlockHash;
 
   constructor(
-    public client: ISubstrateClientAt<ChainApi>,
+    readonly client: ISubstrateClientAt<ChainApi>,
     atBlockHash?: BlockHash,
   ) {
     this.#atBlockHash = atBlockHash;

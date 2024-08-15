@@ -23,7 +23,7 @@ export abstract class BaseSubmittableExtrinsic extends Extrinsic implements ISub
   #alterTx?: HexString;
 
   constructor(
-    public client: ISubstrateClient,
+    readonly client: ISubstrateClient,
     call: IRuntimeTxCall,
   ) {
     super(client.registry, call);
