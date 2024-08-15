@@ -172,6 +172,16 @@ describe('Contract', () => {
         expect(decodedEvent).toEqual({ name: 'Flipped', data: { old: false, new: true } });
       });
 
+      it('should throw error if contract address does not match', () => {
+        flipper = new Contract(api, FLIPPER_CONTRACT_METADATA_V5, RANDOM_CONTRACT_ADDRESS);
+
+        const contractEmittedEventRecord =
+          '0x00010000000803f2773dba008bbe3bb76fa8cb89fddb534b4e81dcaf52faaf94190a89ab3d3b04080001040a39b5ca0b8b3a5172476100ae7b9168b269cc91d5648efe180c75d935d3e886';
+        const eventRecord = api.registry.findCodec(19).tryDecode(contractEmittedEventRecord) as FrameSystemEventRecord;
+
+        expect(() => flipper.decodeEvent(eventRecord)).toThrowError('Invalid ContractEmitted Event');
+      });
+
       it('should throw error if cannot determine the event meta', () => {
         flipper = new Contract(
           api,
