@@ -10,6 +10,7 @@ import type {
  * after verifying via `call.taggedTransactionQueue.validateTransaction`
  */
 export class InvalidTxError extends DedotError {
+  name = 'InvalidTxError';
   constructor(
     message: string,
     public data: Result<
