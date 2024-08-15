@@ -22,11 +22,11 @@ export class Contract<ContractApi extends GenericContractApi = GenericContractAp
   }
 
   decodeEvent(eventRecord: IEventRecord): ContractEvent {
-    return this.#registry.decodeEvent(eventRecord);
+    return this.#registry.decodeEvent(eventRecord, this.address);
   }
 
   decodeEvents(eventRecords: IEventRecord[]): ContractEvent[] {
-    return this.#registry.decodeEvents(eventRecords);
+    return this.#registry.decodeEvents(eventRecords, this.address);
   }
 
   get metadata(): ContractMetadata {
