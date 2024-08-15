@@ -32,6 +32,8 @@ export const MockedRuntimeVersionWithContractsApi: RuntimeVersion = {
   stateVersion: 0,
 };
 
+const FLIPPER_V4_CONTRACT_ADDRESS = '5GdT4fJfXHtLxEk3npnK9a65LF986z67uRKhZ9TsZ17Lnhdg';
+
 describe('Contract', () => {
   let api: LegacyClient, provider: MockProvider, flipper: Contract, psp22: Contract;
 
@@ -39,7 +41,7 @@ describe('Contract', () => {
     beforeEach(async () => {
       provider = new MockProvider(MockedRuntimeVersionWithContractsApi);
       api = await LegacyClient.new({ provider });
-      flipper = new Contract(api, FLIPPER_CONTRACT_METADATA_V4, RANDOM_CONTRACT_ADDRESS);
+      flipper = new Contract(api, FLIPPER_CONTRACT_METADATA_V4, FLIPPER_V4_CONTRACT_ADDRESS);
       psp22 = new Contract(api, PSP22_CONTRACT_METADATA, RANDOM_CONTRACT_ADDRESS);
     });
 
@@ -116,12 +118,16 @@ describe('Contract', () => {
         .findCodec(19)
         .tryDecode(notContractEmittedEventRecordHex) as FrameSystemEventRecord;
 
-      expect(() => flipper.decodeEvent(eventRecord)).toThrowError(`Event Record is not valid!`);
+      expect(() => flipper.decodeEvent(eventRecord)).toThrowError('Invalid ContractEmitted Event');
     });
 
     describe('decodeEventV5', () => {
       it('should decode if can detect anonymous event meta', () => {
-        flipper = new Contract(api, FLIPPER_CONTRACT_METADATA_V5_NO_SIGNATURE_TOPIC, RANDOM_CONTRACT_ADDRESS);
+        flipper = new Contract(
+          api,
+          FLIPPER_CONTRACT_METADATA_V5_NO_SIGNATURE_TOPIC,
+          '5Euv8w2AmFMVNePZEkG9T7zVsgY2TNyt2V9NoBcmiS1zTrz6',
+        );
 
         const contractEmittedEventRecord =
           '0x000100000008037e00d4cc806c1d91d5caccb5f933511d3270761ec5fb68bc6ab01ebe727fe6db08010000';
@@ -138,7 +144,7 @@ describe('Contract', () => {
         flipper = new Contract(
           api,
           FLIPPER_CONTRACT_METADATA_V5_NO_SIGNATURE_TOPIC_INDEXED_FIELDS,
-          RANDOM_CONTRACT_ADDRESS,
+          '5E8TUSzaDG3AHRNHBqhtb4egLUrULR4ojLPXo2Rm3a1RNJ1c',
         );
 
         const contractEmittedEventRecord =
@@ -153,7 +159,7 @@ describe('Contract', () => {
       });
 
       it('should decode properly', () => {
-        flipper = new Contract(api, FLIPPER_CONTRACT_METADATA_V5, RANDOM_CONTRACT_ADDRESS);
+        flipper = new Contract(api, FLIPPER_CONTRACT_METADATA_V5, '5HYcsFkV9ath7f8t8bAUqmfuh6iTrVzsXxjNhN3EvEPsKmF9');
 
         const contractEmittedEventRecord =
           '0x00010000000803f2773dba008bbe3bb76fa8cb89fddb534b4e81dcaf52faaf94190a89ab3d3b04080001040a39b5ca0b8b3a5172476100ae7b9168b269cc91d5648efe180c75d935d3e886';
@@ -167,7 +173,11 @@ describe('Contract', () => {
       });
 
       it('should throw error if cannot determine the event meta', () => {
-        flipper = new Contract(api, FLIPPER_CONTRACT_METADATA_V5_NO_SIGNATURE_TOPIC, RANDOM_CONTRACT_ADDRESS);
+        flipper = new Contract(
+          api,
+          FLIPPER_CONTRACT_METADATA_V5_NO_SIGNATURE_TOPIC,
+          '5HYcsFkV9ath7f8t8bAUqmfuh6iTrVzsXxjNhN3EvEPsKmF9',
+        );
 
         const contractEmittedEventRecord =
           '0x00010000000803f2773dba008bbe3bb76fa8cb89fddb534b4e81dcaf52faaf94190a89ab3d3b04080001040a39b5ca0b8b3a5172476100ae7b9168b269cc91d5648efe180c75d935d3e886';
@@ -179,7 +189,7 @@ describe('Contract', () => {
 
     describe('decodeEventV4', () => {
       beforeEach(async () => {
-        flipper = new Contract(api, FLIPPER_CONTRACT_METADATA_V4, RANDOM_CONTRACT_ADDRESS);
+        flipper = new Contract(api, FLIPPER_CONTRACT_METADATA_V4, FLIPPER_V4_CONTRACT_ADDRESS);
       });
 
       it('should decode properly', () => {
