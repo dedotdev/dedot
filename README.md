@@ -487,8 +487,8 @@ After running the command, Types & APIs of the contract will be generated.
 E.g: if the contract's name is `flipper`, the Types & APIs will be put in a folder named `flipper`, the entry-point interface for the contract will be `FlipperContractApi` in `flipper/index.d.ts` file. An example of Types & APIs for flipper contract can be found [here](https://github.com/dedotdev/dedot/tree/main/zombienet-tests/src/contracts/flipper).
 
 > [!NOTE]
-> If you're connecting to a local [`substrate-contracts-node`](https://github.com/paritytech/substrate-contracts-node/releases) for development, you might to connect using `LegacyClient` as the latest version of `substrate-contracts-node` does not working fine/comply with the last updates for [new JSON-RPC specs](https://paritytech.github.io/json-rpc-interface-spec/introduction.html).
-> Following [this instruction](#using-legacyclient-to-connect-via-legacy-json-rpc-apis) to connect to the network via `LegacyClient`
+> If you're connecting to a local [`substrate-contracts-node`](https://github.com/paritytech/substrate-contracts-node/releases) for development, you might to connect using `LegacyClient` as the latest version of `substrate-contracts-node` ([`v0.41.0`](https://github.com/paritytech/substrate-contracts-node/releases/tag/v0.41.0)) does not working fine/comply with the latest updates for [new JSON-RPC specs](https://paritytech.github.io/json-rpc-interface-spec/introduction.html).
+> Following [this instruction](#using-legacyclient-to-connect-via-legacy-json-rpc-apis) to connect to the network via `LegacyClient`.
 
 #### Deploy contracts
 
