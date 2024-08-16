@@ -1,28 +1,25 @@
 import type { PalletContractsPrimitivesContractResult } from '@dedot/api/chaintypes';
 import { Result } from '@dedot/codecs';
 import { GenericSubstrateApi } from '@dedot/types';
-import { assert, concatU8a, hexToU8a, u8aToHex } from '@dedot/utils';
+import { assert, assertFalse, concatU8a, hexToU8a, u8aToHex } from '@dedot/utils';
 import { ContractDispatchError, ContractLangError } from '../errors.js';
-import {
-  ContractCallOptions,
-  ContractCallMessage,
-  GenericContractQueryCall,
-  GenericContractCallResult,
-} from '../types/index.js';
-import { normalizeLabel, toReturnFlags } from '../utils.js';
-import { Executor } from './Executor.js';
+import { ContractCallOptions, GenericContractQueryCall, GenericContractCallResult } from '../types/index.js';
+import { toReturnFlags } from '../utils.js';
+import { ContractExecutor } from './ContractExecutor.js';
 
-export class QueryExecutor<ChainApi extends GenericSubstrateApi> extends Executor<ChainApi> {
+export class QueryExecutor<ChainApi extends GenericSubstrateApi> extends ContractExecutor<ChainApi> {
   doExecute(message: string) {
-    const meta = this.#findMessage(message);
+    const meta = this.findMessage(message);
     assert(meta, `Query message not found: ${message}`);
 
     const callFn: GenericContractQueryCall<ChainApi> = async (...params: any[]) => {
       const { args } = meta;
-      assert(params.length === args.length + 1, `Expected ${args.length + 1} arguments, got ${params.length}`);
 
-      const callOptions = params[args.length] as ContractCallOptions;
-      const { caller, value = 0n, gasLimit, storageDepositLimit } = callOptions;
+      assertFalse(params.length < args.length, `Expected at least ${args.length} arguments, got ${params.length}`);
+      assertFalse(params.length > args.length + 1, `Expected at most ${args.length + 1} arguments, got ${params.length}`);
+
+      const callOptions = (params[args.length] || {}) as ContractCallOptions;
+      const { caller = this.options.defaultCaller, value = 0n, gasLimit, storageDepositLimit } = callOptions;
       assert(caller, 'Expected a valid caller address in ContractCallOptions');
 
       const formattedInputs = args.map((arg, index) => this.tryEncode(arg, params[index]));
@@ -59,9 +56,5 @@ export class QueryExecutor<ChainApi extends GenericSubstrateApi> extends Executo
     callFn.meta = meta;
 
     return callFn;
-  }
-
-  #findMessage(message: string): ContractCallMessage | undefined {
-    return this.metadata.spec.messages.find((one) => normalizeLabel(one.label) === message);
   }
 }

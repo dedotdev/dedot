@@ -1,22 +1,19 @@
 import { ISubstrateClient } from '@dedot/api';
 import { SubstrateApi } from '@dedot/api/chaintypes';
-import { AccountId32 } from '@dedot/codecs';
 import { GenericSubstrateApi, RpcVersion } from '@dedot/types';
 import { TypinkRegistry } from '../TypinkRegistry.js';
-import { ContractMessageArg, ContractMessage } from '../types/index.js';
+import { ContractMessageArg, ContractMessage, Options } from '../types/index.js';
 import { ContractMetadata } from '../types/index.js';
 
 export abstract class Executor<ChainApi extends GenericSubstrateApi = SubstrateApi[RpcVersion]> {
   readonly #api: ISubstrateClient<ChainApi>;
   readonly #registry: TypinkRegistry;
-  readonly #address?: AccountId32;
+  readonly #options: Options;
 
-  constructor(api: ISubstrateClient<ChainApi>, registry: TypinkRegistry, address?: AccountId32) {
+  constructor(api: ISubstrateClient<ChainApi>, registry: TypinkRegistry, options: Options = {}) {
     this.#api = api;
     this.#registry = registry;
-    if (address) {
-      this.#address = new AccountId32(address);
-    }
+    this.#options = options;
   }
 
   get api(): ISubstrateClient<ChainApi> {
@@ -27,12 +24,12 @@ export abstract class Executor<ChainApi extends GenericSubstrateApi = SubstrateA
     return this.#registry.metadata;
   }
 
-  get address(): AccountId32 | undefined {
-    return this.#address;
-  }
-
   get registry(): TypinkRegistry {
     return this.#registry;
+  }
+
+  get options(): Options {
+    return this.#options;
   }
 
   abstract doExecute(...paths: string[]): unknown;

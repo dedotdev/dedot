@@ -1,12 +1,11 @@
 import { GenericSubstrateApi } from '@dedot/types';
 import { assert, concatU8a, hexToU8a, u8aToHex } from '@dedot/utils';
-import { ContractCallMessage, ContractTxOptions, GenericContractTxCall } from '../types/index.js';
-import { normalizeLabel } from '../utils.js';
-import { Executor } from './Executor.js';
+import { ContractTxOptions, GenericContractTxCall } from '../types/index.js';
+import { ContractExecutor } from './ContractExecutor.js';
 
-export class TxExecutor<ChainApi extends GenericSubstrateApi> extends Executor<ChainApi> {
+export class TxExecutor<ChainApi extends GenericSubstrateApi> extends ContractExecutor<ChainApi> {
   doExecute(message: string) {
-    const meta = this.#findTxMessage(message);
+    const meta = this.findTxMessage(message);
     assert(meta, `Tx message not found: ${message}`);
 
     const callFn: GenericContractTxCall<ChainApi> = (...params: any[]) => {
@@ -26,9 +25,5 @@ export class TxExecutor<ChainApi extends GenericSubstrateApi> extends Executor<C
     callFn.meta = meta;
 
     return callFn;
-  }
-
-  #findTxMessage(message: string): ContractCallMessage | undefined {
-    return this.metadata.spec.messages.find((one) => one.mutates && normalizeLabel(one.label) === message);
   }
 }

@@ -1,48 +1,31 @@
-import { ISubstrateClient } from '@dedot/api';
 import { PalletContractsPrimitivesCode, PalletContractsPrimitivesContractResultResult } from '@dedot/api/chaintypes';
-import { Hash } from '@dedot/codecs';
 import { Result } from '@dedot/shape';
 import { GenericSubstrateApi } from '@dedot/types';
-import {
-  assert,
-  assertFalse,
-  concatU8a,
-  HexString,
-  hexToU8a,
-  isNull,
-  isUndefined,
-  isWasm,
-  u8aToHex,
-} from '@dedot/utils';
-import { TypinkRegistry } from '../TypinkRegistry.js';
+import { assert, assertFalse, concatU8a, hexToU8a, isNull, isUndefined, isWasm, u8aToHex } from '@dedot/utils';
 import { ContractInstantiateDispatchError, ContractInstantiateLangError } from '../errors.js';
-import {
-  ConstructorCallOptions,
-  ContractConstructorMessage,
-  GenericConstructorCallResult,
-  GenericConstructorQueryCall,
-} from '../types/index.js';
-import { normalizeLabel, toReturnFlags } from '../utils.js';
-import { Executor } from './Executor.js';
+import { ConstructorCallOptions, GenericConstructorCallResult, GenericConstructorQueryCall } from '../types/index.js';
+import { toReturnFlags } from '../utils.js';
+import { DeployerExecutor } from './DeployerExecutor.js';
 
-export class ConstructorQueryExecutor<ChainApi extends GenericSubstrateApi> extends Executor<ChainApi> {
-  protected readonly code: Hash | Uint8Array | HexString | string;
-
-  constructor(api: ISubstrateClient<ChainApi>, registry: TypinkRegistry, code: Hash | Uint8Array | string) {
-    super(api, registry);
-    this.code = code;
-  }
-
+export class ConstructorQueryExecutor<ChainApi extends GenericSubstrateApi> extends DeployerExecutor<ChainApi> {
   doExecute(constructor: string) {
-    const meta = this.#findConstructorMeta(constructor);
+    const meta = this.findConstructorMeta(constructor);
     assert(meta, `Constructor message not found: ${constructor}`);
 
     const callFn: GenericConstructorQueryCall<ChainApi> = async (...params: any[]) => {
       const { args } = meta;
-      assert(params.length === args.length + 1, `Expected ${args.length + 1} arguments, got ${params.length}`);
 
-      const callOptions = params[args.length] as ConstructorCallOptions;
-      const { caller, value = 0n, gasLimit, storageDepositLimit, salt = '0x' } = callOptions;
+      assertFalse(params.length < args.length, `Expected at least ${args.length} arguments, got ${params.length}`);
+      assertFalse(params.length > args.length + 1, `Expected at most ${args.length + 1} arguments, got ${params.length}`);
+
+      const callOptions = (params[args.length] || {}) as ConstructorCallOptions;
+      const {
+        caller = this.options.defaultCaller,
+        value = 0n,
+        gasLimit,
+        storageDepositLimit,
+        salt = '0x',
+      } = callOptions;
       assert(caller, 'Expected a valid caller address in ConstructorCallOptions');
       assertFalse(isNull(salt) || isUndefined(salt), 'Expected a salt in ConstructorCallOptions');
 
@@ -86,9 +69,5 @@ export class ConstructorQueryExecutor<ChainApi extends GenericSubstrateApi> exte
     callFn.meta = meta;
 
     return callFn;
-  }
-
-  #findConstructorMeta(constructor: string): ContractConstructorMessage | undefined {
-    return this.metadata.spec.constructors.find((one) => normalizeLabel(one.label) === constructor);
   }
 }
