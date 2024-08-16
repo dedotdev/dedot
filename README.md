@@ -138,7 +138,7 @@ const client = await DedotClient.new(provider);
 
 #### Using `LegacyClient` to connect via legacy JSON-RPC APIs
 
-If the JSON-RPC server doesn't support [new](https://paritytech.github.io/json-rpc-interface-spec/introduction.html) JSON-RPC APIs yet, you can connect using the `LegacyClient` which build on top of the legacy JSON-RPC APIs.
+If the JSON-RPC server doesn't support [new JSON-RPC APIs](https://paritytech.github.io/json-rpc-interface-spec/introduction.html) yet, you can connect to the network using the `LegacyClient` which build on top of the [legacy JSON-RPC APIs](https://github.com/w3f/PSPs/blob/master/PSPs/drafts/psp-6.md).
 
 ```typescript
 import { LegacyClient, WsProvider } from 'dedot';
