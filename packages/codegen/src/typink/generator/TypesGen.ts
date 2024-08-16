@@ -33,28 +33,32 @@ export class TypesGen extends BaseTypesGen {
   override shouldGenerateTypeIn(id: TypeId): boolean {
     const { messages, constructors } = this.contractMetadata.spec;
 
-    const idInParameters = (messages: ContractMessage[]) => {
-      for (let message of messages) {
-        // prettier-ignore
-        const isIn = message.args.reduce(
+    return (
+      (this.#idInParameters(id, messages) || this.#idInParameters(id, constructors)) && this.#includeKnownTypes(id)
+    );
+  }
+
+  #idInParameters(id: TypeId, messages: ContractMessage[]): boolean {
+    for (let message of messages) {
+      // prettier-ignore
+      const isIn = message.args.reduce(
           (a, { type: { type: typeId } }) => a || this.#typeDependOn(typeId, id),
           false,
         );
 
-        if (isIn) return true;
-      }
+      if (isIn) return true;
+    }
 
-      return false;
-    };
-
-    return (idInParameters(messages) || idInParameters(constructors)) && this.#includeKnownTypes(id);
+    return false;
   }
 
-  #includeKnownTypes(typeA: TypeId): boolean {
-    if (this.knownTypes.has(typeA)) return true;
+  // Find out does type depends on known types
+  // Example: `type TypeA = Struct { field: AccountId }` => includeKnownTypes(TypeA) === true
+  #includeKnownTypes(typeId: TypeId): boolean {
+    if (this.knownTypes[typeId]) return true;
 
     const { types } = this.contractMetadata;
-    const defA = normalizeContractTypeDef(types[typeA].type.def);
+    const defA = normalizeContractTypeDef(types[typeId].type.def);
     const { type, value } = defA;
 
     switch (type) {
@@ -80,6 +84,7 @@ export class TypesGen extends BaseTypesGen {
   }
 
   // Find out does typeA depends on typeB
+  // Example: `type TypeA = Struct { field: TypeB }` => typeDependOn(TypeA, TypeB) === true
   #typeDependOn(typeA: TypeId, typeB: TypeId): boolean {
     if (typeA === typeB) return true;
 

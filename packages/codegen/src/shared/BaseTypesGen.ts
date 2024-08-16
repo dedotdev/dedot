@@ -24,13 +24,13 @@ export abstract class BaseTypesGen {
   includedTypes: Record<TypeId, NamedType>;
   typeImports: TypeImports;
   skipTypes: string[];
-  knownTypes: Map<TypeId, string>;
+  knownTypes: Record<TypeId, string>;
 
   protected constructor(types: PortableType[], skipTypes: string[] = []) {
     this.types = types;
     this.skipTypes = skipTypes;
-    this.knownTypes = new Map<TypeId, string>();
     this.typeImports = new TypeImports();
+    this.knownTypes = this.#knownTypes();
     this.includedTypes = {};
   }
 
@@ -43,6 +43,21 @@ export abstract class BaseTypesGen {
   clearCache() {
     this.typeCache = {};
     this.typeImports.clear();
+  }
+
+  #knownTypes(): Record<TypeId, string> {
+    const typesWithPath = this.types.filter((one) => one.path.length > 0);
+
+    return typesWithPath.reduce(
+      (o, type) => {
+        const { path, id } = type;
+        const [knownType, codecName] = checkKnownCodecType(path.join('::'));
+
+        if (!knownType) return o;
+        return { ...o, [id]: codecName };
+      },
+      {} as Record<TypeId, string>,
+    );
   }
 
   includeTypes(): Record<TypeId, NamedType> {
@@ -73,15 +88,6 @@ export abstract class BaseTypesGen {
       }
     });
 
-    typesWithPath.map((type) => {
-      const { path, id } = type;
-      const joinedPath = path.join('::');
-      const [knownType, codecName] = checkKnownCodecType(joinedPath);
-      if (!knownType) return;
-
-      this.knownTypes.set(id, codecName);
-    });
-
     return typesWithPath.reduce(
       (o, type) => {
         const { path, id } = type;
@@ -95,7 +101,7 @@ export abstract class BaseTypesGen {
 
         let name, nameOut;
 
-        const knownCodecName = this.knownTypes.get(id);
+        const knownCodecName = this.knownTypes[id];
         const knownType = !!knownCodecName;
 
         if (knownType) {

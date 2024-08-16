@@ -27,9 +27,8 @@ export class TypesGen extends BaseTypesGen {
   registry: PortableRegistry;
 
   constructor(metadata: MetadataLatest) {
-    super(metadata.types);
+    super(metadata.types, SKIP_TYPES);
     this.metadata = metadata;
-    this.skipTypes = SKIP_TYPES;
     this.registry = new PortableRegistry(this.metadata);
     this.includedTypes = this.includeTypes();
   }
