@@ -147,6 +147,16 @@ const provider = new WsProvider('wss://rpc.polkadot.io');
 const api = await LegacyClient.new(provider);
 ```
 
+> [!NOTE]
+> The [new JSON-RPC APIs](https://paritytech.github.io/json-rpc-interface-spec/introduction.html) are not well implemented/unstable for RPC Nodes using Polkadot-SDK version < `1.11.0`, so one should connect to the network using `LegacyClient` in such cases. For nodes using Polkadot-SDK version >= `1.11.0`, it's recommended to use `DedotClient` to connect to the network.
+>
+> You can easily check the current node's implementation version by calling RPC: `client.rpc.system_version()`
+
+
+> [!NOTE]
+> It's recommended to use `DedotClient` for better performance when you connect to the network using [smoldot](https://www.npmjs.com/package/smoldot) light client via [`SmoldotProvider`](https://github.com/dedotdev/dedot/blob/main/packages/providers/src/smoldot/SmoldotProvider.ts).
+
+
 ### Chain Types & APIs
 
 Each Substrate-based blockchain has their own set of data types & APIs to interact with, so being aware of those types & APIs when working with a blockchain will greatly improve the overall development experience. `dedot` exposes TypeScript's types & APIs for each individual Substrate-based blockchain, we recommend using TypeScript for your project to have the best experience.
@@ -487,7 +497,8 @@ After running the command, Types & APIs of the contract will be generated.
 E.g: if the contract's name is `flipper`, the Types & APIs will be put in a folder named `flipper`, the entry-point interface for the contract will be `FlipperContractApi` in `flipper/index.d.ts` file. An example of Types & APIs for flipper contract can be found [here](https://github.com/dedotdev/dedot/tree/main/zombienet-tests/src/contracts/flipper).
 
 > [!NOTE]
-> If you're connecting to a local [`substrate-contracts-node`](https://github.com/paritytech/substrate-contracts-node/releases) for development, you might to connect using `LegacyClient` as the latest version of `substrate-contracts-node` ([`v0.41.0`](https://github.com/paritytech/substrate-contracts-node/releases/tag/v0.41.0)) does not working fine/comply with the latest updates for [new JSON-RPC specs](https://paritytech.github.io/json-rpc-interface-spec/introduction.html).
+> If you're connecting to a local [`substrate-contracts-node`](https://github.com/paritytech/substrate-contracts-node/releases) for development, you might want to connect using `LegacyClient` as the latest version of `substrate-contracts-node` ([`v0.41.0`](https://github.com/paritytech/substrate-contracts-node/releases/tag/v0.41.0)) does not working fine/comply with the latest updates for [new JSON-RPC specs](https://paritytech.github.io/json-rpc-interface-spec/introduction.html).
+> 
 > Following [this instruction](#using-legacyclient-to-connect-via-legacy-json-rpc-apis) to connect to the network via `LegacyClient`.
 
 #### Deploy contracts
