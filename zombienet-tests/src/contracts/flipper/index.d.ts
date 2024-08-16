@@ -12,6 +12,13 @@ import type { InkPrimitivesLangError } from './types';
 
 export * from './types';
 
+/**
+ * @name: FlipperContractApi
+ * @contractName: flipper
+ * @contractVersion: 5.0.0
+ * @authors: Parity Technologies <admin@parity.io>
+ * @language: ink! 5.0.0
+ **/
 export interface FlipperContractApi<
   Rv extends RpcVersion = RpcVersion,
   ChainApi extends VersionedGenericSubstrateApi = SubstrateApi,
