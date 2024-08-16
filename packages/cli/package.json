@@ -18,7 +18,8 @@
   "scripts": {
     "build": "tsc --project tsconfig.build.json && cp -R ./bin ./dist",
     "clean": "rm -rf ./dist && rm -rf ./tsconfig.tsbuildinfo ./tsconfig.build.tsbuildinfo",
-    "start": "ts-node src/index.ts"
+    "start": "ts-node src/index.ts",
+    "test": "vitest --watch=false"
   },
   "dependencies": {
     "@dedot/api": "workspace:*",
