@@ -14,7 +14,7 @@ Delightful JavaScript/TypeScript client for [Polkadot](https://polkadot.network/
 [ico-version]: https://img.shields.io/github/package-json/v/dedotdev/dedot?filename=packages%2Fapi%2Fpackage.json&style=flat-square
 [ico-license]: https://img.shields.io/github/license/dedotdev/dedot?style=flat-square
 
-[link-telegram]: https://t.me/+edmxW2Lsmm02ODll
+[link-telegram]: https://t.me/JoinDedot
 
 ---
 
@@ -61,6 +61,7 @@ Delightful JavaScript/TypeScript client for [Polkadot](https://polkadot.network/
 
 ### Getting started
 
+#### Installation & connecting to network
 Follow the below steps to install Dedot to your project.
 
 - Install `dedot` package
@@ -123,7 +124,9 @@ const run = async () => {
 run().catch(console.error);
 ```
 
-- You can also import `dedot` using `require`.
+#### Support CommonJS (`require`)
+
+You can also import `dedot` using `require`.
 
 ```js
 // main.js
@@ -133,7 +136,9 @@ const provider = new WsProvider('wss://rpc.polkadot.io');
 const api = await DedotClient.new(provider);
 ```
 
-- If the JSON-RPC server doesn't support [new](https://paritytech.github.io/json-rpc-interface-spec/introduction.html) JSON-RPC APIs yet, you can connect using the `LegacyClient` which build on top of the legacy JSON-RPC APIs.
+#### Using `LegacyClient` to connect via legacy JSON-RPC APIs
+
+If the JSON-RPC server doesn't support [new](https://paritytech.github.io/json-rpc-interface-spec/introduction.html) JSON-RPC APIs yet, you can connect using the `LegacyClient` which build on top of the legacy JSON-RPC APIs.
 
 ```typescript
 import { LegacyClient, WsProvider } from 'dedot';
@@ -480,6 +485,10 @@ dedot typink -m ./path/to/metadata.json -o ./where/to-put/generated-types
 ```
 After running the command, Types & APIs of the contract will be generated. 
 E.g: if the contract's name is `flipper`, the Types & APIs will be put in a folder named `flipper`, the entry-point interface for the contract will be `FlipperContractApi` in `flipper/index.d.ts` file. An example of Types & APIs for flipper contract can be found [here](https://github.com/dedotdev/dedot/tree/main/zombienet-tests/src/contracts/flipper).
+
+> [!NOTE]
+> If you're connecting to a local [`substrate-contracts-node`](https://github.com/paritytech/substrate-contracts-node/releases) for development, you might to connect using `LegacyClient` as the latest version of `substrate-contracts-node` does not working fine/comply with the last updates for [new JSON-RPC specs](https://paritytech.github.io/json-rpc-interface-spec/introduction.html).
+> Following [this instruction](#using-legacyclient-to-connect-via-legacy-json-rpc-apis) to connect to the network via `LegacyClient`
 
 #### Deploy contracts
 
