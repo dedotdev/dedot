@@ -26,7 +26,6 @@ export class IndexGen {
       source: { language = '' },
     } = this.contractMetadata;
 
-    const importTypes = typeImports.toImports({ useSubPaths });
     const interfaceDocs = commentBlock([
       `@name: ${interfaceName}`, // prettier-end-here
       `@contractName: ${name}`,
@@ -34,6 +33,7 @@ export class IndexGen {
       `@authors: ${authors.join(', ')}`,
       `@language: ${language}`,
     ]);
+    const importTypes = typeImports.toImports({ useSubPaths });
 
     const template = compileTemplate('typink/templates/index.hbs');
 
