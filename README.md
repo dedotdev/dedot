@@ -150,7 +150,10 @@ const client = await LegacyClient.new(provider);
 > [!NOTE]
 > The [new JSON-RPC APIs](https://paritytech.github.io/json-rpc-interface-spec/introduction.html) are not well implemented/unstable for RPC Nodes using Polkadot-SDK version < `1.11.0`, so one should connect to the network using `LegacyClient` in such cases. For nodes using Polkadot-SDK version >= `1.11.0`, it's recommended to use `DedotClient` to connect to the network.
 >
-> You can easily check the current node's implementation version by calling RPC: `client.rpc.system_version()`
+> You can easily check the current node's implementation version by calling RPC `system_version`:
+> ```typescript
+> const version = await client.rpc.system_version();
+> ```
 
 
 > [!NOTE]
