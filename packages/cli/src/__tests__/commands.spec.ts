@@ -11,7 +11,6 @@ describe('chaintypes', () => {
     expect(result).toBeTruthy();
     expect(result.metadata.version).toEqual('V15');
     expect(result.runtimeVersion).toBeTypeOf('object');
-    expect(result.runtimeApis).toBeTypeOf('object');
     expect(result.rpcMethods).toEqual([]);
   });
 
@@ -26,7 +25,6 @@ describe('chaintypes', () => {
     expect(result).toBeTruthy();
     expect(result.metadata.version).toEqual('V15');
     expect(result.runtimeVersion).toBeTypeOf('object');
-    expect(result.runtimeApis).toBeTypeOf('object');
     expect(result.rpcMethods).toEqual([]);
   });
 

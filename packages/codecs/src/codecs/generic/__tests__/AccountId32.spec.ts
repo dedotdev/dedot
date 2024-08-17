@@ -1,6 +1,6 @@
 import { encodeAddress } from '@dedot/utils';
 import { describe, expect, it } from 'vitest';
-import { AccountId32 } from '../AccountId32';
+import { AccountId32 } from '../AccountId32.js';
 
 describe('AccountId32', () => {
   describe('eq', () => {

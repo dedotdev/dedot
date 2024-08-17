@@ -1,4 +1,5 @@
-import { Metadata, RuntimeVersion } from '@dedot/codecs';
+import { SubstrateRuntimeVersion } from '@dedot/api';
+import { Metadata } from '@dedot/codecs';
 
 export interface ParsedResult extends DecodedMetadataInfo {
   rpcMethods: string[];
@@ -6,6 +7,5 @@ export interface ParsedResult extends DecodedMetadataInfo {
 
 export interface DecodedMetadataInfo {
   metadata: Metadata;
-  runtimeVersion: RuntimeVersion;
-  runtimeApis: Record<string, number>;
+  runtimeVersion: SubstrateRuntimeVersion;
 }
