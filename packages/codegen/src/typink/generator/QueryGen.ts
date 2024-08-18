@@ -1,9 +1,4 @@
-import {
-  ContractMetadata,
-  ContractMessage,
-  normalizeLabel,
-  ContractMessageArg,
-} from '@dedot/contracts';
+import { ContractMetadata, ContractMessage, normalizeLabel, ContractMessageArg } from '@dedot/contracts';
 import { stringCamelCase } from '@dedot/utils';
 import { beautifySourceCode, commentBlock, compileTemplate } from '../../utils.js';
 import { TypesGen } from './TypesGen.js';
@@ -43,21 +38,22 @@ export class QueryGen {
 
     messages.forEach((messageDef) => {
       const { label, docs, selector, args } = messageDef;
+      const optionsParamName = args.some(({ label }) => stringCamelCase(label) === 'options') ? '_options' : 'options';
       callsOut += `${commentBlock(
         docs,
         '\n',
         args.map((arg) => `@param {${this.typesGen.generateType(arg.type.type, 1)}} ${stringCamelCase(arg.label)}`),
-        optionsTypeName ? `@param {${optionsTypeName}} options` : '',
+        optionsTypeName ? `@param {${optionsTypeName}} ${optionsParamName}` : '',
         '\n',
         `@selector ${selector}`,
       )}`;
-      callsOut += `${normalizeLabel(label)}: ${this.generateMethodDef(messageDef)};\n\n`;
+      callsOut += `${normalizeLabel(label)}: ${this.generateMethodDef(messageDef, optionsParamName)};\n\n`;
     });
 
     return callsOut;
   }
 
-  generateMethodDef(def: ContractMessage): string {
+  generateMethodDef(def: ContractMessage, optionsParamName = 'options'): string {
     const { args, returnType } = def;
 
     const paramsOut = this.generateParamsOut(args);
@@ -66,7 +62,7 @@ export class QueryGen {
     // Unwrap langError result
     const typeOut = typeOutRaw.match(/^(\w+)<(.*), (.*)>$/)!.at(2);
 
-    return `GenericContractQueryCall<ChainApi, (${paramsOut && `${paramsOut},`} options: ContractCallOptions) => Promise<GenericContractCallResult<${typeOut}, ContractCallResult<ChainApi>>>>`;
+    return `GenericContractQueryCall<ChainApi, (${paramsOut && `${paramsOut},`} ${optionsParamName}: ContractCallOptions) => Promise<GenericContractCallResult<${typeOut}, ContractCallResult<ChainApi>>>>`;
   }
 
   generateParamsOut(args: ContractMessageArg[]) {
