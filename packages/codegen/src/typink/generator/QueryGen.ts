@@ -38,7 +38,12 @@ export class QueryGen {
 
     messages.forEach((messageDef) => {
       const { label, docs, selector, args } = messageDef;
-      const optionsParamName = args.some(({ label }) => stringCamelCase(label) === 'options') ? '_options' : 'options';
+
+      // In case there is an arg has label `options`,
+      // we use the name `_options` for the last options param
+      // This is just and edge case, so this approach works for now
+      const optionsParamName = args.some(({ label }) => label === 'options') ? '_options' : 'options';
+
       callsOut += `${commentBlock(
         docs,
         '\n',
