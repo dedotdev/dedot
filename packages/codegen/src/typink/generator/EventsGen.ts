@@ -31,8 +31,6 @@ export class EventsGen extends QueryGen {
   #generateEventDef(event: ContractEventMeta) {
     const { args, label } = event;
 
-    args.forEach(({ type: { type } }) => this.importType(type));
-
     const paramsOut = this.generateParamsOut(args);
 
     return `GenericContractEvent<'${stringPascalCase(label)}', {${paramsOut}}>`;

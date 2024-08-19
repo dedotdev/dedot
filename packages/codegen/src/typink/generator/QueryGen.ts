@@ -1,10 +1,4 @@
-import {
-  normalizeContractTypeDef,
-  ContractMetadata,
-  ContractMessage,
-  normalizeLabel,
-  ContractMessageArg,
-} from '@dedot/contracts';
+import { ContractMetadata, ContractMessage, normalizeLabel, ContractMessageArg } from '@dedot/contracts';
 import { stringCamelCase } from '@dedot/utils';
 import { beautifySourceCode, commentBlock, compileTemplate } from '../../utils.js';
 import { TypesGen } from './TypesGen.js';
@@ -44,25 +38,28 @@ export class QueryGen {
 
     messages.forEach((messageDef) => {
       const { label, docs, selector, args } = messageDef;
+
+      // In case there is an arg has label `options`,
+      // we use the name `_options` for the last options param
+      // This is just and edge case, so this approach works for now
+      const optionsParamName = args.some(({ label }) => label === 'options') ? '_options' : 'options';
+
       callsOut += `${commentBlock(
         docs,
         '\n',
         args.map((arg) => `@param {${this.typesGen.generateType(arg.type.type, 1)}} ${stringCamelCase(arg.label)}`),
-        optionsTypeName ? `@param {${optionsTypeName}} options` : '',
+        optionsTypeName ? `@param {${optionsTypeName}} ${optionsParamName}` : '',
         '\n',
         `@selector ${selector}`,
       )}`;
-      callsOut += `${normalizeLabel(label)}: ${this.generateMethodDef(messageDef)};\n\n`;
+      callsOut += `${normalizeLabel(label)}: ${this.generateMethodDef(messageDef, optionsParamName)};\n\n`;
     });
 
     return callsOut;
   }
 
-  generateMethodDef(def: ContractMessage): string {
+  generateMethodDef(def: ContractMessage, optionsParamName = 'options'): string {
     const { args, returnType } = def;
-
-    this.importType(returnType.type);
-    args.forEach(({ type: { type } }) => this.importType(type));
 
     const paramsOut = this.generateParamsOut(args);
     const typeOutRaw = this.typesGen.generateType(returnType.type, 0, true);
@@ -70,40 +67,12 @@ export class QueryGen {
     // Unwrap langError result
     const typeOut = typeOutRaw.match(/^(\w+)<(.*), (.*)>$/)!.at(2);
 
-    return `GenericContractQueryCall<ChainApi, (${paramsOut && `${paramsOut},`} options: ContractCallOptions) => Promise<GenericContractCallResult<${typeOut}, ContractCallResult<ChainApi>>>>`;
+    return `GenericContractQueryCall<ChainApi, (${paramsOut && `${paramsOut},`} ${optionsParamName}: ContractCallOptions) => Promise<GenericContractCallResult<${typeOut}, ContractCallResult<ChainApi>>>>`;
   }
 
   generateParamsOut(args: ContractMessageArg[]) {
     return args
       .map(({ type: { type }, label }) => `${stringCamelCase(label)}: ${this.typesGen.generateType(type, 1)}`)
       .join(', ');
-  }
-
-  importType(typeId: number): any {
-    const contractType = this.contractMetadata.types[typeId];
-    const typeDef = normalizeContractTypeDef(this.contractMetadata.types[typeId].type.def);
-
-    if (this.typesGen.includedTypes[contractType.id]) {
-      this.typesGen.addTypeImport(this.typesGen.includedTypes[contractType.id].name);
-      return;
-    }
-    const { type, value } = typeDef;
-
-    switch (type) {
-      case 'Compact':
-      case 'Primitive':
-      case 'BitSequence':
-        return;
-      case 'Struct':
-        return value.fields.forEach(({ typeId }) => this.importType(typeId));
-      case 'Enum':
-        return value.members.forEach(({ fields }) => fields.map(({ typeId }) => this.importType(typeId)).flat());
-      case 'Tuple':
-        return value.fields.forEach((typeId) => this.importType(typeId));
-      case 'SizedVec':
-        return this.importType(value.typeParam);
-      case 'Sequence':
-        return this.importType(value.typeParam);
-    }
   }
 }

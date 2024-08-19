@@ -24,10 +24,8 @@ export class ConstructorQueryGen extends QueryGen {
     return beautifySourceCode(template({ importTypes, constructorsOut }));
   }
 
-  override generateMethodDef(def: ContractConstructorMessage): string {
+  override generateMethodDef(def: ContractConstructorMessage, optionsParamName = 'options'): string {
     const { args, returnType } = def;
-
-    args.forEach(({ type: { type } }) => this.importType(type));
 
     const paramsOut = this.generateParamsOut(args);
     const typeOutRaw = this.typesGen.generateType(returnType.type, 0, true);
@@ -35,6 +33,6 @@ export class ConstructorQueryGen extends QueryGen {
     // Unwrap langError result
     const typeOut = typeOutRaw.match(/^(\w+)<(.*), (.*)>$/)!.at(2);
 
-    return `GenericConstructorQueryCall<ChainApi, (${paramsOut && `${paramsOut},`} options: ConstructorCallOptions) => Promise<GenericConstructorCallResult<${typeOut}, ContractInstantiateResult<ChainApi>>>>`;
+    return `GenericConstructorQueryCall<ChainApi, (${paramsOut && `${paramsOut},`} ${optionsParamName}: ConstructorCallOptions) => Promise<GenericConstructorCallResult<${typeOut}, ContractInstantiateResult<ChainApi>>>>`;
   }
 }
