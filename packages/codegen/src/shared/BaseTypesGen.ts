@@ -24,12 +24,14 @@ export abstract class BaseTypesGen {
   includedTypes: Record<TypeId, NamedType>;
   typeImports: TypeImports;
   skipTypes: string[];
+  knownTypes: Record<TypeId, string>;
 
-  protected constructor(types: PortableType[]) {
+  protected constructor(types: PortableType[], skipTypes: string[] = []) {
     this.types = types;
-    this.includedTypes = {};
+    this.skipTypes = skipTypes;
     this.typeImports = new TypeImports();
-    this.skipTypes = [];
+    this.knownTypes = this.calculateKnownTypes();
+    this.includedTypes = {};
   }
 
   shouldGenerateTypeIn(_id: TypeId): boolean {
@@ -43,7 +45,22 @@ export abstract class BaseTypesGen {
     this.typeImports.clear();
   }
 
-  includeTypes(): Record<TypeId, NamedType> {
+  protected calculateKnownTypes(): Record<TypeId, string> {
+    const typesWithPath = this.types.filter((one) => one.path.length > 0);
+
+    return typesWithPath.reduce(
+      (o, type) => {
+        const { path, id } = type;
+        const [knownType, codecName] = checkKnownCodecType(path.join('::'));
+
+        if (!knownType) return o;
+        return { ...o, [id]: codecName };
+      },
+      {} as Record<TypeId, string>,
+    );
+  }
+
+  protected calculateIncludedTypes(): Record<TypeId, NamedType> {
     const pathsCount = new Map<string, Array<number>>();
     const typesWithPath = this.types.filter((one) => one.path.length > 0);
     const skipIds: TypeId[] = [];
@@ -82,17 +99,15 @@ export abstract class BaseTypesGen {
 
         const suffix = typeSuffixes.get(id) || '';
 
-        let knownType = false;
         let name, nameOut;
 
-        const [isKnownCodecType, codecName] = checkKnownCodecType(joinedPath);
+        const knownCodecName = this.knownTypes[id];
+        const knownType = !!knownCodecName;
 
-        if (isKnownCodecType) {
-          const codecType = findKnownCodecType(codecName);
+        if (knownType) {
+          const codecType = findKnownCodecType(knownCodecName);
           name = codecType.typeIn;
           nameOut = codecType.typeOut;
-
-          knownType = true;
         } else if (PATH_RM_INDEX_1.includes(path[1])) {
           const newPath = path.slice();
           newPath.splice(1, 1);
@@ -101,7 +116,7 @@ export abstract class BaseTypesGen {
           name = this.cleanPath(path);
         }
 
-        if (this.shouldGenerateTypeIn(id)) {
+        if (!knownType && this.shouldGenerateTypeIn(id)) {
           nameOut = name;
           name = name.endsWith('Like') ? name : `${name}Like`;
         }
