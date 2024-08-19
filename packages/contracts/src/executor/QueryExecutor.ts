@@ -16,7 +16,10 @@ export class QueryExecutor<ChainApi extends GenericSubstrateApi> extends Contrac
       const { args } = meta;
 
       assertFalse(params.length < args.length, `Expected at least ${args.length} arguments, got ${params.length}`);
-      assertFalse(params.length > args.length + 1, `Expected at most ${args.length + 1} arguments, got ${params.length}`);
+      assertFalse(
+        params.length > args.length + 1,
+        `Expected at most ${args.length + 1} arguments, got ${params.length}`,
+      );
 
       const callOptions = (params[args.length] || {}) as ContractCallOptions;
       const { caller = this.options.defaultCaller, value = 0n, gasLimit, storageDepositLimit } = callOptions;

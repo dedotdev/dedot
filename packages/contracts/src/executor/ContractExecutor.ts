@@ -7,15 +7,17 @@ import { normalizeLabel } from '../utils.js';
 import { Executor } from './Executor.js';
 
 export abstract class ContractExecutor<ChainApi extends GenericSubstrateApi> extends Executor<ChainApi> {
-  readonly #address: AccountId32;
+  readonly address: AccountId32;
 
-  constructor(api: ISubstrateClient<ChainApi>, registry: TypinkRegistry, address: AccountId32Like, options?: Options) {
-    super(api, registry, options);
-    this.#address = new AccountId32(address);
-  }
+  constructor(
+    client: ISubstrateClient<ChainApi>,
+    registry: TypinkRegistry,
+    address: AccountId32Like,
+    options?: Options,
+  ) {
+    super(client, registry, options);
 
-  get address(): AccountId32 {
-    return this.#address;
+    this.address = new AccountId32(address);
   }
 
   findMessage(message: string): ContractCallMessage | undefined {

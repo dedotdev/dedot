@@ -57,6 +57,6 @@ export class Contract<ContractApi extends GenericContractApi = GenericContractAp
   }
 
   get events(): ContractApi['events'] {
-    return newProxyChain(new EventExecutor(this.client, this.#registry, this.#options)) as ContractApi['events'];
+    return newProxyChain(new EventExecutor(this.client, this.#registry, this.#address, this.#options)) as ContractApi['events'];
   }
 }

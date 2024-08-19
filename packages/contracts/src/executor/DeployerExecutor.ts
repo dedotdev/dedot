@@ -8,20 +8,17 @@ import { normalizeLabel } from '../utils.js';
 import { Executor } from './Executor.js';
 
 export abstract class DeployerExecutor<ChainApi extends GenericSubstrateApi> extends Executor<ChainApi> {
-  readonly #code: Hash | Uint8Array | HexString | string;
+  readonly code: Hash | Uint8Array | HexString | string;
 
   constructor(
-    api: ISubstrateClient<ChainApi>,
+    client: ISubstrateClient<ChainApi>,
     registry: TypinkRegistry,
     code: Hash | Uint8Array | HexString | string,
     options?: Options,
   ) {
-    super(api, registry, options);
-    this.#code = code;
-  }
+    super(client, registry, options);
 
-  get code(): Hash | Uint8Array | HexString | string {
-    return this.#code;
+    this.code = code;
   }
 
   protected findConstructorMeta(constructor: string): ContractConstructorMessage | undefined {
