@@ -3,20 +3,20 @@ import { AccountId32, AccountId32Like } from '@dedot/codecs';
 import { IEventRecord } from '@dedot/types';
 import { TypinkRegistry } from './TypinkRegistry.js';
 import { EventExecutor, QueryExecutor, TxExecutor } from './executor/index.js';
-import { ContractEvent, ContractMetadata, GenericContractApi, Options } from './types/index.js';
+import { ContractEvent, ContractMetadata, GenericContractApi, ExecutionOptions } from './types/index.js';
 import { ensureSupportContractsPallet, newProxyChain, parseRawMetadata } from './utils.js';
 
 export class Contract<ContractApi extends GenericContractApi = GenericContractApi> {
   readonly #registry: TypinkRegistry;
   readonly #address: AccountId32;
   readonly #metadata: ContractMetadata;
-  readonly #options?: Options;
+  readonly #options?: ExecutionOptions;
 
   constructor(
     readonly client: ISubstrateClient<ContractApi['types']['ChainApi']>,
     metadata: ContractMetadata | string,
     address: AccountId32Like,
-    options?: Options
+    options?: ExecutionOptions,
   ) {
     ensureSupportContractsPallet(client);
 
@@ -53,10 +53,18 @@ export class Contract<ContractApi extends GenericContractApi = GenericContractAp
   }
 
   get tx(): ContractApi['tx'] {
-    return newProxyChain(new TxExecutor(this.client, this.#registry, this.#address, this.#options)) as ContractApi['tx'];
+    return newProxyChain(
+      new TxExecutor(this.client, this.#registry, this.#address, this.#options),
+    ) as ContractApi['tx'];
   }
 
   get events(): ContractApi['events'] {
-    return newProxyChain(new EventExecutor(this.client, this.#registry, this.#address, this.#options)) as ContractApi['events'];
+    return newProxyChain(
+      new EventExecutor(this.client, this.#registry, this.#address, this.#options),
+    ) as ContractApi['events'];
+  }
+
+  get options(): ExecutionOptions | undefined {
+    return this.#options;
   }
 }

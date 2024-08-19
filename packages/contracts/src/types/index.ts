@@ -170,7 +170,7 @@ export interface GenericContractApi<
   };
 }
 
-export interface Options {
+export interface ExecutionOptions {
   defaultCaller?: AccountId32Like;  
 }
 

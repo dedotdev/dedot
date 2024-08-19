@@ -3,20 +3,20 @@ import { Hash } from '@dedot/codecs';
 import { TypinkRegistry } from './TypinkRegistry.js';
 import { ConstructorQueryExecutor } from './executor/ConstructorQueryExecutor.js';
 import { ConstructorTxExecutor } from './executor/index.js';
-import { ContractMetadata, GenericContractApi, Options } from './types/index.js';
+import { ContractMetadata, GenericContractApi, ExecutionOptions } from './types/index.js';
 import { ensureSupportContractsPallet, newProxyChain, parseRawMetadata } from './utils.js';
 
 export class ContractDeployer<ContractApi extends GenericContractApi = GenericContractApi> {
   readonly #metadata: ContractMetadata;
   readonly #registry: TypinkRegistry;
   readonly #code: Hash | Uint8Array | string;
-  readonly #options?: Options;
+  readonly #options?: ExecutionOptions;
 
   constructor(
     readonly client: ISubstrateClient<ContractApi['types']['ChainApi']>,
     metadata: ContractMetadata | string,
     codeHashOrWasm: Hash | Uint8Array | string,
-    options?: Options
+    options?: ExecutionOptions,
   ) {
     ensureSupportContractsPallet(client);
 
@@ -44,5 +44,9 @@ export class ContractDeployer<ContractApi extends GenericContractApi = GenericCo
     return newProxyChain(
       new ConstructorQueryExecutor(this.client, this.#registry, this.#code, this.#options),
     ) as ContractApi['constructorQuery'];
+  }
+
+  get options(): ExecutionOptions | undefined {
+    return this.#options;
   }
 }

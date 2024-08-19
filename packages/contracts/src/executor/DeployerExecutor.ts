@@ -3,7 +3,7 @@ import { Hash } from '@dedot/codecs';
 import { GenericSubstrateApi } from '@dedot/types';
 import { HexString } from '@dedot/utils';
 import { TypinkRegistry } from '../TypinkRegistry.js';
-import { ContractConstructorMessage, Options } from '../types/index.js';
+import { ContractConstructorMessage, ExecutionOptions } from '../types/index.js';
 import { normalizeLabel } from '../utils.js';
 import { Executor } from './Executor.js';
 
@@ -14,7 +14,7 @@ export abstract class DeployerExecutor<ChainApi extends GenericSubstrateApi> ext
     client: ISubstrateClient<ChainApi>,
     registry: TypinkRegistry,
     code: Hash | Uint8Array | HexString | string,
-    options?: Options,
+    options?: ExecutionOptions,
   ) {
     super(client, registry, options);
 
