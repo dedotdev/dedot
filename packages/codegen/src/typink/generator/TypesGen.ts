@@ -8,7 +8,7 @@ const SKIP_TYPES = ['Result', 'Option'];
 export class TypesGen extends BaseTypesGen {
   constructor(public contractMetadata: ContractMetadata) {
     super(extractContractTypes(contractMetadata), SKIP_TYPES);
-    this.includedTypes = this.includeTypes();
+    this.includedTypes = this.calculateIncludedTypes();
   }
 
   generate(useSubPaths: boolean = false): Promise<string> {

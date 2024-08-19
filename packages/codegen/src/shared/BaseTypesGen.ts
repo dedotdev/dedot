@@ -30,7 +30,7 @@ export abstract class BaseTypesGen {
     this.types = types;
     this.skipTypes = skipTypes;
     this.typeImports = new TypeImports();
-    this.knownTypes = this.#knownTypes();
+    this.knownTypes = this.calculateKnownTypes();
     this.includedTypes = {};
   }
 
@@ -45,7 +45,7 @@ export abstract class BaseTypesGen {
     this.typeImports.clear();
   }
 
-  #knownTypes(): Record<TypeId, string> {
+  protected calculateKnownTypes(): Record<TypeId, string> {
     const typesWithPath = this.types.filter((one) => one.path.length > 0);
 
     return typesWithPath.reduce(
@@ -60,7 +60,7 @@ export abstract class BaseTypesGen {
     );
   }
 
-  includeTypes(): Record<TypeId, NamedType> {
+  protected calculateIncludedTypes(): Record<TypeId, NamedType> {
     const pathsCount = new Map<string, Array<number>>();
     const typesWithPath = this.types.filter((one) => one.path.length > 0);
     const skipIds: TypeId[] = [];

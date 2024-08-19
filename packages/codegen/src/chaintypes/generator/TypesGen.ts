@@ -30,7 +30,7 @@ export class TypesGen extends BaseTypesGen {
     super(metadata.types, SKIP_TYPES);
     this.metadata = metadata;
     this.registry = new PortableRegistry(this.metadata);
-    this.includedTypes = this.includeTypes();
+    this.includedTypes = this.calculateIncludedTypes();
   }
 
   generate(useSubPaths: boolean = false) {
