@@ -1,5 +1,9 @@
-export class DedotError extends Error {}
+export class DedotError extends Error {
+  name = 'DedotError';
+}
 /**
  * Throwing when a api is unknown upon evaluation
  */
-export class UnknownApiError extends DedotError {}
+export class UnknownApiError extends DedotError {
+  name = 'UnknownApiError';
+}

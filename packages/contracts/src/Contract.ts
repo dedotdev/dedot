@@ -7,16 +7,19 @@ import { ContractEvent, ContractMetadata, GenericContractApi, Options } from './
 import { ensureSupportContractsPallet, newProxyChain, parseRawMetadata } from './utils.js';
 
 export class Contract<ContractApi extends GenericContractApi = GenericContractApi> {
-  readonly #api: ISubstrateClient;
   readonly #registry: TypinkRegistry;
   readonly #address: AccountId32;
   readonly #metadata: ContractMetadata;
   readonly #options?: Options;
 
-  constructor(api: ISubstrateClient, metadata: ContractMetadata | string, address: AccountId32Like, options?: Options) {
-    ensureSupportContractsPallet(api);
+  constructor(
+    readonly client: ISubstrateClient<ContractApi['types']['ChainApi']>,
+    metadata: ContractMetadata | string,
+    address: AccountId32Like,
+    options?: Options
+  ) {
+    ensureSupportContractsPallet(client);
 
-    this.#api = api;
     this.#address = new AccountId32(address);
     this.#metadata = typeof metadata === 'string' ? parseRawMetadata(metadata) : metadata;
     this.#registry = new TypinkRegistry(this.#metadata);
@@ -24,11 +27,11 @@ export class Contract<ContractApi extends GenericContractApi = GenericContractAp
   }
 
   decodeEvent(eventRecord: IEventRecord): ContractEvent {
-    return this.#registry.decodeEvent(eventRecord);
+    return this.#registry.decodeEvent(eventRecord, this.address);
   }
 
   decodeEvents(eventRecords: IEventRecord[]): ContractEvent[] {
-    return this.#registry.decodeEvents(eventRecords);
+    return this.#registry.decodeEvents(eventRecords, this.address);
   }
 
   get metadata(): ContractMetadata {
@@ -45,15 +48,15 @@ export class Contract<ContractApi extends GenericContractApi = GenericContractAp
 
   get query(): ContractApi['query'] {
     return newProxyChain(
-      new QueryExecutor(this.#api, this.#registry, this.#address, this.#options),
+      new QueryExecutor(this.client, this.#registry, this.#address, this.#options),
     ) as ContractApi['query'];
   }
 
   get tx(): ContractApi['tx'] {
-    return newProxyChain(new TxExecutor(this.#api, this.#registry, this.#address, this.#options)) as ContractApi['tx'];
+    return newProxyChain(new TxExecutor(this.client, this.#registry, this.#address, this.#options)) as ContractApi['tx'];
   }
 
   get events(): ContractApi['events'] {
-    return newProxyChain(new EventExecutor(this.#api, this.#registry, this.#options)) as ContractApi['events'];
+    return newProxyChain(new EventExecutor(this.client, this.#registry, this.#options)) as ContractApi['events'];
   }
 }

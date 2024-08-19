@@ -1,6 +1,7 @@
 import { ISubstrateClient } from '@dedot/api';
+import { SubstrateApi } from '@dedot/api/chaintypes';
 import { PortableType, TypeDef } from '@dedot/codecs';
-import { GenericSubstrateApi } from '@dedot/types';
+import { GenericSubstrateApi, RpcVersion } from '@dedot/types';
 import { stringCamelCase } from '@dedot/utils';
 import { Executor } from './executor/index.js';
 import { ContractMetadata, ContractTypeDef, ReturnFlags } from './types/index.js';
@@ -101,9 +102,9 @@ export function newProxyChain<ChainApi extends GenericSubstrateApi>(carrier: Exe
   });
 }
 
-export function ensureSupportContractsPallet<ChainApi extends GenericSubstrateApi>(api: ISubstrateClient<ChainApi>) {
+export function ensureSupportContractsPallet(client: ISubstrateClient<SubstrateApi[RpcVersion]>) {
   try {
-    !!api.call.contractsApi.call.meta && !!api.tx.contracts.call.meta;
+    !!client.call.contractsApi.call.meta && !!client.tx.contracts.call.meta;
   } catch {
     throw new Error('Contracts pallet is not available');
   }

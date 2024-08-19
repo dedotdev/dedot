@@ -27,7 +27,7 @@ export class CheckMortality extends SignedExtension<EraLike, Hash> {
   }
 
   async #getSigningHeader(): Promise<SigningHeader> {
-    if (this.api.rpcVersion === 'v2') {
+    if (this.client.rpcVersion === 'v2') {
       return this.#getSigningHeaderRpcV2();
     }
 
@@ -35,7 +35,7 @@ export class CheckMortality extends SignedExtension<EraLike, Hash> {
   }
 
   async #getSigningHeaderRpcV2(): Promise<SigningHeader> {
-    const api = this.api as DedotClient;
+    const api = this.client as DedotClient;
     // TODO similar to the legacy, we should account for the case finality is lagging behind
     const finalizedBlock = await api.chainHead.finalizedBlock();
 
@@ -48,8 +48,8 @@ export class CheckMortality extends SignedExtension<EraLike, Hash> {
   // Ref: https://github.com/polkadot-js/api/blob/3bdf49b0428a62f16b3222b9a31bfefa43c1ca55/packages/api-derive/src/tx/signingInfo.ts#L34-L64
   async #getSigningHeaderViaLegacyRpc(): Promise<SigningHeader> {
     const [header, finalizedHash] = await Promise.all([
-      this.api.rpc.chain_getHeader(),
-      this.api.rpc.chain_getFinalizedHead(),
+      this.client.rpc.chain_getHeader(),
+      this.client.rpc.chain_getFinalizedHead(),
     ]);
 
     assert(header, 'Current header not found');
@@ -60,10 +60,10 @@ export class CheckMortality extends SignedExtension<EraLike, Hash> {
         if (parentHash.length === 0 || isZeroHex(parentHash)) {
           return header;
         } else {
-          return this.api.rpc.chain_getHeader(parentHash);
+          return this.client.rpc.chain_getHeader(parentHash);
         }
       }),
-      this.api.rpc.chain_getHeader(finalizedHash),
+      this.client.rpc.chain_getHeader(finalizedHash),
     ]);
 
     assert(currentHeader, 'Cannot determine current header');
@@ -77,7 +77,7 @@ export class CheckMortality extends SignedExtension<EraLike, Hash> {
 
   async #toSigningHeader(header: Header): Promise<SigningHeader> {
     const { number } = header;
-    const hash = (await this.api.rpc.chain_getBlockHash(header.number))!;
+    const hash = (await this.client.rpc.chain_getBlockHash(header.number))!;
 
     return { hash, number };
   }
@@ -98,7 +98,7 @@ export class CheckMortality extends SignedExtension<EraLike, Hash> {
 
   #getConst<T>(pallet: string, name: string): T | undefined {
     try {
-      return this.api.consts[pallet][name];
+      return this.client.consts[pallet][name];
     } catch {
       // ignore this on purpose
     }

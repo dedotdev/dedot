@@ -1,9 +1,18 @@
 import { GenericSubstrateApi } from '@dedot/types';
-import { assert, assertFalse, concatU8a, hexToU8a, isNull, isUndefined, isWasm, u8aToHex } from '@dedot/utils';
+import {
+  assert,
+  assertFalse,
+  concatU8a,
+  hexToU8a,
+  isNull,
+  isUndefined,
+  isWasm,
+  u8aToHex,
+} from '@dedot/utils';
 import { ConstructorTxOptions, GenericConstructorTxCall } from '../types/index.js';
-import { DeployerExecutor } from './DeployerExecutor.js';
+import {DeployerExecutor} from "./DeployerExecutor.js";
 
-export class ConstructorTxExecutor<ChainApi extends GenericSubstrateApi> extends DeployerExecutor<ChainApi> {
+export class ConstructorTxExecutor<ChainApi extends GenericSubstrateApi> extends DeployerExecutor <ChainApi> {
   doExecute(constructor: string) {
     const meta = this.findConstructorMeta(constructor);
     assert(meta, `Constructor message not found: ${constructor}`);
@@ -21,9 +30,23 @@ export class ConstructorTxExecutor<ChainApi extends GenericSubstrateApi> extends
       const bytes = u8aToHex(concatU8a(hexToU8a(meta.selector), ...formattedInputs));
 
       if (isWasm(this.code)) {
-        return this.api.tx.contracts.instantiateWithCode(value, gasLimit, storageDepositLimit, this.code, bytes, salt);
+        return this.client.tx.contracts.instantiateWithCode(
+          value,
+          gasLimit,
+          storageDepositLimit,
+          this.code,
+          bytes,
+          salt,
+        );
       } else {
-        return this.api.tx.contracts.instantiate(value, gasLimit, storageDepositLimit, this.code, bytes, salt);
+        return this.client.tx.contracts.instantiate(
+          value, // prettier-end-here
+          gasLimit,
+          storageDepositLimit,
+          this.code,
+          bytes,
+          salt,
+        );
       }
     };
 

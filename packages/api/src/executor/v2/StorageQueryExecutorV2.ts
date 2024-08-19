@@ -13,12 +13,12 @@ export class StorageQueryExecutorV2<
   ChainApi extends GenericSubstrateApi = GenericSubstrateApi,
 > extends StorageQueryExecutor<ChainApi> {
   constructor(
-    api: ISubstrateClientAt<ChainApi>,
+    client: ISubstrateClientAt<ChainApi>,
     public chainHead: ChainHead,
     atBlockHash?: BlockHash,
   ) {
-    assert(api.rpcVersion === 'v2', 'Only supports JSON-RPC v2');
-    super(api, atBlockHash);
+    assert(client.rpcVersion === 'v2', 'Only supports JSON-RPC v2');
+    super(client, atBlockHash);
   }
 
   protected override exposeStorageMapMethods(entry: QueryableStorage): Record<string, AsyncMethod> {

@@ -77,7 +77,7 @@ export class RuntimeApiExecutor<ChainApi extends GenericSubstrateApi = GenericSu
     const args = [func, params];
     if (at) args.push(at);
 
-    return this.api.rpc.state_call(...args);
+    return this.client.rpc.state_call(...args);
   }
 
   tryDecode(callSpec: RuntimeApiMethodSpec, raw: any) {
@@ -111,7 +111,7 @@ export class RuntimeApiExecutor<ChainApi extends GenericSubstrateApi = GenericSu
 
     if (!isNumber(targetVersion)) return undefined;
 
-    const userDefinedSpec = this.#findDefinedSpec(this.api.options.runtimeApis, runtimeApi, method, targetVersion);
+    const userDefinedSpec = this.#findDefinedSpec(this.client.options.runtimeApis, runtimeApi, method, targetVersion);
     if (userDefinedSpec) return userDefinedSpec;
 
     const methodDef = this.#findRuntimeApiMethodDef(runtimeApi, method);
@@ -152,7 +152,7 @@ export class RuntimeApiExecutor<ChainApi extends GenericSubstrateApi = GenericSu
   #findTargetRuntimeApiVersion(runtimeApi: string): number | undefined {
     const runtimeApiHash = calcRuntimeApiHash(runtimeApi);
     try {
-      return this.api.runtimeVersion.apis[runtimeApiHash] || FallbackRuntimeApis[runtimeApiHash];
+      return this.client.runtimeVersion.apis[runtimeApiHash] || FallbackRuntimeApis[runtimeApiHash];
     } catch {
       return FallbackRuntimeApis[runtimeApiHash];
     }

@@ -46,7 +46,7 @@ export const chaintypes: CommandModule<Args, Args> = {
       }
 
       if (parsedResult) {
-        const { metadata, runtimeVersion, runtimeApis, rpcMethods } = parsedResult;
+        const { metadata, runtimeVersion, rpcMethods } = parsedResult;
         const chainName =
           chain || stringCamelCase(runtimeVersion.specName) || (shouldGenerateGenericTypes ? 'substrate' : 'local');
 
@@ -55,7 +55,7 @@ export const chaintypes: CommandModule<Args, Args> = {
           chainName,
           metadata.latest,
           rpcMethods,
-          runtimeApis,
+          runtimeVersion,
           outDir,
           extension,
           subpath,

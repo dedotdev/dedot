@@ -7,7 +7,7 @@ import { SignedExtension } from '../SignedExtension.js';
  */
 export class CheckTxVersion extends SignedExtension<{}, number> {
   async init(): Promise<void> {
-    this.additionalSigned = this.api.runtimeVersion.transactionVersion;
+    this.additionalSigned = this.client.runtimeVersion.transactionVersion;
   }
 
   toPayload(): Partial<SignerPayloadJSON> {

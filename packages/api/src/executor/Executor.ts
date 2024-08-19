@@ -11,18 +11,18 @@ export abstract class Executor<ChainApi extends GenericSubstrateApi = GenericSub
   readonly #atBlockHash?: BlockHash;
 
   constructor(
-    public api: ISubstrateClientAt<ChainApi>,
+    readonly client: ISubstrateClientAt<ChainApi>,
     atBlockHash?: BlockHash,
   ) {
     this.#atBlockHash = atBlockHash;
   }
 
   get atBlockHash() {
-    return this.#atBlockHash || this.api.atBlockHash;
+    return this.#atBlockHash || this.client.atBlockHash;
   }
 
   get registry() {
-    return this.api.registry;
+    return this.client.registry;
   }
 
   get metadata() {
@@ -41,7 +41,7 @@ export abstract class Executor<ChainApi extends GenericSubstrateApi = GenericSub
     try {
       return this.doExecute(...paths);
     } catch (e: any) {
-      if (!this.api.options?.throwOnUnknownApi && e instanceof UnknownApiError) {
+      if (!this.client.options?.throwOnUnknownApi && e instanceof UnknownApiError) {
         return undefined;
       }
 

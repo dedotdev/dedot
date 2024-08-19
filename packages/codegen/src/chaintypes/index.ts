@@ -1,5 +1,5 @@
-import { LegacyClient } from '@dedot/api';
-import { MetadataLatest } from '@dedot/codecs';
+import { LegacyClient, SubstrateRuntimeVersion } from '@dedot/api';
+import { MetadataLatest, RuntimeVersion } from '@dedot/codecs';
 import { WsProvider } from '@dedot/providers';
 import { RpcMethods } from '@dedot/types/json-rpc';
 import { stringDashCase, stringPascalCase } from '@dedot/utils';
@@ -26,15 +26,22 @@ export async function generateTypesFromEndpoint(
   useSubPaths: boolean = false,
 ): Promise<GeneratedResult> {
   // Immediately throw error if cannot connect to provider for the first time.
-  const api = await LegacyClient.new(new WsProvider({ endpoint, retryDelayMs: 0, timeout: 0 }));
-  const { methods }: RpcMethods = await api.rpc.rpc_methods();
-  const apis = api.runtimeVersion.apis || {};
+  const client = await LegacyClient.new(new WsProvider({ endpoint, retryDelayMs: 0, timeout: 0 }));
+  const { methods }: RpcMethods = await client.rpc.rpc_methods();
 
-  chain = chain || api.runtimeVersion.specName || 'local';
+  chain = chain || client.runtimeVersion.specName || 'local';
 
-  const result = await generateTypes(chain, api.metadata.latest, methods, apis, outDir, extension, useSubPaths);
+  const result = await generateTypes(
+    chain,
+    client.metadata.latest,
+    methods,
+    client.runtimeVersion,
+    outDir,
+    extension,
+    useSubPaths,
+  );
 
-  await api.disconnect();
+  await client.disconnect();
 
   return result;
 }
@@ -43,7 +50,7 @@ export async function generateTypes(
   chain: string,
   metadata: MetadataLatest,
   rpcMethods: string[],
-  runtimeApis: Record<string, number>,
+  runtimeVersion: SubstrateRuntimeVersion,
   outDir: string = '.',
   extension: string = 'd.ts',
   useSubPaths: boolean = false,
@@ -69,10 +76,10 @@ export async function generateTypes(
   const constsGen = new ConstsGen(typesGen);
   const queryGen = new QueryGen(typesGen);
   const jsonRpcGen = new JsonRpcGen(typesGen, rpcMethods);
-  const indexGen = new IndexGen(interfaceName);
+  const indexGen = new IndexGen(interfaceName, runtimeVersion);
   const errorsGen = new ErrorsGen(typesGen);
   const eventsGen = new EventsGen(typesGen);
-  const runtimeApisGen = new RuntimeApisGen(typesGen, runtimeApis);
+  const runtimeApisGen = new RuntimeApisGen(typesGen, runtimeVersion.apis);
   const txGen = new TxGen(typesGen);
 
   fs.writeFileSync(defTypesFileName, await typesGen.generate(useSubPaths));

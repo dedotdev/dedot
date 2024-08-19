@@ -6,30 +6,14 @@ import { ContractMessageArg, ContractMessage, Options } from '../types/index.js'
 import { ContractMetadata } from '../types/index.js';
 
 export abstract class Executor<ChainApi extends GenericSubstrateApi = SubstrateApi[RpcVersion]> {
-  readonly #api: ISubstrateClient<ChainApi>;
-  readonly #registry: TypinkRegistry;
-  readonly #options: Options;
-
-  constructor(api: ISubstrateClient<ChainApi>, registry: TypinkRegistry, options: Options = {}) {
-    this.#api = api;
-    this.#registry = registry;
-    this.#options = options;
-  }
-
-  get api(): ISubstrateClient<ChainApi> {
-    return this.#api;
-  }
+  constructor(
+    readonly client: ISubstrateClient<ChainApi>,
+    readonly registry: TypinkRegistry,
+    readonly options?: Options,
+  ) {}
 
   get metadata(): ContractMetadata {
-    return this.#registry.metadata;
-  }
-
-  get registry(): TypinkRegistry {
-    return this.#registry;
-  }
-
-  get options(): Options {
-    return this.#options;
+    return this.registry.metadata;
   }
 
   abstract doExecute(...paths: string[]): unknown;

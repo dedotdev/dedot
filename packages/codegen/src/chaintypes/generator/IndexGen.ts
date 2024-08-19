@@ -1,8 +1,12 @@
+import { SubstrateRuntimeVersion } from '@dedot/api';
 import { TypeImports } from '../../shared/index.js';
-import { beautifySourceCode, compileTemplate } from '../../utils.js';
+import { beautifySourceCode, commentBlock, compileTemplate } from '../../utils.js';
 
 export class IndexGen {
-  constructor(public readonly interfaceName: string) {}
+  constructor(
+    readonly interfaceName: string,
+    readonly runtimeVersion: SubstrateRuntimeVersion,
+  ) {}
 
   async generate(useSubPaths: boolean = false) {
     const interfaceName = this.interfaceName;
@@ -11,9 +15,13 @@ export class IndexGen {
     typeImports.addKnownType('GenericSubstrateApi', 'RpcLegacy', 'RpcV2', 'RpcVersion');
 
     const importTypes = typeImports.toImports({ useSubPaths });
+    const interfaceDocs = commentBlock([
+      `@name: ${interfaceName}`, // prettier-end-here
+      `@specVersion: ${this.runtimeVersion.specVersion}`,
+    ]);
 
     const template = compileTemplate('chaintypes/templates/index.hbs');
 
-    return beautifySourceCode(template({ importTypes, interfaceName }));
+    return beautifySourceCode(template({ interfaceName, interfaceDocs, importTypes }));
   }
 }

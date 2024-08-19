@@ -21,7 +21,7 @@ export interface Versioned{{{interfaceName}}}<Rv extends RpcVersion> extends Gen
   tx: ChainTx<Rv>;
 }
 
-export interface {{{interfaceName}}} {
+{{interfaceDocs}}export interface {{{interfaceName}}} {
   legacy: Versioned{{{interfaceName}}}<RpcLegacy>;
   v2: Versioned{{{interfaceName}}}<RpcV2>;
 }

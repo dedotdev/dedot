@@ -1,11 +1,24 @@
 import { PalletContractsPrimitivesCode, PalletContractsPrimitivesContractResultResult } from '@dedot/api/chaintypes';
 import { Result } from '@dedot/shape';
 import { GenericSubstrateApi } from '@dedot/types';
-import { assert, assertFalse, concatU8a, hexToU8a, isNull, isUndefined, isWasm, u8aToHex } from '@dedot/utils';
+import {
+  assert,
+  assertFalse,
+  concatU8a,
+  hexToU8a,
+  isNull,
+  isUndefined,
+  isWasm,
+  u8aToHex,
+} from '@dedot/utils';
 import { ContractInstantiateDispatchError, ContractInstantiateLangError } from '../errors.js';
-import { ConstructorCallOptions, GenericConstructorCallResult, GenericConstructorQueryCall } from '../types/index.js';
-import { toReturnFlags } from '../utils.js';
-import { DeployerExecutor } from './DeployerExecutor.js';
+import {
+  ConstructorCallOptions,
+  GenericConstructorCallResult,
+  GenericConstructorQueryCall,
+} from '../types/index.js';
+import {  toReturnFlags } from '../utils.js';
+import {DeployerExecutor} from "./DeployerExecutor.js";
 
 export class ConstructorQueryExecutor<ChainApi extends GenericSubstrateApi> extends DeployerExecutor<ChainApi> {
   doExecute(constructor: string) {
@@ -36,7 +49,7 @@ export class ConstructorQueryExecutor<ChainApi extends GenericSubstrateApi> exte
         value: this.code,
       } as PalletContractsPrimitivesCode;
 
-      const raw: PalletContractsPrimitivesContractResultResult = await this.api.call.contractsApi.instantiate(
+      const raw: PalletContractsPrimitivesContractResultResult = await this.client.call.contractsApi.instantiate(
         caller,
         value,
         gasLimit,

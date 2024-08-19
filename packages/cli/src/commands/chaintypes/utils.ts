@@ -21,7 +21,7 @@ export const getRuntimeVersion = (metadata: Metadata): RuntimeVersion => {
 export const decodeMetadata = (metadataHex: HexString): DecodedMetadataInfo => {
   const metadata = $Metadata.tryDecode(metadataHex);
   const runtimeVersion = getRuntimeVersion(metadata);
-  const runtimeApis: Record<string, number> = runtimeVersion.apis.reduce(
+  const apis: Record<string, number> = runtimeVersion.apis.reduce(
     (acc, [name, version]) => {
       acc[name] = version;
       return acc;
@@ -31,19 +31,20 @@ export const decodeMetadata = (metadataHex: HexString): DecodedMetadataInfo => {
 
   return {
     metadata,
-    runtimeVersion,
-    runtimeApis,
+    runtimeVersion: {
+      ...runtimeVersion,
+      apis,
+    },
   };
 };
 
 export const parseMetadataFromRaw = async (metadataFile: string): Promise<ParsedResult> => {
   const metadataHex = fs.readFileSync(metadataFile, 'utf-8').trim() as HexString;
-  const { metadata, runtimeVersion, runtimeApis } = decodeMetadata(metadataHex);
+  const { metadata, runtimeVersion } = decodeMetadata(metadataHex);
 
   return {
     metadata,
     runtimeVersion,
-    runtimeApis,
     rpcMethods: [],
   };
 };
@@ -58,23 +59,21 @@ export const parseMetadataFromWasm = async (runtimeFile: string): Promise<Parsed
 
   const metadataHex = u8aToHex(u8aMetadata.subarray(offset));
 
-  const { metadata, runtimeVersion, runtimeApis } = decodeMetadata(metadataHex);
+  const { metadata, runtimeVersion } = decodeMetadata(metadataHex);
 
   return {
     metadata,
     runtimeVersion,
-    runtimeApis,
     rpcMethods: [],
   };
 };
 
 export const parseStaticSubstrate = async (): Promise<ParsedResult> => {
-  const { runtimeVersion, metadata, runtimeApis } = decodeMetadata(staticSubstrate as HexString);
+  const { runtimeVersion, metadata } = decodeMetadata(staticSubstrate as HexString);
 
   return {
     metadata,
     runtimeVersion,
-    runtimeApis,
     rpcMethods: rpc.methods,
   };
 };

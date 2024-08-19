@@ -12,6 +12,7 @@ import { toReturnFlags } from './utils.js';
  * @extends DedotError
  */
 export class ContractInstantiateError<ContractApi extends GenericContractApi = GenericContractApi> extends DedotError {
+  name = 'ContractInstantiateError';
   /**
    * The raw result of the contract instantiation.
    */
@@ -39,6 +40,7 @@ export class ContractInstantiateError<ContractApi extends GenericContractApi = G
 export class ContractInstantiateDispatchError<
   ContractApi extends GenericContractApi = GenericContractApi,
 > extends ContractInstantiateError<ContractApi> {
+  name = 'ContractInstantiateDispatchError';
   /**
    * The error that occurred during the dispatch phase.
    */
@@ -53,6 +55,7 @@ export class ContractInstantiateDispatchError<
   constructor(err: DispatchError, raw: ContractInstantiateResult<ContractApi['types']['ChainApi']>) {
     super(raw);
     this.dispatchError = err;
+    this.message = `Dispatch error: ${JSON.stringify(err)}`;
   }
 }
 
@@ -69,6 +72,7 @@ export class ContractInstantiateDispatchError<
 export class ContractInstantiateLangError<
   ContractApi extends GenericContractApi = GenericContractApi,
 > extends ContractInstantiateError<ContractApi> {
+  name = 'ContractInstantiateLangError';
   /**
    * The language-specific error that occurred during the instantiation.
    */
@@ -93,6 +97,7 @@ export class ContractInstantiateLangError<
     super(raw);
     this.langError = err;
     this.flags = toReturnFlags(raw.result.value.result.flags.bits);
+    this.message = `Lange error: ${JSON.stringify(err)}`;
   }
 }
 
@@ -105,6 +110,7 @@ export class ContractInstantiateLangError<
  * @extends DedotError
  */
 export class ContractExecutionError<ContractApi extends GenericContractApi = GenericContractApi> extends DedotError {
+  name = 'ContractExecutionError';
   /**
    * The raw result of the contract call.
    */
@@ -132,6 +138,7 @@ export class ContractExecutionError<ContractApi extends GenericContractApi = Gen
 export class ContractDispatchError<
   ContractApi extends GenericContractApi = GenericContractApi,
 > extends ContractExecutionError<ContractApi> {
+  name = 'ContractDispatchError';
   /**
    * The error that occurred during the dispatch phase.
    */
@@ -146,6 +153,7 @@ export class ContractDispatchError<
   constructor(err: DispatchError, raw: ContractCallResult<ContractApi['types']['ChainApi']>) {
     super(raw);
     this.dispatchError = err;
+    this.message = `Dispatch error: ${JSON.stringify(err)}`;
   }
 }
 
@@ -162,6 +170,7 @@ export class ContractDispatchError<
 export class ContractLangError<
   ContractApi extends GenericContractApi = GenericContractApi,
 > extends ContractExecutionError<ContractApi> {
+  name = 'ContractLangError';
   /**
    * The language-specific error that occurred during the execution.
    */
@@ -183,6 +192,7 @@ export class ContractLangError<
     super(raw);
     this.langError = err;
     this.flags = toReturnFlags(raw.result.value.flags.bits);
+    this.message = `Lange error: ${JSON.stringify(err)}`;
   }
 }
 

@@ -1,6 +1,6 @@
 import { ContractMetadata } from '@dedot/contracts';
 import { TypeImports } from '../../shared/index.js';
-import { beautifySourceCode, compileTemplate } from '../../utils.js';
+import { beautifySourceCode, commentBlock, compileTemplate } from '../../utils.js';
 import { TypesGen } from './TypesGen.js';
 
 export class IndexGen {
@@ -21,9 +21,22 @@ export class IndexGen {
     typeImports.addChainType('SubstrateApi');
     typeImports.addPortableType(langErrorName);
 
+    const {
+      contract: { name = '', version = '', authors = [] },
+      source: { language = '' },
+    } = this.contractMetadata;
+
+    const interfaceDocs = commentBlock([
+      `@name: ${interfaceName}`, // prettier-end-here
+      `@contractName: ${name}`,
+      `@contractVersion: ${version}`,
+      `@authors: ${authors.join(', ')}`,
+      `@language: ${language}`,
+    ]);
     const importTypes = typeImports.toImports({ useSubPaths });
+
     const template = compileTemplate('typink/templates/index.hbs');
 
-    return beautifySourceCode(template({ interfaceName, langErrorName, importTypes }));
+    return beautifySourceCode(template({ interfaceName, interfaceDocs, langErrorName, importTypes }));
   }
 }
