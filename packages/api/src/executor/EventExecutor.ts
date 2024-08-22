@@ -1,10 +1,8 @@
 import { PalletEventMetadataLatest } from '@dedot/codecs';
-import { FlatEnum } from '@dedot/shape';
 import type { GenericPalletEvent, GenericSubstrateApi, IEventRecord, PalletEvent, Unsub } from '@dedot/types';
 import { assert, stringCamelCase, stringPascalCase, UnknownApiError } from '@dedot/utils';
 import { Executor } from './Executor.js';
 import { isEventRecord } from './utils.js';
-import { EventRecord } from '@polkadot/types/interfaces/types.js';
 
 /**
  * @name EventExecutor
