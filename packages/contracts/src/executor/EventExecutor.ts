@@ -41,7 +41,13 @@ export class EventExecutor<ChainApi extends GenericSubstrateApi> extends Executo
     };
 
     const watch = (callback: (events: ContractEvent[]) => void): Promise<Unsub> => {
-      return this.client.query.system.events((records: IEventRecord[]) => callback(filter(records)));
+      return this.client.query.system.events((records: IEventRecord[]) => {
+        const events = filter(records);
+
+        if (events.length === 0) return;
+
+        callback(filter(records));
+      });
     };
 
     return {
