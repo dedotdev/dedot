@@ -6,6 +6,7 @@ import {
   GenericSubstrateApi,
   IEventRecord,
   RpcVersion,
+  Unsub,
   VersionedGenericSubstrateApi,
 } from '@dedot/types';
 import { ContractCallMessage, ContractConstructorMessage } from './shared.js';
@@ -145,6 +146,7 @@ export interface GenericContractEvent<EventName extends string = string, Data ex
   is: (event: IEventRecord | ContractEvent) => event is ContractEvent<EventName, Data>;
   find: (events: IEventRecord[] | ContractEvent[]) => ContractEvent<EventName, Data> | undefined;
   filter: (events: IEventRecord[] | ContractEvent[]) => ContractEvent<EventName, Data>[];
+  watch: (callback: (events: ContractEvent<EventName, Data>[]) => void) => Promise<Unsub>;
   meta: ContractEventMeta;
 }
 

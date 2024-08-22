@@ -1,5 +1,5 @@
 import { isEventRecord } from '@dedot/api';
-import { GenericSubstrateApi, IEventRecord } from '@dedot/types';
+import { GenericSubstrateApi, IEventRecord, Unsub } from '@dedot/types';
 import { assert, stringPascalCase } from '@dedot/utils';
 import { ContractEvent, ContractEventMeta, GenericContractEvent } from '../types/index.js';
 import { ContractExecutor } from './ContractExecutor.js';
@@ -40,11 +40,16 @@ export class EventExecutor<ChainApi extends GenericSubstrateApi> extends Contrac
       }
     };
 
+    const watch = (callback: (events: ContractEvent[]) => void): Promise<Unsub> => {
+      return this.client.query.system.events((records: IEventRecord[]) => callback(filter(records)));
+    };
+
     return {
       is,
       find,
       filter,
       meta,
+      watch,
     };
   }
 

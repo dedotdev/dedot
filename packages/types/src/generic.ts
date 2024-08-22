@@ -130,6 +130,7 @@ export interface GenericPalletEvent<
   is: (event: IEventRecord | PalletEvent) => event is PalletEvent<Pallet, EventName, Data>;
   find: (events: IEventRecord[] | PalletEvent[]) => PalletEvent<Pallet, EventName, Data> | undefined;
   filter: (events: IEventRecord[] | PalletEvent[]) => PalletEvent<Pallet, EventName, Data>[];
+  watch: (callback: (events: PalletEvent<Pallet, EventName, Data>[]) => void) => Promise<Unsub>;
   meta: PalletEventMetadataLatest;
 }
 
