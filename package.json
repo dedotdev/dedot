@@ -25,9 +25,9 @@
     "gen:chaintypes-substrate": "yarn cli chaintypes -w substrate -c substrate -o ./packages/api/src/chaintypes -d=false -s=false && yarn fix-esm-path"
   },
   "devDependencies": {
-    "@polkadot/types-support": "^12.3.1",
+    "@polkadot/types-support": "^12.4.2",
     "@trivago/prettier-plugin-sort-imports": "^4.3.0",
-    "happy-dom": "^14.12.3",
+    "happy-dom": "^15.0.0",
     "husky": "^9.1.4",
     "lerna": "7.4.2",
     "prettier": "^3.3.3",
@@ -39,8 +39,8 @@
     "vitest": "^2.0.5"
   },
   "resolutions": {
-    "@polkadot/types": "^12.3.1",
-    "@polkadot/types-support": "^12.3.1"
+    "@polkadot/types": "^12.4.2",
+    "@polkadot/types-support": "^12.4.2"
   },
   "license": "Apache-2.0"
 }
