@@ -4,5 +4,6 @@
   "entryPointStrategy": "packages",
   "includeVersion": false,
   "plugin": ["@mxssfd/typedoc-theme"],
-  "theme": "my-theme"
+  "theme": "my-theme",
+  "out": "./typedoc"
 }
