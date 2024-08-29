@@ -30,7 +30,7 @@ Delightful JavaScript/TypeScript client for [Polkadot](https://polkadot.network/
 - ✅ Compatible with `@polkadot/extension`-based wallets
 - ✅ Support Metadata V14, V15 (latest)
 - ✅ Built-in metadata optimization ([caching](https://docs.dedot.dev/getting-started/connect-to-network#caching-metadata), [compact mode](https://github.com/dedotdev/dedot/issues/45) ⏳)
-- ✅ Build on top of both the [new](https://paritytech.github.io/json-rpc-interface-spec/introduction.html) & legacy (
+- ✅ Build on top of both the [new](https://paritytech.github.io/json-rpc-interface-spec/introduction.html) & [legacy](https://github.com/w3f/PSPs/blob/master/PSPs/drafts/psp-6.md) (
   deprecated soon) JSON-RPC APIs
 - ✅ Support [light clients](https://docs.dedot.dev/getting-started/connect-to-network#initializing-dedotclient-and-interact-with-polkadot-network) (e.g: [smoldot](https://www.npmjs.com/package/smoldot))
 - ✅ [Typed Contract APIs](https://docs.dedot.dev/ink-smart-contracts/intro)
