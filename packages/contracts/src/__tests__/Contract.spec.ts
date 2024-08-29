@@ -1,5 +1,6 @@
 import { LegacyClient, FallbackRuntimeApis } from '@dedot/api';
 import { FrameSystemEventRecord } from '@dedot/api/chaintypes/index.js';
+// @ts-ignore
 import MockProvider from '@dedot/api/client/__tests__/MockProvider';
 import { RuntimeVersion } from '@dedot/codecs';
 import { ContractEvent } from '@dedot/contracts';

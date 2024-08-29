@@ -1,4 +1,5 @@
 import { LegacyClient } from '@dedot/api';
+// @ts-ignore
 import MockProvider from '@dedot/api/client/__tests__/MockProvider';
 import { beforeEach, describe, expect, it } from 'vitest';
 import { ContractDeployer } from '../ContractDeployer.js';
