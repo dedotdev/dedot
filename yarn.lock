@@ -3724,7 +3724,7 @@ __metadata:
     "@mxssfd/typedoc-theme": "npm:^1.1.6"
     "@polkadot/types-support": "npm:^12.4.2"
     "@trivago/prettier-plugin-sort-imports": "npm:^4.3.0"
-    happy-dom: "npm:^15.0.0"
+    happy-dom: "npm:^15.3.1"
     husky: "npm:^9.1.4"
     lerna: "npm:7.4.2"
     prettier: "npm:^3.3.3"
@@ -5014,14 +5014,14 @@ __metadata:
   languageName: node
   linkType: hard
 
-"happy-dom@npm:^15.0.0":
-  version: 15.0.0
-  resolution: "happy-dom@npm:15.0.0"
+"happy-dom@npm:^15.3.1":
+  version: 15.3.1
+  resolution: "happy-dom@npm:15.3.1"
   dependencies:
     entities: "npm:^4.5.0"
     webidl-conversions: "npm:^7.0.0"
     whatwg-mimetype: "npm:^3.0.0"
-  checksum: 10c0/0f9a3d8267ca67cd38237589be12ebfd0d5249ecd99a79c2667da69f47280a03979ffc78420224503a0fe5c9620bb4f3858f892add77befc22b831f564cb3a0d
+  checksum: 10c0/c4400a216a47dc8948939fcef694ec428ce880e341c75835b90b668af348a360f56086c38f5d0e37a10e6b6ea7280c036bc298cf27739d606fb8bce9b72f5ad7
   languageName: node
   linkType: hard
 
