@@ -1,0 +1,9 @@
+{
+  "entryPoints": ["packages/*"],
+  "name": "Dedot API References",
+  "entryPointStrategy": "packages",
+  "includeVersion": false,
+  "plugin": ["@mxssfd/typedoc-theme"],
+  "theme": "my-theme",
+  "out": "./typedoc"
+}
