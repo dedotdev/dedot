@@ -1,1 +1,3 @@
 typedoc/* linguist-vendored
+*.html linguist-vendored
+*.css linguist-vendored
