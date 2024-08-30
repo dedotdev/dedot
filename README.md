@@ -43,6 +43,46 @@ Check out Dedot documentation on the website: https://dedot.dev
 - [CLI](https://docs.dedot.dev/cli)
 - [Build with Dedot](https://docs.dedot.dev/help-and-faq/built-with-dedot)
 
+### Example
+1. Install packages
+```shell
+npm i dedot # or yarn, pnpm
+
+npm i -D @dedot/chaintypes
+```
+2. Connect to the network
+```typescript
+import { DedotClient, WsProvider } from 'dedot';
+import type { PolkadotApi } from '@dedot/chaintypes';
+
+const provider = new WsProvider('wss://rpc.polkadot.io');
+const client = await DedotClient.new<PolkadotApi>(provider);
+
+// Call rpc `state_getMetadata` to fetch raw scale-encoded metadata and decode it.
+const metadata = await client.rpc.state_getMetadata();
+console.log('Metadata:', metadata);
+
+// Listen to best blocks
+client.chainHead.on('bestBlock', (block: PinnedBlock) => { // or 'finalizedBlock'
+  console.log(`Current best block number: ${block.number}, hash: ${block.hash}`);
+});
+
+// Query on-chain storage
+const balance = await client.query.system.account(<address>);
+console.log('Balance:', balance);
+
+// Get pallet constants
+const ss58Prefix = client.consts.system.ss58Prefix;
+console.log('Polkadot ss58Prefix:', ss58Prefix);
+
+// Call runtime api
+const pendingRewards = await client.call.nominationPoolsApi.pendingRewards(<address>)
+console.log('Pending rewards:', pendingRewards);
+
+// await unsub();
+// await client.disconnect();
+```
+
 ### Resources & announcements
 - [Introducing Dedot](https://forum.polkadot.network/t/introducing-dedot-a-delightful-javascript-client-for-polkadot-substrate-based-blockchains/8956)
 - [Type-safe APIs to interact with ink! Smart Contracts](https://forum.polkadot.network/t/type-safe-apis-to-interact-with-ink-smart-contracts-dedot/9485)
