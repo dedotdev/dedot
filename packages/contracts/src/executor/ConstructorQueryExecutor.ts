@@ -5,7 +5,7 @@ import { assert, assertFalse, concatU8a, hexToU8a, isNull, isUndefined, isWasm, 
 import { ContractInstantiateDispatchError, ContractInstantiateLangError } from '../errors.js';
 import { ConstructorCallOptions, GenericConstructorCallResult, GenericConstructorQueryCall } from '../types/index.js';
 import { toReturnFlags } from '../utils.js';
-import { DeployerExecutor } from './DeployerExecutor.js';
+import { DeployerExecutor } from './abstract/index.js';
 
 export class ConstructorQueryExecutor<ChainApi extends GenericSubstrateApi> extends DeployerExecutor<ChainApi> {
   doExecute(constructor: string) {

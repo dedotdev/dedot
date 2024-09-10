@@ -5,7 +5,7 @@ import { assert, assertFalse, concatU8a, hexToU8a, u8aToHex } from '@dedot/utils
 import { ContractDispatchError, ContractLangError } from '../errors.js';
 import { ContractCallOptions, GenericContractQueryCall, GenericContractCallResult } from '../types/index.js';
 import { toReturnFlags } from '../utils.js';
-import { ContractExecutor } from './ContractExecutor.js';
+import { ContractExecutor } from './abstract/index.js';
 
 export class QueryExecutor<ChainApi extends GenericSubstrateApi> extends ContractExecutor<ChainApi> {
   doExecute(message: string) {

@@ -2,7 +2,7 @@ import { isEventRecord } from '@dedot/api';
 import { GenericSubstrateApi, IEventRecord } from '@dedot/types';
 import { assert, stringPascalCase } from '@dedot/utils';
 import { ContractEvent, ContractEventMeta, GenericContractEvent } from '../types/index.js';
-import { ContractExecutor } from './ContractExecutor.js';
+import { ContractExecutor } from './abstract/index.js';
 
 export class EventExecutor<ChainApi extends GenericSubstrateApi> extends ContractExecutor<ChainApi> {
   doExecute(eventName: string): GenericContractEvent {
