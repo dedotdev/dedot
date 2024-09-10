@@ -24,7 +24,7 @@ export interface ConstructorQuery<ChainApi extends GenericSubstrateApi> extends 
     ChainApi,
     (
       initValue: boolean,
-      options: ConstructorCallOptions,
+      options?: ConstructorCallOptions,
     ) => Promise<GenericConstructorCallResult<[], ContractInstantiateResult<ChainApi>>>
   >;
 
@@ -37,7 +37,7 @@ export interface ConstructorQuery<ChainApi extends GenericSubstrateApi> extends 
    **/
   newDefault: GenericConstructorQueryCall<
     ChainApi,
-    (options: ConstructorCallOptions) => Promise<GenericConstructorCallResult<[], ContractInstantiateResult<ChainApi>>>
+    (options?: ConstructorCallOptions) => Promise<GenericConstructorCallResult<[], ContractInstantiateResult<ChainApi>>>
   >;
 
   /**
@@ -52,7 +52,7 @@ export interface ConstructorQuery<ChainApi extends GenericSubstrateApi> extends 
     ChainApi,
     (
       seed: Hash,
-      options: ConstructorCallOptions,
+      options?: ConstructorCallOptions,
     ) => Promise<GenericConstructorCallResult<Result<[], FlipperFlipperError>, ContractInstantiateResult<ChainApi>>>
   >;
 }

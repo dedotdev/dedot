@@ -1,30 +1,18 @@
 import { ISubstrateClient } from '@dedot/api';
 import { SubstrateApi } from '@dedot/api/chaintypes';
-import { AccountId32, AccountId32Like } from '@dedot/codecs';
 import { GenericSubstrateApi, RpcVersion } from '@dedot/types';
-import { TypinkRegistry } from '../TypinkRegistry.js';
-import { ContractMessageArg, ContractMessage } from '../types/index.js';
-import { ContractMetadata } from '../types/index.js';
+import { TypinkRegistry } from '../../TypinkRegistry.js';
+import { ContractMessageArg, ContractMessage, ExecutionOptions, ContractMetadata } from '../../types';
 
 export abstract class Executor<ChainApi extends GenericSubstrateApi = SubstrateApi[RpcVersion]> {
-  readonly #address?: AccountId32;
-
   constructor(
     readonly client: ISubstrateClient<ChainApi>,
     readonly registry: TypinkRegistry,
-    address?: AccountId32Like,
-  ) {
-    if (address) {
-      this.#address = new AccountId32(address);
-    }
-  }
+    readonly options: ExecutionOptions = {},
+  ) {}
 
   get metadata(): ContractMetadata {
     return this.registry.metadata;
-  }
-
-  get address(): AccountId32 | undefined {
-    return this.#address;
   }
 
   abstract doExecute(...paths: string[]): unknown;

@@ -1,32 +1,11 @@
-import { ISubstrateClient } from '@dedot/api';
-import { Hash } from '@dedot/codecs';
 import { GenericSubstrateApi } from '@dedot/types';
-import {
-  assert,
-  assertFalse,
-  concatU8a,
-  HexString,
-  hexToU8a,
-  isNull,
-  isUndefined,
-  isWasm,
-  u8aToHex,
-} from '@dedot/utils';
-import { TypinkRegistry } from '../TypinkRegistry.js';
-import { ConstructorTxOptions, ContractConstructorMessage, GenericConstructorTxCall } from '../types/index.js';
-import { normalizeLabel } from '../utils.js';
-import { Executor } from './Executor.js';
+import { assert, assertFalse, concatU8a, hexToU8a, isNull, isUndefined, isWasm, u8aToHex } from '@dedot/utils';
+import { ConstructorTxOptions, GenericConstructorTxCall } from '../types/index.js';
+import { DeployerExecutor } from './abstract/index.js';
 
-export class ConstructorTxExecutor<ChainApi extends GenericSubstrateApi> extends Executor<ChainApi> {
-  protected readonly code: Hash | Uint8Array | HexString | string;
-
-  constructor(client: ISubstrateClient<ChainApi>, registry: TypinkRegistry, code: Hash | Uint8Array | string) {
-    super(client, registry);
-    this.code = code;
-  }
-
+export class ConstructorTxExecutor<ChainApi extends GenericSubstrateApi> extends DeployerExecutor<ChainApi> {
   doExecute(constructor: string) {
-    const meta = this.#findConstructorMeta(constructor);
+    const meta = this.findConstructorMeta(constructor);
     assert(meta, `Constructor message not found: ${constructor}`);
 
     const callFn: GenericConstructorTxCall<ChainApi> = (...params: any[]) => {
@@ -65,9 +44,5 @@ export class ConstructorTxExecutor<ChainApi extends GenericSubstrateApi> extends
     callFn.meta = meta;
 
     return callFn;
-  }
-
-  #findConstructorMeta(constructor: string): ContractConstructorMessage | undefined {
-    return this.metadata.spec.constructors.find((one) => normalizeLabel(one.label) === constructor);
   }
 }
