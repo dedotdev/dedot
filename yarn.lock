@@ -486,7 +486,7 @@ __metadata:
     "@dedot/storage": "workspace:*"
     "@dedot/types": "workspace:*"
     "@dedot/utils": "workspace:*"
-    "@polkadot/types": "npm:^12.4.2"
+    "@polkadot/types": "npm:^13.0.1"
   languageName: unknown
   linkType: soft
 
@@ -9651,7 +9651,7 @@ __metadata:
   dependencies:
     "@dedot/chaintypes": "npm:*"
     "@polkadot/keyring": "npm:^13.0.2"
-    "@polkadot/types": "npm:^12.4.2"
+    "@polkadot/types": "npm:^13.0.1"
     dedot: "workspace:*"
   languageName: unknown
   linkType: soft
