@@ -26,8 +26,8 @@
     "typedoc": "yarn build && npx typedoc"
   },
   "devDependencies": {
-    "@mxssfd/typedoc-theme": "^1.1.6",
-    "@polkadot/types-support": "^12.4.2",
+    "@mxssfd/typedoc-theme": "^1.1.7",
+    "@polkadot/types-support": "^13.1.1",
     "@trivago/prettier-plugin-sort-imports": "^4.3.0",
     "happy-dom": "^15.0.0",
     "husky": "^9.1.4",
@@ -42,8 +42,8 @@
     "vitest": "^2.0.5"
   },
   "resolutions": {
-    "@polkadot/types": "^12.4.2",
-    "@polkadot/types-support": "^12.4.2"
+    "@polkadot/types": "^13.1.1",
+    "@polkadot/types-support": "^13.1.1"
   },
   "license": "Apache-2.0"
 }
