@@ -21,7 +21,7 @@ export const run = async (_nodeName: any, networkInfo: any) => {
 
   const verifyContracts = async (api: ISubstrateClient<SubstrateApi[RpcVersion]>, flipper: ContractMetadata) => {
     const wasm = flipper.source.wasm!;
-    const deployer = new ContractDeployer<FlipperContractApi>(api, flipper, wasm);
+    const deployer = new ContractDeployer<FlipperContractApi>(api, flipper, wasm, { defaultCaller: caller });
 
     // Avoid to use same salt with previous tests.
     const timestamp = await api.query.timestamp.now();
@@ -31,7 +31,6 @@ export const run = async (_nodeName: any, networkInfo: any) => {
     const {
       raw: { gasRequired },
     } = await deployer.query.new(true, {
-      caller,
       salt,
     });
 
@@ -67,15 +66,15 @@ export const run = async (_nodeName: any, networkInfo: any) => {
     });
 
     console.log(`[${api.rpcVersion}] Deployed contract address`, contractAddress);
-    const contract = new Contract<FlipperContractApi>(api, flipper, contractAddress);
+    const contract = new Contract<FlipperContractApi>(api, flipper, contractAddress, { defaultCaller: caller });
 
-    const { data: state } = await contract.query.get({ caller });
+    const { data: state } = await contract.query.get();
 
     console.log(`[${api.rpcVersion}] Initial value:`, state);
     console.log(`[${api.rpcVersion}] Flipping...`);
 
     // Dry-run to estimate gas fee
-    const { raw } = await contract.query.flip({ caller });
+    const { raw } = await contract.query.flip();
 
     await new Promise<void>(async (resolve) => {
       await contract.tx.flip({ gasLimit: raw.gasRequired }).signAndSend(alicePair, ({ status, events }) => {
@@ -125,7 +124,7 @@ export const run = async (_nodeName: any, networkInfo: any) => {
     const { data: newState, flags } = await contract.query.get({ caller });
     console.log(`[${api.rpcVersion}] New value:`, newState);
 
-    assert(flags.bits === 0 && flags.revert === false, 'Should not get Revert flag if call success!')
+    assert(flags.bits === 0 && flags.revert === false, 'Should not get Revert flag if call success!');
     assert(state !== newState, 'State should be changed');
   };
 
