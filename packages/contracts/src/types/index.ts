@@ -71,7 +71,7 @@ export type CallOptions = {
 
 export type ConstructorCallOptions = CallOptions & {
   salt?: BytesLike;
-  caller: AccountId32Like;
+  caller?: AccountId32Like;
 };
 
 export type ConstructorTxOptions = CallOptions & {
@@ -80,7 +80,7 @@ export type ConstructorTxOptions = CallOptions & {
 };
 
 export type ContractCallOptions = CallOptions & {
-  caller: AccountId32Like;
+  caller?: AccountId32Like;
 };
 
 export type ContractTxOptions = CallOptions & {
@@ -171,3 +171,8 @@ export interface GenericContractApi<
     ChainApi: ChainApi[Rv];
   };
 }
+
+export interface ExecutionOptions {
+  defaultCaller?: AccountId32Like;  
+}
+

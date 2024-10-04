@@ -24,7 +24,7 @@ export interface ContractQuery<ChainApi extends GenericSubstrateApi> extends Gen
     ChainApi,
     (
       seed: Hash,
-      options: ContractCallOptions,
+      options?: ContractCallOptions,
     ) => Promise<GenericContractCallResult<Result<boolean, FlipperFlipperError>, ContractCallResult<ChainApi>>>
   >;
 
@@ -37,7 +37,7 @@ export interface ContractQuery<ChainApi extends GenericSubstrateApi> extends Gen
    **/
   flip: GenericContractQueryCall<
     ChainApi,
-    (options: ContractCallOptions) => Promise<GenericContractCallResult<[], ContractCallResult<ChainApi>>>
+    (options?: ContractCallOptions) => Promise<GenericContractCallResult<[], ContractCallResult<ChainApi>>>
   >;
 
   /**
@@ -49,6 +49,6 @@ export interface ContractQuery<ChainApi extends GenericSubstrateApi> extends Gen
    **/
   get: GenericContractQueryCall<
     ChainApi,
-    (options: ContractCallOptions) => Promise<GenericContractCallResult<boolean, ContractCallResult<ChainApi>>>
+    (options?: ContractCallOptions) => Promise<GenericContractCallResult<boolean, ContractCallResult<ChainApi>>>
   >;
 }

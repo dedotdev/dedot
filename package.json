@@ -22,25 +22,28 @@
     "publish:next": "yarn build && npx lerna publish prerelease --canary --preid next.$(git rev-parse --short=8 HEAD) --dist-tag next --force-publish --no-private --no-git-tag-version --yes",
     "publish:pre": "yarn build && npx lerna publish prerelease -m \"chore(release): publish %s - [skip ci]\" --force-publish --no-private",
     "zombienet-test-preps": "npx lerna exec --no-private -- node \\$LERNA_ROOT_PATH/scripts/zombienet-tests-preps.js",
-    "gen:chaintypes-substrate": "yarn cli chaintypes -w substrate -c substrate -o ./packages/api/src/chaintypes -d=false -s=false && yarn fix-esm-path"
+    "gen:chaintypes-substrate": "yarn cli chaintypes -w substrate -c substrate -o ./packages/api/src/chaintypes -d=false -s=false && yarn fix-esm-path",
+    "typedoc": "yarn build && npx typedoc"
   },
   "devDependencies": {
-    "@polkadot/types-support": "^12.3.1",
+    "@mxssfd/typedoc-theme": "^1.1.7",
+    "@polkadot/types-support": "^14.0.1",
     "@trivago/prettier-plugin-sort-imports": "^4.3.0",
-    "happy-dom": "^14.12.3",
+    "happy-dom": "^15.0.0",
     "husky": "^9.1.4",
     "lerna": "7.4.2",
     "prettier": "^3.3.3",
     "prettier-plugin-organize-imports": "^3.2.4",
     "ts-node": "^10.9.2",
     "tsc-esm-fix": "^2.20.27",
+    "typedoc": "^0.26.7",
     "typescript": "5.4.5",
     "vite-tsconfig-paths": "^4.3.2",
-    "vitest": "^2.0.5"
+    "vitest": "^2.1.2"
   },
   "resolutions": {
-    "@polkadot/types": "^12.3.1",
-    "@polkadot/types-support": "^12.3.1"
+    "@polkadot/types": "^13.1.1",
+    "@polkadot/types-support": "^13.1.1"
   },
   "license": "Apache-2.0"
 }
