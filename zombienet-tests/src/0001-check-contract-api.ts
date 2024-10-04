@@ -68,6 +68,18 @@ export const run = async (_nodeName: any, networkInfo: any) => {
     console.log(`[${api.rpcVersion}] Deployed contract address`, contractAddress);
     const contract = new Contract<FlipperContractApi>(api, flipper, contractAddress, { defaultCaller: caller });
 
+    const flippedPromise = new Promise<boolean>(async (resolve) => {
+      const unsub = await contract.events.Flipped.watch((events) => {
+        events.forEach((event) => {
+          console.log('Coin flipped!');
+          console.log('New state:', event.data.new);
+
+          unsub();
+          resolve(true);
+        });
+      });
+    });
+
     const { data: state } = await contract.query.get();
 
     console.log(`[${api.rpcVersion}] Initial value:`, state);
@@ -126,6 +138,7 @@ export const run = async (_nodeName: any, networkInfo: any) => {
 
     assert(flags.bits === 0 && flags.revert === false, 'Should not get Revert flag if call success!');
     assert(state !== newState, 'State should be changed');
+    assert(await flippedPromise, 'Flipped event should be watched');
   };
 
   console.log('Checking via legacy API');

@@ -3,6 +3,7 @@ import { cryptoWaitReady } from '@polkadot/util-crypto';
 import { RococoRuntimeRuntimeCallLike } from '@dedot/chaintypes/rococo';
 import { DedotClient, WsProvider } from 'dedot';
 import { assert, isHex, isNumber } from 'dedot/utils';
+import { aw } from 'vitest/dist/chunks/reporters.DAfKSDh5';
 
 const BOB = '5FHneW46xGXgs5mUiveU4sbTyGBzmstUspZC92UhjJM694ty';
 
@@ -31,7 +32,14 @@ export const run = async (nodeName: any, networkInfo: any): Promise<void> => {
 
   const batchTx = api.tx.utility.batch([transferTx.call, remarkCall as any]);
 
-  return new Promise(async (resolve) => {
+  const transferred = new Promise<boolean>((resolve) => {
+    api.events.balances.Transfer.watch((events) => {
+      console.log('Watched Transfer Events', events);
+      resolve(true);
+    });
+  });
+
+  const batchedPromise = new Promise<void>(async (resolve) => {
     let blockIncluded = false;
     const unsub = await batchTx.signAndSend(alice, async ({ status, txIndex, events }) => {
       console.log('Transaction status', status);
@@ -66,4 +74,7 @@ export const run = async (nodeName: any, networkInfo: any): Promise<void> => {
       }
     });
   });
+
+  await batchedPromise;
+  assert(await transferred, 'balances.Transfer event should be received');
 };

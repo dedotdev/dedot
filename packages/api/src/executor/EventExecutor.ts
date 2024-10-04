@@ -1,5 +1,5 @@
 import { PalletEventMetadataLatest } from '@dedot/codecs';
-import type { GenericPalletEvent, GenericSubstrateApi, IEventRecord, PalletEvent } from '@dedot/types';
+import type { GenericPalletEvent, GenericSubstrateApi, IEventRecord, PalletEvent, Unsub } from '@dedot/types';
 import { assert, stringCamelCase, stringPascalCase, UnknownApiError } from '@dedot/utils';
 import { Executor } from './Executor.js';
 import { isEventRecord } from './utils.js';
@@ -50,6 +50,16 @@ export class EventExecutor<ChainApi extends GenericSubstrateApi = GenericSubstra
       }
     };
 
+    const watch = (callback: (events: PalletEvent[]) => void): Promise<Unsub> => {
+      return this.client.query.system.events((records: IEventRecord[]) => {
+        const events = filter(records);
+
+        if (events.length === 0) return;
+
+        callback(filter(records));
+      });
+    };
+
     const meta: PalletEventMetadataLatest = {
       ...eventDef,
       pallet: targetPallet.name,
@@ -61,6 +71,7 @@ export class EventExecutor<ChainApi extends GenericSubstrateApi = GenericSubstra
       find,
       filter,
       meta,
+      watch,
     };
   }
 
