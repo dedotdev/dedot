@@ -2,7 +2,7 @@ import { ISubstrateClient } from '@dedot/api';
 import { SubstrateApi } from '@dedot/api/chaintypes';
 import { GenericSubstrateApi, RpcVersion } from '@dedot/types';
 import { TypinkRegistry } from '../../TypinkRegistry.js';
-import { ContractMessageArg, ContractMessage, ExecutionOptions, ContractMetadata } from '../../types';
+import { ContractMessageArg, ContractMessage, ExecutionOptions, ContractMetadata } from '../../types/index.js';
 
 export abstract class Executor<ChainApi extends GenericSubstrateApi = SubstrateApi[RpcVersion]> {
   constructor(
