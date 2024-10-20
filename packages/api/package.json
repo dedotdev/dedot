@@ -42,8 +42,11 @@
     "access": "public",
     "directory": "dist"
   },
-  "license": "Apache-2.0",
   "devDependencies": {
     "@polkadot/types": "^14.0.1"
-  }
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "license": "Apache-2.0"
 }
