@@ -615,7 +615,7 @@ __metadata:
   resolution: "@dedot/providers@workspace:packages/providers"
   dependencies:
     "@dedot/utils": "workspace:*"
-    "@polkadot/x-ws": "npm:^13.1.1"
+    "@polkadot/x-ws": "npm:^13.2.2"
     mock-socket: "npm:^9.3.1"
     smoldot: "npm:^2.0.30"
   languageName: unknown
@@ -1991,6 +1991,15 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@polkadot/x-global@npm:13.2.2":
+  version: 13.2.2
+  resolution: "@polkadot/x-global@npm:13.2.2"
+  dependencies:
+    tslib: "npm:^2.8.0"
+  checksum: 10c0/8129a33319be3f48e7cd540324e97f6108799ef2aeb026157bfd313fbf22146f3a2ebefd1d8dfa1fbc57987d2157a3169a33b5cbb4f26f9abf49765bbb1874fe
+  languageName: node
+  linkType: hard
+
 "@polkadot/x-randomvalues@npm:13.1.1":
   version: 13.1.1
   resolution: "@polkadot/x-randomvalues@npm:13.1.1"
@@ -2035,14 +2044,14 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@polkadot/x-ws@npm:^13.1.1":
-  version: 13.1.1
-  resolution: "@polkadot/x-ws@npm:13.1.1"
+"@polkadot/x-ws@npm:^13.2.2":
+  version: 13.2.2
+  resolution: "@polkadot/x-ws@npm:13.2.2"
   dependencies:
-    "@polkadot/x-global": "npm:13.1.1"
-    tslib: "npm:^2.7.0"
-    ws: "npm:^8.16.0"
-  checksum: 10c0/6d485fb62218beee0ea38e3dc275385ad9fa64677f451833447a5e54bbf70c3827e5a4d4e7d9531988109e8f1760437f854c7cb19e2df488f35b4c20bf8a6b1e
+    "@polkadot/x-global": "npm:13.2.2"
+    tslib: "npm:^2.8.0"
+    ws: "npm:^8.18.0"
+  checksum: 10c0/2357628b0c71a4298c79f46c424e62ba3b80e160466aac772265071439b443f440390f5d393775bfe949ee7c4ea840a4197df4187fceddc71e9d8fa95b4c3d44
   languageName: node
   linkType: hard
 
@@ -9248,6 +9257,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"tslib@npm:^2.8.0":
+  version: 2.8.0
+  resolution: "tslib@npm:2.8.0"
+  checksum: 10c0/31e4d14dc1355e9b89e4d3c893a18abb7f90b6886b089c2da91224d0a7752c79f3ddc41bc1aa0a588ac895bd97bb99c5bc2bfdb2f86de849f31caeb3ba79bbe5
+  languageName: node
+  linkType: hard
+
 "tuf-js@npm:^1.1.7":
   version: 1.1.7
   resolution: "tuf-js@npm:1.1.7"
@@ -9972,7 +9988,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"ws@npm:^8.16.0":
+"ws@npm:^8.16.0, ws@npm:^8.18.0":
   version: 8.18.0
   resolution: "ws@npm:8.18.0"
   peerDependencies:
