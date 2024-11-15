@@ -11,7 +11,7 @@
     "dedot": "workspace:*"
   },
   "devDependencies": {
-    "@polkadot/types": "^14.0.1"
+    "@polkadot/types": "^14.3.1"
   },
   "license": "Apache-2.0"
 }
