@@ -617,7 +617,7 @@ __metadata:
     "@dedot/utils": "workspace:*"
     "@polkadot/x-ws": "npm:^13.2.3"
     mock-socket: "npm:^9.3.1"
-    smoldot: "npm:^2.0.30"
+    smoldot: "npm:^2.0.34"
   languageName: unknown
   linkType: soft
 
@@ -8577,12 +8577,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"smoldot@npm:^2.0.30":
-  version: 2.0.30
-  resolution: "smoldot@npm:2.0.30"
+"smoldot@npm:^2.0.34":
+  version: 2.0.34
+  resolution: "smoldot@npm:2.0.34"
   dependencies:
     ws: "npm:^8.8.1"
-  checksum: 10c0/d4aaa7169f2933d3cbcc78720d22a8dee7d038c01f5868d1ccc022e5ebb9deab33ee7fe235f933ae863eccccc65735313c4e2645864730f8a421d44dbd11398b
+  checksum: 10c0/b9079a70706c54ee16d0ec0b626f6f13807b6130856c570b84ca8dd0506283110017bcc7696d08f3a15e70c9bf2d5ba8a2d7249665347185593193beb1907d1e
   languageName: node
   linkType: hard
 
