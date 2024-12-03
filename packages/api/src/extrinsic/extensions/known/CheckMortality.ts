@@ -89,6 +89,7 @@ export class CheckMortality extends SignedExtension<EraLike, Hash> {
       BigInt(MORTAL_PERIOD) /
         BigInt(
           this.#getConst<bigint>('babe', 'expectedBlockTime') ||
+            this.#getConst<bigint>('aura', 'slotDuration') ||
             BigInt(this.#getConst<bigint>('timestamp', 'minimumPeriod') || 0) * 2n ||
             FALLBACK_PERIOD,
         ) +
