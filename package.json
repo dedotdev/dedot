@@ -30,7 +30,7 @@
     "@polkadot/types-support": "^15.0.1",
     "@trivago/prettier-plugin-sort-imports": "^4.3.0",
     "happy-dom": "^15.0.0",
-    "husky": "^9.1.4",
+    "husky": "^9.1.7",
     "lerna": "7.4.2",
     "prettier": "^3.4.1",
     "prettier-plugin-organize-imports": "^3.2.4",
