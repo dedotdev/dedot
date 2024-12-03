@@ -1834,12 +1834,12 @@ __metadata:
   linkType: hard
 
 "@polkadot/types-support@npm:^13.1.1":
-  version: 13.1.1
-  resolution: "@polkadot/types-support@npm:13.1.1"
+  version: 13.2.1
+  resolution: "@polkadot/types-support@npm:13.2.1"
   dependencies:
     "@polkadot/util": "npm:^13.1.1"
     tslib: "npm:^2.7.0"
-  checksum: 10c0/38a08e414038c1938f273efb3708a7c535349e1646f6e477f240c476aa64e990db794b42d71ccafb667894f7cc708c5551e526e0e751f68f67c487027851ff83
+  checksum: 10c0/eb2ea1b1e0b175c2299a5e520a5e7cd55322a312c163a16558a844a740362065bb1145eb53c9aeb002d852060c9a59f3dcabd9ba7da5042705b41f75a0092040
   languageName: node
   linkType: hard
 
