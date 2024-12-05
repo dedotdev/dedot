@@ -27,23 +27,23 @@
   },
   "devDependencies": {
     "@mxssfd/typedoc-theme": "^1.1.7",
-    "@polkadot/types-support": "^15.0.1",
+    "@polkadot/types-support": "^13.2.1",
     "@trivago/prettier-plugin-sort-imports": "^4.3.0",
-    "happy-dom": "^15.0.0",
+    "happy-dom": "^15.11.7",
     "husky": "^9.1.4",
     "lerna": "7.4.2",
-    "prettier": "^3.4.1",
+    "prettier": "^3.4.2",
     "prettier-plugin-organize-imports": "^3.2.4",
     "ts-node": "^10.9.2",
     "tsc-esm-fix": "^2.20.27",
-    "typedoc": "^0.27.2",
+    "typedoc": "^0.27.3",
     "typescript": "5.4.5",
     "vite-tsconfig-paths": "^4.3.2",
     "vitest": "^2.1.8"
   },
   "resolutions": {
-    "@polkadot/types": "^13.1.1",
-    "@polkadot/types-support": "^13.1.1"
+    "@polkadot/types": "^13.2.1",
+    "@polkadot/types-support": "^13.2.1"
   },
   "engines": {
     "node": ">=18"
