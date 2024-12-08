@@ -1,4 +1,4 @@
-# dedot
+# Dedot
 
 Delightful JavaScript/TypeScript client for [Polkadot](https://polkadot.network/) & [Substrate](https://substrate.io/)
 
