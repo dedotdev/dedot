@@ -3,7 +3,6 @@ import { cryptoWaitReady } from '@polkadot/util-crypto';
 import { RococoRuntimeRuntimeCallLike } from '@dedot/chaintypes/rococo';
 import { DedotClient, WsProvider } from 'dedot';
 import { assert, isHex, isNumber } from 'dedot/utils';
-import { aw } from 'vitest/dist/chunks/reporters.DAfKSDh5';
 
 const BOB = '5FHneW46xGXgs5mUiveU4sbTyGBzmstUspZC92UhjJM694ty';
 
