@@ -513,7 +513,7 @@ __metadata:
     "@dedot/codecs": "workspace:*"
     "@dedot/codegen": "workspace:*"
     "@polkadot-api/wasm-executor": "npm:^0.1.2"
-    "@polkadot/types-support": "npm:~14.0.1"
+    "@polkadot/types-support": "npm:~15.0.2"
     "@types/yargs": "npm:^17.0.33"
     ora: "npm:^8.1.1"
     yargs: "npm:^17.7.2"
@@ -3912,7 +3912,7 @@ __metadata:
   resolution: "dedot.dev@workspace:."
   dependencies:
     "@mxssfd/typedoc-theme": "npm:^1.1.7"
-    "@polkadot/types-support": "npm:~14.0.1"
+    "@polkadot/types-support": "npm:~15.0.2"
     "@trivago/prettier-plugin-sort-imports": "npm:^4.3.0"
     happy-dom: "npm:^15.11.7"
     husky: "npm:^9.1.4"
