@@ -43,7 +43,7 @@
     "directory": "dist"
   },
   "devDependencies": {
-    "@polkadot/types": "~14.0.1"
+    "@polkadot/types": "~15.1.1"
   },
   "engines": {
     "node": ">=18"
