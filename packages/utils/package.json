@@ -23,7 +23,7 @@
   },
   "dependencies": {
     "@noble/hashes": "^1.7.0",
-    "@scure/base": "^1.2.1",
+    "@scure/base": "^1.2.4",
     "eventemitter3": "^5.0.1"
   },
   "engines": {
