@@ -27,7 +27,7 @@
   },
   "devDependencies": {
     "@mxssfd/typedoc-theme": "^1.1.7",
-    "@polkadot/types-support": "^15.3.1",
+    "@polkadot/types-support": "^15.5.1",
     "@trivago/prettier-plugin-sort-imports": "^4.3.0",
     "happy-dom": "^15.11.7",
     "husky": "^9.1.4",
