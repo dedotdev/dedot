@@ -1,3 +1,6 @@
+![Dedot_Baner_final](https://github.com/user-attachments/assets/21402da8-93cb-4441-8688-6fbccb5cfa2b)
+
+
 # Dedot
 
 Delightful JavaScript/TypeScript client for [Polkadot](https://polkadot.network/) & [Substrate](https://substrate.io/)
