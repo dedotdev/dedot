@@ -1,16 +1,16 @@
 import staticSubstrateV15 from '@polkadot/types-support/metadata/v15/substrate-hex';
-import { OpaqueMetadata, RuntimeVersion } from '@dedot/codecs';
+import { RuntimeVersion, unwrapOpaqueMetadata } from '@dedot/codecs';
 import {
   ConnectionStatus,
   JsonRpcProvider,
-  ProviderEvent,
   JsonRpcSubscription,
   JsonRpcSubscriptionCallback,
   JsonRpcSubscriptionInput,
+  ProviderEvent,
 } from '@dedot/providers';
 import { AnyFunc } from '@dedot/types';
 import { ChainProperties } from '@dedot/types/json-rpc';
-import { EventEmitter } from '@dedot/utils';
+import { EventEmitter, HexString } from '@dedot/utils';
 import { FallbackRuntimeApis } from '../../executor/RuntimeApiExecutor.js';
 
 export const MockedRuntimeVersion: RuntimeVersion = {
@@ -32,7 +32,7 @@ export default class MockProvider extends EventEmitter<ProviderEvent> implements
 
   constructor(
     mockedRuntimeVersion: RuntimeVersion = MockedRuntimeVersion,
-    metadata: OpaqueMetadata = staticSubstrateV15,
+    metadata: HexString = unwrapOpaqueMetadata(staticSubstrateV15),
   ) {
     super();
     this.rpcRequests = {
