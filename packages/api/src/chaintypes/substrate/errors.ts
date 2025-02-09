@@ -282,7 +282,7 @@ export interface ChainErrors<Rv extends RpcVersion> extends GenericChainErrors<R
     TooManyWinners: GenericPalletError<Rv>;
 
     /**
-     * Sumission was prepared for a different round.
+     * Submission was prepared for a different round.
      **/
     PreDispatchDifferentRound: GenericPalletError<Rv>;
 
@@ -433,6 +433,26 @@ export interface ChainErrors<Rv extends RpcVersion> extends GenericChainErrors<R
      * Used when attempting to use deprecated controller account logic.
      **/
     ControllerDeprecated: GenericPalletError<Rv>;
+
+    /**
+     * Cannot reset a ledger.
+     **/
+    CannotRestoreLedger: GenericPalletError<Rv>;
+
+    /**
+     * Provided reward destination is not allowed.
+     **/
+    RewardDestinationRestricted: GenericPalletError<Rv>;
+
+    /**
+     * Not enough funds available to withdraw.
+     **/
+    NotEnoughFunds: GenericPalletError<Rv>;
+
+    /**
+     * Operation not allowed for virtual stakers.
+     **/
+    VirtualStakerNotAllowed: GenericPalletError<Rv>;
 
     /**
      * Generic pallet error
@@ -663,6 +683,11 @@ export interface ChainErrors<Rv extends RpcVersion> extends GenericChainErrors<R
     PrimeAccountNotMember: GenericPalletError<Rv>;
 
     /**
+     * Proposal is still active.
+     **/
+    ProposalActive: GenericPalletError<Rv>;
+
+    /**
      * Generic pallet error
      **/
     [error: string]: GenericPalletError<Rv>;
@@ -725,6 +750,11 @@ export interface ChainErrors<Rv extends RpcVersion> extends GenericChainErrors<R
      * Prime account is not a member
      **/
     PrimeAccountNotMember: GenericPalletError<Rv>;
+
+    /**
+     * Proposal is still active.
+     **/
+    ProposalActive: GenericPalletError<Rv>;
 
     /**
      * Generic pallet error
@@ -899,11 +929,6 @@ export interface ChainErrors<Rv extends RpcVersion> extends GenericChainErrors<R
    * Pallet `Treasury`'s errors
    **/
   treasury: {
-    /**
-     * Proposer's balance is too low.
-     **/
-    InsufficientProposersBalance: GenericPalletError<Rv>;
-
     /**
      * No proposal, bounty or spend at that index.
      **/
@@ -1120,6 +1145,11 @@ export interface ChainErrors<Rv extends RpcVersion> extends GenericChainErrors<R
     ReentranceDenied: GenericPalletError<Rv>;
 
     /**
+     * A contract attempted to invoke a state modifying API while being in read-only mode.
+     **/
+    StateChangeDenied: GenericPalletError<Rv>;
+
+    /**
      * Origin doesn't have enough balance to pay the required storage deposits.
      **/
     StorageDepositNotEnoughFunds: GenericPalletError<Rv>;
@@ -1155,7 +1185,7 @@ export interface ChainErrors<Rv extends RpcVersion> extends GenericChainErrors<R
     CodeRejected: GenericPalletError<Rv>;
 
     /**
-     * An indetermistic code was used in a context where this is not permitted.
+     * An indeterministic code was used in a context where this is not permitted.
      **/
     Indeterministic: GenericPalletError<Rv>;
 
@@ -1188,6 +1218,11 @@ export interface ChainErrors<Rv extends RpcVersion> extends GenericChainErrors<R
      * Can not add a delegate dependency to the code hash of the contract itself.
      **/
     CannotAddSelfAsDelegateDependency: GenericPalletError<Rv>;
+
+    /**
+     * Can not add more data to transient storage.
+     **/
+    OutOfTransientStorage: GenericPalletError<Rv>;
 
     /**
      * Generic pallet error
@@ -1360,6 +1395,27 @@ export interface ChainErrors<Rv extends RpcVersion> extends GenericChainErrors<R
      * The username cannot be forcefully removed because it can still be accepted.
      **/
     NotExpired: GenericPalletError<Rv>;
+
+    /**
+     * The username cannot be removed because it's still in the grace period.
+     **/
+    TooEarly: GenericPalletError<Rv>;
+
+    /**
+     * The username cannot be removed because it is not unbinding.
+     **/
+    NotUnbinding: GenericPalletError<Rv>;
+
+    /**
+     * The username cannot be unbound because it is already unbinding.
+     **/
+    AlreadyUnbinding: GenericPalletError<Rv>;
+
+    /**
+     * The action cannot be performed because of insufficient privileges (e.g. authority
+     * trying to unbind a username provided by the system).
+     **/
+    InsufficientPrivileges: GenericPalletError<Rv>;
 
     /**
      * Generic pallet error
@@ -2108,6 +2164,11 @@ export interface ChainErrors<Rv extends RpcVersion> extends GenericChainErrors<R
     CallbackFailed: GenericPalletError<Rv>;
 
     /**
+     * The asset ID must be equal to the [`NextAssetId`].
+     **/
+    BadAssetId: GenericPalletError<Rv>;
+
+    /**
      * Generic pallet error
      **/
     [error: string]: GenericPalletError<Rv>;
@@ -2220,6 +2281,11 @@ export interface ChainErrors<Rv extends RpcVersion> extends GenericChainErrors<R
     CallbackFailed: GenericPalletError<Rv>;
 
     /**
+     * The asset ID must be equal to the [`NextAssetId`].
+     **/
+    BadAssetId: GenericPalletError<Rv>;
+
+    /**
      * Generic pallet error
      **/
     [error: string]: GenericPalletError<Rv>;
@@ -2234,9 +2300,24 @@ export interface ChainErrors<Rv extends RpcVersion> extends GenericChainErrors<R
     InvalidKeyOwnershipProof: GenericPalletError<Rv>;
 
     /**
-     * An equivocation proof provided as part of an equivocation report is invalid.
+     * A double voting proof provided as part of an equivocation report is invalid.
      **/
-    InvalidEquivocationProof: GenericPalletError<Rv>;
+    InvalidDoubleVotingProof: GenericPalletError<Rv>;
+
+    /**
+     * A fork voting proof provided as part of an equivocation report is invalid.
+     **/
+    InvalidForkVotingProof: GenericPalletError<Rv>;
+
+    /**
+     * A future block voting proof provided as part of an equivocation report is invalid.
+     **/
+    InvalidFutureBlockVotingProof: GenericPalletError<Rv>;
+
+    /**
+     * The session of the equivocation proof is invalid
+     **/
+    InvalidEquivocationProofSession: GenericPalletError<Rv>;
 
     /**
      * A given equivocation report is valid but already previously reported.
@@ -2363,7 +2444,7 @@ export interface ChainErrors<Rv extends RpcVersion> extends GenericChainErrors<R
     Throttled: GenericPalletError<Rv>;
 
     /**
-     * The operation would result in a receipt worth an insignficant value.
+     * The operation would result in a receipt worth an insignificant value.
      **/
     MakesDust: GenericPalletError<Rv>;
 
@@ -2910,7 +2991,7 @@ export interface ChainErrors<Rv extends RpcVersion> extends GenericChainErrors<R
     MissingProof: GenericPalletError<Rv>;
 
     /**
-     * Unable to verify proof becasue state data is missing.
+     * Unable to verify proof because state data is missing.
      **/
     MissingStateData: GenericPalletError<Rv>;
 
@@ -3095,6 +3176,11 @@ export interface ChainErrors<Rv extends RpcVersion> extends GenericChainErrors<R
      * The preimage does not exist.
      **/
     PreimageNotExist: GenericPalletError<Rv>;
+
+    /**
+     * The preimage is stored with a different length than the one provided.
+     **/
+    PreimageStoredWithDifferentLength: GenericPalletError<Rv>;
 
     /**
      * Generic pallet error
@@ -3282,6 +3368,11 @@ export interface ChainErrors<Rv extends RpcVersion> extends GenericChainErrors<R
      * Prime account is not a member
      **/
     PrimeAccountNotMember: GenericPalletError<Rv>;
+
+    /**
+     * Proposal is still active.
+     **/
+    ProposalActive: GenericPalletError<Rv>;
 
     /**
      * Generic pallet error
@@ -3591,6 +3682,26 @@ export interface ChainErrors<Rv extends RpcVersion> extends GenericChainErrors<R
     NothingToAdjust: GenericPalletError<Rv>;
 
     /**
+     * No slash pending that can be applied to the member.
+     **/
+    NothingToSlash: GenericPalletError<Rv>;
+
+    /**
+     * The pool or member delegation has already migrated to delegate stake.
+     **/
+    AlreadyMigrated: GenericPalletError<Rv>;
+
+    /**
+     * The pool or member delegation has not migrated yet to delegate stake.
+     **/
+    NotMigrated: GenericPalletError<Rv>;
+
+    /**
+     * This call is not allowed in the current state of the pallet.
+     **/
+    NotSupported: GenericPalletError<Rv>;
+
+    /**
      * Generic pallet error
      **/
     [error: string]: GenericPalletError<Rv>;
@@ -3665,6 +3776,11 @@ export interface ChainErrors<Rv extends RpcVersion> extends GenericChainErrors<R
     PreimageNotExist: GenericPalletError<Rv>;
 
     /**
+     * The preimage is stored with a different length than the one provided.
+     **/
+    PreimageStoredWithDifferentLength: GenericPalletError<Rv>;
+
+    /**
      * Generic pallet error
      **/
     [error: string]: GenericPalletError<Rv>;
@@ -3722,6 +3838,11 @@ export interface ChainErrors<Rv extends RpcVersion> extends GenericChainErrors<R
      * The new member to exchange is the same as the old member
      **/
     SameMember: GenericPalletError<Rv>;
+
+    /**
+     * The max member count for the rank has been reached.
+     **/
+    TooManyMembers: GenericPalletError<Rv>;
 
     /**
      * Generic pallet error
@@ -4187,6 +4308,36 @@ export interface ChainErrors<Rv extends RpcVersion> extends GenericChainErrors<R
     InvalidConfig: GenericPalletError<Rv>;
 
     /**
+     * The revenue must be claimed for 1 or more timeslices.
+     **/
+    NoClaimTimeslices: GenericPalletError<Rv>;
+
+    /**
+     * The caller doesn't have the permission to enable or disable auto-renewal.
+     **/
+    NoPermission: GenericPalletError<Rv>;
+
+    /**
+     * We reached the limit for auto-renewals.
+     **/
+    TooManyAutoRenewals: GenericPalletError<Rv>;
+
+    /**
+     * Only cores which are assigned to a task can be auto-renewed.
+     **/
+    NonTaskAutoRenewal: GenericPalletError<Rv>;
+
+    /**
+     * Failed to get the sovereign account of a task.
+     **/
+    SovereignAccountNotFound: GenericPalletError<Rv>;
+
+    /**
+     * Attempted to disable auto-renewal for a core that didn't have it enabled.
+     **/
+    AutoRenewalNotEnabled: GenericPalletError<Rv>;
+
+    /**
      * Generic pallet error
      **/
     [error: string]: GenericPalletError<Rv>;
@@ -4199,6 +4350,276 @@ export interface ChainErrors<Rv extends RpcVersion> extends GenericChainErrors<R
      * The referenced task was not found.
      **/
     NotFound: GenericPalletError<Rv>;
+
+    /**
+     * Generic pallet error
+     **/
+    [error: string]: GenericPalletError<Rv>;
+  };
+  /**
+   * Pallet `AssetConversionMigration`'s errors
+   **/
+  assetConversionMigration: {
+    /**
+     * Provided asset pair is not supported for pool.
+     **/
+    InvalidAssetPair: GenericPalletError<Rv>;
+
+    /**
+     * The pool doesn't exist.
+     **/
+    PoolNotFound: GenericPalletError<Rv>;
+
+    /**
+     * Pool's balance cannot be zero.
+     **/
+    ZeroBalance: GenericPalletError<Rv>;
+
+    /**
+     * Indicates a partial transfer of balance to the new account during a migration.
+     **/
+    PartialTransfer: GenericPalletError<Rv>;
+
+    /**
+     * Generic pallet error
+     **/
+    [error: string]: GenericPalletError<Rv>;
+  };
+  /**
+   * Pallet `Revive`'s errors
+   **/
+  revive: {
+    /**
+     * Invalid schedule supplied, e.g. with zero weight of a basic operation.
+     **/
+    InvalidSchedule: GenericPalletError<Rv>;
+
+    /**
+     * Invalid combination of flags supplied to `seal_call` or `seal_delegate_call`.
+     **/
+    InvalidCallFlags: GenericPalletError<Rv>;
+
+    /**
+     * The executed contract exhausted its gas limit.
+     **/
+    OutOfGas: GenericPalletError<Rv>;
+
+    /**
+     * Performing the requested transfer failed. Probably because there isn't enough
+     * free balance in the sender's account.
+     **/
+    TransferFailed: GenericPalletError<Rv>;
+
+    /**
+     * Performing a call was denied because the calling depth reached the limit
+     * of what is specified in the schedule.
+     **/
+    MaxCallDepthReached: GenericPalletError<Rv>;
+
+    /**
+     * No contract was found at the specified address.
+     **/
+    ContractNotFound: GenericPalletError<Rv>;
+
+    /**
+     * No code could be found at the supplied code hash.
+     **/
+    CodeNotFound: GenericPalletError<Rv>;
+
+    /**
+     * No code info could be found at the supplied code hash.
+     **/
+    CodeInfoNotFound: GenericPalletError<Rv>;
+
+    /**
+     * A buffer outside of sandbox memory was passed to a contract API function.
+     **/
+    OutOfBounds: GenericPalletError<Rv>;
+
+    /**
+     * Input passed to a contract API function failed to decode as expected type.
+     **/
+    DecodingFailed: GenericPalletError<Rv>;
+
+    /**
+     * Contract trapped during execution.
+     **/
+    ContractTrapped: GenericPalletError<Rv>;
+
+    /**
+     * The size defined in `T::MaxValueSize` was exceeded.
+     **/
+    ValueTooLarge: GenericPalletError<Rv>;
+
+    /**
+     * Termination of a contract is not allowed while the contract is already
+     * on the call stack. Can be triggered by `seal_terminate`.
+     **/
+    TerminatedWhileReentrant: GenericPalletError<Rv>;
+
+    /**
+     * `seal_call` forwarded this contracts input. It therefore is no longer available.
+     **/
+    InputForwarded: GenericPalletError<Rv>;
+
+    /**
+     * The amount of topics passed to `seal_deposit_events` exceeds the limit.
+     **/
+    TooManyTopics: GenericPalletError<Rv>;
+
+    /**
+     * The chain does not provide a chain extension. Calling the chain extension results
+     * in this error. Note that this usually shouldn't happen as deploying such contracts
+     * is rejected.
+     **/
+    NoChainExtension: GenericPalletError<Rv>;
+
+    /**
+     * Failed to decode the XCM program.
+     **/
+    XcmDecodeFailed: GenericPalletError<Rv>;
+
+    /**
+     * A contract with the same AccountId already exists.
+     **/
+    DuplicateContract: GenericPalletError<Rv>;
+
+    /**
+     * A contract self destructed in its constructor.
+     *
+     * This can be triggered by a call to `seal_terminate`.
+     **/
+    TerminatedInConstructor: GenericPalletError<Rv>;
+
+    /**
+     * A call tried to invoke a contract that is flagged as non-reentrant.
+     **/
+    ReentranceDenied: GenericPalletError<Rv>;
+
+    /**
+     * A contract called into the runtime which then called back into this pallet.
+     **/
+    ReenteredPallet: GenericPalletError<Rv>;
+
+    /**
+     * A contract attempted to invoke a state modifying API while being in read-only mode.
+     **/
+    StateChangeDenied: GenericPalletError<Rv>;
+
+    /**
+     * Origin doesn't have enough balance to pay the required storage deposits.
+     **/
+    StorageDepositNotEnoughFunds: GenericPalletError<Rv>;
+
+    /**
+     * More storage was created than allowed by the storage deposit limit.
+     **/
+    StorageDepositLimitExhausted: GenericPalletError<Rv>;
+
+    /**
+     * Code removal was denied because the code is still in use by at least one contract.
+     **/
+    CodeInUse: GenericPalletError<Rv>;
+
+    /**
+     * The contract ran to completion but decided to revert its storage changes.
+     * Please note that this error is only returned from extrinsics. When called directly
+     * or via RPC an `Ok` will be returned. In this case the caller needs to inspect the flags
+     * to determine whether a reversion has taken place.
+     **/
+    ContractReverted: GenericPalletError<Rv>;
+
+    /**
+     * The contract failed to compile or is missing the correct entry points.
+     *
+     * A more detailed error can be found on the node console if debug messages are enabled
+     * by supplying `-lruntime::revive=debug`.
+     **/
+    CodeRejected: GenericPalletError<Rv>;
+
+    /**
+     * The code blob supplied is larger than [`limits::code::BLOB_BYTES`].
+     **/
+    BlobTooLarge: GenericPalletError<Rv>;
+
+    /**
+     * The static memory consumption of the blob will be larger than
+     * [`limits::code::STATIC_MEMORY_BYTES`].
+     **/
+    StaticMemoryTooLarge: GenericPalletError<Rv>;
+
+    /**
+     * The program contains a basic block that is larger than allowed.
+     **/
+    BasicBlockTooLarge: GenericPalletError<Rv>;
+
+    /**
+     * The program contains an invalid instruction.
+     **/
+    InvalidInstruction: GenericPalletError<Rv>;
+
+    /**
+     * The contract has reached its maximum number of delegate dependencies.
+     **/
+    MaxDelegateDependenciesReached: GenericPalletError<Rv>;
+
+    /**
+     * The dependency was not found in the contract's delegate dependencies.
+     **/
+    DelegateDependencyNotFound: GenericPalletError<Rv>;
+
+    /**
+     * The contract already depends on the given delegate dependency.
+     **/
+    DelegateDependencyAlreadyExists: GenericPalletError<Rv>;
+
+    /**
+     * Can not add a delegate dependency to the code hash of the contract itself.
+     **/
+    CannotAddSelfAsDelegateDependency: GenericPalletError<Rv>;
+
+    /**
+     * Can not add more data to transient storage.
+     **/
+    OutOfTransientStorage: GenericPalletError<Rv>;
+
+    /**
+     * The contract tried to call a syscall which does not exist (at its current api level).
+     **/
+    InvalidSyscall: GenericPalletError<Rv>;
+
+    /**
+     * Invalid storage flags were passed to one of the storage syscalls.
+     **/
+    InvalidStorageFlags: GenericPalletError<Rv>;
+
+    /**
+     * PolkaVM failed during code execution. Probably due to a malformed program.
+     **/
+    ExecutionFailed: GenericPalletError<Rv>;
+
+    /**
+     * Failed to convert a U256 to a Balance.
+     **/
+    BalanceConversionFailed: GenericPalletError<Rv>;
+
+    /**
+     * Immutable data can only be set during deploys and only be read during calls.
+     * Additionally, it is only valid to set the data once and it must not be empty.
+     **/
+    InvalidImmutableAccess: GenericPalletError<Rv>;
+
+    /**
+     * An `AccountID32` account tried to interact with the pallet without having a mapping.
+     *
+     * Call [`Pallet::map_account`] in order to create a mapping for the account.
+     **/
+    AccountUnmapped: GenericPalletError<Rv>;
+
+    /**
+     * Tried to map an account that is already mapped.
+     **/
+    AccountAlreadyMapped: GenericPalletError<Rv>;
 
     /**
      * Generic pallet error

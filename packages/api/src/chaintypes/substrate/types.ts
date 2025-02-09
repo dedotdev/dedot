@@ -7,13 +7,13 @@ import type {
   BytesLike,
   Data,
   DispatchError,
-  DispatchInfo,
   Era,
   FixedArray,
   FixedBytes,
   FixedI64,
   FixedU128,
   FixedU64,
+  H160,
   H256,
   Header,
   MultiAddress,
@@ -61,7 +61,6 @@ export type KitchensinkRuntimeRuntimeEvent =
   | { pallet: 'Indices'; palletEvent: PalletIndicesEvent }
   | { pallet: 'Balances'; palletEvent: PalletBalancesEvent }
   | { pallet: 'TransactionPayment'; palletEvent: PalletTransactionPaymentEvent }
-  | { pallet: 'AssetTxPayment'; palletEvent: PalletAssetTxPaymentEvent }
   | { pallet: 'AssetConversionTxPayment'; palletEvent: PalletAssetConversionTxPaymentEvent }
   | { pallet: 'ElectionProviderMultiPhase'; palletEvent: PalletElectionProviderMultiPhaseEvent }
   | { pallet: 'Staking'; palletEvent: PalletStakingPalletEvent }
@@ -122,7 +121,9 @@ export type KitchensinkRuntimeRuntimeEvent =
   | { pallet: 'MultiBlockMigrations'; palletEvent: PalletMigrationsEvent }
   | { pallet: 'Broker'; palletEvent: PalletBrokerEvent }
   | { pallet: 'Parameters'; palletEvent: PalletParametersEvent }
-  | { pallet: 'SkipFeelessPayment'; palletEvent: PalletSkipFeelessPaymentEvent };
+  | { pallet: 'SkipFeelessPayment'; palletEvent: PalletSkipFeelessPaymentEvent }
+  | { pallet: 'AssetConversionMigration'; palletEvent: PalletAssetConversionOpsEvent }
+  | { pallet: 'Revive'; palletEvent: PalletReviveEvent };
 
 /**
  * Event for the System pallet.
@@ -131,11 +132,11 @@ export type FrameSystemEvent =
   /**
    * An extrinsic completed successfully.
    **/
-  | { name: 'ExtrinsicSuccess'; data: { dispatchInfo: DispatchInfo } }
+  | { name: 'ExtrinsicSuccess'; data: { dispatchInfo: FrameSystemDispatchEventInfo } }
   /**
    * An extrinsic failed.
    **/
-  | { name: 'ExtrinsicFailed'; data: { dispatchError: DispatchError; dispatchInfo: DispatchInfo } }
+  | { name: 'ExtrinsicFailed'; data: { dispatchError: DispatchError; dispatchInfo: FrameSystemDispatchEventInfo } }
   /**
    * `:code` was updated.
    **/
@@ -157,9 +158,31 @@ export type FrameSystemEvent =
    **/
   | { name: 'UpgradeAuthorized'; data: { codeHash: H256; checkVersion: boolean } };
 
+export type FrameSystemDispatchEventInfo = {
+  weight: SpWeightsWeightV2Weight;
+  class: FrameSupportDispatchDispatchClass;
+  paysFee: FrameSupportDispatchPays;
+};
+
 export type FrameSupportDispatchDispatchClass = 'Normal' | 'Operational' | 'Mandatory';
 
 export type FrameSupportDispatchPays = 'Yes' | 'No';
+
+export type SpRuntimeProvingTrieTrieError =
+  | 'InvalidStateRoot'
+  | 'IncompleteDatabase'
+  | 'ValueAtIncompleteKey'
+  | 'DecoderError'
+  | 'InvalidHash'
+  | 'DuplicateKey'
+  | 'ExtraneousNode'
+  | 'ExtraneousValue'
+  | 'ExtraneousHashReference'
+  | 'InvalidChildReference'
+  | 'ValueMismatch'
+  | 'IncompleteProof'
+  | 'RootMismatch'
+  | 'DecodeError';
 
 /**
  * The `Event` enum of this pallet
@@ -326,26 +349,26 @@ export type PalletTransactionPaymentEvent =
 /**
  * The `Event` enum of this pallet
  **/
-export type PalletAssetTxPaymentEvent =
-  /**
-   * A transaction fee `actual_fee`, of which `tip` was added to the minimum inclusion fee,
-   * has been paid by `who` in an asset `asset_id`.
-   **/
-  { name: 'AssetTxFeePaid'; data: { who: AccountId32; actualFee: bigint; tip: bigint; assetId?: number | undefined } };
-
-/**
- * The `Event` enum of this pallet
- **/
 export type PalletAssetConversionTxPaymentEvent =
   /**
    * A transaction fee `actual_fee`, of which `tip` was added to the minimum inclusion fee,
    * has been paid by `who` in an asset `asset_id`.
    **/
-  | { name: 'AssetTxFeePaid'; data: { who: AccountId32; actualFee: bigint; tip: bigint; assetId: number } }
+  | {
+      name: 'AssetTxFeePaid';
+      data: {
+        who: AccountId32;
+        actualFee: bigint;
+        tip: bigint;
+        assetId: FrameSupportTokensFungibleUnionOfNativeOrWithId;
+      };
+    }
   /**
    * A swap of the refund in native currency back to asset failed.
    **/
   | { name: 'AssetRefundFailed'; data: { nativeAmountKept: bigint } };
+
+export type FrameSupportTokensFungibleUnionOfNativeOrWithId = { type: 'Native' } | { type: 'WithId'; value: number };
 
 /**
  * The `Event` enum of this pallet
@@ -355,7 +378,7 @@ export type PalletElectionProviderMultiPhaseEvent =
    * A solution was stored with the given compute.
    *
    * The `origin` indicates the origin of the solution. If `origin` is `Some(AccountId)`,
-   * the stored solution was submited in the signed phase by a miner with the `AccountId`.
+   * the stored solution was submitted in the signed phase by a miner with the `AccountId`.
    * Otherwise, the solution was stored either during the unsigned phase or by
    * `T::ForceOrigin`. The `bool` is `true` when a previous solution was ejected to make
    * room for this one.
@@ -472,9 +495,12 @@ export type PalletStakingPalletEvent =
    **/
   | { name: 'Chilled'; data: { stash: AccountId32 } }
   /**
-   * The stakers' rewards are getting paid.
+   * A Page of stakers rewards are getting paid. `next` is `None` if all pages are claimed.
    **/
-  | { name: 'PayoutStarted'; data: { eraIndex: number; validatorStash: AccountId32 } }
+  | {
+      name: 'PayoutStarted';
+      data: { eraIndex: number; validatorStash: AccountId32; page: number; next?: number | undefined };
+    }
   /**
    * A validator has set their preferences.
    **/
@@ -570,7 +596,7 @@ export type PalletDemocracyEvent =
    **/
   | { name: 'Voted'; data: { voter: AccountId32; refIndex: number; vote: PalletDemocracyVoteAccountVote } }
   /**
-   * An account has secconded a proposal
+   * An account has seconded a proposal
    **/
   | { name: 'Seconded'; data: { seconder: AccountId32; propIndex: number } }
   /**
@@ -680,7 +706,19 @@ export type PalletCollectiveEvent =
   /**
    * A proposal was closed because its threshold was reached or after its duration was up.
    **/
-  | { name: 'Closed'; data: { proposalHash: H256; yes: number; no: number } };
+  | { name: 'Closed'; data: { proposalHash: H256; yes: number; no: number } }
+  /**
+   * A proposal was killed.
+   **/
+  | { name: 'Killed'; data: { proposalHash: H256 } }
+  /**
+   * Some cost for storing a proposal was burned.
+   **/
+  | { name: 'ProposalCostBurned'; data: { proposalHash: H256; who: AccountId32 } }
+  /**
+   * Some cost for storing a proposal was released.
+   **/
+  | { name: 'ProposalCostReleased'; data: { proposalHash: H256; who: AccountId32 } };
 
 /**
  * The `Event` enum of this pallet
@@ -770,18 +808,12 @@ export type PalletGrandpaEvent =
    **/
   | { name: 'Resumed' };
 
-export type SpConsensusGrandpaAppPublic = SpCoreEd25519Public;
-
-export type SpCoreEd25519Public = FixedBytes<32>;
+export type SpConsensusGrandpaAppPublic = FixedBytes<32>;
 
 /**
  * The `Event` enum of this pallet
  **/
 export type PalletTreasuryEvent =
-  /**
-   * New proposal.
-   **/
-  | { name: 'Proposed'; data: { proposalIndex: number } }
   /**
    * We have ended a spend period and will now allocate funds.
    **/
@@ -790,10 +822,6 @@ export type PalletTreasuryEvent =
    * Some funds have been allocated.
    **/
   | { name: 'Awarded'; data: { proposalIndex: number; award: bigint; account: AccountId32 } }
-  /**
-   * A proposal was rejected; funds were slashed.
-   **/
-  | { name: 'Rejected'; data: { proposalIndex: number; slashed: bigint } }
   /**
    * Some of our funds have been burnt.
    **/
@@ -821,7 +849,7 @@ export type PalletTreasuryEvent =
       name: 'AssetSpendApproved';
       data: {
         index: number;
-        assetKind: number;
+        assetKind: FrameSupportTokensFungibleUnionOfNativeOrWithId;
         amount: bigint;
         beneficiary: AccountId32;
         validFrom: number;
@@ -850,9 +878,12 @@ export type PalletTreasuryEvent =
  * The `Event` enum of this pallet
  **/
 export type PalletAssetRateEvent =
-  | { name: 'AssetRateCreated'; data: { assetKind: number; rate: FixedU128 } }
-  | { name: 'AssetRateRemoved'; data: { assetKind: number } }
-  | { name: 'AssetRateUpdated'; data: { assetKind: number; old: FixedU128; new: FixedU128 } };
+  | { name: 'AssetRateCreated'; data: { assetKind: FrameSupportTokensFungibleUnionOfNativeOrWithId; rate: FixedU128 } }
+  | { name: 'AssetRateRemoved'; data: { assetKind: FrameSupportTokensFungibleUnionOfNativeOrWithId } }
+  | {
+      name: 'AssetRateUpdated';
+      data: { assetKind: FrameSupportTokensFungibleUnionOfNativeOrWithId; old: FixedU128; new: FixedU128 };
+    };
 
 /**
  * The `Event` enum of this pallet
@@ -1059,9 +1090,7 @@ export type PalletImOnlineEvent =
    **/
   | { name: 'SomeOffline'; data: { offline: Array<[AccountId32, SpStakingExposure]> } };
 
-export type PalletImOnlineSr25519AppSr25519Public = SpCoreSr25519Public;
-
-export type SpCoreSr25519Public = FixedBytes<32>;
+export type PalletImOnlineSr25519AppSr25519Public = FixedBytes<32>;
 
 export type SpStakingExposure = { total: bigint; own: bigint; others: Array<SpStakingIndividualExposure> };
 
@@ -1115,6 +1144,14 @@ export type PalletIdentityEvent =
    **/
   | { name: 'SubIdentityAdded'; data: { sub: AccountId32; main: AccountId32; deposit: bigint } }
   /**
+   * An account's sub-identities were set (in bulk).
+   **/
+  | { name: 'SubIdentitiesSet'; data: { main: AccountId32; numberOfSubs: number; newDeposit: bigint } }
+  /**
+   * A given sub-account's associated name was changed by its super-identity.
+   **/
+  | { name: 'SubIdentityRenamed'; data: { sub: AccountId32; main: AccountId32 } }
+  /**
    * A sub-identity was removed from an identity and the deposit freed.
    **/
   | { name: 'SubIdentityRemoved'; data: { sub: AccountId32; main: AccountId32; deposit: bigint } }
@@ -1151,7 +1188,19 @@ export type PalletIdentityEvent =
    * A dangling username (as in, a username corresponding to an account that has removed its
    * identity) has been removed.
    **/
-  | { name: 'DanglingUsernameRemoved'; data: { who: AccountId32; username: Bytes } };
+  | { name: 'DanglingUsernameRemoved'; data: { who: AccountId32; username: Bytes } }
+  /**
+   * A username has been unbound.
+   **/
+  | { name: 'UsernameUnbound'; data: { username: Bytes } }
+  /**
+   * A username has been removed.
+   **/
+  | { name: 'UsernameRemoved'; data: { username: Bytes } }
+  /**
+   * A username has been killed.
+   **/
+  | { name: 'UsernameKilled'; data: { username: Bytes } };
 
 /**
  * The `Event` enum of this pallet
@@ -1365,6 +1414,18 @@ export type PalletGluttonEvent =
          * The storage limit.
          **/
         storage: FixedU64;
+      };
+    }
+  /**
+   * The block length limit has been updated.
+   **/
+  | {
+      name: 'BlockLengthLimitSet';
+      data: {
+        /**
+         * The block length limit.
+         **/
+        blockLength: FixedU64;
       };
     };
 
@@ -1652,7 +1713,15 @@ export type PalletAssetsEvent =
   /**
    * Some account `who` was blocked.
    **/
-  | { name: 'Blocked'; data: { assetId: number; who: AccountId32 } };
+  | { name: 'Blocked'; data: { assetId: number; who: AccountId32 } }
+  /**
+   * Some assets were deposited (e.g. for transaction fees).
+   **/
+  | { name: 'Deposited'; data: { assetId: number; who: AccountId32; amount: bigint } }
+  /**
+   * Some assets were withdrawn from the account (e.g. for transaction fees).
+   **/
+  | { name: 'Withdrawn'; data: { assetId: number; who: AccountId32; amount: bigint } };
 
 /**
  * The `Event` enum of this pallet
@@ -1760,7 +1829,7 @@ export type PalletNisEvent =
    **/
   | { name: 'Funded'; data: { deficit: bigint } }
   /**
-   * A receipt was transfered.
+   * A receipt was transferred.
    **/
   | { name: 'Transferred'; data: { from: AccountId32; to: AccountId32; index: number } };
 
@@ -2257,10 +2326,10 @@ export type PalletCoreFellowshipEvent =
   | { name: 'Swapped'; data: { who: AccountId32; newWho: AccountId32 } };
 
 export type PalletCoreFellowshipParamsType = {
-  activeSalary: FixedArray<bigint, 9>;
-  passiveSalary: FixedArray<bigint, 9>;
-  demotionPeriod: FixedArray<number, 9>;
-  minPromotionPeriod: FixedArray<number, 9>;
+  activeSalary: Array<bigint>;
+  passiveSalary: Array<bigint>;
+  demotionPeriod: Array<number>;
+  minPromotionPeriod: Array<number>;
   offboardTimeout: number;
 };
 
@@ -2732,7 +2801,9 @@ export type KitchensinkRuntimeRuntimeCall =
   | { pallet: 'MultiBlockMigrations'; palletCall: PalletMigrationsCall }
   | { pallet: 'Broker'; palletCall: PalletBrokerCall }
   | { pallet: 'Mixnet'; palletCall: PalletMixnetCall }
-  | { pallet: 'Parameters'; palletCall: PalletParametersCall };
+  | { pallet: 'Parameters'; palletCall: PalletParametersCall }
+  | { pallet: 'AssetConversionMigration'; palletCall: PalletAssetConversionOpsCall }
+  | { pallet: 'Revive'; palletCall: PalletReviveCall };
 
 export type KitchensinkRuntimeRuntimeCallLike =
   | { pallet: 'System'; palletCall: FrameSystemCallLike }
@@ -2799,7 +2870,9 @@ export type KitchensinkRuntimeRuntimeCallLike =
   | { pallet: 'MultiBlockMigrations'; palletCall: PalletMigrationsCallLike }
   | { pallet: 'Broker'; palletCall: PalletBrokerCallLike }
   | { pallet: 'Mixnet'; palletCall: PalletMixnetCallLike }
-  | { pallet: 'Parameters'; palletCall: PalletParametersCallLike };
+  | { pallet: 'Parameters'; palletCall: PalletParametersCallLike }
+  | { pallet: 'AssetConversionMigration'; palletCall: PalletAssetConversionOpsCallLike }
+  | { pallet: 'Revive'; palletCall: PalletReviveCallLike };
 
 /**
  * Contains a variant per dispatchable extrinsic that this pallet has.
@@ -3227,7 +3300,7 @@ export type SpConsensusSlotsEquivocationProof = {
   secondHeader: Header;
 };
 
-export type SpConsensusBabeAppPublic = SpCoreSr25519Public;
+export type SpConsensusBabeAppPublic = FixedBytes<32>;
 
 export type SpConsensusSlotsSlot = bigint;
 
@@ -3513,7 +3586,7 @@ export type PalletBalancesCall =
    *
    * This will waive the transaction fee if at least all but 10% of the accounts needed to
    * be upgraded. (We let some not have to be upgraded just in order to allow for the
-   * possibililty of churn).
+   * possibility of churn).
    **/
   | { name: 'UpgradeAccounts'; params: { who: Array<AccountId32> } }
   /**
@@ -3529,7 +3602,17 @@ export type PalletBalancesCall =
    *
    * # Example
    **/
-  | { name: 'ForceAdjustTotalIssuance'; params: { direction: PalletBalancesAdjustmentDirection; delta: bigint } };
+  | { name: 'ForceAdjustTotalIssuance'; params: { direction: PalletBalancesAdjustmentDirection; delta: bigint } }
+  /**
+   * Burn the specified liquid free balance from the origin account.
+   *
+   * If the origin's account ends up below the existential deposit as a result
+   * of the burn and `keep_alive` is false, the account will be reaped.
+   *
+   * Unlike sending funds to a _burn_ address, which merely makes the funds inaccessible,
+   * this `burn` operation will reduce total issuance by the amount _burned_.
+   **/
+  | { name: 'Burn'; params: { value: bigint; keepAlive: boolean } };
 
 export type PalletBalancesCallLike =
   /**
@@ -3588,7 +3671,7 @@ export type PalletBalancesCallLike =
    *
    * This will waive the transaction fee if at least all but 10% of the accounts needed to
    * be upgraded. (We let some not have to be upgraded just in order to allow for the
-   * possibililty of churn).
+   * possibility of churn).
    **/
   | { name: 'UpgradeAccounts'; params: { who: Array<AccountId32Like> } }
   /**
@@ -3604,7 +3687,17 @@ export type PalletBalancesCallLike =
    *
    * # Example
    **/
-  | { name: 'ForceAdjustTotalIssuance'; params: { direction: PalletBalancesAdjustmentDirection; delta: bigint } };
+  | { name: 'ForceAdjustTotalIssuance'; params: { direction: PalletBalancesAdjustmentDirection; delta: bigint } }
+  /**
+   * Burn the specified liquid free balance from the origin account.
+   *
+   * If the origin's account ends up below the existential deposit as a result
+   * of the burn and `keep_alive` is false, the account will be reaped.
+   *
+   * Unlike sending funds to a _burn_ address, which merely makes the funds inaccessible,
+   * this `burn` operation will reduce total issuance by the amount _burned_.
+   **/
+  | { name: 'Burn'; params: { value: bigint; keepAlive: boolean } };
 
 export type PalletBalancesAdjustmentDirection = 'Increase' | 'Decrease';
 
@@ -3791,7 +3884,8 @@ export type PalletStakingPalletCall =
    * - Three extra DB entries.
    *
    * NOTE: Two of the storage writes (`Self::bonded`, `Self::payee`) are _never_ cleaned
-   * unless the `origin` falls below _existential deposit_ and gets removed as dust.
+   * unless the `origin` falls below _existential deposit_ (or equal to 0) and gets removed
+   * as dust.
    **/
   | { name: 'Bond'; params: { value: bigint; payee: PalletStakingRewardDestination } }
   /**
@@ -3814,7 +3908,7 @@ export type PalletStakingPalletCall =
   /**
    * Schedule a portion of the stash to be unlocked ready for transfer out after the bond
    * period ends. If this leaves an amount actively bonded less than
-   * T::Currency::minimum_balance(), then it is increased to the full amount.
+   * [`asset::existential_deposit`], then it is increased to the full amount.
    *
    * The dispatch origin for this call must be _Signed_ by the controller, not the stash.
    *
@@ -3851,7 +3945,7 @@ export type PalletStakingPalletCall =
    * this call results in a complete removal of all the data related to the stash account.
    * In this case, the `num_slashing_spans` must be larger or equal to the number of
    * slashing spans associated with the stash account in the [`SlashingSpans`] storage type,
-   * otherwise the call will fail. The call weight is directly propotional to
+   * otherwise the call will fail. The call weight is directly proportional to
    * `num_slashing_spans`.
    *
    * ## Complexity
@@ -3935,7 +4029,7 @@ export type PalletStakingPalletCall =
    **/
   | { name: 'SetValidatorCount'; params: { new: number } }
   /**
-   * Increments the ideal number of validators upto maximum of
+   * Increments the ideal number of validators up to maximum of
    * `ElectionProviderBase::MaxWinners`.
    *
    * The dispatch origin must be Root.
@@ -3945,7 +4039,7 @@ export type PalletStakingPalletCall =
    **/
   | { name: 'IncreaseValidatorCount'; params: { additional: number } }
   /**
-   * Scale up the ideal number of validators by a factor upto maximum of
+   * Scale up the ideal number of validators by a factor up to maximum of
    * `ElectionProviderBase::MaxWinners`.
    *
    * The dispatch origin must be Root.
@@ -4056,6 +4150,7 @@ export type PalletStakingPalletCall =
    *
    * 1. the `total_balance` of the stash is below existential deposit.
    * 2. or, the `ledger.total` of the stash is below existential deposit.
+   * 3. or, existential deposit is zero and either `total_balance` or `ledger.total` is zero.
    *
    * The former can happen in cases like a slash; the latter when a fully unbonded account
    * is still receiving staking rewards in `RewardDestination::Staked`.
@@ -4195,7 +4290,29 @@ export type PalletStakingPalletCall =
    *
    * The dispatch origin must be `T::AdminOrigin`.
    **/
-  | { name: 'DeprecateControllerBatch'; params: { controllers: Array<AccountId32> } };
+  | { name: 'DeprecateControllerBatch'; params: { controllers: Array<AccountId32> } }
+  /**
+   * Restores the state of a ledger which is in an inconsistent state.
+   *
+   * The requirements to restore a ledger are the following:
+   * * The stash is bonded; or
+   * * The stash is not bonded but it has a staking lock left behind; or
+   * * If the stash has an associated ledger and its state is inconsistent; or
+   * * If the ledger is not corrupted *but* its staking lock is out of sync.
+   *
+   * The `maybe_*` input parameters will overwrite the corresponding data and metadata of the
+   * ledger associated with the stash. If the input parameters are not set, the ledger will
+   * be reset values from on-chain state.
+   **/
+  | {
+      name: 'RestoreLedger';
+      params: {
+        stash: AccountId32;
+        maybeController?: AccountId32 | undefined;
+        maybeTotal?: bigint | undefined;
+        maybeUnlocking?: Array<PalletStakingUnlockChunk> | undefined;
+      };
+    };
 
 export type PalletStakingPalletCallLike =
   /**
@@ -4213,7 +4330,8 @@ export type PalletStakingPalletCallLike =
    * - Three extra DB entries.
    *
    * NOTE: Two of the storage writes (`Self::bonded`, `Self::payee`) are _never_ cleaned
-   * unless the `origin` falls below _existential deposit_ and gets removed as dust.
+   * unless the `origin` falls below _existential deposit_ (or equal to 0) and gets removed
+   * as dust.
    **/
   | { name: 'Bond'; params: { value: bigint; payee: PalletStakingRewardDestination } }
   /**
@@ -4236,7 +4354,7 @@ export type PalletStakingPalletCallLike =
   /**
    * Schedule a portion of the stash to be unlocked ready for transfer out after the bond
    * period ends. If this leaves an amount actively bonded less than
-   * T::Currency::minimum_balance(), then it is increased to the full amount.
+   * [`asset::existential_deposit`], then it is increased to the full amount.
    *
    * The dispatch origin for this call must be _Signed_ by the controller, not the stash.
    *
@@ -4273,7 +4391,7 @@ export type PalletStakingPalletCallLike =
    * this call results in a complete removal of all the data related to the stash account.
    * In this case, the `num_slashing_spans` must be larger or equal to the number of
    * slashing spans associated with the stash account in the [`SlashingSpans`] storage type,
-   * otherwise the call will fail. The call weight is directly propotional to
+   * otherwise the call will fail. The call weight is directly proportional to
    * `num_slashing_spans`.
    *
    * ## Complexity
@@ -4357,7 +4475,7 @@ export type PalletStakingPalletCallLike =
    **/
   | { name: 'SetValidatorCount'; params: { new: number } }
   /**
-   * Increments the ideal number of validators upto maximum of
+   * Increments the ideal number of validators up to maximum of
    * `ElectionProviderBase::MaxWinners`.
    *
    * The dispatch origin must be Root.
@@ -4367,7 +4485,7 @@ export type PalletStakingPalletCallLike =
    **/
   | { name: 'IncreaseValidatorCount'; params: { additional: number } }
   /**
-   * Scale up the ideal number of validators by a factor upto maximum of
+   * Scale up the ideal number of validators by a factor up to maximum of
    * `ElectionProviderBase::MaxWinners`.
    *
    * The dispatch origin must be Root.
@@ -4478,6 +4596,7 @@ export type PalletStakingPalletCallLike =
    *
    * 1. the `total_balance` of the stash is below existential deposit.
    * 2. or, the `ledger.total` of the stash is below existential deposit.
+   * 3. or, existential deposit is zero and either `total_balance` or `ledger.total` is zero.
    *
    * The former can happen in cases like a slash; the latter when a fully unbonded account
    * is still receiving staking rewards in `RewardDestination::Staked`.
@@ -4617,7 +4736,29 @@ export type PalletStakingPalletCallLike =
    *
    * The dispatch origin must be `T::AdminOrigin`.
    **/
-  | { name: 'DeprecateControllerBatch'; params: { controllers: Array<AccountId32Like> } };
+  | { name: 'DeprecateControllerBatch'; params: { controllers: Array<AccountId32Like> } }
+  /**
+   * Restores the state of a ledger which is in an inconsistent state.
+   *
+   * The requirements to restore a ledger are the following:
+   * * The stash is bonded; or
+   * * The stash is not bonded but it has a staking lock left behind; or
+   * * If the stash has an associated ledger and its state is inconsistent; or
+   * * If the ledger is not corrupted *but* its staking lock is out of sync.
+   *
+   * The `maybe_*` input parameters will overwrite the corresponding data and metadata of the
+   * ledger associated with the stash. If the input parameters are not set, the ledger will
+   * be reset values from on-chain state.
+   **/
+  | {
+      name: 'RestoreLedger';
+      params: {
+        stash: AccountId32Like;
+        maybeController?: AccountId32Like | undefined;
+        maybeTotal?: bigint | undefined;
+        maybeUnlocking?: Array<PalletStakingUnlockChunk> | undefined;
+      };
+    };
 
 export type PalletStakingPalletConfigOp = { type: 'Noop' } | { type: 'Set'; value: bigint } | { type: 'Remove' };
 
@@ -4632,6 +4773,8 @@ export type PalletStakingPalletConfigOpPerbill =
   | { type: 'Noop' }
   | { type: 'Set'; value: Perbill }
   | { type: 'Remove' };
+
+export type PalletStakingUnlockChunk = { value: bigint; era: number };
 
 /**
  * Contains a variant per dispatchable extrinsic that this pallet has.
@@ -4703,13 +4846,11 @@ export type KitchensinkRuntimeSessionKeys = {
   beefy: SpConsensusBeefyEcdsaCryptoPublic;
 };
 
-export type SpAuthorityDiscoveryAppPublic = SpCoreSr25519Public;
+export type SpAuthorityDiscoveryAppPublic = FixedBytes<32>;
 
-export type SpMixnetAppPublic = SpCoreSr25519Public;
+export type SpMixnetAppPublic = FixedBytes<32>;
 
-export type SpConsensusBeefyEcdsaCryptoPublic = SpCoreEcdsaPublic;
-
-export type SpCoreEcdsaPublic = FixedBytes<33>;
+export type SpConsensusBeefyEcdsaCryptoPublic = FixedBytes<33>;
 
 /**
  * Contains a variant per dispatchable extrinsic that this pallet has.
@@ -5384,7 +5525,29 @@ export type PalletCollectiveCall =
   | {
       name: 'Close';
       params: { proposalHash: H256; index: number; proposalWeightBound: SpWeightsWeightV2Weight; lengthBound: number };
-    };
+    }
+  /**
+   * Disapprove the proposal and burn the cost held for storing this proposal.
+   *
+   * Parameters:
+   * - `origin`: must be the `KillOrigin`.
+   * - `proposal_hash`: The hash of the proposal that should be killed.
+   *
+   * Emits `Killed` and `ProposalCostBurned` if any cost was held for a given proposal.
+   **/
+  | { name: 'Kill'; params: { proposalHash: H256 } }
+  /**
+   * Release the cost held for storing a proposal once the given proposal is completed.
+   *
+   * If there is no associated cost for the given proposal, this call will have no effect.
+   *
+   * Parameters:
+   * - `origin`: must be `Signed` or `Root`.
+   * - `proposal_hash`: The hash of the proposal.
+   *
+   * Emits `ProposalCostReleased` if any cost held for a given proposal.
+   **/
+  | { name: 'ReleaseProposalCost'; params: { proposalHash: H256 } };
 
 export type PalletCollectiveCallLike =
   /**
@@ -5500,7 +5663,29 @@ export type PalletCollectiveCallLike =
   | {
       name: 'Close';
       params: { proposalHash: H256; index: number; proposalWeightBound: SpWeightsWeightV2Weight; lengthBound: number };
-    };
+    }
+  /**
+   * Disapprove the proposal and burn the cost held for storing this proposal.
+   *
+   * Parameters:
+   * - `origin`: must be the `KillOrigin`.
+   * - `proposal_hash`: The hash of the proposal that should be killed.
+   *
+   * Emits `Killed` and `ProposalCostBurned` if any cost was held for a given proposal.
+   **/
+  | { name: 'Kill'; params: { proposalHash: H256 } }
+  /**
+   * Release the cost held for storing a proposal once the given proposal is completed.
+   *
+   * If there is no associated cost for the given proposal, this call will have no effect.
+   *
+   * Parameters:
+   * - `origin`: must be `Signed` or `Root`.
+   * - `proposal_hash`: The hash of the proposal.
+   *
+   * Emits `ProposalCostReleased` if any cost held for a given proposal.
+   **/
+  | { name: 'ReleaseProposalCost'; params: { proposalHash: H256 } };
 
 /**
  * Contains a variant per dispatchable extrinsic that this pallet has.
@@ -5921,9 +6106,7 @@ export type FinalityGrandpaEquivocation = {
 
 export type FinalityGrandpaPrevote = { targetHash: H256; targetNumber: number };
 
-export type SpConsensusGrandpaAppSignature = SpCoreEd25519Signature;
-
-export type SpCoreEd25519Signature = FixedBytes<64>;
+export type SpConsensusGrandpaAppSignature = FixedBytes<64>;
 
 export type FinalityGrandpaEquivocationPrecommit = {
   roundNumber: bigint;
@@ -5938,63 +6121,6 @@ export type FinalityGrandpaPrecommit = { targetHash: H256; targetNumber: number 
  * Contains a variant per dispatchable extrinsic that this pallet has.
  **/
 export type PalletTreasuryCall =
-  /**
-   * Put forward a suggestion for spending.
-   *
-   * ## Dispatch Origin
-   *
-   * Must be signed.
-   *
-   * ## Details
-   * A deposit proportional to the value is reserved and slashed if the proposal is rejected.
-   * It is returned once the proposal is awarded.
-   *
-   * ### Complexity
-   * - O(1)
-   *
-   * ## Events
-   *
-   * Emits [`Event::Proposed`] if successful.
-   **/
-  | { name: 'ProposeSpend'; params: { value: bigint; beneficiary: MultiAddress } }
-  /**
-   * Reject a proposed spend.
-   *
-   * ## Dispatch Origin
-   *
-   * Must be [`Config::RejectOrigin`].
-   *
-   * ## Details
-   * The original deposit will be slashed.
-   *
-   * ### Complexity
-   * - O(1)
-   *
-   * ## Events
-   *
-   * Emits [`Event::Rejected`] if successful.
-   **/
-  | { name: 'RejectProposal'; params: { proposalId: number } }
-  /**
-   * Approve a proposal.
-   *
-   * ## Dispatch Origin
-   *
-   * Must be [`Config::ApproveOrigin`].
-   *
-   * ## Details
-   *
-   * At a later time, the proposal will be allocated to the beneficiary and the original
-   * deposit will be returned.
-   *
-   * ### Complexity
-   * - O(1).
-   *
-   * ## Events
-   *
-   * No events are emitted from this dispatch.
-   **/
-  | { name: 'ApproveProposal'; params: { proposalId: number } }
   /**
    * Propose and approve a spend of treasury funds.
    *
@@ -6069,14 +6195,19 @@ export type PalletTreasuryCall =
    **/
   | {
       name: 'Spend';
-      params: { assetKind: number; amount: bigint; beneficiary: MultiAddress; validFrom?: number | undefined };
+      params: {
+        assetKind: FrameSupportTokensFungibleUnionOfNativeOrWithId;
+        amount: bigint;
+        beneficiary: MultiAddress;
+        validFrom?: number | undefined;
+      };
     }
   /**
    * Claim a spend.
    *
    * ## Dispatch Origin
    *
-   * Must be signed.
+   * Must be signed
    *
    * ## Details
    *
@@ -6136,63 +6267,6 @@ export type PalletTreasuryCall =
   | { name: 'VoidSpend'; params: { index: number } };
 
 export type PalletTreasuryCallLike =
-  /**
-   * Put forward a suggestion for spending.
-   *
-   * ## Dispatch Origin
-   *
-   * Must be signed.
-   *
-   * ## Details
-   * A deposit proportional to the value is reserved and slashed if the proposal is rejected.
-   * It is returned once the proposal is awarded.
-   *
-   * ### Complexity
-   * - O(1)
-   *
-   * ## Events
-   *
-   * Emits [`Event::Proposed`] if successful.
-   **/
-  | { name: 'ProposeSpend'; params: { value: bigint; beneficiary: MultiAddressLike } }
-  /**
-   * Reject a proposed spend.
-   *
-   * ## Dispatch Origin
-   *
-   * Must be [`Config::RejectOrigin`].
-   *
-   * ## Details
-   * The original deposit will be slashed.
-   *
-   * ### Complexity
-   * - O(1)
-   *
-   * ## Events
-   *
-   * Emits [`Event::Rejected`] if successful.
-   **/
-  | { name: 'RejectProposal'; params: { proposalId: number } }
-  /**
-   * Approve a proposal.
-   *
-   * ## Dispatch Origin
-   *
-   * Must be [`Config::ApproveOrigin`].
-   *
-   * ## Details
-   *
-   * At a later time, the proposal will be allocated to the beneficiary and the original
-   * deposit will be returned.
-   *
-   * ### Complexity
-   * - O(1).
-   *
-   * ## Events
-   *
-   * No events are emitted from this dispatch.
-   **/
-  | { name: 'ApproveProposal'; params: { proposalId: number } }
   /**
    * Propose and approve a spend of treasury funds.
    *
@@ -6267,14 +6341,19 @@ export type PalletTreasuryCallLike =
    **/
   | {
       name: 'Spend';
-      params: { assetKind: number; amount: bigint; beneficiary: MultiAddressLike; validFrom?: number | undefined };
+      params: {
+        assetKind: FrameSupportTokensFungibleUnionOfNativeOrWithId;
+        amount: bigint;
+        beneficiary: MultiAddressLike;
+        validFrom?: number | undefined;
+      };
     }
   /**
    * Claim a spend.
    *
    * ## Dispatch Origin
    *
-   * Must be signed.
+   * Must be signed
    *
    * ## Details
    *
@@ -6343,21 +6422,21 @@ export type PalletAssetRateCall =
    * ## Complexity
    * - O(1)
    **/
-  | { name: 'Create'; params: { assetKind: number; rate: FixedU128 } }
+  | { name: 'Create'; params: { assetKind: FrameSupportTokensFungibleUnionOfNativeOrWithId; rate: FixedU128 } }
   /**
    * Update the conversion rate to native balance for the given asset.
    *
    * ## Complexity
    * - O(1)
    **/
-  | { name: 'Update'; params: { assetKind: number; rate: FixedU128 } }
+  | { name: 'Update'; params: { assetKind: FrameSupportTokensFungibleUnionOfNativeOrWithId; rate: FixedU128 } }
   /**
    * Remove an existing conversion rate to native balance for the given asset.
    *
    * ## Complexity
    * - O(1)
    **/
-  | { name: 'Remove'; params: { assetKind: number } };
+  | { name: 'Remove'; params: { assetKind: FrameSupportTokensFungibleUnionOfNativeOrWithId } };
 
 export type PalletAssetRateCallLike =
   /**
@@ -6366,21 +6445,21 @@ export type PalletAssetRateCallLike =
    * ## Complexity
    * - O(1)
    **/
-  | { name: 'Create'; params: { assetKind: number; rate: FixedU128 } }
+  | { name: 'Create'; params: { assetKind: FrameSupportTokensFungibleUnionOfNativeOrWithId; rate: FixedU128 } }
   /**
    * Update the conversion rate to native balance for the given asset.
    *
    * ## Complexity
    * - O(1)
    **/
-  | { name: 'Update'; params: { assetKind: number; rate: FixedU128 } }
+  | { name: 'Update'; params: { assetKind: FrameSupportTokensFungibleUnionOfNativeOrWithId; rate: FixedU128 } }
   /**
    * Remove an existing conversion rate to native balance for the given asset.
    *
    * ## Complexity
    * - O(1)
    **/
-  | { name: 'Remove'; params: { assetKind: number } };
+  | { name: 'Remove'; params: { assetKind: FrameSupportTokensFungibleUnionOfNativeOrWithId } };
 
 /**
  * Contains a variant per dispatchable extrinsic that this pallet has.
@@ -6861,9 +6940,7 @@ export type PalletImOnlineHeartbeat = {
   validatorsLen: number;
 };
 
-export type PalletImOnlineSr25519AppSr25519Signature = SpCoreSr25519Signature;
-
-export type SpCoreSr25519Signature = FixedBytes<64>;
+export type PalletImOnlineSr25519AppSr25519Signature = FixedBytes<64>;
 
 /**
  * Identity pallet declaration.
@@ -6928,7 +7005,7 @@ export type PalletIdentityCall =
    * - `max_fee`: The maximum fee that may be paid. This should just be auto-populated as:
    *
    * ```nocompile
-   * Self::registrars().get(reg_index).unwrap().fee
+   * Registrars::<T>::get().get(reg_index).unwrap().fee
    * ```
    *
    * Emits `JudgementRequested` if successful.
@@ -7056,18 +7133,23 @@ export type PalletIdentityCall =
   /**
    * Add an `AccountId` with permission to grant usernames with a given `suffix` appended.
    *
-   * The authority can grant up to `allocation` usernames. To top up their allocation, they
-   * should just issue (or request via governance) a new `add_username_authority` call.
+   * The authority can grant up to `allocation` usernames. To top up the allocation or
+   * change the account used to grant usernames, this call can be used with the updated
+   * parameters to overwrite the existing configuration.
    **/
   | { name: 'AddUsernameAuthority'; params: { authority: MultiAddress; suffix: Bytes; allocation: number } }
   /**
    * Remove `authority` from the username authorities.
    **/
-  | { name: 'RemoveUsernameAuthority'; params: { authority: MultiAddress } }
+  | { name: 'RemoveUsernameAuthority'; params: { suffix: Bytes; authority: MultiAddress } }
   /**
    * Set the username for `who`. Must be called by a username authority.
    *
-   * The authority must have an `allocation`. Users can either pre-sign their usernames or
+   * If `use_allocation` is set, the authority must have a username allocation available to
+   * spend. Otherwise, the authority will need to put up a deposit for registering the
+   * username.
+   *
+   * Users can either pre-sign their usernames or
    * accept them later.
    *
    * Usernames must:
@@ -7077,7 +7159,12 @@ export type PalletIdentityCall =
    **/
   | {
       name: 'SetUsernameFor';
-      params: { who: MultiAddress; username: Bytes; signature?: SpRuntimeMultiSignature | undefined };
+      params: {
+        who: MultiAddress;
+        username: Bytes;
+        signature?: SpRuntimeMultiSignature | undefined;
+        useAllocation: boolean;
+      };
     }
   /**
    * Accept a given username that an `authority` granted. The call must include the full
@@ -7095,10 +7182,21 @@ export type PalletIdentityCall =
    **/
   | { name: 'SetPrimaryUsername'; params: { username: Bytes } }
   /**
-   * Remove a username that corresponds to an account with no identity. Exists when a user
-   * gets a username but then calls `clear_identity`.
+   * Start the process of removing a username by placing it in the unbinding usernames map.
+   * Once the grace period has passed, the username can be deleted by calling
+   * [remove_username](crate::Call::remove_username).
    **/
-  | { name: 'RemoveDanglingUsername'; params: { username: Bytes } };
+  | { name: 'UnbindUsername'; params: { username: Bytes } }
+  /**
+   * Permanently delete a username which has been unbinding for longer than the grace period.
+   * Caller is refunded the fee if the username expired and the removal was successful.
+   **/
+  | { name: 'RemoveUsername'; params: { username: Bytes } }
+  /**
+   * Call with [ForceOrigin](crate::Config::ForceOrigin) privileges which deletes a username
+   * and slashes any deposit associated with it.
+   **/
+  | { name: 'KillUsername'; params: { username: Bytes } };
 
 export type PalletIdentityCallLike =
   /**
@@ -7160,7 +7258,7 @@ export type PalletIdentityCallLike =
    * - `max_fee`: The maximum fee that may be paid. This should just be auto-populated as:
    *
    * ```nocompile
-   * Self::registrars().get(reg_index).unwrap().fee
+   * Registrars::<T>::get().get(reg_index).unwrap().fee
    * ```
    *
    * Emits `JudgementRequested` if successful.
@@ -7288,18 +7386,23 @@ export type PalletIdentityCallLike =
   /**
    * Add an `AccountId` with permission to grant usernames with a given `suffix` appended.
    *
-   * The authority can grant up to `allocation` usernames. To top up their allocation, they
-   * should just issue (or request via governance) a new `add_username_authority` call.
+   * The authority can grant up to `allocation` usernames. To top up the allocation or
+   * change the account used to grant usernames, this call can be used with the updated
+   * parameters to overwrite the existing configuration.
    **/
   | { name: 'AddUsernameAuthority'; params: { authority: MultiAddressLike; suffix: BytesLike; allocation: number } }
   /**
    * Remove `authority` from the username authorities.
    **/
-  | { name: 'RemoveUsernameAuthority'; params: { authority: MultiAddressLike } }
+  | { name: 'RemoveUsernameAuthority'; params: { suffix: BytesLike; authority: MultiAddressLike } }
   /**
    * Set the username for `who`. Must be called by a username authority.
    *
-   * The authority must have an `allocation`. Users can either pre-sign their usernames or
+   * If `use_allocation` is set, the authority must have a username allocation available to
+   * spend. Otherwise, the authority will need to put up a deposit for registering the
+   * username.
+   *
+   * Users can either pre-sign their usernames or
    * accept them later.
    *
    * Usernames must:
@@ -7309,7 +7412,12 @@ export type PalletIdentityCallLike =
    **/
   | {
       name: 'SetUsernameFor';
-      params: { who: MultiAddressLike; username: BytesLike; signature?: SpRuntimeMultiSignature | undefined };
+      params: {
+        who: MultiAddressLike;
+        username: BytesLike;
+        signature?: SpRuntimeMultiSignature | undefined;
+        useAllocation: boolean;
+      };
     }
   /**
    * Accept a given username that an `authority` granted. The call must include the full
@@ -7327,10 +7435,21 @@ export type PalletIdentityCallLike =
    **/
   | { name: 'SetPrimaryUsername'; params: { username: BytesLike } }
   /**
-   * Remove a username that corresponds to an account with no identity. Exists when a user
-   * gets a username but then calls `clear_identity`.
+   * Start the process of removing a username by placing it in the unbinding usernames map.
+   * Once the grace period has passed, the username can be deleted by calling
+   * [remove_username](crate::Call::remove_username).
    **/
-  | { name: 'RemoveDanglingUsername'; params: { username: BytesLike } };
+  | { name: 'UnbindUsername'; params: { username: BytesLike } }
+  /**
+   * Permanently delete a username which has been unbinding for longer than the grace period.
+   * Caller is refunded the fee if the username expired and the removal was successful.
+   **/
+  | { name: 'RemoveUsername'; params: { username: BytesLike } }
+  /**
+   * Call with [ForceOrigin](crate::Config::ForceOrigin) privileges which deletes a username
+   * and slashes any deposit associated with it.
+   **/
+  | { name: 'KillUsername'; params: { username: BytesLike } };
 
 export type PalletIdentityLegacyIdentityInfo = {
   additional: Array<[Data, Data]>;
@@ -7354,11 +7473,9 @@ export type PalletIdentityJudgement =
   | { type: 'Erroneous' };
 
 export type SpRuntimeMultiSignature =
-  | { type: 'Ed25519'; value: SpCoreEd25519Signature }
-  | { type: 'Sr25519'; value: SpCoreSr25519Signature }
-  | { type: 'Ecdsa'; value: SpCoreEcdsaSignature };
-
-export type SpCoreEcdsaSignature = FixedBytes<65>;
+  | { type: 'Ed25519'; value: FixedBytes<64> }
+  | { type: 'Sr25519'; value: FixedBytes<64> }
+  | { type: 'Ecdsa'; value: FixedBytes<65> };
 
 /**
  * Contains a variant per dispatchable extrinsic that this pallet has.
@@ -8468,7 +8585,20 @@ export type PalletGluttonCall =
    *
    * Only callable by Root or `AdminOrigin`.
    **/
-  | { name: 'SetStorage'; params: { storage: FixedU64 } };
+  | { name: 'SetStorage'; params: { storage: FixedU64 } }
+  /**
+   * Increase the block size by including the specified garbage bytes.
+   **/
+  | { name: 'Bloat'; params: { garbage: Array<FixedBytes<1024>> } }
+  /**
+   * Set how much of the block length should be filled with trash data on each block.
+   *
+   * `1.0` means that all block should be filled. If set to `1.0`, storage proof size will
+   * be close to zero.
+   *
+   * Only callable by Root or `AdminOrigin`.
+   **/
+  | { name: 'SetBlockLength'; params: { blockLength: FixedU64 } };
 
 export type PalletGluttonCallLike =
   /**
@@ -8495,7 +8625,20 @@ export type PalletGluttonCallLike =
    *
    * Only callable by Root or `AdminOrigin`.
    **/
-  | { name: 'SetStorage'; params: { storage: FixedU64 } };
+  | { name: 'SetStorage'; params: { storage: FixedU64 } }
+  /**
+   * Increase the block size by including the specified garbage bytes.
+   **/
+  | { name: 'Bloat'; params: { garbage: Array<FixedBytes<1024>> } }
+  /**
+   * Set how much of the block length should be filled with trash data on each block.
+   *
+   * `1.0` means that all block should be filled. If set to `1.0`, storage proof size will
+   * be close to zero.
+   *
+   * Only callable by Root or `AdminOrigin`.
+   **/
+  | { name: 'SetBlockLength'; params: { blockLength: FixedU64 } };
 
 /**
  * Contains a variant per dispatchable extrinsic that this pallet has.
@@ -9319,7 +9462,21 @@ export type PalletBountiesCall =
    * ## Complexity
    * - O(1).
    **/
-  | { name: 'ExtendBountyExpiry'; params: { bountyId: number; remark: Bytes } };
+  | { name: 'ExtendBountyExpiry'; params: { bountyId: number; remark: Bytes } }
+  /**
+   * Approve bountry and propose a curator simultaneously.
+   * This call is a shortcut to calling `approve_bounty` and `propose_curator` separately.
+   *
+   * May only be called from `T::SpendOrigin`.
+   *
+   * - `bounty_id`: Bounty ID to approve.
+   * - `curator`: The curator account whom will manage this bounty.
+   * - `fee`: The curator fee.
+   *
+   * ## Complexity
+   * - O(1).
+   **/
+  | { name: 'ApproveBountyWithCurator'; params: { bountyId: number; curator: MultiAddress; fee: bigint } };
 
 export type PalletBountiesCallLike =
   /**
@@ -9433,7 +9590,21 @@ export type PalletBountiesCallLike =
    * ## Complexity
    * - O(1).
    **/
-  | { name: 'ExtendBountyExpiry'; params: { bountyId: number; remark: BytesLike } };
+  | { name: 'ExtendBountyExpiry'; params: { bountyId: number; remark: BytesLike } }
+  /**
+   * Approve bountry and propose a curator simultaneously.
+   * This call is a shortcut to calling `approve_bounty` and `propose_curator` separately.
+   *
+   * May only be called from `T::SpendOrigin`.
+   *
+   * - `bounty_id`: Bounty ID to approve.
+   * - `curator`: The curator account whom will manage this bounty.
+   * - `fee`: The curator fee.
+   *
+   * ## Complexity
+   * - O(1).
+   **/
+  | { name: 'ApproveBountyWithCurator'; params: { bountyId: number; curator: MultiAddressLike; fee: bigint } };
 
 /**
  * Contains a variant per dispatchable extrinsic that this pallet has.
@@ -9683,7 +9854,7 @@ export type PalletAssetsCall =
    *
    * Parameters:
    * - `id`: The identifier of the new asset. This must not be currently in use to identify
-   * an existing asset.
+   * an existing asset. If [`NextAssetId`] is set, then this must be equal to it.
    * - `admin`: The admin of this class of assets. The admin is the initial address of each
    * member of the asset class's admin team.
    * - `min_balance`: The minimum balance of this new asset that any single account must
@@ -9704,7 +9875,7 @@ export type PalletAssetsCall =
    * Unlike `create`, no funds are reserved.
    *
    * - `id`: The identifier of the new asset. This must not be currently in use to identify
-   * an existing asset.
+   * an existing asset. If [`NextAssetId`] is set, then this must be equal to it.
    * - `owner`: The owner of this class of assets. The owner has full superuser permissions
    * over this asset, but may later change and configure the permissions using
    * `transfer_ownership` and `set_team`.
@@ -9726,8 +9897,6 @@ export type PalletAssetsCall =
    *
    * - `id`: The identifier of the asset to be destroyed. This must identify an existing
    * asset.
-   *
-   * The asset class must be frozen before calling `start_destroy`.
    **/
   | { name: 'StartDestroy'; params: { id: number } }
   /**
@@ -10208,7 +10377,26 @@ export type PalletAssetsCall =
    *
    * Weight: `O(1)`
    **/
-  | { name: 'Block'; params: { id: number; who: MultiAddress } };
+  | { name: 'Block'; params: { id: number; who: MultiAddress } }
+  /**
+   * Transfer the entire transferable balance from the caller asset account.
+   *
+   * NOTE: This function only attempts to transfer _transferable_ balances. This means that
+   * any held, frozen, or minimum balance (when `keep_alive` is `true`), will not be
+   * transferred by this function. To ensure that this function results in a killed account,
+   * you might need to prepare the account by removing any reference counters, storage
+   * deposits, etc...
+   *
+   * The dispatch origin of this call must be Signed.
+   *
+   * - `id`: The identifier of the asset for the account holding a deposit.
+   * - `dest`: The recipient of the transfer.
+   * - `keep_alive`: A boolean to determine if the `transfer_all` operation should send all
+   * of the funds the asset account has, causing the sender asset account to be killed
+   * (false), or transfer everything except at least the minimum balance, which will
+   * guarantee to keep the sender asset account alive (true).
+   **/
+  | { name: 'TransferAll'; params: { id: number; dest: MultiAddress; keepAlive: boolean } };
 
 export type PalletAssetsCallLike =
   /**
@@ -10222,7 +10410,7 @@ export type PalletAssetsCallLike =
    *
    * Parameters:
    * - `id`: The identifier of the new asset. This must not be currently in use to identify
-   * an existing asset.
+   * an existing asset. If [`NextAssetId`] is set, then this must be equal to it.
    * - `admin`: The admin of this class of assets. The admin is the initial address of each
    * member of the asset class's admin team.
    * - `min_balance`: The minimum balance of this new asset that any single account must
@@ -10243,7 +10431,7 @@ export type PalletAssetsCallLike =
    * Unlike `create`, no funds are reserved.
    *
    * - `id`: The identifier of the new asset. This must not be currently in use to identify
-   * an existing asset.
+   * an existing asset. If [`NextAssetId`] is set, then this must be equal to it.
    * - `owner`: The owner of this class of assets. The owner has full superuser permissions
    * over this asset, but may later change and configure the permissions using
    * `transfer_ownership` and `set_team`.
@@ -10265,8 +10453,6 @@ export type PalletAssetsCallLike =
    *
    * - `id`: The identifier of the asset to be destroyed. This must identify an existing
    * asset.
-   *
-   * The asset class must be frozen before calling `start_destroy`.
    **/
   | { name: 'StartDestroy'; params: { id: number } }
   /**
@@ -10753,7 +10939,26 @@ export type PalletAssetsCallLike =
    *
    * Weight: `O(1)`
    **/
-  | { name: 'Block'; params: { id: number; who: MultiAddressLike } };
+  | { name: 'Block'; params: { id: number; who: MultiAddressLike } }
+  /**
+   * Transfer the entire transferable balance from the caller asset account.
+   *
+   * NOTE: This function only attempts to transfer _transferable_ balances. This means that
+   * any held, frozen, or minimum balance (when `keep_alive` is `true`), will not be
+   * transferred by this function. To ensure that this function results in a killed account,
+   * you might need to prepare the account by removing any reference counters, storage
+   * deposits, etc...
+   *
+   * The dispatch origin of this call must be Signed.
+   *
+   * - `id`: The identifier of the asset for the account holding a deposit.
+   * - `dest`: The recipient of the transfer.
+   * - `keep_alive`: A boolean to determine if the `transfer_all` operation should send all
+   * of the funds the asset account has, causing the sender asset account to be killed
+   * (false), or transfer everything except at least the minimum balance, which will
+   * guarantee to keep the sender asset account alive (true).
+   **/
+  | { name: 'TransferAll'; params: { id: number; dest: MultiAddressLike; keepAlive: boolean } };
 
 /**
  * Contains a variant per dispatchable extrinsic that this pallet has.
@@ -10766,8 +10971,8 @@ export type PalletBeefyCall =
    * will be reported.
    **/
   | {
-      name: 'ReportEquivocation';
-      params: { equivocationProof: SpConsensusBeefyEquivocationProof; keyOwnerProof: SpSessionMembershipProof };
+      name: 'ReportDoubleVoting';
+      params: { equivocationProof: SpConsensusBeefyDoubleVotingProof; keyOwnerProof: SpSessionMembershipProof };
     }
   /**
    * Report voter equivocation/misbehavior. This method will verify the
@@ -10781,8 +10986,8 @@ export type PalletBeefyCall =
    * reporter.
    **/
   | {
-      name: 'ReportEquivocationUnsigned';
-      params: { equivocationProof: SpConsensusBeefyEquivocationProof; keyOwnerProof: SpSessionMembershipProof };
+      name: 'ReportDoubleVotingUnsigned';
+      params: { equivocationProof: SpConsensusBeefyDoubleVotingProof; keyOwnerProof: SpSessionMembershipProof };
     }
   /**
    * Reset BEEFY consensus by setting a new BEEFY genesis at `delay_in_blocks` blocks in the
@@ -10790,7 +10995,53 @@ export type PalletBeefyCall =
    *
    * Note: `delay_in_blocks` has to be at least 1.
    **/
-  | { name: 'SetNewGenesis'; params: { delayInBlocks: number } };
+  | { name: 'SetNewGenesis'; params: { delayInBlocks: number } }
+  /**
+   * Report fork voting equivocation. This method will verify the equivocation proof
+   * and validate the given key ownership proof against the extracted offender.
+   * If both are valid, the offence will be reported.
+   **/
+  | {
+      name: 'ReportForkVoting';
+      params: { equivocationProof: SpConsensusBeefyForkVotingProof; keyOwnerProof: SpSessionMembershipProof };
+    }
+  /**
+   * Report fork voting equivocation. This method will verify the equivocation proof
+   * and validate the given key ownership proof against the extracted offender.
+   * If both are valid, the offence will be reported.
+   *
+   * This extrinsic must be called unsigned and it is expected that only
+   * block authors will call it (validated in `ValidateUnsigned`), as such
+   * if the block author is defined it will be defined as the equivocation
+   * reporter.
+   **/
+  | {
+      name: 'ReportForkVotingUnsigned';
+      params: { equivocationProof: SpConsensusBeefyForkVotingProof; keyOwnerProof: SpSessionMembershipProof };
+    }
+  /**
+   * Report future block voting equivocation. This method will verify the equivocation proof
+   * and validate the given key ownership proof against the extracted offender.
+   * If both are valid, the offence will be reported.
+   **/
+  | {
+      name: 'ReportFutureBlockVoting';
+      params: { equivocationProof: SpConsensusBeefyFutureBlockVotingProof; keyOwnerProof: SpSessionMembershipProof };
+    }
+  /**
+   * Report future block voting equivocation. This method will verify the equivocation proof
+   * and validate the given key ownership proof against the extracted offender.
+   * If both are valid, the offence will be reported.
+   *
+   * This extrinsic must be called unsigned and it is expected that only
+   * block authors will call it (validated in `ValidateUnsigned`), as such
+   * if the block author is defined it will be defined as the equivocation
+   * reporter.
+   **/
+  | {
+      name: 'ReportFutureBlockVotingUnsigned';
+      params: { equivocationProof: SpConsensusBeefyFutureBlockVotingProof; keyOwnerProof: SpSessionMembershipProof };
+    };
 
 export type PalletBeefyCallLike =
   /**
@@ -10800,8 +11051,8 @@ export type PalletBeefyCallLike =
    * will be reported.
    **/
   | {
-      name: 'ReportEquivocation';
-      params: { equivocationProof: SpConsensusBeefyEquivocationProof; keyOwnerProof: SpSessionMembershipProof };
+      name: 'ReportDoubleVoting';
+      params: { equivocationProof: SpConsensusBeefyDoubleVotingProof; keyOwnerProof: SpSessionMembershipProof };
     }
   /**
    * Report voter equivocation/misbehavior. This method will verify the
@@ -10815,8 +11066,8 @@ export type PalletBeefyCallLike =
    * reporter.
    **/
   | {
-      name: 'ReportEquivocationUnsigned';
-      params: { equivocationProof: SpConsensusBeefyEquivocationProof; keyOwnerProof: SpSessionMembershipProof };
+      name: 'ReportDoubleVotingUnsigned';
+      params: { equivocationProof: SpConsensusBeefyDoubleVotingProof; keyOwnerProof: SpSessionMembershipProof };
     }
   /**
    * Reset BEEFY consensus by setting a new BEEFY genesis at `delay_in_blocks` blocks in the
@@ -10824,14 +11075,60 @@ export type PalletBeefyCallLike =
    *
    * Note: `delay_in_blocks` has to be at least 1.
    **/
-  | { name: 'SetNewGenesis'; params: { delayInBlocks: number } };
+  | { name: 'SetNewGenesis'; params: { delayInBlocks: number } }
+  /**
+   * Report fork voting equivocation. This method will verify the equivocation proof
+   * and validate the given key ownership proof against the extracted offender.
+   * If both are valid, the offence will be reported.
+   **/
+  | {
+      name: 'ReportForkVoting';
+      params: { equivocationProof: SpConsensusBeefyForkVotingProof; keyOwnerProof: SpSessionMembershipProof };
+    }
+  /**
+   * Report fork voting equivocation. This method will verify the equivocation proof
+   * and validate the given key ownership proof against the extracted offender.
+   * If both are valid, the offence will be reported.
+   *
+   * This extrinsic must be called unsigned and it is expected that only
+   * block authors will call it (validated in `ValidateUnsigned`), as such
+   * if the block author is defined it will be defined as the equivocation
+   * reporter.
+   **/
+  | {
+      name: 'ReportForkVotingUnsigned';
+      params: { equivocationProof: SpConsensusBeefyForkVotingProof; keyOwnerProof: SpSessionMembershipProof };
+    }
+  /**
+   * Report future block voting equivocation. This method will verify the equivocation proof
+   * and validate the given key ownership proof against the extracted offender.
+   * If both are valid, the offence will be reported.
+   **/
+  | {
+      name: 'ReportFutureBlockVoting';
+      params: { equivocationProof: SpConsensusBeefyFutureBlockVotingProof; keyOwnerProof: SpSessionMembershipProof };
+    }
+  /**
+   * Report future block voting equivocation. This method will verify the equivocation proof
+   * and validate the given key ownership proof against the extracted offender.
+   * If both are valid, the offence will be reported.
+   *
+   * This extrinsic must be called unsigned and it is expected that only
+   * block authors will call it (validated in `ValidateUnsigned`), as such
+   * if the block author is defined it will be defined as the equivocation
+   * reporter.
+   **/
+  | {
+      name: 'ReportFutureBlockVotingUnsigned';
+      params: { equivocationProof: SpConsensusBeefyFutureBlockVotingProof; keyOwnerProof: SpSessionMembershipProof };
+    };
 
-export type SpConsensusBeefyEquivocationProof = {
+export type SpConsensusBeefyDoubleVotingProof = {
   first: SpConsensusBeefyVoteMessage;
   second: SpConsensusBeefyVoteMessage;
 };
 
-export type SpConsensusBeefyEcdsaCryptoSignature = SpCoreEcdsaSignature;
+export type SpConsensusBeefyEcdsaCryptoSignature = FixedBytes<65>;
 
 export type SpConsensusBeefyVoteMessage = {
   commitment: SpConsensusBeefyCommitment;
@@ -10846,6 +11143,21 @@ export type SpConsensusBeefyCommitment = {
 };
 
 export type SpConsensusBeefyPayload = Array<[FixedBytes<2>, Bytes]>;
+
+export type SpConsensusBeefyForkVotingProof = {
+  vote: SpConsensusBeefyVoteMessage;
+  ancestryProof: SpMmrPrimitivesAncestryProof;
+  header: Header;
+};
+
+export type SpMmrPrimitivesAncestryProof = {
+  prevPeaks: Array<H256>;
+  prevLeafCount: bigint;
+  leafCount: bigint;
+  items: Array<[bigint, H256]>;
+};
+
+export type SpConsensusBeefyFutureBlockVotingProof = { vote: SpConsensusBeefyVoteMessage };
 
 /**
  * Contains a variant per dispatchable extrinsic that this pallet has.
@@ -13731,6 +14043,14 @@ export type PalletCoreFellowshipCall =
    **/
   | { name: 'Promote'; params: { who: AccountId32; toRank: number } }
   /**
+   * Fast promotions can skip ranks and ignore the `min_promotion_period`.
+   *
+   * This is useful for out-of-band promotions, hence it has its own `FastPromoteOrigin` to
+   * be (possibly) more restrictive than `PromoteOrigin`. Note that the member must already
+   * be inducted.
+   **/
+  | { name: 'PromoteFast'; params: { who: AccountId32; toRank: number } }
+  /**
    * Stop tracking a prior member who is now not a ranked member of the collective.
    *
    * - `origin`: A `Signed` origin of an account.
@@ -13760,7 +14080,17 @@ export type PalletCoreFellowshipCall =
    *
    * - `origin`: A signed origin of a ranked, but not tracked, account.
    **/
-  | { name: 'Import' };
+  | { name: 'Import' }
+  /**
+   * Set the parameters partially.
+   *
+   * - `origin`: An origin complying with `ParamsOrigin` or root.
+   * - `partial_params`: The new parameters for the pallet.
+   *
+   * This update config with multiple arguments without duplicating
+   * the fields that does not need to update (set to None).
+   **/
+  | { name: 'SetPartialParams'; params: { partialParams: PalletCoreFellowshipParamsTypeOption } };
 
 export type PalletCoreFellowshipCallLike =
   /**
@@ -13816,6 +14146,14 @@ export type PalletCoreFellowshipCallLike =
    **/
   | { name: 'Promote'; params: { who: AccountId32Like; toRank: number } }
   /**
+   * Fast promotions can skip ranks and ignore the `min_promotion_period`.
+   *
+   * This is useful for out-of-band promotions, hence it has its own `FastPromoteOrigin` to
+   * be (possibly) more restrictive than `PromoteOrigin`. Note that the member must already
+   * be inducted.
+   **/
+  | { name: 'PromoteFast'; params: { who: AccountId32Like; toRank: number } }
+  /**
    * Stop tracking a prior member who is now not a ranked member of the collective.
    *
    * - `origin`: A `Signed` origin of an account.
@@ -13845,7 +14183,25 @@ export type PalletCoreFellowshipCallLike =
    *
    * - `origin`: A signed origin of a ranked, but not tracked, account.
    **/
-  | { name: 'Import' };
+  | { name: 'Import' }
+  /**
+   * Set the parameters partially.
+   *
+   * - `origin`: An origin complying with `ParamsOrigin` or root.
+   * - `partial_params`: The new parameters for the pallet.
+   *
+   * This update config with multiple arguments without duplicating
+   * the fields that does not need to update (set to None).
+   **/
+  | { name: 'SetPartialParams'; params: { partialParams: PalletCoreFellowshipParamsTypeOption } };
+
+export type PalletCoreFellowshipParamsTypeOption = {
+  activeSalary: Array<bigint | undefined>;
+  passiveSalary: Array<bigint | undefined>;
+  demotionPeriod: Array<number | undefined>;
+  minPromotionPeriod: Array<number | undefined>;
+  offboardTimeout?: number | undefined;
+};
 
 /**
  * Contains a variant per dispatchable extrinsic that this pallet has.
@@ -15210,8 +15566,13 @@ export type PalletAllianceUnscrupulousItem =
  **/
 export type PalletNominationPoolsCall =
   /**
-   * Stake funds with a pool. The amount to bond is transferred from the member to the
-   * pools account and immediately increases the pools bond.
+   * Stake funds with a pool. The amount to bond is transferred from the member to the pool
+   * account and immediately increases the pools bond.
+   *
+   * The method of transferring the amount to the pool account is determined by
+   * [`adapter::StakeStrategyType`]. If the pool is configured to use
+   * [`adapter::StakeStrategyType::Delegate`], the funds remain in the account of
+   * the `origin`, while the pool gains the right to use these funds for staking.
    *
    * # Note
    *
@@ -15240,7 +15601,7 @@ export type PalletNominationPoolsCall =
    * The member will earn rewards pro rata based on the members stake vs the sum of the
    * members in the pools stake. Rewards do not "expire".
    *
-   * See `claim_payout_other` to caim rewards on bahalf of some `other` pool member.
+   * See `claim_payout_other` to claim rewards on behalf of some `other` pool member.
    **/
   | { name: 'ClaimPayout' }
   /**
@@ -15305,7 +15666,10 @@ export type PalletNominationPoolsCall =
    *
    * # Note
    *
-   * If the target is the depositor, the pool will be destroyed.
+   * - If the target is the depositor, the pool will be destroyed.
+   * - If the pool has any pending slash, we also try to slash the member before letting them
+   * withdraw. This calculation adds some weight overhead and is only defensive. In reality,
+   * pool slashes must have been already applied via permissionless [`Call::apply_slash`].
    **/
   | { name: 'WithdrawUnbonded'; params: { memberAccount: MultiAddress; numSlashingSpans: number } }
   /**
@@ -15377,7 +15741,7 @@ export type PalletNominationPoolsCall =
   | { name: 'SetMetadata'; params: { poolId: number; metadata: Bytes } }
   /**
    * Update configurations for the nomination pools. The origin for this call must be
-   * Root.
+   * [`Config::AdminOrigin`].
    *
    * # Arguments
    *
@@ -15445,29 +15809,24 @@ export type PalletNominationPoolsCall =
    *
    * In the case of `origin != other`, `origin` can only bond extra pending rewards of
    * `other` members assuming set_claim_permission for the given member is
-   * `PermissionlessAll` or `PermissionlessCompound`.
+   * `PermissionlessCompound` or `PermissionlessAll`.
    **/
   | { name: 'BondExtraOther'; params: { member: MultiAddress; extra: PalletNominationPoolsBondExtra } }
   /**
    * Allows a pool member to set a claim permission to allow or disallow permissionless
    * bonding and withdrawing.
    *
-   * By default, this is `Permissioned`, which implies only the pool member themselves can
-   * claim their pending rewards. If a pool member wishes so, they can set this to
-   * `PermissionlessAll` to allow any account to claim their rewards and bond extra to the
-   * pool.
-   *
    * # Arguments
    *
    * * `origin` - Member of a pool.
-   * * `actor` - Account to claim reward. // improve this
+   * * `permission` - The permission to be applied.
    **/
   | { name: 'SetClaimPermission'; params: { permission: PalletNominationPoolsClaimPermission } }
   /**
    * `origin` can claim payouts on some pool member `other`'s behalf.
    *
-   * Pool member `other` must have a `PermissionlessAll` or `PermissionlessWithdraw` in order
-   * for this call to be successful.
+   * Pool member `other` must have a `PermissionlessWithdraw` or `PermissionlessAll` claim
+   * permission for this call to be successful.
    **/
   | { name: 'ClaimPayoutOther'; params: { other: AccountId32 } }
   /**
@@ -15518,17 +15877,56 @@ export type PalletNominationPoolsCall =
    * Set or remove a pool's commission claim permission.
    *
    * Determines who can claim the pool's pending commission. Only the `Root` role of the pool
-   * is able to conifigure commission claim permissions.
+   * is able to configure commission claim permissions.
    **/
   | {
       name: 'SetCommissionClaimPermission';
       params: { poolId: number; permission?: PalletNominationPoolsCommissionClaimPermission | undefined };
-    };
+    }
+  /**
+   * Apply a pending slash on a member.
+   *
+   * Fails unless [`crate::pallet::Config::StakeAdapter`] is of strategy type:
+   * [`adapter::StakeStrategyType::Delegate`].
+   *
+   * This call can be dispatched permissionlessly (i.e. by any account). If the member has
+   * slash to be applied, caller may be rewarded with the part of the slash.
+   **/
+  | { name: 'ApplySlash'; params: { memberAccount: MultiAddress } }
+  /**
+   * Migrates delegated funds from the pool account to the `member_account`.
+   *
+   * Fails unless [`crate::pallet::Config::StakeAdapter`] is of strategy type:
+   * [`adapter::StakeStrategyType::Delegate`].
+   *
+   * This is a permission-less call and refunds any fee if claim is successful.
+   *
+   * If the pool has migrated to delegation based staking, the staked tokens of pool members
+   * can be moved and held in their own account. See [`adapter::DelegateStake`]
+   **/
+  | { name: 'MigrateDelegation'; params: { memberAccount: MultiAddress } }
+  /**
+   * Migrate pool from [`adapter::StakeStrategyType::Transfer`] to
+   * [`adapter::StakeStrategyType::Delegate`].
+   *
+   * Fails unless [`crate::pallet::Config::StakeAdapter`] is of strategy type:
+   * [`adapter::StakeStrategyType::Delegate`].
+   *
+   * This call can be dispatched permissionlessly, and refunds any fee if successful.
+   *
+   * If the pool has already migrated to delegation based staking, this call will fail.
+   **/
+  | { name: 'MigratePoolToDelegateStake'; params: { poolId: number } };
 
 export type PalletNominationPoolsCallLike =
   /**
-   * Stake funds with a pool. The amount to bond is transferred from the member to the
-   * pools account and immediately increases the pools bond.
+   * Stake funds with a pool. The amount to bond is transferred from the member to the pool
+   * account and immediately increases the pools bond.
+   *
+   * The method of transferring the amount to the pool account is determined by
+   * [`adapter::StakeStrategyType`]. If the pool is configured to use
+   * [`adapter::StakeStrategyType::Delegate`], the funds remain in the account of
+   * the `origin`, while the pool gains the right to use these funds for staking.
    *
    * # Note
    *
@@ -15557,7 +15955,7 @@ export type PalletNominationPoolsCallLike =
    * The member will earn rewards pro rata based on the members stake vs the sum of the
    * members in the pools stake. Rewards do not "expire".
    *
-   * See `claim_payout_other` to caim rewards on bahalf of some `other` pool member.
+   * See `claim_payout_other` to claim rewards on behalf of some `other` pool member.
    **/
   | { name: 'ClaimPayout' }
   /**
@@ -15622,7 +16020,10 @@ export type PalletNominationPoolsCallLike =
    *
    * # Note
    *
-   * If the target is the depositor, the pool will be destroyed.
+   * - If the target is the depositor, the pool will be destroyed.
+   * - If the pool has any pending slash, we also try to slash the member before letting them
+   * withdraw. This calculation adds some weight overhead and is only defensive. In reality,
+   * pool slashes must have been already applied via permissionless [`Call::apply_slash`].
    **/
   | { name: 'WithdrawUnbonded'; params: { memberAccount: MultiAddressLike; numSlashingSpans: number } }
   /**
@@ -15703,7 +16104,7 @@ export type PalletNominationPoolsCallLike =
   | { name: 'SetMetadata'; params: { poolId: number; metadata: BytesLike } }
   /**
    * Update configurations for the nomination pools. The origin for this call must be
-   * Root.
+   * [`Config::AdminOrigin`].
    *
    * # Arguments
    *
@@ -15771,29 +16172,24 @@ export type PalletNominationPoolsCallLike =
    *
    * In the case of `origin != other`, `origin` can only bond extra pending rewards of
    * `other` members assuming set_claim_permission for the given member is
-   * `PermissionlessAll` or `PermissionlessCompound`.
+   * `PermissionlessCompound` or `PermissionlessAll`.
    **/
   | { name: 'BondExtraOther'; params: { member: MultiAddressLike; extra: PalletNominationPoolsBondExtra } }
   /**
    * Allows a pool member to set a claim permission to allow or disallow permissionless
    * bonding and withdrawing.
    *
-   * By default, this is `Permissioned`, which implies only the pool member themselves can
-   * claim their pending rewards. If a pool member wishes so, they can set this to
-   * `PermissionlessAll` to allow any account to claim their rewards and bond extra to the
-   * pool.
-   *
    * # Arguments
    *
    * * `origin` - Member of a pool.
-   * * `actor` - Account to claim reward. // improve this
+   * * `permission` - The permission to be applied.
    **/
   | { name: 'SetClaimPermission'; params: { permission: PalletNominationPoolsClaimPermission } }
   /**
    * `origin` can claim payouts on some pool member `other`'s behalf.
    *
-   * Pool member `other` must have a `PermissionlessAll` or `PermissionlessWithdraw` in order
-   * for this call to be successful.
+   * Pool member `other` must have a `PermissionlessWithdraw` or `PermissionlessAll` claim
+   * permission for this call to be successful.
    **/
   | { name: 'ClaimPayoutOther'; params: { other: AccountId32Like } }
   /**
@@ -15844,12 +16240,46 @@ export type PalletNominationPoolsCallLike =
    * Set or remove a pool's commission claim permission.
    *
    * Determines who can claim the pool's pending commission. Only the `Root` role of the pool
-   * is able to conifigure commission claim permissions.
+   * is able to configure commission claim permissions.
    **/
   | {
       name: 'SetCommissionClaimPermission';
       params: { poolId: number; permission?: PalletNominationPoolsCommissionClaimPermission | undefined };
-    };
+    }
+  /**
+   * Apply a pending slash on a member.
+   *
+   * Fails unless [`crate::pallet::Config::StakeAdapter`] is of strategy type:
+   * [`adapter::StakeStrategyType::Delegate`].
+   *
+   * This call can be dispatched permissionlessly (i.e. by any account). If the member has
+   * slash to be applied, caller may be rewarded with the part of the slash.
+   **/
+  | { name: 'ApplySlash'; params: { memberAccount: MultiAddressLike } }
+  /**
+   * Migrates delegated funds from the pool account to the `member_account`.
+   *
+   * Fails unless [`crate::pallet::Config::StakeAdapter`] is of strategy type:
+   * [`adapter::StakeStrategyType::Delegate`].
+   *
+   * This is a permission-less call and refunds any fee if claim is successful.
+   *
+   * If the pool has migrated to delegation based staking, the staked tokens of pool members
+   * can be moved and held in their own account. See [`adapter::DelegateStake`]
+   **/
+  | { name: 'MigrateDelegation'; params: { memberAccount: MultiAddressLike } }
+  /**
+   * Migrate pool from [`adapter::StakeStrategyType::Transfer`] to
+   * [`adapter::StakeStrategyType::Delegate`].
+   *
+   * Fails unless [`crate::pallet::Config::StakeAdapter`] is of strategy type:
+   * [`adapter::StakeStrategyType::Delegate`].
+   *
+   * This call can be dispatched permissionlessly, and refunds any fee if successful.
+   *
+   * If the pool has already migrated to delegation based staking, this call will fail.
+   **/
+  | { name: 'MigratePoolToDelegateStake'; params: { poolId: number } };
 
 export type PalletNominationPoolsBondExtra = { type: 'FreeBalance'; value: bigint } | { type: 'Rewards' };
 
@@ -16065,7 +16495,7 @@ export type PalletAssetConversionCall =
    * calls to render the liquidity withdrawable and rectify the exchange rate.
    *
    * Once liquidity is added, someone may successfully call
-   * [`Pallet::swap_exact_tokens_for_tokens`] successfully.
+   * [`Pallet::swap_exact_tokens_for_tokens`].
    **/
   | {
       name: 'AddLiquidity';
@@ -16130,6 +16560,26 @@ export type PalletAssetConversionCall =
         sendTo: AccountId32;
         keepAlive: boolean;
       };
+    }
+  /**
+   * Touch an existing pool to fulfill prerequisites before providing liquidity, such as
+   * ensuring that the pool's accounts are in place. It is typically useful when a pool
+   * creator removes the pool's accounts and does not provide a liquidity. This action may
+   * involve holding assets from the caller as a deposit for creating the pool's accounts.
+   *
+   * The origin must be Signed.
+   *
+   * - `asset1`: The asset ID of an existing pool with a pair (asset1, asset2).
+   * - `asset2`: The asset ID of an existing pool with a pair (asset1, asset2).
+   *
+   * Emits `Touched` event when successful.
+   **/
+  | {
+      name: 'Touch';
+      params: {
+        asset1: FrameSupportTokensFungibleUnionOfNativeOrWithId;
+        asset2: FrameSupportTokensFungibleUnionOfNativeOrWithId;
+      };
     };
 
 export type PalletAssetConversionCallLike =
@@ -16160,7 +16610,7 @@ export type PalletAssetConversionCallLike =
    * calls to render the liquidity withdrawable and rectify the exchange rate.
    *
    * Once liquidity is added, someone may successfully call
-   * [`Pallet::swap_exact_tokens_for_tokens`] successfully.
+   * [`Pallet::swap_exact_tokens_for_tokens`].
    **/
   | {
       name: 'AddLiquidity';
@@ -16225,9 +16675,27 @@ export type PalletAssetConversionCallLike =
         sendTo: AccountId32Like;
         keepAlive: boolean;
       };
+    }
+  /**
+   * Touch an existing pool to fulfill prerequisites before providing liquidity, such as
+   * ensuring that the pool's accounts are in place. It is typically useful when a pool
+   * creator removes the pool's accounts and does not provide a liquidity. This action may
+   * involve holding assets from the caller as a deposit for creating the pool's accounts.
+   *
+   * The origin must be Signed.
+   *
+   * - `asset1`: The asset ID of an existing pool with a pair (asset1, asset2).
+   * - `asset2`: The asset ID of an existing pool with a pair (asset1, asset2).
+   *
+   * Emits `Touched` event when successful.
+   **/
+  | {
+      name: 'Touch';
+      params: {
+        asset1: FrameSupportTokensFungibleUnionOfNativeOrWithId;
+        asset2: FrameSupportTokensFungibleUnionOfNativeOrWithId;
+      };
     };
-
-export type FrameSupportTokensFungibleUnionOfNativeOrWithId = { type: 'Native' } | { type: 'WithId'; value: number };
 
 /**
  * Contains a variant per dispatchable extrinsic that this pallet has.
@@ -16789,10 +17257,14 @@ export type PalletBrokerCall =
    * Begin the Bulk Coretime sales rotation.
    *
    * - `origin`: Must be Root or pass `AdminOrigin`.
-   * - `initial_price`: The price of Bulk Coretime in the first sale.
-   * - `core_count`: The number of cores which can be allocated.
+   * - `end_price`: The price after the leadin period of Bulk Coretime in the first sale.
+   * - `extra_cores`: Number of extra cores that should be requested on top of the cores
+   * required for `Reservations` and `Leases`.
+   *
+   * This will call [`Self::request_core_count`] internally to set the correct core count on
+   * the relay chain.
    **/
-  | { name: 'StartSales'; params: { initialPrice: bigint; coreCount: number } }
+  | { name: 'StartSales'; params: { endPrice: bigint; extraCores: number } }
   /**
    * Purchase Bulk Coretime in the ongoing Sale.
    *
@@ -16860,13 +17332,12 @@ export type PalletBrokerCall =
   /**
    * Claim the revenue owed from inclusion in the Instantaneous Coretime Pool.
    *
-   * - `origin`: Must be a Signed origin of the account which owns the Region `region_id`.
+   * - `origin`: Must be a Signed origin.
    * - `region_id`: The Region which was assigned to the Pool.
-   * - `max_timeslices`: The maximum number of timeslices which should be processed. This may
-   * effect the weight of the call but should be ideally made equivalant to the length of
-   * the Region `region_id`. If it is less than this, then further dispatches will be
-   * required with the `region_id` which makes up any remainders of the region to be
-   * collected.
+   * - `max_timeslices`: The maximum number of timeslices which should be processed. This
+   * must be greater than 0. This may affect the weight of the call but should be ideally
+   * made equivalent to the length of the Region `region_id`. If less, further dispatches
+   * will be required with the same `region_id` to claim revenue for the remainder.
    **/
   | { name: 'ClaimRevenue'; params: { regionId: PalletBrokerRegionId; maxTimeslices: number } }
   /**
@@ -16914,7 +17385,33 @@ export type PalletBrokerCall =
    * - `core_count`: The desired number of cores to be made available.
    **/
   | { name: 'RequestCoreCount'; params: { coreCount: number } }
-  | { name: 'NotifyCoreCount'; params: { coreCount: number } };
+  | { name: 'NotifyCoreCount'; params: { coreCount: number } }
+  | { name: 'NotifyRevenue'; params: { revenue: PalletBrokerOnDemandRevenueRecord } }
+  /**
+   * Extrinsic for enabling auto renewal.
+   *
+   * Callable by the sovereign account of the task on the specified core. This account
+   * will be charged at the start of every bulk period for renewing core time.
+   *
+   * - `origin`: Must be the sovereign account of the task
+   * - `core`: The core to which the task to be renewed is currently assigned.
+   * - `task`: The task for which we want to enable auto renewal.
+   * - `workload_end_hint`: should be used when enabling auto-renewal for a core that is not
+   * expiring in the upcoming bulk period (e.g., due to holding a lease) since it would be
+   * inefficient to look up when the core expires to schedule the next renewal.
+   **/
+  | { name: 'EnableAutoRenew'; params: { core: number; task: number; workloadEndHint?: number | undefined } }
+  /**
+   * Extrinsic for disabling auto renewal.
+   *
+   * Callable by the sovereign account of the task on the specified core.
+   *
+   * - `origin`: Must be the sovereign account of the task.
+   * - `core`: The core for which we want to disable auto renewal.
+   * - `task`: The task for which we want to disable auto renewal.
+   **/
+  | { name: 'DisableAutoRenew'; params: { core: number; task: number } }
+  | { name: 'SwapLeases'; params: { id: number; other: number } };
 
 export type PalletBrokerCallLike =
   /**
@@ -16957,10 +17454,14 @@ export type PalletBrokerCallLike =
    * Begin the Bulk Coretime sales rotation.
    *
    * - `origin`: Must be Root or pass `AdminOrigin`.
-   * - `initial_price`: The price of Bulk Coretime in the first sale.
-   * - `core_count`: The number of cores which can be allocated.
+   * - `end_price`: The price after the leadin period of Bulk Coretime in the first sale.
+   * - `extra_cores`: Number of extra cores that should be requested on top of the cores
+   * required for `Reservations` and `Leases`.
+   *
+   * This will call [`Self::request_core_count`] internally to set the correct core count on
+   * the relay chain.
    **/
-  | { name: 'StartSales'; params: { initialPrice: bigint; coreCount: number } }
+  | { name: 'StartSales'; params: { endPrice: bigint; extraCores: number } }
   /**
    * Purchase Bulk Coretime in the ongoing Sale.
    *
@@ -17028,13 +17529,12 @@ export type PalletBrokerCallLike =
   /**
    * Claim the revenue owed from inclusion in the Instantaneous Coretime Pool.
    *
-   * - `origin`: Must be a Signed origin of the account which owns the Region `region_id`.
+   * - `origin`: Must be a Signed origin.
    * - `region_id`: The Region which was assigned to the Pool.
-   * - `max_timeslices`: The maximum number of timeslices which should be processed. This may
-   * effect the weight of the call but should be ideally made equivalant to the length of
-   * the Region `region_id`. If it is less than this, then further dispatches will be
-   * required with the `region_id` which makes up any remainders of the region to be
-   * collected.
+   * - `max_timeslices`: The maximum number of timeslices which should be processed. This
+   * must be greater than 0. This may affect the weight of the call but should be ideally
+   * made equivalent to the length of the Region `region_id`. If less, further dispatches
+   * will be required with the same `region_id` to claim revenue for the remainder.
    **/
   | { name: 'ClaimRevenue'; params: { regionId: PalletBrokerRegionId; maxTimeslices: number } }
   /**
@@ -17082,7 +17582,33 @@ export type PalletBrokerCallLike =
    * - `core_count`: The desired number of cores to be made available.
    **/
   | { name: 'RequestCoreCount'; params: { coreCount: number } }
-  | { name: 'NotifyCoreCount'; params: { coreCount: number } };
+  | { name: 'NotifyCoreCount'; params: { coreCount: number } }
+  | { name: 'NotifyRevenue'; params: { revenue: PalletBrokerOnDemandRevenueRecord } }
+  /**
+   * Extrinsic for enabling auto renewal.
+   *
+   * Callable by the sovereign account of the task on the specified core. This account
+   * will be charged at the start of every bulk period for renewing core time.
+   *
+   * - `origin`: Must be the sovereign account of the task
+   * - `core`: The core to which the task to be renewed is currently assigned.
+   * - `task`: The task for which we want to enable auto renewal.
+   * - `workload_end_hint`: should be used when enabling auto-renewal for a core that is not
+   * expiring in the upcoming bulk period (e.g., due to holding a lease) since it would be
+   * inefficient to look up when the core expires to schedule the next renewal.
+   **/
+  | { name: 'EnableAutoRenew'; params: { core: number; task: number; workloadEndHint?: number | undefined } }
+  /**
+   * Extrinsic for disabling auto renewal.
+   *
+   * Callable by the sovereign account of the task on the specified core.
+   *
+   * - `origin`: Must be the sovereign account of the task.
+   * - `core`: The core for which we want to disable auto renewal.
+   * - `task`: The task for which we want to disable auto renewal.
+   **/
+  | { name: 'DisableAutoRenew'; params: { core: number; task: number } }
+  | { name: 'SwapLeases'; params: { id: number; other: number } };
 
 export type PalletBrokerConfigRecord = {
   advanceNotice: number;
@@ -17110,6 +17636,8 @@ export type PalletBrokerCoretimeInterfaceCoreAssignment =
 export type PalletBrokerRegionId = { begin: number; core: number; mask: PalletBrokerCoreMask };
 
 export type PalletBrokerFinality = 'Provisional' | 'Final';
+
+export type PalletBrokerOnDemandRevenueRecord = { until: number; amount: bigint };
 
 /**
  * Contains a variant per dispatchable extrinsic that this pallet has.
@@ -17139,7 +17667,7 @@ export type PalletMixnetBoundedMixnode = {
   externalAddresses: Array<Bytes>;
 };
 
-export type SpMixnetAppSignature = SpCoreSr25519Signature;
+export type SpMixnetAppSignature = FixedBytes<64>;
 
 /**
  * Contains a variant per dispatchable extrinsic that this pallet has.
@@ -17162,9 +17690,10 @@ export type PalletParametersCallLike =
    **/
   { name: 'SetParameter'; params: { keyValue: KitchensinkRuntimeRuntimeParameters } };
 
-export type KitchensinkRuntimeRuntimeParameters =
-  | { type: 'Storage'; value: KitchensinkRuntimeDynamicParamsStorageParameters }
-  | { type: 'Contract'; value: KitchensinkRuntimeDynamicParamsContractsParameters };
+export type KitchensinkRuntimeRuntimeParameters = {
+  type: 'Storage';
+  value: KitchensinkRuntimeDynamicParamsStorageParameters;
+};
 
 export type KitchensinkRuntimeDynamicParamsStorageParameters =
   | { type: 'BaseDeposit'; value: [KitchensinkRuntimeDynamicParamsStorageBaseDeposit, bigint | undefined] }
@@ -17174,19 +17703,370 @@ export type KitchensinkRuntimeDynamicParamsStorageBaseDeposit = {};
 
 export type KitchensinkRuntimeDynamicParamsStorageByteDeposit = {};
 
-export type KitchensinkRuntimeDynamicParamsContractsParameters =
-  | { type: 'DepositPerItem'; value: [KitchensinkRuntimeDynamicParamsContractsDepositPerItem, bigint | undefined] }
-  | { type: 'DepositPerByte'; value: [KitchensinkRuntimeDynamicParamsContractsDepositPerByte, bigint | undefined] }
-  | {
-      type: 'DefaultDepositLimit';
-      value: [KitchensinkRuntimeDynamicParamsContractsDefaultDepositLimit, bigint | undefined];
+/**
+ * Pallet's callable functions.
+ **/
+export type PalletAssetConversionOpsCall =
+  /**
+   * Migrates an existing pool to a new account ID derivation method for a given asset pair.
+   * If the migration is successful, transaction fees are refunded to the caller.
+   *
+   * Must be signed.
+   **/
+  {
+    name: 'MigrateToNewAccount';
+    params: {
+      asset1: FrameSupportTokensFungibleUnionOfNativeOrWithId;
+      asset2: FrameSupportTokensFungibleUnionOfNativeOrWithId;
     };
+  };
 
-export type KitchensinkRuntimeDynamicParamsContractsDepositPerItem = {};
+export type PalletAssetConversionOpsCallLike =
+  /**
+   * Migrates an existing pool to a new account ID derivation method for a given asset pair.
+   * If the migration is successful, transaction fees are refunded to the caller.
+   *
+   * Must be signed.
+   **/
+  {
+    name: 'MigrateToNewAccount';
+    params: {
+      asset1: FrameSupportTokensFungibleUnionOfNativeOrWithId;
+      asset2: FrameSupportTokensFungibleUnionOfNativeOrWithId;
+    };
+  };
 
-export type KitchensinkRuntimeDynamicParamsContractsDepositPerByte = {};
+/**
+ * Contains a variant per dispatchable extrinsic that this pallet has.
+ **/
+export type PalletReviveCall =
+  /**
+   * A raw EVM transaction, typically dispatched by an Ethereum JSON-RPC server.
+   *
+   * # Parameters
+   *
+   * * `payload`: The RLP-encoded [`crate::evm::TransactionLegacySigned`].
+   * * `gas_limit`: The gas limit enforced during contract execution.
+   * * `storage_deposit_limit`: The maximum balance that can be charged to the caller for
+   * storage usage.
+   *
+   * # Note
+   *
+   * This call cannot be dispatched directly; attempting to do so will result in a failed
+   * transaction. It serves as a wrapper for an Ethereum transaction. When submitted, the
+   * runtime converts it into a [`sp_runtime::generic::CheckedExtrinsic`] by recovering the
+   * signer and validating the transaction.
+   **/
+  | { name: 'EthTransact'; params: { payload: Bytes; gasLimit: SpWeightsWeightV2Weight; storageDepositLimit: bigint } }
+  /**
+   * Makes a call to an account, optionally transferring some balance.
+   *
+   * # Parameters
+   *
+   * * `dest`: Address of the contract to call.
+   * * `value`: The balance to transfer from the `origin` to `dest`.
+   * * `gas_limit`: The gas limit enforced when executing the constructor.
+   * * `storage_deposit_limit`: The maximum amount of balance that can be charged from the
+   * caller to pay for the storage consumed.
+   * * `data`: The input data to pass to the contract.
+   *
+   * * If the account is a smart-contract account, the associated code will be
+   * executed and any value will be transferred.
+   * * If the account is a regular account, any value will be transferred.
+   * * If no account exists and the call value is not less than `existential_deposit`,
+   * a regular account will be created and any value will be transferred.
+   **/
+  | {
+      name: 'Call';
+      params: {
+        dest: H160;
+        value: bigint;
+        gasLimit: SpWeightsWeightV2Weight;
+        storageDepositLimit: bigint;
+        data: Bytes;
+      };
+    }
+  /**
+   * Instantiates a contract from a previously deployed wasm binary.
+   *
+   * This function is identical to [`Self::instantiate_with_code`] but without the
+   * code deployment step. Instead, the `code_hash` of an on-chain deployed wasm binary
+   * must be supplied.
+   **/
+  | {
+      name: 'Instantiate';
+      params: {
+        value: bigint;
+        gasLimit: SpWeightsWeightV2Weight;
+        storageDepositLimit: bigint;
+        codeHash: H256;
+        data: Bytes;
+        salt?: FixedBytes<32> | undefined;
+      };
+    }
+  /**
+   * Instantiates a new contract from the supplied `code` optionally transferring
+   * some balance.
+   *
+   * This dispatchable has the same effect as calling [`Self::upload_code`] +
+   * [`Self::instantiate`]. Bundling them together provides efficiency gains. Please
+   * also check the documentation of [`Self::upload_code`].
+   *
+   * # Parameters
+   *
+   * * `value`: The balance to transfer from the `origin` to the newly created contract.
+   * * `gas_limit`: The gas limit enforced when executing the constructor.
+   * * `storage_deposit_limit`: The maximum amount of balance that can be charged/reserved
+   * from the caller to pay for the storage consumed.
+   * * `code`: The contract code to deploy in raw bytes.
+   * * `data`: The input data to pass to the contract constructor.
+   * * `salt`: Used for the address derivation. If `Some` is supplied then `CREATE2`
+   * semantics are used. If `None` then `CRATE1` is used.
+   *
+   *
+   * Instantiation is executed as follows:
+   *
+   * - The supplied `code` is deployed, and a `code_hash` is created for that code.
+   * - If the `code_hash` already exists on the chain the underlying `code` will be shared.
+   * - The destination address is computed based on the sender, code_hash and the salt.
+   * - The smart-contract account is created at the computed address.
+   * - The `value` is transferred to the new account.
+   * - The `deploy` function is executed in the context of the newly-created account.
+   **/
+  | {
+      name: 'InstantiateWithCode';
+      params: {
+        value: bigint;
+        gasLimit: SpWeightsWeightV2Weight;
+        storageDepositLimit: bigint;
+        code: Bytes;
+        data: Bytes;
+        salt?: FixedBytes<32> | undefined;
+      };
+    }
+  /**
+   * Upload new `code` without instantiating a contract from it.
+   *
+   * If the code does not already exist a deposit is reserved from the caller
+   * and unreserved only when [`Self::remove_code`] is called. The size of the reserve
+   * depends on the size of the supplied `code`.
+   *
+   * # Note
+   *
+   * Anyone can instantiate a contract from any uploaded code and thus prevent its removal.
+   * To avoid this situation a constructor could employ access control so that it can
+   * only be instantiated by permissioned entities. The same is true when uploading
+   * through [`Self::instantiate_with_code`].
+   **/
+  | { name: 'UploadCode'; params: { code: Bytes; storageDepositLimit: bigint } }
+  /**
+   * Remove the code stored under `code_hash` and refund the deposit to its owner.
+   *
+   * A code can only be removed by its original uploader (its owner) and only if it is
+   * not used by any contract.
+   **/
+  | { name: 'RemoveCode'; params: { codeHash: H256 } }
+  /**
+   * Privileged function that changes the code of an existing contract.
+   *
+   * This takes care of updating refcounts and all other necessary operations. Returns
+   * an error if either the `code_hash` or `dest` do not exist.
+   *
+   * # Note
+   *
+   * This does **not** change the address of the contract in question. This means
+   * that the contract address is no longer derived from its code hash after calling
+   * this dispatchable.
+   **/
+  | { name: 'SetCode'; params: { dest: H160; codeHash: H256 } }
+  /**
+   * Register the callers account id so that it can be used in contract interactions.
+   *
+   * This will error if the origin is already mapped or is a eth native `Address20`. It will
+   * take a deposit that can be released by calling [`Self::unmap_account`].
+   **/
+  | { name: 'MapAccount' }
+  /**
+   * Unregister the callers account id in order to free the deposit.
+   *
+   * There is no reason to ever call this function other than freeing up the deposit.
+   * This is only useful when the account should no longer be used.
+   **/
+  | { name: 'UnmapAccount' }
+  /**
+   * Dispatch an `call` with the origin set to the callers fallback address.
+   *
+   * Every `AccountId32` can control its corresponding fallback account. The fallback account
+   * is the `AccountId20` with the last 12 bytes set to `0xEE`. This is essentially a
+   * recovery function in case an `AccountId20` was used without creating a mapping first.
+   **/
+  | { name: 'DispatchAsFallbackAccount'; params: { call: KitchensinkRuntimeRuntimeCall } };
 
-export type KitchensinkRuntimeDynamicParamsContractsDefaultDepositLimit = {};
+export type PalletReviveCallLike =
+  /**
+   * A raw EVM transaction, typically dispatched by an Ethereum JSON-RPC server.
+   *
+   * # Parameters
+   *
+   * * `payload`: The RLP-encoded [`crate::evm::TransactionLegacySigned`].
+   * * `gas_limit`: The gas limit enforced during contract execution.
+   * * `storage_deposit_limit`: The maximum balance that can be charged to the caller for
+   * storage usage.
+   *
+   * # Note
+   *
+   * This call cannot be dispatched directly; attempting to do so will result in a failed
+   * transaction. It serves as a wrapper for an Ethereum transaction. When submitted, the
+   * runtime converts it into a [`sp_runtime::generic::CheckedExtrinsic`] by recovering the
+   * signer and validating the transaction.
+   **/
+  | {
+      name: 'EthTransact';
+      params: { payload: BytesLike; gasLimit: SpWeightsWeightV2Weight; storageDepositLimit: bigint };
+    }
+  /**
+   * Makes a call to an account, optionally transferring some balance.
+   *
+   * # Parameters
+   *
+   * * `dest`: Address of the contract to call.
+   * * `value`: The balance to transfer from the `origin` to `dest`.
+   * * `gas_limit`: The gas limit enforced when executing the constructor.
+   * * `storage_deposit_limit`: The maximum amount of balance that can be charged from the
+   * caller to pay for the storage consumed.
+   * * `data`: The input data to pass to the contract.
+   *
+   * * If the account is a smart-contract account, the associated code will be
+   * executed and any value will be transferred.
+   * * If the account is a regular account, any value will be transferred.
+   * * If no account exists and the call value is not less than `existential_deposit`,
+   * a regular account will be created and any value will be transferred.
+   **/
+  | {
+      name: 'Call';
+      params: {
+        dest: H160;
+        value: bigint;
+        gasLimit: SpWeightsWeightV2Weight;
+        storageDepositLimit: bigint;
+        data: BytesLike;
+      };
+    }
+  /**
+   * Instantiates a contract from a previously deployed wasm binary.
+   *
+   * This function is identical to [`Self::instantiate_with_code`] but without the
+   * code deployment step. Instead, the `code_hash` of an on-chain deployed wasm binary
+   * must be supplied.
+   **/
+  | {
+      name: 'Instantiate';
+      params: {
+        value: bigint;
+        gasLimit: SpWeightsWeightV2Weight;
+        storageDepositLimit: bigint;
+        codeHash: H256;
+        data: BytesLike;
+        salt?: FixedBytes<32> | undefined;
+      };
+    }
+  /**
+   * Instantiates a new contract from the supplied `code` optionally transferring
+   * some balance.
+   *
+   * This dispatchable has the same effect as calling [`Self::upload_code`] +
+   * [`Self::instantiate`]. Bundling them together provides efficiency gains. Please
+   * also check the documentation of [`Self::upload_code`].
+   *
+   * # Parameters
+   *
+   * * `value`: The balance to transfer from the `origin` to the newly created contract.
+   * * `gas_limit`: The gas limit enforced when executing the constructor.
+   * * `storage_deposit_limit`: The maximum amount of balance that can be charged/reserved
+   * from the caller to pay for the storage consumed.
+   * * `code`: The contract code to deploy in raw bytes.
+   * * `data`: The input data to pass to the contract constructor.
+   * * `salt`: Used for the address derivation. If `Some` is supplied then `CREATE2`
+   * semantics are used. If `None` then `CRATE1` is used.
+   *
+   *
+   * Instantiation is executed as follows:
+   *
+   * - The supplied `code` is deployed, and a `code_hash` is created for that code.
+   * - If the `code_hash` already exists on the chain the underlying `code` will be shared.
+   * - The destination address is computed based on the sender, code_hash and the salt.
+   * - The smart-contract account is created at the computed address.
+   * - The `value` is transferred to the new account.
+   * - The `deploy` function is executed in the context of the newly-created account.
+   **/
+  | {
+      name: 'InstantiateWithCode';
+      params: {
+        value: bigint;
+        gasLimit: SpWeightsWeightV2Weight;
+        storageDepositLimit: bigint;
+        code: BytesLike;
+        data: BytesLike;
+        salt?: FixedBytes<32> | undefined;
+      };
+    }
+  /**
+   * Upload new `code` without instantiating a contract from it.
+   *
+   * If the code does not already exist a deposit is reserved from the caller
+   * and unreserved only when [`Self::remove_code`] is called. The size of the reserve
+   * depends on the size of the supplied `code`.
+   *
+   * # Note
+   *
+   * Anyone can instantiate a contract from any uploaded code and thus prevent its removal.
+   * To avoid this situation a constructor could employ access control so that it can
+   * only be instantiated by permissioned entities. The same is true when uploading
+   * through [`Self::instantiate_with_code`].
+   **/
+  | { name: 'UploadCode'; params: { code: BytesLike; storageDepositLimit: bigint } }
+  /**
+   * Remove the code stored under `code_hash` and refund the deposit to its owner.
+   *
+   * A code can only be removed by its original uploader (its owner) and only if it is
+   * not used by any contract.
+   **/
+  | { name: 'RemoveCode'; params: { codeHash: H256 } }
+  /**
+   * Privileged function that changes the code of an existing contract.
+   *
+   * This takes care of updating refcounts and all other necessary operations. Returns
+   * an error if either the `code_hash` or `dest` do not exist.
+   *
+   * # Note
+   *
+   * This does **not** change the address of the contract in question. This means
+   * that the contract address is no longer derived from its code hash after calling
+   * this dispatchable.
+   **/
+  | { name: 'SetCode'; params: { dest: H160; codeHash: H256 } }
+  /**
+   * Register the callers account id so that it can be used in contract interactions.
+   *
+   * This will error if the origin is already mapped or is a eth native `Address20`. It will
+   * take a deposit that can be released by calling [`Self::unmap_account`].
+   **/
+  | { name: 'MapAccount' }
+  /**
+   * Unregister the callers account id in order to free the deposit.
+   *
+   * There is no reason to ever call this function other than freeing up the deposit.
+   * This is only useful when the account should no longer be used.
+   **/
+  | { name: 'UnmapAccount' }
+  /**
+   * Dispatch an `call` with the origin set to the callers fallback address.
+   *
+   * Every `AccountId32` can control its corresponding fallback account. The fallback account
+   * is the `AccountId20` with the last 12 bytes set to `0xEE`. This is essentially a
+   * recovery function in case an `AccountId20` was used without creating a mapping first.
+   **/
+  | { name: 'DispatchAsFallbackAccount'; params: { call: KitchensinkRuntimeRuntimeCallLike } };
 
 export type SpRuntimeBlakeTwo256 = {};
 
@@ -17221,7 +18101,15 @@ export type PalletConvictionVotingEvent =
   /**
    * An \[account\] has cancelled a previous delegation operation.
    **/
-  | { name: 'Undelegated'; data: AccountId32 };
+  | { name: 'Undelegated'; data: AccountId32 }
+  /**
+   * An account that has voted
+   **/
+  | { name: 'Voted'; data: { who: AccountId32; vote: PalletConvictionVotingVoteAccountVote } }
+  /**
+   * A vote that been removed
+   **/
+  | { name: 'VoteRemoved'; data: { who: AccountId32; vote: PalletConvictionVotingVoteAccountVote } };
 
 /**
  * The `Event` enum of this pallet
@@ -17358,8 +18246,10 @@ export type PalletNominationPoolsEvent =
    * A member has been removed from a pool.
    *
    * The removal can be voluntary (withdrawn all unbonded funds) or involuntary (kicked).
+   * Any funds that are still delegated (i.e. dangling delegation) are released and are
+   * represented by `released_balance`.
    **/
-  | { name: 'MemberRemoved'; data: { poolId: number; member: AccountId32 } }
+  | { name: 'MemberRemoved'; data: { poolId: number; member: AccountId32; releasedBalance: bigint } }
   /**
    * The roles of a pool have been updated to the given new roles. Note that the depositor
    * can never change.
@@ -17740,7 +18630,7 @@ export type PalletRankedCollectiveVoteRecord = { type: 'Aye'; value: number } | 
  **/
 export type PalletAssetConversionEvent =
   /**
-   * A successful call of the `CretaPool` extrinsic will create this event.
+   * A successful call of the `CreatePool` extrinsic will create this event.
    **/
   | {
       name: 'PoolCreated';
@@ -17913,6 +18803,23 @@ export type PalletAssetConversionEvent =
          **/
         path: Array<[FrameSupportTokensFungibleUnionOfNativeOrWithId, bigint]>;
       };
+    }
+  /**
+   * Pool has been touched in order to fulfill operational requirements.
+   **/
+  | {
+      name: 'Touched';
+      data: {
+        /**
+         * The ID of the pool.
+         **/
+        poolId: [FrameSupportTokensFungibleUnionOfNativeOrWithId, FrameSupportTokensFungibleUnionOfNativeOrWithId];
+
+        /**
+         * The account initiating the touch.
+         **/
+        who: AccountId32;
+      };
     };
 
 /**
@@ -18054,7 +18961,8 @@ export type FrameSupportMessagesProcessMessageError =
   | { type: 'Corrupt' }
   | { type: 'Unsupported' }
   | { type: 'Overweight'; value: SpWeightsWeightV2Weight }
-  | { type: 'Yield' };
+  | { type: 'Yield' }
+  | { type: 'StackLimitReached' };
 
 /**
  * The `Event` enum of this pallet
@@ -18374,12 +19282,12 @@ export type PalletBrokerEvent =
         /**
          * The old owner of the Region.
          **/
-        oldOwner: AccountId32;
+        oldOwner?: AccountId32 | undefined;
 
         /**
          * The new owner of the Region.
          **/
-        owner: AccountId32;
+        owner?: AccountId32 | undefined;
       };
     }
   /**
@@ -18537,7 +19445,7 @@ export type PalletBrokerEvent =
         /**
          * The price of Bulk Coretime after the Leadin Period.
          **/
-        regularPrice: bigint;
+        endPrice: bigint;
 
         /**
          * The first timeslice of the Regions which are being sold in this sale.
@@ -18551,8 +19459,7 @@ export type PalletBrokerEvent =
         regionEnd: number;
 
         /**
-         * The number of cores we want to sell, ideally. Selling this amount would result in
-         * no change to the price for the next sale.
+         * The number of cores we want to sell, ideally.
          **/
         idealCoresSold: number;
 
@@ -18828,7 +19735,7 @@ export type PalletBrokerEvent =
    * Some historical Instantaneous Core Pool payment record has been dropped.
    **/
   | {
-      name: 'AllowedRenewalDropped';
+      name: 'PotentialRenewalDropped';
       data: {
         /**
          * The timeslice whose renewal is no longer available.
@@ -18840,7 +19747,62 @@ export type PalletBrokerEvent =
          **/
         core: number;
       };
-    };
+    }
+  | {
+      name: 'AutoRenewalEnabled';
+      data: {
+        /**
+         * The core for which the renewal was enabled.
+         **/
+        core: number;
+
+        /**
+         * The task for which the renewal was enabled.
+         **/
+        task: number;
+      };
+    }
+  | {
+      name: 'AutoRenewalDisabled';
+      data: {
+        /**
+         * The core for which the renewal was disabled.
+         **/
+        core: number;
+
+        /**
+         * The task for which the renewal was disabled.
+         **/
+        task: number;
+      };
+    }
+  /**
+   * Failed to auto-renew a core, likely due to the payer account not being sufficiently
+   * funded.
+   **/
+  | {
+      name: 'AutoRenewalFailed';
+      data: {
+        /**
+         * The core for which the renewal failed.
+         **/
+        core: number;
+
+        /**
+         * The account which was supposed to pay for renewal.
+         *
+         * If `None` it indicates that we failed to get the sovereign account of a task.
+         **/
+        payer?: AccountId32 | undefined;
+      };
+    }
+  /**
+   * The auto-renewal limit has been reached upon renewing cores.
+   *
+   * This should never happen, given that enable_auto_renew checks for this before enabling
+   * auto-renewal.
+   **/
+  | { name: 'AutoRenewalLimitReached' };
 
 /**
  * The `Event` enum of this pallet
@@ -18871,31 +19833,23 @@ export type PalletParametersEvent =
     };
   };
 
-export type KitchensinkRuntimeRuntimeParametersKey =
-  | { type: 'Storage'; value: KitchensinkRuntimeDynamicParamsStorageParametersKey }
-  | { type: 'Contract'; value: KitchensinkRuntimeDynamicParamsContractsParametersKey };
+export type KitchensinkRuntimeRuntimeParametersKey = {
+  type: 'Storage';
+  value: KitchensinkRuntimeDynamicParamsStorageParametersKey;
+};
 
 export type KitchensinkRuntimeDynamicParamsStorageParametersKey =
   | { type: 'BaseDeposit'; value: KitchensinkRuntimeDynamicParamsStorageBaseDeposit }
   | { type: 'ByteDeposit'; value: KitchensinkRuntimeDynamicParamsStorageByteDeposit };
 
-export type KitchensinkRuntimeDynamicParamsContractsParametersKey =
-  | { type: 'DepositPerItem'; value: KitchensinkRuntimeDynamicParamsContractsDepositPerItem }
-  | { type: 'DepositPerByte'; value: KitchensinkRuntimeDynamicParamsContractsDepositPerByte }
-  | { type: 'DefaultDepositLimit'; value: KitchensinkRuntimeDynamicParamsContractsDefaultDepositLimit };
-
-export type KitchensinkRuntimeRuntimeParametersValue =
-  | { type: 'Storage'; value: KitchensinkRuntimeDynamicParamsStorageParametersValue }
-  | { type: 'Contract'; value: KitchensinkRuntimeDynamicParamsContractsParametersValue };
+export type KitchensinkRuntimeRuntimeParametersValue = {
+  type: 'Storage';
+  value: KitchensinkRuntimeDynamicParamsStorageParametersValue;
+};
 
 export type KitchensinkRuntimeDynamicParamsStorageParametersValue =
   | { type: 'BaseDeposit'; value: bigint }
   | { type: 'ByteDeposit'; value: bigint };
-
-export type KitchensinkRuntimeDynamicParamsContractsParametersValue =
-  | { type: 'DepositPerItem'; value: bigint }
-  | { type: 'DepositPerByte'; value: bigint }
-  | { type: 'DefaultDepositLimit'; value: bigint };
 
 /**
  * The `Event` enum of this pallet
@@ -18904,7 +19858,176 @@ export type PalletSkipFeelessPaymentEvent =
   /**
    * A transaction fee was skipped.
    **/
-  { name: 'FeeSkipped'; data: { who: AccountId32 } };
+  { name: 'FeeSkipped'; data: { origin: KitchensinkRuntimeOriginCaller } };
+
+/**
+ * The `Event` enum of this pallet
+ **/
+export type PalletAssetConversionOpsEvent =
+  /**
+   * Indicates that a pool has been migrated to the new account ID.
+   **/
+  {
+    name: 'MigratedToNewAccount';
+    data: {
+      /**
+       * Pool's ID.
+       **/
+      poolId: [FrameSupportTokensFungibleUnionOfNativeOrWithId, FrameSupportTokensFungibleUnionOfNativeOrWithId];
+
+      /**
+       * Pool's prior account ID.
+       **/
+      priorAccount: AccountId32;
+
+      /**
+       * Pool's new account ID.
+       **/
+      newAccount: AccountId32;
+    };
+  };
+
+/**
+ * The `Event` enum of this pallet
+ **/
+export type PalletReviveEvent =
+  /**
+   * Contract deployed by address at the specified address.
+   **/
+  | { name: 'Instantiated'; data: { deployer: H160; contract: H160 } }
+  /**
+   * Contract has been removed.
+   *
+   * # Note
+   *
+   * The only way for a contract to be removed and emitting this event is by calling
+   * `seal_terminate`.
+   **/
+  | {
+      name: 'Terminated';
+      data: {
+        /**
+         * The contract that was terminated.
+         **/
+        contract: H160;
+
+        /**
+         * The account that received the contracts remaining balance
+         **/
+        beneficiary: H160;
+      };
+    }
+  /**
+   * Code with the specified hash has been stored.
+   **/
+  | { name: 'CodeStored'; data: { codeHash: H256; depositHeld: bigint; uploader: H160 } }
+  /**
+   * A custom event emitted by the contract.
+   **/
+  | {
+      name: 'ContractEmitted';
+      data: {
+        /**
+         * The contract that emitted the event.
+         **/
+        contract: H160;
+
+        /**
+         * Data supplied by the contract. Metadata generated during contract compilation
+         * is needed to decode it.
+         **/
+        data: Bytes;
+
+        /**
+         * A list of topics used to index the event.
+         * Number of topics is capped by [`limits::NUM_EVENT_TOPICS`].
+         **/
+        topics: Array<H256>;
+      };
+    }
+  /**
+   * A code with the specified hash was removed.
+   **/
+  | { name: 'CodeRemoved'; data: { codeHash: H256; depositReleased: bigint; remover: H160 } }
+  /**
+   * A contract's code was updated.
+   **/
+  | {
+      name: 'ContractCodeUpdated';
+      data: {
+        /**
+         * The contract that has been updated.
+         **/
+        contract: H160;
+
+        /**
+         * New code hash that was set for the contract.
+         **/
+        newCodeHash: H256;
+
+        /**
+         * Previous code hash of the contract.
+         **/
+        oldCodeHash: H256;
+      };
+    }
+  /**
+   * A contract was called either by a plain account or another contract.
+   *
+   * # Note
+   *
+   * Please keep in mind that like all events this is only emitted for successful
+   * calls. This is because on failure all storage changes including events are
+   * rolled back.
+   **/
+  | {
+      name: 'Called';
+      data: {
+        /**
+         * The caller of the `contract`.
+         **/
+        caller: PalletReviveExecOrigin;
+
+        /**
+         * The contract that was called.
+         **/
+        contract: H160;
+      };
+    }
+  /**
+   * A contract delegate called a code hash.
+   *
+   * # Note
+   *
+   * Please keep in mind that like all events this is only emitted for successful
+   * calls. This is because on failure all storage changes including events are
+   * rolled back.
+   **/
+  | {
+      name: 'DelegateCalled';
+      data: {
+        /**
+         * The contract that performed the delegate call and hence in whose context
+         * the `code_hash` is executed.
+         **/
+        contract: H160;
+
+        /**
+         * The code hash that was delegate called.
+         **/
+        codeHash: H256;
+      };
+    }
+  /**
+   * Some funds have been transferred and held as storage deposit.
+   **/
+  | { name: 'StorageDepositTransferredAndHeld'; data: { from: H160; to: H160; amount: bigint } }
+  /**
+   * Some storage deposit funds have been transferred and released.
+   **/
+  | { name: 'StorageDepositTransferredAndReleased'; data: { from: H160; to: H160; amount: bigint } };
+
+export type PalletReviveExecOrigin = { type: 'Root' } | { type: 'Signed'; value: AccountId32 };
 
 export type FrameSystemLastRuntimeUpgradeInfo = { specVersion: number; specName: string };
 
@@ -19064,16 +20187,22 @@ export type PalletBalancesReasons = 'Fee' | 'Misc' | 'All';
 
 export type PalletBalancesReserveData = { id: FixedBytes<8>; amount: bigint };
 
-export type PalletBalancesIdAmount = { id: KitchensinkRuntimeRuntimeHoldReason; amount: bigint };
+export type FrameSupportTokensMiscIdAmount = { id: KitchensinkRuntimeRuntimeHoldReason; amount: bigint };
 
 export type KitchensinkRuntimeRuntimeHoldReason =
+  | { type: 'Council'; value: PalletCollectiveHoldReason }
+  | { type: 'TechnicalCommittee'; value: PalletCollectiveHoldReason }
   | { type: 'Contracts'; value: PalletContractsHoldReason }
   | { type: 'Preimage'; value: PalletPreimageHoldReason }
   | { type: 'Nis'; value: PalletNisHoldReason }
   | { type: 'NftFractionalization'; value: PalletNftFractionalizationHoldReason }
   | { type: 'TransactionStorage'; value: PalletTransactionStorageHoldReason }
   | { type: 'StateTrieMigration'; value: PalletStateTrieMigrationHoldReason }
-  | { type: 'SafeMode'; value: PalletSafeModeHoldReason };
+  | { type: 'AllianceMotion'; value: PalletCollectiveHoldReason }
+  | { type: 'SafeMode'; value: PalletSafeModeHoldReason }
+  | { type: 'Revive'; value: PalletReviveHoldReason };
+
+export type PalletCollectiveHoldReason = 'ProposalSubmission';
 
 export type PalletContractsHoldReason = 'CodeUploadDepositReserve' | 'StorageDepositReserve';
 
@@ -19089,7 +20218,12 @@ export type PalletStateTrieMigrationHoldReason = 'SlashForMigrate';
 
 export type PalletSafeModeHoldReason = 'EnterOrExtend';
 
-export type PalletBalancesIdAmountRuntimeFreezeReason = { id: KitchensinkRuntimeRuntimeFreezeReason; amount: bigint };
+export type PalletReviveHoldReason = 'CodeUploadDepositReserve' | 'StorageDepositReserve' | 'AddressMapping';
+
+export type FrameSupportTokensMiscIdAmountRuntimeFreezeReason = {
+  id: KitchensinkRuntimeRuntimeFreezeReason;
+  amount: bigint;
+};
 
 export type KitchensinkRuntimeRuntimeFreezeReason = {
   type: 'NominationPools';
@@ -19232,7 +20366,7 @@ export type PalletElectionProviderMultiPhaseError =
    **/
   | 'TooManyWinners'
   /**
-   * Sumission was prepared for a different round.
+   * Submission was prepared for a different round.
    **/
   | 'PreDispatchDifferentRound';
 
@@ -19243,8 +20377,6 @@ export type PalletStakingStakingLedger = {
   unlocking: Array<PalletStakingUnlockChunk>;
   legacyClaimedRewards: Array<number>;
 };
-
-export type PalletStakingUnlockChunk = { value: bigint; era: number };
 
 export type PalletStakingNominations = { targets: Array<AccountId32>; submittedIn: number; suppressed: boolean };
 
@@ -19388,7 +20520,23 @@ export type PalletStakingPalletError =
   /**
    * Used when attempting to use deprecated controller account logic.
    **/
-  | 'ControllerDeprecated';
+  | 'ControllerDeprecated'
+  /**
+   * Cannot reset a ledger.
+   **/
+  | 'CannotRestoreLedger'
+  /**
+   * Provided reward destination is not allowed.
+   **/
+  | 'RewardDestinationRestricted'
+  /**
+   * Not enough funds available to withdraw.
+   **/
+  | 'NotEnoughFunds'
+  /**
+   * Operation not allowed for virtual stakers.
+   **/
+  | 'VirtualStakerNotAllowed';
 
 export type SpCoreCryptoKeyTypeId = FixedBytes<4>;
 
@@ -19557,6 +20705,8 @@ export type PalletDemocracyError =
    **/
   | 'PreimageNotExist';
 
+export type FrameSupportTokensFungibleHoldConsideration = bigint;
+
 export type PalletCollectiveVotes = {
   index: number;
   threshold: number;
@@ -19612,7 +20762,11 @@ export type PalletCollectiveError =
   /**
    * Prime account is not a member
    **/
-  | 'PrimeAccountNotMember';
+  | 'PrimeAccountNotMember'
+  /**
+   * Proposal is still active.
+   **/
+  | 'ProposalActive';
 
 export type PalletElectionsPhragmenSeatHolder = { who: AccountId32; stake: bigint; deposit: bigint };
 
@@ -19759,7 +20913,7 @@ export type PalletGrandpaError =
 export type PalletTreasuryProposal = { proposer: AccountId32; value: bigint; beneficiary: AccountId32; bond: bigint };
 
 export type PalletTreasurySpendStatus = {
-  assetKind: number;
+  assetKind: FrameSupportTokensFungibleUnionOfNativeOrWithId;
   amount: bigint;
   beneficiary: AccountId32;
   validFrom: number;
@@ -19778,10 +20932,6 @@ export type FrameSupportPalletId = FixedBytes<8>;
  * Error for the treasury pallet.
  **/
 export type PalletTreasuryError =
-  /**
-   * Proposer's balance is too low.
-   **/
-  | 'InsufficientProposersBalance'
   /**
    * No proposal, bounty or spend at that index.
    **/
@@ -19869,7 +21019,6 @@ export type PalletContractsStorageDeletionQueueManager = { insertCounter: number
 export type PalletContractsSchedule = {
   limits: PalletContractsScheduleLimits;
   instructionWeights: PalletContractsScheduleInstructionWeights;
-  hostFnWeights: PalletContractsScheduleHostFnWeights;
 };
 
 export type PalletContractsScheduleLimits = {
@@ -19878,75 +21027,11 @@ export type PalletContractsScheduleLimits = {
   subjectLen: number;
   payloadLen: number;
   runtimeMemory: number;
+  validatorRuntimeMemory: number;
+  eventRefTime: bigint;
 };
 
 export type PalletContractsScheduleInstructionWeights = { base: number };
-
-export type PalletContractsScheduleHostFnWeights = {
-  caller: SpWeightsWeightV2Weight;
-  isContract: SpWeightsWeightV2Weight;
-  codeHash: SpWeightsWeightV2Weight;
-  ownCodeHash: SpWeightsWeightV2Weight;
-  callerIsOrigin: SpWeightsWeightV2Weight;
-  callerIsRoot: SpWeightsWeightV2Weight;
-  address: SpWeightsWeightV2Weight;
-  gasLeft: SpWeightsWeightV2Weight;
-  balance: SpWeightsWeightV2Weight;
-  valueTransferred: SpWeightsWeightV2Weight;
-  minimumBalance: SpWeightsWeightV2Weight;
-  blockNumber: SpWeightsWeightV2Weight;
-  now: SpWeightsWeightV2Weight;
-  weightToFee: SpWeightsWeightV2Weight;
-  input: SpWeightsWeightV2Weight;
-  inputPerByte: SpWeightsWeightV2Weight;
-  rReturn: SpWeightsWeightV2Weight;
-  returnPerByte: SpWeightsWeightV2Weight;
-  terminate: SpWeightsWeightV2Weight;
-  random: SpWeightsWeightV2Weight;
-  depositEvent: SpWeightsWeightV2Weight;
-  depositEventPerTopic: SpWeightsWeightV2Weight;
-  depositEventPerByte: SpWeightsWeightV2Weight;
-  debugMessage: SpWeightsWeightV2Weight;
-  debugMessagePerByte: SpWeightsWeightV2Weight;
-  setStorage: SpWeightsWeightV2Weight;
-  setStoragePerNewByte: SpWeightsWeightV2Weight;
-  setStoragePerOldByte: SpWeightsWeightV2Weight;
-  setCodeHash: SpWeightsWeightV2Weight;
-  clearStorage: SpWeightsWeightV2Weight;
-  clearStoragePerByte: SpWeightsWeightV2Weight;
-  containsStorage: SpWeightsWeightV2Weight;
-  containsStoragePerByte: SpWeightsWeightV2Weight;
-  getStorage: SpWeightsWeightV2Weight;
-  getStoragePerByte: SpWeightsWeightV2Weight;
-  takeStorage: SpWeightsWeightV2Weight;
-  takeStoragePerByte: SpWeightsWeightV2Weight;
-  transfer: SpWeightsWeightV2Weight;
-  call: SpWeightsWeightV2Weight;
-  delegateCall: SpWeightsWeightV2Weight;
-  callTransferSurcharge: SpWeightsWeightV2Weight;
-  callPerClonedByte: SpWeightsWeightV2Weight;
-  instantiate: SpWeightsWeightV2Weight;
-  instantiateTransferSurcharge: SpWeightsWeightV2Weight;
-  instantiatePerInputByte: SpWeightsWeightV2Weight;
-  instantiatePerSaltByte: SpWeightsWeightV2Weight;
-  hashSha2256: SpWeightsWeightV2Weight;
-  hashSha2256PerByte: SpWeightsWeightV2Weight;
-  hashKeccak256: SpWeightsWeightV2Weight;
-  hashKeccak256PerByte: SpWeightsWeightV2Weight;
-  hashBlake2256: SpWeightsWeightV2Weight;
-  hashBlake2256PerByte: SpWeightsWeightV2Weight;
-  hashBlake2128: SpWeightsWeightV2Weight;
-  hashBlake2128PerByte: SpWeightsWeightV2Weight;
-  ecdsaRecover: SpWeightsWeightV2Weight;
-  ecdsaToEthAddress: SpWeightsWeightV2Weight;
-  sr25519Verify: SpWeightsWeightV2Weight;
-  sr25519VerifyPerByte: SpWeightsWeightV2Weight;
-  reentranceCount: SpWeightsWeightV2Weight;
-  accountReentranceCount: SpWeightsWeightV2Weight;
-  instantiationNonce: SpWeightsWeightV2Weight;
-  lockDelegateDependency: SpWeightsWeightV2Weight;
-  unlockDelegateDependency: SpWeightsWeightV2Weight;
-};
 
 export type PalletContractsEnvironment = {
   accountId: PalletContractsEnvironmentType;
@@ -20079,6 +21164,10 @@ export type PalletContractsError =
    **/
   | 'ReentranceDenied'
   /**
+   * A contract attempted to invoke a state modifying API while being in read-only mode.
+   **/
+  | 'StateChangeDenied'
+  /**
    * Origin doesn't have enough balance to pay the required storage deposits.
    **/
   | 'StorageDepositNotEnoughFunds'
@@ -20109,7 +21198,7 @@ export type PalletContractsError =
    **/
   | 'CodeRejected'
   /**
-   * An indetermistic code was used in a context where this is not permitted.
+   * An indeterministic code was used in a context where this is not permitted.
    **/
   | 'Indeterministic'
   /**
@@ -20135,7 +21224,11 @@ export type PalletContractsError =
   /**
    * Can not add a delegate dependency to the code hash of the contract itself.
    **/
-  | 'CannotAddSelfAsDelegateDependency';
+  | 'CannotAddSelfAsDelegateDependency'
+  /**
+   * Can not add more data to transient storage.
+   **/
+  | 'OutOfTransientStorage';
 
 /**
  * Error for the Sudo pallet.
@@ -20172,7 +21265,14 @@ export type PalletIdentityRegistration = {
 
 export type PalletIdentityRegistrarInfo = { account: AccountId32; fee: bigint; fields: bigint };
 
-export type PalletIdentityAuthorityProperties = { suffix: Bytes; allocation: number };
+export type PalletIdentityAuthorityProperties = { accountId: AccountId32; allocation: number };
+
+export type PalletIdentityUsernameInformation = { owner: AccountId32; provider: PalletIdentityProvider };
+
+export type PalletIdentityProvider =
+  | { type: 'Allocation' }
+  | { type: 'AuthorityDeposit'; value: bigint }
+  | { type: 'System' };
 
 /**
  * The `Error` enum of this pallet.
@@ -20281,7 +21381,24 @@ export type PalletIdentityError =
   /**
    * The username cannot be forcefully removed because it can still be accepted.
    **/
-  | 'NotExpired';
+  | 'NotExpired'
+  /**
+   * The username cannot be removed because it's still in the grace period.
+   **/
+  | 'TooEarly'
+  /**
+   * The username cannot be removed because it is not unbinding.
+   **/
+  | 'NotUnbinding'
+  /**
+   * The username cannot be unbound because it is already unbinding.
+   **/
+  | 'AlreadyUnbinding'
+  /**
+   * The action cannot be performed because of insufficient privileges (e.g. authority
+   * trying to unbind a username provided by the system).
+   **/
+  | 'InsufficientPrivileges';
 
 export type PalletSocietyMemberRecord = {
   rank: number;
@@ -20619,8 +21736,6 @@ export type PalletPreimageRequestStatus =
       };
     };
 
-export type FrameSupportTokensFungibleHoldConsideration = bigint;
-
 /**
  * The `Error` enum of this pallet.
  **/
@@ -20786,7 +21901,8 @@ export type PalletBountiesBountyStatus =
   | { type: 'Funded' }
   | { type: 'CuratorProposed'; value: { curator: AccountId32 } }
   | { type: 'Active'; value: { curator: AccountId32; updateDue: number } }
-  | { type: 'PendingPayout'; value: { curator: AccountId32; beneficiary: AccountId32; unlockAt: number } };
+  | { type: 'PendingPayout'; value: { curator: AccountId32; beneficiary: AccountId32; unlockAt: number } }
+  | { type: 'ApprovedWithCurator'; value: { curator: AccountId32 } };
 
 /**
  * The `Error` enum of this pallet.
@@ -21010,7 +22126,11 @@ export type PalletAssetsError =
   /**
    * Callback action resulted in error
    **/
-  | 'CallbackFailed';
+  | 'CallbackFailed'
+  /**
+   * The asset ID must be equal to the [`NextAssetId`].
+   **/
+  | 'BadAssetId';
 
 /**
  * The `Error` enum of this pallet.
@@ -21021,9 +22141,21 @@ export type PalletBeefyError =
    **/
   | 'InvalidKeyOwnershipProof'
   /**
-   * An equivocation proof provided as part of an equivocation report is invalid.
+   * A double voting proof provided as part of an equivocation report is invalid.
    **/
-  | 'InvalidEquivocationProof'
+  | 'InvalidDoubleVotingProof'
+  /**
+   * A fork voting proof provided as part of an equivocation report is invalid.
+   **/
+  | 'InvalidForkVotingProof'
+  /**
+   * A future block voting proof provided as part of an equivocation report is invalid.
+   **/
+  | 'InvalidFutureBlockVotingProof'
+  /**
+   * The session of the equivocation proof is invalid
+   **/
+  | 'InvalidEquivocationProofSession'
   /**
    * A given equivocation report is valid but already previously reported.
    **/
@@ -21146,7 +22278,7 @@ export type PalletNisError =
    **/
   | 'Throttled'
   /**
-   * The operation would result in a receipt worth an insignficant value.
+   * The operation would result in a receipt worth an insignificant value.
    **/
   | 'MakesDust'
   /**
@@ -21666,7 +22798,7 @@ export type PalletTransactionStorageError =
    **/
   | 'MissingProof'
   /**
-   * Unable to verify proof becasue state data is missing.
+   * Unable to verify proof because state data is missing.
    **/
   | 'MissingStateData'
   /**
@@ -21840,7 +22972,11 @@ export type PalletReferendaError =
   /**
    * The preimage does not exist.
    **/
-  | 'PreimageNotExist';
+  | 'PreimageNotExist'
+  /**
+   * The preimage is stored with a different length than the one provided.
+   **/
+  | 'PreimageStoredWithDifferentLength';
 
 /**
  * The `Error` enum of this pallet.
@@ -22244,14 +23380,32 @@ export type PalletNominationPoolsError =
   /**
    * No imbalance in the ED deposit for the pool.
    **/
-  | { name: 'NothingToAdjust' };
+  | { name: 'NothingToAdjust' }
+  /**
+   * No slash pending that can be applied to the member.
+   **/
+  | { name: 'NothingToSlash' }
+  /**
+   * The pool or member delegation has already migrated to delegate stake.
+   **/
+  | { name: 'AlreadyMigrated' }
+  /**
+   * The pool or member delegation has not migrated yet to delegate stake.
+   **/
+  | { name: 'NotMigrated' }
+  /**
+   * This call is not allowed in the current state of the pallet.
+   **/
+  | { name: 'NotSupported' };
 
 export type PalletNominationPoolsDefensiveError =
   | 'NotEnoughSpaceInUnbondPool'
   | 'PoolNotFound'
   | 'RewardPoolNotFound'
   | 'SubPoolsNotFound'
-  | 'BondedStashKilledPrematurely';
+  | 'BondedStashKilledPrematurely'
+  | 'DelegationUnsupported'
+  | 'SlashNotApplied';
 
 export type PalletReferendaReferendumInfoTally =
   | { type: 'Ongoing'; value: PalletReferendaReferendumStatusTally }
@@ -22320,7 +23474,11 @@ export type PalletRankedCollectiveError =
   /**
    * The new member to exchange is the same as the old member
    **/
-  | 'SameMember';
+  | 'SameMember'
+  /**
+   * The max member count for the rank has been reached.
+   **/
+  | 'TooManyMembers';
 
 export type PalletAssetConversionPoolInfo = { lpToken: number };
 
@@ -22597,7 +23755,7 @@ export type PalletBrokerStatusRecord = {
 export type PalletBrokerSaleInfoRecord = {
   saleStart: number;
   leadinLength: number;
-  price: bigint;
+  endPrice: bigint;
   regionBegin: number;
   regionEnd: number;
   idealCoresSold: number;
@@ -22607,15 +23765,15 @@ export type PalletBrokerSaleInfoRecord = {
   coresSold: number;
 };
 
-export type PalletBrokerAllowedRenewalId = { core: number; when: number };
+export type PalletBrokerPotentialRenewalId = { core: number; when: number };
 
-export type PalletBrokerAllowedRenewalRecord = { price: bigint; completion: PalletBrokerCompletionStatus };
+export type PalletBrokerPotentialRenewalRecord = { price: bigint; completion: PalletBrokerCompletionStatus };
 
 export type PalletBrokerCompletionStatus =
   | { type: 'Partial'; value: PalletBrokerCoreMask }
   | { type: 'Complete'; value: Array<PalletBrokerScheduleItem> };
 
-export type PalletBrokerRegionRecord = { end: number; owner: AccountId32; paid?: bigint | undefined };
+export type PalletBrokerRegionRecord = { end: number; owner?: AccountId32 | undefined; paid?: bigint | undefined };
 
 export type PalletBrokerContributionRecord = { length: number; payee: AccountId32 };
 
@@ -22626,6 +23784,8 @@ export type PalletBrokerInstaPoolHistoryRecord = {
   systemContributions: number;
   maybePayout?: bigint | undefined;
 };
+
+export type PalletBrokerAutoRenewalRecord = { core: number; task: number; nextRenewal: number };
 
 /**
  * The `Error` enum of this pallet.
@@ -22745,7 +23905,31 @@ export type PalletBrokerError =
   /**
    * The configuration could not be applied because it is invalid.
    **/
-  | 'InvalidConfig';
+  | 'InvalidConfig'
+  /**
+   * The revenue must be claimed for 1 or more timeslices.
+   **/
+  | 'NoClaimTimeslices'
+  /**
+   * The caller doesn't have the permission to enable or disable auto-renewal.
+   **/
+  | 'NoPermission'
+  /**
+   * We reached the limit for auto-renewals.
+   **/
+  | 'TooManyAutoRenewals'
+  /**
+   * Only cores which are assigned to a task can be auto-renewed.
+   **/
+  | 'NonTaskAutoRenewal'
+  /**
+   * Failed to get the sovereign account of a task.
+   **/
+  | 'SovereignAccountNotFound'
+  /**
+   * Attempted to disable auto-renewal for a core that didn't have it enabled.
+   **/
+  | 'AutoRenewalNotEnabled';
 
 /**
  * The `Error` enum of this pallet.
@@ -22755,6 +23939,244 @@ export type PalletExampleTasksError =
    * The referenced task was not found.
    **/
   'NotFound';
+
+/**
+ * The `Error` enum of this pallet.
+ **/
+export type PalletAssetConversionOpsError =
+  /**
+   * Provided asset pair is not supported for pool.
+   **/
+  | 'InvalidAssetPair'
+  /**
+   * The pool doesn't exist.
+   **/
+  | 'PoolNotFound'
+  /**
+   * Pool's balance cannot be zero.
+   **/
+  | 'ZeroBalance'
+  /**
+   * Indicates a partial transfer of balance to the new account during a migration.
+   **/
+  | 'PartialTransfer';
+
+export type PalletReviveWasmCodeInfo = {
+  owner: AccountId32;
+  deposit: bigint;
+  refcount: bigint;
+  codeLen: number;
+  apiVersion: number;
+  behaviourVersion: number;
+};
+
+export type PalletReviveStorageContractInfo = {
+  trieId: Bytes;
+  codeHash: H256;
+  storageBytes: number;
+  storageItems: number;
+  storageByteDeposit: bigint;
+  storageItemDeposit: bigint;
+  storageBaseDeposit: bigint;
+  delegateDependencies: Array<[H256, bigint]>;
+  immutableDataLen: number;
+};
+
+export type PalletReviveStorageDeletionQueueManager = { insertCounter: number; deleteCounter: number };
+
+/**
+ * The `Error` enum of this pallet.
+ **/
+export type PalletReviveError =
+  /**
+   * Invalid schedule supplied, e.g. with zero weight of a basic operation.
+   **/
+  | 'InvalidSchedule'
+  /**
+   * Invalid combination of flags supplied to `seal_call` or `seal_delegate_call`.
+   **/
+  | 'InvalidCallFlags'
+  /**
+   * The executed contract exhausted its gas limit.
+   **/
+  | 'OutOfGas'
+  /**
+   * Performing the requested transfer failed. Probably because there isn't enough
+   * free balance in the sender's account.
+   **/
+  | 'TransferFailed'
+  /**
+   * Performing a call was denied because the calling depth reached the limit
+   * of what is specified in the schedule.
+   **/
+  | 'MaxCallDepthReached'
+  /**
+   * No contract was found at the specified address.
+   **/
+  | 'ContractNotFound'
+  /**
+   * No code could be found at the supplied code hash.
+   **/
+  | 'CodeNotFound'
+  /**
+   * No code info could be found at the supplied code hash.
+   **/
+  | 'CodeInfoNotFound'
+  /**
+   * A buffer outside of sandbox memory was passed to a contract API function.
+   **/
+  | 'OutOfBounds'
+  /**
+   * Input passed to a contract API function failed to decode as expected type.
+   **/
+  | 'DecodingFailed'
+  /**
+   * Contract trapped during execution.
+   **/
+  | 'ContractTrapped'
+  /**
+   * The size defined in `T::MaxValueSize` was exceeded.
+   **/
+  | 'ValueTooLarge'
+  /**
+   * Termination of a contract is not allowed while the contract is already
+   * on the call stack. Can be triggered by `seal_terminate`.
+   **/
+  | 'TerminatedWhileReentrant'
+  /**
+   * `seal_call` forwarded this contracts input. It therefore is no longer available.
+   **/
+  | 'InputForwarded'
+  /**
+   * The amount of topics passed to `seal_deposit_events` exceeds the limit.
+   **/
+  | 'TooManyTopics'
+  /**
+   * The chain does not provide a chain extension. Calling the chain extension results
+   * in this error. Note that this usually shouldn't happen as deploying such contracts
+   * is rejected.
+   **/
+  | 'NoChainExtension'
+  /**
+   * Failed to decode the XCM program.
+   **/
+  | 'XcmDecodeFailed'
+  /**
+   * A contract with the same AccountId already exists.
+   **/
+  | 'DuplicateContract'
+  /**
+   * A contract self destructed in its constructor.
+   *
+   * This can be triggered by a call to `seal_terminate`.
+   **/
+  | 'TerminatedInConstructor'
+  /**
+   * A call tried to invoke a contract that is flagged as non-reentrant.
+   **/
+  | 'ReentranceDenied'
+  /**
+   * A contract called into the runtime which then called back into this pallet.
+   **/
+  | 'ReenteredPallet'
+  /**
+   * A contract attempted to invoke a state modifying API while being in read-only mode.
+   **/
+  | 'StateChangeDenied'
+  /**
+   * Origin doesn't have enough balance to pay the required storage deposits.
+   **/
+  | 'StorageDepositNotEnoughFunds'
+  /**
+   * More storage was created than allowed by the storage deposit limit.
+   **/
+  | 'StorageDepositLimitExhausted'
+  /**
+   * Code removal was denied because the code is still in use by at least one contract.
+   **/
+  | 'CodeInUse'
+  /**
+   * The contract ran to completion but decided to revert its storage changes.
+   * Please note that this error is only returned from extrinsics. When called directly
+   * or via RPC an `Ok` will be returned. In this case the caller needs to inspect the flags
+   * to determine whether a reversion has taken place.
+   **/
+  | 'ContractReverted'
+  /**
+   * The contract failed to compile or is missing the correct entry points.
+   *
+   * A more detailed error can be found on the node console if debug messages are enabled
+   * by supplying `-lruntime::revive=debug`.
+   **/
+  | 'CodeRejected'
+  /**
+   * The code blob supplied is larger than [`limits::code::BLOB_BYTES`].
+   **/
+  | 'BlobTooLarge'
+  /**
+   * The static memory consumption of the blob will be larger than
+   * [`limits::code::STATIC_MEMORY_BYTES`].
+   **/
+  | 'StaticMemoryTooLarge'
+  /**
+   * The program contains a basic block that is larger than allowed.
+   **/
+  | 'BasicBlockTooLarge'
+  /**
+   * The program contains an invalid instruction.
+   **/
+  | 'InvalidInstruction'
+  /**
+   * The contract has reached its maximum number of delegate dependencies.
+   **/
+  | 'MaxDelegateDependenciesReached'
+  /**
+   * The dependency was not found in the contract's delegate dependencies.
+   **/
+  | 'DelegateDependencyNotFound'
+  /**
+   * The contract already depends on the given delegate dependency.
+   **/
+  | 'DelegateDependencyAlreadyExists'
+  /**
+   * Can not add a delegate dependency to the code hash of the contract itself.
+   **/
+  | 'CannotAddSelfAsDelegateDependency'
+  /**
+   * Can not add more data to transient storage.
+   **/
+  | 'OutOfTransientStorage'
+  /**
+   * The contract tried to call a syscall which does not exist (at its current api level).
+   **/
+  | 'InvalidSyscall'
+  /**
+   * Invalid storage flags were passed to one of the storage syscalls.
+   **/
+  | 'InvalidStorageFlags'
+  /**
+   * PolkaVM failed during code execution. Probably due to a malformed program.
+   **/
+  | 'ExecutionFailed'
+  /**
+   * Failed to convert a U256 to a Balance.
+   **/
+  | 'BalanceConversionFailed'
+  /**
+   * Immutable data can only be set during deploys and only be read during calls.
+   * Additionally, it is only valid to set the data once and it must not be empty.
+   **/
+  | 'InvalidImmutableAccess'
+  /**
+   * An `AccountID32` account tried to interact with the pallet without having a mapping.
+   *
+   * Call [`Pallet::map_account`] in order to create a mapping for the account.
+   **/
+  | 'AccountUnmapped'
+  /**
+   * Tried to map an account that is already mapped.
+   **/
+  | 'AccountAlreadyMapped';
 
 export type FrameSystemExtensionsCheckNonZeroSender = {};
 
@@ -22770,7 +24192,14 @@ export type FrameSystemExtensionsCheckNonce = number;
 
 export type FrameSystemExtensionsCheckWeight = {};
 
-export type PalletAssetConversionTxPaymentChargeAssetTxPayment = { tip: bigint; assetId?: number | undefined };
+export type PalletAssetConversionTxPaymentChargeAssetTxPayment = {
+  tip: bigint;
+  assetId?: FrameSupportTokensFungibleUnionOfNativeOrWithId | undefined;
+};
+
+export type FrameMetadataHashExtensionCheckMetadataHash = { mode: FrameMetadataHashExtensionMode };
+
+export type FrameMetadataHashExtensionMode = 'Disabled' | 'Enabled';
 
 export type SpRuntimeBlock = { header: Header; extrinsics: Array<UncheckedExtrinsic> };
 
@@ -22793,7 +24222,9 @@ export type SpRuntimeTransactionValidityInvalidTransaction =
   | { type: 'Custom'; value: number }
   | { type: 'BadMandatory' }
   | { type: 'MandatoryValidation' }
-  | { type: 'BadSigner' };
+  | { type: 'BadSigner' }
+  | { type: 'IndeterminateImplicit' }
+  | { type: 'UnknownOrigin' };
 
 export type SpRuntimeTransactionValidityUnknownTransaction =
   | { type: 'CannotLookup' }
@@ -22820,7 +24251,7 @@ export type SpStatementStoreRuntimeApiValidStatement = { maxCount: number; maxSi
 
 export type SpStatementStoreRuntimeApiInvalidStatement = 'BadProof' | 'NoProof' | 'InternalError';
 
-export type SpConsensusGrandpaOpaqueKeyOwnershipProof = Bytes;
+export type SpRuntimeOpaqueValue = Bytes;
 
 export type SpConsensusBabeBabeConfiguration = {
   slotDuration: bigint;
@@ -22879,6 +24310,50 @@ export type PalletContractsPrimitivesCodeUploadReturnValue = { codeHash: H256; d
 
 export type PalletContractsPrimitivesContractAccessError = 'DoesntExist' | 'KeyDecodingFailed' | 'MigrationInProgress';
 
+export type PalletRevivePrimitivesContractResult = {
+  gasConsumed: SpWeightsWeightV2Weight;
+  gasRequired: SpWeightsWeightV2Weight;
+  storageDeposit: PalletRevivePrimitivesStorageDeposit;
+  debugMessage: Bytes;
+  result: Result<PalletRevivePrimitivesExecReturnValue, DispatchError>;
+  events?: Array<FrameSystemEventRecord> | undefined;
+};
+
+export type PalletRevivePrimitivesExecReturnValue = { flags: PalletReviveUapiFlagsReturnFlags; data: Bytes };
+
+export type PalletReviveUapiFlagsReturnFlags = { bits: number };
+
+export type PalletRevivePrimitivesStorageDeposit =
+  | { type: 'Refund'; value: bigint }
+  | { type: 'Charge'; value: bigint };
+
+export type PalletRevivePrimitivesCode = { type: 'Upload'; value: Bytes } | { type: 'Existing'; value: H256 };
+
+export type PalletRevivePrimitivesContractResultInstantiateReturnValue = {
+  gasConsumed: SpWeightsWeightV2Weight;
+  gasRequired: SpWeightsWeightV2Weight;
+  storageDeposit: PalletRevivePrimitivesStorageDeposit;
+  debugMessage: Bytes;
+  result: Result<PalletRevivePrimitivesInstantiateReturnValue, DispatchError>;
+  events?: Array<FrameSystemEventRecord> | undefined;
+};
+
+export type PalletRevivePrimitivesInstantiateReturnValue = {
+  result: PalletRevivePrimitivesExecReturnValue;
+  addr: H160;
+};
+
+export type PalletRevivePrimitivesEthContractResult = {
+  fee: bigint;
+  gasRequired: SpWeightsWeightV2Weight;
+  storageDeposit: bigint;
+  result: Result<Bytes, DispatchError>;
+};
+
+export type PalletRevivePrimitivesCodeUploadReturnValue = { codeHash: H256; deposit: bigint };
+
+export type PalletRevivePrimitivesContractAccessError = 'DoesntExist' | 'KeyDecodingFailed';
+
 export type PalletTransactionPaymentRuntimeDispatchInfo = {
   weight: SpWeightsWeightV2Weight;
   class: FrameSupportDispatchDispatchClass;
@@ -22894,7 +24369,11 @@ export type PalletTransactionPaymentInclusionFee = { baseFee: bigint; lenFee: bi
 
 export type SpConsensusBeefyValidatorSet = { validators: Array<SpConsensusBeefyEcdsaCryptoPublic>; id: bigint };
 
-export type SpConsensusBeefyOpaqueKeyOwnershipProof = Bytes;
+export type SpConsensusBeefyForkVotingProofOpaqueValue = {
+  vote: SpConsensusBeefyVoteMessage;
+  ancestryProof: SpRuntimeOpaqueValue;
+  header: Header;
+};
 
 export type SpMmrPrimitivesError =
   | 'InvalidNumericOp'
@@ -22910,7 +24389,7 @@ export type SpMmrPrimitivesError =
 
 export type SpMmrPrimitivesEncodableOpaqueLeaf = Bytes;
 
-export type SpMmrPrimitivesProof = { leafIndices: Array<bigint>; leafCount: bigint; items: Array<H256> };
+export type SpMmrPrimitivesLeafProof = { leafIndices: Array<bigint>; leafCount: bigint; items: Array<H256> };
 
 export type SpMixnetSessionStatus = { currentIndex: number; phase: SpMixnetSessionPhase };
 
@@ -22981,4 +24460,6 @@ export type KitchensinkRuntimeRuntimeError =
   | { pallet: 'SafeMode'; palletError: PalletSafeModeError }
   | { pallet: 'MultiBlockMigrations'; palletError: PalletMigrationsError }
   | { pallet: 'Broker'; palletError: PalletBrokerError }
-  | { pallet: 'TasksExample'; palletError: PalletExampleTasksError };
+  | { pallet: 'TasksExample'; palletError: PalletExampleTasksError }
+  | { pallet: 'AssetConversionMigration'; palletError: PalletAssetConversionOpsError }
+  | { pallet: 'Revive'; palletError: PalletReviveError };

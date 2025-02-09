@@ -4,10 +4,10 @@ import type {
   AccountId32,
   Bytes,
   DispatchError,
-  DispatchInfo,
   FixedBytes,
   FixedU128,
   FixedU64,
+  H160,
   H256,
   Perbill,
   Permill,
@@ -21,6 +21,8 @@ import type {
   FrameSupportPreimagesBounded,
   FrameSupportTokensFungibleUnionOfNativeOrWithId,
   FrameSupportTokensMiscBalanceStatus,
+  FrameSystemDispatchEventInfo,
+  KitchensinkRuntimeOriginCaller,
   KitchensinkRuntimeProxyType,
   KitchensinkRuntimeRuntimeParametersKey,
   KitchensinkRuntimeRuntimeParametersValue,
@@ -31,6 +33,7 @@ import type {
   PalletBrokerScheduleItem,
   PalletContractsOrigin,
   PalletConvictionVotingTally,
+  PalletConvictionVotingVoteAccountVote,
   PalletCoreFellowshipParamsType,
   PalletCoreFellowshipWish,
   PalletDemocracyMetadataOwner,
@@ -48,6 +51,7 @@ import type {
   PalletNominationPoolsPoolState,
   PalletRankedCollectiveTally,
   PalletRankedCollectiveVoteRecord,
+  PalletReviveExecOrigin,
   PalletSafeModeExitReason,
   PalletSocietyGroupParams,
   PalletStakingForcing,
@@ -71,7 +75,12 @@ export interface ChainEvents<Rv extends RpcVersion> extends GenericChainEvents<R
     /**
      * An extrinsic completed successfully.
      **/
-    ExtrinsicSuccess: GenericPalletEvent<Rv, 'System', 'ExtrinsicSuccess', { dispatchInfo: DispatchInfo }>;
+    ExtrinsicSuccess: GenericPalletEvent<
+      Rv,
+      'System',
+      'ExtrinsicSuccess',
+      { dispatchInfo: FrameSystemDispatchEventInfo }
+    >;
 
     /**
      * An extrinsic failed.
@@ -80,7 +89,7 @@ export interface ChainEvents<Rv extends RpcVersion> extends GenericChainEvents<R
       Rv,
       'System',
       'ExtrinsicFailed',
-      { dispatchError: DispatchError; dispatchInfo: DispatchInfo }
+      { dispatchError: DispatchError; dispatchInfo: FrameSystemDispatchEventInfo }
     >;
 
     /**
@@ -324,26 +333,6 @@ export interface ChainEvents<Rv extends RpcVersion> extends GenericChainEvents<R
     [prop: string]: GenericPalletEvent<Rv>;
   };
   /**
-   * Pallet `AssetTxPayment`'s events
-   **/
-  assetTxPayment: {
-    /**
-     * A transaction fee `actual_fee`, of which `tip` was added to the minimum inclusion fee,
-     * has been paid by `who` in an asset `asset_id`.
-     **/
-    AssetTxFeePaid: GenericPalletEvent<
-      Rv,
-      'AssetTxPayment',
-      'AssetTxFeePaid',
-      { who: AccountId32; actualFee: bigint; tip: bigint; assetId?: number | undefined }
-    >;
-
-    /**
-     * Generic pallet event
-     **/
-    [prop: string]: GenericPalletEvent<Rv>;
-  };
-  /**
    * Pallet `AssetConversionTxPayment`'s events
    **/
   assetConversionTxPayment: {
@@ -355,7 +344,7 @@ export interface ChainEvents<Rv extends RpcVersion> extends GenericChainEvents<R
       Rv,
       'AssetConversionTxPayment',
       'AssetTxFeePaid',
-      { who: AccountId32; actualFee: bigint; tip: bigint; assetId: number }
+      { who: AccountId32; actualFee: bigint; tip: bigint; assetId: FrameSupportTokensFungibleUnionOfNativeOrWithId }
     >;
 
     /**
@@ -381,7 +370,7 @@ export interface ChainEvents<Rv extends RpcVersion> extends GenericChainEvents<R
      * A solution was stored with the given compute.
      *
      * The `origin` indicates the origin of the solution. If `origin` is `Some(AccountId)`,
-     * the stored solution was submited in the signed phase by a miner with the `AccountId`.
+     * the stored solution was submitted in the signed phase by a miner with the `AccountId`.
      * Otherwise, the solution was stored either during the unsigned phase or by
      * `T::ForceOrigin`. The `bool` is `true` when a previous solution was ejected to make
      * room for this one.
@@ -531,13 +520,13 @@ export interface ChainEvents<Rv extends RpcVersion> extends GenericChainEvents<R
     Chilled: GenericPalletEvent<Rv, 'Staking', 'Chilled', { stash: AccountId32 }>;
 
     /**
-     * The stakers' rewards are getting paid.
+     * A Page of stakers rewards are getting paid. `next` is `None` if all pages are claimed.
      **/
     PayoutStarted: GenericPalletEvent<
       Rv,
       'Staking',
       'PayoutStarted',
-      { eraIndex: number; validatorStash: AccountId32 }
+      { eraIndex: number; validatorStash: AccountId32; page: number; next?: number | undefined }
     >;
 
     /**
@@ -665,7 +654,7 @@ export interface ChainEvents<Rv extends RpcVersion> extends GenericChainEvents<R
     >;
 
     /**
-     * An account has secconded a proposal
+     * An account has seconded a proposal
      **/
     Seconded: GenericPalletEvent<Rv, 'Democracy', 'Seconded', { seconder: AccountId32; propIndex: number }>;
 
@@ -801,6 +790,31 @@ export interface ChainEvents<Rv extends RpcVersion> extends GenericChainEvents<R
     Closed: GenericPalletEvent<Rv, 'Council', 'Closed', { proposalHash: H256; yes: number; no: number }>;
 
     /**
+     * A proposal was killed.
+     **/
+    Killed: GenericPalletEvent<Rv, 'Council', 'Killed', { proposalHash: H256 }>;
+
+    /**
+     * Some cost for storing a proposal was burned.
+     **/
+    ProposalCostBurned: GenericPalletEvent<
+      Rv,
+      'Council',
+      'ProposalCostBurned',
+      { proposalHash: H256; who: AccountId32 }
+    >;
+
+    /**
+     * Some cost for storing a proposal was released.
+     **/
+    ProposalCostReleased: GenericPalletEvent<
+      Rv,
+      'Council',
+      'ProposalCostReleased',
+      { proposalHash: H256; who: AccountId32 }
+    >;
+
+    /**
      * Generic pallet event
      **/
     [prop: string]: GenericPalletEvent<Rv>;
@@ -865,6 +879,31 @@ export interface ChainEvents<Rv extends RpcVersion> extends GenericChainEvents<R
      * A proposal was closed because its threshold was reached or after its duration was up.
      **/
     Closed: GenericPalletEvent<Rv, 'TechnicalCommittee', 'Closed', { proposalHash: H256; yes: number; no: number }>;
+
+    /**
+     * A proposal was killed.
+     **/
+    Killed: GenericPalletEvent<Rv, 'TechnicalCommittee', 'Killed', { proposalHash: H256 }>;
+
+    /**
+     * Some cost for storing a proposal was burned.
+     **/
+    ProposalCostBurned: GenericPalletEvent<
+      Rv,
+      'TechnicalCommittee',
+      'ProposalCostBurned',
+      { proposalHash: H256; who: AccountId32 }
+    >;
+
+    /**
+     * Some cost for storing a proposal was released.
+     **/
+    ProposalCostReleased: GenericPalletEvent<
+      Rv,
+      'TechnicalCommittee',
+      'ProposalCostReleased',
+      { proposalHash: H256; who: AccountId32 }
+    >;
 
     /**
      * Generic pallet event
@@ -1007,11 +1046,6 @@ export interface ChainEvents<Rv extends RpcVersion> extends GenericChainEvents<R
    **/
   treasury: {
     /**
-     * New proposal.
-     **/
-    Proposed: GenericPalletEvent<Rv, 'Treasury', 'Proposed', { proposalIndex: number }>;
-
-    /**
      * We have ended a spend period and will now allocate funds.
      **/
     Spending: GenericPalletEvent<Rv, 'Treasury', 'Spending', { budgetRemaining: bigint }>;
@@ -1025,11 +1059,6 @@ export interface ChainEvents<Rv extends RpcVersion> extends GenericChainEvents<R
       'Awarded',
       { proposalIndex: number; award: bigint; account: AccountId32 }
     >;
-
-    /**
-     * A proposal was rejected; funds were slashed.
-     **/
-    Rejected: GenericPalletEvent<Rv, 'Treasury', 'Rejected', { proposalIndex: number; slashed: bigint }>;
 
     /**
      * Some of our funds have been burnt.
@@ -1075,7 +1104,7 @@ export interface ChainEvents<Rv extends RpcVersion> extends GenericChainEvents<R
       'AssetSpendApproved',
       {
         index: number;
-        assetKind: number;
+        assetKind: FrameSupportTokensFungibleUnionOfNativeOrWithId;
         amount: bigint;
         beneficiary: AccountId32;
         validFrom: number;
@@ -1113,13 +1142,23 @@ export interface ChainEvents<Rv extends RpcVersion> extends GenericChainEvents<R
    * Pallet `AssetRate`'s events
    **/
   assetRate: {
-    AssetRateCreated: GenericPalletEvent<Rv, 'AssetRate', 'AssetRateCreated', { assetKind: number; rate: FixedU128 }>;
-    AssetRateRemoved: GenericPalletEvent<Rv, 'AssetRate', 'AssetRateRemoved', { assetKind: number }>;
+    AssetRateCreated: GenericPalletEvent<
+      Rv,
+      'AssetRate',
+      'AssetRateCreated',
+      { assetKind: FrameSupportTokensFungibleUnionOfNativeOrWithId; rate: FixedU128 }
+    >;
+    AssetRateRemoved: GenericPalletEvent<
+      Rv,
+      'AssetRate',
+      'AssetRateRemoved',
+      { assetKind: FrameSupportTokensFungibleUnionOfNativeOrWithId }
+    >;
     AssetRateUpdated: GenericPalletEvent<
       Rv,
       'AssetRate',
       'AssetRateUpdated',
-      { assetKind: number; old: FixedU128; new: FixedU128 }
+      { assetKind: FrameSupportTokensFungibleUnionOfNativeOrWithId; old: FixedU128; new: FixedU128 }
     >;
 
     /**
@@ -1484,6 +1523,26 @@ export interface ChainEvents<Rv extends RpcVersion> extends GenericChainEvents<R
     >;
 
     /**
+     * An account's sub-identities were set (in bulk).
+     **/
+    SubIdentitiesSet: GenericPalletEvent<
+      Rv,
+      'Identity',
+      'SubIdentitiesSet',
+      { main: AccountId32; numberOfSubs: number; newDeposit: bigint }
+    >;
+
+    /**
+     * A given sub-account's associated name was changed by its super-identity.
+     **/
+    SubIdentityRenamed: GenericPalletEvent<
+      Rv,
+      'Identity',
+      'SubIdentityRenamed',
+      { sub: AccountId32; main: AccountId32 }
+    >;
+
+    /**
      * A sub-identity was removed from an identity and the deposit freed.
      **/
     SubIdentityRemoved: GenericPalletEvent<
@@ -1549,6 +1608,21 @@ export interface ChainEvents<Rv extends RpcVersion> extends GenericChainEvents<R
       'DanglingUsernameRemoved',
       { who: AccountId32; username: Bytes }
     >;
+
+    /**
+     * A username has been unbound.
+     **/
+    UsernameUnbound: GenericPalletEvent<Rv, 'Identity', 'UsernameUnbound', { username: Bytes }>;
+
+    /**
+     * A username has been removed.
+     **/
+    UsernameRemoved: GenericPalletEvent<Rv, 'Identity', 'UsernameRemoved', { username: Bytes }>;
+
+    /**
+     * A username has been killed.
+     **/
+    UsernameKilled: GenericPalletEvent<Rv, 'Identity', 'UsernameKilled', { username: Bytes }>;
 
     /**
      * Generic pallet event
@@ -1877,6 +1951,21 @@ export interface ChainEvents<Rv extends RpcVersion> extends GenericChainEvents<R
          * The storage limit.
          **/
         storage: FixedU64;
+      }
+    >;
+
+    /**
+     * The block length limit has been updated.
+     **/
+    BlockLengthLimitSet: GenericPalletEvent<
+      Rv,
+      'Glutton',
+      'BlockLengthLimitSet',
+      {
+        /**
+         * The block length limit.
+         **/
+        blockLength: FixedU64;
       }
     >;
 
@@ -2288,6 +2377,16 @@ export interface ChainEvents<Rv extends RpcVersion> extends GenericChainEvents<R
     Blocked: GenericPalletEvent<Rv, 'Assets', 'Blocked', { assetId: number; who: AccountId32 }>;
 
     /**
+     * Some assets were deposited (e.g. for transaction fees).
+     **/
+    Deposited: GenericPalletEvent<Rv, 'Assets', 'Deposited', { assetId: number; who: AccountId32; amount: bigint }>;
+
+    /**
+     * Some assets were withdrawn from the account (e.g. for transaction fees).
+     **/
+    Withdrawn: GenericPalletEvent<Rv, 'Assets', 'Withdrawn', { assetId: number; who: AccountId32; amount: bigint }>;
+
+    /**
      * Generic pallet event
      **/
     [prop: string]: GenericPalletEvent<Rv>;
@@ -2473,6 +2572,16 @@ export interface ChainEvents<Rv extends RpcVersion> extends GenericChainEvents<R
     Blocked: GenericPalletEvent<Rv, 'PoolAssets', 'Blocked', { assetId: number; who: AccountId32 }>;
 
     /**
+     * Some assets were deposited (e.g. for transaction fees).
+     **/
+    Deposited: GenericPalletEvent<Rv, 'PoolAssets', 'Deposited', { assetId: number; who: AccountId32; amount: bigint }>;
+
+    /**
+     * Some assets were withdrawn from the account (e.g. for transaction fees).
+     **/
+    Withdrawn: GenericPalletEvent<Rv, 'PoolAssets', 'Withdrawn', { assetId: number; who: AccountId32; amount: bigint }>;
+
+    /**
      * Generic pallet event
      **/
     [prop: string]: GenericPalletEvent<Rv>;
@@ -2601,7 +2710,7 @@ export interface ChainEvents<Rv extends RpcVersion> extends GenericChainEvents<R
     Funded: GenericPalletEvent<Rv, 'Nis', 'Funded', { deficit: bigint }>;
 
     /**
-     * A receipt was transfered.
+     * A receipt was transferred.
      **/
     Transferred: GenericPalletEvent<Rv, 'Nis', 'Transferred', { from: AccountId32; to: AccountId32; index: number }>;
 
@@ -3852,6 +3961,26 @@ export interface ChainEvents<Rv extends RpcVersion> extends GenericChainEvents<R
     Undelegated: GenericPalletEvent<Rv, 'ConvictionVoting', 'Undelegated', AccountId32>;
 
     /**
+     * An account that has voted
+     **/
+    Voted: GenericPalletEvent<
+      Rv,
+      'ConvictionVoting',
+      'Voted',
+      { who: AccountId32; vote: PalletConvictionVotingVoteAccountVote }
+    >;
+
+    /**
+     * A vote that been removed
+     **/
+    VoteRemoved: GenericPalletEvent<
+      Rv,
+      'ConvictionVoting',
+      'VoteRemoved',
+      { who: AccountId32; vote: PalletConvictionVotingVoteAccountVote }
+    >;
+
+    /**
      * Generic pallet event
      **/
     [prop: string]: GenericPalletEvent<Rv>;
@@ -3934,6 +4063,31 @@ export interface ChainEvents<Rv extends RpcVersion> extends GenericChainEvents<R
      * A proposal was closed because its threshold was reached or after its duration was up.
      **/
     Closed: GenericPalletEvent<Rv, 'AllianceMotion', 'Closed', { proposalHash: H256; yes: number; no: number }>;
+
+    /**
+     * A proposal was killed.
+     **/
+    Killed: GenericPalletEvent<Rv, 'AllianceMotion', 'Killed', { proposalHash: H256 }>;
+
+    /**
+     * Some cost for storing a proposal was burned.
+     **/
+    ProposalCostBurned: GenericPalletEvent<
+      Rv,
+      'AllianceMotion',
+      'ProposalCostBurned',
+      { proposalHash: H256; who: AccountId32 }
+    >;
+
+    /**
+     * Some cost for storing a proposal was released.
+     **/
+    ProposalCostReleased: GenericPalletEvent<
+      Rv,
+      'AllianceMotion',
+      'ProposalCostReleased',
+      { proposalHash: H256; who: AccountId32 }
+    >;
 
     /**
      * Generic pallet event
@@ -4137,8 +4291,15 @@ export interface ChainEvents<Rv extends RpcVersion> extends GenericChainEvents<R
      * A member has been removed from a pool.
      *
      * The removal can be voluntary (withdrawn all unbonded funds) or involuntary (kicked).
+     * Any funds that are still delegated (i.e. dangling delegation) are released and are
+     * represented by `released_balance`.
      **/
-    MemberRemoved: GenericPalletEvent<Rv, 'NominationPools', 'MemberRemoved', { poolId: number; member: AccountId32 }>;
+    MemberRemoved: GenericPalletEvent<
+      Rv,
+      'NominationPools',
+      'MemberRemoved',
+      { poolId: number; member: AccountId32; releasedBalance: bigint }
+    >;
 
     /**
      * The roles of a pool have been updated to the given new roles. Note that the depositor
@@ -4627,7 +4788,7 @@ export interface ChainEvents<Rv extends RpcVersion> extends GenericChainEvents<R
    **/
   assetConversion: {
     /**
-     * A successful call of the `CretaPool` extrinsic will create this event.
+     * A successful call of the `CreatePool` extrinsic will create this event.
      **/
     PoolCreated: GenericPalletEvent<
       Rv,
@@ -4813,6 +4974,26 @@ export interface ChainEvents<Rv extends RpcVersion> extends GenericChainEvents<R
          * E.g. (A, amount_in) -> (Dot, amount_out) -> (B, amount_out)
          **/
         path: Array<[FrameSupportTokensFungibleUnionOfNativeOrWithId, bigint]>;
+      }
+    >;
+
+    /**
+     * Pool has been touched in order to fulfill operational requirements.
+     **/
+    Touched: GenericPalletEvent<
+      Rv,
+      'AssetConversion',
+      'Touched',
+      {
+        /**
+         * The ID of the pool.
+         **/
+        poolId: [FrameSupportTokensFungibleUnionOfNativeOrWithId, FrameSupportTokensFungibleUnionOfNativeOrWithId];
+
+        /**
+         * The account initiating the touch.
+         **/
+        who: AccountId32;
       }
     >;
 
@@ -5354,12 +5535,12 @@ export interface ChainEvents<Rv extends RpcVersion> extends GenericChainEvents<R
         /**
          * The old owner of the Region.
          **/
-        oldOwner: AccountId32;
+        oldOwner?: AccountId32 | undefined;
 
         /**
          * The new owner of the Region.
          **/
-        owner: AccountId32;
+        owner?: AccountId32 | undefined;
       }
     >;
 
@@ -5544,7 +5725,7 @@ export interface ChainEvents<Rv extends RpcVersion> extends GenericChainEvents<R
         /**
          * The price of Bulk Coretime after the Leadin Period.
          **/
-        regularPrice: bigint;
+        endPrice: bigint;
 
         /**
          * The first timeslice of the Regions which are being sold in this sale.
@@ -5558,8 +5739,7 @@ export interface ChainEvents<Rv extends RpcVersion> extends GenericChainEvents<R
         regionEnd: number;
 
         /**
-         * The number of cores we want to sell, ideally. Selling this amount would result in
-         * no change to the price for the next sale.
+         * The number of cores we want to sell, ideally.
          **/
         idealCoresSold: number;
 
@@ -5877,10 +6057,10 @@ export interface ChainEvents<Rv extends RpcVersion> extends GenericChainEvents<R
     /**
      * Some historical Instantaneous Core Pool payment record has been dropped.
      **/
-    AllowedRenewalDropped: GenericPalletEvent<
+    PotentialRenewalDropped: GenericPalletEvent<
       Rv,
       'Broker',
-      'AllowedRenewalDropped',
+      'PotentialRenewalDropped',
       {
         /**
          * The timeslice whose renewal is no longer available.
@@ -5893,6 +6073,69 @@ export interface ChainEvents<Rv extends RpcVersion> extends GenericChainEvents<R
         core: number;
       }
     >;
+    AutoRenewalEnabled: GenericPalletEvent<
+      Rv,
+      'Broker',
+      'AutoRenewalEnabled',
+      {
+        /**
+         * The core for which the renewal was enabled.
+         **/
+        core: number;
+
+        /**
+         * The task for which the renewal was enabled.
+         **/
+        task: number;
+      }
+    >;
+    AutoRenewalDisabled: GenericPalletEvent<
+      Rv,
+      'Broker',
+      'AutoRenewalDisabled',
+      {
+        /**
+         * The core for which the renewal was disabled.
+         **/
+        core: number;
+
+        /**
+         * The task for which the renewal was disabled.
+         **/
+        task: number;
+      }
+    >;
+
+    /**
+     * Failed to auto-renew a core, likely due to the payer account not being sufficiently
+     * funded.
+     **/
+    AutoRenewalFailed: GenericPalletEvent<
+      Rv,
+      'Broker',
+      'AutoRenewalFailed',
+      {
+        /**
+         * The core for which the renewal failed.
+         **/
+        core: number;
+
+        /**
+         * The account which was supposed to pay for renewal.
+         *
+         * If `None` it indicates that we failed to get the sovereign account of a task.
+         **/
+        payer?: AccountId32 | undefined;
+      }
+    >;
+
+    /**
+     * The auto-renewal limit has been reached upon renewing cores.
+     *
+     * This should never happen, given that enable_auto_renew checks for this before enabling
+     * auto-renewal.
+     **/
+    AutoRenewalLimitReached: GenericPalletEvent<Rv, 'Broker', 'AutoRenewalLimitReached', null>;
 
     /**
      * Generic pallet event
@@ -5942,7 +6185,220 @@ export interface ChainEvents<Rv extends RpcVersion> extends GenericChainEvents<R
     /**
      * A transaction fee was skipped.
      **/
-    FeeSkipped: GenericPalletEvent<Rv, 'SkipFeelessPayment', 'FeeSkipped', { who: AccountId32 }>;
+    FeeSkipped: GenericPalletEvent<Rv, 'SkipFeelessPayment', 'FeeSkipped', { origin: KitchensinkRuntimeOriginCaller }>;
+
+    /**
+     * Generic pallet event
+     **/
+    [prop: string]: GenericPalletEvent<Rv>;
+  };
+  /**
+   * Pallet `AssetConversionMigration`'s events
+   **/
+  assetConversionMigration: {
+    /**
+     * Indicates that a pool has been migrated to the new account ID.
+     **/
+    MigratedToNewAccount: GenericPalletEvent<
+      Rv,
+      'AssetConversionMigration',
+      'MigratedToNewAccount',
+      {
+        /**
+         * Pool's ID.
+         **/
+        poolId: [FrameSupportTokensFungibleUnionOfNativeOrWithId, FrameSupportTokensFungibleUnionOfNativeOrWithId];
+
+        /**
+         * Pool's prior account ID.
+         **/
+        priorAccount: AccountId32;
+
+        /**
+         * Pool's new account ID.
+         **/
+        newAccount: AccountId32;
+      }
+    >;
+
+    /**
+     * Generic pallet event
+     **/
+    [prop: string]: GenericPalletEvent<Rv>;
+  };
+  /**
+   * Pallet `Revive`'s events
+   **/
+  revive: {
+    /**
+     * Contract deployed by address at the specified address.
+     **/
+    Instantiated: GenericPalletEvent<Rv, 'Revive', 'Instantiated', { deployer: H160; contract: H160 }>;
+
+    /**
+     * Contract has been removed.
+     *
+     * # Note
+     *
+     * The only way for a contract to be removed and emitting this event is by calling
+     * `seal_terminate`.
+     **/
+    Terminated: GenericPalletEvent<
+      Rv,
+      'Revive',
+      'Terminated',
+      {
+        /**
+         * The contract that was terminated.
+         **/
+        contract: H160;
+
+        /**
+         * The account that received the contracts remaining balance
+         **/
+        beneficiary: H160;
+      }
+    >;
+
+    /**
+     * Code with the specified hash has been stored.
+     **/
+    CodeStored: GenericPalletEvent<Rv, 'Revive', 'CodeStored', { codeHash: H256; depositHeld: bigint; uploader: H160 }>;
+
+    /**
+     * A custom event emitted by the contract.
+     **/
+    ContractEmitted: GenericPalletEvent<
+      Rv,
+      'Revive',
+      'ContractEmitted',
+      {
+        /**
+         * The contract that emitted the event.
+         **/
+        contract: H160;
+
+        /**
+         * Data supplied by the contract. Metadata generated during contract compilation
+         * is needed to decode it.
+         **/
+        data: Bytes;
+
+        /**
+         * A list of topics used to index the event.
+         * Number of topics is capped by [`limits::NUM_EVENT_TOPICS`].
+         **/
+        topics: Array<H256>;
+      }
+    >;
+
+    /**
+     * A code with the specified hash was removed.
+     **/
+    CodeRemoved: GenericPalletEvent<
+      Rv,
+      'Revive',
+      'CodeRemoved',
+      { codeHash: H256; depositReleased: bigint; remover: H160 }
+    >;
+
+    /**
+     * A contract's code was updated.
+     **/
+    ContractCodeUpdated: GenericPalletEvent<
+      Rv,
+      'Revive',
+      'ContractCodeUpdated',
+      {
+        /**
+         * The contract that has been updated.
+         **/
+        contract: H160;
+
+        /**
+         * New code hash that was set for the contract.
+         **/
+        newCodeHash: H256;
+
+        /**
+         * Previous code hash of the contract.
+         **/
+        oldCodeHash: H256;
+      }
+    >;
+
+    /**
+     * A contract was called either by a plain account or another contract.
+     *
+     * # Note
+     *
+     * Please keep in mind that like all events this is only emitted for successful
+     * calls. This is because on failure all storage changes including events are
+     * rolled back.
+     **/
+    Called: GenericPalletEvent<
+      Rv,
+      'Revive',
+      'Called',
+      {
+        /**
+         * The caller of the `contract`.
+         **/
+        caller: PalletReviveExecOrigin;
+
+        /**
+         * The contract that was called.
+         **/
+        contract: H160;
+      }
+    >;
+
+    /**
+     * A contract delegate called a code hash.
+     *
+     * # Note
+     *
+     * Please keep in mind that like all events this is only emitted for successful
+     * calls. This is because on failure all storage changes including events are
+     * rolled back.
+     **/
+    DelegateCalled: GenericPalletEvent<
+      Rv,
+      'Revive',
+      'DelegateCalled',
+      {
+        /**
+         * The contract that performed the delegate call and hence in whose context
+         * the `code_hash` is executed.
+         **/
+        contract: H160;
+
+        /**
+         * The code hash that was delegate called.
+         **/
+        codeHash: H256;
+      }
+    >;
+
+    /**
+     * Some funds have been transferred and held as storage deposit.
+     **/
+    StorageDepositTransferredAndHeld: GenericPalletEvent<
+      Rv,
+      'Revive',
+      'StorageDepositTransferredAndHeld',
+      { from: H160; to: H160; amount: bigint }
+    >;
+
+    /**
+     * Some storage deposit funds have been transferred and released.
+     **/
+    StorageDepositTransferredAndReleased: GenericPalletEvent<
+      Rv,
+      'Revive',
+      'StorageDepositTransferredAndReleased',
+      { from: H160; to: H160; amount: bigint }
+    >;
 
     /**
      * Generic pallet event

@@ -1,7 +1,7 @@
 import { rpc } from '@polkadot/types-support/metadata/static-substrate';
 import staticSubstrate from '@polkadot/types-support/metadata/v15/substrate-hex';
 import { ConstantExecutor } from '@dedot/api';
-import { $Metadata, Metadata, PortableRegistry, RuntimeVersion } from '@dedot/codecs';
+import { $Metadata, Metadata, PortableRegistry, RuntimeVersion, unwrapOpaqueMetadata } from '@dedot/codecs';
 import * as $ from '@dedot/shape';
 import { HexString, hexToU8a, u8aToHex } from '@dedot/utils';
 import { getMetadataFromRuntime } from '@polkadot-api/wasm-executor';
@@ -69,7 +69,7 @@ export const parseMetadataFromWasm = async (runtimeFile: string): Promise<Parsed
 };
 
 export const parseStaticSubstrate = async (): Promise<ParsedResult> => {
-  const { runtimeVersion, metadata } = decodeMetadata(staticSubstrate as HexString);
+  const { runtimeVersion, metadata } = decodeMetadata(unwrapOpaqueMetadata(staticSubstrate));
 
   return {
     metadata,

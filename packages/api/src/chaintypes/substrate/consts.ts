@@ -170,11 +170,15 @@ export interface ChainConsts<Rv extends RpcVersion> extends GenericChainConsts<R
     /**
      * The maximum number of locks that should exist on an account.
      * Not strictly enforced, but used for weight estimation.
+     *
+     * Use of locks is deprecated in favour of freezes. See `https://github.com/paritytech/substrate/pull/12951/`
      **/
     maxLocks: number;
 
     /**
      * The maximum number of named reserves that can exist on an account.
+     *
+     * Use of reserves is deprecated in favour of holds. See `https://github.com/paritytech/substrate/pull/12951/`
      **/
     maxReserves: number;
 
@@ -223,15 +227,6 @@ export interface ChainConsts<Rv extends RpcVersion> extends GenericChainConsts<R
     [name: string]: any;
   };
   /**
-   * Pallet `AssetTxPayment`'s constants
-   **/
-  assetTxPayment: {
-    /**
-     * Generic pallet constant
-     **/
-    [name: string]: any;
-  };
-  /**
    * Pallet `AssetConversionTxPayment`'s constants
    **/
   assetConversionTxPayment: {
@@ -244,16 +239,6 @@ export interface ChainConsts<Rv extends RpcVersion> extends GenericChainConsts<R
    * Pallet `ElectionProviderMultiPhase`'s constants
    **/
   electionProviderMultiPhase: {
-    /**
-     * Duration of the unsigned phase.
-     **/
-    unsignedPhase: number;
-
-    /**
-     * Duration of the signed phase.
-     **/
-    signedPhase: number;
-
     /**
      * The minimum amount of improvement to the solution score that defines a solution as
      * "better" in the Signed phase.
@@ -648,22 +633,6 @@ export interface ChainConsts<Rv extends RpcVersion> extends GenericChainConsts<R
    **/
   treasury: {
     /**
-     * Fraction of a proposal's value that should be bonded in order to place the proposal.
-     * An accepted proposal gets these back. A rejected proposal does not.
-     **/
-    proposalBond: Permill;
-
-    /**
-     * Minimum amount of funds that should be placed in a deposit for making a proposal.
-     **/
-    proposalBondMinimum: bigint;
-
-    /**
-     * Maximum amount of funds that should be placed in a deposit for making a proposal.
-     **/
-    proposalBondMaximum: bigint | undefined;
-
-    /**
      * Period between successive spends.
      **/
     spendPeriod: number;
@@ -679,6 +648,9 @@ export interface ChainConsts<Rv extends RpcVersion> extends GenericChainConsts<R
     palletId: FrameSupportPalletId;
 
     /**
+     * DEPRECATED: associated with `spend_local` call and will be removed in May 2025.
+     * Refer to <https://github.com/paritytech/polkadot-sdk/pull/5961> for migration to `spend`.
+     *
      * The maximum number of approvals that can wait in the spending queue.
      *
      * NOTE: This parameter is also used within the Bounties Pallet extension if enabled.
@@ -757,6 +729,12 @@ export interface ChainConsts<Rv extends RpcVersion> extends GenericChainConsts<R
      * The maximum allowable length in bytes for storage keys.
      **/
     maxStorageKeyLen: number;
+
+    /**
+     * The maximum size of the transient storage in bytes.
+     * This includes keys, values, and previous entries used for storage rollback.
+     **/
+    maxTransientStorageSize: number;
 
     /**
      * The maximum number of delegate_dependencies that a contract can lock with
@@ -879,6 +857,12 @@ export interface ChainConsts<Rv extends RpcVersion> extends GenericChainConsts<R
     byteDeposit: bigint;
 
     /**
+     * The amount held on deposit per registered username. This value should change only in
+     * runtime upgrades with proper migration of existing deposits.
+     **/
+    usernameDeposit: bigint;
+
+    /**
      * The amount held on deposit for a registered subaccount. This should account for the fact
      * that one storage item's value will increase by the size of an account ID, and there will
      * be another trie item whose value is the size of an account ID plus 32 bytes.
@@ -891,7 +875,7 @@ export interface ChainConsts<Rv extends RpcVersion> extends GenericChainConsts<R
     maxSubAccounts: number;
 
     /**
-     * Maxmimum number of registrars allowed in the system. Needed to bound the complexity
+     * Maximum number of registrars allowed in the system. Needed to bound the complexity
      * of, e.g., updating judgements.
      **/
     maxRegistrars: number;
@@ -900,6 +884,12 @@ export interface ChainConsts<Rv extends RpcVersion> extends GenericChainConsts<R
      * The number of blocks within which a username grant must be accepted.
      **/
     pendingUsernameExpiration: number;
+
+    /**
+     * The number of blocks that must pass to enable the permanent deletion of a username by
+     * its respective authority.
+     **/
+    usernameGracePeriod: number;
 
     /**
      * The maximum length of a suffix.
@@ -1711,6 +1701,13 @@ export interface ChainConsts<Rv extends RpcVersion> extends GenericChainConsts<R
     evidenceSize: number;
 
     /**
+     * Represents the highest possible rank in this pallet.
+     *
+     * Increasing this value is supported, but decreasing it may lead to a broken state.
+     **/
+    maxRank: number;
+
+    /**
      * Generic pallet constant
      **/
     [name: string]: any;
@@ -2132,12 +2129,22 @@ export interface ChainConsts<Rv extends RpcVersion> extends GenericChainConsts<R
 
     /**
      * The amount of weight (if any) which should be provided to the message queue for
-     * servicing enqueued items.
+     * servicing enqueued items `on_initialize`.
      *
      * This may be legitimately `None` in the case that you will call
-     * `ServiceQueues::service_queues` manually.
+     * `ServiceQueues::service_queues` manually or set [`Self::IdleMaxServiceWeight`] to have
+     * it run in `on_idle`.
      **/
     serviceWeight: SpWeightsWeightV2Weight | undefined;
+
+    /**
+     * The maximum amount of weight (if any) to be used from remaining weight `on_idle` which
+     * should be provided to the message queue for servicing enqueued items `on_idle`.
+     * Useful for parachains to process messages at the same block they are received.
+     *
+     * If `None`, it will not call `ServiceQueues::service_queues` in `on_idle`.
+     **/
+    idleMaxServiceWeight: SpWeightsWeightV2Weight | undefined;
 
     /**
      * Generic pallet constant
@@ -2303,6 +2310,7 @@ export interface ChainConsts<Rv extends RpcVersion> extends GenericChainConsts<R
      * Maximum number of system cores.
      **/
     maxReservedCores: number;
+    maxAutoRenewals: number;
 
     /**
      * Generic pallet constant
@@ -2396,6 +2404,95 @@ export interface ChainConsts<Rv extends RpcVersion> extends GenericChainConsts<R
    * Pallet `SkipFeelessPayment`'s constants
    **/
   skipFeelessPayment: {
+    /**
+     * Generic pallet constant
+     **/
+    [name: string]: any;
+  };
+  /**
+   * Pallet `PalletExampleMbms`'s constants
+   **/
+  palletExampleMbms: {
+    /**
+     * Generic pallet constant
+     **/
+    [name: string]: any;
+  };
+  /**
+   * Pallet `AssetConversionMigration`'s constants
+   **/
+  assetConversionMigration: {
+    /**
+     * Generic pallet constant
+     **/
+    [name: string]: any;
+  };
+  /**
+   * Pallet `Revive`'s constants
+   **/
+  revive: {
+    /**
+     * The amount of balance a caller has to pay for each byte of storage.
+     *
+     * # Note
+     *
+     * It is safe to change this value on a live chain as all refunds are pro rata.
+     **/
+    depositPerByte: bigint;
+
+    /**
+     * The amount of balance a caller has to pay for each storage item.
+     *
+     * # Note
+     *
+     * It is safe to change this value on a live chain as all refunds are pro rata.
+     **/
+    depositPerItem: bigint;
+
+    /**
+     * The percentage of the storage deposit that should be held for using a code hash.
+     * Instantiating a contract, or calling [`chain_extension::Ext::lock_delegate_dependency`]
+     * protects the code from being removed. In order to prevent abuse these actions are
+     * protected with a percentage of the code deposit.
+     **/
+    codeHashLockupDepositPercent: Perbill;
+
+    /**
+     * Make contract callable functions marked as `#[unstable]` available.
+     *
+     * Contracts that use `#[unstable]` functions won't be able to be uploaded unless
+     * this is set to `true`. This is only meant for testnets and dev nodes in order to
+     * experiment with new features.
+     *
+     * # Warning
+     *
+     * Do **not** set to `true` on productions chains.
+     **/
+    unsafeUnstableInterface: boolean;
+
+    /**
+     * The [EIP-155](https://eips.ethereum.org/EIPS/eip-155) chain ID.
+     *
+     * This is a unique identifier assigned to each blockchain network,
+     * preventing replay attacks.
+     **/
+    chainId: bigint;
+
+    /**
+     * The ratio between the decimal representation of the native token and the ETH token.
+     **/
+    nativeToEthRatio: number;
+    apiVersion: number;
+
+    /**
+     * Generic pallet constant
+     **/
+    [name: string]: any;
+  };
+  /**
+   * Pallet `VerifySignature`'s constants
+   **/
+  verifySignature: {
     /**
      * Generic pallet constant
      **/
