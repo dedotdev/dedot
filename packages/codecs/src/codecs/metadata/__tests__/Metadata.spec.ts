@@ -1,7 +1,7 @@
 import staticSubstrateV13 from '@polkadot/types-support/metadata/v13/substrate-hex';
 import staticSubstrateV14 from '@polkadot/types-support/metadata/v14/substrate-hex';
 import staticSubstrateV15 from '@polkadot/types-support/metadata/v15/substrate-hex';
-import { $Metadata, MAGIC_NUMBER } from '@dedot/codecs';
+import { $Metadata, decodeOpaqueMetadata, MAGIC_NUMBER } from '@dedot/codecs';
 import { assert, hexToString, numberToHex } from '@dedot/utils';
 import { describe, expect, expectTypeOf, it } from 'vitest';
 
@@ -32,7 +32,7 @@ describe('$Metadata', () => {
   });
 
   it('should decode metadata v15', () => {
-    const metadata = $Metadata.tryDecode(staticSubstrateV15);
+    const metadata = decodeOpaqueMetadata(staticSubstrateV15);
 
     expect(metadata.version).toEqual('V15');
     expect(metadata.versionNumber).toEqual(15);

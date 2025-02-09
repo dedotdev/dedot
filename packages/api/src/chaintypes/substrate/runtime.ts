@@ -6,6 +6,8 @@ import type {
   Bytes,
   BytesLike,
   DispatchError,
+  FixedBytes,
+  H160,
   H256,
   Header,
   Result,
@@ -23,6 +25,12 @@ import type {
   PalletContractsPrimitivesContractResult,
   PalletContractsPrimitivesContractResultResult,
   PalletContractsWasmDeterminism,
+  PalletRevivePrimitivesCode,
+  PalletRevivePrimitivesCodeUploadReturnValue,
+  PalletRevivePrimitivesContractAccessError,
+  PalletRevivePrimitivesContractResult,
+  PalletRevivePrimitivesContractResultInstantiateReturnValue,
+  PalletRevivePrimitivesEthContractResult,
   PalletTransactionPaymentFeeDetails,
   PalletTransactionPaymentRuntimeDispatchInfo,
   SpAuthorityDiscoveryAppPublic,
@@ -30,13 +38,13 @@ import type {
   SpConsensusBabeBabeConfiguration,
   SpConsensusBabeEpoch,
   SpConsensusBabeOpaqueKeyOwnershipProof,
+  SpConsensusBeefyDoubleVotingProof,
   SpConsensusBeefyEcdsaCryptoPublic,
-  SpConsensusBeefyEquivocationProof,
-  SpConsensusBeefyOpaqueKeyOwnershipProof,
+  SpConsensusBeefyForkVotingProofOpaqueValue,
+  SpConsensusBeefyFutureBlockVotingProof,
   SpConsensusBeefyValidatorSet,
   SpConsensusGrandpaAppPublic,
   SpConsensusGrandpaEquivocationProof,
-  SpConsensusGrandpaOpaqueKeyOwnershipProof,
   SpConsensusSlotsEquivocationProof,
   SpConsensusSlotsSlot,
   SpCoreCryptoKeyTypeId,
@@ -48,9 +56,10 @@ import type {
   SpMixnetSessionStatus,
   SpMmrPrimitivesEncodableOpaqueLeaf,
   SpMmrPrimitivesError,
-  SpMmrPrimitivesProof,
+  SpMmrPrimitivesLeafProof,
   SpRuntimeBlock,
   SpRuntimeExtrinsicInclusionMode,
+  SpRuntimeOpaqueValue,
   SpRuntimeTransactionValidityTransactionSource,
   SpRuntimeTransactionValidityTransactionValidityError,
   SpRuntimeTransactionValidityValidTransaction,
@@ -290,13 +299,13 @@ export interface RuntimeApis<Rv extends RpcVersion> extends GenericRuntimeApis<R
      *
      * @callname: GrandpaApi_submit_report_equivocation_unsigned_extrinsic
      * @param {SpConsensusGrandpaEquivocationProof} equivocation_proof
-     * @param {SpConsensusGrandpaOpaqueKeyOwnershipProof} key_owner_proof
+     * @param {SpRuntimeOpaqueValue} key_owner_proof
      **/
     submitReportEquivocationUnsignedExtrinsic: GenericRuntimeApiMethod<
       Rv,
       (
         equivocationProof: SpConsensusGrandpaEquivocationProof,
-        keyOwnerProof: SpConsensusGrandpaOpaqueKeyOwnershipProof,
+        keyOwnerProof: SpRuntimeOpaqueValue,
       ) => Promise<[] | undefined>
     >;
 
@@ -319,10 +328,7 @@ export interface RuntimeApis<Rv extends RpcVersion> extends GenericRuntimeApis<R
      **/
     generateKeyOwnershipProof: GenericRuntimeApiMethod<
       Rv,
-      (
-        setId: bigint,
-        authorityId: SpConsensusGrandpaAppPublic,
-      ) => Promise<SpConsensusGrandpaOpaqueKeyOwnershipProof | undefined>
+      (setId: bigint, authorityId: SpConsensusGrandpaAppPublic) => Promise<SpRuntimeOpaqueValue | undefined>
     >;
 
     /**
@@ -368,6 +374,75 @@ export interface RuntimeApis<Rv extends RpcVersion> extends GenericRuntimeApis<R
     balanceToPoints: GenericRuntimeApiMethod<Rv, (poolId: number, newFunds: bigint) => Promise<bigint>>;
 
     /**
+     * Returns the pending slash for a given pool.
+     *
+     * @callname: NominationPoolsApi_pool_pending_slash
+     * @param {number} pool_id
+     **/
+    poolPendingSlash: GenericRuntimeApiMethod<Rv, (poolId: number) => Promise<bigint>>;
+
+    /**
+     * Returns the pending slash for a given pool member.
+     *
+     * @callname: NominationPoolsApi_member_pending_slash
+     * @param {AccountId32Like} member
+     **/
+    memberPendingSlash: GenericRuntimeApiMethod<Rv, (member: AccountId32Like) => Promise<bigint>>;
+
+    /**
+     * Returns true if the pool with `pool_id` needs migration.
+     *
+     * This can happen when the `pallet-nomination-pools` has switched to using strategy
+     * [`DelegateStake`](pallet_nomination_pools::adapter::DelegateStake) but the pool
+     * still has funds that were staked using the older strategy
+     * [TransferStake](pallet_nomination_pools::adapter::TransferStake). Use
+     * [`migrate_pool_to_delegate_stake`](pallet_nomination_pools::Call::migrate_pool_to_delegate_stake)
+     * to migrate the pool.
+     *
+     * @callname: NominationPoolsApi_pool_needs_delegate_migration
+     * @param {number} pool_id
+     **/
+    poolNeedsDelegateMigration: GenericRuntimeApiMethod<Rv, (poolId: number) => Promise<boolean>>;
+
+    /**
+     * Returns true if the delegated funds of the pool `member` needs migration.
+     *
+     * Once a pool has successfully migrated to the strategy
+     * [`DelegateStake`](pallet_nomination_pools::adapter::DelegateStake), the funds of the
+     * member can be migrated from pool account to the member's account. Use
+     * [`migrate_delegation`](pallet_nomination_pools::Call::migrate_delegation)
+     * to migrate the funds of the pool member.
+     *
+     * @callname: NominationPoolsApi_member_needs_delegate_migration
+     * @param {AccountId32Like} member
+     **/
+    memberNeedsDelegateMigration: GenericRuntimeApiMethod<Rv, (member: AccountId32Like) => Promise<boolean>>;
+
+    /**
+     * Returns the total contribution of a pool member including any balance that is unbonding.
+     *
+     * @callname: NominationPoolsApi_member_total_balance
+     * @param {AccountId32Like} who
+     **/
+    memberTotalBalance: GenericRuntimeApiMethod<Rv, (who: AccountId32Like) => Promise<bigint>>;
+
+    /**
+     * Total balance contributed to the pool.
+     *
+     * @callname: NominationPoolsApi_pool_balance
+     * @param {number} pool_id
+     **/
+    poolBalance: GenericRuntimeApiMethod<Rv, (poolId: number) => Promise<bigint>>;
+
+    /**
+     * Returns the bonded account and reward account associated with the pool_id.
+     *
+     * @callname: NominationPoolsApi_pool_accounts
+     * @param {number} pool_id
+     **/
+    poolAccounts: GenericRuntimeApiMethod<Rv, (poolId: number) => Promise<[AccountId32, AccountId32]>>;
+
+    /**
      * Generic runtime api call
      **/
     [method: string]: GenericRuntimeApiMethod<Rv>;
@@ -385,13 +460,22 @@ export interface RuntimeApis<Rv extends RpcVersion> extends GenericRuntimeApis<R
     nominationsQuota: GenericRuntimeApiMethod<Rv, (balance: bigint) => Promise<number>>;
 
     /**
-     * Returns the page count of exposures for a validator in a given era.
+     * Returns the page count of exposures for a validator `account` in a given era.
      *
      * @callname: StakingApi_eras_stakers_page_count
      * @param {number} era
      * @param {AccountId32Like} account
      **/
     erasStakersPageCount: GenericRuntimeApiMethod<Rv, (era: number, account: AccountId32Like) => Promise<number>>;
+
+    /**
+     * Returns true if validator `account` has pages to be claimed for the given era.
+     *
+     * @callname: StakingApi_pending_rewards
+     * @param {number} era
+     * @param {AccountId32Like} account
+     **/
+    pendingRewards: GenericRuntimeApiMethod<Rv, (era: number, account: AccountId32Like) => Promise<boolean>>;
 
     /**
      * Generic runtime api call
@@ -627,6 +711,146 @@ export interface RuntimeApis<Rv extends RpcVersion> extends GenericRuntimeApis<R
         address: AccountId32Like,
         key: BytesLike,
       ) => Promise<Result<Bytes | undefined, PalletContractsPrimitivesContractAccessError>>
+    >;
+
+    /**
+     * Generic runtime api call
+     **/
+    [method: string]: GenericRuntimeApiMethod<Rv>;
+  };
+  /**
+   * @runtimeapi: ReviveApi - 0x8c403e5c4a9fd442
+   **/
+  reviveApi: {
+    /**
+     * Returns the free balance of the given `[H160]` address.
+     *
+     * @callname: ReviveApi_balance
+     * @param {H160} address
+     **/
+    balance: GenericRuntimeApiMethod<Rv, (address: H160) => Promise<bigint>>;
+
+    /**
+     * Returns the nonce of the given `[H160]` address.
+     *
+     * @callname: ReviveApi_nonce
+     * @param {H160} address
+     **/
+    nonce: GenericRuntimeApiMethod<Rv, (address: H160) => Promise<number>>;
+
+    /**
+     * Perform a call from a specified account to a given contract.
+     *
+     * See [`crate::Pallet::bare_call`].
+     *
+     * @callname: ReviveApi_call
+     * @param {AccountId32Like} origin
+     * @param {H160} dest
+     * @param {bigint} value
+     * @param {SpWeightsWeightV2Weight | undefined} gas_limit
+     * @param {bigint | undefined} storage_deposit_limit
+     * @param {BytesLike} input_data
+     **/
+    call: GenericRuntimeApiMethod<
+      Rv,
+      (
+        origin: AccountId32Like,
+        dest: H160,
+        value: bigint,
+        gasLimit: SpWeightsWeightV2Weight | undefined,
+        storageDepositLimit: bigint | undefined,
+        inputData: BytesLike,
+      ) => Promise<PalletRevivePrimitivesContractResult>
+    >;
+
+    /**
+     * Instantiate a new contract.
+     *
+     * See `[crate::Pallet::bare_instantiate]`.
+     *
+     * @callname: ReviveApi_instantiate
+     * @param {AccountId32Like} origin
+     * @param {bigint} value
+     * @param {SpWeightsWeightV2Weight | undefined} gas_limit
+     * @param {bigint | undefined} storage_deposit_limit
+     * @param {PalletRevivePrimitivesCode} code
+     * @param {BytesLike} data
+     * @param {FixedBytes<32> | undefined} salt
+     **/
+    instantiate: GenericRuntimeApiMethod<
+      Rv,
+      (
+        origin: AccountId32Like,
+        value: bigint,
+        gasLimit: SpWeightsWeightV2Weight | undefined,
+        storageDepositLimit: bigint | undefined,
+        code: PalletRevivePrimitivesCode,
+        data: BytesLike,
+        salt?: FixedBytes<32> | undefined,
+      ) => Promise<PalletRevivePrimitivesContractResultInstantiateReturnValue>
+    >;
+
+    /**
+     * Perform an Ethereum call.
+     *
+     * See [`crate::Pallet::bare_eth_transact`]
+     *
+     * @callname: ReviveApi_eth_transact
+     * @param {H160} origin
+     * @param {H160 | undefined} dest
+     * @param {bigint} value
+     * @param {BytesLike} input
+     * @param {SpWeightsWeightV2Weight | undefined} gas_limit
+     * @param {bigint | undefined} storage_deposit_limit
+     **/
+    ethTransact: GenericRuntimeApiMethod<
+      Rv,
+      (
+        origin: H160,
+        dest: H160 | undefined,
+        value: bigint,
+        input: BytesLike,
+        gasLimit?: SpWeightsWeightV2Weight | undefined,
+        storageDepositLimit?: bigint | undefined,
+      ) => Promise<PalletRevivePrimitivesEthContractResult>
+    >;
+
+    /**
+     * Upload new code without instantiating a contract from it.
+     *
+     * See [`crate::Pallet::bare_upload_code`].
+     *
+     * @callname: ReviveApi_upload_code
+     * @param {AccountId32Like} origin
+     * @param {BytesLike} code
+     * @param {bigint | undefined} storage_deposit_limit
+     **/
+    uploadCode: GenericRuntimeApiMethod<
+      Rv,
+      (
+        origin: AccountId32Like,
+        code: BytesLike,
+        storageDepositLimit?: bigint | undefined,
+      ) => Promise<Result<PalletRevivePrimitivesCodeUploadReturnValue, DispatchError>>
+    >;
+
+    /**
+     * Query a given storage key in a given contract.
+     *
+     * Returns `Ok(Some(Vec<u8>))` if the storage value exists under the given key in the
+     * specified account and `Ok(None)` if it doesn't. If the account specified by the address
+     * doesn't exist, or doesn't have a contract then `Err` is returned.
+     *
+     * @callname: ReviveApi_get_storage
+     * @param {H160} address
+     * @param {FixedBytes<32>} key
+     **/
+    getStorage: GenericRuntimeApiMethod<
+      Rv,
+      (
+        address: H160,
+        key: FixedBytes<32>,
+      ) => Promise<Result<Bytes | undefined, PalletRevivePrimitivesContractAccessError>>
     >;
 
     /**
@@ -887,8 +1111,8 @@ export interface RuntimeApis<Rv extends RpcVersion> extends GenericRuntimeApis<R
     validatorSet: GenericRuntimeApiMethod<Rv, () => Promise<SpConsensusBeefyValidatorSet | undefined>>;
 
     /**
-     * Submits an unsigned extrinsic to report an equivocation. The caller
-     * must provide the equivocation proof and a key ownership proof
+     * Submits an unsigned extrinsic to report a double voting equivocation. The caller
+     * must provide the double voting proof and a key ownership proof
      * (should be obtained using `generate_key_ownership_proof`). The
      * extrinsic will be unsigned and should only be accepted for local
      * authorship (not to be broadcast to the network). This method returns
@@ -896,15 +1120,59 @@ export interface RuntimeApis<Rv extends RpcVersion> extends GenericRuntimeApis<R
      * reporting is disabled for the given runtime (i.e. this method is
      * hardcoded to return `None`). Only useful in an offchain context.
      *
-     * @callname: BeefyApi_submit_report_equivocation_unsigned_extrinsic
-     * @param {SpConsensusBeefyEquivocationProof} equivocation_proof
-     * @param {SpConsensusBeefyOpaqueKeyOwnershipProof} key_owner_proof
+     * @callname: BeefyApi_submit_report_double_voting_unsigned_extrinsic
+     * @param {SpConsensusBeefyDoubleVotingProof} equivocation_proof
+     * @param {SpRuntimeOpaqueValue} key_owner_proof
      **/
-    submitReportEquivocationUnsignedExtrinsic: GenericRuntimeApiMethod<
+    submitReportDoubleVotingUnsignedExtrinsic: GenericRuntimeApiMethod<
       Rv,
       (
-        equivocationProof: SpConsensusBeefyEquivocationProof,
-        keyOwnerProof: SpConsensusBeefyOpaqueKeyOwnershipProof,
+        equivocationProof: SpConsensusBeefyDoubleVotingProof,
+        keyOwnerProof: SpRuntimeOpaqueValue,
+      ) => Promise<[] | undefined>
+    >;
+
+    /**
+     * Submits an unsigned extrinsic to report a fork voting equivocation. The caller
+     * must provide the fork voting proof (the ancestry proof should be obtained using
+     * `generate_ancestry_proof`) and a key ownership proof (should be obtained using
+     * `generate_key_ownership_proof`). The extrinsic will be unsigned and should only
+     * be accepted for local authorship (not to be broadcast to the network). This method
+     * returns `None` when creation of the extrinsic fails, e.g. if equivocation
+     * reporting is disabled for the given runtime (i.e. this method is
+     * hardcoded to return `None`). Only useful in an offchain context.
+     *
+     * @callname: BeefyApi_submit_report_fork_voting_unsigned_extrinsic
+     * @param {SpConsensusBeefyForkVotingProofOpaqueValue} equivocation_proof
+     * @param {SpRuntimeOpaqueValue} key_owner_proof
+     **/
+    submitReportForkVotingUnsignedExtrinsic: GenericRuntimeApiMethod<
+      Rv,
+      (
+        equivocationProof: SpConsensusBeefyForkVotingProofOpaqueValue,
+        keyOwnerProof: SpRuntimeOpaqueValue,
+      ) => Promise<[] | undefined>
+    >;
+
+    /**
+     * Submits an unsigned extrinsic to report a future block voting equivocation. The caller
+     * must provide the future block voting proof and a key ownership proof
+     * (should be obtained using `generate_key_ownership_proof`).
+     * The extrinsic will be unsigned and should only be accepted for local
+     * authorship (not to be broadcast to the network). This method returns
+     * `None` when creation of the extrinsic fails, e.g. if equivocation
+     * reporting is disabled for the given runtime (i.e. this method is
+     * hardcoded to return `None`). Only useful in an offchain context.
+     *
+     * @callname: BeefyApi_submit_report_future_block_voting_unsigned_extrinsic
+     * @param {SpConsensusBeefyFutureBlockVotingProof} equivocation_proof
+     * @param {SpRuntimeOpaqueValue} key_owner_proof
+     **/
+    submitReportFutureBlockVotingUnsignedExtrinsic: GenericRuntimeApiMethod<
+      Rv,
+      (
+        equivocationProof: SpConsensusBeefyFutureBlockVotingProof,
+        keyOwnerProof: SpRuntimeOpaqueValue,
       ) => Promise<[] | undefined>
     >;
 
@@ -927,10 +1195,20 @@ export interface RuntimeApis<Rv extends RpcVersion> extends GenericRuntimeApis<R
      **/
     generateKeyOwnershipProof: GenericRuntimeApiMethod<
       Rv,
-      (
-        setId: bigint,
-        authorityId: SpConsensusBeefyEcdsaCryptoPublic,
-      ) => Promise<SpConsensusBeefyOpaqueKeyOwnershipProof | undefined>
+      (setId: bigint, authorityId: SpConsensusBeefyEcdsaCryptoPublic) => Promise<SpRuntimeOpaqueValue | undefined>
+    >;
+
+    /**
+     * Generates a proof that the `prev_block_number` is part of the canonical chain at
+     * `best_known_block_number`.
+     *
+     * @callname: BeefyApi_generate_ancestry_proof
+     * @param {number} prev_block_number
+     * @param {number | undefined} best_known_block_number
+     **/
+    generateAncestryProof: GenericRuntimeApiMethod<
+      Rv,
+      (prevBlockNumber: number, bestKnownBlockNumber?: number | undefined) => Promise<SpRuntimeOpaqueValue | undefined>
     >;
 
     /**
@@ -969,7 +1247,7 @@ export interface RuntimeApis<Rv extends RpcVersion> extends GenericRuntimeApis<R
       (
         blockNumbers: Array<number>,
         bestKnownBlockNumber?: number | undefined,
-      ) => Promise<Result<[Array<SpMmrPrimitivesEncodableOpaqueLeaf>, SpMmrPrimitivesProof], SpMmrPrimitivesError>>
+      ) => Promise<Result<[Array<SpMmrPrimitivesEncodableOpaqueLeaf>, SpMmrPrimitivesLeafProof], SpMmrPrimitivesError>>
     >;
 
     /**
@@ -977,17 +1255,17 @@ export interface RuntimeApis<Rv extends RpcVersion> extends GenericRuntimeApis<R
      *
      * Note this function will use on-chain MMR root hash and check if the proof matches the hash.
      * Note, the leaves should be sorted such that corresponding leaves and leaf indices have the
-     * same position in both the `leaves` vector and the `leaf_indices` vector contained in the [Proof]
+     * same position in both the `leaves` vector and the `leaf_indices` vector contained in the [LeafProof]
      *
      * @callname: MmrApi_verify_proof
      * @param {Array<SpMmrPrimitivesEncodableOpaqueLeaf>} leaves
-     * @param {SpMmrPrimitivesProof} proof
+     * @param {SpMmrPrimitivesLeafProof} proof
      **/
     verifyProof: GenericRuntimeApiMethod<
       Rv,
       (
         leaves: Array<SpMmrPrimitivesEncodableOpaqueLeaf>,
-        proof: SpMmrPrimitivesProof,
+        proof: SpMmrPrimitivesLeafProof,
       ) => Promise<Result<[], SpMmrPrimitivesError>>
     >;
 
@@ -998,19 +1276,19 @@ export interface RuntimeApis<Rv extends RpcVersion> extends GenericRuntimeApis<R
      * proof is verified against given MMR root hash.
      *
      * Note, the leaves should be sorted such that corresponding leaves and leaf indices have the
-     * same position in both the `leaves` vector and the `leaf_indices` vector contained in the [Proof]
+     * same position in both the `leaves` vector and the `leaf_indices` vector contained in the [LeafProof]
      *
      * @callname: MmrApi_verify_proof_stateless
      * @param {H256} root
      * @param {Array<SpMmrPrimitivesEncodableOpaqueLeaf>} leaves
-     * @param {SpMmrPrimitivesProof} proof
+     * @param {SpMmrPrimitivesLeafProof} proof
      **/
     verifyProofStateless: GenericRuntimeApiMethod<
       Rv,
       (
         root: H256,
         leaves: Array<SpMmrPrimitivesEncodableOpaqueLeaf>,
-        proof: SpMmrPrimitivesProof,
+        proof: SpMmrPrimitivesLeafProof,
       ) => Promise<Result<[], SpMmrPrimitivesError>>
     >;
 
@@ -1113,28 +1391,52 @@ export interface RuntimeApis<Rv extends RpcVersion> extends GenericRuntimeApis<R
    **/
   genesisBuilder: {
     /**
-     * Creates the default `RuntimeGenesisConfig` and returns it as a JSON blob.
+     * Build `RuntimeGenesisConfig` from a JSON blob not using any defaults and store it in the
+     * storage.
      *
-     * This function instantiates the default `RuntimeGenesisConfig` struct for the runtime and serializes it into a JSON
-     * blob. It returns a `Vec<u8>` containing the JSON representation of the default `RuntimeGenesisConfig`.
+     * In the case of a FRAME-based runtime, this function deserializes the full
+     * `RuntimeGenesisConfig` from the given JSON blob and puts it into the storage. If the
+     * provided JSON blob is incorrect or incomplete or the deserialization fails, an error
+     * is returned.
      *
-     * @callname: GenesisBuilder_create_default_config
-     **/
-    createDefaultConfig: GenericRuntimeApiMethod<Rv, () => Promise<Bytes>>;
-
-    /**
-     * Build `RuntimeGenesisConfig` from a JSON blob not using any defaults and store it in the storage.
+     * Please note that provided JSON blob must contain all `RuntimeGenesisConfig` fields, no
+     * defaults will be used.
      *
-     * This function deserializes the full `RuntimeGenesisConfig` from the given JSON blob and puts it into the storage.
-     * If the provided JSON blob is incorrect or incomplete or the deserialization fails, an error is returned.
-     * It is recommended to log any errors encountered during the process.
-     *
-     * Please note that provided json blob must contain all `RuntimeGenesisConfig` fields, no defaults will be used.
-     *
-     * @callname: GenesisBuilder_build_config
+     * @callname: GenesisBuilder_build_state
      * @param {BytesLike} json
      **/
-    buildConfig: GenericRuntimeApiMethod<Rv, (json: BytesLike) => Promise<Result<[], string>>>;
+    buildState: GenericRuntimeApiMethod<Rv, (json: BytesLike) => Promise<Result<[], string>>>;
+
+    /**
+     * Returns a JSON blob representation of the built-in `RuntimeGenesisConfig` identified by
+     * `id`.
+     *
+     * If `id` is `None` the function should return JSON blob representation of the default
+     * `RuntimeGenesisConfig` struct of the runtime. Implementation must provide default
+     * `RuntimeGenesisConfig`.
+     *
+     * Otherwise function returns a JSON representation of the built-in, named
+     * `RuntimeGenesisConfig` preset identified by `id`, or `None` if such preset does not
+     * exist. Returned `Vec<u8>` contains bytes of JSON blob (patch) which comprises a list of
+     * (potentially nested) key-value pairs that are intended for customizing the default
+     * runtime genesis config. The patch shall be merged (rfc7386) with the JSON representation
+     * of the default `RuntimeGenesisConfig` to create a comprehensive genesis config that can
+     * be used in `build_state` method.
+     *
+     * @callname: GenesisBuilder_get_preset
+     * @param {string | undefined} id
+     **/
+    getPreset: GenericRuntimeApiMethod<Rv, (id?: string | undefined) => Promise<Bytes | undefined>>;
+
+    /**
+     * Returns a list of identifiers for available builtin `RuntimeGenesisConfig` presets.
+     *
+     * The presets from the list can be queried with [`GenesisBuilder::get_preset`] method. If
+     * no named presets are provided by the runtime the list is empty.
+     *
+     * @callname: GenesisBuilder_preset_names
+     **/
+    presetNames: GenericRuntimeApiMethod<Rv, () => Promise<Array<string>>>;
 
     /**
      * Generic runtime api call

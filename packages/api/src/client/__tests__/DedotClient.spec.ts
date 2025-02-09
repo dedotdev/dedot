@@ -2,7 +2,7 @@ import staticSubstrateV15 from '@polkadot/types-support/metadata/v15/substrate-h
 import { Signer } from '@polkadot/types/types';
 import { SubstrateRuntimeVersion } from '@dedot/api';
 import { fakeSigner } from '@dedot/api/extrinsic/submittable/fakeSigner';
-import { $Metadata, $RuntimeVersion, type RuntimeVersion } from '@dedot/codecs';
+import { $RuntimeVersion, type RuntimeVersion, unwrapOpaqueMetadata } from '@dedot/codecs';
 import { WsProvider } from '@dedot/providers';
 import type { AnyShape } from '@dedot/shape';
 import * as $ from '@dedot/shape';
@@ -20,9 +20,8 @@ import { mockedRuntime, newChainHeadSimulator } from '../../json-rpc/group/__tes
 import { DedotClient } from '../DedotClient.js';
 import MockProvider from './MockProvider.js';
 
-const prefixedMetadataV15 = u8aToHex(
-  $.Option($.lenPrefixed($Metadata)).tryEncode($Metadata.tryDecode(staticSubstrateV15)),
-);
+const prefixedMetadataV15 = staticSubstrateV15;
+const rawMetadataV15 = unwrapOpaqueMetadata(staticSubstrateV15);
 
 describe('DedotClient', () => {
   it('should throws error for invalid endpoint', () => {
@@ -881,7 +880,7 @@ describe('DedotClient', () => {
         const api = await DedotClient.new({
           provider,
           metadata: {
-            'RAW_META/0x0000000000000000000000000000000000000000000000000000000000000000/1': staticSubstrateV15,
+            'RAW_META/0x0000000000000000000000000000000000000000000000000000000000000000/1': rawMetadataV15,
           },
         });
 
@@ -949,7 +948,7 @@ describe('DedotClient', () => {
             provider: newProvider,
             cacheMetadata: true,
             metadata: {
-              'RAW_META/0x0000000000000000000000000000000000000000000000000000000000000000/2': staticSubstrateV15,
+              'RAW_META/0x0000000000000000000000000000000000000000000000000000000000000000/2': rawMetadataV15,
             },
           });
 

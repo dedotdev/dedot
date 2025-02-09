@@ -8,6 +8,7 @@ import type {
   FixedBytes,
   FixedU128,
   FixedU64,
+  H160,
   H256,
   MultiAddressLike,
   Perbill,
@@ -41,12 +42,14 @@ import type {
   PalletBrokerConfigRecord,
   PalletBrokerCoreMask,
   PalletBrokerFinality,
+  PalletBrokerOnDemandRevenueRecord,
   PalletBrokerRegionId,
   PalletBrokerScheduleItem,
   PalletContractsWasmDeterminism,
   PalletConvictionVotingConviction,
   PalletConvictionVotingVoteAccountVote,
   PalletCoreFellowshipParamsType,
+  PalletCoreFellowshipParamsTypeOption,
   PalletCoreFellowshipWish,
   PalletDemocracyConviction,
   PalletDemocracyMetadataOwner,
@@ -88,6 +91,7 @@ import type {
   PalletStakingPalletConfigOpPercent,
   PalletStakingPalletConfigOpU32,
   PalletStakingRewardDestination,
+  PalletStakingUnlockChunk,
   PalletStakingValidatorPrefs,
   PalletStateTrieMigrationMigrationLimits,
   PalletStateTrieMigrationMigrationTask,
@@ -95,7 +99,9 @@ import type {
   PalletUniquesDestroyWitness,
   PalletVestingVestingInfo,
   SpConsensusBabeDigestsNextConfigDescriptor,
-  SpConsensusBeefyEquivocationProof,
+  SpConsensusBeefyDoubleVotingProof,
+  SpConsensusBeefyForkVotingProof,
+  SpConsensusBeefyFutureBlockVotingProof,
   SpConsensusGrandpaEquivocationProof,
   SpConsensusSlotsEquivocationProof,
   SpMixnetAppSignature,
@@ -1024,7 +1030,7 @@ export interface ChainTx<Rv extends RpcVersion> extends GenericChainTx<Rv, TxCal
      *
      * This will waive the transaction fee if at least all but 10% of the accounts needed to
      * be upgraded. (We let some not have to be upgraded just in order to allow for the
-     * possibililty of churn).
+     * possibility of churn).
      *
      * @param {Array<AccountId32Like>} who
      **/
@@ -1089,6 +1095,35 @@ export interface ChainTx<Rv extends RpcVersion> extends GenericChainTx<Rv, TxCal
           palletCall: {
             name: 'ForceAdjustTotalIssuance';
             params: { direction: PalletBalancesAdjustmentDirection; delta: bigint };
+          };
+        }
+      >
+    >;
+
+    /**
+     * Burn the specified liquid free balance from the origin account.
+     *
+     * If the origin's account ends up below the existential deposit as a result
+     * of the burn and `keep_alive` is false, the account will be reaped.
+     *
+     * Unlike sending funds to a _burn_ address, which merely makes the funds inaccessible,
+     * this `burn` operation will reduce total issuance by the amount _burned_.
+     *
+     * @param {bigint} value
+     * @param {boolean} keepAlive
+     **/
+    burn: GenericTxCall<
+      Rv,
+      (
+        value: bigint,
+        keepAlive: boolean,
+      ) => ChainSubmittableExtrinsic<
+        Rv,
+        {
+          pallet: 'Balances';
+          palletCall: {
+            name: 'Burn';
+            params: { value: bigint; keepAlive: boolean };
           };
         }
       >
@@ -1268,7 +1303,8 @@ export interface ChainTx<Rv extends RpcVersion> extends GenericChainTx<Rv, TxCal
      * - Three extra DB entries.
      *
      * NOTE: Two of the storage writes (`Self::bonded`, `Self::payee`) are _never_ cleaned
-     * unless the `origin` falls below _existential deposit_ and gets removed as dust.
+     * unless the `origin` falls below _existential deposit_ (or equal to 0) and gets removed
+     * as dust.
      *
      * @param {bigint} value
      * @param {PalletStakingRewardDestination} payee
@@ -1325,7 +1361,7 @@ export interface ChainTx<Rv extends RpcVersion> extends GenericChainTx<Rv, TxCal
     /**
      * Schedule a portion of the stash to be unlocked ready for transfer out after the bond
      * period ends. If this leaves an amount actively bonded less than
-     * T::Currency::minimum_balance(), then it is increased to the full amount.
+     * [`asset::existential_deposit`], then it is increased to the full amount.
      *
      * The dispatch origin for this call must be _Signed_ by the controller, not the stash.
      *
@@ -1377,7 +1413,7 @@ export interface ChainTx<Rv extends RpcVersion> extends GenericChainTx<Rv, TxCal
      * this call results in a complete removal of all the data related to the stash account.
      * In this case, the `num_slashing_spans` must be larger or equal to the number of
      * slashing spans associated with the stash account in the [`SlashingSpans`] storage type,
-     * otherwise the call will fail. The call weight is directly propotional to
+     * otherwise the call will fail. The call weight is directly proportional to
      * `num_slashing_spans`.
      *
      * ## Complexity
@@ -1562,7 +1598,7 @@ export interface ChainTx<Rv extends RpcVersion> extends GenericChainTx<Rv, TxCal
     >;
 
     /**
-     * Increments the ideal number of validators upto maximum of
+     * Increments the ideal number of validators up to maximum of
      * `ElectionProviderBase::MaxWinners`.
      *
      * The dispatch origin must be Root.
@@ -1587,7 +1623,7 @@ export interface ChainTx<Rv extends RpcVersion> extends GenericChainTx<Rv, TxCal
     >;
 
     /**
-     * Scale up the ideal number of validators by a factor upto maximum of
+     * Scale up the ideal number of validators by a factor up to maximum of
      * `ElectionProviderBase::MaxWinners`.
      *
      * The dispatch origin must be Root.
@@ -1839,6 +1875,7 @@ export interface ChainTx<Rv extends RpcVersion> extends GenericChainTx<Rv, TxCal
      *
      * 1. the `total_balance` of the stash is below existential deposit.
      * 2. or, the `ledger.total` of the stash is below existential deposit.
+     * 3. or, existential deposit is zero and either `total_balance` or `ledger.total` is zero.
      *
      * The former can happen in cases like a slash; the latter when a fully unbonded account
      * is still receiving staking rewards in `RewardDestination::Staked`.
@@ -2130,6 +2167,48 @@ export interface ChainTx<Rv extends RpcVersion> extends GenericChainTx<Rv, TxCal
           palletCall: {
             name: 'DeprecateControllerBatch';
             params: { controllers: Array<AccountId32Like> };
+          };
+        }
+      >
+    >;
+
+    /**
+     * Restores the state of a ledger which is in an inconsistent state.
+     *
+     * The requirements to restore a ledger are the following:
+     * * The stash is bonded; or
+     * * The stash is not bonded but it has a staking lock left behind; or
+     * * If the stash has an associated ledger and its state is inconsistent; or
+     * * If the ledger is not corrupted *but* its staking lock is out of sync.
+     *
+     * The `maybe_*` input parameters will overwrite the corresponding data and metadata of the
+     * ledger associated with the stash. If the input parameters are not set, the ledger will
+     * be reset values from on-chain state.
+     *
+     * @param {AccountId32Like} stash
+     * @param {AccountId32Like | undefined} maybeController
+     * @param {bigint | undefined} maybeTotal
+     * @param {Array<PalletStakingUnlockChunk> | undefined} maybeUnlocking
+     **/
+    restoreLedger: GenericTxCall<
+      Rv,
+      (
+        stash: AccountId32Like,
+        maybeController: AccountId32Like | undefined,
+        maybeTotal: bigint | undefined,
+        maybeUnlocking: Array<PalletStakingUnlockChunk> | undefined,
+      ) => ChainSubmittableExtrinsic<
+        Rv,
+        {
+          pallet: 'Staking';
+          palletCall: {
+            name: 'RestoreLedger';
+            params: {
+              stash: AccountId32Like;
+              maybeController: AccountId32Like | undefined;
+              maybeTotal: bigint | undefined;
+              maybeUnlocking: Array<PalletStakingUnlockChunk> | undefined;
+            };
           };
         }
       >
@@ -3038,6 +3117,58 @@ export interface ChainTx<Rv extends RpcVersion> extends GenericChainTx<Rv, TxCal
     >;
 
     /**
+     * Disapprove the proposal and burn the cost held for storing this proposal.
+     *
+     * Parameters:
+     * - `origin`: must be the `KillOrigin`.
+     * - `proposal_hash`: The hash of the proposal that should be killed.
+     *
+     * Emits `Killed` and `ProposalCostBurned` if any cost was held for a given proposal.
+     *
+     * @param {H256} proposalHash
+     **/
+    kill: GenericTxCall<
+      Rv,
+      (proposalHash: H256) => ChainSubmittableExtrinsic<
+        Rv,
+        {
+          pallet: 'Council';
+          palletCall: {
+            name: 'Kill';
+            params: { proposalHash: H256 };
+          };
+        }
+      >
+    >;
+
+    /**
+     * Release the cost held for storing a proposal once the given proposal is completed.
+     *
+     * If there is no associated cost for the given proposal, this call will have no effect.
+     *
+     * Parameters:
+     * - `origin`: must be `Signed` or `Root`.
+     * - `proposal_hash`: The hash of the proposal.
+     *
+     * Emits `ProposalCostReleased` if any cost held for a given proposal.
+     *
+     * @param {H256} proposalHash
+     **/
+    releaseProposalCost: GenericTxCall<
+      Rv,
+      (proposalHash: H256) => ChainSubmittableExtrinsic<
+        Rv,
+        {
+          pallet: 'Council';
+          palletCall: {
+            name: 'ReleaseProposalCost';
+            params: { proposalHash: H256 };
+          };
+        }
+      >
+    >;
+
+    /**
      * Generic pallet tx call
      **/
     [callName: string]: GenericTxCall<Rv, TxCall<Rv>>;
@@ -3274,6 +3405,58 @@ export interface ChainTx<Rv extends RpcVersion> extends GenericChainTx<Rv, TxCal
               proposalWeightBound: SpWeightsWeightV2Weight;
               lengthBound: number;
             };
+          };
+        }
+      >
+    >;
+
+    /**
+     * Disapprove the proposal and burn the cost held for storing this proposal.
+     *
+     * Parameters:
+     * - `origin`: must be the `KillOrigin`.
+     * - `proposal_hash`: The hash of the proposal that should be killed.
+     *
+     * Emits `Killed` and `ProposalCostBurned` if any cost was held for a given proposal.
+     *
+     * @param {H256} proposalHash
+     **/
+    kill: GenericTxCall<
+      Rv,
+      (proposalHash: H256) => ChainSubmittableExtrinsic<
+        Rv,
+        {
+          pallet: 'TechnicalCommittee';
+          palletCall: {
+            name: 'Kill';
+            params: { proposalHash: H256 };
+          };
+        }
+      >
+    >;
+
+    /**
+     * Release the cost held for storing a proposal once the given proposal is completed.
+     *
+     * If there is no associated cost for the given proposal, this call will have no effect.
+     *
+     * Parameters:
+     * - `origin`: must be `Signed` or `Root`.
+     * - `proposal_hash`: The hash of the proposal.
+     *
+     * Emits `ProposalCostReleased` if any cost held for a given proposal.
+     *
+     * @param {H256} proposalHash
+     **/
+    releaseProposalCost: GenericTxCall<
+      Rv,
+      (proposalHash: H256) => ChainSubmittableExtrinsic<
+        Rv,
+        {
+          pallet: 'TechnicalCommittee';
+          palletCall: {
+            name: 'ReleaseProposalCost';
+            params: { proposalHash: H256 };
           };
         }
       >
@@ -3765,112 +3948,6 @@ export interface ChainTx<Rv extends RpcVersion> extends GenericChainTx<Rv, TxCal
    **/
   treasury: {
     /**
-     * Put forward a suggestion for spending.
-     *
-     * ## Dispatch Origin
-     *
-     * Must be signed.
-     *
-     * ## Details
-     * A deposit proportional to the value is reserved and slashed if the proposal is rejected.
-     * It is returned once the proposal is awarded.
-     *
-     * ### Complexity
-     * - O(1)
-     *
-     * ## Events
-     *
-     * Emits [`Event::Proposed`] if successful.
-     *
-     * @param {bigint} value
-     * @param {MultiAddressLike} beneficiary
-     **/
-    proposeSpend: GenericTxCall<
-      Rv,
-      (
-        value: bigint,
-        beneficiary: MultiAddressLike,
-      ) => ChainSubmittableExtrinsic<
-        Rv,
-        {
-          pallet: 'Treasury';
-          palletCall: {
-            name: 'ProposeSpend';
-            params: { value: bigint; beneficiary: MultiAddressLike };
-          };
-        }
-      >
-    >;
-
-    /**
-     * Reject a proposed spend.
-     *
-     * ## Dispatch Origin
-     *
-     * Must be [`Config::RejectOrigin`].
-     *
-     * ## Details
-     * The original deposit will be slashed.
-     *
-     * ### Complexity
-     * - O(1)
-     *
-     * ## Events
-     *
-     * Emits [`Event::Rejected`] if successful.
-     *
-     * @param {number} proposalId
-     **/
-    rejectProposal: GenericTxCall<
-      Rv,
-      (proposalId: number) => ChainSubmittableExtrinsic<
-        Rv,
-        {
-          pallet: 'Treasury';
-          palletCall: {
-            name: 'RejectProposal';
-            params: { proposalId: number };
-          };
-        }
-      >
-    >;
-
-    /**
-     * Approve a proposal.
-     *
-     * ## Dispatch Origin
-     *
-     * Must be [`Config::ApproveOrigin`].
-     *
-     * ## Details
-     *
-     * At a later time, the proposal will be allocated to the beneficiary and the original
-     * deposit will be returned.
-     *
-     * ### Complexity
-     * - O(1).
-     *
-     * ## Events
-     *
-     * No events are emitted from this dispatch.
-     *
-     * @param {number} proposalId
-     **/
-    approveProposal: GenericTxCall<
-      Rv,
-      (proposalId: number) => ChainSubmittableExtrinsic<
-        Rv,
-        {
-          pallet: 'Treasury';
-          palletCall: {
-            name: 'ApproveProposal';
-            params: { proposalId: number };
-          };
-        }
-      >
-    >;
-
-    /**
      * Propose and approve a spend of treasury funds.
      *
      * ## Dispatch Origin
@@ -3976,7 +4053,7 @@ export interface ChainTx<Rv extends RpcVersion> extends GenericChainTx<Rv, TxCal
      *
      * Emits [`Event::AssetSpendApproved`] if successful.
      *
-     * @param {number} assetKind
+     * @param {FrameSupportTokensFungibleUnionOfNativeOrWithId} assetKind
      * @param {bigint} amount
      * @param {MultiAddressLike} beneficiary
      * @param {number | undefined} validFrom
@@ -3984,7 +4061,7 @@ export interface ChainTx<Rv extends RpcVersion> extends GenericChainTx<Rv, TxCal
     spend: GenericTxCall<
       Rv,
       (
-        assetKind: number,
+        assetKind: FrameSupportTokensFungibleUnionOfNativeOrWithId,
         amount: bigint,
         beneficiary: MultiAddressLike,
         validFrom: number | undefined,
@@ -3994,7 +4071,12 @@ export interface ChainTx<Rv extends RpcVersion> extends GenericChainTx<Rv, TxCal
           pallet: 'Treasury';
           palletCall: {
             name: 'Spend';
-            params: { assetKind: number; amount: bigint; beneficiary: MultiAddressLike; validFrom: number | undefined };
+            params: {
+              assetKind: FrameSupportTokensFungibleUnionOfNativeOrWithId;
+              amount: bigint;
+              beneficiary: MultiAddressLike;
+              validFrom: number | undefined;
+            };
           };
         }
       >
@@ -4005,7 +4087,7 @@ export interface ChainTx<Rv extends RpcVersion> extends GenericChainTx<Rv, TxCal
      *
      * ## Dispatch Origin
      *
-     * Must be signed.
+     * Must be signed
      *
      * ## Details
      *
@@ -4123,13 +4205,13 @@ export interface ChainTx<Rv extends RpcVersion> extends GenericChainTx<Rv, TxCal
      * ## Complexity
      * - O(1)
      *
-     * @param {number} assetKind
+     * @param {FrameSupportTokensFungibleUnionOfNativeOrWithId} assetKind
      * @param {FixedU128} rate
      **/
     create: GenericTxCall<
       Rv,
       (
-        assetKind: number,
+        assetKind: FrameSupportTokensFungibleUnionOfNativeOrWithId,
         rate: FixedU128,
       ) => ChainSubmittableExtrinsic<
         Rv,
@@ -4137,7 +4219,7 @@ export interface ChainTx<Rv extends RpcVersion> extends GenericChainTx<Rv, TxCal
           pallet: 'AssetRate';
           palletCall: {
             name: 'Create';
-            params: { assetKind: number; rate: FixedU128 };
+            params: { assetKind: FrameSupportTokensFungibleUnionOfNativeOrWithId; rate: FixedU128 };
           };
         }
       >
@@ -4149,13 +4231,13 @@ export interface ChainTx<Rv extends RpcVersion> extends GenericChainTx<Rv, TxCal
      * ## Complexity
      * - O(1)
      *
-     * @param {number} assetKind
+     * @param {FrameSupportTokensFungibleUnionOfNativeOrWithId} assetKind
      * @param {FixedU128} rate
      **/
     update: GenericTxCall<
       Rv,
       (
-        assetKind: number,
+        assetKind: FrameSupportTokensFungibleUnionOfNativeOrWithId,
         rate: FixedU128,
       ) => ChainSubmittableExtrinsic<
         Rv,
@@ -4163,7 +4245,7 @@ export interface ChainTx<Rv extends RpcVersion> extends GenericChainTx<Rv, TxCal
           pallet: 'AssetRate';
           palletCall: {
             name: 'Update';
-            params: { assetKind: number; rate: FixedU128 };
+            params: { assetKind: FrameSupportTokensFungibleUnionOfNativeOrWithId; rate: FixedU128 };
           };
         }
       >
@@ -4175,17 +4257,17 @@ export interface ChainTx<Rv extends RpcVersion> extends GenericChainTx<Rv, TxCal
      * ## Complexity
      * - O(1)
      *
-     * @param {number} assetKind
+     * @param {FrameSupportTokensFungibleUnionOfNativeOrWithId} assetKind
      **/
     remove: GenericTxCall<
       Rv,
-      (assetKind: number) => ChainSubmittableExtrinsic<
+      (assetKind: FrameSupportTokensFungibleUnionOfNativeOrWithId) => ChainSubmittableExtrinsic<
         Rv,
         {
           pallet: 'AssetRate';
           palletCall: {
             name: 'Remove';
-            params: { assetKind: number };
+            params: { assetKind: FrameSupportTokensFungibleUnionOfNativeOrWithId };
           };
         }
       >
@@ -4873,7 +4955,7 @@ export interface ChainTx<Rv extends RpcVersion> extends GenericChainTx<Rv, TxCal
      * - `max_fee`: The maximum fee that may be paid. This should just be auto-populated as:
      *
      * ```nocompile
-     * Self::registrars().get(reg_index).unwrap().fee
+     * Registrars::<T>::get().get(reg_index).unwrap().fee
      * ```
      *
      * Emits `JudgementRequested` if successful.
@@ -5193,8 +5275,9 @@ export interface ChainTx<Rv extends RpcVersion> extends GenericChainTx<Rv, TxCal
     /**
      * Add an `AccountId` with permission to grant usernames with a given `suffix` appended.
      *
-     * The authority can grant up to `allocation` usernames. To top up their allocation, they
-     * should just issue (or request via governance) a new `add_username_authority` call.
+     * The authority can grant up to `allocation` usernames. To top up the allocation or
+     * change the account used to grant usernames, this call can be used with the updated
+     * parameters to overwrite the existing configuration.
      *
      * @param {MultiAddressLike} authority
      * @param {BytesLike} suffix
@@ -5221,17 +5304,21 @@ export interface ChainTx<Rv extends RpcVersion> extends GenericChainTx<Rv, TxCal
     /**
      * Remove `authority` from the username authorities.
      *
+     * @param {BytesLike} suffix
      * @param {MultiAddressLike} authority
      **/
     removeUsernameAuthority: GenericTxCall<
       Rv,
-      (authority: MultiAddressLike) => ChainSubmittableExtrinsic<
+      (
+        suffix: BytesLike,
+        authority: MultiAddressLike,
+      ) => ChainSubmittableExtrinsic<
         Rv,
         {
           pallet: 'Identity';
           palletCall: {
             name: 'RemoveUsernameAuthority';
-            params: { authority: MultiAddressLike };
+            params: { suffix: BytesLike; authority: MultiAddressLike };
           };
         }
       >
@@ -5240,7 +5327,11 @@ export interface ChainTx<Rv extends RpcVersion> extends GenericChainTx<Rv, TxCal
     /**
      * Set the username for `who`. Must be called by a username authority.
      *
-     * The authority must have an `allocation`. Users can either pre-sign their usernames or
+     * If `use_allocation` is set, the authority must have a username allocation available to
+     * spend. Otherwise, the authority will need to put up a deposit for registering the
+     * username.
+     *
+     * Users can either pre-sign their usernames or
      * accept them later.
      *
      * Usernames must:
@@ -5251,6 +5342,7 @@ export interface ChainTx<Rv extends RpcVersion> extends GenericChainTx<Rv, TxCal
      * @param {MultiAddressLike} who
      * @param {BytesLike} username
      * @param {SpRuntimeMultiSignature | undefined} signature
+     * @param {boolean} useAllocation
      **/
     setUsernameFor: GenericTxCall<
       Rv,
@@ -5258,13 +5350,19 @@ export interface ChainTx<Rv extends RpcVersion> extends GenericChainTx<Rv, TxCal
         who: MultiAddressLike,
         username: BytesLike,
         signature: SpRuntimeMultiSignature | undefined,
+        useAllocation: boolean,
       ) => ChainSubmittableExtrinsic<
         Rv,
         {
           pallet: 'Identity';
           palletCall: {
             name: 'SetUsernameFor';
-            params: { who: MultiAddressLike; username: BytesLike; signature: SpRuntimeMultiSignature | undefined };
+            params: {
+              who: MultiAddressLike;
+              username: BytesLike;
+              signature: SpRuntimeMultiSignature | undefined;
+              useAllocation: boolean;
+            };
           };
         }
       >
@@ -5331,19 +5429,60 @@ export interface ChainTx<Rv extends RpcVersion> extends GenericChainTx<Rv, TxCal
     >;
 
     /**
-     * Remove a username that corresponds to an account with no identity. Exists when a user
-     * gets a username but then calls `clear_identity`.
+     * Start the process of removing a username by placing it in the unbinding usernames map.
+     * Once the grace period has passed, the username can be deleted by calling
+     * [remove_username](crate::Call::remove_username).
      *
      * @param {BytesLike} username
      **/
-    removeDanglingUsername: GenericTxCall<
+    unbindUsername: GenericTxCall<
       Rv,
       (username: BytesLike) => ChainSubmittableExtrinsic<
         Rv,
         {
           pallet: 'Identity';
           palletCall: {
-            name: 'RemoveDanglingUsername';
+            name: 'UnbindUsername';
+            params: { username: BytesLike };
+          };
+        }
+      >
+    >;
+
+    /**
+     * Permanently delete a username which has been unbinding for longer than the grace period.
+     * Caller is refunded the fee if the username expired and the removal was successful.
+     *
+     * @param {BytesLike} username
+     **/
+    removeUsername: GenericTxCall<
+      Rv,
+      (username: BytesLike) => ChainSubmittableExtrinsic<
+        Rv,
+        {
+          pallet: 'Identity';
+          palletCall: {
+            name: 'RemoveUsername';
+            params: { username: BytesLike };
+          };
+        }
+      >
+    >;
+
+    /**
+     * Call with [ForceOrigin](crate::Config::ForceOrigin) privileges which deletes a username
+     * and slashes any deposit associated with it.
+     *
+     * @param {BytesLike} username
+     **/
+    killUsername: GenericTxCall<
+      Rv,
+      (username: BytesLike) => ChainSubmittableExtrinsic<
+        Rv,
+        {
+          pallet: 'Identity';
+          palletCall: {
+            name: 'KillUsername';
             params: { username: BytesLike };
           };
         }
@@ -6761,6 +6900,49 @@ export interface ChainTx<Rv extends RpcVersion> extends GenericChainTx<Rv, TxCal
     >;
 
     /**
+     * Increase the block size by including the specified garbage bytes.
+     *
+     * @param {Array<FixedBytes<1024>>} garbage
+     **/
+    bloat: GenericTxCall<
+      Rv,
+      (garbage: Array<FixedBytes<1024>>) => ChainSubmittableExtrinsic<
+        Rv,
+        {
+          pallet: 'Glutton';
+          palletCall: {
+            name: 'Bloat';
+            params: { garbage: Array<FixedBytes<1024>> };
+          };
+        }
+      >
+    >;
+
+    /**
+     * Set how much of the block length should be filled with trash data on each block.
+     *
+     * `1.0` means that all block should be filled. If set to `1.0`, storage proof size will
+     * be close to zero.
+     *
+     * Only callable by Root or `AdminOrigin`.
+     *
+     * @param {FixedU64} blockLength
+     **/
+    setBlockLength: GenericTxCall<
+      Rv,
+      (blockLength: FixedU64) => ChainSubmittableExtrinsic<
+        Rv,
+        {
+          pallet: 'Glutton';
+          palletCall: {
+            name: 'SetBlockLength';
+            params: { blockLength: FixedU64 };
+          };
+        }
+      >
+    >;
+
+    /**
      * Generic pallet tx call
      **/
     [callName: string]: GenericTxCall<Rv, TxCall<Rv>>;
@@ -7753,6 +7935,41 @@ export interface ChainTx<Rv extends RpcVersion> extends GenericChainTx<Rv, TxCal
     >;
 
     /**
+     * Approve bountry and propose a curator simultaneously.
+     * This call is a shortcut to calling `approve_bounty` and `propose_curator` separately.
+     *
+     * May only be called from `T::SpendOrigin`.
+     *
+     * - `bounty_id`: Bounty ID to approve.
+     * - `curator`: The curator account whom will manage this bounty.
+     * - `fee`: The curator fee.
+     *
+     * ## Complexity
+     * - O(1).
+     *
+     * @param {number} bountyId
+     * @param {MultiAddressLike} curator
+     * @param {bigint} fee
+     **/
+    approveBountyWithCurator: GenericTxCall<
+      Rv,
+      (
+        bountyId: number,
+        curator: MultiAddressLike,
+        fee: bigint,
+      ) => ChainSubmittableExtrinsic<
+        Rv,
+        {
+          pallet: 'Bounties';
+          palletCall: {
+            name: 'ApproveBountyWithCurator';
+            params: { bountyId: number; curator: MultiAddressLike; fee: bigint };
+          };
+        }
+      >
+    >;
+
+    /**
      * Generic pallet tx call
      **/
     [callName: string]: GenericTxCall<Rv, TxCall<Rv>>;
@@ -7998,7 +8215,7 @@ export interface ChainTx<Rv extends RpcVersion> extends GenericChainTx<Rv, TxCal
      *
      * Parameters:
      * - `id`: The identifier of the new asset. This must not be currently in use to identify
-     * an existing asset.
+     * an existing asset. If [`NextAssetId`] is set, then this must be equal to it.
      * - `admin`: The admin of this class of assets. The admin is the initial address of each
      * member of the asset class's admin team.
      * - `min_balance`: The minimum balance of this new asset that any single account must
@@ -8040,7 +8257,7 @@ export interface ChainTx<Rv extends RpcVersion> extends GenericChainTx<Rv, TxCal
      * Unlike `create`, no funds are reserved.
      *
      * - `id`: The identifier of the new asset. This must not be currently in use to identify
-     * an existing asset.
+     * an existing asset. If [`NextAssetId`] is set, then this must be equal to it.
      * - `owner`: The owner of this class of assets. The owner has full superuser permissions
      * over this asset, but may later change and configure the permissions using
      * `transfer_ownership` and `set_team`.
@@ -8085,8 +8302,6 @@ export interface ChainTx<Rv extends RpcVersion> extends GenericChainTx<Rv, TxCal
      *
      * - `id`: The identifier of the asset to be destroyed. This must identify an existing
      * asset.
-     *
-     * The asset class must be frozen before calling `start_destroy`.
      *
      * @param {number} id
      **/
@@ -9137,6 +9352,46 @@ export interface ChainTx<Rv extends RpcVersion> extends GenericChainTx<Rv, TxCal
           palletCall: {
             name: 'Block';
             params: { id: number; who: MultiAddressLike };
+          };
+        }
+      >
+    >;
+
+    /**
+     * Transfer the entire transferable balance from the caller asset account.
+     *
+     * NOTE: This function only attempts to transfer _transferable_ balances. This means that
+     * any held, frozen, or minimum balance (when `keep_alive` is `true`), will not be
+     * transferred by this function. To ensure that this function results in a killed account,
+     * you might need to prepare the account by removing any reference counters, storage
+     * deposits, etc...
+     *
+     * The dispatch origin of this call must be Signed.
+     *
+     * - `id`: The identifier of the asset for the account holding a deposit.
+     * - `dest`: The recipient of the transfer.
+     * - `keep_alive`: A boolean to determine if the `transfer_all` operation should send all
+     * of the funds the asset account has, causing the sender asset account to be killed
+     * (false), or transfer everything except at least the minimum balance, which will
+     * guarantee to keep the sender asset account alive (true).
+     *
+     * @param {number} id
+     * @param {MultiAddressLike} dest
+     * @param {boolean} keepAlive
+     **/
+    transferAll: GenericTxCall<
+      Rv,
+      (
+        id: number,
+        dest: MultiAddressLike,
+        keepAlive: boolean,
+      ) => ChainSubmittableExtrinsic<
+        Rv,
+        {
+          pallet: 'Assets';
+          palletCall: {
+            name: 'TransferAll';
+            params: { id: number; dest: MultiAddressLike; keepAlive: boolean };
           };
         }
       >
@@ -9162,7 +9417,7 @@ export interface ChainTx<Rv extends RpcVersion> extends GenericChainTx<Rv, TxCal
      *
      * Parameters:
      * - `id`: The identifier of the new asset. This must not be currently in use to identify
-     * an existing asset.
+     * an existing asset. If [`NextAssetId`] is set, then this must be equal to it.
      * - `admin`: The admin of this class of assets. The admin is the initial address of each
      * member of the asset class's admin team.
      * - `min_balance`: The minimum balance of this new asset that any single account must
@@ -9204,7 +9459,7 @@ export interface ChainTx<Rv extends RpcVersion> extends GenericChainTx<Rv, TxCal
      * Unlike `create`, no funds are reserved.
      *
      * - `id`: The identifier of the new asset. This must not be currently in use to identify
-     * an existing asset.
+     * an existing asset. If [`NextAssetId`] is set, then this must be equal to it.
      * - `owner`: The owner of this class of assets. The owner has full superuser permissions
      * over this asset, but may later change and configure the permissions using
      * `transfer_ownership` and `set_team`.
@@ -9249,8 +9504,6 @@ export interface ChainTx<Rv extends RpcVersion> extends GenericChainTx<Rv, TxCal
      *
      * - `id`: The identifier of the asset to be destroyed. This must identify an existing
      * asset.
-     *
-     * The asset class must be frozen before calling `start_destroy`.
      *
      * @param {number} id
      **/
@@ -10307,6 +10560,46 @@ export interface ChainTx<Rv extends RpcVersion> extends GenericChainTx<Rv, TxCal
     >;
 
     /**
+     * Transfer the entire transferable balance from the caller asset account.
+     *
+     * NOTE: This function only attempts to transfer _transferable_ balances. This means that
+     * any held, frozen, or minimum balance (when `keep_alive` is `true`), will not be
+     * transferred by this function. To ensure that this function results in a killed account,
+     * you might need to prepare the account by removing any reference counters, storage
+     * deposits, etc...
+     *
+     * The dispatch origin of this call must be Signed.
+     *
+     * - `id`: The identifier of the asset for the account holding a deposit.
+     * - `dest`: The recipient of the transfer.
+     * - `keep_alive`: A boolean to determine if the `transfer_all` operation should send all
+     * of the funds the asset account has, causing the sender asset account to be killed
+     * (false), or transfer everything except at least the minimum balance, which will
+     * guarantee to keep the sender asset account alive (true).
+     *
+     * @param {number} id
+     * @param {MultiAddressLike} dest
+     * @param {boolean} keepAlive
+     **/
+    transferAll: GenericTxCall<
+      Rv,
+      (
+        id: number,
+        dest: MultiAddressLike,
+        keepAlive: boolean,
+      ) => ChainSubmittableExtrinsic<
+        Rv,
+        {
+          pallet: 'PoolAssets';
+          palletCall: {
+            name: 'TransferAll';
+            params: { id: number; dest: MultiAddressLike; keepAlive: boolean };
+          };
+        }
+      >
+    >;
+
+    /**
      * Generic pallet tx call
      **/
     [callName: string]: GenericTxCall<Rv, TxCall<Rv>>;
@@ -10321,21 +10614,21 @@ export interface ChainTx<Rv extends RpcVersion> extends GenericChainTx<Rv, TxCal
      * against the extracted offender. If both are valid, the offence
      * will be reported.
      *
-     * @param {SpConsensusBeefyEquivocationProof} equivocationProof
+     * @param {SpConsensusBeefyDoubleVotingProof} equivocationProof
      * @param {SpSessionMembershipProof} keyOwnerProof
      **/
-    reportEquivocation: GenericTxCall<
+    reportDoubleVoting: GenericTxCall<
       Rv,
       (
-        equivocationProof: SpConsensusBeefyEquivocationProof,
+        equivocationProof: SpConsensusBeefyDoubleVotingProof,
         keyOwnerProof: SpSessionMembershipProof,
       ) => ChainSubmittableExtrinsic<
         Rv,
         {
           pallet: 'Beefy';
           palletCall: {
-            name: 'ReportEquivocation';
-            params: { equivocationProof: SpConsensusBeefyEquivocationProof; keyOwnerProof: SpSessionMembershipProof };
+            name: 'ReportDoubleVoting';
+            params: { equivocationProof: SpConsensusBeefyDoubleVotingProof; keyOwnerProof: SpSessionMembershipProof };
           };
         }
       >
@@ -10352,21 +10645,21 @@ export interface ChainTx<Rv extends RpcVersion> extends GenericChainTx<Rv, TxCal
      * if the block author is defined it will be defined as the equivocation
      * reporter.
      *
-     * @param {SpConsensusBeefyEquivocationProof} equivocationProof
+     * @param {SpConsensusBeefyDoubleVotingProof} equivocationProof
      * @param {SpSessionMembershipProof} keyOwnerProof
      **/
-    reportEquivocationUnsigned: GenericTxCall<
+    reportDoubleVotingUnsigned: GenericTxCall<
       Rv,
       (
-        equivocationProof: SpConsensusBeefyEquivocationProof,
+        equivocationProof: SpConsensusBeefyDoubleVotingProof,
         keyOwnerProof: SpSessionMembershipProof,
       ) => ChainSubmittableExtrinsic<
         Rv,
         {
           pallet: 'Beefy';
           palletCall: {
-            name: 'ReportEquivocationUnsigned';
-            params: { equivocationProof: SpConsensusBeefyEquivocationProof; keyOwnerProof: SpSessionMembershipProof };
+            name: 'ReportDoubleVotingUnsigned';
+            params: { equivocationProof: SpConsensusBeefyDoubleVotingProof; keyOwnerProof: SpSessionMembershipProof };
           };
         }
       >
@@ -10389,6 +10682,122 @@ export interface ChainTx<Rv extends RpcVersion> extends GenericChainTx<Rv, TxCal
           palletCall: {
             name: 'SetNewGenesis';
             params: { delayInBlocks: number };
+          };
+        }
+      >
+    >;
+
+    /**
+     * Report fork voting equivocation. This method will verify the equivocation proof
+     * and validate the given key ownership proof against the extracted offender.
+     * If both are valid, the offence will be reported.
+     *
+     * @param {SpConsensusBeefyForkVotingProof} equivocationProof
+     * @param {SpSessionMembershipProof} keyOwnerProof
+     **/
+    reportForkVoting: GenericTxCall<
+      Rv,
+      (
+        equivocationProof: SpConsensusBeefyForkVotingProof,
+        keyOwnerProof: SpSessionMembershipProof,
+      ) => ChainSubmittableExtrinsic<
+        Rv,
+        {
+          pallet: 'Beefy';
+          palletCall: {
+            name: 'ReportForkVoting';
+            params: { equivocationProof: SpConsensusBeefyForkVotingProof; keyOwnerProof: SpSessionMembershipProof };
+          };
+        }
+      >
+    >;
+
+    /**
+     * Report fork voting equivocation. This method will verify the equivocation proof
+     * and validate the given key ownership proof against the extracted offender.
+     * If both are valid, the offence will be reported.
+     *
+     * This extrinsic must be called unsigned and it is expected that only
+     * block authors will call it (validated in `ValidateUnsigned`), as such
+     * if the block author is defined it will be defined as the equivocation
+     * reporter.
+     *
+     * @param {SpConsensusBeefyForkVotingProof} equivocationProof
+     * @param {SpSessionMembershipProof} keyOwnerProof
+     **/
+    reportForkVotingUnsigned: GenericTxCall<
+      Rv,
+      (
+        equivocationProof: SpConsensusBeefyForkVotingProof,
+        keyOwnerProof: SpSessionMembershipProof,
+      ) => ChainSubmittableExtrinsic<
+        Rv,
+        {
+          pallet: 'Beefy';
+          palletCall: {
+            name: 'ReportForkVotingUnsigned';
+            params: { equivocationProof: SpConsensusBeefyForkVotingProof; keyOwnerProof: SpSessionMembershipProof };
+          };
+        }
+      >
+    >;
+
+    /**
+     * Report future block voting equivocation. This method will verify the equivocation proof
+     * and validate the given key ownership proof against the extracted offender.
+     * If both are valid, the offence will be reported.
+     *
+     * @param {SpConsensusBeefyFutureBlockVotingProof} equivocationProof
+     * @param {SpSessionMembershipProof} keyOwnerProof
+     **/
+    reportFutureBlockVoting: GenericTxCall<
+      Rv,
+      (
+        equivocationProof: SpConsensusBeefyFutureBlockVotingProof,
+        keyOwnerProof: SpSessionMembershipProof,
+      ) => ChainSubmittableExtrinsic<
+        Rv,
+        {
+          pallet: 'Beefy';
+          palletCall: {
+            name: 'ReportFutureBlockVoting';
+            params: {
+              equivocationProof: SpConsensusBeefyFutureBlockVotingProof;
+              keyOwnerProof: SpSessionMembershipProof;
+            };
+          };
+        }
+      >
+    >;
+
+    /**
+     * Report future block voting equivocation. This method will verify the equivocation proof
+     * and validate the given key ownership proof against the extracted offender.
+     * If both are valid, the offence will be reported.
+     *
+     * This extrinsic must be called unsigned and it is expected that only
+     * block authors will call it (validated in `ValidateUnsigned`), as such
+     * if the block author is defined it will be defined as the equivocation
+     * reporter.
+     *
+     * @param {SpConsensusBeefyFutureBlockVotingProof} equivocationProof
+     * @param {SpSessionMembershipProof} keyOwnerProof
+     **/
+    reportFutureBlockVotingUnsigned: GenericTxCall<
+      Rv,
+      (
+        equivocationProof: SpConsensusBeefyFutureBlockVotingProof,
+        keyOwnerProof: SpSessionMembershipProof,
+      ) => ChainSubmittableExtrinsic<
+        Rv,
+        {
+          pallet: 'Beefy';
+          palletCall: {
+            name: 'ReportFutureBlockVotingUnsigned';
+            params: {
+              equivocationProof: SpConsensusBeefyFutureBlockVotingProof;
+              keyOwnerProof: SpSessionMembershipProof;
+            };
           };
         }
       >
@@ -13570,6 +13979,33 @@ export interface ChainTx<Rv extends RpcVersion> extends GenericChainTx<Rv, TxCal
     >;
 
     /**
+     * Fast promotions can skip ranks and ignore the `min_promotion_period`.
+     *
+     * This is useful for out-of-band promotions, hence it has its own `FastPromoteOrigin` to
+     * be (possibly) more restrictive than `PromoteOrigin`. Note that the member must already
+     * be inducted.
+     *
+     * @param {AccountId32Like} who
+     * @param {number} toRank
+     **/
+    promoteFast: GenericTxCall<
+      Rv,
+      (
+        who: AccountId32Like,
+        toRank: number,
+      ) => ChainSubmittableExtrinsic<
+        Rv,
+        {
+          pallet: 'CoreFellowship';
+          palletCall: {
+            name: 'PromoteFast';
+            params: { who: AccountId32Like; toRank: number };
+          };
+        }
+      >
+    >;
+
+    /**
      * Stop tracking a prior member who is now not a ranked member of the collective.
      *
      * - `origin`: A `Signed` origin of an account.
@@ -13642,6 +14078,31 @@ export interface ChainTx<Rv extends RpcVersion> extends GenericChainTx<Rv, TxCal
           pallet: 'CoreFellowship';
           palletCall: {
             name: 'Import';
+          };
+        }
+      >
+    >;
+
+    /**
+     * Set the parameters partially.
+     *
+     * - `origin`: An origin complying with `ParamsOrigin` or root.
+     * - `partial_params`: The new parameters for the pallet.
+     *
+     * This update config with multiple arguments without duplicating
+     * the fields that does not need to update (set to None).
+     *
+     * @param {PalletCoreFellowshipParamsTypeOption} partialParams
+     **/
+    setPartialParams: GenericTxCall<
+      Rv,
+      (partialParams: PalletCoreFellowshipParamsTypeOption) => ChainSubmittableExtrinsic<
+        Rv,
+        {
+          pallet: 'CoreFellowship';
+          palletCall: {
+            name: 'SetPartialParams';
+            params: { partialParams: PalletCoreFellowshipParamsTypeOption };
           };
         }
       >
@@ -15217,6 +15678,58 @@ export interface ChainTx<Rv extends RpcVersion> extends GenericChainTx<Rv, TxCal
     >;
 
     /**
+     * Disapprove the proposal and burn the cost held for storing this proposal.
+     *
+     * Parameters:
+     * - `origin`: must be the `KillOrigin`.
+     * - `proposal_hash`: The hash of the proposal that should be killed.
+     *
+     * Emits `Killed` and `ProposalCostBurned` if any cost was held for a given proposal.
+     *
+     * @param {H256} proposalHash
+     **/
+    kill: GenericTxCall<
+      Rv,
+      (proposalHash: H256) => ChainSubmittableExtrinsic<
+        Rv,
+        {
+          pallet: 'AllianceMotion';
+          palletCall: {
+            name: 'Kill';
+            params: { proposalHash: H256 };
+          };
+        }
+      >
+    >;
+
+    /**
+     * Release the cost held for storing a proposal once the given proposal is completed.
+     *
+     * If there is no associated cost for the given proposal, this call will have no effect.
+     *
+     * Parameters:
+     * - `origin`: must be `Signed` or `Root`.
+     * - `proposal_hash`: The hash of the proposal.
+     *
+     * Emits `ProposalCostReleased` if any cost held for a given proposal.
+     *
+     * @param {H256} proposalHash
+     **/
+    releaseProposalCost: GenericTxCall<
+      Rv,
+      (proposalHash: H256) => ChainSubmittableExtrinsic<
+        Rv,
+        {
+          pallet: 'AllianceMotion';
+          palletCall: {
+            name: 'ReleaseProposalCost';
+            params: { proposalHash: H256 };
+          };
+        }
+      >
+    >;
+
+    /**
      * Generic pallet tx call
      **/
     [callName: string]: GenericTxCall<Rv, TxCall<Rv>>;
@@ -15598,8 +16111,13 @@ export interface ChainTx<Rv extends RpcVersion> extends GenericChainTx<Rv, TxCal
    **/
   nominationPools: {
     /**
-     * Stake funds with a pool. The amount to bond is transferred from the member to the
-     * pools account and immediately increases the pools bond.
+     * Stake funds with a pool. The amount to bond is transferred from the member to the pool
+     * account and immediately increases the pools bond.
+     *
+     * The method of transferring the amount to the pool account is determined by
+     * [`adapter::StakeStrategyType`]. If the pool is configured to use
+     * [`adapter::StakeStrategyType::Delegate`], the funds remain in the account of
+     * the `origin`, while the pool gains the right to use these funds for staking.
      *
      * # Note
      *
@@ -15662,7 +16180,7 @@ export interface ChainTx<Rv extends RpcVersion> extends GenericChainTx<Rv, TxCal
      * The member will earn rewards pro rata based on the members stake vs the sum of the
      * members in the pools stake. Rewards do not "expire".
      *
-     * See `claim_payout_other` to caim rewards on bahalf of some `other` pool member.
+     * See `claim_payout_other` to claim rewards on behalf of some `other` pool member.
      *
      **/
     claimPayout: GenericTxCall<
@@ -15778,7 +16296,10 @@ export interface ChainTx<Rv extends RpcVersion> extends GenericChainTx<Rv, TxCal
      *
      * # Note
      *
-     * If the target is the depositor, the pool will be destroyed.
+     * - If the target is the depositor, the pool will be destroyed.
+     * - If the pool has any pending slash, we also try to slash the member before letting them
+     * withdraw. This calculation adds some weight overhead and is only defensive. In reality,
+     * pool slashes must have been already applied via permissionless [`Call::apply_slash`].
      *
      * @param {MultiAddressLike} memberAccount
      * @param {number} numSlashingSpans
@@ -15977,7 +16498,7 @@ export interface ChainTx<Rv extends RpcVersion> extends GenericChainTx<Rv, TxCal
 
     /**
      * Update configurations for the nomination pools. The origin for this call must be
-     * Root.
+     * [`Config::AdminOrigin`].
      *
      * # Arguments
      *
@@ -16104,7 +16625,7 @@ export interface ChainTx<Rv extends RpcVersion> extends GenericChainTx<Rv, TxCal
      *
      * In the case of `origin != other`, `origin` can only bond extra pending rewards of
      * `other` members assuming set_claim_permission for the given member is
-     * `PermissionlessAll` or `PermissionlessCompound`.
+     * `PermissionlessCompound` or `PermissionlessAll`.
      *
      * @param {MultiAddressLike} member
      * @param {PalletNominationPoolsBondExtra} extra
@@ -16130,15 +16651,10 @@ export interface ChainTx<Rv extends RpcVersion> extends GenericChainTx<Rv, TxCal
      * Allows a pool member to set a claim permission to allow or disallow permissionless
      * bonding and withdrawing.
      *
-     * By default, this is `Permissioned`, which implies only the pool member themselves can
-     * claim their pending rewards. If a pool member wishes so, they can set this to
-     * `PermissionlessAll` to allow any account to claim their rewards and bond extra to the
-     * pool.
-     *
      * # Arguments
      *
      * * `origin` - Member of a pool.
-     * * `actor` - Account to claim reward. // improve this
+     * * `permission` - The permission to be applied.
      *
      * @param {PalletNominationPoolsClaimPermission} permission
      **/
@@ -16159,8 +16675,8 @@ export interface ChainTx<Rv extends RpcVersion> extends GenericChainTx<Rv, TxCal
     /**
      * `origin` can claim payouts on some pool member `other`'s behalf.
      *
-     * Pool member `other` must have a `PermissionlessAll` or `PermissionlessWithdraw` in order
-     * for this call to be successful.
+     * Pool member `other` must have a `PermissionlessWithdraw` or `PermissionlessAll` claim
+     * permission for this call to be successful.
      *
      * @param {AccountId32Like} other
      **/
@@ -16310,7 +16826,7 @@ export interface ChainTx<Rv extends RpcVersion> extends GenericChainTx<Rv, TxCal
      * Set or remove a pool's commission claim permission.
      *
      * Determines who can claim the pool's pending commission. Only the `Root` role of the pool
-     * is able to conifigure commission claim permissions.
+     * is able to configure commission claim permissions.
      *
      * @param {number} poolId
      * @param {PalletNominationPoolsCommissionClaimPermission | undefined} permission
@@ -16327,6 +16843,85 @@ export interface ChainTx<Rv extends RpcVersion> extends GenericChainTx<Rv, TxCal
           palletCall: {
             name: 'SetCommissionClaimPermission';
             params: { poolId: number; permission: PalletNominationPoolsCommissionClaimPermission | undefined };
+          };
+        }
+      >
+    >;
+
+    /**
+     * Apply a pending slash on a member.
+     *
+     * Fails unless [`crate::pallet::Config::StakeAdapter`] is of strategy type:
+     * [`adapter::StakeStrategyType::Delegate`].
+     *
+     * This call can be dispatched permissionlessly (i.e. by any account). If the member has
+     * slash to be applied, caller may be rewarded with the part of the slash.
+     *
+     * @param {MultiAddressLike} memberAccount
+     **/
+    applySlash: GenericTxCall<
+      Rv,
+      (memberAccount: MultiAddressLike) => ChainSubmittableExtrinsic<
+        Rv,
+        {
+          pallet: 'NominationPools';
+          palletCall: {
+            name: 'ApplySlash';
+            params: { memberAccount: MultiAddressLike };
+          };
+        }
+      >
+    >;
+
+    /**
+     * Migrates delegated funds from the pool account to the `member_account`.
+     *
+     * Fails unless [`crate::pallet::Config::StakeAdapter`] is of strategy type:
+     * [`adapter::StakeStrategyType::Delegate`].
+     *
+     * This is a permission-less call and refunds any fee if claim is successful.
+     *
+     * If the pool has migrated to delegation based staking, the staked tokens of pool members
+     * can be moved and held in their own account. See [`adapter::DelegateStake`]
+     *
+     * @param {MultiAddressLike} memberAccount
+     **/
+    migrateDelegation: GenericTxCall<
+      Rv,
+      (memberAccount: MultiAddressLike) => ChainSubmittableExtrinsic<
+        Rv,
+        {
+          pallet: 'NominationPools';
+          palletCall: {
+            name: 'MigrateDelegation';
+            params: { memberAccount: MultiAddressLike };
+          };
+        }
+      >
+    >;
+
+    /**
+     * Migrate pool from [`adapter::StakeStrategyType::Transfer`] to
+     * [`adapter::StakeStrategyType::Delegate`].
+     *
+     * Fails unless [`crate::pallet::Config::StakeAdapter`] is of strategy type:
+     * [`adapter::StakeStrategyType::Delegate`].
+     *
+     * This call can be dispatched permissionlessly, and refunds any fee if successful.
+     *
+     * If the pool has already migrated to delegation based staking, this call will fail.
+     *
+     * @param {number} poolId
+     **/
+    migratePoolToDelegateStake: GenericTxCall<
+      Rv,
+      (poolId: number) => ChainSubmittableExtrinsic<
+        Rv,
+        {
+          pallet: 'NominationPools';
+          palletCall: {
+            name: 'MigratePoolToDelegateStake';
+            params: { poolId: number };
           };
         }
       >
@@ -16835,7 +17430,7 @@ export interface ChainTx<Rv extends RpcVersion> extends GenericChainTx<Rv, TxCal
      * calls to render the liquidity withdrawable and rectify the exchange rate.
      *
      * Once liquidity is added, someone may successfully call
-     * [`Pallet::swap_exact_tokens_for_tokens`] successfully.
+     * [`Pallet::swap_exact_tokens_for_tokens`].
      *
      * @param {FrameSupportTokensFungibleUnionOfNativeOrWithId} asset1
      * @param {FrameSupportTokensFungibleUnionOfNativeOrWithId} asset2
@@ -16989,6 +17584,42 @@ export interface ChainTx<Rv extends RpcVersion> extends GenericChainTx<Rv, TxCal
               amountInMax: bigint;
               sendTo: AccountId32Like;
               keepAlive: boolean;
+            };
+          };
+        }
+      >
+    >;
+
+    /**
+     * Touch an existing pool to fulfill prerequisites before providing liquidity, such as
+     * ensuring that the pool's accounts are in place. It is typically useful when a pool
+     * creator removes the pool's accounts and does not provide a liquidity. This action may
+     * involve holding assets from the caller as a deposit for creating the pool's accounts.
+     *
+     * The origin must be Signed.
+     *
+     * - `asset1`: The asset ID of an existing pool with a pair (asset1, asset2).
+     * - `asset2`: The asset ID of an existing pool with a pair (asset1, asset2).
+     *
+     * Emits `Touched` event when successful.
+     *
+     * @param {FrameSupportTokensFungibleUnionOfNativeOrWithId} asset1
+     * @param {FrameSupportTokensFungibleUnionOfNativeOrWithId} asset2
+     **/
+    touch: GenericTxCall<
+      Rv,
+      (
+        asset1: FrameSupportTokensFungibleUnionOfNativeOrWithId,
+        asset2: FrameSupportTokensFungibleUnionOfNativeOrWithId,
+      ) => ChainSubmittableExtrinsic<
+        Rv,
+        {
+          pallet: 'AssetConversion';
+          palletCall: {
+            name: 'Touch';
+            params: {
+              asset1: FrameSupportTokensFungibleUnionOfNativeOrWithId;
+              asset2: FrameSupportTokensFungibleUnionOfNativeOrWithId;
             };
           };
         }
@@ -17715,24 +18346,28 @@ export interface ChainTx<Rv extends RpcVersion> extends GenericChainTx<Rv, TxCal
      * Begin the Bulk Coretime sales rotation.
      *
      * - `origin`: Must be Root or pass `AdminOrigin`.
-     * - `initial_price`: The price of Bulk Coretime in the first sale.
-     * - `core_count`: The number of cores which can be allocated.
+     * - `end_price`: The price after the leadin period of Bulk Coretime in the first sale.
+     * - `extra_cores`: Number of extra cores that should be requested on top of the cores
+     * required for `Reservations` and `Leases`.
      *
-     * @param {bigint} initialPrice
-     * @param {number} coreCount
+     * This will call [`Self::request_core_count`] internally to set the correct core count on
+     * the relay chain.
+     *
+     * @param {bigint} endPrice
+     * @param {number} extraCores
      **/
     startSales: GenericTxCall<
       Rv,
       (
-        initialPrice: bigint,
-        coreCount: number,
+        endPrice: bigint,
+        extraCores: number,
       ) => ChainSubmittableExtrinsic<
         Rv,
         {
           pallet: 'Broker';
           palletCall: {
             name: 'StartSales';
-            params: { initialPrice: bigint; coreCount: number };
+            params: { endPrice: bigint; extraCores: number };
           };
         }
       >
@@ -17934,13 +18569,12 @@ export interface ChainTx<Rv extends RpcVersion> extends GenericChainTx<Rv, TxCal
     /**
      * Claim the revenue owed from inclusion in the Instantaneous Coretime Pool.
      *
-     * - `origin`: Must be a Signed origin of the account which owns the Region `region_id`.
+     * - `origin`: Must be a Signed origin.
      * - `region_id`: The Region which was assigned to the Pool.
-     * - `max_timeslices`: The maximum number of timeslices which should be processed. This may
-     * effect the weight of the call but should be ideally made equivalant to the length of
-     * the Region `region_id`. If it is less than this, then further dispatches will be
-     * required with the `region_id` which makes up any remainders of the region to be
-     * collected.
+     * - `max_timeslices`: The maximum number of timeslices which should be processed. This
+     * must be greater than 0. This may affect the weight of the call but should be ideally
+     * made equivalent to the length of the Region `region_id`. If less, further dispatches
+     * will be required with the same `region_id` to claim revenue for the remainder.
      *
      * @param {PalletBrokerRegionId} regionId
      * @param {number} maxTimeslices
@@ -18124,6 +18758,110 @@ export interface ChainTx<Rv extends RpcVersion> extends GenericChainTx<Rv, TxCal
     >;
 
     /**
+     *
+     * @param {PalletBrokerOnDemandRevenueRecord} revenue
+     **/
+    notifyRevenue: GenericTxCall<
+      Rv,
+      (revenue: PalletBrokerOnDemandRevenueRecord) => ChainSubmittableExtrinsic<
+        Rv,
+        {
+          pallet: 'Broker';
+          palletCall: {
+            name: 'NotifyRevenue';
+            params: { revenue: PalletBrokerOnDemandRevenueRecord };
+          };
+        }
+      >
+    >;
+
+    /**
+     * Extrinsic for enabling auto renewal.
+     *
+     * Callable by the sovereign account of the task on the specified core. This account
+     * will be charged at the start of every bulk period for renewing core time.
+     *
+     * - `origin`: Must be the sovereign account of the task
+     * - `core`: The core to which the task to be renewed is currently assigned.
+     * - `task`: The task for which we want to enable auto renewal.
+     * - `workload_end_hint`: should be used when enabling auto-renewal for a core that is not
+     * expiring in the upcoming bulk period (e.g., due to holding a lease) since it would be
+     * inefficient to look up when the core expires to schedule the next renewal.
+     *
+     * @param {number} core
+     * @param {number} task
+     * @param {number | undefined} workloadEndHint
+     **/
+    enableAutoRenew: GenericTxCall<
+      Rv,
+      (
+        core: number,
+        task: number,
+        workloadEndHint: number | undefined,
+      ) => ChainSubmittableExtrinsic<
+        Rv,
+        {
+          pallet: 'Broker';
+          palletCall: {
+            name: 'EnableAutoRenew';
+            params: { core: number; task: number; workloadEndHint: number | undefined };
+          };
+        }
+      >
+    >;
+
+    /**
+     * Extrinsic for disabling auto renewal.
+     *
+     * Callable by the sovereign account of the task on the specified core.
+     *
+     * - `origin`: Must be the sovereign account of the task.
+     * - `core`: The core for which we want to disable auto renewal.
+     * - `task`: The task for which we want to disable auto renewal.
+     *
+     * @param {number} core
+     * @param {number} task
+     **/
+    disableAutoRenew: GenericTxCall<
+      Rv,
+      (
+        core: number,
+        task: number,
+      ) => ChainSubmittableExtrinsic<
+        Rv,
+        {
+          pallet: 'Broker';
+          palletCall: {
+            name: 'DisableAutoRenew';
+            params: { core: number; task: number };
+          };
+        }
+      >
+    >;
+
+    /**
+     *
+     * @param {number} id
+     * @param {number} other
+     **/
+    swapLeases: GenericTxCall<
+      Rv,
+      (
+        id: number,
+        other: number,
+      ) => ChainSubmittableExtrinsic<
+        Rv,
+        {
+          pallet: 'Broker';
+          palletCall: {
+            name: 'SwapLeases';
+            params: { id: number; other: number };
+          };
+        }
+      >
+    >;
+
+    /**
      * Generic pallet tx call
      **/
     [callName: string]: GenericTxCall<Rv, TxCall<Rv>>;
@@ -18181,6 +18919,399 @@ export interface ChainTx<Rv extends RpcVersion> extends GenericChainTx<Rv, TxCal
           palletCall: {
             name: 'SetParameter';
             params: { keyValue: KitchensinkRuntimeRuntimeParameters };
+          };
+        }
+      >
+    >;
+
+    /**
+     * Generic pallet tx call
+     **/
+    [callName: string]: GenericTxCall<Rv, TxCall<Rv>>;
+  };
+  /**
+   * Pallet `AssetConversionMigration`'s transaction calls
+   **/
+  assetConversionMigration: {
+    /**
+     * Migrates an existing pool to a new account ID derivation method for a given asset pair.
+     * If the migration is successful, transaction fees are refunded to the caller.
+     *
+     * Must be signed.
+     *
+     * @param {FrameSupportTokensFungibleUnionOfNativeOrWithId} asset1
+     * @param {FrameSupportTokensFungibleUnionOfNativeOrWithId} asset2
+     **/
+    migrateToNewAccount: GenericTxCall<
+      Rv,
+      (
+        asset1: FrameSupportTokensFungibleUnionOfNativeOrWithId,
+        asset2: FrameSupportTokensFungibleUnionOfNativeOrWithId,
+      ) => ChainSubmittableExtrinsic<
+        Rv,
+        {
+          pallet: 'AssetConversionMigration';
+          palletCall: {
+            name: 'MigrateToNewAccount';
+            params: {
+              asset1: FrameSupportTokensFungibleUnionOfNativeOrWithId;
+              asset2: FrameSupportTokensFungibleUnionOfNativeOrWithId;
+            };
+          };
+        }
+      >
+    >;
+
+    /**
+     * Generic pallet tx call
+     **/
+    [callName: string]: GenericTxCall<Rv, TxCall<Rv>>;
+  };
+  /**
+   * Pallet `Revive`'s transaction calls
+   **/
+  revive: {
+    /**
+     * A raw EVM transaction, typically dispatched by an Ethereum JSON-RPC server.
+     *
+     * # Parameters
+     *
+     * * `payload`: The RLP-encoded [`crate::evm::TransactionLegacySigned`].
+     * * `gas_limit`: The gas limit enforced during contract execution.
+     * * `storage_deposit_limit`: The maximum balance that can be charged to the caller for
+     * storage usage.
+     *
+     * # Note
+     *
+     * This call cannot be dispatched directly; attempting to do so will result in a failed
+     * transaction. It serves as a wrapper for an Ethereum transaction. When submitted, the
+     * runtime converts it into a [`sp_runtime::generic::CheckedExtrinsic`] by recovering the
+     * signer and validating the transaction.
+     *
+     * @param {BytesLike} payload
+     * @param {SpWeightsWeightV2Weight} gasLimit
+     * @param {bigint} storageDepositLimit
+     **/
+    ethTransact: GenericTxCall<
+      Rv,
+      (
+        payload: BytesLike,
+        gasLimit: SpWeightsWeightV2Weight,
+        storageDepositLimit: bigint,
+      ) => ChainSubmittableExtrinsic<
+        Rv,
+        {
+          pallet: 'Revive';
+          palletCall: {
+            name: 'EthTransact';
+            params: { payload: BytesLike; gasLimit: SpWeightsWeightV2Weight; storageDepositLimit: bigint };
+          };
+        }
+      >
+    >;
+
+    /**
+     * Makes a call to an account, optionally transferring some balance.
+     *
+     * # Parameters
+     *
+     * * `dest`: Address of the contract to call.
+     * * `value`: The balance to transfer from the `origin` to `dest`.
+     * * `gas_limit`: The gas limit enforced when executing the constructor.
+     * * `storage_deposit_limit`: The maximum amount of balance that can be charged from the
+     * caller to pay for the storage consumed.
+     * * `data`: The input data to pass to the contract.
+     *
+     * * If the account is a smart-contract account, the associated code will be
+     * executed and any value will be transferred.
+     * * If the account is a regular account, any value will be transferred.
+     * * If no account exists and the call value is not less than `existential_deposit`,
+     * a regular account will be created and any value will be transferred.
+     *
+     * @param {H160} dest
+     * @param {bigint} value
+     * @param {SpWeightsWeightV2Weight} gasLimit
+     * @param {bigint} storageDepositLimit
+     * @param {BytesLike} data
+     **/
+    call: GenericTxCall<
+      Rv,
+      (
+        dest: H160,
+        value: bigint,
+        gasLimit: SpWeightsWeightV2Weight,
+        storageDepositLimit: bigint,
+        data: BytesLike,
+      ) => ChainSubmittableExtrinsic<
+        Rv,
+        {
+          pallet: 'Revive';
+          palletCall: {
+            name: 'Call';
+            params: {
+              dest: H160;
+              value: bigint;
+              gasLimit: SpWeightsWeightV2Weight;
+              storageDepositLimit: bigint;
+              data: BytesLike;
+            };
+          };
+        }
+      >
+    >;
+
+    /**
+     * Instantiates a contract from a previously deployed wasm binary.
+     *
+     * This function is identical to [`Self::instantiate_with_code`] but without the
+     * code deployment step. Instead, the `code_hash` of an on-chain deployed wasm binary
+     * must be supplied.
+     *
+     * @param {bigint} value
+     * @param {SpWeightsWeightV2Weight} gasLimit
+     * @param {bigint} storageDepositLimit
+     * @param {H256} codeHash
+     * @param {BytesLike} data
+     * @param {FixedBytes<32> | undefined} salt
+     **/
+    instantiate: GenericTxCall<
+      Rv,
+      (
+        value: bigint,
+        gasLimit: SpWeightsWeightV2Weight,
+        storageDepositLimit: bigint,
+        codeHash: H256,
+        data: BytesLike,
+        salt: FixedBytes<32> | undefined,
+      ) => ChainSubmittableExtrinsic<
+        Rv,
+        {
+          pallet: 'Revive';
+          palletCall: {
+            name: 'Instantiate';
+            params: {
+              value: bigint;
+              gasLimit: SpWeightsWeightV2Weight;
+              storageDepositLimit: bigint;
+              codeHash: H256;
+              data: BytesLike;
+              salt: FixedBytes<32> | undefined;
+            };
+          };
+        }
+      >
+    >;
+
+    /**
+     * Instantiates a new contract from the supplied `code` optionally transferring
+     * some balance.
+     *
+     * This dispatchable has the same effect as calling [`Self::upload_code`] +
+     * [`Self::instantiate`]. Bundling them together provides efficiency gains. Please
+     * also check the documentation of [`Self::upload_code`].
+     *
+     * # Parameters
+     *
+     * * `value`: The balance to transfer from the `origin` to the newly created contract.
+     * * `gas_limit`: The gas limit enforced when executing the constructor.
+     * * `storage_deposit_limit`: The maximum amount of balance that can be charged/reserved
+     * from the caller to pay for the storage consumed.
+     * * `code`: The contract code to deploy in raw bytes.
+     * * `data`: The input data to pass to the contract constructor.
+     * * `salt`: Used for the address derivation. If `Some` is supplied then `CREATE2`
+     * semantics are used. If `None` then `CRATE1` is used.
+     *
+     *
+     * Instantiation is executed as follows:
+     *
+     * - The supplied `code` is deployed, and a `code_hash` is created for that code.
+     * - If the `code_hash` already exists on the chain the underlying `code` will be shared.
+     * - The destination address is computed based on the sender, code_hash and the salt.
+     * - The smart-contract account is created at the computed address.
+     * - The `value` is transferred to the new account.
+     * - The `deploy` function is executed in the context of the newly-created account.
+     *
+     * @param {bigint} value
+     * @param {SpWeightsWeightV2Weight} gasLimit
+     * @param {bigint} storageDepositLimit
+     * @param {BytesLike} code
+     * @param {BytesLike} data
+     * @param {FixedBytes<32> | undefined} salt
+     **/
+    instantiateWithCode: GenericTxCall<
+      Rv,
+      (
+        value: bigint,
+        gasLimit: SpWeightsWeightV2Weight,
+        storageDepositLimit: bigint,
+        code: BytesLike,
+        data: BytesLike,
+        salt: FixedBytes<32> | undefined,
+      ) => ChainSubmittableExtrinsic<
+        Rv,
+        {
+          pallet: 'Revive';
+          palletCall: {
+            name: 'InstantiateWithCode';
+            params: {
+              value: bigint;
+              gasLimit: SpWeightsWeightV2Weight;
+              storageDepositLimit: bigint;
+              code: BytesLike;
+              data: BytesLike;
+              salt: FixedBytes<32> | undefined;
+            };
+          };
+        }
+      >
+    >;
+
+    /**
+     * Upload new `code` without instantiating a contract from it.
+     *
+     * If the code does not already exist a deposit is reserved from the caller
+     * and unreserved only when [`Self::remove_code`] is called. The size of the reserve
+     * depends on the size of the supplied `code`.
+     *
+     * # Note
+     *
+     * Anyone can instantiate a contract from any uploaded code and thus prevent its removal.
+     * To avoid this situation a constructor could employ access control so that it can
+     * only be instantiated by permissioned entities. The same is true when uploading
+     * through [`Self::instantiate_with_code`].
+     *
+     * @param {BytesLike} code
+     * @param {bigint} storageDepositLimit
+     **/
+    uploadCode: GenericTxCall<
+      Rv,
+      (
+        code: BytesLike,
+        storageDepositLimit: bigint,
+      ) => ChainSubmittableExtrinsic<
+        Rv,
+        {
+          pallet: 'Revive';
+          palletCall: {
+            name: 'UploadCode';
+            params: { code: BytesLike; storageDepositLimit: bigint };
+          };
+        }
+      >
+    >;
+
+    /**
+     * Remove the code stored under `code_hash` and refund the deposit to its owner.
+     *
+     * A code can only be removed by its original uploader (its owner) and only if it is
+     * not used by any contract.
+     *
+     * @param {H256} codeHash
+     **/
+    removeCode: GenericTxCall<
+      Rv,
+      (codeHash: H256) => ChainSubmittableExtrinsic<
+        Rv,
+        {
+          pallet: 'Revive';
+          palletCall: {
+            name: 'RemoveCode';
+            params: { codeHash: H256 };
+          };
+        }
+      >
+    >;
+
+    /**
+     * Privileged function that changes the code of an existing contract.
+     *
+     * This takes care of updating refcounts and all other necessary operations. Returns
+     * an error if either the `code_hash` or `dest` do not exist.
+     *
+     * # Note
+     *
+     * This does **not** change the address of the contract in question. This means
+     * that the contract address is no longer derived from its code hash after calling
+     * this dispatchable.
+     *
+     * @param {H160} dest
+     * @param {H256} codeHash
+     **/
+    setCode: GenericTxCall<
+      Rv,
+      (
+        dest: H160,
+        codeHash: H256,
+      ) => ChainSubmittableExtrinsic<
+        Rv,
+        {
+          pallet: 'Revive';
+          palletCall: {
+            name: 'SetCode';
+            params: { dest: H160; codeHash: H256 };
+          };
+        }
+      >
+    >;
+
+    /**
+     * Register the callers account id so that it can be used in contract interactions.
+     *
+     * This will error if the origin is already mapped or is a eth native `Address20`. It will
+     * take a deposit that can be released by calling [`Self::unmap_account`].
+     *
+     **/
+    mapAccount: GenericTxCall<
+      Rv,
+      () => ChainSubmittableExtrinsic<
+        Rv,
+        {
+          pallet: 'Revive';
+          palletCall: {
+            name: 'MapAccount';
+          };
+        }
+      >
+    >;
+
+    /**
+     * Unregister the callers account id in order to free the deposit.
+     *
+     * There is no reason to ever call this function other than freeing up the deposit.
+     * This is only useful when the account should no longer be used.
+     *
+     **/
+    unmapAccount: GenericTxCall<
+      Rv,
+      () => ChainSubmittableExtrinsic<
+        Rv,
+        {
+          pallet: 'Revive';
+          palletCall: {
+            name: 'UnmapAccount';
+          };
+        }
+      >
+    >;
+
+    /**
+     * Dispatch an `call` with the origin set to the callers fallback address.
+     *
+     * Every `AccountId32` can control its corresponding fallback account. The fallback account
+     * is the `AccountId20` with the last 12 bytes set to `0xEE`. This is essentially a
+     * recovery function in case an `AccountId20` was used without creating a mapping first.
+     *
+     * @param {KitchensinkRuntimeRuntimeCallLike} call
+     **/
+    dispatchAsFallbackAccount: GenericTxCall<
+      Rv,
+      (call: KitchensinkRuntimeRuntimeCallLike) => ChainSubmittableExtrinsic<
+        Rv,
+        {
+          pallet: 'Revive';
+          palletCall: {
+            name: 'DispatchAsFallbackAccount';
+            params: { call: KitchensinkRuntimeRuntimeCallLike };
           };
         }
       >

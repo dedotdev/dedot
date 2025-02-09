@@ -1,4 +1,7 @@
+import staticSubstrateV15 from '@polkadot/types-support/metadata/v15/substrate-hex';
+import { OpaqueMetadata } from '@dedot/codecs/codecs';
 import * as $ from '@dedot/shape';
+import { ensurePresence, HexString, u8aToHex } from '@dedot/utils';
 import { toV15 } from './conversion/index.js';
 import { $MetadataV14 } from './v14.js';
 import {
@@ -106,3 +109,14 @@ export const $Metadata: $.Shape<Metadata> = $.instance(
   $.Tuple($.u32, $MetadataVersioned),
   (metadata: Metadata) => [metadata.magicNumber, metadata.metadataVersioned],
 );
+
+export const decodeOpaqueMetadata = (opaqueMetadata: OpaqueMetadata): Metadata => {
+  return ensurePresence(
+    $.Option($.lenPrefixed($Metadata)).tryDecode(opaqueMetadata), // prettier-end-here
+    'Invalid opaque metadata',
+  );
+};
+
+export const unwrapOpaqueMetadata = (opaqueMetadata: OpaqueMetadata): HexString => {
+  return u8aToHex($Metadata.tryEncode(decodeOpaqueMetadata(opaqueMetadata)));
+};
