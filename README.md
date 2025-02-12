@@ -90,7 +90,7 @@ console.log('Pending rewards:', pendingRewards);
 - [Introducing Dedot](https://forum.polkadot.network/t/introducing-dedot-a-delightful-javascript-client-for-polkadot-substrate-based-blockchains/8956)
 - [Type-safe APIs to interact with ink! Smart Contracts](https://forum.polkadot.network/t/type-safe-apis-to-interact-with-ink-smart-contracts-dedot/9485)
 
-### Acknowledment
+### Acknowledgment
 
 [Dedot](https://dedot.dev) take a lot of inspirations from project [@polkadot/api](https://github.com/polkadot-js/api). A big thank to all the maintainers/contributors of this awesome library.
 
