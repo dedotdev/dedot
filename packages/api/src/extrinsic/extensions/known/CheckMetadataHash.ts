@@ -1,5 +1,5 @@
-import { SignerPayloadJSON } from '@polkadot/types/types';
 import { Hash } from '@dedot/codecs';
+import { SignerPayloadJSON } from '@dedot/types';
 import { assert, isHex } from '@dedot/utils';
 import { SignedExtension } from '../SignedExtension.js';
 

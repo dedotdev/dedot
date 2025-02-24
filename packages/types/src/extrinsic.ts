@@ -1,7 +1,6 @@
-import { IKeyringPair, Signer } from '@polkadot/types/types';
 import { ApplyExtrinsicResult, BlockHash, DispatchError, DispatchInfo, Hash, RuntimeDispatchInfo } from '@dedot/codecs';
 import { HexString } from '@dedot/utils';
-import { Callback, IEventRecord, Unsub } from './index.js';
+import { Callback, IEventRecord, IKeyringPair, InjectedSigner, Unsub } from './index.js';
 
 export type AddressOrPair = IKeyringPair | string; // | AccountId32Like | MultiAddressLike;
 
@@ -18,7 +17,7 @@ export interface PayloadOptions {
   [prop: string]: any;
 }
 export interface SignerOptions extends PayloadOptions {
-  signer?: Signer;
+  signer?: InjectedSigner;
 }
 
 export type DryRunResult = ApplyExtrinsicResult;

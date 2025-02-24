@@ -1,8 +1,8 @@
-import { Signer } from '@polkadot/types/types';
 import { BlockHash, Extrinsic, Hash } from '@dedot/codecs';
 import {
   AddressOrPair,
   Callback,
+  InjectedSigner,
   IRuntimeTxCall,
   ISubmittableExtrinsic,
   ISubmittableResult,
@@ -145,7 +145,7 @@ export abstract class BaseSubmittableExtrinsic extends Extrinsic implements ISub
     }
   }
 
-  #getSigner(options?: Partial<SignerOptions>): Signer | undefined {
+  #getSigner(options?: Partial<SignerOptions>): InjectedSigner | undefined {
     return options?.signer || this.client.options.signer;
   }
 }

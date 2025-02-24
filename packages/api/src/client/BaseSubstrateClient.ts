@@ -1,8 +1,7 @@
-import { Signer } from '@polkadot/types/types';
 import { $Metadata, BlockHash, Hash, Metadata, PortableRegistry, RuntimeVersion } from '@dedot/codecs';
 import type { JsonRpcProvider } from '@dedot/providers';
 import { type IStorage, LocalStorage } from '@dedot/storage';
-import { GenericSubstrateApi, RpcVersion, VersionedGenericSubstrateApi } from '@dedot/types';
+import { GenericSubstrateApi, InjectedSigner, RpcVersion, VersionedGenericSubstrateApi } from '@dedot/types';
 import { calcRuntimeApiHash, deferred, Deferred, ensurePresence as _ensurePresence, u8aToHex } from '@dedot/utils';
 import type { SubstrateApi } from '../chaintypes/index.js';
 import { ConstantExecutor, ErrorExecutor, EventExecutor } from '../executor/index.js';
@@ -349,7 +348,7 @@ export abstract class BaseSubstrateClient<
     throw new Error('Unimplemented!');
   }
 
-  setSigner(signer?: Signer): void {
+  setSigner(signer?: InjectedSigner): void {
     this._options.signer = signer;
   }
 }

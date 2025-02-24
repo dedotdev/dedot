@@ -1,7 +1,7 @@
 import Keyring from '@polkadot/keyring';
-import { Signer, SignerResult } from '@polkadot/types/types';
 import { cryptoWaitReady } from '@polkadot/util-crypto';
 import { ExtrinsicSignature } from '@dedot/codecs';
+import { InjectedSigner, SignerResult } from '@dedot/types';
 import { assert, u8aToHex } from '@dedot/utils';
 import { $, LegacyClient, WsProvider } from 'dedot';
 
@@ -42,7 +42,7 @@ export const run = async (nodeName: any, networkInfo: any): Promise<void> => {
     },
   };
 
-  const verifySigner = (signer?: Signer) => {
+  const verifySigner = (signer?: InjectedSigner) => {
     return new Promise<void>(async (resolve) => {
       const remarkWithEventTx = await api.tx.system.remarkWithEvent('Hello Dedot').sign(alice.address, { signer });
 

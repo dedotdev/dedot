@@ -1,6 +1,5 @@
-import { IKeyringPair } from '@polkadot/types/types';
 import { TransactionStatus } from '@dedot/codecs';
-import type { AddressOrPair, TxStatus } from '@dedot/types';
+import type { AddressOrPair, IKeyringPair, TxStatus } from '@dedot/types';
 import { assert, blake2AsU8a, HexString, hexToU8a, isFunction } from '@dedot/utils';
 
 export function isKeyringPair(account: AddressOrPair): account is IKeyringPair {

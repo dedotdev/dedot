@@ -1,9 +1,15 @@
-import { Signer } from '@polkadot/types/types';
 import { BlockHash, Hash, Metadata, PortableRegistry } from '@dedot/codecs';
 import type { ConnectionStatus, JsonRpcProvider, ProviderEvent } from '@dedot/providers';
 import type { AnyShape } from '@dedot/shape';
 import type { IStorage } from '@dedot/storage';
-import type { GenericSubstrateApi, RpcVersion, RuntimeApiName, RuntimeApiSpec, Unsub } from '@dedot/types';
+import type {
+  GenericSubstrateApi,
+  InjectedSigner,
+  RpcVersion,
+  RuntimeApiName,
+  RuntimeApiSpec,
+  Unsub,
+} from '@dedot/types';
 import type { HashFn, HexString, IEventEmitter } from '@dedot/utils';
 import type { AnySignedExtension } from './extrinsic/index.js';
 
@@ -63,7 +69,7 @@ export interface ApiOptions extends JsonRpcClientOptions {
   /**
    * A signer instance to use for signing transactions
    */
-  signer?: Signer;
+  signer?: InjectedSigner;
 }
 
 export type ApiEvent = ProviderEvent | 'ready' | 'runtimeUpgraded';
@@ -140,7 +146,7 @@ export interface ISubstrateClient<
    *
    * @param signer
    */
-  setSigner(signer?: Signer): void;
+  setSigner(signer?: InjectedSigner): void;
 }
 
 /**

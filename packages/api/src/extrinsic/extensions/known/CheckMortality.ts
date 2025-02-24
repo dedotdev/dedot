@@ -1,5 +1,5 @@
-import { SignerPayloadJSON } from '@polkadot/types/types';
 import { BlockHash, EraLike, Hash, Header } from '@dedot/codecs';
+import { SignerPayloadJSON } from '@dedot/types';
 import { assert, bnMin, isZeroHex, numberToHex, u8aToHex } from '@dedot/utils';
 import { DedotClient } from '../../../client/index.js';
 import { SignedExtension } from '../SignedExtension.js';

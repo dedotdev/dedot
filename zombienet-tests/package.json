@@ -10,8 +10,5 @@
     "@polkadot/keyring": "^13.3.1",
     "dedot": "workspace:*"
   },
-  "devDependencies": {
-    "@polkadot/types": "^15.5.2"
-  },
   "license": "Apache-2.0"
 }

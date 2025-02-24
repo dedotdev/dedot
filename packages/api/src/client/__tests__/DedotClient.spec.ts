@@ -1,11 +1,11 @@
 import staticSubstrateV15 from '@polkadot/types-support/metadata/v15/substrate-hex';
-import { Signer } from '@polkadot/types/types';
 import { SubstrateRuntimeVersion } from '@dedot/api';
 import { fakeSigner } from '@dedot/api/extrinsic/submittable/fakeSigner';
 import { $RuntimeVersion, type RuntimeVersion, unwrapOpaqueMetadata } from '@dedot/codecs';
 import { WsProvider } from '@dedot/providers';
 import type { AnyShape } from '@dedot/shape';
 import * as $ from '@dedot/shape';
+import { InjectedSigner } from '@dedot/types';
 import {
   MethodResponse,
   OperationBodyDone,
@@ -294,7 +294,7 @@ describe('DedotClient', () => {
 
         describe('signer should works', () => {
           const ALICE = '5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY';
-          let signer: Signer;
+          let signer: InjectedSigner;
 
           beforeEach(() => {
             signer = {
