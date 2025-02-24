@@ -1,7 +1,6 @@
-import { SignerPayloadJSON } from '@polkadot/types/types';
 import { PortableRegistry, SignedExtensionDefLatest } from '@dedot/codecs';
 import * as $ from '@dedot/shape';
-import { PayloadOptions } from '@dedot/types';
+import { PayloadOptions, SignerPayloadJSON } from '@dedot/types';
 import { ensurePresence } from '@dedot/utils';
 import { ISubstrateClient } from '../../types.js';
 

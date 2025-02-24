@@ -42,9 +42,6 @@
     "access": "public",
     "directory": "dist"
   },
-  "devDependencies": {
-    "@polkadot/types": "^15.5.2"
-  },
   "engines": {
     "node": ">=18"
   },

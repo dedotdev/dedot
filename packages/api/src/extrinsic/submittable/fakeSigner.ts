@@ -1,4 +1,4 @@
-import type { Signer, SignerResult } from '@polkadot/types/types';
+import { InjectedSigner, SignerResult } from '@dedot/types';
 import { u8aToHex } from '@dedot/utils';
 
 const FAKE_SIGNATURE = new Uint8Array(64 * 8).fill(0);
@@ -10,4 +10,4 @@ export const fakeSigner = {
       signature: u8aToHex(FAKE_SIGNATURE),
     };
   },
-} as Signer;
+} as InjectedSigner;
