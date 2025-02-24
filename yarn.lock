@@ -3879,7 +3879,7 @@ __metadata:
     prettier-plugin-organize-imports: "npm:^3.2.4"
     ts-node: "npm:^10.9.2"
     tsc-esm-fix: "npm:^2.20.27"
-    typedoc: "npm:^0.27.6"
+    typedoc: "npm:^0.27.8"
     typescript: "npm:5.4.5"
     vite-tsconfig-paths: "npm:^4.3.2"
     vitest: "npm:^2.1.8"
@@ -9089,9 +9089,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"typedoc@npm:^0.27.6":
-  version: 0.27.6
-  resolution: "typedoc@npm:0.27.6"
+"typedoc@npm:^0.27.8":
+  version: 0.27.8
+  resolution: "typedoc@npm:0.27.8"
   dependencies:
     "@gerrit0/mini-shiki": "npm:^1.24.0"
     lunr: "npm:^2.3.9"
@@ -9102,7 +9102,7 @@ __metadata:
     typescript: 5.0.x || 5.1.x || 5.2.x || 5.3.x || 5.4.x || 5.5.x || 5.6.x || 5.7.x
   bin:
     typedoc: bin/typedoc
-  checksum: 10c0/74af856fc2b9ca151567db8e08737a6ab8b29efb611414510eb833f80723245bc6ade00f2be7a410e335833cfd5e3deb1ae1ecfdb4da3a13c65faedd1f1805b0
+  checksum: 10c0/640921f9b514b92ba94151a9c784e8071b0a229fd6749107fc1985d14d896a7d0f8538c15c2d73b3dffa4589c7c53d85da6003c0d5d921f21d1812768b3dece9
   languageName: node
   linkType: hard
 
