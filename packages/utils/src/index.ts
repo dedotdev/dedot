@@ -15,3 +15,4 @@ export * from './to.js';
 export * from './misc.js';
 export * from './deferred.js';
 export * from './queue/index.js';
+export * from './formatBalance.js';
