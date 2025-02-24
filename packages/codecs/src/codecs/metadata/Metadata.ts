@@ -1,4 +1,3 @@
-import staticSubstrateV15 from '@polkadot/types-support/metadata/v15/substrate-hex';
 import { OpaqueMetadata } from '@dedot/codecs/codecs';
 import * as $ from '@dedot/shape';
 import { ensurePresence, HexString, u8aToHex } from '@dedot/utils';
