@@ -39,6 +39,11 @@ Delightful JavaScript/TypeScript client for [Polkadot](https://polkadot.network/
 - ✅ [Typed Contract APIs](https://docs.dedot.dev/ink-smart-contracts/intro)
 - ✅ Fully-typed low-level [JSON-RPC client](https://docs.dedot.dev/clients-and-providers/clients#jsonrpcclient)
 
+> [!TIP]
+> Are you developing an [ink!](https://use.ink/) dApp?
+>
+> Check out [Typink](https://github.com/dedotdev/typink) (https://typink.dev), a comprehensive toolkit for ink! dApp development, built on Dedot! 
+
 ### Documentation
 Check out Dedot documentation on the website: https://dedot.dev
 - [Getting started](https://docs.dedot.dev/getting-started/installation)
