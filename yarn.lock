@@ -1773,28 +1773,28 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@polkadot/keyring@npm:^13.3.1":
-  version: 13.3.1
-  resolution: "@polkadot/keyring@npm:13.3.1"
+"@polkadot/keyring@npm:^13.4.3":
+  version: 13.4.3
+  resolution: "@polkadot/keyring@npm:13.4.3"
   dependencies:
-    "@polkadot/util": "npm:13.3.1"
-    "@polkadot/util-crypto": "npm:13.3.1"
+    "@polkadot/util": "npm:13.4.3"
+    "@polkadot/util-crypto": "npm:13.4.3"
     tslib: "npm:^2.8.0"
   peerDependencies:
-    "@polkadot/util": 13.3.1
-    "@polkadot/util-crypto": 13.3.1
-  checksum: 10c0/30090dc1c597e0c04a5750529381242aa0a58dd3bb41054e06e950ff50dbc1d4d54295c7a91ebef1f54d14744433dda3eb148c110498d5fda5c5c0a036684de2
+    "@polkadot/util": 13.4.3
+    "@polkadot/util-crypto": 13.4.3
+  checksum: 10c0/3cffcbcee32ec4212f4ee69cd9dde4ea4875f456b748130a1dc4b318d1ac34550bbb95a67c2ab03d7162f81f8c33b15cf6c5204dad169f975141a65345c0d72a
   languageName: node
   linkType: hard
 
-"@polkadot/networks@npm:13.3.1":
-  version: 13.3.1
-  resolution: "@polkadot/networks@npm:13.3.1"
+"@polkadot/networks@npm:13.4.3":
+  version: 13.4.3
+  resolution: "@polkadot/networks@npm:13.4.3"
   dependencies:
-    "@polkadot/util": "npm:13.3.1"
+    "@polkadot/util": "npm:13.4.3"
     "@substrate/ss58-registry": "npm:^1.51.0"
     tslib: "npm:^2.8.0"
-  checksum: 10c0/ed9075a597e63dd8e2b14f0b60820384dd03489898c157195b94be835350f9091a4aee3c585c77ee9853548a2df10415a820069bf2992aa8b864805e79e4b815
+  checksum: 10c0/a178369c8fef6fb32e5096a897b36a70dedd657ef198333223be9d36ca17ba0a26301c5896aa3d88a0a91a778eee63591f6b5884d630d79f32d81c3e191cf51d
   languageName: node
   linkType: hard
 
@@ -1808,27 +1808,42 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@polkadot/util-crypto@npm:13.3.1":
-  version: 13.3.1
-  resolution: "@polkadot/util-crypto@npm:13.3.1"
+"@polkadot/util-crypto@npm:13.4.3":
+  version: 13.4.3
+  resolution: "@polkadot/util-crypto@npm:13.4.3"
   dependencies:
     "@noble/curves": "npm:^1.3.0"
     "@noble/hashes": "npm:^1.3.3"
-    "@polkadot/networks": "npm:13.3.1"
-    "@polkadot/util": "npm:13.3.1"
+    "@polkadot/networks": "npm:13.4.3"
+    "@polkadot/util": "npm:13.4.3"
     "@polkadot/wasm-crypto": "npm:^7.4.1"
     "@polkadot/wasm-util": "npm:^7.4.1"
-    "@polkadot/x-bigint": "npm:13.3.1"
-    "@polkadot/x-randomvalues": "npm:13.3.1"
+    "@polkadot/x-bigint": "npm:13.4.3"
+    "@polkadot/x-randomvalues": "npm:13.4.3"
     "@scure/base": "npm:^1.1.7"
     tslib: "npm:^2.8.0"
   peerDependencies:
-    "@polkadot/util": 13.3.1
-  checksum: 10c0/130138ca9ef3fb92f2b50912840ddc6ab962152ad3fcd53d72beb24b67728e97b1a90b70ecd294f3afaeac7aef0f895808283a832ad426cbc9bc618c4df7775c
+    "@polkadot/util": 13.4.3
+  checksum: 10c0/601b3d57eea400c9229d4766092659e8095eb7aa7329cdddb0f6bc325b312cf7bdaa24c86792ff1aae4b7d810130455c425a1336cf9066adbef66b5d923c6eeb
   languageName: node
   linkType: hard
 
-"@polkadot/util@npm:13.3.1, @polkadot/util@npm:^13.3.1":
+"@polkadot/util@npm:13.4.3":
+  version: 13.4.3
+  resolution: "@polkadot/util@npm:13.4.3"
+  dependencies:
+    "@polkadot/x-bigint": "npm:13.4.3"
+    "@polkadot/x-global": "npm:13.4.3"
+    "@polkadot/x-textdecoder": "npm:13.4.3"
+    "@polkadot/x-textencoder": "npm:13.4.3"
+    "@types/bn.js": "npm:^5.1.6"
+    bn.js: "npm:^5.2.1"
+    tslib: "npm:^2.8.0"
+  checksum: 10c0/06798e9799926abcf3b40fff1e659099ca8f8be378a41bda30f12b2cd8f90ce18b8a3feeb735c0cab8c183231cebec5fbbeb26046fa48ca7e825bebed5f79ddc
+  languageName: node
+  linkType: hard
+
+"@polkadot/util@npm:^13.3.1":
   version: 13.3.1
   resolution: "@polkadot/util@npm:13.3.1"
   dependencies:
@@ -1933,6 +1948,16 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@polkadot/x-bigint@npm:13.4.3":
+  version: 13.4.3
+  resolution: "@polkadot/x-bigint@npm:13.4.3"
+  dependencies:
+    "@polkadot/x-global": "npm:13.4.3"
+    tslib: "npm:^2.8.0"
+  checksum: 10c0/133bb54e6020dde4945ddaa685f0714f09930ef1518f8ab3e03a042ab6b892bb3ec882199966c290adbe5dc2b3c6d6312624a8671eb835346df8664c3d2f1773
+  languageName: node
+  linkType: hard
+
 "@polkadot/x-global@npm:13.0.2":
   version: 13.0.2
   resolution: "@polkadot/x-global@npm:13.0.2"
@@ -1960,16 +1985,16 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@polkadot/x-randomvalues@npm:13.3.1":
-  version: 13.3.1
-  resolution: "@polkadot/x-randomvalues@npm:13.3.1"
+"@polkadot/x-randomvalues@npm:13.4.3":
+  version: 13.4.3
+  resolution: "@polkadot/x-randomvalues@npm:13.4.3"
   dependencies:
-    "@polkadot/x-global": "npm:13.3.1"
+    "@polkadot/x-global": "npm:13.4.3"
     tslib: "npm:^2.8.0"
   peerDependencies:
-    "@polkadot/util": 13.3.1
+    "@polkadot/util": 13.4.3
     "@polkadot/wasm-util": "*"
-  checksum: 10c0/569bc4f03991c4f2e4d907b4a9a85a0472afb3d296dc4e42c0ca84f7f6bd6e83f1d3cd8d84275daff7d065bfd21b02860f68f86be405c2e2a85cd98c01f12d58
+  checksum: 10c0/be067c265c0a2fde838a876e352a35b9bb3950c1b0e87b5464f31e18b3999b50daf63d0dcca3819ea33cbda44e7857d53b4fa391c64ae00a975e9c09b5e21578
   languageName: node
   linkType: hard
 
@@ -1983,6 +2008,16 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@polkadot/x-textdecoder@npm:13.4.3":
+  version: 13.4.3
+  resolution: "@polkadot/x-textdecoder@npm:13.4.3"
+  dependencies:
+    "@polkadot/x-global": "npm:13.4.3"
+    tslib: "npm:^2.8.0"
+  checksum: 10c0/187685b2d125bf22828bd39977941d77ba314af37691f1e86a123fa148a9cd7e0ef4470048d40454eeb8c1830e89d7258bd314b3ee47d6e6557de910d1871b3c
+  languageName: node
+  linkType: hard
+
 "@polkadot/x-textencoder@npm:13.3.1":
   version: 13.3.1
   resolution: "@polkadot/x-textencoder@npm:13.3.1"
@@ -1990,6 +2025,16 @@ __metadata:
     "@polkadot/x-global": "npm:13.3.1"
     tslib: "npm:^2.8.0"
   checksum: 10c0/df6c5fbeec59bd83e47824719ac2647f07972c9587c442940539aea331cb70aafea0ef9a04c23902c52fdf6471af8d1eb7430d218590f1b49ab101bb10e4b891
+  languageName: node
+  linkType: hard
+
+"@polkadot/x-textencoder@npm:13.4.3":
+  version: 13.4.3
+  resolution: "@polkadot/x-textencoder@npm:13.4.3"
+  dependencies:
+    "@polkadot/x-global": "npm:13.4.3"
+    tslib: "npm:^2.8.0"
+  checksum: 10c0/8c9b2f53142abf3dafd35c6fadf719e84098466e4ac9f4b58f0c7f0cce6aaf4c7a69d6323a708223e10bc439e35b87cd5ed95f507be7745fb23a32a3f52257b2
   languageName: node
   linkType: hard
 
@@ -9815,7 +9860,7 @@ __metadata:
   resolution: "zombienet-tests@workspace:zombienet-tests"
   dependencies:
     "@dedot/chaintypes": "npm:*"
-    "@polkadot/keyring": "npm:^13.3.1"
+    "@polkadot/keyring": "npm:^13.4.3"
     dedot: "workspace:*"
   languageName: unknown
   linkType: soft
