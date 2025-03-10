@@ -32,7 +32,7 @@
     "happy-dom": "^15.11.7",
     "husky": "^9.1.4",
     "lerna": "7.4.2",
-    "prettier": "^3.4.2",
+    "prettier": "^3.5.3",
     "prettier-plugin-organize-imports": "^3.2.4",
     "ts-node": "^10.9.2",
     "tsc-esm-fix": "^2.20.27",
