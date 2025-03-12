@@ -60,8 +60,11 @@ export interface PaginationOptions {
   startKey?: StorageKey;
 }
 
-type WithPagination<T> = T extends any[]
-  ? [...Partial<T>, pagination?: PaginationOptions]
+
+export type WithoutLast<T> = T extends any[] ? T extends [...infer U, any] ? U : T : T;
+
+export type WithPagination<T> = T extends any[]
+  ? [...Partial<WithoutLast<T>>, pagination?: PaginationOptions]
   : [pagination?: PaginationOptions];
 
 export type GenericStorageQuery<
@@ -85,7 +88,7 @@ export type GenericStorageQuery<
           multi: StorageMultiQueryMethod<T>;
         } & (KeyTypeOut extends any[]
           ? {
-              entries: (...args: Partial<KeyTypeOut>) => Promise<Array<[KeyTypeOut, NonNullable<ReturnType<T>>]>>;
+              entries: (...args: Partial<WithoutLast<KeyTypeOut>>) => Promise<Array<[KeyTypeOut, NonNullable<ReturnType<T>>]>>;
             }
           : {
               entries: () => Promise<Array<[KeyTypeOut, NonNullable<ReturnType<T>>]>>;

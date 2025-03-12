@@ -28,8 +28,10 @@ export class StorageQueryExecutorV2<
     // TODO improve this, fallback to use `archive`-prefixed if available?
     const entries = async (...args: any[]): Promise<Array<[any, any]>> => {
       const withArgs = !!args && args.length > 0;
+      const key = withArgs ? entry.encodeKey(args, true) : entry.prefixKey;
+
       const results = await this.chainHead.storage([
-        { type: 'descendantsValues', key: withArgs ? entry.encodePartialKey(args) : entry.prefixKey },
+        { type: 'descendantsValues', key },
       ]);
       return results.map(({ key, value }) => [
         entry.decodeKey(key as HexString),
