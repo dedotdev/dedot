@@ -60,6 +60,10 @@ export interface PaginationOptions {
   startKey?: StorageKey;
 }
 
+type WithPagination<T> = T extends any[]
+  ? [...Partial<T>, pagination?: PaginationOptions]
+  : [pagination?: PaginationOptions];
+
 export type GenericStorageQuery<
   Rv extends RpcVersion = RpcVersion,
   T extends AnyFunc = AnyFunc,
@@ -72,14 +76,21 @@ export type GenericStorageQuery<
     : Rv extends RpcLegacy
       ? {
           multi: StorageMultiQueryMethod<T>;
-          pagedKeys: (pagination?: PaginationOptions) => Promise<KeyTypeOut[]>;
-          pagedEntries: (pagination?: PaginationOptions) => Promise<Array<[KeyTypeOut, NonNullable<ReturnType<T>>]>>;
+          pagedKeys: (...args: WithPagination<KeyTypeOut>) => Promise<KeyTypeOut[]>;
+          pagedEntries: (
+            ...args: WithPagination<KeyTypeOut>
+          ) => Promise<Array<[KeyTypeOut, NonNullable<ReturnType<T>>]>>;
         }
       : {
           multi: StorageMultiQueryMethod<T>;
-          entries: () => Promise<Array<[KeyTypeOut, NonNullable<ReturnType<T>>]>>;
-          // TODO support pagedKeys, pagedEntries via archive-prefix apis
-        });
+        } & (KeyTypeOut extends any[]
+          ? {
+              entries: (...args: Partial<KeyTypeOut>) => Promise<Array<[KeyTypeOut, NonNullable<ReturnType<T>>]>>;
+            }
+          : {
+              entries: () => Promise<Array<[KeyTypeOut, NonNullable<ReturnType<T>>]>>;
+            }));
+// TODO support pagedKeys, pagedEntries via archive-prefix apis
 
 export type GenericRuntimeApiMethod<_ extends RpcVersion = RpcVersion, F extends AsyncMethod = AsyncMethod> = F & {
   meta: RuntimeApiMethodSpec;

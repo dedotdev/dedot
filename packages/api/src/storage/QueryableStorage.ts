@@ -67,6 +67,7 @@ export class QueryableStorage {
    * Encode plain key input to raw/bytes storage key
    *
    * @param keyInput
+   * TODO encode partial keys
    */
   encodeKey(keyInput?: any): StorageKey {
     const { storageType } = this.storageEntry;
@@ -79,6 +80,29 @@ export class QueryableStorage {
 
       const keyParts = keyTypeIds.map((keyId, index) => {
         const input = extractedInputs[index];
+        const hasher = HASHERS[hashers[index]];
+        const $keyCodec = this.registry.findCodec(keyId);
+        return hasher($keyCodec.tryEncode(input));
+      });
+
+      return u8aToHex(concatU8a(this.prefixKeyAsU8a, ...keyParts));
+    }
+
+    throw Error(`Invalid storage entry type: ${JSON.stringify(storageType)}`);
+  }
+
+  encodePartialKey(keyInput?: any): StorageKey {
+    const { storageType } = this.storageEntry;
+
+    if (storageType.type === 'Plain') {
+      return this.prefixKey;
+    } else if (storageType.type === 'Map') {
+      const { hashers, keyTypeIds } = this.#getStorageMapInfo(storageType);
+      // const extractedInputs = this.#extractRequiredKeyInputs(keyInput, hashers.length);
+      const extractedInputs = keyInput as any[];
+
+      const keyParts = extractedInputs.map((input, index) => {
+        const keyId = keyTypeIds[index];
         const hasher = HASHERS[hashers[index]];
         const $keyCodec = this.registry.findCodec(keyId);
         return hasher($keyCodec.tryEncode(input));
