@@ -165,7 +165,7 @@ export class QueryableStorage {
       }
 
       if (numberOfValue === 1) {
-        return [keyInput];
+        return allowPartialKeys ? keyInput : [keyInput];
       } else {
         if (!Array.isArray(keyInput)) {
           throw new Error(`Input should be an array with ${numberOfValue} value(s)`);
