@@ -60,14 +60,14 @@ export interface PaginationOptions {
   startKey?: StorageKey;
 }
 
-interface PagedKeysMethod<T> {
-  (...args: WithPagination<T>): Promise<T[]>;
-  (pagination?: PaginationOptions): Promise<T[]>;
+interface PagedKeysMethod<T extends AnyFunc = AnyFunc, TypeOut extends any = any> {
+  (...args: WithPagination<Parameters<T>[0]>): Promise<TypeOut[]>;
+  (pagination?: PaginationOptions): Promise<TypeOut[]>;
 }
 
-interface PagedEntriesMethod<T, TypeOut extends AnyFunc = AnyFunc> {
-  (...args: WithPagination<T>): Promise<Array<[T, NonNullable<ReturnType<TypeOut>>]>>;
-  (pagination?: PaginationOptions): Promise<Array<[T, NonNullable<ReturnType<TypeOut>>]>>;
+interface PagedEntriesMethod<T extends AnyFunc = AnyFunc, TypeOut extends any = any> {
+  (...args: WithPagination<Parameters<T>[0]>): Promise<Array<[TypeOut, NonNullable<ReturnType<T>>]>>;
+  (pagination?: PaginationOptions): Promise<Array<[TypeOut, NonNullable<ReturnType<T>>]>>;
 }
 
 export type WithoutLast<T> = T extends any[] ? T extends [...infer U, any] ? U : T : T;
@@ -88,8 +88,8 @@ export type GenericStorageQuery<
     : Rv extends RpcLegacy
       ? {
           multi: StorageMultiQueryMethod<T>;
-          pagedKeys: PagedKeysMethod<KeyTypeOut>;
-          pagedEntries: PagedEntriesMethod<KeyTypeOut, T>;
+          pagedKeys: PagedKeysMethod<T, KeyTypeOut>;
+          pagedEntries: PagedEntriesMethod<T, KeyTypeOut>;
         }
       : {
           multi: StorageMultiQueryMethod<T>;
