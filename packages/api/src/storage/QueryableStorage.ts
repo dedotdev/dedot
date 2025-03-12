@@ -173,15 +173,18 @@ export class QueryableStorage {
 
         if (allowPartialKeys) {
           if (keyInput.length >= numberOfValue) {
-            throw new Error(`Invalid key inputs, partial input cannot be longer than required key inputs (${numberOfValue})`);
+            throw new Error(`Invalid key inputs, partial key inputs cannot be longer than required key inputs (${numberOfValue})`);
           }
+          
+          // TODO we need to make sure only filter out values in the last positions
+          return keyInput.slice(0, numberOfValue).filter((one) => one !== undefined && one !== null);
         } else {
           if (keyInput.length !== numberOfValue) {
             throw new Error(`Mismatch key inputs length, required an array of ${numberOfValue} value(s)`);
           }
-        }
 
-        return keyInput.slice(0, numberOfValue);
+          return keyInput.slice(0, numberOfValue);
+        }
       }
     }
   }
