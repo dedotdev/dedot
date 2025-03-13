@@ -165,7 +165,7 @@ export class QueryableStorage {
       }
 
       if (numberOfValue === 1) {
-        return allowPartialKeys ? keyInput : [keyInput];
+        return allowPartialKeys && Array.isArray(keyInput) ? keyInput : [keyInput];
       } else {
         if (!Array.isArray(keyInput)) {
           throw new Error(`Input should be an array with ${numberOfValue} value(s)`);
@@ -173,9 +173,11 @@ export class QueryableStorage {
 
         if (allowPartialKeys) {
           if (keyInput.length >= numberOfValue) {
-            throw new Error(`Invalid key inputs, partial key inputs cannot be longer than required key inputs (${numberOfValue})`);
+            throw new Error(
+              `Invalid key inputs, partial key inputs should be less than the required key inputs, (max: ${numberOfValue - 1})`,
+            );
           }
-          
+
           // TODO we need to make sure only filter out values in the last positions
           return keyInput.slice(0, numberOfValue).filter((one) => one !== undefined && one !== null);
         } else {
