@@ -1,6 +1,6 @@
 {
   "name": "@dedot/codecs",
-  "version": "0.7.1",
+  "version": "0.8.0",
   "description": "Known codecs",
   "author": "Thang X. Vu <thang@coongcrafts.io>",
   "homepage": "https://github.com/dedotdev/dedot/tree/main/packages/codecs",
