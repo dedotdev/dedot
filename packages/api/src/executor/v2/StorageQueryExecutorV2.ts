@@ -26,8 +26,13 @@ export class StorageQueryExecutorV2<
     // so for now we're trying to pull all entries from storage
     // this might take a while for large storage
     // TODO improve this, fallback to use `archive`-prefixed if available?
-    const entries = async (): Promise<Array<[any, any]>> => {
-      const results = await this.chainHead.storage([{ type: 'descendantsValues', key: entry.prefixKey }]);
+    const entries = async (...args: any[]): Promise<Array<[any, any]>> => {
+      const withArgs = !!args && args.length > 0;
+      const key = withArgs ? entry.encodeKey(args, true) : entry.prefixKey;
+
+      const results = await this.chainHead.storage([
+        { type: 'descendantsValues', key },
+      ]);
       return results.map(({ key, value }) => [
         entry.decodeKey(key as HexString),
         entry.decodeValue(value as HexString),

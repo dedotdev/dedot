@@ -60,26 +60,61 @@ export interface PaginationOptions {
   startKey?: StorageKey;
 }
 
+interface PagedKeysMethod<T extends AnyFunc = AnyFunc, TypeOut extends any = any> {
+  (...args: WithPagination<Parameters<T>[0]>): Promise<TypeOut[]>;
+  (pagination?: PaginationOptions): Promise<TypeOut[]>;
+}
+
+interface PagedEntriesMethod<T extends AnyFunc = AnyFunc, TypeOut extends any = any> {
+  (...args: WithPagination<Parameters<T>[0]>): Promise<Array<[TypeOut, NonNullable<ReturnType<T>>]>>;
+  (pagination?: PaginationOptions): Promise<Array<[TypeOut, NonNullable<ReturnType<T>>]>>;
+}
+
+export type WithoutLast<T> = T extends any[] ? T extends [...infer U, any] ? U : T : T;
+
+export type WithPagination<T> = T extends any[]
+  ? [...Partial<WithoutLast<T>>, pagination?: PaginationOptions]
+  : [pagination?: PaginationOptions];
+
+/**
+ * @description A generic type for storage query methods that handles both single and map (double & n-th map) storage entries
+ */
 export type GenericStorageQuery<
   Rv extends RpcVersion = RpcVersion,
   T extends AnyFunc = AnyFunc,
   KeyTypeOut extends any = undefined,
 > = StorageQueryMethod<T> & {
+  /** Metadata for the storage entry including pallet name, storage name, and type information, ... */
   meta: PalletStorageEntryMetadataLatest;
+
+  /** Get the raw storage key for the given arguments */
   rawKey: (...args: Parameters<T>) => StorageKey;
 } & (KeyTypeOut extends undefined
     ? {}
     : Rv extends RpcLegacy
       ? {
+          /** Query multiple storage entries in a single call */
           multi: StorageMultiQueryMethod<T>;
-          pagedKeys: (pagination?: PaginationOptions) => Promise<KeyTypeOut[]>;
-          pagedEntries: (pagination?: PaginationOptions) => Promise<Array<[KeyTypeOut, NonNullable<ReturnType<T>>]>>;
+
+          /** Get storage keys in paginated form */
+          pagedKeys: PagedKeysMethod<T, KeyTypeOut>;
+
+          /** Get storage entries (key-value pairs) in paginated form */
+          pagedEntries: PagedEntriesMethod<T, KeyTypeOut>;
         }
       : {
+          /** Query multiple storage entries in a single call */
           multi: StorageMultiQueryMethod<T>;
-          entries: () => Promise<Array<[KeyTypeOut, NonNullable<ReturnType<T>>]>>;
-          // TODO support pagedKeys, pagedEntries via archive-prefix apis
-        });
+        } & (KeyTypeOut extends any[]
+          ? {
+              /** Get all storage entries, allowing partial keys input */
+              entries: (...args: Partial<WithoutLast<KeyTypeOut>>) => Promise<Array<[KeyTypeOut, NonNullable<ReturnType<T>>]>>;
+            }
+          : {
+              /** Get all storage entries */
+              entries: () => Promise<Array<[KeyTypeOut, NonNullable<ReturnType<T>>]>>;
+            }));
+// TODO support pagedKeys, pagedEntries via archive-prefix apis
 
 export type GenericRuntimeApiMethod<_ extends RpcVersion = RpcVersion, F extends AsyncMethod = AsyncMethod> = F & {
   meta: RuntimeApiMethodSpec;

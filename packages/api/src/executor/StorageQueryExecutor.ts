@@ -6,9 +6,10 @@ import type {
   GenericSubstrateApi,
   PaginationOptions,
   Unsub,
+  WithPagination,
 } from '@dedot/types';
 import type { StorageChangeSet } from '@dedot/types/json-rpc';
-import { assert, isFunction } from '@dedot/utils';
+import { assert, isFunction, isObject } from '@dedot/utils';
 import { QueryableStorage } from '../storage/QueryableStorage.js';
 import { Executor } from './Executor.js';
 
@@ -102,20 +103,32 @@ export class StorageQueryExecutor<
   }
 
   protected exposeStorageMapMethods(entry: QueryableStorage): Record<string, AsyncMethod> {
-    const rawKeys = async (pagination?: PaginationOptions): Promise<StorageKey[]> => {
+    const rawKeys = async (partialInput: any[], pagination?: PaginationOptions): Promise<StorageKey[]> => {
       const pageSize = pagination?.pageSize || DEFAULT_KEYS_PAGE_SIZE;
       const startKey = pagination?.startKey || entry.prefixKey;
 
-      return await this.client.rpc.state_getKeysPaged(entry.prefixKey, pageSize, startKey, this.atBlockHash);
+      return await this.client.rpc.state_getKeysPaged(entry.encodeKey(partialInput, true), pageSize, startKey, this.atBlockHash);
     };
 
-    const pagedKeys = async (pagination?: PaginationOptions): Promise<any[]> => {
-      const storageKeys = await rawKeys({ pageSize: DEFAULT_KEYS_PAGE_SIZE, ...pagination });
+    const extractArgs = (args: any[]): [any[], PaginationOptions | undefined] => {
+      const inArgs = args.slice();
+      const lastArg = args.at(-1);
+      const pagination = isObject(lastArg) && ('pageSize' in lastArg || 'startKey' in lastArg) ? inArgs.pop() : undefined;
+
+      return [inArgs, pagination];
+    };
+
+    const pagedKeys = async (...args: any[]): Promise<any[]> => {
+      const [inArgs, pagination] = extractArgs(args);
+
+      const storageKeys = await rawKeys(inArgs, { pageSize: DEFAULT_KEYS_PAGE_SIZE, ...pagination });
       return storageKeys.map((key) => entry.decodeKey(key));
     };
 
-    const pagedEntries = async (pagination?: PaginationOptions): Promise<Array<[any, any]>> => {
-      const storageKeys = await rawKeys({ pageSize: DEFAULT_ENTRIES_PAGE_SIZE, ...pagination });
+    const pagedEntries = async (...args: any[]): Promise<Array<[any, any]>> => {
+      const [inArgs, pagination] = extractArgs(args);
+
+      const storageKeys = await rawKeys(inArgs, { pageSize: DEFAULT_ENTRIES_PAGE_SIZE, ...pagination });
       const storageMap = await this.queryStorage(storageKeys, this.atBlockHash);
       return storageKeys.map((key) => [entry.decodeKey(key), entry.decodeValue(storageMap[key])]);
     };
