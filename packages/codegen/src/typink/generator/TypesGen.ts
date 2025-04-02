@@ -24,7 +24,7 @@ export class TypesGen extends BaseTypesGen {
         }
       });
 
-    const importTypes = this.typeImports.toImports({ excludeModules: ['./types'], useSubPaths });
+    const importTypes = this.typeImports.toImports({ excludeModules: ['./types.js'], useSubPaths });
     const template = compileTemplate('typink/templates/types.hbs');
 
     return beautifySourceCode(template({ importTypes, defTypeOut }));

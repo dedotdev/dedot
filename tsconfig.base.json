@@ -1,8 +1,4 @@
 {
-  "ts-node": {
-    "esm": true,
-    "experimentalSpecifierResolution": "node"
-  },
   "compilerOptions": {
     "target": "ESNext",
     "useDefineForClassFields": true,

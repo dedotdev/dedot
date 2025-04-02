@@ -50,7 +50,7 @@ export class TypeImports {
       [this.codecTypes, `${prefix}dedot/codecs`],
       [this.contractTypes, `${prefix}dedot/contracts`],
       [this.chainTypes, prefix ? '@dedot/api/chaintypes' : 'dedot/chaintypes'],
-      [this.portableTypes, './types'],
+      [this.portableTypes, './types.js'],
     ];
 
     return toImports

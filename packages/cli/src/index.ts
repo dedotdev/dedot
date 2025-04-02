@@ -2,8 +2,8 @@ import { dedot } from './dedot.js';
 
 export { dedot };
 
-// We run this directly for development purpose via ts-node
+// We run this directly for development purpose via tsx
 // @ts-ignore
-if (process[Symbol.for('ts-node.register.instance')]) {
+if (typeof process.env._ === 'string' && process.env._.includes('tsx')) {
   dedot();
 }
