@@ -115,7 +115,8 @@ export abstract class BaseSubstrateClient<
     }
 
     if (shouldUpdateCache && this._localCache) {
-      await this._localCache.set(metadataKey, u8aToHex($Metadata.tryEncode(metadata)));
+      const encodedMetadata = u8aToHex($Metadata.tryEncode(metadata));
+      await this.safeSetMetadataToCache(metadataKey, encodedMetadata);
     }
 
     if (!metadata) {
@@ -123,6 +124,39 @@ export abstract class BaseSubstrateClient<
     }
 
     this.setMetadata(metadata);
+  }
+
+  /**
+   * Safely set metadata to cache with fallback cleanup if storage limit is exceeded
+   */
+  protected async safeSetMetadataToCache(key: string, value: string): Promise<void> {
+    if (!this._localCache) return;
+    
+    try {
+      // First attempt to set the metadata
+      await this._localCache.set(key, value);
+    } catch (error) {
+      console.warn('Failed to store metadata in cache, attempting to clean up old entries:', error);
+      
+      try {
+        // Get all keys that start with RAW_META/
+        const allKeys = await this._localCache.keys();
+        const metadataKeys = allKeys.filter(k => k.startsWith('RAW_META/') && k !== key);
+        
+        // Remove all other metadata entries
+        for (const metaKey of metadataKeys) {
+          await this._localCache.remove(metaKey);
+        }
+        
+        console.info(`Cleaned up ${metadataKeys.length} old metadata entries, trying again`);
+        
+        // Try again after cleanup
+        await this._localCache.set(key, value);
+      } catch (cleanupError) {
+        // If it still fails after cleanup, log the error but continue
+        console.error('Failed to store metadata even after cleanup:', cleanupError);
+      }
+    }
   }
 
   protected setMetadata(metadata: Metadata) {
