@@ -3,14 +3,14 @@
 import type { SubstrateApi } from 'dedot/chaintypes';
 import type { GenericContractApi } from 'dedot/contracts';
 import type { RpcVersion, VersionedGenericSubstrateApi } from 'dedot/types';
-import { ConstructorQuery } from './constructor-query';
-import { ConstructorTx } from './constructor-tx';
-import { ContractEvents } from './events';
-import { ContractQuery } from './query';
-import { ContractTx } from './tx';
-import type { InkPrimitivesLangError } from './types';
+import { ConstructorQuery } from './constructor-query.js';
+import { ConstructorTx } from './constructor-tx.js';
+import { ContractEvents } from './events.js';
+import { ContractQuery } from './query.js';
+import { ContractTx } from './tx.js';
+import type { InkPrimitivesLangError } from './types.js';
 
-export * from './types';
+export * from './types.js';
 
 /**
  * @name: FlipperContractApi

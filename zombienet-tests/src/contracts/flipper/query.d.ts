@@ -9,7 +9,7 @@ import type {
   GenericContractQueryCall,
 } from 'dedot/contracts';
 import type { GenericSubstrateApi } from 'dedot/types';
-import type { FlipperFlipperError } from './types';
+import type { FlipperFlipperError } from './types.js';
 
 export interface ContractQuery<ChainApi extends GenericSubstrateApi> extends GenericContractQuery<ChainApi> {
   /**

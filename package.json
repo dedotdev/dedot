@@ -18,11 +18,11 @@
     "postinstall": "husky install",
     "copy-files-to-dist": "npx lerna exec --no-private -- node \\$LERNA_ROOT_PATH/scripts/copy-files-to-dist.js",
     "fix-esm-path": "npx tsc-esm-fix --src=packages --ext=.js",
-    "cli": "ts-node packages/cli/src/index.ts",
+    "cli": "npx tsx ./packages/cli/src/index.ts",
     "publish:next": "yarn build && npx lerna publish prerelease --canary --preid next.$(git rev-parse --short=8 HEAD) --dist-tag next --force-publish --no-private --no-git-tag-version --yes",
     "publish:pre": "yarn build && npx lerna publish prerelease -m \"chore(release): publish %s - [skip ci]\" --force-publish --no-private",
     "zombienet-test-preps": "npx lerna exec --no-private -- node \\$LERNA_ROOT_PATH/scripts/zombienet-tests-preps.js",
-    "gen:chaintypes-substrate": "yarn cli chaintypes -w substrate -c substrate -o ./packages/api/src/chaintypes -d=false -s=false && yarn fix-esm-path",
+    "gen:chaintypes-substrate": "yarn cli chaintypes -w substrate -c substrate -o ./packages/api/src/chaintypes -d=false -s=false",
     "typedoc": "yarn build && npx typedoc"
   },
   "devDependencies": {
@@ -34,7 +34,6 @@
     "lerna": "7.4.2",
     "prettier": "^3.4.2",
     "prettier-plugin-organize-imports": "^3.2.4",
-    "ts-node": "^10.9.2",
     "tsc-esm-fix": "^2.20.27",
     "tsx": "^4.19.3",
     "typedoc": "^0.27.6",
