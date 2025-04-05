@@ -19,7 +19,7 @@
     "build": "tsc --project tsconfig.build.json && cp -R ./bin ./dist",
     "clean": "rm -rf ./dist && rm -rf ./tsconfig.tsbuildinfo ./tsconfig.build.tsbuildinfo",
     "start": "tsx src/index.ts",
-    "test": "vitest --watch=false"
+    "test": "npx vitest --watch=false"
   },
   "dependencies": {
     "@dedot/api": "workspace:*",
