@@ -85,9 +85,6 @@ describe('isEmptyStructOrTuple', () => {
 });
 
 describe('FallbackSignedExtension', () => {
-  // Save original extensions
-  const originalExtensions = { ...knownSignedExtensions };
-
   // Mock client and registry
   const mockRegistry = {
     metadata: {
@@ -141,17 +138,6 @@ describe('FallbackSignedExtension', () => {
     registry: mockRegistry,
     options: {},
   };
-
-  beforeAll(() => {
-    // Remove CheckNonZeroSender and CheckWeight for testing
-    delete knownSignedExtensions.CheckNonZeroSender;
-    delete knownSignedExtensions.CheckWeight;
-  });
-
-  afterAll(() => {
-    // Restore original extensions
-    Object.assign(knownSignedExtensions, originalExtensions);
-  });
 
   it('should use FallbackSignedExtension for unknown extensions that do not require input', async () => {
     const extraSignedExtension = new ExtraSignedExtension(mockClient as any, {
