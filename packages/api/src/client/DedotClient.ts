@@ -1,7 +1,7 @@
 import { $H256, BlockHash, PortableRegistry } from '@dedot/codecs';
 import type { JsonRpcProvider } from '@dedot/providers';
 import { u32 } from '@dedot/shape';
-import { GenericSubstrateApi, RpcV2, VersionedGenericSubstrateApi } from '@dedot/types';
+import { Callback, GenericStorageQuery, GenericSubstrateApi, RpcV2, VersionedGenericSubstrateApi } from '@dedot/types';
 import { assert, concatU8a, HexString, noop, twox64Concat, u8aToHex, xxhashAsU8a } from '@dedot/utils';
 import type { SubstrateApi } from '../chaintypes/index.js';
 import {
@@ -13,6 +13,7 @@ import {
   TxExecutorV2,
 } from '../executor/index.js';
 import { ChainHead, ChainSpec, PinnedBlock, Transaction, TransactionWatch } from '../json-rpc/index.js';
+import { QueryableStorage } from '../storage/QueryableStorage.js';
 import { newProxyChain } from '../proxychain.js';
 import type { ApiOptions, ISubstrateClientAt, SubstrateRuntimeVersion, TxBroadcaster } from '../types.js';
 import { BaseSubstrateClient, ensurePresence } from './BaseSubstrateClient.js';
@@ -186,6 +187,101 @@ export class DedotClient<ChainApi extends VersionedGenericSubstrateApi = Substra
 
   override get tx(): ChainApi[RpcV2]['tx'] {
     return newProxyChain({ executor: new TxExecutorV2(this) }) as ChainApi[RpcV2]['tx'];
+  }
+
+  /**
+   * Query multiple storage items in a single call
+   * 
+   * @param queries Array of query specifications, each with a function and optional arguments
+   * @param callback Optional callback for subscription-based queries
+   * @returns For one-time queries: Array of decoded values; For subscriptions: Unsubscribe function
+   */
+  override async multiQuery(queries: { fn: GenericStorageQuery, args?: any[] }[], callback?: Callback<any[]>): Promise<any> {
+    // Extract the storage keys for each query
+    const keys = queries.map(q => q.fn.rawKey(...(q.args || [])));
+
+    // If a callback is provided, set up a subscription
+    if (callback) {
+      // Get the best block
+      const best = await this.chainHead.bestBlock();
+      
+      // Track the latest changes for each key
+      const latestChanges = new Map<string, any>();
+
+      // Function to pull storage values and call the callback if there are changes
+      const pull = async ({ hash }: PinnedBlock) => {
+        // Query storage using ChainHead API
+        const storageQueries = keys.map(key => ({ type: 'value' as const, key }));
+        const results = await this.chainHead.storage(storageQueries, undefined, hash);
+        
+        let changed = false;
+        
+        // Check for changes
+        results.forEach((result) => {
+          const key = result.key as string;
+          const value = result.value;
+          
+          if (latestChanges.size > 0 && latestChanges.get(key) === value) return;
+          
+          changed = true;
+          latestChanges.set(key, value);
+        });
+        
+        if (!changed) return;
+        
+        // Map the changes to decoded values
+        const values = queries.map((q, i) => {
+          const key = keys[i];
+          const value = latestChanges.get(key);
+          return value !== undefined ? this.#decodeStorageValue(q.fn, value) : undefined;
+        });
+        
+        // Call the callback with the decoded values
+        callback(values);
+      };
+      
+      // Initial pull
+      await pull(best);
+      
+      // Subscribe to best block events
+      const unsub = this.chainHead.on('bestBlock', pull);
+      
+      return async () => {
+        unsub();
+      };
+    } 
+    // Otherwise, just fetch once
+    else {
+      // Query storage using ChainHead API
+      const storageQueries = keys.map(key => ({ type: 'value' as const, key }));
+      const results = await this.chainHead.storage(storageQueries);
+      
+      // Create a map of key -> value
+      const resultsMap = new Map<string, any>();
+      results.forEach(result => {
+        resultsMap.set(result.key as string, result.value);
+      });
+      
+      // Map the results to decoded values
+      return queries.map((q, i) => {
+        const key = keys[i];
+        const value = resultsMap.get(key);
+        return value !== undefined ? this.#decodeStorageValue(q.fn, value) : undefined;
+      });
+    }
+  }
+
+  // Helper method to decode storage values
+  #decodeStorageValue(fn: GenericStorageQuery, value: any): any {
+    // Create a QueryableStorage instance for the storage entry
+    const entry = new QueryableStorage(
+      this.registry,
+      fn.meta.pallet,
+      fn.meta.name
+    );
+    
+    // Decode the value using the QueryableStorage instance
+    return entry.decodeValue(value);
   }
 
   /**
