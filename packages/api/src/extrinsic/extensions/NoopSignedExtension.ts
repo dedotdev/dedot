@@ -4,8 +4,18 @@ import { SignedExtension } from './SignedExtension.js';
 import { ISubstrateClient } from '../../types.js';
 
 /**
- * A no-operation signed extension that can be used as a fallback for unknown extensions
+ * A no-operation signed extension that can be used as a fallback for extensions
  * that don't require external input.
+ * 
+ * This extension is automatically used for:
+ * - Unknown extensions with empty struct or tuple types
+ * - Known extensions that don't require input, such as:
+ *   - CheckNonZeroSender: Ensures sender is not the zero address
+ *   - CheckWeight: Block resource (weight) limit check
+ *   - PrevalidateAttests: Validates `attest` calls prior to execution
+ *   - StorageWeightReclaim: Storage weight reclaim mechanism
+ * 
+ * These extensions have empty struct or tuple types and don't need explicit implementation.
  */
 export class NoopSignedExtension extends SignedExtension {
   private readonly extensionIdent: string;

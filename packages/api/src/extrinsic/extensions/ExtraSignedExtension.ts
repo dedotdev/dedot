@@ -65,8 +65,6 @@ export class ExtraSignedExtension extends SignedExtension<any[], any[]> {
         );
 
         if (requireNoExternalInputs) {
-          // Use NoopSignedExtension for extensions that don't require input
-          console.warn(`SignedExtension for ${extDef.ident} not found, using NoopSignedExtension`);
           return new NoopSignedExtension(
             this.client,
             {
