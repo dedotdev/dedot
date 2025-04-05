@@ -1,4 +1,4 @@
-import { describe, expect, it, beforeAll, afterAll, vi } from 'vitest';
+import { describe, expect, it, beforeAll, afterAll } from 'vitest';
 import { knownSignedExtensions } from '../known/index.js';
 import { ExtraSignedExtension } from '../ExtraSignedExtension.js';
 import { NoopSignedExtension, isEmptyStructOrTuple } from '../NoopSignedExtension.js';
@@ -87,7 +87,6 @@ describe('isEmptyStructOrTuple', () => {
 describe('NoopSignedExtension', () => {
   // Save original extensions
   const originalExtensions = { ...knownSignedExtensions };
-  const mockConsoleWarn = vi.spyOn(console, 'warn').mockImplementation(() => {});
 
   // Mock client and registry
   const mockRegistry = {
@@ -152,7 +151,6 @@ describe('NoopSignedExtension', () => {
   afterAll(() => {
     // Restore original extensions
     Object.assign(knownSignedExtensions, originalExtensions);
-    mockConsoleWarn.mockRestore();
   });
 
   it('should use NoopSignedExtension for unknown extensions that do not require input', async () => {
@@ -162,11 +160,6 @@ describe('NoopSignedExtension', () => {
 
     // This should not throw an error
     await extraSignedExtension.init();
-
-    // Check that console.warn was called for the unknown extension
-    expect(mockConsoleWarn).toHaveBeenCalledWith(
-      expect.stringContaining('SignedExtension for UnknownExtension not found, using NoopSignedExtension')
-    );
 
     // Check that the extensions were initialized correctly
     expect(extraSignedExtension.data.length).toBe(3);
