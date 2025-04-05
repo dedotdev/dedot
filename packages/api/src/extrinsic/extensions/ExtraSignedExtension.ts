@@ -1,9 +1,10 @@
 import * as $ from '@dedot/shape';
 import { SignerPayloadJSON, SignerPayloadRaw } from '@dedot/types';
-import { assert, ensurePresence, HexString, u8aToHex } from '@dedot/utils';
+import { ensurePresence, HexString, u8aToHex } from '@dedot/utils';
 import { ISignedExtension, SignedExtension } from './SignedExtension.js';
 import { FallbackSignedExtension, isEmptyStructOrTuple } from './FallbackSignedExtension.js';
 import { knownSignedExtensions } from './known/index.js';
+import type { SignedExtensionDefLatest } from '@dedot/codecs';
 
 export class ExtraSignedExtension extends SignedExtension<any[], any[]> {
   #signedExtensions?: ISignedExtension[];
@@ -57,28 +58,32 @@ export class ExtraSignedExtension extends SignedExtension<any[], any[]> {
           ...ensurePresence(this.options),
           def: extDef,
         });
-      } else {
-        // Check if the extension requires no external inputs (has empty/trivial types)
-        const requireNoExternalInputs = (
-          isEmptyStructOrTuple(this.registry, extDef.typeId) &&
-          isEmptyStructOrTuple(this.registry, extDef.additionalSigned)
+      } else if (this.isRequireNoExternalInputs(extDef)) {
+        return new FallbackSignedExtension(
+          this.client,
+          {
+            ...ensurePresence(this.options),
+            def: extDef,
+          },
+          extDef.ident
         );
-
-        if (requireNoExternalInputs) {
-          return new FallbackSignedExtension(
-            this.client,
-            {
-              ...ensurePresence(this.options),
-              def: extDef,
-            },
-            extDef.ident
-          );
-        }
-
-        // For extensions that require input but aren't implemented, throw an error
-        throw new Error(`SignedExtension for ${extDef.ident} requires input but is not implemented`);
       }
+
+      // For extensions that require input but aren't implemented, throw an error
+      throw new Error(`SignedExtension for ${extDef.ident} requires input but is not implemented`);
     });
+  }
+
+  /**
+   * Check if the extension requires no external inputs (e.g: struct or tuple with empty types like `()` or `[]`)
+   * @param extDef - The definition of the signed extension
+   * @returns boolean
+   */
+  private isRequireNoExternalInputs(extDef: SignedExtensionDefLatest): boolean {
+    return (
+      isEmptyStructOrTuple(this.registry, extDef.typeId) &&
+      isEmptyStructOrTuple(this.registry, extDef.additionalSigned)
+    );
   }
 
   toPayload(call: HexString = '0x'): SignerPayloadJSON {
