@@ -88,7 +88,7 @@ export class NewStorageQueryService<
     const unsub = this.client.chainHead.on('bestBlock', pull);
     
     return async () => {
-      await Promise.resolve(unsub());
+      unsub()
     };
   }
 }
