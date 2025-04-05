@@ -15,16 +15,16 @@ import { StorageWeightReclaim } from './StorageWeightReclaim.js';
 export type AnySignedExtension = new (...args: any[]) => ISignedExtension;
 
 export const knownSignedExtensions: Record<string, AnySignedExtension> = {
-  CheckNonZeroSender,
+  // CheckNonZeroSender,
   CheckSpecVersion,
   CheckTxVersion,
   CheckGenesis,
   CheckMortality,
   CheckNonce,
-  CheckWeight,
+  // CheckWeight,
   ChargeTransactionPayment,
-  PrevalidateAttests,
+  // PrevalidateAttests,
   ChargeAssetTxPayment,
   CheckMetadataHash,
-  StorageWeightReclaim,
+  // StorageWeightReclaim,
 };
