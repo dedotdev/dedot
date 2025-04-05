@@ -2,7 +2,9 @@ import * as $ from '@dedot/shape';
 import { SignerPayloadJSON, SignerPayloadRaw } from '@dedot/types';
 import { assert, ensurePresence, HexString, u8aToHex } from '@dedot/utils';
 import { ISignedExtension, SignedExtension } from './SignedExtension.js';
+import { NoopSignedExtension } from './NoopSignedExtension.js';
 import { knownSignedExtensions } from './known/index.js';
+import { isEmptyOrTrivialType } from './utils.js';
 
 export class ExtraSignedExtension extends SignedExtension<any[], any[]> {
   #signedExtensions?: ISignedExtension[];
@@ -51,12 +53,34 @@ export class ExtraSignedExtension extends SignedExtension<any[], any[]> {
         userSignedExtensions[extDef.ident as keyof typeof knownSignedExtensions] ||
         knownSignedExtensions[extDef.ident as keyof typeof knownSignedExtensions];
 
-      assert(Extension, `SignedExtension for ${extDef.ident} not found`);
+      if (Extension) {
+        return new Extension(this.client, {
+          ...ensurePresence(this.options),
+          def: extDef,
+        });
+      } else {
+        // Check if the extension requires no external inputs (has empty/trivial types)
+        const requireNoExternalInputs = (
+          isEmptyOrTrivialType(this.registry, extDef.typeId) &&
+          isEmptyOrTrivialType(this.registry, extDef.additionalSigned)
+        );
 
-      return new Extension(this.client, {
-        ...ensurePresence(this.options),
-        def: extDef,
-      });
+        if (requireNoExternalInputs) {
+          // Use NoopSignedExtension for extensions that don't require input
+          console.warn(`SignedExtension for ${extDef.ident} not found, using NoopSignedExtension`);
+          return new NoopSignedExtension(
+            this.client,
+            {
+              ...ensurePresence(this.options),
+              def: extDef,
+            },
+            extDef.ident
+          );
+        }
+
+        // For extensions that require input but aren't implemented, throw an error
+        throw new Error(`SignedExtension for ${extDef.ident} requires input but is not implemented`);
+      }
     });
   }
 
