@@ -1,7 +1,7 @@
 import { describe, expect, it, beforeAll, afterAll } from 'vitest';
 import { knownSignedExtensions } from '../known/index.js';
 import { ExtraSignedExtension } from '../ExtraSignedExtension.js';
-import { NoopSignedExtension, isEmptyStructOrTuple } from '../NoopSignedExtension.js';
+import { FallbackSignedExtension, isEmptyStructOrTuple } from '../FallbackSignedExtension.js';
 
 describe('isEmptyStructOrTuple', () => {
   // Mock registry with various type definitions
@@ -84,7 +84,7 @@ describe('isEmptyStructOrTuple', () => {
   });
 });
 
-describe('NoopSignedExtension', () => {
+describe('FallbackSignedExtension', () => {
   // Save original extensions
   const originalExtensions = { ...knownSignedExtensions };
 
@@ -153,7 +153,7 @@ describe('NoopSignedExtension', () => {
     Object.assign(knownSignedExtensions, originalExtensions);
   });
 
-  it('should use NoopSignedExtension for unknown extensions that do not require input', async () => {
+  it('should use FallbackSignedExtension for unknown extensions that do not require input', async () => {
     const extraSignedExtension = new ExtraSignedExtension(mockClient as any, {
       signerAddress: '0x123',
     });

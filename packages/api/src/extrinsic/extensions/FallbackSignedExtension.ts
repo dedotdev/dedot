@@ -4,7 +4,7 @@ import { SignedExtension } from './SignedExtension.js';
 import { ISubstrateClient } from '../../types.js';
 
 /**
- * A no-operation signed extension that can be used as a fallback for extensions
+ * A fallback signed extension that can be used for extensions
  * that don't require external input.
  * 
  * This extension is automatically used for:
@@ -17,7 +17,7 @@ import { ISubstrateClient } from '../../types.js';
  * 
  * These extensions have empty struct or tuple types and don't need explicit implementation.
  */
-export class NoopSignedExtension extends SignedExtension {
+export class FallbackSignedExtension extends SignedExtension {
   private readonly extensionIdent: string;
 
   constructor(

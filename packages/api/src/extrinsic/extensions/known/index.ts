@@ -1,7 +1,7 @@
 /**
  * Known signed extensions that require external input.
  * 
- * Note: Extensions that don't require external input are automatically handled by NoopSignedExtension:
+ * Note: Extensions that don't require external input are automatically handled by FallbackSignedExtension:
  * - CheckNonZeroSender
  * - CheckWeight
  * - PrevalidateAttests

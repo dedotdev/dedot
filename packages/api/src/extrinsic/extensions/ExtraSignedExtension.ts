@@ -2,7 +2,7 @@ import * as $ from '@dedot/shape';
 import { SignerPayloadJSON, SignerPayloadRaw } from '@dedot/types';
 import { assert, ensurePresence, HexString, u8aToHex } from '@dedot/utils';
 import { ISignedExtension, SignedExtension } from './SignedExtension.js';
-import { NoopSignedExtension, isEmptyStructOrTuple } from './NoopSignedExtension.js';
+import { FallbackSignedExtension, isEmptyStructOrTuple } from './FallbackSignedExtension.js';
 import { knownSignedExtensions } from './known/index.js';
 
 export class ExtraSignedExtension extends SignedExtension<any[], any[]> {
@@ -65,7 +65,7 @@ export class ExtraSignedExtension extends SignedExtension<any[], any[]> {
         );
 
         if (requireNoExternalInputs) {
-          return new NoopSignedExtension(
+          return new FallbackSignedExtension(
             this.client,
             {
               ...ensurePresence(this.options),
