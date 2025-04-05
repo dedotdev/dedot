@@ -1,0 +1,68 @@
+import { StorageKey } from '@dedot/codecs';
+import type { StorageChangeSet } from '@dedot/types/json-rpc';
+import type { Callback, RpcLegacy, Unsub, VersionedGenericSubstrateApi } from '@dedot/types';
+import type { SubstrateApi } from '../chaintypes/index.js';
+import { LegacyClient } from '../client/LegacyClient.js';
+import { StorageQueryService } from './StorageQueryService.js';
+
+/**
+ * @name LegacyStorageQueryService
+ * @description
+ * Implementation of StorageQueryService for the legacy JSON-RPC API (v1).
+ * This service handles storage queries using the state_queryStorageAt and
+ * state_subscribeStorage RPC methods.
+ * 
+ * It provides:
+ * - One-time queries using state_queryStorageAt
+ * - Subscriptions using state_subscribeStorage
+ * - Efficient change tracking for subscriptions
+ */
+export class LegacyStorageQueryService<
+  ChainApi extends VersionedGenericSubstrateApi = SubstrateApi
+> extends StorageQueryService<RpcLegacy, ChainApi, LegacyClient<ChainApi>> {
+  /**
+   * Query multiple storage items in a single call using state_queryStorageAt
+   * 
+   * @param keys - Array of storage keys to query
+   * @returns Promise resolving to an array of raw values in the same order as the keys
+   */
+  async query(keys: StorageKey[]): Promise<any[]> {
+    // Query storage at the current block
+    const changeSets = await this.client.rpc.state_queryStorageAt(keys);
+    
+    // Create a map of key -> value for easy lookup
+    const resultsMap: Record<string, any> = {};
+    changeSets[0].changes.forEach(([key, value]: [string, any]) => {
+      resultsMap[key] = value ?? undefined;
+    });
+
+    // Return values in the same order as keys
+    return keys.map(key => resultsMap[key]);
+  }
+  
+  /**
+   * Subscribe to multiple storage items using state_subscribeStorage
+   * 
+   * @param keys - Array of storage keys to subscribe to
+   * @param callback - Function to call when storage values change
+   * @returns Promise resolving to an unsubscribe function
+   */
+  async subscribe(keys: StorageKey[], callback: Callback<any[]>): Promise<Unsub> {
+    // Track the latest changes for each key
+    const lastChanges = {} as Record<string, any>;
+
+    // Subscribe to storage changes
+    return this.client.rpc.state_subscribeStorage(keys, (changeSet: StorageChangeSet) => {
+      // Update the latest changes
+      changeSet.changes.forEach(([key, value]: [string, any]) => {
+        if (lastChanges[key] !== value) {
+          lastChanges[key] = value ?? undefined;
+        }
+      });
+
+      // Return values in the same order as keys
+      const values = keys.map(key => lastChanges[key]);
+      callback(values);
+    });
+  }
+}
