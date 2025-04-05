@@ -1,12 +1,13 @@
 import { $Metadata, BlockHash, Hash, Metadata, PortableRegistry, RuntimeVersion } from '@dedot/codecs';
 import type { JsonRpcProvider } from '@dedot/providers';
 import { type IStorage, LocalStorage } from '@dedot/storage';
-import { Callback, GenericStorageQuery, GenericSubstrateApi, InjectedSigner, RpcVersion, VersionedGenericSubstrateApi } from '@dedot/types';
+import { Callback, GenericStorageQuery, GenericSubstrateApi, InjectedSigner, RpcVersion, Unsub, VersionedGenericSubstrateApi } from '@dedot/types';
 import { calcRuntimeApiHash, deferred, Deferred, ensurePresence as _ensurePresence, u8aToHex } from '@dedot/utils';
 import type { SubstrateApi } from '../chaintypes/index.js';
 import { ConstantExecutor, ErrorExecutor, EventExecutor } from '../executor/index.js';
 import { isJsonRpcProvider, JsonRpcClient } from '../json-rpc/index.js';
 import { newProxyChain } from '../proxychain.js';
+import { StorageQueryService } from '../storage/StorageQueryService.js';
 import type {
   ApiEvent,
   ApiOptions,
@@ -386,15 +387,15 @@ export abstract class BaseSubstrateClient<
     this._options.signer = signer;
   }
 
-  async multiQuery(queries: { fn: GenericStorageQuery, args?: any[] }[], callback?: Callback<any>): Promise<any> {
-    const fns = queries.map((q) => q.fn);
-    // for each query, 
-    //   1. fetch the pallet name and storage name from fn.metadata as well
-    //   2. calculate the storage key using the pallet name and storage name and args
-    //   3. fetch the storage value from the storage key
-    //   4. return the storage value
-
-
-    return null;
-  }
+  /**
+   * Query multiple storage items in a single call
+   * 
+   * This method should be implemented by derived classes to query multiple storage items
+   * in a single call or set up a subscription to multiple storage items.
+   * 
+   * @param queries - Array of query specifications, each with a function and optional arguments
+   * @param callback - Optional callback for subscription-based queries
+   * @returns For one-time queries: Array of decoded values; For subscriptions: Unsubscribe function
+   */
+  abstract multiQuery(queries: { fn: GenericStorageQuery, args?: any[] }[], callback?: Callback<any[]>): Promise<any[] | Unsub>;
 }

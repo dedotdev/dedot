@@ -13,6 +13,8 @@ import {
 } from '../executor/index.js';
 import { QueryableStorage } from '../storage/QueryableStorage.js';
 import { newProxyChain } from '../proxychain.js';
+import { LegacyStorageQueryService } from '../storage/LegacyStorageQueryService.js';
+import { StorageQueryService } from '../storage/StorageQueryService.js';
 import type { ApiOptions, ISubstrateClientAt, SubstrateRuntimeVersion } from '../types.js';
 import { BaseSubstrateClient } from './BaseSubstrateClient.js';
 
@@ -271,71 +273,50 @@ export class LegacyClient<ChainApi extends VersionedGenericSubstrateApi = Substr
    * @param callback Optional callback for subscription-based queries
    * @returns For one-time queries: Array of decoded values; For subscriptions: Unsubscribe function
    */
-  override async multiQuery(queries: { fn: GenericStorageQuery, args?: any[] }[], callback?: Callback<any[]>): Promise<any> {
-    // Extract the storage keys for each query
+  override multiQuery(queries: { fn: GenericStorageQuery, args?: any[] }[], callback?: Callback<any[]>): Promise<any[] | Unsub> {
+    // Create service directly when needed
+    const service = new LegacyStorageQueryService(this);
+    
+    // Extract keys from queries
     const keys = queries.map(q => q.fn.rawKey(...(q.args || [])));
-
+    
     // If a callback is provided, set up a subscription
     if (callback) {
-      // Track the latest changes for each key
-      const lastChanges = {} as Record<string, any>;
-
-      // Subscribe to storage changes
-      const unsub = await this.rpc.state_subscribeStorage(keys, (changeSet: StorageChangeSet) => {
-        // Update the latest changes
-        changeSet.changes.forEach(([key, value]) => {
-          if (lastChanges[key] !== value) {
-            lastChanges[key] = value ?? undefined;
-          }
+      return service.subscribe(keys, (rawResults) => {
+        // Map raw results back to decoded values
+        const decodedResults = queries.map((q, i) => {
+          // Get the QueryableStorage instance from the query function
+          const entry = new QueryableStorage(
+            this.registry,
+            q.fn.meta.pallet,
+            q.fn.meta.name
+          );
+          
+          // Decode the value
+          return entry.decodeValue(rawResults[i]);
         });
-
-        // Map the changes to decoded values
-        const values = queries.map((q, i) => {
-          const key = keys[i];
-          const value = lastChanges[key];
-          return value !== undefined ? this.#decodeStorageValue(q.fn, value) : undefined;
-        });
-
-        // Call the callback with the decoded values
-        callback(values);
+        
+        // Call the callback with decoded values
+        callback(decodedResults);
       });
-
-      return unsub;
     } 
     // Otherwise, just fetch once
     else {
-      // Query storage at the current block
-      const changeSets = await this.rpc.state_queryStorageAt(keys);
-      
-      // Convert the changes to a map of key -> value
-      const results = changeSets[0].changes.reduce(
-        (o: Record<string, any>, [key, value]: [string, any]) => {
-          o[key] = value ?? undefined;
-          return o;
-        },
-        {} as Record<string, any>,
-      );
-
-      // Map the results to decoded values
-      return queries.map((q, i) => {
-        const key = keys[i];
-        const value = results[key];
-        return value !== undefined ? this.#decodeStorageValue(q.fn, value) : undefined;
+      return service.query(keys).then(rawResults => {
+        // Map raw results back to decoded values
+        return queries.map((q, i) => {
+          // Get the QueryableStorage instance from the query function
+          const entry = new QueryableStorage(
+            this.registry,
+            q.fn.meta.pallet,
+            q.fn.meta.name
+          );
+          
+          // Decode the value
+          return entry.decodeValue(rawResults[i]);
+        });
       });
     }
-  }
-
-  // Helper method to decode storage values
-  #decodeStorageValue(fn: GenericStorageQuery, value: any): any {
-    // Create a QueryableStorage instance for the storage entry
-    const entry = new QueryableStorage(
-      this.registry,
-      fn.meta.pallet,
-      fn.meta.name
-    );
-    
-    // Decode the value using the QueryableStorage instance
-    return entry.decodeValue(value);
   }
 
   /**

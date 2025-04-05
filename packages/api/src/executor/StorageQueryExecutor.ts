@@ -8,8 +8,8 @@ import type {
   Unsub,
   WithPagination,
 } from '@dedot/types';
-import type { StorageChangeSet } from '@dedot/types/json-rpc';
 import { assert, isFunction, isObject } from '@dedot/utils';
+import { LegacyStorageQueryService } from '../storage/LegacyStorageQueryService.js';
 import { QueryableStorage } from '../storage/QueryableStorage.js';
 import { Executor } from './Executor.js';
 
@@ -137,28 +137,30 @@ export class StorageQueryExecutor<
   }
 
   protected async queryStorage(keys: StorageKey[], hash?: BlockHash): Promise<Record<StorageKey, Option<StorageData>>> {
-    const changeSets: StorageChangeSet[] = await this.client.rpc.state_queryStorageAt(keys, hash);
-
-    return changeSets[0].changes.reduce(
-      (o, [key, value]) => {
-        o[key] = value ?? undefined;
-        return o;
-      },
-      {} as Record<StorageKey, Option<StorageData>>,
-    );
+    // Only handle legacy clients
+    if (this.client.rpcVersion !== 'legacy') {
+      throw new Error('StorageQueryExecutor only supports legacy clients');
+    }
+    
+    // Use LegacyStorageQueryService
+    const service = new LegacyStorageQueryService(this.client as any);
+    const results = await service.query(keys);
+    
+    // Convert array results to record format
+    return keys.reduce((o, key, i) => {
+      o[key] = results[i];
+      return o;
+    }, {} as Record<StorageKey, Option<StorageData>>);
   }
 
   protected subscribeStorage(keys: StorageKey[], callback: Callback<Array<StorageData | undefined>>): Promise<Unsub> {
-    const lastChanges = {} as Record<StorageKey, StorageData | undefined>;
-
-    return this.client.rpc.state_subscribeStorage(keys, (changeSet: StorageChangeSet) => {
-      changeSet.changes.forEach(([key, value]) => {
-        if (lastChanges[key] !== value) {
-          lastChanges[key] = value ?? undefined;
-        }
-      });
-
-      return callback(keys.map((key) => lastChanges[key]));
-    });
+    // Only handle legacy clients
+    if (this.client.rpcVersion !== 'legacy') {
+      throw new Error('StorageQueryExecutor only supports legacy clients');
+    }
+    
+    // Use LegacyStorageQueryService
+    const service = new LegacyStorageQueryService(this.client as any);
+    return service.subscribe(keys, callback);
   }
 }
