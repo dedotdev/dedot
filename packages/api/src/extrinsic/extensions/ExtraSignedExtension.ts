@@ -2,9 +2,8 @@ import * as $ from '@dedot/shape';
 import { SignerPayloadJSON, SignerPayloadRaw } from '@dedot/types';
 import { assert, ensurePresence, HexString, u8aToHex } from '@dedot/utils';
 import { ISignedExtension, SignedExtension } from './SignedExtension.js';
-import { NoopSignedExtension } from './NoopSignedExtension.js';
+import { NoopSignedExtension, isEmptyStructOrTuple } from './NoopSignedExtension.js';
 import { knownSignedExtensions } from './known/index.js';
-import { isEmptyOrTrivialType } from './utils.js';
 
 export class ExtraSignedExtension extends SignedExtension<any[], any[]> {
   #signedExtensions?: ISignedExtension[];
@@ -61,8 +60,8 @@ export class ExtraSignedExtension extends SignedExtension<any[], any[]> {
       } else {
         // Check if the extension requires no external inputs (has empty/trivial types)
         const requireNoExternalInputs = (
-          isEmptyOrTrivialType(this.registry, extDef.typeId) &&
-          isEmptyOrTrivialType(this.registry, extDef.additionalSigned)
+          isEmptyStructOrTuple(this.registry, extDef.typeId) &&
+          isEmptyStructOrTuple(this.registry, extDef.additionalSigned)
         );
 
         if (requireNoExternalInputs) {
