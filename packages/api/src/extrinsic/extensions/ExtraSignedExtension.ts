@@ -1,8 +1,10 @@
 import * as $ from '@dedot/shape';
 import { SignerPayloadJSON, SignerPayloadRaw } from '@dedot/types';
-import { assert, ensurePresence, HexString, u8aToHex } from '@dedot/utils';
+import { ensurePresence, HexString, u8aToHex } from '@dedot/utils';
 import { ISignedExtension, SignedExtension } from './SignedExtension.js';
+import { FallbackSignedExtension, isEmptyStructOrTuple } from './FallbackSignedExtension.js';
 import { knownSignedExtensions } from './known/index.js';
+import type { SignedExtensionDefLatest } from '@dedot/codecs';
 
 export class ExtraSignedExtension extends SignedExtension<any[], any[]> {
   #signedExtensions?: ISignedExtension[];
@@ -51,13 +53,37 @@ export class ExtraSignedExtension extends SignedExtension<any[], any[]> {
         userSignedExtensions[extDef.ident as keyof typeof knownSignedExtensions] ||
         knownSignedExtensions[extDef.ident as keyof typeof knownSignedExtensions];
 
-      assert(Extension, `SignedExtension for ${extDef.ident} not found`);
+      if (Extension) {
+        return new Extension(this.client, {
+          ...ensurePresence(this.options),
+          def: extDef,
+        });
+      } else if (this.isRequireNoExternalInputs(extDef)) {
+        return new FallbackSignedExtension(
+          this.client,
+          {
+            ...ensurePresence(this.options),
+            def: extDef,
+          },
+          extDef.ident
+        );
+      }
 
-      return new Extension(this.client, {
-        ...ensurePresence(this.options),
-        def: extDef,
-      });
+      // For extensions that require input but aren't implemented, throw an error
+      throw new Error(`SignedExtension for ${extDef.ident} requires input but is not implemented`);
     });
+  }
+
+  /**
+   * Check if the extension requires no external inputs (e.g: struct or tuple with empty types like `()` or `[]`)
+   * @param extDef - The definition of the signed extension
+   * @returns boolean
+   */
+  private isRequireNoExternalInputs(extDef: SignedExtensionDefLatest): boolean {
+    return (
+      isEmptyStructOrTuple(this.registry, extDef.typeId) &&
+      isEmptyStructOrTuple(this.registry, extDef.additionalSigned)
+    );
   }
 
   toPayload(call: HexString = '0x'): SignerPayloadJSON {
