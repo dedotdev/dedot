@@ -76,11 +76,13 @@ async function testOneTimeQueries(client: DedotClient | LegacyClient) {
   // Test 2: Query different types of storage items
   const mixedQueries = [
     { fn: client.query.system.account, args: [ALICE] },
-    { fn: client.query.system.number, args: [] }
+    { fn: client.query.system.number }
   ];
   
-  const mixedResults = await client.multiQuery(mixedQueries) as any[];
-  const blockNumber = await client.query.system.number();
+  const [mixedResults, blockNumber] = await Promise.all([
+    client.multiQuery(mixedQueries) as Promise<any[]>,
+    client.query.system.number()
+  ]);
   
   assert(mixedResults[0].data.free === aliceAccount.data.free, 
     `multiQuery result for Alice doesn't match in mixed query`);
@@ -131,7 +133,7 @@ async function testSubscriptionQueries(client: DedotClient | LegacyClient) {
     let lastBlockNumber: number | undefined;
     
     client.multiQuery(
-      [{ fn: client.query.system.number, args: [] }],
+      [{ fn: client.query.system.number }],
       (results) => {
         const blockNumber = results[0];
         
