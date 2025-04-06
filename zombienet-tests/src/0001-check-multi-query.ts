@@ -161,5 +161,32 @@ async function testSubscriptionQueries(client: DedotClient | LegacyClient) {
     );
   });
   
+  // Test 4: Test unsubscribe functionality
+  console.log('Testing multiQuery unsubscribe functionality...');
+  await new Promise<void>(async (resolve) => {
+    let updateCount = 0;
+    let unsubCalled = false;
+    
+    // Create a subscription and store the unsubscribe function
+    const unsub = await client.multiQuery(
+      [{ fn: client.query.system.number }],
+      (results) => {
+        console.log(`Block number update: ${results[0]}`);
+        updateCount++;
+        
+        // If we've seen updates but haven't unsubscribed yet, do it now
+        if (updateCount >= 2 && !unsubCalled) {
+          console.log('Calling unsubscribe function...');
+          unsubCalled = true;
+          
+          // Call the unsubscribe function
+          unsub().then(() => {
+            console.log('Unsubscribed successfully');
+          });
+        }
+      }
+    );
+  });
+  
   console.log('Subscription-based multiQuery tests passed!');
 }
