@@ -58,7 +58,7 @@ async function testOneTimeQueries(client: DedotClient | LegacyClient) {
   ];
   
   // Execute multiQuery
-  const multiResults = await client.multiQuery(queries) as any[];
+  const multiResults = await client.multiQuery(queries);
   
   // Execute individual queries for comparison
   const aliceAccount = await client.query.system.account(ALICE);
@@ -80,7 +80,7 @@ async function testOneTimeQueries(client: DedotClient | LegacyClient) {
   ];
   
   const [mixedResults, blockNumber] = await Promise.all([
-    client.multiQuery(mixedQueries) as Promise<any[]>,
+    client.multiQuery(mixedQueries),
     client.query.system.number()
   ]);
   
@@ -92,7 +92,7 @@ async function testOneTimeQueries(client: DedotClient | LegacyClient) {
   console.log('Block number:', mixedResults[1].toString());
   
   // Test 3: Empty query array
-  const emptyResults = await client.multiQuery([]) as any[];
+  const emptyResults = await client.multiQuery([]);
   assert(emptyResults.length === 0, `Empty query should return empty array`);
   
   console.log('One-time multiQuery tests passed!');

@@ -1,4 +1,3 @@
-import { LegacyStorageQueryService, NewStorageQueryService, QueryableStorage } from '../storage/index.js';
 import { $Metadata, BlockHash, Hash, Metadata, PortableRegistry, RuntimeVersion, StorageDataLike } from '@dedot/codecs';
 import type { JsonRpcProvider } from '@dedot/providers';
 import { type IStorage, LocalStorage } from '@dedot/storage';
@@ -16,6 +15,7 @@ import type { SubstrateApi } from '../chaintypes/index.js';
 import { ConstantExecutor, ErrorExecutor, EventExecutor } from '../executor/index.js';
 import { isJsonRpcProvider, JsonRpcClient } from '../json-rpc/index.js';
 import { newProxyChain } from '../proxychain.js';
+import { LegacyStorageQueryService, NewStorageQueryService, QueryableStorage } from '../storage/index.js';
 import type {
   ApiEvent,
   ApiOptions,
@@ -277,6 +277,7 @@ export abstract class BaseSubstrateClient<
   }
 
   protected async beforeDisconnect() {}
+
   protected async afterDisconnect() {
     this.cleanUp();
   }
@@ -405,11 +406,12 @@ export abstract class BaseSubstrateClient<
    * @param callback - Optional callback for subscription-based queries
    * @returns For one-time queries: Array of decoded values; For subscriptions: Unsubscribe function
    */
+  multiQuery(queries: { fn: GenericStorageQuery; args?: any[] }[]): Promise<any[]>;
+  multiQuery(queries: { fn: GenericStorageQuery; args?: any[] }[], callback: Callback<any[]>): Promise<Unsub>;
   async multiQuery(
     queries: { fn: GenericStorageQuery; args?: any[] }[],
     callback?: Callback<any[]>,
   ): Promise<any[] | Unsub> {
-
     // Extract keys from queries
     const keys = queries.map((q) => q.fn.rawKey(...(q.args || [])));
 
@@ -419,7 +421,7 @@ export abstract class BaseSubstrateClient<
 
       // Decode the value
       return entry.decodeValue(rawValue);
-    }
+    };
 
     // Create service directly when needed
     let service;
