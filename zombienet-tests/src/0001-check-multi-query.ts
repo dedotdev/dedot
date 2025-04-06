@@ -106,10 +106,10 @@ async function testSubscriptionQueries(client: DedotClient | LegacyClient) {
   ];
   
   // Set up a promise to track subscription updates
-  await new Promise<void>(async (resolve, reject) => {
+  await new Promise<void>((resolve) => {
     let updateCount = 0;
     
-    const unsub = await client.multiQuery(queries, (results) => {
+    client.multiQuery(queries, (results) => {
       updateCount++;
       console.log(`Received subscription update #${updateCount}`);
       
@@ -118,22 +118,19 @@ async function testSubscriptionQueries(client: DedotClient | LegacyClient) {
       assert(typeof results[0].data.free === 'bigint', `First result should have free balance`);
       assert(typeof results[1].data.free === 'bigint', `Second result should have free balance`);
       
-      // After receiving at least one update, unsubscribe and resolve
+      // After receiving at least one update, resolve the promise
       if (updateCount >= 1) {
-        (unsub as Unsub)().then(() => {
-          console.log('Unsubscribed successfully');
-          resolve();
-        });
+        resolve();
       }
     });
   });
   
   // Test 2: Subscribe to block number
-  await new Promise<void>(async (resolve, reject) => {
+  await new Promise<void>((resolve) => {
     let counter = 0;
     let lastBlockNumber: number | undefined;
-
-    const unsub = await client.multiQuery(
+    
+    client.multiQuery(
       [{ fn: client.query.system.number, args: [] }],
       (results) => {
         const blockNumber = results[0];
@@ -142,15 +139,15 @@ async function testSubscriptionQueries(client: DedotClient | LegacyClient) {
           // Block number should be increasing
           assert(blockNumber > lastBlockNumber, 'Block number should be increasing');
         }
-
+        
         console.log(`Current block number: ${blockNumber}`);
-
+        
         lastBlockNumber = blockNumber;
         counter += 1;
+        
+        // After receiving a few updates, resolve the promise
         if (counter >= 2) {
-          (unsub as Unsub)().then(() => {
-            resolve();
-          });
+          resolve();
         }
       }
     );
@@ -159,8 +156,8 @@ async function testSubscriptionQueries(client: DedotClient | LegacyClient) {
   // Test 3: Subscribe to empty storage
   const UNKNOWN_ADDRESS = '5GL1n2H9fkCc6K6d87L5MV3WkzWnQz4mbb9HMSNk89CpjrMv';
   
-  await new Promise<void>(async (resolve, reject) => {
-    const unsub = await client.multiQuery(
+  await new Promise<void>((resolve) => {
+    client.multiQuery(
       [{ fn: client.query.system.account, args: [UNKNOWN_ADDRESS] }],
       (results) => {
         const unknownAccount = results[0];
@@ -168,10 +165,8 @@ async function testSubscriptionQueries(client: DedotClient | LegacyClient) {
         assert(unknownAccount.data.free === 0n, 'Incorrect balance for unknown account');
         assert(unknownAccount.nonce === 0, 'Incorrect nonce for unknown account');
         
-        // Unsubscribe and resolve immediately after receiving the first update
-        (unsub as Unsub)().then(() => {
-          resolve();
-        });
+        // Resolve after verifying the empty storage
+        resolve();
       }
     );
   });
