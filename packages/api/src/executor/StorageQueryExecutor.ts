@@ -137,11 +137,6 @@ export class StorageQueryExecutor<
   }
 
   protected async queryStorage(keys: StorageKey[], hash?: BlockHash): Promise<Record<StorageKey, Option<StorageData>>> {
-    // Only handle legacy clients
-    if (this.client.rpcVersion !== 'legacy') {
-      throw new Error('StorageQueryExecutor only supports legacy clients');
-    }
-    
     // Use LegacyStorageQueryService and pass the block hash
     const service = new LegacyStorageQueryService(this.client as any);
     const results = await service.query(keys, hash);
@@ -154,11 +149,6 @@ export class StorageQueryExecutor<
   }
 
   protected subscribeStorage(keys: StorageKey[], callback: Callback<Array<StorageData | undefined>>): Promise<Unsub> {
-    // Only handle legacy clients
-    if (this.client.rpcVersion !== 'legacy') {
-      throw new Error('StorageQueryExecutor only supports legacy clients');
-    }
-    
     // Use LegacyStorageQueryService
     const service = new LegacyStorageQueryService(this.client as any);
     return service.subscribe(keys, callback);
