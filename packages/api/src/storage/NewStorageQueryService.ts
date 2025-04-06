@@ -92,7 +92,7 @@ export class NewStorageQueryService<
     };
     
     // Initial pull
-    pull(best);
+    await pull(best);
     
     // Subscribe to best block events
     const unsub = this.client.chainHead.on('bestBlock', pull);
