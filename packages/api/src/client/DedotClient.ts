@@ -1,23 +1,15 @@
 import { $H256, BlockHash, PortableRegistry } from '@dedot/codecs';
 import type { JsonRpcProvider } from '@dedot/providers';
 import { u32 } from '@dedot/shape';
-import { Callback, GenericStorageQuery, GenericSubstrateApi, RpcV2, Unsub, VersionedGenericSubstrateApi } from '@dedot/types';
+import { GenericSubstrateApi, RpcV2, VersionedGenericSubstrateApi } from '@dedot/types';
 import { assert, concatU8a, HexString, noop, twox64Concat, u8aToHex, xxhashAsU8a } from '@dedot/utils';
 import type { SubstrateApi } from '../chaintypes/index.js';
-import {
-  ConstantExecutor,
-  ErrorExecutor,
-  EventExecutor,
-  RuntimeApiExecutorV2,
-  StorageQueryExecutorV2,
-  TxExecutorV2,
-} from '../executor/index.js';
+import { ConstantExecutor, ErrorExecutor, EventExecutor, RuntimeApiExecutorV2, StorageQueryExecutorV2, TxExecutorV2 } from '../executor/index.js';
 import { ChainHead, ChainSpec, PinnedBlock, Transaction, TransactionWatch } from '../json-rpc/index.js';
-import { QueryableStorage } from '../storage/QueryableStorage.js';
 import { newProxyChain } from '../proxychain.js';
-import { NewStorageQueryService } from '../storage/NewStorageQueryService.js';
 import type { ApiOptions, ISubstrateClientAt, SubstrateRuntimeVersion, TxBroadcaster } from '../types.js';
 import { BaseSubstrateClient, ensurePresence } from './BaseSubstrateClient.js';
+
 
 /**
  * @name DedotClient
@@ -188,59 +180,6 @@ export class DedotClient<ChainApi extends VersionedGenericSubstrateApi = Substra
 
   override get tx(): ChainApi[RpcV2]['tx'] {
     return newProxyChain({ executor: new TxExecutorV2(this) }) as ChainApi[RpcV2]['tx'];
-  }
-
-  /**
-   * Query multiple storage items in a single call
-   * 
-   * @param queries Array of query specifications, each with a function and optional arguments
-   * @param callback Optional callback for subscription-based queries
-   * @returns For one-time queries: Array of decoded values; For subscriptions: Unsubscribe function
-   */
-  override multiQuery(queries: { fn: GenericStorageQuery, args?: any[] }[], callback?: Callback<any[]>): Promise<any[] | Unsub> {
-    // Create service directly when needed
-    const service = new NewStorageQueryService(this);
-    
-    // Extract keys from queries
-    const keys = queries.map(q => q.fn.rawKey(...(q.args || [])));
-    
-    // If a callback is provided, set up a subscription
-    if (callback) {
-      return service.subscribe(keys, (rawResults) => {
-        // Map raw results back to decoded values
-        const decodedResults = queries.map((q, i) => {
-          // Get the QueryableStorage instance from the query function
-          const entry = new QueryableStorage(
-            this.registry,
-            q.fn.meta.pallet,
-            q.fn.meta.name
-          );
-          
-          // Decode the value
-          return entry.decodeValue(rawResults[i]);
-        });
-        
-        // Call the callback with decoded values
-        callback(decodedResults);
-      });
-    } 
-    // Otherwise, just fetch once
-    else {
-      return service.query(keys).then(rawResults => {
-        // Map raw results back to decoded values
-        return queries.map((q, i) => {
-          // Get the QueryableStorage instance from the query function
-          const entry = new QueryableStorage(
-            this.registry,
-            q.fn.meta.pallet,
-            q.fn.meta.name
-          );
-          
-          // Decode the value
-          return entry.decodeValue(rawResults[i]);
-        });
-      });
-    }
   }
 
   /**

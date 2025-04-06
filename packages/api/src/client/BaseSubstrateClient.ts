@@ -1,13 +1,21 @@
-import { $Metadata, BlockHash, Hash, Metadata, PortableRegistry, RuntimeVersion } from '@dedot/codecs';
+import { LegacyStorageQueryService, NewStorageQueryService, QueryableStorage } from '../storage/index.js';
+import { $Metadata, BlockHash, Hash, Metadata, PortableRegistry, RuntimeVersion, StorageDataLike } from '@dedot/codecs';
 import type { JsonRpcProvider } from '@dedot/providers';
 import { type IStorage, LocalStorage } from '@dedot/storage';
-import { Callback, GenericStorageQuery, GenericSubstrateApi, InjectedSigner, RpcVersion, Unsub, VersionedGenericSubstrateApi } from '@dedot/types';
+import {
+  Callback,
+  GenericStorageQuery,
+  GenericSubstrateApi,
+  InjectedSigner,
+  RpcVersion,
+  Unsub,
+  VersionedGenericSubstrateApi,
+} from '@dedot/types';
 import { calcRuntimeApiHash, deferred, Deferred, ensurePresence as _ensurePresence, u8aToHex } from '@dedot/utils';
 import type { SubstrateApi } from '../chaintypes/index.js';
 import { ConstantExecutor, ErrorExecutor, EventExecutor } from '../executor/index.js';
 import { isJsonRpcProvider, JsonRpcClient } from '../json-rpc/index.js';
 import { newProxyChain } from '../proxychain.js';
-import { StorageQueryService } from '../storage/StorageQueryService.js';
 import type {
   ApiEvent,
   ApiOptions,
@@ -132,25 +140,25 @@ export abstract class BaseSubstrateClient<
    */
   protected async safeSetMetadataToCache(key: string, value: string): Promise<void> {
     if (!this._localCache) return;
-    
+
     try {
       // First attempt to set the metadata
       await this._localCache.set(key, value);
     } catch (error) {
       console.warn('Failed to store metadata in cache, attempting to clean up old entries:', error);
-      
+
       try {
         // Get all keys that start with RAW_META/
         const allKeys = await this._localCache.keys();
-        const metadataKeys = allKeys.filter(k => k.startsWith('RAW_META/') && k !== key);
-        
+        const metadataKeys = allKeys.filter((k) => k.startsWith('RAW_META/') && k !== key);
+
         // Remove all other metadata entries
         for (const metaKey of metadataKeys) {
           await this._localCache.remove(metaKey);
         }
-        
+
         console.info(`Cleaned up ${metadataKeys.length} old metadata entries, trying again`);
-        
+
         // Try again after cleanup
         await this._localCache.set(key, value);
       } catch (cleanupError) {
@@ -389,13 +397,46 @@ export abstract class BaseSubstrateClient<
 
   /**
    * Query multiple storage items in a single call
-   * 
+   *
    * This method should be implemented by derived classes to query multiple storage items
    * in a single call or set up a subscription to multiple storage items.
-   * 
+   *
    * @param queries - Array of query specifications, each with a function and optional arguments
    * @param callback - Optional callback for subscription-based queries
    * @returns For one-time queries: Array of decoded values; For subscriptions: Unsubscribe function
    */
-  abstract multiQuery(queries: { fn: GenericStorageQuery, args?: any[] }[], callback?: Callback<any[]>): Promise<any[] | Unsub>;
+  async multiQuery(
+    queries: { fn: GenericStorageQuery; args?: any[] }[],
+    callback?: Callback<any[]>,
+  ): Promise<any[] | Unsub> {
+
+    // Extract keys from queries
+    const keys = queries.map((q) => q.fn.rawKey(...(q.args || [])));
+
+    const decodeValue = (query: GenericStorageQuery, rawValue?: StorageDataLike | null) => {
+      // Get the QueryableStorage instance from the query function
+      const entry = new QueryableStorage(this.registry, query.meta.pallet, query.meta.name);
+
+      // Decode the value
+      return entry.decodeValue(rawValue);
+    }
+
+    // Create service directly when needed
+    let service;
+    if (this.rpcVersion === 'v2') {
+      service = new NewStorageQueryService(this as any);
+    } else {
+      service = new LegacyStorageQueryService(this as any);
+    }
+
+    // If a callback is provided, set up a subscription
+    if (callback) {
+      return service.subscribe(keys, (rawResults) => {
+        callback(queries.map((q, i) => decodeValue(q.fn, rawResults[i])));
+      });
+    } else {
+      const rawResults = await service.query(keys);
+      return queries.map((q, i) => decodeValue(q.fn, rawResults[i]));
+    }
+  }
 }

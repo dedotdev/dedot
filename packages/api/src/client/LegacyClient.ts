@@ -1,7 +1,6 @@
 import { BlockHash, PortableRegistry, RuntimeVersion } from '@dedot/codecs';
 import type { JsonRpcProvider } from '@dedot/providers';
-import { Callback, GenericStorageQuery, GenericSubstrateApi, RpcLegacy, Unsub, VersionedGenericSubstrateApi } from '@dedot/types';
-import type { StorageChangeSet } from '@dedot/types/json-rpc';
+import { GenericSubstrateApi, RpcLegacy, Unsub, VersionedGenericSubstrateApi } from '@dedot/types';
 import type { SubstrateApi } from '../chaintypes/index.js';
 import {
   ConstantExecutor,
@@ -11,10 +10,7 @@ import {
   StorageQueryExecutor,
   TxExecutor,
 } from '../executor/index.js';
-import { QueryableStorage } from '../storage/QueryableStorage.js';
 import { newProxyChain } from '../proxychain.js';
-import { LegacyStorageQueryService } from '../storage/LegacyStorageQueryService.js';
-import { StorageQueryService } from '../storage/StorageQueryService.js';
 import type { ApiOptions, ISubstrateClientAt, SubstrateRuntimeVersion } from '../types.js';
 import { BaseSubstrateClient } from './BaseSubstrateClient.js';
 
@@ -264,59 +260,6 @@ export class LegacyClient<ChainApi extends VersionedGenericSubstrateApi = Substr
    */
   get tx(): ChainApi[RpcLegacy]['tx'] {
     return newProxyChain({ executor: new TxExecutor(this) }) as ChainApi[RpcLegacy]['tx'];
-  }
-
-  /**
-   * Query multiple storage items in a single call
-   * 
-   * @param queries Array of query specifications, each with a function and optional arguments
-   * @param callback Optional callback for subscription-based queries
-   * @returns For one-time queries: Array of decoded values; For subscriptions: Unsubscribe function
-   */
-  override multiQuery(queries: { fn: GenericStorageQuery, args?: any[] }[], callback?: Callback<any[]>): Promise<any[] | Unsub> {
-    // Create service directly when needed
-    const service = new LegacyStorageQueryService(this);
-    
-    // Extract keys from queries
-    const keys = queries.map(q => q.fn.rawKey(...(q.args || [])));
-    
-    // If a callback is provided, set up a subscription
-    if (callback) {
-      return service.subscribe(keys, (rawResults) => {
-        // Map raw results back to decoded values
-        const decodedResults = queries.map((q, i) => {
-          // Get the QueryableStorage instance from the query function
-          const entry = new QueryableStorage(
-            this.registry,
-            q.fn.meta.pallet,
-            q.fn.meta.name
-          );
-          
-          // Decode the value
-          return entry.decodeValue(rawResults[i]);
-        });
-        
-        // Call the callback with decoded values
-        callback(decodedResults);
-      });
-    } 
-    // Otherwise, just fetch once
-    else {
-      return service.query(keys).then(rawResults => {
-        // Map raw results back to decoded values
-        return queries.map((q, i) => {
-          // Get the QueryableStorage instance from the query function
-          const entry = new QueryableStorage(
-            this.registry,
-            q.fn.meta.pallet,
-            q.fn.meta.name
-          );
-          
-          // Decode the value
-          return entry.decodeValue(rawResults[i]);
-        });
-      });
-    }
   }
 
   /**
