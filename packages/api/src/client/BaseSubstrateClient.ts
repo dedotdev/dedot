@@ -431,12 +431,12 @@ export abstract class BaseSubstrateClient<
 
     // If a callback is provided, set up a subscription
     if (callback) {
-      return service.subscribe(keys, (rawResults) => {
-        callback(queries.map((q, i) => decodeValue(q.fn, rawResults[i])));
+      return service.subscribe(keys, (results) => {
+        callback(queries.map((q, i) => decodeValue(q.fn, results[keys[i]])));
       });
     } else {
-      const rawResults = await service.query(keys);
-      return queries.map((q, i) => decodeValue(q.fn, rawResults[i]));
+      const results = await service.query(keys);
+      return queries.map((q, i) => decodeValue(q.fn, results[keys[i]]));
     }
   }
 }

@@ -1,4 +1,4 @@
-import { BlockHash, StorageKey } from '@dedot/codecs';
+import { BlockHash, StorageData, StorageKey } from '@dedot/codecs';
 import type { Callback, RpcV2, Unsub, VersionedGenericSubstrateApi } from '@dedot/types';
 import type { SubstrateApi } from '../chaintypes/index.js';
 import { DedotClient } from '../client/DedotClient.js';
@@ -25,25 +25,29 @@ export class NewStorageQueryService<
    * 
    * @param keys - Array of storage keys to query
    * @param at - Optional block hash to query at (defaults to best block)
-   * @returns Promise resolving to an array of raw values in the same order as the keys
+   * @returns Promise resolving to a record mapping storage keys to their values
    */
-  async query(keys: StorageKey[], at?: BlockHash): Promise<any[]> {
+  async query(keys: StorageKey[], at?: BlockHash): Promise<Record<StorageKey, StorageData | undefined>> {
     // Query storage using ChainHead API
     const storageQueries = keys.map(key => ({ type: 'value' as const, key }));
     
     // Use the provided block hash or skip it in tests
-    const results = at 
+    const rawResults = at
       ? await this.client.chainHead.storage(storageQueries, undefined, at)
       : await this.client.chainHead.storage(storageQueries);
     
     // Create a map of key -> value for easy lookup
-    const resultsMap = new Map<string, any>();
-    results.forEach((result) => {
-      resultsMap.set(result.key, result.value);
+    const results: Record<StorageKey, StorageData | undefined> = {};
+    
+    // Initialize all keys with undefined
+    keys.forEach(key => results[key] = undefined);
+    
+    // Update with actual values from the response
+    rawResults.forEach((result) => {
+      results[result.key as StorageKey] = result.value as StorageData || undefined;
     });
     
-    // Return values in the same order as keys
-    return keys.map(key => resultsMap.get(key));
+    return results;
   }
   
   /**
@@ -53,38 +57,41 @@ export class NewStorageQueryService<
    * @param callback - Function to call when storage values change
    * @returns Promise resolving to an unsubscribe function
    */
-  async subscribe(keys: StorageKey[], callback: Callback<any[]>): Promise<Unsub> {
+  async subscribe(keys: StorageKey[], callback: Callback<Record<StorageKey, StorageData | undefined>>): Promise<Unsub> {
     // Get the best block
     const best = await this.client.chainHead.bestBlock();
 
     // Track the latest changes for each key
-    const latestChanges = new Map<string, any>();
+    const latestChanges: Record<StorageKey, StorageData | undefined> = {};
+
+    // Initialize all keys with undefined
+    keys.forEach(key => latestChanges[key] = undefined);
 
     // Function to pull storage values and call the callback if there are changes
     const pull = async ({ hash }: PinnedBlock) => {
       // Query storage using ChainHead API
       const storageQueries = keys.map(key => ({ type: 'value' as const, key }));
-      const results = await this.client.chainHead.storage(storageQueries, undefined, hash);
+      const rawResults = await this.client.chainHead.storage(storageQueries, undefined, hash);
 
       let changed = false;
 
-      // Create a map of key -> value for easy lookup
-      const resultsMap = new Map<string, any>();
-      results.forEach((result) => {
-        resultsMap.set(result.key, result.value);
+      // Create a map for easy lookup
+      const results: Record<string, StorageData | undefined> = {};
+      rawResults.forEach((result) => {
+        results[result.key] = result.value as StorageData || undefined;
       });
 
       keys.forEach((key) => {
-        const newValue = resultsMap.get(key);
-        if (latestChanges.size > 0 && latestChanges.get(key) === newValue) return;
+        const newValue = results[key];
+        if (latestChanges[key] === newValue) return;
 
         changed = true;
-        latestChanges.set(key, newValue);
+        latestChanges[key] = newValue;
       });
       
       if (!changed) return;
       
-      callback(keys.map(key => latestChanges.get(key)));
+      callback({...latestChanges});
     };
     
     // Initial pull

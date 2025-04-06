@@ -5,12 +5,11 @@ import type {
   GenericStorageQuery,
   GenericSubstrateApi,
   PaginationOptions,
+  RpcVersion,
   Unsub,
-  WithPagination,
 } from '@dedot/types';
 import { assert, isFunction, isObject } from '@dedot/utils';
-import { LegacyStorageQueryService } from '../storage/LegacyStorageQueryService.js';
-import { QueryableStorage } from '../storage/QueryableStorage.js';
+import { type StorageQueryService, LegacyStorageQueryService, QueryableStorage } from '../storage/index.js';
 import { Executor } from './Executor.js';
 
 const DEFAULT_KEYS_PAGE_SIZE = 1000;
@@ -107,13 +106,19 @@ export class StorageQueryExecutor<
       const pageSize = pagination?.pageSize || DEFAULT_KEYS_PAGE_SIZE;
       const startKey = pagination?.startKey || entry.prefixKey;
 
-      return await this.client.rpc.state_getKeysPaged(entry.encodeKey(partialInput, true), pageSize, startKey, this.atBlockHash);
+      return await this.client.rpc.state_getKeysPaged(
+        entry.encodeKey(partialInput, true),
+        pageSize,
+        startKey,
+        this.atBlockHash,
+      );
     };
 
     const extractArgs = (args: any[]): [any[], PaginationOptions | undefined] => {
       const inArgs = args.slice();
       const lastArg = args.at(-1);
-      const pagination = isObject(lastArg) && ('pageSize' in lastArg || 'startKey' in lastArg) ? inArgs.pop() : undefined;
+      const pagination =
+        isObject(lastArg) && ('pageSize' in lastArg || 'startKey' in lastArg) ? inArgs.pop() : undefined;
 
       return [inArgs, pagination];
     };
@@ -136,21 +141,17 @@ export class StorageQueryExecutor<
     return { pagedKeys, pagedEntries };
   }
 
+  protected getStorageQueryService(): StorageQueryService<RpcVersion> {
+    return new LegacyStorageQueryService(this.client as any);
+  }
+
   protected async queryStorage(keys: StorageKey[], hash?: BlockHash): Promise<Record<StorageKey, Option<StorageData>>> {
-    // Use LegacyStorageQueryService and pass the block hash
-    const service = new LegacyStorageQueryService(this.client as any);
-    const results = await service.query(keys, hash);
-    
-    // Convert array results to record format
-    return keys.reduce((o, key, i) => {
-      o[key] = results[i];
-      return o;
-    }, {} as Record<StorageKey, Option<StorageData>>);
+    return this.getStorageQueryService().query(keys, hash);
   }
 
   protected subscribeStorage(keys: StorageKey[], callback: Callback<Array<StorageData | undefined>>): Promise<Unsub> {
-    // Use LegacyStorageQueryService
-    const service = new LegacyStorageQueryService(this.client as any);
-    return service.subscribe(keys, callback);
+    return this.getStorageQueryService().subscribe(keys, (results) => {
+      callback(keys.map((key) => results[key]));
+    });
   }
 }

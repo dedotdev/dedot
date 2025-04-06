@@ -1,11 +1,11 @@
-import { BlockHash, Option, StorageData, StorageKey } from '@dedot/codecs';
-import type { AsyncMethod, Callback, GenericSubstrateApi, Unsub } from '@dedot/types';
+import { BlockHash } from '@dedot/codecs';
+import type { AsyncMethod, GenericSubstrateApi, RpcVersion } from '@dedot/types';
 import { assert, HexString } from '@dedot/utils';
-import { ChainHead, ChainHeadEvent, PinnedBlock } from '../../json-rpc/index.js';
-import { NewStorageQueryService } from '../../storage/NewStorageQueryService.js';
-import { QueryableStorage } from '../../storage/QueryableStorage.js';
+import { ChainHead } from '../../json-rpc/index.js';
+import { type StorageQueryService, NewStorageQueryService, QueryableStorage } from '../../storage/index.js';
 import { ISubstrateClientAt } from '../../types.js';
 import { StorageQueryExecutor } from '../StorageQueryExecutor.js';
+
 
 /**
  * @name StorageQueryExecutorV2
@@ -43,26 +43,11 @@ export class StorageQueryExecutorV2<
     return { entries };
   }
 
-  // Override queryStorage and subscribeStorage methods to use NewStorageQueryService directly
-  protected override async queryStorage(keys: StorageKey[], hash?: BlockHash): Promise<Record<StorageKey, Option<StorageData>>> {
-    // Use NewStorageQueryService directly with chainHead and pass the block hash
-    // @ts-ignore little trick to make querying data client.at instance works here, TODO need to rethink about this
+  protected override getStorageQueryService(): StorageQueryService<RpcVersion> {
+    // @ts-ignore little trick to make querying data client.at instance works here,
+    // TODO need to rethink about this
     if (!this.client['chainHead']) this.client['chainHead'] = this.chainHead;
 
-    const service = new NewStorageQueryService(this.client as any);
-
-    const results = await service.query(keys, hash);
-    
-    // Convert array results to record format
-    return keys.reduce((o, key, i) => {
-      o[key] = results[i];
-      return o;
-    }, {} as Record<StorageKey, Option<StorageData>>);
-  }
-
-  protected override subscribeStorage(keys: StorageKey[], callback: Callback<Array<StorageData | undefined>>): Promise<Unsub> {
-    // Use NewStorageQueryService directly with chainHead
-    const service = new NewStorageQueryService(this.client as any);
-    return service.subscribe(keys, callback);
+    return new NewStorageQueryService(this.client as any);
   }
 }

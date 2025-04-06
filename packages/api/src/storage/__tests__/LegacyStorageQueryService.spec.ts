@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { LegacyStorageQueryService } from '../LegacyStorageQueryService.js';
-import { StorageKey } from '@dedot/codecs';
+import { StorageData, StorageKey } from '@dedot/codecs';
 import { Callback, Unsub } from '@dedot/types';
 import { LegacyClient } from '../../client/LegacyClient.js';
 
@@ -54,7 +54,7 @@ describe('LegacyStorageQueryService', () => {
       expect(mockClient.rpc.state_queryStorageAt).toHaveBeenCalledWith(mockKeys);
     });
     
-    it('should return values in the same order as the keys', async () => {
+    it('should return a record mapping keys to values', async () => {
       // Setup mock response with values in a different order than the keys
       const mockChanges = [
         { changes: [['0x02', '0xvalue2'], ['0x01', '0xvalue1']] },
@@ -65,7 +65,10 @@ describe('LegacyStorageQueryService', () => {
       const result = await service.query(mockKeys);
       
       // Verify the result
-      expect(result).toEqual(['0xvalue1', '0xvalue2']);
+      expect(result).toEqual({
+        '0x01': '0xvalue1',
+        '0x02': '0xvalue2'
+      });
     });
     
     it('should handle undefined values', async () => {
@@ -79,7 +82,10 @@ describe('LegacyStorageQueryService', () => {
       const result = await service.query(mockKeys);
       
       // Verify the result
-      expect(result).toEqual(['0xvalue1', undefined]);
+      expect(result).toEqual({
+        '0x01': '0xvalue1',
+        '0x02': undefined
+      });
     });
     
     it('should handle missing keys in the response', async () => {
@@ -93,7 +99,10 @@ describe('LegacyStorageQueryService', () => {
       const result = await service.query(mockKeys);
       
       // Verify the result
-      expect(result).toEqual(['0xvalue1', undefined]);
+      expect(result).toEqual({
+        '0x01': '0xvalue1',
+        '0x02': undefined
+      });
     });
     
     it('should handle empty response', async () => {
@@ -107,7 +116,10 @@ describe('LegacyStorageQueryService', () => {
       const result = await service.query(mockKeys);
       
       // Verify the result
-      expect(result).toEqual([undefined, undefined]);
+      expect(result).toEqual({
+        '0x01': undefined,
+        '0x02': undefined
+      });
     });
   });
   
@@ -153,7 +165,10 @@ describe('LegacyStorageQueryService', () => {
       
       // Verify the callback was called with the correct values
       expect(callback).toHaveBeenCalledTimes(1);
-      expect(callback).toHaveBeenCalledWith(['0xvalue1', '0xvalue2']);
+      expect(callback).toHaveBeenCalledWith({
+        '0x01': '0xvalue1',
+        '0x02': '0xvalue2'
+      });
     });
     
     it('should handle changes in a different order than the keys', async () => {
@@ -179,8 +194,11 @@ describe('LegacyStorageQueryService', () => {
         subscriptionCallback(mockChangeSet);
       }
       
-      // Verify the callback was called with values in the same order as the keys
-      expect(callback).toHaveBeenCalledWith(['0xvalue1', '0xvalue2']);
+      // Verify the callback was called with a record containing all keys
+      expect(callback).toHaveBeenCalledWith({
+        '0x01': '0xvalue1',
+        '0x02': '0xvalue2'
+      });
     });
     
     it('should handle undefined values in changes', async () => {
@@ -207,7 +225,10 @@ describe('LegacyStorageQueryService', () => {
       }
       
       // Verify the callback was called with the correct values
-      expect(callback).toHaveBeenCalledWith(['0xvalue1', undefined]);
+      expect(callback).toHaveBeenCalledWith({
+        '0x01': '0xvalue1',
+        '0x02': undefined
+      });
     });
     
     it('should handle missing keys in changes', async () => {
@@ -234,7 +255,10 @@ describe('LegacyStorageQueryService', () => {
       }
       
       // Verify the callback was called with the correct values
-      expect(callback).toHaveBeenCalledWith(['0xvalue1', undefined]);
+      expect(callback).toHaveBeenCalledWith({
+        '0x01': '0xvalue1',
+        '0x02': undefined
+      });
     });
     
     it('should return an unsubscribe function', async () => {

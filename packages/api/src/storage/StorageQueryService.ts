@@ -1,4 +1,4 @@
-import { BlockHash, StorageKey } from '@dedot/codecs';
+import { BlockHash, StorageData, StorageKey } from '@dedot/codecs';
 import type { Callback, GenericSubstrateApi, RpcVersion, Unsub, VersionedGenericSubstrateApi } from '@dedot/types';
 import type { SubstrateApi } from '../chaintypes/index.js';
 import { BaseSubstrateClient } from '../client/BaseSubstrateClient.js';
@@ -31,11 +31,11 @@ export abstract class StorageQueryService<
    * Query multiple storage items in a single call
    * 
    * @param keys - Array of storage keys to query
-   * @param at - Optional block hash to query at (defaults to current/best block)
-   * @returns Promise resolving to an array of raw values in the same order as the keys
+   * @param at - Optional block hash to query at
+   * @returns Promise resolving to a record mapping storage keys to their values
    */
-  abstract query(keys: StorageKey[], at?: BlockHash): Promise<any[]>;
-
+  abstract query(keys: StorageKey[], at?: BlockHash): Promise<Record<StorageKey, StorageData | undefined>>;
+  
   /**
    * Subscribe to multiple storage items
    * 
@@ -43,5 +43,5 @@ export abstract class StorageQueryService<
    * @param callback - Function to call when storage values change
    * @returns Promise resolving to an unsubscribe function
    */
-  abstract subscribe(keys: StorageKey[], callback: Callback<any[]>): Promise<Unsub>;
+  abstract subscribe(keys: StorageKey[], callback: Callback<Record<StorageKey, StorageData | undefined>>): Promise<Unsub>;
 }

@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { NewStorageQueryService } from '../NewStorageQueryService.js';
-import { StorageKey } from '@dedot/codecs';
+import { StorageData, StorageKey } from '@dedot/codecs';
 import { Callback, Unsub } from '@dedot/types';
 import { DedotClient } from '../../client/DedotClient.js';
 import { PinnedBlock } from '../../json-rpc/group/ChainHead/ChainHead.js';
@@ -60,7 +60,7 @@ describe('NewStorageQueryService', () => {
       ]);
     });
     
-    it('should return values in the same order as the keys', async () => {
+    it('should return a record mapping keys to values', async () => {
       // Setup mock response with values in a different order than the keys
       const mockResults = [
         { key: '0x02', value: '0xvalue2' },
@@ -72,7 +72,10 @@ describe('NewStorageQueryService', () => {
       const result = await service.query(mockKeys);
       
       // Verify the result
-      expect(result).toEqual(['0xvalue1', '0xvalue2']);
+      expect(result).toEqual({
+        '0x01': '0xvalue1',
+        '0x02': '0xvalue2'
+      });
     });
     
     it('should handle undefined values', async () => {
@@ -87,7 +90,10 @@ describe('NewStorageQueryService', () => {
       const result = await service.query(mockKeys);
       
       // Verify the result
-      expect(result).toEqual(['0xvalue1', undefined]);
+      expect(result).toEqual({
+        '0x01': '0xvalue1',
+        '0x02': undefined
+      });
     });
     
     it('should handle missing keys in the response', async () => {
@@ -101,7 +107,10 @@ describe('NewStorageQueryService', () => {
       const result = await service.query(mockKeys);
       
       // Verify the result
-      expect(result).toEqual(['0xvalue1', undefined]);
+      expect(result).toEqual({
+        '0x01': '0xvalue1',
+        '0x02': undefined
+      });
     });
     
     it('should handle empty response', async () => {
@@ -113,7 +122,10 @@ describe('NewStorageQueryService', () => {
       const result = await service.query(mockKeys);
       
       // Verify the result
-      expect(result).toEqual([undefined, undefined]);
+      expect(result).toEqual({
+        '0x01': undefined,
+        '0x02': undefined
+      });
     });
   });
   
@@ -179,7 +191,10 @@ describe('NewStorageQueryService', () => {
       
       // Verify the callback was called with initial values
       expect(callback).toHaveBeenCalledTimes(1);
-      expect(callback).toHaveBeenCalledWith(['0xvalue1', '0xvalue2']);
+      expect(callback).toHaveBeenCalledWith({
+        '0x01': '0xvalue1',
+        '0x02': '0xvalue2'
+      });
       
       // Reset the callback mock
       callback.mockReset();
@@ -199,7 +214,10 @@ describe('NewStorageQueryService', () => {
       
       // Verify the callback was called with new values
       expect(callback).toHaveBeenCalledTimes(1);
-      expect(callback).toHaveBeenCalledWith(['0xnewvalue1', '0xnewvalue2']);
+      expect(callback).toHaveBeenCalledWith({
+        '0x01': '0xnewvalue1',
+        '0x02': '0xnewvalue2'
+      });
     });
     
     it('should not call the callback when no changes are detected', async () => {
