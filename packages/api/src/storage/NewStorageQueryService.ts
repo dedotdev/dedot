@@ -64,9 +64,6 @@ export class NewStorageQueryService<
     // Track the latest changes for each key
     const latestChanges: Record<StorageKey, StorageData | undefined> = {};
 
-    // Initialize all keys with undefined
-    keys.forEach(key => latestChanges[key] = undefined);
-
     // Function to pull storage values and call the callback if there are changes
     const pull = async ({ hash }: PinnedBlock) => {
       // Query storage using ChainHead API
@@ -83,12 +80,12 @@ export class NewStorageQueryService<
 
       keys.forEach((key) => {
         const newValue = results[key];
-        if (latestChanges[key] === newValue) return;
+        if (Object.keys(latestChanges).length > 0 && latestChanges[key] === newValue) return;
 
         changed = true;
         latestChanges[key] = newValue;
       });
-      
+
       if (!changed) return;
       
       callback({...latestChanges});
