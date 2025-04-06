@@ -13,7 +13,6 @@ export const run = async (nodeName: any, networkInfo: any) => {
 
   const balances = await api.query.system.account.multi([ALICE, BOB]);
 
-  console.log('checkin-1')
   Object.entries(addressesToCheck).forEach(([name, address], idx) => {
     (async () => {
       const balance = await api.query.system.account(address);
@@ -26,7 +25,6 @@ export const run = async (nodeName: any, networkInfo: any) => {
   });
 
   // Check storage map entries
-  console.log('checkin-2')
   const accounts = await api.query.system.account.entries();
   const addressToFreeBalance = accounts.reduce(
     (o, [k, v]) => {
@@ -38,7 +36,6 @@ export const run = async (nodeName: any, networkInfo: any) => {
   assert(addressToFreeBalance[ALICE] === 10_000_000_000_000_000n, 'Incorrect balance for Alice');
   assert(addressToFreeBalance[BOB] === 10_000_000_000_000_000n, 'Incorrect balance for Alice');
 
-  console.log('checkin-3')
   // Verify empty storage subscription
   const UNKNOWN_ADDRESS: string = '5GL1n2H9fkCc6K6d87L5MV3WkzWnQz4mbb9HMSNk89CpjrMv';
   await new Promise<void>(async (resolve) => {
@@ -49,7 +46,6 @@ export const run = async (nodeName: any, networkInfo: any) => {
     });
   });
 
-  console.log('checkin-4')
   await new Promise<void>(async (resolve, reject) => {
     let counter = 0;
     let lastBlockNumber: number | undefined;

@@ -2,7 +2,7 @@ import { BlockHash, StorageKey } from '@dedot/codecs';
 import type { Callback, RpcV2, Unsub, VersionedGenericSubstrateApi } from '@dedot/types';
 import type { SubstrateApi } from '../chaintypes/index.js';
 import { DedotClient } from '../client/DedotClient.js';
-import { PinnedBlock } from '../json-rpc/group/ChainHead/ChainHead.js';
+import { ChainHeadEvent, PinnedBlock } from '../json-rpc/group/ChainHead/ChainHead.js';
 import { StorageQueryService } from './StorageQueryService.js';
 
 /**
@@ -56,7 +56,7 @@ export class NewStorageQueryService<
   async subscribe(keys: StorageKey[], callback: Callback<any[]>): Promise<Unsub> {
     // Get the best block
     const best = await this.client.chainHead.bestBlock();
-    
+
     // Track the latest changes for each key
     const latestChanges = new Map<string, any>();
 
@@ -65,25 +65,26 @@ export class NewStorageQueryService<
       // Query storage using ChainHead API
       const storageQueries = keys.map(key => ({ type: 'value' as const, key }));
       const results = await this.client.chainHead.storage(storageQueries, undefined, hash);
-      
+
       let changed = false;
-      
-      // Check for changes
+
+      // Create a map of key -> value for easy lookup
+      const resultsMap = new Map<string, any>();
       results.forEach((result) => {
-        const key = result.key;
-        const value = result.value;
-        
-        if (latestChanges.size > 0 && latestChanges.get(key) === value) return;
-        
+        resultsMap.set(result.key, result.value);
+      });
+
+      keys.forEach((key) => {
+        const newValue = resultsMap.get(key);
+        if (latestChanges.size > 0 && latestChanges.get(key) === newValue) return;
+
         changed = true;
-        latestChanges.set(key, value);
+        latestChanges.set(key, newValue);
       });
       
       if (!changed) return;
       
-      // Return values in the same order as keys
-      const values = keys.map(key => latestChanges.get(key));
-      callback(values);
+      callback(keys.map(key => latestChanges.get(key)));
     };
     
     // Initial pull
