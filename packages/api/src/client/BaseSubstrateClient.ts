@@ -6,6 +6,8 @@ import {
   GenericStorageQuery,
   GenericSubstrateApi,
   InjectedSigner,
+  Query,
+  QueryFnResult,
   RpcVersion,
   Unsub,
   VersionedGenericSubstrateApi,
@@ -399,15 +401,31 @@ export abstract class BaseSubstrateClient<
   /**
    * Query multiple storage items in a single call
    *
-   * This method should be implemented by derived classes to query multiple storage items
-   * in a single call or set up a subscription to multiple storage items.
+   * This method allows you to query multiple storage items in a single call or set up a subscription
+   * to multiple storage items. It provides type safety for both the query functions and their results.
    *
+   * @example
+   * // One-time query with type-safe results
+   * const [balance, blockNumber] = await client.multiQuery([
+   *   { fn: client.query.system.account, args: [ALICE] },
+   *   { fn: client.query.system.number, args: [] }
+   * ]);
+   * // balance will be typed as AccountInfo
+   * // blockNumber will be typed as number
+   *
+   *
+   * @template Fns Array of storage query functions
    * @param queries - Array of query specifications, each with a function and optional arguments
    * @param callback - Optional callback for subscription-based queries
-   * @returns For one-time queries: Array of decoded values; For subscriptions: Unsubscribe function
+   * @returns For one-time queries: Array of decoded values with proper types; For subscriptions: Unsubscribe function
    */
-  multiQuery(queries: { fn: GenericStorageQuery; args?: any[] }[]): Promise<any[]>;
-  multiQuery(queries: { fn: GenericStorageQuery; args?: any[] }[], callback: Callback<any[]>): Promise<Unsub>;
+  multiQuery<Fns extends GenericStorageQuery[]>(
+    queries: { [K in keyof Fns]: Query<Fns[K]> }
+  ): Promise<{ [K in keyof Fns]: QueryFnResult<Fns[K]> }>;
+  multiQuery<Fns extends GenericStorageQuery[]>(
+    queries: { [K in keyof Fns]: Query<Fns[K]> },
+    callback: Callback<{ [K in keyof Fns]: QueryFnResult<Fns[K]> }>
+  ): Promise<Unsub>;
   async multiQuery(
     queries: { fn: GenericStorageQuery; args?: any[] }[],
     callback?: Callback<any[]>,

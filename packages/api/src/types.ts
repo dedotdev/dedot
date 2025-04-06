@@ -6,7 +6,7 @@ import type {
   Callback,
   GenericStorageQuery,
   GenericSubstrateApi,
-  InjectedSigner,
+  InjectedSigner, Query, QueryFnResult,
   RpcVersion,
   RuntimeApiName,
   RuntimeApiSpec,
@@ -156,8 +156,13 @@ export interface ISubstrateClient<
    * @param callback - Optional callback function to handle results
    * @returns A promise resolving to an array of results or an Unsub function
    */
-  multiQuery(queries: { fn: GenericStorageQuery; args?: any[] }[]): Promise<any[]>;
-  multiQuery(queries: { fn: GenericStorageQuery; args?: any[] }[], callback?: Callback<any[]>): Promise<Unsub>;
+  multiQuery<Fns extends GenericStorageQuery[]>(
+    queries: { [K in keyof Fns]: Query<Fns[K]> }
+  ): Promise<{ [K in keyof Fns]: QueryFnResult<Fns[K]> }>;
+  multiQuery<Fns extends GenericStorageQuery[]>(
+    queries: { [K in keyof Fns]: Query<Fns[K]> },
+    callback: Callback<{ [K in keyof Fns]: QueryFnResult<Fns[K]> }>
+  ): Promise<Unsub>;
 }
 
 /**

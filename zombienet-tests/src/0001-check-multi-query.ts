@@ -51,14 +51,11 @@ async function testWithLegacyClient(wsUri: string) {
 async function testOneTimeQueries(client: DedotClient | LegacyClient) {
   console.log('Testing one-time multiQuery...');
   
-  // Test 1: Query multiple account balances
-  const queries = [
+  // Execute multiQuery
+  const multiResults = await client.multiQuery([
     { fn: client.query.system.account, args: [ALICE] },
     { fn: client.query.system.account, args: [BOB] }
-  ];
-  
-  // Execute multiQuery
-  const multiResults = await client.multiQuery(queries);
+  ]);
   
   // Execute individual queries for comparison
   const aliceAccount = await client.query.system.account(ALICE);
@@ -74,13 +71,11 @@ async function testOneTimeQueries(client: DedotClient | LegacyClient) {
   console.log('Bob balance:', multiResults[1].data.free.toString());
   
   // Test 2: Query different types of storage items
-  const mixedQueries = [
-    { fn: client.query.system.account, args: [ALICE] },
-    { fn: client.query.system.number }
-  ];
-  
   const [mixedResults, blockNumber] = await Promise.all([
-    client.multiQuery(mixedQueries),
+    client.multiQuery([
+      { fn: client.query.system.account, args: [ALICE] },
+      { fn: client.query.system.number }
+    ]),
     client.query.system.number()
   ]);
   
@@ -101,17 +96,14 @@ async function testOneTimeQueries(client: DedotClient | LegacyClient) {
 async function testSubscriptionQueries(client: DedotClient | LegacyClient) {
   console.log('Testing subscription-based multiQuery...');
   
-  // Test 1: Subscribe to multiple account balances
-  const queries = [
-    { fn: client.query.system.account, args: [ALICE] },
-    { fn: client.query.system.account, args: [BOB] }
-  ];
-  
   // Set up a promise to track subscription updates
   await new Promise<void>((resolve) => {
     let updateCount = 0;
     
-    client.multiQuery(queries, (results) => {
+    client.multiQuery([
+      { fn: client.query.system.account, args: [ALICE] },
+      { fn: client.query.system.account, args: [BOB] }
+    ], (results) => {
       updateCount++;
       console.log(`Received subscription update #${updateCount}`);
       
@@ -134,9 +126,7 @@ async function testSubscriptionQueries(client: DedotClient | LegacyClient) {
     
     client.multiQuery(
       [{ fn: client.query.system.number }],
-      (results) => {
-        const blockNumber = results[0];
-        
+      ([blockNumber]) => {
         if (lastBlockNumber !== undefined) {
           // Block number should be increasing
           assert(blockNumber > lastBlockNumber, 'Block number should be increasing');
@@ -161,9 +151,7 @@ async function testSubscriptionQueries(client: DedotClient | LegacyClient) {
   await new Promise<void>((resolve) => {
     client.multiQuery(
       [{ fn: client.query.system.account, args: [UNKNOWN_ADDRESS] }],
-      (results) => {
-        const unknownAccount = results[0];
-        
+      ([unknownAccount]) => {
         assert(unknownAccount.data.free === 0n, 'Incorrect balance for unknown account');
         assert(unknownAccount.nonce === 0, 'Incorrect nonce for unknown account');
         
