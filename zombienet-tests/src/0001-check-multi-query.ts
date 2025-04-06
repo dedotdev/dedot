@@ -182,6 +182,7 @@ async function testSubscriptionQueries(client: DedotClient | LegacyClient) {
           // Call the unsubscribe function
           unsub().then(() => {
             console.log('Unsubscribed successfully');
+            resolve();
           });
         }
       }
