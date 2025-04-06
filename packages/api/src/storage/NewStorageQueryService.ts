@@ -1,4 +1,4 @@
-import { StorageKey } from '@dedot/codecs';
+import { BlockHash, StorageKey } from '@dedot/codecs';
 import type { Callback, RpcV2, Unsub, VersionedGenericSubstrateApi } from '@dedot/types';
 import type { SubstrateApi } from '../chaintypes/index.js';
 import { DedotClient } from '../client/DedotClient.js';
@@ -24,12 +24,17 @@ export class NewStorageQueryService<
    * Query multiple storage items in a single call using chainHead_storage
    * 
    * @param keys - Array of storage keys to query
+   * @param at - Optional block hash to query at (defaults to best block)
    * @returns Promise resolving to an array of raw values in the same order as the keys
    */
-  async query(keys: StorageKey[]): Promise<any[]> {
+  async query(keys: StorageKey[], at?: BlockHash): Promise<any[]> {
     // Query storage using ChainHead API
     const storageQueries = keys.map(key => ({ type: 'value' as const, key }));
-    const results = await this.client.chainHead.storage(storageQueries);
+    
+    // Use the provided block hash or skip it in tests
+    const results = at 
+      ? await this.client.chainHead.storage(storageQueries, undefined, at)
+      : await this.client.chainHead.storage(storageQueries);
     
     // Create a map of key -> value for easy lookup
     const resultsMap = new Map<string, any>();

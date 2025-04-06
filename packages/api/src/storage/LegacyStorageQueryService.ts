@@ -1,4 +1,4 @@
-import { StorageKey } from '@dedot/codecs';
+import { BlockHash, StorageKey } from '@dedot/codecs';
 import type { StorageChangeSet } from '@dedot/types/json-rpc';
 import type { Callback, RpcLegacy, Unsub, VersionedGenericSubstrateApi } from '@dedot/types';
 import type { SubstrateApi } from '../chaintypes/index.js';
@@ -24,17 +24,22 @@ export class LegacyStorageQueryService<
    * Query multiple storage items in a single call using state_queryStorageAt
    * 
    * @param keys - Array of storage keys to query
+   * @param at - Optional block hash to query at (defaults to current/best block)
    * @returns Promise resolving to an array of raw values in the same order as the keys
    */
-  async query(keys: StorageKey[]): Promise<any[]> {
-    // Query storage at the current block
-    const changeSets = await this.client.rpc.state_queryStorageAt(keys);
+  async query(keys: StorageKey[], at?: BlockHash): Promise<any[]> {
+    // Query storage at the specified block or current block
+    const changeSets = at
+      ? await this.client.rpc.state_queryStorageAt(keys, at)
+      : await this.client.rpc.state_queryStorageAt(keys);
     
     // Create a map of key -> value for easy lookup
     const resultsMap: Record<string, any> = {};
-    changeSets[0].changes.forEach(([key, value]: [string, any]) => {
-      resultsMap[key] = value ?? undefined;
-    });
+    if (changeSets && changeSets.length > 0) {
+      changeSets[0].changes.forEach(([key, value]: [string, any]) => {
+        resultsMap[key] = value ?? undefined;
+      });
+    }
 
     // Return values in the same order as keys
     return keys.map(key => resultsMap[key]);

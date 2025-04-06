@@ -45,9 +45,13 @@ export class StorageQueryExecutorV2<
 
   // Override queryStorage and subscribeStorage methods to use NewStorageQueryService directly
   protected override async queryStorage(keys: StorageKey[], hash?: BlockHash): Promise<Record<StorageKey, Option<StorageData>>> {
-    // Use NewStorageQueryService directly with chainHead
+    // Use NewStorageQueryService directly with chainHead and pass the block hash
+    // @ts-ignore little trick to make querying data client.at instance works here, TODO need to rethink about this
+    if (!this.client['chainHead']) this.client['chainHead'] = this.chainHead;
+
     const service = new NewStorageQueryService(this.client as any);
-    const results = await service.query(keys);
+
+    const results = await service.query(keys, hash);
     
     // Convert array results to record format
     return keys.reduce((o, key, i) => {

@@ -31,9 +31,10 @@ export abstract class StorageQueryService<
    * Query multiple storage items in a single call
    * 
    * @param keys - Array of storage keys to query
+   * @param at - Optional block hash to query at (defaults to current/best block)
    * @returns Promise resolving to an array of raw values in the same order as the keys
    */
-  abstract query(keys: StorageKey[]): Promise<any[]>;
+  abstract query(keys: StorageKey[], at?: BlockHash): Promise<any[]>;
 
   /**
    * Subscribe to multiple storage items

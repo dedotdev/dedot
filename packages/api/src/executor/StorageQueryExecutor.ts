@@ -142,9 +142,9 @@ export class StorageQueryExecutor<
       throw new Error('StorageQueryExecutor only supports legacy clients');
     }
     
-    // Use LegacyStorageQueryService
+    // Use LegacyStorageQueryService and pass the block hash
     const service = new LegacyStorageQueryService(this.client as any);
-    const results = await service.query(keys);
+    const results = await service.query(keys, hash);
     
     // Convert array results to record format
     return keys.reduce((o, key, i) => {

@@ -10,8 +10,8 @@ import { LegacyClient } from '../LegacyClient.js';
 import MockProvider, { MockedRuntimeVersion } from './MockProvider.js';
 
 describe('LegacyClient', () => {
-  it('should throws error for invalid endpoint', () => {
-    expect(async () => {
+  it('should throws error for invalid endpoint', async () => {
+    await expect(async () => {
       await LegacyClient.new(new WsProvider('invalid_endpoint'));
     }).rejects.toThrowError(
       'Invalid websocket endpoint invalid_endpoint, a valid endpoint should start with wss:// or ws://',
@@ -88,12 +88,12 @@ describe('LegacyClient', () => {
         });
       });
 
-      it('should throws error if query entry not found', () => {
-        expect(async () => {
+      it('should throws error if query entry not found', async () => {
+        await expect(async () => {
           await api.query.palletName.notFound();
         }).rejects.toThrowError(new Error('Pallet not found: palletName'));
 
-        expect(async () => {
+        await expect(async () => {
           // @ts-ignore
           await api.query.system.notFound();
         }).rejects.toThrowError(new Error(`Storage item not found: notFound`));
