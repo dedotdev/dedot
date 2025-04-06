@@ -106,11 +106,10 @@ async function testSubscriptionQueries(client: DedotClient | LegacyClient) {
   ];
   
   // Set up a promise to track subscription updates
-  const subscriptionPromise = new Promise<void>((resolve) => {
+  await new Promise<void>(async (resolve, reject) => {
     let updateCount = 0;
     
-    // Create a callback function
-    const callback: Callback<any[]> = (results) => {
+    const unsub = await client.multiQuery(queries, (results) => {
       updateCount++;
       console.log(`Received subscription update #${updateCount}`);
       
@@ -119,94 +118,62 @@ async function testSubscriptionQueries(client: DedotClient | LegacyClient) {
       assert(typeof results[0].data.free === 'bigint', `First result should have free balance`);
       assert(typeof results[1].data.free === 'bigint', `Second result should have free balance`);
       
-      // After receiving at least one update, resolve the promise
+      // After receiving at least one update, unsubscribe and resolve
       if (updateCount >= 1) {
-        setTimeout(() => {
+        (unsub as Unsub)().then(() => {
+          console.log('Unsubscribed successfully');
           resolve();
-        }, 100);
+        });
       }
-    };
-    
-    // Call multiQuery with the callback
-    client.multiQuery(queries, callback).then((unsubFn) => {
-      // Store the unsubscribe function for later use
-      const unsubscribe = unsubFn as Unsub;
-      
-      // Set up cleanup after we've received at least one update
-      const checkInterval = setInterval(() => {
-        if (updateCount >= 1) {
-          clearInterval(checkInterval);
-          unsubscribe().then(() => {
-            console.log('Unsubscribed successfully');
-          });
-        }
-      }, 100);
     });
   });
   
-  // Wait for the subscription to receive updates
-  await subscriptionPromise;
-  
   // Test 2: Subscribe to block number
-  await new Promise<void>((resolve) => {
+  await new Promise<void>(async (resolve, reject) => {
+    let counter = 0;
     let lastBlockNumber: number | undefined;
-    let updateCount = 0;
-    let unsubscribe: Unsub | null = null;
-    
-    // Create a callback function
-    const callback: Callback<any[]> = (results) => {
-      const blockNumber = results[0];
-      updateCount++;
-      
-      console.log(`Current block number: ${blockNumber}`);
-      
-      if (lastBlockNumber !== undefined) {
-        // Block number should be increasing
-        assert(blockNumber > lastBlockNumber, 'Block number should be increasing');
-      }
-      
-      lastBlockNumber = blockNumber;
-      
-      // After receiving a few updates, unsubscribe and resolve
-      if (updateCount >= 3 && unsubscribe) {
-        unsubscribe().then(() => resolve());
-      }
-    };
-    
-    // Call multiQuery with the callback
-    client.multiQuery(
+
+    const unsub = await client.multiQuery(
       [{ fn: client.query.system.number, args: [] }],
-      callback
-    ).then((unsubFn) => {
-      unsubscribe = unsubFn as Unsub;
-    });
+      (results) => {
+        const blockNumber = results[0];
+        
+        if (lastBlockNumber !== undefined) {
+          // Block number should be increasing
+          assert(blockNumber > lastBlockNumber, 'Block number should be increasing');
+        }
+
+        console.log(`Current block number: ${blockNumber}`);
+
+        lastBlockNumber = blockNumber;
+        counter += 1;
+        if (counter >= 2) {
+          (unsub as Unsub)().then(() => {
+            resolve();
+          });
+        }
+      }
+    );
   });
   
   // Test 3: Subscribe to empty storage
   const UNKNOWN_ADDRESS = '5GL1n2H9fkCc6K6d87L5MV3WkzWnQz4mbb9HMSNk89CpjrMv';
   
-  await new Promise<void>((resolve) => {
-    let unsubscribe: Unsub | null = null;
-    
-    // Create a callback function
-    const callback: Callback<any[]> = (results) => {
-      const unknownAccount = results[0];
-      
-      assert(unknownAccount.data.free === 0n, 'Incorrect balance for unknown account');
-      assert(unknownAccount.nonce === 0, 'Incorrect nonce for unknown account');
-      
-      if (unsubscribe) {
-        unsubscribe().then(() => resolve());
-      }
-    };
-    
-    // Call multiQuery with the callback
-    client.multiQuery(
+  await new Promise<void>(async (resolve, reject) => {
+    const unsub = await client.multiQuery(
       [{ fn: client.query.system.account, args: [UNKNOWN_ADDRESS] }],
-      callback
-    ).then((unsubFn) => {
-      unsubscribe = unsubFn as Unsub;
-    });
+      (results) => {
+        const unknownAccount = results[0];
+        
+        assert(unknownAccount.data.free === 0n, 'Incorrect balance for unknown account');
+        assert(unknownAccount.nonce === 0, 'Incorrect nonce for unknown account');
+        
+        // Unsubscribe and resolve immediately after receiving the first update
+        (unsub as Unsub)().then(() => {
+          resolve();
+        });
+      }
+    );
   });
   
   console.log('Subscription-based multiQuery tests passed!');
