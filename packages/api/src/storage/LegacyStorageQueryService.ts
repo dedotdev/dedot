@@ -42,7 +42,7 @@ export class LegacyStorageQueryService<
     // Update with actual values from the response
     if (changeSets && changeSets.length > 0) {
       changeSets[0].changes.forEach(([key, value]: [string, any]) => {
-        results[key as StorageKey] = value || undefined;
+        results[key as StorageKey] = value ?? undefined;
       });
     }
 
@@ -68,7 +68,7 @@ export class LegacyStorageQueryService<
       // Update the latest changes
       changeSet.changes.forEach(([key, value]: [string, any]) => {
         if (lastChanges[key as StorageKey] !== value) {
-          lastChanges[key as StorageKey] = value || undefined;
+          lastChanges[key as StorageKey] = value ?? undefined;
         }
       });
 

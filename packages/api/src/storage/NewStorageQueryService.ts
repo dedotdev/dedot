@@ -44,7 +44,7 @@ export class NewStorageQueryService<
     
     // Update with actual values from the response
     rawResults.forEach((result) => {
-      results[result.key as StorageKey] = result.value as StorageData || undefined;
+      results[result.key as StorageKey] = result.value as StorageData ?? undefined;
     });
     
     return results;
@@ -75,7 +75,7 @@ export class NewStorageQueryService<
       // Create a map for easy lookup
       const results: Record<string, StorageData | undefined> = {};
       rawResults.forEach((result) => {
-        results[result.key] = result.value as StorageData || undefined;
+        results[result.key] = result.value as StorageData ?? undefined;
       });
 
       keys.forEach((key) => {
