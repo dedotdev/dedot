@@ -9,7 +9,7 @@ import type {
   Unsub,
 } from '@dedot/types';
 import { assert, isFunction, isObject } from '@dedot/utils';
-import { type StorageQueryService, LegacyStorageQueryService, QueryableStorage } from '../storage/index.js';
+import { type BaseStorageQuery, LegacyStorageQuery, QueryableStorage } from '../storage/index.js';
 import { Executor } from './Executor.js';
 
 const DEFAULT_KEYS_PAGE_SIZE = 1000;
@@ -141,16 +141,16 @@ export class StorageQueryExecutor<
     return { pagedKeys, pagedEntries };
   }
 
-  protected getStorageQueryService(): StorageQueryService<RpcVersion> {
-    return new LegacyStorageQueryService(this.client as any);
+  protected getStorageQuery(): BaseStorageQuery<RpcVersion> {
+    return new LegacyStorageQuery(this.client as any);
   }
 
   protected async queryStorage(keys: StorageKey[], hash?: BlockHash): Promise<Record<StorageKey, Option<StorageData>>> {
-    return this.getStorageQueryService().query(keys, hash);
+    return this.getStorageQuery().query(keys, hash);
   }
 
   protected subscribeStorage(keys: StorageKey[], callback: Callback<Array<StorageData | undefined>>): Promise<Unsub> {
-    return this.getStorageQueryService().subscribe(keys, (results) => {
+    return this.getStorageQuery().subscribe(keys, (results) => {
       callback(keys.map((key) => results[key]));
     });
   }

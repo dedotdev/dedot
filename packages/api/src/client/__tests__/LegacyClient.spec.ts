@@ -347,8 +347,8 @@ describe('LegacyClient', () => {
 
         // Call multiQuery
         const result = await api.multiQuery([
-          { fn: mockQueryFn1 as any },
-          { fn: mockQueryFn2 as any },
+          { fn: mockQueryFn1 as any, args: [] },
+          { fn: mockQueryFn2 as any, args: [] },
         ]);
 
         // Verify rawKey was called
@@ -410,8 +410,8 @@ describe('LegacyClient', () => {
 
         // Call multiQuery with subscription
         const unsub = await api.multiQuery([
-          { fn: mockQueryFn1 as any },
-          { fn: mockQueryFn2 as any },
+          { fn: mockQueryFn1 as any, args: [] },
+          { fn: mockQueryFn2 as any, args: [] },
         ], callback);
 
         // Verify state_subscribeStorage was called with the correct keys
@@ -475,7 +475,7 @@ describe('LegacyClient', () => {
         provider.setRpcRequest('state_queryStorageAt', () => { throw mockError; });
 
         // Call multiQuery and expect it to reject with the error
-        await expect(api.multiQuery([{ fn: mockQueryFn as any }])).rejects.toThrow(mockError);
+        await expect(api.multiQuery([{ fn: mockQueryFn as any, args: [] }])).rejects.toThrow(mockError);
       });
     });
 

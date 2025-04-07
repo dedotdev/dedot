@@ -17,7 +17,7 @@ import type { SubstrateApi } from '../chaintypes/index.js';
 import { ConstantExecutor, ErrorExecutor, EventExecutor } from '../executor/index.js';
 import { isJsonRpcProvider, JsonRpcClient } from '../json-rpc/index.js';
 import { newProxyChain } from '../proxychain.js';
-import { LegacyStorageQueryService, NewStorageQueryService, QueryableStorage } from '../storage/index.js';
+import { LegacyStorageQuery, NewStorageQuery, QueryableStorage } from '../storage/index.js';
 import type {
   ApiEvent,
   ApiOptions,
@@ -444,9 +444,9 @@ export abstract class BaseSubstrateClient<
     // Create service directly when needed
     let service;
     if (this.rpcVersion === 'v2') {
-      service = new NewStorageQueryService(this as any);
+      service = new NewStorageQuery(this as any);
     } else {
-      service = new LegacyStorageQueryService(this as any);
+      service = new LegacyStorageQuery(this as any);
     }
 
     // If a callback is provided, set up a subscription

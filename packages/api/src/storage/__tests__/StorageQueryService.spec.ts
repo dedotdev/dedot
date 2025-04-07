@@ -1,10 +1,10 @@
 import { describe, it, expect, vi } from 'vitest';
-import { StorageQueryService } from '../StorageQueryService.js';
+import { BaseStorageQuery } from '../BaseStorageQuery.js';
 import { StorageData, StorageKey } from '@dedot/codecs';
 import { Callback, Unsub } from '@dedot/types';
 
 // Create a concrete implementation of the abstract class for testing
-class TestStorageQueryService extends StorageQueryService<any, any, any> {
+class TestBaseStorageQuery extends BaseStorageQuery<any, any, any> {
   constructor() {
     // Create a mock client
     const mockClient = {
@@ -41,20 +41,20 @@ class TestStorageQueryService extends StorageQueryService<any, any, any> {
   }
 }
 
-describe('StorageQueryService', () => {
+describe('BaseStorageQuery', () => {
   it('should be instantiable with a concrete implementation', () => {
-    const service = new TestStorageQueryService();
-    expect(service).toBeInstanceOf(StorageQueryService);
+    const service = new TestBaseStorageQuery();
+    expect(service).toBeInstanceOf(BaseStorageQuery);
   });
   
   it('should have query and subscribe methods', () => {
-    const service = new TestStorageQueryService();
+    const service = new TestBaseStorageQuery();
     expect(typeof service.query).toBe('function');
     expect(typeof service.subscribe).toBe('function');
   });
   
   it('query method should return a record of key-value pairs', async () => {
-    const service = new TestStorageQueryService();
+    const service = new TestBaseStorageQuery();
     const keys = ['0x01', '0x02'] as StorageKey[];
     
     const result = await service.query(keys);
@@ -66,7 +66,7 @@ describe('StorageQueryService', () => {
   });
   
   it('subscribe method should call the callback with a record of key-value pairs', async () => {
-    const service = new TestStorageQueryService();
+    const service = new TestBaseStorageQuery();
     const keys = ['0x01', '0x02'] as StorageKey[];
     const callback = vi.fn();
     
@@ -85,7 +85,7 @@ describe('StorageQueryService', () => {
   });
   
   it('unsubscribe function should be callable', async () => {
-    const service = new TestStorageQueryService();
+    const service = new TestBaseStorageQuery();
     const keys = ['0x01'] as StorageKey[];
     const callback = vi.fn();
     

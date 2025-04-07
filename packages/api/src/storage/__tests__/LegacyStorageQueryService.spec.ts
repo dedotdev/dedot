@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { LegacyStorageQueryService } from '../LegacyStorageQueryService.js';
+import { LegacyStorageQuery } from '../LegacyStorageQuery.js';
 import { StorageData, StorageKey } from '@dedot/codecs';
 import { Callback, Unsub } from '@dedot/types';
 import { LegacyClient } from '../../client/LegacyClient.js';
@@ -19,9 +19,9 @@ vi.mock('../../client/LegacyClient.js', () => {
   };
 });
 
-describe('LegacyStorageQueryService', () => {
+describe('LegacyStorageQuery', () => {
   let mockClient: LegacyClient;
-  let service: LegacyStorageQueryService;
+  let service: LegacyStorageQuery;
   let mockKeys: StorageKey[];
   
   beforeEach(() => {
@@ -32,7 +32,7 @@ describe('LegacyStorageQueryService', () => {
     mockClient = new LegacyClient({} as any);
     
     // Create the service
-    service = new LegacyStorageQueryService(mockClient);
+    service = new LegacyStorageQuery(mockClient);
     
     // Create some test keys
     mockKeys = ['0x01', '0x02'] as StorageKey[];

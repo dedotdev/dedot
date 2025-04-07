@@ -3,12 +3,12 @@ import type { StorageChangeSet } from '@dedot/types/json-rpc';
 import type { Callback, RpcLegacy, Unsub, VersionedGenericSubstrateApi } from '@dedot/types';
 import type { SubstrateApi } from '../chaintypes/index.js';
 import { LegacyClient } from '../client/LegacyClient.js';
-import { StorageQueryService } from './StorageQueryService.js';
+import { BaseStorageQuery } from './BaseStorageQuery.js';
 
 /**
- * @name LegacyStorageQueryService
+ * @name LegacyStorageQuery
  * @description
- * Implementation of StorageQueryService for the legacy JSON-RPC API (v1).
+ * Implementation of BaseStorageQuery for the legacy JSON-RPC API (v1).
  * This service handles storage queries using the state_queryStorageAt and
  * state_subscribeStorage RPC methods.
  *
@@ -17,9 +17,9 @@ import { StorageQueryService } from './StorageQueryService.js';
  * - Subscriptions using state_subscribeStorage
  * - Efficient change tracking for subscriptions
  */
-export class LegacyStorageQueryService<
+export class LegacyStorageQuery<
   ChainApi extends VersionedGenericSubstrateApi = SubstrateApi
-> extends StorageQueryService<RpcLegacy, ChainApi, LegacyClient<ChainApi>> {
+> extends BaseStorageQuery<RpcLegacy, ChainApi, LegacyClient<ChainApi>> {
   /**
    * Query multiple storage items in a single call using state_queryStorageAt
    *

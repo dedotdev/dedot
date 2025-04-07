@@ -1,10 +1,10 @@
 import { BlockHash, StorageData, StorageKey } from '@dedot/codecs';
-import type { Callback, GenericSubstrateApi, RpcVersion, Unsub, VersionedGenericSubstrateApi } from '@dedot/types';
+import type { Callback, RpcVersion, Unsub, VersionedGenericSubstrateApi } from '@dedot/types';
 import type { SubstrateApi } from '../chaintypes/index.js';
 import { BaseSubstrateClient } from '../client/BaseSubstrateClient.js';
 
 /**
- * @name StorageQueryService
+ * @name BaseStorageQuery
  * @description
  * An abstract service that provides functionality for querying and subscribing to
  * multiple storage items. This service is designed to be extended by version-specific
@@ -17,7 +17,7 @@ import { BaseSubstrateClient } from '../client/BaseSubstrateClient.js';
  * This abstraction eliminates code duplication between different client implementations
  * and provides a consistent interface for storage operations.
  */
-export abstract class StorageQueryService<
+export abstract class BaseStorageQuery<
   Rv extends RpcVersion,
   ChainApi extends VersionedGenericSubstrateApi = SubstrateApi,
   T extends BaseSubstrateClient<Rv, ChainApi> = BaseSubstrateClient<Rv, ChainApi>

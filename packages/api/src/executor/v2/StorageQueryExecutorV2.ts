@@ -2,7 +2,7 @@ import { BlockHash } from '@dedot/codecs';
 import type { AsyncMethod, GenericSubstrateApi, RpcVersion } from '@dedot/types';
 import { assert, HexString } from '@dedot/utils';
 import { ChainHead } from '../../json-rpc/index.js';
-import { type StorageQueryService, NewStorageQueryService, QueryableStorage } from '../../storage/index.js';
+import { type BaseStorageQuery, NewStorageQuery, QueryableStorage } from '../../storage/index.js';
 import { ISubstrateClientAt } from '../../types.js';
 import { StorageQueryExecutor } from '../StorageQueryExecutor.js';
 
@@ -43,11 +43,11 @@ export class StorageQueryExecutorV2<
     return { entries };
   }
 
-  protected override getStorageQueryService(): StorageQueryService<RpcVersion> {
+  protected override getStorageQuery(): BaseStorageQuery<RpcVersion> {
     // @ts-ignore little trick to make querying data client.at instance works here,
     // TODO need to rethink about this
     if (!this.client['chainHead']) this.client['chainHead'] = this.chainHead;
 
-    return new NewStorageQueryService(this.client as any);
+    return new NewStorageQuery(this.client as any);
   }
 }

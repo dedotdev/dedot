@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { NewStorageQueryService } from '../NewStorageQueryService.js';
+import { NewStorageQuery } from '../NewStorageQuery.js';
 import { StorageData, StorageKey } from '@dedot/codecs';
 import { Callback, Unsub } from '@dedot/types';
 import { DedotClient } from '../../client/DedotClient.js';
@@ -21,9 +21,9 @@ vi.mock('../../client/DedotClient.js', () => {
   };
 });
 
-describe('NewStorageQueryService', () => {
+describe('NewBaseStorageQuery', () => {
   let mockClient: DedotClient;
-  let service: NewStorageQueryService;
+  let service: NewStorageQuery;
   let mockKeys: StorageKey[];
   
   beforeEach(() => {
@@ -34,7 +34,7 @@ describe('NewStorageQueryService', () => {
     mockClient = new DedotClient({} as any);
     
     // Create the service
-    service = new NewStorageQueryService(mockClient);
+    service = new NewStorageQuery(mockClient);
     
     // Create some test keys
     mockKeys = ['0x01', '0x02'] as StorageKey[];

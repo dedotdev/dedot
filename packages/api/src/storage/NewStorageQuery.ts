@@ -2,13 +2,13 @@ import { BlockHash, StorageData, StorageKey } from '@dedot/codecs';
 import type { Callback, RpcV2, Unsub, VersionedGenericSubstrateApi } from '@dedot/types';
 import type { SubstrateApi } from '../chaintypes/index.js';
 import { DedotClient } from '../client/DedotClient.js';
-import { ChainHeadEvent, PinnedBlock } from '../json-rpc/group/ChainHead/ChainHead.js';
-import { StorageQueryService } from './StorageQueryService.js';
+import { PinnedBlock } from '../json-rpc/group/ChainHead/ChainHead.js';
+import { BaseStorageQuery } from './BaseStorageQuery.js';
 
 /**
- * @name NewStorageQueryService
+ * @name NewStorageQuery
  * @description
- * Implementation of StorageQueryService for the new JSON-RPC API (v2).
+ * Implementation of BaseStorageQuery for the new JSON-RPC API (v2).
  * This service handles storage queries using the chainHead_storage RPC method
  * and chainHead events for subscriptions.
  * 
@@ -17,9 +17,9 @@ import { StorageQueryService } from './StorageQueryService.js';
  * - Subscriptions using chainHead 'bestBlock' events
  * - Efficient change detection for subscriptions
  */
-export class NewStorageQueryService<
+export class NewStorageQuery<
   ChainApi extends VersionedGenericSubstrateApi = SubstrateApi
-> extends StorageQueryService<RpcV2, ChainApi, DedotClient<ChainApi>> {
+> extends BaseStorageQuery<RpcV2, ChainApi, DedotClient<ChainApi>> {
   /**
    * Query multiple storage items in a single call using chainHead_storage
    * 
