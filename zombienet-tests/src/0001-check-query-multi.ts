@@ -23,29 +23,25 @@ export const run = async (nodeName: any, networkInfo: any) => {
 async function testWithDedotClient(wsUri: string) {
   const client = await DedotClient.new(new WsProvider(wsUri));
   
-  try {
-    // Test one-time queries
-    await testOneTimeQueries(client);
-    
-    // Test subscription-based queries
-    await testSubscriptionQueries(client);
-  } finally {
-    await client.disconnect();
-  }
+  // Test one-time queries
+  await testOneTimeQueries(client);
+  
+  // Test subscription-based queries
+  await testSubscriptionQueries(client);
+
+  await client.disconnect();
 }
 
 async function testWithLegacyClient(wsUri: string) {
   const client = await LegacyClient.new(new WsProvider(wsUri));
   
-  try {
-    // Test one-time queries
-    await testOneTimeQueries(client);
-    
-    // Test subscription-based queries
-    await testSubscriptionQueries(client);
-  } finally {
-    await client.disconnect();
-  }
+  // Test one-time queries
+  await testOneTimeQueries(client);
+  
+  // Test subscription-based queries
+  await testSubscriptionQueries(client);
+  
+  await client.disconnect();
 }
 
 async function testOneTimeQueries(client: DedotClient | LegacyClient) {
