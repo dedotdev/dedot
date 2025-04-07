@@ -314,7 +314,7 @@ describe('LegacyClient', () => {
       });
     });
 
-    describe('multiQuery', () => {
+    describe('queryMulti', () => {
       it('should query multiple storage items', async () => {
         // Mock storage query functions
         const mockQueryFn1 = {
@@ -345,8 +345,8 @@ describe('LegacyClient', () => {
           .mockImplementationOnce(() => mockDecodedValue1)
           .mockImplementationOnce(() => mockDecodedValue2);
 
-        // Call multiQuery
-        const result = await api.multiQuery([
+        // Call queryMulti
+        const result = await api.queryMulti([
           { fn: mockQueryFn1 as any, args: [] },
           { fn: mockQueryFn2 as any, args: [] },
         ]);
@@ -408,8 +408,8 @@ describe('LegacyClient', () => {
         // Mock callback
         const callback = vi.fn();
 
-        // Call multiQuery with subscription
-        const unsub = await api.multiQuery([
+        // Call queryMulti with subscription
+        const unsub = await api.queryMulti([
           { fn: mockQueryFn1 as any, args: [] },
           { fn: mockQueryFn2 as any, args: [] },
         ], callback);
@@ -459,7 +459,7 @@ describe('LegacyClient', () => {
       });
 
       it('should handle empty query array', async () => {
-        const result = await api.multiQuery([]);
+        const result = await api.queryMulti([]);
         expect(result).toEqual([]);
       });
 
@@ -474,8 +474,8 @@ describe('LegacyClient', () => {
         const mockError = new Error('Storage query failed');
         provider.setRpcRequest('state_queryStorageAt', () => { throw mockError; });
 
-        // Call multiQuery and expect it to reject with the error
-        await expect(api.multiQuery([{ fn: mockQueryFn as any, args: [] }])).rejects.toThrow(mockError);
+        // Call queryMulti and expect it to reject with the error
+        await expect(api.queryMulti([{ fn: mockQueryFn as any, args: [] }])).rejects.toThrow(mockError);
       });
     });
 

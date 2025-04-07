@@ -10,14 +10,14 @@ export const run = async (nodeName: any, networkInfo: any) => {
   const { wsUri } = networkInfo.nodesByName[nodeName];
   
   // Test with DedotClient (v2 API)
-  console.log('Testing multiQuery with DedotClient (v2 API)');
+  console.log('Testing queryMulti with DedotClient (v2 API)');
   await testWithDedotClient(wsUri);
   
   // Test with LegacyClient
-  console.log('Testing multiQuery with LegacyClient');
+  console.log('Testing queryMulti with LegacyClient');
   await testWithLegacyClient(wsUri);
   
-  console.log('All multiQuery tests passed!');
+  console.log('All queryMulti tests passed!');
 };
 
 async function testWithDedotClient(wsUri: string) {
@@ -49,10 +49,10 @@ async function testWithLegacyClient(wsUri: string) {
 }
 
 async function testOneTimeQueries(client: DedotClient | LegacyClient) {
-  console.log('Testing one-time multiQuery...');
+  console.log('Testing one-time queryMulti...');
   
-  // Execute multiQuery
-  const multiResults = await client.multiQuery([
+  // Execute queryMulti
+  const multiResults = await client.queryMulti([
     { fn: client.query.system.account, args: [ALICE] },
     { fn: client.query.system.account, args: [BOB] }
   ]);
@@ -63,16 +63,16 @@ async function testOneTimeQueries(client: DedotClient | LegacyClient) {
   
   // Verify results match individual queries
   assert(multiResults[0].data.free === aliceAccount.data.free, 
-    `multiQuery result for Alice doesn't match individual query`);
+    `queryMulti result for Alice doesn't match individual query`);
   assert(multiResults[1].data.free === bobAccount.data.free, 
-    `multiQuery result for Bob doesn't match individual query`);
+    `queryMulti result for Bob doesn't match individual query`);
   
   console.log('Alice balance:', multiResults[0].data.free.toString());
   console.log('Bob balance:', multiResults[1].data.free.toString());
   
   // Test 2: Query different types of storage items
   const [mixedResults, blockNumber] = await Promise.all([
-    client.multiQuery([
+    client.queryMulti([
       { fn: client.query.system.account, args: [ALICE] },
       { fn: client.query.system.number }
     ]),
@@ -80,27 +80,27 @@ async function testOneTimeQueries(client: DedotClient | LegacyClient) {
   ]);
   
   assert(mixedResults[0].data.free === aliceAccount.data.free, 
-    `multiQuery result for Alice doesn't match in mixed query`);
+    `queryMulti result for Alice doesn't match in mixed query`);
   assert(mixedResults[1] === blockNumber, 
-    `multiQuery result for block number doesn't match individual query`);
+    `queryMulti result for block number doesn't match individual query`);
   
   console.log('Block number:', mixedResults[1].toString());
   
   // Test 3: Empty query array
-  const emptyResults = await client.multiQuery([]);
+  const emptyResults = await client.queryMulti([]);
   assert(emptyResults.length === 0, `Empty query should return empty array`);
   
-  console.log('One-time multiQuery tests passed!');
+  console.log('One-time queryMulti tests passed!');
 }
 
 async function testSubscriptionQueries(client: DedotClient | LegacyClient) {
-  console.log('Testing subscription-based multiQuery...');
+  console.log('Testing subscription-based queryMulti...');
   
   // Set up a promise to track subscription updates
   await new Promise<void>((resolve) => {
     let updateCount = 0;
     
-    client.multiQuery([
+    client.queryMulti([
       { fn: client.query.system.account, args: [ALICE] },
       { fn: client.query.system.account, args: [BOB] }
     ], (results) => {
@@ -124,7 +124,7 @@ async function testSubscriptionQueries(client: DedotClient | LegacyClient) {
     let counter = 0;
     let lastBlockNumber: number | undefined;
     
-    client.multiQuery(
+    client.queryMulti(
       [{ fn: client.query.system.number }],
       ([blockNumber]) => {
         if (lastBlockNumber !== undefined) {
@@ -149,7 +149,7 @@ async function testSubscriptionQueries(client: DedotClient | LegacyClient) {
   const UNKNOWN_ADDRESS = '5GL1n2H9fkCc6K6d87L5MV3WkzWnQz4mbb9HMSNk89CpjrMv';
   
   await new Promise<void>((resolve) => {
-    client.multiQuery(
+    client.queryMulti(
       [{ fn: client.query.system.account, args: [UNKNOWN_ADDRESS] }],
       ([unknownAccount]) => {
         assert(unknownAccount.data.free === 0n, 'Incorrect balance for unknown account');
@@ -162,13 +162,13 @@ async function testSubscriptionQueries(client: DedotClient | LegacyClient) {
   });
   
   // Test 4: Test unsubscribe functionality
-  console.log('Testing multiQuery unsubscribe functionality...');
+  console.log('Testing queryMulti unsubscribe functionality...');
   await new Promise<void>(async (resolve) => {
     let updateCount = 0;
     let unsubCalled = false;
     
     // Create a subscription and store the unsubscribe function
-    const unsub = await client.multiQuery(
+    const unsub = await client.queryMulti(
       [{ fn: client.query.system.number }],
       (results) => {
         console.log(`Block number update: ${results[0]}`);
@@ -189,5 +189,5 @@ async function testSubscriptionQueries(client: DedotClient | LegacyClient) {
     );
   });
   
-  console.log('Subscription-based multiQuery tests passed!');
+  console.log('Subscription-based queryMulti tests passed!');
 }

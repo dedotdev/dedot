@@ -406,7 +406,7 @@ export abstract class BaseSubstrateClient<
    *
    * @example
    * // One-time query with type-safe results
-   * const [balance, blockNumber] = await client.multiQuery([
+   * const [balance, blockNumber] = await client.queryMulti([
    *   { fn: client.query.system.account, args: [ALICE] },
    *   { fn: client.query.system.number, args: [] }
    * ]);
@@ -419,14 +419,14 @@ export abstract class BaseSubstrateClient<
    * @param callback - Optional callback for subscription-based queries
    * @returns For one-time queries: Array of decoded values with proper types; For subscriptions: Unsubscribe function
    */
-  multiQuery<Fns extends GenericStorageQuery[]>(
+  queryMulti<Fns extends GenericStorageQuery[]>(
     queries: { [K in keyof Fns]: Query<Fns[K]> }
   ): Promise<{ [K in keyof Fns]: QueryFnResult<Fns[K]> }>;
-  multiQuery<Fns extends GenericStorageQuery[]>(
+  queryMulti<Fns extends GenericStorageQuery[]>(
     queries: { [K in keyof Fns]: Query<Fns[K]> },
     callback: Callback<{ [K in keyof Fns]: QueryFnResult<Fns[K]> }>
   ): Promise<Unsub>;
-  async multiQuery(
+  async queryMulti(
     queries: { fn: GenericStorageQuery; args?: any[] }[],
     callback?: Callback<any[]>,
   ): Promise<any[] | Unsub> {

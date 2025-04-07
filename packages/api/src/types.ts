@@ -156,10 +156,10 @@ export interface ISubstrateClient<
    * @param callback - Optional callback function to handle results
    * @returns A promise resolving to an array of results or an Unsub function
    */
-  multiQuery<Fns extends GenericStorageQuery[]>(
+  queryMulti<Fns extends GenericStorageQuery[]>(
     queries: { [K in keyof Fns]: Query<Fns[K]> }
   ): Promise<{ [K in keyof Fns]: QueryFnResult<Fns[K]> }>;
-  multiQuery<Fns extends GenericStorageQuery[]>(
+  queryMulti<Fns extends GenericStorageQuery[]>(
     queries: { [K in keyof Fns]: Query<Fns[K]> },
     callback: Callback<{ [K in keyof Fns]: QueryFnResult<Fns[K]> }>
   ): Promise<Unsub>;
