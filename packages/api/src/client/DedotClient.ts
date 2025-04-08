@@ -1,15 +1,22 @@
 import { $H256, BlockHash, PortableRegistry } from '@dedot/codecs';
 import type { JsonRpcProvider } from '@dedot/providers';
 import { u32 } from '@dedot/shape';
-import { GenericSubstrateApi, RpcV2, VersionedGenericSubstrateApi } from '@dedot/types';
+import { GenericSubstrateApi, RpcV2, RpcVersion, VersionedGenericSubstrateApi } from '@dedot/types';
 import { assert, concatU8a, HexString, noop, twox64Concat, u8aToHex, xxhashAsU8a } from '@dedot/utils';
 import type { SubstrateApi } from '../chaintypes/index.js';
-import { ConstantExecutor, ErrorExecutor, EventExecutor, RuntimeApiExecutorV2, StorageQueryExecutorV2, TxExecutorV2 } from '../executor/index.js';
+import {
+  ConstantExecutor,
+  ErrorExecutor,
+  EventExecutor,
+  RuntimeApiExecutorV2,
+  StorageQueryExecutorV2,
+  TxExecutorV2,
+} from '../executor/index.js';
 import { ChainHead, ChainSpec, PinnedBlock, Transaction, TransactionWatch } from '../json-rpc/index.js';
 import { newProxyChain } from '../proxychain.js';
+import { BaseStorageQuery, NewStorageQuery } from '../storage/index.js';
 import type { ApiOptions, ISubstrateClientAt, SubstrateRuntimeVersion, TxBroadcaster } from '../types.js';
 import { BaseSubstrateClient, ensurePresence } from './BaseSubstrateClient.js';
-
 
 /**
  * @name DedotClient
@@ -229,5 +236,9 @@ export class DedotClient<ChainApi extends VersionedGenericSubstrateApi = Substra
     this.#apiAtCache[hash] = api;
 
     return api;
+  }
+
+  protected override getStorageQuery(): BaseStorageQuery<RpcVersion> {
+    return new NewStorageQuery(this as any);
   }
 }

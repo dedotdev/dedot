@@ -1,6 +1,6 @@
 import { BlockHash, PortableRegistry, RuntimeVersion } from '@dedot/codecs';
 import type { JsonRpcProvider } from '@dedot/providers';
-import { GenericSubstrateApi, RpcLegacy, Unsub, VersionedGenericSubstrateApi } from '@dedot/types';
+import { GenericSubstrateApi, RpcLegacy, RpcVersion, Unsub, VersionedGenericSubstrateApi } from '@dedot/types';
 import type { SubstrateApi } from '../chaintypes/index.js';
 import {
   ConstantExecutor,
@@ -11,6 +11,7 @@ import {
   TxExecutor,
 } from '../executor/index.js';
 import { newProxyChain } from '../proxychain.js';
+import { BaseStorageQuery, LegacyStorageQuery } from '../storage/index.js';
 import type { ApiOptions, ISubstrateClientAt, SubstrateRuntimeVersion } from '../types.js';
 import { BaseSubstrateClient } from './BaseSubstrateClient.js';
 
@@ -302,5 +303,9 @@ export class LegacyClient<ChainApi extends VersionedGenericSubstrateApi = Substr
     this.#apiAtCache[hash] = api;
 
     return api;
+  }
+
+  protected override getStorageQuery(): BaseStorageQuery<RpcVersion> {
+    return new LegacyStorageQuery(this as any);
   }
 }

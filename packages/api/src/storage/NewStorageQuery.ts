@@ -17,7 +17,9 @@ import { BaseStorageQuery } from './BaseStorageQuery.js';
  * - Subscriptions using chainHead 'bestBlock' events
  * - Efficient change detection for subscriptions
  */
-export class NewStorageQuery extends BaseStorageQuery<RpcV2, SubstrateApi, DedotClient> {
+export class NewStorageQuery<
+  ChainApi extends VersionedGenericSubstrateApi = SubstrateApi // prettier-end-here
+> extends BaseStorageQuery<RpcV2, ChainApi, DedotClient<ChainApi>> {
   /**
    * Query multiple storage items in a single call using chainHead_storage
    * 

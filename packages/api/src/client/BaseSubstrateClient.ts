@@ -17,7 +17,7 @@ import type { SubstrateApi } from '../chaintypes/index.js';
 import { ConstantExecutor, ErrorExecutor, EventExecutor } from '../executor/index.js';
 import { isJsonRpcProvider, JsonRpcClient } from '../json-rpc/index.js';
 import { newProxyChain } from '../proxychain.js';
-import { LegacyStorageQuery, NewStorageQuery, QueryableStorage } from '../storage/index.js';
+import { BaseStorageQuery, QueryableStorage } from '../storage/index.js';
 import type {
   ApiEvent,
   ApiOptions,
@@ -420,11 +420,11 @@ export abstract class BaseSubstrateClient<
    * @returns For one-time queries: Array of decoded values with proper types; For subscriptions: Unsubscribe function
    */
   queryMulti<Fns extends GenericStorageQuery[]>(
-    queries: { [K in keyof Fns]: Query<Fns[K]> }
+    queries: { [K in keyof Fns]: Query<Fns[K]> }, // prettier-end-here
   ): Promise<{ [K in keyof Fns]: QueryFnResult<Fns[K]> }>;
   queryMulti<Fns extends GenericStorageQuery[]>(
     queries: { [K in keyof Fns]: Query<Fns[K]> },
-    callback: Callback<{ [K in keyof Fns]: QueryFnResult<Fns[K]> }>
+    callback: Callback<{ [K in keyof Fns]: QueryFnResult<Fns[K]> }>,
   ): Promise<Unsub>;
   async queryMulti(
     queries: { fn: GenericStorageQuery; args?: any[] }[],
@@ -441,22 +441,18 @@ export abstract class BaseSubstrateClient<
       return entry.decodeValue(rawValue);
     };
 
-    // Create service directly when needed
-    let service;
-    if (this.rpcVersion === 'v2') {
-      service = new NewStorageQuery(this as any);
-    } else {
-      service = new LegacyStorageQuery(this as any);
-    }
-
     // If a callback is provided, set up a subscription
     if (callback) {
-      return service.subscribe(keys, (results) => {
+      return this.getStorageQuery().subscribe(keys, (results) => {
         callback(queries.map((q, i) => decodeValue(q.fn, results[keys[i]])));
       });
     } else {
-      const results = await service.query(keys);
+      const results = await this.getStorageQuery().query(keys);
       return queries.map((q, i) => decodeValue(q.fn, results[keys[i]]));
     }
+  }
+
+  protected getStorageQuery(): BaseStorageQuery<RpcVersion> {
+    throw new Error('Unimplemented!');
   }
 }
