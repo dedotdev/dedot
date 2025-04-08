@@ -17,9 +17,7 @@ import { BaseStorageQuery } from './BaseStorageQuery.js';
  * - Subscriptions using chainHead 'bestBlock' events
  * - Efficient change detection for subscriptions
  */
-export class NewStorageQuery<
-  ChainApi extends VersionedGenericSubstrateApi = SubstrateApi
-> extends BaseStorageQuery<RpcV2, ChainApi, DedotClient<ChainApi>> {
+export class NewStorageQuery extends BaseStorageQuery<RpcV2, SubstrateApi, DedotClient> {
   /**
    * Query multiple storage items in a single call using chainHead_storage
    * 
@@ -73,9 +71,9 @@ export class NewStorageQuery<
       let changed = false;
 
       // Create a map for easy lookup
-      const results: Record<string, StorageData | undefined> = {};
+      const results: Record<StorageKey, StorageData | undefined> = {};
       rawResults.forEach((result) => {
-        results[result.key] = result.value as StorageData ?? undefined;
+        results[result.key as StorageKey] = result.value as StorageData ?? undefined;
       });
 
       keys.forEach((key) => {

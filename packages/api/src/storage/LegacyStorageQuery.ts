@@ -17,9 +17,7 @@ import { BaseStorageQuery } from './BaseStorageQuery.js';
  * - Subscriptions using state_subscribeStorage
  * - Efficient change tracking for subscriptions
  */
-export class LegacyStorageQuery<
-  ChainApi extends VersionedGenericSubstrateApi = SubstrateApi
-> extends BaseStorageQuery<RpcLegacy, ChainApi, LegacyClient<ChainApi>> {
+export class LegacyStorageQuery extends BaseStorageQuery<RpcLegacy> {
   /**
    * Query multiple storage items in a single call using state_queryStorageAt
    *
@@ -41,8 +39,8 @@ export class LegacyStorageQuery<
 
     // Update with actual values from the response
     if (changeSets && changeSets.length > 0) {
-      changeSets[0].changes.forEach(([key, value]: [string, any]) => {
-        results[key as StorageKey] = value ?? undefined;
+      changeSets[0].changes.forEach(([key, value]) => {
+        results[key] = value ?? undefined;
       });
     }
 
@@ -66,9 +64,9 @@ export class LegacyStorageQuery<
     // Subscribe to storage changes
     return this.client.rpc.state_subscribeStorage(keys, (changeSet: StorageChangeSet) => {
       // Update the latest changes
-      changeSet.changes.forEach(([key, value]: [string, any]) => {
-        if (lastChanges[key as StorageKey] !== value) {
-          lastChanges[key as StorageKey] = value ?? undefined;
+      changeSet.changes.forEach(([key, value]) => {
+        if (lastChanges[key] !== value) {
+          lastChanges[key] = value ?? undefined;
         }
       });
 
