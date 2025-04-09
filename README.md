@@ -3,7 +3,7 @@
 
 # Dedot
 
-Delightful JavaScript/TypeScript client for [Polkadot](https://polkadot.network/) & [Substrate](https://substrate.io/)
+Delightful JavaScript/TypeScript client for [Polkadot](https://polkadot.com/) & [Polkadot SDK-based](https://github.com/paritytech/polkadot-sdk) blockchains.
 
 ![Version][ico-version]
 ![Unit test][ico-unit-test]
@@ -21,18 +21,18 @@ Delightful JavaScript/TypeScript client for [Polkadot](https://polkadot.network/
 
 ---
 
-[Dedot](https://dedot.dev) is the next-generation JavaScript client for Polkadot and Substrate-based blockchains. Designed to elevate the dapp development experience, Dedot is built & optimized to be lightweight and tree-shakable, offering precise Types & APIs suggestions for individual Substrate-based blockchains and ink! Smart Contracts. Dedot also helps dapps efficiently connect to multiple chains simultaneously as we head toward a seamless multi-chain future.
+[Dedot](https://dedot.dev) is the next-generation JavaScript client for Polkadot and Polkadot SDK-based blockchains. Designed to elevate the dapp development experience, Dedot is built & optimized to be lightweight and tree-shakable, offering precise Types & APIs suggestions for individual Polkadot SDK-based blockchain network and ink! Smart Contracts. Dedot also helps dapps efficiently connect to multiple chains simultaneously as we head toward a seamless multi-chain future.
 
 ### Features
 
 - ✅ Small bundle size, tree-shakable (no more bn.js or wasm-blob tight dependencies)
-- ✅ Types & APIs suggestions for each individual Substrate-based blockchain
+- ✅ Types & APIs suggestions for each individual Polkadot SDK-based blockchain
   network ([@dedot/chaintypes](https://github.com/dedotdev/chaintypes))
 - ✅ Familiar api style with `@polkadot/api`, [easy & fast migration!](https://docs.dedot.dev/getting-started/pjs-to-dedot)
 - ✅ Native [TypeScript type system](https://docs.dedot.dev/getting-started/pjs-to-dedot#type-system) for scale-codec
 - ✅ Compatible with `@polkadot/extension`-based wallets
 - ✅ Support Metadata V14, V15 (latest)
-- ✅ Built-in metadata optimization ([caching](https://docs.dedot.dev/getting-started/connect-to-network#caching-metadata), [compact mode](https://github.com/dedotdev/dedot/issues/45) ⏳)
+- ✅ Built-in metadata optimization ([caching](https://docs.dedot.dev/getting-started/connect-to-network#caching-metadata))
 - ✅ Build on top of both the [new](https://paritytech.github.io/json-rpc-interface-spec/introduction.html) & [legacy](https://github.com/w3f/PSPs/blob/master/PSPs/drafts/psp-6.md) (
   deprecated soon) JSON-RPC APIs
 - ✅ Support [light clients](https://docs.dedot.dev/getting-started/connect-to-network#initializing-dedotclient-and-interact-with-polkadot-network) (e.g: [smoldot](https://www.npmjs.com/package/smoldot))
