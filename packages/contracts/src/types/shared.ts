@@ -66,6 +66,11 @@ export interface ContractTypeDef {
   sequence?: SequenceType;
   variant?: VariantType;
   tuple?: number[];
+  compact?: CompactType;
+}
+
+export interface CompactType {
+  type: number;
 }
 
 export interface CompositeType {
