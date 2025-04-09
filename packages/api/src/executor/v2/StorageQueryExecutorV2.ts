@@ -1,10 +1,11 @@
-import { BlockHash, Option, StorageData, StorageKey } from '@dedot/codecs';
-import type { AsyncMethod, Callback, GenericSubstrateApi } from '@dedot/types';
+import { BlockHash } from '@dedot/codecs';
+import type { AsyncMethod, GenericSubstrateApi, RpcVersion } from '@dedot/types';
 import { assert, HexString } from '@dedot/utils';
-import { ChainHead, ChainHeadEvent, PinnedBlock } from '../../json-rpc/index.js';
-import { QueryableStorage } from '../../storage/QueryableStorage.js';
+import { ChainHead } from '../../json-rpc/index.js';
+import { type BaseStorageQuery, NewStorageQuery, QueryableStorage } from '../../storage/index.js';
 import { ISubstrateClientAt } from '../../types.js';
 import { StorageQueryExecutor } from '../StorageQueryExecutor.js';
+
 
 /**
  * @name StorageQueryExecutorV2
@@ -42,56 +43,11 @@ export class StorageQueryExecutorV2<
     return { entries };
   }
 
-  protected override async queryStorage(
-    keys: StorageKey[],
-    at?: BlockHash,
-  ): Promise<Record<StorageKey, Option<StorageData>>> {
-    const results = await this.chainHead.storage(
-      keys.map((key) => ({ type: 'value', key })),
-      undefined,
-      at,
-    );
+  protected override getStorageQuery(): BaseStorageQuery<RpcVersion> {
+    // @ts-ignore little trick to make querying data client.at instance works here,
+    // TODO need to rethink about this
+    if (!this.client['chainHead']) this.client['chainHead'] = this.chainHead;
 
-    return results.reduce(
-      (o, r) => {
-        o[r.key as StorageKey] = (r.value ?? undefined) as Option<StorageData>;
-        return o;
-      },
-      {} as Record<StorageKey, Option<StorageData>>,
-    );
-  }
-
-  protected override async subscribeStorage(keys: HexString[], callback: Callback<Array<StorageData | undefined>>) {
-    let best: PinnedBlock = await this.chainHead.bestBlock();
-    let eventToListen: ChainHeadEvent = 'bestBlock';
-
-    // TODO subscribe to finalized data source
-    // initialHash = this.chainHead.finalizedHash;
-    // eventToListen = 'finalizedBlock';
-
-    const latestChanges: Map<HexString, StorageData | undefined> = new Map();
-
-    const pull = async ({ hash }: PinnedBlock) => {
-      const results = await this.queryStorage(keys, hash);
-      let changed = false;
-      keys.forEach((key) => {
-        const newValue = results[key] as StorageData;
-        if (latestChanges.size > 0 && latestChanges.get(key) === newValue) return;
-
-        changed = true;
-        latestChanges.set(key, newValue);
-      });
-
-      if (!changed) return;
-      callback(keys.map((key) => latestChanges.get(key)));
-    };
-
-    await pull(best);
-
-    const unsub = this.chainHead.on(eventToListen, pull);
-
-    return async () => {
-      unsub();
-    };
+    return new NewStorageQuery(this.client as any);
   }
 }

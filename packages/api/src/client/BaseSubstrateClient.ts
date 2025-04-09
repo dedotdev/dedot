@@ -1,12 +1,23 @@
-import { $Metadata, BlockHash, Hash, Metadata, PortableRegistry, RuntimeVersion } from '@dedot/codecs';
+import { $Metadata, BlockHash, Hash, Metadata, PortableRegistry, RuntimeVersion, StorageDataLike } from '@dedot/codecs';
 import type { JsonRpcProvider } from '@dedot/providers';
 import { type IStorage, LocalStorage } from '@dedot/storage';
-import { GenericSubstrateApi, InjectedSigner, RpcVersion, VersionedGenericSubstrateApi } from '@dedot/types';
+import {
+  Callback,
+  GenericStorageQuery,
+  GenericSubstrateApi,
+  InjectedSigner,
+  Query,
+  QueryFnResult,
+  RpcVersion,
+  Unsub,
+  VersionedGenericSubstrateApi,
+} from '@dedot/types';
 import { calcRuntimeApiHash, deferred, Deferred, ensurePresence as _ensurePresence, u8aToHex } from '@dedot/utils';
 import type { SubstrateApi } from '../chaintypes/index.js';
 import { ConstantExecutor, ErrorExecutor, EventExecutor } from '../executor/index.js';
 import { isJsonRpcProvider, JsonRpcClient } from '../json-rpc/index.js';
 import { newProxyChain } from '../proxychain.js';
+import { BaseStorageQuery, QueryableStorage } from '../storage/index.js';
 import type {
   ApiEvent,
   ApiOptions,
@@ -131,25 +142,25 @@ export abstract class BaseSubstrateClient<
    */
   protected async safeSetMetadataToCache(key: string, value: string): Promise<void> {
     if (!this._localCache) return;
-    
+
     try {
       // First attempt to set the metadata
       await this._localCache.set(key, value);
     } catch (error) {
       console.warn('Failed to store metadata in cache, attempting to clean up old entries:', error);
-      
+
       try {
         // Get all keys that start with RAW_META/
         const allKeys = await this._localCache.keys();
-        const metadataKeys = allKeys.filter(k => k.startsWith('RAW_META/') && k !== key);
-        
+        const metadataKeys = allKeys.filter((k) => k.startsWith('RAW_META/') && k !== key);
+
         // Remove all other metadata entries
         for (const metaKey of metadataKeys) {
           await this._localCache.remove(metaKey);
         }
-        
+
         console.info(`Cleaned up ${metadataKeys.length} old metadata entries, trying again`);
-        
+
         // Try again after cleanup
         await this._localCache.set(key, value);
       } catch (cleanupError) {
@@ -268,6 +279,7 @@ export abstract class BaseSubstrateClient<
   }
 
   protected async beforeDisconnect() {}
+
   protected async afterDisconnect() {
     this.cleanUp();
   }
@@ -384,5 +396,63 @@ export abstract class BaseSubstrateClient<
 
   setSigner(signer?: InjectedSigner): void {
     this._options.signer = signer;
+  }
+
+  /**
+   * Query multiple storage items in a single call
+   *
+   * This method allows you to query multiple storage items in a single call or set up a subscription
+   * to multiple storage items. It provides type safety for both the query functions and their results.
+   *
+   * @example
+   * // One-time query with type-safe results
+   * const [balance, blockNumber] = await client.queryMulti([
+   *   { fn: client.query.system.account, args: [ALICE] },
+   *   { fn: client.query.system.number, args: [] }
+   * ]);
+   * // balance will be typed as AccountInfo
+   * // blockNumber will be typed as number
+   *
+   *
+   * @template Fns Array of storage query functions
+   * @param queries - Array of query specifications, each with a function and optional arguments
+   * @param callback - Optional callback for subscription-based queries
+   * @returns For one-time queries: Array of decoded values with proper types; For subscriptions: Unsubscribe function
+   */
+  queryMulti<Fns extends GenericStorageQuery[]>(
+    queries: { [K in keyof Fns]: Query<Fns[K]> }, // prettier-end-here
+  ): Promise<{ [K in keyof Fns]: QueryFnResult<Fns[K]> }>;
+  queryMulti<Fns extends GenericStorageQuery[]>(
+    queries: { [K in keyof Fns]: Query<Fns[K]> },
+    callback: Callback<{ [K in keyof Fns]: QueryFnResult<Fns[K]> }>,
+  ): Promise<Unsub>;
+  async queryMulti(
+    queries: { fn: GenericStorageQuery; args?: any[] }[],
+    callback?: Callback<any[]>,
+  ): Promise<any[] | Unsub> {
+    // Extract keys from queries
+    const keys = queries.map((q) => q.fn.rawKey(...(q.args || [])));
+
+    const decodeValue = (query: GenericStorageQuery, rawValue?: StorageDataLike | null) => {
+      // Get the QueryableStorage instance from the query function
+      const entry = new QueryableStorage(this.registry, query.meta.pallet, query.meta.name);
+
+      // Decode the value
+      return entry.decodeValue(rawValue);
+    };
+
+    // If a callback is provided, set up a subscription
+    if (callback) {
+      return this.getStorageQuery().subscribe(keys, (results) => {
+        callback(queries.map((q, i) => decodeValue(q.fn, results[keys[i]])));
+      });
+    } else {
+      const results = await this.getStorageQuery().query(keys);
+      return queries.map((q, i) => decodeValue(q.fn, results[keys[i]]));
+    }
+  }
+
+  protected getStorageQuery(): BaseStorageQuery<RpcVersion> {
+    throw new Error('Unimplemented!');
   }
 }

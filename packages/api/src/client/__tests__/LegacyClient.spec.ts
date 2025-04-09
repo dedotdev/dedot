@@ -10,8 +10,8 @@ import { LegacyClient } from '../LegacyClient.js';
 import MockProvider, { MockedRuntimeVersion } from './MockProvider.js';
 
 describe('LegacyClient', () => {
-  it('should throws error for invalid endpoint', () => {
-    expect(async () => {
+  it('should throws error for invalid endpoint', async () => {
+    await expect(async () => {
       await LegacyClient.new(new WsProvider('invalid_endpoint'));
     }).rejects.toThrowError(
       'Invalid websocket endpoint invalid_endpoint, a valid endpoint should start with wss:// or ws://',
@@ -88,12 +88,12 @@ describe('LegacyClient', () => {
         });
       });
 
-      it('should throws error if query entry not found', () => {
-        expect(async () => {
+      it('should throws error if query entry not found', async () => {
+        await expect(async () => {
           await api.query.palletName.notFound();
         }).rejects.toThrowError(new Error('Pallet not found: palletName'));
 
-        expect(async () => {
+        await expect(async () => {
           // @ts-ignore
           await api.query.system.notFound();
         }).rejects.toThrowError(new Error(`Storage item not found: notFound`));
@@ -311,6 +311,171 @@ describe('LegacyClient', () => {
 
         await apiAt.call.metadata.metadata();
         expect(providerSend).toBeCalledWith('state_call', ['Metadata_metadata', '0x', atHash]);
+      });
+    });
+
+    describe('queryMulti', () => {
+      it('should query multiple storage items', async () => {
+        // Mock storage query functions
+        const mockQueryFn1 = {
+          meta: { pallet: 'system', name: 'number' },
+          rawKey: vi.fn().mockReturnValue('0x01'),
+        };
+        const mockQueryFn2 = {
+          meta: { pallet: 'system', name: 'events' },
+          rawKey: vi.fn().mockReturnValue('0x02'),
+        };
+
+        // Set up the spy before making the call
+        const providerSend = vi.spyOn(api.provider, 'send');
+        
+        // Mock state_queryStorageAt response
+        const mockChanges = [
+          { changes: [['0x01', '0xvalue1'], ['0x02', '0xvalue2']] },
+        ];
+        provider.setRpcRequest('state_queryStorageAt', () => mockChanges);
+
+        // Mock QueryableStorage
+        const mockDecodedValue1 = 42;
+        const mockDecodedValue2 = ['event1', 'event2'];
+        
+        // Use vi.spyOn to mock the QueryableStorage constructor and its decodeValue method
+        const originalQueryableStorage = await import('../../storage/QueryableStorage.js').then(m => m.QueryableStorage);
+        vi.spyOn(originalQueryableStorage.prototype, 'decodeValue')
+          .mockImplementationOnce(() => mockDecodedValue1)
+          .mockImplementationOnce(() => mockDecodedValue2);
+
+        // Call queryMulti
+        const result = await api.queryMulti([
+          { fn: mockQueryFn1 as any, args: [] },
+          { fn: mockQueryFn2 as any, args: [] },
+        ]);
+
+        // Verify rawKey was called
+        expect(mockQueryFn1.rawKey).toHaveBeenCalled();
+        expect(mockQueryFn2.rawKey).toHaveBeenCalled();
+
+        // Verify state_queryStorageAt was called with the correct keys
+        expect(providerSend).toHaveBeenCalledWith('state_queryStorageAt', [['0x01', '0x02']]);
+
+        // Verify the result contains the decoded values
+        expect(result).toEqual([mockDecodedValue1, mockDecodedValue2]);
+      });
+
+      it('should handle subscription-based queries', async () => {
+        // Mock storage query functions
+        const mockQueryFn1 = {
+          meta: { pallet: 'system', name: 'number' },
+          rawKey: vi.fn().mockReturnValue('0x01'),
+        };
+        const mockQueryFn2 = {
+          meta: { pallet: 'system', name: 'events' },
+          rawKey: vi.fn().mockReturnValue('0x02'),
+        };
+
+        // Set up the spy before making the call
+        const providerSend = vi.spyOn(api.provider, 'send');
+        
+        // Create a mock subscription ID
+        const mockSubscriptionId = 'storage-sub-123';
+        
+        // Create a mock unsubscribe function
+        const mockUnsub = vi.fn();
+        
+        // Mock the state_subscribeStorage RPC method to return the subscription ID
+        provider.setRpcRequest('state_subscribeStorage', () => mockSubscriptionId);
+        
+        // Mock the state_unsubscribeStorage RPC method
+        provider.setRpcRequest('state_unsubscribeStorage', () => {
+          mockUnsub();
+          return true;
+        });
+
+        // Mock QueryableStorage
+        const mockDecodedValue1 = 42;
+        const mockDecodedValue2 = ['event1', 'event2'];
+        
+        const originalQueryableStorage = await import('../../storage/QueryableStorage.js').then(m => m.QueryableStorage);
+        vi.spyOn(originalQueryableStorage.prototype, 'decodeValue')
+          .mockImplementation((raw) => {
+            if (raw === '0xvalue1') return mockDecodedValue1;
+            if (raw === '0xvalue2') return mockDecodedValue2;
+            if (raw === '0xnewvalue1') return 43;
+            if (raw === '0xnewvalue2') return ['event3', 'event4'];
+            return undefined;
+          });
+
+        // Mock callback
+        const callback = vi.fn();
+
+        // Call queryMulti with subscription
+        const unsub = await api.queryMulti([
+          { fn: mockQueryFn1 as any, args: [] },
+          { fn: mockQueryFn2 as any, args: [] },
+        ], callback);
+
+        // Verify state_subscribeStorage was called with the correct keys
+        expect(providerSend).toHaveBeenCalledWith('state_subscribeStorage', expect.any(Array));
+
+        // Simulate a change event by directly calling the callback registered in the provider
+        const mockChangeSet = {
+          changes: [['0x01', '0xvalue1'], ['0x02', '0xvalue2']],
+        };
+        
+        // Use the notify method to simulate a subscription update
+        provider.notify(mockSubscriptionId, mockChangeSet);
+        
+        // Wait for the callback to be called
+        await new Promise(resolve => setTimeout(resolve, 0));
+        
+        // Verify the callback was called with the decoded values
+        expect(callback).toHaveBeenCalledWith([mockDecodedValue1, mockDecodedValue2]);
+
+        // Simulate another change event with different values
+        const mockChangeSet2 = {
+          changes: [['0x01', '0xnewvalue1'], ['0x02', '0xnewvalue2']],
+        };
+        
+        // Reset the mock to check only the new call
+        callback.mockReset();
+        
+        // Use the notify method to simulate another subscription update
+        provider.notify(mockSubscriptionId, mockChangeSet2);
+        
+        // Wait for the callback to be called
+        await new Promise(resolve => setTimeout(resolve, 0));
+        
+        // Verify the callback was called with the new decoded values
+        expect(callback).toHaveBeenCalledWith([43, ['event3', 'event4']]);
+
+        // Verify the unsubscribe function
+        expect(typeof unsub).toBe('function');
+        
+        // Call the unsubscribe function
+        await (unsub as Function)();
+        
+        // Verify the mock unsubscribe was called
+        expect(mockUnsub).toHaveBeenCalledTimes(1);
+      });
+
+      it('should handle empty query array', async () => {
+        const result = await api.queryMulti([]);
+        expect(result).toEqual([]);
+      });
+
+      it('should handle errors from storage service', async () => {
+        // Mock storage query functions
+        const mockQueryFn = {
+          meta: { pallet: 'system', name: 'number' },
+          rawKey: vi.fn().mockReturnValue('0x01'),
+        };
+
+        // Mock state_queryStorageAt to throw an error
+        const mockError = new Error('Storage query failed');
+        provider.setRpcRequest('state_queryStorageAt', () => { throw mockError; });
+
+        // Call queryMulti and expect it to reject with the error
+        await expect(api.queryMulti([{ fn: mockQueryFn as any, args: [] }])).rejects.toThrow(mockError);
       });
     });
 

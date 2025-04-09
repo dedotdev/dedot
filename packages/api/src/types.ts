@@ -3,8 +3,10 @@ import type { ConnectionStatus, JsonRpcProvider, ProviderEvent } from '@dedot/pr
 import type { AnyShape } from '@dedot/shape';
 import type { IStorage } from '@dedot/storage';
 import type {
+  Callback,
+  GenericStorageQuery,
   GenericSubstrateApi,
-  InjectedSigner,
+  InjectedSigner, Query, QueryFnResult,
   RpcVersion,
   RuntimeApiName,
   RuntimeApiSpec,
@@ -147,6 +149,20 @@ export interface ISubstrateClient<
    * @param signer
    */
   setSigner(signer?: InjectedSigner): void;
+
+  /**
+   * Perform multiple storage queries in parallel
+   * @param queries - An array of query objects
+   * @param callback - Optional callback function to handle results
+   * @returns A promise resolving to an array of results or an Unsub function
+   */
+  queryMulti<Fns extends GenericStorageQuery[]>(
+    queries: { [K in keyof Fns]: Query<Fns[K]> }
+  ): Promise<{ [K in keyof Fns]: QueryFnResult<Fns[K]> }>;
+  queryMulti<Fns extends GenericStorageQuery[]>(
+    queries: { [K in keyof Fns]: Query<Fns[K]> },
+    callback: Callback<{ [K in keyof Fns]: QueryFnResult<Fns[K]> }>
+  ): Promise<Unsub>;
 }
 
 /**

@@ -190,3 +190,28 @@ export interface VersionedGenericSubstrateApi {
   legacy: GenericSubstrateApi<RpcLegacy>;
   v2: GenericSubstrateApi<RpcV2>;
 }
+
+
+export type QueryFnParams<F> =
+  F extends GenericStorageQuery<any, infer T, any>
+    ? Parameters<T>
+    : never;
+
+export type QueryFnResult<F> =
+  F extends GenericStorageQuery<any, infer T, any>
+    ? ReturnType<T>
+    : never;
+
+export type QueryWithParams<F> = {
+  fn: F;
+  args: QueryFnParams<F>;
+};
+
+export type QueryWithoutParams<F> = {
+  fn: F;
+  args?: [];
+};
+
+export type Query<F> = QueryFnParams<F> extends []
+  ? QueryWithoutParams<F>
+  : QueryWithParams<F>;

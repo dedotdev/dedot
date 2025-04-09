@@ -5,12 +5,11 @@ import type {
   GenericStorageQuery,
   GenericSubstrateApi,
   PaginationOptions,
+  RpcVersion,
   Unsub,
-  WithPagination,
 } from '@dedot/types';
-import type { StorageChangeSet } from '@dedot/types/json-rpc';
 import { assert, isFunction, isObject } from '@dedot/utils';
-import { QueryableStorage } from '../storage/QueryableStorage.js';
+import { type BaseStorageQuery, LegacyStorageQuery, QueryableStorage } from '../storage/index.js';
 import { Executor } from './Executor.js';
 
 const DEFAULT_KEYS_PAGE_SIZE = 1000;
@@ -107,13 +106,19 @@ export class StorageQueryExecutor<
       const pageSize = pagination?.pageSize || DEFAULT_KEYS_PAGE_SIZE;
       const startKey = pagination?.startKey || entry.prefixKey;
 
-      return await this.client.rpc.state_getKeysPaged(entry.encodeKey(partialInput, true), pageSize, startKey, this.atBlockHash);
+      return await this.client.rpc.state_getKeysPaged(
+        entry.encodeKey(partialInput, true),
+        pageSize,
+        startKey,
+        this.atBlockHash,
+      );
     };
 
     const extractArgs = (args: any[]): [any[], PaginationOptions | undefined] => {
       const inArgs = args.slice();
       const lastArg = args.at(-1);
-      const pagination = isObject(lastArg) && ('pageSize' in lastArg || 'startKey' in lastArg) ? inArgs.pop() : undefined;
+      const pagination =
+        isObject(lastArg) && ('pageSize' in lastArg || 'startKey' in lastArg) ? inArgs.pop() : undefined;
 
       return [inArgs, pagination];
     };
@@ -136,29 +141,17 @@ export class StorageQueryExecutor<
     return { pagedKeys, pagedEntries };
   }
 
-  protected async queryStorage(keys: StorageKey[], hash?: BlockHash): Promise<Record<StorageKey, Option<StorageData>>> {
-    const changeSets: StorageChangeSet[] = await this.client.rpc.state_queryStorageAt(keys, hash);
+  protected getStorageQuery(): BaseStorageQuery<RpcVersion> {
+    return new LegacyStorageQuery(this.client as any);
+  }
 
-    return changeSets[0].changes.reduce(
-      (o, [key, value]) => {
-        o[key] = value ?? undefined;
-        return o;
-      },
-      {} as Record<StorageKey, Option<StorageData>>,
-    );
+  protected async queryStorage(keys: StorageKey[], hash?: BlockHash): Promise<Record<StorageKey, Option<StorageData>>> {
+    return this.getStorageQuery().query(keys, hash);
   }
 
   protected subscribeStorage(keys: StorageKey[], callback: Callback<Array<StorageData | undefined>>): Promise<Unsub> {
-    const lastChanges = {} as Record<StorageKey, StorageData | undefined>;
-
-    return this.client.rpc.state_subscribeStorage(keys, (changeSet: StorageChangeSet) => {
-      changeSet.changes.forEach(([key, value]) => {
-        if (lastChanges[key] !== value) {
-          lastChanges[key] = value ?? undefined;
-        }
-      });
-
-      return callback(keys.map((key) => lastChanges[key]));
+    return this.getStorageQuery().subscribe(keys, (results) => {
+      callback(keys.map((key) => results[key]));
     });
   }
 }

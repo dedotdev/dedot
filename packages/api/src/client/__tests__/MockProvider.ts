@@ -40,6 +40,7 @@ export default class MockProvider extends EventEmitter<ProviderEvent> implements
       state_getRuntimeVersion: () => mockedRuntimeVersion,
       state_subscribeRuntimeVersion: () => 'runtime-version-subscription-id',
       state_unsubscribeRuntimeVersion: () => null,
+      state_unsubscribeStorage: () => true,
       system_chain: () => 'MockedChain',
       system_properties: () => ({ ss58Format: 42 }) as ChainProperties,
       state_getMetadata: () => metadata,
