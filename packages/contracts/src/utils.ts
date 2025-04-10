@@ -71,8 +71,13 @@ export const normalizeContractTypeDef = (def: ContractTypeDef): TypeDef => {
     value = {
       typeParam: def.compact.type,
     };
-  }
-  else {
+  } else if (def.bitsequence) {
+    type = 'BitSequence';
+    value = {
+      bitOrderType: def.bitsequence.bit_order_type,
+      bitStoreType: def.bitsequence.bit_store_type,
+    };
+  } else {
     throw Error(`Invalid contract type def: ${JSON.stringify(def)}`);
   }
 
