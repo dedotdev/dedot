@@ -1,22 +1,6 @@
 import { LegacyClient, DedotClient, WsProvider } from 'dedot';
 import { assert, waitFor } from 'dedot/utils';
 
-// Custom provider for testing
-class TestWsProvider extends WsProvider {
-  constructor(endpoint: string) {
-    super(endpoint);
-  }
-
-  // Method to force reconnection
-  public async forceReconnection(): Promise<void> {
-    console.log('Forcing WebSocket reconnection...');
-    await this.disconnect();
-    await waitFor(1000); // Wait a bit
-    await this.connect();
-    console.log('WebSocket reconnected');
-  }
-}
-
 export const run = async (nodeName: any, networkInfo: any) => {
   const { wsUri } = networkInfo.nodesByName[nodeName];
   
@@ -42,8 +26,8 @@ export const run = async (nodeName: any, networkInfo: any) => {
 };
 
 async function testStorageSubscription(wsUri: string, clientType: 'legacy' | 'dedot') {
-  // Create custom provider
-  const provider = new TestWsProvider(wsUri);
+  // Create standard provider
+  const provider = new WsProvider(wsUri);
   
   // Create appropriate client
   const client = clientType === 'legacy' 
@@ -70,8 +54,12 @@ async function testStorageSubscription(wsUri: string, clientType: 'legacy' | 'de
         console.log(`\n${clientType}: Received 3 updates, forcing reconnection...`);
         
         // Force reconnection
-        provider.forceReconnection().then(() => {
-          console.log(`${clientType}: Connection reestablished`);
+        (async () => {
+          console.log('Forcing WebSocket reconnection...');
+          await provider.disconnect();
+          await waitFor(1000); // Wait a bit
+          await provider.connect();
+          console.log('WebSocket reconnected');
           
           // Set a timeout to resolve after waiting for more updates
           setTimeout(async () => {
@@ -92,11 +80,10 @@ async function testStorageSubscription(wsUri: string, clientType: 'legacy' | 'de
               reject(new Error(`Subscription STOPPED after reconnection - received 0 updates after WebSocket reconnection`));
             }
           }, 20000); // Wait 20 seconds for potential updates
-        });
+        })();
       }
     });
   });
-
   // Always disconnect the client after the test, regardless of outcome
   await client.disconnect();
 }
