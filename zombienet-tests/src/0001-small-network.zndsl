@@ -5,4 +5,4 @@ Creds: config
 alice: is up
 bob: is up
 alice: reports node_roles is 4
-alice: js-script ./0001-check-storage-subscription-reconnection.ts within 300 seconds
+alice: ts-script ./0001-check-storage-subscription-reconnection.ts within 300 seconds
