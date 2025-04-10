@@ -6,6 +6,23 @@ import { FLIPPER_CONTRACT_METADATA_V4 } from './contracts-metadata.js';
 
 describe('utils', () => {
   describe('normalizeContractTypeDef', () => {
+    it('returns correct TypeDef for compact def', () => {
+      const def: ContractTypeDef = { compact: { type: 1 } };
+      const result = normalizeContractTypeDef(def) as TypeDef & { type: 'Compact' };
+
+      expect(result.type).toBe('Compact');
+      expect(result.value.typeParam).toEqual(1);
+    });
+
+    it('returns correct TypeDef for bitsequence def', () => {
+      const def: ContractTypeDef = { bitsequence: { bit_order_type: 0, bit_store_type: 1 } };
+      const result = normalizeContractTypeDef(def) as TypeDef & { type: 'BitSequence' };
+
+      expect(result.type).toBe('BitSequence');
+      expect(result.value.bitOrderType).toEqual(0);
+      expect(result.value.bitStoreType).toEqual(1);
+    });
+
     it('returns correct TypeDef for variant def', () => {
       const def: ContractTypeDef = {
         variant: {
