@@ -13,6 +13,7 @@ export const run = async (nodeName: any, networkInfo: any) => {
     console.log("✅ LegacyClient test PASSED: Subscription continued after reconnection");
   } catch (error: any) {
     console.error(`❌ LegacyClient test FAILED: ${error.message}`);
+    throw error;
   }
   
   try {
@@ -21,7 +22,7 @@ export const run = async (nodeName: any, networkInfo: any) => {
     console.log("✅ DedotClient test PASSED: Subscription continued after reconnection");
   } catch (error: any) {
     console.error(`❌ DedotClient test FAILED: ${error.message}`);
-    console.error("This confirms the issue: DedotClient storage subscriptions do not automatically resubscribe after WebSocket reconnection");
+    throw error;
   }
 };
 
