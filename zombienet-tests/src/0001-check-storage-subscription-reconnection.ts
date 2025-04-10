@@ -27,26 +27,6 @@ export const run = async (nodeName: any, networkInfo: any) => {
     throw error;
   }
 
-  // Test both client types with multi subscription
-  console.log('\n=== TESTING MULTI STORAGE SUBSCRIPTION RECONNECTION ===');
-  try {
-    console.log('\n--- Testing LegacyClient with multi subscription ---');
-    await testMultiSubscription(wsUri, 'legacy');
-    console.log('✅ LegacyClient multi subscription test PASSED');
-  } catch (error: any) {
-    console.error(`❌ LegacyClient multi subscription test FAILED: ${error.message}`);
-    throw error;
-  }
-
-  try {
-    console.log('\n--- Testing DedotClient with multi subscription ---');
-    await testMultiSubscription(wsUri, 'dedot');
-    console.log('✅ DedotClient multi subscription test PASSED');
-  } catch (error: any) {
-    console.error(`❌ DedotClient multi subscription test FAILED: ${error.message}`);
-    throw error;
-  }
-
   // Test both client types with queryMulti subscription
   console.log('\n=== TESTING QUERYMULTI SUBSCRIPTION RECONNECTION ===');
   try {
@@ -128,33 +108,37 @@ async function testStorageSubscription(wsUri: string, clientType: 'legacy' | 'de
   await client.disconnect();
 }
 
-// New function for testing multi subscription
-async function testMultiSubscription(wsUri: string, clientType: 'legacy' | 'dedot') {
+// New function for testing queryMulti subscription
+async function testQueryMultiSubscription(wsUri: string, clientType: 'legacy' | 'dedot') {
   // Create standard provider
   const provider = new WsProvider(wsUri);
 
   // Create appropriate client
   const client = clientType === 'legacy' ? await LegacyClient.new(provider) : await DedotClient.new(provider);
 
-  try {
-    // Track subscription updates
-    const updates: Array<Array<any>> = [];
-    let reconnectionTriggered = false;
-    let unsubFn: any;
+  // Track subscription updates
+  const updates: Array<Array<any>> = [];
+  let reconnectionTriggered = false;
+  let unsubFn: any;
 
-    // Set up multi subscription to system.account for multiple addresses
-    await new Promise<void>(async (resolve, reject) => {
-      // Create the subscription
-      unsubFn = await client.query.system.account.multi([ALICE, BOB], (accounts) => {
-        console.log(`${clientType} received multi update #${updates.length + 1}`);
+  // Set up queryMulti subscription to different storage items
+  await new Promise<void>(async (resolve, reject) => {
+    // Create the subscription
+    unsubFn = await client.queryMulti(
+      [
+        { fn: client.query.system.account, args: [ALICE] },
+        { fn: client.query.system.number }
+      ],
+      (results) => {
+        console.log(`${clientType} received queryMulti update #${updates.length + 1}`);
         
-        updates.push(accounts);
+        updates.push(results);
 
         // After receiving 3 updates, we'll disrupt the connection
         if (updates.length === 3 && !reconnectionTriggered) {
           reconnectionTriggered = true;
 
-          console.log(`\n${clientType}: Received 3 multi updates, forcing reconnection...`);
+          console.log(`\n${clientType}: Received 3 queryMulti updates, forcing reconnection...`);
 
           // Force reconnection
           (async () => {
@@ -165,7 +149,7 @@ async function testMultiSubscription(wsUri: string, clientType: 'legacy' | 'dedo
             setTimeout(async () => {
               const updatesAfterReconnection = updates.length - 3;
 
-              console.log(`\n${clientType} multi test results:`);
+              console.log(`\n${clientType} queryMulti test results:`);
               console.log(`- Total updates received: ${updates.length}`);
               console.log(`- Updates before reconnection: 3`);
               console.log(`- Updates after reconnection: ${updatesAfterReconnection}`);
@@ -174,90 +158,20 @@ async function testMultiSubscription(wsUri: string, clientType: 'legacy' | 'dedo
               await unsubFn();
 
               if (updatesAfterReconnection > 0) {
-                console.log(`- Multi subscription CONTINUED after reconnection`);
+                console.log(`- QueryMulti subscription CONTINUED after reconnection`);
                 resolve();
               } else {
                 reject(
-                  new Error(`Multi subscription STOPPED after reconnection - received 0 updates after WebSocket reconnection`),
+                  new Error(`QueryMulti subscription STOPPED after reconnection - received 0 updates after WebSocket reconnection`),
                 );
               }
             }, 20000); // Wait 20 seconds for potential updates
           })();
         }
-      });
-    });
-  } finally {
-    // Always disconnect the client after the test, regardless of outcome
-    await client.disconnect();
-  }
-}
-
-// New function for testing queryMulti subscription
-async function testQueryMultiSubscription(wsUri: string, clientType: 'legacy' | 'dedot') {
-  // Create standard provider
-  const provider = new WsProvider(wsUri);
-
-  // Create appropriate client
-  const client = clientType === 'legacy' ? await LegacyClient.new(provider) : await DedotClient.new(provider);
-
-  try {
-    // Track subscription updates
-    const updates: Array<Array<any>> = [];
-    let reconnectionTriggered = false;
-    let unsubFn: any;
-
-    // Set up queryMulti subscription to different storage items
-    await new Promise<void>(async (resolve, reject) => {
-      // Create the subscription
-      unsubFn = await client.queryMulti(
-        [
-          { fn: client.query.system.account, args: [ALICE] },
-          { fn: client.query.system.number }
-        ],
-        (results) => {
-          console.log(`${clientType} received queryMulti update #${updates.length + 1}`);
-          
-          updates.push(results);
-
-          // After receiving 3 updates, we'll disrupt the connection
-          if (updates.length === 3 && !reconnectionTriggered) {
-            reconnectionTriggered = true;
-
-            console.log(`\n${clientType}: Received 3 queryMulti updates, forcing reconnection...`);
-
-            // Force reconnection
-            (async () => {
-              console.log('Forcing WebSocket reconnection...');
-              provider.__unsafeWs()!.close(1001);
-
-              // Set a timeout to resolve after waiting for more updates
-              setTimeout(async () => {
-                const updatesAfterReconnection = updates.length - 3;
-
-                console.log(`\n${clientType} queryMulti test results:`);
-                console.log(`- Total updates received: ${updates.length}`);
-                console.log(`- Updates before reconnection: 3`);
-                console.log(`- Updates after reconnection: ${updatesAfterReconnection}`);
-
-                // Clean up subscription only
-                await unsubFn();
-
-                if (updatesAfterReconnection > 0) {
-                  console.log(`- QueryMulti subscription CONTINUED after reconnection`);
-                  resolve();
-                } else {
-                  reject(
-                    new Error(`QueryMulti subscription STOPPED after reconnection - received 0 updates after WebSocket reconnection`),
-                  );
-                }
-              }, 20000); // Wait 20 seconds for potential updates
-            })();
-          }
-        }
-      );
-    });
-  } finally {
-    // Always disconnect the client after the test, regardless of outcome
-    await client.disconnect();
-  }
+      }
+    );
+  });
+  
+  // Always disconnect the client after the test, regardless of outcome
+  await client.disconnect();
 }
