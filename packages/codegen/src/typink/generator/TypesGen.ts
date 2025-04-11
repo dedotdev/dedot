@@ -58,7 +58,7 @@ export class TypesGen extends BaseTypesGen {
   // type TypeA = Struct { field: AccountId } => includeKnownTypes(TypeA) === true
   // type TypeA = Struct { field: TypeB }; type TypeB = Struct { field: AccountId, type: TypeA } => includeKnownTypes(TypeA) === true
   //
-  // `checked` is used to prevent circlur dependencies
+  // `checked` is used to prevent circular dependencies
   #includeKnownTypes(typeId: TypeId, checked: Set<TypeId> = new Set<TypeId>()): boolean {
     // Return `false` because `typeId` is already checked
     // If it were a known type, the first check would have returned `true`.
@@ -101,7 +101,7 @@ export class TypesGen extends BaseTypesGen {
   // type TypeA = Struct { field: TypeB } => typeDependOn(TypeA, TypeB) === true
   // type TypeA = Struct { field: TypeB }; type TypeB = Struct { field: TypeA } => typeDependOn(TypeA, TypeB) === true
   //
-  // `checked` is used to prevent circlur dependencies
+  // `checked` is used to prevent circular dependencies
   #typeDependOn(typeA: TypeId, typeB: TypeId, checked: Set<TypeId> = new Set<TypeId>()): boolean {
     if (checked.has(typeA)) return false;
     if (typeA === typeB) return true;
