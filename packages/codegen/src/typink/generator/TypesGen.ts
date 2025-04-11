@@ -42,9 +42,9 @@ export class TypesGen extends BaseTypesGen {
     for (let message of messages) {
       // prettier-ignore
       const isIn = message.args.reduce(
-          (a, { type: { type: typeId } }) => a || this.#typeDependOn(typeId, id),
+          (a, {type: {type: typeId}}) => a || this.#typeDependOn(typeId, id),
           false,
-        );
+      );
 
       if (isIn) return true;
     }
@@ -53,9 +53,19 @@ export class TypesGen extends BaseTypesGen {
   }
 
   // Find out does type depends on known types
-  // Example: `type TypeA = Struct { field: AccountId }` => includeKnownTypes(TypeA) === true
-  #includeKnownTypes(typeId: TypeId): boolean {
+  //
+  // Example:
+  // type TypeA = Struct { field: AccountId } => includeKnownTypes(TypeA) === true
+  // type TypeA = Struct { field: TypeB }; type TypeB = Struct { field: AccountId, type: TypeA } => includeKnownTypes(TypeA) === true
+  //
+  // `checked` is used to prevent circular dependencies
+  #includeKnownTypes(typeId: TypeId, checked: Set<TypeId> = new Set<TypeId>()): boolean {
+    // Return `false` because `typeId` is already checked
+    // If it were a known type, the first check would have returned `true`.
+    if (checked.has(typeId)) return false;
     if (this.knownTypes[typeId]) return true;
+
+    checked.add(typeId);
 
     const { types } = this.contractMetadata;
     const defA = normalizeContractTypeDef(types[typeId].type.def);
@@ -63,30 +73,40 @@ export class TypesGen extends BaseTypesGen {
 
     switch (type) {
       case 'Struct':
-        return value.fields.some(({ typeId }) => this.#includeKnownTypes(typeId));
+        return value.fields.some(({ typeId }) => this.#includeKnownTypes(typeId, checked));
       case 'Enum':
-        return value.members.some(({ fields }) => fields.some(({ typeId }) => this.#includeKnownTypes(typeId)));
+        return value.members.some(({ fields }) =>
+          fields.some(({ typeId }) => this.#includeKnownTypes(typeId, checked)),
+        );
       case 'Tuple':
-        return value.fields.some((typeId) => this.#includeKnownTypes(typeId));
+        return value.fields.some((typeId) => this.#includeKnownTypes(typeId, checked));
       case 'Sequence':
       case 'SizedVec':
+      case 'Compact':
         const $innerType = this.types[value.typeParam].typeDef;
         if ($innerType.type === 'Primitive' && $innerType.value.kind === 'u8') {
           return true; // ByteLikes
         } else {
-          return this.#includeKnownTypes(value.typeParam);
+          return this.#includeKnownTypes(value.typeParam, checked);
         }
       case 'Primitive':
-      case 'Compact':
       case 'BitSequence':
         return false;
     }
   }
 
   // Find out does typeA depends on typeB
-  // Example: `type TypeA = Struct { field: TypeB }` => typeDependOn(TypeA, TypeB) === true
-  #typeDependOn(typeA: TypeId, typeB: TypeId): boolean {
+  //
+  // Example:
+  // type TypeA = Struct { field: TypeB } => typeDependOn(TypeA, TypeB) === true
+  // type TypeA = Struct { field: TypeB }; type TypeB = Struct { field: TypeA } => typeDependOn(TypeA, TypeB) === true
+  //
+  // `checked` is used to prevent circular dependencies
+  #typeDependOn(typeA: TypeId, typeB: TypeId, checked: Set<TypeId> = new Set<TypeId>()): boolean {
+    if (checked.has(typeA)) return false;
     if (typeA === typeB) return true;
+
+    checked.add(typeA);
 
     const { types } = this.contractMetadata;
     const defA = normalizeContractTypeDef(types[typeA].type.def);
@@ -96,24 +116,24 @@ export class TypesGen extends BaseTypesGen {
     switch (type) {
       case 'Struct':
         return value.fields.reduce(
-          (a, { typeId }) => a || this.#typeDependOn(typeId, typeB),
-          false,
+            (a, {typeId}) => a || this.#typeDependOn(typeId, typeB, checked),
+            false,
         );
       case 'Enum':
         return value.members.reduce(
-          (a, { fields }) => a || fields.reduce((a, { typeId }) => a || this.#typeDependOn(typeId, typeB), false),
-          false,
+            (a, {fields}) => a || fields.reduce((a, {typeId}) => a || this.#typeDependOn(typeId, typeB, checked), false),
+            false,
         );
       case 'Tuple':
         return value.fields.reduce(
-          (a, typeId) => a || this.#typeDependOn(typeId, typeB),
-          false,
+            (a, typeId) => a || this.#typeDependOn(typeId, typeB, checked),
+            false,
         );
       case 'Sequence':
       case 'SizedVec':
-        return this.#typeDependOn(value.typeParam, typeB);
-      case 'Primitive':
       case 'Compact':
+        return this.#typeDependOn(value.typeParam, typeB, checked);
+      case 'Primitive':
       case 'BitSequence':
         return false;
     }
