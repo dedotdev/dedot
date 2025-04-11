@@ -282,4 +282,8 @@ export class WsProvider extends SubscriptionProvider {
     assert(this.#ws && this.status === 'connected', 'Websocket connection is not connected');
     this.#ws.send(JSON.stringify(request));
   }
+
+  __unsafeWs(): WebSocket | undefined {
+    return this.#ws;
+  }
 }

@@ -1,3 +1,4 @@
+import { ChainHeadEvent } from '@dedot/api/json-rpc';
 import { BlockHash, Hash, Metadata, PortableRegistry } from '@dedot/codecs';
 import type { ConnectionStatus, JsonRpcProvider, ProviderEvent } from '@dedot/providers';
 import type { AnyShape } from '@dedot/shape';
@@ -6,7 +7,9 @@ import type {
   Callback,
   GenericStorageQuery,
   GenericSubstrateApi,
-  InjectedSigner, Query, QueryFnResult,
+  InjectedSigner,
+  Query,
+  QueryFnResult,
   RpcVersion,
   RuntimeApiName,
   RuntimeApiSpec,
@@ -75,6 +78,7 @@ export interface ApiOptions extends JsonRpcClientOptions {
 }
 
 export type ApiEvent = ProviderEvent | 'ready' | 'runtimeUpgraded';
+export type DedotClientEvent = ApiEvent | ChainHeadEvent;
 
 export interface SubstrateRuntimeVersion {
   specName: string;
@@ -95,7 +99,9 @@ export interface IJsonRpcClient<
   options: JsonRpcClientOptions;
   status: ConnectionStatus;
   provider: JsonRpcProvider;
+
   connect(): Promise<this>;
+
   disconnect(): Promise<void>;
 
   rpc: ChainApi['rpc'];
@@ -132,6 +138,7 @@ export interface ISubstrateClient<
     ISubstrateClientAt<ChainApi> {
   options: ApiOptions;
   tx: ChainApi['tx'];
+
   at<ChainApiAt extends GenericSubstrateApi = ChainApi>(hash: BlockHash): Promise<ISubstrateClientAt<ChainApiAt>>;
 
   /**
@@ -157,11 +164,12 @@ export interface ISubstrateClient<
    * @returns A promise resolving to an array of results or an Unsub function
    */
   queryMulti<Fns extends GenericStorageQuery[]>(
-    queries: { [K in keyof Fns]: Query<Fns[K]> }
+    queries: { [K in keyof Fns]: Query<Fns[K]> }, // pretter-end-here
   ): Promise<{ [K in keyof Fns]: QueryFnResult<Fns[K]> }>;
+
   queryMulti<Fns extends GenericStorageQuery[]>(
     queries: { [K in keyof Fns]: Query<Fns[K]> },
-    callback: Callback<{ [K in keyof Fns]: QueryFnResult<Fns[K]> }>
+    callback: Callback<{ [K in keyof Fns]: QueryFnResult<Fns[K]> }>,
   ): Promise<Unsub>;
 }
 

@@ -44,9 +44,10 @@ export function ensurePresence<T>(value: T): NonNullable<T> {
 export abstract class BaseSubstrateClient<
     Rv extends RpcVersion,
     ChainApi extends VersionedGenericSubstrateApi = SubstrateApi,
+    Events extends string = ApiEvent,
   >
-  extends JsonRpcClient<ChainApi, ApiEvent>
-  implements ISubstrateClient<ChainApi[Rv]>
+  extends JsonRpcClient<ChainApi, Events>
+  implements ISubstrateClient<ChainApi[Rv], Events>
 {
   protected _options: ApiOptions;
 
@@ -251,10 +252,13 @@ export abstract class BaseSubstrateClient<
   }
 
   protected async doConnect(): Promise<this> {
+    // @ts-ignore
     this.on('connected', this.onConnected);
+    // @ts-ignore
     this.on('disconnected', this.onDisconnected);
 
     return new Promise<this>((resolve) => {
+      // @ts-ignore
       this.once('ready', () => {
         resolve(this);
       });
@@ -271,6 +275,7 @@ export abstract class BaseSubstrateClient<
     await this.initializeLocalCache();
     await this.doInitialize();
 
+    // @ts-ignore
     this.emit('ready');
   }
 

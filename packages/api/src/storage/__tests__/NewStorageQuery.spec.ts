@@ -11,6 +11,7 @@ vi.mock('../../client/DedotClient.js', () => {
     DedotClient: vi.fn().mockImplementation(() => {
       return {
         rpcVersion: 'v2',
+        on: vi.fn().mockReturnValue(vi.fn()),
         chainHead: {
           storage: vi.fn(),
           on: vi.fn(),
@@ -130,14 +131,14 @@ describe('NewBaseStorageQuery', () => {
   });
   
   describe('subscribe method', () => {
-    it('should call chainHead.bestBlock and chainHead.on with the correct parameters', async () => {
+    it('should call chainHead.bestBlock and client.on with the correct parameters', async () => {
       // Setup mock response for bestBlock
       const mockBestBlock = { hash: '0xbesthash' };
       (mockClient.chainHead.bestBlock as any).mockResolvedValue(mockBestBlock);
       
       // Setup mock response for on
       const mockUnsub = vi.fn();
-      (mockClient.chainHead.on as any).mockReturnValue(mockUnsub);
+      (mockClient.on as any).mockReturnValue(mockUnsub);
       
       // Setup mock response for storage
       const mockResults = [
@@ -154,8 +155,8 @@ describe('NewBaseStorageQuery', () => {
       
       // Verify the chainHead calls
       expect(mockClient.chainHead.bestBlock).toHaveBeenCalledTimes(1);
-      expect(mockClient.chainHead.on).toHaveBeenCalledTimes(1);
-      expect(mockClient.chainHead.on).toHaveBeenCalledWith('bestBlock', expect.any(Function));
+      expect(mockClient.on).toHaveBeenCalledTimes(1);
+      expect(mockClient.on).toHaveBeenCalledWith('bestBlock', expect.any(Function));
       expect(mockClient.chainHead.storage).toHaveBeenCalledTimes(1);
       expect(mockClient.chainHead.storage).toHaveBeenCalledWith([
         { type: 'value', key: '0x01' },
@@ -171,7 +172,7 @@ describe('NewBaseStorageQuery', () => {
       // Setup mock response for on
       let onCallback: Function | undefined;
       const mockUnsub = vi.fn();
-      (mockClient.chainHead.on as any).mockImplementation((event: string, cb: Function) => {
+      (mockClient.on as any).mockImplementation((event: string, cb: Function) => {
         onCallback = cb;
         return mockUnsub;
       });
@@ -228,7 +229,7 @@ describe('NewBaseStorageQuery', () => {
       // Setup mock response for on
       let onCallback: Function | undefined;
       const mockUnsub = vi.fn();
-      (mockClient.chainHead.on as any).mockImplementation((event: string, cb: Function) => {
+      (mockClient.on as any).mockImplementation((event: string, cb: Function) => {
         onCallback = cb;
         return mockUnsub;
       });
@@ -269,7 +270,7 @@ describe('NewBaseStorageQuery', () => {
       
       // Setup mock response for on
       const mockUnsub = vi.fn();
-      (mockClient.chainHead.on as any).mockReturnValue(mockUnsub);
+      (mockClient.on as any).mockReturnValue(mockUnsub);
       
       // Setup mock response for storage
       const mockResults = [
