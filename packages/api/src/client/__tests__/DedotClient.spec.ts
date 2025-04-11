@@ -981,7 +981,7 @@ describe('DedotClient', () => {
         // Set up the spies before making the call
         const chainHeadBestBlockSpy = vi.spyOn(api.chainHead, 'bestBlock');
         const chainHeadStorageSpy = vi.spyOn(api.chainHead, 'storage');
-        const chainHeadOnSpy = vi.spyOn(api.chainHead, 'on');
+        const apiOnSpy = vi.spyOn(api, 'on');
         
         // Mock chainHead.bestBlock and chainHead.storage
         const mockBestBlock = { hash: '0xbesthash', number: 100, parent: '0xparenthash' } as PinnedBlock;
@@ -993,10 +993,10 @@ describe('DedotClient', () => {
         ];
         chainHeadStorageSpy.mockResolvedValue(mockInitialResults);
 
-        // Mock chainHead.on
+        // Mock api.on
         let onCallback: Function | undefined;
         const mockUnsub = vi.fn();
-        chainHeadOnSpy.mockImplementation((event: string, cb: Function) => {
+        apiOnSpy.mockImplementation((event: string, cb: Function) => {
           onCallback = cb;
           return mockUnsub;
         });
@@ -1024,9 +1024,9 @@ describe('DedotClient', () => {
           { fn: mockQueryFn2 as any, args: [] },
         ], callback);
 
-        // Verify chainHead.bestBlock and chainHead.on were called
+        // Verify chainHead.bestBlock and api.on were called
         expect(api.chainHead.bestBlock).toHaveBeenCalled();
-        expect(api.chainHead.on).toHaveBeenCalledWith('bestBlock', expect.any(Function));
+        expect(api.on).toHaveBeenCalledWith('bestBlock', expect.any(Function));
 
         // Verify chainHead.storage was called with the correct parameters
         expect(api.chainHead.storage).toHaveBeenCalledWith([
