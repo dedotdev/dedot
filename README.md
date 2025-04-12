@@ -71,7 +71,7 @@ const metadata = await client.rpc.state_getMetadata();
 console.log('Metadata:', metadata);
 
 // Listen to best blocks
-client.chainHead.on('bestBlock', (block: PinnedBlock) => { // or 'finalizedBlock'
+client.on('bestBlock', (block: PinnedBlock) => { // or 'finalizedBlock'
   console.log(`Current best block number: ${block.number}, hash: ${block.hash}`);
 });
 
