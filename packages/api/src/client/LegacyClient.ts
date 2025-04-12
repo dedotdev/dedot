@@ -174,8 +174,12 @@ export class LegacyClient<ChainApi extends VersionedGenericSubstrateApi = Substr
       return;
     }
 
-    await this.#runtimeSubscriptionUnsub();
-    this.#runtimeSubscriptionUnsub = undefined;
+    try {
+      await this.#runtimeSubscriptionUnsub();
+      this.#runtimeSubscriptionUnsub = undefined;
+    } catch {
+      // ignore
+    }
   }
 
   #subscribeUpdates() {

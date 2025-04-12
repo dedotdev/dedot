@@ -981,7 +981,7 @@ describe('DedotClient', () => {
         // Set up the spies before making the call
         const chainHeadBestBlockSpy = vi.spyOn(api.chainHead, 'bestBlock');
         const chainHeadStorageSpy = vi.spyOn(api.chainHead, 'storage');
-        const chainHeadOnSpy = vi.spyOn(api.chainHead, 'on');
+        const apiOnSpy = vi.spyOn(api, 'on');
         
         // Mock chainHead.bestBlock and chainHead.storage
         const mockBestBlock = { hash: '0xbesthash', number: 100, parent: '0xparenthash' } as PinnedBlock;
@@ -993,10 +993,10 @@ describe('DedotClient', () => {
         ];
         chainHeadStorageSpy.mockResolvedValue(mockInitialResults);
 
-        // Mock chainHead.on
+        // Mock api.on
         let onCallback: Function | undefined;
         const mockUnsub = vi.fn();
-        chainHeadOnSpy.mockImplementation((event: string, cb: Function) => {
+        apiOnSpy.mockImplementation((event: string, cb: Function) => {
           onCallback = cb;
           return mockUnsub;
         });
@@ -1024,9 +1024,9 @@ describe('DedotClient', () => {
           { fn: mockQueryFn2 as any, args: [] },
         ], callback);
 
-        // Verify chainHead.bestBlock and chainHead.on were called
+        // Verify chainHead.bestBlock and api.on were called
         expect(api.chainHead.bestBlock).toHaveBeenCalled();
-        expect(api.chainHead.on).toHaveBeenCalledWith('bestBlock', expect.any(Function));
+        expect(api.on).toHaveBeenCalledWith('bestBlock', expect.any(Function));
 
         // Verify chainHead.storage was called with the correct parameters
         expect(api.chainHead.storage).toHaveBeenCalledWith([
@@ -1229,6 +1229,147 @@ describe('DedotClient', () => {
       //   expect(api.tx.system.notFound).toBeUndefined();
       //   expect(api.tx.notFound.notFound).toBeUndefined();
       // });
+    });
+  });
+
+  describe('event forwarding', () => {
+    let api: DedotClient;
+    let simulator: ReturnType<typeof newChainHeadSimulator>;
+    let provider: MockProvider;
+    
+    beforeEach(async () => {
+      provider = new MockProvider();
+      simulator = newChainHeadSimulator({ provider });
+      simulator.notify(simulator.initializedEvent);
+      
+      provider.setRpcRequests({
+        chainSpec_v1_chainName: () => 'MockedChain',
+        chainHead_v1_call: () => ({ result: 'started', operationId: 'call01' }) as MethodResponse,
+      });
+
+      simulator.notify({
+        operationId: 'call01',
+        event: 'operationCallDone',
+        output: prefixedMetadataV15,
+      } as OperationCallDone);
+      
+      api = await DedotClient.new({ provider });
+    });
+
+    afterEach(async () => {
+      api && api.status !== 'disconnected' && (await api.disconnect());
+    });
+
+    it('should forward newBlock events from ChainHead', async () => {
+      const newBlockSpy = vi.fn();
+      api.on('newBlock', newBlockSpy);
+
+      const newBlock = simulator.nextNewBlock();
+      simulator.notify(newBlock);
+
+      await new Promise<void>((resolve) => {
+        setTimeout(() => {
+          expect(newBlockSpy).toHaveBeenCalledTimes(1);
+          const pinnedBlock = newBlockSpy.mock.calls[0][0] as PinnedBlock;
+          expect(pinnedBlock.hash).toEqual(newBlock.blockHash);
+          resolve();
+        }, 10);
+      });
+    });
+
+    it('should forward bestBlock events from ChainHead', async () => {
+      const bestBlockSpy = vi.fn();
+      api.on('bestBlock', bestBlockSpy);
+
+      // Create a new block first
+      simulator.notify(simulator.nextNewBlock());
+      
+      // Then make it the best block
+      const bestBlock = simulator.nextBestBlock();
+      simulator.notify(bestBlock);
+
+      await new Promise<void>((resolve) => {
+        setTimeout(() => {
+          expect(bestBlockSpy).toHaveBeenCalledTimes(1);
+          const pinnedBlock = bestBlockSpy.mock.calls[0][0] as PinnedBlock;
+          expect(pinnedBlock.hash).toEqual(bestBlock.bestBlockHash);
+          resolve();
+        }, 10);
+      });
+    });
+
+    it('should forward finalizedBlock events from ChainHead', async () => {
+      const finalizedBlockSpy = vi.fn();
+      api.on('finalizedBlock', finalizedBlockSpy);
+
+      // Create a new block first
+      const newBlock = simulator.nextNewBlock();
+      simulator.notify(newBlock);
+      
+      // Then make it the best block
+      simulator.notify(simulator.nextBestBlock());
+      
+      // Then finalize it
+      const finalized = simulator.nextFinalized();
+      simulator.notify(finalized);
+
+      await new Promise<void>((resolve) => {
+        setTimeout(() => {
+          expect(finalizedBlockSpy).toHaveBeenCalledTimes(1);
+          const pinnedBlock = finalizedBlockSpy.mock.calls[0][0] as PinnedBlock;
+          expect(pinnedBlock.hash).toEqual(finalized.finalizedBlockHashes[0]);
+          resolve();
+        }, 10);
+      });
+    });
+
+    it('should forward bestChainChanged events from ChainHead', async () => {
+      const bestChainChangedSpy = vi.fn();
+      api.on('bestChainChanged', bestChainChangedSpy);
+
+      // Create a mock PinnedBlock directly
+      const mockPinnedBlock: PinnedBlock = {
+        hash: '0xmockblockhash',
+        number: 123,
+        parent: '0xmockparenthash',
+      };
+      
+      // Directly emit the bestChainChanged event with our mock block
+      api.chainHead.emit('bestChainChanged', mockPinnedBlock);
+
+      await new Promise<void>((resolve) => {
+        setTimeout(() => {
+          expect(bestChainChangedSpy).toHaveBeenCalledTimes(1);
+          const emittedBlock = bestChainChangedSpy.mock.calls[0][0] as PinnedBlock;
+          expect(emittedBlock).toBe(mockPinnedBlock);
+          expect(emittedBlock.hash).toEqual('0xmockblockhash');
+          resolve();
+        }, 100); // Increased timeout to ensure event propagation
+      });
+    });
+
+    it('should forward multiple events in sequence', async () => {
+      const events: string[] = [];
+      
+      api.on('newBlock', () => events.push('newBlock'));
+      api.on('bestBlock', () => events.push('bestBlock'));
+      api.on('finalizedBlock', () => events.push('finalizedBlock'));
+      
+      // Create a new block
+      simulator.notify(simulator.nextNewBlock());
+      
+      // Make it the best block
+      simulator.notify(simulator.nextBestBlock());
+      
+      // Finalize it
+      simulator.notify(simulator.nextFinalized());
+
+      await new Promise<void>((resolve) => {
+        setTimeout(() => {
+          expect(events).toEqual(['newBlock', 'bestBlock', 'finalizedBlock']);
+          resolve();
+        }, 10);
+      });
     });
   });
 });

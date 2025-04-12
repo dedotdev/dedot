@@ -198,8 +198,8 @@ export class SubmittableExtrinsicV2 extends BaseSubmittableExtrinsic {
       }),
     );
 
-    const stopBestBlockTrackingFn = api.chainHead.on('bestBlock', checkBestBlockIncluded);
-    const stopFinalizedBlockTrackingFn = api.chainHead.on('finalizedBlock', checkFinalizedBlockIncluded);
+    const stopBestBlockTrackingFn = api.on('bestBlock', checkBestBlockIncluded);
+    const stopFinalizedBlockTrackingFn = api.on('finalizedBlock', checkFinalizedBlockIncluded);
 
     const stopTracking = () => {
       stopBestBlockTrackingFn();

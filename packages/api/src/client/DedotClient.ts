@@ -15,7 +15,13 @@ import {
 import { ChainHead, ChainSpec, PinnedBlock, Transaction, TransactionWatch } from '../json-rpc/index.js';
 import { newProxyChain } from '../proxychain.js';
 import { BaseStorageQuery, NewStorageQuery } from '../storage/index.js';
-import type { ApiOptions, ISubstrateClientAt, SubstrateRuntimeVersion, TxBroadcaster } from '../types.js';
+import type {
+  ApiOptions,
+  DedotClientEvent,
+  ISubstrateClientAt,
+  SubstrateRuntimeVersion,
+  TxBroadcaster,
+} from '../types.js';
 import { BaseSubstrateClient, ensurePresence } from './BaseSubstrateClient.js';
 
 /**
@@ -25,7 +31,7 @@ import { BaseSubstrateClient, ensurePresence } from './BaseSubstrateClient.js';
  * __Unstable, use with caution.__
  */
 export class DedotClient<ChainApi extends VersionedGenericSubstrateApi = SubstrateApi> // prettier-end-here
-  extends BaseSubstrateClient<RpcV2, ChainApi>
+  extends BaseSubstrateClient<RpcV2, ChainApi, DedotClientEvent>
 {
   protected _chainHead?: ChainHead;
   protected _chainSpec?: ChainSpec;
@@ -111,6 +117,12 @@ export class DedotClient<ChainApi extends VersionedGenericSubstrateApi = Substra
 
     await this.setupMetadata(metadata);
     this.subscribeRuntimeUpgrades();
+
+    // relegate events
+    this.chainHead.on('newBlock', (...args) => this.emit('newBlock', ...args));
+    this.chainHead.on('bestBlock', (...args) => this.emit('bestBlock', ...args));
+    this.chainHead.on('finalizedBlock', (...args) => this.emit('finalizedBlock', ...args));
+    this.chainHead.on('bestChainChanged', (...args) => this.emit('bestChainChanged', ...args));
   }
 
   /**
