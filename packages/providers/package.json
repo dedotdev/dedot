@@ -2,8 +2,8 @@
   "name": "@dedot/providers",
   "version": "0.9.1",
   "description": "JSON-RPC Providers",
-  "author": "Thang X. Vu <thang@coongcrafts.io>",
-  "homepage": "https://github.com/dedotdev/dedot/tree/main/packages/providers",
+  "author": "Thang X. Vu <thang@dedot.dev>",
+  "homepage": "https://dedot.dev",
   "repository": {
     "directory": "packages/providers",
     "type": "git",
