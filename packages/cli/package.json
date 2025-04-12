@@ -1,8 +1,8 @@
 {
   "name": "@dedot/cli",
   "version": "0.9.1",
-  "author": "Thang X. Vu <thang@coongcrafts.io>",
-  "homepage": "https://github.com/dedotdev/dedot/tree/main/packages/cli",
+  "author": "Thang X. Vu <thang@dedot.dev>",
+  "homepage": "https://dedot.dev",
   "repository": {
     "directory": "packages/cli",
     "type": "git",

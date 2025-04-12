@@ -2,8 +2,8 @@
   "name": "@dedot/storage",
   "version": "0.9.1",
   "description": "Storage for different purposes (caching...)",
-  "author": "Thang X. Vu <thang@coongcrafts.io>",
-  "homepage": "https://github.com/dedotdev/dedot/tree/main/packages/storage",
+  "author": "Thang X. Vu <thang@dedot.dev>",
+  "homepage": "https://dedot.dev",
   "repository": {
     "directory": "packages/storage",
     "type": "git",

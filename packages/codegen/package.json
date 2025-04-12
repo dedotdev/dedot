@@ -2,8 +2,8 @@
   "name": "@dedot/codegen",
   "version": "0.9.1",
   "description": "Generate types",
-  "author": "Thang X. Vu <thang@coongcrafts.io>",
-  "homepage": "https://github.com/dedotdev/dedot/tree/main/packages/codegen",
+  "author": "Thang X. Vu <thang@dedot.dev>",
+  "homepage": "https://dedot.dev",
   "repository": {
     "directory": "packages/codegen",
     "type": "git",

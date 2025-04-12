@@ -1,7 +1,7 @@
 {
   "name": "dedot.dev",
   "private": true,
-  "author": "Thang X. Vu <thang@coongcrafts.io>",
+  "author": "Thang X. Vu <thang@dedot.dev>",
   "packageManager": "yarn@4.1.1",
   "workspaces": [
     "packages/*",

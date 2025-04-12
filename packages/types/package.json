@@ -2,8 +2,8 @@
   "name": "@dedot/types",
   "version": "0.9.1",
   "description": "Known types",
-  "author": "Thang X. Vu <thang@coongcrafts.io>",
-  "homepage": "https://github.com/dedotdev/dedot/tree/main/packages/types",
+  "author": "Thang X. Vu <thang@dedot.dev>",
+  "homepage": "https://dedot.dev",
   "repository": {
     "directory": "packages/types",
     "type": "git",
