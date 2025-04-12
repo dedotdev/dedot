@@ -283,7 +283,11 @@ export class WsProvider extends SubscriptionProvider {
     this.#ws.send(JSON.stringify(request));
   }
 
-  __unsafeWs(): WebSocket | undefined {
+  /**
+   * Unsafe access to the websocket instance, use with caution. 
+   * Currently only used for testing
+   */
+  protected __unsafeWs(): WebSocket | undefined {
     return this.#ws;
   }
 }

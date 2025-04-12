@@ -77,6 +77,7 @@ async function testStorageSubscription(wsUri: string, clientType: 'legacy' | 'de
         // Force reconnection
         (async () => {
           console.log('Forcing WebSocket reconnection...');
+          // @ts-ignore
           provider.__unsafeWs()!.close(1001);
 
           // Set a timeout to resolve after waiting for more updates
@@ -143,6 +144,7 @@ async function testQueryMultiSubscription(wsUri: string, clientType: 'legacy' | 
           // Force reconnection
           (async () => {
             console.log('Forcing WebSocket reconnection...');
+            // @ts-ignore
             provider.__unsafeWs()!.close(1001);
 
             // Set a timeout to resolve after waiting for more updates
