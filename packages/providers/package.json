@@ -19,7 +19,7 @@
   },
   "dependencies": {
     "@dedot/utils": "workspace:*",
-    "@polkadot/x-ws": "^13.4.3"
+    "@polkadot/x-ws": "^13.4.4"
   },
   "publishConfig": {
     "access": "public",
