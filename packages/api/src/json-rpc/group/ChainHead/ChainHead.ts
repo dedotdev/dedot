@@ -462,7 +462,22 @@ export class ChainHead extends JsonRpcGroup<ChainHeadEvent> {
     if (!runtimeEvent) return;
 
     if (runtimeEvent.type == 'valid') {
-      return runtimeEvent.spec;
+      const newRuntimeVersion = runtimeEvent.spec;
+
+      // fix inconsistent type of returned apis
+      // in some network endpoints this newRuntimeVersion.apis is an array (maybe using an old version of the sdk)
+      // here we convert it to a map format for consistency.
+      if (Array.isArray(newRuntimeVersion.apis)) {
+        newRuntimeVersion.apis = newRuntimeVersion.apis.reduce(
+          (o, [name, version]) => {
+            o[name] = version;
+            return o;
+          },
+          {} as Record<string, number>,
+        );
+      }
+
+      return newRuntimeVersion;
     }
 
     // If the runtime is invalid,
