@@ -605,7 +605,7 @@ __metadata:
   resolution: "@dedot/providers@workspace:packages/providers"
   dependencies:
     "@dedot/utils": "workspace:*"
-    "@polkadot/x-ws": "npm:^13.4.3"
+    "@polkadot/x-ws": "npm:^13.4.4"
     mock-socket: "npm:^9.3.1"
     smoldot: "npm:^2.0.34"
   languageName: unknown
@@ -647,7 +647,7 @@ __metadata:
   resolution: "@dedot/shape@workspace:packages/shape"
   dependencies:
     "@dedot/utils": "workspace:*"
-    deshape: "npm:^0.0.1"
+    deshape: "npm:^0.1.0"
   languageName: unknown
   linkType: soft
 
@@ -700,7 +700,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@dedot/utils@workspace:packages/utils"
   dependencies:
-    "@noble/hashes": "npm:^1.7.1"
+    "@noble/hashes": "npm:^1.7.2"
     "@scure/base": "npm:^1.2.4"
     eventemitter3: "npm:^5.0.1"
   languageName: unknown
@@ -1513,10 +1513,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@noble/hashes@npm:^1.7.1":
-  version: 1.7.1
-  resolution: "@noble/hashes@npm:1.7.1"
-  checksum: 10c0/2f8ec0338ccc92b576a0f5c16ab9c017a3a494062f1fbb569ae641c5e7eab32072f9081acaa96b5048c0898f972916c818ea63cbedda707886a4b5ffcfbf94e3
+"@noble/hashes@npm:^1.7.2":
+  version: 1.7.2
+  resolution: "@noble/hashes@npm:1.7.2"
+  checksum: 10c0/b1411eab3c0b6691d847e9394fe7f1fcd45eeb037547c8f97e7d03c5068a499b4aef188e8e717eee67389dca4fee17d69d7e0f58af6c092567b0b76359b114b2
   languageName: node
   linkType: hard
 
@@ -2109,12 +2109,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@polkadot/x-global@npm:13.4.3":
-  version: 13.4.3
-  resolution: "@polkadot/x-global@npm:13.4.3"
+"@polkadot/x-global@npm:13.4.4":
+  version: 13.4.4
+  resolution: "@polkadot/x-global@npm:13.4.4"
   dependencies:
     tslib: "npm:^2.8.0"
-  checksum: 10c0/704d0f1f221a7cd3fadc64502a9da133fd438d4931de8e6c0ada04545e25c90759c4a79dec1595623f28c8cc29a3123cbbc0d1932613c174da85d5f1de24dbbe
+  checksum: 10c0/9b2a55975871e85503ae7bf819dca9e25093a2b4b4c492986a8d2188068ccdb075b18746c21f23e4e2af070ed58f7ab0e9d7f58e28ff15cd10e8f202386d15d7
   languageName: node
   linkType: hard
 
@@ -2162,14 +2162,14 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@polkadot/x-ws@npm:^13.4.3":
-  version: 13.4.3
-  resolution: "@polkadot/x-ws@npm:13.4.3"
+"@polkadot/x-ws@npm:^13.4.4":
+  version: 13.4.4
+  resolution: "@polkadot/x-ws@npm:13.4.4"
   dependencies:
-    "@polkadot/x-global": "npm:13.4.3"
+    "@polkadot/x-global": "npm:13.4.4"
     tslib: "npm:^2.8.0"
     ws: "npm:^8.18.0"
-  checksum: 10c0/929ffd34c6625ef5bcf8dcf1f4a922d6e234bf75e23de633b56a747285b0a5f85c6f28339a2ff61aa297dc9c5b98ca783e6c70bf7e7856fc2b6be6aba92a7cb6
+  checksum: 10c0/569bfe900bad2e4fbac754f6e1a0ef2f6de0cee9520d4820c014bbb54f9cc0eba8319c09e25aebc9b19ab23dbd88003bfb5eb3f1cd8ad73f68c25224dd037d77
   languageName: node
   linkType: hard
 
@@ -4114,6 +4114,13 @@ __metadata:
   version: 0.0.1
   resolution: "deshape@npm:0.0.1"
   checksum: 10c0/f736741f697f51e0772c792d369311a922c5d726f046a11f70fc8c40a6972aed5332c093ddd840c8244fa66ee0cf6a214e2f3e89fd1e64324fb344a2c4dda1a7
+  languageName: node
+  linkType: hard
+
+"deshape@npm:^0.1.0":
+  version: 0.1.0
+  resolution: "deshape@npm:0.1.0"
+  checksum: 10c0/cf99f2007882cd67cdf6b9eb4f5520a795e2f03dc83359578907176a19faeee6d70452b8f95f4fd2d2c1de4de48125e2d95485dc34310ac027c01e9a33b9849c
   languageName: node
   linkType: hard
 
