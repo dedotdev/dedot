@@ -73,39 +73,29 @@ export class NewStorageQuery<
 
     // Function to pull storage values and call the callback if there are changes
     const pull = async ({ hash }: PinnedBlock) => {
-      try {
-        // Query storage using ChainHead API with the abort signal
-        const storageQueries = keys.map((key) => ({ type: 'value' as const, key }));
-        const rawResults = await this.client.chainHead.storage(storageQueries, undefined, hash);
+      // Query storage using ChainHead API with the abort signal
+      const storageQueries = keys.map((key) => ({ type: 'value' as const, key }));
+      const rawResults = await this.client.chainHead.storage(storageQueries, undefined, hash);
 
-        let changed = false;
+      let changed = false;
 
-        // Create a map for easy lookup
-        const results: Record<StorageKey, StorageData | undefined> = {};
-        rawResults.forEach((result) => {
-          results[result.key as StorageKey] = (result.value as StorageData) ?? undefined;
-        });
+      // Create a map for easy lookup
+      const results: Record<StorageKey, StorageData | undefined> = {};
+      rawResults.forEach((result) => {
+        results[result.key as StorageKey] = (result.value as StorageData) ?? undefined;
+      });
 
-        keys.forEach((key) => {
-          const newValue = results[key];
-          if (Object.keys(latestChanges).length > 0 && latestChanges[key] === newValue) return;
+      keys.forEach((key) => {
+        const newValue = results[key];
+        if (Object.keys(latestChanges).length > 0 && latestChanges[key] === newValue) return;
 
-          changed = true;
-          latestChanges[key] = newValue;
-        });
+        changed = true;
+        latestChanges[key] = newValue;
+      });
 
-        if (!changed) return;
+      if (!changed) return;
 
-        callback({ ...latestChanges });
-      } catch (e) {
-        if (e instanceof ChainHeadBlockNotPinnedError) {
-          // ignore this error as obsolete best block might get unpinned
-          // before this pull get a chance to run
-          return;
-        }
-
-        console.error(e);
-      }
+      callback({ ...latestChanges });
     };
 
     // Initial pull
@@ -113,7 +103,7 @@ export class NewStorageQuery<
 
     // Subscribe to best block events
     const unsub = this.client.on('bestBlock', (block: PinnedBlock) => {
-      pullQueue.enqueue(() => pull(block)).catch(noop);
+      pullQueue.enqueue(() => pull(block)).catch(console.error);
     });
 
     return async () => {
