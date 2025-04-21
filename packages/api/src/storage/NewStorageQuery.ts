@@ -1,10 +1,9 @@
 import { BlockHash, StorageData, StorageKey } from '@dedot/codecs';
 import type { Callback, RpcV2, Unsub, VersionedGenericSubstrateApi } from '@dedot/types';
-import { AsyncQueue, noop } from '@dedot/utils';
+import { AsyncQueue } from '@dedot/utils';
 import type { SubstrateApi } from '../chaintypes/index.js';
 import { DedotClient } from '../client/DedotClient.js';
 import { PinnedBlock } from '../json-rpc/group/ChainHead/ChainHead.js';
-import { ChainHeadBlockNotPinnedError } from '../json-rpc/index.js';
 import { BaseStorageQuery } from './BaseStorageQuery.js';
 
 /**
@@ -73,7 +72,7 @@ export class NewStorageQuery<
 
     // Function to pull storage values and call the callback if there are changes
     const pull = async ({ hash }: PinnedBlock) => {
-      // Query storage using ChainHead API with the abort signal
+      // Query storage using ChainHead API
       const storageQueries = keys.map((key) => ({ type: 'value' as const, key }));
       const rawResults = await this.client.chainHead.storage(storageQueries, undefined, hash);
 
