@@ -65,6 +65,10 @@ export class NewStorageQuery<
 
     // Track the latest changes for each key
     const latestChanges: Record<StorageKey, StorageData | undefined> = {};
+    // Using a queue here to make sure we don't accidentally
+    // put a pressure the json-rpc server in-case new blocks stack up too fast
+    // in case we send a lot of requests at the same time
+    // or the block time is small enough with elastic scaling
     const pullQueue = new AsyncQueue();
 
     // Function to pull storage values and call the callback if there are changes
