@@ -1,6 +1,6 @@
 import { BlockHash, StorageData, StorageKey } from '@dedot/codecs';
 import type { Callback, RpcV2, Unsub, VersionedGenericSubstrateApi } from '@dedot/types';
-import { AsyncQueue, noop, shortenAddress } from '@dedot/utils';
+import { AsyncQueue, noop } from '@dedot/utils';
 import type { SubstrateApi } from '../chaintypes/index.js';
 import { DedotClient } from '../client/DedotClient.js';
 import { PinnedBlock } from '../json-rpc/group/ChainHead/ChainHead.js';
