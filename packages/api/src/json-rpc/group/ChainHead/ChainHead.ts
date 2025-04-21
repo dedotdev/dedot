@@ -19,7 +19,6 @@ import {
   ChainHeadBlockNotPinnedError,
   ChainHeadBlockPrunedError,
   ChainHeadError,
-  ChainHeadInvalidRuntimeError,
   ChainHeadLimitReachedError,
   ChainHeadOperationError,
   ChainHeadOperationInaccessibleError,
@@ -689,14 +688,20 @@ export class ChainHead extends JsonRpcGroup<ChainHeadEvent> {
 
       this.#blockUsage.use(hash);
 
-      const results: Array<StorageResult> = [];
+      const fetchItem = async (item: StorageQuery): Promise<StorageResult> => {
+        const [newBatch, newDiscardedItems] = await this.#getStorage([item], childTrie ?? null, hash);
+        if (newDiscardedItems.length > 0) {
+          return fetchItem(newDiscardedItems[0]);
+        }
 
-      let queryItems = items;
-      while (queryItems.length > 0) {
-        const [newBatch, newDiscardedItems] = await this.#getStorage(queryItems, childTrie ?? null, hash);
-        results.push(...newBatch);
-        queryItems = newDiscardedItems;
-      }
+        if (newBatch.length === 0) {
+          return { key: item.key, value: undefined };
+        }
+
+        return newBatch[0];
+      };
+
+      const results: Array<StorageResult> = await Promise.all(items.map((one) => fetchItem(one)));
 
       this.#cache.set(cacheKey, results);
       return results;

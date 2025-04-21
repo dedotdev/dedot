@@ -68,8 +68,7 @@ export class NewStorageQuery<
     const pullQueue = new AsyncQueue();
 
     // Function to pull storage values and call the callback if there are changes
-    const pull = async ({ hash, number }: PinnedBlock) => {
-      // console.log('pull', shortenAddress(hash), number, 'queue size', pullQueue.size);
+    const pull = async ({ hash }: PinnedBlock) => {
       try {
         // Query storage using ChainHead API with the abort signal
         const storageQueries = keys.map((key) => ({ type: 'value' as const, key }));
@@ -110,14 +109,7 @@ export class NewStorageQuery<
 
     // Subscribe to best block events
     const unsub = this.client.on('bestBlock', (block: PinnedBlock) => {
-      if (pullQueue.size >= 3) {
-        // console.log('queue is overloaded, clean it up now!');
-        pullQueue.cancel();
-      }
-
-      // console.log('queue', shortenAddress(block.hash), block.number);
       pullQueue.enqueue(() => pull(block)).catch(noop);
-      // console.log('queue size', pullQueue.size);
     });
 
     return async () => {
