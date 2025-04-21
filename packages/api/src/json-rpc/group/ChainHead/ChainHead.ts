@@ -525,7 +525,7 @@ export class ChainHead extends JsonRpcGroup<ChainHeadEvent> {
       return await operation();
     } catch (e) {
       if (e instanceof ChainHeadError && e.retryStrategy) {
-        return this.#retryOperation(e.retryStrategy, operation);
+        return await this.#retryOperation(e.retryStrategy, operation);
       }
 
       throw e;
@@ -550,7 +550,7 @@ export class ChainHead extends JsonRpcGroup<ChainHeadEvent> {
     } catch (e: any) {
       // retry again until success, TODO we might need to limit the number of retries
       if (e instanceof ChainHeadError && e.retryStrategy) {
-        return this.#retryOperation(e.retryStrategy, retry);
+        return await this.#retryOperation(e.retryStrategy, retry);
       }
 
       throw e;
@@ -702,7 +702,7 @@ export class ChainHead extends JsonRpcGroup<ChainHeadEvent> {
       return results;
     } catch (e) {
       if (e instanceof ChainHeadBlockPrunedError && shouldRetryOnPrunedBlock) {
-        return this.storage(items, childTrie);
+        return await this.storage(items, childTrie);
       }
 
       throw e;

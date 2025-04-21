@@ -1,8 +1,10 @@
 import { BlockHash, StorageData, StorageKey } from '@dedot/codecs';
 import type { Callback, RpcV2, Unsub, VersionedGenericSubstrateApi } from '@dedot/types';
+import { AsyncQueue, noop, shortenAddress } from '@dedot/utils';
 import type { SubstrateApi } from '../chaintypes/index.js';
 import { DedotClient } from '../client/DedotClient.js';
 import { PinnedBlock } from '../json-rpc/group/ChainHead/ChainHead.js';
+import { ChainHeadBlockNotPinnedError } from '../json-rpc/index.js';
 import { BaseStorageQuery } from './BaseStorageQuery.js';
 
 /**
@@ -63,42 +65,64 @@ export class NewStorageQuery<
 
     // Track the latest changes for each key
     const latestChanges: Record<StorageKey, StorageData | undefined> = {};
+    const pullQueue = new AsyncQueue();
 
     // Function to pull storage values and call the callback if there are changes
-    const pull = async ({ hash }: PinnedBlock) => {
-      // Query storage using ChainHead API
-      const storageQueries = keys.map((key) => ({ type: 'value' as const, key }));
-      const rawResults = await this.client.chainHead.storage(storageQueries, undefined, hash);
+    const pull = async ({ hash, number }: PinnedBlock) => {
+      // console.log('pull', shortenAddress(hash), number, 'queue size', pullQueue.size);
+      try {
+        // Query storage using ChainHead API with the abort signal
+        const storageQueries = keys.map((key) => ({ type: 'value' as const, key }));
+        const rawResults = await this.client.chainHead.storage(storageQueries, undefined, hash);
 
-      let changed = false;
+        let changed = false;
 
-      // Create a map for easy lookup
-      const results: Record<StorageKey, StorageData | undefined> = {};
-      rawResults.forEach((result) => {
-        results[result.key as StorageKey] = (result.value as StorageData) ?? undefined;
-      });
+        // Create a map for easy lookup
+        const results: Record<StorageKey, StorageData | undefined> = {};
+        rawResults.forEach((result) => {
+          results[result.key as StorageKey] = (result.value as StorageData) ?? undefined;
+        });
 
-      keys.forEach((key) => {
-        const newValue = results[key];
-        if (Object.keys(latestChanges).length > 0 && latestChanges[key] === newValue) return;
+        keys.forEach((key) => {
+          const newValue = results[key];
+          if (Object.keys(latestChanges).length > 0 && latestChanges[key] === newValue) return;
 
-        changed = true;
-        latestChanges[key] = newValue;
-      });
+          changed = true;
+          latestChanges[key] = newValue;
+        });
 
-      if (!changed) return;
+        if (!changed) return;
 
-      callback({ ...latestChanges });
+        callback({ ...latestChanges });
+      } catch (e) {
+        if (e instanceof ChainHeadBlockNotPinnedError) {
+          // ignore this error as obsolete best block might get unpinned
+          // before this pull get a chance to run
+          return;
+        }
+
+        console.error(e);
+      }
     };
 
     // Initial pull
     await pull(best);
 
     // Subscribe to best block events
-    const unsub = this.client.on('bestBlock', pull);
+    const unsub = this.client.on('bestBlock', (block: PinnedBlock) => {
+      if (pullQueue.size >= 3) {
+        // console.log('queue is overloaded, clean it up now!');
+        pullQueue.cancel();
+      }
+
+      // console.log('queue', shortenAddress(block.hash), block.number);
+      pullQueue.enqueue(() => pull(block)).catch(noop);
+      // console.log('queue size', pullQueue.size);
+    });
 
     return async () => {
       unsub();
+      pullQueue.cancel();
     };
   }
 }
