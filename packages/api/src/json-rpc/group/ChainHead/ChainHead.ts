@@ -696,7 +696,7 @@ export class ChainHead extends JsonRpcGroup<ChainHeadEvent> {
         const fetchItem = async (item: StorageQuery): Promise<StorageResult> => {
           const [newBatch, newDiscardedItems] = await this.#getStorage([item], childTrie ?? null, hash);
           if (newDiscardedItems.length > 0) {
-            return fetchItem(newDiscardedItems[0]);
+            return fetchItem(item);
           }
 
           if (newBatch.length === 0) {
