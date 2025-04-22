@@ -1,5 +1,6 @@
 import { BlockHash, StorageData, StorageKey } from '@dedot/codecs';
 import type { Callback, RpcV2, Unsub, VersionedGenericSubstrateApi } from '@dedot/types';
+import { AsyncQueue } from '@dedot/utils';
 import type { SubstrateApi } from '../chaintypes/index.js';
 import { DedotClient } from '../client/DedotClient.js';
 import { PinnedBlock } from '../json-rpc/group/ChainHead/ChainHead.js';
@@ -63,6 +64,11 @@ export class NewStorageQuery<
 
     // Track the latest changes for each key
     const latestChanges: Record<StorageKey, StorageData | undefined> = {};
+    // Using a queue here to make sure we don't accidentally
+    // put a pressure the json-rpc server in-case new blocks stack up too fast
+    // in case we send a lot of requests at the same time
+    // or the block time is small enough with elastic scaling
+    const pullQueue = new AsyncQueue();
 
     // Function to pull storage values and call the callback if there are changes
     const pull = async ({ hash }: PinnedBlock) => {
@@ -95,10 +101,13 @@ export class NewStorageQuery<
     await pull(best);
 
     // Subscribe to best block events
-    const unsub = this.client.on('bestBlock', pull);
+    const unsub = this.client.on('bestBlock', (block: PinnedBlock) => {
+      pullQueue.enqueue(() => pull(block)).catch(console.error);
+    });
 
     return async () => {
       unsub();
+      pullQueue.cancel();
     };
   }
 }

@@ -19,7 +19,6 @@ import {
   ChainHeadBlockNotPinnedError,
   ChainHeadBlockPrunedError,
   ChainHeadError,
-  ChainHeadInvalidRuntimeError,
   ChainHeadLimitReachedError,
   ChainHeadOperationError,
   ChainHeadOperationInaccessibleError,
@@ -525,7 +524,7 @@ export class ChainHead extends JsonRpcGroup<ChainHeadEvent> {
       return await operation();
     } catch (e) {
       if (e instanceof ChainHeadError && e.retryStrategy) {
-        return this.#retryOperation(e.retryStrategy, operation);
+        return await this.#retryOperation(e.retryStrategy, operation);
       }
 
       throw e;
@@ -550,7 +549,7 @@ export class ChainHead extends JsonRpcGroup<ChainHeadEvent> {
     } catch (e: any) {
       // retry again until success, TODO we might need to limit the number of retries
       if (e instanceof ChainHeadError && e.retryStrategy) {
-        return this.#retryOperation(e.retryStrategy, retry);
+        return await this.#retryOperation(e.retryStrategy, retry);
       }
 
       throw e;
@@ -689,20 +688,39 @@ export class ChainHead extends JsonRpcGroup<ChainHeadEvent> {
 
       this.#blockUsage.use(hash);
 
-      const results: Array<StorageResult> = [];
+      let results: Array<StorageResult> = [];
 
-      let queryItems = items;
-      while (queryItems.length > 0) {
-        const [newBatch, newDiscardedItems] = await this.#getStorage(queryItems, childTrie ?? null, hash);
-        results.push(...newBatch);
-        queryItems = newDiscardedItems;
+      // @ts-ignore a trick internally to check whether a provider is using smoldot connection
+      const isSmoldot = typeof this.client.provider['chain'] === 'function';
+      if (isSmoldot) {
+        const fetchItem = async (item: StorageQuery): Promise<StorageResult> => {
+          const [newBatch, newDiscardedItems] = await this.#getStorage([item], childTrie ?? null, hash);
+          if (newDiscardedItems.length > 0) {
+            return fetchItem(item);
+          }
+
+          if (newBatch.length === 0) {
+            return { key: item.key, value: undefined };
+          }
+
+          return newBatch[0];
+        };
+
+        results = await Promise.all(items.map((one) => fetchItem(one)));
+      } else {
+        let queryItems = items;
+        while (queryItems.length > 0) {
+          const [newBatch, newDiscardedItems] = await this.#getStorage(queryItems, childTrie ?? null, hash);
+          results.push(...newBatch);
+          queryItems = newDiscardedItems;
+        }
       }
 
       this.#cache.set(cacheKey, results);
       return results;
     } catch (e) {
       if (e instanceof ChainHeadBlockPrunedError && shouldRetryOnPrunedBlock) {
-        return this.storage(items, childTrie);
+        return await this.storage(items, childTrie);
       }
 
       throw e;
