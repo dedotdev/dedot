@@ -70,7 +70,7 @@ interface PagedEntriesMethod<T extends AnyFunc = AnyFunc, TypeOut extends any = 
   (pagination?: PaginationOptions): Promise<Array<[TypeOut, NonNullable<ReturnType<T>>]>>;
 }
 
-export type WithoutLast<T> = T extends any[] ? T extends [...infer U, any] ? U : T : T;
+export type WithoutLast<T> = T extends any[] ? (T extends [...infer U, any] ? U : T) : T;
 
 export type WithPagination<T> = T extends any[]
   ? [...Partial<WithoutLast<T>>, pagination?: PaginationOptions]
@@ -108,7 +108,9 @@ export type GenericStorageQuery<
         } & (KeyTypeOut extends any[]
           ? {
               /** Get all storage entries, allowing partial keys input */
-              entries: (...args: Partial<WithoutLast<KeyTypeOut>>) => Promise<Array<[KeyTypeOut, NonNullable<ReturnType<T>>]>>;
+              entries: (
+                ...args: WithoutLast<Parameters<T>[0]>
+              ) => Promise<Array<[KeyTypeOut, NonNullable<ReturnType<T>>]>>;
             }
           : {
               /** Get all storage entries */
@@ -191,14 +193,13 @@ export interface VersionedGenericSubstrateApi {
   v2: GenericSubstrateApi<RpcV2>;
 }
 
-
 export type QueryFnParams<F> =
-  F extends GenericStorageQuery<any, infer T, any>
+  F extends GenericStorageQuery<any, infer T, any> // prettier-end-here
     ? Parameters<T>
     : never;
 
 export type QueryFnResult<F> =
-  F extends GenericStorageQuery<any, infer T, any>
+  F extends GenericStorageQuery<any, infer T, any> // prettier-end-here
     ? ReturnType<T>
     : never;
 
@@ -212,6 +213,7 @@ export type QueryWithoutParams<F> = {
   args?: [];
 };
 
-export type Query<F> = QueryFnParams<F> extends []
-  ? QueryWithoutParams<F>
-  : QueryWithParams<F>;
+export type Query<F> =
+  QueryFnParams<F> extends [] // prettier-end-here
+    ? QueryWithoutParams<F>
+    : QueryWithParams<F>;
