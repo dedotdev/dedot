@@ -691,30 +691,30 @@ export class ChainHead extends JsonRpcGroup<ChainHeadEvent> {
       let results: Array<StorageResult> = [];
 
       // @ts-ignore a trick internally to check whether a provider is using smoldot connection
-      const isSmoldot = typeof this.client.provider['chain'] === 'function';
-      if (isSmoldot) {
-        const fetchItem = async (item: StorageQuery): Promise<StorageResult[]> => {
-          const [batch, newDiscardedItems] = await this.#getStorage([item], childTrie ?? null, hash);
-          if (newDiscardedItems.length > 0) {
-            return fetchItem(item);
-          }
-
-          if (batch.length === 0) {
-            return [{ key: item.key, value: undefined }];
-          }
-
-          return batch;
-        };
-
-        results = (await Promise.all(items.map((one) => fetchItem(one)))).flat();
-      } else {
-        let queryItems = items;
-        while (queryItems.length > 0) {
-          const [newBatch, newDiscardedItems] = await this.#getStorage(queryItems, childTrie ?? null, hash);
-          results.push(...newBatch);
-          queryItems = newDiscardedItems;
+      // const isSmoldot = typeof this.client.provider['chain'] === 'function';
+      // if (isSmoldot) {
+      const fetchItem = async (item: StorageQuery): Promise<StorageResult[]> => {
+        const [batch, newDiscardedItems] = await this.#getStorage([item], childTrie ?? null, hash);
+        if (newDiscardedItems.length > 0) {
+          return fetchItem(item);
         }
-      }
+
+        if (batch.length === 0) {
+          return [{ key: item.key, value: undefined }];
+        }
+
+        return batch;
+      };
+
+      results = (await Promise.all(items.map((one) => fetchItem(one)))).flat();
+      // } else {
+      //   let queryItems = items;
+      //   while (queryItems.length > 0) {
+      //     const [newBatch, newDiscardedItems] = await this.#getStorage(queryItems, childTrie ?? null, hash);
+      //     results.push(...newBatch);
+      //     queryItems = newDiscardedItems;
+      //   }
+      // }
 
       this.#cache.set(cacheKey, results);
       return results;
