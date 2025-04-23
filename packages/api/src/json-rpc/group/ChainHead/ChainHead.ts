@@ -691,7 +691,7 @@ export class ChainHead extends JsonRpcGroup<ChainHeadEvent> {
       let results: Array<StorageResult> = [];
 
       // @ts-ignore a trick internally to check whether a provider is using smoldot connection
-      // const isSmoldot = typeof this.client.provider['chain'] === 'function';
+      const isSmoldot = typeof this.client.provider['chain'] === 'function';
       if (isSmoldot) {
         const fetchItem = async (item: StorageQuery): Promise<StorageResult[]> => {
           const [batch, newDiscardedItems] = await this.#getStorage([item], childTrie ?? null, hash);
