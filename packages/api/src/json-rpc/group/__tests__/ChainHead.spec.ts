@@ -295,7 +295,7 @@ describe('ChainHead', () => {
           setTimeout(() => {
             expect(providerSend).toHaveBeenCalledWith('chainHead_v1_unpin', [
               simulator.subscriptionId,
-              ['0x0f', '0x00', '0x01', '0x02', '0x03', '0x04', '0x05'],
+              ['0x00', '0x01', '0x02', '0x03', '0x04', '0x05', '0x0f'],
             ]);
             resolve();
           }, 10);

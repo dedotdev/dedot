@@ -245,30 +245,20 @@ export class ChainHead extends JsonRpcGroup<ChainHeadEvent> {
           this.#finalizedQueue.push(hash);
         });
 
-        this.emit('finalizedBlock', this.findBlock(this.#finalizedHash));
-
-        // TODO should we find all descendants of the pruned blocks and unpin them as well?
-        //      that's probably a premature optimization
-        const finalizedBlockHeights = finalizedBlockHashes.map((hash) => this.findBlock(hash)!.number);
-        const pinnedHashes = Object.keys(this.#pinnedBlocks);
-        const hashesToUnpin = new Set([
-          ...prunedBlockHashes.filter((hash) => pinnedHashes.includes(hash)),
-          // Since we have the current finalized blocks,
-          // we can mark all the other blocks at the same height as pruned and unpin all together with the reported pruned blocks
-          ...Object.values(this.#pinnedBlocks)
-            .filter((b) => finalizedBlockHeights.includes(b.number))
-            .filter((b) => !finalizedBlockHashes.includes(b.hash))
-            .map((b) => b.hash),
-        ]);
+        const currentFinalizedBlock = this.findBlock(this.#finalizedHash)!;
+        this.emit('finalizedBlock', currentFinalizedBlock);
 
         // TODO account for operations that haven't received its operationId yet
         Object.values(this.#handlers).forEach(({ defer, hash, operationId }) => {
-          if (hashesToUnpin.has(hash)) {
+          if (prunedBlockHashes.includes(hash)) {
             defer.reject(new ChainHeadBlockPrunedError());
             this.stopOperation(operationId).catch(noop);
             delete this.#handlers[operationId];
           }
         });
+
+        const pinnedHashes = Object.keys(this.#pinnedBlocks) as BlockHash[];
+        const hashesToUnpin = new Set(prunedBlockHashes.filter((hash) => pinnedHashes.includes(hash)));
 
         // Unpin the oldest finalized pinned blocks to maintain the queue size
         if (this.#finalizedQueue.length > MIN_FINALIZED_QUEUE_SIZE) {
@@ -288,6 +278,16 @@ export class ChainHead extends JsonRpcGroup<ChainHeadEvent> {
 
           this.#finalizedQueue = finalizedQueue;
         }
+
+        // Unpin all obsolete blocks with blockNumber < the latest finalized block number
+        // & not a finalized block & is not in use
+        pinnedHashes.forEach((hash) => {
+          if (this.#blockUsage.usage(hash) > 0) return;
+          if (this.#finalizedQueue.includes(hash)) return;
+          if (this.findBlock(hash)!.number > currentFinalizedBlock.number) return;
+
+          hashesToUnpin.add(hash);
+        });
 
         hashesToUnpin.forEach((hash) => {
           if (!this.isPinned(hash)) return;
