@@ -522,7 +522,7 @@ describe('DedotClient', () => {
 
             const remarkTx = api.tx.system.remarkWithEvent('Hello World');
 
-            // f
+            // via initialization - f
             simulator.notify(simulator.nextNewBlock({ fork: true })); // f-1
             simulator.notify(simulator.nextNewBlock()); // 0x10 -> f
             simulator.notify(simulator.nextNewBlock({ fork: true, fromWhichParentFork: 1 })); // 0x10-1 -> f-1
@@ -530,7 +530,7 @@ describe('DedotClient', () => {
             simulator.notify(simulator.nextNewBlock());
             simulator.notify(simulator.nextNewBlock());
 
-            simulator.notify(simulator.nextBestBlock());
+            simulator.notify(simulator.nextBestBlock(), 5);
             simulator.notify(simulator.nextBestBlock(false, 1), 30);
             simulator.notify(simulator.nextBestBlock(true, 1), 40);
 
@@ -947,9 +947,9 @@ describe('DedotClient', () => {
         const mockDecodedValue2 = ['event1', 'event2'];
 
         // Use vi.spyOn to mock the QueryableStorage constructor and its decodeValue method
-        const originalQueryableStorage = await import('../../storage/QueryableStorage.js').then(
-          (m) => m.QueryableStorage,
-        );
+        const originalQueryableStorage = // prettier-end-here
+          await import('../../storage/QueryableStorage.js').then((m) => m.QueryableStorage);
+
         vi.spyOn(originalQueryableStorage.prototype, 'decodeValue')
           .mockImplementationOnce(() => mockDecodedValue1)
           .mockImplementationOnce(() => mockDecodedValue2);
@@ -1012,9 +1012,9 @@ describe('DedotClient', () => {
         const mockDecodedValue1 = 42;
         const mockDecodedValue2 = ['event1', 'event2'];
 
-        const originalQueryableStorage = await import('../../storage/QueryableStorage.js').then(
-          (m) => m.QueryableStorage,
-        );
+        const originalQueryableStorage = // prettier-end-here
+          await import('../../storage/QueryableStorage.js').then((m) => m.QueryableStorage);
+
         vi.spyOn(originalQueryableStorage.prototype, 'decodeValue').mockImplementation((raw) => {
           if (raw === '0xvalue1') return mockDecodedValue1;
           if (raw === '0xvalue2') return mockDecodedValue2;
