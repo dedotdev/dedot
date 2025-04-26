@@ -143,12 +143,20 @@ export class ChainHead extends JsonRpcGroup<ChainHeadEvent> {
     try {
       this.#unsub && this.#unsub().catch(noop); // ensure unfollowed
 
+      let signals = 0;
+
       this.#unsub = await this.send('follow', true, (event: FollowEvent, subscription: JsonRpcSubscription) => {
         this.#followResponseQueue
           .enqueue(async () => {
             await this.#onFollowEvent(event, subscription);
 
-            if (event.event == 'initialized') {
+            if (signals >= 2) return;
+            signals += 1;
+
+            // Sometime smoldot send a `stop` event right after `initialized`
+            // So requests sending between `initialized` and `stop` will be on pruned hashes -> throwing out errors
+            // Here we make sure to receive at least the first 2 signals to resolve
+            if (signals >= 2) {
               defer.resolve();
             }
           })
@@ -536,15 +544,13 @@ export class ChainHead extends JsonRpcGroup<ChainHeadEvent> {
   async #retryOperation(strategy: RetryStrategy, retry: AsyncMethod): Promise<any> {
     try {
       return await new Promise((resolve, reject) => {
-        setTimeout(() => {
-          if (strategy === RetryStrategy.NOW) {
-            retry().then(resolve).catch(reject);
-          } else if (strategy === RetryStrategy.QUEUED) {
-            this.#retryQueue.enqueue(retry).then(resolve).catch(reject);
-          } else {
-            throw new Error('Invalid retry strategy');
-          }
-        }); // retry again in the next tick
+        if (strategy === RetryStrategy.NOW) {
+          retry().then(resolve).catch(reject);
+        } else if (strategy === RetryStrategy.QUEUED) {
+          this.#retryQueue.enqueue(retry).then(resolve).catch(reject);
+        } else {
+          throw new Error('Invalid retry strategy');
+        }
       });
     } catch (e: any) {
       // retry again until success, TODO we might need to limit the number of retries
