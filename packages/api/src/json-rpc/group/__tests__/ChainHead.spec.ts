@@ -48,9 +48,16 @@ describe('ChainHead', () => {
     providerSubscribe = vi.spyOn(provider, 'subscribe');
   });
 
+  const notifyInitializedEvent = () => {
+    const initialized = notify(simulator.subscriptionId, simulator.initializedEvent);
+    const firstNewBlock = notify(simulator.subscriptionId, simulator.nextNewBlock());
+
+    return [initialized, firstNewBlock];
+  };
+
   describe('follow', () => {
     it('follows chain head successfully', async () => {
-      notify(simulator.subscriptionId, simulator.initializedEvent);
+      notifyInitializedEvent();
 
       await chainHead.follow();
 
@@ -73,7 +80,7 @@ describe('ChainHead', () => {
     });
 
     it('throws error when trying to follow chain head twice', async () => {
-      notify(simulator.subscriptionId, simulator.initializedEvent);
+      notifyInitializedEvent();
 
       await chainHead.follow();
 
@@ -83,7 +90,7 @@ describe('ChainHead', () => {
 
   describe('unfollow', () => {
     it('unfollows chain head successfully', async () => {
-      notify(simulator.subscriptionId, simulator.initializedEvent);
+      notifyInitializedEvent();
 
       await chainHead.follow();
       await chainHead.unfollow();
@@ -102,8 +109,9 @@ describe('ChainHead', () => {
   });
 
   describe('chainHead operations', () => {
+    let firstNewBlock: NewBlock;
     beforeEach(async () => {
-      notify(simulator.subscriptionId, simulator.initializedEvent);
+      firstNewBlock = notifyInitializedEvent()[1];
 
       await chainHead.follow();
     });
@@ -137,7 +145,6 @@ describe('ChainHead', () => {
 
     describe('bestBlockChanged', () => {
       it('handle bestBlockChanged', async () => {
-        notify(simulator.subscriptionId, simulator.nextNewBlock());
         const newBlock2 = notify(simulator.subscriptionId, simulator.nextNewBlock({ withRuntime: true }));
         notify(simulator.subscriptionId, simulator.nextNewBlock());
 
@@ -173,7 +180,6 @@ describe('ChainHead', () => {
 
     describe('finalized', () => {
       it('handle finalized', async () => {
-        const newBlock1 = notify(simulator.subscriptionId, simulator.nextNewBlock());
         notify(simulator.subscriptionId, simulator.nextNewBlock({ fork: true }));
         const newBlock2 = notify(simulator.subscriptionId, simulator.nextNewBlock({ withRuntime: true }));
         notify(simulator.subscriptionId, simulator.nextNewBlock());
@@ -184,7 +190,7 @@ describe('ChainHead', () => {
 
         await new Promise<void>((resolve) => {
           const unsub = chainHead.on('finalizedBlock', async (block: PinnedBlock) => {
-            expect(block.hash).toEqual(newBlock1.blockHash);
+            expect(block.hash).toEqual(firstNewBlock.blockHash);
             expect(block.hash).toEqual(finalized1.finalizedBlockHashes.at(-1));
             await expect(chainHead.finalizedHash()).resolves.toEqual(block.hash);
 
@@ -235,7 +241,6 @@ describe('ChainHead', () => {
       });
 
       it('should finalize in favor of a fork chain', async () => {
-        notify(simulator.subscriptionId, simulator.nextNewBlock());
         const newForkedBlock = notify(simulator.subscriptionId, simulator.nextNewBlock({ fork: true }));
         notify(simulator.subscriptionId, simulator.nextNewBlock({ fromWhichParentFork: 1, withRuntime: true }));
         notify(simulator.subscriptionId, simulator.nextNewBlock());
@@ -268,7 +273,6 @@ describe('ChainHead', () => {
       });
 
       it('should unpin block at the same height as finalized blocks', async () => {
-        notify(simulator.subscriptionId, simulator.nextNewBlock());
         const newForkedBlock = notify(simulator.subscriptionId, simulator.nextNewBlock({ fork: true }));
         notify(simulator.subscriptionId, simulator.nextNewBlock({ fromWhichParentFork: 1, withRuntime: true }));
         notify(simulator.subscriptionId, simulator.nextNewBlock());
@@ -309,7 +313,6 @@ describe('ChainHead', () => {
             () => ({ result: 'started', operationId: 'call01' }) as MethodResponse,
           );
 
-          notify(simulator.subscriptionId, simulator.nextNewBlock());
           notify(simulator.subscriptionId, simulator.nextNewBlock({ fork: true }));
           notify(simulator.subscriptionId, simulator.nextNewBlock({ withRuntime: true }));
           notify(simulator.subscriptionId, simulator.nextNewBlock());
@@ -358,7 +361,6 @@ describe('ChainHead', () => {
             () => ({ result: 'started', operationId: 'body02' }) as MethodResponse,
           );
 
-          notify(simulator.subscriptionId, simulator.nextNewBlock());
           notify(simulator.subscriptionId, simulator.nextNewBlock({ fork: true }));
           notify(simulator.subscriptionId, simulator.nextNewBlock({ withRuntime: true }));
           notify(simulator.subscriptionId, simulator.nextNewBlock());
@@ -428,7 +430,6 @@ describe('ChainHead', () => {
             () => ({ result: 'started', operationId: 'storage01' }) as MethodResponse,
           );
 
-          notify(simulator.subscriptionId, simulator.nextNewBlock());
           notify(simulator.subscriptionId, simulator.nextNewBlock({ fork: true }));
           notify(simulator.subscriptionId, simulator.nextNewBlock({ withRuntime: true }));
           notify(simulator.subscriptionId, simulator.nextNewBlock());
@@ -490,7 +491,6 @@ describe('ChainHead', () => {
             }
           });
 
-          notify(simulator.subscriptionId, simulator.nextNewBlock());
           notify(simulator.subscriptionId, simulator.nextNewBlock({ fork: true }));
 
           notify(simulator.subscriptionId, simulator.nextNewBlock({ withRuntime: true }));
@@ -553,7 +553,6 @@ describe('ChainHead', () => {
             }
           });
 
-          notify(simulator.subscriptionId, simulator.nextNewBlock());
           notify(simulator.subscriptionId, simulator.nextNewBlock({ fork: true }));
 
           notify(simulator.subscriptionId, simulator.nextNewBlock({ withRuntime: true }));
@@ -610,7 +609,6 @@ describe('ChainHead', () => {
             }
           });
 
-          notify(simulator.subscriptionId, simulator.nextNewBlock());
           notify(simulator.subscriptionId, simulator.nextNewBlock({ fork: true }));
 
           notify(simulator.subscriptionId, simulator.nextNewBlock({ withRuntime: true }));
@@ -1167,9 +1165,10 @@ describe('ChainHead', () => {
 
   describe('stop recovery', () => {
     let prevSubId: string;
+
     beforeEach(async () => {
       prevSubId = simulator.subscriptionId;
-      notify(simulator.subscriptionId, simulator.initializedEvent);
+      notifyInitializedEvent();
 
       await chainHead.follow();
     });
@@ -1177,7 +1176,7 @@ describe('ChainHead', () => {
     it('should attempt to re-follow on receiving stop event', async () => {
       await new Promise<void>((resolve) => {
         simulator.subscriptionId = simulator.stop().newSubscriptionId;
-        notify(simulator.subscriptionId, simulator.initializedEvent);
+        notifyInitializedEvent();
 
         setTimeout(() => {
           expect(prevSubId).not.toEqual(simulator.subscriptionId);
@@ -1276,7 +1275,7 @@ describe('ChainHead', () => {
       simulator.subscriptionId = newSubscriptionId;
       simulator.initializedEvent = initializedEvent;
 
-      notify(simulator.subscriptionId, simulator.initializedEvent);
+      notifyInitializedEvent();
 
       await expect(result).rejects.toThrow('Block hash 0x0e is not pinned');
 
@@ -1384,7 +1383,7 @@ describe('ChainHead', () => {
 
   describe('caching', () => {
     beforeEach(async () => {
-      notify(simulator.subscriptionId, simulator.initializedEvent);
+      notifyInitializedEvent();
 
       await chainHead.follow();
     });
