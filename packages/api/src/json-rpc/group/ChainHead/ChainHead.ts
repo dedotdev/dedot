@@ -321,7 +321,7 @@ export class ChainHead extends JsonRpcGroup<ChainHeadEvent> {
           .then(() => {
             // 3. Resolve the recovering promise
             // This means to continue all pending requests while the chainHead started recovering mode at step 1.
-            this.#recovering!.resolve();
+            this.#recovering?.resolve();
 
             // 4. Recover stale operations
             // 4.1. Operations that's going on & waiting to receiving its operationId
@@ -338,7 +338,7 @@ export class ChainHead extends JsonRpcGroup<ChainHeadEvent> {
           .catch((e: any) => {
             console.error(e);
             // TODO we should retry a few attempts
-            this.#recovering!.reject(new ChainHeadError('Cannot recover from stop event!'));
+            this.#recovering?.reject(new ChainHeadError('Cannot recover from stop event!'));
 
             Object.values(this.#handlers).forEach(({ defer, operationId }) => {
               defer.reject(new ChainHeadError('Cannot recover from stop event!'));
