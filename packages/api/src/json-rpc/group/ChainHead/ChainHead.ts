@@ -88,7 +88,8 @@ export class ChainHead extends JsonRpcGroup<ChainHeadEvent> {
     this.#retryQueue = new AsyncQueue();
     this.#blockUsage = new BlockUsage();
     this.#cache = new Map();
-    this.#operationQueue = new ThrottleQueue(this.#__unsafe__isSmoldot() ? 30 : 250);
+    // This helps us to not accidentally putting too much stress on the JSON-RPC server, especially smoldot/light-client
+    this.#operationQueue = new ThrottleQueue(this.#__unsafe__isSmoldot() ? 25 : 250);
   }
 
   async runtimeVersion(): Promise<ChainHeadRuntimeVersion> {
