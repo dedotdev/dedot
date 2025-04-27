@@ -11,7 +11,17 @@ import type {
   StorageQuery,
   StorageResult,
 } from '@dedot/types/json-rpc';
-import { assert, AsyncQueue, deferred, Deferred, ensurePresence, HexString, noop, waitFor } from '@dedot/utils';
+import {
+  assert,
+  AsyncQueue,
+  deferred,
+  Deferred,
+  ensurePresence,
+  HexString,
+  noop,
+  ThrottleQueue,
+  waitFor,
+} from '@dedot/utils';
 import type { IJsonRpcClient } from '../../../types.js';
 import { JsonRpcGroup, type JsonRpcGroupOptions } from '../JsonRpcGroup.js';
 import { BlockUsage } from './BlockUsage.js';
@@ -66,6 +76,7 @@ export class ChainHead extends JsonRpcGroup<ChainHeadEvent> {
   #recovering?: Deferred<void>;
   #blockUsage: BlockUsage;
   #cache: Map<string, any>;
+  #operationQueue: ThrottleQueue;
 
   constructor(client: IJsonRpcClient, options?: Partial<JsonRpcGroupOptions>) {
     super(client, { prefix: 'chainHead', supportedVersions: ['unstable', 'v1'], ...options });
@@ -77,6 +88,7 @@ export class ChainHead extends JsonRpcGroup<ChainHeadEvent> {
     this.#retryQueue = new AsyncQueue();
     this.#blockUsage = new BlockUsage();
     this.#cache = new Map();
+    this.#operationQueue = new ThrottleQueue(this.#__unsafe__isSmoldot() ? 30 : 250);
   }
 
   async runtimeVersion(): Promise<ChainHeadRuntimeVersion> {
@@ -510,6 +522,7 @@ export class ChainHead extends JsonRpcGroup<ChainHeadEvent> {
     this.#retryQueue.clear();
     this.#blockUsage.clear();
     this.#cache.clear();
+    this.#operationQueue.cancel();
   }
 
   async #ensureFollowed(): Promise<void> {
@@ -609,7 +622,7 @@ export class ChainHead extends JsonRpcGroup<ChainHeadEvent> {
         return this.#awaitOperation(resp, hash);
       };
 
-      const resp = await this.#performOperationWithRetry(operation, atHash);
+      const resp = await this.#operationQueue.add(() => this.#performOperationWithRetry(operation, atHash));
       this.#cache.set(cacheKey, resp);
       return resp;
     } catch (e: any) {
@@ -643,7 +656,7 @@ export class ChainHead extends JsonRpcGroup<ChainHeadEvent> {
         return this.#awaitOperation(resp, hash);
       };
 
-      const resp = await this.#performOperationWithRetry(operation, atHash);
+      const resp = await this.#operationQueue.add(() => this.#performOperationWithRetry(operation, atHash));
       this.#cache.set(cacheKey, resp);
       return resp;
     } catch (e: any) {
@@ -696,9 +709,7 @@ export class ChainHead extends JsonRpcGroup<ChainHeadEvent> {
 
       let results: Array<StorageResult> = [];
 
-      // @ts-ignore a trick internally to check whether a provider is using smoldot connection
-      const isSmoldot = typeof this.client.provider['chain'] === 'function';
-      if (isSmoldot) {
+      if (this.#__unsafe__isSmoldot()) {
         const fetchItem = async (item: StorageQuery): Promise<StorageResult[]> => {
           const [batch, newDiscardedItems] = await this.#getStorage([item], childTrie ?? null, hash);
 
@@ -739,7 +750,7 @@ export class ChainHead extends JsonRpcGroup<ChainHeadEvent> {
   ): Promise<[fetchedResults: Array<StorageResult>, discardedItems: Array<StorageQuery>]> {
     const operation = () => this.#getStorageOperation(items, childTrie, this.#ensurePinnedHash(at));
 
-    return this.#performOperationWithRetry(operation, at);
+    return this.#operationQueue.add(() => this.#performOperationWithRetry(operation, at));
   }
 
   async #getStorageOperation(
@@ -789,5 +800,10 @@ export class ChainHead extends JsonRpcGroup<ChainHeadEvent> {
     if (Array.isArray(hashes) && hashes.length === 0) return;
 
     await this.send('unpin', this.#subscriptionId, hashes);
+  }
+
+  #__unsafe__isSmoldot(): boolean {
+    // @ts-ignore  a trick internally to check whether a provider is using smoldot connection
+    return typeof this.client.provider['chain'] === 'function';
   }
 }
