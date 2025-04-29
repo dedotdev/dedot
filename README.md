@@ -98,8 +98,9 @@ console.log('Pending rewards:', pendingRewards);
 ### Real-World Projects Powered by Dedot
 
 - [Polkadot Live App](https://polkadot-live.github.io/) ([Github](https://github.com/polkadot-live/polkadot-live-app))
+- [Polkadot Staking Dashboard](https://staking.polkadot.cloud/) ([Github](https://github.com/polkadot-cloud/polkadot-staking-dashboard))
 - [Typink](https://typink.dev/) ([Github](https://github.com/dedotdev/typink))
-- ... add yours? [PRs](https://github.com/dedotdev/docs) are more than welcome!
+- ... add yours? PRs are more than welcome!
 
 ### Acknowledgment
 
