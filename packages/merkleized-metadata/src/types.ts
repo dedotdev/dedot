@@ -1,7 +1,11 @@
+import { TypeRef } from './codecs';
+
+type OptionalProps<T, K extends keyof T> = Omit<T, K> & Partial<Pick<T, K>>;
+
 /**
  * Chain-specific information required for metadata hash calculation
  */
-export interface ChainMetadataInfo {
+export interface ChainInfo {
   /** Runtime spec version */
   specVersion: number;
 
@@ -17,6 +21,8 @@ export interface ChainMetadataInfo {
   /** Token symbol */
   tokenSymbol: string;
 }
+
+export type ChainInfoOptional = OptionalProps<ChainInfo, 'specVersion' | 'specName' | 'ss58Prefix'>;
 
 /**
  * Metadata digest structure as defined in RFC-0078
@@ -65,34 +71,6 @@ export interface MetadataTreeNode {
   /** Right child node if available */
   right?: MetadataTreeNode;
 }
-
-/**
- * Type reference as defined in RFC-0078
- */
-export type TypeRef =
-  | { tag: 'bool' }
-  | { tag: 'char' }
-  | { tag: 'str' }
-  | { tag: 'u8' }
-  | { tag: 'u16' }
-  | { tag: 'u32' }
-  | { tag: 'u64' }
-  | { tag: 'u128' }
-  | { tag: 'u256' }
-  | { tag: 'i8' }
-  | { tag: 'i16' }
-  | { tag: 'i32' }
-  | { tag: 'i64' }
-  | { tag: 'i128' }
-  | { tag: 'i256' }
-  | { tag: 'compactU8' }
-  | { tag: 'compactU16' }
-  | { tag: 'compactU32' }
-  | { tag: 'compactU64' }
-  | { tag: 'compactU128' }
-  | { tag: 'compactU256' }
-  | { tag: 'void' }
-  | { tag: 'perId'; value: number };
 
 /**
  * Field in a composite or enumeration type
@@ -148,12 +126,12 @@ export interface EnumerationVariant {
  * Type definition as defined in RFC-0078
  */
 export type TypeDef =
-  | { tag: 'composite'; value: Field[] }
-  | { tag: 'enumeration'; value: EnumerationVariant }
-  | { tag: 'sequence'; value: TypeRef }
-  | { tag: 'array'; value: Array }
-  | { tag: 'tuple'; value: TypeRef[] }
-  | { tag: 'bitSequence'; value: BitSequence };
+  | { type: 'composite'; value: Field[] }
+  | { type: 'enumeration'; value: EnumerationVariant }
+  | { type: 'sequence'; value: TypeRef }
+  | { type: 'array'; value: Array }
+  | { type: 'tuple'; value: TypeRef[] }
+  | { type: 'bitSequence'; value: BitSequence };
 
 /**
  * Type information as defined in RFC-0078
@@ -220,5 +198,5 @@ export interface MetadataProof {
   extrinsicMetadata: ExtrinsicMetadata;
 
   /** Chain metadata info */
-  chainInfo: ChainMetadataInfo;
+  chainInfo: ChainInfo;
 }

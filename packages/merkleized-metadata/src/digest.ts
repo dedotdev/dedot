@@ -2,7 +2,7 @@ import { Metadata } from '@dedot/codecs';
 import { blake3AsU8a } from '@dedot/utils';
 import { buildMerkleTree } from './merkle.js';
 import { transformMetadata } from './transform.js';
-import { ChainMetadataInfo, ExtrinsicMetadata, MetadataDigest, MetadataDigestV1, TypeInfo } from './types.js';
+import { ChainInfo, ExtrinsicMetadata, MetadataDigest, MetadataDigestV1, TypeInfo } from './types.js';
 
 /**
  * Encode type information for hashing
@@ -35,7 +35,7 @@ export function encodeExtrinsicMetadata(extrinsicMetadata: ExtrinsicMetadata): U
  * @param chainInfo - Chain-specific information
  * @returns Metadata digest
  */
-export function createMetadataDigest(metadata: Metadata, chainInfo: ChainMetadataInfo): MetadataDigest {
+export function createMetadataDigest(metadata: Metadata, chainInfo: ChainInfo): MetadataDigest {
   // Transform metadata to RFC format
   const { typeInfo, extrinsicMetadata } = transformMetadata(metadata);
 
@@ -85,7 +85,7 @@ export function encodeMetadataDigest(digest: MetadataDigest): Uint8Array {
  * @param chainInfo - Chain-specific information
  * @returns Metadata hash result
  */
-export function calculateMetadataHash(metadata: Metadata, chainInfo: ChainMetadataInfo): Uint8Array {
+export function calculateMetadataHash(metadata: Metadata, chainInfo: ChainInfo): Uint8Array {
   const digest = createMetadataDigest(metadata, chainInfo);
   const encodedDigest = encodeMetadataDigest(digest);
   return blake3AsU8a(encodedDigest);

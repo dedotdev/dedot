@@ -1,10 +1,11 @@
 import { Metadata, PortableRegistry, PortableType } from '@dedot/codecs';
-import { ExtrinsicMetadata, Field, TypeDef, TypeInfo, TypeRef } from './types.js';
+import { TypeRef } from './codecs';
+import { ExtrinsicMetadata, Field, TypeDef, TypeInfo } from './types.js';
 
 /**
  * Map of primitive types to TypeRef tags
  */
-const PRIMITIVE_TYPE_MAP: Record<string, TypeRef['tag']> = {
+const PRIMITIVE_TYPE_MAP: Record<string, TypeRef['type']> = {
   bool: 'bool',
   char: 'char',
   str: 'str',
@@ -25,7 +26,7 @@ const PRIMITIVE_TYPE_MAP: Record<string, TypeRef['tag']> = {
 /**
  * Map of compact types to TypeRef tags
  */
-const COMPACT_TYPE_MAP: Record<string, TypeRef['tag']> = {
+const COMPACT_TYPE_MAP: Record<string, TypeRef['type']> = {
   u8: 'compactU8',
   u16: 'compactU16',
   u32: 'compactU32',
@@ -52,7 +53,7 @@ function isPrimitiveType(type: PortableType, registry: PortableRegistry): boolea
  * @param registry - Portable registry
  * @returns Primitive type tag or null if not a primitive
  */
-function getPrimitiveTypeTag(type: PortableType, registry: PortableRegistry): TypeRef['tag'] | null {
+function getPrimitiveTypeTag(type: PortableType, registry: PortableRegistry): TypeRef['type'] | null {
   if (type.typeDef.type !== 'Primitive') {
     return null;
   }
@@ -84,7 +85,7 @@ function isCompactType(type: PortableType, registry: PortableRegistry): boolean 
  * @param registry - Portable registry
  * @returns Compact type tag or null if not a compact
  */
-function getCompactTypeTag(type: PortableType, registry: PortableRegistry): TypeRef['tag'] | null {
+function getCompactTypeTag(type: PortableType, registry: PortableRegistry): TypeRef['type'] | null {
   if (type.typeDef.type !== 'Compact') {
     return null;
   }
@@ -203,32 +204,32 @@ export function generateTypeRef(
   const primitiveTag = getPrimitiveTypeTag(type, registry);
   if (primitiveTag) {
     if (primitiveTag === 'perId') {
-      throw new Error('Invalid primitive tag: perId');
+      throw new Error('Invalid primitive type: perId');
     }
-    return { tag: primitiveTag } as TypeRef;
+    return { type: primitiveTag } as TypeRef;
   }
 
   // Check for compact type
   const compactTag = getCompactTypeTag(type, registry);
   if (compactTag) {
     if (compactTag === 'perId') {
-      throw new Error('Invalid compact tag: perId');
+      throw new Error('Invalid compact type: perId');
     }
-    return { tag: compactTag } as TypeRef;
+    return { type: compactTag } as TypeRef;
   }
 
   // Check for void type
   if (isVoidType(type, registry)) {
-    return { tag: 'void' } as TypeRef;
+    return { type: 'void' } as TypeRef;
   }
 
   // Check if type is accessible
   if (accessibleTypes.has(frameId)) {
-    return { tag: 'perId', value: accessibleTypes.get(frameId)! };
+    return { type: 'perId', value: accessibleTypes.get(frameId)! };
   }
 
   // Default to void for types that should be filtered out
-  return { tag: 'void' } as TypeRef;
+  return { type: 'void' } as TypeRef;
 }
 
 /**
@@ -274,7 +275,7 @@ export function generateTypeDefinitions(metadata: Metadata, accessibleTypes: Map
       typeTree.push({
         path,
         typeId,
-        typeDef: { tag: 'composite', value: fields },
+        typeDef: { type: 'composite', value: fields },
       });
     } else if (type.typeDef.type === 'Enum') {
       // For variants, create a separate type info for each variant
@@ -285,7 +286,7 @@ export function generateTypeDefinitions(metadata: Metadata, accessibleTypes: Map
           path,
           typeId,
           typeDef: {
-            tag: 'enumeration',
+            type: 'enumeration',
             value: {
               name: variant.name,
               fields,
@@ -299,7 +300,7 @@ export function generateTypeDefinitions(metadata: Metadata, accessibleTypes: Map
         path,
         typeId,
         typeDef: {
-          tag: 'sequence',
+          type: 'sequence',
           value: generateTypeRef(type.typeDef.value.typeParam, registry, accessibleTypes),
         },
       });
@@ -309,7 +310,7 @@ export function generateTypeDefinitions(metadata: Metadata, accessibleTypes: Map
         path,
         typeId,
         typeDef: {
-          tag: 'array',
+          type: 'array',
           value: {
             len: arrayDef.len,
             typeParam: generateTypeRef(arrayDef.typeParam, registry, accessibleTypes),
@@ -322,7 +323,7 @@ export function generateTypeDefinitions(metadata: Metadata, accessibleTypes: Map
       typeTree.push({
         path,
         typeId,
-        typeDef: { tag: 'tuple', value: types },
+        typeDef: { type: 'tuple', value: types },
       });
     } else if (type.typeDef.type === 'BitSequence') {
       // For bit sequence, we need to determine the storage type
@@ -342,7 +343,7 @@ export function generateTypeDefinitions(metadata: Metadata, accessibleTypes: Map
         path,
         typeId,
         typeDef: {
-          tag: 'bitSequence',
+          type: 'bitSequence',
           value: {
             numBytes,
             leastSignificantBitFirst,
@@ -359,7 +360,7 @@ export function generateTypeDefinitions(metadata: Metadata, accessibleTypes: Map
     }
 
     // For enumerations with the same typeId, sort by variant index
-    if (a.typeDef.tag === 'enumeration' && b.typeDef.tag === 'enumeration') {
+    if (a.typeDef.type === 'enumeration' && b.typeDef.type === 'enumeration') {
       return a.typeDef.value.index - b.typeDef.value.index;
     }
 

@@ -1,17 +1,17 @@
-import { Metadata } from '@dedot/codecs';
-import { HexString, hexToU8a, isHex } from '@dedot/utils';
+import { $Metadata, Metadata, PortableRegistry, RuntimeVersion } from '@dedot/codecs';
+import { assert, HexString, hexToU8a, isHex, stringCamelCase } from '@dedot/utils';
 import { calculateMetadataHash, createMetadataDigest } from './digest.js';
 import { generateProof } from './merkle.js';
 import { transformMetadata } from './transform.js';
-import { ChainMetadataInfo, MetadataDigest, MetadataProof, TypeInfo } from './types.js';
+import { ChainInfo, ChainInfoOptional, MetadataDigest, MetadataProof, TypeInfo } from './types.js';
 
 /**
- * @name MetatadaMerkleizer
+ * @name MerkleizedMetatada
  * @description Utility for calculating merkleized metadata hash according to RFC-0078
  */
-export class MetatadaMerkleizer {
+export class MerkleizedMetatada {
   readonly #metadata: Metadata;
-  readonly #chainInfo: ChainMetadataInfo;
+  readonly #chainInfo: ChainInfo;
   readonly #typeInfo: TypeInfo[];
   readonly #encodedTypes: Uint8Array[];
   readonly #extrinsicMetadata: any;
@@ -22,9 +22,25 @@ export class MetatadaMerkleizer {
    * @param metadata - The metadata to calculate hash for
    * @param chainInfo - Chain-specific information
    */
-  constructor(metadata: Metadata, chainInfo: ChainMetadataInfo) {
+  constructor(metadata: Metadata | HexString | Uint8Array, chainInfo: ChainInfoOptional) {
+    // Try decode metadata
+    if (typeof metadata === 'string' || metadata instanceof Uint8Array) {
+      metadata = $Metadata.tryDecode(metadata);
+    }
+
     this.#metadata = metadata;
-    this.#chainInfo = chainInfo;
+
+    const runtimeVersion = this.#lookupConstant<RuntimeVersion>('system', 'version');
+    const ss58Prefix = this.#lookupConstant<number>('system', 'ss58Prefix');
+
+    this.#chainInfo = {
+      specVersion: runtimeVersion.specVersion,
+      specName: runtimeVersion.specName,
+      ss58Prefix,
+      ...chainInfo,
+    };
+
+    console.log(this.#chainInfo);
 
     // Transform metadata to RFC format
     const { typeInfo, extrinsicMetadata } = transformMetadata(metadata);
@@ -121,5 +137,20 @@ export class MetatadaMerkleizer {
       extrinsicMetadata: this.#extrinsicMetadata,
       chainInfo: this.#chainInfo,
     };
+  }
+
+  #lookupConstant<T extends any = any>(pallet: string, constant: string): T {
+    const registry = new PortableRegistry(this.#metadata.latest);
+    const targetPallet = this.#metadata.latest.pallets.find((p) => stringCamelCase(p.name) === pallet);
+
+    assert(targetPallet, `Pallet not found: ${pallet}`);
+
+    const constantDef = targetPallet.constants.find((one) => stringCamelCase(one.name) === constant);
+
+    assert(constantDef, `Constant ${constant} not found in pallet ${pallet}`);
+
+    const $codec = registry.findCodec(constantDef.typeId);
+
+    return $codec.tryDecode(constantDef.value) as T;
   }
 }

@@ -1,6 +1,6 @@
 import { DedotClient } from '@dedot/api';
 import { WsProvider } from '@dedot/providers';
-import { MetatadaMerkleizer, ChainMetadataInfo } from '../src/index.js';
+import { MerkleizedMetatada } from '../src/index.js';
 
 /**
  * Example of calculating metadata hash for a real chain
@@ -15,20 +15,12 @@ async function main() {
   const metadata = client.metadata;
   console.log(`Connected to ${client.runtimeVersion.specName} v${client.runtimeVersion.specVersion}`);
 
-  // Define chain-specific information
-  const chainInfo: ChainMetadataInfo = {
-    specVersion: client.runtimeVersion.specVersion,
-    specName: client.runtimeVersion.specName,
-    ss58Prefix: client.consts.system.ss58Prefix,
-    decimals: 10,
-    tokenSymbol: 'DOT',
-  };
-
-  console.log('Chain Info:', chainInfo);
-
   // Create a calculator instance
   console.log('Creating MetatadaMerkleizer...');
-  const merkleizer = new MetatadaMerkleizer(metadata, chainInfo);
+  const merkleizer = new MerkleizedMetatada(metadata, {
+    decimals: 10,
+    tokenSymbol: 'DOT',
+  });
 
   // Calculate metadata hash
   console.log('Calculating metadata hash...');
