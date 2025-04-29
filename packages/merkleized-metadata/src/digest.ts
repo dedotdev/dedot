@@ -1,32 +1,9 @@
 import { Metadata } from '@dedot/codecs';
 import { blake3AsU8a } from '@dedot/utils';
+import { $ExtrinsicMetadata, $MetadataDigest, $TypeInfo } from './codecs';
 import { buildMerkleTree } from './merkle.js';
 import { transformMetadata } from './transform.js';
-import { ChainInfo, ExtrinsicMetadata, MetadataDigest, MetadataDigestV1, TypeInfo } from './types.js';
-
-/**
- * Encode type information for hashing
- *
- * @param typeInfo - Type information to encode
- * @returns Encoded type information
- */
-export function encodeTypeInfo(typeInfo: TypeInfo): Uint8Array {
-  // Simple JSON encoding for now
-  // In a production implementation, this would use SCALE encoding
-  return new TextEncoder().encode(JSON.stringify(typeInfo));
-}
-
-/**
- * Encode extrinsic metadata for hashing
- *
- * @param extrinsicMetadata - Extrinsic metadata to encode
- * @returns Encoded extrinsic metadata
- */
-export function encodeExtrinsicMetadata(extrinsicMetadata: ExtrinsicMetadata): Uint8Array {
-  // Simple JSON encoding for now
-  // In a production implementation, this would use SCALE encoding
-  return new TextEncoder().encode(JSON.stringify(extrinsicMetadata));
-}
+import { ChainInfo, MetadataDigest, MetadataDigestV1 } from './types.js';
 
 /**
  * Create metadata digest from metadata and chain info
@@ -40,13 +17,13 @@ export function createMetadataDigest(metadata: Metadata, chainInfo: ChainInfo): 
   const { typeInfo, extrinsicMetadata } = transformMetadata(metadata);
 
   // Encode type information
-  const encodedTypes = typeInfo.map(encodeTypeInfo);
+  const encodedTypes = typeInfo.map((info) => $TypeInfo.encode(info));
 
   // Build merkle tree from encoded type information
   const typeTree = buildMerkleTree(encodedTypes);
 
   // Hash extrinsic metadata
-  const encodedExtrinsicMetadata = encodeExtrinsicMetadata(extrinsicMetadata);
+  const encodedExtrinsicMetadata = $ExtrinsicMetadata.encode(extrinsicMetadata);
   const extrinsicMetadataHash = blake3AsU8a(encodedExtrinsicMetadata);
 
   // Create digest
@@ -67,18 +44,6 @@ export function createMetadataDigest(metadata: Metadata, chainInfo: ChainInfo): 
 }
 
 /**
- * Encode metadata digest for hashing
- *
- * @param digest - Metadata digest to encode
- * @returns Encoded metadata digest
- */
-export function encodeMetadataDigest(digest: MetadataDigest): Uint8Array {
-  // Simple JSON encoding for now
-  // In a production implementation, this would use SCALE encoding
-  return new TextEncoder().encode(JSON.stringify(digest));
-}
-
-/**
  * Calculate metadata hash from metadata and chain info
  *
  * @param metadata - Metadata to calculate hash for
@@ -86,7 +51,5 @@ export function encodeMetadataDigest(digest: MetadataDigest): Uint8Array {
  * @returns Metadata hash result
  */
 export function calculateMetadataHash(metadata: Metadata, chainInfo: ChainInfo): Uint8Array {
-  const digest = createMetadataDigest(metadata, chainInfo);
-  const encodedDigest = encodeMetadataDigest(digest);
-  return blake3AsU8a(encodedDigest);
+  return blake3AsU8a($MetadataDigest.encode(createMetadataDigest(metadata, chainInfo)));
 }

@@ -1,9 +1,10 @@
 import { $Metadata, Metadata, PortableRegistry, RuntimeVersion } from '@dedot/codecs';
-import { assert, HexString, hexToU8a, isHex, stringCamelCase } from '@dedot/utils';
-import { calculateMetadataHash, createMetadataDigest } from './digest.js';
+import { assert, blake3AsHex, HexString, hexToU8a, isHex, stringCamelCase } from '@dedot/utils';
+import { $MetadataDigest, $TypeInfo } from './codecs';
+import { createMetadataDigest } from './digest.js';
 import { generateProof } from './merkle.js';
 import { transformMetadata } from './transform.js';
-import { ChainInfo, ChainInfoOptional, MetadataDigest, MetadataProof, TypeInfo } from './types.js';
+import { ChainInfo, ChainInfoOptional, MetadataProof, TypeInfo } from './types.js';
 
 /**
  * @name MerkleizedMetatada
@@ -40,28 +41,13 @@ export class MerkleizedMetatada {
       ...chainInfo,
     };
 
-    console.log(this.#chainInfo);
-
     // Transform metadata to RFC format
     const { typeInfo, extrinsicMetadata } = transformMetadata(metadata);
     this.#typeInfo = typeInfo;
     this.#extrinsicMetadata = extrinsicMetadata;
 
     // Encode type information
-    this.#encodedTypes = typeInfo.map((info) => {
-      // Simple JSON encoding for now
-      // In a production implementation, this would use SCALE encoding
-      return new TextEncoder().encode(JSON.stringify(info));
-    });
-  }
-
-  /**
-   * Calculate the metadata hash
-   *
-   * @returns The metadata hash result
-   */
-  hash(): Uint8Array {
-    return calculateMetadataHash(this.#metadata, this.#chainInfo);
+    this.#encodedTypes = typeInfo.map((info) => $TypeInfo.encode(info));
   }
 
   /**
@@ -69,8 +55,8 @@ export class MerkleizedMetatada {
    *
    * @returns The metadata digest
    */
-  digest(): MetadataDigest {
-    return createMetadataDigest(this.#metadata, this.#chainInfo);
+  digest(): HexString {
+    return blake3AsHex($MetadataDigest.encode(createMetadataDigest(this.#metadata, this.#chainInfo)));
   }
 
   /**
