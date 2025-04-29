@@ -1,9 +1,9 @@
 import { Metadata } from '@dedot/codecs';
 import { blake3AsU8a } from '@dedot/utils';
-import { $ExtrinsicMetadata, $MetadataDigest, $TypeInfo } from './codecs';
+import { $ExtrinsicMetadata, $MetadataDigest, $TypeInfo, MetadataDigest } from './codecs';
 import { buildMerkleTree } from './merkle.js';
 import { transformMetadata } from './transform.js';
-import { ChainInfo, MetadataDigest, MetadataDigestV1 } from './types.js';
+import { ChainInfo } from './types.js';
 
 /**
  * Create metadata digest from metadata and chain info
@@ -26,20 +26,17 @@ export function createMetadataDigest(metadata: Metadata, chainInfo: ChainInfo): 
   const encodedExtrinsicMetadata = $ExtrinsicMetadata.encode(extrinsicMetadata);
   const extrinsicMetadataHash = blake3AsU8a(encodedExtrinsicMetadata);
 
-  // Create digest
-  const digestV1: MetadataDigestV1 = {
-    typeInformationTreeRoot: typeTree.hash,
-    extrinsicMetadataHash,
-    specVersion: chainInfo.specVersion,
-    specName: chainInfo.specName,
-    base58Prefix: chainInfo.ss58Prefix,
-    decimals: chainInfo.decimals,
-    tokenSymbol: chainInfo.tokenSymbol,
-  };
-
   return {
     type: 'V1',
-    value: digestV1,
+    value: {
+      typeInformationTreeRoot: typeTree.hash,
+      extrinsicMetadataHash,
+      specVersion: chainInfo.specVersion,
+      specName: chainInfo.specName,
+      base58Prefix: chainInfo.ss58Prefix,
+      decimals: chainInfo.decimals,
+      tokenSymbol: chainInfo.tokenSymbol,
+    },
   };
 }
 

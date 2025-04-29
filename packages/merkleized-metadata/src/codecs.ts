@@ -158,59 +158,30 @@ export type ExtrinsicMetadata = $.Input<typeof $ExtrinsicMetadata>;
 /**
  * Metadata digest structure as defined in RFC-0078
  */
-export const $MetadataDigestV1 = $.Struct({
-  /** Root hash of the type information tree */
-  typeInformationTreeRoot: $Bytes,
-
-  /** Hash of the extrinsic metadata */
-  extrinsicMetadataHash: $Bytes,
-
-  /** Runtime spec version */
-  specVersion: $.u32,
-
-  /** Runtime spec name */
-  specName: $.str,
-
-  /** SS58 address format prefix */
-  base58Prefix: $.u32,
-
-  /** Token decimal places */
-  decimals: $.u32,
-
-  /** Token symbol */
-  tokenSymbol: $.str,
-});
-
-export type MetadataDigestV1 = $.Input<typeof $MetadataDigestV1>;
-
-/**
- * Versioned metadata digest
- */
 export const $MetadataDigest = $.Enum({
   V0: notSupportedCodec('Not supported!'),
-  V1: $MetadataDigestV1,
+  V1: $.Struct({
+    /** Root hash of the type information tree */
+    typeInformationTreeRoot: $Bytes,
+
+    /** Hash of the extrinsic metadata */
+    extrinsicMetadataHash: $Bytes,
+
+    /** Runtime spec version */
+    specVersion: $.u32,
+
+    /** Runtime spec name */
+    specName: $.str,
+
+    /** SS58 address format prefix */
+    base58Prefix: $.u32,
+
+    /** Token decimal places */
+    decimals: $.u32,
+
+    /** Token symbol */
+    tokenSymbol: $.str,
+  }),
 });
 
 export type MetadataDigest = $.Input<typeof $MetadataDigest>;
-
-/**
- * Chain-specific information required for metadata hash calculation
- */
-export const $ChainInfo = $.Struct({
-  /** Runtime spec version */
-  specVersion: $.u32,
-
-  /** Runtime spec name */
-  specName: $.str,
-
-  /** SS58 address format prefix */
-  ss58Prefix: $.u32,
-
-  /** Token decimal places */
-  decimals: $.u32,
-
-  /** Token symbol */
-  tokenSymbol: $.str,
-});
-
-export type ChainInfo = $.Input<typeof $ChainInfo>;

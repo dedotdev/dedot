@@ -1,6 +1,6 @@
 import { Metadata, PortableRegistry, PortableType } from '@dedot/codecs';
 import { TypeRef } from './codecs';
-import { ExtrinsicMetadata, Field, TypeDef, TypeInfo } from './types.js';
+import { ExtrinsicMetadata, Field, TypeInfo } from './codecs.js';
 
 /**
  * Map of primitive types to TypeRef tags

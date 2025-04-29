@@ -1,10 +1,8 @@
 import { $Metadata, Metadata, PortableRegistry, RuntimeVersion } from '@dedot/codecs';
-import { assert, blake3AsHex, HexString, hexToU8a, isHex, stringCamelCase } from '@dedot/utils';
-import { $MetadataDigest, $TypeInfo } from './codecs';
+import { assert, blake3AsHex, HexString, stringCamelCase } from '@dedot/utils';
+import { $MetadataDigest } from './codecs';
 import { createMetadataDigest } from './digest.js';
-import { generateProof } from './merkle.js';
-import { transformMetadata } from './transform.js';
-import { ChainInfo, ChainInfoOptional, MetadataProof, TypeInfo } from './types.js';
+import { ChainInfo, ChainInfoOptional, MetadataProof } from './types.js';
 
 /**
  * @name MerkleizedMetatada
@@ -13,9 +11,6 @@ import { ChainInfo, ChainInfoOptional, MetadataProof, TypeInfo } from './types.j
 export class MerkleizedMetatada {
   readonly #metadata: Metadata;
   readonly #chainInfo: ChainInfo;
-  readonly #typeInfo: TypeInfo[];
-  readonly #encodedTypes: Uint8Array[];
-  readonly #extrinsicMetadata: any;
 
   /**
    * Create a new MetatadaMerkleizer instance
@@ -40,14 +35,6 @@ export class MerkleizedMetatada {
       ss58Prefix,
       ...chainInfo,
     };
-
-    // Transform metadata to RFC format
-    const { typeInfo, extrinsicMetadata } = transformMetadata(metadata);
-    this.#typeInfo = typeInfo;
-    this.#extrinsicMetadata = extrinsicMetadata;
-
-    // Encode type information
-    this.#encodedTypes = typeInfo.map((info) => $TypeInfo.encode(info));
   }
 
   /**
@@ -71,19 +58,7 @@ export class MerkleizedMetatada {
     // 1. Decode the extrinsic to extract call data, extrinsic extra, and signed extra
     // 2. Identify the type IDs used in the extrinsic
     // 3. Generate proof for those type IDs
-
-    // For now, we'll just generate a proof for the first few types as an example
-    const typeIndices = [0, 1, 2].filter((i) => i < this.#typeInfo.length);
-
-    const { leaves, leafIndices, proofs } = generateProof(this.#encodedTypes, typeIndices);
-
-    return {
-      leaves: typeIndices.map((i) => this.#typeInfo[i]),
-      leafIndices,
-      proofs,
-      extrinsicMetadata: this.#extrinsicMetadata,
-      chainInfo: this.#chainInfo,
-    };
+    throw new Error('To implement!');
   }
 
   /**
@@ -100,29 +75,11 @@ export class MerkleizedMetatada {
     signedExtra: Uint8Array | HexString,
   ): MetadataProof {
     // Convert hex strings to Uint8Array if needed
-    const callDataBytes = isHex(callData) ? hexToU8a(callData as HexString) : (callData as Uint8Array);
-    const extrinsicExtraBytes = isHex(extrinsicExtra)
-      ? hexToU8a(extrinsicExtra as HexString)
-      : (extrinsicExtra as Uint8Array);
-    const signedExtraBytes = isHex(signedExtra) ? hexToU8a(signedExtra as HexString) : (signedExtra as Uint8Array);
-
     // In a real implementation, we would:
     // 1. Decode the call data, extrinsic extra, and signed extra
     // 2. Identify the type IDs used in these components
     // 3. Generate proof for those type IDs
-
-    // For now, we'll just generate a proof for the first few types as an example
-    const typeIndices = [0, 1, 2].filter((i) => i < this.#typeInfo.length);
-
-    const { leaves, leafIndices, proofs } = generateProof(this.#encodedTypes, typeIndices);
-
-    return {
-      leaves: typeIndices.map((i) => this.#typeInfo[i]),
-      leafIndices,
-      proofs,
-      extrinsicMetadata: this.#extrinsicMetadata,
-      chainInfo: this.#chainInfo,
-    };
+    throw new Error('To implement!');
   }
 
   #lookupConstant<T extends any = any>(pallet: string, constant: string): T {

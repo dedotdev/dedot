@@ -1,16 +1,4 @@
-import {
-  TypeDefArray,
-  TypeDefBitSequence,
-  EnumerationVariant,
-  ExtrinsicMetadata,
-  Field,
-  MetadataDigest,
-  MetadataDigestV1,
-  SignedExtensionMetadata,
-  TypeDef,
-  TypeInfo,
-  TypeRef,
-} from './codecs';
+import { ExtrinsicMetadata, TypeInfo } from './codecs';
 
 type OptionalProps<T, K extends keyof T> = Omit<T, K> & Partial<Pick<T, K>>;
 
@@ -35,21 +23,6 @@ export interface ChainInfo {
 }
 
 export type ChainInfoOptional = OptionalProps<ChainInfo, 'specVersion' | 'specName' | 'ss58Prefix'>;
-
-// Re-export all types from codecs
-export type {
-  TypeDefArray,
-  TypeDefBitSequence,
-  EnumerationVariant,
-  ExtrinsicMetadata,
-  Field,
-  MetadataDigest,
-  MetadataDigestV1,
-  SignedExtensionMetadata,
-  TypeDef,
-  TypeInfo,
-  TypeRef,
-};
 
 /**
  * Merkle tree node in the metadata tree
