@@ -24,11 +24,8 @@ async function main() {
 
   // Calculate metadata hash
   console.log('Calculating metadata hash...');
-  console.log('Metadata Hash:', merkleizer.hash());
   const digest = merkleizer.digest();
   console.log('Digest Version:', digest);
-  console.log('Type Tree Root:', Buffer.from(digest.value.typeInformationTreeRoot).toString('hex'));
-  console.log('Extrinsic Metadata Hash:', Buffer.from(digest.value.extrinsicMetadataHash).toString('hex'));
 
   // Disconnect the client
   await client.disconnect();
