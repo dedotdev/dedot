@@ -162,10 +162,8 @@ export function getAccessibleTypes(metadata: Metadata): Map<number, number> {
     } else if (typeDef.type === 'SizedVec') {
       types.add(id);
       collectTypesFromId(typeDef.value.typeParam);
-    } else if (typeDef.type === 'BitSequence') {
-      types.add(id);
     }
-    // Primitive and compact types are not stored
+    // Primitive, compact & BitSequence types are not stored
   };
 
   // Collect types from extrinsic metadata
