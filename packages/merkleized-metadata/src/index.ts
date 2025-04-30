@@ -5,8 +5,7 @@ export * from './types.js';
 export * from './codecs.js';
 
 // Export main class
-export * from './MetadataMerkleizer.js';
+export * from './MerkleizedMetatada.js';
 
 // Export utility functions
-export { calculateMetadataHash, createMetadataDigest } from './digest.js';
 export { buildMerkleTree, generateProof } from './merkle.js';
