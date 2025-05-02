@@ -590,6 +590,19 @@ __metadata:
   languageName: unknown
   linkType: soft
 
+"@dedot/merkleized-metadata@workspace:packages/merkleized-metadata":
+  version: 0.0.0-use.local
+  resolution: "@dedot/merkleized-metadata@workspace:packages/merkleized-metadata"
+  dependencies:
+    "@dedot/api": "workspace:*"
+    "@dedot/codecs": "workspace:*"
+    "@dedot/providers": "workspace:*"
+    "@dedot/shape": "workspace:*"
+    "@dedot/types": "workspace:*"
+    "@dedot/utils": "workspace:*"
+  languageName: unknown
+  linkType: soft
+
 "@dedot/providers@npm:0.1.1":
   version: 0.1.1
   resolution: "@dedot/providers@npm:0.1.1"
