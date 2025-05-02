@@ -54,12 +54,20 @@ function isPrimitiveType(type: PortableType, registry: PortableRegistry): boolea
  * @returns Primitive type tag or null if not a primitive
  */
 function getPrimitiveTypeTag(type: PortableType, registry: PortableRegistry): TypeRef['type'] | null {
-  if (type.typeDef.type !== 'Primitive') {
-    return null;
+  if (type.typeDef.type === 'Primitive') {
+    const primitive = type.typeDef.value.kind;
+    return PRIMITIVE_TYPE_MAP[primitive] || null;
   }
 
-  const primitive = type.typeDef.value.kind;
-  return PRIMITIVE_TYPE_MAP[primitive] || null;
+  if (type.typeDef.type === 'Tuple' && type.typeDef.value.fields.length === 1) {
+    return getPrimitiveTypeTag(registry.findType(type.typeDef.value.fields[0]), registry);
+  }
+
+  if (type.typeDef.type === 'Struct' && type.typeDef.value.fields.length === 1) {
+    return getPrimitiveTypeTag(registry.findType(type.typeDef.value.fields[0].typeId), registry);
+  }
+
+  return null;
 }
 
 /**
@@ -91,12 +99,9 @@ function getCompactTypeTag(type: PortableType, registry: PortableRegistry): Type
   }
 
   const innerType = registry.findType(type.typeDef.value.typeParam);
-  if (innerType.typeDef.type !== 'Primitive') {
-    return null;
-  }
 
-  const primitive = innerType.typeDef.value.kind;
-  return COMPACT_TYPE_MAP[primitive] || null;
+  const primitive = getPrimitiveTypeTag(innerType, registry);
+  return primitive ? COMPACT_TYPE_MAP[primitive] : null;
 }
 
 /**
@@ -162,7 +167,10 @@ export function getAccessibleTypes(metadata: Metadata): Map<number, number> {
     } else if (typeDef.type === 'SizedVec') {
       types.add(id);
       collectTypesFromId(typeDef.value.typeParam);
+    } else if (typeDef.type === 'BitSequence') {
+      types.add(id);
     }
+
     // Primitive, compact & BitSequence types are not stored
   };
 
@@ -199,12 +207,9 @@ export function generateTypeRef(
   const type = registry.findType(frameId);
 
   // Check for primitive type
-  const primitiveTag = getPrimitiveTypeTag(type, registry);
-  if (primitiveTag) {
-    if (primitiveTag === 'perId') {
-      throw new Error('Invalid primitive type: perId');
-    }
-    return { type: primitiveTag } as TypeRef;
+  if (type.typeDef.type === 'Primitive') {
+    const primitive = type.typeDef.value.kind;
+    return { type: PRIMITIVE_TYPE_MAP[primitive] } as TypeRef;
   }
 
   // Check for compact type
@@ -214,11 +219,6 @@ export function generateTypeRef(
       throw new Error('Invalid compact type: perId');
     }
     return { type: compactTag } as TypeRef;
-  }
-
-  // Check for void type
-  if (isVoidType(type, registry)) {
-    return { type: 'void' } as TypeRef;
   }
 
   // Check if type is accessible
@@ -243,10 +243,21 @@ function convertField(
   registry: PortableRegistry,
   accessibleTypes: Map<number, number>,
 ): Field {
+  if (field.typeName === 'ParaId') {
+    // const type = registry.findType(field.typeId);
+    // console.log(
+    //   'field',
+    //   field,
+    //   registry.findType(field.typeId),
+    //   generateTypeRef(field.typeId, registry, accessibleTypes),
+    // );
+    // console.log('====');
+  }
+
   return {
+    typeName: field.typeName,
     name: field.name,
     ty: generateTypeRef(field.typeId, registry, accessibleTypes),
-    typeName: field.typeName,
   };
 }
 
@@ -336,6 +347,15 @@ export function generateTypeDefinitions(metadata: Metadata, accessibleTypes: Map
       // Determine bit order from the type path
       const orderType = registry.findType(bitOrderType);
       const leastSignificantBitFirst = orderType.path.some((p) => p.includes('Lsb0'));
+
+      // console.log(
+      //   'numBytes',
+      //   {
+      //     numBytes,
+      //     leastSignificantBitFirst,
+      //   },
+      //   type.typeDef,
+      // );
 
       typeTree.push({
         path,

@@ -1,5 +1,4 @@
 import { blake3AsU8a, concatU8a } from '@dedot/utils';
-import { MetadataTreeNode } from './types.js';
 
 /**
  * Build a merkle tree from leaves
@@ -7,60 +6,17 @@ import { MetadataTreeNode } from './types.js';
  * @param leaves - Leaf data to build tree from
  * @returns Root of the merkle tree
  */
-export function buildMerkleTree(leaves: Uint8Array[]): MetadataTreeNode {
-  if (leaves.length === 0) {
-    // Return all zeros hash for empty tree
-    return { hash: new Uint8Array(32).fill(0) };
+export function buildMerkleTree(leaves: Uint8Array[]): Uint8Array {
+  const nodes: Uint8Array[] = leaves.map((leaf) => blake3AsU8a(leaf));
+
+  // Ref: https://polkadot-fellows.github.io/RFCs/approved/0078-merkleized-metadata.html#building-the-merkle-tree-root
+  while (nodes.length > 1) {
+    const right = nodes.pop()!;
+    const left = nodes.pop()!;
+    nodes.unshift(blake3AsU8a(concatU8a(left, right)));
   }
 
-  // Hash all leaves
-  const leafNodes: MetadataTreeNode[] = leaves.map((leaf) => ({
-    hash: blake3AsU8a(leaf),
-  }));
-
-  // Build the tree
-  return buildTreeFromNodes(leafNodes);
-}
-
-/**
- * Build a tree from leaf nodes
- *
- * @param nodes - Leaf nodes
- * @returns Root of the merkle tree
- */
-function buildTreeFromNodes(nodes: MetadataTreeNode[]): MetadataTreeNode {
-  if (nodes.length === 0) {
-    // Return all zeros hash for empty tree
-    return { hash: new Uint8Array(32).fill(0) };
-  }
-
-  if (nodes.length === 1) {
-    return nodes[0];
-  }
-
-  const nextLevel: MetadataTreeNode[] = [];
-
-  // Process pairs of nodes
-  for (let i = 0; i < nodes.length; i += 2) {
-    if (i + 1 < nodes.length) {
-      // Combine pair of nodes
-      const left = nodes[i];
-      const right = nodes[i + 1];
-      const parentHash = blake3AsU8a(concatU8a(left.hash, right.hash));
-
-      nextLevel.push({
-        hash: parentHash,
-        left,
-        right,
-      });
-    } else {
-      // Odd number of nodes, promote the last one to the next level
-      nextLevel.push(nodes[i]);
-    }
-  }
-
-  // Recursively build the next level
-  return buildTreeFromNodes(nextLevel);
+  return nodes[0];
 }
 
 /**
@@ -174,51 +130,52 @@ export function generateProof(
   leafIndices: number[];
   proofs: Uint8Array[];
 } {
-  // Generate proof data
-  const { leaves, leafIndices, proofIndices } = generateProofData(encodedTypes, typeIndices);
-
-  // Build the tree to get the hashes
-  const leafNodes = encodedTypes.map((leaf) => ({ hash: blake3AsU8a(leaf) }));
-  const tree = buildTreeFromNodes(leafNodes);
-
-  // Collect proof hashes
-  const proofs: Uint8Array[] = [];
-
-  // Helper function to find a node by index
-  const findNodeByIndex = (
-    node: MetadataTreeNode | undefined,
-    index: number,
-    currentIndex: number = 0,
-  ): MetadataTreeNode | undefined => {
-    if (!node) return undefined;
-    if (currentIndex === index) return node;
-
-    const leftChild = 2 * currentIndex + 1;
-    const rightChild = 2 * currentIndex + 2;
-
-    if (index >= leftChild) {
-      // Check right subtree first if index is beyond left child
-      if (index >= rightChild) {
-        return findNodeByIndex(node.right, index, rightChild);
-      }
-      // Check left subtree
-      return findNodeByIndex(node.left, index, leftChild);
-    }
-
-    return undefined;
-  };
-
-  // Collect proof hashes
-  for (const index of proofIndices) {
-    const node = findNodeByIndex(tree, index);
-    if (node) {
-      proofs.push(node.hash);
-    }
-  }
-
-  return {
-    leaves,
-    leafIndices,
-    proofs,
-  };
+  throw new Error('To implement!');
+  // // Generate proof data
+  // const { leaves, leafIndices, proofIndices } = generateProofData(encodedTypes, typeIndices);
+  //
+  // // Build the tree to get the hashes
+  // const leafNodes = encodedTypes.map((leaf) => ({ hash: blake3AsU8a(leaf) }));
+  // const tree = buildTreeFromNodes(leafNodes);
+  //
+  // // Collect proof hashes
+  // const proofs: Uint8Array[] = [];
+  //
+  // // Helper function to find a node by index
+  // const findNodeByIndex = (
+  //   node: MetadataTreeNode | undefined,
+  //   index: number,
+  //   currentIndex: number = 0,
+  // ): MetadataTreeNode | undefined => {
+  //   if (!node) return undefined;
+  //   if (currentIndex === index) return node;
+  //
+  //   const leftChild = 2 * currentIndex + 1;
+  //   const rightChild = 2 * currentIndex + 2;
+  //
+  //   if (index >= leftChild) {
+  //     // Check right subtree first if index is beyond left child
+  //     if (index >= rightChild) {
+  //       return findNodeByIndex(node.right, index, rightChild);
+  //     }
+  //     // Check left subtree
+  //     return findNodeByIndex(node.left, index, leftChild);
+  //   }
+  //
+  //   return undefined;
+  // };
+  //
+  // // Collect proof hashes
+  // for (const index of proofIndices) {
+  //   const node = findNodeByIndex(tree, index);
+  //   if (node) {
+  //     proofs.push(node.hash);
+  //   }
+  // }
+  //
+  // return {
+  //   leaves,
+  //   leafIndices,
+  //   proofs,
+  // };
 }

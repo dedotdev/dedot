@@ -56,7 +56,7 @@ export const $TypeDef = $.Enum({
   Tuple: $.Struct({ fields: $.Vec($TypeId) }),
   Primitive: $.Struct({ kind: $PrimitiveKind }),
   Compact: $.Struct({ typeParam: $TypeId }),
-  BitSequence: $.Struct({ bitOrderType: $TypeId, bitStoreType: $TypeId }),
+  BitSequence: $.Struct({ bitStoreType: $TypeId, bitOrderType: $TypeId }),
 });
 export type TypeDef = $.Input<typeof $TypeDef>;
 

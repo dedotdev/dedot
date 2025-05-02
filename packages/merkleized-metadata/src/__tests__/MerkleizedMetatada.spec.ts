@@ -1,4 +1,3 @@
-import { $Metadata, unwrapOpaqueMetadata } from '@dedot/codecs';
 import * as $ from '@dedot/shape';
 import { HexString, hexStripPrefix, hexToU8a } from '@dedot/utils';
 import fs from 'fs';
@@ -11,52 +10,46 @@ describe('MerkleizedMetatada', () => {
   const FIXTURES = [
     {
       name: 'rococo_metadata_v15',
-      expectedHash: '0x6619a31025a9a14086a34da4ede7ed61258b9f55c12baae8bc801317869d2dfb',
+      expectedHash: '0x1d1b101a5e9cd567bf709a563a4b5de5aa15d8a50a6671fc9726e23eabf2039b',
     },
     {
       name: 'polkadot_metadata_v15',
-      expectedHash: '0x72b3e70cb722edeb45a9380720ecad79b09b4113ab2dee5f5d974f170fb77a7e',
+      expectedHash: '0x7e4dc0adfbf8a4f4ed5df4dff00e77272ff088bc4696ea07ee72ea8c9a1797b8',
     },
     {
       name: 'kusama_metadata_v15',
-      expectedHash: '0x23d7a31034edf29f4a5977ffc3075aba8087c422026e9bf4aaea8bc8192d6a23',
+      expectedHash: '0x5e5033b411afc9c8e737305486a85b54f71a0f62c84f77d4fe9397f0b47c4b10',
     },
     {
       name: 'acala_metadata_v15',
-      expectedHash: '0xbd64dee496517c5288c47014fe0f57c2e12e42a7d627caeafa95e9f992e7e774',
+      expectedHash: '0xca54eb46f25eebb4f23db531dbc4bb7e1f9ff23ebe664b0dbd3b676904cb93d8',
     },
     {
       name: 'moonbeam_metadata_v15',
-      expectedHash: '0x1339dc558887eb12f454586ef324c36bd3a1990000e17fbba6311f6ae55af676',
+      expectedHash: '0x8abb910db4cec588e18840b01ea85e279db545734cf70f251d16053249e6a7f1',
     },
     {
       name: 'hydradx_metadata_v15',
-      expectedHash: '0xa11f4b8cb2515bf5dc0f8f7c04c0602d72e97892c562dafc3bb1d526d36ab838',
+      expectedHash: '0x78a44d1a94d70bd69842d1464b76c1f3f07f9f67f6e6c764553dc5078bfba38c',
     },
   ];
 
   // Fixed chain information for all tests
   const chainInfo = {
-    specVersion: 1,
-    specName: 'nice',
-    ss58Prefix: 1,
-    decimals: 1,
-    tokenSymbol: 'lol',
+    decimals: 42,
+    tokenSymbol: 'UNIT',
   };
 
   // Test each fixture
   FIXTURES.forEach(({ name, expectedHash }) => {
     it(`should calculate correct hash for ${name}`, () => {
-      // Load metadata file
       const metadataPath = path.join(__dirname, 'metadadata', name);
       const metadataHex = fs.readFileSync(metadataPath, 'utf-8') as HexString;
-      const metadata = $.Option($.lenPrefixed($.RawHex)).decode(hexToU8a(hexStripPrefix(metadataHex.trim())));
+      const metadata = $.Option($.lenPrefixed($.RawHex)).decode(hexToU8a(hexStripPrefix(metadataHex.trim())))!;
 
-      const merkleizer = new MerkleizedMetatada(metadata!, chainInfo);
+      const merkleizer = new MerkleizedMetatada(metadata, chainInfo);
 
-      // // Calculate hash and verify
-      const hash = merkleizer.digest();
-      expect(hash).toEqual(expectedHash);
+      expect(merkleizer.digest()).toEqual(expectedHash);
     });
   });
 });

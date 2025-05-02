@@ -25,20 +25,6 @@ export interface ChainInfo {
 export type ChainInfoOptional = OptionalProps<ChainInfo, 'specVersion' | 'specName' | 'ss58Prefix'>;
 
 /**
- * Merkle tree node in the metadata tree
- */
-export interface MetadataTreeNode {
-  /** Hash of the node */
-  hash: Uint8Array;
-
-  /** Left child node if available */
-  left?: MetadataTreeNode;
-
-  /** Right child node if available */
-  right?: MetadataTreeNode;
-}
-
-/**
  * Proof for metadata verification
  */
 export interface MetadataProof {

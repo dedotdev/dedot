@@ -1,5 +1,5 @@
 import { $Metadata, Metadata, PortableRegistry, RuntimeVersion } from '@dedot/codecs';
-import { assert, blake3AsHex, blake3AsU8a, HexString, stringCamelCase } from '@dedot/utils';
+import { assert, blake3AsHex, HexString, stringCamelCase, u8aToHex } from '@dedot/utils';
 import { $ExtrinsicMetadata, $MetadataDigest, $TypeInfo, MetadataDigest } from './codecs';
 import { buildMerkleTree } from './merkle';
 import { transformMetadata } from './transform';
@@ -44,24 +44,15 @@ export class MerkleizedMetatada {
    * @returns The metadata digest
    */
   digest(): HexString {
-    // Transform metadata to RFC format
     const { typeInfo, extrinsicMetadata } = transformMetadata(this.#metadata);
 
-    // Encode type information
     const encodedTypes = typeInfo.map((info) => $TypeInfo.encode(info));
-
-    // Build merkle tree from encoded type information
-    const typeTree = buildMerkleTree(encodedTypes);
-
-    // Hash extrinsic metadata
-    const encodedExtrinsicMetadata = $ExtrinsicMetadata.encode(extrinsicMetadata);
-    const extrinsicMetadataHash = blake3AsU8a(encodedExtrinsicMetadata);
 
     const digest: MetadataDigest = {
       type: 'V1',
       value: {
-        typeInformationTreeRoot: typeTree.hash,
-        extrinsicMetadataHash,
+        typeInformationTreeRoot: u8aToHex(buildMerkleTree(encodedTypes)),
+        extrinsicMetadataHash: blake3AsHex($ExtrinsicMetadata.encode(extrinsicMetadata)),
         specVersion: this.#chainInfo.specVersion,
         specName: this.#chainInfo.specName,
         base58Prefix: this.#chainInfo.ss58Prefix,

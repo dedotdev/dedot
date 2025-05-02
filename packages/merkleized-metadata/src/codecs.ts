@@ -1,4 +1,4 @@
-import { $Bytes, notSupportedCodec } from '@dedot/codecs';
+import { notSupportedCodec } from '@dedot/codecs';
 import * as $ from '@dedot/shape';
 
 export const $TypeRef = $.Enum({
@@ -54,7 +54,7 @@ export type TypeDefArray = $.Input<typeof $TypeDefArray>;
  * Bit sequence type definition
  */
 export const $TypeDefBitSequence = $.Struct({
-  numBytes: $.u32,
+  numBytes: $.u8,
   leastSignificantBitFirst: $.bool,
 });
 
@@ -111,7 +111,7 @@ export type SignedExtensionMetadata = $.Input<typeof $SignedExtensionMetadata>;
  * Extrinsic metadata as defined in RFC-0078
  */
 export const $ExtrinsicMetadata = $.Struct({
-  version: $.u32,
+  version: $.u8,
   addressTy: $TypeRef,
   callTy: $TypeRef,
   signatureTy: $TypeRef,
@@ -126,12 +126,12 @@ export type ExtrinsicMetadata = $.Input<typeof $ExtrinsicMetadata>;
 export const $MetadataDigest = $.Enum({
   V0: notSupportedCodec('Not supported!'),
   V1: $.Struct({
-    typeInformationTreeRoot: $Bytes,
-    extrinsicMetadataHash: $Bytes,
+    typeInformationTreeRoot: $.FixedHex(32),
+    extrinsicMetadataHash: $.FixedHex(32),
     specVersion: $.u32,
     specName: $.str,
-    base58Prefix: $.u32,
-    decimals: $.u32,
+    base58Prefix: $.u16,
+    decimals: $.u8,
     tokenSymbol: $.str,
   }),
 });
