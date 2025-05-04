@@ -106,3 +106,117 @@ export function generateProof(
     proofs: proofIndices.map((idx) => nodes[idx]),
   };
 }
+
+/**
+ * Verify a Merkle proof
+ * 
+ * @param rootHash - The expected root hash
+ * @param leaves - The leaf nodes included in the proof
+ * @param leafIndices - The indices of the leaves in the original tree
+ * @param proofs - The proof nodes
+ * @returns Whether the proof is valid
+ */
+export function verifyProof(
+  rootHash: Uint8Array,
+  leaves: Uint8Array[],
+  leafIndices: number[],
+  proofs: Uint8Array[]
+): boolean {
+  if (leaves.length === 0 || leafIndices.length === 0) {
+    // Empty proof is only valid for an empty tree (root is null)
+    return rootHash.length === 0;
+  }
+
+  // Create a map to store known nodes (leaves and proof nodes)
+  const nodeMap = new Map<number, Uint8Array>();
+  
+  // Add the leaves to the map at their respective indices
+  for (let i = 0; i < leaves.length; i++) {
+    nodeMap.set(leafIndices[i], leaves[i]);
+  }
+  
+  // Create a queue of nodes to process
+  let nodesToProcess = [...leafIndices];
+  
+  // Keep track of which proof nodes have been used
+  const unusedProofs = [...proofs];
+  
+  // Process nodes until we reach the root or can't proceed further
+  while (nodesToProcess.length > 0 && !nodeMap.has(0)) {
+    const nextNodesToProcess = new Set<number>();
+    
+    for (const nodeIdx of nodesToProcess) {
+      // Skip the root node
+      if (nodeIdx === 0) continue;
+      
+      // Get the sibling index
+      const siblingIdx = nodeIdx % 2 === 0 ? nodeIdx - 1 : nodeIdx + 1;
+      
+      // If we don't have the sibling in our map, try to find it in the unused proofs
+      if (!nodeMap.has(siblingIdx)) {
+        // We need to assign a proof node to this sibling
+        if (unusedProofs.length === 0) {
+          // No more proof nodes available, but we need one
+          return false;
+        }
+        
+        // Use the next available proof node
+        nodeMap.set(siblingIdx, unusedProofs.shift()!);
+      }
+      
+      // Calculate the parent index
+      const parentIdx = Math.floor((nodeIdx - 1) / 2);
+      
+      // If we already have the parent, skip
+      if (nodeMap.has(parentIdx)) {
+        continue;
+      }
+      
+      // Make sure we have both children of the parent
+      const leftChildIdx = parentIdx * 2 + 1;
+      const rightChildIdx = parentIdx * 2 + 2;
+      
+      if (nodeMap.has(leftChildIdx) && nodeMap.has(rightChildIdx)) {
+        // Calculate the parent hash
+        const leftChild = nodeMap.get(leftChildIdx)!;
+        const rightChild = nodeMap.get(rightChildIdx)!;
+        const parentHash = blake3AsU8a(concatU8a(leftChild, rightChild));
+        
+        // Add the parent to the map
+        nodeMap.set(parentIdx, parentHash);
+        
+        // Add the parent to the next round of processing
+        nextNodesToProcess.add(parentIdx);
+      }
+    }
+    
+    // If we didn't add any new nodes to process, but we haven't reached the root,
+    // then the proof is invalid
+    if (nextNodesToProcess.size === 0 && !nodeMap.has(0)) {
+      return false;
+    }
+    
+    nodesToProcess = [...nextNodesToProcess];
+  }
+  
+  // Check if we have the root node
+  if (!nodeMap.has(0)) {
+    return false;
+  }
+  
+  // Compare the calculated root with the expected root
+  const calculatedRoot = nodeMap.get(0)!;
+  
+  // Compare the Uint8Arrays
+  if (calculatedRoot.length !== rootHash.length) {
+    return false;
+  }
+  
+  for (let i = 0; i < calculatedRoot.length; i++) {
+    if (calculatedRoot[i] !== rootHash[i]) {
+      return false;
+    }
+  }
+  
+  return true;
+}

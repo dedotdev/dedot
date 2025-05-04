@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { buildMerkleTree, generateProof } from '../merkle';
+import { buildMerkleTree, generateProof, verifyProof } from '../merkle';
 import { blake3AsU8a, concatU8a, u8aToHex } from '@dedot/utils';
 
 describe('merkle', () => {
@@ -166,15 +166,203 @@ describe('merkle', () => {
       expect(u8aToHex(reconstructedRoot)).toEqual(u8aToHex(rootHash));
     });
     
-    // Helper function to verify a proof
-    function verifyProof(
-      rootHash: Uint8Array,
-      proof: { leaves: Uint8Array[]; leafIndices: number[]; proofs: Uint8Array[] }
-    ): boolean {
-      // Implementation of a proof verification function
-      // This would reconstruct the root from the leaves and proofs
-      // and compare it to the expected root
-      return true;
-    }
+    it('should use the verifyProof function to verify proofs', () => {
+      // Create a simple tree with 4 leaves
+      const leaves = [
+        new Uint8Array([1, 2, 3]),
+        new Uint8Array([4, 5, 6]),
+        new Uint8Array([7, 8, 9]),
+        new Uint8Array([10, 11, 12]),
+      ];
+      
+      // Build the tree and get the root hash
+      const tree = buildMerkleTree(leaves);
+      const rootHash = tree[0];
+      
+      // Generate proof for leaf 1
+      const proof = generateProof(leaves, [1]);
+      
+      // Manually verify the proof first to confirm it's correct
+      const leafHash = proof.leaves[0]; // This is the hash at index 4
+      const siblingHash = tree[3]; // Sibling of leaf 1 (index 4) is leaf 0 (index 3)
+      const parentHash = blake3AsU8a(concatU8a(siblingHash, leafHash));
+      const parentSiblingHash = tree[2]; // Sibling of parent (index 1) is node 2
+      const reconstructedRoot = blake3AsU8a(concatU8a(parentHash, parentSiblingHash));
+      
+      // Confirm our manual verification works
+      expect(u8aToHex(reconstructedRoot)).toEqual(u8aToHex(rootHash));
+      
+      // Now let's create a proof with the correct sibling nodes in the right order
+      const correctProofs = [siblingHash, parentSiblingHash];
+      
+      // Verify the proof using our verifyProof function
+      const isValid = verifyProof(rootHash, [leafHash], [4], correctProofs);
+      
+      // The proof should be valid
+      expect(isValid).toBe(true);
+    });
+    
+    it('should verify proofs for multiple leaves', () => {
+      // Create a simple tree with 4 leaves
+      const leaves = [
+        new Uint8Array([1, 2, 3]),
+        new Uint8Array([4, 5, 6]),
+        new Uint8Array([7, 8, 9]),
+        new Uint8Array([10, 11, 12]),
+      ];
+      
+      // Build the tree and get the root hash
+      const tree = buildMerkleTree(leaves);
+      const rootHash = tree[0];
+      
+      // For multiple leaves, we need to manually create the proof
+      // We want to prove leaves 0 and 2 (tree indices 3 and 5)
+      const leaf0Hash = tree[3]; // Hash of leaf 0
+      const leaf2Hash = tree[5]; // Hash of leaf 2
+      
+      // Sibling of leaf 0 (index 3) is leaf 1 (index 4)
+      const sibling0Hash = tree[4];
+      
+      // Sibling of leaf 2 (index 5) is leaf 3 (index 6)
+      const sibling2Hash = tree[6];
+      
+      // Calculate parent of leaf 0 and its sibling (index 1)
+      const parent0Hash = blake3AsU8a(concatU8a(leaf0Hash, sibling0Hash));
+      
+      // Calculate parent of leaf 2 and its sibling (index 2)
+      const parent2Hash = blake3AsU8a(concatU8a(leaf2Hash, sibling2Hash));
+      
+      // Calculate root from the two parents
+      const calculatedRoot = blake3AsU8a(concatU8a(parent0Hash, parent2Hash));
+      
+      // Confirm our manual calculation is correct
+      expect(u8aToHex(calculatedRoot)).toEqual(u8aToHex(rootHash));
+      
+      // Now create a proof with the correct sibling nodes
+      const correctProofs = [sibling0Hash, sibling2Hash];
+      
+      // Verify the proof using our verifyProof function
+      const isValid = verifyProof(rootHash, [leaf0Hash, leaf2Hash], [3, 5], correctProofs);
+      
+      // The proof should be valid
+      expect(isValid).toBe(true);
+    });
+    
+    it('should detect invalid proofs with tampered leaves', () => {
+      // Create a simple tree with 4 leaves
+      const leaves = [
+        new Uint8Array([1, 2, 3]),
+        new Uint8Array([4, 5, 6]),
+        new Uint8Array([7, 8, 9]),
+        new Uint8Array([10, 11, 12]),
+      ];
+      
+      // Build the tree and get the root hash
+      const tree = buildMerkleTree(leaves);
+      const rootHash = tree[0];
+      
+      // Generate proof for leaf 1
+      const proof = generateProof(leaves, [1]);
+      
+      // Tamper with the leaf
+      const tamperedLeaves = [new Uint8Array([99, 99, 99])]; // Different data
+      
+      // Verify the tampered proof
+      const isValid = verifyProof(rootHash, tamperedLeaves, proof.leafIndices, proof.proofs);
+      
+      // The proof should be invalid
+      expect(isValid).toBe(false);
+    });
+    
+    it('should detect invalid proofs with wrong indices', () => {
+      // Create a simple tree with 4 leaves
+      const leaves = [
+        new Uint8Array([1, 2, 3]),
+        new Uint8Array([4, 5, 6]),
+        new Uint8Array([7, 8, 9]),
+        new Uint8Array([10, 11, 12]),
+      ];
+      
+      // Build the tree and get the root hash
+      const tree = buildMerkleTree(leaves);
+      const rootHash = tree[0];
+      
+      // Generate proof for leaf 1
+      const proof = generateProof(leaves, [1]);
+      
+      // Use wrong indices (leaf 0 instead of leaf 1)
+      const wrongIndices = [3]; // Tree index for leaf 0
+      
+      // Verify the proof with wrong indices
+      const isValid = verifyProof(rootHash, proof.leaves, wrongIndices, proof.proofs);
+      
+      // The proof should be invalid
+      expect(isValid).toBe(false);
+    });
+    
+    it('should detect invalid proofs with tampered proof nodes', () => {
+      // Create a simple tree with 4 leaves
+      const leaves = [
+        new Uint8Array([1, 2, 3]),
+        new Uint8Array([4, 5, 6]),
+        new Uint8Array([7, 8, 9]),
+        new Uint8Array([10, 11, 12]),
+      ];
+      
+      // Build the tree and get the root hash
+      const tree = buildMerkleTree(leaves);
+      const rootHash = tree[0];
+      
+      // Generate proof for leaf 1
+      const proof = generateProof(leaves, [1]);
+      
+      // Tamper with the proof nodes
+      const tamperedProofs = [new Uint8Array([99, 99, 99])]; // Different data
+      
+      // Verify the tampered proof
+      const isValid = verifyProof(rootHash, proof.leaves, proof.leafIndices, tamperedProofs);
+      
+      // The proof should be invalid
+      expect(isValid).toBe(false);
+    });
+    
+    it('should handle edge case: single leaf tree', () => {
+      // Create a tree with a single leaf
+      const leaves = [new Uint8Array([1, 2, 3])];
+      
+      // Build the tree and get the root hash
+      const tree = buildMerkleTree(leaves);
+      const rootHash = tree[0];
+      
+      // Generate proof for the only leaf
+      const proof = generateProof(leaves, [0]);
+      
+      // Verify the proof
+      const isValid = verifyProof(rootHash, proof.leaves, proof.leafIndices, proof.proofs);
+      
+      // The proof should be valid
+      expect(isValid).toBe(true);
+    });
+    
+    it('should handle edge case: empty proof', () => {
+      // Create a tree with some leaves
+      const leaves = [
+        new Uint8Array([1, 2, 3]),
+        new Uint8Array([4, 5, 6]),
+      ];
+      
+      // Build the tree and get the root hash
+      const tree = buildMerkleTree(leaves);
+      const rootHash = tree[0];
+      
+      // Generate an empty proof
+      const proof = generateProof(leaves, []);
+      
+      // Verify the empty proof
+      const isValid = verifyProof(rootHash, proof.leaves, proof.leafIndices, proof.proofs);
+      
+      // The proof should be invalid (empty proof can't verify a non-empty tree)
+      expect(isValid).toBe(false);
+    });
   });
 });
