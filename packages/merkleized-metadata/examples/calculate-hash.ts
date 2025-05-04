@@ -1,11 +1,18 @@
+import Keyring from '@polkadot/keyring';
+import { cryptoWaitReady } from '@polkadot/util-crypto';
 import { DedotClient } from '@dedot/api';
 import { WsProvider } from '@dedot/providers';
+import { HexString } from '@dedot/utils';
 import { MerkleizedMetatada } from '../src/index.js';
 
 /**
  * Example of calculating metadata hash for a real chain
  */
 async function main() {
+  await cryptoWaitReady();
+  const keyring = new Keyring({ type: 'sr25519' });
+  const alice = keyring.addFromUri('//Alice');
+
   // Create a dedot client
   console.log('Connecting to Polkadot...');
   const provider = new WsProvider('wss://rpc.polkadot.io');
@@ -22,10 +29,16 @@ async function main() {
     tokenSymbol: 'DOT',
   });
 
+  const remarkTx = client.tx.system.remark('Hello World');
+  await remarkTx.sign(alice, { tip: 1000_000n });
+
+  console.log('txHex', remarkTx.toHex());
+
   // Calculate metadata hash
-  console.log('Calculating metadata hash...');
-  const digest = merkleizer.digest();
-  console.log('Digest Version:', digest);
+  // console.log('Calculating metadata hash...');
+  console.log(merkleizer.proofForExtrinsic(remarkTx.toHex()));
+  // const digest = merkleizer.digest();
+  // console.log('Digest Version:', digest);
 
   // Disconnect the client
   await client.disconnect();

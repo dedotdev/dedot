@@ -29,7 +29,7 @@ export type ChainInfoOptional = OptionalProps<ChainInfo, 'specVersion' | 'specNa
  */
 export interface MetadataProof {
   /** Leaves included in the proof */
-  leaves: TypeInfo[];
+  leaves: Uint8Array[];
 
   /** Indices of the leaves in the original tree */
   leafIndices: number[];

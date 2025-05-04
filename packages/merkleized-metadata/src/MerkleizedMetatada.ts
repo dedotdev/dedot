@@ -1,7 +1,8 @@
-import { $Metadata, Metadata, PortableRegistry, RuntimeVersion } from '@dedot/codecs';
-import { assert, blake3AsHex, HexString, stringCamelCase, u8aToHex } from '@dedot/utils';
-import { $ExtrinsicMetadata, $MetadataDigest, $TypeInfo, MetadataDigest } from './codecs';
-import { buildMerkleTree } from './merkle';
+import { $ExtrinsicVersion, $Metadata, Metadata, PortableRegistry, RuntimeVersion } from '@dedot/codecs';
+import * as $ from '@dedot/shape';
+import { assert, blake3AsHex, HexString, hexToU8a, stringCamelCase, u8aToHex } from '@dedot/utils';
+import { $ExtrinsicMetadata, $MetadataDigest, $TypeInfo, EnumerationVariant, MetadataDigest, TypeRef } from './codecs';
+import { buildMerkleTree, generateProof } from './merkle';
 import { transformMetadata } from './transform';
 import { ChainInfo, ChainInfoOptional, MetadataProof } from './types.js';
 
@@ -51,7 +52,7 @@ export class MerkleizedMetatada {
     const digest: MetadataDigest = {
       type: 'V1',
       value: {
-        typeInformationTreeRoot: u8aToHex(buildMerkleTree(encodedTypes)),
+        typeInformationTreeRoot: u8aToHex(buildMerkleTree(encodedTypes)[0]),
         extrinsicMetadataHash: blake3AsHex($ExtrinsicMetadata.encode(extrinsicMetadata)),
         specVersion: this.#chainInfo.specVersion,
         specName: this.#chainInfo.specName,
@@ -74,9 +75,143 @@ export class MerkleizedMetatada {
   proofForExtrinsic(extrinsic: Uint8Array | HexString, additionalSigned?: Uint8Array | HexString): MetadataProof {
     // In a real implementation, we would:
     // 1. Decode the extrinsic to extract call data, extrinsic extra, and signed extra
+    const $Codec = $.Tuple($.compactU32, $ExtrinsicVersion, $.RawHex);
+
+    const [length, version, bytes] = $Codec.tryDecode(extrinsic);
+
+    const { extrinsicMetadata, typeInfo } = transformMetadata(this.#metadata);
+
     // 2. Identify the type IDs used in the extrinsic
+    const typeRefs: TypeRef[] = [];
+    if (version.signed) {
+      typeRefs.push(
+        extrinsicMetadata.addressTy,
+        extrinsicMetadata.signatureTy,
+        ...extrinsicMetadata.signedExtensions.map((e) => e.includedInExtrinsic),
+        extrinsicMetadata.callTy,
+      );
+    } else {
+      typeRefs.push(extrinsicMetadata.callTy);
+    }
+
+    if (!!additionalSigned) {
+      typeRefs.push(...extrinsicMetadata.signedExtensions.map((e) => e.includedInSignedData));
+    }
+
+    console.log(length, version, bytes == extrinsic, bytes, typeRefs);
+
+    const primitiveCodecs = {
+      bool: $.bool,
+      char: $.u8,
+      str: $.str,
+      u8: $.u8,
+      u16: $.u16,
+      u32: $.u32,
+      u64: $.u64,
+      u128: $.u128,
+      u256: $.u256,
+      i8: $.i8,
+      i16: $.i16,
+      i32: $.i32,
+      i64: $.i64,
+      i128: $.i128,
+      i256: $.i256,
+      compactU8: $.compactU8,
+      compactU16: $.compactU16,
+      compactU32: $.compactU32,
+      compactU64: $.compactU64,
+      compactU128: $.compactU128,
+      compactU256: $.compactU256,
+      void: $.Null,
+    };
+
+    let toDecode = hexToU8a(bytes);
+
+    const refIdToIdx = new Map<number, number[]>();
+    typeInfo.forEach((one, idx) => {
+      const bag = refIdToIdx.get(one.typeId);
+      if (bag) {
+        bag.push(idx);
+      } else {
+        refIdToIdx.set(one.typeId, [idx]);
+      }
+    });
+
+    const decode = ($codec: $.AnyShape) => {
+      const decoded = $codec.decode(toDecode) as any;
+
+      // @ts-ignore
+      const encodedLength = $codec.encode(decoded).length;
+      toDecode = toDecode.subarray(encodedLength);
+
+      return decoded;
+    };
+
+    const collectedIdx = new Set<number>();
+
+    const decodeAndCollect = (one: TypeRef) => {
+      if (one.type === 'perId') {
+        const indexes = refIdToIdx.get(one.value)!;
+        const [idx] = indexes;
+
+        if (indexes.length === 1) collectedIdx.add(idx);
+
+        const { typeDef } = typeInfo[idx];
+
+        switch (typeDef.type) {
+          case 'sequence':
+            const length = decode($.compactU32);
+            for (let i = 0; i < length; i += 1) {
+              decodeAndCollect(typeDef.value);
+            }
+
+            break;
+          case 'tuple':
+            typeDef.value.forEach(decodeAndCollect);
+            break;
+          case 'array':
+            for (let i = 0; i < typeDef.value.len; i += 1) {
+              decodeAndCollect(typeDef.value.typeParam);
+            }
+            break;
+          case 'composite':
+            typeDef.value.forEach((one) => decodeAndCollect(one.ty));
+            break;
+          case 'bitSequence':
+            break;
+          case 'enumeration':
+            const selectedIdx = decode($.u8);
+            const [{ fields }, idx] = refIdToIdx
+              .get(one.value)!
+              .map((id) => [typeInfo[id].typeDef.value, id] as [EnumerationVariant, number])!
+              .find(([{ index }]) => index === selectedIdx)!;
+
+            collectedIdx.add(idx);
+            fields.forEach(({ ty }) => decodeAndCollect(ty));
+            break;
+        }
+      } else {
+        decode(primitiveCodecs[one.type]);
+      }
+    };
+
+    typeRefs.map(decodeAndCollect);
+
+    console.log(collectedIdx);
+
+    if (toDecode.length > 0) {
+      throw new Error('Extra bytes at the end of the extrinsic!');
+    }
+
     // 3. Generate proof for those type IDs
-    throw new Error('To implement!');
+
+    const leaves = typeInfo.map((info) => $TypeInfo.encode(info));
+
+    return {
+      ...generateProof(leaves, [...collectedIdx]),
+      extrinsicMetadata,
+      chainInfo: this.#chainInfo,
+    };
   }
 
   /**
