@@ -69,11 +69,35 @@ export function generateProof(
 
   // Map to tree indices
   const leafIndices = indices.map((idx) => startingIndex + idx);
-
+  
+  // Create a Set for efficient lookup
+  const leafIndicesSet = new Set(leafIndices);
+  
   // Collect proof indices
-  const proofIndices: number[] = [];
-
-  // TODO Implement algorithm to extract proofIndices
+  const proofIndicesSet = new Set<number>();
+  
+  // For each leaf index, traverse up the tree and collect sibling nodes
+  for (const leafIdx of leafIndices) {
+    let currentIdx = leafIdx;
+    
+    while (currentIdx > 0) { // While not at the root
+      // Get sibling index
+      const siblingIdx = currentIdx % 2 === 0 
+        ? currentIdx - 1  // If current is right child, sibling is left
+        : currentIdx + 1; // If current is left child, sibling is right
+      
+      // If sibling exists and is not one of our target nodes, add to proof
+      if (siblingIdx < nodes.length && !leafIndicesSet.has(siblingIdx)) {
+        proofIndicesSet.add(siblingIdx);
+      }
+      
+      // Move up to parent
+      currentIdx = Math.floor((currentIdx - 1) / 2);
+    }
+  }
+  
+  // Convert Set to Array and sort
+  const proofIndices = [...proofIndicesSet].sort((a, b) => a - b);
 
   // Return the proof data
   return {
