@@ -1,4 +1,4 @@
-![Dedot_Baner_final](https://github.com/user-attachments/assets/21402da8-93cb-4441-8688-6fbccb5cfa2b)
+![Dedot Banner](https://github.com/user-attachments/assets/94a6e1cd-cdaf-4449-8fbf-5762186b9462)
 
 
 # Dedot
