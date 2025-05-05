@@ -1,7 +1,15 @@
 import { $ExtrinsicVersion, $Metadata, Metadata, PortableRegistry, RuntimeVersion } from '@dedot/codecs';
 import * as $ from '@dedot/shape';
 import { assert, blake3AsHex, HexString, hexToU8a, stringCamelCase, u8aToHex } from '@dedot/utils';
-import { $ExtrinsicMetadata, $MetadataDigest, $TypeInfo, EnumerationVariant, MetadataDigest, TypeRef } from './codecs';
+import {
+  $ExtrinsicMetadata,
+  $MetadataDigest,
+  $Proof,
+  $TypeInfo,
+  EnumerationVariant,
+  MetadataDigest,
+  TypeRef,
+} from './codecs';
 import { buildMerkleTree, generateProof } from './merkle';
 import { transformMetadata } from './transform';
 import { ChainInfo, ChainInfoOptional, MetadataProof } from './types.js';
@@ -54,11 +62,7 @@ export class MerkleizedMetatada {
       value: {
         typeInformationTreeRoot: u8aToHex(buildMerkleTree(encodedTypes)[0]),
         extrinsicMetadataHash: blake3AsHex($ExtrinsicMetadata.encode(extrinsicMetadata)),
-        specVersion: this.#chainInfo.specVersion,
-        specName: this.#chainInfo.specName,
-        base58Prefix: this.#chainInfo.ss58Prefix,
-        decimals: this.#chainInfo.decimals,
-        tokenSymbol: this.#chainInfo.tokenSymbol,
+        chainInfo: this.#chainInfo,
       },
     };
 
@@ -72,7 +76,7 @@ export class MerkleizedMetatada {
    * @param additionalSigned - Optional additional signed data
    * @returns The metadata proof
    */
-  proofForExtrinsic(extrinsic: Uint8Array | HexString, additionalSigned?: Uint8Array | HexString): MetadataProof {
+  proofForExtrinsic(extrinsic: Uint8Array | HexString, additionalSigned?: Uint8Array | HexString): Uint8Array {
     // In a real implementation, we would:
     // 1. Decode the extrinsic to extract call data, extrinsic extra, and signed extra
     const $Codec = $.Tuple($.compactU32, $ExtrinsicVersion, $.RawHex);
@@ -100,7 +104,31 @@ export class MerkleizedMetatada {
 
     console.log(length, version, bytes == extrinsic, bytes, typeRefs);
 
-    const primitiveCodecs = {
+    type PrimitiveType =
+      | 'bool'
+      | 'char'
+      | 'str'
+      | 'u8'
+      | 'u16'
+      | 'u32'
+      | 'u64'
+      | 'u128'
+      | 'u256'
+      | 'i8'
+      | 'i16'
+      | 'i32'
+      | 'i64'
+      | 'i128'
+      | 'i256'
+      | 'compactU8'
+      | 'compactU16'
+      | 'compactU32'
+      | 'compactU64'
+      | 'compactU128'
+      | 'compactU256'
+      | 'void';
+
+    const primitiveCodecs: Record<PrimitiveType, $.AnyShape> = {
       bool: $.bool,
       char: $.u8,
       str: $.str,
@@ -207,11 +235,15 @@ export class MerkleizedMetatada {
 
     const leaves = typeInfo.map((info) => $TypeInfo.encode(info));
 
-    return {
-      ...generateProof(leaves, [...collectedIdx]),
+    const generatedProofs = generateProof(leaves, [...collectedIdx]);
+
+    console.log('[dedot] proofs', generatedProofs.proofs.length);
+
+    return $Proof.encode({
+      ...generatedProofs,
       extrinsicMetadata,
       chainInfo: this.#chainInfo,
-    };
+    });
   }
 
   /**

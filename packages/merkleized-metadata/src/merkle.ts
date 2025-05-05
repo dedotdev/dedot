@@ -15,6 +15,16 @@ import { blake3AsU8a, concatU8a } from '@dedot/utils';
  * @returns Root of the merkle tree
  */
 export function buildMerkleTree(leaves: Uint8Array[]): Uint8Array[] {
+  // Handle empty trees
+  if (leaves.length === 0) {
+    return [];
+  }
+
+  // Handle single leaf trees
+  if (leaves.length === 1) {
+    return [blake3AsU8a(leaves[0])];
+  }
+
   const nodes: Uint8Array[] = Array<Uint8Array>(leaves.length * 2 - 1);
 
   const startingIndex = leaves.length - 1;
@@ -62,6 +72,8 @@ export function generateProof(
   // Sort indices
   indices = [...indices].sort((a, b) => a - b);
 
+  console.log('[dedot]indices', indices);
+
   // Calculate the starting index for leaves in the tree
   const startingIndex = leaves.length - 1;
 
@@ -69,33 +81,35 @@ export function generateProof(
 
   // Map to tree indices
   const leafIndices = indices.map((idx) => startingIndex + idx);
-  
+
   // Create a Set for efficient lookup
   const leafIndicesSet = new Set(leafIndices);
-  
+
   // Collect proof indices
   const proofIndicesSet = new Set<number>();
-  
+
   // For each leaf index, traverse up the tree and collect sibling nodes
   for (const leafIdx of leafIndices) {
     let currentIdx = leafIdx;
-    
-    while (currentIdx > 0) { // While not at the root
+
+    while (currentIdx > 0) {
+      // While not at the root
       // Get sibling index
-      const siblingIdx = currentIdx % 2 === 0 
-        ? currentIdx - 1  // If current is right child, sibling is left
-        : currentIdx + 1; // If current is left child, sibling is right
-      
+      const siblingIdx =
+        currentIdx % 2 === 0
+          ? currentIdx - 1 // If current is right child, sibling is left
+          : currentIdx + 1; // If current is left child, sibling is right
+
       // If sibling exists and is not one of our target nodes, add to proof
       if (siblingIdx < nodes.length && !leafIndicesSet.has(siblingIdx)) {
         proofIndicesSet.add(siblingIdx);
       }
-      
+
       // Move up to parent
       currentIdx = Math.floor((currentIdx - 1) / 2);
     }
   }
-  
+
   // Convert Set to Array and sort
   const proofIndices = [...proofIndicesSet].sort((a, b) => a - b);
 
@@ -109,7 +123,7 @@ export function generateProof(
 
 /**
  * Verify a Merkle proof
- * 
+ *
  * @param rootHash - The expected root hash
  * @param leaves - The leaf nodes included in the proof
  * @param leafIndices - The indices of the leaves in the original tree

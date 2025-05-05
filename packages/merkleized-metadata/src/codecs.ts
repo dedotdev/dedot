@@ -120,6 +120,14 @@ export const $ExtrinsicMetadata = $.Struct({
 
 export type ExtrinsicMetadata = $.Input<typeof $ExtrinsicMetadata>;
 
+export const $ChainInfo = $.Struct({
+  specVersion: $.u32,
+  specName: $.str,
+  ss58Prefix: $.u16,
+  decimals: $.u8,
+  tokenSymbol: $.str,
+});
+
 /**
  * Metadata digest structure as defined in RFC-0078
  */
@@ -128,12 +136,16 @@ export const $MetadataDigest = $.Enum({
   V1: $.Struct({
     typeInformationTreeRoot: $.FixedHex(32),
     extrinsicMetadataHash: $.FixedHex(32),
-    specVersion: $.u32,
-    specName: $.str,
-    base58Prefix: $.u16,
-    decimals: $.u8,
-    tokenSymbol: $.str,
+    chainInfo: $ChainInfo,
   }),
 });
 
 export type MetadataDigest = $.Input<typeof $MetadataDigest>;
+
+export const $Proof = $.Struct({
+  leaves: $.Vec($.sizedUint8Array(32)),
+  leafIndices: $.Vec($.u32),
+  proofs: $.Vec($.sizedUint8Array(32)),
+  extrinsicMetadata: $ExtrinsicMetadata,
+  chainInfo: $ChainInfo,
+});
