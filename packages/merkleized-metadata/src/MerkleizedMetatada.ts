@@ -1,6 +1,7 @@
 import { $ExtrinsicVersion, $Metadata, Metadata, PortableRegistry, RuntimeVersion } from '@dedot/codecs';
 import * as $ from '@dedot/shape';
 import { assert, blake3AsHex, HexString, hexToU8a, stringCamelCase, u8aToHex } from '@dedot/utils';
+import fs from 'fs';
 import {
   $ExtrinsicMetadata,
   $MetadataDigest,
@@ -10,7 +11,7 @@ import {
   MetadataDigest,
   TypeRef,
 } from './codecs';
-import { buildMerkleTree, generateProof } from './merkle';
+import { buildMerkleTree, generateProofs } from './merkle';
 import { transformMetadata } from './transform';
 import { ChainInfo, ChainInfoOptional, MetadataProof } from './types.js';
 
@@ -81,7 +82,7 @@ export class MerkleizedMetatada {
     // 1. Decode the extrinsic to extract call data, extrinsic extra, and signed extra
     const $Codec = $.Tuple($.compactU32, $ExtrinsicVersion, $.RawHex);
 
-    const [length, version, bytes] = $Codec.tryDecode(extrinsic);
+    const [_, version, bytes] = $Codec.tryDecode(extrinsic);
 
     const { extrinsicMetadata, typeInfo } = transformMetadata(this.#metadata);
 
@@ -101,8 +102,6 @@ export class MerkleizedMetatada {
     if (!!additionalSigned) {
       typeRefs.push(...extrinsicMetadata.signedExtensions.map((e) => e.includedInSignedData));
     }
-
-    console.log(length, version, bytes == extrinsic, bytes, typeRefs);
 
     type PrimitiveType =
       | 'bool'
@@ -175,14 +174,14 @@ export class MerkleizedMetatada {
       return decoded;
     };
 
-    const collectedIdx = new Set<number>();
+    const collectedIndices = new Set<number>();
 
     const decodeAndCollect = (one: TypeRef) => {
       if (one.type === 'perId') {
         const indexes = refIdToIdx.get(one.value)!;
         const [idx] = indexes;
 
-        if (indexes.length === 1) collectedIdx.add(idx);
+        if (indexes.length === 1) collectedIndices.add(idx);
 
         const { typeDef } = typeInfo[idx];
 
@@ -214,7 +213,7 @@ export class MerkleizedMetatada {
               .map((id) => [typeInfo[id].typeDef.value, id] as [EnumerationVariant, number])!
               .find(([{ index }]) => index === selectedIdx)!;
 
-            collectedIdx.add(idx);
+            collectedIndices.add(idx);
             fields.forEach(({ ty }) => decodeAndCollect(ty));
             break;
         }
@@ -225,22 +224,19 @@ export class MerkleizedMetatada {
 
     typeRefs.map(decodeAndCollect);
 
-    console.log(collectedIdx);
+    // console.log(collectedIdx);
 
     if (toDecode.length > 0) {
       throw new Error('Extra bytes at the end of the extrinsic!');
     }
 
-    // 3. Generate proof for those type IDs
-
     const leaves = typeInfo.map((info) => $TypeInfo.encode(info));
 
-    const generatedProofs = generateProof(leaves, [...collectedIdx]);
-
-    console.log('[dedot] proofs', generatedProofs.proofs.length);
+    // Sort indices for consistency
+    const knownIndices = [...collectedIndices].sort((a, b) => a - b);
 
     return $Proof.encode({
-      ...generatedProofs,
+      ...generateProofs(leaves, knownIndices),
       extrinsicMetadata,
       chainInfo: this.#chainInfo,
     });

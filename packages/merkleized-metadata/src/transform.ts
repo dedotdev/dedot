@@ -1,4 +1,5 @@
 import { Metadata, PortableRegistry, PortableType } from '@dedot/codecs';
+import fs from 'fs';
 import { TypeRef } from './codecs';
 import { ExtrinsicMetadata, Field, TypeInfo } from './codecs.js';
 

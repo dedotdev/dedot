@@ -8,4 +8,4 @@ export * from './codecs.js';
 export * from './MerkleizedMetatada.js';
 
 // Export utility functions
-export { buildMerkleTree, generateProof } from './merkle.js';
+export { buildMerkleTree, generateProofs } from './merkle.js';
