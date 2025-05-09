@@ -138,11 +138,6 @@ export abstract class BaseSubmittableExtrinsic extends Extrinsic implements ISub
     if (!alteredTx.signed) {
       throw new DedotError('Altered transaction from signer is not signed');
     }
-
-    // Signer's not allow the change the call data
-    if (alteredTx.callHex !== this.callHex) {
-      throw new DedotError('Call data does not match, signer is not allowed to change tx call data.');
-    }
   }
 
   #getSigner(options?: Partial<SignerOptions>): InjectedSigner | undefined {

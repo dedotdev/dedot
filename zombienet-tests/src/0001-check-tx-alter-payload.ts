@@ -1,7 +1,7 @@
 import Keyring from '@polkadot/keyring';
 import { cryptoWaitReady } from '@polkadot/util-crypto';
 import { ExtrinsicSignature } from '@dedot/codecs';
-import { InjectedSigner, SignerResult } from '@dedot/types';
+import { InjectedSigner, SignerPayloadJSON, SignerResult } from '@dedot/types';
 import { assert, u8aToHex } from '@dedot/utils';
 import { $, LegacyClient, WsProvider } from 'dedot';
 
@@ -16,7 +16,9 @@ export const run = async (nodeName: any, networkInfo: any): Promise<void> => {
   const tip = 1_000n;
 
   const alterSigner = {
-    signPayload: async (): Promise<SignerResult> => {
+    signPayload: async (payload: SignerPayloadJSON): Promise<SignerResult> => {
+      assert(payload.withSignedTransaction, 'withSignedTransaction should be true');
+
       // Changing the payload to add some tip
       // So we should expect the tip should be presence where the original tx does not have
       // Proving that the original tx payload is already alter to add the tip
