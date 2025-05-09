@@ -1,10 +1,10 @@
+import type { SignedExtensionDefLatest } from '@dedot/codecs';
 import * as $ from '@dedot/shape';
 import { SignerPayloadJSON, SignerPayloadRaw } from '@dedot/types';
 import { ensurePresence, HexString, u8aToHex } from '@dedot/utils';
-import { ISignedExtension, SignedExtension } from './SignedExtension.js';
 import { FallbackSignedExtension, isEmptyStructOrTuple } from './FallbackSignedExtension.js';
+import { ISignedExtension, SignedExtension } from './SignedExtension.js';
 import { knownSignedExtensions } from './known/index.js';
-import type { SignedExtensionDefLatest } from '@dedot/codecs';
 
 export class ExtraSignedExtension extends SignedExtension<any[], any[]> {
   #signedExtensions?: ISignedExtension[];
@@ -65,7 +65,7 @@ export class ExtraSignedExtension extends SignedExtension<any[], any[]> {
             ...ensurePresence(this.options),
             def: extDef,
           },
-          extDef.ident
+          extDef.ident,
         );
       }
 
@@ -81,7 +81,7 @@ export class ExtraSignedExtension extends SignedExtension<any[], any[]> {
    */
   private isRequireNoExternalInputs(extDef: SignedExtensionDefLatest): boolean {
     return (
-      isEmptyStructOrTuple(this.registry, extDef.typeId) &&
+      isEmptyStructOrTuple(this.registry, extDef.typeId) && // prettier-end-here
       isEmptyStructOrTuple(this.registry, extDef.additionalSigned)
     );
   }
@@ -89,9 +89,16 @@ export class ExtraSignedExtension extends SignedExtension<any[], any[]> {
   toPayload(call: HexString = '0x'): SignerPayloadJSON {
     const signedExtensions = this.#signedExtensions!.map((se) => se.identifier);
     const { version } = this.registry.metadata.extrinsic;
+    const { signerAddress } = this.options!;
 
     return Object.assign(
-      { address: this.options!.signerAddress, signedExtensions, version, method: call },
+      {
+        address: signerAddress,
+        signedExtensions,
+        version,
+        method: call,
+        withSignedTransaction: true, // allow signer/wallet to alter transaction by default
+      },
       ...this.#signedExtensions!.map((se) => se.toPayload()),
     ) as SignerPayloadJSON;
   }
