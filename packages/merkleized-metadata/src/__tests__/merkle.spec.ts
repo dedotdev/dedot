@@ -1,6 +1,6 @@
 import { blake3AsU8a, concatU8a, u8aToHex } from '@dedot/utils';
 import { describe, expect, it } from 'vitest';
-import { buildMerkleTree, generateProofs, verifyProof } from '../merkle';
+import { buildMerkleTree, generateProof, verifyProof } from '../merkle';
 
 describe('merkle', () => {
   describe('buildMerkleTree', () => {
@@ -50,7 +50,7 @@ describe('merkle', () => {
     it('should return empty arrays for empty indices', () => {
       const leaves = [new Uint8Array([1, 2, 3]), new Uint8Array([4, 5, 6])];
 
-      const proof = generateProofs(leaves, []);
+      const proof = generateProof(leaves, []);
 
       expect(proof.leaves).toEqual([]);
       expect(proof.leafIndices).toEqual([]);
@@ -66,7 +66,7 @@ describe('merkle', () => {
       ];
 
       // Generate proof for the first leaf (index 0)
-      const proof = generateProofs(leaves, [0]);
+      const proof = generateProof(leaves, [0]);
 
       // The leaf indices should be [3] (tree index for the first leaf)
       expect(proof.leafIndices).toEqual([3]);
@@ -96,7 +96,7 @@ describe('merkle', () => {
       ];
 
       // Generate proof for leaves 0 and 2
-      const proof = generateProofs(leaves, [0, 2]);
+      const proof = generateProof(leaves, [0, 2]);
 
       // The leaf indices should be [3, 5] (tree indices for leaves 0 and 2)
       expect(proof.leafIndices).toEqual([3, 5]);
@@ -132,7 +132,7 @@ describe('merkle', () => {
       const rootHash = tree[0];
 
       // Generate proof for leaf 1
-      const proof = generateProofs(leaves, [1]);
+      const proof = generateProof(leaves, [1]);
 
       // For verification, we'll use a simpler approach
       // We know the structure of our test tree:
@@ -179,7 +179,7 @@ describe('merkle', () => {
       const rootHash = tree[0];
 
       // Generate proof for leaf 1
-      const proof = generateProofs(leaves, [5, 7]);
+      const proof = generateProof(leaves, [5, 7]);
       console.log(proof);
 
       // Manually verify the proof first to confirm it's correct
@@ -262,7 +262,7 @@ describe('merkle', () => {
       const rootHash = tree[0];
 
       // Generate proof for leaf 1
-      const proof = generateProofs(leaves, [1]);
+      const proof = generateProof(leaves, [1]);
 
       // Tamper with the leaf
       const tamperedLeaves = [new Uint8Array([99, 99, 99])]; // Different data
@@ -288,7 +288,7 @@ describe('merkle', () => {
       const rootHash = tree[0];
 
       // Generate proof for leaf 1
-      const proof = generateProofs(leaves, [1]);
+      const proof = generateProof(leaves, [1]);
 
       // Use wrong indices (leaf 0 instead of leaf 1)
       const wrongIndices = [3]; // Tree index for leaf 0
@@ -314,7 +314,7 @@ describe('merkle', () => {
       const rootHash = tree[0];
 
       // Generate proof for leaf 1
-      const proof = generateProofs(leaves, [1]);
+      const proof = generateProof(leaves, [1]);
 
       // Tamper with the proof nodes
       const tamperedProofs = [new Uint8Array([99, 99, 99])]; // Different data
@@ -335,7 +335,7 @@ describe('merkle', () => {
       const rootHash = tree[0];
 
       // Generate proof for the only leaf
-      const proof = generateProofs(leaves, [0]);
+      const proof = generateProof(leaves, [0]);
 
       // Verify the proof
       const isValid = verifyProof(rootHash, proof.leaves, proof.leafIndices, proof.proofs);
@@ -353,7 +353,7 @@ describe('merkle', () => {
       const rootHash = tree[0];
 
       // Generate an empty proof
-      const proof = generateProofs(leaves, []);
+      const proof = generateProof(leaves, []);
 
       // Verify the empty proof
       const isValid = verifyProof(rootHash, proof.leaves, proof.leafIndices, proof.proofs);

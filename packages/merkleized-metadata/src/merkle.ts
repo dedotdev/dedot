@@ -61,7 +61,7 @@ function getLevel(nodeIndex: number): number {
  * @param indices - Indices of leaves to generate proof for
  * @returns Proof data
  */
-export function generateProofs(
+export function generateProof(
   leaves: Uint8Array[],
   indices: number[],
 ): {

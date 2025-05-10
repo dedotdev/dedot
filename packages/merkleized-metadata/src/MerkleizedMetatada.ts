@@ -11,7 +11,7 @@ import {
   TypeInfo,
   TypeRef,
 } from './codecs';
-import { buildMerkleTree, generateProofs } from './merkle';
+import { buildMerkleTree, generateProof } from './merkle';
 import { transformMetadata } from './transform';
 import { ChainInfo, ChainInfoOptional } from './types.js';
 
@@ -213,6 +213,13 @@ export class MerkleizedMetatada {
 
     const { extrinsicMetadata, typeInfo } = transformMetadata(this.#metadata);
 
+    let toDecode = toU8a(bytes);
+
+    assert(
+      version.version === extrinsicMetadata.version,
+      `Invalid extrinsic version, expected version ${extrinsicMetadata.version}`,
+    );
+
     // 2. Identify the type IDs used in the extrinsic
     const typeRefs: TypeRef[] = [];
     if (version.signed) {
@@ -226,16 +233,19 @@ export class MerkleizedMetatada {
       typeRefs.push(extrinsicMetadata.callTy);
     }
 
-    if (!!additionalSigned) {
+    if (additionalSigned) {
       typeRefs.push(...extrinsicMetadata.signedExtensions.map((e) => e.includedInSignedData));
+      toDecode = concatU8a(toU8a(toDecode), toU8a(additionalSigned));
     }
 
-    const knownLeafIndices = this.#decodeAndCollectLeaves(toU8a(bytes), typeRefs, typeInfo);
+    const knownLeafIndices = this.#decodeAndCollectLeaves(toDecode, typeRefs, typeInfo);
 
     const leaves = typeInfo.map((info) => $TypeInfo.encode(info));
 
+    const proof = generateProof(leaves, knownLeafIndices);
+
     return $Proof.encode({
-      ...generateProofs(leaves, knownLeafIndices),
+      ...proof,
       extrinsicMetadata,
       chainInfo: this.#chainInfo,
     });
@@ -272,7 +282,7 @@ export class MerkleizedMetatada {
     const leaves = typeInfo.map((info) => $TypeInfo.encode(info));
 
     return $Proof.encode({
-      ...generateProofs(leaves, knownLeafIndices),
+      ...generateProof(leaves, knownLeafIndices),
       extrinsicMetadata,
       chainInfo: this.#chainInfo,
     });
