@@ -2,7 +2,7 @@ import Keyring from '@polkadot/keyring';
 import { cryptoWaitReady } from '@polkadot/util-crypto';
 import { DedotClient } from '@dedot/api';
 import { WsProvider } from '@dedot/providers';
-import { HexString } from '@dedot/utils';
+import { HexString, u8aToHex } from '@dedot/utils';
 import { MerkleizedMetatada } from '../src/index.js';
 
 /**
@@ -32,13 +32,10 @@ async function main() {
   const remarkTx = client.tx.system.remark('Hello World');
   await remarkTx.sign(alice, { tip: 1000_000n });
 
+  console.log('Calculating metadata hash...');
   console.log('txHex', remarkTx.toHex());
-
-  // Calculate metadata hash
-  // console.log('Calculating metadata hash...');
-  console.log(merkleizer.proofForExtrinsic(remarkTx.toHex()));
-  // const digest = merkleizer.digest();
-  // console.log('Digest Version:', digest);
+  console.log('Digest:', u8aToHex(merkleizer.digest()));
+  console.log('ProofForExtrinsic', u8aToHex(merkleizer.proofForExtrinsic(remarkTx.toHex())));
 
   // Disconnect the client
   await client.disconnect();
