@@ -1,6 +1,6 @@
 import { $ExtrinsicVersion, $Metadata, Metadata, PortableRegistry, RuntimeVersion } from '@dedot/codecs';
 import * as $ from '@dedot/shape';
-import { assert, blake3AsHex, concatU8a, HexString, stringCamelCase, toU8a, u8aToHex } from '@dedot/utils';
+import { assert, blake3AsHex, blake3AsU8a, concatU8a, HexString, stringCamelCase, toU8a, u8aToHex } from '@dedot/utils';
 import {
   $ExtrinsicMetadata,
   $MetadataDigest,
@@ -53,7 +53,7 @@ export class MerkleizedMetatada {
    *
    * @returns The metadata digest
    */
-  digest(): HexString {
+  digest(): Uint8Array {
     const { typeInfo, extrinsicMetadata } = transformMetadata(this.#metadata);
 
     const encodedTypes = typeInfo.map((info) => $TypeInfo.encode(info));
@@ -67,7 +67,7 @@ export class MerkleizedMetatada {
       },
     };
 
-    return blake3AsHex($MetadataDigest.encode(digest));
+    return blake3AsU8a($MetadataDigest.encode(digest));
   }
 
   #decodeAndCollectLeaves(toDecode: Uint8Array, typeRefs: TypeRef[], typeInfo: TypeInfo[]): number[] {

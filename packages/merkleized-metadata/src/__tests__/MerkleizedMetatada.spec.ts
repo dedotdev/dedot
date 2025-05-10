@@ -1,5 +1,5 @@
 import * as $ from '@dedot/shape';
-import { HexString, hexStripPrefix, hexToU8a } from '@dedot/utils';
+import { HexString, hexStripPrefix, hexToU8a, u8aToHex } from '@dedot/utils';
 import fs from 'fs';
 import path from 'path';
 import { describe, expect, it } from 'vitest';
@@ -50,7 +50,7 @@ describe('MerkleizedMetatada', () => {
 
         const merkleizer = new MerkleizedMetatada(metadata, chainInfo);
 
-        expect(merkleizer.digest()).toEqual(expectedHash);
+        expect(u8aToHex(merkleizer.digest())).toEqual(expectedHash);
       });
     });
   });
@@ -62,7 +62,7 @@ describe('MerkleizedMetatada', () => {
       // This is a placeholder test that will always pass
       expect(true).toBe(true);
     });
-    
+
     it('should include additional signed data in the proof when provided', () => {
       // Skip this test for now as it requires actual extrinsic data
       // In a real test, we would use actual extrinsic data from the chain
