@@ -1,4 +1,4 @@
-import { OpaqueMetadata } from '@dedot/codecs/codecs';
+import { OpaqueMetadata } from '@dedot/codecs';
 import * as $ from '@dedot/shape';
 import { ensurePresence, HexString, u8aToHex } from '@dedot/utils';
 import { toV15 } from './conversion/index.js';
