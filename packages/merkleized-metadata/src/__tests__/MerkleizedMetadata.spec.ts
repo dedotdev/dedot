@@ -3,7 +3,7 @@ import { HexString, hexStripPrefix, hexToU8a, u8aToHex } from '@dedot/utils';
 import fs from 'fs';
 import path from 'path';
 import { beforeEach, describe, expect, it } from 'vitest';
-import { MerkleizedMetatada } from '../MerkleizedMetatada.js';
+import { MerkleizedMetadata } from '../MerkleizedMetadata.js';
 import { DIGEST_FIXTURES, TX_PAYLOAD_PROOF_FIXTURES, TX_PROOF_FIXTURES } from './fixtures.js';
 
 // Fixed chain information for all tests
@@ -18,13 +18,13 @@ const loadMetadata = (fileName: string): HexString => {
   return $.Option($.lenPrefixed($.RawHex)).decode(hexToU8a(hexStripPrefix(metadataHex.trim())))!;
 };
 
-describe('MerkleizedMetatada', () => {
+describe('MerkleizedMetadata', () => {
   describe('digest', () => {
     DIGEST_FIXTURES.forEach(({ name, expectedHash }) => {
       it(`should calculate correct hash for ${name}`, () => {
         const metadata = loadMetadata(name);
 
-        const merkleizer = new MerkleizedMetatada(metadata, CHAIN_INFO);
+        const merkleizer = new MerkleizedMetadata(metadata, CHAIN_INFO);
 
         expect(u8aToHex(merkleizer.digest())).toEqual(expectedHash);
       });
@@ -32,10 +32,10 @@ describe('MerkleizedMetatada', () => {
   });
 
   describe('proofFor*', () => {
-    let merkleizer: MerkleizedMetatada;
+    let merkleizer: MerkleizedMetadata;
     beforeEach(() => {
       const metadata = loadMetadata('polkadot_metadata_v15');
-      merkleizer = new MerkleizedMetatada(metadata, CHAIN_INFO);
+      merkleizer = new MerkleizedMetadata(metadata, CHAIN_INFO);
     });
 
     describe('proofForExtrinsic', () => {

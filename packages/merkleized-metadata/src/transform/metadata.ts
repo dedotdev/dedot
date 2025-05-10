@@ -1,196 +1,7 @@
-import { Metadata, PortableRegistry, PortableType } from '@dedot/codecs';
-import fs from 'fs';
-import { TypeRef } from './codecs';
-import { ExtrinsicMetadata, Field, TypeInfo } from './codecs.js';
-
-/**
- * Map of primitive types to TypeRef tags
- */
-const PRIMITIVE_TYPE_MAP: Record<string, TypeRef['type']> = {
-  bool: 'bool',
-  char: 'char',
-  str: 'str',
-  u8: 'u8',
-  u16: 'u16',
-  u32: 'u32',
-  u64: 'u64',
-  u128: 'u128',
-  u256: 'u256',
-  i8: 'i8',
-  i16: 'i16',
-  i32: 'i32',
-  i64: 'i64',
-  i128: 'i128',
-  i256: 'i256',
-};
-
-/**
- * Map of compact types to TypeRef tags
- */
-const COMPACT_TYPE_MAP: Record<string, TypeRef['type']> = {
-  u8: 'compactU8',
-  u16: 'compactU16',
-  u32: 'compactU32',
-  u64: 'compactU64',
-  u128: 'compactU128',
-  u256: 'compactU256',
-};
-
-/**
- * Check if a type is a primitive type
- *
- * @param type - Type to check
- * @param registry - Portable registry
- * @returns Whether the type is a primitive type
- */
-function isPrimitiveType(type: PortableType, registry: PortableRegistry): boolean {
-  return type.typeDef.type === 'Primitive';
-}
-
-/**
- * Get primitive type tag for a type
- *
- * @param type - Type to get primitive tag for
- * @param registry - Portable registry
- * @returns Primitive type tag or null if not a primitive
- */
-function getPrimitiveTypeTag(type: PortableType, registry: PortableRegistry): TypeRef['type'] | null {
-  if (type.typeDef.type === 'Primitive') {
-    const primitive = type.typeDef.value.kind;
-    return PRIMITIVE_TYPE_MAP[primitive] || null;
-  }
-
-  if (type.typeDef.type === 'Tuple' && type.typeDef.value.fields.length === 1) {
-    return getPrimitiveTypeTag(registry.findType(type.typeDef.value.fields[0]), registry);
-  }
-
-  if (type.typeDef.type === 'Struct' && type.typeDef.value.fields.length === 1) {
-    return getPrimitiveTypeTag(registry.findType(type.typeDef.value.fields[0].typeId), registry);
-  }
-
-  return null;
-}
-
-/**
- * Check if a type is a compact type
- *
- * @param type - Type to check
- * @param registry - Portable registry
- * @returns Whether the type is a compact type
- */
-function isCompactType(type: PortableType, registry: PortableRegistry): boolean {
-  if (type.typeDef.type !== 'Compact') {
-    return false;
-  }
-
-  const innerType = registry.findType(type.typeDef.value.typeParam);
-  return innerType.typeDef.type === 'Primitive';
-}
-
-/**
- * Get compact type tag for a type
- *
- * @param type - Type to get compact tag for
- * @param registry - Portable registry
- * @returns Compact type tag or null if not a compact
- */
-function getCompactTypeTag(type: PortableType, registry: PortableRegistry): TypeRef['type'] | null {
-  if (type.typeDef.type !== 'Compact') {
-    return null;
-  }
-
-  const innerType = registry.findType(type.typeDef.value.typeParam);
-
-  const primitive = getPrimitiveTypeTag(innerType, registry);
-  return primitive ? COMPACT_TYPE_MAP[primitive] : null;
-}
-
-/**
- * Check if a type is a void type (empty composite or tuple)
- *
- * @param type - Type to check
- * @param registry - Portable registry
- * @returns Whether the type is a void type
- */
-function isVoidType(type: PortableType, registry: PortableRegistry): boolean {
-  if (type.typeDef.type === 'Struct') {
-    return type.typeDef.value.fields.length === 0;
-  }
-
-  if (type.typeDef.type === 'Tuple') {
-    return type.typeDef.value.fields.length === 0;
-  }
-
-  return false;
-}
-
-/**
- * Get accessible types from metadata
- *
- * @param metadata - Metadata
- * @returns Map of type IDs to their positions
- */
-export function getAccessibleTypes(metadata: Metadata): Map<number, number> {
-  const registry = new PortableRegistry(metadata.latest);
-  const types = new Set<number>();
-
-  // Helper function to collect types recursively
-  const collectTypesFromId = (id: number) => {
-    if (types.has(id)) return;
-
-    const type = registry.findType(id);
-    const { typeDef } = type;
-
-    if (typeDef.type === 'Struct') {
-      if (typeDef.value.fields.length === 0) return;
-
-      types.add(id);
-      typeDef.value.fields.forEach((field) => {
-        collectTypesFromId(field.typeId);
-      });
-    } else if (typeDef.type === 'Enum') {
-      if (typeDef.value.members.length === 0) return;
-
-      types.add(id);
-      typeDef.value.members.forEach((variant) => {
-        variant.fields.forEach((field) => {
-          collectTypesFromId(field.typeId);
-        });
-      });
-    } else if (typeDef.type === 'Tuple') {
-      if (typeDef.value.fields.length === 0) return;
-
-      types.add(id);
-      typeDef.value.fields.forEach(collectTypesFromId);
-    } else if (typeDef.type === 'Sequence') {
-      types.add(id);
-      collectTypesFromId(typeDef.value.typeParam);
-    } else if (typeDef.type === 'SizedVec') {
-      types.add(id);
-      collectTypesFromId(typeDef.value.typeParam);
-    } else if (typeDef.type === 'BitSequence') {
-      types.add(id);
-    }
-
-    // Primitive, compact & BitSequence types are not stored
-  };
-
-  // Collect types from extrinsic metadata
-  collectTypesFromId(metadata.latest.extrinsic.callTypeId);
-  collectTypesFromId(metadata.latest.extrinsic.addressTypeId);
-  collectTypesFromId(metadata.latest.extrinsic.signatureTypeId);
-
-  metadata.latest.extrinsic.signedExtensions.forEach((ext) => {
-    collectTypesFromId(ext.typeId);
-    collectTypesFromId(ext.additionalSigned);
-  });
-
-  // Sort types by ID
-  const sortedTypes = [...types].sort((a, b) => a - b);
-
-  // Create map of type IDs to their positions
-  return new Map(sortedTypes.map((value, idx) => [value, idx]));
-}
+import { Metadata, PortableRegistry } from '@dedot/codecs';
+import { ExtrinsicMetadata, Field, TypeInfo, TypeRef } from '../codecs';
+import { getAccessibleTypes } from './accessibleTypes';
+import { getCompactTypeTag, getPrimitiveTypeTag } from './typeUtils';
 
 /**
  * Generate TypeRef for a type
@@ -244,17 +55,6 @@ function convertField(
   registry: PortableRegistry,
   accessibleTypes: Map<number, number>,
 ): Field {
-  if (field.typeName === 'ParaId') {
-    // const type = registry.findType(field.typeId);
-    // console.log(
-    //   'field',
-    //   field,
-    //   registry.findType(field.typeId),
-    //   generateTypeRef(field.typeId, registry, accessibleTypes),
-    // );
-    // console.log('====');
-  }
-
   return {
     typeName: field.typeName,
     name: field.name,
@@ -349,15 +149,6 @@ export function generateTypeDefinitions(metadata: Metadata, accessibleTypes: Map
       const orderType = registry.findType(bitOrderType);
       const leastSignificantBitFirst = orderType.path.some((p) => p.includes('Lsb0'));
 
-      // console.log(
-      //   'numBytes',
-      //   {
-      //     numBytes,
-      //     leastSignificantBitFirst,
-      //   },
-      //   type.typeDef,
-      // );
-
       typeTree.push({
         path,
         typeId,
@@ -437,3 +228,6 @@ export function transformMetadata(metadata: Metadata): {
     extrinsicMetadata,
   };
 }
+
+// Import this at the end to avoid circular dependencies
+import { PRIMITIVE_TYPE_MAP } from './typeUtils';

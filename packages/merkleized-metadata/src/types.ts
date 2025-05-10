@@ -1,5 +1,3 @@
-import { ExtrinsicMetadata, TypeInfo } from './codecs';
-
 type OptionalProps<T, K extends keyof T> = Omit<T, K> & Partial<Pick<T, K>>;
 
 /**
@@ -23,23 +21,3 @@ export interface ChainInfo {
 }
 
 export type ChainInfoOptional = OptionalProps<ChainInfo, 'specVersion' | 'specName' | 'ss58Prefix'>;
-
-/**
- * Proof for metadata verification
- */
-export interface MetadataProof {
-  /** Leaves included in the proof */
-  leaves: Uint8Array[];
-
-  /** Indices of the leaves in the original tree */
-  leafIndices: number[];
-
-  /** Proof hashes */
-  proofs: Uint8Array[];
-
-  /** Extrinsic metadata */
-  extrinsicMetadata: ExtrinsicMetadata;
-
-  /** Chain metadata info */
-  chainInfo: ChainInfo;
-}
