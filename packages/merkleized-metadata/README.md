@@ -20,12 +20,17 @@ This package provides utilities for calculating metadata hashes according to the
 - Generate proofs for extrinsics
 - Verify metadata proofs
 
+The package is organized into a modular structure:
+- Core functionality in the main `MerkleizedMetadata` class
+- Merkle tree operations in the `merkle` module
+- Metadata transformation utilities in the `transform` module
+
 ## Usage
 
 ### Calculating Metadata Hash
 
 ```typescript
-import { MerkleizedMetadata, ChainMetadataInfo } from '@dedot/merkleized-metadata';
+import { MerkleizedMetadata } from '@dedot/merkleized-metadata';
 import { DedotClient } from '@dedot/api';
 
 // Create a dedot client
@@ -35,10 +40,13 @@ const client = await DedotClient.create('wss://rpc.polkadot.io');
 const metadata = client.metadata;
 
 // Define chain-specific information
-const chainInfo: ChainMetadataInfo = {
-  specVersion: client.runtimeVersion.specVersion,
-  specName: client.runtimeVersion.specName,
-  ss58Prefix: 0, // Polkadot
+const chainInfo = {
+  // These can be omitted as they'll be fetched from metadata
+  // specVersion: client.runtimeVersion.specVersion,
+  // specName: client.runtimeVersion.specName,
+  // ss58Prefix: 0, // Polkadot
+  
+  // These are required
   decimals: 10,
   tokenSymbol: 'DOT'
 };
@@ -47,23 +55,8 @@ const chainInfo: ChainMetadataInfo = {
 const calculator = new MerkleizedMetadata(metadata, chainInfo);
 
 // Calculate metadata hash
-const result = calculator.calculateHash();
-console.log('Metadata Hash:', result.hashHex);
-```
-
-### Using Utility Functions
-
-```typescript
-import { calculateMetadataHash, calculateMetadataHashHex, createMetadataDigest } from '@dedot/merkleized-metadata';
-
-// Calculate metadata hash directly
-const hashResult = calculateMetadataHash(metadata, chainInfo);
-
-// Calculate metadata hash and return as hex string
-const hashHex = calculateMetadataHashHex(metadata, chainInfo);
-
-// Create metadata digest without calculating hash
-const digest = createMetadataDigest(metadata, chainInfo);
+const hash = calculator.digest();
+console.log('Metadata Hash:', hash);
 ```
 
 ### Generating Proofs for Extrinsics
@@ -80,31 +73,93 @@ const proof = calculator.proofForExtrinsic(extrinsicHex);
 
 // Generate proof for extrinsic parts
 const callData = '0x...'; // Hex-encoded call data
-const extrinsicExtra = '0x...'; // Hex-encoded extrinsic extra
-const signedExtra = '0x...'; // Hex-encoded signed extra
-const proof2 = calculator.proofForExtrinsicParts(callData, extrinsicExtra, signedExtra);
+const includedInExtrinsic = '0x...'; // Hex-encoded extrinsic extra
+const includedInSignedData = '0x...'; // Hex-encoded signed extra
+const proof2 = calculator.proofForExtrinsicParts(callData, includedInExtrinsic, includedInSignedData);
+
+// Generate proof for extrinsic payload
+const txPayload = '0x...'; // Hex-encoded transaction payload
+const proof3 = calculator.proofForExtrinsicPayload(txPayload);
+```
+
+### Error Handling
+
+The package includes improved error handling with specific error types:
+
+```typescript
+import { MerkleizedMetadata, ExtrinsicDecodingError } from '@dedot/merkleized-metadata';
+
+try {
+  const proof = calculator.proofForExtrinsic(invalidExtrinsic);
+} catch (error) {
+  if (error instanceof ExtrinsicDecodingError) {
+    console.error('Failed to decode extrinsic:', error.message);
+    // Handle decoding error
+  } else {
+    // Handle other errors
+    console.error('Unexpected error:', error);
+  }
+}
+```
+
+### Using Merkle Tree Utilities Directly
+
+```typescript
+import { buildMerkleTree, generateProof } from '@dedot/merkleized-metadata';
+
+// Build a Merkle tree from leaves
+const leaves = [new Uint8Array([1, 2, 3]), new Uint8Array([4, 5, 6])];
+const tree = buildMerkleTree(leaves);
+const rootHash = tree[0];
+
+// Generate proof for specific leaves
+const indices = [0]; // Generate proof for the first leaf
+const proof = generateProof(leaves, indices);
 ```
 
 ## API Reference
 
 ### Classes
 
-- `MerkleizedMetadata` - Main class for calculating metadata hashes and generating proofs
+#### `MerkleizedMetadata`
 
-### Functions
+Main class for calculating metadata hashes and generating proofs.
 
-- `calculateMetadataHash` - Calculate metadata hash from metadata and chain info
-- `calculateMetadataHashHex` - Calculate metadata hash and return as hex string
-- `createMetadataDigest` - Create metadata digest from metadata and chain info
-- `buildMerkleTree` - Build a merkle tree from leaves
-- `generateProof` - Generate proof for specific type information
+- **Constructor**: `new MerkleizedMetadata(metadata, chainInfo)`
+  - `metadata`: Metadata object, hex string, or Uint8Array
+  - `chainInfo`: Chain-specific information (some fields can be omitted as they'll be fetched from metadata)
+
+- **Methods**:
+  - `digest()`: Calculate metadata hash and return as Uint8Array
+  - `proofForExtrinsic(extrinsic, additionalSigned?)`: Generate proof for an extrinsic
+  - `proofForExtrinsicParts(callData, includedInExtrinsic, includedInSignedData)`: Generate proof for extrinsic parts
+  - `proofForExtrinsicPayload(txPayload)`: Generate proof for extrinsic payload
+
+#### `ExtrinsicDecodingError`
+
+Error thrown when decoding extrinsic data fails.
+
+### Merkle Module Functions
+
+- `buildMerkleTree(leaves)`: Build a Merkle tree from leaves
+- `generateProof(leaves, indices)`: Generate proof for specific leaf indices
+- `verifyProof(rootHash, leaves, leafIndices, proofs)`: Verify a Merkle proof
 
 ### Types
 
-- `ChainMetadataInfo` - Chain-specific information required for metadata hash calculation
-- `MetadataDigest` - Metadata digest structure
-- `MetadataHashResult` - Result of metadata hash calculation
-- `MetadataProof` - Proof for metadata verification
+- `ChainInfo`: Chain-specific information required for metadata hash calculation
+  - `specVersion`: Runtime spec version
+  - `specName`: Runtime spec name
+  - `ss58Prefix`: SS58 address format prefix
+  - `decimals`: Token decimal places
+  - `tokenSymbol`: Token symbol
+
+- `ChainInfoOptional`: Same as `ChainInfo` but with some fields optional
+  - `specVersion?`: Optional runtime spec version
+  - `specName?`: Optional runtime spec name
+  - `ss58Prefix?`: Optional SS58 address format prefix
+  - `decimals`: Required token decimal places
+  - `tokenSymbol`: Required token symbol
 
 ## License
 

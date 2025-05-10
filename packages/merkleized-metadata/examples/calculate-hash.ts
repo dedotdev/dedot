@@ -3,7 +3,7 @@ import { cryptoWaitReady } from '@polkadot/util-crypto';
 import { DedotClient } from '@dedot/api';
 import { WsProvider } from '@dedot/providers';
 import { HexString, u8aToHex } from '@dedot/utils';
-import { MerkleizedMetatada } from '../src/index.js';
+import { MerkleizedMetadata } from '../src/index.js';
 
 /**
  * Example of calculating metadata hash for a real chain
@@ -24,7 +24,7 @@ async function main() {
 
   // Create a calculator instance
   console.log('Creating MetatadaMerkleizer...');
-  const merkleizer = new MerkleizedMetatada(metadata, {
+  const merkleizer = new MerkleizedMetadata(metadata, {
     decimals: 10,
     tokenSymbol: 'DOT',
   });
