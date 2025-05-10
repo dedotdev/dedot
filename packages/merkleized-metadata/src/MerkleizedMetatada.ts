@@ -1,7 +1,6 @@
 import { $ExtrinsicVersion, $Metadata, Metadata, PortableRegistry, RuntimeVersion } from '@dedot/codecs';
 import * as $ from '@dedot/shape';
-import { assert, blake3AsHex, HexString, hexToU8a, stringCamelCase, u8aToHex } from '@dedot/utils';
-import fs from 'fs';
+import { assert, blake3AsHex, concatU8a, HexString, stringCamelCase, toU8a, u8aToHex } from '@dedot/utils';
 import {
   $ExtrinsicMetadata,
   $MetadataDigest,
@@ -9,11 +8,12 @@ import {
   $TypeInfo,
   EnumerationVariant,
   MetadataDigest,
+  TypeInfo,
   TypeRef,
 } from './codecs';
 import { buildMerkleTree, generateProofs } from './merkle';
 import { transformMetadata } from './transform';
-import { ChainInfo, ChainInfoOptional, MetadataProof } from './types.js';
+import { ChainInfo, ChainInfoOptional } from './types.js';
 
 /**
  * @name MerkleizedMetatada
@@ -70,39 +70,7 @@ export class MerkleizedMetatada {
     return blake3AsHex($MetadataDigest.encode(digest));
   }
 
-  /**
-   * Generate proof for an extrinsic
-   *
-   * @param extrinsic - The extrinsic to generate proof for
-   * @param additionalSigned - Optional additional signed data
-   * @returns The metadata proof
-   */
-  proofForExtrinsic(extrinsic: Uint8Array | HexString, additionalSigned?: Uint8Array | HexString): Uint8Array {
-    // In a real implementation, we would:
-    // 1. Decode the extrinsic to extract call data, extrinsic extra, and signed extra
-    const $Codec = $.Tuple($.compactU32, $ExtrinsicVersion, $.RawHex);
-
-    const [_, version, bytes] = $Codec.tryDecode(extrinsic);
-
-    const { extrinsicMetadata, typeInfo } = transformMetadata(this.#metadata);
-
-    // 2. Identify the type IDs used in the extrinsic
-    const typeRefs: TypeRef[] = [];
-    if (version.signed) {
-      typeRefs.push(
-        extrinsicMetadata.addressTy,
-        extrinsicMetadata.signatureTy,
-        ...extrinsicMetadata.signedExtensions.map((e) => e.includedInExtrinsic),
-        extrinsicMetadata.callTy,
-      );
-    } else {
-      typeRefs.push(extrinsicMetadata.callTy);
-    }
-
-    if (!!additionalSigned) {
-      typeRefs.push(...extrinsicMetadata.signedExtensions.map((e) => e.includedInSignedData));
-    }
-
+  #decodeAndCollectLeaves(toDecode: Uint8Array, typeRefs: TypeRef[], typeInfo: TypeInfo[]): number[] {
     type PrimitiveType =
       | 'bool'
       | 'char'
@@ -151,8 +119,6 @@ export class MerkleizedMetatada {
       compactU256: $.compactU256,
       void: $.Null,
     };
-
-    let toDecode = hexToU8a(bytes);
 
     const refIdToIdx = new Map<number, number[]>();
     typeInfo.forEach((one, idx) => {
@@ -224,19 +190,52 @@ export class MerkleizedMetatada {
 
     typeRefs.map(decodeAndCollect);
 
-    // console.log(collectedIdx);
-
     if (toDecode.length > 0) {
       throw new Error('Extra bytes at the end of the extrinsic!');
     }
 
+    return [...collectedIndices].sort((a, b) => a - b);
+  }
+
+  /**
+   * Generate proof for an extrinsic
+   *
+   * @param extrinsic - The extrinsic to generate proof for
+   * @param additionalSigned - Optional additional signed data
+   * @returns The metadata proof
+   */
+  proofForExtrinsic(extrinsic: Uint8Array | HexString, additionalSigned?: Uint8Array | HexString): Uint8Array {
+    // In a real implementation, we would:
+    // 1. Decode the extrinsic to extract call data, extrinsic extra, and signed extra
+    const $Codec = $.Tuple($.compactU32, $ExtrinsicVersion, $.RawHex);
+
+    const [, version, bytes] = $Codec.tryDecode(extrinsic);
+
+    const { extrinsicMetadata, typeInfo } = transformMetadata(this.#metadata);
+
+    // 2. Identify the type IDs used in the extrinsic
+    const typeRefs: TypeRef[] = [];
+    if (version.signed) {
+      typeRefs.push(
+        extrinsicMetadata.addressTy,
+        extrinsicMetadata.signatureTy,
+        ...extrinsicMetadata.signedExtensions.map((e) => e.includedInExtrinsic),
+        extrinsicMetadata.callTy,
+      );
+    } else {
+      typeRefs.push(extrinsicMetadata.callTy);
+    }
+
+    if (!!additionalSigned) {
+      typeRefs.push(...extrinsicMetadata.signedExtensions.map((e) => e.includedInSignedData));
+    }
+
+    const knownLeafIndices = this.#decodeAndCollectLeaves(toU8a(bytes), typeRefs, typeInfo);
+
     const leaves = typeInfo.map((info) => $TypeInfo.encode(info));
 
-    // Sort indices for consistency
-    const knownIndices = [...collectedIndices].sort((a, b) => a - b);
-
     return $Proof.encode({
-      ...generateProofs(leaves, knownIndices),
+      ...generateProofs(leaves, knownLeafIndices),
       extrinsicMetadata,
       chainInfo: this.#chainInfo,
     });
@@ -244,23 +243,39 @@ export class MerkleizedMetatada {
 
   /**
    * Generate proof for extrinsic parts
-   *
-   * @param callData - The call data
-   * @param extrinsicExtra - The extrinsic extra data
-   * @param signedExtra - The signed extra data
-   * @returns The metadata proof
    */
   proofForExtrinsicParts(
     callData: Uint8Array | HexString,
-    extrinsicExtra: Uint8Array | HexString,
-    signedExtra: Uint8Array | HexString,
-  ): MetadataProof {
-    // Convert hex strings to Uint8Array if needed
-    // In a real implementation, we would:
-    // 1. Decode the call data, extrinsic extra, and signed extra
-    // 2. Identify the type IDs used in these components
-    // 3. Generate proof for those type IDs
-    throw new Error('To implement!');
+    includedInExtrinsic: Uint8Array | HexString,
+    includedInSignedData: Uint8Array | HexString,
+  ): Uint8Array {
+    const payload = concatU8a(
+      toU8a(callData), // prettier-end-here
+      toU8a(includedInExtrinsic),
+      toU8a(includedInSignedData),
+    );
+
+    return this.proofForExtrinsicPayload(payload);
+  }
+
+  proofForExtrinsicPayload(txPayload: Uint8Array | HexString): Uint8Array {
+    const { extrinsicMetadata, typeInfo } = transformMetadata(this.#metadata);
+
+    const typeRefs: TypeRef[] = [
+      extrinsicMetadata.callTy,
+      ...extrinsicMetadata.signedExtensions.map((e) => e.includedInExtrinsic),
+      ...extrinsicMetadata.signedExtensions.map((e) => e.includedInSignedData),
+    ];
+
+    const knownLeafIndices = this.#decodeAndCollectLeaves(toU8a(txPayload), typeRefs, typeInfo);
+
+    const leaves = typeInfo.map((info) => $TypeInfo.encode(info));
+
+    return $Proof.encode({
+      ...generateProofs(leaves, knownLeafIndices),
+      extrinsicMetadata,
+      chainInfo: this.#chainInfo,
+    });
   }
 
   #lookupConstant<T extends any = any>(pallet: string, constant: string): T {
