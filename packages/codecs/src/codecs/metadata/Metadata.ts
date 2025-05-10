@@ -15,6 +15,7 @@ import {
   RuntimeApiMethodDefV15,
   StorageEntryV15,
 } from './v15.js';
+import { $MetadataV16 } from './v16.js';
 
 export const notSupportedCodec = (msg = 'Not supported!'): $.Shape<never> => {
   return $.createShape({
@@ -48,6 +49,7 @@ export const $MetadataVersioned = $.Enum({
   V13: notSupportedCodec('Metadata V13 is not supported'),
   V14: $MetadataV14,
   V15: $MetadataV15,
+  V16: $MetadataV16,
 });
 
 export type MetadataVersioned = $.Input<typeof $MetadataVersioned>;
