@@ -3,8 +3,9 @@ import * as $ from '@dedot/shape';
 import { assert, blake3AsHex, blake3AsU8a, concatU8a, HexString, toU8a, u8aToHex } from '@dedot/utils';
 import { $ExtrinsicMetadata, $MetadataDigest, $Proof, $TypeInfo, TypeRef } from './codecs.js';
 import { buildMerkleTree, generateProof } from './merkle/index.js';
-import { decodeAndCollectLeaves, lookupConstant, transformMetadata } from './transform/index.js';
+import { decodeAndCollectLeaves, transformMetadata } from './transform/index.js';
 import { ChainInfo, ChainInfoOptional } from './types.js';
+import { lookupConstant } from './utils.js';
 
 /**
  * @name MerkleizedMetadata
