@@ -19,11 +19,6 @@ This package provides utilities for calculating metadata hashes according to the
 - Calculate metadata hashes for runtime metadata
 - Generate proofs for extrinsics
 
-The package is organized into a modular structure:
-- Core functionality in the main `MerkleizedMetadata` class
-- Merkle tree operations in the `merkle` module
-- Metadata transformation utilities in the `transform` module
-
 ## Usage
 
 ### Calculating Metadata Hash
@@ -50,11 +45,11 @@ const chainInfo = {
   tokenSymbol: 'DOT'
 };
 
-// Create a calculator instance
-const calculator = new MerkleizedMetadata(metadata, chainInfo);
+// Create a merkleizer instance
+const merkleizer = new MerkleizedMetadata(metadata, chainInfo);
 
 // Calculate metadata hash
-const hash = calculator.digest();
+const hash = merkleizer.digest();
 console.log('Metadata Hash:', hash);
 ```
 
@@ -63,44 +58,25 @@ console.log('Metadata Hash:', hash);
 ```typescript
 import { MerkleizedMetadata } from '@dedot/merkleized-metadata';
 
-// Create a calculator instance
-const calculator = new MerkleizedMetadata(metadata, chainInfo);
+// Create a merkleizer instance
+const merkleizer = new MerkleizedMetadata(metadata, chainInfo);
 
 // Generate proof for an extrinsic
 const extrinsicHex = '0x...'; // Hex-encoded extrinsic
-const proof = calculator.proofForExtrinsic(extrinsicHex);
+const proof = merkleizer.proofForExtrinsic(extrinsicHex);
 
 // Generate proof for extrinsic parts
 const callData = '0x...'; // Hex-encoded call data
 const includedInExtrinsic = '0x...'; // Hex-encoded extrinsic extra
 const includedInSignedData = '0x...'; // Hex-encoded signed extra
-const proof2 = calculator.proofForExtrinsicParts(callData, includedInExtrinsic, includedInSignedData);
+const proof2 = merkleizer.proofForExtrinsicParts(callData, includedInExtrinsic, includedInSignedData);
 
 // Generate proof for extrinsic payload
 const txPayload = '0x...'; // Hex-encoded transaction payload
-const proof3 = calculator.proofForExtrinsicPayload(txPayload);
+const proof3 = merkleizer.proofForExtrinsicPayload(txPayload);
 ```
 
-### Using Merkle Tree Utilities Directly
-
-```typescript
-import { buildMerkleTree, generateProof } from '@dedot/merkleized-metadata';
-
-// Build a Merkle tree from leaves
-const leaves = [new Uint8Array([1, 2, 3]), new Uint8Array([4, 5, 6])];
-const tree = buildMerkleTree(leaves);
-const rootHash = tree[0];
-
-// Generate proof for specific leaves
-const indices = [0]; // Generate proof for the first leaf
-const proof = generateProof(leaves, indices);
-```
-
-## API Reference
-
-### Classes
-
-#### `MerkleizedMetadata`
+## `MerkleizedMetadata`
 
 Main class for calculating metadata hashes and generating proofs.
 
@@ -113,27 +89,6 @@ Main class for calculating metadata hashes and generating proofs.
   - `proofForExtrinsic(extrinsic, additionalSigned?)`: Generate proof for an extrinsic
   - `proofForExtrinsicParts(callData, includedInExtrinsic, includedInSignedData)`: Generate proof for extrinsic parts
   - `proofForExtrinsicPayload(txPayload)`: Generate proof for extrinsic payload
-
-### Merkle Module Functions
-
-- `buildMerkleTree(leaves)`: Build a Merkle tree from leaves
-- `generateProof(leaves, indices)`: Generate proof for specific leaf indices
-
-### Types
-
-- `ChainInfo`: Chain-specific information required for metadata hash calculation
-  - `specVersion`: Runtime spec version
-  - `specName`: Runtime spec name
-  - `ss58Prefix`: SS58 address format prefix
-  - `decimals`: Token decimal places
-  - `tokenSymbol`: Token symbol
-
-- `ChainInfoOptional`: Same as `ChainInfo` but with some fields optional
-  - `specVersion?`: Optional runtime spec version
-  - `specName?`: Optional runtime spec name
-  - `ss58Prefix?`: Optional SS58 address format prefix
-  - `decimals`: Required token decimal places
-  - `tokenSymbol`: Required token symbol
 
 ## License
 
