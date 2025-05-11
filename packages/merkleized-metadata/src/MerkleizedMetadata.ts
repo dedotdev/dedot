@@ -1,7 +1,7 @@
 import { $ExtrinsicVersion, $Metadata, Metadata, RuntimeVersion } from '@dedot/codecs';
 import * as $ from '@dedot/shape';
 import { assert, blake3AsHex, blake3AsU8a, concatU8a, HexString, toU8a, u8aToHex } from '@dedot/utils';
-import { $ExtrinsicMetadata, $MetadataDigest, $Proof, $TypeInfo, MetadataDigest, TypeRef } from './codecs';
+import { $ExtrinsicMetadata, $MetadataDigest, $Proof, $TypeInfo, TypeRef } from './codecs';
 import { buildMerkleTree, generateProof } from './merkle';
 import { decodeAndCollectLeaves, lookupConstant, transformMetadata } from './transform';
 import { ChainInfo, ChainInfoOptional } from './types.js';
@@ -28,12 +28,12 @@ export class MerkleizedMetadata {
 
     this.#metadata = metadata;
 
-    const runtimeVersion = lookupConstant<RuntimeVersion>(this.#metadata, 'system', 'version');
+    const { specVersion, specName } = lookupConstant<RuntimeVersion>(this.#metadata, 'system', 'version');
     const ss58Prefix = lookupConstant<number>(this.#metadata, 'system', 'ss58Prefix');
 
     this.#chainInfo = {
-      specVersion: runtimeVersion.specVersion,
-      specName: runtimeVersion.specName,
+      specVersion,
+      specName,
       ss58Prefix,
       ...chainInfo,
     };
