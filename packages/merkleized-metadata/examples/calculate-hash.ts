@@ -2,11 +2,16 @@ import Keyring from '@polkadot/keyring';
 import { cryptoWaitReady } from '@polkadot/util-crypto';
 import { DedotClient } from '@dedot/api';
 import { WsProvider } from '@dedot/providers';
-import { HexString, u8aToHex } from '@dedot/utils';
+import { u8aToHex } from '@dedot/utils';
 import { MerkleizedMetadata } from '../src/index.js';
 
 /**
  * Example of calculating metadata hash for a real chain
+ *
+ * To run the script:
+ * ```shell
+ * tsx ./packages/merkleized-metadata/examples/calculate-hash.ts
+ * ```
  */
 async function main() {
   await cryptoWaitReady();
@@ -23,7 +28,6 @@ async function main() {
   console.log(`Connected to ${client.runtimeVersion.specName} v${client.runtimeVersion.specVersion}`);
 
   // Create a calculator instance
-  console.log('Creating MetatadaMerkleizer...');
   const merkleizer = new MerkleizedMetadata(metadata, {
     decimals: 10,
     tokenSymbol: 'DOT',
@@ -32,8 +36,7 @@ async function main() {
   const remarkTx = client.tx.system.remark('Hello World');
   await remarkTx.sign(alice, { tip: 1000_000n });
 
-  console.log('Calculating metadata hash...');
-  console.log('txHex', remarkTx.toHex());
+  console.log('TxHex', remarkTx.toHex());
   console.log('Digest:', u8aToHex(merkleizer.digest()));
   console.log('ProofForExtrinsic', u8aToHex(merkleizer.proofForExtrinsic(remarkTx.toHex())));
 

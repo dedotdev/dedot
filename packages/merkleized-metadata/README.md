@@ -18,7 +18,6 @@ This package provides utilities for calculating metadata hashes according to the
 
 - Calculate metadata hashes for runtime metadata
 - Generate proofs for extrinsics
-- Verify metadata proofs
 
 The package is organized into a modular structure:
 - Core functionality in the main `MerkleizedMetadata` class
@@ -119,7 +118,6 @@ Main class for calculating metadata hashes and generating proofs.
 
 - `buildMerkleTree(leaves)`: Build a Merkle tree from leaves
 - `generateProof(leaves, indices)`: Generate proof for specific leaf indices
-- `verifyProof(rootHash, leaves, leafIndices, proofs)`: Verify a Merkle proof
 
 ### Types
 
