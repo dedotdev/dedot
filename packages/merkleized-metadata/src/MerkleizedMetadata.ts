@@ -8,17 +8,62 @@ import { ChainInfo, ChainInfoOptional } from './types.js';
 
 /**
  * @name MerkleizedMetadata
- * @description Utility for calculating merkleized metadata hash according to RFC-0078
+ * @description A utility class for working with merkleized metadata according to RFC-0078.
+ *
+ * This class implements the Merkleized Metadata specification defined in
+ * [RFC-0078](https://polkadot-fellows.github.io/RFCs/approved/0078-merkleized-metadata.html).
+ * It provides functionality to:
+ *
+ * 1. Calculate metadata digest/hash
+ * 2. Generate proofs for extrinsics
+ * 3. Generate proofs for extrinsic payloads
+ * 4. Generate proofs for extrinsic parts
+ *
+ * Merkleized metadata allows for efficient verification of blockchain metadata
+ * by using Merkle trees to represent type information, enabling lightweight clients
+ * to validate transactions without requiring the full metadata.
+ *
+ * @example
+ * ```typescript
+ * // Create a merkleizer instance
+ * const merkleizer = new MerkleizedMetadata(metadata, {
+ *   decimals: 10,
+ *   tokenSymbol: 'DOT'
+ * });
+ *
+ * // Calculate metadata hash
+ * const hash = merkleizer.digest();
+ * ```
  */
 export class MerkleizedMetadata {
   readonly #metadata: Metadata;
   readonly #chainInfo: ChainInfo;
 
   /**
-   * Create a new MerkleizedMetadata instance
+   * Creates a new MerkleizedMetadata instance.
    *
-   * @param metadata - The metadata to calculate hash for
-   * @param chainInfo - Chain-specific information
+   * @param metadata - The metadata to process, can be provided as a Metadata object,
+   *                   a hex string, or a Uint8Array. If provided as a string or Uint8Array,
+   *                   it will be decoded into a Metadata object.
+   * @param chainInfo - Chain-specific information required for metadata processing.
+   *                    Some fields (specVersion, specName, ss58Prefix) will be automatically
+   *                    extracted from the metadata if not provided. The decimals and tokenSymbol
+   *                    fields are required and must be provided.
+   *
+   * @example
+   * ```typescript
+   * // Using a Metadata object
+   * const merkleizer = new MerkleizedMetadata(metadata, {
+   *   decimals: 10,
+   *   tokenSymbol: 'DOT'
+   * });
+   *
+   * // Using a hex string
+   * const merkleizer = new MerkleizedMetadata('0x...', {
+   *   decimals: 12,
+   *   tokenSymbol: 'KSM'
+   * });
+   * ```
    */
   constructor(metadata: Metadata | HexString | Uint8Array, chainInfo: ChainInfoOptional) {
     // Try decode metadata
@@ -40,9 +85,16 @@ export class MerkleizedMetadata {
   }
 
   /**
-   * Get the metadata digest
+   * Calculates the metadata digest according to RFC-0078.
    *
-   * @returns The metadata digest
+   * @returns The metadata digest as a Uint8Array
+   *
+   * @example
+   * ```typescript
+   * const merkleizer = new MerkleizedMetadata(metadata, chainInfo);
+   * const digest = merkleizer.digest();
+   * console.log('Metadata Hash:', u8aToHex(digest));
+   * ```
    */
   digest(): Uint8Array {
     const { typeInfo, extrinsicMetadata } = transformMetadata(this.#metadata);
@@ -62,11 +114,25 @@ export class MerkleizedMetadata {
   }
 
   /**
-   * Generate proof for an extrinsic
+   * Generates a proof for an extrinsic.
    *
-   * @param extrinsic - The extrinsic to generate proof for
-   * @param additionalSigned - Optional additional signed data
-   * @returns The metadata proof
+   * @param extrinsic - The extrinsic to generate proof for, as a Uint8Array or hex string
+   * @param additionalSigned - Optional additional signed data, as a Uint8Array or hex string.
+   *                           This is typically used for including extra data that was signed
+   *                           but not included in the extrinsic itself.
+   * @returns The proof as a Uint8Array
+   * @throws {Error} If the extrinsic version doesn't match the expected version from metadata
+   *
+   * @example
+   * ```typescript
+   * // Generate proof for an extrinsic
+   * const extrinsicHex = '0x...'; // Hex-encoded extrinsic
+   * const proof = merkleizer.proofForExtrinsic(extrinsicHex);
+   *
+   * // With additional signed data
+   * const additionalSigned = '0x...';
+   * const proofWithExtra = merkleizer.proofForExtrinsic(extrinsicHex, additionalSigned);
+   * ```
    */
   proofForExtrinsic(extrinsic: Uint8Array | HexString, additionalSigned?: Uint8Array | HexString): Uint8Array {
     // Decode the extrinsic to extract call data, extrinsic extra, and signed extra
@@ -114,12 +180,27 @@ export class MerkleizedMetadata {
   }
 
   /**
-   * Generate proof for extrinsic parts
+   * Generates a proof for extrinsic parts.
    *
-   * @param callData - Call data
-   * @param includedInExtrinsic - Data included in extrinsic
-   * @param includedInSignedData - Data included in signed data
-   * @returns The metadata proof
+   * @param callData - The call data (function call and parameters), as a Uint8Array or hex string
+   * @param includedInExtrinsic - Data included in the extrinsic (like address, signature),
+   *                              as a Uint8Array or hex string
+   * @param includedInSignedData - Data included in the signed payload (like era, nonce),
+   *                               as a Uint8Array or hex string
+   * @returns The proof as a Uint8Array
+   *
+   * @example
+   * ```typescript
+   * // Generate proof for extrinsic parts
+   * const callData = '0x...'; // Hex-encoded call data
+   * const includedInExtrinsic = '0x...'; // Hex-encoded extrinsic extra
+   * const includedInSignedData = '0x...'; // Hex-encoded signed extra
+   * const proof = merkleizer.proofForExtrinsicParts(
+   *   callData,
+   *   includedInExtrinsic,
+   *   includedInSignedData
+   * );
+   * ```
    */
   proofForExtrinsicParts(
     callData: Uint8Array | HexString,
@@ -136,10 +217,18 @@ export class MerkleizedMetadata {
   }
 
   /**
-   * Generate proof for extrinsic payload
+   * Generates a proof for an extrinsic payload.
    *
-   * @param txPayload - Transaction payload
-   * @returns The metadata proof
+   * @param txPayload - The transaction payload, as a Uint8Array or hex string.
+   *                    This should contain the complete data that was signed.
+   * @returns The proof as a Uint8Array
+   *
+   * @example
+   * ```typescript
+   * // Generate proof for extrinsic payload
+   * const txPayload = '0x...'; // Hex-encoded extrinsic payload
+   * const proof = merkleizer.proofForExtrinsicPayload(txPayload);
+   * ```
    */
   proofForExtrinsicPayload(txPayload: Uint8Array | HexString): Uint8Array {
     const { extrinsicMetadata, typeInfo } = transformMetadata(this.#metadata);
