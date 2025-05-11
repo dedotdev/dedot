@@ -1,7 +1,8 @@
 import { Metadata, PortableRegistry } from '@dedot/codecs';
+import { assert } from '@dedot/utils';
 import { ExtrinsicMetadata, Field, TypeInfo, TypeRef } from '../codecs';
 import { getAccessibleTypes } from './accessibleTypes';
-import { getCompactTypeTag, getPrimitiveTypeTag } from './typeUtils';
+import { getCompactType, PRIMITIVE_TYPE_MAP } from './typeUtils';
 
 /**
  * Generate TypeRef for a type
@@ -20,17 +21,16 @@ export function generateTypeRef(
 
   // Check for primitive type
   if (type.typeDef.type === 'Primitive') {
-    const primitive = type.typeDef.value.kind;
-    return { type: PRIMITIVE_TYPE_MAP[primitive] } as TypeRef;
+    const primitiveType = PRIMITIVE_TYPE_MAP[type.typeDef.value.kind];
+    assert(primitiveType, `Primitive Type Not Found: ${type.typeDef.value.kind}`);
+    return { type: primitiveType } as TypeRef;
   }
 
   // Check for compact type
-  const compactTag = getCompactTypeTag(type, registry);
-  if (compactTag) {
-    if (compactTag === 'perId') {
-      throw new Error('Invalid compact type: perId');
-    }
-    return { type: compactTag } as TypeRef;
+  const compactType = getCompactType(type, registry);
+  if (compactType) {
+    assert(compactType !== 'perId', 'Invalid compact type: perId');
+    return { type: compactType } as TypeRef;
   }
 
   // Check if type is accessible
@@ -38,7 +38,6 @@ export function generateTypeRef(
     return { type: 'perId', value: accessibleTypes.get(frameId)! };
   }
 
-  // Default to void for types that should be filtered out
   return { type: 'void' } as TypeRef;
 }
 
@@ -69,7 +68,7 @@ function convertField(
  * @param accessibleTypes - Map of accessible types
  * @returns Array of type information
  */
-export function generateTypeDefinitions(metadata: Metadata, accessibleTypes: Map<number, number>): TypeInfo[] {
+export function generateTypeInfo(metadata: Metadata, accessibleTypes: Map<number, number>): TypeInfo[] {
   const registry = new PortableRegistry(metadata.latest);
   const typeTree: TypeInfo[] = [];
 
@@ -218,7 +217,7 @@ export function transformMetadata(metadata: Metadata): {
   const accessibleTypes = getAccessibleTypes(metadata);
 
   // Generate type definitions
-  const typeInfo = generateTypeDefinitions(metadata, accessibleTypes);
+  const typeInfo = generateTypeInfo(metadata, accessibleTypes);
 
   // Generate extrinsic metadata
   const extrinsicMetadata = generateExtrinsicMetadata(metadata, accessibleTypes);
@@ -228,6 +227,3 @@ export function transformMetadata(metadata: Metadata): {
     extrinsicMetadata,
   };
 }
-
-// Import this at the end to avoid circular dependencies
-import { PRIMITIVE_TYPE_MAP } from './typeUtils';

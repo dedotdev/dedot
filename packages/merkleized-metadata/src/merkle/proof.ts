@@ -3,7 +3,7 @@ import { buildMerkleTree } from './tree';
 
 /**
  * Calculate the level of a node in the Merkle tree
- * 
+ *
  * @param nodeIndex - Index of the node in the tree array
  * @returns Level of the node in the tree
  */
@@ -86,7 +86,7 @@ export function generateProof(
     }
   }
 
-  // Recursive true DFS function to traverse the tree top-down
+  // Recursive DFS to traverse the tree top-down
   function dfs(nodeIdx: number): void {
     // If we've reached an invalid node index, return
     if (nodeIdx >= tree.length) {

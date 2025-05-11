@@ -49,16 +49,16 @@ export class MerkleizedMetadata {
 
     const encodedTypes = typeInfo.map((info) => $TypeInfo.encode(info));
 
-    const digest: MetadataDigest = {
-      type: 'V1',
-      value: {
-        typeInformationTreeRoot: u8aToHex(buildMerkleTree(encodedTypes)[0]),
-        extrinsicMetadataHash: blake3AsHex($ExtrinsicMetadata.encode(extrinsicMetadata)),
-        chainInfo: this.#chainInfo,
-      },
-    };
-
-    return blake3AsU8a($MetadataDigest.encode(digest));
+    return blake3AsU8a(
+      $MetadataDigest.encode({
+        type: 'V1',
+        value: {
+          typeInformationTreeRoot: u8aToHex(buildMerkleTree(encodedTypes)[0]),
+          extrinsicMetadataHash: blake3AsHex($ExtrinsicMetadata.encode(extrinsicMetadata)),
+          chainInfo: this.#chainInfo,
+        },
+      }),
+    );
   }
 
   /**
@@ -71,17 +71,16 @@ export class MerkleizedMetadata {
   proofForExtrinsic(extrinsic: Uint8Array | HexString, additionalSigned?: Uint8Array | HexString): Uint8Array {
     // Decode the extrinsic to extract call data, extrinsic extra, and signed extra
     const $Codec = $.Tuple($.compactU32, $ExtrinsicVersion, $.RawHex);
-
     const [, version, bytes] = $Codec.tryDecode(extrinsic);
 
     const { extrinsicMetadata, typeInfo } = transformMetadata(this.#metadata);
-
-    let toDecode = toU8a(bytes);
 
     assert(
       version.version === extrinsicMetadata.version,
       `Invalid extrinsic version, expected version ${extrinsicMetadata.version}`,
     );
+
+    let toDecode = toU8a(bytes);
 
     // Identify the type IDs used in the extrinsic
     const typeRefs: TypeRef[] = [];

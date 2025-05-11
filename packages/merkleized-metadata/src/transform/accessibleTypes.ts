@@ -4,7 +4,7 @@ import { Metadata, PortableRegistry } from '@dedot/codecs';
  * Get accessible types from metadata
  *
  * @param metadata - Metadata
- * @returns Map of type IDs to their positions
+ * @returns Map of type IDs to their index positions
  */
 export function getAccessibleTypes(metadata: Metadata): Map<number, number> {
   const registry = new PortableRegistry(metadata.latest);
