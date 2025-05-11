@@ -24,7 +24,6 @@
   "dependencies": {
     "@dedot/codecs": "workspace:*",
     "@dedot/shape": "workspace:*",
-    "@dedot/types": "workspace:*",
     "@dedot/utils": "workspace:*"
   },
   "devDependencies": {
