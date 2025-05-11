@@ -1,3 +1,4 @@
+import { DedotError } from '@dedot/utils';
 import { buildMerkleTree } from './tree';
 
 /**
@@ -32,7 +33,7 @@ export function generateProof(
 
   // Validate indices are in bounds
   if (indices.some((idx) => idx < 0 || idx >= leaves.length)) {
-    throw new Error('Leaf index out of bounds');
+    throw new DedotError('Leaf index out of bounds');
   }
 
   // Sort indices for consistency
@@ -81,7 +82,7 @@ export function generateProof(
     while (currentIdx >= 0) {
       nodesOnPath.add(currentIdx);
       if (currentIdx === 0) break; // Reached the root
-      currentIdx = Math.floor((currentIdx - 1) / 2);
+      currentIdx = Math.floor((currentIdx - 1) / 2); // parent node idx
     }
   }
 

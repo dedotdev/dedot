@@ -34,7 +34,7 @@ export type TypeRef = $.Input<typeof $TypeRef>;
  */
 export const $Field = $.Struct({
   name: $.Option($.str),
-  ty: $TypeRef,
+  typeRef: $TypeRef,
   typeName: $.Option($.str),
 });
 
@@ -112,9 +112,9 @@ export type SignedExtensionMetadata = $.Input<typeof $SignedExtensionMetadata>;
  */
 export const $ExtrinsicMetadata = $.Struct({
   version: $.u8,
-  addressTy: $TypeRef,
-  callTy: $TypeRef,
-  signatureTy: $TypeRef,
+  addressTypeId: $TypeRef,
+  callTypeId: $TypeRef,
+  signatureTypeId: $TypeRef,
   signedExtensions: $.Vec($SignedExtensionMetadata),
 });
 

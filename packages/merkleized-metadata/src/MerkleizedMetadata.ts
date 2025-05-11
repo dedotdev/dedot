@@ -86,13 +86,13 @@ export class MerkleizedMetadata {
     const typeRefs: TypeRef[] = [];
     if (version.signed) {
       typeRefs.push(
-        extrinsicMetadata.addressTy,
-        extrinsicMetadata.signatureTy,
+        extrinsicMetadata.addressTypeId,
+        extrinsicMetadata.signatureTypeId,
         ...extrinsicMetadata.signedExtensions.map((e) => e.includedInExtrinsic),
-        extrinsicMetadata.callTy,
+        extrinsicMetadata.callTypeId,
       );
     } else {
-      typeRefs.push(extrinsicMetadata.callTy);
+      typeRefs.push(extrinsicMetadata.callTypeId);
     }
 
     if (additionalSigned) {
@@ -145,7 +145,7 @@ export class MerkleizedMetadata {
     const { extrinsicMetadata, typeInfo } = transformMetadata(this.#metadata);
 
     const typeRefs: TypeRef[] = [
-      extrinsicMetadata.callTy,
+      extrinsicMetadata.callTypeId,
       ...extrinsicMetadata.signedExtensions.map((e) => e.includedInExtrinsic),
       ...extrinsicMetadata.signedExtensions.map((e) => e.includedInSignedData),
     ];

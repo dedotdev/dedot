@@ -57,7 +57,7 @@ function convertField(
   return {
     typeName: field.typeName,
     name: field.name,
-    ty: generateTypeRef(field.typeId, registry, accessibleTypes),
+    typeRef: generateTypeRef(field.typeId, registry, accessibleTypes),
   };
 }
 
@@ -192,9 +192,9 @@ export function generateExtrinsicMetadata(metadata: Metadata, accessibleTypes: M
 
   return {
     version: extrinsic.version,
-    addressTy: generateTypeRef(extrinsic.addressTypeId, registry, accessibleTypes),
-    callTy: generateTypeRef(extrinsic.callTypeId, registry, accessibleTypes),
-    signatureTy: generateTypeRef(extrinsic.signatureTypeId, registry, accessibleTypes),
+    addressTypeId: generateTypeRef(extrinsic.addressTypeId, registry, accessibleTypes),
+    callTypeId: generateTypeRef(extrinsic.callTypeId, registry, accessibleTypes),
+    signatureTypeId: generateTypeRef(extrinsic.signatureTypeId, registry, accessibleTypes),
     signedExtensions: extrinsic.signedExtensions.map((ext) => ({
       identifier: ext.ident,
       includedInExtrinsic: generateTypeRef(ext.typeId, registry, accessibleTypes),

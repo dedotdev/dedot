@@ -121,7 +121,7 @@ function processPerIdType(state: DecodingState, typeId: number): void {
 
     case 'composite': {
       for (const field of typeDef.value) {
-        processTypeRef(state, field.ty);
+        processTypeRef(state, field.typeRef);
       }
       break;
     }
@@ -145,7 +145,7 @@ function processPerIdType(state: DecodingState, typeId: number): void {
       state.collectedIndices.add(variantIdx);
 
       for (const field of fields) {
-        processTypeRef(state, field.ty);
+        processTypeRef(state, field.typeRef);
       }
       break;
     }
