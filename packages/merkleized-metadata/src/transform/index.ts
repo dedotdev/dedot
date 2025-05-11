@@ -9,3 +9,5 @@ export {
   getCompactTypeTag,
   isVoidType,
 } from './typeUtils';
+export { decodeAndCollectLeaves, ExtrinsicDecodingError } from './decoder';
+export { lookupConstant } from './utils';
