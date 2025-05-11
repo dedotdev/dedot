@@ -1,20 +1,10 @@
-import { DedotError } from '@dedot/utils';
 import * as $ from '@dedot/shape';
+import { DedotError } from '@dedot/utils';
 import { TypeInfo, TypeRef, EnumerationVariant } from '../codecs';
 
 /**
- * Error thrown when decoding extrinsic data fails
- */
-export class ExtrinsicDecodingError extends DedotError {
-  constructor(message: string) {
-    super(message);
-    this.name = 'ExtrinsicDecodingError';
-  }
-}
-
-/**
  * Decode extrinsic data and collect leaf indices
- * 
+ *
  * @param toDecode - Data to decode
  * @param typeRefs - Type references to use for decoding
  * @param typeInfo - Type information
@@ -90,7 +80,7 @@ export function decodeAndCollectLeaves(toDecode: Uint8Array, typeRefs: TypeRef[]
       toDecode = toDecode.subarray(encodedLength);
       return decoded;
     } catch (error: any) {
-      throw new ExtrinsicDecodingError(`Failed to decode data: ${error.message || String(error)}`);
+      throw new DedotError(`Failed to decode data: ${error.message || String(error)}`);
     }
   };
 
@@ -102,7 +92,7 @@ export function decodeAndCollectLeaves(toDecode: Uint8Array, typeRefs: TypeRef[]
       const indexes = refIdToIdx.get(one.value);
 
       if (!indexes || indexes.length === 0) {
-        throw new ExtrinsicDecodingError(`Type ID ${one.value} not found in type info`);
+        throw new DedotError(`Type ID ${one.value} not found in type info`);
       }
 
       const [idx] = indexes;
@@ -146,9 +136,7 @@ export function decodeAndCollectLeaves(toDecode: Uint8Array, typeRefs: TypeRef[]
             .find(([{ index }]) => index === selectedIdx);
 
           if (!variantInfo) {
-            throw new ExtrinsicDecodingError(
-              `Enum variant with index ${selectedIdx} not found for type ID ${one.value}`,
-            );
+            throw new DedotError(`Enum variant with index ${selectedIdx} not found for type ID ${one.value}`);
           }
 
           const [{ fields }, idx] = variantInfo;
@@ -158,7 +146,7 @@ export function decodeAndCollectLeaves(toDecode: Uint8Array, typeRefs: TypeRef[]
 
         default:
           // This should never happen as we've covered all possible typeDef types
-          throw new ExtrinsicDecodingError(`Unsupported type definition: ${(typeDef as any).type}`);
+          throw new DedotError(`Unsupported type definition: ${(typeDef as any).type}`);
       }
     } else {
       decode(primitiveCodecs[one.type]);
@@ -170,7 +158,7 @@ export function decodeAndCollectLeaves(toDecode: Uint8Array, typeRefs: TypeRef[]
 
   // Check if there are any remaining bytes
   if (toDecode.length > 0) {
-    throw new ExtrinsicDecodingError(`Extra bytes at the end of the extrinsic: ${toDecode.length} bytes remaining`);
+    throw new DedotError(`Extra bytes at the end of the extrinsic: ${toDecode.length} bytes remaining`);
   }
 
   return [...collectedIndices].sort((a, b) => a - b);
