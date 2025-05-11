@@ -6,7 +6,6 @@ import { WsProvider } from '@dedot/providers';
 import type { AnyShape } from '@dedot/shape';
 import * as $ from '@dedot/shape';
 import { InjectedSigner } from '@dedot/types';
-import { PinnedBlock } from '../../json-rpc/group/ChainHead/ChainHead.js';
 import {
   MethodResponse,
   OperationBodyDone,
@@ -17,6 +16,7 @@ import {
 import { assert, deferred, stringCamelCase, stringPascalCase, u8aToHex } from '@dedot/utils';
 import { MockInstance } from '@vitest/spy';
 import { afterEach, beforeEach, describe, expect, expectTypeOf, it, vi } from 'vitest';
+import { PinnedBlock } from '../../json-rpc/group/ChainHead/ChainHead.js';
 import { mockedRuntime, newChainHeadSimulator } from '../../json-rpc/group/__tests__/simulator.js';
 import { DedotClient } from '../DedotClient.js';
 import MockProvider from './MockProvider.js';
@@ -41,6 +41,7 @@ describe('DedotClient', () => {
       providerSend = vi.spyOn(provider, 'send');
       simulator = newChainHeadSimulator({ provider });
       simulator.notify(simulator.initializedEvent);
+      simulator.notify(simulator.nextNewBlock());
 
       provider.setRpcRequests({
         chainSpec_v1_chainName: () => 'MockedChain',
@@ -521,7 +522,7 @@ describe('DedotClient', () => {
 
             const remarkTx = api.tx.system.remarkWithEvent('Hello World');
 
-            simulator.notify(simulator.nextNewBlock()); // f
+            // via initialization - f
             simulator.notify(simulator.nextNewBlock({ fork: true })); // f-1
             simulator.notify(simulator.nextNewBlock()); // 0x10 -> f
             simulator.notify(simulator.nextNewBlock({ fork: true, fromWhichParentFork: 1 })); // 0x10-1 -> f-1
@@ -747,6 +748,8 @@ describe('DedotClient', () => {
         it('should emit runtimeUpgrade event', async () => {
           const originalRuntime = simulator.runtime;
 
+          simulator.notify(simulator.nextBestBlock());
+
           const newBlock = simulator.nextNewBlock({ withRuntime: true });
           simulator.notify(newBlock, 100);
           simulator.notify(simulator.nextBestBlock(), 150);
@@ -782,6 +785,8 @@ describe('DedotClient', () => {
           provider.setRpcRequests({
             chainHead_v1_call: () => ({ result: 'started', operationId: 'call02' }) as MethodResponse,
           });
+
+          simulator.notify(simulator.nextBestBlock());
 
           const newBlock = simulator.nextNewBlock({ withRuntime: true });
           simulator.notify(newBlock, 100);
@@ -929,7 +934,7 @@ describe('DedotClient', () => {
 
         // Set up the spy before making the call
         const chainHeadStorageSpy = vi.spyOn(api.chainHead, 'storage');
-        
+
         // Mock chainHead.storage response
         const mockResults = [
           { key: '0x01', value: '0xvalue1' },
@@ -940,9 +945,11 @@ describe('DedotClient', () => {
         // Mock QueryableStorage
         const mockDecodedValue1 = 42;
         const mockDecodedValue2 = ['event1', 'event2'];
-        
+
         // Use vi.spyOn to mock the QueryableStorage constructor and its decodeValue method
-        const originalQueryableStorage = await import('../../storage/QueryableStorage.js').then(m => m.QueryableStorage);
+        const originalQueryableStorage = // prettier-end-here
+          await import('../../storage/QueryableStorage.js').then((m) => m.QueryableStorage);
+
         vi.spyOn(originalQueryableStorage.prototype, 'decodeValue')
           .mockImplementationOnce(() => mockDecodedValue1)
           .mockImplementationOnce(() => mockDecodedValue2);
@@ -982,11 +989,11 @@ describe('DedotClient', () => {
         const chainHeadBestBlockSpy = vi.spyOn(api.chainHead, 'bestBlock');
         const chainHeadStorageSpy = vi.spyOn(api.chainHead, 'storage');
         const apiOnSpy = vi.spyOn(api, 'on');
-        
+
         // Mock chainHead.bestBlock and chainHead.storage
         const mockBestBlock = { hash: '0xbesthash', number: 100, parent: '0xparenthash' } as PinnedBlock;
         chainHeadBestBlockSpy.mockResolvedValue(mockBestBlock);
-        
+
         const mockInitialResults = [
           { key: '0x01', value: '0xvalue1' },
           { key: '0x02', value: '0xvalue2' },
@@ -1004,35 +1011,43 @@ describe('DedotClient', () => {
         // Mock QueryableStorage
         const mockDecodedValue1 = 42;
         const mockDecodedValue2 = ['event1', 'event2'];
-        
-        const originalQueryableStorage = await import('../../storage/QueryableStorage.js').then(m => m.QueryableStorage);
-        vi.spyOn(originalQueryableStorage.prototype, 'decodeValue')
-          .mockImplementation((raw) => {
-            if (raw === '0xvalue1') return mockDecodedValue1;
-            if (raw === '0xvalue2') return mockDecodedValue2;
-            if (raw === '0xnewvalue1') return 43;
-            if (raw === '0xnewvalue2') return ['event3', 'event4'];
-            return undefined;
-          });
+
+        const originalQueryableStorage = // prettier-end-here
+          await import('../../storage/QueryableStorage.js').then((m) => m.QueryableStorage);
+
+        vi.spyOn(originalQueryableStorage.prototype, 'decodeValue').mockImplementation((raw) => {
+          if (raw === '0xvalue1') return mockDecodedValue1;
+          if (raw === '0xvalue2') return mockDecodedValue2;
+          if (raw === '0xnewvalue1') return 43;
+          if (raw === '0xnewvalue2') return ['event3', 'event4'];
+          return undefined;
+        });
 
         // Mock callback
         const callback = vi.fn();
 
         // Call queryMulti with subscription
-        const unsub = await api.queryMulti([
-          { fn: mockQueryFn1 as any, args: [] },
-          { fn: mockQueryFn2 as any, args: [] },
-        ], callback);
+        const unsub = await api.queryMulti(
+          [
+            { fn: mockQueryFn1 as any, args: [] },
+            { fn: mockQueryFn2 as any, args: [] },
+          ],
+          callback,
+        );
 
         // Verify chainHead.bestBlock and api.on were called
         expect(api.chainHead.bestBlock).toHaveBeenCalled();
         expect(api.on).toHaveBeenCalledWith('bestBlock', expect.any(Function));
 
         // Verify chainHead.storage was called with the correct parameters
-        expect(api.chainHead.storage).toHaveBeenCalledWith([
-          { type: 'value', key: '0x01' },
-          { type: 'value', key: '0x02' },
-        ], undefined, '0xbesthash');
+        expect(api.chainHead.storage).toHaveBeenCalledWith(
+          [
+            { type: 'value', key: '0x01' },
+            { type: 'value', key: '0x02' },
+          ],
+          undefined,
+          '0xbesthash',
+        );
 
         // Verify the callback was called with the initial values
         expect(callback).toHaveBeenCalledWith([mockDecodedValue1, mockDecodedValue2]);
@@ -1054,20 +1069,24 @@ describe('DedotClient', () => {
         }
 
         // Verify chainHead.storage was called with the new block hash
-        expect(api.chainHead.storage).toHaveBeenCalledWith([
-          { type: 'value', key: '0x01' },
-          { type: 'value', key: '0x02' },
-        ], undefined, '0xnewhash');
+        expect(api.chainHead.storage).toHaveBeenCalledWith(
+          [
+            { type: 'value', key: '0x01' },
+            { type: 'value', key: '0x02' },
+          ],
+          undefined,
+          '0xnewhash',
+        );
 
         // Verify the callback was called with the new decoded values
         expect(callback).toHaveBeenCalledWith([43, ['event3', 'event4']]);
 
         // Verify the unsubscribe function
         expect(typeof unsub).toBe('function');
-        
+
         // Call the unsubscribe function
         await (unsub as Function)();
-        
+
         // Verify the mock unsubscribe was called
         expect(mockUnsub).toHaveBeenCalledTimes(1);
       });
@@ -1086,7 +1105,7 @@ describe('DedotClient', () => {
 
         // Set up the spy before making the call
         const chainHeadStorageSpy = vi.spyOn(api.chainHead, 'storage');
-        
+
         // Mock chainHead.storage to throw an error
         const mockError = new Error('Storage query failed');
         chainHeadStorageSpy.mockRejectedValue(mockError);
@@ -1114,6 +1133,7 @@ describe('DedotClient', () => {
         const newProviderSend = vi.spyOn(newProvider, 'send');
         const newSimulator = newChainHeadSimulator({ provider });
         newSimulator.notify(newSimulator.initializedEvent);
+        newSimulator.notify(newSimulator.nextNewBlock());
 
         const newApi = await DedotClient.new({ provider, cacheMetadata: true });
 
@@ -1134,6 +1154,7 @@ describe('DedotClient', () => {
           const newProviderSend = vi.spyOn(newProvider, 'send');
           const newSimulator = newChainHeadSimulator({ provider: newProvider, initialRuntime: nextMockedRuntime });
           newSimulator.notify(newSimulator.initializedEvent);
+          newSimulator.notify(newSimulator.nextNewBlock());
 
           const newApi = await DedotClient.new({
             provider: newProvider,
@@ -1236,12 +1257,13 @@ describe('DedotClient', () => {
     let api: DedotClient;
     let simulator: ReturnType<typeof newChainHeadSimulator>;
     let provider: MockProvider;
-    
+
     beforeEach(async () => {
       provider = new MockProvider();
       simulator = newChainHeadSimulator({ provider });
       simulator.notify(simulator.initializedEvent);
-      
+      simulator.notify(simulator.nextNewBlock());
+
       provider.setRpcRequests({
         chainSpec_v1_chainName: () => 'MockedChain',
         chainHead_v1_call: () => ({ result: 'started', operationId: 'call01' }) as MethodResponse,
@@ -1252,7 +1274,7 @@ describe('DedotClient', () => {
         event: 'operationCallDone',
         output: prefixedMetadataV15,
       } as OperationCallDone);
-      
+
       api = await DedotClient.new({ provider });
     });
 
@@ -1283,7 +1305,7 @@ describe('DedotClient', () => {
 
       // Create a new block first
       simulator.notify(simulator.nextNewBlock());
-      
+
       // Then make it the best block
       const bestBlock = simulator.nextBestBlock();
       simulator.notify(bestBlock);
@@ -1305,10 +1327,10 @@ describe('DedotClient', () => {
       // Create a new block first
       const newBlock = simulator.nextNewBlock();
       simulator.notify(newBlock);
-      
+
       // Then make it the best block
       simulator.notify(simulator.nextBestBlock());
-      
+
       // Then finalize it
       const finalized = simulator.nextFinalized();
       simulator.notify(finalized);
@@ -1333,7 +1355,7 @@ describe('DedotClient', () => {
         number: 123,
         parent: '0xmockparenthash',
       };
-      
+
       // Directly emit the bestChainChanged event with our mock block
       api.chainHead.emit('bestChainChanged', mockPinnedBlock);
 
@@ -1350,17 +1372,17 @@ describe('DedotClient', () => {
 
     it('should forward multiple events in sequence', async () => {
       const events: string[] = [];
-      
+
       api.on('newBlock', () => events.push('newBlock'));
       api.on('bestBlock', () => events.push('bestBlock'));
       api.on('finalizedBlock', () => events.push('finalizedBlock'));
-      
+
       // Create a new block
       simulator.notify(simulator.nextNewBlock());
-      
+
       // Make it the best block
       simulator.notify(simulator.nextBestBlock());
-      
+
       // Finalize it
       simulator.notify(simulator.nextFinalized());
 

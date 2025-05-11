@@ -1,6 +1,6 @@
 {
   "name": "@dedot/utils",
-  "version": "0.9.4",
+  "version": "0.9.6",
   "description": "Useful utilities for dedot apis",
   "author": "Thang X. Vu <thang@dedot.dev>",
   "homepage": "https://dedot.dev",
@@ -23,7 +23,7 @@
   },
   "dependencies": {
     "@noble/hashes": "^1.8.0",
-    "@scure/base": "^1.2.4",
+    "@scure/base": "^1.2.5",
     "eventemitter3": "^5.0.1"
   },
   "engines": {

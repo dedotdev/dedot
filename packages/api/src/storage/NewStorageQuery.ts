@@ -1,6 +1,6 @@
 import { BlockHash, StorageData, StorageKey } from '@dedot/codecs';
 import type { Callback, RpcV2, Unsub, VersionedGenericSubstrateApi } from '@dedot/types';
-import { AsyncQueue } from '@dedot/utils';
+import { AsyncQueue, noop } from '@dedot/utils';
 import type { SubstrateApi } from '../chaintypes/index.js';
 import { DedotClient } from '../client/DedotClient.js';
 import { PinnedBlock } from '../json-rpc/group/ChainHead/ChainHead.js';
@@ -102,7 +102,13 @@ export class NewStorageQuery<
 
     // Subscribe to best block events
     const unsub = this.client.on('bestBlock', (block: PinnedBlock) => {
-      pullQueue.enqueue(() => pull(block)).catch(console.error);
+      // Here we're handling each pull one by one,
+      // If the queue get too long, it might take a long time for us to get the fresh & latest data
+      // This is a precaution in such case, if the queue size >= 3 we skip all the pending pull and jump to the latest pull
+      if (pullQueue.size >= 3) pullQueue.clear();
+
+      // TODO timing out for a pull to prevent it took too long to fetch
+      pullQueue.enqueue(() => pull(block)).catch(noop);
     });
 
     return async () => {
