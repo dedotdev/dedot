@@ -82,26 +82,6 @@ const txPayload = '0x...'; // Hex-encoded transaction payload
 const proof3 = calculator.proofForExtrinsicPayload(txPayload);
 ```
 
-### Error Handling
-
-The package includes improved error handling with specific error types:
-
-```typescript
-import { MerkleizedMetadata, ExtrinsicDecodingError } from '@dedot/merkleized-metadata';
-
-try {
-  const proof = calculator.proofForExtrinsic(invalidExtrinsic);
-} catch (error) {
-  if (error instanceof ExtrinsicDecodingError) {
-    console.error('Failed to decode extrinsic:', error.message);
-    // Handle decoding error
-  } else {
-    // Handle other errors
-    console.error('Unexpected error:', error);
-  }
-}
-```
-
 ### Using Merkle Tree Utilities Directly
 
 ```typescript
@@ -134,10 +114,6 @@ Main class for calculating metadata hashes and generating proofs.
   - `proofForExtrinsic(extrinsic, additionalSigned?)`: Generate proof for an extrinsic
   - `proofForExtrinsicParts(callData, includedInExtrinsic, includedInSignedData)`: Generate proof for extrinsic parts
   - `proofForExtrinsicPayload(txPayload)`: Generate proof for extrinsic payload
-
-#### `ExtrinsicDecodingError`
-
-Error thrown when decoding extrinsic data fails.
 
 ### Merkle Module Functions
 
