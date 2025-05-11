@@ -3,13 +3,18 @@ import { SubstrateApi } from '@dedot/api/chaintypes';
 import { GenericSubstrateApi, RpcVersion } from '@dedot/types';
 import { TypinkRegistry } from '../../TypinkRegistry.js';
 import { ContractMessageArg, ContractMessage, ExecutionOptions, ContractMetadata } from '../../types/index.js';
+import { palletReviveCompatible } from '../../utils.js';
 
 export abstract class Executor<ChainApi extends GenericSubstrateApi = SubstrateApi[RpcVersion]> {
-  constructor(
+  readonly palletReviveCompatible: boolean;
+
+  protected constructor(
     readonly client: ISubstrateClient<ChainApi>,
     readonly registry: TypinkRegistry,
     readonly options: ExecutionOptions = {},
-  ) {}
+  ) {
+    this.palletReviveCompatible = palletReviveCompatible(this.registry.metadata);
+  }
 
   get metadata(): ContractMetadata {
     return this.registry.metadata;

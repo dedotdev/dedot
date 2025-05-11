@@ -114,11 +114,13 @@ export function newProxyChain<ChainApi extends GenericSubstrateApi>(carrier: Exe
 }
 
 export function ensureSupportContractsPallet(client: ISubstrateClient<SubstrateApi[RpcVersion]>) {
-  try {
-    !!client.call.contractsApi.call.meta && !!client.tx.contracts.call.meta;
-  } catch {
-    throw new Error('Contracts pallet is not available');
-  }
+  // TODO re-enable this!
+  // try {
+  //   (!!client.call.contractsApi.call.meta && !!client.tx.contracts.call.meta) ||
+  //     (!!client.call.reviveApi.call.meta && !!client.tx.revive.call.meta);
+  // } catch {
+  //   throw new Error('Contracts pallet is not available');
+  // }
 }
 
 export function normalizeLabel(label?: string): string {
@@ -134,4 +136,9 @@ export function toReturnFlags(bits: number): ReturnFlags {
     bits,
     revert: bits === REVERT_FLAG,
   };
+}
+
+// TODO do this properly
+export function palletReviveCompatible(metadata: ContractMetadata): boolean {
+  return metadata.source.language.startsWith('ink! 6');
 }
