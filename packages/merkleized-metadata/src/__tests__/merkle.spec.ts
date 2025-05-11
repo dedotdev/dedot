@@ -1,6 +1,6 @@
-import { blake3AsU8a, concatU8a, u8aToHex } from '@dedot/utils';
+import { blake3AsU8a, concatU8a } from '@dedot/utils';
 import { describe, expect, it } from 'vitest';
-import { buildMerkleTree, generateProof } from '../merkle';
+import { buildMerkleTree } from '../merkle/index.js';
 
 describe('merkle', () => {
   describe('buildMerkleTree', () => {

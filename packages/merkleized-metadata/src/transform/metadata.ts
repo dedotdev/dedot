@@ -1,8 +1,8 @@
 import { Metadata, PortableRegistry } from '@dedot/codecs';
 import { assert } from '@dedot/utils';
-import { ExtrinsicMetadata, Field, TypeInfo, TypeRef } from '../codecs';
-import { getAccessibleTypes } from './accessibleTypes';
-import { getCompactType, PRIMITIVE_TYPE_MAP } from './typeUtils';
+import { ExtrinsicMetadata, Field, TypeInfo, TypeRef } from '../codecs.js';
+import { getAccessibleTypes } from './accessibleTypes.js';
+import { getCompactType, PRIMITIVE_TYPE_MAP } from './typeUtils.js';
 
 /**
  * Generate TypeRef for a type

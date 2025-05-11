@@ -1,5 +1,5 @@
 import { PortableRegistry, PortableType } from '@dedot/codecs';
-import { TypeRef } from '../codecs';
+import { TypeRef } from '../codecs.js';
 
 /**
  * Map of primitive types to TypeRef tags

@@ -1,5 +1,5 @@
 import { DedotError } from '@dedot/utils';
-import { buildMerkleTree } from './tree';
+import { buildMerkleTree } from './tree.js';
 
 /**
  * Calculate the level of a node in the Merkle tree

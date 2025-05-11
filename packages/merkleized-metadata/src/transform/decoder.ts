@@ -1,6 +1,6 @@
 import * as $ from '@dedot/shape';
 import { DedotError } from '@dedot/utils';
-import { TypeInfo, TypeRef, EnumerationVariant } from '../codecs';
+import { TypeInfo, TypeRef, EnumerationVariant } from '../codecs.js';
 
 const PRIMITIVE_CODECS: Record<string, $.AnyShape> = {
   bool: $.bool,

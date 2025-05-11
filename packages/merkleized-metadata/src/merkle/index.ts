@@ -1,2 +1,2 @@
-export { buildMerkleTree } from './tree';
-export { generateProof } from './proof';
+export { buildMerkleTree } from './tree.js';
+export { generateProof } from './proof.js';
