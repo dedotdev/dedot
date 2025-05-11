@@ -598,7 +598,6 @@ __metadata:
     "@dedot/codecs": "workspace:*"
     "@dedot/providers": "workspace:*"
     "@dedot/shape": "workspace:*"
-    "@dedot/types": "workspace:*"
     "@dedot/utils": "workspace:*"
   languageName: unknown
   linkType: soft
