@@ -8,7 +8,6 @@
   "references": [
     { "path": "../codecs/tsconfig.json" },
     { "path": "../shape/tsconfig.json" },
-    { "path": "../types/tsconfig.json" },
     { "path": "../utils/tsconfig.json" }
   ]
 }
