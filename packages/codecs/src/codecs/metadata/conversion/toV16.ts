@@ -1,4 +1,7 @@
 import { calcRuntimeApiHash } from '@dedot/utils';
+import { RuntimeVersion } from '../../known/index.js';
+import { MetadataLatest } from '../Metadata.js';
+import { lookupConstant } from '../utils.js';
 import { MetadataV15 } from '../v15.js';
 import {
   ConstantDefV16,
@@ -9,17 +12,26 @@ import {
   StorageEntryV16,
 } from '../v16.js';
 
-export const toV16 = (metadataV15: MetadataV15, runtimeVersion?: Record<string, number>): MetadataV16 => {
-  console.log(runtimeVersion);
+export const toV16 = (metadataV15: MetadataV15): MetadataV16 => {
+  const runtimeVersion = lookupConstant<RuntimeVersion>(metadataV15 as unknown as MetadataLatest, 'system', 'version');
 
   const { types, pallets, extrinsic, apis, outerEnums, custom } = metadataV15;
 
+  const transactionExtensionsByVersion = new Map<number, number[]>();
+  transactionExtensionsByVersion.set(
+    0,
+    Array.from({ length: extrinsic.signedExtensions.length }).map((_, i) => i),
+  );
+
   const extrinsicV16 = {
+    ...extrinsic,
     version: [extrinsic.version],
-    addressTypeId: extrinsic.addressTypeId,
-    signatureTypeId: extrinsic.signatureTypeId,
-    transactionExtensionsByVersion: new Map(),
-    transactionExtensions: [],
+    transactionExtensionsByVersion,
+    transactionExtensions: extrinsic.signedExtensions.map(({ ident, typeId, additionalSigned }) => ({
+      identifier: ident,
+      typeId,
+      implicit: additionalSigned,
+    })),
   } as ExtrinsicDefV16;
 
   const palletsV16 = pallets.map((p) => ({
@@ -31,9 +43,9 @@ export const toV16 = (metadataV15: MetadataV15, runtimeVersion?: Record<string, 
         deprecationInfo: { type: 'NotDeprecated' },
       })) as StorageEntryV16[],
     },
-    calls: p.calls ? { typeId: p.calls, deprecationInfo: { type: 'NotDeprecated' } } : undefined,
-    event: p.event ? { typeId: p.event, deprecationInfo: { type: 'NotDeprecated' } } : undefined,
-    error: p.error ? { typeId: p.error, deprecationInfo: { type: 'NotDeprecated' } } : undefined,
+    calls: p.calls ? { typeId: p.calls, deprecationInfo: [new Map()] } : undefined,
+    event: p.event ? { typeId: p.event, deprecationInfo: [new Map()] } : undefined,
+    error: p.error ? { typeId: p.error, deprecationInfo: [new Map()] } : undefined,
     constants: p.constants.map((c) => ({ ...c, deprecationInfo: { type: 'NotDeprecated' } })) as ConstantDefV16[],
     associatedTypes: [],
     viewFunctions: [],
@@ -47,7 +59,9 @@ export const toV16 = (metadataV15: MetadataV15, runtimeVersion?: Record<string, 
       deprecationInfo: { type: 'NotDeprecated' },
     })),
     deprecationInfo: { type: 'NotDeprecated' },
-    version: runtimeVersion ? runtimeVersion[calcRuntimeApiHash(api.name)] : -1,
+    version: runtimeVersion
+      ? runtimeVersion.apis.find(([apiHash]) => apiHash === calcRuntimeApiHash(api.name))?.at(1)
+      : -1,
   })) as RuntimeApiDefV16[];
 
   return { types, pallets: palletsV16, extrinsic: extrinsicV16, apis: apisV16, outerEnums, custom } as MetadataV16;
