@@ -28,6 +28,9 @@
     },
     {
       "path": "../contracts/tsconfig.json"
+    },
+    {
+      "path": "../merkleized-metadata/tsconfig.json"
     }
   ]
 }
