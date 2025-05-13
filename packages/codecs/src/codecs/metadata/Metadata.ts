@@ -1,4 +1,4 @@
-import { OpaqueMetadata, RuntimeVersion } from '@dedot/codecs/codecs';
+import { OpaqueMetadata } from '@dedot/codecs/codecs';
 import * as $ from '@dedot/shape';
 import { ensurePresence, HexString, u8aToHex } from '@dedot/utils';
 import { toV15, toV16 } from './conversion/index.js';
@@ -74,7 +74,6 @@ export type RuntimeApiMethodDefLatest = RuntimeApiMethodDefV16;
 export class Metadata {
   magicNumber: number;
   metadataVersioned: MetadataVersioned;
-  #runtimeVersion?: Record<string, number>;
 
   constructor(magicNumber: number, metadata: MetadataVersioned) {
     if (magicNumber !== MAGIC_NUMBER) {
@@ -83,10 +82,6 @@ export class Metadata {
 
     this.magicNumber = magicNumber;
     this.metadataVersioned = metadata;
-  }
-
-  setRuntimeVersion(runtimeVersion: Record<string, number>) {
-    this.#runtimeVersion = runtimeVersion;
   }
 
   get versionNumber(): number {
@@ -102,9 +97,9 @@ export class Metadata {
     if (currentVersion === 'V16') {
       return this.metadataVersioned.value;
     } else if (currentVersion === 'V15') {
-      return toV16(this.metadataVersioned.value, this.#runtimeVersion);
+      return toV16(this.metadataVersioned.value);
     } else if (currentVersion === 'V14') {
-      return toV16(toV15(this.metadataVersioned.value), this.#runtimeVersion);
+      return toV16(toV15(this.metadataVersioned.value));
     }
 
     throw new Error(`Unsupported metadata version, found: ${currentVersion}`);

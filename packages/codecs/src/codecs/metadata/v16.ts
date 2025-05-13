@@ -3,7 +3,18 @@ import { $PortableType, $TypeId } from './scale_info.js';
 import { $Hasher, $SignedExtensionDefV14 } from './v14.js';
 import { $RuntimeApiMethodParamDefV15 } from './v15.js';
 
-export const $DeprecationStatusDefV16 = $.Enum({
+export const $VariantDeprecationInfoDefV16 = $.Enum({
+  DeprecatedWithoutNote: { index: 1 },
+  Deprecated: { index: 2, value: $.Struct({ note: $.str, since: $.Option($.str) }) },
+});
+
+export type VariantDeprecationInfoDefV16 = $.Input<typeof $VariantDeprecationInfoDefV16>;
+
+export const $EnumDeprecationInfoDefV16 = $.Tuple($.map($.u8, $VariantDeprecationInfoDefV16));
+
+export type EnumDeprecationInfoDefV16 = $.Input<typeof $EnumDeprecationInfoDefV16>;
+
+export const $ItemDeprecationInfoDefV16 = $.Enum({
   NotDeprecated: null,
   DeprecatedWithoutNote: null,
   Deprecated: $.Struct({
@@ -12,22 +23,14 @@ export const $DeprecationStatusDefV16 = $.Enum({
   }),
 });
 
-export type DeprecationStatusDefV16 = $.Input<typeof $DeprecationStatusDefV16>;
-
-export const $DeprecationInfoDefV16 = $.Enum({
-  NotDeprecated: null,
-  ItemDeprecated: $DeprecationStatusDefV16,
-  VariantsDeprecated: $.map($.u8, $DeprecationStatusDefV16),
-});
-
-export type DeprecationInfoDefV16 = $.Input<typeof $DeprecationInfoDefV16>;
+export type ItemDeprecationInfoDefV16 = $.Input<typeof $ItemDeprecationInfoDefV16>;
 
 export const $ConstantDefV16 = $.Struct({
   name: $.str,
   typeId: $TypeId,
   value: $.PrefixedHex,
   docs: $.Vec($.str),
-  deprecationInfo: $DeprecationStatusDefV16,
+  deprecationInfo: $ItemDeprecationInfoDefV16,
 });
 
 export type ConstantDefV16 = $.Input<typeof $ConstantDefV16>;
@@ -45,7 +48,7 @@ export const $StorageEntryV16 = $.Struct({
   }),
   default: $.PrefixedHex,
   docs: $.Vec($.str),
-  deprecationInfo: $DeprecationStatusDefV16,
+  deprecationInfo: $ItemDeprecationInfoDefV16,
 });
 
 export type StorageEntryV16 = $.Input<typeof $StorageEntryV16>;
@@ -55,12 +58,12 @@ export const $FunctionParamDefV16 = $RuntimeApiMethodParamDefV15;
 export type FunctionParamDefV16 = $.Input<typeof $FunctionParamDefV16>;
 
 export const $ViewFunctionDefV16 = $.Struct({
-  name: $.str,
   id: $.sizedArray($.u8, 32),
+  name: $.str,
   inputs: $.Vec($FunctionParamDefV16),
   output: $TypeId,
   docs: $.Vec($.str),
-  deprecationInfo: $DeprecationStatusDefV16,
+  deprecationInfo: $ItemDeprecationInfoDefV16,
 });
 
 export type ViewFunctionDefV16 = $.Input<typeof $ViewFunctionDefV16>;
@@ -84,27 +87,27 @@ export const $PalletDefV16 = $.Struct({
   calls: $.Option(
     $.Struct({
       typeId: $TypeId,
-      deprecationInfo: $DeprecationInfoDefV16,
+      deprecationInfo: $EnumDeprecationInfoDefV16,
     }),
   ),
   event: $.Option(
     $.Struct({
       typeId: $TypeId,
-      deprecationInfo: $DeprecationInfoDefV16,
+      deprecationInfo: $EnumDeprecationInfoDefV16,
     }),
   ),
   constants: $.Vec($ConstantDefV16),
   error: $.Option(
     $.Struct({
       typeId: $TypeId,
-      deprecationInfo: $DeprecationInfoDefV16,
+      deprecationInfo: $EnumDeprecationInfoDefV16,
     }),
   ),
   associatedTypes: $.Vec($AssociatedTypeDefV16),
   viewFunctions: $.Vec($ViewFunctionDefV16),
   index: $.u8,
   docs: $.Vec($.str),
-  deprecationInfo: $DeprecationStatusDefV16,
+  deprecationInfo: $ItemDeprecationInfoDefV16,
 });
 
 export type PalletDefV16 = $.Input<typeof $PalletDefV16>;
@@ -124,7 +127,8 @@ export const $ExtrinsicDefV16 = $.Struct({
   version: $.Vec($.u8),
   addressTypeId: $TypeId,
   signatureTypeId: $TypeId,
-  transactionExtensionsByVersion: $.map($.u8, $.Vec($.u32)), // It will be compactU32 in frame-metadata v21
+  callTypeId: $TypeId,
+  transactionExtensionsByVersion: $.map($.u8, $.Vec($.compactU32)),
   transactionExtensions: $.Vec($TransactionExtensionDefV16),
 });
 
@@ -135,7 +139,7 @@ export const $RuntimeApiMethodDefV16 = $.Struct({
   inputs: $.Vec($FunctionParamDefV16),
   output: $TypeId,
   docs: $.Vec($.str),
-  deprecationInfo: $DeprecationStatusDefV16,
+  deprecationInfo: $ItemDeprecationInfoDefV16,
 });
 
 export type RuntimeApiMethodDefV16 = $.Input<typeof $RuntimeApiMethodDefV16>;
@@ -144,14 +148,14 @@ export const $RuntimeApiDefV16 = $.Struct({
   name: $.str,
   methods: $.Vec($RuntimeApiMethodDefV16),
   docs: $.Vec($.str),
-  deprecationInfo: $DeprecationStatusDefV16,
-  version: $.u32, // It will be compactU32 in frame-metadata v21
+  version: $.compactU32,
+  deprecationInfo: $ItemDeprecationInfoDefV16,
 });
 
 export type RuntimeApiDefV16 = $.Input<typeof $RuntimeApiDefV16>;
 
 /**
- * Ref: https://github.com/paritytech/frame-metadata/blob/a060c2d488771e5976c26d1bf64fdf8ad734cf1b/frame-metadata/src/v16.rs#L46-L63
+ * Ref: https://github.com/paritytech/frame-metadata/blob/f0742f8449233421d4db60e22175e26abaf68762/frame-metadata/src/v16.rs#L46-L64
  */
 export const $MetadataV16 = $.Struct({
   types: $.Vec($PortableType),

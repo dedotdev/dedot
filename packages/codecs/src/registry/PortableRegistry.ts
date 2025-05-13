@@ -55,7 +55,7 @@ export class PortableRegistry extends TypeRegistry {
     const targetPallet = this.metadata!.pallets.find((p) => p.index === moduleError.index);
     if (!targetPallet || !targetPallet.error) return;
 
-    const def = this.metadata!.types[targetPallet.error];
+    const def = this.metadata!.types[targetPallet.error.typeId];
     if (!def) return;
 
     const { type, value } = def.typeDef;

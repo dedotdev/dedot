@@ -172,8 +172,6 @@ export abstract class BaseSubstrateClient<
   }
 
   protected setMetadata(metadata: Metadata) {
-    metadata.setRuntimeVersion(this.runtimeVersion.apis);
-
     this._metadata = metadata;
     this._registry = new PortableRegistry(metadata.latest, this.options.hasher);
   }
