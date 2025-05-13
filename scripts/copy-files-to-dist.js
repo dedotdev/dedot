@@ -105,6 +105,12 @@ const main = () => {
           require: './cjs/contracts/index.js',
           default: './contracts/index.js',
         };
+        pkgJson.exports['./merkleized-metadata'] = {
+          types: './merkleized-metadata/index.d.ts',
+          import: './merkleized-metadata/index.js',
+          require: './cjs/merkleized-metadata/index.js',
+          default: './merkleized-metadata/index.js',
+        };
       }
 
       if (pkgJson.name === '@dedot/types') {
