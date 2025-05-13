@@ -41,7 +41,7 @@ export abstract class SignedExtension<Data extends any = {}, AdditionalSigned ex
   }
 
   get identifier(): string {
-    return this.signedExtensionDef.ident;
+    return this.signedExtensionDef.identifier;
   }
 
   get $Data(): $.AnyShape {
@@ -49,7 +49,7 @@ export abstract class SignedExtension<Data extends any = {}, AdditionalSigned ex
   }
 
   get $AdditionalSigned(): $.AnyShape {
-    return ensurePresence(this.registry.findCodec(this.signedExtensionDef.additionalSigned));
+    return ensurePresence(this.registry.findCodec(this.signedExtensionDef.implicit));
   }
 
   get registry() {

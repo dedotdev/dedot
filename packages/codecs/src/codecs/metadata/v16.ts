@@ -112,9 +112,6 @@ export const $PalletDefV16 = $.Struct({
 
 export type PalletDefV16 = $.Input<typeof $PalletDefV16>;
 
-export const $SignedExtensionDefV16 = $SignedExtensionDefV14;
-export type SignedExtensionDefV16 = $.Input<typeof $SignedExtensionDefV16>;
-
 export const $TransactionExtensionDefV16 = $.Struct({
   identifier: $.str,
   typeId: $TypeId,

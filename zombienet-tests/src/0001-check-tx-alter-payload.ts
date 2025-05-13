@@ -22,11 +22,11 @@ export const run = async (nodeName: any, networkInfo: any): Promise<void> => {
       // Proving that the original tx payload is already alter to add the tip
       const transferTx = await api.tx.system.remarkWithEvent('Hello Dedot').sign(alice, { tip });
 
-      const { addressTypeId, signatureTypeId, extraTypeId } = api.registry.metadata!.extrinsic;
+      const { addressTypeId, signatureTypeId } = api.registry.metadata!.extrinsic;
 
       const $Address = api.registry.findCodec<any>(addressTypeId);
       const $Signature = api.registry.findCodec<any>(signatureTypeId);
-      const $Extra = api.registry.findCodec<any>(extraTypeId);
+      const $Extra = api.registry.createExtraCodec(4);
 
       const $ExtrinsicSignature: $.Shape<ExtrinsicSignature> = $.Struct({
         address: $Address,

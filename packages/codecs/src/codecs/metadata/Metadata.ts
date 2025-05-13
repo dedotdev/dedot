@@ -7,12 +7,12 @@ import { $MetadataV15 } from './v15.js';
 import {
   $PalletDefV16,
   $RuntimeApiMethodDefV16,
-  $SignedExtensionDefV16,
   $StorageEntryV16,
+  $TransactionExtensionDefV16,
   PalletDefV16,
-  SignedExtensionDefV16,
   RuntimeApiMethodDefV16,
   StorageEntryV16,
+  TransactionExtensionDefV16,
 } from './v16.js';
 import { $MetadataV16, MetadataV16 } from './v16.js';
 
@@ -65,8 +65,8 @@ export type PalletDefLatest = PalletDefV16;
 export const $StorageEntryLatest = $StorageEntryV16;
 export type StorageEntryLatest = StorageEntryV16;
 
-export const $SignedExtensionDefLatest = $SignedExtensionDefV16;
-export type SignedExtensionDefLatest = SignedExtensionDefV16;
+export const $SignedExtensionDefLatest = $TransactionExtensionDefV16;
+export type SignedExtensionDefLatest = TransactionExtensionDefV16;
 
 export const $RuntimeApiMethodDefLatest = $RuntimeApiMethodDefV16;
 export type RuntimeApiMethodDefLatest = RuntimeApiMethodDefV16;

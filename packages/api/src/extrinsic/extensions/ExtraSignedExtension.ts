@@ -1,10 +1,10 @@
+import { DEFAULT_EXTRINSIC_VERSION, type SignedExtensionDefLatest } from '@dedot/codecs';
 import * as $ from '@dedot/shape';
 import { SignerPayloadJSON, SignerPayloadRaw } from '@dedot/types';
 import { ensurePresence, HexString, u8aToHex } from '@dedot/utils';
-import { ISignedExtension, SignedExtension } from './SignedExtension.js';
 import { FallbackSignedExtension, isEmptyStructOrTuple } from './FallbackSignedExtension.js';
+import { ISignedExtension, SignedExtension } from './SignedExtension.js';
 import { knownSignedExtensions } from './known/index.js';
-import type { SignedExtensionDefLatest } from '@dedot/codecs';
 
 export class ExtraSignedExtension extends SignedExtension<any[], any[]> {
   #signedExtensions?: ISignedExtension[];
@@ -23,13 +23,11 @@ export class ExtraSignedExtension extends SignedExtension<any[], any[]> {
   }
 
   get $Data(): $.AnyShape {
-    const { extraTypeId } = this.registry.metadata.extrinsic;
-
-    return ensurePresence(this.registry.findCodec(extraTypeId));
+    return ensurePresence(this.registry.createExtraCodec(DEFAULT_EXTRINSIC_VERSION));
   }
 
   get $AdditionalSigned(): $.AnyShape {
-    const $AdditionalSignedCodecs = this.#signedExtensionDefs.map((se) => this.registry.findCodec(se.additionalSigned));
+    const $AdditionalSignedCodecs = this.#signedExtensionDefs.map((se) => this.registry.findCodec(se.implicit));
 
     return $.Tuple(...$AdditionalSignedCodecs);
   }
@@ -42,7 +40,7 @@ export class ExtraSignedExtension extends SignedExtension<any[], any[]> {
   }
 
   get #signedExtensionDefs() {
-    return this.registry.metadata.extrinsic.signedExtensions;
+    return this.registry.metadata.extrinsic.transactionExtensions;
   }
 
   #getSignedExtensions() {
@@ -50,8 +48,8 @@ export class ExtraSignedExtension extends SignedExtension<any[], any[]> {
       const { signedExtensions: userSignedExtensions = {} } = this.client.options;
 
       const Extension =
-        userSignedExtensions[extDef.ident as keyof typeof knownSignedExtensions] ||
-        knownSignedExtensions[extDef.ident as keyof typeof knownSignedExtensions];
+        userSignedExtensions[extDef.identifier as keyof typeof knownSignedExtensions] ||
+        knownSignedExtensions[extDef.identifier as keyof typeof knownSignedExtensions];
 
       if (Extension) {
         return new Extension(this.client, {
@@ -65,12 +63,12 @@ export class ExtraSignedExtension extends SignedExtension<any[], any[]> {
             ...ensurePresence(this.options),
             def: extDef,
           },
-          extDef.ident
+          extDef.identifier,
         );
       }
 
       // For extensions that require input but aren't implemented, throw an error
-      throw new Error(`SignedExtension for ${extDef.ident} requires input but is not implemented`);
+      throw new Error(`SignedExtension for ${extDef.identifier} requires input but is not implemented`);
     });
   }
 
@@ -80,10 +78,7 @@ export class ExtraSignedExtension extends SignedExtension<any[], any[]> {
    * @returns boolean
    */
   private isRequireNoExternalInputs(extDef: SignedExtensionDefLatest): boolean {
-    return (
-      isEmptyStructOrTuple(this.registry, extDef.typeId) &&
-      isEmptyStructOrTuple(this.registry, extDef.additionalSigned)
-    );
+    return isEmptyStructOrTuple(this.registry, extDef.typeId) && isEmptyStructOrTuple(this.registry, extDef.implicit);
   }
 
   toPayload(call: HexString = '0x'): SignerPayloadJSON {

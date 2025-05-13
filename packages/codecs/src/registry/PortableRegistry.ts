@@ -1,4 +1,4 @@
-import { EnumOptions } from '@dedot/shape';
+import { EnumOptions, Tuple } from '@dedot/shape';
 import { blake2_256, HashFn, HexString, hexToU8a, isObject, isU8a, u8aToHex } from '@dedot/utils';
 import {
   $Extrinsic,
@@ -26,6 +26,27 @@ export class PortableRegistry extends TypeRegistry {
 
   get $Extrinsic() {
     return $Extrinsic(this);
+  }
+
+  createExtraCodec(transactionVersion: number) {
+    const { transactionExtensions, transactionExtensionsByVersion, version } = this.metadata.extrinsic;
+
+    const transactionVersionIndex = version.findIndex((v) => v === transactionVersion);
+
+    if (transactionVersionIndex < 0) {
+      throw new Error(`Invalid transaction version: ${transactionVersion}`);
+    }
+
+    const transactionExtensionIndexes = transactionExtensionsByVersion.get(transactionVersionIndex);
+
+    if (!transactionExtensionIndexes) {
+      throw new Error(`No transaction extensions found for version ${transactionVersion}`);
+    }
+
+    const transactionExtensionsVersioned = transactionExtensionIndexes.map((index) => transactionExtensions[index]);
+    const extraCodecs = transactionExtensionsVersioned.map(({ typeId }) => this.findCodec(typeId));
+
+    return Tuple(...extraCodecs);
   }
 
   get metadata(): MetadataLatest {
