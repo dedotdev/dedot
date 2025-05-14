@@ -28,7 +28,7 @@ export class PortableRegistry extends TypeRegistry {
     return $Extrinsic(this);
   }
 
-  createExtraCodec(transactionVersion: number) {
+  $Extra(transactionVersion: number) {
     const { transactionExtensions, transactionExtensionsByVersion, version } = this.metadata.extrinsic;
 
     const transactionVersionIndex = version.findIndex((v) => v === transactionVersion);

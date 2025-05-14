@@ -9,14 +9,14 @@ export class Extrinsic<A = any, C = any, S = any, E = any> extends ExtrinsicV4<A
 export interface ExtrinsicSignature<A = any, S = any, E = any> extends ExtrinsicSignatureV4<A, S, E> {}
 export const DEFAULT_EXTRINSIC_VERSION = 4;
 
-export const $Extrinsic = (registry: PortableRegistry) => {
+export const $Extrinsic = (registry: PortableRegistry, version = DEFAULT_EXTRINSIC_VERSION) => {
   assert(registry, 'PortableRegistry is required to compose $Extrinsic codec');
 
   const { callTypeId, addressTypeId, signatureTypeId } = registry.metadata!.extrinsic;
 
   const $Address = registry.findCodec(addressTypeId) as $.Shape<any>;
   const $Signature = registry.findCodec(signatureTypeId) as $.Shape<any>;
-  const $Extra = registry.createExtraCodec(DEFAULT_EXTRINSIC_VERSION) as $.Shape<any>;
+  const $Extra = registry.$Extra(version) as $.Shape<any>;
   const $RuntimeCall = registry.findCodec(callTypeId) as $.Shape<any>;
 
   const $ExtrinsicSignature: $.Shape<ExtrinsicSignature> = $.Struct({
