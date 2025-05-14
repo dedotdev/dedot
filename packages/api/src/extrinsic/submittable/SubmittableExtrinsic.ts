@@ -1,17 +1,11 @@
-import { BlockHash, Hash, SignedBlock, TransactionStatus } from '@dedot/codecs';
-import {
-  AddressOrPair,
-  Callback,
-  DryRunResult,
-  ISubmittableExtrinsicLegacy,
-  ISubmittableResult,
-  SignerOptions,
-  Unsub,
-} from '@dedot/types';
+import { BlockHash, SignedBlock, TransactionStatus } from '@dedot/codecs';
+import { AddressOrPair, Callback, DryRunResult, ISubmittableExtrinsicLegacy, ISubmittableResult, SignerOptions, TxHash, TxUnsub } from '@dedot/types';
 import { assert, isHex } from '@dedot/utils';
 import { BaseSubmittableExtrinsic } from './BaseSubmittableExtrinsic.js';
 import { SubmittableResult } from './SubmittableResult.js';
-import { toTxStatus } from './utils.js';
+import { RejectedTxError } from './errors';
+import { toTxStatus, txDefer } from './utils.js';
+
 
 /**
  * @name SubmittableExtrinsic
@@ -29,38 +23,63 @@ export class SubmittableExtrinsic extends BaseSubmittableExtrinsic implements IS
     return dryRunFn(this.toHex());
   }
 
-  send(): Promise<Hash>;
-  send(callback: Callback<ISubmittableResult>): Promise<Unsub>;
-  async send(callback?: Callback<ISubmittableResult> | undefined): Promise<Hash | Unsub> {
+  send(): TxHash;
+  send(callback: Callback<ISubmittableResult>): TxUnsub;
+  send(callback?: Callback<ISubmittableResult> | undefined) {
     const isSubscription = !!callback;
     const txHex = this.toHex();
     const txHash = this.hash;
 
-    if (isSubscription) {
-      return this.client.rpc.author_submitAndWatchExtrinsic(txHex, async (txStatus: TransactionStatus) => {
-        if (txStatus.type === 'InBlock' || txStatus.type === 'Finalized') {
-          const blockHash: BlockHash = txStatus.value;
+    const { deferTx, deferFinalized, deferBestChainBlockIncluded } = txDefer();
 
-          const [signedBlock, blockEvents] = await Promise.all([
-            this.client.rpc.chain_getBlock(blockHash),
-            this.getSystemEventsAt(blockHash),
-          ]);
+    const unsub = this.client.rpc.author_submitAndWatchExtrinsic(txHex, async (txStatus: TransactionStatus) => {
+      if (txStatus.type === 'InBlock' || txStatus.type === 'Finalized') {
+        const blockHash: BlockHash = txStatus.value;
 
-          const txIndex = (signedBlock as SignedBlock).block.extrinsics.indexOf(txHex);
-          assert(txIndex >= 0, 'Extrinsic not found!');
+        const [signedBlock, blockEvents] = await Promise.all([
+          this.client.rpc.chain_getBlock(blockHash),
+          this.getSystemEventsAt(blockHash),
+        ]);
 
-          const events = blockEvents.filter(({ phase }) => phase.type === 'ApplyExtrinsic' && phase.value === txIndex);
-          const blockNumber = (signedBlock as SignedBlock).block.header.number;
+        const txIndex = (signedBlock as SignedBlock).block.extrinsics.indexOf(txHex);
+        assert(txIndex >= 0, 'Extrinsic not found!');
 
-          const status = toTxStatus(txStatus, { txIndex, blockNumber });
-          return callback(new SubmittableResult({ status, txHash, events, txIndex }));
-        } else {
-          const status = toTxStatus(txStatus);
-          return callback(new SubmittableResult({ status, txHash }));
+        const events = blockEvents.filter(({ phase }) => phase.type === 'ApplyExtrinsic' && phase.value === txIndex);
+        const blockNumber = (signedBlock as SignedBlock).block.header.number;
+
+        const status = toTxStatus(txStatus, { txIndex, blockNumber });
+        const result = new SubmittableResult({ status, txHash, events, txIndex });
+
+        if (status.type === 'BestChainBlockIncluded') {
+          deferBestChainBlockIncluded.resolve(result);
+        } else if (status.type === 'Finalized') {
+          deferBestChainBlockIncluded.resolve(result);
+          deferFinalized.resolve(result);
         }
+
+        !isSubscription && deferTx.resolve(txHash);
+        return callback?.(result);
+      } else {
+        const status = toTxStatus(txStatus);
+        const result = new SubmittableResult({ status, txHash });
+
+        if (status.type === 'Invalid' || status.type === 'Drop') {
+          const e = new RejectedTxError(result);
+          deferBestChainBlockIncluded.reject(e);
+          deferFinalized.reject(e);
+        }
+
+        !isSubscription && deferTx.resolve(txHash);
+        return callback?.(new SubmittableResult({ status, txHash }));
+      }
+    });
+
+    if (isSubscription) {
+      unsub.then((x) => {
+        deferTx.resolve(x);
       });
-    } else {
-      return this.client.rpc.author_submitExtrinsic(txHex);
     }
+
+    return deferTx.promise;
   }
 }

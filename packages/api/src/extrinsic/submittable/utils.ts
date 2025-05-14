@@ -1,6 +1,7 @@
-import { TransactionStatus } from '@dedot/codecs';
-import type { AddressOrPair, IKeyringPair, TxStatus } from '@dedot/types';
-import { assert, blake2AsU8a, HexString, hexToU8a, isFunction } from '@dedot/utils';
+import { RejectedTxError } from '@dedot/api';
+import { Hash, TransactionStatus } from '@dedot/codecs';
+import { AddressOrPair, IKeyringPair, ISubmittableResult, TxStatus, Unsub } from '@dedot/types';
+import { assert, blake2AsU8a, deferred, HexString, hexToU8a, isFunction } from '@dedot/utils';
 
 export function isKeyringPair(account: AddressOrPair): account is IKeyringPair {
   return isFunction((account as IKeyringPair).sign);
@@ -84,4 +85,35 @@ export function toTxStatus(txStatus: TransactionStatus, txInfo?: TxInfo): TxStat
         },
       };
   }
+}
+
+export function txDefer() {
+  const deferTx = deferred<Unsub | Hash>();
+  const deferFinalized = deferred<ISubmittableResult>();
+  const deferBestChainBlockIncluded = deferred<ISubmittableResult>();
+
+  Object.assign(deferTx.promise, {
+    untilFinalized: () => deferFinalized.promise,
+    untilBestChainBlockIncluded: () => deferBestChainBlockIncluded.promise,
+  });
+
+  const onTxProgress = (result: ISubmittableResult) => {
+    const { status } = result;
+    if (status.type === 'BestChainBlockIncluded') {
+      deferBestChainBlockIncluded.resolve(result);
+    } else if (status.type === 'Finalized') {
+      deferBestChainBlockIncluded.resolve(result);
+      deferFinalized.resolve(result);
+    } else if (status.type === 'Invalid' || status.type === 'Drop') {
+      deferBestChainBlockIncluded.reject(new RejectedTxError(result));
+      deferFinalized.reject(new RejectedTxError(result));
+    }
+  };
+
+  return {
+    deferTx,
+    deferFinalized,
+    deferBestChainBlockIncluded,
+    onTxProgress,
+  };
 }

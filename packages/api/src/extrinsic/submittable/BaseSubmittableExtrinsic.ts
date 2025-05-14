@@ -1,4 +1,4 @@
-import { BlockHash, Extrinsic, Hash } from '@dedot/codecs';
+import { BlockHash, Extrinsic } from '@dedot/codecs';
 import {
   AddressOrPair,
   Callback,
@@ -9,15 +9,16 @@ import {
   PayloadOptions,
   RpcVersion,
   SignerOptions,
+  TxHash,
   TxPaymentInfo,
-  Unsub,
+  TxUnsub,
 } from '@dedot/types';
 import { DedotError, HexString, isFunction, toHex, u8aToHex } from '@dedot/utils';
 import type { FrameSystemEventRecord, SubstrateApi } from '../../chaintypes/index.js';
 import type { ISubstrateClient, ISubstrateClientAt } from '../../types.js';
 import { ExtraSignedExtension } from '../extensions/index.js';
 import { fakeSigner } from './fakeSigner.js';
-import { isKeyringPair, signRaw } from './utils.js';
+import { isKeyringPair, signRaw, txDefer } from './utils.js';
 
 export abstract class BaseSubmittableExtrinsic extends Extrinsic implements ISubmittableExtrinsic {
   #alterTx?: HexString;
@@ -81,21 +82,42 @@ export abstract class BaseSubmittableExtrinsic extends Extrinsic implements ISub
     return this;
   }
 
-  signAndSend(account: AddressOrPair, options?: Partial<SignerOptions>): Promise<Hash>;
-  signAndSend(account: AddressOrPair, callback: Callback<ISubmittableResult>): Promise<Unsub>;
+  signAndSend(account: AddressOrPair, options?: Partial<SignerOptions>): TxHash;
+  signAndSend(account: AddressOrPair, callback: Callback<ISubmittableResult>): TxUnsub;
   signAndSend(
     account: AddressOrPair,
     options: Partial<SignerOptions>,
     callback?: Callback<ISubmittableResult>,
-  ): Promise<Unsub>;
-  async signAndSend(
+  ): TxUnsub;
+  signAndSend(
     fromAccount: AddressOrPair,
     partialOptions?: Partial<SignerOptions> | Callback<ISubmittableResult>,
     maybeCallback?: Callback<ISubmittableResult>,
-  ): Promise<Hash | Unsub> {
+  ) {
     const [options, callback] = this.#normalizeOptions(partialOptions, maybeCallback);
-    await this.sign(fromAccount, options);
-    return this.send(callback as any);
+
+    const { deferTx, deferFinalized, deferBestChainBlockIncluded } = txDefer();
+
+    this.sign(fromAccount, options)
+      .then(() => {
+        const deferSend = this.send(callback as any);
+        deferSend
+          .then(deferTx.resolve) // --
+          .catch(deferTx.reject);
+
+        deferSend
+          .untilFinalized() //--
+          .then(deferFinalized.resolve)
+          .catch(deferFinalized.reject);
+
+        deferSend
+          .untilBestChainBlockIncluded() //--
+          .then(deferBestChainBlockIncluded.resolve)
+          .catch(deferBestChainBlockIncluded.reject);
+      })
+      .catch(deferTx.reject);
+
+    return deferTx.promise;
   }
 
   #normalizeOptions(
@@ -109,9 +131,9 @@ export abstract class BaseSubmittableExtrinsic extends Extrinsic implements ISub
     }
   }
 
-  send(): Promise<Hash>;
-  send(callback: Callback): Promise<Unsub>;
-  send(callback?: Callback | undefined): Promise<Hash | Unsub> {
+  send(): TxHash;
+  send(callback: Callback): TxUnsub;
+  send(callback?: Callback | undefined): TxHash | TxUnsub {
     throw new Error('Unimplemented!');
   }
 
