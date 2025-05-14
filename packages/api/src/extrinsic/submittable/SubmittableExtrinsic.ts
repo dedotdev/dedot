@@ -12,7 +12,7 @@ import {
 import { assert, isHex } from '@dedot/utils';
 import { BaseSubmittableExtrinsic } from './BaseSubmittableExtrinsic.js';
 import { SubmittableResult } from './SubmittableResult.js';
-import { RejectedTxError } from './errors';
+import { RejectedTxError } from './errors.js';
 import { toTxStatus, txDefer } from './utils.js';
 
 /**
@@ -59,10 +59,10 @@ export class SubmittableExtrinsic extends BaseSubmittableExtrinsic implements IS
         const result = new SubmittableResult({ status, txHash, events, txIndex });
 
         if (status.type === 'BestChainBlockIncluded') {
-          deferBestChainBlockIncluded.resolve(result);
+          deferBestChainBlockIncluded()?.resolve(result);
         } else if (status.type === 'Finalized') {
-          deferBestChainBlockIncluded.resolve(result);
-          deferFinalized.resolve(result);
+          deferBestChainBlockIncluded()?.resolve(result);
+          deferFinalized()?.resolve(result);
         }
 
         !isSubscription && deferTx.resolve(txHash);
@@ -73,8 +73,8 @@ export class SubmittableExtrinsic extends BaseSubmittableExtrinsic implements IS
 
         if (status.type === 'Invalid' || status.type === 'Drop') {
           const e = new RejectedTxError(result);
-          deferBestChainBlockIncluded.reject(e);
-          deferFinalized.reject(e);
+          deferBestChainBlockIncluded()?.reject(e);
+          deferFinalized()?.reject(e);
         }
 
         !isSubscription && deferTx.resolve(txHash);

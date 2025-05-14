@@ -1,7 +1,7 @@
 import { Hash, TransactionStatus } from '@dedot/codecs';
 import { AddressOrPair, IKeyringPair, ISubmittableResult, TxStatus, Unsub } from '@dedot/types';
 import { assert, blake2AsU8a, Deferred, deferred, HexString, hexToU8a, isFunction } from '@dedot/utils';
-import { RejectedTxError } from './errors';
+import { RejectedTxError } from './errors.js';
 
 export function isKeyringPair(account: AddressOrPair): account is IKeyringPair {
   return isFunction((account as IKeyringPair).sign);
@@ -119,8 +119,8 @@ export function txDefer() {
 
   return {
     deferTx,
-    deferFinalized,
-    deferBestChainBlockIncluded,
+    deferFinalized: () => deferFinalized,
+    deferBestChainBlockIncluded: () => deferBestChainBlockIncluded,
     onTxProgress,
   };
 }

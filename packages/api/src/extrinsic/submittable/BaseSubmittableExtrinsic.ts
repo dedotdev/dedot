@@ -107,13 +107,13 @@ export abstract class BaseSubmittableExtrinsic extends Extrinsic implements ISub
 
         deferSend
           .untilFinalized() //--
-          .then(deferFinalized.resolve)
-          .catch(deferFinalized.reject);
+          .then(deferFinalized()?.resolve)
+          .catch(deferFinalized()?.reject);
 
         deferSend
           .untilBestChainBlockIncluded() //--
-          .then(deferBestChainBlockIncluded.resolve)
-          .catch(deferBestChainBlockIncluded.reject);
+          .then(deferBestChainBlockIncluded()?.resolve)
+          .catch(deferBestChainBlockIncluded()?.reject);
       })
       .catch(deferTx.reject);
 
