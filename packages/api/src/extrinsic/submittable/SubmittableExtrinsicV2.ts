@@ -226,7 +226,8 @@ export class SubmittableExtrinsicV2 extends BaseSubmittableExtrinsic {
 
     // TODO handle timeout for this with the Drop status,
     //  just in-case we somehow can't find the tx in any block
-    const unsub = this.#send((result) => {
+    let unsub: Unsub | undefined;
+    this.#send((result) => {
       onTxProgress(result);
 
       if (isSubscription) {
@@ -245,15 +246,15 @@ export class SubmittableExtrinsicV2 extends BaseSubmittableExtrinsic {
         status.type === 'Drop'
       ) {
         deferTx.resolve(txHash);
-        unsub.then((x) => x().catch(noop));
+        unsub?.().catch(noop);
       }
-    });
+    })
+      .then((x) => {
+        unsub = x;
 
-    if (isSubscription) {
-      unsub.then((x) => {
-        deferTx.resolve(x);
-      });
-    }
+        isSubscription && deferTx.resolve(unsub);
+      })
+      .catch(deferTx.reject);
 
     return deferTx.promise;
   }

@@ -1,7 +1,7 @@
-import { RejectedTxError } from '@dedot/api';
 import { Hash, TransactionStatus } from '@dedot/codecs';
 import { AddressOrPair, IKeyringPair, ISubmittableResult, TxStatus, Unsub } from '@dedot/types';
-import { assert, blake2AsU8a, deferred, HexString, hexToU8a, isFunction } from '@dedot/utils';
+import { assert, blake2AsU8a, Deferred, deferred, HexString, hexToU8a, isFunction } from '@dedot/utils';
+import { RejectedTxError } from './errors';
 
 export function isKeyringPair(account: AddressOrPair): account is IKeyringPair {
   return isFunction((account as IKeyringPair).sign);
@@ -89,24 +89,31 @@ export function toTxStatus(txStatus: TransactionStatus, txInfo?: TxInfo): TxStat
 
 export function txDefer() {
   const deferTx = deferred<Unsub | Hash>();
-  const deferFinalized = deferred<ISubmittableResult>();
-  const deferBestChainBlockIncluded = deferred<ISubmittableResult>();
+  let deferFinalized: Deferred<ISubmittableResult> | undefined;
+  let deferBestChainBlockIncluded: Deferred<ISubmittableResult> | undefined;
 
   Object.assign(deferTx.promise, {
-    untilFinalized: () => deferFinalized.promise,
-    untilBestChainBlockIncluded: () => deferBestChainBlockIncluded.promise,
+    untilFinalized: () => {
+      deferFinalized = deferred<ISubmittableResult>();
+      return deferFinalized.promise;
+    },
+    untilBestChainBlockIncluded: () => {
+      deferBestChainBlockIncluded = deferred<ISubmittableResult>();
+      return deferBestChainBlockIncluded.promise;
+    },
   });
 
   const onTxProgress = (result: ISubmittableResult) => {
     const { status } = result;
     if (status.type === 'BestChainBlockIncluded') {
-      deferBestChainBlockIncluded.resolve(result);
+      deferBestChainBlockIncluded?.resolve(result);
     } else if (status.type === 'Finalized') {
-      deferBestChainBlockIncluded.resolve(result);
-      deferFinalized.resolve(result);
+      deferBestChainBlockIncluded?.resolve(result);
+      deferFinalized?.resolve(result);
     } else if (status.type === 'Invalid' || status.type === 'Drop') {
-      deferBestChainBlockIncluded.reject(new RejectedTxError(result));
-      deferFinalized.reject(new RejectedTxError(result));
+      const e = new RejectedTxError(result);
+      deferBestChainBlockIncluded?.reject(e);
+      deferFinalized?.reject(e);
     }
   };
 

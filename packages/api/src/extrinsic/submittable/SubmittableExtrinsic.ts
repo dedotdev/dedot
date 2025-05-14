@@ -1,11 +1,19 @@
 import { BlockHash, SignedBlock, TransactionStatus } from '@dedot/codecs';
-import { AddressOrPair, Callback, DryRunResult, ISubmittableExtrinsicLegacy, ISubmittableResult, SignerOptions, TxHash, TxUnsub } from '@dedot/types';
+import {
+  AddressOrPair,
+  Callback,
+  DryRunResult,
+  ISubmittableExtrinsicLegacy,
+  ISubmittableResult,
+  SignerOptions,
+  TxHash,
+  TxUnsub,
+} from '@dedot/types';
 import { assert, isHex } from '@dedot/utils';
 import { BaseSubmittableExtrinsic } from './BaseSubmittableExtrinsic.js';
 import { SubmittableResult } from './SubmittableResult.js';
 import { RejectedTxError } from './errors';
 import { toTxStatus, txDefer } from './utils.js';
-
 
 /**
  * @name SubmittableExtrinsic
