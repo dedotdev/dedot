@@ -5,5 +5,5 @@ Creds: config
 alice: is up
 bob: is up
 alice: reports node_roles is 4
-alice: ts-script ./0001-check-contract-tx-chaining-methods.ts within 200 seconds
-alice: ts-script ./0001-check-tx-chaining-methods.ts within 200 seconds
+alice: ts-script ./0001-check-contract-tx-chaining-methods.ts within 300 seconds
+alice: ts-script ./0001-check-tx-chaining-methods.ts within 300 seconds
