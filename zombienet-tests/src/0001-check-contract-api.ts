@@ -93,7 +93,7 @@ export const run = async (_nodeName: any, networkInfo: any) => {
 
     const flippedEvent2 = contract.events.Flipped.find(contractEvents);
     const flippedEvent3 = contractEvents.find(contract.events.Flipped.is);
-    const flippedEvent4 = contract.decodeEvent(events.find(contract.events.Flipped.is)!);
+    const flippedEvent4 = contract.decodeEvent(newEvents.find(contract.events.Flipped.is)!);
 
     assert(
       JSON.stringify(flippedEvent1) === JSON.stringify(flippedEvent2), // prettier-end-here
