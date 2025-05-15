@@ -1,0 +1,18 @@
+Description: Small Network Test
+Network: ./0001-small-network.json
+Creds: config
+
+alice: is up
+bob: is up
+alice: reports node_roles is 4
+alice: ts-script ./0001-check-tx-batch-v2.ts within 100 seconds
+alice: ts-script ./0001-check-ws-provider-connection.ts within 100 seconds
+alice: ts-script ./0001-tx-broadcaster.ts within 100 seconds
+alice: ts-script ./0001-verify-chain-head-logic.ts within 200 seconds
+alice: ts-script ./0001-check-payment-info.ts within 200 seconds
+alice: ts-script ./0001-tracking-tx-validity.ts within 200 seconds
+alice: ts-script ./0001-check-contract-api.ts within 500 seconds
+alice: ts-script ./0001-check-tx-alter-payload.ts within 200 seconds
+alice: ts-script ./0001-verify-contract-errors.ts within 500 seconds
+alice: ts-script ./0001-check-query-with-partial-keys.ts within 3000 seconds
+alice: ts-script ./0001-verify-dedot-client-events.ts within 100 seconds
