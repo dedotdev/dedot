@@ -43,20 +43,29 @@ export interface IRuntimeTxCall {
     | null;
 }
 
+interface PromiseWithUntil<T, R> extends Promise<T> {
+  untilFinalized(): Promise<R>;
+  untilBestChainBlockIncluded(): Promise<R>;
+}
+
+export interface TxUnsub<R extends ISubmittableResult = ISubmittableResult> extends PromiseWithUntil<Unsub, R> {}
+
+export interface TxHash<R extends ISubmittableResult = ISubmittableResult> extends PromiseWithUntil<Hash, R> {}
+
 export interface ISubmittableExtrinsic<R extends ISubmittableResult = ISubmittableResult> {
   paymentInfo(account: AddressOrPair, options?: Partial<PayloadOptions>): Promise<TxPaymentInfo>;
 
-  send(): Promise<Hash>;
+  send(): TxHash<R>;
 
-  send(callback: Callback<R>): Promise<Unsub>;
+  send(callback: Callback<R>): TxUnsub<R>;
 
   sign(account: AddressOrPair, options?: Partial<SignerOptions>): Promise<this>;
 
-  signAndSend(account: AddressOrPair, options?: Partial<SignerOptions>): Promise<Hash>;
+  signAndSend(account: AddressOrPair, options?: Partial<SignerOptions>): TxHash<R>;
 
-  signAndSend(account: AddressOrPair, callback: Callback<R>): Promise<Unsub>;
+  signAndSend(account: AddressOrPair, callback: Callback<R>): TxUnsub<R>;
 
-  signAndSend(account: AddressOrPair, options: Partial<SignerOptions>, callback?: Callback<R>): Promise<Unsub>;
+  signAndSend(account: AddressOrPair, options: Partial<SignerOptions>, callback?: Callback<R>): TxUnsub<R>;
 }
 
 export interface ISubmittableExtrinsicLegacy<R extends ISubmittableResult = ISubmittableResult>

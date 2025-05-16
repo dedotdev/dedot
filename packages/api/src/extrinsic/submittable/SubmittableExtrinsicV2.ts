@@ -1,11 +1,12 @@
-import type { BlockHash, Hash } from '@dedot/codecs';
-import type { Callback, IEventRecord, IRuntimeTxCall, ISubmittableResult, TxStatus, Unsub } from '@dedot/types';
-import { AsyncQueue, deferred, noop } from '@dedot/utils';
+import type { BlockHash } from '@dedot/codecs';
+import { Callback, IEventRecord, IRuntimeTxCall, ISubmittableResult, TxHash, TxUnsub, Unsub } from '@dedot/types';
+import { AsyncQueue, noop } from '@dedot/utils';
 import { DedotClient } from '../../client/index.js';
 import { PinnedBlock } from '../../json-rpc/index.js';
 import { BaseSubmittableExtrinsic } from './BaseSubmittableExtrinsic.js';
 import { SubmittableResult } from './SubmittableResult.js';
 import { InvalidTxError } from './errors.js';
+import { txDefer } from './utils.js';
 
 type TxFound = { blockHash: BlockHash; blockNumber: number; index: number; events: IEventRecord[] };
 
@@ -216,32 +217,49 @@ export class SubmittableExtrinsicV2 extends BaseSubmittableExtrinsic {
     return txUnsub;
   }
 
-  send(): Promise<Hash>;
-  send(callback: Callback): Promise<Unsub>;
-  async send(callback?: Callback | undefined): Promise<Hash | Unsub> {
+  send(): TxHash;
+  send(callback: Callback): TxUnsub;
+  send(callback?: Callback | undefined) {
     const isSubscription = !!callback;
 
-    if (isSubscription) {
-      return this.#send(callback);
-    } else {
-      const defer = deferred<Hash>();
+    const { deferTx, onTxProgress } = txDefer();
 
-      try {
-        // TODO handle timeout for this with the Drop status, just in-case we somehow can't find the tx in any block
-        const unsub = await this.#send(({ status, txHash }) => {
-          if (status.type === 'BestChainBlockIncluded' || status.type === 'Finalized') {
-            defer.resolve(txHash);
-            unsub().catch(noop);
-          } else if (status.type === 'Invalid' || status.type === 'Drop') {
-            defer.reject(new Error(status.value.error));
-            unsub().catch(noop);
-          }
-        });
-      } catch (e: any) {
-        defer.reject(e);
+    // TODO handle timeout for this with the Drop status,
+    //  just in-case we somehow can't find the tx in any block
+    let unsub: Unsub | undefined;
+    this.#send((result) => {
+      onTxProgress(result);
+
+      if (isSubscription) {
+        try {
+          callback?.(result);
+        } catch {}
+
+        return;
       }
 
-      return defer.promise;
-    }
+      const { status, txHash } = result;
+      if (
+        status.type === 'BestChainBlockIncluded' ||
+        status.type === 'Finalized' ||
+        status.type === 'Invalid' ||
+        status.type === 'Drop'
+      ) {
+        deferTx.resolve(txHash);
+
+        // Unsub the subscription if we're at the final states
+        if (status.type !== 'BestChainBlockIncluded') {
+          unsub?.().catch(noop);
+        }
+      }
+    })
+      .then((x) => {
+        unsub = x;
+
+        isSubscription && deferTx.resolve(unsub);
+      })
+      .catch(deferTx.reject);
+
+    return deferTx.promise;
   }
 }

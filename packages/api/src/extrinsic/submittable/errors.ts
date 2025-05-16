@@ -1,4 +1,5 @@
 import type { Result } from '@dedot/codecs';
+import { ISubmittableResult } from '@dedot/types';
 import { DedotError } from '@dedot/utils';
 import type {
   SpRuntimeTransactionValidityTransactionValidityError,
@@ -19,5 +20,12 @@ export class InvalidTxError extends DedotError {
     >,
   ) {
     super(message);
+  }
+}
+
+export class RejectedTxError extends DedotError {
+  name = 'RejectedTxError';
+  constructor(public result: ISubmittableResult) {
+    super();
   }
 }

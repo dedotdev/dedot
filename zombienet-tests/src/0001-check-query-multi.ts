@@ -127,9 +127,9 @@ async function testSubscriptionQueries(client: DedotClient | LegacyClient) {
     client.queryMulti([{ fn: client.query.system.number }], ([blockNumber]) => {
       if (lastBlockNumber !== undefined && counter >= 3) {
         if (blockNumber > lastBlockNumber) {
-          resolve();
+          return resolve();
         } else {
-          reject('Block number should be increasing');
+          return reject('Block number should be increasing');
         }
       }
 
