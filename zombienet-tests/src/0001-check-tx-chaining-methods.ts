@@ -37,6 +37,10 @@ async function testChainingMethods(ClientClass: typeof LegacyClient | typeof Ded
   // Test 3: Compare both methods (should receive BestChainBlockIncluded before Finalized)
   console.log('Testing order of events');
   await testEventOrder(api, alice);
+
+  // Test 4: Check return types of send and signAndSend methods
+  console.log('Testing send and signAndSend return types');
+  await testSendAndSignAndSendReturnTypes(api, alice);
 }
 
 async function testUntilBestChainBlockIncluded(api: LegacyClient | DedotClient, alice: IKeyringPair) {
@@ -120,4 +124,45 @@ async function testEventOrder(api: LegacyClient | DedotClient, alice: any) {
   assert(bestChainBlockIncludedTime < finalizedTime, 'BestChainBlockIncluded should be received before Finalized');
 
   console.log('Event order test passed');
+}
+
+async function testSendAndSignAndSendReturnTypes(api: LegacyClient | DedotClient, alice: IKeyringPair) {
+  // Test 1: send() without callback should return a hash
+  console.log('Testing send() without callback');
+  const tx1 = api.tx.system.remark('Hello World');
+  await tx1.sign(alice);
+  const result1 = await tx1.send();
+
+  assert(isHex(result1), 'send() without callback should return a hex hash');
+  console.log('send() without callback test passed');
+
+  // Test 2: send() with callback should return an unsubscribe object/function
+  console.log('Testing send() with callback');
+  const tx2 = api.tx.system.remark('Hello World');
+  await tx2.sign(alice);
+
+  const result2 = await tx2.send(() => {});
+  // Check that it's not a hash (which would be a hex string)
+  assert(typeof result2 === 'function', 'send() with callback should return a function');
+  console.log('send() with callback test passed');
+
+  // Test 3: signAndSend() without callback should return a hash
+  console.log('Testing signAndSend() without callback');
+  const tx3 = api.tx.system.remark('Hello World');
+  await tx3.sign(alice);
+  const result3 = await tx3.signAndSend(alice);
+
+  assert(isHex(result3), 'signAndSend() without callback should return a hex hash');
+  console.log('signAndSend() without callback test passed');
+
+  // Test 4: signAndSend() with callback should return an unsubscribe object/function
+  console.log('Testing signAndSend() with callback');
+  const tx4 = api.tx.system.remark('Hello World');
+  await tx4.sign(alice);
+
+  const result4 = await tx4.signAndSend(alice, () => {});
+  assert(typeof result4 === 'function', 'signAndSend() with callback should return a function');
+
+  console.log('signAndSend() with callback test passed');
+  console.log('All send and signAndSend return type tests passed');
 }
