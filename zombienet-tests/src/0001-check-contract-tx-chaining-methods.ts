@@ -1,7 +1,7 @@
 import Keyring from '@polkadot/keyring';
 import { cryptoWaitReady } from '@polkadot/util-crypto';
 import { DedotClient, ISubstrateClient, LegacyClient, WsProvider } from 'dedot';
-import { SubstrateApi } from 'dedot/chaintypes';
+import { SpWeightsWeightV2Weight, SubstrateApi } from 'dedot/chaintypes';
 import { Contract, ContractDeployer, ContractMetadata, parseRawMetadata } from 'dedot/contracts';
 import { IKeyringPair, RpcVersion } from 'dedot/types';
 import { assert, isHex, isNumber, stringToHex } from 'dedot/utils';
@@ -120,7 +120,7 @@ async function testContractChainingMethods(
   await testContractCombinedPromises(contract, alicePair, raw.gasRequired);
 }
 
-async function testContractEventOrder(contract: Contract<FlipperContractApi>, alicePair: any, gasLimit: any) {
+async function testContractEventOrder(contract: Contract<FlipperContractApi>, alicePair: IKeyringPair, gasLimit: any) {
   // Track the order of events
   let bestChainBlockIncludedReceived = false;
   let finalizedReceived = false;
@@ -129,7 +129,7 @@ async function testContractEventOrder(contract: Contract<FlipperContractApi>, al
 
   // Send the transaction and track status updates
   await new Promise<void>((resolve) => {
-    contract.tx.flip({ gasLimit }).signAndSend(alicePair, ({ status }: any) => {
+    contract.tx.flip({ gasLimit }).signAndSend(alicePair, ({ status }) => {
       if (status.type === 'BestChainBlockIncluded') {
         bestChainBlockIncludedReceived = true;
         bestChainBlockIncludedTime = Date.now();
@@ -149,9 +149,15 @@ async function testContractEventOrder(contract: Contract<FlipperContractApi>, al
   assert(bestChainBlockIncludedTime < finalizedTime, 'BestChainBlockIncluded should be received before Finalized');
 }
 
-async function testContractCombinedPromises(contract: Contract<FlipperContractApi>, alicePair: any, gasLimit: any) {
+async function testContractCombinedPromises(
+  contract: Contract<FlipperContractApi>,
+  alicePair: IKeyringPair,
+  gasLimit: SpWeightsWeightV2Weight,
+) {
   // Create two promises using both chaining methods
-  const signedTx = contract.tx.flip({ gasLimit }).signAndSend(alicePair);
+  const signedTx = contract.tx.flip({ gasLimit }).signAndSend(alicePair, ({ status }) => {
+    console.log(`[${contract.client.rpcVersion}] Transaction status`, status.type);
+  });
 
   const bestChainPromise = signedTx.untilBestChainBlockIncluded();
   const finalizedPromise = signedTx.untilFinalized();
