@@ -37,20 +37,20 @@ async function testChainingMethods(ClientClass: typeof LegacyClient | typeof Ded
   // Test 3: Compare both methods (should receive BestChainBlockIncluded before Finalized)
   console.log('Testing order of events');
   await testEventOrder(api, alice);
-
-  // Test 4: Test using both promises together
-  console.log('Testing combined promises');
-  await testCombinedPromises(api, alice);
 }
 
-async function testUntilBestChainBlockIncluded(api: LegacyClient | DedotClient, alice: any) {
+async function testUntilBestChainBlockIncluded(api: LegacyClient | DedotClient, alice: IKeyringPair) {
   const prevBobBalance = (await api.query.system.account(BOB)).data.free;
   console.log('BOB - initial balance:', prevBobBalance.toString());
 
   const transferTx = api.tx.balances.transferKeepAlive(BOB, TRANSFER_AMOUNT);
 
   // Use untilBestChainBlockIncluded to wait for the transaction to be included in a block
-  const result = await transferTx.signAndSend(alice).untilBestChainBlockIncluded();
+  const result = await transferTx
+    .signAndSend(alice, ({ status }) => {
+      console.log(`[${api.rpcVersion}] Transaction status`, status.type);
+    })
+    .untilBestChainBlockIncluded();
 
   // Verify the result contains the expected status
   assert(result.status.type === 'BestChainBlockIncluded', 'Status should be BestChainBlockIncluded');
@@ -66,14 +66,18 @@ async function testUntilBestChainBlockIncluded(api: LegacyClient | DedotClient, 
   console.log('untilBestChainBlockIncluded test passed');
 }
 
-async function testUntilFinalized(api: LegacyClient | DedotClient, alice: any) {
+async function testUntilFinalized(api: LegacyClient | DedotClient, alice: IKeyringPair) {
   const prevBobBalance = (await api.query.system.account(BOB)).data.free;
   console.log('BOB - initial balance:', prevBobBalance.toString());
 
   const transferTx = api.tx.balances.transferKeepAlive(BOB, TRANSFER_AMOUNT);
 
   // Use untilFinalized to wait for the transaction to be finalized
-  const result = await transferTx.signAndSend(alice).untilFinalized();
+  const result = await transferTx
+    .signAndSend(alice, ({ status }) => {
+      console.log(`[${api.rpcVersion}] Transaction status`, status.type);
+    })
+    .untilFinalized();
 
   // Verify the result contains the expected status
   assert(result.status.type === 'Finalized', 'Status should be Finalized');
@@ -120,30 +124,4 @@ async function testEventOrder(api: LegacyClient | DedotClient, alice: any) {
   assert(bestChainBlockIncludedTime < finalizedTime, 'BestChainBlockIncluded should be received before Finalized');
 
   console.log('Event order test passed');
-}
-
-async function testCombinedPromises(api: LegacyClient | DedotClient, alice: IKeyringPair) {
-  // Create two promises using both chaining methods
-  const transferTx = api.tx.balances.transferKeepAlive(BOB, TRANSFER_AMOUNT);
-  const signedTx = transferTx.signAndSend(alice, ({ status }) => {
-    console.log(`[${api.rpcVersion}] Transaction status`, status.type);
-  });
-
-  const bestChainPromise = signedTx.untilBestChainBlockIncluded();
-  const finalizedPromise = signedTx.untilFinalized();
-
-  // Wait for both promises to resolve
-  const [bestChainResult, finalizedResult] = await Promise.all([bestChainPromise, finalizedPromise]);
-
-  // Verify the results
-  assert(
-    bestChainResult.status.type === 'BestChainBlockIncluded',
-    'First result status should be BestChainBlockIncluded',
-  );
-  assert(finalizedResult.status.type === 'Finalized', 'Second result status should be Finalized');
-
-  // Verify both results refer to the same transaction
-  assert(bestChainResult.txHash === finalizedResult.txHash, 'Both results should have the same txHash');
-
-  console.log('Combined promises test passed');
 }

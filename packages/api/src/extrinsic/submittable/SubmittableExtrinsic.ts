@@ -38,7 +38,7 @@ export class SubmittableExtrinsic extends BaseSubmittableExtrinsic implements IS
     const txHex = this.toHex();
     const txHash = this.hash;
 
-    const { deferTx, deferFinalized, deferBestChainBlockIncluded } = txDefer();
+    const { deferTx, onTxProgress } = txDefer();
 
     const unsub = this.client.rpc.author_submitAndWatchExtrinsic(txHex, async (txStatus: TransactionStatus) => {
       if (txStatus.type === 'InBlock' || txStatus.type === 'Finalized') {
@@ -58,12 +58,7 @@ export class SubmittableExtrinsic extends BaseSubmittableExtrinsic implements IS
         const status = toTxStatus(txStatus, { txIndex, blockNumber });
         const result = new SubmittableResult({ status, txHash, events, txIndex });
 
-        if (status.type === 'BestChainBlockIncluded') {
-          deferBestChainBlockIncluded()?.resolve(result);
-        } else if (status.type === 'Finalized') {
-          deferBestChainBlockIncluded()?.resolve(result);
-          deferFinalized()?.resolve(result);
-        }
+        onTxProgress(result);
 
         !isSubscription && deferTx.resolve(txHash);
         return callback?.(result);
@@ -71,11 +66,7 @@ export class SubmittableExtrinsic extends BaseSubmittableExtrinsic implements IS
         const status = toTxStatus(txStatus);
         const result = new SubmittableResult({ status, txHash });
 
-        if (status.type === 'Invalid' || status.type === 'Drop') {
-          const e = new RejectedTxError(result);
-          deferBestChainBlockIncluded()?.reject(e);
-          deferFinalized()?.reject(e);
-        }
+        onTxProgress(result);
 
         !isSubscription && deferTx.resolve(txHash);
         return callback?.(new SubmittableResult({ status, txHash }));
