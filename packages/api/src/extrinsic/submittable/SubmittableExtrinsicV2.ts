@@ -246,7 +246,11 @@ export class SubmittableExtrinsicV2 extends BaseSubmittableExtrinsic {
         status.type === 'Drop'
       ) {
         deferTx.resolve(txHash);
-        unsub?.().catch(noop);
+
+        // Unsub the subscription if we're at the final states
+        if (status.type !== 'BestChainBlockIncluded') {
+          unsub?.().catch(noop);
+        }
       }
     })
       .then((x) => {
