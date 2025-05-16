@@ -140,16 +140,14 @@ async function testSendAndSignAndSendReturnTypes(api: LegacyClient | DedotClient
   console.log('Testing send() with callback');
   const tx2 = api.tx.system.remark('Hello World');
   await tx2.sign(alice);
-
   const result2 = await tx2.send(() => {});
-  // Check that it's not a hash (which would be a hex string)
+
   assert(typeof result2 === 'function', 'send() with callback should return a function');
   console.log('send() with callback test passed');
 
   // Test 3: signAndSend() without callback should return a hash
   console.log('Testing signAndSend() without callback');
   const tx3 = api.tx.system.remark('Hello World');
-  await tx3.sign(alice);
   const result3 = await tx3.signAndSend(alice);
 
   assert(isHex(result3), 'signAndSend() without callback should return a hex hash');
@@ -158,11 +156,10 @@ async function testSendAndSignAndSendReturnTypes(api: LegacyClient | DedotClient
   // Test 4: signAndSend() with callback should return an unsubscribe object/function
   console.log('Testing signAndSend() with callback');
   const tx4 = api.tx.system.remark('Hello World');
-  await tx4.sign(alice);
-
   const result4 = await tx4.signAndSend(alice, () => {});
-  assert(typeof result4 === 'function', 'signAndSend() with callback should return a function');
 
+  assert(typeof result4 === 'function', 'signAndSend() with callback should return a function');
   console.log('signAndSend() with callback test passed');
+
   console.log('All send and signAndSend return type tests passed');
 }
