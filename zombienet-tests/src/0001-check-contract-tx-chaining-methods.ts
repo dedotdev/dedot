@@ -1,7 +1,7 @@
 import Keyring from '@polkadot/keyring';
 import { cryptoWaitReady } from '@polkadot/util-crypto';
 import { DedotClient, ISubstrateClient, LegacyClient, WsProvider } from 'dedot';
-import { SpWeightsWeightV2Weight, SubstrateApi } from 'dedot/chaintypes';
+import { SubstrateApi } from 'dedot/chaintypes';
 import { Contract, ContractDeployer, ContractMetadata, parseRawMetadata } from 'dedot/contracts';
 import { IKeyringPair, RpcVersion } from 'dedot/types';
 import { assert, isHex, isNumber, stringToHex } from 'dedot/utils';
@@ -54,10 +54,8 @@ async function testContractChainingMethods(
 
   // Test untilBestChainBlockIncluded with contract deployment
   const bestChainResult = await deployer.tx
-    .new(true, { gasLimit: gasRequired, salt })
-    .signAndSend(alicePair, ({ status }) => {
-      console.log(`[${api.rpcVersion}] Transaction status`, status.type);
-    })
+    .new(true, { gasLimit: gasRequired, salt }) // --
+    .signAndSend(alicePair)
     .untilBestChainBlockIncluded();
 
   // Verify the result contains the expected status
@@ -86,10 +84,8 @@ async function testContractChainingMethods(
 
   // Test untilFinalized with contract method call
   const finalizedResult = await contract.tx
-    .flip({ gasLimit: raw.gasRequired })
-    .signAndSend(alicePair, ({ status }) => {
-      console.log(`[${api.rpcVersion}] Transaction status`, status.type);
-    })
+    .flip({ gasLimit: raw.gasRequired }) // --
+    .signAndSend(alicePair)
     .untilFinalized();
 
   // Verify the result contains the expected status
@@ -108,6 +104,4 @@ async function testContractChainingMethods(
   const { data: newState } = await contract.query.get();
   console.log(`[${api.rpcVersion}] New value:`, newState);
   assert(initialState !== newState, 'State should be changed');
-
-  console.log(`[${api.rpcVersion}] Testing order of events with contract method call`);
 }
