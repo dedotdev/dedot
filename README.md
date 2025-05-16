@@ -14,7 +14,7 @@ Delightful JavaScript/TypeScript client for [Polkadot](https://polkadot.com/) & 
 
 [ico-telegram]: https://img.shields.io/badge/Dedot-2CA5E0.svg?style=flat-square&logo=telegram&label=Telegram
 [ico-unit-test]: https://img.shields.io/github/actions/workflow/status/dedotdev/dedot/run-tests.yml?label=unit%20tests&style=flat-square
-[ico-e2e-test]: https://img.shields.io/github/actions/workflow/status/dedotdev/dedot/zombienet-tests.yml?label=e2e%20tests&style=flat-square
+[ico-e2e-test]: https://img.shields.io/github/actions/workflow/status/dedotdev/dedot/zombienet-tests-batch-01.yml?label=e2e%20tests&style=flat-square
 [ico-version]: https://img.shields.io/github/package-json/v/dedotdev/dedot?filename=packages%2Fapi%2Fpackage.json&style=flat-square
 [ico-license]: https://img.shields.io/github/license/dedotdev/dedot?style=flat-square
 [ico-downloads]: https://img.shields.io/npm/dw/dedot?style=flat-square
