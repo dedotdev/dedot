@@ -131,35 +131,39 @@ async function testSendAndSignAndSendReturnTypes(api: LegacyClient | DedotClient
   console.log('Testing send() without callback');
   const tx1 = api.tx.system.remark('Hello World');
   await tx1.sign(alice);
-  const result1 = await tx1.send();
+  const result1 = tx1.send();
 
-  assert(isHex(result1), 'send() without callback should return a hex hash');
+  assert(isHex(await result1), 'send() without callback should return a hex hash');
   console.log('send() without callback test passed');
+  await result1.untilBestChainBlockIncluded();
 
   // Test 2: send() with callback should return an unsubscribe object/function
   console.log('Testing send() with callback');
   const tx2 = api.tx.system.remark('Hello World');
   await tx2.sign(alice);
-  const result2 = await tx2.send(() => {});
+  const result2 = tx2.send(() => {});
 
-  assert(typeof result2 === 'function', 'send() with callback should return a function');
+  assert(typeof (await result2) === 'function', 'send() with callback should return a function');
   console.log('send() with callback test passed');
+  await result2.untilBestChainBlockIncluded();
 
   // Test 3: signAndSend() without callback should return a hash
   console.log('Testing signAndSend() without callback');
   const tx3 = api.tx.system.remark('Hello World');
-  const result3 = await tx3.signAndSend(alice);
+  const result3 = tx3.signAndSend(alice);
 
-  assert(isHex(result3), 'signAndSend() without callback should return a hex hash');
+  assert(isHex(await result3), 'signAndSend() without callback should return a hex hash');
   console.log('signAndSend() without callback test passed');
+  await result3.untilBestChainBlockIncluded();
 
   // Test 4: signAndSend() with callback should return an unsubscribe object/function
   console.log('Testing signAndSend() with callback');
   const tx4 = api.tx.system.remark('Hello World');
-  const result4 = await tx4.signAndSend(alice, () => {});
+  const result4 = tx4.signAndSend(alice, () => {});
 
-  assert(typeof result4 === 'function', 'signAndSend() with callback should return a function');
+  assert(typeof (await result4) === 'function', 'signAndSend() with callback should return a function');
   console.log('signAndSend() with callback test passed');
-
+  await result4.untilBestChainBlockIncluded();
+  
   console.log('All send and signAndSend return type tests passed');
 }
