@@ -96,7 +96,7 @@ export abstract class BaseSubmittableExtrinsic extends Extrinsic implements ISub
   ) {
     const [options, callback] = this.#normalizeOptions(partialOptions, maybeCallback);
 
-    const { deferTx, deferFinalized, deferBestChainBlockIncluded } = txDefer();
+    const { deferTx, deferFinalized, deferBestChainBlockIncluded, onTxProgress } = txDefer();
 
     this.sign(fromAccount, options)
       .then(() => {
@@ -106,17 +106,22 @@ export abstract class BaseSubmittableExtrinsic extends Extrinsic implements ISub
           .catch(deferTx.reject);
 
         deferSend
-          .untilFinalized() //--
-          .then(deferFinalized()?.resolve)
+          .untilBestChainBlockIncluded() //--
+          .then((r) => {
+            onTxProgress(r);
+          })
           .catch((e) => {
-            deferFinalized()?.reject(e);
+            deferBestChainBlockIncluded()?.reject(e);
           });
 
         deferSend
-          .untilBestChainBlockIncluded() //--
-          .then(deferBestChainBlockIncluded()?.resolve)
+          .untilFinalized() //--
+          .then((r) => {
+            onTxProgress(r);
+          })
           .catch((e) => {
             deferBestChainBlockIncluded()?.reject(e);
+            deferFinalized()?.reject(e);
           });
       })
       .catch(deferTx.reject);
