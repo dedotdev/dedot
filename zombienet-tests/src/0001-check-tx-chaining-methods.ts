@@ -47,9 +47,7 @@ async function testUntilBestChainBlockIncluded(api: LegacyClient | DedotClient, 
 
   // Use untilBestChainBlockIncluded to wait for the transaction to be included in a block
   const result = await transferTx
-    .signAndSend(alice, ({ status }) => {
-      console.log(`[${api.rpcVersion}] Transaction status`, status.type);
-    })
+    .signAndSend(alice) // --
     .untilBestChainBlockIncluded();
 
   // Verify the result contains the expected status

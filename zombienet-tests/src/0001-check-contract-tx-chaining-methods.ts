@@ -1,7 +1,7 @@
 import Keyring from '@polkadot/keyring';
 import { cryptoWaitReady } from '@polkadot/util-crypto';
 import { DedotClient, ISubstrateClient, LegacyClient, WsProvider } from 'dedot';
-import { SubstrateApi } from 'dedot/chaintypes';
+import { SpWeightsWeightV2Weight, SubstrateApi } from 'dedot/chaintypes';
 import { Contract, ContractDeployer, ContractMetadata, parseRawMetadata } from 'dedot/contracts';
 import { IKeyringPair, RpcVersion } from 'dedot/types';
 import { assert, isHex, isNumber, stringToHex } from 'dedot/utils';
@@ -104,4 +104,74 @@ async function testContractChainingMethods(
   const { data: newState } = await contract.query.get();
   console.log(`[${api.rpcVersion}] New value:`, newState);
   assert(initialState !== newState, 'State should be changed');
+
+  console.log(`[${api.rpcVersion}] Testing order of events with contract method call`);
+
+  // Test the order of events
+  await testContractEventOrder(contract, alicePair, raw.gasRequired);
+
+  console.log(`[${api.rpcVersion}] Testing combined promises with contract method call`);
+
+  // Test using both promises together
+  await testContractCombinedPromises(contract, alicePair, raw.gasRequired);
+}
+
+async function testContractEventOrder(contract: Contract<FlipperContractApi>, alicePair: IKeyringPair, gasLimit: any) {
+  // Track the order of events
+  let bestChainBlockIncludedReceived = false;
+  let finalizedReceived = false;
+  let bestChainBlockIncludedTime = 0;
+  let finalizedTime = 0;
+
+  // Send the transaction and track status updates
+  await new Promise<void>((resolve) => {
+    contract.tx.flip({ gasLimit }).signAndSend(alicePair, ({ status }) => {
+      if (status.type === 'BestChainBlockIncluded') {
+        bestChainBlockIncludedReceived = true;
+        bestChainBlockIncludedTime = Date.now();
+        console.log('Received BestChainBlockIncluded status at:', bestChainBlockIncludedTime);
+      } else if (status.type === 'Finalized') {
+        finalizedReceived = true;
+        finalizedTime = Date.now();
+        console.log('Received Finalized status at:', finalizedTime);
+        resolve();
+      }
+    });
+  });
+
+  // Verify both statuses were received and in the correct order
+  assert(bestChainBlockIncludedReceived, 'BestChainBlockIncluded status should be received');
+  assert(finalizedReceived, 'Finalized status should be received');
+  assert(bestChainBlockIncludedTime < finalizedTime, 'BestChainBlockIncluded should be received before Finalized');
+}
+
+async function testContractCombinedPromises(
+  contract: Contract<FlipperContractApi>,
+  alicePair: IKeyringPair,
+  gasLimit: SpWeightsWeightV2Weight,
+) {
+  // Create two promises using both chaining methods
+  const signedTx = contract.tx // --
+    .flip({ gasLimit })
+    .signAndSend(alicePair);
+
+  const bestChainPromise = signedTx.untilBestChainBlockIncluded();
+  const finalizedPromise = signedTx.untilFinalized();
+
+  // Wait for both promises to resolve
+  const [bestChainResult, finalizedResult] = await Promise.all([bestChainPromise, finalizedPromise]);
+
+  // Verify the results
+  assert(
+    bestChainResult.status.type === 'BestChainBlockIncluded',
+    'First result status should be BestChainBlockIncluded',
+  );
+  assert(finalizedResult.status.type === 'Finalized', 'Second result status should be Finalized');
+
+  // Verify both results refer to the same transaction
+  assert(bestChainResult.txHash === finalizedResult.txHash, 'Both results should have the same txHash');
+
+  // Verify the flip was successful
+  const flippedEvent = contract.events.Flipped.find(finalizedResult.events);
+  assert(flippedEvent, 'Flipped event should be emitted');
 }
