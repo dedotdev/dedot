@@ -73,10 +73,8 @@ async function testUntilFinalized(api: LegacyClient | DedotClient, alice: IKeyri
   const transferTx = api.tx.balances.transferKeepAlive(BOB, TRANSFER_AMOUNT);
 
   // Use untilFinalized to wait for the transaction to be finalized
-  const result = await transferTx
-    .signAndSend(alice, ({ status }) => {
-      console.log(`[${api.rpcVersion}] Transaction status`, status.type);
-    })
+  const result = await transferTx // --
+    .signAndSend(alice)
     .untilFinalized();
 
   // Verify the result contains the expected status
