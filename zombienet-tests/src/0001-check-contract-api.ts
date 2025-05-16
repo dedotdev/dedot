@@ -36,7 +36,7 @@ export const run = async (_nodeName: any, networkInfo: any) => {
 
     const { events } = await deployer.tx
       .new(true, { gasLimit: gasRequired, salt })
-      .signAndSend(alicePair, async ({ status }) => {
+      .signAndSend(alicePair, ({ status }) => {
         console.log(`[${api.rpcVersion}] Transaction status:`, status.type);
       })
       .untilFinalized();
