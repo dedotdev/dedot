@@ -9,6 +9,7 @@ Delightful JavaScript/TypeScript client for [Polkadot](https://polkadot.com/) & 
 ![Unit test][ico-unit-test]
 ![E2E test][ico-e2e-test]
 ![License][ico-license]
+![weekly downloads][ico-downloads]
 [![Chat on Telegram][ico-telegram]][link-telegram]
 
 [ico-telegram]: https://img.shields.io/badge/Dedot-2CA5E0.svg?style=flat-square&logo=telegram&label=Telegram
@@ -16,7 +17,7 @@ Delightful JavaScript/TypeScript client for [Polkadot](https://polkadot.com/) & 
 [ico-e2e-test]: https://img.shields.io/github/actions/workflow/status/dedotdev/dedot/zombienet-tests.yml?label=e2e%20tests&style=flat-square
 [ico-version]: https://img.shields.io/github/package-json/v/dedotdev/dedot?filename=packages%2Fapi%2Fpackage.json&style=flat-square
 [ico-license]: https://img.shields.io/github/license/dedotdev/dedot?style=flat-square
-
+[ico-downloads]: https://img.shields.io/npm/dw/dedot?style=flat-square
 [link-telegram]: https://t.me/JoinDedot
 
 ---
@@ -87,7 +88,7 @@ console.log('Polkadot ss58Prefix:', ss58Prefix);
 const pendingRewards = await client.call.nominationPoolsApi.pendingRewards(<address>)
 console.log('Pending rewards:', pendingRewards);
 
-// await unsub();
+// Disconnect
 // await client.disconnect();
 ```
 
