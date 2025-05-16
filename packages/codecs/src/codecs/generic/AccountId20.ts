@@ -27,6 +27,10 @@ export class AccountId20 {
   toJSON() {
     return this.address();
   }
+
+  eq(other: AccountId20Like): boolean {
+    return this.raw === new AccountId20(other).raw;
+  }
 }
 
 export type AccountId20Like = AccountId20 | HexString | Uint8Array;
