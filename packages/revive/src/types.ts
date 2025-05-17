@@ -12,6 +12,7 @@ import {
   InkContractMessage,
   InkContractMessageArg,
   InkContractMetadataV6,
+  InkContractTypeDef,
   ReturnFlags,
   RpcVersion,
   Unsub,
@@ -24,6 +25,7 @@ export type ContractCallMessage = InkContractCallMessage;
 export type ContractConstructorMessage = InkContractConstructorMessage;
 export type ContractMessage = InkContractMessage;
 export type ContractMessageArg = InkContractMessageArg;
+export type ContractTypeDef = InkContractTypeDef;
 
 export interface GenericContractCallResult<DecodedData = any, ContractResult = any> {
   data: DecodedData;

@@ -1,8 +1,9 @@
-import { AccountId20, TypeDef } from '@dedot/codecs';
+import { TypeDef } from '@dedot/codecs';
+import { ReturnFlags } from '@dedot/types';
 import { describe, expect, it } from 'vitest';
-import { ContractTypeDef, ReturnFlags } from '../types/index.js';
-import { create1, extractContractTypes, normalizeContractTypeDef, normalizeLabel, toReturnFlags } from '../utils.js';
-import { FLIPPER_CONTRACT_METADATA_V4 } from './contracts-metadata.js';
+import { ContractTypeDef } from '../types.js';
+import { extractContractTypes, normalizeContractTypeDef, normalizeLabel, toReturnFlags } from '../utils.js';
+import { INK_FLIPPER_CONTRACT_METADATA_V6 } from './contracts-metadata';
 
 describe('utils', () => {
   describe('normalizeContractTypeDef', () => {
@@ -105,9 +106,9 @@ describe('utils', () => {
   });
   describe('extractContractTypes', () => {
     it('returns correct PortableType array for valid ContractMetadata', () => {
-      const flipper = FLIPPER_CONTRACT_METADATA_V4;
+      const flipper = INK_FLIPPER_CONTRACT_METADATA_V6;
 
-      const result = extractContractTypes(FLIPPER_CONTRACT_METADATA_V4);
+      const result = extractContractTypes(INK_FLIPPER_CONTRACT_METADATA_V6);
       expect(result).toHaveLength(flipper.types.length);
       expect(result[0]).toHaveProperty('id', flipper.types[0].id);
       expect(result[0]).toHaveProperty('typeDef');
@@ -151,4 +152,3 @@ describe('utils', () => {
     });
   });
 });
-
