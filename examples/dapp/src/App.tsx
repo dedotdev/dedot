@@ -1,29 +1,24 @@
 import { useState } from 'react';
 import { useAsync } from 'react-use';
-import { polkadot } from '@substrate/connect-known-chains';
-import { DedotClient, SmoldotProvider } from 'dedot';
-import { startWithWorker } from 'dedot/smoldot/with-worker';
-import Worker from 'dedot/smoldot/worker?worker';
-import './App.css';
+import { PolkadotApi } from '@dedot/chaintypes';
+import { DedotClient, WsProvider } from 'dedot';
 
-const smoldotClient = startWithWorker(new Worker());
-const chain = smoldotClient.addChain({ chainSpec: polkadot });
+const ENDPOINT = 'wss://rpc.polkadot.io';
 
-// const ENDPOINT = 'wss://rpc.polkadot.io';
-
-export default function App() {
-  const [api, setApi] = useState<DedotClient>();
+function App() {
+  const [client, setClient] = useState<DedotClient<PolkadotApi>>();
   useAsync(async () => {
-    console.time('init api took');
-    const provider = new SmoldotProvider(chain);
-    setApi(await DedotClient.new(provider));
-    console.timeEnd('init api took');
+    console.time('init client took');
+    setClient(await DedotClient.new<PolkadotApi>({ provider: new WsProvider(ENDPOINT), cacheMetadata: true }));
+    console.timeEnd('init client took');
   });
 
   return (
     <>
-      <h1>Dedot</h1>
-      <p className='read-the-docs'>{api ? 'Dedot Connected' : 'Dedot Connecting...'}</p>
+      <h1>DedotClient</h1>
+      <p>{client ? 'Connected' : `Connecting to Polkadot via RPC: ${ENDPOINT}...`}</p>
     </>
   );
 }
+
+export default App;

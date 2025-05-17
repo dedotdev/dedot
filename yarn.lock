@@ -3335,8 +3335,6 @@ __metadata:
   resolution: "dapp@workspace:examples/dapp"
   dependencies:
     "@dedot/chaintypes": "npm:*"
-    "@dedot/smoldot": "workspace:*"
-    "@substrate/connect-known-chains": "npm:^1.10.1"
     "@types/react": "npm:^18.3.3"
     "@types/react-dom": "npm:^18.3.0"
     "@typescript-eslint/eslint-plugin": "npm:^6.21.0"
@@ -7983,6 +7981,29 @@ __metadata:
   checksum: 10c0/a16775323e1404dd43fabafe7460be13a471e021637bc7889468eb45ce6a6b207261f454e4e530a19500cc962c4cc5348583520843b363f4193cee5c00e1e539
   languageName: node
   linkType: hard
+
+"smoldot-dapp@workspace:examples/smoldot-dapp":
+  version: 0.0.0-use.local
+  resolution: "smoldot-dapp@workspace:examples/smoldot-dapp"
+  dependencies:
+    "@dedot/chaintypes": "npm:*"
+    "@substrate/connect-known-chains": "npm:^1.10.1"
+    "@types/react": "npm:^18.3.3"
+    "@types/react-dom": "npm:^18.3.0"
+    "@typescript-eslint/eslint-plugin": "npm:^6.21.0"
+    "@typescript-eslint/parser": "npm:^6.21.0"
+    "@vitejs/plugin-react": "npm:^4.3.1"
+    dedot: "workspace:*"
+    eslint: "npm:^8.57.0"
+    eslint-plugin-react-hooks: "npm:^4.6.2"
+    eslint-plugin-react-refresh: "npm:^0.4.7"
+    react: "npm:^18.3.1"
+    react-dom: "npm:^18.3.1"
+    react-use: "npm:^17.5.0"
+    typescript: "npm:^5.5.2"
+    vite: "npm:^5.4.8"
+  languageName: unknown
+  linkType: soft
 
 "smoldot@npm:^2.0.34":
   version: 2.0.34
