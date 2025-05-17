@@ -424,6 +424,14 @@ __metadata:
   languageName: unknown
   linkType: soft
 
+"@dedot/smoldot@workspace:*, @dedot/smoldot@workspace:packages/smoldot":
+  version: 0.0.0-use.local
+  resolution: "@dedot/smoldot@workspace:packages/smoldot"
+  dependencies:
+    smoldot: "npm:^2.0.34"
+  languageName: unknown
+  linkType: soft
+
 "@dedot/storage@workspace:*, @dedot/storage@workspace:packages/storage":
   version: 0.0.0-use.local
   resolution: "@dedot/storage@workspace:packages/storage"
@@ -1932,6 +1940,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@substrate/connect-known-chains@npm:^1.10.1":
+  version: 1.10.1
+  resolution: "@substrate/connect-known-chains@npm:1.10.1"
+  checksum: 10c0/a587eb8b5d7e33d4410f726a6e60297e18fd6ca0bedd510bdc3aee073f2d4b94f0ee06c3747aab91626701e586a304c97671364550ba9b31ab492de764e1cbf0
+  languageName: node
+  linkType: hard
+
 "@substrate/ss58-registry@npm:^1.51.0":
   version: 1.51.0
   resolution: "@substrate/ss58-registry@npm:1.51.0"
@@ -3420,6 +3435,7 @@ __metadata:
     "@dedot/providers": "workspace:*"
     "@dedot/runtime-specs": "workspace:*"
     "@dedot/shape": "workspace:*"
+    "@dedot/smoldot": "workspace:*"
     "@dedot/types": "workspace:*"
     "@dedot/utils": "workspace:*"
   bin:
@@ -7965,6 +7981,29 @@ __metadata:
   checksum: 10c0/a16775323e1404dd43fabafe7460be13a471e021637bc7889468eb45ce6a6b207261f454e4e530a19500cc962c4cc5348583520843b363f4193cee5c00e1e539
   languageName: node
   linkType: hard
+
+"smoldot-dapp@workspace:examples/smoldot-dapp":
+  version: 0.0.0-use.local
+  resolution: "smoldot-dapp@workspace:examples/smoldot-dapp"
+  dependencies:
+    "@dedot/chaintypes": "npm:*"
+    "@substrate/connect-known-chains": "npm:^1.10.1"
+    "@types/react": "npm:^18.3.3"
+    "@types/react-dom": "npm:^18.3.0"
+    "@typescript-eslint/eslint-plugin": "npm:^6.21.0"
+    "@typescript-eslint/parser": "npm:^6.21.0"
+    "@vitejs/plugin-react": "npm:^4.3.1"
+    dedot: "workspace:*"
+    eslint: "npm:^8.57.0"
+    eslint-plugin-react-hooks: "npm:^4.6.2"
+    eslint-plugin-react-refresh: "npm:^0.4.7"
+    react: "npm:^18.3.1"
+    react-dom: "npm:^18.3.1"
+    react-use: "npm:^17.5.0"
+    typescript: "npm:^5.5.2"
+    vite: "npm:^5.4.8"
+  languageName: unknown
+  linkType: soft
 
 "smoldot@npm:^2.0.34":
   version: 2.0.34
