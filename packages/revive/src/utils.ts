@@ -5,7 +5,7 @@ import { GenericSubstrateApi, InkContractTypeDef, ReturnFlags, RpcVersion } from
 import { HexString, hexToU8a, keccakAsU8a, stringCamelCase, toHex, u8aToHex } from '@dedot/utils';
 import { BytesLike, encodeRlp } from 'ethers';
 import { Executor } from './executor/index.js';
-import { ContractMetadata } from './types/index.js';
+import { ContractMetadata } from './types.js';
 
 export const extractContractTypes = (contractMetadata: ContractMetadata): PortableType[] => {
   const { types } = contractMetadata;

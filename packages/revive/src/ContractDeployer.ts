@@ -3,7 +3,7 @@ import { Hash } from '@dedot/codecs';
 import { TypinkRegistry } from './TypinkRegistry.js';
 import { ConstructorQueryExecutor } from './executor/ConstructorQueryExecutor.js';
 import { ConstructorTxExecutor } from './executor/index.js';
-import { ExecutionOptions, ContractMetadata, GenericContractApi } from './types/index.js';
+import { ContractMetadata, ExecutionOptions, GenericContractApi } from './types.js';
 import { ensureSupportRevivePallet, newProxyChain, parseRawMetadata } from './utils.js';
 
 export class ContractDeployer<ContractApi extends GenericContractApi = GenericContractApi> {

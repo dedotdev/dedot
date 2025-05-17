@@ -1,6 +1,6 @@
 import { GenericSubstrateApi } from '@dedot/types';
 import { assert, concatU8a, hexToU8a, isPvm, u8aToHex } from '@dedot/utils';
-import { ConstructorTxOptions, GenericConstructorTxCall } from '../types/index.js';
+import { ConstructorTxOptions, GenericConstructorTxCall } from '../types.js';
 import { DeployerExecutor } from './abstract/index.js';
 
 export class ConstructorTxExecutor<ChainApi extends GenericSubstrateApi> extends DeployerExecutor<ChainApi> {

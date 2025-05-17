@@ -6,7 +6,7 @@ import { Result } from '@dedot/shape';
 import { GenericSubstrateApi } from '@dedot/types';
 import { assert, assertFalse, concatU8a, hexToU8a, isPvm, u8aToHex } from '@dedot/utils';
 import { ContractInstantiateDispatchError, ContractInstantiateLangError } from '../errors.js';
-import { ConstructorCallOptions, GenericConstructorCallResult, GenericConstructorQueryCall } from '../types/index.js';
+import { ConstructorCallOptions, GenericConstructorCallResult, GenericConstructorQueryCall } from '../types.js';
 import { toReturnFlags } from '../utils.js';
 import { DeployerExecutor } from './abstract/index.js';
 

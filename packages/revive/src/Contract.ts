@@ -3,7 +3,7 @@ import { AccountId20, AccountId20Like } from '@dedot/codecs';
 import { IEventRecord } from '@dedot/types';
 import { TypinkRegistry } from './TypinkRegistry.js';
 import { EventExecutor, QueryExecutor, TxExecutor } from './executor/index.js';
-import { ContractEvent, ContractMetadata, ExecutionOptions, GenericContractApi } from './types/index.js';
+import { ContractEvent, ContractMetadata, ExecutionOptions, GenericContractApi } from './types.js';
 import { ensureSupportRevivePallet, newProxyChain, parseRawMetadata } from './utils.js';
 
 export class Contract<ContractApi extends GenericContractApi = GenericContractApi> {

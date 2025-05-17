@@ -3,7 +3,7 @@ import { Hash } from '@dedot/codecs';
 import { GenericSubstrateApi } from '@dedot/types';
 import { HexString } from '@dedot/utils';
 import { TypinkRegistry } from '../../TypinkRegistry.js';
-import { ContractConstructorMessage, ExecutionOptions } from '../../types/index.js';
+import { ContractConstructorMessage, ExecutionOptions } from '../../types.js';
 import { normalizeLabel } from '../../utils.js';
 import { Executor } from './Executor.js';
 

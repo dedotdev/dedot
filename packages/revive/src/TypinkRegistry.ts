@@ -1,8 +1,8 @@
 import { AccountId20, AccountId20Like, Bytes, TypeRegistry } from '@dedot/codecs';
 import * as $ from '@dedot/shape';
-import { ContractEvent, IEventRecord, IRuntimeEvent } from '@dedot/types';
+import { IEventRecord, IRuntimeEvent } from '@dedot/types';
 import { assert, DedotError, hexToU8a, stringCamelCase, stringPascalCase } from '@dedot/utils';
-import { ContractEventMeta, ContractMetadata } from './types/index.js';
+import { ContractEvent, ContractEventMeta, ContractMetadata } from './types.js';
 import { extractContractTypes } from './utils.js';
 
 interface ContractEmittedEvent extends IRuntimeEvent {

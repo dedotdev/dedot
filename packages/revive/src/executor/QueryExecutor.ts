@@ -3,7 +3,7 @@ import { Result } from '@dedot/codecs';
 import { GenericSubstrateApi } from '@dedot/types';
 import { assert, assertFalse, concatU8a, hexToU8a, u8aToHex } from '@dedot/utils';
 import { ContractDispatchError, ContractLangError } from '../errors.js';
-import { ContractCallOptions, GenericContractQueryCall, GenericContractCallResult } from '../types/index.js';
+import { ContractCallOptions, GenericContractCallResult, GenericContractQueryCall } from '../types.js';
 import { toReturnFlags } from '../utils.js';
 import { ContractExecutor } from './abstract/index.js';
 
