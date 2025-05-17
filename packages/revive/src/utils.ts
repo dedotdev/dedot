@@ -1,9 +1,9 @@
 import { ISubstrateClient } from '@dedot/api';
 import { SubstrateApi } from '@dedot/api/chaintypes';
-import { AccountId20, PortableType, TypeDef } from '@dedot/codecs';
+import { AccountId20, BytesLike, PortableType, TypeDef } from '@dedot/codecs';
 import { GenericSubstrateApi, InkContractTypeDef, ReturnFlags, RpcVersion } from '@dedot/types';
 import { HexString, hexToU8a, keccakAsU8a, stringCamelCase, toHex, u8aToHex } from '@dedot/utils';
-import { BytesLike, encodeRlp } from 'ethers';
+import { encodeRlp } from 'ethers';
 import { Executor } from './executor/index.js';
 import { ContractMetadata } from './types.js';
 

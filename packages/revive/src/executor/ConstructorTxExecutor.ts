@@ -29,7 +29,7 @@ export class ConstructorTxExecutor<ChainApi extends GenericSubstrateApi> extends
           salt,
         );
       } else {
-        return this.client.tx.contracts.instantiate(
+        return this.client.tx.revive.instantiate(
           value, // prettier-end-here
           gasLimit,
           storageDepositLimit,
