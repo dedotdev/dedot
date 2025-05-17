@@ -23,8 +23,8 @@ export const run = async (nodeName: any, networkInfo: any): Promise<void> => {
 
   const transferTx = api.tx.balances.transferKeepAlive(BOB, TEN_UNIT);
 
-  return new Promise(async (resolve) => {
-    const unsub = await transferTx.signAndSend(alice, async ({ status }) => {
+  await transferTx
+    .signAndSend(alice, async ({ status }) => {
       console.log('Transaction status', status);
 
       if (status.type === 'Finalized') {
@@ -38,10 +38,7 @@ export const run = async (nodeName: any, networkInfo: any): Promise<void> => {
 
         console.log('BOB - old balance verified', prevBobBalanceAt);
         assert(prevBobBalanceAt === prevBobBalance, `Incorrect BOB balance at previous block ${prevBlockNumber}`);
-
-        await unsub();
-        resolve();
       }
-    });
-  });
+    })
+    .untilFinalized();
 };

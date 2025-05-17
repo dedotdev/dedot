@@ -22,9 +22,9 @@ export const run = async (nodeName: any, networkInfo: any): Promise<void> => {
 
   const transferTx = api.tx.balances.transferKeepAlive(BOB, TEN_UNIT);
 
-  return new Promise(async (resolve) => {
-    let blockIncluded: boolean = false;
-    const unsub = await transferTx.signAndSend(alice, async ({ status, txIndex }) => {
+  let blockIncluded: boolean = false;
+  await transferTx
+    .signAndSend(alice, async ({ status, txIndex }) => {
       console.log('Transaction status', status.type);
       if (status.type === 'BestChainBlockIncluded') {
         assert(isHex(status.value.blockHash), 'Block hash should be hex');
@@ -45,9 +45,7 @@ export const run = async (nodeName: any, networkInfo: any): Promise<void> => {
         assert(txIndex === status.value.txIndex, 'Mismatched tx index');
 
         assert(blockIncluded, 'Finalized before block included');
-        await unsub();
-        resolve();
       }
-    });
-  });
+    })
+    .untilFinalized();
 };
