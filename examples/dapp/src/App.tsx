@@ -1,15 +1,22 @@
 import { useState } from 'react';
 import { useAsync } from 'react-use';
-import { LegacyClient, WsProvider } from 'dedot';
+import { polkadot } from '@substrate/connect-known-chains';
+import { DedotClient, SmoldotProvider } from 'dedot';
+import { startWithWorker } from 'dedot/smoldot/with-worker';
+import Worker from 'dedot/smoldot/worker?worker';
 import './App.css';
 
-const ENDPOINT = 'wss://rpc.polkadot.io';
+const smoldotClient = startWithWorker(new Worker());
+const chain = smoldotClient.addChain({ chainSpec: polkadot });
 
-function App() {
-  const [api, setApi] = useState<LegacyClient>();
+// const ENDPOINT = 'wss://rpc.polkadot.io';
+
+export default function App() {
+  const [api, setApi] = useState<DedotClient>();
   useAsync(async () => {
     console.time('init api took');
-    setApi(await LegacyClient.new({ provider: new WsProvider(ENDPOINT), cacheMetadata: true }));
+    const provider = new SmoldotProvider(chain);
+    setApi(await DedotClient.new(provider));
     console.timeEnd('init api took');
   });
 
@@ -20,5 +27,3 @@ function App() {
     </>
   );
 }
-
-export default App;

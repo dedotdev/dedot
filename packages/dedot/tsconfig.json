@@ -4,7 +4,8 @@
     "baseUrl": "./",
     "outDir": "dist",
     "rootDir": "src",
-    "declarationDir": "dist"
+    "declarationDir": "dist",
+    "moduleResolution": "node16"
   },
   "include": ["src/**/*"],
   "references": [
@@ -37,6 +38,9 @@
     },
     {
       "path": "../merkleized-metadata/tsconfig.json"
+    },
+    {
+      "path": "../smoldot/tsconfig.json"
     }
   ]
 }

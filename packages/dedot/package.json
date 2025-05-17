@@ -29,6 +29,7 @@
     "@dedot/providers": "workspace:*",
     "@dedot/runtime-specs": "workspace:*",
     "@dedot/shape": "workspace:*",
+    "@dedot/smoldot": "workspace:*",
     "@dedot/types": "workspace:*",
     "@dedot/utils": "workspace:*"
   },
@@ -82,6 +83,21 @@
       "types": "./src/merkleized-metadata/index.ts",
       "import": "./src/merkleized-metadata/index.ts",
       "default": "./src/merkleized-metadata/index.ts"
+    },
+    "./smoldot": {
+      "types": "./src/smoldot/index.ts",
+      "import": "./src/smoldot/index.ts",
+      "default": "./src/smoldot/index.ts"
+    },
+    "./smoldot/worker": {
+      "types": "./src/smoldot/worker/index.ts",
+      "import": "./src/smoldot/worker/index.ts",
+      "default": "./src/smoldot/worker/index.ts"
+    },
+    "./smoldot/with-worker": {
+      "types": "./src/smoldot/with-worker/index.ts",
+      "import": "./src/smoldot/with-worker/index.ts",
+      "default": "./src/smoldot/with-worker/index.ts"
     }
   },
   "publishConfig": {

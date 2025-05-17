@@ -35,6 +35,9 @@
     },
     {
       "path": "../merkleized-metadata/tsconfig.json"
+    },
+    {
+      "path": "../smoldot/tsconfig.json"
     }
   ]
 }
