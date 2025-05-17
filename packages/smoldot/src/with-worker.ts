@@ -1,6 +1,7 @@
 // @ts-nocheck
 import { Client, ClientOptionsWithBytecode, SmoldotBytecode, startWithBytecode } from 'smoldot/no-auto-bytecode';
 
+export { Client };
 export type StartWithWorkerOptions = Omit<ClientOptionsWithBytecode, 'bytecode' | 'portToWorker'>;
 
 // Inspired From: // Source Code: https://smol-dot.github.io/smoldot/doc-javascript/#md:usage-with-a-worker
