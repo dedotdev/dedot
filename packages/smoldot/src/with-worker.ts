@@ -7,7 +7,7 @@ export type StartWithWorkerOptions = Omit<ClientOptionsWithBytecode, 'bytecode' 
 /**
  * Initializes a smoldot client that runs in a Web Worker.
  *
- * Inspired From: https://smol-dot.github.io/smoldot/doc-javascript/#md:usage-with-a-worker
+ * Inspired By: https://smol-dot.github.io/smoldot/doc-javascript/#md:usage-with-a-worker
  *
  * @param worker - Web Worker instance created from '@dedot/smoldot/worker'
  * @param options - Optional configuration options for the smoldot client
