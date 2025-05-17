@@ -5,7 +5,8 @@
     "outDir": "dist",
     "rootDir": "src",
     "declarationDir": "dist",
-    "moduleResolution": "node16"
+    "module": "NodeNext",
+    "moduleResolution": "NodeNext"
   },
   "include": ["src/**/*"],
   "references": [
