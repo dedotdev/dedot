@@ -1,5 +1,5 @@
 // @ts-nocheck
-// Source Code: https://smol-dot.github.io/smoldot/doc-javascript/#md:usage-with-a-worker
+// Inspired From: https://smol-dot.github.io/smoldot/doc-javascript/#md:usage-with-a-worker
 import { compileBytecode } from 'smoldot/bytecode';
 import { run } from 'smoldot/worker';
 
