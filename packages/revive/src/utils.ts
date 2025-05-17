@@ -1,11 +1,11 @@
 import { ISubstrateClient } from '@dedot/api';
 import { SubstrateApi } from '@dedot/api/chaintypes';
 import { AccountId20, PortableType, TypeDef } from '@dedot/codecs';
-import { GenericSubstrateApi, RpcVersion } from '@dedot/types';
+import { ContractTypeDef, GenericSubstrateApi, ReturnFlags, RpcVersion } from '@dedot/types';
 import { HexString, hexToU8a, keccakAsU8a, stringCamelCase, toHex, u8aToHex } from '@dedot/utils';
 import { BytesLike, encodeRlp } from 'ethers';
 import { Executor } from './executor/index.js';
-import { ContractMetadata, ContractTypeDef, ReturnFlags } from './types/index.js';
+import { ContractMetadata } from './types/index.js';
 
 export const extractContractTypes = (contractMetadata: ContractMetadata): PortableType[] => {
   const { types } = contractMetadata;
@@ -92,7 +92,7 @@ const SUPPORTED_VERSIONS = [5, '4'] as const;
 export const parseRawMetadata = (rawMetadata: string): ContractMetadata => {
   const metadata = JSON.parse(rawMetadata);
 
-  // This is for V1, V2, V3
+  // This is for V2, V2, V3
   const unsupportedVersion = UNSUPPORTED_VERSIONS.find((o) => metadata[o]);
   if (unsupportedVersion) {
     throw new Error(`Unsupported metadata version: ${unsupportedVersion}`);
@@ -114,7 +114,7 @@ export function newProxyChain<ChainApi extends GenericSubstrateApi>(carrier: Exe
   });
 }
 
-export function ensureSupportContractsPallet(client: ISubstrateClient<SubstrateApi[RpcVersion]>) {
+export function ensureSupportRevivePallet(client: ISubstrateClient<SubstrateApi[RpcVersion]>) {
   try {
     !!client.call.reviveApi.call.meta && !!client.tx.revive.call.meta;
   } catch {

@@ -1,6 +1,6 @@
 export interface ContractSource {
   hash: string;
-  contract_binary?: string;
+  wasm?: string;
   language: string;
   compiler: string;
   build_info: BuildInfo;

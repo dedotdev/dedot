@@ -1,12 +1,12 @@
 import { AccountId20, AccountId20Like, Bytes, TypeRegistry } from '@dedot/codecs';
 import * as $ from '@dedot/shape';
-import { IEventRecord, IRuntimeEvent } from '@dedot/types';
-import { DedotError, assert, hexToU8a, stringCamelCase, stringPascalCase } from '@dedot/utils';
-import { ContractEvent, ContractEventMeta, ContractMetadata } from './types/index.js';
+import { ContractEvent, IEventRecord, IRuntimeEvent } from '@dedot/types';
+import { assert, DedotError, hexToU8a, stringCamelCase, stringPascalCase } from '@dedot/utils';
+import { ContractEventMeta, ContractMetadata } from './types/index.js';
 import { extractContractTypes } from './utils.js';
 
 interface ContractEmittedEvent extends IRuntimeEvent {
-  pallet: 'Contracts';
+  pallet: 'Revive';
   palletEvent: {
     name: 'ContractEmitted';
     data: {
@@ -43,8 +43,6 @@ export class TypinkRegistry extends TypeRegistry {
     switch (version) {
       case 5:
         return this.#decodeEventV5(eventRecord);
-      case '4':
-        return this.#decodeEventV4(eventRecord);
       default:
         throw new DedotError('Unsupported metadata version!');
     }
@@ -69,20 +67,6 @@ export class TypinkRegistry extends TypeRegistry {
     }
 
     return true;
-  }
-
-  #decodeEventV4(eventRecord: IEventRecord): ContractEvent {
-    assert(this.#metadata.version === '4', 'Invalid metadata version!');
-    assert(this.#isContractEmittedEvent(eventRecord.event), 'Invalid ContractEmitted Event');
-
-    const data = hexToU8a(eventRecord.event.palletEvent.data.data);
-    const index = data.at(0);
-    assert(index !== undefined, 'Unable to decode event index!');
-
-    const event = this.#metadata.spec.events[index];
-    assert(event, `Event index not found: ${index.toString()}`);
-
-    return this.#tryDecodeEvent(event, data.subarray(1));
   }
 
   #decodeEventV5(eventRecord: IEventRecord): ContractEvent {

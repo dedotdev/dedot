@@ -1,6 +1,4 @@
-import type {
-  PalletRevivePrimitivesContractResult,
-} from '@dedot/api/chaintypes';
+import type { PalletRevivePrimitivesContractResult } from '@dedot/api/chaintypes';
 import { Result } from '@dedot/codecs';
 import { GenericSubstrateApi } from '@dedot/types';
 import { assert, assertFalse, concatU8a, hexToU8a, u8aToHex } from '@dedot/utils';

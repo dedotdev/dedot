@@ -1,6 +1,6 @@
 import { ISubstrateClient } from '@dedot/api';
 import { SubstrateApi } from '@dedot/api/chaintypes';
-import { H160, PortableType, TypeDef } from '@dedot/codecs';
+import { PortableType, TypeDef } from '@dedot/codecs';
 import { GenericSubstrateApi, RpcVersion } from '@dedot/types';
 import { stringCamelCase } from '@dedot/utils';
 import { Executor } from './executor/index.js';
@@ -134,9 +134,4 @@ export function toReturnFlags(bits: number): ReturnFlags {
     bits,
     revert: bits === REVERT_FLAG,
   };
-}
-
-// https://github.com/paritytech/polkadot-sdk/blob/5405e473854b139f1d0735550d90687eaf1a13f9/substrate/frame/revive/src/address.rs#L197-L204
-export function create1(): H160 {
-
 }

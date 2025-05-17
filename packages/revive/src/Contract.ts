@@ -3,8 +3,8 @@ import { AccountId20, AccountId20Like } from '@dedot/codecs';
 import { IEventRecord } from '@dedot/types';
 import { TypinkRegistry } from './TypinkRegistry.js';
 import { EventExecutor, QueryExecutor, TxExecutor } from './executor/index.js';
-import { ContractEvent, ContractMetadata, GenericContractApi, ExecutionOptions } from './types/index.js';
-import { ensureSupportContractsPallet, newProxyChain, parseRawMetadata } from './utils.js';
+import { ContractEvent, ContractMetadata, ExecutionOptions, GenericContractApi } from './types/index.js';
+import { ensureSupportRevivePallet, newProxyChain, parseRawMetadata } from './utils.js';
 
 export class Contract<ContractApi extends GenericContractApi = GenericContractApi> {
   readonly #registry: TypinkRegistry;
@@ -18,7 +18,7 @@ export class Contract<ContractApi extends GenericContractApi = GenericContractAp
     address: AccountId20Like,
     options?: ExecutionOptions,
   ) {
-    ensureSupportContractsPallet(client);
+    ensureSupportRevivePallet(client);
 
     this.#address = new AccountId20(address);
     this.#metadata = typeof metadata === 'string' ? parseRawMetadata(metadata) : metadata;

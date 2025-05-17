@@ -1,30 +1,29 @@
 import { SubstrateApi } from '@dedot/api/chaintypes';
-import { AccountId32, AccountId32Like, BytesLike, H160, Weight } from '@dedot/codecs';
+import { AccountId32Like, BytesLike, H160, Weight } from '@dedot/codecs';
 import {
   AnyFunc,
   AsyncMethod,
+  ContractCallMessage as InkContractCallMessage,
+  ContractConstructorMessage as InkContractConstructorMessage,
+  ContractEventV5,
+  ContractMessage as InkContractMessage,
+  ContractMessageArg as InkContractMessageArg,
+  ContractMetadataV6,
+  GenericInkLangError,
   GenericSubstrateApi,
   IEventRecord,
+  ReturnFlags,
   RpcVersion,
   Unsub,
   VersionedGenericSubstrateApi,
 } from '@dedot/types';
-import { ContractCallMessage, ContractConstructorMessage } from './shared.js';
-import { ContractEventV4, ContractMetadataV4 } from './v4.js';
-import { ContractEventV5, ContractMetadataV5 } from './v5.js';
 
-export * from './shared.js';
-
-export type ContractEventMeta = ContractEventV4 | ContractEventV5;
-
-/**
- * Flags used by a contract to customize exit behaviour.
- * Ref: https://github.com/paritytech/polkadot-sdk/blob/d2fd53645654d3b8e12cbf735b67b93078d70113/substrate/frame/contracts/uapi/src/flags.rs#L23-L26
- */
-export type ReturnFlags = {
-  bits: number;
-  revert: boolean; // 0x0000_0001
-};
+export type ContractMetadata = ContractMetadataV6;
+export type ContractEventMeta = ContractEventV5;
+export type ContractCallMessage = InkContractCallMessage;
+export type ContractConstructorMessage = InkContractConstructorMessage;
+export type ContractMessage = InkContractMessage;
+export type ContractMessageArg = InkContractMessageArg;
 
 export interface GenericContractCallResult<DecodedData = any, ContractResult = any> {
   data: DecodedData;
@@ -60,8 +59,6 @@ export type InstantiateSubmittableExtrinsic<ChainApi extends GenericSubstrateApi
 export type GenericInstantiateSubmittableExtrinsic<ChainApi extends GenericSubstrateApi> =
   | InstantiateSubmittableExtrinsic<ChainApi>
   | InstantiateWithCodeSubmittableExtrinsic<ChainApi>;
-
-export type ContractMetadata = ContractMetadataV4 | ContractMetadataV5;
 
 export type CallOptions = {
   value?: bigint;
@@ -153,8 +150,6 @@ export interface GenericContractEvent<EventName extends string = string, Data ex
 export interface GenericContractEvents<_ extends GenericSubstrateApi> {
   [event: string]: GenericContractEvent;
 }
-
-export type GenericInkLangError = 'CouldNotReadInput' | any;
 
 export interface GenericContractApi<
   Rv extends RpcVersion = RpcVersion,

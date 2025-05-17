@@ -1,8 +1,8 @@
 import {
+  ContractCallMessage,
   ContractConstructorMessage,
   ContractEventArg,
   ContractInformation,
-  ContractCallMessage,
   ContractSource,
   ContractStorage,
   ContractType,
