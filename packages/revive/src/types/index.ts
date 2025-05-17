@@ -3,23 +3,23 @@ import { AccountId32Like, BytesLike, H160, Weight } from '@dedot/codecs';
 import {
   AnyFunc,
   AsyncMethod,
-  ContractCallMessage as InkContractCallMessage,
-  ContractConstructorMessage as InkContractConstructorMessage,
-  ContractEventV5,
-  ContractMessage as InkContractMessage,
-  ContractMessageArg as InkContractMessageArg,
-  ContractMetadataV6,
   GenericInkLangError,
   GenericSubstrateApi,
   IEventRecord,
+  InkContractCallMessage,
+  InkContractConstructorMessage,
+  InkContractEventV5,
+  InkContractMessage,
+  InkContractMessageArg,
+  InkContractMetadataV6,
   ReturnFlags,
   RpcVersion,
   Unsub,
   VersionedGenericSubstrateApi,
 } from '@dedot/types';
 
-export type ContractMetadata = ContractMetadataV6;
-export type ContractEventMeta = ContractEventV5;
+export type ContractMetadata = InkContractMetadataV6;
+export type ContractEventMeta = InkContractEventV5;
 export type ContractCallMessage = InkContractCallMessage;
 export type ContractConstructorMessage = InkContractConstructorMessage;
 export type ContractMessage = InkContractMessage;

@@ -1,44 +1,44 @@
 import {
-  ContractCallMessage,
-  ContractConstructorMessage,
-  ContractEventArg,
-  ContractInformation,
-  ContractSource,
-  ContractStorage,
-  ContractType,
-  ContractTypeInfo,
+  InkContractCallMessage,
+  InkContractConstructorMessage,
+  InkContractEventArg,
+  InkContractInformation,
+  InkContractSource,
+  InkContractStorage,
+  InkContractType,
+  InkContractTypeInfo,
 } from './shared.js';
 
-export interface ContractMetadataV4 {
-  source: ContractSource;
-  contract: ContractInformation;
-  spec: ContractSpecV4;
-  storage: ContractStorage;
-  types: ContractType[];
+export interface InkContractMetadataV4 {
+  source: InkContractSource;
+  contract: InkContractInformation;
+  spec: InkContractSpecV4;
+  storage: InkContractStorage;
+  types: InkContractType[];
   version: '4';
 }
 
-export interface ContractSpecV4 {
-  constructors: ContractConstructorMessage[];
+export interface InkContractSpecV4 {
+  constructors: InkContractConstructorMessage[];
   docs: string[];
-  environment: ContractEnvironmentV4;
-  events: ContractEventV4[];
-  lang_error: ContractTypeInfo;
-  messages: ContractCallMessage[];
+  environment: InkContractEnvironmentV4;
+  events: InkContractEventV4[];
+  lang_error: InkContractTypeInfo;
+  messages: InkContractCallMessage[];
 }
 
-export interface ContractEventV4 {
-  args: ContractEventArg[];
+export interface InkContractEventV4 {
+  args: InkContractEventArg[];
   docs: string[];
   label: string;
 }
 
-export interface ContractEnvironmentV4 {
-  accountId: ContractTypeInfo;
-  balance: ContractTypeInfo;
-  blockNumber: ContractTypeInfo;
-  chainExtension: ContractTypeInfo;
-  hash: ContractTypeInfo;
+export interface InkContractEnvironmentV4 {
+  accountId: InkContractTypeInfo;
+  balance: InkContractTypeInfo;
+  blockNumber: InkContractTypeInfo;
+  chainExtension: InkContractTypeInfo;
+  hash: InkContractTypeInfo;
   maxEventTopics: number;
-  timestamp: ContractTypeInfo;
+  timestamp: InkContractTypeInfo;
 }

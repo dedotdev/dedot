@@ -1,26 +1,26 @@
-import { ContractInformation, ContractSource, ContractStorage, ContractType } from './shared.js';
-import { ContractEnvironmentV4, ContractEventV4, ContractSpecV4 } from './v4.js';
+import { InkContractInformation, InkContractSource, InkContractStorage, InkContractType } from './shared.js';
+import { InkContractEnvironmentV4, InkContractEventV4, InkContractSpecV4 } from './v4.js';
 
-export interface ContractMetadataV5 {
-  source: ContractSource;
-  contract: ContractInformation;
-  spec: ContractSpecV5;
-  storage: ContractStorage;
-  types: ContractType[];
+export interface InkContractMetadataV5 {
+  source: InkContractSource;
+  contract: InkContractInformation;
+  spec: InkContractSpecV5;
+  storage: InkContractStorage;
+  types: InkContractType[];
   // This is a numberic field in v5 metadata, but it is a string in v4 metadata
   version: 5;
 }
 
-export interface ContractSpecV5 extends ContractSpecV4 {
-  environment: ContractEnvironmentV5;
-  events: ContractEventV5[];
+export interface InkContractSpecV5 extends InkContractSpecV4 {
+  environment: InkContractEnvironmentV5;
+  events: InkContractEventV5[];
 }
 
-export interface ContractEventV5 extends ContractEventV4 {
+export interface InkContractEventV5 extends InkContractEventV4 {
   module_path: string;
   signature_topic?: string | null;
 }
 
-export interface ContractEnvironmentV5 extends ContractEnvironmentV4 {
+export interface InkContractEnvironmentV5 extends InkContractEnvironmentV4 {
   staticBufferSize: number;
 }

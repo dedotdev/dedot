@@ -1,7 +1,7 @@
 import { ISubstrateClient } from '@dedot/api';
 import { SubstrateApi } from '@dedot/api/chaintypes';
 import { AccountId20, PortableType, TypeDef } from '@dedot/codecs';
-import { ContractTypeDef, GenericSubstrateApi, ReturnFlags, RpcVersion } from '@dedot/types';
+import { GenericSubstrateApi, InkContractTypeDef, ReturnFlags, RpcVersion } from '@dedot/types';
 import { HexString, hexToU8a, keccakAsU8a, stringCamelCase, toHex, u8aToHex } from '@dedot/utils';
 import { BytesLike, encodeRlp } from 'ethers';
 import { Executor } from './executor/index.js';
@@ -22,7 +22,7 @@ export const extractContractTypes = (contractMetadata: ContractMetadata): Portab
   );
 };
 
-export const normalizeContractTypeDef = (def: ContractTypeDef): TypeDef => {
+export const normalizeContractTypeDef = (def: InkContractTypeDef): TypeDef => {
   let type: string;
   let value: any;
 

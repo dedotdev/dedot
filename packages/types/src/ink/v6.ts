@@ -1,10 +1,12 @@
-import { ContractSource } from './shared.js';
-import { ContractMetadataV5 } from './v5.js';
+import { InkContractSource } from './shared.js';
+import { InkContractMetadataV5 } from './v5.js';
 
-export interface ContractSourceV6 extends Omit<ContractSource, 'wasm'> {
+export interface InkContractSourceV6 extends Omit<InkContractSource, 'wasm'> {
   contract_binary?: string;
 }
 
-export interface ContractMetadataV6 extends Omit<ContractMetadataV5, 'source'> {
-  source: ContractSourceV6;
+export interface InkContractMetadataV6 extends Omit<InkContractMetadataV5, 'source'> {
+  source: InkContractSourceV6;
+  // The version is still 5, maybe for the alpha version
+  version: 5;
 }
