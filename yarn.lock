@@ -4085,6 +4085,8 @@ __metadata:
   resolution: "example-scripts@workspace:examples/scripts"
   dependencies:
     "@dedot/chaintypes": "npm:latest"
+    "@polkadot/keyring": "npm:^13.4.4"
+    "@substrate/connect-known-chains": "npm:^1.10.1"
     dedot: "workspace:*"
   languageName: unknown
   linkType: soft
