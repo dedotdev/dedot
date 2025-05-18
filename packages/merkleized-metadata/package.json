@@ -26,10 +26,6 @@
     "@dedot/shape": "workspace:*",
     "@dedot/utils": "workspace:*"
   },
-  "devDependencies": {
-    "@dedot/api": "workspace:*",
-    "@dedot/providers": "workspace:*"
-  },
   "engines": {
     "node": ">=18"
   },

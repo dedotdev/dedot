@@ -1,9 +1,8 @@
 import Keyring from '@polkadot/keyring';
 import { cryptoWaitReady } from '@polkadot/util-crypto';
-import { DedotClient } from '@dedot/api';
-import { WsProvider } from '@dedot/providers';
-import { u8aToHex } from '@dedot/utils';
-import { MerkleizedMetadata } from '../src/index.js';
+import { DedotClient, WsProvider } from 'dedot';
+import { MerkleizedMetadata } from 'dedot/merkleized-metadata';
+import { u8aToHex } from 'dedot/utils';
 
 /**
  * Example of calculating metadata hash for a real chain

@@ -309,15 +309,6 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@dedot/chaintypes@npm:*":
-  version: 0.96.0
-  resolution: "@dedot/chaintypes@npm:0.96.0"
-  peerDependencies:
-    dedot: ">=0.7.1"
-  checksum: 10c0/5a60a880318446633114fe1f506013bfeed1fd9ccac8ca65137c79bc8784e1dd4e9bcb4a66ad77884d41af0b3a70fbbe23018f76652bbfa9ef7ab71a8d649f84
-  languageName: node
-  linkType: hard
-
 "@dedot/chaintypes@npm:latest":
   version: 0.97.0
   resolution: "@dedot/chaintypes@npm:0.97.0"
@@ -386,9 +377,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@dedot/merkleized-metadata@workspace:packages/merkleized-metadata"
   dependencies:
-    "@dedot/api": "workspace:*"
     "@dedot/codecs": "workspace:*"
-    "@dedot/providers": "workspace:*"
     "@dedot/shape": "workspace:*"
     "@dedot/utils": "workspace:*"
   languageName: unknown
@@ -3334,7 +3323,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "dapp@workspace:examples/dapp"
   dependencies:
-    "@dedot/chaintypes": "npm:*"
+    "@dedot/chaintypes": "npm:latest"
     "@types/react": "npm:^18.3.3"
     "@types/react-dom": "npm:^18.3.0"
     "@typescript-eslint/eslint-plugin": "npm:^6.21.0"
@@ -4090,6 +4079,15 @@ __metadata:
   checksum: 10c0/4ba5c00c506e6c786b4d6262cfbce90ddc14c10d4667e5c83ae993c9de88aa856033994dd2b35b83e8dc1170e224e66a319fa80adc4c32adcd2379bbc75da814
   languageName: node
   linkType: hard
+
+"example-scripts@workspace:examples/scripts":
+  version: 0.0.0-use.local
+  resolution: "example-scripts@workspace:examples/scripts"
+  dependencies:
+    "@dedot/chaintypes": "npm:latest"
+    dedot: "workspace:*"
+  languageName: unknown
+  linkType: soft
 
 "execa@npm:5.0.0":
   version: 5.0.0
@@ -7986,7 +7984,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "smoldot-dapp@workspace:examples/smoldot-dapp"
   dependencies:
-    "@dedot/chaintypes": "npm:*"
+    "@dedot/chaintypes": "npm:latest"
     "@substrate/connect-known-chains": "npm:^1.10.1"
     "@types/react": "npm:^18.3.3"
     "@types/react-dom": "npm:^18.3.0"

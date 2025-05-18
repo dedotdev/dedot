@@ -1,0 +1,10 @@
+{
+  "name": "example-scripts",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "dependencies": {
+    "@dedot/chaintypes": "latest",
+    "dedot": "workspace:*"
+  }
+}
