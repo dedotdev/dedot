@@ -1,7 +1,7 @@
 import { PolkadotPeopleApi } from '@dedot/chaintypes/polkadot-people';
 import { polkadot, polkadot_people } from '@substrate/connect-known-chains';
 import { DedotClient, SmoldotProvider } from 'dedot';
-import { start } from 'smoldot';
+import { start } from 'dedot/smoldot';
 
 // Start smoldot instance & initialize chains
 const smoldot = start();

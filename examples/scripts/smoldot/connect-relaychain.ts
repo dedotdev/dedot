@@ -1,8 +1,8 @@
 import type { PolkadotApi } from '@dedot/chaintypes';
 import { polkadot } from '@substrate/connect-known-chains';
 import { DedotClient, SmoldotProvider } from 'dedot';
+import { start } from 'dedot/smoldot';
 import { formatBalance } from 'dedot/utils';
-import { start } from 'smoldot';
 
 // Start smoldot instance & initialize a chain
 const smoldot = start();
