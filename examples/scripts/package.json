@@ -1,0 +1,12 @@
+{
+  "name": "example-scripts",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "dependencies": {
+    "@dedot/chaintypes": "latest",
+    "@polkadot/keyring": "^13.4.4",
+    "@substrate/connect-known-chains": "^1.10.1",
+    "dedot": "workspace:*"
+  }
+}

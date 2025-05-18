@@ -10,7 +10,7 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "@dedot/chaintypes": "*",
+    "@dedot/chaintypes": "latest",
     "dedot": "workspace:*",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
