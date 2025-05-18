@@ -335,7 +335,7 @@ __metadata:
     "@dedot/codecs": "workspace:*"
     "@dedot/codegen": "workspace:*"
     "@polkadot-api/wasm-executor": "npm:^0.1.2"
-    "@polkadot/types-support": "npm:^15.5.2"
+    "@polkadot/types-support": "npm:^15.10.2"
     "@types/yargs": "npm:^17.0.33"
     ora: "npm:^8.2.0"
     yargs: "npm:^17.7.2"
@@ -3407,7 +3407,7 @@ __metadata:
   resolution: "dedot.dev@workspace:."
   dependencies:
     "@mxssfd/typedoc-theme": "npm:^1.1.7"
-    "@polkadot/types-support": "npm:^15.5.2"
+    "@polkadot/types-support": "npm:^15.10.2"
     "@trivago/prettier-plugin-sort-imports": "npm:^4.3.0"
     happy-dom: "npm:^15.11.7"
     husky: "npm:^9.1.4"
@@ -3415,8 +3415,8 @@ __metadata:
     prettier: "npm:^3.4.2"
     prettier-plugin-organize-imports: "npm:^3.2.4"
     tsc-esm-fix: "npm:^2.20.27"
-    tsx: "npm:^4.19.3"
-    typedoc: "npm:^0.28.2"
+    tsx: "npm:^4.19.4"
+    typedoc: "npm:^0.28.4"
     typescript: "npm:5.4.5"
     vite-tsconfig-paths: "npm:^4.3.2"
     vitest: "npm:^2.1.8"
@@ -8638,7 +8638,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"tsx@npm:^4.19.3":
+"tsx@npm:^4.19.4":
   version: 4.19.4
   resolution: "tsx@npm:4.19.4"
   dependencies:
@@ -8723,7 +8723,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"typedoc@npm:^0.28.2":
+"typedoc@npm:^0.28.4":
   version: 0.28.4
   resolution: "typedoc@npm:0.28.4"
   dependencies:

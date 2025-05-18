@@ -61,6 +61,7 @@ import type {
   PalletIdentityLegacyIdentityInfo,
   PalletImOnlineHeartbeat,
   PalletImOnlineSr25519AppSr25519Signature,
+  PalletMetaTxMetaTx,
   PalletMigrationsHistoricCleanupSelector,
   PalletMigrationsMigrationCursor,
   PalletMixnetRegistration,
@@ -566,6 +567,78 @@ export interface ChainTx<Rv extends RpcVersion> extends GenericChainTx<Rv, TxCal
     >;
 
     /**
+     * Dispatch a fallback call in the event the main call fails to execute.
+     * May be called from any origin except `None`.
+     *
+     * This function first attempts to dispatch the `main` call.
+     * If the `main` call fails, the `fallback` is attemted.
+     * if the fallback is successfully dispatched, the weights of both calls
+     * are accumulated and an event containing the main call error is deposited.
+     *
+     * In the event of a fallback failure the whole call fails
+     * with the weights returned.
+     *
+     * - `main`: The main call to be dispatched. This is the primary action to execute.
+     * - `fallback`: The fallback call to be dispatched in case the `main` call fails.
+     *
+     * ## Dispatch Logic
+     * - If the origin is `root`, both the main and fallback calls are executed without
+     * applying any origin filters.
+     * - If the origin is not `root`, the origin filter is applied to both the `main` and
+     * `fallback` calls.
+     *
+     * ## Use Case
+     * - Some use cases might involve submitting a `batch` type call in either main, fallback
+     * or both.
+     *
+     * @param {KitchensinkRuntimeRuntimeCallLike} main
+     * @param {KitchensinkRuntimeRuntimeCallLike} fallback
+     **/
+    ifElse: GenericTxCall<
+      Rv,
+      (
+        main: KitchensinkRuntimeRuntimeCallLike,
+        fallback: KitchensinkRuntimeRuntimeCallLike,
+      ) => ChainSubmittableExtrinsic<
+        Rv,
+        {
+          pallet: 'Utility';
+          palletCall: {
+            name: 'IfElse';
+            params: { main: KitchensinkRuntimeRuntimeCallLike; fallback: KitchensinkRuntimeRuntimeCallLike };
+          };
+        }
+      >
+    >;
+
+    /**
+     * Dispatches a function call with a provided origin.
+     *
+     * Almost the same as [`Pallet::dispatch_as`] but forwards any error of the inner call.
+     *
+     * The dispatch origin for this call must be _Root_.
+     *
+     * @param {KitchensinkRuntimeOriginCaller} asOrigin
+     * @param {KitchensinkRuntimeRuntimeCallLike} call
+     **/
+    dispatchAsFallible: GenericTxCall<
+      Rv,
+      (
+        asOrigin: KitchensinkRuntimeOriginCaller,
+        call: KitchensinkRuntimeRuntimeCallLike,
+      ) => ChainSubmittableExtrinsic<
+        Rv,
+        {
+          pallet: 'Utility';
+          palletCall: {
+            name: 'DispatchAsFallible';
+            params: { asOrigin: KitchensinkRuntimeOriginCaller; call: KitchensinkRuntimeRuntimeCallLike };
+          };
+        }
+      >
+    >;
+
+    /**
      * Generic pallet tx call
      **/
     [callName: string]: GenericTxCall<Rv, TxCall<Rv>>;
@@ -862,6 +935,34 @@ export interface ChainTx<Rv extends RpcVersion> extends GenericChainTx<Rv, TxCal
           pallet: 'Indices';
           palletCall: {
             name: 'Freeze';
+            params: { index: number };
+          };
+        }
+      >
+    >;
+
+    /**
+     * Poke the deposit reserved for an index.
+     *
+     * The dispatch origin for this call must be _Signed_ and the signing account must have a
+     * non-frozen account `index`.
+     *
+     * The transaction fees is waived if the deposit is changed after poking/reconsideration.
+     *
+     * - `index`: the index whose deposit is to be poked/reconsidered.
+     *
+     * Emits `DepositPoked` if successful.
+     *
+     * @param {number} index
+     **/
+    pokeDeposit: GenericTxCall<
+      Rv,
+      (index: number) => ChainSubmittableExtrinsic<
+        Rv,
+        {
+          pallet: 'Indices';
+          palletCall: {
+            name: 'PokeDeposit';
             params: { index: number };
           };
         }
@@ -2209,6 +2310,76 @@ export interface ChainTx<Rv extends RpcVersion> extends GenericChainTx<Rv, TxCal
               maybeTotal: bigint | undefined;
               maybeUnlocking: Array<PalletStakingUnlockChunk> | undefined;
             };
+          };
+        }
+      >
+    >;
+
+    /**
+     * Removes the legacy Staking locks if they exist.
+     *
+     * This removes the legacy lock on the stake with [`Config::OldCurrency`] and creates a
+     * hold on it if needed. If all stake cannot be held, the best effort is made to hold as
+     * much as possible. The remaining stake is forced withdrawn from the ledger.
+     *
+     * The fee is waived if the migration is successful.
+     *
+     * @param {AccountId32Like} stash
+     **/
+    migrateCurrency: GenericTxCall<
+      Rv,
+      (stash: AccountId32Like) => ChainSubmittableExtrinsic<
+        Rv,
+        {
+          pallet: 'Staking';
+          palletCall: {
+            name: 'MigrateCurrency';
+            params: { stash: AccountId32Like };
+          };
+        }
+      >
+    >;
+
+    /**
+     * This function allows governance to manually slash a validator and is a
+     * **fallback mechanism**.
+     *
+     * The dispatch origin must be `T::AdminOrigin`.
+     *
+     * ## Parameters
+     * - `validator_stash` - The stash account of the validator to slash.
+     * - `era` - The era in which the validator was in the active set.
+     * - `slash_fraction` - The percentage of the stake to slash, expressed as a Perbill.
+     *
+     * ## Behavior
+     *
+     * The slash will be applied using the standard slashing mechanics, respecting the
+     * configured `SlashDeferDuration`.
+     *
+     * This means:
+     * - If the validator was already slashed by a higher percentage for the same era, this
+     * slash will have no additional effect.
+     * - If the validator was previously slashed by a lower percentage, only the difference
+     * will be applied.
+     * - The slash will be deferred by `SlashDeferDuration` eras before being enacted.
+     *
+     * @param {AccountId32Like} validatorStash
+     * @param {number} era
+     * @param {Perbill} slashFraction
+     **/
+    manualSlash: GenericTxCall<
+      Rv,
+      (
+        validatorStash: AccountId32Like,
+        era: number,
+        slashFraction: Perbill,
+      ) => ChainSubmittableExtrinsic<
+        Rv,
+        {
+          pallet: 'Staking';
+          palletCall: {
+            name: 'ManualSlash';
+            params: { validatorStash: AccountId32Like; era: number; slashFraction: Perbill };
           };
         }
       >
@@ -6074,7 +6245,7 @@ export interface ChainTx<Rv extends RpcVersion> extends GenericChainTx<Rv, TxCal
     >;
 
     /**
-     * Allow ROOT to bypass the recovery process and set an a rescuer account
+     * Allow ROOT to bypass the recovery process and set a rescuer account
      * for a lost account directly.
      *
      * The dispatch origin for this call must be _ROOT_.
@@ -7041,7 +7212,7 @@ export interface ChainTx<Rv extends RpcVersion> extends GenericChainTx<Rv, TxCal
     >;
 
     /**
-     * Ensure that the a bulk of pre-images is upgraded.
+     * Ensure that the bulk of pre-images is upgraded.
      *
      * The caller pays no fee if at least 90% of pre-images were successfully updated.
      *
@@ -7429,6 +7600,30 @@ export interface ChainTx<Rv extends RpcVersion> extends GenericChainTx<Rv, TxCal
     >;
 
     /**
+     * Poke / Adjust deposits made for proxies and announcements based on current values.
+     * This can be used by accounts to possibly lower their locked amount.
+     *
+     * The dispatch origin for this call must be _Signed_.
+     *
+     * The transaction fee is waived if the deposit amount has changed.
+     *
+     * Emits `DepositPoked` if successful.
+     *
+     **/
+    pokeDeposit: GenericTxCall<
+      Rv,
+      () => ChainSubmittableExtrinsic<
+        Rv,
+        {
+          pallet: 'Proxy';
+          palletCall: {
+            name: 'PokeDeposit';
+          };
+        }
+      >
+    >;
+
+    /**
      * Generic pallet tx call
      **/
     [callName: string]: GenericTxCall<Rv, TxCall<Rv>>;
@@ -7655,6 +7850,43 @@ export interface ChainTx<Rv extends RpcVersion> extends GenericChainTx<Rv, TxCal
               timepoint: PalletMultisigTimepoint;
               callHash: FixedBytes<32>;
             };
+          };
+        }
+      >
+    >;
+
+    /**
+     * Poke the deposit reserved for an existing multisig operation.
+     *
+     * The dispatch origin for this call must be _Signed_ and must be the original depositor of
+     * the multisig operation.
+     *
+     * The transaction fee is waived if the deposit amount has changed.
+     *
+     * - `threshold`: The total number of approvals needed for this multisig.
+     * - `other_signatories`: The accounts (other than the sender) who are part of the
+     * multisig.
+     * - `call_hash`: The hash of the call this deposit is reserved for.
+     *
+     * Emits `DepositPoked` if successful.
+     *
+     * @param {number} threshold
+     * @param {Array<AccountId32Like>} otherSignatories
+     * @param {FixedBytes<32>} callHash
+     **/
+    pokeDeposit: GenericTxCall<
+      Rv,
+      (
+        threshold: number,
+        otherSignatories: Array<AccountId32Like>,
+        callHash: FixedBytes<32>,
+      ) => ChainSubmittableExtrinsic<
+        Rv,
+        {
+          pallet: 'Multisig';
+          palletCall: {
+            name: 'PokeDeposit';
+            params: { threshold: number; otherSignatories: Array<AccountId32Like>; callHash: FixedBytes<32> };
           };
         }
       >
@@ -8303,6 +8535,9 @@ export interface ChainTx<Rv extends RpcVersion> extends GenericChainTx<Rv, TxCal
      * - `id`: The identifier of the asset to be destroyed. This must identify an existing
      * asset.
      *
+     * It will fail with either [`Error::ContainsHolds`] or [`Error::ContainsFreezes`] if
+     * an account contains holds or freezes in place.
+     *
      * @param {number} id
      **/
     startDestroy: GenericTxCall<
@@ -9205,6 +9440,9 @@ export interface ChainTx<Rv extends RpcVersion> extends GenericChainTx<Rv, TxCal
      * refunded.
      * - `allow_burn`: If `true` then assets may be destroyed in order to complete the refund.
      *
+     * It will fail with either [`Error::ContainsHolds`] or [`Error::ContainsFreezes`] if
+     * the asset account contains holds or freezes in place.
+     *
      * Emits `Refunded` event when successful.
      *
      * @param {number} id
@@ -9302,6 +9540,9 @@ export interface ChainTx<Rv extends RpcVersion> extends GenericChainTx<Rv, TxCal
      *
      * - `id`: The identifier of the asset for the account holding a deposit.
      * - `who`: The account to refund.
+     *
+     * It will fail with either [`Error::ContainsHolds`] or [`Error::ContainsFreezes`] if
+     * the asset account contains holds or freezes in place.
      *
      * Emits `Refunded` event when successful.
      *
@@ -9505,6 +9746,9 @@ export interface ChainTx<Rv extends RpcVersion> extends GenericChainTx<Rv, TxCal
      * - `id`: The identifier of the asset to be destroyed. This must identify an existing
      * asset.
      *
+     * It will fail with either [`Error::ContainsHolds`] or [`Error::ContainsFreezes`] if
+     * an account contains holds or freezes in place.
+     *
      * @param {number} id
      **/
     startDestroy: GenericTxCall<
@@ -10407,6 +10651,9 @@ export interface ChainTx<Rv extends RpcVersion> extends GenericChainTx<Rv, TxCal
      * refunded.
      * - `allow_burn`: If `true` then assets may be destroyed in order to complete the refund.
      *
+     * It will fail with either [`Error::ContainsHolds`] or [`Error::ContainsFreezes`] if
+     * the asset account contains holds or freezes in place.
+     *
      * Emits `Refunded` event when successful.
      *
      * @param {number} id
@@ -10504,6 +10751,9 @@ export interface ChainTx<Rv extends RpcVersion> extends GenericChainTx<Rv, TxCal
      *
      * - `id`: The identifier of the asset for the account holding a deposit.
      * - `who`: The account to refund.
+     *
+     * It will fail with either [`Error::ContainsHolds`] or [`Error::ContainsFreezes`] if
+     * the asset account contains holds or freezes in place.
      *
      * Emits `Refunded` event when successful.
      *
@@ -14061,11 +14311,11 @@ export interface ChainTx<Rv extends RpcVersion> extends GenericChainTx<Rv, TxCal
     >;
 
     /**
-     * Introduce an already-ranked individual of the collective into this pallet. The rank may
-     * still be zero.
+     * Introduce an already-ranked individual of the collective into this pallet.
      *
-     * This resets `last_proof` to the current block and `last_promotion` will be set to zero,
-     * thereby delaying any automatic demotion but allowing immediate promotion.
+     * The rank may still be zero. This resets `last_proof` to the current block and
+     * `last_promotion` will be set to zero, thereby delaying any automatic demotion but
+     * allowing immediate promotion.
      *
      * - `origin`: A signed origin of a ranked, but not tracked, account.
      *
@@ -14078,6 +14328,34 @@ export interface ChainTx<Rv extends RpcVersion> extends GenericChainTx<Rv, TxCal
           pallet: 'CoreFellowship';
           palletCall: {
             name: 'Import';
+          };
+        }
+      >
+    >;
+
+    /**
+     * Introduce an already-ranked individual of the collective into this pallet.
+     *
+     * The rank may still be zero. Can be called by anyone on any collective member - including
+     * the sender.
+     *
+     * This resets `last_proof` to the current block and `last_promotion` will be set to zero,
+     * thereby delaying any automatic demotion but allowing immediate promotion.
+     *
+     * - `origin`: A signed origin of a ranked, but not tracked, account.
+     * - `who`: The account ID of the collective member to be inducted.
+     *
+     * @param {AccountId32Like} who
+     **/
+    importMember: GenericTxCall<
+      Rv,
+      (who: AccountId32Like) => ChainSubmittableExtrinsic<
+        Rv,
+        {
+          pallet: 'CoreFellowship';
+          palletCall: {
+            name: 'ImportMember';
+            params: { who: AccountId32Like };
           };
         }
       >
@@ -16111,8 +16389,9 @@ export interface ChainTx<Rv extends RpcVersion> extends GenericChainTx<Rv, TxCal
    **/
   nominationPools: {
     /**
-     * Stake funds with a pool. The amount to bond is transferred from the member to the pool
-     * account and immediately increases the pools bond.
+     * Stake funds with a pool. The amount to bond is delegated (or transferred based on
+     * [`adapter::StakeStrategyType`]) from the member to the pool account and immediately
+     * increases the pool's bond.
      *
      * The method of transferring the amount to the pool account is determined by
      * [`adapter::StakeStrategyType`]. If the pool is configured to use
@@ -16410,13 +16689,13 @@ export interface ChainTx<Rv extends RpcVersion> extends GenericChainTx<Rv, TxCal
      * The dispatch origin of this call must be signed by the pool nominator or the pool
      * root role.
      *
-     * This directly forward the call to the staking pallet, on behalf of the pool bonded
-     * account.
+     * This directly forwards the call to an implementation of `StakingInterface` (e.g.,
+     * `pallet-staking`) through [`Config::StakeAdapter`], on behalf of the bonded pool.
      *
      * # Note
      *
-     * In addition to a `root` or `nominator` role of `origin`, pool's depositor needs to have
-     * at least `depositor_min_bond` in the pool to start nominating.
+     * In addition to a `root` or `nominator` role of `origin`, the pool's depositor needs to
+     * have at least `depositor_min_bond` in the pool to start nominating.
      *
      * @param {number} poolId
      * @param {Array<AccountId32Like>} validators
@@ -16588,6 +16867,9 @@ export interface ChainTx<Rv extends RpcVersion> extends GenericChainTx<Rv, TxCal
      * The dispatch origin of this call can be signed by the pool nominator or the pool
      * root role, same as [`Pallet::nominate`].
      *
+     * This directly forwards the call to an implementation of `StakingInterface` (e.g.,
+     * `pallet-staking`) through [`Config::StakeAdapter`], on behalf of the bonded pool.
+     *
      * Under certain conditions, this call can be dispatched permissionlessly (i.e. by any
      * account).
      *
@@ -16596,9 +16878,7 @@ export interface ChainTx<Rv extends RpcVersion> extends GenericChainTx<Rv, TxCal
      * are unable to unbond.
      *
      * # Conditions for permissioned dispatch:
-     * * The caller has a nominator or root role of the pool.
-     * This directly forward the call to the staking pallet, on behalf of the pool bonded
-     * account.
+     * * The caller is the pool's nominator or root.
      *
      * @param {number} poolId
      **/
@@ -16777,9 +17057,20 @@ export interface ChainTx<Rv extends RpcVersion> extends GenericChainTx<Rv, TxCal
     /**
      * Claim pending commission.
      *
-     * The dispatch origin of this call must be signed by the `root` role of the pool. Pending
-     * commission is paid out and added to total claimed commission`. Total pending commission
-     * is reset to zero. the current.
+     * The `root` role of the pool is _always_ allowed to claim the pool's commission.
+     *
+     * If the pool has set `CommissionClaimPermission::Permissionless`, then any account can
+     * trigger the process of claiming the pool's commission.
+     *
+     * If the pool has set its `CommissionClaimPermission` to `Account(acc)`, then only
+     * accounts
+     * * `acc`, and
+     * * the pool's root account
+     *
+     * may call this extrinsic on behalf of the pool.
+     *
+     * Pending commissions are paid out and added to the total claimed commission.
+     * The total pending commission is reset to zero.
      *
      * @param {number} poolId
      **/
@@ -16854,8 +17145,10 @@ export interface ChainTx<Rv extends RpcVersion> extends GenericChainTx<Rv, TxCal
      * Fails unless [`crate::pallet::Config::StakeAdapter`] is of strategy type:
      * [`adapter::StakeStrategyType::Delegate`].
      *
-     * This call can be dispatched permissionlessly (i.e. by any account). If the member has
-     * slash to be applied, caller may be rewarded with the part of the slash.
+     * The pending slash amount of the member must be equal or more than `ExistentialDeposit`.
+     * This call can be dispatched permissionlessly (i.e. by any account). If the execution
+     * is successful, fee is refunded and caller may be rewarded with a part of the slash
+     * based on the [`crate::pallet::Config::StakeAdapter`] configuration.
      *
      * @param {MultiAddressLike} memberAccount
      **/
@@ -18267,6 +18560,9 @@ export interface ChainTx<Rv extends RpcVersion> extends GenericChainTx<Rv, TxCal
     /**
      * Reserve a core for a workload.
      *
+     * The workload will be given a reservation, but two sale period boundaries must pass
+     * before the core is actually assigned.
+     *
      * - `origin`: Must be Root or pass `AdminOrigin`.
      * - `workload`: The workload which should be permanently placed on a core.
      *
@@ -18840,6 +19136,84 @@ export interface ChainTx<Rv extends RpcVersion> extends GenericChainTx<Rv, TxCal
     >;
 
     /**
+     * Reserve a core for a workload immediately.
+     *
+     * - `origin`: Must be Root or pass `AdminOrigin`.
+     * - `workload`: The workload which should be permanently placed on a core starting
+     * immediately.
+     * - `core`: The core to which the assignment should be made until the reservation takes
+     * effect. It is left to the caller to either add this new core or reassign any other
+     * tasks to this existing core.
+     *
+     * This reserves the workload and then injects the workload into the Workplan for the next
+     * two sale periods. This overwrites any existing assignments for this core at the start of
+     * the next sale period.
+     *
+     * @param {Array<PalletBrokerScheduleItem>} workload
+     * @param {number} core
+     **/
+    forceReserve: GenericTxCall<
+      Rv,
+      (
+        workload: Array<PalletBrokerScheduleItem>,
+        core: number,
+      ) => ChainSubmittableExtrinsic<
+        Rv,
+        {
+          pallet: 'Broker';
+          palletCall: {
+            name: 'ForceReserve';
+            params: { workload: Array<PalletBrokerScheduleItem>; core: number };
+          };
+        }
+      >
+    >;
+
+    /**
+     * Remove a lease.
+     *
+     * - `origin`: Must be Root or pass `AdminOrigin`.
+     * - `task`: The task id of the lease which should be removed.
+     *
+     * @param {number} task
+     **/
+    removeLease: GenericTxCall<
+      Rv,
+      (task: number) => ChainSubmittableExtrinsic<
+        Rv,
+        {
+          pallet: 'Broker';
+          palletCall: {
+            name: 'RemoveLease';
+            params: { task: number };
+          };
+        }
+      >
+    >;
+
+    /**
+     * Remove an assignment from the Workplan.
+     *
+     * - `origin`: Must be Root or pass `AdminOrigin`.
+     * - `region_id`: The Region to be removed from the workplan.
+     *
+     * @param {PalletBrokerRegionId} regionId
+     **/
+    removeAssignment: GenericTxCall<
+      Rv,
+      (regionId: PalletBrokerRegionId) => ChainSubmittableExtrinsic<
+        Rv,
+        {
+          pallet: 'Broker';
+          palletCall: {
+            name: 'RemoveAssignment';
+            params: { regionId: PalletBrokerRegionId };
+          };
+        }
+      >
+    >;
+
+    /**
      *
      * @param {number} id
      * @param {number} other
@@ -18976,7 +19350,7 @@ export interface ChainTx<Rv extends RpcVersion> extends GenericChainTx<Rv, TxCal
      *
      * # Parameters
      *
-     * * `payload`: The RLP-encoded [`crate::evm::TransactionLegacySigned`].
+     * * `payload`: The encoded [`crate::evm::TransactionSigned`].
      * * `gas_limit`: The gas limit enforced during contract execution.
      * * `storage_deposit_limit`: The maximum balance that can be charged to the caller for
      * storage usage.
@@ -18989,22 +19363,16 @@ export interface ChainTx<Rv extends RpcVersion> extends GenericChainTx<Rv, TxCal
      * signer and validating the transaction.
      *
      * @param {BytesLike} payload
-     * @param {SpWeightsWeightV2Weight} gasLimit
-     * @param {bigint} storageDepositLimit
      **/
     ethTransact: GenericTxCall<
       Rv,
-      (
-        payload: BytesLike,
-        gasLimit: SpWeightsWeightV2Weight,
-        storageDepositLimit: bigint,
-      ) => ChainSubmittableExtrinsic<
+      (payload: BytesLike) => ChainSubmittableExtrinsic<
         Rv,
         {
           pallet: 'Revive';
           palletCall: {
             name: 'EthTransact';
-            params: { payload: BytesLike; gasLimit: SpWeightsWeightV2Weight; storageDepositLimit: bigint };
+            params: { payload: BytesLike };
           };
         }
       >
@@ -19312,6 +19680,308 @@ export interface ChainTx<Rv extends RpcVersion> extends GenericChainTx<Rv, TxCal
           palletCall: {
             name: 'DispatchAsFallbackAccount';
             params: { call: KitchensinkRuntimeRuntimeCallLike };
+          };
+        }
+      >
+    >;
+
+    /**
+     * Generic pallet tx call
+     **/
+    [callName: string]: GenericTxCall<Rv, TxCall<Rv>>;
+  };
+  /**
+   * Pallet `AssetRewards`'s transaction calls
+   **/
+  assetRewards: {
+    /**
+     * Create a new reward pool.
+     *
+     * Parameters:
+     * - `origin`: must be `Config::CreatePoolOrigin`;
+     * - `staked_asset_id`: the asset to be staked in the pool;
+     * - `reward_asset_id`: the asset to be distributed as rewards;
+     * - `reward_rate_per_block`: the amount of reward tokens distributed per block;
+     * - `expiry`: the block number at which the pool will cease to accumulate rewards. The
+     * [`DispatchTime::After`] variant evaluated at the execution time.
+     * - `admin`: the account allowed to extend the pool expiration, increase the rewards rate
+     * and receive the unutilized reward tokens back after the pool completion. If `None`,
+     * the caller is set as an admin.
+     *
+     * @param {FrameSupportTokensFungibleUnionOfNativeOrWithId} stakedAssetId
+     * @param {FrameSupportTokensFungibleUnionOfNativeOrWithId} rewardAssetId
+     * @param {bigint} rewardRatePerBlock
+     * @param {FrameSupportScheduleDispatchTime} expiry
+     * @param {AccountId32Like | undefined} admin
+     **/
+    createPool: GenericTxCall<
+      Rv,
+      (
+        stakedAssetId: FrameSupportTokensFungibleUnionOfNativeOrWithId,
+        rewardAssetId: FrameSupportTokensFungibleUnionOfNativeOrWithId,
+        rewardRatePerBlock: bigint,
+        expiry: FrameSupportScheduleDispatchTime,
+        admin: AccountId32Like | undefined,
+      ) => ChainSubmittableExtrinsic<
+        Rv,
+        {
+          pallet: 'AssetRewards';
+          palletCall: {
+            name: 'CreatePool';
+            params: {
+              stakedAssetId: FrameSupportTokensFungibleUnionOfNativeOrWithId;
+              rewardAssetId: FrameSupportTokensFungibleUnionOfNativeOrWithId;
+              rewardRatePerBlock: bigint;
+              expiry: FrameSupportScheduleDispatchTime;
+              admin: AccountId32Like | undefined;
+            };
+          };
+        }
+      >
+    >;
+
+    /**
+     * Stake additional tokens in a pool.
+     *
+     * A freeze is placed on the staked tokens.
+     *
+     * @param {number} poolId
+     * @param {bigint} amount
+     **/
+    stake: GenericTxCall<
+      Rv,
+      (
+        poolId: number,
+        amount: bigint,
+      ) => ChainSubmittableExtrinsic<
+        Rv,
+        {
+          pallet: 'AssetRewards';
+          palletCall: {
+            name: 'Stake';
+            params: { poolId: number; amount: bigint };
+          };
+        }
+      >
+    >;
+
+    /**
+     * Unstake tokens from a pool.
+     *
+     * Removes the freeze on the staked tokens.
+     *
+     * Parameters:
+     * - origin: must be the `staker` if the pool is still active. Otherwise, any account.
+     * - pool_id: the pool to unstake from.
+     * - amount: the amount of tokens to unstake.
+     * - staker: the account to unstake from. If `None`, the caller is used.
+     *
+     * @param {number} poolId
+     * @param {bigint} amount
+     * @param {AccountId32Like | undefined} staker
+     **/
+    unstake: GenericTxCall<
+      Rv,
+      (
+        poolId: number,
+        amount: bigint,
+        staker: AccountId32Like | undefined,
+      ) => ChainSubmittableExtrinsic<
+        Rv,
+        {
+          pallet: 'AssetRewards';
+          palletCall: {
+            name: 'Unstake';
+            params: { poolId: number; amount: bigint; staker: AccountId32Like | undefined };
+          };
+        }
+      >
+    >;
+
+    /**
+     * Harvest unclaimed pool rewards.
+     *
+     * Parameters:
+     * - origin: must be the `staker` if the pool is still active. Otherwise, any account.
+     * - pool_id: the pool to harvest from.
+     * - staker: the account for which to harvest rewards. If `None`, the caller is used.
+     *
+     * @param {number} poolId
+     * @param {AccountId32Like | undefined} staker
+     **/
+    harvestRewards: GenericTxCall<
+      Rv,
+      (
+        poolId: number,
+        staker: AccountId32Like | undefined,
+      ) => ChainSubmittableExtrinsic<
+        Rv,
+        {
+          pallet: 'AssetRewards';
+          palletCall: {
+            name: 'HarvestRewards';
+            params: { poolId: number; staker: AccountId32Like | undefined };
+          };
+        }
+      >
+    >;
+
+    /**
+     * Modify a pool reward rate.
+     *
+     * Currently the reward rate can only be increased.
+     *
+     * Only the pool admin may perform this operation.
+     *
+     * @param {number} poolId
+     * @param {bigint} newRewardRatePerBlock
+     **/
+    setPoolRewardRatePerBlock: GenericTxCall<
+      Rv,
+      (
+        poolId: number,
+        newRewardRatePerBlock: bigint,
+      ) => ChainSubmittableExtrinsic<
+        Rv,
+        {
+          pallet: 'AssetRewards';
+          palletCall: {
+            name: 'SetPoolRewardRatePerBlock';
+            params: { poolId: number; newRewardRatePerBlock: bigint };
+          };
+        }
+      >
+    >;
+
+    /**
+     * Modify a pool admin.
+     *
+     * Only the pool admin may perform this operation.
+     *
+     * @param {number} poolId
+     * @param {AccountId32Like} newAdmin
+     **/
+    setPoolAdmin: GenericTxCall<
+      Rv,
+      (
+        poolId: number,
+        newAdmin: AccountId32Like,
+      ) => ChainSubmittableExtrinsic<
+        Rv,
+        {
+          pallet: 'AssetRewards';
+          palletCall: {
+            name: 'SetPoolAdmin';
+            params: { poolId: number; newAdmin: AccountId32Like };
+          };
+        }
+      >
+    >;
+
+    /**
+     * Set when the pool should expire.
+     *
+     * Currently the expiry block can only be extended.
+     *
+     * Only the pool admin may perform this operation.
+     *
+     * @param {number} poolId
+     * @param {FrameSupportScheduleDispatchTime} newExpiry
+     **/
+    setPoolExpiryBlock: GenericTxCall<
+      Rv,
+      (
+        poolId: number,
+        newExpiry: FrameSupportScheduleDispatchTime,
+      ) => ChainSubmittableExtrinsic<
+        Rv,
+        {
+          pallet: 'AssetRewards';
+          palletCall: {
+            name: 'SetPoolExpiryBlock';
+            params: { poolId: number; newExpiry: FrameSupportScheduleDispatchTime };
+          };
+        }
+      >
+    >;
+
+    /**
+     * Convenience method to deposit reward tokens into a pool.
+     *
+     * This method is not strictly necessary (tokens could be transferred directly to the
+     * pool pot address), but is provided for convenience so manual derivation of the
+     * account id is not required.
+     *
+     * @param {number} poolId
+     * @param {bigint} amount
+     **/
+    depositRewardTokens: GenericTxCall<
+      Rv,
+      (
+        poolId: number,
+        amount: bigint,
+      ) => ChainSubmittableExtrinsic<
+        Rv,
+        {
+          pallet: 'AssetRewards';
+          palletCall: {
+            name: 'DepositRewardTokens';
+            params: { poolId: number; amount: bigint };
+          };
+        }
+      >
+    >;
+
+    /**
+     * Cleanup a pool.
+     *
+     * Origin must be the pool admin.
+     *
+     * Cleanup storage, release any associated storage cost and return the remaining reward
+     * tokens to the admin.
+     *
+     * @param {number} poolId
+     **/
+    cleanupPool: GenericTxCall<
+      Rv,
+      (poolId: number) => ChainSubmittableExtrinsic<
+        Rv,
+        {
+          pallet: 'AssetRewards';
+          palletCall: {
+            name: 'CleanupPool';
+            params: { poolId: number };
+          };
+        }
+      >
+    >;
+
+    /**
+     * Generic pallet tx call
+     **/
+    [callName: string]: GenericTxCall<Rv, TxCall<Rv>>;
+  };
+  /**
+   * Pallet `MetaTx`'s transaction calls
+   **/
+  metaTx: {
+    /**
+     * Dispatch a given meta transaction.
+     *
+     * - `_origin`: Can be any kind of origin.
+     * - `meta_tx`: Meta Transaction with a target call to be dispatched.
+     *
+     * @param {PalletMetaTxMetaTx} metaTx
+     **/
+    dispatch: GenericTxCall<
+      Rv,
+      (metaTx: PalletMetaTxMetaTx) => ChainSubmittableExtrinsic<
+        Rv,
+        {
+          pallet: 'MetaTx';
+          palletCall: {
+            name: 'Dispatch';
+            params: { metaTx: PalletMetaTxMetaTx };
           };
         }
       >

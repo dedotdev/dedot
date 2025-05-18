@@ -12,12 +12,15 @@ import type {
   Header,
   Result,
   RuntimeVersion,
+  U256,
   UncheckedExtrinsic,
   UncheckedExtrinsicLike,
 } from '@dedot/codecs';
 import type { GenericRuntimeApiMethod, GenericRuntimeApis, RpcVersion } from '@dedot/types';
 import type {
   FrameSupportTokensFungibleUnionOfNativeOrWithId,
+  FrameSupportViewFunctionsViewFunctionDispatchError,
+  FrameSupportViewFunctionsViewFunctionId,
   KitchensinkRuntimeRuntimeCallLike,
   PalletContractsPrimitivesCode,
   PalletContractsPrimitivesCodeUploadReturnValue,
@@ -25,12 +28,16 @@ import type {
   PalletContractsPrimitivesContractResult,
   PalletContractsPrimitivesContractResultResult,
   PalletContractsWasmDeterminism,
+  PalletReviveEvmApiDebugRpcTypesCallTrace,
+  PalletReviveEvmApiDebugRpcTypesTracerConfig,
+  PalletReviveEvmApiRpcTypesGenGenericTransaction,
   PalletRevivePrimitivesCode,
   PalletRevivePrimitivesCodeUploadReturnValue,
   PalletRevivePrimitivesContractAccessError,
   PalletRevivePrimitivesContractResult,
   PalletRevivePrimitivesContractResultInstantiateReturnValue,
-  PalletRevivePrimitivesEthContractResult,
+  PalletRevivePrimitivesEthTransactError,
+  PalletRevivePrimitivesEthTransactInfo,
   PalletTransactionPaymentFeeDetails,
   PalletTransactionPaymentRuntimeDispatchInfo,
   SpAuthorityDiscoveryAppPublic,
@@ -133,6 +140,30 @@ export interface RuntimeApis<Rv extends RpcVersion> extends GenericRuntimeApis<R
      * @callname: Metadata_metadata_versions
      **/
     metadataVersions: GenericRuntimeApiMethod<Rv, () => Promise<Array<number>>>;
+
+    /**
+     * Generic runtime api call
+     **/
+    [method: string]: GenericRuntimeApiMethod<Rv>;
+  };
+  /**
+   * @runtimeapi: RuntimeViewFunction - 0xccd9de6396c899ca
+   **/
+  runtimeViewFunction: {
+    /**
+     * Execute a view function query.
+     *
+     * @callname: RuntimeViewFunction_execute_view_function
+     * @param {FrameSupportViewFunctionsViewFunctionId} query_id
+     * @param {BytesLike} input
+     **/
+    executeViewFunction: GenericRuntimeApiMethod<
+      Rv,
+      (
+        queryId: FrameSupportViewFunctionsViewFunctionId,
+        input: BytesLike,
+      ) => Promise<Result<Bytes, FrameSupportViewFunctionsViewFunctionDispatchError>>
+    >;
 
     /**
      * Generic runtime api call
@@ -383,6 +414,9 @@ export interface RuntimeApis<Rv extends RpcVersion> extends GenericRuntimeApis<R
 
     /**
      * Returns the pending slash for a given pool member.
+     *
+     * If pending slash of the member exceeds `ExistentialDeposit`, it can be reported on
+     * chain.
      *
      * @callname: NominationPoolsApi_member_pending_slash
      * @param {AccountId32Like} member
@@ -723,12 +757,26 @@ export interface RuntimeApis<Rv extends RpcVersion> extends GenericRuntimeApis<R
    **/
   reviveApi: {
     /**
-     * Returns the free balance of the given `[H160]` address.
+     * Returns the block gas limit.
+     *
+     * @callname: ReviveApi_block_gas_limit
+     **/
+    blockGasLimit: GenericRuntimeApiMethod<Rv, () => Promise<U256>>;
+
+    /**
+     * Returns the free balance of the given `[H160]` address, using EVM decimals.
      *
      * @callname: ReviveApi_balance
      * @param {H160} address
      **/
-    balance: GenericRuntimeApiMethod<Rv, (address: H160) => Promise<bigint>>;
+    balance: GenericRuntimeApiMethod<Rv, (address: H160) => Promise<U256>>;
+
+    /**
+     * Returns the gas price.
+     *
+     * @callname: ReviveApi_gas_price
+     **/
+    gasPrice: GenericRuntimeApiMethod<Rv, () => Promise<U256>>;
 
     /**
      * Returns the nonce of the given `[H160]` address.
@@ -796,23 +844,13 @@ export interface RuntimeApis<Rv extends RpcVersion> extends GenericRuntimeApis<R
      * See [`crate::Pallet::bare_eth_transact`]
      *
      * @callname: ReviveApi_eth_transact
-     * @param {H160} origin
-     * @param {H160 | undefined} dest
-     * @param {bigint} value
-     * @param {BytesLike} input
-     * @param {SpWeightsWeightV2Weight | undefined} gas_limit
-     * @param {bigint | undefined} storage_deposit_limit
+     * @param {PalletReviveEvmApiRpcTypesGenGenericTransaction} tx
      **/
     ethTransact: GenericRuntimeApiMethod<
       Rv,
       (
-        origin: H160,
-        dest: H160 | undefined,
-        value: bigint,
-        input: BytesLike,
-        gasLimit?: SpWeightsWeightV2Weight | undefined,
-        storageDepositLimit?: bigint | undefined,
-      ) => Promise<PalletRevivePrimitivesEthContractResult>
+        tx: PalletReviveEvmApiRpcTypesGenGenericTransaction,
+      ) => Promise<Result<PalletRevivePrimitivesEthTransactInfo, PalletRevivePrimitivesEthTransactError>>
     >;
 
     /**
@@ -851,6 +889,65 @@ export interface RuntimeApis<Rv extends RpcVersion> extends GenericRuntimeApis<R
         address: H160,
         key: FixedBytes<32>,
       ) => Promise<Result<Bytes | undefined, PalletRevivePrimitivesContractAccessError>>
+    >;
+
+    /**
+     * Traces the execution of an entire block and returns call traces.
+     *
+     * This is intended to be called through `state_call` to replay the block from the
+     * parent block.
+     *
+     * See eth-rpc `debug_traceBlockByNumber` for usage.
+     *
+     * @callname: ReviveApi_trace_block
+     * @param {SpRuntimeBlock} block
+     * @param {PalletReviveEvmApiDebugRpcTypesTracerConfig} config
+     **/
+    traceBlock: GenericRuntimeApiMethod<
+      Rv,
+      (
+        block: SpRuntimeBlock,
+        config: PalletReviveEvmApiDebugRpcTypesTracerConfig,
+      ) => Promise<Array<[number, PalletReviveEvmApiDebugRpcTypesCallTrace]>>
+    >;
+
+    /**
+     * Traces the execution of a specific transaction within a block.
+     *
+     * This is intended to be called through `state_call` to replay the block from the
+     * parent hash up to the transaction.
+     *
+     * See eth-rpc `debug_traceTransaction` for usage.
+     *
+     * @callname: ReviveApi_trace_tx
+     * @param {SpRuntimeBlock} block
+     * @param {number} tx_index
+     * @param {PalletReviveEvmApiDebugRpcTypesTracerConfig} config
+     **/
+    traceTx: GenericRuntimeApiMethod<
+      Rv,
+      (
+        block: SpRuntimeBlock,
+        txIndex: number,
+        config: PalletReviveEvmApiDebugRpcTypesTracerConfig,
+      ) => Promise<PalletReviveEvmApiDebugRpcTypesCallTrace | undefined>
+    >;
+
+    /**
+     * Dry run and return the trace of the given call.
+     *
+     * See eth-rpc `debug_traceCall` for usage.
+     *
+     * @callname: ReviveApi_trace_call
+     * @param {PalletReviveEvmApiRpcTypesGenGenericTransaction} tx
+     * @param {PalletReviveEvmApiDebugRpcTypesTracerConfig} config
+     **/
+    traceCall: GenericRuntimeApiMethod<
+      Rv,
+      (
+        tx: PalletReviveEvmApiRpcTypesGenGenericTransaction,
+        config: PalletReviveEvmApiDebugRpcTypesTracerConfig,
+      ) => Promise<Result<PalletReviveEvmApiDebugRpcTypesCallTrace, PalletRevivePrimitivesEthTransactError>>
     >;
 
     /**
@@ -1380,6 +1477,24 @@ export interface RuntimeApis<Rv extends RpcVersion> extends GenericRuntimeApis<R
       Rv,
       (encoded: BytesLike) => Promise<Array<[Bytes, SpCoreCryptoKeyTypeId]> | undefined>
     >;
+
+    /**
+     * Generic runtime api call
+     **/
+    [method: string]: GenericRuntimeApiMethod<Rv>;
+  };
+  /**
+   * @runtimeapi: AssetRewards - 0x65f855d6e093c2f1
+   **/
+  assetRewards: {
+    /**
+     * Get the cost of creating a pool.
+     *
+     * This is especially useful when the cost is dynamic.
+     *
+     * @callname: AssetRewards_pool_creation_cost
+     **/
+    poolCreationCost: GenericRuntimeApiMethod<Rv, () => Promise<bigint>>;
 
     /**
      * Generic runtime api call
