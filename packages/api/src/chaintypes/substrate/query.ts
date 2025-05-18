@@ -35,6 +35,8 @@ import type {
   PalletAllianceCid,
   PalletAllianceMemberRole,
   PalletAssetConversionPoolInfo,
+  PalletAssetRewardsPoolInfo,
+  PalletAssetRewardsPoolStakerInfo,
   PalletAssetsApproval,
   PalletAssetsAssetAccount,
   PalletAssetsAssetDetails,
@@ -68,6 +70,8 @@ import type {
   PalletCoreFellowshipMemberStatus,
   PalletCoreFellowshipParamsType,
   PalletCoreFellowshipWish,
+  PalletDelegatedStakingAgentLedger,
+  PalletDelegatedStakingDelegation,
   PalletDemocracyMetadataOwner,
   PalletDemocracyReferendumInfo,
   PalletDemocracyVoteThreshold,
@@ -176,7 +180,9 @@ import type {
   SpStakingExposure,
   SpStakingExposurePage,
   SpStakingOffenceOffenceDetails,
+  SpStakingOffenceOffenceSeverity,
   SpStakingPagedExposureMetadata,
+  SpWeightsWeightV2Weight,
 } from './types.js';
 
 export interface ChainStorage<Rv extends RpcVersion> extends GenericChainStorage<Rv> {
@@ -329,6 +335,19 @@ export interface ChainStorage<Rv extends RpcVersion> extends GenericChainStorage
      * @param {Callback<FrameSystemCodeUpgradeAuthorization | undefined> =} callback
      **/
     authorizedUpgrade: GenericStorageQuery<Rv, () => FrameSystemCodeUpgradeAuthorization | undefined>;
+
+    /**
+     * The weight reclaimed for the extrinsic.
+     *
+     * This information is available until the end of the extrinsic execution.
+     * More precisely this information is removed in `note_applied_extrinsic`.
+     *
+     * Logic doing some post dispatch weight reduction must update this storage to avoid duplicate
+     * reduction.
+     *
+     * @param {Callback<SpWeightsWeightV2Weight> =} callback
+     **/
+    extrinsicWeightReclaimed: GenericStorageQuery<Rv, () => SpWeightsWeightV2Weight>;
 
     /**
      * Generic pallet storage query
@@ -1257,19 +1276,6 @@ export interface ChainStorage<Rv extends RpcVersion> extends GenericChainStorage
     currentPlannedSession: GenericStorageQuery<Rv, () => number>;
 
     /**
-     * Indices of validators that have offended in the active era. The offenders are disabled for a
-     * whole era. For this reason they are kept here - only staking pallet knows about eras. The
-     * implementor of [`DisablingStrategy`] defines if a validator should be disabled which
-     * implicitly means that the implementor also controls the max number of disabled validators.
-     *
-     * The vec is always kept sorted so that we can find whether a given validator has previously
-     * offended using binary search.
-     *
-     * @param {Callback<Array<number>> =} callback
-     **/
-    disabledValidators: GenericStorageQuery<Rv, () => Array<number>>;
-
-    /**
      * The threshold for when users can start calling `chill_other` for other validators /
      * nominators. The threshold is compared to the actual number of validators / nominators
      * (`CountFor*`) in the system compared to the configured max (`Max*Count`).
@@ -1324,9 +1330,9 @@ export interface ChainStorage<Rv extends RpcVersion> extends GenericChainStorage
      * disabled using binary search. It gets cleared when `on_session_ending` returns
      * a new set of identities.
      *
-     * @param {Callback<Array<number>> =} callback
+     * @param {Callback<Array<[number, SpStakingOffenceOffenceSeverity]>> =} callback
      **/
-    disabledValidators: GenericStorageQuery<Rv, () => Array<number>>;
+    disabledValidators: GenericStorageQuery<Rv, () => Array<[number, SpStakingOffenceOffenceSeverity]>>;
 
     /**
      * The next session keys for a validator.
@@ -2465,6 +2471,7 @@ export interface ChainStorage<Rv extends RpcVersion> extends GenericChainStorage
    **/
   scheduler: {
     /**
+     * Block number at which the agenda began incomplete execution.
      *
      * @param {Callback<number | undefined> =} callback
      **/
@@ -4777,14 +4784,151 @@ export interface ChainStorage<Rv extends RpcVersion> extends GenericChainStorage
     /**
      * Map a Ethereum address to its original `AccountId32`.
      *
-     * Stores the last 12 byte for addresses that were originally an `AccountId32` instead
-     * of an `H160`. Register your `AccountId32` using [`Pallet::map_account`] in order to
+     * When deriving a `H160` from an `AccountId32` we use a hash function. In order to
+     * reconstruct the original account we need to store the reverse mapping here.
+     * Register your `AccountId32` using [`Pallet::map_account`] in order to
      * use it with this pallet.
      *
      * @param {H160} arg
-     * @param {Callback<FixedBytes<12> | undefined> =} callback
+     * @param {Callback<AccountId32 | undefined> =} callback
      **/
-    addressSuffix: GenericStorageQuery<Rv, (arg: H160) => FixedBytes<12> | undefined, H160>;
+    originalAccount: GenericStorageQuery<Rv, (arg: H160) => AccountId32 | undefined, H160>;
+
+    /**
+     * Generic pallet storage query
+     **/
+    [storage: string]: GenericStorageQuery<Rv>;
+  };
+  /**
+   * Pallet `DelegatedStaking`'s storage queries
+   **/
+  delegatedStaking: {
+    /**
+     * Map of Delegators to their `Delegation`.
+     *
+     * Implementation note: We are not using a double map with `delegator` and `agent` account
+     * as keys since we want to restrict delegators to delegate only to one account at a time.
+     *
+     * @param {AccountId32Like} arg
+     * @param {Callback<PalletDelegatedStakingDelegation | undefined> =} callback
+     **/
+    delegators: GenericStorageQuery<
+      Rv,
+      (arg: AccountId32Like) => PalletDelegatedStakingDelegation | undefined,
+      AccountId32
+    >;
+
+    /**
+     * Counter for the related counted storage map
+     *
+     * @param {Callback<number> =} callback
+     **/
+    counterForDelegators: GenericStorageQuery<Rv, () => number>;
+
+    /**
+     * Map of `Agent` to their `Ledger`.
+     *
+     * @param {AccountId32Like} arg
+     * @param {Callback<PalletDelegatedStakingAgentLedger | undefined> =} callback
+     **/
+    agents: GenericStorageQuery<
+      Rv,
+      (arg: AccountId32Like) => PalletDelegatedStakingAgentLedger | undefined,
+      AccountId32
+    >;
+
+    /**
+     * Counter for the related counted storage map
+     *
+     * @param {Callback<number> =} callback
+     **/
+    counterForAgents: GenericStorageQuery<Rv, () => number>;
+
+    /**
+     * Generic pallet storage query
+     **/
+    [storage: string]: GenericStorageQuery<Rv>;
+  };
+  /**
+   * Pallet `AssetRewards`'s storage queries
+   **/
+  assetRewards: {
+    /**
+     * State of pool stakers.
+     *
+     * @param {[number, AccountId32Like]} arg
+     * @param {Callback<PalletAssetRewardsPoolStakerInfo | undefined> =} callback
+     **/
+    poolStakers: GenericStorageQuery<
+      Rv,
+      (arg: [number, AccountId32Like]) => PalletAssetRewardsPoolStakerInfo | undefined,
+      [number, AccountId32]
+    >;
+
+    /**
+     * State and configuration of each staking pool.
+     *
+     * @param {number} arg
+     * @param {Callback<PalletAssetRewardsPoolInfo | undefined> =} callback
+     **/
+    pools: GenericStorageQuery<Rv, (arg: number) => PalletAssetRewardsPoolInfo | undefined, number>;
+
+    /**
+     * The cost associated with storing pool information on-chain which was incurred by the pool
+     * creator.
+     *
+     * This cost may be [`None`], as determined by [`Config::Consideration`].
+     *
+     * @param {number} arg
+     * @param {Callback<[AccountId32, FrameSupportTokensFungibleHoldConsideration] | undefined> =} callback
+     **/
+    poolCost: GenericStorageQuery<
+      Rv,
+      (arg: number) => [AccountId32, FrameSupportTokensFungibleHoldConsideration] | undefined,
+      number
+    >;
+
+    /**
+     * Stores the [`PoolId`] to use for the next pool.
+     *
+     * Incremented when a new pool is created.
+     *
+     * @param {Callback<number> =} callback
+     **/
+    nextPoolId: GenericStorageQuery<Rv, () => number>;
+
+    /**
+     * Generic pallet storage query
+     **/
+    [storage: string]: GenericStorageQuery<Rv>;
+  };
+  /**
+   * Pallet `AssetsFreezer`'s storage queries
+   **/
+  assetsFreezer: {
+    /**
+     * A map that stores freezes applied on an account for a given AssetId.
+     *
+     * @param {[number, AccountId32Like]} arg
+     * @param {Callback<Array<FrameSupportTokensMiscIdAmountRuntimeFreezeReason>> =} callback
+     **/
+    freezes: GenericStorageQuery<
+      Rv,
+      (arg: [number, AccountId32Like]) => Array<FrameSupportTokensMiscIdAmountRuntimeFreezeReason>,
+      [number, AccountId32]
+    >;
+
+    /**
+     * A map that stores the current total frozen balance for every account on a given AssetId.
+     *
+     * @param {[number, AccountId32Like]} arg
+     * @param {Callback<bigint | undefined> =} callback
+     **/
+    frozenBalances: GenericStorageQuery<
+      Rv,
+      (arg: [number, AccountId32Like]) => bigint | undefined,
+      [number, AccountId32]
+    >;
 
     /**
      * Generic pallet storage query
