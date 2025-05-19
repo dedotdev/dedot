@@ -90,8 +90,16 @@ export class Contract<ContractApi extends GenericContractApi = GenericContractAp
       unpacked: async (): Promise<GenericUnpackedStorage> => {
         const { ty, root_key } = this.metadata.storage.root;
 
-        const typeDef = this.metadata.types.find(({ id }) => id === ty);
+        const typeDef = this.registry.findType(ty)!;
+        console.dir(typeDef, { depth: null });
+        // const typeDef = this.metadata.types.find(({ id }) => id === ty);
         assert(typeDef, 'Root TypeDef Not Found');
+
+        // 1. clone this typeDef
+        // 2. recursively look through the structure of this root typeDef
+        //    - only keep type with path start with ['ink_storage', 'lazy']
+        //    - remove all other types
+        // 3. create a codec with the new typeDef after removal
 
         // Create a new type without primitive types, only lazy types
         // typeDef.type.
