@@ -17,7 +17,7 @@ export * from './types.js';
     events: ContractEvents<ChainApi[Rv]>;
     storage: {
       root(): Promise<{{{rootStorageName}}}>
-      unpacked(): Promise<DeepOnlyGetters<{{{rootStorageName}}}>>
+      unpacked(): DeepOnlyGetters<{{{rootStorageName}}}>
     };
 
     types: {

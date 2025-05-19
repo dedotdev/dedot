@@ -169,7 +169,7 @@ export interface GenericContractApi<
   events: GenericContractEvents<ChainApi[Rv]>;
   storage: {
     root(): Promise<GenericRootStorage>;
-    unpacked(): Promise<GenericUnpackedStorage>;
+    unpacked(): GenericUnpackedStorage;
   };
 
   types: {

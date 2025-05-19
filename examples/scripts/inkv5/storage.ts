@@ -75,7 +75,7 @@ const contract = new Contract<Psp22ContractApi>(
 );
 
 const root: Psp22Token = await contract.storage.root();
-const unpacked = await contract.storage.unpacked();
+const unpacked = contract.storage.unpacked();
 
 console.log(root);
 console.log(unpacked);

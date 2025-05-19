@@ -81,7 +81,7 @@ export class Contract<ContractApi extends GenericContractApi = GenericContractAp
 
         return this.registry.findCodec(ty).tryDecode(rawValue);
       },
-      unpacked: async (): Promise<ContractApi['types']['UnpackedStorage']> => {
+      unpacked: (): ContractApi['types']['UnpackedStorage'] => {
         const { ty } = this.metadata.storage.root;
 
         const $unpackedCodec = this.registry.createUnpackedCodec(ty);

@@ -30,7 +30,7 @@ export interface Psp22ContractApi<
   events: ContractEvents<ChainApi[Rv]>;
   storage: {
     root(): Promise<Psp22Token>;
-    unpacked(): Promise<DeepOnlyGetters<Psp22Token>>;
+    unpacked(): DeepOnlyGetters<Psp22Token>;
   };
 
   types: {
