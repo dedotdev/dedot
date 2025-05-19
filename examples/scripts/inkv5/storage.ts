@@ -78,10 +78,10 @@ const contract = new Contract<Psp22ContractApi>(
 const root: Psp22Token = await contract.storage.root();
 const unpacked = await contract.storage.unpacked();
 
-// const balance = unpacked.data.balances.get(ALICE);
-
-console.log(await root.data.balances.get(ALICE));
-console.log(await root.data.balances.get(BOB));
+console.log(root);
+console.log(unpacked);
+console.log(await unpacked.data.balances.get(ALICE));
+console.log(await unpacked.data.balances.get(BOB));
 
 // Disconnect the client
 await client.disconnect();

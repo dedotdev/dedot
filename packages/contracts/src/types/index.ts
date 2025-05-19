@@ -183,3 +183,21 @@ export interface GenericContractApi<
 export interface ExecutionOptions {
   defaultCaller?: AccountId32Like;
 }
+
+// Utility: Detect if a type has a `.get(...)` method
+type HasGetter<T> = T extends { get: (...args: any[]) => any } ? true : false;
+
+// Recursive type: Keep props if they (or children) have `.get(...)`, preserve original type
+export type DeepOnlyGetters<T> = {
+  [K in keyof T as HasGetter<T[K]> extends true
+    ? K
+    : T[K] extends object
+      ? keyof DeepOnlyGetters<T[K]> extends never
+        ? never
+        : K
+      : never]: T[K] extends object
+    ? HasGetter<T[K]> extends true
+      ? T[K] // preserve full type if it has `.get(...)`
+      : DeepOnlyGetters<T[K]> // recurse
+    : never;
+};

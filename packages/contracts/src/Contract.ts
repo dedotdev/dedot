@@ -1,16 +1,10 @@
 import { ISubstrateClient } from '@dedot/api';
 import { AccountId32, AccountId32Like, Bytes } from '@dedot/codecs';
 import { IEventRecord } from '@dedot/types';
-import { assert, HexString, toU8a } from '@dedot/utils';
+import { HexString, toU8a } from '@dedot/utils';
 import { TypinkRegistry } from './TypinkRegistry.js';
 import { EventExecutor, QueryExecutor, TxExecutor } from './executor/index.js';
-import {
-  ContractEvent,
-  ContractMetadata,
-  GenericContractApi,
-  ExecutionOptions,
-  GenericUnpackedStorage,
-} from './types/index.js';
+import { ContractEvent, ContractMetadata, ExecutionOptions, GenericContractApi } from './types/index.js';
 import { ensureSupportContractsPallet, newProxyChain, parseRawMetadata } from './utils.js';
 
 export class Contract<ContractApi extends GenericContractApi = GenericContractApi> {
@@ -87,21 +81,12 @@ export class Contract<ContractApi extends GenericContractApi = GenericContractAp
 
         return this.registry.findCodec(ty).tryDecode(rawValue);
       },
-      unpacked: async (): Promise<GenericUnpackedStorage> => {
-        const { ty, root_key } = this.metadata.storage.root;
+      unpacked: async (): Promise<ContractApi['types']['UnpackedStorage']> => {
+        const { ty } = this.metadata.storage.root;
 
-        const typeDef = this.registry.findType(ty)!;
-        console.dir(typeDef, { depth: null });
-        // const typeDef = this.metadata.types.find(({ id }) => id === ty);
-        assert(typeDef, 'Root TypeDef Not Found');
+        const $unpackedCodec = this.registry.createUnpackedCodec(ty);
 
-        // create a codec out of this typeDef 
-        // recursively look through the structure of this typeDef, the codec should:
-        //    - only keep type with path start with ['ink_storage', 'lazy']
-        //    - remove all other types, codecs
-
-
-        throw new Error('To implement!');
+        return $unpackedCodec ? $unpackedCodec.tryDecode('0x') : {};
       },
     };
   }
@@ -109,8 +94,6 @@ export class Contract<ContractApi extends GenericContractApi = GenericContractAp
   #getStorage = async (key: Uint8Array | HexString): Promise<Bytes | undefined> => {
     const rawKey = toU8a(key);
     const result = await this.client.call.contractsApi.getStorage(this.address.address(), rawKey);
-
-    // console.log('[getStorage]', result);
 
     if (result.isOk) {
       return result.value;
