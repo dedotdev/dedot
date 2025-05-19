@@ -95,14 +95,11 @@ export class Contract<ContractApi extends GenericContractApi = GenericContractAp
         // const typeDef = this.metadata.types.find(({ id }) => id === ty);
         assert(typeDef, 'Root TypeDef Not Found');
 
-        // 1. clone this typeDef
-        // 2. recursively look through the structure of this root typeDef
+        // create a codec out of this typeDef 
+        // recursively look through the structure of this typeDef, the codec should:
         //    - only keep type with path start with ['ink_storage', 'lazy']
-        //    - remove all other types
-        // 3. create a codec with the new typeDef after removal
+        //    - remove all other types, codecs
 
-        // Create a new type without primitive types, only lazy types
-        // typeDef.type.
 
         throw new Error('To implement!');
       },
