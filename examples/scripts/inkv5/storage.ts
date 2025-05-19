@@ -7,7 +7,6 @@ import { MerkleizedMetadata } from 'dedot/merkleized-metadata';
 import { concatU8a, toU8a, u8aToHex } from 'dedot/utils';
 import { Flipper, FlipperContractApi } from './flipper/index.js';
 import flipper from './flipper_v5.json';
-import greeter from './greeter.json';
 import psp22 from './psp22.json';
 import { Psp22ContractApi, Psp22Token } from './psp22/index.js';
 

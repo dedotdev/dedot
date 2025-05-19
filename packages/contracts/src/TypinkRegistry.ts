@@ -125,7 +125,7 @@ export class TypinkRegistry extends TypeRegistry {
       const { fields } = def.value;
 
       if (fields.length === 0) {
-        return $.Struct({});
+        return null;
       }
 
       // Create a new struct with only lazy fields
