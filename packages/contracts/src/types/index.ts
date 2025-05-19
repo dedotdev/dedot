@@ -155,6 +155,8 @@ export interface GenericContractEvents<_ extends GenericSubstrateApi> {
 }
 
 export type GenericInkLangError = 'CouldNotReadInput' | any;
+export type GenericRootStorage = any;
+export type GenericUnpackedStorage = any;
 
 export interface GenericContractApi<
   Rv extends RpcVersion = RpcVersion,
@@ -165,14 +167,19 @@ export interface GenericContractApi<
   constructorQuery: GenericConstructorQuery<ChainApi[Rv]>;
   constructorTx: GenericConstructorTx<ChainApi[Rv]>;
   events: GenericContractEvents<ChainApi[Rv]>;
+  storage: {
+    root(): Promise<GenericRootStorage>;
+    unpacked(): Promise<GenericUnpackedStorage>;
+  };
 
   types: {
+    RootStorage: GenericRootStorage;
+    UnpackedStorage: GenericUnpackedStorage;
     LangError: GenericInkLangError;
     ChainApi: ChainApi[Rv];
   };
 }
 
 export interface ExecutionOptions {
-  defaultCaller?: AccountId32Like;  
+  defaultCaller?: AccountId32Like;
 }
-

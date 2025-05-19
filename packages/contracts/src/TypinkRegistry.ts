@@ -1,8 +1,8 @@
-import { AccountId32, AccountId32Like, Bytes, TypeRegistry } from '@dedot/codecs';
+import { AccountId32, AccountId32Like, Bytes, TypeId, TypeRegistry } from '@dedot/codecs';
 import * as $ from '@dedot/shape';
 import { IEventRecord, IRuntimeEvent } from '@dedot/types';
-import { DedotError, assert, hexToU8a, stringCamelCase, stringPascalCase } from '@dedot/utils';
-import { ContractEvent, ContractEventMeta, ContractMetadata } from './types/index.js';
+import { assert, concatU8a, DedotError, hexToU8a, stringCamelCase, stringPascalCase, toU8a } from '@dedot/utils';
+import { AnyLayout, ContractEvent, ContractEventMeta, ContractMetadata, ContractType } from './types/index.js';
 import { extractContractTypes } from './utils.js';
 
 interface ContractEmittedEvent extends IRuntimeEvent {
@@ -16,10 +16,54 @@ interface ContractEmittedEvent extends IRuntimeEvent {
   };
 }
 
+// TODO fix duplications
+const KNOWN_LAZY_TYPES = {
+  MAPPING: ['ink_storage', 'lazy', 'mapping', 'Mapping'].join('::'),
+  LAZY: ['ink_storage', 'lazy', 'Lazy'].join('::'),
+  STORAGE_VEC: ['ink_storage', 'lazy', 'vec', 'StorageVec'].join('::'),
+};
+
+const findRootKey = (layout: AnyLayout, targetId: number): string | undefined => {
+  if (layout.root) {
+    if (layout.root.ty === targetId) {
+      return layout.root.root_key;
+    } else {
+      const potentialKey = findRootKey(layout.root.layout, targetId);
+      if (potentialKey) return potentialKey;
+    }
+  } else if (layout.array) {
+    const potentialKey = findRootKey(layout.array.layout, targetId);
+    if (potentialKey) return potentialKey;
+  } else if (layout.enum) {
+    for (const one of Object.values(layout.enum.variants)) {
+      for (const structField of one.fields) {
+        const potentialKey = findRootKey(structField.layout, targetId);
+        if (potentialKey) return potentialKey;
+      }
+    }
+  } else if (layout.leaf) {
+    if (layout.leaf.ty === targetId) {
+      return layout.leaf.key;
+    } else {
+      return undefined;
+    }
+  } else if (layout.struct) {
+    for (const structField of layout.struct.fields) {
+      const potentialKey = findRootKey(structField.layout, targetId);
+      if (potentialKey) return potentialKey;
+    }
+  }
+
+  throw new Error(`Layout Not Supported: ${JSON.stringify(layout)}`);
+};
+
 export class TypinkRegistry extends TypeRegistry {
   readonly #metadata: ContractMetadata;
 
-  constructor(metadata: ContractMetadata) {
+  constructor(
+    metadata: ContractMetadata,
+    public getStorage?: (key: Uint8Array) => Promise<Bytes | undefined>,
+  ) {
     super(extractContractTypes(metadata));
 
     this.#metadata = metadata;
@@ -27,6 +71,92 @@ export class TypinkRegistry extends TypeRegistry {
 
   get metadata(): ContractMetadata {
     return this.#metadata;
+  }
+
+  findCodec<I = unknown, O = I>(typeId: TypeId): $.Shape<I, O> {
+    const types = this.metadata.types;
+    const typeDef = types.find(({ id }) => id == typeId)!;
+
+    const $codec = super.findCodec<I, O>(typeId);
+
+    // const typeDef = this.findType(typeId);
+    const typePath = typeDef.type.path?.join('::');
+    if (typePath === KNOWN_LAZY_TYPES.MAPPING) {
+      return this.#createLazyMappingCodec($codec, typeDef);
+    } else if (typePath === KNOWN_LAZY_TYPES.LAZY) {
+      return this.#createLazyCodec($codec, typeDef);
+    }
+
+    return $codec;
+  }
+
+  #createLazyMappingCodec<I = unknown, O = I>($codec: $.AnyShape, typeDef: ContractType): $.Shape<I, O> {
+    const registry = this;
+
+    class LazyMapping {
+      constructor() {}
+
+      async get(key: any) {
+        const {
+          id,
+          type: { params },
+        } = typeDef;
+
+        const [keyType, valueType] = params!;
+        const $Key = registry.findCodec(keyType.type);
+        const $Value = registry.findCodec(valueType.type);
+
+        const rootLayout = registry.metadata.storage;
+        const rootKey = findRootKey(rootLayout as AnyLayout, id);
+        assert(rootKey, 'Storage Root Key Not Found');
+
+        const encodedKey = $Key.tryEncode(key);
+        const storageKey = concatU8a(toU8a(rootKey), encodedKey);
+        const rawValue = await registry.getStorage?.(storageKey);
+
+        if (rawValue) {
+          return $Value.tryDecode(rawValue);
+        }
+
+        return undefined;
+      }
+    }
+
+    // @ts-ignore
+    return $.instance(LazyMapping, $.Tuple($codec), () => ({}));
+  }
+
+  #createLazyCodec<I = unknown, O = I>($codec: $.AnyShape, typeDef: ContractType): $.Shape<I, O> {
+    const registry = this;
+
+    class LazyObject {
+      constructor() {}
+
+      async get() {
+        const {
+          id,
+          type: { params },
+        } = typeDef;
+
+        const [valueType] = params!;
+        const $Value = registry.findCodec(valueType.type);
+
+        const rootLayout = registry.metadata.storage;
+        const rootKey = findRootKey(rootLayout as AnyLayout, id);
+        assert(rootKey, 'Root Key Not Found');
+
+        const rawValue = await registry.getStorage?.(toU8a(rootKey));
+
+        if (rawValue) {
+          return $Value.tryDecode(rawValue);
+        }
+
+        return undefined;
+      }
+    }
+
+    // @ts-ignore
+    return $.instance(LazyObject, $.Tuple($codec), () => ({}));
   }
 
   decodeEvents(records: IEventRecord[], contract?: AccountId32Like): ContractEvent[] {

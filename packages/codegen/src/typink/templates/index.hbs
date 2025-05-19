@@ -15,8 +15,14 @@ export * from './types.js';
     constructorQuery: ConstructorQuery<ChainApi[Rv]>;
     constructorTx: ConstructorTx<ChainApi[Rv]>;
     events: ContractEvents<ChainApi[Rv]>;
+    storage: {
+      root(): Promise<{{{rootStorageName}}}>
+      unpacked(): Promise<{{{unpackedStorageName}}}>
+    };
 
     types: {
+      RootStorage: {{{rootStorageName}}};
+      UnpackedStorage: {{{unpackedStorageName}}};
       LangError: {{{langErrorName}}};
       ChainApi: ChainApi[Rv];
     };

@@ -15,11 +15,14 @@ export class IndexGen {
     const langErrorId = this.contractMetadata.spec.lang_error.type;
     const langErrorName = this.typesGen.cleanPath(this.contractMetadata.types[langErrorId].type.path!);
 
+    const rootStorageId = this.contractMetadata.storage.root.ty;
+    const rootStorageName = this.typesGen.cleanPath(this.contractMetadata.types[rootStorageId].type.path!);
+
     const typeImports = new TypeImports();
     typeImports.addKnownType('VersionedGenericSubstrateApi', 'RpcVersion', 'RpcV2');
     typeImports.addContractType('GenericContractApi');
     typeImports.addChainType('SubstrateApi');
-    typeImports.addPortableType(langErrorName);
+    typeImports.addPortableType(langErrorName, rootStorageName);
 
     const {
       contract: { name = '', version = '', authors = [] },
@@ -37,6 +40,14 @@ export class IndexGen {
 
     const template = compileTemplate('typink/templates/index.hbs');
 
-    return beautifySourceCode(template({ interfaceName, interfaceDocs, langErrorName, importTypes }));
+    return beautifySourceCode(
+      template({
+        interfaceName,
+        interfaceDocs,
+        langErrorName,
+        importTypes,
+        rootStorageName,
+      }),
+    );
   }
 }

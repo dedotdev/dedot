@@ -4,6 +4,11 @@ import { BaseTypesGen } from '../../shared/index.js';
 import { beautifySourceCode, compileTemplate } from '../../utils.js';
 
 const SKIP_TYPES = ['Result', 'Option'];
+const KNOWN_LAZY_TYPES = {
+  MAPPING: ['ink_storage', 'lazy', 'mapping', 'Mapping'].join('::'),
+  LAZY: ['ink_storage', 'lazy', 'Lazy'].join('::'),
+  STORAGE_VEC: ['ink_storage', 'lazy', 'vec', 'StorageVec'].join('::'),
+};
 
 export class TypesGen extends BaseTypesGen {
   constructor(public contractMetadata: ContractMetadata) {
@@ -28,6 +33,31 @@ export class TypesGen extends BaseTypesGen {
     const template = compileTemplate('typink/templates/types.hbs');
 
     return beautifySourceCode(template({ importTypes, defTypeOut }));
+  }
+
+  generateType(typeId: TypeId, nestedLevel = 0, typeOut = false): string {
+    const types = this.contractMetadata.types;
+    const typeDef = types.find(({ id }) => id == typeId)!;
+
+    const generatedType = super.generateType(typeId, nestedLevel, typeOut);
+
+    const typePath = typeDef.type.path?.join('::');
+
+    if (nestedLevel > 0) {
+      if (typePath === KNOWN_LAZY_TYPES.MAPPING) {
+        const KeyType = super.generateType(typeDef.type.params![0].type, 1);
+        const ValueType = super.generateType(typeDef.type.params![1].type, 1, true);
+        return `{ get(arg: ${KeyType}): Promise<${ValueType}> }`;
+      } else if (typePath === KNOWN_LAZY_TYPES.LAZY) {
+        const ValueType = super.generateType(typeDef.type.params![0].type, 1, true);
+
+        return `{ get(): Promise<${ValueType}> }`;
+      } else if (typePath === KNOWN_LAZY_TYPES.STORAGE_VEC) {
+        // ignore for now!
+      }
+    }
+
+    return generatedType;
   }
 
   override shouldGenerateTypeIn(id: TypeId): boolean {
