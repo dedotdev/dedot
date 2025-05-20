@@ -24,7 +24,7 @@ export interface ContractEnvironmentV5 extends ContractEnvironmentV4 {
   staticBufferSize: number;
 }
 
-interface StructLayoutV5 {
+export interface StructLayoutV5 {
   name: string;
   fields: {
     name: string;
@@ -32,28 +32,28 @@ interface StructLayoutV5 {
   }[];
 }
 
-interface LeafLayoutV5 {
+export interface LeafLayoutV5 {
   key: string;
   ty: number;
 }
 
-interface HashLayoutV5 {
+export interface HashLayoutV5 {
   // TODO support hash layout
 }
 
-interface ArrayLayoutV5 {
+export interface ArrayLayoutV5 {
   offset: string;
   len: number;
   layout: AnyLayoutV5;
 }
 
-interface EnumLayoutV5 {
+export interface EnumLayoutV5 {
   name: string;
   dispatch_key: string;
   variants: Record<number, StructLayoutV5>;
 }
 
-interface RootLayoutV5 {
+export interface RootLayoutV5 {
   root_key: string;
   layout: AnyLayoutV5;
   ty: number;

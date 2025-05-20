@@ -42,7 +42,7 @@ export interface ContractEnvironmentV4 {
   timestamp: ContractTypeInfo;
 }
 
-interface StructLayoutV4 {
+export interface StructLayoutV4 {
   name: string;
   fields: {
     name: string;
@@ -50,28 +50,28 @@ interface StructLayoutV4 {
   }[];
 }
 
-interface LeafLayoutV4 {
+export interface LeafLayoutV4 {
   key: string;
   ty: number;
 }
 
-interface HashLayoutV4 {
+export interface HashLayoutV4 {
   // TODO support hash layout
 }
 
-interface ArrayLayoutV4 {
+export interface ArrayLayoutV4 {
   offset: string;
   len: number;
   layout: AnyLayoutV4;
 }
 
-interface EnumLayoutV4 {
+export interface EnumLayoutV4 {
   name: string;
   dispatch_key: string;
   variants: Record<number, StructLayoutV4>;
 }
 
-interface RootLayoutV4 {
+export interface RootLayoutV4 {
   root_key: string;
   layout: AnyLayoutV4;
 }

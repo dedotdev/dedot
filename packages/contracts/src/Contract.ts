@@ -12,6 +12,7 @@ import {
   LooseContractMetadata,
 } from './types/index.js';
 import { checkStorageApiSupports, ensureSupportContractsPallet, newProxyChain, parseRawMetadata } from './utils.js';
+import { RootLayoutV5 } from './types/v5.js';
 
 export class Contract<ContractApi extends GenericContractApi = GenericContractApi> {
   readonly #registry: TypinkRegistry;
@@ -83,7 +84,7 @@ export class Contract<ContractApi extends GenericContractApi = GenericContractAp
       root: async (): Promise<ContractApi['types']['RootStorage']> => {
         checkStorageApiSupports(this.metadata.version);
 
-        const { ty, root_key } = this.metadata.storage.root;
+        const { ty, root_key } = this.metadata.storage.root as RootLayoutV5;
 
         const rawValue = await this.#getStorage(root_key as HexString);
 
@@ -92,7 +93,7 @@ export class Contract<ContractApi extends GenericContractApi = GenericContractAp
       unpacked: (): ContractApi['types']['UnpackedStorage'] => {
         checkStorageApiSupports(this.metadata.version);
 
-        const { ty } = this.metadata.storage.root;
+        const { ty } = this.metadata.storage.root as RootLayoutV5;
 
         const $unpackedCodec = this.registry.createUnpackedCodec(ty);
 

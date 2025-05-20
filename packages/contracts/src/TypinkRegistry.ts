@@ -2,8 +2,9 @@ import { AccountId32, AccountId32Like, Bytes, TypeId, TypeRegistry } from '@dedo
 import * as $ from '@dedot/shape';
 import { IEventRecord, IRuntimeEvent } from '@dedot/types';
 import { assert, concatU8a, DedotError, hexToU8a, stringCamelCase, stringPascalCase, toU8a } from '@dedot/utils';
-import { AnyLayout, ContractEvent, ContractEventMeta, ContractMetadata, ContractType } from './types/index.js';
+import { ContractEvent, ContractEventMeta, ContractMetadata, ContractType } from './types/index.js';
 import { extractContractTypes } from './utils.js';
+import { AnyLayoutV5 } from './types/v5.js';
 
 interface ContractEmittedEvent extends IRuntimeEvent {
   pallet: 'Contracts';
@@ -23,7 +24,7 @@ const KNOWN_LAZY_TYPES = {
   STORAGE_VEC: ['ink_storage', 'lazy', 'vec', 'StorageVec'].join('::'),
 };
 
-const findRootKey = (layout: AnyLayout, targetId: number): string | undefined => {
+const findRootKey = (layout: AnyLayoutV5, targetId: number): string | undefined => {
   if (layout.root) {
     if (layout.root.ty === targetId) {
       return layout.root.root_key;
@@ -282,7 +283,7 @@ export class TypinkRegistry extends TypeRegistry {
         const $Value = registry.findCodec(valueType.type);
 
         const rootLayout = registry.metadata.storage;
-        const rootKey = findRootKey(rootLayout as AnyLayout, id);
+        const rootKey = findRootKey(rootLayout as AnyLayoutV5, id);
         assert(rootKey, 'Storage Root Key Not Found');
 
         const encodedKey = $Key.tryEncode(key);
@@ -317,7 +318,7 @@ export class TypinkRegistry extends TypeRegistry {
         const $Value = registry.findCodec(valueType.type);
 
         const rootLayout = registry.metadata.storage;
-        const rootKey = findRootKey(rootLayout as AnyLayout, id);
+        const rootKey = findRootKey(rootLayout as AnyLayoutV5, id);
         assert(rootKey, 'Root Key Not Found');
 
         const rawValue = await registry.getStorage?.(toU8a(rootKey));
