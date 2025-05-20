@@ -30,12 +30,12 @@
   "parachains": [
     {
       "id": 2000,
-      "chain": "contracts-rococo-dev",
+      "chain": "ink-parachain-local",
       "collator_groups": [
         {
           "count": 3,
           "name": "collator",
-          "command": "polkadot-parachain"
+          "command": "ink-node"
         }
       ]
     }
