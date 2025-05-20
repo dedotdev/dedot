@@ -10,8 +10,8 @@ import {
   ExecutionOptions,
   GenericContractApi,
   LooseContractMetadata,
+  RootLayoutV5,
 } from './types/index.js';
-import { RootLayoutV5 } from './types/v5.js';
 import { checkStorageApiSupports, ensureSupportContractsPallet, newProxyChain, parseRawMetadata } from './utils.js';
 
 export class Contract<ContractApi extends GenericContractApi = GenericContractApi> {
