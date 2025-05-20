@@ -16,9 +16,7 @@
   "contract": {
     "name": "motherspace",
     "version": "0.1.0",
-    "authors": [
-      "Thang X. Vu <thang@coongcrafts.io>"
-    ]
+    "authors": ["Thang X. Vu <thang@coongcrafts.io>"]
   },
   "image": null,
   "spec": {
@@ -28,33 +26,24 @@
           {
             "label": "space_code",
             "type": {
-              "displayName": [
-                "Hash"
-              ],
+              "displayName": ["Hash"],
               "type": 0
             }
           },
           {
             "label": "owner_id",
             "type": {
-              "displayName": [
-                "AccountId"
-              ],
+              "displayName": ["AccountId"],
               "type": 5
             }
           }
         ],
         "default": false,
-        "docs": [
-          "Constructor that initializes the `bool` value to the given `init_value`."
-        ],
+        "docs": ["Constructor that initializes the `bool` value to the given `init_value`."],
         "label": "new",
         "payable": false,
         "returnType": {
-          "displayName": [
-            "ink_primitives",
-            "ConstructorResult"
-          ],
+          "displayName": ["ink_primitives", "ConstructorResult"],
           "type": 6
         },
         "selector": "0x9bae9d5e"
@@ -63,49 +52,34 @@
     "docs": [],
     "environment": {
       "accountId": {
-        "displayName": [
-          "AccountId"
-        ],
+        "displayName": ["AccountId"],
         "type": 5
       },
       "balance": {
-        "displayName": [
-          "Balance"
-        ],
+        "displayName": ["Balance"],
         "type": 22
       },
       "blockNumber": {
-        "displayName": [
-          "BlockNumber"
-        ],
+        "displayName": ["BlockNumber"],
         "type": 3
       },
       "chainExtension": {
-        "displayName": [
-          "ChainExtension"
-        ],
+        "displayName": ["ChainExtension"],
         "type": 47
       },
       "hash": {
-        "displayName": [
-          "Hash"
-        ],
+        "displayName": ["Hash"],
         "type": 0
       },
       "maxEventTopics": 4,
       "timestamp": {
-        "displayName": [
-          "Timestamp"
-        ],
+        "displayName": ["Timestamp"],
         "type": 46
       }
     },
     "events": [],
     "lang_error": {
-      "displayName": [
-        "ink",
-        "LangError"
-      ],
+      "displayName": ["ink", "LangError"],
       "type": 8
     },
     "messages": [
@@ -114,9 +88,7 @@
           {
             "label": "new_space_code",
             "type": {
-              "displayName": [
-                "CodeHash"
-              ],
+              "displayName": ["CodeHash"],
               "type": 0
             }
           }
@@ -127,10 +99,7 @@
         "mutates": true,
         "payable": false,
         "returnType": {
-          "displayName": [
-            "ink",
-            "MessageResult"
-          ],
+          "displayName": ["ink", "MessageResult"],
           "type": 9
         },
         "selector": "0x5d56dce0"
@@ -143,10 +112,7 @@
         "mutates": false,
         "payable": false,
         "returnType": {
-          "displayName": [
-            "ink",
-            "MessageResult"
-          ],
+          "displayName": ["ink", "MessageResult"],
           "type": 13
         },
         "selector": "0xb8e3c2b5"
@@ -156,36 +122,28 @@
           {
             "label": "info",
             "type": {
-              "displayName": [
-                "SpaceInfo"
-              ],
+              "displayName": ["SpaceInfo"],
               "type": 14
             }
           },
           {
             "label": "config",
             "type": {
-              "displayName": [
-                "Option"
-              ],
+              "displayName": ["Option"],
               "type": 18
             }
           },
           {
             "label": "owner",
             "type": {
-              "displayName": [
-                "Option"
-              ],
+              "displayName": ["Option"],
               "type": 23
             }
           },
           {
             "label": "plugins",
             "type": {
-              "displayName": [
-                "Option"
-              ],
+              "displayName": ["Option"],
               "type": 24
             }
           }
@@ -196,10 +154,7 @@
         "mutates": true,
         "payable": false,
         "returnType": {
-          "displayName": [
-            "ink",
-            "MessageResult"
-          ],
+          "displayName": ["ink", "MessageResult"],
           "type": 27
         },
         "selector": "0x02cb5e5e"
@@ -209,18 +164,14 @@
           {
             "label": "from",
             "type": {
-              "displayName": [
-                "u32"
-              ],
+              "displayName": ["u32"],
               "type": 3
             }
           },
           {
             "label": "per_page",
             "type": {
-              "displayName": [
-                "u32"
-              ],
+              "displayName": ["u32"],
               "type": 3
             }
           }
@@ -231,10 +182,7 @@
         "mutates": false,
         "payable": false,
         "returnType": {
-          "displayName": [
-            "ink",
-            "MessageResult"
-          ],
+          "displayName": ["ink", "MessageResult"],
           "type": 32
         },
         "selector": "0x5f88ade4"
@@ -244,9 +192,7 @@
           {
             "label": "who",
             "type": {
-              "displayName": [
-                "Option"
-              ],
+              "displayName": ["Option"],
               "type": 23
             }
           }
@@ -257,10 +203,7 @@
         "mutates": false,
         "payable": false,
         "returnType": {
-          "displayName": [
-            "ink",
-            "MessageResult"
-          ],
+          "displayName": ["ink", "MessageResult"],
           "type": 35
         },
         "selector": "0x062bd130"
@@ -270,9 +213,7 @@
           {
             "label": "who",
             "type": {
-              "displayName": [
-                "AccountId"
-              ],
+              "displayName": ["AccountId"],
               "type": 5
             }
           }
@@ -283,10 +224,7 @@
         "mutates": true,
         "payable": false,
         "returnType": {
-          "displayName": [
-            "ink",
-            "MessageResult"
-          ],
+          "displayName": ["ink", "MessageResult"],
           "type": 9
         },
         "selector": "0x71a26402"
@@ -296,9 +234,7 @@
           {
             "label": "who",
             "type": {
-              "displayName": [
-                "AccountId"
-              ],
+              "displayName": ["AccountId"],
               "type": 5
             }
           }
@@ -309,10 +245,7 @@
         "mutates": true,
         "payable": false,
         "returnType": {
-          "displayName": [
-            "ink",
-            "MessageResult"
-          ],
+          "displayName": ["ink", "MessageResult"],
           "type": 9
         },
         "selector": "0xd474e856"
@@ -325,10 +258,7 @@
         "mutates": false,
         "payable": false,
         "returnType": {
-          "displayName": [
-            "ink",
-            "MessageResult"
-          ],
+          "displayName": ["ink", "MessageResult"],
           "type": 36
         },
         "selector": "0x12deaf26"
@@ -338,9 +268,7 @@
           {
             "label": "space_id",
             "type": {
-              "displayName": [
-                "SpaceId"
-              ],
+              "displayName": ["SpaceId"],
               "type": 5
             }
           }
@@ -351,10 +279,7 @@
         "mutates": false,
         "payable": false,
         "returnType": {
-          "displayName": [
-            "ink",
-            "MessageResult"
-          ],
+          "displayName": ["ink", "MessageResult"],
           "type": 37
         },
         "selector": "0xa9ae76ed"
@@ -367,10 +292,7 @@
         "mutates": false,
         "payable": false,
         "returnType": {
-          "displayName": [
-            "ink",
-            "MessageResult"
-          ],
+          "displayName": ["ink", "MessageResult"],
           "type": 36
         },
         "selector": "0x30f973be"
@@ -380,18 +302,14 @@
           {
             "label": "plugin_id",
             "type": {
-              "displayName": [
-                "PluginId"
-              ],
+              "displayName": ["PluginId"],
               "type": 26
             }
           },
           {
             "label": "launcher_address",
             "type": {
-              "displayName": [
-                "AccountId"
-              ],
+              "displayName": ["AccountId"],
               "type": 5
             }
           }
@@ -402,10 +320,7 @@
         "mutates": true,
         "payable": false,
         "returnType": {
-          "displayName": [
-            "ink",
-            "MessageResult"
-          ],
+          "displayName": ["ink", "MessageResult"],
           "type": 38
         },
         "selector": "0x28859bb4"
@@ -422,10 +337,7 @@
         "mutates": false,
         "payable": false,
         "returnType": {
-          "displayName": [
-            "ink",
-            "MessageResult"
-          ],
+          "displayName": ["ink", "MessageResult"],
           "type": 40
         },
         "selector": "0xed3a62d8"
@@ -435,9 +347,7 @@
           {
             "label": "plugin_id",
             "type": {
-              "displayName": [
-                "PluginId"
-              ],
+              "displayName": ["PluginId"],
               "type": 26
             }
           }
@@ -448,10 +358,7 @@
         "mutates": false,
         "payable": false,
         "returnType": {
-          "displayName": [
-            "ink",
-            "MessageResult"
-          ],
+          "displayName": ["ink", "MessageResult"],
           "type": 41
         },
         "selector": "0xfd3ed8a2"
@@ -461,18 +368,14 @@
           {
             "label": "plugin_id",
             "type": {
-              "displayName": [
-                "PluginId"
-              ],
+              "displayName": ["PluginId"],
               "type": 26
             }
           },
           {
             "label": "new_code_hash",
             "type": {
-              "displayName": [
-                "CodeHash"
-              ],
+              "displayName": ["CodeHash"],
               "type": 0
             }
           }
@@ -483,10 +386,7 @@
         "mutates": true,
         "payable": false,
         "returnType": {
-          "displayName": [
-            "ink",
-            "MessageResult"
-          ],
+          "displayName": ["ink", "MessageResult"],
           "type": 38
         },
         "selector": "0xb13942d9"
@@ -496,34 +396,25 @@
           {
             "label": "space_id",
             "type": {
-              "displayName": [
-                "SpaceId"
-              ],
+              "displayName": ["SpaceId"],
               "type": 5
             }
           },
           {
             "label": "plugins",
             "type": {
-              "displayName": [
-                "Vec"
-              ],
+              "displayName": ["Vec"],
               "type": 25
             }
           }
         ],
         "default": false,
-        "docs": [
-          " Install plugins"
-        ],
+        "docs": [" Install plugins"],
         "label": "install_plugins",
         "mutates": true,
         "payable": false,
         "returnType": {
-          "displayName": [
-            "ink",
-            "MessageResult"
-          ],
+          "displayName": ["ink", "MessageResult"],
           "type": 43
         },
         "selector": "0xe5b8ee4b"
@@ -536,10 +427,7 @@
         "mutates": false,
         "payable": false,
         "returnType": {
-          "displayName": [
-            "ink",
-            "MessageResult"
-          ],
+          "displayName": ["ink", "MessageResult"],
           "type": 45
         },
         "selector": "0xeef02b02"
@@ -549,9 +437,7 @@
           {
             "label": "who",
             "type": {
-              "displayName": [
-                "AccountId"
-              ],
+              "displayName": ["AccountId"],
               "type": 5
             }
           }
@@ -562,10 +448,7 @@
         "mutates": true,
         "payable": false,
         "returnType": {
-          "displayName": [
-            "ink",
-            "MessageResult"
-          ],
+          "displayName": ["ink", "MessageResult"],
           "type": 9
         },
         "selector": "0x107e33ea"
@@ -575,9 +458,7 @@
           {
             "label": "code_hash",
             "type": {
-              "displayName": [
-                "Hash"
-              ],
+              "displayName": ["Hash"],
               "type": 0
             }
           }
@@ -588,10 +469,7 @@
         "mutates": true,
         "payable": false,
         "returnType": {
-          "displayName": [
-            "ink",
-            "MessageResult"
-          ],
+          "displayName": ["ink", "MessageResult"],
           "type": 6
         },
         "selector": "0x1700ae80"
@@ -604,10 +482,7 @@
         "mutates": false,
         "payable": false,
         "returnType": {
-          "displayName": [
-            "ink",
-            "MessageResult"
-          ],
+          "displayName": ["ink", "MessageResult"],
           "type": 13
         },
         "selector": "0xbaa5b034"
@@ -786,11 +661,7 @@
             ]
           }
         },
-        "path": [
-          "ink_primitives",
-          "types",
-          "Hash"
-        ]
+        "path": ["ink_primitives", "types", "Hash"]
       }
     },
     {
@@ -843,11 +714,7 @@
             ]
           }
         },
-        "path": [
-          "ink_primitives",
-          "types",
-          "AccountId"
-        ]
+        "path": ["ink_primitives", "types", "AccountId"]
       }
     },
     {
@@ -887,9 +754,7 @@
             "type": 8
           }
         ],
-        "path": [
-          "Result"
-        ]
+        "path": ["Result"]
       }
     },
     {
@@ -913,10 +778,7 @@
             ]
           }
         },
-        "path": [
-          "ink_primitives",
-          "LangError"
-        ]
+        "path": ["ink_primitives", "LangError"]
       }
     },
     {
@@ -956,9 +818,7 @@
             "type": 8
           }
         ],
-        "path": [
-          "Result"
-        ]
+        "path": ["Result"]
       }
     },
     {
@@ -998,9 +858,7 @@
             "type": 11
           }
         ],
-        "path": [
-          "Result"
-        ]
+        "path": ["Result"]
       }
     },
     {
@@ -1042,11 +900,7 @@
             ]
           }
         },
-        "path": [
-          "motherspace",
-          "motherspace",
-          "Error"
-        ]
+        "path": ["motherspace", "motherspace", "Error"]
       }
     },
     {
@@ -1094,9 +948,7 @@
             "type": 8
           }
         ],
-        "path": [
-          "Result"
-        ]
+        "path": ["Result"]
       }
     },
     {
@@ -1123,11 +975,7 @@
             ]
           }
         },
-        "path": [
-          "motherspace",
-          "motherspace",
-          "SpaceInfo"
-        ]
+        "path": ["motherspace", "motherspace", "SpaceInfo"]
       }
     },
     {
@@ -1158,9 +1006,7 @@
             "type": 12
           }
         ],
-        "path": [
-          "Option"
-        ]
+        "path": ["Option"]
       }
     },
     {
@@ -1191,9 +1037,7 @@
             "type": 17
           }
         ],
-        "path": [
-          "Option"
-        ]
+        "path": ["Option"]
       }
     },
     {
@@ -1225,11 +1069,7 @@
             ]
           }
         },
-        "path": [
-          "motherspace",
-          "motherspace",
-          "ImageSource"
-        ]
+        "path": ["motherspace", "motherspace", "ImageSource"]
       }
     },
     {
@@ -1260,9 +1100,7 @@
             "type": 19
           }
         ],
-        "path": [
-          "Option"
-        ]
+        "path": ["Option"]
       }
     },
     {
@@ -1284,11 +1122,7 @@
             ]
           }
         },
-        "path": [
-          "motherspace",
-          "motherspace",
-          "SpaceConfig"
-        ]
+        "path": ["motherspace", "motherspace", "SpaceConfig"]
       }
     },
     {
@@ -1312,11 +1146,7 @@
             ]
           }
         },
-        "path": [
-          "motherspace",
-          "motherspace",
-          "RegistrationType"
-        ]
+        "path": ["motherspace", "motherspace", "RegistrationType"]
       }
     },
     {
@@ -1359,11 +1189,7 @@
             ]
           }
         },
-        "path": [
-          "motherspace",
-          "motherspace",
-          "Pricing"
-        ]
+        "path": ["motherspace", "motherspace", "Pricing"]
       }
     },
     {
@@ -1402,9 +1228,7 @@
             "type": 5
           }
         ],
-        "path": [
-          "Option"
-        ]
+        "path": ["Option"]
       }
     },
     {
@@ -1435,9 +1259,7 @@
             "type": 25
           }
         ],
-        "path": [
-          "Option"
-        ]
+        "path": ["Option"]
       }
     },
     {
@@ -1498,9 +1320,7 @@
             "type": 8
           }
         ],
-        "path": [
-          "Result"
-        ]
+        "path": ["Result"]
       }
     },
     {
@@ -1540,19 +1360,14 @@
             "type": 11
           }
         ],
-        "path": [
-          "Result"
-        ]
+        "path": ["Result"]
       }
     },
     {
       "id": 29,
       "type": {
         "def": {
-          "tuple": [
-            5,
-            30
-          ]
+          "tuple": [5, 30]
         }
       }
     },
@@ -1570,10 +1385,7 @@
       "id": 31,
       "type": {
         "def": {
-          "tuple": [
-            26,
-            5
-          ]
+          "tuple": [26, 5]
         }
       }
     },
@@ -1614,9 +1426,7 @@
             "type": 8
           }
         ],
-        "path": [
-          "Result"
-        ]
+        "path": ["Result"]
       }
     },
     {
@@ -1659,11 +1469,7 @@
             "type": 5
           }
         ],
-        "path": [
-          "motherspace",
-          "motherspace",
-          "Pagination"
-        ]
+        "path": ["motherspace", "motherspace", "Pagination"]
       }
     },
     {
@@ -1711,9 +1517,7 @@
             "type": 8
           }
         ],
-        "path": [
-          "Result"
-        ]
+        "path": ["Result"]
       }
     },
     {
@@ -1753,9 +1557,7 @@
             "type": 8
           }
         ],
-        "path": [
-          "Result"
-        ]
+        "path": ["Result"]
       }
     },
     {
@@ -1795,9 +1597,7 @@
             "type": 8
           }
         ],
-        "path": [
-          "Result"
-        ]
+        "path": ["Result"]
       }
     },
     {
@@ -1837,9 +1637,7 @@
             "type": 8
           }
         ],
-        "path": [
-          "Result"
-        ]
+        "path": ["Result"]
       }
     },
     {
@@ -1879,9 +1677,7 @@
             "type": 11
           }
         ],
-        "path": [
-          "Result"
-        ]
+        "path": ["Result"]
       }
     },
     {
@@ -1921,9 +1717,7 @@
             "type": 8
           }
         ],
-        "path": [
-          "Result"
-        ]
+        "path": ["Result"]
       }
     },
     {
@@ -1963,9 +1757,7 @@
             "type": 8
           }
         ],
-        "path": [
-          "Result"
-        ]
+        "path": ["Result"]
       }
     },
     {
@@ -2005,9 +1797,7 @@
             "type": 11
           }
         ],
-        "path": [
-          "Result"
-        ]
+        "path": ["Result"]
       }
     },
     {
@@ -2047,9 +1837,7 @@
             "type": 8
           }
         ],
-        "path": [
-          "Result"
-        ]
+        "path": ["Result"]
       }
     },
     {
@@ -2089,9 +1877,7 @@
             "type": 11
           }
         ],
-        "path": [
-          "Result"
-        ]
+        "path": ["Result"]
       }
     },
     {
@@ -2131,9 +1917,7 @@
             "type": 8
           }
         ],
-        "path": [
-          "Result"
-        ]
+        "path": ["Result"]
       }
     },
     {
@@ -2150,11 +1934,7 @@
         "def": {
           "variant": {}
         },
-        "path": [
-          "ink_env",
-          "types",
-          "NoChainExtension"
-        ]
+        "path": ["ink_env", "types", "NoChainExtension"]
       }
     }
   ],

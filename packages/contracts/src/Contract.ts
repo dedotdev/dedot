@@ -4,7 +4,13 @@ import { IEventRecord } from '@dedot/types';
 import { HexString, toU8a } from '@dedot/utils';
 import { TypinkRegistry } from './TypinkRegistry.js';
 import { EventExecutor, QueryExecutor, TxExecutor } from './executor/index.js';
-import { ContractEvent, ContractMetadata, ExecutionOptions, GenericContractApi } from './types/index.js';
+import {
+  ContractEvent,
+  ContractMetadata,
+  ExecutionOptions,
+  GenericContractApi,
+  LooseContractMetadata,
+} from './types/index.js';
 import { checkStorageApiSupports, ensureSupportContractsPallet, newProxyChain, parseRawMetadata } from './utils.js';
 
 export class Contract<ContractApi extends GenericContractApi = GenericContractApi> {
@@ -15,14 +21,14 @@ export class Contract<ContractApi extends GenericContractApi = GenericContractAp
 
   constructor(
     readonly client: ISubstrateClient<ContractApi['types']['ChainApi']>,
-    metadata: ContractMetadata | string,
+    metadata: LooseContractMetadata | string,
     address: AccountId32Like,
     options?: ExecutionOptions,
   ) {
     ensureSupportContractsPallet(client);
 
     this.#address = new AccountId32(address);
-    this.#metadata = typeof metadata === 'string' ? parseRawMetadata(metadata) : metadata;
+    this.#metadata = typeof metadata === 'string' ? parseRawMetadata(metadata) : (metadata as ContractMetadata);
 
     const getStorage = this.#getStorage.bind(this);
 

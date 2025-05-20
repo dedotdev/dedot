@@ -69,7 +69,7 @@ const CONTRACT_PSP22_ADDRESS = '5F5WzFVG3v3ytpe7bfDVd7UccYvdtWCU2JiguacQWNACxTsC
 
 const contract = new Contract<MotherspaceContractApi>(
   client, // --
-  motherspace as any,
+  motherspace,
   CONTRACT_PSP22_ADDRESS,
   {
     defaultCaller: alice.address,

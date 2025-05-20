@@ -63,6 +63,11 @@ export type GenericInstantiateSubmittableExtrinsic<ChainApi extends GenericSubst
 
 export type ContractMetadata = ContractMetadataV4 | ContractMetadataV5;
 
+export interface LooseContractMetadata {
+  version: number | string;
+  [prop: string]: any;
+}
+
 export type CallOptions = {
   value?: bigint;
   gasLimit?: Weight | undefined;
