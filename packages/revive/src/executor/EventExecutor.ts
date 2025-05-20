@@ -14,7 +14,7 @@ export class EventExecutor<ChainApi extends GenericSubstrateApi> extends Contrac
       if (isEventRecord(event)) {
         try {
           event = this.registry.decodeEvent(event, this.address);
-        } catch {
+        } catch (e) {
           return false;
         }
       }
@@ -33,6 +33,8 @@ export class EventExecutor<ChainApi extends GenericSubstrateApi> extends Contrac
     };
 
     const filter = (events: IEventRecord[] | ContractEvent[]): ContractEvent[] => {
+      if (!events || events.length === 0) return [];
+
       if (isEventRecord(events[0])) {
         return this.registry.decodeEvents(events as IEventRecord[], this.address).filter(is);
       } else {

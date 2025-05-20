@@ -1,4 +1,4 @@
-import { AccountId20, AccountId20Like, Bytes, TypeRegistry } from '@dedot/codecs';
+import { AccountId20, AccountId20Like, Bytes, H256, TypeRegistry } from '@dedot/codecs';
 import * as $ from '@dedot/shape';
 import { IEventRecord, IRuntimeEvent } from '@dedot/types';
 import { assert, DedotError, hexToU8a, stringCamelCase, stringPascalCase } from '@dedot/utils';
@@ -10,8 +10,9 @@ interface ContractEmittedEvent extends IRuntimeEvent {
   palletEvent: {
     name: 'ContractEmitted';
     data: {
-      contract: AccountId20;
+      contract: AccountId20Like;
       data: Bytes;
+      topics: Array<H256>;
     };
   };
 }
@@ -59,11 +60,7 @@ export class TypinkRegistry extends TypeRegistry {
     if (contract) {
       // @ts-ignore
       const emittedContract = event.palletEvent.data?.contract;
-      if (emittedContract instanceof AccountId20) {
-        return emittedContract.eq(contract);
-      } else {
-        return false;
-      }
+      return new AccountId20(emittedContract).eq(contract);
     }
 
     return true;
@@ -73,8 +70,9 @@ export class TypinkRegistry extends TypeRegistry {
     assert(this.#metadata.version === 5, 'Invalid metadata version!');
     assert(this.#isContractEmittedEvent(eventRecord.event), 'Invalid ContractEmitted Event');
 
-    const data = hexToU8a(eventRecord.event.palletEvent.data.data);
-    const signatureTopic = eventRecord.topics.at(0);
+    const eventData = eventRecord.event.palletEvent.data;
+    const data = hexToU8a(eventData.data);
+    const signatureTopic = eventData.topics.at(0);
 
     let eventMeta: ContractEventMeta | undefined;
     if (signatureTopic) {
