@@ -412,7 +412,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@dedot/revive@workspace:packages/revive":
+"@dedot/revive@workspace:*, @dedot/revive@workspace:packages/revive":
   version: 0.0.0-use.local
   resolution: "@dedot/revive@workspace:packages/revive"
   dependencies:
@@ -3469,6 +3469,7 @@ __metadata:
     "@dedot/contracts": "workspace:*"
     "@dedot/merkleized-metadata": "workspace:*"
     "@dedot/providers": "workspace:*"
+    "@dedot/revive": "workspace:*"
     "@dedot/runtime-specs": "workspace:*"
     "@dedot/shape": "workspace:*"
     "@dedot/types": "workspace:*"
