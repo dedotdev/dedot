@@ -55,6 +55,7 @@ export class ConstructorQueryExecutor<ChainApi extends GenericSubstrateApi> exte
         raw,
         address: raw.result.value.addr,
         flags: toReturnFlags(bits),
+        inputBytes: bytes,
       } as GenericConstructorCallResult;
     };
 

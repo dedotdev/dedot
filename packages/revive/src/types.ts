@@ -1,5 +1,5 @@
 import { SubstrateApi } from '@dedot/api/chaintypes';
-import { AccountId32Like, BytesLike, H160, Weight } from '@dedot/codecs';
+import { AccountId32Like, BytesLike, FixedBytes, H160, Weight } from '@dedot/codecs';
 import {
   AnyFunc,
   AsyncMethod,
@@ -31,6 +31,7 @@ export interface GenericContractCallResult<DecodedData = any, ContractResult = a
   data: DecodedData;
   raw: ContractResult;
   flags: ReturnFlags;
+  inputBytes: BytesLike;
 }
 
 export interface GenericConstructorCallResult<DecodedData = any, ContractResult = any>
@@ -69,13 +70,14 @@ export type CallOptions = {
 };
 
 export type ConstructorCallOptions = CallOptions & {
-  salt?: BytesLike;
+  salt?: FixedBytes<32>;
   caller?: AccountId32Like;
 };
 
 export type ConstructorTxOptions = CallOptions & {
-  salt?: BytesLike;
+  salt?: FixedBytes<32>;
   gasLimit: Weight;
+  storageDepositLimit: bigint;
 };
 
 export type ContractCallOptions = CallOptions & {
@@ -84,6 +86,7 @@ export type ContractCallOptions = CallOptions & {
 
 export type ContractTxOptions = CallOptions & {
   gasLimit: Weight;
+  storageDepositLimit: bigint;
 };
 
 export type GenericContractQueryCall<
