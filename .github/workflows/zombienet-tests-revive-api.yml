@@ -39,6 +39,11 @@ jobs:
 
           curl -L -O https://github.com/paritytech/polkadot-sdk/releases/download/polkadot-stable2503-4/polkadot-parachain
           chmod +x polkadot-parachain
+
+          curl -L -O https://github.com/use-ink/ink-node/releases/download/v0.43.2/ink-node-linux.tar.gz
+          tar -xzf ink-node-linux.tar.gz
+          mv ./ink-node-linux/ink-node ./ink-node
+          chmod +x ink-node
       - name: Run tests on small network
         run: |
           export PATH=$(pwd):$PATH
