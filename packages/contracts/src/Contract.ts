@@ -5,7 +5,7 @@ import { HexString, toU8a } from '@dedot/utils';
 import { TypinkRegistry } from './TypinkRegistry.js';
 import { EventExecutor, QueryExecutor, TxExecutor } from './executor/index.js';
 import { ContractEvent, ContractMetadata, ExecutionOptions, GenericContractApi } from './types/index.js';
-import { ensureSupportContractsPallet, newProxyChain, parseRawMetadata } from './utils.js';
+import { checkStorageApiSupports, ensureSupportContractsPallet, newProxyChain, parseRawMetadata } from './utils.js';
 
 export class Contract<ContractApi extends GenericContractApi = GenericContractApi> {
   readonly #registry: TypinkRegistry;
@@ -75,6 +75,8 @@ export class Contract<ContractApi extends GenericContractApi = GenericContractAp
   get storage(): ContractApi['storage'] {
     return {
       root: async (): Promise<ContractApi['types']['RootStorage']> => {
+        checkStorageApiSupports(this.metadata.version);
+
         const { ty, root_key } = this.metadata.storage.root;
 
         const rawValue = await this.#getStorage(root_key as HexString);
@@ -82,6 +84,8 @@ export class Contract<ContractApi extends GenericContractApi = GenericContractAp
         return this.registry.findCodec(ty).tryDecode(rawValue);
       },
       unpacked: (): ContractApi['types']['UnpackedStorage'] => {
+        checkStorageApiSupports(this.metadata.version);
+
         const { ty } = this.metadata.storage.root;
 
         const $unpackedCodec = this.registry.createUnpackedCodec(ty);

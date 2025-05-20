@@ -2,7 +2,7 @@ import { ISubstrateClient } from '@dedot/api';
 import { SubstrateApi } from '@dedot/api/chaintypes';
 import { PortableType, TypeDef } from '@dedot/codecs';
 import { GenericSubstrateApi, RpcVersion } from '@dedot/types';
-import { stringCamelCase } from '@dedot/utils';
+import { DedotError, stringCamelCase } from '@dedot/utils';
 import { Executor } from './executor/index.js';
 import { ContractMetadata, ContractTypeDef, ReturnFlags } from './types/index.js';
 
@@ -103,6 +103,13 @@ export const parseRawMetadata = (rawMetadata: string): ContractMetadata => {
   }
 
   return metadata as ContractMetadata;
+};
+
+export const checkStorageApiSupports = (version: string | number) => {
+  const numberedVersion = typeof version === 'number' ? version : parseInt(version);
+  if (numberedVersion >= 5) return;
+
+  throw new DedotError(`Contract Storage Api Only Available for metadata version >= 5, current version: ${version}`);
 };
 
 export function newProxyChain<ChainApi extends GenericSubstrateApi>(carrier: Executor<ChainApi>): unknown {

@@ -7,6 +7,8 @@ import { MerkleizedMetadata } from 'dedot/merkleized-metadata';
 import { concatU8a, toU8a, u8aToHex } from 'dedot/utils';
 import { Flipper, FlipperContractApi } from './flipper/index.js';
 import flipper from './flipper_v5.json';
+import motherspace from './motherspace.json';
+import { MotherspaceContractApi } from './motherspace/index.js';
 import psp22 from './psp22.json';
 import { Psp22ContractApi, Psp22Token } from './psp22/index.js';
 
@@ -65,22 +67,22 @@ const CONTRACT_PSP22_ADDRESS = '5F5WzFVG3v3ytpe7bfDVd7UccYvdtWCU2JiguacQWNACxTsC
 // console.log('alice balance', await decoded.data.balances.get(ALICE));
 // console.log('bob balance', await decoded.data.balances.get(BOB));
 
-const contract = new Contract<Psp22ContractApi>(
+const contract = new Contract<MotherspaceContractApi>(
   client, // --
-  psp22 as any,
+  motherspace as any,
   CONTRACT_PSP22_ADDRESS,
   {
     defaultCaller: alice.address,
   },
 );
 
-const root: Psp22Token = await contract.storage.root();
+// const root: Psp22Token = await contract.storage.root();
 const unpacked = contract.storage.unpacked();
 
-console.log(root);
+// console.log(root);
 console.log(unpacked);
-console.log(await unpacked.data.balances.get(ALICE));
-console.log(await unpacked.data.balances.get(BOB));
+// console.log(await unpacked.data.balances.get(ALICE));
+// console.log(await unpacked.data.balances.get(BOB));
 
 // Disconnect the client
 await client.disconnect();

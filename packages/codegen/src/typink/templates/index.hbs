@@ -16,13 +16,13 @@ export * from './types.js';
     constructorTx: ConstructorTx<ChainApi[Rv]>;
     events: ContractEvents<ChainApi[Rv]>;
     storage: {
-      root(): Promise<{{{rootStorageName}}}>
-      unpacked(): DeepOnlyGetters<{{{rootStorageName}}}>
+      root(): Promise<{{{rootStorageName}}}>;
+      unpacked(): {{{unpackedStorageName}}};
     };
 
     types: {
       RootStorage: {{{rootStorageName}}};
-      UnpackedStorage: DeepOnlyGetters<{{{rootStorageName}}}>;
+      UnpackedStorage: {{{unpackedStorageName}}};
       LangError: {{{langErrorName}}};
       ChainApi: ChainApi[Rv];
     };

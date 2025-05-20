@@ -1,4 +1,4 @@
-import { ContractMetadata } from '@dedot/contracts';
+import { checkStorageApiSupports, ContractMetadata } from '@dedot/contracts';
 import { TypeImports } from '../../shared/index.js';
 import { beautifySourceCode, commentBlock, compileTemplate } from '../../utils.js';
 import { TypesGen } from './TypesGen.js';
@@ -15,14 +15,13 @@ export class IndexGen {
     const langErrorId = this.contractMetadata.spec.lang_error.type;
     const langErrorName = this.typesGen.cleanPath(this.contractMetadata.types[langErrorId].type.path!);
 
-    const rootStorageId = this.contractMetadata.storage.root.ty;
-    const rootStorageName = this.typesGen.cleanPath(this.contractMetadata.types[rootStorageId].type.path!);
-
     const typeImports = new TypeImports();
     typeImports.addKnownType('VersionedGenericSubstrateApi', 'RpcVersion', 'RpcV2');
     typeImports.addContractType('GenericContractApi', 'DeepOnlyGetters');
     typeImports.addChainType('SubstrateApi');
-    typeImports.addPortableType(langErrorName, rootStorageName);
+    typeImports.addPortableType(langErrorName);
+
+    const [rootStorageName, unpackedStorageName] = this.#extractRootStorageNames(typeImports);
 
     const {
       contract: { name = '', version = '', authors = [] },
@@ -47,7 +46,25 @@ export class IndexGen {
         langErrorName,
         importTypes,
         rootStorageName,
+        unpackedStorageName,
       }),
     );
+  }
+
+  #extractRootStorageNames(typeImports: TypeImports) {
+    try {
+      checkStorageApiSupports(this.contractMetadata.version);
+
+      const rootStorageId = this.contractMetadata.storage.root.ty;
+      const rootStorageName = this.typesGen.cleanPath(this.contractMetadata.types[rootStorageId].type.path!);
+      typeImports.addPortableType(rootStorageName);
+
+      return [rootStorageName, `DeepOnlyGetters<${rootStorageName}>`];
+    } catch {
+      const names = ['GenericRootStorage', 'GenericUnpackedStorage'];
+      typeImports.addContractType(...names);
+
+      return names;
+    }
   }
 }
