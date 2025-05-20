@@ -1929,10 +1929,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@substrate/connect-known-chains@npm:^1.10.1":
-  version: 1.10.1
-  resolution: "@substrate/connect-known-chains@npm:1.10.1"
-  checksum: 10c0/a587eb8b5d7e33d4410f726a6e60297e18fd6ca0bedd510bdc3aee073f2d4b94f0ee06c3747aab91626701e586a304c97671364550ba9b31ab492de764e1cbf0
+"@substrate/connect-known-chains@npm:^1.10.2":
+  version: 1.10.2
+  resolution: "@substrate/connect-known-chains@npm:1.10.2"
+  checksum: 10c0/5d089628d5723ac9cbdd2eee0b99551698831415660d8d79cd7cd15002ae61422e30f178806f9be66e571b0d13f3f94b03f04f10393ee74b88757c8c2ba1504e
   languageName: node
   linkType: hard
 
@@ -4086,7 +4086,7 @@ __metadata:
   dependencies:
     "@dedot/chaintypes": "npm:latest"
     "@polkadot/keyring": "npm:^13.4.4"
-    "@substrate/connect-known-chains": "npm:^1.10.1"
+    "@substrate/connect-known-chains": "npm:^1.10.2"
     dedot: "workspace:*"
   languageName: unknown
   linkType: soft
@@ -7987,7 +7987,7 @@ __metadata:
   resolution: "smoldot-dapp@workspace:examples/smoldot-dapp"
   dependencies:
     "@dedot/chaintypes": "npm:latest"
-    "@substrate/connect-known-chains": "npm:^1.10.1"
+    "@substrate/connect-known-chains": "npm:^1.10.2"
     "@types/react": "npm:^18.3.3"
     "@types/react-dom": "npm:^18.3.0"
     "@typescript-eslint/eslint-plugin": "npm:^6.21.0"

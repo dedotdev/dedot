@@ -11,7 +11,7 @@
   },
   "dependencies": {
     "@dedot/chaintypes": "latest",
-    "@substrate/connect-known-chains": "^1.10.1",
+    "@substrate/connect-known-chains": "^1.10.2",
     "dedot": "workspace:*",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
