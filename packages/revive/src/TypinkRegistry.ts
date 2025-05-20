@@ -50,7 +50,7 @@ export class TypinkRegistry extends TypeRegistry {
 
   #isContractEmittedEvent(event: IRuntimeEvent, contract?: AccountId20Like): event is ContractEmittedEvent {
     const eventMatched =
-      event.pallet === 'Contracts' &&
+      event.pallet === 'Revive' &&
       typeof event.palletEvent === 'object' &&
       event.palletEvent.name === 'ContractEmitted';
 
