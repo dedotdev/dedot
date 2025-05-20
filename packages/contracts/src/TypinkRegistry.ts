@@ -88,6 +88,8 @@ export class TypinkRegistry extends TypeRegistry {
       return this.#createLazyMappingCodec($codec, typeDef);
     } else if (typePath === KNOWN_LAZY_TYPES.LAZY) {
       return this.#createLazyCodec($codec, typeDef);
+    } else if (typePath === KNOWN_LAZY_TYPES.STORAGE_VEC) {
+      return this.#createStorageVecCodec($codec, typeDef);
     }
 
     return $codec;
@@ -114,9 +116,10 @@ export class TypinkRegistry extends TypeRegistry {
         return this.#createLazyMappingCodec($codec, contractTypeDef);
       } else if (typePath === KNOWN_LAZY_TYPES.LAZY) {
         return this.#createLazyCodec($codec, contractTypeDef);
+      } else if (typePath === KNOWN_LAZY_TYPES.STORAGE_VEC) {
+        return this.#createStorageVecCodec($codec, contractTypeDef);
       } else {
-        // For other lazy types, return the standard codec
-        return $codec;
+        throw new DedotError(`Unsupported Lazy Type`);
       }
     }
 
@@ -335,6 +338,75 @@ export class TypinkRegistry extends TypeRegistry {
 
     // @ts-ignore
     return $.instance(LazyObject, $.Tuple($codec), () => ({}));
+  }
+
+  #createStorageVecCodec<I = unknown, O = I>($codec: $.AnyShape, typeDef: ContractType): $.Shape<I, O> {
+    const registry = this;
+
+    class LazyStorageVec {
+      constructor() {}
+
+      async len(): Promise<number> {
+        const {
+          id,
+          type: { def },
+        } = typeDef;
+
+        assert(def.composite);
+
+        const lenTypeId = def.composite.fields![0].type;
+        const lenTypeDef = registry.metadata.types.find(({ id }) => id === lenTypeId);
+
+        assert(lenTypeDef);
+
+        const {
+          type: { params },
+        } = lenTypeDef;
+
+        const innerLenTypeId = params![0].type;
+        const $Len = registry.findCodec(innerLenTypeId);
+
+        const rootLayout = registry.metadata.storage;
+        const rootKey = findRootKey(rootLayout as AnyLayoutV5, id);
+        assert(rootKey, 'Root Key Not Found');
+
+        const storageKey = concatU8a(toU8a(rootKey));
+        const rawValue = await registry.getStorage?.(toU8a(storageKey));
+
+        if (rawValue) {
+          return $Len.tryDecode(rawValue) as number;
+        }
+
+        return 0;
+      }
+
+      async get(index: number) {
+        const {
+          id,
+          type: { params },
+        } = typeDef;
+
+        const [valueType] = params!;
+        const $Value = registry.findCodec(valueType.type);
+
+        const rootLayout = registry.metadata.storage;
+        const rootKey = findRootKey(rootLayout as AnyLayoutV5, id);
+        assert(rootKey, 'Root Key Not Found');
+
+        const encodedKey = $.u32.tryEncode(index);
+        const storageKey = concatU8a(toU8a(rootKey), encodedKey);
+        const rawValue = await registry.getStorage?.(toU8a(storageKey));
+
+        if (rawValue) {
+          return $Value.tryDecode(rawValue);
+        }
+
+        return undefined;
+      }
+    }
+
+    // @ts-ignore
+    return $.instance(LazyStorageVec, $.Tuple($codec), () => ({}));
   }
 
   decodeEvents(records: IEventRecord[], contract?: AccountId32Like): ContractEvent[] {

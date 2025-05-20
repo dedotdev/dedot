@@ -53,7 +53,9 @@ export class TypesGen extends BaseTypesGen {
 
         return `{ get(): Promise<${ValueType}> }`;
       } else if (typePath === KNOWN_LAZY_TYPES.STORAGE_VEC) {
-        // ignore for now!
+        const ValueType = super.generateType(typeDef.type.params![0].type, 1, true);
+
+        return `{ len(): Promise<number>; get(index: number): Promise<${ValueType}> }`;
       }
     }
 

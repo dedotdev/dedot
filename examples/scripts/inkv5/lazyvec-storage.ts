@@ -2,7 +2,7 @@ import Keyring from '@polkadot/keyring';
 import { cryptoWaitReady } from '@polkadot/util-crypto';
 import { LegacyClient, WsProvider } from 'dedot';
 import { Contract, ContractDeployer } from 'dedot/contracts';
-import { stringToHex, toU8a } from 'dedot/utils';
+import { stringToHex } from 'dedot/utils';
 import { LazyvecContractApi } from './lazyvec/index.js';
 import lazyvecMetadata from './lazyvec.json' assert { type: 'json' };
 
@@ -85,6 +85,17 @@ try {
   }).untilFinalized();
   
   console.log('Proposal created:', createProposalResult);
+
+  const createProposalResult2 = await contract.tx.createProposal(
+    new Uint8Array([1, 2, 3, 4, 5, 6]), // data
+    100_000, // duration
+    5, // min_approvals
+    { gasLimit: createProposalGas }
+  ).signAndSend(alice, ({ status }: { status: { type: string } }) => {
+    console.log('Create proposal 2 status:', status.type);
+  }).untilFinalized();
+
+  console.log('Proposal 2 created:', createProposalResult2);
   
   // Get the root storage
   console.log('\nGetting root storage...');
@@ -106,12 +117,12 @@ try {
   if (unpacked.proposals) {
     // Get the length of the lazy vector
     console.log('\nAccessing lazy vector elements using getters:');
-    const length = await unpacked.proposals.len.get();
+    const length = await unpacked.proposals.len();
     console.log('Number of proposals:', length);
     
     // Get the first proposal if it exists
     if (length > 0) {
-      const proposal = await unpacked.proposals.elements.get(0);
+      const proposal = await unpacked.proposals.get(0);
       console.log('First proposal:', proposal);
 
       // Access specific fields of the proposal
