@@ -25,6 +25,7 @@
     "@dedot/cli": "workspace:*",
     "@dedot/codecs": "workspace:*",
     "@dedot/contracts": "workspace:*",
+    "@dedot/revive": "workspace:*",
     "@dedot/merkleized-metadata": "workspace:*",
     "@dedot/providers": "workspace:*",
     "@dedot/runtime-specs": "workspace:*",
@@ -82,6 +83,11 @@
       "types": "./src/merkleized-metadata/index.ts",
       "import": "./src/merkleized-metadata/index.ts",
       "default": "./src/merkleized-metadata/index.ts"
+    },
+    "./revive": {
+      "types": "./src/revive/index.ts",
+      "import": "./src/revive/index.ts",
+      "default": "./src/revive/index.ts"
     }
   },
   "publishConfig": {

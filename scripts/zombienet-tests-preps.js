@@ -85,6 +85,12 @@ const main = () => {
         require: './dist/cjs/contracts/index.js',
         default: './dist/contracts/index.js',
       };
+      pkgJson.exports['./revive'] = {
+        types: './dist/revive/index.d.ts',
+        import: './dist/revive/index.js',
+        require: './dist/cjs/revive/index.js',
+        default: './dist/revive/index.js',
+      };
     }
 
     fileContent = JSON.stringify(pkgJson, null, 2);
