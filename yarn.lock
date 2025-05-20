@@ -310,11 +310,11 @@ __metadata:
   linkType: soft
 
 "@dedot/chaintypes@npm:latest":
-  version: 0.97.0
-  resolution: "@dedot/chaintypes@npm:0.97.0"
+  version: 0.101.0
+  resolution: "@dedot/chaintypes@npm:0.101.0"
   peerDependencies:
     dedot: ">=0.7.1"
-  checksum: 10c0/00bbbced07a8c921688b380ae169e62e3b0b4161d96fa82175715e33a945045eb823759a8620b77a1a00a1d6f8422f738522c1cec5684ed27b6c7ef047ccd614
+  checksum: 10c0/0bc81856232a5ee7d40a29b3969133ef2bb0a818c2ea0bab3f048500d0993fd7035c12e4ec1e66b1a6c8ce451437ca20f61131df42bab8776caa63b66672782b
   languageName: node
   linkType: hard
 
