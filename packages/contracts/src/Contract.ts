@@ -1,7 +1,7 @@
 import { ISubstrateClient } from '@dedot/api';
-import { AccountId32, AccountId32Like, Bytes } from '@dedot/codecs';
+import { AccountId32, AccountId32Like } from '@dedot/codecs';
 import { IEventRecord } from '@dedot/types';
-import { HexString, toU8a } from '@dedot/utils';
+import { DedotError, HexString, toU8a } from '@dedot/utils';
 import { TypinkRegistry } from './TypinkRegistry.js';
 import { EventExecutor, QueryExecutor, TxExecutor } from './executor/index.js';
 import {
@@ -11,8 +11,8 @@ import {
   GenericContractApi,
   LooseContractMetadata,
 } from './types/index.js';
-import { checkStorageApiSupports, ensureSupportContractsPallet, newProxyChain, parseRawMetadata } from './utils.js';
 import { RootLayoutV5 } from './types/v5.js';
+import { checkStorageApiSupports, ensureSupportContractsPallet, newProxyChain, parseRawMetadata } from './utils.js';
 
 export class Contract<ContractApi extends GenericContractApi = GenericContractApi> {
   readonly #registry: TypinkRegistry;
@@ -33,7 +33,7 @@ export class Contract<ContractApi extends GenericContractApi = GenericContractAp
 
     const getStorage = this.#getStorage.bind(this);
 
-    this.#registry = new TypinkRegistry(this.#metadata, getStorage);
+    this.#registry = new TypinkRegistry(this.#metadata, { getStorage });
     this.#options = options;
   }
 
@@ -102,7 +102,7 @@ export class Contract<ContractApi extends GenericContractApi = GenericContractAp
     };
   }
 
-  #getStorage = async (key: Uint8Array | HexString): Promise<Bytes | undefined> => {
+  #getStorage = async (key: Uint8Array | HexString): Promise<HexString | undefined> => {
     const rawKey = toU8a(key);
     const result = await this.client.call.contractsApi.getStorage(this.address.address(), rawKey);
 
@@ -110,6 +110,6 @@ export class Contract<ContractApi extends GenericContractApi = GenericContractAp
       return result.value;
     }
 
-    throw new Error(result.err);
+    throw new DedotError(result.err);
   };
 }
