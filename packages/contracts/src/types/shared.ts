@@ -113,54 +113,6 @@ export interface ParamInfo {
   type: number;
 }
 
-interface StructLayout {
-  name: string;
-  fields: {
-    name: string;
-    layout: AnyLayout;
-  }[];
-}
-
-interface LeafLayout {
-  key: string;
-  ty: number;
-}
-
-interface HashLayout {
-  // TODO support hash layout
-}
-
-interface ArrayLayout {
-  offset: string;
-  len: number;
-  layout: AnyLayout;
-}
-
-interface EnumLayout {
-  name: string;
-  dispatch_key: string;
-  variants: Record<number, StructLayout>;
-}
-
-interface RootLayout {
-  root_key: string;
-  layout: AnyLayout;
-  ty: number;
-}
-
-export type AnyLayout = {
-  struct: StructLayout;
-  leaf: LeafLayout;
-  hash: HashLayout;
-  array: ArrayLayout;
-  enum: EnumLayout;
-  root: RootLayout;
-};
-
-export interface ContractStorage {
-  root: RootLayout;
-}
-
 export interface ContractEventArg extends ContractMessageArg {
   docs: string[];
   indexed: boolean;
