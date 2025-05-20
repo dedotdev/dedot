@@ -3,8 +3,8 @@ import * as $ from '@dedot/shape';
 import { IEventRecord, IRuntimeEvent } from '@dedot/types';
 import { assert, concatU8a, DedotError, hexToU8a, stringCamelCase, stringPascalCase, toU8a } from '@dedot/utils';
 import { ContractEvent, ContractEventMeta, ContractMetadata, ContractType } from './types/index.js';
-import { extractContractTypes } from './utils.js';
 import { AnyLayoutV5 } from './types/v5.js';
+import { extractContractTypes } from './utils.js';
 
 interface ContractEmittedEvent extends IRuntimeEvent {
   pallet: 'Contracts';
@@ -29,12 +29,10 @@ const findRootKey = (layout: AnyLayoutV5, targetId: number): string | undefined 
     if (layout.root.ty === targetId) {
       return layout.root.root_key;
     } else {
-      const potentialKey = findRootKey(layout.root.layout, targetId);
-      if (potentialKey) return potentialKey;
+      return findRootKey(layout.root.layout, targetId);
     }
   } else if (layout.array) {
-    const potentialKey = findRootKey(layout.array.layout, targetId);
-    if (potentialKey) return potentialKey;
+    return findRootKey(layout.array.layout, targetId);
   } else if (layout.enum) {
     for (const one of Object.values(layout.enum.variants)) {
       for (const structField of one.fields) {
@@ -42,6 +40,8 @@ const findRootKey = (layout: AnyLayoutV5, targetId: number): string | undefined 
         if (potentialKey) return potentialKey;
       }
     }
+
+    return undefined;
   } else if (layout.leaf) {
     if (layout.leaf.ty === targetId) {
       return layout.leaf.key;
@@ -53,6 +53,8 @@ const findRootKey = (layout: AnyLayoutV5, targetId: number): string | undefined 
       const potentialKey = findRootKey(structField.layout, targetId);
       if (potentialKey) return potentialKey;
     }
+
+    return undefined;
   }
 
   throw new Error(`Layout Not Supported: ${JSON.stringify(layout)}`);
