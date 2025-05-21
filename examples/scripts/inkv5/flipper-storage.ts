@@ -80,10 +80,10 @@ try {
   // Check specific values in the root storage
   console.log('\nChecking root storage values:');
   console.log('Value:', await root.value.get()); // Access the boolean value directly
-  console.log('Owner:', (await root.owner.get()).address()); // Access the boolean value directly
+  console.log('Owner:', (await root.owner.get())!.address()); // Access the boolean value directly
 
   console.log('Value:', await unpacked.value.get()); // Access the boolean value directly
-  console.log('Owner:', (await unpacked.owner.get()).address()); // Access the boolean value directly
+  console.log('Owner:', (await unpacked.owner.get())!.address()); // Access the boolean value directly
 
   console.log("===")
 
@@ -95,10 +95,10 @@ try {
     .untilFinalized();
 
   console.log('Value:', await root.value.get()); // Access the boolean value directly
-  console.log('Owner:', (await root.owner.get()).address()); // Access the boolean value directly
+  console.log('Owner:', (await root.owner.get())!.address()); // Access the boolean value directly
 
   console.log('Value:', await unpacked.value.get()); // Access the boolean value directly
-  console.log('Owner:', (await unpacked.owner.get()).address()); // Access the boolean value directly
+  console.log('Owner:', (await unpacked.owner.get())!.address()); // Access the boolean value directly
 
 } catch (error) {
   console.error('Error:', error);

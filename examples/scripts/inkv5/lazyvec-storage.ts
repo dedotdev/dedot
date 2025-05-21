@@ -122,7 +122,7 @@ try {
     
     // Get the first proposal if it exists
     if (length > 0) {
-      const proposal = await unpacked.proposals.get(0);
+      const proposal = (await unpacked.proposals.get(0))!;
       console.log('First proposal:', proposal);
 
       // Access specific fields of the proposal
