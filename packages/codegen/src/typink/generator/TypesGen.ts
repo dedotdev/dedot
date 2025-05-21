@@ -46,17 +46,21 @@ export class TypesGen extends BaseTypesGen {
     if (nestedLevel > 0) {
       const lazyType = isLazyType(typeDef.type.path);
 
+      if (!lazyType) return generatedType;
+
+      const [p1, p2] = typeDef.type.params!;
+
       if (lazyType === KnownLazyType.LAZY) {
-        const ValueType = super.generateType(typeDef.type.params![0].type, 1, true);
+        const ValueType = super.generateType(p1.type, 1, true);
 
         return `{ get(): Promise<${ValueType} | undefined> }`;
       } else if (lazyType === KnownLazyType.MAPPING) {
-        const KeyType = super.generateType(typeDef.type.params![0].type, 1);
-        const ValueType = super.generateType(typeDef.type.params![1].type, 1, true);
+        const KeyType = super.generateType(p1.type, 1);
+        const ValueType = super.generateType(p2.type, 1, true);
 
         return `{ get(arg: ${KeyType}): Promise<${ValueType} | undefined> }`;
       } else if (lazyType === KnownLazyType.STORAGE_VEC) {
-        const ValueType = super.generateType(typeDef.type.params![0].type, 1, true);
+        const ValueType = super.generateType(p1.type, 1, true);
 
         return `{ len(): Promise<number>; get(index: number): Promise<${ValueType} | undefined> }`;
       }
