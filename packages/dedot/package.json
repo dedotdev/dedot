@@ -31,7 +31,8 @@
     "@dedot/shape": "workspace:*",
     "@dedot/smoldot": "workspace:*",
     "@dedot/types": "workspace:*",
-    "@dedot/utils": "workspace:*"
+    "@dedot/utils": "workspace:*",
+    "smoldot": "^2.0.34"
   },
   "exports": {
     ".": {
@@ -90,14 +91,14 @@
       "default": "./src/smoldot/index.ts"
     },
     "./smoldot/worker": {
-      "types": "./src/smoldot/worker/index.ts",
-      "import": "./src/smoldot/worker/index.ts",
-      "default": "./src/smoldot/worker/index.ts"
+      "types": "./src/smoldot/worker.ts",
+      "import": "./src/smoldot/worker.ts",
+      "default": "./src/smoldot/worker.ts"
     },
     "./smoldot/with-worker": {
-      "types": "./src/smoldot/with-worker/index.ts",
-      "import": "./src/smoldot/with-worker/index.ts",
-      "default": "./src/smoldot/with-worker/index.ts"
+      "types": "./src/smoldot/with-worker.ts",
+      "import": "./src/smoldot/with-worker.ts",
+      "default": "./src/smoldot/with-worker.ts"
     }
   },
   "publishConfig": {

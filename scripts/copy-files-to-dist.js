@@ -118,16 +118,16 @@ const main = () => {
           default: './smoldot/index.js',
         };
         pkgJson.exports['./smoldot/worker'] = {
-          types: './smoldot/worker/index.d.ts',
-          import: './smoldot/worker/index.js',
-          require: './cjs/smoldot/worker/index.js',
-          default: './smoldot/worker/index.js',
+          types: './smoldot/worker.d.ts',
+          import: './smoldot/worker.js',
+          require: './cjs/smoldot/worker.js',
+          default: './smoldot/worker.js',
         };
         pkgJson.exports['./smoldot/with-worker'] = {
-          types: './smoldot/with-worker/index.d.ts',
-          import: './smoldot/with-worker/index.js',
-          require: './cjs/smoldot/with-worker/index.js',
-          default: './smoldot/with-worker/index.js',
+          types: './smoldot/with-worker.d.ts',
+          import: './smoldot/with-worker.js',
+          require: './cjs/smoldot/with-worker.js',
+          default: './smoldot/with-worker.js',
         };
       }
 

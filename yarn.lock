@@ -3481,6 +3481,7 @@ __metadata:
     "@dedot/smoldot": "workspace:*"
     "@dedot/types": "workspace:*"
     "@dedot/utils": "workspace:*"
+    smoldot: "npm:^2.0.34"
   bin:
     dedot: ./bin/dedot.mjs
     djs: ./bin/dedot.mjs
