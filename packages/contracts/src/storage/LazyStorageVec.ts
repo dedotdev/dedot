@@ -4,32 +4,13 @@ import { BaseLazyObject } from './BaseLazyObject';
 
 export class LazyStorageVec extends BaseLazyObject {
   async len(): Promise<number> {
-    const {
-      id,
-      type: { def },
-    } = this.typeDef;
-
-    assert(def.composite);
-
-    const lenTypeId = def.composite.fields![0].type;
-    const lenTypeDef = this.registry.metadata.types.find(({ id }) => id === lenTypeId);
-
-    assert(lenTypeDef);
-
-    const {
-      type: { params },
-    } = lenTypeDef;
-
-    const innerLenTypeId = params![0].type;
-    const $Len = this.registry.findCodec(innerLenTypeId);
+    const { id } = this.typeDef;
 
     const rootKey = this.findStorageRootLayout(id);
-
-    const storageKey = concatU8a(toU8a(rootKey));
-    const rawValue = await this.getContractStorage(storageKey);
+    const rawValue = await this.getContractStorage(rootKey);
 
     if (rawValue) {
-      return $Len.tryDecode(rawValue) as number;
+      return $.u32.tryDecode(rawValue) as number;
     }
 
     return 0;

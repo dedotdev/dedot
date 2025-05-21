@@ -179,3 +179,27 @@ export function findStorageRootKey(layout: AnyLayoutV5, targetId: number): strin
 
   throw new Error(`Layout Not Supported: ${JSON.stringify(layout)}`);
 }
+
+const KNOWN_LAZY_TYPES = {
+  LAZY: ['ink_storage', 'lazy', 'Lazy'].join('::'),
+  MAPPING: ['ink_storage', 'lazy', 'mapping', 'Mapping'].join('::'),
+  STORAGE_VEC: ['ink_storage', 'lazy', 'vec', 'StorageVec'].join('::'),
+};
+
+export enum KnownLazyType {
+  LAZY = 'LAZY',
+  MAPPING = 'MAPPING',
+  STORAGE_VEC = 'STORAGE_VEC',
+}
+
+export function isLazyType(typePath?: string | string[] | undefined): KnownLazyType | undefined {
+  if (!typePath) return;
+
+  if (Array.isArray(typePath)) {
+    typePath = typePath.join('::');
+  }
+
+  if (typePath === KNOWN_LAZY_TYPES.LAZY) return KnownLazyType.LAZY;
+  if (typePath === KNOWN_LAZY_TYPES.MAPPING) return KnownLazyType.MAPPING;
+  if (typePath === KNOWN_LAZY_TYPES.STORAGE_VEC) return KnownLazyType.STORAGE_VEC;
+}

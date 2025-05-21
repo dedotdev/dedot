@@ -10,7 +10,10 @@ export type InkStorageTraitsImplsAutoKey = {};
 
 export type InkStorageTraitsImplsManualKey = {};
 
-export type Flipper = { value: { get(): Promise<boolean> }; owner: { get(): Promise<AccountId32> } };
+export type Flipper = {
+  value: { get(): Promise<boolean | undefined> };
+  owner: { get(): Promise<AccountId32 | undefined> };
+};
 
 export type InkPrimitivesLangError = 'CouldNotReadInput';
 

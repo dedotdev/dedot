@@ -2,9 +2,9 @@ import { AccountId32, AccountId32Like, Bytes, TypeId, TypeRegistry } from '@dedo
 import * as $ from '@dedot/shape';
 import { IEventRecord, IRuntimeEvent } from '@dedot/types';
 import { assert, DedotError, HexString, hexToU8a, stringCamelCase, stringPascalCase } from '@dedot/utils';
-import { LazyMapping, LazyObject, LazyStorageVec } from './codecs/index.js';
+import { LazyMapping, LazyObject, LazyStorageVec } from './storage/index.js';
 import { ContractEvent, ContractEventMeta, ContractMetadata, ContractType } from './types/index.js';
-import { extractContractTypes } from './utils.js';
+import { extractContractTypes, isLazyType, KnownLazyType } from './utils.js';
 
 interface ContractEmittedEvent extends IRuntimeEvent {
   pallet: 'Contracts';
@@ -16,13 +16,6 @@ interface ContractEmittedEvent extends IRuntimeEvent {
     };
   };
 }
-
-// TODO fix duplications
-const KNOWN_LAZY_TYPES = {
-  MAPPING: ['ink_storage', 'lazy', 'mapping', 'Mapping'].join('::'),
-  LAZY: ['ink_storage', 'lazy', 'Lazy'].join('::'),
-  STORAGE_VEC: ['ink_storage', 'lazy', 'vec', 'StorageVec'].join('::'),
-};
 
 export interface TypinkRegistryOptions {
   getStorage?: (key: Uint8Array | HexString) => Promise<HexString | undefined>;
@@ -42,13 +35,13 @@ export class TypinkRegistry extends TypeRegistry {
 
     const $codec = super.findCodec<I, O>(typeId);
 
-    // const typeDef = this.findType(typeId);
-    const typePath = typeDef.type.path?.join('::');
-    if (typePath === KNOWN_LAZY_TYPES.MAPPING) {
+    const lazyType = isLazyType(typeDef.type.path);
+
+    if (lazyType === KnownLazyType.MAPPING) {
       return this.#createLazyCodec(LazyMapping, $codec, typeDef);
-    } else if (typePath === KNOWN_LAZY_TYPES.LAZY) {
+    } else if (lazyType === KnownLazyType.LAZY) {
       return this.#createLazyCodec(LazyObject, $codec, typeDef);
-    } else if (typePath === KNOWN_LAZY_TYPES.STORAGE_VEC) {
+    } else if (lazyType === KnownLazyType.STORAGE_VEC) {
       return this.#createLazyCodec(LazyStorageVec, $codec, typeDef);
     }
 
@@ -59,29 +52,8 @@ export class TypinkRegistry extends TypeRegistry {
     const typeDef = this.findType(typeId);
 
     // Check if this is a lazy storage type we want to keep
-    const typePath = typeDef.path.join('::');
-    if (
-      typePath &&
-      (typePath === KNOWN_LAZY_TYPES.MAPPING ||
-        typePath === KNOWN_LAZY_TYPES.LAZY ||
-        typePath === KNOWN_LAZY_TYPES.STORAGE_VEC)
-    ) {
-      // For lazy types, use the existing codec creation methods
-      const $codec = this.findCodec(typeId);
-
-      // Get the contract type definition for lazy codecs
-      const typeDef = this.metadata.types.find(({ id }) => id == typeId)!;
-
-      if (typePath === KNOWN_LAZY_TYPES.MAPPING) {
-        return this.#createLazyCodec(LazyMapping, $codec, typeDef);
-      } else if (typePath === KNOWN_LAZY_TYPES.LAZY) {
-        return this.#createLazyCodec(LazyObject, $codec, typeDef);
-      } else if (typePath === KNOWN_LAZY_TYPES.STORAGE_VEC) {
-        return this.#createLazyCodec(LazyStorageVec, $codec, typeDef);
-      } else {
-        throw new DedotError(`Unsupported Lazy Type`);
-      }
-    }
+    const lazyType = isLazyType(typeDef.path);
+    if (lazyType) return this.findCodec(typeId);
 
     // For non-lazy types, we need to recursively process the structure
     const { typeDef: def } = typeDef;

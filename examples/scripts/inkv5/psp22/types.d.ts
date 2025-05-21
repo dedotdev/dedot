@@ -19,8 +19,8 @@ export type Psp22Token = {
 
 export type Psp22DataPsp22Data = {
   totalSupply: bigint;
-  balances: { get(arg: AccountId32Like): Promise<bigint> };
-  allowances: { get(arg: [AccountId32Like, AccountId32Like]): Promise<bigint> };
+  balances: { get(arg: AccountId32Like): Promise<bigint | undefined> };
+  allowances: { get(arg: [AccountId32Like, AccountId32Like]): Promise<bigint | undefined> };
 };
 
 export type InkPrimitivesLangError = 'CouldNotReadInput';
