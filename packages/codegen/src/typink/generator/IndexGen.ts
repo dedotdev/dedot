@@ -17,7 +17,7 @@ export class IndexGen {
 
     const typeImports = new TypeImports();
     typeImports.addKnownType('VersionedGenericSubstrateApi', 'RpcVersion', 'RpcV2');
-    typeImports.addContractType('GenericContractApi', 'DeepOnlyGetters');
+    typeImports.addContractType('GenericContractApi', 'WithUnpackedStorage');
     typeImports.addChainType('SubstrateApi');
     typeImports.addPortableType(langErrorName);
 
@@ -60,7 +60,7 @@ export class IndexGen {
       const rootStorageName = this.typesGen.cleanPath(this.contractMetadata.types[rootStorageId].type.path!);
       typeImports.addPortableType(rootStorageName);
 
-      return [rootStorageName, `DeepOnlyGetters<${rootStorageName}>`];
+      return [rootStorageName, `WithUnpackedStorage<${rootStorageName}>`];
     } catch {
       const names = ['GenericRootStorage', 'GenericUnpackedStorage'];
       typeImports.addContractType(...names);

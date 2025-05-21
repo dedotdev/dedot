@@ -195,16 +195,16 @@ export interface ExecutionOptions {
 type HasGetter<T> = T extends { get: (...args: any[]) => any } ? true : false;
 
 // Recursive type: Keep props if they (or children) have `.get(...)`, preserve original type
-export type DeepOnlyGetters<T> = {
+export type WithUnpackedStorage<T> = {
   [K in keyof T as HasGetter<T[K]> extends true
     ? K
     : T[K] extends object
-      ? keyof DeepOnlyGetters<T[K]> extends never
+      ? keyof WithUnpackedStorage<T[K]> extends never
         ? never
         : K
       : never]: T[K] extends object
     ? HasGetter<T[K]> extends true
       ? T[K] // preserve full type if it has `.get(...)`
-      : DeepOnlyGetters<T[K]> // recurse
+      : WithUnpackedStorage<T[K]> // recurse
     : never;
 };
