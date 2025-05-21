@@ -4,7 +4,7 @@ import { LegacyClient, WsProvider } from 'dedot';
 import { Contract, ContractDeployer } from 'dedot/contracts';
 import { stringToHex } from 'dedot/utils';
 import { FlipperContractApi } from './flipper/index.js';
-import flipperMetadata from './flipper_v5.json' assert { type: 'json' };
+import flipperMetadata from './flipper.json' assert { type: 'json' };
 
 // Wait for crypto to be ready for keyring
 await cryptoWaitReady();
@@ -76,10 +76,16 @@ try {
   // For Flipper, the unpacked storage might be empty since it doesn't use lazy storage types
   console.log('\nNote: Flipper uses a simple boolean value, not lazy storage types');
   console.log('Therefore, unpacked() might return an empty object');
-  
+
   // Check specific values in the root storage
   console.log('\nChecking root storage values:');
-  console.log('Value:', root.value); // Access the boolean value directly
+  console.log('Value:', await root.value.get()); // Access the boolean value directly
+  console.log('Owner:', (await root.owner.get()).address()); // Access the boolean value directly
+
+  console.log('Value:', await unpacked.value.get()); // Access the boolean value directly
+  console.log('Owner:', (await unpacked.owner.get()).address()); // Access the boolean value directly
+
+  console.log("===")
 
   const dryRunResult = await contract.query.flip({ caller: alice.address });
 
@@ -88,8 +94,11 @@ try {
     .signAndSend(alice)
     .untilFinalized();
 
-  const updatedRoot = await contract.storage.root();
-  console.log('Updated root storage:', updatedRoot);
+  console.log('Value:', await root.value.get()); // Access the boolean value directly
+  console.log('Owner:', (await root.owner.get()).address()); // Access the boolean value directly
+
+  console.log('Value:', await unpacked.value.get()); // Access the boolean value directly
+  console.log('Owner:', (await unpacked.owner.get()).address()); // Access the boolean value directly
 
 } catch (error) {
   console.error('Error:', error);
