@@ -103,8 +103,10 @@ export class Contract<ContractApi extends GenericContractApi = GenericContractAp
   }
 
   #getStorage = async (key: Uint8Array | HexString): Promise<HexString | undefined> => {
-    const rawKey = toU8a(key);
-    const result = await this.client.call.contractsApi.getStorage(this.address.address(), rawKey);
+    const result = await this.client.call.contractsApi.getStorage(
+      this.address.address(), //--
+      toU8a(key),
+    );
 
     if (result.isOk) {
       return result.value;
