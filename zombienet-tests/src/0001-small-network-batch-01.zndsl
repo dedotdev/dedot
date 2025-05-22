@@ -16,3 +16,7 @@ alice: ts-script ./0001-check-tx-alter-payload.ts within 200 seconds
 alice: ts-script ./0001-verify-contract-errors.ts within 500 seconds
 alice: ts-script ./0001-check-query-with-partial-keys.ts within 3000 seconds
 alice: ts-script ./0001-verify-dedot-client-events.ts within 100 seconds
+alice: ts-script ./0001-check-runtime-api.ts within 100 seconds
+alice: ts-script ./0001-check-storage-query.ts within 100 seconds
+alice: ts-script ./0001-check-storage-query-v2.ts within 100 seconds
+alice: ts-script ./0001-check-storage-map-pagination.ts within 200 seconds
