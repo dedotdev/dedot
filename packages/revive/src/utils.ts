@@ -11,7 +11,7 @@ import {
 } from '@dedot/codecs';
 import { GenericSubstrateApi, InkContractTypeDef, ReturnFlags, RpcVersion } from '@dedot/types';
 import { HexString, hexToU8a, keccakAsU8a, stringCamelCase, toHex, u8aToHex } from '@dedot/utils';
-import { encodeRlp } from 'ethers';
+import { RLP } from '@ethereumjs/rlp';
 import { Executor } from './executor/index.js';
 import { ContractMetadata } from './types.js';
 
@@ -147,7 +147,7 @@ export function toReturnFlags(bits: number): ReturnFlags {
 
 // https://github.com/paritytech/polkadot-sdk/blob/5405e473854b139f1d0735550d90687eaf1a13f9/substrate/frame/revive/src/address.rs#L197-L204
 export function create1(deployer: AccountId20Like, nonce: number): HexString {
-  const encodedData = encodeRlp([new AccountId20(deployer).raw, toHex(nonce)]);
+  const encodedData = RLP.encode([new AccountId20(deployer).raw, toHex(nonce)]);
   const hash = keccakAsU8a(encodedData);
 
   return u8aToHex(hash.subarray(12));

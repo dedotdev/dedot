@@ -22,7 +22,7 @@
     "@dedot/codecs": "workspace:*",
     "@dedot/types": "workspace:*",
     "@dedot/utils": "workspace:*",
-    "ethers": "^6.14.1"
+    "@ethereumjs/rlp": "^10.0.0"
   },
   "publishConfig": {
     "access": "public",
