@@ -113,19 +113,6 @@ export interface ParamInfo {
   type: number;
 }
 
-export interface ContractStorage {
-  root: {
-    layout: {
-      struct: {
-        //TODO: Write interface for fields when in needed
-        fields: any[];
-        name: string;
-      };
-    };
-    root_key: string;
-  };
-}
-
 export interface ContractEventArg extends ContractMessageArg {
   docs: string[];
   indexed: boolean;
