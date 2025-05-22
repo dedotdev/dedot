@@ -1,6 +1,6 @@
 import * as $ from '@dedot/shape';
-import { assert, concatU8a, toU8a } from '@dedot/utils';
-import { BaseLazyObject } from './BaseLazyObject';
+import { concatU8a, toU8a } from '@dedot/utils';
+import { BaseLazyObject } from './BaseLazyObject.js';
 
 export class LazyStorageVec extends BaseLazyObject {
   async len(): Promise<number> {

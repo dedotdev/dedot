@@ -1,5 +1,5 @@
 import { concatU8a, toU8a } from '@dedot/utils';
-import { BaseLazyObject } from './BaseLazyObject';
+import { BaseLazyObject } from './BaseLazyObject.js';
 
 export class LazyMapping extends BaseLazyObject {
   async get(key: any) {
