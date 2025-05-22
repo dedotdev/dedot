@@ -77,14 +77,14 @@ export const run = async (_nodeName: any, networkInfo: any) => {
       raw: { gasRequired: createProposalGas },
     } = await contract.query.createProposal(
       new Uint8Array([1, 2, 3, 4, 5]), // data
-      100, // duration
+      0, // duration
       2, // min_approvals
     );
 
     await contract.tx
       .createProposal(
         new Uint8Array([1, 2, 3, 4, 5]), // data
-        100, // duration
+        0, // duration
         2, // min_approvals
         { gasLimit: createProposalGas },
       )
@@ -106,7 +106,7 @@ export const run = async (_nodeName: any, networkInfo: any) => {
     // Verify proposal data
     assert(proposal!.minApprovals === 2, 'Proposal min_approvals should be 2');
     assert(proposal!.approvals === 0, 'Proposal approvals should be 0');
-    assert(proposal!.until > 100, 'Proposal until should be larger than 100');
+    assert(proposal!.until > 0, 'Proposal until should be larger than 0');
 
     // Create a second proposal
     console.log(`[${api.rpcVersion}] Creating a second proposal...`);
