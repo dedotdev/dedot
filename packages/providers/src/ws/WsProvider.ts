@@ -3,14 +3,39 @@ import { assert } from '@dedot/utils';
 import { SubscriptionProvider } from '../base/index.js';
 import { JsonRpcRequest } from '../types.js';
 
+/**
+ * Information provided to the endpoint selector function
+ */
+export interface ConnectionState {
+  /**
+   * Connection attempt counter (1 for initial, increments on reconnects)
+   * Resets to 1 after a successful connection
+   */
+  attempt: number;
+
+  /**
+   * The current endpoint being connected to or the last successfully connected endpoint
+   */
+  currentEndpoint: string;
+}
+
+/**
+ * Function that returns an endpoint string when called
+ * @param info Connection attempt information
+ * @returns A valid websocket endpoint string
+ */
+export type EndpointSelector = (info: ConnectionState) => string | Promise<string>;
+
 export interface WsProviderOptions {
   /**
-   * The websocket endpoint to connect to
+   * The websocket endpoint to connect to, or a function that returns an endpoint
    * A valid endpoint should start with `wss://`, `ws://`
+   * If a function is provided, it will be called whenever an endpoint is needed
+   * (initial connection and reconnection attempts)
    *
    * @required
    */
-  endpoint: string;
+  endpoint: string | EndpointSelector;
   /**
    * Delay in milliseconds before retrying to connect
    * If the value is <= 0, retry will be disabled
@@ -69,6 +94,10 @@ export class WsProvider extends SubscriptionProvider {
   #ws?: WebSocket;
   #timeoutTimer?: ReturnType<typeof setInterval>;
 
+  // Connection state tracking
+  #attempt: number = 1;
+  #currentEndpoint?: string;
+
   constructor(options: WsProviderOptions | string) {
     super();
 
@@ -76,7 +105,7 @@ export class WsProvider extends SubscriptionProvider {
   }
 
   async connect(): Promise<this> {
-    this.#connectAndRetry();
+    this.#connectAndRetry().catch(console.error);
     return this.#untilConnected();
   }
 
@@ -105,11 +134,45 @@ export class WsProvider extends SubscriptionProvider {
     return this.#options.retryDelayMs > 0;
   }
 
-  #doConnect() {
+  /**
+   * Get the current endpoint, either directly or by calling the endpoint selector function
+   */
+  async #getEndpoint(): Promise<string> {
+    const endpoint = this.#options.endpoint;
+
+    if (typeof endpoint === 'function') {
+      // Create a connection state object to pass to the endpoint selector
+      const info: ConnectionState = {
+        attempt: this.#attempt,
+        currentEndpoint: this.#currentEndpoint!,
+      };
+
+      const result = await Promise.resolve(endpoint(info));
+      this.#validateEndpoint(result);
+      return result;
+    }
+
+    return endpoint;
+  }
+
+  /**
+   * Validate that an endpoint is properly formatted
+   */
+  #validateEndpoint(endpoint: string): void {
+    if (!endpoint || (!endpoint.startsWith('ws://') && !endpoint.startsWith('wss://'))) {
+      throw new Error(`Invalid websocket endpoint ${endpoint}, a valid endpoint should start with wss:// or ws://`);
+    }
+  }
+
+  async #doConnect() {
     assert(!this.#ws, 'Websocket connection already exists');
 
     try {
-      this.#ws = new WebSocket(this.#options.endpoint);
+      // Get the endpoint (may be async)
+      const endpoint = await this.#getEndpoint();
+      this.#currentEndpoint = endpoint;
+
+      this.#ws = new WebSocket(endpoint);
       this.#ws.onopen = this.#onSocketOpen;
       this.#ws.onclose = this.#onSocketClose;
       this.#ws.onmessage = this.#onSocketMessage;
@@ -123,11 +186,11 @@ export class WsProvider extends SubscriptionProvider {
     }
   }
 
-  #connectAndRetry() {
+  async #connectAndRetry() {
     assert(!this.#ws, 'Websocket connection already exists');
 
     try {
-      this.#doConnect();
+      await this.#doConnect();
     } catch (e) {
       if (!this.#shouldRetry) {
         throw e;
@@ -140,14 +203,21 @@ export class WsProvider extends SubscriptionProvider {
   #retry() {
     if (!this.#shouldRetry) return;
 
+    // Increment attempt counter for reconnection
+    this.#attempt++;
+
     setTimeout(() => {
       this._setStatus('reconnecting');
 
-      this.#connectAndRetry();
+      this.#connectAndRetry().catch(console.error);
     }, this.#options.retryDelayMs);
   }
 
   #onSocketOpen = async (event: Event) => {
+    // Connection successful - reset attempt counter
+    // currentEndpoint is already set and represents the successfully connected endpoint
+    this.#attempt = 1;
+
     this._setStatus('connected');
 
     // re-subscribe to previous subscriptions if this is a reconnect
@@ -214,7 +284,7 @@ export class WsProvider extends SubscriptionProvider {
   #onSocketClose = (event: CloseEvent) => {
     this.#clearWs();
 
-    const error = new Error(`disconnected from ${this.#options.endpoint}: ${event.code} - ${event.reason}`);
+    const error = new Error(`disconnected from ${this.#currentEndpoint}: ${event.code} - ${event.reason}`);
 
     // Reject all pending requests
     Object.values(this._handlers).forEach(({ defer }) => {
@@ -254,10 +324,11 @@ export class WsProvider extends SubscriptionProvider {
             ...options,
           };
 
-    const { endpoint = '' } = normalizedOptions;
-
-    if (!endpoint.startsWith('ws://') && !endpoint.startsWith('wss://')) {
-      throw new Error(`Invalid websocket endpoint ${endpoint}, a valid endpoint should start with wss:// or ws://`);
+    // Only validate string endpoints here
+    // Function endpoints will be validated when they're called
+    const { endpoint } = normalizedOptions;
+    if (typeof endpoint === 'string') {
+      this.#validateEndpoint(endpoint);
     }
 
     return normalizedOptions as Required<WsProviderOptions>;
@@ -284,7 +355,7 @@ export class WsProvider extends SubscriptionProvider {
   }
 
   /**
-   * Unsafe access to the websocket instance, use with caution. 
+   * Unsafe access to the websocket instance, use with caution.
    * Currently only used for testing
    */
   protected __unsafeWs(): WebSocket | undefined {
