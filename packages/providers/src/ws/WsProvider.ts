@@ -1,5 +1,5 @@
 import { WebSocket } from '@polkadot/x-ws';
-import { assert } from '@dedot/utils';
+import { assert, DedotError } from '@dedot/utils';
 import { SubscriptionProvider } from '../base/index.js';
 import { JsonRpcRequest } from '../types.js';
 
@@ -160,7 +160,9 @@ export class WsProvider extends SubscriptionProvider {
    */
   #validateEndpoint(endpoint: string): void {
     if (!endpoint || (!endpoint.startsWith('ws://') && !endpoint.startsWith('wss://'))) {
-      throw new Error(`Invalid websocket endpoint ${endpoint}, a valid endpoint should start with wss:// or ws://`);
+      throw new DedotError(
+        `Invalid websocket endpoint ${endpoint}, a valid endpoint should start with wss:// or ws://`,
+      );
     }
   }
 
@@ -261,7 +263,7 @@ export class WsProvider extends SubscriptionProvider {
 
       Object.values(this._handlers).forEach(({ from, defer, request }) => {
         if (now - from > timeout) {
-          defer.reject(new Error(`Request timed out after ${timeout}ms`));
+          defer.reject(new DedotError(`Request timed out after ${timeout}ms`));
           delete this._handlers[request.id];
         }
       });
@@ -284,7 +286,7 @@ export class WsProvider extends SubscriptionProvider {
   #onSocketClose = (event: CloseEvent) => {
     this.#clearWs();
 
-    const error = new Error(`disconnected from ${this.#currentEndpoint}: ${event.code} - ${event.reason}`);
+    const error = new DedotError(`disconnected from ${this.#currentEndpoint}: ${event.code} - ${event.reason}`);
 
     // Reject all pending requests
     Object.values(this._handlers).forEach(({ defer }) => {
