@@ -95,8 +95,38 @@ export const run = async (nodeName: any, networkInfo: any): Promise<void> => {
 
   await provider2.disconnect();
 
-  // Test 3: Endpoint selector with alternating URLs
-  console.log('\n=== Test 3: Alternating Endpoint Selection ===');
+  // Test 3: Direct endpoint selector constructor (new simplified syntax)
+  console.log('\n=== Test 3: Direct Endpoint Selector Constructor ===');
+
+  const directSelectorCalls: WsConnectionState[] = [];
+  const directSelector: WsEndpointSelector = (info: WsConnectionState) => {
+    console.log('Direct selector called with:', info);
+    directSelectorCalls.push({ ...info });
+    return aliceUrl; // Use alice URL for this test
+  };
+
+  // Test the new simplified syntax: pass endpoint selector directly
+  const provider3 = new WsProvider(directSelector);
+
+  await provider3.connect();
+
+  // Verify selector was called with correct initial state
+  assert(directSelectorCalls.length === 1, 'Direct selector should be called exactly once');
+  assert(directSelectorCalls[0].attempt === 1, 'Initial attempt should be 1');
+  assert(directSelectorCalls[0].currentEndpoint === undefined, 'Initial currentEndpoint should be undefined');
+
+  // Test basic RPC functionality
+  const genesisHashDirect = await provider3.send('chain_getBlockHash', [0]);
+  assert(isHex(genesisHashDirect), 'Expected genesis hash to be a hex string');
+  console.log('Genesis hash from direct selector:', genesisHashDirect);
+
+  // Should match previous genesis hash (same chain)
+  assert(genesisHash === genesisHashDirect, 'Genesis hashes should match between different provider instances');
+
+  await provider3.disconnect();
+
+  // Test 4: Endpoint selector with alternating URLs
+  console.log('\n=== Test 4: Alternating Endpoint Selection ===');
 
   const alternateCalls: WsConnectionState[] = [];
   let alternateCallCount = 0;
@@ -110,15 +140,15 @@ export const run = async (nodeName: any, networkInfo: any): Promise<void> => {
     return alternateCallCount % 2 === 1 ? aliceUrl : bobUrl;
   };
 
-  const provider3 = new WsProvider({ endpoint: alternatingSelector });
+  const provider4 = new WsProvider({ endpoint: alternatingSelector });
 
-  await provider3.connect();
+  await provider4.connect();
 
   // Test subscription functionality
   console.log('Testing subscription on endpoint selector connection...');
 
   return new Promise(async (resolve, reject) => {
-    const subscription = await provider3.subscribe(
+    const subscription = await provider4.subscribe(
       {
         subname: 'chain_newHead',
         subscribe: 'chain_subscribeNewHead',
@@ -142,7 +172,7 @@ export const run = async (nodeName: any, networkInfo: any): Promise<void> => {
           assert(alternateCalls.length >= 1, 'Alternating selector should be called at least once');
           assert(alternateCalls[0].attempt === 1, 'First call should have attempt = 1');
 
-          await provider3.disconnect();
+          await provider4.disconnect();
 
           console.log('\n=== All EndpointSelector Tests Passed! ===');
           resolve();

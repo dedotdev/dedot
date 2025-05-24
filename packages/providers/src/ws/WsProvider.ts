@@ -95,7 +95,7 @@ export class WsProvider extends SubscriptionProvider {
   #attempt: number = 1;
   #currentEndpoint?: string;
 
-  constructor(options: WsProviderOptions | string) {
+  constructor(options: WsProviderOptions | string | WsEndpointSelector) {
     super();
 
     this.#options = this.#normalizeOptions(options);
@@ -313,9 +313,9 @@ export class WsProvider extends SubscriptionProvider {
     this._onReceiveResponse(message.data);
   };
 
-  #normalizeOptions(options: WsProviderOptions | string): Required<WsProviderOptions> {
+  #normalizeOptions(options: WsProviderOptions | string | WsEndpointSelector): Required<WsProviderOptions> {
     const normalizedOptions =
-      typeof options === 'string'
+      typeof options === 'string' || typeof options === 'function'
         ? {
             ...DEFAULT_OPTIONS,
             endpoint: options,

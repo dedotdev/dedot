@@ -104,6 +104,26 @@ describe('WsProvider', () => {
     expect(endpointSelector).toHaveBeenCalledTimes(1);
   });
 
+  it('connects using endpoint selector function passed directly to constructor', async () => {
+    const endpointSelector = vi.fn(() => FAKE_WS_URL);
+    const provider = new WsProvider(endpointSelector);
+
+    await expect(provider.connect()).resolves.toBe(provider);
+    expect(endpointSelector).toHaveBeenCalledTimes(1);
+    expect(endpointSelector).toHaveBeenCalledWith(
+      expect.objectContaining({
+        attempt: 1,
+        currentEndpoint: undefined,
+      }),
+    );
+  });
+
+  it('throws an error when endpoint selector passed directly returns an invalid endpoint', async () => {
+    const endpointSelector: WsEndpointSelector = () => 'invalid-endpoint';
+    const provider = new WsProvider({ endpoint: endpointSelector, retryDelayMs: -1 });
+    await expect(provider.connect()).rejects.toThrow();
+  });
+
   it('sends a JSON-RPC request over the websocket connection', async () => {
     const provider = new WsProvider(FAKE_WS_URL);
     await provider.connect();
