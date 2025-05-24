@@ -1,7 +1,7 @@
 import { describe, expect, it, beforeAll, afterAll } from 'vitest';
-import { knownSignedExtensions } from '../known/index.js';
 import { ExtraSignedExtension } from '../ExtraSignedExtension.js';
 import { FallbackSignedExtension, isEmptyStructOrTuple } from '../FallbackSignedExtension.js';
+import { knownSignedExtensions } from '../known/index.js';
 
 describe('isEmptyStructOrTuple', () => {
   // Mock registry with various type definitions
@@ -89,10 +89,10 @@ describe('FallbackSignedExtension', () => {
   const mockRegistry = {
     metadata: {
       extrinsic: {
-        signedExtensions: [
-          { ident: 'CheckNonZeroSender', typeId: 1, additionalSigned: 2 },
-          { ident: 'CheckWeight', typeId: 3, additionalSigned: 4 },
-          { ident: 'UnknownExtension', typeId: 5, additionalSigned: 6 },
+        transactionExtensions: [
+          { identifier: 'CheckNonZeroSender', typeId: 1, implicit: 2 },
+          { identifier: 'CheckWeight', typeId: 3, implicit: 4 },
+          { identifier: 'UnknownExtension', typeId: 5, implicit: 6 },
         ],
         extraTypeId: 7,
       },
@@ -191,7 +191,7 @@ describe('FallbackSignedExtension', () => {
 
     // This should throw an error
     await expect(extraSignedExtension.init()).rejects.toThrow(
-      'SignedExtension for UnknownExtension requires input but is not implemented'
+      'SignedExtension for UnknownExtension requires input but is not implemented',
     );
   });
 });

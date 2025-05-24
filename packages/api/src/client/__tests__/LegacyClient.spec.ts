@@ -104,7 +104,7 @@ describe('LegacyClient', () => {
       it('should inspect errors', () => {
         api.metadata.latest.pallets.forEach((pallet) => {
           if (!pallet.error) return;
-          const event = api.metadata.latest.types[pallet.error];
+          const event = api.metadata.latest.types[pallet.error.typeId];
           if (event.typeDef.type === 'Enum') {
             event.typeDef.value.members.forEach((m) => {
               expect(api.errors[stringCamelCase(pallet.name)][stringPascalCase(m.name)]).toHaveProperty(['is']);
@@ -130,7 +130,7 @@ describe('LegacyClient', () => {
       it('should inspect events', () => {
         api.metadata.latest.pallets.forEach((pallet) => {
           if (!pallet.event) return;
-          const event = api.metadata.latest.types[pallet.event];
+          const event = api.metadata.latest.types[pallet.event.typeId];
           if (event.typeDef.type === 'Enum') {
             event.typeDef.value.members.forEach((m) => {
               expect(api.events[stringCamelCase(pallet.name)][stringPascalCase(m.name)]).toHaveProperty(['is']);
@@ -232,7 +232,7 @@ describe('LegacyClient', () => {
       it('should be available', async () => {
         api.metadata.latest.pallets.forEach((pallet) => {
           if (!pallet.calls) return;
-          const calls = api.metadata.latest.types[pallet.calls];
+          const calls = api.metadata.latest.types[pallet.calls.typeId];
           if (calls.typeDef.type === 'Enum') {
             calls.typeDef.value.members.forEach((m) => {
               const tx = api.tx[stringCamelCase(pallet.name)][stringCamelCase(m.name)];
@@ -328,19 +328,26 @@ describe('LegacyClient', () => {
 
         // Set up the spy before making the call
         const providerSend = vi.spyOn(api.provider, 'send');
-        
+
         // Mock state_queryStorageAt response
         const mockChanges = [
-          { changes: [['0x01', '0xvalue1'], ['0x02', '0xvalue2']] },
+          {
+            changes: [
+              ['0x01', '0xvalue1'],
+              ['0x02', '0xvalue2'],
+            ],
+          },
         ];
         provider.setRpcRequest('state_queryStorageAt', () => mockChanges);
 
         // Mock QueryableStorage
         const mockDecodedValue1 = 42;
         const mockDecodedValue2 = ['event1', 'event2'];
-        
+
         // Use vi.spyOn to mock the QueryableStorage constructor and its decodeValue method
-        const originalQueryableStorage = await import('../../storage/QueryableStorage.js').then(m => m.QueryableStorage);
+        const originalQueryableStorage = await import('../../storage/QueryableStorage.js').then(
+          (m) => m.QueryableStorage,
+        );
         vi.spyOn(originalQueryableStorage.prototype, 'decodeValue')
           .mockImplementationOnce(() => mockDecodedValue1)
           .mockImplementationOnce(() => mockDecodedValue2);
@@ -375,16 +382,16 @@ describe('LegacyClient', () => {
 
         // Set up the spy before making the call
         const providerSend = vi.spyOn(api.provider, 'send');
-        
+
         // Create a mock subscription ID
         const mockSubscriptionId = 'storage-sub-123';
-        
+
         // Create a mock unsubscribe function
         const mockUnsub = vi.fn();
-        
+
         // Mock the state_subscribeStorage RPC method to return the subscription ID
         provider.setRpcRequest('state_subscribeStorage', () => mockSubscriptionId);
-        
+
         // Mock the state_unsubscribeStorage RPC method
         provider.setRpcRequest('state_unsubscribeStorage', () => {
           mockUnsub();
@@ -394,66 +401,76 @@ describe('LegacyClient', () => {
         // Mock QueryableStorage
         const mockDecodedValue1 = 42;
         const mockDecodedValue2 = ['event1', 'event2'];
-        
-        const originalQueryableStorage = await import('../../storage/QueryableStorage.js').then(m => m.QueryableStorage);
-        vi.spyOn(originalQueryableStorage.prototype, 'decodeValue')
-          .mockImplementation((raw) => {
-            if (raw === '0xvalue1') return mockDecodedValue1;
-            if (raw === '0xvalue2') return mockDecodedValue2;
-            if (raw === '0xnewvalue1') return 43;
-            if (raw === '0xnewvalue2') return ['event3', 'event4'];
-            return undefined;
-          });
+
+        const originalQueryableStorage = await import('../../storage/QueryableStorage.js').then(
+          (m) => m.QueryableStorage,
+        );
+        vi.spyOn(originalQueryableStorage.prototype, 'decodeValue').mockImplementation((raw) => {
+          if (raw === '0xvalue1') return mockDecodedValue1;
+          if (raw === '0xvalue2') return mockDecodedValue2;
+          if (raw === '0xnewvalue1') return 43;
+          if (raw === '0xnewvalue2') return ['event3', 'event4'];
+          return undefined;
+        });
 
         // Mock callback
         const callback = vi.fn();
 
         // Call queryMulti with subscription
-        const unsub = await api.queryMulti([
-          { fn: mockQueryFn1 as any, args: [] },
-          { fn: mockQueryFn2 as any, args: [] },
-        ], callback);
+        const unsub = await api.queryMulti(
+          [
+            { fn: mockQueryFn1 as any, args: [] },
+            { fn: mockQueryFn2 as any, args: [] },
+          ],
+          callback,
+        );
 
         // Verify state_subscribeStorage was called with the correct keys
         expect(providerSend).toHaveBeenCalledWith('state_subscribeStorage', expect.any(Array));
 
         // Simulate a change event by directly calling the callback registered in the provider
         const mockChangeSet = {
-          changes: [['0x01', '0xvalue1'], ['0x02', '0xvalue2']],
+          changes: [
+            ['0x01', '0xvalue1'],
+            ['0x02', '0xvalue2'],
+          ],
         };
-        
+
         // Use the notify method to simulate a subscription update
         provider.notify(mockSubscriptionId, mockChangeSet);
-        
+
         // Wait for the callback to be called
-        await new Promise(resolve => setTimeout(resolve, 0));
-        
+        await new Promise((resolve) => setTimeout(resolve, 0));
+
         // Verify the callback was called with the decoded values
         expect(callback).toHaveBeenCalledWith([mockDecodedValue1, mockDecodedValue2]);
 
         // Simulate another change event with different values
         const mockChangeSet2 = {
-          changes: [['0x01', '0xnewvalue1'], ['0x02', '0xnewvalue2']],
+          changes: [
+            ['0x01', '0xnewvalue1'],
+            ['0x02', '0xnewvalue2'],
+          ],
         };
-        
+
         // Reset the mock to check only the new call
         callback.mockReset();
-        
+
         // Use the notify method to simulate another subscription update
         provider.notify(mockSubscriptionId, mockChangeSet2);
-        
+
         // Wait for the callback to be called
-        await new Promise(resolve => setTimeout(resolve, 0));
-        
+        await new Promise((resolve) => setTimeout(resolve, 0));
+
         // Verify the callback was called with the new decoded values
         expect(callback).toHaveBeenCalledWith([43, ['event3', 'event4']]);
 
         // Verify the unsubscribe function
         expect(typeof unsub).toBe('function');
-        
+
         // Call the unsubscribe function
         await (unsub as Function)();
-        
+
         // Verify the mock unsubscribe was called
         expect(mockUnsub).toHaveBeenCalledTimes(1);
       });
@@ -472,7 +489,9 @@ describe('LegacyClient', () => {
 
         // Mock state_queryStorageAt to throw an error
         const mockError = new Error('Storage query failed');
-        provider.setRpcRequest('state_queryStorageAt', () => { throw mockError; });
+        provider.setRpcRequest('state_queryStorageAt', () => {
+          throw mockError;
+        });
 
         // Call queryMulti and expect it to reject with the error
         await expect(api.queryMulti([{ fn: mockQueryFn as any, args: [] }])).rejects.toThrow(mockError);
