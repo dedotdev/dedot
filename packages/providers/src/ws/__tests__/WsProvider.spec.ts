@@ -1,7 +1,7 @@
 import { JsonRpcRequest, JsonRpcResponse } from '@dedot/providers';
 import { Client, Server } from 'mock-socket';
-import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
-import { ConnectionState, EndpointSelector, WsProvider, WsProviderOptions } from '../WsProvider.js';
+import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
+import { EndpointSelector, WsProvider, WsProviderOptions } from '../WsProvider.js';
 
 // Global handler for unhandled rejections
 process.on('unhandledRejection', (reason) => {

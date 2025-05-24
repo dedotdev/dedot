@@ -3,9 +3,6 @@ import { assert, DedotError } from '@dedot/utils';
 import { SubscriptionProvider } from '../base/index.js';
 import { JsonRpcRequest } from '../types.js';
 
-/**
- * Information provided to the endpoint selector function
- */
 export interface ConnectionState {
   /**
    * Connection attempt counter (1 for initial, increments on reconnects)
@@ -16,7 +13,7 @@ export interface ConnectionState {
   /**
    * The current endpoint being connected to or the last successfully connected endpoint
    */
-  currentEndpoint: string;
+  currentEndpoint?: string;
 }
 
 /**
@@ -144,12 +141,12 @@ export class WsProvider extends SubscriptionProvider {
       // Create a connection state object to pass to the endpoint selector
       const info: ConnectionState = {
         attempt: this.#attempt,
-        currentEndpoint: this.#currentEndpoint!,
+        currentEndpoint: this.#currentEndpoint,
       };
 
-      const result = await Promise.resolve(endpoint(info));
-      this.#validateEndpoint(result);
-      return result;
+      return this.#validateEndpoint(
+        await Promise.resolve(endpoint(info)), // --
+      );
     }
 
     return endpoint;
@@ -158,12 +155,14 @@ export class WsProvider extends SubscriptionProvider {
   /**
    * Validate that an endpoint is properly formatted
    */
-  #validateEndpoint(endpoint: string): void {
+  #validateEndpoint(endpoint: string): string {
     if (!endpoint || (!endpoint.startsWith('ws://') && !endpoint.startsWith('wss://'))) {
       throw new DedotError(
         `Invalid websocket endpoint ${endpoint}, a valid endpoint should start with wss:// or ws://`,
       );
     }
+
+    return endpoint;
   }
 
   async #doConnect() {
