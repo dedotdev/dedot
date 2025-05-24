@@ -26,7 +26,7 @@ export const run = async (nodeName: any, networkInfo: any): Promise<void> => {
 
       const $Address = api.registry.findCodec<any>(addressTypeId);
       const $Signature = api.registry.findCodec<any>(signatureTypeId);
-      const $Extra = api.registry.createExtraCodec(4);
+      const $Extra = api.registry.$Extra(4);
 
       const $ExtrinsicSignature: $.Shape<ExtrinsicSignature> = $.Struct({
         address: $Address,
