@@ -169,11 +169,9 @@ export class WsProvider extends SubscriptionProvider {
     assert(!this.#ws, 'Websocket connection already exists');
 
     try {
-      // Get the endpoint (may be async)
-      const endpoint = await this.#getEndpoint();
-      this.#currentEndpoint = endpoint;
+      this.#currentEndpoint = await this.#getEndpoint();
 
-      this.#ws = new WebSocket(endpoint);
+      this.#ws = new WebSocket(this.#currentEndpoint);
       this.#ws.onopen = this.#onSocketOpen;
       this.#ws.onclose = this.#onSocketClose;
       this.#ws.onmessage = this.#onSocketMessage;
