@@ -3,8 +3,6 @@ import { assert, isHex, isNumber } from 'dedot/utils';
 
 export const run = async (nodeName: any, networkInfo: any): Promise<void> => {
   const { wsUri: endpoint } = networkInfo.nodesByName[nodeName];
-  console.log(nodeName);
-  console.log(networkInfo);
 
   const provider = new WsProvider(endpoint);
 
