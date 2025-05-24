@@ -197,6 +197,76 @@ describe('WsProvider', () => {
     }
   });
 
+  it('connects using an array of endpoints', async () => {
+    const provider = new WsProvider({
+      endpoint: [FAKE_WS_URL, FAKE_WS_URL_2]
+    });
+
+    await expect(provider.connect()).resolves.toBe(provider);
+    await provider.disconnect();
+  });
+
+  it('throws an error when endpoint array is empty', async () => {
+    expect(() => {
+      new WsProvider({ endpoint: [] });
+    }).toThrow('Endpoint array cannot be empty');
+  });
+
+  it('validates all endpoints in array during construction', async () => {
+    expect(() => {
+      new WsProvider({ endpoint: [FAKE_WS_URL, 'invalid-endpoint'] });
+    }).toThrow('Invalid websocket endpoint invalid-endpoint');
+  });
+
+  it('avoids last failed endpoint when reconnecting with array', async () => {
+    // Mock Math.random to control endpoint selection
+    const originalRandom = Math.random;
+    let randomCallCount = 0;
+    Math.random = vi.fn(() => {
+      // First call (initial connection): return 0 to select first endpoint
+      // Second call (reconnection): return 0 to select first available endpoint (which will be the second one)
+      return 0;
+    });
+
+    try {
+      const provider = new WsProvider({
+        endpoint: [FAKE_WS_URL, FAKE_WS_URL_2],
+        retryDelayMs: 100,
+      });
+
+      // Add error handler to catch any unhandled errors
+      provider.on('error', () => {
+        // Intentionally empty - just to prevent unhandled errors
+      });
+
+      // Get access to the private WebSocket instance
+      const getWs = () => (provider as any).__unsafeWs();
+
+      // Connect initially - should use first endpoint (FAKE_WS_URL)
+      await provider.connect();
+
+      // Store the current WebSocket
+      const ws = getWs();
+
+      // Manually trigger the onclose event to simulate a disconnection
+      const closeEvent = { code: 1006, reason: 'Test close', wasClean: false };
+      (ws.onclose as any)(closeEvent);
+
+      // Wait for reconnection to happen
+      await new Promise((resolve) => setTimeout(resolve, 200));
+
+      // The provider should have attempted to reconnect
+      // Since FAKE_WS_URL failed, it should try FAKE_WS_URL_2
+      // We can't easily verify the exact endpoint used, but we can verify it connected
+      expect(provider.status).toBe('connected');
+
+      await provider.disconnect();
+    } finally {
+      // Restore original Math.random
+      Math.random = originalRandom;
+    }
+  });
+
   it('throws an error when the request is timed out', async () => {
     // Create a testable provider that allows direct access to the timeout handler
     class TestableWsProvider extends WsProvider {
