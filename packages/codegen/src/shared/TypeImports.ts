@@ -1,7 +1,13 @@
 type ImportConfig = {
   excludeModules?: string[];
   useSubPaths?: boolean;
+  smartContractApi?: SmartContractApi;
 };
+
+export enum SmartContractApi {
+  ReviveApi = 'revive',
+  ContractsApi = 'contracts',
+}
 
 export class TypeImports {
   // Portable types from chain/metadata
@@ -13,7 +19,7 @@ export class TypeImports {
   knownJsonRpcTypes: Set<string>;
   // External types to define explicitly
   outTypes: Set<string>;
-  // Know types defined in @dedot/contracts
+  // Know contract types
   contractTypes: Set<string>;
   // Know types defined in @dedot/api/chaintypes or dedot/chaintypes
   chainTypes: Set<string>;
@@ -39,7 +45,7 @@ export class TypeImports {
   }
 
   toImports(config?: ImportConfig) {
-    const { excludeModules = [], useSubPaths = false } = config || {};
+    const { excludeModules = [], useSubPaths = false, smartContractApi = SmartContractApi.ContractsApi } = config || {};
 
     // TODO generate outTypes!
     const prefix = useSubPaths ? '' : '@';
@@ -48,7 +54,7 @@ export class TypeImports {
       [this.knownTypes, `${prefix}dedot/types`],
       [this.knownJsonRpcTypes, `${prefix}dedot/types/json-rpc`],
       [this.codecTypes, `${prefix}dedot/codecs`],
-      [this.contractTypes, `${prefix}dedot/contracts`],
+      [this.contractTypes, `${prefix}dedot/${smartContractApi}`],
       [this.chainTypes, prefix ? '@dedot/api/chaintypes' : 'dedot/chaintypes'],
       [this.portableTypes, './types.js'],
     ];

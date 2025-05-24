@@ -2,6 +2,7 @@ import { ContractMetadata, parseRawMetadata } from '@dedot/contracts';
 import { stringDashCase, stringPascalCase } from '@dedot/utils';
 import fs from 'fs';
 import path from 'path';
+import { SmartContractApi } from '../shared/TypeImports.js';
 import { GeneratedResult } from '../types.js';
 import {
   IndexGen,
@@ -19,6 +20,7 @@ export async function generateContractTypes(
   outDir: string = '.',
   extension: string = 'd.ts',
   useSubPaths: boolean = false,
+  smartContractApi: SmartContractApi = SmartContractApi.ContractsApi,
 ): Promise<GeneratedResult> {
   let contractMetadata = typeof metadata === 'string' ? parseRawMetadata(metadata) : metadata;
   const contractName = contract || contractMetadata.contract.name;
@@ -46,13 +48,13 @@ export async function generateContractTypes(
   const eventsGen = new EventsGen(contractMetadata, typesGen);
   const indexGen = new IndexGen(interfaceName, contractMetadata, typesGen);
 
-  fs.writeFileSync(typesFileName, await typesGen.generate(useSubPaths));
-  fs.writeFileSync(queryTypesFileName, await queryGen.generate(useSubPaths));
-  fs.writeFileSync(txTypesFileName, await txGen.generate(useSubPaths));
-  fs.writeFileSync(constructorQueryTypesFileName, await constructorQueryGen.generate(useSubPaths));
-  fs.writeFileSync(constructorTxTypesFileName, await constructorTxGen.generate(useSubPaths));
-  fs.writeFileSync(eventsTypesFile, await eventsGen.generate(useSubPaths));
-  fs.writeFileSync(indexTypesFileName, await indexGen.generate(useSubPaths));
+  fs.writeFileSync(typesFileName, await typesGen.generate(useSubPaths, smartContractApi));
+  fs.writeFileSync(queryTypesFileName, await queryGen.generate(useSubPaths, smartContractApi));
+  fs.writeFileSync(txTypesFileName, await txGen.generate(useSubPaths, smartContractApi));
+  fs.writeFileSync(constructorQueryTypesFileName, await constructorQueryGen.generate(useSubPaths, smartContractApi));
+  fs.writeFileSync(constructorTxTypesFileName, await constructorTxGen.generate(useSubPaths, smartContractApi));
+  fs.writeFileSync(eventsTypesFile, await eventsGen.generate(useSubPaths, smartContractApi));
+  fs.writeFileSync(indexTypesFileName, await indexGen.generate(useSubPaths, smartContractApi));
 
   return { interfaceName, outputFolder: dirPath };
 }

@@ -1,9 +1,10 @@
 import { ContractMessage } from '@dedot/contracts';
+import { SmartContractApi } from '../../shared/TypeImports.js';
 import { beautifySourceCode, compileTemplate } from '../../utils.js';
 import { QueryGen } from './QueryGen.js';
 
 export class TxGen extends QueryGen {
-  generate(useSubPaths: boolean = false) {
+  generate(useSubPaths: boolean = false, smartContractApi: SmartContractApi = SmartContractApi.ContractsApi) {
     this.typesGen.clearCache();
 
     this.typesGen.typeImports.addKnownType('GenericSubstrateApi');
@@ -18,7 +19,7 @@ export class TxGen extends QueryGen {
     const txMessages = messages.filter((one) => one.mutates);
 
     const txCallsOut = this.doGenerate(txMessages, 'ContractTxOptions');
-    const importTypes = this.typesGen.typeImports.toImports({ useSubPaths });
+    const importTypes = this.typesGen.typeImports.toImports({ useSubPaths, smartContractApi });
     const template = compileTemplate('typink/templates/tx.hbs');
 
     return beautifySourceCode(template({ importTypes, txCallsOut }));

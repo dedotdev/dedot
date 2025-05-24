@@ -1,18 +1,19 @@
-import { ContractMetadata, ContractMessage, normalizeLabel, ContractMessageArg } from '@dedot/contracts';
-import { stringCamelCase } from '@dedot/utils';
+import { GenericInkContractMetadata, GenericInkContractMessage, GenericInkContractMessageArg } from '@dedot/types';
+import { stringCamelCase, normalizeLabel } from '@dedot/utils';
+import { SmartContractApi } from '../../shared/TypeImports.js';
 import { beautifySourceCode, commentBlock, compileTemplate } from '../../utils.js';
 import { TypesGen } from './TypesGen.js';
 
 export class QueryGen {
-  contractMetadata: ContractMetadata;
+  contractMetadata: GenericInkContractMetadata;
   typesGen: TypesGen;
 
-  constructor(contractMetadata: ContractMetadata, typeGen: TypesGen) {
+  constructor(contractMetadata: GenericInkContractMetadata, typeGen: TypesGen) {
     this.contractMetadata = contractMetadata;
     this.typesGen = typeGen;
   }
 
-  generate(useSubPaths: boolean = false) {
+  generate(useSubPaths: boolean = false, smartContractApi: SmartContractApi = SmartContractApi.ContractsApi) {
     this.typesGen.clearCache();
 
     this.typesGen.typeImports.addKnownType('GenericSubstrateApi');
@@ -27,13 +28,13 @@ export class QueryGen {
     const { messages } = this.contractMetadata.spec;
 
     const queryCallsOut = this.doGenerate(messages, 'ContractCallOptions');
-    const importTypes = this.typesGen.typeImports.toImports({ useSubPaths });
+    const importTypes = this.typesGen.typeImports.toImports({ useSubPaths, smartContractApi });
     const template = compileTemplate('typink/templates/query.hbs');
 
     return beautifySourceCode(template({ importTypes, queryCallsOut }));
   }
 
-  doGenerate(messages: ContractMessage[], optionsTypeName?: string) {
+  doGenerate(messages: GenericInkContractMessage[], optionsTypeName?: string) {
     let callsOut = '';
 
     messages.forEach((messageDef) => {
@@ -58,7 +59,7 @@ export class QueryGen {
     return callsOut;
   }
 
-  generateMethodDef(def: ContractMessage, optionsParamName = 'options'): string {
+  generateMethodDef(def: GenericInkContractMessage, optionsParamName = 'options'): string {
     const { args, returnType } = def;
 
     const paramsOut = this.generateParamsOut(args);
@@ -70,7 +71,7 @@ export class QueryGen {
     return `GenericContractQueryCall<ChainApi, (${paramsOut && `${paramsOut},`} ${optionsParamName}?: ContractCallOptions) => Promise<GenericContractCallResult<${typeOut}, ContractCallResult<ChainApi>>>>`;
   }
 
-  generateParamsOut(args: ContractMessageArg[]) {
+  generateParamsOut(args: GenericInkContractMessageArg[]) {
     return args
       .map(({ type: { type }, label }) => `${stringCamelCase(label)}: ${this.typesGen.generateType(type, 1)}`)
       .join(', ');
