@@ -204,11 +204,9 @@ export class WsProvider extends SubscriptionProvider {
   #retry() {
     if (!this.#shouldRetry) return;
 
-    // Increment attempt counter for reconnection
-    this.#attempt++;
-
     setTimeout(() => {
       this._setStatus('reconnecting');
+      this.#attempt += 1;
 
       this.#connectAndRetry().catch(console.error);
     }, this.#options.retryDelayMs);
@@ -216,7 +214,6 @@ export class WsProvider extends SubscriptionProvider {
 
   #onSocketOpen = async (event: Event) => {
     // Connection successful - reset attempt counter
-    // currentEndpoint is already set and represents the successfully connected endpoint
     this.#attempt = 1;
 
     this._setStatus('connected');
