@@ -3,7 +3,7 @@ import { assert, DedotError } from '@dedot/utils';
 import { SubscriptionProvider } from '../base/index.js';
 import { JsonRpcRequest } from '../types.js';
 
-export interface ConnectionState {
+export interface WsConnectionState {
   /**
    * Connection attempt counter (1 for initial, increments on reconnects)
    * Resets to 1 after a successful connection
@@ -21,7 +21,7 @@ export interface ConnectionState {
  * @param info Connection attempt information
  * @returns A valid websocket endpoint string
  */
-export type EndpointSelector = (info: ConnectionState) => string | Promise<string>;
+export type WsEndpointSelector = (info: WsConnectionState) => string | Promise<string>;
 
 export interface WsProviderOptions {
   /**
@@ -32,7 +32,7 @@ export interface WsProviderOptions {
    *
    * @required
    */
-  endpoint: string | EndpointSelector;
+  endpoint: string | WsEndpointSelector;
   /**
    * Delay in milliseconds before retrying to connect
    * If the value is <= 0, retry will be disabled
@@ -139,7 +139,7 @@ export class WsProvider extends SubscriptionProvider {
 
     if (typeof endpoint === 'function') {
       // Create a connection state object to pass to the endpoint selector
-      const info: ConnectionState = {
+      const info: WsConnectionState = {
         attempt: this.#attempt,
         currentEndpoint: this.#currentEndpoint,
       };

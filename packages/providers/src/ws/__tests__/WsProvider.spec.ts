@@ -1,7 +1,7 @@
 import { JsonRpcRequest, JsonRpcResponse } from '@dedot/providers';
 import { Client, Server } from 'mock-socket';
 import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
-import { EndpointSelector, WsProvider, WsProviderOptions } from '../WsProvider.js';
+import { WsEndpointSelector, WsProvider, WsProviderOptions } from '../WsProvider.js';
 
 // Global handler for unhandled rejections
 process.on('unhandledRejection', (reason) => {
@@ -77,7 +77,7 @@ describe('WsProvider', () => {
   });
 
   it('throws an error when endpoint selector returns an invalid endpoint', async () => {
-    const endpointSelector: EndpointSelector = () => 'invalid-endpoint';
+    const endpointSelector: WsEndpointSelector = () => 'invalid-endpoint';
     const provider = new WsProvider({ endpoint: endpointSelector, retryDelayMs: -1 });
     await expect(provider.connect()).rejects.toThrow();
   });
