@@ -26,10 +26,15 @@ export type WsEndpointSelector = (info: WsConnectionState) => string | Promise<s
 
 export interface WsProviderOptions {
   /**
-   * The websocket endpoint to connect to, or a function that returns an endpoint
-   * A valid endpoint should start with `wss://`, `ws://`
-   * If a function is provided, it will be called whenever an endpoint is needed
-   * (initial connection and reconnection attempts)
+   * The websocket endpoint to connect to. Can be:
+   * - A single endpoint string (e.g., 'wss://rpc.polkadot.io')
+   * - An array of endpoints for automatic failover
+   * - A function that returns an endpoint for advanced endpoint selection logic
+   *
+   * Valid endpoints must start with `wss://` or `ws://`.
+   *
+   * When an array is provided, endpoints are randomly selected on initial connection
+   * and reconnection attempts will prefer different endpoints when possible.
    *
    * @required
    */
@@ -60,10 +65,26 @@ const NO_RESUBSCRIBE_PREFIXES = ['author_', 'chainHead_', 'transactionWatch_'];
 
 /**
  * @name WsProvider
- * @description A JSON-RPC provider that connects to a WebSocket endpoint
+ * @description A JSON-RPC provider that connects to WebSocket endpoints with support for
+ * single endpoint, multiple endpoints for failover, and custom endpoint selection logic.
+ *
  * @example
  * ```ts
+ * // Single endpoint
  * const provider = new WsProvider('wss://rpc.polkadot.io');
+ *
+ * // Multiple endpoints for automatic failover
+ * const provider = new WsProvider([
+ *   'wss://rpc.polkadot.io',
+ *   'wss://polkadot-rpc.dwellir.com',
+ *   'wss://polkadot.api.onfinality.io/public-ws'
+ * ]);
+ *
+ * // Custom endpoint selector
+ * const provider = new WsProvider((info) => {
+ *   console.log(`Connection attempt ${info.attempt}`);
+ *   return info.attempt >= 3 ? 'wss://backup.rpc' : 'wss://primary.rpc';
+ * });
  *
  * await provider.connect();
  *
@@ -71,7 +92,7 @@ const NO_RESUBSCRIBE_PREFIXES = ['author_', 'chainHead_', 'transactionWatch_'];
  * const genesisHash = await provider.send('chain_getBlockHash', [0]);
  * console.log(genesisHash);
  *
- * // Subscribe to runtimeVersion changes
+ * // Subscribe to new heads
  * await provider.subscribe(
  *   {
  *     subname: 'chain_newHead',
