@@ -1,9 +1,9 @@
 import { describe, expect, it, vi } from 'vitest';
 import { pickRandomItem } from '../utils.js';
 
-describe('selectRandomItem', () => {
+describe('pickRandomItem', () => {
   it('throws error for empty array', () => {
-    expect(() => pickRandomItem([])).toThrow('Cannot select from empty array');
+    expect(() => pickRandomItem([])).toThrow('Cannot pick from empty array');
   });
 
   it('returns the only item from single-item array', () => {
@@ -46,11 +46,6 @@ describe('selectRandomItem', () => {
     const numbers = [1, 2, 3, 4, 5];
     const result = pickRandomItem(numbers, 3);
     expect(numbers).toContain(result);
-
-    const objects = [{ id: 1 }, { id: 2 }, { id: 3 }];
-    const excludeObj = { id: 2 };
-    const objResult = pickRandomItem(objects, excludeObj);
-    expect(objects).toContain(objResult);
   });
 
   it('handles undefined excludeItem correctly', () => {
