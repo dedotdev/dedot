@@ -114,7 +114,7 @@ export class WsProvider extends SubscriptionProvider {
   #timeoutTimer?: ReturnType<typeof setInterval>;
 
   // Connection state tracking
-  #attempt: number = 1;
+  #attempt: number = 0;
   #currentEndpoint?: string;
 
   constructor(options: WsProviderOptions | string | string[] | WsEndpointSelector) {
@@ -203,6 +203,8 @@ export class WsProvider extends SubscriptionProvider {
   async #connectAndRetry() {
     assert(!this.#ws, 'Websocket connection already exists');
 
+    this.#attempt += 1;
+
     try {
       await this.#doConnect();
     } catch (e) {
@@ -219,15 +221,13 @@ export class WsProvider extends SubscriptionProvider {
 
     setTimeout(() => {
       this._setStatus('reconnecting');
-      this.#attempt += 1;
-
       this.#connectAndRetry().catch(console.error);
     }, this.#options.retryDelayMs);
   }
 
   #onSocketOpen = async (event: Event) => {
     // Connection successful - reset attempt counter
-    this.#attempt = 1;
+    this.#attempt = 0;
 
     this._setStatus('connected', this.#currentEndpoint);
 
