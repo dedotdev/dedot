@@ -2,7 +2,7 @@ import { WebSocket } from '@polkadot/x-ws';
 import { assert, DedotError } from '@dedot/utils';
 import { SubscriptionProvider } from '../base/index.js';
 import { JsonRpcRequest } from '../types.js';
-import { pickRandomItem } from '../utils.js';
+import { pickRandomItem, validateEndpoint } from '../utils.js';
 
 export interface WsConnectionState {
   /**
@@ -96,7 +96,7 @@ export class WsProvider extends SubscriptionProvider {
   #attempt: number = 1;
   #currentEndpoint?: string;
 
-  constructor(options: WsProviderOptions | string | WsEndpointSelector) {
+  constructor(options: WsProviderOptions | string | string[] | WsEndpointSelector) {
     super();
 
     this.#options = this.#normalizeOptions(options);
@@ -145,7 +145,7 @@ export class WsProvider extends SubscriptionProvider {
         currentEndpoint: this.#currentEndpoint,
       };
 
-      return this.#validateEndpoint(
+      return validateEndpoint(
         await Promise.resolve(endpoint(info)), // --
       );
     }
@@ -154,19 +154,6 @@ export class WsProvider extends SubscriptionProvider {
     // But we add this check for type safety
     if (Array.isArray(endpoint)) {
       throw new DedotError('Endpoint array should have been converted to a selector function');
-    }
-
-    return endpoint;
-  }
-
-  /**
-   * Validate that an endpoint is properly formatted
-   */
-  #validateEndpoint(endpoint: string): string {
-    if (!endpoint || (!endpoint.startsWith('ws://') && !endpoint.startsWith('wss://'))) {
-      throw new DedotError(
-        `Invalid websocket endpoint ${endpoint}, a valid endpoint should start with wss:// or ws://`,
-      );
     }
 
     return endpoint;
@@ -315,9 +302,9 @@ export class WsProvider extends SubscriptionProvider {
     this._onReceiveResponse(message.data);
   };
 
-  #normalizeOptions(options: WsProviderOptions | string | WsEndpointSelector): Required<WsProviderOptions> {
+  #normalizeOptions(options: WsProviderOptions | string | string[] | WsEndpointSelector): Required<WsProviderOptions> {
     const normalizedOptions =
-      typeof options === 'string' || typeof options === 'function'
+      typeof options === 'string' || typeof options === 'function' || Array.isArray(options)
         ? {
             ...DEFAULT_OPTIONS,
             endpoint: options,
@@ -331,23 +318,18 @@ export class WsProvider extends SubscriptionProvider {
     const { endpoint } = normalizedOptions;
 
     if (typeof endpoint === 'string') {
-      // Validate string endpoints
-      this.#validateEndpoint(endpoint);
+      validateEndpoint(endpoint);
     } else if (Array.isArray(endpoint)) {
-      // Convert array to endpoint selector function
       if (endpoint.length === 0) {
         throw new DedotError('Endpoint array cannot be empty');
       }
 
-      // Validate all endpoints in the array
-      endpoint.forEach((ep) => this.#validateEndpoint(ep));
+      endpoint.forEach(validateEndpoint);
 
-      // Replace the array with a default endpoint selector
       normalizedOptions.endpoint = (info: WsConnectionState) => {
         return pickRandomItem(endpoint, info.currentEndpoint);
       };
     }
-    // Function endpoints will be validated when they're called
 
     return normalizedOptions as Required<WsProviderOptions>;
   }

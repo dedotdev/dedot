@@ -1,3 +1,5 @@
+import { DedotError } from '@dedot/utils';
+
 /**
  * Picks a random item from an array, optionally excluding a specific item
  *
@@ -17,4 +19,15 @@ export function pickRandomItem<T>(items: T[], excludeItem?: T): T {
   const finalItems = availableItems.length > 0 ? availableItems : items;
 
   return finalItems[Math.floor(Math.random() * finalItems.length)];
+}
+
+/**
+ * Validate that an endpoint is properly formatted
+ */
+export function validateEndpoint(endpoint: string): string {
+  if (!endpoint || (!endpoint.startsWith('ws://') && !endpoint.startsWith('wss://'))) {
+    throw new DedotError(`Invalid websocket endpoint ${endpoint}, a valid endpoint should start with wss:// or ws://`);
+  }
+
+  return endpoint;
 }
