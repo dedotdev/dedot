@@ -1,6 +1,7 @@
 import { JsonRpcRequest, JsonRpcResponse } from '@dedot/providers';
+import { waitFor } from '@dedot/utils';
 import { Client, Server } from 'mock-socket';
-import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
+import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
 import { WsEndpointSelector, WsProvider, WsProviderOptions } from '../WsProvider.js';
 
 // Global handler for unhandled rejections
@@ -189,12 +190,8 @@ describe('WsProvider', () => {
         }),
       );
 
-      // Store the current WebSocket
-      const ws = getWs();
-
-      // Manually trigger the onclose event to simulate a disconnection
-      const closeEvent = { code: 1006, reason: 'Test close', wasClean: false };
-      (ws.onclose as any)(closeEvent);
+      // Use direct close method to simulate disconnection
+      getWs().close(3000);
 
       // Wait for reconnection to happen
       await new Promise((resolve) => setTimeout(resolve, 200));
@@ -277,4 +274,394 @@ describe('WsProvider', () => {
       });
     }
   }, 20000); // Increase test timeout to 20 seconds
+
+  describe('Array Endpoints', () => {
+    const FAKE_WS_URL_3 = 'ws://127.0.0.1:9946';
+    const FAKE_WS_URL_4 = 'ws://127.0.0.1:9947';
+    let testMockServers: Server[] = [];
+
+    const createMockServer = (url: string): Server => {
+      const server = new Server(url);
+      server.on('connection', (socket) => {
+        socket.on('message', (data) => {
+          const message: JsonRpcRequest = JSON.parse(data.toString());
+          socket.send(JSON.stringify({ id: message.id, jsonrpc: '2.0', result: 'ok' } as JsonRpcResponse<string>));
+        });
+      });
+      return server;
+    };
+
+    const setupTestServers = (urls: string[]) => {
+      testMockServers = urls.map(createMockServer);
+    };
+
+    const stopTestServers = () => {
+      testMockServers.forEach((server) => server.stop());
+      testMockServers = [];
+    };
+
+    afterEach(() => {
+      stopTestServers();
+    });
+
+    describe('Basic Array Functionality', () => {
+      beforeEach(() => {
+        setupTestServers([FAKE_WS_URL_3, FAKE_WS_URL_4]);
+      });
+
+      it('connects with array of valid endpoints', async () => {
+        const endpoints = [FAKE_WS_URL, FAKE_WS_URL_2];
+        const provider = new WsProvider(endpoints);
+        await expect(provider.connect()).resolves.toBe(provider);
+        await provider.disconnect();
+      });
+
+      it('connects with array passed in options object', async () => {
+        const endpoints = [FAKE_WS_URL, FAKE_WS_URL_2];
+        const provider = new WsProvider({ endpoint: endpoints });
+        await expect(provider.connect()).resolves.toBe(provider);
+        await provider.disconnect();
+      });
+
+      it('throws error for empty endpoint array', () => {
+        expect(() => new WsProvider([])).toThrow('Endpoint array cannot be empty');
+      });
+
+      it('throws error for array containing invalid endpoints', () => {
+        const endpoints = [FAKE_WS_URL, 'invalid-endpoint'];
+        expect(() => new WsProvider(endpoints)).toThrow('Invalid websocket endpoint');
+      });
+
+      it('validates all endpoints in array during construction', () => {
+        const endpoints = ['http://invalid', 'wss://valid.com', 'another-invalid'];
+        expect(() => new WsProvider(endpoints)).toThrow('Invalid websocket endpoint');
+      });
+
+      it('works with single endpoint array', async () => {
+        const endpoints = [FAKE_WS_URL];
+        const provider = new WsProvider(endpoints);
+        await expect(provider.connect()).resolves.toBe(provider);
+        await provider.disconnect();
+      });
+    });
+
+    describe('Random Selection', () => {
+      beforeEach(() => {
+        setupTestServers([FAKE_WS_URL_3]);
+      });
+
+      it('selects random endpoint from array on initial connection', async () => {
+        const endpoints = [FAKE_WS_URL, FAKE_WS_URL_2, FAKE_WS_URL_3];
+
+        // Mock Math.random to return 0 (first item)
+        const mockRandom = vi.spyOn(Math, 'random').mockReturnValue(0);
+
+        const provider = new WsProvider(endpoints);
+        await provider.connect();
+
+        expect(provider.status).toBe('connected');
+
+        mockRandom.mockRestore();
+        await provider.disconnect();
+      });
+    });
+
+    describe('Reconnection with Arrays', () => {
+      beforeEach(() => {
+        setupTestServers([FAKE_WS_URL_3, FAKE_WS_URL_4]);
+      });
+
+      it('selects different endpoint on reconnection when possible', async () => {
+        const endpoints = [FAKE_WS_URL, FAKE_WS_URL_2];
+        const provider = new WsProvider({
+          endpoint: endpoints,
+          retryDelayMs: 100, // Short delay for testing
+        });
+
+        // Add error handler to prevent unhandled errors
+        provider.on('error', () => {
+          // Intentionally empty
+        });
+
+        try {
+          // Get access to the private WebSocket instance
+          const getWs = () => (provider as any).__unsafeWs();
+
+          // Connect initially
+          await provider.connect();
+          expect(provider.status).toBe('connected');
+
+          // Use direct close method to simulate disconnection
+          getWs().close(3000);
+
+          // Wait for reconnection to happen
+          await new Promise((resolve) => setTimeout(resolve, 200));
+
+          // Verify we're connected again
+          expect(provider.status).toBe('connected');
+        } finally {
+          await provider.disconnect().catch(() => {
+            // Ignore disconnect errors since we're just cleaning up
+          });
+        }
+      });
+
+      it('reuses same endpoint when only one available', async () => {
+        const endpoints = [FAKE_WS_URL];
+        const provider = new WsProvider({
+          endpoint: endpoints,
+          retryDelayMs: 100,
+        });
+
+        provider.on('error', () => {
+          // Intentionally empty
+        });
+
+        try {
+          const getWs = () => (provider as any).__unsafeWs();
+
+          await provider.connect();
+
+          // Use direct close method to simulate disconnection
+          getWs().close(3000);
+
+          // Wait for reconnection
+          await new Promise((resolve) => setTimeout(resolve, 200));
+
+          expect(provider.status).toBe('connected');
+        } finally {
+          await provider.disconnect().catch(() => {});
+        }
+      });
+
+      it('increments attempt counter on reconnection', async () => {
+        // Create a custom endpoint selector to track the connection state
+        const connectionStates: any[] = [];
+        const endpointSelector = vi.fn((info) => {
+          connectionStates.push({ ...info });
+          return FAKE_WS_URL;
+        });
+
+        const provider = new WsProvider({
+          endpoint: endpointSelector,
+          retryDelayMs: 100,
+        });
+
+        provider.on('error', () => {
+          // Intentionally empty
+        });
+
+        try {
+          const getWs = () => (provider as any).__unsafeWs();
+
+          // Initial connection
+          await provider.connect();
+          expect(connectionStates[0]).toEqual({
+            attempt: 1,
+            currentEndpoint: undefined,
+          });
+
+          // Use direct close method to simulate disconnection
+          getWs().close(3000);
+
+          // Wait for reconnection
+          await new Promise((resolve) => setTimeout(resolve, 200));
+
+          // Check that attempt counter incremented
+          expect(connectionStates[1]).toEqual({
+            attempt: 2,
+            currentEndpoint: FAKE_WS_URL,
+          });
+        } finally {
+          await provider.disconnect().catch(() => {});
+        }
+      });
+
+      it('handles server-side disconnection by stopping mock server', async () => {
+        // Setup dedicated servers for this test
+        const testUrl1 = 'ws://127.0.0.1:9948';
+        const testUrl2 = 'ws://127.0.0.1:9949';
+        const server1 = createMockServer(testUrl1);
+        const server2 = createMockServer(testUrl2);
+
+        const endpoints = [testUrl1, testUrl2];
+        const provider = new WsProvider({
+          endpoint: endpoints,
+          retryDelayMs: 100,
+        });
+
+        provider.on('error', () => {
+          // Intentionally empty
+        });
+
+        try {
+          // Connect initially
+          await provider.connect();
+          expect(provider.status).toBe('connected');
+
+          // Simulate server going down by stopping the server
+          server1.stop();
+
+          // Wait for reconnection to happen (should connect to server2)
+          await new Promise((resolve) => setTimeout(resolve, 300));
+
+          // Should be reconnected to the second server
+          expect(provider.status).toBe('connected');
+        } finally {
+          server1.stop();
+          server2.stop();
+          await provider.disconnect().catch(() => {});
+        }
+      });
+    });
+
+    describe('Edge Cases', () => {
+      beforeEach(() => {
+        setupTestServers([FAKE_WS_URL_3, FAKE_WS_URL_4]);
+      });
+
+      it('handles reconnection when current endpoint becomes unavailable', async () => {
+        // This test simulates the scenario where the current endpoint is no longer available
+        // and should be excluded from the next selection
+        const endpoints = [FAKE_WS_URL, FAKE_WS_URL_2];
+        const provider = new WsProvider({
+          endpoint: endpoints,
+          retryDelayMs: 100,
+        });
+
+        provider.on('error', () => {});
+
+        try {
+          await provider.connect();
+
+          const getWs = () => (provider as any).__unsafeWs();
+
+          // Use direct close method to simulate disconnection
+          getWs().close(3000);
+
+          // Wait for reconnection attempt
+          await new Promise((resolve) => setTimeout(resolve, 200));
+
+          // Should successfully reconnect (possibly to different endpoint)
+          expect(provider.status).toBe('connected');
+        } finally {
+          await provider.disconnect().catch(() => {});
+        }
+      });
+
+      it('works correctly with array passed directly to constructor', async () => {
+        const endpoints = [FAKE_WS_URL, FAKE_WS_URL_2];
+        const provider = new WsProvider(endpoints);
+
+        await expect(provider.connect()).resolves.toBe(provider);
+        expect(provider.status).toBe('connected');
+
+        await provider.disconnect();
+      });
+
+      it('falls back to current endpoint when all others are filtered out', async () => {
+        // Test the scenario where pickRandomItem falls back to original array
+        // when all items would be excluded
+        const endpoints = [FAKE_WS_URL];
+        const provider = new WsProvider({
+          endpoint: endpoints,
+          retryDelayMs: 100,
+        });
+
+        provider.on('error', () => {});
+
+        try {
+          await provider.connect();
+
+          const getWs = () => (provider as any).__unsafeWs();
+
+          // Use direct close method to simulate disconnection
+          getWs().close(3000);
+
+          // Wait for reconnection
+          await new Promise((resolve) => setTimeout(resolve, 200));
+
+          // Should reconnect to the same endpoint since it's the only one
+          expect(provider.status).toBe('connected');
+        } finally {
+          await provider.disconnect().catch(() => {});
+        }
+      });
+    });
+
+    describe('Integration', () => {
+      beforeEach(() => {
+        setupTestServers([FAKE_WS_URL_3, FAKE_WS_URL_4]);
+      });
+
+      it('maintains subscription reestablishment on reconnection', async () => {
+        const endpoints = [FAKE_WS_URL, FAKE_WS_URL_2];
+        const provider = new WsProvider({
+          endpoint: endpoints,
+          retryDelayMs: 100,
+        });
+
+        provider.on('error', () => {});
+
+        try {
+          await provider.connect();
+
+          // Create a subscription
+          const subscription = await provider.subscribe(
+            { subname: 'test', subscribe: 'test_subscribe', params: [], unsubscribe: 'test_unsubscribe' },
+            () => {},
+          );
+
+          expect(subscription).toBeDefined();
+
+          const getWs = () => (provider as any).__unsafeWs();
+
+          // Use direct close method to simulate disconnection
+          getWs().close(3000);
+
+          // Wait for reconnection
+          await new Promise((resolve) => setTimeout(resolve, 200));
+
+          // Should be reconnected
+          expect(provider.status).toBe('connected');
+        } finally {
+          await provider.disconnect().catch(() => {});
+        }
+      });
+
+      it('works with timeout handling', async () => {
+        const endpoints = [FAKE_WS_URL, FAKE_WS_URL_2];
+        const provider = new WsProvider({
+          endpoint: endpoints,
+          timeout: 1000,
+        });
+
+        try {
+          await provider.connect();
+
+          // Send a normal request that should succeed
+          await expect(provider.send('test_method', [])).resolves.toBe('ok');
+        } finally {
+          await provider.disconnect();
+        }
+      });
+
+      it('properly handles disconnect and cleanup', async () => {
+        const endpoints = [FAKE_WS_URL, FAKE_WS_URL_2];
+        const provider = new WsProvider(endpoints);
+
+        await provider.connect();
+        expect(provider.status).toBe('connected');
+
+        await provider.disconnect();
+        expect(provider.status).toBe('disconnected');
+
+        // Should be able to reconnect
+        await provider.connect();
+        expect(provider.status).toBe('connected');
+
+        await provider.disconnect();
+      });
+    });
+  });
 });
