@@ -2,6 +2,7 @@ import { WebSocket } from '@polkadot/x-ws';
 import { assert, DedotError } from '@dedot/utils';
 import { SubscriptionProvider } from '../base/index.js';
 import { JsonRpcRequest } from '../types.js';
+import { pickRandomItem, validateEndpoint } from '../utils.js';
 
 export interface WsConnectionState {
   /**
@@ -25,14 +26,19 @@ export type WsEndpointSelector = (info: WsConnectionState) => string | Promise<s
 
 export interface WsProviderOptions {
   /**
-   * The websocket endpoint to connect to, or a function that returns an endpoint
-   * A valid endpoint should start with `wss://`, `ws://`
-   * If a function is provided, it will be called whenever an endpoint is needed
-   * (initial connection and reconnection attempts)
+   * The websocket endpoint to connect to. Can be:
+   * - A single endpoint string (e.g., 'wss://rpc.polkadot.io')
+   * - An array of endpoints for automatic failover
+   * - A function that returns an endpoint for advanced endpoint selection logic
+   *
+   * Valid endpoints must start with `wss://` or `ws://`.
+   *
+   * When an array is provided, endpoints are randomly selected on initial connection
+   * and reconnection attempts will prefer different endpoints when possible.
    *
    * @required
    */
-  endpoint: string | WsEndpointSelector;
+  endpoint: string | string[] | WsEndpointSelector;
   /**
    * Delay in milliseconds before retrying to connect
    * If the value is <= 0, retry will be disabled
@@ -59,10 +65,26 @@ const NO_RESUBSCRIBE_PREFIXES = ['author_', 'chainHead_', 'transactionWatch_'];
 
 /**
  * @name WsProvider
- * @description A JSON-RPC provider that connects to a WebSocket endpoint
+ * @description A JSON-RPC provider that connects to WebSocket endpoints with support for
+ * single endpoint, multiple endpoints for failover, and custom endpoint selection logic.
+ *
  * @example
  * ```ts
+ * // Single endpoint
  * const provider = new WsProvider('wss://rpc.polkadot.io');
+ *
+ * // Multiple endpoints for automatic failover
+ * const provider = new WsProvider([
+ *   'wss://rpc.polkadot.io',
+ *   'wss://polkadot-rpc.dwellir.com',
+ *   'wss://polkadot.api.onfinality.io/public-ws'
+ * ]);
+ *
+ * // Custom endpoint selector
+ * const provider = new WsProvider((info) => {
+ *   console.log(`Connection attempt ${info.attempt}`);
+ *   return info.attempt >= 3 ? 'wss://backup.rpc' : 'wss://primary.rpc';
+ * });
  *
  * await provider.connect();
  *
@@ -70,7 +92,7 @@ const NO_RESUBSCRIBE_PREFIXES = ['author_', 'chainHead_', 'transactionWatch_'];
  * const genesisHash = await provider.send('chain_getBlockHash', [0]);
  * console.log(genesisHash);
  *
- * // Subscribe to runtimeVersion changes
+ * // Subscribe to new heads
  * await provider.subscribe(
  *   {
  *     subname: 'chain_newHead',
@@ -95,7 +117,7 @@ export class WsProvider extends SubscriptionProvider {
   #attempt: number = 1;
   #currentEndpoint?: string;
 
-  constructor(options: WsProviderOptions | string | WsEndpointSelector) {
+  constructor(options: WsProviderOptions | string | string[] | WsEndpointSelector) {
     super();
 
     this.#options = this.#normalizeOptions(options);
@@ -144,22 +166,15 @@ export class WsProvider extends SubscriptionProvider {
         currentEndpoint: this.#currentEndpoint,
       };
 
-      return this.#validateEndpoint(
+      return validateEndpoint(
         await Promise.resolve(endpoint(info)), // --
       );
     }
 
-    return endpoint;
-  }
-
-  /**
-   * Validate that an endpoint is properly formatted
-   */
-  #validateEndpoint(endpoint: string): string {
-    if (!endpoint || (!endpoint.startsWith('ws://') && !endpoint.startsWith('wss://'))) {
-      throw new DedotError(
-        `Invalid websocket endpoint ${endpoint}, a valid endpoint should start with wss:// or ws://`,
-      );
+    // If endpoint is an array, this should not happen as arrays are converted to functions in #normalizeOptions
+    // But we add this check for type safety
+    if (Array.isArray(endpoint)) {
+      throw new DedotError('Endpoint array should have been converted to a selector function');
     }
 
     return endpoint;
@@ -308,9 +323,9 @@ export class WsProvider extends SubscriptionProvider {
     this._onReceiveResponse(message.data);
   };
 
-  #normalizeOptions(options: WsProviderOptions | string | WsEndpointSelector): Required<WsProviderOptions> {
+  #normalizeOptions(options: WsProviderOptions | string | string[] | WsEndpointSelector): Required<WsProviderOptions> {
     const normalizedOptions =
-      typeof options === 'string' || typeof options === 'function'
+      typeof options === 'string' || typeof options === 'function' || Array.isArray(options)
         ? {
             ...DEFAULT_OPTIONS,
             endpoint: options,
@@ -320,11 +335,21 @@ export class WsProvider extends SubscriptionProvider {
             ...options,
           };
 
-    // Only validate string endpoints here
-    // Function endpoints will be validated when they're called
+    // Handle different endpoint types
     const { endpoint } = normalizedOptions;
+
     if (typeof endpoint === 'string') {
-      this.#validateEndpoint(endpoint);
+      validateEndpoint(endpoint);
+    } else if (Array.isArray(endpoint)) {
+      if (endpoint.length === 0) {
+        throw new DedotError('Endpoint array cannot be empty');
+      }
+
+      endpoint.forEach(validateEndpoint);
+
+      normalizedOptions.endpoint = (info: WsConnectionState) => {
+        return pickRandomItem(endpoint, info.currentEndpoint);
+      };
     }
 
     return normalizedOptions as Required<WsProviderOptions>;
