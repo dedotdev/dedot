@@ -300,15 +300,15 @@ describe('WsProvider', () => {
       testMockServers = [];
     };
 
+    beforeEach(() => {
+      setupTestServers([FAKE_WS_URL_3, FAKE_WS_URL_4]);
+    });
+
     afterEach(() => {
       stopTestServers();
     });
 
     describe('Basic Array Functionality', () => {
-      beforeEach(() => {
-        setupTestServers([FAKE_WS_URL_3, FAKE_WS_URL_4]);
-      });
-
       it('connects with array of valid endpoints', async () => {
         const endpoints = [FAKE_WS_URL, FAKE_WS_URL_2];
         const provider = new WsProvider(endpoints);
@@ -346,10 +346,6 @@ describe('WsProvider', () => {
     });
 
     describe('Random Selection', () => {
-      beforeEach(() => {
-        setupTestServers([FAKE_WS_URL_3]);
-      });
-
       it('selects random endpoint from array on initial connection', async () => {
         const endpoints = [FAKE_WS_URL, FAKE_WS_URL_2, FAKE_WS_URL_3];
 
@@ -367,10 +363,6 @@ describe('WsProvider', () => {
     });
 
     describe('Reconnection with Arrays', () => {
-      beforeEach(() => {
-        setupTestServers([FAKE_WS_URL_3, FAKE_WS_URL_4]);
-      });
-
       it('selects different endpoint on reconnection when possible', async () => {
         const endpoints = [FAKE_WS_URL, FAKE_WS_URL_2];
         const provider = new WsProvider({
@@ -516,10 +508,6 @@ describe('WsProvider', () => {
     });
 
     describe('Edge Cases', () => {
-      beforeEach(() => {
-        setupTestServers([FAKE_WS_URL_3, FAKE_WS_URL_4]);
-      });
-
       it('handles reconnection when current endpoint becomes unavailable', async () => {
         // This test simulates the scenario where the current endpoint is no longer available
         // and should be excluded from the next selection
@@ -590,10 +578,6 @@ describe('WsProvider', () => {
     });
 
     describe('Integration', () => {
-      beforeEach(() => {
-        setupTestServers([FAKE_WS_URL_3, FAKE_WS_URL_4]);
-      });
-
       it('maintains subscription reestablishment on reconnection', async () => {
         const endpoints = [FAKE_WS_URL, FAKE_WS_URL_2];
         const provider = new WsProvider({
