@@ -229,7 +229,7 @@ export class WsProvider extends SubscriptionProvider {
     // Connection successful - reset attempt counter
     this.#attempt = 1;
 
-    this._setStatus('connected');
+    this._setStatus('connected', this.#currentEndpoint);
 
     // re-subscribe to previous subscriptions if this is a reconnect
     Object.keys(this._subscriptions).forEach((subkey) => {

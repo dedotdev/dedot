@@ -105,24 +105,24 @@ export class JsonRpcClient<
     });
   }
 
-  #onConnected = async () => {
+  #onConnected = async (...args: any[]) => {
     // @ts-ignore
-    this.emit('connected');
+    this.emit('connected', ...args);
   };
 
-  #onDisconnected = async () => {
+  #onDisconnected = async (...args: any[]) => {
     // @ts-ignore
-    this.emit('disconnected');
+    this.emit('disconnected', ...args);
   };
 
-  #onReconnecting = async () => {
+  #onReconnecting = async (...args: any[]) => {
     // @ts-ignore
-    this.emit('reconnecting');
+    this.emit('reconnecting', ...args);
   };
 
-  #onError = async (e: Error) => {
+  #onError = async (...args: any[]) => {
     // @ts-ignore
-    this.emit('error', e);
+    this.emit('error', ...args);
   };
 
   async disconnect(): Promise<void> {
