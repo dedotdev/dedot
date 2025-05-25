@@ -111,6 +111,24 @@ const main = () => {
           require: './cjs/merkleized-metadata/index.js',
           default: './merkleized-metadata/index.js',
         };
+        pkgJson.exports['./smoldot'] = {
+          types: './smoldot/index.d.ts',
+          import: './smoldot/index.js',
+          require: './cjs/smoldot/index.js',
+          default: './smoldot/index.js',
+        };
+        pkgJson.exports['./smoldot/worker'] = {
+          types: './smoldot/worker.d.ts',
+          import: './smoldot/worker.js',
+          require: './cjs/smoldot/worker.js',
+          default: './smoldot/worker.js',
+        };
+        pkgJson.exports['./smoldot/with-worker'] = {
+          types: './smoldot/with-worker.d.ts',
+          import: './smoldot/with-worker.js',
+          require: './cjs/smoldot/with-worker.js',
+          default: './smoldot/with-worker.js',
+        };
       }
 
       if (pkgJson.name === '@dedot/types') {
@@ -119,6 +137,21 @@ const main = () => {
           import: './json-rpc/index.js',
           require: './cjs/json-rpc/index.js',
           default: './json-rpc/index.js',
+        };
+      }
+
+      if (pkgJson.name === '@dedot/smoldot') {
+        pkgJson.exports['./worker'] = {
+          types: './worker.d.ts',
+          import: './worker.js',
+          require: './cjs/worker.js',
+          default: './worker.js',
+        };
+        pkgJson.exports['./with-worker'] = {
+          types: './with-worker.d.ts',
+          import: './with-worker.js',
+          require: './cjs/with-worker.js',
+          default: './with-worker.js',
         };
       }
 

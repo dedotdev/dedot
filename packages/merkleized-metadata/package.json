@@ -1,6 +1,6 @@
 {
   "name": "@dedot/merkleized-metadata",
-  "version": "0.10.0",
+  "version": "0.11.1",
   "description": "RFC-0078 Merkleized Metadata Implementation",
   "author": "Thang X. Vu <thang@dedot.dev>",
   "homepage": "https://dedot.dev",
@@ -25,10 +25,6 @@
     "@dedot/codecs": "workspace:*",
     "@dedot/shape": "workspace:*",
     "@dedot/utils": "workspace:*"
-  },
-  "devDependencies": {
-    "@dedot/api": "workspace:*",
-    "@dedot/providers": "workspace:*"
   },
   "engines": {
     "node": ">=18"

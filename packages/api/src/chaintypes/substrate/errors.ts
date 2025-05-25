@@ -455,6 +455,22 @@ export interface ChainErrors<Rv extends RpcVersion> extends GenericChainErrors<R
     VirtualStakerNotAllowed: GenericPalletError<Rv>;
 
     /**
+     * Stash could not be reaped as other pallet might depend on it.
+     **/
+    CannotReapStash: GenericPalletError<Rv>;
+
+    /**
+     * The stake of this account is already migrated to `Fungible` holds.
+     **/
+    AlreadyMigrated: GenericPalletError<Rv>;
+
+    /**
+     * Account is restricted from participation in staking. This may happen if the account is
+     * staking in another way already, such as via pool.
+     **/
+    Restricted: GenericPalletError<Rv>;
+
+    /**
      * Generic pallet error
      **/
     [error: string]: GenericPalletError<Rv>;
@@ -1908,12 +1924,13 @@ export interface ChainErrors<Rv extends RpcVersion> extends GenericChainErrors<R
     SenderInSignatories: GenericPalletError<Rv>;
 
     /**
-     * Multisig operation not found when attempting to cancel.
+     * Multisig operation not found in storage.
      **/
     NotFound: GenericPalletError<Rv>;
 
     /**
-     * Only the account that originally created the multisig is able to cancel it.
+     * Only the account that originally created the multisig is able to cancel it or update
+     * its deposits.
      **/
     NotOwner: GenericPalletError<Rv>;
 
@@ -2169,6 +2186,16 @@ export interface ChainErrors<Rv extends RpcVersion> extends GenericChainErrors<R
     BadAssetId: GenericPalletError<Rv>;
 
     /**
+     * The asset cannot be destroyed because some accounts for this asset contain freezes.
+     **/
+    ContainsFreezes: GenericPalletError<Rv>;
+
+    /**
+     * The asset cannot be destroyed because some accounts for this asset contain holds.
+     **/
+    ContainsHolds: GenericPalletError<Rv>;
+
+    /**
      * Generic pallet error
      **/
     [error: string]: GenericPalletError<Rv>;
@@ -2284,6 +2311,16 @@ export interface ChainErrors<Rv extends RpcVersion> extends GenericChainErrors<R
      * The asset ID must be equal to the [`NextAssetId`].
      **/
     BadAssetId: GenericPalletError<Rv>;
+
+    /**
+     * The asset cannot be destroyed because some accounts for this asset contain freezes.
+     **/
+    ContainsFreezes: GenericPalletError<Rv>;
+
+    /**
+     * The asset cannot be destroyed because some accounts for this asset contain holds.
+     **/
+    ContainsHolds: GenericPalletError<Rv>;
 
     /**
      * Generic pallet error
@@ -3687,6 +3724,11 @@ export interface ChainErrors<Rv extends RpcVersion> extends GenericChainErrors<R
     NothingToSlash: GenericPalletError<Rv>;
 
     /**
+     * The slash amount is too low to be applied.
+     **/
+    SlashTooLow: GenericPalletError<Rv>;
+
+    /**
      * The pool or member delegation has already migrated to delegate stake.
      **/
     AlreadyMigrated: GenericPalletError<Rv>;
@@ -3700,6 +3742,12 @@ export interface ChainErrors<Rv extends RpcVersion> extends GenericChainErrors<R
      * This call is not allowed in the current state of the pallet.
      **/
     NotSupported: GenericPalletError<Rv>;
+
+    /**
+     * Account is restricted from participation in pools. This may happen if the account is
+     * staking in another way already.
+     **/
+    Restricted: GenericPalletError<Rv>;
 
     /**
      * Generic pallet error
@@ -4261,6 +4309,11 @@ export interface ChainErrors<Rv extends RpcVersion> extends GenericChainErrors<R
     TooManyLeases: GenericPalletError<Rv>;
 
     /**
+     * The lease does not exist.
+     **/
+    LeaseNotFound: GenericPalletError<Rv>;
+
+    /**
      * The revenue for the Instantaneous Core Sales of this period is not (yet) known and thus
      * this operation cannot proceed.
      **/
@@ -4336,6 +4389,17 @@ export interface ChainErrors<Rv extends RpcVersion> extends GenericChainErrors<R
      * Attempted to disable auto-renewal for a core that didn't have it enabled.
      **/
     AutoRenewalNotEnabled: GenericPalletError<Rv>;
+
+    /**
+     * Attempted to force remove an assignment that doesn't exist.
+     **/
+    AssignmentNotFound: GenericPalletError<Rv>;
+
+    /**
+     * Needed to prevent spam attacks.The amount of credits the user attempted to purchase is
+     * below `T::MinimumCreditPurchase`.
+     **/
+    CreditPurchaseTooSmall: GenericPalletError<Rv>;
 
     /**
      * Generic pallet error
@@ -4604,6 +4668,11 @@ export interface ChainErrors<Rv extends RpcVersion> extends GenericChainErrors<R
     BalanceConversionFailed: GenericPalletError<Rv>;
 
     /**
+     * Failed to convert an EVM balance to a native balance.
+     **/
+    DecimalPrecisionLoss: GenericPalletError<Rv>;
+
+    /**
      * Immutable data can only be set during deploys and only be read during calls.
      * Additionally, it is only valid to set the data once and it must not be empty.
      **/
@@ -4620,6 +4689,211 @@ export interface ChainErrors<Rv extends RpcVersion> extends GenericChainErrors<R
      * Tried to map an account that is already mapped.
      **/
     AccountAlreadyMapped: GenericPalletError<Rv>;
+
+    /**
+     * The transaction used to dry-run a contract is invalid.
+     **/
+    InvalidGenericTransaction: GenericPalletError<Rv>;
+
+    /**
+     * The refcount of a code either over or underflowed.
+     **/
+    RefcountOverOrUnderflow: GenericPalletError<Rv>;
+
+    /**
+     * Unsupported precompile address
+     **/
+    UnsupportedPrecompileAddress: GenericPalletError<Rv>;
+
+    /**
+     * Precompile Error
+     **/
+    PrecompileFailure: GenericPalletError<Rv>;
+
+    /**
+     * Generic pallet error
+     **/
+    [error: string]: GenericPalletError<Rv>;
+  };
+  /**
+   * Pallet `DelegatedStaking`'s errors
+   **/
+  delegatedStaking: {
+    /**
+     * The account cannot perform this operation.
+     **/
+    NotAllowed: GenericPalletError<Rv>;
+
+    /**
+     * An existing staker cannot perform this action.
+     **/
+    AlreadyStaking: GenericPalletError<Rv>;
+
+    /**
+     * Reward Destination cannot be same as `Agent` account.
+     **/
+    InvalidRewardDestination: GenericPalletError<Rv>;
+
+    /**
+     * Delegation conditions are not met.
+     *
+     * Possible issues are
+     * 1) Cannot delegate to self,
+     * 2) Cannot delegate to multiple delegates.
+     **/
+    InvalidDelegation: GenericPalletError<Rv>;
+
+    /**
+     * The account does not have enough funds to perform the operation.
+     **/
+    NotEnoughFunds: GenericPalletError<Rv>;
+
+    /**
+     * Not an existing `Agent` account.
+     **/
+    NotAgent: GenericPalletError<Rv>;
+
+    /**
+     * Not a Delegator account.
+     **/
+    NotDelegator: GenericPalletError<Rv>;
+
+    /**
+     * Some corruption in internal state.
+     **/
+    BadState: GenericPalletError<Rv>;
+
+    /**
+     * Unapplied pending slash restricts operation on `Agent`.
+     **/
+    UnappliedSlash: GenericPalletError<Rv>;
+
+    /**
+     * `Agent` has no pending slash to be applied.
+     **/
+    NothingToSlash: GenericPalletError<Rv>;
+
+    /**
+     * Failed to withdraw amount from Core Staking.
+     **/
+    WithdrawFailed: GenericPalletError<Rv>;
+
+    /**
+     * Operation not supported by this pallet.
+     **/
+    NotSupported: GenericPalletError<Rv>;
+
+    /**
+     * Generic pallet error
+     **/
+    [error: string]: GenericPalletError<Rv>;
+  };
+  /**
+   * Pallet `AssetRewards`'s errors
+   **/
+  assetRewards: {
+    /**
+     * The staker does not have enough tokens to perform the operation.
+     **/
+    NotEnoughTokens: GenericPalletError<Rv>;
+
+    /**
+     * An operation was attempted on a non-existent pool.
+     **/
+    NonExistentPool: GenericPalletError<Rv>;
+
+    /**
+     * An operation was attempted for a non-existent staker.
+     **/
+    NonExistentStaker: GenericPalletError<Rv>;
+
+    /**
+     * An operation was attempted with a non-existent asset.
+     **/
+    NonExistentAsset: GenericPalletError<Rv>;
+
+    /**
+     * There was an error converting a block number.
+     **/
+    BlockNumberConversionError: GenericPalletError<Rv>;
+
+    /**
+     * The expiry block must be in the future.
+     **/
+    ExpiryBlockMustBeInTheFuture: GenericPalletError<Rv>;
+
+    /**
+     * Insufficient funds to create the freeze.
+     **/
+    InsufficientFunds: GenericPalletError<Rv>;
+
+    /**
+     * The expiry block can be only extended.
+     **/
+    ExpiryCut: GenericPalletError<Rv>;
+
+    /**
+     * The reward rate per block can be only increased.
+     **/
+    RewardRateCut: GenericPalletError<Rv>;
+
+    /**
+     * The pool still has staked tokens or rewards.
+     **/
+    NonEmptyPool: GenericPalletError<Rv>;
+
+    /**
+     * Generic pallet error
+     **/
+    [error: string]: GenericPalletError<Rv>;
+  };
+  /**
+   * Pallet `AssetsFreezer`'s errors
+   **/
+  assetsFreezer: {
+    /**
+     * Number of freezes on an account would exceed `MaxFreezes`.
+     **/
+    TooManyFreezes: GenericPalletError<Rv>;
+
+    /**
+     * Generic pallet error
+     **/
+    [error: string]: GenericPalletError<Rv>;
+  };
+  /**
+   * Pallet `MetaTx`'s errors
+   **/
+  metaTx: {
+    /**
+     * Invalid proof (e.g. signature).
+     **/
+    BadProof: GenericPalletError<Rv>;
+
+    /**
+     * The meta transaction is not yet valid (e.g. nonce too high).
+     **/
+    Future: GenericPalletError<Rv>;
+
+    /**
+     * The meta transaction is outdated (e.g. nonce too low).
+     **/
+    Stale: GenericPalletError<Rv>;
+
+    /**
+     * The meta transactions's birth block is ancient.
+     **/
+    AncientBirthBlock: GenericPalletError<Rv>;
+
+    /**
+     * The transaction extension did not authorize any origin.
+     **/
+    UnknownOrigin: GenericPalletError<Rv>;
+
+    /**
+     * The meta transaction is invalid.
+     **/
+    Invalid: GenericPalletError<Rv>;
 
     /**
      * Generic pallet error
