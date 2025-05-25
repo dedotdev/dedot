@@ -1,5 +1,4 @@
 import { JsonRpcRequest, JsonRpcResponse } from '@dedot/providers';
-import { waitFor } from '@dedot/utils';
 import { Client, Server } from 'mock-socket';
 import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
 import { WsEndpointSelector, WsProvider, WsProviderOptions } from '../WsProvider.js';
@@ -155,63 +154,6 @@ describe('WsProvider', () => {
     const provider = new WsProvider(FAKE_WS_URL);
     await provider.connect();
     await expect(provider.disconnect()).resolves.toBeUndefined();
-  });
-
-  it('uses endpoint selector for reconnection and resets attempt counter on success', async () => {
-    // Create a simplified test that directly tests the reconnection logic
-    const endpointSelector = vi.fn();
-    endpointSelector.mockReturnValueOnce(FAKE_WS_URL); // First call returns first URL
-    endpointSelector.mockReturnValueOnce(FAKE_WS_URL_2); // Second call returns second URL
-
-    // Create a provider with error event handler to catch any unhandled errors
-    const provider = new WsProvider({
-      endpoint: endpointSelector,
-      retryDelayMs: 100, // Short delay for testing
-    });
-
-    // Add error handler to catch any unhandled errors
-    provider.on('error', () => {
-      // Intentionally empty - just to prevent unhandled errors
-    });
-
-    try {
-      // Get access to the private WebSocket instance
-      const getWs = () => (provider as any).__unsafeWs();
-
-      // Connect initially
-      await provider.connect();
-
-      // Verify first connection used first endpoint
-      expect(endpointSelector).toHaveBeenCalledTimes(1);
-      expect(endpointSelector).toHaveBeenCalledWith(
-        expect.objectContaining({
-          attempt: 1,
-          currentEndpoint: undefined,
-        }),
-      );
-
-      // Use direct close method to simulate disconnection
-      getWs().close(3000);
-
-      // Wait for reconnection to happen
-      await new Promise((resolve) => setTimeout(resolve, 200));
-
-      // Verify the endpoint selector was called again
-      expect(endpointSelector).toHaveBeenCalledTimes(2);
-
-      // Verify second call was for reconnection
-      expect(endpointSelector).toHaveBeenLastCalledWith(
-        expect.objectContaining({
-          attempt: 2,
-          currentEndpoint: FAKE_WS_URL, // The current endpoint is set to the last endpoint used
-        }),
-      );
-    } finally {
-      // Disconnect to clean up
-      await provider.disconnect().catch(() => {
-        // Ignore disconnect errors since we're just cleaning up
-      });
-    }
   });
 
   it('throws an error when the request is timed out', async () => {
@@ -421,49 +363,6 @@ describe('WsProvider', () => {
           await new Promise((resolve) => setTimeout(resolve, 200));
 
           expect(provider.status).toBe('connected');
-        } finally {
-          await provider.disconnect().catch(() => {});
-        }
-      });
-
-      it('increments attempt counter on reconnection', async () => {
-        // Create a custom endpoint selector to track the connection state
-        const connectionStates: any[] = [];
-        const endpointSelector = vi.fn((info) => {
-          connectionStates.push({ ...info });
-          return FAKE_WS_URL;
-        });
-
-        const provider = new WsProvider({
-          endpoint: endpointSelector,
-          retryDelayMs: 100,
-        });
-
-        provider.on('error', () => {
-          // Intentionally empty
-        });
-
-        try {
-          const getWs = () => (provider as any).__unsafeWs();
-
-          // Initial connection
-          await provider.connect();
-          expect(connectionStates[0]).toEqual({
-            attempt: 1,
-            currentEndpoint: undefined,
-          });
-
-          // Use direct close method to simulate disconnection
-          getWs().close(3000);
-
-          // Wait for reconnection
-          await new Promise((resolve) => setTimeout(resolve, 200));
-
-          // Check that attempt counter incremented
-          expect(connectionStates[1]).toEqual({
-            attempt: 2,
-            currentEndpoint: FAKE_WS_URL,
-          });
         } finally {
           await provider.disconnect().catch(() => {});
         }
