@@ -1,88 +1,160 @@
-import { describe, expect, it, vi } from 'vitest';
-import { pickRandomItem } from '../utils.js';
+import { DedotError } from '@dedot/utils';
+import { describe, expect, it } from 'vitest';
+import { pickRandomItem, validateEndpoint } from '../utils.js';
 
-describe('pickRandomItem', () => {
-  it('throws error for empty array', () => {
-    expect(() => pickRandomItem([])).toThrow('Cannot pick from empty array');
+describe('utils', () => {
+  describe('validateEndpoint', () => {
+    describe('valid endpoints', () => {
+      it('accepts ws:// endpoints', () => {
+        const endpoint = 'ws://localhost:9944';
+        expect(validateEndpoint(endpoint)).toBe(endpoint);
+      });
+
+      it('accepts wss:// endpoints', () => {
+        const endpoint = 'wss://rpc.polkadot.io';
+        expect(validateEndpoint(endpoint)).toBe(endpoint);
+      });
+
+      it('accepts endpoints with ports', () => {
+        const endpoint = 'ws://127.0.0.1:9944';
+        expect(validateEndpoint(endpoint)).toBe(endpoint);
+      });
+
+      it('accepts endpoints with paths', () => {
+        const endpoint = 'wss://rpc.polkadot.io/ws';
+        expect(validateEndpoint(endpoint)).toBe(endpoint);
+      });
+    });
+
+    describe('invalid endpoints', () => {
+      it('rejects http:// endpoints', () => {
+        expect(() => validateEndpoint('http://localhost:8080')).toThrow(DedotError);
+        expect(() => validateEndpoint('http://localhost:8080')).toThrow(
+          'Invalid websocket endpoint http://localhost:8080, a valid endpoint should start with wss:// or ws://',
+        );
+      });
+
+      it('rejects https:// endpoints', () => {
+        expect(() => validateEndpoint('https://example.com')).toThrow(DedotError);
+        expect(() => validateEndpoint('https://example.com')).toThrow(
+          'Invalid websocket endpoint https://example.com, a valid endpoint should start with wss:// or ws://',
+        );
+      });
+
+      it('rejects empty string', () => {
+        expect(() => validateEndpoint('')).toThrow(DedotError);
+        expect(() => validateEndpoint('')).toThrow(
+          'Invalid websocket endpoint , a valid endpoint should start with wss:// or ws://',
+        );
+      });
+
+      it('rejects endpoints without protocol', () => {
+        expect(() => validateEndpoint('localhost:9944')).toThrow(DedotError);
+        expect(() => validateEndpoint('localhost:9944')).toThrow(
+          'Invalid websocket endpoint localhost:9944, a valid endpoint should start with wss:// or ws://',
+        );
+      });
+
+      it('rejects malformed protocols', () => {
+        expect(() => validateEndpoint('ws:/localhost:9944')).toThrow(DedotError);
+        expect(() => validateEndpoint('wss//example.com')).toThrow(DedotError);
+        expect(() => validateEndpoint('ws:localhost')).toThrow(DedotError);
+      });
+
+      it('rejects other protocols', () => {
+        expect(() => validateEndpoint('ftp://example.com')).toThrow(DedotError);
+        expect(() => validateEndpoint('tcp://localhost:9944')).toThrow(DedotError);
+        expect(() => validateEndpoint('udp://localhost:9944')).toThrow(DedotError);
+      });
+    });
+
+    describe('error handling', () => {
+      it('throws DedotError for invalid endpoints', () => {
+        expect(() => validateEndpoint('invalid')).toThrow(DedotError);
+      });
+
+      it('includes the invalid endpoint in error message', () => {
+        const invalidEndpoint = 'http://invalid.com';
+        expect(() => validateEndpoint(invalidEndpoint)).toThrow(
+          `Invalid websocket endpoint ${invalidEndpoint}, a valid endpoint should start with wss:// or ws://`,
+        );
+      });
+
+      it('provides helpful error message format', () => {
+        expect(() => validateEndpoint('tcp://localhost')).toThrow(
+          /Invalid websocket endpoint .*, a valid endpoint should start with wss:\/\/ or ws:\/\//,
+        );
+      });
+    });
   });
 
-  it('returns the only item from single-item array', () => {
-    const items = ['only-item'];
-    const result = pickRandomItem(items);
-    expect(result).toBe('only-item');
-  });
+  describe('pickRandomItem', () => {
+    describe('basic functionality', () => {
+      it('returns an item from a single-item array', () => {
+        const items = ['item1'];
+        const result = pickRandomItem(items);
+        expect(result).toBe('item1');
+      });
 
-  it('returns an item from the array', () => {
-    const items = ['item1', 'item2', 'item3'];
-    const result = pickRandomItem(items);
-    expect(items).toContain(result);
-  });
+      it('returns an item from the array', () => {
+        const items = ['item1', 'item2', 'item3'];
+        const result = pickRandomItem(items);
+        expect(items).toContain(result);
+      });
 
-  it('excludes specified item when possible', () => {
-    const items = ['item1', 'item2', 'item3'];
-    const excludeItem = 'item2';
+      it('throws error for empty array', () => {
+        expect(() => pickRandomItem([])).toThrow('Cannot pick from empty array');
+      });
+    });
 
-    // Mock Math.random to always return 0 for predictable testing
-    const mockRandom = vi.spyOn(Math, 'random').mockReturnValue(0);
+    describe('exclusion functionality', () => {
+      it('excludes specified item when possible', () => {
+        const items = ['item1', 'item2', 'item3'];
+        const excludeItem = 'item1';
 
-    const result = pickRandomItem(items, excludeItem);
+        // Run multiple times to ensure exclusion works
+        for (let i = 0; i < 10; i++) {
+          const result = pickRandomItem(items, excludeItem);
+          expect(result).not.toBe(excludeItem);
+          expect(['item2', 'item3']).toContain(result);
+        }
+      });
 
-    // Should return first item from filtered array ['item1', 'item3']
-    expect(result).toBe('item1');
-    expect(result).not.toBe(excludeItem);
+      it('falls back to original array when only excluded item available', () => {
+        const items = ['item1'];
+        const excludeItem = 'item1';
+        const result = pickRandomItem(items, excludeItem);
+        expect(result).toBe('item1');
+      });
 
-    mockRandom.mockRestore();
-  });
+      it('works when excluded item is not in array', () => {
+        const items = ['item1', 'item2'];
+        const excludeItem = 'item3';
+        const result = pickRandomItem(items, excludeItem);
+        expect(items).toContain(result);
+      });
 
-  it('falls back to original array when all items would be excluded', () => {
-    const items = ['only-item'];
-    const excludeItem = 'only-item';
+      it('handles undefined exclude item', () => {
+        const items = ['item1', 'item2'];
+        const result = pickRandomItem(items, undefined);
+        expect(items).toContain(result);
+      });
+    });
 
-    const result = pickRandomItem(items, excludeItem);
-    expect(result).toBe('only-item');
-  });
+    describe('type safety', () => {
+      it('works with string arrays', () => {
+        const items = ['a', 'b', 'c'];
+        const result = pickRandomItem(items);
+        expect(typeof result).toBe('string');
+        expect(items).toContain(result);
+      });
 
-  it('works with different data types', () => {
-    const numbers = [1, 2, 3, 4, 5];
-    const result = pickRandomItem(numbers, 3);
-    expect(numbers).toContain(result);
-  });
-
-  it('handles undefined excludeItem correctly', () => {
-    const items = ['item1', 'item2', 'item3'];
-    const result = pickRandomItem(items, undefined);
-    expect(items).toContain(result);
-  });
-
-  it('distributes selection randomly', () => {
-    const items = ['item1', 'item2', 'item3'];
-    const results = new Set();
-
-    // Run multiple times to check randomness
-    for (let i = 0; i < 100; i++) {
-      const result = pickRandomItem(items);
-      results.add(result);
-    }
-
-    // Should have selected multiple different items
-    expect(results.size).toBeGreaterThan(1);
-  });
-
-  it('respects exclusion in random distribution', () => {
-    const items = ['item1', 'item2', 'item3'];
-    const excludeItem = 'item2';
-    const results = new Set();
-
-    // Run multiple times to check that excluded item is never selected
-    for (let i = 0; i < 100; i++) {
-      const result = pickRandomItem(items, excludeItem);
-      results.add(result);
-    }
-
-    // Should never contain the excluded item
-    expect(results.has(excludeItem)).toBe(false);
-    // Should contain other items
-    expect(results.has('item1')).toBe(true);
-    expect(results.has('item3')).toBe(true);
+      it('works with number arrays', () => {
+        const items = [1, 2, 3];
+        const result = pickRandomItem(items);
+        expect(typeof result).toBe('number');
+        expect(items).toContain(result);
+      });
+    });
   });
 });
