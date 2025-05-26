@@ -27,7 +27,7 @@ export class ExtraSignedExtension extends SignedExtension<any[], any[]> {
   }
 
   get $AdditionalSigned(): $.AnyShape {
-    const $AdditionalSignedCodecs = this.#signedExtensionDefs.map((se) => this.registry.findCodec(se.implicit));
+    const $AdditionalSignedCodecs = this.#signedExtensionDefs.map((se) => this.registry.findCodec(se.additionalSigned));
 
     return $.Tuple(...$AdditionalSignedCodecs);
   }
@@ -40,7 +40,7 @@ export class ExtraSignedExtension extends SignedExtension<any[], any[]> {
   }
 
   get #signedExtensionDefs() {
-    return this.registry.metadata.extrinsic.transactionExtensions;
+    return this.registry.metadata.extrinsic.signedExtensions;
   }
 
   #getSignedExtensions() {
@@ -78,7 +78,9 @@ export class ExtraSignedExtension extends SignedExtension<any[], any[]> {
    * @returns boolean
    */
   private isRequireNoExternalInputs(extDef: SignedExtensionDefLatest): boolean {
-    return isEmptyStructOrTuple(this.registry, extDef.typeId) && isEmptyStructOrTuple(this.registry, extDef.implicit);
+    return (
+      isEmptyStructOrTuple(this.registry, extDef.typeId) && isEmptyStructOrTuple(this.registry, extDef.additionalSigned)
+    );
   }
 
   toPayload(call: HexString = '0x'): SignerPayloadJSON {

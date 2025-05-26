@@ -1,6 +1,6 @@
 import * as $ from '@dedot/shape';
 import { $PortableType, $TypeId } from './scale_info.js';
-import { $Hasher, $SignedExtensionDefV14 } from './v14.js';
+import { $Hasher } from './v14.js';
 import { $RuntimeApiMethodParamDefV15 } from './v15.js';
 
 export const $VariantDeprecationInfoDefV16 = $.Enum({
@@ -112,21 +112,23 @@ export const $PalletDefV16 = $.Struct({
 
 export type PalletDefV16 = $.Input<typeof $PalletDefV16>;
 
-export const $TransactionExtensionDefV16 = $.Struct({
+export const $SignedExtensionDefV16 = $.Struct({
   identifier: $.str,
   typeId: $TypeId,
-  implicit: $TypeId,
+  additionalSigned: $TypeId,
 });
 
-export type TransactionExtensionDefV16 = $.Input<typeof $TransactionExtensionDefV16>;
+export type SignedExtensionDefV16 = $.Input<typeof $SignedExtensionDefV16>;
 
 export const $ExtrinsicDefV16 = $.Struct({
   version: $.Vec($.u8),
   addressTypeId: $TypeId,
   signatureTypeId: $TypeId,
   callTypeId: $TypeId,
-  transactionExtensionsByVersion: $.map($.u8, $.Vec($.compactU32)),
-  transactionExtensions: $.Vec($TransactionExtensionDefV16),
+  // Note in v16, `signedExtensions` was renamed to `transactionExtensions`
+  // But we keep the old name for compatibility
+  signedExtensionsByVersion: $.map($.u8, $.Vec($.compactU32)),
+  signedExtensions: $.Vec($SignedExtensionDefV16),
 });
 
 export type ExtrinsicDefV16 = $.Input<typeof $ExtrinsicDefV16>;

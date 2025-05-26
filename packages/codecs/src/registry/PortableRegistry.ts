@@ -28,23 +28,23 @@ export class PortableRegistry extends TypeRegistry {
     return $Extrinsic(this);
   }
 
-  $Extra(transactionVersion: number) {
-    const { transactionExtensions, transactionExtensionsByVersion, version } = this.metadata.extrinsic;
+  $Extra(extrinsicVersion: number) {
+    const { signedExtensions, signedExtensionsByVersion, version } = this.metadata.extrinsic;
 
-    const transactionVersionIndex = version.findIndex((v) => v === transactionVersion);
+    const extrinsicVersionIndex = version.findIndex((v) => v === extrinsicVersion);
 
-    if (transactionVersionIndex < 0) {
-      throw new Error(`Invalid transaction version: ${transactionVersion}`);
+    if (extrinsicVersionIndex < 0) {
+      throw new Error(`Invalid extrinsic version: ${extrinsicVersion}`);
     }
 
-    const transactionExtensionIndexes = transactionExtensionsByVersion.get(transactionVersionIndex);
+    const signedExtensionIndexes = signedExtensionsByVersion.get(extrinsicVersionIndex);
 
-    if (!transactionExtensionIndexes) {
-      throw new Error(`No transaction extensions found for version ${transactionVersion}`);
+    if (!signedExtensionIndexes) {
+      throw new Error(`No signed extensions found for version ${extrinsicVersion}`);
     }
 
-    const transactionExtensionsVersioned = transactionExtensionIndexes.map((index) => transactionExtensions[index]);
-    const extraCodecs = transactionExtensionsVersioned.map(({ typeId }) => this.findCodec(typeId));
+    const signedExtensionsVersioned = signedExtensionIndexes.map((index) => signedExtensions[index]);
+    const extraCodecs = signedExtensionsVersioned.map(({ typeId }) => this.findCodec(typeId));
 
     return Tuple(...extraCodecs);
   }

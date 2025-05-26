@@ -17,8 +17,8 @@ export const toV16 = (metadataV15: MetadataV15): MetadataV16 => {
 
   const { types, pallets, extrinsic, apis, outerEnums, custom } = metadataV15;
 
-  const transactionExtensionsByVersion = new Map<number, number[]>();
-  transactionExtensionsByVersion.set(
+  const signedExtensionsByVersion = new Map<number, number[]>();
+  signedExtensionsByVersion.set(
     0,
     Array.from({ length: extrinsic.signedExtensions.length }).map((_, i) => i),
   );
@@ -26,11 +26,11 @@ export const toV16 = (metadataV15: MetadataV15): MetadataV16 => {
   const extrinsicV16 = {
     ...extrinsic,
     version: [extrinsic.version],
-    transactionExtensionsByVersion,
-    transactionExtensions: extrinsic.signedExtensions.map(({ ident, typeId, additionalSigned }) => ({
+    signedExtensionsByVersion,
+    signedExtensions: extrinsic.signedExtensions.map(({ ident, typeId, additionalSigned }) => ({
       identifier: ident,
       typeId,
-      implicit: additionalSigned,
+      additionalSigned,
     })),
   } as ExtrinsicDefV16;
 

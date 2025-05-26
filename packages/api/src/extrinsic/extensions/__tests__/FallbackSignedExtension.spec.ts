@@ -89,10 +89,10 @@ describe('FallbackSignedExtension', () => {
   const mockRegistry = {
     metadata: {
       extrinsic: {
-        transactionExtensions: [
-          { identifier: 'CheckNonZeroSender', typeId: 1, implicit: 2 },
-          { identifier: 'CheckWeight', typeId: 3, implicit: 4 },
-          { identifier: 'UnknownExtension', typeId: 5, implicit: 6 },
+        signedExtensions: [
+          { identifier: 'CheckNonZeroSender', typeId: 1, additionalSigned: 2 },
+          { identifier: 'CheckWeight', typeId: 3, additionalSigned: 4 },
+          { identifier: 'UnknownExtension', typeId: 5, additionalSigned: 6 },
         ],
         extraTypeId: 7,
       },
