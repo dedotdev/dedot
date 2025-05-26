@@ -41,6 +41,7 @@ describe('DedotClient', () => {
       providerSend = vi.spyOn(provider, 'send');
       simulator = newChainHeadSimulator({ provider });
       simulator.notify(simulator.initializedEvent);
+      simulator.notify(simulator.nextNewBlock());
 
       provider.setRpcRequests({
         chainSpec_v1_chainName: () => 'MockedChain',
@@ -154,7 +155,7 @@ describe('DedotClient', () => {
         it('should inspect errors', () => {
           api.metadata.latest.pallets.forEach((pallet) => {
             if (!pallet.error) return;
-            const event = api.metadata.latest.types[pallet.error.typeId];
+            const event = api.metadata.latest.types[pallet.error];
             if (event.typeDef.type === 'Enum') {
               event.typeDef.value.members.forEach((m) => {
                 expect(api.errors[stringCamelCase(pallet.name)][stringPascalCase(m.name)]).toHaveProperty(['is']);
@@ -521,7 +522,7 @@ describe('DedotClient', () => {
 
             const remarkTx = api.tx.system.remarkWithEvent('Hello World');
 
-            simulator.notify(simulator.nextNewBlock()); // f
+            // via initialization - f
             simulator.notify(simulator.nextNewBlock({ fork: true })); // f-1
             simulator.notify(simulator.nextNewBlock()); // 0x10 -> f
             simulator.notify(simulator.nextNewBlock({ fork: true, fromWhichParentFork: 1 })); // 0x10-1 -> f-1
@@ -747,6 +748,8 @@ describe('DedotClient', () => {
         it('should emit runtimeUpgrade event', async () => {
           const originalRuntime = simulator.runtime;
 
+          simulator.notify(simulator.nextBestBlock());
+
           const newBlock = simulator.nextNewBlock({ withRuntime: true });
           simulator.notify(newBlock, 100);
           simulator.notify(simulator.nextBestBlock(), 150);
@@ -782,6 +785,8 @@ describe('DedotClient', () => {
           provider.setRpcRequests({
             chainHead_v1_call: () => ({ result: 'started', operationId: 'call02' }) as MethodResponse,
           });
+
+          simulator.notify(simulator.nextBestBlock());
 
           const newBlock = simulator.nextNewBlock({ withRuntime: true });
           simulator.notify(newBlock, 100);
@@ -942,9 +947,9 @@ describe('DedotClient', () => {
         const mockDecodedValue2 = ['event1', 'event2'];
 
         // Use vi.spyOn to mock the QueryableStorage constructor and its decodeValue method
-        const originalQueryableStorage = await import('../../storage/QueryableStorage.js').then(
-          (m) => m.QueryableStorage,
-        );
+        const originalQueryableStorage = // prettier-end-here
+          await import('../../storage/QueryableStorage.js').then((m) => m.QueryableStorage);
+
         vi.spyOn(originalQueryableStorage.prototype, 'decodeValue')
           .mockImplementationOnce(() => mockDecodedValue1)
           .mockImplementationOnce(() => mockDecodedValue2);
@@ -1007,9 +1012,9 @@ describe('DedotClient', () => {
         const mockDecodedValue1 = 42;
         const mockDecodedValue2 = ['event1', 'event2'];
 
-        const originalQueryableStorage = await import('../../storage/QueryableStorage.js').then(
-          (m) => m.QueryableStorage,
-        );
+        const originalQueryableStorage = // prettier-end-here
+          await import('../../storage/QueryableStorage.js').then((m) => m.QueryableStorage);
+
         vi.spyOn(originalQueryableStorage.prototype, 'decodeValue').mockImplementation((raw) => {
           if (raw === '0xvalue1') return mockDecodedValue1;
           if (raw === '0xvalue2') return mockDecodedValue2;
@@ -1128,6 +1133,7 @@ describe('DedotClient', () => {
         const newProviderSend = vi.spyOn(newProvider, 'send');
         const newSimulator = newChainHeadSimulator({ provider });
         newSimulator.notify(newSimulator.initializedEvent);
+        newSimulator.notify(newSimulator.nextNewBlock());
 
         const newApi = await DedotClient.new({ provider, cacheMetadata: true });
 
@@ -1148,6 +1154,7 @@ describe('DedotClient', () => {
           const newProviderSend = vi.spyOn(newProvider, 'send');
           const newSimulator = newChainHeadSimulator({ provider: newProvider, initialRuntime: nextMockedRuntime });
           newSimulator.notify(newSimulator.initializedEvent);
+          newSimulator.notify(newSimulator.nextNewBlock());
 
           const newApi = await DedotClient.new({
             provider: newProvider,
@@ -1255,6 +1262,7 @@ describe('DedotClient', () => {
       provider = new MockProvider();
       simulator = newChainHeadSimulator({ provider });
       simulator.notify(simulator.initializedEvent);
+      simulator.notify(simulator.nextNewBlock());
 
       provider.setRpcRequests({
         chainSpec_v1_chainName: () => 'MockedChain',

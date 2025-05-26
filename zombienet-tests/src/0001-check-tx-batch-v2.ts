@@ -1,7 +1,7 @@
 import Keyring from '@polkadot/keyring';
 import { cryptoWaitReady } from '@polkadot/util-crypto';
-import { RococoRuntimeRuntimeCallLike } from '@dedot/chaintypes/rococo';
 import { DedotClient, WsProvider } from 'dedot';
+import { KitchensinkRuntimeRuntimeCallLike } from 'dedot/chaintypes';
 import { assert, isHex, isNumber } from 'dedot/utils';
 
 const BOB = '5FHneW46xGXgs5mUiveU4sbTyGBzmstUspZC92UhjJM694ty';
@@ -19,7 +19,7 @@ export const run = async (nodeName: any, networkInfo: any): Promise<void> => {
   const TEN_UNIT = BigInt(10 * 1e12);
 
   const transferTx = api.tx.balances.transferKeepAlive(BOB, TEN_UNIT);
-  const remarkCall: RococoRuntimeRuntimeCallLike = {
+  const remarkCall: KitchensinkRuntimeRuntimeCallLike = {
     pallet: 'System',
     palletCall: {
       name: 'RemarkWithEvent',
@@ -38,9 +38,9 @@ export const run = async (nodeName: any, networkInfo: any): Promise<void> => {
     });
   });
 
-  const batchedPromise = new Promise<void>(async (resolve) => {
-    let blockIncluded = false;
-    const unsub = await batchTx.signAndSend(alice, async ({ status, txIndex, events }) => {
+  let blockIncluded = false;
+  await batchTx
+    .signAndSend(alice, async ({ status, txIndex, events }) => {
       console.log('Transaction status', status);
 
       if (status.type === 'BestChainBlockIncluded') {
@@ -68,12 +68,9 @@ export const run = async (nodeName: any, networkInfo: any): Promise<void> => {
         assert(txIndex === status.value.txIndex, 'Mismatched tx index');
 
         assert(blockIncluded, 'Finalized before block included');
-        await unsub();
-        resolve();
       }
-    });
-  });
+    })
+    .untilFinalized();
 
-  await batchedPromise;
   assert(await transferred, 'balances.Transfer event should be received');
 };

@@ -1,0 +1,33 @@
+{
+  "name": "@dedot/merkleized-metadata",
+  "version": "0.12.0",
+  "description": "RFC-0078 Merkleized Metadata Implementation",
+  "author": "Thang X. Vu <thang@dedot.dev>",
+  "homepage": "https://dedot.dev",
+  "repository": {
+    "directory": "packages/merkleized-metadata",
+    "type": "git",
+    "url": "https://github.com/dedotdev/dedot.git"
+  },
+  "main": "src/index.ts",
+  "sideEffects": false,
+  "type": "module",
+  "scripts": {
+    "build": "tsc --project tsconfig.build.json && tsc --project tsconfig.build.cjs.json",
+    "clean": "rm -rf ./dist && rm -rf ./tsconfig.tsbuildinfo ./tsconfig.build.tsbuildinfo",
+    "test": "npx vitest --watch=false"
+  },
+  "publishConfig": {
+    "access": "public",
+    "directory": "dist"
+  },
+  "dependencies": {
+    "@dedot/codecs": "workspace:*",
+    "@dedot/shape": "workspace:*",
+    "@dedot/utils": "workspace:*"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "license": "Apache-2.0"
+}

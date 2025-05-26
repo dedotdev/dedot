@@ -1,4 +1,4 @@
-![Dedot_Baner_final](https://github.com/user-attachments/assets/21402da8-93cb-4441-8688-6fbccb5cfa2b)
+![Dedot Banner](https://github.com/user-attachments/assets/94a6e1cd-cdaf-4449-8fbf-5762186b9462)
 
 
 # Dedot
@@ -9,14 +9,15 @@ Delightful JavaScript/TypeScript client for [Polkadot](https://polkadot.com/) & 
 ![Unit test][ico-unit-test]
 ![E2E test][ico-e2e-test]
 ![License][ico-license]
+![weekly downloads][ico-downloads]
 [![Chat on Telegram][ico-telegram]][link-telegram]
 
 [ico-telegram]: https://img.shields.io/badge/Dedot-2CA5E0.svg?style=flat-square&logo=telegram&label=Telegram
 [ico-unit-test]: https://img.shields.io/github/actions/workflow/status/dedotdev/dedot/run-tests.yml?label=unit%20tests&style=flat-square
-[ico-e2e-test]: https://img.shields.io/github/actions/workflow/status/dedotdev/dedot/zombienet-tests.yml?label=e2e%20tests&style=flat-square
+[ico-e2e-test]: https://img.shields.io/github/actions/workflow/status/dedotdev/dedot/zombienet-tests-batch-01.yml?label=e2e%20tests&style=flat-square
 [ico-version]: https://img.shields.io/github/package-json/v/dedotdev/dedot?filename=packages%2Fapi%2Fpackage.json&style=flat-square
 [ico-license]: https://img.shields.io/github/license/dedotdev/dedot?style=flat-square
-
+[ico-downloads]: https://img.shields.io/npm/dw/dedot?style=flat-square
 [link-telegram]: https://t.me/JoinDedot
 
 ---
@@ -87,13 +88,20 @@ console.log('Polkadot ss58Prefix:', ss58Prefix);
 const pendingRewards = await client.call.nominationPoolsApi.pendingRewards(<address>)
 console.log('Pending rewards:', pendingRewards);
 
-// await unsub();
+// Disconnect
 // await client.disconnect();
 ```
 
 ### Resources & announcements
 - [Introducing Dedot](https://forum.polkadot.network/t/introducing-dedot-a-delightful-javascript-client-for-polkadot-substrate-based-blockchains/8956)
 - [Type-safe APIs to interact with ink! Smart Contracts](https://forum.polkadot.network/t/type-safe-apis-to-interact-with-ink-smart-contracts-dedot/9485)
+
+### Real-World Projects Powered by Dedot
+
+- [Polkadot Live App](https://polkadot-live.github.io/) ([Github](https://github.com/polkadot-live/polkadot-live-app))
+- [Polkadot Staking Dashboard](https://staking.polkadot.cloud/) ([Github](https://github.com/polkadot-cloud/polkadot-staking-dashboard))
+- [Typink](https://typink.dev/) ([Github](https://github.com/dedotdev/typink))
+- ... add yours? PRs are more than welcome!
 
 ### Acknowledgment
 

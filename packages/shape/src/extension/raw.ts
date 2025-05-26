@@ -9,7 +9,9 @@ export const RawHex: Shape<HexString> = createShape({
     buffer.insertArray(hexToU8a(value));
   },
   subDecode(buffer: DecodeBuffer) {
-    return u8aToHex(buffer.array);
+    const value = buffer.array.subarray(buffer.index);
+    buffer.index += value.length;
+    return u8aToHex(value);
   },
 });
 

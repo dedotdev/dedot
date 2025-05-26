@@ -1,9 +1,9 @@
 import Keyring from '@polkadot/keyring';
 import { cryptoWaitReady } from '@polkadot/util-crypto';
-import { ExtrinsicSignature } from '@dedot/codecs';
-import { InjectedSigner, SignerResult } from '@dedot/types';
-import { assert, u8aToHex } from '@dedot/utils';
 import { $, LegacyClient, WsProvider } from 'dedot';
+import { ExtrinsicSignature } from 'dedot/codecs';
+import { InjectedSigner, SignerPayloadJSON, SignerResult } from 'dedot/types';
+import { assert, u8aToHex } from 'dedot/utils';
 
 export const run = async (nodeName: any, networkInfo: any): Promise<void> => {
   await cryptoWaitReady();
@@ -16,7 +16,9 @@ export const run = async (nodeName: any, networkInfo: any): Promise<void> => {
   const tip = 1_000n;
 
   const alterSigner = {
-    signPayload: async (): Promise<SignerResult> => {
+    signPayload: async (payload: SignerPayloadJSON): Promise<SignerResult> => {
+      assert(payload.withSignedTransaction, 'withSignedTransaction should be true');
+
       // Changing the payload to add some tip
       // So we should expect the tip should be presence where the original tx does not have
       // Proving that the original tx payload is already alter to add the tip
@@ -42,31 +44,26 @@ export const run = async (nodeName: any, networkInfo: any): Promise<void> => {
     },
   };
 
-  const verifySigner = (signer?: InjectedSigner) => {
-    return new Promise<void>(async (resolve) => {
-      const remarkWithEventTx = await api.tx.system.remarkWithEvent('Hello Dedot').sign(alice.address, { signer });
+  const verifySigner = async (signer?: InjectedSigner) => {
+    const remarkWithEventTx = await api.tx.system.remarkWithEvent('Hello Dedot').sign(alice.address, { signer });
 
-      assert(remarkWithEventTx.signature, 'Tx signature should be available');
+    assert(remarkWithEventTx.signature, 'Tx signature should be available');
 
-      const unsub = await remarkWithEventTx.send(async ({ status, events, dispatchInfo }) => {
+    const { events } = await remarkWithEventTx
+      .send(({ status }) => {
         console.log('Transaction status', status.type);
+      })
+      .untilFinalized();
 
-        if (status.type === 'Finalized') {
-          const remarkEvent = api.events.system.Remarked.find(events);
-          const txFreePaidEvent = api.events.transactionPayment.TransactionFeePaid.find(events);
+    const remarkEvent = api.events.system.Remarked.find(events);
+    const txFreePaidEvent = api.events.transactionPayment.TransactionFeePaid.find(events);
 
-          assert(
-            remarkEvent && remarkEvent.pallet === 'System' && remarkEvent.palletEvent.name === 'Remarked',
-            'System.Remarked event should be emitted',
-          );
+    assert(
+      remarkEvent && remarkEvent.pallet === 'System' && remarkEvent.palletEvent.name === 'Remarked',
+      'System.Remarked event should be emitted',
+    );
 
-          assert(txFreePaidEvent && txFreePaidEvent.palletEvent.data.tip === tip, 'Tip value is not correct');
-
-          await unsub();
-          resolve();
-        }
-      });
-    });
+    assert(txFreePaidEvent && txFreePaidEvent.palletEvent.data.tip === tip, 'Tip value is not correct');
   };
 
   // sign tx via custom signer option

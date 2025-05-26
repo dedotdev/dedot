@@ -1,6 +1,6 @@
 {
   "name": "@dedot/shape",
-  "version": "0.9.1",
+  "version": "0.12.0",
   "description": "Basic codecs & shapes, extending existing subshape",
   "author": "Thang X. Vu <thang@dedot.dev>",
   "homepage": "https://dedot.dev",
@@ -17,7 +17,7 @@
   ],
   "dependencies": {
     "@dedot/utils": "workspace:*",
-    "deshape": "^0.0.1"
+    "deshape": "^0.1.0"
   },
   "scripts": {
     "build": "tsc --project tsconfig.build.json && tsc --project tsconfig.build.cjs.json",

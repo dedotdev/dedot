@@ -4,7 +4,9 @@
     "baseUrl": "./",
     "outDir": "dist",
     "rootDir": "src",
-    "declarationDir": "dist"
+    "declarationDir": "dist",
+    "module": "NodeNext",
+    "moduleResolution": "NodeNext"
   },
   "include": ["src/**/*"],
   "references": [
@@ -34,6 +36,12 @@
     },
     {
       "path": "../contracts/tsconfig.json"
+    },
+    {
+      "path": "../merkleized-metadata/tsconfig.json"
+    },
+    {
+      "path": "../smoldot/tsconfig.json"
     }
   ]
 }

@@ -1,16 +1,44 @@
 import { WebSocket } from '@polkadot/x-ws';
-import { assert } from '@dedot/utils';
+import { assert, DedotError } from '@dedot/utils';
 import { SubscriptionProvider } from '../base/index.js';
 import { JsonRpcRequest } from '../types.js';
+import { pickRandomItem, validateEndpoint } from '../utils.js';
+
+export interface WsConnectionState {
+  /**
+   * Connection attempt counter (1 for initial, increments on reconnects)
+   * Resets to 1 after a successful connection
+   */
+  attempt: number;
+
+  /**
+   * The current endpoint being connected to or the last successfully connected endpoint
+   */
+  currentEndpoint?: string;
+}
+
+/**
+ * Function that returns an endpoint string when called
+ * @param info Connection attempt information
+ * @returns A valid websocket endpoint string
+ */
+export type WsEndpointSelector = (info: WsConnectionState) => string | Promise<string>;
 
 export interface WsProviderOptions {
   /**
-   * The websocket endpoint to connect to
-   * A valid endpoint should start with `wss://`, `ws://`
+   * The websocket endpoint to connect to. Can be:
+   * - A single endpoint string (e.g., 'wss://rpc.polkadot.io')
+   * - An array of endpoints for automatic failover
+   * - A function that returns an endpoint for advanced endpoint selection logic
+   *
+   * Valid endpoints must start with `wss://` or `ws://`.
+   *
+   * When an array is provided, endpoints are randomly selected on initial connection
+   * and reconnection attempts will prefer different endpoints when possible.
    *
    * @required
    */
-  endpoint: string;
+  endpoint: string | string[] | WsEndpointSelector;
   /**
    * Delay in milliseconds before retrying to connect
    * If the value is <= 0, retry will be disabled
@@ -37,10 +65,26 @@ const NO_RESUBSCRIBE_PREFIXES = ['author_', 'chainHead_', 'transactionWatch_'];
 
 /**
  * @name WsProvider
- * @description A JSON-RPC provider that connects to a WebSocket endpoint
+ * @description A JSON-RPC provider that connects to WebSocket endpoints with support for
+ * single endpoint, multiple endpoints for failover, and custom endpoint selection logic.
+ *
  * @example
  * ```ts
+ * // Single endpoint
  * const provider = new WsProvider('wss://rpc.polkadot.io');
+ *
+ * // Multiple endpoints for automatic failover
+ * const provider = new WsProvider([
+ *   'wss://rpc.polkadot.io',
+ *   'wss://polkadot-rpc.dwellir.com',
+ *   'wss://polkadot.api.onfinality.io/public-ws'
+ * ]);
+ *
+ * // Custom endpoint selector
+ * const provider = new WsProvider((info) => {
+ *   console.log(`Connection attempt ${info.attempt}`);
+ *   return info.attempt >= 3 ? 'wss://backup.rpc' : 'wss://primary.rpc';
+ * });
  *
  * await provider.connect();
  *
@@ -48,7 +92,7 @@ const NO_RESUBSCRIBE_PREFIXES = ['author_', 'chainHead_', 'transactionWatch_'];
  * const genesisHash = await provider.send('chain_getBlockHash', [0]);
  * console.log(genesisHash);
  *
- * // Subscribe to runtimeVersion changes
+ * // Subscribe to new heads
  * await provider.subscribe(
  *   {
  *     subname: 'chain_newHead',
@@ -69,14 +113,18 @@ export class WsProvider extends SubscriptionProvider {
   #ws?: WebSocket;
   #timeoutTimer?: ReturnType<typeof setInterval>;
 
-  constructor(options: WsProviderOptions | string) {
+  // Connection state tracking
+  #attempt: number = 0;
+  #currentEndpoint?: string;
+
+  constructor(options: WsProviderOptions | string | string[] | WsEndpointSelector) {
     super();
 
     this.#options = this.#normalizeOptions(options);
   }
 
   async connect(): Promise<this> {
-    this.#connectAndRetry();
+    this.#connectAndRetry().catch(console.error);
     return this.#untilConnected();
   }
 
@@ -105,11 +153,40 @@ export class WsProvider extends SubscriptionProvider {
     return this.#options.retryDelayMs > 0;
   }
 
-  #doConnect() {
+  /**
+   * Get the current endpoint, either directly or by calling the endpoint selector function
+   */
+  async #getEndpoint(): Promise<string> {
+    const endpoint = this.#options.endpoint;
+
+    if (typeof endpoint === 'function') {
+      // Create a connection state object to pass to the endpoint selector
+      const info: WsConnectionState = {
+        attempt: this.#attempt,
+        currentEndpoint: this.#currentEndpoint,
+      };
+
+      return validateEndpoint(
+        await Promise.resolve(endpoint(info)), // --
+      );
+    }
+
+    // If endpoint is an array, this should not happen as arrays are converted to functions in #normalizeOptions
+    // But we add this check for type safety
+    if (Array.isArray(endpoint)) {
+      throw new DedotError('Endpoint array should have been converted to a selector function');
+    }
+
+    return endpoint;
+  }
+
+  async #doConnect() {
     assert(!this.#ws, 'Websocket connection already exists');
 
     try {
-      this.#ws = new WebSocket(this.#options.endpoint);
+      this.#currentEndpoint = await this.#getEndpoint();
+
+      this.#ws = new WebSocket(this.#currentEndpoint);
       this.#ws.onopen = this.#onSocketOpen;
       this.#ws.onclose = this.#onSocketClose;
       this.#ws.onmessage = this.#onSocketMessage;
@@ -123,11 +200,13 @@ export class WsProvider extends SubscriptionProvider {
     }
   }
 
-  #connectAndRetry() {
+  async #connectAndRetry() {
     assert(!this.#ws, 'Websocket connection already exists');
 
+    this.#attempt += 1;
+
     try {
-      this.#doConnect();
+      await this.#doConnect();
     } catch (e) {
       if (!this.#shouldRetry) {
         throw e;
@@ -142,13 +221,15 @@ export class WsProvider extends SubscriptionProvider {
 
     setTimeout(() => {
       this._setStatus('reconnecting');
-
-      this.#connectAndRetry();
+      this.#connectAndRetry().catch(console.error);
     }, this.#options.retryDelayMs);
   }
 
   #onSocketOpen = async (event: Event) => {
-    this._setStatus('connected');
+    // Connection successful - reset attempt counter
+    this.#attempt = 0;
+
+    this._setStatus('connected', this.#currentEndpoint);
 
     // re-subscribe to previous subscriptions if this is a reconnect
     Object.keys(this._subscriptions).forEach((subkey) => {
@@ -191,7 +272,7 @@ export class WsProvider extends SubscriptionProvider {
 
       Object.values(this._handlers).forEach(({ from, defer, request }) => {
         if (now - from > timeout) {
-          defer.reject(new Error(`Request timed out after ${timeout}ms`));
+          defer.reject(new DedotError(`Request timed out after ${timeout}ms`));
           delete this._handlers[request.id];
         }
       });
@@ -214,7 +295,7 @@ export class WsProvider extends SubscriptionProvider {
   #onSocketClose = (event: CloseEvent) => {
     this.#clearWs();
 
-    const error = new Error(`disconnected from ${this.#options.endpoint}: ${event.code} - ${event.reason}`);
+    const error = new DedotError(`disconnected from ${this.#currentEndpoint}: ${event.code} - ${event.reason}`);
 
     // Reject all pending requests
     Object.values(this._handlers).forEach(({ defer }) => {
@@ -242,9 +323,9 @@ export class WsProvider extends SubscriptionProvider {
     this._onReceiveResponse(message.data);
   };
 
-  #normalizeOptions(options: WsProviderOptions | string): Required<WsProviderOptions> {
+  #normalizeOptions(options: WsProviderOptions | string | string[] | WsEndpointSelector): Required<WsProviderOptions> {
     const normalizedOptions =
-      typeof options === 'string'
+      typeof options === 'string' || typeof options === 'function' || Array.isArray(options)
         ? {
             ...DEFAULT_OPTIONS,
             endpoint: options,
@@ -254,10 +335,21 @@ export class WsProvider extends SubscriptionProvider {
             ...options,
           };
 
-    const { endpoint = '' } = normalizedOptions;
+    // Handle different endpoint types
+    const { endpoint } = normalizedOptions;
 
-    if (!endpoint.startsWith('ws://') && !endpoint.startsWith('wss://')) {
-      throw new Error(`Invalid websocket endpoint ${endpoint}, a valid endpoint should start with wss:// or ws://`);
+    if (typeof endpoint === 'string') {
+      validateEndpoint(endpoint);
+    } else if (Array.isArray(endpoint)) {
+      if (endpoint.length === 0) {
+        throw new DedotError('Endpoint array cannot be empty');
+      }
+
+      endpoint.forEach(validateEndpoint);
+
+      normalizedOptions.endpoint = (info: WsConnectionState) => {
+        return pickRandomItem(endpoint, info.currentEndpoint);
+      };
     }
 
     return normalizedOptions as Required<WsProviderOptions>;
@@ -284,7 +376,7 @@ export class WsProvider extends SubscriptionProvider {
   }
 
   /**
-   * Unsafe access to the websocket instance, use with caution. 
+   * Unsafe access to the websocket instance, use with caution.
    * Currently only used for testing
    */
   protected __unsafeWs(): WebSocket | undefined {

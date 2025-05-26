@@ -1,6 +1,6 @@
 {
   "name": "dedot",
-  "version": "0.9.1",
+  "version": "0.12.0",
   "description": "A delightful JavaScript/TypeScript client for Polkadot & Substrate",
   "author": "Thang X. Vu <thang@dedot.dev>",
   "homepage": "https://dedot.dev",
@@ -25,11 +25,14 @@
     "@dedot/cli": "workspace:*",
     "@dedot/codecs": "workspace:*",
     "@dedot/contracts": "workspace:*",
+    "@dedot/merkleized-metadata": "workspace:*",
     "@dedot/providers": "workspace:*",
     "@dedot/runtime-specs": "workspace:*",
     "@dedot/shape": "workspace:*",
+    "@dedot/smoldot": "workspace:*",
     "@dedot/types": "workspace:*",
-    "@dedot/utils": "workspace:*"
+    "@dedot/utils": "workspace:*",
+    "smoldot": "^2.0.34"
   },
   "exports": {
     ".": {
@@ -76,6 +79,26 @@
       "types": "./src/contracts/index.ts",
       "import": "./src/contracts/index.ts",
       "default": "./src/contracts/index.ts"
+    },
+    "./merkleized-metadata": {
+      "types": "./src/merkleized-metadata/index.ts",
+      "import": "./src/merkleized-metadata/index.ts",
+      "default": "./src/merkleized-metadata/index.ts"
+    },
+    "./smoldot": {
+      "types": "./src/smoldot/index.ts",
+      "import": "./src/smoldot/index.ts",
+      "default": "./src/smoldot/index.ts"
+    },
+    "./smoldot/worker": {
+      "types": "./src/smoldot/worker.ts",
+      "import": "./src/smoldot/worker.ts",
+      "default": "./src/smoldot/worker.ts"
+    },
+    "./smoldot/with-worker": {
+      "types": "./src/smoldot/with-worker.ts",
+      "import": "./src/smoldot/with-worker.ts",
+      "default": "./src/smoldot/with-worker.ts"
     }
   },
   "publishConfig": {

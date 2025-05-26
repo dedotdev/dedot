@@ -1,6 +1,7 @@
-import { TransactionStatus } from '@dedot/codecs';
-import type { AddressOrPair, IKeyringPair, TxStatus } from '@dedot/types';
-import { assert, blake2AsU8a, HexString, hexToU8a, isFunction } from '@dedot/utils';
+import { Hash, TransactionStatus } from '@dedot/codecs';
+import { AddressOrPair, IKeyringPair, ISubmittableResult, TxStatus, Unsub } from '@dedot/types';
+import { assert, blake2AsU8a, Deferred, deferred, HexString, hexToU8a, isFunction } from '@dedot/utils';
+import { RejectedTxError } from './errors.js';
 
 export function isKeyringPair(account: AddressOrPair): account is IKeyringPair {
   return isFunction((account as IKeyringPair).sign);
@@ -84,4 +85,42 @@ export function toTxStatus(txStatus: TransactionStatus, txInfo?: TxInfo): TxStat
         },
       };
   }
+}
+
+export function txDefer() {
+  const deferTx = deferred<Unsub | Hash>();
+  let deferFinalized: Deferred<ISubmittableResult> | undefined;
+  let deferBestChainBlockIncluded: Deferred<ISubmittableResult> | undefined;
+
+  Object.assign(deferTx.promise, {
+    untilFinalized: () => {
+      deferFinalized = deferred<ISubmittableResult>();
+      return deferFinalized.promise;
+    },
+    untilBestChainBlockIncluded: () => {
+      deferBestChainBlockIncluded = deferred<ISubmittableResult>();
+      return deferBestChainBlockIncluded.promise;
+    },
+  });
+
+  const onTxProgress = (result: ISubmittableResult) => {
+    const { status } = result;
+    if (status.type === 'BestChainBlockIncluded') {
+      deferBestChainBlockIncluded?.resolve(result);
+    } else if (status.type === 'Finalized') {
+      deferBestChainBlockIncluded?.resolve(result);
+      deferFinalized?.resolve(result);
+    } else if (status.type === 'Invalid' || status.type === 'Drop') {
+      const e = new RejectedTxError(result);
+      deferBestChainBlockIncluded?.reject(e);
+      deferFinalized?.reject(e);
+    }
+  };
+
+  return {
+    deferTx,
+    deferFinalized: () => deferFinalized,
+    deferBestChainBlockIncluded: () => deferBestChainBlockIncluded,
+    onTxProgress,
+  };
 }

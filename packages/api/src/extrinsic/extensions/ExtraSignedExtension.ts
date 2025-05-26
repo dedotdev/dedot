@@ -1,4 +1,4 @@
-import { DEFAULT_EXTRINSIC_VERSION, type SignedExtensionDefLatest } from '@dedot/codecs';
+import type { SignedExtensionDefLatest } from '@dedot/codecs';
 import * as $ from '@dedot/shape';
 import { SignerPayloadJSON, SignerPayloadRaw } from '@dedot/types';
 import { ensurePresence, HexString, u8aToHex } from '@dedot/utils';
@@ -79,16 +79,24 @@ export class ExtraSignedExtension extends SignedExtension<any[], any[]> {
    */
   private isRequireNoExternalInputs(extDef: SignedExtensionDefLatest): boolean {
     return (
-      isEmptyStructOrTuple(this.registry, extDef.typeId) && isEmptyStructOrTuple(this.registry, extDef.additionalSigned)
+      isEmptyStructOrTuple(this.registry, extDef.typeId) && // prettier-end-here
+      isEmptyStructOrTuple(this.registry, extDef.additionalSigned)
     );
   }
 
   toPayload(call: HexString = '0x'): SignerPayloadJSON {
     const signedExtensions = this.#signedExtensions!.map((se) => se.identifier);
     const { version } = this.registry.metadata.extrinsic;
+    const { signerAddress } = this.options!;
 
     return Object.assign(
-      { address: this.options!.signerAddress, signedExtensions, version, method: call },
+      {
+        address: signerAddress,
+        signedExtensions,
+        version,
+        method: call,
+        withSignedTransaction: true, // allow signer/wallet to alter transaction by default
+      },
       ...this.#signedExtensions!.map((se) => se.toPayload()),
     ) as SignerPayloadJSON;
   }

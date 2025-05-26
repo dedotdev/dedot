@@ -1,6 +1,6 @@
-import { OpaqueMetadata } from '@dedot/codecs/codecs';
 import * as $ from '@dedot/shape';
 import { ensurePresence, HexString, u8aToHex } from '@dedot/utils';
+import { OpaqueMetadata } from '../known/metadata.js';
 import { toV15, toV16 } from './conversion/index.js';
 import { $MetadataV14 } from './v14.js';
 import { $MetadataV15 } from './v15.js';
@@ -13,8 +13,9 @@ import {
   RuntimeApiMethodDefV16,
   StorageEntryV16,
   SignedExtensionDefV16,
+  $MetadataV16,
+  MetadataV16
 } from './v16.js';
-import { $MetadataV16, MetadataV16 } from './v16.js';
 
 export const notSupportedCodec = (msg = 'Not supported!'): $.Shape<never> => {
   return $.createShape({
