@@ -155,7 +155,7 @@ describe('DedotClient', () => {
         it('should inspect errors', () => {
           api.metadata.latest.pallets.forEach((pallet) => {
             if (!pallet.error) return;
-            const event = api.metadata.latest.types[pallet.error];
+            const event = api.metadata.latest.types[pallet.error.typeId];
             if (event.typeDef.type === 'Enum') {
               event.typeDef.value.members.forEach((m) => {
                 expect(api.errors[stringCamelCase(pallet.name)][stringPascalCase(m.name)]).toHaveProperty(['is']);

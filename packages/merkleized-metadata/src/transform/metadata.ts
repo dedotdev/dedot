@@ -191,12 +191,12 @@ export function generateExtrinsicMetadata(metadata: Metadata, accessibleTypes: M
   const extrinsic = metadata.latest.extrinsic;
 
   return {
-    version: extrinsic.version,
+    version: extrinsic.version.at(0) || 0,
     addressTypeId: generateTypeRef(extrinsic.addressTypeId, registry, accessibleTypes),
     callTypeId: generateTypeRef(extrinsic.callTypeId, registry, accessibleTypes),
     signatureTypeId: generateTypeRef(extrinsic.signatureTypeId, registry, accessibleTypes),
     signedExtensions: extrinsic.signedExtensions.map((ext) => ({
-      identifier: ext.ident,
+      identifier: ext.identifier,
       includedInExtrinsic: generateTypeRef(ext.typeId, registry, accessibleTypes),
       includedInSignedData: generateTypeRef(ext.additionalSigned, registry, accessibleTypes),
     })),

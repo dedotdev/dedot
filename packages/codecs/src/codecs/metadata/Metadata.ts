@@ -14,7 +14,7 @@ import {
   StorageEntryV16,
   SignedExtensionDefV16,
   $MetadataV16,
-  MetadataV16
+  MetadataV16,
 } from './v16.js';
 
 export const notSupportedCodec = (msg = 'Not supported!'): $.Shape<never> => {
