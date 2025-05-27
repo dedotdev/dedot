@@ -1,9 +1,9 @@
 import { WsProvider, MaxRetryAttemptedError } from 'dedot';
-import { assert } from 'dedot/utils';
+import { assert, waitFor } from 'dedot/utils';
 
 /**
  * E2E tests for WsProvider maxRetryAttempts functionality
- * 
+ *
  * These tests verify:
  * 1. Initial connection failure behavior - first attempt doesn't count as retry
  * 2. Connection interruption behavior - stops retrying after max attempts
@@ -30,8 +30,8 @@ async function testInitialConnectionFailures() {
   console.log('\n--- Testing Initial Connection Failures ---');
 
   // Use non-existent endpoints to simulate connection failures
-  const invalidEndpoint = 'ws://127.0.0.1:99999'; // Non-existent port
-  const invalidEndpoint2 = 'ws://127.0.0.1:99998';
+  const invalidEndpoint = 'ws://127.0.0.1:9999'; // Non-existent port
+  const invalidEndpoint2 = 'ws://127.0.0.1:9999';
 
   // Test 1: maxRetryAttempts = 0 (no retries)
   console.log('Test 1: maxRetryAttempts = 0 (should fail immediately)');
@@ -49,14 +49,14 @@ async function testInitialConnectionFailures() {
     } catch (error: any) {
       const endTime = Date.now();
       const duration = endTime - startTime;
-      
+
       console.log(`  - Failed as expected after ${duration}ms`);
       console.log(`  - Error type: ${error.constructor.name}`);
-      
+
       // Should fail quickly without retry delays
       assert(duration < 500, `Should fail quickly, but took ${duration}ms`);
-      // Note: For initial connection with maxRetryAttempts=0, it might not throw MaxRetryAttemptedError
-      // but rather the underlying connection error
+
+      assert(provider.status === 'disconnected', 'Status should be disconnected');
     }
   }
 
@@ -76,17 +76,16 @@ async function testInitialConnectionFailures() {
     } catch (error: any) {
       const endTime = Date.now();
       const duration = endTime - startTime;
-      
+
       console.log(`  - Failed as expected after ${duration}ms`);
       console.log(`  - Error: ${error.message}`);
-      
+
       // Should have taken at least one retry delay (200ms)
       assert(duration >= 180, `Should take at least 180ms for 1 retry, but took ${duration}ms`);
       assert(duration < 1000, `Should not take too long, but took ${duration}ms`);
-      
-      if (error instanceof MaxRetryAttemptedError) {
-        assert(error.message.includes('1 retry attempts'), 'Error message should mention 1 retry attempt');
-      }
+      assert(provider.status === 'disconnected', 'Status should be disconnected');
+
+      assert(error.message.includes('1 retry attempts'), 'Error message should mention 1 retry attempt');
     }
   }
 
@@ -106,17 +105,16 @@ async function testInitialConnectionFailures() {
     } catch (error: any) {
       const endTime = Date.now();
       const duration = endTime - startTime;
-      
+
       console.log(`  - Failed as expected after ${duration}ms`);
       console.log(`  - Error: ${error.message}`);
-      
+
       // Should have taken at least 3 retry delays (3 * 150ms = 450ms)
       assert(duration >= 400, `Should take at least 400ms for 3 retries, but took ${duration}ms`);
       assert(duration < 2000, `Should not take too long, but took ${duration}ms`);
-      
-      if (error instanceof MaxRetryAttemptedError) {
-        assert(error.message.includes('3 retry attempts'), 'Error message should mention 3 retry attempts');
-      }
+
+      assert(provider.status === 'disconnected', 'Status should be disconnected');
+      assert(error.message.includes('3 retry attempts'), 'Error message should mention 3 retry attempts');
     }
   }
 
@@ -136,16 +134,14 @@ async function testInitialConnectionFailures() {
     } catch (error: any) {
       const endTime = Date.now();
       const duration = endTime - startTime;
-      
+
       console.log(`  - Failed as expected after ${duration}ms`);
       console.log(`  - Error: ${error.message}`);
-      
+
       // Should have taken at least 2 retry delays
       assert(duration >= 180, `Should take at least 180ms for 2 retries, but took ${duration}ms`);
-      
-      if (error instanceof MaxRetryAttemptedError) {
-        assert(error.message.includes('2 retry attempts'), 'Error message should mention 2 retry attempts');
-      }
+      assert(provider.status === 'disconnected', 'Status should be disconnected');
+      assert(error.message.includes('2 retry attempts'), 'Error message should mention 2 retry attempts');
     }
   }
 
@@ -187,13 +183,13 @@ async function testConnectionInterruptionAfterSuccess(validEndpoint: string) {
     // Force close the connection to simulate network interruption
     const ws = (provider as any).__unsafeWs();
     assert(ws, 'WebSocket should exist');
-    
+
     // Close with non-normal code to trigger reconnection logic
     ws.close(3000, 'Simulated network interruption');
     console.log('  - Simulated connection interruption');
 
     // Wait a bit to see if any retry attempts happen
-    await new Promise(resolve => setTimeout(resolve, 300));
+    await waitFor(2500);
 
     console.log(`  - Final status: ${provider.status}`);
     console.log(`  - Error emitted: ${errorEmitted}`);
@@ -202,32 +198,19 @@ async function testConnectionInterruptionAfterSuccess(validEndpoint: string) {
     // Should be disconnected and should have emitted MaxRetryAttemptedError
     // Note: The provider might reconnect successfully since we're using a valid endpoint
     // In a real scenario with network interruption, we'd expect it to be disconnected
-    console.log(`  - Verifying behavior: status=${provider.status}, errorEmitted=${errorEmitted}, maxRetryErrorEmitted=${maxRetryErrorEmitted}`);
-    
-    // For maxRetryAttempts=0, we expect immediate disconnection and MaxRetryAttemptedError
-    if (provider.status === 'connected') {
-      console.log('  - Warning: Provider did not disconnect as expected (might have reconnected)');
-    } else {
-      console.log('  - ✓ Provider is disconnected as expected');
-    }
-    if (!maxRetryErrorEmitted) {
-      console.log('  - Warning: MaxRetryAttemptedError was not emitted as expected');
-    } else {
-      console.log('  - ✓ MaxRetryAttemptedError was emitted as expected');
-    }
+    console.log(
+      `  - Verifying behavior: status=${provider.status}, errorEmitted=${errorEmitted}, maxRetryErrorEmitted=${maxRetryErrorEmitted}`,
+    );
 
-    await provider.disconnect().catch(() => {}); // Clean up
+    // For maxRetryAttempts=0, we expect immediate disconnection and MaxRetryAttemptedError
+    // @ts-ignore
+    assert(provider.status === 'disconnected', 'Status should be disconnected');
+    assert(maxRetryErrorEmitted, 'MaxRetryError should be emitted');
   }
 
   // Test 2: maxRetryAttempts = 2 (2 retries after interruption)
   console.log('Test 2: maxRetryAttempts = 2 (2 retries after connection loss)');
   {
-    const provider = new WsProvider({
-      endpoint: 'ws://127.0.0.1:99997', // Use invalid endpoint to ensure retries fail
-      maxRetryAttempts: 2,
-      retryDelayMs: 150,
-    });
-
     let maxRetryError: MaxRetryAttemptedError | null = null;
     const errors: Error[] = [];
 
@@ -236,7 +219,7 @@ async function testConnectionInterruptionAfterSuccess(validEndpoint: string) {
     const validProvider = new WsProvider({
       endpoint: validEndpoint,
       maxRetryAttempts: 2,
-      retryDelayMs: 150,
+      retryDelayMs: 100,
     });
 
     validProvider.on('error', (error: Error) => {
@@ -256,53 +239,72 @@ async function testConnectionInterruptionAfterSuccess(validEndpoint: string) {
     console.log('  - Simulated connection interruption');
 
     // Wait for retry attempts to complete
-    // 2 retries * 150ms delay = at least 300ms
-    await new Promise(resolve => setTimeout(resolve, 500));
+    await waitFor(2500);
 
     console.log(`  - Final status: ${validProvider.status}`);
     console.log(`  - Total errors: ${errors.length}`);
-    
+
     console.log(`  - MaxRetryError: ${maxRetryError ? 'MaxRetryAttemptedError occurred' : 'null'}`);
 
     // Note: Since we're using a valid endpoint, the provider might actually reconnect successfully
     // In a real network interruption scenario, we'd expect it to fail after retries
     // For this test, we'll verify the retry mechanism is working
-    
-    await validProvider.disconnect().catch(() => {}); // Clean up
+    assert(validProvider.status === 'connected', 'Should be connected again');
+
+    validProvider.disconnect().catch(() => {}); // Clean up
   }
 
-  // Test 3: Connection interruption with endpoint array
-  console.log('Test 3: Connection interruption with endpoint array');
+  console.log('Test 3: disconnect on reaches max retry');
   {
-    // Use one valid and one invalid endpoint
-    const endpoints = [validEndpoint, 'ws://127.0.0.1:99996'];
+    let maxRetryError: MaxRetryAttemptedError | null = null;
+    const errors: Error[] = [];
+    let triggerred = false;
+
+    // For this test, we'll use a different approach:
+    // Connect to valid endpoint, then simulate disconnection
     const provider = new WsProvider({
-      endpoint: endpoints,
-      maxRetryAttempts: 1,
+      endpoint: () => {
+        if (triggerred) {
+          return 'ws://127.0.0.1:9999';
+        }
+
+        return validEndpoint;
+      },
+      maxRetryAttempts: 2,
       retryDelayMs: 100,
     });
 
-    const errors: any[] = [];
-    provider.on('error', (error) => {
+    provider.on('error', (error: Error) => {
       errors.push(error);
+      if (error instanceof MaxRetryAttemptedError) {
+        maxRetryError = error;
+      }
     });
 
     await provider.connect();
     assert(provider.status === 'connected', 'Should be connected initially');
-    console.log('  - Successfully connected with endpoint array');
+    console.log('  - Successfully connected');
 
-    // Force close to trigger reconnection
+    // Get the WebSocket and close it to simulate network interruption
     const ws = (provider as any).__unsafeWs();
     ws.close(3000, 'Simulated network interruption');
     console.log('  - Simulated connection interruption');
+    triggerred = true;
 
-    // Wait for potential reconnection
-    await new Promise(resolve => setTimeout(resolve, 300));
+    // Wait for retry attempts to complete
+    await waitFor(2500);
 
     console.log(`  - Final status: ${provider.status}`);
-    console.log(`  - Errors emitted: ${errors.length}`);
+    console.log(`  - Total errors: ${errors.length}`);
 
-    await provider.disconnect().catch(() => {}); // Clean up
+    console.log(`  - MaxRetryError: ${maxRetryError ? 'MaxRetryAttemptedError occurred' : 'null'}`);
+
+    // Note: Since we're using a valid endpoint, the provider might actually reconnect successfully
+    // In a real network interruption scenario, we'd expect it to fail after retries
+    // For this test, we'll verify the retry mechanism is working
+    // @ts-ignore
+    assert(provider.status === 'disconnected', 'Should be disconnected');
+    assert(maxRetryError, 'MaxRetryAttemptedError occurred');
   }
 
   console.log('✓ Connection interruption tests completed');
