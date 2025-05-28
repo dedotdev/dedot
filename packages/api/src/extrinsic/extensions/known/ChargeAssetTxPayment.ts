@@ -1,5 +1,5 @@
 import { SignerPayloadJSON } from '@dedot/types';
-import { assert, bnToHex, u8aToHex } from '@dedot/utils';
+import { assert, bnToHex, HexString, hexToBn, u8aToHex } from '@dedot/utils';
 import { SignedExtension } from '../SignedExtension.js';
 
 /**
@@ -12,6 +12,15 @@ export class ChargeAssetTxPayment extends SignedExtension<{ tip: bigint; assetId
     this.data = {
       tip: tip || 0n,
       assetId,
+    };
+  }
+
+  async fromPayload(payload: SignerPayloadJSON): Promise<void> {
+    const { tip, assetId } = payload;
+
+    this.data = {
+      tip: hexToBn(tip) || 0n,
+      assetId: this.#decodeAssetId(assetId),
     };
   }
 
@@ -31,6 +40,15 @@ export class ChargeAssetTxPayment extends SignedExtension<{ tip: bigint; assetId
     }
 
     return u8aToHex(this.$AssetId().tryEncode(assetId));
+  }
+
+  #decodeAssetId(assetId?: HexString): number | object | undefined {
+    // @ts-ignore
+    if (assetId === null || assetId === undefined || assetId === '' || assetId === '0x') {
+      return undefined;
+    }
+
+    return this.$AssetId().tryDecode(assetId);
   }
 
   $AssetId() {

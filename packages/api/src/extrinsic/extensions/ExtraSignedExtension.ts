@@ -18,6 +18,15 @@ export class ExtraSignedExtension extends SignedExtension<any[], any[]> {
     this.additionalSigned = this.#signedExtensions!.map((se) => se.additionalSigned);
   }
 
+  async fromPayload(payload: SignerPayloadJSON): Promise<void> {
+    this.#signedExtensions = this.#getSignedExtensions();
+
+    await Promise.all(this.#signedExtensions!.map((se) => se.fromPayload(payload)));
+
+    this.data = this.#signedExtensions!.map((se) => se.data);
+    this.additionalSigned = this.#signedExtensions!.map((se) => se.additionalSigned);
+  }
+
   get identifier(): string {
     return 'ExtraSignedExtension';
   }

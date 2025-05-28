@@ -57,5 +57,14 @@ export const hexStripPrefix = (input?: HexString | string): string => {
   return input.startsWith('0x') ? input.substring(2) : input;
 };
 
-// - TODO hexToNumber
-// - TODO hexToBigInt
+export const hexToNumber = (input?: string): number => {
+  if (!input) return 0;
+
+  return parseInt(hexStripPrefix(input), 16);
+};
+
+export const hexToBn = (input?: HexString): bigint => {
+  if (!input) return 0n;
+
+  return BigInt(`0x${hexStripPrefix(input)}`);
+};
