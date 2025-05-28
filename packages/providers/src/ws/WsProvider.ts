@@ -1,6 +1,7 @@
 import { WebSocket } from '@polkadot/x-ws';
 import { assert, DedotError } from '@dedot/utils';
 import { SubscriptionProvider } from '../base/index.js';
+import { MaxRetryAttemptedError } from '../error.js';
 import { JsonRpcRequest } from '../types.js';
 import { pickRandomItem, validateEndpoint } from '../utils.js';
 
@@ -47,6 +48,14 @@ export interface WsProviderOptions {
    */
   retryDelayMs?: number;
   /**
+   * Maximum number of retry attempts before giving up
+   * If not provided or set to undefined, will retry to connect forever (current behavior)
+   * If set to 0, no retries will be attempted
+   *
+   * @default undefined (retry forever)
+   */
+  maxRetryAttempts?: number;
+  /**
    * Timeout in milliseconds for the request,
    * an error will be thrown if the request takes longer than this value
    *
@@ -79,6 +88,13 @@ const NO_RESUBSCRIBE_PREFIXES = ['author_', 'chainHead_', 'transactionWatch_'];
  *   'wss://polkadot-rpc.dwellir.com',
  *   'wss://polkadot.api.onfinality.io/public-ws'
  * ]);
+ *
+ * // With retry limit - stop after 5 failed attempts
+ * const provider = new WsProvider({
+ *   endpoint: 'wss://rpc.polkadot.io',
+ *   maxRetryAttempts: 5,
+ *   retryDelayMs: 3000
+ * });
  *
  * // Custom endpoint selector
  * const provider = new WsProvider((info) => {
@@ -116,6 +132,7 @@ export class WsProvider extends SubscriptionProvider {
   // Connection state tracking
   #attempt: number = 0;
   #currentEndpoint?: string;
+  #initialized: boolean = false;
 
   constructor(options: WsProviderOptions | string | string[] | WsEndpointSelector) {
     super();
@@ -131,8 +148,9 @@ export class WsProvider extends SubscriptionProvider {
   #untilConnected = (): Promise<this> => {
     return new Promise((resolve, reject) => {
       const doResolve = () => {
+        this.#initialized = true;
         resolve(this);
-        this.off('error', doReject);
+        this.off('error', attemptReject);
       };
 
       const doReject = (error: Error) => {
@@ -142,15 +160,35 @@ export class WsProvider extends SubscriptionProvider {
 
       this.once('connected', doResolve);
 
-      // If we are not retrying, reject the promise if an error occurs
-      if (!this.#shouldRetry) {
-        this.once('error', doReject);
-      }
+      const attemptReject = (e: Error) => {
+        if (this.#retryEnabled) {
+          if (e instanceof MaxRetryAttemptedError) {
+            doReject(e);
+          }
+        } else {
+          doReject(e);
+        }
+      };
+
+      this.on('error', attemptReject);
     });
   };
 
-  get #shouldRetry() {
+  get #retryEnabled() {
     return this.#options.retryDelayMs > 0;
+  }
+
+  get #canRetry() {
+    if (!this.#retryEnabled) return false;
+
+    const { maxRetryAttempts } = this.#options;
+
+    if (maxRetryAttempts === undefined) return true;
+
+    // if the provider is not yet initialized,
+    // the first initial connect attempt will not be counted as a retry
+    const initialAttempt = this.#initialized ? 0 : 1;
+    return this.#attempt - initialAttempt < maxRetryAttempts;
   }
 
   /**
@@ -208,7 +246,7 @@ export class WsProvider extends SubscriptionProvider {
     try {
       await this.#doConnect();
     } catch (e) {
-      if (!this.#shouldRetry) {
+      if (!this.#canRetry) {
         throw e;
       }
 
@@ -217,12 +255,21 @@ export class WsProvider extends SubscriptionProvider {
   }
 
   #retry() {
-    if (!this.#shouldRetry) return;
+    if (!this.#retryEnabled) return;
 
-    setTimeout(() => {
-      this._setStatus('reconnecting');
-      this.#connectAndRetry().catch(console.error);
-    }, this.#options.retryDelayMs);
+    if (this.#canRetry) {
+      setTimeout(() => {
+        this._setStatus('reconnecting');
+        this.#connectAndRetry().catch(console.error);
+      }, this.#options.retryDelayMs);
+    } else {
+      const error = new MaxRetryAttemptedError(
+        `Cannot reconnect to network after ${this.#options.maxRetryAttempts} retry attempts`,
+      );
+
+      this.emit('error', error);
+      this._setStatus('disconnected');
+    }
   }
 
   #onSocketOpen = async (event: Event) => {
