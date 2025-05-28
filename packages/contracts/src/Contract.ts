@@ -1,26 +1,34 @@
 import { ISubstrateClient } from '@dedot/api';
-import { AccountId32, AccountId32Like } from '@dedot/codecs';
+import { AccountId32 } from '@dedot/codecs';
 import { IEventRecord } from '@dedot/types';
 import { TypinkRegistry } from './TypinkRegistry.js';
 import { EventExecutor, QueryExecutor, TxExecutor } from './executor/index.js';
-import { ContractEvent, ContractMetadata, GenericContractApi, ExecutionOptions } from './types/index.js';
+import {
+  ContractEvent,
+  ContractMetadata,
+  GenericContractApi,
+  ExecutionOptions,
+  ContractAddress,
+} from './types/index.js';
 import { ensureSupportContractsPallet, newProxyChain, parseRawMetadata } from './utils.js';
 
 export class Contract<ContractApi extends GenericContractApi = GenericContractApi> {
   readonly #registry: TypinkRegistry;
-  readonly #address: AccountId32;
+  readonly #address: ContractAddress;
   readonly #metadata: ContractMetadata;
   readonly #options?: ExecutionOptions;
 
   constructor(
     readonly client: ISubstrateClient<ContractApi['types']['ChainApi']>,
     metadata: ContractMetadata | string,
-    address: AccountId32Like,
+    address: ContractAddress,
     options?: ExecutionOptions,
   ) {
     ensureSupportContractsPallet(client);
 
-    this.#address = new AccountId32(address);
+    // TODO validate address depends on ink version
+    this.#address = address;
+
     this.#metadata = typeof metadata === 'string' ? parseRawMetadata(metadata) : metadata;
     this.#registry = new TypinkRegistry(this.#metadata);
     this.#options = options;
@@ -38,7 +46,7 @@ export class Contract<ContractApi extends GenericContractApi = GenericContractAp
     return this.#metadata;
   }
 
-  get address(): AccountId32 {
+  get address(): ContractAddress {
     return this.#address;
   }
 

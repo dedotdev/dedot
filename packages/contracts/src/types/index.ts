@@ -1,5 +1,20 @@
-import { SubstrateApi } from '@dedot/api/chaintypes';
-import { AccountId32, AccountId32Like, BytesLike, Weight } from '@dedot/codecs';
+import {
+  PalletContractsPrimitivesExecReturnValue,
+  PalletRevivePrimitivesExecReturnValue,
+  PalletRevivePrimitivesStorageDeposit,
+  SpWeightsWeightV2Weight,
+  SubstrateApi,
+} from '@dedot/api/chaintypes';
+import {
+  AccountId32,
+  AccountId32Like,
+  type Bytes,
+  BytesLike,
+  type DispatchError,
+  type H256,
+  type Result,
+  Weight,
+} from '@dedot/codecs';
 import {
   AnyFunc,
   AsyncMethod,
@@ -9,7 +24,7 @@ import {
   Unsub,
   VersionedGenericSubstrateApi,
 } from '@dedot/types';
-import { ContractCallMessage, ContractConstructorMessage } from './shared.js';
+import { ContractAddress, ContractCallMessage, ContractConstructorMessage } from './shared.js';
 import { ContractEventV4, ContractMetadataV4 } from './v4.js';
 import { ContractEventV5, ContractMetadataV5 } from './v5.js';
 
@@ -34,8 +49,35 @@ export interface GenericContractCallResult<DecodedData = any, ContractResult = a
 
 export interface GenericConstructorCallResult<DecodedData = any, ContractResult = any>
   extends GenericContractCallResult<DecodedData, ContractResult> {
-  address: AccountId32; // Address of the contract will be instantiated
+  address: ContractAddress; // Address of the contract will be instantiated
 }
+
+export type ContractCode = { type: 'Upload'; value: Bytes } | { type: 'Existing'; value: H256 };
+
+export type WeightV2 = { refTime: bigint; proofSize: bigint };
+
+export type StorageDeposit = { type: 'Refund'; value: bigint } | { type: 'Charge'; value: bigint };
+
+export type ExecReturnValue = { flags: { bits: number }; data: Bytes };
+
+export type InstantiateReturnValue = {
+  result: ExecReturnValue;
+  address: ContractAddress;
+};
+
+export type NewContractResult = {
+  gasConsumed: WeightV2;
+  gasRequired: WeightV2;
+  storageDeposit: StorageDeposit;
+  result: Result<ExecReturnValue, DispatchError>;
+};
+
+export type NewContractInstantiateResult = {
+  gasConsumed: WeightV2;
+  gasRequired: WeightV2;
+  storageDeposit: StorageDeposit;
+  result: Result<InstantiateReturnValue, DispatchError>;
+};
 
 export type ContractCallResult<ChainApi extends GenericSubstrateApi> = Awaited<
   ReturnType<ChainApi['call']['contractsApi']['call']>
@@ -173,6 +215,5 @@ export interface GenericContractApi<
 }
 
 export interface ExecutionOptions {
-  defaultCaller?: AccountId32Like;  
+  defaultCaller?: AccountId32Like;
 }
-

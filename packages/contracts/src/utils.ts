@@ -86,7 +86,7 @@ export const normalizeContractTypeDef = (def: ContractTypeDef): TypeDef => {
 
 const UNSUPPORTED_VERSIONS = ['V3', 'V2', 'V1'] as const;
 
-const SUPPORTED_VERSIONS = [5, '4'] as const;
+const SUPPORTED_VERSIONS = [5, '4'] as const; // 6
 
 export const parseRawMetadata = (rawMetadata: string): ContractMetadata => {
   const metadata = JSON.parse(rawMetadata);

@@ -133,4 +133,8 @@ export class TypinkRegistry extends TypeRegistry {
 
     return args.length ? { name, data } : { name };
   }
+
+  isInkV6(): boolean {
+    return this.metadata.source.language.toLowerCase().startsWith('ink! 6.');
+  }
 }

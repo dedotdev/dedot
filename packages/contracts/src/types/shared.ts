@@ -1,3 +1,5 @@
+export type ContractAddress = string; // ss58 or evm address
+
 export interface ContractSource {
   hash: string;
   wasm?: string;

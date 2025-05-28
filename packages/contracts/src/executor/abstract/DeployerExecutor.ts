@@ -18,6 +18,7 @@ export abstract class DeployerExecutor<ChainApi extends GenericSubstrateApi> ext
   ) {
     super(client, registry, options);
 
+    // TODO validate code based on ink! version (wasm or pvm)
     this.code = code;
   }
 
