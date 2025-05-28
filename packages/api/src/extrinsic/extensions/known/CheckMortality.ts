@@ -1,6 +1,6 @@
 import { BlockHash, EraLike, Hash, Header } from '@dedot/codecs';
 import { SignerPayloadJSON } from '@dedot/types';
-import { assert, bnMin, isZeroHex, numberToHex, u8aToHex } from '@dedot/utils';
+import { assert, bnMin, hexToBn, hexToNumber, isZeroHex, numberToHex, u8aToHex } from '@dedot/utils';
 import { DedotClient } from '../../../client/index.js';
 import { SignedExtension } from '../SignedExtension.js';
 
@@ -24,6 +24,14 @@ export class CheckMortality extends SignedExtension<EraLike, Hash> {
     this.#signingHeader = await this.#getSigningHeader();
     this.data = { period: this.#calculateMortalLength(), current: BigInt(this.#signingHeader.number) };
     this.additionalSigned = this.#signingHeader.hash;
+  }
+
+  async fromPayload(payload: SignerPayloadJSON): Promise<void> {
+    const { era, blockHash, blockNumber } = payload;
+
+    this.#signingHeader = { hash: blockHash, number: hexToNumber(blockNumber) };
+    this.data = this.$Data.tryDecode(era) as EraLike;
+    this.additionalSigned = blockHash;
   }
 
   async #getSigningHeader(): Promise<SigningHeader> {

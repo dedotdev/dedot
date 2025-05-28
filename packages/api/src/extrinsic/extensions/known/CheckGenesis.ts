@@ -11,6 +11,10 @@ export class CheckGenesis extends SignedExtension<{}, Hash> {
     this.additionalSigned = ensurePresence(this.client.genesisHash);
   }
 
+  async fromPayload(payload: SignerPayloadJSON): Promise<void> {
+    this.additionalSigned = ensurePresence(payload.genesisHash, 'Genesis hash not found in the payload');
+  }
+
   toPayload(): Partial<SignerPayloadJSON> {
     return {
       genesisHash: this.additionalSigned,

@@ -1,6 +1,6 @@
 import { Hash } from '@dedot/codecs';
 import { SignerPayloadJSON } from '@dedot/types';
-import { assert, isHex } from '@dedot/utils';
+import { assert, ensurePresence, isHex } from '@dedot/utils';
 import { SignedExtension } from '../SignedExtension.js';
 
 export type CheckMetadataHashMode = 'Disabled' | 'Enabled';
@@ -13,6 +13,19 @@ export class CheckMetadataHash extends SignedExtension<{ mode: CheckMetadataHash
     let metadataHash = this.payloadOptions.metadataHash;
 
     if (metadataHash) {
+      assert(isHex(metadataHash), 'Metadata hash is not a valid hex string');
+      this.data = { mode: 'Enabled' };
+      this.additionalSigned = metadataHash;
+    } else {
+      this.data = { mode: 'Disabled' };
+      this.additionalSigned = undefined;
+    }
+  }
+
+  async fromPayload(payload: SignerPayloadJSON): Promise<void> {
+    const { mode, metadataHash } = payload;
+
+    if (mode) {
       assert(isHex(metadataHash), 'Metadata hash is not a valid hex string');
       this.data = { mode: 'Enabled' };
       this.additionalSigned = metadataHash;

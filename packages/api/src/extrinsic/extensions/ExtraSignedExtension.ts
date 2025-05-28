@@ -18,6 +18,15 @@ export class ExtraSignedExtension extends SignedExtension<any[], any[]> {
     this.additionalSigned = this.#signedExtensions!.map((se) => se.additionalSigned);
   }
 
+  async fromPayload(payload: SignerPayloadJSON): Promise<void> {
+    this.#signedExtensions = this.#getSignedExtensions();
+
+    await Promise.all(this.#signedExtensions!.map((se) => se.fromPayload(payload)));
+
+    this.data = this.#signedExtensions!.map((se) => se.data);
+    this.additionalSigned = this.#signedExtensions!.map((se) => se.additionalSigned);
+  }
+
   get identifier(): string {
     return 'ExtraSignedExtension';
   }
@@ -86,7 +95,7 @@ export class ExtraSignedExtension extends SignedExtension<any[], any[]> {
     );
   }
 
-  toPayload(call: HexString = '0x'): SignerPayloadJSON {
+  toPayload(call: HexString | string = '0x'): SignerPayloadJSON {
     const signedExtensions = this.#signedExtensions!.map((se) => se.identifier);
     const { version } = this.registry.metadata.extrinsic;
     const { signerAddress } = this.options!;
@@ -103,7 +112,7 @@ export class ExtraSignedExtension extends SignedExtension<any[], any[]> {
     ) as SignerPayloadJSON;
   }
 
-  toRawPayload(call: HexString = '0x'): SignerPayloadRaw {
+  toRawPayload(call: HexString | string = '0x'): SignerPayloadRaw {
     const payload = this.toPayload(call);
     const $ToSignPayload = $.Tuple($.RawHex, this.$Data, this.$AdditionalSigned);
     const toSignPayload = [call, this.data, this.additionalSigned];
