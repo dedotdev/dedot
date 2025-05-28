@@ -1,4 +1,3 @@
-import { EraLike } from '@dedot/codecs';
 import { SignerPayloadJSON } from '@dedot/types';
 import { assert, hexToNumber, numberToHex } from '@dedot/utils';
 import { SignedExtension } from '../SignedExtension.js';

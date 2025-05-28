@@ -57,14 +57,22 @@ export const hexStripPrefix = (input?: HexString | string): string => {
   return input.startsWith('0x') ? input.substring(2) : input;
 };
 
-export const hexToNumber = (input?: string): number => {
-  if (!input) return 0;
-
-  return parseInt(hexStripPrefix(input), 16);
+/**
+ * Convert a hex string to a number
+ *
+ * @param input
+ */
+export const hexToNumber = (input?: HexString | string): number => {
+  const stripped = hexStripPrefix(input);
+  return stripped ? parseInt(stripped, 16) : 0;
 };
 
-export const hexToBn = (input?: HexString): bigint => {
-  if (!input) return 0n;
-
-  return BigInt(`0x${hexStripPrefix(input)}`);
+/**
+ * Convert a hex string to a bigint
+ *
+ * @param input
+ */
+export const hexToBn = (input?: HexString | string): bigint => {
+  const stripped = hexStripPrefix(input);
+  return stripped ? BigInt(`0x${stripped}`) : 0n;
 };
