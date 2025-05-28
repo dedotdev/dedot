@@ -28,7 +28,7 @@
     "@polkadot-api/wasm-executor": "^0.1.2",
     "@polkadot/types-support": "^15.10.2",
     "ora": "^8.2.0",
-    "yargs": "^17.7.2"
+    "yargs": "^18.0.0"
   },
   "devDependencies": {
     "@types/yargs": "^17.0.33"
