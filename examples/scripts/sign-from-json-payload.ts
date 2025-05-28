@@ -1,5 +1,5 @@
-import { SignerPayloadJSON, SignerResult } from '@dedot/types';
 import { DedotClient, ExtraSignedExtension, signRawMessage, WsProvider } from 'dedot';
+import { SignerPayloadJSON, SignerResult } from 'dedot/types';
 import { assert, HexString, u8aToHex } from 'dedot/utils';
 import { devPairs } from './keyring.js';
 
@@ -12,11 +12,11 @@ const signer = {
     const extra = new ExtraSignedExtension(client, { signerAddress: payload.address });
     await extra.fromPayload(payload);
 
-    const rawPayload = extra.toRawPayload(payload.method as HexString).data;
+    const rawPayload = extra.toRawPayload(payload.method).data;
     const signature = u8aToHex(signRawMessage(alice, rawPayload));
 
     assert(
-      JSON.stringify(extra.toPayload(payload.method as HexString)) === JSON.stringify(payload),
+      JSON.stringify(extra.toPayload(payload.method)) === JSON.stringify(payload),
       'JSON Payload should remain the same!',
     );
 

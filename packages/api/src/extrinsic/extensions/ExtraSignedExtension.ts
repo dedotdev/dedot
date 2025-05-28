@@ -95,7 +95,7 @@ export class ExtraSignedExtension extends SignedExtension<any[], any[]> {
     );
   }
 
-  toPayload(call: HexString = '0x'): SignerPayloadJSON {
+  toPayload(call: HexString | string = '0x'): SignerPayloadJSON {
     const signedExtensions = this.#signedExtensions!.map((se) => se.identifier);
     const { version } = this.registry.metadata.extrinsic;
     const { signerAddress } = this.options!;
@@ -112,7 +112,7 @@ export class ExtraSignedExtension extends SignedExtension<any[], any[]> {
     ) as SignerPayloadJSON;
   }
 
-  toRawPayload(call: HexString = '0x'): SignerPayloadRaw {
+  toRawPayload(call: HexString | string = '0x'): SignerPayloadRaw {
     const payload = this.toPayload(call);
     const $ToSignPayload = $.Tuple($.RawHex, this.$Data, this.$AdditionalSigned);
     const toSignPayload = [call, this.data, this.additionalSigned];
