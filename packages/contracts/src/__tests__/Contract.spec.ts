@@ -88,7 +88,7 @@ describe('Contract', () => {
       provider = new MockProvider();
       api = await LegacyClient.new({ provider });
       expect(() => new Contract(api, FLIPPER_CONTRACT_METADATA_V4, RANDOM_CONTRACT_ADDRESS)).toThrowError(
-        'Contracts pallet is not available',
+        'Pallet Contracts is not available',
       );
     });
   });

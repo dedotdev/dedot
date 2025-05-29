@@ -36,7 +36,7 @@ describe('ContractDeployer', () => {
       api = await LegacyClient.new({ provider });
       expect(
         () => new ContractDeployer(api, FLIPPER_CONTRACT_METADATA_V4, FLIPPER_CONTRACT_METADATA_V4.source.hash),
-      ).toThrowError('Contracts pallet is not available');
+      ).toThrowError('Pallet Contracts is not available');
     });
   });
 });

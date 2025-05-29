@@ -117,7 +117,7 @@ export function ensureSupportPalletContracts(client: ISubstrateClient<SubstrateA
   try {
     !!client.call.contractsApi.call.meta && !!client.tx.contracts.call.meta;
   } catch {
-    throw new Error('Pallet contracts is not available');
+    throw new Error('Pallet Contracts is not available');
   }
 }
 
@@ -125,7 +125,7 @@ export function ensureSupportPalletRevive(client: ISubstrateClient<SubstrateApi[
   try {
     !!client.call.reviveApi.call.meta && !!client.tx.revive.call.meta;
   } catch {
-    throw new Error('Pallet revive is not available');
+    throw new Error('Pallet Revive is not available');
   }
 }
 
