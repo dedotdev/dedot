@@ -1,16 +1,10 @@
+import { SubstrateApi } from '@dedot/api/chaintypes';
 import {
-  PalletContractsPrimitivesExecReturnValue,
-  PalletRevivePrimitivesExecReturnValue,
-  PalletRevivePrimitivesStorageDeposit,
-  SpWeightsWeightV2Weight,
-  SubstrateApi,
-} from '@dedot/api/chaintypes';
-import {
-  AccountId32,
   AccountId32Like,
   type Bytes,
   BytesLike,
   type DispatchError,
+  Extrinsic,
   type H256,
   type Result,
   Weight,
@@ -20,6 +14,7 @@ import {
   AsyncMethod,
   GenericSubstrateApi,
   IEventRecord,
+  ISubmittableExtrinsic,
   RpcVersion,
   Unsub,
   VersionedGenericSubstrateApi,
@@ -70,6 +65,7 @@ export type NewContractResult = {
   gasRequired: WeightV2;
   storageDeposit: StorageDeposit;
   result: Result<ExecReturnValue, DispatchError>;
+  debugMessage?: Bytes;
 };
 
 export type NewContractInstantiateResult = {
@@ -77,33 +73,25 @@ export type NewContractInstantiateResult = {
   gasRequired: WeightV2;
   storageDeposit: StorageDeposit;
   result: Result<InstantiateReturnValue, DispatchError>;
+  debugMessage?: Bytes;
 };
 
-export type ContractCallResult<ChainApi extends GenericSubstrateApi> = Awaited<
-  ReturnType<ChainApi['call']['contractsApi']['call']>
->;
+export type ContractCallResult<_ extends GenericSubstrateApi> = NewContractResult;
 
-export type ContractInstantiateResult<ChainApi extends GenericSubstrateApi> = Awaited<
-  ReturnType<ChainApi['call']['contractsApi']['instantiate']>
->;
+export type ContractInstantiateResult<_ extends GenericSubstrateApi> = NewContractInstantiateResult;
 
-export type ContractSubmittableExtrinsic<ChainApi extends GenericSubstrateApi> = ReturnType<
-  ChainApi['tx']['contracts']['call']
->;
+type SubmittableExtrinsic = ISubmittableExtrinsic & Extrinsic;
 
-export type InstantiateWithCodeSubmittableExtrinsic<ChainApi extends GenericSubstrateApi> = ReturnType<
-  ChainApi['tx']['contracts']['instantiateWithCode']
->;
+export type ContractSubmittableExtrinsic<_ extends GenericSubstrateApi> = SubmittableExtrinsic;
 
-export type InstantiateSubmittableExtrinsic<ChainApi extends GenericSubstrateApi> = ReturnType<
-  ChainApi['tx']['contracts']['instantiate']
->;
-
-export type GenericInstantiateSubmittableExtrinsic<ChainApi extends GenericSubstrateApi> =
-  | InstantiateSubmittableExtrinsic<ChainApi>
-  | InstantiateWithCodeSubmittableExtrinsic<ChainApi>;
+export type GenericInstantiateSubmittableExtrinsic<_ extends GenericSubstrateApi> = SubmittableExtrinsic;
 
 export type ContractMetadata = ContractMetadataV4 | ContractMetadataV5;
+
+export interface LooseContractMetadata {
+  version: number | string;
+  [prop: string]: any;
+}
 
 export type CallOptions = {
   value?: bigint;

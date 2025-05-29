@@ -9,8 +9,9 @@ import {
   GenericContractApi,
   ExecutionOptions,
   ContractAddress,
+  LooseContractMetadata,
 } from './types/index.js';
-import { ensureSupportContractsPallet, newProxyChain, parseRawMetadata } from './utils.js';
+import { ensureSupportPalletContracts, ensureSupportPalletRevive, newProxyChain, parseRawMetadata } from './utils.js';
 
 export class Contract<ContractApi extends GenericContractApi = GenericContractApi> {
   readonly #registry: TypinkRegistry;
@@ -20,17 +21,26 @@ export class Contract<ContractApi extends GenericContractApi = GenericContractAp
 
   constructor(
     readonly client: ISubstrateClient<ContractApi['types']['ChainApi']>,
-    metadata: ContractMetadata | string,
+    metadata: LooseContractMetadata | string,
     address: ContractAddress,
     options?: ExecutionOptions,
   ) {
-    ensureSupportContractsPallet(client);
-
     // TODO validate address depends on ink version
     this.#address = address;
 
-    this.#metadata = typeof metadata === 'string' ? parseRawMetadata(metadata) : metadata;
+    this.#metadata =
+      typeof metadata === 'string' // --
+        ? parseRawMetadata(metadata)
+        : (metadata as ContractMetadata);
+
     this.#registry = new TypinkRegistry(this.#metadata);
+
+    if (this.registry.isInkV6()) {
+      ensureSupportPalletRevive(client);
+    } else {
+      ensureSupportPalletContracts(client);
+    }
+
     this.#options = options;
   }
 

@@ -113,11 +113,19 @@ export function newProxyChain<ChainApi extends GenericSubstrateApi>(carrier: Exe
   });
 }
 
-export function ensureSupportContractsPallet(client: ISubstrateClient<SubstrateApi[RpcVersion]>) {
+export function ensureSupportPalletContracts(client: ISubstrateClient<SubstrateApi[RpcVersion]>) {
   try {
     !!client.call.contractsApi.call.meta && !!client.tx.contracts.call.meta;
   } catch {
-    throw new Error('Contracts pallet is not available');
+    throw new Error('Pallet contracts is not available');
+  }
+}
+
+export function ensureSupportPalletRevive(client: ISubstrateClient<SubstrateApi[RpcVersion]>) {
+  try {
+    !!client.call.reviveApi.call.meta && !!client.tx.revive.call.meta;
+  } catch {
+    throw new Error('Pallet revive is not available');
   }
 }
 

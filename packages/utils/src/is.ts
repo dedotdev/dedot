@@ -61,5 +61,17 @@ export function isWasm(input: unknown) {
     input = hexToU8a(input);
   }
 
+  // TODO the length should be longer than code hash which is 32 bytes
   return isU8a(input) && u8aEq(input.subarray(0, 4), WASM_MAGIC);
+}
+
+const PVM_PREFIX = new Uint8Array([80, 86, 77]); // \PVM
+
+export function isPvm(input: unknown) {
+  if (typeof input === 'string') {
+    input = hexToU8a(input);
+  }
+
+  // TODO the length should be longer than code hash which is 32 bytes
+  return isU8a(input) && u8aEq(input.subarray(0, 3), PVM_PREFIX);
 }

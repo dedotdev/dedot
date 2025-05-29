@@ -68,6 +68,7 @@ export class QueryExecutor<ChainApi extends GenericSubstrateApi> extends Contrac
             gasRequired: raw.gasRequired,
             storageDeposit: raw.storageDeposit,
             result: raw.result,
+            debugMessage: raw.debugMessage,
           };
         }
       })();
