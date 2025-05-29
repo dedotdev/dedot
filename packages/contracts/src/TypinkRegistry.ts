@@ -1,8 +1,8 @@
-import { AccountId32, AccountId32Like, Bytes, TypeRegistry } from '@dedot/codecs';
+import { AccountId32, Bytes, TypeRegistry } from '@dedot/codecs';
 import * as $ from '@dedot/shape';
 import { IEventRecord, IRuntimeEvent } from '@dedot/types';
 import { DedotError, assert, hexToU8a, stringCamelCase, stringPascalCase } from '@dedot/utils';
-import { ContractEvent, ContractEventMeta, ContractMetadata } from './types/index.js';
+import { ContractAddress, ContractEvent, ContractEventMeta, ContractMetadata } from './types/index.js';
 import { extractContractTypes } from './utils.js';
 
 interface ContractEmittedEvent extends IRuntimeEvent {
@@ -29,13 +29,13 @@ export class TypinkRegistry extends TypeRegistry {
     return this.#metadata;
   }
 
-  decodeEvents(records: IEventRecord[], contract?: AccountId32Like): ContractEvent[] {
+  decodeEvents(records: IEventRecord[], contract?: ContractAddress): ContractEvent[] {
     return records
       .filter(({ event }) => this.#isContractEmittedEvent(event, contract)) // prettier-end-here
       .map((record) => this.decodeEvent(record, contract));
   }
 
-  decodeEvent(eventRecord: IEventRecord, contract?: AccountId32Like): ContractEvent {
+  decodeEvent(eventRecord: IEventRecord, contract?: ContractAddress): ContractEvent {
     assert(this.#isContractEmittedEvent(eventRecord.event, contract), 'Invalid ContractEmitted Event');
 
     const { version } = this.#metadata;
@@ -50,7 +50,7 @@ export class TypinkRegistry extends TypeRegistry {
     }
   }
 
-  #isContractEmittedEvent(event: IRuntimeEvent, contract?: AccountId32Like): event is ContractEmittedEvent {
+  #isContractEmittedEvent(event: IRuntimeEvent, contractAddress?: ContractAddress): event is ContractEmittedEvent {
     const eventMatched =
       event.pallet === 'Contracts' &&
       typeof event.palletEvent === 'object' &&
@@ -58,11 +58,12 @@ export class TypinkRegistry extends TypeRegistry {
 
     if (!eventMatched) return false;
 
-    if (contract) {
+    if (contractAddress) {
       // @ts-ignore
       const emittedContract = event.palletEvent.data?.contract;
       if (emittedContract instanceof AccountId32) {
-        return emittedContract.eq(contract);
+        // TODO convert both to the same format before compare
+        return emittedContract.address() === contractAddress;
       } else {
         return false;
       }
