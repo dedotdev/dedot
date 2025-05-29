@@ -34,6 +34,8 @@ export class QueryExecutor<ChainApi extends GenericSubstrateApi> extends Contrac
       const formattedInputs = args.map((arg, index) => this.tryEncode(arg, params[index]));
       const bytes = u8aToHex(concatU8a(hexToU8a(meta.selector), ...formattedInputs));
 
+      await this.ensureContractPresence();
+
       const client = this.client as unknown as ISubstrateClient<SubstrateApi[RpcVersion]>;
 
       const raw: NewContractResult = await (async () => {

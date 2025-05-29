@@ -1,23 +1,15 @@
 import type { ISubstrateClient } from '@dedot/api';
-import {
-  PalletContractsPrimitivesCode,
-  PalletContractsPrimitivesContractResultResult,
-  type SubstrateApi,
-} from '@dedot/api/chaintypes';
-import type { DispatchError } from '@dedot/codecs';
+import { type SubstrateApi } from '@dedot/api/chaintypes';
 import { Result } from '@dedot/shape';
 import { GenericSubstrateApi, RpcVersion } from '@dedot/types';
-import { assert, assertFalse, concatU8a, hexToU8a, isNull, isUndefined, isWasm, u8aToHex } from '@dedot/utils';
+import { assert, assertFalse, concatU8a, hexToU8a, isNull, isUndefined, u8aToHex } from '@dedot/utils';
 import { ContractInstantiateDispatchError, ContractInstantiateLangError } from '../errors.js';
 import {
   ConstructorCallOptions,
   ContractCode,
   GenericConstructorCallResult,
   GenericConstructorQueryCall,
-  InstantiateReturnValue,
   NewContractInstantiateResult,
-  StorageDeposit,
-  WeightV2,
 } from '../types/index.js';
 import { toReturnFlags } from '../utils.js';
 import { DeployerExecutor } from './abstract/index.js';
@@ -50,8 +42,8 @@ export class ConstructorQueryExecutor<ChainApi extends GenericSubstrateApi> exte
       const formattedInputs = args.map((arg, index) => this.tryEncode(arg, params[index]));
       const bytes = u8aToHex(concatU8a(hexToU8a(meta.selector), ...formattedInputs));
       const code = {
-        // TODO support pvm
-        type: isWasm(this.code) ? 'Upload' : 'Existing',
+        // TODO support pvm, fix me!
+        type: this.code.length <= 66 ? 'Existing' : 'Upload',
         value: this.code,
       } as ContractCode;
 
