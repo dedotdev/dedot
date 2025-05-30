@@ -1,6 +1,6 @@
 import * as $ from '@dedot/shape';
 import { $PortableType, $TypeId } from './scale_info.js';
-import { $Hasher } from './v14.js';
+import { $Hasher, $SignedExtensionDefV14 } from './v14.js';
 import { $RuntimeApiMethodParamDefV15 } from './v15.js';
 
 export const $VariantDeprecationInfoDefV16 = $.Enum({
@@ -112,11 +112,7 @@ export const $PalletDefV16 = $.Struct({
 
 export type PalletDefV16 = $.Input<typeof $PalletDefV16>;
 
-export const $SignedExtensionDefV16 = $.Struct({
-  identifier: $.str,
-  typeId: $TypeId,
-  additionalSigned: $TypeId,
-});
+export const $SignedExtensionDefV16 = $SignedExtensionDefV14;
 
 export type SignedExtensionDefV16 = $.Input<typeof $SignedExtensionDefV16>;
 

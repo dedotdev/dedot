@@ -48,8 +48,8 @@ export class ExtraSignedExtension extends SignedExtension<any[], any[]> {
       const { signedExtensions: userSignedExtensions = {} } = this.client.options;
 
       const Extension =
-        userSignedExtensions[extDef.identifier as keyof typeof knownSignedExtensions] ||
-        knownSignedExtensions[extDef.identifier as keyof typeof knownSignedExtensions];
+        userSignedExtensions[extDef.ident as keyof typeof knownSignedExtensions] ||
+        knownSignedExtensions[extDef.ident as keyof typeof knownSignedExtensions];
 
       if (Extension) {
         return new Extension(this.client, {
@@ -63,12 +63,12 @@ export class ExtraSignedExtension extends SignedExtension<any[], any[]> {
             ...ensurePresence(this.options),
             def: extDef,
           },
-          extDef.identifier,
+          extDef.ident,
         );
       }
 
       // For extensions that require input but aren't implemented, throw an error
-      throw new Error(`SignedExtension for ${extDef.identifier} requires input but is not implemented`);
+      throw new Error(`SignedExtension for ${extDef.ident} requires input but is not implemented`);
     });
   }
 

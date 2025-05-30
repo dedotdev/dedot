@@ -196,7 +196,7 @@ export function generateExtrinsicMetadata(metadata: Metadata, accessibleTypes: M
     callTypeId: generateTypeRef(extrinsic.callTypeId, registry, accessibleTypes),
     signatureTypeId: generateTypeRef(extrinsic.signatureTypeId, registry, accessibleTypes),
     signedExtensions: extrinsic.signedExtensions.map((ext) => ({
-      identifier: ext.identifier,
+      identifier: ext.ident,
       includedInExtrinsic: generateTypeRef(ext.typeId, registry, accessibleTypes),
       includedInSignedData: generateTypeRef(ext.additionalSigned, registry, accessibleTypes),
     })),

@@ -27,11 +27,6 @@ export const toV16 = (metadataV15: MetadataV15): MetadataV16 => {
     ...extrinsic,
     version: [extrinsic.version],
     signedExtensionsByVersion,
-    signedExtensions: extrinsic.signedExtensions.map(({ ident, typeId, additionalSigned }) => ({
-      identifier: ident,
-      typeId,
-      additionalSigned,
-    })),
   } as ExtrinsicDefV16;
 
   const palletsV16 = pallets.map((p) => ({

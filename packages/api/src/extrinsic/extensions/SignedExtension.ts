@@ -41,7 +41,7 @@ export abstract class SignedExtension<Data extends any = {}, AdditionalSigned ex
   }
 
   get identifier(): string {
-    return this.signedExtensionDef.identifier;
+    return this.signedExtensionDef.ident;
   }
 
   get $Data(): $.AnyShape {

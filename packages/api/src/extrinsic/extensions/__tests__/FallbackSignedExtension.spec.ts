@@ -90,9 +90,9 @@ describe('FallbackSignedExtension', () => {
     metadata: {
       extrinsic: {
         signedExtensions: [
-          { identifier: 'CheckNonZeroSender', typeId: 1, additionalSigned: 2 },
-          { identifier: 'CheckWeight', typeId: 3, additionalSigned: 4 },
-          { identifier: 'UnknownExtension', typeId: 5, additionalSigned: 6 },
+          { ident: 'CheckNonZeroSender', typeId: 1, additionalSigned: 2 },
+          { ident: 'CheckWeight', typeId: 3, additionalSigned: 4 },
+          { ident: 'UnknownExtension', typeId: 5, additionalSigned: 6 },
         ],
         extraTypeId: 7,
       },
