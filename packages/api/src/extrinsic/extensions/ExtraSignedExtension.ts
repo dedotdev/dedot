@@ -23,7 +23,7 @@ export class ExtraSignedExtension extends SignedExtension<any[], any[]> {
   }
 
   get $Data(): $.AnyShape {
-    return ensurePresence(this.registry.$Extra(DEFAULT_EXTRINSIC_VERSION));
+    return ensurePresence(this.registry.$Extra());
   }
 
   get $AdditionalSigned(): $.AnyShape {

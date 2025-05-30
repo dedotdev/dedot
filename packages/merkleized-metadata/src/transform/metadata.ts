@@ -1,5 +1,5 @@
 import { Metadata, PortableRegistry } from '@dedot/codecs';
-import { assert } from '@dedot/utils';
+import { assert, ensurePresence } from '@dedot/utils';
 import { ExtrinsicMetadata, Field, TypeInfo, TypeRef } from '../codecs.js';
 import { getAccessibleTypes } from './accessibleTypes.js';
 import { getCompactType, PRIMITIVE_TYPE_MAP } from './typeUtils.js';
@@ -191,7 +191,7 @@ export function generateExtrinsicMetadata(metadata: Metadata, accessibleTypes: M
   const extrinsic = metadata.latest.extrinsic;
 
   return {
-    version: extrinsic.version.at(0) || 0,
+    version: ensurePresence(extrinsic.versions.at(0), 'Extrinsic version not found'),
     addressTypeId: generateTypeRef(extrinsic.addressTypeId, registry, accessibleTypes),
     callTypeId: generateTypeRef(extrinsic.callTypeId, registry, accessibleTypes),
     signatureTypeId: generateTypeRef(extrinsic.signatureTypeId, registry, accessibleTypes),

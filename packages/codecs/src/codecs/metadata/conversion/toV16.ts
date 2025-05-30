@@ -1,4 +1,4 @@
-import { calcRuntimeApiHash } from '@dedot/utils';
+import { calcRuntimeApiHash, ensurePresence } from '@dedot/utils';
 import { RuntimeVersion } from '../../known/index.js';
 import { MetadataLatest } from '../Metadata.js';
 import { lookupConstant } from '../utils.js';
@@ -13,8 +13,6 @@ import {
 } from '../v16.js';
 
 export const toV16 = (metadataV15: MetadataV15): MetadataV16 => {
-  const runtimeVersion = lookupConstant<RuntimeVersion>(metadataV15 as unknown as MetadataLatest, 'system', 'version');
-
   const { types, pallets, extrinsic, apis, outerEnums, custom } = metadataV15;
 
   const signedExtensionsByVersion = new Map<number, number[]>();
@@ -25,7 +23,7 @@ export const toV16 = (metadataV15: MetadataV15): MetadataV16 => {
 
   const extrinsicV16 = {
     ...extrinsic,
-    version: [extrinsic.version],
+    versions: [extrinsic.version],
     signedExtensionsByVersion,
   } as ExtrinsicDefV16;
 
@@ -49,6 +47,15 @@ export const toV16 = (metadataV15: MetadataV15): MetadataV16 => {
     deprecationInfo: { type: 'NotDeprecated' },
   })) as PalletDefV16[];
 
+  const runtimeVersion = ensurePresence(
+    lookupConstant<RuntimeVersion>(metadataV15 as unknown as MetadataLatest, 'system', 'version'),
+    'Runtime Version not found in Metadata v15',
+  );
+  const findRuntimeApiVersion = (apiName: string): number => {
+    const [_, version] = runtimeVersion.apis.find(([apiHash]) => apiHash === calcRuntimeApiHash(apiName))!;
+    return version;
+  };
+
   const apisV16 = apis.map((api) => ({
     ...api,
     methods: api.methods.map((m) => ({
@@ -56,10 +63,15 @@ export const toV16 = (metadataV15: MetadataV15): MetadataV16 => {
       deprecationInfo: { type: 'NotDeprecated' },
     })),
     deprecationInfo: { type: 'NotDeprecated' },
-    version: runtimeVersion
-      ? runtimeVersion.apis.find(([apiHash]) => apiHash === calcRuntimeApiHash(api.name))?.at(1)
-      : -1,
+    version: findRuntimeApiVersion(api.name),
   })) as RuntimeApiDefV16[];
 
-  return { types, pallets: palletsV16, extrinsic: extrinsicV16, apis: apisV16, outerEnums, custom } as MetadataV16;
+  return {
+    types, // --
+    pallets: palletsV16,
+    extrinsic: extrinsicV16,
+    apis: apisV16,
+    outerEnums,
+    custom,
+  } as MetadataV16;
 };

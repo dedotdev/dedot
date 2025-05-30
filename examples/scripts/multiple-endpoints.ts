@@ -1,5 +1,6 @@
 import { DedotClient, WsProvider } from 'dedot';
 import { waitFor } from 'dedot/utils';
+import * as fs from 'node:fs';
 
 // Multiple endpoints for failover
 const provider = new WsProvider([
@@ -16,6 +17,8 @@ client.on('connected', (connectedUrl) => {
 
 await client.connect();
 
-await waitFor(1000);
+fs.writeFileSync('./metadata.json', JSON.stringify(client.metadata.latest, null, 2));
 
-await client.disconnect();
+// await waitFor(1000);
+//
+// await client.disconnect();

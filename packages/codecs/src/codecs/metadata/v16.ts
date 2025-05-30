@@ -117,7 +117,7 @@ export const $SignedExtensionDefV16 = $SignedExtensionDefV14;
 export type SignedExtensionDefV16 = $.Input<typeof $SignedExtensionDefV16>;
 
 export const $ExtrinsicDefV16 = $.Struct({
-  version: $.Vec($.u8),
+  versions: $.Vec($.u8),
   addressTypeId: $TypeId,
   signatureTypeId: $TypeId,
   callTypeId: $TypeId,

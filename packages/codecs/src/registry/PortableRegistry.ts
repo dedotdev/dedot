@@ -1,7 +1,8 @@
 import { EnumOptions, Tuple } from '@dedot/shape';
-import { blake2_256, HashFn, HexString, hexToU8a, isObject, isU8a, u8aToHex } from '@dedot/utils';
+import { assert, blake2_256, HashFn, HexString, hexToU8a, isObject, isU8a, u8aToHex } from '@dedot/utils';
 import {
   $Extrinsic,
+  DEFAULT_EXTRINSIC_VERSION,
   DispatchError,
   MetadataLatest,
   ModuleError,
@@ -28,20 +29,15 @@ export class PortableRegistry extends TypeRegistry {
     return $Extrinsic(this);
   }
 
-  $Extra(extrinsicVersion: number) {
-    const { signedExtensions, signedExtensionsByVersion, version } = this.metadata.extrinsic;
+  $Extra(extrinsicVersion: number = DEFAULT_EXTRINSIC_VERSION) {
+    const { signedExtensions, signedExtensionsByVersion, versions } = this.metadata.extrinsic;
 
-    const extrinsicVersionIndex = version.findIndex((v) => v === extrinsicVersion);
-
-    if (extrinsicVersionIndex < 0) {
-      throw new Error(`Invalid extrinsic version: ${extrinsicVersion}`);
-    }
+    const extrinsicVersionIndex = versions.findIndex((v) => v === extrinsicVersion);
+    assert(extrinsicVersionIndex >= 0, `Invalid extrinsic version: ${extrinsicVersion}`);
 
     const signedExtensionIndexes = signedExtensionsByVersion.get(extrinsicVersionIndex);
 
-    if (!signedExtensionIndexes) {
-      throw new Error(`No signed extensions found for version ${extrinsicVersion}`);
-    }
+    assert(signedExtensionIndexes, `No signed extensions found for version ${extrinsicVersion}`);
 
     const signedExtensionsVersioned = signedExtensionIndexes.map((index) => signedExtensions[index]);
     const extraCodecs = signedExtensionsVersioned.map(({ typeId }) => this.findCodec(typeId));
