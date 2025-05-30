@@ -86,14 +86,14 @@ export class ExtraSignedExtension extends SignedExtension<any[], any[]> {
 
   toPayload(call: HexString = '0x'): SignerPayloadJSON {
     const signedExtensions = this.#signedExtensions!.map((se) => se.identifier);
-    const { version } = this.registry.metadata.extrinsic;
+    const { versions } = this.registry.metadata.extrinsic;
     const { signerAddress } = this.options!;
 
     return Object.assign(
       {
         address: signerAddress,
         signedExtensions,
-        version,
+        version: ensurePresence(versions.at(0)),
         method: call,
         withSignedTransaction: true, // allow signer/wallet to alter transaction by default
       },
