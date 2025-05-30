@@ -18,7 +18,7 @@ export class EventsGen extends ApiGen {
         continue;
       }
 
-      const eventDefs = this.#getEventDefs(eventTypeId);
+      const eventDefs = this.#getEventDefs(eventTypeId.typeId);
       const flatMembers = eventDefs.every((d) => d.fields.length === 0);
 
       defTypeOut += commentBlock(`Pallet \`${pallet.name}\`'s events`);

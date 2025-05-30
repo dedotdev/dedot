@@ -4,6 +4,7 @@ import staticSubstrateV15 from '@polkadot/types-support/metadata/v15/substrate-h
 import { $Metadata, decodeOpaqueMetadata, MAGIC_NUMBER } from '@dedot/codecs';
 import { assert, hexToString, numberToHex } from '@dedot/utils';
 import { describe, expect, expectTypeOf, it } from 'vitest';
+import { westendMetadataV16 } from './shared.js';
 
 describe('$Metadata', () => {
   it('should verify magic number', () => {
@@ -45,6 +46,24 @@ describe('$Metadata', () => {
     expectTypeOf(metadataVersioned.value.types).toBeArray();
     expectTypeOf(metadataVersioned.value.extrinsic).toBeObject();
     expectTypeOf(metadataVersioned.value.runtimeType).toBeNumber();
+    expectTypeOf(metadataVersioned.value.apis).toBeArray();
+    expectTypeOf(metadataVersioned.value.outerEnums).toBeObject();
+    expectTypeOf(metadataVersioned.value.custom.map).toBeObject();
+  });
+
+  it('should decode metadata v16', () => {
+    const metadata = $Metadata.tryDecode(westendMetadataV16);
+
+    expect(metadata.version).toEqual('V16');
+    expect(metadata.versionNumber).toEqual(16);
+
+    const { metadataVersioned } = metadata;
+    expect(metadataVersioned.type).toEqual('V16');
+
+    assert(metadataVersioned.type === 'V16');
+    expectTypeOf(metadataVersioned.value.pallets).toBeArray();
+    expectTypeOf(metadataVersioned.value.types).toBeArray();
+    expectTypeOf(metadataVersioned.value.extrinsic).toBeObject();
     expectTypeOf(metadataVersioned.value.apis).toBeArray();
     expectTypeOf(metadataVersioned.value.outerEnums).toBeObject();
     expectTypeOf(metadataVersioned.value.custom.map).toBeObject();

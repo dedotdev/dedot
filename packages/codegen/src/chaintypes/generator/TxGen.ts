@@ -32,7 +32,7 @@ export class TxGen extends ApiGen {
     for (let pallet of pallets) {
       if (pallet.calls === undefined) continue;
 
-      const { typeDef } = types[pallet.calls];
+      const { typeDef } = types[pallet.calls.typeId];
 
       if (typeDef.type !== 'Enum') continue;
 

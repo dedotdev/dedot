@@ -1,7 +1,7 @@
 import { describe, expect, it, beforeAll, afterAll } from 'vitest';
-import { knownSignedExtensions } from '../known/index.js';
 import { ExtraSignedExtension } from '../ExtraSignedExtension.js';
 import { FallbackSignedExtension, isEmptyStructOrTuple } from '../FallbackSignedExtension.js';
+import { knownSignedExtensions } from '../known/index.js';
 
 describe('isEmptyStructOrTuple', () => {
   // Mock registry with various type definitions
@@ -191,7 +191,7 @@ describe('FallbackSignedExtension', () => {
 
     // This should throw an error
     await expect(extraSignedExtension.init()).rejects.toThrow(
-      'SignedExtension for UnknownExtension requires input but is not implemented'
+      'SignedExtension for UnknownExtension requires input but is not implemented',
     );
   });
 });
