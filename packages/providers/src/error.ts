@@ -1,3 +1,4 @@
+import { DedotError } from '@dedot/utils';
 import { JsonRpcErrorObject } from './json-rpc.js';
 
 export const UNKNOWN_ERROR_CODE = -99999;
@@ -20,3 +21,5 @@ export class JsonRpcError<Data = any> extends Error {
     }
   }
 }
+
+export class MaxRetryAttemptedError extends DedotError {}
