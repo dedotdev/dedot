@@ -242,6 +242,9 @@ export class TypinkRegistry extends TypeRegistry {
   }
 
   isInkV6(): boolean {
-    return this.metadata.source.language.toLowerCase().startsWith('ink! 6.');
+    // TODO move to check via contract metadata version
+    return this.metadata.source.language
+      .toLowerCase() // --
+      .startsWith('ink! 6.');
   }
 }
