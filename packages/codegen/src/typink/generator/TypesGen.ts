@@ -1,6 +1,6 @@
 import { TypeId } from '@dedot/codecs';
 import { ContractMessage, ContractMetadata, extractContractTypes, normalizeContractTypeDef } from '@dedot/contracts';
-import { BaseTypesGen } from '../../shared/index.js';
+import { BaseTypesGen, SmartContractApi } from '../../shared/index.js';
 import { beautifySourceCode, compileTemplate } from '../../utils.js';
 
 const SKIP_TYPES = ['Result', 'Option'];
@@ -11,7 +11,10 @@ export class TypesGen extends BaseTypesGen {
     this.includedTypes = this.calculateIncludedTypes();
   }
 
-  generate(useSubPaths: boolean = false): Promise<string> {
+  generate(
+    useSubPaths: boolean = false,
+    smartContractApi: SmartContractApi = SmartContractApi.ContractsApi,
+  ): Promise<string> {
     let defTypeOut = '';
 
     Object.values(this.includedTypes)
@@ -24,7 +27,7 @@ export class TypesGen extends BaseTypesGen {
         }
       });
 
-    const importTypes = this.typeImports.toImports({ excludeModules: ['./types.js'], useSubPaths });
+    const importTypes = this.typeImports.toImports({ excludeModules: ['./types.js'], useSubPaths, smartContractApi });
     const template = compileTemplate('typink/templates/types.hbs');
 
     return beautifySourceCode(template({ importTypes, defTypeOut }));

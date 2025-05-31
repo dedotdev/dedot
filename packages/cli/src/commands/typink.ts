@@ -12,13 +12,14 @@ type Args = {
   metadata?: string;
   dts?: boolean;
   subpath?: boolean;
+  api?: string;
 };
 
 export const typink: CommandModule<Args, Args> = {
   command: 'typink',
   describe: 'Generate Types & APIs for ink! smart contracts',
   handler: async (yargs) => {
-    const { contract, output = '', metadata, dts = true, subpath = true } = yargs;
+    const { contract, output = '', metadata, dts = true, subpath = true, api } = yargs;
 
     assert(metadata, 'Metadata file is required, -h or --help to known more about the command');
 
@@ -40,6 +41,7 @@ export const typink: CommandModule<Args, Args> = {
         outDir,
         extension,
         subpath,
+        api as any,
       );
       spinner.succeed('Generated contract Types & APIs');
 
@@ -84,6 +86,18 @@ export const typink: CommandModule<Args, Args> = {
         describe: 'Using subpath for shared packages (e.g: dedot/contracts)',
         alias: 's',
         default: true,
+      })
+      .option('api', {
+        type: 'string',
+        describe: 'Smart contract API to use <contracts|revive>',
+        validate: (value: string) => {
+          if (!['contracts', 'revive'].includes(value)) {
+            throw new Error('Invalid smart contract API, only contracts and revive are supported');
+          }
+
+          return true;
+        },
+        alias: 'a',
       });
   },
 };

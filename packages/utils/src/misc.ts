@@ -19,6 +19,16 @@ export function normalizeName(ident: string): string {
 }
 
 /**
+ * Normalize function label and arg's label from ink contract metadata
+ *
+ * Remove special characters (:: => _)
+ */
+export function normalizeLabel(label?: string): string {
+  if (!label) return '';
+  return stringCamelCase(label.replaceAll('::', '_'));
+}
+
+/**
  * Simply does nothing
  */
 export function noop() {}

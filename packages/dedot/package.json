@@ -27,6 +27,7 @@
     "@dedot/contracts": "workspace:*",
     "@dedot/merkleized-metadata": "workspace:*",
     "@dedot/providers": "workspace:*",
+    "@dedot/revive": "workspace:*",
     "@dedot/runtime-specs": "workspace:*",
     "@dedot/shape": "workspace:*",
     "@dedot/smoldot": "workspace:*",
@@ -99,6 +100,11 @@
       "types": "./src/smoldot/with-worker.ts",
       "import": "./src/smoldot/with-worker.ts",
       "default": "./src/smoldot/with-worker.ts"
+    },
+    "./revive": {
+      "types": "./src/revive/index.ts",
+      "import": "./src/revive/index.ts",
+      "default": "./src/revive/index.ts"
     }
   },
   "publishConfig": {

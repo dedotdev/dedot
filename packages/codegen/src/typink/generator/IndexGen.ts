@@ -1,16 +1,16 @@
-import { ContractMetadata } from '@dedot/contracts';
-import { TypeImports } from '../../shared/index.js';
+import { GenericInkContractMetadata } from '@dedot/types';
+import { SmartContractApi, TypeImports } from '../../shared/index.js';
 import { beautifySourceCode, commentBlock, compileTemplate } from '../../utils.js';
 import { TypesGen } from './TypesGen.js';
 
 export class IndexGen {
   constructor(
     public interfaceName: string,
-    public contractMetadata: ContractMetadata,
+    public contractMetadata: GenericInkContractMetadata,
     public typesGen: TypesGen,
   ) {}
 
-  generate(useSubPaths: boolean = false) {
+  generate(useSubPaths: boolean = false, smartContractApi: SmartContractApi = SmartContractApi.ContractsApi) {
     const interfaceName = this.interfaceName;
     const langErrorId = this.contractMetadata.spec.lang_error.type;
     const langErrorName = this.typesGen.cleanPath(this.contractMetadata.types[langErrorId].type.path!);
@@ -33,7 +33,7 @@ export class IndexGen {
       `@authors: ${authors.join(', ')}`,
       `@language: ${language}`,
     ]);
-    const importTypes = typeImports.toImports({ useSubPaths });
+    const importTypes = typeImports.toImports({ useSubPaths, smartContractApi });
 
     const template = compileTemplate('typink/templates/index.hbs');
 
