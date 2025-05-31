@@ -155,7 +155,7 @@ describe('DedotClient', () => {
         it('should inspect errors', () => {
           api.metadata.latest.pallets.forEach((pallet) => {
             if (!pallet.error) return;
-            const event = api.metadata.latest.types[pallet.error];
+            const event = api.metadata.latest.types[pallet.error.typeId];
             if (event.typeDef.type === 'Enum') {
               event.typeDef.value.members.forEach((m) => {
                 expect(api.errors[stringCamelCase(pallet.name)][stringPascalCase(m.name)]).toHaveProperty(['is']);
@@ -181,7 +181,7 @@ describe('DedotClient', () => {
         it('should inspect events', () => {
           api.metadata.latest.pallets.forEach((pallet) => {
             if (!pallet.event) return;
-            const event = api.metadata.latest.types[pallet.event];
+            const event = api.metadata.latest.types[pallet.event.typeId];
             if (event.typeDef.type === 'Enum') {
               event.typeDef.value.members.forEach((m) => {
                 expect(api.events[stringCamelCase(pallet.name)][stringPascalCase(m.name)]).toHaveProperty(['is']);
@@ -278,7 +278,7 @@ describe('DedotClient', () => {
         it('should be available', async () => {
           api.metadata.latest.pallets.forEach((pallet) => {
             if (!pallet.calls) return;
-            const calls = api.metadata.latest.types[pallet.calls];
+            const calls = api.metadata.latest.types[pallet.calls.typeId];
             if (calls.typeDef.type === 'Enum') {
               calls.typeDef.value.members.forEach((m) => {
                 const tx = api.tx[stringCamelCase(pallet.name)][stringCamelCase(m.name)];

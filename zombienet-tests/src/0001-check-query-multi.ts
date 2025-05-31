@@ -8,15 +8,20 @@ const CHARLIE = '5FLSigC9HGRKVhB9FiEo4Y3koPsNmBmLJbpXg2mp1hXcS59Y';
 export const run = async (nodeName: any, networkInfo: any) => {
   const { wsUri } = networkInfo.nodesByName[nodeName];
 
-  // Test with DedotClient (v2 API)
-  console.log('Testing queryMulti with DedotClient (v2 API)');
-  await testWithDedotClient(wsUri);
+  try {
+    // Test with DedotClient (v2 API)
+    console.log('Testing queryMulti with DedotClient (v2 API)');
+    await testWithDedotClient(wsUri);
 
-  // Test with LegacyClient
-  console.log('Testing queryMulti with LegacyClient');
-  await testWithLegacyClient(wsUri);
+    // Test with LegacyClient
+    console.log('Testing queryMulti with LegacyClient');
+    await testWithLegacyClient(wsUri);
 
-  console.log('All queryMulti tests passed!');
+    console.log('All queryMulti tests passed!');
+  } catch (e) {
+    console.log(e);
+    throw e;
+  }
 };
 
 async function testWithDedotClient(wsUri: string) {

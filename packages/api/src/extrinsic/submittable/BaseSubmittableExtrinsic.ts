@@ -18,7 +18,7 @@ import type { FrameSystemEventRecord, SubstrateApi } from '../../chaintypes/inde
 import type { ISubstrateClient, ISubstrateClientAt } from '../../types.js';
 import { ExtraSignedExtension } from '../extensions/index.js';
 import { fakeSigner } from './fakeSigner.js';
-import { isKeyringPair, signRaw, txDefer } from './utils.js';
+import { isKeyringPair, signRawMessage, txDefer } from './utils.js';
 
 export abstract class BaseSubmittableExtrinsic extends Extrinsic implements ISubmittableExtrinsic {
   #alterTx?: HexString;
@@ -52,7 +52,7 @@ export abstract class BaseSubmittableExtrinsic extends Extrinsic implements ISub
 
     let signature: HexString, alteredTx: HexString | Uint8Array | undefined;
     if (isKeyringPair(fromAccount)) {
-      signature = u8aToHex(signRaw(fromAccount, extra.toRawPayload(this.callHex).data as HexString));
+      signature = u8aToHex(signRawMessage(fromAccount, extra.toRawPayload(this.callHex).data as HexString));
     } else if (signer?.signPayload) {
       const result = await signer.signPayload(extra.toPayload(this.callHex));
 

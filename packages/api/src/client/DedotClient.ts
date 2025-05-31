@@ -170,7 +170,9 @@ export class DedotClient<ChainApi extends VersionedGenericSubstrateApi = Substra
   }
 
   protected override onDisconnected = async () => {
-    this.chainHead.unfollow().catch(noop);
+    try {
+      this.chainHead.unfollow().catch(noop);
+    } catch {}
   };
 
   protected override cleanUp() {

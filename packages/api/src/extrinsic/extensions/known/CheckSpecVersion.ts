@@ -1,5 +1,5 @@
 import { SignerPayloadJSON } from '@dedot/types';
-import { numberToHex } from '@dedot/utils';
+import { hexToNumber, numberToHex } from '@dedot/utils';
 import { SignedExtension } from '../SignedExtension.js';
 
 /**
@@ -8,6 +8,12 @@ import { SignedExtension } from '../SignedExtension.js';
 export class CheckSpecVersion extends SignedExtension<{}, number> {
   async init(): Promise<void> {
     this.additionalSigned = this.client.runtimeVersion.specVersion;
+  }
+
+  async fromPayload(payload: SignerPayloadJSON): Promise<void> {
+    const { specVersion } = payload;
+
+    this.additionalSigned = hexToNumber(specVersion);
   }
 
   toPayload(): Partial<SignerPayloadJSON> {

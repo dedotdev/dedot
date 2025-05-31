@@ -1,7 +1,7 @@
-import type { SignedExtensionDefLatest } from '@dedot/codecs';
+import { DEFAULT_EXTRINSIC_VERSION, type SignedExtensionDefLatest } from '@dedot/codecs';
 import * as $ from '@dedot/shape';
 import { SignerPayloadJSON, SignerPayloadRaw } from '@dedot/types';
-import { ensurePresence, HexString, u8aToHex } from '@dedot/utils';
+import { assert, ensurePresence, HexString, u8aToHex } from '@dedot/utils';
 import { FallbackSignedExtension, isEmptyStructOrTuple } from './FallbackSignedExtension.js';
 import { ISignedExtension, SignedExtension } from './SignedExtension.js';
 import { knownSignedExtensions } from './known/index.js';
@@ -18,14 +18,21 @@ export class ExtraSignedExtension extends SignedExtension<any[], any[]> {
     this.additionalSigned = this.#signedExtensions!.map((se) => se.additionalSigned);
   }
 
+  async fromPayload(payload: SignerPayloadJSON): Promise<void> {
+    this.#signedExtensions = this.#getSignedExtensions();
+
+    await Promise.all(this.#signedExtensions!.map((se) => se.fromPayload(payload)));
+
+    this.data = this.#signedExtensions!.map((se) => se.data);
+    this.additionalSigned = this.#signedExtensions!.map((se) => se.additionalSigned);
+  }
+
   get identifier(): string {
     return 'ExtraSignedExtension';
   }
 
   get $Data(): $.AnyShape {
-    const { extraTypeId } = this.registry.metadata.extrinsic;
-
-    return ensurePresence(this.registry.findCodec(extraTypeId));
+    return ensurePresence(this.registry.$Extra());
   }
 
   get $AdditionalSigned(): $.AnyShape {
@@ -86,16 +93,21 @@ export class ExtraSignedExtension extends SignedExtension<any[], any[]> {
     );
   }
 
-  toPayload(call: HexString = '0x'): SignerPayloadJSON {
+  toPayload(call: HexString | string = '0x'): SignerPayloadJSON {
     const signedExtensions = this.#signedExtensions!.map((se) => se.identifier);
-    const { version } = this.registry.metadata.extrinsic;
+    const { versions } = this.registry.metadata.extrinsic;
     const { signerAddress } = this.options!;
+
+    assert(
+      versions.includes(DEFAULT_EXTRINSIC_VERSION), // --
+      'Extrinsic Version 4 Not Found',
+    );
 
     return Object.assign(
       {
         address: signerAddress,
         signedExtensions,
-        version,
+        version: DEFAULT_EXTRINSIC_VERSION,
         method: call,
         withSignedTransaction: true, // allow signer/wallet to alter transaction by default
       },
@@ -103,7 +115,7 @@ export class ExtraSignedExtension extends SignedExtension<any[], any[]> {
     ) as SignerPayloadJSON;
   }
 
-  toRawPayload(call: HexString = '0x'): SignerPayloadRaw {
+  toRawPayload(call: HexString | string = '0x'): SignerPayloadRaw {
     const payload = this.toPayload(call);
     const $ToSignPayload = $.Tuple($.RawHex, this.$Data, this.$AdditionalSigned);
     const toSignPayload = [call, this.data, this.additionalSigned];

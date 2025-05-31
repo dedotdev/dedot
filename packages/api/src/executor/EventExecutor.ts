@@ -15,7 +15,7 @@ export class EventExecutor<ChainApi extends GenericSubstrateApi = GenericSubstra
     const eventTypeId = targetPallet.event;
     assert(eventTypeId, new UnknownApiError(`Not found event with id ${eventTypeId} in pallet ${pallet}`));
 
-    const eventDef = this.#getEventDef(eventTypeId, eventName);
+    const eventDef = this.#getEventDef(eventTypeId.typeId, eventName);
 
     const is = (event: IEventRecord | PalletEvent): event is PalletEvent => {
       if (isEventRecord(event)) {

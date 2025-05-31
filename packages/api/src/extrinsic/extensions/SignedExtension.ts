@@ -1,7 +1,7 @@
 import { PortableRegistry, SignedExtensionDefLatest } from '@dedot/codecs';
 import * as $ from '@dedot/shape';
 import { PayloadOptions, SignerPayloadJSON } from '@dedot/types';
-import { ensurePresence } from '@dedot/utils';
+import { DedotError, ensurePresence } from '@dedot/utils';
 import { ISubstrateClient } from '../../types.js';
 
 export interface ISignedExtension {
@@ -12,6 +12,7 @@ export interface ISignedExtension {
   data: any;
   additionalSigned: any;
   init(): Promise<void>;
+  fromPayload(payload: SignerPayloadJSON): Promise<void>;
   registry: PortableRegistry;
   toPayload(...additional: any[]): Partial<SignerPayloadJSON>;
 }
@@ -37,7 +38,11 @@ export abstract class SignedExtension<Data extends any = {}, AdditionalSigned ex
   }
 
   async init() {
-    // TODO implement this method
+    throw new DedotError('Unimplemented');
+  }
+
+  async fromPayload(payload: SignerPayloadJSON): Promise<void> {
+    throw new DedotError('Unimplemented');
   }
 
   get identifier(): string {

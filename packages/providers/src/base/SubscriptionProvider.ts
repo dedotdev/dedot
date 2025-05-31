@@ -57,11 +57,11 @@ export abstract class SubscriptionProvider extends EventEmitter<ProviderEvent> i
     throw new Error('Unimplemented!');
   }
 
-  protected _setStatus(status: ConnectionStatus) {
+  protected _setStatus(status: ConnectionStatus, ...args: any[]) {
     if (this._status === status) return;
 
     this._status = status;
-    this.emit(status);
+    this.emit(status, ...args);
   }
 
   protected _cleanUp() {

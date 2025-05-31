@@ -1,5 +1,5 @@
 import { SignerPayloadJSON } from '@dedot/types';
-import { assert, numberToHex } from '@dedot/utils';
+import { assert, hexToNumber, numberToHex } from '@dedot/utils';
 import { SignedExtension } from '../SignedExtension.js';
 
 /**
@@ -8,6 +8,12 @@ import { SignedExtension } from '../SignedExtension.js';
 export class CheckNonce extends SignedExtension<number> {
   async init(): Promise<void> {
     this.data = this.payloadOptions.nonce || (await this.#getNonce());
+  }
+
+  async fromPayload(payload: SignerPayloadJSON): Promise<void> {
+    const { nonce } = payload;
+
+    this.data = hexToNumber(nonce);
   }
 
   async #getNonce(): Promise<number> {

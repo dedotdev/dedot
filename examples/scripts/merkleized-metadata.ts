@@ -3,6 +3,7 @@ import { cryptoWaitReady } from '@polkadot/util-crypto';
 import { DedotClient, WsProvider } from 'dedot';
 import { MerkleizedMetadata } from 'dedot/merkleized-metadata';
 import { u8aToHex } from 'dedot/utils';
+import { devPairs } from './keyring.js';
 
 /**
  * Example of calculating metadata hash for a real chain
@@ -12,9 +13,7 @@ import { u8aToHex } from 'dedot/utils';
  * tsx ./packages/merkleized-metadata/examples/calculate-hash.ts
  * ```
  */
-await cryptoWaitReady();
-const keyring = new Keyring({ type: 'sr25519' });
-const alice = keyring.addFromUri('//Alice');
+const { alice } = await devPairs();
 
 // Create a dedot client
 console.log('Connecting to Polkadot...');

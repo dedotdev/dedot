@@ -1,5 +1,10 @@
 // @ts-nocheck
-import { Client, ClientOptionsWithBytecode, SmoldotBytecode, startWithBytecode } from 'smoldot/no-auto-bytecode';
+import {
+  type Client,
+  type ClientOptionsWithBytecode,
+  type SmoldotBytecode,
+  startWithBytecode,
+} from 'smoldot/no-auto-bytecode';
 
 export { Client };
 export type StartWithWorkerOptions = Omit<ClientOptionsWithBytecode, 'bytecode' | 'portToWorker'>;
