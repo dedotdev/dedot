@@ -64,19 +64,19 @@ export const run = async (_nodeName: any, networkInfo: any) => {
     console.log(`[${api.rpcVersion}] Owner:`, owner?.address());
     assert(owner?.eq(caller), 'Owner should be set to caller');
 
-    // Test unpacked() storage method
-    console.log(`[${api.rpcVersion}] Testing unpacked() storage method`);
-    const unpacked = contract.storage.unpacked();
+    // Test lazy() storage method
+    console.log(`[${api.rpcVersion}] Testing lazy() storage method`);
+    const lazy = contract.storage.lazy();
 
-    // Verify unpacked value is true
-    const unpackedValue = await unpacked.value.get();
-    console.log(`[${api.rpcVersion}] Unpacked value:`, unpackedValue);
-    assert(unpackedValue === true, 'Unpacked value should be true');
+    // Verify lazy value is true
+    const lazyValue = await lazy.value.get();
+    console.log(`[${api.rpcVersion}] lazy value:`, lazyValue);
+    assert(lazyValue === true, 'lazy value should be true');
 
-    // Verify unpacked owner is set to caller
-    const unpackedOwner = await unpacked.owner.get();
-    console.log(`[${api.rpcVersion}] Unpacked owner:`, unpackedOwner?.address());
-    assert(unpackedOwner?.eq(caller), 'Unpacked owner should be set to caller');
+    // Verify lazy owner is set to caller
+    const lazyOwner = await lazy.owner.get();
+    console.log(`[${api.rpcVersion}] lazy owner:`, lazyOwner?.address());
+    assert(lazyOwner?.eq(caller), 'lazy owner should be set to caller');
 
     // Flip the value
     console.log(`[${api.rpcVersion}] Flipping the value`);
@@ -103,19 +103,19 @@ export const run = async (_nodeName: any, networkInfo: any) => {
     console.log(`[${api.rpcVersion}] Owner after flip:`, ownerAfterFlip?.address());
     assert(ownerAfterFlip?.eq(caller), 'Owner after flip should still be set to caller');
 
-    // Verify unpacked() storage after flip
-    console.log(`[${api.rpcVersion}] Testing unpacked() storage after flip`);
-    const unpackedAfterFlip = contract.storage.unpacked();
+    // Verify lazy() storage after flip
+    console.log(`[${api.rpcVersion}] Testing lazy() storage after flip`);
+    const lazyAfterFlip = contract.storage.lazy();
 
-    // Verify unpacked value is now false
-    const unpackedValueAfterFlip = await unpackedAfterFlip.value.get();
-    console.log(`[${api.rpcVersion}] Unpacked value after flip:`, unpackedValueAfterFlip);
-    assert(unpackedValueAfterFlip === false, 'Unpacked value after flip should be false');
+    // Verify lazy value is now false
+    const lazyValueAfterFlip = await lazyAfterFlip.value.get();
+    console.log(`[${api.rpcVersion}] lazy value after flip:`, lazyValueAfterFlip);
+    assert(lazyValueAfterFlip === false, 'lazy value after flip should be false');
 
-    // Verify unpacked owner is still set to caller
-    const unpackedOwnerAfterFlip = await unpackedAfterFlip.owner.get();
-    console.log(`[${api.rpcVersion}] Unpacked owner after flip:`, unpackedOwnerAfterFlip?.address());
-    assert(unpackedOwnerAfterFlip?.eq(caller), 'Unpacked owner after flip should still be set to caller');
+    // Verify lazy owner is still set to caller
+    const lazyOwnerAfterFlip = await lazyAfterFlip.owner.get();
+    console.log(`[${api.rpcVersion}] lazy owner after flip:`, lazyOwnerAfterFlip?.address());
+    assert(lazyOwnerAfterFlip?.eq(caller), 'lazy owner after flip should still be set to caller');
 
     console.log(`[${api.rpcVersion}] Flipper contract storage API tests passed`);
   };

@@ -5,8 +5,8 @@ import { SubstrateApi } from 'dedot/chaintypes';
 import { Contract, ContractDeployer } from 'dedot/contracts';
 import { RpcVersion } from 'dedot/types';
 import { assert, stringToHex } from 'dedot/utils';
-import * as psp22Raw from '../../examples/scripts/inkv5/psp22.json';
 import { Psp22ContractApi } from '../../examples/scripts/inkv5/psp22';
+import * as psp22Raw from '../../examples/scripts/inkv5/psp22.json';
 
 export const run = async (_nodeName: any, networkInfo: any) => {
   await cryptoWaitReady();
@@ -17,31 +17,30 @@ export const run = async (_nodeName: any, networkInfo: any) => {
 
   const alice = alicePair.address;
   const bob = bobPair.address;
-  
+
   const verifyPsp22Storage = async (api: ISubstrateClient<SubstrateApi[RpcVersion]>) => {
     console.log(`[${api.rpcVersion}] Testing PSP22 contract storage API`);
-    
+
     // Deploy the contract
-    const deployer = new ContractDeployer<Psp22ContractApi>(
-      api,
-      psp22Raw,
-      psp22Raw.source.wasm,
-      { defaultCaller: alice }
-    );
+    const deployer = new ContractDeployer<Psp22ContractApi>(api, psp22Raw, psp22Raw.source.wasm, {
+      defaultCaller: alice,
+    });
 
     // Generate a unique salt
     const timestamp = await api.query.timestamp.now();
     const salt = stringToHex(`${api.rpcVersion}_${timestamp}`);
-    
+
     // Dry-run to estimate gas fee
-    const { raw: { gasRequired } } = await deployer.query.new(
+    const {
+      raw: { gasRequired },
+    } = await deployer.query.new(
       1000000000000n, // total_supply
       'Test Token', // name
       'TST', // symbol
       18, // decimal
-      { salt }
+      { salt },
     );
-    
+
     // Deploy the contract
     const { events } = await deployer.tx
       .new(
@@ -49,148 +48,136 @@ export const run = async (_nodeName: any, networkInfo: any) => {
         'Test Token', // name
         'TST', // symbol
         18, // decimal
-        { gasLimit: gasRequired, salt }
+        { gasLimit: gasRequired, salt },
       )
       .signAndSend(alicePair, ({ status }: { status: { type: string } }) => {
         console.log(`[${api.rpcVersion}] Transaction status:`, status.type);
       })
       .untilFinalized();
-    
+
     // Extract the contract address from the events
     const instantiatedEvent = api.events.contracts.Instantiated.find(events);
     assert(instantiatedEvent, 'Event Contracts.Instantiated should be available');
-    
+
     const contractAddress = instantiatedEvent.palletEvent.data.contract.address();
     console.log(`[${api.rpcVersion}] Deployed contract address`, contractAddress);
-    
+
     // Create a Contract instance with the deployed address
-    const contract = new Contract<Psp22ContractApi>(
-      api,
-      psp22Raw,
-      contractAddress,
-      { defaultCaller: alice }
-    );
-    
+    const contract = new Contract<Psp22ContractApi>(api, psp22Raw, contractAddress, { defaultCaller: alice });
+
     // Test root() storage method
     console.log(`[${api.rpcVersion}] Testing root() storage method`);
     const root = await contract.storage.root();
-    
+
     // Verify token metadata
     console.log(`[${api.rpcVersion}] Token name:`, root.name);
     assert(root.name === 'Test Token', 'Token name should be "Test Token"');
-    
+
     console.log(`[${api.rpcVersion}] Token symbol:`, root.symbol);
     assert(root.symbol === 'TST', 'Token symbol should be "TST"');
-    
+
     console.log(`[${api.rpcVersion}] Token decimals:`, root.decimals);
     assert(root.decimals === 18, 'Token decimals should be 18');
-    
+
     console.log(`[${api.rpcVersion}] Total supply:`, root.data.totalSupply);
     assert(root.data.totalSupply === 1000000000000n, 'Total supply should be 1000000000000');
-    
+
     // Check Alice's balance (should be the total supply)
     const aliceBalance = await root.data.balances.get(alice);
     console.log(`[${api.rpcVersion}] Alice balance:`, aliceBalance);
     assert(aliceBalance === 1000000000000n, 'Alice should have the total supply');
-    
+
     // Check Bob's balance (should be 0)
     const bobBalance = await root.data.balances.get(bob);
     console.log(`[${api.rpcVersion}] Bob balance:`, bobBalance);
     assert(bobBalance === undefined || bobBalance === 0n, 'Bob should have 0 balance');
-    
-    // Test unpacked() storage method
-    console.log(`[${api.rpcVersion}] Testing unpacked() storage method`);
-    const unpacked = contract.storage.unpacked();
-    
-    // Check Alice's balance using unpacked storage
-    const unpackedAliceBalance = await unpacked.data.balances.get(alice);
-    console.log(`[${api.rpcVersion}] Unpacked Alice balance:`, unpackedAliceBalance);
-    assert(unpackedAliceBalance === 1000000000000n, 'Unpacked Alice should have the total supply');
-    
-    // Check Bob's balance using unpacked storage
-    const unpackedBobBalance = await unpacked.data.balances.get(bob);
-    console.log(`[${api.rpcVersion}] Unpacked Bob balance:`, unpackedBobBalance);
-    assert(unpackedBobBalance === undefined || unpackedBobBalance === 0n, 'Unpacked Bob should have 0 balance');
-    
+
+    // Test lazy() storage method
+    console.log(`[${api.rpcVersion}] Testing lazy() storage method`);
+    const lazy = contract.storage.lazy();
+
+    // Check Alice's balance using lazy storage
+    const lazyAliceBalance = await lazy.data.balances.get(alice);
+    console.log(`[${api.rpcVersion}] lazy Alice balance:`, lazyAliceBalance);
+    assert(lazyAliceBalance === 1000000000000n, 'lazy Alice should have the total supply');
+
+    // Check Bob's balance using lazy storage
+    const lazyBobBalance = await lazy.data.balances.get(bob);
+    console.log(`[${api.rpcVersion}] lazy Bob balance:`, lazyBobBalance);
+    assert(lazyBobBalance === undefined || lazyBobBalance === 0n, 'lazy Bob should have 0 balance');
+
     // Transfer tokens from Alice to Bob
     console.log(`[${api.rpcVersion}] Transferring tokens from Alice to Bob`);
     const transferAmount = 100000000000n; // 10% of total supply
-    
-    const { raw: { gasRequired: transferGas } } = await contract.query.psp22Transfer(
-      bob,
-      transferAmount,
-      new Uint8Array()
-    );
-    
-    await contract.tx.psp22Transfer(
-      bob,
-      transferAmount,
-      new Uint8Array(),
-      { gasLimit: transferGas }
-    ).signAndSend(alicePair, ({ status }: { status: { type: string } }) => {
-      console.log(`[${api.rpcVersion}] Transfer status:`, status.type);
-    }).untilFinalized();
-    
+
+    const {
+      raw: { gasRequired: transferGas },
+    } = await contract.query.psp22Transfer(bob, transferAmount, new Uint8Array());
+
+    await contract.tx
+      .psp22Transfer(bob, transferAmount, new Uint8Array(), { gasLimit: transferGas })
+      .signAndSend(alicePair, ({ status }: { status: { type: string } }) => {
+        console.log(`[${api.rpcVersion}] Transfer status:`, status.type);
+      })
+      .untilFinalized();
+
     // Verify storage after transfer using root()
     console.log(`[${api.rpcVersion}] Testing root() storage after transfer`);
     const rootAfterTransfer = await contract.storage.root();
-    
+
     // Check Alice's balance after transfer
     const aliceBalanceAfterTransfer = await rootAfterTransfer.data.balances.get(alice);
     console.log(`[${api.rpcVersion}] Alice balance after transfer:`, aliceBalanceAfterTransfer);
     assert(aliceBalanceAfterTransfer === 900000000000n, 'Alice should have 900000000000 after transfer');
-    
+
     // Check Bob's balance after transfer
     const bobBalanceAfterTransfer = await rootAfterTransfer.data.balances.get(bob);
     console.log(`[${api.rpcVersion}] Bob balance after transfer:`, bobBalanceAfterTransfer);
     assert(bobBalanceAfterTransfer === 100000000000n, 'Bob should have 100000000000 after transfer');
-    
-    // Verify storage after transfer using unpacked()
-    console.log(`[${api.rpcVersion}] Testing unpacked() storage after transfer`);
-    const unpackedAfterTransfer = contract.storage.unpacked();
-    
-    // Check Alice's balance after transfer using unpacked storage
-    const unpackedAliceBalanceAfterTransfer = await unpackedAfterTransfer.data.balances.get(alice);
-    console.log(`[${api.rpcVersion}] Unpacked Alice balance after transfer:`, unpackedAliceBalanceAfterTransfer);
-    assert(unpackedAliceBalanceAfterTransfer === 900000000000n, 'Unpacked Alice should have 900000000000 after transfer');
-    
-    // Check Bob's balance after transfer using unpacked storage
-    const unpackedBobBalanceAfterTransfer = await unpackedAfterTransfer.data.balances.get(bob);
-    console.log(`[${api.rpcVersion}] Unpacked Bob balance after transfer:`, unpackedBobBalanceAfterTransfer);
-    assert(unpackedBobBalanceAfterTransfer === 100000000000n, 'Unpacked Bob should have 100000000000 after transfer');
-    
+
+    // Verify storage after transfer using lazy()
+    console.log(`[${api.rpcVersion}] Testing lazy() storage after transfer`);
+    const lazyAfterTransfer = contract.storage.lazy();
+
+    // Check Alice's balance after transfer using lazy storage
+    const lazyAliceBalanceAfterTransfer = await lazyAfterTransfer.data.balances.get(alice);
+    console.log(`[${api.rpcVersion}] lazy Alice balance after transfer:`, lazyAliceBalanceAfterTransfer);
+    assert(lazyAliceBalanceAfterTransfer === 900000000000n, 'lazy Alice should have 900000000000 after transfer');
+
+    // Check Bob's balance after transfer using lazy storage
+    const lazyBobBalanceAfterTransfer = await lazyAfterTransfer.data.balances.get(bob);
+    console.log(`[${api.rpcVersion}] lazy Bob balance after transfer:`, lazyBobBalanceAfterTransfer);
+    assert(lazyBobBalanceAfterTransfer === 100000000000n, 'lazy Bob should have 100000000000 after transfer');
+
     // Test allowances
     console.log(`[${api.rpcVersion}] Testing allowances`);
-    
+
     // Approve Bob to spend Alice's tokens
     const approveAmount = 50000000000n;
-    
-    const { raw: { gasRequired: approveGas } } = await contract.query.psp22Approve(
-      bob,
-      approveAmount,
-      { caller: alice }
-    );
-    
-    await contract.tx.psp22Approve(
-      bob,
-      approveAmount,
-      { gasLimit: approveGas }
-    ).signAndSend(alicePair, ({ status }: { status: { type: string } }) => {
-      console.log(`[${api.rpcVersion}] Approve status:`, status.type);
-    }).untilFinalized();
-    
+
+    const {
+      raw: { gasRequired: approveGas },
+    } = await contract.query.psp22Approve(bob, approveAmount, { caller: alice });
+
+    await contract.tx
+      .psp22Approve(bob, approveAmount, { gasLimit: approveGas })
+      .signAndSend(alicePair, ({ status }: { status: { type: string } }) => {
+        console.log(`[${api.rpcVersion}] Approve status:`, status.type);
+      })
+      .untilFinalized();
+
     // Check allowance using root()
     const rootAfterApprove = await contract.storage.root();
     const allowance = await rootAfterApprove.data.allowances.get([alice, bob]);
     console.log(`[${api.rpcVersion}] Allowance:`, allowance);
     assert(allowance === approveAmount, `Allowance should be ${approveAmount}`);
-    
-    // Check allowance using unpacked()
-    const unpackedAfterApprove = contract.storage.unpacked();
-    const unpackedAllowance = await unpackedAfterApprove.data.allowances.get([alice, bob]);
-    console.log(`[${api.rpcVersion}] Unpacked allowance:`, unpackedAllowance);
-    assert(unpackedAllowance === approveAmount, `Unpacked allowance should be ${approveAmount}`);
-    
+
+    // Check allowance using lazy()
+    const lazyAfterApprove = contract.storage.lazy();
+    const lazyAllowance = await lazyAfterApprove.data.allowances.get([alice, bob]);
+    console.log(`[${api.rpcVersion}] lazy allowance:`, lazyAllowance);
+    assert(lazyAllowance === approveAmount, `lazy allowance should be ${approveAmount}`);
+
     console.log(`[${api.rpcVersion}] PSP22 contract storage API tests passed`);
   };
 

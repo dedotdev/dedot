@@ -62,12 +62,12 @@ export const run = async (_nodeName: any, networkInfo: any) => {
     // Verify initial state
     console.log(`[${api.rpcVersion}] Initial root storage:`, root);
 
-    // Test unpacked() storage method
-    console.log(`[${api.rpcVersion}] Testing unpacked() storage method`);
-    const unpacked = contract.storage.unpacked();
+    // Test lazy() storage method
+    console.log(`[${api.rpcVersion}] Testing lazy() storage method`);
+    const lazy = contract.storage.lazy();
 
     // Verify initial state of lazy vector
-    const initialLength = await unpacked.proposals.len();
+    const initialLength = await lazy.proposals.len();
     console.log(`[${api.rpcVersion}] Initial vector length:`, initialLength);
     assert(initialLength === 0, 'Initial vector length should be 0');
 
@@ -94,12 +94,12 @@ export const run = async (_nodeName: any, networkInfo: any) => {
       .untilFinalized();
 
     // Verify vector length after adding a proposal
-    const lengthAfterProposal = await unpacked.proposals.len();
+    const lengthAfterProposal = await lazy.proposals.len();
     console.log(`[${api.rpcVersion}] Vector length after proposal:`, lengthAfterProposal);
     assert(lengthAfterProposal === 1, 'Vector length after proposal should be 1');
 
     // Get the first proposal
-    const proposal = await unpacked.proposals.get(0);
+    const proposal = await lazy.proposals.get(0);
     console.log(`[${api.rpcVersion}] First proposal:`, proposal);
     assert(proposal !== undefined, 'First proposal should exist');
 
@@ -123,12 +123,12 @@ export const run = async (_nodeName: any, networkInfo: any) => {
       .untilFinalized();
 
     // Verify vector length after adding a second proposal
-    const lengthAfterSecondProposal = await unpacked.proposals.len();
+    const lengthAfterSecondProposal = await lazy.proposals.len();
     console.log(`[${api.rpcVersion}] Vector length after second proposal:`, lengthAfterSecondProposal);
     assert(lengthAfterSecondProposal === 2, 'Vector length after second proposal should be 2');
 
     // Get the second proposal
-    const secondProposal = await unpacked.proposals.get(1);
+    const secondProposal = await lazy.proposals.get(1);
     console.log(`[${api.rpcVersion}] Second proposal:`, secondProposal);
     assert(secondProposal !== undefined, 'Second proposal should exist');
 
@@ -138,7 +138,7 @@ export const run = async (_nodeName: any, networkInfo: any) => {
     assert(secondProposal!.until > 200, 'Second proposal until should be larger than 200');
 
     // Test accessing non-existent element
-    const nonExistentProposal = await unpacked.proposals.get(2);
+    const nonExistentProposal = await lazy.proposals.get(2);
     console.log(`[${api.rpcVersion}] Non-existent proposal:`, nonExistentProposal);
     assert(nonExistentProposal === undefined, 'Non-existent proposal should be undefined');
 
