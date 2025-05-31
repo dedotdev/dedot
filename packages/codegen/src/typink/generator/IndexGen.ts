@@ -1,4 +1,4 @@
-import { ContractMetadata } from '@dedot/contracts';
+import { checkStorageApiSupports, ContractMetadata, RootLayoutV5 } from '@dedot/contracts';
 import { TypeImports } from '../../shared/index.js';
 import { beautifySourceCode, commentBlock, compileTemplate } from '../../utils.js';
 import { TypesGen } from './TypesGen.js';
@@ -17,9 +17,11 @@ export class IndexGen {
 
     const typeImports = new TypeImports();
     typeImports.addKnownType('VersionedGenericSubstrateApi', 'RpcVersion', 'RpcV2');
-    typeImports.addContractType('GenericContractApi');
+    typeImports.addContractType('GenericContractApi', 'WithLazyStorage');
     typeImports.addChainType('SubstrateApi');
     typeImports.addPortableType(langErrorName);
+
+    const [rootStorageName, lazyStorageName] = this.#extractRootStorageNames(typeImports);
 
     const {
       contract: { name = '', version = '', authors = [] },
@@ -37,6 +39,33 @@ export class IndexGen {
 
     const template = compileTemplate('typink/templates/index.hbs');
 
-    return beautifySourceCode(template({ interfaceName, interfaceDocs, langErrorName, importTypes }));
+    return beautifySourceCode(
+      template({
+        interfaceName,
+        interfaceDocs,
+        langErrorName,
+        importTypes,
+        rootStorageName,
+        lazyStorageName,
+      }),
+    );
+  }
+
+  #extractRootStorageNames(typeImports: TypeImports) {
+    try {
+      checkStorageApiSupports(this.contractMetadata.version);
+
+      const { ty: rootStorageId } = this.contractMetadata.storage.root as RootLayoutV5;
+
+      const rootStorageName = this.typesGen.cleanPath(this.contractMetadata.types[rootStorageId].type.path!);
+      typeImports.addPortableType(rootStorageName);
+
+      return [rootStorageName, `WithLazyStorage<${rootStorageName}>`];
+    } catch {
+      const names = ['GenericRootStorage', 'GenericLazyStorage'];
+      typeImports.addContractType(...names);
+
+      return names;
+    }
   }
 }

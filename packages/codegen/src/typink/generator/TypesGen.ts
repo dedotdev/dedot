@@ -1,5 +1,12 @@
 import { TypeId } from '@dedot/codecs';
-import { ContractMessage, ContractMetadata, extractContractTypes, normalizeContractTypeDef } from '@dedot/contracts';
+import {
+  ContractMessage,
+  ContractMetadata,
+  extractContractTypes,
+  isLazyType,
+  KnownLazyType,
+  normalizeContractTypeDef,
+} from '@dedot/contracts';
 import { BaseTypesGen } from '../../shared/index.js';
 import { beautifySourceCode, compileTemplate } from '../../utils.js';
 
@@ -28,6 +35,40 @@ export class TypesGen extends BaseTypesGen {
     const template = compileTemplate('typink/templates/types.hbs');
 
     return beautifySourceCode(template({ importTypes, defTypeOut }));
+  }
+
+  generateType(typeId: TypeId, nestedLevel = 0, typeOut = false): string {
+    const generatedType = super.generateType(typeId, nestedLevel, typeOut);
+
+    // Lazy types should be inside a wrapper structure/object
+    // So we only check for lazy type when nestedLevel > 0
+    if (nestedLevel > 0) {
+      const types = this.contractMetadata.types;
+      const typeDef = types.find(({ id }) => id == typeId)!;
+
+      const lazyType = isLazyType(typeDef.type.path);
+
+      if (!lazyType) return generatedType;
+
+      const [p1, p2] = typeDef.type.params!;
+
+      if (lazyType === KnownLazyType.LAZY) {
+        const ValueType = super.generateType(p1.type, 1, true);
+
+        return `{ get(): Promise<${ValueType} | undefined> }`;
+      } else if (lazyType === KnownLazyType.MAPPING) {
+        const KeyType = super.generateType(p1.type, 1);
+        const ValueType = super.generateType(p2.type, 1, true);
+
+        return `{ get(arg: ${KeyType}): Promise<${ValueType} | undefined> }`;
+      } else if (lazyType === KnownLazyType.STORAGE_VEC) {
+        const ValueType = super.generateType(p1.type, 1, true);
+
+        return `{ len(): Promise<number>; get(index: number): Promise<${ValueType} | undefined> }`;
+      }
+    }
+
+    return generatedType;
   }
 
   override shouldGenerateTypeIn(id: TypeId): boolean {

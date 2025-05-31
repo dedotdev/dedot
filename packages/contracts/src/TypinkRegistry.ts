@@ -1,9 +1,10 @@
-import { AccountId32, AccountId32Like, Bytes, TypeRegistry } from '@dedot/codecs';
+import { AccountId32, AccountId32Like, Bytes, TypeId, TypeRegistry } from '@dedot/codecs';
 import * as $ from '@dedot/shape';
 import { IEventRecord, IRuntimeEvent } from '@dedot/types';
-import { DedotError, assert, hexToU8a, stringCamelCase, stringPascalCase } from '@dedot/utils';
-import { ContractEvent, ContractEventMeta, ContractMetadata } from './types/index.js';
-import { extractContractTypes } from './utils.js';
+import { assert, DedotError, HexString, hexToU8a, stringCamelCase, stringPascalCase } from '@dedot/utils';
+import { LazyMapping, LazyObject, LazyStorageVec } from './storage/index.js';
+import { ContractEvent, ContractEventMeta, ContractMetadata, ContractType } from './types/index.js';
+import { extractContractTypes, isLazyType, KnownLazyType } from './utils.js';
 
 interface ContractEmittedEvent extends IRuntimeEvent {
   pallet: 'Contracts';
@@ -16,17 +17,123 @@ interface ContractEmittedEvent extends IRuntimeEvent {
   };
 }
 
+export interface TypinkRegistryOptions {
+  /**
+   * Get raw contract storage value given a key
+   *
+   * @param key
+   */
+  getStorage?: (key: Uint8Array | HexString) => Promise<HexString | undefined>;
+}
+
 export class TypinkRegistry extends TypeRegistry {
-  readonly #metadata: ContractMetadata;
-
-  constructor(metadata: ContractMetadata) {
+  constructor(
+    public readonly metadata: ContractMetadata,
+    public readonly options?: TypinkRegistryOptions,
+  ) {
     super(extractContractTypes(metadata));
-
-    this.#metadata = metadata;
   }
 
-  get metadata(): ContractMetadata {
-    return this.#metadata;
+  findCodec<I = unknown, O = I>(typeId: TypeId): $.Shape<I, O> {
+    const types = this.metadata.types;
+    const typeDef = types.find(({ id }) => id == typeId)!;
+
+    const $codec = super.findCodec<I, O>(typeId);
+
+    const lazyType = isLazyType(typeDef.type.path);
+
+    if (lazyType === KnownLazyType.MAPPING) {
+      return this.#createLazyCodec(LazyMapping, $codec, typeDef);
+    } else if (lazyType === KnownLazyType.LAZY) {
+      return this.#createLazyCodec(LazyObject, $codec, typeDef);
+    } else if (lazyType === KnownLazyType.STORAGE_VEC) {
+      return this.#createLazyCodec(LazyStorageVec, $codec, typeDef);
+    }
+
+    return $codec;
+  }
+
+  /**
+   * Creates a lazy codec for a given type ID, extracting only storage types that is lazy/non-packed storage.
+   *
+   * @param typeId The type ID to create a lazy codec for
+   * @returns A shape codec containing only lazy/non-packed storage fields, or null if no lazy fields exist
+   */
+  createLazyCodec(typeId: TypeId): $.AnyShape | null {
+    const typeDef = this.findType(typeId);
+
+    // Check if this is a lazy storage type we want to keep
+    const lazyType = isLazyType(typeDef.path);
+    if (lazyType) return this.findCodec(typeId);
+
+    // For non-lazy types, we need to recursively process the structure
+    const { typeDef: def } = typeDef;
+
+    // We only support Struct type for now.
+    if (def.type === 'Struct') {
+      const { fields } = def.value;
+
+      if (fields.length === 0) {
+        return null;
+      }
+
+      // Handle tuple-like structs (fields with undefined names)
+      if (fields[0].name === undefined) {
+        if (fields.length === 1) {
+          // Single unnamed field - check if it contains lazy types
+          return this.createLazyCodec(fields[0].typeId);
+        } else {
+          return null; // Unsupported Lazy Codec Structure
+        }
+      } else {
+        // Named struct fields - create struct with only lazy fields
+        const lazyFields: Record<string, $.AnyShape> = {};
+        let hasLazyFields = false;
+
+        for (const field of fields) {
+          // Skip fields with undefined names in named structs
+          if (field.name === undefined) continue;
+
+          // Recursively check if this field contains lazy types
+          const fieldCodec = this.createLazyCodec(field.typeId);
+
+          // Only include fields that have lazy types
+          if (fieldCodec) {
+            lazyFields[field.name] = fieldCodec;
+            hasLazyFields = true;
+          }
+        }
+
+        // If no lazy fields, return null
+        if (!hasLazyFields) {
+          return null;
+        }
+
+        return $.Struct(lazyFields);
+      }
+    }
+
+    return null;
+  }
+
+  #enhanceLazyCodec($codec: $.AnyShape, typeDef: ContractType) {
+    const $Codec = $.Tuple($codec);
+
+    // @ts-ignore
+    $Codec.subDecode = () => {
+      return [typeDef, this];
+    };
+
+    return $Codec;
+  }
+
+  #createLazyCodec<I = unknown, O = I>(
+    LazyClazz: new (...args: any[]) => any,
+    $codec: $.AnyShape,
+    typeDef: ContractType,
+  ): $.Shape<I, O> {
+    // @ts-ignore
+    return $.instance(LazyClazz, this.#enhanceLazyCodec($codec, typeDef), () => ({}));
   }
 
   decodeEvents(records: IEventRecord[], contract?: AccountId32Like): ContractEvent[] {
@@ -38,7 +145,7 @@ export class TypinkRegistry extends TypeRegistry {
   decodeEvent(eventRecord: IEventRecord, contract?: AccountId32Like): ContractEvent {
     assert(this.#isContractEmittedEvent(eventRecord.event, contract), 'Invalid ContractEmitted Event');
 
-    const { version } = this.#metadata;
+    const { version } = this.metadata;
 
     switch (version) {
       case 5:
@@ -72,21 +179,21 @@ export class TypinkRegistry extends TypeRegistry {
   }
 
   #decodeEventV4(eventRecord: IEventRecord): ContractEvent {
-    assert(this.#metadata.version === '4', 'Invalid metadata version!');
+    assert(this.metadata.version === '4', 'Invalid metadata version!');
     assert(this.#isContractEmittedEvent(eventRecord.event), 'Invalid ContractEmitted Event');
 
     const data = hexToU8a(eventRecord.event.palletEvent.data.data);
     const index = data.at(0);
     assert(index !== undefined, 'Unable to decode event index!');
 
-    const event = this.#metadata.spec.events[index];
+    const event = this.metadata.spec.events[index];
     assert(event, `Event index not found: ${index.toString()}`);
 
     return this.#tryDecodeEvent(event, data.subarray(1));
   }
 
   #decodeEventV5(eventRecord: IEventRecord): ContractEvent {
-    assert(this.#metadata.version === 5, 'Invalid metadata version!');
+    assert(this.metadata.version === 5, 'Invalid metadata version!');
     assert(this.#isContractEmittedEvent(eventRecord.event), 'Invalid ContractEmitted Event');
 
     const data = hexToU8a(eventRecord.event.palletEvent.data.data);
@@ -94,14 +201,14 @@ export class TypinkRegistry extends TypeRegistry {
 
     let eventMeta: ContractEventMeta | undefined;
     if (signatureTopic) {
-      eventMeta = this.#metadata.spec.events.find((one) => one.signature_topic === signatureTopic);
+      eventMeta = this.metadata.spec.events.find((one) => one.signature_topic === signatureTopic);
     }
 
     // TODO: Handle multiple anonymous events
     // If `event` does not exist, it means it's an anonymous event
     // that does not contain a signature topic in the metadata.
     if (!eventMeta) {
-      const potentialEvents = this.#metadata.spec.events.filter(
+      const potentialEvents = this.metadata.spec.events.filter(
         (one) => !one.signature_topic && one.args.filter((arg) => arg.indexed).length === eventRecord.topics.length,
       );
 

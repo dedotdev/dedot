@@ -14,6 +14,8 @@ import { ContractEventV4, ContractMetadataV4 } from './v4.js';
 import { ContractEventV5, ContractMetadataV5 } from './v5.js';
 
 export * from './shared.js';
+export * from './v4.js';
+export * from './v5.js';
 
 export type ContractEventMeta = ContractEventV4 | ContractEventV5;
 
@@ -62,6 +64,11 @@ export type GenericInstantiateSubmittableExtrinsic<ChainApi extends GenericSubst
   | InstantiateWithCodeSubmittableExtrinsic<ChainApi>;
 
 export type ContractMetadata = ContractMetadataV4 | ContractMetadataV5;
+
+export interface LooseContractMetadata {
+  version: number | string;
+  [prop: string]: any;
+}
 
 export type CallOptions = {
   value?: bigint;
@@ -155,6 +162,8 @@ export interface GenericContractEvents<_ extends GenericSubstrateApi> {
 }
 
 export type GenericInkLangError = 'CouldNotReadInput' | any;
+export type GenericRootStorage = any;
+export type GenericLazyStorage = any;
 
 export interface GenericContractApi<
   Rv extends RpcVersion = RpcVersion,
@@ -165,14 +174,37 @@ export interface GenericContractApi<
   constructorQuery: GenericConstructorQuery<ChainApi[Rv]>;
   constructorTx: GenericConstructorTx<ChainApi[Rv]>;
   events: GenericContractEvents<ChainApi[Rv]>;
+  storage: {
+    root(): Promise<GenericRootStorage>;
+    lazy(): GenericLazyStorage;
+  };
 
   types: {
+    RootStorage: GenericRootStorage;
+    LazyStorage: GenericLazyStorage;
     LangError: GenericInkLangError;
     ChainApi: ChainApi[Rv];
   };
 }
 
 export interface ExecutionOptions {
-  defaultCaller?: AccountId32Like;  
+  defaultCaller?: AccountId32Like;
 }
 
+// Utility: Detect if a type has a `.get(...)` method
+type HasGetter<T> = T extends { get: (...args: any[]) => any } ? true : false;
+
+// Recursive type: Keep props if they (or children) have `.get(...)`, preserve original type
+export type WithLazyStorage<T> = {
+  [K in keyof T as HasGetter<T[K]> extends true
+    ? K
+    : T[K] extends object
+      ? keyof WithLazyStorage<T[K]> extends never
+        ? never
+        : K
+      : never]: T[K] extends object
+    ? HasGetter<T[K]> extends true
+      ? T[K] // preserve full type if it has `.get(...)`
+      : WithLazyStorage<T[K]> // recurse
+    : never;
+};

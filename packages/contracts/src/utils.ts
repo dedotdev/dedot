@@ -2,7 +2,8 @@ import { ISubstrateClient } from '@dedot/api';
 import { SubstrateApi } from '@dedot/api/chaintypes';
 import { PortableType, TypeDef } from '@dedot/codecs';
 import { GenericSubstrateApi, RpcVersion } from '@dedot/types';
-import { stringCamelCase } from '@dedot/utils';
+import { DedotError, stringCamelCase } from '@dedot/utils';
+import { AnyLayoutV5 } from 'src/types/v5';
 import { Executor } from './executor/index.js';
 import { ContractMetadata, ContractTypeDef, ReturnFlags } from './types/index.js';
 
@@ -105,6 +106,13 @@ export const parseRawMetadata = (rawMetadata: string): ContractMetadata => {
   return metadata as ContractMetadata;
 };
 
+export const checkStorageApiSupports = (version: string | number) => {
+  const numberedVersion = typeof version === 'number' ? version : parseInt(version);
+  if (numberedVersion >= 5) return;
+
+  throw new DedotError(`Contract Storage Api Only Available for metadata version >= 5, current version: ${version}`);
+};
+
 export function newProxyChain<ChainApi extends GenericSubstrateApi>(carrier: Executor<ChainApi>): unknown {
   return new Proxy(carrier, {
     get(target: Executor<ChainApi>, property: string | symbol): any {
@@ -134,4 +142,33 @@ export function toReturnFlags(bits: number): ReturnFlags {
     bits,
     revert: bits === REVERT_FLAG,
   };
+}
+
+const KNOWN_LAZY_TYPES = {
+  LAZY: ['ink_storage', 'lazy', 'Lazy'].join('::'),
+  MAPPING: ['ink_storage', 'lazy', 'mapping', 'Mapping'].join('::'),
+  STORAGE_VEC: ['ink_storage', 'lazy', 'vec', 'StorageVec'].join('::'),
+};
+
+export enum KnownLazyType {
+  LAZY = 'LAZY',
+  MAPPING = 'MAPPING',
+  STORAGE_VEC = 'STORAGE_VEC',
+}
+
+/**
+ * Check if a type is lazy/non-packed storage
+ *
+ * @param typePath
+ */
+export function isLazyType(typePath?: string | string[] | undefined): KnownLazyType | undefined {
+  if (!typePath) return;
+
+  if (Array.isArray(typePath)) {
+    typePath = typePath.join('::');
+  }
+
+  if (typePath === KNOWN_LAZY_TYPES.LAZY) return KnownLazyType.LAZY;
+  if (typePath === KNOWN_LAZY_TYPES.MAPPING) return KnownLazyType.MAPPING;
+  if (typePath === KNOWN_LAZY_TYPES.STORAGE_VEC) return KnownLazyType.STORAGE_VEC;
 }

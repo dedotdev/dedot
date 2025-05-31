@@ -8,18 +8,18 @@ import { ConstructorTx } from './constructor-tx.js';
 import { ContractEvents } from './events.js';
 import { ContractQuery } from './query.js';
 import { ContractTx } from './tx.js';
-import type { Flipper, InkPrimitivesLangError } from './types.js';
+import type { InkPrimitivesLangError, LazyvecLazyVector } from './types.js';
 
 export * from './types.js';
 
 /**
- * @name: FlipperContractApi
- * @contractName: flipper
- * @contractVersion: 5.0.0
- * @authors: Parity Technologies <admin@parity.io>
- * @language: ink! 5.0.0
+ * @name: LazyvecContractApi
+ * @contractName: lazyvec
+ * @contractVersion: 5.1.0
+ * @authors: Use Ink <ink@use.ink>
+ * @language: ink! 5.1.1
  **/
-export interface FlipperContractApi<
+export interface LazyvecContractApi<
   Rv extends RpcVersion = RpcVersion,
   ChainApi extends VersionedGenericSubstrateApi = SubstrateApi,
 > extends GenericContractApi<Rv, ChainApi> {
@@ -29,13 +29,13 @@ export interface FlipperContractApi<
   constructorTx: ConstructorTx<ChainApi[Rv]>;
   events: ContractEvents<ChainApi[Rv]>;
   storage: {
-    root(): Promise<Flipper>;
-    lazy(): WithLazyStorage<Flipper>;
+    root(): Promise<LazyvecLazyVector>;
+    lazy(): WithLazyStorage<LazyvecLazyVector>;
   };
 
   types: {
-    RootStorage: Flipper;
-    LazyStorage: WithLazyStorage<Flipper>;
+    RootStorage: LazyvecLazyVector;
+    LazyStorage: WithLazyStorage<LazyvecLazyVector>;
     LangError: InkPrimitivesLangError;
     ChainApi: ChainApi[Rv];
   };

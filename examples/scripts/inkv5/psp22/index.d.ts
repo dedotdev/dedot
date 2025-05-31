@@ -8,18 +8,18 @@ import { ConstructorTx } from './constructor-tx.js';
 import { ContractEvents } from './events.js';
 import { ContractQuery } from './query.js';
 import { ContractTx } from './tx.js';
-import type { Flipper, InkPrimitivesLangError } from './types.js';
+import type { InkPrimitivesLangError, Psp22Token } from './types.js';
 
 export * from './types.js';
 
 /**
- * @name: FlipperContractApi
- * @contractName: flipper
- * @contractVersion: 5.0.0
- * @authors: Parity Technologies <admin@parity.io>
+ * @name: Psp22ContractApi
+ * @contractName: psp22
+ * @contractVersion: 2.0.0
+ * @authors: Cardinal
  * @language: ink! 5.0.0
  **/
-export interface FlipperContractApi<
+export interface Psp22ContractApi<
   Rv extends RpcVersion = RpcVersion,
   ChainApi extends VersionedGenericSubstrateApi = SubstrateApi,
 > extends GenericContractApi<Rv, ChainApi> {
@@ -29,13 +29,13 @@ export interface FlipperContractApi<
   constructorTx: ConstructorTx<ChainApi[Rv]>;
   events: ContractEvents<ChainApi[Rv]>;
   storage: {
-    root(): Promise<Flipper>;
-    lazy(): WithLazyStorage<Flipper>;
+    root(): Promise<Psp22Token>;
+    lazy(): WithLazyStorage<Psp22Token>;
   };
 
   types: {
-    RootStorage: Flipper;
-    LazyStorage: WithLazyStorage<Flipper>;
+    RootStorage: Psp22Token;
+    LazyStorage: WithLazyStorage<Psp22Token>;
     LangError: InkPrimitivesLangError;
     ChainApi: ChainApi[Rv];
   };
