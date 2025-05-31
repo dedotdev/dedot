@@ -1,5 +1,5 @@
 import { DEFAULT_EXTRINSIC_VERSION, Metadata, PortableRegistry } from '@dedot/codecs';
-import { assert, ensurePresence } from '@dedot/utils';
+import { assert } from '@dedot/utils';
 import { ExtrinsicMetadata, Field, TypeInfo, TypeRef } from '../codecs.js';
 import { getAccessibleTypes } from './accessibleTypes.js';
 import { getCompactType, PRIMITIVE_TYPE_MAP } from './typeUtils.js';

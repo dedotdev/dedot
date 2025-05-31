@@ -1,4 +1,4 @@
-import { type SignedExtensionDefLatest } from '@dedot/codecs';
+import { DEFAULT_EXTRINSIC_VERSION, type SignedExtensionDefLatest } from '@dedot/codecs';
 import * as $ from '@dedot/shape';
 import { SignerPayloadJSON, SignerPayloadRaw } from '@dedot/types';
 import { assert, ensurePresence, HexString, u8aToHex } from '@dedot/utils';
