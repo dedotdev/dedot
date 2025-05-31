@@ -6,8 +6,10 @@ const keyring = new Keyring({ type: 'sr25519' });
 export const devPairs = async () => {
   await cryptoWaitReady();
   const alice = keyring.addFromUri('//Alice');
+  const bob = keyring.addFromUri('//Bob');
 
   return {
     alice,
+    bob,
   };
 };

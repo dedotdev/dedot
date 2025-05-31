@@ -1,17 +1,11 @@
-import Keyring from '@polkadot/keyring';
-import { cryptoWaitReady } from '@polkadot/util-crypto';
 import { LegacyClient, WsProvider } from 'dedot';
 import { Contract, ContractDeployer } from 'dedot/contracts';
 import { stringToHex } from 'dedot/utils';
 import { LazyvecContractApi } from './lazyvec/index.js';
 import lazyvecMetadata from './lazyvec.json' assert { type: 'json' };
+import { devPairs } from "../keyring.js";
 
-// Wait for crypto to be ready for keyring
-await cryptoWaitReady();
-
-// Create a keyring and add Alice as deployer
-const keyring = new Keyring({ type: 'sr25519' });
-const alice = keyring.addFromUri('//Alice');
+const { alice } = await devPairs()
 
 // Connect to a local node
 console.log('Connecting to node...');
@@ -45,7 +39,7 @@ try {
       gasLimit: gasRequired, 
       salt 
     })
-    .signAndSend(alice, ({ status }: { status: { type: string } }) => {
+    .signAndSend(alice, ({ status }) => {
       console.log('Transaction status:', status.type);
     })
     .untilFinalized();
@@ -74,10 +68,10 @@ try {
     100, // duration
     2 // min_approvals
   );
-  
+
   const createProposalResult = await contract.tx.createProposal(
     new Uint8Array([1, 2, 3, 4, 5]), // data
-    100, // duration
+    0, // duration
     2, // min_approvals
     { gasLimit: createProposalGas }
   ).signAndSend(alice, ({ status }: { status: { type: string } }) => {
@@ -88,10 +82,10 @@ try {
 
   const createProposalResult2 = await contract.tx.createProposal(
     new Uint8Array([1, 2, 3, 4, 5, 6]), // data
-    100_000, // duration
+    100, // duration
     5, // min_approvals
     { gasLimit: createProposalGas }
-  ).signAndSend(alice, ({ status }: { status: { type: string } }) => {
+  ).signAndSend(alice, ({ status }) => {
     console.log('Create proposal 2 status:', status.type);
   }).untilFinalized();
 

@@ -1,17 +1,12 @@
-import Keyring from '@polkadot/keyring';
-import { cryptoWaitReady } from '@polkadot/util-crypto';
 import { LegacyClient, WsProvider } from 'dedot';
 import { Contract, ContractDeployer } from 'dedot/contracts';
 import { stringToHex } from 'dedot/utils';
 import { FlipperContractApi } from './flipper/index.js';
 import flipperMetadata from './flipper.json' assert { type: 'json' };
 
-// Wait for crypto to be ready for keyring
-await cryptoWaitReady();
+import { devPairs } from "../keyring.js";
 
-// Create a keyring and add Alice as deployer
-const keyring = new Keyring({ type: 'sr25519' });
-const alice = keyring.addFromUri('//Alice');
+const { alice } = await devPairs()
 
 // Connect to a local node
 console.log('Connecting to node...');

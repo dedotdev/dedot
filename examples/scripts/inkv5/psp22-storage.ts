@@ -1,18 +1,11 @@
-import Keyring from '@polkadot/keyring';
-import { cryptoWaitReady } from '@polkadot/util-crypto';
 import { LegacyClient, WsProvider } from 'dedot';
 import { Contract, ContractDeployer } from 'dedot/contracts';
 import { stringToHex } from 'dedot/utils';
 import { Psp22ContractApi } from './psp22/index.js';
 import psp22Metadata from './psp22.json' assert { type: 'json' };
+import { devPairs } from "../keyring.js";
 
-// Wait for crypto to be ready for keyring
-await cryptoWaitReady();
-
-// Create a keyring and add Alice as deployer
-const keyring = new Keyring({ type: 'sr25519' });
-const alice = keyring.addFromUri('//Alice');
-const bob = keyring.addFromUri('//Bob');
+const { alice, bob } = await devPairs()
 
 // Connect to a local node
 console.log('Connecting to node...');
@@ -54,7 +47,7 @@ try {
       18, // decimal
       { gasLimit: gasRequired, salt }
     )
-    .signAndSend(alice, ({ status }: { status: { type: string } }) => {
+    .signAndSend(alice, ({ status }) => {
       console.log('Transaction status:', status.type);
     })
     .untilFinalized();
@@ -89,7 +82,7 @@ try {
     100000000000n,
     new Uint8Array(),
     { gasLimit: transferGas }
-  ).signAndSend(alice, ({ status }: { status: { type: string } }) => {
+  ).signAndSend(alice, ({ status }) => {
     console.log('Transfer status:', status.type);
   }).untilFinalized();
   
