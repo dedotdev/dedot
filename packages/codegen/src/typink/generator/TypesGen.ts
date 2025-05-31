@@ -38,12 +38,14 @@ export class TypesGen extends BaseTypesGen {
   }
 
   generateType(typeId: TypeId, nestedLevel = 0, typeOut = false): string {
-    const types = this.contractMetadata.types;
-    const typeDef = types.find(({ id }) => id == typeId)!;
-
     const generatedType = super.generateType(typeId, nestedLevel, typeOut);
 
+    // Lazy types should be inside a wrapper structure/object
+    // So we only check for lazy type when nestedLevel > 0
     if (nestedLevel > 0) {
+      const types = this.contractMetadata.types;
+      const typeDef = types.find(({ id }) => id == typeId)!;
+
       const lazyType = isLazyType(typeDef.type.path);
 
       if (!lazyType) return generatedType;

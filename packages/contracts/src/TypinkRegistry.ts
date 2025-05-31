@@ -18,6 +18,11 @@ interface ContractEmittedEvent extends IRuntimeEvent {
 }
 
 export interface TypinkRegistryOptions {
+  /**
+   * Get raw contract storage value given a key
+   *
+   * @param key
+   */
   getStorage?: (key: Uint8Array | HexString) => Promise<HexString | undefined>;
 }
 
@@ -49,10 +54,10 @@ export class TypinkRegistry extends TypeRegistry {
   }
 
   /**
-   * Creates a lazy codec for a given type ID, extracting only storage types that contain lazy fields.
+   * Creates a lazy codec for a given type ID, extracting only storage types that is lazy/non-packed storage.
    *
    * @param typeId The type ID to create a lazy codec for
-   * @returns A shape codec containing only lazy storage fields, or null if no lazy fields exist
+   * @returns A shape codec containing only lazy/non-packed storage fields, or null if no lazy fields exist
    */
   createLazyCodec(typeId: TypeId): $.AnyShape | null {
     const typeDef = this.findType(typeId);

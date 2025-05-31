@@ -156,6 +156,11 @@ export enum KnownLazyType {
   STORAGE_VEC = 'STORAGE_VEC',
 }
 
+/**
+ * Check if a type is lazy/non-packed storage
+ *
+ * @param typePath
+ */
 export function isLazyType(typePath?: string | string[] | undefined): KnownLazyType | undefined {
   if (!typePath) return;
 
