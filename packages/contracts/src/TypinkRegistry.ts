@@ -1,10 +1,8 @@
-import { AccountId32, AccountId32Like, Bytes, TypeId, TypeRegistry } from '@dedot/codecs';
+import { AccountId32, Bytes, TypeId, TypeRegistry } from '@dedot/codecs';
 import * as $ from '@dedot/shape';
 import { IEventRecord, IRuntimeEvent } from '@dedot/types';
 import { assert, DedotError, HexString, hexToU8a, stringCamelCase, stringPascalCase } from '@dedot/utils';
-
 import { LazyMapping, LazyObject, LazyStorageVec } from './storage/index.js';
-
 import { ContractAddress, ContractEvent, ContractEventMeta, ContractMetadata, ContractType } from './types/index.js';
 import { extractContractTypes, isLazyType, KnownLazyType } from './utils.js';
 
@@ -105,12 +103,11 @@ export class TypinkRegistry extends TypeRegistry {
             hasLazyFields = true;
           }
         }
-  }
+
         // If no lazy fields, return null
         if (!hasLazyFields) {
           return null;
         }
-
 
         return $.Struct(lazyFields);
       }
@@ -172,8 +169,7 @@ export class TypinkRegistry extends TypeRegistry {
       // @ts-ignore
       const emittedContract = event.palletEvent.data?.contract;
       if (emittedContract instanceof AccountId32) {
-        // TODO convert both to the same format before compare
-        return emittedContract.address() === contractAddress;
+        return emittedContract.eq(contractAddress);
       } else {
         return false;
       }
