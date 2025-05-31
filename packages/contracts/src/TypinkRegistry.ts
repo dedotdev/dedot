@@ -48,6 +48,12 @@ export class TypinkRegistry extends TypeRegistry {
     return $codec;
   }
 
+  /**
+   * Creates an unpacked codec for a given type ID, extracting only storage types that contain lazy fields.
+   *
+   * @param typeId The type ID to create an unpacked codec for
+   * @returns A shape codec containing only lazy storage fields, or null if no lazy fields exist
+   */
   createUnpackedCodec(typeId: TypeId): $.AnyShape | null {
     const typeDef = this.findType(typeId);
 
@@ -58,7 +64,7 @@ export class TypinkRegistry extends TypeRegistry {
     // For non-lazy types, we need to recursively process the structure
     const { typeDef: def } = typeDef;
 
-    // Handle different type structures based on the type definition
+    // We only support Struct type for now.
     if (def.type === 'Struct') {
       const { fields } = def.value;
 
@@ -66,140 +72,42 @@ export class TypinkRegistry extends TypeRegistry {
         return null;
       }
 
-      // Create a new struct with only lazy fields
-      const lazyFields: Record<string, $.AnyShape> = {};
-      let hasLazyFields = false;
-
-      for (const field of fields) {
-        if (field.name === undefined) continue;
-
-        // Recursively check if this field contains lazy types
-        const fieldCodec = this.createUnpackedCodec(field.typeId);
-
-        // Only include fields that have lazy types
-        if (fieldCodec) {
-          lazyFields[field.name] = fieldCodec;
-          hasLazyFields = true;
+      // Handle tuple-like structs (fields with undefined names)
+      if (fields[0].name === undefined) {
+        if (fields.length === 1) {
+          // Single unnamed field - check if it contains lazy types
+          return this.createUnpackedCodec(fields[0].typeId);
+        } else {
+          return null; // Unsupported Unpacked Codec Structure
         }
-      }
-
-      // If no lazy fields, return null
-      if (!hasLazyFields) {
-        return null;
-      }
-
-      return $.Struct(lazyFields);
-    } else if (def.type === 'Enum') {
-      const { members } = def.value;
-
-      if (members.length === 0) {
-        return null;
-      }
-
-      // Process each enum variant
-      const lazyVariants: Record<string, any> = {};
-      let hasLazyVariants = false;
-
-      for (const { fields, name, index } of members) {
-        if (fields.length === 0) {
-          continue;
-        }
-
-        // Check if any fields in this variant contain lazy types
+      } else {
+        // Named struct fields - create struct with only lazy fields
+        const lazyFields: Record<string, $.AnyShape> = {};
         let hasLazyFields = false;
-        const variantFields: Record<string, $.AnyShape> = {};
 
         for (const field of fields) {
-          if (field.name === undefined && fields.length > 1) continue;
+          // Skip fields with undefined names in named structs
+          if (field.name === undefined) continue;
 
+          // Recursively check if this field contains lazy types
           const fieldCodec = this.createUnpackedCodec(field.typeId);
+
+          // Only include fields that have lazy types
           if (fieldCodec) {
-            if (field.name) {
-              variantFields[field.name] = fieldCodec;
-            }
+            lazyFields[field.name] = fieldCodec;
             hasLazyFields = true;
           }
         }
 
-        if (hasLazyFields) {
-          lazyVariants[name] = {
-            index,
-            value:
-              fields.length === 1 && fields[0].name === undefined
-                ? this.createUnpackedCodec(fields[0].typeId)
-                : $.Struct(variantFields),
-          };
-          hasLazyVariants = true;
+        // If no lazy fields, return null
+        if (!hasLazyFields) {
+          return null;
         }
+
+        return $.Struct(lazyFields);
       }
-
-      // If no lazy variants, return null
-      if (!hasLazyVariants) {
-        return null;
-      }
-
-      return $.Enum(lazyVariants);
-    } else if (def.type === 'Tuple') {
-      const { fields } = def.value;
-
-      if (fields.length === 0) {
-        return null;
-      }
-
-      // Check if any tuple elements contain lazy types
-      const lazyElements: $.AnyShape[] = [];
-
-      for (const fieldId of fields) {
-        const elementCodec = this.createUnpackedCodec(fieldId);
-        if (elementCodec) {
-          lazyElements.push(elementCodec);
-        }
-      }
-
-      // If no lazy elements, return null
-      if (lazyElements.length === 0) {
-        return null;
-      }
-
-      return $.Tuple(...lazyElements);
-    } else if (def.type === 'Sequence') {
-      // Check if the element type contains lazy types
-      const elementTypeId = def.value.typeParam;
-      const elementCodec = this.createUnpackedCodec(elementTypeId);
-
-      // If element type doesn't contain lazy types, return null
-      if (!elementCodec) {
-        return null;
-      }
-
-      // Create appropriate vector codec
-      return $.Vec(elementCodec);
-    } else if (def.type === 'SizedVec') {
-      // Check if the element type contains lazy types
-      const elementTypeId = def.value.typeParam;
-      const elementCodec = this.createUnpackedCodec(elementTypeId);
-
-      // If element type doesn't contain lazy types, return null
-      if (!elementCodec) {
-        return null;
-      }
-
-      // Create appropriate sized vector codec
-      return $.SizedVec(elementCodec, def.value.len);
-    } else if (def.type === 'Compact') {
-      // Check if the inner type contains lazy types
-      const innerTypeId = def.value.typeParam;
-      const innerCodec = this.createUnpackedCodec(innerTypeId);
-
-      // If inner type doesn't contain lazy types, return null
-      if (!innerCodec) {
-        return null;
-      }
-
-      return $.compact(innerCodec);
     }
 
-    // For primitive types and other non-container types, they don't contain lazy types
     return null;
   }
 
