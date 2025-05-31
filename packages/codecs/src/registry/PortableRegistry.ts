@@ -1,7 +1,8 @@
-import { EnumOptions } from '@dedot/shape';
-import { blake2_256, HashFn, HexString, hexToU8a, isObject, isU8a, u8aToHex } from '@dedot/utils';
+import { EnumOptions, Tuple } from '@dedot/shape';
+import { assert, blake2_256, HashFn, HexString, hexToU8a, isObject, isU8a, u8aToHex } from '@dedot/utils';
 import {
   $Extrinsic,
+  DEFAULT_EXTRINSIC_VERSION,
   DispatchError,
   MetadataLatest,
   ModuleError,
@@ -26,6 +27,22 @@ export class PortableRegistry extends TypeRegistry {
 
   get $Extrinsic() {
     return $Extrinsic(this);
+  }
+
+  $Extra(extrinsicVersion: number = DEFAULT_EXTRINSIC_VERSION) {
+    const { signedExtensions, signedExtensionsByVersion, versions } = this.metadata.extrinsic;
+
+    const extrinsicVersionIndex = versions.findIndex((v) => v === extrinsicVersion);
+    assert(extrinsicVersionIndex >= 0, `Invalid extrinsic version: ${extrinsicVersion}`);
+
+    const signedExtensionIndexes = signedExtensionsByVersion.get(extrinsicVersionIndex);
+
+    assert(signedExtensionIndexes, `No signed extensions found for version ${extrinsicVersion}`);
+
+    const signedExtensionsVersioned = signedExtensionIndexes.map((index) => signedExtensions[index]);
+    const extraCodecs = signedExtensionsVersioned.map(({ typeId }) => this.findCodec(typeId));
+
+    return Tuple(...extraCodecs);
   }
 
   get metadata(): MetadataLatest {
@@ -55,7 +72,7 @@ export class PortableRegistry extends TypeRegistry {
     const targetPallet = this.metadata!.pallets.find((p) => p.index === moduleError.index);
     if (!targetPallet || !targetPallet.error) return;
 
-    const def = this.metadata!.types[targetPallet.error];
+    const def = this.metadata!.types[targetPallet.error.typeId];
     if (!def) return;
 
     const { type, value } = def.typeDef;

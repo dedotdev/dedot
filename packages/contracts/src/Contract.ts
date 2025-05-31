@@ -1,17 +1,24 @@
 import { ISubstrateClient } from '@dedot/api';
-import { AccountId32 } from '@dedot/codecs';
 import { IEventRecord } from '@dedot/types';
+import { DedotError, HexString, toU8a } from '@dedot/utils';
 import { TypinkRegistry } from './TypinkRegistry.js';
 import { EventExecutor, QueryExecutor, TxExecutor } from './executor/index.js';
 import {
+  ContractAddress,
   ContractEvent,
   ContractMetadata,
-  GenericContractApi,
   ExecutionOptions,
-  ContractAddress,
+  GenericContractApi,
   LooseContractMetadata,
+  RootLayoutV5,
 } from './types/index.js';
-import { ensureSupportPalletContracts, ensureSupportPalletRevive, newProxyChain, parseRawMetadata } from './utils.js';
+import {
+  checkStorageApiSupports,
+  ensureSupportPalletContracts,
+  ensureSupportPalletRevive,
+  newProxyChain,
+  parseRawMetadata,
+} from './utils.js';
 
 export class Contract<ContractApi extends GenericContractApi = GenericContractApi> {
   readonly #registry: TypinkRegistry;
@@ -33,7 +40,9 @@ export class Contract<ContractApi extends GenericContractApi = GenericContractAp
         ? parseRawMetadata(metadata)
         : (metadata as ContractMetadata);
 
-    this.#registry = new TypinkRegistry(this.#metadata);
+    const getStorage = this.#getStorage.bind(this);
+
+    this.#registry = new TypinkRegistry(this.#metadata, { getStorage });
 
     if (this.registry.isInkV6()) {
       ensureSupportPalletRevive(client);
@@ -85,4 +94,40 @@ export class Contract<ContractApi extends GenericContractApi = GenericContractAp
   get options(): ExecutionOptions | undefined {
     return this.#options;
   }
+
+  get storage(): ContractApi['storage'] {
+    return {
+      root: async (): Promise<ContractApi['types']['RootStorage']> => {
+        checkStorageApiSupports(this.metadata.version);
+
+        const { ty, root_key } = this.metadata.storage.root as RootLayoutV5;
+
+        const rawValue = await this.#getStorage(root_key as HexString);
+
+        return this.registry.findCodec(ty).tryDecode(rawValue);
+      },
+      lazy: (): ContractApi['types']['LazyStorage'] => {
+        checkStorageApiSupports(this.metadata.version);
+
+        const { ty } = this.metadata.storage.root as RootLayoutV5;
+
+        const $lazyCodec = this.registry.createLazyCodec(ty);
+
+        return $lazyCodec ? $lazyCodec.tryDecode('0x') : {};
+      },
+    };
+  }
+
+  #getStorage = async (key: Uint8Array | HexString): Promise<HexString | undefined> => {
+    const result = await this.client.call.contractsApi.getStorage(
+      this.address.address(), //--
+      toU8a(key),
+    );
+
+    if (result.isOk) {
+      return result.value;
+    }
+
+    throw new DedotError(result.err);
+  };
 }

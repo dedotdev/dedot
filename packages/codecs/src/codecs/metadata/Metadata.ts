@@ -1,20 +1,21 @@
 import * as $ from '@dedot/shape';
 import { ensurePresence, HexString, u8aToHex } from '@dedot/utils';
 import { OpaqueMetadata } from '../known/metadata.js';
-import { toV15 } from './conversion/index.js';
+import { toV15, toV16 } from './conversion/index.js';
 import { $MetadataV14 } from './v14.js';
+import { $MetadataV15 } from './v15.js';
 import {
-  $MetadataV15,
-  $PalletDefV15,
-  $RuntimeApiMethodDefV15,
-  $SignedExtensionDefV15,
-  $StorageEntryV15,
-  MetadataV15,
-  PalletDefV15,
-  SignedExtensionDefV15,
-  RuntimeApiMethodDefV15,
-  StorageEntryV15,
-} from './v15.js';
+  $PalletDefV16,
+  $RuntimeApiMethodDefV16,
+  $StorageEntryV16,
+  $SignedExtensionDefV16,
+  PalletDefV16,
+  RuntimeApiMethodDefV16,
+  StorageEntryV16,
+  SignedExtensionDefV16,
+  $MetadataV16,
+  MetadataV16,
+} from './v16.js';
 
 export const notSupportedCodec = (msg = 'Not supported!'): $.Shape<never> => {
   return $.createShape({
@@ -48,6 +49,7 @@ export const $MetadataVersioned = $.Enum({
   V13: notSupportedCodec('Metadata V13 is not supported'),
   V14: $MetadataV14,
   V15: $MetadataV15,
+  V16: $MetadataV16,
 });
 
 export type MetadataVersioned = $.Input<typeof $MetadataVersioned>;
@@ -55,20 +57,20 @@ export type MetadataVersioned = $.Input<typeof $MetadataVersioned>;
 // Ref: https://github.com/paritytech/frame-metadata/blob/a07b2451b82809501fd797691046c1164f7e8840/frame-metadata/src/v14.rs#L30
 export const MAGIC_NUMBER = 1635018093; // 0x6174656d
 
-export const $MetadataLatest = $MetadataV15;
-export type MetadataLatest = MetadataV15;
+export const $MetadataLatest = $MetadataV16;
+export type MetadataLatest = MetadataV16;
 
-export const $PalletDefLatest = $PalletDefV15;
-export type PalletDefLatest = PalletDefV15;
+export const $PalletDefLatest = $PalletDefV16;
+export type PalletDefLatest = PalletDefV16;
 
-export const $StorageEntryLatest = $StorageEntryV15;
-export type StorageEntryLatest = StorageEntryV15;
+export const $StorageEntryLatest = $StorageEntryV16;
+export type StorageEntryLatest = StorageEntryV16;
 
-export const $SignedExtensionDefLatest = $SignedExtensionDefV15;
-export type SignedExtensionDefLatest = SignedExtensionDefV15;
+export const $SignedExtensionDefLatest = $SignedExtensionDefV16;
+export type SignedExtensionDefLatest = SignedExtensionDefV16;
 
-export const $RuntimeApiMethodDefLatest = $RuntimeApiMethodDefV15;
-export type RuntimeApiMethodDefLatest = RuntimeApiMethodDefV15;
+export const $RuntimeApiMethodDefLatest = $RuntimeApiMethodDefV16;
+export type RuntimeApiMethodDefLatest = RuntimeApiMethodDefV16;
 
 export class Metadata {
   magicNumber: number;
@@ -93,10 +95,12 @@ export class Metadata {
 
   get latest(): MetadataLatest {
     const currentVersion = this.metadataVersioned.type;
-    if (currentVersion === 'V15') {
+    if (currentVersion === 'V16') {
       return this.metadataVersioned.value;
+    } else if (currentVersion === 'V15') {
+      return toV16(this.metadataVersioned.value);
     } else if (currentVersion === 'V14') {
-      return toV15(this.metadataVersioned.value);
+      return toV16(toV15(this.metadataVersioned.value));
     }
 
     throw new Error(`Unsupported metadata version, found: ${currentVersion}`);

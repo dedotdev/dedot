@@ -19,3 +19,4 @@ alice: ts-script ./0001-check-tx-alter-payload.ts within 200 seconds
 alice: ts-script ./0001-verify-contract-errors.ts within 500 seconds
 alice: ts-script ./0001-check-query-with-partial-keys.ts within 3000 seconds
 alice: ts-script ./0001-verify-dedot-client-events.ts within 100 seconds
+alice: ts-script ./0001-check-contract-storage-lazyvec.ts within 500 seconds

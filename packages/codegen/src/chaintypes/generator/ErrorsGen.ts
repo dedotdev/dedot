@@ -16,7 +16,7 @@ export class ErrorsGen extends ApiGen {
         continue;
       }
 
-      const errorDefs = this.#getErrorDefs(errorTypeId);
+      const errorDefs = this.#getErrorDefs(errorTypeId.typeId);
 
       defTypeOut += commentBlock(`Pallet \`${pallet.name}\`'s errors`);
       defTypeOut += `${stringCamelCase(pallet.name)}: {

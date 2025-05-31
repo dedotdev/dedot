@@ -14,7 +14,7 @@ export class ErrorExecutor<ChainApi extends GenericSubstrateApi = GenericSubstra
     const errorTypeId = targetPallet.error;
     assert(errorTypeId, new UnknownApiError(`Not found error with id ${errorTypeId} in pallet ${pallet}`));
 
-    const errorDef = this.#getErrorDef(errorTypeId, errorName);
+    const errorDef = this.#getErrorDef(errorTypeId.typeId, errorName);
 
     return {
       meta: {
