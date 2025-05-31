@@ -120,7 +120,7 @@ export class Contract<ContractApi extends GenericContractApi = GenericContractAp
 
   #getStorage = async (key: Uint8Array | HexString): Promise<HexString | undefined> => {
     const result = await this.client.call.contractsApi.getStorage(
-      this.address.address(), //--
+      this.address, //--
       toU8a(key),
     );
 
