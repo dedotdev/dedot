@@ -89,7 +89,7 @@ export const run = async (_nodeName: any, networkInfo: any) => {
 
     // If caller's balance is zero, should be throwing DispatchError
     try {
-      const contract = new Contract<FlipperContractApi>(api, flipper, alicePair.addressRaw);
+      const contract = new Contract<FlipperContractApi>(api, flipper, alicePair.address);
       await contract.query.flip({ caller });
 
       throw new Error('Expected to throw error!');
