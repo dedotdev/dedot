@@ -1,7 +1,7 @@
-import { type SignedExtensionDefLatest } from '@dedot/codecs';
+import { DEFAULT_EXTRINSIC_VERSION, type SignedExtensionDefLatest } from '@dedot/codecs';
 import * as $ from '@dedot/shape';
 import { SignerPayloadJSON, SignerPayloadRaw } from '@dedot/types';
-import { ensurePresence, HexString, u8aToHex } from '@dedot/utils';
+import { assert, ensurePresence, HexString, u8aToHex } from '@dedot/utils';
 import { FallbackSignedExtension, isEmptyStructOrTuple } from './FallbackSignedExtension.js';
 import { ISignedExtension, SignedExtension } from './SignedExtension.js';
 import { knownSignedExtensions } from './known/index.js';
@@ -98,11 +98,16 @@ export class ExtraSignedExtension extends SignedExtension<any[], any[]> {
     const { versions } = this.registry.metadata.extrinsic;
     const { signerAddress } = this.options!;
 
+    assert(
+      versions.includes(DEFAULT_EXTRINSIC_VERSION), // --
+      'Extrinsic Version 4 Not Found',
+    );
+
     return Object.assign(
       {
         address: signerAddress,
         signedExtensions,
-        version: ensurePresence(versions.at(0)),
+        version: DEFAULT_EXTRINSIC_VERSION,
         method: call,
         withSignedTransaction: true, // allow signer/wallet to alter transaction by default
       },
