@@ -49,12 +49,12 @@ export class TypinkRegistry extends TypeRegistry {
   }
 
   /**
-   * Creates an unpacked codec for a given type ID, extracting only storage types that contain lazy fields.
+   * Creates a lazy codec for a given type ID, extracting only storage types that contain lazy fields.
    *
-   * @param typeId The type ID to create an unpacked codec for
+   * @param typeId The type ID to create a lazy codec for
    * @returns A shape codec containing only lazy storage fields, or null if no lazy fields exist
    */
-  createUnpackedCodec(typeId: TypeId): $.AnyShape | null {
+  createLazyCodec(typeId: TypeId): $.AnyShape | null {
     const typeDef = this.findType(typeId);
 
     // Check if this is a lazy storage type we want to keep
@@ -76,9 +76,9 @@ export class TypinkRegistry extends TypeRegistry {
       if (fields[0].name === undefined) {
         if (fields.length === 1) {
           // Single unnamed field - check if it contains lazy types
-          return this.createUnpackedCodec(fields[0].typeId);
+          return this.createLazyCodec(fields[0].typeId);
         } else {
-          return null; // Unsupported Unpacked Codec Structure
+          return null; // Unsupported Lazy Codec Structure
         }
       } else {
         // Named struct fields - create struct with only lazy fields
@@ -90,7 +90,7 @@ export class TypinkRegistry extends TypeRegistry {
           if (field.name === undefined) continue;
 
           // Recursively check if this field contains lazy types
-          const fieldCodec = this.createUnpackedCodec(field.typeId);
+          const fieldCodec = this.createLazyCodec(field.typeId);
 
           // Only include fields that have lazy types
           if (fieldCodec) {

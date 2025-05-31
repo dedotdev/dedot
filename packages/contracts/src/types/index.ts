@@ -163,7 +163,7 @@ export interface GenericContractEvents<_ extends GenericSubstrateApi> {
 
 export type GenericInkLangError = 'CouldNotReadInput' | any;
 export type GenericRootStorage = any;
-export type GenericUnpackedStorage = any;
+export type GenericLazyStorage = any;
 
 export interface GenericContractApi<
   Rv extends RpcVersion = RpcVersion,
@@ -176,12 +176,12 @@ export interface GenericContractApi<
   events: GenericContractEvents<ChainApi[Rv]>;
   storage: {
     root(): Promise<GenericRootStorage>;
-    unpacked(): GenericUnpackedStorage;
+    lazy(): GenericLazyStorage;
   };
 
   types: {
     RootStorage: GenericRootStorage;
-    UnpackedStorage: GenericUnpackedStorage;
+    LazyStorage: GenericLazyStorage;
     LangError: GenericInkLangError;
     ChainApi: ChainApi[Rv];
   };
@@ -195,16 +195,16 @@ export interface ExecutionOptions {
 type HasGetter<T> = T extends { get: (...args: any[]) => any } ? true : false;
 
 // Recursive type: Keep props if they (or children) have `.get(...)`, preserve original type
-export type WithUnpackedStorage<T> = {
+export type WithLazyStorage<T> = {
   [K in keyof T as HasGetter<T[K]> extends true
     ? K
     : T[K] extends object
-      ? keyof WithUnpackedStorage<T[K]> extends never
+      ? keyof WithLazyStorage<T[K]> extends never
         ? never
         : K
       : never]: T[K] extends object
     ? HasGetter<T[K]> extends true
       ? T[K] // preserve full type if it has `.get(...)`
-      : WithUnpackedStorage<T[K]> // recurse
+      : WithLazyStorage<T[K]> // recurse
     : never;
 };

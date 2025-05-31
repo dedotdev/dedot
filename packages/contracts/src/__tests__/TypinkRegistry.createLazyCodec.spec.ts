@@ -1,5 +1,6 @@
 import { PortableType, TypeId } from '@dedot/codecs';
 import * as $ from '@dedot/shape';
+import { assert } from '@dedot/utils';
 import * as util from 'node:util';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { TypinkRegistry } from '../TypinkRegistry.js';
@@ -132,17 +133,17 @@ class TestTypinkRegistry extends TypinkRegistry {
     this.metadata.types = types;
   }
 
-  // Create a safe version of createUnpackedCodec that handles errors
-  safeCreateUnpackedCodec(typeId: TypeId): $.AnyShape | null {
+  // Create a safe version of createLazyCodec that handles errors
+  safeCreateLazyCodec(typeId: TypeId): $.AnyShape | null {
     try {
-      return this.createUnpackedCodec(typeId);
-    } catch (e) {
+      return this.createLazyCodec(typeId);
+    } catch (error) {
       return null;
     }
   }
 }
 
-describe('TypinkRegistry.createUnpackedCodec', () => {
+describe('TypinkRegistry.createLazyCodec', () => {
   let registry: TestTypinkRegistry;
 
   beforeEach(() => {
@@ -151,7 +152,7 @@ describe('TypinkRegistry.createUnpackedCodec', () => {
 
   describe('Basic functionality', () => {
     it('should return null for non-existent type ID', () => {
-      expect(registry.safeCreateUnpackedCodec(999)).toBeNull();
+      expect(registry.safeCreateLazyCodec(999)).toBeNull();
     });
 
     it('should return null for primitive types', () => {
@@ -160,8 +161,8 @@ describe('TypinkRegistry.createUnpackedCodec', () => {
 
       registry.registerMockTypes([boolType, u8Type]);
 
-      expect(registry.safeCreateUnpackedCodec(1)).toBeNull();
-      expect(registry.safeCreateUnpackedCodec(2)).toBeNull();
+      expect(registry.safeCreateLazyCodec(1)).toBeNull();
+      expect(registry.safeCreateLazyCodec(2)).toBeNull();
     });
   });
 
@@ -190,7 +191,7 @@ describe('TypinkRegistry.createUnpackedCodec', () => {
     });
 
     it('should return codec for standalone Mapping type', () => {
-      const result = registry.safeCreateUnpackedCodec(1);
+      const result = registry.safeCreateLazyCodec(1);
       expect(result).not.toBeNull();
     });
   });
@@ -212,7 +213,7 @@ describe('TypinkRegistry.createUnpackedCodec', () => {
     });
 
     it('should return codec for standalone Lazy type', () => {
-      const result = registry.safeCreateUnpackedCodec(1);
+      const result = registry.safeCreateLazyCodec(1);
       expect(result).not.toBeNull();
     });
   });
@@ -238,7 +239,7 @@ describe('TypinkRegistry.createUnpackedCodec', () => {
     });
 
     it('should return codec for standalone StorageVec type', () => {
-      const result = registry.safeCreateUnpackedCodec(1);
+      const result = registry.safeCreateLazyCodec(1);
       expect(result).not.toBeNull();
     });
   });
@@ -282,10 +283,10 @@ describe('TypinkRegistry.createUnpackedCodec', () => {
       registry.registerMockTypes([mappingType, lazyType, storageVecType, regularType]);
       registry.registerMockContractTypes([mappingContractType, lazyContractType, storageVecContractType]);
 
-      expect(registry.safeCreateUnpackedCodec(1)).not.toBeNull();
-      expect(registry.safeCreateUnpackedCodec(2)).not.toBeNull();
-      expect(registry.safeCreateUnpackedCodec(3)).not.toBeNull();
-      expect(registry.safeCreateUnpackedCodec(4)).toBeNull();
+      expect(registry.safeCreateLazyCodec(1)).not.toBeNull();
+      expect(registry.safeCreateLazyCodec(2)).not.toBeNull();
+      expect(registry.safeCreateLazyCodec(3)).not.toBeNull();
+      expect(registry.safeCreateLazyCodec(4)).toBeNull();
     });
 
     it('should match paths starting with ink_storage::lazy', () => {
@@ -310,8 +311,8 @@ describe('TypinkRegistry.createUnpackedCodec', () => {
       registry.registerMockTypes([customLazyType, regularType, valueType]);
       registry.registerMockContractTypes([customLazyContractType]);
 
-      expect(registry.safeCreateUnpackedCodec(1)).toBeNull();
-      expect(registry.safeCreateUnpackedCodec(2)).toBeNull();
+      expect(registry.safeCreateLazyCodec(1)).toBeNull();
+      expect(registry.safeCreateLazyCodec(2)).toBeNull();
     });
   });
 
@@ -327,9 +328,9 @@ describe('TypinkRegistry.createUnpackedCodec', () => {
       registry.registerMockTypes([errorType]);
 
       // Should not throw an error
-      expect(() => registry.safeCreateUnpackedCodec(1)).not.toThrow();
+      expect(() => registry.safeCreateLazyCodec(1)).not.toThrow();
       // Should return null
-      expect(registry.safeCreateUnpackedCodec(1)).toBeNull();
+      expect(registry.safeCreateLazyCodec(1)).toBeNull();
     });
   });
 });

@@ -39,28 +39,28 @@ describe('Contract Storage API', () => {
       contract = new Contract(api, FLIPPER_CONTRACT_METADATA_V5, RANDOM_CONTRACT_ADDRESS);
     });
 
-    describe('unpacked()', () => {
+    describe('lazy()', () => {
       it('should return empty object for non-lazy storage types', () => {
         // The Flipper contract has a simple boolean value, which is not a lazy storage type
-        const result = contract.storage.unpacked();
+        const result = contract.storage.lazy();
         
-        // For non-lazy storage types, unpacked() should return an empty object
+        // For non-lazy storage types, lazy() should return an empty object
         expect(result).toEqual({});
       });
 
-      it('should return unpacked storage structure when codec is available', () => {
-        // Mock the createUnpackedCodec method to return a codec with a value property
+      it('should return lazy storage structure when codec is available', () => {
+        // Mock the createLazyCodec method to return a codec with a value property
         const mockCodec = $.Struct({ value: $.bool });
-        const originalCreateUnpackedCodec = contract.registry.createUnpackedCodec;
-        contract.registry.createUnpackedCodec = vi.fn().mockReturnValue(mockCodec);
+        const originalCreateLazyCodec = contract.registry.createLazyCodec;
+        contract.registry.createLazyCodec = vi.fn().mockReturnValue(mockCodec);
         
-        const result = contract.storage.unpacked();
+        const result = contract.storage.lazy();
         
         // Should return the structure from the codec
         expect(result).toHaveProperty('value');
         
         // Restore the original method
-        contract.registry.createUnpackedCodec = originalCreateUnpackedCodec;
+        contract.registry.createLazyCodec = originalCreateLazyCodec;
       });
     });
   });
@@ -78,15 +78,15 @@ describe('Contract Storage API', () => {
       );
     });
 
-    it('should throw error for unpacked() with unsupported metadata version', () => {
-      expect(() => contract.storage.unpacked()).toThrow(
+    it('should throw error for lazy() with unsupported metadata version', () => {
+      expect(() => contract.storage.lazy()).toThrow(
         'Contract Storage Api Only Available for metadata version >= 5, current version: 4'
       );
     });
   });
 
   describe('with lazy storage types', () => {
-    it('should handle lazy storage types in unpacked()', () => {
+    it('should handle lazy storage types in lazy()', () => {
       // Create a contract with the metadata
       const contract = new Contract(api, FLIPPER_CONTRACT_METADATA_V5, RANDOM_CONTRACT_ADDRESS);
       
@@ -95,16 +95,16 @@ describe('Contract Storage API', () => {
         tryDecode: () => ({ value: true, counter: 42 })
       };
       
-      // Mock the createUnpackedCodec method
-      const originalCreateUnpackedCodec = contract.registry.createUnpackedCodec;
-      contract.registry.createUnpackedCodec = vi.fn().mockReturnValue(mockCodec);
+      // Mock the createLazyCodec method
+      const originalCreateLazyCodec = contract.registry.createLazyCodec;
+      contract.registry.createLazyCodec = vi.fn().mockReturnValue(mockCodec);
       
-      // Test unpacked() returns the structure
-      const unpackedStorage = contract.storage.unpacked();
-      expect(unpackedStorage).toEqual({ value: true, counter: 42 });
+      // Test lazy() returns the structure
+      const lazyStorage = contract.storage.lazy();
+      expect(lazyStorage).toEqual({ value: true, counter: 42 });
       
       // Restore the original method
-      contract.registry.createUnpackedCodec = originalCreateUnpackedCodec;
+      contract.registry.createLazyCodec = originalCreateLazyCodec;
     });
   });
 

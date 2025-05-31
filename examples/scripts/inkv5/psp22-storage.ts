@@ -100,25 +100,25 @@ try {
   console.log('Symbol:', root.symbol);
   console.log('Decimals:', root.decimals);
   
-  // Get the unpacked storage
-  console.log('\nGetting unpacked storage...');
-  const unpacked = contract.storage.unpacked();
-  console.log('Unpacked storage:', unpacked);
+  // Get the lazy storage
+  console.log('\nGetting lazy storage...');
+  const lazy = contract.storage.lazy();
+  console.log('Unpacked storage:', lazy);
   
-  // Access unpacked storage values using getters
-  if (unpacked.data) {
-    console.log('\nAccessing unpacked storage values using getters:');
+  // Access lazy storage values using getters
+  if (lazy.data) {
+    console.log('\nAccessing lazy storage values using getters:');
 
     // Get balances using the get method on the balances mapping
-    const aliceBalance = await unpacked.data.balances.get(alice.address);
-    console.log('Alice balance (from unpacked storage):', aliceBalance);
+    const aliceBalance = await lazy.data.balances.get(alice.address);
+    console.log('Alice balance (from lazy storage):', aliceBalance);
 
-    const bobBalance = await unpacked.data.balances.get(bob.address);
-    console.log('Bob balance (from unpacked storage):', bobBalance);
+    const bobBalance = await lazy.data.balances.get(bob.address);
+    console.log('Bob balance (from lazy storage):', bobBalance);
 
     // Get allowances using the get method on the allowances mapping
-    const allowance = await unpacked.data.allowances.get([alice.address, bob.address]);
-    console.log('Alice allowance for Bob (from unpacked storage):', allowance);
+    const allowance = await lazy.data.allowances.get([alice.address, bob.address]);
+    console.log('Alice allowance for Bob (from lazy storage):', allowance);
   }
   
 } catch (error) {

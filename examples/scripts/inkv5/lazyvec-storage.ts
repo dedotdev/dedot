@@ -102,21 +102,21 @@ try {
     console.log('Proposals in root storage:', root.proposals);
   }
   
-  // Get the unpacked storage
-  console.log('\nGetting unpacked storage...');
-  const unpacked = contract.storage.unpacked();
-  console.log('Unpacked storage:', unpacked);
+  // Get the lazy storage
+  console.log('\nGetting lazy storage...');
+  const lazy = contract.storage.lazy();
+  console.log('Unpacked storage:', lazy);
   
   // If the lazy vector has elements, we can access them using getters
-  if (unpacked.proposals) {
+  if (lazy.proposals) {
     // Get the length of the lazy vector
     console.log('\nAccessing lazy vector elements using getters:');
-    const length = await unpacked.proposals.len();
+    const length = await lazy.proposals.len();
     console.log('Number of proposals:', length);
     
     // Get the first proposal if it exists
     if (length > 0) {
-      const proposal = (await unpacked.proposals.get(0))!;
+      const proposal = (await lazy.proposals.get(0))!;
       console.log('First proposal:', proposal);
 
       // Access specific fields of the proposal

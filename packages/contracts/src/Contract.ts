@@ -90,14 +90,14 @@ export class Contract<ContractApi extends GenericContractApi = GenericContractAp
 
         return this.registry.findCodec(ty).tryDecode(rawValue);
       },
-      unpacked: (): ContractApi['types']['UnpackedStorage'] => {
+      lazy: (): ContractApi['types']['LazyStorage'] => {
         checkStorageApiSupports(this.metadata.version);
 
         const { ty } = this.metadata.storage.root as RootLayoutV5;
 
-        const $unpackedCodec = this.registry.createUnpackedCodec(ty);
+        const $lazyCodec = this.registry.createLazyCodec(ty);
 
-        return $unpackedCodec ? $unpackedCodec.tryDecode('0x') : {};
+        return $lazyCodec ? $lazyCodec.tryDecode('0x') : {};
       },
     };
   }

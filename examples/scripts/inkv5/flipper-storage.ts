@@ -63,22 +63,22 @@ try {
   const root = await contract.storage.root();
   console.log('Root storage:', root);
   
-  // Get the unpacked storage
+  // Get the lazy storage
   console.log('\nGetting unpacked storage...');
-  const unpacked = contract.storage.unpacked();
-  console.log('Unpacked storage:', unpacked);
+  const lazy = contract.storage.lazy();
+  console.log('Unpacked storage:', lazy);
   
-  // For Flipper, the unpacked storage might be empty since it doesn't use lazy storage types
+  // For Flipper, the lazy storage might be empty since it doesn't use lazy storage types
   console.log('\nNote: Flipper uses a simple boolean value, not lazy storage types');
-  console.log('Therefore, unpacked() might return an empty object');
+  console.log('Therefore, lazy() might return an empty object');
 
   // Check specific values in the root storage
   console.log('\nChecking root storage values:');
   console.log('Value:', await root.value.get()); // Access the boolean value directly
   console.log('Owner:', (await root.owner.get())!.address()); // Access the boolean value directly
 
-  console.log('Value:', await unpacked.value.get()); // Access the boolean value directly
-  console.log('Owner:', (await unpacked.owner.get())!.address()); // Access the boolean value directly
+  console.log('Value:', await lazy.value.get()); // Access the boolean value directly
+  console.log('Owner:', (await lazy.owner.get())!.address()); // Access the boolean value directly
 
   console.log("===")
 
@@ -92,8 +92,8 @@ try {
   console.log('Value:', await root.value.get()); // Access the boolean value directly
   console.log('Owner:', (await root.owner.get())!.address()); // Access the boolean value directly
 
-  console.log('Value:', await unpacked.value.get()); // Access the boolean value directly
-  console.log('Owner:', (await unpacked.owner.get())!.address()); // Access the boolean value directly
+  console.log('Value:', await lazy.value.get()); // Access the boolean value directly
+  console.log('Owner:', (await lazy.owner.get())!.address()); // Access the boolean value directly
 
 } catch (error) {
   console.error('Error:', error);

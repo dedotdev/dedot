@@ -17,11 +17,11 @@ export class IndexGen {
 
     const typeImports = new TypeImports();
     typeImports.addKnownType('VersionedGenericSubstrateApi', 'RpcVersion', 'RpcV2');
-    typeImports.addContractType('GenericContractApi', 'WithUnpackedStorage');
+    typeImports.addContractType('GenericContractApi', 'WithLazyStorage');
     typeImports.addChainType('SubstrateApi');
     typeImports.addPortableType(langErrorName);
 
-    const [rootStorageName, unpackedStorageName] = this.#extractRootStorageNames(typeImports);
+    const [rootStorageName, lazyStorageName] = this.#extractRootStorageNames(typeImports);
 
     const {
       contract: { name = '', version = '', authors = [] },
@@ -46,7 +46,7 @@ export class IndexGen {
         langErrorName,
         importTypes,
         rootStorageName,
-        unpackedStorageName,
+        lazyStorageName,
       }),
     );
   }
@@ -60,9 +60,9 @@ export class IndexGen {
       const rootStorageName = this.typesGen.cleanPath(this.contractMetadata.types[rootStorageId].type.path!);
       typeImports.addPortableType(rootStorageName);
 
-      return [rootStorageName, `WithUnpackedStorage<${rootStorageName}>`];
+      return [rootStorageName, `WithLazyStorage<${rootStorageName}>`];
     } catch {
-      const names = ['GenericRootStorage', 'GenericUnpackedStorage'];
+      const names = ['GenericRootStorage', 'GenericLazyStorage'];
       typeImports.addContractType(...names);
 
       return names;
