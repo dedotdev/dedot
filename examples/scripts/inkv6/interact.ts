@@ -1,13 +1,11 @@
-import Keyring from '@polkadot/keyring';
-import { cryptoWaitReady } from '@polkadot/util-crypto';
 import { LegacyClient, WsProvider } from 'dedot';
-import { Contract, ContractDeployer } from 'dedot/contracts';
+import { Contract, ContractDeployer, create2, toEthAddress } from 'dedot/contracts';
 import { FlipperContractApi } from './flipper/index.js';
 import flipper6 from './flipper_v6.json' with { type: 'json' };
+import { devPairs } from "../keyring.js";
 
 // Initialize crypto and keyring
-await cryptoWaitReady();
-const alice = new Keyring({type: 'sr25519'}).addFromUri('//Alice');
+const {alice} = await devPairs()
 
 // @ts-ignore
 BigInt.prototype.toJSON = function () {
@@ -19,6 +17,11 @@ const client = await LegacyClient.new(new WsProvider('ws://127.0.0.1:9944'));
 
 console.log('🚀 Starting Flipper Contract Demonstration with Pallet-Revive');
 console.log('='.repeat(60));
+
+// Try to map account first!
+await client.tx.revive.mapAccount()
+  .signAndSend(alice) // --
+  .untilFinalized()
 
 // Extract PVM bytecode from metadata
 const pvmBytecode = flipper6.source.contract_binary;
@@ -56,7 +59,8 @@ try {
 
   // Dry run the constructor to estimate gas and validate deployment
   console.log('🔍 Dry running constructor with initial value: true');
-  const dryRunResult = await deployer1.query.new(true, { salt });
+  const dryRunResult = await deployer1.query.new(true, {salt});
+  console.log('dryRunResult', dryRunResult)
   //
   console.log(`   ✅ Dry run successful!`);
   console.log(`   📊 Gas consumed: ${dryRunResult.raw.gasConsumed.refTime.toLocaleString()}`);
@@ -67,7 +71,7 @@ try {
   // Deploy the contract with full code
   console.log('🚀 Deploying contract with full PVM bytecode...');
 
-  await deployer1.tx.new(true, { gasLimit: dryRunResult.raw.gasRequired, salt }) // --
+  await deployer1.tx.new(true, {gasLimit: dryRunResult.raw.gasRequired, salt}) // --
     .signAndSend(alice, ({status}) => {
       console.log(`   📊 Transaction status: ${status.type}`);
     })
@@ -85,7 +89,7 @@ try {
   // Create new deployer using code hash instead of full bytecode
   const deployer2 = new ContractDeployer<FlipperContractApi>(
     client,
-    flipper6 as any,
+    flipper6,
     codeHash, // Using code hash instead of full bytecode
     defaultOptions,
   );
