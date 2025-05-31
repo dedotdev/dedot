@@ -26,7 +26,7 @@ export class ConstructorTxExecutor<ChainApi extends GenericSubstrateApi> extends
       assert(params.length === args.length + 1, `Expected ${args.length + 1} arguments, got ${params.length}`);
 
       const txCallOptions = params[args.length] as ConstructorTxOptions;
-      const { value = 0n, gasLimit, storageDepositLimit = 0n, salt = '0x' } = txCallOptions;
+      const { value = 0n, gasLimit, storageDepositLimit, salt = '0x' } = txCallOptions;
       assert(gasLimit, 'Expected a gas limit in ConstructorTxOptions');
       assertFalse(isNull(salt) || isUndefined(salt), 'Expected a salt in ConstructorCallOptions');
 
@@ -40,7 +40,7 @@ export class ConstructorTxExecutor<ChainApi extends GenericSubstrateApi> extends
           return client.tx.revive.instantiateWithCode(
             value, //--
             gasLimit,
-            storageDepositLimit,
+            storageDepositLimit || 0n,
             this.code,
             bytes,
             salt,
@@ -49,7 +49,7 @@ export class ConstructorTxExecutor<ChainApi extends GenericSubstrateApi> extends
           return client.tx.revive.instantiate(
             value, // --
             gasLimit,
-            storageDepositLimit,
+            storageDepositLimit || 0n,
             toHex(this.code),
             bytes,
             salt,

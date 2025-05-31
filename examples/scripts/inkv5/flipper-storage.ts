@@ -36,10 +36,12 @@ try {
   console.log('Deploying Flipper contract...');
   const { events } = await deployer.tx
     .new(true, { gasLimit: gasRequired, salt })
-    .signAndSend(alice, ({ status }: { status: { type: string } }) => {
+    .signAndSend(alice, ({ status }) => {
       console.log('Transaction status:', status.type);
     })
     .untilFinalized();
+
+  console.log(events);
   
   // Extract the contract address from the events
   const instantiatedEvent = client.events.contracts.Instantiated.find(events);

@@ -74,7 +74,7 @@ try {
     0, // duration
     2, // min_approvals
     { gasLimit: createProposalGas }
-  ).signAndSend(alice, ({ status }: { status: { type: string } }) => {
+  ).signAndSend(alice, ({ status }) => {
     console.log('Create proposal status:', status.type);
   }).untilFinalized();
   
