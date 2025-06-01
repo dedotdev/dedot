@@ -87,18 +87,6 @@ export const run = async (_nodeName: any, networkInfo: any) => {
       console.log('LangError', e.langError);
     }
 
-    // If caller's balance is zero, should be throwing DispatchError
-    try {
-      const contract = new Contract<FlipperContractApi>(api, flipper, alicePair.address);
-      await contract.query.flip({ caller });
-
-      throw new Error('Expected to throw error!');
-    } catch (e: any) {
-      assert(isContractExecutionError(e), 'Should throw ContractExecutionError!');
-      assert(isContractDispatchError(e), 'Should throw ContractDispatchError!');
-      console.log('DispatchError', e.dispatchError);
-    }
-
     // If input parameters is not in correct format, should be throwing LangError
     try {
       await contract.query.flipWithSeed('0x_error', { caller });
@@ -110,6 +98,19 @@ export const run = async (_nodeName: any, networkInfo: any) => {
       assert(e.flags.revert === true && e.flags.bits === 1, 'Should get Revert flag here!');
 
       console.log('LangError', e.langError);
+    }
+
+    // Should throw error if contract is not presence on-chain!
+    try {
+      const contract = new Contract<FlipperContractApi>(api, flipper, alicePair.address);
+      await contract.query.flip({ caller });
+
+      throw new Error('Expected to throw error!');
+    } catch (e: any) {
+      assert(
+        e.message === `Contract with address ${alicePair.address} does not exist on chain!`,
+        'Should check contract on-chain presence!',
+      );
     }
   };
 
