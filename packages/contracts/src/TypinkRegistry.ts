@@ -1,4 +1,4 @@
-import { AccountId32, Bytes, TypeId, TypeRegistry } from '@dedot/codecs';
+import { AccountId32, Bytes, H160, H256, TypeId, TypeRegistry } from '@dedot/codecs';
 import * as $ from '@dedot/shape';
 import { IEventRecord, IRuntimeEvent } from '@dedot/types';
 import { assert, DedotError, HexString, hexToU8a, stringCamelCase, stringPascalCase } from '@dedot/utils';
@@ -6,14 +6,22 @@ import { LazyMapping, LazyObject, LazyStorageVec } from './storage/index.js';
 import { ContractAddress, ContractEvent, ContractEventMeta, ContractMetadata, ContractType } from './types/index.js';
 import { extractContractTypes, isLazyType, KnownLazyType } from './utils.js';
 
-interface ContractEmittedEvent extends IRuntimeEvent {
-  pallet: 'Contracts';
+type KnownPallets = 'Contracts' | 'Revive';
+
+interface ContractEmittedEvent<Pallet extends KnownPallets = 'Contracts'> extends IRuntimeEvent {
+  pallet: Pallet;
   palletEvent: {
     name: 'ContractEmitted';
-    data: {
-      contract: AccountId32;
-      data: Bytes;
-    };
+    data: Pallet extends 'Contracts'
+      ? {
+          contract: AccountId32;
+          data: Bytes;
+        }
+      : {
+          contract: H160;
+          data: Bytes;
+          topics: Array<H256>;
+        };
   };
 }
 
@@ -149,7 +157,7 @@ export class TypinkRegistry extends TypeRegistry {
 
     switch (version) {
       case 5:
-        return this.#decodeEventV5(eventRecord);
+        return this.isInkV6() ? this.#decodeEventV6(eventRecord) : this.#decodeEventV5(eventRecord);
       case '4':
         return this.#decodeEventV4(eventRecord);
       default:
@@ -157,9 +165,14 @@ export class TypinkRegistry extends TypeRegistry {
     }
   }
 
-  #isContractEmittedEvent(event: IRuntimeEvent, contractAddress?: ContractAddress): event is ContractEmittedEvent {
+  #isContractEmittedEvent<Pallet extends KnownPallets = 'Contracts'>(
+    event: IRuntimeEvent,
+    contractAddress?: ContractAddress,
+  ): event is ContractEmittedEvent<Pallet> {
     const eventMatched =
-      event.pallet === 'Contracts' &&
+      (this.isInkV6() // --
+        ? event.pallet === 'Revive'
+        : event.pallet === 'Contracts') &&
       typeof event.palletEvent === 'object' &&
       event.palletEvent.name === 'ContractEmitted';
 
@@ -168,7 +181,10 @@ export class TypinkRegistry extends TypeRegistry {
     if (contractAddress) {
       // @ts-ignore
       const emittedContract = event.palletEvent.data?.contract;
-      if (emittedContract instanceof AccountId32) {
+
+      if (this.isInkV6()) {
+        return emittedContract === contractAddress;
+      } else if (emittedContract instanceof AccountId32) {
         return emittedContract.eq(contractAddress);
       } else {
         return false;
@@ -198,6 +214,34 @@ export class TypinkRegistry extends TypeRegistry {
 
     const data = hexToU8a(eventRecord.event.palletEvent.data.data);
     const signatureTopic = eventRecord.topics.at(0);
+
+    let eventMeta: ContractEventMeta | undefined;
+    if (signatureTopic) {
+      eventMeta = this.metadata.spec.events.find((one) => one.signature_topic === signatureTopic);
+    }
+
+    // TODO: Handle multiple anonymous events
+    // If `event` does not exist, it means it's an anonymous event
+    // that does not contain a signature topic in the metadata.
+    if (!eventMeta) {
+      const potentialEvents = this.metadata.spec.events.filter(
+        (one) => !one.signature_topic && one.args.filter((arg) => arg.indexed).length === eventRecord.topics.length,
+      );
+
+      assert(potentialEvents.length === 1, 'Unable to determine event!');
+      eventMeta = potentialEvents[0];
+    }
+
+    return this.#tryDecodeEvent(eventMeta, data);
+  }
+
+  #decodeEventV6(eventRecord: IEventRecord): ContractEvent {
+    assert(this.metadata.version === 5, 'Invalid metadata version!');
+    assert(this.#isContractEmittedEvent<'Revive'>(eventRecord.event), 'Invalid ContractEmitted Event');
+
+    const eventData = eventRecord.event.palletEvent.data;
+    const data = hexToU8a(eventData.data);
+    const signatureTopic = eventData.topics.at(0);
 
     let eventMeta: ContractEventMeta | undefined;
     if (signatureTopic) {
