@@ -6,7 +6,7 @@ on:
   merge_group:
 
 jobs:
-  zombienet-tests:
+  e2e-tests:
     runs-on: ubuntu-latest
 
     strategy:
@@ -26,7 +26,7 @@ jobs:
         run: |
           curl -L -O https://github.com/paritytech/substrate-contracts-node/releases/download/v0.42.0/substrate-contracts-node-linux.tar.gz 
           tar -xzf substrate-contracts-node-linux.tar.gz
-          mv ./substrate-contracts-node/substrate-contracts-node ./substrate-contracts-node
+          mv ./substrate-contracts-node-linux/substrate-contracts-node ./substrate-contracts-node
           chmod +x substrate-contracts-node
 
           curl -L -O https://github.com/use-ink/ink-node/releases/download/v0.43.2/ink-node-linux.tar.gz
