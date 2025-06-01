@@ -2,7 +2,9 @@ export type ContractAddress = string; // ss58 or evm address
 
 export interface ContractSource {
   hash: string;
-  wasm?: string;
+  // It should be wasm in v4 & v5, and contract_binary in v6
+  // But we decided to use code for consistency
+  code?: string;
   language: string;
   compiler: string;
   build_info: BuildInfo;

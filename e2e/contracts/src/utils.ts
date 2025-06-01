@@ -42,7 +42,7 @@ export const deployFlipperV5 = async (callerPair: KeyringPair): Promise<HexStrin
   const deployer = new ContractDeployer<FlipperContractApi>(
     contractsClient, // prettier-end-here
     flipperV5Metadata,
-    flipperV5Metadata.source.wasm!,
+    flipperV5Metadata.source.code!,
     {
       defaultCaller: callerPair.address,
     },
@@ -68,7 +68,7 @@ export const deployFlipperV6 = async (callerPair: KeyringPair): Promise<HexStrin
   const deployer = new ContractDeployer<FlipperContractApi>(
     reviveClient,
     flipperV6Metadata,
-    flipperV6Metadata.source.contract_binary!,
+    flipperV6Metadata.source.code!,
     {
       defaultCaller: callerPair.address,
     },

@@ -21,7 +21,7 @@ export const run = async (_nodeName: any, networkInfo: any) => {
     console.log(`[${api.rpcVersion}] Testing Flipper contract storage API`);
 
     // Deploy the contract
-    const wasm = flipperV5.source.wasm!;
+    const wasm = flipperV5.source.code!;
     const deployer = new ContractDeployer<FlipperContractApi>(api, flipperV5, wasm, { defaultCaller: caller });
 
     // Generate a unique salt

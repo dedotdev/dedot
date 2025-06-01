@@ -36,7 +36,7 @@ async function testContractChainingMethods(
   alicePair: IKeyringPair,
   caller: string,
 ) {
-  const wasm = flipper.source.wasm!;
+  const wasm = flipper.source.code!;
   const deployer = new ContractDeployer<FlipperContractApi>(api, flipper, wasm, { defaultCaller: caller });
 
   // Avoid using the same salt with previous tests

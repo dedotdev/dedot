@@ -12,7 +12,7 @@ describe('ContractDeployer', () => {
       deployer = new ContractDeployer<FlipperContractApi>(
         contractsClient, // prettier-end-here
         flipperV5Metadata,
-        flipperV5Metadata.source.wasm!,
+        flipperV5Metadata.source.code!,
         {
           defaultCaller: alicePair.address,
         },
@@ -62,7 +62,7 @@ describe('ContractDeployer', () => {
       deployer = new ContractDeployer<FlipperContractApi>(
         reviveClient,
         flipperV6Metadata,
-        flipperV6Metadata.source.contract_binary!,
+        flipperV6Metadata.source.code!,
         {
           defaultCaller: alicePair.address,
         },
@@ -107,7 +107,7 @@ describe('ContractDeployer', () => {
 
       const contractAddress = create2(
         toEthAddress(alicePair.address),
-        flipperV6Metadata.source.contract_binary!,
+        flipperV6Metadata.source.code!,
         raw.inputBytes!,
         salt,
       );

@@ -22,7 +22,6 @@ jobs:
           cache: 'yarn'
       - run: yarn install --immutable
       - run: yarn build
-      - run: yarn zombienet-test-preps
       - name: Download executables
         run: |
           curl -L -O https://github.com/paritytech/substrate-contracts-node/releases/download/v0.42.0/substrate-contracts-node-linux.tar.gz 

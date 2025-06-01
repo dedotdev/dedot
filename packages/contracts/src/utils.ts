@@ -100,6 +100,16 @@ const SUPPORTED_VERSIONS = [5, '4'] as const; // 6
 export const parseRawMetadata = (rawMetadata: string): ContractMetadata => {
   const metadata = JSON.parse(rawMetadata);
 
+  if (metadata.source.wasm) {
+    metadata.source.code = metadata.source.wasm;
+
+    delete metadata.source.wasm;
+  } else if (metadata.source.contract_binary) {
+    metadata.source.code = metadata.source.contract_binary;
+
+    delete metadata.source.contract_binary;
+  }
+
   // This is for V1, V2, V3
   const unsupportedVersion = UNSUPPORTED_VERSIONS.find((o) => metadata[o]);
   if (unsupportedVersion) {

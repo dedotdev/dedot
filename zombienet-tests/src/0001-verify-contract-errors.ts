@@ -6,7 +6,6 @@ import {
   Contract,
   ContractDeployer,
   ContractMetadata,
-  isContractDispatchError,
   isContractExecutionError,
   isContractInstantiateDispatchError,
   isContractInstantiateError,
@@ -31,7 +30,7 @@ export const run = async (_nodeName: any, networkInfo: any) => {
   const flipperV5 = parseRawMetadata(JSON.stringify(flipperV5Raw));
 
   const verifyContracts = async (api: ISubstrateClient<SubstrateApi[RpcVersion]>, flipper: ContractMetadata) => {
-    const wasm = flipper.source.wasm!;
+    const wasm = flipper.source.code!;
     const deployer = new ContractDeployer<FlipperContractApi>(api, flipper, wasm);
 
     // Avoid to use same salt with previous tests.
@@ -133,7 +132,7 @@ const deployFlipper = async (
   const alicePair = new Keyring({ type: 'sr25519' }).addFromUri('//Alice');
   const caller = alicePair.address;
 
-  const wasm = flipper.source.wasm!;
+  const wasm = flipper.source.code!;
   const deployer = new ContractDeployer<FlipperContractApi>(api, flipper, wasm);
 
   // Dry-run to estimate gas fee
