@@ -3,11 +3,11 @@ import type { SubstrateApi } from '@dedot/api/chaintypes';
 import { GenericSubstrateApi, RpcVersion } from '@dedot/types';
 import {
   assert,
-  assertFalse,
   concatU8a,
   hexToU8a,
-  isNull,
+  isHex,
   isPvm,
+  isU8a,
   isUndefined,
   isWasm,
   toHex,
@@ -26,9 +26,8 @@ export class ConstructorTxExecutor<ChainApi extends GenericSubstrateApi> extends
       assert(params.length === args.length + 1, `Expected ${args.length + 1} arguments, got ${params.length}`);
 
       const txCallOptions = params[args.length] as ConstructorTxOptions;
-      const { value = 0n, gasLimit, storageDepositLimit, salt = '0x' } = txCallOptions;
+      const { value = 0n, gasLimit, storageDepositLimit, salt } = txCallOptions;
       assert(gasLimit, 'Expected a gas limit in ConstructorTxOptions');
-      assertFalse(isNull(salt) || isUndefined(salt), 'Expected a salt in ConstructorCallOptions');
 
       const formattedInputs = args.map((arg, index) => this.tryEncode(arg, params[index]));
       const bytes = u8aToHex(concatU8a(hexToU8a(meta.selector), ...formattedInputs));
@@ -36,43 +35,50 @@ export class ConstructorTxExecutor<ChainApi extends GenericSubstrateApi> extends
       const client = this.client as unknown as ISubstrateClient<SubstrateApi[RpcVersion]>;
 
       if (this.registry.isInkV6()) {
+        assert(
+          isUndefined(salt) ||
+            (isHex(salt) && hexToU8a(salt).byteLength == 32) ||
+            (isU8a(salt) && salt.byteLength == 32),
+          'Expected a valid salt in ConstructorCallOptions, must be a hex string or Uint8Array of length 32',
+        );
+
         if (isPvm(this.code)) {
           return client.tx.revive.instantiateWithCode(
-            value, //--
+            value,
             gasLimit,
             storageDepositLimit || 0n,
             this.code,
             bytes,
-            salt,
+            isU8a(salt) ? u8aToHex(salt) : salt,
           );
         } else {
           return client.tx.revive.instantiate(
-            value, // --
+            value,
             gasLimit,
             storageDepositLimit || 0n,
             toHex(this.code),
             bytes,
-            salt,
+            isU8a(salt) ? u8aToHex(salt) : salt,
           );
         }
       } else {
         if (isWasm(this.code)) {
           return client.tx.contracts.instantiateWithCode(
-            value, // --
+            value,
             gasLimit,
             storageDepositLimit,
             this.code,
             bytes,
-            salt,
+            salt || '0x',
           );
         } else {
           return client.tx.contracts.instantiate(
-            value, // --
+            value,
             gasLimit,
             storageDepositLimit,
             toHex(this.code),
             bytes,
-            salt,
+            salt || '0x',
           );
         }
       }

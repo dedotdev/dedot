@@ -2,7 +2,7 @@ import type { ISubstrateClient } from '@dedot/api';
 import { type SubstrateApi } from '@dedot/api/chaintypes';
 import { Result } from '@dedot/shape';
 import { GenericSubstrateApi, RpcVersion } from '@dedot/types';
-import { assert, assertFalse, concatU8a, hexToU8a, isNull, isUndefined, u8aToHex } from '@dedot/utils';
+import { assert, assertFalse, concatU8a, hexToU8a, isHex, isNull, isU8a, isUndefined, u8aToHex } from '@dedot/utils';
 import { ContractInstantiateDispatchError, ContractInstantiateLangError } from '../errors.js';
 import {
   ConstructorCallOptions,
@@ -30,14 +30,13 @@ export class ConstructorQueryExecutor<ChainApi extends GenericSubstrateApi> exte
 
       const callOptions = (params[args.length] || {}) as ConstructorCallOptions;
       const {
-        caller = this.options.defaultCaller,
+        caller = this.options.defaultCaller, // --
         value = 0n,
         gasLimit,
         storageDepositLimit,
-        salt = '0x',
+        salt,
       } = callOptions;
       assert(caller, 'Expected a valid caller address in ConstructorCallOptions');
-      assertFalse(isNull(salt) || isUndefined(salt), 'Expected a salt in ConstructorCallOptions');
 
       const formattedInputs = args.map((arg, index) => this.tryEncode(arg, params[index]));
       const bytes = u8aToHex(concatU8a(hexToU8a(meta.selector), ...formattedInputs));
@@ -51,6 +50,13 @@ export class ConstructorQueryExecutor<ChainApi extends GenericSubstrateApi> exte
 
       const raw: NewContractInstantiateResult = await (async () => {
         if (this.registry.isInkV6()) {
+          assert(
+            isUndefined(salt) ||
+              (isHex(salt) && hexToU8a(salt).byteLength == 32) ||
+              (isU8a(salt) && salt.byteLength == 32),
+            'Expected a valid salt in ConstructorCallOptions, must be a hex string or Uint8Array of length 32',
+          );
+
           const raw = await client.call.reviveApi.instantiate(
             caller, // --
             value,
@@ -58,7 +64,7 @@ export class ConstructorQueryExecutor<ChainApi extends GenericSubstrateApi> exte
             storageDepositLimit,
             code,
             bytes,
-            salt,
+            isU8a(salt) ? u8aToHex(salt) : salt,
           );
 
           const result = raw.result;
@@ -74,6 +80,7 @@ export class ConstructorQueryExecutor<ChainApi extends GenericSubstrateApi> exte
             gasConsumed: raw.gasConsumed,
             gasRequired: raw.gasRequired,
             storageDeposit: raw.storageDeposit,
+            inputBytes: bytes,
             result,
           } as NewContractInstantiateResult;
         } else {
@@ -84,7 +91,7 @@ export class ConstructorQueryExecutor<ChainApi extends GenericSubstrateApi> exte
             storageDepositLimit,
             code,
             bytes,
-            salt,
+            salt || '0x',
           );
 
           const result = raw.result;
