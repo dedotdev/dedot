@@ -370,6 +370,7 @@ __metadata:
     "@dedot/codecs": "workspace:*"
     "@dedot/types": "workspace:*"
     "@dedot/utils": "workspace:*"
+    "@ethereumjs/rlp": "npm:^10.0.0"
   languageName: unknown
   linkType: soft
 
@@ -822,6 +823,15 @@ __metadata:
   version: 8.57.1
   resolution: "@eslint/js@npm:8.57.1"
   checksum: 10c0/b489c474a3b5b54381c62e82b3f7f65f4b8a5eaaed126546520bf2fede5532a8ed53212919fed1e9048dcf7f37167c8561d58d0ba4492a4244004e7793805223
+  languageName: node
+  linkType: hard
+
+"@ethereumjs/rlp@npm:^10.0.0":
+  version: 10.0.0
+  resolution: "@ethereumjs/rlp@npm:10.0.0"
+  bin:
+    rlp: bin/rlp.cjs
+  checksum: 10c0/a414ea191ed42a12982f962149384e8294c57f7f4a026b288d4578ab4a797142c219438a200ced58977c0fbc1a7f47b4b61b3398178894ad7cbaa138bdcc78c5
   languageName: node
   linkType: hard
 
@@ -3625,6 +3635,16 @@ __metadata:
   checksum: 10c0/c57bcd4bdf7e623abab2df43a7b5b23d18152154529d166c1e0da6bee341d84c432d157d7e97b32fecb1bf3a8b8857dd85ed81a915789f550637ed25b8e64fc2
   languageName: node
   linkType: hard
+
+"e2e-contracts@workspace:e2e/contracts":
+  version: 0.0.0-use.local
+  resolution: "e2e-contracts@workspace:e2e/contracts"
+  dependencies:
+    "@dedot/chaintypes": "npm:^0.101.0"
+    "@polkadot/keyring": "npm:^13.5.1"
+    dedot: "workspace:*"
+  languageName: unknown
+  linkType: soft
 
 "eastasianwidth@npm:^0.2.0":
   version: 0.2.0

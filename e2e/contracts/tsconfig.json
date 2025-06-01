@@ -1,0 +1,19 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "baseUrl": "./",
+    "outDir": "dist",
+    "rootDir": "src",
+    "declarationDir": "dist",
+    "paths": {
+      "dedot": ["../../packages/dedot/src"],
+      "dedot/*": ["../../packages/dedot/src/*"]
+    }
+  },
+  "include": ["src/**/*"],
+  "references": [
+    {
+      "path": "../../packages/dedot/tsconfig.json"
+    }
+  ]
+}
