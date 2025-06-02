@@ -1,7 +1,7 @@
 import type { ISubstrateClient } from '@dedot/api';
 import type { SubstrateApi } from '@dedot/api/chaintypes';
 import { GenericSubstrateApi, RpcVersion } from '@dedot/types';
-import { assert, concatU8a, HexString, hexToU8a, u8aToHex } from '@dedot/utils';
+import { assert, concatU8a, HexString, hexToU8a, isUndefined, u8aToHex } from '@dedot/utils';
 import { ContractTxOptions, GenericContractTxCall } from '../types/index.js';
 import { ContractExecutor } from './abstract/index.js';
 
@@ -24,7 +24,7 @@ export class TxExecutor<ChainApi extends GenericSubstrateApi> extends ContractEx
       const client = this.client as unknown as ISubstrateClient<SubstrateApi[RpcVersion]>;
 
       if (this.registry.isInkV6()) {
-        assert(storageDepositLimit, 'Expected a storage deposit limit in ContractTxOptions');
+        assert(!isUndefined(storageDepositLimit), 'Expected a storage deposit limit in ContractTxOptions');
 
         return client.tx.revive.call(
           this.address as HexString, // --

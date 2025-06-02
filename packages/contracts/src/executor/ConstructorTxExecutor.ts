@@ -43,7 +43,7 @@ export class ConstructorTxExecutor<ChainApi extends GenericSubstrateApi> extends
           'Expected a valid salt in ConstructorCallOptions, must be a hex string or Uint8Array of length 32',
         );
 
-        assert(storageDepositLimit, 'Expected a storage deposit limit in ConstructorTxOptions');
+        assert(!isUndefined(storageDepositLimit), 'Expected a storage deposit limit in ConstructorTxOptions');
 
         if (isPvm(this.code)) {
           return client.tx.revive.instantiateWithCode(
