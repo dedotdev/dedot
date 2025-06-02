@@ -2,7 +2,7 @@ import type { ISubstrateClient } from '@dedot/api';
 import { type SubstrateApi } from '@dedot/api/chaintypes';
 import { Result } from '@dedot/shape';
 import { GenericSubstrateApi, RpcVersion } from '@dedot/types';
-import { assert, assertFalse, concatU8a, hexToU8a, isHex, isNull, isU8a, isUndefined, u8aToHex } from '@dedot/utils';
+import { assert, assertFalse, concatU8a, hexToU8a, isHex, isU8a, isUndefined, u8aToHex } from '@dedot/utils';
 import { ContractInstantiateDispatchError, ContractInstantiateLangError } from '../errors.js';
 import {
   ConstructorCallOptions,

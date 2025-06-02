@@ -92,7 +92,7 @@ describe('EventExecutor', () => {
       const { raw } = await contract.query.flip();
 
       const { events: newEvents } = await contract.tx
-        .flip({ gasLimit: raw.gasRequired })
+        .flip({ gasLimit: raw.gasRequired, storageDepositLimit: raw.storageDeposit.value })
         .signAndSend(alicePair)
         .untilFinalized();
 
@@ -146,7 +146,10 @@ describe('EventExecutor', () => {
       });
 
       const { raw } = await contract.query.flip();
-      await contract.tx.flip({ gasLimit: raw.gasRequired }).signAndSend(alicePair).untilFinalized();
+      await contract.tx
+        .flip({ gasLimit: raw.gasRequired, storageDepositLimit: raw.storageDeposit.value })
+        .signAndSend(alicePair)
+        .untilFinalized();
 
       expect(await flippedPromise).toBe(true);
     });
