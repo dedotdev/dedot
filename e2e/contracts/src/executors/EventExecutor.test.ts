@@ -4,7 +4,7 @@ import { beforeEach, describe, expect, it } from 'vitest';
 import { FlipperContractApi } from '../contracts/flipper';
 import { devPairs, flipperV5Metadata, flipperV6Metadata, deployFlipperV5, deployFlipperV6 } from '../utils.js';
 
-describe('Contract', () => {
+describe('EventExecutor', () => {
   let contract: Contract<FlipperContractApi>;
   let alicePair = devPairs().alice;
 
@@ -150,5 +150,7 @@ describe('Contract', () => {
 
       expect(await flippedPromise).toBe(true);
     });
+
+    // TODO: Add tests for another errors
   });
 });
