@@ -24,6 +24,8 @@ export class TxExecutor<ChainApi extends GenericSubstrateApi> extends ContractEx
       const client = this.client as unknown as ISubstrateClient<SubstrateApi[RpcVersion]>;
 
       if (this.registry.isInkV6()) {
+        assert(storageDepositLimit, 'Expected a storage deposit limit in ContractTxOptions');
+
         return client.tx.revive.call(
           this.address as HexString, // --
           value,

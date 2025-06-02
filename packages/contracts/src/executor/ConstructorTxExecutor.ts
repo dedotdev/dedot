@@ -3,6 +3,7 @@ import type { SubstrateApi } from '@dedot/api/chaintypes';
 import { GenericSubstrateApi, RpcVersion } from '@dedot/types';
 import {
   assert,
+  assertFalse,
   concatU8a,
   hexToU8a,
   isHex,
@@ -42,11 +43,13 @@ export class ConstructorTxExecutor<ChainApi extends GenericSubstrateApi> extends
           'Expected a valid salt in ConstructorCallOptions, must be a hex string or Uint8Array of length 32',
         );
 
+        assert(storageDepositLimit, 'Expected a storage deposit limit in ConstructorTxOptions');
+
         if (isPvm(this.code)) {
           return client.tx.revive.instantiateWithCode(
             value,
             gasLimit,
-            storageDepositLimit || 0n,
+            storageDepositLimit,
             this.code,
             bytes,
             isU8a(salt) ? u8aToHex(salt) : salt,
@@ -55,7 +58,7 @@ export class ConstructorTxExecutor<ChainApi extends GenericSubstrateApi> extends
           return client.tx.revive.instantiate(
             value,
             gasLimit,
-            storageDepositLimit || 0n,
+            storageDepositLimit,
             toHex(this.code),
             bytes,
             isU8a(salt) ? u8aToHex(salt) : salt,
