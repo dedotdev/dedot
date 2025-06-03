@@ -1,6 +1,6 @@
 import { ISubstrateClient } from '@dedot/api';
 import { IEventRecord } from '@dedot/types';
-import { DedotError, HexString, toU8a } from '@dedot/utils';
+import { DedotError, HexString, toHex, toU8a } from '@dedot/utils';
 import { TypinkRegistry } from './TypinkRegistry.js';
 import { EventExecutor, QueryExecutor, TxExecutor } from './executor/index.js';
 import {
@@ -119,10 +119,19 @@ export class Contract<ContractApi extends GenericContractApi = GenericContractAp
   }
 
   #getStorage = async (key: Uint8Array | HexString): Promise<HexString | undefined> => {
-    const result = await this.client.call.contractsApi.getStorage(
-      this.address, //--
-      toU8a(key),
-    );
+    const result = await (async () => {
+      if (this.registry.isInkV6()) {
+        return await this.client.call.reviveApi.getStorageVarKey(
+          this.address as HexString, //--
+          toHex(key),
+        );
+      } else {
+        return await this.client.call.contractsApi.getStorage(
+          this.address, //--
+          toU8a(key),
+        );
+      }
+    })();
 
     if (result.isOk) {
       return result.value;

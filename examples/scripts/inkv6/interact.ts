@@ -71,14 +71,22 @@ try {
   // Deploy the contract with full code
   console.log('🚀 Deploying contract with full PVM bytecode...');
 
-  await deployer1.tx.new(true, {gasLimit: dryRunResult.raw.gasRequired, salt}) // --
+  const result = await deployer1.tx.new(true, {
+    gasLimit: dryRunResult.raw.gasRequired,
+    storageDepositLimit: dryRunResult.raw.storageDeposit.value,
+    salt
+  })
     .signAndSend(alice, ({status}) => {
       console.log(`   📊 Transaction status: ${status.type}`);
     })
     .untilFinalized();
 
-  console.log(`   ✅ Contract deployed successfully!`);
-  console.log();
+  if (result.dispatchError) {
+    console.log(`   ❌ Contract deployed failed!`);
+    console.log(client.registry.findErrorMeta(result.dispatchError))
+  } else {
+    console.log(`   ✅ Contract deployed successfully!`);
+  }
 
   // =================================================================
   // Step 2: Redeploy contract using code hash
@@ -95,12 +103,21 @@ try {
   );
 
   console.log('🚀 Deploying second contract instance using code hash...');
-  await deployer2.tx.new(false, {gasLimit: dryRunResult.raw.gasRequired, salt: genRanHex(64)}) // --
+  await deployer2.tx.new(false, {
+    gasLimit: dryRunResult.raw.gasRequired,
+    storageDepositLimit: dryRunResult.raw.storageDeposit.value,
+    salt: genRanHex(64)
+  }) // --
     .signAndSend(alice, ({status}) => {
       console.log(`   📊 Transaction status: ${status.type}`);
     })
     .untilFinalized();
-  console.log(`   ✅ Contract redeployed successfully!`);
+  if (result.dispatchError) {
+    console.log(`   ❌ Contract deployed failed!`);
+    console.log(client.registry.findErrorMeta(result.dispatchError))
+  } else {
+    console.log(`   ✅ Contract deployed successfully!`);
+  }
 
   // =================================================================
   // Step 3: Get value from flipper contract
@@ -108,14 +125,18 @@ try {
   console.log('📝 Step 3: Get Value from Flipper Contract');
   console.log('-'.repeat(50));
 
-  const contract1Address = '0x454b9F63b034a12Ec26264E15B159Fb2f8Bc7E6e';
-  // const contract1Address = '0x5169b3F29419768fB3ABd17Fee227d82498DF7Ea';
+  const contractAddress = create2(
+    toEthAddress(alice.address),
+    flipper6.source.contract_binary,
+    dryRunResult.raw.inputBytes,
+    salt,
+  );
 
   // Create contract instance for the first deployed contract
   const contract1 = new Contract<FlipperContractApi>(
     client,
     flipper6 as any,
-    contract1Address,
+    contractAddress,
     defaultOptions,
   );
 
@@ -141,7 +162,10 @@ try {
 
   // Execute the actual flip
   console.log('🔄 Executing flip transaction...');
-  await contract1.tx.flip({gasLimit: flipDryRun.raw.gasRequired}) // --
+  await contract1.tx.flip({
+    gasLimit: flipDryRun.raw.gasRequired,
+    storageDepositLimit: flipDryRun.raw.storageDeposit.value
+  }) // --
     .signAndSend(alice, ({status}) => {
       console.log(`   📊 Transaction status: ${status.type}`);
     })
@@ -185,7 +209,10 @@ try {
   // Execute flipWithSeed if dry run was successful
   if (flipWithSeedDryRun.data.isOk) {
     console.log('🔄 Executing flipWithSeed transaction...');
-    await contract1.tx.flipWithSeed(seed, {gasLimit: flipWithSeedDryRun.raw.gasRequired})
+    await contract1.tx.flipWithSeed(seed, {
+      gasLimit: flipWithSeedDryRun.raw.gasRequired,
+      storageDepositLimit: flipWithSeedDryRun.raw.storageDeposit.value
+    })
       .signAndSend(alice, ({status, txHash}) => {
         console.log(`   📊 Transaction status: ${status.type}`);
       })

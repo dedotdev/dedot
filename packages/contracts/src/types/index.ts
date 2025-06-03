@@ -79,7 +79,7 @@ export type NewContractInstantiateResult = {
   result: Result<InstantiateReturnValue, DispatchError>;
   // Encoded (selector + arguments) passed to the constructor
   // Needed when deploying contract using salt in pallet-revive, used in `create2()`
-  inputBytes?: Bytes;
+  inputBytes: Bytes; // TODO find a better way to access this
   debugMessage?: Bytes;
 };
 

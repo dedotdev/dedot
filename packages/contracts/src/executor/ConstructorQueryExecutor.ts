@@ -107,6 +107,7 @@ export class ConstructorQueryExecutor<ChainApi extends GenericSubstrateApi> exte
             gasConsumed: raw.gasConsumed,
             gasRequired: raw.gasRequired,
             storageDeposit: raw.storageDeposit,
+            inputBytes: bytes,
             result,
             debugMessage: raw.debugMessage,
           } as NewContractInstantiateResult;
