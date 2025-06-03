@@ -4,7 +4,7 @@ import { TypinkRegistry } from './TypinkRegistry.js';
 import { ConstructorQueryExecutor } from './executor/ConstructorQueryExecutor.js';
 import { ConstructorTxExecutor } from './executor/index.js';
 import { ContractMetadata, GenericContractApi, ExecutionOptions, LooseContractMetadata } from './types/index.js';
-import { ensurePalletPresence, newProxyChain, parseRawMetadata } from './utils.js';
+import { ensurePalletPresence, newProxyChain, parseRawMetadata } from './utils/index.js';
 
 export class ContractDeployer<ContractApi extends GenericContractApi = GenericContractApi> {
   readonly #metadata: ContractMetadata;

@@ -11,7 +11,7 @@ import {
   GenericConstructorCallResult,
   GenericConstructorQueryCall,
 } from '../types/index.js';
-import { toReturnFlags } from '../utils.js';
+import { toReturnFlags } from '../utils/index.js';
 import { DeployerExecutor } from './abstract/index.js';
 
 export class ConstructorQueryExecutor<ChainApi extends GenericSubstrateApi> extends DeployerExecutor<ChainApi> {

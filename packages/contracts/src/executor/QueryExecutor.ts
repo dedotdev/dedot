@@ -10,7 +10,7 @@ import {
   GenericContractCallResult,
   GenericContractQueryCall,
 } from '../types/index.js';
-import { toReturnFlags } from '../utils.js';
+import { ensureContractPresence, toReturnFlags } from '../utils/index.js';
 import { ContractExecutor } from './abstract/index.js';
 
 export class QueryExecutor<ChainApi extends GenericSubstrateApi> extends ContractExecutor<ChainApi> {
@@ -34,9 +34,9 @@ export class QueryExecutor<ChainApi extends GenericSubstrateApi> extends Contrac
       const formattedInputs = args.map((arg, index) => this.tryEncode(arg, params[index]));
       const bytes = u8aToHex(concatU8a(hexToU8a(meta.selector), ...formattedInputs));
 
-      await this.ensureContractPresence();
-
       const client = this.client as unknown as ISubstrateClient<SubstrateApi[RpcVersion]>;
+
+      await ensureContractPresence(client, this.registry, this.address);
 
       const raw: ContractCallResult<ChainApi> = await (async () => {
         if (this.registry.isRevive()) {

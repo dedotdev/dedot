@@ -4,7 +4,7 @@ import { IEventRecord, IRuntimeEvent } from '@dedot/types';
 import { assert, DedotError, HexString, hexToU8a, stringCamelCase, stringPascalCase } from '@dedot/utils';
 import { LazyMapping, LazyObject, LazyStorageVec } from './storage/index.js';
 import { ContractAddress, ContractEvent, ContractEventMeta, ContractMetadata, ContractType } from './types/index.js';
-import { extractContractTypes, isLazyType, KnownLazyType } from './utils.js';
+import { extractContractTypes, isLazyType, KnownLazyType } from './utils/index.js';
 
 type KnownPallets = 'Contracts' | 'Revive';
 

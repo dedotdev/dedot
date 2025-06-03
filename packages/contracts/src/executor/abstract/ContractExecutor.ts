@@ -1,11 +1,8 @@
 import { ISubstrateClient } from '@dedot/api';
-import type { SubstrateApi } from '@dedot/api/chaintypes';
-import { AccountId32, AccountId32Like } from '@dedot/codecs';
-import { GenericSubstrateApi, RpcVersion } from '@dedot/types';
-import { ensurePresence, HexString } from '@dedot/utils';
+import { GenericSubstrateApi } from '@dedot/types';
 import { TypinkRegistry } from '../../TypinkRegistry.js';
 import { ContractAddress, ContractCallMessage, ExecutionOptions } from '../../types/index.js';
-import { normalizeLabel } from '../../utils.js';
+import { normalizeLabel } from '../../utils/index.js';
 import { Executor } from './Executor.js';
 
 export abstract class ContractExecutor<ChainApi extends GenericSubstrateApi> extends Executor<ChainApi> {
@@ -21,18 +18,6 @@ export abstract class ContractExecutor<ChainApi extends GenericSubstrateApi> ext
 
     // TODO validate address depends on ink version
     this.address = address;
-  }
-
-  async ensureContractPresence() {
-    const client = this.client as unknown as ISubstrateClient<SubstrateApi[RpcVersion]>;
-    let contractInfo: any;
-    if (this.registry.isRevive()) {
-      contractInfo = await client.query.revive.contractInfoOf(this.address as HexString);
-    } else {
-      contractInfo = await client.query.contracts.contractInfoOf(this.address);
-    }
-
-    ensurePresence(contractInfo, `Contract with address ${this.address} does not exist on chain!`);
   }
 
   protected findMessage(message: string): ContractCallMessage | undefined {

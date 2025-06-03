@@ -1,4 +1,4 @@
-import { checkStorageApiSupports, ContractMetadata, RootLayoutV5 } from '@dedot/contracts';
+import { ensureStorageApiSupports, ContractMetadata, RootLayoutV5 } from '@dedot/contracts';
 import { TypeImports } from '../../shared/index.js';
 import { beautifySourceCode, commentBlock, compileTemplate } from '../../utils.js';
 import { TypesGen } from './TypesGen.js';
@@ -53,7 +53,7 @@ export class IndexGen {
 
   #extractRootStorageNames(typeImports: TypeImports) {
     try {
-      checkStorageApiSupports(this.contractMetadata.version);
+      ensureStorageApiSupports(this.contractMetadata.version);
 
       const { ty: rootStorageId } = this.contractMetadata.storage.root as RootLayoutV5;
 

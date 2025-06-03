@@ -1,4 +1,4 @@
-import { parseRawMetadata } from "../utils.js";
+import { parseRawMetadata } from "../utils/index.js";
 // @ts-ignore
 import flipperV4Raw from './flipper_v4.json' assert { type: 'json' };
 // @ts-ignore

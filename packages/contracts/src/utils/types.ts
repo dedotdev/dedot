@@ -1,20 +1,6 @@
-import { ISubstrateClient } from '@dedot/api';
-import { SubstrateApi } from '@dedot/api/chaintypes';
-import {
-  AccountId20,
-  AccountId20Like,
-  AccountId32,
-  AccountId32Like,
-  BytesLike,
-  PortableType,
-  TypeDef,
-} from '@dedot/codecs';
-import { GenericSubstrateApi, RpcVersion } from '@dedot/types';
-import { DedotError, HexString, hexToU8a, keccakAsU8a, stringCamelCase, toHex, u8aToHex } from '@dedot/utils';
-import { RLP } from '@ethereumjs/rlp';
-import { TypinkRegistry } from './TypinkRegistry.js';
-import { Executor } from './executor/index.js';
-import { ContractMetadata, ContractTypeDef, ReturnFlags } from './types/index.js';
+import { PortableType, TypeDef } from '@dedot/codecs';
+import { stringCamelCase } from '@dedot/utils';
+import { ContractMetadata, ContractTypeDef, ReturnFlags } from 'src/types';
 
 export const extractContractTypes = (contractMetadata: ContractMetadata): PortableType[] => {
   const { types } = contractMetadata;
@@ -125,37 +111,6 @@ export const parseRawMetadata = (rawMetadata: string): ContractMetadata => {
   return metadata as ContractMetadata;
 };
 
-export const checkStorageApiSupports = (version: string | number) => {
-  const numberedVersion = typeof version === 'number' ? version : parseInt(version);
-  if (numberedVersion >= 5) return;
-
-  throw new DedotError(`Contract Storage Api Only Available for metadata version >= 5, current version: ${version}`);
-};
-
-export function newProxyChain<ChainApi extends GenericSubstrateApi>(carrier: Executor<ChainApi>): unknown {
-  return new Proxy(carrier, {
-    get(target: Executor<ChainApi>, property: string | symbol): any {
-      return target.doExecute(property.toString());
-    },
-  });
-}
-
-export function ensurePalletPresence(client: ISubstrateClient<SubstrateApi[RpcVersion]>, registry: TypinkRegistry) {
-  if (registry.isRevive()) {
-    try {
-      !!client.call.reviveApi.call.meta && !!client.tx.revive.call.meta;
-    } catch {
-      throw new DedotError('Pallet Revive is not available');
-    }
-  } else {
-    try {
-      !!client.call.contractsApi.call.meta && !!client.tx.contracts.call.meta;
-    } catch {
-      throw new DedotError('Pallet Contracts is not available');
-    }
-  }
-}
-
 export function normalizeLabel(label?: string): string {
   if (!label) return '';
   return stringCamelCase(label.replaceAll('::', '_'));
@@ -198,56 +153,4 @@ export function isLazyType(typePath?: string | string[] | undefined): KnownLazyT
   if (typePath === KNOWN_LAZY_TYPES.LAZY) return KnownLazyType.LAZY;
   if (typePath === KNOWN_LAZY_TYPES.MAPPING) return KnownLazyType.MAPPING;
   if (typePath === KNOWN_LAZY_TYPES.STORAGE_VEC) return KnownLazyType.STORAGE_VEC;
-}
-
-// https://github.com/paritytech/polkadot-sdk/blob/5405e473854b139f1d0735550d90687eaf1a13f9/substrate/frame/revive/src/address.rs#L197-L204
-export function create1(deployer: AccountId20Like, nonce: number): HexString {
-  const encodedData = RLP.encode([new AccountId20(deployer).raw, toHex(nonce)]);
-  const hash = keccakAsU8a(encodedData);
-
-  return u8aToHex(hash.subarray(12));
-}
-
-// https://github.com/paritytech/polkadot-sdk/blob/5405e473854b139f1d0735550d90687eaf1a13f9/substrate/frame/revive/src/address.rs#L206-L219
-export function create2(deployer: AccountId20Like, code: BytesLike, inputData: BytesLike, salt: BytesLike): HexString {
-  const codeBytes = typeof code === 'string' ? hexToU8a(code) : code;
-  const inputDataBytes = typeof inputData === 'string' ? hexToU8a(inputData) : inputData;
-  const saltBytes = typeof salt === 'string' ? hexToU8a(salt) : salt;
-
-  const initCodeHash = keccakAsU8a(new Uint8Array([...codeBytes, ...inputDataBytes]));
-
-  const bytes = new Uint8Array(1 + (20 + 32 + 32)); // 0xff + deployer + salt + initCodeHash
-  bytes[0] = 0xff;
-  bytes.set(hexToU8a(new AccountId20(deployer).raw), 1);
-  bytes.set(saltBytes, 21);
-  bytes.set(initCodeHash, 53);
-
-  const hash = keccakAsU8a(bytes);
-
-  return u8aToHex(hash.subarray(12));
-}
-
-function isEthDerived(accountId: Uint8Array): boolean {
-  if (accountId.length >= 32) {
-    return accountId[20] === 0xee && accountId[21] === 0xee;
-  }
-
-  return false;
-}
-
-// https://github.com/paritytech/polkadot-sdk/blob/5405e473854b139f1d0735550d90687eaf1a13f9/substrate/frame/revive/src/address.rs#L101-L113
-export function toEthAddress(accountId: AccountId32Like): HexString {
-  const accountBytes = hexToU8a(new AccountId32(accountId).raw);
-
-  const accountBuffer = new Uint8Array(32);
-  accountBuffer.set(accountBytes.slice(0, 32));
-
-  if (isEthDerived(accountBytes)) {
-    // This was originally an eth address
-    // We just strip the 0xEE suffix to get the original address
-    return ('0x' + Buffer.from(accountBuffer.slice(0, 20)).toString('hex')) as HexString;
-  } else {
-    const accountHash = keccakAsU8a(accountBuffer);
-    return u8aToHex(accountHash.subarray(12));
-  }
 }
