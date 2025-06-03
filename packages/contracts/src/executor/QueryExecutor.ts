@@ -6,9 +6,9 @@ import { assert, assertFalse, concatU8a, HexString, hexToU8a, u8aToHex } from '@
 import { ContractDispatchError, ContractLangError } from '../errors.js';
 import {
   ContractCallOptions,
+  ContractCallResult,
   GenericContractCallResult,
   GenericContractQueryCall,
-  NewContractResult,
 } from '../types/index.js';
 import { toReturnFlags } from '../utils.js';
 import { ContractExecutor } from './abstract/index.js';
@@ -38,7 +38,7 @@ export class QueryExecutor<ChainApi extends GenericSubstrateApi> extends Contrac
 
       const client = this.client as unknown as ISubstrateClient<SubstrateApi[RpcVersion]>;
 
-      const raw: NewContractResult = await (async () => {
+      const raw: ContractCallResult<ChainApi> = await (async () => {
         if (this.registry.isRevive()) {
           const raw = await client.call.reviveApi.call(
             caller, // --
@@ -54,7 +54,7 @@ export class QueryExecutor<ChainApi extends GenericSubstrateApi> extends Contrac
             gasRequired: raw.gasRequired,
             storageDeposit: raw.storageDeposit,
             result: raw.result,
-          };
+          } as ContractCallResult<ChainApi>;
         } else {
           const raw = await client.call.contractsApi.call(
             caller, // --
@@ -71,7 +71,7 @@ export class QueryExecutor<ChainApi extends GenericSubstrateApi> extends Contrac
             storageDeposit: raw.storageDeposit,
             result: raw.result,
             debugMessage: raw.debugMessage,
-          };
+          } as ContractCallResult<ChainApi>;
         }
       })();
 

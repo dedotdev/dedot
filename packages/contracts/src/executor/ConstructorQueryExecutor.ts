@@ -7,9 +7,9 @@ import { ContractInstantiateDispatchError, ContractInstantiateLangError } from '
 import {
   ConstructorCallOptions,
   ContractCode,
+  ContractInstantiateResult,
   GenericConstructorCallResult,
   GenericConstructorQueryCall,
-  NewContractInstantiateResult,
 } from '../types/index.js';
 import { toReturnFlags } from '../utils.js';
 import { DeployerExecutor } from './abstract/index.js';
@@ -48,7 +48,7 @@ export class ConstructorQueryExecutor<ChainApi extends GenericSubstrateApi> exte
 
       const client = this.client as unknown as ISubstrateClient<SubstrateApi[RpcVersion]>;
 
-      const raw: NewContractInstantiateResult = await (async () => {
+      const raw: ContractInstantiateResult<ChainApi> = await (async () => {
         if (this.registry.isRevive()) {
           assert(
             isUndefined(salt) ||
@@ -82,7 +82,7 @@ export class ConstructorQueryExecutor<ChainApi extends GenericSubstrateApi> exte
             storageDeposit: raw.storageDeposit,
             inputBytes: bytes,
             result,
-          } as NewContractInstantiateResult;
+          } as ContractInstantiateResult<ChainApi>;
         } else {
           const raw = await client.call.contractsApi.instantiate(
             caller, // --
@@ -110,7 +110,7 @@ export class ConstructorQueryExecutor<ChainApi extends GenericSubstrateApi> exte
             inputBytes: bytes,
             result,
             debugMessage: raw.debugMessage,
-          } as NewContractInstantiateResult;
+          } as ContractInstantiateResult<ChainApi>;
         }
       })();
 

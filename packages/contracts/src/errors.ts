@@ -1,6 +1,6 @@
 import { DispatchError } from '@dedot/codecs';
 import { assert, DedotError } from '@dedot/utils';
-import { GenericContractApi, NewContractInstantiateResult, NewContractResult, ReturnFlags } from './types/index.js';
+import { ContractCallResult, ContractInstantiateResult, GenericContractApi, ReturnFlags } from './types/index.js';
 import { toReturnFlags } from './utils.js';
 
 /**
@@ -16,14 +16,14 @@ export class ContractInstantiateError<ContractApi extends GenericContractApi = G
   /**
    * The raw result of the contract instantiation.
    */
-  raw: NewContractInstantiateResult;
+  raw: ContractInstantiateResult<ContractApi['types']['ChainApi']>;
 
   /**
    * Constructs a new `ContractInstantiateError` instance.
    *
    * @param raw - The raw result of the contract instantiation.
    */
-  constructor(raw: NewContractInstantiateResult) {
+  constructor(raw: ContractInstantiateResult<ContractApi['types']['ChainApi']>) {
     super();
     this.raw = raw;
   }
@@ -52,7 +52,7 @@ export class ContractInstantiateDispatchError<
    * @param err - The `DispatchError` that occurred during the dispatch phase.
    * @param raw - The raw result of the contract instantiation.
    */
-  constructor(err: DispatchError, raw: NewContractInstantiateResult) {
+  constructor(err: DispatchError, raw: ContractInstantiateResult<ContractApi['types']['ChainApi']>) {
     super(raw);
     this.dispatchError = err;
     this.message = `Dispatch error: ${JSON.stringify(err)}`;
@@ -88,7 +88,10 @@ export class ContractInstantiateLangError<
    * @param err - The `LangError` that occurred during the instantiation phase.
    * @param raw - The raw result of the contract instantiation.
    */
-  constructor(err: ContractApi['types']['LangError'], raw: NewContractInstantiateResult) {
+  constructor(
+    err: ContractApi['types']['LangError'],
+    raw: ContractInstantiateResult<ContractApi['types']['ChainApi']>,
+  ) {
     assert(raw.result.isOk, 'Should not throw DispatchError!');
 
     super(raw);
@@ -111,14 +114,14 @@ export class ContractExecutionError<ContractApi extends GenericContractApi = Gen
   /**
    * The raw result of the contract call.
    */
-  raw: NewContractResult;
+  raw: ContractCallResult<ContractApi['types']['ChainApi']>;
 
   /**
    * Constructs a new `ContractExecutionError` instance.
    *
    * @param raw - The raw result of the contract call.
    */
-  constructor(raw: NewContractResult) {
+  constructor(raw: ContractCallResult<ContractApi['types']['ChainApi']>) {
     super();
     this.raw = raw;
   }
@@ -147,7 +150,7 @@ export class ContractDispatchError<
    * @param err - The `DispatchError` that occurred during the dispatch phase.
    * @param raw - The raw result of the contract call.
    */
-  constructor(err: DispatchError, raw: NewContractResult) {
+  constructor(err: DispatchError, raw: ContractCallResult<ContractApi['types']['ChainApi']>) {
     super(raw);
     this.dispatchError = err;
     this.message = `Dispatch error: ${JSON.stringify(err)}`;
@@ -183,7 +186,7 @@ export class ContractLangError<
    * @param err - The `LangError` that occurred during the execution phase.
    * @param raw - The raw result of the contract call.
    */
-  constructor(err: ContractApi['types']['LangError'], raw: NewContractResult) {
+  constructor(err: ContractApi['types']['LangError'], raw: ContractCallResult<ContractApi['types']['ChainApi']>) {
     assert(raw.result.isOk, 'Should not throw DispatchError!');
 
     super(raw);

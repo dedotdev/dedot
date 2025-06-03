@@ -64,7 +64,7 @@ export type InstantiateReturnValue = {
   address: ContractAddress;
 };
 
-export type NewContractResult = {
+export type ContractCallResult<_ extends GenericSubstrateApi> = {
   gasConsumed: WeightV2;
   gasRequired: WeightV2;
   storageDeposit: StorageDeposit;
@@ -72,7 +72,7 @@ export type NewContractResult = {
   debugMessage?: Bytes;
 };
 
-export type NewContractInstantiateResult = {
+export type ContractInstantiateResult<_ extends GenericSubstrateApi> = {
   gasConsumed: WeightV2;
   gasRequired: WeightV2;
   storageDeposit: StorageDeposit;
@@ -82,10 +82,6 @@ export type NewContractInstantiateResult = {
   inputBytes: Bytes; // TODO find a better way to access this
   debugMessage?: Bytes;
 };
-
-export type ContractCallResult<_ extends GenericSubstrateApi> = NewContractResult;
-
-export type ContractInstantiateResult<_ extends GenericSubstrateApi> = NewContractInstantiateResult;
 
 type SubmittableExtrinsic = ISubmittableExtrinsic & Extrinsic;
 
