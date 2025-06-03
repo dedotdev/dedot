@@ -12,6 +12,7 @@ import {
 import { GenericSubstrateApi, RpcVersion } from '@dedot/types';
 import { DedotError, HexString, hexToU8a, keccakAsU8a, stringCamelCase, toHex, u8aToHex } from '@dedot/utils';
 import { RLP } from '@ethereumjs/rlp';
+import { TypinkRegistry } from './TypinkRegistry.js';
 import { Executor } from './executor/index.js';
 import { ContractMetadata, ContractTypeDef, ReturnFlags } from './types/index.js';
 
@@ -139,19 +140,19 @@ export function newProxyChain<ChainApi extends GenericSubstrateApi>(carrier: Exe
   });
 }
 
-export function ensureSupportPalletContracts(client: ISubstrateClient<SubstrateApi[RpcVersion]>) {
-  try {
-    !!client.call.contractsApi.call.meta && !!client.tx.contracts.call.meta;
-  } catch {
-    throw new DedotError('Pallet Contracts is not available');
-  }
-}
-
-export function ensureSupportPalletRevive(client: ISubstrateClient<SubstrateApi[RpcVersion]>) {
-  try {
-    !!client.call.reviveApi.call.meta && !!client.tx.revive.call.meta;
-  } catch {
-    throw new DedotError('Pallet Revive is not available');
+export function ensurePalletPresence(client: ISubstrateClient<SubstrateApi[RpcVersion]>, registry: TypinkRegistry) {
+  if (registry.isRevive()) {
+    try {
+      !!client.call.reviveApi.call.meta && !!client.tx.revive.call.meta;
+    } catch {
+      throw new DedotError('Pallet Revive is not available');
+    }
+  } else {
+    try {
+      !!client.call.contractsApi.call.meta && !!client.tx.contracts.call.meta;
+    } catch {
+      throw new DedotError('Pallet Contracts is not available');
+    }
   }
 }
 

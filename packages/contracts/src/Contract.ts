@@ -12,13 +12,7 @@ import {
   LooseContractMetadata,
   RootLayoutV5,
 } from './types/index.js';
-import {
-  checkStorageApiSupports,
-  ensureSupportPalletContracts,
-  ensureSupportPalletRevive,
-  newProxyChain,
-  parseRawMetadata,
-} from './utils.js';
+import { checkStorageApiSupports, ensurePalletPresence, newProxyChain, parseRawMetadata } from './utils.js';
 
 export class Contract<ContractApi extends GenericContractApi = GenericContractApi> {
   readonly #registry: TypinkRegistry;
@@ -44,11 +38,7 @@ export class Contract<ContractApi extends GenericContractApi = GenericContractAp
 
     this.#registry = new TypinkRegistry(this.#metadata, { getStorage });
 
-    if (this.registry.isRevive()) {
-      ensureSupportPalletRevive(client);
-    } else {
-      ensureSupportPalletContracts(client);
-    }
+    ensurePalletPresence(client, this.registry);
 
     this.#options = options;
   }

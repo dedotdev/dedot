@@ -4,7 +4,7 @@ import { TypinkRegistry } from './TypinkRegistry.js';
 import { ConstructorQueryExecutor } from './executor/ConstructorQueryExecutor.js';
 import { ConstructorTxExecutor } from './executor/index.js';
 import { ContractMetadata, GenericContractApi, ExecutionOptions, LooseContractMetadata } from './types/index.js';
-import { ensureSupportPalletContracts, ensureSupportPalletRevive, newProxyChain, parseRawMetadata } from './utils.js';
+import { ensurePalletPresence, newProxyChain, parseRawMetadata } from './utils.js';
 
 export class ContractDeployer<ContractApi extends GenericContractApi = GenericContractApi> {
   readonly #metadata: ContractMetadata;
@@ -25,13 +25,9 @@ export class ContractDeployer<ContractApi extends GenericContractApi = GenericCo
 
     this.#registry = new TypinkRegistry(this.#metadata);
 
-    if (this.registry.isRevive()) {
-      ensureSupportPalletRevive(client);
-    } else {
-      ensureSupportPalletContracts(client);
-    }
+    ensurePalletPresence(client, this.registry);
 
-    this.#code = codeHashOrCode; // hash or wasm or pvm
+    this.#code = codeHashOrCode; // TODO validate hash or wasm or pvm
     this.#options = options;
   }
 
