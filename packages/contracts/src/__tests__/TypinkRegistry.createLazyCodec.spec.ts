@@ -1,7 +1,5 @@
 import { PortableType, TypeId } from '@dedot/codecs';
 import * as $ from '@dedot/shape';
-import { assert } from '@dedot/utils';
-import * as util from 'node:util';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { TypinkRegistry } from '../TypinkRegistry.js';
 import { ContractMetadata, ContractType } from '../types/index.js';

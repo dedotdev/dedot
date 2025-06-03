@@ -1,7 +1,11 @@
 import * as util from 'node:util';
 import { beforeEach, describe, expect, it } from 'vitest';
 import { TypinkRegistry } from '../TypinkRegistry.js';
-import { FLIPPER_CONTRACT_METADATA_V4 } from './contracts-metadata.js';
+import {
+  FLIPPER_CONTRACT_METADATA_V4,
+  FLIPPER_CONTRACT_METADATA_V5,
+  FLIPPER_CONTRACT_METADATA_V6,
+} from './contracts-metadata.js';
 
 describe('TypinkRegistry', () => {
   describe('with metadata', () => {
@@ -39,6 +43,19 @@ describe('TypinkRegistry', () => {
 
       it('should throw error for non-existing codec type id', () => {
         expect(() => registry.findType(1_000_000)).toThrowError('Cannot find portable type for id: 1000000');
+      });
+    });
+
+    describe('isRevive', () => {
+      it('should work properly', () => {
+        registry = new TypinkRegistry(FLIPPER_CONTRACT_METADATA_V4);
+        expect(registry.isRevive()).toBe(false);
+
+        registry = new TypinkRegistry(FLIPPER_CONTRACT_METADATA_V5);
+        expect(registry.isRevive()).toBe(false);
+
+        registry = new TypinkRegistry(FLIPPER_CONTRACT_METADATA_V6);
+        expect(registry.isRevive()).toBe(true);
       });
     });
   });

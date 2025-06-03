@@ -1,40 +1,22 @@
-import { LegacyClient, FallbackRuntimeApis } from '@dedot/api';
+import { LegacyClient } from '@dedot/api';
 // @ts-ignore
 import MockProvider from '@dedot/api/client/__tests__/MockProvider';
-import { RuntimeVersion } from '@dedot/codecs';
-import { Bytes } from '@dedot/codecs';
 import * as $ from '@dedot/shape';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { Contract } from '../Contract.js';
+import { MockedRuntimeVersion } from './Contract.spec.js';
 import {
   FLIPPER_CONTRACT_METADATA_V4,
   FLIPPER_CONTRACT_METADATA_V5,
   RANDOM_CONTRACT_ADDRESS,
 } from './contracts-metadata.js';
-import { DedotError, HexString } from '@dedot/utils';
-
-export const MockedRuntimeVersionWithContractsApi: RuntimeVersion = {
-  specName: 'mock-spec',
-  implName: 'mock-spec-impl',
-  authoringVersion: 0,
-  specVersion: 1,
-  implVersion: 0,
-  apis: [
-    // @ts-ignore
-    ...Object.entries(FallbackRuntimeApis),
-    // @ts-ignore
-    ['0x68b66ba122c93fa7', 2], // ContractsApi v2
-  ],
-  transactionVersion: 25,
-  stateVersion: 0,
-};
 
 describe('Contract Storage API', () => {
   let api: LegacyClient, provider: MockProvider, contract: Contract;
 
   describe('with metadata v5', () => {
     beforeEach(async () => {
-      provider = new MockProvider(MockedRuntimeVersionWithContractsApi);
+      provider = new MockProvider(MockedRuntimeVersion);
       api = await LegacyClient.new({ provider });
       contract = new Contract(api, FLIPPER_CONTRACT_METADATA_V5, RANDOM_CONTRACT_ADDRESS);
     });
@@ -43,7 +25,7 @@ describe('Contract Storage API', () => {
       it('should return empty object for non-lazy storage types', () => {
         // The Flipper contract has a simple boolean value, which is not a lazy storage type
         const result = contract.storage.lazy();
-        
+
         // For non-lazy storage types, lazy() should return an empty object
         expect(result).toEqual({});
       });
@@ -53,12 +35,12 @@ describe('Contract Storage API', () => {
         const mockCodec = $.Struct({ value: $.bool });
         const originalCreateLazyCodec = contract.registry.createLazyCodec;
         contract.registry.createLazyCodec = vi.fn().mockReturnValue(mockCodec);
-        
+
         const result = contract.storage.lazy();
-        
+
         // Should return the structure from the codec
         expect(result).toHaveProperty('value');
-        
+
         // Restore the original method
         contract.registry.createLazyCodec = originalCreateLazyCodec;
       });
@@ -67,20 +49,20 @@ describe('Contract Storage API', () => {
 
   describe('with metadata v4', () => {
     beforeEach(async () => {
-      provider = new MockProvider(MockedRuntimeVersionWithContractsApi);
+      provider = new MockProvider(MockedRuntimeVersion);
       api = await LegacyClient.new({ provider });
       contract = new Contract(api, FLIPPER_CONTRACT_METADATA_V4, RANDOM_CONTRACT_ADDRESS);
     });
 
     it('should throw error for root() with unsupported metadata version', async () => {
       await expect(contract.storage.root()).rejects.toThrow(
-        'Contract Storage Api Only Available for metadata version >= 5, current version: 4'
+        'Contract Storage Api Only Available for metadata version >= 5, current version: 4',
       );
     });
 
     it('should throw error for lazy() with unsupported metadata version', () => {
       expect(() => contract.storage.lazy()).toThrow(
-        'Contract Storage Api Only Available for metadata version >= 5, current version: 4'
+        'Contract Storage Api Only Available for metadata version >= 5, current version: 4',
       );
     });
   });
@@ -89,20 +71,20 @@ describe('Contract Storage API', () => {
     it('should handle lazy storage types in lazy()', () => {
       // Create a contract with the metadata
       const contract = new Contract(api, FLIPPER_CONTRACT_METADATA_V5, RANDOM_CONTRACT_ADDRESS);
-      
+
       // Create a simple mock codec that returns a fixed object
       const mockCodec = {
-        tryDecode: () => ({ value: true, counter: 42 })
+        tryDecode: () => ({ value: true, counter: 42 }),
       };
-      
+
       // Mock the createLazyCodec method
       const originalCreateLazyCodec = contract.registry.createLazyCodec;
       contract.registry.createLazyCodec = vi.fn().mockReturnValue(mockCodec);
-      
+
       // Test lazy() returns the structure
       const lazyStorage = contract.storage.lazy();
       expect(lazyStorage).toEqual({ value: true, counter: 42 });
-      
+
       // Restore the original method
       contract.registry.createLazyCodec = originalCreateLazyCodec;
     });
@@ -110,7 +92,7 @@ describe('Contract Storage API', () => {
 
   describe('error handling', () => {
     beforeEach(async () => {
-      provider = new MockProvider(MockedRuntimeVersionWithContractsApi);
+      provider = new MockProvider(MockedRuntimeVersion);
       api = await LegacyClient.new({ provider });
     });
 
@@ -125,15 +107,15 @@ describe('Contract Storage API', () => {
             layout: {
               struct: {
                 fields: [],
-                name: 'Flipper'
-              }
-            }
-          }
-        }
+                name: 'Flipper',
+              },
+            },
+          },
+        },
       };
 
       const invalidContract = new Contract(api, invalidMetadata, RANDOM_CONTRACT_ADDRESS);
-      
+
       // Should throw an error when root key is missing
       await expect(invalidContract.storage.root()).rejects.toThrow();
     });
