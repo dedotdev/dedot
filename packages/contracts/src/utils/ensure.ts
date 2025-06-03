@@ -1,5 +1,6 @@
 import { ISubstrateClient } from '@dedot/api';
 import { SubstrateApi } from '@dedot/api/chaintypes';
+import { accountId20ToHex, accountId32ToHex } from '@dedot/codecs';
 import { RpcVersion } from '@dedot/types';
 import { assert, DedotError, ensurePresence, HexString } from '@dedot/utils';
 import { TypinkRegistry } from 'src/TypinkRegistry';
@@ -44,4 +45,24 @@ export async function ensureContractPresence(
   })();
 
   ensurePresence(contractInfo, `Contract with address ${address} does not exist on chain!`);
+}
+
+export function ensureValidContractAddress(address: ContractAddress, registry: TypinkRegistry) {
+  if (registry.isRevive()) {
+    try {
+      accountId20ToHex(address as HexString);
+    } catch {
+      throw new DedotError(
+        `Invalid pallet-revive contract address: ${address}. It should be a 20-byte address (0x + 40 hex characters).`,
+      );
+    }
+  } else {
+    try {
+      accountId32ToHex(address);
+    } catch {
+      throw new DedotError(
+        `Invalid pallet-contracts contract address: ${address}. It should be a 32-byte address (0x + 64 hex characters).`,
+      );
+    }
+  }
 }

@@ -12,7 +12,13 @@ import {
   LooseContractMetadata,
   RootLayoutV5,
 } from './types/index.js';
-import { ensureStorageApiSupports, ensurePalletPresence, newProxyChain, parseRawMetadata } from './utils/index.js';
+import {
+  ensureStorageApiSupports,
+  ensurePalletPresence,
+  newProxyChain,
+  parseRawMetadata,
+  ensureValidContractAddress,
+} from './utils/index.js';
 
 export class Contract<ContractApi extends GenericContractApi = GenericContractApi> {
   readonly #registry: TypinkRegistry;
@@ -26,9 +32,6 @@ export class Contract<ContractApi extends GenericContractApi = GenericContractAp
     address: ContractAddress,
     options?: ExecutionOptions,
   ) {
-    // TODO validate address depends on ink version
-    this.#address = address;
-
     this.#metadata =
       typeof metadata === 'string' // --
         ? parseRawMetadata(metadata)
@@ -39,7 +42,9 @@ export class Contract<ContractApi extends GenericContractApi = GenericContractAp
     this.#registry = new TypinkRegistry(this.#metadata, { getStorage });
 
     ensurePalletPresence(client, this.registry);
+    ensureValidContractAddress(address, this.registry);
 
+    this.#address = address;
     this.#options = options;
   }
 

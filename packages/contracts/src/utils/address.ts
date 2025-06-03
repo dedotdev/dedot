@@ -31,7 +31,7 @@ export function create2(deployer: AccountId20Like, code: BytesLike, inputData: B
 
 function isEthDerived(accountId: Uint8Array): boolean {
   if (accountId.length >= 32) {
-    return accountId[20] === 0xee && accountId[21] === 0xee;
+    return accountId.slice(20, accountId.length).every((byte) => byte === 0xee);
   }
 
   return false;
