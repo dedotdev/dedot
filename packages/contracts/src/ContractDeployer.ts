@@ -25,7 +25,7 @@ export class ContractDeployer<ContractApi extends GenericContractApi = GenericCo
 
     this.#registry = new TypinkRegistry(this.#metadata);
 
-    if (this.registry.isInkV6()) {
+    if (this.registry.isRevive()) {
       ensureSupportPalletRevive(client);
     } else {
       ensureSupportPalletContracts(client);

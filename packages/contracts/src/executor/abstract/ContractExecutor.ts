@@ -26,7 +26,7 @@ export abstract class ContractExecutor<ChainApi extends GenericSubstrateApi> ext
   async ensureContractPresence() {
     const client = this.client as unknown as ISubstrateClient<SubstrateApi[RpcVersion]>;
     let contractInfo: any;
-    if (this.registry.isInkV6()) {
+    if (this.registry.isRevive()) {
       contractInfo = await client.query.revive.contractInfoOf(this.address as HexString);
     } else {
       contractInfo = await client.query.contracts.contractInfoOf(this.address);

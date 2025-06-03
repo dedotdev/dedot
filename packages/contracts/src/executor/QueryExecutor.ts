@@ -39,7 +39,7 @@ export class QueryExecutor<ChainApi extends GenericSubstrateApi> extends Contrac
       const client = this.client as unknown as ISubstrateClient<SubstrateApi[RpcVersion]>;
 
       const raw: NewContractResult = await (async () => {
-        if (this.registry.isInkV6()) {
+        if (this.registry.isRevive()) {
           const raw = await client.call.reviveApi.call(
             caller, // --
             this.address as HexString,

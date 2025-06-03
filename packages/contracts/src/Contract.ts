@@ -44,7 +44,7 @@ export class Contract<ContractApi extends GenericContractApi = GenericContractAp
 
     this.#registry = new TypinkRegistry(this.#metadata, { getStorage });
 
-    if (this.registry.isInkV6()) {
+    if (this.registry.isRevive()) {
       ensureSupportPalletRevive(client);
     } else {
       ensureSupportPalletContracts(client);
@@ -120,7 +120,7 @@ export class Contract<ContractApi extends GenericContractApi = GenericContractAp
 
   #getStorage = async (key: Uint8Array | HexString): Promise<HexString | undefined> => {
     const result = await (async () => {
-      if (this.registry.isInkV6()) {
+      if (this.registry.isRevive()) {
         return await this.client.call.reviveApi.getStorageVarKey(
           this.address as HexString, //--
           toHex(key),

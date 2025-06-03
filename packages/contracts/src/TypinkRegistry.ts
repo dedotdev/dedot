@@ -157,7 +157,10 @@ export class TypinkRegistry extends TypeRegistry {
 
     switch (version) {
       case 5:
-        return this.isInkV6() ? this.#decodeEventV6(eventRecord) : this.#decodeEventV5(eventRecord);
+        // TODO fix me
+        return this.isRevive() // --
+          ? this.#decodeEventV6(eventRecord)
+          : this.#decodeEventV5(eventRecord);
       case '4':
         return this.#decodeEventV4(eventRecord);
       default:
@@ -170,7 +173,7 @@ export class TypinkRegistry extends TypeRegistry {
     contractAddress?: ContractAddress,
   ): event is ContractEmittedEvent<Pallet> {
     const eventMatched =
-      (this.isInkV6() // --
+      (this.isRevive() // --
         ? event.pallet === 'Revive'
         : event.pallet === 'Contracts') &&
       typeof event.palletEvent === 'object' &&
@@ -182,7 +185,7 @@ export class TypinkRegistry extends TypeRegistry {
       // @ts-ignore
       const emittedContract = event.palletEvent.data?.contract;
 
-      if (this.isInkV6()) {
+      if (this.isRevive()) {
         return emittedContract === contractAddress;
       } else if (emittedContract instanceof AccountId32) {
         return emittedContract.eq(contractAddress);
@@ -236,6 +239,7 @@ export class TypinkRegistry extends TypeRegistry {
   }
 
   #decodeEventV6(eventRecord: IEventRecord): ContractEvent {
+    // TODO this should be version 6, FIX ME
     assert(this.metadata.version === 5, 'Invalid metadata version!');
     assert(this.#isContractEmittedEvent<'Revive'>(eventRecord.event), 'Invalid ContractEmitted Event');
 
@@ -285,8 +289,11 @@ export class TypinkRegistry extends TypeRegistry {
     return args.length ? { name, data } : { name };
   }
 
-  isInkV6(): boolean {
-    // TODO move to check via contract metadata version
+  /**
+   * Check if the contract is Revive Compatible (ink!v6)
+   */
+  isRevive(): boolean {
+    // TODO move to check via contract metadata version 6
     return this.metadata.source.language
       .toLowerCase() // --
       .startsWith('ink! 6.');

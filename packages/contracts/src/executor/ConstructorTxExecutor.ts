@@ -35,7 +35,7 @@ export class ConstructorTxExecutor<ChainApi extends GenericSubstrateApi> extends
 
       const client = this.client as unknown as ISubstrateClient<SubstrateApi[RpcVersion]>;
 
-      if (this.registry.isInkV6()) {
+      if (this.registry.isRevive()) {
         assert(
           isUndefined(salt) ||
             (isHex(salt) && hexToU8a(salt).byteLength == 32) ||

@@ -49,7 +49,7 @@ export class ConstructorQueryExecutor<ChainApi extends GenericSubstrateApi> exte
       const client = this.client as unknown as ISubstrateClient<SubstrateApi[RpcVersion]>;
 
       const raw: NewContractInstantiateResult = await (async () => {
-        if (this.registry.isInkV6()) {
+        if (this.registry.isRevive()) {
           assert(
             isUndefined(salt) ||
               (isHex(salt) && hexToU8a(salt).byteLength == 32) ||
