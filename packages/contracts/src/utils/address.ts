@@ -1,5 +1,5 @@
 import { AccountId20, AccountId20Like, AccountId32, AccountId32Like, BytesLike } from '@dedot/codecs';
-import { HexString, hexToU8a, keccakAsU8a, toHex, u8aToHex } from '@dedot/utils';
+import { concatU8a, HexString, hexToU8a, keccakAsU8a, toHex, toU8a, u8aToHex } from '@dedot/utils';
 import { RLP } from '@ethereumjs/rlp';
 
 // https://github.com/paritytech/polkadot-sdk/blob/5405e473854b139f1d0735550d90687eaf1a13f9/substrate/frame/revive/src/address.rs#L197-L204
@@ -12,16 +12,12 @@ export function create1(deployer: AccountId20Like, nonce: number): HexString {
 
 // https://github.com/paritytech/polkadot-sdk/blob/5405e473854b139f1d0735550d90687eaf1a13f9/substrate/frame/revive/src/address.rs#L206-L219
 export function create2(deployer: AccountId20Like, code: BytesLike, inputData: BytesLike, salt: BytesLike): HexString {
-  const codeBytes = typeof code === 'string' ? hexToU8a(code) : code;
-  const inputDataBytes = typeof inputData === 'string' ? hexToU8a(inputData) : inputData;
-  const saltBytes = typeof salt === 'string' ? hexToU8a(salt) : salt;
-
-  const initCodeHash = keccakAsU8a(new Uint8Array([...codeBytes, ...inputDataBytes]));
+  const initCodeHash = keccakAsU8a(concatU8a(toU8a(code), toU8a(inputData)));
 
   const bytes = new Uint8Array(1 + (20 + 32 + 32)); // 0xff + deployer + salt + initCodeHash
   bytes[0] = 0xff;
   bytes.set(hexToU8a(new AccountId20(deployer).raw), 1);
-  bytes.set(saltBytes, 21);
+  bytes.set(toU8a(salt), 21);
   bytes.set(initCodeHash, 53);
 
   const hash = keccakAsU8a(bytes);
