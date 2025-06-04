@@ -1,6 +1,6 @@
 import { ISubstrateClient } from '@dedot/api';
 import { SubstrateApi } from '@dedot/api/chaintypes';
-import { accountId32ToHex } from '@dedot/codecs';
+import { accountId32ToHex, Hash } from '@dedot/codecs';
 import { RpcVersion } from '@dedot/types';
 import {
   assert,
@@ -61,17 +61,17 @@ export function ensureValidContractAddress(address: ContractAddress, registry: T
   if (registry.isRevive()) {
     assert(
       isEvmAddress(address as HexString),
-      `Invalid pallet-revive contract address: ${address}: expected a 20-byte address as a hex string or a Uint8Array`,
+      `Invalid pallet-revive contract address: ${address}. Expected a 20-byte address as a hex string or a Uint8Array`,
     );
   } else {
     assert(
       hexToU8a(accountId32ToHex(address)).length === 32,
-      `Invalid pallet-contracts contract address: ${address}. expected a 32-byte address as a hex string or a Uint8Array`,
+      `Invalid pallet-contracts contract address: ${address}. Expected a 32-byte address as a hex string or a Uint8Array`,
     );
   }
 }
 
-export function ensureValidCodeHashOrCode(codeHashOrCode: HexString | Uint8Array, registry: TypinkRegistry) {
+export function ensureValidCodeHashOrCode(codeHashOrCode: Hash | Uint8Array | string, registry: TypinkRegistry) {
   assert(
     toHex(codeHashOrCode).length === 66 || (registry.isRevive() ? isPvm(codeHashOrCode) : isWasm(codeHashOrCode)),
     'Invalid code hash or code: expected a hash of 32-byte or a valid PVM/WASM code as a hex string or a Uint8Array',

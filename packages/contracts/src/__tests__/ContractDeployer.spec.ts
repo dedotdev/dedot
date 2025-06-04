@@ -1,7 +1,7 @@
 import { LegacyClient } from '@dedot/api';
 // @ts-ignore
 import MockProvider from '@dedot/api/client/__tests__/MockProvider';
-import { genRanHex } from 'src/tests.js';
+import { generateRandomHex } from '@dedot/utils';
 import { beforeEach, describe, expect, it } from 'vitest';
 import { ContractDeployer } from '../ContractDeployer.js';
 import { MockedRuntimeVersion } from './Contract.spec.js';
@@ -42,7 +42,7 @@ describe('ContractDeployer', () => {
         ),
       );
 
-      const invalidCodeHash = genRanHex(128);
+      const invalidCodeHash = generateRandomHex(128);
       expect(() => new ContractDeployer(api, FLIPPER_CONTRACT_METADATA_V4, invalidCodeHash)).toThrowError(
         new Error(
           'Invalid code hash or code: expected a hash of 32-byte or a valid PVM/WASM code as a hex string or a Uint8Array',
