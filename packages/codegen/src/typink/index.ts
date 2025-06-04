@@ -1,16 +1,16 @@
-import { ContractMetadata, parseRawMetadata } from '@dedot/contracts';
+import { ContractMetadata, ensureSupportedContractMetadataVersion } from '@dedot/contracts';
 import { stringDashCase, stringPascalCase } from '@dedot/utils';
 import fs from 'fs';
 import path from 'path';
 import { GeneratedResult } from '../types.js';
 import {
+  ConstructorQueryGen,
+  ConstructorTxGen,
+  EventsGen,
   IndexGen,
   QueryGen,
-  EventsGen,
   TxGen,
   TypesGen,
-  ConstructorTxGen,
-  ConstructorQueryGen,
 } from './generator/index.js';
 
 export async function generateContractTypes(
@@ -20,7 +20,10 @@ export async function generateContractTypes(
   extension: string = 'd.ts',
   useSubPaths: boolean = false,
 ): Promise<GeneratedResult> {
-  let contractMetadata = typeof metadata === 'string' ? parseRawMetadata(metadata) : metadata;
+  let contractMetadata = typeof metadata === 'string' ? JSON.parse(metadata) : metadata;
+
+  ensureSupportedContractMetadataVersion(contractMetadata);
+
   const contractName = contract || contractMetadata.contract.name;
 
   const dirPath = path.resolve(outDir, stringDashCase(contractName));

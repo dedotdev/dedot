@@ -14,7 +14,7 @@ import {
   toHex,
 } from '@dedot/utils';
 import { TypinkRegistry } from 'src/TypinkRegistry';
-import { ContractAddress } from 'src/types';
+import { ContractAddress, LooseContractMetadata } from 'src/types';
 
 export const ensureStorageApiSupports = (version: string | number) => {
   const numberedVersion = typeof version === 'number' ? version : parseInt(version);
@@ -76,4 +76,21 @@ export function ensureValidCodeHashOrCode(codeHashOrCode: Hash | Uint8Array | st
     toHex(codeHashOrCode).length === 66 || (registry.isRevive() ? isPvm(codeHashOrCode) : isWasm(codeHashOrCode)),
     'Invalid code hash or code: expected a hash of 32-byte or a valid PVM/WASM code as a hex string or a Uint8Array',
   );
+}
+
+const UNSUPPORTED_VERSIONS = ['V3', 'V2', 'V1'];
+
+const SUPPORTED_VERSIONS = [5, '4'];
+
+export function ensureSupportedContractMetadataVersion(metadata: LooseContractMetadata) {
+  // This is for V1, V2, V3
+  const unsupportedVersion = UNSUPPORTED_VERSIONS.find((o) => metadata[o]);
+  if (unsupportedVersion) {
+    throw new DedotError(`Unsupported metadata version: ${unsupportedVersion}`);
+  }
+
+  // This is for V4, V5, V6
+  if (!SUPPORTED_VERSIONS.includes(metadata.version)) {
+    throw new DedotError(`Unsupported metadata version: ${metadata.version}`);
+  }
 }

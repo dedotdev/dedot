@@ -2,7 +2,7 @@ import Keyring from '@polkadot/keyring';
 import { cryptoWaitReady } from '@polkadot/util-crypto';
 import { DedotClient, ISubstrateClient, LegacyClient, WsProvider } from 'dedot';
 import { SubstrateApi } from 'dedot/chaintypes';
-import { Contract, ContractDeployer, ContractMetadata, parseRawMetadata } from 'dedot/contracts';
+import { Contract, ContractDeployer, ContractMetadata } from 'dedot/contracts';
 import { RpcVersion } from 'dedot/types';
 import { assert, stringToHex } from 'dedot/utils';
 import * as flipperV4Raw from '../flipper_v4.json';
@@ -16,11 +16,11 @@ export const run = async (_nodeName: any, networkInfo: any) => {
   const { wsUri } = networkInfo.nodesByName['collator-1'];
 
   const caller = alicePair.address;
-  const flipperV4 = parseRawMetadata(JSON.stringify(flipperV4Raw));
-  const flipperV5 = parseRawMetadata(JSON.stringify(flipperV5Raw));
+  const flipperV4 = flipperV4Raw as ContractMetadata;
+  const flipperV5 = flipperV5Raw as ContractMetadata;
 
   const verifyContracts = async (api: ISubstrateClient<SubstrateApi[RpcVersion]>, flipper: ContractMetadata) => {
-    const wasm = flipper.source.code!;
+    const wasm = flipper.source.wasm!;
     const deployer = new ContractDeployer<FlipperContractApi>(api, flipper, wasm, { defaultCaller: caller });
 
     // Avoid to use same salt with previous tests.

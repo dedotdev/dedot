@@ -5,18 +5,18 @@ import { SubstrateApi } from 'dedot/chaintypes';
 import {
   Contract,
   ContractDeployer,
-  ContractMetadata,
+  ContractMetadataV4,
+  ContractMetadataV5,
   isContractExecutionError,
   isContractInstantiateDispatchError,
   isContractInstantiateError,
   isContractInstantiateLangError,
   isContractLangError,
-  parseRawMetadata,
 } from 'dedot/contracts';
 import { RpcVersion } from 'dedot/types';
 import { assert, stringToHex } from 'dedot/utils';
-import * as flipperV4Raw from '../flipper_v4.json';
-import * as flipperV5Raw from '../flipper_v5.json';
+import * as flipperV4 from '../flipper_v4.json';
+import * as flipperV5 from '../flipper_v5.json';
 import { FlipperContractApi } from './contracts/flipper';
 
 export const run = async (_nodeName: any, networkInfo: any) => {
@@ -26,11 +26,12 @@ export const run = async (_nodeName: any, networkInfo: any) => {
   const { wsUri } = networkInfo.nodesByName['collator-1'];
 
   const caller = alicePair.address;
-  const flipperV4 = parseRawMetadata(JSON.stringify(flipperV4Raw));
-  const flipperV5 = parseRawMetadata(JSON.stringify(flipperV5Raw));
 
-  const verifyContracts = async (api: ISubstrateClient<SubstrateApi[RpcVersion]>, flipper: ContractMetadata) => {
-    const wasm = flipper.source.code!;
+  const verifyContracts = async (
+    api: ISubstrateClient<SubstrateApi[RpcVersion]>,
+    flipper: ContractMetadataV4 | ContractMetadataV5,
+  ) => {
+    const wasm = flipper.source.wasm!;
     const deployer = new ContractDeployer<FlipperContractApi>(api, flipper, wasm);
 
     // Avoid to use same salt with previous tests.
@@ -115,24 +116,24 @@ export const run = async (_nodeName: any, networkInfo: any) => {
 
   console.log('Checking via legacy API');
   const apiLegacy = await LegacyClient.new(new WsProvider(wsUri));
-  await verifyContracts(apiLegacy, flipperV4);
-  await verifyContracts(apiLegacy, flipperV5);
+  await verifyContracts(apiLegacy, flipperV4 as ContractMetadataV4);
+  await verifyContracts(apiLegacy, flipperV5 as ContractMetadataV5);
 
   console.log('Checking via new API');
   const apiV2 = await DedotClient.new(new WsProvider(wsUri));
-  await verifyContracts(apiV2, flipperV4);
-  await verifyContracts(apiV2, flipperV5);
+  await verifyContracts(apiV2, flipperV4 as ContractMetadataV4);
+  await verifyContracts(apiV2, flipperV5 as ContractMetadataV5);
 };
 
 const deployFlipper = async (
   api: ISubstrateClient<SubstrateApi[RpcVersion]>,
-  flipper: ContractMetadata,
+  flipper: ContractMetadataV4 | ContractMetadataV5,
   salt?: string,
 ): Promise<string> => {
   const alicePair = new Keyring({ type: 'sr25519' }).addFromUri('//Alice');
   const caller = alicePair.address;
 
-  const wasm = flipper.source.code!;
+  const wasm = flipper.source.wasm!;
   const deployer = new ContractDeployer<FlipperContractApi>(api, flipper, wasm);
 
   // Dry-run to estimate gas fee

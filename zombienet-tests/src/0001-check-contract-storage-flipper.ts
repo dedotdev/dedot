@@ -2,10 +2,10 @@ import Keyring from '@polkadot/keyring';
 import { cryptoWaitReady } from '@polkadot/util-crypto';
 import { DedotClient, ISubstrateClient, LegacyClient, WsProvider } from 'dedot';
 import { SubstrateApi } from 'dedot/chaintypes';
-import { Contract, ContractDeployer, parseRawMetadata } from 'dedot/contracts';
+import { Contract, ContractDeployer } from 'dedot/contracts';
 import { RpcVersion } from 'dedot/types';
 import { assert, stringToHex } from 'dedot/utils';
-import * as flipperV5Raw from '../../examples/scripts/inkv5/flipper.json';
+import * as flipperV5 from '../../examples/scripts/inkv5/flipper.json';
 import { FlipperContractApi } from '../../examples/scripts/inkv5/flipper/index.js';
 
 export const run = async (_nodeName: any, networkInfo: any) => {
@@ -15,13 +15,12 @@ export const run = async (_nodeName: any, networkInfo: any) => {
   const { wsUri } = networkInfo.nodesByName['collator-1'];
 
   const caller = alicePair.address;
-  const flipperV5 = parseRawMetadata(JSON.stringify(flipperV5Raw));
 
   const verifyFlipperStorage = async (api: ISubstrateClient<SubstrateApi[RpcVersion]>) => {
     console.log(`[${api.rpcVersion}] Testing Flipper contract storage API`);
 
     // Deploy the contract
-    const wasm = flipperV5.source.code!;
+    const wasm = flipperV5.source.wasm!;
     const deployer = new ContractDeployer<FlipperContractApi>(api, flipperV5, wasm, { defaultCaller: caller });
 
     // Generate a unique salt

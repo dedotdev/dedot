@@ -1,6 +1,7 @@
 import * as util from 'node:util';
 import { beforeEach, describe, expect, it } from 'vitest';
 import { TypinkRegistry } from '../TypinkRegistry.js';
+import { ContractMetadata } from '../types';
 import {
   FLIPPER_CONTRACT_METADATA_V4,
   FLIPPER_CONTRACT_METADATA_V5,
@@ -12,7 +13,7 @@ describe('TypinkRegistry', () => {
     let registry: TypinkRegistry;
 
     beforeEach(() => {
-      registry = new TypinkRegistry(FLIPPER_CONTRACT_METADATA_V4);
+      registry = new TypinkRegistry(FLIPPER_CONTRACT_METADATA_V4 as ContractMetadata);
     });
 
     it('should have metadata', () => {
@@ -48,13 +49,13 @@ describe('TypinkRegistry', () => {
 
     describe('isRevive', () => {
       it('should work properly', () => {
-        registry = new TypinkRegistry(FLIPPER_CONTRACT_METADATA_V4);
+        registry = new TypinkRegistry(FLIPPER_CONTRACT_METADATA_V4 as ContractMetadata);
         expect(registry.isRevive()).toBe(false);
 
-        registry = new TypinkRegistry(FLIPPER_CONTRACT_METADATA_V5);
+        registry = new TypinkRegistry(FLIPPER_CONTRACT_METADATA_V5 as ContractMetadata);
         expect(registry.isRevive()).toBe(false);
 
-        registry = new TypinkRegistry(FLIPPER_CONTRACT_METADATA_V6);
+        registry = new TypinkRegistry(FLIPPER_CONTRACT_METADATA_V6 as ContractMetadata);
         expect(registry.isRevive()).toBe(true);
       });
     });

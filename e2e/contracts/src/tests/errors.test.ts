@@ -18,7 +18,7 @@ describe('Errors', () => {
       const deployer = new ContractDeployer<FlipperContractApi>(
         contractsClient, // prettier-end-here
         flipperV5Metadata,
-        flipperV5Metadata.source.code!,
+        flipperV5Metadata.source.wasm!,
         {
           defaultCaller: alicePair.address,
         },
@@ -37,7 +37,7 @@ describe('Errors', () => {
       const deployer = new ContractDeployer<FlipperContractApi>(
         contractsClient, // prettier-end-here
         flipperV5Metadata,
-        flipperV5Metadata.source.code!,
+        flipperV5Metadata.source.wasm!,
         {
           defaultCaller: alicePair.address,
         },
@@ -59,7 +59,7 @@ describe('Errors', () => {
       const deployer = new ContractDeployer<FlipperContractApi>(
         contractsClient, // prettier-end-here
         flipperV5Metadata,
-        flipperV5Metadata.source.code!,
+        flipperV5Metadata.source.wasm!,
         {
           defaultCaller: alicePair.address,
         },
@@ -96,7 +96,7 @@ describe('Errors', () => {
       const deployer = new ContractDeployer<FlipperContractApi>(
         reviveClient, // prettier-end-here
         flipperV6Metadata,
-        flipperV6Metadata.source.code!,
+        flipperV6Metadata.source.contract_binary!,
         {
           defaultCaller: alicePair.address,
         },
@@ -115,7 +115,7 @@ describe('Errors', () => {
       const deployer = new ContractDeployer<FlipperContractApi>(
         reviveClient, // prettier-end-here
         flipperV6Metadata,
-        flipperV6Metadata.source.code!,
+        flipperV6Metadata.source.contract_binary!,
         {
           defaultCaller: alicePair.address,
         },

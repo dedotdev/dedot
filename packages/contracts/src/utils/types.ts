@@ -80,37 +80,6 @@ export const normalizeContractTypeDef = (def: ContractTypeDef): TypeDef => {
   return { type, value } as TypeDef;
 };
 
-const UNSUPPORTED_VERSIONS = ['V3', 'V2', 'V1'] as const;
-
-const SUPPORTED_VERSIONS = [5, '4'] as const; // 6
-
-export const parseRawMetadata = (rawMetadata: string): ContractMetadata => {
-  const metadata = JSON.parse(rawMetadata);
-
-  if (metadata.source.wasm) {
-    metadata.source.code = metadata.source.wasm;
-
-    delete metadata.source.wasm;
-  } else if (metadata.source.contract_binary) {
-    metadata.source.code = metadata.source.contract_binary;
-
-    delete metadata.source.contract_binary;
-  }
-
-  // This is for V1, V2, V3
-  const unsupportedVersion = UNSUPPORTED_VERSIONS.find((o) => metadata[o]);
-  if (unsupportedVersion) {
-    throw new Error(`Unsupported metadata version: ${unsupportedVersion}`);
-  }
-
-  // This is for V4, V5
-  if (!SUPPORTED_VERSIONS.includes(metadata.version)) {
-    throw new Error(`Unsupported metadata version: ${metadata.version}`);
-  }
-
-  return metadata as ContractMetadata;
-};
-
 export function normalizeLabel(label?: string): string {
   if (!label) return '';
   return stringCamelCase(label.replaceAll('::', '_'));

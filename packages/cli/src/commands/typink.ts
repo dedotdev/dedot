@@ -1,5 +1,5 @@
 import { generateContractTypes } from '@dedot/codegen';
-import { parseRawMetadata } from '@dedot/contracts';
+import { ensureSupportedContractMetadataVersion } from '@dedot/contracts';
 import { assert } from '@dedot/utils';
 import * as fs from 'node:fs';
 import ora from 'ora';
@@ -30,7 +30,10 @@ export const typink: CommandModule<Args, Args> = {
 
     try {
       spinner.text = `Parsing contract metadata file: ${metadata}`;
-      const contractMetadata = parseRawMetadata(fs.readFileSync(metadataFile, 'utf-8'));
+
+      const contractMetadata = JSON.parse((fs.readFileSync(metadataFile, 'utf-8')));
+      ensureSupportedContractMetadataVersion(contractMetadata);
+
       spinner.succeed(`Parsed contract metadata file: ${metadata}`);
 
       spinner.text = 'Generating contract Types & APIs';

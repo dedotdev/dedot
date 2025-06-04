@@ -4,7 +4,12 @@ import { TypinkRegistry } from './TypinkRegistry.js';
 import { ConstructorQueryExecutor } from './executor/ConstructorQueryExecutor.js';
 import { ConstructorTxExecutor } from './executor/index.js';
 import { ContractMetadata, ExecutionOptions, GenericContractApi, LooseContractMetadata } from './types/index.js';
-import { ensurePalletPresence, ensureValidCodeHashOrCode, newProxyChain, parseRawMetadata } from './utils/index.js';
+import {
+  ensurePalletPresence,
+  ensureSupportedContractMetadataVersion,
+  ensureValidCodeHashOrCode,
+  newProxyChain,
+} from './utils/index.js';
 
 export class ContractDeployer<ContractApi extends GenericContractApi = GenericContractApi> {
   readonly #metadata: ContractMetadata;
@@ -18,10 +23,9 @@ export class ContractDeployer<ContractApi extends GenericContractApi = GenericCo
     codeHashOrCode: Hash | Uint8Array | string,
     options?: ExecutionOptions,
   ) {
-    this.#metadata =
-      typeof metadata === 'string' // --
-        ? parseRawMetadata(metadata)
-        : (metadata as ContractMetadata);
+    this.#metadata = (typeof metadata === 'string' ? JSON.parse(metadata) : metadata) as ContractMetadata;
+
+    ensureSupportedContractMetadataVersion(this.metadata);
 
     this.#registry = new TypinkRegistry(this.metadata);
 

@@ -1,26 +1,22 @@
 export type ContractAddress = string; // ss58 or evm address
 
-export interface ContractSource {
-  hash: string;
-  // It should be wasm in v4 & v5, and contract_binary in v6
-  // But we decided to use code for consistency
-  code?: string;
-  language: string;
-  compiler: string;
-  build_info: BuildInfo;
-}
-
 export interface ContractInformation {
   name: string;
   version: string;
   authors: string[];
 }
 
+export interface ContractSource {
+  hash: string;
+  language: string;
+  compiler: string;
+  build_info: BuildInfo;
+}
+
 export interface BuildInfo {
   build_mode: string;
   cargo_contract_version: string;
   rust_toolchain: string;
-  wasm_opt_settings: WasmOptSettings;
 }
 
 export interface WasmOptSettings {

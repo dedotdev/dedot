@@ -1,14 +1,7 @@
 import Keyring from '@polkadot/keyring';
 import { KeyringPair } from '@polkadot/keyring/types';
 import { cryptoWaitReady } from '@polkadot/util-crypto';
-import {
-  ContractDeployer,
-  ContractMetadataV5,
-  ContractMetadataV6,
-  create1,
-  parseRawMetadata,
-  toEthAddress,
-} from '@dedot/contracts';
+import { ContractDeployer, create1, toEthAddress } from '@dedot/contracts';
 import { assert, generateRandomHex, HexString } from '@dedot/utils';
 import { FlipperContractApi } from './contracts/flipper';
 // @ts-ignore
@@ -22,8 +15,8 @@ export const ALICE = '5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY';
 export const BOB = '5FHneW46xGXgs5mUiveU4sbTyGBzmstUspZC92UhjJM694ty';
 export const CHARLIE = '5FLSigC9HGRKVhB9FiEo4Y3koPsNmBmLJbpXg2mp1hXcS59Y';
 
-export const flipperV5Metadata = parseRawMetadata(JSON.stringify(flipperV5)) as ContractMetadataV5;
-export const flipperV6Metadata = parseRawMetadata(JSON.stringify(flipperV6)) as ContractMetadataV6;
+export const flipperV5Metadata = flipperV5;
+export const flipperV6Metadata = flipperV6;
 
 export const devPairs = () => {
   const alice = KEYRING.addFromUri('//Alice');
@@ -35,7 +28,7 @@ export const deployFlipperV5 = async (callerPair: KeyringPair): Promise<HexStrin
   const deployer = new ContractDeployer<FlipperContractApi>(
     contractsClient, // prettier-end-here
     flipperV5Metadata,
-    flipperV5Metadata.source.code!,
+    flipperV5Metadata.source.wasm!,
     {
       defaultCaller: callerPair.address,
     },
@@ -61,7 +54,7 @@ export const deployFlipperV6 = async (callerPair: KeyringPair): Promise<HexStrin
   const deployer = new ContractDeployer<FlipperContractApi>(
     reviveClient,
     flipperV6Metadata,
-    flipperV6Metadata.source.code!,
+    flipperV6Metadata.source.contract_binary!,
     {
       defaultCaller: callerPair.address,
     },

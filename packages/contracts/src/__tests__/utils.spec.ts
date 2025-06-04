@@ -1,14 +1,14 @@
 import { TypeDef } from '@dedot/codecs';
 import { describe, expect, it } from 'vitest';
-import { ContractTypeDef, ReturnFlags } from '../types/index.js';
+import { ContractMetadata, ContractTypeDef, ReturnFlags } from '../types/index.js';
 import {
+  create1,
+  create2,
   extractContractTypes,
   normalizeContractTypeDef,
   normalizeLabel,
-  toReturnFlags,
-  create1,
-  create2,
   toEthAddress,
+  toReturnFlags,
 } from '../utils/index.js';
 import { FLIPPER_CONTRACT_METADATA_V4, FLIPPER_CONTRACT_METADATA_V6 } from './contracts-metadata.js';
 
@@ -117,7 +117,7 @@ describe('utils', () => {
       it('returns correct PortableType array for valid ContractMetadata', () => {
         const flipper = FLIPPER_CONTRACT_METADATA_V4;
 
-        const result = extractContractTypes(FLIPPER_CONTRACT_METADATA_V4);
+        const result = extractContractTypes(FLIPPER_CONTRACT_METADATA_V4 as ContractMetadata);
         expect(result).toHaveLength(flipper.types.length);
         expect(result[0]).toHaveProperty('id', flipper.types[0].id);
         expect(result[0]).toHaveProperty('typeDef');
@@ -177,7 +177,7 @@ describe('utils', () => {
     describe('create2', () => {
       it('should generate correct address for given parameters', () => {
         const deployer = '0x9621dde636de098b43efb0fa9b61facfe328f99d';
-        const code = FLIPPER_CONTRACT_METADATA_V6.source.code!;
+        const code = FLIPPER_CONTRACT_METADATA_V6.source.contract_binary!;
         const inputData = '0x9bae9d5e01';
         const salt = '0x00db90387370ad89cb16adfbc6c33e7de7e960a318af0c3ad95a471f500a3e7b';
 

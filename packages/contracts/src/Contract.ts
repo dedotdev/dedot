@@ -15,9 +15,9 @@ import {
 import {
   ensurePalletPresence,
   ensureStorageApiSupports,
+  ensureSupportedContractMetadataVersion,
   ensureValidContractAddress,
   newProxyChain,
-  parseRawMetadata,
 } from './utils/index.js';
 
 export class Contract<ContractApi extends GenericContractApi = GenericContractApi> {
@@ -32,10 +32,9 @@ export class Contract<ContractApi extends GenericContractApi = GenericContractAp
     address: ContractAddress,
     options?: ExecutionOptions,
   ) {
-    this.#metadata =
-      typeof metadata === 'string' // --
-        ? parseRawMetadata(metadata)
-        : (metadata as ContractMetadata);
+    this.#metadata = (typeof metadata === 'string' ? JSON.parse(metadata) : metadata) as ContractMetadata;
+
+    ensureSupportedContractMetadataVersion(this.metadata);
 
     const getStorage = this.#getStorage.bind(this);
 

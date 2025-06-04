@@ -50,7 +50,8 @@ describe('ContractDeployer', () => {
       );
 
       expect(
-        () => new ContractDeployer(api, FLIPPER_CONTRACT_METADATA_V4, FLIPPER_CONTRACT_METADATA_V6.source.code!),
+        () =>
+          new ContractDeployer(api, FLIPPER_CONTRACT_METADATA_V4, FLIPPER_CONTRACT_METADATA_V6.source.contract_binary!),
       ).toThrowError(
         new Error(
           'Invalid code hash or code: expected a hash of 32-byte or a valid PVM/WASM code as a hex string or a Uint8Array',
@@ -58,7 +59,7 @@ describe('ContractDeployer', () => {
       );
 
       expect(
-        () => new ContractDeployer(api, FLIPPER_CONTRACT_METADATA_V6, FLIPPER_CONTRACT_METADATA_V5.source.code!),
+        () => new ContractDeployer(api, FLIPPER_CONTRACT_METADATA_V6, FLIPPER_CONTRACT_METADATA_V5.source.wasm!),
       ).toThrowError(
         new Error(
           'Invalid code hash or code: expected a hash of 32-byte or a valid PVM/WASM code as a hex string or a Uint8Array',
