@@ -5,15 +5,10 @@ import {
   ContractInstantiateLangError,
   ContractLangError,
 } from '@dedot/contracts';
+import { generateRandomHex } from '@dedot/utils';
 import { describe, expect, it } from 'vitest';
 import { FlipperContractApi } from '../contracts/flipper';
-import {
-  devPairs,
-  flipperV5Metadata,
-  genRanHex,
-  deployFlipperV5,
-  flipperV6Metadata,
-} from '../utils.js';
+import { devPairs, flipperV5Metadata, deployFlipperV5, flipperV6Metadata } from '../utils.js';
 
 describe('Errors', () => {
   let alicePair = devPairs().alice;
@@ -29,7 +24,7 @@ describe('Errors', () => {
         },
       );
       const blank = '0x0000000000000000000000000000000000000000000000000000000000000000';
-      const salt = genRanHex(64);
+      const salt = generateRandomHex();
 
       const { data, flags } = await deployer.query.fromSeed(blank, { salt });
 
@@ -47,7 +42,7 @@ describe('Errors', () => {
           defaultCaller: alicePair.address,
         },
       );
-      const salt = genRanHex(64);
+      const salt = generateRandomHex();
 
       const { raw } = await deployer.query.newDefault({ salt });
       await deployer.tx // --
@@ -69,7 +64,7 @@ describe('Errors', () => {
           defaultCaller: alicePair.address,
         },
       );
-      const salt = genRanHex(64);
+      const salt = generateRandomHex();
 
       expect(deployer.query.fromSeed('0x_error', { salt })).rejects.toThrowError(ContractInstantiateLangError);
     });
@@ -84,7 +79,7 @@ describe('Errors', () => {
     });
 
     it('should throw error when contract not existed', async () => {
-      const fakeAddress = genRanHex(80);
+      const fakeAddress = generateRandomHex(80);
 
       const contract = new Contract<FlipperContractApi>(contractsClient, flipperV5Metadata, fakeAddress, {
         defaultCaller: alicePair.address,
@@ -107,7 +102,7 @@ describe('Errors', () => {
         },
       );
       const blank = '0x0000000000000000000000000000000000000000000000000000000000000000';
-      const salt = genRanHex(64);
+      const salt = generateRandomHex();
 
       const { data, flags } = await deployer.query.fromSeed(blank, { salt });
 
@@ -125,7 +120,7 @@ describe('Errors', () => {
           defaultCaller: alicePair.address,
         },
       );
-      const salt = genRanHex(64);
+      const salt = generateRandomHex();
 
       const { raw } = await deployer.query.newDefault({ salt });
       await deployer.tx // --
@@ -137,7 +132,7 @@ describe('Errors', () => {
     });
 
     it('should throw error when contract not existed', async () => {
-      const fakeAddress = genRanHex(80);
+      const fakeAddress = generateRandomHex(80);
 
       const contract = new Contract<FlipperContractApi>(reviveClient, flipperV6Metadata, fakeAddress, {
         defaultCaller: alicePair.address,

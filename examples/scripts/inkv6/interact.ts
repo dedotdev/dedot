@@ -3,6 +3,7 @@ import { Contract, ContractDeployer, create2, toEthAddress } from 'dedot/contrac
 import { FlipperContractApi } from './flipper/index.js';
 import flipper6 from './flipper_v6.json' with { type: 'json' };
 import { devPairs } from "../keyring.js";
+import { generateRandomHex } from "dedot/utils";
 
 // Initialize crypto and keyring
 const {alice} = await devPairs()
@@ -37,10 +38,6 @@ console.log();
 // Common options for contract operations
 const defaultOptions = {defaultCaller: alice.address};
 
-export const genRanHex: (size?: number) => `0x${string}` = (size = 32) =>
-  `0x${[...Array<string>(size)].map(() => Math.floor(Math.random() * 16).toString(16)).join('')}`;
-
-
 try {
   // =================================================================
   // Step 1: Dry run constructor and deploy contract with full code
@@ -55,7 +52,7 @@ try {
     defaultOptions,
   );
 
-  const salt = genRanHex(64);
+  const salt = generateRandomHex();
 
   // Dry run the constructor to estimate gas and validate deployment
   console.log('🔍 Dry running constructor with initial value: true');
@@ -106,7 +103,7 @@ try {
   await deployer2.tx.new(false, {
     gasLimit: dryRunResult.raw.gasRequired,
     storageDepositLimit: dryRunResult.raw.storageDeposit.value,
-    salt: genRanHex(64)
+    salt: generateRandomHex()
   }) // --
     .signAndSend(alice, ({status}) => {
       console.log(`   📊 Transaction status: ${status.type}`);

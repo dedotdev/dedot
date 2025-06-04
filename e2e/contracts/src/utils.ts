@@ -9,7 +9,7 @@ import {
   parseRawMetadata,
   toEthAddress,
 } from '@dedot/contracts';
-import { assert, HexString } from '@dedot/utils';
+import { assert, generateRandomHex, HexString } from '@dedot/utils';
 import { FlipperContractApi } from './contracts/flipper';
 // @ts-ignore
 import * as flipperV5 from './contracts/flipper_v5.json';
@@ -31,13 +31,6 @@ export const devPairs = () => {
   return { alice, bob };
 };
 
-export const sleep = (ms: number = 0) => {
-  return new Promise((resolve) => setTimeout(resolve, ms));
-};
-
-export const genRanHex = (size: number = 32): HexString =>
-  `0x${[...Array<string>(size)].map(() => Math.floor(Math.random() * 16).toString(16)).join('')}`;
-
 export const deployFlipperV5 = async (callerPair: KeyringPair): Promise<HexString> => {
   const deployer = new ContractDeployer<FlipperContractApi>(
     contractsClient, // prettier-end-here
@@ -48,7 +41,7 @@ export const deployFlipperV5 = async (callerPair: KeyringPair): Promise<HexStrin
     },
   );
 
-  const salt = genRanHex(32);
+  const salt = generateRandomHex();
 
   const { raw } = await deployer.query.new(true, { salt });
 

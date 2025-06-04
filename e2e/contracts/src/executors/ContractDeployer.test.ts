@@ -1,7 +1,8 @@
 import { Contract, ContractDeployer, create1, create2, toEthAddress } from '@dedot/contracts';
+import { generateRandomHex } from '@dedot/utils';
 import { beforeAll, describe, expect, it } from 'vitest';
 import { FlipperContractApi } from '../contracts/flipper';
-import { devPairs, flipperV5Metadata, flipperV6Metadata, genRanHex } from '../utils.js';
+import { devPairs, flipperV5Metadata, flipperV6Metadata } from '../utils.js';
 
 describe('ContractDeployer', () => {
   let alicePair = devPairs().alice;
@@ -29,7 +30,7 @@ describe('ContractDeployer', () => {
     });
 
     it('should deploy contract properly', async () => {
-      const salt = genRanHex(64);
+      const salt = generateRandomHex();
 
       const { raw } = await deployer.query.new(true, {
         salt,
@@ -102,7 +103,7 @@ describe('ContractDeployer', () => {
     });
 
     it('should deploy contract with salt properly', async () => {
-      const salt = genRanHex(64);
+      const salt = generateRandomHex();
       const { raw } = await deployer.query.new(true, { salt });
 
       const contractAddress = create2(
