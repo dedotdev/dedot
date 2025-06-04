@@ -60,3 +60,10 @@ export function ensureValidContractAddress(address: ContractAddress, registry: T
     );
   }
 }
+
+export function ensureValidCodeHashOrCode(codeHashOrCode: HexString | Uint8Array, registry: TypinkRegistry) {
+  assert(
+    toHex(codeHashOrCode).length === 66 || (registry.isRevive() ? isPvm(codeHashOrCode) : isWasm(codeHashOrCode)),
+    'Invalid code hash or code: expected a hash of 32-byte or a valid PVM/WASM code as a hex string or a Uint8Array',
+  );
+}

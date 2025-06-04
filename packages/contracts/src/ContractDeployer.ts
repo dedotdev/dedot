@@ -3,8 +3,8 @@ import { Hash } from '@dedot/codecs';
 import { TypinkRegistry } from './TypinkRegistry.js';
 import { ConstructorQueryExecutor } from './executor/ConstructorQueryExecutor.js';
 import { ConstructorTxExecutor } from './executor/index.js';
-import { ContractMetadata, GenericContractApi, ExecutionOptions, LooseContractMetadata } from './types/index.js';
-import { ensurePalletPresence, newProxyChain, parseRawMetadata } from './utils/index.js';
+import { ContractMetadata, ExecutionOptions, GenericContractApi, LooseContractMetadata } from './types/index.js';
+import { ensurePalletPresence, ensureValidCodeHashOrCode, newProxyChain, parseRawMetadata } from './utils/index.js';
 
 export class ContractDeployer<ContractApi extends GenericContractApi = GenericContractApi> {
   readonly #metadata: ContractMetadata;
@@ -23,11 +23,12 @@ export class ContractDeployer<ContractApi extends GenericContractApi = GenericCo
         ? parseRawMetadata(metadata)
         : (metadata as ContractMetadata);
 
-    this.#registry = new TypinkRegistry(this.#metadata);
+    this.#registry = new TypinkRegistry(this.metadata);
 
     ensurePalletPresence(client, this.registry);
+    ensureValidCodeHashOrCode(codeHashOrCode, this.registry);
 
-    this.#code = codeHashOrCode; // TODO validate hash or wasm or pvm
+    this.#code = codeHashOrCode;
     this.#options = options;
   }
 
