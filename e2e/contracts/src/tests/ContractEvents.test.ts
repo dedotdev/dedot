@@ -4,7 +4,7 @@ import { beforeEach, describe, expect, it } from 'vitest';
 import { FlipperContractApi } from '../contracts/flipper';
 import { devPairs, flipperV5Metadata, flipperV6Metadata, deployFlipperV5, deployFlipperV6 } from '../utils.js';
 
-describe('EventExecutor', () => {
+describe('ContractEvents', () => {
   let contract: Contract<FlipperContractApi>;
   let alicePair = devPairs().alice;
 
