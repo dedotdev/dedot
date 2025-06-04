@@ -76,3 +76,12 @@ export const hexToBn = (input?: HexString | string): bigint => {
   const stripped = hexStripPrefix(input);
   return stripped ? BigInt(`0x${stripped}`) : 0n;
 };
+
+/**
+ * Generate a random hex string of provided bytes size
+ *
+ * @param bytes number of bytes to generate (default: 32 bytes)
+ */
+export const generateRandomHex = (bytes: number = 32): HexString => {
+  return `0x${[...Array<string>(bytes * 2)].map(() => Math.floor(Math.random() * 16).toString(16)).join('')}`;
+};
