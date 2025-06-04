@@ -1,4 +1,4 @@
-import { LegacyClient, FallbackRuntimeApis, ErrorExecutor } from '@dedot/api';
+import { FallbackRuntimeApis, LegacyClient } from '@dedot/api';
 import { FrameSystemEventRecord } from '@dedot/api/chaintypes/index.js';
 // @ts-ignore
 import MockProvider from '@dedot/api/client/__tests__/MockProvider';

@@ -16,7 +16,6 @@ export abstract class ContractExecutor<ChainApi extends GenericSubstrateApi> ext
   ) {
     super(client, registry, options);
 
-    // TODO validate address depends on ink version
     this.address = address;
   }
 

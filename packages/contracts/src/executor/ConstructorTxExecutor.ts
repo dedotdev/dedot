@@ -26,7 +26,7 @@ export class ConstructorTxExecutor<ChainApi extends GenericSubstrateApi> extends
       if (this.registry.isRevive()) {
         assert(
           isUndefined(salt) || toU8a(salt).byteLength == 32,
-          'Invalid salt provided in ConstructorCallOptions: expected a 32-byte value as a hex string or a Uint8Array.',
+          'Invalid salt provided in ConstructorCallOptions: expected a 32-byte value as a hex string or a Uint8Array',
         );
 
         assert(!isUndefined(storageDepositLimit), 'Expected a storage deposit limit in ConstructorTxOptions');

@@ -1,8 +1,18 @@
 import { ISubstrateClient } from '@dedot/api';
 import { SubstrateApi } from '@dedot/api/chaintypes';
-import { accountId20ToHex, accountId32ToHex } from '@dedot/codecs';
+import { accountId32ToHex } from '@dedot/codecs';
 import { RpcVersion } from '@dedot/types';
-import { assert, decodeAddress, DedotError, ensurePresence, HexString, hexToU8a, isEvmAddress } from '@dedot/utils';
+import {
+  assert,
+  DedotError,
+  ensurePresence,
+  HexString,
+  hexToU8a,
+  isEvmAddress,
+  isPvm,
+  isWasm,
+  toHex,
+} from '@dedot/utils';
 import { TypinkRegistry } from 'src/TypinkRegistry';
 import { ContractAddress } from 'src/types';
 
@@ -51,12 +61,12 @@ export function ensureValidContractAddress(address: ContractAddress, registry: T
   if (registry.isRevive()) {
     assert(
       isEvmAddress(address as HexString),
-      `Invalid pallet-revive contract address: ${address}. It should be a 20-byte address (0x + 40 hex characters)`,
+      `Invalid pallet-revive contract address: ${address}: expected a 20-byte address as a hex string or a Uint8Array`,
     );
   } else {
     assert(
       hexToU8a(accountId32ToHex(address)).length === 32,
-      `Invalid pallet-contracts contract address: ${address}. It should be a 32-byte address (0x + 64 hex characters)`,
+      `Invalid pallet-contracts contract address: ${address}. expected a 32-byte address as a hex string or a Uint8Array`,
     );
   }
 }

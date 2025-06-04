@@ -13,11 +13,11 @@ import {
   RootLayoutV5,
 } from './types/index.js';
 import {
-  ensureStorageApiSupports,
   ensurePalletPresence,
+  ensureStorageApiSupports,
+  ensureValidContractAddress,
   newProxyChain,
   parseRawMetadata,
-  ensureValidContractAddress,
 } from './utils/index.js';
 
 export class Contract<ContractApi extends GenericContractApi = GenericContractApi> {
@@ -39,7 +39,7 @@ export class Contract<ContractApi extends GenericContractApi = GenericContractAp
 
     const getStorage = this.#getStorage.bind(this);
 
-    this.#registry = new TypinkRegistry(this.#metadata, { getStorage });
+    this.#registry = new TypinkRegistry(this.metadata, { getStorage });
 
     ensurePalletPresence(client, this.registry);
     ensureValidContractAddress(address, this.registry);

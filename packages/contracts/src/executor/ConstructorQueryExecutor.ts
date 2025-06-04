@@ -41,7 +41,6 @@ export class ConstructorQueryExecutor<ChainApi extends GenericSubstrateApi> exte
       const formattedInputs = args.map((arg, index) => this.tryEncode(arg, params[index]));
       const bytes = u8aToHex(concatU8a(hexToU8a(meta.selector), ...formattedInputs));
       const code = {
-        // TODO support pvm, fix me!
         type: this.code.length <= 66 ? 'Existing' : 'Upload',
         value: this.code,
       } as ContractCode;
@@ -52,7 +51,7 @@ export class ConstructorQueryExecutor<ChainApi extends GenericSubstrateApi> exte
         if (this.registry.isRevive()) {
           assert(
             isUndefined(salt) || toU8a(salt).byteLength == 32,
-            'Invalid salt provided in ConstructorCallOptions: expected a 32-byte value as a hex string or a Uint8Array.',
+            'Invalid salt provided in ConstructorCallOptions: expected a 32-byte value as a hex string or a Uint8Array',
           );
 
           const raw = await client.call.reviveApi.instantiate(
