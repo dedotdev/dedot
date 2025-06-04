@@ -218,16 +218,15 @@ export class TypinkRegistry extends TypeRegistry {
     return this.#tryDecodeEvent(event, data.subarray(1));
   }
 
-  #decodeEventV5(eventRecord: IEventRecord): ContractEvent {
+  #detectEventMeta(signatureTopics: HexString[]): ContractEventMeta {
+    // Only version 5 metadata supports signature topics
     assert(this.metadata.version === 5, 'Invalid metadata version!');
-    assert(this.#isContractEmittedEvent(eventRecord.event), 'Invalid ContractEmitted Event');
-
-    const data = hexToU8a(eventRecord.event.palletEvent.data.data);
-    const signatureTopic = eventRecord.topics.at(0);
 
     let eventMeta: ContractEventMeta | undefined;
-    if (signatureTopic) {
-      eventMeta = this.metadata.spec.events.find((one) => one.signature_topic === signatureTopic);
+    const targetSignatureTopic = signatureTopics.at(0);
+
+    if (targetSignatureTopic) {
+      eventMeta = this.metadata.spec.events.find((one) => one.signature_topic === targetSignatureTopic);
     }
 
     // TODO: Handle multiple anonymous events
@@ -235,12 +234,24 @@ export class TypinkRegistry extends TypeRegistry {
     // that does not contain a signature topic in the metadata.
     if (!eventMeta) {
       const potentialEvents = this.metadata.spec.events.filter(
-        (one) => !one.signature_topic && one.args.filter((arg) => arg.indexed).length === eventRecord.topics.length,
+        (one) => !one.signature_topic && one.args.filter((arg) => arg.indexed).length === signatureTopics.length,
       );
 
       assert(potentialEvents.length === 1, 'Unable to determine event!');
       eventMeta = potentialEvents[0];
     }
+
+    return eventMeta;
+  }
+
+  #decodeEventV5(eventRecord: IEventRecord): ContractEvent {
+    assert(this.metadata.version === 5, 'Invalid metadata version!');
+    assert(this.#isContractEmittedEvent(eventRecord.event), 'Invalid ContractEmitted Event');
+
+    const data = hexToU8a(eventRecord.event.palletEvent.data.data);
+    const signatureTopics = eventRecord.topics;
+
+    const eventMeta = this.#detectEventMeta(signatureTopics);
 
     return this.#tryDecodeEvent(eventMeta, data);
   }
@@ -252,24 +263,9 @@ export class TypinkRegistry extends TypeRegistry {
 
     const eventData = eventRecord.event.palletEvent.data;
     const data = hexToU8a(eventData.data);
-    const signatureTopic = eventData.topics.at(0);
+    const signatureTopics = eventData.topics;
 
-    let eventMeta: ContractEventMeta | undefined;
-    if (signatureTopic) {
-      eventMeta = this.metadata.spec.events.find((one) => one.signature_topic === signatureTopic);
-    }
-
-    // TODO: Handle multiple anonymous events
-    // If `event` does not exist, it means it's an anonymous event
-    // that does not contain a signature topic in the metadata.
-    if (!eventMeta) {
-      const potentialEvents = this.metadata.spec.events.filter(
-        (one) => !one.signature_topic && one.args.filter((arg) => arg.indexed).length === eventRecord.topics.length,
-      );
-
-      assert(potentialEvents.length === 1, 'Unable to determine event!');
-      eventMeta = potentialEvents[0];
-    }
+    const eventMeta = this.#detectEventMeta(signatureTopics);
 
     return this.#tryDecodeEvent(eventMeta, data);
   }

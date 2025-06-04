@@ -6,16 +6,17 @@ import {
   ContractLangError,
 } from '@dedot/contracts';
 import { generateRandomHex } from '@dedot/utils';
-import { describe, expect, it } from 'vitest';
+import { beforeAll, describe, expect, it } from 'vitest';
 import { FlipperContractApi } from '../contracts/flipper';
 import { deployFlipperV5, devPairs, flipperV5Metadata, flipperV6Metadata } from '../utils.js';
 
 describe('Errors', () => {
   let alicePair = devPairs().alice;
+  let deployer: ContractDeployer<FlipperContractApi>;
 
   describe('Contracts', () => {
-    it('should decode error properly', async () => {
-      const deployer = new ContractDeployer<FlipperContractApi>(
+    beforeAll(() => {
+      deployer = new ContractDeployer<FlipperContractApi>(
         contractsClient, // prettier-end-here
         flipperV5Metadata,
         flipperV5Metadata.source.wasm!,
@@ -23,6 +24,9 @@ describe('Errors', () => {
           defaultCaller: alicePair.address,
         },
       );
+    });
+
+    it('should decode error properly', async () => {
       const blank = '0x0000000000000000000000000000000000000000000000000000000000000000';
       const salt = generateRandomHex();
 
@@ -34,14 +38,6 @@ describe('Errors', () => {
     });
 
     it('should throw ContractInstantiateDispatchError', async () => {
-      const deployer = new ContractDeployer<FlipperContractApi>(
-        contractsClient, // prettier-end-here
-        flipperV5Metadata,
-        flipperV5Metadata.source.wasm!,
-        {
-          defaultCaller: alicePair.address,
-        },
-      );
       const salt = generateRandomHex();
 
       const { raw } = await deployer.query.newDefault({ salt });
@@ -92,8 +88,8 @@ describe('Errors', () => {
   });
 
   describe('Revive', () => {
-    it('should decode error properly', async () => {
-      const deployer = new ContractDeployer<FlipperContractApi>(
+    beforeAll(() => {
+      deployer = new ContractDeployer<FlipperContractApi>(
         reviveClient, // prettier-end-here
         flipperV6Metadata,
         flipperV6Metadata.source.contract_binary!,
@@ -101,6 +97,9 @@ describe('Errors', () => {
           defaultCaller: alicePair.address,
         },
       );
+    });
+
+    it('should decode error properly', async () => {
       const blank = '0x0000000000000000000000000000000000000000000000000000000000000000';
       const salt = generateRandomHex();
 
@@ -112,14 +111,6 @@ describe('Errors', () => {
     });
 
     it('should throw ContractInstantiateDispatchError', async () => {
-      const deployer = new ContractDeployer<FlipperContractApi>(
-        reviveClient, // prettier-end-here
-        flipperV6Metadata,
-        flipperV6Metadata.source.contract_binary!,
-        {
-          defaultCaller: alicePair.address,
-        },
-      );
       const salt = generateRandomHex();
 
       const { raw } = await deployer.query.newDefault({ salt });
@@ -142,5 +133,7 @@ describe('Errors', () => {
         new Error(`Contract with address ${fakeAddress} does not exist on chain!`),
       );
     });
+
+    // TODO: Add tests for others errors which are not being supported by revive yet
   });
 });

@@ -70,7 +70,7 @@ describe('ContractDeployer', () => {
       );
     });
 
-    it('should dryrun properly', async () => {
+    it('should dry run properly', async () => {
       const result = await deployer.query.new(true);
 
       expect(result).toBeDefined();

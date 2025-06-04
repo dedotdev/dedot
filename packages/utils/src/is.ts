@@ -1,4 +1,5 @@
 import { hexToU8a } from './hex.js';
+import { toU8a } from './to.js';
 import { HexString } from './types.js';
 import { u8aEq } from './u8a.js';
 
@@ -59,10 +60,11 @@ const WASM_MAGIC = new Uint8Array([0, 97, 115, 109]); // \0asm
 export function isWasm(input: unknown) {
   if (typeof input === 'string') {
     input = hexToU8a(input);
+
+    console.log(input, isU8a(input) && input.length);
   }
 
-  // TODO the length should be longer than code hash which is 32 bytes
-  return isU8a(input) && u8aEq(input.subarray(0, 4), WASM_MAGIC);
+  return isU8a(input) && input.length > 32 && u8aEq(input.subarray(0, 4), WASM_MAGIC);
 }
 
 const PVM_PREFIX = new Uint8Array([80, 86, 77]); // \PVM
@@ -72,6 +74,5 @@ export function isPvm(input: unknown) {
     input = hexToU8a(input);
   }
 
-  // TODO the length should be longer than code hash which is 32 bytes
-  return isU8a(input) && u8aEq(input.subarray(0, 3), PVM_PREFIX);
+  return isU8a(input) && input.length > 32 && u8aEq(input.subarray(0, 3), PVM_PREFIX);
 }
