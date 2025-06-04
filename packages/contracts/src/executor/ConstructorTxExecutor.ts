@@ -1,19 +1,7 @@
 import type { ISubstrateClient } from '@dedot/api';
 import type { SubstrateApi } from '@dedot/api/chaintypes';
 import { GenericSubstrateApi, RpcVersion } from '@dedot/types';
-import {
-  assert,
-  assertFalse,
-  concatU8a,
-  hexToU8a,
-  isHex,
-  isPvm,
-  isU8a,
-  isUndefined,
-  isWasm,
-  toHex,
-  u8aToHex,
-} from '@dedot/utils';
+import { assert, concatU8a, hexToU8a, isPvm, isUndefined, isWasm, toHex, toU8a, u8aToHex } from '@dedot/utils';
 import { ConstructorTxOptions, GenericConstructorTxCall } from '../types/index.js';
 import { DeployerExecutor } from './abstract/index.js';
 
@@ -37,10 +25,8 @@ export class ConstructorTxExecutor<ChainApi extends GenericSubstrateApi> extends
 
       if (this.registry.isRevive()) {
         assert(
-          isUndefined(salt) ||
-            (isHex(salt) && hexToU8a(salt).byteLength == 32) ||
-            (isU8a(salt) && salt.byteLength == 32),
-          'Expected a valid salt in ConstructorCallOptions, must be a hex string or Uint8Array of length 32',
+          isUndefined(salt) || toU8a(salt).byteLength == 32,
+          'Invalid salt provided in ConstructorCallOptions: expected a 32-byte value as a hex string or a Uint8Array.',
         );
 
         assert(!isUndefined(storageDepositLimit), 'Expected a storage deposit limit in ConstructorTxOptions');
@@ -52,7 +38,7 @@ export class ConstructorTxExecutor<ChainApi extends GenericSubstrateApi> extends
             storageDepositLimit,
             this.code,
             bytes,
-            isU8a(salt) ? u8aToHex(salt) : salt,
+            salt ? toHex(salt) : undefined,
           );
         } else {
           return client.tx.revive.instantiate(
@@ -61,7 +47,7 @@ export class ConstructorTxExecutor<ChainApi extends GenericSubstrateApi> extends
             storageDepositLimit,
             toHex(this.code),
             bytes,
-            isU8a(salt) ? u8aToHex(salt) : salt,
+            salt ? toHex(salt) : undefined,
           );
         }
       } else {
