@@ -1,5 +1,4 @@
 import { TypeDef } from '@dedot/codecs';
-import { hexToU8a } from '@dedot/utils';
 import { describe, expect, it } from 'vitest';
 import { ContractTypeDef, ReturnFlags } from '../types/index.js';
 import {
@@ -10,7 +9,6 @@ import {
   create1,
   create2,
   toEthAddress,
-  isEthDerived,
 } from '../utils/index.js';
 import { FLIPPER_CONTRACT_METADATA_V4, FLIPPER_CONTRACT_METADATA_V6 } from './contracts-metadata.js';
 
