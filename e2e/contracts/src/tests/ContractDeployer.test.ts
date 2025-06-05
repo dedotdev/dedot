@@ -109,7 +109,7 @@ describe('ContractDeployer', () => {
       const contractAddress = CREATE2(
         toEthAddress(alicePair.address),
         flipperV6Metadata.source.contract_binary!,
-        raw.inputBytes!,
+        raw.inputData,
         salt,
       );
 

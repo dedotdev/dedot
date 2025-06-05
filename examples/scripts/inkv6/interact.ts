@@ -116,7 +116,7 @@ console.log('-'.repeat(50));
 const contractAddress = CREATE2(
   toEthAddress(alice.address),
   flipper6.source.contract_binary,
-  dryRun.raw.inputBytes,
+  dryRun.raw.inputData,
   salt,
 );
 

@@ -77,7 +77,7 @@ export class ConstructorQueryExecutor<ChainApi extends GenericSubstrateApi> exte
             gasConsumed: raw.gasConsumed,
             gasRequired: raw.gasRequired,
             storageDeposit: raw.storageDeposit,
-            inputBytes: bytes,
+            inputData: bytes,
             result,
           } as ContractInstantiateResult<ChainApi>;
         } else {
@@ -104,9 +104,9 @@ export class ConstructorQueryExecutor<ChainApi extends GenericSubstrateApi> exte
             gasConsumed: raw.gasConsumed,
             gasRequired: raw.gasRequired,
             storageDeposit: raw.storageDeposit,
-            inputBytes: bytes,
-            result,
+            inputData: bytes,
             debugMessage: raw.debugMessage,
+            result,
           } as ContractInstantiateResult<ChainApi>;
         }
       })();

@@ -68,19 +68,18 @@ export type ContractCallResult<_ extends GenericSubstrateApi> = {
   gasConsumed: WeightV2;
   gasRequired: WeightV2;
   storageDeposit: StorageDeposit;
-  result: Result<ExecReturnValue, DispatchError>;
+  inputData: Bytes; // Encoded (selector + arguments) input data
   debugMessage?: Bytes;
+  result: Result<ExecReturnValue, DispatchError>;
 };
 
 export type ContractInstantiateResult<_ extends GenericSubstrateApi> = {
   gasConsumed: WeightV2;
   gasRequired: WeightV2;
   storageDeposit: StorageDeposit;
-  result: Result<InstantiateReturnValue, DispatchError>;
-  // Encoded (selector + arguments) passed to the constructor
-  // Needed when deploying contract using salt in pallet-revive, used in `create2()`
-  inputBytes: Bytes; // TODO find a better way to access this
+  inputData: Bytes; // Encoded (selector + arguments) input data
   debugMessage?: Bytes;
+  result: Result<InstantiateReturnValue, DispatchError>;
 };
 
 type SubmittableExtrinsic = ISubmittableExtrinsic & Extrinsic;

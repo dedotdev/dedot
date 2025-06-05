@@ -53,6 +53,7 @@ export class QueryExecutor<ChainApi extends GenericSubstrateApi> extends Contrac
             gasConsumed: raw.gasConsumed,
             gasRequired: raw.gasRequired,
             storageDeposit: raw.storageDeposit,
+            inputData: bytes,
             result: raw.result,
           } as ContractCallResult<ChainApi>;
         } else {
@@ -69,8 +70,9 @@ export class QueryExecutor<ChainApi extends GenericSubstrateApi> extends Contrac
             gasConsumed: raw.gasConsumed,
             gasRequired: raw.gasRequired,
             storageDeposit: raw.storageDeposit,
-            result: raw.result,
             debugMessage: raw.debugMessage,
+            inputData: bytes,
+            result: raw.result,
           } as ContractCallResult<ChainApi>;
         }
       })();
