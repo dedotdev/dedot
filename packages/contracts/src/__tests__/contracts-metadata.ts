@@ -7,8 +7,7 @@ import flipperV6Raw from './flipper_v6.json' assert {type: 'json'};
 // @ts-ignore
 import flipperV5NoSignatureTopicRaw from './flipper_v5_no_signature_topic.json' assert {type: 'json'};
 // @ts-ignore
-import flipperV5NoSignatureTopicIndexedFieldsRaw
-  from './flipper_v5_no_signature_topic_indexed_fields.json' assert {type: 'json'};
+import flipperV5NoSignatureTopicIndexedFieldsRaw from './flipper_v5_no_signature_topic_indexed_fields.json' assert {type: 'json'};
 // @ts-ignore
 import psp22Raw from './psp22.json' assert {type: 'json'};
 

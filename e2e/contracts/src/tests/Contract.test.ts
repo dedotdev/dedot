@@ -31,7 +31,7 @@ describe('Contract', () => {
 
       const { raw } = await contract.query.flip();
       await contract.tx
-        .flip({ gasLimit: raw.gasRequired, storageDepositLimit: raw.storageDeposit.value })
+        .flip({ gasLimit: raw.gasRequired }) // --
         .signAndSend(alicePair)
         .untilFinalized();
 
@@ -46,9 +46,12 @@ describe('Contract', () => {
   describe('Revive', () => {
     beforeEach(async () => {
       const contractAddress = await deployFlipperV6(alicePair);
-      contract = new Contract<FlipperContractApi>(reviveClient, flipperV6Metadata, contractAddress, {
-        defaultCaller: alicePair.address,
-      });
+      contract = new Contract<FlipperContractApi>(
+        reviveClient, // --
+        flipperV6Metadata,
+        contractAddress,
+        { defaultCaller: alicePair.address },
+      );
     });
 
     it('should dry run contract properly', async () => {
@@ -67,7 +70,10 @@ describe('Contract', () => {
 
       const { raw } = await contract.query.flip();
       await contract.tx
-        .flip({ gasLimit: raw.gasRequired, storageDepositLimit: raw.storageDeposit.value })
+        .flip({
+          gasLimit: raw.gasRequired,
+          storageDepositLimit: raw.storageDeposit.value,
+        })
         .signAndSend(alicePair)
         .untilFinalized();
 
