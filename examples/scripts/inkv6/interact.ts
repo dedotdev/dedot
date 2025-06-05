@@ -1,5 +1,5 @@
 import { LegacyClient, WsProvider } from 'dedot';
-import { Contract, ContractDeployer, CREATE2, toEthAddress } from 'dedot/contracts';
+import { Contract, ContractDeployer, CREATE2, toEvmAddress } from 'dedot/contracts';
 import { generateRandomHex } from 'dedot/utils';
 import { devPairs } from '../keyring.js';
 import { FlipperContractApi } from './flipper/index.js';
@@ -114,7 +114,7 @@ console.log('📝 Step 3: Get Value from Flipper Contract');
 console.log('-'.repeat(50));
 
 const contractAddress = CREATE2(
-  toEthAddress(alice.address),
+  toEvmAddress(alice.address),
   flipper6.source.contract_binary,
   dryRun.raw.inputData,
   salt,

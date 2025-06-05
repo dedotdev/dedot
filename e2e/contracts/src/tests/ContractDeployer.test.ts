@@ -1,4 +1,4 @@
-import { Contract, ContractDeployer, CREATE1, CREATE2, toEthAddress } from '@dedot/contracts';
+import { Contract, ContractDeployer, CREATE1, CREATE2, toEvmAddress } from '@dedot/contracts';
 import { generateRandomHex } from '@dedot/utils';
 import { beforeAll, describe, expect, it } from 'vitest';
 import { FlipperContractApi } from '../contracts/flipper';
@@ -83,7 +83,7 @@ describe('ContractDeployer', () => {
       const result = await deployer.query.new(true);
 
       const nonce = await reviveClient.call.accountNonceApi.accountNonce(alicePair.address);
-      const contractAddress = CREATE1(toEthAddress(alicePair.address), nonce);
+      const contractAddress = CREATE1(toEvmAddress(alicePair.address), nonce);
 
       await deployer.tx
         .new(true, { gasLimit: result.raw.gasRequired, storageDepositLimit: result.raw.storageDeposit.value })
@@ -107,7 +107,7 @@ describe('ContractDeployer', () => {
       const { raw } = await deployer.query.new(true, { salt });
 
       const contractAddress = CREATE2(
-        toEthAddress(alicePair.address),
+        toEvmAddress(alicePair.address),
         flipperV6Metadata.source.contract_binary!,
         raw.inputData,
         salt,

@@ -7,7 +7,7 @@ import {
   extractContractTypes,
   normalizeContractTypeDef,
   normalizeLabel,
-  toEthAddress,
+  toEvmAddress,
   toReturnFlags,
 } from '../utils/index.js';
 import { FLIPPER_CONTRACT_METADATA_V4, FLIPPER_CONTRACT_METADATA_V6 } from './contracts-metadata.js';
@@ -191,7 +191,7 @@ describe('utils', () => {
       it('should convert ss58 to eth address', () => {
         const accountId = '5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY';
 
-        const result = toEthAddress(accountId);
+        const result = toEvmAddress(accountId);
 
         expect(result).toMatch(/^0x[a-fA-F0-9]{40}$/);
         expect(result).toBe('0x9621dde636de098b43efb0fa9b61facfe328f99d');
@@ -202,7 +202,7 @@ describe('utils', () => {
         const ethAddress = '0x1234567890123456789012345678901234567890';
         const ethDerivedAccount = ethAddress + 'eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee';
 
-        const result = toEthAddress(ethDerivedAccount);
+        const result = toEvmAddress(ethDerivedAccount);
 
         expect(result).toMatch(/^0x[a-fA-F0-9]{40}$/);
         expect(result).toBe(ethAddress);

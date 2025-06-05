@@ -1,7 +1,7 @@
 import Keyring from '@polkadot/keyring';
 import { KeyringPair } from '@polkadot/keyring/types';
 import { cryptoWaitReady } from '@polkadot/util-crypto';
-import { ContractAddress, ContractDeployer, CREATE1, toEthAddress } from '@dedot/contracts';
+import { ContractAddress, ContractDeployer, CREATE1, toEvmAddress } from '@dedot/contracts';
 import { assert, generateRandomHex } from '@dedot/utils';
 import { FlipperContractApi } from './contracts/flipper';
 import * as flipperV5 from './contracts/flipper_v5.json';
@@ -56,7 +56,7 @@ export const deployFlipperV6 = async (signer: KeyringPair): Promise<ContractAddr
 
   const { raw } = await deployer.query.new(true);
   const nonce = await reviveClient.call.accountNonceApi.accountNonce(signer.address);
-  const contractAddress = CREATE1(toEthAddress(signer.address), nonce);
+  const contractAddress = CREATE1(toEvmAddress(signer.address), nonce);
 
   await deployer.tx
     .new(true, { gasLimit: raw.gasRequired, storageDepositLimit: raw.storageDeposit.value })
