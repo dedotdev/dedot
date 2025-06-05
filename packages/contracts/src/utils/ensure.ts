@@ -61,12 +61,12 @@ export function ensureValidContractAddress(address: ContractAddress, registry: T
   if (registry.isRevive()) {
     assert(
       isEvmAddress(address as HexString),
-      `Invalid pallet-revive contract address: ${address}. Expected a 20-byte address as a hex string or a Uint8Array`,
+      `Invalid contract address: ${address}. Expected an EVM 20-byte address as a hex string or a Uint8Array`,
     );
   } else {
     assert(
       hexToU8a(accountId32ToHex(address)).length === 32,
-      `Invalid pallet-contracts contract address: ${address}. Expected a 32-byte address as a hex string or a Uint8Array`,
+      `Invalid contract address: ${address}. Expected a Substrate 32-byte address as a hex string or a Uint8Array`,
     );
   }
 }

@@ -113,9 +113,9 @@ if (result2.dispatchError) {
 console.log('📝 Step 3: Read contract value');
 
 const contractAddress = CREATE2(
-  toEvmAddress(alice.address),
+  toEvmAddress(alice.address), // --
   flipper6.source.contract_binary,
-  dryRun.raw.inputData,
+  dryRun.inputData,
   salt,
 );
 

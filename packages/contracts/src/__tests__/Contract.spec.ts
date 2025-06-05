@@ -90,19 +90,19 @@ describe('Contract', () => {
     it('should throw error if contract address invalid', () => {
       expect(() => new Contract(api, FLIPPER_CONTRACT_METADATA_V6, FLIPPER_V4_CONTRACT_ADDRESS)).toThrowError(
         new Error(
-          `Invalid pallet-revive contract address: ${FLIPPER_V4_CONTRACT_ADDRESS}. Expected a 20-byte address as a hex string or a Uint8Array`,
+          `Invalid contract address: ${FLIPPER_V4_CONTRACT_ADDRESS}. Expected an EVM 20-byte address as a hex string or a Uint8Array`,
         ),
       );
 
       expect(() => new Contract(api, FLIPPER_CONTRACT_METADATA_V5, FLIPPER_V6_CONTRACT_ADDRESS)).toThrowError(
         new Error(
-          `Invalid pallet-contracts contract address: ${FLIPPER_V6_CONTRACT_ADDRESS}. Expected a 32-byte address as a hex string or a Uint8Array`,
+          `Invalid contract address: ${FLIPPER_V6_CONTRACT_ADDRESS}. Expected a Substrate 32-byte address as a hex string or a Uint8Array`,
         ),
       );
 
       expect(() => new Contract(api, FLIPPER_CONTRACT_METADATA_V4, FLIPPER_V6_CONTRACT_ADDRESS)).toThrowError(
         new Error(
-          `Invalid pallet-contracts contract address: ${FLIPPER_V6_CONTRACT_ADDRESS}. Expected a 32-byte address as a hex string or a Uint8Array`,
+          `Invalid contract address: ${FLIPPER_V6_CONTRACT_ADDRESS}. Expected a Substrate 32-byte address as a hex string or a Uint8Array`,
         ),
       );
     });

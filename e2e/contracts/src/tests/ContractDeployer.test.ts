@@ -104,12 +104,12 @@ describe('ContractDeployer', () => {
 
     it('should deploy contract with salt properly', async () => {
       const salt = generateRandomHex();
-      const { raw } = await deployer.query.new(true, { salt });
+      const { raw, inputData } = await deployer.query.new(true, { salt });
 
       const contractAddress = CREATE2(
         toEvmAddress(alicePair.address),
         flipperV6Metadata.source.contract_binary!,
-        raw.inputData,
+        inputData,
         salt,
       );
 

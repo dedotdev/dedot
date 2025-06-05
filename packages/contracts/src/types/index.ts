@@ -44,6 +44,7 @@ export interface GenericContractCallResult<DecodedData = any, ContractResult = a
   data: DecodedData;
   raw: ContractResult;
   flags: ReturnFlags;
+  inputData: Bytes; // Encoded (selector + arguments) input data
 }
 
 export interface GenericConstructorCallResult<DecodedData = any, ContractResult = any>
@@ -68,7 +69,6 @@ export type ContractCallResult<_ extends GenericSubstrateApi> = {
   gasConsumed: WeightV2;
   gasRequired: WeightV2;
   storageDeposit: StorageDeposit;
-  inputData: Bytes; // Encoded (selector + arguments) input data
   debugMessage?: Bytes;
   result: Result<ExecReturnValue, DispatchError>;
 };
@@ -77,7 +77,6 @@ export type ContractInstantiateResult<_ extends GenericSubstrateApi> = {
   gasConsumed: WeightV2;
   gasRequired: WeightV2;
   storageDeposit: StorageDeposit;
-  inputData: Bytes; // Encoded (selector + arguments) input data
   debugMessage?: Bytes;
   result: Result<InstantiateReturnValue, DispatchError>;
 };
