@@ -126,6 +126,15 @@ console.log('🔍 Reading current value from contract');
 const getValue1 = await contract.query.get();
 console.log(`📖 Current value: ${getValue1.data}`);
 
+console.log('🔍 Reading root storage');
+const root = await contract.storage.root();
+console.log(`📦 Root storage value: ${root.value}`);
+
+console.log('✅ Initial verification:');
+console.log(`📊 Query value: ${getValue1.data}`);
+console.log(`📊 Storage value: ${root.value}`);
+console.log(`🔄 Values match: ${getValue1.data === root.value ? '✅ YES' : '❌ NO'}`);
+
 console.log('📝 Step 4: Flip the value');
 
 console.log('🔍 Dry running flip operation');
@@ -149,10 +158,23 @@ console.log('🔍 Reading value after flip');
 const getValueAfterFlip = await contract.query.get();
 console.log(`📖 New value: ${getValueAfterFlip.data}`);
 
-console.log('✅ Verification results:');
-console.log(`📊 Original value: ${getValue1.data}`);
-console.log(`📊 New value: ${getValueAfterFlip.data}`);
+console.log('🔍 Reading updated root storage');
+const newRoot = await contract.storage.root();
+console.log(`📦 New root storage value: ${newRoot.value}`);
+
+console.log('✅ Post-flip verification:');
+console.log(`📊 Query value: ${getValueAfterFlip.data}`);
+console.log(`📊 Storage value: ${newRoot.value}`);
+console.log(`🔄 Values match: ${getValueAfterFlip.data === newRoot.value ? '✅ YES' : '❌ NO'}`);
+
+console.log('✅ Overall verification results:');
+console.log(`📊 Original query value: ${getValue1.data}`);
+console.log(`📊 Original storage value: ${root.value}`);
+console.log(`📊 New query value: ${getValueAfterFlip.data}`);
+console.log(`📊 New storage value: ${newRoot.value}`);
 console.log(`🔄 Value changed: ${getValue1.data !== getValueAfterFlip.data ? '✅ YES' : '❌ NO'}`);
+console.log(`🔄 Storage changed: ${root.value !== newRoot.value ? '✅ YES' : '❌ NO'}`);
+console.log(`🔄 Query-Storage consistency: ${(getValue1.data === root.value && getValueAfterFlip.data === newRoot.value) ? '✅ CONSISTENT' : '❌ INCONSISTENT'}`);
 
 console.log('🎁 Bonus: Demonstrate flipWithSeed method');
 
@@ -175,8 +197,18 @@ if (flipWithSeedDryRun.data.isOk) {
     .untilFinalized();
   console.log(`✅ FlipWithSeed executed successfully`);
 
+  console.log('🔍 Reading final value after flipWithSeed');
   const finalValue = await contract.query.get();
   console.log(`📖 Final value: ${finalValue.data}`);
+
+  console.log('🔍 Reading final root storage');
+  const finalRoot = await contract.storage.root();
+  console.log(`📦 Final root storage value: ${finalRoot.value}`);
+
+  console.log('✅ Final verification:');
+  console.log(`📊 Query value: ${finalValue.data}`);
+  console.log(`📊 Storage value: ${finalRoot.value}`);
+  console.log(`🔄 Values match: ${finalValue.data === finalRoot.value ? '✅ YES' : '❌ NO'}`);
 } else {
   console.log(`⚠️ FlipWithSeed dry run failed: ${JSON.stringify(flipWithSeedDryRun.data.err)}`);
 }
