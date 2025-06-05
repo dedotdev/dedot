@@ -3,6 +3,7 @@ import { Contract, ContractDeployer, CREATE2, isContractInstantiateDispatchError
 import { generateRandomHex } from 'dedot/utils';
 import { devPairs } from '../keyring.js';
 import { FlipperContractApi } from './flipper/index.js';
+// @ts-ignore
 import flipper6 from './flipper_v6.json';
 
 // Initialize crypto and keyring
