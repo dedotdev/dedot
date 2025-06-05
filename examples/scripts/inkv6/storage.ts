@@ -9,17 +9,18 @@ const { alice } = await devPairs();
 const client = await DedotClient.new(new WsProvider('wss://sys.ibp.network/asset-hub-westend'));
 
 const contractAddress = '0x90b7109346eEbbd8218336fF67CB7F7b5b599eFE';
-// Create contract instance for the first deployed contract
-const contract = new Contract<FlipperContractApi>(client, flipper6, contractAddress, {
-  defaultCaller: alice.address,
-});
+
+const contract = new Contract<FlipperContractApi>(
+  client, // --
+  flipper6,
+  contractAddress,
+  { defaultCaller: alice.address },
+);
 
 // Get the current value
 console.log('🔍 Reading current value from first contract...');
 const getValue1 = await contract.query.get();
 console.log(`   📖 Current value: ${getValue1.data}`);
-console.log(`   ⛽ Gas consumed: ${getValue1.raw.gasConsumed.refTime.toLocaleString()}`);
-console.log();
 
 const root = await contract.storage.root();
 

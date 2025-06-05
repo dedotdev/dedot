@@ -2,8 +2,8 @@ import { TypeDef } from '@dedot/codecs';
 import { describe, expect, it } from 'vitest';
 import { ContractMetadata, ContractTypeDef, ReturnFlags } from '../types/index.js';
 import {
-  create1,
-  create2,
+  CREATE1,
+  CREATE2,
   extractContractTypes,
   normalizeContractTypeDef,
   normalizeLabel,
@@ -168,7 +168,7 @@ describe('utils', () => {
         const deployer = '0x9621dde636de098b43efb0fa9b61facfe328f99d';
         const nonce = 39;
 
-        const result = create1(deployer, nonce);
+        const result = CREATE1(deployer, nonce);
 
         expect(result).toBe('0x2e66c81231a5a1be75aea054b010e5c2f40ea90f');
       });
@@ -181,7 +181,7 @@ describe('utils', () => {
         const inputData = '0x9bae9d5e01';
         const salt = '0x00db90387370ad89cb16adfbc6c33e7de7e960a318af0c3ad95a471f500a3e7b';
 
-        const result = create2(deployer, code, inputData, salt);
+        const result = CREATE2(deployer, code, inputData, salt);
 
         expect(result).toBe('0x96e3ef2ec5c06ec612863cb18c0dff3741f95d02');
       });

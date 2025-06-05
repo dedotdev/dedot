@@ -10,7 +10,7 @@
       "dedot/*": ["../../packages/dedot/src/*"]
     }
   },
-  "include": ["src/**/*"],
+  "include": ["src/**/*", "src/**/*.json"],
   "references": [
     {
       "path": "../../packages/dedot/tsconfig.json"
