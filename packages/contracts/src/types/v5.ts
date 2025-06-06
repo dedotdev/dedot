@@ -1,17 +1,13 @@
-import { ContractInformation, ContractSource, ContractType } from './shared.js';
+import { ContractInformation, ContractType } from './shared.js';
 import { ContractEnvironmentV4, ContractEventV4, ContractSourceV4, ContractSpecV4 } from './v4.js';
 
 export interface ContractMetadataV5 {
-  source: ContractSourceV5;
+  source: ContractSourceV4;
   contract: ContractInformation;
   spec: ContractSpecV5;
   storage: ContractStorageV5;
   types: ContractType[];
   version: 5; // This is a numberic field in v5 metadata, but it is a string in v4 metadata
-}
-
-export interface ContractSourceV5 extends ContractSource {
-  wasm?: string;
 }
 
 export interface ContractSpecV5 extends ContractSpecV4 {

@@ -1,6 +1,5 @@
 import { ContractInformation, ContractSource, ContractType } from './shared';
-import { ContractSourceV4 } from './v4';
-import { ContractMetadataV5, ContractSpecV5, ContractStorageV5 } from './v5.js';
+import { ContractSpecV5, ContractStorageV5 } from './v5.js';
 
 export interface ContractSourceV6 extends ContractSource {
   contract_binary?: string;
