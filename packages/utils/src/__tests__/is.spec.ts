@@ -1,4 +1,6 @@
 import { describe, it, expect } from 'vitest';
+import { concatU8a } from '../concat.js';
+import { hexToU8a } from '../hex.js';
 import {
   isBigInt,
   isBoolean,
@@ -11,6 +13,7 @@ import {
   isU8a,
   isUndefined,
   isWasm,
+  isPvm,
 } from '../is.js';
 
 describe('is', () => {
@@ -144,30 +147,73 @@ describe('is', () => {
 
   describe('isWasm', () => {
     it('returns true for valid wasm input', () => {
-      const wasmInput = new Uint8Array([0, 97, 115, 109, 1, 2, 3, 4]);
+      const wasmInput = hexToU8a('0x0061736d'.padEnd(128, 'ff'));
       expect(isWasm(wasmInput)).toBe(true);
     });
 
     it('returns true for valid wasm input in hex format', () => {
-      const wasmInput = '0x0061736d01020304';
+      const wasmInput = '0x0061736d'.padEnd(128, 'ff');
       expect(isWasm(wasmInput)).toBe(true);
     });
 
     it('returns false for non-wasm input', () => {
       const nonWasmInput = new Uint8Array([1, 2, 3, 4]);
       expect(isWasm(nonWasmInput)).toBe(false);
+
+      const hasWasmMagicButLengthMismatch = concatU8a(new Uint8Array([0, 97, 115, 109]), new Uint8Array([1, 2, 3]));
+      expect(isWasm(hasWasmMagicButLengthMismatch)).toBe(false);
     });
 
     it('returns false for non-wasm input in hex format', () => {
-      const nonWasmInput = '0x01020304';
+      const nonWasmInput = '0x01020304'.padEnd(128, 'ff');
       expect(isWasm(nonWasmInput)).toBe(false);
     });
 
     it('returns false for non-Uint8Array and non-string input', () => {
+      // @ts-ignore
       expect(isWasm(123)).toBe(false);
+      // @ts-ignore
       expect(isWasm({})).toBe(false);
+      // @ts-ignore
       expect(isWasm(null)).toBe(false);
+      // @ts-ignore
       expect(isWasm(undefined)).toBe(false);
+    });
+  });
+
+  describe('isPvm', () => {
+    it('returns true for valid pvm input', () => {
+      const pvmInput = hexToU8a('0x50564d'.padEnd(128, '0'));
+      expect(isPvm(pvmInput)).toBe(true);
+    });
+
+    it('returns true for valid pvm input in hex format', () => {
+      const pvmInput = '0x50564d'.padEnd(128, '0');
+      expect(isPvm(pvmInput)).toBe(true);
+    });
+
+    it('returns false for non-pvm input', () => {
+      const nonPvmInput = new Uint8Array([1, 2, 3]);
+      expect(isPvm(nonPvmInput)).toBe(false);
+
+      const hasPvmPrefixButLengthMismatch = concatU8a(new Uint8Array([0x50, 0x56, 0x4d]), new Uint8Array([1, 2, 3]));
+      expect(isPvm(hasPvmPrefixButLengthMismatch)).toBe(false);
+    });
+
+    it('returns false for non-pvm input in hex format', () => {
+      const nonPvmInput = '0x010203'.padEnd(128, '0');
+      expect(isPvm(nonPvmInput)).toBe(false);
+    });
+
+    it('returns false for non-Uint8Array and non-string input', () => {
+      // @ts-ignore
+      expect(isPvm(123)).toBe(false);
+      // @ts-ignore
+      expect(isPvm({})).toBe(false);
+      // @ts-ignore
+      expect(isPvm(null)).toBe(false);
+      // @ts-ignore
+      expect(isPvm(undefined)).toBe(false);
     });
   });
 });

@@ -1,4 +1,5 @@
 import { hexToU8a } from './hex.js';
+import { toU8a } from './to.js';
 import { HexString } from './types.js';
 import { u8aEq } from './u8a.js';
 
@@ -56,10 +57,24 @@ const WASM_MAGIC = new Uint8Array([0, 97, 115, 109]); // \0asm
 /**
  * @Ref: https://github.com/polkadot-js/common/blob/master/packages/util/src/is/wasm.ts
  */
-export function isWasm(input: unknown) {
-  if (typeof input === 'string') {
-    input = hexToU8a(input);
-  }
+export function isWasm(input: string | Uint8Array | HexString) {
+  try {
+    input = toU8a(input);
 
-  return isU8a(input) && u8aEq(input.subarray(0, 4), WASM_MAGIC);
+    return input.length > 32 && u8aEq(input.subarray(0, 4), WASM_MAGIC);
+  } catch {}
+
+  return false;
+}
+
+const PVM_PREFIX = new Uint8Array([80, 86, 77]); // \PVM
+
+export function isPvm(input: string | Uint8Array | HexString) {
+  try {
+    input = toU8a(input);
+
+    return input.length > 32 && u8aEq(input.subarray(0, 3), PVM_PREFIX);
+  } catch {}
+
+  return false;
 }

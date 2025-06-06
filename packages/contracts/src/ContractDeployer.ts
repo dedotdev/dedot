@@ -3,8 +3,13 @@ import { Hash } from '@dedot/codecs';
 import { TypinkRegistry } from './TypinkRegistry.js';
 import { ConstructorQueryExecutor } from './executor/ConstructorQueryExecutor.js';
 import { ConstructorTxExecutor } from './executor/index.js';
-import { ContractMetadata, GenericContractApi, ExecutionOptions, LooseContractMetadata } from './types/index.js';
-import { ensureSupportContractsPallet, newProxyChain, parseRawMetadata } from './utils.js';
+import { ContractMetadata, ExecutionOptions, GenericContractApi, LooseContractMetadata } from './types/index.js';
+import {
+  ensurePalletPresence,
+  ensureSupportedContractMetadataVersion,
+  ensureValidCodeHashOrCode,
+  newProxyChain,
+} from './utils/index.js';
 
 export class ContractDeployer<ContractApi extends GenericContractApi = GenericContractApi> {
   readonly #metadata: ContractMetadata;
@@ -15,14 +20,19 @@ export class ContractDeployer<ContractApi extends GenericContractApi = GenericCo
   constructor(
     readonly client: ISubstrateClient<ContractApi['types']['ChainApi']>,
     metadata: LooseContractMetadata | string,
-    codeHashOrWasm: Hash | Uint8Array | string,
+    codeHashOrCode: Hash | Uint8Array | string,
     options?: ExecutionOptions,
   ) {
-    ensureSupportContractsPallet(client);
+    this.#metadata = (typeof metadata === 'string' ? JSON.parse(metadata) : metadata) as ContractMetadata;
 
-    this.#metadata = typeof metadata === 'string' ? parseRawMetadata(metadata) : (metadata as ContractMetadata);
-    this.#registry = new TypinkRegistry(this.#metadata);
-    this.#code = codeHashOrWasm;
+    ensureSupportedContractMetadataVersion(this.metadata);
+
+    this.#registry = new TypinkRegistry(this.metadata);
+
+    ensurePalletPresence(client, this.registry);
+    ensureValidCodeHashOrCode(codeHashOrCode, this.registry);
+
+    this.#code = codeHashOrCode;
     this.#options = options;
   }
 

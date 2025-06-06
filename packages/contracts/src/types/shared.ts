@@ -1,10 +1,4 @@
-export interface ContractSource {
-  hash: string;
-  wasm?: string;
-  language: string;
-  compiler: string;
-  build_info: BuildInfo;
-}
+export type ContractAddress = string; // ss58 or evm address
 
 export interface ContractInformation {
   name: string;
@@ -12,11 +6,17 @@ export interface ContractInformation {
   authors: string[];
 }
 
+export interface ContractSource {
+  hash: string;
+  language: string;
+  compiler: string;
+  build_info: BuildInfo;
+}
+
 export interface BuildInfo {
   build_mode: string;
   cargo_contract_version: string;
   rust_toolchain: string;
-  wasm_opt_settings: WasmOptSettings;
 }
 
 export interface WasmOptSettings {

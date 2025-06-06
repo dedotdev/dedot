@@ -1,23 +1,22 @@
 import { ISubstrateClient } from '@dedot/api';
-import { AccountId32, AccountId32Like } from '@dedot/codecs';
 import { GenericSubstrateApi } from '@dedot/types';
 import { TypinkRegistry } from '../../TypinkRegistry.js';
-import { ContractCallMessage, ExecutionOptions } from '../../types/index.js';
-import { normalizeLabel } from '../../utils.js';
+import { ContractAddress, ContractCallMessage, ExecutionOptions } from '../../types/index.js';
+import { normalizeLabel } from '../../utils/index.js';
 import { Executor } from './Executor.js';
 
 export abstract class ContractExecutor<ChainApi extends GenericSubstrateApi> extends Executor<ChainApi> {
-  readonly address: AccountId32;
+  readonly address: ContractAddress;
 
   constructor(
     client: ISubstrateClient<ChainApi>,
     registry: TypinkRegistry,
-    address: AccountId32Like,
+    address: ContractAddress,
     options?: ExecutionOptions,
   ) {
     super(client, registry, options);
 
-    this.address = new AccountId32(address);
+    this.address = address;
   }
 
   protected findMessage(message: string): ContractCallMessage | undefined {

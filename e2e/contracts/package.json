@@ -1,0 +1,15 @@
+{
+  "name": "e2e-contracts",
+  "author": "Tung Vu <tung@dedot.dev>",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "e2e:test": "npx vitest --watch=false --no-file-parallelism"
+  },
+  "dependencies": {
+    "@dedot/chaintypes": "^0.101.0",
+    "@polkadot/keyring": "^13.5.1",
+    "dedot": "workspace:*"
+  },
+  "license": "Apache-2.0"
+}

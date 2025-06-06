@@ -6,6 +6,7 @@
   "workspaces": [
     "packages/*",
     "examples/*",
+    "e2e/*",
     "zombienet-tests"
   ],
   "scripts": {

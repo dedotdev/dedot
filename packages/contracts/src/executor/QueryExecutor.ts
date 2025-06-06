@@ -1,10 +1,16 @@
-import type { PalletContractsPrimitivesContractResult } from '@dedot/api/chaintypes';
+import type { ISubstrateClient } from '@dedot/api';
+import type { SubstrateApi } from '@dedot/api/chaintypes';
 import { Result } from '@dedot/codecs';
-import { GenericSubstrateApi } from '@dedot/types';
-import { assert, assertFalse, concatU8a, hexToU8a, u8aToHex } from '@dedot/utils';
+import { GenericSubstrateApi, RpcVersion } from '@dedot/types';
+import { assert, assertFalse, concatU8a, HexString, hexToU8a, u8aToHex } from '@dedot/utils';
 import { ContractDispatchError, ContractLangError } from '../errors.js';
-import { ContractCallOptions, GenericContractQueryCall, GenericContractCallResult } from '../types/index.js';
-import { toReturnFlags } from '../utils.js';
+import {
+  ContractCallOptions,
+  ContractCallResult,
+  GenericContractCallResult,
+  GenericContractQueryCall,
+} from '../types/index.js';
+import { ensureContractPresence, toReturnFlags } from '../utils/index.js';
 import { ContractExecutor } from './abstract/index.js';
 
 export class QueryExecutor<ChainApi extends GenericSubstrateApi> extends ContractExecutor<ChainApi> {
@@ -28,14 +34,46 @@ export class QueryExecutor<ChainApi extends GenericSubstrateApi> extends Contrac
       const formattedInputs = args.map((arg, index) => this.tryEncode(arg, params[index]));
       const bytes = u8aToHex(concatU8a(hexToU8a(meta.selector), ...formattedInputs));
 
-      const raw: PalletContractsPrimitivesContractResult = await this.client.call.contractsApi.call(
-        caller,
-        this.address,
-        value,
-        gasLimit,
-        storageDepositLimit,
-        bytes,
-      );
+      const client = this.client as unknown as ISubstrateClient<SubstrateApi[RpcVersion]>;
+
+      await ensureContractPresence(client, this.registry, this.address);
+
+      const raw: ContractCallResult<ChainApi> = await (async () => {
+        if (this.registry.isRevive()) {
+          const raw = await client.call.reviveApi.call(
+            caller, // --
+            this.address as HexString,
+            value,
+            gasLimit,
+            storageDepositLimit,
+            bytes,
+          );
+
+          return {
+            gasConsumed: raw.gasConsumed,
+            gasRequired: raw.gasRequired,
+            storageDeposit: raw.storageDeposit,
+            result: raw.result,
+          } as ContractCallResult<ChainApi>;
+        } else {
+          const raw = await client.call.contractsApi.call(
+            caller, // --
+            this.address,
+            value,
+            gasLimit,
+            storageDepositLimit,
+            bytes,
+          );
+
+          return {
+            gasConsumed: raw.gasConsumed,
+            gasRequired: raw.gasRequired,
+            storageDeposit: raw.storageDeposit,
+            debugMessage: raw.debugMessage,
+            result: raw.result,
+          } as ContractCallResult<ChainApi>;
+        }
+      })();
 
       if (raw.result.isErr) {
         throw new ContractDispatchError(raw.result.err, raw);
@@ -53,6 +91,7 @@ export class QueryExecutor<ChainApi extends GenericSubstrateApi> extends Contrac
         data: data.value,
         raw,
         flags: toReturnFlags(bits),
+        inputData: bytes,
       } as GenericContractCallResult;
     };
 

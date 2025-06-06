@@ -50,7 +50,7 @@ export const run = async (_nodeName: any, networkInfo: any) => {
         18, // decimal
         { gasLimit: gasRequired, salt },
       )
-      .signAndSend(alicePair, ({ status }: { status: { type: string } }) => {
+      .signAndSend(alicePair, ({ status }) => {
         console.log(`[${api.rpcVersion}] Transaction status:`, status.type);
       })
       .untilFinalized();
@@ -116,7 +116,7 @@ export const run = async (_nodeName: any, networkInfo: any) => {
 
     await contract.tx
       .psp22Transfer(bob, transferAmount, new Uint8Array(), { gasLimit: transferGas })
-      .signAndSend(alicePair, ({ status }: { status: { type: string } }) => {
+      .signAndSend(alicePair, ({ status }) => {
         console.log(`[${api.rpcVersion}] Transfer status:`, status.type);
       })
       .untilFinalized();
@@ -161,7 +161,7 @@ export const run = async (_nodeName: any, networkInfo: any) => {
 
     await contract.tx
       .psp22Approve(bob, approveAmount, { gasLimit: approveGas })
-      .signAndSend(alicePair, ({ status }: { status: { type: string } }) => {
+      .signAndSend(alicePair, ({ status }) => {
         console.log(`[${api.rpcVersion}] Approve status:`, status.type);
       })
       .untilFinalized();

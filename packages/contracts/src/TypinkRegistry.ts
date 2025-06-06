@@ -1,19 +1,32 @@
-import { AccountId32, AccountId32Like, Bytes, TypeId, TypeRegistry } from '@dedot/codecs';
+import { AccountId32, Bytes, H160, H256, TypeId, TypeRegistry } from '@dedot/codecs';
 import * as $ from '@dedot/shape';
 import { IEventRecord, IRuntimeEvent } from '@dedot/types';
 import { assert, DedotError, HexString, hexToU8a, stringCamelCase, stringPascalCase } from '@dedot/utils';
 import { LazyMapping, LazyObject, LazyStorageVec } from './storage/index.js';
-import { ContractEvent, ContractEventMeta, ContractMetadata, ContractType } from './types/index.js';
-import { extractContractTypes, isLazyType, KnownLazyType } from './utils.js';
+import { ContractAddress, ContractEvent, ContractEventMeta, ContractMetadata, ContractType } from './types/index.js';
+import {
+  ensureSupportedContractMetadataVersion,
+  extractContractTypes,
+  isLazyType,
+  KnownLazyType,
+} from './utils/index.js';
 
-interface ContractEmittedEvent extends IRuntimeEvent {
-  pallet: 'Contracts';
+type KnownPallets = 'Contracts' | 'Revive';
+
+interface ContractEmittedEvent<Pallet extends KnownPallets = 'Contracts'> extends IRuntimeEvent {
+  pallet: Pallet;
   palletEvent: {
     name: 'ContractEmitted';
-    data: {
-      contract: AccountId32;
-      data: Bytes;
-    };
+    data: Pallet extends 'Contracts'
+      ? {
+          contract: AccountId32;
+          data: Bytes;
+        }
+      : {
+          contract: H160;
+          data: Bytes;
+          topics: Array<H256>;
+        };
   };
 }
 
@@ -31,6 +44,8 @@ export class TypinkRegistry extends TypeRegistry {
     public readonly metadata: ContractMetadata,
     public readonly options?: TypinkRegistryOptions,
   ) {
+    ensureSupportedContractMetadataVersion(metadata);
+
     super(extractContractTypes(metadata));
   }
 
@@ -136,20 +151,23 @@ export class TypinkRegistry extends TypeRegistry {
     return $.instance(LazyClazz, this.#enhanceLazyCodec($codec, typeDef), () => ({}));
   }
 
-  decodeEvents(records: IEventRecord[], contract?: AccountId32Like): ContractEvent[] {
+  decodeEvents(records: IEventRecord[], contract?: ContractAddress): ContractEvent[] {
     return records
       .filter(({ event }) => this.#isContractEmittedEvent(event, contract)) // prettier-end-here
       .map((record) => this.decodeEvent(record, contract));
   }
 
-  decodeEvent(eventRecord: IEventRecord, contract?: AccountId32Like): ContractEvent {
+  decodeEvent(eventRecord: IEventRecord, contract?: ContractAddress): ContractEvent {
     assert(this.#isContractEmittedEvent(eventRecord.event, contract), 'Invalid ContractEmitted Event');
 
     const { version } = this.metadata;
 
     switch (version) {
+      case 6:
       case 5:
-        return this.#decodeEventV5(eventRecord);
+        return this.isRevive() // --
+          ? this.#decodeEventV6(eventRecord)
+          : this.#decodeEventV5(eventRecord);
       case '4':
         return this.#decodeEventV4(eventRecord);
       default:
@@ -157,19 +175,27 @@ export class TypinkRegistry extends TypeRegistry {
     }
   }
 
-  #isContractEmittedEvent(event: IRuntimeEvent, contract?: AccountId32Like): event is ContractEmittedEvent {
+  #isContractEmittedEvent<Pallet extends KnownPallets = 'Contracts'>(
+    event: IRuntimeEvent,
+    contractAddress?: ContractAddress,
+  ): event is ContractEmittedEvent<Pallet> {
     const eventMatched =
-      event.pallet === 'Contracts' &&
+      (this.isRevive() // --
+        ? event.pallet === 'Revive'
+        : event.pallet === 'Contracts') &&
       typeof event.palletEvent === 'object' &&
       event.palletEvent.name === 'ContractEmitted';
 
     if (!eventMatched) return false;
 
-    if (contract) {
+    if (contractAddress) {
       // @ts-ignore
       const emittedContract = event.palletEvent.data?.contract;
-      if (emittedContract instanceof AccountId32) {
-        return emittedContract.eq(contract);
+
+      if (this.isRevive()) {
+        return emittedContract === contractAddress;
+      } else if (emittedContract instanceof AccountId32) {
+        return emittedContract.eq(contractAddress);
       } else {
         return false;
       }
@@ -192,16 +218,16 @@ export class TypinkRegistry extends TypeRegistry {
     return this.#tryDecodeEvent(event, data.subarray(1));
   }
 
-  #decodeEventV5(eventRecord: IEventRecord): ContractEvent {
-    assert(this.metadata.version === 5, 'Invalid metadata version!');
-    assert(this.#isContractEmittedEvent(eventRecord.event), 'Invalid ContractEmitted Event');
-
-    const data = hexToU8a(eventRecord.event.palletEvent.data.data);
-    const signatureTopic = eventRecord.topics.at(0);
+  #detectEventMeta(signatureTopics: HexString[]): ContractEventMeta {
+    // Only version >= 5 metadata supports signature topics
+    assert(+this.metadata.version >= 5, 'Invalid metadata version!');
 
     let eventMeta: ContractEventMeta | undefined;
-    if (signatureTopic) {
-      eventMeta = this.metadata.spec.events.find((one) => one.signature_topic === signatureTopic);
+    const targetSignatureTopic = signatureTopics.at(0);
+
+    if (targetSignatureTopic) {
+      // @ts-ignore
+      eventMeta = this.metadata.spec.events.find((one) => one.signature_topic === targetSignatureTopic);
     }
 
     // TODO: Handle multiple anonymous events
@@ -209,12 +235,38 @@ export class TypinkRegistry extends TypeRegistry {
     // that does not contain a signature topic in the metadata.
     if (!eventMeta) {
       const potentialEvents = this.metadata.spec.events.filter(
-        (one) => !one.signature_topic && one.args.filter((arg) => arg.indexed).length === eventRecord.topics.length,
+        // @ts-ignore
+        (one) => !one.signature_topic && one.args.filter((arg) => arg.indexed).length === signatureTopics.length,
       );
 
       assert(potentialEvents.length === 1, 'Unable to determine event!');
       eventMeta = potentialEvents[0];
     }
+
+    return eventMeta;
+  }
+
+  #decodeEventV5(eventRecord: IEventRecord): ContractEvent {
+    assert(this.metadata.version === 5, 'Invalid metadata version!');
+    assert(this.#isContractEmittedEvent(eventRecord.event), 'Invalid ContractEmitted Event');
+
+    const data = hexToU8a(eventRecord.event.palletEvent.data.data);
+    const signatureTopics = eventRecord.topics;
+
+    const eventMeta = this.#detectEventMeta(signatureTopics);
+
+    return this.#tryDecodeEvent(eventMeta, data);
+  }
+
+  #decodeEventV6(eventRecord: IEventRecord): ContractEvent {
+    assert(this.isRevive(), 'Invalid metadata version!');
+    assert(this.#isContractEmittedEvent<'Revive'>(eventRecord.event), 'Invalid ContractEmitted Event');
+
+    const eventData = eventRecord.event.palletEvent.data;
+    const data = hexToU8a(eventData.data);
+    const signatureTopics = eventData.topics;
+
+    const eventMeta = this.#detectEventMeta(signatureTopics);
 
     return this.#tryDecodeEvent(eventMeta, data);
   }
@@ -239,5 +291,17 @@ export class TypinkRegistry extends TypeRegistry {
     const name = stringPascalCase(label);
 
     return args.length ? { name, data } : { name };
+  }
+
+  /**
+   * Check if the contract is Revive Compatible (ink!v6)
+   */
+  isRevive(): boolean {
+    return (
+      +this.metadata.version >= 6 ||
+      this.metadata.source.language // TODO remove this
+        .toLowerCase() // --
+        .startsWith('ink! 6.')
+    );
   }
 }

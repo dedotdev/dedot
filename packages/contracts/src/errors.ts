@@ -1,7 +1,7 @@
 import { DispatchError } from '@dedot/codecs';
-import { DedotError, assert } from '@dedot/utils';
+import { assert, DedotError } from '@dedot/utils';
 import { ContractCallResult, ContractInstantiateResult, GenericContractApi, ReturnFlags } from './types/index.js';
-import { toReturnFlags } from './utils.js';
+import { toReturnFlags } from './utils/index.js';
 
 /**
  * Represents an error that occurred during the instantiation of a smart contract.

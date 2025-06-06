@@ -1,10 +1,28 @@
-import { PalletContractsPrimitivesCode, PalletContractsPrimitivesContractResultResult } from '@dedot/api/chaintypes';
+import type { ISubstrateClient } from '@dedot/api';
+import { type SubstrateApi } from '@dedot/api/chaintypes';
 import { Result } from '@dedot/shape';
-import { GenericSubstrateApi } from '@dedot/types';
-import { assert, assertFalse, concatU8a, hexToU8a, isNull, isUndefined, isWasm, u8aToHex } from '@dedot/utils';
+import { GenericSubstrateApi, RpcVersion } from '@dedot/types';
+import {
+  assert,
+  assertFalse,
+  concatU8a,
+  hexToU8a,
+  isPvm,
+  isUndefined,
+  isWasm,
+  toHex,
+  toU8a,
+  u8aToHex,
+} from '@dedot/utils';
 import { ContractInstantiateDispatchError, ContractInstantiateLangError } from '../errors.js';
-import { ConstructorCallOptions, GenericConstructorCallResult, GenericConstructorQueryCall } from '../types/index.js';
-import { toReturnFlags } from '../utils.js';
+import {
+  ConstructorCallOptions,
+  ContractCode,
+  ContractInstantiateResult,
+  GenericConstructorCallResult,
+  GenericConstructorQueryCall,
+} from '../types/index.js';
+import { toReturnFlags } from '../utils/index.js';
 import { DeployerExecutor } from './abstract/index.js';
 
 export class ConstructorQueryExecutor<ChainApi extends GenericSubstrateApi> extends DeployerExecutor<ChainApi> {
@@ -23,31 +41,86 @@ export class ConstructorQueryExecutor<ChainApi extends GenericSubstrateApi> exte
 
       const callOptions = (params[args.length] || {}) as ConstructorCallOptions;
       const {
-        caller = this.options.defaultCaller,
+        caller = this.options.defaultCaller, // --
         value = 0n,
         gasLimit,
         storageDepositLimit,
-        salt = '0x',
+        salt,
       } = callOptions;
       assert(caller, 'Expected a valid caller address in ConstructorCallOptions');
-      assertFalse(isNull(salt) || isUndefined(salt), 'Expected a salt in ConstructorCallOptions');
 
       const formattedInputs = args.map((arg, index) => this.tryEncode(arg, params[index]));
       const bytes = u8aToHex(concatU8a(hexToU8a(meta.selector), ...formattedInputs));
-      const code = {
-        type: isWasm(this.code) ? 'Upload' : 'Existing',
-        value: this.code,
-      } as PalletContractsPrimitivesCode;
 
-      const raw: PalletContractsPrimitivesContractResultResult = await this.client.call.contractsApi.instantiate(
-        caller,
-        value,
-        gasLimit,
-        storageDepositLimit,
-        code,
-        bytes,
-        salt,
-      );
+      const isUpload = isPvm(this.code) || isWasm(this.code);
+      const code = {
+        type: isUpload ? 'Upload' : 'Existing',
+        value: this.code,
+      } as ContractCode;
+
+      const client = this.client as unknown as ISubstrateClient<SubstrateApi[RpcVersion]>;
+
+      const raw: ContractInstantiateResult<ChainApi> = await (async () => {
+        if (this.registry.isRevive()) {
+          assert(
+            isUndefined(salt) || toU8a(salt).byteLength == 32,
+            'Invalid salt provided in ConstructorCallOptions: expected a 32-byte value as a hex string or a Uint8Array',
+          );
+
+          const raw = await client.call.reviveApi.instantiate(
+            caller, // --
+            value,
+            gasLimit,
+            storageDepositLimit,
+            code,
+            bytes,
+            salt ? toHex(salt) : undefined,
+          );
+
+          const result = raw.result;
+          if (result.isOk) {
+            // @ts-ignore
+            result.value.address = result.value.addr;
+
+            // @ts-ignore
+            delete result.value.addr;
+          }
+
+          return {
+            gasConsumed: raw.gasConsumed,
+            gasRequired: raw.gasRequired,
+            storageDeposit: raw.storageDeposit,
+            result,
+          } as ContractInstantiateResult<ChainApi>;
+        } else {
+          const raw = await client.call.contractsApi.instantiate(
+            caller, // --
+            value,
+            gasLimit,
+            storageDepositLimit,
+            code,
+            bytes,
+            salt || '0x',
+          );
+
+          const result = raw.result;
+          if (result.isOk) {
+            // @ts-ignore
+            result.value.address = result.value.accountId.address();
+
+            // @ts-ignore
+            delete result.value.accountId;
+          }
+
+          return {
+            gasConsumed: raw.gasConsumed,
+            gasRequired: raw.gasRequired,
+            storageDeposit: raw.storageDeposit,
+            debugMessage: raw.debugMessage,
+            result,
+          } as ContractInstantiateResult<ChainApi>;
+        }
+      })();
 
       if (raw.result.isErr) {
         throw new ContractInstantiateDispatchError(raw.result.err, raw);
@@ -64,8 +137,9 @@ export class ConstructorQueryExecutor<ChainApi extends GenericSubstrateApi> exte
       return {
         data: data.value,
         raw,
-        address: raw.result.value.accountId,
+        address: raw.result.value.address,
         flags: toReturnFlags(bits),
+        inputData: bytes,
       } as GenericConstructorCallResult;
     };
 

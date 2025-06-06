@@ -1,11 +1,6 @@
-import { ISubstrateClient } from '@dedot/api';
-import { SubstrateApi } from '@dedot/api/chaintypes';
 import { PortableType, TypeDef } from '@dedot/codecs';
-import { GenericSubstrateApi, RpcVersion } from '@dedot/types';
-import { DedotError, stringCamelCase } from '@dedot/utils';
-import { AnyLayoutV5 } from 'src/types/v5';
-import { Executor } from './executor/index.js';
-import { ContractMetadata, ContractTypeDef, ReturnFlags } from './types/index.js';
+import { stringCamelCase } from '@dedot/utils';
+import { ContractMetadata, ContractTypeDef, ReturnFlags } from 'src/types';
 
 export const extractContractTypes = (contractMetadata: ContractMetadata): PortableType[] => {
   const { types } = contractMetadata;
@@ -84,50 +79,6 @@ export const normalizeContractTypeDef = (def: ContractTypeDef): TypeDef => {
 
   return { type, value } as TypeDef;
 };
-
-const UNSUPPORTED_VERSIONS = ['V3', 'V2', 'V1'] as const;
-
-const SUPPORTED_VERSIONS = [5, '4'] as const;
-
-export const parseRawMetadata = (rawMetadata: string): ContractMetadata => {
-  const metadata = JSON.parse(rawMetadata);
-
-  // This is for V1, V2, V3
-  const unsupportedVersion = UNSUPPORTED_VERSIONS.find((o) => metadata[o]);
-  if (unsupportedVersion) {
-    throw new Error(`Unsupported metadata version: ${unsupportedVersion}`);
-  }
-
-  // This is for V4, V5
-  if (!SUPPORTED_VERSIONS.includes(metadata.version)) {
-    throw new Error(`Unsupported metadata version: ${metadata.version}`);
-  }
-
-  return metadata as ContractMetadata;
-};
-
-export const checkStorageApiSupports = (version: string | number) => {
-  const numberedVersion = typeof version === 'number' ? version : parseInt(version);
-  if (numberedVersion >= 5) return;
-
-  throw new DedotError(`Contract Storage Api Only Available for metadata version >= 5, current version: ${version}`);
-};
-
-export function newProxyChain<ChainApi extends GenericSubstrateApi>(carrier: Executor<ChainApi>): unknown {
-  return new Proxy(carrier, {
-    get(target: Executor<ChainApi>, property: string | symbol): any {
-      return target.doExecute(property.toString());
-    },
-  });
-}
-
-export function ensureSupportContractsPallet(client: ISubstrateClient<SubstrateApi[RpcVersion]>) {
-  try {
-    !!client.call.contractsApi.call.meta && !!client.tx.contracts.call.meta;
-  } catch {
-    throw new Error('Contracts pallet is not available');
-  }
-}
 
 export function normalizeLabel(label?: string): string {
   if (!label) return '';

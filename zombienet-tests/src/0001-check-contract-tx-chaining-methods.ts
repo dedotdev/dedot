@@ -2,11 +2,11 @@ import Keyring from '@polkadot/keyring';
 import { cryptoWaitReady } from '@polkadot/util-crypto';
 import { DedotClient, ISubstrateClient, LegacyClient, WsProvider } from 'dedot';
 import { SpWeightsWeightV2Weight, SubstrateApi } from 'dedot/chaintypes';
-import { Contract, ContractDeployer, ContractMetadata, parseRawMetadata } from 'dedot/contracts';
+import { Contract, ContractDeployer, ContractMetadataV4, ContractMetadataV5 } from 'dedot/contracts';
 import { IKeyringPair, RpcVersion } from 'dedot/types';
 import { assert, isHex, isNumber, stringToHex } from 'dedot/utils';
-import * as flipperV4Raw from '../flipper_v4.json';
-import * as flipperV5Raw from '../flipper_v5.json';
+import * as flipperV4 from '../flipper_v4.json';
+import * as flipperV5 from '../flipper_v5.json';
 import { FlipperContractApi } from './contracts/flipper';
 
 export const run = async (_nodeName: any, networkInfo: any) => {
@@ -16,23 +16,21 @@ export const run = async (_nodeName: any, networkInfo: any) => {
   const { wsUri } = networkInfo.nodesByName['collator-1'];
 
   const caller = alicePair.address;
-  const flipperV4 = parseRawMetadata(JSON.stringify(flipperV4Raw));
-  const flipperV5 = parseRawMetadata(JSON.stringify(flipperV5Raw));
 
   // Test with LegacyClient
   console.log('Testing contract chaining methods with LegacyClient');
   const apiLegacy = await LegacyClient.new(new WsProvider(wsUri));
-  await testContractChainingMethods(apiLegacy, flipperV4, alicePair, caller);
+  await testContractChainingMethods(apiLegacy, flipperV4 as ContractMetadataV4, alicePair, caller);
 
   // Test with DedotClient
   console.log('Testing contract chaining methods with DedotClient');
   const apiV2 = await DedotClient.new(new WsProvider(wsUri));
-  await testContractChainingMethods(apiV2, flipperV5, alicePair, caller);
+  await testContractChainingMethods(apiV2, flipperV5 as ContractMetadataV5, alicePair, caller);
 };
 
 async function testContractChainingMethods(
   api: ISubstrateClient<SubstrateApi[RpcVersion]>,
-  flipper: ContractMetadata,
+  flipper: ContractMetadataV4 | ContractMetadataV5,
   alicePair: IKeyringPair,
   caller: string,
 ) {

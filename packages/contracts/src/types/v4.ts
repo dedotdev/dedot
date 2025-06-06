@@ -1,4 +1,5 @@
 import {
+  BuildInfo,
   ContractCallMessage,
   ContractConstructorMessage,
   ContractEventArg,
@@ -6,15 +7,23 @@ import {
   ContractSource,
   ContractType,
   ContractTypeInfo,
+  WasmOptSettings,
 } from './shared.js';
 
 export interface ContractMetadataV4 {
-  source: ContractSource;
+  source: ContractSourceV4;
   contract: ContractInformation;
   spec: ContractSpecV4;
   storage: ContractStorageV4;
   types: ContractType[];
   version: '4';
+}
+
+export interface ContractSourceV4 extends ContractSource {
+  wasm?: string;
+  build_info: BuildInfo & {
+    wasm_opt_settings: WasmOptSettings;
+  };
 }
 
 export interface ContractSpecV4 {
@@ -77,12 +86,12 @@ export interface RootLayoutV4 {
 }
 
 export type AnyLayoutV4 = {
-  struct: StructLayoutV4;
-  leaf: LeafLayoutV4;
-  hash: HashLayoutV4;
-  array: ArrayLayoutV4;
-  enum: EnumLayoutV4;
-  root: RootLayoutV4;
+  struct?: StructLayoutV4;
+  leaf?: LeafLayoutV4;
+  hash?: HashLayoutV4;
+  array?: ArrayLayoutV4;
+  enum?: EnumLayoutV4;
+  root?: RootLayoutV4;
 };
 
 export interface ContractStorageV4 {

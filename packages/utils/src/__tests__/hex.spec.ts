@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { hexToString, hexToU8a, isZeroHex, hexToNumber, hexToBn } from '../hex.js';
+import { hexToString, hexToU8a, isZeroHex, hexToNumber, hexToBn, generateRandomHex } from '../hex.js';
 import { HexString } from '../types.js';
 
 describe('hex', () => {
@@ -112,10 +112,13 @@ describe('hex', () => {
       { input: '0x123', expected: 291n },
       { input: '0x123abc', expected: 1194684n },
       { input: '0xffffffff', expected: 4294967295n },
-    ])('should convert hex string without 0x prefix by handling it internally: $input -> $expected', ({ input, expected }) => {
-      // Note: hexToBn expects HexString type (with 0x prefix), but internally uses hexStripPrefix
-      expect(hexToBn(input as HexString)).toBe(expected);
-    });
+    ])(
+      'should convert hex string without 0x prefix by handling it internally: $input -> $expected',
+      ({ input, expected }) => {
+        // Note: hexToBn expects HexString type (with 0x prefix), but internally uses hexStripPrefix
+        expect(hexToBn(input as HexString)).toBe(expected);
+      },
+    );
 
     it.each([
       { input: undefined, expected: 0n },
@@ -148,6 +151,135 @@ describe('hex', () => {
       const hex256 = '0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff' as HexString;
       const expected = BigInt('0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff');
       expect(hexToBn(hex256)).toBe(expected);
+    });
+  });
+
+  describe('generateRandomHex', () => {
+    describe('basic functionality', () => {
+      it('should generate hex string with default 32 bytes', () => {
+        const result = generateRandomHex();
+        expect(result).toMatch(/^0x[0-9a-f]{64}$/);
+        expect(result.length).toBe(66); // '0x' + 64 hex chars
+      });
+
+      it.each([
+        { bytes: 1, expectedLength: 4 }, // '0x' + 2 hex chars
+        { bytes: 4, expectedLength: 10 }, // '0x' + 8 hex chars
+        { bytes: 16, expectedLength: 34 }, // '0x' + 32 hex chars
+        { bytes: 32, expectedLength: 66 }, // '0x' + 64 hex chars
+        { bytes: 64, expectedLength: 130 }, // '0x' + 128 hex chars
+        { bytes: 128, expectedLength: 258 }, // '0x' + 256 hex chars
+      ])('should generate hex string with $bytes bytes -> length $expectedLength', ({ bytes, expectedLength }) => {
+        const result = generateRandomHex(bytes);
+        expect(result.length).toBe(expectedLength);
+        expect(result).toMatch(new RegExp(`^0x[0-9a-f]{${expectedLength - 2}}$`));
+      });
+    });
+
+    describe('format validation', () => {
+      it('should always start with 0x prefix', () => {
+        const result = generateRandomHex(16);
+        expect(result.startsWith('0x')).toBe(true);
+      });
+
+      it('should only contain valid hex characters', () => {
+        const result = generateRandomHex(32);
+        expect(result).toMatch(/^0x[0-9a-f]+$/);
+      });
+
+      it('should return HexString type that works with other hex utilities', () => {
+        const result = generateRandomHex(4);
+        // Should be able to use with other hex functions without type errors
+        expect(() => hexToU8a(result)).not.toThrow();
+        expect(() => hexToNumber(result)).not.toThrow();
+        expect(() => hexToBn(result)).not.toThrow();
+      });
+    });
+
+    describe('randomness tests', () => {
+      it('should generate different values on multiple calls', () => {
+        const results = Array.from({ length: 10 }, () => generateRandomHex(16));
+        const uniqueResults = new Set(results);
+        expect(uniqueResults.size).toBe(10); // All should be unique
+      });
+
+      it('should not generate predictable patterns', () => {
+        const result = generateRandomHex(32);
+        const hexPart = result.slice(2); // Remove '0x' prefix
+
+        // Check it's not all the same character
+        const allSameChar = hexPart.split('').every((char) => char === hexPart[0]);
+        expect(allSameChar).toBe(false);
+
+        // Check it's not all zeros
+        expect(hexPart).not.toBe('0'.repeat(64));
+
+        // Check it's not all 'f's
+        expect(hexPart).not.toBe('f'.repeat(64));
+      });
+
+      it('should have reasonable distribution of hex characters', () => {
+        // Generate a larger sample to test distribution
+        const result = generateRandomHex(100); // 200 hex chars
+        const hexPart = result.slice(2);
+        const charCounts = new Map<string, number>();
+
+        // Count occurrences of each hex character
+        for (const char of hexPart) {
+          charCounts.set(char, (charCounts.get(char) || 0) + 1);
+        }
+
+        // Should have multiple different characters (not just 1 or 2)
+        expect(charCounts.size).toBeGreaterThan(5);
+
+        // No single character should dominate (> 50% of total)
+        const maxCount = Math.max(...charCounts.values());
+        expect(maxCount).toBeLessThan(hexPart.length * 0.5);
+      });
+    });
+
+    describe('edge cases', () => {
+      it('should handle zero bytes', () => {
+        const result = generateRandomHex(0);
+        expect(result).toBe('0x');
+        expect(result.length).toBe(2);
+      });
+
+      it('should handle large byte values', () => {
+        const result = generateRandomHex(1000);
+        expect(result.length).toBe(2002); // '0x' + 2000 hex chars
+        expect(result).toMatch(/^0x[0-9a-f]{2000}$/);
+      });
+
+      it('should handle fractional bytes (throws error due to invalid array length)', () => {
+        // The current implementation doesn't handle fractional bytes properly
+        // It tries to create Array(bytes * 2) which fails with fractional numbers
+        expect(() => generateRandomHex(1.7)).toThrow('Invalid array length');
+      });
+    });
+
+    describe('integration with other hex utilities', () => {
+      it('should work with hexToU8a', () => {
+        const hex = generateRandomHex(8);
+        const uint8Array = hexToU8a(hex);
+        expect(uint8Array).toBeInstanceOf(Uint8Array);
+        expect(uint8Array.length).toBe(8);
+      });
+
+      it('should work with hexToNumber for small values', () => {
+        const hex = generateRandomHex(4); // 4 bytes = 32 bits, safe for number
+        const number = hexToNumber(hex);
+        expect(typeof number).toBe('number');
+        expect(number).toBeGreaterThanOrEqual(0);
+        expect(number).toBeLessThanOrEqual(0xffffffff);
+      });
+
+      it('should work with hexToBn', () => {
+        const hex = generateRandomHex(32);
+        const bigint = hexToBn(hex);
+        expect(typeof bigint).toBe('bigint');
+        expect(bigint).toBeGreaterThanOrEqual(0n);
+      });
     });
   });
 });

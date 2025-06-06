@@ -1,5 +1,3 @@
-import Keyring from '@polkadot/keyring';
-import { cryptoWaitReady } from '@polkadot/util-crypto';
 import { DedotClient, WsProvider } from 'dedot';
 import { MerkleizedMetadata } from 'dedot/merkleized-metadata';
 import { u8aToHex } from 'dedot/utils';

@@ -40,7 +40,7 @@ export const run = async (_nodeName: any, networkInfo: any) => {
         gasLimit: gasRequired,
         salt,
       })
-      .signAndSend(alicePair, ({ status }: { status: { type: string } }) => {
+      .signAndSend(alicePair, ({ status }) => {
         console.log(`[${api.rpcVersion}] Transaction status:`, status.type);
       })
       .untilFinalized();
@@ -88,7 +88,7 @@ export const run = async (_nodeName: any, networkInfo: any) => {
         2, // min_approvals
         { gasLimit: createProposalGas },
       )
-      .signAndSend(alicePair, ({ status }: { status: { type: string } }) => {
+      .signAndSend(alicePair, ({ status }) => {
         console.log(`[${api.rpcVersion}] Create proposal status:`, status.type);
       })
       .untilFinalized();
@@ -117,7 +117,7 @@ export const run = async (_nodeName: any, networkInfo: any) => {
         3, // min_approvals
         { gasLimit: createProposalGas },
       )
-      .signAndSend(alicePair, ({ status }: { status: { type: string } }) => {
+      .signAndSend(alicePair, ({ status }) => {
         console.log(`[${api.rpcVersion}] Create second proposal status:`, status.type);
       })
       .untilFinalized();

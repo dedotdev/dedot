@@ -1,5 +1,7 @@
-import { GenericSubstrateApi } from '@dedot/types';
-import { assert, assertFalse, concatU8a, hexToU8a, isNull, isUndefined, isWasm, u8aToHex } from '@dedot/utils';
+import type { ISubstrateClient } from '@dedot/api';
+import type { SubstrateApi } from '@dedot/api/chaintypes';
+import { GenericSubstrateApi, RpcVersion } from '@dedot/types';
+import { assert, concatU8a, hexToU8a, isPvm, isUndefined, isWasm, toHex, toU8a, u8aToHex } from '@dedot/utils';
 import { ConstructorTxOptions, GenericConstructorTxCall } from '../types/index.js';
 import { DeployerExecutor } from './abstract/index.js';
 
@@ -13,31 +15,61 @@ export class ConstructorTxExecutor<ChainApi extends GenericSubstrateApi> extends
       assert(params.length === args.length + 1, `Expected ${args.length + 1} arguments, got ${params.length}`);
 
       const txCallOptions = params[args.length] as ConstructorTxOptions;
-      const { value = 0n, gasLimit, storageDepositLimit, salt = '0x' } = txCallOptions;
+      const { value = 0n, gasLimit, storageDepositLimit, salt } = txCallOptions;
       assert(gasLimit, 'Expected a gas limit in ConstructorTxOptions');
-      assertFalse(isNull(salt) || isUndefined(salt), 'Expected a salt in ConstructorCallOptions');
 
       const formattedInputs = args.map((arg, index) => this.tryEncode(arg, params[index]));
       const bytes = u8aToHex(concatU8a(hexToU8a(meta.selector), ...formattedInputs));
 
-      if (isWasm(this.code)) {
-        return this.client.tx.contracts.instantiateWithCode(
-          value,
-          gasLimit,
-          storageDepositLimit,
-          this.code,
-          bytes,
-          salt,
+      const client = this.client as unknown as ISubstrateClient<SubstrateApi[RpcVersion]>;
+
+      if (this.registry.isRevive()) {
+        assert(
+          isUndefined(salt) || toU8a(salt).byteLength == 32,
+          'Invalid salt provided in ConstructorCallOptions: expected a 32-byte value as a hex string or a Uint8Array',
         );
+
+        assert(!isUndefined(storageDepositLimit), 'Expected a storage deposit limit in ConstructorTxOptions');
+
+        if (isPvm(this.code)) {
+          return client.tx.revive.instantiateWithCode(
+            value,
+            gasLimit,
+            storageDepositLimit,
+            this.code,
+            bytes,
+            salt ? toHex(salt) : undefined,
+          );
+        } else {
+          return client.tx.revive.instantiate(
+            value,
+            gasLimit,
+            storageDepositLimit,
+            toHex(this.code),
+            bytes,
+            salt ? toHex(salt) : undefined,
+          );
+        }
       } else {
-        return this.client.tx.contracts.instantiate(
-          value, // prettier-end-here
-          gasLimit,
-          storageDepositLimit,
-          this.code,
-          bytes,
-          salt,
-        );
+        if (isWasm(this.code)) {
+          return client.tx.contracts.instantiateWithCode(
+            value,
+            gasLimit,
+            storageDepositLimit,
+            this.code,
+            bytes,
+            salt || '0x',
+          );
+        } else {
+          return client.tx.contracts.instantiate(
+            value,
+            gasLimit,
+            storageDepositLimit,
+            toHex(this.code),
+            bytes,
+            salt || '0x',
+          );
+        }
       }
     };
 

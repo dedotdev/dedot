@@ -1,8 +1,8 @@
-import { ContractInformation, ContractSource, ContractType } from './shared.js';
-import { ContractEnvironmentV4, ContractEventV4, ContractSpecV4 } from './v4.js';
+import { ContractInformation, ContractType } from './shared.js';
+import { ContractEnvironmentV4, ContractEventV4, ContractSourceV4, ContractSpecV4 } from './v4.js';
 
 export interface ContractMetadataV5 {
-  source: ContractSource;
+  source: ContractSourceV4;
   contract: ContractInformation;
   spec: ContractSpecV5;
   storage: ContractStorageV5;
@@ -60,12 +60,12 @@ export interface RootLayoutV5 {
 }
 
 export type AnyLayoutV5 = {
-  struct: StructLayoutV5;
-  leaf: LeafLayoutV5;
-  hash: HashLayoutV5;
-  array: ArrayLayoutV5;
-  enum: EnumLayoutV5;
-  root: RootLayoutV5;
+  struct?: StructLayoutV5;
+  leaf?: LeafLayoutV5;
+  hash?: HashLayoutV5;
+  array?: ArrayLayoutV5;
+  enum?: EnumLayoutV5;
+  root?: RootLayoutV5;
 };
 
 export interface ContractStorageV5 {

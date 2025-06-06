@@ -1,10 +1,10 @@
 import { ISubstrateClient } from '@dedot/api';
-import { AccountId32, AccountId32Like } from '@dedot/codecs';
 import { IEventRecord } from '@dedot/types';
-import { DedotError, HexString, toU8a } from '@dedot/utils';
+import { DedotError, HexString, toHex, toU8a } from '@dedot/utils';
 import { TypinkRegistry } from './TypinkRegistry.js';
 import { EventExecutor, QueryExecutor, TxExecutor } from './executor/index.js';
 import {
+  ContractAddress,
   ContractEvent,
   ContractMetadata,
   ExecutionOptions,
@@ -12,28 +12,38 @@ import {
   LooseContractMetadata,
   RootLayoutV5,
 } from './types/index.js';
-import { checkStorageApiSupports, ensureSupportContractsPallet, newProxyChain, parseRawMetadata } from './utils.js';
+import {
+  ensurePalletPresence,
+  ensureStorageApiSupports,
+  ensureSupportedContractMetadataVersion,
+  ensureValidContractAddress,
+  newProxyChain,
+} from './utils/index.js';
 
 export class Contract<ContractApi extends GenericContractApi = GenericContractApi> {
   readonly #registry: TypinkRegistry;
-  readonly #address: AccountId32;
+  readonly #address: ContractAddress;
   readonly #metadata: ContractMetadata;
   readonly #options?: ExecutionOptions;
 
   constructor(
     readonly client: ISubstrateClient<ContractApi['types']['ChainApi']>,
     metadata: LooseContractMetadata | string,
-    address: AccountId32Like,
+    address: ContractAddress,
     options?: ExecutionOptions,
   ) {
-    ensureSupportContractsPallet(client);
+    this.#metadata = (typeof metadata === 'string' ? JSON.parse(metadata) : metadata) as ContractMetadata;
 
-    this.#address = new AccountId32(address);
-    this.#metadata = typeof metadata === 'string' ? parseRawMetadata(metadata) : (metadata as ContractMetadata);
+    ensureSupportedContractMetadataVersion(this.metadata);
 
     const getStorage = this.#getStorage.bind(this);
 
-    this.#registry = new TypinkRegistry(this.#metadata, { getStorage });
+    this.#registry = new TypinkRegistry(this.metadata, { getStorage });
+
+    ensurePalletPresence(client, this.registry);
+    ensureValidContractAddress(address, this.registry);
+
+    this.#address = address;
     this.#options = options;
   }
 
@@ -49,7 +59,7 @@ export class Contract<ContractApi extends GenericContractApi = GenericContractAp
     return this.#metadata;
   }
 
-  get address(): AccountId32 {
+  get address(): ContractAddress {
     return this.#address;
   }
 
@@ -82,7 +92,7 @@ export class Contract<ContractApi extends GenericContractApi = GenericContractAp
   get storage(): ContractApi['storage'] {
     return {
       root: async (): Promise<ContractApi['types']['RootStorage']> => {
-        checkStorageApiSupports(this.metadata.version);
+        ensureStorageApiSupports(this.metadata.version);
 
         const { ty, root_key } = this.metadata.storage.root as RootLayoutV5;
 
@@ -91,7 +101,7 @@ export class Contract<ContractApi extends GenericContractApi = GenericContractAp
         return this.registry.findCodec(ty).tryDecode(rawValue);
       },
       lazy: (): ContractApi['types']['LazyStorage'] => {
-        checkStorageApiSupports(this.metadata.version);
+        ensureStorageApiSupports(this.metadata.version);
 
         const { ty } = this.metadata.storage.root as RootLayoutV5;
 
@@ -103,10 +113,19 @@ export class Contract<ContractApi extends GenericContractApi = GenericContractAp
   }
 
   #getStorage = async (key: Uint8Array | HexString): Promise<HexString | undefined> => {
-    const result = await this.client.call.contractsApi.getStorage(
-      this.address.address(), //--
-      toU8a(key),
-    );
+    const result = await (async () => {
+      if (this.registry.isRevive()) {
+        return await this.client.call.reviveApi.getStorageVarKey(
+          this.address as HexString, //--
+          toHex(key),
+        );
+      } else {
+        return await this.client.call.contractsApi.getStorage(
+          this.address, //--
+          toU8a(key),
+        );
+      }
+    })();
 
     if (result.isOk) {
       return result.value;
