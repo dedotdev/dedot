@@ -27,6 +27,7 @@ describe('ContractDeployer', () => {
       expect(result.address).toBeDefined();
       expect(result.data).toBeDefined();
       expect(result.flags).toBeDefined();
+      expect(result.inputData).toBeDefined();
     });
 
     it('should deploy contract properly', async () => {
@@ -77,6 +78,7 @@ describe('ContractDeployer', () => {
       expect(result.address).toBeDefined();
       expect(result.data).toBeDefined();
       expect(result.flags).toBeDefined();
+      expect(result.inputData).toBeDefined();
     });
 
     it('should deploy contract without salt properly', async () => {

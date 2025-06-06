@@ -20,6 +20,7 @@ describe('Contract', () => {
 
       expect(result).toBeDefined();
       expect(result.data).toBeDefined();
+      expect(result.inputData).toBeDefined();
     });
 
     it('should run tx properly', async () => {
@@ -59,6 +60,7 @@ describe('Contract', () => {
 
       expect(result).toBeDefined();
       expect(result.data).toBeDefined();
+      expect(result.inputData).toBeDefined();
     });
 
     it('should run tx properly', async () => {
