@@ -60,8 +60,6 @@ const WASM_MAGIC = new Uint8Array([0, 97, 115, 109]); // \0asm
 export function isWasm(input: unknown) {
   if (typeof input === 'string') {
     input = hexToU8a(input);
-
-    console.log(input, isU8a(input) && input.length);
   }
 
   return isU8a(input) && input.length > 32 && u8aEq(input.subarray(0, 4), WASM_MAGIC);
