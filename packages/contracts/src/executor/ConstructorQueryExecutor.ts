@@ -2,7 +2,18 @@ import type { ISubstrateClient } from '@dedot/api';
 import { type SubstrateApi } from '@dedot/api/chaintypes';
 import { Result } from '@dedot/shape';
 import { GenericSubstrateApi, RpcVersion } from '@dedot/types';
-import { assert, assertFalse, concatU8a, hexToU8a, isUndefined, toHex, toU8a, u8aToHex } from '@dedot/utils';
+import {
+  assert,
+  assertFalse,
+  concatU8a,
+  hexToU8a,
+  isPvm,
+  isUndefined,
+  isWasm,
+  toHex,
+  toU8a,
+  u8aToHex,
+} from '@dedot/utils';
 import { ContractInstantiateDispatchError, ContractInstantiateLangError } from '../errors.js';
 import {
   ConstructorCallOptions,
@@ -40,8 +51,10 @@ export class ConstructorQueryExecutor<ChainApi extends GenericSubstrateApi> exte
 
       const formattedInputs = args.map((arg, index) => this.tryEncode(arg, params[index]));
       const bytes = u8aToHex(concatU8a(hexToU8a(meta.selector), ...formattedInputs));
+
+      const isUpload = isPvm(this.code) || isWasm(this.code);
       const code = {
-        type: this.code.length <= 66 ? 'Existing' : 'Upload',
+        type: isUpload ? 'Upload' : 'Existing',
         value: this.code,
       } as ContractCode;
 

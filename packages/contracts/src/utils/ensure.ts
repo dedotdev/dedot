@@ -11,7 +11,7 @@ import {
   isEvmAddress,
   isPvm,
   isWasm,
-  toHex,
+  toU8a,
 } from '@dedot/utils';
 import { TypinkRegistry } from 'src/TypinkRegistry';
 import { ContractAddress, LooseContractMetadata } from 'src/types';
@@ -73,7 +73,7 @@ export function ensureValidContractAddress(address: ContractAddress, registry: T
 
 export function ensureValidCodeHashOrCode(codeHashOrCode: Hash | Uint8Array | string, registry: TypinkRegistry) {
   assert(
-    toHex(codeHashOrCode).length === 66 || (registry.isRevive() ? isPvm(codeHashOrCode) : isWasm(codeHashOrCode)),
+    toU8a(codeHashOrCode).length === 32 || (registry.isRevive() ? isPvm(codeHashOrCode) : isWasm(codeHashOrCode)),
     'Invalid code hash or code: expected a hash of 32-byte or a valid PVM/WASM code as a hex string or a Uint8Array',
   );
 }

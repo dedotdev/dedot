@@ -170,9 +170,13 @@ describe('is', () => {
     });
 
     it('returns false for non-Uint8Array and non-string input', () => {
+      // @ts-ignore
       expect(isWasm(123)).toBe(false);
+      // @ts-ignore
       expect(isWasm({})).toBe(false);
+      // @ts-ignore
       expect(isWasm(null)).toBe(false);
+      // @ts-ignore
       expect(isWasm(undefined)).toBe(false);
     });
   });
@@ -202,9 +206,13 @@ describe('is', () => {
     });
 
     it('returns false for non-Uint8Array and non-string input', () => {
+      // @ts-ignore
       expect(isPvm(123)).toBe(false);
+      // @ts-ignore
       expect(isPvm({})).toBe(false);
+      // @ts-ignore
       expect(isPvm(null)).toBe(false);
+      // @ts-ignore
       expect(isPvm(undefined)).toBe(false);
     });
   });
