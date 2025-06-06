@@ -105,7 +105,7 @@ export default class MockProvider extends EventEmitter<ProviderEvent> implements
   }
 
   notify(subscriptionId: string, data: Error | any) {
-    const { callback, subscription } = this.#subscriptions[subscriptionId];
+    const { callback, subscription } = this.#subscriptions[subscriptionId] || {};
     if (callback) {
       if (data instanceof Error) {
         callback(data, undefined, subscription);
