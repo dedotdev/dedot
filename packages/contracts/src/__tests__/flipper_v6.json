@@ -284,5 +284,5 @@
     { "id": 17, "type": { "def": { "primitive": "u32" } } },
     { "id": 18, "type": { "def": { "variant": {} }, "path": ["ink_primitives", "types", "NoChainExtension"] } }
   ],
-  "version": 5
+  "version": 6
 }

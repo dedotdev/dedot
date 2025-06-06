@@ -296,9 +296,11 @@ export class TypinkRegistry extends TypeRegistry {
    * Check if the contract is Revive Compatible (ink!v6)
    */
   isRevive(): boolean {
-    // TODO move to check via contract metadata version 6
-    return this.metadata.source.language
-      .toLowerCase() // --
-      .startsWith('ink! 6.');
+    return (
+      +this.metadata.version >= 6 ||
+      this.metadata.source.language // TODO remove this
+        .toLowerCase() // --
+        .startsWith('ink! 6.')
+    );
   }
 }

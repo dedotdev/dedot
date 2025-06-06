@@ -80,7 +80,7 @@ export function ensureValidCodeHashOrCode(codeHashOrCode: Hash | Uint8Array | st
 
 const UNSUPPORTED_VERSIONS = ['V3', 'V2', 'V1'];
 
-const SUPPORTED_VERSIONS = [5, '4'];
+const SUPPORTED_VERSIONS = [6, 5, '4'];
 
 export function ensureSupportedContractMetadataVersion(metadata: LooseContractMetadata) {
   // This is for V1, V2, V3
