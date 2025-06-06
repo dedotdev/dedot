@@ -1,4 +1,4 @@
-import { DedotClient, WsProvider } from 'dedot';
+import { LegacyClient, WsProvider } from 'dedot';
 import { Contract, ContractDeployer } from 'dedot/contracts';
 import { stringToHex } from 'dedot/utils';
 import { devPairs } from '../keyring.js';
@@ -10,7 +10,7 @@ const { alice, bob } = await devPairs();
 // Connect to a local node
 console.log('Connecting to node...');
 const provider = new WsProvider('ws://127.0.0.1:9944');
-const client = await DedotClient.create({ provider });
+const client = await LegacyClient.create({ provider });
 console.log(`Connected to ${client.runtimeVersion.specName} v${client.runtimeVersion.specVersion}`);
 
 // Create a ContractDeployer instance
