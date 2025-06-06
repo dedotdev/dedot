@@ -1,6 +1,6 @@
 import { DedotClient, WsProvider } from 'dedot';
 import { Contract, ContractDeployer, CREATE2, toEvmAddress } from 'dedot/contracts';
-import { generateRandomHex } from 'dedot/utils';
+import { assert, generateRandomHex } from 'dedot/utils';
 import { devPairs } from '../keyring.js';
 // @ts-ignore
 import psp22 from './psp22v6.json';
@@ -131,7 +131,7 @@ const { raw: dryRunRaw2 } = await contract.query.psp22Transfer(
 );
 
 // Execute the transfer
-await contract.tx
+const transferResult = await contract.tx
   .psp22Transfer(toEvmAddress(bob.address), transferAmount, new Uint8Array(), {
     gasLimit: dryRunRaw2.gasRequired,
     storageDepositLimit: dryRunRaw2.storageDeposit.value,
@@ -142,6 +142,10 @@ await contract.tx
   .untilFinalized();
 
 console.log('✅ Transfer completed');
+
+const transferEvent = contract.events.Transfer.find(transferResult.events);
+assert(transferEvent, 'Transfer event should be emitted!');
+console.log('Transfer Event', transferEvent);
 
 console.log('\n📝 Step 4: Verify storage changes after transfer');
 
@@ -181,7 +185,7 @@ console.log(`🔐 Setting allowance of ${allowanceAmount} for Bob...`);
 const { raw: dryRunRaw3 } = await contract.query.psp22Approve(toEvmAddress(bob.address), allowanceAmount);
 
 // Execute the approval
-await contract.tx
+const approvalResult = await contract.tx
   .psp22Approve(toEvmAddress(bob.address), allowanceAmount, {
     gasLimit: dryRunRaw3.gasRequired,
     storageDepositLimit: dryRunRaw3.storageDeposit.value,
@@ -192,6 +196,10 @@ await contract.tx
   .untilFinalized();
 
 console.log('✅ Allowance set');
+
+const approvalEvent = contract.events.Approval.find(approvalResult.events);
+assert(approvalEvent, 'Approval event should be emitted!');
+console.log('Approval Event', approvalEvent);
 
 // Verify allowance in storage
 console.log('🔍 Reading updated allowance from lazy storage...');

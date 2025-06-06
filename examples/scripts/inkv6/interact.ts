@@ -1,37 +1,10 @@
 import { DedotClient, WsProvider } from 'dedot';
 import { Contract, ContractDeployer, CREATE2, isContractInstantiateDispatchError, toEvmAddress } from 'dedot/contracts';
-import { generateRandomHex } from 'dedot/utils';
+import { assert, generateRandomHex } from 'dedot/utils';
 import { devPairs } from '../keyring.js';
 import { FlipperContractApi } from './flipper/index.js';
 // @ts-ignore
 import flipper6 from './flipperv6.json';
-
-// Event signature topics
-const FLIPPED_EVENT_TOPIC = '0x0a39b5ca0b8b3a5172476100ae7b9168b269cc91d5648efe180c75d935d3e886';
-
-// Helper function to verify contract events
-function verifyFlippedEvent(result: any, expectedOld: boolean, expectedNew: boolean) {
-  console.log('🔍 Verifying Flipped event...');
-  
-  const events = result.events?.filter((event: any) => 
-    event.topics?.[0] === FLIPPED_EVENT_TOPIC
-  );
-  
-  if (!events || events.length === 0) {
-    console.log('❌ No Flipped event found in transaction');
-    return false;
-  }
-  
-  console.log(`✅ Found ${events.length} Flipped event(s)`);
-  
-  // For this verification, we'll check that the event was emitted
-  // The actual event data decoding would require more complex registry usage
-  // but the presence of the event with correct topic is a good verification
-  console.log(`📋 Event topic: ${events[0].topics[0]}`);
-  console.log(`📋 Expected old value: ${expectedOld}, new value: ${expectedNew}`);
-  
-  return true;
-}
 
 // Initialize crypto and keyring
 const { alice } = await devPairs();
@@ -180,8 +153,9 @@ const flipResult = await contract.tx
   .untilFinalized();
 
 // Verify the Flipped event was emitted
-const flipEventVerified = verifyFlippedEvent(flipResult, getValue1.data, !getValue1.data);
-console.log(`🎯 Flip event verification: ${flipEventVerified ? '✅ PASSED' : '❌ FAILED'}`);
+const flippedEvent = contract.events.Flipped.find(flipResult.events);
+assert(flippedEvent, 'Flipped event should be emitted');
+console.log(`🎯 Flipped event:`, flippedEvent);
 
 console.log('📝 Step 5: Verify value changed');
 
@@ -231,8 +205,9 @@ if (flipWithSeedDryRun.data.isOk) {
   console.log(`✅ FlipWithSeed executed successfully`);
 
   // Verify the Flipped event was emitted for flipWithSeed
-  const flipWithSeedEventVerified = verifyFlippedEvent(flipWithSeedResult, getValueAfterFlip.data, !getValueAfterFlip.data);
-  console.log(`🎯 FlipWithSeed event verification: ${flipWithSeedEventVerified ? '✅ PASSED' : '❌ FAILED'}`);
+  const flippedEvent = contract.events.Flipped.find(flipWithSeedResult.events);
+  assert(flippedEvent, 'Flipped event should be emitted');
+  console.log(`🎯 Flipped event:`, flippedEvent);
 
   console.log('🔍 Reading final value after flipWithSeed');
   const finalValue = await contract.query.get();
