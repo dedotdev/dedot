@@ -1,8 +1,8 @@
-import { DedotClient } from 'dedot';
+import { LegacyClient } from 'dedot';
 
 declare global {
-  var contractsClient: DedotClient;
-  var reviveClient: DedotClient;
+  var contractsClient: LegacyClient;
+  var reviveClient: LegacyClient;
 }
 
 export {};
