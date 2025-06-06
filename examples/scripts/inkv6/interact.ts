@@ -1,10 +1,10 @@
-import { LegacyClient, WsProvider } from 'dedot';
+import { DedotClient, WsProvider } from 'dedot';
 import { Contract, ContractDeployer, CREATE2, isContractInstantiateDispatchError, toEvmAddress } from 'dedot/contracts';
 import { generateRandomHex } from 'dedot/utils';
 import { devPairs } from '../keyring.js';
 import { FlipperContractApi } from './flipper/index.js';
 // @ts-ignore
-import flipper6 from './flipper_v6.json';
+import flipper6 from './flipperv6.json';
 
 // Initialize crypto and keyring
 const { alice } = await devPairs();
@@ -15,7 +15,7 @@ BigInt.prototype.toJSON = function () {
 };
 
 // Connect to the ink-node
-const client = await LegacyClient.new(new WsProvider('ws://127.0.0.1:9944'));
+const client = await DedotClient.new(new WsProvider('ws://127.0.0.1:9944'));
 
 console.log('🚀 Starting Flipper contract demonstration');
 
@@ -174,7 +174,9 @@ console.log(`📊 New query value: ${getValueAfterFlip.data}`);
 console.log(`📊 New storage value: ${newRoot.value}`);
 console.log(`🔄 Value changed: ${getValue1.data !== getValueAfterFlip.data ? '✅ YES' : '❌ NO'}`);
 console.log(`🔄 Storage changed: ${root.value !== newRoot.value ? '✅ YES' : '❌ NO'}`);
-console.log(`🔄 Query-Storage consistency: ${(getValue1.data === root.value && getValueAfterFlip.data === newRoot.value) ? '✅ CONSISTENT' : '❌ INCONSISTENT'}`);
+console.log(
+  `🔄 Query-Storage consistency: ${getValue1.data === root.value && getValueAfterFlip.data === newRoot.value ? '✅ CONSISTENT' : '❌ INCONSISTENT'}`,
+);
 
 console.log('🎁 Bonus: Demonstrate flipWithSeed method');
 

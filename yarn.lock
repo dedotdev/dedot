@@ -309,6 +309,15 @@ __metadata:
   languageName: unknown
   linkType: soft
 
+"@dedot/chaintypes@npm:^0.101.0":
+  version: 0.101.0
+  resolution: "@dedot/chaintypes@npm:0.101.0"
+  peerDependencies:
+    dedot: ">=0.7.1"
+  checksum: 10c0/0bc81856232a5ee7d40a29b3969133ef2bb0a818c2ea0bab3f048500d0993fd7035c12e4ec1e66b1a6c8ce451437ca20f61131df42bab8776caa63b66672782b
+  languageName: node
+  linkType: hard
+
 "@dedot/chaintypes@npm:^0.111.0":
   version: 0.111.0
   resolution: "@dedot/chaintypes@npm:0.111.0"

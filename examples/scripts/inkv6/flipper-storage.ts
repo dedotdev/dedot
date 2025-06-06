@@ -3,7 +3,7 @@ import { Contract } from 'dedot/contracts';
 import { devPairs } from '../keyring.js';
 import { FlipperContractApi } from './flipper/index.js';
 // @ts-ignore
-import flipper6 from './flipper_v6.json';
+import flipper6 from './flipperv6.json';
 
 const { alice } = await devPairs();
 
