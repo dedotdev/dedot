@@ -309,21 +309,12 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@dedot/chaintypes@npm:^0.101.0":
-  version: 0.101.0
-  resolution: "@dedot/chaintypes@npm:0.101.0"
+"@dedot/chaintypes@npm:^0.113.0":
+  version: 0.113.0
+  resolution: "@dedot/chaintypes@npm:0.113.0"
   peerDependencies:
     dedot: ">=0.7.1"
-  checksum: 10c0/0bc81856232a5ee7d40a29b3969133ef2bb0a818c2ea0bab3f048500d0993fd7035c12e4ec1e66b1a6c8ce451437ca20f61131df42bab8776caa63b66672782b
-  languageName: node
-  linkType: hard
-
-"@dedot/chaintypes@npm:^0.111.0":
-  version: 0.111.0
-  resolution: "@dedot/chaintypes@npm:0.111.0"
-  peerDependencies:
-    dedot: ">=0.7.1"
-  checksum: 10c0/946f6b5f702603dfdb11c985d60ad937bda7e5ec5c286ad1f1035d9eac69bbecf068c9686dd3bf8d4bcd35949550617e9ddd5786a8c31e70579bde463127b716
+  checksum: 10c0/3242ac821ecc901c08a3e7b9238ad136ae84dba67930c2f74ad5885d43ed7286dd62d38216caa578ab44f58938b0ede69c98790868b0d0a8211ad3a1420309df
   languageName: node
   linkType: hard
 
@@ -3403,7 +3394,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "dapp@workspace:examples/dapp"
   dependencies:
-    "@dedot/chaintypes": "npm:^0.111.0"
+    "@dedot/chaintypes": "npm:^0.113.0"
     "@types/react": "npm:^18.3.3"
     "@types/react-dom": "npm:^18.3.0"
     "@typescript-eslint/eslint-plugin": "npm:^6.21.0"
@@ -3656,7 +3647,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "e2e-contracts@workspace:e2e/contracts"
   dependencies:
-    "@dedot/chaintypes": "npm:^0.101.0"
+    "@dedot/chaintypes": "npm:^0.113.0"
     "@polkadot/keyring": "npm:^13.5.1"
     dedot: "workspace:*"
   languageName: unknown
@@ -4175,7 +4166,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "example-scripts@workspace:examples/scripts"
   dependencies:
-    "@dedot/chaintypes": "npm:^0.111.0"
+    "@dedot/chaintypes": "npm:^0.113.0"
     "@polkadot/keyring": "npm:^13.5.1"
     "@substrate/connect-known-chains": "npm:^1.10.2"
     dedot: "workspace:*"
@@ -8077,7 +8068,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "smoldot-dapp@workspace:examples/smoldot-dapp"
   dependencies:
-    "@dedot/chaintypes": "npm:^0.111.0"
+    "@dedot/chaintypes": "npm:^0.113.0"
     "@substrate/connect-known-chains": "npm:^1.10.2"
     "@types/react": "npm:^18.3.3"
     "@types/react-dom": "npm:^18.3.0"
@@ -9489,7 +9480,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "zombienet-tests@workspace:zombienet-tests"
   dependencies:
-    "@dedot/chaintypes": "npm:^0.111.0"
+    "@dedot/chaintypes": "npm:^0.113.0"
     "@polkadot/keyring": "npm:^13.5.1"
     dedot: "workspace:*"
   languageName: unknown
