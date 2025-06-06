@@ -32,7 +32,7 @@ Delightful JavaScript/TypeScript client for [Polkadot](https://polkadot.com/) & 
 - ✅ Familiar api style with `@polkadot/api`, [easy & fast migration!](https://docs.dedot.dev/getting-started/pjs-to-dedot)
 - ✅ Native [TypeScript type system](https://docs.dedot.dev/getting-started/pjs-to-dedot#type-system) for scale-codec
 - ✅ Compatible with `@polkadot/extension`-based wallets
-- ✅ Support Metadata V14, V15 (latest)
+- ✅ Support Metadata V14, V15, V16 (latest)
 - ✅ Built-in metadata optimization ([caching](https://docs.dedot.dev/getting-started/connect-to-network#caching-metadata))
 - ✅ Build on top of both the [new](https://paritytech.github.io/json-rpc-interface-spec/introduction.html) & [legacy](https://github.com/w3f/PSPs/blob/master/PSPs/drafts/psp-6.md) (
   deprecated soon) JSON-RPC APIs
