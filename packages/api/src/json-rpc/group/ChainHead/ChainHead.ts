@@ -156,6 +156,7 @@ export class ChainHead extends JsonRpcGroup<ChainHeadEvent> {
     try {
       this.#unsub && this.#unsub().catch(noop); // ensure unfollowed
 
+      const SIGNAL_THRESHOLD = this.#__unsafe__isSmoldot() ? 2 : 1;
       let signals = 0;
 
       this.#unsub = await this.send('follow', true, (event: FollowEvent, subscription: JsonRpcSubscription) => {
@@ -163,13 +164,13 @@ export class ChainHead extends JsonRpcGroup<ChainHeadEvent> {
           .enqueue(async () => {
             await this.#onFollowEvent(event, subscription);
 
-            if (signals >= 2) return;
+            if (signals >= SIGNAL_THRESHOLD) return;
             signals += 1;
 
             // Sometime smoldot send a `stop` event right after `initialized`
             // So requests sending between `initialized` and `stop` will be on pruned hashes -> throwing out errors
             // Here we make sure to receive at least the first 2 signals to resolve
-            if (signals >= 2) {
+            if (signals >= SIGNAL_THRESHOLD) {
               defer.resolve();
             }
           })
