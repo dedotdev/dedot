@@ -163,8 +163,8 @@ export class TypinkRegistry extends TypeRegistry {
     const { version } = this.metadata;
 
     switch (version) {
+      case 6:
       case 5:
-        // TODO fix me
         return this.isRevive() // --
           ? this.#decodeEventV6(eventRecord)
           : this.#decodeEventV5(eventRecord);
@@ -219,13 +219,14 @@ export class TypinkRegistry extends TypeRegistry {
   }
 
   #detectEventMeta(signatureTopics: HexString[]): ContractEventMeta {
-    // Only version 5 metadata supports signature topics
-    assert(this.metadata.version === 5, 'Invalid metadata version!');
+    // Only version >= 5 metadata supports signature topics
+    assert(+this.metadata.version >= 5, 'Invalid metadata version!');
 
     let eventMeta: ContractEventMeta | undefined;
     const targetSignatureTopic = signatureTopics.at(0);
 
     if (targetSignatureTopic) {
+      // @ts-ignore
       eventMeta = this.metadata.spec.events.find((one) => one.signature_topic === targetSignatureTopic);
     }
 
@@ -234,6 +235,7 @@ export class TypinkRegistry extends TypeRegistry {
     // that does not contain a signature topic in the metadata.
     if (!eventMeta) {
       const potentialEvents = this.metadata.spec.events.filter(
+        // @ts-ignore
         (one) => !one.signature_topic && one.args.filter((arg) => arg.indexed).length === signatureTopics.length,
       );
 
@@ -257,8 +259,7 @@ export class TypinkRegistry extends TypeRegistry {
   }
 
   #decodeEventV6(eventRecord: IEventRecord): ContractEvent {
-    // TODO this should be version 6, FIX ME
-    assert(this.metadata.version === 5, 'Invalid metadata version!');
+    assert(this.isRevive(), 'Invalid metadata version!');
     assert(this.#isContractEmittedEvent<'Revive'>(eventRecord.event), 'Invalid ContractEmitted Event');
 
     const eventData = eventRecord.event.palletEvent.data;
