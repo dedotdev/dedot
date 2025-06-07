@@ -1,5 +1,5 @@
 {
-  "name": "zombienet-tests",
+  "name": "zombienet",
   "author": "Tung Vu <tung@dedot.dev>",
   "private": true,
   "scripts": {
