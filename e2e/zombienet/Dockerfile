@@ -16,4 +16,4 @@ WORKDIR /usr/dedot
 RUN yarn install --immutable
 RUN yarn build
 RUN yarn zombienet-test-preps
-RUN zombienet-linux-x64 -p native test ./zombienet-tests/src/0001-small-network.zndsl
+RUN zombienet-linux-x64 -p native test ./e2e/zombienet/src/0001-small-network.zndsl

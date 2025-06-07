@@ -5,8 +5,8 @@ import { SubstrateApi } from 'dedot/chaintypes';
 import { Contract, ContractDeployer } from 'dedot/contracts';
 import { RpcVersion } from 'dedot/types';
 import { assert, stringToHex } from 'dedot/utils';
-import { LazyvecContractApi } from '../../examples/scripts/inkv5/lazyvec';
-import * as lazyvecRaw from '../../examples/scripts/inkv5/lazyvec.json';
+import { LazyvecContractApi } from '../../../examples/scripts/inkv5/lazyvec';
+import * as lazyvecRaw from '../../../examples/scripts/inkv5/lazyvec.json';
 
 export const run = async (_nodeName: any, networkInfo: any) => {
   await cryptoWaitReady();
