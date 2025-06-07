@@ -43,4 +43,4 @@ jobs:
         run: |
           export PATH=$(pwd):$PATH
           export RUST_BACKTRACE=full
-          ./zombienet-linux-x64 -p native test ./zombienet-tests/src/0001-small-network-batch-02.zndsl
+          ./zombienet-linux-x64 -p native test ./e2e/zombienet/src/0001-small-network-batch-02.zndsl
