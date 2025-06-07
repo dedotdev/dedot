@@ -5,8 +5,8 @@ import { SubstrateApi } from 'dedot/chaintypes';
 import { Contract, ContractDeployer } from 'dedot/contracts';
 import { RpcVersion } from 'dedot/types';
 import { assert, stringToHex } from 'dedot/utils';
-import * as flipperV5 from '../../examples/scripts/inkv5/flipper.json';
-import { FlipperContractApi } from '../../examples/scripts/inkv5/flipper/index.js';
+import * as flipperV5 from '../../../examples/scripts/inkv5/flipper.json';
+import { FlipperContractApi } from '../../../examples/scripts/inkv5/flipper/index.js';
 
 export const run = async (_nodeName: any, networkInfo: any) => {
   await cryptoWaitReady();
