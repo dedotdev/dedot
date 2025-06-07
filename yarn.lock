@@ -9422,9 +9422,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"zombienet-tests@workspace:zombienet-tests":
+"zombienet@workspace:e2e/zombienet":
   version: 0.0.0-use.local
-  resolution: "zombienet-tests@workspace:zombienet-tests"
+  resolution: "zombienet@workspace:e2e/zombienet"
   dependencies:
     "@dedot/chaintypes": "npm:^0.113.0"
     "@polkadot/keyring": "npm:^13.5.1"
