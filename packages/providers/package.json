@@ -27,7 +27,7 @@
   },
   "devDependencies": {
     "mock-socket": "^9.3.1",
-    "smoldot": "^2.0.35"
+    "smoldot": "^2.0.36"
   },
   "engines": {
     "node": ">=18"
