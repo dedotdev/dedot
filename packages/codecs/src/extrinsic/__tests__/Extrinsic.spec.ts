@@ -2,8 +2,8 @@ import { AccountId32, Extrinsic } from '@dedot/codecs';
 import * as $ from '@dedot/shape';
 import { u8aToHex } from '@dedot/utils';
 import { beforeEach, describe, expect, it } from 'vitest';
-import { PortableRegistry } from '../../../registry/index.js';
 import { $Metadata } from '../../metadata/index.js';
+import { PortableRegistry } from '../../registry/PortableRegistry.js';
 import staticSubstrateV14 from './kusama-hex.js';
 
 // Ref: https://github.com/polkadot-js/api/blob/3bdf49b0428a62f16b3222b9a31bfefa43c1ca55/packages/types/src/extrinsic/Extrinsic.spec.ts#L20-L49

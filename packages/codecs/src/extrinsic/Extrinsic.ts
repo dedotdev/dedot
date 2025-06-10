@@ -1,6 +1,6 @@
 import * as $ from '@dedot/shape';
 import { assert } from '@dedot/utils';
-import { PortableRegistry } from '../../registry/index.js';
+import type { PortableRegistry } from '../registry/PortableRegistry.js';
 import { ExtrinsicV4, ExtrinsicSignatureV4 } from './ExtrinsicV4.js';
 import { $ExtrinsicVersion } from './ExtrinsicVersion.js';
 
