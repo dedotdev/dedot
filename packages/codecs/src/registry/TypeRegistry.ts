@@ -4,20 +4,21 @@ import { normalizeName, stringPascalCase } from '@dedot/utils';
 import {
   $AccountId20,
   $AccountId32,
-  $Bytes,
-  $Data,
   $Digest,
   $DigestItem,
   $Era,
   $EthereumAddress,
   $Hash,
   $Header,
+} from '../codecs/generic/index.js';
+import {
+  $Bytes, // --
+  $Data,
   $MultiAddress,
   $RawBytes,
   $UncheckedExtrinsic,
-  PortableType,
-  TypeId,
-} from '../codecs/index.js';
+} from '../codecs/known/index.js';
+import type { PortableType, TypeId } from '../metadata/index.js';
 
 const KNOWN_CODECS: Record<string, $.AnyShape> = {
   'sp_core::crypto::AccountId32': $AccountId32,

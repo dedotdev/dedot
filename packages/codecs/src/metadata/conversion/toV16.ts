@@ -1,5 +1,5 @@
 import { calcRuntimeApiHash, ensurePresence } from '@dedot/utils';
-import { RuntimeVersion } from '../../known/index.js';
+import { RuntimeVersion } from '../../codecs/known/index.js';
 import { MetadataLatest } from '../Metadata.js';
 import { lookupConstant } from '../utils.js';
 import { MetadataV15 } from '../v15.js';

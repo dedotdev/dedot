@@ -1,6 +1,6 @@
-import { HexString, blake2AsHex, u8aToHex } from '@dedot/utils';
-import { PortableRegistry } from '../../registry/index.js';
-import { Hash } from '../generic/index.js';
+import { HexString, u8aToHex } from '@dedot/utils';
+import { Hash } from '../codecs/generic/index.js';
+import { PortableRegistry } from '../registry/PortableRegistry.js';
 
 export interface ExtrinsicSignatureV4<Address = any, Signature = any, Extra = any> {
   address: Address;

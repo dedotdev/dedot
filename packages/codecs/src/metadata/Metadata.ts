@@ -1,6 +1,6 @@
 import * as $ from '@dedot/shape';
 import { ensurePresence, HexString, u8aToHex } from '@dedot/utils';
-import { OpaqueMetadata } from '../known/metadata.js';
+import { OpaqueMetadata } from '../codecs/known/metadata.js';
 import { toV15, toV16 } from './conversion/index.js';
 import { $MetadataV14 } from './v14.js';
 import { $MetadataV15 } from './v15.js';

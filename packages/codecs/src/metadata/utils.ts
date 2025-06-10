@@ -1,5 +1,5 @@
 import { assert, stringCamelCase } from '@dedot/utils';
-import { PortableRegistry } from '../../registry/PortableRegistry.js';
+import { PortableRegistry } from '../registry/PortableRegistry.js';
 import { MetadataLatest } from './Metadata.js';
 
 /**

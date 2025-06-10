@@ -1,6 +1,6 @@
-import { $Data, $DataRaw, Data, DataRaw } from '@dedot/codecs';
 import { blake2AsHex, keccakAsHex } from '@dedot/utils';
 import { describe, expect, it } from 'vitest';
+import { $Data, $DataRaw, Data, DataRaw } from '../identity.js';
 
 describe('identity', () => {
   describe('Data', () => {

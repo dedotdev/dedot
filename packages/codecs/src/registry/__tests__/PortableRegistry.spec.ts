@@ -2,7 +2,7 @@ import staticSubstrate from '@polkadot/types-support/metadata/static-substrate';
 import * as $ from '@dedot/shape';
 import * as util from 'util';
 import { beforeEach, describe, expect, it } from 'vitest';
-import { $Metadata } from '../../codecs/index.js';
+import { $Metadata } from '../../metadata/index.js';
 import { PortableRegistry } from '../PortableRegistry.js';
 
 describe('PortableRegistry', () => {
