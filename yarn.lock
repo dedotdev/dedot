@@ -3421,7 +3421,7 @@ __metadata:
     prettier: "npm:^3.5.3"
     prettier-plugin-organize-imports: "npm:^3.2.4"
     tsc-esm-fix: "npm:^2.20.27"
-    tsx: "npm:^4.19.4"
+    tsx: "npm:^4.20.1"
     typedoc: "npm:^0.28.4"
     typescript: "npm:5.4.5"
     vite-tsconfig-paths: "npm:^4.3.2"
@@ -8666,9 +8666,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"tsx@npm:^4.19.4":
-  version: 4.19.4
-  resolution: "tsx@npm:4.19.4"
+"tsx@npm:^4.20.1":
+  version: 4.20.1
+  resolution: "tsx@npm:4.20.1"
   dependencies:
     esbuild: "npm:~0.25.0"
     fsevents: "npm:~2.3.3"
@@ -8678,7 +8678,7 @@ __metadata:
       optional: true
   bin:
     tsx: dist/cli.mjs
-  checksum: 10c0/f7b8d44362343fbde1f2ecc9832d243a450e1168dd09702a545ebe5f699aa6912e45b431a54b885466db414cceda48e5067b36d182027c43b2c02a4f99d8721e
+  checksum: 10c0/10f861c66d13fcdcae1d4203f06c682d4c4beadb915d644aa198dfac49be18496e6e26daf5f693be87cf2776c1a883abb21e811f77ffd5b0a5cdd41d49c8cd52
   languageName: node
   linkType: hard
 
