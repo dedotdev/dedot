@@ -10,7 +10,7 @@ export interface ExtrinsicSignatureV4<Address = any, Signature = any, Extra = an
 
 export class ExtrinsicV4<Address = any, Call = any, Signature = any, Extra = any> {
   readonly #version: number;
-  readonly #call: Call;
+  #call: Call;
   #signature?: ExtrinsicSignatureV4<Address, Signature, Extra>;
 
   constructor(
@@ -37,6 +37,10 @@ export class ExtrinsicV4<Address = any, Call = any, Signature = any, Extra = any
 
   get call() {
     return this.#call;
+  }
+
+  set call(call: any) {
+    this.#call = call;
   }
 
   get callU8a(): Uint8Array {

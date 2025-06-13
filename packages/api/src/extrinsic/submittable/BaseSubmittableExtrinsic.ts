@@ -20,14 +20,24 @@ import { ExtraSignedExtension } from '../extensions/index.js';
 import { fakeSigner } from './fakeSigner.js';
 import { isKeyringPair, signRawMessage, txDefer } from './utils.js';
 
+interface TxHooks {
+  beforeSign?: (tx: Extrinsic & ISubmittableExtrinsic) => Promise<void>;
+  onCallback?: <R>(result: ISubmittableResult) => R;
+}
+
 export abstract class BaseSubmittableExtrinsic extends Extrinsic implements ISubmittableExtrinsic {
   #alterTx?: HexString;
+  #hooks?: TxHooks;
 
   constructor(
     readonly client: ISubstrateClient,
     call: IRuntimeTxCall,
   ) {
     super(client.registry, call);
+  }
+
+  withHooks(hooks: TxHooks) {
+    this.#hooks = hooks;
   }
 
   async paymentInfo(account: AddressOrPair, options?: Partial<PayloadOptions>): Promise<TxPaymentInfo> {
@@ -40,6 +50,9 @@ export abstract class BaseSubmittableExtrinsic extends Extrinsic implements ISub
   }
 
   async sign(fromAccount: AddressOrPair, options?: Partial<SignerOptions>) {
+    const beforeSign = this.#hooks?.beforeSign;
+    if (beforeSign) await beforeSign(this);
+
     const address = isKeyringPair(fromAccount) ? fromAccount.address : fromAccount.toString();
     const extra = new ExtraSignedExtension(this.client, {
       signerAddress: address,

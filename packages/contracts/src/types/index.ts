@@ -15,6 +15,7 @@ import {
   GenericSubstrateApi,
   IEventRecord,
   ISubmittableExtrinsic,
+  ISubmittableResult,
   RpcVersion,
   Unsub,
   VersionedGenericSubstrateApi,
@@ -81,7 +82,11 @@ export type ContractInstantiateResult<_ extends GenericSubstrateApi> = {
   result: Result<InstantiateReturnValue, DispatchError>;
 };
 
-type SubmittableExtrinsic = ISubmittableExtrinsic & Extrinsic;
+interface IContractSubmittableResult extends ISubmittableResult {
+  contractAddress: () => Promise<ContractAddress>;
+}
+
+type SubmittableExtrinsic = ISubmittableExtrinsic<IContractSubmittableResult> & Extrinsic;
 
 export type ContractSubmittableExtrinsic<_ extends GenericSubstrateApi> = SubmittableExtrinsic;
 
@@ -107,7 +112,7 @@ export type ConstructorCallOptions = CallOptions & {
 
 export type ConstructorTxOptions = CallOptions & {
   salt?: BytesLike;
-  gasLimit: Weight;
+  gasLimit?: Weight;
 };
 
 export type ContractCallOptions = CallOptions & {
