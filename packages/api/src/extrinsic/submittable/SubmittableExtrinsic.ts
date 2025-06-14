@@ -61,7 +61,7 @@ export class SubmittableExtrinsic extends BaseSubmittableExtrinsic implements IS
         onTxProgress(result);
 
         !isSubscription && deferTx.resolve(txHash);
-        return callback?.(result);
+        return callback?.(this.transformTxResult(result));
       } else {
         const status = toTxStatus(txStatus);
         const result = new SubmittableResult({ status, txHash });
@@ -69,7 +69,7 @@ export class SubmittableExtrinsic extends BaseSubmittableExtrinsic implements IS
         onTxProgress(result);
 
         !isSubscription && deferTx.resolve(txHash);
-        return callback?.(new SubmittableResult({ status, txHash }));
+        return callback?.(this.transformTxResult(new SubmittableResult({ status, txHash })));
       }
     });
 

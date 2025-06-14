@@ -20,14 +20,33 @@ import { ExtraSignedExtension } from '../extensions/index.js';
 import { fakeSigner } from './fakeSigner.js';
 import { isKeyringPair, signRawMessage, txDefer } from './utils.js';
 
+interface TxHooks {
+  beforeSign?: (tx: Extrinsic & ISubmittableExtrinsic, signerAddress: string) => Promise<void>;
+  transformResult?: <R extends ISubmittableResult = ISubmittableResult>(result: ISubmittableResult) => R;
+}
+
 export abstract class BaseSubmittableExtrinsic extends Extrinsic implements ISubmittableExtrinsic {
   #alterTx?: HexString;
+  #hooks?: TxHooks;
 
   constructor(
     readonly client: ISubstrateClient,
     call: IRuntimeTxCall,
   ) {
     super(client.registry, call);
+  }
+
+  withHooks(hooks: TxHooks) {
+    this.#hooks = hooks;
+  }
+
+  protected transformTxResult<R extends ISubmittableResult = ISubmittableResult>(result: ISubmittableResult): R {
+    const transform = this.#hooks?.transformResult;
+    if (typeof transform === 'function') {
+      return transform(result);
+    }
+
+    return result as any;
   }
 
   async paymentInfo(account: AddressOrPair, options?: Partial<PayloadOptions>): Promise<TxPaymentInfo> {
@@ -41,6 +60,10 @@ export abstract class BaseSubmittableExtrinsic extends Extrinsic implements ISub
 
   async sign(fromAccount: AddressOrPair, options?: Partial<SignerOptions>) {
     const address = isKeyringPair(fromAccount) ? fromAccount.address : fromAccount.toString();
+
+    const beforeSign = this.#hooks?.beforeSign;
+    if (beforeSign) await beforeSign(this, address);
+
     const extra = new ExtraSignedExtension(this.client, {
       signerAddress: address,
       payloadOptions: options,

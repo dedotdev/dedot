@@ -26,7 +26,7 @@ export interface FlipperContractApi<
   query: ContractQuery<ChainApi[Rv]>;
   tx: ContractTx<ChainApi[Rv]>;
   constructorQuery: ConstructorQuery<ChainApi[Rv]>;
-  constructorTx: ConstructorTx<ChainApi[Rv]>;
+  constructorTx: ConstructorTx<ChainApi[Rv], FlipperContractApi>;
   events: ContractEvents<ChainApi[Rv]>;
   storage: {
     root(): Promise<Flipper>;

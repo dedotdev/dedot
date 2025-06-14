@@ -13,7 +13,7 @@ export * from './types.js';
     query: ContractQuery<ChainApi[Rv]>;
     tx: ContractTx<ChainApi[Rv]>;
     constructorQuery: ConstructorQuery<ChainApi[Rv]>;
-    constructorTx: ConstructorTx<ChainApi[Rv]>;
+    constructorTx: ConstructorTx<ChainApi[Rv], {{{interfaceName}}}>;
     events: ContractEvents<ChainApi[Rv]>;
     storage: {
       root(): Promise<{{{rootStorageName}}}>;
