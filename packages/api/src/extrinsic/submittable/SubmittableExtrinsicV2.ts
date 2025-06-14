@@ -232,7 +232,7 @@ export class SubmittableExtrinsicV2 extends BaseSubmittableExtrinsic {
 
       if (isSubscription) {
         try {
-          callback?.(result);
+          callback?.(this.transformTxResult(result));
         } catch {}
 
         return;

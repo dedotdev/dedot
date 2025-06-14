@@ -1,6 +1,6 @@
 import { LegacyClient, WsProvider } from 'dedot';
 import { Contract, ContractDeployer } from 'dedot/contracts';
-import { stringToHex } from 'dedot/utils';
+import { generateRandomHex, stringToHex } from 'dedot/utils';
 import { devPairs } from '../keyring.js';
 import flipperMetadata from './flipper.json';
 import { FlipperContractApi } from './flipper/index.js';
@@ -21,39 +21,22 @@ const deployer = new ContractDeployer<FlipperContractApi>(client, flipperMetadat
 
 try {
   // Generate a unique salt
-  const timestamp = await client.query.timestamp.now();
-  const salt = stringToHex(`flipper_${timestamp}`);
-
-  // Dry-run to estimate gas fee
-  console.log('Estimating gas...');
-  const {
-    raw: { gasRequired },
-  } = await deployer.query.new(true, { salt });
+  const salt = generateRandomHex();
 
   // Deploy the contract
   console.log('Deploying Flipper contract...');
-  const { events } = await deployer.tx
-    .new(true, { gasLimit: gasRequired, salt })
+  const txResult = await deployer.tx
+    .new(true, { salt })
     .signAndSend(alice, ({ status }) => {
       console.log('Transaction status:', status.type);
     })
     .untilFinalized();
 
-  console.log(events);
-
-  // Extract the contract address from the events
-  const instantiatedEvent = client.events.contracts.Instantiated.find(events);
-  if (!instantiatedEvent) {
-    throw new Error('Failed to find Instantiated event');
-  }
-
-  const contractAddress = instantiatedEvent.palletEvent.data.contract.address();
+  const contractAddress = await txResult.contractAddress();
   console.log('Contract deployed at:', contractAddress);
 
   // Create a Contract instance with the deployed address
-  const contract = new Contract<FlipperContractApi>(client, flipperMetadata, contractAddress, {
-    defaultCaller: alice.address,
-  });
+  const contract = await txResult.contract();
 
   // Get the root storage
   console.log('\nGetting root storage...');
