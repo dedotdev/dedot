@@ -45,9 +45,12 @@ describe('ContractDeployer', () => {
       expect(instantiatedEvent).toBeDefined();
 
       const contractAddress = instantiatedEvent!.palletEvent.data.contract.raw;
-      const contract = new Contract<FlipperContractApi>(contractsClient, flipperV5Metadata, contractAddress!, {
-        defaultCaller: alice.address,
-      });
+      const contract = new Contract<FlipperContractApi>(
+        contractsClient, // --
+        flipperV5Metadata,
+        contractAddress!,
+        { defaultCaller: alice.address },
+      );
 
       const value = await contract.query.get();
       expect(value).toBeDefined();
@@ -84,9 +87,12 @@ describe('ContractDeployer', () => {
       expect(instantiatedEvent).toBeDefined();
 
       const contractAddress = instantiatedEvent!.palletEvent.data.contract.raw;
-      const contract = new Contract<FlipperContractApi>(contractsClient, flipperV5Metadata, contractAddress!, {
-        defaultCaller: alice.address,
-      });
+      const contract = new Contract<FlipperContractApi>(
+        contractsClient, // --
+        flipperV5Metadata,
+        contractAddress!,
+        { defaultCaller: alice.address },
+      );
 
       const value = await contract.query.get();
       expect(value).toBeDefined();
@@ -115,9 +121,7 @@ describe('ContractDeployer', () => {
           contractsClient, // prettier-end-here
           flipperV5Metadata,
           flipperV5Metadata.source.hash,
-          {
-            defaultCaller: alice.address,
-          },
+          { defaultCaller: alice.address },
         );
 
         await deployer.client.tx.contracts
