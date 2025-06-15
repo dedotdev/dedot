@@ -35,12 +35,9 @@ console.log(`Version: ${flipper6.contract.version}`);
 console.log(`Language: ${flipper6.source.language}`);
 console.log(`Code Hash: ${codeHash}`);
 
-// Common options for contract operations
-const defaultOptions = { defaultCaller: alice.address };
-
 console.log('📝 Step 1: Deploy contract with full code');
 
-const deployer1 = new ContractDeployer<FlipperContractApi>(client, flipper6, pvmBytecode, defaultOptions);
+const deployer1 = new ContractDeployer<FlipperContractApi>(client, flipper6, pvmBytecode);
 
 const salt = generateRandomHex();
 
@@ -62,12 +59,7 @@ if (txResult.dispatchError) {
 console.log('📝 Step 2: Deploy contract using code hash');
 
 // Create new deployer using code hash instead of full bytecode
-const deployer2 = new ContractDeployer<FlipperContractApi>(
-  client,
-  flipper6,
-  codeHash, // Using code hash instead of full bytecode
-  defaultOptions,
-);
+const deployer2 = new ContractDeployer<FlipperContractApi>(client, flipper6, codeHash);
 
 console.log('🚀 Deploying second contract instance using code hash');
 const salt2 = generateRandomHex();

@@ -3,7 +3,7 @@ import type { SubstrateApi } from '@dedot/api/chaintypes';
 import { GenericSubstrateApi, RpcVersion } from '@dedot/types';
 import { assert, concatU8a, hexToU8a, isPvm, isUndefined, isWasm, toHex, toU8a, u8aToHex } from '@dedot/utils';
 import { Contract } from '../Contract.js';
-import { ConstructorTxOptions, GenericConstructorTxCall, ContractAddress } from '../types/index.js';
+import { ConstructorTxOptions, GenericConstructorTxCall, ContractAddress, ExecutionOptions } from '../types/index.js';
 import { CREATE1, CREATE2, ensureParamsLength, toEvmAddress } from '../utils/index.js';
 import { ConstructorQueryExecutor } from './ConstructorQueryExecutor';
 import { DeployerExecutor } from './abstract/index.js';
@@ -90,7 +90,15 @@ export class ConstructorTxExecutor<ChainApi extends GenericSubstrateApi> extends
           const needsDryRun = !callParams.gasLimit || (this.registry.isRevive() && !callParams.storageDepositLimit);
           if (!needsDryRun) return;
 
-          const executor = new ConstructorQueryExecutor(this.client, this.registry, this.code, this.options);
+          const executor = new ConstructorQueryExecutor(
+            this.client, // --
+            this.registry,
+            this.code,
+            {
+              defaultCaller: signerAddress,
+              ...this.options,
+            },
+          );
           const { raw } = await executor.doExecute(constructor)(...params);
 
           const { gasRequired, storageDeposit } = raw;
@@ -147,14 +155,18 @@ export class ConstructorTxExecutor<ChainApi extends GenericSubstrateApi> extends
             return cachedAddress;
           };
 
-          const contract = async () => {
+          const contract = async (overrideOptions?: ExecutionOptions) => {
             const address = await contractAddress();
 
             return new Contract(
               client, // --
               this.metadata,
               address,
-              this.options,
+              {
+                defaultCaller: deployerAddress,
+                ...this.options,
+                ...overrideOptions,
+              },
             );
           };
 

@@ -93,7 +93,7 @@ interface IContractInstantiateSubmittableResult<
   /**
    * Get deployed contract instance
    */
-  contract(): Promise<Contract<ContractApi>>;
+  contract(options?: ExecutionOptions): Promise<Contract<ContractApi>>;
 }
 
 type SubmittableExtrinsic<R extends ISubmittableResult> = ISubmittableExtrinsic<R> & Extrinsic;
