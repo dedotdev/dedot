@@ -5,7 +5,7 @@ import { FlipperContractApi } from '../contracts/flipper';
 import { devPairs, flipperV5Metadata, flipperV6Metadata } from '../utils.js';
 
 describe('ContractDeployer', () => {
-  let alicePair = devPairs().alice;
+  let alice = devPairs().alice;
 
   describe('Contracts', () => {
     let deployer: ContractDeployer<FlipperContractApi>;
@@ -14,9 +14,7 @@ describe('ContractDeployer', () => {
         contractsClient, // prettier-end-here
         flipperV5Metadata,
         flipperV5Metadata.source.wasm!,
-        {
-          defaultCaller: alicePair.address,
-        },
+        { defaultCaller: alice.address },
       );
     });
 
@@ -39,7 +37,7 @@ describe('ContractDeployer', () => {
 
       const { events } = await deployer.tx
         .new(true, { gasLimit: raw.gasRequired, salt })
-        .signAndSend(alicePair)
+        .signAndSend(alice)
         .untilFinalized();
 
       const instantiatedEvent = contractsClient.events.contracts.Instantiated.find(events);
@@ -48,7 +46,7 @@ describe('ContractDeployer', () => {
 
       const contractAddress = instantiatedEvent!.palletEvent.data.contract.raw;
       const contract = new Contract<FlipperContractApi>(contractsClient, flipperV5Metadata, contractAddress!, {
-        defaultCaller: alicePair.address,
+        defaultCaller: alice.address,
       });
 
       const value = await contract.query.get();
@@ -62,14 +60,12 @@ describe('ContractDeployer', () => {
         contractsClient, // prettier-end-here
         flipperV5Metadata,
         flipperV5Metadata.source.hash,
-        {
-          defaultCaller: alicePair.address,
-        },
+        { defaultCaller: alice.address },
       );
 
       await deployer.client.tx.contracts
         .uploadCode(flipperV5Metadata.source.wasm!, undefined, 'Enforced')
-        .signAndSend(alicePair)
+        .signAndSend(alice)
         .untilFinalized();
 
       const salt = generateRandomHex();
@@ -80,7 +76,7 @@ describe('ContractDeployer', () => {
 
       const { events } = await deployer.tx
         .new(true, { gasLimit: raw.gasRequired, salt })
-        .signAndSend(alicePair)
+        .signAndSend(alice)
         .untilFinalized();
 
       const instantiatedEvent = contractsClient.events.contracts.Instantiated.find(events);
@@ -89,13 +85,60 @@ describe('ContractDeployer', () => {
 
       const contractAddress = instantiatedEvent!.palletEvent.data.contract.raw;
       const contract = new Contract<FlipperContractApi>(contractsClient, flipperV5Metadata, contractAddress!, {
-        defaultCaller: alicePair.address,
+        defaultCaller: alice.address,
       });
 
       const value = await contract.query.get();
       expect(value).toBeDefined();
       expect(value.data).toBeDefined();
       expect(value.data).toEqual(true);
+    });
+
+    describe('auto dry-run', () => {
+      it('should deploy contract properly using wasm', async () => {
+        const salt = generateRandomHex();
+
+        const txResult = await deployer.tx
+          .new(true, { salt }) // --
+          .signAndSend(alice)
+          .untilFinalized();
+
+        const contract = await txResult.contract();
+        const value = await contract.query.get();
+        expect(value).toBeDefined();
+        expect(value.data).toBeDefined();
+        expect(value.data).toEqual(true);
+      });
+
+      it('should deploy contract properly using code hash', async () => {
+        deployer = new ContractDeployer<FlipperContractApi>(
+          contractsClient, // prettier-end-here
+          flipperV5Metadata,
+          flipperV5Metadata.source.hash,
+          {
+            defaultCaller: alice.address,
+          },
+        );
+
+        await deployer.client.tx.contracts
+          .uploadCode(flipperV5Metadata.source.wasm!, undefined, 'Enforced')
+          .signAndSend(alice)
+          .untilFinalized();
+
+        const salt = generateRandomHex();
+
+        const txResult = await deployer.tx
+          .new(true, { salt }) // --
+          .signAndSend(alice)
+          .untilFinalized();
+
+        const contract = await txResult.contract();
+
+        const value = await contract.query.get();
+        expect(value).toBeDefined();
+        expect(value.data).toBeDefined();
+        expect(value.data).toEqual(true);
+      });
     });
   });
 
@@ -106,9 +149,7 @@ describe('ContractDeployer', () => {
         reviveClient,
         flipperV6Metadata,
         flipperV6Metadata.source.contract_binary!,
-        {
-          defaultCaller: alicePair.address,
-        },
+        { defaultCaller: alice.address },
       );
     });
 
@@ -128,12 +169,12 @@ describe('ContractDeployer', () => {
         flipperV6Metadata,
         flipperV6Metadata.source.hash!,
         {
-          defaultCaller: alicePair.address,
+          defaultCaller: alice.address,
         },
       );
 
       const dryRunResult = await reviveClient.call.reviveApi.uploadCode(
-        alicePair.address,
+        alice.address,
         flipperV6Metadata.source.contract_binary!,
         undefined,
       );
@@ -142,23 +183,23 @@ describe('ContractDeployer', () => {
 
       await reviveClient.tx.revive
         .uploadCode(flipperV6Metadata.source.contract_binary!, dryRunResult.value.deposit)
-        .signAndSend(alicePair)
+        .signAndSend(alice)
         .untilFinalized();
 
       const result = await deployer.query.new(true);
 
-      const nonce = await reviveClient.call.accountNonceApi.accountNonce(alicePair.address);
-      const contractAddress = CREATE1(toEvmAddress(alicePair.address), nonce);
+      const nonce = await reviveClient.call.accountNonceApi.accountNonce(alice.address);
+      const contractAddress = CREATE1(toEvmAddress(alice.address), nonce);
 
       await deployer.tx
         .new(true, { gasLimit: result.raw.gasRequired, storageDepositLimit: result.raw.storageDeposit.value })
-        .signAndSend(alicePair)
+        .signAndSend(alice)
         .untilFinalized();
 
       console.log('Deployed contract address:', contractAddress);
 
       const contract = new Contract<FlipperContractApi>(reviveClient, flipperV6Metadata, contractAddress, {
-        defaultCaller: alicePair.address,
+        defaultCaller: alice.address,
       });
 
       const value = await contract.query.get();
@@ -170,18 +211,18 @@ describe('ContractDeployer', () => {
     it('should deploy contract without salt properly', async () => {
       const result = await deployer.query.new(true);
 
-      const nonce = await reviveClient.call.accountNonceApi.accountNonce(alicePair.address);
-      const contractAddress = CREATE1(toEvmAddress(alicePair.address), nonce);
+      const nonce = await reviveClient.call.accountNonceApi.accountNonce(alice.address);
+      const contractAddress = CREATE1(toEvmAddress(alice.address), nonce);
 
       await deployer.tx
         .new(true, { gasLimit: result.raw.gasRequired, storageDepositLimit: result.raw.storageDeposit.value })
-        .signAndSend(alicePair)
+        .signAndSend(alice)
         .untilFinalized();
 
       console.log('Deployed contract address:', contractAddress);
 
       const contract = new Contract<FlipperContractApi>(reviveClient, flipperV6Metadata, contractAddress, {
-        defaultCaller: alicePair.address,
+        defaultCaller: alice.address,
       });
 
       const value = await contract.query.get();
@@ -195,7 +236,7 @@ describe('ContractDeployer', () => {
       const { raw, inputData } = await deployer.query.new(true, { salt });
 
       const contractAddress = CREATE2(
-        toEvmAddress(alicePair.address),
+        toEvmAddress(alice.address),
         flipperV6Metadata.source.contract_binary!,
         inputData,
         salt,
@@ -203,19 +244,90 @@ describe('ContractDeployer', () => {
 
       await deployer.tx
         .new(true, { gasLimit: raw.gasRequired, storageDepositLimit: raw.storageDeposit.value, salt })
-        .signAndSend(alicePair)
+        .signAndSend(alice)
         .untilFinalized();
 
       console.log('Deployed contract address:', contractAddress);
 
       const contract = new Contract<FlipperContractApi>(reviveClient, flipperV6Metadata, contractAddress, {
-        defaultCaller: alicePair.address,
+        defaultCaller: alice.address,
       });
 
       const value = await contract.query.get();
       expect(value).toBeDefined();
       expect(value.data).toBeDefined();
       expect(value.data).toEqual(true);
+    });
+
+    describe('auto dry-run', () => {
+      it('should deploy contract using code hash properly', async () => {
+        deployer = new ContractDeployer<FlipperContractApi>(
+          reviveClient,
+          flipperV6Metadata,
+          flipperV6Metadata.source.hash!,
+          { defaultCaller: alice.address },
+        );
+
+        const dryRun = await reviveClient.call.reviveApi.uploadCode(
+          alice.address,
+          flipperV6Metadata.source.contract_binary!,
+        );
+
+        assert(dryRun.isOk, 'Dry run result should be ok');
+
+        await reviveClient.tx.revive
+          .uploadCode(flipperV6Metadata.source.contract_binary!, dryRun.value.deposit)
+          .signAndSend(alice)
+          .untilFinalized();
+
+        const txResult = await deployer.tx
+          .new(true) // --
+          .signAndSend(alice)
+          .untilFinalized();
+
+        console.log('Deployed contract address:', await txResult.contractAddress());
+
+        const contract = await txResult.contract();
+
+        const value = await contract.query.get();
+        expect(value).toBeDefined();
+        expect(value.data).toBeDefined();
+        expect(value.data).toEqual(true);
+      });
+
+      it('should deploy contract without salt properly', async () => {
+        const txResult = await deployer.tx // --
+          .new(true)
+          .signAndSend(alice)
+          .untilFinalized();
+
+        console.log('Deployed contract address:', await txResult.contractAddress());
+
+        const contract = await txResult.contract();
+
+        const value = await contract.query.get();
+        expect(value).toBeDefined();
+        expect(value.data).toBeDefined();
+        expect(value.data).toEqual(true);
+      });
+
+      it('should deploy contract with salt properly', async () => {
+        const salt = generateRandomHex();
+
+        const txResult = await deployer.tx
+          .new(true, { salt }) // --
+          .signAndSend(alice)
+          .untilFinalized();
+
+        console.log('Deployed contract address:', await txResult.contractAddress());
+
+        const contract = await txResult.contract();
+
+        const value = await contract.query.get();
+        expect(value).toBeDefined();
+        expect(value.data).toBeDefined();
+        expect(value.data).toEqual(true);
+      });
     });
   });
 });
