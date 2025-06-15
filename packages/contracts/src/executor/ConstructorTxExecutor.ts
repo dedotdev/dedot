@@ -3,7 +3,7 @@ import type { SubstrateApi } from '@dedot/api/chaintypes';
 import { GenericSubstrateApi, RpcVersion } from '@dedot/types';
 import { assert, concatU8a, hexToU8a, isPvm, isUndefined, isWasm, toHex, toU8a, u8aToHex } from '@dedot/utils';
 import { Contract } from '../Contract.js';
-import { ConstructorTxOptions, GenericConstructorTxCall } from '../types/index.js';
+import { ConstructorTxOptions, GenericConstructorTxCall, ContractAddress } from '../types/index.js';
 import { CREATE1, CREATE2, ensureParamsLength, toEvmAddress } from '../utils/index.js';
 import { ConstructorQueryExecutor } from './ConstructorQueryExecutor';
 import { DeployerExecutor } from './abstract/index.js';
@@ -108,8 +108,11 @@ export class ConstructorTxExecutor<ChainApi extends GenericSubstrateApi> extends
           tx.call = newCall;
         },
         transformResult: (result) => {
+          let cachedAddress: ContractAddress;
+
           const contractAddress = async () => {
-            // TODO cache contract address
+            if (cachedAddress) return cachedAddress;
+
             if (this.registry.isRevive()) {
               if (salt) {
                 let code;
@@ -122,14 +125,14 @@ export class ConstructorTxExecutor<ChainApi extends GenericSubstrateApi> extends
 
                 assert(code, 'Contract Code Binary Not Found');
 
-                return CREATE2(
+                cachedAddress = CREATE2(
                   toEvmAddress(deployerAddress), // --
                   code,
                   bytes,
                   salt,
                 );
               } else {
-                return CREATE1(
+                cachedAddress = CREATE1(
                   toEvmAddress(deployerAddress), // --
                   deployerNonce,
                 );
@@ -138,8 +141,10 @@ export class ConstructorTxExecutor<ChainApi extends GenericSubstrateApi> extends
               const event = client.events.contracts.Instantiated.find(result.events);
               assert(event, 'Contracts.Instantiated event not found');
 
-              return event.palletEvent.data.contract.address();
+              cachedAddress = event.palletEvent.data.contract.address();
             }
+
+            return cachedAddress;
           };
 
           const contract = async () => {

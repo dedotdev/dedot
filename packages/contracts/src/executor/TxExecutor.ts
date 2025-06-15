@@ -19,7 +19,6 @@ export class TxExecutor<ChainApi extends GenericSubstrateApi> extends ContractEx
 
       const txCallOptions = (params[args.length] || {}) as ContractTxOptions;
       const { value = 0n, gasLimit, storageDepositLimit } = txCallOptions;
-      // assert(gasLimit, 'Expected a gas limit in ContractTxOptions');
 
       const formattedInputs = args.map((arg, index) => this.tryEncode(arg, params[index]));
       const bytes = u8aToHex(concatU8a(hexToU8a(meta.selector), ...formattedInputs));
