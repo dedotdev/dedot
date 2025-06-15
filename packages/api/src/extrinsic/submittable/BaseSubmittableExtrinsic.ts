@@ -21,7 +21,9 @@ import { fakeSigner } from './fakeSigner.js';
 import { isKeyringPair, signRawMessage, txDefer } from './utils.js';
 
 interface TxHooks {
+  // A hook that is called before the extrinsic is signed.
   beforeSign?: (tx: Extrinsic & ISubmittableExtrinsic, signerAddress: string) => Promise<void>;
+  // A hook to transform the submittable result on tx execution progress, helpful for customizing the submittable result.
   transformResult?: <R extends ISubmittableResult = ISubmittableResult>(result: ISubmittableResult) => R;
 }
 

@@ -53,7 +53,7 @@ const txResult = await deployer1.tx
 if (txResult.dispatchError) {
   console.log(`❌ Contract deployment failed:`, client.registry.findErrorMeta(txResult.dispatchError));
 } else {
-  console.log(`✅ Contract deployed successfully`);
+  console.log(`✅ Contract deployed successfully via code at`, await txResult.contractAddress());
 }
 
 console.log('📝 Step 2: Deploy contract using code hash');
@@ -76,7 +76,7 @@ const txResult2 = await deployer2.tx
 if (txResult2.dispatchError) {
   console.log(`❌ Contract deployment failed:`, client.registry.findErrorMeta(txResult2.dispatchError));
 } else {
-  console.log(`✅ Contract deployed successfully`);
+  console.log(`✅ Contract deployed successfully via code hash at:`, await txResult2.contractAddress());
 }
 
 console.log('📝 Step 3: Read contract value');

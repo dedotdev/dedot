@@ -1,6 +1,6 @@
 import { BaseSubmittableExtrinsic, ISubstrateClient } from '@dedot/api';
 import type { SubstrateApi } from '@dedot/api/chaintypes';
-import { GenericSubstrateApi, RpcVersion } from '@dedot/types';
+import { GenericSubstrateApi, ISubmittableResult, RpcVersion } from '@dedot/types';
 import { assert, concatU8a, hexToU8a, isPvm, isUndefined, isWasm, toHex, toU8a, u8aToHex } from '@dedot/utils';
 import { Contract } from '../Contract.js';
 import { ConstructorTxOptions, GenericConstructorTxCall, ContractAddress, ExecutionOptions } from '../types/index.js';
@@ -77,6 +77,41 @@ export class ConstructorTxExecutor<ChainApi extends GenericSubstrateApi> extends
 
       let deployerAddress: string, deployerNonce: number;
 
+      const calculateContractAddress = async (result: ISubmittableResult): Promise<string> => {
+        assert(deployerAddress, 'Deployer Address Not Found');
+
+        if (this.registry.isRevive()) {
+          if (salt) {
+            let code;
+            if (isPvm(this.code)) {
+              code = this.code;
+            } else {
+              // pull the raw code in case we're using a code hash here
+              code = await client.query.revive.pristineCode(toHex(this.code));
+            }
+
+            assert(code, 'Contract Code Binary Not Found');
+
+            return CREATE2(
+              toEvmAddress(deployerAddress), // --
+              code,
+              bytes,
+              salt,
+            );
+          } else {
+            return CREATE1(
+              toEvmAddress(deployerAddress), // --
+              deployerNonce,
+            );
+          }
+        } else {
+          const event = client.events.contracts.Instantiated.find(result.events);
+          assert(event, 'Contracts.Instantiated event not found');
+
+          return event.palletEvent.data.contract.address();
+        }
+      };
+
       (tx as unknown as BaseSubmittableExtrinsic).withHooks({
         beforeSign: async (tx, signerAddress) => {
           deployerAddress = signerAddress;
@@ -121,37 +156,7 @@ export class ConstructorTxExecutor<ChainApi extends GenericSubstrateApi> extends
           const contractAddress = async () => {
             if (cachedAddress) return cachedAddress;
 
-            if (this.registry.isRevive()) {
-              if (salt) {
-                let code;
-                if (isPvm(this.code)) {
-                  code = this.code;
-                } else {
-                  // pull the raw code in case we're using a code hash here
-                  code = await client.query.revive.pristineCode(toHex(this.code));
-                }
-
-                assert(code, 'Contract Code Binary Not Found');
-
-                cachedAddress = CREATE2(
-                  toEvmAddress(deployerAddress), // --
-                  code,
-                  bytes,
-                  salt,
-                );
-              } else {
-                cachedAddress = CREATE1(
-                  toEvmAddress(deployerAddress), // --
-                  deployerNonce,
-                );
-              }
-            } else {
-              const event = client.events.contracts.Instantiated.find(result.events);
-              assert(event, 'Contracts.Instantiated event not found');
-
-              cachedAddress = event.palletEvent.data.contract.address();
-            }
-
+            cachedAddress = await calculateContractAddress(result);
             return cachedAddress;
           };
 
