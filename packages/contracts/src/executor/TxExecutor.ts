@@ -50,7 +50,8 @@ export class TxExecutor<ChainApi extends GenericSubstrateApi> extends ContractEx
         beforeSign: async (tx) => {
           const callParams = { ...tx.call.palletCall.params };
 
-          // TODO check if we should call dry-run
+          const needsDryRun = !callParams.gasLimit || (this.registry.isRevive() && !callParams.storageDepositLimit);
+          if (!needsDryRun) return;
 
           const executor = new QueryExecutor(this.client, this.registry, this.address, this.options);
           const { raw } = await executor.doExecute(message)(...params);
