@@ -56,20 +56,20 @@ export class SubmittableExtrinsic extends BaseSubmittableExtrinsic implements IS
         const blockNumber = (signedBlock as SignedBlock).block.header.number;
 
         const status = toTxStatus(txStatus, { txIndex, blockNumber });
-        const result = new SubmittableResult({ status, txHash, events, txIndex });
+        const result = this.transformTxResult(new SubmittableResult({ status, txHash, events, txIndex }));
 
         onTxProgress(result);
 
         !isSubscription && deferTx.resolve(txHash);
-        return callback?.(this.transformTxResult(result));
+        return callback?.(result);
       } else {
         const status = toTxStatus(txStatus);
-        const result = new SubmittableResult({ status, txHash });
+        const result = this.transformTxResult(new SubmittableResult({ status, txHash }));
 
         onTxProgress(result);
 
         !isSubscription && deferTx.resolve(txHash);
-        return callback?.(this.transformTxResult(new SubmittableResult({ status, txHash })));
+        return callback?.(result);
       }
     });
 

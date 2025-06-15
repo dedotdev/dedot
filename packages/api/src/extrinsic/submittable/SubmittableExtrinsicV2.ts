@@ -228,11 +228,13 @@ export class SubmittableExtrinsicV2 extends BaseSubmittableExtrinsic {
     //  just in-case we somehow can't find the tx in any block
     let unsub: Unsub | undefined;
     this.#send((result) => {
+      result = this.transformTxResult(result);
+
       onTxProgress(result);
 
       if (isSubscription) {
         try {
-          callback?.(this.transformTxResult(result));
+          callback?.(result);
         } catch {}
 
         return;

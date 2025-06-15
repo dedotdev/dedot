@@ -1,5 +1,5 @@
-import { Contract, ContractDeployer, CREATE1, CREATE2, toEvmAddress } from '@dedot/contracts';
-import { assert, generateRandomHex, HexString } from '@dedot/utils';
+import { Contract, ContractDeployer, CREATE1, CREATE2, toEvmAddress } from 'dedot/contracts';
+import { assert, generateRandomHex } from 'dedot/utils';
 import { beforeAll, describe, expect, it } from 'vitest';
 import { FlipperContractApi } from '../contracts/flipper';
 import { devPairs, flipperV5Metadata, flipperV6Metadata } from '../utils.js';
@@ -109,8 +109,6 @@ describe('ContractDeployer', () => {
           .signAndSend(alice)
           .untilFinalized();
 
-        console.log('txResult', txResult);
-
         const contract = await txResult.contract();
         const value = await contract.query.get();
         expect(value).toBeDefined();
@@ -137,8 +135,6 @@ describe('ContractDeployer', () => {
           .new(true, { salt }) // --
           .signAndSend(alice)
           .untilFinalized();
-
-        console.log('txResult', txResult);
 
         const contract = await txResult.contract();
 
@@ -293,8 +289,6 @@ describe('ContractDeployer', () => {
           .signAndSend(alice)
           .untilFinalized();
 
-        console.log('txResult', txResult);
-
         console.log('Deployed contract address:', await txResult.contractAddress());
 
         const contract = await txResult.contract();
@@ -311,7 +305,6 @@ describe('ContractDeployer', () => {
           .signAndSend(alice)
           .untilFinalized();
 
-        console.log('txResult', txResult);
         console.log('Deployed contract address:', await txResult.contractAddress());
 
         const contract = await txResult.contract();
@@ -330,7 +323,6 @@ describe('ContractDeployer', () => {
           .signAndSend(alice)
           .untilFinalized();
 
-        console.log('txResult', txResult);
         console.log('Deployed contract address:', await txResult.contractAddress());
 
         const contract = await txResult.contract();
