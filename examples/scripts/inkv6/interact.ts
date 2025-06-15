@@ -1,5 +1,5 @@
 import { DedotClient, WsProvider } from 'dedot';
-import { ContractDeployer } from 'dedot/contracts';
+import { ContractDeployer, toEvmAddress } from 'dedot/contracts';
 import { assert, generateRandomHex } from 'dedot/utils';
 import { devPairs } from '../keyring.js';
 import { FlipperContractApi } from './flipper/index.js';
@@ -19,11 +19,17 @@ const client = await DedotClient.new(new WsProvider('ws://127.0.0.1:9944'));
 
 console.log('🚀 Starting Flipper contract demonstration');
 
-// Try to map account first!
-await client.tx.revive
-  .mapAccount()
-  .signAndSend(alice) // --
-  .untilFinalized();
+const mappedAccount = await client.query.revive.originalAccount(toEvmAddress(alice.address));
+if (mappedAccount) {
+  console.log('Alice address has already been mapped!');
+} else {
+  console.log('Alice address is not mapped, map the account now!');
+
+  await client.tx.revive
+    .mapAccount()
+    .signAndSend(alice) // --
+    .untilFinalized();
+}
 
 // Extract PVM bytecode from metadata
 const pvmBytecode = flipper6.source.contract_binary;
