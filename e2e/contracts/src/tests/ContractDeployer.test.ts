@@ -109,6 +109,8 @@ describe('ContractDeployer', () => {
           .signAndSend(alice)
           .untilFinalized();
 
+        console.log('txResult', txResult);
+
         const contract = await txResult.contract();
         const value = await contract.query.get();
         expect(value).toBeDefined();
@@ -135,6 +137,8 @@ describe('ContractDeployer', () => {
           .new(true, { salt }) // --
           .signAndSend(alice)
           .untilFinalized();
+
+        console.log('txResult', txResult);
 
         const contract = await txResult.contract();
 
@@ -289,6 +293,8 @@ describe('ContractDeployer', () => {
           .signAndSend(alice)
           .untilFinalized();
 
+        console.log('txResult', txResult);
+
         console.log('Deployed contract address:', await txResult.contractAddress());
 
         const contract = await txResult.contract();
@@ -305,6 +311,7 @@ describe('ContractDeployer', () => {
           .signAndSend(alice)
           .untilFinalized();
 
+        console.log('txResult', txResult);
         console.log('Deployed contract address:', await txResult.contractAddress());
 
         const contract = await txResult.contract();
@@ -323,6 +330,7 @@ describe('ContractDeployer', () => {
           .signAndSend(alice)
           .untilFinalized();
 
+        console.log('txResult', txResult);
         console.log('Deployed contract address:', await txResult.contractAddress());
 
         const contract = await txResult.contract();
