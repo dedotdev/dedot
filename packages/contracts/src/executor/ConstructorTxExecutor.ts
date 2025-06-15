@@ -108,11 +108,22 @@ export class ConstructorTxExecutor<ChainApi extends GenericSubstrateApi> extends
         },
         transformResult: (result) => {
           const contractAddress = async () => {
+            // TODO cache contract address
             if (this.registry.isRevive()) {
               if (salt) {
+                let code;
+                if (isPvm(this.code)) {
+                  code = this.code;
+                } else {
+                  // pull the raw code in case we're using a code hash here
+                  code = await client.query.revive.pristineCode(toHex(this.code));
+                }
+
+                assert(code, 'Contract Code Binary Not Found');
+
                 return CREATE2(
                   toEvmAddress(deployerAddress), // --
-                  this.code,
+                  code,
                   bytes,
                   salt,
                 );
