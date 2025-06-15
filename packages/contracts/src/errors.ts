@@ -97,7 +97,7 @@ export class ContractInstantiateLangError<
     super(raw);
     this.langError = err;
     this.flags = toReturnFlags(raw.result.value.result.flags.bits);
-    this.message = `Lange error: ${JSON.stringify(err)}`;
+    this.message = `Lang error: ${JSON.stringify(err)}`;
   }
 }
 
@@ -192,7 +192,7 @@ export class ContractLangError<
     super(raw);
     this.langError = err;
     this.flags = toReturnFlags(raw.result.value.flags.bits);
-    this.message = `Lange error: ${JSON.stringify(err)}`;
+    this.message = `Lang error: ${JSON.stringify(err)}`;
   }
 }
 

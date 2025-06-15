@@ -1,5 +1,5 @@
-import { Contract } from '@dedot/contracts';
-import { assert } from '@dedot/utils';
+import { Contract } from 'dedot/contracts';
+import { assert } from 'dedot/utils';
 import { beforeEach, describe, expect, it } from 'vitest';
 import { FlipperContractApi } from '../contracts/flipper';
 import { devPairs, flipperV5Metadata, flipperV6Metadata, deployFlipperV5, deployFlipperV6 } from '../utils.js';

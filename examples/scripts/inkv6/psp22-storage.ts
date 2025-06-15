@@ -38,20 +38,13 @@ const salt = generateRandomHex();
 
 // Dry-run to estimate gas fee
 console.log('⛽ Estimating gas for deployment...');
-const dryRun = await deployer.query.new(
+await deployer.query.new(
   1_000_000_000_000n, // total_supply: 1,000,000 tokens (with 12 decimals)
   'Storage Test Token', // name
   'STT', // symbol
   9, // decimals
   { salt },
 );
-
-const dryRunRaw1 = dryRun.raw;
-
-// Calculate the contract address using CREATE2 before deployment
-const contractAddress = CREATE2(toEvmAddress(alice.address), psp22.source.contract_binary, dryRun.inputData, salt);
-
-console.log(`📍 Predicted contract address: ${contractAddress}`);
 
 // Deploy the contract
 console.log('🚀 Deploying PSP22 contract...');
@@ -61,11 +54,7 @@ const result = await deployer.tx
     'Storage Test Token', // name
     'STT', // symbol
     9, // decimals
-    {
-      gasLimit: dryRunRaw1.gasRequired,
-      storageDepositLimit: dryRunRaw1.storageDeposit.value,
-      salt,
-    },
+    { salt },
   )
   .signAndSend(alice, ({ status }) => {
     console.log(`📊 Deployment status: ${status.type}`);
@@ -76,16 +65,11 @@ if (result.dispatchError) {
   console.log(`❌ Contract deployment failed:`, client.registry.findErrorMeta(result.dispatchError));
   throw new Error('Contract deployment failed');
 } else {
-  console.log(`✅ Contract deployed successfully at: ${contractAddress}`);
+  console.log(`✅ Contract deployed successfully at: ${await result.contractAddress()}`);
 }
 
 // Create a Contract instance with the deployed address
-const contract = new Contract<Psp22v6ContractApi>(
-  client, // --
-  psp22,
-  contractAddress,
-  { defaultCaller: alice.address },
-);
+const contract = await result.contract();
 
 console.log('\n📝 Step 2: Read initial contract storage state');
 
@@ -124,18 +108,11 @@ const transferAmount = 100_000_000_000n; // 100 tokens (with 9 decimals)
 console.log(`💸 Transferring ${transferAmount} tokens to Bob...`);
 
 // Estimate gas for transfer
-const { raw: dryRunRaw2 } = await contract.query.psp22Transfer(
-  toEvmAddress(bob.address),
-  transferAmount,
-  new Uint8Array(),
-);
+await contract.query.psp22Transfer(toEvmAddress(bob.address), transferAmount, new Uint8Array());
 
 // Execute the transfer
 const transferResult = await contract.tx
-  .psp22Transfer(toEvmAddress(bob.address), transferAmount, new Uint8Array(), {
-    gasLimit: dryRunRaw2.gasRequired,
-    storageDepositLimit: dryRunRaw2.storageDeposit.value,
-  })
+  .psp22Transfer(toEvmAddress(bob.address), transferAmount, new Uint8Array())
   .signAndSend(alice, ({ status }) => {
     console.log(`📊 Transfer status: ${status.type}`);
   })
@@ -182,14 +159,11 @@ const allowanceAmount = 50_000_000_000n; // 50 tokens
 console.log(`🔐 Setting allowance of ${allowanceAmount} for Bob...`);
 
 // Estimate gas for approve
-const { raw: dryRunRaw3 } = await contract.query.psp22Approve(toEvmAddress(bob.address), allowanceAmount);
+await contract.query.psp22Approve(toEvmAddress(bob.address), allowanceAmount);
 
 // Execute the approval
 const approvalResult = await contract.tx
-  .psp22Approve(toEvmAddress(bob.address), allowanceAmount, {
-    gasLimit: dryRunRaw3.gasRequired,
-    storageDepositLimit: dryRunRaw3.storageDeposit.value,
-  })
+  .psp22Approve(toEvmAddress(bob.address), allowanceAmount)
   .signAndSend(alice, ({ status }) => {
     console.log(`📊 Approve status: ${status.type}`);
   })

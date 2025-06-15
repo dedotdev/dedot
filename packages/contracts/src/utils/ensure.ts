@@ -4,6 +4,7 @@ import { accountId32ToHex, Hash } from '@dedot/codecs';
 import { RpcVersion } from '@dedot/types';
 import {
   assert,
+  assertFalse,
   DedotError,
   ensurePresence,
   HexString,
@@ -93,4 +94,17 @@ export function ensureSupportedContractMetadataVersion(metadata: LooseContractMe
   if (!SUPPORTED_VERSIONS.includes(metadata.version)) {
     throw new DedotError(`Unsupported metadata version: ${metadata.version}`);
   }
+}
+
+export function ensureParamsLength(expectedArgsLength: number, actualParamsLength: number) {
+  assertFalse(
+    actualParamsLength < expectedArgsLength,
+    `Expected at least ${expectedArgsLength} arguments, got ${actualParamsLength}`,
+  );
+
+  // One extra param for the options
+  assertFalse(
+    actualParamsLength > expectedArgsLength + 1,
+    `Expected at most ${expectedArgsLength + 1} arguments, got ${actualParamsLength}`,
+  );
 }
