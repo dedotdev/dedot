@@ -116,7 +116,7 @@ export class ConstructorTxExecutor<ChainApi extends GenericSubstrateApi> extends
         beforeSign: async (tx, signerAddress) => {
           deployerAddress = signerAddress;
 
-          if (!salt) {
+          if (this.registry.isRevive() && !salt) {
             deployerNonce = await client.call.accountNonceApi.accountNonce(deployerAddress);
           }
 
