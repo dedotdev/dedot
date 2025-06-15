@@ -46,13 +46,21 @@ export class TxExecutor<ChainApi extends GenericSubstrateApi> extends ContractEx
       })();
 
       (tx as unknown as BaseSubmittableExtrinsic).withHooks({
-        beforeSign: async (tx) => {
+        beforeSign: async (tx, signerAddress) => {
           const callParams = { ...tx.call.palletCall.params };
 
           const needsDryRun = !callParams.gasLimit || (this.registry.isRevive() && !callParams.storageDepositLimit);
           if (!needsDryRun) return;
 
-          const executor = new QueryExecutor(this.client, this.registry, this.address, this.options);
+          const executor = new QueryExecutor(
+            this.client, // --
+            this.registry,
+            this.address,
+            {
+              defaultCaller: signerAddress,
+              ...this.options,
+            },
+          );
           const { raw } = await executor.doExecute(message)(...params);
 
           const { gasRequired, storageDeposit } = raw;
