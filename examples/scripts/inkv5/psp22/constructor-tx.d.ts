@@ -30,7 +30,7 @@ export interface ConstructorTx<
       name: string | undefined,
       symbol: string | undefined,
       decimals: number,
-      options: ConstructorTxOptions,
+      options?: ConstructorTxOptions,
     ) => GenericInstantiateSubmittableExtrinsic<ChainApi, ContractApi>
   >;
 }

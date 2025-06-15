@@ -21,7 +21,7 @@ export interface ContractTx<ChainApi extends GenericSubstrateApi> extends Generi
    **/
   psp22Transfer: GenericContractTxCall<
     ChainApi,
-    (to: H160, value: bigint, data: BytesLike, options: ContractTxOptions) => ContractSubmittableExtrinsic<ChainApi>
+    (to: H160, value: bigint, data: BytesLike, options?: ContractTxOptions) => ContractSubmittableExtrinsic<ChainApi>
   >;
 
   /**
@@ -41,7 +41,7 @@ export interface ContractTx<ChainApi extends GenericSubstrateApi> extends Generi
       to: H160,
       value: bigint,
       data: BytesLike,
-      options: ContractTxOptions,
+      options?: ContractTxOptions,
     ) => ContractSubmittableExtrinsic<ChainApi>
   >;
 
@@ -55,7 +55,7 @@ export interface ContractTx<ChainApi extends GenericSubstrateApi> extends Generi
    **/
   psp22Approve: GenericContractTxCall<
     ChainApi,
-    (spender: H160, value: bigint, options: ContractTxOptions) => ContractSubmittableExtrinsic<ChainApi>
+    (spender: H160, value: bigint, options?: ContractTxOptions) => ContractSubmittableExtrinsic<ChainApi>
   >;
 
   /**
@@ -68,7 +68,7 @@ export interface ContractTx<ChainApi extends GenericSubstrateApi> extends Generi
    **/
   psp22IncreaseAllowance: GenericContractTxCall<
     ChainApi,
-    (spender: H160, deltaValue: bigint, options: ContractTxOptions) => ContractSubmittableExtrinsic<ChainApi>
+    (spender: H160, deltaValue: bigint, options?: ContractTxOptions) => ContractSubmittableExtrinsic<ChainApi>
   >;
 
   /**
@@ -81,6 +81,6 @@ export interface ContractTx<ChainApi extends GenericSubstrateApi> extends Generi
    **/
   psp22DecreaseAllowance: GenericContractTxCall<
     ChainApi,
-    (spender: H160, deltaValue: bigint, options: ContractTxOptions) => ContractSubmittableExtrinsic<ChainApi>
+    (spender: H160, deltaValue: bigint, options?: ContractTxOptions) => ContractSubmittableExtrinsic<ChainApi>
   >;
 }

@@ -4,7 +4,7 @@ import { GenericSubstrateApi, RpcVersion } from '@dedot/types';
 import { assert, concatU8a, hexToU8a, isPvm, isUndefined, isWasm, toHex, toU8a, u8aToHex } from '@dedot/utils';
 import { Contract } from '../Contract.js';
 import { ConstructorTxOptions, GenericConstructorTxCall } from '../types/index.js';
-import { CREATE1, CREATE2, toEvmAddress } from '../utils/index.js';
+import { CREATE1, CREATE2, ensureParamsLength, toEvmAddress } from '../utils/index.js';
 import { ConstructorQueryExecutor } from './ConstructorQueryExecutor';
 import { DeployerExecutor } from './abstract/index.js';
 
@@ -16,9 +16,9 @@ export class ConstructorTxExecutor<ChainApi extends GenericSubstrateApi> extends
     // @ts-ignore
     const callFn: GenericConstructorTxCall<ChainApi> = (...params: any[]) => {
       const { args } = meta;
-      assert(params.length === args.length + 1, `Expected ${args.length + 1} arguments, got ${params.length}`);
+      ensureParamsLength(args.length, params.length);
 
-      const txCallOptions = params[args.length] as ConstructorTxOptions;
+      const txCallOptions = (params[args.length] || {}) as ConstructorTxOptions;
       const { value = 0n, gasLimit, storageDepositLimit, salt } = txCallOptions;
 
       const formattedInputs = args.map((arg, index) => this.tryEncode(arg, params[index]));
@@ -90,7 +90,7 @@ export class ConstructorTxExecutor<ChainApi extends GenericSubstrateApi> extends
           // TODO check if we should call dry-run
 
           const executor = new ConstructorQueryExecutor(this.client, this.registry, this.code, this.options);
-          const { raw } = await executor.doExecute(constructor)(...params.slice(0, -1), { salt });
+          const { raw } = await executor.doExecute(constructor)(...params);
 
           const { gasRequired, storageDeposit } = raw;
           if (!callParams.gasLimit) {

@@ -21,6 +21,6 @@ export interface ConstructorTx<
    **/
   default: GenericConstructorTxCall<
     ChainApi,
-    (options: ConstructorTxOptions) => GenericInstantiateSubmittableExtrinsic<ChainApi, ContractApi>
+    (options?: ConstructorTxOptions) => GenericInstantiateSubmittableExtrinsic<ChainApi, ContractApi>
   >;
 }

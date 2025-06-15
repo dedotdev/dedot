@@ -49,7 +49,6 @@ try {
       new Uint8Array([1, 2, 3, 4, 5]), // data
       0, // duration
       2, // min_approvals
-      {},
     )
     .signAndSend(alice, ({ status }) => {
       console.log('Create proposal status:', status.type);
@@ -63,7 +62,6 @@ try {
       new Uint8Array([1, 2, 3, 4, 5, 6]), // data
       100, // duration
       5, // min_approvals
-      {},
     )
     .signAndSend(alice, ({ status }) => {
       console.log('Create proposal 2 status:', status.type);

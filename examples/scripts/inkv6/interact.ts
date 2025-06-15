@@ -109,7 +109,7 @@ console.log('📝 Step 4: Flip the value');
 {
   console.log('🔄 Executing flip transaction');
   const flipResult = await contract.tx
-    .flip({})
+    .flip()
     .signAndSend(alice, ({ status }) => {
       console.log(`📊 Transaction status: ${status.type}`);
     })
@@ -154,7 +154,7 @@ console.log('📝 Step 4: Flip the value');
 
   console.log('🔄 Executing flipWithSeed transaction');
   const flipWithSeedResult = await contract.tx
-    .flipWithSeed(seed, {})
+    .flipWithSeed(seed)
     .signAndSend(alice, ({ status }) => {
       console.log(`📊 Transaction status: ${status.type}`);
     })

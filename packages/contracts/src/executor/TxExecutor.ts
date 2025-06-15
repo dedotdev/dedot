@@ -1,8 +1,9 @@
 import { BaseSubmittableExtrinsic, ISubstrateClient } from '@dedot/api';
 import type { SubstrateApi } from '@dedot/api/chaintypes';
 import { GenericSubstrateApi, RpcVersion } from '@dedot/types';
-import { assert, concatU8a, HexString, hexToU8a, isUndefined, u8aToHex } from '@dedot/utils';
+import { assert, concatU8a, HexString, hexToU8a, u8aToHex } from '@dedot/utils';
 import { ContractTxOptions, GenericContractTxCall } from '../types/index.js';
+import { ensureParamsLength } from '../utils/index.js';
 import { QueryExecutor } from './QueryExecutor.js';
 import { ContractExecutor } from './abstract/index.js';
 
@@ -13,9 +14,10 @@ export class TxExecutor<ChainApi extends GenericSubstrateApi> extends ContractEx
 
     const callFn: GenericContractTxCall<ChainApi> = (...params: any[]) => {
       const { args } = meta;
-      assert(params.length === args.length + 1, `Expected ${args.length + 1} arguments, got ${params.length}`);
 
-      const txCallOptions = params[args.length] as ContractTxOptions;
+      ensureParamsLength(args.length, params.length);
+
+      const txCallOptions = (params[args.length] || {}) as ContractTxOptions;
       const { value = 0n, gasLimit, storageDepositLimit } = txCallOptions;
       // assert(gasLimit, 'Expected a gas limit in ContractTxOptions');
 
@@ -51,7 +53,7 @@ export class TxExecutor<ChainApi extends GenericSubstrateApi> extends ContractEx
           // TODO check if we should call dry-run
 
           const executor = new QueryExecutor(this.client, this.registry, this.address, this.options);
-          const { raw } = await executor.doExecute(message)(...params.slice(0, -1));
+          const { raw } = await executor.doExecute(message)(...params);
 
           const { gasRequired, storageDeposit } = raw;
           if (!callParams.gasLimit) {

@@ -1,6 +1,6 @@
 import { LegacyClient, WsProvider } from 'dedot';
 import { Contract, ContractDeployer } from 'dedot/contracts';
-import { stringToHex } from 'dedot/utils';
+import { generateRandomHex, stringToHex } from 'dedot/utils';
 import { devPairs } from '../keyring.js';
 import psp22Metadata from './psp22.json';
 import { Psp22ContractApi } from './psp22/index.js';
@@ -20,20 +20,17 @@ const deployer = new ContractDeployer<Psp22ContractApi>(client, psp22Metadata, p
 });
 
 // Generate a unique salt
-const timestamp = await client.query.timestamp.now();
-const salt = stringToHex(`psp22_${timestamp}`);
+const salt = generateRandomHex();
 
 // Dry-run to estimate gas fee
 // console.log('Estimating gas...');
-// const {
-//   raw: { gasRequired },
-// } = await deployer.query.new(
-//   1000000000000n, // total_supply
-//   'Test Token', // name
-//   'TST', // symbol
-//   18, // decimal
-//   { salt },
-// );
+await deployer.query.new(
+  1000000000000n, // total_supply
+  'Test Token', // name
+  'TST', // symbol
+  18, // decimal
+  { salt },
+);
 
 // Deploy the contract
 console.log('Deploying PSP22 contract...');
@@ -50,23 +47,12 @@ const txResult = await deployer.tx
   })
   .untilFinalized();
 
-// // Extract the contract address from the events
-// const instantiatedEvent = client.events.contracts.Instantiated.find(events);
-// if (!instantiatedEvent) {
-//   throw new Error('Failed to find Instantiated event');
-// }
-//
-// const contractAddress = instantiatedEvent.palletEvent.data.contract.address();
-// console.log('Contract deployed at:', contractAddress);
-
 // Create a Contract instance with the deployed address
 const contract = await txResult.contract();
 
 // Transfer some tokens to Bob
 console.log('\nTransferring tokens to Bob...');
-// const {
-//   raw: { gasRequired: transferGas },
-// } = await contract.query.psp22Transfer(bob.address, 100000000000n, new Uint8Array());
+await contract.query.psp22Transfer(bob.address, 100000000000n, new Uint8Array());
 
 const transferResult = await contract.tx
   .psp22Transfer(bob.address, 100000000000n, new Uint8Array(), {})

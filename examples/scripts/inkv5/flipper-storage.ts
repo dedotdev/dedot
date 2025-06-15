@@ -62,9 +62,12 @@ try {
 
   console.log('===');
 
-  const dryRunResult = await contract.query.flip({ caller: alice.address });
+  await contract.query.flip({ caller: alice.address });
 
-  await contract.tx.flip({ gasLimit: dryRunResult.raw.gasRequired }).signAndSend(alice).untilFinalized();
+  await contract.tx
+    .flip() // --
+    .signAndSend(alice)
+    .untilFinalized();
 
   console.log('Value:', await root.value.get()); // Access the boolean value directly
   console.log('Owner:', (await root.owner.get())!.address()); // Access the boolean value directly

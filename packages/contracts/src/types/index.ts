@@ -125,16 +125,13 @@ export type ConstructorCallOptions = CallOptions & {
 
 export type ConstructorTxOptions = CallOptions & {
   salt?: BytesLike;
-  gasLimit?: Weight;
 };
 
 export type ContractCallOptions = CallOptions & {
   caller?: AccountId32Like;
 };
 
-export type ContractTxOptions = CallOptions & {
-  gasLimit?: Weight;
-};
+export type ContractTxOptions = CallOptions;
 
 export type GenericContractQueryCall<
   ChainApi extends GenericSubstrateApi,

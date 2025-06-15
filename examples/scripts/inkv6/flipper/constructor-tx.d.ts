@@ -24,7 +24,10 @@ export interface ConstructorTx<
    **/
   new: GenericConstructorTxCall<
     ChainApi,
-    (initValue: boolean, options: ConstructorTxOptions) => GenericInstantiateSubmittableExtrinsic<ChainApi, ContractApi>
+    (
+      initValue: boolean,
+      options?: ConstructorTxOptions,
+    ) => GenericInstantiateSubmittableExtrinsic<ChainApi, ContractApi>
   >;
 
   /**
@@ -36,7 +39,7 @@ export interface ConstructorTx<
    **/
   newDefault: GenericConstructorTxCall<
     ChainApi,
-    (options: ConstructorTxOptions) => GenericInstantiateSubmittableExtrinsic<ChainApi, ContractApi>
+    (options?: ConstructorTxOptions) => GenericInstantiateSubmittableExtrinsic<ChainApi, ContractApi>
   >;
 
   /**
@@ -49,6 +52,6 @@ export interface ConstructorTx<
    **/
   fromSeed: GenericConstructorTxCall<
     ChainApi,
-    (seed: Hash, options: ConstructorTxOptions) => GenericInstantiateSubmittableExtrinsic<ChainApi, ContractApi>
+    (seed: Hash, options?: ConstructorTxOptions) => GenericInstantiateSubmittableExtrinsic<ChainApi, ContractApi>
   >;
 }
