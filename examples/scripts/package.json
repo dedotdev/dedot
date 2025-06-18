@@ -5,7 +5,7 @@
   "type": "module",
   "dependencies": {
     "@dedot/chaintypes": "^0.113.0",
-    "@polkadot/keyring": "^13.5.1",
+    "@polkadot/keyring": "^13.5.2",
     "@substrate/connect-known-chains": "^1.10.2",
     "dedot": "workspace:*"
   }
