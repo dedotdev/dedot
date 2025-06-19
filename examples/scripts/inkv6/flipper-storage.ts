@@ -27,17 +27,14 @@ console.log(`📦 Root storage value: ${root.value}`);
 
 console.log('📝 Step 2: Prepare flip transaction');
 
-const { raw } = await contract.query.flip();
+await contract.query.flip();
 console.log('✅ Flip dry run successful');
 
 console.log('📝 Step 3: Execute flip transaction');
 
 console.log('🔄 Flipping value');
 await contract.tx
-  .flip({
-    gasLimit: raw.gasRequired,
-    storageDepositLimit: raw.storageDeposit.value,
-  })
+  .flip()
   .signAndSend(alice, ({ status }) => console.log(`📊 Transaction status: ${status.type}`))
   .untilBestChainBlockIncluded();
 

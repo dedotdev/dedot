@@ -1,8 +1,8 @@
 import Keyring from '@polkadot/keyring';
 import { KeyringPair } from '@polkadot/keyring/types';
 import { cryptoWaitReady } from '@polkadot/util-crypto';
-import { ContractAddress, ContractDeployer, CREATE1, toEvmAddress } from '@dedot/contracts';
-import { assert, generateRandomHex } from '@dedot/utils';
+import { ContractAddress, ContractDeployer } from '@dedot/contracts';
+import { generateRandomHex } from '@dedot/utils';
 import { FlipperContractApi } from './contracts/flipper';
 import * as flipperV5 from './contracts/flipper_v5.json';
 import * as flipperV6 from './contracts/flipper_v6.json';
@@ -24,24 +24,17 @@ export const deployFlipperV5 = async (signer: KeyringPair): Promise<ContractAddr
     contractsClient, // prettier-end-here
     flipperV5Metadata,
     flipperV5Metadata.source.wasm!,
-    {
-      defaultCaller: signer.address,
-    },
+    { defaultCaller: signer.address },
   );
 
   const salt = generateRandomHex();
 
-  const { raw } = await deployer.query.new(true, { salt });
-
-  const { events } = await deployer.tx
-    .new(true, { gasLimit: raw.gasRequired, salt })
+  const txResult = await deployer.tx // --
+    .new(true, { salt })
     .signAndSend(signer)
     .untilFinalized();
 
-  const instantiatedEvent = contractsClient.events.contracts.Instantiated.find(events);
-  assert(instantiatedEvent, 'Event Contracts.Instantiated should be available');
-
-  return instantiatedEvent!.palletEvent.data.contract.address();
+  return await txResult.contractAddress();
 };
 
 export const deployFlipperV6 = async (signer: KeyringPair): Promise<ContractAddress> => {
@@ -49,21 +42,13 @@ export const deployFlipperV6 = async (signer: KeyringPair): Promise<ContractAddr
     reviveClient,
     flipperV6Metadata,
     flipperV6Metadata.source.contract_binary!,
-    {
-      defaultCaller: signer.address,
-    },
+    { defaultCaller: signer.address },
   );
 
-  const { raw } = await deployer.query.new(true);
-  const nonce = await reviveClient.call.accountNonceApi.accountNonce(signer.address);
-  const contractAddress = CREATE1(toEvmAddress(signer.address), nonce);
-
-  await deployer.tx
-    .new(true, { gasLimit: raw.gasRequired, storageDepositLimit: raw.storageDeposit.value })
+  const txResult = await deployer.tx // --
+    .new(true)
     .signAndSend(signer)
     .untilFinalized();
 
-  console.log('Deployed contract address:', contractAddress);
-
-  return contractAddress;
+  return await txResult.contractAddress();
 };
