@@ -15,7 +15,7 @@ const client = await DedotClient.new<PolkadotPeopleApi>(provider);
 // Query on-chain storage
 const GAV = '16SDAKg9N6kKAbhgDyxBXdHEwpwHUHs2CNEiLNGeZV55qHna';
 const identity = await client.query.identity.identityOf(GAV);
-console.log('Identity:', identity![0].info);
+console.log('Identity:', identity?.info);
 
 // Disconnect
 await client.disconnect();
