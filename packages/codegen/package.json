@@ -1,6 +1,6 @@
 {
   "name": "@dedot/codegen",
-  "version": "0.13.1",
+  "version": "0.13.2",
   "description": "Generate types",
   "author": "Thang X. Vu <thang@dedot.dev>",
   "homepage": "https://dedot.dev",
