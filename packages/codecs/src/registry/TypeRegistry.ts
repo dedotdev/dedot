@@ -152,11 +152,7 @@ export abstract class TypeRegistry {
         const some = members.find((one) => one.name === 'Some');
         if (some) {
           const $codec = this.findCodec(some.fields[0].typeId);
-          if ($codec.metadata[0].name === '$.bool') {
-            return $.optionBool;
-          } else {
-            return $.Option($codec);
-          }
+          return $.Option($codec);
         }
       } else if (path.join('::') === 'Result') {
         const ok = members.find((one) => one.name === 'Ok');
