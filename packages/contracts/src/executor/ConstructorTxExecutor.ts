@@ -163,6 +163,8 @@ export class ConstructorTxExecutor<ChainApi extends GenericSubstrateApi> extends
           const contract = async (overrideOptions?: ExecutionOptions) => {
             const address = await contractAddress();
 
+            // TODO check if the contract is existed on chain or not!
+
             return new Contract(
               client, // --
               this.metadata,

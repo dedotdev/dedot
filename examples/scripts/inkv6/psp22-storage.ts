@@ -16,10 +16,17 @@ const client = await DedotClient.new(new WsProvider('ws://127.0.0.1:9944'));
 console.log(`✅ Connected to ${client.runtimeVersion.specName} v${client.runtimeVersion.specVersion}`);
 
 // Try to map account first!
-await client.tx.revive
-  .mapAccount()
-  .signAndSend(alice) // --
-  .untilFinalized();
+const mappedAccount = await client.query.revive.originalAccount(toEvmAddress(alice.address));
+if (mappedAccount) {
+  console.log('Alice address has already been mapped!');
+} else {
+  console.log('Alice address is not mapped, map the account now!');
+
+  await client.tx.revive
+    .mapAccount()
+    .signAndSend(alice) // --
+    .untilFinalized();
+}
 
 // Option 1: Deploy a new contract for testing
 console.log('\n📝 Step 1: Deploy PSP22 contract for storage testing');
@@ -33,19 +40,6 @@ const deployer = new ContractDeployer<Psp22v6ContractApi>(
   { defaultCaller: alice.address },
 );
 
-// Generate a unique salt to avoid conflicts
-const salt = generateRandomHex();
-
-// Dry-run to estimate gas fee
-console.log('⛽ Estimating gas for deployment...');
-await deployer.query.new(
-  1_000_000_000_000n, // total_supply: 1,000,000 tokens (with 12 decimals)
-  'Storage Test Token', // name
-  'STT', // symbol
-  9, // decimals
-  { salt },
-);
-
 // Deploy the contract
 console.log('🚀 Deploying PSP22 contract...');
 const result = await deployer.tx
@@ -54,7 +48,7 @@ const result = await deployer.tx
     'Storage Test Token', // name
     'STT', // symbol
     9, // decimals
-    { salt },
+    { salt: generateRandomHex() },
   )
   .signAndSend(alice, ({ status }) => {
     console.log(`📊 Deployment status: ${status.type}`);
@@ -107,9 +101,6 @@ console.log('\n📝 Step 3: Execute token transfer and verify storage changes');
 const transferAmount = 100_000_000_000n; // 100 tokens (with 9 decimals)
 console.log(`💸 Transferring ${transferAmount} tokens to Bob...`);
 
-// Estimate gas for transfer
-await contract.query.psp22Transfer(toEvmAddress(bob.address), transferAmount, new Uint8Array());
-
 // Execute the transfer
 const transferResult = await contract.tx
   .psp22Transfer(toEvmAddress(bob.address), transferAmount, new Uint8Array())
@@ -157,9 +148,6 @@ console.log('\n📝 Step 5: Test allowance functionality and storage');
 // Set an allowance for Bob to spend Alice's tokens
 const allowanceAmount = 50_000_000_000n; // 50 tokens
 console.log(`🔐 Setting allowance of ${allowanceAmount} for Bob...`);
-
-// Estimate gas for approve
-await contract.query.psp22Approve(toEvmAddress(bob.address), allowanceAmount);
 
 // Execute the approval
 const approvalResult = await contract.tx

@@ -13,24 +13,24 @@ const client = await DedotClient.new(new WsProvider('wss://sys.ibp.network/asset
 
 const contractAddress = '0x90b7109346eEbbd8218336fF67CB7F7b5b599eFE';
 
-const contract = new Contract<FlipperContractApi>(client, flipper6, contractAddress, { defaultCaller: alice.address });
+const contract = new Contract<FlipperContractApi>(
+  client, // --
+  flipper6,
+  contractAddress,
+  { defaultCaller: alice.address },
+);
 
 console.log('📝 Step 1: Read initial contract state');
 
 console.log('🔍 Reading current value from contract');
-const getValue1 = await contract.query.get();
-console.log(`📖 Current value: ${getValue1.data}`);
+const value = await contract.query.get();
+console.log(`📖 Current value: ${value.data}`);
 
 console.log('🔍 Reading root storage');
 const root = await contract.storage.root();
 console.log(`📦 Root storage value: ${root.value}`);
 
-console.log('📝 Step 2: Prepare flip transaction');
-
-await contract.query.flip();
-console.log('✅ Flip dry run successful');
-
-console.log('📝 Step 3: Execute flip transaction');
+console.log('📝 Step 2: Execute flip transaction');
 
 console.log('🔄 Flipping value');
 await contract.tx
@@ -38,7 +38,7 @@ await contract.tx
   .signAndSend(alice, ({ status }) => console.log(`📊 Transaction status: ${status.type}`))
   .untilBestChainBlockIncluded();
 
-console.log('📝 Step 4: Verify storage changes');
+console.log('📝 Step 3: Verify storage changes');
 
 console.log('🔍 Reading updated root storage');
 const newRootStorage = await contract.storage.root();

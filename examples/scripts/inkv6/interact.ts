@@ -45,12 +45,10 @@ console.log('📝 Step 1: Deploy contract with full code');
 
 const deployer1 = new ContractDeployer<FlipperContractApi>(client, flipper6, pvmBytecode);
 
-const salt = generateRandomHex();
-
 console.log('🚀 Deploying contract with full PVM bytecode');
 
 const txResult = await deployer1.tx
-  .new(true, { salt })
+  .new(true, { salt: generateRandomHex() })
   .signAndSend(alice, ({ status }) => {
     console.log(`📊 Transaction status: ${status.type}`);
   })
@@ -68,11 +66,10 @@ console.log('📝 Step 2: Deploy contract using code hash');
 const deployer2 = new ContractDeployer<FlipperContractApi>(client, flipper6, codeHash);
 
 console.log('🚀 Deploying second contract instance using code hash');
-const salt2 = generateRandomHex();
 
 const txResult2 = await deployer2.tx
   .new(false, {
-    salt: salt2,
+    salt: generateRandomHex(),
   })
   .signAndSend(alice, ({ status }) => {
     console.log(`📊 Transaction status: ${status.type}`);
@@ -90,17 +87,17 @@ console.log('📝 Step 3: Read contract value');
 const contract = await txResult.contract();
 
 console.log('🔍 Reading current value from contract');
-const getValue1 = await contract.query.get();
-console.log(`📖 Current value: ${getValue1.data}`);
+const value1 = await contract.query.get();
+console.log(`📖 Current value: ${value1.data}`);
 
 console.log('🔍 Reading root storage');
 const root = await contract.storage.root();
 console.log(`📦 Root storage value: ${root.value}`);
 
 console.log('✅ Initial verification:');
-console.log(`📊 Query value: ${getValue1.data}`);
+console.log(`📊 Query value: ${value1.data}`);
 console.log(`📊 Storage value: ${root.value}`);
-console.log(`🔄 Values match: ${getValue1.data === root.value ? '✅ YES' : '❌ NO'}`);
+console.log(`🔄 Values match: ${value1.data === root.value ? '✅ YES' : '❌ NO'}`);
 
 console.log('📝 Step 4: Flip the value');
 
@@ -134,14 +131,14 @@ console.log('📝 Step 4: Flip the value');
   console.log(`🔄 Values match: ${getValueAfterFlip.data === newRoot.value ? '✅ YES' : '❌ NO'}`);
 
   console.log('✅ Overall verification results:');
-  console.log(`📊 Original query value: ${getValue1.data}`);
+  console.log(`📊 Original query value: ${value1.data}`);
   console.log(`📊 Original storage value: ${root.value}`);
   console.log(`📊 New query value: ${getValueAfterFlip.data}`);
   console.log(`📊 New storage value: ${newRoot.value}`);
-  console.log(`🔄 Value changed: ${getValue1.data !== getValueAfterFlip.data ? '✅ YES' : '❌ NO'}`);
+  console.log(`🔄 Value changed: ${value1.data !== getValueAfterFlip.data ? '✅ YES' : '❌ NO'}`);
   console.log(`🔄 Storage changed: ${root.value !== newRoot.value ? '✅ YES' : '❌ NO'}`);
   console.log(
-    `🔄 Query-Storage consistency: ${getValue1.data === root.value && getValueAfterFlip.data === newRoot.value ? '✅ CONSISTENT' : '❌ INCONSISTENT'}`,
+    `🔄 Query-Storage consistency: ${value1.data === root.value && getValueAfterFlip.data === newRoot.value ? '✅ CONSISTENT' : '❌ INCONSISTENT'}`,
   );
 }
 
