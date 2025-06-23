@@ -3,8 +3,8 @@ import type { SubstrateApi } from '@dedot/api/chaintypes';
 import { GenericSubstrateApi, ISubmittableResult, RpcVersion } from '@dedot/types';
 import { assert, concatU8a, hexToU8a, isPvm, isUndefined, isWasm, toHex, toU8a, u8aToHex } from '@dedot/utils';
 import { Contract } from '../Contract.js';
-import { ConstructorTxOptions, GenericConstructorTxCall, ContractAddress, ExecutionOptions } from '../types/index.js';
-import { CREATE1, CREATE2, ensureParamsLength, toEvmAddress } from '../utils/index.js';
+import { ConstructorTxOptions, ContractAddress, ExecutionOptions, GenericConstructorTxCall } from '../types/index.js';
+import { CREATE1, CREATE2, ensureContractPresence, ensureParamsLength, toEvmAddress } from '../utils/index.js';
 import { ConstructorQueryExecutor } from './ConstructorQueryExecutor';
 import { DeployerExecutor } from './abstract/index.js';
 
@@ -79,6 +79,15 @@ export class ConstructorTxExecutor<ChainApi extends GenericSubstrateApi> extends
 
       const calculateContractAddress = async (result: ISubmittableResult): Promise<string> => {
         assert(deployerAddress, 'Deployer Address Not Found');
+        const { status, events, dispatchError } = result;
+
+        const onChain = status.type === 'BestChainBlockIncluded' || status.type === 'Finalized';
+        assert(onChain, 'The deployment transaction has not yet been included in the best chain block or finalized.');
+
+        assert(
+          !dispatchError,
+          'The deployment transaction failed to execute. Refer to the dispatch error for more information.',
+        );
 
         if (this.registry.isRevive()) {
           if (salt) {
@@ -105,7 +114,7 @@ export class ConstructorTxExecutor<ChainApi extends GenericSubstrateApi> extends
             );
           }
         } else {
-          const event = client.events.contracts.Instantiated.find(result.events);
+          const event = client.events.contracts.Instantiated.find(events);
           assert(event, 'Contracts.Instantiated event not found');
 
           return event.palletEvent.data.contract.address();
@@ -163,7 +172,8 @@ export class ConstructorTxExecutor<ChainApi extends GenericSubstrateApi> extends
           const contract = async (overrideOptions?: ExecutionOptions) => {
             const address = await contractAddress();
 
-            // TODO check if the contract is existed on chain or not!
+            // Check if the contract is existed on chain or not!
+            await ensureContractPresence(client, this.registry, address);
 
             return new Contract(
               client, // --
