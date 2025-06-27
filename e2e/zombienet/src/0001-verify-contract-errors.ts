@@ -131,21 +131,12 @@ const deployFlipper = async (
   salt?: string,
 ): Promise<string> => {
   const alicePair = new Keyring({ type: 'sr25519' }).addFromUri('//Alice');
-  const caller = alicePair.address;
 
   const wasm = flipper.source.wasm!;
   const deployer = new ContractDeployer<FlipperContractApi>(api, flipper, wasm);
 
-  // Dry-run to estimate gas fee
-  const {
-    raw: { gasRequired },
-  } = await deployer.query.new(true, {
-    caller,
-    salt,
-  });
-
   return await new Promise<string>(async (resolve) => {
-    await deployer.tx.new(true, { gasLimit: gasRequired, salt }).signAndSend(alicePair, async ({ status, events }) => {
+    await deployer.tx.new(true, { salt }).signAndSend(alicePair, async ({ status, events }) => {
       console.log(`[${api.rpcVersion}] Transaction status:`, status.type);
 
       if (status.type === 'Finalized') {

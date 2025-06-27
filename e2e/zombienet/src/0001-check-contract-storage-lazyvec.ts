@@ -28,16 +28,10 @@ export const run = async (_nodeName: any, networkInfo: any) => {
     const timestamp = await api.query.timestamp.now();
     const salt = stringToHex(`${api.rpcVersion}_${timestamp}`);
 
-    // Dry-run to estimate gas fee
-    const {
-      raw: { gasRequired },
-    } = await deployer.query.default({ salt });
-
     // Deploy the contract
     const { events } = await deployer.tx
       .default({
         value: 1000000000000n, // Some value for payable constructor
-        gasLimit: gasRequired,
         salt,
       })
       .signAndSend(alicePair, ({ status }) => {
@@ -73,20 +67,12 @@ export const run = async (_nodeName: any, networkInfo: any) => {
 
     // Create a proposal to populate the lazy vector
     console.log(`[${api.rpcVersion}] Creating a proposal...`);
-    const {
-      raw: { gasRequired: createProposalGas },
-    } = await contract.query.createProposal(
-      new Uint8Array([1, 2, 3, 4, 5]), // data
-      0, // duration
-      2, // min_approvals
-    );
 
     await contract.tx
       .createProposal(
         new Uint8Array([1, 2, 3, 4, 5]), // data
         0, // duration
         2, // min_approvals
-        { gasLimit: createProposalGas },
       )
       .signAndSend(alicePair, ({ status }) => {
         console.log(`[${api.rpcVersion}] Create proposal status:`, status.type);
@@ -115,7 +101,6 @@ export const run = async (_nodeName: any, networkInfo: any) => {
         new Uint8Array([6, 7, 8, 9, 10]), // data
         200, // duration
         3, // min_approvals
-        { gasLimit: createProposalGas },
       )
       .signAndSend(alicePair, ({ status }) => {
         console.log(`[${api.rpcVersion}] Create second proposal status:`, status.type);
