@@ -46,9 +46,15 @@ describe('Errors', () => {
         .signAndSend(alicePair)
         .untilFinalized();
 
-      await expect(deployer.query.newDefault({ gasLimit: raw.gasRequired, salt })).rejects.toThrowError(
-        ContractInstantiateDispatchError,
-      );
+      try {
+        await deployer.query.newDefault({ gasLimit: raw.gasRequired, salt });
+      } catch (e: any) {
+        expect(e).toBeInstanceOf(ContractInstantiateDispatchError);
+        expect(e.moduleError).toBeDefined();
+        expect(e.moduleError!.pallet).toEqual('Contracts');
+        expect(e.moduleError!.name).toEqual('DuplicateContract');
+        expect(e.message).toMatch(/Dispatch error: Contracts::DuplicateContract/);
+      }
     });
 
     it('should throw ContractInstantiateLangError', async () => {
