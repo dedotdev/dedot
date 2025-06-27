@@ -5,7 +5,7 @@ import { assert, concatU8a, hexToU8a, isPvm, isUndefined, isWasm, toHex, toU8a, 
 import { Contract } from '../Contract.js';
 import { ConstructorTxOptions, ContractAddress, ExecutionOptions, GenericConstructorTxCall } from '../types/index.js';
 import { CREATE1, CREATE2, ensureContractPresence, ensureParamsLength, toEvmAddress } from '../utils/index.js';
-import { ConstructorQueryExecutor } from './ConstructorQueryExecutor';
+import { ConstructorQueryExecutor } from './ConstructorQueryExecutor.js';
 import { DeployerExecutor } from './abstract/index.js';
 
 export class ConstructorTxExecutor<ChainApi extends GenericSubstrateApi> extends DeployerExecutor<ChainApi> {
