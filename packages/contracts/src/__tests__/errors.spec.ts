@@ -18,7 +18,7 @@ describe('Dispatch Errors', () => {
   describe('ContractInstantiateDispatchError', () => {
     it('should format the message with module error details when provided', () => {
       const error = new ContractInstantiateDispatchError(mockDispatchError, mockRawResult, mockModuleError);
-      expect(error.message).toBe('Dispatch error: TestPallet::TestError\n  This is a test error.');
+      expect(error.message).toBe('Dispatch error: TestPallet::TestError - This is a test error.');
       expect(error.moduleError).toBe(mockModuleError);
     });
 
@@ -32,7 +32,7 @@ describe('Dispatch Errors', () => {
   describe('ContractDispatchError', () => {
     it('should format the message with module error details when provided', () => {
       const error = new ContractDispatchError(mockDispatchError, mockRawResult, mockModuleError);
-      expect(error.message).toBe('Dispatch error: TestPallet::TestError\n  This is a test error.');
+      expect(error.message).toBe('Dispatch error: TestPallet::TestError - This is a test error.');
       expect(error.moduleError).toBe(mockModuleError);
     });
 

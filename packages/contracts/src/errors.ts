@@ -8,7 +8,7 @@ const formatDispatchError = (err: DispatchError, moduleError?: PalletErrorMetada
     const { pallet, name, docs } = moduleError;
     let message = `Dispatch error: ${pallet}::${name}`;
     if (docs) {
-      message += `- ${docs.join('\n  ')}`;
+      message += ` - ${docs.join('\n  ')}`;
     }
     return message;
   } else {
