@@ -22,7 +22,9 @@
     "@dedot/codecs": "workspace:*",
     "@dedot/types": "workspace:*",
     "@dedot/utils": "workspace:*",
-    "@ethereumjs/rlp": "^10.0.0"
+    "@ethereumjs/rlp": "^10.0.0",
+    "@ethersproject/abi": "^5.8.0",
+    "@polkadot/keyring": "^13.5.2"
   },
   "publishConfig": {
     "access": "public",

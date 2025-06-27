@@ -5,3 +5,5 @@ export * from './types/index.js';
 export * from './TypinkRegistry.js';
 export * from './Contract.js';
 export * from './ContractDeployer.js';
+export * from './SolContract.js';
+export * from './SolContractDeployer.js';

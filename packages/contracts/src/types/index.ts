@@ -19,6 +19,7 @@ import {
   Unsub,
   VersionedGenericSubstrateApi,
 } from '@dedot/types';
+import { ConstructorFragment, FunctionFragment } from '@ethersproject/abi';
 import { ContractAddress, ContractCallMessage, ContractConstructorMessage } from './shared.js';
 import { ContractEventV4, ContractMetadataV4 } from './v4.js';
 import { ContractEventV5, ContractMetadataV5 } from './v5.js';
@@ -28,6 +29,7 @@ export * from './shared.js';
 export * from './v4.js';
 export * from './v5.js';
 export * from './v6.js';
+export * from './sol/index.js';
 
 export type ContractEventMeta = ContractEventV4 | ContractEventV5;
 
@@ -122,14 +124,14 @@ export type GenericContractQueryCall<
   ChainApi extends GenericSubstrateApi,
   F extends AsyncMethod = (...args: any[]) => Promise<GenericContractCallResult<any, ContractCallResult<ChainApi>>>,
 > = F & {
-  meta: ContractCallMessage;
+  meta: ContractCallMessage | FunctionFragment;
 };
 
 export type GenericContractTxCall<
   ChainApi extends GenericSubstrateApi,
   F extends AnyFunc = (...args: any[]) => ContractSubmittableExtrinsic<ChainApi>,
 > = F & {
-  meta: ContractCallMessage;
+  meta: ContractCallMessage | FunctionFragment;
 };
 
 export type GenericConstructorQueryCall<
@@ -138,14 +140,14 @@ export type GenericConstructorQueryCall<
     ...args: any[]
   ) => Promise<GenericConstructorCallResult<any, ContractInstantiateResult<ChainApi>>>,
 > = F & {
-  meta: ContractConstructorMessage;
+  meta: ContractConstructorMessage | ConstructorFragment;
 };
 
 export type GenericConstructorTxCall<
   ChainApi extends GenericSubstrateApi,
   F extends AnyFunc = (...args: any[]) => GenericInstantiateSubmittableExtrinsic<ChainApi>,
 > = F & {
-  meta: ContractConstructorMessage;
+  meta: ContractConstructorMessage | ConstructorFragment;
 };
 
 export interface GenericContractQuery<ChainApi extends GenericSubstrateApi> {
