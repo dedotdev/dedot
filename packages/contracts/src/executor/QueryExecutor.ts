@@ -72,7 +72,9 @@ export class QueryExecutor<ChainApi extends GenericSubstrateApi> extends Contrac
       })();
 
       if (raw.result.isErr) {
-        throw new ContractDispatchError(raw.result.err, raw);
+        const dispatchError = raw.result.err;
+        const moduleError = client.registry.findErrorMeta(dispatchError);
+        throw new ContractDispatchError(dispatchError, raw, moduleError);
       }
 
       const data = this.tryDecode(meta, raw.result.value.data) as Result<any, any>;
