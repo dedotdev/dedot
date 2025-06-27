@@ -42,6 +42,24 @@ describe('Contract', () => {
       expect(newState).toEqual(!state);
       console.log('After state:', newState);
     });
+
+    it('should auto dry-run tx properly', async () => {
+      const { data: state } = await contract.query.get();
+
+      expect(state).toBeDefined();
+      console.log('Before state:', state);
+
+      await contract.tx
+        .flip() // --
+        .signAndSend(alicePair)
+        .untilFinalized();
+
+      const { data: newState } = await contract.query.get();
+
+      expect(newState).toBeDefined();
+      expect(newState).toEqual(!state);
+      console.log('After state:', newState);
+    });
   });
 
   describe('Revive', () => {
@@ -77,6 +95,25 @@ describe('Contract', () => {
           storageDepositLimit: raw.storageDeposit.value,
         })
         .signAndSend(alicePair)
+        .untilFinalized();
+
+      const { data: newState } = await contract.query.get();
+
+      expect(newState).toBeDefined();
+      expect(newState).toEqual(!state);
+      console.log('After state:', newState);
+    });
+
+    it('should auto dry-run tx properly', async () => {
+      // Dry-run to estimate gas fee
+      const { data: state } = await contract.query.get();
+
+      expect(state).toBeDefined();
+      console.log('Before state:', state);
+
+      await contract.tx
+        .flip()
+        .signAndSend(alicePair) // --
         .untilFinalized();
 
       const { data: newState } = await contract.query.get();

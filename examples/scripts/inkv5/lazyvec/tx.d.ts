@@ -17,7 +17,7 @@ export interface ContractTx<ChainApi extends GenericSubstrateApi> extends Generi
    *
    * @selector 0x681266a0
    **/
-  approve: GenericContractTxCall<ChainApi, (options: ContractTxOptions) => ContractSubmittableExtrinsic<ChainApi>>;
+  approve: GenericContractTxCall<ChainApi, (options?: ContractTxOptions) => ContractSubmittableExtrinsic<ChainApi>>;
 
   /**
    * Create a new proposal.
@@ -37,7 +37,7 @@ export interface ContractTx<ChainApi extends GenericSubstrateApi> extends Generi
       data: BytesLike,
       duration: number,
       minApprovals: number,
-      options: ContractTxOptions,
+      options?: ContractTxOptions,
     ) => ContractSubmittableExtrinsic<ChainApi>
   >;
 }

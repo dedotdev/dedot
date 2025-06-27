@@ -2,18 +2,7 @@ import type { ISubstrateClient } from '@dedot/api';
 import { type SubstrateApi } from '@dedot/api/chaintypes';
 import { Result } from '@dedot/shape';
 import { GenericSubstrateApi, RpcVersion } from '@dedot/types';
-import {
-  assert,
-  assertFalse,
-  concatU8a,
-  hexToU8a,
-  isPvm,
-  isUndefined,
-  isWasm,
-  toHex,
-  toU8a,
-  u8aToHex,
-} from '@dedot/utils';
+import { assert, concatU8a, hexToU8a, isPvm, isUndefined, isWasm, toHex, toU8a, u8aToHex } from '@dedot/utils';
 import { ContractInstantiateDispatchError, ContractInstantiateLangError } from '../errors.js';
 import {
   ConstructorCallOptions,
@@ -22,7 +11,7 @@ import {
   GenericConstructorCallResult,
   GenericConstructorQueryCall,
 } from '../types/index.js';
-import { toReturnFlags } from '../utils/index.js';
+import { ensureParamsLength, toReturnFlags } from '../utils/index.js';
 import { DeployerExecutor } from './abstract/index.js';
 
 export class ConstructorQueryExecutor<ChainApi extends GenericSubstrateApi> extends DeployerExecutor<ChainApi> {
@@ -33,11 +22,7 @@ export class ConstructorQueryExecutor<ChainApi extends GenericSubstrateApi> exte
     const callFn: GenericConstructorQueryCall<ChainApi> = async (...params: any[]) => {
       const { args } = meta;
 
-      assertFalse(params.length < args.length, `Expected at least ${args.length} arguments, got ${params.length}`);
-      assertFalse(
-        params.length > args.length + 1,
-        `Expected at most ${args.length + 1} arguments, got ${params.length}`,
-      );
+      ensureParamsLength(args.length, params.length);
 
       const callOptions = (params[args.length] || {}) as ConstructorCallOptions;
       const {

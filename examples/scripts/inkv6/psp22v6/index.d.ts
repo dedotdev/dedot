@@ -26,7 +26,7 @@ export interface Psp22v6ContractApi<
   query: ContractQuery<ChainApi[Rv]>;
   tx: ContractTx<ChainApi[Rv]>;
   constructorQuery: ConstructorQuery<ChainApi[Rv]>;
-  constructorTx: ConstructorTx<ChainApi[Rv]>;
+  constructorTx: ConstructorTx<ChainApi[Rv], Psp22v6ContractApi>;
   events: ContractEvents<ChainApi[Rv]>;
   storage: {
     root(): Promise<Psp22v6Token>;

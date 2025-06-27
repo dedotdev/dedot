@@ -2,6 +2,9 @@
 
 {{{ importTypes }}}
 
-export interface ConstructorTx<ChainApi extends GenericSubstrateApi> extends GenericConstructorTx<ChainApi> {
+export interface ConstructorTx<
+  ChainApi extends GenericSubstrateApi,
+  ContractApi extends GenericContractApi = GenericContractApi,
+> extends GenericConstructorTx<ChainApi> {
     {{{ constructorsOut }}}
 }

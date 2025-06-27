@@ -1,6 +1,6 @@
 import { LegacyClient, WsProvider } from 'dedot';
-import { Contract, ContractDeployer } from 'dedot/contracts';
-import { stringToHex } from 'dedot/utils';
+import { ContractDeployer } from 'dedot/contracts';
+import { generateRandomHex } from 'dedot/utils';
 import { devPairs } from '../keyring.js';
 import flipperMetadata from './flipper.json';
 import { FlipperContractApi } from './flipper/index.js';
@@ -19,78 +19,57 @@ const deployer = new ContractDeployer<FlipperContractApi>(client, flipperMetadat
   defaultCaller: alice.address,
 });
 
-try {
-  // Generate a unique salt
-  const timestamp = await client.query.timestamp.now();
-  const salt = stringToHex(`flipper_${timestamp}`);
+// Generate a unique salt
+const salt = generateRandomHex();
 
-  // Dry-run to estimate gas fee
-  console.log('Estimating gas...');
-  const {
-    raw: { gasRequired },
-  } = await deployer.query.new(true, { salt });
+// Deploy the contract
+console.log('Deploying Flipper contract...');
+const txResult = await deployer.tx
+  .new(true, { salt })
+  .signAndSend(alice, ({ status }) => {
+    console.log('Transaction status:', status.type);
+  })
+  .untilFinalized();
 
-  // Deploy the contract
-  console.log('Deploying Flipper contract...');
-  const { events } = await deployer.tx
-    .new(true, { gasLimit: gasRequired, salt })
-    .signAndSend(alice, ({ status }) => {
-      console.log('Transaction status:', status.type);
-    })
-    .untilFinalized();
+const contractAddress = await txResult.contractAddress();
+console.log('Contract deployed at:', contractAddress);
 
-  console.log(events);
+// Create a Contract instance with the deployed address
+const contract = await txResult.contract();
 
-  // Extract the contract address from the events
-  const instantiatedEvent = client.events.contracts.Instantiated.find(events);
-  if (!instantiatedEvent) {
-    throw new Error('Failed to find Instantiated event');
-  }
+// Get the root storage
+console.log('\nGetting root storage...');
+const root = await contract.storage.root();
 
-  const contractAddress = instantiatedEvent.palletEvent.data.contract.address();
-  console.log('Contract deployed at:', contractAddress);
+// Get the lazy storage
+console.log('\nGetting unpacked storage...');
+const lazy = contract.storage.lazy();
 
-  // Create a Contract instance with the deployed address
-  const contract = new Contract<FlipperContractApi>(client, flipperMetadata, contractAddress, {
-    defaultCaller: alice.address,
-  });
+// Check specific values in the root storage
+console.log('\nChecking storage values:');
+console.log('[Root] Value:', await root.value.get()); // Access the boolean value directly
+console.log('[Root] Owner:', (await root.owner.get())!.address()); // Access the boolean value directly
 
-  // Get the root storage
-  console.log('\nGetting root storage...');
-  const root = await contract.storage.root();
-  console.log('Root storage:', root);
+console.log('[Lazy] Value:', await lazy.value.get()); // Access the boolean value directly
+console.log('[Lazy] Owner:', (await lazy.owner.get())!.address()); // Access the boolean value directly
 
-  // Get the lazy storage
-  console.log('\nGetting unpacked storage...');
-  const lazy = contract.storage.lazy();
-  console.log('Unpacked storage:', lazy);
+console.log('===');
 
-  // For Flipper, the lazy storage might be empty since it doesn't use lazy storage types
-  console.log('\nNote: Flipper uses a simple boolean value, not lazy storage types');
-  console.log('Therefore, lazy() might return an empty object');
+console.log('Flipping the value');
 
-  // Check specific values in the root storage
-  console.log('\nChecking root storage values:');
-  console.log('Value:', await root.value.get()); // Access the boolean value directly
-  console.log('Owner:', (await root.owner.get())!.address()); // Access the boolean value directly
+await contract.tx
+  .flip() // --
+  .signAndSend(alice)
+  .untilFinalized();
 
-  console.log('Value:', await lazy.value.get()); // Access the boolean value directly
-  console.log('Owner:', (await lazy.owner.get())!.address()); // Access the boolean value directly
+console.log('Done flipping the value');
 
-  console.log('===');
+console.log('===');
 
-  const dryRunResult = await contract.query.flip({ caller: alice.address });
+console.log('[Root] Value:', await root.value.get()); // Access the boolean value directly
+console.log('[Root] Owner:', (await root.owner.get())!.address()); // Access the boolean value directly
 
-  await contract.tx.flip({ gasLimit: dryRunResult.raw.gasRequired }).signAndSend(alice).untilFinalized();
+console.log('[Lazy] Value:', await lazy.value.get()); // Access the boolean value directly
+console.log('[Lazy] Owner:', (await lazy.owner.get())!.address()); // Access the boolean value directly
 
-  console.log('Value:', await root.value.get()); // Access the boolean value directly
-  console.log('Owner:', (await root.owner.get())!.address()); // Access the boolean value directly
-
-  console.log('Value:', await lazy.value.get()); // Access the boolean value directly
-  console.log('Owner:', (await lazy.owner.get())!.address()); // Access the boolean value directly
-} catch (error) {
-  console.error('Error:', error);
-} finally {
-  // Disconnect the client
-  await client.disconnect();
-}
+await client.disconnect();

@@ -1,7 +1,7 @@
 import * as util from 'node:util';
 import { beforeEach, describe, expect, it } from 'vitest';
 import { TypinkRegistry } from '../TypinkRegistry.js';
-import { ContractMetadata } from '../types';
+import { ContractMetadata } from '../types/index.js';
 import {
   FLIPPER_CONTRACT_METADATA_V4,
   FLIPPER_CONTRACT_METADATA_V5,

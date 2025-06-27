@@ -1,7 +1,7 @@
 import Keyring from '@polkadot/keyring';
 import { cryptoWaitReady } from '@polkadot/util-crypto';
 import { DedotClient, ISubstrateClient, LegacyClient, WsProvider } from 'dedot';
-import { SpWeightsWeightV2Weight, SubstrateApi } from 'dedot/chaintypes';
+import { SubstrateApi } from 'dedot/chaintypes';
 import { Contract, ContractDeployer, ContractMetadataV4, ContractMetadataV5 } from 'dedot/contracts';
 import { IKeyringPair, RpcVersion } from 'dedot/types';
 import { assert, isHex, isNumber, stringToHex } from 'dedot/utils';
@@ -41,18 +41,11 @@ async function testContractChainingMethods(
   const timestamp = await api.query.timestamp.now();
   const salt = stringToHex(`${api.rpcVersion}_${timestamp}_chaining_test`);
 
-  // Dry-run to estimate gas fee
-  const {
-    raw: { gasRequired },
-  } = await deployer.query.new(true, {
-    salt,
-  });
-
   console.log(`[${api.rpcVersion}] Testing untilBestChainBlockIncluded with contract deployment`);
 
   // Test untilBestChainBlockIncluded with contract deployment
   const bestChainResult = await deployer.tx
-    .new(true, { gasLimit: gasRequired, salt }) // --
+    .new(true, { salt }) // --
     .signAndSend(alicePair)
     .untilBestChainBlockIncluded();
 
@@ -75,14 +68,11 @@ async function testContractChainingMethods(
   const { data: initialState } = await contract.query.get();
   console.log(`[${api.rpcVersion}] Initial value:`, initialState);
 
-  // Dry-run to estimate gas fee for flip
-  const { raw } = await contract.query.flip();
-
   console.log(`[${api.rpcVersion}] Testing untilFinalized with contract method call`);
 
   // Test untilFinalized with contract method call
   const finalizedResult = await contract.tx
-    .flip({ gasLimit: raw.gasRequired }) // --
+    .flip() // --
     .signAndSend(alicePair)
     .untilFinalized();
 
@@ -106,15 +96,15 @@ async function testContractChainingMethods(
   console.log(`[${api.rpcVersion}] Testing order of events with contract method call`);
 
   // Test the order of events
-  await testContractEventOrder(contract, alicePair, raw.gasRequired);
+  await testContractEventOrder(contract, alicePair);
 
   console.log(`[${api.rpcVersion}] Testing combined promises with contract method call`);
 
   // Test using both promises together
-  await testContractCombinedPromises(contract, alicePair, raw.gasRequired);
+  await testContractCombinedPromises(contract, alicePair);
 }
 
-async function testContractEventOrder(contract: Contract<FlipperContractApi>, alicePair: IKeyringPair, gasLimit: any) {
+async function testContractEventOrder(contract: Contract<FlipperContractApi>, alicePair: IKeyringPair) {
   // Track the order of events
   let bestChainBlockIncludedReceived = false;
   let finalizedReceived = false;
@@ -123,7 +113,7 @@ async function testContractEventOrder(contract: Contract<FlipperContractApi>, al
 
   // Send the transaction and track status updates
   await new Promise<void>((resolve) => {
-    contract.tx.flip({ gasLimit }).signAndSend(alicePair, ({ status }) => {
+    contract.tx.flip().signAndSend(alicePair, ({ status }) => {
       if (status.type === 'BestChainBlockIncluded') {
         bestChainBlockIncludedReceived = true;
         bestChainBlockIncludedTime = Date.now();
@@ -143,14 +133,10 @@ async function testContractEventOrder(contract: Contract<FlipperContractApi>, al
   assert(bestChainBlockIncludedTime < finalizedTime, 'BestChainBlockIncluded should be received before Finalized');
 }
 
-async function testContractCombinedPromises(
-  contract: Contract<FlipperContractApi>,
-  alicePair: IKeyringPair,
-  gasLimit: SpWeightsWeightV2Weight,
-) {
+async function testContractCombinedPromises(contract: Contract<FlipperContractApi>, alicePair: IKeyringPair) {
   // Create two promises using both chaining methods
   const signedTx = contract.tx // --
-    .flip({ gasLimit })
+    .flip()
     .signAndSend(alicePair);
 
   const bestChainPromise = signedTx.untilBestChainBlockIncluded();
