@@ -3,6 +3,19 @@ import { assert, DedotError } from '@dedot/utils';
 import { ContractCallResult, ContractInstantiateResult, GenericContractApi, ReturnFlags } from './types/index.js';
 import { toReturnFlags } from './utils/index.js';
 
+const formatDispatchError = (err: DispatchError, moduleError?: PalletErrorMetadataLatest) => {
+  if (moduleError) {
+    const { pallet, name, docs } = moduleError;
+    let message = `Dispatch error: ${pallet}::${name}`;
+    if (docs) {
+      message += `\n  ${docs.join('\n  ')}`;
+    }
+    return message;
+  } else {
+    return `Dispatch error: ${JSON.stringify(err)}`;
+  }
+};
+
 /**
  * Represents an error that occurred during the instantiation of a smart contract.
  * This class extends the base `DedotError` and includes a `raw` property of type `ContractInstantiateResult`.
@@ -65,15 +78,7 @@ export class ContractInstantiateDispatchError<
     super(raw);
     this.dispatchError = err;
     this.moduleError = moduleError;
-    if (moduleError) {
-      const { pallet, name, docs } = moduleError;
-      this.message = `Dispatch error: ${pallet}::${name}`;
-      if (docs) {
-        this.message += `\n  ${docs.join('\n  ')}`;
-      }
-    } else {
-      this.message = `Dispatch error: ${JSON.stringify(err)}`;
-    }
+    this.message = formatDispatchError(err, moduleError);
   }
 }
 
@@ -181,15 +186,7 @@ export class ContractDispatchError<
     super(raw);
     this.dispatchError = err;
     this.moduleError = moduleError;
-    if (moduleError) {
-      const { pallet, name, docs } = moduleError;
-      this.message = `Dispatch error: ${pallet}::${name}`;
-      if (docs) {
-        this.message += `\n  ${docs.join('\n  ')}`;
-      }
-    } else {
-      this.message = `Dispatch error: ${JSON.stringify(err)}`;
-    }
+    this.message = formatDispatchError(err, moduleError);
   }
 }
 
