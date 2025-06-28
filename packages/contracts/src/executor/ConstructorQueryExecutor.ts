@@ -108,7 +108,9 @@ export class ConstructorQueryExecutor<ChainApi extends GenericSubstrateApi> exte
       })();
 
       if (raw.result.isErr) {
-        throw new ContractInstantiateDispatchError(raw.result.err, raw);
+        const dispatchError = raw.result.err;
+        const moduleError = client.registry.findErrorMeta(dispatchError);
+        throw new ContractInstantiateDispatchError(dispatchError, raw, moduleError);
       }
 
       const data = this.tryDecode(meta, raw.result.value.result.data) as Result<any, any>;

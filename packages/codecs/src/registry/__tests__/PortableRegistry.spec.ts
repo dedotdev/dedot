@@ -52,5 +52,31 @@ describe('PortableRegistry', () => {
         expect(() => registry.findType(1_000_000)).toThrowError('Cannot find portable type for id: 1000000');
       });
     });
+
+    describe('findErrorMeta', () => {
+      it('should return undefined for non-module dispatch error', () => {
+        const dispatchError = { type: 'Other' } as any;
+        expect(registry.findErrorMeta(dispatchError)).toBeUndefined();
+      });
+
+      it('should return error metadata for a valid module error', () => {
+        const moduleError = { index: 10, error: '0x04000000' as const }; // PalletId 10, ErrorId 4
+        const errorMeta = registry.findErrorMeta(moduleError);
+
+        expect(errorMeta).toBeDefined();
+        expect(errorMeta!.pallet).toEqual('ElectionProviderMultiPhase');
+        expect(errorMeta!.name).toEqual('SignedCannotPayDeposit');
+      });
+
+      it('should return undefined for a non-existent pallet index', () => {
+        const moduleError = { index: 999, error: '0x00' as const };
+        expect(registry.findErrorMeta(moduleError)).toBeUndefined();
+      });
+
+      it('should return undefined for a non-existent error index within a pallet', () => {
+        const moduleError = { index: 10, error: '0x99' as const };
+        expect(registry.findErrorMeta(moduleError)).toBeUndefined();
+      });
+    });
   });
 });

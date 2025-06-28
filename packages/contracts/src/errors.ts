@@ -1,7 +1,20 @@
-import { DispatchError } from '@dedot/codecs';
+import { DispatchError, PalletErrorMetadataLatest } from '@dedot/codecs';
 import { assert, DedotError } from '@dedot/utils';
 import { ContractCallResult, ContractInstantiateResult, GenericContractApi, ReturnFlags } from './types/index.js';
 import { toReturnFlags } from './utils/index.js';
+
+const formatDispatchError = (err: DispatchError, moduleError?: PalletErrorMetadataLatest) => {
+  if (moduleError) {
+    const { pallet, name, docs } = moduleError;
+    let message = `Dispatch error: ${pallet}::${name}`;
+    if (docs) {
+      message += ` - ${docs.join('\n  ')}`;
+    }
+    return message;
+  } else {
+    return `Dispatch error: ${JSON.stringify(err)}`;
+  }
+};
 
 /**
  * Represents an error that occurred during the instantiation of a smart contract.
@@ -45,17 +58,27 @@ export class ContractInstantiateDispatchError<
    * The error that occurred during the dispatch phase.
    */
   dispatchError: DispatchError;
+  /**
+   * The decoded module error, if any.
+   */
+  moduleError?: PalletErrorMetadataLatest;
 
   /**
    * Constructs a new `ContractInstantiateDispatchError` instance.
    *
    * @param err - The `DispatchError` that occurred during the dispatch phase.
    * @param raw - The raw result of the contract instantiation.
+   * @param moduleError - The decoded module error, if any.
    */
-  constructor(err: DispatchError, raw: ContractInstantiateResult<ContractApi['types']['ChainApi']>) {
+  constructor(
+    err: DispatchError,
+    raw: ContractInstantiateResult<ContractApi['types']['ChainApi']>,
+    moduleError?: PalletErrorMetadataLatest,
+  ) {
     super(raw);
     this.dispatchError = err;
-    this.message = `Dispatch error: ${JSON.stringify(err)}`;
+    this.moduleError = moduleError;
+    this.message = formatDispatchError(err, moduleError);
   }
 }
 
@@ -143,17 +166,27 @@ export class ContractDispatchError<
    * The error that occurred during the dispatch phase.
    */
   dispatchError: DispatchError;
+  /**
+   * The decoded module error, if any.
+   */
+  moduleError?: PalletErrorMetadataLatest;
 
   /**
    * Constructs a new `ContractDispatchError` instance.
    *
    * @param err - The `DispatchError` that occurred during the dispatch phase.
    * @param raw - The raw result of the contract call.
+   * @param moduleError - The decoded module error, if any.
    */
-  constructor(err: DispatchError, raw: ContractCallResult<ContractApi['types']['ChainApi']>) {
+  constructor(
+    err: DispatchError,
+    raw: ContractCallResult<ContractApi['types']['ChainApi']>,
+    moduleError?: PalletErrorMetadataLatest,
+  ) {
     super(raw);
     this.dispatchError = err;
-    this.message = `Dispatch error: ${JSON.stringify(err)}`;
+    this.moduleError = moduleError;
+    this.message = formatDispatchError(err, moduleError);
   }
 }
 
