@@ -1,12 +1,13 @@
 export interface SolABITypeDef {
   internalType: string;
+  components?: SolABITypeDef[];
   name: string;
   type: string;
 }
 
-export interface SolABIInput extends SolABITypeDef { };
+export interface SolABIInput extends SolABITypeDef {}
 
-export interface SolABIOutput extends SolABITypeDef { };
+export interface SolABIOutput extends SolABITypeDef {}
 
 export interface SolABIFunction {
   inputs: SolABIInput[];

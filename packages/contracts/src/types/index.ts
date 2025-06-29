@@ -200,15 +200,15 @@ export interface GenericContractApi<
   constructorQuery: GenericConstructorQuery<ChainApi[Rv]>;
   constructorTx: GenericConstructorTx<ChainApi[Rv]>;
   events: GenericContractEvents<ChainApi[Rv]>;
-  storage: {
+  storage?: {
     root(): Promise<GenericRootStorage>;
     lazy(): GenericLazyStorage;
   };
 
   types: {
-    RootStorage: GenericRootStorage;
-    LazyStorage: GenericLazyStorage;
-    LangError: GenericInkLangError;
+    RootStorage?: GenericRootStorage;
+    LazyStorage?: GenericLazyStorage;
+    LangError?: GenericInkLangError;
     ChainApi: ChainApi[Rv];
   };
 }
