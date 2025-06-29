@@ -26,7 +26,7 @@
     "@dedot/codecs": "workspace:*",
     "@dedot/codegen": "workspace:*",
     "@polkadot-api/wasm-executor": "^0.1.2",
-    "@polkadot/types-support": "^16.1.2",
+    "@polkadot/types-support": "^16.2.2",
     "ora": "^8.2.0",
     "yargs": "^17.7.2"
   },

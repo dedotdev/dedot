@@ -10,8 +10,8 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "@dedot/chaintypes": "^0.113.0",
-    "@substrate/connect-known-chains": "^1.10.2",
+    "@dedot/chaintypes": "^0.123.0",
+    "@substrate/connect-known-chains": "^1.10.3",
     "dedot": "workspace:*",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",

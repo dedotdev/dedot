@@ -7,8 +7,8 @@
     "e2e:test": "npx vitest --watch=false --no-file-parallelism"
   },
   "dependencies": {
-    "@dedot/chaintypes": "^0.113.0",
-    "@polkadot/keyring": "^13.5.1",
+    "@dedot/chaintypes": "^0.123.0",
+    "@polkadot/keyring": "^13.5.2",
     "dedot": "workspace:*"
   },
   "license": "Apache-2.0"
