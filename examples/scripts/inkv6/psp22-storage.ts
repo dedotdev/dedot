@@ -36,7 +36,7 @@ console.log('🔧 Creating contract deployer...');
 const deployer = new ContractDeployer<Psp22v6ContractApi>(
   client, // --
   psp22,
-  psp22.source.contract_binary,
+  psp22.source.contract_binary, // extracted from .contract or .polkavm files
   { defaultCaller: alice.address },
 );
 

@@ -15,9 +15,12 @@ console.log(`Connected to ${client.runtimeVersion.specName} v${client.runtimeVer
 
 // Create a ContractDeployer instance
 console.log('Creating contract deployer...');
-const deployer = new ContractDeployer<FlipperContractApi>(client, flipperMetadata, flipperMetadata.source.wasm, {
-  defaultCaller: alice.address,
-});
+const deployer = new ContractDeployer<FlipperContractApi>(
+  client,
+  flipperMetadata,
+  flipperMetadata.source.wasm, // extracted from .contract or .wasm files
+  { defaultCaller: alice.address },
+);
 
 // Generate a unique salt
 const salt = generateRandomHex();

@@ -18,7 +18,7 @@ console.log('Creating contract deployer...');
 const deployer = new ContractDeployer<Psp22ContractApi>(
   client, // --
   psp22Metadata,
-  psp22Metadata.source.wasm,
+  psp22Metadata.source.wasm, // extracted from .contract or .wasm files
   { defaultCaller: alice.address },
 );
 
