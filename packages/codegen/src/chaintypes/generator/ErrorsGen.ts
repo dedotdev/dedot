@@ -1,5 +1,6 @@
 import { assert, stringCamelCase, stringPascalCase } from '@dedot/utils';
 import { beautifySourceCode, commentBlock, compileTemplate } from '../../utils.js';
+import { getVariantDeprecationComment } from '../../utils.js';
 import { ApiGen } from './ApiGen.js';
 
 export class ErrorsGen extends ApiGen {
@@ -21,6 +22,15 @@ export class ErrorsGen extends ApiGen {
       defTypeOut += commentBlock(`Pallet \`${pallet.name}\`'s errors`);
       defTypeOut += `${stringCamelCase(pallet.name)}: {
         ${errorDefs
+          .map((def, index) => {
+            const { docs } = def;
+            const deprecationComments = getVariantDeprecationComment(errorTypeId.deprecationInfo, index);
+            if (deprecationComments.length > 0) {
+              docs.push('\n', ...deprecationComments);
+            }
+
+            return { ...def, docs };
+          })
           .map(({ name, docs }) => `${commentBlock(docs)}${stringPascalCase(name)}: GenericPalletError<Rv>`)
           .join(',\n')}
           

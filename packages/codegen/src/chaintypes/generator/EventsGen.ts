@@ -1,6 +1,7 @@
 import { EnumTypeDef, Field, TypeId } from '@dedot/codecs';
 import { assert, stringCamelCase, stringPascalCase } from '@dedot/utils';
 import { beautifySourceCode, commentBlock, compileTemplate } from '../../utils.js';
+import { getVariantDeprecationComment } from '../../utils.js';
 import { ApiGen } from './ApiGen.js';
 
 export class EventsGen extends ApiGen {
@@ -24,9 +25,8 @@ export class EventsGen extends ApiGen {
       defTypeOut += commentBlock(`Pallet \`${pallet.name}\`'s events`);
       defTypeOut += `${stringCamelCase(pallet.name)}: {
         ${eventDefs
-          .map((def) => {
+          .map((def, index) => {
             const genericParts: any[] = [`'${pallet.name}'`, `'${def.name}'`];
-
             const eventDataPart = this.#generateMemberDefType(def.fields);
             if (eventDataPart) {
               genericParts.push(eventDataPart);
@@ -34,10 +34,16 @@ export class EventsGen extends ApiGen {
               genericParts.push(flatMembers ? 'undefined' : 'null');
             }
 
-            return { ...def, genericParts };
+            const { docs } = def;
+            const deprecationComments = getVariantDeprecationComment(eventTypeId.deprecationInfo, index);
+            if (deprecationComments.length > 0) {
+              docs.push('\n', ...deprecationComments);
+            }
+
+            return { ...def, genericParts, docs };
           })
           .map(
-            ({ name, docs, fields, genericParts }) =>
+            ({ name, docs, genericParts }) =>
               `${commentBlock(docs)}${stringPascalCase(name)}: GenericPalletEvent<Rv, ${genericParts.join(', ')}>`,
           )
           .join(',\n')}
