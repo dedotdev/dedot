@@ -1,5 +1,5 @@
 import * as $ from '@dedot/shape';
-import { StorageEntryLatest } from './Metadata.js';
+import { StorageEntryLatest, ViewFunctionMethodDefLatest } from './Metadata.js';
 import { Field } from './scale_info.js';
 
 export interface PalletInfo {
@@ -26,5 +26,7 @@ export interface PalletTxMetadataV15 extends PalletTxMetadataV14 {}
 export interface PalletErrorMetadataLatest extends PalletErrorMetadataV15 {}
 export interface PalletEventMetadataLatest extends PalletEventMetadataV15 {}
 export interface PalletTxMetadataLatest extends PalletTxMetadataV15 {}
+
+export interface PalletViewFunctionMetadataLatest extends ViewFunctionMethodDefLatest, PalletInfo {}
 
 export interface PalletStorageEntryMetadataLatest extends StorageEntryLatest, PalletInfo {}
