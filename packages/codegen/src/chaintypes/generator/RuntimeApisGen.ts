@@ -109,6 +109,10 @@ export class RuntimeApisGen extends ApiGen {
     const callName = `${runtimeApiName}_${stringSnakeCase(methodName)}`;
     const defaultDocs = [`@callname: ${callName}`];
     const deprecationComments = getDeprecationComment(deprecationInfo);
+    if (deprecationComments.length > 0) {
+      deprecationComments.push('\n', ...deprecationComments);
+    }
+
     const typeOut = this.typesGen.generateType(output, 1, true);
     this.#addTypeImport(typeOut, false);
     const typedInputs = inputs
@@ -129,7 +133,6 @@ export class RuntimeApisGen extends ApiGen {
       '\n',
       defaultDocs,
       typedInputs.map(({ type, name }) => `@param {${type}} ${name}`),
-      '\n',
       deprecationComments,
     )}${stringCamelCase(methodName)}: GenericRuntimeApiMethod<Rv, (${paramsOut}) => Promise<${typeOut}>>`;
   }

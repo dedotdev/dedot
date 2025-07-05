@@ -72,12 +72,14 @@ export class TxGen extends ApiGen {
           ${typedTxs
             .map(({ functionName, params, docs, callInput }, idx) => {
               const deprecationComments = getVariantDeprecationComment(pallet.calls?.deprecationInfo, idx);
+              if (deprecationComments.length > 0) {
+                deprecationComments.push('\n', ...deprecationComments);
+              }
 
               return `${commentBlock(
                 docs,
                 '\n',
                 params.map((p) => `@param {${p.type}} ${p.normalizedName} ${p.docs}`),
-                '\n',
                 deprecationComments,
               )}${functionName}: GenericTxCall<Rv, (${params.map((p) => `${p.normalizedName}: ${p.type}`).join(', ')}) => ChainSubmittableExtrinsic<Rv, ${callInput}>>`;
             })
