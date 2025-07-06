@@ -110,7 +110,7 @@ export class RuntimeApisGen extends ApiGen {
     const defaultDocs = [`@callname: ${callName}`];
     const deprecationComments = getDeprecationComment(deprecationInfo);
     if (deprecationComments.length > 0) {
-      deprecationComments.push('\n', ...deprecationComments);
+      deprecationComments.unshift('\n');
     }
 
     const typeOut = this.typesGen.generateType(output, 1, true);

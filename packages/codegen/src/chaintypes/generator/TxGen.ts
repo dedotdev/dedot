@@ -73,7 +73,7 @@ export class TxGen extends ApiGen {
             .map(({ functionName, params, docs, callInput }, idx) => {
               const deprecationComments = getVariantDeprecationComment(pallet.calls?.deprecationInfo, idx);
               if (deprecationComments.length > 0) {
-                deprecationComments.push('\n', ...deprecationComments);
+                deprecationComments.unshift('\n');
               }
 
               return `${commentBlock(
