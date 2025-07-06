@@ -1,5 +1,6 @@
 import { normalizeName, stringCamelCase } from '@dedot/utils';
 import { beautifySourceCode, commentBlock, compileTemplate } from '../../utils.js';
+import { getDeprecationComment } from '../../utils.js';
 import { ApiGen } from './ApiGen.js';
 
 export class ConstsGen extends ApiGen {
@@ -11,11 +12,19 @@ export class ConstsGen extends ApiGen {
 
     let defTypeOut = '';
     for (let pallet of pallets) {
-      const typedConstants = pallet.constants.map((one) => ({
-        name: normalizeName(one.name),
-        type: this.typesGen.generateType(one.typeId, 1, true),
-        docs: one.docs,
-      }));
+      const typedConstants = pallet.constants.map((one) => {
+        const { deprecationInfo, docs } = one;
+        const deprecationComments = getDeprecationComment(deprecationInfo);
+        if (deprecationComments.length > 0) {
+          docs.push('\n', ...deprecationComments);
+        }
+
+        return {
+          name: normalizeName(one.name),
+          type: this.typesGen.generateType(one.typeId, 1, true),
+          docs,
+        };
+      });
 
       defTypeOut += commentBlock(`Pallet \`${pallet.name}\`'s constants`);
       defTypeOut += `${stringCamelCase(pallet.name)}: {
