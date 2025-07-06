@@ -42,12 +42,13 @@ export function ensurePresence<T>(value: T): NonNullable<T> {
  * @description Base & shared abstraction for Substrate API Clients
  */
 export abstract class BaseSubstrateClient<
-  Rv extends RpcVersion,
-  ChainApi extends VersionedGenericSubstrateApi = SubstrateApi,
-  Events extends string = ApiEvent,
->
+    Rv extends RpcVersion,
+    ChainApi extends VersionedGenericSubstrateApi = SubstrateApi,
+    Events extends string = ApiEvent,
+  >
   extends JsonRpcClient<ChainApi, Events>
-  implements ISubstrateClient<ChainApi[Rv], Events> {
+  implements ISubstrateClient<ChainApi[Rv], Events>
+{
   protected _options: ApiOptions;
 
   protected _registry?: PortableRegistry;
@@ -224,7 +225,7 @@ export abstract class BaseSubstrateClient<
           if (!rawMetadata) continue;
 
           return $Metadata.tryDecode(rawMetadata);
-        } catch { }
+        } catch {}
       }
     }
 
@@ -268,7 +269,7 @@ export abstract class BaseSubstrateClient<
     await this.initialize();
   };
 
-  protected onDisconnected = async () => { };
+  protected onDisconnected = async () => {};
 
   protected async initialize() {
     await this.initializeLocalCache();
@@ -282,7 +283,7 @@ export abstract class BaseSubstrateClient<
     throw new Error('Unimplemented!');
   }
 
-  protected async beforeDisconnect() { }
+  protected async beforeDisconnect() {}
 
   protected async afterDisconnect() {
     this.cleanUp();

@@ -10,6 +10,7 @@ import {
   EventExecutor,
   RuntimeApiExecutorV2,
   StorageQueryExecutorV2,
+  ViewFunctionExecutorV2,
   TxExecutorV2,
 } from '../executor/index.js';
 import { ChainHead, ChainSpec, PinnedBlock, Transaction, TransactionWatch } from '../json-rpc/index.js';
@@ -189,6 +190,16 @@ export class DedotClient<ChainApi extends VersionedGenericSubstrateApi = Substra
     }) as ChainApi[RpcV2]['query'];
   }
 
+  override get view(): ChainApi[RpcV2]['view'] {
+    return this.viewAt();
+  }
+
+  protected override viewAt(blockHash?: BlockHash): ChainApi[RpcV2]['view'] {
+    return newProxyChain({
+      executor: new ViewFunctionExecutorV2(this, this.chainHead, blockHash),
+    }) as ChainApi[RpcV2]['view'];
+  }
+
   override get call(): ChainApi[RpcV2]['call'] {
     return this.callAt();
   }
@@ -246,6 +257,7 @@ export class DedotClient<ChainApi extends VersionedGenericSubstrateApi = Substra
     api.errors = newProxyChain({ executor: new ErrorExecutor(api) }) as ChainApiAt['errors'];
     api.query = newProxyChain({ executor: new StorageQueryExecutorV2(api, this.chainHead) }) as ChainApiAt['query'];
     api.call = newProxyChain({ executor: new RuntimeApiExecutorV2(api, this.chainHead) }) as ChainApiAt['call'];
+    api.view = newProxyChain({ executor: new ViewFunctionExecutorV2(api, this.chainHead) }) as ChainApiAt['view'];
 
     this.#apiAtCache[hash] = api;
 

@@ -11,3 +11,4 @@ export * from './ViewFunctionExecutor.js';
 export * from './v2/StorageQueryExecutorV2.js';
 export * from './v2/RuntimeApiExecutorV2.js';
 export * from './v2/TxExecutorV2.js';
+export * from './v2/ViewFunctionExecutorV2.js';

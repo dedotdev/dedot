@@ -74,8 +74,8 @@ export type SignedExtensionDefLatest = SignedExtensionDefV16;
 export const $RuntimeApiMethodDefLatest = $RuntimeApiMethodDefV16;
 export type RuntimeApiMethodDefLatest = RuntimeApiMethodDefV16;
 
-export const $ViewFunctionMethodDefLatest = $ViewFunctionDefV16;
-export type ViewFunctionMethodDefLatest = ViewFunctionDefV16;
+export const $ViewFunctionDefLatest = $ViewFunctionDefV16;
+export type ViewFunctionDefLatest = ViewFunctionDefV16;
 
 export class Metadata {
   magicNumber: number;
