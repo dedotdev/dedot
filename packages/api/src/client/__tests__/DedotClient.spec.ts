@@ -73,7 +73,7 @@ describe('DedotClient', () => {
           simulator.subscriptionId,
           await api.chainHead.bestHash(),
           'Metadata_metadata_at_version',
-          '0x0f000000',
+          '0x10000000',
         ]);
 
         expect(api.rpc).toBeDefined();
@@ -661,7 +661,7 @@ describe('DedotClient', () => {
             simulator.subscriptionId,
             '0x0d',
             'Metadata_metadata_at_version',
-            '0x0f000000',
+            '0x10000000',
           ]);
 
           expect(providerSend).toBeCalledWith('chainHead_v1_stopOperation', [simulator.subscriptionId, 'call2']);
@@ -814,7 +814,7 @@ describe('DedotClient', () => {
             simulator.subscriptionId,
             newBlock.blockHash,
             'Metadata_metadata_at_version',
-            '0x0f000000',
+            '0x10000000',
           ]);
         });
       });
@@ -1200,7 +1200,7 @@ describe('DedotClient', () => {
             newSimulator.subscriptionId,
             await newApi.chainHead.bestHash(),
             'Metadata_metadata_at_version',
-            '0x0f000000',
+            '0x10000000',
           ]);
 
           expect(newProviderSend).toHaveBeenLastCalledWith('chainHead_v1_stopOperation', [
