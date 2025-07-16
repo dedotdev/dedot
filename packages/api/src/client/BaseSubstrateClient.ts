@@ -28,7 +28,7 @@ import type {
   SubstrateRuntimeVersion,
 } from '../types.js';
 
-const SUPPORTED_METADATA_VERSIONS = [16, 15, 14];
+const SUPPORTED_METADATA_VERSIONS = [15, 14];
 const MetadataApiHash = calcRuntimeApiHash('Metadata'); // 0x37e397fc7c91f5e4
 
 const MESSAGE: string = 'Make sure to call `.connect()` method first before using the API interfaces.';
@@ -223,7 +223,7 @@ export abstract class BaseSubstrateClient<
         try {
           const rawMetadata = await this.callAt(hash).metadata.metadataAtVersion(version);
           console.log(`Using metadata version ${version} from metadata.metadataAtVersion()`);
-          console.log(`Raw metadata: ${u8aToHex(rawMetadata)}`);
+          console.log(`Raw metadata: ${rawMetadata.length}`);
 
           if (!rawMetadata) continue;
 
