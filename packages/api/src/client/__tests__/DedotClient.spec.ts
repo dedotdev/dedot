@@ -894,7 +894,7 @@ describe('DedotClient', () => {
           simulator.subscriptionId,
           await api.chainHead.bestHash(),
           'Metadata_metadata_at_version',
-          '0x0f000000',
+          '0x10000000',
         ]);
 
         expect(api.rpc).toBeDefined();
@@ -1141,7 +1141,7 @@ describe('DedotClient', () => {
           simulator.subscriptionId,
           await api.chainHead.bestHash(),
           'Metadata_metadata_at_version',
-          '0x0f000000',
+          '0x10000000',
         ]);
         expect(newApi.metadata).toBeDefined();
         expect(newApi.metadata).toEqual(api.metadata);
@@ -1168,7 +1168,7 @@ describe('DedotClient', () => {
             newSimulator.subscriptionId,
             await newApi.chainHead.bestHash(),
             'Metadata_metadata_at_version',
-            '0x0f000000',
+            '0x10000000',
           ]);
 
           expect(newApi.metadata).toBeDefined();
