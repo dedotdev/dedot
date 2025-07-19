@@ -42,11 +42,6 @@ export interface GenericChainViewFunctions<_ extends RpcVersion = RpcVersion> {
   };
 }
 
-export interface GenericViewFunctionResult<DecodedData = any, RuntimeViewFunctionResult = any> {
-  data: DecodedData;
-  raw: RuntimeViewFunctionResult;
-}
-
 export type GenericViewFunction<_ extends RpcVersion = RpcVersion, F extends AnyFunc = AnyFunc> = F & {
   meta?: PalletViewFunctionMetadataLatest;
 };

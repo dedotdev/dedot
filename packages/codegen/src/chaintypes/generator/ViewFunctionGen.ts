@@ -3,9 +3,6 @@ import { beautifySourceCode, commentBlock, compileTemplate } from '../../utils.j
 import { getDeprecationComment } from '../../utils.js';
 import { ApiGen } from './ApiGen.js';
 
-const RUNTIME_API_NAME = 'RuntimeViewFunction';
-const METHOD_NAME = 'execute_view_function';
-
 export class ViewFunctionGen extends ApiGen {
   generate(useSubPaths: boolean = false) {
     const { pallets } = this.metadata;
@@ -18,9 +15,8 @@ export class ViewFunctionGen extends ApiGen {
       'GenericViewFunctionResult',
     );
 
-    const executeViewFunctionOutputType = this.#getExecuteViewFunctionOutputType();
-
     let defTypeOut = '';
+
     for (let pallet of pallets) {
       if (!pallet.viewFunctions || pallet.viewFunctions.length === 0) continue;
 
@@ -43,7 +39,7 @@ export class ViewFunctionGen extends ApiGen {
         );
 
         const outputType = this.typesGen.generateType(vf.output, 1, true);
-        return `${commentBlock(docs)}${stringCamelCase(vf.name)}: GenericViewFunction<Rv, (${params.join(', ')}) => Promise<GenericViewFunctionResult<${outputType}, ${executeViewFunctionOutputType}>>>`;
+        return `${commentBlock(docs)}${stringCamelCase(vf.name)}: GenericViewFunction<Rv, (${params.join(', ')}) => Promise<${outputType}>>`;
       });
 
       defTypeOut += commentBlock(`Pallet \`${pallet.name}\`'s view functions`);
@@ -58,17 +54,5 @@ export class ViewFunctionGen extends ApiGen {
     const template = compileTemplate('chaintypes/templates/view-function.hbs');
 
     return beautifySourceCode(template({ importTypes, defTypeOut }));
-  }
-
-  #getExecuteViewFunctionOutputType(): string {
-    const executeViewFunctionTypeDef = this.metadata.apis
-      .find((api) => api.name === RUNTIME_API_NAME)
-      ?.methods.find((one) => one.name === METHOD_NAME);
-
-    if (!executeViewFunctionTypeDef) {
-      throw new Error(`Runtime API method 'execute_view_function' not found in RuntimeViewFunction API`);
-    }
-
-    return this.typesGen.generateType(executeViewFunctionTypeDef.output, 1, true);
   }
 }

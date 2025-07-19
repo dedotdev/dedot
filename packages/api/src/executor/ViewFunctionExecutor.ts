@@ -41,13 +41,7 @@ export class ViewFunctionExecutor<
         throw new DedotError(`ViewFunctionError ${JSON.stringify(result.err)}`);
       }
 
-      const $dataCodec = this.registry.findCodec(output);
-      const data = $dataCodec.tryDecode(result.value);
-
-      return {
-        data,
-        raw: result,
-      } as GenericViewFunctionResult;
+      return this.registry.findCodec(output).tryDecode(result.value);
     };
 
     callFn.meta = {
