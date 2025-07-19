@@ -1,5 +1,11 @@
 import { stringCamelCase, stringPascalCase } from '@dedot/utils';
-import { beautifySourceCode, commentBlock, compileTemplate, isReservedWord } from '../../utils.js';
+import {
+  beautifySourceCode,
+  commentBlock,
+  compileTemplate,
+  isReservedWord,
+  getVariantDeprecationComment,
+} from '../../utils.js';
 import { ApiGen } from '../generator/index.js';
 
 export class TxGen extends ApiGen {
@@ -39,7 +45,7 @@ export class TxGen extends ApiGen {
       const isFlatEnum = typeDef.value.members.every((m) => m.fields.length === 0);
 
       const typedTxs = typeDef.value.members
-        .map((one) => ({
+        .map((one, index) => ({
           functionName: stringCamelCase(one.name),
           params: one.fields.map((f) => ({
             name: stringCamelCase(f.name!),
@@ -48,6 +54,7 @@ export class TxGen extends ApiGen {
             docs: f.docs,
           })),
           docs: one.docs,
+          index,
         }))
         .map((f) => {
           return {
@@ -63,14 +70,17 @@ export class TxGen extends ApiGen {
       txDefsOut += commentBlock(`Pallet \`${pallet.name}\`'s transaction calls`);
       txDefsOut += `${stringCamelCase(pallet.name)}: {
           ${typedTxs
-            .map(
-              ({ functionName, params, docs, callInput }) =>
-                `${commentBlock(
-                  docs,
-                  '\n',
-                  params.map((p) => `@param {${p.type}} ${p.normalizedName} ${p.docs}`),
-                )}${functionName}: GenericTxCall<Rv, (${params.map((p) => `${p.normalizedName}: ${p.type}`).join(', ')}) => ChainSubmittableExtrinsic<Rv, ${callInput}>>`,
-            )
+            .map(({ functionName, params, docs, callInput }, idx) => {
+              const deprecationComments = getVariantDeprecationComment(pallet.calls?.deprecationInfo, idx);
+
+              return `${commentBlock(
+                docs,
+                '\n',
+                params.map((p) => `@param {${p.type}} ${p.normalizedName} ${p.docs}`),
+                '\n',
+                deprecationComments,
+              )}${functionName}: GenericTxCall<Rv, (${params.map((p) => `${p.normalizedName}: ${p.type}`).join(', ')}) => ChainSubmittableExtrinsic<Rv, ${callInput}>>`;
+            })
             .join(',\n')}
             
           ${commentBlock('Generic pallet tx call')}[callName: string]: GenericTxCall<Rv, TxCall<Rv>>,

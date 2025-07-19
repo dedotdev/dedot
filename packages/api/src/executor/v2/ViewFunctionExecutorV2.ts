@@ -4,14 +4,14 @@ import { assert, HexString } from '@dedot/utils';
 import { ChainHead } from '../../json-rpc/index.js';
 import { ISubstrateClientAt } from '../../types.js';
 import { StateCallParams } from '../Executor.js';
-import { RuntimeApiExecutor } from '../RuntimeApiExecutor.js';
+import { ViewFunctionExecutor } from '../ViewFunctionExecutor.js';
 
 /**
- * @name RuntimeApiExecutorV2
+ * @name ViewFunctionExecutorV2
  */
-export class RuntimeApiExecutorV2<
+export class ViewFunctionExecutorV2<
   ChainApi extends GenericSubstrateApi = GenericSubstrateApi,
-> extends RuntimeApiExecutor<ChainApi> {
+> extends ViewFunctionExecutor<ChainApi> {
   constructor(
     client: ISubstrateClientAt<ChainApi>,
     public chainHead: ChainHead,

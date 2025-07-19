@@ -58,7 +58,7 @@ export const $FunctionParamDefV16 = $RuntimeApiMethodParamDefV15;
 export type FunctionParamDefV16 = $.Input<typeof $FunctionParamDefV16>;
 
 export const $ViewFunctionDefV16 = $.Struct({
-  id: $.sizedArray($.u8, 32),
+  id: $.sizedUint8Array(32),
   name: $.str,
   inputs: $.Vec($FunctionParamDefV16),
   output: $TypeId,
@@ -119,8 +119,8 @@ export type SignedExtensionDefV16 = $.Input<typeof $SignedExtensionDefV16>;
 export const $ExtrinsicDefV16 = $.Struct({
   versions: $.Vec($.u8),
   addressTypeId: $TypeId,
-  signatureTypeId: $TypeId,
   callTypeId: $TypeId,
+  signatureTypeId: $TypeId,
   // Note in v16, `signedExtensions` was renamed to `transactionExtensions`
   // But we keep the old name for compatibility
   signedExtensionsByVersion: $.map($.u8, $.Vec($.compactU32)),

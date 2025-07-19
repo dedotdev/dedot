@@ -28,7 +28,7 @@ import type {
   SubstrateRuntimeVersion,
 } from '../types.js';
 
-const SUPPORTED_METADATA_VERSIONS = [15, 14];
+const SUPPORTED_METADATA_VERSIONS = [16, 15, 14];
 const MetadataApiHash = calcRuntimeApiHash('Metadata'); // 0x37e397fc7c91f5e4
 
 const MESSAGE: string = 'Make sure to call `.connect()` method first before using the API interfaces.';
@@ -379,6 +379,15 @@ export abstract class BaseSubstrateClient<
   }
 
   get query(): ChainApi[Rv]['query'] {
+    throw new Error('Unimplemented!');
+  }
+
+  get view(): ChainApi[Rv]['view'] {
+    return this.viewAt();
+  }
+
+  // For internal use with caution
+  protected viewAt(hash?: BlockHash): ChainApi[Rv]['view'] {
     throw new Error('Unimplemented!');
   }
 
