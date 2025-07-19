@@ -258,7 +258,7 @@ describe('LegacyClient', () => {
         // runtime version is not changing, so the metadata can be re-use
         expect(providerSend).not.toBeCalledWith('state_call', [
           'Metadata_metadata_at_version',
-          '0x0f000000',
+          '0x10000000',
           '0x12345678',
         ]);
       });
@@ -273,6 +273,7 @@ describe('LegacyClient', () => {
         const _ = await api.at('0x12345678');
 
         expect(providerSend).toBeCalledWith('state_getRuntimeVersion', ['0x12345678']);
+        expect(providerSend).toBeCalledWith('state_call', ['Metadata_metadata_at_version', '0x10000000', '0x12345678']); // $.u32.decode(16) = '0x10000000'
         expect(providerSend).toBeCalledWith('state_call', ['Metadata_metadata_at_version', '0x0f000000', '0x12345678']); // $.u32.decode(15) = '0x0f000000'
         expect(providerSend).toBeCalledWith('state_call', ['Metadata_metadata_at_version', '0x0e000000', '0x12345678']); // $.u32.decode(14) = '0x0e000000'
       });
