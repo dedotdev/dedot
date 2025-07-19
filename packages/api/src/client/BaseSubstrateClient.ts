@@ -222,9 +222,6 @@ export abstract class BaseSubstrateClient<
       for (const version of SUPPORTED_METADATA_VERSIONS) {
         try {
           const rawMetadata = await this.callAt(hash).metadata.metadataAtVersion(version);
-          console.log(`Using metadata version ${version} from metadata.metadataAtVersion()`);
-          console.log(`Raw metadata: ${rawMetadata.length}`);
-
           if (!rawMetadata) continue;
 
           return $Metadata.tryDecode(rawMetadata);

@@ -1,6 +1,6 @@
 import type { Bytes, PalletDefLatest, Result, ViewFunctionDefLatest } from '@dedot/codecs';
 import * as $ from '@dedot/shape';
-import type { GenericSubstrateApi, GenericViewFunction, GenericViewFunctionResult } from '@dedot/types';
+import type { GenericSubstrateApi, GenericViewFunction } from '@dedot/types';
 import { assert, concatU8a, HexString, stringCamelCase, u8aToHex, UnknownApiError, DedotError } from '@dedot/utils';
 import { FrameSupportViewFunctionsViewFunctionDispatchError } from '../chaintypes/index.js';
 import { Executor, StateCallParams } from './Executor.js';
@@ -38,7 +38,7 @@ export class ViewFunctionExecutor<
 
       const result = this.#decodeRawResult(rawResult);
       if (result.isErr) {
-        throw new DedotError(`ViewFunctionError ${JSON.stringify(result.err)}`);
+        throw new DedotError(`Error when calling view function (type: ${result.err.type})`);
       }
 
       return this.registry.findCodec(output).tryDecode(result.value);
