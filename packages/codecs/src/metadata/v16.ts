@@ -119,8 +119,8 @@ export type SignedExtensionDefV16 = $.Input<typeof $SignedExtensionDefV16>;
 export const $ExtrinsicDefV16 = $.Struct({
   versions: $.Vec($.u8),
   addressTypeId: $TypeId,
-  signatureTypeId: $TypeId,
   callTypeId: $TypeId,
+  signatureTypeId: $TypeId,
   // Note in v16, `signedExtensions` was renamed to `transactionExtensions`
   // But we keep the old name for compatibility
   signedExtensionsByVersion: $.map($.u8, $.Vec($.compactU32)),
