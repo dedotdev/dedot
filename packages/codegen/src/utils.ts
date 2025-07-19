@@ -82,19 +82,13 @@ export const getDeprecationComment = (deprecationInfo: ItemDeprecationInfoDefV16
   }
 
   switch (deprecationInfo.type) {
-    case 'NotDeprecated':
-      return [];
     case 'DeprecatedWithoutNote':
-      return ['@deprecated This item is deprecated without note'];
+      return ['@deprecated'];
     case 'Deprecated': {
       const { note, since } = deprecationInfo.value;
-      const comment = [`@deprecated ${note}`];
-      if (since) {
-        comment.push(`@since ${since}`);
-      }
-
-      return comment;
+      return [`@deprecated ${note}${since ? ` (since ${since})` : ''}`];
     }
+    case 'NotDeprecated':
     default:
       return [];
   }
@@ -117,14 +111,10 @@ export const getVariantDeprecationComment = (
 
   switch (variantDeprecation.type) {
     case 'DeprecatedWithoutNote':
-      return ['@deprecated This variant is deprecated without note'];
+      return ['@deprecated'];
     case 'Deprecated': {
       const { note, since } = variantDeprecation.value;
-      const comment = [`@deprecated ${note}`];
-      if (since) {
-        comment.push(`@since ${since}`);
-      }
-      return comment;
+      return [`@deprecated ${note}${since ? ` (since ${since})` : ''}`];
     }
     default:
       return [];
