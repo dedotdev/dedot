@@ -84,8 +84,32 @@ interface PagedEntriesMethod<T extends AnyFunc = AnyFunc, TypeOut extends any = 
 export type WithoutLast<T> = T extends any[] ? (T extends [...infer U, any] ? U : T) : T;
 
 export type WithPagination<T> = T extends any[]
-  ? [...Partial<WithoutLast<T>>, pagination?: PaginationOptions]
+  ? [...PartialParams<WithoutLast<T>>, pagination?: PaginationOptions]
   : [pagination?: PaginationOptions];
+
+export type PartialParams<T> = T extends readonly [...infer Params]
+  ? Params extends readonly []
+    ? []
+    : Params extends readonly [infer P1]
+      ? [P1?]
+      : Params extends readonly [infer P1, infer P2]
+        ? [P1?] | [P1, P2?]
+        : Params extends readonly [infer P1, infer P2, infer P3]
+          ? [P1?] | [P1, P2?] | [P1, P2, P3?]
+          : Params extends readonly [infer P1, infer P2, infer P3, infer P4]
+            ? [P1?] | [P1, P2?] | [P1, P2, P3?] | [P1, P2, P3, P4?]
+            : Params extends readonly [infer P1, infer P2, infer P3, infer P4, infer P5]
+              ? [P1?] | [P1, P2?] | [P1, P2, P3?] | [P1, P2, P3, P4?] | [P1, P2, P3, P4, P5?]
+              : Params extends readonly [infer P1, infer P2, infer P3, infer P4, infer P5, infer P6]
+                ?
+                    | [P1?]
+                    | [P1, P2?]
+                    | [P1, P2, P3?]
+                    | [P1, P2, P3, P4?]
+                    | [P1, P2, P3, P4, P5?]
+                    | [P1, P2, P3, P4, P5, P6?]
+                : Partial<Params>
+  : [];
 
 /**
  * @description A generic type for storage query methods that handles both single and map (double & n-th map) storage entries
@@ -120,7 +144,7 @@ export type GenericStorageQuery<
           ? {
               /** Get all storage entries, allowing partial keys input */
               entries: (
-                ...args: WithoutLast<Parameters<T>[0]>
+                ...args: PartialParams<WithoutLast<Parameters<T>[0]>>
               ) => Promise<Array<[KeyTypeOut, NonNullable<ReturnType<T>>]>>;
             }
           : {
