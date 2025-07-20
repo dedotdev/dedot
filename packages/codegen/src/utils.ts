@@ -98,6 +98,7 @@ export const getDeprecationComment = (deprecationInfo: ItemDeprecationInfoDefV16
  * Generate deprecation comment for enum variant from EnumDeprecationInfoDefV16
  *
  * @param deprecationInfo - The deprecation information for the enum
+ * @param variantIndex
  */
 export const getVariantDeprecationComment = (
   deprecationInfo: EnumDeprecationInfoDefV16 | undefined,
