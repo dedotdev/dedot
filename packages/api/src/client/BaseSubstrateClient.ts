@@ -28,7 +28,7 @@ import type {
   SubstrateRuntimeVersion,
 } from '../types.js';
 
-const SUPPORTED_METADATA_VERSIONS = [15, 14];
+const SUPPORTED_METADATA_VERSIONS = [16, 15, 14];
 const MetadataApiHash = calcRuntimeApiHash('Metadata'); // 0x37e397fc7c91f5e4
 
 const MESSAGE: string = 'Make sure to call `.connect()` method first before using the API interfaces.';
@@ -216,10 +216,11 @@ export abstract class BaseSubstrateClient<
     const supportedV2 = runtime ? runtime.apis[MetadataApiHash] === 2 : true;
 
     if (supportedV2) {
-      // It makes sense to call metadata.metadataVersions to fetch the list of supported metadata versions first
-      // But for now, this approach could potentially help save/reduce one rpc call to the server in case the node support v15
-      // Question: Why not having a `metadata.metadataLatest` to fetch the latest version?
-      for (const version of SUPPORTED_METADATA_VERSIONS) {
+      const versions: number[] = ((await this.callAt(hash).metadata.metadataVersions()) as number[]) // --
+        .filter((v) => SUPPORTED_METADATA_VERSIONS.includes(v))
+        .sort((a, b) => b - a); // sort desc, bigger first
+
+      for (const version of versions) {
         try {
           const rawMetadata = await this.callAt(hash).metadata.metadataAtVersion(version);
           if (!rawMetadata) continue;

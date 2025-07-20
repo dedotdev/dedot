@@ -43,17 +43,30 @@ describe('DedotClient', () => {
       simulator.notify(simulator.initializedEvent);
       simulator.notify(simulator.nextNewBlock());
 
+      let counter = 0;
       provider.setRpcRequests({
         chainSpec_v1_chainName: () => 'MockedChain',
-        chainHead_v1_call: () => ({ result: 'started', operationId: 'call01' }) as MethodResponse,
+        chainHead_v1_call: () => {
+          counter += 1;
+          return { result: 'started', operationId: `call${counter.toString().padStart(2, '0')}` } as MethodResponse;
+        },
         module_rpc_name: () => '0x',
       });
 
       simulator.notify({
         operationId: 'call01',
         event: 'operationCallDone',
-        output: prefixedMetadataV15,
+        output: '0x0c100000000f0000000e000000',
       } as OperationCallDone);
+
+      simulator.notify(
+        {
+          operationId: 'call02',
+          event: 'operationCallDone',
+          output: prefixedMetadataV15,
+        } as OperationCallDone,
+        20,
+      );
     });
 
     describe('cache disabled', () => {
@@ -72,8 +85,15 @@ describe('DedotClient', () => {
         expect(providerSend).toBeCalledWith('chainHead_v1_call', [
           simulator.subscriptionId,
           await api.chainHead.bestHash(),
+          'Metadata_metadata_versions',
+          '0x',
+        ]);
+
+        expect(providerSend).toBeCalledWith('chainHead_v1_call', [
+          simulator.subscriptionId,
+          await api.chainHead.bestHash(),
           'Metadata_metadata_at_version',
-          '0x0f000000',
+          '0x10000000',
         ]);
 
         expect(api.rpc).toBeDefined();
@@ -641,9 +661,18 @@ describe('DedotClient', () => {
             {
               operationId: 'call2',
               event: 'operationCallDone',
-              output: prefixedMetadataV15,
+              output: '0x0c100000000f0000000e000000',
             } as OperationCallDone,
             5,
+          );
+
+          simulator.notify(
+            {
+              operationId: 'call3',
+              event: 'operationCallDone',
+              output: prefixedMetadataV15,
+            } as OperationCallDone,
+            20,
           );
 
           const _ = await api.at('0x0d');
@@ -660,8 +689,15 @@ describe('DedotClient', () => {
           expect(providerSend).toBeCalledWith('chainHead_v1_call', [
             simulator.subscriptionId,
             '0x0d',
+            'Metadata_metadata_versions',
+            '0x',
+          ]);
+
+          expect(providerSend).toBeCalledWith('chainHead_v1_call', [
+            simulator.subscriptionId,
+            '0x0d',
             'Metadata_metadata_at_version',
-            '0x0f000000',
+            '0x10000000',
           ]);
 
           expect(providerSend).toBeCalledWith('chainHead_v1_stopOperation', [simulator.subscriptionId, 'call2']);
@@ -721,26 +757,6 @@ describe('DedotClient', () => {
             null,
           ]);
           expect(providerSend).toBeCalledWith('chainHead_v1_stopOperation', [simulator.subscriptionId, 'storage05']);
-
-          simulator.notify(
-            {
-              operationId: 'call05',
-              event: 'operationCallDone',
-              output: u8aToHex($.Array($.u32).tryEncode([14, 15])),
-            } as OperationCallDone,
-            5,
-          );
-
-          await expect(apiAt.call.metadata.metadataVersions()).resolves.toEqual([14, 15]);
-
-          expect(providerSend).toBeCalledWith('chainHead_v1_call', [
-            simulator.subscriptionId,
-            hash,
-            'Metadata_metadata_versions',
-            '0x',
-          ]);
-
-          expect(providerSend).toBeCalledWith('chainHead_v1_stopOperation', [simulator.subscriptionId, 'call05']);
         });
       });
 
@@ -756,7 +772,16 @@ describe('DedotClient', () => {
 
           simulator.notify(
             {
-              operationId: 'call01',
+              operationId: 'call03',
+              event: 'operationCallDone',
+              output: '0x0c100000000f0000000e000000',
+            } as OperationCallDone,
+            50,
+          );
+
+          simulator.notify(
+            {
+              operationId: 'call04',
               event: 'operationCallDone',
               output: prefixedMetadataV15,
             } as OperationCallDone,
@@ -782,8 +807,12 @@ describe('DedotClient', () => {
         });
 
         it('getRuntimeVersion should return the latest version', async () => {
+          let counter = 1;
           provider.setRpcRequests({
-            chainHead_v1_call: () => ({ result: 'started', operationId: 'call02' }) as MethodResponse,
+            chainHead_v1_call: () => {
+              counter += 1;
+              return { result: 'started', operationId: `call${counter}` } as MethodResponse;
+            },
           });
 
           simulator.notify(simulator.nextBestBlock());
@@ -794,7 +823,16 @@ describe('DedotClient', () => {
 
           simulator.notify(
             {
-              operationId: 'call02',
+              operationId: 'call2',
+              event: 'operationCallDone',
+              output: '0x0c100000000f0000000e000000',
+            } as OperationCallDone,
+            350,
+          );
+
+          simulator.notify(
+            {
+              operationId: 'call3',
               event: 'operationCallDone',
               output: prefixedMetadataV15,
             } as OperationCallDone,
@@ -813,8 +851,15 @@ describe('DedotClient', () => {
           expect(providerSend).toBeCalledWith('chainHead_v1_call', [
             simulator.subscriptionId,
             newBlock.blockHash,
+            'Metadata_metadata_versions',
+            '0x',
+          ]);
+
+          expect(providerSend).toBeCalledWith('chainHead_v1_call', [
+            simulator.subscriptionId,
+            newBlock.blockHash,
             'Metadata_metadata_at_version',
-            '0x0f000000',
+            '0x10000000',
           ]);
         });
       });
@@ -893,8 +938,15 @@ describe('DedotClient', () => {
         expect(providerSend).not.toBeCalledWith('chainHead_v1_call', [
           simulator.subscriptionId,
           await api.chainHead.bestHash(),
+          'Metadata_metadata_versions',
+          '0x',
+        ]);
+
+        expect(providerSend).not.toBeCalledWith('chainHead_v1_call', [
+          simulator.subscriptionId,
+          await api.chainHead.bestHash(),
           'Metadata_metadata_at_version',
-          '0x0f000000',
+          '0x10000000',
         ]);
 
         expect(api.rpc).toBeDefined();
@@ -1141,7 +1193,7 @@ describe('DedotClient', () => {
           simulator.subscriptionId,
           await api.chainHead.bestHash(),
           'Metadata_metadata_at_version',
-          '0x0f000000',
+          '0x10000000',
         ]);
         expect(newApi.metadata).toBeDefined();
         expect(newApi.metadata).toEqual(api.metadata);
@@ -1165,10 +1217,17 @@ describe('DedotClient', () => {
           });
 
           expect(newProviderSend).not.toBeCalledWith('chainHead_v1_call', [
+            simulator.subscriptionId,
+            await api.chainHead.bestHash(),
+            'Metadata_metadata_versions',
+            '0x',
+          ]);
+
+          expect(newProviderSend).not.toBeCalledWith('chainHead_v1_call', [
             newSimulator.subscriptionId,
             await newApi.chainHead.bestHash(),
             'Metadata_metadata_at_version',
-            '0x0f000000',
+            '0x10000000',
           ]);
 
           expect(newApi.metadata).toBeDefined();
@@ -1184,28 +1243,56 @@ describe('DedotClient', () => {
           const newSimulator = newChainHeadSimulator({ provider: newProvider, initialRuntime: nextMockedRuntime });
           newSimulator.notify(newSimulator.initializedEvent);
 
+          let counter = 0;
           newProvider.setRpcRequests({
-            chainHead_v1_call: () => ({ result: 'started', operationId: 'callMetadata01' }) as MethodResponse,
+            chainHead_v1_call: () => {
+              counter += 1;
+              return { result: 'started', operationId: `callMetadata0${counter}` } as MethodResponse;
+            },
           });
 
-          newSimulator.notify({
-            operationId: 'callMetadata01',
-            event: 'operationCallDone',
-            output: prefixedMetadataV15,
-          } as OperationCallDone);
+          newSimulator.notify(
+            {
+              operationId: 'callMetadata01',
+              event: 'operationCallDone',
+              output: '0x0c100000000f0000000e000000',
+            } as OperationCallDone,
+            5,
+          );
+
+          newSimulator.notify(
+            {
+              operationId: 'callMetadata02',
+              event: 'operationCallDone',
+              output: prefixedMetadataV15,
+            } as OperationCallDone,
+            20,
+          );
 
           const newApi = await DedotClient.new({ provider: newProvider, cacheMetadata: true });
+
+          expect(newProviderSend).toBeCalledWith('chainHead_v1_call', [
+            simulator.subscriptionId,
+            await newApi.chainHead.bestHash(),
+            'Metadata_metadata_versions',
+            '0x',
+          ]);
 
           expect(newProviderSend).toBeCalledWith('chainHead_v1_call', [
             newSimulator.subscriptionId,
             await newApi.chainHead.bestHash(),
             'Metadata_metadata_at_version',
-            '0x0f000000',
+            '0x10000000',
+          ]);
+
+          expect(newProviderSend).toBeCalledWith('chainHead_v1_stopOperation', [
+            newSimulator.subscriptionId,
+            'callMetadata01',
           ]);
 
           expect(newProviderSend).toHaveBeenLastCalledWith('chainHead_v1_stopOperation', [
             newSimulator.subscriptionId,
-            'callMetadata01',
+            'callMetadata02',
           ]);
 
           expect(newApi.metadata).toBeDefined();
@@ -1264,16 +1351,32 @@ describe('DedotClient', () => {
       simulator.notify(simulator.initializedEvent);
       simulator.notify(simulator.nextNewBlock());
 
+      let counter = 0;
       provider.setRpcRequests({
         chainSpec_v1_chainName: () => 'MockedChain',
-        chainHead_v1_call: () => ({ result: 'started', operationId: 'call01' }) as MethodResponse,
+        chainHead_v1_call: () => {
+          counter += 1;
+          return { result: 'started', operationId: `call0${counter}` } as MethodResponse;
+        },
       });
 
-      simulator.notify({
-        operationId: 'call01',
-        event: 'operationCallDone',
-        output: prefixedMetadataV15,
-      } as OperationCallDone);
+      simulator.notify(
+        {
+          operationId: 'call01',
+          event: 'operationCallDone',
+          output: '0x0c100000000f0000000e000000',
+        } as OperationCallDone,
+        5,
+      );
+
+      simulator.notify(
+        {
+          operationId: 'call02',
+          event: 'operationCallDone',
+          output: prefixedMetadataV15,
+        } as OperationCallDone,
+        10,
+      );
 
       api = await DedotClient.new({ provider });
     });
