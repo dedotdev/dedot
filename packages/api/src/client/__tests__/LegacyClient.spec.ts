@@ -269,10 +269,23 @@ describe('LegacyClient', () => {
           () => ({ ...MockedRuntimeVersion, specVersion: 0 }) as RuntimeVersion,
         );
 
+        provider.setRpcRequest('state_call', async (params) => {
+          return new Promise<HexString>((resolve) => {
+            setTimeout(() => {
+              if (params[0] === 'Metadata_metadata_versions') {
+                resolve('0x0c100000000f0000000e000000');
+              } else {
+                resolve('0x');
+              }
+            }, 300);
+          });
+        });
+
         const providerSend = vi.spyOn(provider, 'send');
         const _ = await api.at('0x12345678');
 
         expect(providerSend).toBeCalledWith('state_getRuntimeVersion', ['0x12345678']);
+        expect(providerSend).toBeCalledWith('state_call', ['Metadata_metadata_versions', '0x', '0x12345678']); // $.u32.decode(16) = '0x10000000'
         expect(providerSend).toBeCalledWith('state_call', ['Metadata_metadata_at_version', '0x10000000', '0x12345678']); // $.u32.decode(16) = '0x10000000'
         expect(providerSend).toBeCalledWith('state_call', ['Metadata_metadata_at_version', '0x0f000000', '0x12345678']); // $.u32.decode(15) = '0x0f000000'
         expect(providerSend).toBeCalledWith('state_call', ['Metadata_metadata_at_version', '0x0e000000', '0x12345678']); // $.u32.decode(14) = '0x0e000000'

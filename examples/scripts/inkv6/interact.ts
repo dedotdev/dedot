@@ -32,7 +32,7 @@ if (mappedAccount) {
 }
 
 // Extract PVM bytecode from metadata
-const pvmBytecode = flipper6.source.contract_binary;
+const pvmBytecode = flipper6.source.contract_binary; // extracted from .contract or .polkavm files
 const codeHash = flipper6.source.hash;
 
 console.log(`📋 Contract info:`);

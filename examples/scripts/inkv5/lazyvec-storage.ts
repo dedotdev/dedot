@@ -18,7 +18,7 @@ console.log('Creating contract deployer...');
 const deployer = new ContractDeployer<LazyvecContractApi>(
   client, // --
   lazyvecMetadata,
-  lazyvecMetadata.source.wasm,
+  lazyvecMetadata.source.wasm, // extracted from .contract or .wasm files
   { defaultCaller: alice.address },
 );
 
