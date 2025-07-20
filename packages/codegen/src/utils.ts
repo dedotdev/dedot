@@ -1,3 +1,4 @@
+import { ItemDeprecationInfoDefV16, EnumDeprecationInfoDefV16 } from '@dedot/codecs';
 import * as fs from 'fs';
 import handlebars from 'handlebars';
 import * as path from 'path';
@@ -68,4 +69,55 @@ export const isNativeType = (type: string) => {
       return type.match(one);
     }
   });
+};
+
+/**
+ * Generate deprecation comment from ItemDeprecationInfoDefV16
+ *
+ * @param deprecationInfo - The deprecation information for the item
+ */
+export const getDeprecationComment = (deprecationInfo: ItemDeprecationInfoDefV16 | undefined): string[] => {
+  if (!deprecationInfo) {
+    return [];
+  }
+
+  switch (deprecationInfo.type) {
+    case 'DeprecatedWithoutNote':
+      return ['@deprecated'];
+    case 'Deprecated': {
+      const { note, since } = deprecationInfo.value;
+      return [`@deprecated ${note}${since ? ` (since ${since})` : ''}`];
+    }
+    case 'NotDeprecated':
+    default:
+      return [];
+  }
+};
+
+/**
+ * Generate deprecation comment for enum variant from EnumDeprecationInfoDefV16
+ *
+ * @param deprecationInfo - The deprecation information for the enum
+ * @param variantIndex
+ */
+export const getVariantDeprecationComment = (
+  deprecationInfo: EnumDeprecationInfoDefV16 | undefined,
+  variantIndex: number,
+): string[] => {
+  if (!deprecationInfo || !deprecationInfo[0]) return [];
+
+  const variantDeprecation = deprecationInfo[0].get(variantIndex);
+
+  if (!variantDeprecation) return [];
+
+  switch (variantDeprecation.type) {
+    case 'DeprecatedWithoutNote':
+      return ['@deprecated'];
+    case 'Deprecated': {
+      const { note, since } = variantDeprecation.value;
+      return [`@deprecated ${note}${since ? ` (since ${since})` : ''}`];
+    }
+    default:
+      return [];
+  }
 };
