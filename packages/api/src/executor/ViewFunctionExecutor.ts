@@ -54,16 +54,14 @@ export class ViewFunctionExecutor<
   }
 
   #findViewFunctionDef(pallet: PalletDefLatest, viewFunctionName: string): ViewFunctionDefLatest | undefined {
-    const viewFunctionDef = pallet.viewFunctions.find((vf) => stringCamelCase(vf.name) === viewFunctionName);
-
-    return viewFunctionDef;
+    return pallet.viewFunctions.find((vf) => stringCamelCase(vf.name) === viewFunctionName);
   }
 
   #decodeRawResult(rawResult: HexString): Result<Bytes, FrameSupportViewFunctionsViewFunctionDispatchError> {
     const runtimeViewFunctionDef = this.metadata.apis
       .find((api) => api.name === RUNTIME_API_NAME)
       ?.methods.find((method) => method.name === METHOD_NAME);
-    assert(runtimeViewFunctionDef, new UnknownApiError('Runtime view function definition not found'));
+    assert(runtimeViewFunctionDef, new UnknownApiError('RuntimeViewFunction definition not found'));
 
     const $codec = this.registry.findCodec(runtimeViewFunctionDef.output);
     const result = $codec.tryDecode(rawResult);

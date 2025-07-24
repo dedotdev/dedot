@@ -1,4 +1,3 @@
-import type { BlockHash } from '@dedot/codecs';
 import type { GenericSubstrateApi } from '@dedot/types';
 import { assert, HexString } from '@dedot/utils';
 import { ChainHead } from '../../json-rpc/index.js';
@@ -15,10 +14,9 @@ export class ViewFunctionExecutorV2<
   constructor(
     client: ISubstrateClientAt<ChainApi>,
     public chainHead: ChainHead,
-    atBlockHash?: BlockHash,
   ) {
     assert(client.rpcVersion === 'v2', 'Only supports JSON-RPC v2');
-    super(client, atBlockHash);
+    super(client);
   }
 
   protected override stateCall(callParams: StateCallParams): Promise<HexString> {

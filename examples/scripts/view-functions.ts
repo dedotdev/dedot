@@ -14,8 +14,21 @@ const client = await DedotClient.create({ provider });
 
 console.log(`Connected to ${client.runtimeVersion.specName} v${client.runtimeVersion.specVersion}`);
 
-const result = await client.view.voterList.scores(alice.address);
+const shouldBeUndefinedList = await client.view.voterList.scores(alice.address);
+console.assert(
+  shouldBeUndefinedList[0] === undefined && shouldBeUndefinedList[1] === undefined,
+  'voterList.scores should return [undefined, undefined] for non-validator address',
+);
 
-console.log('Voter Scores:', result);
+const shouldBeTrue = await client.view.proxy.isSuperset('Any', 'Governance');
+console.assert(shouldBeTrue === true, 'proxy.isSuperset("Any", "Governance") should return true');
+
+const shouldBeFalse = await client.view.proxy.isSuperset('Governance', 'Any');
+console.assert(shouldBeFalse === false, 'proxy.isSuperset("Governance", "Any") should return false');
+
+const shouldBeZero = await client.view.paras.removeUpgradeCooldownCost(0);
+console.assert(shouldBeZero === 0n, 'paras.removeUpgradeCooldownCost(0) should return 0n');
+
+console.log('All assertions passed!');
 
 await client.disconnect();

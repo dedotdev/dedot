@@ -191,12 +191,8 @@ export class DedotClient<ChainApi extends VersionedGenericSubstrateApi = Substra
   }
 
   override get view(): ChainApi[RpcV2]['view'] {
-    return this.viewAt();
-  }
-
-  protected override viewAt(blockHash?: BlockHash): ChainApi[RpcV2]['view'] {
     return newProxyChain({
-      executor: new ViewFunctionExecutorV2(this, this.chainHead, blockHash),
+      executor: new ViewFunctionExecutorV2(this, this.chainHead),
     }) as ChainApi[RpcV2]['view'];
   }
 

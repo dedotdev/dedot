@@ -384,11 +384,6 @@ export abstract class BaseSubstrateClient<
   }
 
   get view(): ChainApi[Rv]['view'] {
-    return this.viewAt();
-  }
-
-  // For internal use with caution
-  protected viewAt(hash?: BlockHash): ChainApi[Rv]['view'] {
     throw new Error('Unimplemented!');
   }
 

@@ -3,16 +3,15 @@ import { beautifySourceCode, commentBlock, compileTemplate } from '../../utils.j
 import { getDeprecationComment } from '../../utils.js';
 import { ApiGen } from './ApiGen.js';
 
-export class ViewFunctionGen extends ApiGen {
+export class ViewFunctionsGen extends ApiGen {
   generate(useSubPaths: boolean = false) {
     const { pallets } = this.metadata;
 
     this.typesGen.clearCache();
     this.typesGen.typeImports.addKnownType(
-      'GenericChainViewFunctions',
+      'GenericChainViewFunctions', // --
       'GenericViewFunction',
       'RpcVersion',
-      'GenericViewFunctionResult',
     );
 
     let defTypeOut = '';
@@ -51,7 +50,7 @@ export class ViewFunctionGen extends ApiGen {
     }
 
     const importTypes = this.typesGen.typeImports.toImports({ useSubPaths });
-    const template = compileTemplate('chaintypes/templates/view-function.hbs');
+    const template = compileTemplate('chaintypes/templates/view-functions.hbs');
 
     return beautifySourceCode(template({ importTypes, defTypeOut }));
   }

@@ -253,12 +253,7 @@ export class LegacyClient<ChainApi extends VersionedGenericSubstrateApi = Substr
   }
 
   get view(): ChainApi[RpcLegacy]['view'] {
-    return this.viewAt();
-  }
-
-  // For internal use with caution
-  protected override viewAt(hash?: BlockHash): ChainApi[RpcLegacy]['view'] {
-    return newProxyChain({ executor: new ViewFunctionExecutor(this, hash) }) as ChainApi[RpcLegacy]['view'];
+    return newProxyChain({ executor: new ViewFunctionExecutor(this) }) as ChainApi[RpcLegacy]['view'];
   }
 
   /**
