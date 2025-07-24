@@ -29,7 +29,7 @@ jobs:
           mv ./substrate-contracts-node-linux/substrate-contracts-node ./substrate-contracts-node
           chmod +x substrate-contracts-node
 
-          curl -L -O https://github.com/use-ink/ink-node/releases/download/v0.43.3/ink-node-linux.tar.gz
+          curl -L -O https://github.com/use-ink/ink-node/releases/download/v0.44.0/ink-node-linux.tar.gz
           tar -xzf ink-node-linux.tar.gz
           mv ./ink-node-linux/ink-node ./ink-node
           chmod +x ink-node
@@ -39,10 +39,10 @@ jobs:
           export PATH=$(pwd):$PATH
           export RUST_BACKTRACE=full
           ./ink-node --rpc-port=9955 & 
-          ./substrate-contracts-node --dev --rpc-port=9944 &
+          ./substrate-contracts-node --dev &
 
           chmod +x ./e2e/contracts/wait-for-port.sh
-          ./e2e/contracts/wait-for-port.sh 9944 30
+          ./e2e/contracts/wait-for-port.sh 9944 30 &
           ./e2e/contracts/wait-for-port.sh 9955 30
 
       - name: Run tests

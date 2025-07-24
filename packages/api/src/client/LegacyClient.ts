@@ -9,6 +9,7 @@ import {
   RuntimeApiExecutor,
   StorageQueryExecutor,
   TxExecutor,
+  ViewFunctionExecutor,
 } from '../executor/index.js';
 import { newProxyChain } from '../proxychain.js';
 import { BaseStorageQuery, LegacyStorageQuery } from '../storage/index.js';
@@ -56,8 +57,7 @@ const KEEP_ALIVE_INTERVAL = 10_000; // in ms
  * ```
  */
 export class LegacyClient<ChainApi extends VersionedGenericSubstrateApi = SubstrateApi> // prettier-end-here
-  extends BaseSubstrateClient<RpcLegacy, ChainApi>
-{
+  extends BaseSubstrateClient<RpcLegacy, ChainApi> {
   #runtimeSubscriptionUnsub?: Unsub;
   #healthTimer?: ReturnType<typeof setInterval>;
   #apiAtCache: Record<BlockHash, ISubstrateClientAt<any>> = {};
@@ -250,6 +250,10 @@ export class LegacyClient<ChainApi extends VersionedGenericSubstrateApi = Substr
   // For internal use with caution
   protected override callAt(hash?: BlockHash): ChainApi[RpcLegacy]['call'] {
     return newProxyChain({ executor: new RuntimeApiExecutor(this, hash) }) as ChainApi[RpcLegacy]['call'];
+  }
+
+  get view(): ChainApi[RpcLegacy]['view'] {
+    return newProxyChain({ executor: new ViewFunctionExecutor(this) }) as ChainApi[RpcLegacy]['view'];
   }
 
   /**

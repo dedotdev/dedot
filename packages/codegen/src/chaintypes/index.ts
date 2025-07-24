@@ -1,5 +1,5 @@
 import { LegacyClient, SubstrateRuntimeVersion } from '@dedot/api';
-import { MetadataLatest, RuntimeVersion } from '@dedot/codecs';
+import { MetadataLatest } from '@dedot/codecs';
 import { WsProvider } from '@dedot/providers';
 import { RpcMethods } from '@dedot/types/json-rpc';
 import { stringDashCase, stringPascalCase } from '@dedot/utils';
@@ -15,6 +15,7 @@ import {
   QueryGen,
   RuntimeApisGen,
   TxGen,
+  ViewFunctionsGen,
   TypesGen,
 } from './generator/index.js';
 
@@ -65,6 +66,7 @@ export async function generateTypes(
   const eventsFileName = path.join(dirPath, `events.${extension}`);
   const runtimeApisFileName = path.join(dirPath, `runtime.${extension}`);
   const txFileName = path.join(dirPath, `tx.${extension}`);
+  const viewFunctionsFileName = path.join(dirPath, `view-functions.${extension}`);
 
   if (!fs.existsSync(dirPath)) {
     fs.mkdirSync(dirPath, { recursive: true });
@@ -81,6 +83,7 @@ export async function generateTypes(
   const eventsGen = new EventsGen(typesGen);
   const runtimeApisGen = new RuntimeApisGen(typesGen, runtimeVersion.apis);
   const txGen = new TxGen(typesGen);
+  const viewFunctionGen = new ViewFunctionsGen(typesGen);
 
   fs.writeFileSync(defTypesFileName, await typesGen.generate(useSubPaths));
   fs.writeFileSync(errorsFileName, await errorsGen.generate(useSubPaths));
@@ -91,6 +94,7 @@ export async function generateTypes(
   fs.writeFileSync(txFileName, await txGen.generate(useSubPaths));
   fs.writeFileSync(indexFileName, await indexGen.generate(useSubPaths));
   fs.writeFileSync(runtimeApisFileName, await runtimeApisGen.generate(useSubPaths));
+  fs.writeFileSync(viewFunctionsFileName, await viewFunctionGen.generate(useSubPaths));
 
   return { interfaceName, outputFolder: dirPath };
 }

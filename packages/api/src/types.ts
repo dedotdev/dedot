@@ -126,6 +126,7 @@ export interface ISubstrateClientAt<ChainApi extends GenericSubstrateApi = Gener
   call: ChainApi['call'];
   events: ChainApi['events'];
   errors: ChainApi['errors'];
+  view: ChainApi['view'];
 }
 
 /**

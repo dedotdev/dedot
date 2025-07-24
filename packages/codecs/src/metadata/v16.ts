@@ -58,7 +58,7 @@ export const $FunctionParamDefV16 = $RuntimeApiMethodParamDefV15;
 export type FunctionParamDefV16 = $.Input<typeof $FunctionParamDefV16>;
 
 export const $ViewFunctionDefV16 = $.Struct({
-  id: $.sizedArray($.u8, 32),
+  id: $.sizedUint8Array(32),
   name: $.str,
   inputs: $.Vec($FunctionParamDefV16),
   output: $TypeId,

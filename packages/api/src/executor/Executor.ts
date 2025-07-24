@@ -1,7 +1,13 @@
 import type { BlockHash, PalletDefLatest } from '@dedot/codecs';
 import type { GenericSubstrateApi } from '@dedot/types';
-import { assert, stringCamelCase, UnknownApiError } from '@dedot/utils';
+import { assert, HexString, stringCamelCase, UnknownApiError } from '@dedot/utils';
 import { ISubstrateClientAt } from '../types.js';
+
+export interface StateCallParams {
+  func: string;
+  params: HexString;
+  at?: BlockHash;
+}
 
 /**
  * @name Executor
@@ -35,6 +41,15 @@ export abstract class Executor<ChainApi extends GenericSubstrateApi = GenericSub
     assert(targetPallet, new UnknownApiError(`Pallet not found: ${name}`));
 
     return targetPallet;
+  }
+
+  protected stateCall(callParams: StateCallParams): Promise<HexString> {
+    const { func, params, at } = callParams;
+
+    const args = [func, params];
+    if (at) args.push(at);
+
+    return this.client.rpc.state_call(...args);
   }
 
   execute(...paths: string[]): unknown {

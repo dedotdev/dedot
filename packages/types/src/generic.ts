@@ -5,6 +5,7 @@ import {
   PalletEventMetadataLatest,
   PalletStorageEntryMetadataLatest,
   PalletTxMetadataLatest,
+  PalletViewFunctionMetadataLatest,
   StorageKey,
 } from '@dedot/codecs';
 import { IEventRecord } from './event.js';
@@ -34,6 +35,16 @@ export interface GenericChainConsts<_ extends RpcVersion = RpcVersion> {
     [constantName: string]: any;
   };
 }
+
+export interface GenericChainViewFunctions<_ extends RpcVersion = RpcVersion> {
+  [pallet: string]: {
+    [viewFunction: string]: any;
+  };
+}
+
+export type GenericViewFunction<_ extends RpcVersion = RpcVersion, F extends AnyFunc = AnyFunc> = F & {
+  meta?: PalletViewFunctionMetadataLatest;
+};
 
 export type GenericTxCall<_ extends RpcVersion = RpcVersion, F extends AnyFunc = AnyFunc> = F & {
   meta?: PalletTxMetadataLatest;
@@ -209,6 +220,7 @@ export interface GenericSubstrateApi<Rv extends RpcVersion = RpcVersion> {
   errors: GenericChainErrors<Rv>;
   events: GenericChainEvents<Rv>;
   call: GenericRuntimeApis<Rv>;
+  view: GenericChainViewFunctions<Rv>;
   tx: GenericChainTx<Rv>;
 }
 

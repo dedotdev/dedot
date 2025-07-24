@@ -383,6 +383,10 @@ export abstract class BaseSubstrateClient<
     throw new Error('Unimplemented!');
   }
 
+  get view(): ChainApi[Rv]['view'] {
+    throw new Error('Unimplemented!');
+  }
+
   get call(): ChainApi[Rv]['call'] {
     return this.callAt();
   }
