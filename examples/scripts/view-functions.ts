@@ -1,5 +1,5 @@
 import { DedotClient, LegacyClient, WsProvider } from 'dedot';
-import { WestendApi } from '../../westend/index.js';
+import { WestendApi } from '@dedot/chaintypes';
 import { devPairs } from './keyring.js';
 
 async function checkViewFunctions(client: DedotClient<WestendApi> | LegacyClient<WestendApi>, clientType: string) {

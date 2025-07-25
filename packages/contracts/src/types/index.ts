@@ -82,7 +82,7 @@ export type ContractInstantiateResult<_ extends GenericSubstrateApi> = {
   result: Result<InstantiateReturnValue, DispatchError>;
 };
 
-interface IContractInstantiateSubmittableResult<
+export interface IContractInstantiateSubmittableResult<
   ContractApi extends GenericContractApi = GenericContractApi, // --
 > extends ISubmittableResult {
   /**
