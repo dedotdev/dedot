@@ -2168,13 +2168,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/prop-types@npm:*":
-  version: 15.7.14
-  resolution: "@types/prop-types@npm:15.7.14"
-  checksum: 10c0/1ec775160bfab90b67a782d735952158c7e702ca4502968aa82565bd8e452c2de8601c8dfe349733073c31179116cf7340710160d3836aa8a1ef76d1532893b1
-  languageName: node
-  linkType: hard
-
 "@types/react-dom@npm:^18.3.0":
   version: 18.3.7
   resolution: "@types/react-dom@npm:18.3.7"
@@ -2184,13 +2177,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/react@npm:^18.3.3":
-  version: 18.3.21
-  resolution: "@types/react@npm:18.3.21"
+"@types/react@npm:^19.1.8":
+  version: 19.1.8
+  resolution: "@types/react@npm:19.1.8"
   dependencies:
-    "@types/prop-types": "npm:*"
     csstype: "npm:^3.0.2"
-  checksum: 10c0/b33424c62f01ab2404c60abef995e05aa1a696a636bdd77a34ef6c942d171c673b1e451d9dba7f9a169a83c9eef0ddfaf1ba08f6cef542df9404290199a73967
+  checksum: 10c0/4908772be6dc941df276931efeb0e781777fa76e4d5d12ff9f75eb2dcc2db3065e0100efde16fde562c5bafa310cc8f50c1ee40a22640459e066e72cd342143e
   languageName: node
   linkType: hard
 
@@ -3395,7 +3387,7 @@ __metadata:
   resolution: "dapp@workspace:examples/dapp"
   dependencies:
     "@dedot/chaintypes": "npm:^0.123.0"
-    "@types/react": "npm:^18.3.3"
+    "@types/react": "npm:^19.1.8"
     "@types/react-dom": "npm:^18.3.0"
     "@typescript-eslint/eslint-plugin": "npm:^6.21.0"
     "@typescript-eslint/parser": "npm:^6.21.0"
@@ -3404,7 +3396,7 @@ __metadata:
     eslint: "npm:^8.57.0"
     eslint-plugin-react-hooks: "npm:^4.6.2"
     eslint-plugin-react-refresh: "npm:^0.4.7"
-    react: "npm:^18.3.1"
+    react: "npm:^19.1.1"
     react-dom: "npm:^18.3.1"
     react-use: "npm:^17.5.0"
     typescript: "npm:^5.5.2"
@@ -7522,12 +7514,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"react@npm:^18.3.1":
-  version: 18.3.1
-  resolution: "react@npm:18.3.1"
-  dependencies:
-    loose-envify: "npm:^1.1.0"
-  checksum: 10c0/283e8c5efcf37802c9d1ce767f302dd569dd97a70d9bb8c7be79a789b9902451e0d16334b05d73299b20f048cbc3c7d288bbbde10b701fa194e2089c237dbea3
+"react@npm:^19.1.1":
+  version: 19.1.1
+  resolution: "react@npm:19.1.1"
+  checksum: 10c0/8c9769a2dfd02e603af6445058325e6c8a24b47b185d0e461f66a6454765ddcaecb3f0a90184836c68bb509f3c38248359edbc42f0d07c23eb500a5c30c87b4e
   languageName: node
   linkType: hard
 
@@ -8070,7 +8060,7 @@ __metadata:
   dependencies:
     "@dedot/chaintypes": "npm:^0.123.0"
     "@substrate/connect-known-chains": "npm:^1.10.3"
-    "@types/react": "npm:^18.3.3"
+    "@types/react": "npm:^19.1.8"
     "@types/react-dom": "npm:^18.3.0"
     "@typescript-eslint/eslint-plugin": "npm:^6.21.0"
     "@typescript-eslint/parser": "npm:^6.21.0"
@@ -8079,7 +8069,7 @@ __metadata:
     eslint: "npm:^8.57.0"
     eslint-plugin-react-hooks: "npm:^4.6.2"
     eslint-plugin-react-refresh: "npm:^0.4.7"
-    react: "npm:^18.3.1"
+    react: "npm:^19.1.1"
     react-dom: "npm:^18.3.1"
     react-use: "npm:^17.5.0"
     typescript: "npm:^5.5.2"
