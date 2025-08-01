@@ -2,7 +2,7 @@ import * as $ from '@dedot/shape';
 import { assert } from '@dedot/utils';
 import type { PortableRegistry } from '../registry/PortableRegistry.js';
 import { ExtrinsicV4, ExtrinsicSignatureV4 } from './ExtrinsicV4.js';
-import { $ExtrinsicVersion } from './ExtrinsicVersion.js';
+import { $ExtrinsicVersion, ExtrinsicType } from './ExtrinsicVersion.js';
 
 // TODO extrinsic versioning
 export class Extrinsic<A = any, C = any, S = any, E = any> extends ExtrinsicV4<A, C, S, E> {}
@@ -32,14 +32,14 @@ export const $Extrinsic = (registry: PortableRegistry, version = DEFAULT_EXTRINS
     staticSize,
     subDecode(buffer: $.DecodeBuffer) {
       const { type } = $ExtrinsicVersion.subDecode(buffer);
-      const signature = type === 'signed' ? $ExtrinsicSignature.subDecode(buffer) : undefined;
+      const signature = type === ExtrinsicType.Signed ? $ExtrinsicSignature.subDecode(buffer) : undefined;
       const call = $RuntimeCall.subDecode(buffer);
 
       return new Extrinsic(registry, call, signature);
     },
     subEncode(buffer: $.EncodeBuffer, extrinsic): void {
       const { version, signed, signature, call } = extrinsic;
-      const type = signed ? 'signed' : 'bare';
+      const type = signed ? ExtrinsicType.Signed : ExtrinsicType.Bare;
       $ExtrinsicVersion.subEncode(buffer, { version, type });
 
       if (signed) {

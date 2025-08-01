@@ -21,9 +21,15 @@ const verifyExtrinsicVersion = (actualVersion: number) => {
   );
 };
 
+export enum ExtrinsicType {
+  Bare = 'bare',
+  Signed = 'signed',
+  General = 'general',
+}
+
 export type ExtrinsicVersion = {
   version: number;
-  type: 'bare' | 'signed' | 'general';
+  type: ExtrinsicType;
 };
 
 export const $ExtrinsicVersion: $.Shape<ExtrinsicVersion> = $.createShape({
@@ -37,23 +43,23 @@ export const $ExtrinsicVersion: $.Shape<ExtrinsicVersion> = $.createShape({
     const version = firstByte & VERSION_MASK;
     const typeBits = firstByte & TYPE_MASK;
 
-    let type: 'bare' | 'signed' | 'general';
+    let type: ExtrinsicType;
 
     if (version === LEGACY_EXTRINSIC_FORMAT_VERSION) {
       // V4 compatibility: use old logic where bit 7 indicates signed
       const signed = (firstByte & 0b1000_0000) !== 0;
-      type = signed ? 'signed' : 'bare';
+      type = signed ? ExtrinsicType.Signed : ExtrinsicType.Bare;
     } else if (version === EXTRINSIC_FORMAT_VERSION) {
       // V5: use new type bits
       switch (typeBits) {
         case BARE_EXTRINSIC:
-          type = 'bare';
+          type = ExtrinsicType.Bare;
           break;
         case SIGNED_EXTRINSIC:
-          type = 'signed';
+          type = ExtrinsicType.Signed;
           break;
         case GENERAL_EXTRINSIC:
-          type = 'general';
+          type = ExtrinsicType.General;
           break;
         default:
           throw new Error(`Invalid extrinsic type bits: ${typeBits.toString(2)}`);
@@ -72,19 +78,19 @@ export const $ExtrinsicVersion: $.Shape<ExtrinsicVersion> = $.createShape({
 
     if (version === LEGACY_EXTRINSIC_FORMAT_VERSION) {
       // V4 compatibility: encode with old format (bit 7 for signed)
-      const signed = type === 'signed';
+      const signed = type === ExtrinsicType.Signed;
       byte = (+signed << 7) | version;
     } else if (version === EXTRINSIC_FORMAT_VERSION) {
       // V5: encode with new format (bits 6-7 for type)
       let typeBits: number;
       switch (type) {
-        case 'bare':
+        case ExtrinsicType.Bare:
           typeBits = BARE_EXTRINSIC;
           break;
-        case 'signed':
+        case ExtrinsicType.Signed:
           typeBits = SIGNED_EXTRINSIC;
           break;
-        case 'general':
+        case ExtrinsicType.General:
           typeBits = GENERAL_EXTRINSIC;
           break;
         default:
