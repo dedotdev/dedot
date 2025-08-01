@@ -31,15 +31,16 @@ export const $Extrinsic = (registry: PortableRegistry, version = DEFAULT_EXTRINS
     metadata: [],
     staticSize,
     subDecode(buffer: $.DecodeBuffer) {
-      const { signed } = $ExtrinsicVersion.subDecode(buffer);
-      const signature = signed ? $ExtrinsicSignature.subDecode(buffer) : undefined;
+      const { type } = $ExtrinsicVersion.subDecode(buffer);
+      const signature = type === 'signed' ? $ExtrinsicSignature.subDecode(buffer) : undefined;
       const call = $RuntimeCall.subDecode(buffer);
 
       return new Extrinsic(registry, call, signature);
     },
     subEncode(buffer: $.EncodeBuffer, extrinsic): void {
       const { version, signed, signature, call } = extrinsic;
-      $ExtrinsicVersion.subEncode(buffer, { version, signed });
+      const type = signed ? 'signed' : 'bare';
+      $ExtrinsicVersion.subEncode(buffer, { version, type });
 
       if (signed) {
         assert(signature, 'Signature is required!');
