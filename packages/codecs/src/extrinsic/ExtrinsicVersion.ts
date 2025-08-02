@@ -1,5 +1,5 @@
 import * as $ from '@dedot/shape';
-import { assert } from '@dedot/utils';
+import { assert, DedotError } from '@dedot/utils';
 
 // Bit masks for v5
 const VERSION_MASK = 0b0011_1111; // bits 0-5 for version
@@ -63,10 +63,10 @@ export const $ExtrinsicVersion: $.Shape<ExtrinsicVersion> = $.createShape({
           type = ExtrinsicType.General;
           break;
         default:
-          throw new Error(`Invalid extrinsic type bits: ${typeBits.toString(2)}`);
+          throw new DedotError(`Invalid extrinsic type bits: ${typeBits.toString(2)}`);
       }
     } else {
-      throw new Error(`Unsupported extrinsic format version: ${version}`);
+      throw new DedotError(`Unsupported extrinsic format version: ${version}`);
     }
 
     return { version, type };
@@ -95,11 +95,11 @@ export const $ExtrinsicVersion: $.Shape<ExtrinsicVersion> = $.createShape({
           typeBits = GENERAL_EXTRINSIC;
           break;
         default:
-          throw new Error(`Invalid extrinsic type: ${type}`);
+          throw new DedotError(`Invalid extrinsic type: ${type}`);
       }
       byte = typeBits | version;
     } else {
-      throw new Error(`Unsupported extrinsic format version: ${version}`);
+      throw new DedotError(`Unsupported extrinsic format version: ${version}`);
     }
 
     buffer.array[buffer.index++] = byte;
