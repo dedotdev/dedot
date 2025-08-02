@@ -74,7 +74,7 @@ describe('Extrinsic', () => {
     });
   });
 
-  it.skip('should encode sample transaction', () => {
+  it('should encode sample transaction', () => {
     const rawTx = u8aToHex(
       $Extrinsic.tryEncode(
         new Extrinsic(
