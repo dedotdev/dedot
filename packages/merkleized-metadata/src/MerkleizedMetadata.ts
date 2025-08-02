@@ -1,4 +1,4 @@
-import { $ExtrinsicVersion, $Metadata, Metadata, RuntimeVersion } from '@dedot/codecs';
+import { $ExtrinsicVersion, $Metadata, ExtrinsicType, Metadata, RuntimeVersion } from '@dedot/codecs';
 import * as $ from '@dedot/shape';
 import { assert, blake3AsHex, blake3AsU8a, concatU8a, HexString, toU8a, u8aToHex } from '@dedot/utils';
 import { $ExtrinsicMetadata, $MetadataDigest, $Proof, $TypeInfo, TypeRef } from './codecs.js';
@@ -151,7 +151,7 @@ export class MerkleizedMetadata {
 
     // Identify the type IDs used in the extrinsic
     const typeRefs: TypeRef[] = [];
-    if (version.signed) {
+    if (version.type == ExtrinsicType.Signed) {
       typeRefs.push(
         extrinsicMetadata.addressTypeId,
         extrinsicMetadata.signatureTypeId,
