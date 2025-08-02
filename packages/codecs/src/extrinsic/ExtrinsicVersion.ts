@@ -10,13 +10,13 @@ const BARE_EXTRINSIC = 0b0000_0000;
 const SIGNED_EXTRINSIC = 0b1000_0000;
 const GENERAL_EXTRINSIC = 0b0100_0000;
 
-export const LEGACY_EXTRINSIC_FORMAT_VERSION = 4;
-export const EXTRINSIC_FORMAT_VERSION = 5;
+export const EXTRINSIC_FORMAT_VERSION_V4 = 4;
+export const EXTRINSIC_FORMAT_VERSION_V5 = 5;
 
 // Support both V4 and V5
 const verifyExtrinsicVersion = (actualVersion: number) => {
   assert(
-    actualVersion === LEGACY_EXTRINSIC_FORMAT_VERSION || actualVersion === EXTRINSIC_FORMAT_VERSION,
+    actualVersion === EXTRINSIC_FORMAT_VERSION_V4 || actualVersion === EXTRINSIC_FORMAT_VERSION_V5,
     `Unsupported extrinsic format version, found: ${actualVersion}`,
   );
 };
@@ -45,11 +45,11 @@ export const $ExtrinsicVersion: $.Shape<ExtrinsicVersion> = $.createShape({
 
     let type: ExtrinsicType;
 
-    if (version === LEGACY_EXTRINSIC_FORMAT_VERSION) {
+    if (version === EXTRINSIC_FORMAT_VERSION_V4) {
       // V4 compatibility: use old logic where bit 7 indicates signed
       const signed = (firstByte & 0b1000_0000) !== 0;
       type = signed ? ExtrinsicType.Signed : ExtrinsicType.Bare;
-    } else if (version === EXTRINSIC_FORMAT_VERSION) {
+    } else if (version === EXTRINSIC_FORMAT_VERSION_V5) {
       // V5: use new type bits
       switch (typeBits) {
         case BARE_EXTRINSIC:
@@ -76,11 +76,11 @@ export const $ExtrinsicVersion: $.Shape<ExtrinsicVersion> = $.createShape({
 
     let byte: number;
 
-    if (version === LEGACY_EXTRINSIC_FORMAT_VERSION) {
+    if (version === EXTRINSIC_FORMAT_VERSION_V4) {
       // V4 compatibility: encode with old format (bit 7 for signed)
       const signed = type === ExtrinsicType.Signed;
       byte = (+signed << 7) | version;
-    } else if (version === EXTRINSIC_FORMAT_VERSION) {
+    } else if (version === EXTRINSIC_FORMAT_VERSION_V5) {
       // V5: encode with new format (bits 6-7 for type)
       let typeBits: number;
       switch (type) {
