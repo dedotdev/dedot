@@ -141,6 +141,7 @@ export class GenericExtrinsic<Address = any, Call = any, Signature = any, Extra 
     if (this.version === EXTRINSIC_FORMAT_VERSION_V4) {
       this.#extrinsicType = ExtrinsicType.Signed;
       this.#signature = signature;
+      return;
     }
 
     throw new DedotError(`Signature not supported for extrinsic version: ${this.version}`);
