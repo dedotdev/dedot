@@ -41,15 +41,16 @@ export const $ExtrinsicVersion: $.Shape<ExtrinsicVersion> = $.createShape({
     // For v4: bit 7 is signed flag, bits 0-6 are version
     // For v5: bits 6-7 are type, bits 0-5 are version
     const version = firstByte & VERSION_MASK;
-    const typeBits = firstByte & TYPE_MASK;
 
     let type: ExtrinsicType;
 
     if (version === EXTRINSIC_FORMAT_VERSION_V4) {
       // V4 compatibility: use old logic where bit 7 indicates signed
-      const signed = (firstByte & 0b1000_0000) !== 0;
+      const signed = (firstByte & SIGNED_EXTRINSIC) !== 0;
       type = signed ? ExtrinsicType.Signed : ExtrinsicType.Bare;
     } else if (version === EXTRINSIC_FORMAT_VERSION_V5) {
+      const typeBits = firstByte & TYPE_MASK;
+
       // V5: use new type bits
       switch (typeBits) {
         case BARE_EXTRINSIC:

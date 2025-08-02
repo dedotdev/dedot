@@ -40,9 +40,12 @@ export const $Extrinsic = (registry: PortableRegistry): $.Shape<Extrinsic> => {
 
   const { callTypeId } = registry.metadata!.extrinsic;
   const $RuntimeCall = registry.findCodec(callTypeId) as $.Shape<any>;
+  const $Signature = $ExtrinsicSignature(registry);
 
-  // TODO fix me!
-  const staticSize = $ExtrinsicVersion.staticSize + $ExtrinsicSignature(registry).staticSize + $RuntimeCall.staticSize;
+  const staticSize =
+    $ExtrinsicVersion.staticSize +
+    $RuntimeCall.staticSize + // --
+    $Signature.staticSize; // TODO adjust this based on extrinsic version
 
   const $BaseEx = $.createShape<Extrinsic>({
     metadata: [],
@@ -53,14 +56,12 @@ export const $Extrinsic = (registry: PortableRegistry): $.Shape<Extrinsic> => {
       if (version === EXTRINSIC_FORMAT_VERSION_V4) {
         const signature =
           type === ExtrinsicType.Signed // --
-            ? $ExtrinsicSignature(registry).subDecode(buffer)
+            ? $Signature.subDecode(buffer)
             : undefined;
 
         const call = $RuntimeCall.subDecode(buffer);
 
-        // Use strict Preamble structure for explicit control
         let preamble: Preamble;
-
         if (type === ExtrinsicType.Signed) {
           preamble = {
             version: EXTRINSIC_FORMAT_VERSION_V4,
@@ -93,7 +94,7 @@ export const $Extrinsic = (registry: PortableRegistry): $.Shape<Extrinsic> => {
           preamble = {
             version: EXTRINSIC_FORMAT_VERSION_V5,
             extrinsicType: ExtrinsicType.General,
-            versionedExtensions: versionedExtensions!,
+            versionedExtensions,
           } as PreambleV5General;
         } else {
           preamble = {
@@ -108,28 +109,25 @@ export const $Extrinsic = (registry: PortableRegistry): $.Shape<Extrinsic> => {
       throw new DedotError(`Invalid extrinsic format version: ${version}`);
     },
     subEncode(buffer: $.EncodeBuffer, extrinsic: Extrinsic): void {
-      const { version, extrinsicType, signature, call, versionedExtensions } = extrinsic;
+      const { version, extrinsicType, signature, call, extensions } = extrinsic;
 
       if (version === EXTRINSIC_FORMAT_VERSION_V4) {
         $ExtrinsicVersion.subEncode(buffer, { version, type: extrinsicType });
 
         if (extrinsicType === ExtrinsicType.Signed) {
           assert(signature, 'Signature is required for signed extrinsic!');
-          $ExtrinsicSignature(registry).subEncode(buffer, signature);
+          $Signature.subEncode(buffer, signature);
         }
       } else if (version === EXTRINSIC_FORMAT_VERSION_V5) {
         $ExtrinsicVersion.subEncode(buffer, { version, type: extrinsicType });
 
         if (extrinsicType === ExtrinsicType.General) {
-          assert(versionedExtensions, 'VersionedExtensions is required for general extrinsic!');
-          const extensionVersion = ensurePresence(
-            versionedExtensions.extensionVersion,
-            'extensionVersion is required!',
-          );
+          assert(extensions, 'VersionedExtensions is required for general extrinsic!');
+          const extensionVersion = ensurePresence(extensions.extensionVersion, 'extensionVersion is required!');
 
           $.u8.subEncode(buffer, extensionVersion);
-          if (versionedExtensions.extra) {
-            registry.$Extra(extensionVersion).subEncode(buffer, versionedExtensions.extra);
+          if (extensions.extra) {
+            registry.$Extra(extensionVersion).subEncode(buffer, extensions.extra);
           }
         }
       }

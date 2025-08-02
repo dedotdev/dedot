@@ -1,7 +1,7 @@
-import { assert, DedotError, ensurePresence, HexString, u8aToHex } from '@dedot/utils';
+import { assert, DedotError, HexString, u8aToHex } from '@dedot/utils';
 import { Hash } from '../codecs/generic/index.js';
 import { PortableRegistry } from '../registry/PortableRegistry.js';
-import { EXTRINSIC_FORMAT_VERSION_V4, ExtrinsicType } from './ExtrinsicVersion.js';
+import { EXTRINSIC_FORMAT_VERSION_V4, EXTRINSIC_FORMAT_VERSION_V5, ExtrinsicType } from './ExtrinsicVersion.js';
 
 export interface ExtrinsicSignatureV4<Address = any, Signature = any, Extra = any> {
   address: Address;
@@ -47,32 +47,34 @@ export type Preamble<Address = any, Signature = any, Extra = any> =
 
 // Type guard to check if preamble is the new Preamble interface
 function isPreamble<Address, Signature, Extra>(preamble: any): preamble is Preamble<Address, Signature, Extra> {
-  if (!preamble || typeof preamble !== 'object' || !('version' in preamble) || !('extrinsicType' in preamble)) {
+  // Basic validation - return false for invalid structure
+  if (!preamble || typeof preamble !== 'object' || Array.isArray(preamble)) {
+    return false;
+  }
+
+  if (!('version' in preamble) || !('extrinsicType' in preamble)) {
     return false;
   }
 
   const { version, extrinsicType } = preamble;
 
-  // Validate version/type combinations
-  if (version === 4) {
+  // Validate allowed combinations
+  if (version === EXTRINSIC_FORMAT_VERSION_V4) {
+    assert(extrinsicType !== ExtrinsicType.General, 'Version 4 does not support General extrinsic type');
     return extrinsicType === ExtrinsicType.Bare || extrinsicType === ExtrinsicType.Signed;
-  } else if (version === 5) {
+  } else if (version === EXTRINSIC_FORMAT_VERSION_V5) {
+    assert(extrinsicType !== ExtrinsicType.Signed, 'Version 5 does not support Signed extrinsic type');
     return extrinsicType === ExtrinsicType.Bare || extrinsicType === ExtrinsicType.General;
   }
 
   return false;
 }
 
-// Type guard to check if preamble is GeneralPreamble (v5) - kept for backward compatibility
-function isGeneralPreamble<Extra>(preamble: any): preamble is VersionedExtensions<Extra> {
-  return preamble && typeof preamble === 'object' && 'extensionVersion' in preamble;
-}
-
 export class GenericExtrinsic<Address = any, Call = any, Signature = any, Extra = any> {
   readonly #version: number;
   #extrinsicType: ExtrinsicType;
   #signature?: ExtrinsicSignatureV4<Address, Signature, Extra>;
-  #versionedExtensions?: VersionedExtensions<Extra>;
+  #extensions?: VersionedExtensions<Extra>;
 
   constructor(
     public registry: PortableRegistry,
@@ -85,10 +87,10 @@ export class GenericExtrinsic<Address = any, Call = any, Signature = any, Extra 
       this.#extrinsicType = preamble.extrinsicType;
 
       // Type narrowing based on version and extrinsicType
-      if (preamble.version === 4 && preamble.extrinsicType === ExtrinsicType.Signed) {
+      if (preamble.version === EXTRINSIC_FORMAT_VERSION_V4 && preamble.extrinsicType === ExtrinsicType.Signed) {
         this.#signature = (preamble as PreambleV4Signed<Address, Signature, Extra>).signature;
-      } else if (preamble.version === 5 && preamble.extrinsicType === ExtrinsicType.General) {
-        this.#versionedExtensions = (preamble as PreambleV5General<Extra>).versionedExtensions;
+      } else if (preamble.version === EXTRINSIC_FORMAT_VERSION_V5 && preamble.extrinsicType === ExtrinsicType.General) {
+        this.#extensions = (preamble as PreambleV5General<Extra>).versionedExtensions;
       }
       // For bare types (v4 or v5), no additional data needed
     } else if (preamble) {
@@ -119,8 +121,8 @@ export class GenericExtrinsic<Address = any, Call = any, Signature = any, Extra 
     return this.#signature;
   }
 
-  get versionedExtensions() {
-    return this.#versionedExtensions;
+  get extensions() {
+    return this.#extensions;
   }
 
   get callU8a(): Uint8Array {

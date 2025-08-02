@@ -4,8 +4,8 @@ import { u8aToHex } from '@dedot/utils';
 import { beforeEach, describe, expect, it } from 'vitest';
 import { $Metadata } from '../../metadata/index.js';
 import { PortableRegistry } from '../../registry/PortableRegistry.js';
-import { PreambleV5General, PreambleV4Bare } from '../GenericExtrinsic.js';
 import { ExtrinsicType } from '../ExtrinsicVersion.js';
+import { PreambleV5General, PreambleV4Bare } from '../GenericExtrinsic.js';
 import staticSubstrateV14 from './kusama-hex.js';
 
 // Ref: https://github.com/polkadot-js/api/blob/3bdf49b0428a62f16b3222b9a31bfefa43c1ca55/packages/types/src/extrinsic/Extrinsic.spec.ts#L20-L49
@@ -120,16 +120,7 @@ describe('Extrinsic', () => {
       extrinsicType: ExtrinsicType.General,
       versionedExtensions: {
         extensionVersion: 0,
-        extra: [
-          {},
-          {},
-          {},
-          {},
-          { type: 'Mortal', value: { period: 1024n, phase: 186n } },
-          68,
-          {},
-          30000000000n,
-        ],
+        extra: [{}, {}, {}, {}, { type: 'Mortal', value: { period: 1024n, phase: 186n } }, 68, {}, 30000000000n],
       },
     };
 
@@ -151,8 +142,8 @@ describe('Extrinsic', () => {
     expect(extrinsic.version).toEqual(5);
     expect(extrinsic.extrinsicType).toEqual(ExtrinsicType.General);
     expect(extrinsic.signed).toEqual(false);
-    expect(extrinsic.versionedExtensions).toBeDefined();
-    expect(extrinsic.versionedExtensions?.extensionVersion).toEqual(0);
+    expect(extrinsic.extensions).toBeDefined();
+    expect(extrinsic.extensions?.extensionVersion).toEqual(0);
   });
 
   it('should create v4 bare extrinsic with explicit control', () => {
