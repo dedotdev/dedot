@@ -28,8 +28,8 @@ import type {
   PalletContractsPrimitivesContractResult,
   PalletContractsPrimitivesContractResultResult,
   PalletContractsWasmDeterminism,
-  PalletReviveEvmApiDebugRpcTypesCallTrace,
-  PalletReviveEvmApiDebugRpcTypesTracerConfig,
+  PalletReviveEvmApiDebugRpcTypesTrace,
+  PalletReviveEvmApiDebugRpcTypesTracerType,
   PalletReviveEvmApiRpcTypesGenGenericTransaction,
   PalletRevivePrimitivesCode,
   PalletRevivePrimitivesCodeUploadReturnValue,
@@ -901,14 +901,14 @@ export interface RuntimeApis<Rv extends RpcVersion> extends GenericRuntimeApis<R
      *
      * @callname: ReviveApi_trace_block
      * @param {SpRuntimeBlock} block
-     * @param {PalletReviveEvmApiDebugRpcTypesTracerConfig} config
+     * @param {PalletReviveEvmApiDebugRpcTypesTracerType} config
      **/
     traceBlock: GenericRuntimeApiMethod<
       Rv,
       (
         block: SpRuntimeBlock,
-        config: PalletReviveEvmApiDebugRpcTypesTracerConfig,
-      ) => Promise<Array<[number, PalletReviveEvmApiDebugRpcTypesCallTrace]>>
+        config: PalletReviveEvmApiDebugRpcTypesTracerType,
+      ) => Promise<Array<[number, PalletReviveEvmApiDebugRpcTypesTrace]>>
     >;
 
     /**
@@ -922,15 +922,15 @@ export interface RuntimeApis<Rv extends RpcVersion> extends GenericRuntimeApis<R
      * @callname: ReviveApi_trace_tx
      * @param {SpRuntimeBlock} block
      * @param {number} tx_index
-     * @param {PalletReviveEvmApiDebugRpcTypesTracerConfig} config
+     * @param {PalletReviveEvmApiDebugRpcTypesTracerType} config
      **/
     traceTx: GenericRuntimeApiMethod<
       Rv,
       (
         block: SpRuntimeBlock,
         txIndex: number,
-        config: PalletReviveEvmApiDebugRpcTypesTracerConfig,
-      ) => Promise<PalletReviveEvmApiDebugRpcTypesCallTrace | undefined>
+        config: PalletReviveEvmApiDebugRpcTypesTracerType,
+      ) => Promise<PalletReviveEvmApiDebugRpcTypesTrace | undefined>
     >;
 
     /**
@@ -940,14 +940,14 @@ export interface RuntimeApis<Rv extends RpcVersion> extends GenericRuntimeApis<R
      *
      * @callname: ReviveApi_trace_call
      * @param {PalletReviveEvmApiRpcTypesGenGenericTransaction} tx
-     * @param {PalletReviveEvmApiDebugRpcTypesTracerConfig} config
+     * @param {PalletReviveEvmApiDebugRpcTypesTracerType} config
      **/
     traceCall: GenericRuntimeApiMethod<
       Rv,
       (
         tx: PalletReviveEvmApiRpcTypesGenGenericTransaction,
-        config: PalletReviveEvmApiDebugRpcTypesTracerConfig,
-      ) => Promise<Result<PalletReviveEvmApiDebugRpcTypesCallTrace, PalletRevivePrimitivesEthTransactError>>
+        config: PalletReviveEvmApiDebugRpcTypesTracerType,
+      ) => Promise<Result<PalletReviveEvmApiDebugRpcTypesTrace, PalletRevivePrimitivesEthTransactError>>
     >;
 
     /**
