@@ -1,7 +1,13 @@
-import { describe, it, expect, vi } from 'vitest';
 import { DedotError } from '@dedot/utils';
+import { describe, it, expect, vi } from 'vitest';
 import { ExtrinsicType, EXTRINSIC_FORMAT_VERSION_V4, EXTRINSIC_FORMAT_VERSION_V5 } from '../ExtrinsicVersion.js';
-import { GenericExtrinsic, PreambleV4Bare, PreambleV4Signed, PreambleV5Bare, PreambleV5General } from '../GenericExtrinsic.js';
+import {
+  GenericExtrinsic,
+  PreambleV4Bare,
+  PreambleV4Signed,
+  PreambleV5Bare,
+  PreambleV5General,
+} from '../GenericExtrinsic.js';
 
 // We need to test the private isPreamble function indirectly through the GenericExtrinsic constructor
 describe('isPreamble validation', () => {
@@ -10,35 +16,35 @@ describe('isPreamble validation', () => {
       // null preamble defaults to v4 bare (no signature)
       const extrinsic = new GenericExtrinsic({} as any, {}, null as any);
       expect(extrinsic.version).toBe(EXTRINSIC_FORMAT_VERSION_V4);
-      expect(extrinsic.extrinsicType).toBe(ExtrinsicType.Bare);
+      expect(extrinsic.type).toBe(ExtrinsicType.Bare);
     });
 
     it('should return false for undefined preamble', () => {
       // undefined preamble defaults to v4 bare (no signature)
       const extrinsic = new GenericExtrinsic({} as any, {}, undefined);
       expect(extrinsic.version).toBe(EXTRINSIC_FORMAT_VERSION_V4);
-      expect(extrinsic.extrinsicType).toBe(ExtrinsicType.Bare);
+      expect(extrinsic.type).toBe(ExtrinsicType.Bare);
     });
 
     it('should return false for string preamble', () => {
       // When isPreamble returns false but preamble is truthy, it's treated as legacy signature (v4 signed)
       const extrinsic = new GenericExtrinsic({} as any, {}, 'invalid' as any);
       expect(extrinsic.version).toBe(EXTRINSIC_FORMAT_VERSION_V4);
-      expect(extrinsic.extrinsicType).toBe(ExtrinsicType.Signed);
+      expect(extrinsic.type).toBe(ExtrinsicType.Signed);
     });
 
     it('should return false for number preamble', () => {
       // When isPreamble returns false but preamble is truthy, it's treated as legacy signature (v4 signed)
       const extrinsic = new GenericExtrinsic({} as any, {}, 42 as any);
       expect(extrinsic.version).toBe(EXTRINSIC_FORMAT_VERSION_V4);
-      expect(extrinsic.extrinsicType).toBe(ExtrinsicType.Signed);
+      expect(extrinsic.type).toBe(ExtrinsicType.Signed);
     });
 
     it('should return false for array preamble', () => {
       // When isPreamble returns false but preamble is truthy, it's treated as legacy signature (v4 signed)
       const extrinsic = new GenericExtrinsic({} as any, {}, [] as any);
       expect(extrinsic.version).toBe(EXTRINSIC_FORMAT_VERSION_V4);
-      expect(extrinsic.extrinsicType).toBe(ExtrinsicType.Signed);
+      expect(extrinsic.type).toBe(ExtrinsicType.Signed);
     });
 
     it('should return false for missing version property', () => {
@@ -48,7 +54,7 @@ describe('isPreamble validation', () => {
       // When isPreamble returns false but preamble is truthy, it's treated as legacy signature (v4 signed)
       const extrinsic = new GenericExtrinsic({} as any, {}, preamble as any);
       expect(extrinsic.version).toBe(EXTRINSIC_FORMAT_VERSION_V4);
-      expect(extrinsic.extrinsicType).toBe(ExtrinsicType.Signed);
+      expect(extrinsic.type).toBe(ExtrinsicType.Signed);
     });
 
     it('should return false for missing extrinsicType property', () => {
@@ -58,7 +64,7 @@ describe('isPreamble validation', () => {
       // When isPreamble returns false but preamble is truthy, it's treated as legacy signature (v4 signed)
       const extrinsic = new GenericExtrinsic({} as any, {}, preamble as any);
       expect(extrinsic.version).toBe(EXTRINSIC_FORMAT_VERSION_V4);
-      expect(extrinsic.extrinsicType).toBe(ExtrinsicType.Signed);
+      expect(extrinsic.type).toBe(ExtrinsicType.Signed);
     });
   });
 
@@ -71,7 +77,7 @@ describe('isPreamble validation', () => {
       // When isPreamble returns false but preamble is truthy, it's treated as legacy signature (v4 signed)
       const extrinsic = new GenericExtrinsic({} as any, {}, preamble as any);
       expect(extrinsic.version).toBe(EXTRINSIC_FORMAT_VERSION_V4);
-      expect(extrinsic.extrinsicType).toBe(ExtrinsicType.Signed);
+      expect(extrinsic.type).toBe(ExtrinsicType.Signed);
     });
 
     it('should return false for version 3', () => {
@@ -82,7 +88,7 @@ describe('isPreamble validation', () => {
       // When isPreamble returns false but preamble is truthy, it's treated as legacy signature (v4 signed)
       const extrinsic = new GenericExtrinsic({} as any, {}, preamble as any);
       expect(extrinsic.version).toBe(EXTRINSIC_FORMAT_VERSION_V4);
-      expect(extrinsic.extrinsicType).toBe(ExtrinsicType.Signed);
+      expect(extrinsic.type).toBe(ExtrinsicType.Signed);
     });
 
     it('should return false for version 6', () => {
@@ -93,7 +99,7 @@ describe('isPreamble validation', () => {
       // When isPreamble returns false but preamble is truthy, it's treated as legacy signature (v4 signed)
       const extrinsic = new GenericExtrinsic({} as any, {}, preamble as any);
       expect(extrinsic.version).toBe(EXTRINSIC_FORMAT_VERSION_V4);
-      expect(extrinsic.extrinsicType).toBe(ExtrinsicType.Signed);
+      expect(extrinsic.type).toBe(ExtrinsicType.Signed);
     });
   });
 
@@ -105,7 +111,7 @@ describe('isPreamble validation', () => {
       };
 
       expect(() => new GenericExtrinsic({} as any, {}, preamble as any)).toThrow(
-        new DedotError('Version 4 does not support General extrinsic type')
+        new DedotError('Version 4 does not support General extrinsic type'),
       );
     });
 
@@ -116,7 +122,7 @@ describe('isPreamble validation', () => {
       };
 
       expect(() => new GenericExtrinsic({} as any, {}, preamble as any)).toThrow(
-        new DedotError('Version 5 does not support Signed extrinsic type')
+        new DedotError('Version 5 does not support Signed extrinsic type'),
       );
     });
   });
@@ -130,7 +136,7 @@ describe('isPreamble validation', () => {
 
       const extrinsic = new GenericExtrinsic({} as any, {}, preamble);
       expect(extrinsic.version).toBe(4);
-      expect(extrinsic.extrinsicType).toBe(ExtrinsicType.Bare);
+      expect(extrinsic.type).toBe(ExtrinsicType.Bare);
     });
 
     it('should accept valid V4 signed preamble', () => {
@@ -146,7 +152,7 @@ describe('isPreamble validation', () => {
 
       const extrinsic = new GenericExtrinsic({} as any, {}, preamble);
       expect(extrinsic.version).toBe(4);
-      expect(extrinsic.extrinsicType).toBe(ExtrinsicType.Signed);
+      expect(extrinsic.type).toBe(ExtrinsicType.Signed);
       expect(extrinsic.signature).toEqual(preamble.signature);
     });
 
@@ -158,7 +164,7 @@ describe('isPreamble validation', () => {
 
       const extrinsic = new GenericExtrinsic({} as any, {}, preamble);
       expect(extrinsic.version).toBe(5);
-      expect(extrinsic.extrinsicType).toBe(ExtrinsicType.Bare);
+      expect(extrinsic.type).toBe(ExtrinsicType.Bare);
     });
 
     it('should accept valid V5 general preamble', () => {
@@ -173,7 +179,7 @@ describe('isPreamble validation', () => {
 
       const extrinsic = new GenericExtrinsic({} as any, {}, preamble);
       expect(extrinsic.version).toBe(5);
-      expect(extrinsic.extrinsicType).toBe(ExtrinsicType.General);
+      expect(extrinsic.type).toBe(ExtrinsicType.General);
       expect(extrinsic.extensions).toEqual(preamble.versionedExtensions);
     });
   });
@@ -187,7 +193,7 @@ describe('isPreamble validation', () => {
       // When isPreamble returns false but preamble is truthy, it's treated as legacy signature (v4 signed)
       const extrinsic = new GenericExtrinsic({} as any, {}, preamble as any);
       expect(extrinsic.version).toBe(EXTRINSIC_FORMAT_VERSION_V4);
-      expect(extrinsic.extrinsicType).toBe(ExtrinsicType.Signed);
+      expect(extrinsic.type).toBe(ExtrinsicType.Signed);
     });
 
     it('should return false for V5 with invalid extrinsic type', () => {
@@ -198,7 +204,7 @@ describe('isPreamble validation', () => {
       // When isPreamble returns false but preamble is truthy, it's treated as legacy signature (v4 signed)
       const extrinsic = new GenericExtrinsic({} as any, {}, preamble as any);
       expect(extrinsic.version).toBe(EXTRINSIC_FORMAT_VERSION_V4);
-      expect(extrinsic.extrinsicType).toBe(ExtrinsicType.Signed);
+      expect(extrinsic.type).toBe(ExtrinsicType.Signed);
     });
   });
 
@@ -213,7 +219,7 @@ describe('isPreamble validation', () => {
 
       const extrinsic = new GenericExtrinsic({} as any, {}, preamble as any);
       expect(extrinsic.version).toBe(4);
-      expect(extrinsic.extrinsicType).toBe(ExtrinsicType.Bare);
+      expect(extrinsic.type).toBe(ExtrinsicType.Bare);
     });
 
     it('should handle V4 Signed with extra properties', () => {
@@ -226,7 +232,7 @@ describe('isPreamble validation', () => {
 
       const extrinsic = new GenericExtrinsic({} as any, {}, preamble as any);
       expect(extrinsic.version).toBe(4);
-      expect(extrinsic.extrinsicType).toBe(ExtrinsicType.Signed);
+      expect(extrinsic.type).toBe(ExtrinsicType.Signed);
     });
 
     it('should handle V5 General with extra properties', () => {
@@ -239,7 +245,7 @@ describe('isPreamble validation', () => {
 
       const extrinsic = new GenericExtrinsic({} as any, {}, preamble as any);
       expect(extrinsic.version).toBe(5);
-      expect(extrinsic.extrinsicType).toBe(ExtrinsicType.General);
+      expect(extrinsic.type).toBe(ExtrinsicType.General);
     });
   });
 });

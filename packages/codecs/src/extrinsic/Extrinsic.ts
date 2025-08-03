@@ -109,19 +109,19 @@ export const $Extrinsic = (registry: PortableRegistry): $.Shape<Extrinsic> => {
       throw new DedotError(`Invalid extrinsic format version: ${version}`);
     },
     subEncode(buffer: $.EncodeBuffer, extrinsic: Extrinsic): void {
-      const { version, extrinsicType, signature, call, extensions } = extrinsic;
+      const { version, type, signature, call, extensions } = extrinsic;
 
       if (version === EXTRINSIC_FORMAT_VERSION_V4) {
-        $ExtrinsicVersion.subEncode(buffer, { version, type: extrinsicType });
+        $ExtrinsicVersion.subEncode(buffer, { version, type });
 
-        if (extrinsicType === ExtrinsicType.Signed) {
+        if (type === ExtrinsicType.Signed) {
           assert(signature, 'Signature is required for signed extrinsic!');
           $Signature.subEncode(buffer, signature);
         }
       } else if (version === EXTRINSIC_FORMAT_VERSION_V5) {
-        $ExtrinsicVersion.subEncode(buffer, { version, type: extrinsicType });
+        $ExtrinsicVersion.subEncode(buffer, { version, type });
 
-        if (extrinsicType === ExtrinsicType.General) {
+        if (type === ExtrinsicType.General) {
           assert(extensions, 'VersionedExtensions is required for general extrinsic!');
           const extensionVersion = ensurePresence(extensions.extensionVersion, 'extensionVersion is required!');
 

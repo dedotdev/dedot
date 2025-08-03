@@ -109,7 +109,7 @@ export class GenericExtrinsic<Address = any, Call = any, Signature = any, Extra 
     return this.#extrinsicType === ExtrinsicType.Signed;
   }
 
-  get extrinsicType() {
+  get type() {
     return this.#extrinsicType;
   }
 

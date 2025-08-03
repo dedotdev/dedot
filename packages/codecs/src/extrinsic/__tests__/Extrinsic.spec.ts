@@ -2,12 +2,12 @@ import { AccountId32, Extrinsic } from '@dedot/codecs';
 import * as $ from '@dedot/shape';
 import { u8aToHex } from '@dedot/utils';
 import { beforeEach, describe, expect, it } from 'vitest';
+import { westendMetadataV16 } from '../../metadata/__tests__/shared.js';
 import { $Metadata } from '../../metadata/index.js';
 import { PortableRegistry } from '../../registry/PortableRegistry.js';
 import { ExtrinsicType } from '../ExtrinsicVersion.js';
 import { PreambleV5General, PreambleV4Bare, PreambleV4Signed, PreambleV5Bare } from '../GenericExtrinsic.js';
 import staticSubstrateV14 from './kusama-hex.js';
-import { westendMetadataV16 } from '../../metadata/__tests__/shared.js';
 
 describe('Extrinsic', () => {
   describe('V4 Extrinsics (Substrate V14)', () => {
@@ -54,7 +54,7 @@ describe('Extrinsic', () => {
 
         expect(ex.version).toEqual(4);
         expect(ex.signed).toEqual(true);
-        expect(ex.extrinsicType).toEqual(ExtrinsicType.Signed);
+        expect(ex.type).toEqual(ExtrinsicType.Signed);
         expect(ex.signature?.address.type).toEqual('Id');
         expect(ex.signature?.address.value.raw).toEqual(
           '0xfcc4910cb536b4333db4bccb40e2cf6427b4766518e754b91e70c97e4a87dbb3',
@@ -99,13 +99,17 @@ describe('Extrinsic', () => {
                 palletCall: {
                   name: 'TransferAllowDeath',
                   params: {
-                    dest: new AccountId32('0x495e1e506f266418af07fa0c5c108dd436f2faa59fe7d9e54403779f5bbd7718').address(),
+                    dest: new AccountId32(
+                      '0x495e1e506f266418af07fa0c5c108dd436f2faa59fe7d9e54403779f5bbd7718',
+                    ).address(),
                     value: 104560923320000n,
                   },
                 },
               },
               {
-                address: new AccountId32('0xfcc4910cb536b4333db4bccb40e2cf6427b4766518e754b91e70c97e4a87dbb3').address(),
+                address: new AccountId32(
+                  '0xfcc4910cb536b4333db4bccb40e2cf6427b4766518e754b91e70c97e4a87dbb3',
+                ).address(),
                 signature: {
                   type: 'Ed25519',
                   value:
@@ -140,16 +144,7 @@ describe('Extrinsic', () => {
               value:
                 '0xd99ffe3e610ad234e1414bda5831395a6df9098bf80b01561ce89a5065ae89d5c10e1619c6c99131b0bea4fb73ef04d07c07770e2ae9df5c325c331769ccb300',
             },
-            extra: [
-              {},
-              {},
-              {},
-              {},
-              { type: 'Mortal', value: { period: 1024n, phase: 186n } },
-              68,
-              {},
-              30000000000n,
-            ],
+            extra: [{}, {}, {}, {}, { type: 'Mortal', value: { period: 1024n, phase: 186n } }, 68, {}, 30000000000n],
           },
         };
 
@@ -169,7 +164,7 @@ describe('Extrinsic', () => {
         );
 
         expect(extrinsic.version).toEqual(4);
-        expect(extrinsic.extrinsicType).toEqual(ExtrinsicType.Signed);
+        expect(extrinsic.type).toEqual(ExtrinsicType.Signed);
         expect(extrinsic.signed).toEqual(true);
         expect(extrinsic.signature).toBeDefined();
       });
@@ -181,7 +176,7 @@ describe('Extrinsic', () => {
 
         expect(ex.version).toEqual(4);
         expect(ex.signed).toEqual(false);
-        expect(ex.extrinsicType).toEqual(ExtrinsicType.Bare);
+        expect(ex.type).toEqual(ExtrinsicType.Bare);
         expect(ex.signature).toBeUndefined();
 
         expect(ex.call).toEqual({
@@ -246,7 +241,7 @@ describe('Extrinsic', () => {
         );
 
         expect(extrinsic.version).toEqual(4);
-        expect(extrinsic.extrinsicType).toEqual(ExtrinsicType.Bare);
+        expect(extrinsic.type).toEqual(ExtrinsicType.Bare);
         expect(extrinsic.signed).toEqual(false);
         expect(extrinsic.signature).toBeUndefined();
       });
@@ -282,7 +277,7 @@ describe('Extrinsic', () => {
 
         expect(ex.version).toEqual(5);
         expect(ex.signed).toEqual(false);
-        expect(ex.extrinsicType).toEqual(ExtrinsicType.Bare);
+        expect(ex.type).toEqual(ExtrinsicType.Bare);
         expect(ex.signature).toBeUndefined();
         expect(ex.extensions).toBeUndefined();
 
@@ -348,7 +343,7 @@ describe('Extrinsic', () => {
         );
 
         expect(extrinsic.version).toEqual(5);
-        expect(extrinsic.extrinsicType).toEqual(ExtrinsicType.Bare);
+        expect(extrinsic.type).toEqual(ExtrinsicType.Bare);
         expect(extrinsic.signed).toEqual(false);
         expect(extrinsic.signature).toBeUndefined();
         expect(extrinsic.extensions).toBeUndefined();
@@ -382,7 +377,7 @@ describe('Extrinsic', () => {
         );
 
         expect(extrinsic.version).toEqual(5);
-        expect(extrinsic.extrinsicType).toEqual(ExtrinsicType.General);
+        expect(extrinsic.type).toEqual(ExtrinsicType.General);
         expect(extrinsic.signed).toEqual(false);
         expect(extrinsic.signature).toBeUndefined();
         expect(extrinsic.extensions).toBeDefined();
