@@ -8,6 +8,7 @@ import { ChainJsonRpcApis } from './json-rpc.js';
 import { ChainStorage } from './query.js';
 import { RuntimeApis } from './runtime.js';
 import { ChainTx } from './tx.js';
+import { ChainViewFunctions } from './view-functions.js';
 
 export * from './types.js';
 
@@ -18,6 +19,7 @@ export interface VersionedSubstrateApi<Rv extends RpcVersion> extends GenericSub
   errors: ChainErrors<Rv>;
   events: ChainEvents<Rv>;
   call: RuntimeApis<Rv>;
+  view: ChainViewFunctions<Rv>;
   tx: ChainTx<Rv>;
 }
 
