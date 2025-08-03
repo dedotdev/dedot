@@ -3,7 +3,7 @@ import staticSubstrate from '@polkadot/types-support/metadata/v15/substrate-hex'
 import { ConstantExecutor } from '@dedot/api';
 import { $Metadata, Metadata, PortableRegistry, RuntimeVersion, unwrapOpaqueMetadata } from '@dedot/codecs';
 import * as $ from '@dedot/shape';
-import { HexString, hexToU8a, u8aToHex } from '@dedot/utils';
+import { HexString, hexToU8a, isHex } from '@dedot/utils';
 import { getMetadataFromRuntime } from '@polkadot-api/wasm-executor';
 import * as fs from 'fs';
 import { DecodedMetadataInfo, ParsedResult } from './types.js';
@@ -18,9 +18,9 @@ export const getRuntimeVersion = (metadata: Metadata): RuntimeVersion => {
   return executor.execute('system', 'version') as RuntimeVersion;
 };
 
-export const decodeMetadata = (metadataHex: HexString): DecodedMetadataInfo => {
-  const metadata = $Metadata.tryDecode(metadataHex);
-  const runtimeVersion = getRuntimeVersion(metadata);
+export const decodeMetadata = (metadata: HexString | Uint8Array): DecodedMetadataInfo => {
+  const decodedMetadata = $Metadata.tryDecode(metadata);
+  const runtimeVersion = getRuntimeVersion(decodedMetadata);
   const apis: Record<string, number> = runtimeVersion.apis.reduce(
     (acc, [name, version]) => {
       acc[name] = version;
@@ -30,7 +30,7 @@ export const decodeMetadata = (metadataHex: HexString): DecodedMetadataInfo => {
   );
 
   return {
-    metadata,
+    metadata: decodedMetadata,
     runtimeVersion: {
       ...runtimeVersion,
       apis,
@@ -39,8 +39,12 @@ export const decodeMetadata = (metadataHex: HexString): DecodedMetadataInfo => {
 };
 
 export const parseMetadataFromRaw = async (metadataFile: string): Promise<ParsedResult> => {
-  const metadataHex = fs.readFileSync(metadataFile, 'utf-8').trim() as HexString;
-  const { metadata, runtimeVersion } = decodeMetadata(metadataHex);
+  const fileContent = fs.readFileSync(metadataFile);
+
+  const contentStr = fileContent.toString('utf-8').trim();
+  const metadataInput = isHex(contentStr) ? (contentStr as HexString) : fileContent;
+
+  const { metadata, runtimeVersion } = decodeMetadata(metadataInput);
 
   return {
     metadata,
@@ -57,9 +61,9 @@ export const parseMetadataFromWasm = async (runtimeFile: string): Promise<Parsed
   const length = $.compactU32.tryDecode(u8aMetadata);
   const offset = $.compactU32.tryEncode(length).length;
 
-  const metadataHex = u8aToHex(u8aMetadata.subarray(offset));
+  const metadataU8a = u8aMetadata.subarray(offset);
 
-  const { metadata, runtimeVersion } = decodeMetadata(metadataHex);
+  const { metadata, runtimeVersion } = decodeMetadata(metadataU8a);
 
   return {
     metadata,

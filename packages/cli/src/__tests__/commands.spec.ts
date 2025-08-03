@@ -4,12 +4,21 @@ import { parseMetadataFromRaw, parseMetadataFromWasm } from '../commands/chainty
 
 const METADATA_FILE = path.resolve(`${process.platform === 'win32' ? '' : '/'}${/file:\/{2,3}(.+)\/[^/]/.exec(import.meta.url)![1]}`, 'raw_metadata.scale');
 const RUNTIME_FILE = path.resolve(`${process.platform === 'win32' ? '' : '/'}${/file:\/{2,3}(.+)\/[^/]/.exec(import.meta.url)![1]}`, 'runtime.wasm');
+const BINARY_METADATA_FILE = path.resolve(`${process.platform === 'win32' ? '' : '/'}${/file:\/{2,3}(.+)\/[^/]/.exec(import.meta.url)![1]}`, 'dot.scale');
 
 describe('chaintypes', () => {
   it('should parse raw metadata file properly', async () => {
     const result = await parseMetadataFromRaw(METADATA_FILE);
     expect(result).toBeTruthy();
     expect(result.metadata.version).toEqual('V15');
+    expect(result.runtimeVersion).toBeTypeOf('object');
+    expect(result.rpcMethods).toEqual([]);
+  });
+
+  it('should parse binary metadata file properly', async () => {
+    const result = await parseMetadataFromRaw(BINARY_METADATA_FILE);
+    expect(result).toBeTruthy();
+    expect(result.metadata.version).toMatch(/^V1[456]$/);
     expect(result.runtimeVersion).toBeTypeOf('object');
     expect(result.rpcMethods).toEqual([]);
   });
