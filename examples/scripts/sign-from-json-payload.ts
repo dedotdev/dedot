@@ -3,7 +3,7 @@ import { SignerPayloadJSON, SignerResult } from 'dedot/types';
 import { assert, u8aToHex } from 'dedot/utils';
 import { devPairs } from './keyring.js';
 
-const client = await DedotClient.new(new WsProvider('wss://rpc.ibp.network/westend'));
+const client = await DedotClient.new(new WsProvider('wss://westend-rpc.polkadot.io'));
 
 const { alice } = await devPairs();
 
