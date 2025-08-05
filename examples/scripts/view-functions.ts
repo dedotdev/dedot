@@ -1,5 +1,5 @@
-import { DedotClient, LegacyClient, WsProvider } from 'dedot';
 import { WestendApi } from '@dedot/chaintypes';
+import { DedotClient, LegacyClient, WsProvider } from 'dedot';
 import { devPairs } from './keyring.js';
 
 async function checkViewFunctions(client: DedotClient<WestendApi> | LegacyClient<WestendApi>, clientType: string) {
@@ -37,7 +37,7 @@ async function checkViewFunctions(client: DedotClient<WestendApi> | LegacyClient
 console.log('Connecting to Westend...');
 
 // Test with DedotClient
-const provider = new WsProvider('wss://rpc.ibp.network/westend');
+const provider = new WsProvider('wss://westend-rpc.polkadot.io');
 const dedotClient = await DedotClient.create<WestendApi>({ provider });
 console.log(`Connected to ${dedotClient.runtimeVersion.specName} v${dedotClient.runtimeVersion.specVersion}`);
 await checkViewFunctions(dedotClient, 'DedotClient');
