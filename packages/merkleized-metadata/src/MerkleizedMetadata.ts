@@ -1,6 +1,6 @@
 import { $ExtrinsicVersion, $Metadata, ExtrinsicType, Metadata, RuntimeVersion } from '@dedot/codecs';
 import * as $ from '@dedot/shape';
-import { assert, blake3AsHex, blake3AsU8a, concatU8a, HexString, toU8a, u8aToHex } from '@dedot/utils';
+import { assert, blake3AsHex, blake3AsU8a, concatU8a, HexString, isHex, isU8a, toU8a, u8aToHex } from '@dedot/utils';
 import { $ExtrinsicMetadata, $MetadataDigest, $Proof, $TypeInfo, TypeRef } from './codecs.js';
 import { buildMerkleTree, generateProof } from './merkle/index.js';
 import { decodeAndCollectLeaves, transformMetadata } from './transform/index.js';
@@ -68,7 +68,7 @@ export class MerkleizedMetadata {
    */
   constructor(metadata: Metadata | HexString | Uint8Array, chainInfo: ChainInfoOptional) {
     // Try decode metadata
-    if (!(metadata instanceof Metadata)) {
+    if (isHex(metadata) || isU8a(metadata)) {
       metadata = $Metadata.tryDecode(metadata);
     }
 
