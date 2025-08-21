@@ -7,3 +7,19 @@ export type ArchiveStorageResult = { result?: Array<StorageResult>; discardedIte
 export interface PaginatedStorageQuery<Key = string> extends StorageQuery<Key> {
   paginationStartKey?: Key;
 }
+
+export interface ArchiveStorageDiffItem<Key = string> {
+  key: Key;
+  returnType: 'value' | 'hash';
+  childTrie?: string;
+}
+
+export interface ArchiveStorageDiffValue {
+  key: string;
+  value?: string;
+  hash?: string;
+}
+
+export interface ArchiveStorageDiffResult {
+  values: Array<ArchiveStorageDiffValue>;
+}
