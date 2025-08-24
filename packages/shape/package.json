@@ -1,6 +1,6 @@
 {
   "name": "@dedot/shape",
-  "version": "0.15.1",
+  "version": "0.15.2",
   "description": "Basic codecs & shapes, extending existing subshape",
   "author": "Thang X. Vu <thang@dedot.dev>",
   "homepage": "https://dedot.dev",
