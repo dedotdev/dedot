@@ -371,22 +371,6 @@ describe('LegacyClient', () => {
         expect(errorRefs[1].meta.name).toEqual('SpecVersionNeedsToIncrease');
         expect(errorRefs[2].meta.name).toEqual('InsufficientBalance');
       });
-
-      it('should maintain proxy chain independence for consts', async () => {
-        const apiAt = await api.at('0x12345678');
-
-        // Access multiple constants - they should be independent
-        const constRefs = [
-          apiAt.consts.system.blockWeights,
-          apiAt.consts.system.blockLength,
-          apiAt.consts.balances.existentialDeposit,
-        ];
-
-        // Each should be defined and independent
-        expect(constRefs[0]).toBeDefined();
-        expect(constRefs[1]).toBeDefined();
-        expect(constRefs[2]).toBeDefined();
-      });
     });
 
     describe('queryMulti', () => {

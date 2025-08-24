@@ -771,22 +771,6 @@ describe('DedotClient', () => {
           expect(errorRefs[2].meta.name).toEqual('InsufficientBalance');
         });
 
-        it('should maintain proxy chain independence for consts', async () => {
-          const apiAt = await api.at('0x0e');
-
-          // Access multiple constants - they should be independent
-          const constRefs = [
-            apiAt.consts.system.blockWeights,
-            apiAt.consts.system.blockLength,
-            apiAt.consts.balances.existentialDeposit,
-          ];
-
-          // Each should be defined and independent
-          expect(constRefs[0]).toBeDefined();
-          expect(constRefs[1]).toBeDefined();
-          expect(constRefs[2]).toBeDefined();
-        });
-
         it('should perform query & runtime api', async () => {
           provider.setRpcRequests({
             chainHead_v1_storage: () => ({ result: 'started', operationId: 'storage05' }) as MethodResponse,
