@@ -25,15 +25,12 @@ export const newProxyChain = <ChainApi extends GenericSubstrateApi>(
 
   return new Proxy(carrier, {
     get(target: Carrier<ChainApi>, property: string | symbol, receiver: any): any {
-      if (!target.chain) {
-        target.chain = [];
-      }
+      const newCarrier: Carrier<ChainApi> = {
+        executor: target.executor,
+        chain: [...(target.chain || []), property.toString()],
+      };
 
-      const { chain } = target;
-
-      chain.push(property.toString());
-
-      return newProxyChain<ChainApi>(target, currentLevel + 1, maxLevel);
+      return newProxyChain<ChainApi>(newCarrier, currentLevel + 1, maxLevel);
     },
   });
 };
