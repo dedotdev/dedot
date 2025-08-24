@@ -78,3 +78,7 @@ export function isPvm(input: string | Uint8Array | HexString) {
 
   return false;
 }
+
+export function isNumberArray(input: unknown): input is Array<number> {
+  return Array.isArray(input) && input.every(isNumber);
+}

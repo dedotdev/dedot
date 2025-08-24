@@ -9,7 +9,7 @@ export const $Block = $.Struct({
 
 export type Block = $.Input<typeof $Block>;
 
-export const $Justification = $.Tuple($ConsensusEngineId, $.PrefixedHex);
+export const $Justification = $.Tuple($ConsensusEngineId, $.Vec($.u8));
 export type Justification = $.Input<typeof $Justification>;
 export const $Justifications = $.Vec($Justification);
 export type Justifications = $.Input<typeof $Justifications>;
