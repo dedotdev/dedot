@@ -726,6 +726,67 @@ describe('DedotClient', () => {
           expect(providerSend).toBeCalledWith('system_chain', []);
         });
 
+        it('should maintain proxy chain independence for events', async () => {
+          const apiAt = await api.at('0x0e');
+
+          // Access multiple events - they should be independent
+          const eventRefs = [
+            apiAt.events.system.ExtrinsicSuccess,
+            apiAt.events.system.ExtrinsicFailed,
+            apiAt.events.system.CodeUpdated,
+            apiAt.events.balances.Transfer,
+          ];
+
+          // Each should have independent metadata
+          expect(eventRefs[0].meta.name).toEqual('ExtrinsicSuccess');
+          expect(eventRefs[1].meta.name).toEqual('ExtrinsicFailed');
+          expect(eventRefs[2].meta.name).toEqual('CodeUpdated');
+          expect(eventRefs[3].meta.name).toEqual('Transfer');
+
+          // Access them again in different order - should still work
+          const eventRefs2 = [
+            apiAt.events.system.ExtrinsicFailed,
+            apiAt.events.system.ExtrinsicSuccess,
+            apiAt.events.balances.Transfer,
+          ];
+
+          expect(eventRefs2[0].meta.name).toEqual('ExtrinsicFailed');
+          expect(eventRefs2[1].meta.name).toEqual('ExtrinsicSuccess');
+          expect(eventRefs2[2].meta.name).toEqual('Transfer');
+        });
+
+        it('should maintain proxy chain independence for errors', async () => {
+          const apiAt = await api.at('0x0e');
+
+          // Access multiple errors - they should be independent
+          const errorRefs = [
+            apiAt.errors.system.InvalidSpecName,
+            apiAt.errors.system.SpecVersionNeedsToIncrease,
+            apiAt.errors.balances.InsufficientBalance,
+          ];
+
+          // Each should have independent metadata
+          expect(errorRefs[0].meta.name).toEqual('InvalidSpecName');
+          expect(errorRefs[1].meta.name).toEqual('SpecVersionNeedsToIncrease');
+          expect(errorRefs[2].meta.name).toEqual('InsufficientBalance');
+        });
+
+        it('should maintain proxy chain independence for consts', async () => {
+          const apiAt = await api.at('0x0e');
+
+          // Access multiple constants - they should be independent
+          const constRefs = [
+            apiAt.consts.system.blockWeights,
+            apiAt.consts.system.blockLength,
+            apiAt.consts.balances.existentialDeposit,
+          ];
+
+          // Each should be defined and independent
+          expect(constRefs[0]).toBeDefined();
+          expect(constRefs[1]).toBeDefined();
+          expect(constRefs[2]).toBeDefined();
+        });
+
         it('should perform query & runtime api', async () => {
           provider.setRpcRequests({
             chainHead_v1_storage: () => ({ result: 'started', operationId: 'storage05' }) as MethodResponse,
