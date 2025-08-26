@@ -1,7 +1,8 @@
 import { BlockHash, Option } from '@dedot/codecs';
+import { Callback, Unsub } from '@dedot/types';
 import {
+  ArchiveStorageEventType,
   ArchiveStorageResult,
-  ArchiveStorageDiffItem,
   MethodResult,
   PaginatedStorageQuery,
 } from '@dedot/types/json-rpc';
@@ -19,23 +20,31 @@ import { JsonRpcGroup, JsonRpcGroupOptions } from './JsonRpcGroup.js';
  */
 export class Archive extends JsonRpcGroup {
   #genesisHash?: HexString;
-  #finalizedHeight?: number;
-  #lastFinalizedCheck?: number;
 
   constructor(client: IJsonRpcClient, options?: Partial<JsonRpcGroupOptions>) {
     super(client, { prefix: 'archive', supportedVersions: ['unstable', 'v1'], ...options });
   }
 
   /**
-   * Retrieves the body (list of transactions) of a given block hash.
+   * Retrieves the body (list of transactions) of a given block.
    * Returns an array of strings containing the hexadecimal-encoded SCALE-codec-encoded
    * transactions in that block. If no block with that hash is found, null.
    *
-   * @param hash - The block hash
+   * @param hash - The block hash (optional, defaults to current finalized block)
    * @returns Array of transaction hashes or null if block not found
+   *
+   * @example
+   * ```typescript
+   * // Get transactions from current finalized block
+   * const transactions = await archive.body();
+   *
+   * // Get transactions from specific block
+   * const transactions = await archive.body('0x1234...');
+   * ```
    */
-  async body(hash: BlockHash): Promise<Option<Array<HexString>>> {
-    return this.send('body', hash);
+  async body(hash?: BlockHash): Promise<Option<Array<HexString>>> {
+    const blockHash = hash || (await this.finalizedHash());
+    return this.send('body', blockHash);
   }
 
   /**
@@ -56,34 +65,55 @@ export class Archive extends JsonRpcGroup {
    * Get the block's header.
    * Returns a string containing the hexadecimal-encoded SCALE-codec encoding header of the block.
    *
-   * @param hash - The block hash
+   * @param hash - The block hash (optional, defaults to current finalized block)
    * @returns The encoded block header or null if block not found
+   *
+   * @example
+   * ```typescript
+   * // Get header of current finalized block
+   * const header = await archive.header();
+   *
+   * // Get header of specific block
+   * const header = await archive.header('0x1234...');
+   * ```
    */
-  async header(hash: BlockHash): Promise<Option<HexString>> {
-    return this.send('header', hash);
+  async header(hash?: BlockHash): Promise<Option<HexString>> {
+    const blockHash = hash || (await this.finalizedHash());
+    return this.send('header', blockHash);
   }
 
   /**
    * Get the height of the current finalized block.
    * Returns an integer height of the current finalized block of the chain.
-   * This value is cached for a short period to reduce RPC calls.
    *
    * @returns The height of the finalized block
    */
   async finalizedHeight(): Promise<number> {
-    const now = Date.now();
-    // Cache finalized height for 2 seconds to reduce RPC calls
-    if (!this.#finalizedHeight || !this.#lastFinalizedCheck || now - this.#lastFinalizedCheck > 2000) {
-      this.#finalizedHeight = await this.send('finalizedHeight');
-      this.#lastFinalizedCheck = now;
+    return this.send('finalizedHeight');
+  }
+
+  /**
+   * Get the hash of the current finalized block.
+   * Returns a string containing the hexadecimal-encoded hash of the current finalized block.
+   * This is a convenience method that combines finalizedHeight() and hashByHeight().
+   *
+   * @returns The hash of the current finalized block
+   */
+  async finalizedHash(): Promise<HexString> {
+    const height = await this.finalizedHeight();
+    const hashes = await this.hashByHeight(height);
+
+    if (hashes.length === 0) {
+      throw new Error(`No block found at finalized height ${height}`);
     }
-    return this.#finalizedHeight;
+
+    return hashes[0];
   }
 
   /**
    * Get the hashes of blocks from the given height.
    * Returns an array (possibly empty) of strings containing hexadecimal-encoded hashes of block headers.
-   * 
+   *
    * Note: For heights <= finalized height, there is guaranteed to be one block.
    * For heights > finalized height, there may be zero, one or multiple blocks depending on forks.
    *
@@ -97,49 +127,85 @@ export class Archive extends JsonRpcGroup {
   /**
    * Call into the Runtime API at a specified block's state.
    *
-   * @param hash - The block hash
    * @param func - The runtime API function to call
    * @param params - The parameters for the function call (SCALE-encoded)
+   * @param hash - The block hash (optional, defaults to current finalized block)
    * @returns The result of the runtime call
+   *
+   * @example
+   * ```typescript
+   * // Call Core_version on current finalized block
+   * const version = await archive.call('Core_version', '0x');
+   *
+   * // Call Core_version on specific block
+   * const version = await archive.call('Core_version', '0x', '0x1234...');
+   * ```
    */
-  async call(hash: BlockHash, func: string, params: HexString): Promise<MethodResult> {
-    return this.send('call', hash, func, params);
+  async call(func: string, params: HexString, hash?: BlockHash): Promise<MethodResult> {
+    const blockHash = hash || (await this.finalizedHash());
+    return this.send('call', blockHash, func, params);
+  }
+
+  /**
+   * Returns storage entries at a specific block's state via subscription.
+   *
+   * @param items - Array of storage queries with optional pagination
+   * @param childTrie - Optional child trie key
+   * @param callback - Callback to receive storage events
+   * @param hash - The block hash (optional, defaults to current finalized block)
+   * @returns Unsubscribe function
+   */
+  async #storageSubscription(
+    items: Array<PaginatedStorageQuery>,
+    childTrie: HexString | null,
+    callback: Callback<ArchiveStorageEventType>,
+    hash?: BlockHash,
+  ): Promise<Unsub> {
+    const blockHash = hash || await this.finalizedHash();
+    return this.send('storage', blockHash, items, childTrie, callback);
   }
 
   /**
    * Returns storage entries at a specific block's state.
-   * Supports pagination for large result sets.
+   * This method collects all storage events and returns them as a single result.
    *
-   * @param hash - The block hash
    * @param items - Array of storage queries with optional pagination
    * @param childTrie - Optional child trie key
-   * @returns Storage results with potential discarded items count
+   * @param hash - The block hash (optional, defaults to current finalized block)
+   * @returns Storage results array
+   *
+   * @example
+   * ```typescript
+   * // Query storage from current finalized block
+   * const results = await archive.storage([{ key: '0x1234', type: 'value' }]);
+   * 
+   * // Query storage from specific block
+   * const results = await archive.storage([{ key: '0x1234', type: 'value' }], null, '0xabcd...');
+   * ```
    */
   async storage(
-    hash: BlockHash,
     items: Array<PaginatedStorageQuery>,
-    childTrie?: Option<HexString>,
+    childTrie?: HexString | null,
+    hash?: BlockHash,
   ): Promise<ArchiveStorageResult> {
-    return this.send('storage', hash, items, childTrie ?? null);
-  }
+    return new Promise(async (resolve, reject) => {
+      const results: any[] = [];
+      const blockHash = hash || await this.finalizedHash();
 
-  /**
-   * Returns the storage difference between two blocks.
-   * This is a subscription-based method that returns an operation ID.
-   *
-   * @param hash - The block hash to get storage at
-   * @param items - Array of storage diff items to query
-   * @param previousHash - Optional previous block hash for comparison
-   * @param childTrie - Optional child trie key
-   * @returns Operation ID for the storage diff subscription
-   */
-  async storageDiff(
-    hash: BlockHash,
-    items: Array<ArchiveStorageDiffItem>,
-    previousHash?: Option<BlockHash>,
-    childTrie?: Option<HexString>,
-  ): Promise<string> {
-    return this.send('storageDiff', hash, items, previousHash ?? null, childTrie ?? null);
+      this.#storageSubscription(items, childTrie || null, (event) => {
+        switch (event.event) {
+          case 'storage':
+            results.push(event);
+            break;
+          case 'storageDone':
+            resolve(results);
+            break;
+          case 'storageError':
+            reject(new Error(event.error));
+            break;
+        }
+      }, blockHash).catch(reject);
+    });
   }
 
   /**
@@ -149,14 +215,5 @@ export class Archive extends JsonRpcGroup {
    */
   async stopStorage(operationId: string): Promise<void> {
     return this.send('stopStorage', operationId);
-  }
-
-  /**
-   * Stop an ongoing storage diff operation.
-   *
-   * @param operationId - The operation ID to stop
-   */
-  async stopStorageDiff(operationId: string): Promise<void> {
-    return this.send('stopStorageDiff', operationId);
   }
 }

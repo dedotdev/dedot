@@ -16,4 +16,6 @@ export const subscriptionsInfo: SubscriptionsInfo = {
     'transactionWatch_unstable_unwatch',
   ],
   transactionWatch_v1_submitAndWatch: ['transactionWatch_v1_watchEvent', 'transactionWatch_v1_unwatch'],
+  archive_v1_storage: ['archive_v1_storageEvent', 'archive_v1_stopStorage'],
+  archive_v1_storageDiff: ['archive_v1_storageDiffEvent', 'archive_v1_stopStorageDiff'],
 };
