@@ -1,6 +1,7 @@
-import { literalUnion, sizedArray, sizedUint8Array, tuple, uint8Array } from '../deshape.js';
+import { literalUnion, sizedArray, sizedUint8Array, uint8Array } from '../deshape.js';
 import { array } from './array.js';
 import { option } from './option.js';
+import { tuple } from './tuple.js';
 
 export const FlatEnum = literalUnion;
 export const Option = option;
