@@ -6,7 +6,7 @@ import {
   MethodResult,
   PaginatedStorageQuery,
 } from '@dedot/types/json-rpc';
-import { HexString } from '@dedot/utils';
+import { DedotError, HexString } from '@dedot/utils';
 import { IJsonRpcClient } from '../../types.js';
 import { JsonRpcGroup, JsonRpcGroupOptions } from './JsonRpcGroup.js';
 
@@ -161,7 +161,7 @@ export class Archive extends JsonRpcGroup {
     callback: Callback<ArchiveStorageEventType>,
     hash?: BlockHash,
   ): Promise<Unsub> {
-    const blockHash = hash || await this.finalizedHash();
+    const blockHash = hash || (await this.finalizedHash());
     return this.send('storage', blockHash, items, childTrie, callback);
   }
 
@@ -178,7 +178,7 @@ export class Archive extends JsonRpcGroup {
    * ```typescript
    * // Query storage from current finalized block
    * const results = await archive.storage([{ key: '0x1234', type: 'value' }]);
-   * 
+   *
    * // Query storage from specific block
    * const results = await archive.storage([{ key: '0x1234', type: 'value' }], null, '0xabcd...');
    * ```
@@ -190,30 +190,26 @@ export class Archive extends JsonRpcGroup {
   ): Promise<ArchiveStorageResult> {
     return new Promise(async (resolve, reject) => {
       const results: any[] = [];
-      const blockHash = hash || await this.finalizedHash();
+      const blockHash = hash || (await this.finalizedHash());
 
-      this.#storageSubscription(items, childTrie || null, (event) => {
-        switch (event.event) {
-          case 'storage':
-            results.push(event);
-            break;
-          case 'storageDone':
-            resolve(results);
-            break;
-          case 'storageError':
-            reject(new Error(event.error));
-            break;
-        }
-      }, blockHash).catch(reject);
+      this.#storageSubscription(
+        items,
+        childTrie || null,
+        (event) => {
+          switch (event.event) {
+            case 'storage':
+              results.push(event);
+              break;
+            case 'storageDone':
+              resolve(results);
+              break;
+            case 'storageError':
+              reject(new DedotError(event.error));
+              break;
+          }
+        },
+        blockHash,
+      ).catch(reject);
     });
-  }
-
-  /**
-   * Stop an ongoing storage operation.
-   *
-   * @param operationId - The operation ID to stop
-   */
-  async stopStorage(operationId: string): Promise<void> {
-    return this.send('stopStorage', operationId);
   }
 }

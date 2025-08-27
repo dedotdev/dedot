@@ -2,8 +2,6 @@ import { BlockHash, Option } from '@dedot/codecs';
 import { Callback, GenericJsonRpcApis, Unsub } from '@dedot/types';
 import { HexString } from '@dedot/utils';
 import {
-  ArchiveStorageResult,
-  ArchiveStorageDiffResult,
   ArchiveStorageDiffItem,
   ArchiveStorageEventType,
   ArchiveStorageDiffEventType,
@@ -74,6 +72,22 @@ export interface ArchiveV1 extends GenericJsonRpcApis {
    */
   archive_v1_call(hash: BlockHash, func: string, params: string): Promise<MethodResult>;
 
+  /**
+   * Returns storage entries at a specific block's state via subscription.
+   *
+   * @pubsub archive_v1_storageEvent, archive_v1_storage, archive_v1_stopStorage
+   * @param hash
+   * @param items
+   * @param childTrie
+   * @param callback
+   * @version v1
+   */
+  archive_v1_storage(
+    hash: BlockHash,
+    items: Array<PaginatedStorageQuery>,
+    childTrie: Option<HexString> | null,
+    callback: Callback<ArchiveStorageEventType>,
+  ): Promise<Unsub>;
 
   /**
    * Returns the storage difference between two blocks via subscription.
@@ -89,24 +103,8 @@ export interface ArchiveV1 extends GenericJsonRpcApis {
   archive_v1_storageDiff(
     hash: BlockHash,
     items: Array<ArchiveStorageDiffItem>,
-    previousHash: Option<BlockHash>,
-    childTrie: Option<HexString>,
+    previousHash: Option<BlockHash> | null,
+    childTrie: Option<HexString> | null,
     callback: Callback<ArchiveStorageDiffEventType>,
   ): Promise<Unsub>;
-
-  /**
-   * Stop an ongoing storage operation.
-   *
-   * @param operationId
-   * @version v1
-   */
-  archive_v1_stopStorage(operationId: string): Promise<void>;
-
-  /**
-   * Stop an ongoing storage diff operation.
-   *
-   * @param operationId
-   * @version v1
-   */
-  archive_v1_stopStorageDiff(operationId: string): Promise<void>;
 }
