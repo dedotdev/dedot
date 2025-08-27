@@ -317,13 +317,13 @@ async function testStoragePromise(archive: Archive) {
   // Test 2: Storage query without hash (uses finalized block)
   try {
     log('Testing archive.storage() without hash parameter (should use finalized block)...');
-    
+
     const aliceKey = storageEntry.encodeKey(ALICE);
     const items = [{ key: aliceKey, type: 'value' as const }];
-    
+
     const results = await archive.storage(items);
     log(`Got ${results.length} results using default finalized block`);
-    
+
     logSuccess('Storage query without hash parameter verified', {
       resultCount: results.length,
       usedFinalizedBlock: true,
@@ -375,22 +375,6 @@ async function testStoragePromise(archive: Archive) {
 }
 
 /**
- * Test Control APIs (stop operations)
- */
-async function testControlApis(archive: Archive) {
-  log('=== TESTING CONTROL APIs ===');
-
-  // Test 1: Stop storage operation (using a dummy operation ID)
-  try {
-    log('Testing archive.stopStorage()...');
-    await archive.stopStorage('dummy_operation_id');
-    logSuccess('stopStorage call completed (note: operation ID may not exist)');
-  } catch (error) {
-    logWarning('stopStorage call failed (expected for non-existent operation ID)');
-  }
-}
-
-/**
  * Main function to run all tests
  */
 async function main() {
@@ -410,19 +394,16 @@ async function main() {
     // Comment out any test sections you don't want to run
 
     // Basic information tests
-    // await testBasicInfo(archive);
-    //
-    // // Block data tests
-    // await testBlockData(archive);
-    //
-    // // Runtime API tests
-    // await testRuntimeApi(archive);
+    await testBasicInfo(archive);
+
+    // Block data tests
+    await testBlockData(archive);
+
+    // Runtime API tests
+    await testRuntimeApi(archive);
 
     // Promise-based storage tests
     await testStoragePromise(archive);
-
-    // Control API tests
-    await testControlApis(archive);
 
     logSuccess('🎉 All Archive API tests completed!');
   } catch (error) {

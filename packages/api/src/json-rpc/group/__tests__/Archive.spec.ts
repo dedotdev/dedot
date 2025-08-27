@@ -276,7 +276,7 @@ describe('Archive', () => {
       }, 10);
 
       const result = await storagePromise;
-      
+
       // Should call finalizedHeight, hashByHeight, then storage
       expect(providerSend).toHaveBeenCalledWith('archive_v1_finalizedHeight', []);
       expect(providerSend).toHaveBeenCalledWith('archive_v1_hashByHeight', [1000]);
@@ -320,17 +320,6 @@ describe('Archive', () => {
       }, 10);
 
       await storagePromise;
-    });
-  });
-
-  describe('stopStorage', () => {
-    it('should stop storage operation', async () => {
-      const providerSend = vi.spyOn(client.provider, 'send');
-      const archive = new Archive(client);
-
-      await archive.stopStorage('operation_123');
-
-      expect(providerSend).toBeCalledWith('archive_v1_stopStorage', ['operation_123']);
     });
   });
 
