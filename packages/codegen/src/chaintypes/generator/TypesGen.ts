@@ -21,7 +21,7 @@ const SKIP_TYPES = [
   /^WrapperKeepOpaque$/,
   /^WrapperOpaque$/,
 
-  // These types are used internally by chains and do not contain data, so we skip them
+  // Types from this path are used internally by chains and do not contain data, so we skip them
   /^substrate_typenum::/,
 ];
 

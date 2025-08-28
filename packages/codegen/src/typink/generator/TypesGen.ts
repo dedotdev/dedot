@@ -10,7 +10,7 @@ import {
 import { BaseTypesGen } from '../../shared/index.js';
 import { beautifySourceCode, compileTemplate } from '../../utils.js';
 
-const SKIP_TYPES = ['Result', 'Option'];
+const SKIP_TYPES = [/^Result$/, /^Option$/];
 
 export class TypesGen extends BaseTypesGen {
   constructor(public contractMetadata: ContractMetadata) {
