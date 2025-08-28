@@ -4,7 +4,7 @@
  * Example: Historical Data Access with Archive Fallback
  *
  * This script demonstrates how to use DedotClient.at() to access historical blockchain data
- * from Polkadot mainnet, specifically accessing blocks that are 1000 blocks behind the
+ * from Polkadot mainnet, specifically accessing blocks that are 5000 blocks behind the
  * current finalized block. It showcases the Archive fallback mechanism when blocks are
  * not pinned in ChainHead.
  */
