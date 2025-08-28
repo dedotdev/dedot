@@ -689,7 +689,10 @@ export class ChainHead extends JsonRpcGroup<ChainHeadEvent> {
 
     const fallback = async (archive: Archive): Promise<Array<HexString>> => {
       const result = await archive.body(at);
-      return result || [];
+      if (result === undefined) {
+        throw new ChainHeadOperationError(`Block ${at || 'latest'} not found in Archive`);
+      }
+      return result;
     };
 
     try {
