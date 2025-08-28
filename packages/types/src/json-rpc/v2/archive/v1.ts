@@ -11,28 +11,28 @@ import {
 
 /**
  * archive-prefixed JSON-RPC methods.
- * Ref: https://github.com/paritytech/polkadot-sdk/blob/53bcbb15f1de62661671ad8099b9dc3f8b623efd/substrate/client/rpc-spec-v2/src/archive/api.rs#L27-L107
+ * Ref: https://paritytech.github.io/json-rpc-interface-spec/api/archive.html
  *
- * @version unstable
+ * @version v1
  */
-export interface ArchiveUnstable extends GenericJsonRpcApis {
+export interface ArchiveV1 extends GenericJsonRpcApis {
   /**
    * Retrieves the body (list of transactions) of a given block hash.
    * Returns an array of strings containing the hexadecimal-encoded SCALE-codec-encoded
    * transactions in that block. If no block with that hash is found, null.
    *
    * @param hash
-   * @version unstable
+   * @version v1
    */
-  archive_unstable_body(hash: BlockHash): Promise<Option<Array<HexString>>>;
+  archive_v1_body(hash: BlockHash): Promise<Option<Array<HexString>>>;
 
   /**
    * Get the chain's genesis hash.
    * Returns a string containing the hexadecimal-encoded hash of the genesis block of the chain.
    *
-   * @version unstable
+   * @version v1
    */
-  archive_unstable_genesisHash(): Promise<HexString>;
+  archive_v1_genesisHash(): Promise<HexString>;
 
   /**
    * Get the block's header.
@@ -40,17 +40,17 @@ export interface ArchiveUnstable extends GenericJsonRpcApis {
    * block.
    *
    * @param hash
-   * @version unstable
+   * @version v1
    */
-  archive_unstable_header(hash: BlockHash): Promise<Option<HexString>>;
+  archive_v1_header(hash: BlockHash): Promise<Option<HexString>>;
 
   /**
    * Get the height of the current finalized block.
    * Returns an integer height of the current finalized block of the chain.
    *
-   * @version unstable
+   * @version v1
    */
-  archive_unstable_finalizedHeight(): Promise<number>;
+  archive_v1_finalizedHeight(): Promise<number>;
 
   /**
    * Get the hashes of blocks from the given height.
@@ -58,9 +58,9 @@ export interface ArchiveUnstable extends GenericJsonRpcApis {
    * block header.
    *
    * @param height
-   * @version unstable
+   * @version v1
    */
-  archive_unstable_hashByHeight(height: number): Promise<Array<HexString>>;
+  archive_v1_hashByHeight(height: number): Promise<Array<HexString>>;
 
   /**
    * Call into the Runtime API at a specified block's state.
@@ -68,21 +68,21 @@ export interface ArchiveUnstable extends GenericJsonRpcApis {
    * @param hash
    * @param func
    * @param params
-   * @version unstable
+   * @version v1
    */
-  archive_unstable_call(hash: BlockHash, func: string, params: string): Promise<MethodResult>;
+  archive_v1_call(hash: BlockHash, func: string, params: string): Promise<MethodResult>;
 
   /**
    * Returns storage entries at a specific block's state via subscription.
    *
-   * @pubsub archive_unstable_storageEvent, archive_unstable_storage, archive_unstable_stopStorage
+   * @pubsub archive_v1_storageEvent, archive_v1_storage, archive_v1_stopStorage
    * @param hash
    * @param items
    * @param childTrie
    * @param callback
-   * @version unstable
+   * @version v1
    */
-  archive_unstable_storage(
+  archive_v1_storage(
     hash: BlockHash,
     items: Array<PaginatedStorageQuery>,
     childTrie: Option<HexString> | null,
@@ -92,15 +92,15 @@ export interface ArchiveUnstable extends GenericJsonRpcApis {
   /**
    * Returns the storage difference between two blocks via subscription.
    *
-   * @pubsub archive_unstable_storageDiffEvent, archive_unstable_storageDiff, archive_unstable_stopStorageDiff
+   * @pubsub archive_v1_storageDiffEvent, archive_v1_storageDiff, archive_v1_stopStorageDiff
    * @param hash
    * @param items
    * @param previousHash
    * @param childTrie
    * @param callback
-   * @version unstable
+   * @version v1
    */
-  archive_unstable_storageDiff(
+  archive_v1_storageDiff(
     hash: BlockHash,
     items: Array<ArchiveStorageDiffItem>,
     previousHash: Option<BlockHash> | null,
