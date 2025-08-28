@@ -1,3 +1,4 @@
+import { BlockHash } from '@dedot/codecs';
 import { DedotError } from '@dedot/utils';
 
 export enum RetryStrategy {
@@ -57,6 +58,12 @@ export class ChainHeadInvalidRuntimeError extends ChainHeadError {
 
 export class ChainHeadBlockNotPinnedError extends ChainHeadError {
   name = 'ChainHeadBlockNotPinnedError';
+  hash: BlockHash;
+
+  constructor(message: string, hash: BlockHash | string) {
+    super(message);
+    this.hash = hash as BlockHash;
+  }
 }
 
 export class ChainHeadBlockPrunedError extends ChainHeadError {

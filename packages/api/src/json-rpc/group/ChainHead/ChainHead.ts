@@ -471,7 +471,7 @@ export class ChainHead extends JsonRpcGroup<ChainHeadEvent> {
       if (this.isPinned(hash)) {
         return hash;
       } else {
-        throw new ChainHeadBlockNotPinnedError(`Block hash ${hash} is not pinned`);
+        throw new ChainHeadBlockNotPinnedError(`Block hash ${hash} is not pinned`, hash);
       }
     }
 
@@ -495,15 +495,15 @@ export class ChainHead extends JsonRpcGroup<ChainHeadEvent> {
    */
   async #tryWithArchive<T>(
     operation: () => Promise<T>,
-    fallback: (archive: Archive) => Promise<T>,
-    hash?: BlockHash,
+    fallback: (archive: Archive, hash: BlockHash) => Promise<T>,
   ): Promise<T> {
     try {
       return await operation();
     } catch (error) {
       if (error instanceof ChainHeadBlockNotPinnedError && this.#archive) {
-        console.warn(`Block ${hash || 'latest'} not pinned in ChainHead, falling back to Archive`);
-        return await fallback(this.#archive);
+        const errorHash = error.hash;
+        console.warn(`Block ${errorHash} not pinned in ChainHead, falling back to Archive`);
+        return await fallback(this.#archive, errorHash);
       }
 
       throw error;
@@ -687,16 +687,16 @@ export class ChainHead extends JsonRpcGroup<ChainHeadEvent> {
       return resp;
     };
 
-    const fallback = async (archive: Archive): Promise<Array<HexString>> => {
-      const result = await archive.body(at);
+    const fallback = async (archive: Archive, hash: BlockHash): Promise<Array<HexString>> => {
+      const result = await archive.body(hash);
       if (result === undefined) {
-        throw new ChainHeadOperationError(`Block ${at || 'latest'} not found in Archive`);
+        throw new ChainHeadOperationError(`Block ${hash} not found in Archive`);
       }
       return result;
     };
 
     try {
-      return await this.#tryWithArchive(operation, fallback, at);
+      return await this.#tryWithArchive(operation, fallback);
     } catch (e: any) {
       if (e instanceof ChainHeadBlockPrunedError && shouldRetryOnPrunedBlock) {
         return this.body();
@@ -733,10 +733,10 @@ export class ChainHead extends JsonRpcGroup<ChainHeadEvent> {
       return resp;
     };
 
-    const fallback = (archive: Archive) => archive.call(func, params, at);
+    const fallback = (archive: Archive, hash: BlockHash) => archive.call(func, params, hash);
 
     try {
-      return await this.#tryWithArchive(operation, fallback, at);
+      return await this.#tryWithArchive(operation, fallback);
     } catch (e: any) {
       if (e instanceof ChainHeadBlockPrunedError && shouldRetryOnPrunedBlock) {
         return this.call(func, params);
@@ -765,9 +765,9 @@ export class ChainHead extends JsonRpcGroup<ChainHeadEvent> {
       return resp;
     };
 
-    const fallback = (archive: Archive) => archive.header(at);
+    const fallback = (archive: Archive, errorHash: BlockHash) => archive.header(errorHash);
 
-    return await this.#tryWithArchive(operation, fallback, at);
+    return await this.#tryWithArchive(operation, fallback);
   }
 
   async #getHeader(at: BlockHash): Promise<Option<HexString>> {
@@ -822,12 +822,12 @@ export class ChainHead extends JsonRpcGroup<ChainHeadEvent> {
       }
     };
 
-    const fallback = (archive: Archive): Promise<ArchiveStorageResult> => {
-      return archive.storage(items, childTrie as HexString | null, at);
+    const fallback = (archive: Archive, hash: BlockHash): Promise<ArchiveStorageResult> => {
+      return archive.storage(items, childTrie as HexString | null, hash);
     };
 
     try {
-      return await this.#tryWithArchive(operation, fallback, at);
+      return await this.#tryWithArchive(operation, fallback);
     } catch (e) {
       if (e instanceof ChainHeadBlockPrunedError && shouldRetryOnPrunedBlock) {
         return await this.storage(items, childTrie);
