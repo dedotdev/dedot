@@ -1,4 +1,4 @@
-import { stringToHex } from '@dedot/utils';
+import { DedotError, stringToHex } from '@dedot/utils';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import MockProvider from '../../../client/__tests__/MockProvider.js';
 import { IJsonRpcClient } from '../../../types.js';
@@ -201,7 +201,7 @@ describe('Archive', () => {
       const archive = new Archive(client);
       const result = await archive.call('Core_version', '0x', mockBlockHash);
 
-      expect(result).toEqual({ success: true, value: '0x1234' });
+      expect(result).toBe('0x1234');
       expect(providerSend).toBeCalledWith('archive_v1_call', [mockBlockHash, 'Core_version', '0x']);
     });
 
@@ -210,7 +210,7 @@ describe('Archive', () => {
       const archive = new Archive(client);
       const result = await archive.call('Core_version', '0x');
 
-      expect(result).toEqual({ success: true, value: '0x1234' });
+      expect(result).toBe('0x1234');
       // Should call finalizedHeight, hashByHeight, then call
       expect(providerSend).toHaveBeenCalledWith('archive_v1_finalizedHeight', []);
       expect(providerSend).toHaveBeenCalledWith('archive_v1_hashByHeight', [1000]);
@@ -226,9 +226,9 @@ describe('Archive', () => {
       const testClient = new JsonRpcClient({ provider: testProvider });
 
       const archive = new Archive(testClient);
-      const result = await archive.call('Invalid_method', '0x', mockBlockHash);
-
-      expect(result).toEqual({ success: false, error: 'Runtime error' });
+      
+      await expect(archive.call('Invalid_method', '0x', mockBlockHash))
+        .rejects.toThrow(DedotError);
     });
   });
 

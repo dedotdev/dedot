@@ -20,9 +20,11 @@ import { JsonRpcGroup, JsonRpcGroupOptions } from './JsonRpcGroup.js';
  */
 export class Archive extends JsonRpcGroup {
   #genesisHash?: HexString;
+  #cache: Map<string, any>;
 
   constructor(client: IJsonRpcClient, options?: Partial<JsonRpcGroupOptions>) {
     super(client, { prefix: 'archive', supportedVersions: ['unstable', 'v1'], ...options });
+    this.#cache = new Map();
   }
 
   /**
@@ -44,7 +46,15 @@ export class Archive extends JsonRpcGroup {
    */
   async body(hash?: BlockHash): Promise<Option<Array<HexString>>> {
     const blockHash = hash || (await this.finalizedHash());
-    return this.send('body', blockHash);
+    const cacheKey = `${blockHash}::body`;
+
+    if (this.#cache.has(cacheKey)) {
+      return this.#cache.get(cacheKey);
+    }
+
+    const result = await this.send('body', blockHash);
+    this.#cache.set(cacheKey, result);
+    return result;
   }
 
   /**
@@ -79,7 +89,15 @@ export class Archive extends JsonRpcGroup {
    */
   async header(hash?: BlockHash): Promise<Option<HexString>> {
     const blockHash = hash || (await this.finalizedHash());
-    return this.send('header', blockHash);
+    const cacheKey = `${blockHash}::header`;
+
+    if (this.#cache.has(cacheKey)) {
+      return this.#cache.get(cacheKey);
+    }
+
+    const result = await this.send('header', blockHash);
+    this.#cache.set(cacheKey, result);
+    return result;
   }
 
   /**
@@ -141,9 +159,21 @@ export class Archive extends JsonRpcGroup {
    * const version = await archive.call('Core_version', '0x', '0x1234...');
    * ```
    */
-  async call(func: string, params: HexString, hash?: BlockHash): Promise<MethodResult> {
+  async call(func: string, params: HexString, hash?: BlockHash): Promise<HexString> {
     const blockHash = hash || (await this.finalizedHash());
-    return this.send('call', blockHash, func, params);
+    const cacheKey = `${blockHash}::call::${func}::${params}`;
+
+    if (this.#cache.has(cacheKey)) {
+      return this.#cache.get(cacheKey);
+    }
+
+    const result: MethodResult = await this.send('call', blockHash, func, params);
+    if (!result.success) {
+      throw new DedotError(result.error);
+    }
+
+    this.#cache.set(cacheKey, result.value);
+    return result.value as HexString;
   }
 
   /**
@@ -192,6 +222,14 @@ export class Archive extends JsonRpcGroup {
       const results: any[] = [];
       const blockHash = hash || (await this.finalizedHash());
 
+      // Generate cache key
+      const cacheKey = `${blockHash}::storage::${JSON.stringify(items)}::${childTrie ?? null}`;
+
+      // Check cache
+      if (this.#cache.has(cacheKey)) {
+        return resolve(this.#cache.get(cacheKey));
+      }
+
       this.#storageSubscription(
         items,
         childTrie || null,
@@ -201,6 +239,8 @@ export class Archive extends JsonRpcGroup {
               results.push(event);
               break;
             case 'storageDone':
+              // Set cache after successful completion
+              this.#cache.set(cacheKey, results);
               resolve(results);
               break;
             case 'storageError':
@@ -211,5 +251,19 @@ export class Archive extends JsonRpcGroup {
         blockHash,
       ).catch(reject);
     });
+  }
+
+  /**
+   * Clears the internal cache used for storing archive query results.
+   * This can be useful for memory management or when you want to force fresh data retrieval.
+   *
+   * @example
+   * ```typescript
+   * // Clear all cached results
+   * archive.clearCache();
+   * ```
+   */
+  clearCache(): void {
+    this.#cache.clear();
   }
 }

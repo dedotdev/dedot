@@ -215,11 +215,7 @@ async function testRuntimeApi(archive: Archive) {
   try {
     log(`Testing archive.call(${blockHash}, 'Core_version', '0x')...`);
     const result = await archive.call('Core_version', '0x', blockHash);
-    if (result.success) {
-      logSuccess('Core_version runtime call successful', { result: result.value });
-    } else {
-      logError('Core_version runtime call failed', result.error);
-    }
+    logSuccess('Core_version runtime call successful', { result });
   } catch (error) {
     console.error(error);
     logError('Failed to call Core_version', error);
@@ -229,9 +225,9 @@ async function testRuntimeApi(archive: Archive) {
   try {
     log(`Testing archive.call(${blockHash}, 'Core_version', '0x') with proper decoding...`);
     const result = await archive.call('Core_version', '0x', blockHash);
-    assert(result.success, 'Core_version call should succeed');
+    assert(result, 'Core_version call should return a value');
 
-    const runtimeVersion = $RuntimeVersion.tryDecode(result.value);
+    const runtimeVersion = $RuntimeVersion.tryDecode(result);
     assert(runtimeVersion.specName, 'Runtime should have a spec name');
     assert(runtimeVersion.specVersion > 0, 'Runtime should have a spec version');
 
@@ -265,8 +261,8 @@ async function testStoragePromise(archive: Archive) {
 
     // Get metadata to create QueryableStorage
     const rawMetadata = await archive.call('Metadata_metadata_at_version', '0x0f000000', blockHash);
-    assert(rawMetadata.success, 'Metadata call should succeed');
-    const metadata = $.Option($.lenPrefixed($Metadata)).tryDecode(rawMetadata.value)!;
+    assert(rawMetadata, 'Metadata call should succeed');
+    const metadata = $.Option($.lenPrefixed($Metadata)).tryDecode(rawMetadata)!;
     const registry = new PortableRegistry(metadata.latest);
     storageEntry = new QueryableStorage(registry, 'System', 'Account');
     referendaStorage = new QueryableStorage(registry, 'Referenda', 'ReferendumInfoFor');
