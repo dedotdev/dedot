@@ -2,6 +2,7 @@ import { $Header, BlockHash, Option } from '@dedot/codecs';
 import type { JsonRpcSubscription } from '@dedot/providers';
 import type { AsyncMethod, Unsub } from '@dedot/types';
 import type {
+  ArchiveStorageResult,
   ChainHeadRuntimeVersion,
   FollowEvent,
   FollowOperationEvent,
@@ -23,6 +24,7 @@ import {
   waitFor,
 } from '@dedot/utils';
 import type { IJsonRpcClient } from '../../../types.js';
+import { Archive } from '../Archive.js';
 import { JsonRpcGroup, type JsonRpcGroupOptions } from '../JsonRpcGroup.js';
 import { BlockUsage } from './BlockUsage.js';
 import {
@@ -77,6 +79,17 @@ export class ChainHead extends JsonRpcGroup<ChainHeadEvent> {
   #blockUsage: BlockUsage;
   #cache: Map<string, any>;
   #operationQueue: ThrottleQueue;
+  /**
+   * Archive instance used as fallback when ChainHead blocks are not pinned.
+   *
+   * When ChainHead operations fail with ChainHeadBlockNotPinnedError, the system
+   * automatically attempts the same operation using the Archive API. This provides
+   * seamless access to historical blockchain data even when blocks are no longer
+   * maintained in the ChainHead's pinned block set.
+   *
+   * @private
+   */
+  #archive?: Archive;
 
   constructor(client: IJsonRpcClient, options?: Partial<JsonRpcGroupOptions>) {
     super(client, { prefix: 'chainHead', supportedVersions: ['unstable', 'v1'], ...options });
@@ -90,6 +103,19 @@ export class ChainHead extends JsonRpcGroup<ChainHeadEvent> {
     this.#cache = new Map();
     // This helps us to not accidentally putting too much stress on the JSON-RPC server, especially smoldot/light-client
     this.#operationQueue = new ThrottleQueue(this.#__unsafe__isSmoldot() ? 25 : 250);
+  }
+
+  /**
+   * Attach an Archive instance as fallback for operations that fail due to unpinned blocks.
+   * When a ChainHeadBlockNotPinnedError occurs, the operation will automatically fallback
+   * to the Archive API to attempt to retrieve the data from historical blocks.
+   *
+   * @param archive - Archive instance to use as fallback
+   * @returns this ChainHead instance for method chaining
+   */
+  withArchive(archive: Archive): this {
+    this.#archive = archive;
+    return this;
   }
 
   async runtimeVersion(): Promise<ChainHeadRuntimeVersion> {
@@ -452,6 +478,38 @@ export class ChainHead extends JsonRpcGroup<ChainHeadEvent> {
     return ensurePresence(this.#bestHash || this.#finalizedHash);
   }
 
+  /**
+   * Executes a ChainHead operation with automatic Archive fallback.
+   *
+   * This method first attempts the primary ChainHead operation. If it fails with
+   * ChainHeadBlockNotPinnedError (indicating the block is no longer pinned), and
+   * an Archive instance is available, it automatically retries the operation using
+   * the Archive API.
+   *
+   * @param operation - Primary ChainHead operation to attempt
+   * @param fallback - Archive operation to fallback to
+   * @param hash - Block hash being accessed (for logging)
+   * @returns Result from either ChainHead or Archive operation
+   * @throws Original error if not a pinning error or no Archive available
+   * @private
+   */
+  async #tryWithArchive<T>(
+    operation: () => Promise<T>,
+    fallback: (archive: Archive) => Promise<T>,
+    hash?: BlockHash,
+  ): Promise<T> {
+    try {
+      return await operation();
+    } catch (error) {
+      if (error instanceof ChainHeadBlockNotPinnedError && this.#archive) {
+        console.warn(`Block ${hash || 'latest'} not pinned in ChainHead, falling back to Archive`);
+        return await fallback(this.#archive);
+      }
+
+      throw error;
+    }
+  }
+
   #getOperationHandler(result: FollowOperationEvent): OperationHandler | undefined {
     const handler = this.#handlers[result.operationId];
     if (handler) return handler;
@@ -609,14 +667,14 @@ export class ChainHead extends JsonRpcGroup<ChainHeadEvent> {
     await this.#ensureFollowed();
     const shouldRetryOnPrunedBlock = !at;
 
-    try {
+    const operation = async (): Promise<Array<HexString>> => {
       const atHash = this.#ensurePinnedHash(at);
       const cacheKey = `${atHash}::body`;
       if (this.#cache.has(cacheKey)) {
         return this.#cache.get(cacheKey);
       }
 
-      const operation = async (): Promise<Array<HexString>> => {
+      const bodyOperation = async (): Promise<Array<HexString>> => {
         await this.#ensureFollowed();
         const hash = this.#ensurePinnedHash(atHash);
 
@@ -624,9 +682,18 @@ export class ChainHead extends JsonRpcGroup<ChainHeadEvent> {
         return this.#awaitOperation(resp, hash);
       };
 
-      const resp = await this.#operationQueue.add(() => this.#performOperationWithRetry(operation, atHash));
+      const resp = await this.#operationQueue.add(() => this.#performOperationWithRetry(bodyOperation, atHash));
       this.#cache.set(cacheKey, resp);
       return resp;
+    };
+
+    const fallback = async (archive: Archive): Promise<Array<HexString>> => {
+      const result = await archive.body(at);
+      return result || [];
+    };
+
+    try {
+      return await this.#tryWithArchive(operation, fallback, at);
     } catch (e: any) {
       if (e instanceof ChainHeadBlockPrunedError && shouldRetryOnPrunedBlock) {
         return this.body();
@@ -643,14 +710,14 @@ export class ChainHead extends JsonRpcGroup<ChainHeadEvent> {
     await this.#ensureFollowed();
     const shouldRetryOnPrunedBlock = !at;
 
-    try {
+    const operation = async (): Promise<HexString> => {
       const atHash = this.#ensurePinnedHash(at);
       const cacheKey = `${atHash}::call::${func}::${params}`;
       if (this.#cache.has(cacheKey)) {
         return this.#cache.get(cacheKey);
       }
 
-      const operation = async (): Promise<HexString> => {
+      const callOperation = async (): Promise<HexString> => {
         await this.#ensureFollowed();
         const hash = this.#ensurePinnedHash(atHash);
 
@@ -658,9 +725,15 @@ export class ChainHead extends JsonRpcGroup<ChainHeadEvent> {
         return this.#awaitOperation(resp, hash);
       };
 
-      const resp = await this.#operationQueue.add(() => this.#performOperationWithRetry(operation, atHash));
+      const resp = await this.#operationQueue.add(() => this.#performOperationWithRetry(callOperation, atHash));
       this.#cache.set(cacheKey, resp);
       return resp;
+    };
+
+    const fallback = (archive: Archive) => archive.call(func, params, at);
+
+    try {
+      return await this.#tryWithArchive(operation, fallback, at);
     } catch (e: any) {
       if (e instanceof ChainHeadBlockPrunedError && shouldRetryOnPrunedBlock) {
         return this.call(func, params);
@@ -676,16 +749,22 @@ export class ChainHead extends JsonRpcGroup<ChainHeadEvent> {
   async header(at?: BlockHash): Promise<Option<HexString>> {
     await this.#ensureFollowed();
 
-    const hash = this.#ensurePinnedHash(at);
-    const cacheKey = `${hash}::header`;
+    const operation = async (): Promise<Option<HexString>> => {
+      const hash = this.#ensurePinnedHash(at);
+      const cacheKey = `${hash}::header`;
 
-    if (this.#cache.has(cacheKey)) {
-      return this.#cache.get(cacheKey);
-    }
+      if (this.#cache.has(cacheKey)) {
+        return this.#cache.get(cacheKey);
+      }
 
-    const resp = await this.#getHeader(hash);
-    this.#cache.set(cacheKey, resp);
-    return resp;
+      const resp = await this.#getHeader(hash);
+      this.#cache.set(cacheKey, resp);
+      return resp;
+    };
+
+    const fallback = (archive: Archive) => archive.header(at);
+
+    return await this.#tryWithArchive(operation, fallback, at);
   }
 
   async #getHeader(at: BlockHash): Promise<Option<HexString>> {
@@ -699,49 +778,59 @@ export class ChainHead extends JsonRpcGroup<ChainHeadEvent> {
     await this.#ensureFollowed();
     const shouldRetryOnPrunedBlock = !at;
 
-    const hash = this.#ensurePinnedHash(at);
-    try {
-      // JSON.stringify(items) might get big, we probably should do a twox hashing in such case
-      const cacheKey = `${hash}::storage::${JSON.stringify(items)}::${childTrie ?? null}`;
-      if (this.#cache.has(cacheKey)) {
-        return this.#cache.get(cacheKey);
-      }
-
-      this.#blockUsage.use(hash);
-
-      let results: Array<StorageResult> = [];
-
-      if (this.#__unsafe__isSmoldot()) {
-        const fetchItem = async (item: StorageQuery): Promise<StorageResult[]> => {
-          const [batch, newDiscardedItems] = await this.#getStorage([item], childTrie ?? null, hash);
-
-          if (newDiscardedItems.length > 0) {
-            return fetchItem(item);
-          }
-
-          return batch;
-        };
-
-        results = (await Promise.all(items.map((one) => fetchItem(one)))).flat();
-      } else {
-        let queryItems = items;
-        while (queryItems.length > 0) {
-          const [newBatch, newDiscardedItems] = await this.#getStorage(queryItems, childTrie ?? null, hash);
-          results.push(...newBatch);
-          queryItems = newDiscardedItems;
+    const operation = async (): Promise<Array<StorageResult>> => {
+      const hash = this.#ensurePinnedHash(at);
+      try {
+        // JSON.stringify(items) might get big, we probably should do a twox hashing in such case
+        const cacheKey = `${hash}::storage::${JSON.stringify(items)}::${childTrie ?? null}`;
+        if (this.#cache.has(cacheKey)) {
+          return this.#cache.get(cacheKey);
         }
-      }
 
-      this.#cache.set(cacheKey, results);
-      return results;
+        this.#blockUsage.use(hash);
+
+        let results: Array<StorageResult> = [];
+
+        if (this.#__unsafe__isSmoldot()) {
+          const fetchItem = async (item: StorageQuery): Promise<StorageResult[]> => {
+            const [batch, newDiscardedItems] = await this.#getStorage([item], childTrie ?? null, hash);
+
+            if (newDiscardedItems.length > 0) {
+              return fetchItem(item);
+            }
+
+            return batch;
+          };
+
+          results = (await Promise.all(items.map((one) => fetchItem(one)))).flat();
+        } else {
+          let queryItems = items;
+          while (queryItems.length > 0) {
+            const [newBatch, newDiscardedItems] = await this.#getStorage(queryItems, childTrie ?? null, hash);
+            results.push(...newBatch);
+            queryItems = newDiscardedItems;
+          }
+        }
+
+        this.#cache.set(cacheKey, results);
+        return results;
+      } finally {
+        this.#blockUsage.release(hash);
+      }
+    };
+
+    const fallback = (archive: Archive): Promise<ArchiveStorageResult> => {
+      return archive.storage(items, childTrie as HexString | null, at);
+    };
+
+    try {
+      return await this.#tryWithArchive(operation, fallback, at);
     } catch (e) {
       if (e instanceof ChainHeadBlockPrunedError && shouldRetryOnPrunedBlock) {
         return await this.storage(items, childTrie);
       }
 
       throw e;
-    } finally {
-      this.#blockUsage.release(hash);
     }
   }
 
