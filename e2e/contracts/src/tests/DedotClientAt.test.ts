@@ -88,9 +88,7 @@ describe('DedotClient .at() Method E2E Tests', () => {
     it('should access genesis block API via Archive fallback', async () => {
       // Mock isPinned to return false to ensure Archive fallback is triggered
       // (genesis might still be pinned in newly launched chains)
-      if (client.chainHead.isPinned(genesisHash)) {
-        vi.spyOn(client.chainHead, 'isPinned').mockReturnValue(false);
-      }
+      vi.spyOn(client.chainHead, 'isPinned').mockReturnValue(false);
 
       const genesisApi = await client.at(genesisHash);
 
