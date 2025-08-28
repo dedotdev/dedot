@@ -38,7 +38,7 @@ jobs:
         run: |
           export PATH=$(pwd):$PATH
           export RUST_BACKTRACE=full
-          ./ink-node --rpc-port=9955 & 
+          ./ink-node --rpc-port=9955 --state-pruning=archive --blocks-pruning=archive & 
           ./substrate-contracts-node --dev &
 
           chmod +x ./e2e/contracts/wait-for-port.sh
