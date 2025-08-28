@@ -3,23 +3,26 @@ import { EnumOptions } from '@dedot/shape';
 import { BaseTypesGen } from '../../shared/index.js';
 import { beautifySourceCode, commentBlock, compileTemplate } from '../../utils.js';
 
-// Skip generate types for these
-// as we do have native types for them
 const SKIP_TYPES = [
-  'BoundedBTreeMap',
-  'BoundedBTreeSet',
-  'BoundedVec',
-  'Box',
-  'BTreeMap',
-  'BTreeSet',
-  'Cow',
-  'Option',
-  'Range',
-  'RangeInclusive',
-  'Result',
-  'WeakBoundedVec',
-  'WrapperKeepOpaque',
-  'WrapperOpaque',
+  // Skip generate types for these
+  // as we do have native types for them
+  /^BoundedBTreeMap$/,
+  /^BoundedBTreeSet$/,
+  /^BoundedVec$/,
+  /^Box$/,
+  /^BTreeMap$/,
+  /^BTreeSet$/,
+  /^Cow$/,
+  /^Option$/,
+  /^Range$/,
+  /^RangeInclusive$/,
+  /^Result$/,
+  /^WeakBoundedVec$/,
+  /^WrapperKeepOpaque$/,
+  /^WrapperOpaque$/,
+
+  // These types are used internally by chains and do not contain data, so we skip them
+  /^substrate_typenum::/,
 ];
 
 export class TypesGen extends BaseTypesGen {
@@ -40,7 +43,7 @@ export class TypesGen extends BaseTypesGen {
 
     Object.values(this.includedTypes)
       .filter(({ skip, knownType }) => !(skip || knownType))
-      .forEach(({ name, nameOut, id, docs }) => {
+      .forEach(({ id, name, docs, nameOut }) => {
         defTypeOut += `${commentBlock(docs)}export type ${nameOut} = ${this.generateType(id, 0, true)};\n\n`;
 
         if (this.shouldGenerateTypeIn(id)) {

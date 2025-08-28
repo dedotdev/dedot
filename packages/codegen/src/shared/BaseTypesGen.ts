@@ -23,10 +23,10 @@ export abstract class BaseTypesGen {
   types: PortableType[];
   includedTypes: Record<TypeId, NamedType>;
   typeImports: TypeImports;
-  skipTypes: string[];
+  skipTypes: RegExp[];
   knownTypes: Record<TypeId, string>;
 
-  protected constructor(types: PortableType[], skipTypes: string[] = []) {
+  protected constructor(types: PortableType[], skipTypes: RegExp[] = []) {
     this.types = types;
     this.skipTypes = skipTypes;
     this.typeImports = new TypeImports();
@@ -93,7 +93,10 @@ export abstract class BaseTypesGen {
         const { path, id } = type;
         const joinedPath = path.join('::');
 
-        if (this.skipTypes.includes(joinedPath) || this.skipTypes.includes(path.at(-1)!)) {
+        if (
+          this.skipTypes.some((typeRegex) => typeRegex.test(joinedPath)) ||
+          this.skipTypes.some((typeRegex) => typeRegex.test(path.at(-1)!))
+        ) {
           return o;
         }
 
