@@ -108,10 +108,9 @@ export interface IJsonRpcClient<
 }
 
 /**
- * A generic interface for Substrate clients at a specific block
+ * @internal
  */
-export interface ISubstrateClientAt<ChainApi extends GenericSubstrateApi = GenericSubstrateApi> {
-  atBlockHash?: BlockHash;
+export interface IGenericSubstrateClient<ChainApi extends GenericSubstrateApi = GenericSubstrateApi> {
   rpcVersion: RpcVersion;
 
   options: ApiOptions;
@@ -130,13 +129,21 @@ export interface ISubstrateClientAt<ChainApi extends GenericSubstrateApi = Gener
 }
 
 /**
+ * A generic interface for Substrate clients at a specific block
+ */
+export interface ISubstrateClientAt<ChainApi extends GenericSubstrateApi = GenericSubstrateApi>
+  extends IGenericSubstrateClient<ChainApi> {
+  atBlockHash: BlockHash;
+}
+
+/**
  * A generic interface for Substrate clients
  */
 export interface ISubstrateClient<
   ChainApi extends GenericSubstrateApi = GenericSubstrateApi,
   Events extends string = ApiEvent,
 > extends IJsonRpcClient<ChainApi, Events>,
-    ISubstrateClientAt<ChainApi> {
+    IGenericSubstrateClient<ChainApi> {
   options: ApiOptions;
   tx: ChainApi['tx'];
 

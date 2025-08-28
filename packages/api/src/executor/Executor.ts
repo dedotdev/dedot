@@ -1,7 +1,7 @@
 import type { BlockHash, PalletDefLatest } from '@dedot/codecs';
 import type { GenericSubstrateApi } from '@dedot/types';
 import { assert, HexString, stringCamelCase, UnknownApiError } from '@dedot/utils';
-import { ISubstrateClientAt } from '../types.js';
+import { ISubstrateClient, ISubstrateClientAt } from '../types.js';
 
 export interface StateCallParams {
   func: string;
@@ -17,13 +17,14 @@ export abstract class Executor<ChainApi extends GenericSubstrateApi = GenericSub
   readonly #atBlockHash?: BlockHash;
 
   constructor(
-    readonly client: ISubstrateClientAt<ChainApi>,
+    readonly client: ISubstrateClientAt<ChainApi> | ISubstrateClient<ChainApi, any>,
     atBlockHash?: BlockHash,
   ) {
     this.#atBlockHash = atBlockHash;
   }
 
   get atBlockHash() {
+    // @ts-ignore
     return this.#atBlockHash || this.client.atBlockHash;
   }
 
