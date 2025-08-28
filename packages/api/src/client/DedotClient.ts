@@ -80,13 +80,8 @@ export class DedotClient<ChainApi extends VersionedGenericSubstrateApi = Substra
   }
 
   async archive() {
-    if (!this._archive) {
-      throw new DedotError('Archive is not initialized');
-    }
-
-    if (!(await this._archive.supported())) {
-      throw new DedotError('Archive API is not supported by the connected server/node');
-    }
+    assert(this._archive, 'Archive instance is not initialized');
+    assert(await this._archive.supported(), 'Archive JSON-RPC is not supported by the connected server');
 
     return this._archive;
   }
@@ -266,7 +261,7 @@ export class DedotClient<ChainApi extends VersionedGenericSubstrateApi = Substra
           throw new DedotError(`Unable to fetch runtime version for block ${hash}: ${error}`);
         }
       } else {
-        throw new DedotError('Block is not pinned and Archive API is not supported by the server/node!');
+        throw new DedotError('Block is not pinned and Archive JSON-RPC is not supported by the server/node!');
       }
     }
 

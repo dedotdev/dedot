@@ -55,11 +55,11 @@ describe('DedotClient .at() Method E2E Tests', () => {
         _archive: mockArchive,
         archive: async function () {
           if (!this._archive) {
-            throw new DedotError('Archive is not initialized');
+            throw new DedotError('Archive instance is not initialized');
           }
 
           if (!(await this._archive.supported())) {
-            throw new DedotError('Archive API is not supported by the connected server/node');
+            throw new DedotError('Archive JSON-RPC is not supported by the connected server/node');
           }
 
           return this._archive;
@@ -67,7 +67,9 @@ describe('DedotClient .at() Method E2E Tests', () => {
       };
 
       await expect(mockClient.archive()).rejects.toThrow(DedotError);
-      await expect(mockClient.archive()).rejects.toThrow('Archive API is not supported by the connected server/node');
+      await expect(mockClient.archive()).rejects.toThrow(
+        'Archive JSON-RPC is not supported by the connected server/node',
+      );
     });
 
     it('should have pre-fetched test data available', () => {
