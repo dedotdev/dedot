@@ -581,7 +581,7 @@ export class ChainHead extends JsonRpcGroup<ChainHeadEvent> {
     this.#followResponseQueue.clear();
     this.#retryQueue.clear();
     this.#blockUsage.clear();
-    this.#cache.clear();
+    this.clearCache();
     this.#operationQueue.cancel();
   }
 
@@ -899,5 +899,20 @@ export class ChainHead extends JsonRpcGroup<ChainHeadEvent> {
   #__unsafe__isSmoldot(): boolean {
     // @ts-ignore  a trick internally to check whether a provider is using smoldot connection
     return typeof this.client.provider['chain'] === 'function';
+  }
+
+  /**
+   * Clears the internal cache used for storing query results (both chainHead & archive instances)
+   * This can be useful for memory management or when you want to force fresh data retrieval.
+   *
+   * @example
+   * ```typescript
+   * // Clear all cached results
+   * chainHead.clearCache();
+   * ```
+   */
+  clearCache(): void {
+    this.#cache.clear();
+    this.#archive?.clearCache();
   }
 }
