@@ -12,6 +12,11 @@ import { ChainTx } from './tx.js';
 
 export * from './types.js';
 
+// Chain-specific types
+export type ChainAddress = {{{addressType}}};
+export type ChainSignature = {{{signatureType}}};
+export type ChainRuntimeCall = {{{runtimeCallType}}};
+
 export interface Versioned{{{interfaceName}}}<Rv extends RpcVersion> extends GenericSubstrateApi<Rv> {
   rpc: ChainJsonRpcApis<Rv>;
   consts: ChainConsts<Rv>;
@@ -26,4 +31,10 @@ export interface Versioned{{{interfaceName}}}<Rv extends RpcVersion> extends Gen
 {{interfaceDocs}}export interface {{{interfaceName}}} {
   legacy: Versioned{{{interfaceName}}}<RpcLegacy>;
   v2: Versioned{{{interfaceName}}}<RpcV2>;
+  
+  types: {
+    Address: ChainAddress;
+    Signature: ChainSignature;
+    RuntimeCall: ChainRuntimeCall;
+  };
 }
