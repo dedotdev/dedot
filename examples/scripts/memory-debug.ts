@@ -6,12 +6,12 @@
  * This script connects to Polkadot mainnet and performs various operations
  * on 2000 recent blocks to analyze memory consumption patterns.
  */
-import { $Header, $Extrinsic, $SignedBlock } from '@dedot/codecs';
-import type { SignedBlock } from '@dedot/codecs';
-import { DedotClient, LegacyClient, WsProvider } from 'dedot';
+import { $Header } from '@dedot/codecs';
+import { DedotClient, WsProvider } from 'dedot';
 
-const POLKADOT_RPC = 'wss://rpc.polkadot.io';
-const BLOCKS_TO_PROCESS = 2000;
+// const RPC_ENDPOINT = 'wss://archive.minersunion.ai';
+const RPC_ENDPOINT = 'wss://bittensor-finney.api.onfinality.io/public-ws';
+const BLOCKS_TO_PROCESS = 100_000;
 
 interface MemoryStats {
   blockNumber: number;
@@ -50,7 +50,7 @@ function logMemoryUsage(stats: MemoryStats, index: number, total: number) {
   );
 }
 
-async function processBlock(api: LegacyClient, blockNumber: number, index: number): Promise<MemoryStats> {
+async function processBlock(api: DedotClient, blockNumber: number, index: number): Promise<MemoryStats> {
   try {
     // 1. Get block hash
     const blockHash = await api.rpc.chain_getBlockHash(blockNumber);
@@ -73,17 +73,68 @@ async function processBlock(api: LegacyClient, blockNumber: number, index: numbe
 
     // 5. Query system events
     const events = await apiAtBlock.query.system.events();
+    console.log('Events Size', events.length);
 
-    // 6. Decode each extrinsic
-    const decodedExtrinsics = [];
-    for (const rawExtrinsic of signedBlock.block.extrinsics) {
+    // 6. Decode each extrinsic with events and dispatch results
+    const decodedExtrinsics = signedBlock.block.extrinsics.map((rawExtrinsic, index) => {
       try {
-        const decoded = api.registry.$Extrinsic.tryDecode(rawExtrinsic);
-        decodedExtrinsics.push(decoded);
-      } catch (error) {
-        console.error(`Failed to decode extrinsic in block #${blockNumber}:`, error);
+        const extrinsic = api.registry.$Extrinsic.tryDecode(rawExtrinsic);
+
+        const extrinsicEvents = events
+          .filter(({ phase }) => phase.type === 'ApplyExtrinsic' && phase.value === index)
+          .map(({ event }) => event);
+
+        const dispatchResult = (() => {
+          for (const event of extrinsicEvents) {
+            if (api.events.system.ExtrinsicSuccess.is(event)) {
+              return {
+                isSuccess: true as const,
+                dispatchInfo: event.palletEvent.data.dispatchInfo,
+              };
+            }
+
+            if (api.events.system.ExtrinsicFailed.is(event)) {
+              return {
+                isSuccess: false as const,
+                dispatchInfo: event.palletEvent.data.dispatchInfo,
+                dispatchError: event.palletEvent.data.dispatchError,
+              };
+            }
+          }
+
+          // Some extrinsics (like inherents) might not have success/failure events
+          console.warn(`No success/failure event found for extrinsic ${index} in block #${blockNumber}`);
+          return {
+            isSuccess: undefined,
+            dispatchInfo: undefined,
+          };
+        })();
+
+        return {
+          id: {
+            blockNumber,
+            extrinsicIndex: index,
+          },
+          extrinsic,
+          events: extrinsicEvents,
+          ...dispatchResult,
+        };
+      } catch (error: any) {
+        console.error(`Failed to decode extrinsic ${index} in block #${blockNumber}:`, error);
+        return {
+          id: {
+            blockNumber,
+            extrinsicIndex: index,
+          },
+          extrinsic: null,
+          events: [],
+          isSuccess: undefined,
+          error: error.message,
+        };
       }
-    }
+    });
+
+    console.log('Tx Size', decodedExtrinsics.length);
 
     // Get memory stats after processing
     const stats = getMemoryStats(blockNumber);
@@ -102,7 +153,7 @@ async function main() {
   console.log('🔗 Connecting to Polkadot mainnet...');
   console.log(`📊 Will process ${BLOCKS_TO_PROCESS} recent blocks\n`);
 
-  const api = await LegacyClient.new(new WsProvider(POLKADOT_RPC));
+  const api = await DedotClient.new(new WsProvider(RPC_ENDPOINT));
 
   try {
     // Get initial memory baseline
@@ -135,8 +186,8 @@ async function main() {
         continue;
       }
 
-      // Log detailed stats every 100 blocks
-      if ((i + 1) % 100 === 0) {
+      // Log detailed stats every 50 blocks
+      if ((i + 1) % 50 === 0) {
         const currentMemory = memoryStats[memoryStats.length - 1];
         const memoryGrowth = currentMemory.heapUsed - initialMemory.heapUsed;
         const avgMemoryPerBlock = memoryGrowth / (i + 1);
@@ -145,6 +196,8 @@ async function main() {
         console.log(`  Memory growth: ${formatBytes(memoryGrowth)}`);
         console.log(`  Avg per block: ${formatBytes(avgMemoryPerBlock)}`);
         console.log(`  Time elapsed: ${((Date.now() - startTime) / 1000).toFixed(1)}s\n`);
+        console.log(`  Clearing cache ...`);
+        await api.clearCache();
       }
     }
 

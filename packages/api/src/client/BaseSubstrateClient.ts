@@ -37,7 +37,7 @@ import type {
 
 const SUPPORTED_METADATA_VERSIONS = [16, 15, 14];
 const MetadataApiHash = calcRuntimeApiHash('Metadata'); // 0x37e397fc7c91f5e4
-const API_AT_CACHE_CAPACITY = 128;
+const API_AT_CACHE_CAPACITY = 64;
 const API_AT_CACHE_TTL = 300_000; // 5 minutes
 
 const MESSAGE: string = 'Make sure to call `.connect()` method first before using the API interfaces.';
