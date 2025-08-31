@@ -258,10 +258,11 @@ export abstract class BaseSubstrateClient<
   }
 
   /**
-   * @description Clear local cache
+   * @description Clear local cache and API at-block cache
    */
   async clearCache() {
     await this._localCache?.clear();
+    this._apiAtCache.clear();
   }
 
   protected async doConnect(): Promise<this> {

@@ -200,6 +200,14 @@ export class DedotClient<ChainApi extends VersionedGenericSubstrateApi = Substra
     this._txBroadcaster = undefined;
   }
 
+  /**
+   * @description Clear local cache, API at-block cache, and ChainHead cache
+   */
+  async clearCache() {
+    await super.clearCache();
+    this._chainHead?.clearCache();
+  }
+
   override get query(): ChainApi[RpcV2]['query'] {
     return newProxyChain({
       executor: new StorageQueryExecutorV2(this, this.chainHead),
