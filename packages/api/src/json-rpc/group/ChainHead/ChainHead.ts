@@ -22,6 +22,7 @@ import {
   noop,
   ThrottleQueue,
   waitFor,
+  LRUCache,
 } from '@dedot/utils';
 import type { IJsonRpcClient } from '../../../types.js';
 import { Archive } from '../Archive.js';
@@ -59,6 +60,8 @@ export type ChainHeadEvent =
   | 'bestChainChanged'; // new best chain, a fork happened
 
 export const MIN_FINALIZED_QUEUE_SIZE = 10; // finalized queue size
+const CHAINHEAD_CACHE_CAPACITY = 256;
+const CHAINHEAD_CACHE_TTL = 30_000; // 30 seconds
 
 export class ChainHead extends JsonRpcGroup<ChainHeadEvent> {
   #unsub?: Unsub;
@@ -77,7 +80,7 @@ export class ChainHead extends JsonRpcGroup<ChainHeadEvent> {
   #retryQueue: AsyncQueue;
   #recovering?: Deferred<void>;
   #blockUsage: BlockUsage;
-  #cache: Map<string, any>;
+  #cache: LRUCache;
   #operationQueue: ThrottleQueue;
   /**
    * Archive instance used as fallback when ChainHead blocks are not pinned.
@@ -100,7 +103,7 @@ export class ChainHead extends JsonRpcGroup<ChainHeadEvent> {
     this.#followResponseQueue = new AsyncQueue();
     this.#retryQueue = new AsyncQueue();
     this.#blockUsage = new BlockUsage();
-    this.#cache = new Map();
+    this.#cache = new LRUCache(CHAINHEAD_CACHE_CAPACITY, CHAINHEAD_CACHE_TTL);
     // This helps us to not accidentally putting too much stress on the JSON-RPC server, especially smoldot/light-client
     this.#operationQueue = new ThrottleQueue(this.#__unsafe__isSmoldot() ? 25 : 250);
   }
@@ -341,8 +344,9 @@ export class ChainHead extends JsonRpcGroup<ChainHeadEvent> {
           if (!this.isPinned(hash)) return;
           delete this.#pinnedBlocks[hash];
 
-          // clear cache
-          Array.from(this.#cache.keys())
+          // Clear cache entries related to the pruned block
+          // Filter and remove only cache entries for this specific block
+          this.#cache.keys()
             .filter((key) => key.startsWith(`${hash}::`))
             .forEach((key) => this.#cache.delete(key));
         });
@@ -670,8 +674,9 @@ export class ChainHead extends JsonRpcGroup<ChainHeadEvent> {
     const operation = async (): Promise<Array<HexString>> => {
       const atHash = this.#ensurePinnedHash(at);
       const cacheKey = `${atHash}::body`;
-      if (this.#cache.has(cacheKey)) {
-        return this.#cache.get(cacheKey);
+      const cached = this.#cache.get<any>(cacheKey);
+      if (cached) {
+        return cached;
       }
 
       const bodyOperation = async (): Promise<Array<HexString>> => {
@@ -716,8 +721,9 @@ export class ChainHead extends JsonRpcGroup<ChainHeadEvent> {
     const operation = async (): Promise<HexString> => {
       const atHash = this.#ensurePinnedHash(at);
       const cacheKey = `${atHash}::call::${func}::${params}`;
-      if (this.#cache.has(cacheKey)) {
-        return this.#cache.get(cacheKey);
+      const cached = this.#cache.get<any>(cacheKey);
+      if (cached) {
+        return cached;
       }
 
       const callOperation = async (): Promise<HexString> => {
@@ -756,8 +762,9 @@ export class ChainHead extends JsonRpcGroup<ChainHeadEvent> {
       const hash = this.#ensurePinnedHash(at);
       const cacheKey = `${hash}::header`;
 
-      if (this.#cache.has(cacheKey)) {
-        return this.#cache.get(cacheKey);
+      const cached = this.#cache.get<any>(cacheKey);
+      if (cached) {
+        return cached;
       }
 
       const resp = await this.#getHeader(hash);
@@ -786,8 +793,9 @@ export class ChainHead extends JsonRpcGroup<ChainHeadEvent> {
       try {
         // JSON.stringify(items) might get big, we probably should do a twox hashing in such case
         const cacheKey = `${hash}::storage::${JSON.stringify(items)}::${childTrie ?? null}`;
-        if (this.#cache.has(cacheKey)) {
-          return this.#cache.get(cacheKey);
+        const cached = this.#cache.get<Array<StorageResult>>(cacheKey);
+        if (cached) {
+          return cached;
         }
 
         this.#blockUsage.use(hash);
