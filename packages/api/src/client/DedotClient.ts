@@ -264,6 +264,7 @@ export class DedotClient<ChainApi extends VersionedGenericSubstrateApi = Substra
         try {
           // Fetch runtime version via Archive
           const runtimeRaw = await this._archive.call('Core_version', '0x', hash);
+          assert(runtimeRaw, 'Runtime Version Not Found');
           targetVersion = this.toSubstrateRuntimeVersion($RuntimeVersion.tryDecode(runtimeRaw));
         } catch (error) {
           throw new DedotError(`Unable to fetch runtime version for block ${hash}: ${error}`);
