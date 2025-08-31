@@ -259,9 +259,13 @@ export abstract class BaseSubstrateClient<
 
   /**
    * @description Clear local cache and API at-block cache
+   * @param keepMetadataCache Keep the metadata cache, only clear other caches.
    */
-  async clearCache() {
-    await this._localCache?.clear();
+  async clearCache(keepMetadataCache: boolean = false): Promise<void> {
+    if (!keepMetadataCache) {
+      await this._localCache?.clear();
+    }
+
     this._apiAtCache.clear();
   }
 

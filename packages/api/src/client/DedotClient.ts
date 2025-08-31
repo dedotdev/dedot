@@ -202,9 +202,10 @@ export class DedotClient<ChainApi extends VersionedGenericSubstrateApi = Substra
 
   /**
    * @description Clear local cache, API at-block cache, and ChainHead cache
+   * @param keepMetadataCache Keep the metadata cache, only clear other caches.
    */
-  async clearCache() {
-    await super.clearCache();
+  async clearCache(keepMetadataCache: boolean = false) {
+    await super.clearCache(keepMetadataCache);
     this._chainHead?.clearCache();
   }
 
