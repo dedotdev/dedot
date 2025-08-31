@@ -6,9 +6,12 @@ import {
   MethodResult,
   PaginatedStorageQuery,
 } from '@dedot/types/json-rpc';
-import { DedotError, HexString } from '@dedot/utils';
+import { DedotError, HexString, LRUCache } from '@dedot/utils';
 import { IJsonRpcClient } from '../../types.js';
 import { JsonRpcGroup, JsonRpcGroupOptions } from './JsonRpcGroup.js';
+
+const ARCHIVE_CACHE_CAPACITY = 256;
+const ARCHIVE_CACHE_TTL = 60_000; // 1 minutes - archive data is immutable
 
 /**
  * @name Archive
@@ -20,11 +23,11 @@ import { JsonRpcGroup, JsonRpcGroupOptions } from './JsonRpcGroup.js';
  */
 export class Archive extends JsonRpcGroup {
   #genesisHash?: HexString;
-  #cache: Map<string, any>;
+  #cache: LRUCache;
 
   constructor(client: IJsonRpcClient, options?: Partial<JsonRpcGroupOptions>) {
     super(client, { prefix: 'archive', supportedVersions: ['unstable', 'v1'], ...options });
-    this.#cache = new Map();
+    this.#cache = new LRUCache(ARCHIVE_CACHE_CAPACITY, ARCHIVE_CACHE_TTL);
   }
 
   /**
@@ -48,8 +51,9 @@ export class Archive extends JsonRpcGroup {
     const blockHash = hash || (await this.finalizedHash());
     const cacheKey = `${blockHash}::body`;
 
-    if (this.#cache.has(cacheKey)) {
-      return this.#cache.get(cacheKey);
+    const cached = this.#cache.get<Option<Array<HexString>>>(cacheKey);
+    if (cached !== null) {
+      return cached;
     }
 
     const result = await this.send('body', blockHash);
@@ -91,8 +95,9 @@ export class Archive extends JsonRpcGroup {
     const blockHash = hash || (await this.finalizedHash());
     const cacheKey = `${blockHash}::header`;
 
-    if (this.#cache.has(cacheKey)) {
-      return this.#cache.get(cacheKey);
+    const cached = this.#cache.get<Option<HexString>>(cacheKey);
+    if (cached !== null) {
+      return cached;
     }
 
     const result = await this.send('header', blockHash);
@@ -163,8 +168,9 @@ export class Archive extends JsonRpcGroup {
     const blockHash = hash || (await this.finalizedHash());
     const cacheKey = `${blockHash}::call::${func}::${params}`;
 
-    if (this.#cache.has(cacheKey)) {
-      return this.#cache.get(cacheKey);
+    const cached = this.#cache.get<HexString>(cacheKey);
+    if (cached !== null) {
+      return cached;
     }
 
     const result: MethodResult = await this.send('call', blockHash, func, params);
@@ -226,8 +232,9 @@ export class Archive extends JsonRpcGroup {
       const cacheKey = `${blockHash}::storage::${JSON.stringify(items)}::${childTrie ?? null}`;
 
       // Check cache
-      if (this.#cache.has(cacheKey)) {
-        return resolve(this.#cache.get(cacheKey));
+      const cached = this.#cache.get<ArchiveStorageResult>(cacheKey);
+      if (cached !== null) {
+        return resolve(cached);
       }
 
       this.#storageSubscription(

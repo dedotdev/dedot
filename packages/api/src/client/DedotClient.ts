@@ -38,7 +38,6 @@ export class DedotClient<ChainApi extends VersionedGenericSubstrateApi = Substra
   protected _chainSpec?: ChainSpec;
   protected _archive?: Archive;
   protected _txBroadcaster?: TxBroadcaster;
-  #apiAtCache: Record<BlockHash, ISubstrateClientAt<any>> = {};
 
   /**
    * Use factory methods (`create`, `new`) to create `DedotClient` instances.
@@ -199,7 +198,6 @@ export class DedotClient<ChainApi extends VersionedGenericSubstrateApi = Substra
     this._chainSpec = undefined;
     this._archive = undefined;
     this._txBroadcaster = undefined;
-    this.#apiAtCache = {};
   }
 
   override get query(): ChainApi[RpcV2]['query'] {
@@ -237,7 +235,8 @@ export class DedotClient<ChainApi extends VersionedGenericSubstrateApi = Substra
   async at<ChainApiAt extends GenericSubstrateApi = ChainApi[RpcV2]>(
     hash: BlockHash,
   ): Promise<ISubstrateClientAt<ChainApiAt>> {
-    if (this.#apiAtCache[hash]) return this.#apiAtCache[hash];
+    const cached = this._apiAtCache.get<ISubstrateClientAt<ChainApiAt>>(hash);
+    if (cached) return cached;
 
     let targetVersion: SubstrateRuntimeVersion;
 
@@ -290,7 +289,7 @@ export class DedotClient<ChainApi extends VersionedGenericSubstrateApi = Substra
     api.call = newProxyChain({ executor: new RuntimeApiExecutorV2(api, this.chainHead) }) as ChainApiAt['call'];
     api.view = newProxyChain({ executor: new ViewFunctionExecutorV2(api, this.chainHead) }) as ChainApiAt['view'];
 
-    this.#apiAtCache[hash] = api;
+    this._apiAtCache.set(hash, api);
 
     return api;
   }
