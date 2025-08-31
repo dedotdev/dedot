@@ -275,4 +275,103 @@ describe('BaseSubstrateClient', () => {
       expect(consoleSpy.info).not.toHaveBeenCalled();
     });
   });
+
+  describe('clearCache', () => {
+    let client: MockBaseSubstrateClient;
+    let mockLocalCache: MockStorage;
+
+    beforeEach(() => {
+      client = new MockBaseSubstrateClient();
+      mockLocalCache = new MockStorage();
+      
+      // Set up mocks
+      (client as any)._localCache = mockLocalCache;
+    });
+
+    afterEach(() => {
+      vi.restoreAllMocks();
+    });
+
+    it('should clear both _localCache and _apiAtCache when keepMetadataCache=false (default)', async () => {
+      // Spy on cache clear methods
+      const localCacheClearSpy = vi.spyOn(mockLocalCache, 'clear');
+      const apiAtCacheClearSpy = vi.spyOn((client as any)._apiAtCache, 'clear');
+
+      // Call clearCache with default parameter (false)
+      await client.clearCache();
+
+      // Verify both caches were cleared
+      expect(localCacheClearSpy).toHaveBeenCalledTimes(1);
+      expect(apiAtCacheClearSpy).toHaveBeenCalledTimes(1);
+    });
+
+    it('should clear both _localCache and _apiAtCache when keepMetadataCache=false explicitly', async () => {
+      // Spy on cache clear methods
+      const localCacheClearSpy = vi.spyOn(mockLocalCache, 'clear');
+      const apiAtCacheClearSpy = vi.spyOn((client as any)._apiAtCache, 'clear');
+
+      // Call clearCache with explicit false parameter
+      await client.clearCache(false);
+
+      // Verify both caches were cleared
+      expect(localCacheClearSpy).toHaveBeenCalledTimes(1);
+      expect(apiAtCacheClearSpy).toHaveBeenCalledTimes(1);
+    });
+
+    it('should only clear _apiAtCache when keepMetadataCache=true', async () => {
+      // Spy on cache clear methods
+      const localCacheClearSpy = vi.spyOn(mockLocalCache, 'clear');
+      const apiAtCacheClearSpy = vi.spyOn((client as any)._apiAtCache, 'clear');
+
+      // Call clearCache with keepMetadataCache=true
+      await client.clearCache(true);
+
+      // Verify only _apiAtCache was cleared, not _localCache
+      expect(localCacheClearSpy).not.toHaveBeenCalled();
+      expect(apiAtCacheClearSpy).toHaveBeenCalledTimes(1);
+    });
+
+    it('should not throw error when _localCache is undefined', async () => {
+      // Set _localCache to undefined
+      (client as any)._localCache = undefined;
+
+      // Spy on _apiAtCache clear method
+      const apiAtCacheClearSpy = vi.spyOn((client as any)._apiAtCache, 'clear');
+
+      // Call clearCache - should not throw
+      await expect(client.clearCache()).resolves.toBeUndefined();
+      await expect(client.clearCache(true)).resolves.toBeUndefined();
+
+      // Verify _apiAtCache was still cleared both times
+      expect(apiAtCacheClearSpy).toHaveBeenCalledTimes(2);
+    });
+
+    it('should handle _localCache.clear() throwing an error', async () => {
+      // Make _localCache.clear() throw an error
+      vi.spyOn(mockLocalCache, 'clear').mockRejectedValue(new Error('Cache clear failed'));
+
+      // Spy on _apiAtCache clear method
+      const apiAtCacheClearSpy = vi.spyOn((client as any)._apiAtCache, 'clear');
+
+      // Call clearCache - should propagate the error
+      await expect(client.clearCache(false)).rejects.toThrow('Cache clear failed');
+
+      // Verify _apiAtCache was not called due to the error
+      expect(apiAtCacheClearSpy).not.toHaveBeenCalled();
+    });
+
+    it('should still work when keepMetadataCache=true even if _localCache would fail', async () => {
+      // Make _localCache.clear() throw an error (but it shouldn't be called)
+      vi.spyOn(mockLocalCache, 'clear').mockRejectedValue(new Error('Cache clear failed'));
+
+      // Spy on _apiAtCache clear method  
+      const apiAtCacheClearSpy = vi.spyOn((client as any)._apiAtCache, 'clear');
+
+      // Call clearCache with keepMetadataCache=true - should not throw
+      await expect(client.clearCache(true)).resolves.toBeUndefined();
+
+      // Verify _apiAtCache was cleared
+      expect(apiAtCacheClearSpy).toHaveBeenCalledTimes(1);
+    });
+  });
 });

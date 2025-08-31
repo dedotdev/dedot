@@ -1542,4 +1542,166 @@ describe('DedotClient', () => {
       });
     });
   });
+
+  describe('clearCache', () => {
+    let api: DedotClient;
+    let provider: MockProvider;
+    let simulator: ReturnType<typeof newChainHeadSimulator>;
+
+    beforeEach(async () => {
+      provider = new MockProvider();
+      simulator = newChainHeadSimulator({ provider });
+      simulator.notify(simulator.initializedEvent);
+      simulator.notify(simulator.nextNewBlock());
+
+      let counter = 0;
+      provider.setRpcRequests({
+        chainSpec_v1_chainName: () => 'MockedChain',
+        chainHead_v1_call: () => {
+          counter += 1;
+          return { result: 'started', operationId: `call0${counter}` } as MethodResponse;
+        },
+      });
+
+      simulator.notify(
+        {
+          operationId: 'call01',
+          event: 'operationCallDone',
+          output: '0x0c100000000f0000000e000000',
+        } as OperationCallDone,
+        5,
+      );
+
+      simulator.notify(
+        {
+          operationId: 'call02',
+          event: 'operationCallDone',
+          output: prefixedMetadataV15,
+        } as OperationCallDone,
+        10,
+      );
+
+      api = await DedotClient.new({ provider });
+    });
+
+    afterEach(async () => {
+      // Restore mocks first to avoid issues with disconnect
+      vi.restoreAllMocks();
+      
+      if (api && api.status !== 'disconnected') {
+        try {
+          await api.disconnect();
+        } catch (error) {
+          // Ignore disconnect errors in tests, they're expected in some cases
+          console.log('Ignoring expected disconnect error in test cleanup:', error);
+        }
+      }
+    });
+
+    it('should call parent clearCache and chainHead clearCache when keepMetadataCache=false (default)', async () => {
+      // Spy on parent method and chainHead clearCache
+      const parentClearCacheSpy = vi.spyOn(Object.getPrototypeOf(Object.getPrototypeOf(api)), 'clearCache');
+      const chainHeadClearCacheSpy = vi.spyOn(api.chainHead, 'clearCache');
+
+      // Call clearCache with default parameter (false)
+      await api.clearCache();
+
+      // Verify parent method was called with false
+      expect(parentClearCacheSpy).toHaveBeenCalledTimes(1);
+      expect(parentClearCacheSpy).toHaveBeenCalledWith(false);
+
+      // Verify chainHead clearCache was called
+      expect(chainHeadClearCacheSpy).toHaveBeenCalledTimes(1);
+    });
+
+    it('should call parent clearCache and chainHead clearCache when keepMetadataCache=false explicitly', async () => {
+      // Spy on parent method and chainHead clearCache
+      const parentClearCacheSpy = vi.spyOn(Object.getPrototypeOf(Object.getPrototypeOf(api)), 'clearCache');
+      const chainHeadClearCacheSpy = vi.spyOn(api.chainHead, 'clearCache');
+
+      // Call clearCache with explicit false parameter
+      await api.clearCache(false);
+
+      // Verify parent method was called with false
+      expect(parentClearCacheSpy).toHaveBeenCalledTimes(1);
+      expect(parentClearCacheSpy).toHaveBeenCalledWith(false);
+
+      // Verify chainHead clearCache was called
+      expect(chainHeadClearCacheSpy).toHaveBeenCalledTimes(1);
+    });
+
+    it('should call parent clearCache and chainHead clearCache when keepMetadataCache=true', async () => {
+      // Spy on parent method and chainHead clearCache
+      const parentClearCacheSpy = vi.spyOn(Object.getPrototypeOf(Object.getPrototypeOf(api)), 'clearCache');
+      const chainHeadClearCacheSpy = vi.spyOn(api.chainHead, 'clearCache');
+
+      // Call clearCache with keepMetadataCache=true
+      await api.clearCache(true);
+
+      // Verify parent method was called with true
+      expect(parentClearCacheSpy).toHaveBeenCalledTimes(1);
+      expect(parentClearCacheSpy).toHaveBeenCalledWith(true);
+
+      // Verify chainHead clearCache was still called
+      expect(chainHeadClearCacheSpy).toHaveBeenCalledTimes(1);
+    });
+
+    it('should not throw error when chainHead is undefined', async () => {
+      // Spy on parent method first before disconnecting
+      const parentClearCacheSpy = vi.spyOn(Object.getPrototypeOf(Object.getPrototypeOf(api)), 'clearCache');
+
+      // Disconnect first to avoid cleanup issues
+      await api.disconnect();
+
+      // Set chainHead to undefined after disconnection
+      (api as any)._chainHead = undefined;
+
+      // Call clearCache - should not throw
+      await expect(api.clearCache()).resolves.toBeUndefined();
+      await expect(api.clearCache(true)).resolves.toBeUndefined();
+
+      // Verify parent method was called both times
+      expect(parentClearCacheSpy).toHaveBeenCalledTimes(2);
+      expect(parentClearCacheSpy).toHaveBeenNthCalledWith(1, false);
+      expect(parentClearCacheSpy).toHaveBeenNthCalledWith(2, true);
+    });
+
+    it('should propagate parent clearCache errors', async () => {
+      // Make parent clearCache throw an error
+      const parentClearCacheSpy = vi.spyOn(Object.getPrototypeOf(Object.getPrototypeOf(api)), 'clearCache');
+      parentClearCacheSpy.mockRejectedValue(new Error('Parent cache clear failed'));
+
+      // Spy on chainHead clearCache
+      const chainHeadClearCacheSpy = vi.spyOn(api.chainHead, 'clearCache');
+
+      // Call clearCache - should propagate the error
+      await expect(api.clearCache()).rejects.toThrow('Parent cache clear failed');
+
+      // Verify parent method was called
+      expect(parentClearCacheSpy).toHaveBeenCalledTimes(1);
+      
+      // Verify chainHead clearCache was not called due to the error
+      expect(chainHeadClearCacheSpy).not.toHaveBeenCalled();
+    });
+
+    it('should propagate chainHead clearCache errors after clearing parent cache', async () => {
+      // Spy on parent method
+      const parentClearCacheSpy = vi.spyOn(Object.getPrototypeOf(Object.getPrototypeOf(api)), 'clearCache');
+
+      // Make chainHead clearCache throw an error
+      const chainHeadClearCacheSpy = vi.spyOn(api.chainHead, 'clearCache');
+      chainHeadClearCacheSpy.mockImplementation(() => {
+        throw new Error('ChainHead cache clear failed');
+      });
+
+      // Call clearCache - the error from chainHead should propagate
+      await expect(api.clearCache()).rejects.toThrow('ChainHead cache clear failed');
+
+      // Verify parent method was called first
+      expect(parentClearCacheSpy).toHaveBeenCalledTimes(1);
+
+      // Verify chainHead clearCache was called and failed
+      expect(chainHeadClearCacheSpy).toHaveBeenCalledTimes(1);
+    });
+  });
 });
