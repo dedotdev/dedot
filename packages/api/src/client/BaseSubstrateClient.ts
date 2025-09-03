@@ -12,7 +12,14 @@ import {
   Unsub,
   VersionedGenericSubstrateApi,
 } from '@dedot/types';
-import { calcRuntimeApiHash, deferred, Deferred, ensurePresence as _ensurePresence, u8aToHex } from '@dedot/utils';
+import {
+  calcRuntimeApiHash,
+  deferred,
+  Deferred,
+  ensurePresence as _ensurePresence,
+  u8aToHex,
+  LRUCache,
+} from '@dedot/utils';
 import type { SubstrateApi } from '../chaintypes/index.js';
 import { ConstantExecutor, ErrorExecutor, EventExecutor } from '../executor/index.js';
 import { isJsonRpcProvider, JsonRpcClient } from '../json-rpc/index.js';
@@ -30,6 +37,8 @@ import type {
 
 const SUPPORTED_METADATA_VERSIONS = [16, 15, 14];
 const MetadataApiHash = calcRuntimeApiHash('Metadata'); // 0x37e397fc7c91f5e4
+const API_AT_CACHE_CAPACITY = 64;
+const API_AT_CACHE_TTL = 300_000; // 5 minutes
 
 const MESSAGE: string = 'Make sure to call `.connect()` method first before using the API interfaces.';
 
@@ -59,6 +68,7 @@ export abstract class BaseSubstrateClient<
 
   protected _localCache?: IStorage;
   protected _runtimeUpgrading?: Deferred<void>;
+  protected _apiAtCache: LRUCache;
 
   protected constructor(
     public rpcVersion: RpcVersion,
@@ -66,6 +76,7 @@ export abstract class BaseSubstrateClient<
   ) {
     super(options);
     this._options = this.normalizeOptions(options);
+    this._apiAtCache = new LRUCache(API_AT_CACHE_CAPACITY, API_AT_CACHE_TTL);
   }
 
   /// --- Internal logics
@@ -243,13 +254,19 @@ export abstract class BaseSubstrateClient<
     this._genesisHash = undefined;
     this._runtimeVersion = undefined;
     this._localCache = undefined;
+    this._apiAtCache.clear();
   }
 
   /**
-   * @description Clear local cache
+   * @description Clear local cache and API at-block cache
+   * @param keepMetadataCache Keep the metadata cache, only clear other caches.
    */
-  async clearCache() {
-    await this._localCache?.clear();
+  async clearCache(keepMetadataCache: boolean = false): Promise<void> {
+    if (!keepMetadataCache) {
+      await this._localCache?.clear();
+    }
+
+    this._apiAtCache.clear();
   }
 
   protected async doConnect(): Promise<this> {

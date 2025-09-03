@@ -1,8 +1,8 @@
-import { $H256, BlockHash, PortableRegistry } from '@dedot/codecs';
+import { $H256, $RuntimeVersion, BlockHash, PortableRegistry } from '@dedot/codecs';
 import type { JsonRpcProvider } from '@dedot/providers';
 import { u32 } from '@dedot/shape';
 import { GenericSubstrateApi, RpcV2, RpcVersion, VersionedGenericSubstrateApi } from '@dedot/types';
-import { assert, concatU8a, HexString, noop, twox64Concat, u8aToHex, xxhashAsU8a } from '@dedot/utils';
+import { assert, concatU8a, HexString, noop, twox64Concat, u8aToHex, xxhashAsU8a, DedotError } from '@dedot/utils';
 import type { SubstrateApi } from '../chaintypes/index.js';
 import {
   ConstantExecutor,
@@ -13,7 +13,7 @@ import {
   ViewFunctionExecutorV2,
   TxExecutorV2,
 } from '../executor/index.js';
-import { ChainHead, ChainSpec, PinnedBlock, Transaction, TransactionWatch } from '../json-rpc/index.js';
+import { Archive, ChainHead, ChainSpec, PinnedBlock, Transaction, TransactionWatch } from '../json-rpc/index.js';
 import { newProxyChain } from '../proxychain.js';
 import { BaseStorageQuery, NewStorageQuery } from '../storage/index.js';
 import type {
@@ -36,8 +36,8 @@ export class DedotClient<ChainApi extends VersionedGenericSubstrateApi = Substra
 {
   protected _chainHead?: ChainHead;
   protected _chainSpec?: ChainSpec;
+  protected _archive?: Archive;
   protected _txBroadcaster?: TxBroadcaster;
-  #apiAtCache: Record<BlockHash, ISubstrateClientAt<any>> = {};
 
   /**
    * Use factory methods (`create`, `new`) to create `DedotClient` instances.
@@ -78,6 +78,13 @@ export class DedotClient<ChainApi extends VersionedGenericSubstrateApi = Substra
     return ensurePresence(this._chainHead);
   }
 
+  async archive() {
+    assert(this._archive, 'Archive instance is not initialized');
+    assert(await this._archive.supported(), 'Archive JSON-RPC is not supported by the connected server');
+
+    return this._archive;
+  }
+
   get txBroadcaster() {
     this.chainHead; // Ensure chain head is initialized
     assert(this._txBroadcaster, 'JSON-RPC method to broadcast transactions is not supported by the server/node.');
@@ -100,6 +107,15 @@ export class DedotClient<ChainApi extends VersionedGenericSubstrateApi = Substra
 
     this._chainHead = new ChainHead(this, { rpcMethods });
     this._chainSpec = new ChainSpec(this, { rpcMethods });
+
+    // Always initialize Archive, but only set up fallback if supported
+    this._archive = new Archive(this, { rpcMethods });
+
+    // Set up ChainHead with Archive fallback only if Archive is supported
+    if (await this._archive.supported()) {
+      this._chainHead.withArchive(this._archive);
+    }
+
     this._txBroadcaster = await this.#initializeTxBroadcaster(rpcMethods);
 
     // Fetching node information
@@ -180,8 +196,17 @@ export class DedotClient<ChainApi extends VersionedGenericSubstrateApi = Substra
     super.cleanUp();
     this._chainHead = undefined;
     this._chainSpec = undefined;
+    this._archive = undefined;
     this._txBroadcaster = undefined;
-    this.#apiAtCache = {};
+  }
+
+  /**
+   * @description Clear local cache, API at-block cache, and ChainHead cache
+   * @param keepMetadataCache Keep the metadata cache, only clear other caches.
+   */
+  async clearCache(keepMetadataCache: boolean = false) {
+    await super.clearCache(keepMetadataCache);
+    this._chainHead?.clearCache();
   }
 
   override get query(): ChainApi[RpcV2]['query'] {
@@ -212,22 +237,41 @@ export class DedotClient<ChainApi extends VersionedGenericSubstrateApi = Substra
 
   /**
    * Get a new API instance at a specific block hash
-   * For now, this only supports pinned block hashes from the chain head
+   * Supports both pinned blocks (via ChainHead) and historical blocks (via Archive fallback)
    *
    * @param hash
    */
   async at<ChainApiAt extends GenericSubstrateApi = ChainApi[RpcV2]>(
     hash: BlockHash,
   ): Promise<ISubstrateClientAt<ChainApiAt>> {
-    if (this.#apiAtCache[hash]) return this.#apiAtCache[hash];
+    const cached = this._apiAtCache.get<ISubstrateClientAt<ChainApiAt>>(hash);
+    if (cached) return cached;
 
+    let targetVersion: SubstrateRuntimeVersion;
+
+    // Try to get block info from ChainHead first (for pinned blocks)
     const targetBlock = this.chainHead.findBlock(hash);
-    assert(targetBlock, 'Block is not pinned!');
-
-    let targetVersion = targetBlock.runtime as SubstrateRuntimeVersion;
-    if (!targetVersion) {
-      // fallback to fetching on-chain runtime if we can't find it in the block
-      targetVersion = this.toSubstrateRuntimeVersion(await this.callAt(hash).core.version());
+    if (targetBlock) {
+      targetVersion = targetBlock.runtime as SubstrateRuntimeVersion;
+      if (!targetVersion) {
+        // fallback to fetching on-chain runtime if we can't find it in the block
+        targetVersion = this.toSubstrateRuntimeVersion(await this.callAt(hash).core.version());
+      }
+    } else {
+      // Block not pinned, try via Archive fallback if supported
+      if (this._archive && (await this._archive.supported())) {
+        console.warn(`Block ${hash} is not pinned, using Archive for historical access`);
+        try {
+          // Fetch runtime version via Archive
+          const runtimeRaw = await this._archive.call('Core_version', '0x', hash);
+          assert(runtimeRaw, 'Runtime Version Not Found');
+          targetVersion = this.toSubstrateRuntimeVersion($RuntimeVersion.tryDecode(runtimeRaw));
+        } catch (error) {
+          throw new DedotError(`Unable to fetch runtime version for block ${hash}: ${error}`);
+        }
+      } else {
+        throw new DedotError('Block is not pinned and Archive JSON-RPC is not supported by the server/node!');
+      }
     }
 
     let metadata = this.metadata;
@@ -255,7 +299,7 @@ export class DedotClient<ChainApi extends VersionedGenericSubstrateApi = Substra
     api.call = newProxyChain({ executor: new RuntimeApiExecutorV2(api, this.chainHead) }) as ChainApiAt['call'];
     api.view = newProxyChain({ executor: new ViewFunctionExecutorV2(api, this.chainHead) }) as ChainApiAt['view'];
 
-    this.#apiAtCache[hash] = api;
+    this._apiAtCache.set(hash, api);
 
     return api;
   }

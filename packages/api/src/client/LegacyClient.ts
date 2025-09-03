@@ -60,7 +60,6 @@ export class LegacyClient<ChainApi extends VersionedGenericSubstrateApi = Substr
   extends BaseSubstrateClient<RpcLegacy, ChainApi> {
   #runtimeSubscriptionUnsub?: Unsub;
   #healthTimer?: ReturnType<typeof setInterval>;
-  #apiAtCache: Record<BlockHash, ISubstrateClientAt<any>> = {};
 
   /**
    * Use factory methods (`create`, `new`) to create `Dedot` instances.
@@ -120,7 +119,6 @@ export class LegacyClient<ChainApi extends VersionedGenericSubstrateApi = Substr
 
   protected override cleanUp() {
     super.cleanUp();
-    this.#apiAtCache = {};
     this.#healthTimer = undefined;
     this.#runtimeSubscriptionUnsub = undefined;
   }
@@ -280,7 +278,8 @@ export class LegacyClient<ChainApi extends VersionedGenericSubstrateApi = Substr
   async at<ChainApiAt extends GenericSubstrateApi = ChainApi[RpcLegacy]>(
     hash: BlockHash,
   ): Promise<ISubstrateClientAt<ChainApiAt>> {
-    if (this.#apiAtCache[hash]) return this.#apiAtCache[hash];
+    const cached = this._apiAtCache.get<ISubstrateClientAt<ChainApiAt>>(hash);
+    if (cached) return cached;
 
     const targetVersion = await this.#getRuntimeVersion(hash);
 
@@ -308,7 +307,7 @@ export class LegacyClient<ChainApi extends VersionedGenericSubstrateApi = Substr
     api.events = newProxyChain({ executor: new EventExecutor(api) }) as ChainApiAt['events'];
     api.errors = newProxyChain({ executor: new ErrorExecutor(api) }) as ChainApiAt['errors'];
 
-    this.#apiAtCache[hash] = api;
+    this._apiAtCache.set(hash, api);
 
     return api;
   }
