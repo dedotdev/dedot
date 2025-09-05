@@ -391,7 +391,7 @@ __metadata:
     "@dedot/utils": "workspace:*"
     "@polkadot/x-ws": "npm:^13.5.2"
     mock-socket: "npm:^9.3.1"
-    smoldot: "npm:^2.0.36"
+    smoldot: "npm:^2.0.38"
   languageName: unknown
   linkType: soft
 
@@ -418,7 +418,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@dedot/smoldot@workspace:packages/smoldot"
   dependencies:
-    smoldot: "npm:^2.0.36"
+    smoldot: "npm:^2.0.38"
   languageName: unknown
   linkType: soft
 
@@ -3453,7 +3453,7 @@ __metadata:
     "@dedot/smoldot": "workspace:*"
     "@dedot/types": "workspace:*"
     "@dedot/utils": "workspace:*"
-    smoldot: "npm:^2.0.36"
+    smoldot: "npm:^2.0.38"
   bin:
     dedot: ./bin/dedot.mjs
     djs: ./bin/dedot.mjs
@@ -8042,12 +8042,12 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"smoldot@npm:^2.0.36":
-  version: 2.0.36
-  resolution: "smoldot@npm:2.0.36"
+"smoldot@npm:^2.0.38":
+  version: 2.0.38
+  resolution: "smoldot@npm:2.0.38"
   dependencies:
     ws: "npm:^8.8.1"
-  checksum: 10c0/b2fff51da5b1e07180e11e13a7aec8404d66a1f69cba4d8e3d5c366d7c1512707d34100b52e80879d9314e5dd3e283e6f88eddd675ca63e2d30ac1b87a145775
+  checksum: 10c0/6d80dd9faf5efe9339dda3d803094afca2d7d256be498f327a1237efaa07df5cf76ed2b7527b5e2f96c2b9cb8074e1cbc61250933e3bb721bb3737e1ae2a1e2e
   languageName: node
   linkType: hard
 

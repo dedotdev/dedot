@@ -32,7 +32,7 @@
     "@dedot/smoldot": "workspace:*",
     "@dedot/types": "workspace:*",
     "@dedot/utils": "workspace:*",
-    "smoldot": "^2.0.36"
+    "smoldot": "^2.0.38"
   },
   "exports": {
     ".": {
