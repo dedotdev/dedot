@@ -17,7 +17,7 @@
     "clean": "rm -rf ./dist && rm -rf ./tsconfig.tsbuildinfo ./tsconfig.build.tsbuildinfo"
   },
   "dependencies": {
-    "smoldot": "^2.0.36"
+    "smoldot": "^2.0.38"
   },
   "exports": {
     ".": {
