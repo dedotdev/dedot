@@ -389,7 +389,7 @@ __metadata:
   resolution: "@dedot/providers@workspace:packages/providers"
   dependencies:
     "@dedot/utils": "workspace:*"
-    "@polkadot/x-ws": "npm:^13.5.2"
+    "@polkadot/x-ws": "npm:^13.5.6"
     mock-socket: "npm:^9.3.1"
     smoldot: "npm:^2.0.36"
   languageName: unknown
@@ -1650,21 +1650,21 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@polkadot/x-global@npm:13.5.2":
-  version: 13.5.2
-  resolution: "@polkadot/x-global@npm:13.5.2"
-  dependencies:
-    tslib: "npm:^2.8.0"
-  checksum: 10c0/821069dd63dc72d9c0f7c2df74470565635c89342a3ac0455334b007d977c539382918140f416ca79546692ca5b7201fa6d9010ce8a0a345cc7d9b851d160e58
-  languageName: node
-  linkType: hard
-
 "@polkadot/x-global@npm:13.5.4":
   version: 13.5.4
   resolution: "@polkadot/x-global@npm:13.5.4"
   dependencies:
     tslib: "npm:^2.8.0"
   checksum: 10c0/5c3a58a143201217e29bc067195bff8695ce93ba662fac444688d2cc5f717464405c24edbded187927119dd1cf98f29974180579bc80a864e561b1b87a37d5ba
+  languageName: node
+  linkType: hard
+
+"@polkadot/x-global@npm:13.5.6":
+  version: 13.5.6
+  resolution: "@polkadot/x-global@npm:13.5.6"
+  dependencies:
+    tslib: "npm:^2.8.0"
+  checksum: 10c0/725832ea3b9d1fb39d131f6c9d4c558ba0fb35b41f1510396600316eeb190bb4faacf2467b3ed3d60363372e1361acde5988879f468e5ba403db3338e017a94d
   languageName: node
   linkType: hard
 
@@ -1701,14 +1701,14 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@polkadot/x-ws@npm:^13.5.2":
-  version: 13.5.2
-  resolution: "@polkadot/x-ws@npm:13.5.2"
+"@polkadot/x-ws@npm:^13.5.6":
+  version: 13.5.6
+  resolution: "@polkadot/x-ws@npm:13.5.6"
   dependencies:
-    "@polkadot/x-global": "npm:13.5.2"
+    "@polkadot/x-global": "npm:13.5.6"
     tslib: "npm:^2.8.0"
     ws: "npm:^8.18.0"
-  checksum: 10c0/d87dfab657ffa3e30cdd6862346d918f400a66c1de1be921439cc16939f3718c2d11fc2bd559b55ab712f6fed58ad466d033cd25df3b845198acbe3311ce52bb
+  checksum: 10c0/cb9d46e185f76eada2f28e9f077ca7efacf8cc394e5afe7a4024e886ab6b96bdb423c3a5144267829fa5a0bc409992cea0c1a843f9542dbf30341b37438eff9e
   languageName: node
   linkType: hard
 
