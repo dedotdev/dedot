@@ -34,7 +34,6 @@ describe('ChainHead', () => {
   let providerSubscribe: MockInstance;
   let simulator: ReturnType<typeof newChainHeadSimulator>;
   let initialRuntime: ChainHeadRuntimeVersion;
-  let consoleWarnSpy: MockInstance;
 
   const notify = (subscriptionId: string, data: Error | any, timeout = 0) => {
     setTimeout(() => {
@@ -53,11 +52,6 @@ describe('ChainHead', () => {
 
     providerSend = vi.spyOn(provider, 'send');
     providerSubscribe = vi.spyOn(provider, 'subscribe');
-    consoleWarnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
-  });
-
-  afterEach(() => {
-    consoleWarnSpy.mockRestore();
   });
 
   const notifyInitializedEvent = () => {
@@ -1572,9 +1566,6 @@ describe('ChainHead', () => {
         // Verify
         expect(result).toEqual(['0xabcd1234']);
         expect(mockArchive.body).toHaveBeenCalledWith(mockBlockHash);
-        expect(consoleWarnSpy).toHaveBeenCalledWith(
-          `Block ${mockBlockHash} not pinned in ChainHead, falling back to Archive`,
-        );
       });
 
       it('should throw error when archive body returns undefined', async () => {
@@ -1606,7 +1597,6 @@ describe('ChainHead', () => {
         // Execute & Verify
         await expect(chainHead.body(mockBlockHash)).rejects.toThrow(ChainHeadBlockPrunedError);
         expect(mockArchive.body).not.toHaveBeenCalled();
-        expect(consoleWarnSpy).not.toHaveBeenCalled();
       });
 
       it('should throw original error when no archive attached', async () => {
@@ -1619,7 +1609,6 @@ describe('ChainHead', () => {
 
         // Execute & Verify
         await expect(chainHead.body(mockBlockHash)).rejects.toThrow(ChainHeadBlockNotPinnedError);
-        expect(consoleWarnSpy).not.toHaveBeenCalled();
       });
     });
 
@@ -1641,9 +1630,6 @@ describe('ChainHead', () => {
         // Verify
         expect(result).toBe('0xfeedbeef');
         expect(mockArchive.call).toHaveBeenCalledWith('Core_version', '0xabcd', mockBlockHash);
-        expect(consoleWarnSpy).toHaveBeenCalledWith(
-          `Block ${mockBlockHash} not pinned in ChainHead, falling back to Archive`,
-        );
       });
 
       it('should not fallback for other errors', async () => {
@@ -1679,9 +1665,6 @@ describe('ChainHead', () => {
         // Verify
         expect(result).toBe('0xheader123');
         expect(mockArchive.header).toHaveBeenCalledWith(mockBlockHash);
-        expect(consoleWarnSpy).toHaveBeenCalledWith(
-          `Block ${mockBlockHash} not pinned in ChainHead, falling back to Archive`,
-        );
       });
 
       it('should not fallback for other errors', async () => {
@@ -1729,9 +1712,6 @@ describe('ChainHead', () => {
           mockStorageQueries, // Should convert StorageQuery[] to PaginatedStorageQuery[]
           '0xchildtrie',
           mockBlockHash,
-        );
-        expect(consoleWarnSpy).toHaveBeenCalledWith(
-          `Block ${mockBlockHash} not pinned in ChainHead, falling back to Archive`,
         );
       });
 
@@ -1782,11 +1762,6 @@ describe('ChainHead', () => {
 
         // Execute
         await chainHead.body(mockBlockHash);
-
-        // Verify
-        expect(consoleWarnSpy).toHaveBeenCalledWith(
-          `Block ${mockBlockHash} not pinned in ChainHead, falling back to Archive`,
-        );
       });
 
       it('should log actual hash when no hash provided', async () => {
@@ -1802,11 +1777,6 @@ describe('ChainHead', () => {
 
         // Execute
         await chainHead.body(); // No hash parameter
-
-        // Verify - should log the actual bestHash, not "latest"
-        expect(consoleWarnSpy).toHaveBeenCalledWith(
-          expect.stringMatching(/^Block 0x[0-9a-fA-F]+ not pinned in ChainHead, falling back to Archive$/),
-        );
       });
     });
 
@@ -1824,7 +1794,6 @@ describe('ChainHead', () => {
 
         // Execute & Verify
         await expect(chainHead.body(mockBlockHash)).rejects.toThrow('Archive failed');
-        expect(consoleWarnSpy).toHaveBeenCalled();
       });
 
       it('should throw original error when no Archive attached', async () => {
@@ -1836,7 +1805,6 @@ describe('ChainHead', () => {
 
         // Execute & Verify
         await expect(chainHead.body(mockBlockHash)).rejects.toThrow(ChainHeadBlockNotPinnedError);
-        expect(consoleWarnSpy).not.toHaveBeenCalled();
       });
     });
   });

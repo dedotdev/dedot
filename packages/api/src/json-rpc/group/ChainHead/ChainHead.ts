@@ -506,7 +506,6 @@ export class ChainHead extends JsonRpcGroup<ChainHeadEvent> {
     } catch (error) {
       if (error instanceof ChainHeadBlockNotPinnedError && this.#archive) {
         const errorHash = error.hash;
-        console.warn(`Block ${errorHash} not pinned in ChainHead, falling back to Archive`);
         return await fallback(this.#archive, errorHash);
       }
 

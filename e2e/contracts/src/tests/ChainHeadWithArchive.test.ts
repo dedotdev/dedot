@@ -16,7 +16,6 @@ describe('ChainHeadWithArchive', () => {
   let finalizedHash: HexString;
   let bestHash: HexString;
   let storageEntry: QueryableStorage;
-  let consoleWarnSpy: any;
 
   beforeAll(async () => {
     // Initialize Archive using reviveClient from global setup
@@ -39,13 +38,9 @@ describe('ChainHeadWithArchive', () => {
     const metadata = $.Option($.lenPrefixed($Metadata)).tryDecode(rawMetadata)!;
     const registry = new PortableRegistry(metadata.latest);
     storageEntry = new QueryableStorage(registry, 'System', 'Account');
-
-    // Setup console spy
-    consoleWarnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
   }, 120_000);
 
   afterEach(() => {
-    consoleWarnSpy.mockClear();
     // Clear all mocks after each test
     vi.clearAllMocks();
   });
@@ -84,11 +79,6 @@ describe('ChainHeadWithArchive', () => {
       expect(headerResult).toBeDefined();
       const header = $Header.tryDecode(headerResult);
       expect(header.number).toBe(0);
-
-      // Should trigger fallback warning with correct hash
-      expect(consoleWarnSpy).toHaveBeenCalledWith(
-        expect.stringMatching(new RegExp(`^Block ${genesisHash} not pinned in ChainHead, falling back to Archive$`)),
-      );
     });
 
     it('should provide consistent results between ChainHead and Archive', async () => {
@@ -111,11 +101,6 @@ describe('ChainHeadWithArchive', () => {
       expect(headerResult).toBeDefined();
       const header = $Header.tryDecode(headerResult);
       expect(Number(header.number)).toBe(0);
-
-      // Should trigger fallback warning since blocks aren't pinned in test env
-      expect(consoleWarnSpy).toHaveBeenCalledWith(
-        expect.stringMatching(new RegExp(`^Block ${genesisHash} not pinned in ChainHead, falling back to Archive$`)),
-      );
     });
   });
 
@@ -126,9 +111,6 @@ describe('ChainHeadWithArchive', () => {
       const bodyResult = await chainHead.body(genesisHash);
 
       expect(Array.isArray(bodyResult)).toBe(true);
-      expect(consoleWarnSpy).toHaveBeenCalledWith(
-        expect.stringMatching(new RegExp(`^Block ${genesisHash} not pinned in ChainHead, falling back to Archive$`)),
-      );
     });
 
     it('should demonstrate that archive fallback works for body when blocks are not pinned', async () => {
@@ -138,11 +120,6 @@ describe('ChainHeadWithArchive', () => {
       const bodyResult = await chainHead.body(genesisHash);
 
       expect(Array.isArray(bodyResult)).toBe(true);
-
-      // Should trigger fallback warning since blocks aren't pinned in test env
-      expect(consoleWarnSpy).toHaveBeenCalledWith(
-        expect.stringMatching(new RegExp(`^Block ${genesisHash} not pinned in ChainHead, falling back to Archive$`)),
-      );
     });
 
     it('should throw ChainHeadOperationError when Archive returns undefined', async () => {
@@ -176,10 +153,6 @@ describe('ChainHeadWithArchive', () => {
       expect(versionResult).toBeDefined();
       const runtime = $RuntimeVersion.tryDecode(versionResult);
       expect(runtime.specVersion).toBeDefined();
-
-      expect(consoleWarnSpy).toHaveBeenCalledWith(
-        expect.stringMatching(new RegExp(`^Block ${genesisHash} not pinned in ChainHead, falling back to Archive$`)),
-      );
     });
 
     it('should demonstrate that archive fallback works for calls when blocks are not pinned', async () => {
@@ -191,11 +164,6 @@ describe('ChainHeadWithArchive', () => {
       expect(versionResult).toBeDefined();
       const runtime = $RuntimeVersion.tryDecode(versionResult);
       expect(runtime.specVersion).toBeDefined();
-
-      // Should trigger fallback warning since blocks aren't pinned in test env
-      expect(consoleWarnSpy).toHaveBeenCalledWith(
-        expect.stringMatching(new RegExp(`^Block ${genesisHash} not pinned in ChainHead, falling back to Archive$`)),
-      );
     });
 
     it('should handle metadata calls consistently', async () => {
@@ -216,9 +184,6 @@ describe('ChainHeadWithArchive', () => {
       const results = await chainHead.storage([{ type: 'value', key: aliceKey }], null, genesisHash);
 
       expect(Array.isArray(results)).toBe(true);
-      expect(consoleWarnSpy).toHaveBeenCalledWith(
-        expect.stringMatching(new RegExp(`^Block ${genesisHash} not pinned in ChainHead, falling back to Archive$`)),
-      );
     });
 
     it('should demonstrate that archive fallback works for storage when blocks are not pinned', async () => {
@@ -229,11 +194,6 @@ describe('ChainHeadWithArchive', () => {
       const results = await chainHead.storage([{ type: 'value', key: aliceKey }], null, genesisHash);
 
       expect(Array.isArray(results)).toBe(true);
-
-      // Should trigger fallback warning since blocks aren't pinned in test env
-      expect(consoleWarnSpy).toHaveBeenCalledWith(
-        expect.stringMatching(new RegExp(`^Block ${genesisHash} not pinned in ChainHead, falling back to Archive$`)),
-      );
     });
 
     it('should handle multiple account queries via fallback', async () => {
@@ -314,9 +274,6 @@ describe('ChainHeadWithArchive', () => {
 
       // Verify archive was called with the exact hash from the error
       expect(archiveHeaderSpy).toHaveBeenCalledWith(genesisHash);
-      expect(consoleWarnSpy).toHaveBeenCalledWith(
-        expect.stringMatching(new RegExp(`^Block ${genesisHash} not pinned in ChainHead, falling back to Archive$`)),
-      );
     });
 
     it('should work with different hashes in error vs parameter', async () => {
@@ -329,9 +286,6 @@ describe('ChainHeadWithArchive', () => {
       await chainHead.header(finalizedHash);
 
       expect(archiveHeaderSpy).toHaveBeenCalledWith(finalizedHash);
-      expect(consoleWarnSpy).toHaveBeenCalledWith(
-        expect.stringMatching(new RegExp(`^Block ${finalizedHash} not pinned in ChainHead, falling back to Archive$`)),
-      );
     });
   });
 
@@ -341,21 +295,14 @@ describe('ChainHeadWithArchive', () => {
       vi.spyOn(chainHead, 'isPinned').mockReturnValue(false);
       const unpinnedHeader = await chainHead.header(genesisHash);
       expect(unpinnedHeader).toBeDefined();
-      expect(consoleWarnSpy).toHaveBeenCalledWith(
-        expect.stringMatching(new RegExp(`^Block ${genesisHash} not pinned in ChainHead, falling back to Archive$`)),
-      );
 
-      // Clear the mock and console spy
-      consoleWarnSpy.mockClear();
+      // Clear all mocks
       vi.clearAllMocks();
 
       // Test with another block hash (should also fallback in test env)
       console.log('Testing that different block also uses fallback in test environment');
       const anyHeader = await chainHead.header(finalizedHash);
       expect(anyHeader).toBeDefined();
-      expect(consoleWarnSpy).toHaveBeenCalledWith(
-        expect.stringMatching(new RegExp(`^Block ${finalizedHash} not pinned in ChainHead, falling back to Archive$`)),
-      );
     });
 
     it('should maintain consistent behavior across all methods with fallback', async () => {
@@ -377,12 +324,6 @@ describe('ChainHeadWithArchive', () => {
       expect(Array.isArray(bodyResult)).toBe(true);
       expect(callResult).toBeDefined();
       expect(Array.isArray(storageResult)).toBe(true);
-
-      // All should log fallback warnings
-      expect(consoleWarnSpy).toHaveBeenCalledTimes(4);
-      consoleWarnSpy.mock.calls.forEach((call: any) => {
-        expect(call[0]).toMatch(new RegExp(`^Block ${testHash} not pinned in ChainHead, falling back to Archive$`));
-      });
     });
   });
 });

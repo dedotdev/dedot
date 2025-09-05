@@ -11,7 +11,6 @@ describe('DedotClient .at() Method E2E Tests', () => {
   let finalizedHash: HexString;
   let bestHash: HexString;
   let finalizedHeight: number;
-  let consoleWarnSpy: any;
 
   beforeAll(async () => {
     // Use reviveClient from global setup (connected to INK_NODE_ENDPOINT)
@@ -23,13 +22,9 @@ describe('DedotClient .at() Method E2E Tests', () => {
     finalizedHeight = await archive.finalizedHeight();
     finalizedHash = await archive.finalizedHash();
     bestHash = await client.chainHead.bestHash();
-
-    // Setup console spy
-    consoleWarnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
   }, 120_000);
 
   afterEach(() => {
-    consoleWarnSpy.mockClear();
     vi.clearAllMocks();
   });
 
@@ -99,11 +94,6 @@ describe('DedotClient .at() Method E2E Tests', () => {
       expect(genesisApi.atBlockHash).toBe(genesisHash);
       expect(genesisApi.runtimeVersion).toBeDefined();
       expect(genesisApi.metadata).toBeDefined();
-
-      // Should trigger Archive fallback warning
-      expect(consoleWarnSpy).toHaveBeenCalledWith(
-        expect.stringMatching(new RegExp(`^Block ${genesisHash} is not pinned, using Archive for historical access$`)),
-      );
     });
 
     it('should access finalized block API (pinned or via Archive)', async () => {
@@ -403,11 +393,7 @@ describe('DedotClient .at() Method E2E Tests', () => {
       console.log('Archive integration verified successfully');
       console.log(`Archive finalized height: ${archiveFinalizedHeight}`);
 
-      // Log current warnings (may or may not have Archive fallback warnings)
-      console.log(`Console warnings captured: ${consoleWarnSpy.mock.calls.length}`);
-      consoleWarnSpy.mock.calls.forEach((call: any, index: number) => {
-        console.log(`Warning ${index + 1}: ${call[0]}`);
-      });
+      // Archive fallback warnings are no longer logged
     });
   });
 });

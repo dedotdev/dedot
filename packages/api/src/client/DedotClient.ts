@@ -260,7 +260,6 @@ export class DedotClient<ChainApi extends VersionedGenericSubstrateApi = Substra
     } else {
       // Block not pinned, try via Archive fallback if supported
       if (this._archive && (await this._archive.supported())) {
-        console.warn(`Block ${hash} is not pinned, using Archive for historical access`);
         try {
           // Fetch runtime version via Archive
           const runtimeRaw = await this._archive.call('Core_version', '0x', hash);
