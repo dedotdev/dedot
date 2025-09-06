@@ -213,6 +213,14 @@ export type GenericChainEvents<
   Data extends any = any,
 > = Record<Pallet, Record<EventName, GenericPalletEvent<Rv, Pallet, EventName, Data>>>;
 
+export interface GenericChainKnownTypes {
+  Address: any;
+  Signature: any;
+  RuntimeCall: any;
+  Extra: any[];
+  [method: string]: any;
+}
+
 export interface GenericSubstrateApi<Rv extends RpcVersion = RpcVersion> {
   rpc: GenericJsonRpcApis<Rv>;
   consts: GenericChainConsts<Rv>;
@@ -222,6 +230,8 @@ export interface GenericSubstrateApi<Rv extends RpcVersion = RpcVersion> {
   call: GenericRuntimeApis<Rv>;
   view: GenericChainViewFunctions<Rv>;
   tx: GenericChainTx<Rv>;
+
+  types: GenericChainKnownTypes;
 }
 
 export interface VersionedGenericSubstrateApi {

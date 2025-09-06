@@ -1,14 +1,16 @@
 import { EnumOptions, Tuple } from '@dedot/shape';
+import * as $ from '@dedot/shape';
+import { GenericSubstrateApi } from '@dedot/types';
 import { assert, blake2_256, HashFn, HexString, hexToU8a, isObject, isU8a, u8aToHex } from '@dedot/utils';
 import type { DispatchError, ModuleError } from '../codecs/known/index.js';
-import { $Extrinsic, DEFAULT_EXTRINSIC_VERSION } from '../extrinsic/index.js';
+import { $Extrinsic, Extrinsic } from '../extrinsic/index.js';
 import type { MetadataLatest, PalletErrorMetadataLatest, PortableType, TypeId } from '../metadata/index.js';
 import { TypeRegistry } from './TypeRegistry.js';
 
 /**
  * Codec registry for portable types from metadata
  */
-export class PortableRegistry extends TypeRegistry {
+export class PortableRegistry<ChainApi extends GenericSubstrateApi = GenericSubstrateApi> extends TypeRegistry {
   readonly #metadata: MetadataLatest;
   #hasher: HashFn;
 
@@ -19,7 +21,7 @@ export class PortableRegistry extends TypeRegistry {
   }
 
   get $Extrinsic() {
-    return $Extrinsic(this);
+    return $Extrinsic<ChainApi>(this);
   }
 
   // default to version 0 for now

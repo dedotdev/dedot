@@ -117,7 +117,7 @@ export interface IGenericSubstrateClient<ChainApi extends GenericSubstrateApi = 
   genesisHash: Hash;
   runtimeVersion: SubstrateRuntimeVersion;
   metadata: Metadata;
-  registry: PortableRegistry;
+  registry: PortableRegistry<ChainApi>;
 
   rpc: ChainApi['rpc'];
   consts: ChainApi['consts'];

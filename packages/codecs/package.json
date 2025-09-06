@@ -14,6 +14,7 @@
   "sideEffects": false,
   "dependencies": {
     "@dedot/shape": "workspace:*",
+    "@dedot/types": "workspace:*",
     "@dedot/utils": "workspace:*"
   },
   "scripts": {
