@@ -14,8 +14,8 @@
   "sideEffects": false,
   "dependencies": {
     "@dedot/shape": "workspace:*",
-    "@dedot/utils": "workspace:*",
-    "@dedot/types": "workspace:*"
+    "@dedot/types": "workspace:*",
+    "@dedot/utils": "workspace:*"
   },
   "scripts": {
     "build": "tsc --project tsconfig.build.json && tsc --project tsconfig.build.cjs.json",
