@@ -56,7 +56,7 @@ export abstract class BaseSubmittableExtrinsic extends Extrinsic implements ISub
 
     const txU8a = this.toU8a();
 
-    const api = this.client as ISubstrateClient<SubstrateApi[RpcVersion]>;
+    const api = this.client as unknown as ISubstrateClient<SubstrateApi[RpcVersion]>;
     return api.call.transactionPaymentApi.queryInfo(txU8a, txU8a.length);
   }
 

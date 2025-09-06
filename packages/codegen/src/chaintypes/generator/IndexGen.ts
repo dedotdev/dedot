@@ -16,7 +16,7 @@ export class IndexGen {
 
     // Clear cache and setup type imports
     this.typesGen.clearCache();
-    this.typesGen.typeImports.addKnownType('GenericSubstrateApi', 'RpcLegacy', 'RpcV2', 'RpcVersion');
+    this.typesGen.typeImports.addKnownType('GenericSubstrateApi', 'GenericChainTypes', 'RpcLegacy', 'RpcV2', 'RpcVersion');
 
     // Extract type IDs from metadata.extrinsic
     const { callTypeId, addressTypeId, signatureTypeId, signedExtensions } = this.typesGen.metadata.extrinsic;
