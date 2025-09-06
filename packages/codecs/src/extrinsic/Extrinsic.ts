@@ -44,7 +44,8 @@ export const $Extrinsic = <ChainApi extends GenericSubstrateApi = GenericSubstra
   Extrinsic<
     ChainApi['types']['Address'], // --
     ChainApi['types']['RuntimeCall'],
-    ChainApi['types']['Signature']
+    ChainApi['types']['Signature'],
+    ChainApi['types']['Extra']
   >
 > => {
   assert(registry, 'PortableRegistry is required to compose $Extrinsic codec');

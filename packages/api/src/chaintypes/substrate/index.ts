@@ -9,7 +9,20 @@ import { ChainJsonRpcApis } from './json-rpc.js';
 import { ChainStorage } from './query.js';
 import { RuntimeApis } from './runtime.js';
 import { ChainTx } from './tx.js';
-import type { KitchensinkRuntimeRuntimeCall, SpRuntimeMultiSignature } from './types.js';
+import type {
+  FrameMetadataHashExtensionCheckMetadataHash,
+  FrameSystemExtensionsCheckGenesis,
+  FrameSystemExtensionsCheckMortality,
+  FrameSystemExtensionsCheckNonZeroSender,
+  FrameSystemExtensionsCheckNonce,
+  FrameSystemExtensionsCheckSpecVersion,
+  FrameSystemExtensionsCheckTxVersion,
+  FrameSystemExtensionsCheckWeight,
+  FrameSystemExtensionsWeightReclaim,
+  KitchensinkRuntimeRuntimeCall,
+  PalletAssetConversionTxPaymentChargeAssetTxPayment,
+  SpRuntimeMultiSignature,
+} from './types.js';
 import { ChainViewFunctions } from './view-functions.js';
 
 export * from './types.js';
@@ -18,6 +31,18 @@ export * from './types.js';
 export type ChainAddress = MultiAddress;
 export type ChainSignature = SpRuntimeMultiSignature;
 export type ChainRuntimeCall = KitchensinkRuntimeRuntimeCall;
+export type ChainExtra = [
+  FrameSystemExtensionsCheckNonZeroSender,
+  FrameSystemExtensionsCheckSpecVersion,
+  FrameSystemExtensionsCheckTxVersion,
+  FrameSystemExtensionsCheckGenesis,
+  FrameSystemExtensionsCheckMortality,
+  FrameSystemExtensionsCheckNonce,
+  FrameSystemExtensionsCheckWeight,
+  PalletAssetConversionTxPaymentChargeAssetTxPayment,
+  FrameMetadataHashExtensionCheckMetadataHash,
+  FrameSystemExtensionsWeightReclaim,
+];
 
 export interface VersionedSubstrateApi<Rv extends RpcVersion> extends GenericSubstrateApi<Rv> {
   rpc: ChainJsonRpcApis<Rv>;
@@ -33,6 +58,7 @@ export interface VersionedSubstrateApi<Rv extends RpcVersion> extends GenericSub
     Address: ChainAddress;
     Signature: ChainSignature;
     RuntimeCall: ChainRuntimeCall;
+    Extra: ChainExtra;
   };
 }
 

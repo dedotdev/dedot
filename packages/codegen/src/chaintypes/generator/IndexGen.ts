@@ -19,15 +19,24 @@ export class IndexGen {
     this.typesGen.typeImports.addKnownType('GenericSubstrateApi', 'RpcLegacy', 'RpcV2', 'RpcVersion');
 
     // Extract type IDs from metadata.extrinsic
-    const { callTypeId, addressTypeId, signatureTypeId } = this.typesGen.metadata.extrinsic;
+    const { callTypeId, addressTypeId, signatureTypeId, signedExtensions } = this.typesGen.metadata.extrinsic;
 
     // Generate proper TypeScript types using typeOut format (0, true)
     const runtimeCallType = this.typesGen.generateType(callTypeId, 1, true);
     const addressType = this.typesGen.generateType(addressTypeId, 1, true);
     const signatureType = this.typesGen.generateType(signatureTypeId, 1, true);
 
+    // Generate Extra type from signed extensions
+    let extraType = 'any[]'; // Default fallback
+    if (signedExtensions && signedExtensions.length > 0) {
+      const signedExtensionTypes = signedExtensions.map(({ typeId }) => 
+        this.typesGen.generateType(typeId, 1, true)
+      );
+      extraType = `[${signedExtensionTypes.join(', ')}]`;
+    }
+
     // Add generated types to imports
-    const generatedTypes = [runtimeCallType, addressType, signatureType];
+    const generatedTypes = [runtimeCallType, addressType, signatureType, extraType];
     this.typesGen.addTypeImport(generatedTypes);
 
     const importTypes = this.typesGen.typeImports.toImports({ useSubPaths });
@@ -46,6 +55,7 @@ export class IndexGen {
         addressType,
         signatureType,
         runtimeCallType,
+        extraType,
       }),
     );
   }

@@ -216,6 +216,7 @@ export type GenericChainEvents<
 export type GenericAddress = any;
 export type GenericSignature = any;
 export type GenericRuntimeCall = any;
+export type GenericExtra = any[];
 
 export interface GenericSubstrateApi<Rv extends RpcVersion = RpcVersion> {
   rpc: GenericJsonRpcApis<Rv>;
@@ -231,6 +232,7 @@ export interface GenericSubstrateApi<Rv extends RpcVersion = RpcVersion> {
     Address: GenericAddress;
     Signature: GenericSignature;
     RuntimeCall: GenericRuntimeCall;
+    Extra: GenericExtra;
   };
 }
 

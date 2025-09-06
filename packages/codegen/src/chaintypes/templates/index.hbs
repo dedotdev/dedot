@@ -16,6 +16,7 @@ export * from './types.js';
 export type ChainAddress = {{{addressType}}};
 export type ChainSignature = {{{signatureType}}};
 export type ChainRuntimeCall = {{{runtimeCallType}}};
+export type ChainExtra = {{{extraType}}};
 
 export interface Versioned{{{interfaceName}}}<Rv extends RpcVersion> extends GenericSubstrateApi<Rv> {
   rpc: ChainJsonRpcApis<Rv>;
@@ -31,6 +32,7 @@ export interface Versioned{{{interfaceName}}}<Rv extends RpcVersion> extends Gen
     Address: ChainAddress;
     Signature: ChainSignature;
     RuntimeCall: ChainRuntimeCall;
+    Extra: ChainExtra;
   };
 }
 
