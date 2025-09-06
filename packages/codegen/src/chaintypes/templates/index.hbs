@@ -26,15 +26,15 @@ export interface Versioned{{{interfaceName}}}<Rv extends RpcVersion> extends Gen
   call: RuntimeApis<Rv>;
   view: ChainViewFunctions<Rv>;
   tx: ChainTx<Rv>;
-}
-
-{{interfaceDocs}}export interface {{{interfaceName}}} {
-  legacy: Versioned{{{interfaceName}}}<RpcLegacy>;
-  v2: Versioned{{{interfaceName}}}<RpcV2>;
   
   types: {
     Address: ChainAddress;
     Signature: ChainSignature;
     RuntimeCall: ChainRuntimeCall;
   };
+}
+
+{{interfaceDocs}}export interface {{{interfaceName}}} {
+  legacy: Versioned{{{interfaceName}}}<RpcLegacy>;
+  v2: Versioned{{{interfaceName}}}<RpcV2>;
 }

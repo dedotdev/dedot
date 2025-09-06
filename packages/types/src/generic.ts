@@ -226,11 +226,11 @@ export interface GenericSubstrateApi<Rv extends RpcVersion = RpcVersion> {
   call: GenericRuntimeApis<Rv>;
   view: GenericChainViewFunctions<Rv>;
   tx: GenericChainTx<Rv>;
-
+  
   types: {
     Address: GenericAddress;
-    RuntimeCall: GenericRuntimeCall;
     Signature: GenericSignature;
+    RuntimeCall: GenericRuntimeCall;
   };
 }
 

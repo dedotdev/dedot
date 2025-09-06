@@ -28,6 +28,12 @@ export interface VersionedSubstrateApi<Rv extends RpcVersion> extends GenericSub
   call: RuntimeApis<Rv>;
   view: ChainViewFunctions<Rv>;
   tx: ChainTx<Rv>;
+
+  types: {
+    Address: ChainAddress;
+    Signature: ChainSignature;
+    RuntimeCall: ChainRuntimeCall;
+  };
 }
 
 /**
@@ -37,10 +43,4 @@ export interface VersionedSubstrateApi<Rv extends RpcVersion> extends GenericSub
 export interface SubstrateApi {
   legacy: VersionedSubstrateApi<RpcLegacy>;
   v2: VersionedSubstrateApi<RpcV2>;
-
-  types: {
-    Address: ChainAddress;
-    Signature: ChainSignature;
-    RuntimeCall: ChainRuntimeCall;
-  };
 }

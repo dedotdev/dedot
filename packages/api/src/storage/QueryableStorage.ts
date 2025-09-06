@@ -29,7 +29,7 @@ export class QueryableStorage {
   readonly pallet: PalletDefLatest;
   readonly storageEntry: StorageEntryLatest;
   constructor(
-    readonly registry: PortableRegistry,
+    readonly registry: PortableRegistry<any>,
     readonly palletName: string,
     readonly storageItem: string,
   ) {
