@@ -1,13 +1,11 @@
+import { DispatchError, ModuleError, StorageKey } from '../codecs/index.js';
 import {
-  DispatchError,
-  ModuleError,
   PalletErrorMetadataLatest,
   PalletEventMetadataLatest,
   PalletStorageEntryMetadataLatest,
   PalletTxMetadataLatest,
   PalletViewFunctionMetadataLatest,
-  StorageKey,
-} from '@dedot/codecs';
+} from '../metadata/index.js';
 import { IEventRecord } from './event.js';
 import { RuntimeApiMethodSpec } from './runtime.js';
 
@@ -213,6 +211,14 @@ export type GenericChainEvents<
   Data extends any = any,
 > = Record<Pallet, Record<EventName, GenericPalletEvent<Rv, Pallet, EventName, Data>>>;
 
+export interface GenericChainKnownTypes {
+  Address: any;
+  Signature: any;
+  RuntimeCall: any;
+  Extra: any[];
+  [method: string]: any;
+}
+
 export interface GenericSubstrateApi<Rv extends RpcVersion = RpcVersion> {
   rpc: GenericJsonRpcApis<Rv>;
   consts: GenericChainConsts<Rv>;
@@ -222,6 +228,8 @@ export interface GenericSubstrateApi<Rv extends RpcVersion = RpcVersion> {
   call: GenericRuntimeApis<Rv>;
   view: GenericChainViewFunctions<Rv>;
   tx: GenericChainTx<Rv>;
+
+  types: GenericChainKnownTypes;
 }
 
 export interface VersionedGenericSubstrateApi {

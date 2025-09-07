@@ -1,4 +1,3 @@
-import { ChainHeadEvent } from '@dedot/api/json-rpc';
 import { BlockHash, Hash, Metadata, PortableRegistry } from '@dedot/codecs';
 import type { ConnectionStatus, JsonRpcProvider, ProviderEvent } from '@dedot/providers';
 import type { AnyShape } from '@dedot/shape';
@@ -17,6 +16,7 @@ import type {
 } from '@dedot/types';
 import type { HashFn, HexString, IEventEmitter } from '@dedot/utils';
 import type { AnySignedExtension } from './extrinsic/index.js';
+import type { ChainHeadEvent } from './json-rpc/index.js';
 
 export type MetadataKey = `RAW_META/${string}`;
 export type SubscribeMethod = string;
@@ -117,7 +117,7 @@ export interface IGenericSubstrateClient<ChainApi extends GenericSubstrateApi = 
   genesisHash: Hash;
   runtimeVersion: SubstrateRuntimeVersion;
   metadata: Metadata;
-  registry: PortableRegistry;
+  registry: PortableRegistry<ChainApi>;
 
   rpc: ChainApi['rpc'];
   consts: ChainApi['consts'];

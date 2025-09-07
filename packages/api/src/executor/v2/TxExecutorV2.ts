@@ -11,12 +11,12 @@ import { TxExecutor } from '../TxExecutor.js';
 export class TxExecutorV2<
   ChainApi extends VersionedGenericSubstrateApi = VersionedGenericSubstrateApi,
 > extends TxExecutor<ChainApi[RpcVersion]> {
-  constructor(api: DedotClient<ChainApi>) {
-    assert(api.rpcVersion === 'v2', 'Only supports JSON-RPC v2');
-    super(api);
+  constructor(readonly client: DedotClient<ChainApi>) {
+    assert(client.rpcVersion === 'v2', 'Only supports JSON-RPC v2');
+    super(client);
   }
 
   protected override createExtrinsic(call: IRuntimeTxCall): any {
-    return new SubmittableExtrinsicV2(this.client as DedotClient, call);
+    return new SubmittableExtrinsicV2(this.client, call);
   }
 }

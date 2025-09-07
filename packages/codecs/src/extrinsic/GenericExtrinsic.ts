@@ -77,7 +77,7 @@ export class GenericExtrinsic<Address = any, Call = any, Signature = any, Extra 
   #extensions?: VersionedExtensions<Extra>;
 
   constructor(
-    public registry: PortableRegistry,
+    public registry: PortableRegistry<any>,
     public call: Call,
     preamble?: ExtrinsicSignatureV4<Address, Signature, Extra> | Preamble<Address, Signature, Extra>,
   ) {

@@ -1,6 +1,7 @@
 import * as $ from '@dedot/shape';
 import { assert, DedotError, ensurePresence } from '@dedot/utils';
 import type { PortableRegistry } from '../registry/PortableRegistry.js';
+import { GenericSubstrateApi } from '../types/index.js';
 import {
   $ExtrinsicVersion,
   EXTRINSIC_FORMAT_VERSION_V5,
@@ -21,7 +22,9 @@ export class Extrinsic<A = any, C = any, S = any, E = any> extends GenericExtrin
 export interface ExtrinsicSignature<A = any, S = any, E = any> extends ExtrinsicSignatureV4<A, S, E> {}
 export const DEFAULT_EXTRINSIC_VERSION = 4;
 
-const $ExtrinsicSignature = (registry: PortableRegistry): $.Shape<ExtrinsicSignature> => {
+const $ExtrinsicSignature = <ChainApi extends GenericSubstrateApi = GenericSubstrateApi>(
+  registry: PortableRegistry<ChainApi>,
+): $.Shape<ExtrinsicSignature> => {
   const { addressTypeId, signatureTypeId } = registry.metadata!.extrinsic;
 
   const $Address = registry.findCodec(addressTypeId) as $.Shape<any>;
@@ -35,12 +38,21 @@ const $ExtrinsicSignature = (registry: PortableRegistry): $.Shape<ExtrinsicSigna
   }) as $.Shape<ExtrinsicSignature>;
 };
 
-export const $Extrinsic = (registry: PortableRegistry): $.Shape<Extrinsic> => {
+export const $Extrinsic = <ChainApi extends GenericSubstrateApi = GenericSubstrateApi>(
+  registry: PortableRegistry<ChainApi>,
+): $.Shape<
+  Extrinsic<
+    ChainApi['types']['Address'], // --
+    ChainApi['types']['RuntimeCall'],
+    ChainApi['types']['Signature'],
+    ChainApi['types']['Extra']
+  >
+> => {
   assert(registry, 'PortableRegistry is required to compose $Extrinsic codec');
 
   const { callTypeId } = registry.metadata!.extrinsic;
   const $RuntimeCall = registry.findCodec(callTypeId) as $.Shape<any>;
-  const $Signature = $ExtrinsicSignature(registry);
+  const $Signature = $ExtrinsicSignature<ChainApi>(registry);
 
   const staticSize =
     $ExtrinsicVersion.staticSize +

@@ -1,7 +1,6 @@
 import { BlockHash, StorageData, StorageKey } from '@dedot/codecs';
-import type { Callback, RpcLegacy, Unsub, VersionedGenericSubstrateApi } from '@dedot/types';
+import type { Callback, Unsub } from '@dedot/types';
 import type { StorageChangeSet } from '@dedot/types/json-rpc';
-import type { SubstrateApi } from '../chaintypes/index.js';
 import { LegacyClient } from '../client/LegacyClient.js';
 import { BaseStorageQuery } from './BaseStorageQuery.js';
 
@@ -17,9 +16,11 @@ import { BaseStorageQuery } from './BaseStorageQuery.js';
  * - Subscriptions using state_subscribeStorage
  * - Efficient change tracking for subscriptions
  */
-export class LegacyStorageQuery<
-  ChainApi extends VersionedGenericSubstrateApi = SubstrateApi, // prettier-end-here
-> extends BaseStorageQuery<RpcLegacy, ChainApi, LegacyClient<ChainApi>> {
+export class LegacyStorageQuery extends BaseStorageQuery {
+  constructor(protected client: LegacyClient<any>) {
+    super(client);
+  }
+
   /**
    * Query multiple storage items in a single call using state_queryStorageAt
    *

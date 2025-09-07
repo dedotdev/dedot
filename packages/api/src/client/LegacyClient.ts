@@ -57,7 +57,8 @@ const KEEP_ALIVE_INTERVAL = 10_000; // in ms
  * ```
  */
 export class LegacyClient<ChainApi extends VersionedGenericSubstrateApi = SubstrateApi> // prettier-end-here
-  extends BaseSubstrateClient<RpcLegacy, ChainApi> {
+  extends BaseSubstrateClient<RpcLegacy, ChainApi>
+{
   #runtimeSubscriptionUnsub?: Unsub;
   #healthTimer?: ReturnType<typeof setInterval>;
 
@@ -284,10 +285,10 @@ export class LegacyClient<ChainApi extends VersionedGenericSubstrateApi = Substr
     const targetVersion = await this.#getRuntimeVersion(hash);
 
     let metadata = this.metadata;
-    let registry = this.registry;
+    let registry: any = this.registry;
     if (targetVersion.specVersion !== this.runtimeVersion.specVersion) {
       metadata = await this.fetchMetadata(hash, targetVersion);
-      registry = new PortableRegistry(metadata.latest, this.options.hasher);
+      registry = new PortableRegistry<ChainApiAt>(metadata.latest, this.options.hasher);
     }
 
     const api = {
@@ -312,7 +313,7 @@ export class LegacyClient<ChainApi extends VersionedGenericSubstrateApi = Substr
     return api;
   }
 
-  protected override getStorageQuery(): BaseStorageQuery<RpcVersion> {
-    return new LegacyStorageQuery(this as any);
+  protected override getStorageQuery(): BaseStorageQuery {
+    return new LegacyStorageQuery(this);
   }
 }

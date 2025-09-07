@@ -60,7 +60,7 @@ export abstract class BaseSubstrateClient<
 {
   protected _options: ApiOptions;
 
-  protected _registry?: PortableRegistry;
+  protected _registry?: PortableRegistry<ChainApi[Rv]>;
   protected _metadata?: Metadata;
 
   protected _genesisHash?: Hash;
@@ -184,7 +184,7 @@ export abstract class BaseSubstrateClient<
 
   protected setMetadata(metadata: Metadata) {
     this._metadata = metadata;
-    this._registry = new PortableRegistry(metadata.latest, this.options.hasher);
+    this._registry = new PortableRegistry<ChainApi[Rv]>(metadata.latest, this.options.hasher);
   }
 
   protected getMetadataKey(runtime?: SubstrateRuntimeVersion): MetadataKey {
@@ -367,7 +367,7 @@ export abstract class BaseSubstrateClient<
     return ensurePresence(this._metadata);
   }
 
-  get registry(): PortableRegistry {
+  get registry(): PortableRegistry<ChainApi[Rv]> {
     return ensurePresence(this._registry);
   }
 
@@ -479,7 +479,7 @@ export abstract class BaseSubstrateClient<
     }
   }
 
-  protected getStorageQuery(): BaseStorageQuery<RpcVersion> {
+  protected getStorageQuery(): BaseStorageQuery {
     throw new Error('Unimplemented!');
   }
 }
