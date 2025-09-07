@@ -269,7 +269,7 @@ export class DedotClient<ChainApi extends VersionedGenericSubstrateApi = Substra
     let registry: any = this.registry;
     if (targetVersion && targetVersion.specVersion !== this.runtimeVersion.specVersion) {
       metadata = await this.fetchMetadata(hash, targetVersion);
-      registry = new PortableRegistry(metadata.latest, this.options.hasher);
+      registry = new PortableRegistry<ChainApiAt>(metadata.latest, this.options.hasher);
     }
 
     const api = {
@@ -295,8 +295,7 @@ export class DedotClient<ChainApi extends VersionedGenericSubstrateApi = Substra
     return api;
   }
 
-  protected override getStorageQuery(): BaseStorageQuery<RpcVersion> {
-    // @ts-ignore
+  protected override getStorageQuery(): BaseStorageQuery {
     return new NewStorageQuery(this);
   }
 }

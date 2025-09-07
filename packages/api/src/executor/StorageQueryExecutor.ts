@@ -142,8 +142,7 @@ export class StorageQueryExecutor<
     return { pagedKeys, pagedEntries };
   }
 
-  protected getStorageQuery(): BaseStorageQuery<RpcVersion> {
-    // @ts-ignore
+  protected getStorageQuery(): BaseStorageQuery {
     return new LegacyStorageQuery(this.client as any);
   }
 

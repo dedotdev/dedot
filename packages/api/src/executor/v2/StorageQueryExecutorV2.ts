@@ -40,12 +40,11 @@ export class StorageQueryExecutorV2<
     return { entries };
   }
 
-  protected override getStorageQuery(): BaseStorageQuery<RpcVersion> {
+  protected override getStorageQuery(): BaseStorageQuery {
     // @ts-ignore little trick to make querying data client.at instance works here,
     // TODO need to rethink about this
     if (!this.client['chainHead']) this.client['chainHead'] = this.chainHead;
 
-    // @ts-ignore
     return new NewStorageQuery(this.client as any);
   }
 }

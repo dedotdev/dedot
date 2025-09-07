@@ -1,8 +1,7 @@
+import { DedotClient } from '@dedot/api/client';
 import { BlockHash, StorageData, StorageKey } from '@dedot/codecs';
-import type { Callback, RpcV2, Unsub, VersionedGenericSubstrateApi } from '@dedot/types';
+import type { Callback, Unsub } from '@dedot/types';
 import { AsyncQueue, noop } from '@dedot/utils';
-import type { SubstrateApi } from '../chaintypes/index.js';
-import { DedotClient } from '../client/DedotClient.js';
 import { PinnedBlock } from '../json-rpc/group/ChainHead/ChainHead.js';
 import { BaseStorageQuery } from './BaseStorageQuery.js';
 
@@ -18,9 +17,11 @@ import { BaseStorageQuery } from './BaseStorageQuery.js';
  * - Subscriptions using chainHead 'bestBlock' events
  * - Efficient change detection for subscriptions
  */
-export class NewStorageQuery<
-  ChainApi extends VersionedGenericSubstrateApi = SubstrateApi, // prettier-end-here
-> extends BaseStorageQuery<RpcV2, ChainApi, DedotClient<ChainApi>> {
+export class NewStorageQuery extends BaseStorageQuery {
+  constructor(protected client: DedotClient<any>) {
+    super(client);
+  }
+
   /**
    * Query multiple storage items in a single call using chainHead_storage
    *

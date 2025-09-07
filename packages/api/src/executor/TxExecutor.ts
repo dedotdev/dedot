@@ -1,4 +1,3 @@
-import { BlockHash } from '@dedot/codecs';
 import type { GenericSubstrateApi, GenericTxCall, IRuntimeTxCall } from '@dedot/types';
 import { assert, stringCamelCase, stringPascalCase, UnknownApiError } from '@dedot/utils';
 import { SubmittableExtrinsic } from '../extrinsic/index.js';
@@ -59,7 +58,6 @@ export class TxExecutor<ChainApi extends GenericSubstrateApi = GenericSubstrateA
   }
 
   protected createExtrinsic(call: IRuntimeTxCall): any {
-    // @ts-ignore
     return new SubmittableExtrinsic(this.client as ISubstrateClient<ChainApi>, call);
   }
 }

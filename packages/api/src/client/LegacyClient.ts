@@ -314,8 +314,7 @@ export class LegacyClient<ChainApi extends VersionedGenericSubstrateApi = Substr
     return api;
   }
 
-  protected override getStorageQuery(): BaseStorageQuery<RpcVersion> {
-    // @ts-ignore
-    return new LegacyStorageQuery(this as any);
+  protected override getStorageQuery(): BaseStorageQuery {
+    return new LegacyStorageQuery(this);
   }
 }
