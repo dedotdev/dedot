@@ -12,7 +12,7 @@ import { ChainTx } from './tx.js';
 
 export * from './types.js';
 
-interface ChainTypes extends GenericChainTypes {
+interface ChainKnownTypes extends GenericChainKnownTypes {
   Address: {{{addressType}}};
   Signature: {{{signatureType}}};
   RuntimeCall: {{{runtimeCallType}}};
@@ -29,7 +29,7 @@ export interface Versioned{{{interfaceName}}}<Rv extends RpcVersion> extends Gen
   view: ChainViewFunctions<Rv>;
   tx: ChainTx<Rv>;
   
-  types: ChainTypes;
+  types: ChainKnownTypes;
 }
 
 {{interfaceDocs}}export interface {{{interfaceName}}} {

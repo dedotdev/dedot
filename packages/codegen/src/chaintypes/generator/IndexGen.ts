@@ -16,7 +16,13 @@ export class IndexGen {
 
     // Clear cache and setup type imports
     this.typesGen.clearCache();
-    this.typesGen.typeImports.addKnownType('GenericSubstrateApi', 'GenericChainTypes', 'RpcLegacy', 'RpcV2', 'RpcVersion');
+    this.typesGen.typeImports.addKnownType(
+      'GenericSubstrateApi',
+      'GenericChainKnownTypes',
+      'RpcLegacy',
+      'RpcV2',
+      'RpcVersion',
+    );
 
     // Extract type IDs from metadata.extrinsic
     const { callTypeId, addressTypeId, signatureTypeId, signedExtensions } = this.typesGen.metadata.extrinsic;
@@ -29,9 +35,7 @@ export class IndexGen {
     // Generate Extra type from signed extensions
     let extraType = 'any[]'; // Default fallback
     if (signedExtensions && signedExtensions.length > 0) {
-      const signedExtensionTypes = signedExtensions.map(({ typeId }) => 
-        this.typesGen.generateType(typeId, 1, true)
-      );
+      const signedExtensionTypes = signedExtensions.map(({ typeId }) => this.typesGen.generateType(typeId, 1, true));
       extraType = `[${signedExtensionTypes.join(', ')}]`;
     }
 
