@@ -87,7 +87,7 @@ export const $Extrinsic = <ChainApi extends GenericSubstrateApi = GenericSubstra
           } as PreambleV4Bare;
         }
 
-        return new Extrinsic(registry as any, call, preamble);
+        return new Extrinsic(registry, call, preamble);
       } else if (version === EXTRINSIC_FORMAT_VERSION_V5) {
         let versionedExtensions: any = undefined;
 
@@ -115,7 +115,7 @@ export const $Extrinsic = <ChainApi extends GenericSubstrateApi = GenericSubstra
           } as PreambleV5Bare;
         }
 
-        return new Extrinsic(registry as any, call, preamble);
+        return new Extrinsic(registry, call, preamble);
       }
 
       throw new DedotError(`Invalid extrinsic format version: ${version}`);
