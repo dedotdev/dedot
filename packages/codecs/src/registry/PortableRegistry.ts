@@ -1,10 +1,9 @@
 import { EnumOptions, Tuple } from '@dedot/shape';
-import * as $ from '@dedot/shape';
-import { GenericSubstrateApi } from '@dedot/types';
 import { assert, blake2_256, HashFn, HexString, hexToU8a, isObject, isU8a, u8aToHex } from '@dedot/utils';
 import type { DispatchError, ModuleError } from '../codecs/known/index.js';
-import { $Extrinsic, Extrinsic } from '../extrinsic/index.js';
+import { $Extrinsic } from '../extrinsic/index.js';
 import type { MetadataLatest, PalletErrorMetadataLatest, PortableType, TypeId } from '../metadata/index.js';
+import { GenericSubstrateApi } from '../types/index.js';
 import { TypeRegistry } from './TypeRegistry.js';
 
 /**

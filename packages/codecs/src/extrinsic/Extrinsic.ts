@@ -1,7 +1,7 @@
 import * as $ from '@dedot/shape';
-import { GenericSubstrateApi } from '@dedot/types';
 import { assert, DedotError, ensurePresence } from '@dedot/utils';
 import type { PortableRegistry } from '../registry/PortableRegistry.js';
+import { GenericSubstrateApi } from '../types/index.js';
 import {
   $ExtrinsicVersion,
   EXTRINSIC_FORMAT_VERSION_V5,

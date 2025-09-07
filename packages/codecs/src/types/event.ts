@@ -1,4 +1,4 @@
-import { Phase, H256, Hash } from '@dedot/codecs';
+import { Phase, H256, Hash } from '../codecs/index.js';
 
 export interface IRuntimeEvent {
   pallet: string;

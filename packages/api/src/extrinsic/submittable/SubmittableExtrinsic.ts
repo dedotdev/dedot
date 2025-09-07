@@ -8,6 +8,7 @@ import {
   SignerOptions,
   TxHash,
   TxUnsub,
+  Unsub,
 } from '@dedot/types';
 import { assert, isHex } from '@dedot/utils';
 import { BaseSubmittableExtrinsic } from './BaseSubmittableExtrinsic.js';
@@ -74,7 +75,7 @@ export class SubmittableExtrinsic extends BaseSubmittableExtrinsic implements IS
     });
 
     if (isSubscription) {
-      unsub.then((x) => {
+      unsub.then((x: Unsub) => {
         deferTx.resolve(x);
       });
     }

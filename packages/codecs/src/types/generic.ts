@@ -1,13 +1,11 @@
+import { DispatchError, ModuleError, StorageKey } from '../codecs/index.js';
 import {
-  DispatchError,
-  ModuleError,
   PalletErrorMetadataLatest,
   PalletEventMetadataLatest,
   PalletStorageEntryMetadataLatest,
   PalletTxMetadataLatest,
   PalletViewFunctionMetadataLatest,
-  StorageKey,
-} from '@dedot/codecs';
+} from '../metadata/index.js';
 import { IEventRecord } from './event.js';
 import { RuntimeApiMethodSpec } from './runtime.js';
 

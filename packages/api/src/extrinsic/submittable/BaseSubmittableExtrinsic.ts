@@ -32,7 +32,7 @@ export abstract class BaseSubmittableExtrinsic extends Extrinsic implements ISub
   #hooks?: TxHooks;
 
   constructor(
-    readonly client: ISubstrateClient,
+    readonly client: ISubstrateClient<any>,
     call: IRuntimeTxCall,
   ) {
     super(client.registry, call);

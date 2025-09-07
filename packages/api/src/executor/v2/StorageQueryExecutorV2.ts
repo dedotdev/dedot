@@ -45,6 +45,7 @@ export class StorageQueryExecutorV2<
     // TODO need to rethink about this
     if (!this.client['chainHead']) this.client['chainHead'] = this.chainHead;
 
+    // @ts-ignore
     return new NewStorageQuery(this.client as any);
   }
 }

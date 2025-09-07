@@ -17,6 +17,6 @@ export class TxExecutorV2<
   }
 
   protected override createExtrinsic(call: IRuntimeTxCall): any {
-    return new SubmittableExtrinsicV2(this.client as DedotClient, call);
+    return new SubmittableExtrinsicV2(this.client as DedotClient<any>, call);
   }
 }

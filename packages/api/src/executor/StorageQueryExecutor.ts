@@ -5,6 +5,7 @@ import type {
   GenericStorageQuery,
   GenericSubstrateApi,
   PaginationOptions,
+  RpcLegacy,
   RpcVersion,
   Unsub,
 } from '@dedot/types';
@@ -142,6 +143,7 @@ export class StorageQueryExecutor<
   }
 
   protected getStorageQuery(): BaseStorageQuery<RpcVersion> {
+    // @ts-ignore
     return new LegacyStorageQuery(this.client as any);
   }
 
