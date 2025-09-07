@@ -1,6 +1,6 @@
 import { PalletErrorMetadataLatest } from '@dedot/codecs';
 import { describe, expect, it } from 'vitest';
-import { ContractDispatchError, ContractInstantiateDispatchError } from '../errors';
+import { ContractDispatchError, ContractInstantiateDispatchError } from '../errors.js';
 
 describe('Dispatch Errors', () => {
   const mockDispatchError = { type: 'Module', value: { index: 1, error: '0x00' } } as any;

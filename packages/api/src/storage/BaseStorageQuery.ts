@@ -1,6 +1,6 @@
-import { ISubstrateClient, ISubstrateClientAt } from '@dedot/api/types';
 import { BlockHash, StorageData, StorageKey } from '@dedot/codecs';
 import type { Callback, Unsub } from '@dedot/types';
+import { ISubstrateClient, ISubstrateClientAt } from '../types.js';
 
 /**
  * @name BaseStorageQuery

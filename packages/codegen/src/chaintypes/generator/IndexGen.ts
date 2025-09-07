@@ -1,6 +1,4 @@
 import { SubstrateRuntimeVersion } from '@dedot/api';
-import { MetadataLatest } from '@dedot/codecs';
-import { TypeImports } from '../../shared/index.js';
 import { beautifySourceCode, commentBlock, compileTemplate } from '../../utils.js';
 import { TypesGen } from './TypesGen.js';
 
