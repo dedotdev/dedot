@@ -3,7 +3,7 @@ import type { SubstrateApi } from '@dedot/api/chaintypes';
 import { GenericSubstrateApi, RpcVersion } from '@dedot/types';
 import { assert, isPvm, isUndefined, toHex, toU8a } from '@dedot/utils';
 import { ConstructorTxOptions, GenericConstructorTxCall } from '../../types/index.js';
-import { SolDeployerExecutor } from '../abstract/sol/index.js';
+import { SolDeployerExecutor } from './abstract/index.js';
 
 export class SolConstructorTxExecutor<ChainApi extends GenericSubstrateApi> extends SolDeployerExecutor<ChainApi> {
   doExecute(_: string) {

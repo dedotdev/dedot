@@ -11,7 +11,7 @@ import {
   GenericConstructorQueryCall,
 } from '../../types/index.js';
 import { toReturnFlags } from '../../utils/index.js';
-import { SolDeployerExecutor } from '../abstract/sol/index.js';
+import { SolDeployerExecutor } from './abstract/index.js';
 
 export class SolConstructorQueryExecutor<ChainApi extends GenericSubstrateApi> extends SolDeployerExecutor<ChainApi> {
   doExecute(_: string) {

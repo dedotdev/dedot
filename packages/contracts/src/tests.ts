@@ -358,13 +358,13 @@ const run2 = async () => {
 
   const {
     data: [balanceOf],
-  } = await contract.query.balanceOf(alicePair.address);
+  } = await contract.query.balanceOf(toEvmAddress(alicePair.address));
 
   console.log('Balance before mint::', (balanceOf as BigInt).toString());
 
-  const dryRunMint = await contract.query.mint(alicePair.address, 1000000000);
+  // const dryRunMint = await contract.query.mint(alicePair.address, 1000000000);
 
-  console.log('Dry run mint results:', dryRunMint);
+  // console.log('Dry run mint results:', dryRunMint);
 };
 
 const run = async () => {

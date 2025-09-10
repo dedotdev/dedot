@@ -2,9 +2,7 @@ import { ISubstrateClient } from '@dedot/api';
 import { GenericSubstrateApi } from '@dedot/types';
 import { assert, DedotError, HexString, isEvmAddress } from '@dedot/utils';
 import { Interface } from '@ethersproject/abi';
-import { SolExecutor } from './executor/abstract/sol/SolExecutor.js';
-import { SolQueryExecutor } from './executor/sol/SolQueryExecutor.js';
-import { SolTxExecutor } from './executor/sol/SolTxExecutor.js';
+import { SolQueryExecutor, SolExecutor, SolTxExecutor } from './executor/index.js';
 import { ContractAddress, ExecutionOptions, GenericContractApi, SolABIItem } from './types/index.js';
 
 export class SolContract<ContractApi extends GenericContractApi = GenericContractApi> {

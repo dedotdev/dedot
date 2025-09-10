@@ -10,7 +10,7 @@ import {
   GenericContractQueryCall,
 } from '../../types/index.js';
 import { toReturnFlags } from '../../utils/index.js';
-import { SolContractExecutor } from '../abstract/sol/SolContractExecutor.js';
+import { SolContractExecutor } from './abstract/SolContractExecutor.js';
 
 export class SolQueryExecutor<ChainApi extends GenericSubstrateApi> extends SolContractExecutor<ChainApi> {
   doExecute(fragmentName: string) {
