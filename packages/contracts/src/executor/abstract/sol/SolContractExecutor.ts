@@ -1,8 +1,9 @@
 import { ISubstrateClient } from '@dedot/api';
 import { GenericSubstrateApi } from '@dedot/types';
+import { stringCamelCase } from '@dedot/utils';
+import { FunctionFragment, Interface } from '@ethersproject/abi';
 import { ContractAddress, ExecutionOptions } from '../../../types/index.js';
 import { SolExecutor } from './SolExecutor.js';
-import { FunctionFragment, Interface } from '@ethersproject/abi';
 
 export abstract class SolContractExecutor<ChainApi extends GenericSubstrateApi> extends SolExecutor<ChainApi> {
   readonly address: ContractAddress;
@@ -19,7 +20,9 @@ export abstract class SolContractExecutor<ChainApi extends GenericSubstrateApi> 
   }
 
   protected findFragment(fragment: string): FunctionFragment | undefined {
-    return this.interf.fragments.find(one => one.type === 'function' && one.name === fragment) as FunctionFragment;
+    return this.interf.fragments.find(
+      (one) => one.type === 'function' && stringCamelCase(one.name) === fragment,
+    ) as FunctionFragment;
   }
 
   protected findTxFragment(fragment: string): FunctionFragment | undefined {

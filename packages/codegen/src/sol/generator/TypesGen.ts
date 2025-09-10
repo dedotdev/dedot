@@ -53,7 +53,7 @@ export class TypesGen {
     // TODO: Fix this
     const generatedTypes: string[] = [];
     this.types
-      .filter((o) => o.internalType.match(INTERNAL_TYPE_REGEX))
+      .filter((o) => o.internalType?.match(INTERNAL_TYPE_REGEX))
       .forEach((typeDef) => {
         const typeName = typeDef.internalType.split('.').pop()!;
 
