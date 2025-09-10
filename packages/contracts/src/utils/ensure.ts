@@ -15,7 +15,7 @@ import {
   toU8a,
 } from '@dedot/utils';
 import { TypinkRegistry } from 'src/TypinkRegistry';
-import { ContractAddress, LooseContractMetadata } from 'src/types';
+import { ContractAddress, LooseContractMetadata } from '../types/index.js';
 
 export const ensureStorageApiSupports = (version: string | number) => {
   const numberedVersion = typeof version === 'number' ? version : parseInt(version);

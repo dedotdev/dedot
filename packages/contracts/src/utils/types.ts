@@ -1,6 +1,6 @@
 import { PortableType, TypeDef } from '@dedot/codecs';
 import { stringCamelCase } from '@dedot/utils';
-import { ContractMetadata, ContractTypeDef, ReturnFlags } from 'src/types';
+import { ContractMetadata, ContractTypeDef, ReturnFlags } from '../types/index.js';
 
 export const extractContractTypes = (contractMetadata: ContractMetadata): PortableType[] => {
   const { types } = contractMetadata;

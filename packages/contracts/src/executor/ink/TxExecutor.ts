@@ -2,8 +2,8 @@ import { BaseSubmittableExtrinsic, ISubstrateClient } from '@dedot/api';
 import type { SubstrateApi } from '@dedot/api/chaintypes';
 import { GenericSubstrateApi, RpcVersion } from '@dedot/types';
 import { assert, concatU8a, HexString, hexToU8a, u8aToHex } from '@dedot/utils';
-import { ContractTxOptions, GenericContractTxCall } from '../types/index.js';
-import { ensureParamsLength } from '../utils/index.js';
+import { ContractTxOptions, GenericContractTxCall } from '../../types/index.js';
+import { ensureParamsLength } from '../../utils/index.js';
 import { QueryExecutor } from './QueryExecutor.js';
 import { ContractExecutor } from './abstract/index.js';
 
