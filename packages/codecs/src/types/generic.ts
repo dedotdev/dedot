@@ -1,12 +1,11 @@
+import { DispatchError, ModuleError, StorageKey } from '../codecs/index.js';
 import {
-  DispatchError,
-  ModuleError,
   PalletErrorMetadataLatest,
   PalletEventMetadataLatest,
   PalletStorageEntryMetadataLatest,
   PalletTxMetadataLatest,
-  StorageKey,
-} from '@dedot/codecs';
+  PalletViewFunctionMetadataLatest,
+} from '../metadata/index.js';
 import { IEventRecord } from './event.js';
 import { RuntimeApiMethodSpec } from './runtime.js';
 
@@ -34,6 +33,16 @@ export interface GenericChainConsts<_ extends RpcVersion = RpcVersion> {
     [constantName: string]: any;
   };
 }
+
+export interface GenericChainViewFunctions<_ extends RpcVersion = RpcVersion> {
+  [pallet: string]: {
+    [viewFunction: string]: any;
+  };
+}
+
+export type GenericViewFunction<_ extends RpcVersion = RpcVersion, F extends AnyFunc = AnyFunc> = F & {
+  meta?: PalletViewFunctionMetadataLatest;
+};
 
 export type GenericTxCall<_ extends RpcVersion = RpcVersion, F extends AnyFunc = AnyFunc> = F & {
   meta?: PalletTxMetadataLatest;
@@ -73,8 +82,32 @@ interface PagedEntriesMethod<T extends AnyFunc = AnyFunc, TypeOut extends any = 
 export type WithoutLast<T> = T extends any[] ? (T extends [...infer U, any] ? U : T) : T;
 
 export type WithPagination<T> = T extends any[]
-  ? [...Partial<WithoutLast<T>>, pagination?: PaginationOptions]
+  ? [...PartialParams<WithoutLast<T>>, pagination?: PaginationOptions]
   : [pagination?: PaginationOptions];
+
+export type PartialParams<T> = T extends readonly [...infer Params]
+  ? Params extends readonly []
+    ? []
+    : Params extends readonly [infer P1]
+      ? [P1?]
+      : Params extends readonly [infer P1, infer P2]
+        ? [P1?] | [P1, P2?]
+        : Params extends readonly [infer P1, infer P2, infer P3]
+          ? [P1?] | [P1, P2?] | [P1, P2, P3?]
+          : Params extends readonly [infer P1, infer P2, infer P3, infer P4]
+            ? [P1?] | [P1, P2?] | [P1, P2, P3?] | [P1, P2, P3, P4?]
+            : Params extends readonly [infer P1, infer P2, infer P3, infer P4, infer P5]
+              ? [P1?] | [P1, P2?] | [P1, P2, P3?] | [P1, P2, P3, P4?] | [P1, P2, P3, P4, P5?]
+              : Params extends readonly [infer P1, infer P2, infer P3, infer P4, infer P5, infer P6]
+                ?
+                    | [P1?]
+                    | [P1, P2?]
+                    | [P1, P2, P3?]
+                    | [P1, P2, P3, P4?]
+                    | [P1, P2, P3, P4, P5?]
+                    | [P1, P2, P3, P4, P5, P6?]
+                : Partial<Params>
+  : [];
 
 /**
  * @description A generic type for storage query methods that handles both single and map (double & n-th map) storage entries
@@ -109,7 +142,7 @@ export type GenericStorageQuery<
           ? {
               /** Get all storage entries, allowing partial keys input */
               entries: (
-                ...args: WithoutLast<Parameters<T>[0]>
+                ...args: PartialParams<WithoutLast<Parameters<T>[0]>>
               ) => Promise<Array<[KeyTypeOut, NonNullable<ReturnType<T>>]>>;
             }
           : {
@@ -178,6 +211,14 @@ export type GenericChainEvents<
   Data extends any = any,
 > = Record<Pallet, Record<EventName, GenericPalletEvent<Rv, Pallet, EventName, Data>>>;
 
+export interface GenericChainKnownTypes {
+  Address: any;
+  Signature: any;
+  RuntimeCall: any;
+  Extra: any[];
+  [method: string]: any;
+}
+
 export interface GenericSubstrateApi<Rv extends RpcVersion = RpcVersion> {
   rpc: GenericJsonRpcApis<Rv>;
   consts: GenericChainConsts<Rv>;
@@ -185,7 +226,10 @@ export interface GenericSubstrateApi<Rv extends RpcVersion = RpcVersion> {
   errors: GenericChainErrors<Rv>;
   events: GenericChainEvents<Rv>;
   call: GenericRuntimeApis<Rv>;
+  view: GenericChainViewFunctions<Rv>;
   tx: GenericChainTx<Rv>;
+
+  types: GenericChainKnownTypes;
 }
 
 export interface VersionedGenericSubstrateApi {

@@ -16,10 +16,17 @@ const client = await DedotClient.new(new WsProvider('ws://127.0.0.1:9944'));
 console.log(`✅ Connected to ${client.runtimeVersion.specName} v${client.runtimeVersion.specVersion}`);
 
 // Try to map account first!
-await client.tx.revive
-  .mapAccount()
-  .signAndSend(alice) // --
-  .untilFinalized();
+const mappedAccount = await client.query.revive.originalAccount(toEvmAddress(alice.address));
+if (mappedAccount) {
+  console.log('Alice address has already been mapped!');
+} else {
+  console.log('Alice address is not mapped, map the account now!');
+
+  await client.tx.revive
+    .mapAccount()
+    .signAndSend(alice) // --
+    .untilFinalized();
+}
 
 // Option 1: Deploy a new contract for testing
 console.log('\n📝 Step 1: Deploy PSP22 contract for storage testing');
@@ -29,29 +36,9 @@ console.log('🔧 Creating contract deployer...');
 const deployer = new ContractDeployer<Psp22v6ContractApi>(
   client, // --
   psp22,
-  psp22.source.contract_binary,
+  psp22.source.contract_binary, // extracted from .contract or .polkavm files
   { defaultCaller: alice.address },
 );
-
-// Generate a unique salt to avoid conflicts
-const salt = generateRandomHex();
-
-// Dry-run to estimate gas fee
-console.log('⛽ Estimating gas for deployment...');
-const dryRun = await deployer.query.new(
-  1_000_000_000_000n, // total_supply: 1,000,000 tokens (with 12 decimals)
-  'Storage Test Token', // name
-  'STT', // symbol
-  9, // decimals
-  { salt },
-);
-
-const dryRunRaw1 = dryRun.raw;
-
-// Calculate the contract address using CREATE2 before deployment
-const contractAddress = CREATE2(toEvmAddress(alice.address), psp22.source.contract_binary, dryRun.inputData, salt);
-
-console.log(`📍 Predicted contract address: ${contractAddress}`);
 
 // Deploy the contract
 console.log('🚀 Deploying PSP22 contract...');
@@ -61,11 +48,7 @@ const result = await deployer.tx
     'Storage Test Token', // name
     'STT', // symbol
     9, // decimals
-    {
-      gasLimit: dryRunRaw1.gasRequired,
-      storageDepositLimit: dryRunRaw1.storageDeposit.value,
-      salt,
-    },
+    { salt: generateRandomHex() },
   )
   .signAndSend(alice, ({ status }) => {
     console.log(`📊 Deployment status: ${status.type}`);
@@ -76,16 +59,11 @@ if (result.dispatchError) {
   console.log(`❌ Contract deployment failed:`, client.registry.findErrorMeta(result.dispatchError));
   throw new Error('Contract deployment failed');
 } else {
-  console.log(`✅ Contract deployed successfully at: ${contractAddress}`);
+  console.log(`✅ Contract deployed successfully at: ${await result.contractAddress()}`);
 }
 
 // Create a Contract instance with the deployed address
-const contract = new Contract<Psp22v6ContractApi>(
-  client, // --
-  psp22,
-  contractAddress,
-  { defaultCaller: alice.address },
-);
+const contract = await result.contract();
 
 console.log('\n📝 Step 2: Read initial contract storage state');
 
@@ -123,19 +101,9 @@ console.log('\n📝 Step 3: Execute token transfer and verify storage changes');
 const transferAmount = 100_000_000_000n; // 100 tokens (with 9 decimals)
 console.log(`💸 Transferring ${transferAmount} tokens to Bob...`);
 
-// Estimate gas for transfer
-const { raw: dryRunRaw2 } = await contract.query.psp22Transfer(
-  toEvmAddress(bob.address),
-  transferAmount,
-  new Uint8Array(),
-);
-
 // Execute the transfer
 const transferResult = await contract.tx
-  .psp22Transfer(toEvmAddress(bob.address), transferAmount, new Uint8Array(), {
-    gasLimit: dryRunRaw2.gasRequired,
-    storageDepositLimit: dryRunRaw2.storageDeposit.value,
-  })
+  .psp22Transfer(toEvmAddress(bob.address), transferAmount, new Uint8Array())
   .signAndSend(alice, ({ status }) => {
     console.log(`📊 Transfer status: ${status.type}`);
   })
@@ -181,15 +149,9 @@ console.log('\n📝 Step 5: Test allowance functionality and storage');
 const allowanceAmount = 50_000_000_000n; // 50 tokens
 console.log(`🔐 Setting allowance of ${allowanceAmount} for Bob...`);
 
-// Estimate gas for approve
-const { raw: dryRunRaw3 } = await contract.query.psp22Approve(toEvmAddress(bob.address), allowanceAmount);
-
 // Execute the approval
 const approvalResult = await contract.tx
-  .psp22Approve(toEvmAddress(bob.address), allowanceAmount, {
-    gasLimit: dryRunRaw3.gasRequired,
-    storageDepositLimit: dryRunRaw3.storageDeposit.value,
-  })
+  .psp22Approve(toEvmAddress(bob.address), allowanceAmount)
   .signAndSend(alice, ({ status }) => {
     console.log(`📊 Approve status: ${status.type}`);
   })

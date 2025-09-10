@@ -28,15 +28,8 @@ export const run = async (_nodeName: any, networkInfo: any) => {
     const timestamp = await api.query.timestamp.now();
     const salt = stringToHex(`${api.rpcVersion}_${timestamp}`);
 
-    // Dry-run to estimate gas fee
-    const {
-      raw: { gasRequired },
-    } = await deployer.query.new(true, {
-      salt,
-    });
-
     const { events } = await deployer.tx
-      .new(true, { gasLimit: gasRequired, salt })
+      .new(true, { salt })
       .signAndSend(alicePair, ({ status }) => {
         console.log(`[${api.rpcVersion}] Transaction status:`, status.type);
       })
@@ -76,11 +69,8 @@ export const run = async (_nodeName: any, networkInfo: any) => {
     console.log(`[${api.rpcVersion}] Initial value:`, state);
     console.log(`[${api.rpcVersion}] Flipping...`);
 
-    // Dry-run to estimate gas fee
-    const { raw } = await contract.query.flip();
-
     const { events: newEvents } = await contract.tx
-      .flip({ gasLimit: raw.gasRequired })
+      .flip()
       .signAndSend(alicePair, ({ status }) => {
         console.log(`[${api.rpcVersion}] Transaction status`, status.type);
       })

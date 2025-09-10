@@ -8,6 +8,7 @@ import {
   isHex,
   isNull,
   isNumber,
+  isNumberArray,
   isObject,
   isString,
   isU8a,
@@ -115,6 +116,32 @@ describe('is', () => {
 
     it('returns false for non-Uint8Array input', () => {
       expect(isU8a('not Uint8Array')).toBe(false);
+    });
+  });
+
+  describe('isNumberArray', () => {
+    it('returns true for array of numbers', () => {
+      expect(isNumberArray([1, 2, 3])).toBe(true);
+      expect(isNumberArray([0])).toBe(true);
+      expect(isNumberArray([1.5, 2.5, 3.5])).toBe(true);
+      expect(isNumberArray([])).toBe(true);
+    });
+
+    it('returns false for array with non-number elements', () => {
+      expect(isNumberArray([1, '2', 3])).toBe(false);
+      expect(isNumberArray(['1', '2', '3'])).toBe(false);
+      expect(isNumberArray([1, null, 3])).toBe(false);
+      expect(isNumberArray([1, undefined, 3])).toBe(false);
+      expect(isNumberArray([1, {}, 3])).toBe(false);
+    });
+
+    it('returns false for non-array input', () => {
+      expect(isNumberArray('not array')).toBe(false);
+      expect(isNumberArray(123)).toBe(false);
+      expect(isNumberArray({})).toBe(false);
+      expect(isNumberArray(null)).toBe(false);
+      expect(isNumberArray(undefined)).toBe(false);
+      expect(isNumberArray(new Uint8Array([1, 2, 3]))).toBe(false);
     });
   });
 

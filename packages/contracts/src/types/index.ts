@@ -15,10 +15,12 @@ import {
   GenericSubstrateApi,
   IEventRecord,
   ISubmittableExtrinsic,
+  ISubmittableResult,
   RpcVersion,
   Unsub,
   VersionedGenericSubstrateApi,
 } from '@dedot/types';
+import { Contract } from '../Contract.js';
 import { ConstructorFragment, FunctionFragment } from '@ethersproject/abi';
 import { ContractAddress, ContractCallMessage, ContractConstructorMessage } from './shared.js';
 import { ContractEventV4, ContractMetadataV4 } from './v4.js';
@@ -55,7 +57,6 @@ export interface GenericConstructorCallResult<DecodedData = any, ContractResult 
 }
 
 export type ContractCode = { type: 'Upload'; value: Bytes } | { type: 'Existing'; value: H256 };
-
 export type WeightV2 = { refTime: bigint; proofSize: bigint };
 
 export type StorageDeposit = { type: 'Refund'; value: bigint } | { type: 'Charge'; value: bigint };
@@ -83,11 +84,28 @@ export type ContractInstantiateResult<_ extends GenericSubstrateApi> = {
   result: Result<InstantiateReturnValue, DispatchError>;
 };
 
-type SubmittableExtrinsic = ISubmittableExtrinsic & Extrinsic;
+export interface IContractInstantiateSubmittableResult<
+  ContractApi extends GenericContractApi = GenericContractApi, // --
+> extends ISubmittableResult {
+  /**
+   * Get deployed contract address
+   */
+  contractAddress(): Promise<ContractAddress>;
 
-export type ContractSubmittableExtrinsic<_ extends GenericSubstrateApi> = SubmittableExtrinsic;
+  /**
+   * Get deployed contract instance
+   */
+  contract(options?: ExecutionOptions): Promise<Contract<ContractApi>>;
+}
 
-export type GenericInstantiateSubmittableExtrinsic<_ extends GenericSubstrateApi> = SubmittableExtrinsic;
+type SubmittableExtrinsic<R extends ISubmittableResult> = ISubmittableExtrinsic<R> & Extrinsic;
+
+export type ContractSubmittableExtrinsic<_ extends GenericSubstrateApi> = SubmittableExtrinsic<ISubmittableResult>;
+
+export type GenericInstantiateSubmittableExtrinsic<
+  _ extends GenericSubstrateApi,
+  ContractApi extends GenericContractApi = GenericContractApi,
+> = SubmittableExtrinsic<IContractInstantiateSubmittableResult<ContractApi>>;
 
 export type ContractMetadata = ContractMetadataV4 | ContractMetadataV5 | ContractMetadataV6;
 
@@ -109,16 +127,13 @@ export type ConstructorCallOptions = CallOptions & {
 
 export type ConstructorTxOptions = CallOptions & {
   salt?: BytesLike;
-  gasLimit: Weight;
 };
 
 export type ContractCallOptions = CallOptions & {
   caller?: AccountId32Like;
 };
 
-export type ContractTxOptions = CallOptions & {
-  gasLimit: Weight;
-};
+export type ContractTxOptions = CallOptions;
 
 export type GenericContractQueryCall<
   ChainApi extends GenericSubstrateApi,

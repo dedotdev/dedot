@@ -1,6 +1,6 @@
 {
   "name": "@dedot/smoldot",
-  "version": "0.13.2",
+  "version": "0.16.0",
   "description": "Smodot Wrapper",
   "author": "Thang X. Vu <thang@dedot.dev>",
   "homepage": "https://dedot.dev",
@@ -17,7 +17,7 @@
     "clean": "rm -rf ./dist && rm -rf ./tsconfig.tsbuildinfo ./tsconfig.build.tsbuildinfo"
   },
   "dependencies": {
-    "smoldot": "^2.0.36"
+    "smoldot": "^2.0.38"
   },
   "exports": {
     ".": {

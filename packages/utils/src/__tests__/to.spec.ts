@@ -42,6 +42,12 @@ describe('to', () => {
       expect(toU8a('abc')).toEqual(new Uint8Array([0x61, 0x62, 0x63]));
     });
 
+    it('returns Uint8Array for Array<number> input', () => {
+      expect(toU8a([0x12, 0x34])).toEqual(new Uint8Array([0x12, 0x34]));
+      expect(toU8a([1, 2, 3])).toEqual(new Uint8Array([1, 2, 3]));
+      expect(toU8a([])).toEqual(new Uint8Array([]));
+    });
+
     it('throws error for invalid input', () => {
       // @ts-ignore
       expect(() => toU8a({})).toThrow('Invalid input type of: [object Object]');

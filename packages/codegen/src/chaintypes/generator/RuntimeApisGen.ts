@@ -11,6 +11,7 @@ import {
   TUPLE_TYPE_REGEX,
   WRAPPER_TYPE_REGEX,
 } from '../../utils.js';
+import { getDeprecationComment } from '../../utils.js';
 import { ApiGen } from './ApiGen.js';
 import { TypesGen } from './TypesGen.js';
 
@@ -104,15 +105,18 @@ export class RuntimeApisGen extends ApiGen {
   }
 
   #generateMethodDef(runtimeApiName: string, methodDef: RuntimeApiMethodDefLatest) {
-    const { name: methodName, inputs, output, docs } = methodDef;
-
+    const { name: methodName, inputs, output, docs, deprecationInfo } = methodDef;
     const callName = `${runtimeApiName}_${stringSnakeCase(methodName)}`;
     const defaultDocs = [`@callname: ${callName}`];
+    const deprecationComments = getDeprecationComment(deprecationInfo);
+    if (deprecationComments.length > 0) {
+      deprecationComments.unshift('\n');
+    }
 
     const typeOut = this.typesGen.generateType(output, 1, true);
     this.#addTypeImport(typeOut, false);
     const typedInputs = inputs
-      .map((input, idx) => ({
+      .map((input) => ({
         ...input,
         type: this.typesGen.generateType(input.typeId, 1),
       }))
@@ -120,18 +124,16 @@ export class RuntimeApisGen extends ApiGen {
         ...input,
         isOptional: this.#isOptionalParam(inputs, input.type, idx),
       }));
-
     this.#addTypeImport(typedInputs.map((t) => t.type));
-
     const paramsOut = typedInputs
       .map(({ name, type, isOptional }) => `${stringCamelCase(name)}${isOptional ? '?' : ''}: ${type}`)
       .join(', ');
-
     return `${commentBlock(
       docs,
       '\n',
       defaultDocs,
       typedInputs.map(({ type, name }) => `@param {${type}} ${name}`),
+      deprecationComments,
     )}${stringCamelCase(methodName)}: GenericRuntimeApiMethod<Rv, (${paramsOut}) => Promise<${typeOut}>>`;
   }
 

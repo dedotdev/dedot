@@ -9,6 +9,7 @@ import {
   RuntimeApiExecutor,
   StorageQueryExecutor,
   TxExecutor,
+  ViewFunctionExecutor,
 } from '../executor/index.js';
 import { newProxyChain } from '../proxychain.js';
 import { BaseStorageQuery, LegacyStorageQuery } from '../storage/index.js';
@@ -60,7 +61,6 @@ export class LegacyClient<ChainApi extends VersionedGenericSubstrateApi = Substr
 {
   #runtimeSubscriptionUnsub?: Unsub;
   #healthTimer?: ReturnType<typeof setInterval>;
-  #apiAtCache: Record<BlockHash, ISubstrateClientAt<any>> = {};
 
   /**
    * Use factory methods (`create`, `new`) to create `Dedot` instances.
@@ -120,7 +120,6 @@ export class LegacyClient<ChainApi extends VersionedGenericSubstrateApi = Substr
 
   protected override cleanUp() {
     super.cleanUp();
-    this.#apiAtCache = {};
     this.#healthTimer = undefined;
     this.#runtimeSubscriptionUnsub = undefined;
   }
@@ -252,6 +251,10 @@ export class LegacyClient<ChainApi extends VersionedGenericSubstrateApi = Substr
     return newProxyChain({ executor: new RuntimeApiExecutor(this, hash) }) as ChainApi[RpcLegacy]['call'];
   }
 
+  get view(): ChainApi[RpcLegacy]['view'] {
+    return newProxyChain({ executor: new ViewFunctionExecutor(this) }) as ChainApi[RpcLegacy]['view'];
+  }
+
   /**
    * @description Entry-point for executing on-chain transactions
    *
@@ -276,15 +279,16 @@ export class LegacyClient<ChainApi extends VersionedGenericSubstrateApi = Substr
   async at<ChainApiAt extends GenericSubstrateApi = ChainApi[RpcLegacy]>(
     hash: BlockHash,
   ): Promise<ISubstrateClientAt<ChainApiAt>> {
-    if (this.#apiAtCache[hash]) return this.#apiAtCache[hash];
+    const cached = this._apiAtCache.get<ISubstrateClientAt<ChainApiAt>>(hash);
+    if (cached) return cached;
 
     const targetVersion = await this.#getRuntimeVersion(hash);
 
     let metadata = this.metadata;
-    let registry = this.registry;
+    let registry: any = this.registry;
     if (targetVersion.specVersion !== this.runtimeVersion.specVersion) {
       metadata = await this.fetchMetadata(hash, targetVersion);
-      registry = new PortableRegistry(metadata.latest, this.options.hasher);
+      registry = new PortableRegistry<ChainApiAt>(metadata.latest, this.options.hasher);
     }
 
     const api = {
@@ -304,12 +308,12 @@ export class LegacyClient<ChainApi extends VersionedGenericSubstrateApi = Substr
     api.events = newProxyChain({ executor: new EventExecutor(api) }) as ChainApiAt['events'];
     api.errors = newProxyChain({ executor: new ErrorExecutor(api) }) as ChainApiAt['errors'];
 
-    this.#apiAtCache[hash] = api;
+    this._apiAtCache.set(hash, api);
 
     return api;
   }
 
-  protected override getStorageQuery(): BaseStorageQuery<RpcVersion> {
-    return new LegacyStorageQuery(this as any);
+  protected override getStorageQuery(): BaseStorageQuery {
+    return new LegacyStorageQuery(this);
   }
 }

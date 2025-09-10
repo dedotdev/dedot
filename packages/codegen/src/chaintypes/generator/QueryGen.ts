@@ -1,6 +1,7 @@
 import { StorageEntryLatest } from '@dedot/codecs';
 import { normalizeName, stringCamelCase } from '@dedot/utils';
 import { beautifySourceCode, commentBlock, compileTemplate } from '../../utils.js';
+import { getDeprecationComment } from '../../utils.js';
 import { ApiGen } from './ApiGen.js';
 
 export class QueryGen extends ApiGen {
@@ -39,7 +40,7 @@ export class QueryGen extends ApiGen {
   }
 
   #generateEntry(entry: StorageEntryLatest) {
-    const { name, storageType, docs, modifier } = entry;
+    const { name, storageType, docs, modifier, deprecationInfo } = entry;
 
     let valueType, keyTypeOut, keyTypeIn;
     if (storageType.type === 'Plain') {
@@ -60,6 +61,11 @@ export class QueryGen extends ApiGen {
       docs.push(`@param {${keyTypeIn}} arg`);
     }
     docs.push(`@param {Callback<${valueType}> =} callback`);
+
+    const deprecationComments = getDeprecationComment(deprecationInfo);
+    if (deprecationComments.length > 0) {
+      docs.push('\n', ...deprecationComments);
+    }
 
     return {
       name: normalizeName(name),

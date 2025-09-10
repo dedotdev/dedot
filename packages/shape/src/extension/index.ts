@@ -1,6 +1,7 @@
 export * from '../deshape.js';
 export { object } from './object.js';
 export { array } from './array.js';
+export { tuple } from './tuple.js';
 export { option } from './option.js';
 export * from './raw.js';
 export * from './hex.js';

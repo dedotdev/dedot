@@ -20,14 +20,35 @@ import { ExtraSignedExtension } from '../extensions/index.js';
 import { fakeSigner } from './fakeSigner.js';
 import { isKeyringPair, signRawMessage, txDefer } from './utils.js';
 
+interface TxHooks {
+  // A hook that is called before the extrinsic is signed.
+  beforeSign?: (tx: Extrinsic & ISubmittableExtrinsic, signerAddress: string) => Promise<void>;
+  // A hook to transform the submittable result on tx execution progress, helpful for customizing the submittable result.
+  transformResult?: <R extends ISubmittableResult = ISubmittableResult>(result: ISubmittableResult) => R;
+}
+
 export abstract class BaseSubmittableExtrinsic extends Extrinsic implements ISubmittableExtrinsic {
   #alterTx?: HexString;
+  #hooks?: TxHooks;
 
   constructor(
-    readonly client: ISubstrateClient,
+    readonly client: ISubstrateClient<any>,
     call: IRuntimeTxCall,
   ) {
     super(client.registry, call);
+  }
+
+  withHooks(hooks: TxHooks) {
+    this.#hooks = hooks;
+  }
+
+  protected transformTxResult<R extends ISubmittableResult = ISubmittableResult>(result: ISubmittableResult): R {
+    const transform = this.#hooks?.transformResult;
+    if (typeof transform === 'function') {
+      return transform(result);
+    }
+
+    return result as any;
   }
 
   async paymentInfo(account: AddressOrPair, options?: Partial<PayloadOptions>): Promise<TxPaymentInfo> {
@@ -35,12 +56,16 @@ export abstract class BaseSubmittableExtrinsic extends Extrinsic implements ISub
 
     const txU8a = this.toU8a();
 
-    const api = this.client as ISubstrateClient<SubstrateApi[RpcVersion]>;
+    const api = this.client as unknown as ISubstrateClient<SubstrateApi[RpcVersion]>;
     return api.call.transactionPaymentApi.queryInfo(txU8a, txU8a.length);
   }
 
   async sign(fromAccount: AddressOrPair, options?: Partial<SignerOptions>) {
     const address = isKeyringPair(fromAccount) ? fromAccount.address : fromAccount.toString();
+
+    const beforeSign = this.#hooks?.beforeSign;
+    if (beforeSign) await beforeSign(this, address);
+
     const extra = new ExtraSignedExtension(this.client, {
       signerAddress: address,
       payloadOptions: options,

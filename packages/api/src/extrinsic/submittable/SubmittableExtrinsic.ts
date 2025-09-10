@@ -8,6 +8,7 @@ import {
   SignerOptions,
   TxHash,
   TxUnsub,
+  Unsub,
 } from '@dedot/types';
 import { assert, isHex } from '@dedot/utils';
 import { BaseSubmittableExtrinsic } from './BaseSubmittableExtrinsic.js';
@@ -56,7 +57,7 @@ export class SubmittableExtrinsic extends BaseSubmittableExtrinsic implements IS
         const blockNumber = (signedBlock as SignedBlock).block.header.number;
 
         const status = toTxStatus(txStatus, { txIndex, blockNumber });
-        const result = new SubmittableResult({ status, txHash, events, txIndex });
+        const result = this.transformTxResult(new SubmittableResult({ status, txHash, events, txIndex }));
 
         onTxProgress(result);
 
@@ -64,17 +65,17 @@ export class SubmittableExtrinsic extends BaseSubmittableExtrinsic implements IS
         return callback?.(result);
       } else {
         const status = toTxStatus(txStatus);
-        const result = new SubmittableResult({ status, txHash });
+        const result = this.transformTxResult(new SubmittableResult({ status, txHash }));
 
         onTxProgress(result);
 
         !isSubscription && deferTx.resolve(txHash);
-        return callback?.(new SubmittableResult({ status, txHash }));
+        return callback?.(result);
       }
     });
 
     if (isSubscription) {
-      unsub.then((x) => {
+      unsub.then((x: Unsub) => {
         deferTx.resolve(x);
       });
     }

@@ -1,7 +1,13 @@
 import { BlockHash, Option } from '@dedot/codecs';
-import { GenericJsonRpcApis } from '@dedot/types';
+import { Callback, GenericJsonRpcApis, Unsub } from '@dedot/types';
 import { HexString } from '@dedot/utils';
-import { ArchiveStorageResult, MethodResult, PaginatedStorageQuery } from '../types/index.js';
+import {
+  ArchiveStorageDiffItem,
+  ArchiveStorageEventType,
+  ArchiveStorageDiffEventType,
+  MethodResult,
+  PaginatedStorageQuery,
+} from '../types/index.js';
 
 /**
  * archive-prefixed JSON-RPC methods.
@@ -67,16 +73,38 @@ export interface ArchiveUnstable extends GenericJsonRpcApis {
   archive_unstable_call(hash: BlockHash, func: string, params: string): Promise<MethodResult>;
 
   /**
-   * Returns storage entries at a specific block's state.
+   * Returns storage entries at a specific block's state via subscription.
    *
+   * @pubsub archive_unstable_storageEvent, archive_unstable_storage, archive_unstable_stopStorage
    * @param hash
    * @param items
    * @param childTrie
+   * @param callback
    * @version unstable
    */
   archive_unstable_storage(
     hash: BlockHash,
     items: Array<PaginatedStorageQuery>,
-    childTrie?: Option<HexString>,
-  ): Promise<ArchiveStorageResult>;
+    childTrie: Option<HexString> | null,
+    callback: Callback<ArchiveStorageEventType>,
+  ): Promise<Unsub>;
+
+  /**
+   * Returns the storage difference between two blocks via subscription.
+   *
+   * @pubsub archive_unstable_storageDiffEvent, archive_unstable_storageDiff, archive_unstable_stopStorageDiff
+   * @param hash
+   * @param items
+   * @param previousHash
+   * @param childTrie
+   * @param callback
+   * @version unstable
+   */
+  archive_unstable_storageDiff(
+    hash: BlockHash,
+    items: Array<ArchiveStorageDiffItem>,
+    previousHash: Option<BlockHash> | null,
+    childTrie: Option<HexString> | null,
+    callback: Callback<ArchiveStorageDiffEventType>,
+  ): Promise<Unsub>;
 }

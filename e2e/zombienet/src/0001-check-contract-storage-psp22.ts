@@ -30,17 +30,6 @@ export const run = async (_nodeName: any, networkInfo: any) => {
     const timestamp = await api.query.timestamp.now();
     const salt = stringToHex(`${api.rpcVersion}_${timestamp}`);
 
-    // Dry-run to estimate gas fee
-    const {
-      raw: { gasRequired },
-    } = await deployer.query.new(
-      1000000000000n, // total_supply
-      'Test Token', // name
-      'TST', // symbol
-      18, // decimal
-      { salt },
-    );
-
     // Deploy the contract
     const { events } = await deployer.tx
       .new(
@@ -48,7 +37,7 @@ export const run = async (_nodeName: any, networkInfo: any) => {
         'Test Token', // name
         'TST', // symbol
         18, // decimal
-        { gasLimit: gasRequired, salt },
+        { salt },
       )
       .signAndSend(alicePair, ({ status }) => {
         console.log(`[${api.rpcVersion}] Transaction status:`, status.type);
@@ -110,12 +99,8 @@ export const run = async (_nodeName: any, networkInfo: any) => {
     console.log(`[${api.rpcVersion}] Transferring tokens from Alice to Bob`);
     const transferAmount = 100000000000n; // 10% of total supply
 
-    const {
-      raw: { gasRequired: transferGas },
-    } = await contract.query.psp22Transfer(bob, transferAmount, new Uint8Array());
-
     await contract.tx
-      .psp22Transfer(bob, transferAmount, new Uint8Array(), { gasLimit: transferGas })
+      .psp22Transfer(bob, transferAmount, new Uint8Array())
       .signAndSend(alicePair, ({ status }) => {
         console.log(`[${api.rpcVersion}] Transfer status:`, status.type);
       })
@@ -155,12 +140,8 @@ export const run = async (_nodeName: any, networkInfo: any) => {
     // Approve Bob to spend Alice's tokens
     const approveAmount = 50000000000n;
 
-    const {
-      raw: { gasRequired: approveGas },
-    } = await contract.query.psp22Approve(bob, approveAmount, { caller: alice });
-
     await contract.tx
-      .psp22Approve(bob, approveAmount, { gasLimit: approveGas })
+      .psp22Approve(bob, approveAmount)
       .signAndSend(alicePair, ({ status }) => {
         console.log(`[${api.rpcVersion}] Approve status:`, status.type);
       })

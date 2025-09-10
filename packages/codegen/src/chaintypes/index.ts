@@ -1,5 +1,5 @@
 import { LegacyClient, SubstrateRuntimeVersion } from '@dedot/api';
-import { MetadataLatest, RuntimeVersion } from '@dedot/codecs';
+import { MetadataLatest } from '@dedot/codecs';
 import { WsProvider } from '@dedot/providers';
 import { RpcMethods } from '@dedot/types/json-rpc';
 import { stringDashCase, stringPascalCase } from '@dedot/utils';
@@ -15,6 +15,7 @@ import {
   QueryGen,
   RuntimeApisGen,
   TxGen,
+  ViewFunctionsGen,
   TypesGen,
 } from './generator/index.js';
 
@@ -65,6 +66,7 @@ export async function generateTypes(
   const eventsFileName = path.join(dirPath, `events.${extension}`);
   const runtimeApisFileName = path.join(dirPath, `runtime.${extension}`);
   const txFileName = path.join(dirPath, `tx.${extension}`);
+  const viewFunctionsFileName = path.join(dirPath, `view-functions.${extension}`);
 
   if (!fs.existsSync(dirPath)) {
     fs.mkdirSync(dirPath, { recursive: true });
@@ -76,11 +78,12 @@ export async function generateTypes(
   const constsGen = new ConstsGen(typesGen);
   const queryGen = new QueryGen(typesGen);
   const jsonRpcGen = new JsonRpcGen(typesGen, rpcMethods);
-  const indexGen = new IndexGen(interfaceName, runtimeVersion);
   const errorsGen = new ErrorsGen(typesGen);
   const eventsGen = new EventsGen(typesGen);
   const runtimeApisGen = new RuntimeApisGen(typesGen, runtimeVersion.apis);
   const txGen = new TxGen(typesGen);
+  const viewFunctionGen = new ViewFunctionsGen(typesGen);
+  const indexGen = new IndexGen(interfaceName, runtimeVersion, typesGen);
 
   fs.writeFileSync(defTypesFileName, await typesGen.generate(useSubPaths));
   fs.writeFileSync(errorsFileName, await errorsGen.generate(useSubPaths));
@@ -89,8 +92,9 @@ export async function generateTypes(
   fs.writeFileSync(queryTypesFileName, await queryGen.generate(useSubPaths));
   fs.writeFileSync(constsTypesFileName, await constsGen.generate(useSubPaths));
   fs.writeFileSync(txFileName, await txGen.generate(useSubPaths));
-  fs.writeFileSync(indexFileName, await indexGen.generate(useSubPaths));
   fs.writeFileSync(runtimeApisFileName, await runtimeApisGen.generate(useSubPaths));
+  fs.writeFileSync(viewFunctionsFileName, await viewFunctionGen.generate(useSubPaths));
+  fs.writeFileSync(indexFileName, await indexGen.generate(useSubPaths));
 
   return { interfaceName, outputFolder: dirPath };
 }

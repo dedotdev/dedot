@@ -11,10 +11,16 @@ import {
 } from '@dedot/types/json-rpc';
 import { waitFor } from '@dedot/utils';
 import { MockInstance } from '@vitest/spy';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import MockProvider from '../../../client/__tests__/MockProvider.js';
 import { IJsonRpcClient } from '../../../types.js';
 import { JsonRpcClient } from '../../JsonRpcClient.js';
+import { Archive } from '../Archive.js';
+import {
+  ChainHeadBlockNotPinnedError,
+  ChainHeadBlockPrunedError,
+  ChainHeadOperationError,
+} from '../ChainHead/error.js';
 import { ChainHead, PinnedBlock } from '../ChainHead/index.js';
 import { newChainHeadSimulator } from './simulator.js';
 
@@ -1507,6 +1513,299 @@ describe('ChainHead', () => {
         simulator.subscriptionId,
         'storage01',
       ]);
+    });
+  });
+
+  describe('Archive Fallback', () => {
+    let mockArchive: any;
+    const mockBlockHash = '0x1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef';
+
+    beforeEach(() => {
+      mockArchive = {
+        body: vi.fn(),
+        call: vi.fn(),
+        header: vi.fn(),
+        storage: vi.fn(),
+      };
+    });
+
+    describe('withArchive method', () => {
+      it('should attach archive and return chainHead for chaining', () => {
+        const result = chainHead.withArchive(mockArchive);
+
+        // Should return the same ChainHead instance for method chaining
+        expect(result).toBe(chainHead);
+        expect(() => chainHead.withArchive(mockArchive)).not.toThrow();
+      });
+
+      it('should work without archive (existing behavior)', () => {
+        // ChainHead should work fine without archive fallback attached
+        expect(chainHead).toBeDefined();
+        expect(typeof chainHead.body).toBe('function');
+        expect(typeof chainHead.call).toBe('function');
+        expect(typeof chainHead.header).toBe('function');
+        expect(typeof chainHead.storage).toBe('function');
+      });
+    });
+
+    describe('body() fallback', () => {
+      it('should fallback to archive.body() when ChainHeadBlockNotPinnedError', async () => {
+        // Setup
+        notifyInitializedEvent();
+        await chainHead.follow();
+
+        mockArchive.body.mockResolvedValue(['0xabcd1234']);
+        chainHead.withArchive(mockArchive);
+
+        // Mock isPinned to return false, which will cause #ensurePinnedHash to throw ChainHeadBlockNotPinnedError
+        vi.spyOn(chainHead, 'isPinned').mockReturnValue(false);
+
+        // Execute
+        const result = await chainHead.body(mockBlockHash);
+
+        // Verify
+        expect(result).toEqual(['0xabcd1234']);
+        expect(mockArchive.body).toHaveBeenCalledWith(mockBlockHash);
+      });
+
+      it('should throw error when archive body returns undefined', async () => {
+        // Setup
+        notifyInitializedEvent();
+        await chainHead.follow();
+
+        mockArchive.body.mockResolvedValue(undefined);
+        chainHead.withArchive(mockArchive);
+
+        // Mock isPinned to return false
+        vi.spyOn(chainHead, 'isPinned').mockReturnValue(false);
+
+        // Execute & Verify - should throw error instead of returning []
+        await expect(chainHead.body(mockBlockHash)).rejects.toThrow(ChainHeadOperationError);
+        await expect(chainHead.body(mockBlockHash)).rejects.toThrow(`Block ${mockBlockHash} not found in Archive`);
+        expect(mockArchive.body).toHaveBeenCalledWith(mockBlockHash);
+      });
+
+      it('should not fallback for other errors', async () => {
+        // Setup
+        chainHead.withArchive(mockArchive);
+
+        // Mock ChainHead body to throw different error
+        vi.spyOn(chainHead, 'body').mockImplementation(async () => {
+          throw new ChainHeadBlockPrunedError('Block pruned');
+        });
+
+        // Execute & Verify
+        await expect(chainHead.body(mockBlockHash)).rejects.toThrow(ChainHeadBlockPrunedError);
+        expect(mockArchive.body).not.toHaveBeenCalled();
+      });
+
+      it('should throw original error when no archive attached', async () => {
+        // Don't attach archive
+
+        // Mock ChainHead body to throw
+        vi.spyOn(chainHead, 'body').mockImplementation(async () => {
+          throw new ChainHeadBlockNotPinnedError('Block not pinned', mockBlockHash);
+        });
+
+        // Execute & Verify
+        await expect(chainHead.body(mockBlockHash)).rejects.toThrow(ChainHeadBlockNotPinnedError);
+      });
+    });
+
+    describe('call() fallback', () => {
+      it('should fallback to archive.call() with same parameters', async () => {
+        // Setup
+        notifyInitializedEvent();
+        await chainHead.follow();
+
+        mockArchive.call.mockResolvedValue('0xfeedbeef');
+        chainHead.withArchive(mockArchive);
+
+        // Mock isPinned to return false
+        vi.spyOn(chainHead, 'isPinned').mockReturnValue(false);
+
+        // Execute
+        const result = await chainHead.call('Core_version', '0xabcd', mockBlockHash);
+
+        // Verify
+        expect(result).toBe('0xfeedbeef');
+        expect(mockArchive.call).toHaveBeenCalledWith('Core_version', '0xabcd', mockBlockHash);
+      });
+
+      it('should not fallback for other errors', async () => {
+        // Setup
+        chainHead.withArchive(mockArchive);
+
+        // Mock ChainHead call to throw different error
+        vi.spyOn(chainHead, 'call').mockImplementation(async () => {
+          throw new Error('Network error');
+        });
+
+        // Execute & Verify
+        await expect(chainHead.call('Core_version', '0x', mockBlockHash)).rejects.toThrow('Network error');
+        expect(mockArchive.call).not.toHaveBeenCalled();
+      });
+    });
+
+    describe('header() fallback', () => {
+      it('should fallback to archive.header() when block not pinned', async () => {
+        // Setup
+        notifyInitializedEvent();
+        await chainHead.follow();
+
+        mockArchive.header.mockResolvedValue('0xheader123');
+        chainHead.withArchive(mockArchive);
+
+        // Mock isPinned to return false
+        vi.spyOn(chainHead, 'isPinned').mockReturnValue(false);
+
+        // Execute
+        const result = await chainHead.header(mockBlockHash);
+
+        // Verify
+        expect(result).toBe('0xheader123');
+        expect(mockArchive.header).toHaveBeenCalledWith(mockBlockHash);
+      });
+
+      it('should not fallback for other errors', async () => {
+        // Setup
+        chainHead.withArchive(mockArchive);
+
+        // Mock ChainHead header to throw different error
+        vi.spyOn(chainHead, 'header').mockImplementation(async () => {
+          throw new Error('Connection error');
+        });
+
+        // Execute & Verify
+        await expect(chainHead.header(mockBlockHash)).rejects.toThrow('Connection error');
+        expect(mockArchive.header).not.toHaveBeenCalled();
+      });
+    });
+
+    describe('storage() fallback', () => {
+      const mockStorageQueries = [
+        { key: '0xkey1', type: 'value' as const },
+        { key: '0xkey2', type: 'hash' as const },
+      ];
+
+      it('should fallback to archive.storage() with converted parameters', async () => {
+        // Setup
+        notifyInitializedEvent();
+        await chainHead.follow();
+
+        const archiveResult = [
+          { key: '0xkey1', value: '0xvalue1', event: 'storage' as const },
+          { key: '0xkey2', value: '0xvalue2', event: 'storage' as const },
+        ];
+        mockArchive.storage.mockResolvedValue(archiveResult);
+        chainHead.withArchive(mockArchive);
+
+        // Mock isPinned to return false
+        vi.spyOn(chainHead, 'isPinned').mockReturnValue(false);
+
+        // Execute
+        const result = await chainHead.storage(mockStorageQueries, '0xchildtrie', mockBlockHash);
+
+        // Verify
+        expect(result).toBe(archiveResult);
+        expect(mockArchive.storage).toHaveBeenCalledWith(
+          mockStorageQueries, // Should convert StorageQuery[] to PaginatedStorageQuery[]
+          '0xchildtrie',
+          mockBlockHash,
+        );
+      });
+
+      it('should handle null childTrie parameter', async () => {
+        // Setup
+        notifyInitializedEvent();
+        await chainHead.follow();
+
+        mockArchive.storage.mockResolvedValue([]);
+        chainHead.withArchive(mockArchive);
+
+        // Mock isPinned to return false
+        vi.spyOn(chainHead, 'isPinned').mockReturnValue(false);
+
+        // Execute
+        await chainHead.storage(mockStorageQueries, null, mockBlockHash);
+
+        // Verify
+        expect(mockArchive.storage).toHaveBeenCalledWith(mockStorageQueries, null, mockBlockHash);
+      });
+
+      it('should not fallback for other errors', async () => {
+        // Setup
+        chainHead.withArchive(mockArchive);
+
+        // Mock ChainHead storage to throw different error
+        vi.spyOn(chainHead, 'storage').mockImplementation(async () => {
+          throw new Error('Storage error');
+        });
+
+        // Execute & Verify
+        await expect(chainHead.storage(mockStorageQueries, null, mockBlockHash)).rejects.toThrow('Storage error');
+        expect(mockArchive.storage).not.toHaveBeenCalled();
+      });
+    });
+
+    describe('fallback logging', () => {
+      it('should log warning with block hash when falling back', async () => {
+        // Setup
+        notifyInitializedEvent();
+        await chainHead.follow();
+
+        mockArchive.body.mockResolvedValue([]);
+        chainHead.withArchive(mockArchive);
+
+        // Mock isPinned to return false
+        vi.spyOn(chainHead, 'isPinned').mockReturnValue(false);
+
+        // Execute
+        await chainHead.body(mockBlockHash);
+      });
+
+      it('should log actual hash when no hash provided', async () => {
+        // Setup
+        notifyInitializedEvent();
+        await chainHead.follow();
+
+        mockArchive.body.mockResolvedValue([]);
+        chainHead.withArchive(mockArchive);
+
+        // Mock isPinned to return false for the bestHash (since no hash provided, it will use bestHash)
+        vi.spyOn(chainHead, 'isPinned').mockReturnValue(false);
+
+        // Execute
+        await chainHead.body(); // No hash parameter
+      });
+    });
+
+    describe('error handling', () => {
+      it('should propagate Archive errors when fallback fails', async () => {
+        // Setup
+        notifyInitializedEvent();
+        await chainHead.follow();
+
+        mockArchive.body.mockRejectedValue(new Error('Archive failed'));
+        chainHead.withArchive(mockArchive);
+
+        // Mock isPinned to return false
+        vi.spyOn(chainHead, 'isPinned').mockReturnValue(false);
+
+        // Execute & Verify
+        await expect(chainHead.body(mockBlockHash)).rejects.toThrow('Archive failed');
+      });
+
+      it('should throw original error when no Archive attached', async () => {
+        // Don't attach archive
+
+        vi.spyOn(chainHead, 'body').mockImplementation(async () => {
+          throw new ChainHeadBlockNotPinnedError('Block not pinned', mockBlockHash);
+        });
+
+        // Execute & Verify
+        await expect(chainHead.body(mockBlockHash)).rejects.toThrow(ChainHeadBlockNotPinnedError);
+      });
     });
   });
 });

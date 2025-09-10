@@ -258,7 +258,7 @@ describe('LegacyClient', () => {
         // runtime version is not changing, so the metadata can be re-use
         expect(providerSend).not.toBeCalledWith('state_call', [
           'Metadata_metadata_at_version',
-          '0x0f000000',
+          '0x10000000',
           '0x12345678',
         ]);
       });
@@ -269,10 +269,24 @@ describe('LegacyClient', () => {
           () => ({ ...MockedRuntimeVersion, specVersion: 0 }) as RuntimeVersion,
         );
 
+        provider.setRpcRequest('state_call', async (params) => {
+          return new Promise<HexString>((resolve) => {
+            setTimeout(() => {
+              if (params[0] === 'Metadata_metadata_versions') {
+                resolve('0x0c100000000f0000000e000000');
+              } else {
+                resolve('0x');
+              }
+            }, 300);
+          });
+        });
+
         const providerSend = vi.spyOn(provider, 'send');
         const _ = await api.at('0x12345678');
 
         expect(providerSend).toBeCalledWith('state_getRuntimeVersion', ['0x12345678']);
+        expect(providerSend).toBeCalledWith('state_call', ['Metadata_metadata_versions', '0x', '0x12345678']); // $.u32.decode(16) = '0x10000000'
+        expect(providerSend).toBeCalledWith('state_call', ['Metadata_metadata_at_version', '0x10000000', '0x12345678']); // $.u32.decode(16) = '0x10000000'
         expect(providerSend).toBeCalledWith('state_call', ['Metadata_metadata_at_version', '0x0f000000', '0x12345678']); // $.u32.decode(15) = '0x0f000000'
         expect(providerSend).toBeCalledWith('state_call', ['Metadata_metadata_at_version', '0x0e000000', '0x12345678']); // $.u32.decode(14) = '0x0e000000'
       });
@@ -311,6 +325,51 @@ describe('LegacyClient', () => {
 
         await apiAt.call.metadata.metadata();
         expect(providerSend).toBeCalledWith('state_call', ['Metadata_metadata', '0x', atHash]);
+      });
+
+      it('should maintain proxy chain independence for events', async () => {
+        const apiAt = await api.at('0x12345678');
+
+        // Access multiple events - they should be independent
+        const eventRefs = [
+          apiAt.events.system.ExtrinsicSuccess,
+          apiAt.events.system.ExtrinsicFailed,
+          apiAt.events.system.CodeUpdated,
+          apiAt.events.balances.Transfer,
+        ];
+
+        // Each should have independent metadata
+        expect(eventRefs[0].meta.name).toEqual('ExtrinsicSuccess');
+        expect(eventRefs[1].meta.name).toEqual('ExtrinsicFailed');
+        expect(eventRefs[2].meta.name).toEqual('CodeUpdated');
+        expect(eventRefs[3].meta.name).toEqual('Transfer');
+
+        // Access them again in different order - should still work
+        const eventRefs2 = [
+          apiAt.events.system.ExtrinsicFailed,
+          apiAt.events.system.ExtrinsicSuccess,
+          apiAt.events.balances.Transfer,
+        ];
+
+        expect(eventRefs2[0].meta.name).toEqual('ExtrinsicFailed');
+        expect(eventRefs2[1].meta.name).toEqual('ExtrinsicSuccess');
+        expect(eventRefs2[2].meta.name).toEqual('Transfer');
+      });
+
+      it('should maintain proxy chain independence for errors', async () => {
+        const apiAt = await api.at('0x12345678');
+
+        // Access multiple errors - they should be independent
+        const errorRefs = [
+          apiAt.errors.system.InvalidSpecName,
+          apiAt.errors.system.SpecVersionNeedsToIncrease,
+          apiAt.errors.balances.InsufficientBalance,
+        ];
+
+        // Each should have independent metadata
+        expect(errorRefs[0].meta.name).toEqual('InvalidSpecName');
+        expect(errorRefs[1].meta.name).toEqual('SpecVersionNeedsToIncrease');
+        expect(errorRefs[2].meta.name).toEqual('InsufficientBalance');
       });
     });
 

@@ -15,6 +15,8 @@ import {
   SignedExtensionDefV16,
   $MetadataV16,
   MetadataV16,
+  $ViewFunctionDefV16,
+  ViewFunctionDefV16,
 } from './v16.js';
 
 export const notSupportedCodec = (msg = 'Not supported!'): $.Shape<never> => {
@@ -71,6 +73,9 @@ export type SignedExtensionDefLatest = SignedExtensionDefV16;
 
 export const $RuntimeApiMethodDefLatest = $RuntimeApiMethodDefV16;
 export type RuntimeApiMethodDefLatest = RuntimeApiMethodDefV16;
+
+export const $ViewFunctionDefLatest = $ViewFunctionDefV16;
+export type ViewFunctionDefLatest = ViewFunctionDefV16;
 
 export class Metadata {
   magicNumber: number;

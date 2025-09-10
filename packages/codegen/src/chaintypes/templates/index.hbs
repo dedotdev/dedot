@@ -7,9 +7,17 @@ import { ChainJsonRpcApis } from './json-rpc.js';
 import { ChainErrors } from './errors.js';
 import { ChainEvents } from './events.js';
 import { RuntimeApis } from './runtime.js';
+import { ChainViewFunctions } from './view-functions.js';
 import { ChainTx } from './tx.js';
 
 export * from './types.js';
+
+interface ChainKnownTypes extends GenericChainKnownTypes {
+  Address: {{{addressType}}};
+  Signature: {{{signatureType}}};
+  RuntimeCall: {{{runtimeCallType}}};
+  Extra: {{{extraType}}};
+}
 
 export interface Versioned{{{interfaceName}}}<Rv extends RpcVersion> extends GenericSubstrateApi<Rv> {
   rpc: ChainJsonRpcApis<Rv>;
@@ -18,7 +26,10 @@ export interface Versioned{{{interfaceName}}}<Rv extends RpcVersion> extends Gen
   errors: ChainErrors<Rv>;
   events: ChainEvents<Rv>;
   call: RuntimeApis<Rv>;
+  view: ChainViewFunctions<Rv>;
   tx: ChainTx<Rv>;
+  
+  types: ChainKnownTypes;
 }
 
 {{interfaceDocs}}export interface {{{interfaceName}}} {

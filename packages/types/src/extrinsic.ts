@@ -1,6 +1,7 @@
 import { ApplyExtrinsicResult, BlockHash, DispatchError, DispatchInfo, Hash, RuntimeDispatchInfo } from '@dedot/codecs';
+import { Callback, IEventRecord, Unsub } from '@dedot/codecs/types';
 import { HexString } from '@dedot/utils';
-import { Callback, IEventRecord, IKeyringPair, InjectedSigner, Unsub } from './index.js';
+import { IKeyringPair, InjectedSigner } from './pjs-types.js';
 
 export type AddressOrPair = IKeyringPair | string; // | AccountId32Like | MultiAddressLike;
 

@@ -16,7 +16,7 @@ type TxFound = { blockHash: BlockHash; blockNumber: number; index: number; event
  */
 export class SubmittableExtrinsicV2 extends BaseSubmittableExtrinsic {
   constructor(
-    public client: DedotClient,
+    public client: DedotClient<any>,
     call: IRuntimeTxCall,
   ) {
     super(client, call);
@@ -228,6 +228,8 @@ export class SubmittableExtrinsicV2 extends BaseSubmittableExtrinsic {
     //  just in-case we somehow can't find the tx in any block
     let unsub: Unsub | undefined;
     this.#send((result) => {
+      result = this.transformTxResult(result);
+
       onTxProgress(result);
 
       if (isSubscription) {

@@ -1,6 +1,6 @@
 {
   "name": "@dedot/codegen",
-  "version": "0.13.2",
+  "version": "0.16.0",
   "description": "Generate types",
   "author": "Thang X. Vu <thang@dedot.dev>",
   "homepage": "https://dedot.dev",
@@ -27,7 +27,7 @@
     "@dedot/types": "workspace:*",
     "@dedot/utils": "workspace:*",
     "handlebars": "^4.7.8",
-    "prettier": "^3.5.3"
+    "prettier": "^3.6.2"
   },
   "publishConfig": {
     "access": "public",

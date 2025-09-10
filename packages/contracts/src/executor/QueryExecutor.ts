@@ -2,7 +2,7 @@ import type { ISubstrateClient } from '@dedot/api';
 import type { SubstrateApi } from '@dedot/api/chaintypes';
 import { Result } from '@dedot/codecs';
 import { GenericSubstrateApi, RpcVersion } from '@dedot/types';
-import { assert, assertFalse, concatU8a, HexString, hexToU8a, u8aToHex } from '@dedot/utils';
+import { assert, concatU8a, HexString, hexToU8a, u8aToHex } from '@dedot/utils';
 import { ContractDispatchError, ContractLangError } from '../errors.js';
 import {
   ContractCallOptions,
@@ -10,7 +10,7 @@ import {
   GenericContractCallResult,
   GenericContractQueryCall,
 } from '../types/index.js';
-import { ensureContractPresence, toReturnFlags } from '../utils/index.js';
+import { ensureContractPresence, ensureParamsLength, toReturnFlags } from '../utils/index.js';
 import { ContractExecutor } from './abstract/index.js';
 
 export class QueryExecutor<ChainApi extends GenericSubstrateApi> extends ContractExecutor<ChainApi> {
@@ -21,11 +21,7 @@ export class QueryExecutor<ChainApi extends GenericSubstrateApi> extends Contrac
     const callFn: GenericContractQueryCall<ChainApi> = async (...params: any[]) => {
       const { args } = meta;
 
-      assertFalse(params.length < args.length, `Expected at least ${args.length} arguments, got ${params.length}`);
-      assertFalse(
-        params.length > args.length + 1,
-        `Expected at most ${args.length + 1} arguments, got ${params.length}`,
-      );
+      ensureParamsLength(args.length, params.length);
 
       const callOptions = (params[args.length] || {}) as ContractCallOptions;
       const { caller = this.options.defaultCaller, value = 0n, gasLimit, storageDepositLimit } = callOptions;
@@ -76,7 +72,9 @@ export class QueryExecutor<ChainApi extends GenericSubstrateApi> extends Contrac
       })();
 
       if (raw.result.isErr) {
-        throw new ContractDispatchError(raw.result.err, raw);
+        const dispatchError = raw.result.err;
+        const moduleError = client.registry.findErrorMeta(dispatchError);
+        throw new ContractDispatchError(dispatchError, raw, moduleError);
       }
 
       const data = this.tryDecode(meta, raw.result.value.data) as Result<any, any>;

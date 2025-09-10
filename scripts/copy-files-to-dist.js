@@ -55,6 +55,15 @@ const main = () => {
         };
       }
 
+      if (pkgJson.name === '@dedot/codecs') {
+        pkgJson.exports['./types'] = {
+          types: './types/index.d.ts',
+          import: './types/index.js',
+          require: './cjs/types/index.js',
+          default: './types/index.js',
+        };
+      }
+
       // Export default/generic substrate chaintypes
       if (pkgJson.name === 'dedot') {
         pkgJson.exports['./chaintypes'] = {

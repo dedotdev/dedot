@@ -1,5 +1,5 @@
 import { GenericJsonRpcApis } from '@dedot/types';
-import { ArchiveUnstable } from './archive/index.js';
+import { ArchiveUnstable, ArchiveV1 } from './archive/index.js';
 import { ChainHeadUnstable, ChainHeadV1 } from './chainHead/index.js';
 import { ChainSpecUnstable, ChainSpecV1 } from './chainSpec/index.js';
 import { TransactionUnstable, TransactionV1 } from './transaction/index.js';
@@ -17,4 +17,5 @@ export interface JsonRpcApisV2
     TransactionWatchUnstable,
     TransactionWatchV1,
     ArchiveUnstable,
+    ArchiveV1,
     GenericJsonRpcApis {}

@@ -3,9 +3,8 @@ import type { AsyncMethod, GenericSubstrateApi, RpcVersion } from '@dedot/types'
 import { assert, HexString } from '@dedot/utils';
 import { ChainHead } from '../../json-rpc/index.js';
 import { type BaseStorageQuery, NewStorageQuery, QueryableStorage } from '../../storage/index.js';
-import { ISubstrateClientAt } from '../../types.js';
+import { ISubstrateClient, ISubstrateClientAt } from '../../types.js';
 import { StorageQueryExecutor } from '../StorageQueryExecutor.js';
-
 
 /**
  * @name StorageQueryExecutorV2
@@ -14,7 +13,7 @@ export class StorageQueryExecutorV2<
   ChainApi extends GenericSubstrateApi = GenericSubstrateApi,
 > extends StorageQueryExecutor<ChainApi> {
   constructor(
-    client: ISubstrateClientAt<ChainApi>,
+    client: ISubstrateClientAt<ChainApi> | ISubstrateClient<ChainApi, any>,
     public chainHead: ChainHead,
     atBlockHash?: BlockHash,
   ) {
@@ -31,9 +30,7 @@ export class StorageQueryExecutorV2<
       const withArgs = !!args && args.length > 0;
       const key = withArgs ? entry.encodeKey(args, true) : entry.prefixKey;
 
-      const results = await this.chainHead.storage([
-        { type: 'descendantsValues', key },
-      ]);
+      const results = await this.chainHead.storage([{ type: 'descendantsValues', key }]);
       return results.map(({ key, value }) => [
         entry.decodeKey(key as HexString),
         entry.decodeValue(value as HexString),
@@ -43,7 +40,7 @@ export class StorageQueryExecutorV2<
     return { entries };
   }
 
-  protected override getStorageQuery(): BaseStorageQuery<RpcVersion> {
+  protected override getStorageQuery(): BaseStorageQuery {
     // @ts-ignore little trick to make querying data client.at instance works here,
     // TODO need to rethink about this
     if (!this.client['chainHead']) this.client['chainHead'] = this.chainHead;

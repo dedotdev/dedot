@@ -1,4 +1,4 @@
-import { ContractInformation, ContractSource, ContractType } from './shared';
+import { ContractInformation, ContractSource, ContractType } from './shared.js';
 import { ContractSpecV5, ContractStorageV5 } from './v5.js';
 
 export interface ContractSourceV6 extends ContractSource {

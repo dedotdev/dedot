@@ -1,4 +1,3 @@
-import { ChainHeadEvent } from '@dedot/api/json-rpc';
 import { BlockHash, Hash, Metadata, PortableRegistry } from '@dedot/codecs';
 import type { ConnectionStatus, JsonRpcProvider, ProviderEvent } from '@dedot/providers';
 import type { AnyShape } from '@dedot/shape';
@@ -17,6 +16,7 @@ import type {
 } from '@dedot/types';
 import type { HashFn, HexString, IEventEmitter } from '@dedot/utils';
 import type { AnySignedExtension } from './extrinsic/index.js';
+import type { ChainHeadEvent } from './json-rpc/index.js';
 
 export type MetadataKey = `RAW_META/${string}`;
 export type SubscribeMethod = string;
@@ -108,17 +108,16 @@ export interface IJsonRpcClient<
 }
 
 /**
- * A generic interface for Substrate clients at a specific block
+ * @internal
  */
-export interface ISubstrateClientAt<ChainApi extends GenericSubstrateApi = GenericSubstrateApi> {
-  atBlockHash?: BlockHash;
+export interface IGenericSubstrateClient<ChainApi extends GenericSubstrateApi = GenericSubstrateApi> {
   rpcVersion: RpcVersion;
 
   options: ApiOptions;
   genesisHash: Hash;
   runtimeVersion: SubstrateRuntimeVersion;
   metadata: Metadata;
-  registry: PortableRegistry;
+  registry: PortableRegistry<ChainApi>;
 
   rpc: ChainApi['rpc'];
   consts: ChainApi['consts'];
@@ -126,6 +125,15 @@ export interface ISubstrateClientAt<ChainApi extends GenericSubstrateApi = Gener
   call: ChainApi['call'];
   events: ChainApi['events'];
   errors: ChainApi['errors'];
+  view: ChainApi['view'];
+}
+
+/**
+ * A generic interface for Substrate clients at a specific block
+ */
+export interface ISubstrateClientAt<ChainApi extends GenericSubstrateApi = GenericSubstrateApi>
+  extends IGenericSubstrateClient<ChainApi> {
+  atBlockHash: BlockHash;
 }
 
 /**
@@ -135,7 +143,7 @@ export interface ISubstrateClient<
   ChainApi extends GenericSubstrateApi = GenericSubstrateApi,
   Events extends string = ApiEvent,
 > extends IJsonRpcClient<ChainApi, Events>,
-    ISubstrateClientAt<ChainApi> {
+    IGenericSubstrateClient<ChainApi> {
   options: ApiOptions;
   tx: ChainApi['tx'];
 

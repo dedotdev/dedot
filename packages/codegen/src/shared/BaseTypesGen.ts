@@ -78,9 +78,20 @@ export abstract class BaseTypesGen {
           skipIds.push(id);
         } else {
           pathsCount.get(joinedPath)!.push(id);
+
+          const existingSuffixes = pathsCount
+            .get(joinedPath)!
+            .map((id) => typeSuffixes.get(id) as string)
+            .filter((x) => x);
+
           typeSuffixes.set(
             id,
-            this.extractDupTypeSuffix(id, firstOccurrenceTypeId, pathsCount.get(joinedPath)!.length),
+            this.extractDupTypeSuffix(
+              id, // --
+              firstOccurrenceTypeId,
+              pathsCount.get(joinedPath)!.length,
+              existingSuffixes,
+            ),
           );
         }
       } else {
@@ -415,18 +426,26 @@ export abstract class BaseTypesGen {
     );
   }
 
-  extractDupTypeSuffix(dupTypeId: TypeId, originalTypeId: TypeId, dupCount: number) {
-    const originalTypeParams = this.types[originalTypeId].params;
-    const dupTypeParams = this.types[dupTypeId].params;
-    const diffParam = dupTypeParams.find((one, idx) => !this.#eqlTypeParam(one, originalTypeParams[idx]));
-
-    // TODO make sure these suffix is unique if a type is duplicated more than 2 times
-    if (diffParam?.typeId) {
-      const diffType = this.types[diffParam.typeId];
+  #getTypeSuffix(typeId: number): string | undefined {
+    if (typeId) {
+      const diffType = this.types[typeId];
       if (diffType.path.length > 0) {
         return stringPascalCase(diffType.path.at(-1)!);
       } else if (diffType.typeDef.type === 'Primitive') {
         return stringPascalCase(diffType.typeDef.value.kind);
+      }
+    }
+  }
+
+  extractDupTypeSuffix(dupTypeId: TypeId, originalTypeId: TypeId, dupCount: number, existingSuffixes: string[] = []) {
+    const originalTypeParams = this.types[originalTypeId].params;
+    const dupTypeParams = this.types[dupTypeId].params;
+    const diffParam = dupTypeParams.find((one, idx) => !this.#eqlTypeParam(one, originalTypeParams[idx]));
+
+    if (diffParam?.typeId) {
+      const suffix = this.#getTypeSuffix(diffParam.typeId);
+      if (suffix && !existingSuffixes.includes(suffix)) {
+        return suffix;
       }
     }
 

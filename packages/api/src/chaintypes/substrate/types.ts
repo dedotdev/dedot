@@ -25486,7 +25486,14 @@ export type PalletRevivePrimitivesCodeUploadReturnValue = { codeHash: H256; depo
 
 export type PalletRevivePrimitivesContractAccessError = 'DoesntExist' | 'KeyDecodingFailed';
 
-export type PalletReviveEvmApiDebugRpcTypesTracerConfig = { type: 'CallTracer'; value: { withLogs: boolean } };
+export type PalletReviveEvmApiDebugRpcTypesTracerType = {
+  type: 'CallTracer';
+  value?: PalletReviveEvmApiDebugRpcTypesCallTracerConfig | undefined;
+};
+
+export type PalletReviveEvmApiDebugRpcTypesCallTracerConfig = { withLogs: boolean; onlyTopCall: boolean };
+
+export type PalletReviveEvmApiDebugRpcTypesTrace = { type: 'Call'; value: PalletReviveEvmApiDebugRpcTypesCallTrace };
 
 export type PalletReviveEvmApiDebugRpcTypesCallTrace = {
   from: H160;

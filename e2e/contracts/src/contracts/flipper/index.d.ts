@@ -15,9 +15,9 @@ export * from './types.js';
 /**
  * @name: FlipperContractApi
  * @contractName: flipper
- * @contractVersion: 5.0.0
- * @authors: Parity Technologies <admin@parity.io>
- * @language: ink! 5.0.0
+ * @contractVersion: 0.1.0
+ * @authors: [your_name] <[your_email]>
+ * @language: ink! 6.0.0-alpha
  **/
 export interface FlipperContractApi<
   Rv extends RpcVersion = RpcVersion,
@@ -26,7 +26,7 @@ export interface FlipperContractApi<
   query: ContractQuery<ChainApi[Rv]>;
   tx: ContractTx<ChainApi[Rv]>;
   constructorQuery: ConstructorQuery<ChainApi[Rv]>;
-  constructorTx: ConstructorTx<ChainApi[Rv]>;
+  constructorTx: ConstructorTx<ChainApi[Rv], FlipperContractApi>;
   events: ContractEvents<ChainApi[Rv]>;
   storage: {
     root(): Promise<Flipper>;

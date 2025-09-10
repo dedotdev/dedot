@@ -4,8 +4,8 @@ import {
   ContractInstantiateDispatchError,
   ContractInstantiateLangError,
   ContractLangError,
-} from '@dedot/contracts';
-import { generateRandomHex } from '@dedot/utils';
+} from 'dedot/contracts';
+import { generateRandomHex } from 'dedot/utils';
 import { beforeAll, describe, expect, it } from 'vitest';
 import { FlipperContractApi } from '../contracts/flipper';
 import { deployFlipperV5, devPairs, flipperV5Metadata, flipperV6Metadata } from '../utils.js';
@@ -46,9 +46,15 @@ describe('Errors', () => {
         .signAndSend(alicePair)
         .untilFinalized();
 
-      expect(deployer.query.newDefault({ gasLimit: raw.gasRequired, salt })).rejects.toThrowError(
-        ContractInstantiateDispatchError,
-      );
+      try {
+        await deployer.query.newDefault({ gasLimit: raw.gasRequired, salt });
+      } catch (e: any) {
+        expect(e).toBeInstanceOf(ContractInstantiateDispatchError);
+        expect(e.moduleError).toBeDefined();
+        expect(e.moduleError!.pallet).toEqual('Contracts');
+        expect(e.moduleError!.name).toEqual('DuplicateContract');
+        expect(e.message).toMatch(/Dispatch error: Contracts::DuplicateContract/);
+      }
     });
 
     it('should throw ContractInstantiateLangError', async () => {
@@ -62,7 +68,7 @@ describe('Errors', () => {
       );
       const salt = generateRandomHex();
 
-      expect(deployer.query.fromSeed('0x_error', { salt })).rejects.toThrowError(ContractInstantiateLangError);
+      await expect(deployer.query.fromSeed('0x_error', { salt })).rejects.toThrowError(ContractInstantiateLangError);
     });
 
     it('should throw ContractLangError', async () => {
@@ -71,7 +77,7 @@ describe('Errors', () => {
         defaultCaller: alicePair.address,
       });
 
-      expect(contract.query.flipWithSeed('0x_error')).rejects.toThrowError(ContractLangError);
+      await expect(contract.query.flipWithSeed('0x_error')).rejects.toThrowError(ContractLangError);
     });
 
     it('should throw error when contract not existed', async () => {
@@ -81,7 +87,7 @@ describe('Errors', () => {
         defaultCaller: alicePair.address,
       });
 
-      expect(contract.query.flip()).rejects.toThrowError(
+      await expect(contract.query.flip()).rejects.toThrowError(
         new Error(`Contract with address ${fakeAddress} does not exist on chain!`),
       );
     });
@@ -129,7 +135,7 @@ describe('Errors', () => {
         defaultCaller: alicePair.address,
       });
 
-      expect(contract.query.flip()).rejects.toThrowError(
+      await expect(contract.query.flip()).rejects.toThrowError(
         new Error(`Contract with address ${fakeAddress} does not exist on chain!`),
       );
     });

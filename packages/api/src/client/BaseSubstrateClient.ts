@@ -12,7 +12,14 @@ import {
   Unsub,
   VersionedGenericSubstrateApi,
 } from '@dedot/types';
-import { calcRuntimeApiHash, deferred, Deferred, ensurePresence as _ensurePresence, u8aToHex } from '@dedot/utils';
+import {
+  calcRuntimeApiHash,
+  deferred,
+  Deferred,
+  ensurePresence as _ensurePresence,
+  u8aToHex,
+  LRUCache,
+} from '@dedot/utils';
 import type { SubstrateApi } from '../chaintypes/index.js';
 import { ConstantExecutor, ErrorExecutor, EventExecutor } from '../executor/index.js';
 import { isJsonRpcProvider, JsonRpcClient } from '../json-rpc/index.js';
@@ -28,8 +35,10 @@ import type {
   SubstrateRuntimeVersion,
 } from '../types.js';
 
-const SUPPORTED_METADATA_VERSIONS = [15, 14];
+const SUPPORTED_METADATA_VERSIONS = [16, 15, 14];
 const MetadataApiHash = calcRuntimeApiHash('Metadata'); // 0x37e397fc7c91f5e4
+const API_AT_CACHE_CAPACITY = 64;
+const API_AT_CACHE_TTL = 300_000; // 5 minutes
 
 const MESSAGE: string = 'Make sure to call `.connect()` method first before using the API interfaces.';
 
@@ -51,7 +60,7 @@ export abstract class BaseSubstrateClient<
 {
   protected _options: ApiOptions;
 
-  protected _registry?: PortableRegistry;
+  protected _registry?: PortableRegistry<ChainApi[Rv]>;
   protected _metadata?: Metadata;
 
   protected _genesisHash?: Hash;
@@ -59,6 +68,7 @@ export abstract class BaseSubstrateClient<
 
   protected _localCache?: IStorage;
   protected _runtimeUpgrading?: Deferred<void>;
+  protected _apiAtCache: LRUCache;
 
   protected constructor(
     public rpcVersion: RpcVersion,
@@ -66,6 +76,7 @@ export abstract class BaseSubstrateClient<
   ) {
     super(options);
     this._options = this.normalizeOptions(options);
+    this._apiAtCache = new LRUCache(API_AT_CACHE_CAPACITY, API_AT_CACHE_TTL);
   }
 
   /// --- Internal logics
@@ -173,7 +184,7 @@ export abstract class BaseSubstrateClient<
 
   protected setMetadata(metadata: Metadata) {
     this._metadata = metadata;
-    this._registry = new PortableRegistry(metadata.latest, this.options.hasher);
+    this._registry = new PortableRegistry<ChainApi[Rv]>(metadata.latest, this.options.hasher);
   }
 
   protected getMetadataKey(runtime?: SubstrateRuntimeVersion): MetadataKey {
@@ -216,10 +227,11 @@ export abstract class BaseSubstrateClient<
     const supportedV2 = runtime ? runtime.apis[MetadataApiHash] === 2 : true;
 
     if (supportedV2) {
-      // It makes sense to call metadata.metadataVersions to fetch the list of supported metadata versions first
-      // But for now, this approach could potentially help save/reduce one rpc call to the server in case the node support v15
-      // Question: Why not having a `metadata.metadataLatest` to fetch the latest version?
-      for (const version of SUPPORTED_METADATA_VERSIONS) {
+      const versions: number[] = ((await this.callAt(hash).metadata.metadataVersions()) as number[]) // --
+        .filter((v) => SUPPORTED_METADATA_VERSIONS.includes(v))
+        .sort((a, b) => b - a); // sort desc, bigger first
+
+      for (const version of versions) {
         try {
           const rawMetadata = await this.callAt(hash).metadata.metadataAtVersion(version);
           if (!rawMetadata) continue;
@@ -242,13 +254,19 @@ export abstract class BaseSubstrateClient<
     this._genesisHash = undefined;
     this._runtimeVersion = undefined;
     this._localCache = undefined;
+    this._apiAtCache.clear();
   }
 
   /**
-   * @description Clear local cache
+   * @description Clear local cache and API at-block cache
+   * @param keepMetadataCache Keep the metadata cache, only clear other caches.
    */
-  async clearCache() {
-    await this._localCache?.clear();
+  async clearCache(keepMetadataCache: boolean = false): Promise<void> {
+    if (!keepMetadataCache) {
+      await this._localCache?.clear();
+    }
+
+    this._apiAtCache.clear();
   }
 
   protected async doConnect(): Promise<this> {
@@ -349,7 +367,7 @@ export abstract class BaseSubstrateClient<
     return ensurePresence(this._metadata);
   }
 
-  get registry(): PortableRegistry {
+  get registry(): PortableRegistry<ChainApi[Rv]> {
     return ensurePresence(this._registry);
   }
 
@@ -379,6 +397,10 @@ export abstract class BaseSubstrateClient<
   }
 
   get query(): ChainApi[Rv]['query'] {
+    throw new Error('Unimplemented!');
+  }
+
+  get view(): ChainApi[Rv]['view'] {
     throw new Error('Unimplemented!');
   }
 
@@ -457,7 +479,7 @@ export abstract class BaseSubstrateClient<
     }
   }
 
-  protected getStorageQuery(): BaseStorageQuery<RpcVersion> {
+  protected getStorageQuery(): BaseStorageQuery {
     throw new Error('Unimplemented!');
   }
 }

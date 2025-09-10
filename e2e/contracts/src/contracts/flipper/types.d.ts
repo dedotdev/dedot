@@ -6,4 +6,4 @@ export type InkPrimitivesLangError = 'CouldNotReadInput';
 
 export type FlipperFlipperError = 'ZeroSum';
 
-export type InkEnvNoChainExtension = null;
+export type InkPrimitivesNoChainExtension = null;
