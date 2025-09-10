@@ -26,20 +26,24 @@ export const ensureStorageApiSupports = (version: string | number) => {
   );
 };
 
-export function ensurePalletPresence(client: ISubstrateClient<SubstrateApi[RpcVersion]>, registry: TypinkRegistry) {
-  if (registry.isRevive()) {
-    try {
-      !!client.call.reviveApi.call.meta && !!client.tx.revive.call.meta;
-    } catch {
-      throw new DedotError('Pallet Revive is not available');
-    }
-  } else {
-    try {
-      !!client.call.contractsApi.call.meta && !!client.tx.contracts.call.meta;
-    } catch {
-      throw new DedotError('Pallet Contracts is not available');
-    }
+export function ensurePalletRevive(client: ISubstrateClient<SubstrateApi[RpcVersion]>) {
+  try {
+    !!client.call.reviveApi.call.meta && !!client.tx.revive.call.meta;
+  } catch {
+    throw new DedotError('Pallet Revive is not available');
   }
+}
+
+export function ensurePalletContracts(client: ISubstrateClient<SubstrateApi[RpcVersion]>) {
+  try {
+    !!client.call.contractsApi.call.meta && !!client.tx.contracts.call.meta;
+  } catch {
+    throw new DedotError('Pallet Contracts is not available');
+  }
+}
+
+export function ensurePalletPresence(client: ISubstrateClient<SubstrateApi[RpcVersion]>, registry: TypinkRegistry) {
+  registry.isRevive() ? ensurePalletRevive(client) : ensurePalletContracts(client);
 }
 
 export async function ensureContractPresence(
