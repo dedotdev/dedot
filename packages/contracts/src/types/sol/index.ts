@@ -1,83 +1,126 @@
-import { SolABIItem } from "./abi.js";
+import { SubstrateApi } from '@dedot/api/chaintypes/index.js';
+import {
+  AnyFunc,
+  AsyncMethod,
+  GenericSubstrateApi,
+  IEventRecord,
+  RpcVersion,
+  Unsub,
+  VersionedGenericSubstrateApi,
+} from '@dedot/codecs/types';
+import { ISubmittableResult } from '@dedot/types';
+import { ConstructorFragment, EventFragment, FunctionFragment } from '@ethersproject/abi';
+import { SolContract } from '../../SolContract.js';
+import {
+  ContractAddress,
+  ContractCallResult,
+  ContractInstantiateResult,
+  ContractSubmittableExtrinsic,
+  ExecutionOptions,
+  GenericConstructorCallResult,
+  GenericContractCallResult,
+  SubmittableExtrinsic,
+} from '../shared.js';
 
-export * from "./abi.js"
+export * from './abi.js';
 
-export interface SolDevDocMethod {
-  details?: string;
-  params?: Record<string, string>;
-  returns?: Record<string, string>;
+export interface ISolContractInstantiateSubmittableResult<
+  ContractApi extends SolGenericContractApi = SolGenericContractApi, // --
+> extends ISubmittableResult {
+  /**
+   * Get deployed contract address
+   */
+  contractAddress(): Promise<ContractAddress>;
+
+  /**
+   * Get deployed contract instance
+   */
+  contract(options?: ExecutionOptions): Promise<SolContract<ContractApi>>;
 }
 
-export interface SolDevDoc {
-  details?: string;
-  kind: 'dev';
-  methods: Record<string, SolDevDocMethod>;
-  title?: string;
-  version: number;
+export type SolGenericInstantiateSubmittableExtrinsic<
+  _ extends GenericSubstrateApi,
+  ContractApi extends SolGenericContractApi = SolGenericContractApi,
+> = SubmittableExtrinsic<ISolContractInstantiateSubmittableResult<ContractApi>>;
+
+export type SolGenericContractQueryCall<
+  ChainApi extends GenericSubstrateApi,
+  F extends AsyncMethod = (...args: any[]) => Promise<GenericContractCallResult<any, ContractCallResult<ChainApi>>>,
+> = F & {
+  meta: FunctionFragment;
+};
+
+export type SolGenericContractTxCall<
+  ChainApi extends GenericSubstrateApi,
+  F extends AnyFunc = (...args: any[]) => ContractSubmittableExtrinsic<ChainApi>,
+> = F & {
+  meta: FunctionFragment;
+};
+
+export type SolGenericConstructorQueryCall<
+  ChainApi extends GenericSubstrateApi,
+  F extends AsyncMethod = (
+    ...args: any[]
+  ) => Promise<GenericConstructorCallResult<any, ContractInstantiateResult<ChainApi>>>,
+> = F & {
+  meta: ConstructorFragment;
+};
+
+export type SolGenericConstructorTxCall<
+  ChainApi extends GenericSubstrateApi,
+  F extends AnyFunc = (...args: any[]) => SolGenericInstantiateSubmittableExtrinsic<ChainApi>,
+> = F & {
+  meta: ConstructorFragment;
+};
+
+export interface SolGenericContractQuery<ChainApi extends GenericSubstrateApi> {
+  [method: string]: SolGenericContractQueryCall<ChainApi>;
 }
 
-export interface SolUserDoc {
-  kind: 'user';
-  methods: Record<string, any>;
-  version: number;
+export interface SolGenericContractTx<ChainApi extends GenericSubstrateApi> {
+  [method: string]: SolGenericContractTxCall<ChainApi>;
 }
 
-// Compiler Settings Types
-export interface SolOptimizerDetails {
-  constantOptimizer: boolean;
-  cse: boolean;
-  deduplicate: boolean;
-  inliner: boolean;
-  jumpdestRemover: boolean;
-  orderLiterals: boolean;
-  peephole: boolean;
-  simpleCounterForLoopUncheckedIncrement: boolean;
-  yul: boolean;
+export interface SolGenericConstructorQuery<ChainApi extends GenericSubstrateApi> {
+  [method: string]: SolGenericConstructorQueryCall<ChainApi>;
 }
 
-export interface SolOptimizer {
-  details: SolOptimizerDetails;
-  runs: number;
+export interface SolGenericConstructorTx<ChainApi extends GenericSubstrateApi> {
+  [method: string]: SolGenericConstructorTxCall<ChainApi>;
 }
 
-export interface SolMetadata {
-  bytecodeHash: 'ipfs' | 'bzzr1' | 'none';
+export type SolContractEvent<EventName extends string = string, Data extends any = any> = Data extends undefined
+  ? {
+      name: EventName;
+    }
+  : {
+      name: EventName;
+      data: Data;
+    };
+
+export interface SolGenericContractEvent<EventName extends string = string, Data extends any = any> {
+  is: (event: IEventRecord | SolContractEvent) => event is SolContractEvent<EventName, Data>;
+  find: (events: IEventRecord[] | SolContractEvent[]) => SolContractEvent<EventName, Data> | undefined;
+  filter: (events: IEventRecord[] | SolContractEvent[]) => SolContractEvent<EventName, Data>[];
+  watch: (callback: (events: SolContractEvent<EventName, Data>[]) => void) => Promise<Unsub>;
+  meta: EventFragment;
 }
 
-export interface SolSettings {
-  compilationTarget: Record<string, string>;
-  evmVersion: string;
-  libraries: Record<string, Record<string, string>>;
-  metadata: SolMetadata;
-  optimizer: SolOptimizer;
-  remappings: string[];
+export interface SolGenericContractEvents<_ extends GenericSubstrateApi> {
+  [event: string]: SolGenericContractEvent;
 }
 
-// Source Types
-export interface SolSource {
-  keccak256: string;
-  license?: string;
-  urls: string[];
-}
+export interface SolGenericContractApi<
+  Rv extends RpcVersion = RpcVersion,
+  ChainApi extends VersionedGenericSubstrateApi = SubstrateApi,
+> {
+  query: SolGenericContractQuery<ChainApi[Rv]>;
+  tx: SolGenericContractTx<ChainApi[Rv]>;
+  constructorQuery: SolGenericConstructorQuery<ChainApi[Rv]>;
+  constructorTx: SolGenericConstructorTx<ChainApi[Rv]>;
+  events: SolGenericContractEvents<ChainApi[Rv]>;
 
-// Compiler Types
-export interface SolCompiler {
-  version: string;
-}
-
-// Output Types
-export interface SolOutput {
-  abi: SolABIItem[];
-  devdoc: SolDevDoc;
-  userdoc: SolUserDoc;
-}
-
-// Main Compilation Result Type
-export interface SolCompilationResult {
-  compiler: SolCompiler;
-  language: 'Solidity';
-  output: SolOutput;
-  settings: SolSettings;
-  sources: Record<string, SolSource>;
-  version: number;
+  types: {
+    ChainApi: ChainApi[Rv];
+  };
 }

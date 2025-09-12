@@ -4,11 +4,11 @@ import { GenericSubstrateApi, RpcVersion } from '@dedot/types';
 import { assert, assertFalse, isPvm, isUndefined, toHex, toU8a } from '@dedot/utils';
 import { ContractInstantiateDispatchError } from '../../errors.js';
 import {
+  SolGenericConstructorQueryCall,
   ConstructorCallOptions,
   ContractCode,
   ContractInstantiateResult,
   GenericConstructorCallResult,
-  GenericConstructorQueryCall,
 } from '../../types/index.js';
 import { toReturnFlags } from '../../utils/index.js';
 import { SolDeployerExecutor } from './abstract/index.js';
@@ -18,7 +18,7 @@ export class SolConstructorQueryExecutor<ChainApi extends GenericSubstrateApi> e
     const fragment = this.findConstructorFragment();
     assert(fragment, `There are no constructor fragment existed in the ABI`);
 
-    const callFn: GenericConstructorQueryCall<ChainApi> = async (...params: any[]) => {
+    const callFn: SolGenericConstructorQueryCall<ChainApi> = async (...params: any[]) => {
       const { inputs } = fragment;
 
       assertFalse(params.length < inputs.length, `Expected at least ${inputs.length} arguments, got ${params.length}`);

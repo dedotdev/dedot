@@ -1,12 +1,12 @@
 import { ISubstrateClient } from '@dedot/api';
 import { GenericSubstrateApi } from '@dedot/types';
-import { assert, DedotError, HexString, isEvmAddress } from '@dedot/utils';
+import { assert, HexString, isEvmAddress } from '@dedot/utils';
 import { Interface } from '@ethersproject/abi';
 import { SolQueryExecutor, SolExecutor, SolTxExecutor } from './executor/index.js';
-import { ContractAddress, ExecutionOptions, GenericContractApi, SolABIItem } from './types/index.js';
-import {ensurePalletRevive} from "./utils";
+import { ContractAddress, ExecutionOptions, SolGenericContractApi, SolABIItem } from './types/index.js';
+import { ensurePalletRevive } from './utils';
 
-export class SolContract<ContractApi extends GenericContractApi = GenericContractApi> {
+export class SolContract<ContractApi extends SolGenericContractApi = SolGenericContractApi> {
   readonly #address: ContractAddress;
   readonly #abiItems: SolABIItem[];
   readonly #interf: Interface;

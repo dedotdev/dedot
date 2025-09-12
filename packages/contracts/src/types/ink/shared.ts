@@ -1,5 +1,3 @@
-export type ContractAddress = string; // ss58 or evm address
-
 export interface ContractInformation {
   name: string;
   version: string;
