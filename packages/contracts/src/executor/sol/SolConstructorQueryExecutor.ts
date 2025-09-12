@@ -82,11 +82,8 @@ export class SolConstructorQueryExecutor<ChainApi extends GenericSubstrateApi> e
         throw new ContractInstantiateDispatchError(raw.result.err, raw);
       }
 
-      // TODO: Check it, sol contract does not return data here.
-      const data = undefined;
-
-      // TODO: Check if it has lang error.
-
+      // TODO: Check if it is data here if an error with data occurs when instantiating
+      const data = raw.result.value.result.data;
       const bits = raw.result.value.result.flags.bits;
 
       return {

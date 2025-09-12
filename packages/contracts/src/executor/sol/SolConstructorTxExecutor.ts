@@ -10,6 +10,7 @@ export class SolConstructorTxExecutor<ChainApi extends GenericSubstrateApi> exte
     const fragment = this.findConstructorFragment();
     assert(fragment, `There are no constructor fragment existed in the ABI`);
 
+    // @ts-ignore
     const callFn: GenericConstructorTxCall<ChainApi> = (...params: any[]) => {
       const { inputs } = fragment;
       assert(params.length === inputs.length + 1, `Expected ${inputs.length + 1} arguments, got ${params.length}`);

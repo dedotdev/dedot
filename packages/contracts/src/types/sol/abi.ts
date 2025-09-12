@@ -1,5 +1,5 @@
 export interface SolABITypeDef {
-  internalType: string;
+  internalType?: string;
   components?: SolABITypeDef[];
   name: string;
   type: string;
@@ -36,4 +36,20 @@ export interface SolABIError {
   type: 'error';
 }
 
-export type SolABIItem = SolABIFunction | SolABIConstructor | SolABIEvent | SolABIError;
+export interface SolABIFallback {
+  type: 'fallback';
+  stateMutability: 'nonpayable' | 'payable';
+}
+
+export interface SolABIReceive {
+  type: 'receive';
+  stateMutability: 'payable';
+}
+
+export type SolABIItem =
+  | SolABIFunction
+  | SolABIConstructor
+  | SolABIEvent
+  | SolABIError
+  | SolABIFallback
+  | SolABIReceive;
