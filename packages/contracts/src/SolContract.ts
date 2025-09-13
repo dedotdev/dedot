@@ -2,8 +2,8 @@ import { ISubstrateClient } from '@dedot/api';
 import { GenericSubstrateApi } from '@dedot/types';
 import { assert, HexString, isEvmAddress } from '@dedot/utils';
 import { Interface } from '@ethersproject/abi';
-import { SolQueryExecutor, SolExecutor, SolTxExecutor } from './executor/index.js';
-import { ContractAddress, ExecutionOptions, SolGenericContractApi, SolABIItem } from './types/index.js';
+import { SolQueryExecutor, SolExecutor, SolTxExecutor, SolEventExecutor } from './executor/index.js';
+import { ContractAddress, ExecutionOptions, SolABIItem, SolGenericContractApi } from './types/index.js';
 import { ensurePalletRevive } from './utils';
 
 export class SolContract<ContractApi extends SolGenericContractApi = SolGenericContractApi> {
@@ -53,6 +53,12 @@ export class SolContract<ContractApi extends SolGenericContractApi = SolGenericC
     return newProxyChain(
       new SolTxExecutor(this.client, this.#interf, this.#address, this.#options),
     ) as ContractApi['tx'];
+  }
+
+  get events(): ContractApi['events'] {
+    return newProxyChain(
+      new SolEventExecutor(this.client, this.#interf, this.#address, this.#options),
+    ) as ContractApi['events'];
   }
 
   get options(): ExecutionOptions | undefined {
