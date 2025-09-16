@@ -34,4 +34,16 @@ describe('AccountId32', () => {
       expect(accountId1.eq(accountId2)).toBe(false);
     });
   });
+
+  describe('isZero', () => {
+    it('should return true for zero AccountId32', () => {
+      const zeroAccountId = new AccountId32('0x');
+      expect(zeroAccountId.isZero()).toBe(true);
+    });
+
+    it('should return false for non-zero AccountId32', () => {
+      const nonZeroAccountId = new AccountId32('5GdT4fJfXHtLxEk3npnK9a65LF986z67uRKhZ9TsZ17Lnhdg');
+      expect(nonZeroAccountId.isZero()).toBe(false);
+    });
+  });
 });
