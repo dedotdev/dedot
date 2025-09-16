@@ -1,15 +1,14 @@
 /**
  * Known signed extensions that require external input.
- * 
+ *
  * Note: Extensions that don't require external input are automatically handled by FallbackSignedExtension:
  * - CheckNonZeroSender
  * - CheckWeight
  * - PrevalidateAttests
  * - StorageWeightReclaim
- * 
+ *
  * These extensions have empty struct or tuple types and don't need explicit implementation.
  */
-
 import { ISignedExtension } from '../SignedExtension.js';
 import { ChargeAssetTxPayment } from './ChargeAssetTxPayment.js';
 import { ChargeTransactionPayment } from './ChargeTransactionPayment.js';

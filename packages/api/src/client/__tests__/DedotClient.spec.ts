@@ -1587,7 +1587,7 @@ describe('DedotClient', () => {
     afterEach(async () => {
       // Restore mocks first to avoid issues with disconnect
       vi.restoreAllMocks();
-      
+
       if (api && api.status !== 'disconnected') {
         try {
           await api.disconnect();
@@ -1679,7 +1679,7 @@ describe('DedotClient', () => {
 
       // Verify parent method was called
       expect(parentClearCacheSpy).toHaveBeenCalledTimes(1);
-      
+
       // Verify chainHead clearCache was not called due to the error
       expect(chainHeadClearCacheSpy).not.toHaveBeenCalled();
     });
