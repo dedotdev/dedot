@@ -283,7 +283,7 @@ describe('BaseSubstrateClient', () => {
     beforeEach(() => {
       client = new MockBaseSubstrateClient();
       mockLocalCache = new MockStorage();
-      
+
       // Set up mocks
       (client as any)._localCache = mockLocalCache;
     });
@@ -364,7 +364,7 @@ describe('BaseSubstrateClient', () => {
       // Make _localCache.clear() throw an error (but it shouldn't be called)
       vi.spyOn(mockLocalCache, 'clear').mockRejectedValue(new Error('Cache clear failed'));
 
-      // Spy on _apiAtCache clear method  
+      // Spy on _apiAtCache clear method
       const apiAtCacheClearSpy = vi.spyOn((client as any)._apiAtCache, 'clear');
 
       // Call clearCache with keepMetadataCache=true - should not throw

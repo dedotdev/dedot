@@ -346,7 +346,8 @@ export class ChainHead extends JsonRpcGroup<ChainHeadEvent> {
 
           // Clear cache entries related to the pruned block
           // Filter and remove only cache entries for this specific block
-          this.#cache.keys()
+          this.#cache
+            .keys()
             .filter((key) => key.startsWith(`${hash}::`))
             .forEach((key) => this.#cache.delete(key));
         });

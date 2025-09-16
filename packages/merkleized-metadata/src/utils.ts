@@ -3,17 +3,13 @@ import { assert, stringCamelCase } from '@dedot/utils';
 
 /**
  * Look up a constant in the metadata
- * 
+ *
  * @param metadata - Metadata object
  * @param pallet - Pallet name
  * @param constant - Constant name
  * @returns Constant value
  */
-export function lookupConstant<T extends any = any>(
-  metadata: Metadata,
-  pallet: string, 
-  constant: string
-): T {
+export function lookupConstant<T extends any = any>(metadata: Metadata, pallet: string, constant: string): T {
   const registry = new PortableRegistry(metadata.latest);
   const targetPallet = metadata.latest.pallets.find((p) => stringCamelCase(p.name) === pallet);
 

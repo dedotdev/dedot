@@ -96,7 +96,7 @@ describe('Archive', () => {
       expect(body1).toEqual([mockTxHash]);
       expect(body2).toEqual([mockTxHash]);
       expect(body1).toBe(body2); // Should be the same reference (cached)
-      
+
       // Should only call archive_v1_body once
       expect(providerSend.mock.calls.filter((call) => call[0] === 'archive_v1_body').length).toBe(1);
     });
@@ -113,7 +113,7 @@ describe('Archive', () => {
 
       expect(body1).toEqual([mockTxHash]);
       expect(body2).toEqual([mockTxHash]);
-      
+
       // Should call archive_v1_body twice with different hashes
       expect(providerSend).toHaveBeenCalledWith('archive_v1_body', [mockBlockHash]);
       expect(providerSend).toHaveBeenCalledWith('archive_v1_body', [anotherBlockHash]);
@@ -194,7 +194,7 @@ describe('Archive', () => {
       expect(header1).toBe(mockBlockHeader);
       expect(header2).toBe(mockBlockHeader);
       expect(header1).toBe(header2); // Should be the same reference (cached)
-      
+
       // Should only call archive_v1_header once
       expect(providerSend.mock.calls.filter((call) => call[0] === 'archive_v1_header').length).toBe(1);
     });
@@ -222,7 +222,7 @@ describe('Archive', () => {
 
       expect(header1).toBe(mockBlockHeader);
       expect(header2).toBe(anotherBlockHeader);
-      
+
       // Should call archive_v1_header twice with different hashes
       expect(providerSend).toHaveBeenCalledWith('archive_v1_header', [mockBlockHash]);
       expect(providerSend).toHaveBeenCalledWith('archive_v1_header', [anotherBlockHash]);
@@ -339,9 +339,8 @@ describe('Archive', () => {
       const testClient = new JsonRpcClient({ provider: testProvider });
 
       const archive = new Archive(testClient);
-      
-      await expect(archive.call('Invalid_method', '0x', mockBlockHash))
-        .rejects.toThrow(DedotError);
+
+      await expect(archive.call('Invalid_method', '0x', mockBlockHash)).rejects.toThrow(DedotError);
     });
 
     it('should cache call results', async () => {
@@ -356,7 +355,7 @@ describe('Archive', () => {
       expect(result1).toBe('0x1234');
       expect(result2).toBe('0x1234');
       expect(result1).toBe(result2); // Should be the same reference (cached)
-      
+
       // Should only call archive_v1_call once
       expect(providerSend.mock.calls.filter((call) => call[0] === 'archive_v1_call').length).toBe(1);
     });
@@ -382,7 +381,7 @@ describe('Archive', () => {
 
       expect(result1).toBe('0x1234');
       expect(result2).toBe('0x5678');
-      
+
       // Should call archive_v1_call twice with different functions
       expect(providerSend).toHaveBeenCalledWith('archive_v1_call', [mockBlockHash, 'Core_version', '0x']);
       expect(providerSend).toHaveBeenCalledWith('archive_v1_call', [mockBlockHash, 'Metadata_metadata', '0x']);
@@ -410,7 +409,7 @@ describe('Archive', () => {
 
       expect(result1).toBe('0x1234');
       expect(result2).toBe('0x9999');
-      
+
       // Should call archive_v1_call twice with different params
       expect(providerSend).toHaveBeenCalledWith('archive_v1_call', [mockBlockHash, 'Core_version', '0x']);
       expect(providerSend).toHaveBeenCalledWith('archive_v1_call', [mockBlockHash, 'Core_version', '0xabcd']);
@@ -439,7 +438,7 @@ describe('Archive', () => {
 
       expect(result1).toBe('0x1234');
       expect(result2).toBe('0xeeee');
-      
+
       // Should call archive_v1_call twice with different hashes
       expect(providerSend).toHaveBeenCalledWith('archive_v1_call', [mockBlockHash, 'Core_version', '0x']);
       expect(providerSend).toHaveBeenCalledWith('archive_v1_call', [anotherBlockHash, 'Core_version', '0x']);
@@ -579,7 +578,7 @@ describe('Archive', () => {
       expect(result1).toEqual([{ key: '0x1234', value: '0x5678', event: 'storage' }]);
       expect(result2).toEqual([{ key: '0x1234', value: '0x5678', event: 'storage' }]);
       expect(result1).toBe(result2); // Should be the same reference (cached)
-      
+
       // Should only call archive_v1_storage once
       expect(providerSend.mock.calls.filter((call) => call[0] === 'archive_v1_storage').length).toBe(1);
     });
@@ -633,7 +632,7 @@ describe('Archive', () => {
 
       expect(result1).toEqual([{ key: '0x1234', value: '0xaaaa', event: 'storage' }]);
       expect(result2).toEqual([{ key: '0x5678', value: '0xbbbb', event: 'storage' }]);
-      
+
       // Should call archive_v1_storage twice with different items
       expect(providerSend.mock.calls.filter((call) => call[0] === 'archive_v1_storage').length).toBe(2);
     });
@@ -686,7 +685,7 @@ describe('Archive', () => {
 
       expect(result1).toEqual([{ key: '0x1234', value: '0xaaaa', event: 'storage' }]);
       expect(result2).toEqual([{ key: '0x1234', value: '0xbbbb', event: 'storage' }]);
-      
+
       // Should call archive_v1_storage twice with different child trie
       expect(providerSend.mock.calls.filter((call) => call[0] === 'archive_v1_storage').length).toBe(2);
     });
@@ -740,7 +739,7 @@ describe('Archive', () => {
 
       expect(result1).toEqual([{ key: '0x1234', value: '0xaaaa', event: 'storage' }]);
       expect(result2).toEqual([{ key: '0x1234', value: '0xbbbb', event: 'storage' }]);
-      
+
       // Should call archive_v1_storage twice with different hashes
       expect(providerSend.mock.calls.filter((call) => call[0] === 'archive_v1_storage').length).toBe(2);
     });
@@ -840,7 +839,7 @@ describe('Archive', () => {
       await archive.body(mockBlockHash);
       await archive.header(mockBlockHash);
       await archive.call('Core_version', '0x', mockBlockHash);
-      
+
       const storagePromise1 = archive.storage(items, null, mockBlockHash);
       setTimeout(() => {
         provider.notify('storage_subscription_1', {
@@ -867,7 +866,7 @@ describe('Archive', () => {
       await archive.body(mockBlockHash);
       await archive.header(mockBlockHash);
       await archive.call('Core_version', '0x', mockBlockHash);
-      
+
       const storagePromise2 = archive.storage(items, null, mockBlockHash);
       setTimeout(() => {
         provider.notify('storage_subscription_2', {
@@ -894,17 +893,17 @@ describe('Archive', () => {
 
       // First call to genesisHash
       const genesisHash1 = await archive.genesisHash();
-      
+
       // Clear cache using clearCache()
       archive.clearCache();
-      
+
       // Second call to genesisHash should still be cached
       const genesisHash2 = await archive.genesisHash();
 
       expect(genesisHash1).toBe(mockGenesisHash);
       expect(genesisHash2).toBe(mockGenesisHash);
       expect(genesisHash1).toBe(genesisHash2);
-      
+
       // Should only call archive_v1_genesisHash once (because it uses #genesisHash field, not #cache Map)
       expect(providerSend.mock.calls.filter((call) => call[0] === 'archive_v1_genesisHash').length).toBe(1);
     });

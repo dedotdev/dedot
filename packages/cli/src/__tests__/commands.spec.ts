@@ -2,9 +2,18 @@ import * as path from 'path';
 import { describe, expect, it } from 'vitest';
 import { parseMetadataFromRaw, parseMetadataFromWasm } from '../commands/chaintypes/utils.js';
 
-const METADATA_FILE = path.resolve(`${process.platform === 'win32' ? '' : '/'}${/file:\/{2,3}(.+)\/[^/]/.exec(import.meta.url)![1]}`, 'raw_metadata.scale');
-const RUNTIME_FILE = path.resolve(`${process.platform === 'win32' ? '' : '/'}${/file:\/{2,3}(.+)\/[^/]/.exec(import.meta.url)![1]}`, 'runtime.wasm');
-const BINARY_METADATA_FILE = path.resolve(`${process.platform === 'win32' ? '' : '/'}${/file:\/{2,3}(.+)\/[^/]/.exec(import.meta.url)![1]}`, 'dot.scale');
+const METADATA_FILE = path.resolve(
+  `${process.platform === 'win32' ? '' : '/'}${/file:\/{2,3}(.+)\/[^/]/.exec(import.meta.url)![1]}`,
+  'raw_metadata.scale',
+);
+const RUNTIME_FILE = path.resolve(
+  `${process.platform === 'win32' ? '' : '/'}${/file:\/{2,3}(.+)\/[^/]/.exec(import.meta.url)![1]}`,
+  'runtime.wasm',
+);
+const BINARY_METADATA_FILE = path.resolve(
+  `${process.platform === 'win32' ? '' : '/'}${/file:\/{2,3}(.+)\/[^/]/.exec(import.meta.url)![1]}`,
+  'dot.scale',
+);
 
 describe('chaintypes', () => {
   it('should parse raw metadata file properly', async () => {

@@ -31,7 +31,7 @@ export const typink: CommandModule<Args, Args> = {
     try {
       spinner.text = `Parsing contract metadata file: ${metadata}`;
 
-      const contractMetadata = JSON.parse((fs.readFileSync(metadataFile, 'utf-8')));
+      const contractMetadata = JSON.parse(fs.readFileSync(metadataFile, 'utf-8'));
       ensureSupportedContractMetadataVersion(contractMetadata);
 
       spinner.succeed(`Parsed contract metadata file: ${metadata}`);

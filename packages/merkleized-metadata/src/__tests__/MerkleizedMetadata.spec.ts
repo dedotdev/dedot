@@ -1,6 +1,6 @@
+import { $Metadata, Metadata } from '@dedot/codecs';
 import * as $ from '@dedot/shape';
 import { HexString, hexStripPrefix, hexToU8a, u8aToHex } from '@dedot/utils';
-import { $Metadata, Metadata } from '@dedot/codecs';
 import fs from 'fs';
 import path from 'path';
 import { beforeEach, describe, expect, it } from 'vitest';
@@ -108,7 +108,7 @@ describe('MerkleizedMetadata', () => {
         const merkleizer1 = new MerkleizedMetadata(metadataHex, CHAIN_INFO);
         expect(merkleizer1).toBeDefined();
         expect(merkleizer1.digest()).toBeDefined();
-        
+
         // Test that hex without prefix is treated as Metadata object, not hex string
         // This is expected behavior since isHex() requires 0x prefix
         const hexWithoutPrefix = hexStripPrefix(metadataHex);
@@ -137,7 +137,7 @@ describe('MerkleizedMetadata', () => {
         const merkleizer3 = new MerkleizedMetadata(metadataU8a, CHAIN_INFO);
 
         const { tx, additionalSigned } = TX_PROOF_FIXTURES[0];
-        
+
         const proof1 = u8aToHex(merkleizer1.proofForExtrinsic(tx as HexString, additionalSigned as HexString));
         const proof2 = u8aToHex(merkleizer2.proofForExtrinsic(tx as HexString, additionalSigned as HexString));
         const proof3 = u8aToHex(merkleizer3.proofForExtrinsic(tx as HexString, additionalSigned as HexString));
@@ -170,7 +170,7 @@ describe('MerkleizedMetadata', () => {
 
       it('should throw error for malformed metadata bytes', () => {
         // Create a Uint8Array that's long enough but not valid metadata
-        const malformedU8a = new Uint8Array(100).fill(0xFF);
+        const malformedU8a = new Uint8Array(100).fill(0xff);
         expect(() => new MerkleizedMetadata(malformedU8a, CHAIN_INFO)).toThrow();
       });
     });
@@ -211,7 +211,7 @@ describe('MerkleizedMetadata', () => {
       it('should extract chain info correctly regardless of input type', () => {
         // Create merkleizers with partial chain info
         const partialChainInfo = { decimals: 10, tokenSymbol: 'DOT' };
-        
+
         const merkleizer1 = new MerkleizedMetadata(metadataObject, partialChainInfo);
         const merkleizer2 = new MerkleizedMetadata(metadataHex, partialChainInfo);
         const merkleizer3 = new MerkleizedMetadata(metadataU8a, partialChainInfo);
