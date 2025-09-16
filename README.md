@@ -104,7 +104,7 @@ console.log('Pending rewards:', pendingRewards);
 - [Allfeat SDK](https://www.allfeat.com/) ([Github](https://github.com/Allfeat/allfeat-js))
 - [Polkadot UI](https://dot-ui.com/) ([Github](https://github.com/Polkadot-UI-Initiative/dot-ui))
 - [Create Dot App](https://github.com/preschian/create-dot-app)
-- [LunoKit](https://www.lunolab.xyz/) ([Github](https://github.com/Luno-lab/LunoKit))
+- [LunoKit - Wallet Developer Tools](https://www.lunolab.xyz/) ([Github](https://github.com/Luno-lab/LunoKit))
 - ... add yours? PRs are more than welcome!
 
 ### Acknowledgment
