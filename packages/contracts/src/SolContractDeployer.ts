@@ -3,13 +3,14 @@ import { Hash } from '@dedot/codecs';
 import { GenericSubstrateApi } from '@dedot/types';
 import { assert, isPvm, toU8a } from '@dedot/utils';
 import { Interface } from '@ethersproject/abi';
+import { SolRegistry } from './SolRegistry';
 import { SolConstructorTxExecutor, SolExecutor, SolConstructorQueryExecutor } from './executor/index.js';
 import { ExecutionOptions, GenericContractApi, SolABIItem } from './types/index.js';
 import { ensurePalletRevive } from './utils';
 
 export class SolContractDeployer<ContractApi extends GenericContractApi = GenericContractApi> {
   readonly #abiItems: SolABIItem[];
-  readonly #interf: Interface;
+  readonly #registry: SolRegistry;
   readonly #code: Hash | Uint8Array | string;
   readonly #options?: ExecutionOptions;
 
@@ -20,7 +21,7 @@ export class SolContractDeployer<ContractApi extends GenericContractApi = Generi
     options?: ExecutionOptions,
   ) {
     this.#abiItems = typeof abiItems === 'string' ? JSON.parse(abiItems) : abiItems;
-    this.#interf = new Interface(this.#abiItems);
+    this.#registry = new SolRegistry(new Interface(this.#abiItems));
 
     ensurePalletRevive(client);
     assert(
@@ -36,19 +37,19 @@ export class SolContractDeployer<ContractApi extends GenericContractApi = Generi
     return this.#abiItems;
   }
 
-  get interf(): Interface {
-    return this.#interf;
+  get registry(): SolRegistry {
+    return this.#registry;
   }
 
   get tx(): ContractApi['constructorTx'] {
     return newProxyChain(
-      new SolConstructorTxExecutor(this.client, this.#interf, this.#code, this.#options),
+      new SolConstructorTxExecutor(this.client, this.#registry, this.#code, this.#options),
     ) as ContractApi['constructorTx'];
   }
 
   get query(): ContractApi['constructorQuery'] {
     return newProxyChain(
-      new SolConstructorQueryExecutor(this.client, this.#interf, this.#code, this.#options),
+      new SolConstructorQueryExecutor(this.client, this.#registry, this.#code, this.#options),
     ) as ContractApi['constructorQuery'];
   }
 

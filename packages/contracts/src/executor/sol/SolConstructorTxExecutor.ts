@@ -32,7 +32,7 @@ export class SolConstructorTxExecutor<ChainApi extends GenericSubstrateApi> exte
       );
       assert(!isUndefined(storageDepositLimit), 'Expected a storage deposit limit in ConstructorTxOptions');
 
-      const bytes = this.interf.encodeDeploy(params.slice(0, inputs.length));
+      const bytes = this.registry.interf.encodeDeploy(params.slice(0, inputs.length));
 
       const client = this.client as unknown as ISubstrateClient<SubstrateApi[RpcVersion]>;
 
@@ -117,7 +117,7 @@ export class SolConstructorTxExecutor<ChainApi extends GenericSubstrateApi> exte
 
           const executor = new SolConstructorQueryExecutor(
             this.client, // --
-            this.interf,
+            this.registry,
             this.code,
             {
               defaultCaller: signerAddress,

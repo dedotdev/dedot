@@ -2,6 +2,7 @@ import { ISubstrateClient } from '@dedot/api';
 import { GenericSubstrateApi } from '@dedot/types';
 import { assert, HexString, isEvmAddress } from '@dedot/utils';
 import { Interface } from '@ethersproject/abi';
+import { SolRegistry } from './SolRegistry';
 import { SolQueryExecutor, SolExecutor, SolTxExecutor, SolEventExecutor } from './executor/index.js';
 import { ContractAddress, ExecutionOptions, SolABIItem, SolGenericContractApi } from './types/index.js';
 import { ensurePalletRevive } from './utils';
@@ -9,7 +10,7 @@ import { ensurePalletRevive } from './utils';
 export class SolContract<ContractApi extends SolGenericContractApi = SolGenericContractApi> {
   readonly #address: ContractAddress;
   readonly #abiItems: SolABIItem[];
-  readonly #interf: Interface;
+  readonly #registry: SolRegistry;
   readonly #options?: ExecutionOptions;
 
   constructor(
@@ -19,7 +20,7 @@ export class SolContract<ContractApi extends SolGenericContractApi = SolGenericC
     options?: ExecutionOptions,
   ) {
     this.#abiItems = typeof abiItems === 'string' ? JSON.parse(abiItems) : abiItems;
-    this.#interf = new Interface(this.#abiItems);
+    this.#registry = new SolRegistry(new Interface(this.#abiItems));
 
     ensurePalletRevive(client);
     assert(
@@ -39,25 +40,25 @@ export class SolContract<ContractApi extends SolGenericContractApi = SolGenericC
     return this.#address;
   }
 
-  get interf(): Interface {
-    return this.#interf;
+  get registry(): SolRegistry {
+    return this.#registry;
   }
 
   get query(): ContractApi['query'] {
     return newProxyChain(
-      new SolQueryExecutor(this.client, this.#interf, this.#address, this.#options),
+      new SolQueryExecutor(this.client, this.#registry, this.#address, this.#options),
     ) as ContractApi['query'];
   }
 
   get tx(): ContractApi['tx'] {
     return newProxyChain(
-      new SolTxExecutor(this.client, this.#interf, this.#address, this.#options),
+      new SolTxExecutor(this.client, this.#registry, this.#address, this.#options),
     ) as ContractApi['tx'];
   }
 
   get events(): ContractApi['events'] {
     return newProxyChain(
-      new SolEventExecutor(this.client, this.#interf, this.#address, this.#options),
+      new SolEventExecutor(this.client, this.#registry, this.#address, this.#options),
     ) as ContractApi['events'];
   }
 

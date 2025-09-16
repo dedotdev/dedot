@@ -2,7 +2,7 @@ import type { ISubstrateClient } from '@dedot/api';
 import { type SubstrateApi } from '@dedot/api/chaintypes';
 import { GenericSubstrateApi, RpcVersion } from '@dedot/types';
 import { assert, assertFalse, isPvm, isUndefined, toHex, toU8a } from '@dedot/utils';
-import { ContractInstantiateDispatchError } from '../../errors.js';
+import { ContractInstantiateDispatchError, SolContractInstantiateCustomError } from '../../errors.js';
 import {
   SolGenericConstructorQueryCall,
   ConstructorCallOptions,
@@ -41,7 +41,7 @@ export class SolConstructorQueryExecutor<ChainApi extends GenericSubstrateApi> e
         'Invalid salt provided in ConstructorCallOptions: expected a 32-byte value as a hex string or a Uint8Array',
       );
 
-      const bytes = this.interf.encodeDeploy(params.slice(0, inputs.length));
+      const bytes = this.registry.interf.encodeDeploy(params.slice(0, inputs.length));
       const isUpload = isPvm(this.code);
       const code = {
         type: isUpload ? 'Upload' : 'Existing',
@@ -82,15 +82,23 @@ export class SolConstructorQueryExecutor<ChainApi extends GenericSubstrateApi> e
         throw new ContractInstantiateDispatchError(raw.result.err, raw);
       }
 
-      // TODO: Check if it is data here if an error with data occurs when instantiating
+      // Constructors doesn't return any data, but when an error occurs during instantiation,
+      // data may contain error information.
+      // Ref: https://docs.soliditylang.org/en/latest/control-structures.html?utm_source=chatgpt.com#panic-via-assert-and-error-via-require
       const data = raw.result.value.result.data;
-      const bits = raw.result.value.result.flags.bits;
+      const flags = toReturnFlags(raw.result.value.result.flags.bits);
+
+      if (flags.revert) {
+        // TODO: Handle the case errors from assert! or panic! macros
+        const error = this.registry.interf.parseError(data);
+        throw new SolContractInstantiateCustomError(error.name, raw, error);
+      }
 
       return {
         data,
         raw,
+        flags,
         address: raw.result.value.address,
-        flags: toReturnFlags(bits),
         inputData: bytes,
       } as GenericConstructorCallResult;
     };

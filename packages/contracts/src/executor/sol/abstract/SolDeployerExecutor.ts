@@ -2,7 +2,8 @@ import { ISubstrateClient } from '@dedot/api';
 import { Hash } from '@dedot/codecs';
 import { GenericSubstrateApi } from '@dedot/types';
 import { HexString } from '@dedot/utils';
-import { ConstructorFragment, Interface } from '@ethersproject/abi';
+import { ConstructorFragment } from '@ethersproject/abi';
+import { SolRegistry } from '../../../SolRegistry';
 import { ExecutionOptions } from '../../../types/index.js';
 import { SolExecutor } from './SolExecutor.js';
 
@@ -11,16 +12,16 @@ export abstract class SolDeployerExecutor<ChainApi extends GenericSubstrateApi> 
 
   constructor(
     client: ISubstrateClient<ChainApi>,
-    interf: Interface,
+    registry: SolRegistry,
     code: Hash | Uint8Array | HexString | string,
     options?: ExecutionOptions,
   ) {
-    super(client, interf, options);
+    super(client, registry, options);
 
     this.code = code;
   }
 
   protected findConstructorFragment(): ConstructorFragment | undefined {
-    return this.interf.deploy;
+    return this.registry.interf.deploy;
   }
 }

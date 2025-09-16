@@ -1,13 +1,13 @@
 import type { ISubstrateClient } from '@dedot/api';
 import type { SubstrateApi } from '@dedot/api/chaintypes';
 import { GenericSubstrateApi, RpcVersion } from '@dedot/types';
-import { assert, assertFalse, HexString } from '@dedot/utils';
-import { ContractDispatchError } from '../../errors.js';
+import { assert, assertFalse, DedotError, HexString } from '@dedot/utils';
+import { SolContractCustomError, ContractDispatchError } from '../../errors.js';
 import {
   ContractCallOptions,
   ContractCallResult,
   GenericContractCallResult,
-  GenericContractQueryCall,
+  SolGenericContractQueryCall,
 } from '../../types/index.js';
 import { toReturnFlags } from '../../utils/index.js';
 import { SolContractExecutor } from './abstract/SolContractExecutor.js';
@@ -17,7 +17,7 @@ export class SolQueryExecutor<ChainApi extends GenericSubstrateApi> extends SolC
     const fragment = this.findFragment(fragmentName);
     assert(fragment, `Query fragment not found: ${fragmentName}`);
 
-    const callFn: GenericContractQueryCall<ChainApi> = async (...params: any[]) => {
+    const callFn: SolGenericContractQueryCall<ChainApi> = async (...params: any[]) => {
       const { inputs } = fragment;
 
       assertFalse(params.length < inputs.length, `Expected at least ${inputs.length} arguments, got ${params.length}`);
@@ -30,7 +30,7 @@ export class SolQueryExecutor<ChainApi extends GenericSubstrateApi> extends SolC
       const { caller = this.options.defaultCaller, value = 0n, gasLimit, storageDepositLimit } = callOptions;
       assert(caller, 'Expected a valid caller address in ContractCallOptions');
 
-      const bytes = this.interf.encodeFunctionData(fragment, params.slice(0, inputs.length));
+      const bytes = this.registry.interf.encodeFunctionData(fragment, params.slice(0, inputs.length));
 
       const client = this.client as unknown as ISubstrateClient<SubstrateApi[RpcVersion]>;
 
@@ -56,15 +56,27 @@ export class SolQueryExecutor<ChainApi extends GenericSubstrateApi> extends SolC
         throw new ContractDispatchError(raw.result.err, raw);
       }
 
-      const data = this.interf.decodeFunctionResult(fragment, raw.result.value.data);
-      const bits = raw.result.value.flags.bits;
+      const flags = toReturnFlags(raw.result.value.flags.bits);
 
-      return {
-        data,
-        raw,
-        flags: toReturnFlags(bits),
-        inputData: bytes,
-      } as GenericContractCallResult;
+      try {
+        const data = this.registry.interf.decodeFunctionResult(fragment, raw.result.value.data);
+
+        return {
+          data,
+          raw,
+          flags,
+          inputData: bytes,
+        } as GenericContractCallResult;
+      } catch (e) {
+        if (flags.revert) {
+          // Currently, there is a case haven't been covered yet when the rust code using assert! or panic! macros
+          // Ref: https://docs.soliditylang.org/en/latest/control-structures.html?utm_source=chatgpt.com#panic-via-assert-and-error-via-require
+          const error = this.registry.interf.parseError(raw.result.value.data);
+          throw new SolContractCustomError(error.name, raw, error);
+        }
+
+        throw new DedotError(`Failed to decode contract call result: ${(e as Error).message}`);
+      }
     };
 
     callFn.meta = fragment;

@@ -1,6 +1,13 @@
 import { DispatchError, PalletErrorMetadataLatest } from '@dedot/codecs';
 import { assert, DedotError } from '@dedot/utils';
-import { ContractCallResult, ContractInstantiateResult, GenericContractApi, ReturnFlags } from './types/index.js';
+import { ErrorDescription, Result } from '@ethersproject/abi/lib/interface.js';
+import {
+  ContractCallResult,
+  ContractInstantiateResult,
+  GenericContractApi,
+  ReturnFlags,
+  SolGenericContractApi,
+} from './types/index.js';
 import { toReturnFlags } from './utils/index.js';
 
 const formatDispatchError = (err: DispatchError, moduleError?: PalletErrorMetadataLatest) => {
@@ -226,6 +233,56 @@ export class ContractLangError<
     this.langError = err;
     this.flags = toReturnFlags(raw.result.value.flags.bits);
     this.message = `Lang error: ${JSON.stringify(err)}`;
+  }
+}
+
+export class SolContractInstantiateCustomError<
+  ContractApi extends SolGenericContractApi = SolGenericContractApi,
+  ErrorArg extends Result = Result,
+> extends ContractInstantiateError {
+  name = 'ContractCustomError';
+  /**
+   * The custom error that occurred during the execution.
+   */
+  errorName: string;
+  errorArgs: ErrorArg;
+  errorDesc: ErrorDescription;
+
+  constructor(
+    errorName: string,
+    raw: ContractInstantiateResult<ContractApi['types']['ChainApi']>,
+    errorDesc: ErrorDescription,
+  ) {
+    super(raw);
+    this.errorName = errorName;
+    this.errorDesc = errorDesc;
+    this.errorArgs = errorDesc.args as any;
+    this.message = `Custom error: ${errorName}`;
+  }
+}
+
+export class SolContractCustomError<
+  ContractApi extends SolGenericContractApi = SolGenericContractApi,
+  ErrorArg extends Result = Result,
+> extends ContractExecutionError {
+  name = 'ContractCustomError';
+  /**
+   * The custom error that occurred during the execution.
+   */
+  errorName: string;
+  errorArgs: ErrorArg;
+  errorDesc: ErrorDescription;
+
+  constructor(
+    errorName: string,
+    raw: ContractCallResult<ContractApi['types']['ChainApi']>,
+    errorDesc: ErrorDescription,
+  ) {
+    super(raw);
+    this.errorName = errorName;
+    this.errorDesc = errorDesc;
+    this.errorArgs = errorDesc.args as any;
+    this.message = `Custom error: ${errorName}`;
   }
 }
 
