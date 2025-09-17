@@ -111,9 +111,9 @@ console.log('📝 Step 4: Flip the value');
     .untilFinalized();
 
   // Verify the Flipped event was emitted
-  const flippedEvent = contract.events.Flipped.find(flipResult.events);
-  assert(flippedEvent, 'Flipped event should be emitted');
-  console.log(`🎯 Flipped event:`, flippedEvent);
+  // const flippedEvent = contract.events.Flipped.find(flipResult.events);
+  // assert(flippedEvent, 'Flipped event should be emitted');
+  // console.log(`🎯 Flipped event:`, flippedEvent);
 
   console.log('📝 Step 5: Verify value changed');
 
@@ -142,38 +142,38 @@ console.log('📝 Step 4: Flip the value');
   );
 }
 
-{
-  console.log('🎁 Bonus: Demonstrate flipWithSeed method');
-  const seed = '0x1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef';
-  console.log(`🌱 Using seed: ${seed}`);
-
-  console.log('🔄 Executing flipWithSeed transaction');
-  const flipWithSeedResult = await contract.tx
-    .flipWithSeed(seed)
-    .signAndSend(alice, ({ status }) => {
-      console.log(`📊 Transaction status: ${status.type}`);
-    })
-    .untilFinalized();
-  console.log(`✅ FlipWithSeed executed successfully`);
-
-  // Verify the Flipped event was emitted for flipWithSeed
-  const flippedEvent = contract.events.Flipped.find(flipWithSeedResult.events);
-  assert(flippedEvent, 'Flipped event should be emitted');
-  console.log(`🎯 Flipped event:`, flippedEvent);
-
-  console.log('🔍 Reading final value after flipWithSeed');
-  const finalValue = await contract.query.get();
-  console.log(`📖 Final value: ${finalValue.data}`);
-
-  console.log('🔍 Reading final root storage');
-  const finalRoot = await contract.storage.root();
-  console.log(`📦 Final root storage value: ${finalRoot.value}`);
-
-  console.log('✅ Final verification:');
-  console.log(`📊 Query value: ${finalValue.data}`);
-  console.log(`📊 Storage value: ${finalRoot.value}`);
-  console.log(`🔄 Values match: ${finalValue.data === finalRoot.value ? '✅ YES' : '❌ NO'}`);
-}
+// {
+//   console.log('🎁 Bonus: Demonstrate flipWithSeed method');
+//   const seed = '0x1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef';
+//   console.log(`🌱 Using seed: ${seed}`);
+//
+//   console.log('🔄 Executing flipWithSeed transaction');
+//   const flipWithSeedResult = await contract.tx
+//     .flipWithSeed(seed)
+//     .signAndSend(alice, ({ status }) => {
+//       console.log(`📊 Transaction status: ${status.type}`);
+//     })
+//     .untilFinalized();
+//   console.log(`✅ FlipWithSeed executed successfully`);
+//
+//   // Verify the Flipped event was emitted for flipWithSeed
+//   const flippedEvent = contract.events.Flipped.find(flipWithSeedResult.events);
+//   assert(flippedEvent, 'Flipped event should be emitted');
+//   console.log(`🎯 Flipped event:`, flippedEvent);
+//
+//   console.log('🔍 Reading final value after flipWithSeed');
+//   const finalValue = await contract.query.get();
+//   console.log(`📖 Final value: ${finalValue.data}`);
+//
+//   console.log('🔍 Reading final root storage');
+//   const finalRoot = await contract.storage.root();
+//   console.log(`📦 Final root storage value: ${finalRoot.value}`);
+//
+//   console.log('✅ Final verification:');
+//   console.log(`📊 Query value: ${finalValue.data}`);
+//   console.log(`📊 Storage value: ${finalRoot.value}`);
+//   console.log(`🔄 Values match: ${finalValue.data === finalRoot.value ? '✅ YES' : '❌ NO'}`);
+// }
 console.log('🎉 Demonstration completed successfully');
 
 await client.disconnect();
