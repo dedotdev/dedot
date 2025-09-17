@@ -2,10 +2,10 @@ name: E2E Zombienet Tests / Batch 01
 
 on:
   push:
+    branches: [ main ]
   workflow_dispatch:
   merge_group:
   pull_request:
-    branches: [ main ]
 
 jobs:
   zombienet-tests:

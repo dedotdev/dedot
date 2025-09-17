@@ -5,10 +5,10 @@ name: Run tests
 
 on:
   push:
+    branches: [ main ]
   workflow_dispatch:
   merge_group:
   pull_request:
-    branches: [ main ]
 
 jobs:
   unit-tests:

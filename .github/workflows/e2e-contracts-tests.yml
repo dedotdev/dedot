@@ -2,10 +2,10 @@ name: E2E Contracts API Tests
 
 on:
   push:
+    branches: [ main ]
   workflow_dispatch:
   merge_group:
   pull_request:
-    branches: [ main ]
 
 jobs:
   e2e-tests:
