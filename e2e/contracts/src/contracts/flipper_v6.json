@@ -1,697 +1,162 @@
 {
-    "source": {
-        "hash": "0x50580bd9d6bba63b2027a60f351c51f65921a85481c052acd9c490967f28b59c",
-        "language": "ink! 6.0.0-alpha",
-        "compiler": "rustc 1.87.0",
-        "contract_binary": "0x50564d0000c70a000000000000010624d01840a0000221010a39b5ca0b8b3a5172476100ae7b9168b269cc91d5648efe180c75d935d3e886047907000000000e0000001b0000002600000035000000400000004b00000063616c6c5f646174615f636f70796465706f7369745f6576656e746765745f73746f72616765686173685f626c616b65325f3235367365616c5f72657475726e7365745f73746f7261676576616c75655f7472616e73666572726564051102852b0463616c6c8717066465706c6f790689fd2302889ff7005e0179010f0241024c02a502a603a703c203c303c403eb0310048a049e043c05ab05f8053d066a0672069f06b20605070d0728074b07a207dd07f40708083e08730897089511e87b10107b15087b16531910688d7a84a207c8270b648c6475aeb7107cca95cc01785a955501acb5f6c82804c929028423f8844807c83b0a5108519748038446f884803882658d88848c38956808aeab1b8286d00505cfc609d459097bb995bb089588086465acabebc834088429072805647a01c8a909ae9a267c8b95880178ab95aa01ac9af628166448aeabde82899588087bb995bb08aeabd128f3821010821508821695111832009511f07b1008648a78170795180733090164a7330046288b07951158ff7b10a0007b1598007b16900064857b173033080000137b186849117000404911783307010001951868501002a802821770821978ac978901821868140bffffffff000000004911484911504911584911607b15287b1b2053192136648749116849117049117849218000d2b9089519680a03821768821870821978821a80007b17487b18507b19587b1a60280a951748501004a7fe33070000137b176849117000404911789517489518685010062602330200408217785527014006019876055106163408004013847ae07f5108123a05104013281c491108330501283733050000031e03004013011e030840130101c85a0aac5aca00340b084013330c00001393bcacacba003e0a1040137b16085105ae004911403308000013c878097b19189a7700407b17108467ff039777059a767b155106289587207b17383309206457501008f6fd8217409577017b17409555209566208218385206de8217187b17688217107b177049117895186895156882173050100a70fe95186882172850100c65fe821770821a78aca7348217821840821968821b20d2ba0a0a0182190897970595188800db98057b578210a00082159800821690009511a8003200009511a87b10507b15487b164064163305000013330700001333000e0a060149112049112849113049113880571480521880591c805a04805308805c0c805810380b00001397992097772097cc2097aa20d42909951220d48707d43c08d4ba0a7b1a7b18087b17107b1918330704017c68017c69027c6a037c6b97880897991097aa18d4b8087c6b047c6c05d4a9097c6a067c650797cc08d4cb0b97aa10975518d45a0a956608d49808d4ba0a97aa20d4a8087b289522089577ff5207b4951920330705330805019588ff51080f829a959908510af5330704018210508215488216409511583200827808510814827a7ca9958bff95aa017b7a7b7b0828053309019597ff8e77957a01939a330702db8a073200330920647a648764a828aa0400003300149511f87b101f03000013330800001333090233070a04000000009511c87b10307b15287b16207b1733070000137b1708491110004049111895170850101a9e04821710821518ac574b821608c95707c856087b18087b1710491118951808821750101ca1fc821810821718ac7826821a08975920989920977720987b20330764680a058210308215288216209511383200009511d07b10287b15207b161864896475848aff0033060040330b0000137b1b7b16081e03000013521a02141e030200131e0301001301330903281e1e03010013491110026418649750101e27fc821910836601ac690400330800001364570a0400821910835501ac590400330800001333070a0400838852080f330a330901330b0000132816330a013b0a000013330b000013c8ab0b330902019511f87b10330800001378ba0a04001e03000013520808330901280c1e0301001301330902019511f87b103308000013c8980a959901460a0a04007c7a957701bea808ab97f8330701e08709330702db890732009511907b10687b15607b165850102250fd8477ff005217053c0133093307000013330800400a013808000013978930978b28988718848aff0098993898b83895abd13305000013510b5895ab9d510b3795aa7cff520afe009599835209f700521809f3009577985207eb0034070400137b1795580595171033091f5010245afa330628389599c65209cb0095885bff5208c3009577af5207bc00330601281d95997aff5209af009588a55208a800957727ff5207a000330602017b153049113800404911409517305010269102821738821540ac577e7b1608821830c957069759207a1630c88505989920951b303307645a0a0201801830ac86598377511703545207507b15307b183895173050102836fd8477ff005117023b82183852083478172f8219085109385219017295172f33002a7c7985980178786497285efa7c172f50102c58fd330833073300122839fe00330801330701330012282cfe951538821778173895173995181033091f50102e66f995172f7b1730645733003033089579202863fe8475ff005215023e330802330701330018287afd8477013300169511d87b10207b1518330500401e0300001333080000137b187b150849111001641833002028bbf978152f330701e05707845801501032c5f97c172f501034bdfc645833073300182829fd9511b07b10487b15407b163850103664fb8477ff0052170582003309330600001333050000133308004033070000133300380a01380b0000139555047b1528491130fc3f97b93097b82884baff0098993898883895ac9f98b718510cb50095ab93510b3795aa65ff520ac200959952ff5209ba00958863ff5208b2009577a25207ab0095172850103ad1fb8477ff005217029300289600009599b452098f00958852ff5208870095777fff52077f3308000013340504001395170995880533091f50103c28f833060295170878160778150833003e33089579202821fd8475ff00781528951828aa651a6457501040c2fb33089555fe885701837733001028d1fc9555fe885701837733001028c3fc959911ff5209179588825208119577c252070b5010428cfb286afb3308013307013300122868fc9511e87b10107b15087b166475827710c89706ac7623825a08ac6a1d825ac8a70750104492f77b561082101082150882169511183200009511f07b1008481104951804330904501046ba8210089511103200498a924a294992244925294949496a524a2aa5a4a49494a42422a28484848424124092245192484a1249524248481222411222a1a4100413211421919044229524852449922449129290a42429891411d1242984344992244948922449493249499224499224494a9264529249525249a92925a5ca4921a43e490a0949489224490a499224559234492a2294102148212a24196a92a196124a08c9146a480a3285a49624494a9210a1108724912424894884442849a844442245242232210949922449aa4991242122491249a924543249529284a4944424499224422851922421a1922409110a21420e4948224922898888482444c8444424842421495212490a2525494924494292244925494a48529a24892400",
-        "build_info": {
-            "build_mode": "Release",
-            "cargo_contract_version": "6.0.0-alpha",
-            "rust_toolchain": "stable-aarch64-apple-darwin"
-        }
-    },
-    "contract": {
-        "name": "flipper",
-        "version": "0.1.0",
-        "authors": [
-            "[your_name] <[your_email]>"
-        ]
-    },
-    "image": null,
-    "spec": {
-        "constructors": [
-            {
-                "args": [
-                    {
-                        "label": "init_value",
-                        "type": {
-                            "displayName": [
-                                "bool"
-                            ],
-                            "type": 0
-                        }
-                    }
-                ],
-                "default": false,
-                "docs": [
-                    "Creates a new flipper smart contract initialized with the given value."
-                ],
-                "label": "new",
-                "payable": false,
-                "returnType": {
-                    "displayName": [
-                        "ink_primitives",
-                        "ConstructorResult"
-                    ],
-                    "type": 2
-                },
-                "selector": "0x9bae9d5e"
-            },
-            {
-                "args": [],
-                "default": true,
-                "docs": [
-                    "Creates a new flipper smart contract initialized to `false`."
-                ],
-                "label": "new_default",
-                "payable": false,
-                "returnType": {
-                    "displayName": [
-                        "ink_primitives",
-                        "ConstructorResult"
-                    ],
-                    "type": 2
-                },
-                "selector": "0x61ef7e3e"
-            },
-            {
-                "args": [
-                    {
-                        "label": "seed",
-                        "type": {
-                            "displayName": [
-                                "Hash"
-                            ],
-                            "type": 5
-                        }
-                    }
-                ],
-                "default": false,
-                "docs": [
-                    "Creates a new flipper smart contract with the value being calculate using provided seed."
-                ],
-                "label": "from_seed",
-                "payable": false,
-                "returnType": {
-                    "displayName": [
-                        "ink_primitives",
-                        "ConstructorResult"
-                    ],
-                    "type": 8
-                },
-                "selector": "0x6d4cae81"
-            }
-        ],
-        "docs": [],
-        "environment": {
-            "accountId": {
-                "displayName": [
-                    "AccountId"
-                ],
-                "type": 14
-            },
-            "balance": {
-                "displayName": [
-                    "Balance"
-                ],
-                "type": 15
-            },
-            "blockNumber": {
-                "displayName": [
-                    "BlockNumber"
-                ],
-                "type": 17
-            },
-            "chainExtension": {
-                "displayName": [
-                    "ChainExtension"
-                ],
-                "type": 18
-            },
-            "hash": {
-                "displayName": [
-                    "Hash"
-                ],
-                "type": 5
-            },
-            "maxEventTopics": 4,
-            "staticBufferSize": 16384,
-            "timestamp": {
-                "displayName": [
-                    "Timestamp"
-                ],
-                "type": 16
-            }
-        },
-        "events": [
-            {
-                "args": [
-                    {
-                        "docs": [
-                            "The previous state of the flip."
-                        ],
-                        "indexed": false,
-                        "label": "old",
-                        "type": {
-                            "displayName": [
-                                "bool"
-                            ],
-                            "type": 0
-                        }
-                    },
-                    {
-                        "docs": [
-                            "The new state of the flip."
-                        ],
-                        "indexed": false,
-                        "label": "new",
-                        "type": {
-                            "displayName": [
-                                "bool"
-                            ],
-                            "type": 0
-                        }
-                    }
-                ],
-                "docs": [
-                    "Emitted when the flip function is called."
-                ],
-                "label": "Flipped",
-                "module_path": "flipper::flipper",
-                "signature_topic": "0x0a39b5ca0b8b3a5172476100ae7b9168b269cc91d5648efe180c75d935d3e886"
-            }
-        ],
-        "lang_error": {
-            "displayName": [
-                "ink",
-                "LangError"
-            ],
-            "type": 4
-        },
-        "messages": [
-            {
-                "args": [
-                    {
-                        "label": "seed",
-                        "type": {
-                            "displayName": [
-                                "Hash"
-                            ],
-                            "type": 5
-                        }
-                    }
-                ],
-                "default": false,
-                "docs": [
-                    " Flips the current value, value based on seed."
-                ],
-                "label": "flip_with_seed",
-                "mutates": true,
-                "payable": false,
-                "returnType": {
-                    "displayName": [
-                        "ink",
-                        "MessageResult"
-                    ],
-                    "type": 11
-                },
-                "selector": "0x847d0968"
-            },
-            {
-                "args": [],
-                "default": false,
-                "docs": [
-                    " Flips the current value of the Flipper's boolean."
-                ],
-                "label": "flip",
-                "mutates": true,
-                "payable": false,
-                "returnType": {
-                    "displayName": [
-                        "ink",
-                        "MessageResult"
-                    ],
-                    "type": 2
-                },
-                "selector": "0x633aa551"
-            },
-            {
-                "args": [],
-                "default": false,
-                "docs": [
-                    " Returns the current value of the Flipper's boolean."
-                ],
-                "label": "get",
-                "mutates": false,
-                "payable": false,
-                "returnType": {
-                    "displayName": [
-                        "ink",
-                        "MessageResult"
-                    ],
-                    "type": 13
-                },
-                "selector": "0x2f865bd9"
-            }
-        ]
-    },
-    "storage": {
-        "root": {
-            "layout": {
-                "struct": {
-                    "fields": [
-                        {
-                            "layout": {
-                                "leaf": {
-                                    "key": "0x00000000",
-                                    "ty": 0
-                                }
-                            },
-                            "name": "value"
-                        }
-                    ],
-                    "name": "Flipper"
-                }
-            },
-            "root_key": "0x00000000",
-            "ty": 1
-        }
-    },
-    "types": [
-        {
-            "id": 0,
-            "type": {
-                "def": {
-                    "primitive": "bool"
-                }
-            }
-        },
-        {
-            "id": 1,
-            "type": {
-                "def": {
-                    "composite": {
-                        "fields": [
-                            {
-                                "name": "value",
-                                "type": 0,
-                                "typeName": "<bool as::ink::storage::traits::AutoStorableHint<::ink::storage\n::traits::ManualKey<2054318728u32, ()>,>>::Type"
-                            }
-                        ]
-                    }
-                },
-                "path": [
-                    "flipper",
-                    "flipper",
-                    "Flipper"
-                ]
-            }
-        },
-        {
-            "id": 2,
-            "type": {
-                "def": {
-                    "variant": {
-                        "variants": [
-                            {
-                                "fields": [
-                                    {
-                                        "type": 3
-                                    }
-                                ],
-                                "index": 0,
-                                "name": "Ok"
-                            },
-                            {
-                                "fields": [
-                                    {
-                                        "type": 4
-                                    }
-                                ],
-                                "index": 1,
-                                "name": "Err"
-                            }
-                        ]
-                    }
-                },
-                "params": [
-                    {
-                        "name": "T",
-                        "type": 3
-                    },
-                    {
-                        "name": "E",
-                        "type": 4
-                    }
-                ],
-                "path": [
-                    "Result"
-                ]
-            }
-        },
-        {
-            "id": 3,
-            "type": {
-                "def": {
-                    "tuple": []
-                }
-            }
-        },
-        {
-            "id": 4,
-            "type": {
-                "def": {
-                    "variant": {
-                        "variants": [
-                            {
-                                "index": 1,
-                                "name": "CouldNotReadInput"
-                            }
-                        ]
-                    }
-                },
-                "path": [
-                    "ink_primitives",
-                    "LangError"
-                ]
-            }
-        },
-        {
-            "id": 5,
-            "type": {
-                "def": {
-                    "composite": {
-                        "fields": [
-                            {
-                                "type": 6,
-                                "typeName": "[u8; 32]"
-                            }
-                        ]
-                    }
-                },
-                "path": [
-                    "ink_primitives",
-                    "types",
-                    "Hash"
-                ]
-            }
-        },
-        {
-            "id": 6,
-            "type": {
-                "def": {
-                    "array": {
-                        "len": 32,
-                        "type": 7
-                    }
-                }
-            }
-        },
-        {
-            "id": 7,
-            "type": {
-                "def": {
-                    "primitive": "u8"
-                }
-            }
-        },
-        {
-            "id": 8,
-            "type": {
-                "def": {
-                    "variant": {
-                        "variants": [
-                            {
-                                "fields": [
-                                    {
-                                        "type": 9
-                                    }
-                                ],
-                                "index": 0,
-                                "name": "Ok"
-                            },
-                            {
-                                "fields": [
-                                    {
-                                        "type": 4
-                                    }
-                                ],
-                                "index": 1,
-                                "name": "Err"
-                            }
-                        ]
-                    }
-                },
-                "params": [
-                    {
-                        "name": "T",
-                        "type": 9
-                    },
-                    {
-                        "name": "E",
-                        "type": 4
-                    }
-                ],
-                "path": [
-                    "Result"
-                ]
-            }
-        },
-        {
-            "id": 9,
-            "type": {
-                "def": {
-                    "variant": {
-                        "variants": [
-                            {
-                                "fields": [
-                                    {
-                                        "type": 3
-                                    }
-                                ],
-                                "index": 0,
-                                "name": "Ok"
-                            },
-                            {
-                                "fields": [
-                                    {
-                                        "type": 10
-                                    }
-                                ],
-                                "index": 1,
-                                "name": "Err"
-                            }
-                        ]
-                    }
-                },
-                "params": [
-                    {
-                        "name": "T",
-                        "type": 3
-                    },
-                    {
-                        "name": "E",
-                        "type": 10
-                    }
-                ],
-                "path": [
-                    "Result"
-                ]
-            }
-        },
-        {
-            "id": 10,
-            "type": {
-                "def": {
-                    "variant": {
-                        "variants": [
-                            {
-                                "index": 0,
-                                "name": "ZeroSum"
-                            }
-                        ]
-                    }
-                },
-                "path": [
-                    "flipper",
-                    "flipper",
-                    "FlipperError"
-                ]
-            }
-        },
-        {
-            "id": 11,
-            "type": {
-                "def": {
-                    "variant": {
-                        "variants": [
-                            {
-                                "fields": [
-                                    {
-                                        "type": 12
-                                    }
-                                ],
-                                "index": 0,
-                                "name": "Ok"
-                            },
-                            {
-                                "fields": [
-                                    {
-                                        "type": 4
-                                    }
-                                ],
-                                "index": 1,
-                                "name": "Err"
-                            }
-                        ]
-                    }
-                },
-                "params": [
-                    {
-                        "name": "T",
-                        "type": 12
-                    },
-                    {
-                        "name": "E",
-                        "type": 4
-                    }
-                ],
-                "path": [
-                    "Result"
-                ]
-            }
-        },
-        {
-            "id": 12,
-            "type": {
-                "def": {
-                    "variant": {
-                        "variants": [
-                            {
-                                "fields": [
-                                    {
-                                        "type": 0
-                                    }
-                                ],
-                                "index": 0,
-                                "name": "Ok"
-                            },
-                            {
-                                "fields": [
-                                    {
-                                        "type": 10
-                                    }
-                                ],
-                                "index": 1,
-                                "name": "Err"
-                            }
-                        ]
-                    }
-                },
-                "params": [
-                    {
-                        "name": "T",
-                        "type": 0
-                    },
-                    {
-                        "name": "E",
-                        "type": 10
-                    }
-                ],
-                "path": [
-                    "Result"
-                ]
-            }
-        },
-        {
-            "id": 13,
-            "type": {
-                "def": {
-                    "variant": {
-                        "variants": [
-                            {
-                                "fields": [
-                                    {
-                                        "type": 0
-                                    }
-                                ],
-                                "index": 0,
-                                "name": "Ok"
-                            },
-                            {
-                                "fields": [
-                                    {
-                                        "type": 4
-                                    }
-                                ],
-                                "index": 1,
-                                "name": "Err"
-                            }
-                        ]
-                    }
-                },
-                "params": [
-                    {
-                        "name": "T",
-                        "type": 0
-                    },
-                    {
-                        "name": "E",
-                        "type": 4
-                    }
-                ],
-                "path": [
-                    "Result"
-                ]
-            }
-        },
-        {
-            "id": 14,
-            "type": {
-                "def": {
-                    "composite": {
-                        "fields": [
-                            {
-                                "type": 6,
-                                "typeName": "[u8; 32]"
-                            }
-                        ]
-                    }
-                },
-                "path": [
-                    "ink_primitives",
-                    "types",
-                    "AccountId"
-                ]
-            }
-        },
-        {
-            "id": 15,
-            "type": {
-                "def": {
-                    "primitive": "u128"
-                }
-            }
-        },
-        {
-            "id": 16,
-            "type": {
-                "def": {
-                    "primitive": "u64"
-                }
-            }
-        },
-        {
-            "id": 17,
-            "type": {
-                "def": {
-                    "primitive": "u32"
-                }
-            }
-        },
-        {
-            "id": 18,
-            "type": {
-                "def": {
-                    "variant": {}
-                },
-                "path": [
-                    "ink_primitives",
-                    "types",
-                    "NoChainExtension"
-                ]
-            }
-        }
+  "source": {
+    "hash": "0x2b25836c66382bfad67c98a74ce2464c398c75d732475933939dbadc7445d794",
+    "language": "ink! 6.0.0-alpha",
+    "compiler": "rustc 1.88.0",
+    "contract_binary": "0x50564d0000ef06000000000000010600c00040a000045505000000000e00000019000000240000002f00000063616c6c5f646174615f636f70796765745f73746f726167657365616c5f72657475726e7365745f73746f7261676576616c75655f7472616e7366657272656405110283870463616c6c84e2066465706c6f7906866c11028593ad01b902ba02bb02e202070368039803b60319046704d804f3042a0544057a058b056472531910bb008d2c84c407c842056487642aae52107c7b95770178ab95aa01ac5af6c8480cc949068469f884cb07c8950a510b19017b197b16087b1c1033054911189ab608951918846701d4b90351070e8217107c77783733050101846702510714821710c857077f77c8530979979555020184670497b603510711821710c857078177c853037a37018219188d67847038c9b808958308642701c8470c95cb08c84308d06905aeab198289953308cf0908d458087bc895770828e1642a28693306821b1084b70449111851070c81877a17183306040184b702510717c84607c837077f77951818d4680879879566020184b701510714c86404c843037c37951818d46808788701821718cf0707d457077bc78216088219c89b088469072809c89b0884690701c8a909ae9a107c8795880178a795aa01ac9af66427821030821528821620951138320064c764cbaea5d282789577087b58955508aea5c528f39511f07b1008648a78170795180733090164a733002228d0039511f07b100848110495180433090433002228bb039511a87b10507b15487b16403305000002641633070000023300020a0401805210805814805918805a1c8053805c04805708805b0c49112049112849113049113897aa2097882097bb2097cc20d4a909d42808951220d4b707d43c0a7b1a7b17087b18107b1918330704017c68017c69027c6a037c6b97880897991097aa18d4b8087c6b047c6c05d4a9097c6a067c650797cc08d4cb0b97aa10975518d45a0a956608d49808d4ba0a97aa20d4a8087b289522089577ff5207b4951920330705330805019588ff51080f829a959908510af5330704018210508215488216409511583200827808510814827a7ca9958bff95aa017b7a7b7b0828053309019597ff8e77957a01939a330702db8a0732003300049511f87b1033080000021f0300000233090233070a02000000009511c87b10307b15287b16207b1733070000027b1708491110004049111895170850100a9dfe821710821518ac574b821608c95707c856087b18087b1710491118951808821750100c5ffe821810821718ac7826821a08975920989920977720987b20330764680a03821030821528821620951138320000838852080f330a330901330b00000228163308000002330a013b0a000002c8a80b330902019511f87b10330800000278ba0a020082191052090b33080133070a0200835501ac590400330800000233070a02009511c87b10307b15287b1620501010fcfd8477ff00521705b000330933050000023308004033070000023300120a018057977930977828847aff0098993898883895abd1987718510b2095aa9d520a799599c652097395885bff52086c9577af5207663306281a95997aff52095b9588a5520855957727ff52074e330601017b1508491110004049111895170850101466fd821710821518ac572d7b16821808c957069759207a1608c88505989920951b083307645a0a0101801808ac86098377510711000033080133070133000828defe7b15087b181095170850101611fe8218108477ff009579fe8899018e88d49808977a081407010000000d000000da8a078478015208c084780003958800fe5108b58477000182185108308e773300069511d87b10207b15183308000002330500401e030000027b187b150849111001641833000e2894fc887701501018e9fd330833073300082855fe9511d87b10207b15187b161050101aa1fc8477ff0052170547330933050000023308004095560433070000020a0139070000027b16491108fc3f52479bae9d5e16641750101c4efd8477ff005217021133080133070133000828f9fd0050101e7dfd285bfd9511e87b10107b15087b166475827710c89706ac7630825a08ac6a2a825ac8a7073300209511c87b10307b15287b16202889fa7b56108210108215088216951118320000821008951110320085924a29499244494992a432494a9924294d499a242949a94a92924952522649499394929249292949aa949292929424499224098534494a9224499224294926294992244992244949924c4a32494a2a2935a5a4a410529f2485842424499224852449922a495a4a28242453a8496a32d42409110a117249244992249254248964421292942449aa49394992844452124092884429494284122509952449882844c2a110284424c99024952429499224294d0200",
+    "build_info": {
+      "build_mode": "Release",
+      "cargo_contract_version": "6.0.0-alpha.1",
+      "rust_toolchain": "stable-aarch64-apple-darwin"
+    }
+  },
+  "contract": { "name": "flipper6", "version": "0.1.0", "authors": ["[your_name] <[your_email]>"] },
+  "image": null,
+  "spec": {
+    "constructors": [
+      {
+        "args": [{ "label": "init_value", "type": { "displayName": ["bool"], "type": 0 } }],
+        "default": false,
+        "docs": ["Constructor that initializes the `bool` value to the given `init_value`."],
+        "label": "new",
+        "payable": false,
+        "returnType": { "displayName": ["ink_primitives", "ConstructorResult"], "type": 2 },
+        "selector": "0x9bae9d5e"
+      }
     ],
-    "version": 5
+    "docs": [],
+    "environment": {
+      "accountId": { "displayName": ["AccountId"], "type": 6 },
+      "balance": { "displayName": ["Balance"], "type": 9 },
+      "blockNumber": { "displayName": ["BlockNumber"], "type": 12 },
+      "hash": { "displayName": ["Hash"], "type": 10 },
+      "nativeToEthRatio": 100000000,
+      "staticBufferSize": 16384,
+      "timestamp": { "displayName": ["Timestamp"], "type": 11 }
+    },
+    "events": [],
+    "lang_error": { "displayName": ["ink", "LangError"], "type": 4 },
+    "messages": [
+      {
+        "args": [],
+        "default": false,
+        "docs": [
+          " A message that can be called on instantiated contracts.",
+          " This one flips the value of the stored `bool` from `true`",
+          " to `false` and vice versa."
+        ],
+        "label": "flip",
+        "mutates": true,
+        "payable": false,
+        "returnType": { "displayName": ["ink", "MessageResult"], "type": 2 },
+        "selector": "0x633aa551"
+      },
+      {
+        "args": [],
+        "default": false,
+        "docs": [" Simply returns the current value of our `bool`."],
+        "label": "get",
+        "mutates": false,
+        "payable": false,
+        "returnType": { "displayName": ["ink", "MessageResult"], "type": 5 },
+        "selector": "0x2f865bd9"
+      }
+    ]
+  },
+  "storage": {
+    "root": {
+      "layout": {
+        "struct": {
+          "fields": [{ "layout": { "leaf": { "key": "0x00000000", "ty": 0 } }, "name": "value" }],
+          "name": "Flipper6"
+        }
+      },
+      "root_key": "0x00000000",
+      "ty": 1
+    }
+  },
+  "types": [
+    { "id": 0, "type": { "def": { "primitive": "bool" } } },
+    {
+      "id": 1,
+      "type": {
+        "def": {
+          "composite": {
+            "fields": [
+              {
+                "name": "value",
+                "type": 0,
+                "typeName": "<bool as::ink::storage::traits::AutoStorableHint<::ink::storage\n::traits::ManualKey<2137511608u32, ()>,>>::Type"
+              }
+            ]
+          }
+        },
+        "path": ["flipper6", "flipper6", "Flipper6"]
+      }
+    },
+    {
+      "id": 2,
+      "type": {
+        "def": {
+          "variant": {
+            "variants": [
+              { "fields": [{ "type": 3 }], "index": 0, "name": "Ok" },
+              { "fields": [{ "type": 4 }], "index": 1, "name": "Err" }
+            ]
+          }
+        },
+        "params": [
+          { "name": "T", "type": 3 },
+          { "name": "E", "type": 4 }
+        ],
+        "path": ["Result"]
+      }
+    },
+    { "id": 3, "type": { "def": { "tuple": [] } } },
+    {
+      "id": 4,
+      "type": {
+        "def": { "variant": { "variants": [{ "index": 1, "name": "CouldNotReadInput" }] } },
+        "path": ["ink_primitives", "LangError"]
+      }
+    },
+    {
+      "id": 5,
+      "type": {
+        "def": {
+          "variant": {
+            "variants": [
+              { "fields": [{ "type": 0 }], "index": 0, "name": "Ok" },
+              { "fields": [{ "type": 4 }], "index": 1, "name": "Err" }
+            ]
+          }
+        },
+        "params": [
+          { "name": "T", "type": 0 },
+          { "name": "E", "type": 4 }
+        ],
+        "path": ["Result"]
+      }
+    },
+    {
+      "id": 6,
+      "type": {
+        "def": { "composite": { "fields": [{ "type": 7, "typeName": "[u8; 32]" }] } },
+        "path": ["ink_primitives", "types", "AccountId"]
+      }
+    },
+    { "id": 7, "type": { "def": { "array": { "len": 32, "type": 8 } } } },
+    { "id": 8, "type": { "def": { "primitive": "u8" } } },
+    { "id": 9, "type": { "def": { "primitive": "u128" } } },
+    {
+      "id": 10,
+      "type": {
+        "def": { "composite": { "fields": [{ "type": 7, "typeName": "[u8; 32]" }] } },
+        "path": ["ink_primitives", "types", "Hash"]
+      }
+    },
+    { "id": 11, "type": { "def": { "primitive": "u64" } } },
+    { "id": 12, "type": { "def": { "primitive": "u32" } } }
+  ],
+  "version": 6
 }
