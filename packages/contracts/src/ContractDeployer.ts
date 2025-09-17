@@ -18,7 +18,7 @@ export class ContractDeployer<ContractApi extends GenericContractApi = GenericCo
   readonly #options?: ExecutionOptions;
 
   constructor(
-    readonly client: ISubstrateClient<ContractApi['types']['ChainApi']>,
+    readonly client: ISubstrateClient<any, any>,
     metadata: LooseContractMetadata | string,
     codeHashOrCode: Hash | Uint8Array | string,
     options?: ExecutionOptions,
