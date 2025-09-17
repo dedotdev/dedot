@@ -1,22 +1,9 @@
 import { isEventRecord } from '@dedot/api';
-import { Bytes, H160, H256 } from '@dedot/codecs';
-import { GenericSubstrateApi, IEventRecord, IRuntimeEvent, Unsub } from '@dedot/types';
+import { GenericSubstrateApi, IEventRecord, Unsub } from '@dedot/types';
 import { assert } from '@dedot/utils';
 import { EventFragment } from '@ethersproject/abi';
 import { SolContractEvent, SolGenericContractEvent } from '../../types/index.js';
 import { SolContractExecutor } from './abstract';
-
-interface ContractEmittedEvent extends IRuntimeEvent {
-  pallet: 'Revive';
-  palletEvent: {
-    name: 'ContractEmitted';
-    data: {
-      contract: H160;
-      data: Bytes;
-      topics: Array<H256>;
-    };
-  };
-}
 
 export class SolEventExecutor<ChainApi extends GenericSubstrateApi> extends SolContractExecutor<ChainApi> {
   doExecute(eventName: string): SolGenericContractEvent {

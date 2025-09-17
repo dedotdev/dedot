@@ -242,7 +242,7 @@ export class SolContractInstantiateCustomError<
 > extends ContractInstantiateError {
   name = 'ContractCustomError';
   /**
-   * The custom error that occurred during the execution.
+   * The custom error that occurred during the instantiation.
    */
   errorName: string;
   errorArgs: ErrorArg;

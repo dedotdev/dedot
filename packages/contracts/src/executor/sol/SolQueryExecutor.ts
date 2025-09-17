@@ -2,6 +2,7 @@ import type { ISubstrateClient } from '@dedot/api';
 import type { SubstrateApi } from '@dedot/api/chaintypes';
 import { GenericSubstrateApi, RpcVersion } from '@dedot/types';
 import { assert, assertFalse, DedotError, HexString } from '@dedot/utils';
+import { ErrorDescription } from '@ethersproject/abi/lib/interface.js';
 import { SolContractCustomError, ContractDispatchError } from '../../errors.js';
 import {
   ContractCallOptions,
@@ -58,25 +59,27 @@ export class SolQueryExecutor<ChainApi extends GenericSubstrateApi> extends SolC
 
       const flags = toReturnFlags(raw.result.value.flags.bits);
 
-      try {
-        const data = this.registry.interf.decodeFunctionResult(fragment, raw.result.value.data);
-
-        return {
-          data,
-          raw,
-          flags,
-          inputData: bytes,
-        } as GenericContractCallResult;
-      } catch (e) {
-        if (flags.revert) {
-          // Currently, there is a case haven't been covered yet when the rust code using assert! or panic! macros
-          // Ref: https://docs.soliditylang.org/en/latest/control-structures.html?utm_source=chatgpt.com#panic-via-assert-and-error-via-require
-          const error = this.registry.interf.parseError(raw.result.value.data);
-          throw new SolContractCustomError(error.name, raw, error);
+      if (flags.revert) {
+        let errorDesc: ErrorDescription;
+        try {
+          // This could be failed if the errors is thrown by panic! or assert!
+          // Because for now, those error data format is not correctly encoded
+          errorDesc = this.registry.interf.parseError(raw.result.value.data);
+        } catch (e) {
+          throw new DedotError(`Failed to decode revert reason ${(e as Error).message}`);
         }
 
-        throw new DedotError(`Failed to decode contract call result: ${(e as Error).message}`);
+        throw new SolContractCustomError(errorDesc.name, raw, errorDesc);
       }
+
+      const data = this.registry.interf.decodeFunctionResult(fragment, raw.result.value.data);
+
+      return {
+        data,
+        raw,
+        flags,
+        inputData: bytes,
+      } as GenericContractCallResult;
     };
 
     callFn.meta = fragment;

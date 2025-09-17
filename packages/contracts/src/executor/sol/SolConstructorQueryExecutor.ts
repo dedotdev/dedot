@@ -1,8 +1,13 @@
 import type { ISubstrateClient } from '@dedot/api';
 import { type SubstrateApi } from '@dedot/api/chaintypes';
 import { GenericSubstrateApi, RpcVersion } from '@dedot/types';
-import { assert, assertFalse, isPvm, isUndefined, toHex, toU8a } from '@dedot/utils';
-import { ContractInstantiateDispatchError, SolContractInstantiateCustomError } from '../../errors.js';
+import { assert, assertFalse, DedotError, isPvm, isUndefined, toHex, toU8a } from '@dedot/utils';
+import { ErrorDescription } from '@ethersproject/abi/lib/interface.js';
+import {
+  ContractInstantiateDispatchError,
+  SolContractCustomError,
+  SolContractInstantiateCustomError,
+} from '../../errors.js';
 import {
   SolGenericConstructorQueryCall,
   ConstructorCallOptions,
@@ -82,20 +87,23 @@ export class SolConstructorQueryExecutor<ChainApi extends GenericSubstrateApi> e
         throw new ContractInstantiateDispatchError(raw.result.err, raw);
       }
 
-      // Constructors doesn't return any data, but when an error occurs during instantiation,
-      // data may contain error information.
-      // Ref: https://docs.soliditylang.org/en/latest/control-structures.html?utm_source=chatgpt.com#panic-via-assert-and-error-via-require
-      const data = raw.result.value.result.data;
       const flags = toReturnFlags(raw.result.value.result.flags.bits);
 
       if (flags.revert) {
-        // TODO: Handle the case errors from assert! or panic! macros
-        const error = this.registry.interf.parseError(data);
-        throw new SolContractInstantiateCustomError(error.name, raw, error);
+        let errorDesc: ErrorDescription;
+        try {
+          // This could be failed if the errors is thrown by panic! or assert!
+          // Because for now, those error data format is not correctly encoded
+          errorDesc = this.registry.interf.parseError(raw.result.value.result.data);
+        } catch (e) {
+          throw new DedotError(`Failed to decode revert reason ${(e as Error).message}`);
+        }
+
+        throw new SolContractInstantiateCustomError(errorDesc.name, raw, errorDesc);
       }
 
       return {
-        data,
+        data: raw.result.value.result.data,
         raw,
         flags,
         address: raw.result.value.address,
