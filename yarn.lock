@@ -309,12 +309,12 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@dedot/chaintypes@npm:^0.150.0":
-  version: 0.150.0
-  resolution: "@dedot/chaintypes@npm:0.150.0"
+"@dedot/chaintypes@npm:^0.155.0":
+  version: 0.155.0
+  resolution: "@dedot/chaintypes@npm:0.155.0"
   peerDependencies:
-    dedot: ">=0.15.0"
-  checksum: 10c0/edd61750aed1f2638591384f2cada986b24ca999cc1f5dda3733ae6f56b618f8fcc88ff79fa4024b4a67950cb5616aa700570d603b3485ebfabe128f78241e87
+    dedot: ">=0.16.0"
+  checksum: 10c0/359d788ed63be29e95f9bb6007f7d2d0e567e174a26171fdee67536627c96fe8b5efd26e705031681cc69dbbcfb8cffb41d2a49cb49b558922f5047fbf75e7c0
   languageName: node
   linkType: hard
 
@@ -3340,7 +3340,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "dapp@workspace:examples/dapp"
   dependencies:
-    "@dedot/chaintypes": "npm:^0.150.0"
+    "@dedot/chaintypes": "npm:^0.155.0"
     "@types/react": "npm:^18.3.3"
     "@types/react-dom": "npm:^18.3.0"
     "@typescript-eslint/eslint-plugin": "npm:^6.21.0"
@@ -3593,7 +3593,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "e2e-contracts@workspace:e2e/contracts"
   dependencies:
-    "@dedot/chaintypes": "npm:^0.150.0"
+    "@dedot/chaintypes": "npm:^0.155.0"
     "@polkadot/keyring": "npm:^13.5.6"
     dedot: "workspace:*"
   languageName: unknown
@@ -4112,7 +4112,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "example-scripts@workspace:examples/scripts"
   dependencies:
-    "@dedot/chaintypes": "npm:^0.150.0"
+    "@dedot/chaintypes": "npm:^0.155.0"
     "@polkadot/keyring": "npm:^13.5.6"
     "@substrate/connect-known-chains": "npm:^1.10.3"
     dedot: "workspace:*"
@@ -8014,7 +8014,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "smoldot-dapp@workspace:examples/smoldot-dapp"
   dependencies:
-    "@dedot/chaintypes": "npm:^0.150.0"
+    "@dedot/chaintypes": "npm:^0.155.0"
     "@substrate/connect-known-chains": "npm:^1.10.3"
     "@types/react": "npm:^18.3.3"
     "@types/react-dom": "npm:^18.3.0"
@@ -9426,7 +9426,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "zombienet@workspace:e2e/zombienet"
   dependencies:
-    "@dedot/chaintypes": "npm:^0.150.0"
+    "@dedot/chaintypes": "npm:^0.155.0"
     "@polkadot/keyring": "npm:^13.5.6"
     dedot: "workspace:*"
   languageName: unknown

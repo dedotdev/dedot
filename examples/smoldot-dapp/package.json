@@ -10,7 +10,7 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "@dedot/chaintypes": "^0.150.0",
+    "@dedot/chaintypes": "^0.155.0",
     "@substrate/connect-known-chains": "^1.10.3",
     "dedot": "workspace:*",
     "react": "^18.3.1",
