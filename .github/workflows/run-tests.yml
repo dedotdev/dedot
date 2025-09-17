@@ -7,6 +7,8 @@ on:
   push:
   workflow_dispatch:
   merge_group:
+  pull_request:
+    branches: [ main ]
 
 jobs:
   unit-tests:
