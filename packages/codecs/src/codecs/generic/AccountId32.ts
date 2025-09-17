@@ -7,6 +7,7 @@ import {
   isHex,
   isString,
   isU8a,
+  isZeroHex,
   u8aToHex,
 } from '@dedot/utils';
 
@@ -33,6 +34,10 @@ export class AccountId32 {
 
   address(ss58Format?: SS58FormatPrefix) {
     return encodeAddress(this.raw, ss58Format);
+  }
+
+  isZero() {
+    return isZeroHex(this.raw);
   }
 
   toJSON() {
