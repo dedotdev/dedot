@@ -1,16 +1,16 @@
 import * as $ from '@dedot/shape';
 import { assert, DedotError, ensurePresence } from '@dedot/utils';
 import type { PortableRegistry } from '../registry/PortableRegistry.js';
-import { GenericSubstrateApi } from '../types/index.js';
+import { GenericChainKnownTypes } from '../types/index.js';
 import {
   $ExtrinsicVersion,
+  EXTRINSIC_FORMAT_VERSION_V4,
   EXTRINSIC_FORMAT_VERSION_V5,
   ExtrinsicType,
-  EXTRINSIC_FORMAT_VERSION_V4,
 } from './ExtrinsicVersion.js';
 import {
-  GenericExtrinsic,
   ExtrinsicSignatureV4,
+  GenericExtrinsic,
   Preamble,
   PreambleV4Bare,
   PreambleV4Signed,
@@ -22,8 +22,8 @@ export class Extrinsic<A = any, C = any, S = any, E = any> extends GenericExtrin
 export interface ExtrinsicSignature<A = any, S = any, E = any> extends ExtrinsicSignatureV4<A, S, E> {}
 export const DEFAULT_EXTRINSIC_VERSION = 4;
 
-const $ExtrinsicSignature = <ChainApi extends GenericSubstrateApi = GenericSubstrateApi>(
-  registry: PortableRegistry<ChainApi>,
+const $ExtrinsicSignature = <KnownTypes extends GenericChainKnownTypes = GenericChainKnownTypes>(
+  registry: PortableRegistry<KnownTypes>,
 ): $.Shape<ExtrinsicSignature> => {
   const { addressTypeId, signatureTypeId } = registry.metadata!.extrinsic;
 
@@ -38,21 +38,21 @@ const $ExtrinsicSignature = <ChainApi extends GenericSubstrateApi = GenericSubst
   }) as $.Shape<ExtrinsicSignature>;
 };
 
-export const $Extrinsic = <ChainApi extends GenericSubstrateApi = GenericSubstrateApi>(
-  registry: PortableRegistry<ChainApi>,
+export const $Extrinsic = <KnownTypes extends GenericChainKnownTypes = GenericChainKnownTypes>(
+  registry: PortableRegistry<KnownTypes>,
 ): $.Shape<
   Extrinsic<
-    ChainApi['types']['Address'], // --
-    ChainApi['types']['RuntimeCall'],
-    ChainApi['types']['Signature'],
-    ChainApi['types']['Extra']
+    KnownTypes['Address'], // --
+    KnownTypes['RuntimeCall'],
+    KnownTypes['Signature'],
+    KnownTypes['Extra']
   >
 > => {
   assert(registry, 'PortableRegistry is required to compose $Extrinsic codec');
 
   const { callTypeId } = registry.metadata!.extrinsic;
   const $RuntimeCall = registry.findCodec(callTypeId) as $.Shape<any>;
-  const $Signature = $ExtrinsicSignature<ChainApi>(registry);
+  const $Signature = $ExtrinsicSignature<KnownTypes>(registry);
 
   const staticSize =
     $ExtrinsicVersion.staticSize +
