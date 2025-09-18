@@ -18,7 +18,7 @@ export const run = async (_nodeName: any, networkInfo: any) => {
   const alice = alicePair.address;
   const bob = bobPair.address;
 
-  const verifyPsp22Storage = async (api: LegacyClient | DedotClient) => {
+  const verifyPsp22Storage = async (api: ISubstrateClient<SubstrateApi[RpcVersion]>) => {
     console.log(`[${api.rpcVersion}] Testing PSP22 contract storage API`);
 
     // Deploy the contract

@@ -16,7 +16,7 @@ export const run = async (_nodeName: any, networkInfo: any) => {
 
   const alice = alicePair.address;
 
-  const verifyLazyVecStorage = async (api: LegacyClient | DedotClient) => {
+  const verifyLazyVecStorage = async (api: ISubstrateClient<SubstrateApi[RpcVersion]>) => {
     console.log(`[${api.rpcVersion}] Testing LazyVec contract storage API`);
 
     // Deploy the contract
