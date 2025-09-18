@@ -2,6 +2,8 @@
 
 {{{ importTypes }}}
 
-export interface ContractEvents<ChainApi extends GenericSubstrateApi> extends GenericContractEvents<ChainApi> {
-    {{{ eventsOut }}}
-}
+export interface ContractEvents
+<ChainApi extends GenericSubstrateApi> extends SolGenericContractEvents
+    <ChainApi> {
+        {{{ eventsOut }}}
+        }
