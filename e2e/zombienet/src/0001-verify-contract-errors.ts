@@ -27,10 +27,7 @@ export const run = async (_nodeName: any, networkInfo: any) => {
 
   const caller = alicePair.address;
 
-  const verifyContracts = async (
-    api: ISubstrateClient<SubstrateApi[RpcVersion]>,
-    flipper: ContractMetadataV4 | ContractMetadataV5,
-  ) => {
+  const verifyContracts = async (api: LegacyClient | DedotClient, flipper: ContractMetadataV4 | ContractMetadataV5) => {
     const wasm = flipper.source.wasm!;
     const deployer = new ContractDeployer<FlipperContractApi>(api, flipper, wasm);
 
@@ -126,7 +123,7 @@ export const run = async (_nodeName: any, networkInfo: any) => {
 };
 
 const deployFlipper = async (
-  api: ISubstrateClient<SubstrateApi[RpcVersion]>,
+  api: LegacyClient | DedotClient,
   flipper: ContractMetadataV4 | ContractMetadataV5,
   salt?: string,
 ): Promise<string> => {

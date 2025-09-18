@@ -26,7 +26,9 @@ export const ensureStorageApiSupports = (version: string | number) => {
   );
 };
 
-export function ensurePalletPresence(client: ISubstrateClient<SubstrateApi[RpcVersion]>, registry: TypinkRegistry) {
+export function ensurePalletPresence(_client: ISubstrateClient<any, any>, registry: TypinkRegistry) {
+  const client = _client as ISubstrateClient<SubstrateApi[RpcVersion]>;
+
   if (registry.isRevive()) {
     try {
       !!client.call.reviveApi.call.meta && !!client.tx.revive.call.meta;
@@ -43,10 +45,12 @@ export function ensurePalletPresence(client: ISubstrateClient<SubstrateApi[RpcVe
 }
 
 export async function ensureContractPresence(
-  client: ISubstrateClient<SubstrateApi[RpcVersion]>,
+  _client: ISubstrateClient<any, any>,
   registry: TypinkRegistry,
   address: ContractAddress,
 ) {
+  const client = _client as ISubstrateClient<SubstrateApi[RpcVersion]>;
+
   const contractInfo = await (async () => {
     if (registry.isRevive()) {
       const accountInfo = await client.query.revive.accountInfoOf(address as HexString);

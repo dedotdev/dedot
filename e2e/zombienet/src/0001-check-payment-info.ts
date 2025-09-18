@@ -1,6 +1,5 @@
-import { LegacyClient, DedotClient, ISubstrateClient, WsProvider } from 'dedot';
-import { SubstrateApi } from 'dedot/chaintypes';
-import { RpcVersion, TxPaymentInfo } from 'dedot/types';
+import { DedotClient, LegacyClient, WsProvider } from 'dedot';
+import { TxPaymentInfo } from 'dedot/types';
 import { assert } from 'dedot/utils';
 
 const ALICE = '5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY';
@@ -9,7 +8,7 @@ const BOB = '5FHneW46xGXgs5mUiveU4sbTyGBzmstUspZC92UhjJM694ty';
 export const run = async (nodeName: any, networkInfo: any) => {
   const { wsUri } = networkInfo.nodesByName[nodeName];
 
-  const getPaymentInfo = (api: ISubstrateClient<SubstrateApi[RpcVersion]>): Promise<TxPaymentInfo> => {
+  const getPaymentInfo = (api: LegacyClient | DedotClient): Promise<TxPaymentInfo> => {
     return api.tx.balances.transferKeepAlive(ALICE, BigInt(10 * 1e12)).paymentInfo(BOB);
   };
 

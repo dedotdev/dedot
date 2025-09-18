@@ -29,7 +29,7 @@ export const run = async (_nodeName: any, networkInfo: any) => {
 };
 
 async function testContractChainingMethods(
-  api: ISubstrateClient<SubstrateApi[RpcVersion]>,
+  api: LegacyClient | DedotClient,
   flipper: ContractMetadataV4 | ContractMetadataV5,
   alicePair: IKeyringPair,
   caller: string,
