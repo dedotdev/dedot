@@ -27,7 +27,7 @@ export class Contract<ContractApi extends GenericContractApi = GenericContractAp
   readonly #options?: ExecutionOptions;
 
   constructor(
-    readonly client: ISubstrateClient<any, any>,
+    readonly client: ISubstrateClient<ContractApi['types']['ChainApi']>,
     metadata: LooseContractMetadata | string,
     address: ContractAddress,
     options?: ExecutionOptions,

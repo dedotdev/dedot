@@ -288,7 +288,7 @@ export class LegacyClient<ChainApi extends VersionedGenericSubstrateApi = Substr
     let registry: any = this.registry;
     if (targetVersion.specVersion !== this.runtimeVersion.specVersion) {
       metadata = await this.fetchMetadata(hash, targetVersion);
-      registry = new PortableRegistry<ChainApiAt>(metadata.latest, this.options.hasher);
+      registry = new PortableRegistry<ChainApiAt['types']>(metadata.latest, this.options.hasher);
     }
 
     const api = {

@@ -3,13 +3,13 @@ import { assert, blake2_256, HashFn, HexString, hexToU8a, isObject, isU8a, u8aTo
 import type { DispatchError, ModuleError } from '../codecs/known/index.js';
 import { $Extrinsic } from '../extrinsic/index.js';
 import type { MetadataLatest, PalletErrorMetadataLatest, PortableType, TypeId } from '../metadata/index.js';
-import { GenericSubstrateApi } from '../types/index.js';
+import { GenericChainKnownTypes } from '../types/index.js';
 import { TypeRegistry } from './TypeRegistry.js';
 
 /**
  * Codec registry for portable types from metadata
  */
-export class PortableRegistry<ChainApi extends GenericSubstrateApi = GenericSubstrateApi> extends TypeRegistry {
+export class PortableRegistry<KnownTypes extends GenericChainKnownTypes = GenericChainKnownTypes> extends TypeRegistry {
   readonly #metadata: MetadataLatest;
   #hasher: HashFn;
 
@@ -20,7 +20,7 @@ export class PortableRegistry<ChainApi extends GenericSubstrateApi = GenericSubs
   }
 
   get $Extrinsic() {
-    return $Extrinsic<ChainApi>(this);
+    return $Extrinsic<KnownTypes>(this);
   }
 
   // default to version 0 for now
