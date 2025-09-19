@@ -23,8 +23,8 @@ export class TxGen extends QueryGen {
     return beautifySourceCode(template({ importTypes, txCallsOut }));
   }
 
-  override generateMethodDef(def: SolABIFunction, optionsParamName = 'options'): string {
-    const paramsOut = this.generateParamsOut(def);
+  override generateMethodDef(abiItem: SolABIFunction, optionsParamName = 'options'): string {
+    const paramsOut = this.generateParamsOut(abiItem);
 
     return `SolGenericContractTxCall<ChainApi, (${paramsOut && `${paramsOut},`} ${optionsParamName}: ContractTxOptions) => ContractSubmittableExtrinsic<ChainApi>>`;
   }

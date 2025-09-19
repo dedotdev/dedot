@@ -52,11 +52,11 @@ export class QueryGen {
     return callsOut;
   }
 
-  generateMethodDef(def: SolABIFunction, optionsParamName = 'options'): string {
-    const { outputs } = def;
+  generateMethodDef(abiItem: SolABIFunction, optionsParamName = 'options'): string {
+    const { outputs } = abiItem;
 
-    const paramsOut = this.generateParamsOut(def);
-    const typeOut = `[${outputs.map((o) => this.typesGen.generateType(o, def, 1, true)).join(',')}]`;
+    const paramsOut = this.generateParamsOut(abiItem);
+    const typeOut = `[${outputs.map((o) => this.typesGen.generateType(o, abiItem, 1, true)).join(',')}]`;
 
     return `SolGenericContractQueryCall<ChainApi, (${paramsOut && `${paramsOut},`} ${optionsParamName}?: ContractCallOptions) => Promise<GenericContractCallResult<${typeOut}, ContractCallResult<ChainApi>>>>`;
   }

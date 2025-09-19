@@ -1,8 +1,7 @@
 import { TypesGen } from '@dedot/codegen/sol/generator/TypesGen';
-import { SolABIConstructor, SolABIFunction, SolABIItem } from '@dedot/contracts';
+import { SolABIConstructor, SolABIItem } from '@dedot/contracts';
 import { stringCamelCase } from '@dedot/utils';
 import { beautifySourceCode, commentBlock, compileTemplate } from '../../utils.js';
-import { QueryGen } from './QueryGen.js';
 
 export class ConstructorQueryGen {
   abiItems: SolABIItem[];
@@ -32,10 +31,10 @@ export class ConstructorQueryGen {
     return beautifySourceCode(template({ importTypes, constructorsOut }));
   }
 
-  doGenerateConstructorFragment(constructor: SolABIConstructor, optionsTypeName?: string) {
+  doGenerateConstructorFragment(abiItem: SolABIConstructor, optionsTypeName?: string) {
     let callsOut = '';
 
-    const { inputs } = constructor;
+    const { inputs } = abiItem;
 
     // In case there is an arg has label `options`,
     // we use the name `_options` for the last options param
@@ -43,18 +42,16 @@ export class ConstructorQueryGen {
     const optionsParamName = inputs.some(({ name }) => name === 'options') ? '_options' : 'options';
 
     callsOut += `${commentBlock(
-      inputs.map(
-        (input) => `@param {${this.typesGen.generateType(input, constructor, 1)}} ${stringCamelCase(input.name)}`,
-      ),
+      inputs.map((input) => `@param {${this.typesGen.generateType(input, abiItem, 1)}} ${stringCamelCase(input.name)}`),
       optionsTypeName ? `@param {${optionsTypeName}} ${optionsParamName}` : '',
     )}`;
-    callsOut += `initialize: ${this.generateMethodDef(constructor, optionsParamName)};\n\n`;
+    callsOut += `initialize: ${this.generateMethodDef(abiItem, optionsParamName)};\n\n`;
 
     return callsOut;
   }
 
-  generateMethodDef(def: SolABIConstructor, optionsParamName = 'options'): string {
-    const paramsOut = this.generateParamsOut(def);
+  generateMethodDef(abiItem: SolABIConstructor, optionsParamName = 'options'): string {
+    const paramsOut = this.generateParamsOut(abiItem);
 
     return `SolGenericConstructorQueryCall<ChainApi, (${paramsOut && `${paramsOut},`} ${optionsParamName}?: ConstructorCallOptions) => Promise<GenericConstructorCallResult<[], ContractInstantiateResult<ChainApi>>>>`;
   }

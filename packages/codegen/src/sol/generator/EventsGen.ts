@@ -20,7 +20,7 @@ export class EventsGen {
 
     let eventsOut = '';
     events.forEach((event) => {
-      const { name, inputs, anonymous } = event;
+      const { name, anonymous } = event;
 
       eventsOut += `${stringPascalCase(name)}: ${this.#generateEventDef(event)};\n\n`;
     });
@@ -31,21 +31,21 @@ export class EventsGen {
     return beautifySourceCode(template({ importTypes, eventsOut }));
   }
 
-  #generateEventDef(event: SolABIEvent) {
-    const { name } = event;
+  #generateEventDef(abiItem: SolABIEvent) {
+    const { name } = abiItem;
 
-    const paramsOut = this.generateParamsOut(event);
+    const paramsOut = this.generateParamsOut(abiItem);
 
     return `SolGenericContractEvent<'${stringPascalCase(name)}', {${paramsOut}}>`;
   }
 
-  generateParamsOut(event: SolABIEvent) {
-    const { inputs } = event;
+  generateParamsOut(abiItem: SolABIEvent) {
+    const { inputs } = abiItem;
 
     return inputs
       .map(
         (o) =>
-          `${commentBlock(`@indexed: ${o.indexed}`)}${stringCamelCase(o.name)}: ${this.typesGen.generateType(o, event, 1)}`,
+          `${commentBlock(`@indexed: ${o.indexed}`)}${stringCamelCase(o.name)}: ${this.typesGen.generateType(o, abiItem, 1)}`,
       )
       .join(', ');
   }

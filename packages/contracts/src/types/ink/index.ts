@@ -18,8 +18,9 @@ import {
   GenericConstructorCallResult,
   GenericContractCallResult,
   SubmittableExtrinsic,
+  ContractAddress,
 } from '../shared.js';
-import { ContractAddress, ContractCallMessage, ContractConstructorMessage } from './shared.js';
+import { ContractCallMessage, ContractConstructorMessage } from './shared.js';
 import { ContractEventV4, ContractMetadataV4 } from './v4.js';
 import { ContractEventV5, ContractMetadataV5 } from './v5.js';
 import { ContractMetadataV6 } from './v6.js';

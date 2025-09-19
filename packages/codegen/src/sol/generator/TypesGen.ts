@@ -3,29 +3,31 @@ import { stringPascalCase } from '@dedot/utils';
 import { TypeImports } from '../../shared/TypeImports.js';
 import { beautifySourceCode, compileTemplate, isNativeType } from '../../utils.js';
 
-const NUMBER_TYPES = /^(u?int(8|16|32)?)$/;
-const BIGINT_TYPES = /^(u?int(64|128|256))$/;
-const NUMBER_ARRAY_TYPES = /^(u?int(8|16|32)\[])$/;
-const BIGINT_ARRAY_TYPES = /^(u?int(64|128|256)\[])$/;
-
-const ARRAY_WITH_SIZE = /^(u?int(8|16|32|64|128|256)\[(\d+)])$/;
-const BYTES_TYPES = /^bytes([1-9]|[12]\d|3[0-2])?$/;
+const NUMBER_TYPES = /^u?int(\d+)?(\[(\d+)?])?$/;
+const BIGINT_TYPES = /^u?int(\d+)?(\[(\d+)?])?$/;
+const BYTES_TYPES = /^bytes(\d+)?(\[(\d+)?])??$/;
+const FIXED_TYPES = /^fixed(\d+x\d+)?(\[(\d+)])?$/;
+const UNFIXED_TYPES = /^ufixed(\d+x\d+)?(\[(\d+)?])?$/;
+const STRING_TYPES = /^string(\[(\d+)?])?$/;
+const BOOL_TYPES = /^bool(\[(\d+)?])?$/;
+const ADDRESS_TYPES = /^address(\[(\d+)?])?$/;
+const FUNCTION_TYPES = /^function(\[(\d+)?])?$/;
+const COMPONENT_TYPES = /^tuple(\[(\d+)?])?$/;
 
 const SUPPORTED_SOLIDITY_TYPES = [
-  NUMBER_ARRAY_TYPES,
-  BIGINT_ARRAY_TYPES,
   NUMBER_TYPES,
   BIGINT_TYPES,
-  ARRAY_WITH_SIZE,
   BYTES_TYPES,
-  'string',
-  'bool',
-  'address',
-  'tuple',
-  'function',
+  FIXED_TYPES,
+  UNFIXED_TYPES,
+  STRING_TYPES,
+  BOOL_TYPES,
+  ADDRESS_TYPES,
+  FUNCTION_TYPES,
+  COMPONENT_TYPES,
 ];
 
-export const BASIC_KNOWN_TYPES = [/^H160$/, /^FixedBytes<(\d+)>$/, /FixedArray/];
+export const BASIC_KNOWN_TYPES = [/^H160$/, /^FixedBytes<(\d+)>$/, /^Bytes(\[])?$/, /^BytesLike(\[])?$/];
 
 export class TypesGen {
   abiItems: SolABIItem[];
@@ -107,41 +109,64 @@ export class TypesGen {
   #generateType(typeDef: SolABITypeDef, nestedLevel = 0, typeOut = false): string {
     const { type } = typeDef;
 
-    if (type.match(NUMBER_TYPES)) {
-      return 'number';
-    } else if (type.match(BIGINT_TYPES)) {
-      return 'bigint';
-    } else if (type.match(NUMBER_ARRAY_TYPES)) {
-      return 'number[]';
-    } else if (type.match(BIGINT_ARRAY_TYPES)) {
-      return 'bigint[]';
-    } else if (type.match(ARRAY_WITH_SIZE)) {
-      const [_, bits, size] = type.match(ARRAY_WITH_SIZE)!;
+    if (NUMBER_TYPES.test(type)) {
+      const [_, __, isArray] = type.match(NUMBER_TYPES)!;
 
-      console.log(bits, size);
-      return 'number[]';
-    } else if (type.match(BYTES_TYPES)) {
-      const [_, n] = type.match(BYTES_TYPES)!;
+      return isArray ? 'number[]' : 'number';
+    } else if (BIGINT_TYPES.test(type)) {
+      const [_, __, isArray] = type.match(BIGINT_TYPES)!;
 
-      console.log(n);
-      return `FixedBytes<${n}>`;
-    } else if (type === 'bool') {
-      return 'boolean';
-    } else if (type === 'string') {
-      return 'string';
-    } else if (type === 'tuple') {
+      return isArray ? 'bigint[]' : 'bigint';
+    } else if (BYTES_TYPES.test(type)) {
+      const [_, n, isArray] = type.match(BYTES_TYPES)!;
+
+      if (n) {
+        return isArray ? `FixedBytes<${n}>[]` : `FixedBytes<${n}>`;
+      }
+
+      if (typeOut) {
+        return isArray ? `Bytes[]` : `Bytes`;
+      }
+
+      return isArray ? `BytesLike[]` : `BytesLike`;
+    } else if (BOOL_TYPES.test(type)) {
+      const [_, isArray] = type.match(BOOL_TYPES)!;
+
+      return isArray ? 'boolean[]' : 'boolean';
+    } else if (STRING_TYPES.test(type)) {
+      const [_, isArray] = type.match(STRING_TYPES)!;
+
+      return isArray ? 'string[]' : 'string';
+    } else if (COMPONENT_TYPES.test(type)) {
       const { components = [] } = typeDef;
+      const [_, isArray] = type.match(COMPONENT_TYPES)!;
 
       if (components.length === 0) {
-        return '{}';
+        return isArray ? '{}[]' : '{}';
       } else {
-        return this.generateObjectType(components, nestedLevel + 1, typeOut);
+        const objectType = this.generateObjectType(components, nestedLevel + 1, typeOut);
+
+        return isArray ? `(${objectType})[]` : objectType;
       }
-    } else if (type === 'address') {
-      return typeOut ? 'H160' : 'string';
-    } else if (type === 'function') {
+    } else if (ADDRESS_TYPES.test(type)) {
+      const [_, isArray] = type.match(ADDRESS_TYPES)!;
+
+      if (typeOut) {
+        return isArray ? `H160[]` : `H160`;
+      }
+
+      return isArray ? `string[]` : `string`;
+    } else if (FUNCTION_TYPES.test(type)) {
+      const [_, isArray] = type.match(FUNCTION_TYPES)!;
+
+      // Function type is an address (20 bytes) followed by a function selector (4 bytes).
       // Ref: https://docs.soliditylang.org/en/latest/abi-spec.html#:~:text=function%3A%20an%20address%20(20%20bytes)%20followed%20by%20a%20function%20selector%20(4%20bytes).%20Encoded%20identical%20to%20bytes24.
-      return `FixedBytes<24>`;
+      return isArray ? `FixedBytes<24>[]` : `FixedBytes<24>`;
+    } else if (FIXED_TYPES.test(type) || UNFIXED_TYPES.test(type)) {
+      const [_, __, isArray] = type.match(FIXED_TYPES) || type.match(UNFIXED_TYPES)!;
+
+      // TODO: Use a more precise type
+      return isArray ? 'number[]' : 'number';
     } else {
       throw new Error(`Unsupported Solidity type: ${type}`);
     }

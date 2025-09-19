@@ -15,14 +15,14 @@ import {
 
 export async function generateSolContractTypes(
   abi: SolABIItem[] | string,
-  contract: string,
+  contract: string | undefined = 'contract',
   outDir: string = '.',
   extension: string = 'd.ts',
   useSubPaths: boolean = false,
 ): Promise<GeneratedResult> {
   let abiItems = typeof abi === 'string' ? JSON.parse(abi) : abi;
 
-  const contractName = contract || 'ContractApi';
+  const contractName = contract;
 
   const dirPath = path.resolve(outDir, stringDashCase(contractName));
   const typesFileName = path.join(dirPath, `types.${extension}`);

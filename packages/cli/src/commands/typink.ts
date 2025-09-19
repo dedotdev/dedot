@@ -1,4 +1,4 @@
-import { generateContractTypes } from '@dedot/codegen';
+import { generateContractTypes, GeneratedResult, generateSolContractTypes } from '@dedot/codegen';
 import { ensureSupportedContractMetadataVersion } from '@dedot/contracts';
 import { assert } from '@dedot/utils';
 import * as fs from 'node:fs';
@@ -31,23 +31,30 @@ export const typink: CommandModule<Args, Args> = {
     try {
       spinner.text = `Parsing contract metadata file: ${metadata}`;
 
-      const contractMetadata = JSON.parse((fs.readFileSync(metadataFile, 'utf-8')));
-      ensureSupportedContractMetadataVersion(contractMetadata);
+      const contractMetadata = JSON.parse(fs.readFileSync(metadataFile, 'utf-8'));
+      const isInkContract = Object.hasOwn(contractMetadata, 'version');
+
+      if (isInkContract) {
+        ensureSupportedContractMetadataVersion(contractMetadata);
+        spinner.text = `Detected ink! contract metadata version: ${contractMetadata.version}`;
+      } else {
+        spinner.text = `Detected Solidity contract metadata file`;
+      }
 
       spinner.succeed(`Parsed contract metadata file: ${metadata}`);
-
       spinner.text = 'Generating contract Types & APIs';
-      const { interfaceName, outputFolder } = await generateContractTypes(
-        contractMetadata,
-        contract,
-        outDir,
-        extension,
-        subpath,
-      );
+
+      let result: GeneratedResult;
+      if (isInkContract) {
+        result = await generateContractTypes(contractMetadata, contract, outDir, extension, subpath);
+      } else {
+        result = await generateSolContractTypes(contractMetadata, contract, outDir, extension, subpath);
+      }
+
       spinner.succeed('Generated contract Types & APIs');
 
-      console.log(`  ➡ Output directory: file://${outputFolder}`);
-      console.log(`  ➡ ContractApi interface: ${interfaceName}`);
+      console.log(`  ➡ Output directory: file://${result.outputFolder}`);
+      console.log(`  ➡ ContractApi interface: ${result.interfaceName}`);
       console.log('🌈 Done!');
 
       spinner.stop();
