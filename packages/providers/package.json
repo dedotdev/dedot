@@ -1,6 +1,6 @@
 {
   "name": "@dedot/providers",
-  "version": "0.16.0",
+  "version": "0.17.0",
   "description": "JSON-RPC Providers",
   "author": "Thang X. Vu <thang@dedot.dev>",
   "homepage": "https://dedot.dev",
@@ -27,7 +27,7 @@
   },
   "devDependencies": {
     "mock-socket": "^9.3.1",
-    "smoldot": "^2.0.38"
+    "smoldot": "^2.0.39"
   },
   "engines": {
     "node": ">=18"

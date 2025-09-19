@@ -51,9 +51,12 @@ export async function ensureContractPresence(
   registry: TypinkRegistry,
   address: ContractAddress,
 ) {
-  const contractInfo = await (() => {
+  const contractInfo = await (async () => {
     if (registry.isRevive()) {
-      return client.query.revive.contractInfoOf(address as HexString);
+      const accountInfo = await client.query.revive.accountInfoOf(address as HexString);
+      if (accountInfo?.accountType && accountInfo?.accountType?.type === 'Contract') {
+        return accountInfo.accountType.value;
+      }
     } else {
       return client.query.contracts.contractInfoOf(address);
     }

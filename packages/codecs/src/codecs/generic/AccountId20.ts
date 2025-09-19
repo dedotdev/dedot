@@ -1,5 +1,5 @@
 import * as $ from '@dedot/shape';
-import { HexString, isEvmAddress, isHex, isU8a, u8aToHex } from '@dedot/utils';
+import { HexString, isEvmAddress, isHex, isU8a, isZeroHex, u8aToHex } from '@dedot/utils';
 
 export const accountId20ToHex = (input: AccountId20Like): HexString => {
   if (input instanceof AccountId20) {
@@ -22,6 +22,10 @@ export class AccountId20 {
 
   address() {
     return this.raw;
+  }
+
+  isZero() {
+    return isZeroHex(this.raw);
   }
 
   toJSON() {

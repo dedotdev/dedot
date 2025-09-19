@@ -2,8 +2,10 @@ name: E2E Contracts API Tests
 
 on:
   push:
+    branches: [ main ]
   workflow_dispatch:
   merge_group:
+  pull_request:
 
 jobs:
   e2e-tests:
@@ -29,7 +31,7 @@ jobs:
           mv ./substrate-contracts-node-linux/substrate-contracts-node ./substrate-contracts-node
           chmod +x substrate-contracts-node
 
-          curl -L -O https://github.com/use-ink/ink-node/releases/download/v0.44.0/ink-node-linux.tar.gz
+          curl -L -O https://github.com/use-ink/ink-node/releases/download/v0.45.1/ink-node-linux.tar.gz
           tar -xzf ink-node-linux.tar.gz
           mv ./ink-node-linux/ink-node ./ink-node
           chmod +x ink-node
