@@ -3,8 +3,8 @@ import { stringPascalCase } from '@dedot/utils';
 import { TypeImports } from '../../shared/TypeImports.js';
 import { beautifySourceCode, compileTemplate, isNativeType } from '../../utils.js';
 
-const NUMBER_TYPES = /^u?int(\d+)?(\[(\d+)?])?$/;
-const BIGINT_TYPES = /^u?int(\d+)?(\[(\d+)?])?$/;
+const INT_TYPES = /^int(\d+)?(\[(\d+)?])?$/;
+const UINT_TYPES = /^uint(\d+)?(\[(\d+)?])?$/;
 const BYTES_TYPES = /^bytes(\d+)?(\[(\d+)?])??$/;
 const FIXED_TYPES = /^fixed(\d+x\d+)?(\[(\d+)])?$/;
 const UNFIXED_TYPES = /^ufixed(\d+x\d+)?(\[(\d+)?])?$/;
@@ -15,8 +15,8 @@ const FUNCTION_TYPES = /^function(\[(\d+)?])?$/;
 const COMPONENT_TYPES = /^tuple(\[(\d+)?])?$/;
 
 const SUPPORTED_SOLIDITY_TYPES = [
-  NUMBER_TYPES,
-  BIGINT_TYPES,
+  INT_TYPES,
+  UINT_TYPES,
   BYTES_TYPES,
   FIXED_TYPES,
   UNFIXED_TYPES,
@@ -109,14 +109,24 @@ export class TypesGen {
   #generateType(typeDef: SolABITypeDef, nestedLevel = 0, typeOut = false): string {
     const { type } = typeDef;
 
-    if (NUMBER_TYPES.test(type)) {
-      const [_, __, isArray] = type.match(NUMBER_TYPES)!;
+    if (INT_TYPES.test(type)) {
+      const [_, bitsStr, isArray] = type.match(INT_TYPES)!;
 
-      return isArray ? 'number[]' : 'number';
-    } else if (BIGINT_TYPES.test(type)) {
-      const [_, __, isArray] = type.match(BIGINT_TYPES)!;
+      // Default to 256 when unspecified
+      const bits = bitsStr ? parseInt(bitsStr) : 256;
+      const isSafeNumber = bits <= 48;
 
-      return isArray ? 'bigint[]' : 'bigint';
+      if (isArray) return isSafeNumber ? 'number[]' : 'bigint[]';
+      return isSafeNumber ? 'number' : 'bigint';
+    } else if (UINT_TYPES.test(type)) {
+      const [_, bitsStr, isArray] = type.match(UINT_TYPES)!;
+
+      // Default to 256 when unspecified
+      const bits = bitsStr ? parseInt(bitsStr) : 256;
+      const isSafeNumber = bits <= 48;
+
+      if (isArray) return isSafeNumber ? 'number[]' : 'bigint[]';
+      return isSafeNumber ? 'number' : 'bigint';
     } else if (BYTES_TYPES.test(type)) {
       const [_, n, isArray] = type.match(BYTES_TYPES)!;
 
