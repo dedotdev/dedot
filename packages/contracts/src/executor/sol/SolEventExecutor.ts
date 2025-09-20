@@ -55,7 +55,7 @@ export class SolEventExecutor<ChainApi extends GenericSubstrateApi> extends SolC
       is,
       find,
       filter,
-      meta: fragment,
+      meta: JSON.parse(fragment.format('json')),
       watch,
     };
   }

@@ -56,7 +56,10 @@ export class QueryGen {
     const { outputs } = abiItem;
 
     const paramsOut = this.generateParamsOut(abiItem);
-    const typeOut = `[${outputs.map((o) => this.typesGen.generateType(o, abiItem, 1, true)).join(',')}]`;
+    const typeOutInner = `${outputs.map((o) => this.typesGen.generateType(o, abiItem, 1, true)).join(',')}`;
+
+    // If there is only one output, we don't need to wrap it in a tuple, for userfriendly
+    const typeOut = outputs.length === 1 ? typeOutInner : `[${typeOutInner}]`;
 
     return `SolGenericContractQueryCall<ChainApi, (${paramsOut && `${paramsOut},`} ${optionsParamName}?: ContractCallOptions) => Promise<GenericContractCallResult<${typeOut}, ContractCallResult<ChainApi>>>>`;
   }

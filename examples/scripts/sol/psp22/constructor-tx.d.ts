@@ -28,7 +28,7 @@ export interface ConstructorTx<
       name: NameInput,
       symbol: SymbolInput,
       decimals: number,
-      options: ConstructorTxOptions,
+      options?: ConstructorTxOptions,
     ) => SolGenericInstantiateSubmittableExtrinsic<ChainApi, ContractApi>
   >;
 }

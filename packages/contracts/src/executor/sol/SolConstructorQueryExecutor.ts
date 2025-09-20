@@ -1,13 +1,10 @@
-import type { ISubstrateClient } from '@dedot/api';
+import { type ISubstrateClient } from '@dedot/api';
 import { type SubstrateApi } from '@dedot/api/chaintypes';
 import { GenericSubstrateApi, RpcVersion } from '@dedot/types';
-import { assert, assertFalse, DedotError, isPvm, isUndefined, toHex, toU8a } from '@dedot/utils';
+import { assert, DedotError, isPvm, isUndefined, toHex, toU8a } from '@dedot/utils';
+import { FormatTypes } from '@ethersproject/abi';
 import { ErrorDescription } from '@ethersproject/abi/lib/interface.js';
-import {
-  ContractInstantiateDispatchError,
-  SolContractCustomError,
-  SolContractInstantiateCustomError,
-} from '../../errors.js';
+import { ContractInstantiateDispatchError, SolContractInstantiateCustomError } from '../../errors.js';
 import {
   SolGenericConstructorQueryCall,
   ConstructorCallOptions,
@@ -15,7 +12,7 @@ import {
   ContractInstantiateResult,
   GenericConstructorCallResult,
 } from '../../types/index.js';
-import { toReturnFlags } from '../../utils/index.js';
+import { ensureParamsLength, toReturnFlags } from '../../utils/index.js';
 import { SolDeployerExecutor } from './abstract/index.js';
 
 export class SolConstructorQueryExecutor<ChainApi extends GenericSubstrateApi> extends SolDeployerExecutor<ChainApi> {
@@ -26,11 +23,7 @@ export class SolConstructorQueryExecutor<ChainApi extends GenericSubstrateApi> e
     const callFn: SolGenericConstructorQueryCall<ChainApi> = async (...params: any[]) => {
       const { inputs } = fragment;
 
-      assertFalse(params.length < inputs.length, `Expected at least ${inputs.length} arguments, got ${params.length}`);
-      assertFalse(
-        params.length > inputs.length + 1,
-        `Expected at most ${inputs.length + 1} arguments, got ${params.length}`,
-      );
+      ensureParamsLength(inputs.length, params.length);
 
       const callOptions = (params[inputs.length] || {}) as ConstructorCallOptions;
       const {
@@ -111,7 +104,7 @@ export class SolConstructorQueryExecutor<ChainApi extends GenericSubstrateApi> e
       } as GenericConstructorCallResult;
     };
 
-    callFn.meta = fragment;
+    callFn.meta = JSON.parse(fragment.format(FormatTypes.json));
 
     return callFn;
   }

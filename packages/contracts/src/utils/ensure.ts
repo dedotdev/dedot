@@ -42,6 +42,16 @@ export function ensurePalletContracts(client: ISubstrateClient<SubstrateApi[RpcV
   }
 }
 
+export async function ensureContractPresenceOnRevive(
+  client: ISubstrateClient<SubstrateApi[RpcVersion]>,
+  address: ContractAddress,
+) {
+  const accountInfo = await client.query.revive.accountInfoOf(address as HexString);
+  if (accountInfo?.accountType && accountInfo?.accountType?.type === 'Contract') {
+    return accountInfo.accountType.value;
+  }
+}
+
 export function ensurePalletPresence(client: ISubstrateClient<SubstrateApi[RpcVersion]>, registry: TypinkRegistry) {
   registry.isRevive() ? ensurePalletRevive(client) : ensurePalletContracts(client);
 }
@@ -53,10 +63,7 @@ export async function ensureContractPresence(
 ) {
   const contractInfo = await (async () => {
     if (registry.isRevive()) {
-      const accountInfo = await client.query.revive.accountInfoOf(address as HexString);
-      if (accountInfo?.accountType && accountInfo?.accountType?.type === 'Contract') {
-        return accountInfo.accountType.value;
-      }
+      return ensureContractPresenceOnRevive(client, address);
     } else {
       return client.query.contracts.contractInfoOf(address);
     }

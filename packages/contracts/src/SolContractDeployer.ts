@@ -5,10 +5,10 @@ import { assert, isPvm, toU8a } from '@dedot/utils';
 import { Interface } from '@ethersproject/abi';
 import { SolRegistry } from './SolRegistry';
 import { SolConstructorTxExecutor, SolExecutor, SolConstructorQueryExecutor } from './executor/index.js';
-import { ExecutionOptions, GenericContractApi, SolABIItem } from './types/index.js';
+import { ExecutionOptions, SolABIItem, SolGenericContractApi } from './types/index.js';
 import { ensurePalletRevive } from './utils';
 
-export class SolContractDeployer<ContractApi extends GenericContractApi = GenericContractApi> {
+export class SolContractDeployer<ContractApi extends SolGenericContractApi = SolGenericContractApi> {
   readonly #abiItems: SolABIItem[];
   readonly #registry: SolRegistry;
   readonly #code: Hash | Uint8Array | string;

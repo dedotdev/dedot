@@ -22,7 +22,7 @@ export interface ContractQuery<ChainApi extends GenericSubstrateApi> extends Sol
       owner: string,
       spender: string,
       options?: ContractCallOptions,
-    ) => Promise<GenericContractCallResult<[bigint], ContractCallResult<ChainApi>>>
+    ) => Promise<GenericContractCallResult<bigint, ContractCallResult<ChainApi>>>
   >;
 
   /**
@@ -48,7 +48,7 @@ export interface ContractQuery<ChainApi extends GenericSubstrateApi> extends Sol
     (
       owner: string,
       options?: ContractCallOptions,
-    ) => Promise<GenericContractCallResult<[bigint], ContractCallResult<ChainApi>>>
+    ) => Promise<GenericContractCallResult<bigint, ContractCallResult<ChainApi>>>
   >;
 
   /**
@@ -84,7 +84,7 @@ export interface ContractQuery<ChainApi extends GenericSubstrateApi> extends Sol
    **/
   tokenDecimals: SolGenericContractQueryCall<
     ChainApi,
-    (options?: ContractCallOptions) => Promise<GenericContractCallResult<[number], ContractCallResult<ChainApi>>>
+    (options?: ContractCallOptions) => Promise<GenericContractCallResult<number, ContractCallResult<ChainApi>>>
   >;
 
   /**
@@ -92,9 +92,7 @@ export interface ContractQuery<ChainApi extends GenericSubstrateApi> extends Sol
    **/
   tokenName: SolGenericContractQueryCall<
     ChainApi,
-    (
-      options?: ContractCallOptions,
-    ) => Promise<GenericContractCallResult<[TokenNameOutput], ContractCallResult<ChainApi>>>
+    (options?: ContractCallOptions) => Promise<GenericContractCallResult<TokenNameOutput, ContractCallResult<ChainApi>>>
   >;
 
   /**
@@ -104,7 +102,7 @@ export interface ContractQuery<ChainApi extends GenericSubstrateApi> extends Sol
     ChainApi,
     (
       options?: ContractCallOptions,
-    ) => Promise<GenericContractCallResult<[TokenSymbolOutput], ContractCallResult<ChainApi>>>
+    ) => Promise<GenericContractCallResult<TokenSymbolOutput, ContractCallResult<ChainApi>>>
   >;
 
   /**
@@ -112,7 +110,7 @@ export interface ContractQuery<ChainApi extends GenericSubstrateApi> extends Sol
    **/
   totalSupply: SolGenericContractQueryCall<
     ChainApi,
-    (options?: ContractCallOptions) => Promise<GenericContractCallResult<[bigint], ContractCallResult<ChainApi>>>
+    (options?: ContractCallOptions) => Promise<GenericContractCallResult<bigint, ContractCallResult<ChainApi>>>
   >;
 
   /**

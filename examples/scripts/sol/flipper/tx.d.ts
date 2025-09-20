@@ -12,5 +12,5 @@ export interface ContractTx<ChainApi extends GenericSubstrateApi> extends SolGen
   /**
    * @param {ContractTxOptions} options
    **/
-  flip: SolGenericContractTxCall<ChainApi, (options: ContractTxOptions) => ContractSubmittableExtrinsic<ChainApi>>;
+  flip: SolGenericContractTxCall<ChainApi, (options?: ContractTxOptions) => ContractSubmittableExtrinsic<ChainApi>>;
 }

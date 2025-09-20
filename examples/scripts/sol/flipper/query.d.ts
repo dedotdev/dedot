@@ -8,7 +8,6 @@ import type {
   SolGenericContractQueryCall,
 } from 'dedot/contracts';
 import type { GenericSubstrateApi } from 'dedot/types';
-import type { ThrowUnitErrorOutput } from './types.js';
 
 export interface ContractQuery<ChainApi extends GenericSubstrateApi> extends SolGenericContractQuery<ChainApi> {
   /**
@@ -24,7 +23,7 @@ export interface ContractQuery<ChainApi extends GenericSubstrateApi> extends Sol
    **/
   get: SolGenericContractQueryCall<
     ChainApi,
-    (options?: ContractCallOptions) => Promise<GenericContractCallResult<[boolean], ContractCallResult<ChainApi>>>
+    (options?: ContractCallOptions) => Promise<GenericContractCallResult<boolean, ContractCallResult<ChainApi>>>
   >;
 
   /**
@@ -32,7 +31,7 @@ export interface ContractQuery<ChainApi extends GenericSubstrateApi> extends Sol
    **/
   throwErrorWithNamedParams: SolGenericContractQueryCall<
     ChainApi,
-    (options?: ContractCallOptions) => Promise<GenericContractCallResult<[boolean], ContractCallResult<ChainApi>>>
+    (options?: ContractCallOptions) => Promise<GenericContractCallResult<boolean, ContractCallResult<ChainApi>>>
   >;
 
   /**
@@ -40,7 +39,7 @@ export interface ContractQuery<ChainApi extends GenericSubstrateApi> extends Sol
    **/
   throwErrorWithParams: SolGenericContractQueryCall<
     ChainApi,
-    (options?: ContractCallOptions) => Promise<GenericContractCallResult<[boolean], ContractCallResult<ChainApi>>>
+    (options?: ContractCallOptions) => Promise<GenericContractCallResult<boolean, ContractCallResult<ChainApi>>>
   >;
 
   /**
@@ -48,8 +47,6 @@ export interface ContractQuery<ChainApi extends GenericSubstrateApi> extends Sol
    **/
   throwUnitError: SolGenericContractQueryCall<
     ChainApi,
-    (
-      options?: ContractCallOptions,
-    ) => Promise<GenericContractCallResult<[ThrowUnitErrorOutput], ContractCallResult<ChainApi>>>
+    (options?: ContractCallOptions) => Promise<GenericContractCallResult<boolean, ContractCallResult<ChainApi>>>
   >;
 }

@@ -1,7 +1,7 @@
 import type { ISubstrateClient } from '@dedot/api';
 import type { SubstrateApi } from '@dedot/api/chaintypes';
 import { GenericSubstrateApi, RpcVersion } from '@dedot/types';
-import { assert, assertFalse, DedotError, HexString } from '@dedot/utils';
+import { assert, DedotError, HexString } from '@dedot/utils';
 import { ErrorDescription } from '@ethersproject/abi/lib/interface.js';
 import { SolContractCustomError, ContractDispatchError } from '../../errors.js';
 import {
@@ -10,8 +10,9 @@ import {
   GenericContractCallResult,
   SolGenericContractQueryCall,
 } from '../../types/index.js';
-import { toReturnFlags } from '../../utils/index.js';
+import { ensureParamsLength, toReturnFlags } from '../../utils/index.js';
 import { SolContractExecutor } from './abstract/SolContractExecutor.js';
+import { FormatTypes } from '@ethersproject/abi';
 
 export class SolQueryExecutor<ChainApi extends GenericSubstrateApi> extends SolContractExecutor<ChainApi> {
   doExecute(fragmentName: string) {
@@ -21,11 +22,7 @@ export class SolQueryExecutor<ChainApi extends GenericSubstrateApi> extends SolC
     const callFn: SolGenericContractQueryCall<ChainApi> = async (...params: any[]) => {
       const { inputs } = fragment;
 
-      assertFalse(params.length < inputs.length, `Expected at least ${inputs.length} arguments, got ${params.length}`);
-      assertFalse(
-        params.length > inputs.length + 1,
-        `Expected at most ${inputs.length + 1} arguments, got ${params.length}`,
-      );
+      ensureParamsLength(inputs.length, params.length);
 
       const callOptions = (params[inputs.length] || {}) as ContractCallOptions;
       const { caller = this.options.defaultCaller, value = 0n, gasLimit, storageDepositLimit } = callOptions;
@@ -75,14 +72,15 @@ export class SolQueryExecutor<ChainApi extends GenericSubstrateApi> extends SolC
       const data = this.registry.interf.decodeFunctionResult(fragment, raw.result.value.data);
 
       return {
-        data,
+        // For convenience, if there's only one return value, return it directly instead of an array
+        data: data.length === 1 ? data[0] : data,
         raw,
         flags,
         inputData: bytes,
       } as GenericContractCallResult;
     };
 
-    callFn.meta = fragment;
+    callFn.meta = JSON.parse(fragment.format(FormatTypes.json));
 
     return callFn;
   }

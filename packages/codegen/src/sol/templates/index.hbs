@@ -14,9 +14,10 @@ export * from './types.js';
     tx: ContractTx<ChainApi[Rv]>;
     constructorQuery: ConstructorQuery<ChainApi[Rv]>;
     events: ContractEvents<ChainApi[Rv]>;
-    constructorTx: ConstructorTx<ChainApi[Rv]>;
+    constructorTx: ConstructorTx<ChainApi[Rv], {{{interfaceName}}}>;
 
     types: {
       ChainApi: ChainApi[Rv];
     };
 }
+

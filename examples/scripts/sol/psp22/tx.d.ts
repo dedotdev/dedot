@@ -16,7 +16,7 @@ export interface ContractTx<ChainApi extends GenericSubstrateApi> extends SolGen
    **/
   approve: SolGenericContractTxCall<
     ChainApi,
-    (spender: string, value: bigint, options: ContractTxOptions) => ContractSubmittableExtrinsic<ChainApi>
+    (spender: string, value: bigint, options?: ContractTxOptions) => ContractSubmittableExtrinsic<ChainApi>
   >;
 
   /**
@@ -26,7 +26,7 @@ export interface ContractTx<ChainApi extends GenericSubstrateApi> extends SolGen
    **/
   decreaseAllowance: SolGenericContractTxCall<
     ChainApi,
-    (spender: string, deltaValue: bigint, options: ContractTxOptions) => ContractSubmittableExtrinsic<ChainApi>
+    (spender: string, deltaValue: bigint, options?: ContractTxOptions) => ContractSubmittableExtrinsic<ChainApi>
   >;
 
   /**
@@ -36,7 +36,7 @@ export interface ContractTx<ChainApi extends GenericSubstrateApi> extends SolGen
    **/
   increaseAllowance: SolGenericContractTxCall<
     ChainApi,
-    (spender: string, deltaValue: bigint, options: ContractTxOptions) => ContractSubmittableExtrinsic<ChainApi>
+    (spender: string, deltaValue: bigint, options?: ContractTxOptions) => ContractSubmittableExtrinsic<ChainApi>
   >;
 
   /**
@@ -47,7 +47,7 @@ export interface ContractTx<ChainApi extends GenericSubstrateApi> extends SolGen
    **/
   transfer: SolGenericContractTxCall<
     ChainApi,
-    (to: string, value: bigint, data: number[], options: ContractTxOptions) => ContractSubmittableExtrinsic<ChainApi>
+    (to: string, value: bigint, data: number[], options?: ContractTxOptions) => ContractSubmittableExtrinsic<ChainApi>
   >;
 
   /**
@@ -64,7 +64,7 @@ export interface ContractTx<ChainApi extends GenericSubstrateApi> extends SolGen
       to: string,
       value: bigint,
       data: number[],
-      options: ContractTxOptions,
+      options?: ContractTxOptions,
     ) => ContractSubmittableExtrinsic<ChainApi>
   >;
 }

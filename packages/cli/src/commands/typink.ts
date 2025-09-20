@@ -24,6 +24,7 @@ export const typink: CommandModule<Args, Args> = {
 
     const outDir = path.resolve(output);
     const metadataFile = path.resolve(metadata);
+    const contractName = contract || path.basename(metadataFile).split('.')[0];
     const extension = dts ? 'd.ts' : 'ts';
 
     const spinner = ora().start();
@@ -36,9 +37,9 @@ export const typink: CommandModule<Args, Args> = {
 
       if (isInkContract) {
         ensureSupportedContractMetadataVersion(contractMetadata);
-        spinner.text = `Detected ink! contract metadata version: ${contractMetadata.version}`;
+        spinner.info(`Detected ink! contract metadata version: ${contractMetadata.version}`);
       } else {
-        spinner.text = `Detected Solidity contract metadata file`;
+        spinner.info(`Detected Solidity contract metadata file`);
       }
 
       spinner.succeed(`Parsed contract metadata file: ${metadata}`);
@@ -46,9 +47,9 @@ export const typink: CommandModule<Args, Args> = {
 
       let result: GeneratedResult;
       if (isInkContract) {
-        result = await generateContractTypes(contractMetadata, contract, outDir, extension, subpath);
+        result = await generateContractTypes(contractMetadata, contractName, outDir, extension, subpath);
       } else {
-        result = await generateSolContractTypes(contractMetadata, contract, outDir, extension, subpath);
+        result = await generateSolContractTypes(contractMetadata, contractName, outDir, extension, subpath);
       }
 
       spinner.succeed('Generated contract Types & APIs');

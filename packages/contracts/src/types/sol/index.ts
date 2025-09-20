@@ -9,7 +9,6 @@ import {
   VersionedGenericSubstrateApi,
 } from '@dedot/codecs/types';
 import { ISubmittableResult } from '@dedot/types';
-import { ConstructorFragment, EventFragment, FunctionFragment } from '@ethersproject/abi';
 import { SolContract } from '../../SolContract.js';
 import {
   ContractAddress,
@@ -21,6 +20,7 @@ import {
   GenericContractCallResult,
   SubmittableExtrinsic,
 } from '../shared.js';
+import { SolABIConstructor, SolABIEvent, SolABIFunction } from './abi.js';
 
 export * from './abi.js';
 
@@ -47,14 +47,14 @@ export type SolGenericContractQueryCall<
   ChainApi extends GenericSubstrateApi,
   F extends AsyncMethod = (...args: any[]) => Promise<GenericContractCallResult<any, ContractCallResult<ChainApi>>>,
 > = F & {
-  meta: FunctionFragment;
+  meta: SolABIFunction;
 };
 
 export type SolGenericContractTxCall<
   ChainApi extends GenericSubstrateApi,
   F extends AnyFunc = (...args: any[]) => ContractSubmittableExtrinsic<ChainApi>,
 > = F & {
-  meta: FunctionFragment;
+  meta: SolABIFunction;
 };
 
 export type SolGenericConstructorQueryCall<
@@ -63,14 +63,14 @@ export type SolGenericConstructorQueryCall<
     ...args: any[]
   ) => Promise<GenericConstructorCallResult<any, ContractInstantiateResult<ChainApi>>>,
 > = F & {
-  meta: ConstructorFragment;
+  meta: SolABIConstructor;
 };
 
 export type SolGenericConstructorTxCall<
   ChainApi extends GenericSubstrateApi,
   F extends AnyFunc = (...args: any[]) => SolGenericInstantiateSubmittableExtrinsic<ChainApi>,
 > = F & {
-  meta: ConstructorFragment;
+  meta: SolABIConstructor;
 };
 
 export interface SolGenericContractQuery<ChainApi extends GenericSubstrateApi> {
@@ -103,7 +103,7 @@ export interface SolGenericContractEvent<EventName extends string = string, Data
   find: (events: IEventRecord[] | SolContractEvent[]) => SolContractEvent<EventName, Data> | undefined;
   filter: (events: IEventRecord[] | SolContractEvent[]) => SolContractEvent<EventName, Data>[];
   watch: (callback: (events: SolContractEvent<EventName, Data>[]) => void) => Promise<Unsub>;
-  meta: EventFragment;
+  meta: SolABIEvent;
 }
 
 export interface SolGenericContractEvents<_ extends GenericSubstrateApi> {

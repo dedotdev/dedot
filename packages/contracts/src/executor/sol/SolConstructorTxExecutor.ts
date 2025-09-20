@@ -1,7 +1,8 @@
 import { BaseSubmittableExtrinsic, ISubstrateClient } from '@dedot/api';
 import type { SubstrateApi } from '@dedot/api/chaintypes';
 import { GenericSubstrateApi, ISubmittableResult, RpcVersion } from '@dedot/types';
-import { assert, HexString, isPvm, isUndefined, toHex, toU8a } from '@dedot/utils';
+import { assert, isPvm, isUndefined, toHex, toU8a } from '@dedot/utils';
+import { FormatTypes } from '@ethersproject/abi';
 import { SolContract } from '../../SolContract.js';
 import {
   ConstructorTxOptions,
@@ -9,7 +10,13 @@ import {
   ExecutionOptions,
   SolGenericConstructorTxCall,
 } from '../../types/index.js';
-import { CREATE1, CREATE2, toEvmAddress } from '../../utils';
+import {
+  CREATE1,
+  CREATE2,
+  ensureContractPresenceOnRevive,
+  ensureParamsLength,
+  toEvmAddress,
+} from '../../utils/index.js';
 import { SolConstructorQueryExecutor } from './SolConstructorQueryExecutor';
 import { SolDeployerExecutor } from './abstract/index.js';
 
@@ -21,16 +28,15 @@ export class SolConstructorTxExecutor<ChainApi extends GenericSubstrateApi> exte
     // @ts-ignore
     const callFn: SolGenericConstructorTxCall<ChainApi> = (...params: any[]) => {
       const { inputs } = fragment;
-      assert(params.length === inputs.length + 1, `Expected ${inputs.length + 1} arguments, got ${params.length}`);
 
-      const txCallOptions = params[inputs.length] as ConstructorTxOptions;
+      ensureParamsLength(inputs.length, params.length);
+
+      const txCallOptions = (params[inputs.length] || {}) as ConstructorTxOptions;
       const { value = 0n, gasLimit, storageDepositLimit, salt } = txCallOptions;
-      assert(gasLimit, 'Expected a gas limit in ConstructorTxOptions');
       assert(
         isUndefined(salt) || toU8a(salt).byteLength == 32,
         'Invalid salt provided in ConstructorCallOptions: expected a 32-byte value as a hex string or a Uint8Array',
       );
-      assert(!isUndefined(storageDepositLimit), 'Expected a storage deposit limit in ConstructorTxOptions');
 
       const bytes = this.registry.interf.encodeDeploy(params.slice(0, inputs.length));
 
@@ -40,8 +46,8 @@ export class SolConstructorTxExecutor<ChainApi extends GenericSubstrateApi> exte
         if (isPvm(this.code)) {
           return client.tx.revive.instantiateWithCode(
             value,
-            gasLimit,
-            storageDepositLimit,
+            gasLimit!,
+            storageDepositLimit!,
             this.code,
             bytes,
             salt ? toHex(salt) : undefined,
@@ -49,8 +55,8 @@ export class SolConstructorTxExecutor<ChainApi extends GenericSubstrateApi> exte
         } else {
           return client.tx.revive.instantiate(
             value,
-            gasLimit,
-            storageDepositLimit,
+            gasLimit!,
+            storageDepositLimit!,
             toHex(this.code),
             bytes,
             salt ? toHex(salt) : undefined,
@@ -157,7 +163,7 @@ export class SolConstructorTxExecutor<ChainApi extends GenericSubstrateApi> exte
             const address = await contractAddress();
 
             // Check if the contract is existed on chain or not!
-            await client.query.revive.contractInfoOf(address as HexString);
+            await ensureContractPresenceOnRevive(client, address);
 
             return new SolContract(
               client, // --
@@ -183,7 +189,7 @@ export class SolConstructorTxExecutor<ChainApi extends GenericSubstrateApi> exte
       return tx;
     };
 
-    callFn.meta = fragment;
+    callFn.meta = JSON.parse(fragment.format(FormatTypes.json));
 
     return callFn;
   }
