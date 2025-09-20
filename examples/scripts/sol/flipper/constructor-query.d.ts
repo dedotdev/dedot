@@ -4,21 +4,17 @@ import type {
   ConstructorCallOptions,
   ContractInstantiateResult,
   GenericConstructorCallResult,
-  GenericConstructorQuery,
-  GenericConstructorQueryCall,
+  SolGenericConstructorQuery,
+  SolGenericConstructorQueryCall,
 } from 'dedot/contracts';
 import type { GenericSubstrateApi } from 'dedot/types';
 
-export interface ConstructorQuery<ChainApi extends GenericSubstrateApi> extends GenericConstructorQuery<ChainApi> {
+export interface ConstructorQuery<ChainApi extends GenericSubstrateApi> extends SolGenericConstructorQuery<ChainApi> {
   /**
-   * Constructor that initializes the `bool` value to the given `init_value`.
-   *
    * @param {boolean} initValue
    * @param {ConstructorCallOptions} options
-   *
-   * @selector 0x9bae9d5e
    **/
-  new: GenericConstructorQueryCall<
+  initialize: SolGenericConstructorQueryCall<
     ChainApi,
     (
       initValue: boolean,

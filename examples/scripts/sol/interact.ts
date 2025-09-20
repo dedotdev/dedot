@@ -21,14 +21,14 @@ const run2 = async () => {
   // @ts-ignore
   const deployer = new SolContractDeployer<Psp22ContractApi>(api, abi, code, { defaultCaller: alicePair.address });
 
-  const dryRunDeploy = await deployer.query.initialize(1000000000, [false, 'Test Coin'], [false, 'TC'], 5);
+  const dryRunDeploy = await deployer.query.initialize(1000000000n, [false, 'Test Coin'], [false, 'TC'], 5);
 
   console.log('Dry run results:', dryRunDeploy);
 
   console.log('Trying deploy contract...');
 
   const deployerResult = await deployer.tx
-    .initialize(1000000000, [false, 'Test Coin'], [false, 'TC'], 5, {
+    .initialize(1000000000n, [false, 'Test Coin'], [false, 'TC'], 5, {
       gasLimit: dryRunDeploy.raw.gasRequired,
       storageDepositLimit: dryRunDeploy.raw.storageDeposit.value,
     })
@@ -67,7 +67,7 @@ const run3 = async () => {
   console.log('Trying deploy contract...');
 
   const deployerResult = await deployer.tx
-    .new(false, {
+    .initialize(false, {
       gasLimit: dryRunDeploy.raw.gasRequired,
       storageDepositLimit: dryRunDeploy.raw.storageDeposit.value,
     })
@@ -113,8 +113,7 @@ const run = async () => {
   const contractAddress = await deployerResult.contractAddress();
   console.log('Contract deployed at address:', contractAddress);
 
-  // @ts-ignore
-  const contract: SolContract<FlipperContractApi> = await deployerResult.contract();
+  const contract = await deployerResult.contract();
 
   /*
   const {
