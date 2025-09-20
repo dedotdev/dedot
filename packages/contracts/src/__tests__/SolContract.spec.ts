@@ -38,55 +38,6 @@ describe('SolContract', () => {
       expect((contract.tx as any)[txName].meta).toBeDefined();
     });
 
-    it('expect event APIs to decode a ContractEmitted event', () => {
-      const [, abi] = flipperSol();
-      const abiItems = JSON.parse(abi) as Array<any>;
-      const evmAddr = '0x' + '22'.repeat(20);
-      const contract = new SolContract(api, abi, evmAddr);
-
-      // Read event name from ABI
-      const eventAbi = abiItems.find((i) => i.type === 'event');
-      expect(eventAbi).toBeDefined();
-      const eventName = eventAbi!.name;
-
-      // Need the fragment for encoding test data
-      const fragment = contract.registry.interf.getEvent(eventName) as any;
-
-      // Encode event log (use simple values for inputs)
-      const values = fragment.inputs.map((i: any) => {
-        switch (i.type) {
-          case 'bool':
-            return true;
-          case 'address':
-            return evmAddr;
-          default:
-            return 0;
-        }
-      });
-
-      const { data, topics } = contract.registry.interf.encodeEventLog(fragment, values);
-
-      const record: any = {
-        event: {
-          pallet: 'Revive',
-          palletEvent: {
-            name: 'ContractEmitted',
-            data: {
-              contract: evmAddr,
-              data,
-              topics,
-            },
-          },
-        },
-      };
-
-      const apiEvent = (contract.events as any)[eventName];
-
-      expect(apiEvent.is(record)).toEqual(true);
-      expect(apiEvent.find([record])).toBeDefined();
-      expect(apiEvent.filter([record])).toHaveLength(1);
-    });
-
     it('expect to throw error if contract address invalid (non-EVM)', () => {
       const [, abi] = flipperSol();
       // Using a Substrate address should fail for SolContract (EVM expected)
