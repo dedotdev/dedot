@@ -1,8 +1,7 @@
 import { ISubstrateClient } from '@dedot/api';
 import { Hash } from '@dedot/codecs';
 import { TypinkRegistry } from './TypinkRegistry.js';
-import { ConstructorQueryExecutor } from './executor/ConstructorQueryExecutor.js';
-import { ConstructorTxExecutor } from './executor/index.js';
+import { ConstructorTxExecutor, ConstructorQueryExecutor  } from './executor/index.js';
 import { ContractMetadata, ExecutionOptions, GenericContractApi, LooseContractMetadata } from './types/index.js';
 import {
   ensurePalletPresence,

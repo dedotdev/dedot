@@ -1,6 +1,13 @@
 import { DispatchError, PalletErrorMetadataLatest } from '@dedot/codecs';
 import { assert, DedotError } from '@dedot/utils';
-import { ContractCallResult, ContractInstantiateResult, GenericContractApi, ReturnFlags } from './types/index.js';
+import { ErrorDescription, Result } from '@ethersproject/abi/lib/interface.js';
+import {
+  ContractCallResult,
+  ContractInstantiateResult,
+  GenericContractApi,
+  ReturnFlags,
+  SolGenericContractApi,
+} from './types/index.js';
 import { toReturnFlags } from './utils/index.js';
 
 const formatDispatchError = (err: DispatchError, moduleError?: PalletErrorMetadataLatest) => {
@@ -230,6 +237,66 @@ export class ContractLangError<
 }
 
 /**
+ * Represents a custom error that occurred during the instantiation of a smart contract.
+ * This class extends `ContractInstantiateError` and includes properties for the error name and description.
+ *
+ * @template ContractApi - The type of the contract API. Defaults to `SolGenericContractApi`.
+ *
+ * @extends ContractInstantiateError
+ */
+export class SolContractInstantiateCustomError<
+  ContractApi extends SolGenericContractApi = SolGenericContractApi,
+> extends ContractInstantiateError {
+  name = 'ContractCustomError';
+  /**
+   * The custom error that occurred during the instantiation.
+   */
+  errorName: string;
+  errorDesc: ErrorDescription;
+
+  constructor(
+    errorName: string,
+    raw: ContractInstantiateResult<ContractApi['types']['ChainApi']>,
+    errorDesc: ErrorDescription,
+  ) {
+    super(raw);
+    this.errorName = errorName;
+    this.errorDesc = errorDesc;
+    this.message = `Custom error: ${errorName}`;
+  }
+}
+
+/**
+ * Represents a custom error that occurred during the execution of a smart contract call.
+ * This class extends `ContractExecutionError` and includes properties for the error name and description.
+ *
+ * @template ContractApi - The type of the contract API. Defaults to `SolGenericContractApi`.
+ *
+ * @extends ContractExecutionError
+ */
+export class SolContractCustomError<
+  ContractApi extends SolGenericContractApi = SolGenericContractApi,
+> extends ContractExecutionError {
+  name = 'ContractCustomError';
+  /**
+   * The custom error that occurred during the execution.
+   */
+  errorName: string;
+  errorDesc: ErrorDescription;
+
+  constructor(
+    errorName: string,
+    raw: ContractCallResult<ContractApi['types']['ChainApi']>,
+    errorDesc: ErrorDescription,
+  ) {
+    super(raw);
+    this.errorName = errorName;
+    this.errorDesc = errorDesc;
+    this.message = `Custom error: ${errorName}`;
+  }
+}
+
+/**
  * Checks if the provided error is an instance of `ContractExecutionError`.
  *
  * This function is used to determine if a given error is a result of an execution error during a smart contract call.
@@ -334,4 +401,36 @@ export function isContractInstantiateLangError<ContractApi extends GenericContra
   e: Error,
 ): e is ContractInstantiateLangError<ContractApi> {
   return e instanceof ContractInstantiateLangError;
+}
+
+/**
+ * Checks if the provided error is an instance of `SolContractCustomError`.
+ * This function is used to determine if a given error is a custom error specific to a smart contract.
+ *
+ * @template ContractApi - The type of the contract API. Defaults to `SolGenericContractApi`.
+ *
+ * @param e - The error to be checked. This should be an instance of `Error`.
+ *
+ * @returns `true` if the error is an instance of `SolContractCustomError`, `false` otherwise.
+ */
+export function isSolContractCustomError<ContractApi extends SolGenericContractApi = SolGenericContractApi>(
+  e: Error,
+): e is SolContractCustomError<ContractApi> {
+  return e instanceof SolContractCustomError;
+}
+
+/**
+ * Checks if the provided error is an instance of `SolContractInstantiateCustomError`.
+ * This function is used to determine if a given error is a custom error specific to the instantiation of a smart contract.
+ *
+ * @template ContractApi - The type of the contract API. Defaults to `SolGenericContractApi`.
+ *
+ * @param e - The error to be checked. This should be an instance of `Error`.
+ *
+ * @returns `true` if the error is an instance of `SolContractInstantiateCustomError`, `false` otherwise.
+ */
+export function isSolContractInstantiateCustomError<ContractApi extends SolGenericContractApi = SolGenericContractApi>(
+  e: Error,
+): e is SolContractInstantiateCustomError<ContractApi> {
+  return e instanceof SolContractInstantiateCustomError;
 }

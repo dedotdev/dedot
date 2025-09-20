@@ -1,4 +1,4 @@
-import { generateContractTypes } from '@dedot/codegen';
+import { generateContractTypes, GeneratedResult, generateSolContractTypes } from '@dedot/codegen';
 import { ensureSupportedContractMetadataVersion } from '@dedot/contracts';
 import { assert } from '@dedot/utils';
 import * as fs from 'node:fs';
@@ -24,6 +24,7 @@ export const typink: CommandModule<Args, Args> = {
 
     const outDir = path.resolve(output);
     const metadataFile = path.resolve(metadata);
+    const contractName = contract || path.basename(metadataFile).split('.')[0];
     const extension = dts ? 'd.ts' : 'ts';
 
     const spinner = ora().start();
@@ -32,22 +33,29 @@ export const typink: CommandModule<Args, Args> = {
       spinner.text = `Parsing contract metadata file: ${metadata}`;
 
       const contractMetadata = JSON.parse(fs.readFileSync(metadataFile, 'utf-8'));
-      ensureSupportedContractMetadataVersion(contractMetadata);
+      const isInkContract = Object.hasOwn(contractMetadata, 'version');
+
+      if (isInkContract) {
+        ensureSupportedContractMetadataVersion(contractMetadata);
+        spinner.info(`Detected ink! contract metadata version: ${contractMetadata.version}`);
+      } else {
+        spinner.info(`Detected Solidity contract metadata file`);
+      }
 
       spinner.succeed(`Parsed contract metadata file: ${metadata}`);
-
       spinner.text = 'Generating contract Types & APIs';
-      const { interfaceName, outputFolder } = await generateContractTypes(
-        contractMetadata,
-        contract,
-        outDir,
-        extension,
-        subpath,
-      );
+
+      let result: GeneratedResult;
+      if (isInkContract) {
+        result = await generateContractTypes(contractMetadata, contractName, outDir, extension, subpath);
+      } else {
+        result = await generateSolContractTypes(contractMetadata, contractName, outDir, extension, subpath);
+      }
+
       spinner.succeed('Generated contract Types & APIs');
 
-      console.log(`  ➡ Output directory: file://${outputFolder}`);
-      console.log(`  ➡ ContractApi interface: ${interfaceName}`);
+      console.log(`  ➡ Output directory: file://${result.outputFolder}`);
+      console.log(`  ➡ ContractApi interface: ${result.interfaceName}`);
       console.log('🌈 Done!');
 
       spinner.stop();

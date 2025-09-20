@@ -15,7 +15,7 @@ import {
   toU8a,
 } from '@dedot/utils';
 import { TypinkRegistry } from 'src/TypinkRegistry';
-import { ContractAddress, LooseContractMetadata } from 'src/types';
+import { ContractAddress, LooseContractMetadata } from '../types/index.js';
 
 export const ensureStorageApiSupports = (version: string | number) => {
   const numberedVersion = typeof version === 'number' ? version : parseInt(version);
@@ -26,20 +26,34 @@ export const ensureStorageApiSupports = (version: string | number) => {
   );
 };
 
-export function ensurePalletPresence(client: ISubstrateClient<SubstrateApi[RpcVersion]>, registry: TypinkRegistry) {
-  if (registry.isRevive()) {
-    try {
-      !!client.call.reviveApi.call.meta && !!client.tx.revive.call.meta;
-    } catch {
-      throw new DedotError('Pallet Revive is not available');
-    }
-  } else {
-    try {
-      !!client.call.contractsApi.call.meta && !!client.tx.contracts.call.meta;
-    } catch {
-      throw new DedotError('Pallet Contracts is not available');
-    }
+export function ensurePalletRevive(client: ISubstrateClient<SubstrateApi[RpcVersion]>) {
+  try {
+    !!client.call.reviveApi.call.meta && !!client.tx.revive.call.meta;
+  } catch {
+    throw new DedotError('Pallet Revive is not available');
   }
+}
+
+export function ensurePalletContracts(client: ISubstrateClient<SubstrateApi[RpcVersion]>) {
+  try {
+    !!client.call.contractsApi.call.meta && !!client.tx.contracts.call.meta;
+  } catch {
+    throw new DedotError('Pallet Contracts is not available');
+  }
+}
+
+export async function ensureContractPresenceOnRevive(
+  client: ISubstrateClient<SubstrateApi[RpcVersion]>,
+  address: ContractAddress,
+) {
+  const accountInfo = await client.query.revive.accountInfoOf(address as HexString);
+  if (accountInfo?.accountType && accountInfo?.accountType?.type === 'Contract') {
+    return accountInfo.accountType.value;
+  }
+}
+
+export function ensurePalletPresence(client: ISubstrateClient<SubstrateApi[RpcVersion]>, registry: TypinkRegistry) {
+  registry.isRevive() ? ensurePalletRevive(client) : ensurePalletContracts(client);
 }
 
 export async function ensureContractPresence(
@@ -49,10 +63,7 @@ export async function ensureContractPresence(
 ) {
   const contractInfo = await (async () => {
     if (registry.isRevive()) {
-      const accountInfo = await client.query.revive.accountInfoOf(address as HexString);
-      if (accountInfo?.accountType && accountInfo?.accountType?.type === 'Contract') {
-        return accountInfo.accountType.value;
-      }
+      return ensureContractPresenceOnRevive(client, address);
     } else {
       return client.query.contracts.contractInfoOf(address);
     }

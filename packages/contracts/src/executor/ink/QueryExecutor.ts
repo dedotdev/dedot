@@ -3,14 +3,14 @@ import type { SubstrateApi } from '@dedot/api/chaintypes';
 import { Result } from '@dedot/codecs';
 import { GenericSubstrateApi, RpcVersion } from '@dedot/types';
 import { assert, concatU8a, HexString, hexToU8a, u8aToHex } from '@dedot/utils';
-import { ContractDispatchError, ContractLangError } from '../errors.js';
+import { ContractDispatchError, ContractLangError } from '../../errors.js';
 import {
   ContractCallOptions,
   ContractCallResult,
   GenericContractCallResult,
   GenericContractQueryCall,
-} from '../types/index.js';
-import { ensureContractPresence, ensureParamsLength, toReturnFlags } from '../utils/index.js';
+} from '../../types/index.js';
+import { ensureContractPresence, ensureParamsLength, toReturnFlags } from '../../utils/index.js';
 import { ContractExecutor } from './abstract/index.js';
 
 export class QueryExecutor<ChainApi extends GenericSubstrateApi> extends ContractExecutor<ChainApi> {

@@ -2,7 +2,7 @@ import { ISubstrateClient } from '@dedot/api';
 import { IEventRecord } from '@dedot/types';
 import { DedotError, HexString, toHex, toU8a } from '@dedot/utils';
 import { TypinkRegistry } from './TypinkRegistry.js';
-import { EventExecutor, QueryExecutor, TxExecutor } from './executor/index.js';
+import { EventExecutor, QueryExecutor, TxExecutor } from './executor/ink/index.js';
 import {
   ContractAddress,
   ContractEvent,

@@ -1,6 +1,6 @@
 import { assert, HexString, toU8a } from '@dedot/utils';
 import { TypinkRegistry } from 'src/TypinkRegistry';
-import { AnyLayoutV5, ContractType } from 'src/types';
+import { AnyLayoutV5, ContractType } from '../types/index.js';
 import { findStorageRootKey } from '../utils/index.js';
 
 export abstract class BaseLazyObject {

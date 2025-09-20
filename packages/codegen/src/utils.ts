@@ -55,6 +55,8 @@ const TS_PRIMITIVE_TYPES = [
   'any',
   'Array',
   'Record',
+  'number[]',
+  'bigint[]',
 ];
 
 /**

@@ -3,15 +3,15 @@ import { type SubstrateApi } from '@dedot/api/chaintypes';
 import { Result } from '@dedot/shape';
 import { GenericSubstrateApi, RpcVersion } from '@dedot/types';
 import { assert, concatU8a, hexToU8a, isPvm, isUndefined, isWasm, toHex, toU8a, u8aToHex } from '@dedot/utils';
-import { ContractInstantiateDispatchError, ContractInstantiateLangError } from '../errors.js';
+import { ContractInstantiateDispatchError, ContractInstantiateLangError } from '../../errors.js';
 import {
   ConstructorCallOptions,
   ContractCode,
   ContractInstantiateResult,
   GenericConstructorCallResult,
   GenericConstructorQueryCall,
-} from '../types/index.js';
-import { ensureParamsLength, toReturnFlags } from '../utils/index.js';
+} from '../../types/index.js';
+import { ensureParamsLength, toReturnFlags } from '../../utils/index.js';
 import { DeployerExecutor } from './abstract/index.js';
 
 export class ConstructorQueryExecutor<ChainApi extends GenericSubstrateApi> extends DeployerExecutor<ChainApi> {
