@@ -208,6 +208,12 @@ export class TypesGen {
       return;
     }
 
+    // TODO should have a better fix for this
+    if (typeName.startsWith('FixedBytes<')) {
+      this.typeImports.addCodecType('FixedBytes');
+      return;
+    }
+
     if (BASIC_KNOWN_TYPES.some((re) => typeName.match(re))) {
       this.typeImports.addCodecType(typeName);
       return;
