@@ -70,7 +70,14 @@ export class SolQueryExecutor<ChainApi extends GenericSubstrateApi> extends SolC
         throw new SolContractCustomError(errorDesc.name, raw, errorDesc);
       }
 
-      const data = this.registry.interf.decodeFunctionResult(fragment, raw.result.value.data);
+      let data = this.registry.interf.decodeFunctionResult(fragment, raw.result.value.data);
+      data = data.map((a) => {
+        if (a['_isBigNumber']) {
+          return a.toBigInt();
+        }
+
+        return a;
+      });
 
       return {
         // For convenience, if there's only one return value, return it directly instead of an array

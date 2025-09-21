@@ -13,7 +13,15 @@ export class ConstructorTxGen extends ConstructorQueryGen {
       'SolGenericInstantiateSubmittableExtrinsic',
     );
 
-    const constructor = this.abiItems.find((item) => item.type === 'constructor') as SolABIConstructor;
+    let constructor = this.abiItems.find((item) => item.type === 'constructor') as SolABIConstructor;
+    if (!constructor) {
+      // fallback to default constructor
+      constructor = {
+        inputs: [],
+        stateMutability: 'nonpayable',
+        type: 'constructor',
+      };
+    }
 
     const constructorsOut = this.doGenerateConstructorFragment(constructor, 'ConstructorTxOptions');
     const importTypes = this.typesGen.typeImports.toImports({ useSubPaths });

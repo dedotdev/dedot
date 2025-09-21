@@ -28,7 +28,9 @@ console.log('Contract deployed at address:', contractAddress);
 const contract = await deployerResult.contract();
 
 const { data } = await contract.query.tokenName();
+console.log('tokenName', data);
 
-console.log(data);
+const { data: tokenSupply } = await contract.query.totalSupply();
+console.log('tokenSupply', tokenSupply);
 
 await client.disconnect();

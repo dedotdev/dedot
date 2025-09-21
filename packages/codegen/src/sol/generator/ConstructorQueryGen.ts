@@ -22,7 +22,15 @@ export class ConstructorQueryGen {
       'ContractInstantiateResult',
     );
 
-    const constructor = this.abiItems.find((item) => item.type === 'constructor') as SolABIConstructor;
+    let constructor = this.abiItems.find((item) => item.type === 'constructor') as SolABIConstructor;
+    if (!constructor) {
+      // fallback to default constructor
+      constructor = {
+        inputs: [],
+        stateMutability: 'nonpayable',
+        type: 'constructor',
+      };
+    }
 
     const constructorsOut = this.doGenerateConstructorFragment(constructor, 'ConstructorCallOptions');
     const importTypes = this.typesGen.typeImports.toImports({ useSubPaths });
@@ -34,7 +42,7 @@ export class ConstructorQueryGen {
   doGenerateConstructorFragment(abiItem: SolABIConstructor, optionsTypeName?: string) {
     let callsOut = '';
 
-    const { inputs } = abiItem;
+    const { inputs = [] } = abiItem;
 
     // In case there is an arg has label `options`,
     // we use the name `_options` for the last options param
