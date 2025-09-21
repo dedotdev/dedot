@@ -2,6 +2,7 @@ import type { ISubstrateClient } from '@dedot/api';
 import type { SubstrateApi } from '@dedot/api/chaintypes';
 import { GenericSubstrateApi, RpcVersion } from '@dedot/types';
 import { assert, DedotError, HexString } from '@dedot/utils';
+import { FormatTypes } from '@ethersproject/abi';
 import { ErrorDescription } from '@ethersproject/abi/lib/interface.js';
 import { SolContractCustomError, ContractDispatchError } from '../../errors.js';
 import {
@@ -12,7 +13,6 @@ import {
 } from '../../types/index.js';
 import { ensureParamsLength, toReturnFlags } from '../../utils/index.js';
 import { SolContractExecutor } from './abstract/SolContractExecutor.js';
-import { FormatTypes } from '@ethersproject/abi';
 
 export class SolQueryExecutor<ChainApi extends GenericSubstrateApi> extends SolContractExecutor<ChainApi> {
   doExecute(fragmentName: string) {
@@ -51,7 +51,8 @@ export class SolQueryExecutor<ChainApi extends GenericSubstrateApi> extends SolC
       })();
 
       if (raw.result.isErr) {
-        throw new ContractDispatchError(raw.result.err, raw);
+        const moduleError = client.registry.findErrorMeta(raw.result.err);
+        throw new ContractDispatchError(raw.result.err, raw, moduleError);
       }
 
       const flags = toReturnFlags(raw.result.value.flags.bits);

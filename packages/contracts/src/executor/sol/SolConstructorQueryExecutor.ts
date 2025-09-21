@@ -77,7 +77,8 @@ export class SolConstructorQueryExecutor<ChainApi extends GenericSubstrateApi> e
       })();
 
       if (raw.result.isErr) {
-        throw new ContractInstantiateDispatchError(raw.result.err, raw);
+        const moduleError = client.registry.findErrorMeta(raw.result.err);
+        throw new ContractInstantiateDispatchError(raw.result.err, raw, moduleError);
       }
 
       const flags = toReturnFlags(raw.result.value.result.flags.bits);
