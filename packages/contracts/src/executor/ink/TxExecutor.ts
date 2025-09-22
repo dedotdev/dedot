@@ -12,7 +12,7 @@ export class TxExecutor<ChainApi extends GenericSubstrateApi> extends ContractEx
     const meta = this.findTxMessage(message);
     assert(meta, `Tx message not found: ${message}`);
 
-    const callFn: GenericContractTxCall<ChainApi> = (...params: any[]) => {
+    const callFn: GenericContractTxCall<ChainApi, any, 'ink'> = (...params: any[]) => {
       const { args } = meta;
 
       ensureParamsLength(args.length, params.length);

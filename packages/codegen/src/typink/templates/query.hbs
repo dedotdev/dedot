@@ -2,6 +2,6 @@
 
 {{{ importTypes }}}
 
-export interface ContractQuery<ChainApi extends GenericSubstrateApi> extends GenericContractQuery<ChainApi> {
+export interface ContractQuery<ChainApi extends GenericSubstrateApi, Type extends MetadataType> extends GenericContractQuery<ChainApi, Type> {
     {{{ queryCallsOut }}}
 }

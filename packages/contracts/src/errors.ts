@@ -1,10 +1,11 @@
 import { DispatchError, PalletErrorMetadataLatest } from '@dedot/codecs';
 import { assert, DedotError } from '@dedot/utils';
-import { ErrorDescription, Result } from '@ethersproject/abi/lib/interface.js';
+import { ErrorDescription } from '@ethersproject/abi/lib/interface.js';
 import {
   ContractCallResult,
   ContractInstantiateResult,
   GenericContractApi,
+  InkGenericContractApi,
   ReturnFlags,
   SolGenericContractApi,
 } from './types/index.js';
@@ -100,7 +101,7 @@ export class ContractInstantiateDispatchError<
  * @extends ContractInstantiateError
  */
 export class ContractInstantiateLangError<
-  ContractApi extends GenericContractApi = GenericContractApi,
+  ContractApi extends InkGenericContractApi = InkGenericContractApi,
 > extends ContractInstantiateError<ContractApi> {
   name = 'ContractInstantiateLangError';
   /**
@@ -208,7 +209,7 @@ export class ContractDispatchError<
  * @extends ContractExecutionError
  */
 export class ContractLangError<
-  ContractApi extends GenericContractApi = GenericContractApi,
+  ContractApi extends InkGenericContractApi = InkGenericContractApi,
 > extends ContractExecutionError<ContractApi> {
   name = 'ContractLangError';
   /**
@@ -343,7 +344,7 @@ export function isContractDispatchError<ContractApi extends GenericContractApi =
  * @returns `true` if the error is an instance of `ContractLangError`, `false` otherwise.
  *          This function returns a boolean value indicating whether the provided error is of type `ContractLangError`.
  */
-export function isContractLangError<ContractApi extends GenericContractApi = GenericContractApi>(
+export function isContractLangError<ContractApi extends InkGenericContractApi = InkGenericContractApi>(
   e: Error,
 ): e is ContractLangError<ContractApi> {
   return e instanceof ContractLangError;
@@ -397,7 +398,7 @@ export function isContractInstantiateDispatchError<ContractApi extends GenericCo
  * @returns `true` if the error is an instance of `ContractInstantiateLangError`, `false` otherwise.
  *          This function returns a boolean value indicating whether the provided error is of type `ContractInstantiateLangError`.
  */
-export function isContractInstantiateLangError<ContractApi extends GenericContractApi = GenericContractApi>(
+export function isContractInstantiateLangError<ContractApi extends InkGenericContractApi = InkGenericContractApi>(
   e: Error,
 ): e is ContractInstantiateLangError<ContractApi> {
   return e instanceof ContractInstantiateLangError;

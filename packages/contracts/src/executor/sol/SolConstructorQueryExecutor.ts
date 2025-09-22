@@ -6,7 +6,7 @@ import { FormatTypes } from '@ethersproject/abi';
 import { ErrorDescription } from '@ethersproject/abi/lib/interface.js';
 import { ContractInstantiateDispatchError, SolContractInstantiateCustomError } from '../../errors.js';
 import {
-  SolGenericConstructorQueryCall,
+  GenericConstructorQueryCall,
   ConstructorCallOptions,
   ContractCode,
   ContractInstantiateResult,
@@ -20,7 +20,7 @@ export class SolConstructorQueryExecutor<ChainApi extends GenericSubstrateApi> e
     const fragment = this.findConstructorFragment();
     assert(fragment, `There are no constructor fragment existed in the ABI`);
 
-    const callFn: SolGenericConstructorQueryCall<ChainApi> = async (...params: any[]) => {
+    const callFn: GenericConstructorQueryCall<ChainApi, any, 'sol'> = async (...params: any[]) => {
       const { inputs } = fragment;
 
       ensureParamsLength(inputs.length, params.length);

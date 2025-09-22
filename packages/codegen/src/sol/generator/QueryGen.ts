@@ -15,11 +15,12 @@ export class QueryGen {
   generate(useSubPaths: boolean = false) {
     this.typesGen.typeImports.addKnownType('GenericSubstrateApi');
     this.typesGen.typeImports.addContractType(
-      'SolGenericContractQuery',
-      'SolGenericContractQueryCall',
+      'GenericContractQuery',
+      'GenericContractQueryCall',
       'ContractCallOptions',
       'GenericContractCallResult',
       'ContractCallResult',
+      'MetadataType',
     );
 
     const functions = this.abiItems.filter((item) => item.type === 'function') as SolABIFunction[];
@@ -64,7 +65,7 @@ export class QueryGen {
     // If there is only one output, we don't need to wrap it in a tuple, for user-friendly
     const typeOut = outputs.length === 1 ? typeOutInner : `[${typeOutInner}]`;
 
-    return `SolGenericContractQueryCall<ChainApi, (${paramsOut && `${paramsOut},`} ${optionsParamName}?: ContractCallOptions) => Promise<GenericContractCallResult<${typeOut}, ContractCallResult<ChainApi>>>>`;
+    return `GenericContractQueryCall<ChainApi, (${paramsOut && `${paramsOut},`} ${optionsParamName}?: ContractCallOptions) => Promise<GenericContractCallResult<${typeOut}, ContractCallResult<ChainApi>>>, Type>`;
   }
 
   generateParamsOut(abiItem: SolABIFunction): string {

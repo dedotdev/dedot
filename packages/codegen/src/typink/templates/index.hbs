@@ -9,18 +9,20 @@ import { ContractEvents } from './events.js';
 
 export * from './types.js';
 
-{{{interfaceDocs}}}export interface {{{interfaceName}}}<Rv extends RpcVersion = RpcVersion, ChainApi extends VersionedGenericSubstrateApi = SubstrateApi> extends GenericContractApi<Rv, ChainApi> {
-    query: ContractQuery<ChainApi[Rv]>;
-    tx: ContractTx<ChainApi[Rv]>;
-    constructorQuery: ConstructorQuery<ChainApi[Rv]>;
-    constructorTx: ConstructorTx<ChainApi[Rv], {{{interfaceName}}}>;
-    events: ContractEvents<ChainApi[Rv]>;
+{{{interfaceDocs}}}export interface {{{interfaceName}}}<Rv extends RpcVersion = RpcVersion, ChainApi extends VersionedGenericSubstrateApi = SubstrateApi> extends InkGenericContractApi<Rv, ChainApi> {
+    query: ContractQuery<ChainApi[Rv], 'ink'>;
+    tx: ContractTx<ChainApi[Rv], 'ink'>;
+    constructorQuery: ConstructorQuery<ChainApi[Rv], 'ink'>;
+    constructorTx: ConstructorTx<ChainApi[Rv], {{{interfaceName}}}, 'ink'>;
+    events: ContractEvents<ChainApi[Rv], 'ink'>;
     storage: {
       root(): Promise<{{{rootStorageName}}}>;
       lazy(): {{{lazyStorageName}}};
     };
 
     types: {
+      Metadata: ContractMetadata;
+      Registry: TypinkRegistry;
       RootStorage: {{{rootStorageName}}};
       LazyStorage: {{{lazyStorageName}}};
       LangError: {{{langErrorName}}};

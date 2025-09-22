@@ -3,12 +3,12 @@ import type { SubstrateApi } from '@dedot/api/chaintypes';
 import { GenericSubstrateApi, ISubmittableResult, RpcVersion } from '@dedot/types';
 import { assert, isPvm, isUndefined, toHex, toU8a } from '@dedot/utils';
 import { FormatTypes } from '@ethersproject/abi';
-import { SolContract } from '../../SolContract.js';
+import { Contract } from '../../Contract';
 import {
   ConstructorTxOptions,
   ContractAddress,
   ExecutionOptions,
-  SolGenericConstructorTxCall,
+  GenericConstructorTxCall,
 } from '../../types/index.js';
 import {
   CREATE1,
@@ -26,7 +26,7 @@ export class SolConstructorTxExecutor<ChainApi extends GenericSubstrateApi> exte
     assert(fragment, `There are no constructor fragment existed in the ABI`);
 
     // @ts-ignore
-    const callFn: SolGenericConstructorTxCall<ChainApi> = (...params: any[]) => {
+    const callFn: GenericConstructorTxCall<ChainApi, any, 'sol'> = (...params: any[]) => {
       const { inputs } = fragment;
 
       ensureParamsLength(inputs.length, params.length);
@@ -165,7 +165,7 @@ export class SolConstructorTxExecutor<ChainApi extends GenericSubstrateApi> exte
             // Check if the contract is existed on chain or not!
             await ensureContractPresenceOnRevive(client, address);
 
-            return new SolContract(
+            return new Contract(
               client, // --
               this.abiItems,
               address,

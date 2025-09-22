@@ -3,7 +3,7 @@ import { IEventRecord, IRuntimeEvent } from '@dedot/codecs/types';
 import { assert } from '@dedot/utils';
 import { EventFragment, Interface } from '@ethersproject/abi';
 import { Result } from '@ethersproject/abi/lib/interface.js';
-import { ContractAddress, SolContractEvent } from './types';
+import { ContractAddress, ContractEvent } from './types';
 
 interface ContractEmittedEvent extends IRuntimeEvent {
   pallet: 'Revive';
@@ -20,7 +20,7 @@ interface ContractEmittedEvent extends IRuntimeEvent {
 export class SolRegistry {
   constructor(public readonly interf: Interface) {}
 
-  decodeEvents(records: IEventRecord[], contract: ContractAddress): SolContractEvent[] {
+  decodeEvents(records: IEventRecord[], contract: ContractAddress): ContractEvent[] {
     return records
       .filter((eventRecord) => this.#isContractEmittedEvent(eventRecord.event, contract))
       .map((eventRecord) => this.decodeEvent(eventRecord, contract));
@@ -35,7 +35,7 @@ export class SolRegistry {
     return this.#tryDecodeEvent(fragment, eventRecord.event);
   }
 
-  #tryDecodeEvent(fragment: EventFragment, event: ContractEmittedEvent): SolContractEvent {
+  #tryDecodeEvent(fragment: EventFragment, event: ContractEmittedEvent): ContractEvent {
     const data = this.transformResult(
       this.interf.decodeEventLog(fragment, event.palletEvent.data.data, event.palletEvent.data.topics),
     );
