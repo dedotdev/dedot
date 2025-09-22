@@ -13,7 +13,7 @@ export class IndexGen {
 
     const typeImports = new TypeImports();
     typeImports.addKnownType('VersionedGenericSubstrateApi', 'RpcVersion', 'RpcV2');
-    typeImports.addContractType('SolGenericContractApi', 'SolRegistry', 'SolABI');
+    typeImports.addContractType('GenericContractApi', 'SolRegistry', 'SolABI');
     typeImports.addChainType('SubstrateApi');
 
     const importTypes = typeImports.toImports({ useSubPaths });

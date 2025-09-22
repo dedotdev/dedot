@@ -5,18 +5,21 @@ import type {
   ConstructorCallOptions,
   ContractInstantiateResult,
   GenericConstructorCallResult,
-  SolGenericConstructorQuery,
-  SolGenericConstructorQueryCall,
+  GenericConstructorQuery,
+  GenericConstructorQueryCall,
+  MetadataType,
 } from 'dedot/contracts';
 import type { GenericSubstrateApi } from 'dedot/types';
 
-export interface ConstructorQuery<ChainApi extends GenericSubstrateApi> extends SolGenericConstructorQuery<ChainApi> {
+export interface ConstructorQuery<ChainApi extends GenericSubstrateApi, Type extends MetadataType>
+  extends GenericConstructorQuery<ChainApi, Type> {
   /**
    * @param {FixedBytes<32>[]} proposalNames
    * @param {ConstructorCallOptions} options
    **/
-  initialize: SolGenericConstructorQueryCall<
+  initialize: GenericConstructorQueryCall<
     ChainApi,
+    Type,
     (
       proposalNames: FixedBytes<32>[],
       options?: ConstructorCallOptions,

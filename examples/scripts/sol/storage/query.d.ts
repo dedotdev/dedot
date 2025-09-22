@@ -4,17 +4,20 @@ import type {
   ContractCallOptions,
   ContractCallResult,
   GenericContractCallResult,
-  SolGenericContractQuery,
-  SolGenericContractQueryCall,
+  GenericContractQuery,
+  GenericContractQueryCall,
+  MetadataType,
 } from 'dedot/contracts';
 import type { GenericSubstrateApi } from 'dedot/types';
 
-export interface ContractQuery<ChainApi extends GenericSubstrateApi> extends SolGenericContractQuery<ChainApi> {
+export interface ContractQuery<ChainApi extends GenericSubstrateApi, Type extends MetadataType>
+  extends GenericContractQuery<ChainApi, Type> {
   /**
    * @param {ContractCallOptions} options
    **/
-  retrieve: SolGenericContractQueryCall<
+  retrieve: GenericContractQueryCall<
     ChainApi,
+    Type,
     (options?: ContractCallOptions) => Promise<GenericContractCallResult<bigint, ContractCallResult<ChainApi>>>
   >;
 
@@ -22,8 +25,9 @@ export interface ContractQuery<ChainApi extends GenericSubstrateApi> extends Sol
    * @param {bigint} num
    * @param {ContractCallOptions} options
    **/
-  store: SolGenericContractQueryCall<
+  store: GenericContractQueryCall<
     ChainApi,
+    Type,
     (num: bigint, options?: ContractCallOptions) => Promise<GenericContractCallResult<[], ContractCallResult<ChainApi>>>
   >;
 }

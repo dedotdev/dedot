@@ -3,18 +3,21 @@
 import type {
   ContractSubmittableExtrinsic,
   ContractTxOptions,
-  SolGenericContractTx,
-  SolGenericContractTxCall,
+  GenericContractTx,
+  GenericContractTxCall,
+  MetadataType,
 } from 'dedot/contracts';
 import type { GenericSubstrateApi } from 'dedot/types';
 
-export interface ContractTx<ChainApi extends GenericSubstrateApi> extends SolGenericContractTx<ChainApi> {
+export interface ContractTx<ChainApi extends GenericSubstrateApi, Type extends MetadataType>
+  extends GenericContractTx<ChainApi, Type> {
   /**
    * @param {bigint} num
    * @param {ContractTxOptions} options
    **/
-  store: SolGenericContractTxCall<
+  store: GenericContractTxCall<
     ChainApi,
+    Type,
     (num: bigint, options?: ContractTxOptions) => ContractSubmittableExtrinsic<ChainApi>
   >;
 }

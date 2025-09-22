@@ -21,11 +21,10 @@ export * from './types.js';
     };
 
     types: {
-      Metadata: ContractMetadata;
-      Registry: TypinkRegistry;
+      MetadataType: 'ink';
+      ChainApi: ChainApi[Rv];
       RootStorage: {{{rootStorageName}}};
       LazyStorage: {{{lazyStorageName}}};
       LangError: {{{langErrorName}}};
-      ChainApi: ChainApi[Rv];
     };
 }

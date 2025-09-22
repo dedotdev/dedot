@@ -4,13 +4,15 @@ import type {
   ConstructorCallOptions,
   ContractInstantiateResult,
   GenericConstructorCallResult,
-  SolGenericConstructorQuery,
-  SolGenericConstructorQueryCall,
+  GenericConstructorQuery,
+  GenericConstructorQueryCall,
+  MetadataType,
 } from 'dedot/contracts';
 import type { GenericSubstrateApi } from 'dedot/types';
 import type { NameInput, SymbolInput } from './types.js';
 
-export interface ConstructorQuery<ChainApi extends GenericSubstrateApi> extends SolGenericConstructorQuery<ChainApi> {
+export interface ConstructorQuery<ChainApi extends GenericSubstrateApi, Type extends MetadataType>
+  extends GenericConstructorQuery<ChainApi, Type> {
   /**
    * @param {bigint} supply
    * @param {NameInput} name
@@ -18,8 +20,9 @@ export interface ConstructorQuery<ChainApi extends GenericSubstrateApi> extends 
    * @param {number} decimals
    * @param {ConstructorCallOptions} options
    **/
-  initialize: SolGenericConstructorQueryCall<
+  initialize: GenericConstructorQueryCall<
     ChainApi,
+    Type,
     (
       supply: bigint,
       name: NameInput,

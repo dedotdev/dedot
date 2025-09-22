@@ -6,6 +6,7 @@ import { TypinkRegistry } from './TypinkRegistry.js';
 import { SolEventExecutor, SolQueryExecutor, SolTxExecutor } from './executor';
 import { EventExecutor, QueryExecutor, TxExecutor } from './executor/ink/index.js';
 import {
+  AB,
   ContractAddress,
   ContractMetadata,
   ExecutionOptions,
@@ -13,6 +14,7 @@ import {
   LooseContractMetadata,
   RootLayoutV5,
   SolABI,
+  SolABIItem,
 } from './types/index.js';
 import {
   ensurePalletPresence,
@@ -24,15 +26,15 @@ import {
 } from './utils/index.js';
 
 export class Contract<ContractApi extends GenericContractApi = GenericContractApi> {
-  readonly #registry: ContractApi['types']['Registry'];
-  readonly #metadata: ContractApi['types']['Metadata'];
+  readonly #registry: AB<ContractApi, TypinkRegistry, SolRegistry>;
+  readonly #metadata: AB<ContractApi, ContractMetadata, SolABIItem[]>;
   readonly #address: ContractAddress;
   readonly #isInk: boolean = false;
   readonly #options?: ExecutionOptions;
 
   constructor(
     readonly client: ISubstrateClient<ContractApi['types']['ChainApi']>,
-    metadata: LooseContractMetadata | SolABI | string,
+    metadata: AB<ContractApi, LooseContractMetadata, SolABI> | string,
     address: ContractAddress,
     options?: ExecutionOptions,
   ) {
@@ -43,11 +45,13 @@ export class Contract<ContractApi extends GenericContractApi = GenericContractAp
       ensureSupportedContractMetadataVersion(this.metadata as ContractMetadata);
       const getStorage = this.#getStorage.bind(this);
 
+      // @ts-ignore
       this.#registry = new TypinkRegistry(this.metadata as ContractMetadata, { getStorage });
 
       ensurePalletPresence(client, this.registry as TypinkRegistry);
       ensureValidContractAddress(address, this.registry as TypinkRegistry);
     } else {
+      // @ts-ignore
       this.#registry = new SolRegistry(new Interface(this.metadata as SolABI));
 
       ensurePalletRevive(client);
@@ -65,11 +69,11 @@ export class Contract<ContractApi extends GenericContractApi = GenericContractAp
     return this.#address;
   }
 
-  get metadata(): ContractApi['types']['Metadata'] {
+  get metadata(): AB<ContractApi, ContractMetadata, SolABIItem[]> {
     return this.#metadata;
   }
 
-  get registry(): ContractApi['types']['Registry'] {
+  get registry(): AB<ContractApi, TypinkRegistry, SolRegistry> {
     return this.#registry;
   }
 
@@ -77,8 +81,8 @@ export class Contract<ContractApi extends GenericContractApi = GenericContractAp
     return newProxyChain(
       // @ts-ignore
       this.#isInk
-        ? new SolQueryExecutor(this.client, this.#registry as SolRegistry, this.address, this.options)
-        : new QueryExecutor(this.client, this.#registry as TypinkRegistry, this.#address, this.#options),
+        ? new QueryExecutor(this.client, this.#registry as TypinkRegistry, this.#address, this.#options)
+        : new SolQueryExecutor(this.client, this.#registry as SolRegistry, this.address, this.options),
     ) as ContractApi['query'];
   }
 
@@ -86,8 +90,8 @@ export class Contract<ContractApi extends GenericContractApi = GenericContractAp
     return newProxyChain(
       // @ts-ignore
       this.#isInk
-        ? new SolTxExecutor(this.client, this.#registry as SolRegistry, this.address, this.options)
-        : new TxExecutor(this.client, this.#registry as TypinkRegistry, this.#address, this.#options),
+        ? new TxExecutor(this.client, this.#registry as TypinkRegistry, this.#address, this.#options)
+        : new SolTxExecutor(this.client, this.#registry as SolRegistry, this.address, this.options),
     ) as ContractApi['tx'];
   }
 
@@ -95,8 +99,8 @@ export class Contract<ContractApi extends GenericContractApi = GenericContractAp
     return newProxyChain(
       // @ts-ignore
       this.#isInk
-        ? new SolEventExecutor(this.client, this.#registry as SolRegistry, this.address, this.options)
-        : new EventExecutor(this.client, this.#registry as TypinkRegistry, this.#address, this.#options),
+        ? new EventExecutor(this.client, this.#registry as TypinkRegistry, this.#address, this.#options)
+        : new SolEventExecutor(this.client, this.#registry as SolRegistry, this.address, this.options),
     ) as ContractApi['events'];
   }
 

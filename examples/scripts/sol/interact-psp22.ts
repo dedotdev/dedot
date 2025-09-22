@@ -1,7 +1,7 @@
 import Keyring from '@polkadot/keyring';
 import { cryptoWaitReady } from '@polkadot/util-crypto';
 import { LegacyClient, WsProvider } from 'dedot';
-import { SolContractDeployer } from '../../../packages/contracts/src/SolContractDeployer.js';
+import { ContractDeployer } from 'dedot/contracts';
 import { psp22 } from './abi.js';
 import { Psp22ContractApi } from './psp22/index.js';
 
@@ -13,7 +13,7 @@ const [code, abi] = psp22();
 
 await client.tx.revive.mapAccount().signAndSend(alicePair).untilFinalized();
 
-const deployer = new SolContractDeployer<Psp22ContractApi>(client, abi, code, { defaultCaller: alicePair.address });
+const deployer = new ContractDeployer<Psp22ContractApi>(client, abi, code, { defaultCaller: alicePair.address });
 
 console.log('Trying deploy contract...');
 

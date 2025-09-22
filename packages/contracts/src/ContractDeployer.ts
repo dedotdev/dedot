@@ -11,6 +11,7 @@ import {
   SolConstructorTxExecutor,
 } from './executor/index.js';
 import {
+  AB,
   ContractMetadata,
   ExecutionOptions,
   GenericContractApi,
@@ -26,11 +27,6 @@ import {
   newProxyChain,
 } from './utils/index.js';
 
-type MixedMetadata<ContractApi extends GenericContractApi = GenericContractApi> =
-  ContractApi['types']['MetadataType'] extends 'ink' ? LooseContractMetadata : SolABIItem[];
-
-type AB<ContractApi extends GenericContractApi, A, B> = ContractApi['types']['MetadataType'] extends 'ink' ? A : B;
-
 export class ContractDeployer<ContractApi extends GenericContractApi = GenericContractApi> {
   readonly #isInk: boolean = false;
   readonly #metadata: AB<ContractApi, ContractMetadata, SolABIItem[]>;
@@ -40,14 +36,14 @@ export class ContractDeployer<ContractApi extends GenericContractApi = GenericCo
 
   constructor(
     readonly client: ISubstrateClient<ContractApi['types']['ChainApi']>,
-    metadata: MixedMetadata<ContractApi> | string,
+    metadata: AB<ContractApi, LooseContractMetadata, SolABI> | string,
     codeHashOrCode: Hash | Uint8Array | string,
     options?: ExecutionOptions,
   ) {
     this.#metadata = typeof metadata === 'string' ? JSON.parse(metadata) : metadata;
     this.#isInk = !Array.isArray(metadata); // TODO better way to check for ink! contract
 
-    if (!this.#isInk) {
+    if (this.#isInk) {
       ensureSupportedContractMetadataVersion(this.metadata as ContractMetadata);
       // @ts-ignore
       this.#registry = new TypinkRegistry(this.metadata as ContractMetadata);
@@ -81,8 +77,8 @@ export class ContractDeployer<ContractApi extends GenericContractApi = GenericCo
     return newProxyChain(
       // @ts-ignore
       this.#isInk
-        ? new SolConstructorTxExecutor(this.client, this.#registry as SolRegistry, this.#code, this.#options)
-        : new ConstructorTxExecutor(this.client, this.#registry as TypinkRegistry, this.#code, this.#options),
+        ? new ConstructorTxExecutor(this.client, this.#registry as TypinkRegistry, this.#code, this.#options)
+        : new SolConstructorTxExecutor(this.client, this.#registry as SolRegistry, this.#code, this.#options),
     ) as ContractApi['constructorTx'];
   }
 
@@ -90,8 +86,8 @@ export class ContractDeployer<ContractApi extends GenericContractApi = GenericCo
     return newProxyChain(
       // @ts-ignore
       this.#isInk
-        ? new SolConstructorQueryExecutor(this.client, this.#registry as SolRegistry, this.#code, this.#options)
-        : new ConstructorQueryExecutor(this.client, this.#registry as TypinkRegistry, this.#code, this.#options),
+        ? new ConstructorQueryExecutor(this.client, this.#registry as TypinkRegistry, this.#code, this.#options)
+        : new SolConstructorQueryExecutor(this.client, this.#registry as SolRegistry, this.#code, this.#options),
     ) as ContractApi['constructorQuery'];
   }
 

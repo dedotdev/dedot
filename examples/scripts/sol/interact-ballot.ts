@@ -2,7 +2,7 @@ import Keyring from '@polkadot/keyring';
 import { cryptoWaitReady } from '@polkadot/util-crypto';
 import { LegacyClient, WsProvider } from 'dedot';
 import { FixedBytes } from 'dedot/codecs';
-import { SolContractDeployer, toEvmAddress } from 'dedot/contracts';
+import { toEvmAddress, ContractDeployer } from 'dedot/contracts';
 import { hexToString } from 'dedot/utils';
 import { ballot } from './abi.js';
 import { BallotContractApi } from './ballot/index.js';
@@ -18,7 +18,7 @@ const [code, abi] = ballot();
 await client.tx.revive.mapAccount().signAndSend(alice).untilFinalized();
 await client.tx.revive.mapAccount().signAndSend(bob).untilFinalized();
 
-const deployer = new SolContractDeployer<BallotContractApi>(client, abi, code, { defaultCaller: alice.address });
+const deployer = new ContractDeployer<BallotContractApi>(client, abi, code, { defaultCaller: alice.address });
 
 console.log('Trying deploy contract...');
 

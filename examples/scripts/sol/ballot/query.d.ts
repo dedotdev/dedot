@@ -5,17 +5,20 @@ import type {
   ContractCallOptions,
   ContractCallResult,
   GenericContractCallResult,
-  SolGenericContractQuery,
-  SolGenericContractQueryCall,
+  GenericContractQuery,
+  GenericContractQueryCall,
+  MetadataType,
 } from 'dedot/contracts';
 import type { GenericSubstrateApi } from 'dedot/types';
 
-export interface ContractQuery<ChainApi extends GenericSubstrateApi> extends SolGenericContractQuery<ChainApi> {
+export interface ContractQuery<ChainApi extends GenericSubstrateApi, Type extends MetadataType>
+  extends GenericContractQuery<ChainApi, Type> {
   /**
    * @param {ContractCallOptions} options
    **/
-  chairperson: SolGenericContractQueryCall<
+  chairperson: GenericContractQueryCall<
     ChainApi,
+    Type,
     (options?: ContractCallOptions) => Promise<GenericContractCallResult<H160, ContractCallResult<ChainApi>>>
   >;
 
@@ -23,8 +26,9 @@ export interface ContractQuery<ChainApi extends GenericSubstrateApi> extends Sol
    * @param {string} to
    * @param {ContractCallOptions} options
    **/
-  delegate: SolGenericContractQueryCall<
+  delegate: GenericContractQueryCall<
     ChainApi,
+    Type,
     (to: string, options?: ContractCallOptions) => Promise<GenericContractCallResult<[], ContractCallResult<ChainApi>>>
   >;
 
@@ -32,8 +36,9 @@ export interface ContractQuery<ChainApi extends GenericSubstrateApi> extends Sol
    * @param {string} voter
    * @param {ContractCallOptions} options
    **/
-  giveRightToVote: SolGenericContractQueryCall<
+  giveRightToVote: GenericContractQueryCall<
     ChainApi,
+    Type,
     (
       voter: string,
       options?: ContractCallOptions,
@@ -44,8 +49,9 @@ export interface ContractQuery<ChainApi extends GenericSubstrateApi> extends Sol
    * @param {bigint} arg0
    * @param {ContractCallOptions} options
    **/
-  proposals: SolGenericContractQueryCall<
+  proposals: GenericContractQueryCall<
     ChainApi,
+    Type,
     (
       arg0: bigint,
       options?: ContractCallOptions,
@@ -56,8 +62,9 @@ export interface ContractQuery<ChainApi extends GenericSubstrateApi> extends Sol
    * @param {bigint} proposal
    * @param {ContractCallOptions} options
    **/
-  vote: SolGenericContractQueryCall<
+  vote: GenericContractQueryCall<
     ChainApi,
+    Type,
     (
       proposal: bigint,
       options?: ContractCallOptions,
@@ -68,8 +75,9 @@ export interface ContractQuery<ChainApi extends GenericSubstrateApi> extends Sol
    * @param {string} arg0
    * @param {ContractCallOptions} options
    **/
-  voters: SolGenericContractQueryCall<
+  voters: GenericContractQueryCall<
     ChainApi,
+    Type,
     (
       arg0: string,
       options?: ContractCallOptions,
@@ -79,16 +87,18 @@ export interface ContractQuery<ChainApi extends GenericSubstrateApi> extends Sol
   /**
    * @param {ContractCallOptions} options
    **/
-  winnerName: SolGenericContractQueryCall<
+  winnerName: GenericContractQueryCall<
     ChainApi,
+    Type,
     (options?: ContractCallOptions) => Promise<GenericContractCallResult<FixedBytes<32>, ContractCallResult<ChainApi>>>
   >;
 
   /**
    * @param {ContractCallOptions} options
    **/
-  winningProposal: SolGenericContractQueryCall<
+  winningProposal: GenericContractQueryCall<
     ChainApi,
+    Type,
     (options?: ContractCallOptions) => Promise<GenericContractCallResult<bigint, ContractCallResult<ChainApi>>>
   >;
 }

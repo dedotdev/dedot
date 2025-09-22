@@ -3,26 +3,29 @@
 import type { FixedBytes } from 'dedot/codecs';
 import type {
   ConstructorTxOptions,
-  SolGenericConstructorTx,
-  SolGenericConstructorTxCall,
-  SolGenericContractApi,
-  SolGenericInstantiateSubmittableExtrinsic,
+  GenericConstructorTx,
+  GenericConstructorTxCall,
+  GenericContractApi,
+  GenericInstantiateSubmittableExtrinsic,
+  MetadataType,
 } from 'dedot/contracts';
 import type { GenericSubstrateApi } from 'dedot/types';
 
 export interface ConstructorTx<
   ChainApi extends GenericSubstrateApi,
-  ContractApi extends SolGenericContractApi = SolGenericContractApi,
-> extends SolGenericConstructorTx<ChainApi> {
+  ContractApi extends GenericContractApi,
+  Type extends MetadataType,
+> extends GenericConstructorTx<ChainApi, Type> {
   /**
    * @param {FixedBytes<32>[]} proposalNames
    * @param {ConstructorTxOptions} options
    **/
-  initialize: SolGenericConstructorTxCall<
+  initialize: GenericConstructorTxCall<
     ChainApi,
+    Type,
     (
       proposalNames: FixedBytes<32>[],
       options?: ConstructorTxOptions,
-    ) => SolGenericInstantiateSubmittableExtrinsic<ChainApi, ContractApi>
+    ) => GenericInstantiateSubmittableExtrinsic<ChainApi, ContractApi>
   >;
 }

@@ -1,7 +1,7 @@
 import Keyring from '@polkadot/keyring';
 import { cryptoWaitReady } from '@polkadot/util-crypto';
 import { LegacyClient, WsProvider } from 'dedot';
-import { SolContractDeployer } from '../../../packages/contracts/src/SolContractDeployer.js';
+import { ContractDeployer } from 'dedot/contracts';
 import { storage } from './abi.js';
 import { StorageContractApi } from './storage/index.js';
 
@@ -13,7 +13,7 @@ const [code, abi] = storage();
 
 await client.tx.revive.mapAccount().signAndSend(alice).untilFinalized();
 
-const deployer = new SolContractDeployer<StorageContractApi>(client, abi, code, { defaultCaller: alice.address });
+const deployer = new ContractDeployer<StorageContractApi>(client, abi, code, { defaultCaller: alice.address });
 
 console.log('Trying deploy contract...');
 

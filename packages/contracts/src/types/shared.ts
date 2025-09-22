@@ -1,6 +1,8 @@
 import { AccountId32Like, Bytes, BytesLike, DispatchError, Extrinsic, H256, Weight } from '@dedot/codecs';
 import { Result } from '@dedot/shape';
 import { GenericSubstrateApi, ISubmittableExtrinsic, ISubmittableResult } from '@dedot/types';
+import { GenericContractApi, LooseContractMetadata } from './ink/index.js';
+import { SolABIItem } from './sol/index.js';
 
 export type ContractAddress = string; // ss58 or evm address
 
@@ -79,3 +81,12 @@ export type ContractTxOptions = CallOptions;
 export type SubmittableExtrinsic<R extends ISubmittableResult> = ISubmittableExtrinsic<R> & Extrinsic;
 
 export type ContractSubmittableExtrinsic<_ extends GenericSubstrateApi> = SubmittableExtrinsic<ISubmittableResult>;
+
+export type MixedMetadata<ContractApi extends GenericContractApi = GenericContractApi> =
+  ContractApi['types']['MetadataType'] extends 'ink' // --
+    ? LooseContractMetadata
+    : SolABIItem[];
+
+export type AB<ContractApi extends GenericContractApi, A, B> = ContractApi['types']['MetadataType'] extends 'ink'
+  ? A
+  : B;

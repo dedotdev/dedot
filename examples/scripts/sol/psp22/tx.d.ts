@@ -3,19 +3,22 @@
 import type {
   ContractSubmittableExtrinsic,
   ContractTxOptions,
-  SolGenericContractTx,
-  SolGenericContractTxCall,
+  GenericContractTx,
+  GenericContractTxCall,
+  MetadataType,
 } from 'dedot/contracts';
 import type { GenericSubstrateApi } from 'dedot/types';
 
-export interface ContractTx<ChainApi extends GenericSubstrateApi> extends SolGenericContractTx<ChainApi> {
+export interface ContractTx<ChainApi extends GenericSubstrateApi, Type extends MetadataType>
+  extends GenericContractTx<ChainApi, Type> {
   /**
    * @param {string} spender
    * @param {bigint} value
    * @param {ContractTxOptions} options
    **/
-  approve: SolGenericContractTxCall<
+  approve: GenericContractTxCall<
     ChainApi,
+    Type,
     (spender: string, value: bigint, options?: ContractTxOptions) => ContractSubmittableExtrinsic<ChainApi>
   >;
 
@@ -24,8 +27,9 @@ export interface ContractTx<ChainApi extends GenericSubstrateApi> extends SolGen
    * @param {bigint} deltaValue
    * @param {ContractTxOptions} options
    **/
-  decreaseAllowance: SolGenericContractTxCall<
+  decreaseAllowance: GenericContractTxCall<
     ChainApi,
+    Type,
     (spender: string, deltaValue: bigint, options?: ContractTxOptions) => ContractSubmittableExtrinsic<ChainApi>
   >;
 
@@ -34,8 +38,9 @@ export interface ContractTx<ChainApi extends GenericSubstrateApi> extends SolGen
    * @param {bigint} deltaValue
    * @param {ContractTxOptions} options
    **/
-  increaseAllowance: SolGenericContractTxCall<
+  increaseAllowance: GenericContractTxCall<
     ChainApi,
+    Type,
     (spender: string, deltaValue: bigint, options?: ContractTxOptions) => ContractSubmittableExtrinsic<ChainApi>
   >;
 
@@ -45,8 +50,9 @@ export interface ContractTx<ChainApi extends GenericSubstrateApi> extends SolGen
    * @param {number[]} data
    * @param {ContractTxOptions} options
    **/
-  transfer: SolGenericContractTxCall<
+  transfer: GenericContractTxCall<
     ChainApi,
+    Type,
     (to: string, value: bigint, data: number[], options?: ContractTxOptions) => ContractSubmittableExtrinsic<ChainApi>
   >;
 
@@ -57,8 +63,9 @@ export interface ContractTx<ChainApi extends GenericSubstrateApi> extends SolGen
    * @param {number[]} data
    * @param {ContractTxOptions} options
    **/
-  transferFrom: SolGenericContractTxCall<
+  transferFrom: GenericContractTxCall<
     ChainApi,
+    Type,
     (
       from: string,
       to: string,

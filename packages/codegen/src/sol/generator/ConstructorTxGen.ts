@@ -7,7 +7,7 @@ export class ConstructorTxGen extends ConstructorQueryGen {
     this.typesGen.typeImports.addKnownType('GenericSubstrateApi');
     this.typesGen.typeImports.addContractType(
       'GenericConstructorTx',
-      'SolGenericContractApi',
+      'GenericContractApi',
       'GenericConstructorTxCall',
       'ConstructorTxOptions',
       'GenericInstantiateSubmittableExtrinsic',
@@ -26,6 +26,6 @@ export class ConstructorTxGen extends ConstructorQueryGen {
   override generateMethodDef(abiItem: SolABIConstructor, optionsParamName = 'options'): string {
     const paramsOut = this.generateParamsOut(abiItem);
 
-    return `GenericConstructorTxCall<ChainApi, (${paramsOut && `${paramsOut},`} ${optionsParamName}?: ConstructorTxOptions) => GenericInstantiateSubmittableExtrinsic<ChainApi, ContractApi>, Type>`;
+    return `GenericConstructorTxCall<ChainApi, Type, (${paramsOut && `${paramsOut},`} ${optionsParamName}?: ConstructorTxOptions) => GenericInstantiateSubmittableExtrinsic<ChainApi, ContractApi>>`;
   }
 }

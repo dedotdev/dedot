@@ -4,20 +4,23 @@ import type {
   ContractCallOptions,
   ContractCallResult,
   GenericContractCallResult,
-  SolGenericContractQuery,
-  SolGenericContractQueryCall,
+  GenericContractQuery,
+  GenericContractQueryCall,
+  MetadataType,
 } from 'dedot/contracts';
 import type { GenericSubstrateApi } from 'dedot/types';
 import type { TokenNameOutput, TokenSymbolOutput } from './types.js';
 
-export interface ContractQuery<ChainApi extends GenericSubstrateApi> extends SolGenericContractQuery<ChainApi> {
+export interface ContractQuery<ChainApi extends GenericSubstrateApi, Type extends MetadataType>
+  extends GenericContractQuery<ChainApi, Type> {
   /**
    * @param {string} owner
    * @param {string} spender
    * @param {ContractCallOptions} options
    **/
-  allowance: SolGenericContractQueryCall<
+  allowance: GenericContractQueryCall<
     ChainApi,
+    Type,
     (
       owner: string,
       spender: string,
@@ -30,8 +33,9 @@ export interface ContractQuery<ChainApi extends GenericSubstrateApi> extends Sol
    * @param {bigint} value
    * @param {ContractCallOptions} options
    **/
-  approve: SolGenericContractQueryCall<
+  approve: GenericContractQueryCall<
     ChainApi,
+    Type,
     (
       spender: string,
       value: bigint,
@@ -43,8 +47,9 @@ export interface ContractQuery<ChainApi extends GenericSubstrateApi> extends Sol
    * @param {string} owner
    * @param {ContractCallOptions} options
    **/
-  balanceOf: SolGenericContractQueryCall<
+  balanceOf: GenericContractQueryCall<
     ChainApi,
+    Type,
     (
       owner: string,
       options?: ContractCallOptions,
@@ -56,8 +61,9 @@ export interface ContractQuery<ChainApi extends GenericSubstrateApi> extends Sol
    * @param {bigint} deltaValue
    * @param {ContractCallOptions} options
    **/
-  decreaseAllowance: SolGenericContractQueryCall<
+  decreaseAllowance: GenericContractQueryCall<
     ChainApi,
+    Type,
     (
       spender: string,
       deltaValue: bigint,
@@ -70,8 +76,9 @@ export interface ContractQuery<ChainApi extends GenericSubstrateApi> extends Sol
    * @param {bigint} deltaValue
    * @param {ContractCallOptions} options
    **/
-  increaseAllowance: SolGenericContractQueryCall<
+  increaseAllowance: GenericContractQueryCall<
     ChainApi,
+    Type,
     (
       spender: string,
       deltaValue: bigint,
@@ -82,24 +89,27 @@ export interface ContractQuery<ChainApi extends GenericSubstrateApi> extends Sol
   /**
    * @param {ContractCallOptions} options
    **/
-  tokenDecimals: SolGenericContractQueryCall<
+  tokenDecimals: GenericContractQueryCall<
     ChainApi,
+    Type,
     (options?: ContractCallOptions) => Promise<GenericContractCallResult<number, ContractCallResult<ChainApi>>>
   >;
 
   /**
    * @param {ContractCallOptions} options
    **/
-  tokenName: SolGenericContractQueryCall<
+  tokenName: GenericContractQueryCall<
     ChainApi,
+    Type,
     (options?: ContractCallOptions) => Promise<GenericContractCallResult<TokenNameOutput, ContractCallResult<ChainApi>>>
   >;
 
   /**
    * @param {ContractCallOptions} options
    **/
-  tokenSymbol: SolGenericContractQueryCall<
+  tokenSymbol: GenericContractQueryCall<
     ChainApi,
+    Type,
     (
       options?: ContractCallOptions,
     ) => Promise<GenericContractCallResult<TokenSymbolOutput, ContractCallResult<ChainApi>>>
@@ -108,8 +118,9 @@ export interface ContractQuery<ChainApi extends GenericSubstrateApi> extends Sol
   /**
    * @param {ContractCallOptions} options
    **/
-  totalSupply: SolGenericContractQueryCall<
+  totalSupply: GenericContractQueryCall<
     ChainApi,
+    Type,
     (options?: ContractCallOptions) => Promise<GenericContractCallResult<bigint, ContractCallResult<ChainApi>>>
   >;
 
@@ -119,8 +130,9 @@ export interface ContractQuery<ChainApi extends GenericSubstrateApi> extends Sol
    * @param {number[]} data
    * @param {ContractCallOptions} options
    **/
-  transfer: SolGenericContractQueryCall<
+  transfer: GenericContractQueryCall<
     ChainApi,
+    Type,
     (
       to: string,
       value: bigint,
@@ -136,8 +148,9 @@ export interface ContractQuery<ChainApi extends GenericSubstrateApi> extends Sol
    * @param {number[]} data
    * @param {ContractCallOptions} options
    **/
-  transferFrom: SolGenericContractQueryCall<
+  transferFrom: GenericContractQueryCall<
     ChainApi,
+    Type,
     (
       from: string,
       to: string,
