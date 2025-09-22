@@ -1,22 +1,19 @@
-import { SolABIEvent, SolABIItem } from '@dedot/contracts';
+import { SolAbi, SolAbiEvent } from '@dedot/contracts';
 import { stringCamelCase, stringPascalCase } from '@dedot/utils';
 import { beautifySourceCode, commentBlock, compileTemplate } from '../../utils.js';
 import { TypesGen } from './TypesGen.js';
 
 export class EventsGen {
-  abiItems: SolABIItem[];
-  typesGen: TypesGen;
-
-  constructor(abiItems: SolABIItem[], typeGen: TypesGen) {
-    this.abiItems = abiItems;
-    this.typesGen = typeGen;
-  }
+  constructor(
+    public readonly abi: SolAbi,
+    public readonly typesGen: TypesGen,
+  ) {}
 
   generate(useSubPaths: boolean = false) {
     this.typesGen.typeImports.addKnownType('GenericSubstrateApi');
     this.typesGen.typeImports.addContractType('GenericContractEvents', 'GenericContractEvent', 'MetadataType');
 
-    const events = this.abiItems.filter((o) => o.type === 'event') as SolABIEvent[];
+    const events = this.abi.filter((o) => o.type === 'event') as SolAbiEvent[];
 
     let eventsOut = '';
     events.forEach((event) => {
@@ -31,7 +28,7 @@ export class EventsGen {
     return beautifySourceCode(template({ importTypes, eventsOut }));
   }
 
-  #generateEventDef(abiItem: SolABIEvent) {
+  #generateEventDef(abiItem: SolAbiEvent) {
     const { name } = abiItem;
 
     const paramsOut = this.generateParamsOut(abiItem);
@@ -39,7 +36,7 @@ export class EventsGen {
     return `GenericContractEvent<'${stringPascalCase(name)}', {${paramsOut}}, Type>`;
   }
 
-  generateParamsOut(abiItem: SolABIEvent) {
+  generateParamsOut(abiItem: SolAbiEvent) {
     const { inputs } = abiItem;
 
     return inputs

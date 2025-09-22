@@ -16,8 +16,7 @@ import {
   ExecutionOptions,
   GenericContractApi,
   LooseContractMetadata,
-  SolABI,
-  SolABIItem,
+  SolAbi,
 } from './types/index.js';
 import {
   ensurePalletPresence,
@@ -29,19 +28,20 @@ import {
 
 export class ContractDeployer<ContractApi extends GenericContractApi = GenericContractApi> {
   readonly #isInk: boolean = false;
-  readonly #metadata: AB<ContractApi['types']['MetadataType'], ContractMetadata, SolABIItem[]>;
+  readonly #metadata: AB<ContractApi['types']['MetadataType'], ContractMetadata, SolAbi>;
   readonly #registry: AB<ContractApi['types']['MetadataType'], TypinkRegistry, SolRegistry>;
   readonly #code: Hash | Uint8Array | string;
   readonly #options?: ExecutionOptions;
 
   constructor(
     readonly client: ISubstrateClient<ContractApi['types']['ChainApi']>,
-    metadata: AB<ContractApi['types']['MetadataType'], LooseContractMetadata, SolABI> | string,
+    metadata: AB<ContractApi['types']['MetadataType'], LooseContractMetadata, SolAbi> | string,
     codeHashOrCode: Hash | Uint8Array | string,
     options?: ExecutionOptions,
   ) {
     this.#metadata = typeof metadata === 'string' ? JSON.parse(metadata) : metadata;
-    this.#isInk = !Array.isArray(metadata); // TODO better way to check for ink! contract
+    // TODO we should have a better way to check for ink! contract
+    this.#isInk = !Array.isArray(metadata);
 
     if (this.#isInk) {
       ensureSupportedContractMetadataVersion(this.metadata as ContractMetadata);
@@ -52,7 +52,7 @@ export class ContractDeployer<ContractApi extends GenericContractApi = GenericCo
       ensureValidCodeHashOrCode(codeHashOrCode, this.registry as TypinkRegistry);
     } else {
       // @ts-ignore
-      this.#registry = new SolRegistry(new Interface(this.#metadata as SolABI));
+      this.#registry = new SolRegistry(new Interface(this.#metadata as SolAbi));
 
       ensurePalletRevive(client);
       assert(
@@ -65,7 +65,7 @@ export class ContractDeployer<ContractApi extends GenericContractApi = GenericCo
     this.#options = options;
   }
 
-  get metadata(): AB<ContractApi['types']['MetadataType'], ContractMetadata, SolABIItem[]> {
+  get metadata(): AB<ContractApi['types']['MetadataType'], ContractMetadata, SolAbi> {
     return this.#metadata;
   }
 

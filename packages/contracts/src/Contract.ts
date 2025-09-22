@@ -15,8 +15,7 @@ import {
   GenericContractApi,
   LooseContractMetadata,
   RootLayoutV5,
-  SolABI,
-  SolABIItem,
+  SolAbi,
 } from './types/index.js';
 import {
   ensurePalletPresence,
@@ -29,14 +28,14 @@ import {
 
 export class Contract<ContractApi extends GenericContractApi = GenericContractApi> {
   readonly #registry: AB<ContractApi['types']['MetadataType'], TypinkRegistry, SolRegistry>;
-  readonly #metadata: AB<ContractApi['types']['MetadataType'], ContractMetadata, SolABIItem[]>;
+  readonly #metadata: AB<ContractApi['types']['MetadataType'], ContractMetadata, SolAbi>;
   readonly #address: ContractAddress;
   readonly #isInk: boolean = false;
   readonly #options?: ExecutionOptions;
 
   constructor(
     readonly client: ISubstrateClient<ContractApi['types']['ChainApi']>,
-    metadata: LooseContractMetadata | SolABI | string,
+    metadata: LooseContractMetadata | SolAbi | string,
     address: ContractAddress,
     options?: ExecutionOptions,
   ) {
@@ -54,7 +53,7 @@ export class Contract<ContractApi extends GenericContractApi = GenericContractAp
       ensureValidContractAddress(address, this.registry as TypinkRegistry);
     } else {
       // @ts-ignore
-      this.#registry = new SolRegistry(new Interface(this.metadata as SolABI));
+      this.#registry = new SolRegistry(new Interface(this.metadata as SolAbi));
 
       ensurePalletRevive(client);
       assert(
@@ -79,7 +78,7 @@ export class Contract<ContractApi extends GenericContractApi = GenericContractAp
     return this.#address;
   }
 
-  get metadata(): AB<ContractApi['types']['MetadataType'], ContractMetadata, SolABIItem[]> {
+  get metadata(): AB<ContractApi['types']['MetadataType'], ContractMetadata, SolAbi> {
     return this.#metadata;
   }
 

@@ -3,7 +3,7 @@ import { SubstrateApi } from '@dedot/api/chaintypes';
 import { GenericSubstrateApi, RpcVersion } from '@dedot/types';
 import { FormatTypes } from '@ethersproject/abi';
 import { SolRegistry } from '../../../SolRegistry';
-import { ExecutionOptions, SolABIItem } from '../../../types/index.js';
+import { ExecutionOptions, SolAbi } from '../../../types/index.js';
 
 export abstract class SolExecutor<ChainApi extends GenericSubstrateApi = SubstrateApi[RpcVersion]> {
   protected constructor(
@@ -12,7 +12,7 @@ export abstract class SolExecutor<ChainApi extends GenericSubstrateApi = Substra
     readonly options: ExecutionOptions = {},
   ) {}
 
-  get abiItems(): SolABIItem[] {
+  get abi(): SolAbi {
     return JSON.parse(this.registry.interf.format(FormatTypes.json) as string);
   }
 

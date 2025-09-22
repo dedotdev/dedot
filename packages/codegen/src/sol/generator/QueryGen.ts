@@ -1,16 +1,13 @@
-import { normalizeLabel, SolABIItem, SolABIFunction } from '@dedot/contracts';
+import { normalizeLabel, SolAbi, SolAbiFunction } from '@dedot/contracts';
 import { stringCamelCase } from '@dedot/utils';
 import { beautifySourceCode, commentBlock, compileTemplate } from '../../utils.js';
 import { TypesGen } from './TypesGen.js';
 
 export class QueryGen {
-  abiItems: SolABIItem[];
-  typesGen: TypesGen;
-
-  constructor(abiItems: SolABIItem[], typeGen: TypesGen) {
-    this.abiItems = abiItems;
-    this.typesGen = typeGen;
-  }
+  constructor(
+    public readonly abi: SolAbi,
+    public readonly typesGen: TypesGen,
+  ) {}
 
   generate(useSubPaths: boolean = false) {
     this.typesGen.typeImports.addKnownType('GenericSubstrateApi');
@@ -23,7 +20,7 @@ export class QueryGen {
       'MetadataType',
     );
 
-    const functions = this.abiItems.filter((item) => item.type === 'function') as SolABIFunction[];
+    const functions = this.abi.filter((item) => item.type === 'function') as SolAbiFunction[];
 
     const queryCallsOut = this.doGenerate(functions, 'ContractCallOptions');
     const importTypes = this.typesGen.typeImports.toImports({ useSubPaths });
@@ -32,7 +29,7 @@ export class QueryGen {
     return beautifySourceCode(template({ importTypes, queryCallsOut }));
   }
 
-  doGenerate(functions: SolABIFunction[], optionsTypeName?: string) {
+  doGenerate(functions: SolAbiFunction[], optionsTypeName?: string) {
     let callsOut = '';
 
     functions.forEach((def) => {
@@ -56,7 +53,7 @@ export class QueryGen {
     return callsOut;
   }
 
-  generateMethodDef(abiItem: SolABIFunction, optionsParamName = 'options'): string {
+  generateMethodDef(abiItem: SolAbiFunction, optionsParamName = 'options'): string {
     const { outputs } = abiItem;
 
     const paramsOut = this.generateParamsOut(abiItem);
@@ -68,7 +65,7 @@ export class QueryGen {
     return `GenericContractQueryCall<ChainApi, (${paramsOut && `${paramsOut},`} ${optionsParamName}?: ContractCallOptions) => Promise<GenericContractCallResult<${typeOut}, ContractCallResult<ChainApi>>>, Type>`;
   }
 
-  generateParamsOut(abiItem: SolABIFunction): string {
+  generateParamsOut(abiItem: SolAbiFunction): string {
     return abiItem.inputs
       .map(
         (input, idx) =>

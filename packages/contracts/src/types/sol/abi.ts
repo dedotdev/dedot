@@ -9,7 +9,7 @@ export interface SolABIInput extends SolABITypeDef {}
 
 export interface SolABIOutput extends SolABITypeDef {}
 
-export interface SolABIFunction {
+export interface SolAbiFunction {
   inputs: SolABIInput[];
   name: string;
   outputs: SolABIOutput[];
@@ -17,41 +17,41 @@ export interface SolABIFunction {
   type: 'function';
 }
 
-export interface SolABIConstructor {
+export interface SolAbiConstructor {
   inputs: SolABIInput[];
   stateMutability: 'nonpayable' | 'payable';
   type: 'constructor';
 }
 
-export interface SolABIEvent {
+export interface SolAbiEvent {
   anonymous?: boolean;
   inputs: (SolABIInput & { indexed?: boolean })[];
   name: string;
   type: 'event';
 }
 
-export interface SolABIError {
+export interface SolAbiError {
   inputs: SolABIInput[];
   name: string;
   type: 'error';
 }
 
-export interface SolABIFallback {
+export interface SolAbiFallback {
   type: 'fallback';
   stateMutability: 'nonpayable' | 'payable';
 }
 
-export interface SolABIReceive {
+export interface SolAbiReceive {
   type: 'receive';
   stateMutability: 'payable';
 }
 
-export type SolABIItem =
-  | SolABIFunction
-  | SolABIConstructor
-  | SolABIEvent
-  | SolABIError
-  | SolABIFallback
-  | SolABIReceive;
+export type SolAbiItem =
+  | SolAbiFunction
+  | SolAbiConstructor
+  | SolAbiEvent
+  | SolAbiError
+  | SolAbiFallback
+  | SolAbiReceive;
 
-export type SolABI = SolABIItem[];
+export type SolAbi = SolAbiItem[];

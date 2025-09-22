@@ -1,4 +1,4 @@
-import { SolABIItem, SolABITypeDef } from '@dedot/contracts';
+import { SolAbi, SolAbiItem, SolABITypeDef } from '@dedot/contracts';
 import { stringPascalCase } from '@dedot/utils';
 import { TypeImports } from '../../shared/TypeImports.js';
 import { beautifySourceCode, compileTemplate, isNativeType } from '../../utils.js';
@@ -35,18 +35,15 @@ export const BASIC_KNOWN_TYPES = [
 ];
 
 export class TypesGen {
-  abiItems: SolABIItem[];
   typeImports: TypeImports;
-
-  constructor(abiItems: SolABIItem[]) {
-    this.abiItems = abiItems;
+  constructor(public readonly abi: SolAbi) {
     this.typeImports = new TypeImports();
   }
 
   generate(useSubPaths: boolean = false): Promise<string> {
     let defTypeOut = '';
 
-    this.abiItems.forEach((abiItem) => {
+    this.abi.forEach((abiItem) => {
       if (abiItem.type === 'fallback' || abiItem.type === 'receive') return;
 
       if (
@@ -81,7 +78,7 @@ export class TypesGen {
     return beautifySourceCode(template({ importTypes, defTypeOut }));
   }
 
-  generateTypeName(typeDef: SolABITypeDef, abiItem: SolABIItem, typeOut = false): string {
+  generateTypeName(typeDef: SolABITypeDef, abiItem: SolAbiItem, typeOut = false): string {
     if (abiItem.type === 'fallback' || abiItem.type === 'receive') return '';
 
     if (typeDef.type === 'tuple') {
@@ -96,7 +93,7 @@ export class TypesGen {
     return '';
   }
 
-  generateType(typeDef: SolABITypeDef, abiItem?: SolABIItem, nestedLevel = 0, typeOut = false): string {
+  generateType(typeDef: SolABITypeDef, abiItem?: SolAbiItem, nestedLevel = 0, typeOut = false): string {
     if (nestedLevel > 0 && abiItem) {
       let typeName = this.generateTypeName(typeDef, abiItem, typeOut);
 

@@ -1,4 +1,4 @@
-import { SolABIItem } from '@dedot/contracts';
+import { SolAbi } from '@dedot/contracts';
 import { stringDashCase, stringPascalCase } from '@dedot/utils';
 import fs from 'fs';
 import path from 'path';
@@ -14,7 +14,7 @@ import {
 } from './generator/index.js';
 
 export async function generateSolContractTypes(
-  abi: SolABIItem[] | string,
+  abi: SolAbi | string,
   contract: string | undefined = 'contract',
   outDir: string = '.',
   extension: string = 'd.ts',

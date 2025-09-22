@@ -20,7 +20,7 @@ import {
   SubmittableExtrinsic,
   ContractAddress,
 } from '../shared.js';
-import { SolABIConstructor, SolABIEvent, SolABIFunction } from '../sol/index.js';
+import { SolAbiConstructor, SolAbiEvent, SolAbiFunction } from '../sol/index.js';
 import { ContractCallMessage, ContractConstructorMessage } from './shared.js';
 import { ContractEventV4, ContractMetadataV4 } from './v4.js';
 import { ContractEventV5, ContractMetadataV5 } from './v5.js';
@@ -64,7 +64,7 @@ export type GenericContractQueryCall<
   F extends AsyncMethod = (...args: any[]) => Promise<GenericContractCallResult<any, ContractCallResult<ChainApi>>>,
   Type extends MetadataType = MetadataType,
 > = F & {
-  meta: Type extends 'ink' ? ContractCallMessage : SolABIFunction;
+  meta: Type extends 'ink' ? ContractCallMessage : SolAbiFunction;
 };
 
 export type GenericContractTxCall<
@@ -72,7 +72,7 @@ export type GenericContractTxCall<
   F extends AnyFunc = (...args: any[]) => ContractSubmittableExtrinsic<ChainApi>,
   Type extends MetadataType = MetadataType,
 > = F & {
-  meta: Type extends 'ink' ? ContractCallMessage : SolABIFunction;
+  meta: Type extends 'ink' ? ContractCallMessage : SolAbiFunction;
 };
 
 export type GenericConstructorQueryCall<
@@ -82,7 +82,7 @@ export type GenericConstructorQueryCall<
   ) => Promise<GenericConstructorCallResult<any, ContractInstantiateResult<ChainApi>>>,
   Type extends MetadataType = MetadataType,
 > = F & {
-  meta: Type extends 'ink' ? ContractConstructorMessage : SolABIConstructor;
+  meta: Type extends 'ink' ? ContractConstructorMessage : SolAbiConstructor;
 };
 
 export type GenericConstructorTxCall<
@@ -90,7 +90,7 @@ export type GenericConstructorTxCall<
   F extends AnyFunc = (...args: any[]) => GenericInstantiateSubmittableExtrinsic<ChainApi>,
   Type extends MetadataType = MetadataType,
 > = F & {
-  meta: Type extends 'ink' ? ContractConstructorMessage : SolABIConstructor;
+  meta: Type extends 'ink' ? ContractConstructorMessage : SolAbiConstructor;
 };
 
 export interface GenericContractQuery<ChainApi extends GenericSubstrateApi, Type extends MetadataType = MetadataType> {
@@ -142,7 +142,7 @@ export interface GenericContractEvent<
   find: (events: IEventRecord[] | ContractEvent[]) => ContractEvent<EventName, Data> | undefined;
   filter: (events: IEventRecord[] | ContractEvent[]) => ContractEvent<EventName, Data>[];
   watch: (callback: (events: ContractEvent<EventName, Data>[]) => void) => Promise<Unsub>;
-  meta: Type extends 'ink' ? ContractEventMeta : SolABIEvent;
+  meta: Type extends 'ink' ? ContractEventMeta : SolAbiEvent;
 }
 
 export interface GenericContractEvents<_ extends GenericSubstrateApi, Type extends MetadataType> {

@@ -1,16 +1,13 @@
 import { TypesGen } from '@dedot/codegen/sol/generator/TypesGen';
-import { SolABIConstructor, SolABIItem } from '@dedot/contracts';
+import { SolAbi, SolAbiConstructor } from '@dedot/contracts';
 import { stringCamelCase } from '@dedot/utils';
 import { beautifySourceCode, commentBlock, compileTemplate } from '../../utils.js';
 
 export class ConstructorQueryGen {
-  abiItems: SolABIItem[];
-  typesGen: TypesGen;
-
-  constructor(abiItems: SolABIItem[], typeGen: TypesGen) {
-    this.abiItems = abiItems;
-    this.typesGen = typeGen;
-  }
+  constructor(
+    public readonly abi: SolAbi,
+    public readonly typesGen: TypesGen,
+  ) {}
 
   generate(useSubPaths: boolean = false) {
     this.typesGen.typeImports.addKnownType('GenericSubstrateApi');
@@ -32,7 +29,7 @@ export class ConstructorQueryGen {
     return beautifySourceCode(template({ importTypes, constructorsOut }));
   }
 
-  doGenerateConstructorFragment(abiItem: SolABIConstructor, optionsTypeName?: string) {
+  doGenerateConstructorFragment(abiItem: SolAbiConstructor, optionsTypeName?: string) {
     let callsOut = '';
 
     const { inputs = [] } = abiItem;
@@ -54,13 +51,13 @@ export class ConstructorQueryGen {
     return callsOut;
   }
 
-  generateMethodDef(abiItem: SolABIConstructor, optionsParamName = 'options'): string {
+  generateMethodDef(abiItem: SolAbiConstructor, optionsParamName = 'options'): string {
     const paramsOut = this.generateParamsOut(abiItem);
 
     return `GenericConstructorQueryCall<ChainApi, (${paramsOut && `${paramsOut},`} ${optionsParamName}?: ConstructorCallOptions) => Promise<GenericConstructorCallResult<[], ContractInstantiateResult<ChainApi>>>, Type>`;
   }
 
-  generateParamsOut(abiItem: SolABIConstructor): string {
+  generateParamsOut(abiItem: SolAbiConstructor): string {
     return abiItem.inputs
       .map(
         (input, idx) =>
@@ -69,8 +66,8 @@ export class ConstructorQueryGen {
       .join(', ');
   }
 
-  protected findConstructor(): SolABIConstructor {
-    let constructor = this.abiItems.find((item) => item.type === 'constructor');
+  protected findConstructor(): SolAbiConstructor {
+    let constructor = this.abi.find((item) => item.type === 'constructor');
 
     // Fallback to default constructor
     if (!constructor) {
@@ -81,6 +78,6 @@ export class ConstructorQueryGen {
       };
     }
 
-    return constructor as SolABIConstructor;
+    return constructor as SolAbiConstructor;
   }
 }

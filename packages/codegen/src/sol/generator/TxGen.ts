@@ -1,4 +1,4 @@
-import { SolABIFunction } from '@dedot/contracts';
+import { SolAbiFunction } from '@dedot/contracts';
 import { beautifySourceCode, compileTemplate } from '../../utils.js';
 import { QueryGen } from './QueryGen.js';
 
@@ -13,9 +13,9 @@ export class TxGen extends QueryGen {
       'MetadataType',
     );
 
-    const txFunctions = this.abiItems.filter(
+    const txFunctions = this.abi.filter(
       (item) => item.type === 'function' && item.stateMutability !== 'view',
-    ) as SolABIFunction[];
+    ) as SolAbiFunction[];
 
     const txCallsOut = this.doGenerate(txFunctions, 'ContractTxOptions');
     const importTypes = this.typesGen.typeImports.toImports({ useSubPaths });
@@ -24,7 +24,7 @@ export class TxGen extends QueryGen {
     return beautifySourceCode(template({ importTypes, txCallsOut }));
   }
 
-  override generateMethodDef(abiItem: SolABIFunction, optionsParamName = 'options'): string {
+  override generateMethodDef(abiItem: SolAbiFunction, optionsParamName = 'options'): string {
     const paramsOut = this.generateParamsOut(abiItem);
 
     return `GenericContractTxCall<ChainApi, (${paramsOut && `${paramsOut},`} ${optionsParamName}?: ContractTxOptions) => ContractSubmittableExtrinsic<ChainApi>, Type>`;

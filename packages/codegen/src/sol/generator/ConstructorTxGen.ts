@@ -1,4 +1,4 @@
-import { SolABIConstructor } from '@dedot/contracts';
+import { SolAbiConstructor } from '@dedot/contracts';
 import { beautifySourceCode, compileTemplate } from '../../utils.js';
 import { ConstructorQueryGen } from './ConstructorQueryGen.js';
 
@@ -23,7 +23,7 @@ export class ConstructorTxGen extends ConstructorQueryGen {
     return beautifySourceCode(template({ importTypes, constructorsOut }));
   }
 
-  override generateMethodDef(abiItem: SolABIConstructor, optionsParamName = 'options'): string {
+  override generateMethodDef(abiItem: SolAbiConstructor, optionsParamName = 'options'): string {
     const paramsOut = this.generateParamsOut(abiItem);
 
     return `GenericConstructorTxCall<ChainApi, (${paramsOut && `${paramsOut},`} ${optionsParamName}?: ConstructorTxOptions) => GenericInstantiateSubmittableExtrinsic<ChainApi, ContractApi>, Type>`;

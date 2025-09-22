@@ -167,7 +167,7 @@ export class SolConstructorTxExecutor<ChainApi extends GenericSubstrateApi> exte
 
             return new Contract(
               client, // --
-              this.abiItems,
+              this.abi,
               address,
               {
                 defaultCaller: deployerAddress,
