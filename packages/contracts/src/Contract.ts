@@ -1,4 +1,5 @@
 import { ISubstrateClient } from '@dedot/api';
+import { IEventRecord } from '@dedot/types';
 import { assert, DedotError, HexString, isEvmAddress, toHex, toU8a } from '@dedot/utils';
 import { Interface } from '@ethersproject/abi';
 import { SolRegistry } from './SolRegistry';
@@ -8,6 +9,7 @@ import { EventExecutor, QueryExecutor, TxExecutor } from './executor/ink/index.j
 import {
   AB,
   ContractAddress,
+  ContractEvent,
   ContractMetadata,
   ExecutionOptions,
   GenericContractApi,
@@ -34,7 +36,7 @@ export class Contract<ContractApi extends GenericContractApi = GenericContractAp
 
   constructor(
     readonly client: ISubstrateClient<ContractApi['types']['ChainApi']>,
-    metadata: AB<ContractApi, LooseContractMetadata, SolABI> | string,
+    metadata: LooseContractMetadata | SolABI | string,
     address: ContractAddress,
     options?: ExecutionOptions,
   ) {
@@ -63,6 +65,14 @@ export class Contract<ContractApi extends GenericContractApi = GenericContractAp
 
     this.#address = address;
     this.#options = options;
+  }
+
+  decodeEvent(eventRecord: IEventRecord): ContractEvent {
+    return this.#registry.decodeEvent(eventRecord, this.address);
+  }
+
+  decodeEvents(eventRecords: IEventRecord[]): ContractEvent[] {
+    return this.#registry.decodeEvents(eventRecords, this.address);
   }
 
   get address(): ContractAddress {

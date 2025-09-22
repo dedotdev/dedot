@@ -3,7 +3,13 @@ import type { SubstrateApi } from '@dedot/api/chaintypes';
 import { GenericSubstrateApi, ISubmittableResult, RpcVersion } from '@dedot/types';
 import { assert, concatU8a, hexToU8a, isPvm, isUndefined, isWasm, toHex, toU8a, u8aToHex } from '@dedot/utils';
 import { Contract } from '../../Contract.js';
-import { ConstructorTxOptions, ContractAddress, ExecutionOptions, GenericConstructorTxCall } from '../../types/index.js';
+import {
+  ConstructorTxOptions,
+  ContractAddress,
+  ContractMetadata,
+  ExecutionOptions,
+  GenericConstructorTxCall,
+} from '../../types/index.js';
 import { CREATE1, CREATE2, ensureContractPresence, ensureParamsLength, toEvmAddress } from '../../utils/index.js';
 import { ConstructorQueryExecutor } from './ConstructorQueryExecutor.js';
 import { DeployerExecutor } from './abstract/index.js';
@@ -177,6 +183,7 @@ export class ConstructorTxExecutor<ChainApi extends GenericSubstrateApi> extends
 
             return new Contract(
               client, // --
+              // @ts-ignore
               this.metadata,
               address,
               {

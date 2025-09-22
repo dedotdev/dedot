@@ -82,11 +82,6 @@ export type SubmittableExtrinsic<R extends ISubmittableResult> = ISubmittableExt
 
 export type ContractSubmittableExtrinsic<_ extends GenericSubstrateApi> = SubmittableExtrinsic<ISubmittableResult>;
 
-export type MixedMetadata<ContractApi extends GenericContractApi = GenericContractApi> =
-  ContractApi['types']['MetadataType'] extends 'ink' // --
-    ? LooseContractMetadata
-    : SolABIItem[];
-
 export type AB<ContractApi extends GenericContractApi, A, B> = ContractApi['types']['MetadataType'] extends 'ink'
   ? A
   : B;
