@@ -1,14 +1,23 @@
 import { ISubstrateClient } from '@dedot/api';
 import { Hash } from '@dedot/codecs';
 import { TypinkRegistry } from './TypinkRegistry.js';
-import { ConstructorTxExecutor, ConstructorQueryExecutor  } from './executor/index.js';
-import { ContractMetadata, ExecutionOptions, GenericContractApi, LooseContractMetadata } from './types/index.js';
+import { ConstructorTxExecutor, ConstructorQueryExecutor } from './executor/index.js';
+import {
+  ContractMetadata,
+  ExecutionOptions,
+  GenericContractApi,
+  LooseContractMetadata,
+  SolABIItem,
+} from './types/index.js';
 import {
   ensurePalletPresence,
   ensureSupportedContractMetadataVersion,
   ensureValidCodeHashOrCode,
   newProxyChain,
 } from './utils/index.js';
+
+type MixedMetadata<ContractApi extends GenericContractApi = GenericContractApi> =
+  ContractApi['types']['MetadataType'] extends 'ink' ? LooseContractMetadata : SolABIItem[];
 
 export class ContractDeployer<ContractApi extends GenericContractApi = GenericContractApi> {
   readonly #metadata: ContractMetadata;
@@ -18,7 +27,7 @@ export class ContractDeployer<ContractApi extends GenericContractApi = GenericCo
 
   constructor(
     readonly client: ISubstrateClient<ContractApi['types']['ChainApi']>,
-    metadata: LooseContractMetadata | string,
+    metadata: MixedMetadata<ContractApi> | string,
     codeHashOrCode: Hash | Uint8Array | string,
     options?: ExecutionOptions,
   ) {

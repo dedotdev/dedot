@@ -20,6 +20,7 @@ import {
   SubmittableExtrinsic,
   ContractAddress,
 } from '../shared.js';
+import { SolABIConstructor, SolABIEvent, SolABIFunction } from '../sol/index.js';
 import { ContractCallMessage, ContractConstructorMessage } from './shared.js';
 import { ContractEventV4, ContractMetadataV4 } from './v4.js';
 import { ContractEventV5, ContractMetadataV5 } from './v5.js';
@@ -60,48 +61,55 @@ export interface LooseContractMetadata {
 
 export type GenericContractQueryCall<
   ChainApi extends GenericSubstrateApi,
+  Type extends MetadataType = MetadataType,
   F extends AsyncMethod = (...args: any[]) => Promise<GenericContractCallResult<any, ContractCallResult<ChainApi>>>,
 > = F & {
-  meta: ContractCallMessage;
+  meta: Type extends 'ink' ? ContractCallMessage : SolABIFunction;
 };
 
 export type GenericContractTxCall<
   ChainApi extends GenericSubstrateApi,
+  Type extends MetadataType = MetadataType,
   F extends AnyFunc = (...args: any[]) => ContractSubmittableExtrinsic<ChainApi>,
 > = F & {
-  meta: ContractCallMessage;
+  meta: Type extends 'ink' ? ContractCallMessage : SolABIFunction;
 };
 
 export type GenericConstructorQueryCall<
   ChainApi extends GenericSubstrateApi,
+  Type extends MetadataType = MetadataType,
   F extends AsyncMethod = (
     ...args: any[]
   ) => Promise<GenericConstructorCallResult<any, ContractInstantiateResult<ChainApi>>>,
 > = F & {
-  meta: ContractConstructorMessage;
+  meta: Type extends 'ink' ? ContractConstructorMessage : SolABIConstructor;
 };
 
 export type GenericConstructorTxCall<
   ChainApi extends GenericSubstrateApi,
+  Type extends MetadataType = MetadataType,
   F extends AnyFunc = (...args: any[]) => GenericInstantiateSubmittableExtrinsic<ChainApi>,
 > = F & {
-  meta: ContractConstructorMessage;
+  meta: Type extends 'ink' ? ContractConstructorMessage : SolABIConstructor;
 };
 
-export interface GenericContractQuery<ChainApi extends GenericSubstrateApi> {
-  [method: string]: GenericContractQueryCall<ChainApi>;
+export interface GenericContractQuery<ChainApi extends GenericSubstrateApi, Type extends MetadataType = MetadataType> {
+  [method: string]: GenericContractQueryCall<ChainApi, Type>;
 }
 
-export interface GenericContractTx<ChainApi extends GenericSubstrateApi> {
-  [method: string]: GenericContractTxCall<ChainApi>;
+export interface GenericContractTx<ChainApi extends GenericSubstrateApi, Type extends MetadataType = MetadataType> {
+  [method: string]: GenericContractTxCall<ChainApi, Type>;
 }
 
-export interface GenericConstructorQuery<ChainApi extends GenericSubstrateApi> {
-  [method: string]: GenericConstructorQueryCall<ChainApi>;
+export interface GenericConstructorQuery<
+  ChainApi extends GenericSubstrateApi,
+  Type extends MetadataType = MetadataType,
+> {
+  [method: string]: GenericConstructorQueryCall<ChainApi, Type>;
 }
 
-export interface GenericConstructorTx<ChainApi extends GenericSubstrateApi> {
-  [method: string]: GenericConstructorTxCall<ChainApi>;
+export interface GenericConstructorTx<ChainApi extends GenericSubstrateApi, Type extends MetadataType = MetadataType> {
+  [method: string]: GenericConstructorTxCall<ChainApi, Type>;
 }
 
 export type ContractEvent<EventName extends string = string, Data extends any = any> = Data extends undefined
@@ -113,42 +121,54 @@ export type ContractEvent<EventName extends string = string, Data extends any = 
       data: Data;
     };
 
-export interface GenericContractEvent<EventName extends string = string, Data extends any = any> {
+export interface GenericContractEvent<
+  EventName extends string = string,
+  Data extends any = any,
+  Type extends MetadataType = MetadataType,
+> {
   is: (event: IEventRecord | ContractEvent) => event is ContractEvent<EventName, Data>;
   find: (events: IEventRecord[] | ContractEvent[]) => ContractEvent<EventName, Data> | undefined;
   filter: (events: IEventRecord[] | ContractEvent[]) => ContractEvent<EventName, Data>[];
   watch: (callback: (events: ContractEvent<EventName, Data>[]) => void) => Promise<Unsub>;
-  meta: ContractEventMeta;
+  meta: Type extends 'ink' ? ContractEventMeta : SolABIEvent;
 }
 
-export interface GenericContractEvents<_ extends GenericSubstrateApi> {
-  [event: string]: GenericContractEvent;
+export interface GenericContractEvents<_ extends GenericSubstrateApi, Type extends MetadataType> {
+  [event: string]: GenericContractEvent<string, any, Type>;
 }
 
 export type GenericInkLangError = 'CouldNotReadInput' | any;
 export type GenericRootStorage = any;
 export type GenericLazyStorage = any;
+export type MetadataType = 'ink' | 'sol';
 
 export interface GenericContractApi<
   Rv extends RpcVersion = RpcVersion,
   ChainApi extends VersionedGenericSubstrateApi = SubstrateApi,
+  Type extends MetadataType = MetadataType,
 > {
-  query: GenericContractQuery<ChainApi[Rv]>;
-  tx: GenericContractTx<ChainApi[Rv]>;
-  constructorQuery: GenericConstructorQuery<ChainApi[Rv]>;
-  constructorTx: GenericConstructorTx<ChainApi[Rv]>;
-  events: GenericContractEvents<ChainApi[Rv]>;
-  storage: {
-    root(): Promise<GenericRootStorage>;
-    lazy(): GenericLazyStorage;
-  };
+  query: GenericContractQuery<ChainApi[Rv], Type>;
+  tx: GenericContractTx<ChainApi[Rv], Type>;
+  constructorQuery: GenericConstructorQuery<ChainApi[Rv], Type>;
+  constructorTx: GenericConstructorTx<ChainApi[Rv], Type>;
+  events: GenericContractEvents<ChainApi[Rv], Type>;
+  storage: Type extends 'ink'
+    ? {
+        root(): Promise<GenericRootStorage>;
+        lazy(): GenericLazyStorage;
+      }
+    : undefined;
 
   types: {
-    RootStorage: GenericRootStorage;
-    LazyStorage: GenericLazyStorage;
-    LangError: GenericInkLangError;
+    MetadataType: MetadataType;
     ChainApi: ChainApi[Rv];
-  };
+  } & (Type extends 'ink'
+    ? {
+        RootStorage: GenericRootStorage; // --
+        LazyStorage: GenericLazyStorage;
+        LangError: GenericInkLangError;
+      }
+    : {});
 }
 
 // Utility: Detect if a type has a `.get(...)` method
