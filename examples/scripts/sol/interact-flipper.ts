@@ -13,7 +13,7 @@ const [code, abi] = flipper();
 
 await client.tx.revive.mapAccount().signAndSend(alice).untilFinalized();
 
-const deployer = new ContractDeployer<FlipperContractApi>(client, abi, code, { defaultCaller: alice.address });
+const deployer = new ContractDeployer(client, abi, code, { defaultCaller: alice.address });
 
 console.log('Trying deploy contract...');
 

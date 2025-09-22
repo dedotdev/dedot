@@ -2,7 +2,7 @@ import type { BaseSubmittableExtrinsic, ISubstrateClient } from '@dedot/api';
 import type { SubstrateApi } from '@dedot/api/chaintypes';
 import { GenericSubstrateApi, RpcVersion } from '@dedot/types';
 import { assert, HexString } from '@dedot/utils';
-import { FormatTypes } from '@ethersproject/abi';
+import { encodeFunctionData } from 'viem/utils';
 import { ContractTxOptions, GenericContractTxCall } from '../../types/index.js';
 import { ensureParamsLength } from '../../utils/index.js';
 import { SolQueryExecutor } from './SolQueryExecutor.js';
@@ -20,7 +20,11 @@ export class SolTxExecutor<ChainApi extends GenericSubstrateApi> extends SolCont
 
       const txCallOptions = (params[inputs.length] || {}) as ContractTxOptions;
       const { value = 0n, gasLimit, storageDepositLimit } = txCallOptions;
-      const bytes = this.registry.interf.encodeFunctionData(fragment, params.slice(0, inputs.length));
+      const bytes = encodeFunctionData({
+        abi: this.abi,
+        functionName: fragment.name,
+        args: params.slice(0, inputs.length),
+      });
 
       const client = this.client as unknown as ISubstrateClient<SubstrateApi[RpcVersion]>;
 
@@ -47,7 +51,7 @@ export class SolTxExecutor<ChainApi extends GenericSubstrateApi> extends SolCont
 
           const executor = new SolQueryExecutor(
             this.client, // --
-            this.registry,
+            this.abi,
             this.address,
             {
               defaultCaller: signerAddress,
@@ -75,7 +79,7 @@ export class SolTxExecutor<ChainApi extends GenericSubstrateApi> extends SolCont
       return tx;
     };
 
-    callFn.meta = JSON.parse(fragment.format(FormatTypes.json));
+    callFn.meta = fragment;
 
     return callFn;
   }

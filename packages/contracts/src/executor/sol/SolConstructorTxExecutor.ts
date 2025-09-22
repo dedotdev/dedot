@@ -2,7 +2,7 @@ import { BaseSubmittableExtrinsic, ISubstrateClient } from '@dedot/api';
 import type { SubstrateApi } from '@dedot/api/chaintypes';
 import { GenericSubstrateApi, ISubmittableResult, RpcVersion } from '@dedot/types';
 import { assert, isPvm, isUndefined, toHex, toU8a } from '@dedot/utils';
-import { FormatTypes } from '@ethersproject/abi';
+import { encodeDeployData } from 'viem/utils';
 import { Contract } from '../../Contract';
 import {
   ConstructorTxOptions,
@@ -38,7 +38,11 @@ export class SolConstructorTxExecutor<ChainApi extends GenericSubstrateApi> exte
         'Invalid salt provided in ConstructorCallOptions: expected a 32-byte value as a hex string or a Uint8Array',
       );
 
-      const bytes = this.registry.interf.encodeDeploy(params.slice(0, inputs.length));
+      const bytes = encodeDeployData({
+        abi: this.abi,
+        bytecode: '0x',
+        args: params.slice(0, inputs.length),
+      });
 
       const client = this.client as unknown as ISubstrateClient<SubstrateApi[RpcVersion]>;
 
@@ -123,7 +127,7 @@ export class SolConstructorTxExecutor<ChainApi extends GenericSubstrateApi> exte
 
           const executor = new SolConstructorQueryExecutor(
             this.client, // --
-            this.registry,
+            this.abi,
             this.code,
             {
               defaultCaller: signerAddress,
@@ -167,7 +171,7 @@ export class SolConstructorTxExecutor<ChainApi extends GenericSubstrateApi> exte
 
             return new Contract(
               client, // --
-              this.abiItems,
+              this.abi,
               address,
               {
                 defaultCaller: deployerAddress,
@@ -189,7 +193,7 @@ export class SolConstructorTxExecutor<ChainApi extends GenericSubstrateApi> exte
       return tx;
     };
 
-    callFn.meta = JSON.parse(fragment.format(FormatTypes.json));
+    callFn.meta = fragment;
 
     return callFn;
   }

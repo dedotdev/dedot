@@ -1,8 +1,6 @@
 import { ISubstrateClient } from '@dedot/api';
 import { Hash } from '@dedot/codecs';
 import { assert, isPvm, toU8a } from '@dedot/utils';
-import { Interface } from '@ethersproject/abi';
-import { SolRegistry } from './SolRegistry';
 import { TypinkRegistry } from './TypinkRegistry.js';
 import {
   ConstructorTxExecutor,
@@ -28,7 +26,7 @@ import {
 export class ContractDeployer<ContractApi extends GenericContractApi = GenericContractApi> {
   readonly #isInk: boolean = false;
   readonly #metadata: ContractApi['types']['Metadata'];
-  readonly #registry: ContractApi['types']['Registry'];
+  readonly #registry?: ContractApi['types']['Registry'];
   readonly #code: Hash | Uint8Array | string;
   readonly #options?: ExecutionOptions;
 
@@ -49,8 +47,6 @@ export class ContractDeployer<ContractApi extends GenericContractApi = GenericCo
       ensurePalletPresence(client, this.registry as TypinkRegistry);
       ensureValidCodeHashOrCode(codeHashOrCode, this.registry as TypinkRegistry);
     } else {
-      this.#registry = new SolRegistry(new Interface(this.#metadata as SolABI));
-
       ensurePalletRevive(client);
       assert(
         toU8a(codeHashOrCode).length === 32 || isPvm(codeHashOrCode),
@@ -74,7 +70,7 @@ export class ContractDeployer<ContractApi extends GenericContractApi = GenericCo
     return newProxyChain(
       // @ts-ignore
       this.#isInk
-        ? new SolConstructorTxExecutor(this.client, this.#registry as SolRegistry, this.#code, this.#options)
+        ? new SolConstructorTxExecutor(this.client, this.#metadata as SolABI, this.#code, this.#options)
         : new ConstructorTxExecutor(this.client, this.#registry as TypinkRegistry, this.#code, this.#options),
     ) as ContractApi['constructorTx'];
   }
@@ -83,7 +79,7 @@ export class ContractDeployer<ContractApi extends GenericContractApi = GenericCo
     return newProxyChain(
       // @ts-ignore
       this.#isInk
-        ? new SolConstructorQueryExecutor(this.client, this.#registry as SolRegistry, this.#code, this.#options)
+        ? new SolConstructorQueryExecutor(this.client, this.#metadata as SolABI, this.#code, this.#options)
         : new ConstructorQueryExecutor(this.client, this.#registry as TypinkRegistry, this.#code, this.#options),
     ) as ContractApi['constructorQuery'];
   }

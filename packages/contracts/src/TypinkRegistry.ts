@@ -1,34 +1,17 @@
-import { AccountId32, Bytes, H160, H256, TypeId, TypeRegistry } from '@dedot/codecs';
+import { AccountId32, TypeId, TypeRegistry } from '@dedot/codecs';
 import * as $ from '@dedot/shape';
 import { IEventRecord, IRuntimeEvent } from '@dedot/types';
 import { assert, DedotError, HexString, hexToU8a, stringCamelCase, stringPascalCase } from '@dedot/utils';
 import { LazyMapping, LazyObject, LazyStorageVec } from './storage/index.js';
 import { ContractAddress, ContractEvent, ContractEventMeta, ContractMetadata, ContractType } from './types/index.js';
 import {
+  ContractEmittedEvent,
   ensureSupportedContractMetadataVersion,
   extractContractTypes,
   isLazyType,
   KnownLazyType,
+  KnownPallets,
 } from './utils/index.js';
-
-type KnownPallets = 'Contracts' | 'Revive';
-
-interface ContractEmittedEvent<Pallet extends KnownPallets = 'Contracts'> extends IRuntimeEvent {
-  pallet: Pallet;
-  palletEvent: {
-    name: 'ContractEmitted';
-    data: Pallet extends 'Contracts'
-      ? {
-          contract: AccountId32;
-          data: Bytes;
-        }
-      : {
-          contract: H160;
-          data: Bytes;
-          topics: Array<H256>;
-        };
-  };
-}
 
 export interface TypinkRegistryOptions {
   /**

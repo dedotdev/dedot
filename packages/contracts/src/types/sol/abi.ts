@@ -55,3 +55,5 @@ export type SolABIItem =
   | SolABIReceive;
 
 export type SolABI = SolABIItem[];
+
+export type SolABI = SolABIItem[];

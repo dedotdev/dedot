@@ -2,9 +2,8 @@ import type { ISubstrateClient } from '@dedot/api';
 import type { SubstrateApi } from '@dedot/api/chaintypes';
 import { GenericSubstrateApi, RpcVersion } from '@dedot/types';
 import { assert, DedotError, HexString } from '@dedot/utils';
-import { FormatTypes } from '@ethersproject/abi';
-import { ErrorDescription } from '@ethersproject/abi/lib/interface.js';
-import { SolContractCustomError, ContractDispatchError } from '../../errors.js';
+import { decodeErrorResult, DecodeErrorResultReturnType, decodeFunctionResult, encodeFunctionData } from 'viem/utils';
+import { ContractDispatchError, SolContractCustomError } from '../../errors.js';
 import {
   ContractCallOptions,
   ContractCallResult,
@@ -28,7 +27,11 @@ export class SolQueryExecutor<ChainApi extends GenericSubstrateApi> extends SolC
       const { caller = this.options.defaultCaller, value = 0n, gasLimit, storageDepositLimit } = callOptions;
       assert(caller, 'Expected a valid caller address in ContractCallOptions');
 
-      const bytes = this.registry.interf.encodeFunctionData(fragment, params.slice(0, inputs.length));
+      const bytes = encodeFunctionData({
+        abi: this.abi,
+        functionName: fragment.name,
+        args: params.slice(0, inputs.length),
+      });
 
       const client = this.client as unknown as ISubstrateClient<SubstrateApi[RpcVersion]>;
 
@@ -58,32 +61,36 @@ export class SolQueryExecutor<ChainApi extends GenericSubstrateApi> extends SolC
       const flags = toReturnFlags(raw.result.value.flags.bits);
 
       if (flags.revert) {
-        let errorDesc: ErrorDescription;
+        let errorDesc: DecodeErrorResultReturnType;
         try {
           // This could be failed if the errors is thrown by panic! or assert!
           // Because for now, those error data format is not correctly encoded
-          errorDesc = this.registry.interf.parseError(raw.result.value.data);
+          errorDesc = decodeErrorResult({
+            abi: this.abi,
+            data: raw.result.value.data,
+          });
         } catch (e) {
           throw new DedotError(`Failed to decode revert reason ${(e as Error).message}`);
         }
 
-        throw new SolContractCustomError(errorDesc.name, raw, errorDesc);
+        throw new SolContractCustomError(errorDesc.errorName, raw, errorDesc);
       }
 
-      let data = this.registry.transformResult(
-        this.registry.interf.decodeFunctionResult(fragment, raw.result.value.data),
-      );
+      const data: any[] = decodeFunctionResult({
+        abi: this.abi,
+        functionName: fragment.name,
+        data: raw.result.value.data,
+      });
 
       return {
-        // For convenience, if there's only one return value, return it directly instead of an array
-        data: data.length === 1 ? data[0] : data,
+        data,
         raw,
         flags,
         inputData: bytes,
       } as GenericContractCallResult;
     };
 
-    callFn.meta = JSON.parse(fragment.format(FormatTypes.json));
+    callFn.meta = fragment;
 
     return callFn;
   }

@@ -1,7 +1,5 @@
 import { ISubstrateClient } from '@dedot/api';
 import { assert, DedotError, HexString, isEvmAddress, toHex, toU8a } from '@dedot/utils';
-import { Interface } from '@ethersproject/abi';
-import { SolRegistry } from './SolRegistry';
 import { TypinkRegistry } from './TypinkRegistry.js';
 import { SolEventExecutor, SolQueryExecutor, SolTxExecutor } from './executor';
 import { EventExecutor, QueryExecutor, TxExecutor } from './executor/ink/index.js';
@@ -24,7 +22,7 @@ import {
 } from './utils/index.js';
 
 export class Contract<ContractApi extends GenericContractApi = GenericContractApi> {
-  readonly #registry: ContractApi['types']['Registry'];
+  readonly #registry?: ContractApi['types']['Registry'];
   readonly #metadata: ContractApi['types']['Metadata'];
   readonly #address: ContractAddress;
   readonly #isInk: boolean = false;
@@ -48,8 +46,6 @@ export class Contract<ContractApi extends GenericContractApi = GenericContractAp
       ensurePalletPresence(client, this.registry as TypinkRegistry);
       ensureValidContractAddress(address, this.registry as TypinkRegistry);
     } else {
-      this.#registry = new SolRegistry(new Interface(this.metadata as SolABI));
-
       ensurePalletRevive(client);
       assert(
         isEvmAddress(address as HexString),
@@ -77,7 +73,7 @@ export class Contract<ContractApi extends GenericContractApi = GenericContractAp
     return newProxyChain(
       // @ts-ignore
       this.#isInk
-        ? new SolQueryExecutor(this.client, this.#registry as SolRegistry, this.address, this.options)
+        ? new SolQueryExecutor(this.client, this.#metadata as SolABI, this.address, this.options)
         : new QueryExecutor(this.client, this.#registry as TypinkRegistry, this.#address, this.#options),
     ) as ContractApi['query'];
   }
@@ -86,7 +82,7 @@ export class Contract<ContractApi extends GenericContractApi = GenericContractAp
     return newProxyChain(
       // @ts-ignore
       this.#isInk
-        ? new SolTxExecutor(this.client, this.#registry as SolRegistry, this.address, this.options)
+        ? new SolTxExecutor(this.client, this.#metadata as SolABI, this.address, this.options)
         : new TxExecutor(this.client, this.#registry as TypinkRegistry, this.#address, this.#options),
     ) as ContractApi['tx'];
   }
@@ -95,7 +91,7 @@ export class Contract<ContractApi extends GenericContractApi = GenericContractAp
     return newProxyChain(
       // @ts-ignore
       this.#isInk
-        ? new SolEventExecutor(this.client, this.#registry as SolRegistry, this.address, this.options)
+        ? new SolEventExecutor(this.client, this.#metadata as SolABI, this.address, this.options)
         : new EventExecutor(this.client, this.#registry as TypinkRegistry, this.#address, this.#options),
     ) as ContractApi['events'];
   }

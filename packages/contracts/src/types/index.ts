@@ -10,7 +10,6 @@ import {
 } from '@dedot/codecs/types';
 import { ISubmittableResult } from '@dedot/types';
 import { Contract } from '../Contract';
-import { SolRegistry } from '../SolRegistry';
 import { TypinkRegistry } from '../TypinkRegistry';
 import { ContractCallMessage, ContractConstructorMessage, ContractEventMeta, ContractMetadata } from './ink';
 import {
@@ -164,7 +163,7 @@ export interface GenericContractApi<
     : never;
 
   types: {
-    Registry: Type extends 'ink' ? TypinkRegistry : SolRegistry;
+    Registry: Type extends 'ink' ? TypinkRegistry : undefined;
     Metadata: Type extends 'ink' ? ContractMetadata : SolABIItem[];
     ChainApi: ChainApi[Rv];
   } & (Type extends 'ink'
