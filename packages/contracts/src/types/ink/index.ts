@@ -154,6 +154,21 @@ export type GenericRootStorage = any;
 export type GenericLazyStorage = any;
 export type MetadataType = 'ink' | 'sol';
 
+export type GenericContractTypes<
+  Rv extends RpcVersion = RpcVersion,
+  ChainApi extends VersionedGenericSubstrateApi = SubstrateApi,
+  Type extends MetadataType = MetadataType,
+> = {
+  MetadataType: Type;
+  ChainApi: ChainApi[Rv];
+} & (Type extends 'ink'
+  ? {
+      RootStorage: GenericRootStorage; // --
+      LazyStorage: GenericLazyStorage;
+      LangError: GenericInkLangError;
+    }
+  : {});
+
 export interface GenericContractApi<
   Rv extends RpcVersion = RpcVersion,
   ChainApi extends VersionedGenericSubstrateApi = SubstrateApi,
@@ -171,16 +186,7 @@ export interface GenericContractApi<
       }
     : undefined;
 
-  types: {
-    MetadataType: MetadataType;
-    ChainApi: ChainApi[Rv];
-  } & (Type extends 'ink'
-    ? {
-        RootStorage: GenericRootStorage; // --
-        LazyStorage: GenericLazyStorage;
-        LangError: GenericInkLangError;
-      }
-    : {});
+  types: GenericContractTypes<Rv, ChainApi, Type>;
 }
 
 // Utility: Detect if a type has a `.get(...)` method
@@ -200,3 +206,13 @@ export type WithLazyStorage<T> = {
       : WithLazyStorage<T[K]> // recurse
     : never;
 };
+
+export interface InkGenericContractApi<
+  Rv extends RpcVersion = RpcVersion,
+  ChainApi extends VersionedGenericSubstrateApi = SubstrateApi,
+> extends GenericContractApi<Rv, ChainApi, 'ink'> {}
+
+export interface SolGenericContractApi<
+  Rv extends RpcVersion = RpcVersion,
+  ChainApi extends VersionedGenericSubstrateApi = SubstrateApi,
+> extends GenericContractApi<Rv, ChainApi, 'sol'> {}

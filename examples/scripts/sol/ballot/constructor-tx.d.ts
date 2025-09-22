@@ -5,15 +5,15 @@ import type {
   ConstructorTxOptions,
   GenericConstructorTx,
   GenericConstructorTxCall,
-  GenericContractApi,
   GenericInstantiateSubmittableExtrinsic,
   MetadataType,
+  SolGenericContractApi,
 } from 'dedot/contracts';
 import type { GenericSubstrateApi } from 'dedot/types';
 
 export interface ConstructorTx<
   ChainApi extends GenericSubstrateApi,
-  ContractApi extends GenericContractApi,
+  ContractApi extends SolGenericContractApi,
   Type extends MetadataType,
 > extends GenericConstructorTx<ChainApi, Type> {
   /**

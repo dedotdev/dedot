@@ -7,7 +7,7 @@ export class ConstructorTxGen extends ConstructorQueryGen {
     this.typesGen.typeImports.addKnownType('GenericSubstrateApi');
     this.typesGen.typeImports.addContractType(
       'GenericConstructorTx',
-      'GenericContractApi',
+      'SolGenericContractApi',
       'GenericConstructorTxCall',
       'ConstructorTxOptions',
       'GenericInstantiateSubmittableExtrinsic',

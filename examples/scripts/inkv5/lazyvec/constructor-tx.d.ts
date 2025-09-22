@@ -4,15 +4,17 @@ import type {
   ConstructorTxOptions,
   GenericConstructorTx,
   GenericConstructorTxCall,
-  GenericContractApi,
   GenericInstantiateSubmittableExtrinsic,
+  InkGenericContractApi,
+  MetadataType,
 } from 'dedot/contracts';
 import type { GenericSubstrateApi } from 'dedot/types';
 
 export interface ConstructorTx<
   ChainApi extends GenericSubstrateApi,
-  ContractApi extends GenericContractApi = GenericContractApi,
-> extends GenericConstructorTx<ChainApi> {
+  ContractApi extends InkGenericContractApi,
+  Type extends MetadataType,
+> extends GenericConstructorTx<ChainApi, Type> {
   /**
    *
    * @param {ConstructorTxOptions} options
@@ -21,6 +23,7 @@ export interface ConstructorTx<
    **/
   default: GenericConstructorTxCall<
     ChainApi,
-    (options?: ConstructorTxOptions) => GenericInstantiateSubmittableExtrinsic<ChainApi, ContractApi>
+    (options?: ConstructorTxOptions) => GenericInstantiateSubmittableExtrinsic<ChainApi, ContractApi>,
+    Type
   >;
 }
