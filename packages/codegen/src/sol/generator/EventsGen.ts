@@ -44,8 +44,8 @@ export class EventsGen {
 
     return inputs
       .map(
-        (o) =>
-          `${commentBlock(`@indexed: ${o.indexed}`)}${stringCamelCase(o.name)}: ${this.typesGen.generateType(o, abiItem, 1)}`,
+        (o, idx) =>
+          `${commentBlock(`@indexed: ${o.indexed}`)}${stringCamelCase(o.name || `arg${idx}`)}: ${this.typesGen.generateType(o, abiItem, 1)}`,
       )
       .join(', ');
   }

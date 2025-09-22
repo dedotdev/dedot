@@ -27,7 +27,12 @@ const SUPPORTED_SOLIDITY_TYPES = [
   COMPONENT_TYPES,
 ];
 
-export const BASIC_KNOWN_TYPES = [/^H160$/, /^FixedBytes<(\d+)>$/, /^Bytes(\[])?$/, /^BytesLike(\[])?$/];
+export const BASIC_KNOWN_TYPES = [
+  /^(H160)(\[])?$/,
+  /^(FixedBytes)<(\d+)>(\[])?$/,
+  /^(Bytes)(\[])?$/,
+  /^(BytesLike)(\[])?$/,
+];
 
 export class TypesGen {
   abiItems: SolABIItem[];
@@ -208,14 +213,10 @@ export class TypesGen {
       return;
     }
 
-    // TODO should have a better fix for this
-    if (typeName.startsWith('FixedBytes<')) {
-      this.typeImports.addCodecType('FixedBytes');
-      return;
-    }
-
-    if (BASIC_KNOWN_TYPES.some((re) => typeName.match(re))) {
-      this.typeImports.addCodecType(typeName);
+    const re = BASIC_KNOWN_TYPES.find((re) => typeName.match(re));
+    if (re) {
+      const typeBase = typeName.match(re)![1];
+      this.typeImports.addCodecType(typeBase);
       return;
     }
 

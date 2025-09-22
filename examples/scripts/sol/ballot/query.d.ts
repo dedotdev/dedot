@@ -41,13 +41,13 @@ export interface ContractQuery<ChainApi extends GenericSubstrateApi> extends Sol
   >;
 
   /**
-   * @param {bigint} undefined
+   * @param {bigint} arg0
    * @param {ContractCallOptions} options
    **/
   proposals: SolGenericContractQueryCall<
     ChainApi,
     (
-      undefined: bigint,
+      arg0: bigint,
       options?: ContractCallOptions,
     ) => Promise<GenericContractCallResult<[FixedBytes<32>, bigint], ContractCallResult<ChainApi>>>
   >;
@@ -65,13 +65,13 @@ export interface ContractQuery<ChainApi extends GenericSubstrateApi> extends Sol
   >;
 
   /**
-   * @param {string} undefined
+   * @param {string} arg0
    * @param {ContractCallOptions} options
    **/
   voters: SolGenericContractQueryCall<
     ChainApi,
     (
-      undefined: string,
+      arg0: string,
       options?: ContractCallOptions,
     ) => Promise<GenericContractCallResult<[bigint, boolean, H160, bigint], ContractCallResult<ChainApi>>>
   >;

@@ -43,7 +43,10 @@ export class QueryGen {
       const optionsParamName = inputs.some(({ name }) => name === 'options') ? '_options' : 'options';
 
       callsOut += `${commentBlock(
-        inputs.map((input) => `@param {${this.typesGen.generateType(input, def, 1)}} ${stringCamelCase(input.name)}`),
+        inputs.map(
+          (input, idx) =>
+            `@param {${this.typesGen.generateType(input, def, 1)}} ${stringCamelCase(input.name || `arg${idx}`)}`,
+        ),
         optionsTypeName ? `@param {${optionsTypeName}} ${optionsParamName}` : '',
       )}`;
       callsOut += `${normalizeLabel(name)}: ${this.generateMethodDef(def, optionsParamName)};\n\n`;
@@ -58,7 +61,7 @@ export class QueryGen {
     const paramsOut = this.generateParamsOut(abiItem);
     const typeOutInner = `${outputs.map((o) => this.typesGen.generateType(o, abiItem, 1, true)).join(',')}`;
 
-    // If there is only one output, we don't need to wrap it in a tuple, for userfriendly
+    // If there is only one output, we don't need to wrap it in a tuple, for user-friendly
     const typeOut = outputs.length === 1 ? typeOutInner : `[${typeOutInner}]`;
 
     return `SolGenericContractQueryCall<ChainApi, (${paramsOut && `${paramsOut},`} ${optionsParamName}?: ContractCallOptions) => Promise<GenericContractCallResult<${typeOut}, ContractCallResult<ChainApi>>>>`;
@@ -66,7 +69,10 @@ export class QueryGen {
 
   generateParamsOut(abiItem: SolABIFunction): string {
     return abiItem.inputs
-      .map((input) => `${stringCamelCase(input.name)}: ${this.typesGen.generateType(input, abiItem, 1)}`)
+      .map(
+        (input, idx) =>
+          `${stringCamelCase(input.name || `arg${idx}`)}: ${this.typesGen.generateType(input, abiItem, 1)}`,
+      )
       .join(', ');
   }
 }

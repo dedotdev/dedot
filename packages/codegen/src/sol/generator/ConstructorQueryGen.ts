@@ -22,15 +22,7 @@ export class ConstructorQueryGen {
       'ContractInstantiateResult',
     );
 
-    let constructor = this.abiItems.find((item) => item.type === 'constructor') as SolABIConstructor;
-    if (!constructor) {
-      // fallback to default constructor
-      constructor = {
-        inputs: [],
-        stateMutability: 'nonpayable',
-        type: 'constructor',
-      };
-    }
+    let constructor = this.findConstructor();
 
     const constructorsOut = this.doGenerateConstructorFragment(constructor, 'ConstructorCallOptions');
     const importTypes = this.typesGen.typeImports.toImports({ useSubPaths });
@@ -50,7 +42,10 @@ export class ConstructorQueryGen {
     const optionsParamName = inputs.some(({ name }) => name === 'options') ? '_options' : 'options';
 
     callsOut += `${commentBlock(
-      inputs.map((input) => `@param {${this.typesGen.generateType(input, abiItem, 1)}} ${stringCamelCase(input.name)}`),
+      inputs.map(
+        (input, idx) =>
+          `@param {${this.typesGen.generateType(input, abiItem, 1)}} ${stringCamelCase(input.name || `arg${idx}`)}`,
+      ),
       optionsTypeName ? `@param {${optionsTypeName}} ${optionsParamName}` : '',
     )}`;
     callsOut += `initialize: ${this.generateMethodDef(abiItem, optionsParamName)};\n\n`;
@@ -66,7 +61,25 @@ export class ConstructorQueryGen {
 
   generateParamsOut(abiItem: SolABIConstructor): string {
     return abiItem.inputs
-      .map((input) => `${stringCamelCase(input.name)}: ${this.typesGen.generateType(input, abiItem, 1)}`)
+      .map(
+        (input, idx) =>
+          `${stringCamelCase(input.name || `arg${idx}`)}: ${this.typesGen.generateType(input, abiItem, 1)}`,
+      )
       .join(', ');
+  }
+
+  protected findConstructor(): SolABIConstructor {
+    let constructor = this.abiItems.find((item) => item.type === 'constructor');
+
+    // Fallback to default constructor
+    if (!constructor) {
+      constructor = {
+        inputs: [],
+        stateMutability: 'nonpayable',
+        type: 'constructor',
+      };
+    }
+
+    return constructor as SolABIConstructor;
   }
 }

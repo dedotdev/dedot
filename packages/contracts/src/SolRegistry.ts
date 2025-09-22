@@ -2,6 +2,7 @@ import { Bytes, H160, H256 } from '@dedot/codecs';
 import { IEventRecord, IRuntimeEvent } from '@dedot/codecs/types';
 import { assert } from '@dedot/utils';
 import { EventFragment, Interface } from '@ethersproject/abi';
+import { Result } from '@ethersproject/abi/lib/interface.js';
 import { ContractAddress, SolContractEvent } from './types';
 
 interface ContractEmittedEvent extends IRuntimeEvent {
@@ -35,7 +36,9 @@ export class SolRegistry {
   }
 
   #tryDecodeEvent(fragment: EventFragment, event: ContractEmittedEvent): SolContractEvent {
-    const data = this.interf.decodeEventLog(fragment, event.palletEvent.data.data, event.palletEvent.data.topics);
+    const data = this.transformResult(
+      this.interf.decodeEventLog(fragment, event.palletEvent.data.data, event.palletEvent.data.topics),
+    );
 
     return data.length > 0 ? { name: fragment.name, data } : { name: fragment.name };
   }
@@ -55,5 +58,22 @@ export class SolRegistry {
     }
 
     return true;
+  }
+
+  /*
+   * Transforms the Result array, converting any BigNumber instances to bigint.
+   * We prefer to use bigint instead of BigNumber because bigint is natively supported in JS/TS
+   *
+   * @param data - The Result array to transform.
+   * @returns A new Result array with BigNumber instances converted to bigint.
+   */
+  transformResult(data: Result): Result {
+    return data.map((a) => {
+      if (a['_isBigNumber']) {
+        return a.toBigInt();
+      }
+
+      return a;
+    });
   }
 }
