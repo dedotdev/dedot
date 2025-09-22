@@ -154,20 +154,15 @@ export type GenericRootStorage = any;
 export type GenericLazyStorage = any;
 export type MetadataType = 'ink' | 'sol';
 
-export type GenericContractTypes<
+export interface GenericContractTypes<
   Rv extends RpcVersion = RpcVersion,
   ChainApi extends VersionedGenericSubstrateApi = SubstrateApi,
   Type extends MetadataType = MetadataType,
-> = {
+> {
   MetadataType: Type;
   ChainApi: ChainApi[Rv];
-} & (Type extends 'ink'
-  ? {
-      RootStorage: GenericRootStorage; // --
-      LazyStorage: GenericLazyStorage;
-      LangError: GenericInkLangError;
-    }
-  : {});
+  [TypeName: string]: any;
+}
 
 export interface GenericContractApi<
   Rv extends RpcVersion = RpcVersion,
