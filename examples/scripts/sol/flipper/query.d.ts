@@ -4,49 +4,56 @@ import type {
   ContractCallOptions,
   ContractCallResult,
   GenericContractCallResult,
-  SolGenericContractQuery,
-  SolGenericContractQueryCall,
+  GenericContractQuery,
+  GenericContractQueryCall,
+  MetadataType,
 } from 'dedot/contracts';
 import type { GenericSubstrateApi } from 'dedot/types';
 
-export interface ContractQuery<ChainApi extends GenericSubstrateApi> extends SolGenericContractQuery<ChainApi> {
+export interface ContractQuery<ChainApi extends GenericSubstrateApi, Type extends MetadataType>
+  extends GenericContractQuery<ChainApi, Type> {
   /**
    * @param {ContractCallOptions} options
    **/
-  flip: SolGenericContractQueryCall<
+  flip: GenericContractQueryCall<
     ChainApi,
-    (options?: ContractCallOptions) => Promise<GenericContractCallResult<[], ContractCallResult<ChainApi>>>
+    (options?: ContractCallOptions) => Promise<GenericContractCallResult<[], ContractCallResult<ChainApi>>>,
+    Type
   >;
 
   /**
    * @param {ContractCallOptions} options
    **/
-  get: SolGenericContractQueryCall<
+  get: GenericContractQueryCall<
     ChainApi,
-    (options?: ContractCallOptions) => Promise<GenericContractCallResult<boolean, ContractCallResult<ChainApi>>>
+    (options?: ContractCallOptions) => Promise<GenericContractCallResult<boolean, ContractCallResult<ChainApi>>>,
+    Type
   >;
 
   /**
    * @param {ContractCallOptions} options
    **/
-  throwErrorWithNamedParams: SolGenericContractQueryCall<
+  throwErrorWithNamedParams: GenericContractQueryCall<
     ChainApi,
-    (options?: ContractCallOptions) => Promise<GenericContractCallResult<boolean, ContractCallResult<ChainApi>>>
+    (options?: ContractCallOptions) => Promise<GenericContractCallResult<boolean, ContractCallResult<ChainApi>>>,
+    Type
   >;
 
   /**
    * @param {ContractCallOptions} options
    **/
-  throwErrorWithParams: SolGenericContractQueryCall<
+  throwErrorWithParams: GenericContractQueryCall<
     ChainApi,
-    (options?: ContractCallOptions) => Promise<GenericContractCallResult<boolean, ContractCallResult<ChainApi>>>
+    (options?: ContractCallOptions) => Promise<GenericContractCallResult<boolean, ContractCallResult<ChainApi>>>,
+    Type
   >;
 
   /**
    * @param {ContractCallOptions} options
    **/
-  throwUnitError: SolGenericContractQueryCall<
+  throwUnitError: GenericContractQueryCall<
     ChainApi,
-    (options?: ContractCallOptions) => Promise<GenericContractCallResult<boolean, ContractCallResult<ChainApi>>>
+    (options?: ContractCallOptions) => Promise<GenericContractCallResult<boolean, ContractCallResult<ChainApi>>>,
+    Type
   >;
 }

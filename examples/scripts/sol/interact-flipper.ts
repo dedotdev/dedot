@@ -1,7 +1,7 @@
 import Keyring from '@polkadot/keyring';
 import { cryptoWaitReady } from '@polkadot/util-crypto';
 import { LegacyClient, WsProvider } from 'dedot';
-import { SolContractDeployer } from 'dedot/contracts';
+import { Contract, ContractDeployer } from 'dedot/contracts';
 import { flipper } from './abi.js';
 import { FlipperContractApi } from './flipper/index.js';
 
@@ -13,7 +13,7 @@ const [code, abi] = flipper();
 
 await client.tx.revive.mapAccount().signAndSend(alice).untilFinalized();
 
-const deployer = new SolContractDeployer<FlipperContractApi>(client, abi, code, { defaultCaller: alice.address });
+const deployer = new ContractDeployer<FlipperContractApi>(client, abi, code, { defaultCaller: alice.address });
 
 console.log('Trying deploy contract...');
 
@@ -22,7 +22,7 @@ const contractAddress = await deployerResult.contractAddress();
 
 console.log('Contract deployed at address:', contractAddress);
 
-const contract = await deployerResult.contract();
+const contract: Contract<FlipperContractApi> = await deployerResult.contract();
 
 const { data: before } = await contract.query.get();
 console.log('Before flip:', before);
