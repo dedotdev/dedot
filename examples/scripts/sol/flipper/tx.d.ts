@@ -14,5 +14,5 @@ export interface ContractTx<ChainApi extends GenericSubstrateApi, Type extends M
   /**
    * @param {ContractTxOptions} options
    **/
-  flip: GenericContractTxCall<ChainApi, Type, (options?: ContractTxOptions) => ContractSubmittableExtrinsic<ChainApi>>;
+  flip: GenericContractTxCall<ChainApi, (options?: ContractTxOptions) => ContractSubmittableExtrinsic<ChainApi>, Type>;
 }

@@ -22,13 +22,13 @@ export interface ConstructorQuery<ChainApi extends GenericSubstrateApi, Type ext
    **/
   initialize: GenericConstructorQueryCall<
     ChainApi,
-    Type,
     (
       supply: bigint,
       name: NameInput,
       symbol: SymbolInput,
       decimals: number,
       options?: ConstructorCallOptions,
-    ) => Promise<GenericConstructorCallResult<[], ContractInstantiateResult<ChainApi>>>
+    ) => Promise<GenericConstructorCallResult<[], ContractInstantiateResult<ChainApi>>>,
+    Type
   >;
 }

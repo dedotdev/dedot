@@ -17,8 +17,8 @@ export interface ContractTx<ChainApi extends GenericSubstrateApi, Type extends M
    **/
   delegate: GenericContractTxCall<
     ChainApi,
-    Type,
-    (to: string, options?: ContractTxOptions) => ContractSubmittableExtrinsic<ChainApi>
+    (to: string, options?: ContractTxOptions) => ContractSubmittableExtrinsic<ChainApi>,
+    Type
   >;
 
   /**
@@ -27,8 +27,8 @@ export interface ContractTx<ChainApi extends GenericSubstrateApi, Type extends M
    **/
   giveRightToVote: GenericContractTxCall<
     ChainApi,
-    Type,
-    (voter: string, options?: ContractTxOptions) => ContractSubmittableExtrinsic<ChainApi>
+    (voter: string, options?: ContractTxOptions) => ContractSubmittableExtrinsic<ChainApi>,
+    Type
   >;
 
   /**
@@ -37,7 +37,7 @@ export interface ContractTx<ChainApi extends GenericSubstrateApi, Type extends M
    **/
   vote: GenericContractTxCall<
     ChainApi,
-    Type,
-    (proposal: bigint, options?: ContractTxOptions) => ContractSubmittableExtrinsic<ChainApi>
+    (proposal: bigint, options?: ContractTxOptions) => ContractSubmittableExtrinsic<ChainApi>,
+    Type
   >;
 }

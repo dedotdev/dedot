@@ -18,8 +18,8 @@ export interface ContractTx<ChainApi extends GenericSubstrateApi, Type extends M
    **/
   approve: GenericContractTxCall<
     ChainApi,
-    Type,
-    (spender: string, value: bigint, options?: ContractTxOptions) => ContractSubmittableExtrinsic<ChainApi>
+    (spender: string, value: bigint, options?: ContractTxOptions) => ContractSubmittableExtrinsic<ChainApi>,
+    Type
   >;
 
   /**
@@ -29,8 +29,8 @@ export interface ContractTx<ChainApi extends GenericSubstrateApi, Type extends M
    **/
   decreaseAllowance: GenericContractTxCall<
     ChainApi,
-    Type,
-    (spender: string, deltaValue: bigint, options?: ContractTxOptions) => ContractSubmittableExtrinsic<ChainApi>
+    (spender: string, deltaValue: bigint, options?: ContractTxOptions) => ContractSubmittableExtrinsic<ChainApi>,
+    Type
   >;
 
   /**
@@ -40,8 +40,8 @@ export interface ContractTx<ChainApi extends GenericSubstrateApi, Type extends M
    **/
   increaseAllowance: GenericContractTxCall<
     ChainApi,
-    Type,
-    (spender: string, deltaValue: bigint, options?: ContractTxOptions) => ContractSubmittableExtrinsic<ChainApi>
+    (spender: string, deltaValue: bigint, options?: ContractTxOptions) => ContractSubmittableExtrinsic<ChainApi>,
+    Type
   >;
 
   /**
@@ -52,8 +52,8 @@ export interface ContractTx<ChainApi extends GenericSubstrateApi, Type extends M
    **/
   transfer: GenericContractTxCall<
     ChainApi,
-    Type,
-    (to: string, value: bigint, data: number[], options?: ContractTxOptions) => ContractSubmittableExtrinsic<ChainApi>
+    (to: string, value: bigint, data: number[], options?: ContractTxOptions) => ContractSubmittableExtrinsic<ChainApi>,
+    Type
   >;
 
   /**
@@ -65,13 +65,13 @@ export interface ContractTx<ChainApi extends GenericSubstrateApi, Type extends M
    **/
   transferFrom: GenericContractTxCall<
     ChainApi,
-    Type,
     (
       from: string,
       to: string,
       value: bigint,
       data: number[],
       options?: ContractTxOptions,
-    ) => ContractSubmittableExtrinsic<ChainApi>
+    ) => ContractSubmittableExtrinsic<ChainApi>,
+    Type
   >;
 }

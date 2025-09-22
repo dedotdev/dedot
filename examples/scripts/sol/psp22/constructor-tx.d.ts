@@ -25,13 +25,13 @@ export interface ConstructorTx<
    **/
   initialize: GenericConstructorTxCall<
     ChainApi,
-    Type,
     (
       supply: bigint,
       name: NameInput,
       symbol: SymbolInput,
       decimals: number,
       options?: ConstructorTxOptions,
-    ) => GenericInstantiateSubmittableExtrinsic<ChainApi, ContractApi>
+    ) => GenericInstantiateSubmittableExtrinsic<ChainApi, ContractApi>,
+    Type
   >;
 }

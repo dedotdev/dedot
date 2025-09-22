@@ -61,55 +61,67 @@ export interface LooseContractMetadata {
 
 export type GenericContractQueryCall<
   ChainApi extends GenericSubstrateApi,
-  Type extends MetadataType = MetadataType,
   F extends AsyncMethod = (...args: any[]) => Promise<GenericContractCallResult<any, ContractCallResult<ChainApi>>>,
+  Type extends MetadataType = MetadataType,
 > = F & {
   meta: Type extends 'ink' ? ContractCallMessage : SolABIFunction;
 };
 
 export type GenericContractTxCall<
   ChainApi extends GenericSubstrateApi,
-  Type extends MetadataType = MetadataType,
   F extends AnyFunc = (...args: any[]) => ContractSubmittableExtrinsic<ChainApi>,
+  Type extends MetadataType = MetadataType,
 > = F & {
   meta: Type extends 'ink' ? ContractCallMessage : SolABIFunction;
 };
 
 export type GenericConstructorQueryCall<
   ChainApi extends GenericSubstrateApi,
-  Type extends MetadataType = MetadataType,
   F extends AsyncMethod = (
     ...args: any[]
   ) => Promise<GenericConstructorCallResult<any, ContractInstantiateResult<ChainApi>>>,
+  Type extends MetadataType = MetadataType,
 > = F & {
   meta: Type extends 'ink' ? ContractConstructorMessage : SolABIConstructor;
 };
 
 export type GenericConstructorTxCall<
   ChainApi extends GenericSubstrateApi,
-  Type extends MetadataType = MetadataType,
   F extends AnyFunc = (...args: any[]) => GenericInstantiateSubmittableExtrinsic<ChainApi>,
+  Type extends MetadataType = MetadataType,
 > = F & {
   meta: Type extends 'ink' ? ContractConstructorMessage : SolABIConstructor;
 };
 
 export interface GenericContractQuery<ChainApi extends GenericSubstrateApi, Type extends MetadataType = MetadataType> {
-  [method: string]: GenericContractQueryCall<ChainApi, Type>;
+  [method: string]: GenericContractQueryCall<
+    ChainApi,
+    (...args: any[]) => Promise<GenericContractCallResult<any, ContractCallResult<ChainApi>>>,
+    Type
+  >;
 }
 
 export interface GenericContractTx<ChainApi extends GenericSubstrateApi, Type extends MetadataType = MetadataType> {
-  [method: string]: GenericContractTxCall<ChainApi, Type>;
+  [method: string]: GenericContractTxCall<ChainApi, (...args: any[]) => ContractSubmittableExtrinsic<ChainApi>, Type>;
 }
 
 export interface GenericConstructorQuery<
   ChainApi extends GenericSubstrateApi,
   Type extends MetadataType = MetadataType,
 > {
-  [method: string]: GenericConstructorQueryCall<ChainApi, Type>;
+  [method: string]: GenericConstructorQueryCall<
+    ChainApi,
+    (...args: any[]) => Promise<GenericConstructorCallResult<any, ContractInstantiateResult<ChainApi>>>,
+    Type
+  >;
 }
 
 export interface GenericConstructorTx<ChainApi extends GenericSubstrateApi, Type extends MetadataType = MetadataType> {
-  [method: string]: GenericConstructorTxCall<ChainApi, Type>;
+  [method: string]: GenericConstructorTxCall<
+    ChainApi,
+    (...args: any[]) => GenericInstantiateSubmittableExtrinsic<ChainApi>,
+    Type
+  >;
 }
 
 export type ContractEvent<EventName extends string = string, Data extends any = any> = Data extends undefined

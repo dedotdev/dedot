@@ -18,8 +18,8 @@ export interface ContractQuery<ChainApi extends GenericSubstrateApi, Type extend
    **/
   chairperson: GenericContractQueryCall<
     ChainApi,
-    Type,
-    (options?: ContractCallOptions) => Promise<GenericContractCallResult<H160, ContractCallResult<ChainApi>>>
+    (options?: ContractCallOptions) => Promise<GenericContractCallResult<H160, ContractCallResult<ChainApi>>>,
+    Type
   >;
 
   /**
@@ -28,8 +28,8 @@ export interface ContractQuery<ChainApi extends GenericSubstrateApi, Type extend
    **/
   delegate: GenericContractQueryCall<
     ChainApi,
-    Type,
-    (to: string, options?: ContractCallOptions) => Promise<GenericContractCallResult<[], ContractCallResult<ChainApi>>>
+    (to: string, options?: ContractCallOptions) => Promise<GenericContractCallResult<[], ContractCallResult<ChainApi>>>,
+    Type
   >;
 
   /**
@@ -38,11 +38,11 @@ export interface ContractQuery<ChainApi extends GenericSubstrateApi, Type extend
    **/
   giveRightToVote: GenericContractQueryCall<
     ChainApi,
-    Type,
     (
       voter: string,
       options?: ContractCallOptions,
-    ) => Promise<GenericContractCallResult<[], ContractCallResult<ChainApi>>>
+    ) => Promise<GenericContractCallResult<[], ContractCallResult<ChainApi>>>,
+    Type
   >;
 
   /**
@@ -51,11 +51,11 @@ export interface ContractQuery<ChainApi extends GenericSubstrateApi, Type extend
    **/
   proposals: GenericContractQueryCall<
     ChainApi,
-    Type,
     (
       arg0: bigint,
       options?: ContractCallOptions,
-    ) => Promise<GenericContractCallResult<[FixedBytes<32>, bigint], ContractCallResult<ChainApi>>>
+    ) => Promise<GenericContractCallResult<[FixedBytes<32>, bigint], ContractCallResult<ChainApi>>>,
+    Type
   >;
 
   /**
@@ -64,11 +64,11 @@ export interface ContractQuery<ChainApi extends GenericSubstrateApi, Type extend
    **/
   vote: GenericContractQueryCall<
     ChainApi,
-    Type,
     (
       proposal: bigint,
       options?: ContractCallOptions,
-    ) => Promise<GenericContractCallResult<[], ContractCallResult<ChainApi>>>
+    ) => Promise<GenericContractCallResult<[], ContractCallResult<ChainApi>>>,
+    Type
   >;
 
   /**
@@ -77,11 +77,11 @@ export interface ContractQuery<ChainApi extends GenericSubstrateApi, Type extend
    **/
   voters: GenericContractQueryCall<
     ChainApi,
-    Type,
     (
       arg0: string,
       options?: ContractCallOptions,
-    ) => Promise<GenericContractCallResult<[bigint, boolean, H160, bigint], ContractCallResult<ChainApi>>>
+    ) => Promise<GenericContractCallResult<[bigint, boolean, H160, bigint], ContractCallResult<ChainApi>>>,
+    Type
   >;
 
   /**
@@ -89,8 +89,8 @@ export interface ContractQuery<ChainApi extends GenericSubstrateApi, Type extend
    **/
   winnerName: GenericContractQueryCall<
     ChainApi,
-    Type,
-    (options?: ContractCallOptions) => Promise<GenericContractCallResult<FixedBytes<32>, ContractCallResult<ChainApi>>>
+    (options?: ContractCallOptions) => Promise<GenericContractCallResult<FixedBytes<32>, ContractCallResult<ChainApi>>>,
+    Type
   >;
 
   /**
@@ -98,7 +98,7 @@ export interface ContractQuery<ChainApi extends GenericSubstrateApi, Type extend
    **/
   winningProposal: GenericContractQueryCall<
     ChainApi,
-    Type,
-    (options?: ContractCallOptions) => Promise<GenericContractCallResult<bigint, ContractCallResult<ChainApi>>>
+    (options?: ContractCallOptions) => Promise<GenericContractCallResult<bigint, ContractCallResult<ChainApi>>>,
+    Type
   >;
 }

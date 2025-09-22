@@ -27,6 +27,6 @@ export class TxGen extends QueryGen {
   override generateMethodDef(abiItem: SolABIFunction, optionsParamName = 'options'): string {
     const paramsOut = this.generateParamsOut(abiItem);
 
-    return `GenericContractTxCall<ChainApi, Type, (${paramsOut && `${paramsOut},`} ${optionsParamName}?: ContractTxOptions) => ContractSubmittableExtrinsic<ChainApi>>`;
+    return `GenericContractTxCall<ChainApi, (${paramsOut && `${paramsOut},`} ${optionsParamName}?: ContractTxOptions) => ContractSubmittableExtrinsic<ChainApi>, Type>`;
   }
 }

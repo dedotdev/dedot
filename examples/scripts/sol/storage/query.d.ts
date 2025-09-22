@@ -17,8 +17,8 @@ export interface ContractQuery<ChainApi extends GenericSubstrateApi, Type extend
    **/
   retrieve: GenericContractQueryCall<
     ChainApi,
-    Type,
-    (options?: ContractCallOptions) => Promise<GenericContractCallResult<bigint, ContractCallResult<ChainApi>>>
+    (options?: ContractCallOptions) => Promise<GenericContractCallResult<bigint, ContractCallResult<ChainApi>>>,
+    Type
   >;
 
   /**
@@ -27,7 +27,10 @@ export interface ContractQuery<ChainApi extends GenericSubstrateApi, Type extend
    **/
   store: GenericContractQueryCall<
     ChainApi,
-    Type,
-    (num: bigint, options?: ContractCallOptions) => Promise<GenericContractCallResult<[], ContractCallResult<ChainApi>>>
+    (
+      num: bigint,
+      options?: ContractCallOptions,
+    ) => Promise<GenericContractCallResult<[], ContractCallResult<ChainApi>>>,
+    Type
   >;
 }

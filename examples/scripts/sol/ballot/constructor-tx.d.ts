@@ -22,10 +22,10 @@ export interface ConstructorTx<
    **/
   initialize: GenericConstructorTxCall<
     ChainApi,
-    Type,
     (
       proposalNames: FixedBytes<32>[],
       options?: ConstructorTxOptions,
-    ) => GenericInstantiateSubmittableExtrinsic<ChainApi, ContractApi>
+    ) => GenericInstantiateSubmittableExtrinsic<ChainApi, ContractApi>,
+    Type
   >;
 }

@@ -17,8 +17,8 @@ export interface ContractQuery<ChainApi extends GenericSubstrateApi, Type extend
    **/
   flip: GenericContractQueryCall<
     ChainApi,
-    Type,
-    (options?: ContractCallOptions) => Promise<GenericContractCallResult<[], ContractCallResult<ChainApi>>>
+    (options?: ContractCallOptions) => Promise<GenericContractCallResult<[], ContractCallResult<ChainApi>>>,
+    Type
   >;
 
   /**
@@ -26,8 +26,8 @@ export interface ContractQuery<ChainApi extends GenericSubstrateApi, Type extend
    **/
   get: GenericContractQueryCall<
     ChainApi,
-    Type,
-    (options?: ContractCallOptions) => Promise<GenericContractCallResult<boolean, ContractCallResult<ChainApi>>>
+    (options?: ContractCallOptions) => Promise<GenericContractCallResult<boolean, ContractCallResult<ChainApi>>>,
+    Type
   >;
 
   /**
@@ -35,8 +35,8 @@ export interface ContractQuery<ChainApi extends GenericSubstrateApi, Type extend
    **/
   throwErrorWithNamedParams: GenericContractQueryCall<
     ChainApi,
-    Type,
-    (options?: ContractCallOptions) => Promise<GenericContractCallResult<boolean, ContractCallResult<ChainApi>>>
+    (options?: ContractCallOptions) => Promise<GenericContractCallResult<boolean, ContractCallResult<ChainApi>>>,
+    Type
   >;
 
   /**
@@ -44,8 +44,8 @@ export interface ContractQuery<ChainApi extends GenericSubstrateApi, Type extend
    **/
   throwErrorWithParams: GenericContractQueryCall<
     ChainApi,
-    Type,
-    (options?: ContractCallOptions) => Promise<GenericContractCallResult<boolean, ContractCallResult<ChainApi>>>
+    (options?: ContractCallOptions) => Promise<GenericContractCallResult<boolean, ContractCallResult<ChainApi>>>,
+    Type
   >;
 
   /**
@@ -53,7 +53,7 @@ export interface ContractQuery<ChainApi extends GenericSubstrateApi, Type extend
    **/
   throwUnitError: GenericContractQueryCall<
     ChainApi,
-    Type,
-    (options?: ContractCallOptions) => Promise<GenericContractCallResult<boolean, ContractCallResult<ChainApi>>>
+    (options?: ContractCallOptions) => Promise<GenericContractCallResult<boolean, ContractCallResult<ChainApi>>>,
+    Type
   >;
 }
