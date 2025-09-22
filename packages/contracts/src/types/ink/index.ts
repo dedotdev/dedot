@@ -154,6 +154,8 @@ export type GenericRootStorage = any;
 export type GenericLazyStorage = any;
 export type MetadataType = 'ink' | 'sol';
 
+export type AB<Type extends MetadataType, A, B> = Type extends 'ink' ? A : B;
+
 export interface GenericContractTypes<
   Rv extends RpcVersion = RpcVersion,
   ChainApi extends VersionedGenericSubstrateApi = SubstrateApi,
@@ -174,12 +176,14 @@ export interface GenericContractApi<
   constructorQuery: GenericConstructorQuery<ChainApi[Rv], Type>;
   constructorTx: GenericConstructorTx<ChainApi[Rv], Type>;
   events: GenericContractEvents<ChainApi[Rv], Type>;
-  storage: Type extends 'ink'
-    ? {
-        root(): Promise<GenericRootStorage>;
-        lazy(): GenericLazyStorage;
-      }
-    : undefined;
+  storage: AB<
+    Type,
+    {
+      root(): Promise<GenericRootStorage>;
+      lazy(): GenericLazyStorage;
+    },
+    undefined
+  >;
 
   types: GenericContractTypes<Rv, ChainApi, Type>;
 }
