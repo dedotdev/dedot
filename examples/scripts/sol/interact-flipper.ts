@@ -1,13 +1,13 @@
-import Keyring from '@polkadot/keyring';
 import { cryptoWaitReady } from '@polkadot/util-crypto';
 import { LegacyClient, WsProvider } from 'dedot';
 import { ContractDeployer } from 'dedot/contracts';
+import { devPairs } from '../keyring.js';
 import { flipper } from './abi.js';
 import { FlipperContractApi } from './flipper/index.js';
 
 await cryptoWaitReady();
 
-const alice = new Keyring({ type: 'sr25519' }).addFromUri('//Alice');
+const { alice } = await devPairs();
 const client = await LegacyClient.new(new WsProvider('ws://localhost:9944'));
 const [code, abi] = flipper();
 

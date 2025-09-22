@@ -1,25 +1,25 @@
-import Keyring from '@polkadot/keyring';
 import { cryptoWaitReady } from '@polkadot/util-crypto';
 import { LegacyClient, WsProvider } from 'dedot';
 import { ContractDeployer } from 'dedot/contracts';
+import { devPairs } from '../keyring.js';
 import { psp22 } from './abi.js';
 import { Psp22ContractApi } from './psp22/index.js';
 
 await cryptoWaitReady();
-const alicePair = new Keyring({ type: 'sr25519' }).addFromUri('//Alice');
+const { alice } = await devPairs();
 const client = await LegacyClient.new(new WsProvider('ws://localhost:9944'));
 
 const [code, abi] = psp22();
 
-await client.tx.revive.mapAccount().signAndSend(alicePair).untilFinalized();
+await client.tx.revive.mapAccount().signAndSend(alice).untilFinalized();
 
-const deployer = new ContractDeployer<Psp22ContractApi>(client, abi, code, { defaultCaller: alicePair.address });
+const deployer = new ContractDeployer<Psp22ContractApi>(client, abi, code, { defaultCaller: alice.address });
 
 console.log('Trying deploy contract...');
 
 const deployerResult = await deployer.tx
   .initialize(1000000000n, [true, 'Test Coin'], [true, 'TC'], 5)
-  .signAndSend(alicePair)
+  .signAndSend(alice)
   .untilFinalized();
 
 const contractAddress = await deployerResult.contractAddress();
