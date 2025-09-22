@@ -5,7 +5,7 @@ import { ContractEvent, ContractEventMeta, GenericContractEvent } from '../../ty
 import { ContractExecutor } from './abstract/index.js';
 
 export class EventExecutor<ChainApi extends GenericSubstrateApi> extends ContractExecutor<ChainApi> {
-  doExecute(eventName: string): GenericContractEvent {
+  doExecute(eventName: string): GenericContractEvent<string, any, 'ink'> {
     const meta = this.#findEventMeta(eventName);
 
     assert(meta, 'Contract event metadata not found!');

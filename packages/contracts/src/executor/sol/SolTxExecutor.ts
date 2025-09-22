@@ -3,7 +3,7 @@ import type { SubstrateApi } from '@dedot/api/chaintypes';
 import { GenericSubstrateApi, RpcVersion } from '@dedot/types';
 import { assert, HexString } from '@dedot/utils';
 import { FormatTypes } from '@ethersproject/abi';
-import { ContractTxOptions, SolGenericContractTxCall } from '../../types/index.js';
+import { ContractTxOptions, GenericContractTxCall } from '../../types/index.js';
 import { ensureParamsLength } from '../../utils/index.js';
 import { SolQueryExecutor } from './SolQueryExecutor.js';
 import { SolContractExecutor } from './abstract/SolContractExecutor.js';
@@ -13,7 +13,7 @@ export class SolTxExecutor<ChainApi extends GenericSubstrateApi> extends SolCont
     const fragment = this.findTxFragment(fragmentName);
     assert(fragment, `Tx fragment not found: ${fragmentName}`);
 
-    const callFn: SolGenericContractTxCall<ChainApi> = (...params: any[]) => {
+    const callFn: GenericContractTxCall<ChainApi, any, 'sol'> = (...params: any[]) => {
       const { inputs } = fragment;
 
       ensureParamsLength(inputs.length, params.length);

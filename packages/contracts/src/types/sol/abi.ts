@@ -53,3 +53,5 @@ export type SolABIItem =
   | SolABIError
   | SolABIFallback
   | SolABIReceive;
+
+export type SolABI = SolABIItem[];

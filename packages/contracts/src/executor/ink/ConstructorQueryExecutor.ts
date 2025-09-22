@@ -19,7 +19,7 @@ export class ConstructorQueryExecutor<ChainApi extends GenericSubstrateApi> exte
     const meta = this.findConstructorMeta(constructor);
     assert(meta, `Constructor message not found: ${constructor}`);
 
-    const callFn: GenericConstructorQueryCall<ChainApi> = async (...params: any[]) => {
+    const callFn: GenericConstructorQueryCall<ChainApi, any, 'ink'> = async (...params: any[]) => {
       const { args } = meta;
 
       ensureParamsLength(args.length, params.length);

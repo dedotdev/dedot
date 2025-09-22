@@ -14,7 +14,7 @@ export class EventsGen {
 
   generate(useSubPaths: boolean = false) {
     this.typesGen.typeImports.addKnownType('GenericSubstrateApi');
-    this.typesGen.typeImports.addContractType('SolGenericContractEvents', 'SolGenericContractEvent');
+    this.typesGen.typeImports.addContractType('GenericContractEvents', 'GenericContractEvent', 'MetadataType');
 
     const events = this.abiItems.filter((o) => o.type === 'event') as SolABIEvent[];
 
@@ -26,7 +26,7 @@ export class EventsGen {
     });
 
     const importTypes = this.typesGen.typeImports.toImports({ useSubPaths });
-    const template = compileTemplate('typink/templates/events.hbs');
+    const template = compileTemplate('sol/templates/events.hbs');
 
     return beautifySourceCode(template({ importTypes, eventsOut }));
   }
@@ -36,7 +36,7 @@ export class EventsGen {
 
     const paramsOut = this.generateParamsOut(abiItem);
 
-    return `SolGenericContractEvent<'${stringPascalCase(name)}', {${paramsOut}}>`;
+    return `GenericContractEvent<'${stringPascalCase(name)}', {${paramsOut}}, Type>`;
   }
 
   generateParamsOut(abiItem: SolABIEvent) {

@@ -6,10 +6,11 @@ export class TxGen extends QueryGen {
   generate(useSubPaths: boolean = false) {
     this.typesGen.typeImports.addKnownType('GenericSubstrateApi');
     this.typesGen.typeImports.addContractType(
-      'SolGenericContractTx',
-      'SolGenericContractTxCall',
+      'GenericContractTx',
+      'GenericContractTxCall',
       'ContractTxOptions',
       'ContractSubmittableExtrinsic',
+      'MetadataType',
     );
 
     const txFunctions = this.abiItems.filter(
@@ -26,6 +27,6 @@ export class TxGen extends QueryGen {
   override generateMethodDef(abiItem: SolABIFunction, optionsParamName = 'options'): string {
     const paramsOut = this.generateParamsOut(abiItem);
 
-    return `SolGenericContractTxCall<ChainApi, (${paramsOut && `${paramsOut},`} ${optionsParamName}?: ContractTxOptions) => ContractSubmittableExtrinsic<ChainApi>>`;
+    return `GenericContractTxCall<ChainApi, (${paramsOut && `${paramsOut},`} ${optionsParamName}?: ContractTxOptions) => ContractSubmittableExtrinsic<ChainApi>, Type>`;
   }
 }

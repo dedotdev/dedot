@@ -15,11 +15,12 @@ export class ConstructorQueryGen {
   generate(useSubPaths: boolean = false) {
     this.typesGen.typeImports.addKnownType('GenericSubstrateApi');
     this.typesGen.typeImports.addContractType(
-      'SolGenericConstructorQuery',
-      'SolGenericConstructorQueryCall',
+      'GenericConstructorQuery',
+      'GenericConstructorQueryCall',
       'GenericConstructorCallResult',
       'ConstructorCallOptions',
       'ContractInstantiateResult',
+      'MetadataType',
     );
 
     let constructor = this.findConstructor();
@@ -56,7 +57,7 @@ export class ConstructorQueryGen {
   generateMethodDef(abiItem: SolABIConstructor, optionsParamName = 'options'): string {
     const paramsOut = this.generateParamsOut(abiItem);
 
-    return `SolGenericConstructorQueryCall<ChainApi, (${paramsOut && `${paramsOut},`} ${optionsParamName}?: ConstructorCallOptions) => Promise<GenericConstructorCallResult<[], ContractInstantiateResult<ChainApi>>>>`;
+    return `GenericConstructorQueryCall<ChainApi, (${paramsOut && `${paramsOut},`} ${optionsParamName}?: ConstructorCallOptions) => Promise<GenericConstructorCallResult<[], ContractInstantiateResult<ChainApi>>>, Type>`;
   }
 
   generateParamsOut(abiItem: SolABIConstructor): string {

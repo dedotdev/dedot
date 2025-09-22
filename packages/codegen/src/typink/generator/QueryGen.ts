@@ -22,6 +22,7 @@ export class QueryGen {
       'ContractCallOptions',
       'GenericContractCallResult',
       'ContractCallResult',
+      'MetadataType',
     );
 
     const { messages } = this.contractMetadata.spec;
@@ -67,7 +68,7 @@ export class QueryGen {
     // Unwrap langError result
     const typeOut = typeOutRaw.match(/^(\w+)<(.*), (.*)>$/)!.at(2);
 
-    return `GenericContractQueryCall<ChainApi, (${paramsOut && `${paramsOut},`} ${optionsParamName}?: ContractCallOptions) => Promise<GenericContractCallResult<${typeOut}, ContractCallResult<ChainApi>>>>`;
+    return `GenericContractQueryCall<ChainApi, (${paramsOut && `${paramsOut},`} ${optionsParamName}?: ContractCallOptions) => Promise<GenericContractCallResult<${typeOut}, ContractCallResult<ChainApi>>>, Type>`;
   }
 
   generateParamsOut(args: ContractMessageArg[]) {

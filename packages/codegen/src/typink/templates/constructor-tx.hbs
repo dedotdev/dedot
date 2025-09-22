@@ -4,7 +4,8 @@
 
 export interface ConstructorTx<
   ChainApi extends GenericSubstrateApi,
-  ContractApi extends GenericContractApi = GenericContractApi,
-> extends GenericConstructorTx<ChainApi> {
+  ContractApi extends InkGenericContractApi,
+  Type extends MetadataType
+> extends GenericConstructorTx<ChainApi, Type> {
     {{{ constructorsOut }}}
 }

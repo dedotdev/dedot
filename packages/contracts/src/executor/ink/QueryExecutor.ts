@@ -18,7 +18,7 @@ export class QueryExecutor<ChainApi extends GenericSubstrateApi> extends Contrac
     const meta = this.findMessage(message);
     assert(meta, `Query message not found: ${message}`);
 
-    const callFn: GenericContractQueryCall<ChainApi> = async (...params: any[]) => {
+    const callFn: GenericContractQueryCall<ChainApi, any, 'ink'> = async (...params: any[]) => {
       const { args } = meta;
 
       ensureParamsLength(args.length, params.length);

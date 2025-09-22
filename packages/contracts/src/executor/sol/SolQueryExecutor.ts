@@ -9,7 +9,7 @@ import {
   ContractCallOptions,
   ContractCallResult,
   GenericContractCallResult,
-  SolGenericContractQueryCall,
+  GenericContractQueryCall,
 } from '../../types/index.js';
 import { ensureParamsLength, toReturnFlags } from '../../utils/index.js';
 import { SolContractExecutor } from './abstract/SolContractExecutor.js';
@@ -19,7 +19,7 @@ export class SolQueryExecutor<ChainApi extends GenericSubstrateApi> extends SolC
     const fragment = this.findFragment(fragmentName);
     assert(fragment, `Query fragment not found: ${fragmentName}`);
 
-    const callFn: SolGenericContractQueryCall<ChainApi> = async (...params: any[]) => {
+    const callFn: GenericContractQueryCall<ChainApi, any, 'sol'> = async (...params: any[]) => {
       const { inputs } = fragment;
 
       ensureParamsLength(inputs.length, params.length);
