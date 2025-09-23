@@ -30,7 +30,7 @@ console.log('Before flip:', before);
 const { events } = await contract.tx.flip().signAndSend(alice).untilFinalized();
 
 const eventsFiltered = contract.events.Flipped.filter(events);
-console.log('Events: ', eventsFiltered);
+console.log('Events: ', eventsFiltered[0].data);
 
 const { data: after } = await contract.query.get();
 console.log('After flip:', after);

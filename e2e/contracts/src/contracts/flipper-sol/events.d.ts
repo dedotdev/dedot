@@ -5,23 +5,14 @@ import type { GenericSubstrateApi } from 'dedot/types';
 
 export interface ContractEvents<ChainApi extends GenericSubstrateApi, Type extends MetadataType>
   extends GenericContractEvents<ChainApi, Type> {
-  /**
-   * Emitted when the flip function is called.
-   *
-   *
-   **/
   Flipped: GenericContractEvent<
     'Flipped',
     {
       /**
-       * The previous state of the flip.
-       *
        * @indexed: false
        **/
       old: boolean;
       /**
-       * The new state of the flip.
-       *
        * @indexed: false
        **/
       new: boolean;
