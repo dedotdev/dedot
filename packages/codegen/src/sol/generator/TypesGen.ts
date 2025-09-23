@@ -130,7 +130,7 @@ export class TypesGen {
 
           baseType = `FixedArray<${baseType}, ${n}>`;
         } else {
-          baseType = isNativeType(baseType.replace('[]', '')) ? `${baseType}[]` : `Array<${baseType}>`;
+          baseType = isNativeType(baseType.replaceAll('[]', '')) ? `${baseType}[]` : `Array<${baseType}>`;
         }
       });
 
