@@ -24,7 +24,6 @@ export const typink: CommandModule<Args, Args> = {
 
     const outDir = path.resolve(output);
     const metadataFile = path.resolve(metadata);
-    const contractName = contract || path.basename(metadataFile).split('.')[0];
     const extension = dts ? 'd.ts' : 'ts';
 
     const spinner = ora().start();
@@ -33,7 +32,7 @@ export const typink: CommandModule<Args, Args> = {
       spinner.text = `Parsing contract metadata file: ${metadata}`;
 
       const contractMetadata = JSON.parse(fs.readFileSync(metadataFile, 'utf-8'));
-      const isInkContract = Object.hasOwn(contractMetadata, 'version');
+      const isInkContract = !Array.isArray(contractMetadata) && Object.hasOwn(contractMetadata, 'contract');
 
       if (isInkContract) {
         ensureSupportedContractMetadataVersion(contractMetadata);
@@ -47,8 +46,10 @@ export const typink: CommandModule<Args, Args> = {
 
       let result: GeneratedResult;
       if (isInkContract) {
-        result = await generateContractTypes(contractMetadata, contractName, outDir, extension, subpath);
+        result = await generateContractTypes(contractMetadata, contract, outDir, extension, subpath);
       } else {
+        // For Solidity contract, we use the file name (without extension) as the contract name if not provided
+        const contractName = contract || path.basename(metadataFile).split('.')[0];
         result = await generateSolContractTypes(contractMetadata, contractName, outDir, extension, subpath);
       }
 
