@@ -23,23 +23,23 @@ export interface ContractQuery<ChainApi extends GenericSubstrateApi, Type extend
   >;
 
   /**
-   * @param {string} to
+   * @param {H160} to
    * @param {ContractCallOptions} options
    **/
   delegate: GenericContractQueryCall<
     ChainApi,
-    (to: string, options?: ContractCallOptions) => Promise<GenericContractCallResult<[], ContractCallResult<ChainApi>>>,
+    (to: H160, options?: ContractCallOptions) => Promise<GenericContractCallResult<[], ContractCallResult<ChainApi>>>,
     Type
   >;
 
   /**
-   * @param {string} voter
+   * @param {H160} voter
    * @param {ContractCallOptions} options
    **/
   giveRightToVote: GenericContractQueryCall<
     ChainApi,
     (
-      voter: string,
+      voter: H160,
       options?: ContractCallOptions,
     ) => Promise<GenericContractCallResult<[], ContractCallResult<ChainApi>>>,
     Type
@@ -72,13 +72,13 @@ export interface ContractQuery<ChainApi extends GenericSubstrateApi, Type extend
   >;
 
   /**
-   * @param {string} arg0
+   * @param {H160} arg0
    * @param {ContractCallOptions} options
    **/
   voters: GenericContractQueryCall<
     ChainApi,
     (
-      arg0: string,
+      arg0: H160,
       options?: ContractCallOptions,
     ) => Promise<GenericContractCallResult<[bigint, boolean, H160, bigint], ContractCallResult<ChainApi>>>,
     Type
