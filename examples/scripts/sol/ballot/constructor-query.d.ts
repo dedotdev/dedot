@@ -14,13 +14,13 @@ import type { GenericSubstrateApi } from 'dedot/types';
 export interface ConstructorQuery<ChainApi extends GenericSubstrateApi, Type extends MetadataType>
   extends GenericConstructorQuery<ChainApi, Type> {
   /**
-   * @param {FixedBytes<32>[]} proposalNames
+   * @param {Array<FixedBytes<32>>} proposalNames
    * @param {ConstructorCallOptions} options
    **/
   initialize: GenericConstructorQueryCall<
     ChainApi,
     (
-      proposalNames: FixedBytes<32>[],
+      proposalNames: Array<FixedBytes<32>>,
       options?: ConstructorCallOptions,
     ) => Promise<GenericConstructorCallResult<[], ContractInstantiateResult<ChainApi>>>,
     Type

@@ -17,13 +17,13 @@ export interface ConstructorTx<
   Type extends MetadataType,
 > extends GenericConstructorTx<ChainApi, Type> {
   /**
-   * @param {FixedBytes<32>[]} proposalNames
+   * @param {Array<FixedBytes<32>>} proposalNames
    * @param {ConstructorTxOptions} options
    **/
   initialize: GenericConstructorTxCall<
     ChainApi,
     (
-      proposalNames: FixedBytes<32>[],
+      proposalNames: Array<FixedBytes<32>>,
       options?: ConstructorTxOptions,
     ) => GenericInstantiateSubmittableExtrinsic<ChainApi, ContractApi>,
     Type
