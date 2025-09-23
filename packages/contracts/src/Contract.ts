@@ -3,7 +3,7 @@ import { IEventRecord } from '@dedot/types';
 import { DedotError, HexString, toHex, toU8a } from '@dedot/utils';
 import { SolRegistry } from './SolRegistry.js';
 import { TypinkRegistry } from './TypinkRegistry.js';
-import { SolEventExecutor, SolQueryExecutor, SolTxExecutor } from './executor';
+import { SolEventExecutor, SolQueryExecutor, SolTxExecutor } from './executor/index.js';
 import { EventExecutor, QueryExecutor, TxExecutor } from './executor/ink/index.js';
 import {
   AB,

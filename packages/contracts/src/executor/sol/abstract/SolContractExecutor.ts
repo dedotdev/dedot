@@ -1,6 +1,6 @@
 import { ISubstrateClient } from '@dedot/api';
 import { GenericSubstrateApi } from '@dedot/types';
-import { SolRegistry } from '../../../SolRegistry';
+import { SolRegistry } from '../../../SolRegistry.js';
 import { ContractAddress, ExecutionOptions } from '../../../types/index.js';
 import { SolExecutor } from './SolExecutor.js';
 

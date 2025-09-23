@@ -2,7 +2,7 @@ import { ISubstrateClient } from '@dedot/api';
 import { Hash } from '@dedot/codecs';
 import { GenericSubstrateApi } from '@dedot/types';
 import { HexString } from '@dedot/utils';
-import { SolRegistry } from '../../../SolRegistry';
+import { SolRegistry } from '../../../SolRegistry.js';
 import { ExecutionOptions } from '../../../types/index.js';
 import { SolExecutor } from './SolExecutor.js';
 
