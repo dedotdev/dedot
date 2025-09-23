@@ -31,7 +31,7 @@ describe('TypesGen regex coverage', () => {
     expect(gen.generateType(td('uint16'))).toBe('number');
     expect(gen.generateType(td('uint32'))).toBe('number');
     expect(gen.generateType(td('uint48'))).toBe('number');
-    expect(gen.generateType(td('uint8[]'))).toBe('number[]');
+    expect(gen.generateType(td('uint8[][][]'))).toBe('number[][][]');
     expect(gen.generateType(td('uint48[2]'))).toBe('number[]');
 
     // Unsafe unsigned ints (>48) or unspecified (default 256)
@@ -46,7 +46,7 @@ describe('TypesGen regex coverage', () => {
     expect(gen.generateType(td('bytes'))).toBe('BytesLike');
     expect(gen.generateType(td('bytes[]'))).toBe('BytesLike[]');
     expect(gen.generateType(td('bytes32'))).toBe('FixedBytes<32>');
-    expect(gen.generateType(td('bytes32[]'))).toBe('FixedBytes<32>[]');
+    expect(gen.generateType(td('bytes32[][]'))).toBe('FixedBytes<32>[][]');
 
     // Output (typeOut=true)
     expect(gen.generateType(td('bytes'), undefined, 0, true)).toBe('Bytes');
@@ -58,23 +58,23 @@ describe('TypesGen regex coverage', () => {
   it('expect BOOL_TYPES handle bool with optional arrays', () => {
     expect(gen.generateType(td('bool'))).toBe('boolean');
     expect(gen.generateType(td('bool[]'))).toBe('boolean[]');
-    expect(gen.generateType(td('bool[3]'))).toBe('boolean[]');
+    expect(gen.generateType(td('bool[3][]'))).toBe('boolean[][]');
   });
 
   it('expect STRING_TYPES handle string with optional arrays', () => {
     expect(gen.generateType(td('string'))).toBe('string');
     expect(gen.generateType(td('string[]'))).toBe('string[]');
-    expect(gen.generateType(td('string[2]'))).toBe('string[]');
+    expect(gen.generateType(td('string[2][][]'))).toBe('string[][][]');
   });
 
   it('expect ADDRESS_TYPES handle address arrays; input vs output', () => {
     // Input (typeOut=false)
     expect(gen.generateType(td('address'))).toBe('string');
-    expect(gen.generateType(td('address[]'))).toBe('string[]');
+    expect(gen.generateType(td('address[][]'))).toBe('string[][]');
 
     // Output (typeOut=true)
     expect(gen.generateType(td('address'), undefined, 0, true)).toBe('H160');
-    expect(gen.generateType(td('address[]'), undefined, 0, true)).toBe('H160[]');
+    expect(gen.generateType(td('address[][][]'), undefined, 0, true)).toBe('H160[][][]');
   });
 
   it('expect FUNCTION_TYPES handle function with optional arrays', () => {
@@ -86,7 +86,7 @@ describe('TypesGen regex coverage', () => {
     expect(gen.generateType(td('fixed'))).toBe('Fixed<128,18>');
     expect(gen.generateType(td('fixed128x18'))).toBe('Fixed<128,18>');
     expect(gen.generateType(td('fixed[5]'))).toBe('Fixed<128,18>[]');
-    expect(gen.generateType(td('fixed128x18[2]'))).toBe('Fixed<128,18>[]');
+    expect(gen.generateType(td('fixed128x18[2][]'))).toBe('Fixed<128,18>[][]');
   });
 
   it('expect UNFIXED_TYPES handle optional size and arrays', () => {
@@ -98,7 +98,7 @@ describe('TypesGen regex coverage', () => {
 
   it('expect COMPONENT_TYPES handle empty tuple and arrays', () => {
     expect(gen.generateType(td('tuple'))).toBe('{}');
-    expect(gen.generateType(td('tuple[]'))).toBe('{}[]');
+    expect(gen.generateType(td('tuple[2][]'))).toBe('{}[][]');
   });
 
   it('expect COMPONENT_TYPES with named components generate object type', () => {
