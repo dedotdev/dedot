@@ -22,7 +22,7 @@
     "directory": "dist"
   },
   "dependencies": {
-    "@noble/hashes": "^1.8.0",
+    "@noble/hashes": "^2.0.1",
     "@scure/base": "^1.2.6",
     "eventemitter3": "^5.0.1"
   },
