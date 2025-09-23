@@ -1,5 +1,5 @@
 import { SolAbi, SolAbiItem, SolAbiTypeDef } from '@dedot/contracts';
-import { stringPascalCase } from '@dedot/utils';
+import { stringCamelCase, stringPascalCase } from '@dedot/utils';
 import { TypeImports } from '../../shared/TypeImports.js';
 import { beautifySourceCode, compileTemplate, isNativeType } from '../../utils.js';
 
@@ -50,12 +50,7 @@ export class TypesGen {
     this.abi.forEach((abiItem) => {
       if (abiItem.type === 'fallback' || abiItem.type === 'receive') return;
 
-      if (
-        abiItem.type === 'function' ||
-        abiItem.type === 'constructor' ||
-        abiItem.type === 'event' ||
-        abiItem.type === 'error'
-      ) {
+      if (abiItem.type === 'function' || abiItem.type === 'constructor' || abiItem.type === 'event') {
         const { inputs } = abiItem;
 
         inputs
@@ -160,7 +155,7 @@ export class TypesGen {
         return `${objectType}`;
       }
     } else if (ADDRESS_TYPES.test(type)) {
-      return typeOut ? `H160` : `string`;
+      return `H160`;
     } else if (FUNCTION_TYPES.test(type)) {
       // Function type is an address (20 bytes) followed by a function selector (4 bytes).
       // Ref: https://docs.soliditylang.org/en/latest/abi-spec.html#:~:text=function%3A%20an%20address%20(20%20bytes)%20followed%20by%20a%20function%20selector%20(4%20bytes).%20Encoded%20identical%20to%20bytes24.
@@ -210,7 +205,7 @@ export class TypesGen {
       return `[${props.map(({ type }) => `${type}`).join(', ')}]`;
     }
 
-    return `{${props.map(({ name, type }) => `${name}: ${type}`).join(',\n')}}`;
+    return `{${props.map(({ name, type }) => `${stringCamelCase(name)}: ${type}`).join(',\n')}}`;
   }
 
   addTypeImport(typeName: string | string[]) {

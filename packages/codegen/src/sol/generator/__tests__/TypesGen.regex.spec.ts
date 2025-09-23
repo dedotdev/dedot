@@ -69,8 +69,8 @@ describe('TypesGen regex coverage', () => {
 
   it('expect ADDRESS_TYPES handle address arrays; input vs output', () => {
     // Input (typeOut=false)
-    expect(gen.generateType(td('address'))).toBe('string');
-    expect(gen.generateType(td('address[][]'))).toBe('string[][]');
+    expect(gen.generateType(td('address'))).toBe('H160');
+    expect(gen.generateType(td('address[][]'))).toBe('H160[][]');
 
     // Output (typeOut=true)
     expect(gen.generateType(td('address'), undefined, 0, true)).toBe('H160');
