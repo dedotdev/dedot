@@ -144,6 +144,7 @@ export interface ContractEmittedEvent<Pallet extends KnownPallets = 'Contracts'>
   };
 }
 
+// https://use.ink/docs/v6/basics/metadata/ink/
 export function isInkAbi(metadata: any): boolean {
   try {
     metadata = typeof metadata === 'string' ? JSON.parse(metadata) : metadata;
@@ -159,10 +160,19 @@ export function isInkAbi(metadata: any): boolean {
   return false;
 }
 
+// https://docs.soliditylang.org/en/latest/abi-spec.html#json
 export function isSolAbi(metadata: any): boolean {
   return (
     Array.isArray(metadata) &&
     metadata.length > 0 &&
-    metadata.some((item: any) => item.type === 'function' || item.type === 'constructor' || item.type === 'event')
+    metadata.some(
+      (item: any) =>
+        item.type === 'function' ||
+        item.type === 'constructor' ||
+        item.type === 'event' ||
+        item.type === 'error' ||
+        item.type === 'fallback' ||
+        item.type === 'receive',
+    )
   );
 }
