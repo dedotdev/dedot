@@ -23,6 +23,7 @@ export interface LazyvecContractApi<
   Rv extends RpcVersion = RpcVersion,
   ChainApi extends VersionedGenericSubstrateApi = SubstrateApi,
 > extends InkGenericContractApi<Rv, ChainApi> {
+  metadataType: 'ink';
   query: ContractQuery<ChainApi[Rv], 'ink'>;
   tx: ContractTx<ChainApi[Rv], 'ink'>;
   constructorQuery: ConstructorQuery<ChainApi[Rv], 'ink'>;
@@ -34,7 +35,6 @@ export interface LazyvecContractApi<
   };
 
   types: {
-    MetadataType: 'ink';
     ChainApi: ChainApi[Rv];
     RootStorage: LazyvecLazyVector;
     LazyStorage: WithLazyStorage<LazyvecLazyVector>;

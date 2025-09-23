@@ -15,6 +15,7 @@ export interface StorageContractApi<
   Rv extends RpcVersion = RpcVersion,
   ChainApi extends VersionedGenericSubstrateApi = SubstrateApi,
 > extends SolGenericContractApi<Rv, ChainApi> {
+  metadataType: 'sol';
   query: ContractQuery<ChainApi[Rv], 'sol'>;
   tx: ContractTx<ChainApi[Rv], 'sol'>;
   constructorQuery: ConstructorQuery<ChainApi[Rv], 'sol'>;
@@ -22,7 +23,6 @@ export interface StorageContractApi<
   constructorTx: ConstructorTx<ChainApi[Rv], StorageContractApi, 'sol'>;
 
   types: {
-    MetadataType: 'sol';
     ChainApi: ChainApi[Rv];
   };
 }

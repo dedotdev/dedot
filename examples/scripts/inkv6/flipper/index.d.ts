@@ -23,6 +23,7 @@ export interface FlipperContractApi<
   Rv extends RpcVersion = RpcVersion,
   ChainApi extends VersionedGenericSubstrateApi = SubstrateApi,
 > extends InkGenericContractApi<Rv, ChainApi> {
+  metadataType: 'ink';
   query: ContractQuery<ChainApi[Rv], 'ink'>;
   tx: ContractTx<ChainApi[Rv], 'ink'>;
   constructorQuery: ConstructorQuery<ChainApi[Rv], 'ink'>;
@@ -34,7 +35,6 @@ export interface FlipperContractApi<
   };
 
   types: {
-    MetadataType: 'ink';
     ChainApi: ChainApi[Rv];
     RootStorage: Flipper;
     LazyStorage: WithLazyStorage<Flipper>;

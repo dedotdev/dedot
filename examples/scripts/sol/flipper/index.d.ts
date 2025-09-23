@@ -15,6 +15,7 @@ export interface FlipperContractApi<
   Rv extends RpcVersion = RpcVersion,
   ChainApi extends VersionedGenericSubstrateApi = SubstrateApi,
 > extends SolGenericContractApi<Rv, ChainApi> {
+  metadataType: 'sol';
   query: ContractQuery<ChainApi[Rv], 'sol'>;
   tx: ContractTx<ChainApi[Rv], 'sol'>;
   constructorQuery: ConstructorQuery<ChainApi[Rv], 'sol'>;
@@ -22,7 +23,6 @@ export interface FlipperContractApi<
   constructorTx: ConstructorTx<ChainApi[Rv], FlipperContractApi, 'sol'>;
 
   types: {
-    MetadataType: 'sol';
     ChainApi: ChainApi[Rv];
   };
 }

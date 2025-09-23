@@ -24,6 +24,7 @@
     "publish:pre": "yarn build && npx lerna publish prerelease -m \"chore(release): publish %s - [skip ci]\" --force-publish --no-private",
     "zombienet-test-preps": "npx lerna exec --no-private -- node \\$LERNA_ROOT_PATH/scripts/zombienet-tests-preps.js",
     "gen:chaintypes-substrate": "yarn cli chaintypes -w substrate -c substrate -o ./packages/api/src/chaintypes -d=false -s=false",
+    "gen:typink": "npx tsx ./scripts/gen-typink.ts",
     "typedoc": "yarn build && npx typedoc"
   },
   "devDependencies": {

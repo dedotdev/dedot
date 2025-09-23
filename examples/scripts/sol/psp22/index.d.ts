@@ -15,6 +15,7 @@ export interface Psp22ContractApi<
   Rv extends RpcVersion = RpcVersion,
   ChainApi extends VersionedGenericSubstrateApi = SubstrateApi,
 > extends SolGenericContractApi<Rv, ChainApi> {
+  metadataType: 'sol';
   query: ContractQuery<ChainApi[Rv], 'sol'>;
   tx: ContractTx<ChainApi[Rv], 'sol'>;
   constructorQuery: ConstructorQuery<ChainApi[Rv], 'sol'>;
@@ -22,7 +23,6 @@ export interface Psp22ContractApi<
   constructorTx: ConstructorTx<ChainApi[Rv], Psp22ContractApi, 'sol'>;
 
   types: {
-    MetadataType: 'sol';
     ChainApi: ChainApi[Rv];
   };
 }
