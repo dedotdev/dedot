@@ -16,11 +16,10 @@ import { SolDeployerExecutor } from './abstract/index.js';
 
 export class SolConstructorQueryExecutor<ChainApi extends GenericSubstrateApi> extends SolDeployerExecutor<ChainApi> {
   doExecute(_: string) {
-    const fragment = this.findConstructorFragment();
-    assert(fragment, `There are no constructor fragment existed in the ABI`);
+    const abiConstructor = this.registry.findAbiConstructor();
 
     const callFn: GenericConstructorQueryCall<ChainApi, any, 'sol'> = async (...params: any[]) => {
-      const { inputs } = fragment;
+      const { inputs } = abiConstructor;
 
       ensureParamsLength(inputs.length, params.length);
 
@@ -112,7 +111,7 @@ export class SolConstructorQueryExecutor<ChainApi extends GenericSubstrateApi> e
       } as GenericConstructorCallResult;
     };
 
-    callFn.meta = fragment;
+    callFn.meta = abiConstructor;
 
     return callFn;
   }

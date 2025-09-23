@@ -1,11 +1,54 @@
 import { IEventRecord, IRuntimeEvent } from '@dedot/codecs/types';
-import { assert } from '@dedot/utils';
+import { assert, stringCamelCase } from '@dedot/utils';
 import { decodeEventLog } from 'viem/utils';
-import { ContractAddress, SolAbi, ContractEvent } from './types/index.js';
+import {
+  ContractAddress,
+  SolAbi,
+  ContractEvent,
+  SolAbiFunction,
+  SolAbiConstructor,
+  SolAbiEvent,
+  SolAbiError,
+} from './types/index.js';
 import { ContractEmittedEvent } from './utils/index.js';
 
 export class SolRegistry {
   constructor(public readonly abi: SolAbi) {}
+
+  findAbiFunction(name: string): SolAbiFunction | undefined {
+    return this.abi.find((one) => one.type === 'function' && stringCamelCase(one.name) === name) as SolAbiFunction;
+  }
+
+  findTxAbiFunction(name: string): SolAbiFunction | undefined {
+    const found = this.findAbiFunction(name);
+
+    if (found && found.stateMutability !== 'view') {
+      return found;
+    }
+
+    return undefined;
+  }
+
+  findAbiConstructor(): SolAbiConstructor {
+    let item = this.abi.find((a) => a.type === 'constructor') as SolAbiConstructor;
+
+    return (
+      item ||
+      ({
+        inputs: [],
+        stateMutability: 'nonpayable',
+        type: 'constructor',
+      } as SolAbiConstructor) // Fallback to default constructor
+    );
+  }
+
+  findAbiEvent(name: string): SolAbiEvent | undefined {
+    return this.abi.find((one) => one.type === 'event' && one.name === name) as SolAbiEvent;
+  }
+
+  findAbiError(name: string): SolAbiError | undefined {
+    return this.abi.find((one) => one.type === 'error' && one.name === name) as SolAbiError;
+  }
 
   decodeEvents(records: IEventRecord[], contract: ContractAddress): ContractEvent[] {
     return records

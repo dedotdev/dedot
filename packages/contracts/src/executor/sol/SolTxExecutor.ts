@@ -9,12 +9,12 @@ import { SolQueryExecutor } from './SolQueryExecutor.js';
 import { SolContractExecutor } from './abstract/SolContractExecutor.js';
 
 export class SolTxExecutor<ChainApi extends GenericSubstrateApi> extends SolContractExecutor<ChainApi> {
-  doExecute(fragmentName: string) {
-    const fragment = this.findTxFragment(fragmentName);
-    assert(fragment, `Tx fragment not found: ${fragmentName}`);
+  doExecute(name: string) {
+    const txAbiFunction = this.registry.findTxAbiFunction(name);
+    assert(txAbiFunction, `Abi item not found: ${name}`);
 
     const callFn: GenericContractTxCall<ChainApi, any, 'sol'> = (...params: any[]) => {
-      const { inputs } = fragment;
+      const { inputs } = txAbiFunction;
 
       ensureParamsLength(inputs.length, params.length);
 
@@ -22,7 +22,7 @@ export class SolTxExecutor<ChainApi extends GenericSubstrateApi> extends SolCont
       const { value = 0n, gasLimit, storageDepositLimit } = txCallOptions;
       const bytes = encodeFunctionData({
         abi: this.abi,
-        functionName: fragment.name,
+        functionName: txAbiFunction.name,
         args: params.slice(0, inputs.length),
       });
 
@@ -58,7 +58,7 @@ export class SolTxExecutor<ChainApi extends GenericSubstrateApi> extends SolCont
               ...this.options,
             },
           );
-          const { raw } = await executor.doExecute(fragmentName)(...params);
+          const { raw } = await executor.doExecute(name)(...params);
 
           const { gasRequired, storageDeposit } = raw;
           if (!callParams.gasLimit) {
@@ -79,7 +79,7 @@ export class SolTxExecutor<ChainApi extends GenericSubstrateApi> extends SolCont
       return tx;
     };
 
-    callFn.meta = fragment;
+    callFn.meta = txAbiFunction;
 
     return callFn;
   }

@@ -1,14 +1,13 @@
 import { isEventRecord } from '@dedot/api';
 import { GenericSubstrateApi, IEventRecord, Unsub } from '@dedot/types';
 import { assert } from '@dedot/utils';
-import { ContractEvent, GenericContractEvent, SolAbiEvent } from '../../types/index.js';
+import { ContractEvent, GenericContractEvent } from '../../types/index.js';
 import { SolContractExecutor } from './abstract/index.js';
 
 export class SolEventExecutor<ChainApi extends GenericSubstrateApi> extends SolContractExecutor<ChainApi> {
   doExecute(eventName: string): GenericContractEvent<string, any, 'sol'> {
-    const fragment = this.#findEventFragment(eventName);
-
-    assert(fragment, 'Fragment event not found!');
+    const abiEvent = this.registry.findAbiEvent(eventName);
+    assert(abiEvent, `Abi item not found: ${eventName}`);
 
     const is = (event: IEventRecord | ContractEvent): event is ContractEvent => {
       if (isEventRecord(event)) {
@@ -54,12 +53,8 @@ export class SolEventExecutor<ChainApi extends GenericSubstrateApi> extends SolC
       is,
       find,
       filter,
-      meta: fragment,
+      meta: abiEvent,
       watch,
     };
-  }
-
-  #findEventFragment(fragment: string): SolAbiEvent | undefined {
-    return this.abi.find((one) => one.type === 'event' && one.name === fragment) as SolAbiEvent;
   }
 }

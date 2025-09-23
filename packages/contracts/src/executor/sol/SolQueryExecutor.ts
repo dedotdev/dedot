@@ -14,12 +14,12 @@ import { ensureParamsLength, toReturnFlags } from '../../utils/index.js';
 import { SolContractExecutor } from './abstract/SolContractExecutor.js';
 
 export class SolQueryExecutor<ChainApi extends GenericSubstrateApi> extends SolContractExecutor<ChainApi> {
-  doExecute(fragmentName: string) {
-    const fragment = this.findFragment(fragmentName);
-    assert(fragment, `Query fragment not found: ${fragmentName}`);
+  doExecute(name: string) {
+    const abiFunction = this.registry.findAbiFunction(name);
+    assert(abiFunction, `Abi item not found: ${name}`);
 
     const callFn: GenericContractQueryCall<ChainApi, any, 'sol'> = async (...params: any[]) => {
-      const { inputs } = fragment;
+      const { inputs } = abiFunction;
 
       ensureParamsLength(inputs.length, params.length);
 
@@ -29,7 +29,7 @@ export class SolQueryExecutor<ChainApi extends GenericSubstrateApi> extends SolC
 
       const bytes = encodeFunctionData({
         abi: this.abi,
-        functionName: fragment.name,
+        functionName: abiFunction.name,
         args: params.slice(0, inputs.length),
       });
 
@@ -78,7 +78,7 @@ export class SolQueryExecutor<ChainApi extends GenericSubstrateApi> extends SolC
 
       const data: any[] = decodeFunctionResult({
         abi: this.abi,
-        functionName: fragment.name,
+        functionName: abiFunction.name,
         data: raw.result.value.data,
       });
 
@@ -90,7 +90,7 @@ export class SolQueryExecutor<ChainApi extends GenericSubstrateApi> extends SolC
       } as GenericContractCallResult;
     };
 
-    callFn.meta = fragment;
+    callFn.meta = abiFunction;
 
     return callFn;
   }

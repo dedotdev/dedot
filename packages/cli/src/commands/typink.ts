@@ -1,6 +1,6 @@
 import { generateContractTypes, GeneratedResult, generateSolContractTypes } from '@dedot/codegen';
 import { ensureSupportedContractMetadataVersion, isInkMetadata, isSolidityAbi } from '@dedot/contracts';
-import { assert } from '@dedot/utils';
+import { assert, DedotError } from '@dedot/utils';
 import * as fs from 'node:fs';
 import ora from 'ora';
 import * as path from 'path';
@@ -39,9 +39,9 @@ export const typink: CommandModule<Args, Args> = {
         ensureSupportedContractMetadataVersion(contractMetadata);
         spinner.info(`Detected ink! contract metadata version: ${contractMetadata.version}`);
       } else if (isSolidityContract) {
-        spinner.info(`Detected Solidity contract metadata file`);
+        spinner.info(`Detected Solidity ABI metadata`);
       } else {
-        throw new Error('Unknown metadata format (neither ink! nor Solidity ABI)');
+        throw new DedotError('Unknown metadata format (neither ink! nor Solidity ABI)');
       }
 
       spinner.succeed(`Parsed contract metadata file: ${metadata}`);

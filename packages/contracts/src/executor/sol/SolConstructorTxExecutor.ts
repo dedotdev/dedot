@@ -22,12 +22,11 @@ import { SolDeployerExecutor } from './abstract/index.js';
 
 export class SolConstructorTxExecutor<ChainApi extends GenericSubstrateApi> extends SolDeployerExecutor<ChainApi> {
   doExecute(_: string) {
-    const fragment = this.findConstructorFragment();
-    assert(fragment, `There are no constructor fragment existed in the ABI`);
+    const abiConstructor = this.registry.findAbiConstructor();
 
     // @ts-ignore
     const callFn: GenericConstructorTxCall<ChainApi, any, 'sol'> = (...params: any[]) => {
-      const { inputs } = fragment;
+      const { inputs } = abiConstructor;
 
       ensureParamsLength(inputs.length, params.length);
 
@@ -193,7 +192,7 @@ export class SolConstructorTxExecutor<ChainApi extends GenericSubstrateApi> exte
       return tx;
     };
 
-    callFn.meta = fragment;
+    callFn.meta = abiConstructor;
 
     return callFn;
   }

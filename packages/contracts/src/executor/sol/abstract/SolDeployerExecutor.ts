@@ -3,7 +3,7 @@ import { Hash } from '@dedot/codecs';
 import { GenericSubstrateApi } from '@dedot/types';
 import { HexString } from '@dedot/utils';
 import { SolRegistry } from '../../../SolRegistry';
-import { ExecutionOptions, SolAbiConstructor } from '../../../types/index.js';
+import { ExecutionOptions } from '../../../types/index.js';
 import { SolExecutor } from './SolExecutor.js';
 
 export abstract class SolDeployerExecutor<ChainApi extends GenericSubstrateApi> extends SolExecutor<ChainApi> {
@@ -18,20 +18,5 @@ export abstract class SolDeployerExecutor<ChainApi extends GenericSubstrateApi> 
     super(client, registry, options);
 
     this.code = code;
-  }
-
-  protected findConstructorFragment(): SolAbiConstructor {
-    let fragment = this.abi.find((a) => a.type === 'constructor') as SolAbiConstructor;
-
-    // Fallback to default constructor
-    if (!fragment) {
-      fragment = {
-        inputs: [],
-        stateMutability: 'nonpayable',
-        type: 'constructor',
-      } as SolAbiConstructor;
-    }
-
-    return fragment;
   }
 }
