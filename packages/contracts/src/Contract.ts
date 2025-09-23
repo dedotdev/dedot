@@ -39,7 +39,7 @@ export class Contract<ContractApi extends GenericContractApi = GenericContractAp
     options?: ExecutionOptions,
   ) {
     this.#metadata = typeof metadata === 'string' ? JSON.parse(metadata) : metadata;
-    this.#isInk = !Array.isArray(metadata);
+    this.#isInk = !Array.isArray(metadata) && Object.hasOwn(this.#metadata, 'contract');
 
     if (this.#isInk) {
       ensureSupportedContractMetadataVersion(this.metadata as ContractMetadata);
@@ -122,7 +122,6 @@ export class Contract<ContractApi extends GenericContractApi = GenericContractAp
     }
 
     return {
-      // @ts-ignore
       root: async (): Promise<ContractApi['types']['RootStorage']> => {
         ensureStorageApiSupports((this.metadata as ContractMetadata).version);
 
@@ -133,7 +132,6 @@ export class Contract<ContractApi extends GenericContractApi = GenericContractAp
         // @ts-ignore
         return (this.registry as TypinkRegistry).findCodec(ty).tryDecode(rawValue);
       },
-      // @ts-ignore
       lazy: (): ContractApi['types']['LazyStorage'] => {
         ensureStorageApiSupports((this.metadata as ContractMetadata).version);
 

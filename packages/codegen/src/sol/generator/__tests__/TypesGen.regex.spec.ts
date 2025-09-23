@@ -83,17 +83,17 @@ describe('TypesGen regex coverage', () => {
   });
 
   it('expect FIXED_TYPES handle optional size and arrays', () => {
-    expect(gen.generateType(td('fixed'))).toBe('number');
-    expect(gen.generateType(td('fixed128x18'))).toBe('number');
-    expect(gen.generateType(td('fixed[5]'))).toBe('number[]');
-    expect(gen.generateType(td('fixed128x18[2]'))).toBe('number[]');
+    expect(gen.generateType(td('fixed'))).toBe('Fixed<128,18>');
+    expect(gen.generateType(td('fixed128x18'))).toBe('Fixed<128,18>');
+    expect(gen.generateType(td('fixed[5]'))).toBe('Fixed<128,18>[]');
+    expect(gen.generateType(td('fixed128x18[2]'))).toBe('Fixed<128,18>[]');
   });
 
   it('expect UNFIXED_TYPES handle optional size and arrays', () => {
-    expect(gen.generateType(td('ufixed'))).toBe('number');
-    expect(gen.generateType(td('ufixed128x18'))).toBe('number');
-    expect(gen.generateType(td('ufixed[5]'))).toBe('number[]');
-    expect(gen.generateType(td('ufixed[]'))).toBe('number[]');
+    expect(gen.generateType(td('ufixed'))).toBe('UFixed<128,18>');
+    expect(gen.generateType(td('ufixed128x18'))).toBe('UFixed<128,18>');
+    expect(gen.generateType(td('ufixed[5]'))).toBe('UFixed<128,18>[]');
+    expect(gen.generateType(td('ufixed128x18[2]'))).toBe('UFixed<128,18>[]');
   });
 
   it('expect COMPONENT_TYPES handle empty tuple and arrays', () => {

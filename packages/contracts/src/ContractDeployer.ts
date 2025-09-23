@@ -40,7 +40,7 @@ export class ContractDeployer<ContractApi extends GenericContractApi = GenericCo
   ) {
     this.#metadata = typeof metadata === 'string' ? JSON.parse(metadata) : metadata;
     // TODO we should have a better way to check for ink! contract
-    this.#isInk = !Array.isArray(metadata);
+    this.#isInk = !Array.isArray(metadata) && Object.hasOwn(this.#metadata, 'contract');
 
     if (this.#isInk) {
       ensureSupportedContractMetadataVersion(this.metadata as ContractMetadata);

@@ -64,3 +64,16 @@ export type i256 = bigint;
 export type str = string;
 export type bool = boolean;
 export type Null = null;
+
+/**
+ * Signed fixed-point decimal number of M bits, 8 <= M <= 256, M % 8 == 0, and 0 < N <= 80, which denotes the value v as v / (10 ** N).
+ *
+ * Type in Solidity contracts ABI, see https://docs.soliditylang.org/en/latest/abi-spec.html#types
+ */
+export type Fixed<M extends number, N extends number> = M extends 8 | 16 | 24 | 32 | 40 | 48 ? number : bigint;
+/**
+ * Unsigned fixed-point decimal number of M bits, 8 <= M <= 256, M % 8 == 0, and 0 < N <= 80, which denotes the value v as v / (10 ** N).
+ *
+ * Type in Solidity contracts ABI, see https://docs.soliditylang.org/en/latest/abi-spec.html#types
+ */
+export type UFixed<M extends number, N extends number> = M extends 8 | 16 | 24 | 32 | 40 | 48 ? number : bigint;

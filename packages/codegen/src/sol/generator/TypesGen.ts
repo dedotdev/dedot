@@ -32,6 +32,8 @@ export const BASIC_KNOWN_TYPES = [
   /^(FixedBytes)<(\d+)>(\[])?$/,
   /^(Bytes)(\[])?$/,
   /^(BytesLike)(\[])?$/,
+  /^(Fixed)<(\d+),(\d+)>(\[])?$/,
+  /^(UFixed)<(\d+),(\d+)>(\[])?$/,
 ];
 
 export class TypesGen {
@@ -175,11 +177,20 @@ export class TypesGen {
       // Function type is an address (20 bytes) followed by a function selector (4 bytes).
       // Ref: https://docs.soliditylang.org/en/latest/abi-spec.html#:~:text=function%3A%20an%20address%20(20%20bytes)%20followed%20by%20a%20function%20selector%20(4%20bytes).%20Encoded%20identical%20to%20bytes24.
       return isArray ? `FixedBytes<24>[]` : `FixedBytes<24>`;
-    } else if (FIXED_TYPES.test(type) || UNFIXED_TYPES.test(type)) {
-      const [_, __, isArray] = type.match(FIXED_TYPES) || type.match(UNFIXED_TYPES)!;
+    } else if (FIXED_TYPES.test(type)) {
+      const [_, denotation, isArray] = type.match(FIXED_TYPES)!;
 
-      // TODO: Use a more precise type
-      return isArray ? 'number[]' : 'number';
+      // Ref: https://docs.soliditylang.org/en/latest/abi-spec.html#:~:text=fixed%2C%20ufixed%3A%20synonyms%20for%20fixed128x18%2C%20ufixed128x18%20respectively.%20For%20computing%20the%20function%20selector%2C%20fixed128x18%20and%20ufixed128x18%20have%20to%20be%20used.
+      const [m, n] = denotation ? denotation.split('x').map((s) => parseInt(s)) : [128, 18];
+
+      return isArray ? `Fixed<${m},${n}>[]` : `Fixed<${m},${n}>`;
+    } else if (UNFIXED_TYPES.test(type)) {
+      const [_, denotation, isArray] = type.match(UNFIXED_TYPES)!;
+
+      // Ref: https://docs.soliditylang.org/en/latest/abi-spec.html#:~:text=fixed%2C%20ufixed%3A%20synonyms%20for%20fixed128x18%2C%20ufixed128x18%20respectively.%20For%20computing%20the%20function%20selector%2C%20fixed128x18%20and%20ufixed128x18%20have%20to%20be%20used.
+      const [m, n] = denotation ? denotation.split('x').map((s) => parseInt(s)) : [128, 18];
+
+      return isArray ? `UFixed<${m},${n}>[]` : `UFixed<${m},${n}>`;
     } else {
       throw new Error(`Unsupported Solidity type: ${type}`);
     }
