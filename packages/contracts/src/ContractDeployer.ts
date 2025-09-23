@@ -1,8 +1,7 @@
 import { ISubstrateClient } from '@dedot/api';
 import { Hash } from '@dedot/codecs';
 import { assert, isPvm, toU8a } from '@dedot/utils';
-import { Interface } from '@ethersproject/abi';
-import { SolRegistry } from './SolRegistry';
+import { SolRegistry } from './SolRegistry.js';
 import { TypinkRegistry } from './TypinkRegistry.js';
 import {
   ConstructorQueryExecutor,
@@ -52,7 +51,7 @@ export class ContractDeployer<ContractApi extends GenericContractApi = GenericCo
       ensureValidCodeHashOrCode(codeHashOrCode, this.registry as TypinkRegistry);
     } else {
       // @ts-ignore
-      this.#registry = new SolRegistry(new Interface(this.#metadata as SolAbi));
+      this.#registry = new SolRegistry(this.metadata as SolAbi);
 
       ensurePalletRevive(client);
       assert(

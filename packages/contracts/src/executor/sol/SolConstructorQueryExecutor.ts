@@ -2,8 +2,7 @@ import { type ISubstrateClient } from '@dedot/api';
 import { type SubstrateApi } from '@dedot/api/chaintypes';
 import { GenericSubstrateApi, RpcVersion } from '@dedot/types';
 import { assert, DedotError, isPvm, isUndefined, toHex, toU8a } from '@dedot/utils';
-import { FormatTypes } from '@ethersproject/abi';
-import { ErrorDescription } from '@ethersproject/abi/lib/interface.js';
+import { decodeErrorResult, encodeDeployData, DecodeErrorResultReturnType } from 'viem/utils';
 import { ContractInstantiateDispatchError, SolContractInstantiateCustomError } from '../../errors.js';
 import {
   GenericConstructorQueryCall,
@@ -39,7 +38,12 @@ export class SolConstructorQueryExecutor<ChainApi extends GenericSubstrateApi> e
         'Invalid salt provided in ConstructorCallOptions: expected a 32-byte value as a hex string or a Uint8Array',
       );
 
-      const bytes = this.registry.interf.encodeDeploy(params.slice(0, inputs.length));
+      const bytes = encodeDeployData({
+        abi: this.abi,
+        bytecode: '0x',
+        args: params.slice(0, inputs.length),
+      });
+
       const isUpload = isPvm(this.code);
       const code = {
         type: isUpload ? 'Upload' : 'Existing',
@@ -84,16 +88,19 @@ export class SolConstructorQueryExecutor<ChainApi extends GenericSubstrateApi> e
       const flags = toReturnFlags(raw.result.value.result.flags.bits);
 
       if (flags.revert) {
-        let errorDesc: ErrorDescription;
+        let errorDesc: DecodeErrorResultReturnType;
         try {
           // This could be failed if the errors is thrown by panic! or assert!
           // Because for now, those error data format is not correctly encoded
-          errorDesc = this.registry.interf.parseError(raw.result.value.result.data);
+          errorDesc = decodeErrorResult({
+            abi: this.abi,
+            data: raw.result.value.result.data,
+          });
         } catch (e) {
           throw new DedotError(`Failed to decode revert reason ${(e as Error).message}`);
         }
 
-        throw new SolContractInstantiateCustomError(errorDesc.name, raw, errorDesc);
+        throw new SolContractInstantiateCustomError(errorDesc.errorName, raw, errorDesc);
       }
 
       return {
@@ -105,7 +112,7 @@ export class SolConstructorQueryExecutor<ChainApi extends GenericSubstrateApi> e
       } as GenericConstructorCallResult;
     };
 
-    callFn.meta = JSON.parse(fragment.format(FormatTypes.json));
+    callFn.meta = fragment;
 
     return callFn;
   }

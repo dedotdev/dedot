@@ -75,7 +75,3 @@ export type ContractCallOptions = CallOptions & {
 };
 
 export type ContractTxOptions = CallOptions;
-
-export type SubmittableExtrinsic<R extends ISubmittableResult> = ISubmittableExtrinsic<R> & Extrinsic;
-
-export type ContractSubmittableExtrinsic<_ extends GenericSubstrateApi> = SubmittableExtrinsic<ISubmittableResult>;

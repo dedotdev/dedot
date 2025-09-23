@@ -1,9 +1,8 @@
 import { isEventRecord } from '@dedot/api';
 import { GenericSubstrateApi, IEventRecord, Unsub } from '@dedot/types';
 import { assert } from '@dedot/utils';
-import { EventFragment } from '@ethersproject/abi';
-import { ContractEvent, GenericContractEvent } from '../../types/index.js';
-import { SolContractExecutor } from './abstract';
+import { ContractEvent, GenericContractEvent, SolAbiEvent } from '../../types/index.js';
+import { SolContractExecutor } from './abstract/index.js';
 
 export class SolEventExecutor<ChainApi extends GenericSubstrateApi> extends SolContractExecutor<ChainApi> {
   doExecute(eventName: string): GenericContractEvent<string, any, 'sol'> {
@@ -55,12 +54,12 @@ export class SolEventExecutor<ChainApi extends GenericSubstrateApi> extends SolC
       is,
       find,
       filter,
-      meta: JSON.parse(fragment.format('json')),
+      meta: fragment,
       watch,
     };
   }
 
-  #findEventFragment(fragment: string): EventFragment | undefined {
-    return this.registry.interf.fragments.find((one) => one.type === 'event' && one.name === fragment) as EventFragment;
+  #findEventFragment(fragment: string): SolAbiEvent | undefined {
+    return this.abi.find((one) => one.type === 'event' && one.name === fragment) as SolAbiEvent;
   }
 }
