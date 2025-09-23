@@ -13,9 +13,10 @@ const BOOL_TYPES = /^bool(\[(\d+)?])*?$/;
 const ADDRESS_TYPES = /^address(\[(\d+)?])*?$/;
 const FUNCTION_TYPES = /^function(\[(\d+)?])*?$/;
 const COMPONENT_TYPES = /^tuple(\[(\d+)?])*?$/;
-const ARRAY_DIM = /\[(\d*)\]/g;
+const ARRAY_DIM = /\[(\d+)?\]/g;
+const ONLY_ARRAY_DIM = /^\[(\d+)?\]$/;
 
-const SUPPORTED_SOLIDITY_TYPES = [
+export const SUPPORTED_SOLIDITY_TYPES = [
   INT_TYPES,
   UINT_TYPES,
   BYTES_TYPES,
@@ -29,12 +30,13 @@ const SUPPORTED_SOLIDITY_TYPES = [
 ];
 
 export const BASIC_KNOWN_TYPES = [
-  /^(H160)(\[])?$/,
-  /^(FixedBytes)<(\d+)>(\[])?$/,
-  /^(Bytes)(\[])?$/,
-  /^(BytesLike)(\[])?$/,
-  /^(Fixed)<(\d+),(\d+)>(\[])?$/,
-  /^(UFixed)<(\d+),(\d+)>(\[])?$/,
+  /^(H160)$/,
+  /^(FixedBytes)<(\d+)>$/,
+  /^(Bytes)$/,
+  /^(BytesLike)$/,
+  /^(Fixed)<(\d+),(\d+)>$/,
+  /^(UFixed)<(\d+),(\d+)>$/,
+  /^(FixedArray)$/,
 ];
 
 export class TypesGen {
@@ -110,6 +112,31 @@ export class TypesGen {
     return this.#generateType(typeDef, nestedLevel, typeOut);
   }
 
+  #generateType(typeDef: SolAbiTypeDef, nestedLevel = 0, typeOut = false): string {
+    const { type } = typeDef;
+
+    let baseType = this.#generateBaseType(typeDef, nestedLevel, typeOut);
+    const dimensions = type.match(ARRAY_DIM);
+
+    if (!COMPONENT_TYPES.test(type)) {
+      this.addTypeImport(baseType);
+    }
+
+    dimensions
+      ?.map((o) => o.match(ONLY_ARRAY_DIM)!)
+      .forEach(([_, n]) => {
+        if (n) {
+          this.addTypeImport('FixedArray');
+
+          baseType = `FixedArray<${baseType}, ${n}>`;
+        } else {
+          baseType = isNativeType(baseType.replace('[]', '')) ? `${baseType}[]` : `Array<${baseType}>`;
+        }
+      });
+
+    return baseType;
+  }
+
   #generateBaseType(typeDef: SolAbiTypeDef, nestedLevel = 0, typeOut = false): string {
     const { type } = typeDef;
 
@@ -177,19 +204,6 @@ export class TypesGen {
     } else {
       throw new Error(`Unsupported Solidity type: ${type}`);
     }
-  }
-
-  #generateType(typeDef: SolAbiTypeDef, nestedLevel = 0, typeOut = false): string {
-    const { type } = typeDef;
-
-    const baseType = this.#generateBaseType(typeDef, nestedLevel, typeOut);
-    const dimension = type.match(ARRAY_DIM)?.length || 0;
-
-    if (!COMPONENT_TYPES.test(type)) {
-      this.addTypeImport(baseType);
-    }
-
-    return `${baseType}${'[]'.repeat(dimension)}`;
   }
 
   generateObjectType(components: SolAbiTypeDef[], nestedLevel = 0, typeOut = false) {
