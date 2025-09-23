@@ -1,20 +1,8 @@
-import { Bytes, H160, H256 } from '@dedot/codecs';
 import { IEventRecord, IRuntimeEvent } from '@dedot/codecs/types';
 import { assert } from '@dedot/utils';
 import { decodeEventLog } from 'viem/utils';
-import { ContractAddress, SolAbi, ContractEvent } from './types';
-
-interface ContractEmittedEvent extends IRuntimeEvent {
-  pallet: 'Revive';
-  palletEvent: {
-    name: 'ContractEmitted';
-    data: {
-      contract: H160;
-      data: Bytes;
-      topics: Array<H256>;
-    };
-  };
-}
+import { ContractAddress, SolAbi, ContractEvent } from './types/index.js';
+import { ContractEmittedEvent } from './utils/index.js';
 
 export class SolRegistry {
   constructor(public readonly abi: SolAbi) {}
@@ -40,7 +28,10 @@ export class SolRegistry {
     return data ? { name: eventName, data } : { name: eventName };
   }
 
-  #isContractEmittedEvent(event: IRuntimeEvent, contractAddress?: ContractAddress): event is ContractEmittedEvent {
+  #isContractEmittedEvent(
+    event: IRuntimeEvent,
+    contractAddress?: ContractAddress,
+  ): event is ContractEmittedEvent<'Revive'> {
     const eventMatched =
       typeof event.palletEvent === 'object' && // --
       event.palletEvent.name === 'ContractEmitted';

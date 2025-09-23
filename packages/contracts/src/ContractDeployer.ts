@@ -22,6 +22,7 @@ import {
   ensurePalletRevive,
   ensureSupportedContractMetadataVersion,
   ensureValidCodeHashOrCode,
+  isInkMetadata,
   newProxyChain,
 } from './utils/index.js';
 
@@ -39,8 +40,7 @@ export class ContractDeployer<ContractApi extends GenericContractApi = GenericCo
     options?: ExecutionOptions,
   ) {
     this.#metadata = typeof metadata === 'string' ? JSON.parse(metadata) : metadata;
-    // TODO we should have a better way to check for ink! contract
-    this.#isInk = !Array.isArray(metadata) && Object.hasOwn(this.#metadata, 'contract');
+    this.#isInk = isInkMetadata(this.#metadata);
 
     if (this.#isInk) {
       ensureSupportedContractMetadataVersion(this.metadata as ContractMetadata);

@@ -1,7 +1,7 @@
 import { AccountId32, Bytes, H160, H256, PortableType, TypeDef } from '@dedot/codecs';
 import { IRuntimeEvent } from '@dedot/codecs/types';
 import { stringCamelCase } from '@dedot/utils';
-import { ContractAddress, ContractMetadata, ContractTypeDef, ReturnFlags } from '../types/index.js';
+import { ContractMetadata, ContractTypeDef, ReturnFlags } from '../types/index.js';
 
 export const extractContractTypes = (contractMetadata: ContractMetadata): PortableType[] => {
   const { types } = contractMetadata;
@@ -142,4 +142,24 @@ export interface ContractEmittedEvent<Pallet extends KnownPallets = 'Contracts'>
           topics: Array<H256>;
         };
   };
+}
+
+export function isInkMetadata(metadata: any): boolean {
+  metadata = typeof metadata === 'string' ? JSON.parse(metadata) : metadata;
+
+  return (
+    metadata !== null &&
+    'source' in metadata &&
+    'contract' in metadata &&
+    'spec' in metadata &&
+    'messages' in metadata.spec
+  );
+}
+
+export function isSolidityAbi(metadata: any): boolean {
+  return (
+    Array.isArray(metadata) &&
+    metadata.length > 0 &&
+    metadata.some((item: any) => item.type === 'function' || item.type === 'constructor' || item.type === 'event')
+  );
 }

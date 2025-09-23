@@ -22,6 +22,7 @@ import {
   ensureStorageApiSupports,
   ensureSupportedContractMetadataVersion,
   ensureValidContractAddress,
+  isInkMetadata,
   newProxyChain,
 } from './utils/index.js';
 
@@ -39,7 +40,7 @@ export class Contract<ContractApi extends GenericContractApi = GenericContractAp
     options?: ExecutionOptions,
   ) {
     this.#metadata = typeof metadata === 'string' ? JSON.parse(metadata) : metadata;
-    this.#isInk = !Array.isArray(metadata) && Object.hasOwn(this.#metadata, 'contract');
+    this.#isInk = isInkMetadata(this.#metadata);
 
     if (this.#isInk) {
       ensureSupportedContractMetadataVersion(this.metadata as ContractMetadata);
