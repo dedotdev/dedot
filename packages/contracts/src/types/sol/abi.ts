@@ -1,37 +1,37 @@
-export interface SolABITypeDef {
+export interface SolAbiTypeDef {
   internalType?: string;
-  components?: SolABITypeDef[];
+  components?: SolAbiTypeDef[];
   name: string;
   type: string;
 }
 
-export interface SolABIInput extends SolABITypeDef {}
+export interface SolAbiInput extends SolAbiTypeDef {}
 
-export interface SolABIOutput extends SolABITypeDef {}
+export interface SolAbiOutput extends SolAbiTypeDef {}
 
 export interface SolAbiFunction {
-  inputs: SolABIInput[];
+  inputs: SolAbiInput[];
   name: string;
-  outputs: SolABIOutput[];
+  outputs: SolAbiOutput[];
   stateMutability: 'pure' | 'view' | 'nonpayable' | 'payable';
   type: 'function';
 }
 
 export interface SolAbiConstructor {
-  inputs: SolABIInput[];
+  inputs: SolAbiInput[];
   stateMutability: 'nonpayable' | 'payable';
   type: 'constructor';
 }
 
 export interface SolAbiEvent {
   anonymous?: boolean;
-  inputs: (SolABIInput & { indexed?: boolean })[];
+  inputs: (SolAbiInput & { indexed?: boolean })[];
   name: string;
   type: 'event';
 }
 
 export interface SolAbiError {
-  inputs: SolABIInput[];
+  inputs: SolAbiInput[];
   name: string;
   type: 'error';
 }

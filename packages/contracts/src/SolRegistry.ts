@@ -37,8 +37,7 @@ export class SolRegistry {
       topics: [signatureTopic, ...event.palletEvent.data.topics],
     });
 
-    // @ts-ignore
-    return data.length > 0 ? { name: eventName, data } : { name: eventName };
+    return data ? { name: eventName, data } : { name: eventName };
   }
 
   #isContractEmittedEvent(event: IRuntimeEvent, contractAddress?: ContractAddress): event is ContractEmittedEvent {

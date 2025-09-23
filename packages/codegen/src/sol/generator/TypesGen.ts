@@ -1,4 +1,4 @@
-import { SolAbi, SolAbiItem, SolABITypeDef } from '@dedot/contracts';
+import { SolAbi, SolAbiItem, SolAbiTypeDef } from '@dedot/contracts';
 import { stringPascalCase } from '@dedot/utils';
 import { TypeImports } from '../../shared/TypeImports.js';
 import { beautifySourceCode, compileTemplate, isNativeType } from '../../utils.js';
@@ -36,6 +36,7 @@ export const BASIC_KNOWN_TYPES = [
 
 export class TypesGen {
   typeImports: TypeImports;
+
   constructor(public readonly abi: SolAbi) {
     this.typeImports = new TypeImports();
   }
@@ -78,7 +79,7 @@ export class TypesGen {
     return beautifySourceCode(template({ importTypes, defTypeOut }));
   }
 
-  generateTypeName(typeDef: SolABITypeDef, abiItem: SolAbiItem, typeOut = false): string {
+  generateTypeName(typeDef: SolAbiTypeDef, abiItem: SolAbiItem, typeOut = false): string {
     if (abiItem.type === 'fallback' || abiItem.type === 'receive') return '';
 
     if (typeDef.type === 'tuple') {
@@ -93,7 +94,7 @@ export class TypesGen {
     return '';
   }
 
-  generateType(typeDef: SolABITypeDef, abiItem?: SolAbiItem, nestedLevel = 0, typeOut = false): string {
+  generateType(typeDef: SolAbiTypeDef, abiItem?: SolAbiItem, nestedLevel = 0, typeOut = false): string {
     if (nestedLevel > 0 && abiItem) {
       let typeName = this.generateTypeName(typeDef, abiItem, typeOut);
 
@@ -108,7 +109,7 @@ export class TypesGen {
     return this.#generateType(typeDef, nestedLevel, typeOut);
   }
 
-  #generateType(typeDef: SolABITypeDef, nestedLevel = 0, typeOut = false): string {
+  #generateType(typeDef: SolAbiTypeDef, nestedLevel = 0, typeOut = false): string {
     const { type } = typeDef;
 
     if (INT_TYPES.test(type)) {
@@ -184,7 +185,7 @@ export class TypesGen {
     }
   }
 
-  generateObjectType(components: SolABITypeDef[], nestedLevel = 0, typeOut = false) {
+  generateObjectType(components: SolAbiTypeDef[], nestedLevel = 0, typeOut = false) {
     const props = components.map((typeDef) => {
       const type = this.generateType(typeDef, undefined, nestedLevel + 1, typeOut);
       return {

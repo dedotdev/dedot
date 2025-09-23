@@ -17,7 +17,7 @@ export class IndexGen {
 
     const typeImports = new TypeImports();
     typeImports.addKnownType('VersionedGenericSubstrateApi', 'RpcVersion', 'RpcV2');
-    typeImports.addContractType('InkGenericContractApi', 'WithLazyStorage', 'TypinkRegistry', 'ContractMetadata');
+    typeImports.addContractType('InkGenericContractApi', 'WithLazyStorage');
     typeImports.addChainType('SubstrateApi');
     typeImports.addPortableType(langErrorName);
 

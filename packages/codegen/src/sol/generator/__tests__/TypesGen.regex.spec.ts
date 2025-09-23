@@ -1,10 +1,10 @@
-import type { SolABITypeDef } from '@dedot/contracts';
+import type { SolAbiTypeDef } from '@dedot/contracts';
 import { describe, expect, it } from 'vitest';
 import { TypesGen } from '../TypesGen.js';
 
 const gen = new TypesGen([]);
 
-const td = (type: string, name = 'x', components?: SolABITypeDef[]): SolABITypeDef => ({
+const td = (type: string, name = 'x', components?: SolAbiTypeDef[]): SolAbiTypeDef => ({
   name,
   type,
   ...(components ? { components } : {}),
