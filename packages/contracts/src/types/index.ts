@@ -1,25 +1,25 @@
-import { SubstrateApi } from '@dedot/chaintypes';
+import { SubstrateApi } from '@dedot/api/chaintypes';
 import { Extrinsic } from '@dedot/codecs';
 import {
   AnyFunc,
   AsyncMethod,
   GenericSubstrateApi,
   IEventRecord,
+  ISubmittableExtrinsic,
+  ISubmittableResult,
   RpcVersion,
   Unsub,
   VersionedGenericSubstrateApi,
-  ISubmittableResult,
-  ISubmittableExtrinsic,
 } from '@dedot/types';
 import { Contract } from '../Contract.js';
 import { ContractCallMessage, ContractConstructorMessage, ContractEventMeta } from './ink/index.js';
 import {
-  ContractAddress,
   ContractCallResult,
   ContractInstantiateResult,
   ExecutionOptions,
   GenericConstructorCallResult,
   GenericContractCallResult,
+  ContractAddress,
 } from './shared.js';
 import { SolAbiConstructor, SolAbiEvent, SolAbiFunction } from './sol/index.js';
 

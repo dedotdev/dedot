@@ -1,6 +1,6 @@
 import { DispatchError, PalletErrorMetadataLatest } from '@dedot/codecs';
 import { assert, DedotError } from '@dedot/utils';
-import { ErrorDescription } from '@ethersproject/abi/lib/interface.js';
+import { DecodeErrorResultReturnType } from 'viem/utils';
 import {
   ContractCallResult,
   ContractInstantiateResult,
@@ -253,12 +253,12 @@ export class SolContractInstantiateCustomError<
    * The custom error that occurred during the instantiation.
    */
   errorName: string;
-  errorDesc: ErrorDescription;
+  errorDesc: DecodeErrorResultReturnType;
 
   constructor(
     errorName: string,
     raw: ContractInstantiateResult<ContractApi['types']['ChainApi']>,
-    errorDesc: ErrorDescription,
+    errorDesc: DecodeErrorResultReturnType,
   ) {
     super(raw);
     this.errorName = errorName;
@@ -283,12 +283,12 @@ export class SolContractCustomError<
    * The custom error that occurred during the execution.
    */
   errorName: string;
-  errorDesc: ErrorDescription;
+  errorDesc: DecodeErrorResultReturnType;
 
   constructor(
     errorName: string,
     raw: ContractCallResult<ContractApi['types']['ChainApi']>,
-    errorDesc: ErrorDescription,
+    errorDesc: DecodeErrorResultReturnType,
   ) {
     super(raw);
     this.errorName = errorName;

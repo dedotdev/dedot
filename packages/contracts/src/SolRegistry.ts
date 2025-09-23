@@ -1,9 +1,8 @@
 import { Bytes, H160, H256 } from '@dedot/codecs';
 import { IEventRecord, IRuntimeEvent } from '@dedot/codecs/types';
 import { assert } from '@dedot/utils';
-import { EventFragment, Interface } from '@ethersproject/abi';
-import { Result } from '@ethersproject/abi/lib/interface.js';
-import { ContractAddress, ContractEvent } from './types';
+import { decodeEventLog } from 'viem/utils';
+import { ContractAddress, SolAbi, ContractEvent } from './types';
 
 interface ContractEmittedEvent extends IRuntimeEvent {
   pallet: 'Revive';
@@ -18,7 +17,7 @@ interface ContractEmittedEvent extends IRuntimeEvent {
 }
 
 export class SolRegistry {
-  constructor(public readonly interf: Interface) {}
+  constructor(public readonly abi: SolAbi) {}
 
   decodeEvents(records: IEventRecord[], contract: ContractAddress): ContractEvent[] {
     return records
@@ -29,18 +28,17 @@ export class SolRegistry {
   decodeEvent(eventRecord: IEventRecord, contract: ContractAddress) {
     assert(this.#isContractEmittedEvent(eventRecord.event, contract), 'Invalid ContractEmitted Event');
 
-    const signatureTopic = eventRecord.event.palletEvent.data.topics[0];
-    const fragment = this.interf.getEvent(signatureTopic);
+    const event = eventRecord.event;
+    const signatureTopic = event.palletEvent.data.topics[0];
 
-    return this.#tryDecodeEvent(fragment, eventRecord.event);
-  }
+    const { eventName, args: data } = decodeEventLog({
+      abi: this.abi,
+      data: event.palletEvent.data.data,
+      topics: [signatureTopic, ...event.palletEvent.data.topics],
+    });
 
-  #tryDecodeEvent(fragment: EventFragment, event: ContractEmittedEvent): ContractEvent {
-    const data = this.transformResult(
-      this.interf.decodeEventLog(fragment, event.palletEvent.data.data, event.palletEvent.data.topics),
-    );
-
-    return data.length > 0 ? { name: fragment.name, data } : { name: fragment.name };
+    // @ts-ignore
+    return data.length > 0 ? { name: eventName, data } : { name: eventName };
   }
 
   #isContractEmittedEvent(event: IRuntimeEvent, contractAddress?: ContractAddress): event is ContractEmittedEvent {
@@ -58,22 +56,5 @@ export class SolRegistry {
     }
 
     return true;
-  }
-
-  /*
-   * Transforms the Result array, converting any BigNumber instances to bigint.
-   * We prefer to use bigint instead of BigNumber because bigint is natively supported in JS/TS
-   *
-   * @param data - The Result array to transform.
-   * @returns A new Result array with BigNumber instances converted to bigint.
-   */
-  transformResult(data: Result): Result {
-    return data.map((a) => {
-      if (a['_isBigNumber']) {
-        return a.toBigInt();
-      }
-
-      return a;
-    });
   }
 }
