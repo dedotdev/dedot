@@ -1,6 +1,5 @@
 import { ISubstrateClient } from '@dedot/api';
 import { Hash } from '@dedot/codecs';
-import { assert, isPvm, toU8a } from '@dedot/utils';
 import { SolRegistry } from './SolRegistry.js';
 import { TypinkRegistry } from './TypinkRegistry.js';
 import {
@@ -19,10 +18,9 @@ import {
 } from './types/index.js';
 import {
   ensurePalletPresence,
-  ensurePalletRevive,
   ensureSupportedContractMetadataVersion,
   ensureValidCodeHashOrCode,
-  isInkMetadata,
+  isInkAbi,
   newProxyChain,
 } from './utils/index.js';
 
@@ -40,24 +38,22 @@ export class ContractDeployer<ContractApi extends GenericContractApi = GenericCo
     options?: ExecutionOptions,
   ) {
     this.#metadata = typeof metadata === 'string' ? JSON.parse(metadata) : metadata;
-    this.#isInk = isInkMetadata(this.#metadata);
 
-    if (this.#isInk) {
+    if (isInkAbi(this.metadata)) {
+      this.#isInk = true;
+
       ensureSupportedContractMetadataVersion(this.metadata as ContractMetadata);
       // @ts-ignore
       this.#registry = new TypinkRegistry(this.metadata as ContractMetadata);
 
-      ensurePalletPresence(client, this.registry as TypinkRegistry);
-      ensureValidCodeHashOrCode(codeHashOrCode, this.registry as TypinkRegistry);
+      ensurePalletPresence(client, (this.registry as TypinkRegistry).isRevive());
+      ensureValidCodeHashOrCode(codeHashOrCode, (this.registry as TypinkRegistry).isRevive());
     } else {
       // @ts-ignore
       this.#registry = new SolRegistry(this.metadata as SolAbi);
 
-      ensurePalletRevive(client);
-      assert(
-        toU8a(codeHashOrCode).length === 32 || isPvm(codeHashOrCode),
-        'Invalid code hash or code: expected a hash of 32-byte or a valid PVM/WASM code as a hex string or a Uint8Array',
-      );
+      ensurePalletPresence(client, true);
+      ensureValidCodeHashOrCode(codeHashOrCode, true);
     }
 
     this.#code = codeHashOrCode;
@@ -73,20 +69,18 @@ export class ContractDeployer<ContractApi extends GenericContractApi = GenericCo
   }
 
   get tx(): ContractApi['constructorTx'] {
+    const Executor = this.#isInk ? ConstructorTxExecutor : SolConstructorTxExecutor;
     return newProxyChain(
       // @ts-ignore
-      this.#isInk
-        ? new ConstructorTxExecutor(this.client, this.#registry as TypinkRegistry, this.#code, this.#options)
-        : new SolConstructorTxExecutor(this.client, this.#registry as SolRegistry, this.#code, this.#options),
+      new Executor(this.client, this.registry, this.#code, this.options),
     ) as ContractApi['constructorTx'];
   }
 
   get query(): ContractApi['constructorQuery'] {
+    const Executor = this.#isInk ? ConstructorQueryExecutor : SolConstructorQueryExecutor;
     return newProxyChain(
       // @ts-ignore
-      this.#isInk
-        ? new ConstructorQueryExecutor(this.client, this.#registry as TypinkRegistry, this.#code, this.#options)
-        : new SolConstructorQueryExecutor(this.client, this.#registry as SolRegistry, this.#code, this.#options),
+      new Executor(this.client, this.registry, this.#code, this.options),
     ) as ContractApi['constructorQuery'];
   }
 

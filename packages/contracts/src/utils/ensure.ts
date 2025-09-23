@@ -26,7 +26,7 @@ export const ensureStorageApiSupports = (version: string | number) => {
   );
 };
 
-export function ensurePalletRevive(client: ISubstrateClient<SubstrateApi[RpcVersion]>) {
+function ensurePalletRevive(client: ISubstrateClient<SubstrateApi[RpcVersion]>) {
   try {
     !!client.call.reviveApi.call.meta && !!client.tx.revive.call.meta;
   } catch {
@@ -34,7 +34,7 @@ export function ensurePalletRevive(client: ISubstrateClient<SubstrateApi[RpcVers
   }
 }
 
-export function ensurePalletContracts(client: ISubstrateClient<SubstrateApi[RpcVersion]>) {
+function ensurePalletContracts(client: ISubstrateClient<SubstrateApi[RpcVersion]>) {
   try {
     !!client.call.contractsApi.call.meta && !!client.tx.contracts.call.meta;
   } catch {
@@ -42,28 +42,21 @@ export function ensurePalletContracts(client: ISubstrateClient<SubstrateApi[RpcV
   }
 }
 
-export async function ensureContractPresenceOnRevive(
-  client: ISubstrateClient<SubstrateApi[RpcVersion]>,
-  address: ContractAddress,
-) {
-  const accountInfo = await client.query.revive.accountInfoOf(address as HexString);
-  if (accountInfo?.accountType && accountInfo?.accountType?.type === 'Contract') {
-    return accountInfo.accountType.value;
-  }
-}
-
-export function ensurePalletPresence(client: ISubstrateClient<SubstrateApi[RpcVersion]>, registry: TypinkRegistry) {
-  registry.isRevive() ? ensurePalletRevive(client) : ensurePalletContracts(client);
+export function ensurePalletPresence(client: ISubstrateClient<SubstrateApi[RpcVersion]>, isRevive: boolean) {
+  isRevive ? ensurePalletRevive(client) : ensurePalletContracts(client);
 }
 
 export async function ensureContractPresence(
   client: ISubstrateClient<SubstrateApi[RpcVersion]>,
-  registry: TypinkRegistry,
+  isRevive: boolean,
   address: ContractAddress,
 ) {
   const contractInfo = await (async () => {
-    if (registry.isRevive()) {
-      return ensureContractPresenceOnRevive(client, address);
+    if (isRevive) {
+      const accountInfo = await client.query.revive.accountInfoOf(address as HexString);
+      if (accountInfo?.accountType && accountInfo?.accountType?.type === 'Contract') {
+        return accountInfo.accountType.value;
+      }
     } else {
       return client.query.contracts.contractInfoOf(address);
     }
@@ -72,8 +65,8 @@ export async function ensureContractPresence(
   ensurePresence(contractInfo, `Contract with address ${address} does not exist on chain!`);
 }
 
-export function ensureValidContractAddress(address: ContractAddress, registry: TypinkRegistry) {
-  if (registry.isRevive()) {
+export function ensureValidContractAddress(address: ContractAddress, isRevive: boolean) {
+  if (isRevive) {
     assert(
       isEvmAddress(address as HexString),
       `Invalid contract address: ${address}. Expected an EVM 20-byte address as a hex string or a Uint8Array`,
@@ -86,9 +79,9 @@ export function ensureValidContractAddress(address: ContractAddress, registry: T
   }
 }
 
-export function ensureValidCodeHashOrCode(codeHashOrCode: Hash | Uint8Array | string, registry: TypinkRegistry) {
+export function ensureValidCodeHashOrCode(codeHashOrCode: Hash | Uint8Array | string, isRevive: boolean) {
   assert(
-    toU8a(codeHashOrCode).length === 32 || (registry.isRevive() ? isPvm(codeHashOrCode) : isWasm(codeHashOrCode)),
+    toU8a(codeHashOrCode).length === 32 || (isRevive ? isPvm(codeHashOrCode) : isWasm(codeHashOrCode)),
     'Invalid code hash or code: expected a hash of 32-byte or a valid PVM/WASM code as a hex string or a Uint8Array',
   );
 }

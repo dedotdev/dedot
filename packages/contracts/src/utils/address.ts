@@ -11,7 +11,7 @@ import { toRlp } from 'viem/utils';
  * @param nonce
  */
 export function CREATE1(deployer: AccountId20Like, nonce: number): HexString {
-  const encodedData = toRlp([hexToU8a(new AccountId20(deployer).raw), hexToU8a(toHex(nonce))]);
+  const encodedData = toRlp([new AccountId20(deployer).raw, toHex(nonce)]);
   const hash = keccakAsU8a(encodedData);
 
   return u8aToHex(hash.subarray(12));

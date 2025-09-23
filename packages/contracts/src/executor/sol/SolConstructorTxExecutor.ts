@@ -10,13 +10,7 @@ import {
   ExecutionOptions,
   GenericConstructorTxCall,
 } from '../../types/index.js';
-import {
-  CREATE1,
-  CREATE2,
-  ensureContractPresenceOnRevive,
-  ensureParamsLength,
-  toEvmAddress,
-} from '../../utils/index.js';
+import { CREATE1, CREATE2, ensureContractPresence, ensureParamsLength, toEvmAddress } from '../../utils/index.js';
 import { SolConstructorQueryExecutor } from './SolConstructorQueryExecutor.js';
 import { SolDeployerExecutor } from './abstract/index.js';
 
@@ -166,7 +160,7 @@ export class SolConstructorTxExecutor<ChainApi extends GenericSubstrateApi> exte
             const address = await contractAddress();
 
             // Check if the contract is existed on chain or not!
-            await ensureContractPresenceOnRevive(client, address);
+            await ensureContractPresence(client, true, address);
 
             return new Contract(
               client, // --

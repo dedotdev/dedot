@@ -1,6 +1,6 @@
 import { ISubstrateClient } from '@dedot/api';
 import { IEventRecord } from '@dedot/types';
-import { assert, DedotError, HexString, isEvmAddress, toHex, toU8a } from '@dedot/utils';
+import { DedotError, HexString, toHex, toU8a } from '@dedot/utils';
 import { SolRegistry } from './SolRegistry.js';
 import { TypinkRegistry } from './TypinkRegistry.js';
 import { SolEventExecutor, SolQueryExecutor, SolTxExecutor } from './executor';
@@ -18,11 +18,11 @@ import {
 } from './types/index.js';
 import {
   ensurePalletPresence,
-  ensurePalletRevive,
   ensureStorageApiSupports,
   ensureSupportedContractMetadataVersion,
   ensureValidContractAddress,
-  isInkMetadata,
+  isInkAbi,
+  isSolAbi,
   newProxyChain,
 } from './utils/index.js';
 
@@ -40,26 +40,26 @@ export class Contract<ContractApi extends GenericContractApi = GenericContractAp
     options?: ExecutionOptions,
   ) {
     this.#metadata = typeof metadata === 'string' ? JSON.parse(metadata) : metadata;
-    this.#isInk = isInkMetadata(this.#metadata);
 
-    if (this.#isInk) {
+    if (isInkAbi(this.metadata)) {
+      this.#isInk = true;
+
       ensureSupportedContractMetadataVersion(this.metadata as ContractMetadata);
       const getStorage = this.#getStorage.bind(this);
 
       // @ts-ignore
       this.#registry = new TypinkRegistry(this.metadata as ContractMetadata, { getStorage });
 
-      ensurePalletPresence(client, this.registry as TypinkRegistry);
-      ensureValidContractAddress(address, this.registry as TypinkRegistry);
-    } else {
+      ensurePalletPresence(client, (this.registry as TypinkRegistry).isRevive());
+      ensureValidContractAddress(address, (this.registry as TypinkRegistry).isRevive());
+    } else if (isSolAbi(this.metadata)) {
       // @ts-ignore
       this.#registry = new SolRegistry(this.metadata as SolAbi);
 
-      ensurePalletRevive(client);
-      assert(
-        isEvmAddress(address as HexString),
-        `Invalid contract address: ${address}. Expected an EVM 20-byte address as a hex string or a Uint8Array`,
-      );
+      ensurePalletPresence(client, true);
+      ensureValidContractAddress(address, true);
+    } else {
+      throw new DedotError('Unknown metadata format (neither ink! nor Solidity ABI)');
     }
 
     this.#address = address;
@@ -87,30 +87,21 @@ export class Contract<ContractApi extends GenericContractApi = GenericContractAp
   }
 
   get query(): ContractApi['query'] {
-    return newProxyChain(
-      // @ts-ignore
-      this.#isInk
-        ? new QueryExecutor(this.client, this.#registry as TypinkRegistry, this.#address, this.#options)
-        : new SolQueryExecutor(this.client, this.#registry as SolRegistry, this.address, this.options),
-    ) as ContractApi['query'];
+    const Executor = this.#isInk ? QueryExecutor : SolQueryExecutor;
+    // @ts-ignore
+    return newProxyChain(new Executor(this.client, this.registry, this.address, this.options)) as ContractApi['query'];
   }
 
   get tx(): ContractApi['tx'] {
-    return newProxyChain(
-      // @ts-ignore
-      this.#isInk
-        ? new TxExecutor(this.client, this.#registry as TypinkRegistry, this.#address, this.#options)
-        : new SolTxExecutor(this.client, this.#registry as SolRegistry, this.address, this.options),
-    ) as ContractApi['tx'];
+    const Executor = this.#isInk ? TxExecutor : SolTxExecutor;
+    // @ts-ignore
+    return newProxyChain(new Executor(this.client, this.registry, this.address, this.options)) as ContractApi['tx'];
   }
 
   get events(): ContractApi['events'] {
-    return newProxyChain(
-      // @ts-ignore
-      this.#isInk
-        ? new EventExecutor(this.client, this.#registry as TypinkRegistry, this.#address, this.#options)
-        : new SolEventExecutor(this.client, this.#registry as SolRegistry, this.address, this.options),
-    ) as ContractApi['events'];
+    const Executor = this.#isInk ? EventExecutor : SolEventExecutor;
+    // @ts-ignore
+    return newProxyChain(new Executor(this.client, this.registry, this.address, this.options)) as ContractApi['events'];
   }
 
   get options(): ExecutionOptions | undefined {
@@ -119,7 +110,7 @@ export class Contract<ContractApi extends GenericContractApi = GenericContractAp
 
   get storage(): ContractApi['storage'] {
     if (!this.#isInk) {
-      throw new Error('Storage API is only available for ink! contracts');
+      throw new DedotError('Storage API is only available for ink! contracts');
     }
 
     return {

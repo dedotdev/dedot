@@ -1,5 +1,5 @@
 import type { ISubstrateClient } from '@dedot/api';
-import type { SubstrateApi } from '@dedot/chaintypes';
+import type { SubstrateApi } from '@dedot/api/chaintypes';
 import { GenericSubstrateApi, RpcVersion } from '@dedot/types';
 import { assert, DedotError, HexString } from '@dedot/utils';
 import { decodeErrorResult, DecodeErrorResultReturnType, decodeFunctionResult, encodeFunctionData } from 'viem/utils';
@@ -34,6 +34,8 @@ export class SolQueryExecutor<ChainApi extends GenericSubstrateApi> extends SolC
       });
 
       const client = this.client as unknown as ISubstrateClient<SubstrateApi[RpcVersion]>;
+
+      // await ensureContractPresence(client, true, this.address);
 
       const raw: ContractCallResult<ChainApi> = await (async () => {
         const raw = await client.call.reviveApi.call(

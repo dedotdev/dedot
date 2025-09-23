@@ -179,7 +179,7 @@ export class ConstructorTxExecutor<ChainApi extends GenericSubstrateApi> extends
             const address = await contractAddress();
 
             // Check if the contract is existed on chain or not!
-            await ensureContractPresence(client, this.registry, address);
+            await ensureContractPresence(client, this.registry.isRevive(), address);
 
             return new Contract(
               client, // --

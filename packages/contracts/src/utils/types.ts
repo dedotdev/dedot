@@ -144,19 +144,22 @@ export interface ContractEmittedEvent<Pallet extends KnownPallets = 'Contracts'>
   };
 }
 
-export function isInkMetadata(metadata: any): boolean {
-  metadata = typeof metadata === 'string' ? JSON.parse(metadata) : metadata;
+export function isInkAbi(metadata: any): boolean {
+  try {
+    metadata = typeof metadata === 'string' ? JSON.parse(metadata) : metadata;
 
-  return (
-    metadata !== null &&
-    'source' in metadata &&
-    'contract' in metadata &&
-    'spec' in metadata &&
-    'messages' in metadata.spec
-  );
+    return (
+      metadata !== null && // --
+      'source' in metadata &&
+      'contract' in metadata &&
+      'spec' in metadata
+    );
+  } catch {}
+
+  return false;
 }
 
-export function isSolidityAbi(metadata: any): boolean {
+export function isSolAbi(metadata: any): boolean {
   return (
     Array.isArray(metadata) &&
     metadata.length > 0 &&
