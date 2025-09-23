@@ -10,7 +10,7 @@ import {
   GenericContractCallResult,
   GenericContractQueryCall,
 } from '../../types/index.js';
-import { ensureParamsLength, toReturnFlags } from '../../utils/index.js';
+import { ensureContractPresence, ensureParamsLength, toReturnFlags } from '../../utils/index.js';
 import { ContractExecutor } from './abstract/index.js';
 
 export class QueryExecutor<ChainApi extends GenericSubstrateApi> extends ContractExecutor<ChainApi> {
@@ -32,7 +32,8 @@ export class QueryExecutor<ChainApi extends GenericSubstrateApi> extends Contrac
 
       const client = this.client as unknown as ISubstrateClient<SubstrateApi[RpcVersion]>;
 
-      // await ensureContractPresence(client, this.registry.isRevive(), this.address);
+      // TODO cache this call
+      await ensureContractPresence(client, this.registry.isRevive(), this.address);
 
       const raw: ContractCallResult<ChainApi> = await (async () => {
         if (this.registry.isRevive()) {

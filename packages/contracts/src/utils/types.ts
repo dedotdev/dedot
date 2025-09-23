@@ -146,18 +146,12 @@ export interface ContractEmittedEvent<Pallet extends KnownPallets = 'Contracts'>
 
 // https://use.ink/docs/v6/basics/metadata/ink/
 export function isInkAbi(metadata: any): boolean {
-  try {
-    metadata = typeof metadata === 'string' ? JSON.parse(metadata) : metadata;
-
-    return (
-      metadata !== null && // --
-      'source' in metadata &&
-      'contract' in metadata &&
-      'spec' in metadata
-    );
-  } catch {}
-
-  return false;
+  return (
+    metadata !== null && // --
+    'source' in metadata &&
+    'contract' in metadata &&
+    'spec' in metadata
+  );
 }
 
 // https://docs.soliditylang.org/en/latest/abi-spec.html#json
