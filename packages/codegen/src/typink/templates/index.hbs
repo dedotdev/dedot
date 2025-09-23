@@ -10,6 +10,7 @@ import { ContractEvents } from './events.js';
 export * from './types.js';
 
 {{{interfaceDocs}}}export interface {{{interfaceName}}}<Rv extends RpcVersion = RpcVersion, ChainApi extends VersionedGenericSubstrateApi = SubstrateApi> extends InkGenericContractApi<Rv, ChainApi> {
+    metadataType: 'ink';
     query: ContractQuery<ChainApi[Rv], 'ink'>;
     tx: ContractTx<ChainApi[Rv], 'ink'>;
     constructorQuery: ConstructorQuery<ChainApi[Rv], 'ink'>;
@@ -21,7 +22,6 @@ export * from './types.js';
     };
 
     types: {
-      MetadataType: 'ink';
       ChainApi: ChainApi[Rv];
       RootStorage: {{{rootStorageName}}};
       LazyStorage: {{{lazyStorageName}}};

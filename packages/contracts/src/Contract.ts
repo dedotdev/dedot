@@ -27,8 +27,8 @@ import {
 } from './utils/index.js';
 
 export class Contract<ContractApi extends GenericContractApi = GenericContractApi> {
-  readonly #registry: AB<ContractApi['types']['MetadataType'], TypinkRegistry, SolRegistry>;
-  readonly #metadata: AB<ContractApi['types']['MetadataType'], ContractMetadata, SolAbi>;
+  readonly #registry: AB<ContractApi['metadataType'], TypinkRegistry, SolRegistry>;
+  readonly #metadata: AB<ContractApi['metadataType'], ContractMetadata, SolAbi>;
   readonly #address: ContractAddress;
   readonly #isInk: boolean = false;
   readonly #options?: ExecutionOptions;
@@ -78,11 +78,11 @@ export class Contract<ContractApi extends GenericContractApi = GenericContractAp
     return this.#address;
   }
 
-  get metadata(): AB<ContractApi['types']['MetadataType'], ContractMetadata, SolAbi> {
+  get metadata(): AB<ContractApi['metadataType'], ContractMetadata, SolAbi> {
     return this.#metadata;
   }
 
-  get registry(): AB<ContractApi['types']['MetadataType'], TypinkRegistry, SolRegistry> {
+  get registry(): AB<ContractApi['metadataType'], TypinkRegistry, SolRegistry> {
     return this.#registry;
   }
 

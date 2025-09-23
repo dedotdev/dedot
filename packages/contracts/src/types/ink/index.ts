@@ -145,7 +145,7 @@ export interface GenericContractEvent<
   meta: Type extends 'ink' ? ContractEventMeta : SolAbiEvent;
 }
 
-export interface GenericContractEvents<_ extends GenericSubstrateApi, Type extends MetadataType> {
+export interface GenericContractEvents<_ extends GenericSubstrateApi, Type extends MetadataType = MetadataType> {
   [event: string]: GenericContractEvent<string, any, Type>;
 }
 
@@ -156,21 +156,12 @@ export type MetadataType = 'ink' | 'sol';
 
 export type AB<Type extends MetadataType, A, B> = Type extends 'ink' ? A : B;
 
-export interface GenericContractTypes<
-  Rv extends RpcVersion = RpcVersion,
-  ChainApi extends VersionedGenericSubstrateApi = SubstrateApi,
-  Type extends MetadataType = MetadataType,
-> {
-  MetadataType: Type;
-  ChainApi: ChainApi[Rv];
-  [TypeName: string]: any;
-}
-
 export interface GenericContractApi<
   Rv extends RpcVersion = RpcVersion,
   ChainApi extends VersionedGenericSubstrateApi = SubstrateApi,
   Type extends MetadataType = MetadataType,
 > {
+  metadataType: Type;
   query: GenericContractQuery<ChainApi[Rv], Type>;
   tx: GenericContractTx<ChainApi[Rv], Type>;
   constructorQuery: GenericConstructorQuery<ChainApi[Rv], Type>;
@@ -185,7 +176,10 @@ export interface GenericContractApi<
     undefined
   >;
 
-  types: GenericContractTypes<Rv, ChainApi, Type>;
+  types: {
+    ChainApi: ChainApi[Rv];
+    [TypeName: string]: any;
+  };
 }
 
 // Utility: Detect if a type has a `.get(...)` method

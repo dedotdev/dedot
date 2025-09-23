@@ -28,14 +28,14 @@ import {
 
 export class ContractDeployer<ContractApi extends GenericContractApi = GenericContractApi> {
   readonly #isInk: boolean = false;
-  readonly #metadata: AB<ContractApi['types']['MetadataType'], ContractMetadata, SolAbi>;
-  readonly #registry: AB<ContractApi['types']['MetadataType'], TypinkRegistry, SolRegistry>;
+  readonly #metadata: AB<ContractApi['metadataType'], ContractMetadata, SolAbi>;
+  readonly #registry: AB<ContractApi['metadataType'], TypinkRegistry, SolRegistry>;
   readonly #code: Hash | Uint8Array | string;
   readonly #options?: ExecutionOptions;
 
   constructor(
     readonly client: ISubstrateClient<ContractApi['types']['ChainApi']>,
-    metadata: AB<ContractApi['types']['MetadataType'], LooseContractMetadata, SolAbi> | string,
+    metadata: AB<ContractApi['metadataType'], LooseContractMetadata, SolAbi> | string,
     codeHashOrCode: Hash | Uint8Array | string,
     options?: ExecutionOptions,
   ) {
@@ -65,11 +65,11 @@ export class ContractDeployer<ContractApi extends GenericContractApi = GenericCo
     this.#options = options;
   }
 
-  get metadata(): AB<ContractApi['types']['MetadataType'], ContractMetadata, SolAbi> {
+  get metadata(): AB<ContractApi['metadataType'], ContractMetadata, SolAbi> {
     return this.#metadata;
   }
 
-  get registry(): AB<ContractApi['types']['MetadataType'], TypinkRegistry, SolRegistry> {
+  get registry(): AB<ContractApi['metadataType'], TypinkRegistry, SolRegistry> {
     return this.#registry;
   }
 

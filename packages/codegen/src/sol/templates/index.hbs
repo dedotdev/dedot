@@ -10,6 +10,7 @@ import { ContractEvents } from './events.js';
 export * from './types.js';
 
 {{{interfaceDocs}}}export interface {{{interfaceName}}}<Rv extends RpcVersion = RpcVersion, ChainApi extends VersionedGenericSubstrateApi = SubstrateApi> extends SolGenericContractApi<Rv, ChainApi> {
+    metadataType: 'sol';
     query: ContractQuery<ChainApi[Rv], 'sol'>;
     tx: ContractTx<ChainApi[Rv], 'sol'>;
     constructorQuery: ConstructorQuery<ChainApi[Rv], 'sol'>;
@@ -17,8 +18,6 @@ export * from './types.js';
     constructorTx: ConstructorTx<ChainApi[Rv], {{{interfaceName}}}, 'sol'>;
 
     types: {
-      MetadataType: 'sol';
       ChainApi: ChainApi[Rv];
     };
 }
-
