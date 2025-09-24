@@ -116,13 +116,17 @@ export class TypesGen {
     const { type } = typeDef;
 
     let baseType = this.#generateBaseType(typeDef, nestedLevel, typeOut);
-    const dimensions = type.match(ARRAY_DIM);
 
     if (!COMPONENT_TYPES.test(type)) {
+      // baseType of component types are all generated types, eg: { a: bigint, b: string }
+      // So we don't import them here.
       this.addTypeImport(baseType);
     }
 
+    // Match all array dimensions
+    const dimensions = type.match(ARRAY_DIM);
     dimensions
+      // Match each dimension to see if fixed array or dynamic array (eg: [3] vs [])
       ?.map((o) => o.match(ONLY_ARRAY_DIM)!)
       .forEach(([_, n]) => {
         if (n) {
@@ -175,7 +179,7 @@ export class TypesGen {
     } else if (COMPONENT_TYPES.test(type)) {
       const { components = [] } = typeDef;
       if (components.length === 0) {
-        return '{}';
+        return '[]';
       } else {
         const objectType = this.generateObjectType(components, nestedLevel + 1, typeOut);
 
