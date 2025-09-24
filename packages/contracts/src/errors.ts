@@ -255,12 +255,20 @@ export class SolContractInstantiateError<
   ContractApi extends SolGenericContractApi = SolGenericContractApi,
 > extends ContractInstantiateError {
   name = 'SolContractInstantiateError';
-  details: SolErrorResult;
+  details?: SolErrorResult;
 
-  constructor(raw: ContractInstantiateResult<ContractApi['types']['ChainApi']>, details: SolErrorResult) {
+  constructor(
+    raw: ContractInstantiateResult<ContractApi['types']['ChainApi']>,
+    { details, message }: { details?: SolErrorResult; message?: string },
+  ) {
     super(raw);
     this.details = details;
-    this.message = `Error: ${details.errorName}`;
+
+    if (message) {
+      this.message = message;
+    } else if (details) {
+      this.message = `Error: ${details.errorName}`;
+    }
   }
 }
 
@@ -276,12 +284,20 @@ export class SolContractExecutionError<
   ContractApi extends SolGenericContractApi = SolGenericContractApi,
 > extends ContractExecutionError {
   name = 'SolContractExecutionError';
-  details: SolErrorResult;
+  details?: SolErrorResult;
 
-  constructor(raw: ContractCallResult<ContractApi['types']['ChainApi']>, details: SolErrorResult) {
+  constructor(
+    raw: ContractCallResult<ContractApi['types']['ChainApi']>,
+    { details, message }: { details?: SolErrorResult; message?: string },
+  ) {
     super(raw);
     this.details = details;
-    this.message = `Error: ${details.errorName}`;
+
+    if (message) {
+      this.message = message;
+    } else if (details) {
+      this.message = `Error: ${details.errorName}`;
+    }
   }
 }
 

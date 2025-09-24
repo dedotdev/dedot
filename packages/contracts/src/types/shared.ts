@@ -52,6 +52,7 @@ export type ContractInstantiateResult<_ extends GenericSubstrateApi> = {
 };
 
 export interface ExecutionOptions {
+  // TODO validate this address
   defaultCaller?: AccountId32Like;
 }
 
@@ -71,6 +72,7 @@ export type ConstructorTxOptions = CallOptions & {
 };
 
 export type ContractCallOptions = CallOptions & {
+  // TODO validate this address
   caller?: AccountId32Like;
 };
 

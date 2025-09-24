@@ -1,7 +1,7 @@
 import { type ISubstrateClient } from '@dedot/api';
 import { type SubstrateApi } from '@dedot/api/chaintypes';
 import { GenericSubstrateApi, RpcVersion } from '@dedot/types';
-import { assert, DedotError, isPvm, isUndefined, toHex, toU8a } from '@dedot/utils';
+import { assert, isPvm, isUndefined, toHex, toU8a } from '@dedot/utils';
 import { decodeErrorResult, encodeDeployData } from 'viem/utils';
 import { ContractInstantiateDispatchError, SolContractInstantiateError } from '../../errors.js';
 import {
@@ -86,24 +86,23 @@ export class SolConstructorQueryExecutor<ChainApi extends GenericSubstrateApi> e
 
       const flags = toReturnFlags(raw.result.value.result.flags.bits);
 
+      const data = raw.result.value.result.data;
       if (flags.revert) {
         try {
-          // This could be failed if the errors is thrown by panic! or assert!
-          // Because for now, those error data format is not correctly encoded
-          // TODO fix this
           const errorResult = decodeErrorResult({
             abi: this.abi,
-            data: raw.result.value.result.data,
+            data,
           });
 
-          throw new SolContractInstantiateError(raw, errorResult);
-        } catch (e) {
-          throw new DedotError(`Failed to decode revert reason ${(e as Error).message}`);
+          throw new SolContractInstantiateError(raw, { details: errorResult });
+        } catch (e: any) {
+          // TODO make this better, handle panic!, assert! cases
+          throw new SolContractInstantiateError(raw, { message: `Failed to decode error. Details: ${e.message}` });
         }
       }
 
       return {
-        data: raw.result.value.result.data,
+        data,
         raw,
         flags,
         address: raw.result.value.address,
