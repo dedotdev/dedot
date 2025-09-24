@@ -9,6 +9,7 @@ import type {
   MetadataType,
 } from 'dedot/contracts';
 import type { GenericSubstrateApi } from 'dedot/types';
+import type { FlipWithStructFlipInput, FlipWithStructOutput } from './types.js';
 
 export interface ContractQuery<ChainApi extends GenericSubstrateApi, Type extends MetadataType>
   extends GenericContractQuery<ChainApi, Type> {
@@ -18,6 +19,19 @@ export interface ContractQuery<ChainApi extends GenericSubstrateApi, Type extend
   flip: GenericContractQueryCall<
     ChainApi,
     (options?: ContractCallOptions) => Promise<GenericContractCallResult<[], ContractCallResult<ChainApi>>>,
+    Type
+  >;
+
+  /**
+   * @param {FlipWithStructFlipInput} flip
+   * @param {ContractCallOptions} options
+   **/
+  flipWithStruct: GenericContractQueryCall<
+    ChainApi,
+    (
+      flip: FlipWithStructFlipInput,
+      options?: ContractCallOptions,
+    ) => Promise<GenericContractCallResult<FlipWithStructOutput, ContractCallResult<ChainApi>>>,
     Type
   >;
 

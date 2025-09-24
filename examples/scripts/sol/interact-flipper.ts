@@ -43,7 +43,14 @@ const { data: afterFlip1 } = await contract.query.get();
 console.log('After 1st flip:', afterFlip1);
 
 // Second flip
-const flipResult2 = await contract.tx.flip().signAndSend(alice).untilFinalized();
+console.log('\nDru-run flipWithStruc (no state change):');
+const { data } = await contract.query.flipWithStruct({ should_flip: false, reason: 'Just checking' });
+console.log('Query result (no state change):', data);
+
+const flipResult2 = await contract.tx
+  .flipWithStruct({ should_flip: true, reason: 'I need you to flip!' })
+  .signAndSend(alice)
+  .untilFinalized();
 const flippedEvents2 = contract.events.Flipped.filter(flipResult2.events);
 console.log('\n2nd flip events:', flippedEvents2);
 

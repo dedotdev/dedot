@@ -3,6 +3,31 @@
   { "type": "function", "name": "flip", "inputs": [], "outputs": [], "stateMutability": "nonpayable" },
   {
     "type": "function",
+    "name": "flip_with_struct",
+    "inputs": [
+      {
+        "name": "flip",
+        "type": "tuple",
+        "components": [
+          { "name": "should_flip", "type": "bool" },
+          { "name": "reason", "type": "string" }
+        ]
+      }
+    ],
+    "outputs": [
+      {
+        "name": "",
+        "type": "tuple",
+        "components": [
+          { "name": "is_flipped", "type": "bool" },
+          { "name": "reason", "type": "string" }
+        ]
+      }
+    ],
+    "stateMutability": "nonpayable"
+  },
+  {
+    "type": "function",
     "name": "get",
     "inputs": [],
     "outputs": [{ "name": "", "type": "bool" }],
@@ -34,7 +59,8 @@
     "name": "Flipped",
     "inputs": [
       { "name": "old", "type": "bool", "indexed": false },
-      { "name": "new", "type": "bool", "indexed": false }
+      { "name": "new", "type": "bool", "indexed": false },
+      { "name": "reason", "type": "string", "indexed": false }
     ],
     "anonymous": false
   },
