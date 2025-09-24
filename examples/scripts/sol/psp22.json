@@ -174,5 +174,11 @@
       { "name": "value", "type": "uint128", "indexed": false }
     ],
     "anonymous": false
-  }
+  },
+  { "type": "error", "name": "Custom", "inputs": [{ "name": "", "type": "string" }] },
+  { "type": "error", "name": "InsufficientAllowance", "inputs": [] },
+  { "type": "error", "name": "InsufficientBalance", "inputs": [] },
+  { "type": "error", "name": "SafeTransferCheckFailed", "inputs": [{ "name": "", "type": "string" }] },
+  { "type": "error", "name": "ZeroRecipientAddress", "inputs": [] },
+  { "type": "error", "name": "ZeroSenderAddress", "inputs": [] }
 ]
