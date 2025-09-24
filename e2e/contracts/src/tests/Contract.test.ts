@@ -1,5 +1,5 @@
 import { assert } from '@dedot/utils';
-import { Contract, isSolContractCustomError } from 'dedot/contracts';
+import { Contract, isSolContractExecutionError } from 'dedot/contracts';
 import { beforeEach, describe, expect, it } from 'vitest';
 import { FlipperContractApi } from '../contracts/flipper';
 import { FlipperSolContractApi } from '../contracts/flipper-sol';
@@ -205,24 +205,26 @@ describe('Contract', () => {
         await contract.query.throwUnitError();
         expect(true).toBe(false); // Should not reach here
       } catch (error: any) {
-        assert(isSolContractCustomError(error), 'Should be a custom contract error');
-        expect(error.errorName).toBe('UnitError');
+        assert(isSolContractExecutionError(error), 'Should be a custom contract error');
+        expect(error.message).toBe('Error: UnitError');
+        expect(error.details).toBeDefined();
       }
 
       try {
         await contract.query.throwErrorWithParams();
         expect(true).toBe(false); // Should not reach here
       } catch (error: any) {
-        assert(isSolContractCustomError(error), 'Should be a custom contract error');
-        expect(error.errorName).toBe('ErrorWithParams');
+        assert(isSolContractExecutionError(error), 'Should be a custom contract error');
+        expect(error.message).toBe('Error: ErrorWithParams');
+        expect(error.details).toBeDefined();
       }
 
       try {
         await contract.query.throwErrorWithNamedParams();
         expect(true).toBe(false); // Should not reach here
       } catch (error: any) {
-        assert(isSolContractCustomError(error), 'Should be a custom contract error');
-        expect(error.errorName).toBe('ErrorWithNamedParams');
+        assert(isSolContractExecutionError(error), 'Should be a custom contract error');
+        expect(error.details).toBeDefined();
       }
     });
   });

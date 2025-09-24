@@ -2,14 +2,14 @@ import { type ISubstrateClient } from '@dedot/api';
 import { type SubstrateApi } from '@dedot/api/chaintypes';
 import { GenericSubstrateApi, RpcVersion } from '@dedot/types';
 import { assert, DedotError, isPvm, isUndefined, toHex, toU8a } from '@dedot/utils';
-import { decodeErrorResult, encodeDeployData, DecodeErrorResultReturnType } from 'viem/utils';
-import { ContractInstantiateDispatchError, SolContractInstantiateCustomError } from '../../errors.js';
+import { decodeErrorResult, encodeDeployData } from 'viem/utils';
+import { ContractInstantiateDispatchError, SolContractInstantiateError } from '../../errors.js';
 import {
-  GenericConstructorQueryCall,
   ConstructorCallOptions,
   ContractCode,
   ContractInstantiateResult,
   GenericConstructorCallResult,
+  GenericConstructorQueryCall,
 } from '../../types/index.js';
 import { ensureParamsLength, toReturnFlags } from '../../utils/index.js';
 import { SolDeployerExecutor } from './abstract/index.js';
@@ -87,19 +87,19 @@ export class SolConstructorQueryExecutor<ChainApi extends GenericSubstrateApi> e
       const flags = toReturnFlags(raw.result.value.result.flags.bits);
 
       if (flags.revert) {
-        let errorDesc: DecodeErrorResultReturnType;
         try {
           // This could be failed if the errors is thrown by panic! or assert!
           // Because for now, those error data format is not correctly encoded
-          errorDesc = decodeErrorResult({
+          // TODO fix this
+          const errorResult = decodeErrorResult({
             abi: this.abi,
             data: raw.result.value.result.data,
           });
+
+          throw new SolContractInstantiateError(raw, errorResult);
         } catch (e) {
           throw new DedotError(`Failed to decode revert reason ${(e as Error).message}`);
         }
-
-        throw new SolContractInstantiateCustomError(errorDesc.errorName, raw, errorDesc);
       }
 
       return {
