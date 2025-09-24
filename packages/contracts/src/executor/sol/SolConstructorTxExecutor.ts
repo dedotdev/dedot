@@ -130,7 +130,7 @@ export class SolConstructorTxExecutor<ChainApi extends GenericSubstrateApi> exte
 
           const {
             raw: { gasRequired, storageDeposit },
-          } = await executor.doExecute(_)(...params);
+          } = await executor.doExecute('initialize')(...params);
 
           // Replace the params with gas limit and storage deposit limit
           if (!hasGasLimit) {

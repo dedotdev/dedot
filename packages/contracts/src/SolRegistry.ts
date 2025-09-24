@@ -22,7 +22,7 @@ export class SolRegistry {
   findTxAbiFunction(name: string): SolAbiFunction | undefined {
     const found = this.findAbiFunction(name);
 
-    if (found && found.stateMutability !== 'view') {
+    if (found && (found.stateMutability === 'payable' || found.stateMutability === 'nonpayable')) {
       return found;
     }
 

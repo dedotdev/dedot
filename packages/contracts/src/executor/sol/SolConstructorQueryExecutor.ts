@@ -105,7 +105,7 @@ export class SolConstructorQueryExecutor<ChainApi extends GenericSubstrateApi> e
       }
 
       return {
-        data,
+        data: [],
         raw,
         flags,
         address: raw.result.value.address,

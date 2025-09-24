@@ -85,11 +85,17 @@ export class SolQueryExecutor<ChainApi extends GenericSubstrateApi> extends SolC
         throw new SolContractExecutionError(raw, { details: errorResult });
       }
 
-      const decodedData: any[] = decodeFunctionResult({
+      let decodedData: any[] = decodeFunctionResult({
         abi: this.abi,
         functionName: abiFunction.name,
         data,
       });
+
+      // if this is a tx, then this is a dry run, so the data will be default to []
+      const isTx = abiFunction.stateMutability === 'payable' || abiFunction.stateMutability === 'nonpayable';
+      if (isTx && data === '0x' && decodedData === undefined) {
+        decodedData = [];
+      }
 
       return {
         data: decodedData,
