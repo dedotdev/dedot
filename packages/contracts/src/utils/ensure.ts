@@ -71,14 +71,18 @@ export function ensureValidContractAddress(address: ContractAddress, isRevive: b
       `Invalid contract address: ${address}. Expected an EVM 20-byte address as a hex string or a Uint8Array`,
     );
   } else {
-    ensureValidAccountId32Address(address);
+    ensureValidAccountId32Address(
+      address,
+      `Invalid contract address: ${address}. Expected a Substrate 32-byte address as a hex string or a Uint8Array`,
+    );
   }
 }
 
-export function ensureValidAccountId32Address(address: AccountId32Like) {
+export function ensureValidAccountId32Address(address: AccountId32Like, customErrorMessage?: string) {
   assert(
     hexToU8a(accountId32ToHex(address)).length === 32,
-    `Invalid AccountId32 address: ${address}. Expected a Substrate 32-byte address as a hex string or a Uint8Array`,
+    customErrorMessage ||
+      `Invalid AccountId32 address: ${address}. Expected a Substrate 32-byte address as a hex string or a Uint8Array`,
   );
 }
 
