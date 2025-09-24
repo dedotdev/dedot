@@ -438,7 +438,7 @@ describe('ContractDeployer', () => {
         expect(true).toBe(false); // Should not reach here
       } catch (e: any) {
         expect(e).instanceOf(DedotError);
-        expect(e.message).toMatch(/Failed to decode revert reason /);
+        expect(e.message).toMatch(/Failed to decode error /);
       }
     });
 
