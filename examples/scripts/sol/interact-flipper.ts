@@ -68,7 +68,6 @@ try {
   const result = await contract.query.throwUnitError();
   console.log('Result:', result);
 } catch (error: any) {
-  console.dir(error, { depth: null });
   console.log('   ✅ Expected error caught:', error.message || error);
 }
 
@@ -78,7 +77,6 @@ try {
   const result = await contract.query.throwErrorWithParams();
   console.log('Result:', result);
 } catch (error: any) {
-  console.dir(error, { depth: null });
   console.log('   ✅ Expected error caught:', error.message || error);
 }
 
@@ -88,7 +86,6 @@ try {
   const result = await contract.query.throwErrorWithNamedParams();
   console.log('Result:', result);
 } catch (error: any) {
-  console.dir(error, { depth: null });
   console.log('   ✅ Expected error caught:', error.message || error);
 }
 

@@ -71,17 +71,18 @@ export class SolQueryExecutor<ChainApi extends GenericSubstrateApi> extends SolC
 
       const data = raw.result.value.data;
       if (flags.revert) {
+        let errorResult;
         try {
-          const errorResult = decodeErrorResult({
+          errorResult = decodeErrorResult({
             abi: this.abi,
             data,
           });
-
-          throw new SolContractExecutionError(raw, { details: errorResult });
         } catch (e: any) {
           // TODO make this better, handle panic!, assert! cases
           throw new SolContractExecutionError(raw, { message: `Failed to decode error. Details: ${e.message}` });
         }
+
+        throw new SolContractExecutionError(raw, { details: errorResult });
       }
 
       const decodedData: any[] = decodeFunctionResult({
