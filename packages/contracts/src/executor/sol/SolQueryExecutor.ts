@@ -10,7 +10,12 @@ import {
   GenericContractCallResult,
   GenericContractQueryCall,
 } from '../../types/index.js';
-import { ensureContractPresence, ensureParamsLength, toReturnFlags } from '../../utils/index.js';
+import {
+  ensureContractPresence,
+  ensureParamsLength,
+  ensureValidAccountId32Address,
+  toReturnFlags,
+} from '../../utils/index.js';
 import { SolContractExecutor } from './abstract/SolContractExecutor.js';
 
 export class SolQueryExecutor<ChainApi extends GenericSubstrateApi> extends SolContractExecutor<ChainApi> {
@@ -26,6 +31,7 @@ export class SolQueryExecutor<ChainApi extends GenericSubstrateApi> extends SolC
       const callOptions = (params[inputs.length] || {}) as ContractCallOptions;
       const { caller = this.options.defaultCaller, value = 0n, gasLimit, storageDepositLimit } = callOptions;
       assert(caller, 'Expected a valid caller address in ContractCallOptions');
+      ensureValidAccountId32Address(caller);
 
       const bytes = encodeFunctionData({
         abi: this.abi,

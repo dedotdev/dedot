@@ -1,6 +1,6 @@
 import { ISubstrateClient } from '@dedot/api';
 import { SubstrateApi } from '@dedot/api/chaintypes';
-import { accountId32ToHex, Hash } from '@dedot/codecs';
+import { AccountId32Like, accountId32ToHex, Hash } from '@dedot/codecs';
 import { RpcVersion } from '@dedot/types';
 import {
   assert,
@@ -14,7 +14,6 @@ import {
   isWasm,
   toU8a,
 } from '@dedot/utils';
-import { TypinkRegistry } from 'src/TypinkRegistry';
 import { ContractAddress, LooseContractMetadata } from '../types/index.js';
 
 export const ensureStorageApiSupports = (version: string | number) => {
@@ -72,11 +71,15 @@ export function ensureValidContractAddress(address: ContractAddress, isRevive: b
       `Invalid contract address: ${address}. Expected an EVM 20-byte address as a hex string or a Uint8Array`,
     );
   } else {
-    assert(
-      hexToU8a(accountId32ToHex(address)).length === 32,
-      `Invalid contract address: ${address}. Expected a Substrate 32-byte address as a hex string or a Uint8Array`,
-    );
+    ensureValidAccountId32Address(address);
   }
+}
+
+export function ensureValidAccountId32Address(address: AccountId32Like) {
+  assert(
+    hexToU8a(accountId32ToHex(address)).length === 32,
+    `Invalid AccountId32 address: ${address}. Expected a Substrate 32-byte address as a hex string or a Uint8Array`,
+  );
 }
 
 export function ensureValidCodeHashOrCode(codeHashOrCode: Hash | Uint8Array | string, isRevive: boolean) {

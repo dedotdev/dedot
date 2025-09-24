@@ -11,7 +11,7 @@ import {
   GenericConstructorCallResult,
   GenericConstructorQueryCall,
 } from '../../types/index.js';
-import { ensureParamsLength, toReturnFlags } from '../../utils/index.js';
+import { ensureParamsLength, ensureValidAccountId32Address, toReturnFlags } from '../../utils/index.js';
 import { SolDeployerExecutor } from './abstract/index.js';
 
 export class SolConstructorQueryExecutor<ChainApi extends GenericSubstrateApi> extends SolDeployerExecutor<ChainApi> {
@@ -32,6 +32,8 @@ export class SolConstructorQueryExecutor<ChainApi extends GenericSubstrateApi> e
         salt,
       } = callOptions;
       assert(caller, 'Expected a valid caller address in ConstructorCallOptions');
+      ensureValidAccountId32Address(caller);
+
       assert(
         isUndefined(salt) || toU8a(salt).byteLength == 32,
         'Invalid salt provided in ConstructorCallOptions: expected a 32-byte value as a hex string or a Uint8Array',

@@ -10,7 +10,12 @@ import {
   GenericContractCallResult,
   GenericContractQueryCall,
 } from '../../types/index.js';
-import { ensureContractPresence, ensureParamsLength, toReturnFlags } from '../../utils/index.js';
+import {
+  ensureContractPresence,
+  ensureParamsLength,
+  ensureValidAccountId32Address,
+  toReturnFlags,
+} from '../../utils/index.js';
 import { ContractExecutor } from './abstract/index.js';
 
 export class QueryExecutor<ChainApi extends GenericSubstrateApi> extends ContractExecutor<ChainApi> {
@@ -26,6 +31,7 @@ export class QueryExecutor<ChainApi extends GenericSubstrateApi> extends Contrac
       const callOptions = (params[args.length] || {}) as ContractCallOptions;
       const { caller = this.options.defaultCaller, value = 0n, gasLimit, storageDepositLimit } = callOptions;
       assert(caller, 'Expected a valid caller address in ContractCallOptions');
+      ensureValidAccountId32Address(caller);
 
       const formattedInputs = args.map((arg, index) => this.tryEncode(arg, params[index]));
       const bytes = u8aToHex(concatU8a(hexToU8a(meta.selector), ...formattedInputs));

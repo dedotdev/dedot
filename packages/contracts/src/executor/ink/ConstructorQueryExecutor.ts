@@ -11,7 +11,7 @@ import {
   GenericConstructorCallResult,
   GenericConstructorQueryCall,
 } from '../../types/index.js';
-import { ensureParamsLength, toReturnFlags } from '../../utils/index.js';
+import { ensureParamsLength, ensureValidAccountId32Address, toReturnFlags } from '../../utils/index.js';
 import { DeployerExecutor } from './abstract/index.js';
 
 export class ConstructorQueryExecutor<ChainApi extends GenericSubstrateApi> extends DeployerExecutor<ChainApi> {
@@ -33,6 +33,7 @@ export class ConstructorQueryExecutor<ChainApi extends GenericSubstrateApi> exte
         salt,
       } = callOptions;
       assert(caller, 'Expected a valid caller address in ConstructorCallOptions');
+      ensureValidAccountId32Address(caller);
 
       const formattedInputs = args.map((arg, index) => this.tryEncode(arg, params[index]));
       const bytes = u8aToHex(concatU8a(hexToU8a(meta.selector), ...formattedInputs));
