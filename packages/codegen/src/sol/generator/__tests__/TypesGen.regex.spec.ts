@@ -94,8 +94,8 @@ describe('TypesGen regex coverage', () => {
   });
 
   it('expect COMPONENT_TYPES handle empty tuple and arrays', () => {
-    expect(gen.generateType(td('tuple'))).toBe('{}');
-    expect(gen.generateType(td('tuple[2][]'))).toBe('Array<FixedArray<{}, 2>>');
+    expect(gen.generateType(td('tuple'))).toBe('[]');
+    expect(gen.generateType(td('tuple[2][]'))).toBe('Array<FixedArray<[], 2>>');
   });
 
   it('expect COMPONENT_TYPES with named components generate object type', () => {
