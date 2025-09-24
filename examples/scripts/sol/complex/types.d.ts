@@ -51,8 +51,8 @@ export type ProcessEverythingMixedEverythingInput = {
   i256: bigint;
   uf: UFixed<128, 18>;
   f: Fixed<128, 18>;
-  ufMn: UFixed<32, 5>;
-  fMn: Fixed<64, 10>;
+  uf_mn: UFixed<32, 5>;
+  f_mn: Fixed<64, 10>;
   names: string[];
   addrGrid: FixedArray<FixedArray<H160, 2>, 3>;
   byteRows: FixedArray<Array<BytesLike>, 2>;

@@ -1,5 +1,5 @@
 import { SolAbi, SolAbiItem, SolAbiTypeDef } from '@dedot/contracts';
-import { stringCamelCase, stringPascalCase } from '@dedot/utils';
+import { stringPascalCase } from '@dedot/utils';
 import { TypeImports } from '../../shared/TypeImports.js';
 import { beautifySourceCode, compileTemplate, isNativeType } from '../../utils.js';
 
@@ -13,8 +13,8 @@ const BOOL_TYPES = /^bool(\[(\d+)?])*?$/;
 const ADDRESS_TYPES = /^address(\[(\d+)?])*?$/;
 const FUNCTION_TYPES = /^function(\[(\d+)?])*?$/;
 const COMPONENT_TYPES = /^tuple(\[(\d+)?])*?$/;
-const ARRAY_DIM = /\[(\d+)?\]/g;
-const ONLY_ARRAY_DIM = /^\[(\d+)?\]$/;
+const ARRAY_DIM = /\[(\d+)?]/g;
+const ONLY_ARRAY_DIM = /^\[(\d+)?]$/;
 
 export const SUPPORTED_SOLIDITY_TYPES = [
   INT_TYPES,
@@ -219,7 +219,7 @@ export class TypesGen {
       return `[${props.map(({ type }) => `${type}`).join(', ')}]`;
     }
 
-    return `{${props.map(({ name, type }) => `${stringCamelCase(name)}: ${type}`).join(',\n')}}`;
+    return `{${props.map(({ name, type }) => `${name}: ${type}`).join(',\n')}}`;
   }
 
   addTypeImport(typeName: string | string[]) {
