@@ -52,11 +52,9 @@ export async function ensureContractPresence(
   address: ContractAddress,
   cache?: LRUCache,
 ) {
-  const cacheKey = `${isRevive ? 'revive' : 'contracts'}:${address}`;
-
   // Check cache first if available
   if (cache) {
-    const cached = cache.get<boolean>(cacheKey);
+    const cached = cache.get<boolean>(`${isRevive}::${address}`);
     if (cached) {
       return; // Contract presence was already verified
     }
@@ -77,7 +75,7 @@ export async function ensureContractPresence(
 
   // Cache successful presence check
   if (cache) {
-    cache.set(cacheKey, true);
+    cache.set(`${isRevive}::${address}`, true);
   }
 }
 
