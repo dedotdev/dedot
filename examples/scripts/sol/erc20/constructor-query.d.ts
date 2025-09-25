@@ -16,7 +16,7 @@ export interface ConstructorQuery<ChainApi extends GenericSubstrateApi, Type ext
    * @param {bigint} totalSupply
    * @param {ConstructorCallOptions} options
    **/
-  initialize: GenericConstructorQueryCall<
+  new: GenericConstructorQueryCall<
     ChainApi,
     (
       totalSupply: bigint,

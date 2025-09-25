@@ -20,7 +20,7 @@ export interface ConstructorQuery<ChainApi extends GenericSubstrateApi, Type ext
    * @param {number} decimals
    * @param {ConstructorCallOptions} options
    **/
-  initialize: GenericConstructorQueryCall<
+  new: GenericConstructorQueryCall<
     ChainApi,
     (
       supply: bigint,

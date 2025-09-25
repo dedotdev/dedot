@@ -21,7 +21,7 @@ export interface ConstructorQuery<ChainApi extends GenericSubstrateApi, Type ext
    * @param {BytesLike} bootData
    * @param {ConstructorCallOptions} options
    **/
-  initialize: GenericConstructorQueryCall<
+  new: GenericConstructorQueryCall<
     ChainApi,
     (
       owner: H160,

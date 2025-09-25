@@ -346,7 +346,7 @@ describe('ContractDeployer', () => {
     });
 
     it('should dry run sol contract properly', async () => {
-      const result = await deployer.query.initialize(true);
+      const result = await deployer.query.new(true);
 
       expect(result).toBeDefined();
       expect(result.address).toBeDefined();
@@ -357,12 +357,12 @@ describe('ContractDeployer', () => {
 
     it('should deploy sol contract using PVM code properly', async () => {
       const salt = generateRandomHex();
-      const { raw, inputData } = await deployer.query.initialize(true, { salt });
+      const { raw, inputData } = await deployer.query.new(true, { salt });
 
       const contractAddress = CREATE2(toEvmAddress(alice.address), flipperSolCode, inputData, salt);
 
       await deployer.tx
-        .initialize(true, {
+        .new(true, {
           gasLimit: raw.gasRequired,
           storageDepositLimit: raw.storageDeposit.value,
           salt,
@@ -382,13 +382,13 @@ describe('ContractDeployer', () => {
     });
 
     it('should deploy sol contract without salt properly', async () => {
-      const { raw } = await deployer.query.initialize(true);
+      const { raw } = await deployer.query.new(true);
 
       const nonce = await reviveClient.call.accountNonceApi.accountNonce(alice.address);
       const contractAddress = CREATE1(toEvmAddress(alice.address), nonce);
 
       await deployer.tx
-        .initialize(true, {
+        .new(true, {
           gasLimit: raw.gasRequired,
           storageDepositLimit: raw.storageDeposit.value,
         })
@@ -408,12 +408,12 @@ describe('ContractDeployer', () => {
 
     it('should deploy sol contract with salt properly', async () => {
       const salt = generateRandomHex();
-      const { raw, inputData } = await deployer.query.initialize(true, { salt });
+      const { raw, inputData } = await deployer.query.new(true, { salt });
 
       const contractAddress = CREATE2(toEvmAddress(alice.address), flipperSolCode, inputData, salt);
 
       await deployer.tx
-        .initialize(true, {
+        .new(true, {
           gasLimit: raw.gasRequired,
           storageDepositLimit: raw.storageDeposit.value,
           salt,
@@ -434,7 +434,7 @@ describe('ContractDeployer', () => {
 
     it('should handle error properly with assert!', async () => {
       try {
-        await deployer.query.initialize(false);
+        await deployer.query.new(false);
         expect(true).toBe(false); // Should not reach here
       } catch (e: any) {
         expect(e).instanceOf(DedotError);
@@ -444,7 +444,7 @@ describe('ContractDeployer', () => {
 
     describe('auto dry-run', () => {
       it('should deploy sol contract without salt properly', async () => {
-        const txResult = await deployer.tx.initialize(true).signAndSend(alice).untilFinalized();
+        const txResult = await deployer.tx.new(true).signAndSend(alice).untilFinalized();
 
         console.log('Deployed sol contract address:', await txResult.contractAddress());
 
@@ -457,7 +457,7 @@ describe('ContractDeployer', () => {
       it('should deploy sol contract with salt properly', async () => {
         const salt = generateRandomHex();
 
-        const txResult = await deployer.tx.initialize(true, { salt }).signAndSend(alice).untilFinalized();
+        const txResult = await deployer.tx.new(true, { salt }).signAndSend(alice).untilFinalized();
 
         console.log('Deployed sol contract address:', await txResult.contractAddress());
 
@@ -468,11 +468,8 @@ describe('ContractDeployer', () => {
       });
 
       it('should deploy sol contract with lack of required options', async () => {
-        const { raw } = await deployer.query.initialize(true);
-        const txResult = await deployer.tx
-          .initialize(true, { gasLimit: raw.gasRequired })
-          .signAndSend(alice)
-          .untilFinalized();
+        const { raw } = await deployer.query.new(true);
+        const txResult = await deployer.tx.new(true, { gasLimit: raw.gasRequired }).signAndSend(alice).untilFinalized();
 
         console.log('Deployed sol contract address:', await txResult.contractAddress());
 

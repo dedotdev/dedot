@@ -29,7 +29,7 @@ console.log('='.repeat(60));
 
 const initialSupply = 1000000000n;
 const deployerResult = await deployer.tx
-  .initialize(initialSupply, [true, 'Test Coin'], [true, 'TC'], 5)
+  .new(initialSupply, [true, 'Test Coin'], [true, 'TC'], 5)
   .signAndSend(alice)
   .untilFinalized();
 

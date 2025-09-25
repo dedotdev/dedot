@@ -24,7 +24,7 @@ export interface ConstructorTx<
    * @param {BytesLike} bootData
    * @param {ConstructorTxOptions} options
    **/
-  initialize: GenericConstructorTxCall<
+  new: GenericConstructorTxCall<
     ChainApi,
     (
       owner: H160,

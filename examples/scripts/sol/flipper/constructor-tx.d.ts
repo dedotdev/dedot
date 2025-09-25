@@ -19,7 +19,7 @@ export interface ConstructorTx<
    * @param {boolean} initValue
    * @param {ConstructorTxOptions} options
    **/
-  initialize: GenericConstructorTxCall<
+  new: GenericConstructorTxCall<
     ChainApi,
     (
       initValue: boolean,

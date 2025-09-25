@@ -20,7 +20,7 @@ export interface ConstructorTx<
    * @param {Array<FixedBytes<32>>} proposalNames
    * @param {ConstructorTxOptions} options
    **/
-  initialize: GenericConstructorTxCall<
+  new: GenericConstructorTxCall<
     ChainApi,
     (
       proposalNames: Array<FixedBytes<32>>,

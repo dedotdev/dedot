@@ -66,7 +66,7 @@ export const deployFlipperSol = async (signer: KeyringPair): Promise<Contract<Fl
   });
 
   const txResult = await deployer.tx
-    .initialize(true) // initialize with true
+    .new(true) // initialize with true
     .signAndSend(signer)
     .untilFinalized();
 

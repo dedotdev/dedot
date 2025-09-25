@@ -46,7 +46,7 @@ export class ConstructorQueryGen {
       ),
       optionsTypeName ? `@param {${optionsTypeName}} ${optionsParamName}` : '',
     )}`;
-    callsOut += `initialize: ${this.generateMethodDef(abiItem, optionsParamName)};\n\n`;
+    callsOut += `new: ${this.generateMethodDef(abiItem, optionsParamName)};\n\n`;
 
     return callsOut;
   }

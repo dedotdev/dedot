@@ -17,7 +17,7 @@ const deployer = new ContractDeployer<StorageContractApi>(client, abi, code, { d
 
 console.log('Trying deploy contract...');
 
-const deployerResult = await deployer.tx.initialize().signAndSend(alice).untilFinalized();
+const deployerResult = await deployer.tx.new().signAndSend(alice).untilFinalized();
 const contractAddress = await deployerResult.contractAddress();
 
 console.log('Contract deployed at address:', contractAddress);

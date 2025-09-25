@@ -15,7 +15,7 @@ export interface ConstructorQuery<ChainApi extends GenericSubstrateApi, Type ext
   /**
    * @param {ConstructorCallOptions} options
    **/
-  initialize: GenericConstructorQueryCall<
+  new: GenericConstructorQueryCall<
     ChainApi,
     (
       options?: ConstructorCallOptions,

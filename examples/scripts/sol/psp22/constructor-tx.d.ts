@@ -23,7 +23,7 @@ export interface ConstructorTx<
    * @param {number} decimals
    * @param {ConstructorTxOptions} options
    **/
-  initialize: GenericConstructorTxCall<
+  new: GenericConstructorTxCall<
     ChainApi,
     (
       supply: bigint,

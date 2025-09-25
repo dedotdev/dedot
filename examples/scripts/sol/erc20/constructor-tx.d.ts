@@ -19,7 +19,7 @@ export interface ConstructorTx<
    * @param {bigint} totalSupply
    * @param {ConstructorTxOptions} options
    **/
-  initialize: GenericConstructorTxCall<
+  new: GenericConstructorTxCall<
     ChainApi,
     (
       totalSupply: bigint,

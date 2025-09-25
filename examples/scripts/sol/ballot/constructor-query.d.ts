@@ -17,7 +17,7 @@ export interface ConstructorQuery<ChainApi extends GenericSubstrateApi, Type ext
    * @param {Array<FixedBytes<32>>} proposalNames
    * @param {ConstructorCallOptions} options
    **/
-  initialize: GenericConstructorQueryCall<
+  new: GenericConstructorQueryCall<
     ChainApi,
     (
       proposalNames: Array<FixedBytes<32>>,

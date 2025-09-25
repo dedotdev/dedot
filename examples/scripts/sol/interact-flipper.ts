@@ -19,7 +19,7 @@ console.log('='.repeat(60));
 console.log('🚀 Deploying Flipper contract...');
 console.log('='.repeat(60));
 
-const deployerResult = await deployer.tx.initialize(true).signAndSend(alice).untilFinalized();
+const deployerResult = await deployer.tx.new(true).signAndSend(alice).untilFinalized();
 const contractAddress = await deployerResult.contractAddress();
 
 console.log('✅ Contract deployed at address:', contractAddress);

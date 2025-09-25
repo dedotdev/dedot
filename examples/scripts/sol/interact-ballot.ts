@@ -30,7 +30,7 @@ const proposalNames: FixedBytes<32>[] = [
 ];
 
 const result = await deployer.tx
-  .initialize(proposalNames) // --
+  .new(proposalNames) // --
   .signAndSend(alice)
   .untilFinalized();
 const contractAddress = await result.contractAddress();
