@@ -1,5 +1,5 @@
 import { IEventRecord, IRuntimeEvent } from '@dedot/codecs/types';
-import { assert, stringCamelCase } from '@dedot/utils';
+import { assert, stringCamelCase, LRUCache } from '@dedot/utils';
 import { decodeEventLog } from 'viem/utils';
 import {
   ContractAddress,
@@ -13,7 +13,11 @@ import {
 import { ContractEmittedEvent } from './utils/index.js';
 
 export class SolRegistry {
-  constructor(public readonly abi: SolAbi) {}
+  public readonly cache: LRUCache;
+
+  constructor(public readonly abi: SolAbi) {
+    this.cache = new LRUCache(500);
+  }
 
   findAbiFunction(name: string): SolAbiFunction | undefined {
     return this.abi.find((one) => one.type === 'function' && stringCamelCase(one.name) === name) as SolAbiFunction;

@@ -1,7 +1,7 @@
 import { AccountId32, TypeId, TypeRegistry } from '@dedot/codecs';
 import * as $ from '@dedot/shape';
 import { IEventRecord, IRuntimeEvent } from '@dedot/types';
-import { assert, DedotError, HexString, hexToU8a, stringCamelCase, stringPascalCase } from '@dedot/utils';
+import { assert, DedotError, HexString, hexToU8a, stringCamelCase, stringPascalCase, LRUCache } from '@dedot/utils';
 import { LazyMapping, LazyObject, LazyStorageVec } from './storage/index.js';
 import { ContractAddress, ContractEvent, ContractEventMeta, ContractMetadata, ContractType } from './types/index.js';
 import {
@@ -23,6 +23,8 @@ export interface TypinkRegistryOptions {
 }
 
 export class TypinkRegistry extends TypeRegistry {
+  public readonly cache: LRUCache;
+
   constructor(
     public readonly metadata: ContractMetadata,
     public readonly options?: TypinkRegistryOptions,
@@ -30,6 +32,7 @@ export class TypinkRegistry extends TypeRegistry {
     ensureSupportedContractMetadataVersion(metadata);
 
     super(extractContractTypes(metadata));
+    this.cache = new LRUCache(500);
   }
 
   findCodec<I = unknown, O = I>(typeId: TypeId): $.Shape<I, O> {

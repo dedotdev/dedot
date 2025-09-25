@@ -41,8 +41,7 @@ export class SolQueryExecutor<ChainApi extends GenericSubstrateApi> extends SolC
 
       const client = this.client as unknown as ISubstrateClient<SubstrateApi[RpcVersion]>;
 
-      // TODO cache this call
-      await ensureContractPresence(client, true, this.address);
+      await ensureContractPresence(client, true, this.address, this.registry.cache);
 
       const raw: ContractCallResult<ChainApi> = await (async () => {
         const raw = await client.call.reviveApi.call(
@@ -85,24 +84,28 @@ export class SolQueryExecutor<ChainApi extends GenericSubstrateApi> extends SolC
         throw new SolContractExecutionError(raw, { details: errorResult });
       }
 
-      let decodedData: any[] = decodeFunctionResult({
-        abi: this.abi,
-        functionName: abiFunction.name,
-        data,
-      });
+      try {
+        let decodedData: any[] = decodeFunctionResult({
+          abi: this.abi,
+          functionName: abiFunction.name,
+          data,
+        });
 
-      // if this is a tx, then this is a dry run, so the data will be default to []
-      const isTx = abiFunction.stateMutability === 'payable' || abiFunction.stateMutability === 'nonpayable';
-      if (isTx && data === '0x' && decodedData === undefined) {
-        decodedData = [];
+        // if this is a tx, then this is a dry run, so the data will be default to []
+        const isTx = abiFunction.stateMutability === 'payable' || abiFunction.stateMutability === 'nonpayable';
+        if (isTx && data === '0x' && decodedData === undefined) {
+          decodedData = [];
+        }
+
+        return {
+          data: decodedData,
+          raw,
+          flags,
+          inputData: bytes,
+        } as GenericContractCallResult;
+      } catch (e: any) {
+        throw new SolContractExecutionError(raw, { message: `Failed to decode result. Details: ${e.message}` });
       }
-
-      return {
-        data: decodedData,
-        raw,
-        flags,
-        inputData: bytes,
-      } as GenericContractCallResult;
     };
 
     callFn.meta = abiFunction;

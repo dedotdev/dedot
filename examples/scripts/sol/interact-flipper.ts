@@ -1,6 +1,6 @@
 import { cryptoWaitReady } from '@polkadot/util-crypto';
 import { LegacyClient, WsProvider } from 'dedot';
-import { ContractDeployer } from 'dedot/contracts';
+import { Contract, ContractDeployer } from 'dedot/contracts';
 import { devPairs } from '../keyring.js';
 import { flipper } from './abi.js';
 import { FlipperContractApi } from './flipper/index.js';

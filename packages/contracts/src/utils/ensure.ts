@@ -13,6 +13,7 @@ import {
   isPvm,
   isWasm,
   toU8a,
+  LRUCache,
 } from '@dedot/utils';
 import { ContractAddress, LooseContractMetadata } from '../types/index.js';
 
@@ -49,7 +50,18 @@ export async function ensureContractPresence(
   client: ISubstrateClient<SubstrateApi[RpcVersion]>,
   isRevive: boolean,
   address: ContractAddress,
+  cache?: LRUCache,
 ) {
+  const cacheKey = `${isRevive ? 'revive' : 'contracts'}:${address}`;
+
+  // Check cache first if available
+  if (cache) {
+    const cached = cache.get<boolean>(cacheKey);
+    if (cached) {
+      return; // Contract presence was already verified
+    }
+  }
+
   const contractInfo = await (async () => {
     if (isRevive) {
       const accountInfo = await client.query.revive.accountInfoOf(address as HexString);
@@ -62,6 +74,11 @@ export async function ensureContractPresence(
   })();
 
   ensurePresence(contractInfo, `Contract with address ${address} does not exist on chain!`);
+
+  // Cache successful presence check
+  if (cache) {
+    cache.set(cacheKey, true);
+  }
 }
 
 export function ensureValidContractAddress(address: ContractAddress, isRevive: boolean) {

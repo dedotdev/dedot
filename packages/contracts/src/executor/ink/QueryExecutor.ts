@@ -38,8 +38,7 @@ export class QueryExecutor<ChainApi extends GenericSubstrateApi> extends Contrac
 
       const client = this.client as unknown as ISubstrateClient<SubstrateApi[RpcVersion]>;
 
-      // TODO cache this call
-      await ensureContractPresence(client, this.registry.isRevive(), this.address);
+      await ensureContractPresence(client, this.registry.isRevive(), this.address, this.registry.cache);
 
       const raw: ContractCallResult<ChainApi> = await (async () => {
         if (this.registry.isRevive()) {
