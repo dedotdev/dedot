@@ -1,6 +1,6 @@
 import { AccountId20, AccountId20Like, AccountId32, AccountId32Like, BytesLike } from '@dedot/codecs';
 import { concatU8a, HexString, hexToU8a, keccakAsU8a, toHex, toU8a, u8aToHex } from '@dedot/utils';
-import { RLP } from '@ethereumjs/rlp';
+import { toRlp } from 'viem/utils';
 
 /**
  * Calculate new contract's address is based on the deployer's address and a nonce
@@ -11,7 +11,7 @@ import { RLP } from '@ethereumjs/rlp';
  * @param nonce
  */
 export function CREATE1(deployer: AccountId20Like, nonce: number): HexString {
-  const encodedData = RLP.encode([new AccountId20(deployer).raw, toHex(nonce)]);
+  const encodedData = toRlp([new AccountId20(deployer).raw, toHex(nonce)]);
   const hash = keccakAsU8a(encodedData);
 
   return u8aToHex(hash.subarray(12));

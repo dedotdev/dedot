@@ -216,7 +216,7 @@ export interface GenericChainKnownTypes {
   Signature: any;
   RuntimeCall: any;
   Extra: any[];
-  [method: string]: any;
+  [TypeName: string]: any;
 }
 
 export interface GenericSubstrateApi<Rv extends RpcVersion = RpcVersion> {

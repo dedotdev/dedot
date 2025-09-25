@@ -1,0 +1,59 @@
+[
+  { "type": "constructor", "inputs": [{ "name": "init_value", "type": "bool" }], "stateMutability": "nonpayable" },
+  { "type": "function", "name": "flip", "inputs": [], "outputs": [], "stateMutability": "nonpayable" },
+  {
+    "type": "function",
+    "name": "get",
+    "inputs": [],
+    "outputs": [{ "name": "", "type": "bool" }],
+    "stateMutability": "view"
+  },
+  {
+    "type": "function",
+    "name": "throw_error_with_named_params",
+    "inputs": [],
+    "outputs": [{ "name": "", "type": "bool" }],
+    "stateMutability": "view"
+  },
+  {
+    "type": "function",
+    "name": "throw_error_with_params",
+    "inputs": [],
+    "outputs": [{ "name": "", "type": "bool" }],
+    "stateMutability": "view"
+  },
+  {
+    "type": "function",
+    "name": "throw_unit_error",
+    "inputs": [],
+    "outputs": [{ "name": "", "type": "bool" }],
+    "stateMutability": "view"
+  },
+  {
+    "type": "event",
+    "name": "Flipped",
+    "inputs": [
+      { "name": "old", "type": "bool", "indexed": false },
+      { "name": "new", "type": "bool", "indexed": false }
+    ],
+    "anonymous": false
+  },
+  {
+    "type": "error",
+    "name": "ErrorWithNamedParams",
+    "inputs": [
+      { "name": "status", "type": "bool" },
+      { "name": "reason", "type": "string" }
+    ]
+  },
+  {
+    "type": "error",
+    "name": "ErrorWithParams",
+    "inputs": [
+      { "name": "", "type": "bool" },
+      { "name": "", "type": "uint8" },
+      { "name": "", "type": "string" }
+    ]
+  },
+  { "type": "error", "name": "UnitError", "inputs": [] }
+]

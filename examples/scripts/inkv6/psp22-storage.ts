@@ -1,8 +1,7 @@
 import { DedotClient, WsProvider } from 'dedot';
-import { Contract, ContractDeployer, CREATE2, toEvmAddress } from 'dedot/contracts';
+import { ContractDeployer, toEvmAddress } from 'dedot/contracts';
 import { assert, generateRandomHex } from 'dedot/utils';
 import { devPairs } from '../keyring.js';
-// @ts-ignore
 import psp22 from './psp22v6.json';
 import { Psp22v6ContractApi } from './psp22v6/index.js';
 

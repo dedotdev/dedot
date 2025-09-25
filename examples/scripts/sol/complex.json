@@ -1,0 +1,330 @@
+[
+  {
+    "type": "constructor",
+    "inputs": [
+      { "name": "owner", "type": "address" },
+      { "name": "salt", "type": "bytes32" },
+      { "name": "initNote", "type": "string" },
+      { "name": "flags", "type": "bool[3]" },
+      { "name": "bootData", "type": "bytes" }
+    ],
+    "stateMutability": "nonpayable"
+  },
+  {
+    "type": "receive",
+    "stateMutability": "payable"
+  },
+  {
+    "type": "fallback",
+    "stateMutability": "payable"
+  },
+  {
+    "type": "function",
+    "name": "processIntegers",
+    "inputs": [
+      { "name": "u8", "type": "uint8" },
+      { "name": "u16s", "type": "uint16[]" },
+      { "name": "u256_3", "type": "uint256[3]" },
+      { "name": "i128", "type": "int128" },
+      { "name": "i64s_2x2", "type": "int64[2][2]" },
+      { "name": "bigMatrix", "type": "uint256[2][3][2]" }
+    ],
+    "outputs": [
+      { "name": "sum", "type": "uint256" },
+      { "name": "minMax", "type": "tuple", "components": [
+        { "name": "min", "type": "int256" },
+        { "name": "max", "type": "int256" }
+      ] }
+    ],
+    "stateMutability": "pure"
+  },
+  {
+    "type": "function",
+    "name": "processBytes",
+    "inputs": [
+      { "name": "raw", "type": "bytes" },
+      { "name": "b10", "type": "bytes10" },
+      { "name": "b32s", "type": "bytes32[]" },
+      { "name": "twoColsDyn", "type": "bytes[][2]" },
+      { "name": "grid", "type": "bytes4[3][2]" }
+    ],
+    "outputs": [
+      { "name": "digest", "type": "bytes32" },
+      { "name": "joined", "type": "bytes" }
+    ],
+    "stateMutability": "view"
+  },
+  {
+    "type": "function",
+    "name": "processStringsAndAddresses",
+    "inputs": [
+      { "name": "title", "type": "string" },
+      { "name": "tags", "type": "string[]" },
+      { "name": "primary", "type": "address" },
+      { "name": "signers", "type": "address[2]" },
+      { "name": "ok", "type": "bool[]" }
+    ],
+    "outputs": [
+      { "name": "tagCount", "type": "uint256" },
+      { "name": "allOk", "type": "bool" }
+    ],
+    "stateMutability": "nonpayable"
+  },
+  {
+    "type": "function",
+    "name": "processFixedPoint",
+    "inputs": [
+      { "name": "ufDefault", "type": "ufixed" },
+      { "name": "fDefault", "type": "fixed" },
+      { "name": "uf_128x18", "type": "ufixed128x18" },
+      { "name": "f_64x10_pair", "type": "fixed64x10[2]" },
+      { "name": "uf_32x5_cube", "type": "ufixed32x5[2][2][2]" }
+    ],
+    "outputs": [
+      { "name": "avg", "type": "ufixed128x18" },
+      { "name": "sum", "type": "fixed128x18" }
+    ],
+    "stateMutability": "pure"
+  },
+  {
+    "type": "function",
+    "name": "processTuples",
+    "inputs": [
+      {
+        "name": "user",
+        "type": "tuple",
+        "components": [
+          { "name": "wallet", "type": "address" },
+          { "name": "active", "type": "bool" },
+          { "name": "alias", "type": "string" },
+          { "name": "score", "type": "uint256" },
+          { "name": "meta", "type": "bytes" }
+        ]
+      },
+      {
+        "name": "orders",
+        "type": "tuple[]",
+        "components": [
+          { "name": "id", "type": "bytes32" },
+          { "name": "qty", "type": "uint128" },
+          { "name": "price", "type": "ufixed128x18" },
+          {
+            "name": "items",
+            "type": "tuple[]",
+            "components": [
+              { "name": "sku", "type": "bytes32" },
+              { "name": "count", "type": "uint32" },
+              { "name": "note", "type": "string" }
+            ]
+          }
+        ]
+      },
+      {
+        "name": "matrixOfPeople",
+        "type": "tuple[2][2]",
+        "components": [
+          { "name": "name", "type": "string" },
+          { "name": "age", "type": "uint8" },
+          { "name": "fingerprint", "type": "bytes10" },
+          {
+            "name": "prefs",
+            "type": "tuple",
+            "components": [
+              { "name": "emails", "type": "string[]" },
+              { "name": "twoFA", "type": "bool" },
+              { "name": "backupCodes", "type": "bytes32[3]" }
+            ]
+          }
+        ]
+      }
+    ],
+    "outputs": [
+      {
+        "name": "summary",
+        "type": "tuple",
+        "components": [
+          { "name": "totalOrders", "type": "uint256" },
+          { "name": "totalItems", "type": "uint256" },
+          { "name": "distinctSkus", "type": "uint256" }
+        ]
+      },
+      {
+        "name": "echoUser",
+        "type": "tuple",
+        "components": [
+          { "name": "wallet", "type": "address" },
+          { "name": "active", "type": "bool" },
+          { "name": "alias", "type": "string" },
+          { "name": "score", "type": "uint256" },
+          { "name": "meta", "type": "bytes" }
+        ]
+      }
+    ],
+    "stateMutability": "view"
+  },
+  {
+    "type": "function",
+    "name": "processEverythingMixed",
+    "inputs": [
+      {
+        "name": "everything",
+        "type": "tuple",
+        "components": [
+          { "name": "addr", "type": "address" },
+          { "name": "ok", "type": "bool" },
+          { "name": "title", "type": "string" },
+          { "name": "blob", "type": "bytes" },
+          { "name": "b1", "type": "bytes1" },
+          { "name": "b7", "type": "bytes7" },
+          { "name": "b16", "type": "bytes16" },
+          { "name": "b32", "type": "bytes32" },
+          { "name": "u8", "type": "uint8" },
+          { "name": "u32", "type": "uint32" },
+          { "name": "u64", "type": "uint64" },
+          { "name": "u128", "type": "uint128" },
+          { "name": "u256", "type": "uint256" },
+          { "name": "i8", "type": "int8" },
+          { "name": "i32", "type": "int32" },
+          { "name": "i64", "type": "int64" },
+          { "name": "i128", "type": "int128" },
+          { "name": "i256", "type": "int256" },
+          { "name": "uf", "type": "ufixed" },
+          { "name": "f", "type": "fixed" },
+          { "name": "uf_mn", "type": "ufixed32x5" },
+          { "name": "f_mn", "type": "fixed64x10" },
+          { "name": "names", "type": "string[]" },
+          { "name": "addrGrid", "type": "address[2][3]" },
+          { "name": "byteRows", "type": "bytes[][2]" },
+          { "name": "nums", "type": "uint256[]" },
+          {
+            "name": "deep",
+            "type": "tuple",
+            "components": [
+              { "name": "labels", "type": "string[2]" },
+              { "name": "hashes", "type": "bytes32[]" },
+              {
+                "name": "pairs",
+                "type": "tuple[]",
+                "components": [
+                  { "name": "a", "type": "uint256" },
+                  { "name": "b", "type": "uint256" }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "outputs": [
+      { "name": "hash", "type": "bytes32" },
+      { "name": "count", "type": "uint256" }
+    ],
+    "stateMutability": "nonpayable"
+  },
+  {
+    "type": "event",
+    "name": "EverythingLogged",
+    "inputs": [
+      { "name": "who", "type": "address", "indexed": true },
+      { "name": "topic", "type": "bytes32", "indexed": true },
+      { "name": "note", "type": "string", "indexed": false },
+      { "name": "data", "type": "bytes", "indexed": false },
+      {
+        "name": "meta",
+        "type": "tuple",
+        "indexed": false,
+        "components": [
+          { "name": "ok", "type": "bool" },
+          { "name": "level", "type": "uint8" },
+          { "name": "tags", "type": "string[]" }
+        ]
+      }
+    ],
+    "anonymous": false
+  },
+  {
+    "type": "event",
+    "name": "NumbersBatch",
+    "inputs": [
+      { "name": "u", "type": "uint256[]", "indexed": false },
+      { "name": "i", "type": "int256[]", "indexed": false },
+      { "name": "packed", "type": "bytes32[3]", "indexed": false }
+    ],
+    "anonymous": false
+  },
+  {
+    "type": "error",
+    "name": "InvalidOrder",
+    "inputs": [
+      { "name": "id", "type": "bytes32" },
+      { "name": "reason", "type": "string" },
+      {
+        "name": "ctx",
+        "type": "tuple",
+        "components": [
+          { "name": "expectedMinQty", "type": "uint128" },
+          { "name": "gotQty", "type": "uint128" },
+          { "name": "price", "type": "ufixed128x18" }
+        ]
+      }
+    ]
+  },
+  {
+    "type": "error",
+    "name": "Unauthorized",
+    "inputs": [
+      { "name": "caller", "type": "address" },
+      { "name": "requiredRole", "type": "uint8" }
+    ]
+  },
+  {
+    "type": "function",
+    "name": "echoAllTypes",
+    "inputs": [
+      { "name": "addr", "type": "address" },
+      { "name": "ok", "type": "bool" },
+      { "name": "s", "type": "string" },
+      { "name": "bb", "type": "bytes" },
+      { "name": "b3", "type": "bytes3" },
+      { "name": "u24", "type": "uint24" },
+      { "name": "i40", "type": "int40" },
+      { "name": "uf128x18", "type": "ufixed128x18" },
+      { "name": "f128x18", "type": "fixed128x18" },
+      { "name": "arrDyn", "type": "uint256[]" },
+      { "name": "arrFix", "type": "int256[4]" },
+      {
+        "name": "t",
+        "type": "tuple",
+        "components": [
+          { "name": "x", "type": "uint256" },
+          { "name": "y", "type": "uint256" },
+          { "name": "label", "type": "string" }
+        ]
+      }
+    ],
+    "outputs": [
+      { "name": "addr", "type": "address" },
+      { "name": "ok", "type": "bool" },
+      { "name": "s", "type": "string" },
+      { "name": "bbLen", "type": "uint256" },
+      { "name": "b3", "type": "bytes3" },
+      { "name": "u24", "type": "uint24" },
+      { "name": "i40", "type": "int40" },
+      { "name": "uf128x18", "type": "ufixed128x18" },
+      { "name": "f128x18", "type": "fixed128x18" },
+      { "name": "arrDynLen", "type": "uint256" },
+      { "name": "arrFixSum", "type": "int256" },
+      {
+        "name": "t",
+        "type": "tuple",
+        "components": [
+          { "name": "x", "type": "uint256" },
+          { "name": "y", "type": "uint256" },
+          { "name": "label", "type": "string" }
+        ]
+      }
+    ],
+    "stateMutability": "view"
+  }
+]
+

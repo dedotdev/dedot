@@ -7,10 +7,12 @@ import type {
   GenericContractCallResult,
   GenericContractQuery,
   GenericContractQueryCall,
+  MetadataType,
 } from 'dedot/contracts';
 import type { GenericSubstrateApi } from 'dedot/types';
 
-export interface ContractQuery<ChainApi extends GenericSubstrateApi> extends GenericContractQuery<ChainApi> {
+export interface ContractQuery<ChainApi extends GenericSubstrateApi, Type extends MetadataType>
+  extends GenericContractQuery<ChainApi, Type> {
   /**
    * A message that can be called on instantiated contracts.
    * This one flips the value of the stored `bool` from `true`
@@ -22,7 +24,8 @@ export interface ContractQuery<ChainApi extends GenericSubstrateApi> extends Gen
    **/
   flip: GenericContractQueryCall<
     ChainApi,
-    (options?: ContractCallOptions) => Promise<GenericContractCallResult<[], ContractCallResult<ChainApi>>>
+    (options?: ContractCallOptions) => Promise<GenericContractCallResult<[], ContractCallResult<ChainApi>>>,
+    Type
   >;
 
   /**
@@ -34,7 +37,8 @@ export interface ContractQuery<ChainApi extends GenericSubstrateApi> extends Gen
    **/
   get: GenericContractQueryCall<
     ChainApi,
-    (options?: ContractCallOptions) => Promise<GenericContractCallResult<boolean, ContractCallResult<ChainApi>>>
+    (options?: ContractCallOptions) => Promise<GenericContractCallResult<boolean, ContractCallResult<ChainApi>>>,
+    Type
   >;
 
   /**
@@ -45,6 +49,7 @@ export interface ContractQuery<ChainApi extends GenericSubstrateApi> extends Gen
    **/
   owner: GenericContractQueryCall<
     ChainApi,
-    (options?: ContractCallOptions) => Promise<GenericContractCallResult<AccountId32, ContractCallResult<ChainApi>>>
+    (options?: ContractCallOptions) => Promise<GenericContractCallResult<AccountId32, ContractCallResult<ChainApi>>>,
+    Type
   >;
 }

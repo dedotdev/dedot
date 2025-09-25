@@ -1,9 +1,12 @@
 import { ISubstrateClient } from '@dedot/api';
 import { IEventRecord } from '@dedot/types';
 import { DedotError, HexString, toHex, toU8a } from '@dedot/utils';
+import { SolRegistry } from './SolRegistry.js';
 import { TypinkRegistry } from './TypinkRegistry.js';
-import { EventExecutor, QueryExecutor, TxExecutor } from './executor/index.js';
+import { SolEventExecutor, SolQueryExecutor, SolTxExecutor } from './executor/index.js';
+import { EventExecutor, QueryExecutor, TxExecutor } from './executor/ink/index.js';
 import {
+  AB,
   ContractAddress,
   ContractEvent,
   ContractMetadata,
@@ -11,37 +14,53 @@ import {
   GenericContractApi,
   LooseContractMetadata,
   RootLayoutV5,
+  SolAbi,
 } from './types/index.js';
 import {
   ensurePalletPresence,
   ensureStorageApiSupports,
   ensureSupportedContractMetadataVersion,
   ensureValidContractAddress,
+  isInkAbi,
+  isSolAbi,
   newProxyChain,
 } from './utils/index.js';
 
 export class Contract<ContractApi extends GenericContractApi = GenericContractApi> {
-  readonly #registry: TypinkRegistry;
+  readonly #registry: AB<ContractApi['metadataType'], TypinkRegistry, SolRegistry>;
+  readonly #metadata: AB<ContractApi['metadataType'], ContractMetadata, SolAbi>;
   readonly #address: ContractAddress;
-  readonly #metadata: ContractMetadata;
+  readonly #isInk: boolean = false;
   readonly #options?: ExecutionOptions;
 
   constructor(
     readonly client: ISubstrateClient<ContractApi['types']['ChainApi']>,
-    metadata: LooseContractMetadata | string,
+    metadata: LooseContractMetadata | SolAbi | string,
     address: ContractAddress,
     options?: ExecutionOptions,
   ) {
-    this.#metadata = (typeof metadata === 'string' ? JSON.parse(metadata) : metadata) as ContractMetadata;
+    this.#metadata = typeof metadata === 'string' ? JSON.parse(metadata) : metadata;
 
-    ensureSupportedContractMetadataVersion(this.metadata);
+    if (isInkAbi(this.metadata)) {
+      this.#isInk = true;
 
-    const getStorage = this.#getStorage.bind(this);
+      ensureSupportedContractMetadataVersion(this.metadata as ContractMetadata);
+      const getStorage = this.#getStorage.bind(this);
 
-    this.#registry = new TypinkRegistry(this.metadata, { getStorage });
+      // @ts-ignore
+      this.#registry = new TypinkRegistry(this.metadata as ContractMetadata, { getStorage });
 
-    ensurePalletPresence(client, this.registry);
-    ensureValidContractAddress(address, this.registry);
+      ensurePalletPresence(client, (this.registry as TypinkRegistry).isRevive());
+      ensureValidContractAddress(address, (this.registry as TypinkRegistry).isRevive());
+    } else if (isSolAbi(this.metadata)) {
+      // @ts-ignore
+      this.#registry = new SolRegistry(this.metadata as SolAbi);
+
+      ensurePalletPresence(client, true);
+      ensureValidContractAddress(address, true);
+    } else {
+      throw new DedotError('Unknown metadata format (neither ink! nor Solidity ABI)');
+    }
 
     this.#address = address;
     this.#options = options;
@@ -55,34 +74,34 @@ export class Contract<ContractApi extends GenericContractApi = GenericContractAp
     return this.#registry.decodeEvents(eventRecords, this.address);
   }
 
-  get metadata(): ContractMetadata {
-    return this.#metadata;
-  }
-
   get address(): ContractAddress {
     return this.#address;
   }
 
-  get registry(): TypinkRegistry {
+  get metadata(): AB<ContractApi['metadataType'], ContractMetadata, SolAbi> {
+    return this.#metadata;
+  }
+
+  get registry(): AB<ContractApi['metadataType'], TypinkRegistry, SolRegistry> {
     return this.#registry;
   }
 
   get query(): ContractApi['query'] {
-    return newProxyChain(
-      new QueryExecutor(this.client, this.#registry, this.#address, this.#options),
-    ) as ContractApi['query'];
+    const Executor = this.#isInk ? QueryExecutor : SolQueryExecutor;
+    // @ts-ignore
+    return newProxyChain(new Executor(this.client, this.registry, this.address, this.options)) as ContractApi['query'];
   }
 
   get tx(): ContractApi['tx'] {
-    return newProxyChain(
-      new TxExecutor(this.client, this.#registry, this.#address, this.#options),
-    ) as ContractApi['tx'];
+    const Executor = this.#isInk ? TxExecutor : SolTxExecutor;
+    // @ts-ignore
+    return newProxyChain(new Executor(this.client, this.registry, this.address, this.options)) as ContractApi['tx'];
   }
 
   get events(): ContractApi['events'] {
-    return newProxyChain(
-      new EventExecutor(this.client, this.#registry, this.#address, this.#options),
-    ) as ContractApi['events'];
+    const Executor = this.#isInk ? EventExecutor : SolEventExecutor;
+    // @ts-ignore
+    return newProxyChain(new Executor(this.client, this.registry, this.address, this.options)) as ContractApi['events'];
   }
 
   get options(): ExecutionOptions | undefined {
@@ -90,23 +109,29 @@ export class Contract<ContractApi extends GenericContractApi = GenericContractAp
   }
 
   get storage(): ContractApi['storage'] {
+    if (!this.#isInk) {
+      throw new DedotError('Storage API is only available for ink! contracts');
+    }
+
     return {
       root: async (): Promise<ContractApi['types']['RootStorage']> => {
-        ensureStorageApiSupports(this.metadata.version);
+        ensureStorageApiSupports((this.metadata as ContractMetadata).version);
 
-        const { ty, root_key } = this.metadata.storage.root as RootLayoutV5;
+        const { ty, root_key } = (this.metadata as ContractMetadata).storage.root as RootLayoutV5;
 
         const rawValue = await this.#getStorage(root_key as HexString);
 
-        return this.registry.findCodec(ty).tryDecode(rawValue);
+        // @ts-ignore
+        return (this.registry as TypinkRegistry).findCodec(ty).tryDecode(rawValue);
       },
       lazy: (): ContractApi['types']['LazyStorage'] => {
-        ensureStorageApiSupports(this.metadata.version);
+        ensureStorageApiSupports((this.metadata as ContractMetadata).version);
 
-        const { ty } = this.metadata.storage.root as RootLayoutV5;
+        const { ty } = (this.metadata as ContractMetadata).storage.root as RootLayoutV5;
 
-        const $lazyCodec = this.registry.createLazyCodec(ty);
+        const $lazyCodec = (this.registry as TypinkRegistry).createLazyCodec(ty);
 
+        // @ts-ignore
         return $lazyCodec ? $lazyCodec.tryDecode('0x') : {};
       },
     };
@@ -114,7 +139,7 @@ export class Contract<ContractApi extends GenericContractApi = GenericContractAp
 
   #getStorage = async (key: Uint8Array | HexString): Promise<HexString | undefined> => {
     const result = await (async () => {
-      if (this.registry.isRevive()) {
+      if ((this.registry as TypinkRegistry).isRevive()) {
         return await this.client.call.reviveApi.getStorageVarKey(
           this.address as HexString, //--
           toHex(key),

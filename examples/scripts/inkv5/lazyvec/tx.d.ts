@@ -6,10 +6,12 @@ import type {
   ContractTxOptions,
   GenericContractTx,
   GenericContractTxCall,
+  MetadataType,
 } from 'dedot/contracts';
 import type { GenericSubstrateApi } from 'dedot/types';
 
-export interface ContractTx<ChainApi extends GenericSubstrateApi> extends GenericContractTx<ChainApi> {
+export interface ContractTx<ChainApi extends GenericSubstrateApi, Type extends MetadataType>
+  extends GenericContractTx<ChainApi, Type> {
   /**
    * Vote to approve the current proposal.
    *
@@ -17,7 +19,11 @@ export interface ContractTx<ChainApi extends GenericSubstrateApi> extends Generi
    *
    * @selector 0x681266a0
    **/
-  approve: GenericContractTxCall<ChainApi, (options?: ContractTxOptions) => ContractSubmittableExtrinsic<ChainApi>>;
+  approve: GenericContractTxCall<
+    ChainApi,
+    (options?: ContractTxOptions) => ContractSubmittableExtrinsic<ChainApi>,
+    Type
+  >;
 
   /**
    * Create a new proposal.
@@ -38,6 +44,7 @@ export interface ContractTx<ChainApi extends GenericSubstrateApi> extends Generi
       duration: number,
       minApprovals: number,
       options?: ContractTxOptions,
-    ) => ContractSubmittableExtrinsic<ChainApi>
+    ) => ContractSubmittableExtrinsic<ChainApi>,
+    Type
   >;
 }

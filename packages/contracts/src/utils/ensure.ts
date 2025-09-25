@@ -1,6 +1,6 @@
 import { ISubstrateClient } from '@dedot/api';
 import { SubstrateApi } from '@dedot/api/chaintypes';
-import { accountId32ToHex, Hash } from '@dedot/codecs';
+import { AccountId32Like, accountId32ToHex, Hash } from '@dedot/codecs';
 import { RpcVersion } from '@dedot/types';
 import {
   assert,
@@ -13,9 +13,9 @@ import {
   isPvm,
   isWasm,
   toU8a,
+  LRUCache,
 } from '@dedot/utils';
-import { TypinkRegistry } from 'src/TypinkRegistry';
-import { ContractAddress, LooseContractMetadata } from 'src/types';
+import { ContractAddress, LooseContractMetadata } from '../types/index.js';
 
 export const ensureStorageApiSupports = (version: string | number) => {
   const numberedVersion = typeof version === 'number' ? version : parseInt(version);
@@ -26,29 +26,42 @@ export const ensureStorageApiSupports = (version: string | number) => {
   );
 };
 
-export function ensurePalletPresence(client: ISubstrateClient<SubstrateApi[RpcVersion]>, registry: TypinkRegistry) {
-  if (registry.isRevive()) {
-    try {
-      !!client.call.reviveApi.call.meta && !!client.tx.revive.call.meta;
-    } catch {
-      throw new DedotError('Pallet Revive is not available');
-    }
-  } else {
-    try {
-      !!client.call.contractsApi.call.meta && !!client.tx.contracts.call.meta;
-    } catch {
-      throw new DedotError('Pallet Contracts is not available');
-    }
+function ensurePalletRevive(client: ISubstrateClient<SubstrateApi[RpcVersion]>) {
+  try {
+    !!client.call.reviveApi.call.meta && !!client.tx.revive.call.meta;
+  } catch {
+    throw new DedotError('Pallet Revive is not available');
   }
+}
+
+function ensurePalletContracts(client: ISubstrateClient<SubstrateApi[RpcVersion]>) {
+  try {
+    !!client.call.contractsApi.call.meta && !!client.tx.contracts.call.meta;
+  } catch {
+    throw new DedotError('Pallet Contracts is not available');
+  }
+}
+
+export function ensurePalletPresence(client: ISubstrateClient<SubstrateApi[RpcVersion]>, isRevive: boolean) {
+  isRevive ? ensurePalletRevive(client) : ensurePalletContracts(client);
 }
 
 export async function ensureContractPresence(
   client: ISubstrateClient<SubstrateApi[RpcVersion]>,
-  registry: TypinkRegistry,
+  isRevive: boolean,
   address: ContractAddress,
+  cache?: LRUCache,
 ) {
+  // Check cache first if available
+  if (cache) {
+    const cached = cache.get<boolean>(`${isRevive}::${address}`);
+    if (cached) {
+      return; // Contract presence was already verified
+    }
+  }
+
   const contractInfo = await (async () => {
-    if (registry.isRevive()) {
+    if (isRevive) {
       const accountInfo = await client.query.revive.accountInfoOf(address as HexString);
       if (accountInfo?.accountType && accountInfo?.accountType?.type === 'Contract') {
         return accountInfo.accountType.value;
@@ -59,25 +72,38 @@ export async function ensureContractPresence(
   })();
 
   ensurePresence(contractInfo, `Contract with address ${address} does not exist on chain!`);
+
+  // Cache successful presence check
+  if (cache) {
+    cache.set(`${isRevive}::${address}`, true);
+  }
 }
 
-export function ensureValidContractAddress(address: ContractAddress, registry: TypinkRegistry) {
-  if (registry.isRevive()) {
+export function ensureValidContractAddress(address: ContractAddress, isRevive: boolean) {
+  if (isRevive) {
     assert(
       isEvmAddress(address as HexString),
       `Invalid contract address: ${address}. Expected an EVM 20-byte address as a hex string or a Uint8Array`,
     );
   } else {
-    assert(
-      hexToU8a(accountId32ToHex(address)).length === 32,
+    ensureValidAccountId32Address(
+      address,
       `Invalid contract address: ${address}. Expected a Substrate 32-byte address as a hex string or a Uint8Array`,
     );
   }
 }
 
-export function ensureValidCodeHashOrCode(codeHashOrCode: Hash | Uint8Array | string, registry: TypinkRegistry) {
+export function ensureValidAccountId32Address(address: AccountId32Like, customErrorMessage?: string) {
   assert(
-    toU8a(codeHashOrCode).length === 32 || (registry.isRevive() ? isPvm(codeHashOrCode) : isWasm(codeHashOrCode)),
+    hexToU8a(accountId32ToHex(address)).length === 32,
+    customErrorMessage ||
+      `Invalid AccountId32 address: ${address}. Expected a Substrate 32-byte address as a hex string or a Uint8Array`,
+  );
+}
+
+export function ensureValidCodeHashOrCode(codeHashOrCode: Hash | Uint8Array | string, isRevive: boolean) {
+  assert(
+    toU8a(codeHashOrCode).length === 32 || (isRevive ? isPvm(codeHashOrCode) : isWasm(codeHashOrCode)),
     'Invalid code hash or code: expected a hash of 32-byte or a valid PVM/WASM code as a hex string or a Uint8Array',
   );
 }

@@ -1,0 +1,96 @@
+[
+  { "type": "constructor", "inputs": [{ "name": "total_supply", "type": "uint256" }], "stateMutability": "nonpayable" },
+  {
+    "type": "function",
+    "name": "allowance",
+    "inputs": [
+      { "name": "owner", "type": "address" },
+      { "name": "spender", "type": "address" }
+    ],
+    "outputs": [{ "name": "", "type": "uint256" }],
+    "stateMutability": "view"
+  },
+  {
+    "type": "function",
+    "name": "approve",
+    "inputs": [
+      { "name": "spender", "type": "address" },
+      { "name": "value", "type": "uint256" }
+    ],
+    "outputs": [],
+    "stateMutability": "nonpayable"
+  },
+  {
+    "type": "function",
+    "name": "balance_of",
+    "inputs": [{ "name": "owner", "type": "address" }],
+    "outputs": [{ "name": "", "type": "uint256" }],
+    "stateMutability": "view"
+  },
+  {
+    "type": "function",
+    "name": "total_supply",
+    "inputs": [],
+    "outputs": [{ "name": "", "type": "uint256" }],
+    "stateMutability": "view"
+  },
+  {
+    "type": "function",
+    "name": "transfer",
+    "inputs": [
+      { "name": "to", "type": "address" },
+      { "name": "value", "type": "uint256" }
+    ],
+    "outputs": [],
+    "stateMutability": "nonpayable"
+  },
+  {
+    "type": "function",
+    "name": "transfer_from",
+    "inputs": [
+      { "name": "from", "type": "address" },
+      { "name": "to", "type": "address" },
+      { "name": "value", "type": "uint256" }
+    ],
+    "outputs": [],
+    "stateMutability": "nonpayable"
+  },
+  {
+    "type": "event",
+    "name": "Approval",
+    "inputs": [
+      { "name": "owner", "type": "address", "indexed": true },
+      { "name": "spender", "type": "address", "indexed": true },
+      { "name": "value", "type": "uint256", "indexed": false }
+    ],
+    "anonymous": false
+  },
+  {
+    "type": "event",
+    "name": "Transfer",
+    "inputs": [
+      {
+        "name": "from",
+        "type": "tuple",
+        "indexed": true,
+        "components": [
+          { "name": "", "type": "bool" },
+          { "name": "", "type": "address" }
+        ]
+      },
+      {
+        "name": "to",
+        "type": "tuple",
+        "indexed": true,
+        "components": [
+          { "name": "", "type": "bool" },
+          { "name": "", "type": "address" }
+        ]
+      },
+      { "name": "value", "type": "uint256", "indexed": false }
+    ],
+    "anonymous": false
+  },
+  { "type": "error", "name": "InsufficientAllowance", "inputs": [] },
+  { "type": "error", "name": "InsufficientBalance", "inputs": [] }
+]

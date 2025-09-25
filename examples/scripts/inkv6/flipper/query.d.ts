@@ -7,11 +7,13 @@ import type {
   GenericContractCallResult,
   GenericContractQuery,
   GenericContractQueryCall,
+  MetadataType,
 } from 'dedot/contracts';
 import type { GenericSubstrateApi } from 'dedot/types';
 import type { FlipperFlipperError } from './types.js';
 
-export interface ContractQuery<ChainApi extends GenericSubstrateApi> extends GenericContractQuery<ChainApi> {
+export interface ContractQuery<ChainApi extends GenericSubstrateApi, Type extends MetadataType>
+  extends GenericContractQuery<ChainApi, Type> {
   /**
    * Flips the current value, value based on seed.
    *
@@ -25,7 +27,8 @@ export interface ContractQuery<ChainApi extends GenericSubstrateApi> extends Gen
     (
       seed: Hash,
       options?: ContractCallOptions,
-    ) => Promise<GenericContractCallResult<Result<boolean, FlipperFlipperError>, ContractCallResult<ChainApi>>>
+    ) => Promise<GenericContractCallResult<Result<boolean, FlipperFlipperError>, ContractCallResult<ChainApi>>>,
+    Type
   >;
 
   /**
@@ -37,7 +40,8 @@ export interface ContractQuery<ChainApi extends GenericSubstrateApi> extends Gen
    **/
   flip: GenericContractQueryCall<
     ChainApi,
-    (options?: ContractCallOptions) => Promise<GenericContractCallResult<[], ContractCallResult<ChainApi>>>
+    (options?: ContractCallOptions) => Promise<GenericContractCallResult<[], ContractCallResult<ChainApi>>>,
+    Type
   >;
 
   /**
@@ -49,6 +53,7 @@ export interface ContractQuery<ChainApi extends GenericSubstrateApi> extends Gen
    **/
   get: GenericContractQueryCall<
     ChainApi,
-    (options?: ContractCallOptions) => Promise<GenericContractCallResult<boolean, ContractCallResult<ChainApi>>>
+    (options?: ContractCallOptions) => Promise<GenericContractCallResult<boolean, ContractCallResult<ChainApi>>>,
+    Type
   >;
 }

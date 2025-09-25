@@ -10,14 +10,14 @@ export type InkStorageTraitsImplsAutoKey = {};
 
 export type InkStorageTraitsImplsManualKey = {};
 
-export type Psp22v6Token = {
-  data: Psp22v6DataPsp22Data;
+export type Psp22Token = {
+  data: Psp22DataPsp22Data;
   name?: string | undefined;
   symbol?: string | undefined;
   decimals: number;
 };
 
-export type Psp22v6DataPsp22Data = {
+export type Psp22DataPsp22Data = {
   totalSupply: bigint;
   balances: { get(arg: H160): Promise<bigint | undefined> };
   allowances: { get(arg: [H160, H160]): Promise<bigint | undefined> };
@@ -25,12 +25,10 @@ export type Psp22v6DataPsp22Data = {
 
 export type InkPrimitivesLangError = 'CouldNotReadInput';
 
-export type Psp22v6ErrorsPsp22Error =
+export type Psp22ErrorsPsp22Error =
   | { type: 'Custom'; value: string }
   | { type: 'InsufficientBalance' }
   | { type: 'InsufficientAllowance' }
   | { type: 'ZeroRecipientAddress' }
   | { type: 'ZeroSenderAddress' }
   | { type: 'SafeTransferCheckFailed'; value: string };
-
-export type InkPrimitivesNoChainExtension = null;

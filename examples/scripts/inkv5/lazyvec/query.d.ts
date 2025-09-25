@@ -7,11 +7,13 @@ import type {
   GenericContractCallResult,
   GenericContractQuery,
   GenericContractQueryCall,
+  MetadataType,
 } from 'dedot/contracts';
 import type { GenericSubstrateApi } from 'dedot/types';
 import type { LazyvecProposal } from './types.js';
 
-export interface ContractQuery<ChainApi extends GenericSubstrateApi> extends GenericContractQuery<ChainApi> {
+export interface ContractQuery<ChainApi extends GenericSubstrateApi, Type extends MetadataType>
+  extends GenericContractQuery<ChainApi, Type> {
   /**
    * Vote to approve the current proposal.
    *
@@ -21,7 +23,8 @@ export interface ContractQuery<ChainApi extends GenericSubstrateApi> extends Gen
    **/
   approve: GenericContractQueryCall<
     ChainApi,
-    (options?: ContractCallOptions) => Promise<GenericContractCallResult<[], ContractCallResult<ChainApi>>>
+    (options?: ContractCallOptions) => Promise<GenericContractCallResult<[], ContractCallResult<ChainApi>>>,
+    Type
   >;
 
   /**
@@ -43,7 +46,8 @@ export interface ContractQuery<ChainApi extends GenericSubstrateApi> extends Gen
       duration: number,
       minApprovals: number,
       options?: ContractCallOptions,
-    ) => Promise<GenericContractCallResult<number | undefined, ContractCallResult<ChainApi>>>
+    ) => Promise<GenericContractCallResult<number | undefined, ContractCallResult<ChainApi>>>,
+    Type
   >;
 
   /**
@@ -58,6 +62,7 @@ export interface ContractQuery<ChainApi extends GenericSubstrateApi> extends Gen
     (
       at: number,
       options?: ContractCallOptions,
-    ) => Promise<GenericContractCallResult<LazyvecProposal | undefined, ContractCallResult<ChainApi>>>
+    ) => Promise<GenericContractCallResult<LazyvecProposal | undefined, ContractCallResult<ChainApi>>>,
+    Type
   >;
 }
