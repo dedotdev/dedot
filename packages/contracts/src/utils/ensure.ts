@@ -63,7 +63,7 @@ export async function ensureContractPresence(
   const contractInfo = await (async () => {
     if (isRevive) {
       // Check if accountInfoOf exists to support older versions of pallet-revive
-      if (client.query.revive.accountInfoOf?.meta) {
+      if (!client.query.revive.accountInfoOf?.meta) {
         return client.query.revive.contractInfoOf(address as HexString);
       }
 
