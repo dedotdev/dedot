@@ -37,7 +37,7 @@
     "prettier": "^3.6.2",
     "prettier-plugin-organize-imports": "^3.2.4",
     "tsc-esm-fix": "^2.20.27",
-    "tsx": "^4.20.5",
+    "tsx": "^4.20.6",
     "typedoc": "^0.28.4",
     "typescript": "5.4.5",
     "vite-tsconfig-paths": "^4.3.2",
