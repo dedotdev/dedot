@@ -245,4 +245,8 @@ export class TypesGen {
 
     this.typeImports.addPortableType(typeName);
   }
+
+  clearCache() {
+    this.typeImports.clear();
+  }
 }
