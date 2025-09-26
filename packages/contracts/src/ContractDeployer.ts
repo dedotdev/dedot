@@ -14,6 +14,7 @@ import {
   ExecutionOptions,
   GenericContractApi,
   LooseContractMetadata,
+  LooseSolAbi,
   SolAbi,
 } from './types/index.js';
 import {
@@ -33,7 +34,7 @@ export class ContractDeployer<ContractApi extends GenericContractApi = GenericCo
 
   constructor(
     readonly client: ISubstrateClient<ContractApi['types']['ChainApi']>,
-    metadata: AB<ContractApi['metadataType'], LooseContractMetadata, SolAbi> | string,
+    metadata: AB<ContractApi['metadataType'], LooseContractMetadata, LooseSolAbi> | string,
     codeHashOrCode: Hash | Uint8Array | string,
     options?: ExecutionOptions,
   ) {
