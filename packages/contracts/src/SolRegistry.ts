@@ -89,7 +89,7 @@ export class SolRegistry {
       // @ts-ignore
       const emittedContract = event.palletEvent.data?.contract;
 
-      return emittedContract === contractAddress;
+      return emittedContract?.toLowerCase() === contractAddress.toLowerCase();
     }
 
     return true;
