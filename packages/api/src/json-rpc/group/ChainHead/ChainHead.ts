@@ -59,7 +59,7 @@ export type ChainHeadEvent =
   | 'finalizedBlock' // new best finalized block
   | 'bestChainChanged'; // new best chain, a fork happened
 
-export const MIN_FINALIZED_QUEUE_SIZE = 20; // finalized queue size
+export const MIN_FINALIZED_QUEUE_SIZE = 10; // finalized queue size
 const CHAINHEAD_CACHE_CAPACITY = 256;
 const CHAINHEAD_CACHE_TTL = 30_000; // 30 seconds
 
