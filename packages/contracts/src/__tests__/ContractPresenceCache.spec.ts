@@ -61,23 +61,28 @@ describe('Contract Presence Cache', () => {
 
     it('should use cache when provided for revive pallet', async () => {
       const cache = new LRUCache(500);
+
+      const accountInfoOf = vi.fn().mockResolvedValue({
+        nonce: 0,
+        balance: 1000000n,
+        accountType: {
+          type: 'Contract',
+          value: {
+            trieId: '0x1234',
+            depositAccount: '0xabcdef1234567890abcdef1234567890abcdef12',
+            codeHash: '0x1234567890abcdef',
+            storageBytes: 100,
+            storageItems: 10,
+          },
+        },
+      });
+
+      Object.assign(accountInfoOf, { meta: {} }); // Simulate presence of meta to indicate newer pallet-revive
+
       const mockClient = {
         query: {
           revive: {
-            accountInfoOf: vi.fn().mockResolvedValue({
-              nonce: 0,
-              balance: 1000000n,
-              accountType: {
-                type: 'Contract',
-                value: {
-                  trieId: '0x1234',
-                  depositAccount: '0xabcdef1234567890abcdef1234567890abcdef12',
-                  codeHash: '0x1234567890abcdef',
-                  storageBytes: 100,
-                  storageItems: 10,
-                },
-              },
-            }),
+            accountInfoOf,
           },
         },
       };
@@ -162,6 +167,23 @@ describe('Contract Presence Cache', () => {
     it('should use different cache keys for revive vs contracts pallets', async () => {
       const cache = new LRUCache(500);
 
+      const accountInfoOf = vi.fn().mockResolvedValue({
+        nonce: 0,
+        balance: 1000000n,
+        accountType: {
+          type: 'Contract',
+          value: {
+            trieId: '0x1234',
+            depositAccount: '0xabcdef1234567890abcdef1234567890abcdef12',
+            codeHash: '0x1234567890abcdef',
+            storageBytes: 100,
+            storageItems: 10,
+          },
+        },
+      });
+
+      Object.assign(accountInfoOf, { meta: {} }); // Simulate presence of meta to indicate newer pallet-revive
+
       // Set up mock client with both pallets
       const mockClient = {
         query: {
@@ -174,22 +196,7 @@ describe('Contract Presence Cache', () => {
               storageItems: 10,
             }),
           },
-          revive: {
-            accountInfoOf: vi.fn().mockResolvedValue({
-              nonce: 0,
-              balance: 1000000n,
-              accountType: {
-                type: 'Contract',
-                value: {
-                  trieId: '0x1234',
-                  depositAccount: '0xabcdef1234567890abcdef1234567890abcdef12',
-                  codeHash: '0x1234567890abcdef',
-                  storageBytes: 100,
-                  storageItems: 10,
-                },
-              },
-            }),
-          },
+          revive: { accountInfoOf },
         },
       };
 
@@ -209,6 +216,25 @@ describe('Contract Presence Cache', () => {
       // Verify both queries were made
       expect(mockClient.query.contracts.contractInfoOf).toHaveBeenCalledTimes(1);
       expect(mockClient.query.revive.accountInfoOf).toHaveBeenCalledTimes(1);
+    });
+
+    it('should fallback to contractInfoOf when accountInfoOf not available', async () => {
+      const mockClient = {
+        query: {
+          revive: {
+            contractInfoOf: vi.fn().mockResolvedValue({
+              trieId: '0x1234',
+              depositAccount: '0xabcdef1234567890abcdef1234567890abcdef12',
+              codeHash: '0x1234567890abcdef',
+              storageBytes: 100,
+              storageItems: 10,
+            }),
+          },
+        },
+      };
+
+      await ensureUtils.ensureContractPresence(mockClient as any, true, SOL_CONTRACT_ADDRESS);
+      expect(mockClient.query.revive.contractInfoOf).toHaveBeenCalledTimes(1);
     });
 
     it('should throw error when contract does not exist', async () => {
@@ -232,17 +258,22 @@ describe('Contract Presence Cache', () => {
 
     it('should throw error when revive account is not a contract', async () => {
       const cache = new LRUCache(500);
+
+      const accountInfoOf = vi.fn().mockResolvedValue({
+        nonce: 0,
+        balance: 1000000n,
+        accountType: {
+          type: 'User', // Not a contract
+          value: null,
+        },
+      });
+
+      Object.assign(accountInfoOf, { meta: {} }); // Simulate presence of meta to indicate newer pallet-revive
+
       const mockClient = {
         query: {
           revive: {
-            accountInfoOf: vi.fn().mockResolvedValue({
-              nonce: 0,
-              balance: 1000000n,
-              accountType: {
-                type: 'User', // Not a contract
-                value: null,
-              },
-            }),
+            accountInfoOf,
           },
         },
       };
