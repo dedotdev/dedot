@@ -1,6 +1,7 @@
 import { DedotClient, WsProvider } from 'dedot';
 import { DedotError, HexString } from 'dedot/utils';
 import { afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
+import { devPairs } from '../utils';
 
 const ALICE = '5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY';
 const BOB = '5FHneW46xGXgs5mUiveU4sbTyGBzmstUspZC92UhjJM694ty';
@@ -395,5 +396,173 @@ describe('DedotClient .at() Method E2E Tests', () => {
 
       // Archive fallback warnings are no longer logged
     });
+  });
+
+  describe('QueryMulti Functional Tests', () => {
+    it('should perform basic queryMulti at historical blocks', async () => {
+      console.log('=== Basic QueryMulti Functional Test ===');
+
+      const genesisApi = await client.at(genesisHash);
+
+      const results = await genesisApi.queryMulti([
+        { fn: genesisApi.query.system.account, args: [ALICE] },
+        { fn: genesisApi.query.system.account, args: [BOB] },
+      ]);
+
+      expect(results).toBeDefined();
+      expect(Array.isArray(results)).toBe(true);
+      expect(results.length).toBe(2);
+
+      results.forEach((account, index) => {
+        expect(account).toBeDefined();
+        expect(typeof account.data.free).toBe('bigint');
+        expect(typeof account.nonce).toBe('number');
+
+        const address = index === 0 ? ALICE : BOB;
+        console.log(`${address}: Balance=${account.data.free}, Nonce=${account.nonce}`);
+      });
+
+      console.log('Basic queryMulti functional test completed');
+    });
+
+    it('should handle mixed query types in queryMulti', async () => {
+      console.log('=== Mixed Query Types Test ===');
+
+      const finalizedApi = await client.at(finalizedHash);
+
+      // Mix different types of queries
+
+      const [aliceAccount, blockNumber, parentHash, bobAccount] = await finalizedApi.queryMulti([
+        { fn: finalizedApi.query.system.account, args: [ALICE] },
+        { fn: finalizedApi.query.system.number, args: [] },
+        { fn: finalizedApi.query.system.parentHash, args: [] },
+        { fn: finalizedApi.query.system.account, args: [BOB] },
+      ]);
+
+      // Verify account data
+      expect(aliceAccount).toBeDefined();
+      expect(typeof aliceAccount.data.free).toBe('bigint');
+      expect(bobAccount).toBeDefined();
+      expect(typeof bobAccount.data.free).toBe('bigint');
+
+      // Verify metadata
+      expect(typeof blockNumber).toBe('number');
+      expect(typeof parentHash).toBe('string');
+      expect(parentHash.startsWith('0x')).toBe(true);
+
+      console.log(
+        `Mixed queries result: Block=${blockNumber}, Alice=${aliceAccount.data.free}, Bob=${bobAccount.data.free}`,
+      );
+      console.log('Mixed query types test completed');
+    });
+
+    it('should handle empty queryMulti arrays', async () => {
+      console.log('=== Empty QueryMulti Test ===');
+
+      const api = await client.at(genesisHash);
+      const results = await api.queryMulti([]);
+
+      expect(Array.isArray(results)).toBe(true);
+      expect(results.length).toBe(0);
+
+      console.log('Empty queryMulti handled correctly');
+    });
+
+    it('should handle large batch queries efficiently', async () => {
+      console.log('=== Large Batch Query Test ===');
+
+      const api = await client.at(finalizedHash);
+
+      // Create a larger set of queries (multiple accounts repeated)
+      const accounts = [ALICE, BOB];
+      const largeQuerySet = [];
+
+      for (let i = 0; i < 10; i++) {
+        for (const account of accounts) {
+          largeQuerySet.push({ fn: api.query.system.account, args: [account] });
+        }
+      }
+
+      expect(largeQuerySet.length).toBe(20);
+
+      const startTime = Date.now();
+      // @ts-ignore
+      const results = await api.queryMulti(largeQuerySet);
+      const queryTime = Date.now() - startTime;
+
+      expect(results.length).toBe(20);
+      results.forEach((account, index) => {
+        expect(account).toBeDefined();
+        expect(typeof account.data.free).toBe('bigint');
+      });
+
+      console.log(`Large batch query (${largeQuerySet.length} queries) completed in ${queryTime}ms`);
+      console.log('Large batch query test completed');
+    });
+  });
+
+  describe('Transfer Scenario Tests', () => {
+    const TRANSFER_AMOUNT = 1000000000000n; // 1 DOT in planck
+
+    it('should verify balance changes with queryMulti across transfer', async () => {
+      console.log('=== Transfer Scenario with Balance Verification ===');
+
+      // Get current block hash for "before" state
+      const beforeHash = await client.chainHead.bestHash();
+      const beforeApi = await client.at(beforeHash);
+
+      const [aliceBefore, bobBefore] = await beforeApi.queryMulti([
+        { fn: beforeApi.query.system.account, args: [ALICE] },
+        { fn: beforeApi.query.system.account, args: [BOB] },
+      ]);
+
+      console.log('Balances before transfer:');
+      console.log(`  Alice: ${aliceBefore.data.free}`);
+      console.log(`  Bob: ${bobBefore.data.free}`);
+
+      // Ensure Alice has sufficient balance for transfer
+      if (aliceBefore.data.free < TRANSFER_AMOUNT) {
+        console.log('Skipping transfer test - insufficient Alice balance');
+        return;
+      }
+
+      // Execute transfer from Alice to Bob
+      const { alice } = devPairs();
+
+      const transferTx = client.tx.balances.transferKeepAlive(BOB, TRANSFER_AMOUNT);
+      const txResult = await transferTx.signAndSend(alice).untilFinalized();
+
+      // @ts-ignore
+      const afterHash = txResult.status.value.blockHash;
+      console.log(`Transfer completed in block: ${afterHash}`);
+
+      // Get the after-transfer block hash
+      const afterApi = await client.at(afterHash);
+
+      const [aliceAfter, bobAfter] = await afterApi.queryMulti([
+        { fn: afterApi.query.system.account, args: [ALICE] },
+        { fn: afterApi.query.system.account, args: [BOB] },
+      ]);
+
+      console.log('Balances after transfer:');
+      console.log(`  Alice: ${aliceAfter.data.free}`);
+      console.log(`  Bob: ${bobAfter.data.free}`);
+
+      // Verify balance at previous hash equals pre-transfer balance
+      const historicalApi = await client.at(beforeHash);
+      const [aliceHistorical, bobHistorical] = await historicalApi.queryMulti([
+        { fn: historicalApi.query.system.account, args: [ALICE] },
+        { fn: historicalApi.query.system.account, args: [BOB] },
+      ]);
+
+      expect(aliceHistorical.data.free).toEqual(aliceBefore.data.free);
+      expect(bobHistorical.data.free).toEqual(bobBefore.data.free);
+
+      // Verify transfer actually occurred (accounting for fees)
+      expect(aliceAfter.data.free).toBeLessThan(aliceBefore.data.free);
+      expect(bobAfter.data.free).toEqual(bobBefore.data.free + TRANSFER_AMOUNT);
+
+      console.log('Transfer scenario verification completed successfully');
+    }, 180_000); // Extended timeout for blockchain operations
   });
 });
