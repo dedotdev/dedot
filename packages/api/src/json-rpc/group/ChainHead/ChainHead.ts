@@ -604,7 +604,7 @@ export class ChainHead extends JsonRpcGroup<ChainHeadEvent> {
 
   holdBlock(blockHash: BlockHash) {
     this.#ensurePinnedHash(blockHash);
-    this.#blockUsage.use(hash);
+    this.#blockUsage.use(blockHash);
   }
 
   releaseBlock(blockHash: BlockHash) {
