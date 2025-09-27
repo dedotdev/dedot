@@ -371,6 +371,209 @@ describe('LegacyClient', () => {
         expect(errorRefs[1].meta.name).toEqual('SpecVersionNeedsToIncrease');
         expect(errorRefs[2].meta.name).toEqual('InsufficientBalance');
       });
+
+      it('should query multiple storage items at a specific block', async () => {
+        // Use an existing block hash that was already created
+        const hash = '0x12345678'; // This hash is used in existing tests
+        const apiAt = await api.at(hash);
+
+        // Mock storage query functions
+        const mockQueryFn1 = {
+          meta: { pallet: 'system', name: 'number' },
+          rawKey: vi.fn().mockReturnValue('0x01'),
+        };
+        const mockQueryFn2 = {
+          meta: { pallet: 'system', name: 'events' },
+          rawKey: vi.fn().mockReturnValue('0x02'),
+        };
+        const mockQueryFn3 = {
+          meta: { pallet: 'balances', name: 'totalIssuance' },
+          rawKey: vi.fn().mockReturnValue('0x03'),
+        };
+
+        // Set up the spy before making the call
+        const providerSend = vi.spyOn(provider, 'send');
+
+        // Mock state_queryStorageAt response - it returns an array with changes
+        const mockResults = [
+          {
+            block: hash,
+            changes: [
+              ['0x01', '0xvalue1'],
+              ['0x02', '0xvalue2'],
+              ['0x03', '0xvalue3'],
+            ],
+          },
+        ];
+        providerSend.mockResolvedValue(mockResults);
+
+        // Mock QueryableStorage
+        const mockDecodedValue1 = 42;
+        const mockDecodedValue2 = ['event1', 'event2'];
+        const mockDecodedValue3 = BigInt(1000000);
+
+        // Use vi.spyOn to mock the QueryableStorage constructor and its decodeValue method
+        const originalQueryableStorage = await import('../../storage/QueryableStorage.js').then(
+          (m) => m.QueryableStorage,
+        );
+
+        vi.spyOn(originalQueryableStorage.prototype, 'decodeValue')
+          .mockImplementationOnce(() => mockDecodedValue1)
+          .mockImplementationOnce(() => mockDecodedValue2)
+          .mockImplementationOnce(() => mockDecodedValue3);
+
+        // Call queryMulti on the at() instance
+        const result = await apiAt.queryMulti([
+          { fn: mockQueryFn1 as any, args: [] },
+          { fn: mockQueryFn2 as any, args: [] },
+          { fn: mockQueryFn3 as any, args: [] },
+        ]);
+
+        // Verify rawKey was called
+        expect(mockQueryFn1.rawKey).toHaveBeenCalled();
+        expect(mockQueryFn2.rawKey).toHaveBeenCalled();
+        expect(mockQueryFn3.rawKey).toHaveBeenCalled();
+
+        // Verify state_queryStorageAt was called with the correct parameters and block hash
+        expect(providerSend).toHaveBeenCalledWith('state_queryStorageAt', [['0x01', '0x02', '0x03'], hash]);
+
+        // Verify the result contains the decoded values
+        expect(result).toEqual([mockDecodedValue1, mockDecodedValue2, mockDecodedValue3]);
+      });
+
+      it('should handle empty query array at a specific block', async () => {
+        const hash = '0x12345678'; // Use same hash as existing tests
+        const apiAt = await api.at(hash);
+
+        const result = await apiAt.queryMulti([]);
+        expect(result).toEqual([]);
+      });
+
+      it('should handle errors from storage service at a specific block', async () => {
+        const hash = '0x12345678';
+        const apiAt = await api.at(hash);
+
+        // Mock storage query function
+        const mockQueryFn = {
+          meta: { pallet: 'system', name: 'number' },
+          rawKey: vi.fn().mockReturnValue('0x01'),
+        };
+
+        // Set up the spy before making the call
+        const providerSend = vi.spyOn(provider, 'send');
+
+        // Mock state_queryStorageAt to throw an error
+        const mockError = new Error('Storage query failed at block');
+        providerSend.mockRejectedValue(mockError);
+
+        // Call queryMulti and expect it to reject with the error
+        await expect(apiAt.queryMulti([{ fn: mockQueryFn as any, args: [] }])).rejects.toThrow(mockError);
+      });
+
+      it('should use cached api instance for queryMulti', async () => {
+        const hash = '0x12345678';
+
+        // First call to at()
+        const apiAt1 = await api.at(hash);
+
+        // Second call to at() with same hash
+        const apiAt2 = await api.at(hash);
+
+        // Should be the same instance (cached)
+        expect(apiAt1).toBe(apiAt2);
+
+        // Mock storage query functions
+        const mockQueryFn = {
+          meta: { pallet: 'system', name: 'number' },
+          rawKey: vi.fn().mockReturnValue('0x01'),
+        };
+
+        // Set up the spy
+        const providerSend = vi.spyOn(provider, 'send');
+
+        // Mock state_queryStorageAt response - it returns an array with changes
+        providerSend.mockResolvedValue([
+          {
+            block: hash,
+            changes: [['0x01', '0xvalue1']],
+          },
+        ]);
+
+        // Mock QueryableStorage
+        const originalQueryableStorage = await import('../../storage/QueryableStorage.js').then(
+          (m) => m.QueryableStorage,
+        );
+
+        vi.spyOn(originalQueryableStorage.prototype, 'decodeValue').mockImplementationOnce(() => 42);
+
+        // Call queryMulti on the cached instance
+        const result = await apiAt2.queryMulti([{ fn: mockQueryFn as any, args: [] }]);
+
+        expect(result).toEqual([42]);
+        expect(providerSend).toHaveBeenCalledWith('state_queryStorageAt', [['0x01'], hash]);
+      });
+
+      it('should query multiple storage items with mixed types at a specific block', async () => {
+        const hash = '0x12345678';
+        const apiAt = await api.at(hash);
+
+        // Mock storage query functions with different types
+        const mockPlainQuery = {
+          meta: { pallet: 'system', name: 'number' },
+          rawKey: vi.fn().mockReturnValue('0x01'),
+        };
+        const mockMapQuery = {
+          meta: { pallet: 'system', name: 'account' },
+          rawKey: vi.fn().mockReturnValue('0x02'),
+        };
+        const mockDoubleMapQuery = {
+          meta: { pallet: 'assets', name: 'account' },
+          rawKey: vi.fn().mockReturnValue('0x03'),
+        };
+
+        // Set up the spy
+        const providerSend = vi.spyOn(provider, 'send');
+
+        // Mock state_queryStorageAt response with mixed values (some null)
+        const mockResults = [
+          {
+            block: hash,
+            changes: [
+              ['0x01', '0xvalue1'],
+              ['0x02', null], // Storage item doesn't exist
+              ['0x03', '0xvalue3'],
+            ],
+          },
+        ];
+        providerSend.mockResolvedValue(mockResults);
+
+        // Mock QueryableStorage
+        const originalQueryableStorage = await import('../../storage/QueryableStorage.js').then(
+          (m) => m.QueryableStorage,
+        );
+
+        vi.spyOn(originalQueryableStorage.prototype, 'decodeValue').mockImplementation((raw) => {
+          if (raw === '0xvalue1') return 100;
+          if (raw === null || raw === undefined) return undefined; // Handle null/undefined storage
+          if (raw === '0xvalue3') return { balance: BigInt(5000) };
+          return undefined;
+        });
+
+        // Call queryMulti with mixed query types
+        const result = await apiAt.queryMulti([
+          { fn: mockPlainQuery as any, args: [] },
+          { fn: mockMapQuery as any, args: ['0xalice'] },
+          { fn: mockDoubleMapQuery as any, args: [1, '0xbob'] },
+        ]);
+
+        // Verify rawKey was called with proper arguments
+        expect(mockPlainQuery.rawKey).toHaveBeenCalledWith();
+        expect(mockMapQuery.rawKey).toHaveBeenCalledWith('0xalice');
+        expect(mockDoubleMapQuery.rawKey).toHaveBeenCalledWith(1, '0xbob');
+
+        // Verify the result handles null values properly (undefined is returned for non-existent storage)
+        expect(result).toEqual([100, undefined, { balance: BigInt(5000) }]);
+      });
     });
 
     describe('queryMulti', () => {

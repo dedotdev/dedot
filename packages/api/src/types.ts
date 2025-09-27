@@ -126,6 +126,27 @@ export interface IGenericSubstrateClient<ChainApi extends GenericSubstrateApi = 
   events: ChainApi['events'];
   errors: ChainApi['errors'];
   view: ChainApi['view'];
+
+  /**
+   * Query multiple storage items in a single call
+   *
+   * This method allows you to query multiple storage items in a single call with type safety
+   * for both the query functions and their results.
+   *
+   * @example
+   * // One-time query with type-safe results
+   * const [balance, blockNumber] = await client.queryMulti([
+   *   { fn: client.query.system.account, args: [ALICE] },
+   *   { fn: client.query.system.number, args: [] }
+   * ]);
+   *
+   * @template Fns Array of storage query functions
+   * @param queries - Array of query specifications, each with a function and optional arguments
+   * @returns Array of decoded values with proper types
+   */
+  queryMulti<Fns extends GenericStorageQuery[]>(
+    queries: { [K in keyof Fns]: Query<Fns[K]> },
+  ): Promise<{ [K in keyof Fns]: QueryFnResult<Fns[K]> }>;
 }
 
 /**
@@ -166,15 +187,34 @@ export interface ISubstrateClient<
   setSigner(signer?: InjectedSigner): void;
 
   /**
-   * Perform multiple storage queries in parallel
-   * @param queries - An array of query objects
-   * @param callback - Optional callback function to handle results
-   * @returns A promise resolving to an array of results or an Unsub function
+   * Query multiple storage items in a single call or subscribe to multiple storage items
+   *
+   * This method allows you to query multiple storage items in a single call or set up a subscription
+   * to multiple storage items. It provides type safety for both the query functions and their results.
+   *
+   * @example
+   * // One-time query with type-safe results
+   * const [balance, blockNumber] = await client.queryMulti([
+   *   { fn: client.query.system.account, args: [ALICE] },
+   *   { fn: client.query.system.number, args: [] }
+   * ]);
+   *
+   * // Subscription with callback
+   * const unsub = await client.queryMulti([
+   *   { fn: client.query.system.account, args: [ALICE] },
+   *   { fn: client.query.system.number, args: [] }
+   * ], (results) => {
+   *   console.log('Balance:', results[0], 'Block number:', results[1]);
+   * });
+   *
+   * @template Fns Array of storage query functions
+   * @param queries - Array of query specifications, each with a function and optional arguments
+   * @param callback - Optional callback for subscription-based queries
+   * @returns For one-time queries: Array of decoded values with proper types; For subscriptions: Unsubscribe function
    */
   queryMulti<Fns extends GenericStorageQuery[]>(
-    queries: { [K in keyof Fns]: Query<Fns[K]> }, // pretter-end-here
+    queries: { [K in keyof Fns]: Query<Fns[K]> },
   ): Promise<{ [K in keyof Fns]: QueryFnResult<Fns[K]> }>;
-
   queryMulti<Fns extends GenericStorageQuery[]>(
     queries: { [K in keyof Fns]: Query<Fns[K]> },
     callback: Callback<{ [K in keyof Fns]: QueryFnResult<Fns[K]> }>,
