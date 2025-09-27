@@ -1,8 +1,8 @@
 import { $H256, $RuntimeVersion, BlockHash, PortableRegistry } from '@dedot/codecs';
 import type { JsonRpcProvider } from '@dedot/providers';
 import { u32 } from '@dedot/shape';
-import { GenericSubstrateApi, RpcV2, RpcVersion, VersionedGenericSubstrateApi } from '@dedot/types';
-import { assert, concatU8a, HexString, noop, twox64Concat, u8aToHex, xxhashAsU8a, DedotError } from '@dedot/utils';
+import { GenericStorageQuery, GenericSubstrateApi, RpcV2, VersionedGenericSubstrateApi } from '@dedot/types';
+import { assert, concatU8a, DedotError, HexString, noop, twox64Concat, u8aToHex, xxhashAsU8a } from '@dedot/utils';
 import type { SubstrateApi } from '../chaintypes/index.js';
 import {
   ConstantExecutor,
@@ -10,8 +10,8 @@ import {
   EventExecutor,
   RuntimeApiExecutorV2,
   StorageQueryExecutorV2,
-  ViewFunctionExecutorV2,
   TxExecutorV2,
+  ViewFunctionExecutorV2,
 } from '../executor/index.js';
 import { Archive, ChainHead, ChainSpec, PinnedBlock, Transaction, TransactionWatch } from '../json-rpc/index.js';
 import { newProxyChain } from '../proxychain.js';
@@ -297,6 +297,11 @@ export class DedotClient<ChainApi extends VersionedGenericSubstrateApi = Substra
     api.query = newProxyChain({ executor: new StorageQueryExecutorV2(api, this.chainHead) }) as ChainApiAt['query'];
     api.call = newProxyChain({ executor: new RuntimeApiExecutorV2(api, this.chainHead) }) as ChainApiAt['call'];
     api.view = newProxyChain({ executor: new ViewFunctionExecutorV2(api, this.chainHead) }) as ChainApiAt['view'];
+
+    // @ts-ignore Add queryMulti implementation for at-block queries
+    api.queryMulti = (queries: { fn: GenericStorageQuery; args?: any[] }[]) => {
+      return this.internalQueryMulti(queries, undefined, hash);
+    };
 
     this._apiAtCache.set(hash, api);
 

@@ -62,10 +62,17 @@ export async function ensureContractPresence(
 
   const contractInfo = await (async () => {
     if (isRevive) {
-      const accountInfo = await client.query.revive.accountInfoOf(address as HexString);
-      if (accountInfo?.accountType && accountInfo?.accountType?.type === 'Contract') {
-        return accountInfo.accountType.value;
-      }
+      try {
+        const accountInfo = await client.query.revive.accountInfoOf(address as HexString);
+        if (accountInfo?.accountType && accountInfo?.accountType?.type === 'Contract') {
+          return accountInfo.accountType.value;
+        }
+
+        return undefined;
+      } catch {}
+
+      // Fallback to contractInfoOf for older versions of pallet-revive
+      return client.query.revive.contractInfoOf(address as HexString);
     } else {
       return client.query.contracts.contractInfoOf(address);
     }
