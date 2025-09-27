@@ -179,7 +179,7 @@ export class TypinkRegistry extends TypeRegistry {
       const emittedContract = event.palletEvent.data?.contract;
 
       if (this.isRevive()) {
-        return emittedContract === contractAddress;
+        return emittedContract?.toLowerCase() === contractAddress.toLowerCase();
       } else if (emittedContract instanceof AccountId32) {
         return emittedContract.eq(contractAddress);
       } else {

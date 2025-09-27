@@ -425,6 +425,33 @@ export abstract class BaseSubstrateClient<
     this._options.signer = signer;
   }
 
+  protected async internalQueryMulti(
+    queries: { fn: GenericStorageQuery; args?: any[] }[],
+    callback?: Callback<any[]>,
+    blockHash?: BlockHash,
+  ): Promise<any[] | Unsub> {
+    // Extract keys from queries
+    const keys = queries.map((q) => q.fn.rawKey(...(q.args || [])));
+
+    const decodeValue = (query: GenericStorageQuery, rawValue?: StorageDataLike | null) => {
+      // Get the QueryableStorage instance from the query function
+      const entry = new QueryableStorage(this.registry, query.meta.pallet, query.meta.name);
+
+      // Decode the value
+      return entry.decodeValue(rawValue);
+    };
+
+    // If a callback is provided, set up a subscription
+    if (callback) {
+      return this.getStorageQuery().subscribe(keys, (results) => {
+        callback(queries.map((q, i) => decodeValue(q.fn, results[keys[i]])));
+      });
+    } else {
+      const results = await this.getStorageQuery().query(keys, blockHash);
+      return queries.map((q, i) => decodeValue(q.fn, results[keys[i]]));
+    }
+  }
+
   /**
    * Query multiple storage items in a single call
    *
@@ -457,25 +484,11 @@ export abstract class BaseSubstrateClient<
     queries: { fn: GenericStorageQuery; args?: any[] }[],
     callback?: Callback<any[]>,
   ): Promise<any[] | Unsub> {
-    // Extract keys from queries
-    const keys = queries.map((q) => q.fn.rawKey(...(q.args || [])));
-
-    const decodeValue = (query: GenericStorageQuery, rawValue?: StorageDataLike | null) => {
-      // Get the QueryableStorage instance from the query function
-      const entry = new QueryableStorage(this.registry, query.meta.pallet, query.meta.name);
-
-      // Decode the value
-      return entry.decodeValue(rawValue);
-    };
-
     // If a callback is provided, set up a subscription
     if (callback) {
-      return this.getStorageQuery().subscribe(keys, (results) => {
-        callback(queries.map((q, i) => decodeValue(q.fn, results[keys[i]])));
-      });
+      return this.internalQueryMulti(queries, callback);
     } else {
-      const results = await this.getStorageQuery().query(keys);
-      return queries.map((q, i) => decodeValue(q.fn, results[keys[i]]));
+      return this.internalQueryMulti(queries);
     }
   }
 

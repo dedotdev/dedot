@@ -4,6 +4,8 @@ import { QueryGen } from './QueryGen.js';
 
 export class TxGen extends QueryGen {
   generate(useSubPaths: boolean = false) {
+    this.typesGen.clearCache();
+
     this.typesGen.typeImports.addKnownType('GenericSubstrateApi');
     this.typesGen.typeImports.addContractType(
       'GenericContractTx',
