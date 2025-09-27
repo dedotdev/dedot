@@ -10,6 +10,8 @@ export class ConstructorQueryGen {
   ) {}
 
   generate(useSubPaths: boolean = false) {
+    this.typesGen.clearCache();
+
     this.typesGen.typeImports.addKnownType('GenericSubstrateApi');
     this.typesGen.typeImports.addContractType(
       'GenericConstructorQuery',

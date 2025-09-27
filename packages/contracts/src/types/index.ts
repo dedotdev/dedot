@@ -56,6 +56,8 @@ export interface LooseContractMetadata {
   [prop: string]: any;
 }
 
+export type LooseSolAbi = Array<{ type: string; [prop: string]: any }>;
+
 export type GenericContractQueryCall<
   ChainApi extends GenericSubstrateApi,
   F extends AsyncMethod = (...args: any[]) => Promise<GenericContractCallResult<any, ContractCallResult<ChainApi>>>,

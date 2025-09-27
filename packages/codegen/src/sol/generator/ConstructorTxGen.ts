@@ -4,6 +4,8 @@ import { ConstructorQueryGen } from './ConstructorQueryGen.js';
 
 export class ConstructorTxGen extends ConstructorQueryGen {
   generate(useSubPaths: boolean = false) {
+    this.typesGen.clearCache();
+
     this.typesGen.typeImports.addKnownType('GenericSubstrateApi');
     this.typesGen.typeImports.addContractType(
       'GenericConstructorTx',
