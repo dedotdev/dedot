@@ -5,19 +5,19 @@
       {
         "indexed": true,
         "internalType": "address",
-        "name": "sender",
+        "name": "",
         "type": "address"
       },
       {
         "indexed": false,
         "internalType": "uint256",
-        "name": "value",
+        "name": "",
         "type": "uint256"
       },
       {
         "indexed": false,
         "internalType": "bytes",
-        "name": "data",
+        "name": "",
         "type": "bytes"
       }
     ],

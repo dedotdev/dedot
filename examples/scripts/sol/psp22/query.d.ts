@@ -59,14 +59,14 @@ export interface ContractQuery<ChainApi extends GenericSubstrateApi, Type extend
 
   /**
    * @param {H160} spender
-   * @param {bigint} deltaValue
+   * @param {bigint} delta_value
    * @param {ContractCallOptions} options
    **/
   decreaseAllowance: GenericContractQueryCall<
     ChainApi,
     (
       spender: H160,
-      deltaValue: bigint,
+      delta_value: bigint,
       options?: ContractCallOptions,
     ) => Promise<GenericContractCallResult<[], ContractCallResult<ChainApi>>>,
     Type
@@ -74,14 +74,14 @@ export interface ContractQuery<ChainApi extends GenericSubstrateApi, Type extend
 
   /**
    * @param {H160} spender
-   * @param {bigint} deltaValue
+   * @param {bigint} delta_value
    * @param {ContractCallOptions} options
    **/
   increaseAllowance: GenericContractQueryCall<
     ChainApi,
     (
       spender: H160,
-      deltaValue: bigint,
+      delta_value: bigint,
       options?: ContractCallOptions,
     ) => Promise<GenericContractCallResult<[], ContractCallResult<ChainApi>>>,
     Type
@@ -130,7 +130,7 @@ export interface ContractQuery<ChainApi extends GenericSubstrateApi, Type extend
   /**
    * @param {H160} to
    * @param {bigint} value
-   * @param {number[]} data
+   * @param {number[]} _data
    * @param {ContractCallOptions} options
    **/
   transfer: GenericContractQueryCall<
@@ -138,7 +138,7 @@ export interface ContractQuery<ChainApi extends GenericSubstrateApi, Type extend
     (
       to: H160,
       value: bigint,
-      data: number[],
+      _data: number[],
       options?: ContractCallOptions,
     ) => Promise<GenericContractCallResult<[], ContractCallResult<ChainApi>>>,
     Type
@@ -148,7 +148,7 @@ export interface ContractQuery<ChainApi extends GenericSubstrateApi, Type extend
    * @param {H160} from
    * @param {H160} to
    * @param {bigint} value
-   * @param {number[]} data
+   * @param {number[]} _data
    * @param {ContractCallOptions} options
    **/
   transferFrom: GenericContractQueryCall<
@@ -157,7 +157,7 @@ export interface ContractQuery<ChainApi extends GenericSubstrateApi, Type extend
       from: H160,
       to: H160,
       value: bigint,
-      data: number[],
+      _data: number[],
       options?: ContractCallOptions,
     ) => Promise<GenericContractCallResult<[], ContractCallResult<ChainApi>>>,
     Type

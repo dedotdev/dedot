@@ -6,7 +6,7 @@
     "name": "flip_with_struct",
     "inputs": [
       {
-        "name": "flip",
+        "name": "flip_request",
         "type": "tuple",
         "components": [
           { "name": "should_flip", "type": "bool" },
@@ -58,8 +58,8 @@
     "type": "event",
     "name": "Flipped",
     "inputs": [
-      { "name": "old", "type": "bool", "indexed": false },
-      { "name": "new", "type": "bool", "indexed": false },
+      { "name": "old_value", "type": "bool", "indexed": false },
+      { "name": "new_value", "type": "bool", "indexed": false },
       { "name": "reason", "type": "string", "indexed": false }
     ],
     "anonymous": false

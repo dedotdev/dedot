@@ -8,20 +8,20 @@ export interface ContractEvents<ChainApi extends GenericSubstrateApi, Type exten
   extends GenericContractEvents<ChainApi, Type> {
   FallbackCalled: GenericContractEvent<
     'FallbackCalled',
-    {
+    [
       /**
        * @indexed: true
        **/
-      sender: H160;
+      H160,
       /**
        * @indexed: false
        **/
-      value: bigint;
+      bigint,
       /**
        * @indexed: false
        **/
-      data: BytesLike;
-    },
+      BytesLike,
+    ],
     Type
   >;
 
