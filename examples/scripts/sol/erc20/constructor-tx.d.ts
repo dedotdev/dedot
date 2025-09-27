@@ -16,7 +16,7 @@ export interface ConstructorTx<
   Type extends MetadataType,
 > extends GenericConstructorTx<ChainApi, Type> {
   /**
-   * @param {bigint} totalSupply
+   * @param {bigint} total_supply
    * @param {ConstructorTxOptions} options
    **/
   new: GenericConstructorTxCall<

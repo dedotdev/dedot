@@ -1,5 +1,5 @@
 import { SolAbi, SolAbiEvent } from '@dedot/contracts';
-import { stringCamelCase, stringPascalCase } from '@dedot/utils';
+import { stringPascalCase } from '@dedot/utils';
 import { beautifySourceCode, commentBlock, compileTemplate } from '../../utils.js';
 import { TypesGen } from './TypesGen.js';
 

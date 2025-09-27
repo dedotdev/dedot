@@ -25,7 +25,7 @@ export interface ContractTx<ChainApi extends GenericSubstrateApi, Type extends M
 
   /**
    * @param {H160} spender
-   * @param {bigint} deltaValue
+   * @param {bigint} delta_value
    * @param {ContractTxOptions} options
    **/
   decreaseAllowance: GenericContractTxCall<
@@ -36,7 +36,7 @@ export interface ContractTx<ChainApi extends GenericSubstrateApi, Type extends M
 
   /**
    * @param {H160} spender
-   * @param {bigint} deltaValue
+   * @param {bigint} delta_value
    * @param {ContractTxOptions} options
    **/
   increaseAllowance: GenericContractTxCall<
@@ -48,7 +48,7 @@ export interface ContractTx<ChainApi extends GenericSubstrateApi, Type extends M
   /**
    * @param {H160} to
    * @param {bigint} value
-   * @param {number[]} data
+   * @param {number[]} _data
    * @param {ContractTxOptions} options
    **/
   transfer: GenericContractTxCall<
@@ -61,7 +61,7 @@ export interface ContractTx<ChainApi extends GenericSubstrateApi, Type extends M
    * @param {H160} from
    * @param {H160} to
    * @param {bigint} value
-   * @param {number[]} data
+   * @param {number[]} _data
    * @param {ContractTxOptions} options
    **/
   transferFrom: GenericContractTxCall<

@@ -27,9 +27,9 @@ export interface ContractQuery<ChainApi extends GenericSubstrateApi, Type extend
   /**
    * @param {number} u8
    * @param {number[]} u16s
-   * @param {FixedArray<bigint, 3>} u2563
+   * @param {FixedArray<bigint, 3>} u256_3
    * @param {bigint} i128
-   * @param {FixedArray<FixedArray<bigint, 2>, 2>} i64s2x2
+   * @param {FixedArray<FixedArray<bigint, 2>, 2>} i64s_2x2
    * @param {FixedArray<FixedArray<FixedArray<bigint, 2>, 3>, 2>} bigMatrix
    * @param {ContractCallOptions} options
    **/
@@ -92,9 +92,9 @@ export interface ContractQuery<ChainApi extends GenericSubstrateApi, Type extend
   /**
    * @param {UFixed<128,18>} ufDefault
    * @param {Fixed<128,18>} fDefault
-   * @param {UFixed<128,18>} uf128x18
-   * @param {FixedArray<Fixed<64,10>, 2>} f64x10Pair
-   * @param {FixedArray<FixedArray<FixedArray<UFixed<32,5>, 2>, 2>, 2>} uf32x5Cube
+   * @param {UFixed<128,18>} uf_128x18
+   * @param {FixedArray<Fixed<64,10>, 2>} f_64x10_pair
+   * @param {FixedArray<FixedArray<FixedArray<UFixed<32,5>, 2>, 2>, 2>} uf_32x5_cube
    * @param {ContractCallOptions} options
    **/
   processFixedPoint: GenericContractQueryCall<

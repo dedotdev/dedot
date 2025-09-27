@@ -16,7 +16,7 @@ export interface ConstructorTx<
   Type extends MetadataType,
 > extends GenericConstructorTx<ChainApi, Type> {
   /**
-   * @param {boolean} initValue
+   * @param {boolean} init_value
    * @param {ConstructorTxOptions} options
    **/
   new: GenericConstructorTxCall<

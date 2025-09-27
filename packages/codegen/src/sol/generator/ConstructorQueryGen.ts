@@ -1,6 +1,5 @@
 import { TypesGen } from '@dedot/codegen/sol/generator/TypesGen';
 import { SolAbi, SolAbiConstructor } from '@dedot/contracts';
-import { stringCamelCase } from '@dedot/utils';
 import { beautifySourceCode, commentBlock, compileTemplate } from '../../utils.js';
 
 export class ConstructorQueryGen {
@@ -42,7 +41,7 @@ export class ConstructorQueryGen {
     callsOut += `${commentBlock(
       inputs.map(
         (input, idx) =>
-          `@param {${this.typesGen.generateType(input, abiItem, 1)}} ${stringCamelCase(input.name || `arg${idx}`)}`,
+          `@param {${this.typesGen.generateType(input, abiItem, 1)}} ${input.name || `arg${idx}`}`,
       ),
       optionsTypeName ? `@param {${optionsTypeName}} ${optionsParamName}` : '',
     )}`;

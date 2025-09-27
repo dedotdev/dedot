@@ -23,7 +23,7 @@ export interface ContractQuery<ChainApi extends GenericSubstrateApi, Type extend
   >;
 
   /**
-   * @param {FlipWithStructFlipRequestInput} flipRequest
+   * @param {FlipWithStructFlipRequestInput} flip_request
    * @param {ContractCallOptions} options
    **/
   flipWithStruct: GenericContractQueryCall<

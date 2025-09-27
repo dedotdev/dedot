@@ -59,7 +59,7 @@ export interface ContractQuery<ChainApi extends GenericSubstrateApi, Type extend
 
   /**
    * @param {H160} spender
-   * @param {bigint} deltaValue
+   * @param {bigint} delta_value
    * @param {ContractCallOptions} options
    **/
   decreaseAllowance: GenericContractQueryCall<
@@ -74,7 +74,7 @@ export interface ContractQuery<ChainApi extends GenericSubstrateApi, Type extend
 
   /**
    * @param {H160} spender
-   * @param {bigint} deltaValue
+   * @param {bigint} delta_value
    * @param {ContractCallOptions} options
    **/
   increaseAllowance: GenericContractQueryCall<
@@ -130,7 +130,7 @@ export interface ContractQuery<ChainApi extends GenericSubstrateApi, Type extend
   /**
    * @param {H160} to
    * @param {bigint} value
-   * @param {number[]} data
+   * @param {number[]} _data
    * @param {ContractCallOptions} options
    **/
   transfer: GenericContractQueryCall<
@@ -148,7 +148,7 @@ export interface ContractQuery<ChainApi extends GenericSubstrateApi, Type extend
    * @param {H160} from
    * @param {H160} to
    * @param {bigint} value
-   * @param {number[]} data
+   * @param {number[]} _data
    * @param {ContractCallOptions} options
    **/
   transferFrom: GenericContractQueryCall<
