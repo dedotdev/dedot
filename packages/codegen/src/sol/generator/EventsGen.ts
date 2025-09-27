@@ -19,7 +19,7 @@ export class EventsGen {
     events.forEach((event) => {
       const { name } = event;
 
-      eventsOut += ` ${stringPascalCase(name)}: ${this.#generateEventDef(event)};\n\n`;
+      eventsOut += `${stringPascalCase(name)}: ${this.#generateEventDef(event)};\n\n`;
     });
 
     const importTypes = this.typesGen.typeImports.toImports({ useSubPaths });
