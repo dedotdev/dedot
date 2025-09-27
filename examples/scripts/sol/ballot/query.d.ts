@@ -52,7 +52,7 @@ export interface ContractQuery<ChainApi extends GenericSubstrateApi, Type extend
   proposals: GenericContractQueryCall<
     ChainApi,
     (
-      [bigint],
+      arg0: bigint,
       options?: ContractCallOptions,
     ) => Promise<GenericContractCallResult<[FixedBytes<32>, bigint], ContractCallResult<ChainApi>>>,
     Type
@@ -78,7 +78,7 @@ export interface ContractQuery<ChainApi extends GenericSubstrateApi, Type extend
   voters: GenericContractQueryCall<
     ChainApi,
     (
-      [H160],
+      arg0: H160,
       options?: ContractCallOptions,
     ) => Promise<GenericContractCallResult<[bigint, boolean, H160, bigint], ContractCallResult<ChainApi>>>,
     Type

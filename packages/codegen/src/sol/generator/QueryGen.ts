@@ -66,13 +66,7 @@ export class QueryGen {
   }
 
   generateParamsOut(abiItem: SolAbiFunction): string {
-    const { inputs } = abiItem;
-
-    if (inputs.length > 0 && inputs.at(0)?.name.length === 0) {
-      return `[${inputs.map((o) => this.typesGen.generateType(o, abiItem, 1)).join(', ')}]`;
-    }
-
-    return inputs
+    return abiItem.inputs
       .map((input, idx) => `${input.name || `arg${idx}`}: ${this.typesGen.generateType(input, abiItem, 1)}`)
       .join(', ');
   }
