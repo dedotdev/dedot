@@ -58,11 +58,14 @@ export class ConstructorQueryGen {
   }
 
   generateParamsOut(abiItem: SolAbiConstructor): string {
+    const { inputs } = abiItem;
+
+    if (inputs.length > 0 && inputs.at(0)?.name.length === 0) {
+      return `[${inputs.map((o) => this.typesGen.generateType(o, abiItem, 1)).join(', ')}]`;
+    }
+
     return abiItem.inputs
-      .map(
-        (input, idx) =>
-          `${stringCamelCase(input.name || `arg${idx}`)}: ${this.typesGen.generateType(input, abiItem, 1)}`,
-      )
+      .map((input, idx) => `${input.name || `arg${idx}`}: ${this.typesGen.generateType(input, abiItem, 1)}`)
       .join(', ');
   }
 

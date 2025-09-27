@@ -19,7 +19,7 @@ export interface ConstructorQuery<ChainApi extends GenericSubstrateApi, Type ext
   new: GenericConstructorQueryCall<
     ChainApi,
     (
-      totalSupply: bigint,
+      total_supply: bigint,
       options?: ConstructorCallOptions,
     ) => Promise<GenericConstructorCallResult<[], ContractInstantiateResult<ChainApi>>>,
     Type

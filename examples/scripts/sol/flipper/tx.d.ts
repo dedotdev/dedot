@@ -8,7 +8,7 @@ import type {
   MetadataType,
 } from 'dedot/contracts';
 import type { GenericSubstrateApi } from 'dedot/types';
-import type { FlipWithStructFlipInput } from './types.js';
+import type { FlipWithStructFlipRequestInput } from './types.js';
 
 export interface ContractTx<ChainApi extends GenericSubstrateApi, Type extends MetadataType>
   extends GenericContractTx<ChainApi, Type> {
@@ -18,12 +18,15 @@ export interface ContractTx<ChainApi extends GenericSubstrateApi, Type extends M
   flip: GenericContractTxCall<ChainApi, (options?: ContractTxOptions) => ContractSubmittableExtrinsic<ChainApi>, Type>;
 
   /**
-   * @param {FlipWithStructFlipInput} flip
+   * @param {FlipWithStructFlipRequestInput} flipRequest
    * @param {ContractTxOptions} options
    **/
   flipWithStruct: GenericContractTxCall<
     ChainApi,
-    (flip: FlipWithStructFlipInput, options?: ContractTxOptions) => ContractSubmittableExtrinsic<ChainApi>,
+    (
+      flip_request: FlipWithStructFlipRequestInput,
+      options?: ContractTxOptions,
+    ) => ContractSubmittableExtrinsic<ChainApi>,
     Type
   >;
 }

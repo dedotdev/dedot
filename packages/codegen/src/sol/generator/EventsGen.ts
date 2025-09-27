@@ -17,9 +17,9 @@ export class EventsGen {
 
     let eventsOut = '';
     events.forEach((event) => {
-      const { name, anonymous } = event;
+      const { name } = event;
 
-      eventsOut += `${stringPascalCase(name)}: ${this.#generateEventDef(event)};\n\n`;
+      eventsOut += ` ${stringPascalCase(name)}: ${this.#generateEventDef(event)};\n\n`;
     });
 
     const importTypes = this.typesGen.typeImports.toImports({ useSubPaths });
@@ -39,10 +39,14 @@ export class EventsGen {
   generateParamsOut(abiItem: SolAbiEvent) {
     const { inputs } = abiItem;
 
+    if (inputs.length > 0 && inputs.at(0)?.name.length === 0) {
+      return `[${inputs.map((o) => `${commentBlock(`@indexed: ${o.indexed}`)}${this.typesGen.generateType(o, abiItem, 1)}`).join(', ')}]`;
+    }
+
     return inputs
       .map(
         (o, idx) =>
-          `${commentBlock(`@indexed: ${o.indexed}`)}${stringCamelCase(o.name || `arg${idx}`)}: ${this.typesGen.generateType(o, abiItem, 1)}`,
+          `${commentBlock(`@indexed: ${o.indexed}`)}${o.name || `arg${idx}`}: ${this.typesGen.generateType(o, abiItem, 1)}`,
       )
       .join(', ');
   }

@@ -11,11 +11,11 @@ export interface ContractEvents<ChainApi extends GenericSubstrateApi, Type exten
       /**
        * @indexed: false
        **/
-      old: boolean;
+      old_value: boolean;
       /**
        * @indexed: false
        **/
-      new: boolean;
+      new_value: boolean;
       /**
        * @indexed: false
        **/

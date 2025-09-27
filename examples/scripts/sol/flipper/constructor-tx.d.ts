@@ -22,7 +22,7 @@ export interface ConstructorTx<
   new: GenericConstructorTxCall<
     ChainApi,
     (
-      initValue: boolean,
+      init_value: boolean,
       options?: ConstructorTxOptions,
     ) => GenericInstantiateSubmittableExtrinsic<ChainApi, ContractApi>,
     Type

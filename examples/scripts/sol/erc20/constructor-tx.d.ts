@@ -22,7 +22,7 @@ export interface ConstructorTx<
   new: GenericConstructorTxCall<
     ChainApi,
     (
-      totalSupply: bigint,
+      total_supply: bigint,
       options?: ConstructorTxOptions,
     ) => GenericInstantiateSubmittableExtrinsic<ChainApi, ContractApi>,
     Type

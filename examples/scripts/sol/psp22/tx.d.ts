@@ -30,7 +30,7 @@ export interface ContractTx<ChainApi extends GenericSubstrateApi, Type extends M
    **/
   decreaseAllowance: GenericContractTxCall<
     ChainApi,
-    (spender: H160, deltaValue: bigint, options?: ContractTxOptions) => ContractSubmittableExtrinsic<ChainApi>,
+    (spender: H160, delta_value: bigint, options?: ContractTxOptions) => ContractSubmittableExtrinsic<ChainApi>,
     Type
   >;
 
@@ -41,7 +41,7 @@ export interface ContractTx<ChainApi extends GenericSubstrateApi, Type extends M
    **/
   increaseAllowance: GenericContractTxCall<
     ChainApi,
-    (spender: H160, deltaValue: bigint, options?: ContractTxOptions) => ContractSubmittableExtrinsic<ChainApi>,
+    (spender: H160, delta_value: bigint, options?: ContractTxOptions) => ContractSubmittableExtrinsic<ChainApi>,
     Type
   >;
 
@@ -53,7 +53,7 @@ export interface ContractTx<ChainApi extends GenericSubstrateApi, Type extends M
    **/
   transfer: GenericContractTxCall<
     ChainApi,
-    (to: H160, value: bigint, data: number[], options?: ContractTxOptions) => ContractSubmittableExtrinsic<ChainApi>,
+    (to: H160, value: bigint, _data: number[], options?: ContractTxOptions) => ContractSubmittableExtrinsic<ChainApi>,
     Type
   >;
 
@@ -70,7 +70,7 @@ export interface ContractTx<ChainApi extends GenericSubstrateApi, Type extends M
       from: H160,
       to: H160,
       value: bigint,
-      data: number[],
+      _data: number[],
       options?: ContractTxOptions,
     ) => ContractSubmittableExtrinsic<ChainApi>,
     Type
