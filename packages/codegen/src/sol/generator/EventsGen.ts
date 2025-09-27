@@ -33,7 +33,7 @@ export class EventsGen {
 
     const paramsOut = this.generateParamsOut(abiItem);
 
-    return `GenericContractEvent<'${stringPascalCase(name)}', {${paramsOut}}, Type>`;
+    return `GenericContractEvent<'${stringPascalCase(name)}', ${paramsOut}, Type>`;
   }
 
   generateParamsOut(abiItem: SolAbiEvent) {
@@ -43,11 +43,11 @@ export class EventsGen {
       return `[${inputs.map((o) => `${commentBlock(`@indexed: ${o.indexed}`)}${this.typesGen.generateType(o, abiItem, 1)}`).join(', ')}]`;
     }
 
-    return inputs
+    return `{${inputs
       .map(
         (o, idx) =>
           `${commentBlock(`@indexed: ${o.indexed}`)}${o.name || `arg${idx}`}: ${this.typesGen.generateType(o, abiItem, 1)}`,
       )
-      .join(', ');
+      .join(', ')}}`;
   }
 }
