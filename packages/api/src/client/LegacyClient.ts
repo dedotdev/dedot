@@ -1,6 +1,7 @@
-import { BlockHash, PortableRegistry, RuntimeVersion } from '@dedot/codecs';
+import { BlockHash, Hash, Header, PortableRegistry, RuntimeVersion } from '@dedot/codecs';
 import type { JsonRpcProvider } from '@dedot/providers';
-import { GenericSubstrateApi, RpcLegacy, RpcVersion, Unsub, VersionedGenericSubstrateApi } from '@dedot/types';
+import { GenericSubstrateApi, RpcLegacy, Unsub, VersionedGenericSubstrateApi } from '@dedot/types';
+import { assert } from '@dedot/utils';
 import type { SubstrateApi } from '../chaintypes/index.js';
 import {
   ConstantExecutor,
@@ -282,12 +283,13 @@ export class LegacyClient<ChainApi extends VersionedGenericSubstrateApi = Substr
     const cached = this._apiAtCache.get<ISubstrateClientAt<ChainApiAt>>(hash);
     if (cached) return cached;
 
-    const targetVersion = await this.#getRuntimeVersion(hash);
+    const parentHash = await this.#findParentHash(hash);
+    const targetVersion = await this.#getRuntimeVersion(parentHash);
 
     let metadata = this.metadata;
     let registry: any = this.registry;
     if (targetVersion.specVersion !== this.runtimeVersion.specVersion) {
-      metadata = await this.fetchMetadata(hash, targetVersion);
+      metadata = await this.fetchMetadata(parentHash, targetVersion);
       registry = new PortableRegistry<ChainApiAt['types']>(metadata.latest, this.options.hasher);
     }
 
@@ -315,5 +317,15 @@ export class LegacyClient<ChainApi extends VersionedGenericSubstrateApi = Substr
 
   protected override getStorageQuery(): BaseStorageQuery {
     return new LegacyStorageQuery(this);
+  }
+
+  async #findParentHash(hash: Hash): Promise<Hash> {
+    if (hash === this.genesisHash) {
+      return this.genesisHash;
+    } else {
+      const header: Header | undefined = await this.rpc.chain_getHeader(hash);
+      assert(header, `Header for ${hash} not found`);
+      return header.parentHash;
+    }
   }
 }
