@@ -22,6 +22,7 @@ const decodeEvents = async (Client: typeof LegacyClient | typeof DedotClient, bl
 await decodeEvents(LegacyClient, 6523565);
 await decodeEvents(DedotClient, 6523565);
 
+// runtime upgraded happened
 await decodeEvents(LegacyClient, 6523566);
 await decodeEvents(DedotClient, 6523566);
 
