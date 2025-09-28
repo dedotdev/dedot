@@ -1,8 +1,4 @@
 import { DedotClient, LegacyClient, WsProvider } from 'dedot';
-import { SubstrateApi } from 'dedot/chaintypes';
-import { $SignedBlock } from 'dedot/codecs';
-import { u8aToHex } from 'dedot/utils';
-import * as fs from 'node:fs';
 
 const decodeEvents = async (Client: typeof LegacyClient | typeof DedotClient, blockNumber: number) => {
   const client = await LegacyClient.new(new WsProvider('wss://archive.chain.opentensor.ai:443'));
