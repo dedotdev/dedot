@@ -41,7 +41,7 @@ export class EventsGen {
   generateParamsOut(abiItem: SolAbiEvent) {
     const { inputs } = abiItem;
 
-    if (inputs.length > 0 && inputs.at(0)?.name.length === 0) {
+    if (inputs.length > 0 && !inputs.at(0)!.name) {
       return `[${inputs.map((o) => `${commentBlock(`@indexed: ${o.indexed}`)}${this.typesGen.generateType(o, abiItem, 1)}`).join(', ')}]`;
     }
 
