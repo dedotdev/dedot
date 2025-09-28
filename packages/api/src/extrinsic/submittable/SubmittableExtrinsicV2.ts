@@ -29,7 +29,7 @@ export class SubmittableExtrinsicV2 extends BaseSubmittableExtrinsic {
 
     // validate the transaction
     // https://github.com/paritytech/json-rpc-interface-spec/issues/55#issuecomment-1609011150
-    // ensure at least 2 finalized blocks
+    // ensure at least 2 finalized blocks, this is to make sure the api.at can find the parent hash & block to fetch runtime
     while (true) {
       const block = await this.client.chainHead.finalizedBlock();
       const parentBlock = this.client.chainHead.findBlock(block.parent);
