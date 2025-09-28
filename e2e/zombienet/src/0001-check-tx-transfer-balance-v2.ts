@@ -5,6 +5,11 @@ import { assert, isHex, isNumber } from 'dedot/utils';
 
 const BOB = '5FHneW46xGXgs5mUiveU4sbTyGBzmstUspZC92UhjJM694ty';
 
+process.on('unhandledRejection', (reason, promise) => {
+  console.log('unhandled rejection', reason);
+  console.log('unhandled promise', promise);
+});
+
 export const run = async (nodeName: any, networkInfo: any): Promise<void> => {
   try {
     await cryptoWaitReady();
