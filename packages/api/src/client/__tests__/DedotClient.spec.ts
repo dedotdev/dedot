@@ -41,7 +41,10 @@ describe('DedotClient', () => {
       providerSend = vi.spyOn(provider, 'send');
       simulator = newChainHeadSimulator({ provider });
       simulator.notify(simulator.initializedEvent);
-      simulator.notify(simulator.nextNewBlock());
+      simulator.notify(simulator.nextNewBlock()); // 0xf
+      simulator.notify(simulator.nextNewBlock()); // 0x10
+      simulator.notify(simulator.nextBestBlock()); // 0xf
+      simulator.notify(simulator.nextFinalized()); // 0xf
 
       let counter = 0;
       provider.setRpcRequests({
@@ -84,14 +87,14 @@ describe('DedotClient', () => {
       it('should create new api instance', async () => {
         expect(providerSend).toBeCalledWith('chainHead_v1_call', [
           simulator.subscriptionId,
-          await api.chainHead.bestHash(),
+          '0x0e',
           'Metadata_metadata_versions',
           '0x',
         ]);
 
         expect(providerSend).toBeCalledWith('chainHead_v1_call', [
           simulator.subscriptionId,
-          await api.chainHead.bestHash(),
+          '0x0f',
           'Metadata_metadata_at_version',
           '0x10000000',
         ]);
@@ -579,7 +582,7 @@ describe('DedotClient', () => {
               'BestChainBlockIncluded',
               'Finalized',
             ]);
-            expect(finalizedBlock).toEqual({ blockHash: '0x10-1', blockNumber: 16, txIndex: 2 });
+            expect(finalizedBlock).toEqual({ blockHash: '0x11-1', blockNumber: 17, txIndex: 2 });
           });
         });
       });
@@ -617,7 +620,7 @@ describe('DedotClient', () => {
 
           expect(providerSend).toBeCalledWith('chainHead_v1_call', [
             simulator.subscriptionId,
-            '0x0d',
+            '0x0c',
             'Core_version',
             '0x',
           ]);
@@ -679,7 +682,7 @@ describe('DedotClient', () => {
 
           expect(providerSend).toBeCalledWith('chainHead_v1_call', [
             simulator.subscriptionId,
-            '0x0d',
+            '0x0c',
             'Core_version',
             '0x',
           ]);
@@ -688,14 +691,14 @@ describe('DedotClient', () => {
 
           expect(providerSend).toBeCalledWith('chainHead_v1_call', [
             simulator.subscriptionId,
-            '0x0d',
+            '0x0c',
             'Metadata_metadata_versions',
             '0x',
           ]);
 
           expect(providerSend).toBeCalledWith('chainHead_v1_call', [
             simulator.subscriptionId,
-            '0x0d',
+            '0x0c',
             'Metadata_metadata_at_version',
             '0x10000000',
           ]);
@@ -704,10 +707,10 @@ describe('DedotClient', () => {
         });
 
         it('should define valid props', async () => {
-          const apiAt = await api.at('0x0e');
+          const apiAt = await api.at('0x0f');
 
           expect(apiAt.rpcVersion).toEqual('v2');
-          expect(apiAt.atBlockHash).toEqual('0x0e');
+          expect(apiAt.atBlockHash).toEqual('0x0f');
           expect(apiAt.options).toBeDefined();
           expect(apiAt.runtimeVersion).toBe(simulator.runtime);
           expect(apiAt.registry).toBeDefined();
@@ -720,14 +723,14 @@ describe('DedotClient', () => {
         });
 
         it('should execute rpc', async () => {
-          const apiAt = await api.at('0x0e');
+          const apiAt = await api.at('0x0f');
 
           await apiAt.rpc.system_chain();
           expect(providerSend).toBeCalledWith('system_chain', []);
         });
 
         it('should maintain proxy chain independence for events', async () => {
-          const apiAt = await api.at('0x0e');
+          const apiAt = await api.at('0x0f');
 
           // Access multiple events - they should be independent
           const eventRefs = [
@@ -756,7 +759,7 @@ describe('DedotClient', () => {
         });
 
         it('should maintain proxy chain independence for errors', async () => {
-          const apiAt = await api.at('0x0e');
+          const apiAt = await api.at('0x0f');
 
           // Access multiple errors - they should be independent
           const errorRefs = [
@@ -777,7 +780,7 @@ describe('DedotClient', () => {
             chainHead_v1_call: () => ({ result: 'started', operationId: 'call05' }) as MethodResponse,
           });
 
-          const hash = '0x0e';
+          const hash = '0x0f';
 
           const apiAt = await api.at(hash);
           const key = apiAt.query.system.number.rawKey();
