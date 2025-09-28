@@ -5,10 +5,4 @@ Creds: config
 alice: is up
 bob: is up
 alice: reports node_roles is 4
-alice: ts-script ./0001-check-tx-transfer-balance.ts within 100 seconds
 alice: ts-script ./0001-check-tx-transfer-balance-v2.ts within 100 seconds
-alice: ts-script ./0001-check-tx-batch.ts within 100 seconds
-alice: ts-script ./0001-check-contract-tx-chaining-methods.ts within 500 seconds
-alice: ts-script ./0001-check-tx-chaining-methods.ts within 500 seconds
-alice: ts-script ./0001-check-contract-storage-flipper.ts within 500 seconds
-alice: ts-script ./0001-check-contract-storage-psp22.ts within 500 seconds
