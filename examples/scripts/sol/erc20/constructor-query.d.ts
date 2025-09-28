@@ -13,13 +13,13 @@ import type { GenericSubstrateApi } from 'dedot/types';
 export interface ConstructorQuery<ChainApi extends GenericSubstrateApi, Type extends MetadataType>
   extends GenericConstructorQuery<ChainApi, Type> {
   /**
-   * @param {bigint} totalSupply
+   * @param {bigint} total_supply
    * @param {ConstructorCallOptions} options
    **/
   new: GenericConstructorQueryCall<
     ChainApi,
     (
-      totalSupply: bigint,
+      total_supply: bigint,
       options?: ConstructorCallOptions,
     ) => Promise<GenericConstructorCallResult<[], ContractInstantiateResult<ChainApi>>>,
     Type

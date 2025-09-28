@@ -219,7 +219,7 @@ export class TypesGen {
       };
     });
 
-    if (props.length > 0 && props.at(0)!.name.length === 0) {
+    if (props.length > 0 && !props.at(0)!.name) {
       return `[${props.map(({ type }) => `${type}`).join(', ')}]`;
     }
 

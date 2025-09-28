@@ -27,9 +27,9 @@ export interface ContractQuery<ChainApi extends GenericSubstrateApi, Type extend
   /**
    * @param {number} u8
    * @param {number[]} u16s
-   * @param {FixedArray<bigint, 3>} u2563
+   * @param {FixedArray<bigint, 3>} u256_3
    * @param {bigint} i128
-   * @param {FixedArray<FixedArray<bigint, 2>, 2>} i64s2x2
+   * @param {FixedArray<FixedArray<bigint, 2>, 2>} i64s_2x2
    * @param {FixedArray<FixedArray<FixedArray<bigint, 2>, 3>, 2>} bigMatrix
    * @param {ContractCallOptions} options
    **/
@@ -38,9 +38,9 @@ export interface ContractQuery<ChainApi extends GenericSubstrateApi, Type extend
     (
       u8: number,
       u16s: number[],
-      u2563: FixedArray<bigint, 3>,
+      u256_3: FixedArray<bigint, 3>,
       i128: bigint,
-      i64s2x2: FixedArray<FixedArray<bigint, 2>, 2>,
+      i64s_2x2: FixedArray<FixedArray<bigint, 2>, 2>,
       bigMatrix: FixedArray<FixedArray<FixedArray<bigint, 2>, 3>, 2>,
       options?: ContractCallOptions,
     ) => Promise<GenericContractCallResult<[bigint, ProcessIntegersMinMaxOutput], ContractCallResult<ChainApi>>>,
@@ -92,9 +92,9 @@ export interface ContractQuery<ChainApi extends GenericSubstrateApi, Type extend
   /**
    * @param {UFixed<128,18>} ufDefault
    * @param {Fixed<128,18>} fDefault
-   * @param {UFixed<128,18>} uf128x18
-   * @param {FixedArray<Fixed<64,10>, 2>} f64x10Pair
-   * @param {FixedArray<FixedArray<FixedArray<UFixed<32,5>, 2>, 2>, 2>} uf32x5Cube
+   * @param {UFixed<128,18>} uf_128x18
+   * @param {FixedArray<Fixed<64,10>, 2>} f_64x10_pair
+   * @param {FixedArray<FixedArray<FixedArray<UFixed<32,5>, 2>, 2>, 2>} uf_32x5_cube
    * @param {ContractCallOptions} options
    **/
   processFixedPoint: GenericContractQueryCall<
@@ -102,9 +102,9 @@ export interface ContractQuery<ChainApi extends GenericSubstrateApi, Type extend
     (
       ufDefault: UFixed<128, 18>,
       fDefault: Fixed<128, 18>,
-      uf128x18: UFixed<128, 18>,
-      f64x10Pair: FixedArray<Fixed<64, 10>, 2>,
-      uf32x5Cube: FixedArray<FixedArray<FixedArray<UFixed<32, 5>, 2>, 2>, 2>,
+      uf_128x18: UFixed<128, 18>,
+      f_64x10_pair: FixedArray<Fixed<64, 10>, 2>,
+      uf_32x5_cube: FixedArray<FixedArray<FixedArray<UFixed<32, 5>, 2>, 2>, 2>,
       options?: ContractCallOptions,
     ) => Promise<GenericContractCallResult<[UFixed<128, 18>, Fixed<128, 18>], ContractCallResult<ChainApi>>>,
     Type
