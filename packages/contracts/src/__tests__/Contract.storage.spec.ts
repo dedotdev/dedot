@@ -1,9 +1,12 @@
 import { LegacyClient } from '@dedot/api';
+import { SubstrateApi } from '@dedot/api/chaintypes';
 // @ts-ignore
 import MockProvider from '@dedot/api/client/__tests__/MockProvider';
+import { RpcVersion } from '@dedot/codecs/types';
 import * as $ from '@dedot/shape';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { Contract } from '../Contract.js';
+import { GenericContractApi } from '../types/index.js';
 import { MockedRuntimeVersion } from './Contract.spec.js';
 import {
   FLIPPER_CONTRACT_METADATA_V4,
@@ -11,8 +14,10 @@ import {
   RANDOM_CONTRACT_ADDRESS,
 } from './contracts-metadata.js';
 
+type ContractApi = GenericContractApi<RpcVersion, SubstrateApi, 'ink'>;
+
 describe('Contract Storage API', () => {
-  let api: LegacyClient, provider: MockProvider, contract: Contract;
+  let api: LegacyClient, provider: MockProvider, contract: Contract<ContractApi>;
 
   describe('with metadata v5', () => {
     beforeEach(async () => {
@@ -70,7 +75,7 @@ describe('Contract Storage API', () => {
   describe('with lazy storage types', () => {
     it('should handle lazy storage types in lazy()', () => {
       // Create a contract with the metadata
-      const contract = new Contract(api, FLIPPER_CONTRACT_METADATA_V5, RANDOM_CONTRACT_ADDRESS);
+      const contract = new Contract<ContractApi>(api, FLIPPER_CONTRACT_METADATA_V5, RANDOM_CONTRACT_ADDRESS);
 
       // Create a simple mock codec that returns a fixed object
       const mockCodec = {
@@ -114,7 +119,7 @@ describe('Contract Storage API', () => {
         },
       };
 
-      const invalidContract = new Contract(api, invalidMetadata, RANDOM_CONTRACT_ADDRESS);
+      const invalidContract = new Contract<ContractApi>(api, invalidMetadata, RANDOM_CONTRACT_ADDRESS);
 
       // Should throw an error when root key is missing
       await expect(invalidContract.storage.root()).rejects.toThrow();

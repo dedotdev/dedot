@@ -1,6 +1,6 @@
-import { generateContractTypes } from '@dedot/codegen';
-import { ensureSupportedContractMetadataVersion } from '@dedot/contracts';
-import { assert } from '@dedot/utils';
+import { generateContractTypes, GeneratedResult, generateSolContractTypes } from '@dedot/codegen';
+import { ensureSupportedContractMetadataVersion, isInkAbi, isSolAbi } from '@dedot/contracts';
+import { assert, DedotError } from '@dedot/utils';
 import * as fs from 'node:fs';
 import ora from 'ora';
 import * as path from 'path';
@@ -32,22 +32,34 @@ export const typink: CommandModule<Args, Args> = {
       spinner.text = `Parsing contract metadata file: ${metadata}`;
 
       const contractMetadata = JSON.parse(fs.readFileSync(metadataFile, 'utf-8'));
-      ensureSupportedContractMetadataVersion(contractMetadata);
+      const isInkContract = isInkAbi(contractMetadata);
+      const isSolidityContract = isSolAbi(contractMetadata);
+
+      if (isInkContract) {
+        ensureSupportedContractMetadataVersion(contractMetadata);
+        spinner.info(`Detected ink! contract metadata version: ${contractMetadata.version}`);
+      } else if (isSolidityContract) {
+        spinner.info(`Detected Solidity ABI metadata`);
+      } else {
+        throw new DedotError('Unknown metadata format (neither ink! nor Solidity ABI)');
+      }
 
       spinner.succeed(`Parsed contract metadata file: ${metadata}`);
-
       spinner.text = 'Generating contract Types & APIs';
-      const { interfaceName, outputFolder } = await generateContractTypes(
-        contractMetadata,
-        contract,
-        outDir,
-        extension,
-        subpath,
-      );
+
+      let result: GeneratedResult;
+      if (isInkContract) {
+        result = await generateContractTypes(contractMetadata, contract, outDir, extension, subpath);
+      } else {
+        // For Solidity contract, we use the file name (without extension) as the contract name if not provided
+        const contractName = contract || path.basename(metadataFile).split('.')[0];
+        result = await generateSolContractTypes(contractMetadata, contractName, outDir, extension, subpath);
+      }
+
       spinner.succeed('Generated contract Types & APIs');
 
-      console.log(`  ➡ Output directory: file://${outputFolder}`);
-      console.log(`  ➡ ContractApi interface: ${interfaceName}`);
+      console.log(`  ➡ Output directory: file://${result.outputFolder}`);
+      console.log(`  ➡ ContractApi interface: ${result.interfaceName}`);
       console.log('🌈 Done!');
 
       spinner.stop();

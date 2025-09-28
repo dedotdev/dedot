@@ -14,8 +14,9 @@
   "type": "module",
   "scripts": {
     "build": "tsc --project tsconfig.build.json && tsc --project tsconfig.build.cjs.json && yarn copy",
+    "test": "npx vitest --watch=false",
     "clean": "rm -rf ./dist && rm -rf ./tsconfig.tsbuildinfo ./tsconfig.build.tsbuildinfo",
-    "copy": "cp -R ./src/chaintypes/templates ./dist/chaintypes && cp -R ./src/chaintypes/templates ./dist/cjs/chaintypes && cp -R ./src/typink/templates ./dist/typink && cp -R ./src/typink/templates ./dist/cjs/typink"
+    "copy": "cp -R ./src/chaintypes/templates ./dist/chaintypes && cp -R ./src/chaintypes/templates ./dist/cjs/chaintypes && cp -R ./src/typink/templates ./dist/typink && cp -R ./src/typink/templates ./dist/cjs/typink && cp -R ./src/sol/templates ./dist/sol && cp -R ./src/sol/templates ./dist/cjs/sol"
   },
   "dependencies": {
     "@dedot/api": "workspace:*",

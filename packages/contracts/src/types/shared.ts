@@ -1,119 +1,77 @@
+import { AccountId32Like, Bytes, BytesLike, DispatchError, Extrinsic, H256, Weight } from '@dedot/codecs';
+import { Result } from '@dedot/shape';
+import { GenericSubstrateApi, ISubmittableExtrinsic, ISubmittableResult } from '@dedot/types';
+
 export type ContractAddress = string; // ss58 or evm address
 
-export interface ContractInformation {
-  name: string;
-  version: string;
-  authors: string[];
+/**
+ * Flags used by a contract to customize exit behaviour.
+ * Ref: https://github.com/paritytech/polkadot-sdk/blob/d2fd53645654d3b8e12cbf735b67b93078d70113/substrate/frame/contracts/uapi/src/flags.rs#L23-L26
+ */
+export type ReturnFlags = {
+  bits: number;
+  revert: boolean; // 0x0000_0001
+};
+
+export interface GenericContractCallResult<DecodedData = any, ContractResult = any> {
+  data: DecodedData;
+  raw: ContractResult;
+  flags: ReturnFlags;
+  inputData: Bytes; // Encoded (selector + arguments) input data
 }
 
-export interface ContractSource {
-  hash: string;
-  language: string;
-  compiler: string;
-  build_info: BuildInfo;
+export interface GenericConstructorCallResult<DecodedData = any, ContractResult = any>
+  extends GenericContractCallResult<DecodedData, ContractResult> {
+  address: ContractAddress; // Address of the contract will be instantiated
 }
 
-export interface BuildInfo {
-  build_mode: string;
-  cargo_contract_version: string;
-  rust_toolchain: string;
+export type ContractCode = { type: 'Upload'; value: Bytes } | { type: 'Existing'; value: H256 };
+export type WeightV2 = { refTime: bigint; proofSize: bigint };
+export type StorageDeposit = { type: 'Refund'; value: bigint } | { type: 'Charge'; value: bigint };
+export type ExecReturnValue = { flags: { bits: number }; data: Bytes };
+
+export type InstantiateReturnValue = {
+  result: ExecReturnValue;
+  address: ContractAddress;
+};
+
+export type ContractCallResult<_ extends GenericSubstrateApi> = {
+  gasConsumed: WeightV2;
+  gasRequired: WeightV2;
+  storageDeposit: StorageDeposit;
+  debugMessage?: Bytes;
+  result: Result<ExecReturnValue, DispatchError>;
+};
+
+export type ContractInstantiateResult<_ extends GenericSubstrateApi> = {
+  gasConsumed: WeightV2;
+  gasRequired: WeightV2;
+  storageDeposit: StorageDeposit;
+  debugMessage?: Bytes;
+  result: Result<InstantiateReturnValue, DispatchError>;
+};
+
+export interface ExecutionOptions {
+  defaultCaller?: AccountId32Like;
 }
 
-export interface WasmOptSettings {
-  keep_debug_symbols: boolean;
-  optimization_passes: string;
-}
+export type CallOptions = {
+  value?: bigint;
+  gasLimit?: Weight | undefined;
+  storageDepositLimit?: bigint | undefined;
+};
 
-export interface ContractMessageArg {
-  label: string;
-  type: ContractTypeInfo;
-}
+export type ConstructorCallOptions = CallOptions & {
+  salt?: BytesLike;
+  caller?: AccountId32Like;
+};
 
-export interface ContractTypeInfo {
-  displayName: string[];
-  type: number;
-}
+export type ConstructorTxOptions = CallOptions & {
+  salt?: BytesLike;
+};
 
-export interface ContractMessage {
-  args: ContractMessageArg[];
-  default: boolean;
-  docs: string[];
-  label: string;
-  payable: boolean;
-  returnType: ContractTypeInfo;
-  selector: string;
-}
+export type ContractCallOptions = CallOptions & {
+  caller?: AccountId32Like;
+};
 
-export interface ContractConstructorMessage extends ContractMessage {}
-
-export interface ContractCallMessage extends ContractMessage {
-  mutates: boolean;
-}
-
-export interface ContractType {
-  id: number;
-  type: {
-    def: ContractTypeDef;
-    path?: string[];
-    params?: ParamInfo[];
-  };
-}
-
-export interface ContractTypeDef {
-  composite?: CompositeType;
-  array?: ArrayType;
-  primitive?: string;
-  sequence?: SequenceType;
-  variant?: VariantType;
-  tuple?: number[];
-  compact?: CompactType;
-  bitsequence?: BitSequenceType;
-}
-
-export interface BitSequenceType {
-  bit_order_type: number;
-  bit_store_type: number;
-}
-
-export interface CompactType {
-  type: number;
-}
-
-export interface CompositeType {
-  fields?: {
-    type: number;
-    typeName: string;
-    name?: string;
-  }[];
-}
-
-export interface ArrayType {
-  len: number;
-  type: number;
-}
-
-export interface SequenceType {
-  type: number;
-}
-
-export interface VariantType {
-  variants?: {
-    index: number;
-    name: string;
-    fields?: {
-      type: number;
-      typeName?: string;
-      name?: string;
-    }[];
-  }[];
-}
-
-export interface ParamInfo {
-  name: string;
-  type: number;
-}
-
-export interface ContractEventArg extends ContractMessageArg {
-  docs: string[];
-  indexed: boolean;
-}
+export type ContractTxOptions = CallOptions;

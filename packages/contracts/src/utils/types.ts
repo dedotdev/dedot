@@ -1,6 +1,7 @@
-import { PortableType, TypeDef } from '@dedot/codecs';
+import { AccountId32, Bytes, H160, H256, PortableType, TypeDef } from '@dedot/codecs';
+import { IRuntimeEvent } from '@dedot/codecs/types';
 import { stringCamelCase } from '@dedot/utils';
-import { ContractMetadata, ContractTypeDef, ReturnFlags } from 'src/types';
+import { ContractMetadata, ContractTypeDef, ReturnFlags } from '../types/index.js';
 
 export const extractContractTypes = (contractMetadata: ContractMetadata): PortableType[] => {
   const { types } = contractMetadata;
@@ -122,4 +123,50 @@ export function isLazyType(typePath?: string | string[] | undefined): KnownLazyT
   if (typePath === KNOWN_LAZY_TYPES.LAZY) return KnownLazyType.LAZY;
   if (typePath === KNOWN_LAZY_TYPES.MAPPING) return KnownLazyType.MAPPING;
   if (typePath === KNOWN_LAZY_TYPES.STORAGE_VEC) return KnownLazyType.STORAGE_VEC;
+}
+
+export type KnownPallets = 'Contracts' | 'Revive';
+
+export interface ContractEmittedEvent<Pallet extends KnownPallets = 'Contracts'> extends IRuntimeEvent {
+  pallet: Pallet;
+  palletEvent: {
+    name: 'ContractEmitted';
+    data: Pallet extends 'Contracts'
+      ? {
+          contract: AccountId32;
+          data: Bytes;
+        }
+      : {
+          contract: H160;
+          data: Bytes;
+          topics: Array<H256>;
+        };
+  };
+}
+
+// https://use.ink/docs/v6/basics/metadata/ink/
+export function isInkAbi(metadata: any): boolean {
+  return (
+    metadata !== null && // --
+    'source' in metadata &&
+    'contract' in metadata &&
+    'spec' in metadata
+  );
+}
+
+// https://docs.soliditylang.org/en/latest/abi-spec.html#json
+export function isSolAbi(metadata: any): boolean {
+  return (
+    Array.isArray(metadata) &&
+    metadata.length > 0 &&
+    metadata.some(
+      (item: any) =>
+        item.type === 'function' ||
+        item.type === 'constructor' ||
+        item.type === 'event' ||
+        item.type === 'error' ||
+        item.type === 'fallback' ||
+        item.type === 'receive',
+    )
+  );
 }

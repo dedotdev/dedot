@@ -1,0 +1,252 @@
+import { SolAbi, SolAbiItem, SolAbiTypeDef } from '@dedot/contracts';
+import { stringPascalCase } from '@dedot/utils';
+import { TypeImports } from '../../shared/TypeImports.js';
+import { beautifySourceCode, compileTemplate, isNativeType } from '../../utils.js';
+
+const INT_TYPES = /^int(\d+)?(\[(\d+)?])*?$/;
+const UINT_TYPES = /^uint(\d+)?(\[(\d+)?])*?$/;
+const BYTES_TYPES = /^bytes(\d+)?(\[(\d+)?])*?$/;
+const FIXED_TYPES = /^fixed(\d+x\d+)?(\[(\d+)?])*?$/;
+const UNFIXED_TYPES = /^ufixed(\d+x\d+)?(\[(\d+)?])*?$/;
+const STRING_TYPES = /^string(\[(\d+)?])*?$/;
+const BOOL_TYPES = /^bool(\[(\d+)?])*?$/;
+const ADDRESS_TYPES = /^address(\[(\d+)?])*?$/;
+const FUNCTION_TYPES = /^function(\[(\d+)?])*?$/;
+const COMPONENT_TYPES = /^tuple(\[(\d+)?])*?$/;
+const ARRAY_DIM = /\[(\d+)?]/g;
+const ONLY_ARRAY_DIM = /^\[(\d+)?]$/;
+
+export const SUPPORTED_SOLIDITY_TYPES = [
+  INT_TYPES,
+  UINT_TYPES,
+  BYTES_TYPES,
+  FIXED_TYPES,
+  UNFIXED_TYPES,
+  STRING_TYPES,
+  BOOL_TYPES,
+  ADDRESS_TYPES,
+  FUNCTION_TYPES,
+  COMPONENT_TYPES,
+];
+
+export const BASIC_KNOWN_TYPES = [
+  /^(H160)$/,
+  /^(FixedBytes)<(\d+)>$/,
+  /^(Bytes)$/,
+  /^(BytesLike)$/,
+  /^(Fixed)<(\d+),(\d+)>$/,
+  /^(UFixed)<(\d+),(\d+)>$/,
+  /^(FixedArray)$/,
+];
+
+export class TypesGen {
+  typeImports: TypeImports;
+
+  constructor(public readonly abi: SolAbi) {
+    this.typeImports = new TypeImports();
+  }
+
+  generate(useSubPaths: boolean = false): Promise<string> {
+    let defTypeOut = '';
+
+    this.abi.forEach((abiItem) => {
+      if (abiItem.type === 'fallback' || abiItem.type === 'receive') return;
+
+      if (abiItem.type === 'function' || abiItem.type === 'constructor' || abiItem.type === 'event') {
+        const { inputs } = abiItem;
+
+        inputs
+          .filter((o) => o.components && o.components.length > 0)
+          .forEach((o) => {
+            defTypeOut += `export type ${this.generateTypeName(o, abiItem)} = ${this.generateType(o, abiItem, 0)};\n\n`;
+          });
+      }
+
+      if (abiItem.type === 'function') {
+        const { outputs } = abiItem;
+
+        outputs
+          .filter((o) => o.components && o.components.length > 0)
+          .forEach((o) => {
+            defTypeOut += `export type ${this.generateTypeName(o, abiItem, true)} = ${this.generateType(o, abiItem, 0, true)};\n\n`;
+          });
+      }
+    });
+
+    const importTypes = this.typeImports.toImports({ excludeModules: ['./types.js'], useSubPaths });
+    const template = compileTemplate('sol/templates/types.hbs');
+
+    return beautifySourceCode(template({ importTypes, defTypeOut }));
+  }
+
+  generateTypeName(typeDef: SolAbiTypeDef, abiItem: SolAbiItem, typeOut = false): string {
+    if (abiItem.type === 'fallback' || abiItem.type === 'receive') return '';
+
+    if (COMPONENT_TYPES.test(typeDef.type)) {
+      const baseName =
+        abiItem.type === 'constructor'
+          ? `${typeDef.name}_input`
+          : `${abiItem.name}_${typeDef.name}_${typeOut ? 'output' : 'input'}`;
+
+      return stringPascalCase(baseName);
+    }
+
+    return '';
+  }
+
+  generateType(typeDef: SolAbiTypeDef, abiItem?: SolAbiItem, nestedLevel = 0, typeOut = false): string {
+    if (nestedLevel > 0 && abiItem) {
+      let typeName = this.generateTypeName(typeDef, abiItem, typeOut);
+
+      if (typeName.length === 0) {
+        typeName = this.#generateType(typeDef, nestedLevel, typeOut);
+
+        return typeName;
+      }
+
+      this.addTypeImport(typeName);
+
+      return typeName;
+    }
+
+    return this.#generateType(typeDef, nestedLevel, typeOut);
+  }
+
+  #generateType(typeDef: SolAbiTypeDef, nestedLevel = 0, typeOut = false): string {
+    const { type } = typeDef;
+
+    let baseType = this.#generateBaseType(typeDef, nestedLevel, typeOut);
+
+    if (!COMPONENT_TYPES.test(type)) {
+      // baseType of component types are all generated types, eg: { a: bigint, b: string }
+      // So we don't import them here.
+      this.addTypeImport(baseType);
+    }
+
+    // Match all array dimensions
+    const dimensions = type.match(ARRAY_DIM);
+    dimensions
+      // Match each dimension to see if fixed array or dynamic array (eg: [3] vs [])
+      ?.map((o) => o.match(ONLY_ARRAY_DIM)!)
+      .forEach(([_, n]) => {
+        if (n) {
+          this.addTypeImport('FixedArray');
+
+          baseType = `FixedArray<${baseType}, ${n}>`;
+        } else {
+          baseType = isNativeType(baseType.replaceAll('[]', '')) ? `${baseType}[]` : `Array<${baseType}>`;
+        }
+      });
+
+    return baseType;
+  }
+
+  #generateBaseType(typeDef: SolAbiTypeDef, nestedLevel = 0, typeOut = false): string {
+    const { type } = typeDef;
+
+    if (INT_TYPES.test(type)) {
+      const [_, bitsStr] = type.match(INT_TYPES)!;
+
+      // Default to 256 when unspecified
+      const bits = bitsStr ? parseInt(bitsStr) : 256;
+      const isSafeNumber = bits <= 48;
+
+      return isSafeNumber ? `number` : 'bigint';
+    } else if (UINT_TYPES.test(type)) {
+      const [_, bitsStr] = type.match(UINT_TYPES)!;
+
+      // Default to 256 when unspecified
+      const bits = bitsStr ? parseInt(bitsStr) : 256;
+      const isSafeNumber = bits <= 48;
+
+      return isSafeNumber ? `number` : 'bigint';
+    } else if (BYTES_TYPES.test(type)) {
+      const [_, n] = type.match(BYTES_TYPES)!;
+
+      if (n) {
+        return `FixedBytes<${n}>`;
+      }
+
+      if (typeOut) {
+        return `Bytes`;
+      }
+
+      return `BytesLike`;
+    } else if (BOOL_TYPES.test(type)) {
+      return 'boolean';
+    } else if (STRING_TYPES.test(type)) {
+      return 'string';
+    } else if (COMPONENT_TYPES.test(type)) {
+      const { components = [] } = typeDef;
+      if (components.length === 0) {
+        return '[]';
+      } else {
+        const objectType = this.generateObjectType(components, nestedLevel + 1, typeOut);
+
+        return `${objectType}`;
+      }
+    } else if (ADDRESS_TYPES.test(type)) {
+      return `H160`;
+    } else if (FUNCTION_TYPES.test(type)) {
+      // Function type is an address (20 bytes) followed by a function selector (4 bytes).
+      // Ref: https://docs.soliditylang.org/en/latest/abi-spec.html#:~:text=function%3A%20an%20address%20(20%20bytes)%20followed%20by%20a%20function%20selector%20(4%20bytes).%20Encoded%20identical%20to%20bytes24.
+      return `FixedBytes<24>`;
+    } else if (FIXED_TYPES.test(type)) {
+      const [_, denotation] = type.match(FIXED_TYPES)!;
+
+      // Ref: https://docs.soliditylang.org/en/latest/abi-spec.html#:~:text=fixed%2C%20ufixed%3A%20synonyms%20for%20fixed128x18%2C%20ufixed128x18%20respectively.%20For%20computing%20the%20function%20selector%2C%20fixed128x18%20and%20ufixed128x18%20have%20to%20be%20used.
+      const [m, n] = denotation ? denotation.split('x').map((s) => parseInt(s)) : [128, 18];
+
+      return `Fixed<${m},${n}>`;
+    } else if (UNFIXED_TYPES.test(type)) {
+      const [_, denotation] = type.match(UNFIXED_TYPES)!;
+
+      // Ref: https://docs.soliditylang.org/en/latest/abi-spec.html#:~:text=fixed%2C%20ufixed%3A%20synonyms%20for%20fixed128x18%2C%20ufixed128x18%20respectively.%20For%20computing%20the%20function%20selector%2C%20fixed128x18%20and%20ufixed128x18%20have%20to%20be%20used.
+      const [m, n] = denotation ? denotation.split('x').map((s) => parseInt(s)) : [128, 18];
+
+      return `UFixed<${m},${n}>`;
+    } else {
+      throw new Error(`Unsupported Solidity type: ${type}`);
+    }
+  }
+
+  generateObjectType(components: SolAbiTypeDef[], nestedLevel = 0, typeOut = false) {
+    const props = components.map((typeDef) => {
+      const type = this.generateType(typeDef, undefined, nestedLevel + 1, typeOut);
+      return {
+        name: typeDef.name,
+        type,
+      };
+    });
+
+    if (props.length > 0 && !props.at(0)!.name) {
+      return `[${props.map(({ type }) => `${type}`).join(', ')}]`;
+    }
+
+    return `{${props.map(({ name, type }) => `${name}: ${type}`).join(',\n')}}`;
+  }
+
+  addTypeImport(typeName: string | string[]) {
+    if (Array.isArray(typeName)) {
+      typeName.forEach((one) => this.addTypeImport(one));
+      return;
+    }
+
+    if (isNativeType(typeName)) {
+      return;
+    }
+
+    const re = BASIC_KNOWN_TYPES.find((re) => typeName.match(re));
+    if (re) {
+      const typeBase = typeName.match(re)![1];
+      this.typeImports.addCodecType(typeBase);
+      return;
+    }
+
+    this.typeImports.addPortableType(typeName);
+  }
+
+  clearCache() {
+    this.typeImports.clear();
+  }
+}

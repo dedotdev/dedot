@@ -1,9 +1,8 @@
 import { DedotClient, WsProvider } from 'dedot';
 import { Contract } from 'dedot/contracts';
 import { devPairs } from '../keyring.js';
+import flipper from './flipper.json';
 import { FlipperContractApi } from './flipper/index.js';
-// @ts-ignore
-import flipper6 from './flipperv6.json';
 
 const { alice } = await devPairs();
 
@@ -15,7 +14,7 @@ const contractAddress = '0x90b7109346eEbbd8218336fF67CB7F7b5b599eFE';
 
 const contract = new Contract<FlipperContractApi>(
   client, // --
-  flipper6,
+  flipper,
   contractAddress,
   { defaultCaller: alice.address },
 );

@@ -7,12 +7,15 @@ import { ContractEvent } from '@dedot/contracts';
 import { IEventRecord } from '@dedot/types';
 import { beforeEach, describe, expect, it } from 'vitest';
 import { Contract } from '../Contract.js';
+import { SolRegistry } from '../SolRegistry.js';
 import {
   FLIPPER_CONTRACT_METADATA_V4,
   FLIPPER_CONTRACT_METADATA_V5,
   FLIPPER_CONTRACT_METADATA_V5_NO_SIGNATURE_TOPIC,
   FLIPPER_CONTRACT_METADATA_V5_NO_SIGNATURE_TOPIC_INDEXED_FIELDS,
   FLIPPER_CONTRACT_METADATA_V6,
+  FLIPPER_SOL_ABI,
+  FLIPPER_SOL_CONTRACT_ADDRESS,
   PSP22_CONTRACT_METADATA,
   RANDOM_CONTRACT_ADDRESS,
 } from './contracts-metadata.js';
@@ -41,7 +44,7 @@ const FLIPPER_V4_CONTRACT_ADDRESS = '5GdT4fJfXHtLxEk3npnK9a65LF986z67uRKhZ9TsZ17
 const FLIPPER_V6_CONTRACT_ADDRESS = '0xbd94eb5fdc31ef0e54dca45284fe779165ecaaed';
 
 describe('Contract', () => {
-  let api: LegacyClient, provider: MockProvider, flipper: Contract, psp22: Contract;
+  let api: LegacyClient, provider: MockProvider, flipper: Contract, psp22: Contract, solFlipper: Contract;
 
   describe('api support pallet', () => {
     beforeEach(async () => {
@@ -108,6 +111,47 @@ describe('Contract', () => {
     });
   });
 
+  describe('sol contract support', () => {
+    beforeEach(async () => {
+      provider = new MockProvider(MockedRuntimeVersion);
+      api = await LegacyClient.new({ provider });
+      solFlipper = new Contract(api, FLIPPER_SOL_ABI, FLIPPER_SOL_CONTRACT_ADDRESS);
+    });
+
+    it('should create sol contract instance with valid EVM address', () => {
+      expect(solFlipper).toBeDefined();
+      expect(solFlipper.address).toBe(FLIPPER_SOL_CONTRACT_ADDRESS);
+      expect(solFlipper.metadata).toBe(FLIPPER_SOL_ABI);
+      expect(solFlipper.registry).toBeInstanceOf(SolRegistry);
+    });
+
+    it('should have sol contract methods available', () => {
+      expect(solFlipper.tx.flip).toBeDefined();
+      expect(solFlipper.query.get).toBeDefined();
+      expect(solFlipper.query.throwErrorWithParams).toBeDefined();
+      expect(solFlipper.query.throwErrorWithNamedParams).toBeDefined();
+      expect(solFlipper.query.throwUnitError).toBeDefined();
+      expect(solFlipper.events.Flipped).toBeDefined();
+    });
+
+    it('should throw error with invalid EVM address', () => {
+      expect(() => new Contract(api, FLIPPER_SOL_ABI, FLIPPER_V4_CONTRACT_ADDRESS)).toThrowError(
+        new Error(
+          `Invalid contract address: ${FLIPPER_V4_CONTRACT_ADDRESS}. Expected an EVM 20-byte address as a hex string or a Uint8Array`,
+        ),
+      );
+    });
+
+    it('should throw error with short address', () => {
+      const shortAddress = '0xbd94eb5fdc31ef0e54dca45284fe779165ecaa';
+      expect(() => new Contract(api, FLIPPER_SOL_ABI, shortAddress)).toThrowError(
+        new Error(
+          `Invalid contract address: ${shortAddress}. Expected an EVM 20-byte address as a hex string or a Uint8Array`,
+        ),
+      );
+    });
+  });
+
   describe('api not support pallet', () => {
     it('should throw error if api not support pallet-contracts', async () => {
       provider = new MockProvider();
@@ -121,6 +165,14 @@ describe('Contract', () => {
       provider = new MockProvider();
       api = await LegacyClient.new({ provider });
       expect(() => new Contract(api, FLIPPER_CONTRACT_METADATA_V6, RANDOM_CONTRACT_ADDRESS)).toThrowError(
+        'Pallet Revive is not available',
+      );
+    });
+
+    it('should throw error if api not support pallet-revive for sol contracts', async () => {
+      provider = new MockProvider();
+      api = await LegacyClient.new({ provider });
+      expect(() => new Contract(api, FLIPPER_SOL_ABI, FLIPPER_SOL_CONTRACT_ADDRESS)).toThrowError(
         'Pallet Revive is not available',
       );
     });
@@ -291,6 +343,45 @@ describe('Contract', () => {
           verifyFlipperEventRecord(eventRecord, decodedEvent);
           expect(decodedEvent).toEqual({ name: 'Flipped', data: { old: false, new: true } });
         });
+      });
+    });
+
+    describe('decodeEventSol', () => {
+      beforeEach(async () => {
+        provider = new MockProvider(MockedRuntimeVersion, reviveMetadata);
+        api = await LegacyClient.new({ provider });
+        solFlipper = new Contract(api, FLIPPER_SOL_ABI, FLIPPER_SOL_CONTRACT_ADDRESS);
+      });
+
+      it('should throw error if eventRecord is not ContractEmitted palletEvent', () => {
+        const notContractEmittedEventRecordHex =
+          '0x00010000000600d43593c715fdd31c61141abd04a99fd6822c8558854ccde39a5684e7a56da27d8b15a74b0000000000000000000000000000000000000000000000000000000000';
+
+        const eventRecord = api.registry
+          .findCodec(20)
+          .tryDecode(notContractEmittedEventRecordHex) as FrameSystemEventRecord;
+
+        expect(() => solFlipper.decodeEvent(eventRecord)).toThrowError('Invalid ContractEmitted Event');
+      });
+
+      it('should throw error if contract address does not match', () => {
+        const wrongContractEventRecord =
+          '0x000100000008004f47fdbeea4563033cf473d44e0672cc0990b3a0080001040a39b5ca0b8b3a5172476100ae7b9168b269cc91d5648efe180c75d935d3e88600';
+
+        const eventRecord = api.registry.findCodec(20).tryDecode(wrongContractEventRecord) as FrameSystemEventRecord;
+
+        expect(() => solFlipper.decodeEvent(eventRecord)).toThrowError('Invalid ContractEmitted Event');
+      });
+
+      it('should handle invalid event records for sol contracts', () => {
+        const notContractEmittedEventRecordHex =
+          '0x00010000000600d43593c715fdd31c61141abd04a99fd6822c8558854ccde39a5684e7a56da27d8b15a74b0000000000000000000000000000000000000000000000000000000000';
+
+        const eventRecord = api.registry
+          .findCodec(20)
+          .tryDecode(notContractEmittedEventRecordHex) as FrameSystemEventRecord;
+
+        expect(() => solFlipper.decodeEvent(eventRecord)).toThrowError('Invalid ContractEmitted Event');
       });
     });
   });

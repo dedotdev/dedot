@@ -1,58 +1,87 @@
 import { ISubstrateClient } from '@dedot/api';
 import { Hash } from '@dedot/codecs';
+import { SolRegistry } from './SolRegistry.js';
 import { TypinkRegistry } from './TypinkRegistry.js';
-import { ConstructorQueryExecutor } from './executor/ConstructorQueryExecutor.js';
-import { ConstructorTxExecutor } from './executor/index.js';
-import { ContractMetadata, ExecutionOptions, GenericContractApi, LooseContractMetadata } from './types/index.js';
+import {
+  ConstructorQueryExecutor,
+  ConstructorTxExecutor,
+  SolConstructorQueryExecutor,
+  SolConstructorTxExecutor,
+} from './executor/index.js';
+import {
+  AB,
+  ContractMetadata,
+  ExecutionOptions,
+  GenericContractApi,
+  LooseContractMetadata,
+  LooseSolAbi,
+  SolAbi,
+} from './types/index.js';
 import {
   ensurePalletPresence,
   ensureSupportedContractMetadataVersion,
   ensureValidCodeHashOrCode,
+  isInkAbi,
   newProxyChain,
 } from './utils/index.js';
 
 export class ContractDeployer<ContractApi extends GenericContractApi = GenericContractApi> {
-  readonly #metadata: ContractMetadata;
-  readonly #registry: TypinkRegistry;
+  readonly #isInk: boolean = false;
+  readonly #metadata: AB<ContractApi['metadataType'], ContractMetadata, SolAbi>;
+  readonly #registry: AB<ContractApi['metadataType'], TypinkRegistry, SolRegistry>;
   readonly #code: Hash | Uint8Array | string;
   readonly #options?: ExecutionOptions;
 
   constructor(
     readonly client: ISubstrateClient<ContractApi['types']['ChainApi']>,
-    metadata: LooseContractMetadata | string,
+    metadata: AB<ContractApi['metadataType'], LooseContractMetadata, LooseSolAbi> | string,
     codeHashOrCode: Hash | Uint8Array | string,
     options?: ExecutionOptions,
   ) {
-    this.#metadata = (typeof metadata === 'string' ? JSON.parse(metadata) : metadata) as ContractMetadata;
+    this.#metadata = typeof metadata === 'string' ? JSON.parse(metadata) : metadata;
 
-    ensureSupportedContractMetadataVersion(this.metadata);
+    if (isInkAbi(this.metadata)) {
+      this.#isInk = true;
 
-    this.#registry = new TypinkRegistry(this.metadata);
+      ensureSupportedContractMetadataVersion(this.metadata as ContractMetadata);
+      // @ts-ignore
+      this.#registry = new TypinkRegistry(this.metadata as ContractMetadata);
 
-    ensurePalletPresence(client, this.registry);
-    ensureValidCodeHashOrCode(codeHashOrCode, this.registry);
+      ensurePalletPresence(client, (this.registry as TypinkRegistry).isRevive());
+      ensureValidCodeHashOrCode(codeHashOrCode, (this.registry as TypinkRegistry).isRevive());
+    } else {
+      // @ts-ignore
+      this.#registry = new SolRegistry(this.metadata as SolAbi);
+
+      ensurePalletPresence(client, true);
+      ensureValidCodeHashOrCode(codeHashOrCode, true);
+    }
 
     this.#code = codeHashOrCode;
     this.#options = options;
   }
 
-  get metadata(): ContractMetadata {
+  get metadata(): AB<ContractApi['metadataType'], ContractMetadata, SolAbi> {
     return this.#metadata;
   }
 
-  get registry(): TypinkRegistry {
+  get registry(): AB<ContractApi['metadataType'], TypinkRegistry, SolRegistry> {
     return this.#registry;
   }
 
   get tx(): ContractApi['constructorTx'] {
+    const Executor = this.#isInk ? ConstructorTxExecutor : SolConstructorTxExecutor;
     return newProxyChain(
-      new ConstructorTxExecutor(this.client, this.#registry, this.#code, this.#options),
+      // @ts-ignore
+      new Executor(this.client, this.registry, this.#code, this.options),
     ) as ContractApi['constructorTx'];
   }
 
   get query(): ContractApi['constructorQuery'] {
+    const Executor = this.#isInk ? ConstructorQueryExecutor : SolConstructorQueryExecutor;
     return newProxyChain(
-      new ConstructorQueryExecutor(this.client, this.#registry, this.#code, this.#options),
+      // @ts-ignore
+      new Executor(this.client, this.registry, this.#code, this.options),
     ) as ContractApi['constructorQuery'];
   }
 

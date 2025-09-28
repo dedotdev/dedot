@@ -6,10 +6,12 @@ import type {
   GenericConstructorCallResult,
   GenericConstructorQuery,
   GenericConstructorQueryCall,
+  MetadataType,
 } from 'dedot/contracts';
 import type { GenericSubstrateApi } from 'dedot/types';
 
-export interface ConstructorQuery<ChainApi extends GenericSubstrateApi> extends GenericConstructorQuery<ChainApi> {
+export interface ConstructorQuery<ChainApi extends GenericSubstrateApi, Type extends MetadataType>
+  extends GenericConstructorQuery<ChainApi, Type> {
   /**
    * Creates a new flipper smart contract initialized with the given value.
    *
@@ -23,7 +25,8 @@ export interface ConstructorQuery<ChainApi extends GenericSubstrateApi> extends 
     (
       initValue: boolean,
       options?: ConstructorCallOptions,
-    ) => Promise<GenericConstructorCallResult<[], ContractInstantiateResult<ChainApi>>>
+    ) => Promise<GenericConstructorCallResult<[], ContractInstantiateResult<ChainApi>>>,
+    Type
   >;
 
   /**
@@ -35,6 +38,9 @@ export interface ConstructorQuery<ChainApi extends GenericSubstrateApi> extends 
    **/
   newDefault: GenericConstructorQueryCall<
     ChainApi,
-    (options?: ConstructorCallOptions) => Promise<GenericConstructorCallResult<[], ContractInstantiateResult<ChainApi>>>
+    (
+      options?: ConstructorCallOptions,
+    ) => Promise<GenericConstructorCallResult<[], ContractInstantiateResult<ChainApi>>>,
+    Type
   >;
 }

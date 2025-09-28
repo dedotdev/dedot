@@ -7,7 +7,11 @@ export class EventsGen extends QueryGen {
   generate(useSubPaths: boolean = false) {
     this.typesGen.clearCache();
     this.typesGen.typeImports.addKnownType('GenericSubstrateApi');
-    this.typesGen.typeImports.addContractType('GenericContractEvents', 'GenericContractEvent');
+    this.typesGen.typeImports.addContractType(
+      'GenericContractEvents',
+      'GenericContractEvent',
+      'MetadataType',
+    );
 
     const { events } = this.contractMetadata.spec;
 
@@ -33,7 +37,7 @@ export class EventsGen extends QueryGen {
 
     const paramsOut = this.generateParamsOut(args);
 
-    return `GenericContractEvent<'${stringPascalCase(label)}', {${paramsOut}}>`;
+    return `GenericContractEvent<'${stringPascalCase(label)}', {${paramsOut}}, Type>`;
   }
 
   generateParamsOut(args: ContractEventArg[]) {

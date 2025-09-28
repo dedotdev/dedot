@@ -2,9 +2,8 @@ import { DedotClient, WsProvider } from 'dedot';
 import { ContractDeployer, toEvmAddress } from 'dedot/contracts';
 import { assert, generateRandomHex } from 'dedot/utils';
 import { devPairs } from '../keyring.js';
+import flipper from './flipper.json';
 import { FlipperContractApi } from './flipper/index.js';
-// @ts-ignore
-import flipper6 from './flipperv6.json';
 
 // Initialize crypto and keyring
 const { alice } = await devPairs();
@@ -32,18 +31,18 @@ if (mappedAccount) {
 }
 
 // Extract PVM bytecode from metadata
-const pvmBytecode = flipper6.source.contract_binary; // extracted from .contract or .polkavm files
-const codeHash = flipper6.source.hash;
+const pvmBytecode = flipper.source.contract_binary; // extracted from .contract or .polkavm files
+const codeHash = flipper.source.hash;
 
 console.log(`📋 Contract info:`);
-console.log(`Name: ${flipper6.contract.name}`);
-console.log(`Version: ${flipper6.contract.version}`);
-console.log(`Language: ${flipper6.source.language}`);
+console.log(`Name: ${flipper.contract.name}`);
+console.log(`Version: ${flipper.contract.version}`);
+console.log(`Language: ${flipper.source.language}`);
 console.log(`Code Hash: ${codeHash}`);
 
 console.log('📝 Step 1: Deploy contract with full code');
 
-const deployer1 = new ContractDeployer<FlipperContractApi>(client, flipper6, pvmBytecode);
+const deployer1 = new ContractDeployer<FlipperContractApi>(client, flipper, pvmBytecode);
 
 console.log('🚀 Deploying contract with full PVM bytecode');
 
@@ -63,7 +62,7 @@ if (txResult.dispatchError) {
 console.log('📝 Step 2: Deploy contract using code hash');
 
 // Create new deployer using code hash instead of full bytecode
-const deployer2 = new ContractDeployer<FlipperContractApi>(client, flipper6, codeHash);
+const deployer2 = new ContractDeployer<FlipperContractApi>(client, flipper, codeHash);
 
 console.log('🚀 Deploying second contract instance using code hash');
 

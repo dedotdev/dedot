@@ -1,7 +1,6 @@
-import { BlockHash, Hash, Header, PortableRegistry, RuntimeVersion } from '@dedot/codecs';
+import { BlockHash, PortableRegistry, RuntimeVersion } from '@dedot/codecs';
 import type { JsonRpcProvider } from '@dedot/providers';
 import { GenericSubstrateApi, RpcLegacy, Unsub, VersionedGenericSubstrateApi } from '@dedot/types';
-import { assert } from '@dedot/utils';
 import type { SubstrateApi } from '../chaintypes/index.js';
 import {
   ConstantExecutor,
@@ -309,6 +308,11 @@ export class LegacyClient<ChainApi extends VersionedGenericSubstrateApi = Substr
     api.call = newProxyChain({ executor: new RuntimeApiExecutor(api) }) as ChainApiAt['call'];
     api.events = newProxyChain({ executor: new EventExecutor(api) }) as ChainApiAt['events'];
     api.errors = newProxyChain({ executor: new ErrorExecutor(api) }) as ChainApiAt['errors'];
+
+    // @ts-ignore Add queryMulti implementation for at-block queries
+    api.queryMulti = (queries: { fn: GenericStorageQuery; args?: any[] }[]) => {
+      return this.internalQueryMulti(queries, undefined, hash);
+    };
 
     this._apiAtCache.set(hash, api);
 

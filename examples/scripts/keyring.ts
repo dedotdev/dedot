@@ -7,9 +7,11 @@ export const devPairs = async () => {
   await cryptoWaitReady();
   const alice = keyring.addFromUri('//Alice');
   const bob = keyring.addFromUri('//Bob');
+  const charlie = keyring.addFromUri('//Charlie');
 
   return {
     alice,
     bob,
+    charlie,
   };
 };

@@ -4,15 +4,17 @@ import type {
   ConstructorTxOptions,
   GenericConstructorTx,
   GenericConstructorTxCall,
-  GenericContractApi,
   GenericInstantiateSubmittableExtrinsic,
+  InkGenericContractApi,
+  MetadataType,
 } from 'dedot/contracts';
 import type { GenericSubstrateApi } from 'dedot/types';
 
 export interface ConstructorTx<
   ChainApi extends GenericSubstrateApi,
-  ContractApi extends GenericContractApi = GenericContractApi,
-> extends GenericConstructorTx<ChainApi> {
+  ContractApi extends InkGenericContractApi,
+  Type extends MetadataType,
+> extends GenericConstructorTx<ChainApi, Type> {
   /**
    * Creates a new flipper smart contract initialized with the given value.
    *
@@ -26,7 +28,8 @@ export interface ConstructorTx<
     (
       initValue: boolean,
       options?: ConstructorTxOptions,
-    ) => GenericInstantiateSubmittableExtrinsic<ChainApi, ContractApi>
+    ) => GenericInstantiateSubmittableExtrinsic<ChainApi, ContractApi>,
+    Type
   >;
 
   /**
@@ -38,6 +41,7 @@ export interface ConstructorTx<
    **/
   newDefault: GenericConstructorTxCall<
     ChainApi,
-    (options?: ConstructorTxOptions) => GenericInstantiateSubmittableExtrinsic<ChainApi, ContractApi>
+    (options?: ConstructorTxOptions) => GenericInstantiateSubmittableExtrinsic<ChainApi, ContractApi>,
+    Type
   >;
 }
