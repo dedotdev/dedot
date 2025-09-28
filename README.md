@@ -37,13 +37,13 @@ Delightful JavaScript/TypeScript client for [Polkadot](https://polkadot.com/) & 
 - ✅ Build on top of both the [new](https://paritytech.github.io/json-rpc-interface-spec/introduction.html) & [legacy](https://github.com/w3f/PSPs/blob/master/PSPs/drafts/psp-6.md) (
   deprecated soon) JSON-RPC APIs
 - ✅ Support [light clients](https://docs.dedot.dev/getting-started/connect-to-network#initializing-dedotclient-and-interact-with-polkadot-network) (e.g: [smoldot](https://www.npmjs.com/package/smoldot))
-- ✅ [Typed Contract APIs](https://docs.dedot.dev/ink-smart-contracts/intro)
+- ✅ [Unified Typesafe Contract APIs](https://docs.dedot.dev/ink-smart-contracts/intro) for ink! v5 (WASM, pallet-contracts), ink! v6 and solidity contracts (PVM, pallet-revive)
 - ✅ Fully-typed low-level [JSON-RPC client](https://docs.dedot.dev/clients-and-providers/clients#jsonrpcclient)
 
 > [!TIP]
-> Are you developing an [ink!](https://use.ink/) dApp?
+> Are you building dapps on Polkadot?
 >
-> Check out [Typink](https://github.com/dedotdev/typink) (https://typink.dev), a comprehensive toolkit for ink! dApp development, built on Dedot! 
+> Check out [Typink](https://github.com/dedotdev/typink) (https://typink.dev), a comprehensive toolkit for dapps development, powered by Dedot! 
 
 ### Documentation
 Check out Dedot documentation on the website: https://dedot.dev
@@ -61,7 +61,7 @@ npm i -D @dedot/chaintypes
 ```
 2. Connect to the network
 ```typescript
-import { DedotClient, WsProvider } from 'dedot';
+import { DedotClient, WsProvider, PinnedBlock } from 'dedot';
 import type { PolkadotApi } from '@dedot/chaintypes';
 
 const provider = new WsProvider('wss://rpc.polkadot.io');
@@ -89,7 +89,7 @@ const pendingRewards = await client.call.nominationPoolsApi.pendingRewards(<addr
 console.log('Pending rewards:', pendingRewards);
 
 // Disconnect
-// await client.disconnect();
+await client.disconnect();
 ```
 
 ### Resources & announcements
