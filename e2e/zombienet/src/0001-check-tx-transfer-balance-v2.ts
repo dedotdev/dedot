@@ -28,6 +28,8 @@ export const run = async (nodeName: any, networkInfo: any): Promise<void> => {
 
     const transferTx = api.tx.balances.transferKeepAlive(BOB, TEN_UNIT);
 
+    api.chainHead.log();
+
     let blockIncluded: boolean = false;
     await transferTx
       .signAndSend(alice, async ({ status, txIndex }) => {

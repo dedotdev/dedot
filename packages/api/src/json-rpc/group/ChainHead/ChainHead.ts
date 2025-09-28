@@ -121,6 +121,13 @@ export class ChainHead extends JsonRpcGroup<ChainHeadEvent> {
     return this;
   }
 
+  log() {
+    console.log('[ChainHead] Chain Head Pinned Blocks');
+    console.dir(this.#pinnedBlocks, { depth: null });
+    console.log('[ChainHead] Chain Head Finalized Queue');
+    console.dir(this.#finalizedQueue, { depth: null });
+  }
+
   async runtimeVersion(): Promise<ChainHeadRuntimeVersion> {
     await this.#ensureFollowed();
 
