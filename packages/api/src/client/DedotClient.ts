@@ -1,4 +1,4 @@
-import { $H256, $RuntimeVersion, BlockHash, PortableRegistry } from '@dedot/codecs';
+import { $H256, $Header, $RuntimeVersion, BlockHash, Hash, PortableRegistry } from '@dedot/codecs';
 import type { JsonRpcProvider } from '@dedot/providers';
 import { u32 } from '@dedot/shape';
 import { GenericStorageQuery, GenericSubstrateApi, RpcV2, VersionedGenericSubstrateApi } from '@dedot/types';
@@ -247,24 +247,42 @@ export class DedotClient<ChainApi extends VersionedGenericSubstrateApi = Substra
     const cached = this._apiAtCache.get<ISubstrateClientAt<ChainApiAt>>(hash);
     if (cached) return cached;
 
-    let targetVersion: SubstrateRuntimeVersion;
+    let parentVersion: SubstrateRuntimeVersion;
+    let parentHash: Hash;
 
     // Try to get block info from ChainHead first (for pinned blocks)
     const targetBlock = this.chainHead.findBlock(hash);
     if (targetBlock) {
-      targetVersion = targetBlock.runtime as SubstrateRuntimeVersion;
-      if (!targetVersion) {
-        // fallback to fetching on-chain runtime if we can't find it in the block
-        targetVersion = this.toSubstrateRuntimeVersion(await this.callAt(hash).core.version());
+      if (hash === this.genesisHash) {
+        parentHash = hash;
+        parentVersion = targetBlock.runtime!;
+      } else {
+        parentHash = targetBlock.parent;
+        const parentBlock = this.chainHead.findBlock(parentHash);
+        parentVersion = parentBlock?.runtime as SubstrateRuntimeVersion;
+      }
+
+      // fallback to fetching on-chain runtime if we can't find it in the block
+      if (!parentVersion) {
+        parentVersion = this.toSubstrateRuntimeVersion(await this.callAt(parentHash).core.version());
       }
     } else {
       // Block not pinned, try via Archive fallback if supported
       if (this._archive && (await this._archive.supported())) {
         try {
+          if (hash === this.genesisHash) {
+            parentHash = hash;
+          } else {
+            const rawHeader = await this._archive.header(hash);
+            assert(rawHeader, `Header for block ${hash} not found`);
+            const header = $Header.tryDecode(rawHeader);
+            parentHash = header.parentHash;
+          }
+
           // Fetch runtime version via Archive
-          const runtimeRaw = await this._archive.call('Core_version', '0x', hash);
+          const runtimeRaw = await this._archive.call('Core_version', '0x', parentHash);
           assert(runtimeRaw, 'Runtime Version Not Found');
-          targetVersion = this.toSubstrateRuntimeVersion($RuntimeVersion.tryDecode(runtimeRaw));
+          parentVersion = this.toSubstrateRuntimeVersion($RuntimeVersion.tryDecode(runtimeRaw));
         } catch (error) {
           throw new DedotError(`Unable to fetch runtime version for block ${hash}: ${error}`);
         }
@@ -275,8 +293,8 @@ export class DedotClient<ChainApi extends VersionedGenericSubstrateApi = Substra
 
     let metadata = this.metadata;
     let registry: any = this.registry;
-    if (targetVersion && targetVersion.specVersion !== this.runtimeVersion.specVersion) {
-      metadata = await this.fetchMetadata(hash, targetVersion);
+    if (parentVersion && parentVersion.specVersion !== this.runtimeVersion.specVersion) {
+      metadata = await this.fetchMetadata(parentHash, parentVersion);
       registry = new PortableRegistry<ChainApiAt['types']>(metadata.latest, this.options.hasher);
     }
 
@@ -285,7 +303,7 @@ export class DedotClient<ChainApi extends VersionedGenericSubstrateApi = Substra
       atBlockHash: hash,
       options: this.options,
       genesisHash: this.genesisHash,
-      runtimeVersion: targetVersion,
+      runtimeVersion: parentVersion,
       metadata,
       registry,
       rpc: this.rpc,

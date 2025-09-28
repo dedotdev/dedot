@@ -37,6 +37,30 @@ export default class MockProvider extends EventEmitter<ProviderEvent> implements
     super();
     this.rpcRequests = {
       chain_getBlockHash: () => '0x0000000000000000000000000000000000000000000000000000000000000000',
+      chain_getHeader: (params: any[]) => {
+        // Return a mock header with parent hash
+        // For blocks 0x0d, 0x0e, 0x0f etc, return parent as previous hex
+        const blockHash = params?.[0];
+        let parentHash = '0x0c'; // Default parent
+
+        if (blockHash === '0x0d') {
+          parentHash = '0x0c';
+        } else if (blockHash === '0x0e') {
+          parentHash = '0x0d';
+        } else if (blockHash === '0x0f') {
+          parentHash = '0x0e';
+        } else if (blockHash === '0x0c') {
+          parentHash = '0x0b';
+        }
+
+        return {
+          parentHash,
+          number: '0x1',
+          stateRoot: '0x0000000000000000000000000000000000000000000000000000000000000000',
+          extrinsicsRoot: '0x0000000000000000000000000000000000000000000000000000000000000000',
+          digest: { logs: [] }
+        };
+      },
       state_getRuntimeVersion: () => mockedRuntimeVersion,
       state_subscribeRuntimeVersion: () => 'runtime-version-subscription-id',
       state_unsubscribeRuntimeVersion: () => null,
