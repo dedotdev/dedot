@@ -121,13 +121,6 @@ export class ChainHead extends JsonRpcGroup<ChainHeadEvent> {
     return this;
   }
 
-  log() {
-    console.log('[ChainHead] Chain Head Pinned Blocks');
-    console.dir(this.#pinnedBlocks, { depth: null });
-    console.log('[ChainHead] Chain Head Finalized Queue');
-    console.dir(this.#finalizedQueue, { depth: null });
-  }
-
   async runtimeVersion(): Promise<ChainHeadRuntimeVersion> {
     await this.#ensureFollowed();
 
@@ -607,15 +600,6 @@ export class ChainHead extends JsonRpcGroup<ChainHeadEvent> {
   #cleanUpOperation(operationId: OperationId) {
     delete this.#handlers[operationId];
     this.stopOperation(operationId).catch(noop);
-  }
-
-  holdBlock(blockHash: BlockHash) {
-    this.#ensurePinnedHash(blockHash);
-    this.#blockUsage.use(blockHash);
-  }
-
-  releaseBlock(blockHash: BlockHash) {
-    this.#blockUsage.release(blockHash);
   }
 
   async #performOperationWithRetry<T = any>(operation: () => Promise<T>, hash: BlockHash): Promise<T> {
