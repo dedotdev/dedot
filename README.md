@@ -37,7 +37,7 @@ Delightful JavaScript/TypeScript client for [Polkadot](https://polkadot.com/) & 
 - ✅ Build on top of both the [new](https://paritytech.github.io/json-rpc-interface-spec/introduction.html) & [legacy](https://github.com/w3f/PSPs/blob/master/PSPs/drafts/psp-6.md) (
   deprecated soon) JSON-RPC APIs
 - ✅ Support [light clients](https://docs.dedot.dev/getting-started/connect-to-network#initializing-dedotclient-and-interact-with-polkadot-network) (e.g: [smoldot](https://www.npmjs.com/package/smoldot))
-- ✅ [Unified Typesafe Contract APIs](https://docs.dedot.dev/ink-smart-contracts/intro) for ink! v5 (WASM, pallet-contracts), ink! v6 and solidity contracts (PVM, pallet-revive)
+- ✅ [Unified Typesafe Contract APIs](https://docs.dedot.dev/smart-contracts/intro) for ink! v5 (WASM, pallet-contracts), ink! v6 and solidity contracts (PVM, pallet-revive)
 - ✅ Fully-typed low-level [JSON-RPC client](https://docs.dedot.dev/clients-and-providers/clients#jsonrpcclient)
 
 > [!TIP]
