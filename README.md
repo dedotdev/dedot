@@ -20,6 +20,8 @@ Delightful JavaScript/TypeScript client for [Polkadot](https://polkadot.com/) & 
 [ico-downloads]: https://img.shields.io/npm/dw/dedot?style=flat-square
 [link-telegram]: https://t.me/JoinDedot
 
+👉 Join our [Telegram channel](https://t.me/JoinDedot) to receive the latest updates and support!! 👈
+
 ---
 
 [Dedot](https://dedot.dev) is the next-generation JavaScript client for Polkadot and Polkadot SDK-based blockchains. Designed to elevate the dapp development experience, Dedot is built & optimized to be lightweight and tree-shakable, offering precise Types & APIs suggestions for individual Polkadot SDK-based blockchain network and ink! Smart Contracts. Dedot also helps dapps efficiently connect to multiple chains simultaneously as we head toward a seamless multi-chain future.
