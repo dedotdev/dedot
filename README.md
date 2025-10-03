@@ -20,7 +20,7 @@ Delightful JavaScript/TypeScript client for [Polkadot](https://polkadot.com/) & 
 [ico-downloads]: https://img.shields.io/npm/dw/dedot?style=flat-square
 [link-telegram]: https://t.me/JoinDedot
 
-👉 Join our [Telegram channel](https://t.me/JoinDedot) to receive the latest updates and support!! 👈
+👉 Join our [Telegram group](https://t.me/JoinDedot) to receive the latest updates and support!! 👈
 
 ---
 
