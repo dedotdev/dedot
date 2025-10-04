@@ -285,12 +285,8 @@ export class ChainHead extends JsonRpcGroup<ChainHeadEvent> {
       case 'finalized': {
         const { finalizedBlockHashes, prunedBlockHashes } = result;
 
-        // console.log('[ChainHead] finalizedBlockHashes', finalizedBlockHashes.length);
-
-        // Get the current finalized block number before processing new finalized blocks
         const currentFinalizedNumber = this.findBlock(this.#finalizedHash!)!.number;
 
-        // Process each finalized block in order, emitting events for newly finalized blocks
         for (const hash of finalizedBlockHashes) {
           const block = this.findBlock(hash);
 
@@ -299,16 +295,13 @@ export class ChainHead extends JsonRpcGroup<ChainHeadEvent> {
             continue;
           }
 
-          // Update the finalized hash to this newly finalized block
           this.#finalizedHash = hash;
 
-          // Update the finalized runtime if this block has a new runtime
           const finalizedRuntime = this.#findRuntimeAt(hash);
           if (finalizedRuntime) {
             this.#finalizedRuntime = finalizedRuntime;
           }
 
-          // Emit the finalized block event for this newly finalized block
           this.emit('finalizedBlock', block);
         }
 
