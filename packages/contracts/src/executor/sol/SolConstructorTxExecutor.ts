@@ -65,7 +65,7 @@ export class SolConstructorTxExecutor<ChainApi extends GenericSubstrateApi> exte
 
       const calculateContractAddress = async (result: ISubmittableResult): Promise<string> => {
         assert(deployerAddress, 'Deployer address Not Found');
-        const { status, dispatchError } = result;
+        const { status, dispatchError, events } = result;
 
         const onChain = status.type === 'BestChainBlockIncluded' || status.type === 'Finalized';
         assert(onChain, 'The deployment transaction has not yet been included in the best chain block or finalized.');
@@ -75,6 +75,17 @@ export class SolConstructorTxExecutor<ChainApi extends GenericSubstrateApi> exte
           'The deployment transaction failed to execute. Refer to the dispatch error for more information.',
         );
 
+        // Try to get address from events first
+        try {
+          const event = client.events.revive.Instantiated.find(events);
+
+          if (event) {
+            // @ts-ignore
+            return event.palletEvent.data.contract;
+          }
+        } catch {}
+
+        // Fallback to calculate the address if event not found
         if (salt) {
           let code;
           if (isPvm(this.code)) {
