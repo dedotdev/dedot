@@ -284,10 +284,25 @@ export class ChainHead extends JsonRpcGroup<ChainHeadEvent> {
       }
       case 'finalized': {
         const { finalizedBlockHashes, prunedBlockHashes } = result;
-        this.#finalizedHash = finalizedBlockHashes.at(-1)!;
-        const finalizedRuntime = this.#findRuntimeAt(this.#finalizedHash)!;
-        if (finalizedRuntime) {
-          this.#finalizedRuntime = finalizedRuntime;
+
+        const currentFinalizedNumber = this.findBlock(this.#finalizedHash!)!.number;
+
+        for (const hash of finalizedBlockHashes) {
+          const block = this.findBlock(hash);
+
+          // Skip if block not found OR blocks that are already finalized (block number <= previous finalized number)
+          if (!block || block.number <= currentFinalizedNumber) {
+            continue;
+          }
+
+          this.#finalizedHash = hash;
+
+          const finalizedRuntime = this.#findRuntimeAt(hash);
+          if (finalizedRuntime) {
+            this.#finalizedRuntime = finalizedRuntime;
+          }
+
+          this.emit('finalizedBlock', block);
         }
 
         // push new finalized hashes into the queue, we'll adjust the size later if needed
@@ -296,8 +311,7 @@ export class ChainHead extends JsonRpcGroup<ChainHeadEvent> {
           this.#finalizedQueue.push(hash);
         });
 
-        const currentFinalizedBlock = this.findBlock(this.#finalizedHash)!;
-        this.emit('finalizedBlock', currentFinalizedBlock);
+        const currentFinalizedBlock = this.findBlock(this.#finalizedHash!)!;
 
         // TODO account for operations that haven't received its operationId yet
         Object.values(this.#handlers).forEach(({ defer, hash, operationId }) => {
