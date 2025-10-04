@@ -284,10 +284,32 @@ export class ChainHead extends JsonRpcGroup<ChainHeadEvent> {
       }
       case 'finalized': {
         const { finalizedBlockHashes, prunedBlockHashes } = result;
-        this.#finalizedHash = finalizedBlockHashes.at(-1)!;
-        const finalizedRuntime = this.#findRuntimeAt(this.#finalizedHash)!;
-        if (finalizedRuntime) {
-          this.#finalizedRuntime = finalizedRuntime;
+
+        // console.log('[ChainHead] finalizedBlockHashes', finalizedBlockHashes.length);
+
+        // Get the current finalized block number before processing new finalized blocks
+        const currentFinalizedNumber = this.findBlock(this.#finalizedHash!)!.number;
+
+        // Process each finalized block in order, emitting events for newly finalized blocks
+        for (const hash of finalizedBlockHashes) {
+          const block = this.findBlock(hash);
+
+          // Skip if block not found OR blocks that are already finalized (block number <= previous finalized number)
+          if (!block || block.number <= currentFinalizedNumber) {
+            continue;
+          }
+
+          // Update the finalized hash to this newly finalized block
+          this.#finalizedHash = hash;
+
+          // Update the finalized runtime if this block has a new runtime
+          const finalizedRuntime = this.#findRuntimeAt(hash);
+          if (finalizedRuntime) {
+            this.#finalizedRuntime = finalizedRuntime;
+          }
+
+          // Emit the finalized block event for this newly finalized block
+          this.emit('finalizedBlock', block);
         }
 
         // push new finalized hashes into the queue, we'll adjust the size later if needed
@@ -296,8 +318,7 @@ export class ChainHead extends JsonRpcGroup<ChainHeadEvent> {
           this.#finalizedQueue.push(hash);
         });
 
-        const currentFinalizedBlock = this.findBlock(this.#finalizedHash)!;
-        this.emit('finalizedBlock', currentFinalizedBlock);
+        const currentFinalizedBlock = this.findBlock(this.#finalizedHash!)!;
 
         // TODO account for operations that haven't received its operationId yet
         Object.values(this.#handlers).forEach(({ defer, hash, operationId }) => {
