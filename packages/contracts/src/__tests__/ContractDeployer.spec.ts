@@ -2,9 +2,10 @@ import { LegacyClient } from '@dedot/api';
 // @ts-ignore
 import MockProvider from '@dedot/api/client/__tests__/MockProvider';
 import { generateRandomHex } from '@dedot/utils';
-import { beforeEach, describe, expect, it } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { ContractDeployer } from '../ContractDeployer.js';
 import { SolRegistry } from '../SolRegistry.js';
+import { CREATE1, CREATE2, toEvmAddress } from '../utils/index.js';
 import { MockedRuntimeVersion } from './Contract.spec.js';
 import {
   FLIPPER_CONTRACT_METADATA_V4,
@@ -137,6 +138,174 @@ describe('ContractDeployer', () => {
     it('should accept valid PVM code for sol contracts', () => {
       // The FLIPPER_SOL_CONTRACT_CODE should be valid PVM bytecode
       expect(() => new ContractDeployer(api, FLIPPER_SOL_ABI, FLIPPER_SOL_CONTRACT_CODE)).not.toThrow();
+    });
+  });
+
+  describe('revive contract address resolution', () => {
+    const signer = '0x0101010101010101010101010101010101010101010101010101010101010101';
+    const callOptions = { gasLimit: 1n, storageDepositLimit: 1n } as const;
+
+    const createMockSubmittable = () => {
+      const extrinsic: any = {
+        call: { palletCall: { params: { ...callOptions } } },
+        hooks: undefined,
+      };
+
+      extrinsic.withHooks = vi.fn((hooks) => {
+        extrinsic.hooks = hooks;
+        return extrinsic;
+      });
+
+      return extrinsic;
+    };
+
+    const createMockClient = () => {
+      const extrinsic = createMockSubmittable();
+      const instantiateMock = vi.fn(() => extrinsic);
+      const accountNonceSpy = vi.fn().mockResolvedValue(0);
+      const eventFinder = vi.fn();
+
+      const client: any = {
+        tx: {
+          revive: {
+            call: { meta: {} },
+            instantiateWithCode: instantiateMock,
+          },
+        },
+        call: {
+          reviveApi: { call: { meta: {} } },
+          accountNonceApi: { accountNonce: accountNonceSpy },
+        },
+        events: {
+          revive: { Instantiated: { find: eventFinder } },
+        },
+      };
+
+      return { client, extrinsic, instantiateMock, accountNonceSpy, eventFinder };
+    };
+
+    const scenarios = [
+      {
+        label: 'ink',
+        createDeployer: (client: any) =>
+          new ContractDeployer(
+            client,
+            FLIPPER_CONTRACT_METADATA_V6,
+            FLIPPER_CONTRACT_METADATA_V6.source.contract_binary,
+            {
+              defaultCaller: signer,
+            },
+          ),
+        execute: (deployer: ContractDeployer, options = callOptions) => deployer.tx.new(true, options),
+      },
+      {
+        label: 'sol',
+        createDeployer: (client: any) =>
+          new ContractDeployer(client, FLIPPER_SOL_ABI, FLIPPER_SOL_CONTRACT_CODE, {
+            defaultCaller: signer,
+          }),
+        execute: (deployer: ContractDeployer, options = callOptions) => deployer.tx.constructor(true, options),
+      },
+    ] as const;
+
+    afterEach(() => {
+      vi.restoreAllMocks();
+    });
+
+    describe.each(scenarios)('$label', ({ createDeployer, execute }) => {
+      it('should prefers revive.Instantiated event address when available', async () => {
+        const { client, extrinsic, instantiateMock, accountNonceSpy, eventFinder } = createMockClient();
+        const eventAddress = '0xbeef000000000000000000000000000000000000';
+        eventFinder.mockReturnValue({
+          pallet: 'Revive',
+          palletEvent: { data: { contract: eventAddress } },
+        } as any);
+
+        const deployer = createDeployer(client);
+        const tx = execute(deployer);
+
+        expect(tx).toBe(extrinsic);
+        expect(instantiateMock).toHaveBeenCalledOnce();
+        expect(extrinsic.withHooks).toHaveBeenCalledOnce();
+
+        await extrinsic.hooks.beforeSign(tx, signer);
+        expect(accountNonceSpy).toHaveBeenCalledWith(signer);
+
+        const result = {
+          status: { type: 'Finalized' },
+          dispatchError: undefined,
+          events: [],
+        } as any;
+
+        const augmentedResult = extrinsic.hooks.transformResult(result);
+        const address = await augmentedResult.contractAddress();
+
+        expect(eventFinder).toHaveBeenCalledWith(result.events);
+        expect(address).toBe(eventAddress);
+      });
+
+      it('should falls back to calculated address when revive.Instantiated event missing', async () => {
+        const { client, extrinsic, instantiateMock, accountNonceSpy, eventFinder } = createMockClient();
+
+        const deployerNonce = 7;
+        accountNonceSpy.mockResolvedValue(deployerNonce);
+        eventFinder.mockReturnValue(undefined);
+
+        const deployer = createDeployer(client);
+        const tx = execute(deployer);
+
+        expect(tx).toBe(extrinsic);
+        expect(instantiateMock).toHaveBeenCalledOnce();
+
+        await extrinsic.hooks.beforeSign(tx, signer);
+        expect(accountNonceSpy).toHaveBeenCalledWith(signer);
+
+        const result = {
+          status: { type: 'Finalized' },
+          dispatchError: undefined,
+          events: [],
+        } as any;
+
+        const augmentedResult = extrinsic.hooks.transformResult(result);
+        const address = await augmentedResult.contractAddress();
+
+        expect(eventFinder).toHaveBeenCalledWith(result.events);
+        const expected = CREATE1(toEvmAddress(signer), deployerNonce);
+        expect(address).toBe(expected);
+      });
+
+      it('should falls back to CREATE2 calculation when salt is provided and event missing', async () => {
+        const { client, extrinsic, instantiateMock, accountNonceSpy, eventFinder } = createMockClient();
+        const salt = generateRandomHex(32);
+
+        eventFinder.mockReturnValue(undefined);
+
+        const deployer = createDeployer(client);
+        // @ts-ignore
+        const tx = execute(deployer, { ...callOptions, salt });
+
+        expect(tx).toBe(extrinsic);
+        expect(instantiateMock).toHaveBeenCalledOnce();
+
+        await extrinsic.hooks.beforeSign(tx, signer);
+        expect(accountNonceSpy).not.toHaveBeenCalled();
+
+        const result = {
+          status: { type: 'Finalized' },
+          dispatchError: undefined,
+          events: [],
+        } as any;
+
+        const augmentedResult = extrinsic.hooks.transformResult(result);
+        const address = await augmentedResult.contractAddress();
+
+        const instantiateArgs = instantiateMock.mock.calls[0] as any[];
+        const codeArg = instantiateArgs[3];
+        const bytesArg = instantiateArgs[4];
+
+        const expected = CREATE2(toEvmAddress(signer), codeArg, bytesArg, salt);
+        expect(address).toBe(expected);
+      });
     });
   });
 
