@@ -13,7 +13,7 @@ import {
   TxPaymentInfo,
   TxUnsub,
 } from '@dedot/types';
-import { DedotError, HexString, isFunction, toHex, u8aToHex } from '@dedot/utils';
+import { DedotError, HexString, hexToU8a, isFunction, toHex, u8aToHex } from '@dedot/utils';
 import type { FrameSystemEventRecord, SubstrateApi } from '../../chaintypes/index.js';
 import type { ISubstrateClient, ISubstrateClientAt } from '../../types.js';
 import { ExtraSignedExtension } from '../extensions/index.js';
@@ -174,6 +174,14 @@ export abstract class BaseSubmittableExtrinsic extends Extrinsic implements ISub
   protected async getSystemEventsAt(hash: BlockHash): Promise<FrameSystemEventRecord[]> {
     const atApi = (await this.client.at(hash)) as ISubstrateClientAt<SubstrateApi[RpcVersion]>;
     return await atApi.query.system.events();
+  }
+
+  toU8a(): Uint8Array {
+    if (this.#alterTx) {
+      return hexToU8a(this.#alterTx);
+    }
+
+    return super.toU8a();
   }
 
   toHex(): HexString {

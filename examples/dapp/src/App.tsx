@@ -1,4 +1,4 @@
-import { useCallback, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { useAsync } from 'react-use';
 import { PolkadotApi } from '@dedot/chaintypes';
 import { DedotClient, WsProvider } from 'dedot';
@@ -8,7 +8,9 @@ const ENDPOINT = 'wss://rpc.ibp.network/paseo';
 
 function App() {
   const [client, setClient] = useState<DedotClient<PolkadotApi>>();
+  const [availableWallets, setAvailableWallets] = useState<string[]>([]);
   const [extension, setExtension] = useState<Injected>();
+  const [connectedWalletName, setConnectedWalletName] = useState<string>('');
   const [accounts, setAccounts] = useState<InjectedAccount[]>([]);
   const [selectedAccount, setSelectedAccount] = useState<string>('');
   const [remarkMessage, setRemarkMessage] = useState<string>('');
@@ -32,18 +34,39 @@ function App() {
     }
   });
 
-  // Connect to Talisman wallet
-  const connectWallet = useCallback(async () => {
+  // Detect available wallets from window.injectedWeb3
+  useEffect(() => {
+    const detectWallets = () => {
+      if (window.injectedWeb3) {
+        const wallets = Object.keys(window.injectedWeb3).filter((key) => {
+          const provider = window.injectedWeb3[key];
+          return provider && (provider.enable || provider.connect);
+        });
+        setAvailableWallets(wallets);
+      }
+    };
+
+    // Detect immediately
+    detectWallets();
+
+    // Also detect after a short delay in case extensions load asynchronously
+    const timer = setTimeout(detectWallets, 500);
+    return () => clearTimeout(timer);
+  }, []);
+
+  // Connect to selected wallet
+  const connectWallet = useCallback(async (walletName: string) => {
     try {
       setError('');
-      const talisman = window.injectedWeb3?.['talisman'];
-      if (!talisman?.enable) {
-        setError('Talisman wallet not found. Please install Talisman extension.');
+      const wallet = window.injectedWeb3?.[walletName];
+      if (!wallet?.enable) {
+        setError(`${walletName} wallet not found or does not support connection.`);
         return;
       }
 
-      const injected = await talisman.enable('Dedot Example Dapp');
+      const injected = await wallet.enable('Dedot Example Dapp');
       setExtension(injected);
+      setConnectedWalletName(walletName);
 
       const walletAccounts = await injected.accounts.get();
       setAccounts(walletAccounts);
@@ -52,8 +75,19 @@ function App() {
         setSelectedAccount(walletAccounts[0].address);
       }
     } catch (err) {
-      setError(`Failed to connect to Talisman: ${err instanceof Error ? err.message : String(err)}`);
+      setError(`Failed to connect to ${walletName}: ${err instanceof Error ? err.message : String(err)}`);
     }
+  }, []);
+
+  // Disconnect wallet
+  const disconnectWallet = useCallback(() => {
+    setExtension(undefined);
+    setConnectedWalletName('');
+    setAccounts([]);
+    setSelectedAccount('');
+    setTxStatus('');
+    setTxHash('');
+    setError('');
   }, []);
 
   // Submit system.remark transaction
@@ -126,19 +160,46 @@ function App() {
       <div style={{ marginBottom: '20px' }}>
         <h2>1. Connect Wallet</h2>
         {!extension ? (
-          <button
-            onClick={connectWallet}
-            style={{
-              padding: '10px 20px',
-              fontSize: '16px',
-              backgroundColor: '#007bff',
-              color: 'white',
-              border: 'none',
-              borderRadius: '5px',
-              cursor: 'pointer',
-            }}>
-            Connect to Talisman
-          </button>
+          <>
+            {availableWallets.length > 0 ? (
+              <div>
+                <p style={{ marginBottom: '10px', color: '#666' }}>
+                  Select a wallet to connect:
+                </p>
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px' }}>
+                  {availableWallets.map((walletName) => (
+                    <button
+                      key={walletName}
+                      onClick={() => connectWallet(walletName)}
+                      style={{
+                        padding: '10px 20px',
+                        fontSize: '16px',
+                        backgroundColor: '#007bff',
+                        color: 'white',
+                        border: 'none',
+                        borderRadius: '5px',
+                        cursor: 'pointer',
+                        textTransform: 'capitalize',
+                      }}>
+                      Connect to {walletName}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            ) : (
+              <div
+                style={{
+                  padding: '15px',
+                  backgroundColor: '#fff3cd',
+                  border: '1px solid #ffeaa7',
+                  borderRadius: '5px',
+                  color: '#856404',
+                }}>
+                ⚠️ No wallet extensions detected. Please install a Polkadot wallet extension (e.g., Talisman, Subwallet,
+                Polkadot.js).
+              </div>
+            )}
+          </>
         ) : (
           <div
             style={{
@@ -146,8 +207,27 @@ function App() {
               backgroundColor: '#d4edda',
               border: '1px solid #c3e6cb',
               borderRadius: '5px',
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center',
             }}>
-            ✅ Connected to Talisman ({accounts.length} account{accounts.length !== 1 ? 's' : ''})
+            <span>
+              ✅ Connected to <strong style={{ textTransform: 'capitalize' }}>{connectedWalletName}</strong> (
+              {accounts.length} account{accounts.length !== 1 ? 's' : ''})
+            </span>
+            <button
+              onClick={disconnectWallet}
+              style={{
+                padding: '5px 15px',
+                fontSize: '14px',
+                backgroundColor: '#dc3545',
+                color: 'white',
+                border: 'none',
+                borderRadius: '5px',
+                cursor: 'pointer',
+              }}>
+              Disconnect
+            </button>
           </div>
         )}
       </div>
@@ -278,12 +358,12 @@ function App() {
         }}>
         <h3>ℹ️ Instructions</h3>
         <ol>
-          <li>Make sure you have Talisman wallet extension installed</li>
-          <li>Click "Connect to Talisman" to authorize this dapp</li>
+          <li>Make sure you have a Polkadot wallet extension installed (Talisman, Subwallet, Polkadot.js, etc.)</li>
+          <li>Click on your preferred wallet to connect and authorize this dapp</li>
           <li>Select an account from the dropdown</li>
           <li>Enter a remark message and click "Submit Remark"</li>
-          <li>Approve the transaction in Talisman popup</li>
-          <li>Wait for the transaction to be finalized</li>
+          <li>Approve the transaction in your wallet popup</li>
+          <li>Wait for the transaction to be finalized and view it on Subscan</li>
         </ol>
       </div>
     </div>
