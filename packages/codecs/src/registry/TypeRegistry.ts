@@ -16,6 +16,8 @@ import {
   $Data,
   $MultiAddress,
   $RawBytes,
+  $U128,
+  $U256,
   $UncheckedExtrinsic,
 } from '../codecs/known/index.js';
 import type { PortableType, TypeId } from '../metadata/index.js';
@@ -36,6 +38,8 @@ const KNOWN_CODECS: Record<string, $.AnyShape> = {
   'sp_runtime::generic::header::Header': $Header,
   'ink_primitives::types::Hash': $Hash,
   'ink_primitives::types::AccountId': $AccountId32,
+  'primitive_types::U128': $U128,
+  'primitive_types::U256': $U256,
 };
 
 export abstract class TypeRegistry {
