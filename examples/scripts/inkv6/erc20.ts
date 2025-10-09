@@ -16,7 +16,7 @@ BigInt.prototype.toJSON = function () {
 // Connect to the ink-node
 const client = await DedotClient.new(new WsProvider('ws://127.0.0.1:9944'));
 
-console.log('🚀 Starting Flipper contract demonstration');
+console.log('🚀 Starting ERC20 contract demonstration');
 
 const mappedAccount = await client.query.revive.originalAccount(toEvmAddress(alice.address));
 if (mappedAccount) {
