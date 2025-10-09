@@ -6,7 +6,6 @@ import { Contract } from '../../Contract.js';
 import {
   ConstructorTxOptions,
   ContractAddress,
-  ContractMetadata,
   ExecutionOptions,
   GenericConstructorTxCall,
 } from '../../types/index.js';
@@ -96,6 +95,17 @@ export class ConstructorTxExecutor<ChainApi extends GenericSubstrateApi> extends
         );
 
         if (this.registry.isRevive()) {
+          // Try to get address from events first
+          try {
+            const event = client.events.revive.Instantiated.find(events);
+
+            if (event) {
+              // @ts-ignore
+              return event.palletEvent.data.contract;
+            }
+          } catch {}
+
+          // Fallback to calculate the address if event not found
           if (salt) {
             let code;
             if (isPvm(this.code)) {
