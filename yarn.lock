@@ -393,7 +393,7 @@ __metadata:
   resolution: "@dedot/providers@workspace:packages/providers"
   dependencies:
     "@dedot/utils": "workspace:*"
-    "@polkadot/x-ws": "npm:^13.5.6"
+    "@polkadot/x-ws": "npm:^13.5.7"
     mock-socket: "npm:^9.3.1"
     smoldot: "npm:^2.0.39"
   languageName: unknown
@@ -1694,6 +1694,15 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@polkadot/x-global@npm:13.5.7":
+  version: 13.5.7
+  resolution: "@polkadot/x-global@npm:13.5.7"
+  dependencies:
+    tslib: "npm:^2.8.0"
+  checksum: 10c0/f87729140bee2475e03f509bb209dffca26bebecdb368c3d08fa500e9737e6b7ad7dcf0f9266e15dc136da2b7e397cf3547f1139549a6893da738695e0a5087a
+  languageName: node
+  linkType: hard
+
 "@polkadot/x-randomvalues@npm:13.5.6":
   version: 13.5.6
   resolution: "@polkadot/x-randomvalues@npm:13.5.6"
@@ -1727,14 +1736,14 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@polkadot/x-ws@npm:^13.5.6":
-  version: 13.5.6
-  resolution: "@polkadot/x-ws@npm:13.5.6"
+"@polkadot/x-ws@npm:^13.5.7":
+  version: 13.5.7
+  resolution: "@polkadot/x-ws@npm:13.5.7"
   dependencies:
-    "@polkadot/x-global": "npm:13.5.6"
+    "@polkadot/x-global": "npm:13.5.7"
     tslib: "npm:^2.8.0"
     ws: "npm:^8.18.0"
-  checksum: 10c0/cb9d46e185f76eada2f28e9f077ca7efacf8cc394e5afe7a4024e886ab6b96bdb423c3a5144267829fa5a0bc409992cea0c1a843f9542dbf30341b37438eff9e
+  checksum: 10c0/3b0bfaf31549cb5353b4c18a1dcb007feefbbe0549ad0d09f4c5e3736219f5d4ff827f62dab9a949b6b899b11205a17cfa232c8214259849e6a598f4be34dcd7
   languageName: node
   linkType: hard
 
