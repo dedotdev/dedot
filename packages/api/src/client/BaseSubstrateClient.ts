@@ -223,13 +223,13 @@ export abstract class BaseSubstrateClient<
    * This allows reusing metadata from previously created API instances
    * instead of downloading it again from the network
    */
-  protected findMetadataInCache(specVersion: number): Metadata | undefined {
+  protected findMetadataInCache(specVersion: number): [Metadata, PortableRegistry] | undefined {
     const entries = this._apiAtCache.entries();
 
     for (const [_, apiInstance] of entries) {
       const api = apiInstance as ISubstrateClientAt<any>;
       if (api?.runtimeVersion?.specVersion === specVersion) {
-        return api.metadata;
+        return [api.metadata, api.registry];
       }
     }
 
@@ -240,14 +240,6 @@ export abstract class BaseSubstrateClient<
     // First try finding metadata from the provided option
     const optionMetadata = this.getMetadataFromOptions(runtime);
     if (optionMetadata) return optionMetadata;
-
-    // Second, try finding metadata from cached API instances with the same specVersion
-    if (runtime?.specVersion) {
-      const cachedMetadata = this.findMetadataInCache(runtime.specVersion);
-      if (cachedMetadata) {
-        return cachedMetadata;
-      }
-    }
 
     // Last resort: download metadata from the network
     // If there is no runtime, we assume that the node supports Metadata Api V2

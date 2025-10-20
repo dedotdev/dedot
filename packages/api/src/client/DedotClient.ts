@@ -294,8 +294,14 @@ export class DedotClient<ChainApi extends VersionedGenericSubstrateApi = Substra
     let metadata = this.metadata;
     let registry: any = this.registry;
     if (parentVersion && parentVersion.specVersion !== this.runtimeVersion.specVersion) {
-      metadata = await this.fetchMetadata(parentHash, parentVersion);
-      registry = new PortableRegistry<ChainApiAt['types']>(metadata.latest, this.options.hasher);
+      const cachedMetadata = this.findMetadataInCache(parentVersion.specVersion);
+      if (cachedMetadata) {
+        metadata = cachedMetadata[0];
+        registry = cachedMetadata[1];
+      } else {
+        metadata = await this.fetchMetadata(parentHash, parentVersion);
+        registry = new PortableRegistry<ChainApiAt['types']>(metadata.latest, this.options.hasher);
+      }
     }
 
     const api = {
