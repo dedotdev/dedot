@@ -4,7 +4,7 @@ import { ConstantExecutor } from '@dedot/api';
 import { $Metadata, Metadata, PortableRegistry, RuntimeVersion, unwrapOpaqueMetadata } from '@dedot/codecs';
 import * as $ from '@dedot/shape';
 import { HexString, hexToU8a, isHex } from '@dedot/utils';
-import { getMetadataFromRuntime } from '@polkadot-api/wasm-executor';
+import { getMetadataFromWasmRuntime } from '@dedot/wasm';
 import * as fs from 'fs';
 import { DecodedMetadataInfo, ParsedResult } from './types.js';
 
@@ -55,15 +55,10 @@ export const parseMetadataFromRaw = async (metadataFile: string): Promise<Parsed
 
 export const parseMetadataFromWasm = async (runtimeFile: string): Promise<ParsedResult> => {
   const u8aMetadata = hexToU8a(
-    getMetadataFromRuntime(('0x' + fs.readFileSync(runtimeFile).toString('hex')) as HexString),
+    getMetadataFromWasmRuntime(('0x' + fs.readFileSync(runtimeFile).toString('hex')) as HexString),
   );
-  // Because this u8aMetadata has compactInt prefixed for it length, we need to get rid of it.
-  const length = $.compactU32.tryDecode(u8aMetadata);
-  const offset = $.compactU32.tryEncode(length).length;
 
-  const metadataU8a = u8aMetadata.subarray(offset);
-
-  const { metadata, runtimeVersion } = decodeMetadata(metadataU8a);
+  const { metadata, runtimeVersion } = decodeMetadata(u8aMetadata);
 
   return {
     metadata,

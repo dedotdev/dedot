@@ -329,7 +329,7 @@ __metadata:
     "@dedot/api": "workspace:*"
     "@dedot/codecs": "workspace:*"
     "@dedot/codegen": "workspace:*"
-    "@polkadot-api/wasm-executor": "npm:^0.1.2"
+    "@dedot/wasm": "npm:^0.1.0"
     "@polkadot/types-support": "npm:^16.4.6"
     "@types/yargs": "npm:^17.0.33"
     ora: "npm:^8.2.0"
@@ -451,6 +451,13 @@ __metadata:
     eventemitter3: "npm:^5.0.1"
   languageName: unknown
   linkType: soft
+
+"@dedot/wasm@npm:^0.1.0":
+  version: 0.1.0
+  resolution: "@dedot/wasm@npm:0.1.0"
+  checksum: 10c0/825e3727d756892dcce64584e4fd80c8554f9b1bfd6d5e09dca20d93d1777c42afcae980a2de1064b3b6dc2ea6d6757d1a0f23e8719b327d6634d75c9eba9490
+  languageName: node
+  linkType: hard
 
 "@esbuild/aix-ppc64@npm:0.21.5":
   version: 0.21.5
@@ -1515,13 +1522,6 @@ __metadata:
   version: 0.11.0
   resolution: "@pkgjs/parseargs@npm:0.11.0"
   checksum: 10c0/5bd7576bb1b38a47a7fc7b51ac9f38748e772beebc56200450c4a817d712232b8f1d3ef70532c80840243c657d491cf6a6be1e3a214cff907645819fdc34aadd
-  languageName: node
-  linkType: hard
-
-"@polkadot-api/wasm-executor@npm:^0.1.2":
-  version: 0.1.2
-  resolution: "@polkadot-api/wasm-executor@npm:0.1.2"
-  checksum: 10c0/0577111cf7ee12e1606ba863385f50670f2d073e9032efd8365e578f03f4a8b01e699641e19b2aec15e36832aa3b6b0724951fa84d23e87492d0532f55e291bf
   languageName: node
   linkType: hard
 
