@@ -12,7 +12,7 @@ Download the both `ink-node` and `substrate-contract-node` to your local environ
 # cd to the download folder
 
 # run ink-node at port 9955
-./ink-node --dev --rpc-port=9955 & 
+./ink-node --dev --rpc-port=9955 --state-pruning=archive --blocks-pruning=archive & 
 
 # run substrate-contracts-node at port 9944
 ./substrate-contracts-node --dev --rpc-port=9944 &
