@@ -1,6 +1,6 @@
 import { FixedBytes } from 'dedot/codecs';
-import { Contract, toEvmAddress } from 'dedot/contracts';
-import { hexToString, waitFor } from 'dedot/utils';
+import { Contract, isSolContractExecutionError, toEvmAddress } from 'dedot/contracts';
+import { assert, hexToString, waitFor } from 'dedot/utils';
 import { beforeEach, describe, expect, it } from 'vitest';
 import { BallotContractApi } from '../../../../../examples/scripts/sol/ballot/index.js';
 import { deploySolBallot, devPairs } from '../../utils.js';
@@ -147,5 +147,55 @@ describe('sol Ballot Contract', () => {
 
     expect(voteCount0).toBeGreaterThan(0n);
     expect(voteCount1).toBeGreaterThan(0n);
+  });
+
+  it('should reject voting when already voted', async () => {
+    const bobEvmAddress = toEvmAddress(bobPair.address);
+
+    // Give Bob the right to vote
+    await contract.tx.giveRightToVote(bobEvmAddress).signAndSend(alicePair).untilFinalized();
+
+    // Bob votes for proposal 1
+    await contract.tx.vote(1n).signAndSend(bobPair).untilFinalized();
+
+    // Try to vote again
+    try {
+      await contract.query.vote(0n, { caller: bobPair.address });
+      expect(true).toBe(false); // Should not reach here
+    } catch (error: any) {
+      assert(isSolContractExecutionError(error), 'Should be a contract execution error');
+      expect(error.message).toBe('Already voted.');
+    }
+  });
+
+  it('should reject voting without right to vote', async () => {
+    const bobEvmAddress = toEvmAddress(bobPair.address);
+
+    // Bob tries to vote without being given the right
+    try {
+      await contract.query.vote(0n, { caller: bobPair.address });
+      expect(true).toBe(false); // Should not reach here
+    } catch (error: any) {
+      assert(isSolContractExecutionError(error), 'Should be a contract execution error');
+      expect(error.message).toBe('Has no right to vote');
+    }
+  });
+
+  it('should reject giveRightToVote from non-chairperson', async () => {
+    const bobEvmAddress = toEvmAddress(bobPair.address);
+
+    // Give Bob the right to vote first
+    await contract.tx.giveRightToVote(bobEvmAddress).signAndSend(alicePair).untilFinalized();
+
+    // Bob tries to give voting rights to someone else (not chairperson)
+    const charlieEvmAddress = toEvmAddress(devPairs().bob.address); // Using bob as charlie
+
+    try {
+      await contract.query.giveRightToVote(charlieEvmAddress, { caller: bobPair.address });
+      expect(true).toBe(false); // Should not reach here
+    } catch (error: any) {
+      assert(isSolContractExecutionError(error), 'Should be a contract execution error');
+      expect(error.message).toBe('Only chairperson can give right to vote.');
+    }
   });
 });

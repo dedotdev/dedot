@@ -25,6 +25,36 @@ const formatDispatchError = (err: DispatchError, moduleError?: PalletErrorMetada
 };
 
 /**
+ * Formats a Solidity contract error message.
+ * If the error is the standard Solidity 'Error(string message)' pattern,
+ * extract and return the message string directly.
+ * Otherwise, return a formatted error name.
+ *
+ * @param details - The Solidity error result details.
+ * @returns A formatted error message string.
+ */
+const formatSolErrorMessage = (details?: SolErrorResult): string => {
+  if (!details) {
+    return 'Unknown Error';
+  }
+
+  // Check if this is the standard Solidity Error(string) pattern
+  const isSolidityError =
+    details.errorName === 'Error' &&
+    details.abiItem.inputs.length === 1 &&
+    details.abiItem.inputs[0]?.name === 'message' &&
+    details.abiItem.inputs[0]?.type === 'string';
+
+  if (isSolidityError && details.args && details.args.length > 0) {
+    // Extract the message from args[0]
+    return String(details.args[0]);
+  }
+
+  // Default format for other errors
+  return `Error: ${details.errorName}`;
+};
+
+/**
  * Represents an error that occurred during the instantiation of a smart contract.
  * This class extends the base `DedotError` and includes a `raw` property of type `ContractInstantiateResult`.
  *
@@ -267,7 +297,7 @@ export class SolContractInstantiateError<
     if (message) {
       this.message = message;
     } else if (details) {
-      this.message = `Error: ${details.errorName}`;
+      this.message = formatSolErrorMessage(details);
     }
   }
 }
@@ -296,7 +326,7 @@ export class SolContractExecutionError<
     if (message) {
       this.message = message;
     } else if (details) {
-      this.message = `Error: ${details.errorName}`;
+      this.message = formatSolErrorMessage(details);
     }
   }
 }
