@@ -149,7 +149,11 @@ export abstract class BaseSubmittableExtrinsic extends Extrinsic implements ISub
             deferFinalized()?.reject(e);
           });
       })
-      .catch(deferTx.reject);
+      .catch((e) => {
+        deferBestChainBlockIncluded()?.reject(e);
+        deferFinalized()?.reject(e);
+        deferTx.reject(e);
+      });
 
     return deferTx.promise;
   }

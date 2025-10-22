@@ -54,8 +54,8 @@ export class SolTxExecutor<ChainApi extends GenericSubstrateApi> extends SolCont
             this.registry,
             this.address,
             {
-              defaultCaller: signerAddress,
               ...this.options,
+              defaultCaller: signerAddress,
             },
           );
           const { raw } = await executor.doExecute(name)(...params);
