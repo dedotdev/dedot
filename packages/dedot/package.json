@@ -1,6 +1,6 @@
 {
   "name": "dedot",
-  "version": "0.18.4",
+  "version": "0.18.5",
   "description": "A delightful JavaScript/TypeScript client for Polkadot & Substrate",
   "author": "Thang X. Vu <thang@dedot.dev>",
   "homepage": "https://dedot.dev",
