@@ -134,8 +134,8 @@ export class SolConstructorTxExecutor<ChainApi extends GenericSubstrateApi> exte
             this.registry,
             this.code,
             {
-              defaultCaller: signerAddress,
               ...this.options,
+              defaultCaller: signerAddress,
             },
           );
 

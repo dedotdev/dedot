@@ -22,7 +22,7 @@ describe('sol PSP22 Contract', () => {
     const { data: totalSupply } = await contract.query.totalSupply();
 
     expect(name[1]).toBe('Test Coin');
-    expect(symbol).toBe('TC');
+    expect(symbol[1]).toBe('TC');
     expect(decimals).toBe(5);
     expect(totalSupply).toBe(INITIAL_SUPPLY);
   });
