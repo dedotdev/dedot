@@ -12,11 +12,16 @@ beforeAll(async () => {
   console.log(`Connect to ${INK_NODE_ENDPOINT}`);
   global.reviveClient = await DedotClient.new(new WsProvider(INK_NODE_ENDPOINT));
 
-  const alice = devPairs().alice;
+  const { alice, bob } = devPairs();
 
   await reviveClient.tx.revive
     .mapAccount() // --
     .signAndSend(alice)
+    .untilFinalized();
+
+  await reviveClient.tx.revive
+    .mapAccount() // --
+    .signAndSend(bob)
     .untilFinalized();
 }, 120_000);
 
