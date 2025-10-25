@@ -16,7 +16,7 @@ import type {
 } from '@dedot/types';
 import type { HashFn, HexString, IEventEmitter } from '@dedot/utils';
 import type { AnySignedExtension } from './extrinsic/index.js';
-import type { ChainHeadEvent } from './json-rpc/index.js';
+import type { ChainHeadEvent, PinnedBlock } from './json-rpc/index.js';
 
 export type MetadataKey = `RAW_META/${string}`;
 export type SubscribeMethod = string;
@@ -79,6 +79,7 @@ export interface ApiOptions extends JsonRpcClientOptions {
 
 export type ApiEvent = ProviderEvent | 'ready' | 'runtimeUpgraded';
 export type DedotClientEvent = ApiEvent | ChainHeadEvent;
+export type ClientEvent = ApiEvent | ChainHeadEvent;
 
 export interface SubstrateRuntimeVersion {
   specName: string;
@@ -144,9 +145,9 @@ export interface IGenericSubstrateClient<ChainApi extends GenericSubstrateApi = 
    * @param queries - Array of query specifications, each with a function and optional arguments
    * @returns Array of decoded values with proper types
    */
-  queryMulti<Fns extends GenericStorageQuery[]>(
-    queries: { [K in keyof Fns]: Query<Fns[K]> },
-  ): Promise<{ [K in keyof Fns]: QueryFnResult<Fns[K]> }>;
+  queryMulti<Fns extends GenericStorageQuery[]>(queries: { [K in keyof Fns]: Query<Fns[K]> }): Promise<{
+    [K in keyof Fns]: QueryFnResult<Fns[K]>;
+  }>;
 }
 
 /**
@@ -212,13 +213,26 @@ export interface ISubstrateClient<
    * @param callback - Optional callback for subscription-based queries
    * @returns For one-time queries: Array of decoded values with proper types; For subscriptions: Unsubscribe function
    */
-  queryMulti<Fns extends GenericStorageQuery[]>(
-    queries: { [K in keyof Fns]: Query<Fns[K]> },
-  ): Promise<{ [K in keyof Fns]: QueryFnResult<Fns[K]> }>;
+  queryMulti<Fns extends GenericStorageQuery[]>(queries: { [K in keyof Fns]: Query<Fns[K]> }): Promise<{
+    [K in keyof Fns]: QueryFnResult<Fns[K]>;
+  }>;
   queryMulti<Fns extends GenericStorageQuery[]>(
     queries: { [K in keyof Fns]: Query<Fns[K]> },
     callback: Callback<{ [K in keyof Fns]: QueryFnResult<Fns[K]> }>,
   ): Promise<Unsub>;
+
+  on<Event extends Events = Events>(event: Event, handler: EventHandlerFn<Event>): () => void;
+}
+
+export type EventHandlerFn<Event extends string> = EventTypes[Event];
+
+interface EventTypes {
+  bestBlock: (block: PinnedBlock, bestChainChanged: boolean) => void;
+  finalizedBlock: (block: PinnedBlock) => void;
+  connected: (connectedEndpoint: string) => void;
+  runtimeUpgraded: (newRuntimeVersion: SubstrateRuntimeVersion) => void;
+  error: (error?: Error) => void;
+  [event: string]: (...args: any[]) => void;
 }
 
 /**

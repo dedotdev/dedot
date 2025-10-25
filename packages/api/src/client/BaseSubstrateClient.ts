@@ -28,6 +28,7 @@ import { BaseStorageQuery, QueryableStorage } from '../storage/index.js';
 import type {
   ApiEvent,
   ApiOptions,
+  EventHandlerFn,
   ISubstrateClient,
   ISubstrateClientAt,
   JsonRpcClientOptions,
@@ -513,5 +514,9 @@ export abstract class BaseSubstrateClient<
 
   protected getStorageQuery(): BaseStorageQuery {
     throw new Error('Unimplemented!');
+  }
+
+  on<Event extends Events = Events>(event: Event, handler: EventHandlerFn<Event>): () => void {
+    return super.on(event, handler);
   }
 }

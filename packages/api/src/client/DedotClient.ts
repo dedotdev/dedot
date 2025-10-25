@@ -19,6 +19,7 @@ import { BaseStorageQuery, NewStorageQuery } from '../storage/index.js';
 import type {
   ApiOptions,
   DedotClientEvent,
+  EventHandlerFn,
   ISubstrateClientAt,
   SubstrateRuntimeVersion,
   TxBroadcaster,
@@ -134,6 +135,9 @@ export class DedotClient<ChainApi extends VersionedGenericSubstrateApi = Substra
 
     await this.setupMetadata(metadata);
     this.subscribeRuntimeUpgrades();
+
+    this.emit('bestBlock', await this.chainHead.bestBlock());
+    this.emit('finalizedBlock', await this.chainHead.finalizedBlock());
 
     // relegate events
     this.chainHead.on('newBlock', (...args) => this.emit('newBlock', ...args));
@@ -334,5 +338,24 @@ export class DedotClient<ChainApi extends VersionedGenericSubstrateApi = Substra
 
   protected override getStorageQuery(): BaseStorageQuery {
     return new NewStorageQuery(this);
+  }
+
+  on<Event extends DedotClientEvent = DedotClientEvent>(event: Event, handler: EventHandlerFn<Event>): () => void {
+    const isReady = !!this._genesisHash;
+    if (isReady) {
+      if (event === 'finalizedBlock') {
+        (async () => {
+          this.emit('finalizedBlock', await this.chainHead.finalizedBlock());
+        })();
+      }
+
+      if (event === 'bestBlock') {
+        (async () => {
+          this.emit('bestBlock', await this.chainHead.bestBlock());
+        })();
+      }
+    }
+
+    return super.on(event, handler);
   }
 }
