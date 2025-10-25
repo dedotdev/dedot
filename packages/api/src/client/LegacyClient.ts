@@ -1,7 +1,7 @@
 import { BlockHash, Hash, Header, PortableRegistry, RuntimeVersion } from '@dedot/codecs';
 import type { JsonRpcProvider } from '@dedot/providers';
 import { GenericSubstrateApi, RpcLegacy, Unsub, VersionedGenericSubstrateApi } from '@dedot/types';
-import { assert } from '@dedot/utils';
+import { assert, noop } from '@dedot/utils';
 import type { SubstrateApi } from '../chaintypes/index.js';
 import {
   ConstantExecutor,
@@ -14,8 +14,9 @@ import {
 } from '../executor/index.js';
 import { newProxyChain } from '../proxychain.js';
 import { BaseStorageQuery, LegacyStorageQuery } from '../storage/index.js';
-import type { ApiOptions, ISubstrateClientAt, SubstrateRuntimeVersion } from '../types.js';
+import { ApiOptions, ClientEvent, EventHandlerFn, ISubstrateClientAt, SubstrateRuntimeVersion } from '../types.js';
 import { BaseSubstrateClient } from './BaseSubstrateClient.js';
+import { LegacyEvents } from './LegacyEvents.js';
 
 const KEEP_ALIVE_INTERVAL = 10_000; // in ms
 
@@ -58,10 +59,11 @@ const KEEP_ALIVE_INTERVAL = 10_000; // in ms
  * ```
  */
 export class LegacyClient<ChainApi extends VersionedGenericSubstrateApi = SubstrateApi> // prettier-end-here
-  extends BaseSubstrateClient<RpcLegacy, ChainApi>
+  extends BaseSubstrateClient<RpcLegacy, ChainApi, ClientEvent>
 {
   #runtimeSubscriptionUnsub?: Unsub;
   #healthTimer?: ReturnType<typeof setInterval>;
+  #legacyEvents: LegacyEvents;
 
   /**
    * Use factory methods (`create`, `new`) to create `Dedot` instances.
@@ -70,6 +72,7 @@ export class LegacyClient<ChainApi extends VersionedGenericSubstrateApi = Substr
    */
   constructor(options: ApiOptions | JsonRpcProvider) {
     super('legacy', options);
+    this.#legacyEvents = new LegacyEvents(this);
   }
 
   /**
@@ -117,12 +120,14 @@ export class LegacyClient<ChainApi extends VersionedGenericSubstrateApi = Substr
 
     await this.setupMetadata(metadata);
     this.#subscribeUpdates();
+    this.#setupLegacyEvents();
   }
 
   protected override cleanUp() {
     super.cleanUp();
     this.#healthTimer = undefined;
     this.#runtimeSubscriptionUnsub = undefined;
+    this.#legacyEvents.cleanup().catch(noop);
   }
 
   #subscribeRuntimeUpgrades() {
@@ -182,6 +187,15 @@ export class LegacyClient<ChainApi extends VersionedGenericSubstrateApi = Substr
     }
   }
 
+  #setupLegacyEvents() {
+    // Relay events from LegacyEvents to LegacyClient
+    this.#legacyEvents.on('bestBlock', (...args) => this.emit('bestBlock', ...args));
+    this.#legacyEvents.on('finalizedBlock', (...args) => this.emit('finalizedBlock', ...args));
+
+    // Mark as ready now that the client is initialized
+    this.#legacyEvents.setReady();
+  }
+
   #subscribeUpdates() {
     this.#subscribeRuntimeUpgrades();
     this.#subscribeHealth();
@@ -190,6 +204,7 @@ export class LegacyClient<ChainApi extends VersionedGenericSubstrateApi = Substr
   async #unsubscribeUpdates() {
     await this.#unsubscribeRuntimeUpdates();
     this.#unsubscribeHealth();
+    await this.#legacyEvents?.cleanup();
   }
 
   /// --- Public APIs ---
@@ -338,5 +353,31 @@ export class LegacyClient<ChainApi extends VersionedGenericSubstrateApi = Substr
       assert(header, `Header for ${hash} not found`);
       return header.parentHash;
     }
+  }
+
+  on<Event extends ClientEvent = ClientEvent>(event: Event, handler: EventHandlerFn<Event>): () => void {
+    // Register handlers with LegacyEvents regardless of ready state
+    if (event === 'finalizedBlock') {
+      this.#legacyEvents.registerFinalizedBlockHandler();
+    }
+
+    if (event === 'bestBlock') {
+      this.#legacyEvents.registerBestBlockHandler();
+    }
+
+    const unsub = super.on(event, handler);
+
+    // Return a custom unsubscribe function that also unregisters from LegacyEvents
+    return () => {
+      unsub();
+
+      if (event === 'finalizedBlock') {
+        this.#legacyEvents.unregisterFinalizedBlockHandler();
+      }
+
+      if (event === 'bestBlock') {
+        this.#legacyEvents.unregisterBestBlockHandler();
+      }
+    };
   }
 }
