@@ -57,8 +57,8 @@ export class TxExecutor<ChainApi extends GenericSubstrateApi> extends ContractEx
             this.registry,
             this.address,
             {
-              defaultCaller: signerAddress,
               ...this.options,
+              defaultCaller: signerAddress,
             },
           );
           const { raw } = await executor.doExecute(message)(...params);

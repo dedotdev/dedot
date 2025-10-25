@@ -155,8 +155,8 @@ export class ConstructorTxExecutor<ChainApi extends GenericSubstrateApi> extends
             this.registry,
             this.code,
             {
-              defaultCaller: signerAddress,
               ...this.options,
+              defaultCaller: signerAddress,
             },
           );
           const { raw } = await executor.doExecute(constructor)(...params);
