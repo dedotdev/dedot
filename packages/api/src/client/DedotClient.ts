@@ -22,6 +22,7 @@ import {
   ISubstrateClientAt,
   SubstrateRuntimeVersion,
   IChainSpec,
+  type EventHandlerFn,
 } from '../types.js';
 import { LegacyClient } from './LegacyClient.js';
 import { V2Client } from './V2Client.js';
@@ -159,12 +160,14 @@ export class DedotClient<
     await this.#client.disconnect();
   }
 
-  on(event: ApiEvent, handler: (...args: any[]) => void): () => void {
+  on<Event extends ApiEvent = ApiEvent>(event: Event, handler: EventHandlerFn<Event>): () => void {
     return this.#client.on(event, handler);
   }
+
   once(event: ApiEvent, handler: (...args: any[]) => void): () => void {
     return this.#client.once(event, handler);
   }
+
   off(event: ApiEvent, handler?: ((...args: any[]) => void) | undefined): this {
     this.#client.off(event, handler);
     return this;

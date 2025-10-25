@@ -19,7 +19,7 @@ import { Properties } from '@dedot/types/json-rpc';
 import type { HashFn, HexString, IEventEmitter } from '@dedot/utils';
 import type { SubstrateApi } from './chaintypes/index.js';
 import type { AnySignedExtension } from './extrinsic/index.js';
-import type { ChainHeadEvent } from './json-rpc/index.js';
+import type { ChainHeadEvent, PinnedBlock } from './json-rpc/index.js';
 
 export type MetadataKey = `RAW_META/${string}`;
 export type SubscribeMethod = string;
@@ -82,6 +82,7 @@ export interface ApiOptions extends JsonRpcClientOptions {
 
 export type ApiEvent = ProviderEvent | 'ready' | 'runtimeUpgraded';
 export type DedotClientEvent = ApiEvent | ChainHeadEvent;
+export type ClientEvent = ApiEvent | ChainHeadEvent;
 
 export interface SubstrateRuntimeVersion {
   specName: string;
@@ -294,6 +295,20 @@ export interface ISubstrateClient<
     queries: { [K in keyof Fns]: Query<Fns[K]> },
     callback: Callback<{ [K in keyof Fns]: QueryFnResult<Fns[K]> }>,
   ): Promise<Unsub>;
+
+  on<Event extends Events = Events>(event: Event, handler: EventHandlerFn<Event>): () => void;
+}
+
+export type EventHandlerFn<Event extends string> = EventTypes[Event];
+
+interface EventTypes {
+  ready: () => void;
+  connected: (connectedEndpoint: string) => void;
+  disconnected: () => void;
+  reconnecting: () => void;
+  runtimeUpgraded: (newRuntimeVersion: SubstrateRuntimeVersion, at: BlockInfo) => void;
+  error: (error?: Error) => void;
+  [event: string]: (...args: any[]) => void;
 }
 
 /**
