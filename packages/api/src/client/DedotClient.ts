@@ -133,10 +133,16 @@ export class DedotClient<ChainApi extends VersionedGenericSubstrateApi = Substra
 
     this._genesisHash = genesisHash;
 
+    let shouldFetchMetadata = true;
+
     const newBestRuntime = await this.chainHead.bestRuntimeVersion();
     if (this._runtimeVersion && newBestRuntime.specVersion !== this._runtimeVersion.specVersion) {
+      shouldFetchMetadata = false;
+    } else {
       this._runtimeVersion = newBestRuntime;
+    }
 
+    if (shouldFetchMetadata) {
       let metadata;
       if (await this.shouldPreloadMetadata()) {
         metadata = await this.fetchMetadata();
