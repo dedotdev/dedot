@@ -2,7 +2,7 @@ import { $H256, $Header, $RuntimeVersion, BlockHash, Hash, PortableRegistry } fr
 import type { JsonRpcProvider } from '@dedot/providers';
 import { u32 } from '@dedot/shape';
 import { GenericStorageQuery, GenericSubstrateApi, RpcV2, VersionedGenericSubstrateApi } from '@dedot/types';
-import { assert, concatU8a, DedotError, HexString, noop, twox64Concat, u8aToHex, xxhashAsU8a } from '@dedot/utils';
+import { assert, concatU8a, DedotError, HexString, twox64Concat, u8aToHex, waitFor, xxhashAsU8a } from '@dedot/utils';
 import type { SubstrateApi } from '../chaintypes/index.js';
 import {
   ConstantExecutor,

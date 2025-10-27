@@ -221,6 +221,8 @@ export class ChainHead extends JsonRpcGroup<ChainHeadEvent> {
       case 'initialized': {
         const { finalizedBlockHashes = [], finalizedBlockHash, finalizedBlockRuntime } = result;
         if (finalizedBlockHash) finalizedBlockHashes.push(finalizedBlockHash);
+        const lastFinalizedHash = this.#finalizedHash;
+        const prevPinnedBlocks = this.#pinnedBlocks;
 
         this.#subscriptionId = subscription!.subscriptionId;
         this.#finalizedQueue = finalizedBlockHashes;
@@ -229,8 +231,6 @@ export class ChainHead extends JsonRpcGroup<ChainHeadEvent> {
         assert(this.#finalizedRuntime, 'Invalid finalized runtime');
 
         this.#bestHash = this.#finalizedHash = finalizedBlockHashes.at(-1);
-
-        const prevPinnedBlocks = this.#pinnedBlocks;
 
         this.#pinnedBlocks = finalizedBlockHashes.reduce(
           (o, hash, idx, arr) => {
@@ -271,7 +271,23 @@ export class ChainHead extends JsonRpcGroup<ChainHeadEvent> {
           }
         });
 
-        // this.emit('finalizedBlock', await this.finalizedBlock());
+        if (!lastFinalizedHash) {
+          this.emit('finalizedBlock', await this.finalizedBlock());
+        } else {
+          const lastFinalizedIndex = finalizedBlockHashes.indexOf(lastFinalizedHash as HexString);
+
+          if (lastFinalizedIndex !== -1 && lastFinalizedIndex < finalizedBlockHashes.length - 1) {
+            // Emit all finalized blocks that occurred during the disconnection
+            for (let i = lastFinalizedIndex + 1; i < finalizedBlockHashes.length; i++) {
+              const hash = finalizedBlockHashes[i];
+              const block = this.#pinnedBlocks[hash];
+
+              if (block) {
+                this.emit('finalizedBlock', block);
+              }
+            }
+          }
+        }
 
         break;
       }
@@ -280,7 +296,10 @@ export class ChainHead extends JsonRpcGroup<ChainHeadEvent> {
         const runtime = this.#extractRuntime(newRuntime);
 
         const parentBlock = this.findBlock(parent)!;
-        assert(parentBlock, `Parent block not found for new block ${hash}`);
+        if (!parentBlock) {
+          console.warn(`Parent block not found for new block ${hash}`);
+          return;
+        }
 
         this.#pinnedBlocks[hash] = {
           hash,
