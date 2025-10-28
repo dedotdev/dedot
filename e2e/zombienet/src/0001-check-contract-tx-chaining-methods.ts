@@ -10,22 +10,27 @@ import * as flipperV5 from '../flipper_v5.json';
 import { FlipperContractApi } from './contracts/flipper';
 
 export const run = async (_nodeName: any, networkInfo: any) => {
-  await cryptoWaitReady();
+  try {
+    await cryptoWaitReady();
 
-  const alicePair = new Keyring({ type: 'sr25519' }).addFromUri('//Alice');
-  const { wsUri } = networkInfo.nodesByName['collator-1'];
+    const alicePair = new Keyring({ type: 'sr25519' }).addFromUri('//Alice');
+    const { wsUri } = networkInfo.nodesByName['collator-1'];
 
-  const caller = alicePair.address;
+    const caller = alicePair.address;
 
-  // Test with LegacyClient
-  console.log('Testing contract chaining methods with LegacyClient');
-  const apiLegacy = await LegacyClient.new(new WsProvider(wsUri));
-  await testContractChainingMethods(apiLegacy, flipperV4 as ContractMetadataV4, alicePair, caller);
+    // Test with LegacyClient
+    console.log('Testing contract chaining methods with LegacyClient');
+    const apiLegacy = await LegacyClient.new(new WsProvider(wsUri));
+    await testContractChainingMethods(apiLegacy, flipperV4 as ContractMetadataV4, alicePair, caller);
 
-  // Test with DedotClient
-  console.log('Testing contract chaining methods with DedotClient');
-  const apiV2 = await DedotClient.new(new WsProvider(wsUri));
-  await testContractChainingMethods(apiV2, flipperV5 as ContractMetadataV5, alicePair, caller);
+    // Test with DedotClient
+    console.log('Testing contract chaining methods with DedotClient');
+    const apiV2 = await DedotClient.new(new WsProvider(wsUri));
+    await testContractChainingMethods(apiV2, flipperV5 as ContractMetadataV5, alicePair, caller);
+  } catch (error) {
+    console.error(error);
+    throw error;
+  }
 };
 
 async function testContractChainingMethods(

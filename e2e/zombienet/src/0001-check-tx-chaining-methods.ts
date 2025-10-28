@@ -8,19 +8,24 @@ const BOB = '5FHneW46xGXgs5mUiveU4sbTyGBzmstUspZC92UhjJM694ty';
 const TRANSFER_AMOUNT = BigInt(10 * 1e12); // 10 units
 
 export const run = async (nodeName: any, networkInfo: any): Promise<void> => {
-  await cryptoWaitReady();
-  const keyring = new Keyring({ type: 'sr25519' });
-  const alice = keyring.addFromUri('//Alice');
+  try {
+    await cryptoWaitReady();
+    const keyring = new Keyring({ type: 'sr25519' });
+    const alice = keyring.addFromUri('//Alice');
 
-  const { wsUri } = networkInfo.nodesByName[nodeName];
+    const { wsUri } = networkInfo.nodesByName[nodeName];
 
-  // Test with LegacyClient
-  console.log('Testing chaining methods with LegacyClient');
-  await testChainingMethods(LegacyClient, wsUri, alice);
+    // Test with LegacyClient
+    console.log('Testing chaining methods with LegacyClient');
+    await testChainingMethods(LegacyClient, wsUri, alice);
 
-  // Test with DedotClient
-  console.log('Testing chaining methods with DedotClient');
-  await testChainingMethods(DedotClient, wsUri, alice);
+    // Test with DedotClient
+    console.log('Testing chaining methods with DedotClient');
+    await testChainingMethods(DedotClient, wsUri, alice);
+  } catch (e) {
+    console.error(e);
+    throw e;
+  }
 };
 
 async function testChainingMethods(ClientClass: typeof LegacyClient | typeof DedotClient, wsUri: string, alice: any) {
@@ -164,6 +169,6 @@ async function testSendAndSignAndSendReturnTypes(api: LegacyClient | DedotClient
   assert(typeof (await result4) === 'function', 'signAndSend() with callback should return a function');
   console.log('signAndSend() with callback test passed');
   await result4.untilBestChainBlockIncluded();
-  
+
   console.log('All send and signAndSend return type tests passed');
 }
