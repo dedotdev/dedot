@@ -1,7 +1,7 @@
 import type { Bytes, PalletDefLatest, Result, ViewFunctionDefLatest } from '@dedot/codecs';
 import * as $ from '@dedot/shape';
-import type { GenericSubstrateApi, GenericViewFunction } from '@dedot/types';
-import { assert, concatU8a, HexString, stringCamelCase, u8aToHex, UnknownApiError, DedotError } from '@dedot/utils';
+import type { GenericViewFunction } from '@dedot/types';
+import { assert, concatU8a, DedotError, HexString, stringCamelCase, u8aToHex, UnknownApiError } from '@dedot/utils';
 import { FrameSupportViewFunctionsViewFunctionDispatchError } from '../chaintypes/index.js';
 import { Executor, StateCallParams } from './Executor.js';
 
@@ -12,9 +12,7 @@ const METHOD_NAME = 'execute_view_function';
  * @name ViewFunctionExecutor
  * @description Execute view functions using the runtimeViewFunction API
  */
-export class ViewFunctionExecutor<
-  ChainApi extends GenericSubstrateApi = GenericSubstrateApi,
-> extends Executor<ChainApi> {
+export class ViewFunctionExecutor extends Executor {
   doExecute(pallet: string, viewFunction: string): GenericViewFunction {
     const targetPallet = this.getPallet(pallet);
 

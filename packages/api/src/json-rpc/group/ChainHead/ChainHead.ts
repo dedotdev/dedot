@@ -94,7 +94,7 @@ export class ChainHead extends JsonRpcGroup<ChainHeadEvent> {
    */
   #archive?: Archive;
 
-  constructor(client: IJsonRpcClient, options?: Partial<JsonRpcGroupOptions>) {
+  constructor(client: IJsonRpcClient<any>, options?: Partial<JsonRpcGroupOptions>) {
     super(client, { prefix: 'chainHead', supportedVersions: ['unstable', 'v1'], ...options });
     this.#handlers = {};
     this.#pendingOperations = {};

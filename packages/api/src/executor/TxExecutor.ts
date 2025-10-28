@@ -1,4 +1,4 @@
-import type { GenericSubstrateApi, GenericTxCall, IRuntimeTxCall } from '@dedot/types';
+import type { GenericTxCall, IRuntimeTxCall } from '@dedot/types';
 import { assert, stringCamelCase, stringPascalCase, UnknownApiError } from '@dedot/utils';
 import { SubmittableExtrinsic } from '../extrinsic/index.js';
 import { ISubstrateClient } from '../types.js';
@@ -8,7 +8,7 @@ import { Executor } from './Executor.js';
  * @name TxExecutor
  * @description Execute a transaction instruction, returns a submittable extrinsic
  */
-export class TxExecutor<ChainApi extends GenericSubstrateApi = GenericSubstrateApi> extends Executor<ChainApi> {
+export class TxExecutor extends Executor {
   doExecute(pallet: string, functionName: string) {
     const targetPallet = this.getPallet(pallet);
 
@@ -58,6 +58,6 @@ export class TxExecutor<ChainApi extends GenericSubstrateApi = GenericSubstrateA
   }
 
   protected createExtrinsic(call: IRuntimeTxCall): any {
-    return new SubmittableExtrinsic(this.client as ISubstrateClient<ChainApi>, call);
+    return new SubmittableExtrinsic(this.client as ISubstrateClient, call);
   }
 }

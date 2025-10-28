@@ -4,7 +4,6 @@ import { type IStorage, LocalStorage } from '@dedot/storage';
 import {
   Callback,
   GenericStorageQuery,
-  GenericSubstrateApi,
   InjectedSigner,
   Query,
   QueryFnResult,
@@ -17,8 +16,8 @@ import {
   deferred,
   Deferred,
   ensurePresence as _ensurePresence,
-  u8aToHex,
   LRUCache,
+  u8aToHex,
 } from '@dedot/utils';
 import type { SubstrateApi } from '../chaintypes/index.js';
 import { ConstantExecutor, ErrorExecutor, EventExecutor } from '../executor/index.js';
@@ -51,12 +50,12 @@ export function ensurePresence<T>(value: T): NonNullable<T> {
  * @description Base & shared abstraction for Substrate API Clients
  */
 export abstract class BaseSubstrateClient<
-    Rv extends RpcVersion,
     ChainApi extends VersionedGenericSubstrateApi = SubstrateApi,
+    Rv extends RpcVersion = RpcVersion,
     Events extends string = ApiEvent,
   >
   extends JsonRpcClient<ChainApi, Events>
-  implements ISubstrateClient<ChainApi[Rv], Events>
+  implements ISubstrateClient<ChainApi, Rv, Events>
 {
   protected _options: ApiOptions;
 
@@ -436,7 +435,9 @@ export abstract class BaseSubstrateClient<
     throw new Error('Unimplemented!');
   }
 
-  at<ChainApiAt extends GenericSubstrateApi = ChainApi[Rv]>(hash: BlockHash): Promise<ISubstrateClientAt<ChainApiAt>> {
+  at<ChainApiAt extends VersionedGenericSubstrateApi = ChainApi>(
+    hash: BlockHash,
+  ): Promise<ISubstrateClientAt<ChainApiAt, Rv>> {
     throw new Error('Unimplemented!');
   }
 

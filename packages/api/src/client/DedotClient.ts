@@ -1,7 +1,7 @@
 import { $H256, $Header, $RuntimeVersion, BlockHash, Hash, PortableRegistry } from '@dedot/codecs';
 import type { JsonRpcProvider } from '@dedot/providers';
 import { u32 } from '@dedot/shape';
-import { GenericStorageQuery, GenericSubstrateApi, RpcV2, VersionedGenericSubstrateApi } from '@dedot/types';
+import { GenericStorageQuery, RpcV2, VersionedGenericSubstrateApi } from '@dedot/types';
 import { assert, concatU8a, DedotError, HexString, noop, twox64Concat, u8aToHex, xxhashAsU8a } from '@dedot/utils';
 import type { SubstrateApi } from '../chaintypes/index.js';
 import {
@@ -32,7 +32,7 @@ import { BaseSubstrateClient, ensurePresence } from './BaseSubstrateClient.js';
  * __Unstable, use with caution.__
  */
 export class DedotClient<ChainApi extends VersionedGenericSubstrateApi = SubstrateApi> // prettier-end-here
-  extends BaseSubstrateClient<RpcV2, ChainApi, DedotClientEvent>
+  extends BaseSubstrateClient<ChainApi, RpcV2, DedotClientEvent>
 {
   protected _chainHead?: ChainHead;
   protected _chainSpec?: ChainSpec;
@@ -241,10 +241,10 @@ export class DedotClient<ChainApi extends VersionedGenericSubstrateApi = Substra
    *
    * @param hash
    */
-  async at<ChainApiAt extends GenericSubstrateApi = ChainApi[RpcV2]>(
+  async at<ChainApiAt extends VersionedGenericSubstrateApi = ChainApi>(
     hash: BlockHash,
-  ): Promise<ISubstrateClientAt<ChainApiAt>> {
-    const cached = this._apiAtCache.get<ISubstrateClientAt<ChainApiAt>>(hash);
+  ): Promise<ISubstrateClientAt<ChainApiAt, RpcV2>> {
+    const cached = this._apiAtCache.get<ISubstrateClientAt<ChainApiAt, RpcV2>>(hash);
     if (cached) return cached;
 
     let parentVersion: SubstrateRuntimeVersion;
@@ -300,7 +300,7 @@ export class DedotClient<ChainApi extends VersionedGenericSubstrateApi = Substra
         registry = cachedMetadata[1];
       } else {
         metadata = await this.fetchMetadata(parentHash, parentVersion);
-        registry = new PortableRegistry<ChainApiAt['types']>(metadata.latest, this.options.hasher);
+        registry = new PortableRegistry<ChainApiAt[RpcV2]['types']>(metadata.latest, this.options.hasher);
       }
     }
 
@@ -313,14 +313,18 @@ export class DedotClient<ChainApi extends VersionedGenericSubstrateApi = Substra
       metadata,
       registry,
       rpc: this.rpc,
-    } as ISubstrateClientAt<ChainApiAt>;
+    } as ISubstrateClientAt<ChainApiAt, RpcV2>;
 
-    api.consts = newProxyChain({ executor: new ConstantExecutor(api) }) as ChainApiAt['consts'];
-    api.events = newProxyChain({ executor: new EventExecutor(api) }) as ChainApiAt['events'];
-    api.errors = newProxyChain({ executor: new ErrorExecutor(api) }) as ChainApiAt['errors'];
-    api.query = newProxyChain({ executor: new StorageQueryExecutorV2(api, this.chainHead) }) as ChainApiAt['query'];
-    api.call = newProxyChain({ executor: new RuntimeApiExecutorV2(api, this.chainHead) }) as ChainApiAt['call'];
-    api.view = newProxyChain({ executor: new ViewFunctionExecutorV2(api, this.chainHead) }) as ChainApiAt['view'];
+    api.consts = newProxyChain({ executor: new ConstantExecutor(api) }) as ChainApiAt[RpcV2]['consts'];
+    api.events = newProxyChain({ executor: new EventExecutor(api) }) as ChainApiAt[RpcV2]['events'];
+    api.errors = newProxyChain({ executor: new ErrorExecutor(api) }) as ChainApiAt[RpcV2]['errors'];
+    api.query = newProxyChain({
+      executor: new StorageQueryExecutorV2(api, this.chainHead),
+    }) as ChainApiAt[RpcV2]['query'];
+    api.call = newProxyChain({ executor: new RuntimeApiExecutorV2(api, this.chainHead) }) as ChainApiAt[RpcV2]['call'];
+    api.view = newProxyChain({
+      executor: new ViewFunctionExecutorV2(api, this.chainHead),
+    }) as ChainApiAt[RpcV2]['view'];
 
     // @ts-ignore Add queryMulti implementation for at-block queries
     api.queryMulti = (queries: { fn: GenericStorageQuery; args?: any[] }[]) => {

@@ -1,5 +1,5 @@
 import { BlockHash } from '@dedot/codecs';
-import type { AsyncMethod, GenericSubstrateApi, RpcVersion } from '@dedot/types';
+import type { AsyncMethod } from '@dedot/types';
 import { assert, HexString } from '@dedot/utils';
 import { ChainHead } from '../../json-rpc/index.js';
 import { type BaseStorageQuery, NewStorageQuery, QueryableStorage } from '../../storage/index.js';
@@ -9,11 +9,9 @@ import { StorageQueryExecutor } from '../StorageQueryExecutor.js';
 /**
  * @name StorageQueryExecutorV2
  */
-export class StorageQueryExecutorV2<
-  ChainApi extends GenericSubstrateApi = GenericSubstrateApi,
-> extends StorageQueryExecutor<ChainApi> {
+export class StorageQueryExecutorV2 extends StorageQueryExecutor {
   constructor(
-    client: ISubstrateClientAt<ChainApi> | ISubstrateClient<ChainApi, any>,
+    client: ISubstrateClientAt<any, any> | ISubstrateClient<any, any, any>,
     public chainHead: ChainHead,
     atBlockHash?: BlockHash,
   ) {

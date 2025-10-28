@@ -3,7 +3,6 @@ import { Metadata, toRuntimeApiMethods, toRuntimeApiSpecs } from '@dedot/runtime
 import type { AnyShape } from '@dedot/shape';
 import type {
   GenericRuntimeApiMethod,
-  GenericSubstrateApi,
   RuntimeApiMethodParamSpec,
   RuntimeApiMethodSpec,
   RuntimeApiName,
@@ -32,7 +31,7 @@ export const FallbackRuntimeApiSpecs = { Metadata };
  * or defined externally when initializing `Dedot` instance
  * via `ApiOptions.runtimeApis` option.
  */
-export class RuntimeApiExecutor<ChainApi extends GenericSubstrateApi = GenericSubstrateApi> extends Executor<ChainApi> {
+export class RuntimeApiExecutor extends Executor {
   doExecute(runtimeApi: string, method: string): GenericRuntimeApiMethod {
     const runtimeApiName = stringPascalCase(runtimeApi);
     const methodName = stringSnakeCase(method);

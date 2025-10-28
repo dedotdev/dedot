@@ -4,7 +4,7 @@ import { IJsonRpcClient } from '../../types.js';
 import { JsonRpcGroup, JsonRpcGroupOptions } from './JsonRpcGroup.js';
 
 export class ChainSpec extends JsonRpcGroup {
-  constructor(client: IJsonRpcClient, options?: Partial<JsonRpcGroupOptions>) {
+  constructor(client: IJsonRpcClient<any>, options?: Partial<JsonRpcGroupOptions>) {
     super(client, { prefix: 'chainSpec', supportedVersions: ['unstable', 'v1'], ...options });
   }
 

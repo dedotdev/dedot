@@ -20,7 +20,7 @@ export abstract class BaseStorageQuery {
   /**
    * @param client - The substrate client instance
    */
-  protected constructor(protected client: ISubstrateClientAt<any> | ISubstrateClient<any, any>) {}
+  protected constructor(protected client: ISubstrateClientAt<any, any> | ISubstrateClient<any, any, any>) {}
 
   /**
    * Query multiple storage items in a single call

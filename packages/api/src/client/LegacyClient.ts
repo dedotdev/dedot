@@ -1,6 +1,6 @@
 import { BlockHash, Hash, Header, PortableRegistry, RuntimeVersion } from '@dedot/codecs';
 import type { JsonRpcProvider } from '@dedot/providers';
-import { GenericSubstrateApi, RpcLegacy, Unsub, VersionedGenericSubstrateApi } from '@dedot/types';
+import { RpcLegacy, Unsub, VersionedGenericSubstrateApi } from '@dedot/types';
 import { assert } from '@dedot/utils';
 import type { SubstrateApi } from '../chaintypes/index.js';
 import {
@@ -58,7 +58,7 @@ const KEEP_ALIVE_INTERVAL = 10_000; // in ms
  * ```
  */
 export class LegacyClient<ChainApi extends VersionedGenericSubstrateApi = SubstrateApi> // prettier-end-here
-  extends BaseSubstrateClient<RpcLegacy, ChainApi>
+  extends BaseSubstrateClient<ChainApi, RpcLegacy>
 {
   #runtimeSubscriptionUnsub?: Unsub;
   #healthTimer?: ReturnType<typeof setInterval>;
@@ -277,10 +277,10 @@ export class LegacyClient<ChainApi extends VersionedGenericSubstrateApi = Substr
    *
    * @param hash
    */
-  async at<ChainApiAt extends GenericSubstrateApi = ChainApi[RpcLegacy]>(
+  async at<ChainApiAt extends VersionedGenericSubstrateApi = ChainApi>(
     hash: BlockHash,
-  ): Promise<ISubstrateClientAt<ChainApiAt>> {
-    const cached = this._apiAtCache.get<ISubstrateClientAt<ChainApiAt>>(hash);
+  ): Promise<ISubstrateClientAt<ChainApiAt, RpcLegacy>> {
+    const cached = this._apiAtCache.get<ISubstrateClientAt<ChainApiAt, RpcLegacy>>(hash);
     if (cached) return cached;
 
     const parentHash = await this.#findParentHash(hash);
@@ -295,7 +295,7 @@ export class LegacyClient<ChainApi extends VersionedGenericSubstrateApi = Substr
         registry = cachedMetadata[1];
       } else {
         metadata = await this.fetchMetadata(parentHash, targetVersion);
-        registry = new PortableRegistry<ChainApiAt['types']>(metadata.latest, this.options.hasher);
+        registry = new PortableRegistry<ChainApiAt[RpcLegacy]['types']>(metadata.latest, this.options.hasher);
       }
     }
 
@@ -308,13 +308,13 @@ export class LegacyClient<ChainApi extends VersionedGenericSubstrateApi = Substr
       metadata,
       registry,
       rpc: this.rpc,
-    } as ISubstrateClientAt<ChainApiAt>;
+    } as ISubstrateClientAt<ChainApiAt, RpcLegacy>;
 
-    api.consts = newProxyChain({ executor: new ConstantExecutor(api) }) as ChainApiAt['consts'];
-    api.query = newProxyChain({ executor: new StorageQueryExecutor(api) }) as ChainApiAt['query'];
-    api.call = newProxyChain({ executor: new RuntimeApiExecutor(api) }) as ChainApiAt['call'];
-    api.events = newProxyChain({ executor: new EventExecutor(api) }) as ChainApiAt['events'];
-    api.errors = newProxyChain({ executor: new ErrorExecutor(api) }) as ChainApiAt['errors'];
+    api.consts = newProxyChain({ executor: new ConstantExecutor(api) }) as ChainApiAt[RpcLegacy]['consts'];
+    api.query = newProxyChain({ executor: new StorageQueryExecutor(api) }) as ChainApiAt[RpcLegacy]['query'];
+    api.call = newProxyChain({ executor: new RuntimeApiExecutor(api) }) as ChainApiAt[RpcLegacy]['call'];
+    api.events = newProxyChain({ executor: new EventExecutor(api) }) as ChainApiAt[RpcLegacy]['events'];
+    api.errors = newProxyChain({ executor: new ErrorExecutor(api) }) as ChainApiAt[RpcLegacy]['errors'];
 
     // @ts-ignore Add queryMulti implementation for at-block queries
     api.queryMulti = (queries: { fn: GenericStorageQuery; args?: any[] }[]) => {

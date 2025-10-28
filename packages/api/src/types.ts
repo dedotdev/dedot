@@ -2,10 +2,9 @@ import { BlockHash, Hash, Metadata, PortableRegistry } from '@dedot/codecs';
 import type { ConnectionStatus, JsonRpcProvider, ProviderEvent } from '@dedot/providers';
 import type { AnyShape } from '@dedot/shape';
 import type { IStorage } from '@dedot/storage';
-import type {
+import {
   Callback,
   GenericStorageQuery,
-  GenericSubstrateApi,
   InjectedSigner,
   Query,
   QueryFnResult,
@@ -13,8 +12,10 @@ import type {
   RuntimeApiName,
   RuntimeApiSpec,
   Unsub,
+  VersionedGenericSubstrateApi,
 } from '@dedot/types';
 import type { HashFn, HexString, IEventEmitter } from '@dedot/utils';
+import type { SubstrateApi } from './chaintypes/index.js';
 import type { AnySignedExtension } from './extrinsic/index.js';
 import type { ChainHeadEvent } from './json-rpc/index.js';
 
@@ -93,7 +94,8 @@ export interface SubstrateRuntimeVersion {
  * A generic interface for JSON-RPC clients
  */
 export interface IJsonRpcClient<
-  ChainApi extends GenericSubstrateApi = GenericSubstrateApi,
+  ChainApi extends VersionedGenericSubstrateApi = SubstrateApi,
+  Rv extends RpcVersion = RpcVersion,
   Events extends string = ProviderEvent,
 > extends IEventEmitter<Events> {
   options: JsonRpcClientOptions;
@@ -104,28 +106,31 @@ export interface IJsonRpcClient<
 
   disconnect(): Promise<void>;
 
-  rpc: ChainApi['rpc'];
+  rpc: ChainApi[Rv]['rpc'];
 }
 
 /**
  * @internal
  */
-export interface IGenericSubstrateClient<ChainApi extends GenericSubstrateApi = GenericSubstrateApi> {
+export interface IGenericSubstrateClient<
+  ChainApi extends VersionedGenericSubstrateApi = SubstrateApi,
+  Rv extends RpcVersion = RpcVersion,
+> {
   rpcVersion: RpcVersion;
 
   options: ApiOptions;
   genesisHash: Hash;
   runtimeVersion: SubstrateRuntimeVersion;
   metadata: Metadata;
-  registry: PortableRegistry<ChainApi['types']>;
+  registry: PortableRegistry<ChainApi[Rv]['types']>;
 
-  rpc: ChainApi['rpc'];
-  consts: ChainApi['consts'];
-  query: ChainApi['query'];
-  call: ChainApi['call'];
-  events: ChainApi['events'];
-  errors: ChainApi['errors'];
-  view: ChainApi['view'];
+  rpc: ChainApi[Rv]['rpc'];
+  consts: ChainApi[Rv]['consts'];
+  query: ChainApi[Rv]['query'];
+  call: ChainApi[Rv]['call'];
+  events: ChainApi[Rv]['events'];
+  errors: ChainApi[Rv]['errors'];
+  view: ChainApi[Rv]['view'];
 
   /**
    * Query multiple storage items in a single call
@@ -144,16 +149,18 @@ export interface IGenericSubstrateClient<ChainApi extends GenericSubstrateApi = 
    * @param queries - Array of query specifications, each with a function and optional arguments
    * @returns Array of decoded values with proper types
    */
-  queryMulti<Fns extends GenericStorageQuery[]>(
-    queries: { [K in keyof Fns]: Query<Fns[K]> },
-  ): Promise<{ [K in keyof Fns]: QueryFnResult<Fns[K]> }>;
+  queryMulti<Fns extends GenericStorageQuery[]>(queries: { [K in keyof Fns]: Query<Fns[K]> }): Promise<{
+    [K in keyof Fns]: QueryFnResult<Fns[K]>;
+  }>;
 }
 
 /**
  * A generic interface for Substrate clients at a specific block
  */
-export interface ISubstrateClientAt<ChainApi extends GenericSubstrateApi = GenericSubstrateApi>
-  extends IGenericSubstrateClient<ChainApi> {
+export interface ISubstrateClientAt<
+  ChainApi extends VersionedGenericSubstrateApi = SubstrateApi,
+  Rv extends RpcVersion = RpcVersion,
+> extends IGenericSubstrateClient<ChainApi, Rv> {
   atBlockHash: BlockHash;
 }
 
@@ -161,14 +168,17 @@ export interface ISubstrateClientAt<ChainApi extends GenericSubstrateApi = Gener
  * A generic interface for Substrate clients
  */
 export interface ISubstrateClient<
-  ChainApi extends GenericSubstrateApi = GenericSubstrateApi,
+  ChainApi extends VersionedGenericSubstrateApi = SubstrateApi,
+  Rv extends RpcVersion = RpcVersion,
   Events extends string = ApiEvent,
-> extends IJsonRpcClient<ChainApi, Events>,
-    IGenericSubstrateClient<ChainApi> {
+> extends IJsonRpcClient<ChainApi, Rv, Events>,
+    IGenericSubstrateClient<ChainApi, Rv> {
   options: ApiOptions;
-  tx: ChainApi['tx'];
+  tx: ChainApi[Rv]['tx'];
 
-  at<ChainApiAt extends GenericSubstrateApi = ChainApi>(hash: BlockHash): Promise<ISubstrateClientAt<ChainApiAt>>;
+  at<ChainApiAt extends VersionedGenericSubstrateApi = ChainApi>(
+    hash: BlockHash,
+  ): Promise<ISubstrateClientAt<ChainApiAt, Rv>>;
 
   /**
    * Get current version of the runtime
@@ -212,9 +222,9 @@ export interface ISubstrateClient<
    * @param callback - Optional callback for subscription-based queries
    * @returns For one-time queries: Array of decoded values with proper types; For subscriptions: Unsubscribe function
    */
-  queryMulti<Fns extends GenericStorageQuery[]>(
-    queries: { [K in keyof Fns]: Query<Fns[K]> },
-  ): Promise<{ [K in keyof Fns]: QueryFnResult<Fns[K]> }>;
+  queryMulti<Fns extends GenericStorageQuery[]>(queries: { [K in keyof Fns]: Query<Fns[K]> }): Promise<{
+    [K in keyof Fns]: QueryFnResult<Fns[K]>;
+  }>;
   queryMulti<Fns extends GenericStorageQuery[]>(
     queries: { [K in keyof Fns]: Query<Fns[K]> },
     callback: Callback<{ [K in keyof Fns]: QueryFnResult<Fns[K]> }>,
