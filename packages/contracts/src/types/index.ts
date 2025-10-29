@@ -60,7 +60,7 @@ export type LooseSolAbi = Array<{ type: string; [prop: string]: any }>;
 
 export type GenericContractQueryCall<
   ChainApi extends GenericSubstrateApi,
-  F extends AsyncMethod = (...args: any[]) => Promise<GenericContractCallResult<any, ContractCallResult<ChainApi>>>,
+  F extends AsyncMethod = (...args: any[]) => Promise<GenericContractCallResult<any, ContractCallResult>>,
   Type extends MetadataType = MetadataType,
 > = F & {
   meta: Type extends 'ink' ? ContractCallMessage : SolAbiFunction;
@@ -76,9 +76,7 @@ export type GenericContractTxCall<
 
 export type GenericConstructorQueryCall<
   ChainApi extends GenericSubstrateApi,
-  F extends AsyncMethod = (
-    ...args: any[]
-  ) => Promise<GenericConstructorCallResult<any, ContractInstantiateResult<ChainApi>>>,
+  F extends AsyncMethod = (...args: any[]) => Promise<GenericConstructorCallResult<any, ContractInstantiateResult>>,
   Type extends MetadataType = MetadataType,
 > = F & {
   meta: Type extends 'ink' ? ContractConstructorMessage : SolAbiConstructor;
@@ -95,7 +93,7 @@ export type GenericConstructorTxCall<
 export interface GenericContractQuery<ChainApi extends GenericSubstrateApi, Type extends MetadataType = MetadataType> {
   [method: string]: GenericContractQueryCall<
     ChainApi,
-    (...args: any[]) => Promise<GenericContractCallResult<any, ContractCallResult<ChainApi>>>,
+    (...args: any[]) => Promise<GenericContractCallResult<any, ContractCallResult>>,
     Type
   >;
 }
@@ -110,7 +108,7 @@ export interface GenericConstructorQuery<
 > {
   [method: string]: GenericConstructorQueryCall<
     ChainApi,
-    (...args: any[]) => Promise<GenericConstructorCallResult<any, ContractInstantiateResult<ChainApi>>>,
+    (...args: any[]) => Promise<GenericConstructorCallResult<any, ContractInstantiateResult>>,
     Type
   >;
 }
@@ -176,7 +174,7 @@ export interface GenericContractApi<
   >;
 
   types: {
-    ChainApi: ChainApi[Rv];
+    ChainApi: ChainApi;
 
     [TypeName: string]: any;
   };

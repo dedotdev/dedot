@@ -26,7 +26,7 @@ export const ensureStorageApiSupports = (version: string | number) => {
   );
 };
 
-function ensurePalletRevive(client: ISubstrateClient<SubstrateApi[RpcVersion]>) {
+function ensurePalletRevive(client: ISubstrateClient) {
   try {
     !!client.call.reviveApi.call.meta && !!client.tx.revive.call.meta;
   } catch {
@@ -34,7 +34,7 @@ function ensurePalletRevive(client: ISubstrateClient<SubstrateApi[RpcVersion]>) 
   }
 }
 
-function ensurePalletContracts(client: ISubstrateClient<SubstrateApi[RpcVersion]>) {
+function ensurePalletContracts(client: ISubstrateClient) {
   try {
     !!client.call.contractsApi.call.meta && !!client.tx.contracts.call.meta;
   } catch {
@@ -42,12 +42,12 @@ function ensurePalletContracts(client: ISubstrateClient<SubstrateApi[RpcVersion]
   }
 }
 
-export function ensurePalletPresence(client: ISubstrateClient<SubstrateApi[RpcVersion]>, isRevive: boolean) {
+export function ensurePalletPresence(client: ISubstrateClient, isRevive: boolean) {
   isRevive ? ensurePalletRevive(client) : ensurePalletContracts(client);
 }
 
 export async function ensureContractPresence(
-  client: ISubstrateClient<SubstrateApi[RpcVersion]>,
+  client: ISubstrateClient,
   isRevive: boolean,
   address: ContractAddress,
   cache?: LRUCache,

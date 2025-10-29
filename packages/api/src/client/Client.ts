@@ -24,18 +24,17 @@ import {
 import { DedotClient } from './DedotClient.js';
 import { LegacyClient } from './LegacyClient.js';
 
-export type ClientOptions<Rv extends RpcVersion = RpcV2> = ApiOptions & {
+export type ClientOptions<Rv extends RpcVersion = RpcVersion> = ApiOptions & {
   rpcVersion?: Rv;
 };
 
 export class Client<
   ChainApi extends VersionedGenericSubstrateApi = SubstrateApi, // --
-  Rv extends RpcVersion = RpcV2,
+  Rv extends RpcVersion = RpcVersion,
 > implements ISubstrateClient<ChainApi, Rv, DedotClientEvent>
 {
-  #internalClient: ISubstrateClient<ChainApi, Rv, DedotClientEvent>;
+  #client: ISubstrateClient<ChainApi, Rv, DedotClientEvent>;
   rpcVersion: RpcVersion;
-  options: ApiOptions;
 
   constructor(options: ClientOptions<Rv> | JsonRpcProvider) {
     let rpcVersion: RpcVersion = 'v2';
@@ -48,12 +47,10 @@ export class Client<
     this.rpcVersion = rpcVersion;
 
     if (this.rpcVersion === 'legacy') {
-      this.#internalClient = new LegacyClient(options) as any;
+      this.#client = new LegacyClient(options) as any;
     } else {
-      this.#internalClient = new DedotClient(options) as any;
+      this.#client = new DedotClient(options) as any;
     }
-
-    this.options = this.#internalClient.options;
   }
 
   /**
@@ -63,7 +60,7 @@ export class Client<
    */
   static async create<
     ChainApi extends VersionedGenericSubstrateApi = SubstrateApi, // --
-    Rv extends RpcVersion = RpcV2,
+    Rv extends RpcVersion = RpcVersion,
   >(options: ClientOptions<Rv> | JsonRpcProvider): Promise<ISubstrateClient<ChainApi, Rv, DedotClientEvent>> {
     return new Client<ChainApi, Rv>(options).connect();
   }
@@ -75,95 +72,99 @@ export class Client<
    */
   static async new<
     ChainApi extends VersionedGenericSubstrateApi = SubstrateApi, // --
-    Rv extends RpcVersion = RpcV2,
+    Rv extends RpcVersion = RpcVersion,
   >(options: ClientOptions<Rv> | JsonRpcProvider): Promise<ISubstrateClient<ChainApi, Rv, DedotClientEvent>> {
-    return Client.create(options);
+    return Client.create<ChainApi, Rv>(options);
+  }
+
+  get options(): ApiOptions {
+    return this.#client.options;
   }
 
   get status(): ConnectionStatus {
-    return this.#internalClient.status;
+    return this.#client.status;
   }
 
   get provider(): JsonRpcProvider {
-    return this.#internalClient.provider;
+    return this.#client.provider;
   }
 
   get tx(): ChainApi[Rv]['tx'] {
-    return this.#internalClient.tx;
+    return this.#client.tx;
   }
 
   get rpc(): ChainApi[Rv]['rpc'] {
-    return this.#internalClient.rpc;
+    return this.#client.rpc;
   }
 
   get genesisHash(): HexString {
-    return this.#internalClient.genesisHash;
+    return this.#client.genesisHash;
   }
 
   get runtimeVersion(): SubstrateRuntimeVersion {
-    return this.#internalClient.runtimeVersion;
+    return this.#client.runtimeVersion;
   }
 
   get metadata(): Metadata {
-    return this.#internalClient.metadata;
+    return this.#client.metadata;
   }
 
   get registry(): PortableRegistry<ChainApi[Rv]['types']> {
-    return this.#internalClient.registry;
+    return this.#client.registry;
   }
 
   get consts(): ChainApi[Rv]['consts'] {
-    return this.#internalClient.consts;
+    return this.#client.consts;
   }
   get query(): ChainApi[Rv]['query'] {
-    return this.#internalClient.query;
+    return this.#client.query;
   }
   get call(): ChainApi[Rv]['call'] {
-    return this.#internalClient.call;
+    return this.#client.call;
   }
   get events(): ChainApi[Rv]['events'] {
-    return this.#internalClient.events;
+    return this.#client.events;
   }
   get errors(): ChainApi[Rv]['errors'] {
-    return this.#internalClient.errors;
+    return this.#client.errors;
   }
   get view(): ChainApi[Rv]['view'] {
-    return this.#internalClient.view;
+    return this.#client.view;
   }
 
   async connect(): Promise<this> {
-    await this.#internalClient.connect();
+    await this.#client.connect();
 
     return this;
   }
 
   async disconnect(): Promise<void> {
-    await this.#internalClient.disconnect();
+    await this.#client.disconnect();
   }
 
   on(event: DedotClientEvent, handler: (...args: any[]) => void): () => void {
-    return this.#internalClient.on(event, handler);
+    return this.#client.on(event, handler);
   }
   once(event: DedotClientEvent, handler: (...args: any[]) => void): () => void {
-    return this.#internalClient.once(event, handler);
+    return this.#client.once(event, handler);
   }
   off(event: DedotClientEvent, handler?: ((...args: any[]) => void) | undefined): this {
-    this.#internalClient.off(event, handler);
+    this.#client.off(event, handler);
     return this;
   }
 
   at<ChainApiAt extends VersionedGenericSubstrateApi = ChainApi>(
     hash: `0x${string}`,
   ): Promise<ISubstrateClientAt<ChainApiAt, Rv>> {
-    return this.#internalClient.at(hash);
+    return this.#client.at(hash);
   }
 
   getRuntimeVersion(): Promise<SubstrateRuntimeVersion> {
-    return this.#internalClient.getRuntimeVersion();
+    return this.#client.getRuntimeVersion();
   }
 
   setSigner(signer?: InjectedSigner | undefined): void {
-    this.#internalClient.setSigner(signer);
+    this.#client.setSigner(signer);
   }
 
   queryMulti<Fns extends GenericStorageQuery[]>(queries: { [K in keyof Fns]: Query<Fns[K]> }): Promise<{
@@ -178,6 +179,6 @@ export class Client<
     callback?: Callback<any[]>,
   ): Promise<any[] | Unsub> {
     // @ts-ignore
-    return this.#internalClient.queryMulti(queries, callback);
+    return this.#client.queryMulti(queries, callback);
   }
 }

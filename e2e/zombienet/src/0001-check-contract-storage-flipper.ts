@@ -16,7 +16,7 @@ export const run = async (_nodeName: any, networkInfo: any) => {
 
   const caller = alicePair.address;
 
-  const verifyFlipperStorage = async (api: ISubstrateClient<SubstrateApi[RpcVersion]>) => {
+  const verifyFlipperStorage = async (api: ISubstrateClient) => {
     console.log(`[${api.rpcVersion}] Testing Flipper contract storage API`);
 
     // Deploy the contract

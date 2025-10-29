@@ -68,7 +68,7 @@ export class QueryGen {
     // Unwrap langError result
     const typeOut = typeOutRaw.match(/^(\w+)<(.*), (.*)>$/)!.at(2);
 
-    return `GenericContractQueryCall<ChainApi, (${paramsOut && `${paramsOut},`} ${optionsParamName}?: ContractCallOptions) => Promise<GenericContractCallResult<${typeOut}, ContractCallResult<ChainApi>>>, Type>`;
+    return `GenericContractQueryCall<ChainApi, (${paramsOut && `${paramsOut},`} ${optionsParamName}?: ContractCallOptions) => Promise<GenericContractCallResult<${typeOut}, ContractCallResult>>, Type>`;
   }
 
   generateParamsOut(args: ContractMessageArg[]) {

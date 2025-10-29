@@ -19,7 +19,7 @@ export const run = async (_nodeName: any, networkInfo: any) => {
   const flipperV4 = flipperV4Raw as ContractMetadata;
   const flipperV5 = flipperV5Raw as ContractMetadata;
 
-  const verifyContracts = async (api: ISubstrateClient<SubstrateApi[RpcVersion]>, flipper: ContractMetadata) => {
+  const verifyContracts = async (api: ISubstrateClient, flipper: ContractMetadata) => {
     // @ts-ignore
     const wasm = flipper.source.wasm!;
     const deployer = new ContractDeployer<FlipperContractApi>(api, flipper, wasm, { defaultCaller: caller });

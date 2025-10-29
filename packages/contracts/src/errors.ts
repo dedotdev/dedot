@@ -67,14 +67,14 @@ export class ContractInstantiateError<ContractApi extends GenericContractApi = G
   /**
    * The raw result of the contract instantiation.
    */
-  raw: ContractInstantiateResult<ContractApi['types']['ChainApi']>;
+  raw: ContractInstantiateResult;
 
   /**
    * Constructs a new `ContractInstantiateError` instance.
    *
    * @param raw - The raw result of the contract instantiation.
    */
-  constructor(raw: ContractInstantiateResult<ContractApi['types']['ChainApi']>) {
+  constructor(raw: ContractInstantiateResult) {
     super();
     this.raw = raw;
   }
@@ -108,11 +108,7 @@ export class ContractInstantiateDispatchError<
    * @param raw - The raw result of the contract instantiation.
    * @param moduleError - The decoded module error, if any.
    */
-  constructor(
-    err: DispatchError,
-    raw: ContractInstantiateResult<ContractApi['types']['ChainApi']>,
-    moduleError?: PalletErrorMetadataLatest,
-  ) {
+  constructor(err: DispatchError, raw: ContractInstantiateResult, moduleError?: PalletErrorMetadataLatest) {
     super(raw);
     this.dispatchError = err;
     this.moduleError = moduleError;
@@ -149,10 +145,7 @@ export class ContractInstantiateLangError<
    * @param err - The `LangError` that occurred during the instantiation phase.
    * @param raw - The raw result of the contract instantiation.
    */
-  constructor(
-    err: ContractApi['types']['LangError'],
-    raw: ContractInstantiateResult<ContractApi['types']['ChainApi']>,
-  ) {
+  constructor(err: ContractApi['types']['LangError'], raw: ContractInstantiateResult) {
     assert(raw.result.isOk, 'Should not throw DispatchError!');
 
     super(raw);
@@ -175,14 +168,14 @@ export class ContractExecutionError<ContractApi extends GenericContractApi = Gen
   /**
    * The raw result of the contract call.
    */
-  raw: ContractCallResult<ContractApi['types']['ChainApi']>;
+  raw: ContractCallResult;
 
   /**
    * Constructs a new `ContractExecutionError` instance.
    *
    * @param raw - The raw result of the contract call.
    */
-  constructor(raw: ContractCallResult<ContractApi['types']['ChainApi']>) {
+  constructor(raw: ContractCallResult) {
     super();
     this.raw = raw;
   }
@@ -216,11 +209,7 @@ export class ContractDispatchError<
    * @param raw - The raw result of the contract call.
    * @param moduleError - The decoded module error, if any.
    */
-  constructor(
-    err: DispatchError,
-    raw: ContractCallResult<ContractApi['types']['ChainApi']>,
-    moduleError?: PalletErrorMetadataLatest,
-  ) {
+  constructor(err: DispatchError, raw: ContractCallResult, moduleError?: PalletErrorMetadataLatest) {
     super(raw);
     this.dispatchError = err;
     this.moduleError = moduleError;
@@ -257,7 +246,7 @@ export class ContractLangError<
    * @param err - The `LangError` that occurred during the execution phase.
    * @param raw - The raw result of the contract call.
    */
-  constructor(err: ContractApi['types']['LangError'], raw: ContractCallResult<ContractApi['types']['ChainApi']>) {
+  constructor(err: ContractApi['types']['LangError'], raw: ContractCallResult) {
     assert(raw.result.isOk, 'Should not throw DispatchError!');
 
     super(raw);
@@ -287,10 +276,7 @@ export class SolContractInstantiateError<
   name = 'SolContractInstantiateError';
   details?: SolErrorResult;
 
-  constructor(
-    raw: ContractInstantiateResult<ContractApi['types']['ChainApi']>,
-    { details, message }: { details?: SolErrorResult; message?: string },
-  ) {
+  constructor(raw: ContractInstantiateResult, { details, message }: { details?: SolErrorResult; message?: string }) {
     super(raw);
     this.details = details;
 
@@ -316,10 +302,7 @@ export class SolContractExecutionError<
   name = 'SolContractExecutionError';
   details?: SolErrorResult;
 
-  constructor(
-    raw: ContractCallResult<ContractApi['types']['ChainApi']>,
-    { details, message }: { details?: SolErrorResult; message?: string },
-  ) {
+  constructor(raw: ContractCallResult, { details, message }: { details?: SolErrorResult; message?: string }) {
     super(raw);
     this.details = details;
 

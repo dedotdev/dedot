@@ -14,12 +14,12 @@ import {
 import { ensureParamsLength, ensureValidAccountId32Address, toReturnFlags } from '../../utils/index.js';
 import { DeployerExecutor } from './abstract/index.js';
 
-export class ConstructorQueryExecutor<ChainApi extends GenericSubstrateApi> extends DeployerExecutor<ChainApi> {
+export class ConstructorQueryExecutor extends DeployerExecutor {
   doExecute(constructor: string) {
     const meta = this.findConstructorMeta(constructor);
     assert(meta, `Constructor message not found: ${constructor}`);
 
-    const callFn: GenericConstructorQueryCall<ChainApi, any, 'ink'> = async (...params: any[]) => {
+    const callFn: GenericConstructorQueryCall<any, any, 'ink'> = async (...params: any[]) => {
       const { args } = meta;
 
       ensureParamsLength(args.length, params.length);
@@ -44,9 +44,9 @@ export class ConstructorQueryExecutor<ChainApi extends GenericSubstrateApi> exte
         value: this.code,
       } as ContractCode;
 
-      const client = this.client as unknown as ISubstrateClient<SubstrateApi[RpcVersion]>;
+      const client = this.client as unknown as ISubstrateClient;
 
-      const raw: ContractInstantiateResult<ChainApi> = await (async () => {
+      const raw: ContractInstantiateResult = await (async () => {
         if (this.registry.isRevive()) {
           assert(
             isUndefined(salt) || toU8a(salt).byteLength == 32,
@@ -77,7 +77,7 @@ export class ConstructorQueryExecutor<ChainApi extends GenericSubstrateApi> exte
             gasRequired: raw.gasRequired,
             storageDeposit: raw.storageDeposit,
             result,
-          } as ContractInstantiateResult<ChainApi>;
+          } as ContractInstantiateResult;
         } else {
           const raw = await client.call.contractsApi.instantiate(
             caller, // --
@@ -104,7 +104,7 @@ export class ConstructorQueryExecutor<ChainApi extends GenericSubstrateApi> exte
             storageDeposit: raw.storageDeposit,
             debugMessage: raw.debugMessage,
             result,
-          } as ContractInstantiateResult<ChainApi>;
+          } as ContractInstantiateResult;
         }
       })();
 

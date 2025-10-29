@@ -6,11 +6,11 @@ import { SolRegistry } from '../../../SolRegistry.js';
 import { ExecutionOptions } from '../../../types/index.js';
 import { SolExecutor } from './SolExecutor.js';
 
-export abstract class SolDeployerExecutor<ChainApi extends GenericSubstrateApi> extends SolExecutor<ChainApi> {
+export abstract class SolDeployerExecutor extends SolExecutor {
   readonly code: Hash | Uint8Array | HexString | string;
 
   constructor(
-    client: ISubstrateClient<ChainApi>,
+    client: ISubstrateClient,
     registry: SolRegistry,
     code: Hash | Uint8Array | HexString | string,
     options?: ExecutionOptions,

@@ -1,13 +1,17 @@
-import { Client, WsProvider } from 'dedot';
+import { PolkadotApi } from '@dedot/chaintypes';
+import { Client, ISubstrateClient, WsProvider } from 'dedot';
 
 console.log('Connecting');
 
-const client = await Client.new({
+const client = await Client.new<PolkadotApi>({
   provider: new WsProvider('wss://rpc.polkadot.io'),
   rpcVersion: 'legacy',
 });
 
-// await client.connect();
+// const a: ISubstrateClient = client;
+// a.query.system.number.
+
+// client.query.system.account.pagedEntries(); // await client.connect();
 
 console.log('Connected');
 

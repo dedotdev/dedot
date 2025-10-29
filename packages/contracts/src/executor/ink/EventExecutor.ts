@@ -4,7 +4,7 @@ import { assert, stringPascalCase } from '@dedot/utils';
 import { ContractEvent, ContractEventMeta, GenericContractEvent } from '../../types/index.js';
 import { ContractExecutor } from './abstract/index.js';
 
-export class EventExecutor<ChainApi extends GenericSubstrateApi> extends ContractExecutor<ChainApi> {
+export class EventExecutor extends ContractExecutor {
   doExecute(eventName: string): GenericContractEvent<string, any, 'ink'> {
     const meta = this.#findEventMeta(eventName);
 

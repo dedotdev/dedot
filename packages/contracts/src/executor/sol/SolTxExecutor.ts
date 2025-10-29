@@ -8,12 +8,12 @@ import { ensureParamsLength } from '../../utils/index.js';
 import { SolQueryExecutor } from './SolQueryExecutor.js';
 import { SolContractExecutor } from './abstract/SolContractExecutor.js';
 
-export class SolTxExecutor<ChainApi extends GenericSubstrateApi> extends SolContractExecutor<ChainApi> {
+export class SolTxExecutor extends SolContractExecutor {
   doExecute(name: string) {
     const txAbiFunction = this.registry.findTxAbiFunction(name);
     assert(txAbiFunction, `Abi item not found: ${name}`);
 
-    const callFn: GenericContractTxCall<ChainApi, any, 'sol'> = (...params: any[]) => {
+    const callFn: GenericContractTxCall<any, any, 'sol'> = (...params: any[]) => {
       const { inputs } = txAbiFunction;
 
       ensureParamsLength(inputs.length, params.length);
@@ -26,7 +26,7 @@ export class SolTxExecutor<ChainApi extends GenericSubstrateApi> extends SolCont
         args: params.slice(0, inputs.length),
       });
 
-      const client = this.client as unknown as ISubstrateClient<SubstrateApi[RpcVersion]>;
+      const client = this.client as unknown as ISubstrateClient;
 
       const tx = (() => {
         return client.tx.revive.call(

@@ -34,7 +34,7 @@ export interface FlipperContractApi<
   };
 
   types: {
-    ChainApi: ChainApi[Rv];
+    ChainApi: ChainApi;
     RootStorage: Flipper;
     LazyStorage: WithLazyStorage<Flipper>;
     LangError: InkPrimitivesLangError;
