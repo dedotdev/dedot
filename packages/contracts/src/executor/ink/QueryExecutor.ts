@@ -1,7 +1,5 @@
 import type { ISubstrateClient } from '@dedot/api';
-import type { SubstrateApi } from '@dedot/api/chaintypes';
 import { Result } from '@dedot/codecs';
-import { GenericSubstrateApi, RpcVersion } from '@dedot/types';
 import { assert, concatU8a, HexString, hexToU8a, u8aToHex } from '@dedot/utils';
 import { ContractDispatchError, ContractLangError } from '../../errors.js';
 import {

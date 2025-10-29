@@ -1,6 +1,4 @@
 import { type ISubstrateClient } from '@dedot/api';
-import { type SubstrateApi } from '@dedot/api/chaintypes';
-import { GenericSubstrateApi, RpcVersion } from '@dedot/types';
 import { assert, isPvm, isUndefined, toHex, toU8a } from '@dedot/utils';
 import { decodeErrorResult, encodeDeployData } from 'viem/utils';
 import { ContractInstantiateDispatchError, SolContractInstantiateError } from '../../errors.js';

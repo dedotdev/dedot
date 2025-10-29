@@ -1,6 +1,5 @@
 import { BaseSubmittableExtrinsic, ISubstrateClient } from '@dedot/api';
-import type { SubstrateApi } from '@dedot/api/chaintypes';
-import { GenericSubstrateApi, ISubmittableResult, RpcVersion } from '@dedot/types';
+import { ISubmittableResult } from '@dedot/types';
 import { assert, concatU8a, hexToU8a, isPvm, isUndefined, isWasm, toHex, toU8a, u8aToHex } from '@dedot/utils';
 import { Contract } from '../../Contract.js';
 import {

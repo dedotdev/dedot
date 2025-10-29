@@ -1,7 +1,5 @@
 import { ISubstrateClient } from '@dedot/api';
-import { SubstrateApi } from '@dedot/api/chaintypes';
 import { AccountId32Like, accountId32ToHex, Hash } from '@dedot/codecs';
-import { RpcVersion } from '@dedot/types';
 import {
   assert,
   assertFalse,
@@ -12,8 +10,8 @@ import {
   isEvmAddress,
   isPvm,
   isWasm,
-  toU8a,
   LRUCache,
+  toU8a,
 } from '@dedot/utils';
 import { ContractAddress, LooseContractMetadata } from '../types/index.js';
 

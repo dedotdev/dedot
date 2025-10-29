@@ -1,6 +1,6 @@
 import { BlockHash, Hash, Header, PortableRegistry, RuntimeVersion } from '@dedot/codecs';
 import type { JsonRpcProvider } from '@dedot/providers';
-import { RpcLegacy, Unsub, GenericSubstrateApi } from '@dedot/types';
+import { GenericSubstrateApi, Unsub } from '@dedot/types';
 import { assert } from '@dedot/utils';
 import type { SubstrateApi } from '../chaintypes/index.js';
 import {

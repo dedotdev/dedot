@@ -1,6 +1,5 @@
 import { BaseSubmittableExtrinsic, ISubstrateClient } from '@dedot/api';
-import type { SubstrateApi } from '@dedot/api/chaintypes';
-import { GenericSubstrateApi, ISubmittableResult, RpcVersion } from '@dedot/types';
+import { ISubmittableResult } from '@dedot/types';
 import { assert, isPvm, isUndefined, toHex, toU8a } from '@dedot/utils';
 import { encodeDeployData } from 'viem/utils';
 import { Contract } from '../../Contract.js';

@@ -1,6 +1,4 @@
 import type { BaseSubmittableExtrinsic, ISubstrateClient } from '@dedot/api';
-import type { SubstrateApi } from '@dedot/api/chaintypes';
-import { GenericSubstrateApi, RpcVersion } from '@dedot/types';
 import { assert, HexString } from '@dedot/utils';
 import { encodeFunctionData } from 'viem/utils';
 import { ContractTxOptions, GenericContractTxCall } from '../../types/index.js';
