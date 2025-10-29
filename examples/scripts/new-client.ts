@@ -1,9 +1,8 @@
-import { PolkadotApi } from '@dedot/chaintypes';
-import { Client, ISubstrateClient, WsProvider } from 'dedot';
+import { Client, WsProvider } from 'dedot';
 
 console.log('Connecting');
 
-const client = await Client.new<PolkadotApi>({
+const client = await Client.new({
   provider: new WsProvider('wss://rpc.polkadot.io'),
   rpcVersion: 'legacy',
 });
@@ -16,6 +15,8 @@ const client = await Client.new<PolkadotApi>({
 console.log('Connected');
 
 console.log(await client.query.system.number());
+
+await client.query.nfts.account.entries();
 
 await client.disconnect();
 

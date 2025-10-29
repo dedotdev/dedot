@@ -16,7 +16,7 @@ export abstract class Executor {
   readonly #atBlockHash?: BlockHash;
 
   constructor(
-    readonly client: ISubstrateClientAt<any, any> | ISubstrateClient<any, any, any>,
+    readonly client: ISubstrateClientAt<any> | ISubstrateClient<any, any>,
     atBlockHash?: BlockHash,
   ) {
     this.#atBlockHash = atBlockHash;

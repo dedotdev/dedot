@@ -11,7 +11,7 @@ import { StorageQueryExecutor } from '../StorageQueryExecutor.js';
  */
 export class StorageQueryExecutorV2 extends StorageQueryExecutor {
   constructor(
-    client: ISubstrateClientAt<any, any> | ISubstrateClient<any, any, any>,
+    client: ISubstrateClientAt<any> | ISubstrateClient<any, any>,
     public chainHead: ChainHead,
     atBlockHash?: BlockHash,
   ) {

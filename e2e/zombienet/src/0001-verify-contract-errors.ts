@@ -1,7 +1,6 @@
 import Keyring from '@polkadot/keyring';
 import { cryptoWaitReady } from '@polkadot/util-crypto';
 import { DedotClient, ISubstrateClient, LegacyClient, WsProvider } from 'dedot';
-import { SubstrateApi } from 'dedot/chaintypes';
 import {
   Contract,
   ContractDeployer,
@@ -13,7 +12,6 @@ import {
   isContractInstantiateLangError,
   isContractLangError,
 } from 'dedot/contracts';
-import { RpcVersion } from 'dedot/types';
 import { assert, stringToHex } from 'dedot/utils';
 import * as flipperV4 from '../flipper_v4.json';
 import * as flipperV5 from '../flipper_v5.json';

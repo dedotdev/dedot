@@ -9,7 +9,7 @@ import { ViewFunctionExecutor } from '../ViewFunctionExecutor.js';
  */
 export class ViewFunctionExecutorV2 extends ViewFunctionExecutor {
   constructor(
-    client: ISubstrateClientAt<any, any> | ISubstrateClient<any, any, any>,
+    client: ISubstrateClientAt<any> | ISubstrateClient<any, any>,
     public chainHead: ChainHead,
   ) {
     assert(client.rpcVersion === 'v2', 'Only supports JSON-RPC v2');

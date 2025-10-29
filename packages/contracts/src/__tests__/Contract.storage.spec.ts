@@ -14,7 +14,7 @@ import {
   RANDOM_CONTRACT_ADDRESS,
 } from './contracts-metadata.js';
 
-type ContractApi = GenericContractApi<RpcVersion, SubstrateApi, 'ink'>;
+type ContractApi = GenericContractApi<SubstrateApi, 'ink'>;
 
 describe('Contract Storage API', () => {
   let api: LegacyClient, provider: MockProvider, contract: Contract<ContractApi>;

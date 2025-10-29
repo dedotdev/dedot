@@ -9,7 +9,7 @@ export class EventsGen extends ApiGen {
     const { pallets } = this.metadata;
 
     this.typesGen.clearCache();
-    this.typesGen.typeImports.addKnownType('GenericChainEvents', 'GenericPalletEvent', 'RpcVersion');
+    this.typesGen.typeImports.addKnownType('GenericChainEvents', 'GenericPalletEvent');
 
     let defTypeOut = '';
 
@@ -44,11 +44,11 @@ export class EventsGen extends ApiGen {
           })
           .map(
             ({ name, docs, genericParts }) =>
-              `${commentBlock(docs)}${stringPascalCase(name)}: GenericPalletEvent<Rv, ${genericParts.join(', ')}>`,
+              `${commentBlock(docs)}${stringPascalCase(name)}: GenericPalletEvent<${genericParts.join(', ')}>`,
           )
           .join(',\n')}
           
-        ${commentBlock('Generic pallet event')}[prop: string]: GenericPalletEvent<Rv>,
+        ${commentBlock('Generic pallet event')}[prop: string]: GenericPalletEvent,
       },`;
     }
 

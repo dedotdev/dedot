@@ -12,7 +12,7 @@ import {
   RuntimeApiName,
   RuntimeApiSpec,
   Unsub,
-  VersionedGenericSubstrateApi,
+  GenericSubstrateApi,
 } from '@dedot/types';
 import type { HashFn, HexString, IEventEmitter } from '@dedot/utils';
 import type { SubstrateApi } from './chaintypes/index.js';
@@ -94,8 +94,7 @@ export interface SubstrateRuntimeVersion {
  * A generic interface for JSON-RPC clients
  */
 export interface IJsonRpcClient<
-  ChainApi extends VersionedGenericSubstrateApi = SubstrateApi,
-  Rv extends RpcVersion = RpcVersion,
+  ChainApi extends GenericSubstrateApi = SubstrateApi,
   Events extends string = ProviderEvent,
 > extends IEventEmitter<Events> {
   options: JsonRpcClientOptions;
@@ -106,15 +105,14 @@ export interface IJsonRpcClient<
 
   disconnect(): Promise<void>;
 
-  rpc: ChainApi[Rv]['rpc'];
+  rpc: ChainApi['rpc'];
 }
 
 /**
  * @internal
  */
 export interface IGenericSubstrateClient<
-  ChainApi extends VersionedGenericSubstrateApi = SubstrateApi,
-  Rv extends RpcVersion = RpcVersion,
+  ChainApi extends GenericSubstrateApi = SubstrateApi, // --
 > {
   rpcVersion: RpcVersion;
 
@@ -122,15 +120,15 @@ export interface IGenericSubstrateClient<
   genesisHash: Hash;
   runtimeVersion: SubstrateRuntimeVersion;
   metadata: Metadata;
-  registry: PortableRegistry<ChainApi[Rv]['types']>;
+  registry: PortableRegistry<ChainApi['types']>;
 
-  rpc: ChainApi[Rv]['rpc'];
-  consts: ChainApi[Rv]['consts'];
-  query: ChainApi[Rv]['query'];
-  call: ChainApi[Rv]['call'];
-  events: ChainApi[Rv]['events'];
-  errors: ChainApi[Rv]['errors'];
-  view: ChainApi[Rv]['view'];
+  rpc: ChainApi['rpc'];
+  consts: ChainApi['consts'];
+  query: ChainApi['query'];
+  call: ChainApi['call'];
+  events: ChainApi['events'];
+  errors: ChainApi['errors'];
+  view: ChainApi['view'];
 
   /**
    * Query multiple storage items in a single call
@@ -158,9 +156,8 @@ export interface IGenericSubstrateClient<
  * A generic interface for Substrate clients at a specific block
  */
 export interface ISubstrateClientAt<
-  ChainApi extends VersionedGenericSubstrateApi = SubstrateApi,
-  Rv extends RpcVersion = RpcVersion,
-> extends IGenericSubstrateClient<ChainApi, Rv> {
+  ChainApi extends GenericSubstrateApi = SubstrateApi, // --
+> extends IGenericSubstrateClient<ChainApi> {
   atBlockHash: BlockHash;
 }
 
@@ -168,17 +165,14 @@ export interface ISubstrateClientAt<
  * A generic interface for Substrate clients
  */
 export interface ISubstrateClient<
-  ChainApi extends VersionedGenericSubstrateApi = SubstrateApi,
-  Rv extends RpcVersion = RpcVersion,
+  ChainApi extends GenericSubstrateApi = SubstrateApi, // --
   Events extends string = ApiEvent,
-> extends IJsonRpcClient<ChainApi, Rv, Events>,
-    IGenericSubstrateClient<ChainApi, Rv> {
+> extends IJsonRpcClient<ChainApi, Events>,
+    IGenericSubstrateClient<ChainApi> {
   options: ApiOptions;
-  tx: ChainApi[Rv]['tx'];
+  tx: ChainApi['tx'];
 
-  at<ChainApiAt extends VersionedGenericSubstrateApi = ChainApi>(
-    hash: BlockHash,
-  ): Promise<ISubstrateClientAt<ChainApiAt, Rv>>;
+  at<ChainApiAt extends GenericSubstrateApi = ChainApi>(hash: BlockHash): Promise<ISubstrateClientAt<ChainApiAt>>;
 
   /**
    * Get current version of the runtime

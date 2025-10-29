@@ -1,5 +1,5 @@
 import type { ConnectionStatus, JsonRpcProvider, JsonRpcSubscription, ProviderEvent } from '@dedot/providers';
-import type { AsyncMethod, RpcVersion, Unsub, VersionedGenericSubstrateApi } from '@dedot/types';
+import type { AsyncMethod, GenericSubstrateApi, Unsub } from '@dedot/types';
 import { assert, EventEmitter, isFunction, isString } from '@dedot/utils';
 import type { SubstrateApi } from '../chaintypes/index.js';
 import type { IJsonRpcClient, JsonRpcClientOptions } from '../types.js';
@@ -18,12 +18,11 @@ export const isJsonRpcProvider = (provider: any): provider is JsonRpcProvider =>
 };
 
 export class JsonRpcClient<
-    ChainApi extends VersionedGenericSubstrateApi = SubstrateApi, // prettier-end-here
-    Rv extends RpcVersion = RpcVersion,
+    ChainApi extends GenericSubstrateApi = SubstrateApi, // prettier-end-here
     Events extends string = ProviderEvent,
   >
   extends EventEmitter<Events>
-  implements IJsonRpcClient<ChainApi, Rv, Events>
+  implements IJsonRpcClient<ChainApi, Events>
 {
   readonly #options: JsonRpcClientOptions;
   readonly #provider: JsonRpcProvider;
@@ -47,7 +46,7 @@ export class JsonRpcClient<
    *
    * @param options
    */
-  static async create<ChainApi extends VersionedGenericSubstrateApi = SubstrateApi>(
+  static async create<ChainApi extends GenericSubstrateApi = SubstrateApi>(
     options: JsonRpcClientOptions | JsonRpcProvider,
   ): Promise<JsonRpcClient<ChainApi>> {
     return new JsonRpcClient<ChainApi>(options).connect();
@@ -58,7 +57,7 @@ export class JsonRpcClient<
    *
    * @param options
    */
-  static async new<ChainApi extends VersionedGenericSubstrateApi = SubstrateApi>(
+  static async new<ChainApi extends GenericSubstrateApi = SubstrateApi>(
     options: JsonRpcClientOptions | JsonRpcProvider,
   ): Promise<JsonRpcClient<ChainApi>> {
     return JsonRpcClient.create(options);
@@ -147,14 +146,14 @@ export class JsonRpcClient<
    * const result = await client.rpc.module_rpc_name();
    * ```
    */
-  get rpc(): ChainApi[Rv]['rpc'] {
-    return new Proxy<JsonRpcClient<ChainApi, Rv, Events>>(this, {
+  get rpc(): ChainApi['rpc'] {
+    return new Proxy<JsonRpcClient<ChainApi, Events>>(this, {
       get(target, property: string | symbol, receiver: any): any {
         const rpcMethod = property.toString();
 
         return target.#doExecute(rpcMethod);
       },
-    }) as unknown as ChainApi[Rv]['rpc'];
+    }) as unknown as ChainApi['rpc'];
   }
 
   #doExecute(rpcName: string): AsyncMethod {

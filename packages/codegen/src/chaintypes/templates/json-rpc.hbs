@@ -2,9 +2,9 @@
 
 {{{ importTypes }}}
 
-export type ChainJsonRpcApis<Rv extends RpcVersion> =
+export type ChainJsonRpcApis =
   {{#if jsonRpcMethods.length}}
-    Pick<JsonRpcApis, {{{jsonRpcMethods}}}> & GenericJsonRpcApis<Rv>;
+    Pick<JsonRpcApis, {{{jsonRpcMethods}}}> & GenericJsonRpcApis;
   {{else}}
-    JsonRpcApis & GenericJsonRpcApis<Rv>;
+    JsonRpcApis & GenericJsonRpcApis;
   {{/if}}

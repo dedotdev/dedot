@@ -11,7 +11,6 @@ export class ViewFunctionsGen extends ApiGen {
     this.typesGen.typeImports.addKnownType(
       'GenericChainViewFunctions', // --
       'GenericViewFunction',
-      'RpcVersion',
     );
 
     let defTypeOut = '';
@@ -38,14 +37,14 @@ export class ViewFunctionsGen extends ApiGen {
         );
 
         const outputType = this.typesGen.generateType(vf.output, 1, true);
-        return `${commentBlock(docs)}${stringCamelCase(vf.name)}: GenericViewFunction<Rv, (${params.join(', ')}) => Promise<${outputType}>>`;
+        return `${commentBlock(docs)}${stringCamelCase(vf.name)}: GenericViewFunction<(${params.join(', ')}) => Promise<${outputType}>>`;
       });
 
       defTypeOut += commentBlock(`Pallet \`${pallet.name}\`'s view functions`);
       defTypeOut += `${stringCamelCase(pallet.name)}: {
         ${viewFns.join(',\n')}
         
-        ${commentBlock('Generic pallet view function')}[name: string]: GenericViewFunction<Rv>;
+        ${commentBlock('Generic pallet view function')}[name: string]: GenericViewFunction;
       },`;
     }
 

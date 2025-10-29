@@ -1,9 +1,7 @@
 import Keyring from '@polkadot/keyring';
 import { cryptoWaitReady } from '@polkadot/util-crypto';
 import { DedotClient, ISubstrateClient, LegacyClient, WsProvider } from 'dedot';
-import { SubstrateApi } from 'dedot/chaintypes';
 import { Contract, ContractDeployer } from 'dedot/contracts';
-import { RpcVersion } from 'dedot/types';
 import { assert, stringToHex } from 'dedot/utils';
 import { Psp22ContractApi } from '../../../examples/scripts/inkv5/psp22';
 import * as psp22Raw from '../../../examples/scripts/inkv5/psp22.json';

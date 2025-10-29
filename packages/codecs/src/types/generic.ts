@@ -19,38 +19,38 @@ export type RpcLegacy = 'legacy';
 export type RpcV2 = 'v2';
 export type RpcVersion = RpcLegacy | RpcV2;
 
-export interface GenericPalletError<_ extends RpcVersion = RpcVersion> {
+export interface GenericPalletError {
   is: (moduleError: ModuleError | DispatchError) => boolean;
   meta: PalletErrorMetadataLatest;
 }
 
-export interface GenericJsonRpcApis<_ extends RpcVersion = RpcVersion> {
+export interface GenericJsonRpcApis {
   [rpcName: string]: AsyncMethod;
 }
 
-export interface GenericChainConsts<_ extends RpcVersion = RpcVersion> {
+export interface GenericChainConsts {
   [pallet: string]: {
     [constantName: string]: any;
   };
 }
 
-export interface GenericChainViewFunctions<_ extends RpcVersion = RpcVersion> {
+export interface GenericChainViewFunctions {
   [pallet: string]: {
     [viewFunction: string]: any;
   };
 }
 
-export type GenericViewFunction<_ extends RpcVersion = RpcVersion, F extends AnyFunc = AnyFunc> = F & {
+export type GenericViewFunction<F extends AnyFunc = AnyFunc> = F & {
   meta?: PalletViewFunctionMetadataLatest;
 };
 
-export type GenericTxCall<_ extends RpcVersion = RpcVersion, F extends AnyFunc = AnyFunc> = F & {
+export type GenericTxCall<F extends AnyFunc = AnyFunc> = F & {
   meta?: PalletTxMetadataLatest;
 };
 
-export interface GenericChainTx<Rv extends RpcVersion = RpcVersion, TxCall extends AnyFunc = AnyFunc> {
+export interface GenericChainTx<TxCall extends AnyFunc = AnyFunc> {
   [pallet: string]: {
-    [callName: string]: GenericTxCall<Rv, TxCall>;
+    [callName: string]: GenericTxCall<TxCall>;
   };
 }
 
@@ -113,7 +113,6 @@ export type PartialParams<T> = T extends readonly [...infer Params]
  * @description A generic type for storage query methods that handles both single and map (double & n-th map) storage entries
  */
 export type GenericStorageQuery<
-  Rv extends RpcVersion = RpcVersion,
   T extends AnyFunc = AnyFunc,
   KeyTypeOut extends any = undefined,
 > = StorageQueryMethod<T> & {
@@ -124,54 +123,49 @@ export type GenericStorageQuery<
   rawKey: (...args: Parameters<T>) => StorageKey;
 } & (KeyTypeOut extends undefined
     ? {}
-    : Rv extends RpcLegacy
-      ? {
-          /** Query multiple storage entries in a single call */
-          multi: StorageMultiQueryMethod<T>;
+    : {
+        /** Query multiple storage entries in a single call */
+        multi: StorageMultiQueryMethod<T>;
 
-          /** Get storage keys in paginated form */
-          pagedKeys: PagedKeysMethod<T, KeyTypeOut>;
+        /** Get storage keys in paginated form */
+        pagedKeys: PagedKeysMethod<T, KeyTypeOut>;
 
-          /** Get storage entries (key-value pairs) in paginated form */
-          pagedEntries: PagedEntriesMethod<T, KeyTypeOut>;
-        }
-      : {
-          /** Query multiple storage entries in a single call */
-          multi: StorageMultiQueryMethod<T>;
-        } & (KeyTypeOut extends any[]
-          ? {
-              /** Get all storage entries, allowing partial keys input */
-              entries: (
-                ...args: PartialParams<WithoutLast<Parameters<T>[0]>>
-              ) => Promise<Array<[KeyTypeOut, NonNullable<ReturnType<T>>]>>;
-            }
-          : {
-              /** Get all storage entries */
-              entries: () => Promise<Array<[KeyTypeOut, NonNullable<ReturnType<T>>]>>;
-            }));
+        /** Get storage entries (key-value pairs) in paginated form */
+        pagedEntries: PagedEntriesMethod<T, KeyTypeOut>;
+      } & (KeyTypeOut extends any[]
+        ? {
+            /** Get all storage entries, allowing partial keys input */
+            entries: (
+              ...args: PartialParams<WithoutLast<Parameters<T>[0]>>
+            ) => Promise<Array<[KeyTypeOut, NonNullable<ReturnType<T>>]>>;
+          }
+        : {
+            /** Get all storage entries */
+            entries: () => Promise<Array<[KeyTypeOut, NonNullable<ReturnType<T>>]>>;
+          }));
 // TODO support pagedKeys, pagedEntries via archive-prefix apis
 
-export type GenericRuntimeApiMethod<_ extends RpcVersion = RpcVersion, F extends AsyncMethod = AsyncMethod> = F & {
+export type GenericRuntimeApiMethod<F extends AsyncMethod = AsyncMethod> = F & {
   meta: RuntimeApiMethodSpec;
 };
 
-export interface GenericRuntimeApi<Rv extends RpcVersion = RpcVersion> {
-  [method: string]: GenericRuntimeApiMethod<Rv>;
+export interface GenericRuntimeApi {
+  [method: string]: GenericRuntimeApiMethod;
 }
 
-export interface GenericRuntimeApis<Rv extends RpcVersion = RpcVersion> {
-  [runtime: string]: GenericRuntimeApi<Rv>;
+export interface GenericRuntimeApis {
+  [runtime: string]: GenericRuntimeApi;
 }
 
-export interface GenericChainStorage<Rv extends RpcVersion = RpcVersion> {
+export interface GenericChainStorage {
   [pallet: string]: {
-    [storageName: string]: GenericStorageQuery<Rv>;
+    [storageName: string]: GenericStorageQuery;
   };
 }
 
-export interface GenericChainErrors<Rv extends RpcVersion = RpcVersion> {
+export interface GenericChainErrors {
   [pallet: string]: {
-    [errorName: string]: GenericPalletError<Rv>;
+    [errorName: string]: GenericPalletError;
   };
 }
 
@@ -192,7 +186,6 @@ export interface PalletEvent<
 }
 
 export interface GenericPalletEvent<
-  _ extends RpcVersion = RpcVersion,
   Pallet extends string = string,
   EventName extends string = string,
   Data extends any = any,
@@ -205,11 +198,10 @@ export interface GenericPalletEvent<
 }
 
 export type GenericChainEvents<
-  Rv extends RpcVersion = RpcVersion,
   Pallet extends string = string,
   EventName extends string = string,
   Data extends any = any,
-> = Record<Pallet, Record<EventName, GenericPalletEvent<Rv, Pallet, EventName, Data>>>;
+> = Record<Pallet, Record<EventName, GenericPalletEvent<Pallet, EventName, Data>>>;
 
 export interface GenericChainKnownTypes {
   Address: any;
@@ -219,31 +211,26 @@ export interface GenericChainKnownTypes {
   [TypeName: string]: any;
 }
 
-export interface GenericSubstrateApi<Rv extends RpcVersion = RpcVersion> {
-  rpc: GenericJsonRpcApis<Rv>;
-  consts: GenericChainConsts<Rv>;
-  query: GenericChainStorage<Rv>;
-  errors: GenericChainErrors<Rv>;
-  events: GenericChainEvents<Rv>;
-  call: GenericRuntimeApis<Rv>;
-  view: GenericChainViewFunctions<Rv>;
-  tx: GenericChainTx<Rv>;
+export interface GenericSubstrateApi {
+  rpc: GenericJsonRpcApis;
+  consts: GenericChainConsts;
+  query: GenericChainStorage;
+  errors: GenericChainErrors;
+  events: GenericChainEvents;
+  call: GenericRuntimeApis;
+  view: GenericChainViewFunctions;
+  tx: GenericChainTx;
 
   types: GenericChainKnownTypes;
 }
 
-export interface VersionedGenericSubstrateApi {
-  legacy: GenericSubstrateApi<RpcLegacy>;
-  v2: GenericSubstrateApi<RpcV2>;
-}
-
 export type QueryFnParams<F> =
-  F extends GenericStorageQuery<any, infer T, any> // prettier-end-here
+  F extends GenericStorageQuery<infer T, any> // prettier-end-here
     ? Parameters<T>
     : never;
 
 export type QueryFnResult<F> =
-  F extends GenericStorageQuery<any, infer T, any> // prettier-end-here
+  F extends GenericStorageQuery<infer T, any> // prettier-end-here
     ? ReturnType<T>
     : never;
 

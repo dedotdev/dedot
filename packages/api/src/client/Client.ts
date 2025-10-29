@@ -6,10 +6,9 @@ import {
   InjectedSigner,
   Query,
   QueryFnResult,
-  RpcV2,
-  RpcVersion,
   Unsub,
-  VersionedGenericSubstrateApi,
+  GenericSubstrateApi,
+  RpcVersion,
 } from '@dedot/types';
 import { HexString } from '@dedot/utils';
 import { SubstrateApi } from '../chaintypes/index.js';
@@ -24,19 +23,18 @@ import {
 import { DedotClient } from './DedotClient.js';
 import { LegacyClient } from './LegacyClient.js';
 
-export type ClientOptions<Rv extends RpcVersion = RpcVersion> = ApiOptions & {
-  rpcVersion?: Rv;
+export type ClientOptions = ApiOptions & {
+  rpcVersion?: RpcVersion;
 };
 
 export class Client<
-  ChainApi extends VersionedGenericSubstrateApi = SubstrateApi, // --
-  Rv extends RpcVersion = RpcVersion,
-> implements ISubstrateClient<ChainApi, Rv, DedotClientEvent>
+  ChainApi extends GenericSubstrateApi = SubstrateApi, // --
+> implements ISubstrateClient<ChainApi, DedotClientEvent>
 {
-  #client: ISubstrateClient<ChainApi, Rv, DedotClientEvent>;
+  #client: ISubstrateClient<ChainApi, DedotClientEvent>;
   rpcVersion: RpcVersion;
 
-  constructor(options: ClientOptions<Rv> | JsonRpcProvider) {
+  constructor(options: ClientOptions | JsonRpcProvider) {
     let rpcVersion: RpcVersion = 'v2';
     if (!isJsonRpcProvider(options)) {
       if (options['rpcVersion'] === 'legacy') {
@@ -59,10 +57,9 @@ export class Client<
    * @param options
    */
   static async create<
-    ChainApi extends VersionedGenericSubstrateApi = SubstrateApi, // --
-    Rv extends RpcVersion = RpcVersion,
-  >(options: ClientOptions<Rv> | JsonRpcProvider): Promise<ISubstrateClient<ChainApi, Rv, DedotClientEvent>> {
-    return new Client<ChainApi, Rv>(options).connect();
+    ChainApi extends GenericSubstrateApi = SubstrateApi, // --
+  >(options: ClientOptions | JsonRpcProvider): Promise<ISubstrateClient<ChainApi, DedotClientEvent>> {
+    return new Client<ChainApi>(options).connect();
   }
 
   /**
@@ -71,10 +68,9 @@ export class Client<
    * @param options
    */
   static async new<
-    ChainApi extends VersionedGenericSubstrateApi = SubstrateApi, // --
-    Rv extends RpcVersion = RpcVersion,
-  >(options: ClientOptions<Rv> | JsonRpcProvider): Promise<ISubstrateClient<ChainApi, Rv, DedotClientEvent>> {
-    return Client.create<ChainApi, Rv>(options);
+    ChainApi extends GenericSubstrateApi = SubstrateApi, // --
+  >(options: ClientOptions | JsonRpcProvider): Promise<ISubstrateClient<ChainApi, DedotClientEvent>> {
+    return Client.create<ChainApi>(options);
   }
 
   get options(): ApiOptions {
@@ -89,11 +85,11 @@ export class Client<
     return this.#client.provider;
   }
 
-  get tx(): ChainApi[Rv]['tx'] {
+  get tx(): ChainApi['tx'] {
     return this.#client.tx;
   }
 
-  get rpc(): ChainApi[Rv]['rpc'] {
+  get rpc(): ChainApi['rpc'] {
     return this.#client.rpc;
   }
 
@@ -109,26 +105,26 @@ export class Client<
     return this.#client.metadata;
   }
 
-  get registry(): PortableRegistry<ChainApi[Rv]['types']> {
+  get registry(): PortableRegistry<ChainApi['types']> {
     return this.#client.registry;
   }
 
-  get consts(): ChainApi[Rv]['consts'] {
+  get consts(): ChainApi['consts'] {
     return this.#client.consts;
   }
-  get query(): ChainApi[Rv]['query'] {
+  get query(): ChainApi['query'] {
     return this.#client.query;
   }
-  get call(): ChainApi[Rv]['call'] {
+  get call(): ChainApi['call'] {
     return this.#client.call;
   }
-  get events(): ChainApi[Rv]['events'] {
+  get events(): ChainApi['events'] {
     return this.#client.events;
   }
-  get errors(): ChainApi[Rv]['errors'] {
+  get errors(): ChainApi['errors'] {
     return this.#client.errors;
   }
-  get view(): ChainApi[Rv]['view'] {
+  get view(): ChainApi['view'] {
     return this.#client.view;
   }
 
@@ -153,9 +149,7 @@ export class Client<
     return this;
   }
 
-  at<ChainApiAt extends VersionedGenericSubstrateApi = ChainApi>(
-    hash: `0x${string}`,
-  ): Promise<ISubstrateClientAt<ChainApiAt, Rv>> {
+  at<ChainApiAt extends GenericSubstrateApi = ChainApi>(hash: `0x${string}`): Promise<ISubstrateClientAt<ChainApiAt>> {
     return this.#client.at(hash);
   }
 

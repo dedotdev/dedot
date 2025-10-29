@@ -9,13 +9,13 @@ import { ContractEvents } from './events.js';
 
 export * from './types.js';
 
-{{{interfaceDocs}}}export interface {{{interfaceName}}}<Rv extends RpcVersion = RpcVersion, ChainApi extends VersionedGenericSubstrateApi = SubstrateApi> extends SolGenericContractApi<Rv, ChainApi> {
+{{{interfaceDocs}}}export interface {{{interfaceName}}}< ChainApi extends GenericSubstrateApi = SubstrateApi> extends SolGenericContractApi<ChainApi> {
     metadataType: 'sol';
-    query: ContractQuery<ChainApi[Rv], 'sol'>;
-    tx: ContractTx<ChainApi[Rv], 'sol'>;
-    constructorQuery: ConstructorQuery<ChainApi[Rv], 'sol'>;
-    events: ContractEvents<ChainApi[Rv], 'sol'>;
-    constructorTx: ConstructorTx<ChainApi[Rv], {{{interfaceName}}}, 'sol'>;
+    query: ContractQuery<ChainApi, 'sol'>;
+    tx: ContractTx<ChainApi, 'sol'>;
+    constructorQuery: ConstructorQuery<ChainApi, 'sol'>;
+    events: ContractEvents<ChainApi, 'sol'>;
+    constructorTx: ConstructorTx<ChainApi, {{{interfaceName}}}, 'sol'>;
 
     types: {
       ChainApi: ChainApi;

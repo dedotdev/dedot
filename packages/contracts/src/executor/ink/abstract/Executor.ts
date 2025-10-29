@@ -1,8 +1,6 @@
 import { ISubstrateClient } from '@dedot/api';
-import { SubstrateApi } from '@dedot/api/chaintypes';
-import { GenericSubstrateApi, RpcVersion, VersionedGenericSubstrateApi } from '@dedot/types';
 import { TypinkRegistry } from '../../../TypinkRegistry.js';
-import { ContractMessageArg, ContractMessage, ExecutionOptions, ContractMetadata } from '../../../types/index.js';
+import { ContractMessage, ContractMessageArg, ContractMetadata, ExecutionOptions } from '../../../types/index.js';
 
 export abstract class Executor {
   constructor(
