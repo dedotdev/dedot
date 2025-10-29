@@ -54,7 +54,7 @@ export abstract class BaseSubstrateClient<
     Rv extends RpcVersion = RpcVersion,
     Events extends string = ApiEvent,
   >
-  extends JsonRpcClient<ChainApi, Events>
+  extends JsonRpcClient<ChainApi, Rv, Events>
   implements ISubstrateClient<ChainApi, Rv, Events>
 {
   protected _options: ApiOptions;
