@@ -1,6 +1,6 @@
 import { BlockHash } from '@dedot/codecs';
 import type { AsyncMethod } from '@dedot/types';
-import { assert, HexString } from '@dedot/utils';
+import { assert, DedotError, HexString } from '@dedot/utils';
 import { ChainHead } from '../../json-rpc/index.js';
 import { type BaseStorageQuery, NewStorageQuery, QueryableStorage } from '../../storage/index.js';
 import { ISubstrateClient, ISubstrateClientAt } from '../../types.js';
@@ -35,7 +35,19 @@ export class StorageQueryExecutorV2 extends StorageQueryExecutor {
       ]);
     };
 
-    return { entries };
+    const pagedKeys = () => {
+      throw new DedotError(
+        'The pagedKeys method is not yet available via the new JSON-RPC specification. Please use the LegacyClient instead.',
+      );
+    };
+
+    const pagedEntries = () => {
+      throw new DedotError(
+        'The pagedEntries method is not yet available via the new JSON-RPC specification. Please use the LegacyClient instead.',
+      );
+    };
+
+    return { entries, pagedKeys, pagedEntries };
   }
 
   protected override getStorageQuery(): BaseStorageQuery {

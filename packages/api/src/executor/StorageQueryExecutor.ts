@@ -128,6 +128,11 @@ export class StorageQueryExecutor extends Executor {
       return storageKeys.map((key) => [entry.decodeKey(key), entry.decodeValue(storageMap[key])]);
     };
 
+    const entries = async (...args: any[]): Promise<Array<[any, any]>> => {
+      // TODO implement this
+      return [];
+    };
+
     return { pagedKeys, pagedEntries };
   }
 
