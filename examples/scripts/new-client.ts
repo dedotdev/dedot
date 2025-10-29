@@ -1,11 +1,10 @@
-import { createClient, WsProvider } from 'dedot';
+import { Client, WsProvider } from 'dedot';
 
 console.log('Connecting');
 
-const client = await createClient({
+const client = await Client.new({
   provider: new WsProvider('wss://rpc.polkadot.io'),
   rpcVersion: 'legacy',
-  // autoConnect: false,
 });
 
 // await client.connect();
