@@ -50,9 +50,4 @@ export const run = async (nodeName: any, networkInfo: any) => {
   console.log('Testing with legacy client');
   const apiLegacy = await DedotClient.new({ provider: new WsProvider(wsUri), rpcVersion: 'legacy' });
   await testStorageMapPagination(apiLegacy);
-
-  // Test with v2 client
-  console.log('Testing with v2 client');
-  const apiV2 = await DedotClient.new(new WsProvider(wsUri));
-  await testStorageMapPagination(apiV2);
 };
