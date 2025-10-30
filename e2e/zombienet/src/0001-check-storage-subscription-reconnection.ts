@@ -1,5 +1,5 @@
+import { RpcVersion } from '@dedot/types';
 import { DedotClient, WsProvider } from 'dedot';
-import { assert, waitFor } from 'dedot/utils';
 
 const ALICE = '5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY';
 const BOB = '5FHneW46xGXgs5mUiveU4sbTyGBzmstUspZC92UhjJM694ty';
@@ -20,7 +20,7 @@ export const run = async (nodeName: any, networkInfo: any) => {
 
   try {
     console.log('\n--- Testing V2Client with regular subscription ---');
-    await testStorageSubscription(wsUri, 'dedot');
+    await testStorageSubscription(wsUri, 'v2');
     console.log('✅ V2Client regular subscription test PASSED');
   } catch (error: any) {
     console.error(`❌ V2Client regular subscription test FAILED: ${error.message}`);
@@ -40,7 +40,7 @@ export const run = async (nodeName: any, networkInfo: any) => {
 
   try {
     console.log('\n--- Testing V2Client with queryMulti subscription ---');
-    await testQueryMultiSubscription(wsUri, 'dedot');
+    await testQueryMultiSubscription(wsUri, 'v2');
     console.log('✅ V2Client queryMulti subscription test PASSED');
   } catch (error: any) {
     console.error(`❌ V2Client queryMulti subscription test FAILED: ${error.message}`);
@@ -48,14 +48,12 @@ export const run = async (nodeName: any, networkInfo: any) => {
   }
 };
 
-async function testStorageSubscription(wsUri: string, clientType: 'legacy' | 'dedot') {
+async function testStorageSubscription(wsUri: string, rpcVersion: RpcVersion) {
   // Create standard provider
   const provider = new WsProvider(wsUri);
 
   // Create appropriate client
-  const client = clientType === 'legacy'
-    ? await DedotClient.new({ provider, rpcVersion: 'legacy' })
-    : await DedotClient.new(provider);
+  const client = await DedotClient.new({ provider, rpcVersion });
 
   // Track subscription updates
   const updates: number[] = [];
@@ -66,7 +64,7 @@ async function testStorageSubscription(wsUri: string, clientType: 'legacy' | 'de
   await new Promise<void>(async (resolve, reject) => {
     // Create the subscription
     unsubFn = await client.query.system.number((blockNumber: number) => {
-      console.log(`${clientType} received block #${blockNumber}`);
+      console.log(`${client.rpcVersion} received block #${blockNumber}`);
 
       updates.push(blockNumber);
 
@@ -74,7 +72,7 @@ async function testStorageSubscription(wsUri: string, clientType: 'legacy' | 'de
       if (updates.length === 3 && !reconnectionTriggered) {
         reconnectionTriggered = true;
 
-        console.log(`\n${clientType}: Received 3 updates, forcing reconnection...`);
+        console.log(`\n${client.rpcVersion}: Received 3 updates, forcing reconnection...`);
 
         // Force reconnection
         (async () => {
@@ -86,7 +84,7 @@ async function testStorageSubscription(wsUri: string, clientType: 'legacy' | 'de
           setTimeout(async () => {
             const updatesAfterReconnection = updates.length - 3;
 
-            console.log(`\n${clientType} test results:`);
+            console.log(`\n${client.rpcVersion} test results:`);
             console.log(`- Total updates received: ${updates.length}`);
             console.log(`- Updates before reconnection: 3`);
             console.log(`- Updates after reconnection: ${updatesAfterReconnection}`);
@@ -112,14 +110,12 @@ async function testStorageSubscription(wsUri: string, clientType: 'legacy' | 'de
 }
 
 // New function for testing queryMulti subscription
-async function testQueryMultiSubscription(wsUri: string, clientType: 'legacy' | 'dedot') {
+async function testQueryMultiSubscription(wsUri: string, rpcVersion: RpcVersion) {
   // Create standard provider
   const provider = new WsProvider(wsUri);
 
   // Create appropriate client
-  const client = clientType === 'legacy'
-    ? await DedotClient.new({ provider, rpcVersion: 'legacy' })
-    : await DedotClient.new(provider);
+  const client = await DedotClient.new({ provider, rpcVersion });
 
   // Track subscription updates
   const updates: Array<Array<any>> = [];
@@ -132,7 +128,7 @@ async function testQueryMultiSubscription(wsUri: string, clientType: 'legacy' | 
     unsubFn = await client.queryMulti(
       [{ fn: client.query.system.account, args: [ALICE] }, { fn: client.query.system.number }],
       (results) => {
-        console.log(`${clientType} received queryMulti update #${updates.length + 1}`);
+        console.log(`${client.rpcVersion} received queryMulti update #${updates.length + 1}`);
 
         updates.push(results);
 
@@ -140,7 +136,7 @@ async function testQueryMultiSubscription(wsUri: string, clientType: 'legacy' | 
         if (updates.length === 3 && !reconnectionTriggered) {
           reconnectionTriggered = true;
 
-          console.log(`\n${clientType}: Received 3 queryMulti updates, forcing reconnection...`);
+          console.log(`\n${client.rpcVersion}: Received 3 queryMulti updates, forcing reconnection...`);
 
           // Force reconnection
           (async () => {
@@ -152,7 +148,7 @@ async function testQueryMultiSubscription(wsUri: string, clientType: 'legacy' | 
             setTimeout(async () => {
               const updatesAfterReconnection = updates.length - 3;
 
-              console.log(`\n${clientType} queryMulti test results:`);
+              console.log(`\n${client.rpcVersion} queryMulti test results:`);
               console.log(`- Total updates received: ${updates.length}`);
               console.log(`- Updates before reconnection: 3`);
               console.log(`- Updates after reconnection: ${updatesAfterReconnection}`);

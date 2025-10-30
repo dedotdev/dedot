@@ -37,7 +37,7 @@ async function testWithV2Client(wsUri: string) {
 }
 
 async function testWithLegacyClient(wsUri: string) {
-  const client = await DedotClient.new({ provider: new WsProvider(wsUri), rpcVersion: 'legacy' });
+  const client = await DedotClient.legacy(new WsProvider(wsUri));
 
   // Test one-time queries
   await testOneTimeQueries(client);

@@ -113,7 +113,7 @@ export const run = async (_nodeName: any, networkInfo: any) => {
 
   // Test with legacy client
   console.log('Testing with legacy client');
-  const apiLegacy = await DedotClient.new({ provider: new WsProvider(wsUri), rpcVersion: 'legacy' });
+  const apiLegacy = await DedotClient.legacy(new WsProvider(wsUri));
   await verifyFlipperStorage(apiLegacy);
 
   // Test with new client

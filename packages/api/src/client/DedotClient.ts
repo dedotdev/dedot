@@ -63,7 +63,7 @@ export class DedotClient<
   }
 
   /**
-   * Alias for __V2Client.create__
+   * Alias for DedotClient.create__
    *
    * @param options
    */
@@ -71,6 +71,16 @@ export class DedotClient<
     ChainApi extends GenericSubstrateApi = SubstrateApi, // --
   >(options: ClientOptions | JsonRpcProvider): Promise<DedotClient<ChainApi>> {
     return DedotClient.create<ChainApi>(options);
+  }
+
+  static async legacy<
+    ChainApi extends GenericSubstrateApi = SubstrateApi, // --
+  >(options: ClientOptions | JsonRpcProvider): Promise<DedotClient<ChainApi>> {
+    return DedotClient.create<ChainApi>(
+      isJsonRpcProvider(options) // --
+        ? { provider: options, rpcVersion: 'legacy' }
+        : { ...options, rpcVersion: 'legacy' },
+    );
   }
 
   get options(): ApiOptions {

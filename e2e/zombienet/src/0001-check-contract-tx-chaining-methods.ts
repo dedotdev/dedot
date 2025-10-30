@@ -18,7 +18,7 @@ export const run = async (_nodeName: any, networkInfo: any) => {
 
   // Test with legacy client
   console.log('Testing contract chaining methods with legacy client');
-  const apiLegacy = await DedotClient.new({ provider: new WsProvider(wsUri), rpcVersion: 'legacy' });
+  const apiLegacy = await DedotClient.legacy(new WsProvider(wsUri));
   await testContractChainingMethods(apiLegacy, flipperV4 as ContractMetadataV4, alicePair, caller);
 
   // Test with v2 client

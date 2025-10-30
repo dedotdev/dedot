@@ -12,7 +12,7 @@ export const run = async (nodeName: any, networkInfo: any): Promise<void> => {
 
   const { wsUri } = networkInfo.nodesByName[nodeName];
 
-  const api = await DedotClient.new({ provider: new WsProvider(wsUri), rpcVersion: 'legacy' });
+  const api = await DedotClient.legacy(new WsProvider(wsUri));
   const tip = 1_000n;
 
   const alterSigner = {

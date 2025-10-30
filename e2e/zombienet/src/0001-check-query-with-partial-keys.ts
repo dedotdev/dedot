@@ -6,7 +6,7 @@ export const run = async (nodeName: any, networkInfo: any) => {
 
   // Test with legacy client
   console.log('Testing with legacy client');
-  const clientLegacy = await DedotClient.new({ provider, rpcVersion: 'legacy' });
+  const clientLegacy = await DedotClient.legacy(provider);
 
   const collectionItems_1 = await clientLegacy.query.nfts.item.pagedEntries(29, { pageSize: 2 });
   assert(collectionItems_1.length === 2, 'Incorrect number of items in collection');

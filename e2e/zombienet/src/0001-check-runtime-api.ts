@@ -40,7 +40,7 @@ const verifyRuntimeApi = async (api: ISubstrateClient) => {
 export const run = async (nodeName: any, networkInfo: any) => {
   const { wsUri } = networkInfo.nodesByName[nodeName];
 
-  const apiLegacy = await DedotClient.new({ provider: new WsProvider(wsUri), rpcVersion: 'legacy' });
+  const apiLegacy = await DedotClient.legacy(new WsProvider(wsUri));
   await verifyRuntimeApi(apiLegacy);
 
   const apiV2 = await DedotClient.new(new WsProvider(wsUri));

@@ -12,7 +12,7 @@ export const run = async (nodeName: any, networkInfo: any) => {
     return api.tx.balances.transferKeepAlive(ALICE, BigInt(10 * 1e12)).paymentInfo(BOB);
   };
 
-  const apiLegacy = await DedotClient.new({ provider: new WsProvider(wsUri), rpcVersion: 'legacy' });
+  const apiLegacy = await DedotClient.legacy(new WsProvider(wsUri));
   const paymentInfoLegacy = await getPaymentInfo(apiLegacy);
 
   console.log('[Legacy] Payment Info', paymentInfoLegacy);

@@ -20,7 +20,7 @@ const prepareRemarkTx = async (api: DedotClient): Promise<{ rawTx: HexString; se
 export const run = async (nodeName: any, networkInfo: any): Promise<any> => {
   const { wsUri } = networkInfo.nodesByName[nodeName];
 
-  const client = await DedotClient.new({ provider: new WsProvider(wsUri), rpcVersion: 'legacy' });
+  const client = await DedotClient.legacy(new WsProvider(wsUri));
 
   const broadcastUntilRemark = async (txBroadcaster: TxBroadcaster) => {
     const defer = deferred<void>();

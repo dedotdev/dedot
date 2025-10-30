@@ -118,7 +118,7 @@ export const run = async (_nodeName: any, networkInfo: any) => {
   };
 
   console.log('Checking via legacy API');
-  const apiLegacy = await DedotClient.new({ provider: new WsProvider(wsUri), rpcVersion: 'legacy' });
+  const apiLegacy = await DedotClient.legacy(new WsProvider(wsUri));
   await verifyContracts(apiLegacy, flipperV4);
   await verifyContracts(apiLegacy, flipperV5);
 
