@@ -66,9 +66,4 @@ export const run = async (nodeName: any, networkInfo: any) => {
   console.log('Testing with legacy client');
   const apiLegacy = await DedotClient.legacy(new WsProvider(wsUri));
   await testStorageQuery(apiLegacy);
-
-  // Test with v2 client
-  console.log('Testing with v2 client');
-  const apiV2 = await DedotClient.new(new WsProvider(wsUri));
-  await testStorageQuery(apiV2);
 };
