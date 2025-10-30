@@ -27,7 +27,7 @@ export type ClientOptions = ApiOptions & {
   rpcVersion?: RpcVersion;
 };
 
-export class Client<
+export class DedotClient<
   ChainApi extends GenericSubstrateApi = SubstrateApi, // --
 > implements ISubstrateClient<ChainApi, DedotClientEvent>
 {
@@ -45,9 +45,9 @@ export class Client<
     this.rpcVersion = rpcVersion;
 
     if (this.rpcVersion === 'legacy') {
-      this.#client = new LegacyClient(options) as any;
+      this.#client = new LegacyClient(options);
     } else {
-      this.#client = new V2Client(options) as any;
+      this.#client = new V2Client(options);
     }
   }
 
@@ -58,8 +58,8 @@ export class Client<
    */
   static async create<
     ChainApi extends GenericSubstrateApi = SubstrateApi, // --
-  >(options: ClientOptions | JsonRpcProvider): Promise<ISubstrateClient<ChainApi, DedotClientEvent>> {
-    return new Client<ChainApi>(options).connect();
+  >(options: ClientOptions | JsonRpcProvider): Promise<DedotClient<ChainApi>> {
+    return new DedotClient<ChainApi>(options).connect();
   }
 
   /**
@@ -69,8 +69,8 @@ export class Client<
    */
   static async new<
     ChainApi extends GenericSubstrateApi = SubstrateApi, // --
-  >(options: ClientOptions | JsonRpcProvider): Promise<ISubstrateClient<ChainApi, DedotClientEvent>> {
-    return Client.create<ChainApi>(options);
+  >(options: ClientOptions | JsonRpcProvider): Promise<DedotClient<ChainApi>> {
+    return DedotClient.create<ChainApi>(options);
   }
 
   get options(): ApiOptions {

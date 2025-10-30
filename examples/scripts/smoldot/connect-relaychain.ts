@@ -1,6 +1,6 @@
 import type { PolkadotApi } from '@dedot/chaintypes';
 import { polkadot } from '@substrate/connect-known-chains';
-import { V2Client, SmoldotProvider } from 'dedot';
+import { DedotClient, SmoldotProvider } from 'dedot';
 import { start } from 'dedot/smoldot';
 import { formatBalance } from 'dedot/utils';
 
@@ -10,7 +10,7 @@ const chain = await smoldot.addChain({ chainSpec: polkadot });
 
 // Initialize providers & clients
 const provider = new SmoldotProvider(chain);
-const client = await V2Client.new<PolkadotApi>(provider);
+const client = await DedotClient.new<PolkadotApi>(provider);
 
 // Fetching genesis hash
 const genesisHash = await client.chainSpec.genesisHash();

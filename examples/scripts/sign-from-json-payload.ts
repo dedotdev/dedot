@@ -1,9 +1,9 @@
-import { V2Client, ExtraSignedExtension, signRawMessage, WsProvider } from 'dedot';
+import { DedotClient, ExtraSignedExtension, signRawMessage, WsProvider } from 'dedot';
 import { SignerPayloadJSON, SignerResult } from 'dedot/types';
 import { assert, u8aToHex } from 'dedot/utils';
 import { devPairs } from './keyring.js';
 
-const client = await V2Client.new(new WsProvider('wss://westend-rpc.polkadot.io'));
+const client = await DedotClient.new(new WsProvider('wss://westend-rpc.polkadot.io'));
 
 const { alice } = await devPairs();
 

@@ -1,6 +1,6 @@
 import { PolkadotPeopleApi } from '@dedot/chaintypes/polkadot-people';
 import { polkadot, polkadot_people } from '@substrate/connect-known-chains';
-import { V2Client, SmoldotProvider } from 'dedot';
+import { DedotClient, SmoldotProvider } from 'dedot';
 import { start } from 'dedot/smoldot';
 
 // Start smoldot instance & initialize chains
@@ -10,7 +10,7 @@ const peopleChain = await smoldot.addChain({ chainSpec: polkadot_people, potenti
 
 // Initialize providers & clients
 const provider = new SmoldotProvider(peopleChain);
-const client = await V2Client.new<PolkadotPeopleApi>(provider);
+const client = await DedotClient.new<PolkadotPeopleApi>(provider);
 
 // Query on-chain storage
 const GAV = '16SDAKg9N6kKAbhgDyxBXdHEwpwHUHs2CNEiLNGeZV55qHna';

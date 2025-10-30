@@ -1,4 +1,4 @@
-import { V2Client, WsProvider } from 'dedot';
+import { DedotClient, WsProvider } from 'dedot';
 import { ContractDeployer, toEvmAddress } from 'dedot/contracts';
 import { assert, generateRandomHex } from 'dedot/utils';
 import { devPairs } from '../keyring.js';
@@ -14,7 +14,7 @@ BigInt.prototype.toJSON = function () {
 };
 
 // Connect to the ink-node
-const client = await V2Client.new(new WsProvider('ws://127.0.0.1:9944'));
+const client = await DedotClient.new(new WsProvider('ws://127.0.0.1:9944'));
 
 console.log('🚀 Starting Flipper contract demonstration');
 

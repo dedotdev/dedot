@@ -1,4 +1,4 @@
-import { V2Client, WsProvider } from 'dedot';
+import { DedotClient, WsProvider } from 'dedot';
 import { waitFor } from 'dedot/utils';
 
 // Multiple endpoints for failover
@@ -8,7 +8,7 @@ const provider = new WsProvider([
   'wss://polkadot.api.onfinality.io/public-ws',
 ]);
 
-const client = new V2Client(provider);
+const client = new DedotClient(provider);
 
 client.on('connected', (connectedUrl) => {
   console.log('Connected Endpoint:', connectedUrl);
