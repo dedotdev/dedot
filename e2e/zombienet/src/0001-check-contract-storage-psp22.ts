@@ -1,9 +1,7 @@
 import Keyring from '@polkadot/keyring';
 import { cryptoWaitReady } from '@polkadot/util-crypto';
-import { DedotClient, ISubstrateClient, LegacyClient, WsProvider } from 'dedot';
-import { SubstrateApi } from 'dedot/chaintypes';
+import { DedotClient, ISubstrateClient, WsProvider } from 'dedot';
 import { Contract, ContractDeployer } from 'dedot/contracts';
-import { RpcVersion } from 'dedot/types';
 import { assert, stringToHex } from 'dedot/utils';
 import { Psp22ContractApi } from '../../../examples/scripts/inkv5/psp22';
 import * as psp22Raw from '../../../examples/scripts/inkv5/psp22.json';
@@ -18,7 +16,7 @@ export const run = async (_nodeName: any, networkInfo: any) => {
   const alice = alicePair.address;
   const bob = bobPair.address;
 
-  const verifyPsp22Storage = async (api: ISubstrateClient<SubstrateApi[RpcVersion]>) => {
+  const verifyPsp22Storage = async (api: ISubstrateClient) => {
     console.log(`[${api.rpcVersion}] Testing PSP22 contract storage API`);
 
     // Deploy the contract
@@ -164,7 +162,7 @@ export const run = async (_nodeName: any, networkInfo: any) => {
 
   // Test with legacy client
   console.log('Testing with legacy client');
-  const apiLegacy = await LegacyClient.new(new WsProvider(wsUri));
+  const apiLegacy = await DedotClient.legacy(new WsProvider(wsUri));
   await verifyPsp22Storage(apiLegacy);
 
   // Test with new client

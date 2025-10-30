@@ -1,14 +1,14 @@
 import { StorageData, StorageKey } from '@dedot/codecs';
 import { Callback, Unsub } from '@dedot/types';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { DedotClient } from '../../client/DedotClient.js';
+import { V2Client } from '../../client/V2Client.js';
 import { PinnedBlock } from '../../json-rpc/group/ChainHead/ChainHead.js';
 import { NewStorageQuery } from '../NewStorageQuery.js';
 
-// Mock the DedotClient and ChainHead
-vi.mock('../../client/DedotClient.js', () => {
+// Mock the V2Client and ChainHead
+vi.mock('../../client/V2Client.js', () => {
   return {
-    DedotClient: vi.fn().mockImplementation(() => {
+    V2Client: vi.fn().mockImplementation(() => {
       return {
         rpcVersion: 'v2',
         on: vi.fn().mockReturnValue(vi.fn()),
@@ -23,7 +23,7 @@ vi.mock('../../client/DedotClient.js', () => {
 });
 
 describe('NewBaseStorageQuery', () => {
-  let mockClient: DedotClient;
+  let mockClient: V2Client;
   let service: NewStorageQuery;
   let mockKeys: StorageKey[];
 
@@ -32,7 +32,7 @@ describe('NewBaseStorageQuery', () => {
     vi.clearAllMocks();
 
     // Create a mock client
-    mockClient = new DedotClient({} as any);
+    mockClient = new V2Client({} as any);
 
     // Create the service
     service = new NewStorageQuery(mockClient);

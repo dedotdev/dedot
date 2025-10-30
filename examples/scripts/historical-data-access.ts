@@ -3,12 +3,12 @@
 /**
  * Example: Historical Data Access with Archive Fallback
  *
- * This script demonstrates how to use DedotClient.at() to access historical blockchain data
+ * This script demonstrates how to use V2Client.at() to access historical blockchain data
  * from Polkadot mainnet, specifically accessing blocks that are 5000 blocks behind the
  * current finalized block. It showcases the Archive fallback mechanism when blocks are
  * not pinned in ChainHead.
  */
-import { DedotClient, WsProvider } from 'dedot';
+import { V2Client, WsProvider } from 'dedot';
 
 const POLKADOT_RPC = 'wss://rpc.polkadot.io';
 const BLOCKS_BEHIND = 5000;
@@ -20,7 +20,7 @@ const TREASURY = '5EYCAe5ijiYfyeZ2JJCGq56LmPyNRAKzpG4QkoQkkQNB5e6Z';
 async function main() {
   console.log('🔗 Connecting to Polkadot mainnet...');
 
-  const client = await DedotClient.new(new WsProvider(POLKADOT_RPC));
+  const client = await V2Client.new(new WsProvider(POLKADOT_RPC));
 
   try {
     console.log('📊 Getting current blockchain state...');
@@ -44,7 +44,7 @@ async function main() {
     const historicalHash = historicalHashes[0];
     console.log(`Historical block hash: ${historicalHash}`);
 
-    console.log('\n🏛️ Accessing historical data via DedotClient.at()...');
+    console.log('\n🏛️ Accessing historical data via V2Client.at()...');
 
     // Access historical block API - this will trigger Archive fallback
     const historicalApi = await client.at(historicalHash);

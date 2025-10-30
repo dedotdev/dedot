@@ -1,13 +1,13 @@
 import { useCallback, useEffect, useState } from 'react';
 import { useAsync } from 'react-use';
 import { PolkadotApi } from '@dedot/chaintypes';
-import { DedotClient, WsProvider } from 'dedot';
+import { V2Client, WsProvider } from 'dedot';
 import type { Injected, InjectedAccount } from 'dedot/types';
 
 const ENDPOINT = 'wss://rpc.ibp.network/paseo';
 
 function App() {
-  const [client, setClient] = useState<DedotClient<PolkadotApi>>();
+  const [client, setClient] = useState<V2Client<PolkadotApi>>();
   const [availableWallets, setAvailableWallets] = useState<string[]>([]);
   const [extension, setExtension] = useState<Injected>();
   const [connectedWalletName, setConnectedWalletName] = useState<string>('');
@@ -19,11 +19,11 @@ function App() {
   const [error, setError] = useState<string>('');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // Initialize DedotClient
+  // Initialize V2Client
   useAsync(async () => {
     try {
       console.time('init client took');
-      const newClient = await DedotClient.new<PolkadotApi>({
+      const newClient = await V2Client.new<PolkadotApi>({
         provider: new WsProvider(ENDPOINT),
         cacheMetadata: true,
       });
@@ -163,9 +163,7 @@ function App() {
           <>
             {availableWallets.length > 0 ? (
               <div>
-                <p style={{ marginBottom: '10px', color: '#666' }}>
-                  Select a wallet to connect:
-                </p>
+                <p style={{ marginBottom: '10px', color: '#666' }}>Select a wallet to connect:</p>
                 <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px' }}>
                   {availableWallets.map((walletName) => (
                     <button
@@ -321,8 +319,8 @@ function App() {
           <strong>View Transaction:</strong>{' '}
           <a
             href={`https://paseo.subscan.io/extrinsic/${txHash}`}
-            target="_blank"
-            rel="noopener noreferrer"
+            target='_blank'
+            rel='noopener noreferrer'
             style={{
               color: '#007bff',
               textDecoration: 'underline',

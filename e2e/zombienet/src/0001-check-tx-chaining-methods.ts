@@ -1,7 +1,7 @@
 import Keyring from '@polkadot/keyring';
 import { cryptoWaitReady } from '@polkadot/util-crypto';
-import { IKeyringPair } from '@dedot/types';
-import { DedotClient, LegacyClient, WsProvider } from 'dedot';
+import { IKeyringPair, RpcVersion } from '@dedot/types';
+import { DedotClient, ISubstrateClient, WsProvider } from 'dedot';
 import { assert, isHex, isNumber } from 'dedot/utils';
 
 const BOB = '5FHneW46xGXgs5mUiveU4sbTyGBzmstUspZC92UhjJM694ty';
@@ -14,38 +14,40 @@ export const run = async (nodeName: any, networkInfo: any): Promise<void> => {
 
   const { wsUri } = networkInfo.nodesByName[nodeName];
 
-  // Test with LegacyClient
-  console.log('Testing chaining methods with LegacyClient');
-  await testChainingMethods(LegacyClient, wsUri, alice);
+  // Test with legacy client
+  console.log('Testing chaining methods with legacy client');
+  await testChainingMethods(wsUri, alice, 'legacy');
 
-  // Test with DedotClient
-  console.log('Testing chaining methods with DedotClient');
-  await testChainingMethods(DedotClient, wsUri, alice);
+  // Test with v2 client
+  console.log('Testing chaining methods with v2 client');
+  await testChainingMethods(wsUri, alice, 'v2');
 };
 
-async function testChainingMethods(ClientClass: typeof LegacyClient | typeof DedotClient, wsUri: string, alice: any) {
-  const api = await ClientClass.new(new WsProvider(wsUri));
+async function testChainingMethods(wsUri: string, alice: any, rpcVersion: RpcVersion): Promise<void> {
+  const api = await DedotClient.new({ provider: new WsProvider(wsUri), rpcVersion });
+
+  console.log(`[${api.rpcVersion}] Running chaining methods tests`);
 
   // Test 1: untilBestChainBlockIncluded
-  console.log('Testing untilBestChainBlockIncluded');
+  console.log(`[${api.rpcVersion}] Testing untilBestChainBlockIncluded`);
   await testUntilBestChainBlockIncluded(api, alice);
 
   // Test 2: untilFinalized
-  console.log('Testing untilFinalized');
+  console.log(`[${api.rpcVersion}] Testing untilFinalized`);
   await testUntilFinalized(api, alice);
 
   // Test 3: Compare both methods (should receive BestChainBlockIncluded before Finalized)
-  console.log('Testing order of events');
+  console.log(`[${api.rpcVersion}] Testing order of events`);
   await testEventOrder(api, alice);
 
   // Test 4: Check return types of send and signAndSend methods
-  console.log('Testing send and signAndSend return types');
+  console.log(`[${api.rpcVersion}] Testing send and signAndSend return types`);
   await testSendAndSignAndSendReturnTypes(api, alice);
 }
 
-async function testUntilBestChainBlockIncluded(api: LegacyClient | DedotClient, alice: IKeyringPair) {
+async function testUntilBestChainBlockIncluded(api: ISubstrateClient, alice: IKeyringPair) {
   const prevBobBalance = (await api.query.system.account(BOB)).data.free;
-  console.log('BOB - initial balance:', prevBobBalance.toString());
+  console.log(`[${api.rpcVersion}] BOB - initial balance:`, prevBobBalance.toString());
 
   const transferTx = api.tx.balances.transferKeepAlive(BOB, TRANSFER_AMOUNT);
 
@@ -62,15 +64,15 @@ async function testUntilBestChainBlockIncluded(api: LegacyClient | DedotClient, 
 
   // Verify the transaction was successful by checking Bob's balance
   const newBobBalance = (await api.query.system.account(BOB)).data.free;
-  console.log('BOB - new balance after untilBestChainBlockIncluded:', newBobBalance.toString());
+  console.log(`[${api.rpcVersion}] BOB - new balance after untilBestChainBlockIncluded:`, newBobBalance.toString());
   assert(prevBobBalance + TRANSFER_AMOUNT === newBobBalance, 'Incorrect BOB balance after transfer');
 
-  console.log('untilBestChainBlockIncluded test passed');
+  console.log(`[${api.rpcVersion}] untilBestChainBlockIncluded test passed`);
 }
 
-async function testUntilFinalized(api: LegacyClient | DedotClient, alice: IKeyringPair) {
+async function testUntilFinalized(api: ISubstrateClient, alice: IKeyringPair) {
   const prevBobBalance = (await api.query.system.account(BOB)).data.free;
-  console.log('BOB - initial balance:', prevBobBalance.toString());
+  console.log(`[${api.rpcVersion}] BOB - initial balance:`, prevBobBalance.toString());
 
   const transferTx = api.tx.balances.transferKeepAlive(BOB, TRANSFER_AMOUNT);
 
@@ -87,13 +89,13 @@ async function testUntilFinalized(api: LegacyClient | DedotClient, alice: IKeyri
 
   // Verify the transaction was successful by checking Bob's balance
   const newBobBalance = (await api.query.system.account(BOB)).data.free;
-  console.log('BOB - new balance after untilFinalized:', newBobBalance.toString());
+  console.log(`[${api.rpcVersion}] BOB - new balance after untilFinalized:`, newBobBalance.toString());
   assert(prevBobBalance + TRANSFER_AMOUNT === newBobBalance, 'Incorrect BOB balance after transfer');
 
-  console.log('untilFinalized test passed');
+  console.log(`[${api.rpcVersion}] untilFinalized test passed`);
 }
 
-async function testEventOrder(api: LegacyClient | DedotClient, alice: any) {
+async function testEventOrder(api: ISubstrateClient, alice: any) {
   const transferTx = api.tx.balances.transferKeepAlive(BOB, TRANSFER_AMOUNT);
 
   // Track the order of events
@@ -108,11 +110,11 @@ async function testEventOrder(api: LegacyClient | DedotClient, alice: any) {
       if (status.type === 'BestChainBlockIncluded') {
         bestChainBlockIncludedReceived = true;
         bestChainBlockIncludedTime = Date.now();
-        console.log('Received BestChainBlockIncluded status at:', bestChainBlockIncludedTime);
+        console.log(`[${api.rpcVersion}] Received BestChainBlockIncluded status at:`, bestChainBlockIncludedTime);
       } else if (status.type === 'Finalized') {
         finalizedReceived = true;
         finalizedTime = Date.now();
-        console.log('Received Finalized status at:', finalizedTime);
+        console.log(`[${api.rpcVersion}] Received Finalized status at:`, finalizedTime);
         resolve();
       }
     });
@@ -123,47 +125,47 @@ async function testEventOrder(api: LegacyClient | DedotClient, alice: any) {
   assert(finalizedReceived, 'Finalized status should be received');
   assert(bestChainBlockIncludedTime < finalizedTime, 'BestChainBlockIncluded should be received before Finalized');
 
-  console.log('Event order test passed');
+  console.log(`[${api.rpcVersion}] Event order test passed`);
 }
 
-async function testSendAndSignAndSendReturnTypes(api: LegacyClient | DedotClient, alice: IKeyringPair) {
+async function testSendAndSignAndSendReturnTypes(api: ISubstrateClient, alice: IKeyringPair) {
   // Test 1: send() without callback should return a hash
-  console.log('Testing send() without callback');
+  console.log(`[${api.rpcVersion}] Testing send() without callback`);
   const tx1 = api.tx.system.remark('Hello World');
   await tx1.sign(alice);
   const result1 = tx1.send();
 
   assert(isHex(await result1), 'send() without callback should return a hex hash');
-  console.log('send() without callback test passed');
+  console.log(`[${api.rpcVersion}] send() without callback test passed`);
   await result1.untilBestChainBlockIncluded();
 
   // Test 2: send() with callback should return an unsubscribe object/function
-  console.log('Testing send() with callback');
+  console.log(`[${api.rpcVersion}] Testing send() with callback`);
   const tx2 = api.tx.system.remark('Hello World');
   await tx2.sign(alice);
   const result2 = tx2.send(() => {});
 
   assert(typeof (await result2) === 'function', 'send() with callback should return a function');
-  console.log('send() with callback test passed');
+  console.log(`[${api.rpcVersion}] send() with callback test passed`);
   await result2.untilBestChainBlockIncluded();
 
   // Test 3: signAndSend() without callback should return a hash
-  console.log('Testing signAndSend() without callback');
+  console.log(`[${api.rpcVersion}] Testing signAndSend() without callback`);
   const tx3 = api.tx.system.remark('Hello World');
   const result3 = tx3.signAndSend(alice);
 
   assert(isHex(await result3), 'signAndSend() without callback should return a hex hash');
-  console.log('signAndSend() without callback test passed');
+  console.log(`[${api.rpcVersion}] signAndSend() without callback test passed`);
   await result3.untilBestChainBlockIncluded();
 
   // Test 4: signAndSend() with callback should return an unsubscribe object/function
-  console.log('Testing signAndSend() with callback');
+  console.log(`[${api.rpcVersion}] Testing signAndSend() with callback`);
   const tx4 = api.tx.system.remark('Hello World');
   const result4 = tx4.signAndSend(alice, () => {});
 
   assert(typeof (await result4) === 'function', 'signAndSend() with callback should return a function');
-  console.log('signAndSend() with callback test passed');
+  console.log(`[${api.rpcVersion}] signAndSend() with callback test passed`);
   await result4.untilBestChainBlockIncluded();
-  
-  console.log('All send and signAndSend return type tests passed');
+
+  console.log(`[${api.rpcVersion}] All send and signAndSend return type tests passed`);
 }

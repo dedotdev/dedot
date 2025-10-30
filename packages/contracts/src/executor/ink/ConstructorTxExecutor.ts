@@ -1,6 +1,5 @@
 import { BaseSubmittableExtrinsic, ISubstrateClient } from '@dedot/api';
-import type { SubstrateApi } from '@dedot/api/chaintypes';
-import { GenericSubstrateApi, ISubmittableResult, RpcVersion } from '@dedot/types';
+import { ISubmittableResult } from '@dedot/types';
 import { assert, concatU8a, hexToU8a, isPvm, isUndefined, isWasm, toHex, toU8a, u8aToHex } from '@dedot/utils';
 import { Contract } from '../../Contract.js';
 import {
@@ -13,7 +12,7 @@ import { CREATE1, CREATE2, ensureContractPresence, ensureParamsLength, toEvmAddr
 import { ConstructorQueryExecutor } from './ConstructorQueryExecutor.js';
 import { DeployerExecutor } from './abstract/index.js';
 
-export class ConstructorTxExecutor<ChainApi extends GenericSubstrateApi> extends DeployerExecutor<ChainApi> {
+export class ConstructorTxExecutor extends DeployerExecutor {
   doExecute(constructor: string) {
     const meta = this.findConstructorMeta(constructor);
     assert(meta, `Constructor message not found: ${constructor}`);
@@ -29,7 +28,7 @@ export class ConstructorTxExecutor<ChainApi extends GenericSubstrateApi> extends
       const formattedInputs = args.map((arg, index) => this.tryEncode(arg, params[index]));
       const bytes = u8aToHex(concatU8a(hexToU8a(meta.selector), ...formattedInputs));
 
-      const client = this.client as unknown as ISubstrateClient<SubstrateApi[RpcVersion]>;
+      const client = this.client as unknown as ISubstrateClient;
 
       const tx = (() => {
         if (this.registry.isRevive()) {

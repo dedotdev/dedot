@@ -4,7 +4,7 @@ import { assert } from '@dedot/utils';
 import { ContractEvent, GenericContractEvent } from '../../types/index.js';
 import { SolContractExecutor } from './abstract/index.js';
 
-export class SolEventExecutor<ChainApi extends GenericSubstrateApi> extends SolContractExecutor<ChainApi> {
+export class SolEventExecutor extends SolContractExecutor {
   doExecute(eventName: string): GenericContractEvent<string, any, 'sol'> {
     const abiEvent = this.registry.findAbiEvent(eventName);
     assert(abiEvent, `Abi item not found: ${eventName}`);

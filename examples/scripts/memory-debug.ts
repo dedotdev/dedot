@@ -197,7 +197,6 @@ async function main() {
         console.log(`  Avg per block: ${formatBytes(avgMemoryPerBlock)}`);
         console.log(`  Time elapsed: ${((Date.now() - startTime) / 1000).toFixed(1)}s\n`);
         console.log(`  Clearing cache ...`);
-        await api.clearCache();
       }
     }
 

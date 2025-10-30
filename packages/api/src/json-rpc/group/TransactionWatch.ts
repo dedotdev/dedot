@@ -5,7 +5,7 @@ import { IJsonRpcClient, TxBroadcaster } from '../../types.js';
 import { JsonRpcGroup, JsonRpcGroupOptions } from './JsonRpcGroup.js';
 
 export class TransactionWatch extends JsonRpcGroup implements TxBroadcaster {
-  constructor(client: IJsonRpcClient, options?: Partial<JsonRpcGroupOptions>) {
+  constructor(client: IJsonRpcClient<any>, options?: Partial<JsonRpcGroupOptions>) {
     super(client, { prefix: 'transactionWatch', supportedVersions: ['unstable'], ...options });
   }
 

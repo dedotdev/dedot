@@ -25,7 +25,7 @@ export class Archive extends JsonRpcGroup {
   #genesisHash?: HexString;
   #cache: LRUCache;
 
-  constructor(client: IJsonRpcClient, options?: Partial<JsonRpcGroupOptions>) {
+  constructor(client: IJsonRpcClient<any>, options?: Partial<JsonRpcGroupOptions>) {
     super(client, { prefix: 'archive', supportedVersions: ['unstable', 'v1'], ...options });
     this.#cache = new LRUCache(ARCHIVE_CACHE_CAPACITY, ARCHIVE_CACHE_TTL);
   }

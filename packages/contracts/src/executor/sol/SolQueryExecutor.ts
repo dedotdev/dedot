@@ -1,6 +1,4 @@
 import type { ISubstrateClient } from '@dedot/api';
-import type { SubstrateApi } from '@dedot/api/chaintypes';
-import { GenericSubstrateApi, RpcVersion } from '@dedot/types';
 import { assert, HexString } from '@dedot/utils';
 import { decodeErrorResult, decodeFunctionResult, encodeFunctionData } from 'viem/utils';
 import { ContractDispatchError, SolContractExecutionError } from '../../errors.js';
@@ -18,12 +16,12 @@ import {
 } from '../../utils/index.js';
 import { SolContractExecutor } from './abstract/SolContractExecutor.js';
 
-export class SolQueryExecutor<ChainApi extends GenericSubstrateApi> extends SolContractExecutor<ChainApi> {
+export class SolQueryExecutor extends SolContractExecutor {
   doExecute(name: string) {
     const abiFunction = this.registry.findAbiFunction(name);
     assert(abiFunction, `Abi item not found: ${name}`);
 
-    const callFn: GenericContractQueryCall<ChainApi, any, 'sol'> = async (...params: any[]) => {
+    const callFn: GenericContractQueryCall<any, any, 'sol'> = async (...params: any[]) => {
       const { inputs } = abiFunction;
 
       ensureParamsLength(inputs.length, params.length);
@@ -39,11 +37,11 @@ export class SolQueryExecutor<ChainApi extends GenericSubstrateApi> extends SolC
         args: params.slice(0, inputs.length),
       });
 
-      const client = this.client as unknown as ISubstrateClient<SubstrateApi[RpcVersion]>;
+      const client = this.client as unknown as ISubstrateClient;
 
       await ensureContractPresence(client, true, this.address, this.registry.cache);
 
-      const raw: ContractCallResult<ChainApi> = await (async () => {
+      const raw: ContractCallResult = await (async () => {
         const raw = await client.call.reviveApi.call(
           caller, // --
           this.address as HexString,
@@ -58,7 +56,7 @@ export class SolQueryExecutor<ChainApi extends GenericSubstrateApi> extends SolC
           gasRequired: raw.gasRequired,
           storageDeposit: raw.storageDeposit,
           result: raw.result,
-        } as ContractCallResult<ChainApi>;
+        } as ContractCallResult;
       })();
 
       if (raw.result.isErr) {

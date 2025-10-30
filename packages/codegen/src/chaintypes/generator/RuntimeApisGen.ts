@@ -25,7 +25,7 @@ export class RuntimeApisGen extends ApiGen {
 
   generate(useSubPaths: boolean = false) {
     this.typesGen.clearCache();
-    this.typesGen.typeImports.addKnownType('GenericRuntimeApis', 'GenericRuntimeApiMethod', 'RpcVersion');
+    this.typesGen.typeImports.addKnownType('GenericRuntimeApis', 'GenericRuntimeApiMethod');
 
     let runtimeCallsOut = '';
 
@@ -37,7 +37,7 @@ export class RuntimeApisGen extends ApiGen {
         runtimeCallsOut += `${stringCamelCase(runtimeApiName)}: {
             ${methods.map((method) => this.#generateMethodDef(runtimeApiName, method)).join('\n')} 
               
-            ${commentBlock('Generic runtime api call')}[method: string]: GenericRuntimeApiMethod<Rv>
+            ${commentBlock('Generic runtime api call')}[method: string]: GenericRuntimeApiMethod
         }`;
       });
     } else {
@@ -56,7 +56,7 @@ export class RuntimeApisGen extends ApiGen {
               )
               .join('\n')} 
               
-            ${commentBlock('Generic runtime api call')}[method: string]: GenericRuntimeApiMethod<Rv>
+            ${commentBlock('Generic runtime api call')}[method: string]: GenericRuntimeApiMethod
           }`;
       });
     }
@@ -101,7 +101,7 @@ export class RuntimeApisGen extends ApiGen {
       '\n',
       defaultDocs,
       typedParams.map(({ plainType, name }) => `@param {${plainType}} ${name}`),
-    )}${methodName}: GenericRuntimeApiMethod<Rv, (${paramsOut}) => Promise<${typeOut}>>`;
+    )}${methodName}: GenericRuntimeApiMethod<(${paramsOut}) => Promise<${typeOut}>>`;
   }
 
   #generateMethodDef(runtimeApiName: string, methodDef: RuntimeApiMethodDefLatest) {
@@ -134,7 +134,7 @@ export class RuntimeApisGen extends ApiGen {
       defaultDocs,
       typedInputs.map(({ type, name }) => `@param {${type}} ${name}`),
       deprecationComments,
-    )}${stringCamelCase(methodName)}: GenericRuntimeApiMethod<Rv, (${paramsOut}) => Promise<${typeOut}>>`;
+    )}${stringCamelCase(methodName)}: GenericRuntimeApiMethod<(${paramsOut}) => Promise<${typeOut}>>`;
   }
 
   #targetRuntimeApiSpecs(): RuntimeApiSpec[] {

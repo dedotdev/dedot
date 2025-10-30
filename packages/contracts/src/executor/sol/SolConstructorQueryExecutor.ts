@@ -1,6 +1,4 @@
 import { type ISubstrateClient } from '@dedot/api';
-import { type SubstrateApi } from '@dedot/api/chaintypes';
-import { GenericSubstrateApi, RpcVersion } from '@dedot/types';
 import { assert, isPvm, isUndefined, toHex, toU8a } from '@dedot/utils';
 import { decodeErrorResult, encodeDeployData } from 'viem/utils';
 import { ContractInstantiateDispatchError, SolContractInstantiateError } from '../../errors.js';
@@ -14,11 +12,11 @@ import {
 import { ensureParamsLength, ensureValidAccountId32Address, toReturnFlags } from '../../utils/index.js';
 import { SolDeployerExecutor } from './abstract/index.js';
 
-export class SolConstructorQueryExecutor<ChainApi extends GenericSubstrateApi> extends SolDeployerExecutor<ChainApi> {
+export class SolConstructorQueryExecutor extends SolDeployerExecutor {
   doExecute(_: string) {
     const abiConstructor = this.registry.findAbiConstructor();
 
-    const callFn: GenericConstructorQueryCall<ChainApi, any, 'sol'> = async (...params: any[]) => {
+    const callFn: GenericConstructorQueryCall<any, any, 'sol'> = async (...params: any[]) => {
       const { inputs } = abiConstructor;
 
       ensureParamsLength(inputs.length, params.length);
@@ -51,9 +49,9 @@ export class SolConstructorQueryExecutor<ChainApi extends GenericSubstrateApi> e
         value: this.code,
       } as ContractCode;
 
-      const client = this.client as unknown as ISubstrateClient<SubstrateApi[RpcVersion]>;
+      const client = this.client as unknown as ISubstrateClient;
 
-      const raw: ContractInstantiateResult<ChainApi> = await (async () => {
+      const raw: ContractInstantiateResult = await (async () => {
         const raw = await client.call.reviveApi.instantiate(
           caller, // --
           value,
@@ -78,7 +76,7 @@ export class SolConstructorQueryExecutor<ChainApi extends GenericSubstrateApi> e
           gasRequired: raw.gasRequired,
           storageDeposit: raw.storageDeposit,
           result,
-        } as ContractInstantiateResult<ChainApi>;
+        } as ContractInstantiateResult;
       })();
 
       if (raw.result.isErr) {

@@ -1,9 +1,9 @@
 import { WestendApi } from '@dedot/chaintypes';
-import { DedotClient, LegacyClient, WsProvider } from 'dedot';
+import { DedotClient, WsProvider } from 'dedot';
 import { devPairs } from './keyring.js';
 
-async function checkViewFunctions(client: DedotClient<WestendApi> | LegacyClient<WestendApi>, clientType: string) {
-  console.log(`\nTesting view functions with ${clientType}...`);
+async function checkViewFunctions(client: DedotClient) {
+  console.log(`\nTesting view functions with ${client.rpcVersion}...`);
 
   const { alice } = await devPairs();
 
@@ -11,43 +11,51 @@ async function checkViewFunctions(client: DedotClient<WestendApi> | LegacyClient
   const shouldBeUndefinedList = await client.view.voterList.scores(alice.address);
   console.assert(
     shouldBeUndefinedList[0] === undefined && shouldBeUndefinedList[1] === undefined,
-    `[${clientType}] voterList.scores should return [undefined, undefined] for non-validator address`,
+    `[${client.rpcVersion}] voterList.scores should return [undefined, undefined] for non-validator address`,
   );
   console.log(`✓ voterList.scores test passed`);
 
   // Test proxy.isSuperset - should be true
   const shouldBeTrue = await client.view.proxy.isSuperset('Any', 'Governance');
-  console.assert(shouldBeTrue === true, `[${clientType}] proxy.isSuperset("Any", "Governance") should return true`);
+  console.assert(
+    shouldBeTrue === true,
+    `[${client.rpcVersion}] proxy.isSuperset("Any", "Governance") should return true`,
+  );
   console.log(`✓ proxy.isSuperset (true case) test passed`);
 
   // Test proxy.isSuperset - should be false
   const shouldBeFalse = await client.view.proxy.isSuperset('Governance', 'Any');
-  console.assert(shouldBeFalse === false, `[${clientType}] proxy.isSuperset("Governance", "Any") should return false`);
+  console.assert(
+    shouldBeFalse === false,
+    `[${client.rpcVersion}] proxy.isSuperset("Governance", "Any") should return false`,
+  );
   console.log(`✓ proxy.isSuperset (false case) test passed`);
 
   // Test paras.removeUpgradeCooldownCost
   const shouldBeZero = await client.view.paras.removeUpgradeCooldownCost(0);
-  console.assert(shouldBeZero === 0n, `[${clientType}] paras.removeUpgradeCooldownCost(0) should return 0n`);
+  console.assert(shouldBeZero === 0n, `[${client.rpcVersion}] paras.removeUpgradeCooldownCost(0) should return 0n`);
   console.log(`✓ paras.removeUpgradeCooldownCost test passed`);
 
-  console.log(`${clientType}: All assertions passed!`);
+  console.log(`${client.rpcVersion}: All assertions passed!`);
 }
 
 // Main execution
 console.log('Connecting to Westend...');
 
 // Test with DedotClient
-const provider = new WsProvider('wss://westend-rpc.polkadot.io');
-const dedotClient = await DedotClient.create<WestendApi>({ provider });
-console.log(`Connected to ${dedotClient.runtimeVersion.specName} v${dedotClient.runtimeVersion.specVersion}`);
-await checkViewFunctions(dedotClient, 'DedotClient');
+const v2Client = await DedotClient.create({ provider: new WsProvider('wss://westend-rpc.polkadot.io') });
+console.log(`Connected to ${v2Client.runtimeVersion.specName} v${v2Client.runtimeVersion.specVersion}`);
+await checkViewFunctions(v2Client);
 
 // Test with LegacyClient
-const legacyClient = await LegacyClient.create<WestendApi>({ provider });
-await checkViewFunctions(legacyClient, 'LegacyClient');
+const legacyClient = await DedotClient.create({
+  provider: new WsProvider('wss://westend-rpc.polkadot.io'),
+  rpcVersion: 'legacy',
+});
+await checkViewFunctions(legacyClient);
 
 // Cleanup
 console.log('\nDisconnecting clients...');
-dedotClient.disconnect();
-legacyClient.disconnect();
+await v2Client.disconnect();
+await legacyClient.disconnect();
 console.log('Done!');

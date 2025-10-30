@@ -19,9 +19,6 @@ export class TxGen extends ApiGen {
       'ISubmittableExtrinsic',
       'ISubmittableResult',
       'IRuntimeTxCall',
-      'RpcVersion',
-      'RpcV2',
-      'ISubmittableExtrinsicLegacy',
     );
 
     const { callTypeId, addressTypeId, signatureTypeId } = this.metadata.extrinsic;
@@ -81,11 +78,11 @@ export class TxGen extends ApiGen {
                 '\n',
                 params.map((p) => `@param {${p.type}} ${p.normalizedName} ${p.docs}`),
                 deprecationComments,
-              )}${functionName}: GenericTxCall<Rv, (${params.map((p) => `${p.normalizedName}: ${p.type}`).join(', ')}) => ChainSubmittableExtrinsic<Rv, ${callInput}>>`;
+              )}${functionName}: GenericTxCall<(${params.map((p) => `${p.normalizedName}: ${p.type}`).join(', ')}) => ChainSubmittableExtrinsic<${callInput}>>`;
             })
             .join(',\n')}
             
-          ${commentBlock('Generic pallet tx call')}[callName: string]: GenericTxCall<Rv, TxCall<Rv>>,
+          ${commentBlock('Generic pallet tx call')}[callName: string]: GenericTxCall<TxCall>,
         },`;
     }
 
@@ -93,13 +90,10 @@ export class TxGen extends ApiGen {
 
     // TODO make explicit separate type for Extra
     const defTypes = `
-    export type ChainSubmittableExtrinsic<Rv extends RpcVersion, T extends IRuntimeTxCall = ${callTypeIn}> = 
-        Extrinsic<${addressTypeIn}, T, ${signatureTypeIn}, any[]> &
-        (Rv extends RpcV2
-          ? ISubmittableExtrinsic<ISubmittableResult<FrameSystemEventRecord>>
-          : ISubmittableExtrinsicLegacy<ISubmittableResult<FrameSystemEventRecord>>)
+    export type ChainSubmittableExtrinsic<T extends IRuntimeTxCall = ${callTypeIn}> = 
+        Extrinsic<${addressTypeIn}, T, ${signatureTypeIn}, any[]> & ISubmittableExtrinsic<ISubmittableResult<FrameSystemEventRecord>>
         
-    export type TxCall<Rv extends RpcVersion> = (...args: any[]) => ChainSubmittableExtrinsic<Rv>;    
+    export type TxCall = (...args: any[]) => ChainSubmittableExtrinsic;    
 `;
     const template = compileTemplate('chaintypes/templates/tx.hbs');
 

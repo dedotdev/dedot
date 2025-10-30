@@ -1,6 +1,6 @@
 import { BlockHash, Hash, Header, PortableRegistry, RuntimeVersion } from '@dedot/codecs';
 import type { JsonRpcProvider } from '@dedot/providers';
-import { GenericSubstrateApi, RpcLegacy, Unsub, VersionedGenericSubstrateApi } from '@dedot/types';
+import { GenericSubstrateApi, Unsub } from '@dedot/types';
 import { assert } from '@dedot/utils';
 import type { SubstrateApi } from '../chaintypes/index.js';
 import {
@@ -57,8 +57,8 @@ const KEEP_ALIVE_INTERVAL = 10_000; // in ms
  * run().catch(console.error);
  * ```
  */
-export class LegacyClient<ChainApi extends VersionedGenericSubstrateApi = SubstrateApi> // prettier-end-here
-  extends BaseSubstrateClient<RpcLegacy, ChainApi>
+export class LegacyClient<ChainApi extends GenericSubstrateApi = SubstrateApi> // prettier-end-here
+  extends BaseSubstrateClient<ChainApi>
 {
   #runtimeSubscriptionUnsub?: Unsub;
   #healthTimer?: ReturnType<typeof setInterval>;
@@ -77,7 +77,7 @@ export class LegacyClient<ChainApi extends VersionedGenericSubstrateApi = Substr
    *
    * @param options
    */
-  static async create<ChainApi extends VersionedGenericSubstrateApi = SubstrateApi>(
+  static async create<ChainApi extends GenericSubstrateApi = SubstrateApi>(
     options: ApiOptions | JsonRpcProvider,
   ): Promise<LegacyClient<ChainApi>> {
     return new LegacyClient<ChainApi>(options).connect();
@@ -88,7 +88,7 @@ export class LegacyClient<ChainApi extends VersionedGenericSubstrateApi = Substr
    *
    * @param options
    */
-  static async new<ChainApi extends VersionedGenericSubstrateApi = SubstrateApi>(
+  static async new<ChainApi extends GenericSubstrateApi = SubstrateApi>(
     options: ApiOptions | JsonRpcProvider,
   ): Promise<LegacyClient<ChainApi>> {
     return LegacyClient.create(options);
@@ -201,8 +201,8 @@ export class LegacyClient<ChainApi extends VersionedGenericSubstrateApi = Substr
    * console.log('ss58Prefix:', ss58Prefix)
    * ```
    */
-  get consts(): ChainApi[RpcLegacy]['consts'] {
-    return newProxyChain({ executor: new ConstantExecutor(this) }) as ChainApi[RpcLegacy]['consts'];
+  get consts(): ChainApi['consts'] {
+    return newProxyChain({ executor: new ConstantExecutor(this) }) as ChainApi['consts'];
   }
 
   /**
@@ -213,22 +213,22 @@ export class LegacyClient<ChainApi extends VersionedGenericSubstrateApi = Substr
    * console.log('Balance:', balance);
    * ```
    */
-  get query(): ChainApi[RpcLegacy]['query'] {
-    return newProxyChain({ executor: new StorageQueryExecutor(this) }) as ChainApi[RpcLegacy]['query'];
+  get query(): ChainApi['query'] {
+    return newProxyChain({ executor: new StorageQueryExecutor(this) }) as ChainApi['query'];
   }
 
   /**
    * @description Entry-point for inspecting errors from metadata
    */
-  get errors(): ChainApi[RpcLegacy]['errors'] {
-    return newProxyChain({ executor: new ErrorExecutor(this) }) as ChainApi[RpcLegacy]['errors'];
+  get errors(): ChainApi['errors'] {
+    return newProxyChain({ executor: new ErrorExecutor(this) }) as ChainApi['errors'];
   }
 
   /**
    * @description Entry-point for inspecting events from metadata
    */
-  get events(): ChainApi[RpcLegacy]['events'] {
-    return newProxyChain({ executor: new EventExecutor(this) }) as ChainApi[RpcLegacy]['events'];
+  get events(): ChainApi['events'] {
+    return newProxyChain({ executor: new EventExecutor(this) }) as ChainApi['events'];
   }
 
   /**
@@ -243,17 +243,17 @@ export class LegacyClient<ChainApi extends VersionedGenericSubstrateApi = Substr
    * const queryInfo = await api.call.transactionPaymentApi.queryInfo(tx.toU8a(), tx.length);
    * ```
    */
-  get call(): ChainApi[RpcLegacy]['call'] {
+  get call(): ChainApi['call'] {
     return this.callAt();
   }
 
   // For internal use with caution
-  protected override callAt(hash?: BlockHash): ChainApi[RpcLegacy]['call'] {
-    return newProxyChain({ executor: new RuntimeApiExecutor(this, hash) }) as ChainApi[RpcLegacy]['call'];
+  protected override callAt(hash?: BlockHash): ChainApi['call'] {
+    return newProxyChain({ executor: new RuntimeApiExecutor(this, hash) }) as ChainApi['call'];
   }
 
-  get view(): ChainApi[RpcLegacy]['view'] {
-    return newProxyChain({ executor: new ViewFunctionExecutor(this) }) as ChainApi[RpcLegacy]['view'];
+  get view(): ChainApi['view'] {
+    return newProxyChain({ executor: new ViewFunctionExecutor(this) }) as ChainApi['view'];
   }
 
   /**
@@ -267,8 +267,8 @@ export class LegacyClient<ChainApi extends VersionedGenericSubstrateApi = Substr
    *    });
    * ```
    */
-  get tx(): ChainApi[RpcLegacy]['tx'] {
-    return newProxyChain({ executor: new TxExecutor(this) }) as ChainApi[RpcLegacy]['tx'];
+  get tx(): ChainApi['tx'] {
+    return newProxyChain({ executor: new TxExecutor(this) }) as ChainApi['tx'];
   }
 
   /**
@@ -277,7 +277,7 @@ export class LegacyClient<ChainApi extends VersionedGenericSubstrateApi = Substr
    *
    * @param hash
    */
-  async at<ChainApiAt extends GenericSubstrateApi = ChainApi[RpcLegacy]>(
+  async at<ChainApiAt extends GenericSubstrateApi = ChainApi>(
     hash: BlockHash,
   ): Promise<ISubstrateClientAt<ChainApiAt>> {
     const cached = this._apiAtCache.get<ISubstrateClientAt<ChainApiAt>>(hash);

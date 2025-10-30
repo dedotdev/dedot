@@ -16,7 +16,7 @@ export class IndexGen {
     const langErrorName = this.typesGen.cleanPath(this.contractMetadata.types[langErrorId].type.path!);
 
     const typeImports = new TypeImports();
-    typeImports.addKnownType('VersionedGenericSubstrateApi', 'RpcVersion', 'RpcV2');
+    typeImports.addKnownType('GenericSubstrateApi', 'RpcVersion', 'RpcV2');
     typeImports.addContractType('InkGenericContractApi', 'WithLazyStorage');
     typeImports.addChainType('SubstrateApi');
     typeImports.addPortableType(langErrorName);

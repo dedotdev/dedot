@@ -18,16 +18,16 @@ import { MockInstance } from '@vitest/spy';
 import { afterEach, beforeEach, describe, expect, expectTypeOf, it, vi } from 'vitest';
 import { PinnedBlock } from '../../json-rpc/group/ChainHead/ChainHead.js';
 import { mockedRuntime, newChainHeadSimulator } from '../../json-rpc/group/__tests__/simulator.js';
-import { DedotClient } from '../DedotClient.js';
+import { V2Client } from '../V2Client.js';
 import MockProvider from './MockProvider.js';
 
 const prefixedMetadataV15 = staticSubstrateV15;
 const rawMetadataV15 = unwrapOpaqueMetadata(staticSubstrateV15);
 
-describe('DedotClient', () => {
+describe('V2Client', () => {
   it('should throws error for invalid endpoint', async () => {
     await expect(async () => {
-      await DedotClient.new(new WsProvider('invalid_endpoint'));
+      await V2Client.new(new WsProvider('invalid_endpoint'));
     }).rejects.toThrowError(
       'Invalid websocket endpoint invalid_endpoint, a valid endpoint should start with wss:// or ws://',
     );
@@ -73,9 +73,9 @@ describe('DedotClient', () => {
     });
 
     describe('cache disabled', () => {
-      let api: DedotClient;
+      let api: V2Client;
       beforeEach(async () => {
-        api = await DedotClient.new({ provider });
+        api = await V2Client.new({ provider });
       });
 
       afterEach(async () => {
@@ -1125,7 +1125,7 @@ describe('DedotClient', () => {
           tryEncode: vi.fn(() => new Uint8Array()),
         };
 
-        const api = await DedotClient.new({
+        const api = await V2Client.new({
           provider,
           runtimeApis: {
             Metadata: [
@@ -1177,7 +1177,7 @@ describe('DedotClient', () => {
 
     describe('metadata options', () => {
       it('should use provided metadata from options', async () => {
-        const api = await DedotClient.new({
+        const api = await V2Client.new({
           provider,
           metadata: {
             'RAW_META/0x0000000000000000000000000000000000000000000000000000000000000000/1': rawMetadataV15,
@@ -1213,9 +1213,9 @@ describe('DedotClient', () => {
     });
 
     describe('queryMulti', () => {
-      let api: DedotClient;
+      let api: V2Client;
       beforeEach(async () => {
-        api = await DedotClient.new({ provider });
+        api = await V2Client.new({ provider });
       });
 
       afterEach(async () => {
@@ -1417,9 +1417,9 @@ describe('DedotClient', () => {
     });
 
     describe('cache enabled', () => {
-      let api: DedotClient;
+      let api: V2Client;
       beforeEach(async () => {
-        api = await DedotClient.new({ provider, cacheMetadata: true });
+        api = await V2Client.new({ provider, cacheMetadata: true });
       });
 
       afterEach(async () => {
@@ -1436,7 +1436,7 @@ describe('DedotClient', () => {
         newSimulator.notify(newSimulator.initializedEvent);
         newSimulator.notify(newSimulator.nextNewBlock());
 
-        const newApi = await DedotClient.new({ provider, cacheMetadata: true });
+        const newApi = await V2Client.new({ provider, cacheMetadata: true });
 
         expect(newProviderSend).not.toBeCalledWith('chainHead_v1_call', [
           simulator.subscriptionId,
@@ -1457,7 +1457,7 @@ describe('DedotClient', () => {
           newSimulator.notify(newSimulator.initializedEvent);
           newSimulator.notify(newSimulator.nextNewBlock());
 
-          const newApi = await DedotClient.new({
+          const newApi = await V2Client.new({
             provider: newProvider,
             cacheMetadata: true,
             metadata: {
@@ -1518,7 +1518,7 @@ describe('DedotClient', () => {
             20,
           );
 
-          const newApi = await DedotClient.new({ provider: newProvider, cacheMetadata: true });
+          const newApi = await V2Client.new({ provider: newProvider, cacheMetadata: true });
 
           expect(newProviderSend).toBeCalledWith('chainHead_v1_call', [
             simulator.subscriptionId,
@@ -1553,9 +1553,9 @@ describe('DedotClient', () => {
     });
 
     describe('not throwOnUnknownApi', () => {
-      let api: DedotClient;
+      let api: V2Client;
       beforeEach(async () => {
-        api = await DedotClient.new({ provider, throwOnUnknownApi: false });
+        api = await V2Client.new({ provider, throwOnUnknownApi: false });
       });
 
       afterEach(async () => {
@@ -1590,7 +1590,7 @@ describe('DedotClient', () => {
   });
 
   describe('event forwarding', () => {
-    let api: DedotClient;
+    let api: V2Client;
     let simulator: ReturnType<typeof newChainHeadSimulator>;
     let provider: MockProvider;
 
@@ -1627,7 +1627,7 @@ describe('DedotClient', () => {
         10,
       );
 
-      api = await DedotClient.new({ provider });
+      api = await V2Client.new({ provider });
     });
 
     afterEach(async () => {
@@ -1748,7 +1748,7 @@ describe('DedotClient', () => {
   });
 
   describe('clearCache', () => {
-    let api: DedotClient;
+    let api: V2Client;
     let provider: MockProvider;
     let simulator: ReturnType<typeof newChainHeadSimulator>;
 
@@ -1785,7 +1785,7 @@ describe('DedotClient', () => {
         10,
       );
 
-      api = await DedotClient.new({ provider });
+      api = await V2Client.new({ provider });
     });
 
     afterEach(async () => {

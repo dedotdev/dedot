@@ -1,6 +1,6 @@
 import Keyring from '@polkadot/keyring';
 import { cryptoWaitReady } from '@polkadot/util-crypto';
-import { $, LegacyClient, WsProvider } from 'dedot';
+import { $, DedotClient, WsProvider } from 'dedot';
 import { ExtrinsicSignature } from 'dedot/codecs';
 import { InjectedSigner, SignerPayloadJSON, SignerResult } from 'dedot/types';
 import { assert, u8aToHex } from 'dedot/utils';
@@ -12,7 +12,7 @@ export const run = async (nodeName: any, networkInfo: any): Promise<void> => {
 
   const { wsUri } = networkInfo.nodesByName[nodeName];
 
-  const api = await LegacyClient.new(new WsProvider(wsUri));
+  const api = await DedotClient.legacy(new WsProvider(wsUri));
   const tip = 1_000n;
 
   const alterSigner = {

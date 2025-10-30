@@ -1,18 +1,16 @@
 import { BaseSubmittableExtrinsic, ISubstrateClient } from '@dedot/api';
-import type { SubstrateApi } from '@dedot/api/chaintypes';
-import { GenericSubstrateApi, RpcVersion } from '@dedot/types';
 import { assert, concatU8a, HexString, hexToU8a, u8aToHex } from '@dedot/utils';
 import { ContractTxOptions, GenericContractTxCall } from '../../types/index.js';
 import { ensureParamsLength } from '../../utils/index.js';
 import { QueryExecutor } from './QueryExecutor.js';
 import { ContractExecutor } from './abstract/index.js';
 
-export class TxExecutor<ChainApi extends GenericSubstrateApi> extends ContractExecutor<ChainApi> {
+export class TxExecutor extends ContractExecutor {
   doExecute(message: string) {
     const meta = this.findTxMessage(message);
     assert(meta, `Tx message not found: ${message}`);
 
-    const callFn: GenericContractTxCall<ChainApi, any, 'ink'> = (...params: any[]) => {
+    const callFn: GenericContractTxCall<any, any, 'ink'> = (...params: any[]) => {
       const { args } = meta;
 
       ensureParamsLength(args.length, params.length);
@@ -23,7 +21,7 @@ export class TxExecutor<ChainApi extends GenericSubstrateApi> extends ContractEx
       const formattedInputs = args.map((arg, index) => this.tryEncode(arg, params[index]));
       const bytes = u8aToHex(concatU8a(hexToU8a(meta.selector), ...formattedInputs));
 
-      const client = this.client as unknown as ISubstrateClient<SubstrateApi[RpcVersion]>;
+      const client = this.client as unknown as ISubstrateClient;
 
       const tx = (() => {
         if (this.registry.isRevive()) {

@@ -1,12 +1,10 @@
-import { LegacyClient, DedotClient, ISubstrateClient, WsProvider } from 'dedot';
-import { SubstrateApi } from 'dedot/chaintypes';
+import { DedotClient, ISubstrateClient, WsProvider } from 'dedot';
 import { $Metadata, Metadata } from 'dedot/codecs';
-import { RpcVersion } from 'dedot/types';
 import { assert, stringCamelCase } from 'dedot/utils';
 
 const ALICE = '5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY';
 
-const verifyRuntimeApi = async (api: ISubstrateClient<SubstrateApi[RpcVersion]>) => {
+const verifyRuntimeApi = async (api: ISubstrateClient) => {
   assert(api.metadata.version === 'V15', 'Metadata should be V15');
 
   // Checking if all apis specs are defined
@@ -42,7 +40,7 @@ const verifyRuntimeApi = async (api: ISubstrateClient<SubstrateApi[RpcVersion]>)
 export const run = async (nodeName: any, networkInfo: any) => {
   const { wsUri } = networkInfo.nodesByName[nodeName];
 
-  const apiLegacy = await LegacyClient.new(new WsProvider(wsUri));
+  const apiLegacy = await DedotClient.legacy(new WsProvider(wsUri));
   await verifyRuntimeApi(apiLegacy);
 
   const apiV2 = await DedotClient.new(new WsProvider(wsUri));

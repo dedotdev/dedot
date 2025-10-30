@@ -1,4 +1,3 @@
-import { GenericSubstrateApi } from '@dedot/types';
 import { assert, stringCamelCase, UnknownApiError } from '@dedot/utils';
 import { Executor } from './Executor.js';
 
@@ -7,7 +6,7 @@ import { Executor } from './Executor.js';
  *
  * Find & decode the constant value from metadata
  */
-export class ConstantExecutor<ChainApi extends GenericSubstrateApi = GenericSubstrateApi> extends Executor<ChainApi> {
+export class ConstantExecutor extends Executor {
   doExecute(pallet: string, constantName: string) {
     const targetPallet = this.getPallet(pallet);
 

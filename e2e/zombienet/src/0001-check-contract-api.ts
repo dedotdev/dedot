@@ -1,9 +1,7 @@
 import Keyring from '@polkadot/keyring';
 import { cryptoWaitReady } from '@polkadot/util-crypto';
-import { DedotClient, ISubstrateClient, LegacyClient, WsProvider } from 'dedot';
-import { SubstrateApi } from 'dedot/chaintypes';
+import { DedotClient, ISubstrateClient, WsProvider } from 'dedot';
 import { Contract, ContractDeployer, ContractMetadata } from 'dedot/contracts';
-import { RpcVersion } from 'dedot/types';
 import { assert, stringToHex } from 'dedot/utils';
 import * as flipperV4Raw from '../flipper_v4.json';
 import * as flipperV5Raw from '../flipper_v5.json';
@@ -19,7 +17,7 @@ export const run = async (_nodeName: any, networkInfo: any) => {
   const flipperV4 = flipperV4Raw as ContractMetadata;
   const flipperV5 = flipperV5Raw as ContractMetadata;
 
-  const verifyContracts = async (api: ISubstrateClient<SubstrateApi[RpcVersion]>, flipper: ContractMetadata) => {
+  const verifyContracts = async (api: ISubstrateClient, flipper: ContractMetadata) => {
     // @ts-ignore
     const wasm = flipper.source.wasm!;
     const deployer = new ContractDeployer<FlipperContractApi>(api, flipper, wasm, { defaultCaller: caller });
@@ -120,7 +118,7 @@ export const run = async (_nodeName: any, networkInfo: any) => {
   };
 
   console.log('Checking via legacy API');
-  const apiLegacy = await LegacyClient.new(new WsProvider(wsUri));
+  const apiLegacy = await DedotClient.legacy(new WsProvider(wsUri));
   await verifyContracts(apiLegacy, flipperV4);
   await verifyContracts(apiLegacy, flipperV5);
 

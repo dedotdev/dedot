@@ -1,7 +1,7 @@
 import { BlockHash, StorageData, StorageKey } from '@dedot/codecs';
 import type { Callback, Unsub } from '@dedot/types';
 import { AsyncQueue, noop } from '@dedot/utils';
-import { DedotClient } from '../client/DedotClient.js';
+import { V2Client } from '../client/V2Client.js';
 import { PinnedBlock } from '../json-rpc/group/ChainHead/ChainHead.js';
 import { BaseStorageQuery } from './BaseStorageQuery.js';
 
@@ -18,7 +18,7 @@ import { BaseStorageQuery } from './BaseStorageQuery.js';
  * - Efficient change detection for subscriptions
  */
 export class NewStorageQuery extends BaseStorageQuery {
-  constructor(protected client: DedotClient<any>) {
+  constructor(protected client: V2Client<any>) {
     super(client);
   }
 
