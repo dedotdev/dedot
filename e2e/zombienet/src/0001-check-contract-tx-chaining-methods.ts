@@ -1,6 +1,6 @@
 import Keyring from '@polkadot/keyring';
 import { cryptoWaitReady } from '@polkadot/util-crypto';
-import { V2Client, ISubstrateClient, LegacyClient, WsProvider } from 'dedot';
+import { DedotClient, ISubstrateClient, WsProvider } from 'dedot';
 import { Contract, ContractDeployer, ContractMetadataV4, ContractMetadataV5 } from 'dedot/contracts';
 import { IKeyringPair } from 'dedot/types';
 import { assert, isHex, isNumber, stringToHex } from 'dedot/utils';
@@ -16,14 +16,14 @@ export const run = async (_nodeName: any, networkInfo: any) => {
 
   const caller = alicePair.address;
 
-  // Test with LegacyClient
-  console.log('Testing contract chaining methods with LegacyClient');
-  const apiLegacy = await LegacyClient.new(new WsProvider(wsUri));
+  // Test with legacy client
+  console.log('Testing contract chaining methods with legacy client');
+  const apiLegacy = await DedotClient.new({ provider: new WsProvider(wsUri), rpcVersion: 'legacy' });
   await testContractChainingMethods(apiLegacy, flipperV4 as ContractMetadataV4, alicePair, caller);
 
-  // Test with V2Client
-  console.log('Testing contract chaining methods with V2Client');
-  const apiV2 = await V2Client.new(new WsProvider(wsUri));
+  // Test with v2 client
+  console.log('Testing contract chaining methods with v2 client');
+  const apiV2 = await DedotClient.new(new WsProvider(wsUri));
   await testContractChainingMethods(apiV2, flipperV5 as ContractMetadataV5, alicePair, caller);
 };
 

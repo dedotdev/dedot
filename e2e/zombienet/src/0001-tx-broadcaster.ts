@@ -1,9 +1,9 @@
 import Keyring from '@polkadot/keyring';
 import { cryptoWaitReady } from '@polkadot/util-crypto';
-import { LegacyClient, Transaction, TransactionWatch, TxBroadcaster, WsProvider } from 'dedot';
+import { DedotClient, Transaction, TransactionWatch, TxBroadcaster, WsProvider } from 'dedot';
 import { deferred, HexString, stringToHex } from 'dedot/utils';
 
-const prepareRemarkTx = async (api: LegacyClient): Promise<{ rawTx: HexString; sender: string }> => {
+const prepareRemarkTx = async (api: DedotClient): Promise<{ rawTx: HexString; sender: string }> => {
   await cryptoWaitReady();
   const keyring = new Keyring({ type: 'sr25519' });
   const alice = keyring.addFromUri('//Alice');
@@ -20,7 +20,7 @@ const prepareRemarkTx = async (api: LegacyClient): Promise<{ rawTx: HexString; s
 export const run = async (nodeName: any, networkInfo: any): Promise<any> => {
   const { wsUri } = networkInfo.nodesByName[nodeName];
 
-  const api = await LegacyClient.new(new WsProvider(wsUri));
+  const client = await DedotClient.new({ provider: new WsProvider(wsUri), rpcVersion: 'legacy' });
 
   const broadcastUntilRemark = async (txBroadcaster: TxBroadcaster) => {
     const defer = deferred<void>();
@@ -30,18 +30,18 @@ export const run = async (nodeName: any, networkInfo: any): Promise<any> => {
       return defer.resolve();
     }
 
-    const { rawTx, sender: senderAddress } = await prepareRemarkTx(api);
+    const { rawTx, sender: senderAddress } = await prepareRemarkTx(client);
 
     // @ts-ignore
     console.log(`Broadcasting tx using ${txBroadcaster.prefix}-prefixed broadcaster`);
     const stopBroadcast = await txBroadcaster.broadcastTx(rawTx);
 
-    const unsub = await api.query.system.events((events) => {
-      const remarkEvent = api.events.system.Remarked.find(events);
+    const unsub = await client.query.system.events((events) => {
+      const remarkEvent = client.events.system.Remarked.find(events);
 
       if (remarkEvent) {
         const { sender, hash } = remarkEvent.palletEvent.data;
-        if (sender.address() === senderAddress && api.registry.hashAsHex(stringToHex('Hello world')) === hash) {
+        if (sender.address() === senderAddress && client.registry.hashAsHex(stringToHex('Hello world')) === hash) {
           console.log('Remark event found, stop broadcasting now!');
           stopBroadcast();
           unsub();
@@ -53,5 +53,5 @@ export const run = async (nodeName: any, networkInfo: any): Promise<any> => {
     return defer.promise;
   };
 
-  return Promise.all([Transaction, TransactionWatch].map((Clazz) => broadcastUntilRemark(new Clazz(api))));
+  return Promise.all([Transaction, TransactionWatch].map((Clazz) => broadcastUntilRemark(new Clazz(client))));
 };

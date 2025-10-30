@@ -1,6 +1,6 @@
 import Keyring from '@polkadot/keyring';
 import { cryptoWaitReady } from '@polkadot/util-crypto';
-import { V2Client, ISubstrateClient, LegacyClient, WsProvider } from 'dedot';
+import { DedotClient, ISubstrateClient, WsProvider } from 'dedot';
 import {
   Contract,
   ContractDeployer,
@@ -110,12 +110,12 @@ export const run = async (_nodeName: any, networkInfo: any) => {
   };
 
   console.log('Checking via legacy API');
-  const apiLegacy = await LegacyClient.new(new WsProvider(wsUri));
+  const apiLegacy = await DedotClient.new({ provider: new WsProvider(wsUri), rpcVersion: 'legacy' });
   await verifyContracts(apiLegacy, flipperV4 as ContractMetadataV4);
   await verifyContracts(apiLegacy, flipperV5 as ContractMetadataV5);
 
   console.log('Checking via new API');
-  const apiV2 = await V2Client.new(new WsProvider(wsUri));
+  const apiV2 = await DedotClient.new(new WsProvider(wsUri));
   await verifyContracts(apiV2, flipperV4 as ContractMetadataV4);
   await verifyContracts(apiV2, flipperV5 as ContractMetadataV5);
 };

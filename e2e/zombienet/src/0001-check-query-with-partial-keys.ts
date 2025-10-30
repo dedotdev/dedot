@@ -1,22 +1,27 @@
-import { V2Client, LegacyClient, WsProvider } from 'dedot';
+import { DedotClient, WsProvider } from 'dedot';
 import { assert } from 'dedot/utils';
 
 export const run = async (nodeName: any, networkInfo: any) => {
   const provider = new WsProvider('wss://westend-asset-hub-rpc.polkadot.io');
-  const client = await LegacyClient.new(provider);
 
-  const collectionItems_1 = await client.query.nfts.item.pagedEntries(29, { pageSize: 2 });
+  // Test with legacy client
+  console.log('Testing with legacy client');
+  const clientLegacy = await DedotClient.new({ provider, rpcVersion: 'legacy' });
+
+  const collectionItems_1 = await clientLegacy.query.nfts.item.pagedEntries(29, { pageSize: 2 });
   assert(collectionItems_1.length === 2, 'Incorrect number of items in collection');
 
-  const collectionItems_2 = await client.query.nfts.item.pagedEntries(29);
+  const collectionItems_2 = await clientLegacy.query.nfts.item.pagedEntries(29);
   assert(collectionItems_2.length > 2, 'Should have more than 2 items in collection');
 
-  await client.disconnect();
+  await clientLegacy.disconnect();
 
-  const newClient = await V2Client.new(provider);
+  // Test with v2 client
+  console.log('Testing with v2 client');
+  const clientV2 = await DedotClient.new(provider);
 
-  const collectionItems_3 = await newClient.query.nfts.item.entries(29);
+  const collectionItems_3 = await clientV2.query.nfts.item.entries(29);
   assert(collectionItems_3.length > 2, 'Should have more than 2 items in collection');
 
-  await newClient.disconnect();
+  await clientV2.disconnect();
 };

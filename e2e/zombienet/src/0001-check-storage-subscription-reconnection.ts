@@ -1,4 +1,4 @@
-import { LegacyClient, V2Client, WsProvider } from 'dedot';
+import { DedotClient, WsProvider } from 'dedot';
 import { assert, waitFor } from 'dedot/utils';
 
 const ALICE = '5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY';
@@ -53,7 +53,9 @@ async function testStorageSubscription(wsUri: string, clientType: 'legacy' | 'de
   const provider = new WsProvider(wsUri);
 
   // Create appropriate client
-  const client = clientType === 'legacy' ? await LegacyClient.new(provider) : await V2Client.new(provider);
+  const client = clientType === 'legacy'
+    ? await DedotClient.new({ provider, rpcVersion: 'legacy' })
+    : await DedotClient.new(provider);
 
   // Track subscription updates
   const updates: number[] = [];
@@ -115,7 +117,9 @@ async function testQueryMultiSubscription(wsUri: string, clientType: 'legacy' | 
   const provider = new WsProvider(wsUri);
 
   // Create appropriate client
-  const client = clientType === 'legacy' ? await LegacyClient.new(provider) : await V2Client.new(provider);
+  const client = clientType === 'legacy'
+    ? await DedotClient.new({ provider, rpcVersion: 'legacy' })
+    : await DedotClient.new(provider);
 
   // Track subscription updates
   const updates: Array<Array<any>> = [];

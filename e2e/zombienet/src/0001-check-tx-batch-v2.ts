@@ -1,6 +1,6 @@
 import Keyring from '@polkadot/keyring';
 import { cryptoWaitReady } from '@polkadot/util-crypto';
-import { V2Client, WsProvider } from 'dedot';
+import { DedotClient, WsProvider } from 'dedot';
 import { KitchensinkRuntimeRuntimeCallLike } from 'dedot/chaintypes';
 import { assert, isHex, isNumber } from 'dedot/utils';
 
@@ -14,7 +14,7 @@ export const run = async (nodeName: any, networkInfo: any): Promise<void> => {
   const { wsUri } = networkInfo.nodesByName[nodeName];
 
   // TODO use RococoApi
-  const api = await V2Client.new(new WsProvider(wsUri));
+  const api = await DedotClient.new(new WsProvider(wsUri));
 
   const TEN_UNIT = BigInt(10 * 1e12);
 

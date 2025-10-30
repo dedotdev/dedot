@@ -1,6 +1,6 @@
 import Keyring from '@polkadot/keyring';
 import { cryptoWaitReady } from '@polkadot/util-crypto';
-import { V2Client, ISubstrateClient, LegacyClient, WsProvider } from 'dedot';
+import { DedotClient, ISubstrateClient, WsProvider } from 'dedot';
 import { Contract, ContractDeployer } from 'dedot/contracts';
 import { assert, stringToHex } from 'dedot/utils';
 import { LazyvecContractApi } from '../../../examples/scripts/inkv5/lazyvec';
@@ -130,11 +130,11 @@ export const run = async (_nodeName: any, networkInfo: any) => {
 
   // Test with legacy client
   console.log('Testing with legacy client');
-  const apiLegacy = await LegacyClient.new(new WsProvider(wsUri));
+  const apiLegacy = await DedotClient.new({ provider: new WsProvider(wsUri), rpcVersion: 'legacy' });
   await verifyLazyVecStorage(apiLegacy);
 
   // Test with new client
   console.log('Testing with new client');
-  const apiV2 = await V2Client.new(new WsProvider(wsUri));
+  const apiV2 = await DedotClient.new(new WsProvider(wsUri));
   await verifyLazyVecStorage(apiV2);
 };

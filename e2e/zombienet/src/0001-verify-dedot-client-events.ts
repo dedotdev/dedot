@@ -1,12 +1,12 @@
-import { V2Client, PinnedBlock, WsProvider } from 'dedot';
-import { assert, deferred } from 'dedot/utils';
+import { DedotClient, PinnedBlock, WsProvider } from 'dedot';
+import { assert } from 'dedot/utils';
 
 export const run = async (nodeName: any, networkInfo: any): Promise<any> => {
   const { wsUri } = networkInfo.nodesByName[nodeName];
 
   console.log(`Connecting to node at ${wsUri}`);
   const provider = new WsProvider(wsUri);
-  const client = await V2Client.new({ provider });
+  const client = await DedotClient.new({ provider });
 
   console.log('Connected to node, testing V2Client events...');
 
