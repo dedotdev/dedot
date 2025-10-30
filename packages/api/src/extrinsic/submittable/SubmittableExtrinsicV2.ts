@@ -1,7 +1,7 @@
 import type { BlockHash } from '@dedot/codecs';
 import { Callback, IEventRecord, IRuntimeTxCall, ISubmittableResult, TxHash, TxUnsub, Unsub } from '@dedot/types';
 import { AsyncQueue, noop, waitFor } from '@dedot/utils';
-import { DedotClient } from '../../client/index.js';
+import { V2Client } from '../../client/index.js';
 import { PinnedBlock } from '../../json-rpc/index.js';
 import { BaseSubmittableExtrinsic } from './BaseSubmittableExtrinsic.js';
 import { SubmittableResult } from './SubmittableResult.js';
@@ -16,7 +16,7 @@ type TxFound = { blockHash: BlockHash; blockNumber: number; index: number; event
  */
 export class SubmittableExtrinsicV2 extends BaseSubmittableExtrinsic {
   constructor(
-    public client: DedotClient<any>,
+    public client: V2Client<any>,
     call: IRuntimeTxCall,
   ) {
     super(client, call);

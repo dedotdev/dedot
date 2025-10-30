@@ -1,4 +1,4 @@
-import { DedotClient, WsProvider } from 'dedot';
+import { V2Client, WsProvider } from 'dedot';
 import { Contract } from 'dedot/contracts';
 import { devPairs } from '../keyring.js';
 import flipper from './flipper.json';
@@ -8,7 +8,7 @@ const { alice } = await devPairs();
 
 console.log('🚀 Starting Flipper contract storage demonstration');
 
-const client = await DedotClient.new(new WsProvider('wss://sys.ibp.network/asset-hub-westend'));
+const client = await V2Client.new(new WsProvider('wss://sys.ibp.network/asset-hub-westend'));
 
 const contractAddress = '0x90b7109346eEbbd8218336fF67CB7F7b5b599eFE';
 

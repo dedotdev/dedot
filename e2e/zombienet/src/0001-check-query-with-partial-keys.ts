@@ -1,4 +1,4 @@
-import { DedotClient, LegacyClient, WsProvider } from 'dedot';
+import { V2Client, LegacyClient, WsProvider } from 'dedot';
 import { assert } from 'dedot/utils';
 
 export const run = async (nodeName: any, networkInfo: any) => {
@@ -13,7 +13,7 @@ export const run = async (nodeName: any, networkInfo: any) => {
 
   await client.disconnect();
 
-  const newClient = await DedotClient.new(provider);
+  const newClient = await V2Client.new(provider);
 
   const collectionItems_3 = await newClient.query.nfts.item.entries(29);
   assert(collectionItems_3.length > 2, 'Should have more than 2 items in collection');

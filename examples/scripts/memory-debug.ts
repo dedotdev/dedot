@@ -7,7 +7,7 @@
  * on 2000 recent blocks to analyze memory consumption patterns.
  */
 import { $Header } from '@dedot/codecs';
-import { DedotClient, WsProvider } from 'dedot';
+import { V2Client, WsProvider } from 'dedot';
 
 // const RPC_ENDPOINT = 'wss://archive.minersunion.ai';
 const RPC_ENDPOINT = 'wss://bittensor-finney.api.onfinality.io/public-ws';
@@ -50,7 +50,7 @@ function logMemoryUsage(stats: MemoryStats, index: number, total: number) {
   );
 }
 
-async function processBlock(api: DedotClient, blockNumber: number, index: number): Promise<MemoryStats> {
+async function processBlock(api: V2Client, blockNumber: number, index: number): Promise<MemoryStats> {
   try {
     // 1. Get block hash
     const blockHash = await api.rpc.chain_getBlockHash(blockNumber);
@@ -153,7 +153,7 @@ async function main() {
   console.log('🔗 Connecting to Polkadot mainnet...');
   console.log(`📊 Will process ${BLOCKS_TO_PROCESS} recent blocks\n`);
 
-  const api = await DedotClient.new(new WsProvider(RPC_ENDPOINT));
+  const api = await V2Client.new(new WsProvider(RPC_ENDPOINT));
 
   try {
     // Get initial memory baseline

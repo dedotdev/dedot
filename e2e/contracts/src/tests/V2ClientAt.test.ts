@@ -1,4 +1,4 @@
-import { DedotClient, WsProvider } from 'dedot';
+import { V2Client, WsProvider } from 'dedot';
 import { DedotError, HexString } from 'dedot/utils';
 import { afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
 import { devPairs } from '../utils';
@@ -6,8 +6,8 @@ import { devPairs } from '../utils';
 const ALICE = '5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY';
 const BOB = '5FHneW46xGXgs5mUiveU4sbTyGBzmstUspZC92UhjJM694ty';
 
-describe('DedotClient .at() Method E2E Tests', () => {
-  let client: DedotClient;
+describe('V2Client .at() Method E2E Tests', () => {
+  let client: V2Client;
   let genesisHash: HexString;
   let finalizedHash: HexString;
   let bestHash: HexString;

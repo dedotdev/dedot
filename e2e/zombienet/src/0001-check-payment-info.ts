@@ -1,4 +1,4 @@
-import { DedotClient, ISubstrateClient, LegacyClient, WsProvider } from 'dedot';
+import { V2Client, ISubstrateClient, LegacyClient, WsProvider } from 'dedot';
 import { TxPaymentInfo } from 'dedot/types';
 import { assert } from 'dedot/utils';
 
@@ -18,7 +18,7 @@ export const run = async (nodeName: any, networkInfo: any) => {
   console.log('[API-V1] Payment Info', paymentInfoV1);
   assert(typeof paymentInfoV1.partialFee === 'bigint', '[API-V1] Partial fee should be of type bigint');
 
-  const apiV2 = await DedotClient.new(new WsProvider(wsUri));
+  const apiV2 = await V2Client.new(new WsProvider(wsUri));
   const paymentInfoV2 = await getPaymentInfo(apiV2);
 
   console.log('[API-V2] Payment Info', paymentInfoV2);

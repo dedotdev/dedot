@@ -20,8 +20,8 @@ import {
   ISubstrateClientAt,
   SubstrateRuntimeVersion,
 } from '../types.js';
-import { DedotClient } from './DedotClient.js';
 import { LegacyClient } from './LegacyClient.js';
+import { V2Client } from './V2Client.js';
 
 export type ClientOptions = ApiOptions & {
   rpcVersion?: RpcVersion;
@@ -47,12 +47,12 @@ export class Client<
     if (this.rpcVersion === 'legacy') {
       this.#client = new LegacyClient(options) as any;
     } else {
-      this.#client = new DedotClient(options) as any;
+      this.#client = new V2Client(options) as any;
     }
   }
 
   /**
-   * Factory method to create a new DedotClient instance
+   * Factory method to create a new V2Client instance
    *
    * @param options
    */
@@ -63,7 +63,7 @@ export class Client<
   }
 
   /**
-   * Alias for __DedotClient.create__
+   * Alias for __V2Client.create__
    *
    * @param options
    */

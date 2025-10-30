@@ -1,7 +1,7 @@
 import Keyring from '@polkadot/keyring';
 import { cryptoWaitReady } from '@polkadot/util-crypto';
 import { IKeyringPair } from '@dedot/types';
-import { DedotClient, LegacyClient, WsProvider } from 'dedot';
+import { V2Client, LegacyClient, WsProvider } from 'dedot';
 import { assert, isHex, isNumber } from 'dedot/utils';
 
 const BOB = '5FHneW46xGXgs5mUiveU4sbTyGBzmstUspZC92UhjJM694ty';
@@ -18,12 +18,12 @@ export const run = async (nodeName: any, networkInfo: any): Promise<void> => {
   console.log('Testing chaining methods with LegacyClient');
   await testChainingMethods(LegacyClient, wsUri, alice);
 
-  // Test with DedotClient
-  console.log('Testing chaining methods with DedotClient');
-  await testChainingMethods(DedotClient, wsUri, alice);
+  // Test with V2Client
+  console.log('Testing chaining methods with V2Client');
+  await testChainingMethods(V2Client, wsUri, alice);
 };
 
-async function testChainingMethods(ClientClass: typeof LegacyClient | typeof DedotClient, wsUri: string, alice: any) {
+async function testChainingMethods(ClientClass: typeof LegacyClient | typeof V2Client, wsUri: string, alice: any) {
   const api = await ClientClass.new(new WsProvider(wsUri));
 
   // Test 1: untilBestChainBlockIncluded
@@ -43,7 +43,7 @@ async function testChainingMethods(ClientClass: typeof LegacyClient | typeof Ded
   await testSendAndSignAndSendReturnTypes(api, alice);
 }
 
-async function testUntilBestChainBlockIncluded(api: LegacyClient | DedotClient, alice: IKeyringPair) {
+async function testUntilBestChainBlockIncluded(api: LegacyClient | V2Client, alice: IKeyringPair) {
   const prevBobBalance = (await api.query.system.account(BOB)).data.free;
   console.log('BOB - initial balance:', prevBobBalance.toString());
 
@@ -68,7 +68,7 @@ async function testUntilBestChainBlockIncluded(api: LegacyClient | DedotClient, 
   console.log('untilBestChainBlockIncluded test passed');
 }
 
-async function testUntilFinalized(api: LegacyClient | DedotClient, alice: IKeyringPair) {
+async function testUntilFinalized(api: LegacyClient | V2Client, alice: IKeyringPair) {
   const prevBobBalance = (await api.query.system.account(BOB)).data.free;
   console.log('BOB - initial balance:', prevBobBalance.toString());
 
@@ -93,7 +93,7 @@ async function testUntilFinalized(api: LegacyClient | DedotClient, alice: IKeyri
   console.log('untilFinalized test passed');
 }
 
-async function testEventOrder(api: LegacyClient | DedotClient, alice: any) {
+async function testEventOrder(api: LegacyClient | V2Client, alice: any) {
   const transferTx = api.tx.balances.transferKeepAlive(BOB, TRANSFER_AMOUNT);
 
   // Track the order of events
@@ -126,7 +126,7 @@ async function testEventOrder(api: LegacyClient | DedotClient, alice: any) {
   console.log('Event order test passed');
 }
 
-async function testSendAndSignAndSendReturnTypes(api: LegacyClient | DedotClient, alice: IKeyringPair) {
+async function testSendAndSignAndSendReturnTypes(api: LegacyClient | V2Client, alice: IKeyringPair) {
   // Test 1: send() without callback should return a hash
   console.log('Testing send() without callback');
   const tx1 = api.tx.system.remark('Hello World');
@@ -164,6 +164,6 @@ async function testSendAndSignAndSendReturnTypes(api: LegacyClient | DedotClient
   assert(typeof (await result4) === 'function', 'signAndSend() with callback should return a function');
   console.log('signAndSend() with callback test passed');
   await result4.untilBestChainBlockIncluded();
-  
+
   console.log('All send and signAndSend return type tests passed');
 }

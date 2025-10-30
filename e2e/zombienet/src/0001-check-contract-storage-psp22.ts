@@ -1,6 +1,6 @@
 import Keyring from '@polkadot/keyring';
 import { cryptoWaitReady } from '@polkadot/util-crypto';
-import { DedotClient, ISubstrateClient, LegacyClient, WsProvider } from 'dedot';
+import { V2Client, ISubstrateClient, LegacyClient, WsProvider } from 'dedot';
 import { Contract, ContractDeployer } from 'dedot/contracts';
 import { assert, stringToHex } from 'dedot/utils';
 import { Psp22ContractApi } from '../../../examples/scripts/inkv5/psp22';
@@ -167,6 +167,6 @@ export const run = async (_nodeName: any, networkInfo: any) => {
 
   // Test with new client
   console.log('Testing with new client');
-  const apiV2 = await DedotClient.new(new WsProvider(wsUri));
+  const apiV2 = await V2Client.new(new WsProvider(wsUri));
   await verifyPsp22Storage(apiV2);
 };

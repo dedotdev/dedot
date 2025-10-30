@@ -1,4 +1,4 @@
-import { DedotClient, LegacyClient, WsProvider } from 'dedot';
+import { V2Client, LegacyClient, WsProvider } from 'dedot';
 import { afterAll, beforeAll } from 'vitest';
 import { devPairs } from './utils';
 
@@ -10,7 +10,7 @@ beforeAll(async () => {
   global.contractsClient = await LegacyClient.new(new WsProvider(CONTRACTS_NODE_ENDPOINT));
 
   console.log(`Connect to ${INK_NODE_ENDPOINT}`);
-  global.reviveClient = await DedotClient.new(new WsProvider(INK_NODE_ENDPOINT));
+  global.reviveClient = await V2Client.new(new WsProvider(INK_NODE_ENDPOINT));
 
   const { alice, bob } = devPairs();
 

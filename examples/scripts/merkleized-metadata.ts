@@ -1,4 +1,4 @@
-import { DedotClient, WsProvider } from 'dedot';
+import { V2Client, WsProvider } from 'dedot';
 import { MerkleizedMetadata } from 'dedot/merkleized-metadata';
 import { u8aToHex } from 'dedot/utils';
 import { devPairs } from './keyring.js';
@@ -16,7 +16,7 @@ const { alice } = await devPairs();
 // Create a dedot client
 console.log('Connecting to Polkadot...');
 const provider = new WsProvider('wss://rpc.polkadot.io');
-const client = await DedotClient.create({ provider });
+const client = await V2Client.create({ provider });
 
 // Get metadata from the client
 const metadata = client.metadata;

@@ -26,12 +26,12 @@ import type {
 import { BaseSubstrateClient, ensurePresence } from './BaseSubstrateClient.js';
 
 /**
- * @name DedotClient
+ * @name V2Client
  * @description New promised-based API Client for Polkadot & Substrate based on JSON-RPC V2
  *
  * __Unstable, use with caution.__
  */
-export class DedotClient<ChainApi extends GenericSubstrateApi = SubstrateApi> // prettier-end-here
+export class V2Client<ChainApi extends GenericSubstrateApi = SubstrateApi> // prettier-end-here
   extends BaseSubstrateClient<ChainApi, DedotClientEvent>
 {
   protected _chainHead?: ChainHead;
@@ -40,7 +40,7 @@ export class DedotClient<ChainApi extends GenericSubstrateApi = SubstrateApi> //
   protected _txBroadcaster?: TxBroadcaster;
 
   /**
-   * Use factory methods (`create`, `new`) to create `DedotClient` instances.
+   * Use factory methods (`create`, `new`) to create `V2Client` instances.
    *
    * @param options
    */
@@ -49,25 +49,25 @@ export class DedotClient<ChainApi extends GenericSubstrateApi = SubstrateApi> //
   }
 
   /**
-   * Factory method to create a new DedotClient instance
+   * Factory method to create a new V2Client instance
    *
    * @param options
    */
   static async create<ChainApi extends GenericSubstrateApi = SubstrateApi>(
     options: ApiOptions | JsonRpcProvider,
-  ): Promise<DedotClient<ChainApi>> {
-    return new DedotClient<ChainApi>(options).connect();
+  ): Promise<V2Client<ChainApi>> {
+    return new V2Client<ChainApi>(options).connect();
   }
 
   /**
-   * Alias for __DedotClient.create__
+   * Alias for __V2Client.create__
    *
    * @param options
    */
   static async new<ChainApi extends GenericSubstrateApi = SubstrateApi>(
     options: ApiOptions | JsonRpcProvider,
-  ): Promise<DedotClient<ChainApi>> {
-    return DedotClient.create(options);
+  ): Promise<V2Client<ChainApi>> {
+    return V2Client.create(options);
   }
 
   get chainSpec() {

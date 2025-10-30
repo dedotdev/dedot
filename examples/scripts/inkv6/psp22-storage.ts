@@ -1,4 +1,4 @@
-import { DedotClient, WsProvider } from 'dedot';
+import { V2Client, WsProvider } from 'dedot';
 import { ContractDeployer, toEvmAddress } from 'dedot/contracts';
 import { assert, generateRandomHex } from 'dedot/utils';
 import { devPairs } from '../keyring.js';
@@ -9,9 +9,9 @@ const { alice, bob } = await devPairs();
 
 console.log('🚀 Starting PSP22 contract storage demonstration');
 
-// Connect to a local node using DedotClient (v2 API)
+// Connect to a local node using V2Client (v2 API)
 console.log('📡 Connecting to node...');
-const client = await DedotClient.new(new WsProvider('ws://127.0.0.1:9944'));
+const client = await V2Client.new(new WsProvider('ws://127.0.0.1:9944'));
 console.log(`✅ Connected to ${client.runtimeVersion.specName} v${client.runtimeVersion.specVersion}`);
 
 // Try to map account first!

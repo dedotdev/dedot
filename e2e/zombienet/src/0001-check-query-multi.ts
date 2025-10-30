@@ -1,4 +1,4 @@
-import { DedotClient, LegacyClient, WsProvider } from 'dedot';
+import { V2Client, LegacyClient, WsProvider } from 'dedot';
 import { assert } from 'dedot/utils';
 
 const ALICE = '5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY';
@@ -9,9 +9,9 @@ export const run = async (nodeName: any, networkInfo: any) => {
   const { wsUri } = networkInfo.nodesByName[nodeName];
 
   try {
-    // Test with DedotClient (v2 API)
-    console.log('Testing queryMulti with DedotClient (v2 API)');
-    await testWithDedotClient(wsUri);
+    // Test with V2Client (v2 API)
+    console.log('Testing queryMulti with V2Client (v2 API)');
+    await testWithV2Client(wsUri);
 
     // Test with LegacyClient
     console.log('Testing queryMulti with LegacyClient');
@@ -24,8 +24,8 @@ export const run = async (nodeName: any, networkInfo: any) => {
   }
 };
 
-async function testWithDedotClient(wsUri: string) {
-  const client = await DedotClient.new(new WsProvider(wsUri));
+async function testWithV2Client(wsUri: string) {
+  const client = await V2Client.new(new WsProvider(wsUri));
 
   // Test one-time queries
   await testOneTimeQueries(client);
@@ -48,7 +48,7 @@ async function testWithLegacyClient(wsUri: string) {
   await client.disconnect();
 }
 
-async function testOneTimeQueries(client: DedotClient | LegacyClient) {
+async function testOneTimeQueries(client: V2Client | LegacyClient) {
   console.log('Testing one-time queryMulti...');
 
   // Execute queryMulti
@@ -95,7 +95,7 @@ async function testOneTimeQueries(client: DedotClient | LegacyClient) {
   console.log('One-time queryMulti tests passed!');
 }
 
-async function testSubscriptionQueries(client: DedotClient | LegacyClient) {
+async function testSubscriptionQueries(client: V2Client | LegacyClient) {
   console.log('Testing subscription-based queryMulti...');
 
   // Set up a promise to track subscription updates

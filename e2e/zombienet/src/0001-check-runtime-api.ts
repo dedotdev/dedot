@@ -1,4 +1,4 @@
-import { DedotClient, ISubstrateClient, LegacyClient, WsProvider } from 'dedot';
+import { V2Client, ISubstrateClient, LegacyClient, WsProvider } from 'dedot';
 import { $Metadata, Metadata } from 'dedot/codecs';
 import { assert, stringCamelCase } from 'dedot/utils';
 
@@ -43,6 +43,6 @@ export const run = async (nodeName: any, networkInfo: any) => {
   const apiLegacy = await LegacyClient.new(new WsProvider(wsUri));
   await verifyRuntimeApi(apiLegacy);
 
-  const apiV2 = await DedotClient.new(new WsProvider(wsUri));
+  const apiV2 = await V2Client.new(new WsProvider(wsUri));
   await verifyRuntimeApi(apiV2);
 };

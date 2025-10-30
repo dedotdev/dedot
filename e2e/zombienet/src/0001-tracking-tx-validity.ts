@@ -1,6 +1,6 @@
 import Keyring from '@polkadot/keyring';
 import { cryptoWaitReady } from '@polkadot/util-crypto';
-import { DedotClient, WsProvider } from 'dedot';
+import { V2Client, WsProvider } from 'dedot';
 import { assert } from 'dedot/utils';
 
 export const run = async (nodeName: any, networkInfo: any): Promise<void> => {
@@ -10,7 +10,7 @@ export const run = async (nodeName: any, networkInfo: any): Promise<void> => {
 
   const { wsUri } = networkInfo.nodesByName[nodeName];
 
-  const api = await DedotClient.new(new WsProvider(wsUri));
+  const api = await V2Client.new(new WsProvider(wsUri));
 
   let finalizedTx = 0;
   let invalidTx = 0;

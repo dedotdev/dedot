@@ -1,8 +1,8 @@
 import { WestendApi } from '@dedot/chaintypes';
-import { DedotClient, LegacyClient, WsProvider } from 'dedot';
+import { V2Client, LegacyClient, WsProvider } from 'dedot';
 import { devPairs } from './keyring.js';
 
-async function checkViewFunctions(client: DedotClient<WestendApi> | LegacyClient<WestendApi>, clientType: string) {
+async function checkViewFunctions(client: V2Client<WestendApi> | LegacyClient<WestendApi>, clientType: string) {
   console.log(`\nTesting view functions with ${clientType}...`);
 
   const { alice } = await devPairs();
@@ -36,11 +36,11 @@ async function checkViewFunctions(client: DedotClient<WestendApi> | LegacyClient
 // Main execution
 console.log('Connecting to Westend...');
 
-// Test with DedotClient
+// Test with V2Client
 const provider = new WsProvider('wss://westend-rpc.polkadot.io');
-const dedotClient = await DedotClient.create<WestendApi>({ provider });
+const dedotClient = await V2Client.create<WestendApi>({ provider });
 console.log(`Connected to ${dedotClient.runtimeVersion.specName} v${dedotClient.runtimeVersion.specVersion}`);
-await checkViewFunctions(dedotClient, 'DedotClient');
+await checkViewFunctions(dedotClient, 'V2Client');
 
 // Test with LegacyClient
 const legacyClient = await LegacyClient.create<WestendApi>({ provider });

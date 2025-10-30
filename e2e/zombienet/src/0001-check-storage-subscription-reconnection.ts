@@ -1,4 +1,4 @@
-import { LegacyClient, DedotClient, WsProvider } from 'dedot';
+import { LegacyClient, V2Client, WsProvider } from 'dedot';
 import { assert, waitFor } from 'dedot/utils';
 
 const ALICE = '5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY';
@@ -19,11 +19,11 @@ export const run = async (nodeName: any, networkInfo: any) => {
   }
 
   try {
-    console.log('\n--- Testing DedotClient with regular subscription ---');
+    console.log('\n--- Testing V2Client with regular subscription ---');
     await testStorageSubscription(wsUri, 'dedot');
-    console.log('✅ DedotClient regular subscription test PASSED');
+    console.log('✅ V2Client regular subscription test PASSED');
   } catch (error: any) {
-    console.error(`❌ DedotClient regular subscription test FAILED: ${error.message}`);
+    console.error(`❌ V2Client regular subscription test FAILED: ${error.message}`);
     throw error;
   }
 
@@ -39,11 +39,11 @@ export const run = async (nodeName: any, networkInfo: any) => {
   }
 
   try {
-    console.log('\n--- Testing DedotClient with queryMulti subscription ---');
+    console.log('\n--- Testing V2Client with queryMulti subscription ---');
     await testQueryMultiSubscription(wsUri, 'dedot');
-    console.log('✅ DedotClient queryMulti subscription test PASSED');
+    console.log('✅ V2Client queryMulti subscription test PASSED');
   } catch (error: any) {
-    console.error(`❌ DedotClient queryMulti subscription test FAILED: ${error.message}`);
+    console.error(`❌ V2Client queryMulti subscription test FAILED: ${error.message}`);
     throw error;
   }
 };
@@ -53,7 +53,7 @@ async function testStorageSubscription(wsUri: string, clientType: 'legacy' | 'de
   const provider = new WsProvider(wsUri);
 
   // Create appropriate client
-  const client = clientType === 'legacy' ? await LegacyClient.new(provider) : await DedotClient.new(provider);
+  const client = clientType === 'legacy' ? await LegacyClient.new(provider) : await V2Client.new(provider);
 
   // Track subscription updates
   const updates: number[] = [];
@@ -115,7 +115,7 @@ async function testQueryMultiSubscription(wsUri: string, clientType: 'legacy' | 
   const provider = new WsProvider(wsUri);
 
   // Create appropriate client
-  const client = clientType === 'legacy' ? await LegacyClient.new(provider) : await DedotClient.new(provider);
+  const client = clientType === 'legacy' ? await LegacyClient.new(provider) : await V2Client.new(provider);
 
   // Track subscription updates
   const updates: Array<Array<any>> = [];
@@ -126,13 +126,10 @@ async function testQueryMultiSubscription(wsUri: string, clientType: 'legacy' | 
   await new Promise<void>(async (resolve, reject) => {
     // Create the subscription
     unsubFn = await client.queryMulti(
-      [
-        { fn: client.query.system.account, args: [ALICE] },
-        { fn: client.query.system.number }
-      ],
+      [{ fn: client.query.system.account, args: [ALICE] }, { fn: client.query.system.number }],
       (results) => {
         console.log(`${clientType} received queryMulti update #${updates.length + 1}`);
-        
+
         updates.push(results);
 
         // After receiving 3 updates, we'll disrupt the connection
@@ -164,16 +161,18 @@ async function testQueryMultiSubscription(wsUri: string, clientType: 'legacy' | 
                 resolve();
               } else {
                 reject(
-                  new Error(`QueryMulti subscription STOPPED after reconnection - received 0 updates after WebSocket reconnection`),
+                  new Error(
+                    `QueryMulti subscription STOPPED after reconnection - received 0 updates after WebSocket reconnection`,
+                  ),
                 );
               }
             }, 20000); // Wait 20 seconds for potential updates
           })();
         }
-      }
+      },
     );
   });
-  
+
   // Always disconnect the client after the test, regardless of outcome
   await client.disconnect();
 }

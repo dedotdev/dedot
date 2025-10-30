@@ -1,7 +1,7 @@
 import { BlockHash, EraLike, Hash, Header } from '@dedot/codecs';
 import { SignerPayloadJSON } from '@dedot/types';
 import { assert, bnMin, hexToBn, hexToNumber, isZeroHex, numberToHex, u8aToHex } from '@dedot/utils';
-import { DedotClient } from '../../../client/index.js';
+import { V2Client } from '../../../client/index.js';
 import { SignedExtension } from '../SignedExtension.js';
 
 export const MAX_FINALITY_LAG: number = 5;
@@ -43,7 +43,7 @@ export class CheckMortality extends SignedExtension<EraLike, Hash> {
   }
 
   async #getSigningHeaderRpcV2(): Promise<SigningHeader> {
-    const api = this.client as DedotClient;
+    const api = this.client as V2Client;
     // TODO similar to the legacy, we should account for the case finality is lagging behind
     const finalizedBlock = await api.chainHead.finalizedBlock();
 

@@ -1,6 +1,6 @@
-import { DedotClient, LegacyClient, WsProvider } from 'dedot';
+import { V2Client, LegacyClient, WsProvider } from 'dedot';
 
-const decodeEvents = async (Client: typeof LegacyClient | typeof DedotClient, blockNumber: number) => {
+const decodeEvents = async (Client: typeof LegacyClient | typeof V2Client, blockNumber: number) => {
   const client = await LegacyClient.new(new WsProvider('wss://archive.chain.opentensor.ai:443'));
   const blockHash = await client.rpc.chain_getBlockHash(blockNumber);
   if (!blockHash) {
@@ -16,11 +16,11 @@ const decodeEvents = async (Client: typeof LegacyClient | typeof DedotClient, bl
 };
 
 await decodeEvents(LegacyClient, 6523565);
-await decodeEvents(DedotClient, 6523565);
+await decodeEvents(V2Client, 6523565);
 
 // runtime upgraded happened
 await decodeEvents(LegacyClient, 6523566);
-await decodeEvents(DedotClient, 6523566);
+await decodeEvents(V2Client, 6523566);
 
 await decodeEvents(LegacyClient, 6523567);
-await decodeEvents(DedotClient, 6523567);
+await decodeEvents(V2Client, 6523567);
