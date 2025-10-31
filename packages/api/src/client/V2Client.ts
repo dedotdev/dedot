@@ -102,44 +102,57 @@ export class V2Client<ChainApi extends GenericSubstrateApi = SubstrateApi> // pr
    * Initialize APIs before usage
    */
   protected override async doInitialize() {
-    const rpcMethods: string[] = (await this.rpc.rpc_methods()).methods;
+    const shouldInitialize = !this._genesisHash;
 
-    this._chainHead = new ChainHead(this, { rpcMethods });
-    this._chainSpec = new ChainSpec(this, { rpcMethods });
+    if (shouldInitialize) {
+      const rpcMethods: string[] = (await this.rpc.rpc_methods()).methods;
 
-    // Always initialize Archive, but only set up fallback if supported
-    const archive = new Archive(this, { rpcMethods });
+      this._chainHead = new ChainHead(this, { rpcMethods });
 
-    // Set up ChainHead with Archive fallback only if Archive is supported
-    if (await archive.supported()) {
-      this._chainHead.withArchive(archive);
-      this._archive = archive;
+      this._chainSpec = new ChainSpec(this, { rpcMethods });
+
+      // Always initialize Archive, but only set up fallback if supported
+      const archive = new Archive(this, { rpcMethods });
+
+      // Set up ChainHead with Archive fallback only if Archive is supported
+      if (await archive.supported()) {
+        this._archive = archive;
+        this._chainHead.withArchive(archive);
+      }
+
+      this._txBroadcaster = await this.#initializeTxBroadcaster(rpcMethods);
     }
-
-    this._txBroadcaster = await this.#initializeTxBroadcaster(rpcMethods);
 
     // Fetching node information
     let [_, genesisHash] = await Promise.all([
-      this.chainHead.follow(),
-      this.chainSpec.genesisHash().catch(() => undefined),
+      this.chainHead.follow(true),
+      shouldInitialize
+        ? this.chainSpec.genesisHash().catch(() => this.#getGenesisHashFallback())
+        : Promise.resolve(this._genesisHash),
     ]);
 
-    this._genesisHash = genesisHash || (await this.#getGenesisHashFallback());
-    this._runtimeVersion = await this.chainHead.bestRuntimeVersion();
+    this._genesisHash = genesisHash;
 
-    let metadata;
-    if (await this.shouldPreloadMetadata()) {
-      metadata = await this.fetchMetadata();
+    const newBestRuntime = await this.chainHead.bestRuntimeVersion();
+    if (!this._runtimeVersion || newBestRuntime.specVersion !== this._runtimeVersion.specVersion) {
+      this._runtimeVersion = newBestRuntime;
+
+      let metadata;
+      if (await this.shouldPreloadMetadata()) {
+        metadata = await this.fetchMetadata();
+      }
+
+      await this.setupMetadata(metadata);
     }
 
-    await this.setupMetadata(metadata);
-    this.subscribeRuntimeUpgrades();
+    if (shouldInitialize) {
+      this.subscribeRuntimeUpgrades();
 
-    // relegate events
-    this.chainHead.on('newBlock', (...args) => this.emit('newBlock', ...args));
-    this.chainHead.on('bestBlock', (...args) => this.emit('bestBlock', ...args));
-    this.chainHead.on('finalizedBlock', (...args) => this.emit('finalizedBlock', ...args));
-    this.chainHead.on('bestChainChanged', (...args) => this.emit('bestChainChanged', ...args));
+      this.chainHead.on('newBlock', (...args) => this.emit('newBlock', ...args));
+      this.chainHead.on('bestBlock', (...args) => this.emit('bestBlock', ...args));
+      this.chainHead.on('finalizedBlock', (...args) => this.emit('finalizedBlock', ...args));
+      this.chainHead.on('bestChainChanged', (...args) => this.emit('bestChainChanged', ...args));
+    }
   }
 
   /**
@@ -186,11 +199,12 @@ export class V2Client<ChainApi extends GenericSubstrateApi = SubstrateApi> // pr
     await this.chainHead.unfollow();
   }
 
-  protected override onDisconnected = async () => {
-    try {
-      this.chainHead.unfollow().catch(noop);
-    } catch {}
-  };
+  // protected override onDisconnected = async () => {
+  //   try {
+  //     console.log('onDisconnected');
+  //     this.chainHead.unfollow().catch(noop);
+  //   } catch {}
+  // };
 
   protected override cleanUp() {
     super.cleanUp();
