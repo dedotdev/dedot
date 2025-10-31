@@ -1,10 +1,11 @@
-import { BlockHash, Hash, Metadata, PortableRegistry } from '@dedot/codecs';
+import { BlockHash, Hash, Header, Metadata, PortableRegistry } from '@dedot/codecs';
 import type { ConnectionStatus, JsonRpcProvider, ProviderEvent } from '@dedot/providers';
 import type { AnyShape } from '@dedot/shape';
 import type { IStorage } from '@dedot/storage';
 import {
   Callback,
   GenericStorageQuery,
+  GenericSubstrateApi,
   InjectedSigner,
   Query,
   QueryFnResult,
@@ -12,7 +13,6 @@ import {
   RuntimeApiName,
   RuntimeApiSpec,
   Unsub,
-  GenericSubstrateApi,
 } from '@dedot/types';
 import type { HashFn, HexString, IEventEmitter } from '@dedot/utils';
 import type { SubstrateApi } from './chaintypes/index.js';
@@ -161,6 +161,32 @@ export interface ISubstrateClientAt<
   atBlockHash: BlockHash;
 }
 
+export interface BlockInfo {
+  hash: BlockHash;
+  number: number;
+  parent: BlockHash;
+}
+
+export interface BlockExplorer {
+  // Get the best block
+  best(): Promise<BlockInfo>;
+  // Subscribe to the best block
+  best(callback: Callback<BlockInfo>): () => void;
+  // Get the list of best blocks, an array of block from the current best block to the current finalized block
+  bests(): Promise<BlockInfo[]>;
+  // Subscribe to the list of best blocks
+  bests(callback: Callback<BlockInfo[]>): () => void;
+  // Get the finalized block
+  finalized(): Promise<BlockInfo>;
+  // Subscribe to the finalized block
+  finalized(callback: Callback<BlockInfo>): () => void;
+
+  // Get the header of a block
+  header(numberOrHash: number | BlockHash): Promise<Header>;
+  // Get the body of a block
+  body(numberOrHash: number | BlockHash): Promise<HexString[]>;
+}
+
 /**
  * A generic interface for Substrate clients
  */
@@ -171,6 +197,8 @@ export interface ISubstrateClient<
     IGenericSubstrateClient<ChainApi> {
   options: ApiOptions;
   tx: ChainApi['tx'];
+
+  block: BlockExplorer;
 
   at<ChainApiAt extends GenericSubstrateApi = ChainApi>(hash: BlockHash): Promise<ISubstrateClientAt<ChainApiAt>>;
 
