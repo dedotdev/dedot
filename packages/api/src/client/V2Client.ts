@@ -78,9 +78,8 @@ export class V2Client<ChainApi extends GenericSubstrateApi = SubstrateApi> // pr
     return ensurePresence(this._chainHead);
   }
 
-  async archive() {
-    assert(this._archive, 'Archive instance is not initialized');
-    assert(await this._archive.supported(), 'Archive JSON-RPC is not supported by the connected server');
+  get archive(): Archive | undefined {
+    assert(this._archive, 'Archive JSON-RPC is not supported by the connected server');
 
     return this._archive;
   }
@@ -109,11 +108,12 @@ export class V2Client<ChainApi extends GenericSubstrateApi = SubstrateApi> // pr
     this._chainSpec = new ChainSpec(this, { rpcMethods });
 
     // Always initialize Archive, but only set up fallback if supported
-    this._archive = new Archive(this, { rpcMethods });
+    const archive = new Archive(this, { rpcMethods });
 
     // Set up ChainHead with Archive fallback only if Archive is supported
-    if (await this._archive.supported()) {
-      this._chainHead.withArchive(this._archive);
+    if (await archive.supported()) {
+      this._chainHead.withArchive(archive);
+      this._archive = archive;
     }
 
     this._txBroadcaster = await this.#initializeTxBroadcaster(rpcMethods);

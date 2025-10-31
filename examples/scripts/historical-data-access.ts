@@ -26,8 +26,8 @@ async function main() {
     console.log('📊 Getting current blockchain state...');
 
     // Get current finalized block info
-    const finalizedHeight = await (await client.archive()).finalizedHeight();
-    const finalizedHash = await (await client.archive()).finalizedHash();
+    const finalizedHeight = await client.archive!.finalizedHeight();
+    const finalizedHash = await client.archive!.finalizedHash();
 
     console.log(`Current finalized block: #${finalizedHeight} (${finalizedHash})`);
 
@@ -36,7 +36,7 @@ async function main() {
     console.log(`Target historical block: #${targetHeight}`);
 
     // Get hash of historical block
-    const historicalHashes = await (await client.archive()).hashByHeight(targetHeight);
+    const historicalHashes = await client.archive!.hashByHeight(targetHeight);
     if (historicalHashes.length === 0) {
       throw new Error(`No block found at height ${targetHeight}`);
     }
