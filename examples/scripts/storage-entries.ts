@@ -1,7 +1,7 @@
 import { PolkadotAssetHubApi } from '@dedot/chaintypes';
 import { DedotClient, WsProvider } from 'dedot';
 
-const client = await DedotClient.new<PolkadotAssetHubApi>(new WsProvider('wss://polkadot-asset-hub-rpc.polkadot.io'));
+const client = await DedotClient.new(new WsProvider('wss://polkadot-asset-hub-rpc.polkadot.io'));
 
 console.log('Start querying...');
 

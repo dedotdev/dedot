@@ -4,6 +4,6 @@
 
 {{{ defTypes }}}
 
-export interface ChainTx<Rv extends RpcVersion> extends GenericChainTx<Rv, TxCall<Rv>> {
+export interface ChainTx extends GenericChainTx<TxCall> {
   {{{ txDefsOut }}}
 }

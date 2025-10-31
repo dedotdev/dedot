@@ -1,14 +1,5 @@
 import { BlockHash, Option, StorageData, StorageKey } from '@dedot/codecs';
-import type {
-  AsyncMethod,
-  Callback,
-  GenericStorageQuery,
-  GenericSubstrateApi,
-  PaginationOptions,
-  RpcLegacy,
-  RpcVersion,
-  Unsub,
-} from '@dedot/types';
+import type { AsyncMethod, Callback, GenericStorageQuery, PaginationOptions, Unsub } from '@dedot/types';
 import { assert, isFunction, isObject } from '@dedot/utils';
 import { type BaseStorageQuery, LegacyStorageQuery, QueryableStorage } from '../storage/index.js';
 import { Executor } from './Executor.js';
@@ -20,9 +11,7 @@ const DEFAULT_ENTRIES_PAGE_SIZE = 250;
  * @name StorageQueryExecutor
  * @description Execute a query to on-chain storage
  */
-export class StorageQueryExecutor<
-  ChainApi extends GenericSubstrateApi = GenericSubstrateApi,
-> extends Executor<ChainApi> {
+export class StorageQueryExecutor extends Executor {
   doExecute(pallet: string, storage: string): GenericStorageQuery {
     const entry = new QueryableStorage(this.registry, pallet, storage);
 
@@ -137,6 +126,11 @@ export class StorageQueryExecutor<
       const storageKeys = await rawKeys(inArgs, { pageSize: DEFAULT_ENTRIES_PAGE_SIZE, ...pagination });
       const storageMap = await this.queryStorage(storageKeys, this.atBlockHash);
       return storageKeys.map((key) => [entry.decodeKey(key), entry.decodeValue(storageMap[key])]);
+    };
+
+    const entries = async (...args: any[]): Promise<Array<[any, any]>> => {
+      // TODO implement this
+      return [];
     };
 
     return { pagedKeys, pagedEntries };

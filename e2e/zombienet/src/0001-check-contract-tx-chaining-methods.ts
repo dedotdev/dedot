@@ -1,40 +1,34 @@
 import Keyring from '@polkadot/keyring';
 import { cryptoWaitReady } from '@polkadot/util-crypto';
-import { DedotClient, ISubstrateClient, LegacyClient, WsProvider } from 'dedot';
-import { SubstrateApi } from 'dedot/chaintypes';
+import { DedotClient, ISubstrateClient, WsProvider } from 'dedot';
 import { Contract, ContractDeployer, ContractMetadataV4, ContractMetadataV5 } from 'dedot/contracts';
-import { IKeyringPair, RpcVersion } from 'dedot/types';
+import { IKeyringPair } from 'dedot/types';
 import { assert, isHex, isNumber, stringToHex } from 'dedot/utils';
 import * as flipperV4 from '../flipper_v4.json';
 import * as flipperV5 from '../flipper_v5.json';
 import { FlipperContractApi } from './contracts/flipper';
 
 export const run = async (_nodeName: any, networkInfo: any) => {
-  try {
-    await cryptoWaitReady();
+  await cryptoWaitReady();
 
-    const alicePair = new Keyring({ type: 'sr25519' }).addFromUri('//Alice');
-    const { wsUri } = networkInfo.nodesByName['collator-1'];
+  const alicePair = new Keyring({ type: 'sr25519' }).addFromUri('//Alice');
+  const { wsUri } = networkInfo.nodesByName['collator-1'];
 
-    const caller = alicePair.address;
+  const caller = alicePair.address;
 
-    // Test with LegacyClient
-    console.log('Testing contract chaining methods with LegacyClient');
-    const apiLegacy = await LegacyClient.new(new WsProvider(wsUri));
-    await testContractChainingMethods(apiLegacy, flipperV4 as ContractMetadataV4, alicePair, caller);
+  // Test with legacy client
+  console.log('Testing contract chaining methods with legacy client');
+  const apiLegacy = await DedotClient.legacy(new WsProvider(wsUri));
+  await testContractChainingMethods(apiLegacy, flipperV4 as ContractMetadataV4, alicePair, caller);
 
-    // Test with DedotClient
-    console.log('Testing contract chaining methods with DedotClient');
-    const apiV2 = await DedotClient.new(new WsProvider(wsUri));
-    await testContractChainingMethods(apiV2, flipperV5 as ContractMetadataV5, alicePair, caller);
-  } catch (error) {
-    console.error(error);
-    throw error;
-  }
+  // Test with v2 client
+  console.log('Testing contract chaining methods with v2 client');
+  const apiV2 = await DedotClient.new(new WsProvider(wsUri));
+  await testContractChainingMethods(apiV2, flipperV5 as ContractMetadataV5, alicePair, caller);
 };
 
 async function testContractChainingMethods(
-  api: ISubstrateClient<SubstrateApi[RpcVersion]>,
+  api: ISubstrateClient,
   flipper: ContractMetadataV4 | ContractMetadataV5,
   alicePair: IKeyringPair,
   caller: string,

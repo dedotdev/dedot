@@ -1,4 +1,4 @@
-import { LegacyClient } from 'dedot';
+import { DedotClient } from 'dedot';
 import { HexString } from 'dedot/utils';
 import { afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
 import { devPairs } from '../utils';
@@ -8,7 +8,7 @@ const BOB = '5FHneW46xGXgs5mUiveU4sbTyGBzmstUspZC92UhjJM694ty';
 const CHARLIE = '5FLSigC9HGRKVhB9FiEo4Y3koPsNmBmLJbpXg2mp1hXcS59Y';
 
 describe('LegacyClient .at() Method E2E Tests', () => {
-  let client: LegacyClient;
+  let client: DedotClient;
   let genesisHash: HexString;
   let finalizedHash: HexString;
 

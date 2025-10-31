@@ -1,5 +1,5 @@
 import type { DispatchError, ModuleError } from '@dedot/codecs';
-import type { GenericPalletError, GenericSubstrateApi } from '@dedot/types';
+import type { GenericPalletError } from '@dedot/types';
 import { assert, hexToU8a, isHex, isNumber, isObject, stringPascalCase, UnknownApiError } from '@dedot/utils';
 import { Executor } from './Executor.js';
 
@@ -7,7 +7,7 @@ import { Executor } from './Executor.js';
  * @name ErrorExecutor
  * @description Find pallet error information from metadata
  */
-export class ErrorExecutor<ChainApi extends GenericSubstrateApi = GenericSubstrateApi> extends Executor<ChainApi> {
+export class ErrorExecutor extends Executor {
   doExecute(pallet: string, errorName: string): GenericPalletError {
     const targetPallet = this.getPallet(pallet);
 

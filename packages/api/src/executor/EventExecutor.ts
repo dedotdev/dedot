@@ -1,5 +1,5 @@
 import { PalletEventMetadataLatest } from '@dedot/codecs';
-import type { GenericPalletEvent, GenericSubstrateApi, IEventRecord, PalletEvent, Unsub } from '@dedot/types';
+import type { GenericPalletEvent, IEventRecord, PalletEvent, Unsub } from '@dedot/types';
 import { assert, stringCamelCase, stringPascalCase, UnknownApiError } from '@dedot/utils';
 import { Executor } from './Executor.js';
 import { isEventRecord } from './utils.js';
@@ -8,7 +8,7 @@ import { isEventRecord } from './utils.js';
  * @name EventExecutor
  * @description Find pallet event information from metadata
  */
-export class EventExecutor<ChainApi extends GenericSubstrateApi = GenericSubstrateApi> extends Executor<ChainApi> {
+export class EventExecutor extends Executor {
   doExecute(pallet: string, eventName: string): GenericPalletEvent {
     const targetPallet = this.getPallet(pallet);
 

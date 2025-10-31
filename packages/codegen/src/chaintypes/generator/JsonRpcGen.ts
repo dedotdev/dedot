@@ -51,7 +51,7 @@ export class JsonRpcGen extends ApiGen {
 
   generate(useSubPaths: boolean = false) {
     this.typesGen.clearCache();
-    this.typesGen.typeImports.addKnownType('GenericJsonRpcApis', 'RpcVersion');
+    this.typesGen.typeImports.addKnownType('GenericJsonRpcApis');
     this.typesGen.typeImports.addKnownJsonRpcType('JsonRpcApis');
 
     const toExclude = Object.values(subscriptionsInfo).flat();

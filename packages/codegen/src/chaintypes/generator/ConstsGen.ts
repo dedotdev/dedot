@@ -8,7 +8,7 @@ export class ConstsGen extends ApiGen {
     const { pallets } = this.metadata;
 
     this.typesGen.clearCache();
-    this.typesGen.typeImports.addKnownType('GenericChainConsts', 'RpcVersion');
+    this.typesGen.typeImports.addKnownType('GenericChainConsts');
 
     let defTypeOut = '';
     for (let pallet of pallets) {

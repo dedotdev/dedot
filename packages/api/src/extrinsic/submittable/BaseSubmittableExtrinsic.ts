@@ -32,7 +32,7 @@ export abstract class BaseSubmittableExtrinsic extends Extrinsic implements ISub
   #hooks?: TxHooks;
 
   constructor(
-    readonly client: ISubstrateClient<any>,
+    readonly client: ISubstrateClient<any, any>,
     call: IRuntimeTxCall,
   ) {
     super(client.registry, call);
@@ -56,7 +56,7 @@ export abstract class BaseSubmittableExtrinsic extends Extrinsic implements ISub
 
     const txU8a = this.toU8a();
 
-    const api = this.client as unknown as ISubstrateClient<SubstrateApi[RpcVersion]>;
+    const api = this.client as unknown as ISubstrateClient;
     return api.call.transactionPaymentApi.queryInfo(txU8a, txU8a.length);
   }
 
@@ -176,7 +176,7 @@ export abstract class BaseSubmittableExtrinsic extends Extrinsic implements ISub
   }
 
   protected async getSystemEventsAt(hash: BlockHash): Promise<FrameSystemEventRecord[]> {
-    const atApi = (await this.client.at(hash)) as ISubstrateClientAt<SubstrateApi[RpcVersion]>;
+    const atApi = (await this.client.at(hash)) as ISubstrateClientAt;
     return await atApi.query.system.events();
   }
 

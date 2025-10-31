@@ -1,6 +1,5 @@
 import { BaseSubmittableExtrinsic, ISubstrateClient } from '@dedot/api';
-import type { SubstrateApi } from '@dedot/api/chaintypes';
-import { GenericSubstrateApi, ISubmittableResult, RpcVersion } from '@dedot/types';
+import { ISubmittableResult } from '@dedot/types';
 import { assert, isPvm, isUndefined, toHex, toU8a } from '@dedot/utils';
 import { encodeDeployData } from 'viem/utils';
 import { Contract } from '../../Contract.js';
@@ -14,7 +13,7 @@ import { CREATE1, CREATE2, ensureContractPresence, ensureParamsLength, toEvmAddr
 import { SolConstructorQueryExecutor } from './SolConstructorQueryExecutor.js';
 import { SolDeployerExecutor } from './abstract/index.js';
 
-export class SolConstructorTxExecutor<ChainApi extends GenericSubstrateApi> extends SolDeployerExecutor<ChainApi> {
+export class SolConstructorTxExecutor extends SolDeployerExecutor {
   doExecute(_: string) {
     const abiConstructor = this.registry.findAbiConstructor();
 
@@ -37,7 +36,7 @@ export class SolConstructorTxExecutor<ChainApi extends GenericSubstrateApi> exte
         args: params.slice(0, inputs.length),
       });
 
-      const client = this.client as unknown as ISubstrateClient<SubstrateApi[RpcVersion]>;
+      const client = this.client as unknown as ISubstrateClient;
 
       const tx = (() => {
         if (isPvm(this.code)) {

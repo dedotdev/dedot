@@ -7,11 +7,11 @@ import { ContractConstructorMessage, ExecutionOptions } from '../../../types/ind
 import { normalizeLabel } from '../../../utils/index.js';
 import { Executor } from './Executor.js';
 
-export abstract class DeployerExecutor<ChainApi extends GenericSubstrateApi> extends Executor<ChainApi> {
+export abstract class DeployerExecutor extends Executor {
   readonly code: Hash | Uint8Array | HexString | string;
 
   constructor(
-    client: ISubstrateClient<ChainApi>,
+    client: ISubstrateClient,
     registry: TypinkRegistry,
     code: Hash | Uint8Array | HexString | string,
     options?: ExecutionOptions,

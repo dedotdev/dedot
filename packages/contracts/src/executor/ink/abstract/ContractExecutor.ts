@@ -5,11 +5,11 @@ import { ContractAddress, ContractCallMessage, ExecutionOptions } from '../../..
 import { normalizeLabel } from '../../../utils/index.js';
 import { Executor } from './Executor.js';
 
-export abstract class ContractExecutor<ChainApi extends GenericSubstrateApi> extends Executor<ChainApi> {
+export abstract class ContractExecutor extends Executor {
   readonly address: ContractAddress;
 
   constructor(
-    client: ISubstrateClient<ChainApi>,
+    client: ISubstrateClient,
     registry: TypinkRegistry,
     address: ContractAddress,
     options?: ExecutionOptions,

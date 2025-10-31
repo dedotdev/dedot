@@ -1,5 +1,5 @@
 import { DedotClient, PinnedBlock, WsProvider } from 'dedot';
-import { assert, deferred } from 'dedot/utils';
+import { assert } from 'dedot/utils';
 
 export const run = async (nodeName: any, networkInfo: any): Promise<any> => {
   const { wsUri } = networkInfo.nodesByName[nodeName];
@@ -8,7 +8,7 @@ export const run = async (nodeName: any, networkInfo: any): Promise<any> => {
   const provider = new WsProvider(wsUri);
   const client = await DedotClient.new({ provider });
 
-  console.log('Connected to node, testing DedotClient events...');
+  console.log('Connected to node, testing V2Client events...');
 
   // Set up event tracking
   const receivedEvents: Record<string, PinnedBlock[]> = {
@@ -109,7 +109,7 @@ export const run = async (nodeName: any, networkInfo: any): Promise<any> => {
     // assert(bestHashes.has(hash), `Finalized block ${hash} should have been a best block first`);
   });
 
-  console.log('DedotClient event tests passed!');
+  console.log('V2Client event tests passed!');
   console.log(`Received ${receivedEvents.newBlock.length} newBlock events`);
   console.log(`Received ${receivedEvents.bestBlock.length} bestBlock events`);
   console.log(`Received ${receivedEvents.finalizedBlock.length} finalizedBlock events`);

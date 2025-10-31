@@ -1,7 +1,6 @@
 import Keyring from '@polkadot/keyring';
 import { cryptoWaitReady } from '@polkadot/util-crypto';
-import { DedotClient, ISubstrateClient, LegacyClient, WsProvider } from 'dedot';
-import { SubstrateApi } from 'dedot/chaintypes';
+import { DedotClient, ISubstrateClient, WsProvider } from 'dedot';
 import {
   Contract,
   ContractDeployer,
@@ -13,7 +12,6 @@ import {
   isContractInstantiateLangError,
   isContractLangError,
 } from 'dedot/contracts';
-import { RpcVersion } from 'dedot/types';
 import { assert, stringToHex } from 'dedot/utils';
 import * as flipperV4 from '../flipper_v4.json';
 import * as flipperV5 from '../flipper_v5.json';
@@ -27,10 +25,7 @@ export const run = async (_nodeName: any, networkInfo: any) => {
 
   const caller = alicePair.address;
 
-  const verifyContracts = async (
-    api: ISubstrateClient<SubstrateApi[RpcVersion]>,
-    flipper: ContractMetadataV4 | ContractMetadataV5,
-  ) => {
+  const verifyContracts = async (api: ISubstrateClient, flipper: ContractMetadataV4 | ContractMetadataV5) => {
     const wasm = flipper.source.wasm!;
     const deployer = new ContractDeployer<FlipperContractApi>(api, flipper, wasm);
 
@@ -115,7 +110,7 @@ export const run = async (_nodeName: any, networkInfo: any) => {
   };
 
   console.log('Checking via legacy API');
-  const apiLegacy = await LegacyClient.new(new WsProvider(wsUri));
+  const apiLegacy = await DedotClient.legacy(new WsProvider(wsUri));
   await verifyContracts(apiLegacy, flipperV4 as ContractMetadataV4);
   await verifyContracts(apiLegacy, flipperV5 as ContractMetadataV5);
 
@@ -126,7 +121,7 @@ export const run = async (_nodeName: any, networkInfo: any) => {
 };
 
 const deployFlipper = async (
-  api: ISubstrateClient<SubstrateApi[RpcVersion]>,
+  api: ISubstrateClient,
   flipper: ContractMetadataV4 | ContractMetadataV5,
   salt?: string,
 ): Promise<string> => {

@@ -1,4 +1,4 @@
-import { LegacyClient, WsProvider } from 'dedot';
+import { DedotClient, ISubstrateClient, WsProvider } from 'dedot';
 import { assert } from 'dedot/utils';
 
 const ALICE = '5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY';
@@ -6,17 +6,15 @@ const BOB = '5FHneW46xGXgs5mUiveU4sbTyGBzmstUspZC92UhjJM694ty';
 
 const addressesToCheck: Record<string, string> = { ALICE, BOB };
 
-export const run = async (nodeName: any, networkInfo: any) => {
-  const { wsUri } = networkInfo.nodesByName[nodeName];
-
-  const api = await LegacyClient.new(new WsProvider(wsUri));
+const testStorageQuery = async (api: ISubstrateClient) => {
+  console.log(`[${api.rpcVersion}] Testing storage query`);
 
   const balances = await api.query.system.account.multi([ALICE, BOB]);
 
   Object.entries(addressesToCheck).forEach(([name, address], idx) => {
     (async () => {
       const balance = await api.query.system.account(address);
-      console.log(`${name} balance`, balance);
+      console.log(`[${api.rpcVersion}] ${name} balance`, balance);
       assert(balance.data.free === 10_000_000_000_000_000n, `Incorrect balance for ${name} - ${address}`);
 
       const balanceFromMulti = balances[idx];
@@ -27,8 +25,8 @@ export const run = async (nodeName: any, networkInfo: any) => {
   // Check storage map keys
   const keys = await api.query.system.account.pagedKeys();
   const addresses = keys.map((k) => k.address());
-  console.log(`Total accounts:`, keys.length);
-  console.log('Addresses', addresses);
+  console.log(`[${api.rpcVersion}] Total accounts:`, keys.length);
+  console.log(`[${api.rpcVersion}] Addresses`, addresses);
 
   assert(addresses.includes(ALICE), 'Should include ALICE');
   assert(addresses.includes(BOB), 'Should include BOB');
@@ -57,4 +55,15 @@ export const run = async (nodeName: any, networkInfo: any) => {
       resolve();
     });
   });
+
+  console.log(`[${api.rpcVersion}] Storage query tests passed`);
+};
+
+export const run = async (nodeName: any, networkInfo: any) => {
+  const { wsUri } = networkInfo.nodesByName[nodeName];
+
+  // Test with legacy client
+  console.log('Testing with legacy client');
+  const apiLegacy = await DedotClient.legacy(new WsProvider(wsUri));
+  await testStorageQuery(apiLegacy);
 };

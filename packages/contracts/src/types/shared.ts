@@ -35,7 +35,7 @@ export type InstantiateReturnValue = {
   address: ContractAddress;
 };
 
-export type ContractCallResult<_ extends GenericSubstrateApi> = {
+export type ContractCallResult = {
   gasConsumed: WeightV2;
   gasRequired: WeightV2;
   storageDeposit: StorageDeposit;
@@ -43,7 +43,7 @@ export type ContractCallResult<_ extends GenericSubstrateApi> = {
   result: Result<ExecReturnValue, DispatchError>;
 };
 
-export type ContractInstantiateResult<_ extends GenericSubstrateApi> = {
+export type ContractInstantiateResult = {
   gasConsumed: WeightV2;
   gasRequired: WeightV2;
   storageDeposit: StorageDeposit;

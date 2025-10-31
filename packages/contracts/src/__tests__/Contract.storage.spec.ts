@@ -2,7 +2,6 @@ import { LegacyClient } from '@dedot/api';
 import { SubstrateApi } from '@dedot/api/chaintypes';
 // @ts-ignore
 import MockProvider from '@dedot/api/client/__tests__/MockProvider';
-import { RpcVersion } from '@dedot/codecs/types';
 import * as $ from '@dedot/shape';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { Contract } from '../Contract.js';
@@ -14,7 +13,7 @@ import {
   RANDOM_CONTRACT_ADDRESS,
 } from './contracts-metadata.js';
 
-type ContractApi = GenericContractApi<RpcVersion, SubstrateApi, 'ink'>;
+type ContractApi = GenericContractApi<SubstrateApi, 'ink'>;
 
 describe('Contract Storage API', () => {
   let api: LegacyClient, provider: MockProvider, contract: Contract<ContractApi>;

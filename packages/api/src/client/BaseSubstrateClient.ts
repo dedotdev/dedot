@@ -10,15 +10,14 @@ import {
   QueryFnResult,
   RpcVersion,
   Unsub,
-  VersionedGenericSubstrateApi,
 } from '@dedot/types';
 import {
   calcRuntimeApiHash,
   deferred,
   Deferred,
   ensurePresence as _ensurePresence,
-  u8aToHex,
   LRUCache,
+  u8aToHex,
 } from '@dedot/utils';
 import type { SubstrateApi } from '../chaintypes/index.js';
 import { ConstantExecutor, ErrorExecutor, EventExecutor } from '../executor/index.js';
@@ -51,16 +50,15 @@ export function ensurePresence<T>(value: T): NonNullable<T> {
  * @description Base & shared abstraction for Substrate API Clients
  */
 export abstract class BaseSubstrateClient<
-    Rv extends RpcVersion,
-    ChainApi extends VersionedGenericSubstrateApi = SubstrateApi,
+    ChainApi extends GenericSubstrateApi = SubstrateApi,
     Events extends string = ApiEvent,
   >
   extends JsonRpcClient<ChainApi, Events>
-  implements ISubstrateClient<ChainApi[Rv], Events>
+  implements ISubstrateClient<ChainApi, Events>
 {
   protected _options: ApiOptions;
 
-  protected _registry?: PortableRegistry<ChainApi[Rv]['types']>;
+  protected _registry?: PortableRegistry<ChainApi['types']>;
   protected _metadata?: Metadata;
 
   protected _genesisHash?: Hash;
@@ -184,7 +182,7 @@ export abstract class BaseSubstrateClient<
 
   protected setMetadata(metadata: Metadata) {
     this._metadata = metadata;
-    this._registry = new PortableRegistry<ChainApi[Rv]['types']>(metadata.latest, this.options.hasher);
+    this._registry = new PortableRegistry<ChainApi['types']>(metadata.latest, this.options.hasher);
   }
 
   protected getMetadataKey(runtime?: SubstrateRuntimeVersion): MetadataKey {
@@ -386,7 +384,7 @@ export abstract class BaseSubstrateClient<
     return ensurePresence(this._metadata);
   }
 
-  get registry(): PortableRegistry<ChainApi[Rv]['types']> {
+  get registry(): PortableRegistry<ChainApi['types']> {
     return ensurePresence(this._registry);
   }
 
@@ -403,40 +401,40 @@ export abstract class BaseSubstrateClient<
     return this.runtimeVersion;
   }
 
-  get consts(): ChainApi[Rv]['consts'] {
-    return newProxyChain({ executor: new ConstantExecutor(this) }) as ChainApi[Rv]['consts'];
+  get consts(): ChainApi['consts'] {
+    return newProxyChain({ executor: new ConstantExecutor(this) }) as ChainApi['consts'];
   }
 
-  get errors(): ChainApi[Rv]['errors'] {
-    return newProxyChain({ executor: new ErrorExecutor(this) }) as ChainApi[Rv]['errors'];
+  get errors(): ChainApi['errors'] {
+    return newProxyChain({ executor: new ErrorExecutor(this) }) as ChainApi['errors'];
   }
 
-  get events(): ChainApi[Rv]['events'] {
-    return newProxyChain({ executor: new EventExecutor(this) }) as ChainApi[Rv]['events'];
+  get events(): ChainApi['events'] {
+    return newProxyChain({ executor: new EventExecutor(this) }) as ChainApi['events'];
   }
 
-  get query(): ChainApi[Rv]['query'] {
+  get query(): ChainApi['query'] {
     throw new Error('Unimplemented!');
   }
 
-  get view(): ChainApi[Rv]['view'] {
+  get view(): ChainApi['view'] {
     throw new Error('Unimplemented!');
   }
 
-  get call(): ChainApi[Rv]['call'] {
+  get call(): ChainApi['call'] {
     return this.callAt();
   }
 
   // For internal use with caution
-  protected callAt(hash?: BlockHash): ChainApi[Rv]['call'] {
+  protected callAt(hash?: BlockHash): ChainApi['call'] {
     throw new Error('Unimplemented!');
   }
 
-  get tx(): ChainApi[Rv]['tx'] {
+  get tx(): ChainApi['tx'] {
     throw new Error('Unimplemented!');
   }
 
-  at<ChainApiAt extends GenericSubstrateApi = ChainApi[Rv]>(hash: BlockHash): Promise<ISubstrateClientAt<ChainApiAt>> {
+  at<ChainApiAt extends GenericSubstrateApi = ChainApi>(hash: BlockHash): Promise<ISubstrateClientAt<ChainApiAt>> {
     throw new Error('Unimplemented!');
   }
 
