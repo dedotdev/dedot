@@ -153,8 +153,15 @@ export class ChainHead extends JsonRpcGroup<ChainHeadEvent> {
     return this.findBlock(await this.finalizedHash())!;
   }
 
-  findBlock(hash: BlockHash): PinnedBlock | undefined {
-    return this.#pinnedBlocks[hash];
+  findBlock(hashOrNumber: BlockHash | number): PinnedBlock | undefined {
+    // If it's a hash, do direct lookup
+    if (typeof hashOrNumber === 'string') {
+      return this.#pinnedBlocks[hashOrNumber];
+    }
+
+    // If it's a number, search through pinned blocks
+    const blockNumber = hashOrNumber;
+    return Object.values(this.#pinnedBlocks).find((block) => block.number === blockNumber);
   }
 
   isPinned(hash: BlockHash): boolean {

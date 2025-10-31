@@ -18,12 +18,14 @@ import { newProxyChain } from '../proxychain.js';
 import { BaseStorageQuery, NewStorageQuery } from '../storage/index.js';
 import type {
   ApiOptions,
+  BlockExplorer,
   DedotClientEvent,
   ISubstrateClientAt,
   SubstrateRuntimeVersion,
   TxBroadcaster,
 } from '../types.js';
 import { BaseSubstrateClient, ensurePresence } from './BaseSubstrateClient.js';
+import { V2BlockExplorer } from './explorer/index.js';
 
 /**
  * @name V2Client
@@ -38,6 +40,7 @@ export class V2Client<ChainApi extends GenericSubstrateApi = SubstrateApi> // pr
   protected _chainSpec?: ChainSpec;
   protected _archive?: Archive;
   protected _txBroadcaster?: TxBroadcaster;
+  protected _blockExplorer?: BlockExplorer;
 
   /**
    * Use factory methods (`create`, `new`) to create `V2Client` instances.
@@ -78,10 +81,7 @@ export class V2Client<ChainApi extends GenericSubstrateApi = SubstrateApi> // pr
     return ensurePresence(this._chainHead);
   }
 
-  async archive() {
-    assert(this._archive, 'Archive instance is not initialized');
-    assert(await this._archive.supported(), 'Archive JSON-RPC is not supported by the connected server');
-
+  get archive(): Archive | undefined {
     return this._archive;
   }
 
@@ -109,11 +109,12 @@ export class V2Client<ChainApi extends GenericSubstrateApi = SubstrateApi> // pr
     this._chainSpec = new ChainSpec(this, { rpcMethods });
 
     // Always initialize Archive, but only set up fallback if supported
-    this._archive = new Archive(this, { rpcMethods });
+    const archive = new Archive(this, { rpcMethods });
 
     // Set up ChainHead with Archive fallback only if Archive is supported
-    if (await this._archive.supported()) {
-      this._chainHead.withArchive(this._archive);
+    if (await archive.supported()) {
+      this._archive = archive;
+      this._chainHead.withArchive(archive);
     }
 
     this._txBroadcaster = await this.#initializeTxBroadcaster(rpcMethods);
@@ -134,6 +135,9 @@ export class V2Client<ChainApi extends GenericSubstrateApi = SubstrateApi> // pr
 
     await this.setupMetadata(metadata);
     this.subscribeRuntimeUpgrades();
+
+    // Initialize block explorer
+    this._blockExplorer = new V2BlockExplorer(this);
 
     // relegate events
     this.chainHead.on('newBlock', (...args) => this.emit('newBlock', ...args));
@@ -198,6 +202,7 @@ export class V2Client<ChainApi extends GenericSubstrateApi = SubstrateApi> // pr
     this._chainSpec = undefined;
     this._archive = undefined;
     this._txBroadcaster = undefined;
+    this._blockExplorer = undefined;
   }
 
   /**
@@ -233,6 +238,10 @@ export class V2Client<ChainApi extends GenericSubstrateApi = SubstrateApi> // pr
 
   override get tx(): ChainApi['tx'] {
     return newProxyChain({ executor: new TxExecutorV2(this) }) as ChainApi['tx'];
+  }
+
+  get block(): BlockExplorer {
+    return ensurePresence(this._blockExplorer);
   }
 
   /**

@@ -15,6 +15,7 @@ import { SubstrateApi } from '../chaintypes/index.js';
 import { isJsonRpcProvider } from '../json-rpc/index.js';
 import {
   ApiOptions,
+  BlockExplorer,
   DedotClientEvent,
   ISubstrateClient,
   ISubstrateClientAt,
@@ -136,6 +137,10 @@ export class DedotClient<
   }
   get view(): ChainApi['view'] {
     return this.#client.view;
+  }
+
+  get block(): BlockExplorer {
+    return this.#client.block;
   }
 
   async connect(): Promise<this> {
