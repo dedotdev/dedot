@@ -1,7 +1,7 @@
 import type { BlockHash } from '@dedot/codecs';
 import { Callback, IEventRecord, IRuntimeTxCall, ISubmittableResult, TxHash, TxUnsub, Unsub } from '@dedot/types';
 import { AsyncQueue, noop, waitFor } from '@dedot/utils';
-import { V2Client } from '../../client/index.js';
+import { V2Client } from '../../client/V2Client.js';
 import { PinnedBlock } from '../../json-rpc/index.js';
 import { BaseSubmittableExtrinsic } from './BaseSubmittableExtrinsic.js';
 import { SubmittableResult } from './SubmittableResult.js';

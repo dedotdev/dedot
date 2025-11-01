@@ -1,7 +1,7 @@
 # Example Dapp
 
 This example demonstrates how to:
-- Connect to Paseo testnet using V2Client
+- Connect to Paseo testnet using DedotClient
 - Detect and connect to any Polkadot wallet extension via `window.injectedWeb3`
 - Submit a `system.remark` transaction using wallet signer
 - Track transaction status (Validated → Broadcasting → BestChainBlockIncluded → Finalized)

@@ -8,7 +8,7 @@
  * current finalized block. It showcases the Archive fallback mechanism when blocks are
  * not pinned in ChainHead.
  */
-import { V2Client, WsProvider } from 'dedot';
+import { DedotClient, WsProvider } from 'dedot';
 
 const POLKADOT_RPC = 'wss://rpc.polkadot.io';
 const BLOCKS_BEHIND = 5000;
@@ -20,14 +20,13 @@ const TREASURY = '5EYCAe5ijiYfyeZ2JJCGq56LmPyNRAKzpG4QkoQkkQNB5e6Z';
 async function main() {
   console.log('🔗 Connecting to Polkadot mainnet...');
 
-  const client = await V2Client.new(new WsProvider(POLKADOT_RPC));
+  const client = await DedotClient.new(new WsProvider(POLKADOT_RPC));
 
   try {
     console.log('📊 Getting current blockchain state...');
 
-    // Get current finalized block info
-    const finalizedHeight = await (await client.archive()).finalizedHeight();
-    const finalizedHash = await (await client.archive()).finalizedHash();
+    const finalizedHash = await client.rpc.chain_getFinalizedHead();
+    const finalizedHeight = (await client.rpc.chain_getHeader(finalizedHash))!.number;
 
     console.log(`Current finalized block: #${finalizedHeight} (${finalizedHash})`);
 
@@ -35,13 +34,7 @@ async function main() {
     const targetHeight = finalizedHeight - BLOCKS_BEHIND;
     console.log(`Target historical block: #${targetHeight}`);
 
-    // Get hash of historical block
-    const historicalHashes = await (await client.archive()).hashByHeight(targetHeight);
-    if (historicalHashes.length === 0) {
-      throw new Error(`No block found at height ${targetHeight}`);
-    }
-
-    const historicalHash = historicalHashes[0];
+    const historicalHash = (await client.rpc.chain_getBlockHash(targetHeight))!;
     console.log(`Historical block hash: ${historicalHash}`);
 
     console.log('\n🏛️ Accessing historical data via V2Client.at()...');

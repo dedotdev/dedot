@@ -59,7 +59,7 @@ export type ChainHeadEvent =
   | 'finalizedBlock' // new best finalized block
   | 'bestChainChanged'; // new best chain, a fork happened
 
-export const MIN_FINALIZED_QUEUE_SIZE = 10; // finalized queue size
+const MIN_FINALIZED_QUEUE_SIZE = 10; // finalized queue size
 const CHAINHEAD_CACHE_CAPACITY = 256;
 const CHAINHEAD_CACHE_TTL = 30_000; // 30 seconds
 
@@ -82,6 +82,7 @@ export class ChainHead extends JsonRpcGroup<ChainHeadEvent> {
   #blockUsage: BlockUsage;
   #cache: LRUCache;
   #operationQueue: ThrottleQueue;
+  #minQueueSize: number;
   /**
    * Archive instance used as fallback when ChainHead blocks are not pinned.
    *
@@ -106,6 +107,7 @@ export class ChainHead extends JsonRpcGroup<ChainHeadEvent> {
     this.#cache = new LRUCache(CHAINHEAD_CACHE_CAPACITY, CHAINHEAD_CACHE_TTL);
     // This helps us to not accidentally putting too much stress on the JSON-RPC server, especially smoldot/light-client
     this.#operationQueue = new ThrottleQueue(this.#__unsafe__isSmoldot() ? 25 : 250);
+    this.#minQueueSize = MIN_FINALIZED_QUEUE_SIZE;
   }
 
   /**
@@ -174,8 +176,11 @@ export class ChainHead extends JsonRpcGroup<ChainHeadEvent> {
   /**
    * chainHead_follow
    */
-  async follow(): Promise<void> {
-    assert(!this.#subscriptionId, 'Already followed chain head. Please unfollow first.');
+  async follow(force?: boolean): Promise<void> {
+    if (!force) {
+      assert(!this.#subscriptionId, 'Already followed chain head. Please unfollow first.');
+    }
+
     return this.#doFollow();
   }
 
@@ -183,6 +188,7 @@ export class ChainHead extends JsonRpcGroup<ChainHeadEvent> {
     const defer = deferred<void>();
 
     try {
+      this.#subscriptionId = undefined;
       this.#unsub && this.#unsub().catch(noop); // ensure unfollowed
 
       const SIGNAL_THRESHOLD = this.#__unsafe__isSmoldot() ? 2 : 1;
@@ -217,9 +223,14 @@ export class ChainHead extends JsonRpcGroup<ChainHeadEvent> {
       case 'initialized': {
         const { finalizedBlockHashes = [], finalizedBlockHash, finalizedBlockRuntime } = result;
         if (finalizedBlockHash) finalizedBlockHashes.push(finalizedBlockHash);
+        const lastFinalizedHash = this.#finalizedHash;
+        const prevPinnedBlocks = this.#pinnedBlocks;
 
         this.#subscriptionId = subscription!.subscriptionId;
         this.#finalizedQueue = finalizedBlockHashes;
+        if (finalizedBlockHashes.length > MIN_FINALIZED_QUEUE_SIZE) {
+          this.#minQueueSize = finalizedBlockHashes.length;
+        }
 
         this.#finalizedRuntime = this.#extractRuntime(finalizedBlockRuntime)!;
         assert(this.#finalizedRuntime, 'Invalid finalized runtime');
@@ -240,13 +251,48 @@ export class ChainHead extends JsonRpcGroup<ChainHeadEvent> {
           {} as Record<BlockHash, PinnedBlock>,
         );
 
-        const header = $Header.tryDecode(await this.#getHeader(finalizedBlockHashes[0]));
+        // Get starting block info
+        const startingBlock = await (async () => {
+          const startingBlockHash = finalizedBlockHashes[0];
+          const existing = prevPinnedBlocks[startingBlockHash];
+          if (existing) {
+            return {
+              number: existing.number,
+              parent: existing.parent,
+            };
+          } else {
+            const header = $Header.tryDecode(await this.#getHeader(startingBlockHash));
+            return {
+              number: header.number,
+              parent: header.parentHash,
+            };
+          }
+        })();
+
         Object.values(this.#pinnedBlocks).forEach((b, idx) => {
-          b.number += header.number;
+          b.number += startingBlock.number;
           if (idx === 0) {
-            b.parent = header.parentHash;
+            b.parent = startingBlock.parent;
           }
         });
+
+        if (!lastFinalizedHash) {
+          this.emit('finalizedBlock', await this.finalizedBlock());
+        } else {
+          const lastFinalizedIndex = finalizedBlockHashes.indexOf(lastFinalizedHash as HexString);
+
+          if (lastFinalizedIndex !== -1 && lastFinalizedIndex < finalizedBlockHashes.length - 1) {
+            // Emit all finalized blocks that occurred during the disconnection
+            for (let i = lastFinalizedIndex + 1; i < finalizedBlockHashes.length; i++) {
+              const hash = finalizedBlockHashes[i];
+              const block = this.#pinnedBlocks[hash];
+
+              if (block) {
+                this.emit('finalizedBlock', block);
+              }
+            }
+          }
+        }
 
         break;
       }
@@ -255,7 +301,10 @@ export class ChainHead extends JsonRpcGroup<ChainHeadEvent> {
         const runtime = this.#extractRuntime(newRuntime);
 
         const parentBlock = this.findBlock(parent)!;
-        assert(parentBlock, `Parent block not found for new block ${hash}`);
+        if (!parentBlock) {
+          console.warn(`Parent block not found for new block ${hash}`);
+          return;
+        }
 
         this.#pinnedBlocks[hash] = {
           hash,
@@ -326,9 +375,9 @@ export class ChainHead extends JsonRpcGroup<ChainHeadEvent> {
         const hashesToUnpin = new Set(prunedBlockHashes.filter((hash) => pinnedHashes.includes(hash)));
 
         // Unpin the oldest finalized pinned blocks to maintain the queue size
-        if (this.#finalizedQueue.length > MIN_FINALIZED_QUEUE_SIZE) {
+        if (this.#finalizedQueue.length > this.#minQueueSize) {
           const finalizedQueue = this.#finalizedQueue.slice();
-          const numOfItemsToUnpin = finalizedQueue.length - MIN_FINALIZED_QUEUE_SIZE;
+          const numOfItemsToUnpin = finalizedQueue.length - this.#minQueueSize;
           const queuedHashesToUnpin = finalizedQueue.splice(0, numOfItemsToUnpin);
 
           queuedHashesToUnpin.forEach((hash) => {
