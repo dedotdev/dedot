@@ -1,6 +1,6 @@
 import { IRuntimeTxCall } from '@dedot/types';
 import { assert } from '@dedot/utils';
-import { V2Client } from '../../client/index.js';
+import { V2Client } from '../../client/V2Client.js';
 import { SubmittableExtrinsicV2 } from '../../extrinsic/index.js';
 import { TxExecutor } from '../TxExecutor.js';
 
