@@ -129,11 +129,36 @@ export class StorageQueryExecutor extends Executor {
     };
 
     const entries = async (...args: any[]): Promise<Array<[any, any]>> => {
-      // TODO implement this
-      return [];
+      const [inArgs] = extractArgs(args);
+      const allEntries: Array<[any, any]> = [];
+      let startKey: StorageKey | undefined;
+
+      do {
+        const pagination = {
+          pageSize: DEFAULT_ENTRIES_PAGE_SIZE,
+          ...(startKey ? { startKey } : {}),
+        };
+
+        const storageKeys = await rawKeys(inArgs, pagination);
+        if (storageKeys.length === 0) break;
+
+        const storageMap = await this.queryStorage(storageKeys, this.atBlockHash);
+        const pageEntries = storageKeys.map((key) => [
+          entry.decodeKey(key),
+          entry.decodeValue(storageMap[key]),
+        ]);
+
+        allEntries.push(...pageEntries);
+
+        if (storageKeys.length < DEFAULT_ENTRIES_PAGE_SIZE) break;
+
+        startKey = storageKeys[storageKeys.length - 1];
+      } while (true);
+
+      return allEntries;
     };
 
-    return { pagedKeys, pagedEntries };
+    return { entries, pagedKeys, pagedEntries };
   }
 
   protected getStorageQuery(): BaseStorageQuery {

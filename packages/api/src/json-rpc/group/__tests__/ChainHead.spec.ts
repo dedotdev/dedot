@@ -56,7 +56,8 @@ describe('ChainHead', () => {
 
   const notifyInitializedEvent = () => {
     const initialized = notify(simulator.subscriptionId, simulator.initializedEvent);
-    const firstNewBlock = notify(simulator.subscriptionId, simulator.nextNewBlock());
+    // Add delay to ensure initialized event is processed before newBlock
+    const firstNewBlock = notify(simulator.subscriptionId, simulator.nextNewBlock(), 5);
 
     return [initialized, firstNewBlock];
   };
@@ -90,7 +91,28 @@ describe('ChainHead', () => {
 
       await chainHead.follow();
 
+      // Wait for subscription to be fully established
+      await new Promise((resolve) => setTimeout(resolve, 10));
+
       await expect(chainHead.follow()).rejects.toThrow('Already followed chain head. Please unfollow first.');
+    });
+
+    it('should allow re-following with force parameter', async () => {
+      notifyInitializedEvent();
+
+      await chainHead.follow();
+
+      const firstSubId = simulator.subscriptionId;
+
+      // Simulate new subscription for re-follow
+      simulator.subscriptionId = 'sub_' + Date.now();
+      notifyInitializedEvent();
+
+      // Should not throw when using force
+      await expect(chainHead.follow(true)).resolves.toBeUndefined();
+
+      // Should have called unfollow on the previous subscription
+      expect(providerSend).toHaveBeenCalledWith('chainHead_v1_unfollow', [firstSubId]);
     });
   });
 
@@ -100,6 +122,9 @@ describe('ChainHead', () => {
 
       await chainHead.follow();
       await chainHead.unfollow();
+
+      // Wait for unfollow to complete
+      await new Promise((resolve) => setTimeout(resolve, 10));
 
       expect(providerSend).toHaveBeenCalledWith('rpc_methods', []);
       expect(providerSend).toHaveBeenCalledWith('chainHead_v1_unfollow', [simulator.subscriptionId]);
