@@ -1,7 +1,7 @@
 import { BlockHash, Option, PortableRegistry, StorageData, StorageKey } from '@dedot/codecs';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { StorageQueryExecutor } from '../StorageQueryExecutor.js';
 import { QueryableStorage } from '../../storage/QueryableStorage.js';
+import { StorageQueryExecutor } from '../StorageQueryExecutor.js';
 
 // Create a mock client with required methods
 const createMockClient = () => ({
@@ -45,20 +45,21 @@ describe('StorageQueryExecutor', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     mockClient = createMockClient();
-    
+
     // Create executor instance
     executor = new StorageQueryExecutor(mockClient as any);
     mockEntry = createMockEntry();
 
     // Mock queryStorage method
     vi.spyOn(executor as any, 'queryStorage').mockImplementation(
+      // @ts-ignore
       async (keys: StorageKey[]) => {
         const result: Record<StorageKey, Option<StorageData>> = {};
         keys.forEach((key) => {
           result[key] = `0xvalue_${key}` as any;
         });
         return result;
-      }
+      },
     );
   });
 
@@ -84,11 +85,11 @@ describe('StorageQueryExecutor', () => {
 
       expect(result).toHaveLength(3);
       expect(mockClient.rpc.state_getKeysPaged).toHaveBeenCalledTimes(1);
-      
+
       // Verify decode methods were called
       expect(mockEntry.decodeKey).toHaveBeenCalledTimes(3);
       expect(mockEntry.decodeValue).toHaveBeenCalledTimes(3);
-      
+
       // Verify the structure of returned data
       result.forEach(([key, value]: [any, any]) => {
         expect(key).toBeDefined();
@@ -113,19 +114,19 @@ describe('StorageQueryExecutor', () => {
 
       // Should have accumulated all entries
       expect(result).toHaveLength(600);
-      
+
       // Should have made 3 RPC calls
       expect(mockClient.rpc.state_getKeysPaged).toHaveBeenCalledTimes(3);
-      
+
       // Verify pagination parameters
       const calls = mockClient.rpc.state_getKeysPaged.mock.calls;
-      
+
       // First call: no startKey
       expect(calls[0][2]).toBeUndefined(); // startKey should be undefined initially
-      
+
       // Second call: should use last key from page 1 as startKey
       expect(calls[1][2]).toBe(page1Keys[page1Keys.length - 1]);
-      
+
       // Third call: should use last key from page 2 as startKey
       expect(calls[2][2]).toBe(page2Keys[page2Keys.length - 1]);
     });
@@ -139,7 +140,7 @@ describe('StorageQueryExecutor', () => {
       const result = await methods.entries(...partialArgs);
 
       expect(result).toHaveLength(2);
-      
+
       // Verify encodeKey was called with partial flag
       expect(mockEntry.encodeKey).toHaveBeenCalledWith(partialArgs, true);
     });
@@ -150,15 +151,13 @@ describe('StorageQueryExecutor', () => {
       // Second page: partial (less than 250 items)
       const page2Keys = Array.from({ length: 50 }, (_, i) => `0xkey_${i + 250}`) as StorageKey[];
 
-      mockClient.rpc.state_getKeysPaged
-        .mockResolvedValueOnce(page1Keys)
-        .mockResolvedValueOnce(page2Keys);
+      mockClient.rpc.state_getKeysPaged.mockResolvedValueOnce(page1Keys).mockResolvedValueOnce(page2Keys);
 
       const methods = (executor as any).exposeStorageMapMethods(mockEntry);
       const result = await methods.entries();
 
       expect(result).toHaveLength(300);
-      
+
       // Should stop after 2 calls (second page had < 250 items)
       expect(mockClient.rpc.state_getKeysPaged).toHaveBeenCalledTimes(2);
     });
@@ -177,7 +176,7 @@ describe('StorageQueryExecutor', () => {
 
       // Verify each value was decoded
       expect(mockEntry.decodeValue).toHaveBeenCalledTimes(mockKeys.length);
-      
+
       // Verify the result structure
       expect(result).toHaveLength(2);
       result.forEach(([key, value]: [any, any]) => {
@@ -193,7 +192,7 @@ describe('StorageQueryExecutor', () => {
       mockClient.rpc.state_getKeysPaged.mockRejectedValue(mockError);
 
       const methods = (executor as any).exposeStorageMapMethods(mockEntry);
-      
+
       await expect(methods.entries()).rejects.toThrow('RPC error');
     });
 
@@ -202,7 +201,7 @@ describe('StorageQueryExecutor', () => {
       mockClient.rpc.state_getKeysPaged.mockResolvedValue(mockKeys);
 
       const methods = (executor as any).exposeStorageMapMethods(mockEntry);
-      
+
       // Call with pagination options (should be ignored by entries method)
       const result = await methods.entries('arg1', { pageSize: 100 });
 
@@ -234,7 +233,7 @@ describe('StorageQueryExecutor', () => {
       mockClient.rpc.state_getKeysPaged.mockResolvedValue(mockKeys);
 
       const methods = (executor as any).exposeStorageMapMethods(mockEntry);
-      
+
       // Both should return same structure
       const pagedResult = await methods.pagedEntries();
       const allResult = await methods.entries();
@@ -242,7 +241,7 @@ describe('StorageQueryExecutor', () => {
       // Both should have same structure [key, value][]
       expect(Array.isArray(pagedResult)).toBe(true);
       expect(Array.isArray(allResult)).toBe(true);
-      
+
       if (pagedResult.length > 0 && allResult.length > 0) {
         expect(pagedResult[0]).toHaveLength(2);
         expect(allResult[0]).toHaveLength(2);
@@ -250,4 +249,3 @@ describe('StorageQueryExecutor', () => {
     });
   });
 });
-

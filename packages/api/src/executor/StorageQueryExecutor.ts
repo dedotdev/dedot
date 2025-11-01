@@ -94,7 +94,7 @@ export class StorageQueryExecutor extends Executor {
   protected exposeStorageMapMethods(entry: QueryableStorage): Record<string, AsyncMethod> {
     const rawKeys = async (partialInput: any[], pagination?: PaginationOptions): Promise<StorageKey[]> => {
       const pageSize = pagination?.pageSize || DEFAULT_KEYS_PAGE_SIZE;
-      const startKey = pagination?.startKey || entry.prefixKey;
+      const startKey = pagination?.startKey;
 
       return await this.client.rpc.state_getKeysPaged(
         entry.encodeKey(partialInput, true),
