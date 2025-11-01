@@ -1,5 +1,4 @@
-import { DedotClient, WsProvider } from 'dedot';
-import { waitFor } from 'dedot/utils';
+import { DedotClient, PinnedBlock, WsProvider } from 'dedot';
 
 // Multiple endpoints for failover
 const provider = new WsProvider([
@@ -8,14 +7,23 @@ const provider = new WsProvider([
   'wss://polkadot.api.onfinality.io/public-ws',
 ]);
 
-const client = new DedotClient(provider);
+console.log('Connecting...');
+const client = await DedotClient.new(provider);
 
-client.on('connected', (connectedUrl) => {
+client.on('connected', (connectedUrl: any) => {
   console.log('Connected Endpoint:', connectedUrl);
 });
 
-await client.connect();
+client.on('finalizedBlock', (block: PinnedBlock) => {
+  console.log('Finalized Block:', block.number);
+});
 
-await waitFor(1000);
+client.on('bestBlock', (block: PinnedBlock) => {
+  console.log('Best Block:', block.number);
+});
 
-await client.disconnect();
+setTimeout(async () => {
+  console.log('Switching endpoint');
+  // @ts-ignore
+  client.provider.__unsafeWs().close();
+}, 20_000);
