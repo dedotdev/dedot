@@ -126,12 +126,10 @@ export class V2Client<ChainApi extends GenericSubstrateApi = SubstrateApi> // pr
     // Fetching node information
     let [_, genesisHash] = await Promise.all([
       this.chainHead.follow(true),
-      shouldInitialize
-        ? this.chainSpec.genesisHash().catch(() => this.#getGenesisHashFallback())
-        : Promise.resolve(this._genesisHash),
+      shouldInitialize ? this.chainSpec.genesisHash().catch(() => undefined) : Promise.resolve(this._genesisHash),
     ]);
 
-    this._genesisHash = genesisHash;
+    this._genesisHash = genesisHash || (await this.#getGenesisHashFallback());
 
     const newBestRuntime = await this.chainHead.bestRuntimeVersion();
     if (!this._runtimeVersion || newBestRuntime.specVersion !== this._runtimeVersion.specVersion) {
