@@ -658,14 +658,7 @@ export class ChainHead extends JsonRpcGroup<ChainHeadEvent> {
       await this.#recovering.promise;
     }
 
-    try {
-      console.log('#ensureFollowed', this.#subscriptionId);
-      assert(this.#subscriptionId, 'Please call the .follow() method before invoking any other methods in this group.');
-    } catch (e) {
-      console.error(e);
-
-      throw e;
-    }
+    assert(this.#subscriptionId, 'Please call the .follow() method before invoking any other methods in this group.');
   }
 
   #cleanUpOperation(operationId: OperationId) {
