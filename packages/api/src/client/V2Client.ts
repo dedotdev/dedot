@@ -197,13 +197,6 @@ export class V2Client<ChainApi extends GenericSubstrateApi = SubstrateApi> // pr
     await this.chainHead.unfollow();
   }
 
-  // protected override onDisconnected = async () => {
-  //   try {
-  //     console.log('onDisconnected');
-  //     this.chainHead.unfollow().catch(noop);
-  //   } catch {}
-  // };
-
   protected override cleanUp() {
     super.cleanUp();
     this._chainHead = undefined;
