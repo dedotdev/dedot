@@ -73,12 +73,16 @@ describe('LegacyClient', () => {
               // @ts-ignore
               expect(api.query[stringCamelCase(pallet.name)][stringCamelCase(entry.name)].multi).toBeDefined();
               // @ts-ignore
+              expect(api.query[stringCamelCase(pallet.name)][stringCamelCase(entry.name)].entries).toBeDefined();
+              // @ts-ignore
               expect(api.query[stringCamelCase(pallet.name)][stringCamelCase(entry.name)].pagedKeys).toBeDefined();
               // @ts-ignore
               expect(api.query[stringCamelCase(pallet.name)][stringCamelCase(entry.name)].pagedEntries).toBeDefined();
             } else {
               // @ts-ignore
               expect(api.query[stringCamelCase(pallet.name)][stringCamelCase(entry.name)].multi).toBeUndefined();
+              // @ts-ignore
+              expect(api.query[stringCamelCase(pallet.name)][stringCamelCase(entry.name)].entries).toBeUndefined();
               // @ts-ignore
               expect(api.query[stringCamelCase(pallet.name)][stringCamelCase(entry.name)].pagedKeys).toBeUndefined();
               // @ts-ignore

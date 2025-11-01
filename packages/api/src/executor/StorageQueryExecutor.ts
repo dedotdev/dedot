@@ -94,7 +94,7 @@ export class StorageQueryExecutor extends Executor {
   protected exposeStorageMapMethods(entry: QueryableStorage): Record<string, AsyncMethod> {
     const rawKeys = async (partialInput: any[], pagination?: PaginationOptions): Promise<StorageKey[]> => {
       const pageSize = pagination?.pageSize || DEFAULT_KEYS_PAGE_SIZE;
-      const startKey = pagination?.startKey || entry.prefixKey;
+      const startKey = pagination?.startKey;
 
       return await this.client.rpc.state_getKeysPaged(
         entry.encodeKey(partialInput, true),
@@ -129,11 +129,36 @@ export class StorageQueryExecutor extends Executor {
     };
 
     const entries = async (...args: any[]): Promise<Array<[any, any]>> => {
-      // TODO implement this
-      return [];
+      const [inArgs] = extractArgs(args);
+      const allEntries: Array<[any, any]> = [];
+      let startKey: StorageKey | undefined;
+
+      while (true) {
+        const pagination = {
+          pageSize: DEFAULT_ENTRIES_PAGE_SIZE,
+          ...(startKey ? { startKey } : {}),
+        };
+
+        const storageKeys = await rawKeys(inArgs, pagination);
+        if (storageKeys.length === 0) break;
+
+        const storageMap = await this.queryStorage(storageKeys, this.atBlockHash);
+        const pageEntries: Array<[any, any]> = storageKeys.map((key) => [
+          entry.decodeKey(key),
+          entry.decodeValue(storageMap[key]),
+        ]);
+
+        allEntries.push(...pageEntries);
+
+        if (storageKeys.length < DEFAULT_ENTRIES_PAGE_SIZE) break;
+
+        startKey = storageKeys[storageKeys.length - 1];
+      }
+
+      return allEntries;
     };
 
-    return { pagedKeys, pagedEntries };
+    return { entries, pagedKeys, pagedEntries };
   }
 
   protected getStorageQuery(): BaseStorageQuery {

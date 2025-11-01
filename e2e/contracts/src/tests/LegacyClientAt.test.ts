@@ -362,4 +362,193 @@ describe('LegacyClient .at() Method E2E Tests', () => {
       console.log('LegacyClient Transfer scenario verification completed successfully');
     }, 180_000); // Extended timeout for blockchain operations
   });
+
+  describe('Storage Entries Method Tests', () => {
+    it('should fetch all System.Account entries', async () => {
+      console.log('=== LegacyClient Storage Entries Test ===');
+
+      const finalizedApi = await client.at(finalizedHash);
+
+      // Fetch all entries
+      const allEntries = await finalizedApi.query.system.account.entries();
+
+      expect(Array.isArray(allEntries)).toBe(true);
+      expect(allEntries.length).toBeGreaterThan(0);
+
+      console.log(`LegacyClient Total System.Account entries: ${allEntries.length}`);
+
+      // Verify structure of entries
+      allEntries.forEach(([key, value]) => {
+        expect(key).toBeDefined();
+        expect(value).toBeDefined();
+        expect(typeof value.data.free).toBe('bigint');
+        expect(typeof value.nonce).toBe('number');
+      });
+
+      console.log('LegacyClient All entries fetched successfully');
+    });
+
+    it('should match entries count with pagedKeys count', async () => {
+      console.log('=== LegacyClient Entries vs PagedKeys Count Test ===');
+
+      const api = await client.at(finalizedHash);
+
+      // Fetch using pagedKeys to get all keys
+      let allKeys: any[] = [];
+      let startKey: HexString | undefined;
+      let iteration = 0;
+
+      do {
+        const keys = await api.query.system.account.pagedKeys(
+          startKey ? { pageSize: 1000, startKey } : { pageSize: 1000 },
+        );
+
+        if (keys.length === 0) break;
+
+        allKeys.push(...keys);
+
+        if (keys.length < 1000) break;
+
+        startKey = api.query.system.account.rawKey(keys[keys.length - 1]);
+        iteration++;
+      } while (iteration < 100); // Safety limit
+
+      // Fetch using entries
+      const allEntries = await api.query.system.account.entries();
+
+      expect(allEntries.length).toBe(allKeys.length);
+      console.log(`LegacyClient Entries count (${allEntries.length}) matches pagedKeys count (${allKeys.length})`);
+    });
+
+    it('should return same data as accumulated pagedEntries calls', async () => {
+      console.log('=== LegacyClient Entries vs Accumulated PagedEntries Test ===');
+
+      const api = await client.at(finalizedHash);
+
+      // Fetch using entries
+      const allEntriesViaEntries = await api.query.system.account.entries();
+
+      // Fetch using pagedEntries (accumulate all pages)
+      let allEntriesViaPagedEntries: any[] = [];
+      let startKey: HexString | undefined;
+      let iteration = 0;
+
+      do {
+        const entries = await api.query.system.account.pagedEntries(
+          startKey ? { pageSize: 250, startKey } : { pageSize: 250 },
+        );
+
+        if (entries.length === 0) break;
+
+        allEntriesViaPagedEntries.push(...entries);
+
+        if (entries.length < 250) break;
+
+        startKey = api.query.system.account.rawKey(entries[entries.length - 1][0]);
+        iteration++;
+      } while (iteration < 100); // Safety limit
+
+      expect(allEntriesViaEntries.length).toBe(allEntriesViaPagedEntries.length);
+
+      // Verify first few entries match
+      for (let i = 0; i < Math.min(5, allEntriesViaEntries.length); i++) {
+        const [keyViaEntries, valueViaEntries] = allEntriesViaEntries[i];
+        const [keyViaPaged, valueViaPaged] = allEntriesViaPagedEntries[i];
+
+        expect(keyViaEntries.address()).toBe(keyViaPaged.address());
+        expect(valueViaEntries.data.free).toBe(valueViaPaged.data.free);
+      }
+
+      console.log(
+        `LegacyClient Entries method matches accumulated pagedEntries (${allEntriesViaEntries.length} entries)`,
+      );
+    });
+
+    it('should work correctly at historical blocks', async () => {
+      console.log('=== LegacyClient Historical Entries Test ===');
+
+      const genesisApi = await client.at(genesisHash);
+      const finalizedApi = await client.at(finalizedHash);
+
+      const genesisEntries = await genesisApi.query.system.account.entries();
+      const finalizedEntries = await finalizedApi.query.system.account.entries();
+
+      expect(Array.isArray(genesisEntries)).toBe(true);
+      expect(Array.isArray(finalizedEntries)).toBe(true);
+      expect(genesisEntries.length).toBeGreaterThan(0);
+      expect(finalizedEntries.length).toBeGreaterThan(0);
+
+      console.log(`LegacyClient Genesis entries: ${genesisEntries.length}`);
+      console.log(`LegacyClient Finalized entries: ${finalizedEntries.length}`);
+      console.log('LegacyClient Historical entries fetched successfully');
+    });
+
+    it('should verify entries contain expected accounts', async () => {
+      console.log('=== LegacyClient Entries Content Verification Test ===');
+
+      const api = await client.at(finalizedHash);
+      const allEntries = await api.query.system.account.entries();
+
+      // Extract all addresses
+      const addresses = allEntries.map(([key]) => key.address());
+
+      // Verify known accounts are present
+      expect(addresses).toContain(ALICE);
+      expect(addresses).toContain(BOB);
+
+      // Find Alice's entry
+      const aliceEntry = allEntries.find(([key]) => key.address() === ALICE);
+      expect(aliceEntry).toBeDefined();
+
+      if (aliceEntry) {
+        const [, aliceAccount] = aliceEntry;
+        expect(typeof aliceAccount.data.free).toBe('bigint');
+        expect(aliceAccount.data.free).toBeGreaterThan(0n);
+        console.log(`LegacyClient Alice balance from entries: ${aliceAccount.data.free}`);
+      }
+
+      console.log('LegacyClient Entries content verification passed');
+    });
+
+    it('should handle performance comparison: entries vs manual pagination', async () => {
+      console.log('=== LegacyClient Performance: Entries vs Manual Pagination ===');
+
+      const api = await client.at(finalizedHash);
+
+      // Time the entries method
+      const entriesStartTime = Date.now();
+      const allEntriesViaEntries = await api.query.system.account.entries();
+      const entriesTime = Date.now() - entriesStartTime;
+
+      // Time manual pagination
+      const pagedStartTime = Date.now();
+      let allEntriesViaPaging: any[] = [];
+      let startKey: HexString | undefined;
+      let iteration = 0;
+
+      do {
+        const entries = await api.query.system.account.pagedEntries(
+          startKey ? { pageSize: 250, startKey } : { pageSize: 250 },
+        );
+
+        if (entries.length === 0) break;
+
+        allEntriesViaPaging.push(...entries);
+
+        if (entries.length < 250) break;
+
+        startKey = api.query.system.account.rawKey(entries[entries.length - 1][0]);
+        iteration++;
+      } while (iteration < 100);
+
+      const pagedTime = Date.now() - pagedStartTime;
+
+      console.log(`LegacyClient Entries method: ${entriesTime}ms (${allEntriesViaEntries.length} entries)`);
+      console.log(`LegacyClient Manual pagination: ${pagedTime}ms (${allEntriesViaPaging.length} entries)`);
+      console.log(`LegacyClient Time difference: ${Math.abs(entriesTime - pagedTime)}ms`);
+
+      // Both should return the same count
+      expect(allEntriesViaEntries.length).toBe(allEntriesViaPaging.length);
+    });
+  });
 });
