@@ -227,6 +227,7 @@ export class ChainHead extends JsonRpcGroup<ChainHeadEvent> {
         const prevPinnedBlocks = this.#pinnedBlocks;
 
         this.#subscriptionId = subscription!.subscriptionId;
+        console.log('this.#subscriptionId', this.#subscriptionId);
         this.#finalizedQueue = finalizedBlockHashes;
         if (finalizedBlockHashes.length >= MIN_FINALIZED_QUEUE_SIZE) {
           this.#minQueueSize = finalizedBlockHashes.length;
@@ -657,7 +658,14 @@ export class ChainHead extends JsonRpcGroup<ChainHeadEvent> {
       await this.#recovering.promise;
     }
 
-    assert(this.#subscriptionId, 'Please call the .follow() method before invoking any other methods in this group.');
+    try {
+      console.log('#ensureFollowed', this.#subscriptionId);
+      assert(this.#subscriptionId, 'Please call the .follow() method before invoking any other methods in this group.');
+    } catch (e) {
+      console.error(e);
+
+      throw e;
+    }
   }
 
   #cleanUpOperation(operationId: OperationId) {
