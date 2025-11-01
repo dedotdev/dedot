@@ -227,7 +227,6 @@ export class ChainHead extends JsonRpcGroup<ChainHeadEvent> {
         const prevPinnedBlocks = this.#pinnedBlocks;
 
         this.#subscriptionId = subscription!.subscriptionId;
-        console.log('this.#subscriptionId', this.#subscriptionId);
         this.#finalizedQueue = finalizedBlockHashes;
         if (finalizedBlockHashes.length >= MIN_FINALIZED_QUEUE_SIZE) {
           this.#minQueueSize = finalizedBlockHashes.length;
