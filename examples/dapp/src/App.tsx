@@ -1,13 +1,13 @@
 import { useCallback, useEffect, useState } from 'react';
 import { useAsync } from 'react-use';
 import { PolkadotApi } from '@dedot/chaintypes';
-import { V2Client, WsProvider } from 'dedot';
+import { DedotClient, WsProvider } from 'dedot';
 import type { Injected, InjectedAccount } from 'dedot/types';
 
 const ENDPOINT = 'wss://rpc.ibp.network/paseo';
 
 function App() {
-  const [client, setClient] = useState<V2Client<PolkadotApi>>();
+  const [client, setClient] = useState<DedotClient<PolkadotApi>>();
   const [availableWallets, setAvailableWallets] = useState<string[]>([]);
   const [extension, setExtension] = useState<Injected>();
   const [connectedWalletName, setConnectedWalletName] = useState<string>('');
@@ -19,11 +19,11 @@ function App() {
   const [error, setError] = useState<string>('');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // Initialize V2Client
+  // Initialize DedotClient
   useAsync(async () => {
     try {
       console.time('init client took');
-      const newClient = await V2Client.new<PolkadotApi>({
+      const newClient = await DedotClient.new<PolkadotApi>({
         provider: new WsProvider(ENDPOINT),
         cacheMetadata: true,
       });
