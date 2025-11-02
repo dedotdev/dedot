@@ -11,11 +11,10 @@ import {
 } from '@dedot/types/json-rpc';
 import { waitFor } from '@dedot/utils';
 import { MockInstance } from '@vitest/spy';
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 import MockProvider from '../../../client/__tests__/MockProvider.js';
 import { IJsonRpcClient } from '../../../types.js';
 import { JsonRpcClient } from '../../JsonRpcClient.js';
-import { Archive } from '../Archive.js';
 import {
   ChainHeadBlockNotPinnedError,
   ChainHeadBlockPrunedError,
@@ -54,11 +53,8 @@ describe('ChainHead', () => {
     providerSubscribe = vi.spyOn(provider, 'subscribe');
   });
 
-  const notifyInitializedEvent = () => {
-    const initialized = notify(simulator.subscriptionId, simulator.initializedEvent);
-    const firstNewBlock = notify(simulator.subscriptionId, simulator.nextNewBlock());
-
-    return [initialized, firstNewBlock];
+  const notifyInitializedEvent = (timeout?: number) => {
+    notify(simulator.subscriptionId, simulator.initializedEvent, timeout);
   };
 
   describe('follow', () => {
@@ -117,7 +113,9 @@ describe('ChainHead', () => {
   describe('chainHead operations', () => {
     let firstNewBlock: NewBlock;
     beforeEach(async () => {
-      firstNewBlock = notifyInitializedEvent()[1];
+      notifyInitializedEvent();
+
+      firstNewBlock = notify(simulator.subscriptionId, simulator.nextNewBlock());
 
       await chainHead.follow();
     });
@@ -209,7 +207,7 @@ describe('ChainHead', () => {
           setTimeout(() => {
             expect(providerSend).toHaveBeenCalledWith('chainHead_v1_unpin', [
               simulator.subscriptionId,
-              ['0x0f-1', '0x00', '0x01', '0x02', '0x03', '0x04', '0x05'],
+              ['0x0f-1', '0x00'],
             ]);
             resolve();
           }, 10);
@@ -240,7 +238,7 @@ describe('ChainHead', () => {
         await new Promise<void>((resolve) => {
           setTimeout(() => {
             expect(finalized2.prunedBlockHashes).to.includes('0x0f-1');
-            expect(providerSend).toHaveBeenCalledWith('chainHead_v1_unpin', [simulator.subscriptionId, ['0x06']]);
+            expect(providerSend).toHaveBeenCalledWith('chainHead_v1_unpin', [simulator.subscriptionId, ['0x01']]);
             resolve();
           }, 10);
         });
@@ -271,7 +269,7 @@ describe('ChainHead', () => {
           setTimeout(() => {
             expect(providerSend).toHaveBeenCalledWith('chainHead_v1_unpin', [
               simulator.subscriptionId,
-              ['0x0f', '0x00', '0x01', '0x02', '0x03', '0x04', '0x05'],
+              ['0x0f', '0x00'],
             ]);
             resolve();
           }, 10);
@@ -305,7 +303,7 @@ describe('ChainHead', () => {
           setTimeout(() => {
             expect(providerSend).toHaveBeenCalledWith('chainHead_v1_unpin', [
               simulator.subscriptionId,
-              ['0x00', '0x01', '0x02', '0x03', '0x04', '0x05', '0x0f'],
+              ['0x00', '0x0f'],
             ]);
             resolve();
           }, 10);
@@ -331,10 +329,7 @@ describe('ChainHead', () => {
 
           await new Promise<void>((resolve) => {
             setTimeout(() => {
-              expect(providerSend).toHaveBeenCalledWith('chainHead_v1_unpin', [
-                simulator.subscriptionId,
-                ['0x0f-1', '0x01', '0x02', '0x03', '0x04', '0x05'],
-              ]);
+              expect(providerSend).toHaveBeenCalledWith('chainHead_v1_unpin', [simulator.subscriptionId, ['0x0f-1']]);
               resolve();
             }, 10);
           });
@@ -355,7 +350,7 @@ describe('ChainHead', () => {
             setTimeout(() => {
               expect(providerSend).toHaveBeenCalledWith('chainHead_v1_unpin', [
                 simulator.subscriptionId,
-                ['0x00', '0x06'],
+                ['0x00', '0x01'],
               ]);
               resolve();
             }, 10);
@@ -381,7 +376,7 @@ describe('ChainHead', () => {
             setTimeout(() => {
               expect(providerSend).toHaveBeenCalledWith('chainHead_v1_unpin', [
                 simulator.subscriptionId,
-                ['0x0f-1', '0x00', '0x01', '0x02', '0x03', '0x04'],
+                ['0x0f-1', '0x00'],
               ]);
               resolve();
             }, 10);
@@ -393,7 +388,7 @@ describe('ChainHead', () => {
 
           await new Promise<void>((resolve) => {
             setTimeout(() => {
-              expect(providerSend).toHaveBeenCalledWith('chainHead_v1_unpin', [simulator.subscriptionId, ['0x06']]);
+              expect(providerSend).toHaveBeenCalledWith('chainHead_v1_unpin', [simulator.subscriptionId, ['0x01']]);
               resolve();
             }, 10);
           });
@@ -412,10 +407,7 @@ describe('ChainHead', () => {
 
           await new Promise<void>((resolve) => {
             setTimeout(() => {
-              expect(providerSend).toHaveBeenCalledWith('chainHead_v1_unpin', [
-                simulator.subscriptionId,
-                ['0x05', '0x07'],
-              ]);
+              expect(providerSend).toHaveBeenCalledWith('chainHead_v1_unpin', [simulator.subscriptionId, ['0x02']]);
               resolve();
             }, 10);
           });
@@ -442,16 +434,13 @@ describe('ChainHead', () => {
           notify(simulator.subscriptionId, simulator.nextNewBlock());
 
           notify(simulator.subscriptionId, simulator.nextBestBlock());
-          const result = chainHead.storage(queries, null, '0x02');
+          const result = chainHead.storage(queries, null, '0x00');
 
           notify(simulator.subscriptionId, simulator.nextFinalized());
 
           await new Promise<void>((resolve) => {
             setTimeout(() => {
-              expect(providerSend).toHaveBeenCalledWith('chainHead_v1_unpin', [
-                simulator.subscriptionId,
-                ['0x0f-1', '0x00', '0x01', '0x03', '0x04', '0x05'],
-              ]);
+              expect(providerSend).toHaveBeenCalledWith('chainHead_v1_unpin', [simulator.subscriptionId, ['0x0f-1']]);
               resolve();
             }, 10);
           });
@@ -477,7 +466,7 @@ describe('ChainHead', () => {
             setTimeout(() => {
               expect(providerSend).toHaveBeenCalledWith('chainHead_v1_unpin', [
                 simulator.subscriptionId,
-                ['0x02', '0x06'],
+                ['0x00', '0x01'],
               ]);
               resolve();
             }, 10);
@@ -519,10 +508,7 @@ describe('ChainHead', () => {
             '0x',
           ]);
           expect(providerSend).toHaveBeenCalledWith('chainHead_v1_stopOperation', [simulator.subscriptionId, 'call01']);
-          expect(providerSend).toHaveBeenCalledWith('chainHead_v1_unpin', [
-            simulator.subscriptionId,
-            ['0x0f', '0x00', '0x01', '0x02', '0x03', '0x04', '0x05'],
-          ]);
+          expect(providerSend).toHaveBeenCalledWith('chainHead_v1_unpin', [simulator.subscriptionId, ['0x0f', '0x00']]);
 
           notify(simulator.subscriptionId, {
             operationId: 'call01',
@@ -576,10 +562,7 @@ describe('ChainHead', () => {
 
           expect(providerSend).toHaveBeenCalledWith('chainHead_v1_body', [simulator.subscriptionId, '0x0f']);
           expect(providerSend).toHaveBeenCalledWith('chainHead_v1_stopOperation', [simulator.subscriptionId, 'body01']);
-          expect(providerSend).toHaveBeenCalledWith('chainHead_v1_unpin', [
-            simulator.subscriptionId,
-            ['0x0f', '0x00', '0x01', '0x02', '0x03', '0x04', '0x05'],
-          ]);
+          expect(providerSend).toHaveBeenCalledWith('chainHead_v1_unpin', [simulator.subscriptionId, ['0x0f', '0x00']]);
 
           notify(simulator.subscriptionId, {
             operationId: 'body02',
@@ -642,7 +625,7 @@ describe('ChainHead', () => {
           ]);
           expect(providerSend).toHaveBeenCalledWith('chainHead_v1_unpin', [
             simulator.subscriptionId,
-            ['0x0f-1', '0x00', '0x01', '0x02', '0x03', '0x04', '0x05'],
+            ['0x0f-1', '0x00'],
           ]);
 
           notify(simulator.subscriptionId, {
@@ -1188,7 +1171,10 @@ describe('ChainHead', () => {
           expect(prevSubId).not.toEqual(simulator.subscriptionId);
           expect(providerSend).toHaveBeenNthCalledWith(4, 'chainHead_v1_unfollow', [prevSubId]);
           expect(providerSend).toHaveBeenNthCalledWith(5, 'chainHead_v1_follow', [true]);
-          expect(providerSend).toHaveBeenNthCalledWith(6, 'chainHead_v1_header', [simulator.subscriptionId, '0x00']);
+          expect(providerSend).not.toHaveBeenNthCalledWith(6, 'chainHead_v1_header', [
+            simulator.subscriptionId,
+            '0x00',
+          ]);
           resolve();
         }, 10);
       });
@@ -1227,7 +1213,7 @@ describe('ChainHead', () => {
 
       expect(providerSend).toHaveBeenNthCalledWith(4, 'chainHead_v1_body', [prevSubId, bestHash]);
       expect(providerSend).toHaveBeenNthCalledWith(5, 'chainHead_v1_unfollow', [prevSubId]);
-      expect(providerSend).toHaveBeenNthCalledWith(8, 'chainHead_v1_body', [simulator.subscriptionId, bestHash]);
+      expect(providerSend).toHaveBeenNthCalledWith(7, 'chainHead_v1_body', [simulator.subscriptionId, bestHash]);
       expect(providerSend).toHaveBeenLastCalledWith('chainHead_v1_stopOperation', [simulator.subscriptionId, 'body02']);
     });
 
@@ -1263,7 +1249,7 @@ describe('ChainHead', () => {
 
       expect(providerSend).toHaveBeenNthCalledWith(4, 'chainHead_v1_body', [prevSubId, bestHash]);
       expect(providerSend).toHaveBeenNthCalledWith(5, 'chainHead_v1_unfollow', [prevSubId]);
-      expect(providerSend).toHaveBeenNthCalledWith(8, 'chainHead_v1_body', [simulator.subscriptionId, bestHash]);
+      expect(providerSend).toHaveBeenNthCalledWith(7, 'chainHead_v1_body', [simulator.subscriptionId, bestHash]);
       expect(providerSend).toHaveBeenLastCalledWith('chainHead_v1_stopOperation', [simulator.subscriptionId, 'body03']);
     });
 
@@ -1358,29 +1344,29 @@ describe('ChainHead', () => {
       await expect(results).resolves.toEqual([['0x1111'], '0x1111', storageItems]);
 
       expect(providerSend).toHaveBeenNthCalledWith(4, 'chainHead_v1_unfollow', [prevSubId]);
-      expect(providerSend).toHaveBeenNthCalledWith(7, 'chainHead_v1_body', [simulator.subscriptionId, bestHash]);
+      expect(providerSend).toHaveBeenNthCalledWith(6, 'chainHead_v1_body', [simulator.subscriptionId, bestHash]);
 
-      expect(providerSend).toHaveBeenNthCalledWith(8, 'chainHead_v1_call', [
+      expect(providerSend).toHaveBeenNthCalledWith(7, 'chainHead_v1_call', [
         simulator.subscriptionId,
         bestHash,
         'func',
         '0x',
       ]);
-      expect(providerSend).toHaveBeenNthCalledWith(9, 'chainHead_v1_storage', [
+      expect(providerSend).toHaveBeenNthCalledWith(8, 'chainHead_v1_storage', [
         simulator.subscriptionId,
         bestHash,
         queries,
         null,
       ]);
-      expect(providerSend).toHaveBeenNthCalledWith(10, 'chainHead_v1_stopOperation', [
+      expect(providerSend).toHaveBeenNthCalledWith(9, 'chainHead_v1_stopOperation', [
         simulator.subscriptionId,
         'body02',
       ]);
-      expect(providerSend).toHaveBeenNthCalledWith(11, 'chainHead_v1_stopOperation', [
+      expect(providerSend).toHaveBeenNthCalledWith(10, 'chainHead_v1_stopOperation', [
         simulator.subscriptionId,
         'call02',
       ]);
-      expect(providerSend).toHaveBeenNthCalledWith(12, 'chainHead_v1_stopOperation', [
+      expect(providerSend).toHaveBeenNthCalledWith(11, 'chainHead_v1_stopOperation', [
         simulator.subscriptionId,
         'storage02',
       ]);

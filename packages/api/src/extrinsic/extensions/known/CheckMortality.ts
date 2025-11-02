@@ -1,7 +1,7 @@
 import { BlockHash, EraLike, Hash, Header } from '@dedot/codecs';
 import { SignerPayloadJSON } from '@dedot/types';
-import { assert, bnMin, hexToBn, hexToNumber, isZeroHex, numberToHex, u8aToHex } from '@dedot/utils';
-import { V2Client } from '../../../client/index.js';
+import { assert, bnMin, hexToNumber, isZeroHex, numberToHex, u8aToHex } from '@dedot/utils';
+import { V2Client } from '../../../client/V2Client.js';
 import { SignedExtension } from '../SignedExtension.js';
 
 export const MAX_FINALITY_LAG: number = 5;
