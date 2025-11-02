@@ -7,14 +7,13 @@ import {
   ISubmittableExtrinsic,
   ISubmittableResult,
   PayloadOptions,
-  RpcVersion,
   SignerOptions,
   TxHash,
   TxPaymentInfo,
   TxUnsub,
 } from '@dedot/types';
 import { DedotError, HexString, hexToU8a, isFunction, toHex, u8aToHex } from '@dedot/utils';
-import type { FrameSystemEventRecord, SubstrateApi } from '../../chaintypes/index.js';
+import type { FrameSystemEventRecord } from '../../chaintypes/index.js';
 import type { ISubstrateClient, ISubstrateClientAt } from '../../types.js';
 import { ExtraSignedExtension } from '../extensions/index.js';
 import { fakeSigner } from './fakeSigner.js';

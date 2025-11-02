@@ -36,16 +36,6 @@ export class TxExecutor extends Executor {
           return o;
         }, {} as any);
 
-        const $CallParams = $.Struct(
-          txCallDef.fields.reduce((o, { name, typeId }) => {
-            o[stringCamelCase(name!)] = this.registry.findCodec(typeId);
-            return o;
-          }, {} as any),
-        );
-
-        // @ts-ignore
-        $CallParams.assert?.(callParams);
-
         call = {
           pallet: stringPascalCase(targetPallet.name),
           palletCall: {

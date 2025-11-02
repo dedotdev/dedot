@@ -128,6 +128,9 @@ export class GenericExtrinsic<Address = any, Call = any, Signature = any, Extra 
   get callU8a(): Uint8Array {
     const { callTypeId } = this.registry.metadata!.extrinsic;
     const $RuntimeCall = this.registry.findCodec(callTypeId);
+
+    $RuntimeCall.assert?.(this.call);
+
     return $RuntimeCall.tryEncode(this.call);
   }
 
