@@ -43,11 +43,19 @@ export function Result<TI, TO, UI, UO>($ok: Shape<TI, TO>, $err: Shape<UI, UO>):
       }
     },
     subAssert(assert: AssertState) {
+      // Validate it's an object
+      assert.typeof(this, 'object');
+      assert.nonNull(this);
+
       const value = assert.value as Result<any, any>;
+
+      // Validate discriminant and recursively validate nested value
       if (value.isOk === true) {
-        $ok.subAssert(value.value);
+        $ok.subAssert(assert.key(this, 'value'));
       } else if (value.isErr === true) {
-        $err.subAssert(value.err);
+        $err.subAssert(assert.key(this, 'err'));
+      } else {
+        throw new Error(`${assert.path}: Invalid Result discriminant`);
       }
     },
   });
