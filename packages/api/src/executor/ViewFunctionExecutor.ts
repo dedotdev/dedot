@@ -22,8 +22,12 @@ export class ViewFunctionExecutor extends Executor {
     const callFn: GenericViewFunction = async (...args: any[]) => {
       const { inputs, id, output } = viewFunctionDef;
 
-      const formattedInputs = inputs.map(({ typeId }, index) => this.registry.findCodec(typeId).tryEncode(args[index]));
-      const bytes = u8aToHex(concatU8a(id, $.Vec($.u8).tryEncode(concatU8a(...formattedInputs))));
+      const $ParamsTuple = $.Tuple(...inputs.map((param) => this.registry.findCodec(param.typeId)));
+      $ParamsTuple.assert?.(args);
+
+      const formattedInputs = $ParamsTuple.tryEncode(args);
+
+      const bytes = u8aToHex(concatU8a(id, $.Vec($.u8).tryEncode(formattedInputs)));
 
       const func = `${RUNTIME_API_NAME}_${METHOD_NAME}`;
       const callParams: StateCallParams = {

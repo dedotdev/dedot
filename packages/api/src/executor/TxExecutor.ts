@@ -1,3 +1,4 @@
+import * as $ from '@dedot/shape';
 import type { GenericTxCall, IRuntimeTxCall } from '@dedot/types';
 import { assert, stringCamelCase, stringPascalCase, UnknownApiError } from '@dedot/utils';
 import { SubmittableExtrinsic } from '../extrinsic/index.js';
@@ -34,6 +35,16 @@ export class TxExecutor extends Executor {
           o[stringCamelCase(name!)] = args[idx];
           return o;
         }, {} as any);
+
+        const $CallParams = $.Struct(
+          txCallDef.fields.reduce((o, { name, typeId }) => {
+            o[stringCamelCase(name!)] = this.registry.findCodec(typeId);
+            return o;
+          }, {} as any),
+        );
+
+        // @ts-ignore
+        $CallParams.assert?.(callParams);
 
         call = {
           pallet: stringPascalCase(targetPallet.name),
