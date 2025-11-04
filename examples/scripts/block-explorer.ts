@@ -5,7 +5,6 @@
  * It verifies block exploration capabilities including:
  * - Getting/subscribing to best blocks
  * - Getting/subscribing to finalized blocks
- * - Getting/subscribing to best blocks list (from best to finalized)
  * - Getting block headers by number or hash
  * - Getting block bodies by number or hash
  *
@@ -13,8 +12,8 @@
  *
  * Usage: yarn tsx examples/scripts/block-explorer.ts
  */
-import { DedotClient, WsProvider } from 'dedot';
 import { assert } from '@dedot/utils';
+import { DedotClient, WsProvider } from 'dedot';
 
 // Configuration
 const POLKADOT_ENDPOINT = 'wss://rpc.polkadot.io';
@@ -59,7 +58,7 @@ async function testBestBlock(client: DedotClient) {
 
   try {
     const bestBlock = await client.block.best();
-    
+
     assert(bestBlock.hash, 'Best block should have a hash');
     assert(typeof bestBlock.number === 'number', 'Best block should have a number');
     assert(bestBlock.parent, 'Best block should have a parent hash');
@@ -189,82 +188,6 @@ async function testFinalizedBlockSubscription(client: DedotClient) {
 }
 
 /**
- * Test getting the list of best blocks (from best to finalized)
- */
-async function testBestsBlocks(client: DedotClient) {
-  log('=== TESTING bests() - One-time Query ===');
-
-  try {
-    const bests = await client.block.bests();
-
-    assert(Array.isArray(bests), 'Bests should return an array');
-    assert(bests.length > 0, 'Bests array should not be empty');
-
-    const firstBlock = bests[0];
-    const lastBlock = bests[bests.length - 1];
-
-    assert(firstBlock.number >= lastBlock.number, 'Blocks should be ordered from best to finalized');
-
-    logSuccess(`Got ${bests.length} blocks from best to finalized`, {
-      count: bests.length,
-      bestBlock: {
-        hash: firstBlock.hash,
-        number: firstBlock.number,
-      },
-      finalizedBlock: {
-        hash: lastBlock.hash,
-        number: lastBlock.number,
-      },
-      blockNumbers: bests.map((b) => b.number),
-    });
-  } catch (error) {
-    logError('Failed to get bests blocks', error);
-  }
-}
-
-/**
- * Test subscribing to bests blocks list
- */
-async function testBestsBlocksSubscription(client: DedotClient) {
-  log('=== TESTING bests(callback) - Subscription ===');
-
-  try {
-    let updateCount = 0;
-    const maxUpdates = 3;
-
-    log(`Subscribing to bests blocks updates (will collect ${maxUpdates} updates)...`);
-
-    const unsub = client.block.bests((blocks) => {
-      updateCount++;
-      log(`Bests blocks update #${updateCount}`, {
-        count: blocks.length,
-        bestNumber: blocks[0]?.number,
-        finalizedNumber: blocks[blocks.length - 1]?.number,
-        blockNumbers: blocks.map((b) => b.number),
-      });
-
-      if (updateCount >= maxUpdates) {
-        log('Unsubscribing from bests blocks updates...');
-        unsub();
-        logSuccess(`Received ${updateCount} bests blocks updates`);
-      }
-    });
-
-    // Wait for updates to complete
-    await new Promise((resolve) => {
-      const checkInterval = setInterval(() => {
-        if (updateCount >= maxUpdates) {
-          clearInterval(checkInterval);
-          resolve(undefined);
-        }
-      }, 1000);
-    });
-  } catch (error) {
-    logError('Failed to subscribe to bests blocks', error);
-  }
-}
-
-/**
  * Test getting block header by hash
  */
 async function testHeaderByHash(client: DedotClient) {
@@ -379,7 +302,7 @@ async function main() {
   console.log('🚀 BlockExplorer Verification Script\n');
   console.log(`Connecting to ${POLKADOT_ENDPOINT}...\n`);
 
-  const client = await DedotClient.new(new WsProvider(POLKADOT_ENDPOINT));
+  const client = await DedotClient.legacy(new WsProvider(POLKADOT_ENDPOINT));
 
   try {
     log('✅ Connected successfully\n');
@@ -396,12 +319,6 @@ async function main() {
 
     separator();
     await testFinalizedBlockSubscription(client);
-
-    separator();
-    await testBestsBlocks(client);
-
-    separator();
-    await testBestsBlocksSubscription(client);
 
     separator();
     await testHeaderByHash(client);
@@ -437,4 +354,3 @@ main()
     console.error('❌ Script failed:', error);
     process.exit(1);
   });
-

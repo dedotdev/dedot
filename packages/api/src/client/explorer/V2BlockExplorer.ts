@@ -52,9 +52,7 @@ export class V2BlockExplorer implements BlockExplorer {
       return hashes[0];
     }
 
-    throw new Error(
-      `Block number ${numberOrHash} not found in pinned blocks and Archive is not supported`,
-    );
+    throw new Error(`Block number ${numberOrHash} not found in pinned blocks and Archive is not supported`);
   }
 
   /**
@@ -72,11 +70,11 @@ export class V2BlockExplorer implements BlockExplorer {
         callback(this.toBlockInfo(block));
       };
 
-      this.#chainHead.on('bestBlock', handler);
+      this.#chainHead.bestBlock().then((block) => {
+        handler(block);
+      });
 
-      return () => {
-        this.#chainHead.off('bestBlock', handler);
-      };
+      return this.#chainHead.on('bestBlock', handler);
     } else {
       // One-time query
       return this.#chainHead.bestBlock().then((block) => this.toBlockInfo(block));
@@ -98,65 +96,13 @@ export class V2BlockExplorer implements BlockExplorer {
         callback(this.toBlockInfo(block));
       };
 
-      this.#chainHead.on('finalizedBlock', handler);
+      this.#chainHead.finalizedBlock().then((block) => {
+        handler(block);
+      });
 
-      return () => {
-        this.#chainHead.off('finalizedBlock', handler);
-      };
+      return this.#chainHead.on('finalizedBlock', handler);
     } else {
-      // One-time query
       return this.#chainHead.finalizedBlock().then((block) => this.toBlockInfo(block));
-    }
-  }
-
-  /**
-   * Walk backwards from best block to finalized block through parent chain
-   */
-  private async calculateBests(): Promise<BlockInfo[]> {
-    const bestBlock = await this.#chainHead.bestBlock();
-    const finalizedBlock = await this.#chainHead.finalizedBlock();
-
-    const blocks: BlockInfo[] = [];
-    let currentBlock: PinnedBlock | undefined = bestBlock;
-
-    // Walk backwards from best to finalized
-    while (currentBlock && currentBlock.hash !== finalizedBlock.hash) {
-      blocks.push(this.toBlockInfo(currentBlock));
-      currentBlock = this.#chainHead.findBlock(currentBlock.parent);
-    }
-
-    // Add the finalized block
-    blocks.push(this.toBlockInfo(finalizedBlock));
-
-    return blocks;
-  }
-
-  /**
-   * Get the list of best blocks (from current best to finalized)
-   */
-  bests(): Promise<BlockInfo[]>;
-  /**
-   * Subscribe to the list of best blocks
-   */
-  bests(callback: Callback<BlockInfo[]>): () => void;
-  bests(callback?: Callback<BlockInfo[]>): Promise<BlockInfo[]> | (() => void) {
-    if (callback) {
-      // Subscribe mode - recalculate on any best or finalized block change
-      const handler = async () => {
-        const blocks = await this.calculateBests();
-        callback(blocks);
-      };
-
-      this.#chainHead.on('bestBlock', handler);
-      this.#chainHead.on('finalizedBlock', handler);
-
-      return () => {
-        this.#chainHead.off('bestBlock', handler);
-        this.#chainHead.off('finalizedBlock', handler);
-      };
-    } else {
-      // One-time query
-      return this.calculateBests();
     }
   }
 
@@ -177,9 +123,6 @@ export class V2BlockExplorer implements BlockExplorer {
    */
   async body(numberOrHash: number | BlockHash): Promise<HexString[]> {
     const hash = await this.toBlockHash(numberOrHash);
-    const body = await this.#chainHead.body(hash);
-
-    return body;
+    return await this.#chainHead.body(hash);
   }
 }
-

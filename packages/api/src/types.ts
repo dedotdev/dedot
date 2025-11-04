@@ -172,10 +172,6 @@ export interface BlockExplorer {
   best(): Promise<BlockInfo>;
   // Subscribe to the best block
   best(callback: Callback<BlockInfo>): () => void;
-  // Get the list of best blocks, an array of block from the current best block to the current finalized block
-  bests(): Promise<BlockInfo[]>;
-  // Subscribe to the list of best blocks
-  bests(callback: Callback<BlockInfo[]>): () => void;
   // Get the finalized block
   finalized(): Promise<BlockInfo>;
   // Subscribe to the finalized block

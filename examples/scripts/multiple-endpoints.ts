@@ -14,11 +14,11 @@ client.on('connected', (connectedUrl: any) => {
   console.log('Connected Endpoint:', connectedUrl);
 });
 
-client.on('finalizedBlock', (block: PinnedBlock) => {
+client.block.finalized((block) => {
   console.log('Finalized Block:', block.number);
 });
 
-client.on('bestBlock', (block: PinnedBlock) => {
+client.block.best((block) => {
   console.log('Best Block:', block.number);
 });
 

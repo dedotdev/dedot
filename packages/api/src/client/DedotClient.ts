@@ -16,7 +16,7 @@ import { isJsonRpcProvider } from '../json-rpc/index.js';
 import {
   ApiOptions,
   BlockExplorer,
-  DedotClientEvent,
+  ApiEvent,
   ISubstrateClient,
   ISubstrateClientAt,
   SubstrateRuntimeVersion,
@@ -30,9 +30,9 @@ export type ClientOptions = ApiOptions & {
 
 export class DedotClient<
   ChainApi extends GenericSubstrateApi = SubstrateApi, // --
-> implements ISubstrateClient<ChainApi, DedotClientEvent>
+> implements ISubstrateClient<ChainApi, ApiEvent>
 {
-  #client: ISubstrateClient<ChainApi, DedotClientEvent>;
+  #client: ISubstrateClient<ChainApi, ApiEvent>;
   rpcVersion: RpcVersion;
 
   constructor(options: ClientOptions | JsonRpcProvider) {
@@ -153,13 +153,13 @@ export class DedotClient<
     await this.#client.disconnect();
   }
 
-  on(event: DedotClientEvent, handler: (...args: any[]) => void): () => void {
+  on(event: ApiEvent, handler: (...args: any[]) => void): () => void {
     return this.#client.on(event, handler);
   }
-  once(event: DedotClientEvent, handler: (...args: any[]) => void): () => void {
+  once(event: ApiEvent, handler: (...args: any[]) => void): () => void {
     return this.#client.once(event, handler);
   }
-  off(event: DedotClientEvent, handler?: ((...args: any[]) => void) | undefined): this {
+  off(event: ApiEvent, handler?: ((...args: any[]) => void) | undefined): this {
     this.#client.off(event, handler);
     return this;
   }
