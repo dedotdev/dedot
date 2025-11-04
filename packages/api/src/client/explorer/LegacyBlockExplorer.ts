@@ -5,14 +5,192 @@ import type { BlockExplorer, BlockInfo } from '../../types.js';
 import type { LegacyClient } from '../LegacyClient.js';
 
 /**
+ * Simple Subject implementation inspired by RxJS BehaviorSubject
+ * - Stores current value
+ * - Emits current value immediately to new subscribers
+ * - Tracks listener count for cleanup
+ */
+class Subject<T> {
+  #value?: T;
+  #listeners: Set<Callback<T>>;
+
+  constructor(initialValue?: T) {
+    this.#value = initialValue;
+    this.#listeners = new Set();
+  }
+
+  /**
+   * Emit a new value to all subscribers
+   */
+  next(value: T): void {
+    this.#value = value;
+    this.#listeners.forEach((listener) => {
+      try {
+        listener(value);
+      } catch (error) {
+        // Swallow errors to prevent one listener from breaking others
+        console.error('Error in Subject listener:', error);
+      }
+    });
+  }
+
+  /**
+   * Subscribe to value changes
+   * Immediately emits the current value if available
+   */
+  subscribe(callback: Callback<T>): () => void {
+    // Immediately emit current value to new subscriber
+    if (this.#value !== undefined) {
+      try {
+        callback(this.#value);
+      } catch (error) {
+        console.error('Error in Subject subscriber callback:', error);
+      }
+    }
+
+    this.#listeners.add(callback);
+
+    // Return unsubscribe function
+    return () => {
+      this.#listeners.delete(callback);
+    };
+  }
+
+  /**
+   * Get the number of active listeners
+   */
+  get listenerCount(): number {
+    return this.#listeners.size;
+  }
+
+  /**
+   * Get the current value
+   */
+  get value(): T | undefined {
+    return this.#value;
+  }
+}
+
+/**
  * @name LegacyBlockExplorer
  * @description Block explorer implementation for LegacyClient using legacy JSON-RPC methods
+ * Optimized to share RPC subscriptions across multiple subscribers using Subject pattern
  */
 export class LegacyBlockExplorer implements BlockExplorer {
   readonly #client: LegacyClient<any>;
 
+  // Subjects for block subscriptions
+  readonly #bestBlockSubject: Subject<BlockInfo>;
+  readonly #finalizedBlockSubject: Subject<BlockInfo>;
+
+  // Track RPC subscription cleanup functions
+  #bestBlockUnsub?: () => void;
+  #finalizedBlockUnsub?: () => void;
+
   constructor(client: LegacyClient<any>) {
     this.#client = client;
+    this.#bestBlockSubject = new Subject<BlockInfo>();
+    this.#finalizedBlockSubject = new Subject<BlockInfo>();
+  }
+
+  /**
+   * Start the shared best block subscription if not already active
+   */
+  private ensureBestBlockSubscription(): void {
+    if (this.#bestBlockUnsub) {
+      // Subscription already active
+      return;
+    }
+
+    // Use closure pattern to handle async subscription without race conditions
+    let done = false;
+    let unsub: Unsub | undefined;
+
+    // Start RPC subscription (non-blocking)
+    this.#client.rpc
+      .chain_subscribeNewHeads((header: Header) => {
+        if (done) {
+          // Unsubscribe was called before subscription completed
+          unsub && unsub();
+          return;
+        }
+
+        const blockInfo: BlockInfo = {
+          hash: this.calculateBlockHash(header),
+          number: header.number,
+          parent: header.parentHash,
+        };
+        this.#bestBlockSubject.next(blockInfo);
+      })
+      .then((rpcUnsub: any) => {
+        unsub = rpcUnsub;
+      });
+
+    // Immediately set unsub wrapper to prevent race conditions
+    this.#bestBlockUnsub = () => {
+      done = true;
+      unsub && unsub();
+    };
+  }
+
+  /**
+   * Start the shared finalized block subscription if not already active
+   */
+  private ensureFinalizedBlockSubscription(): void {
+    if (this.#finalizedBlockUnsub) {
+      // Subscription already active
+      return;
+    }
+
+    // Use closure pattern to handle async subscription without race conditions
+    let done = false;
+    let unsub: Unsub | undefined;
+
+    // Start RPC subscription (non-blocking)
+    this.#client.rpc
+      .chain_subscribeFinalizedHeads((header: Header) => {
+        if (done) {
+          // Unsubscribe was called before subscription completed
+          unsub && unsub();
+          return;
+        }
+
+        const blockInfo: BlockInfo = {
+          hash: this.calculateBlockHash(header),
+          number: header.number,
+          parent: header.parentHash,
+        };
+        this.#finalizedBlockSubject.next(blockInfo);
+      })
+      .then((rpcUnsub: any) => {
+        unsub = rpcUnsub;
+      });
+
+    // Immediately set unsub wrapper to prevent race conditions
+    this.#finalizedBlockUnsub = () => {
+      done = true;
+      unsub && unsub();
+    };
+  }
+
+  /**
+   * Clean up best block subscription when no more listeners
+   */
+  private cleanupBestBlockSubscription(): void {
+    if (this.#bestBlockSubject.listenerCount === 0 && this.#bestBlockUnsub) {
+      this.#bestBlockUnsub();
+      this.#bestBlockUnsub = undefined;
+    }
+  }
+
+  /**
+   * Clean up finalized block subscription when no more listeners
+   */
+  private cleanupFinalizedBlockSubscription(): void {
+    if (this.#finalizedBlockSubject.listenerCount === 0 && this.#finalizedBlockUnsub) {
+      this.#finalizedBlockUnsub();
+      this.#finalizedBlockUnsub = undefined;
+    }
   }
 
   /**
@@ -40,34 +218,23 @@ export class LegacyBlockExplorer implements BlockExplorer {
   best(): Promise<BlockInfo>;
   /**
    * Subscribe to the best block
+   * Multiple subscribers will share a single RPC subscription
+   * New subscribers immediately receive the current best block if available
    */
   best(callback: Callback<BlockInfo>): () => void;
   best(callback?: Callback<BlockInfo>): Promise<BlockInfo> | (() => void) {
     if (callback) {
-      let done = false;
-      let unsub: () => void;
+      // Subscribe mode - use shared subscription
+      // Ensure RPC subscription is active (creates on first listener)
+      this.ensureBestBlockSubscription();
 
-      this.#client.rpc
-        .chain_subscribeNewHeads(async (header: Header) => {
-          if (done) {
-            unsub && unsub();
-            return;
-          }
+      // Subscribe to subject (automatically emits current value if available)
+      const unsub = this.#bestBlockSubject.subscribe(callback);
 
-          const blockInfo: BlockInfo = {
-            hash: this.calculateBlockHash(header),
-            number: header.number,
-            parent: header.parentHash,
-          };
-          callback(blockInfo);
-        })
-        .then((x: any) => {
-          unsub = x;
-        });
-
+      // Return cleanup function
       return () => {
-        done = true;
-        unsub && unsub();
+        unsub();
+        this.cleanupBestBlockSubscription();
       };
     } else {
       // One-time query using chain_getHeader
@@ -88,35 +255,23 @@ export class LegacyBlockExplorer implements BlockExplorer {
   finalized(): Promise<BlockInfo>;
   /**
    * Subscribe to the finalized block
+   * Multiple subscribers will share a single RPC subscription
+   * New subscribers immediately receive the current finalized block if available
    */
   finalized(callback: Callback<BlockInfo>): () => void;
   finalized(callback?: Callback<BlockInfo>): Promise<BlockInfo> | (() => void) {
     if (callback) {
-      let done = false;
-      let unsub: () => void;
+      // Subscribe mode - use shared subscription
+      // Ensure RPC subscription is active (creates on first listener)
+      this.ensureFinalizedBlockSubscription();
 
-      // Subscribe mode using chain_subscribeFinalizedHeads
-      this.#client.rpc
-        .chain_subscribeFinalizedHeads(async (header: Header) => {
-          if (done) {
-            unsub && unsub();
-            return;
-          }
+      // Subscribe to subject (automatically emits current value if available)
+      const unsub = this.#finalizedBlockSubject.subscribe(callback);
 
-          const blockInfo: BlockInfo = {
-            hash: this.calculateBlockHash(header),
-            number: header.number,
-            parent: header.parentHash,
-          };
-          callback(blockInfo);
-        })
-        .then((x: any) => {
-          unsub = x;
-        });
-
+      // Return cleanup function
       return () => {
-        done = true;
-        unsub && unsub();
+        unsub();
+        this.cleanupFinalizedBlockSubscription();
       };
     } else {
       // One-time query using chain_getFinalizedHead
