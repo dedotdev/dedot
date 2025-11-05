@@ -94,6 +94,57 @@ export class LegacyBlockExplorer implements BlockExplorer {
   }
 
   /**
+   * Fill missing blocks when a gap is detected
+   * Fetches and emits all missing blocks between lastNumber and currentNumber
+   */
+  private async fillMissingBlocks(
+    lastNumber: number | undefined,
+    currentNumber: number,
+    subject: Subject<BlockInfo>,
+    blockType: 'best' | 'finalized',
+  ): Promise<void> {
+    // No gap if no previous block or current is next sequential block
+    if (lastNumber === undefined || currentNumber <= lastNumber + 1) {
+      return;
+    }
+
+    // Gap detected - backfill missing blocks
+    const gapSize = currentNumber - lastNumber - 1;
+    console.warn(
+      `${blockType} block gap detected: ${gapSize} blocks missing (${lastNumber + 1} to ${currentNumber - 1})`,
+    );
+
+    // Create list of missing block numbers
+    const missingNums = Array.from({ length: gapSize }, (_, i) => lastNumber + 1 + i);
+
+    try {
+      // Fetch all hashes in parallel
+      const hashes = await Promise.all(missingNums.map((num) => this.#client.rpc.chain_getBlockHash(num) as HexString));
+
+      // Fetch all headers in parallel
+      const headers = await Promise.all(hashes.map((hash) => this.#client.rpc.chain_getHeader(hash) as Header));
+
+      // Emit blocks in order
+      for (let i = 0; i < missingNums.length; i++) {
+        const hash = hashes[i];
+        const header = headers[i];
+
+        if (hash && header) {
+          const missingBlockInfo: BlockInfo = {
+            hash,
+            number: header.number,
+            parent: header.parentHash,
+          };
+          subject.next(missingBlockInfo);
+        }
+      }
+    } catch (error) {
+      console.error(`Failed to backfill missing ${blockType} blocks:`, error);
+      // Continue despite backfill failure
+    }
+  }
+
+  /**
    * Start the shared best block subscription if not already active
    */
   private ensureBestBlockSubscription(): void {
@@ -105,6 +156,7 @@ export class LegacyBlockExplorer implements BlockExplorer {
     // Use closure pattern to handle async subscription without race conditions
     let done = false;
     let unsub: Unsub | undefined;
+    const blockQueue = new AsyncQueue();
 
     // Start RPC subscription (non-blocking)
     this.#client.rpc
@@ -115,12 +167,30 @@ export class LegacyBlockExplorer implements BlockExplorer {
           return;
         }
 
-        const blockInfo: BlockInfo = {
-          hash: this.calculateBlockHash(header),
-          number: header.number,
-          parent: header.parentHash,
-        };
-        this.#bestBlockSubject.next(blockInfo);
+        // Enqueue block processing to ensure sequential handling
+        blockQueue
+          .enqueue(async () => {
+            const currentHash = this.calculateBlockHash(header);
+            // Detect gaps in best block stream (due to reconnection)
+            const { number: lastNumber, hash: lastHash } = this.#bestBlockSubject.value || {};
+            if (lastHash === currentHash) {
+              return;
+            }
+
+            // Fill missing blocks if gap detected
+            await this.fillMissingBlocks(lastNumber, header.number, this.#bestBlockSubject, 'best');
+
+            // Emit current block
+            const blockInfo: BlockInfo = {
+              hash: currentHash,
+              number: header.number,
+              parent: header.parentHash,
+            };
+            this.#bestBlockSubject.next(blockInfo);
+          })
+          .catch((error) => {
+            console.error('Error processing best block:', error);
+          });
       })
       .then((rpcUnsub: any) => {
         unsub = rpcUnsub;
@@ -129,6 +199,7 @@ export class LegacyBlockExplorer implements BlockExplorer {
     // Immediately set unsub wrapper to prevent race conditions
     this.#bestBlockUnsub = () => {
       done = true;
+      blockQueue.cancel();
       unsub && unsub();
     };
   }
@@ -165,46 +236,8 @@ export class LegacyBlockExplorer implements BlockExplorer {
               return;
             }
 
-            if (lastNumber !== undefined && header.number > lastNumber + 1) {
-              // Gap detected - backfill missing blocks
-              const gapSize = header.number - lastNumber - 1;
-              console.warn(
-                `Finalized block gap detected: ${gapSize} blocks missing (${lastNumber + 1} to ${header.number - 1})`,
-              );
-
-              // Create list of missing block numbers
-              const missingNums = Array.from({ length: gapSize }, (_, i) => lastNumber + 1 + i);
-
-              try {
-                // Fetch all hashes in parallel
-                const hashes = await Promise.all(
-                  missingNums.map((num) => this.#client.rpc.chain_getBlockHash(num) as HexString),
-                );
-
-                // Fetch all headers in parallel
-                const headers = await Promise.all(
-                  hashes.map((hash) => this.#client.rpc.chain_getHeader(hash) as Header),
-                );
-
-                // Emit blocks in order
-                for (let i = 0; i < missingNums.length; i++) {
-                  const hash = hashes[i];
-                  const header = headers[i];
-
-                  if (hash && header) {
-                    const missingBlockInfo: BlockInfo = {
-                      hash,
-                      number: header.number,
-                      parent: header.parentHash,
-                    };
-                    this.#finalizedBlockSubject.next(missingBlockInfo);
-                  }
-                }
-              } catch (error) {
-                console.error('Failed to backfill missing finalized blocks:', error);
-                // Continue with current block despite backfill failure
-              }
-            }
+            // Fill missing blocks if gap detected
+            await this.fillMissingBlocks(lastNumber, header.number, this.#finalizedBlockSubject, 'finalized');
 
             // Emit current block
             const blockInfo: BlockInfo = {
