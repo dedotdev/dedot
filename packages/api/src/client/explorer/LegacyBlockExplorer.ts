@@ -1,6 +1,6 @@
 import { $Header, BlockHash, Header } from '@dedot/codecs';
 import type { Callback, Unsub } from '@dedot/types';
-import { assert, HexString } from '@dedot/utils';
+import { assert, AsyncQueue, HexString } from '@dedot/utils';
 import type { BlockExplorer, BlockInfo } from '../../types.js';
 import type { LegacyClient } from '../LegacyClient.js';
 
@@ -145,6 +145,7 @@ export class LegacyBlockExplorer implements BlockExplorer {
     // Use closure pattern to handle async subscription without race conditions
     let done = false;
     let unsub: Unsub | undefined;
+    const blockQueue = new AsyncQueue();
 
     // Start RPC subscription (non-blocking)
     this.#client.rpc
@@ -155,12 +156,67 @@ export class LegacyBlockExplorer implements BlockExplorer {
           return;
         }
 
-        const blockInfo: BlockInfo = {
-          hash: this.calculateBlockHash(header),
-          number: header.number,
-          parent: header.parentHash,
-        };
-        this.#finalizedBlockSubject.next(blockInfo);
+        // Enqueue block processing to ensure sequential handling
+        blockQueue
+          .enqueue(async () => {
+            // Detect gaps in finalized block stream (due to reconnection)
+            const lastNumber = this.#finalizedBlockSubject.value?.number;
+            if (lastNumber === header.number) {
+              return;
+            }
+
+            if (lastNumber !== undefined && header.number > lastNumber + 1) {
+              // Gap detected - backfill missing blocks
+              const gapSize = header.number - lastNumber - 1;
+              console.warn(
+                `Finalized block gap detected: ${gapSize} blocks missing (${lastNumber + 1} to ${header.number - 1})`,
+              );
+
+              // Create list of missing block numbers
+              const missingNums = Array.from({ length: gapSize }, (_, i) => lastNumber + 1 + i);
+
+              try {
+                // Fetch all hashes in parallel
+                const hashes = await Promise.all(
+                  missingNums.map((num) => this.#client.rpc.chain_getBlockHash(num) as HexString),
+                );
+
+                // Fetch all headers in parallel
+                const headers = await Promise.all(
+                  hashes.map((hash) => this.#client.rpc.chain_getHeader(hash) as Header),
+                );
+
+                // Emit blocks in order
+                for (let i = 0; i < missingNums.length; i++) {
+                  const hash = hashes[i];
+                  const header = headers[i];
+
+                  if (hash && header) {
+                    const missingBlockInfo: BlockInfo = {
+                      hash,
+                      number: header.number,
+                      parent: header.parentHash,
+                    };
+                    this.#finalizedBlockSubject.next(missingBlockInfo);
+                  }
+                }
+              } catch (error) {
+                console.error('Failed to backfill missing finalized blocks:', error);
+                // Continue with current block despite backfill failure
+              }
+            }
+
+            // Emit current block
+            const blockInfo: BlockInfo = {
+              hash: this.calculateBlockHash(header),
+              number: header.number,
+              parent: header.parentHash,
+            };
+            this.#finalizedBlockSubject.next(blockInfo);
+          })
+          .catch((error) => {
+            console.error('Error processing finalized block:', error);
+          });
       })
       .then((rpcUnsub: any) => {
         unsub = rpcUnsub;
@@ -169,6 +225,7 @@ export class LegacyBlockExplorer implements BlockExplorer {
     // Immediately set unsub wrapper to prevent race conditions
     this.#finalizedBlockUnsub = () => {
       done = true;
+      blockQueue.cancel();
       unsub && unsub();
     };
   }
