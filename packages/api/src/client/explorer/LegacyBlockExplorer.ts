@@ -1,87 +1,20 @@
 import { $Header, BlockHash, Header } from '@dedot/codecs';
 import type { Callback, Unsub } from '@dedot/types';
-import { assert, AsyncQueue, HexString } from '@dedot/utils';
+import { assert, AsyncQueue, HexString, Signal } from '@dedot/utils';
 import type { BlockExplorer, BlockInfo } from '../../types.js';
 import type { LegacyClient } from '../LegacyClient.js';
 
 /**
- * Simple Subject implementation inspired by RxJS BehaviorSubject
- * - Stores current value
- * - Emits current value immediately to new subscribers
- * - Tracks listener count for cleanup
- */
-class Subject<T> {
-  #value?: T;
-  #listeners: Set<Callback<T>>;
-
-  constructor(initialValue?: T) {
-    this.#value = initialValue;
-    this.#listeners = new Set();
-  }
-
-  /**
-   * Emit a new value to all subscribers
-   */
-  next(value: T): void {
-    this.#value = value;
-    this.#listeners.forEach((listener) => {
-      try {
-        listener(value);
-      } catch (error) {
-        // Swallow errors to prevent one listener from breaking others
-        console.error('Error in Subject listener:', error);
-      }
-    });
-  }
-
-  /**
-   * Subscribe to value changes
-   * Immediately emits the current value if available
-   */
-  subscribe(callback: Callback<T>): () => void {
-    // Immediately emit current value to new subscriber
-    if (this.#value !== undefined) {
-      try {
-        callback(this.#value);
-      } catch (error) {
-        console.error('Error in Subject subscriber callback:', error);
-      }
-    }
-
-    this.#listeners.add(callback);
-
-    // Return unsubscribe function
-    return () => {
-      this.#listeners.delete(callback);
-    };
-  }
-
-  /**
-   * Get the number of active listeners
-   */
-  get listenerCount(): number {
-    return this.#listeners.size;
-  }
-
-  /**
-   * Get the current value
-   */
-  get value(): T | undefined {
-    return this.#value;
-  }
-}
-
-/**
  * @name LegacyBlockExplorer
  * @description Block explorer implementation for LegacyClient using legacy JSON-RPC methods
- * Optimized to share RPC subscriptions across multiple subscribers using Subject pattern
+ * Optimized to share RPC subscriptions across multiple subscribers using Signal pattern
  */
 export class LegacyBlockExplorer implements BlockExplorer {
   readonly #client: LegacyClient<any>;
 
-  // Subjects for block subscriptions
-  readonly #bestBlockSubject: Subject<BlockInfo>;
-  readonly #finalizedBlockSubject: Subject<BlockInfo>;
+  // Signals for block subscriptions
+  readonly #bestBlockSignal: Signal<BlockInfo>;
+  readonly #finalizedBlockSignal: Signal<BlockInfo>;
 
   // Track RPC subscription cleanup functions
   #bestBlockUnsub?: () => void;
@@ -89,8 +22,8 @@ export class LegacyBlockExplorer implements BlockExplorer {
 
   constructor(client: LegacyClient<any>) {
     this.#client = client;
-    this.#bestBlockSubject = new Subject<BlockInfo>();
-    this.#finalizedBlockSubject = new Subject<BlockInfo>();
+    this.#bestBlockSignal = new Signal<BlockInfo>();
+    this.#finalizedBlockSignal = new Signal<BlockInfo>();
   }
 
   /**
@@ -100,7 +33,7 @@ export class LegacyBlockExplorer implements BlockExplorer {
   private async fillMissingBlocks(
     lastNumber: number | undefined,
     currentNumber: number,
-    subject: Subject<BlockInfo>,
+    subject: Signal<BlockInfo>,
     blockType: 'best' | 'finalized',
   ): Promise<void> {
     // No gap if no previous block or current is next sequential block
@@ -172,13 +105,13 @@ export class LegacyBlockExplorer implements BlockExplorer {
           .enqueue(async () => {
             const currentHash = this.calculateBlockHash(header);
             // Detect gaps in best block stream (due to reconnection)
-            const { number: lastNumber, hash: lastHash } = this.#bestBlockSubject.value || {};
+            const { number: lastNumber, hash: lastHash } = this.#bestBlockSignal.value || {};
             if (lastHash === currentHash) {
               return;
             }
 
             // Fill missing blocks if gap detected
-            await this.fillMissingBlocks(lastNumber, header.number, this.#bestBlockSubject, 'best');
+            await this.fillMissingBlocks(lastNumber, header.number, this.#bestBlockSignal, 'best');
 
             // Emit current block
             const blockInfo: BlockInfo = {
@@ -186,7 +119,7 @@ export class LegacyBlockExplorer implements BlockExplorer {
               number: header.number,
               parent: header.parentHash,
             };
-            this.#bestBlockSubject.next(blockInfo);
+            this.#bestBlockSignal.next(blockInfo);
           })
           .catch((error) => {
             console.error('Error processing best block:', error);
@@ -231,13 +164,13 @@ export class LegacyBlockExplorer implements BlockExplorer {
         blockQueue
           .enqueue(async () => {
             // Detect gaps in finalized block stream (due to reconnection)
-            const lastNumber = this.#finalizedBlockSubject.value?.number;
+            const lastNumber = this.#finalizedBlockSignal.value?.number;
             if (lastNumber === header.number) {
               return;
             }
 
             // Fill missing blocks if gap detected
-            await this.fillMissingBlocks(lastNumber, header.number, this.#finalizedBlockSubject, 'finalized');
+            await this.fillMissingBlocks(lastNumber, header.number, this.#finalizedBlockSignal, 'finalized');
 
             // Emit current block
             const blockInfo: BlockInfo = {
@@ -245,7 +178,7 @@ export class LegacyBlockExplorer implements BlockExplorer {
               number: header.number,
               parent: header.parentHash,
             };
-            this.#finalizedBlockSubject.next(blockInfo);
+            this.#finalizedBlockSignal.next(blockInfo);
           })
           .catch((error) => {
             console.error('Error processing finalized block:', error);
@@ -267,7 +200,7 @@ export class LegacyBlockExplorer implements BlockExplorer {
    * Clean up best block subscription when no more listeners
    */
   private cleanupBestBlockSubscription(): void {
-    if (this.#bestBlockSubject.listenerCount === 0 && this.#bestBlockUnsub) {
+    if (this.#bestBlockSignal.listenerCount === 0 && this.#bestBlockUnsub) {
       this.#bestBlockUnsub();
       this.#bestBlockUnsub = undefined;
     }
@@ -277,7 +210,7 @@ export class LegacyBlockExplorer implements BlockExplorer {
    * Clean up finalized block subscription when no more listeners
    */
   private cleanupFinalizedBlockSubscription(): void {
-    if (this.#finalizedBlockSubject.listenerCount === 0 && this.#finalizedBlockUnsub) {
+    if (this.#finalizedBlockSignal.listenerCount === 0 && this.#finalizedBlockUnsub) {
       this.#finalizedBlockUnsub();
       this.#finalizedBlockUnsub = undefined;
     }
@@ -319,7 +252,7 @@ export class LegacyBlockExplorer implements BlockExplorer {
       this.ensureBestBlockSubscription();
 
       // Subscribe to subject (automatically emits current value if available)
-      const unsub = this.#bestBlockSubject.subscribe(callback);
+      const unsub = this.#bestBlockSignal.subscribe(callback);
 
       // Return cleanup function
       return () => {
@@ -328,8 +261,8 @@ export class LegacyBlockExplorer implements BlockExplorer {
       };
     } else {
       // One-time query - return cached value if available
-      if (this.#bestBlockSubject.value) {
-        return Promise.resolve(this.#bestBlockSubject.value);
+      if (this.#bestBlockSignal.value) {
+        return Promise.resolve(this.#bestBlockSignal.value);
       }
 
       // Fallback to RPC call if no cached value
@@ -361,7 +294,7 @@ export class LegacyBlockExplorer implements BlockExplorer {
       this.ensureFinalizedBlockSubscription();
 
       // Subscribe to subject (automatically emits current value if available)
-      const unsub = this.#finalizedBlockSubject.subscribe(callback);
+      const unsub = this.#finalizedBlockSignal.subscribe(callback);
 
       // Return cleanup function
       return () => {
@@ -370,8 +303,8 @@ export class LegacyBlockExplorer implements BlockExplorer {
       };
     } else {
       // One-time query - return cached value if available
-      if (this.#finalizedBlockSubject.value) {
-        return Promise.resolve(this.#finalizedBlockSubject.value);
+      if (this.#finalizedBlockSignal.value) {
+        return Promise.resolve(this.#finalizedBlockSignal.value);
       }
 
       // Fallback to RPC call if no cached value
