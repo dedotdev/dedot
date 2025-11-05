@@ -327,7 +327,12 @@ export class LegacyBlockExplorer implements BlockExplorer {
         this.cleanupBestBlockSubscription();
       };
     } else {
-      // One-time query using chain_getHeader
+      // One-time query - return cached value if available
+      if (this.#bestBlockSubject.value) {
+        return Promise.resolve(this.#bestBlockSubject.value);
+      }
+
+      // Fallback to RPC call if no cached value
       return this.#client.rpc.chain_getHeader().then(async (header: Header | undefined) => {
         assert(header, 'Header not found');
         return {
@@ -364,10 +369,14 @@ export class LegacyBlockExplorer implements BlockExplorer {
         this.cleanupFinalizedBlockSubscription();
       };
     } else {
-      // One-time query using chain_getFinalizedHead
+      // One-time query - return cached value if available
+      if (this.#finalizedBlockSubject.value) {
+        return Promise.resolve(this.#finalizedBlockSubject.value);
+      }
+
+      // Fallback to RPC call if no cached value
       return this.#client.rpc.chain_getFinalizedHead().then(async (hash: BlockHash) => {
-        const header = await this.#client.rpc.chain_getHeader(hash);
-        assert(header, 'Finalized header not found');
+        const header = await this.header(hash);
         return {
           hash,
           number: header.number,
