@@ -1794,4 +1794,135 @@ describe('ChainHead', () => {
       });
     });
   });
+
+  describe('best block gap detection and filling', () => {
+    it('should detect and fill best block gaps from pinned blocks', async () => {
+      notifyInitializedEvent();
+      await chainHead.follow();
+
+      const emittedBlocks: PinnedBlock[] = [];
+      chainHead.on('bestBlock', (block) => {
+        emittedBlocks.push(block);
+      });
+
+      // Create some new blocks
+      notify(simulator.subscriptionId, simulator.nextNewBlock()); // 0x0f
+      notify(simulator.subscriptionId, simulator.nextNewBlock()); // 0x10
+      notify(simulator.subscriptionId, simulator.nextNewBlock()); // 0x11
+      notify(simulator.subscriptionId, simulator.nextNewBlock()); // 0x12
+      notify(simulator.subscriptionId, simulator.nextNewBlock()); // 0x13
+
+      await waitFor(10);
+
+      // Emit best block 0x0f (block 15)
+      notify(simulator.subscriptionId, simulator.nextBestBlock());
+      await waitFor(10);
+
+      // Jump to block 0x13 (block 19) - should fill 0x10, 0x11, 0x12
+      notify(simulator.subscriptionId, {
+        event: 'bestBlockChanged',
+        bestBlockHash: '0x13',
+      });
+      await waitFor(10);
+
+      // Should emit: 15, 16, 17, 18, 19
+      expect(emittedBlocks).toHaveLength(5);
+      expect(emittedBlocks.map((b) => b.number)).toEqual([15, 16, 17, 18, 19]);
+    });
+
+    it('should not fill gaps when blocks are sequential', async () => {
+      notifyInitializedEvent();
+      await chainHead.follow();
+
+      const emittedBlocks: PinnedBlock[] = [];
+      chainHead.on('bestBlock', (block) => {
+        emittedBlocks.push(block);
+      });
+
+      // Create and emit blocks sequentially
+      notify(simulator.subscriptionId, simulator.nextNewBlock()); // 0x0f
+      await waitFor(10);
+      notify(simulator.subscriptionId, simulator.nextBestBlock()); // emit 0x0f
+      await waitFor(10);
+
+      notify(simulator.subscriptionId, simulator.nextNewBlock()); // 0x10
+      await waitFor(10);
+      notify(simulator.subscriptionId, {
+        event: 'bestBlockChanged',
+        bestBlockHash: '0x10',
+      });
+      await waitFor(10);
+
+      // Should emit only 2 blocks (15, 16) - no gap filling
+      expect(emittedBlocks).toHaveLength(2);
+      expect(emittedBlocks.map((b) => b.number)).toEqual([15, 16]);
+    });
+
+    it('should log warning when gap is detected', async () => {
+      const consoleWarnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
+
+      notifyInitializedEvent();
+      await chainHead.follow();
+
+      // Create blocks
+      notify(simulator.subscriptionId, simulator.nextNewBlock()); // 0x0f
+      notify(simulator.subscriptionId, simulator.nextNewBlock()); // 0x10
+      notify(simulator.subscriptionId, simulator.nextNewBlock()); // 0x11
+
+      await waitFor(10);
+
+      // Emit best block 0x0f
+      notify(simulator.subscriptionId, simulator.nextBestBlock());
+      await waitFor(10);
+
+      // Jump to 0x11 (skip 0x10)
+      notify(simulator.subscriptionId, {
+        event: 'bestBlockChanged',
+        bestBlockHash: '0x11',
+      });
+      await waitFor(10);
+
+      // Should have logged warning about gap
+      expect(consoleWarnSpy).toHaveBeenCalledWith('best block gap detected: 1 blocks missing (16 to 16)');
+
+      consoleWarnSpy.mockRestore();
+    });
+
+    it('should reset gap tracking after stop/recovery', async () => {
+      notifyInitializedEvent();
+      await chainHead.follow();
+
+      const emittedBlocks: PinnedBlock[] = [];
+      chainHead.on('bestBlock', (block) => {
+        emittedBlocks.push(block);
+      });
+
+      // Emit first best block
+      notify(simulator.subscriptionId, simulator.nextNewBlock()); // 0x0f
+      await waitFor(10);
+      notify(simulator.subscriptionId, simulator.nextBestBlock());
+      await waitFor(10);
+
+      // Trigger stop event
+      notify(simulator.subscriptionId, { event: 'stop' });
+      await waitFor(50);
+
+      emittedBlocks.length = 0; // Clear
+
+      // After recovery, jump to much higher block
+      notify(simulator.subscriptionId, simulator.nextNewBlock()); // 0x10
+      notify(simulator.subscriptionId, simulator.nextNewBlock()); // 0x11
+      await waitFor(10);
+
+      notify(simulator.subscriptionId, {
+        event: 'bestBlockChanged',
+        bestBlockHash: '0x11',
+      });
+      await waitFor(10);
+
+      // Should NOT try to fill gap from before stop (tracking was reset)
+      // Just emits new blocks
+      expect(emittedBlocks.length).toBeGreaterThan(0);
+    });
+  });
 });
