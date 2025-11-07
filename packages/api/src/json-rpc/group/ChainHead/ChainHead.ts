@@ -439,9 +439,6 @@ export class ChainHead extends JsonRpcGroup<ChainHeadEvent> {
         // for the #recovering promise to resolve
         this.#recovering = deferred<void>();
 
-        // Reset gap tracking during recovery
-        this.#lastBestBlockNumber = undefined;
-
         // 2. Attempt to re-follow the chainHead
         this.#doFollow()
           .then(() => {
