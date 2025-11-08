@@ -51,6 +51,7 @@ export type PinnedBlock = {
   number: number;
   parent: BlockHash;
   runtime?: ChainHeadRuntimeVersion;
+  runtimeUpgraded?: boolean;
 };
 
 export type ChainHeadEvent =
@@ -259,8 +260,7 @@ export class ChainHead extends JsonRpcGroup<ChainHeadEvent> {
           {} as Record<BlockHash, PinnedBlock>,
         );
 
-        // Get starting block info
-        const startingBlock = await (async () => {
+        const fetchStartingBlock = async () => {
           const startingBlockHash = finalizedBlockHashes[0];
           const existing = prevPinnedBlocks[startingBlockHash];
           if (existing) {
@@ -275,7 +275,13 @@ export class ChainHead extends JsonRpcGroup<ChainHeadEvent> {
               parent: header.parentHash,
             };
           }
-        })();
+        };
+
+        // Get starting block info
+        const [startingBlock, finalizedHeader] = await Promise.all([
+          fetchStartingBlock(),
+          $Header.tryDecode(await this.#getHeader(this.#finalizedHash!)),
+        ]);
 
         Object.values(this.#pinnedBlocks).forEach((b, idx) => {
           b.number += startingBlock.number;
@@ -283,6 +289,12 @@ export class ChainHead extends JsonRpcGroup<ChainHeadEvent> {
             b.parent = startingBlock.parent;
           }
         });
+
+        this.#pinnedBlocks[this.#finalizedHash!].runtimeUpgraded = finalizedHeader.digest.logs.some(
+          (log) => log.type === 'RuntimeEnvironmentUpdated',
+        );
+
+        // console.dir(this.#pinnedBlocks, { depth: null });
 
         if (!lastFinalizedHash) {
           this.emit('finalizedBlock', await this.finalizedBlock());
@@ -320,6 +332,7 @@ export class ChainHead extends JsonRpcGroup<ChainHeadEvent> {
           // if the runtime is not provided, we'll find it from the parent block
           runtime: runtime || this.#findRuntimeAt(parent),
           number: parentBlock.number + 1,
+          runtimeUpgraded: !!runtime,
         };
 
         this.emit('newBlock', this.#pinnedBlocks[hash]);
@@ -535,6 +548,10 @@ export class ChainHead extends JsonRpcGroup<ChainHeadEvent> {
     if (this.#finalizedQueue.includes(at)) return;
 
     return this.#findRuntimeAt(block.parent!);
+  }
+
+  #hasRuntimeUpgrade(header: ReturnType<typeof $Header.decode>): boolean {
+    return header.digest.logs.some((log) => log.type === 'RuntimeEnvironmentUpdated');
   }
 
   #onTheSameChain(b1: PinnedBlock | undefined, b2: PinnedBlock | undefined): boolean {

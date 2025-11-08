@@ -25,6 +25,7 @@ export class V2BlockExplorer implements BlockExplorer {
       hash: block.hash,
       number: block.number,
       parent: block.parent,
+      runtimeUpgraded: block.runtimeUpgraded === true,
     };
   }
 
