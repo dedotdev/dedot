@@ -27,6 +27,7 @@ import { BaseStorageQuery, QueryableStorage } from '../storage/index.js';
 import type {
   ApiEvent,
   ApiOptions,
+  BlockExplorer,
   ISubstrateClient,
   ISubstrateClientAt,
   JsonRpcClientOptions,
@@ -399,6 +400,10 @@ export abstract class BaseSubstrateClient<
   async getRuntimeVersion(): Promise<SubstrateRuntimeVersion> {
     await this.ensureRuntimeUpgraded();
     return this.runtimeVersion;
+  }
+
+  get block(): BlockExplorer {
+    throw new Error('Unimplemented!');
   }
 
   get consts(): ChainApi['consts'] {

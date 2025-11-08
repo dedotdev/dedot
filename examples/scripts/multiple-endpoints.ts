@@ -1,4 +1,4 @@
-import { DedotClient, PinnedBlock, WsProvider } from 'dedot';
+import { DedotClient, WsProvider } from 'dedot';
 
 // Multiple endpoints for failover
 const provider = new WsProvider([
@@ -14,12 +14,12 @@ client.on('connected', (connectedUrl: any) => {
   console.log('Connected Endpoint:', connectedUrl);
 });
 
-client.on('finalizedBlock', (block: PinnedBlock) => {
-  console.log('Finalized Block:', block.number);
+client.block.finalized((block) => {
+  console.log('Finalized Block:', block.number, block.hash);
 });
 
-client.on('bestBlock', (block: PinnedBlock) => {
-  console.log('Best Block:', block.number);
+client.block.best((block) => {
+  console.log('Best Block:', block.number, block.hash);
 });
 
 setTimeout(async () => {
@@ -27,3 +27,9 @@ setTimeout(async () => {
   // @ts-ignore
   client.provider.__unsafeWs().close();
 }, 20_000);
+
+setTimeout(async () => {
+  console.log('Switching endpoint');
+  // @ts-ignore
+  client.provider.__unsafeWs().close();
+}, 60_000);

@@ -14,8 +14,9 @@ import {
 } from '../executor/index.js';
 import { newProxyChain } from '../proxychain.js';
 import { BaseStorageQuery, LegacyStorageQuery } from '../storage/index.js';
-import type { ApiOptions, ISubstrateClientAt, SubstrateRuntimeVersion } from '../types.js';
-import { BaseSubstrateClient } from './BaseSubstrateClient.js';
+import type { ApiOptions, BlockExplorer, ISubstrateClientAt, SubstrateRuntimeVersion } from '../types.js';
+import { BaseSubstrateClient, ensurePresence } from './BaseSubstrateClient.js';
+import { LegacyBlockExplorer } from './explorer/index.js';
 
 const KEEP_ALIVE_INTERVAL = 10_000; // in ms
 
@@ -62,6 +63,7 @@ export class LegacyClient<ChainApi extends GenericSubstrateApi = SubstrateApi> /
 {
   #runtimeSubscriptionUnsub?: Unsub;
   #healthTimer?: ReturnType<typeof setInterval>;
+  protected _blockExplorer?: BlockExplorer;
 
   /**
    * Use factory methods (`create`, `new`) to create `Dedot` instances.
@@ -116,6 +118,10 @@ export class LegacyClient<ChainApi extends GenericSubstrateApi = SubstrateApi> /
     this._runtimeVersion = runtimeVersion;
 
     await this.setupMetadata(metadata);
+    
+    // Initialize block explorer
+    this._blockExplorer = new LegacyBlockExplorer(this);
+    
     this.#subscribeUpdates();
   }
 
@@ -123,6 +129,7 @@ export class LegacyClient<ChainApi extends GenericSubstrateApi = SubstrateApi> /
     super.cleanUp();
     this.#healthTimer = undefined;
     this.#runtimeSubscriptionUnsub = undefined;
+    this._blockExplorer = undefined;
   }
 
   #subscribeRuntimeUpgrades() {
@@ -269,6 +276,10 @@ export class LegacyClient<ChainApi extends GenericSubstrateApi = SubstrateApi> /
    */
   get tx(): ChainApi['tx'] {
     return newProxyChain({ executor: new TxExecutor(this) }) as ChainApi['tx'];
+  }
+
+  get block(): BlockExplorer {
+    return ensurePresence(this._blockExplorer);
   }
 
   /**

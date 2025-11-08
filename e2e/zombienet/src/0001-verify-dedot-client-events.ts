@@ -20,18 +20,22 @@ export const run = async (nodeName: any, networkInfo: any): Promise<any> => {
 
   // Set up event listeners
   const unsubs = [
+    // @ts-ignore
     client.on('newBlock', (block: PinnedBlock) => {
       console.log(`Received newBlock event with hash: ${block.hash}, number: ${block.number}`);
       receivedEvents.newBlock.push(block);
     }),
+    // @ts-ignore
     client.on('bestBlock', (block: PinnedBlock) => {
       console.log(`Received bestBlock event with hash: ${block.hash}, number: ${block.number}`);
       receivedEvents.bestBlock.push(block);
     }),
+    // @ts-ignore
     client.on('finalizedBlock', (block: PinnedBlock) => {
       console.log(`Received finalizedBlock event with hash: ${block.hash}, number: ${block.number}`);
       receivedEvents.finalizedBlock.push(block);
     }),
+    // @ts-ignore
     client.on('bestChainChanged', (block: PinnedBlock) => {
       console.log(`Received bestChainChanged event with hash: ${block.hash}, number: ${block.number}`);
       receivedEvents.bestChainChanged.push(block);

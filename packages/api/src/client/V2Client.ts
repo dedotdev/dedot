@@ -18,12 +18,14 @@ import { newProxyChain } from '../proxychain.js';
 import { BaseStorageQuery, NewStorageQuery } from '../storage/index.js';
 import type {
   ApiOptions,
+  BlockExplorer,
   DedotClientEvent,
   ISubstrateClientAt,
   SubstrateRuntimeVersion,
   TxBroadcaster,
 } from '../types.js';
 import { BaseSubstrateClient, ensurePresence } from './BaseSubstrateClient.js';
+import { V2BlockExplorer } from './explorer/index.js';
 
 /**
  * @name V2Client
@@ -38,6 +40,7 @@ export class V2Client<ChainApi extends GenericSubstrateApi = SubstrateApi> // pr
   protected _chainSpec?: ChainSpec;
   protected _archive?: Archive;
   protected _txBroadcaster?: TxBroadcaster;
+  protected _blockExplorer?: BlockExplorer;
 
   /**
    * Use factory methods (`create`, `new`) to create `V2Client` instances.
@@ -79,8 +82,6 @@ export class V2Client<ChainApi extends GenericSubstrateApi = SubstrateApi> // pr
   }
 
   get archive(): Archive | undefined {
-    assert(this._archive, 'Archive JSON-RPC is not supported by the connected server');
-
     return this._archive;
   }
 
@@ -121,6 +122,7 @@ export class V2Client<ChainApi extends GenericSubstrateApi = SubstrateApi> // pr
       }
 
       this._txBroadcaster = await this.#initializeTxBroadcaster(rpcMethods);
+      this._blockExplorer = new V2BlockExplorer(this);
     }
 
     // Fetching node information
@@ -203,6 +205,7 @@ export class V2Client<ChainApi extends GenericSubstrateApi = SubstrateApi> // pr
     this._chainSpec = undefined;
     this._archive = undefined;
     this._txBroadcaster = undefined;
+    this._blockExplorer = undefined;
   }
 
   /**
@@ -238,6 +241,10 @@ export class V2Client<ChainApi extends GenericSubstrateApi = SubstrateApi> // pr
 
   override get tx(): ChainApi['tx'] {
     return newProxyChain({ executor: new TxExecutorV2(this) }) as ChainApi['tx'];
+  }
+
+  get block(): BlockExplorer {
+    return ensurePresence(this._blockExplorer);
   }
 
   /**

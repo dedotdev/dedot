@@ -74,6 +74,7 @@ export class ChainHead extends JsonRpcGroup<ChainHeadEvent> {
   #pinnedBlocks: Record<BlockHash, PinnedBlock>;
 
   #bestHash?: BlockHash;
+  #lastBestBlockNumber?: number; // Track last emitted best block number for gap detection
   #finalizedHash?: BlockHash; // best finalized hash
   #finalizedRuntime?: ChainHeadRuntimeVersion;
   #followResponseQueue: AsyncQueue;
@@ -155,8 +156,15 @@ export class ChainHead extends JsonRpcGroup<ChainHeadEvent> {
     return this.findBlock(await this.finalizedHash())!;
   }
 
-  findBlock(hash: BlockHash): PinnedBlock | undefined {
-    return this.#pinnedBlocks[hash];
+  findBlock(hashOrNumber: BlockHash | number): PinnedBlock | undefined {
+    // If it's a hash, do direct lookup
+    if (typeof hashOrNumber === 'string') {
+      return this.#pinnedBlocks[hashOrNumber];
+    }
+
+    // If it's a number, search through pinned blocks
+    const blockNumber = hashOrNumber;
+    return Object.values(this.#pinnedBlocks).find((block) => block.number === blockNumber);
   }
 
   isPinned(hash: BlockHash): boolean {
@@ -325,8 +333,15 @@ export class ChainHead extends JsonRpcGroup<ChainHeadEvent> {
         if (!newBestBlock) return;
         if (currentBestBlock.hash === newBestBlock.hash) return;
 
+        // Detect and fill gaps before updating best hash
+        if (this.#lastBestBlockNumber !== undefined) {
+          this.#fillBestBlockGaps(this.#lastBestBlockNumber, newBestBlock.number);
+        }
+
         const bestChainChanged = !this.#onTheSameChain(currentBestBlock, newBestBlock);
         this.#bestHash = bestBlockHash;
+        this.#lastBestBlockNumber = newBestBlock.number; // Update tracking
+
         this.emit('bestBlock', newBestBlock, bestChainChanged);
         if (bestChainChanged) this.emit('bestChainChanged', newBestBlock);
         break;
@@ -534,6 +549,29 @@ export class ChainHead extends JsonRpcGroup<ChainHeadEvent> {
     }
   }
 
+  /**
+   * Detect and emit missing best blocks from pinned blocks
+   * Called when bestBlockChanged event detects a gap
+   */
+  #fillBestBlockGaps(lastNumber: number, currentNumber: number): void {
+    // No gap if current is next sequential block
+    if (currentNumber <= lastNumber + 1) {
+      return;
+    }
+
+    // Gap detected - emit warning
+    const gapSize = currentNumber - lastNumber - 1;
+    console.warn(`best block gap detected: ${gapSize} blocks missing (${lastNumber + 1} to ${currentNumber - 1})`);
+
+    // Emit missing blocks from pinned blocks
+    for (let num = lastNumber + 1; num < currentNumber; num++) {
+      const pinnedBlock = this.findBlock(num);
+      if (pinnedBlock) {
+        this.emit('bestBlock', pinnedBlock, false); // false = not a fork
+      }
+    }
+  }
+
   #ensurePinnedHash(hash?: BlockHash): BlockHash {
     if (hash) {
       if (this.isPinned(hash)) {
@@ -643,6 +681,7 @@ export class ChainHead extends JsonRpcGroup<ChainHeadEvent> {
 
     this.#pinnedBlocks = {};
     this.#bestHash = undefined;
+    this.#lastBestBlockNumber = undefined;
     this.#finalizedHash = undefined;
     this.#finalizedRuntime = undefined;
     this.#followResponseQueue.clear();

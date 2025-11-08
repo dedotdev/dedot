@@ -1,8 +1,8 @@
 import Keyring from '@polkadot/keyring';
 import { KeyringPair } from '@polkadot/keyring/types';
 import { cryptoWaitReady } from '@polkadot/util-crypto';
-import { Contract, ContractAddress, ContractDeployer } from '@dedot/contracts';
-import { generateRandomHex } from '@dedot/utils';
+import { Contract, ContractAddress, ContractDeployer } from 'dedot/contracts';
+import { generateRandomHex } from 'dedot/utils';
 // Import from examples - inkv5
 import * as inkv5FlipperMetadata from '../../../examples/scripts/inkv5/flipper.json';
 import { FlipperContractApi as Inkv5FlipperApi } from '../../../examples/scripts/inkv5/flipper/index.js';
