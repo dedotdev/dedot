@@ -1,4 +1,4 @@
-import { BlockHash, Hash, Header, PortableRegistry, RuntimeVersion } from '@dedot/codecs';
+import { $Header, BlockHash, Hash, Header, PortableRegistry, RuntimeVersion } from '@dedot/codecs';
 import type { JsonRpcProvider } from '@dedot/providers';
 import { GenericSubstrateApi, Unsub } from '@dedot/types';
 import { assert } from '@dedot/utils';
@@ -118,10 +118,10 @@ export class LegacyClient<ChainApi extends GenericSubstrateApi = SubstrateApi> /
     this._runtimeVersion = runtimeVersion;
 
     await this.setupMetadata(metadata);
-    
+
     // Initialize block explorer
     this._blockExplorer = new LegacyBlockExplorer(this);
-    
+
     this.#subscribeUpdates();
   }
 
@@ -136,13 +136,25 @@ export class LegacyClient<ChainApi extends GenericSubstrateApi = SubstrateApi> /
     if (this.#runtimeSubscriptionUnsub) return;
 
     this.rpc
-      .state_subscribeRuntimeVersion(async (runtimeVersion: RuntimeVersion) => {
+      .chain_subscribeNewHeads(async (header: Header) => {
+        // Check if the digest contains a RuntimeEnvironmentUpdated item
+        const hasRuntimeUpgrade = header.digest.logs.some((log) => log.type === 'RuntimeEnvironmentUpdated');
+
+        if (!hasRuntimeUpgrade) return;
+
+        // Compute the block hash from the header
+        const hash = this.registry.hashAsHex($Header.encode(header));
+
+        // Fetch the runtime version at this block
+        const runtimeVersion: RuntimeVersion = await this.callAt(hash).core.version();
+
+        // Check if the spec version has actually changed
         if (runtimeVersion.specVersion !== this.runtimeVersion?.specVersion) {
           this.startRuntimeUpgrade();
 
           this._runtimeVersion = this.toSubstrateRuntimeVersion(runtimeVersion);
 
-          const newMetadata = await this.fetchMetadata(undefined, this._runtimeVersion);
+          const newMetadata = await this.fetchMetadata(hash, this._runtimeVersion);
           await this.setupMetadata(newMetadata);
 
           this.emit('runtimeUpgraded', this._runtimeVersion);
