@@ -1,7 +1,7 @@
-import { $Header, Header } from '@dedot/codecs';
-import { HexString } from '@dedot/utils';
+import type { BlockInfo, DedotClient } from 'dedot';
+import { $Header, Header } from 'dedot/codecs';
+import { HexString } from 'dedot/utils';
 import { afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
-import type { BlockInfo, DedotClient } from '../../../../packages/api/src/index.js';
 
 describe('LegacyBlockExplorer E2E Tests', () => {
   let client: DedotClient;
@@ -83,7 +83,7 @@ describe('LegacyBlockExplorer E2E Tests', () => {
       const block1 = await client.block.best();
 
       // Wait a bit for chain to produce blocks
-      await new Promise(resolve => setTimeout(resolve, 6000));
+      await new Promise((resolve) => setTimeout(resolve, 6000));
 
       const block2 = await client.block.best();
 
@@ -107,14 +107,14 @@ describe('LegacyBlockExplorer E2E Tests', () => {
       unsub = client.block.best(callback);
 
       // Wait for initial emission
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      await new Promise((resolve) => setTimeout(resolve, 1000));
 
       expect(callback).toHaveBeenCalledWith(
         expect.objectContaining({
           hash: expect.stringMatching(/^0x[0-9a-f]{64}$/),
           number: expect.any(Number),
           parent: expect.stringMatching(/^0x[0-9a-f]{64}$/),
-        })
+        }),
       );
     }, 30_000);
 
@@ -126,7 +126,7 @@ describe('LegacyBlockExplorer E2E Tests', () => {
       });
 
       // Wait for blocks to be produced
-      await new Promise(resolve => setTimeout(resolve, 15_000));
+      await new Promise((resolve) => setTimeout(resolve, 15_000));
 
       unsub();
 
@@ -147,7 +147,7 @@ describe('LegacyBlockExplorer E2E Tests', () => {
       });
 
       // Wait for blocks
-      await new Promise(resolve => setTimeout(resolve, 12_000));
+      await new Promise((resolve) => setTimeout(resolve, 12_000));
 
       unsub();
 
@@ -167,7 +167,7 @@ describe('LegacyBlockExplorer E2E Tests', () => {
       const unsub2 = client.block.best(callback2);
 
       // Wait for some blocks
-      await new Promise(resolve => setTimeout(resolve, 8000));
+      await new Promise((resolve) => setTimeout(resolve, 8000));
 
       unsub1();
       unsub2();
@@ -183,7 +183,7 @@ describe('LegacyBlockExplorer E2E Tests', () => {
       unsub = client.block.best(callback);
 
       // Wait for initial blocks
-      await new Promise(resolve => setTimeout(resolve, 3000));
+      await new Promise((resolve) => setTimeout(resolve, 3000));
 
       const callCountBeforeUnsub = callback.mock.calls.length;
 
@@ -191,7 +191,7 @@ describe('LegacyBlockExplorer E2E Tests', () => {
       unsub = undefined;
 
       // Wait to see if more calls come through
-      await new Promise(resolve => setTimeout(resolve, 8000));
+      await new Promise((resolve) => setTimeout(resolve, 8000));
 
       const callCountAfterUnsub = callback.mock.calls.length;
 
@@ -226,7 +226,7 @@ describe('LegacyBlockExplorer E2E Tests', () => {
       const finalized1 = await client.block.finalized();
 
       // Wait for finalization
-      await new Promise(resolve => setTimeout(resolve, 6000));
+      await new Promise((resolve) => setTimeout(resolve, 6000));
 
       const finalized2 = await client.block.finalized();
 
@@ -250,7 +250,7 @@ describe('LegacyBlockExplorer E2E Tests', () => {
       unsub = client.block.finalized(callback);
 
       // Wait for initial emission
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      await new Promise((resolve) => setTimeout(resolve, 1000));
 
       expect(callback).toHaveBeenCalled();
       expect(callback).toHaveBeenCalledWith(
@@ -258,7 +258,7 @@ describe('LegacyBlockExplorer E2E Tests', () => {
           hash: expect.stringMatching(/^0x[0-9a-f]{64}$/),
           number: expect.any(Number),
           parent: expect.stringMatching(/^0x[0-9a-f]{64}$/),
-        })
+        }),
       );
     }, 30_000);
 
@@ -270,7 +270,7 @@ describe('LegacyBlockExplorer E2E Tests', () => {
       });
 
       // Wait for finalized blocks (finalization is slower)
-      await new Promise(resolve => setTimeout(resolve, 15_000));
+      await new Promise((resolve) => setTimeout(resolve, 15_000));
 
       unsub();
 
@@ -290,7 +290,7 @@ describe('LegacyBlockExplorer E2E Tests', () => {
       });
 
       // Wait for some finalized blocks
-      await new Promise(resolve => setTimeout(resolve, 10_000));
+      await new Promise((resolve) => setTimeout(resolve, 10_000));
 
       const currentBest = await client.block.best();
 
@@ -307,7 +307,7 @@ describe('LegacyBlockExplorer E2E Tests', () => {
       const unsub2 = client.block.finalized(callback2);
 
       // Wait for some blocks
-      await new Promise(resolve => setTimeout(resolve, 8000));
+      await new Promise((resolve) => setTimeout(resolve, 8000));
 
       unsub1();
       unsub2();
@@ -478,7 +478,7 @@ describe('LegacyBlockExplorer E2E Tests', () => {
       const unsubFinalized = client.block.finalized((block) => finalizedBlocks.push(block));
 
       // Wait for blocks
-      await new Promise(resolve => setTimeout(resolve, 10_000));
+      await new Promise((resolve) => setTimeout(resolve, 10_000));
 
       unsubBest();
       unsubFinalized();
@@ -500,7 +500,7 @@ describe('LegacyBlockExplorer E2E Tests', () => {
       const unsubFinalized = client.block.finalized(finalizedCallback);
 
       // Wait for some activity
-      await new Promise(resolve => setTimeout(resolve, 10_000));
+      await new Promise((resolve) => setTimeout(resolve, 10_000));
 
       unsubBest();
       unsubFinalized();
@@ -524,17 +524,17 @@ describe('LegacyBlockExplorer E2E Tests', () => {
 
       // First subscription
       const unsub1 = client.block.best(callback1);
-      await new Promise(resolve => setTimeout(resolve, 3000));
+      await new Promise((resolve) => setTimeout(resolve, 3000));
       unsub1();
 
       const countAfterFirst = callback1.mock.calls.length;
 
       // Wait a bit
-      await new Promise(resolve => setTimeout(resolve, 2000));
+      await new Promise((resolve) => setTimeout(resolve, 2000));
 
       // Second subscription
       const unsub2 = client.block.best(callback2);
-      await new Promise(resolve => setTimeout(resolve, 3000));
+      await new Promise((resolve) => setTimeout(resolve, 3000));
       unsub2();
 
       // Both should have received blocks
@@ -551,7 +551,7 @@ describe('LegacyBlockExplorer E2E Tests', () => {
       }
 
       // Rapid unsubscribe
-      unsubs.forEach(unsub => unsub());
+      unsubs.forEach((unsub) => unsub());
 
       // Should still work after
       const bestBlock = await client.block.best();

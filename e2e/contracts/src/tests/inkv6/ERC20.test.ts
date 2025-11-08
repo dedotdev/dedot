@@ -1,5 +1,5 @@
-import { assert } from '@dedot/utils';
 import { Contract, toEvmAddress } from 'dedot/contracts';
+import { assert } from 'dedot/utils';
 import { beforeEach, describe, expect, it } from 'vitest';
 import { Erc20ContractApi } from '../../../../../examples/scripts/inkv6/erc20/index.js';
 import { deployInkv6Erc20, devPairs } from '../../utils.js';

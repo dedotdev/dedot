@@ -1,5 +1,5 @@
-import { assert } from '@dedot/utils';
 import { Contract, isSolContractExecutionError } from 'dedot/contracts';
+import { assert } from 'dedot/utils';
 import { beforeEach, describe, expect, it } from 'vitest';
 import { FlipperContractApi } from '../../../../../examples/scripts/sol/flipper/index.js';
 import { deploySolFlipper, devPairs } from '../../utils.js';
