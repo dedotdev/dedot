@@ -1,4 +1,4 @@
-import { $Header, BlockHash, Option } from '@dedot/codecs';
+import { $Header, BlockHash, Header, Option } from '@dedot/codecs';
 import type { JsonRpcSubscription } from '@dedot/providers';
 import type { AsyncMethod, Unsub } from '@dedot/types';
 import type {
@@ -290,9 +290,7 @@ export class ChainHead extends JsonRpcGroup<ChainHeadEvent> {
           }
         });
 
-        this.#pinnedBlocks[this.#finalizedHash!].runtimeUpgraded = finalizedHeader.digest.logs.some(
-          (log) => log.type === 'RuntimeEnvironmentUpdated',
-        );
+        this.#pinnedBlocks[this.#finalizedHash!].runtimeUpgraded = this.#hasRuntimeUpgrade(finalizedHeader);
 
         // console.dir(this.#pinnedBlocks, { depth: null });
 
@@ -302,11 +300,48 @@ export class ChainHead extends JsonRpcGroup<ChainHeadEvent> {
           const lastFinalizedIndex = finalizedBlockHashes.indexOf(lastFinalizedHash as HexString);
 
           if (lastFinalizedIndex !== -1 && lastFinalizedIndex < finalizedBlockHashes.length - 1) {
-            // Emit all finalized blocks that occurred during the disconnection
-            for (let i = lastFinalizedIndex + 1; i < finalizedBlockHashes.length; i++) {
-              const hash = finalizedBlockHashes[i];
-              const block = this.#pinnedBlocks[hash];
+            // Get missing block hashes that occurred during disconnection
+            const missingHashes = finalizedBlockHashes.slice(lastFinalizedIndex + 1);
 
+            // Separate blocks into two groups:
+            // 1. Blocks with existing runtime info in prevPinnedBlocks
+            // 2. Blocks needing header fetch
+            const blocksNeedingHeaders: BlockHash[] = [];
+
+            for (const hash of missingHashes) {
+              const prevBlock = prevPinnedBlocks[hash];
+              const currentBlock = this.#pinnedBlocks[hash];
+
+              if (prevBlock?.runtimeUpgraded !== undefined) {
+                // Reuse existing runtime info from prevPinnedBlocks
+                currentBlock.runtimeUpgraded = prevBlock.runtimeUpgraded;
+              } else {
+                // Need to fetch header for this block
+                blocksNeedingHeaders.push(hash);
+              }
+            }
+
+            // Fetch headers in parallel for blocks that need runtime upgrade detection
+            if (blocksNeedingHeaders.length > 0) {
+              const headers = await Promise.all(
+                blocksNeedingHeaders.map(async (hash) => ({
+                  hash,
+                  header: $Header.tryDecode(await this.#getHeader(hash)),
+                })),
+              );
+
+              // Set runtimeUpgraded flag based on digest check
+              for (const { hash, header } of headers) {
+                const block = this.#pinnedBlocks[hash];
+                if (block) {
+                  block.runtimeUpgraded = this.#hasRuntimeUpgrade(header);
+                }
+              }
+            }
+
+            // Emit all missing finalized blocks with proper runtime info
+            for (const hash of missingHashes) {
+              const block = this.#pinnedBlocks[hash];
               if (block) {
                 this.emit('finalizedBlock', block);
               }
@@ -550,7 +585,7 @@ export class ChainHead extends JsonRpcGroup<ChainHeadEvent> {
     return this.#findRuntimeAt(block.parent!);
   }
 
-  #hasRuntimeUpgrade(header: ReturnType<typeof $Header.decode>): boolean {
+  #hasRuntimeUpgrade(header: Header): boolean {
     return header.digest.logs.some((log) => log.type === 'RuntimeEnvironmentUpdated');
   }
 
