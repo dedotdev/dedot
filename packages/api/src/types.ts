@@ -165,6 +165,7 @@ export interface BlockInfo {
   hash: BlockHash;
   number: number;
   parent: BlockHash;
+  runtimeUpgraded: boolean;
 }
 
 export interface BlockExplorer {

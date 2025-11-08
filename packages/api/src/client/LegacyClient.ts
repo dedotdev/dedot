@@ -1,6 +1,6 @@
-import { $Header, BlockHash, Hash, Header, PortableRegistry, RuntimeVersion } from '@dedot/codecs';
+import { BlockHash, Hash, Header, PortableRegistry, RuntimeVersion } from '@dedot/codecs';
 import type { JsonRpcProvider } from '@dedot/providers';
-import { GenericSubstrateApi, Unsub } from '@dedot/types';
+import { GenericSubstrateApi } from '@dedot/types';
 import { assert } from '@dedot/utils';
 import type { SubstrateApi } from '../chaintypes/index.js';
 import {
@@ -61,7 +61,7 @@ const KEEP_ALIVE_INTERVAL = 10_000; // in ms
 export class LegacyClient<ChainApi extends GenericSubstrateApi = SubstrateApi> // prettier-end-here
   extends BaseSubstrateClient<ChainApi>
 {
-  #runtimeSubscriptionUnsub?: Unsub;
+  #runtimeSubscriptionUnsub?: () => void;
   #healthTimer?: ReturnType<typeof setInterval>;
   protected _blockExplorer?: BlockExplorer;
 
@@ -135,36 +135,28 @@ export class LegacyClient<ChainApi extends GenericSubstrateApi = SubstrateApi> /
   #subscribeRuntimeUpgrades() {
     if (this.#runtimeSubscriptionUnsub) return;
 
-    this.rpc
-      .chain_subscribeNewHeads(async (header: Header) => {
-        // Check if the digest contains a RuntimeEnvironmentUpdated item
-        const hasRuntimeUpgrade = header.digest.logs.some((log) => log.type === 'RuntimeEnvironmentUpdated');
+    this.#runtimeSubscriptionUnsub = this.block.best(async (block) => {
+      if (!block.runtimeUpgraded) return;
 
-        if (!hasRuntimeUpgrade) return;
+      const { hash } = block;
 
-        // Compute the block hash from the header
-        const hash = this.registry.hashAsHex($Header.encode(header));
+      // Fetch the runtime version at this block
+      const runtimeVersion: RuntimeVersion = await this.callAt(hash).core.version();
 
-        // Fetch the runtime version at this block
-        const runtimeVersion: RuntimeVersion = await this.callAt(hash).core.version();
+      // Check if the spec version has actually changed
+      if (runtimeVersion.specVersion !== this.runtimeVersion?.specVersion) {
+        this.startRuntimeUpgrade();
 
-        // Check if the spec version has actually changed
-        if (runtimeVersion.specVersion !== this.runtimeVersion?.specVersion) {
-          this.startRuntimeUpgrade();
+        this._runtimeVersion = this.toSubstrateRuntimeVersion(runtimeVersion);
 
-          this._runtimeVersion = this.toSubstrateRuntimeVersion(runtimeVersion);
+        const newMetadata = await this.fetchMetadata(hash, this._runtimeVersion);
+        await this.setupMetadata(newMetadata);
 
-          const newMetadata = await this.fetchMetadata(hash, this._runtimeVersion);
-          await this.setupMetadata(newMetadata);
+        this.emit('runtimeUpgraded', this._runtimeVersion);
 
-          this.emit('runtimeUpgraded', this._runtimeVersion);
-
-          this.doneRuntimeUpgrade();
-        }
-      })
-      .then((unsub) => {
-        this.#runtimeSubscriptionUnsub = unsub;
-      });
+        this.doneRuntimeUpgrade();
+      }
+    });
   }
 
   async #getRuntimeVersion(at?: BlockHash): Promise<SubstrateRuntimeVersion> {

@@ -26,6 +26,18 @@ export class LegacyBlockExplorer implements BlockExplorer {
   }
 
   /**
+   * Convert PinnedBlock to BlockInfo format
+   */
+  private toBlockInfo(header: Header & { hash?: BlockHash }): BlockInfo {
+    return {
+      hash: header.hash || this.calculateBlockHash(header),
+      number: header.number,
+      parent: header.parentHash,
+      runtimeUpgraded: this.hasNewRuntime(header),
+    };
+  }
+
+  /**
    * Fill missing blocks when a gap is detected
    * Fetches and emits all missing blocks between lastNumber and currentNumber
    */
@@ -62,12 +74,7 @@ export class LegacyBlockExplorer implements BlockExplorer {
         const header = headers[i];
 
         if (hash && header) {
-          const missingBlockInfo: BlockInfo = {
-            hash,
-            number: header.number,
-            parent: header.parentHash,
-          };
-          subject.next(missingBlockInfo);
+          subject.next(this.toBlockInfo({ ...header, hash }));
         }
       }
     } catch (error) {
@@ -113,11 +120,7 @@ export class LegacyBlockExplorer implements BlockExplorer {
             await this.fillMissingBlocks(lastNumber, header.number, this.#bestBlockSignal, 'best');
 
             // Emit current block
-            const blockInfo: BlockInfo = {
-              hash: currentHash,
-              number: header.number,
-              parent: header.parentHash,
-            };
+            const blockInfo: BlockInfo = this.toBlockInfo({ ...header, hash: currentHash });
             this.#bestBlockSignal.next(blockInfo);
           })
           .catch((error) => {
@@ -134,6 +137,10 @@ export class LegacyBlockExplorer implements BlockExplorer {
       blockQueue.cancel();
       unsub && unsub();
     };
+  }
+
+  private hasNewRuntime(header: Header): boolean {
+    return header.digest.logs.some((log) => log.type === 'RuntimeEnvironmentUpdated');
   }
 
   /**
@@ -172,11 +179,7 @@ export class LegacyBlockExplorer implements BlockExplorer {
             await this.fillMissingBlocks(lastNumber, header.number, this.#finalizedBlockSignal, 'finalized');
 
             // Emit current block
-            const blockInfo: BlockInfo = {
-              hash: this.calculateBlockHash(header),
-              number: header.number,
-              parent: header.parentHash,
-            };
+            const blockInfo: BlockInfo = this.toBlockInfo(header);
             this.#finalizedBlockSignal.next(blockInfo);
           })
           .catch((error) => {
