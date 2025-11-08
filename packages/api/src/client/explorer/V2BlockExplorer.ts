@@ -1,5 +1,4 @@
 import { $Header, BlockHash, Header } from '@dedot/codecs';
-import type { Callback } from '@dedot/types';
 import { assert, HexString } from '@dedot/utils';
 import type { Archive, ChainHead, PinnedBlock } from '../../json-rpc/index.js';
 import type { BlockExplorer, BlockInfo } from '../../types.js';
@@ -62,8 +61,8 @@ export class V2BlockExplorer implements BlockExplorer {
   /**
    * Subscribe to the best block
    */
-  best(callback: Callback<BlockInfo>): () => void;
-  best(callback?: Callback<BlockInfo>): Promise<BlockInfo> | (() => void) {
+  best(callback: (block: BlockInfo) => void): () => void;
+  best(callback?: (block: BlockInfo) => void): Promise<BlockInfo> | (() => void) {
     if (callback) {
       // Subscribe mode
       const handler = (block: PinnedBlock) => {
@@ -88,8 +87,8 @@ export class V2BlockExplorer implements BlockExplorer {
   /**
    * Subscribe to the finalized block
    */
-  finalized(callback: Callback<BlockInfo>): () => void;
-  finalized(callback?: Callback<BlockInfo>): Promise<BlockInfo> | (() => void) {
+  finalized(callback: (block: BlockInfo) => void): () => void;
+  finalized(callback?: (block: BlockInfo) => void): Promise<BlockInfo> | (() => void) {
     if (callback) {
       // Subscribe mode
       const handler = (block: PinnedBlock) => {

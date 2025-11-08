@@ -1,5 +1,4 @@
 import { $Header, BlockHash, Header } from '@dedot/codecs';
-import type { Callback, Unsub } from '@dedot/types';
 import { assert, AsyncQueue, HexString, Signal } from '@dedot/utils';
 import type { BlockExplorer, BlockInfo } from '../../types.js';
 import type { LegacyClient } from '../LegacyClient.js';
@@ -88,7 +87,7 @@ export class LegacyBlockExplorer implements BlockExplorer {
 
     // Use closure pattern to handle async subscription without race conditions
     let done = false;
-    let unsub: Unsub | undefined;
+    let unsub: () => void | undefined;
     const blockQueue = new AsyncQueue();
 
     // Start RPC subscription (non-blocking)
@@ -148,7 +147,7 @@ export class LegacyBlockExplorer implements BlockExplorer {
 
     // Use closure pattern to handle async subscription without race conditions
     let done = false;
-    let unsub: Unsub | undefined;
+    let unsub: () => void | undefined;
     const blockQueue = new AsyncQueue();
 
     // Start RPC subscription (non-blocking)
@@ -244,8 +243,8 @@ export class LegacyBlockExplorer implements BlockExplorer {
    * Multiple subscribers will share a single RPC subscription
    * New subscribers immediately receive the current best block if available
    */
-  best(callback: Callback<BlockInfo>): () => void;
-  best(callback?: Callback<BlockInfo>): Promise<BlockInfo> | (() => void) {
+  best(callback: (block: BlockInfo) => void): () => void;
+  best(callback?: (block: BlockInfo) => void): Promise<BlockInfo> | (() => void) {
     if (callback) {
       // Subscribe mode - use shared subscription
       // Ensure RPC subscription is active (creates on first listener)
@@ -286,8 +285,8 @@ export class LegacyBlockExplorer implements BlockExplorer {
    * Multiple subscribers will share a single RPC subscription
    * New subscribers immediately receive the current finalized block if available
    */
-  finalized(callback: Callback<BlockInfo>): () => void;
-  finalized(callback?: Callback<BlockInfo>): Promise<BlockInfo> | (() => void) {
+  finalized(callback: (block: BlockInfo) => void): () => void;
+  finalized(callback?: (block: BlockInfo) => void): Promise<BlockInfo> | (() => void) {
     if (callback) {
       // Subscribe mode - use shared subscription
       // Ensure RPC subscription is active (creates on first listener)

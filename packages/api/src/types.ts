@@ -171,11 +171,11 @@ export interface BlockExplorer {
   // Get the best block
   best(): Promise<BlockInfo>;
   // Subscribe to the best block
-  best(callback: Callback<BlockInfo>): () => void;
+  best(callback: (block: BlockInfo) => void): () => void;
   // Get the finalized block
   finalized(): Promise<BlockInfo>;
   // Subscribe to the finalized block
-  finalized(callback: Callback<BlockInfo>): () => void;
+  finalized(callback: (block: BlockInfo) => void): () => void;
 
   // Get the header of a block
   header(numberOrHash: number | BlockHash): Promise<Header>;
