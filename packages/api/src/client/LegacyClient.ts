@@ -152,7 +152,7 @@ export class LegacyClient<ChainApi extends GenericSubstrateApi = SubstrateApi> /
         const newMetadata = await this.fetchMetadata(hash, this._runtimeVersion);
         await this.setupMetadata(newMetadata);
 
-        this.emit('runtimeUpgraded', this._runtimeVersion);
+        this.emit('runtimeUpgraded', this._runtimeVersion, block);
 
         this.doneRuntimeUpgrade();
       }
