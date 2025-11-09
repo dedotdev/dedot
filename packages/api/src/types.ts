@@ -14,6 +14,7 @@ import {
   RuntimeApiSpec,
   Unsub,
 } from '@dedot/types';
+import { Properties } from '@dedot/types/json-rpc';
 import type { HashFn, HexString, IEventEmitter } from '@dedot/utils';
 import type { SubstrateApi } from './chaintypes/index.js';
 import type { AnySignedExtension } from './extrinsic/index.js';
@@ -183,6 +184,11 @@ export interface BlockExplorer {
   body(numberOrHash: number | BlockHash): Promise<HexString[]>;
 }
 
+export interface ChainSpec {
+  chainName(): Promise<string>;
+  properties(): Promise<Properties>;
+}
+
 /**
  * A generic interface for Substrate clients
  */
@@ -194,6 +200,7 @@ export interface ISubstrateClient<
   options: ApiOptions;
   tx: ChainApi['tx'];
 
+  chainSpec: ChainSpec;
   block: BlockExplorer;
 
   at<ChainApiAt extends GenericSubstrateApi = ChainApi>(hash: BlockHash): Promise<ISubstrateClientAt<ChainApiAt>>;

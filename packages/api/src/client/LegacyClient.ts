@@ -1,6 +1,7 @@
 import { BlockHash, Hash, Header, PortableRegistry, RuntimeVersion } from '@dedot/codecs';
 import type { JsonRpcProvider } from '@dedot/providers';
 import { GenericSubstrateApi, Unsub } from '@dedot/types';
+import { ChainProperties } from '@dedot/types/json-rpc';
 import { assert } from '@dedot/utils';
 import type { SubstrateApi } from '../chaintypes/index.js';
 import {
@@ -14,7 +15,7 @@ import {
 } from '../executor/index.js';
 import { newProxyChain } from '../proxychain.js';
 import { BaseStorageQuery, LegacyStorageQuery } from '../storage/index.js';
-import type { ApiOptions, BlockExplorer, ISubstrateClientAt, SubstrateRuntimeVersion } from '../types.js';
+import type { ApiOptions, BlockExplorer, ChainSpec, ISubstrateClientAt, SubstrateRuntimeVersion } from '../types.js';
 import { BaseSubstrateClient, ensurePresence } from './BaseSubstrateClient.js';
 import { LegacyBlockExplorer } from './explorer/index.js';
 
@@ -118,10 +119,10 @@ export class LegacyClient<ChainApi extends GenericSubstrateApi = SubstrateApi> /
     this._runtimeVersion = runtimeVersion;
 
     await this.setupMetadata(metadata);
-    
+
     // Initialize block explorer
     this._blockExplorer = new LegacyBlockExplorer(this);
-    
+
     this.#subscribeUpdates();
   }
 
@@ -280,6 +281,17 @@ export class LegacyClient<ChainApi extends GenericSubstrateApi = SubstrateApi> /
 
   get block(): BlockExplorer {
     return ensurePresence(this._blockExplorer);
+  }
+
+  get chainSpec(): ChainSpec {
+    return {
+      chainName: (): Promise<string> => {
+        return this.rpc.system_chain();
+      },
+      properties: (): Promise<ChainProperties> => {
+        return this.rpc.system_properties();
+      },
+    };
   }
 
   /**
