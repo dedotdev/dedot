@@ -71,6 +71,10 @@ describe('LegacyBlockExplorer', () => {
   beforeEach(async () => {
     subscriptionId = 0;
     await setupMockClient();
+    // Reset subscription ID counter after client initialization
+    // LegacyClient subscribes to runtime upgrades during init, consuming subscription-best-0
+    // We reset here so BlockExplorer subscriptions start from subscription-best-0
+    subscriptionId = 0;
     explorer = new LegacyBlockExplorer(mockClient);
   });
 

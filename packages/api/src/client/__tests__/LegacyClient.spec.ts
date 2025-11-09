@@ -1,6 +1,6 @@
 import staticSubstrateV15 from '@polkadot/types-support/metadata/v15/substrate-hex';
 import { SubstrateRuntimeVersion } from '@dedot/api';
-import type { RuntimeVersion } from '@dedot/codecs';
+import { $Header, type RuntimeVersion } from '@dedot/codecs';
 import { WsProvider } from '@dedot/providers';
 import type { AnyShape } from '@dedot/shape';
 import * as $ from '@dedot/shape';
@@ -262,11 +262,7 @@ describe('LegacyClient', () => {
         expect(providerSend).toBeCalledWith('chain_getHeader', ['0x12345678']);
         expect(providerSend).toBeCalledWith('state_getRuntimeVersion', ['0x0c']);
         // runtime version is not changing, so the metadata can be re-use
-        expect(providerSend).not.toBeCalledWith('state_call', [
-          'Metadata_metadata_at_version',
-          '0x10000000',
-          '0x0c',
-        ]);
+        expect(providerSend).not.toBeCalledWith('state_call', ['Metadata_metadata_at_version', '0x10000000', '0x0c']);
       });
 
       it('should re-fetch metadata if runtime version is changing', async () => {
@@ -773,8 +769,30 @@ describe('LegacyClient', () => {
         const originalRuntime = api.runtimeVersion;
         const nextRuntime = { ...MockedRuntimeVersion, specVersion: originalRuntime.specVersion + 1 } as RuntimeVersion;
 
+        // Mock state_getRuntimeVersion to return the new runtime version when called with the block hash
+        provider.setRpcRequests({
+          state_getRuntimeVersion: async (params) => {
+            // If called with a block hash parameter, return the new runtime version
+            if (params && params.length > 0) {
+              return nextRuntime;
+            }
+            // Otherwise return the original runtime
+            return MockedRuntimeVersion;
+          },
+        });
+
         setTimeout(() => {
-          provider.notify('runtime-version-subscription-id', nextRuntime);
+          // Send a header with RuntimeEnvironmentUpdated digest
+          const header = {
+            parentHash: '0x0000000000000000000000000000000000000000000000000000000000000000',
+            number: 100,
+            stateRoot: '0x0000000000000000000000000000000000000000000000000000000000000000',
+            extrinsicsRoot: '0x0000000000000000000000000000000000000000000000000000000000000000',
+            digest: { logs: [{ type: 'RuntimeEnvironmentUpdated' }] },
+          };
+          // Encode the header before sending
+          const encodedHeader = u8aToHex($Header.tryEncode(header));
+          provider.notify('new-heads-subscription-id', encodedHeader);
         }, 100);
 
         await new Promise<void>((resolve, reject) => {
@@ -793,6 +811,9 @@ describe('LegacyClient', () => {
       });
 
       it('getRuntimeVersion should return the latest version', async () => {
+        const originalRuntime = api.runtimeVersion;
+        const nextRuntime = { ...MockedRuntimeVersion, specVersion: originalRuntime.specVersion + 1 } as RuntimeVersion;
+
         provider.setRpcRequests({
           state_call: async (params) => {
             return new Promise<HexString>((resolve) => {
@@ -805,11 +826,27 @@ describe('LegacyClient', () => {
               }, 300);
             });
           },
+          state_getRuntimeVersion: async (params) => {
+            // If called with a block hash parameter, return the new runtime version
+            if (params && params.length > 0) {
+              return nextRuntime;
+            }
+            // Otherwise return the original runtime
+            return MockedRuntimeVersion;
+          },
         });
 
-        const originalRuntime = api.runtimeVersion;
-        const nextRuntime = { ...MockedRuntimeVersion, specVersion: originalRuntime.specVersion + 1 } as RuntimeVersion;
-        provider.notify('runtime-version-subscription-id', nextRuntime);
+        // Send a header with RuntimeEnvironmentUpdated digest
+        const header = {
+          parentHash: '0x0000000000000000000000000000000000000000000000000000000000000000',
+          number: 100,
+          stateRoot: '0x0000000000000000000000000000000000000000000000000000000000000000',
+          extrinsicsRoot: '0x0000000000000000000000000000000000000000000000000000000000000000',
+          digest: { logs: [{ type: 'RuntimeEnvironmentUpdated' }] },
+        };
+        // Encode the header before sending
+        const encodedHeader = u8aToHex($Header.tryEncode(header));
+        provider.notify('new-heads-subscription-id', encodedHeader);
 
         const newVersion = await new Promise<SubstrateRuntimeVersion>((resolve) => {
           setTimeout(async () => {

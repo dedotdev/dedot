@@ -59,6 +59,7 @@ describe('V2BlockExplorer', () => {
         hash: mockBlock.hash,
         number: mockBlock.number,
         parent: mockBlock.parent,
+        runtimeUpgraded: false,
       });
       expect(mockChainHead.bestBlock).toHaveBeenCalledTimes(1);
     });
@@ -80,6 +81,7 @@ describe('V2BlockExplorer', () => {
         hash: mockBlock.hash,
         number: mockBlock.number,
         parent: mockBlock.parent,
+        runtimeUpgraded: false,
       });
 
       unsub();
@@ -121,6 +123,7 @@ describe('V2BlockExplorer', () => {
         hash: newBlock.hash,
         number: newBlock.number,
         parent: newBlock.parent,
+        runtimeUpgraded: false,
       });
     });
 
@@ -151,6 +154,7 @@ describe('V2BlockExplorer', () => {
         hash: mockBlock.hash,
         number: mockBlock.number,
         parent: mockBlock.parent,
+        runtimeUpgraded: false,
       });
       expect(mockChainHead.finalizedBlock).toHaveBeenCalledTimes(1);
     });
@@ -172,6 +176,7 @@ describe('V2BlockExplorer', () => {
         hash: mockBlock.hash,
         number: mockBlock.number,
         parent: mockBlock.parent,
+        runtimeUpgraded: false,
       });
 
       unsub();
@@ -428,11 +433,12 @@ describe('V2BlockExplorer', () => {
 
       const result = await explorer.best();
 
-      // Should only include hash, number, parent (no runtime)
+      // Should include hash, number, parent, and runtimeUpgraded
       expect(result).toEqual({
         hash: '0xhash',
         number: 42,
         parent: '0xparent',
+        runtimeUpgraded: false,
       });
       expect(result).not.toHaveProperty('runtime');
     });
