@@ -43,9 +43,9 @@ jobs:
           ./ink-node --rpc-port=9955 --state-pruning=archive --blocks-pruning=archive & 
           ./substrate-contracts-node --dev &
 
-          chmod +x ./e2e/contracts/wait-for-port.sh
-          ./e2e/contracts/wait-for-port.sh 9944 30 &
-          ./e2e/contracts/wait-for-port.sh 9955 30
+          chmod +x ./e2e/nodes/wait-for-port.sh
+          ./e2e/nodes/wait-for-port.sh 9944 30 &
+          ./e2e/nodes/wait-for-port.sh 9955 30
 
       - name: Run tests
-        run: yarn workspace e2e-contracts run e2e:test
+        run: yarn workspace e2e-nodes run e2e:test

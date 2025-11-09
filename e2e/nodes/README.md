@@ -1,4 +1,4 @@
-# e2e-contracts-tests
+# e2e-nodes
 
 ### Download the node binaries
 
@@ -23,5 +23,5 @@ Download the both `ink-node` and `substrate-contract-node` to your local environ
 After getting both node running, we can run the e2e tests by running the following command:
 
 ```shell
-yarn workspace e2e-contracts run e2e:test
+yarn workspace e2e-nodes run e2e:test
 ```
