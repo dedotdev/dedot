@@ -125,6 +125,31 @@ export class GenericExtrinsic<Address = any, Call = any, Signature = any, Extra 
     return this.#extensions;
   }
 
+  get preamble(): Preamble<Address, Signature, Extra> {
+    if (this.version === EXTRINSIC_FORMAT_VERSION_V4) {
+      if (this.signed && this.signature) {
+        return {
+          version: EXTRINSIC_FORMAT_VERSION_V4,
+          extrinsicType: ExtrinsicType.Signed,
+          signature: this.signature,
+        };
+      } else {
+        return {
+          version: EXTRINSIC_FORMAT_VERSION_V4,
+          extrinsicType: ExtrinsicType.Bare,
+        };
+      }
+    } else if (this.version === EXTRINSIC_FORMAT_VERSION_V5) {
+      return {
+        version: EXTRINSIC_FORMAT_VERSION_V5,
+        extrinsicType: ExtrinsicType.General,
+        versionedExtensions: this.extensions!,
+      };
+    }
+
+    throw new DedotError('Invalid extrinsic version');
+  }
+
   get callU8a(): Uint8Array {
     const { callTypeId } = this.registry.metadata!.extrinsic;
     const $RuntimeCall = this.registry.findCodec(callTypeId);
