@@ -1,22 +1,23 @@
-import { Metadata, PortableRegistry } from '@dedot/codecs';
+import { type Extrinsic, Metadata, PortableRegistry } from '@dedot/codecs';
 import { ConnectionStatus, JsonRpcProvider } from '@dedot/providers';
 import {
   Callback,
   GenericStorageQuery,
+  GenericSubstrateApi,
   InjectedSigner,
   Query,
   QueryFnResult,
-  Unsub,
-  GenericSubstrateApi,
   RpcVersion,
+  TxUnsub,
+  Unsub,
 } from '@dedot/types';
 import { HexString } from '@dedot/utils';
 import { SubstrateApi } from '../chaintypes/index.js';
 import { isJsonRpcProvider } from '../json-rpc/index.js';
 import {
+  ApiEvent,
   ApiOptions,
   BlockExplorer,
-  ApiEvent,
   ISubstrateClient,
   ISubstrateClientAt,
   SubstrateRuntimeVersion,
@@ -189,5 +190,9 @@ export class DedotClient<
   ): Promise<any[] | Unsub> {
     // @ts-ignore
     return this.#client.queryMulti(queries, callback);
+  }
+
+  sendTx(tx: HexString | Extrinsic, callback?: Callback): TxUnsub {
+    return this.#client.sendTx(tx, callback);
   }
 }

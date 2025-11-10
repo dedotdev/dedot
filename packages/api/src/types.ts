@@ -1,4 +1,4 @@
-import { BlockHash, Hash, Header, Metadata, PortableRegistry } from '@dedot/codecs';
+import { BlockHash, Extrinsic, Hash, Header, Metadata, PortableRegistry } from '@dedot/codecs';
 import type { ConnectionStatus, JsonRpcProvider, ProviderEvent } from '@dedot/providers';
 import type { AnyShape } from '@dedot/shape';
 import type { IStorage } from '@dedot/storage';
@@ -12,6 +12,7 @@ import {
   RpcVersion,
   RuntimeApiName,
   RuntimeApiSpec,
+  TxUnsub,
   Unsub,
 } from '@dedot/types';
 import type { HashFn, HexString, IEventEmitter } from '@dedot/utils';
@@ -213,6 +214,8 @@ export interface ISubstrateClient<
    * @param signer
    */
   setSigner(signer?: InjectedSigner): void;
+
+  sendTx(tx: HexString | Extrinsic, callback?: Callback): TxUnsub;
 
   /**
    * Query multiple storage items in a single call or subscribe to multiple storage items

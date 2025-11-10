@@ -1,7 +1,7 @@
-import { BlockHash, Hash, Header, PortableRegistry, RuntimeVersion } from '@dedot/codecs';
+import { BlockHash, type Extrinsic, Hash, Header, PortableRegistry, RuntimeVersion } from '@dedot/codecs';
 import type { JsonRpcProvider } from '@dedot/providers';
-import { GenericSubstrateApi, Unsub } from '@dedot/types';
-import { assert } from '@dedot/utils';
+import { Callback, GenericSubstrateApi, TxUnsub, Unsub } from '@dedot/types';
+import { assert, HexString } from '@dedot/utils';
 import type { SubstrateApi } from '../chaintypes/index.js';
 import {
   ConstantExecutor,
@@ -12,6 +12,7 @@ import {
   TxExecutor,
   ViewFunctionExecutor,
 } from '../executor/index.js';
+import { SubmittableExtrinsic } from '../extrinsic/submittable/SubmittableExtrinsic.js';
 import { newProxyChain } from '../proxychain.js';
 import { BaseStorageQuery, LegacyStorageQuery } from '../storage/index.js';
 import type { ApiOptions, BlockExplorer, ISubstrateClientAt, SubstrateRuntimeVersion } from '../types.js';
@@ -118,10 +119,10 @@ export class LegacyClient<ChainApi extends GenericSubstrateApi = SubstrateApi> /
     this._runtimeVersion = runtimeVersion;
 
     await this.setupMetadata(metadata);
-    
+
     // Initialize block explorer
     this._blockExplorer = new LegacyBlockExplorer(this);
-    
+
     this.#subscribeUpdates();
   }
 
@@ -349,5 +350,12 @@ export class LegacyClient<ChainApi extends GenericSubstrateApi = SubstrateApi> /
       assert(header, `Header for ${hash} not found`);
       return header.parentHash;
     }
+  }
+
+  sendTx(tx: HexString | Extrinsic, callback?: Callback): TxUnsub {
+    return SubmittableExtrinsic.fromTx(this, tx) // --
+      .send((result) => {
+        callback && callback(result);
+      });
   }
 }
