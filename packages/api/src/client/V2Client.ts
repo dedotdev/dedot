@@ -1,7 +1,7 @@
-import { $H256, $Header, $RuntimeVersion, BlockHash, Hash, PortableRegistry } from '@dedot/codecs';
+import { $H256, $Header, $RuntimeVersion, BlockHash, type Extrinsic, Hash, PortableRegistry } from '@dedot/codecs';
 import type { JsonRpcProvider } from '@dedot/providers';
 import { u32 } from '@dedot/shape';
-import { GenericStorageQuery, GenericSubstrateApi } from '@dedot/types';
+import { Callback, GenericStorageQuery, GenericSubstrateApi, TxUnsub } from '@dedot/types';
 import { assert, concatU8a, DedotError, HexString, twox64Concat, u8aToHex, xxhashAsU8a } from '@dedot/utils';
 import type { SubstrateApi } from '../chaintypes/index.js';
 import {
@@ -13,6 +13,7 @@ import {
   TxExecutorV2,
   ViewFunctionExecutorV2,
 } from '../executor/index.js';
+import { SubmittableExtrinsicV2 } from '../extrinsic/submittable/SubmittableExtrinsicV2.js';
 import { Archive, ChainHead, ChainSpec, PinnedBlock, Transaction, TransactionWatch } from '../json-rpc/index.js';
 import { newProxyChain } from '../proxychain.js';
 import { BaseStorageQuery, NewStorageQuery } from '../storage/index.js';
@@ -358,5 +359,12 @@ export class V2Client<ChainApi extends GenericSubstrateApi = SubstrateApi> // pr
 
   protected override getStorageQuery(): BaseStorageQuery {
     return new NewStorageQuery(this);
+  }
+
+  sendTx(tx: HexString | Extrinsic, callback?: Callback): TxUnsub {
+    return SubmittableExtrinsicV2.fromTx(this, tx) // --
+      .send((result) => {
+        callback && callback(result);
+      });
   }
 }

@@ -1,4 +1,4 @@
-name: E2E Contracts API Tests
+name: E2E Nodes API Tests
 
 on:
   push:
