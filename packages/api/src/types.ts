@@ -215,6 +215,43 @@ export interface ISubstrateClient<
    */
   setSigner(signer?: InjectedSigner): void;
 
+  /**
+   * Broadcasts a transaction to the network and monitors its status.
+   *
+   * This method accepts a transaction (either as a hex-encoded string or an Extrinsic instance)
+   * and submits it to the network. It returns a TxUnsub object that allows you to:
+   * - Subscribe to transaction status updates via an optional callback
+   * - Wait for specific transaction states (finalized, included in best chain block)
+   *
+   * @param tx - The signed transaction to broadcast, either as a hex-encoded string or Extrinsic instance
+   * @param callback - Optional callback function to receive transaction status updates. The callback
+   *                   receives an ISubmittableResult object containing status, events, errors, tx hash, etc...
+   *
+   * @returns A TxUnsub object that is both a Promise<Unsub> and provides utility methods:
+   *          - `.untilFinalized()` - Resolves when transaction is finalized
+   *          - `.untilBestChainBlockIncluded()` - Resolves when transaction is included in best chain block
+   *          - When awaited directly, resolves to an unsubscribe function
+   *
+   * @example
+   * // Basic usage with callback for status updates
+   * const unsub = await client.sendTx(rawTxHex, (result) => {
+   *   console.log('Transaction status:', result.status);
+   *   console.log('Transaction hash:', result.txHash);
+   *   if (result.dispatchError) {
+   *     console.error('Transaction failed:', result.dispatchError);
+   *   }
+   * });
+   *
+   * @example
+   * // Wait for transaction to be included in best chain block
+   * const result = await client.sendTx(rawTxHex, console.log).untilBestChainBlockIncluded();
+   * console.log('Transaction included in block:', result);
+   *
+   * @example
+   * // Wait for transaction finalization
+   * const result = await client.sendTx(rawTxHex).untilFinalized();
+   * console.log('Transaction finalized:', result);
+   */
   sendTx(tx: HexString | Extrinsic, callback?: Callback): TxUnsub;
 
   /**
