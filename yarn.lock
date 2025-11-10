@@ -3683,9 +3683,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"e2e-contracts@workspace:e2e/contracts":
+"e2e-nodes@workspace:e2e/nodes":
   version: 0.0.0-use.local
-  resolution: "e2e-contracts@workspace:e2e/contracts"
+  resolution: "e2e-nodes@workspace:e2e/nodes"
   dependencies:
     "@dedot/chaintypes": "npm:^0.150.0"
     "@polkadot/keyring": "npm:^13.5.6"
