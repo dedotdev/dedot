@@ -1,6 +1,7 @@
 import { BlockHash, type Extrinsic, Hash, Header, PortableRegistry, RuntimeVersion } from '@dedot/codecs';
 import type { JsonRpcProvider } from '@dedot/providers';
 import { Callback, GenericSubstrateApi, TxUnsub, Unsub } from '@dedot/types';
+import { ChainProperties } from '@dedot/types/json-rpc';
 import { assert, HexString } from '@dedot/utils';
 import type { SubstrateApi } from '../chaintypes/index.js';
 import {
@@ -15,7 +16,7 @@ import {
 import { SubmittableExtrinsic } from '../extrinsic/submittable/SubmittableExtrinsic.js';
 import { newProxyChain } from '../proxychain.js';
 import { BaseStorageQuery, LegacyStorageQuery } from '../storage/index.js';
-import type { ApiOptions, BlockExplorer, ISubstrateClientAt, SubstrateRuntimeVersion } from '../types.js';
+import type { ApiOptions, BlockExplorer, IChainSpec, ISubstrateClientAt, SubstrateRuntimeVersion } from '../types.js';
 import { BaseSubstrateClient, ensurePresence } from './BaseSubstrateClient.js';
 import { LegacyBlockExplorer } from './explorer/index.js';
 
@@ -281,6 +282,17 @@ export class LegacyClient<ChainApi extends GenericSubstrateApi = SubstrateApi> /
 
   get block(): BlockExplorer {
     return ensurePresence(this._blockExplorer);
+  }
+
+  get chainSpec(): IChainSpec {
+    return {
+      chainName: (): Promise<string> => {
+        return this.rpc.system_chain();
+      },
+      properties: (): Promise<ChainProperties> => {
+        return this.rpc.system_properties();
+      },
+    };
   }
 
   /**

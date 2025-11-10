@@ -39,6 +39,7 @@ import type {
   ApiEvent,
   ApiOptions,
   BlockExplorer,
+  IChainSpec,
   ISubstrateClient,
   ISubstrateClientAt,
   JsonRpcClientOptions,
@@ -530,6 +531,10 @@ export abstract class BaseSubstrateClient<
   }
 
   sendTx(tx: HexString | Extrinsic, callback?: Callback): TxUnsub {
+    throw new Error('Unimplemented!');
+  }
+
+  get chainSpec(): IChainSpec {
     throw new Error('Unimplemented!');
   }
 }
