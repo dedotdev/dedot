@@ -28,6 +28,7 @@ import type {
   ApiEvent,
   ApiOptions,
   BlockExplorer,
+  IChainSpec,
   ISubstrateClient,
   ISubstrateClientAt,
   JsonRpcClientOptions,
@@ -515,6 +516,10 @@ export abstract class BaseSubstrateClient<
   }
 
   protected getStorageQuery(): BaseStorageQuery {
+    throw new Error('Unimplemented!');
+  }
+
+  get chainSpec(): IChainSpec {
     throw new Error('Unimplemented!');
   }
 }

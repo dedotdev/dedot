@@ -184,7 +184,7 @@ export interface BlockExplorer {
   body(numberOrHash: number | BlockHash): Promise<HexString[]>;
 }
 
-export interface ChainSpec {
+export interface IChainSpec {
   chainName(): Promise<string>;
   properties(): Promise<Properties>;
 }
@@ -200,7 +200,7 @@ export interface ISubstrateClient<
   options: ApiOptions;
   tx: ChainApi['tx'];
 
-  chainSpec: ChainSpec;
+  chainSpec: IChainSpec;
   block: BlockExplorer;
 
   at<ChainApiAt extends GenericSubstrateApi = ChainApi>(hash: BlockHash): Promise<ISubstrateClientAt<ChainApiAt>>;

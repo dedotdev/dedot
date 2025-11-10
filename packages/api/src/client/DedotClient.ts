@@ -20,7 +20,7 @@ import {
   ISubstrateClient,
   ISubstrateClientAt,
   SubstrateRuntimeVersion,
-  ChainSpec,
+  IChainSpec,
 } from '../types.js';
 import { LegacyClient } from './LegacyClient.js';
 import { V2Client } from './V2Client.js';
@@ -144,7 +144,7 @@ export class DedotClient<
     return this.#client.block;
   }
 
-  get chainSpec(): ChainSpec {
+  get chainSpec(): IChainSpec {
     return this.#client.chainSpec;
   }
 

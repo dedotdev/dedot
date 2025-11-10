@@ -15,7 +15,7 @@ import {
 } from '../executor/index.js';
 import { newProxyChain } from '../proxychain.js';
 import { BaseStorageQuery, LegacyStorageQuery } from '../storage/index.js';
-import type { ApiOptions, BlockExplorer, ChainSpec, ISubstrateClientAt, SubstrateRuntimeVersion } from '../types.js';
+import type { ApiOptions, BlockExplorer, IChainSpec, ISubstrateClientAt, SubstrateRuntimeVersion } from '../types.js';
 import { BaseSubstrateClient, ensurePresence } from './BaseSubstrateClient.js';
 import { LegacyBlockExplorer } from './explorer/index.js';
 
@@ -283,7 +283,7 @@ export class LegacyClient<ChainApi extends GenericSubstrateApi = SubstrateApi> /
     return ensurePresence(this._blockExplorer);
   }
 
-  get chainSpec(): ChainSpec {
+  get chainSpec(): IChainSpec {
     return {
       chainName: (): Promise<string> => {
         return this.rpc.system_chain();
