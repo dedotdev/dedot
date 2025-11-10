@@ -1,4 +1,13 @@
-import { $Metadata, BlockHash, Hash, Metadata, PortableRegistry, RuntimeVersion, StorageDataLike } from '@dedot/codecs';
+import {
+  $Metadata,
+  BlockHash,
+  Extrinsic,
+  Hash,
+  Metadata,
+  PortableRegistry,
+  RuntimeVersion,
+  StorageDataLike,
+} from '@dedot/codecs';
 import type { JsonRpcProvider } from '@dedot/providers';
 import { type IStorage, LocalStorage } from '@dedot/storage';
 import {
@@ -9,6 +18,7 @@ import {
   Query,
   QueryFnResult,
   RpcVersion,
+  TxUnsub,
   Unsub,
 } from '@dedot/types';
 import {
@@ -16,6 +26,7 @@ import {
   deferred,
   Deferred,
   ensurePresence as _ensurePresence,
+  type HexString,
   LRUCache,
   u8aToHex,
 } from '@dedot/utils';
@@ -516,6 +527,10 @@ export abstract class BaseSubstrateClient<
   }
 
   protected getStorageQuery(): BaseStorageQuery {
+    throw new Error('Unimplemented!');
+  }
+
+  sendTx(tx: HexString | Extrinsic, callback?: Callback): TxUnsub {
     throw new Error('Unimplemented!');
   }
 

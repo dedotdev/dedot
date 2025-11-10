@@ -1,6 +1,6 @@
-import type { BlockHash } from '@dedot/codecs';
+import { BlockHash, Extrinsic, Preamble } from '@dedot/codecs';
 import { Callback, IEventRecord, IRuntimeTxCall, ISubmittableResult, TxHash, TxUnsub, Unsub } from '@dedot/types';
-import { AsyncQueue, noop, waitFor } from '@dedot/utils';
+import { AsyncQueue, HexString, isHex, noop, waitFor } from '@dedot/utils';
 import { V2Client } from '../../client/V2Client.js';
 import { PinnedBlock } from '../../json-rpc/index.js';
 import { BaseSubmittableExtrinsic } from './BaseSubmittableExtrinsic.js';
@@ -18,8 +18,20 @@ export class SubmittableExtrinsicV2 extends BaseSubmittableExtrinsic {
   constructor(
     public client: V2Client<any>,
     call: IRuntimeTxCall,
+    preamble?: Preamble,
   ) {
-    super(client, call);
+    super(client, call, preamble);
+  }
+
+  static fromTx(client: V2Client<any>, tx: HexString | Extrinsic) {
+    let extrinsic: Extrinsic;
+    if (isHex(tx)) {
+      extrinsic = client.registry.$Extrinsic.tryDecode(tx);
+    } else {
+      extrinsic = tx;
+    }
+
+    return new SubmittableExtrinsicV2(client, extrinsic.call, extrinsic.preamble);
   }
 
   async #send(callback: Callback<ISubmittableResult>): Promise<Unsub> {

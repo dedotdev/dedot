@@ -1,4 +1,4 @@
-import { BlockHash, Extrinsic } from '@dedot/codecs';
+import { BlockHash, Extrinsic, Preamble } from '@dedot/codecs';
 import {
   AddressOrPair,
   Callback,
@@ -7,14 +7,13 @@ import {
   ISubmittableExtrinsic,
   ISubmittableResult,
   PayloadOptions,
-  RpcVersion,
   SignerOptions,
   TxHash,
   TxPaymentInfo,
   TxUnsub,
 } from '@dedot/types';
 import { DedotError, HexString, hexToU8a, isFunction, toHex, u8aToHex } from '@dedot/utils';
-import type { FrameSystemEventRecord, SubstrateApi } from '../../chaintypes/index.js';
+import type { FrameSystemEventRecord } from '../../chaintypes/index.js';
 import type { ISubstrateClient, ISubstrateClientAt } from '../../types.js';
 import { ExtraSignedExtension } from '../extensions/index.js';
 import { fakeSigner } from './fakeSigner.js';
@@ -34,8 +33,9 @@ export abstract class BaseSubmittableExtrinsic extends Extrinsic implements ISub
   constructor(
     readonly client: ISubstrateClient<any, any>,
     call: IRuntimeTxCall,
+    preamble?: Preamble,
   ) {
-    super(client.registry, call);
+    super(client.registry, call, preamble);
   }
 
   withHooks(hooks: TxHooks) {
