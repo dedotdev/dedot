@@ -4,6 +4,7 @@ import handlebars from 'handlebars';
 import * as path from 'path';
 import * as prettier from 'prettier';
 import { currentDirname } from './dirname.js';
+import { LegacyClient } from '@dedot/api';
 
 export const WRAPPER_TYPE_REGEX = /^(\w+)<(.*)>$/;
 export const TUPLE_TYPE_REGEX = /^\[(.*)]$/;
@@ -122,3 +123,30 @@ export const getVariantDeprecationComment = (
       return [];
   }
 };
+
+/**
+ * Resolve block hash from either a block hash or block number
+ * @param client - The API client
+ * @param at - Block hash (0x...) or block number (number)
+ * @returns The resolved block hash
+ */
+export async function resolveBlockHash(client: LegacyClient, at: string): Promise<`0x${string}`> {
+  // Check if it's a hex string (block hash)
+  if (at.startsWith('0x')) {
+    return at as `0x${string}`;
+  }
+
+  // Try to parse as a number (block height)
+  const blockNumber = parseInt(at, 10);
+  if (isNaN(blockNumber)) {
+    throw new Error(`Invalid block specifier: ${at}. Must be a block hash (0x...) or block number.`);
+  }
+
+  // Resolve block number to block hash
+  const blockHash = await client.rpc.chain_getBlockHash(blockNumber);
+  if (!blockHash) {
+    throw new Error(`Block not found at height: ${blockNumber}`);
+  }
+
+  return blockHash;
+}

@@ -14,13 +14,14 @@ type Args = {
   subpath?: boolean;
   wasm?: string;
   metadata?: string;
+  at?: string;
 };
 
 export const chaintypes: CommandModule<Args, Args> = {
   command: 'chaintypes',
   describe: 'Generate Types & APIs for Substrate-based chains',
   handler: async (yargs) => {
-    const { wsUrl, wasm, metadata, output = '', chain = '', dts = true, subpath = true } = yargs;
+    const { wsUrl, wasm, metadata, output = '', chain = '', dts = true, subpath = true, at } = yargs;
 
     const outDir = path.resolve(output);
     const extension = dts ? 'd.ts' : 'ts';
@@ -63,9 +64,10 @@ export const chaintypes: CommandModule<Args, Args> = {
 
         spinner.succeed(`Generated ${stringPascalCase(chainName)} generic chaintypes`);
       } else {
-        spinner.text = `Generating chaintypes via endpoint: ${wsUrl}`;
-        generatedResult = await generateTypesFromEndpoint(chain, wsUrl!, outDir, extension, subpath);
-        spinner.succeed(`Generated chaintypes via endpoint: ${wsUrl}`);
+        const atText = at ? ` at ${at}` : '';
+        spinner.text = `Generating chaintypes via endpoint: ${wsUrl}${atText}`;
+        generatedResult = await generateTypesFromEndpoint(chain, wsUrl!, outDir, extension, subpath, at);
+        spinner.succeed(`Generated chaintypes via endpoint: ${wsUrl}${atText}`);
       }
 
       const { interfaceName, outputFolder } = generatedResult;
@@ -128,6 +130,10 @@ export const chaintypes: CommandModule<Args, Args> = {
         alias: 's',
         default: true,
       })
+      .option('at', {
+        type: 'string',
+        describe: 'Block hash or block number to fetch metadata at',
+      })
       .check((argv) => {
         const inputs = ['wsUrl', 'wasm', 'metadata'];
         const providedInputs = inputs.filter((input) => argv[input]);
@@ -138,6 +144,11 @@ export const chaintypes: CommandModule<Args, Args> = {
 
         if (providedInputs.length === 0) {
           throw new Error(`Please provide one of the following options: ${inputs.join(', ')}`);
+        }
+
+        // Validate that --at is only used with --wsUrl
+        if (argv.at && !argv.wsUrl) {
+          throw new Error('The --at option can only be used with --wsUrl');
         }
 
         return true;
