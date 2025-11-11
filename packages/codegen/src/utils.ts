@@ -1,10 +1,11 @@
+import { LegacyClient } from '@dedot/api';
 import { ItemDeprecationInfoDefV16, EnumDeprecationInfoDefV16 } from '@dedot/codecs';
+import { DedotError } from '@dedot/utils';
 import * as fs from 'fs';
 import handlebars from 'handlebars';
 import * as path from 'path';
 import * as prettier from 'prettier';
 import { currentDirname } from './dirname.js';
-import { LegacyClient } from '@dedot/api';
 
 export const WRAPPER_TYPE_REGEX = /^(\w+)<(.*)>$/;
 export const TUPLE_TYPE_REGEX = /^\[(.*)]$/;
@@ -139,13 +140,13 @@ export async function resolveBlockHash(client: LegacyClient, at: string): Promis
   // Try to parse as a number (block height)
   const blockNumber = parseInt(at, 10);
   if (isNaN(blockNumber)) {
-    throw new Error(`Invalid block specifier: ${at}. Must be a block hash (0x...) or block number.`);
+    throw new DedotError(`Invalid block specifier: ${at}. Must be a block hash (0x...) or block number.`);
   }
 
   // Resolve block number to block hash
   const blockHash = await client.rpc.chain_getBlockHash(blockNumber);
   if (!blockHash) {
-    throw new Error(`Block not found at height: ${blockNumber}`);
+    throw new DedotError(`Block not found at height: ${blockNumber}`);
   }
 
   return blockHash;
