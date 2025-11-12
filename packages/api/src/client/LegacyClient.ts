@@ -143,13 +143,13 @@ export class LegacyClient<ChainApi extends GenericSubstrateApi = SubstrateApi> /
       const { hash } = block;
 
       // Fetch the runtime version at this block
-      const runtimeVersion: RuntimeVersion = await this.callAt(hash).core.version();
+      const runtimeVersion: SubstrateRuntimeVersion = await this.#getRuntimeVersion(hash);
 
       // Check if the spec version has actually changed
       if (runtimeVersion.specVersion !== this.runtimeVersion?.specVersion) {
         this.startRuntimeUpgrade();
 
-        this._runtimeVersion = this.toSubstrateRuntimeVersion(runtimeVersion);
+        this._runtimeVersion = runtimeVersion;
 
         const newMetadata = await this.fetchMetadata(hash, this._runtimeVersion);
         await this.setupMetadata(newMetadata);

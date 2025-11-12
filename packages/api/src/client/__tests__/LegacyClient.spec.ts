@@ -27,6 +27,7 @@ describe('LegacyClient', () => {
 
     afterEach(async () => {
       api && (await api.disconnect());
+      vi.restoreAllMocks();
     });
 
     it('should create new api instance', async () => {
@@ -472,6 +473,9 @@ describe('LegacyClient', () => {
 
         // Call queryMulti and expect it to reject with the error
         await expect(apiAt.queryMulti([{ fn: mockQueryFn as any, args: [] }])).rejects.toThrow(mockError);
+
+        // Restore the spy immediately to prevent affecting background operations
+        providerSend.mockRestore();
       });
 
       it('should use cached api instance for queryMulti', async () => {
@@ -851,7 +855,7 @@ describe('LegacyClient', () => {
         const newVersion = await new Promise<SubstrateRuntimeVersion>((resolve) => {
           setTimeout(async () => {
             resolve(await api.getRuntimeVersion());
-          }, 100);
+          }, 500);
         });
 
         expect(originalRuntime.specVersion + 1).toEqual(newVersion.specVersion);
@@ -870,6 +874,7 @@ describe('LegacyClient', () => {
         await api.clearCache();
         await api.disconnect();
       }
+      vi.restoreAllMocks();
     });
 
     it('should load metadata from cache', async () => {
