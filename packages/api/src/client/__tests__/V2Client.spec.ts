@@ -1227,58 +1227,58 @@ describe('V2Client', () => {
         api && api.status !== 'disconnected' && (await api.disconnect());
       });
 
-      // it('should query multiple storage items', async () => {
-      //   // Mock storage query functions
-      //   const mockQueryFn1 = {
-      //     meta: { pallet: 'system', name: 'number' },
-      //     rawKey: vi.fn().mockReturnValue('0x01'),
-      //   };
-      //   const mockQueryFn2 = {
-      //     meta: { pallet: 'system', name: 'events' },
-      //     rawKey: vi.fn().mockReturnValue('0x02'),
-      //   };
-      //
-      //   // Set up the spy before making the call
-      //   const chainHeadStorageSpy = vi.spyOn(api.chainHead, 'storage');
-      //
-      //   // Mock chainHead.storage response
-      //   const mockResults = [
-      //     { key: '0x01', value: '0xvalue1' },
-      //     { key: '0x02', value: '0xvalue2' },
-      //   ];
-      //   chainHeadStorageSpy.mockResolvedValue(mockResults);
-      //
-      //   // Mock QueryableStorage
-      //   const mockDecodedValue1 = 42;
-      //   const mockDecodedValue2 = ['event1', 'event2'];
-      //
-      //   // Use vi.spyOn to mock the QueryableStorage constructor and its decodeValue method
-      //   const originalQueryableStorage = // prettier-end-here
-      //     await import('../../storage/QueryableStorage.js').then((m) => m.QueryableStorage);
-      //
-      //   vi.spyOn(originalQueryableStorage.prototype, 'decodeValue')
-      //     .mockImplementationOnce(() => mockDecodedValue1)
-      //     .mockImplementationOnce(() => mockDecodedValue2);
-      //
-      //   // Call queryMulti
-      //   const result = await api.queryMulti([
-      //     { fn: mockQueryFn1 as any, args: [] },
-      //     { fn: mockQueryFn2 as any, args: [] },
-      //   ]);
-      //
-      //   // Verify rawKey was called
-      //   expect(mockQueryFn1.rawKey).toHaveBeenCalled();
-      //   expect(mockQueryFn2.rawKey).toHaveBeenCalled();
-      //
-      //   // Verify chainHead.storage was called with the correct parameters
-      //   expect(api.chainHead.storage).toHaveBeenCalledWith([
-      //     { type: 'value', key: '0x01' },
-      //     { type: 'value', key: '0x02' },
-      //   ]);
-      //
-      //   // Verify the result contains the decoded values
-      //   expect(result).toEqual([mockDecodedValue1, mockDecodedValue2]);
-      // });
+      it('should query multiple storage items', async () => {
+        // Mock storage query functions
+        const mockQueryFn1 = {
+          meta: { pallet: 'system', name: 'number' },
+          rawKey: vi.fn().mockReturnValue('0x01'),
+        };
+        const mockQueryFn2 = {
+          meta: { pallet: 'system', name: 'events' },
+          rawKey: vi.fn().mockReturnValue('0x02'),
+        };
+
+        // Set up the spy before making the call
+        const chainHeadStorageSpy = vi.spyOn(api.chainHead, 'storage');
+
+        // Mock chainHead.storage response
+        const mockResults = [
+          { key: '0x01', value: '0xvalue1' },
+          { key: '0x02', value: '0xvalue2' },
+        ];
+        chainHeadStorageSpy.mockResolvedValue(mockResults);
+
+        // Mock QueryableStorage
+        const mockDecodedValue1 = 42;
+        const mockDecodedValue2 = ['event1', 'event2'];
+
+        // Use vi.spyOn to mock the QueryableStorage constructor and its decodeValue method
+        const originalQueryableStorage = // prettier-end-here
+          await import('../../storage/QueryableStorage.js').then((m) => m.QueryableStorage);
+
+        vi.spyOn(originalQueryableStorage.prototype, 'decodeValue')
+          .mockImplementationOnce(() => mockDecodedValue1)
+          .mockImplementationOnce(() => mockDecodedValue2);
+
+        // Call queryMulti
+        const result = await api.queryMulti([
+          { fn: mockQueryFn1 as any, args: [] },
+          { fn: mockQueryFn2 as any, args: [] },
+        ]);
+
+        // Verify rawKey was called
+        expect(mockQueryFn1.rawKey).toHaveBeenCalled();
+        expect(mockQueryFn2.rawKey).toHaveBeenCalled();
+
+        // Verify chainHead.storage was called with the correct parameters
+        expect(api.chainHead.storage).toHaveBeenCalledWith([
+          { type: 'value', key: '0x01' },
+          { type: 'value', key: '0x02' },
+        ]);
+
+        // Verify the result contains the decoded values
+        expect(result).toEqual([mockDecodedValue1, mockDecodedValue2]);
+      });
 
       it('should handle subscription-based queries', async () => {
         // Mock storage query functions
