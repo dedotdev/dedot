@@ -13,7 +13,7 @@ import {
   OperationStorageDone,
   OperationStorageItems,
 } from '@dedot/types/json-rpc';
-import { assert, deferred, stringCamelCase, stringPascalCase, u8aToHex } from '@dedot/utils';
+import { assert, deferred, stringCamelCase, stringPascalCase, u8aToHex, waitFor } from '@dedot/utils';
 import { MockInstance } from '@vitest/spy';
 import { afterEach, beforeEach, describe, expect, expectTypeOf, it, vi } from 'vitest';
 import { PinnedBlock } from '../../json-rpc/group/ChainHead/ChainHead.js';
@@ -41,6 +41,7 @@ describe('V2Client', () => {
       providerSend = vi.spyOn(provider, 'send');
       simulator = newChainHeadSimulator({ provider });
       simulator.notify(simulator.initializedEvent);
+      await waitFor(10);
       simulator.notify(simulator.nextNewBlock()); // 0xf
       simulator.notify(simulator.nextNewBlock()); // 0x10
       simulator.notify(simulator.nextBestBlock()); // 0xf
