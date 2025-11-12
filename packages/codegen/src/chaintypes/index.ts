@@ -43,25 +43,10 @@ export async function generateTypesFromEndpoint(
   let metadata: Metadata;
 
   if (blockHash) {
-    const [fetchedRuntimeVersion, fetchedMetadata] = await Promise.all([
-      client.rpc.state_getRuntimeVersion(blockHash),
-      client.rpc.state_getMetadata(blockHash),
-    ]);
+    const clientAt = await client.at(blockHash);
 
-    // Convert RuntimeVersion to SubstrateRuntimeVersion
-    const apis: Record<string, number> = fetchedRuntimeVersion.apis.reduce(
-      (o, [name, version]) => {
-        o[name] = version;
-        return o;
-      },
-      {} as Record<string, number>,
-    );
-
-    runtimeVersion = {
-      ...fetchedRuntimeVersion,
-      apis,
-    };
-    metadata = fetchedMetadata;
+    runtimeVersion = clientAt.runtimeVersion;
+    metadata = clientAt.metadata;
   } else {
     runtimeVersion = client.runtimeVersion;
     metadata = client.metadata;
