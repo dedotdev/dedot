@@ -64,7 +64,7 @@ describe('V2Client', () => {
           event: 'operationCallDone',
           output: '0x0c100000000f0000000e000000',
         } as OperationCallDone,
-        5,
+        10,
       );
 
       simulator.notify(
