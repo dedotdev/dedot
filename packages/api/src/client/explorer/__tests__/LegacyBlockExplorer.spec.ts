@@ -11,12 +11,12 @@ describe('LegacyBlockExplorer', () => {
   let explorer: LegacyBlockExplorer;
   let subscriptionId: number = 0;
 
-  const createMockHeader = (number: number, parentHash?: HexString): Header => ({
+  const createMockHeader = (number: number, parentHash?: HexString, runtimeUpgraded?: boolean): Header => ({
     parentHash: parentHash || `0x${(number > 0 ? number - 1 : 0).toString(16).padStart(64, '0')}`,
     number,
     stateRoot: `0x${number.toString(16).padStart(64, '0')}`,
     extrinsicsRoot: `0x${number.toString(16).padStart(64, '0')}`,
-    digest: { logs: [] },
+    digest: { logs: runtimeUpgraded ? [{ type: 'RuntimeEnvironmentUpdated' }] : [] },
   });
 
   // Helper to encode header for subscription notifications
@@ -285,6 +285,43 @@ describe('LegacyBlockExplorer', () => {
       errorSpy.mockRestore();
       unsub();
     });
+
+    it('should emit block with runtimeUpgraded=true when RuntimeEnvironmentUpdated digest is present', async () => {
+      const providerSend = vi.spyOn(mockProvider, 'send');
+      const callback = vi.fn();
+
+      const unsub = explorer.best(callback);
+
+      await waitFor();
+      expect(providerSend).toHaveBeenCalledWith('chain_subscribeNewHeads', []);
+
+      // Simulate a normal block
+      const normalHeader = createMockHeader(1);
+      mockProvider.notify('subscription-best-0', encodeHeader(normalHeader));
+      await new Promise((resolve) => setTimeout(resolve, 50));
+
+      // Simulate a block with runtime upgrade
+      const upgradeHeader = createMockHeader(2, undefined, true);
+      mockProvider.notify('subscription-best-0', encodeHeader(upgradeHeader));
+      await new Promise((resolve) => setTimeout(resolve, 50));
+
+      // Should have been called twice
+      expect(callback).toHaveBeenCalledTimes(2);
+
+      // First block should have runtimeUpgraded=false
+      expect(callback.mock.calls[0][0]).toMatchObject({
+        number: 1,
+        runtimeUpgraded: false,
+      });
+
+      // Second block should have runtimeUpgraded=true
+      expect(callback.mock.calls[1][0]).toMatchObject({
+        number: 2,
+        runtimeUpgraded: true,
+      });
+
+      unsub();
+    });
   });
 
   describe('finalized() - Query Mode', () => {
@@ -373,6 +410,43 @@ describe('LegacyBlockExplorer', () => {
       expect(warnSpy).toHaveBeenCalledWith(expect.stringContaining('finalized block gap detected'));
 
       warnSpy.mockRestore();
+      unsub();
+    });
+
+    it('should emit finalized block with runtimeUpgraded=true when RuntimeEnvironmentUpdated digest is present', async () => {
+      const providerSend = vi.spyOn(mockProvider, 'send');
+      const callback = vi.fn();
+
+      const unsub = explorer.finalized(callback);
+
+      await waitFor();
+      expect(providerSend).toHaveBeenCalledWith('chain_subscribeFinalizedHeads', []);
+
+      // Simulate a normal finalized block
+      const normalHeader = createMockHeader(1);
+      mockProvider.notify('subscription-finalized-0', encodeHeader(normalHeader));
+      await new Promise((resolve) => setTimeout(resolve, 50));
+
+      // Simulate a finalized block with runtime upgrade
+      const upgradeHeader = createMockHeader(2, undefined, true);
+      mockProvider.notify('subscription-finalized-0', encodeHeader(upgradeHeader));
+      await new Promise((resolve) => setTimeout(resolve, 50));
+
+      // Should have been called twice
+      expect(callback).toHaveBeenCalledTimes(2);
+
+      // First block should have runtimeUpgraded=false
+      expect(callback.mock.calls[0][0]).toMatchObject({
+        number: 1,
+        runtimeUpgraded: false,
+      });
+
+      // Second block should have runtimeUpgraded=true
+      expect(callback.mock.calls[1][0]).toMatchObject({
+        number: 2,
+        runtimeUpgraded: true,
+      });
+
       unsub();
     });
   });

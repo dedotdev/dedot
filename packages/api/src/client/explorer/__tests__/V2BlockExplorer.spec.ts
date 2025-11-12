@@ -12,11 +12,12 @@ describe('V2BlockExplorer', () => {
   let mockClient: V2Client<any>;
   let explorer: V2BlockExplorer;
 
-  const createMockPinnedBlock = (number: number): PinnedBlock => ({
+  const createMockPinnedBlock = (number: number, runtimeUpgraded?: boolean): PinnedBlock => ({
     hash: `0x${number.toString(16).padStart(64, '0')}`,
     number,
     parent: `0x${(number - 1).toString(16).padStart(64, '0')}`,
     runtime: undefined,
+    runtimeUpgraded,
   });
 
   beforeEach(() => {
@@ -141,6 +142,52 @@ describe('V2BlockExplorer', () => {
 
       expect(mockUnsub).toHaveBeenCalled();
     });
+
+    it('should emit block with runtimeUpgraded=true when PinnedBlock has runtimeUpgraded flag', async () => {
+      const mockBlock = createMockPinnedBlock(42);
+      vi.mocked(mockChainHead.bestBlock).mockResolvedValue(mockBlock);
+
+      let eventHandler: (block: PinnedBlock) => void = () => {};
+      vi.mocked(mockChainHead.on).mockImplementation((event, handler) => {
+        eventHandler = handler as (block: PinnedBlock) => void;
+        return () => {};
+      });
+
+      const callback = vi.fn();
+      explorer.best(callback);
+
+      // Wait for initial emission
+      await new Promise((resolve) => setTimeout(resolve, 10));
+
+      // Simulate normal block event
+      const normalBlock = createMockPinnedBlock(43);
+      eventHandler(normalBlock);
+
+      // Simulate block with runtime upgrade
+      const upgradeBlock = createMockPinnedBlock(44, true);
+      eventHandler(upgradeBlock);
+
+      // Should be called 3 times (initial + 2 events)
+      expect(callback).toHaveBeenCalledTimes(3);
+
+      // First call (initial) should have runtimeUpgraded=false
+      expect(callback.mock.calls[0][0]).toMatchObject({
+        number: 42,
+        runtimeUpgraded: false,
+      });
+
+      // Second call should have runtimeUpgraded=false
+      expect(callback.mock.calls[1][0]).toMatchObject({
+        number: 43,
+        runtimeUpgraded: false,
+      });
+
+      // Third call should have runtimeUpgraded=true
+      expect(callback.mock.calls[2][0]).toMatchObject({
+        number: 44,
+        runtimeUpgraded: true,
+      });
+    });
   });
 
   describe('finalized() - Query Mode', () => {
@@ -191,6 +238,52 @@ describe('V2BlockExplorer', () => {
       explorer.finalized(callback);
 
       expect(mockChainHead.on).toHaveBeenCalledWith('finalizedBlock', expect.any(Function));
+    });
+
+    it('should emit finalized block with runtimeUpgraded=true when PinnedBlock has runtimeUpgraded flag', async () => {
+      const mockBlock = createMockPinnedBlock(40);
+      vi.mocked(mockChainHead.finalizedBlock).mockResolvedValue(mockBlock);
+
+      let eventHandler: (block: PinnedBlock) => void = () => {};
+      vi.mocked(mockChainHead.on).mockImplementation((event, handler) => {
+        eventHandler = handler as (block: PinnedBlock) => void;
+        return () => {};
+      });
+
+      const callback = vi.fn();
+      explorer.finalized(callback);
+
+      // Wait for initial emission
+      await new Promise((resolve) => setTimeout(resolve, 10));
+
+      // Simulate normal finalized block event
+      const normalBlock = createMockPinnedBlock(41);
+      eventHandler(normalBlock);
+
+      // Simulate finalized block with runtime upgrade
+      const upgradeBlock = createMockPinnedBlock(42, true);
+      eventHandler(upgradeBlock);
+
+      // Should be called 3 times (initial + 2 events)
+      expect(callback).toHaveBeenCalledTimes(3);
+
+      // First call (initial) should have runtimeUpgraded=false
+      expect(callback.mock.calls[0][0]).toMatchObject({
+        number: 40,
+        runtimeUpgraded: false,
+      });
+
+      // Second call should have runtimeUpgraded=false
+      expect(callback.mock.calls[1][0]).toMatchObject({
+        number: 41,
+        runtimeUpgraded: false,
+      });
+
+      // Third call should have runtimeUpgraded=true
+      expect(callback.mock.calls[2][0]).toMatchObject({
+        number: 42,
+        runtimeUpgraded: true,
+      });
     });
   });
 
