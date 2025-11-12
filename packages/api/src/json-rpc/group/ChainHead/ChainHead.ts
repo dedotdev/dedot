@@ -228,7 +228,6 @@ export class ChainHead extends JsonRpcGroup<ChainHeadEvent> {
   }
 
   #onFollowEvent = async (result: FollowEvent, subscription?: JsonRpcSubscription) => {
-    console.log('result.event', result.event);
     switch (result.event) {
       case 'initialized': {
         const { finalizedBlockHashes = [], finalizedBlockHash, finalizedBlockRuntime } = result;
