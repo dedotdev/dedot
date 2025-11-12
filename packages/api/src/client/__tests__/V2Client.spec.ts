@@ -41,11 +41,12 @@ describe('V2Client', () => {
       providerSend = vi.spyOn(provider, 'send');
       simulator = newChainHeadSimulator({ provider });
       simulator.notify(simulator.initializedEvent);
-      await waitFor(10);
-      simulator.notify(simulator.nextNewBlock()); // 0xf
-      simulator.notify(simulator.nextNewBlock()); // 0x10
-      simulator.notify(simulator.nextBestBlock()); // 0xf
-      simulator.notify(simulator.nextFinalized()); // 0xf
+      setTimeout(() => {
+        simulator.notify(simulator.nextNewBlock()); // 0xf
+        simulator.notify(simulator.nextNewBlock()); // 0x10
+        simulator.notify(simulator.nextBestBlock()); // 0xf
+        simulator.notify(simulator.nextFinalized()); // 0xf
+      }, 0);
 
       let counter = 0;
       provider.setRpcRequests({
@@ -57,11 +58,14 @@ describe('V2Client', () => {
         module_rpc_name: () => '0x',
       });
 
-      simulator.notify({
-        operationId: 'call01',
-        event: 'operationCallDone',
-        output: '0x0c100000000f0000000e000000',
-      } as OperationCallDone);
+      simulator.notify(
+        {
+          operationId: 'call01',
+          event: 'operationCallDone',
+          output: '0x0c100000000f0000000e000000',
+        } as OperationCallDone,
+        5,
+      );
 
       simulator.notify(
         {
