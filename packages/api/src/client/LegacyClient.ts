@@ -1,8 +1,8 @@
-import { $Header, BlockHash, type Extrinsic, Hash, Header, PortableRegistry, RuntimeVersion } from '@dedot/codecs';
+import { BlockHash, type Extrinsic, Hash, Header, PortableRegistry } from '@dedot/codecs';
 import type { JsonRpcProvider } from '@dedot/providers';
-import { Callback, GenericSubstrateApi, TxUnsub, Unsub } from '@dedot/types';
+import { Callback, GenericSubstrateApi, TxUnsub } from '@dedot/types';
 import { ChainProperties } from '@dedot/types/json-rpc';
-import { assert, HexString, u8aToHex } from '@dedot/utils';
+import { assert, HexString, noop } from '@dedot/utils';
 import type { SubstrateApi } from '../chaintypes/index.js';
 import {
   ConstantExecutor,
@@ -98,10 +98,6 @@ export class LegacyClient<ChainApi extends GenericSubstrateApi = SubstrateApi> /
     return LegacyClient.create(options);
   }
 
-  protected override onDisconnected = async () => {
-    await this.#unsubscribeUpdates();
-  };
-
   protected override async beforeDisconnect() {
     await this.#unsubscribeUpdates();
   }
@@ -169,7 +165,7 @@ export class LegacyClient<ChainApi extends GenericSubstrateApi = SubstrateApi> /
     this.#unsubscribeHealth();
 
     this.#healthTimer = setInterval(() => {
-      this.rpc.system_health().catch(console.error);
+      this.rpc.system_health().catch(noop);
     }, KEEP_ALIVE_INTERVAL);
   }
 
@@ -188,7 +184,7 @@ export class LegacyClient<ChainApi extends GenericSubstrateApi = SubstrateApi> /
     }
 
     try {
-      await this.#runtimeSubscriptionUnsub();
+      this.#runtimeSubscriptionUnsub();
       this.#runtimeSubscriptionUnsub = undefined;
     } catch {
       // ignore

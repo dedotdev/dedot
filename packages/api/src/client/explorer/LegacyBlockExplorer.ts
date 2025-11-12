@@ -1,5 +1,6 @@
 import { $Header, BlockHash, Header } from '@dedot/codecs';
-import { assert, AsyncQueue, HexString, Signal } from '@dedot/utils';
+import { Unsub } from '@dedot/types';
+import { assert, AsyncQueue, HexString, noop, Signal } from '@dedot/utils';
 import type { BlockExplorer, BlockInfo } from '../../types.js';
 import type { LegacyClient } from '../LegacyClient.js';
 
@@ -94,7 +95,7 @@ export class LegacyBlockExplorer implements BlockExplorer {
 
     // Use closure pattern to handle async subscription without race conditions
     let done = false;
-    let unsub: () => void | undefined;
+    let unsub: Unsub | undefined;
     const blockQueue = new AsyncQueue();
 
     // Start RPC subscription (non-blocking)
@@ -127,7 +128,7 @@ export class LegacyBlockExplorer implements BlockExplorer {
             console.error('Error processing best block:', error);
           });
       })
-      .then((rpcUnsub: any) => {
+      .then((rpcUnsub: Unsub) => {
         unsub = rpcUnsub;
       });
 
@@ -135,7 +136,7 @@ export class LegacyBlockExplorer implements BlockExplorer {
     this.#bestBlockUnsub = () => {
       done = true;
       blockQueue.cancel();
-      unsub && unsub();
+      unsub && unsub().catch(noop);
     };
   }
 
@@ -154,7 +155,7 @@ export class LegacyBlockExplorer implements BlockExplorer {
 
     // Use closure pattern to handle async subscription without race conditions
     let done = false;
-    let unsub: () => void | undefined;
+    let unsub: Unsub | undefined;
     const blockQueue = new AsyncQueue();
 
     // Start RPC subscription (non-blocking)
@@ -186,7 +187,7 @@ export class LegacyBlockExplorer implements BlockExplorer {
             console.error('Error processing finalized block:', error);
           });
       })
-      .then((rpcUnsub: any) => {
+      .then((rpcUnsub: Unsub) => {
         unsub = rpcUnsub;
       });
 
@@ -194,7 +195,7 @@ export class LegacyBlockExplorer implements BlockExplorer {
     this.#finalizedBlockUnsub = () => {
       done = true;
       blockQueue.cancel();
-      unsub && unsub();
+      unsub && unsub().catch(noop);
     };
   }
 
