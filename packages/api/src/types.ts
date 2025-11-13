@@ -82,7 +82,6 @@ export interface ApiOptions extends JsonRpcClientOptions {
 
 export type ApiEvent = ProviderEvent | 'ready' | 'runtimeUpgraded';
 export type DedotClientEvent = ApiEvent | ChainHeadEvent;
-export type ClientEvent = ApiEvent | ChainHeadEvent;
 
 export interface SubstrateRuntimeVersion {
   specName: string;
