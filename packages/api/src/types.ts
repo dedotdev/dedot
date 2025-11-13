@@ -181,9 +181,9 @@ export interface BlockExplorer {
   finalized(callback: (block: BlockInfo) => void): () => void;
 
   // Get the header of a block
-  header(numberOrHash: number | BlockHash): Promise<Header>;
+  header(hash: BlockHash): Promise<Header>;
   // Get the body of a block
-  body(numberOrHash: number | BlockHash): Promise<HexString[]>;
+  body(hash: BlockHash): Promise<HexString[]>;
 }
 
 export interface IChainSpec {

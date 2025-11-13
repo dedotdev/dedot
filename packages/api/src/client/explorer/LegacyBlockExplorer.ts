@@ -219,21 +219,6 @@ export class LegacyBlockExplorer implements BlockExplorer {
     }
   }
 
-  /**
-   * Convert block number to block hash using legacy RPC
-   */
-  private async toBlockHash(numberOrHash: number | BlockHash): Promise<BlockHash> {
-    // If already a hash, return it
-    if (typeof numberOrHash === 'string') {
-      return numberOrHash;
-    }
-
-    // Use legacy RPC to get block hash by number
-    const hash = await this.#client.rpc.chain_getBlockHash(numberOrHash);
-    assert(hash, `No block found at height ${numberOrHash}`);
-    return hash;
-  }
-
   private calculateBlockHash(header: Header): BlockHash {
     return this.#client.registry.hashAsHex($Header.tryEncode(header));
   }
@@ -325,11 +310,10 @@ export class LegacyBlockExplorer implements BlockExplorer {
   /**
    * Get the header of a block by number or hash
    */
-  async header(numberOrHash: number | BlockHash): Promise<Header> {
-    const hash = await this.toBlockHash(numberOrHash);
+  async header(hash: BlockHash): Promise<Header> {
     const header = await this.#client.rpc.chain_getHeader(hash);
 
-    assert(header, `Header not found for block ${numberOrHash}`);
+    assert(header, `Header not found for block ${hash}`);
 
     return header;
   }
@@ -337,11 +321,10 @@ export class LegacyBlockExplorer implements BlockExplorer {
   /**
    * Get the body (transactions) of a block by number or hash
    */
-  async body(numberOrHash: number | BlockHash): Promise<HexString[]> {
-    const hash = await this.toBlockHash(numberOrHash);
+  async body(hash: BlockHash): Promise<HexString[]> {
     const block = await this.#client.rpc.chain_getBlock(hash);
 
-    assert(block, `Block not found for ${numberOrHash}`);
+    assert(block, `Block not found for ${hash}`);
 
     return block.block.extrinsics;
   }

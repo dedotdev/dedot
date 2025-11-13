@@ -461,17 +461,6 @@ describe('LegacyBlockExplorer', () => {
       expect(providerSend).toHaveBeenCalledWith('chain_getHeader', [hash]);
     });
 
-    it('should query header by number', async () => {
-      const providerSend = vi.spyOn(mockProvider, 'send');
-      const header = await explorer.header(42);
-
-      expect(header).toBeDefined();
-      expect(providerSend).toHaveBeenCalledWith('chain_getBlockHash', [42]);
-      expect(providerSend).toHaveBeenCalledWith('chain_getHeader', [
-        '0x000000000000000000000000000000000000000000000000000000000000002a',
-      ]);
-    });
-
     it('should throw if header not found', async () => {
       mockProvider.setRpcRequest('chain_getHeader', () => null);
 
@@ -489,18 +478,6 @@ describe('LegacyBlockExplorer', () => {
       expect(Array.isArray(body)).toBe(true);
       expect(body).toHaveLength(3);
       expect(providerSend).toHaveBeenCalledWith('chain_getBlock', [hash]);
-    });
-
-    it('should query body by number', async () => {
-      const providerSend = vi.spyOn(mockProvider, 'send');
-      const body = await explorer.body(42);
-
-      expect(body).toBeDefined();
-      expect(Array.isArray(body)).toBe(true);
-      expect(providerSend).toHaveBeenCalledWith('chain_getBlockHash', [42]);
-      expect(providerSend).toHaveBeenCalledWith('chain_getBlock', [
-        '0x000000000000000000000000000000000000000000000000000000000000002a',
-      ]);
     });
 
     it('should throw if block not found', async () => {
