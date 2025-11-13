@@ -1,5 +1,5 @@
-import { HexString, hexToU8a, u8aToHex } from '@dedot/utils';
-import { constant, DecodeBuffer, metadata, Shape, withMetadata } from '../deshape.js';
+import { HexString, hexToU8a, isHex, u8aToHex } from '@dedot/utils';
+import { AssertState, constant, DecodeBuffer, metadata, Shape, ShapeAssertError, withMetadata } from '../deshape.js';
 import { createShape } from './createShape.js';
 
 export const RawHex: Shape<HexString> = createShape({
@@ -12,6 +12,12 @@ export const RawHex: Shape<HexString> = createShape({
     const value = buffer.array.subarray(buffer.index);
     buffer.index += value.length;
     return u8aToHex(value);
+  },
+  subAssert(assert: AssertState) {
+    assert.typeof(this, 'string');
+    if (!isHex(assert.value as string)) {
+      throw new ShapeAssertError(this, assert.value, `${assert.path}: Expected valid hex string`);
+    }
   },
 });
 

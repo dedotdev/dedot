@@ -146,6 +146,71 @@ export const $Extrinsic = <KnownTypes extends GenericChainKnownTypes = GenericCh
 
       $RuntimeCall.subEncode(buffer, call);
     },
+    subAssert(assertState: $.AssertState) {
+      // Validate it's an instance of Extrinsic class
+      assertState.instanceof(this, Extrinsic);
+
+      const extrinsic = assertState.value as Extrinsic;
+
+      // Validate version and type
+      $ExtrinsicVersion.subAssert(
+        new $.AssertState({ version: extrinsic.version, type: extrinsic.type }, '.{version,type}', assertState),
+      );
+
+      // Validate call exists and is valid
+      const callAssert = assertState.key(this, 'call');
+      $RuntimeCall.subAssert(callAssert);
+
+      // Version-specific validation
+      if (extrinsic.version === EXTRINSIC_FORMAT_VERSION_V4) {
+        if (extrinsic.type === ExtrinsicType.Signed) {
+          // Validate signature exists
+          if (!extrinsic.signature) {
+            throw new $.ShapeAssertError(
+              this,
+              assertState.value,
+              `${assertState.path}: Signature is required for signed V4 extrinsic`,
+            );
+          }
+          const signatureAssert = assertState.key(this, 'signature');
+          $Signature.subAssert(signatureAssert);
+        }
+      } else if (extrinsic.version === EXTRINSIC_FORMAT_VERSION_V5) {
+        if (extrinsic.type === ExtrinsicType.General) {
+          // Validate extensions exists
+          if (!extrinsic.extensions) {
+            throw new $.ShapeAssertError(
+              this,
+              assertState.value,
+              `${assertState.path}: Extensions are required for general V5 extrinsic`,
+            );
+          }
+
+          // Validate extensionVersion exists
+          if (extrinsic.extensions.extensionVersion === undefined) {
+            throw new $.ShapeAssertError(
+              this,
+              assertState.value,
+              `${assertState.path}.extensions.extensionVersion: extensionVersion is required`,
+            );
+          }
+
+          // Validate extensionVersion is a number
+          const extVersionAssert = new $.AssertState(
+            extrinsic.extensions.extensionVersion,
+            '.extensions.extensionVersion',
+            assertState,
+          );
+          extVersionAssert.typeof(this, 'number');
+
+          // Validate extra if present
+          if (extrinsic.extensions.extra !== undefined) {
+            const extraAssert = new $.AssertState(extrinsic.extensions.extra, '.extensions.extra', assertState);
+            registry.$Extra(extrinsic.extensions.extensionVersion).subAssert(extraAssert);
+          }
+        }
+      }
+    },
   });
 
   return $.withMetadata($.metadata('$Extrinsic'), $.lenPrefixed($BaseEx));

@@ -29,6 +29,9 @@ export const notSupportedCodec = (msg = 'Not supported!'): $.Shape<never> => {
     subDecode(buffer: $.DecodeBuffer) {
       throw new Error(msg);
     },
+    subAssert(assert: $.AssertState) {
+      throw new Error(msg);
+    },
   });
 };
 

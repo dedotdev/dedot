@@ -104,4 +104,47 @@ export const $ExtrinsicVersion: $.Shape<ExtrinsicVersion> = $.createShape({
 
     buffer.array[buffer.index++] = byte;
   },
+  subAssert(assert: $.AssertState) {
+    // Validate it's an object with the required structure
+    assert.typeof(this, 'object');
+    assert.nonNull(this);
+
+    const value = assert.value as ExtrinsicVersion;
+
+    // Validate version field
+    const versionAssert = assert.key(this, 'version');
+    versionAssert.typeof(this, 'number');
+
+    // Verify version is 4 or 5
+    if (value.version !== EXTRINSIC_FORMAT_VERSION_V4 && value.version !== EXTRINSIC_FORMAT_VERSION_V5) {
+      throw new $.ShapeAssertError(
+        this,
+        assert.value,
+        `${assert.path}.version: Invalid extrinsic version: ${value.version}, expected 4 or 5`,
+      );
+    }
+
+    // Validate type field
+    const typeAssert = assert.key(this, 'type');
+    typeAssert.typeof(this, 'string');
+
+    // Verify type is a valid ExtrinsicType enum value
+    const validTypes = Object.values(ExtrinsicType);
+    if (!validTypes.includes(value.type)) {
+      throw new $.ShapeAssertError(
+        this,
+        assert.value,
+        `${assert.path}.type: Invalid extrinsic type: ${value.type}, expected one of: ${validTypes.join(', ')}`,
+      );
+    }
+
+    // Additional validation: V4 doesn't support General type
+    if (value.version === EXTRINSIC_FORMAT_VERSION_V4 && value.type === ExtrinsicType.General) {
+      throw new $.ShapeAssertError(
+        this,
+        assert.value,
+        `${assert.path}: Extrinsic version 4 does not support type 'general'`,
+      );
+    }
+  },
 });
