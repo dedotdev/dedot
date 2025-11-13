@@ -10,7 +10,7 @@ const provider = new WsProvider([
 console.log('Connecting...');
 const client = await DedotClient.new(provider);
 
-client.on('connected', (connectedUrl: any) => {
+client.on('connected', (connectedUrl) => {
   console.log('Connected Endpoint:', connectedUrl);
 });
 

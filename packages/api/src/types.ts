@@ -295,6 +295,20 @@ export interface ISubstrateClient<
     queries: { [K in keyof Fns]: Query<Fns[K]> },
     callback: Callback<{ [K in keyof Fns]: QueryFnResult<Fns[K]> }>,
   ): Promise<Unsub>;
+
+  on<Event extends Events = Events>(event: Event, handler: EventHandlerFn<Event>): () => void;
+}
+
+export type EventHandlerFn<Event extends string> = EventTypes[Event];
+
+interface EventTypes {
+  ready: () => void;
+  connected: (connectedEndpoint: string) => void;
+  disconnected: () => void;
+  reconnecting: () => void;
+  runtimeUpgraded: (newRuntimeVersion: SubstrateRuntimeVersion, at: BlockInfo) => void;
+  error: (error?: Error) => void;
+  [event: string]: (...args: any[]) => void;
 }
 
 /**

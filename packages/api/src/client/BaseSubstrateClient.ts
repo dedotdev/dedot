@@ -26,7 +26,7 @@ import {
   deferred,
   Deferred,
   ensurePresence as _ensurePresence,
-  type HexString,
+  HexString,
   LRUCache,
   u8aToHex,
 } from '@dedot/utils';
@@ -39,6 +39,7 @@ import type {
   ApiEvent,
   ApiOptions,
   BlockExplorer,
+  EventHandlerFn,
   IChainSpec,
   ISubstrateClient,
   ISubstrateClientAt,
@@ -536,5 +537,9 @@ export abstract class BaseSubstrateClient<
 
   get chainSpec(): IChainSpec {
     throw new Error('Unimplemented!');
+  }
+
+  on<Event extends Events = Events>(event: Event, handler: EventHandlerFn<Event>): () => void {
+    return super.on(event, handler);
   }
 }
