@@ -3,12 +3,12 @@ import { Executor } from '../executor/Executor.js';
 import { newProxyChain, Carrier } from '../proxychain.js';
 import { ISubstrateClientAt } from '../types.js';
 
-class MockExecutor extends Executor<any> {
+class MockExecutor extends Executor {
   executeCalls: string[][] = [];
   private executorId = Math.random().toString(36).slice(2);
 
   constructor() {
-    super({} as ISubstrateClientAt<any>);
+    super({} as ISubstrateClientAt);
   }
 
   doExecute(...chain: string[]): any {
@@ -23,7 +23,7 @@ class MockExecutor extends Executor<any> {
 describe('newProxyChain', () => {
   it('should execute with correct chain at max level', () => {
     const executor = new MockExecutor();
-    const carrier: Carrier<any> = { executor };
+    const carrier: Carrier = { executor };
 
     const proxy: any = newProxyChain(carrier, 1, 3);
     const result = proxy.pallet.item;
@@ -38,7 +38,7 @@ describe('newProxyChain', () => {
 
   it('should create independent chains for different access paths', () => {
     const executor = new MockExecutor();
-    const carrier: Carrier<any> = { executor };
+    const carrier: Carrier = { executor };
 
     const proxy: any = newProxyChain(carrier, 1, 3);
 
@@ -63,7 +63,7 @@ describe('newProxyChain', () => {
 
   it('should not share state between multiple accesses to the same proxy', () => {
     const executor = new MockExecutor();
-    const carrier: Carrier<any> = { executor };
+    const carrier: Carrier = { executor };
 
     const eventsProxy: any = newProxyChain(carrier, 1, 3);
 
@@ -95,7 +95,7 @@ describe('newProxyChain', () => {
 
   it('should handle concurrent access patterns correctly', async () => {
     const executor = new MockExecutor();
-    const carrier: Carrier<any> = { executor };
+    const carrier: Carrier = { executor };
 
     const proxy: any = newProxyChain(carrier, 1, 3);
 
@@ -118,7 +118,7 @@ describe('newProxyChain', () => {
 
   it('should maintain independence when reusing intermediate proxies', () => {
     const executor = new MockExecutor();
-    const carrier: Carrier<any> = { executor };
+    const carrier: Carrier = { executor };
 
     const eventsProxy: any = newProxyChain(carrier, 1, 3);
     const systemProxy = eventsProxy.system;
@@ -142,7 +142,7 @@ describe('newProxyChain', () => {
 
   it('should work with different max levels', () => {
     const executor = new MockExecutor();
-    const carrier: Carrier<any> = { executor };
+    const carrier: Carrier = { executor };
 
     // Test with max level 2
     const proxy2Level: any = newProxyChain(carrier, 1, 2);
@@ -159,7 +159,7 @@ describe('newProxyChain', () => {
 
   it('should handle empty initial chain', () => {
     const executor = new MockExecutor();
-    const carrier: Carrier<any> = { executor, chain: [] };
+    const carrier: Carrier = { executor, chain: [] };
 
     const proxy: any = newProxyChain(carrier, 1, 3);
     const result = proxy.pallet.item;
@@ -169,7 +169,7 @@ describe('newProxyChain', () => {
 
   it('should handle undefined initial chain', () => {
     const executor = new MockExecutor();
-    const carrier: Carrier<any> = { executor, chain: undefined };
+    const carrier: Carrier = { executor, chain: undefined };
 
     const proxy: any = newProxyChain(carrier, 1, 3);
     const result = proxy.pallet.item;
@@ -179,7 +179,7 @@ describe('newProxyChain', () => {
 
   it('should preserve original carrier executor reference', () => {
     const executor = new MockExecutor();
-    const carrier: Carrier<any> = { executor };
+    const carrier: Carrier = { executor };
 
     const proxy: any = newProxyChain(carrier, 1, 3);
     const result1 = proxy.pallet.item1;
@@ -192,7 +192,7 @@ describe('newProxyChain', () => {
   describe('regression tests for the bug', () => {
     it('should not accumulate chain across multiple event accesses', () => {
       const executor = new MockExecutor();
-      const carrier: Carrier<any> = { executor };
+      const carrier: Carrier = { executor };
 
       // This simulates the apiAtBlock.events proxy
       const eventsProxy: any = newProxyChain(carrier, 1, 3);
@@ -215,7 +215,7 @@ describe('newProxyChain', () => {
 
     it('should handle the exact test scenario from check-events.ts', async () => {
       const executor = new MockExecutor();
-      const carrier: Carrier<any> = { executor };
+      const carrier: Carrier = { executor };
 
       const apiAtBlockEvents: any = newProxyChain(carrier, 1, 3);
 
