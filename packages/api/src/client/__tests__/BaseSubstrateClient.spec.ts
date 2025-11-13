@@ -4,7 +4,7 @@ import { BaseSubstrateClient } from '../BaseSubstrateClient.js';
 import MockProvider from './MockProvider.js';
 
 // Create a mock implementation of BaseSubstrateClient for testing
-class MockBaseSubstrateClient extends BaseSubstrateClient<'v2'> {
+class MockBaseSubstrateClient extends BaseSubstrateClient {
   constructor() {
     super('v2', new MockProvider());
   }
