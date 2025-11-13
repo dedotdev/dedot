@@ -41,12 +41,10 @@ describe('V2Client', () => {
       providerSend = vi.spyOn(provider, 'send');
       simulator = newChainHeadSimulator({ provider });
       simulator.notify(simulator.initializedEvent);
-      setTimeout(() => {
-        simulator.notify(simulator.nextNewBlock()); // 0xf
-        simulator.notify(simulator.nextNewBlock()); // 0x10
-        simulator.notify(simulator.nextBestBlock()); // 0xf
-        simulator.notify(simulator.nextFinalized()); // 0xf
-      }, 0);
+      simulator.notify(simulator.nextNewBlock()); // 0xf
+      simulator.notify(simulator.nextNewBlock()); // 0x10
+      simulator.notify(simulator.nextBestBlock()); // 0xf
+      simulator.notify(simulator.nextFinalized()); // 0xf
 
       let counter = 0;
       provider.setRpcRequests({
@@ -1045,10 +1043,13 @@ describe('V2Client', () => {
           assert(newBlock.newRuntime!.type === 'valid');
 
           await new Promise<void>((resolve, reject) => {
-            api.on('runtimeUpgraded', (newRuntime: SubstrateRuntimeVersion) => {
+            api.on('runtimeUpgraded', (newRuntime, at) => {
               try {
                 // @ts-ignore
                 expect(newBlock.newRuntime!.spec).toEqual(newRuntime);
+                expect(at).toBeDefined();
+                expectTypeOf(at.hash).toBeString();
+                expectTypeOf(at.number).toBeNumber();
                 resolve();
               } catch (e) {
                 reject(e);

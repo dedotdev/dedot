@@ -800,9 +800,12 @@ describe('LegacyClient', () => {
         }, 100);
 
         await new Promise<void>((resolve, reject) => {
-          api.on('runtimeUpgraded', (newRuntime: SubstrateRuntimeVersion) => {
+          api.on('runtimeUpgraded', (newRuntime, at) => {
             try {
               expect(nextRuntime.specVersion).toEqual(newRuntime.specVersion);
+              expect(at).toBeDefined();
+              expectTypeOf(at.hash).toBeString();
+              expectTypeOf(at.number).toBeNumber();
               resolve();
             } catch (e) {
               reject(e);
