@@ -157,15 +157,12 @@ export class ChainHead extends JsonRpcGroup<ChainHeadEvent> {
     return this.findBlock(await this.finalizedHash())!;
   }
 
-  findBlock(hashOrNumber: BlockHash | number): PinnedBlock | undefined {
-    // If it's a hash, do direct lookup
-    if (typeof hashOrNumber === 'string') {
-      return this.#pinnedBlocks[hashOrNumber];
-    }
+  findBlock(hash: BlockHash): PinnedBlock | undefined {
+    return this.#pinnedBlocks[hash];
+  }
 
-    // If it's a number, search through pinned blocks
-    const blockNumber = hashOrNumber;
-    return Object.values(this.#pinnedBlocks).find((block) => block.number === blockNumber);
+  #findBlocksByNumber(blockNumber: number): PinnedBlock[] {
+    return Object.values(this.#pinnedBlocks).filter((block) => block.number === blockNumber);
   }
 
   isPinned(hash: BlockHash): boolean {
@@ -246,7 +243,11 @@ export class ChainHead extends JsonRpcGroup<ChainHeadEvent> {
         assert(this.#finalizedRuntime, 'Invalid finalized runtime');
 
         // Build initial pinned blocks
-        this.#bestHash = this.#finalizedHash = finalizedBlockHashes.at(-1);
+        this.#finalizedHash = finalizedBlockHashes.at(-1);
+        if (!this.#bestHash) {
+          this.#bestHash = this.#finalizedHash;
+        }
+
         this.#pinnedBlocks = this.#buildInitialPinnedBlocks(finalizedBlockHashes, this.#finalizedRuntime);
 
         await this.#updateBlockNumbersAndParents(finalizedBlockHashes, prevPinnedBlocks);
@@ -655,9 +656,9 @@ export class ChainHead extends JsonRpcGroup<ChainHeadEvent> {
 
     // Emit missing blocks from pinned blocks
     for (let num = lastNumber + 1; num < currentNumber; num++) {
-      const pinnedBlock = this.findBlock(num);
-      if (pinnedBlock) {
-        this.emit('bestBlock', pinnedBlock, false); // false = not a fork
+      const blocks = this.#findBlocksByNumber(num);
+      for (let idx = 0; idx < blocks.length; idx++) {
+        this.emit('bestBlock', blocks[idx], idx >= 1);
       }
     }
   }
