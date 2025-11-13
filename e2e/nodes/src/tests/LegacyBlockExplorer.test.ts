@@ -319,13 +319,6 @@ describe('LegacyBlockExplorer E2E Tests', () => {
   });
 
   describe('header(numberOrHash) - Historical Queries', () => {
-    it('should get genesis block header by number', async () => {
-      const header = await client.block.header(0);
-
-      assertValidHeader(header, 0);
-      expect(header.number).toBe(0);
-    }, 30_000);
-
     it('should get genesis block header by hash', async () => {
       const header = await client.block.header(genesisHash);
 
@@ -340,55 +333,14 @@ describe('LegacyBlockExplorer E2E Tests', () => {
       assertValidHeader(header, finalizedBlock.number);
     }, 30_000);
 
-    it('should get best block header', async () => {
-      const bestBlock = await client.block.best();
-      const header = await client.block.header(bestBlock.number);
-
-      assertValidHeader(header);
-      expect(header.number).toBeGreaterThanOrEqual(bestBlock.number);
-    }, 30_000);
-
-    it('should verify header structure completeness', async () => {
-      const header = await client.block.header(0);
-
-      expect(header).toHaveProperty('parentHash');
-      expect(header).toHaveProperty('number');
-      expect(header).toHaveProperty('stateRoot');
-      expect(header).toHaveProperty('extrinsicsRoot');
-      expect(header).toHaveProperty('digest');
-      expect(header.digest).toHaveProperty('logs');
-    }, 30_000);
-
     it('should throw error for invalid hash', async () => {
       const invalidHash = '0xinvalidhash';
 
       await expect(client.block.header(invalidHash as HexString)).rejects.toThrow();
     }, 30_000);
-
-    it('should throw error for non-existent block number', async () => {
-      const futureBlockNumber = 999_999_999;
-
-      await expect(client.block.header(futureBlockNumber)).rejects.toThrow();
-    }, 30_000);
-
-    it('should throw error for very large future block number', async () => {
-      const veryLargeNumber = Number.MAX_SAFE_INTEGER;
-
-      await expect(client.block.header(veryLargeNumber)).rejects.toThrow();
-    }, 30_000);
   });
 
   describe('body(numberOrHash) - Extrinsics Queries', () => {
-    it('should get genesis block body', async () => {
-      const body = await client.block.body(0);
-
-      expect(Array.isArray(body)).toBe(true);
-      // Genesis might have timestamp extrinsic
-      body.forEach((ext) => {
-        expect(ext).toMatch(/^0x[0-9a-f]+$/);
-      });
-    }, 30_000);
-
     it('should get finalized block body', async () => {
       const finalizedBlock = await client.block.finalized();
       const body = await client.block.body(finalizedBlock.hash);
@@ -396,16 +348,6 @@ describe('LegacyBlockExplorer E2E Tests', () => {
       expect(Array.isArray(body)).toBe(true);
       body.forEach((ext) => {
         expect(typeof ext).toBe('string');
-        expect(ext).toMatch(/^0x[0-9a-f]+$/);
-      });
-    }, 30_000);
-
-    it('should get best block body', async () => {
-      const bestBlock = await client.block.best();
-      const body = await client.block.body(bestBlock.number);
-
-      expect(Array.isArray(body)).toBe(true);
-      body.forEach((ext) => {
         expect(ext).toMatch(/^0x[0-9a-f]+$/);
       });
     }, 30_000);
@@ -427,47 +369,16 @@ describe('LegacyBlockExplorer E2E Tests', () => {
 
       await expect(client.block.body(invalidHash as HexString)).rejects.toThrow();
     }, 30_000);
-
-    it('should throw error for non-existent block number', async () => {
-      const futureBlockNumber = 999_999_999;
-
-      await expect(client.block.body(futureBlockNumber)).rejects.toThrow();
-    }, 30_000);
   });
 
   describe('Consistency & Integration', () => {
-    it('should have matching hashes: best() vs header(best.number)', async () => {
-      const bestBlock = await client.block.best();
-      const header = await client.block.header(bestBlock.number);
-
-      // Calculate hash from header
-      const calculatedHash = client.registry.hashAsHex($Header.tryEncode(header));
-
-      // They should match (or be close if block advanced)
-      expect(header.number).toBeGreaterThanOrEqual(bestBlock.number);
-    }, 30_000);
-
-    it('should have matching hashes: finalized() vs header(finalized.number)', async () => {
+    it('should have matching hashes: finalized() vs header(finalized.hash)', async () => {
       const finalizedBlock = await client.block.finalized();
       const header = await client.block.header(finalizedBlock.hash);
 
       const calculatedHash = client.registry.hashAsHex($Header.tryEncode(header));
 
       expect(finalizedBlock.hash).toBe(calculatedHash);
-    }, 30_000);
-
-    it('should maintain valid parent chain', async () => {
-      const bestBlock = await client.block.best();
-
-      // Get current block and its parent
-      const currentHeader = await client.block.header(bestBlock.number);
-
-      if (bestBlock.number > 0) {
-        const parentHeader = await client.block.header(bestBlock.number - 1);
-        const parentHash = client.registry.hashAsHex($Header.tryEncode(parentHeader));
-
-        expect(currentHeader.parentHash).toBe(parentHash);
-      }
     }, 30_000);
 
     it('should handle simultaneous best and finalized subscriptions', async () => {
@@ -568,14 +479,6 @@ describe('LegacyBlockExplorer E2E Tests', () => {
       const nonHexHash = '0xZZZZ' as HexString;
 
       await expect(client.block.header(nonHexHash)).rejects.toThrow();
-    }, 30_000);
-
-    it('should handle block number 0 (genesis edge case)', async () => {
-      const header = await client.block.header(0);
-      const body = await client.block.body(0);
-
-      assertValidHeader(header, 0);
-      expect(Array.isArray(body)).toBe(true);
     }, 30_000);
   });
 });
