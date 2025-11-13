@@ -402,13 +402,18 @@ export class WsProvider extends SubscriptionProvider {
     return normalizedOptions as Required<WsProviderOptions>;
   }
 
-  async disconnect(): Promise<void> {
+  async disconnect(switchEndpoint?: boolean): Promise<void> {
     try {
       assert(this.#ws, 'Websocket connection does not exist');
-      // https://developer.mozilla.org/en-US/docs/Web/API/CloseEvent/code
-      this.#ws.close(1000); // Normal closure
-      this._setStatus('disconnected');
-      this._cleanUp();
+
+      if (!!switchEndpoint) {
+        this.#ws.close();
+      } else {
+        // https://developer.mozilla.org/en-US/docs/Web/API/CloseEvent/code
+        this.#ws.close(1000); // Normal closure
+        this._setStatus('disconnected');
+        this._cleanUp();
+      }
     } catch (error: any) {
       console.error('Error disconnecting from websocket', error);
       this.emit('error', error);
