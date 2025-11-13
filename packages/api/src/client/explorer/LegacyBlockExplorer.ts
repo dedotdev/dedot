@@ -1,5 +1,6 @@
 import { $Header, BlockHash, Header } from '@dedot/codecs';
-import { assert, AsyncQueue, HexString, Signal } from '@dedot/utils';
+import { Unsub } from '@dedot/types';
+import { assert, AsyncQueue, HexString, noop, Signal } from '@dedot/utils';
 import type { BlockExplorer, BlockInfo } from '../../types.js';
 import type { LegacyClient } from '../LegacyClient.js';
 
@@ -23,6 +24,18 @@ export class LegacyBlockExplorer implements BlockExplorer {
     this.#client = client;
     this.#bestBlockSignal = new Signal<BlockInfo>();
     this.#finalizedBlockSignal = new Signal<BlockInfo>();
+  }
+
+  /**
+   * Convert PinnedBlock to BlockInfo format
+   */
+  private toBlockInfo(header: Header & { hash?: BlockHash }): BlockInfo {
+    return {
+      hash: header.hash || this.calculateBlockHash(header),
+      number: header.number,
+      parent: header.parentHash,
+      runtimeUpgraded: this.hasNewRuntime(header),
+    };
   }
 
   /**
@@ -62,12 +75,7 @@ export class LegacyBlockExplorer implements BlockExplorer {
         const header = headers[i];
 
         if (hash && header) {
-          const missingBlockInfo: BlockInfo = {
-            hash,
-            number: header.number,
-            parent: header.parentHash,
-          };
-          subject.next(missingBlockInfo);
+          subject.next(this.toBlockInfo({ ...header, hash }));
         }
       }
     } catch (error) {
@@ -87,7 +95,7 @@ export class LegacyBlockExplorer implements BlockExplorer {
 
     // Use closure pattern to handle async subscription without race conditions
     let done = false;
-    let unsub: () => void | undefined;
+    let unsub: Unsub | undefined;
     const blockQueue = new AsyncQueue();
 
     // Start RPC subscription (non-blocking)
@@ -113,18 +121,14 @@ export class LegacyBlockExplorer implements BlockExplorer {
             await this.fillMissingBlocks(lastNumber, header.number, this.#bestBlockSignal, 'best');
 
             // Emit current block
-            const blockInfo: BlockInfo = {
-              hash: currentHash,
-              number: header.number,
-              parent: header.parentHash,
-            };
+            const blockInfo: BlockInfo = this.toBlockInfo({ ...header, hash: currentHash });
             this.#bestBlockSignal.next(blockInfo);
           })
           .catch((error) => {
             console.error('Error processing best block:', error);
           });
       })
-      .then((rpcUnsub: any) => {
+      .then((rpcUnsub: Unsub) => {
         unsub = rpcUnsub;
       });
 
@@ -132,8 +136,12 @@ export class LegacyBlockExplorer implements BlockExplorer {
     this.#bestBlockUnsub = () => {
       done = true;
       blockQueue.cancel();
-      unsub && unsub();
+      unsub && unsub().catch(noop);
     };
+  }
+
+  private hasNewRuntime(header: Header): boolean {
+    return header.digest.logs.some((log) => log.type === 'RuntimeEnvironmentUpdated');
   }
 
   /**
@@ -147,7 +155,7 @@ export class LegacyBlockExplorer implements BlockExplorer {
 
     // Use closure pattern to handle async subscription without race conditions
     let done = false;
-    let unsub: () => void | undefined;
+    let unsub: Unsub | undefined;
     const blockQueue = new AsyncQueue();
 
     // Start RPC subscription (non-blocking)
@@ -172,18 +180,14 @@ export class LegacyBlockExplorer implements BlockExplorer {
             await this.fillMissingBlocks(lastNumber, header.number, this.#finalizedBlockSignal, 'finalized');
 
             // Emit current block
-            const blockInfo: BlockInfo = {
-              hash: this.calculateBlockHash(header),
-              number: header.number,
-              parent: header.parentHash,
-            };
+            const blockInfo: BlockInfo = this.toBlockInfo(header);
             this.#finalizedBlockSignal.next(blockInfo);
           })
           .catch((error) => {
             console.error('Error processing finalized block:', error);
           });
       })
-      .then((rpcUnsub: any) => {
+      .then((rpcUnsub: Unsub) => {
         unsub = rpcUnsub;
       });
 
@@ -191,7 +195,7 @@ export class LegacyBlockExplorer implements BlockExplorer {
     this.#finalizedBlockUnsub = () => {
       done = true;
       blockQueue.cancel();
-      unsub && unsub();
+      unsub && unsub().catch(noop);
     };
   }
 
@@ -213,21 +217,6 @@ export class LegacyBlockExplorer implements BlockExplorer {
       this.#finalizedBlockUnsub();
       this.#finalizedBlockUnsub = undefined;
     }
-  }
-
-  /**
-   * Convert block number to block hash using legacy RPC
-   */
-  private async toBlockHash(numberOrHash: number | BlockHash): Promise<BlockHash> {
-    // If already a hash, return it
-    if (typeof numberOrHash === 'string') {
-      return numberOrHash;
-    }
-
-    // Use legacy RPC to get block hash by number
-    const hash = await this.#client.rpc.chain_getBlockHash(numberOrHash);
-    assert(hash, `No block found at height ${numberOrHash}`);
-    return hash;
   }
 
   private calculateBlockHash(header: Header): BlockHash {
@@ -321,11 +310,10 @@ export class LegacyBlockExplorer implements BlockExplorer {
   /**
    * Get the header of a block by number or hash
    */
-  async header(numberOrHash: number | BlockHash): Promise<Header> {
-    const hash = await this.toBlockHash(numberOrHash);
+  async header(hash: BlockHash): Promise<Header> {
     const header = await this.#client.rpc.chain_getHeader(hash);
 
-    assert(header, `Header not found for block ${numberOrHash}`);
+    assert(header, `Header not found for block ${hash}`);
 
     return header;
   }
@@ -333,11 +321,10 @@ export class LegacyBlockExplorer implements BlockExplorer {
   /**
    * Get the body (transactions) of a block by number or hash
    */
-  async body(numberOrHash: number | BlockHash): Promise<HexString[]> {
-    const hash = await this.toBlockHash(numberOrHash);
+  async body(hash: BlockHash): Promise<HexString[]> {
     const block = await this.#client.rpc.chain_getBlock(hash);
 
-    assert(block, `Block not found for ${numberOrHash}`);
+    assert(block, `Block not found for ${hash}`);
 
     return block.block.extrinsics;
   }

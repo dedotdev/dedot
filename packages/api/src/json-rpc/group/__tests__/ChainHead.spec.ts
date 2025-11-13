@@ -673,7 +673,7 @@ describe('ChainHead', () => {
         const result = await chainHead.body();
         expect(result).toEqual(['0x1111']);
 
-        expect(providerSend).toHaveBeenNthCalledWith(4, 'chainHead_v1_body', [
+        expect(providerSend).toHaveBeenNthCalledWith(5, 'chainHead_v1_body', [
           simulator.subscriptionId,
           await chainHead.bestHash(),
         ]);
@@ -707,16 +707,16 @@ describe('ChainHead', () => {
         const result = await chainHead.body();
         expect(result).toEqual(['0x1111']);
 
-        expect(providerSend).toHaveBeenNthCalledWith(4, 'chainHead_v1_body', [
+        expect(providerSend).toHaveBeenNthCalledWith(5, 'chainHead_v1_body', [
           simulator.subscriptionId,
           await chainHead.bestHash(),
         ]);
-        expect(providerSend).toHaveBeenNthCalledWith(5, 'chainHead_v1_stopOperation', [
+        expect(providerSend).toHaveBeenNthCalledWith(6, 'chainHead_v1_stopOperation', [
           simulator.subscriptionId,
           'body02',
         ]);
 
-        expect(providerSend).toHaveBeenNthCalledWith(6, 'chainHead_v1_body', [
+        expect(providerSend).toHaveBeenNthCalledWith(7, 'chainHead_v1_body', [
           simulator.subscriptionId,
           await chainHead.bestHash(),
         ]);
@@ -750,7 +750,7 @@ describe('ChainHead', () => {
         const result = await chainHead.body();
         expect(result).toEqual(['0x1111']);
 
-        expect(providerSend).toHaveBeenNthCalledWith(4, 'chainHead_v1_body', [
+        expect(providerSend).toHaveBeenNthCalledWith(5, 'chainHead_v1_body', [
           simulator.subscriptionId,
           await chainHead.bestHash(),
         ]);
@@ -759,12 +759,12 @@ describe('ChainHead', () => {
           simulator.subscriptionId,
           await chainHead.bestHash(),
         ]);
-        expect(providerSend).toHaveBeenNthCalledWith(6, 'chainHead_v1_body', [
+        expect(providerSend).toHaveBeenNthCalledWith(7, 'chainHead_v1_body', [
           simulator.subscriptionId,
           await chainHead.bestHash(),
         ]);
 
-        expect(providerSend).toHaveBeenNthCalledWith(7, 'chainHead_v1_stopOperation', [
+        expect(providerSend).toHaveBeenNthCalledWith(8, 'chainHead_v1_stopOperation', [
           simulator.subscriptionId,
           'body02',
         ]);
@@ -787,7 +787,7 @@ describe('ChainHead', () => {
         const result = await chainHead.call('func', '0x');
         expect(result).toEqual('0x1111');
 
-        expect(providerSend).toHaveBeenNthCalledWith(4, 'chainHead_v1_call', [
+        expect(providerSend).toHaveBeenNthCalledWith(5, 'chainHead_v1_call', [
           simulator.subscriptionId,
           await chainHead.bestHash(),
           'func',
@@ -823,18 +823,18 @@ describe('ChainHead', () => {
         const result = await chainHead.call('func', '0x');
         expect(result).toEqual('0x1111');
 
-        expect(providerSend).toHaveBeenNthCalledWith(4, 'chainHead_v1_call', [
+        expect(providerSend).toHaveBeenNthCalledWith(5, 'chainHead_v1_call', [
           simulator.subscriptionId,
           await chainHead.bestHash(),
           'func',
           '0x',
         ]);
-        expect(providerSend).toHaveBeenNthCalledWith(5, 'chainHead_v1_stopOperation', [
+        expect(providerSend).toHaveBeenNthCalledWith(6, 'chainHead_v1_stopOperation', [
           simulator.subscriptionId,
           'call02',
         ]);
 
-        expect(providerSend).toHaveBeenNthCalledWith(6, 'chainHead_v1_call', [
+        expect(providerSend).toHaveBeenNthCalledWith(7, 'chainHead_v1_call', [
           simulator.subscriptionId,
           await chainHead.bestHash(),
           'func',
@@ -870,27 +870,27 @@ describe('ChainHead', () => {
         const result = await chainHead.call('func', '0x');
         expect(result).toEqual('0x1111');
 
-        expect(providerSend).toHaveBeenNthCalledWith(4, 'chainHead_v1_call', [
-          simulator.subscriptionId,
-          await chainHead.bestHash(),
-          'func',
-          '0x',
-        ]);
-        // 2 retries
         expect(providerSend).toHaveBeenNthCalledWith(5, 'chainHead_v1_call', [
           simulator.subscriptionId,
           await chainHead.bestHash(),
           'func',
           '0x',
         ]);
+        // 2 retries
         expect(providerSend).toHaveBeenNthCalledWith(6, 'chainHead_v1_call', [
           simulator.subscriptionId,
           await chainHead.bestHash(),
           'func',
           '0x',
         ]);
+        expect(providerSend).toHaveBeenNthCalledWith(7, 'chainHead_v1_call', [
+          simulator.subscriptionId,
+          await chainHead.bestHash(),
+          'func',
+          '0x',
+        ]);
 
-        expect(providerSend).toHaveBeenNthCalledWith(7, 'chainHead_v1_stopOperation', [
+        expect(providerSend).toHaveBeenNthCalledWith(8, 'chainHead_v1_stopOperation', [
           simulator.subscriptionId,
           'call02',
         ]);
@@ -928,7 +928,7 @@ describe('ChainHead', () => {
         const result = await chainHead.storage(queries);
         expect(result).toEqual(storageItems);
 
-        expect(providerSend).toHaveBeenNthCalledWith(4, 'chainHead_v1_storage', [
+        expect(providerSend).toHaveBeenNthCalledWith(5, 'chainHead_v1_storage', [
           simulator.subscriptionId,
           await chainHead.bestHash(),
           queries,
@@ -975,18 +975,18 @@ describe('ChainHead', () => {
         const result = await chainHead.storage(queries);
         expect(result).toEqual(storageItems);
 
-        expect(providerSend).toHaveBeenNthCalledWith(4, 'chainHead_v1_storage', [
+        expect(providerSend).toHaveBeenNthCalledWith(5, 'chainHead_v1_storage', [
           simulator.subscriptionId,
           await chainHead.bestHash(),
           queries,
           null,
         ]);
-        expect(providerSend).toHaveBeenNthCalledWith(5, 'chainHead_v1_stopOperation', [
+        expect(providerSend).toHaveBeenNthCalledWith(6, 'chainHead_v1_stopOperation', [
           simulator.subscriptionId,
           'storage01',
         ]);
 
-        expect(providerSend).toHaveBeenNthCalledWith(6, 'chainHead_v1_storage', [
+        expect(providerSend).toHaveBeenNthCalledWith(7, 'chainHead_v1_storage', [
           simulator.subscriptionId,
           await chainHead.bestHash(),
           queries,
@@ -1051,19 +1051,19 @@ describe('ChainHead', () => {
         const result = await chainHead.storage(queries);
         expect(result).toEqual([...storageItemsBatch1, ...storageItemsBatch2]);
 
-        expect(providerSend).toHaveBeenNthCalledWith(4, 'chainHead_v1_storage', [
+        expect(providerSend).toHaveBeenNthCalledWith(5, 'chainHead_v1_storage', [
           simulator.subscriptionId,
           await chainHead.bestHash(),
           queries,
           null,
         ]);
 
-        expect(providerSend).toHaveBeenNthCalledWith(5, 'chainHead_v1_stopOperation', [
+        expect(providerSend).toHaveBeenNthCalledWith(6, 'chainHead_v1_stopOperation', [
           simulator.subscriptionId,
           'storage01',
         ]);
 
-        expect(providerSend).toHaveBeenNthCalledWith(6, 'chainHead_v1_storage', [
+        expect(providerSend).toHaveBeenNthCalledWith(7, 'chainHead_v1_storage', [
           simulator.subscriptionId,
           await chainHead.bestHash(),
           queries.slice(2),
@@ -1111,14 +1111,6 @@ describe('ChainHead', () => {
         const result = await chainHead.storage(queries);
         expect(result).toEqual(storageItems);
 
-        expect(providerSend).toHaveBeenNthCalledWith(4, 'chainHead_v1_storage', [
-          simulator.subscriptionId,
-          await chainHead.bestHash(),
-          queries,
-          null,
-        ]);
-
-        // 2 retries
         expect(providerSend).toHaveBeenNthCalledWith(5, 'chainHead_v1_storage', [
           simulator.subscriptionId,
           await chainHead.bestHash(),
@@ -1126,7 +1118,15 @@ describe('ChainHead', () => {
           null,
         ]);
 
+        // 2 retries
         expect(providerSend).toHaveBeenNthCalledWith(6, 'chainHead_v1_storage', [
+          simulator.subscriptionId,
+          await chainHead.bestHash(),
+          queries,
+          null,
+        ]);
+
+        expect(providerSend).toHaveBeenNthCalledWith(7, 'chainHead_v1_storage', [
           simulator.subscriptionId,
           await chainHead.bestHash(),
           queries,
@@ -1169,9 +1169,9 @@ describe('ChainHead', () => {
 
         setTimeout(() => {
           expect(prevSubId).not.toEqual(simulator.subscriptionId);
-          expect(providerSend).toHaveBeenNthCalledWith(4, 'chainHead_v1_unfollow', [prevSubId]);
-          expect(providerSend).toHaveBeenNthCalledWith(5, 'chainHead_v1_follow', [true]);
-          expect(providerSend).not.toHaveBeenNthCalledWith(6, 'chainHead_v1_header', [
+          expect(providerSend).toHaveBeenNthCalledWith(5, 'chainHead_v1_unfollow', [prevSubId]);
+          expect(providerSend).toHaveBeenNthCalledWith(6, 'chainHead_v1_follow', [true]);
+          expect(providerSend).not.toHaveBeenNthCalledWith(7, 'chainHead_v1_header', [
             simulator.subscriptionId,
             '0x00',
           ]);
@@ -1211,9 +1211,9 @@ describe('ChainHead', () => {
 
       await expect(result).resolves.toEqual(['0x1111']);
 
-      expect(providerSend).toHaveBeenNthCalledWith(4, 'chainHead_v1_body', [prevSubId, bestHash]);
-      expect(providerSend).toHaveBeenNthCalledWith(5, 'chainHead_v1_unfollow', [prevSubId]);
-      expect(providerSend).toHaveBeenNthCalledWith(7, 'chainHead_v1_body', [simulator.subscriptionId, bestHash]);
+      expect(providerSend).toHaveBeenNthCalledWith(5, 'chainHead_v1_body', [prevSubId, bestHash]);
+      expect(providerSend).toHaveBeenNthCalledWith(6, 'chainHead_v1_unfollow', [prevSubId]);
+      expect(providerSend).toHaveBeenNthCalledWith(9, 'chainHead_v1_body', [simulator.subscriptionId, bestHash]);
       expect(providerSend).toHaveBeenLastCalledWith('chainHead_v1_stopOperation', [simulator.subscriptionId, 'body02']);
     });
 
@@ -1247,9 +1247,9 @@ describe('ChainHead', () => {
 
       await expect(result).resolves.toEqual(['0x1111']);
 
-      expect(providerSend).toHaveBeenNthCalledWith(4, 'chainHead_v1_body', [prevSubId, bestHash]);
-      expect(providerSend).toHaveBeenNthCalledWith(5, 'chainHead_v1_unfollow', [prevSubId]);
-      expect(providerSend).toHaveBeenNthCalledWith(7, 'chainHead_v1_body', [simulator.subscriptionId, bestHash]);
+      expect(providerSend).toHaveBeenNthCalledWith(5, 'chainHead_v1_body', [prevSubId, bestHash]);
+      expect(providerSend).toHaveBeenNthCalledWith(6, 'chainHead_v1_unfollow', [prevSubId]);
+      expect(providerSend).toHaveBeenNthCalledWith(9, 'chainHead_v1_body', [simulator.subscriptionId, bestHash]);
       expect(providerSend).toHaveBeenLastCalledWith('chainHead_v1_stopOperation', [simulator.subscriptionId, 'body03']);
     });
 
@@ -1271,8 +1271,8 @@ describe('ChainHead', () => {
 
       await expect(result).rejects.toThrow('Block hash 0x0e is not pinned');
 
-      expect(providerSend).toHaveBeenNthCalledWith(4, 'chainHead_v1_body', [prevSubId, bestHash]);
-      expect(providerSend).toHaveBeenNthCalledWith(5, 'chainHead_v1_unfollow', [prevSubId]);
+      expect(providerSend).toHaveBeenNthCalledWith(5, 'chainHead_v1_body', [prevSubId, bestHash]);
+      expect(providerSend).toHaveBeenNthCalledWith(6, 'chainHead_v1_unfollow', [prevSubId]);
     });
 
     it(`should continue to receive & resolve in-coming requests to chainHead while recovering`, async () => {
@@ -1343,30 +1343,30 @@ describe('ChainHead', () => {
 
       await expect(results).resolves.toEqual([['0x1111'], '0x1111', storageItems]);
 
-      expect(providerSend).toHaveBeenNthCalledWith(4, 'chainHead_v1_unfollow', [prevSubId]);
-      expect(providerSend).toHaveBeenNthCalledWith(6, 'chainHead_v1_body', [simulator.subscriptionId, bestHash]);
+      expect(providerSend).toHaveBeenNthCalledWith(5, 'chainHead_v1_unfollow', [prevSubId]);
+      expect(providerSend).toHaveBeenNthCalledWith(8, 'chainHead_v1_body', [simulator.subscriptionId, bestHash]);
 
-      expect(providerSend).toHaveBeenNthCalledWith(7, 'chainHead_v1_call', [
+      expect(providerSend).toHaveBeenNthCalledWith(9, 'chainHead_v1_call', [
         simulator.subscriptionId,
         bestHash,
         'func',
         '0x',
       ]);
-      expect(providerSend).toHaveBeenNthCalledWith(8, 'chainHead_v1_storage', [
+      expect(providerSend).toHaveBeenNthCalledWith(10, 'chainHead_v1_storage', [
         simulator.subscriptionId,
         bestHash,
         queries,
         null,
       ]);
-      expect(providerSend).toHaveBeenNthCalledWith(9, 'chainHead_v1_stopOperation', [
+      expect(providerSend).toHaveBeenNthCalledWith(11, 'chainHead_v1_stopOperation', [
         simulator.subscriptionId,
         'body02',
       ]);
-      expect(providerSend).toHaveBeenNthCalledWith(10, 'chainHead_v1_stopOperation', [
+      expect(providerSend).toHaveBeenNthCalledWith(12, 'chainHead_v1_stopOperation', [
         simulator.subscriptionId,
         'call02',
       ]);
-      expect(providerSend).toHaveBeenNthCalledWith(11, 'chainHead_v1_stopOperation', [
+      expect(providerSend).toHaveBeenNthCalledWith(13, 'chainHead_v1_stopOperation', [
         simulator.subscriptionId,
         'storage02',
       ]);
@@ -1388,8 +1388,8 @@ describe('ChainHead', () => {
       expect(h1).toEqual(h2);
       expect(h2).toEqual(h3);
 
-      expect(providerSend).toHaveBeenCalledTimes(4);
-      expect(providerSend).toHaveBeenNthCalledWith(4, 'chainHead_v1_header', [simulator.subscriptionId, bestHash]);
+      expect(providerSend).toHaveBeenCalledTimes(5);
+      expect(providerSend).toHaveBeenNthCalledWith(5, 'chainHead_v1_header', [simulator.subscriptionId, bestHash]);
     });
     it('should should cache chainHead_body', async () => {
       provider.setRpcRequest(
@@ -1412,9 +1412,9 @@ describe('ChainHead', () => {
       expect(r2).toEqual(r3);
       expect(r3).toEqual(['0x1111']);
 
-      expect(providerSend).toHaveBeenCalledTimes(5);
-      expect(providerSend).toHaveBeenNthCalledWith(4, 'chainHead_v1_body', [simulator.subscriptionId, bestHash]);
-      expect(providerSend).toHaveBeenNthCalledWith(5, 'chainHead_v1_stopOperation', [
+      expect(providerSend).toHaveBeenCalledTimes(6);
+      expect(providerSend).toHaveBeenNthCalledWith(5, 'chainHead_v1_body', [simulator.subscriptionId, bestHash]);
+      expect(providerSend).toHaveBeenNthCalledWith(6, 'chainHead_v1_stopOperation', [
         simulator.subscriptionId,
         'body02',
       ]);
@@ -1440,14 +1440,14 @@ describe('ChainHead', () => {
       expect(r2).toEqual(r3);
       expect(r3).toEqual('0x1111');
 
-      expect(providerSend).toHaveBeenCalledTimes(5);
-      expect(providerSend).toHaveBeenNthCalledWith(4, 'chainHead_v1_call', [
+      expect(providerSend).toHaveBeenCalledTimes(6);
+      expect(providerSend).toHaveBeenNthCalledWith(5, 'chainHead_v1_call', [
         simulator.subscriptionId,
         bestHash,
         'func',
         '0x',
       ]);
-      expect(providerSend).toHaveBeenNthCalledWith(5, 'chainHead_v1_stopOperation', [
+      expect(providerSend).toHaveBeenNthCalledWith(6, 'chainHead_v1_stopOperation', [
         simulator.subscriptionId,
         'call02',
       ]);
@@ -1488,14 +1488,14 @@ describe('ChainHead', () => {
       expect(r2).toEqual(r3);
       expect(r3).toEqual(storageItems);
 
-      expect(providerSend).toHaveBeenCalledTimes(5);
-      expect(providerSend).toHaveBeenNthCalledWith(4, 'chainHead_v1_storage', [
+      expect(providerSend).toHaveBeenCalledTimes(6);
+      expect(providerSend).toHaveBeenNthCalledWith(5, 'chainHead_v1_storage', [
         simulator.subscriptionId,
         bestHash,
         queries,
         null,
       ]);
-      expect(providerSend).toHaveBeenNthCalledWith(5, 'chainHead_v1_stopOperation', [
+      expect(providerSend).toHaveBeenNthCalledWith(6, 'chainHead_v1_stopOperation', [
         simulator.subscriptionId,
         'storage01',
       ]);

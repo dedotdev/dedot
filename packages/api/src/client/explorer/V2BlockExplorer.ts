@@ -25,33 +25,8 @@ export class V2BlockExplorer implements BlockExplorer {
       hash: block.hash,
       number: block.number,
       parent: block.parent,
+      runtimeUpgraded: block.runtimeUpgraded === true,
     };
-  }
-
-  /**
-   * Convert block number to block hash
-   * First checks pinned blocks via ChainHead, then falls back to Archive if available
-   */
-  private async toBlockHash(numberOrHash: number | BlockHash): Promise<BlockHash> {
-    // If already a hash, return it
-    if (typeof numberOrHash === 'string') {
-      return numberOrHash;
-    }
-
-    // Try to find in pinned blocks first using ChainHead.findBlock
-    const pinnedBlock = this.#chainHead.findBlock(numberOrHash);
-    if (pinnedBlock) {
-      return pinnedBlock.hash;
-    }
-
-    // Fall back to Archive if available
-    if (this.#archive && (await this.#archive.supported())) {
-      const hashes = await this.#archive.hashByHeight(numberOrHash);
-      assert(hashes.length > 0, `No block found at height ${numberOrHash}`);
-      return hashes[0];
-    }
-
-    throw new Error(`Block number ${numberOrHash} not found in pinned blocks and Archive is not supported`);
   }
 
   /**
@@ -108,11 +83,10 @@ export class V2BlockExplorer implements BlockExplorer {
   /**
    * Get the header of a block by number or hash
    */
-  async header(numberOrHash: number | BlockHash): Promise<Header> {
-    const hash = await this.toBlockHash(numberOrHash);
+  async header(hash: BlockHash): Promise<Header> {
     const rawHeader = await this.#chainHead.header(hash);
 
-    assert(rawHeader, `Header not found for block ${numberOrHash}`);
+    assert(rawHeader, `Header not found for block ${hash}`);
 
     return $Header.tryDecode(rawHeader);
   }
@@ -120,8 +94,7 @@ export class V2BlockExplorer implements BlockExplorer {
   /**
    * Get the body (transactions) of a block by number or hash
    */
-  async body(numberOrHash: number | BlockHash): Promise<HexString[]> {
-    const hash = await this.toBlockHash(numberOrHash);
+  async body(hash: BlockHash): Promise<HexString[]> {
     return await this.#chainHead.body(hash);
   }
 }
