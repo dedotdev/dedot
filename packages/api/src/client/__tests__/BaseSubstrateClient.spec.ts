@@ -20,22 +20,18 @@ class MockBaseSubstrateClient extends BaseSubstrateClient {
   }
 
   get query(): any {
-    // Mock implementation - not actually used in tests
     return {} as any;
   }
 
   get tx(): any {
-    // Mock implementation - not actually used in tests
     return {} as any;
   }
 
   protected callAt(): any {
-    // Mock implementation - not actually used in tests
     return {} as any;
   }
 
   at(): any {
-    // Mock implementation - not actually used in tests
     return Promise.resolve({} as any);
   }
 }
