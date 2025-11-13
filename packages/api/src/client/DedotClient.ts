@@ -164,7 +164,7 @@ export class DedotClient<
     return this.#client.on(event, handler);
   }
 
-  once(event: ApiEvent, handler: (...args: any[]) => void): () => void {
+  once<Event extends ApiEvent = ApiEvent>(event: Event, handler: EventHandlerFn<Event>): () => void {
     return this.#client.once(event, handler);
   }
 
