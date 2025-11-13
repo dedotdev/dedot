@@ -1,5 +1,5 @@
 import { WebSocket } from '@polkadot/x-ws';
-import { assert, DedotError } from '@dedot/utils';
+import { assert, DedotError, waitFor } from '@dedot/utils';
 import { SubscriptionProvider } from '../base/index.js';
 import { MaxRetryAttemptedError } from '../error.js';
 import { JsonRpcRequest } from '../types.js';
@@ -205,7 +205,7 @@ export class WsProvider extends SubscriptionProvider {
       };
 
       return validateEndpoint(
-        await Promise.resolve(endpoint(info)), // --
+        await endpoint(info), // --
       );
     }
 
