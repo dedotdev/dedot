@@ -19,7 +19,7 @@ import { Properties } from '@dedot/types/json-rpc';
 import type { HashFn, HexString, IEventEmitter } from '@dedot/utils';
 import type { SubstrateApi } from './chaintypes/index.js';
 import type { AnySignedExtension } from './extrinsic/index.js';
-import type { ChainHeadEvent, PinnedBlock } from './json-rpc/index.js';
+import type { ChainHeadEvent } from './json-rpc/index.js';
 
 export type MetadataKey = `RAW_META/${string}`;
 export type SubscribeMethod = string;
