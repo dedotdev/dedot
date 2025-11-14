@@ -102,6 +102,7 @@ export const chaintypes: CommandModule<Args, Args> = {
         spinner.fail(`Failed to generate chaintypes via endpoint: ${wsUrl}`);
       }
 
+      console.error(`Error details: ${(e as Error).message}`);
       console.error(e);
     }
 
@@ -152,6 +153,7 @@ export const chaintypes: CommandModule<Args, Args> = {
       })
       .option('spec', {
         type: 'number',
+        describe: 'Spec version to fetch metadata at (only with --wsUrl)',
       })
       .check((argv) => {
         const inputs = ['wsUrl', 'wasm', 'metadata'];

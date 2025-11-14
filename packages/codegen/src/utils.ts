@@ -1,6 +1,6 @@
 import { LegacyClient } from '@dedot/api';
 import { ItemDeprecationInfoDefV16, EnumDeprecationInfoDefV16 } from '@dedot/codecs';
-import { DedotError } from '@dedot/utils';
+import { DedotError, HexString, isHex } from '@dedot/utils';
 import * as fs from 'fs';
 import handlebars from 'handlebars';
 import * as path from 'path';
@@ -131,15 +131,15 @@ export const getVariantDeprecationComment = (
  * @param at - Block hash (0x...) or block number (number)
  * @returns The resolved block hash
  */
-export async function resolveBlockHash(client: LegacyClient, at: string): Promise<`0x${string}`> {
+export async function resolveBlockHash(client: LegacyClient, at: string): Promise<HexString> {
   // Check if it's a hex string (block hash)
-  if (at.startsWith('0x')) {
-    return at as `0x${string}`;
+  if (isHex(at.startsWith)) {
+    return at as HexString;
   }
 
   // Try to parse as a number (block height)
   const blockNumber = parseInt(at, 10);
-  if (isNaN(blockNumber)) {
+  if (isNaN(blockNumber) || blockNumber < 0) {
     throw new DedotError(`Invalid block specifier: ${at}. Must be a block hash (0x...) or block number.`);
   }
 

@@ -33,7 +33,7 @@ export async function generateTypesFromEndpoint(
   const { methods }: RpcMethods = await client.rpc.rpc_methods();
 
   // Resolve block hash if `at` or `spec` is provided
-  let blockHash: `0x${string}` | undefined;
+  let blockHash: HexString | undefined;
 
   if (at) {
     blockHash = await resolveBlockHash(client, at);
