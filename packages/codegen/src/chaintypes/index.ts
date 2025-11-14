@@ -26,14 +26,15 @@ export async function generateTypesFromEndpoint(
   outDir?: string,
   extension: string = 'd.ts',
   useSubPaths: boolean = false,
-  at?: string,
+  at?: string, // blockHash or blockHeight
 ): Promise<GeneratedResult> {
   // Immediately throw error if cannot connect to provider for the first time.
   const client = await LegacyClient.new(new WsProvider({ endpoint, retryDelayMs: 0, timeout: 0 }));
   const { methods }: RpcMethods = await client.rpc.rpc_methods();
 
-  // Resolve block hash if `at` is provided
+  // Resolve block hash if `at` or `spec` is provided
   let blockHash: `0x${string}` | undefined;
+
   if (at) {
     blockHash = await resolveBlockHash(client, at);
   }

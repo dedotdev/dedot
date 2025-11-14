@@ -4,7 +4,12 @@ import ora from 'ora';
 import * as path from 'path';
 import { CommandModule } from 'yargs';
 import { ParsedResult } from './types.js';
-import { parseMetadataFromRaw, parseMetadataFromWasm, parseStaticSubstrate } from './utils.js';
+import {
+  parseMetadataFromRaw,
+  parseMetadataFromWasm,
+  parseStaticSubstrate,
+  resolveSpecVersionBlockHash,
+} from './utils.js';
 
 type Args = {
   wsUrl?: string;
@@ -15,13 +20,14 @@ type Args = {
   wasm?: string;
   metadata?: string;
   at?: string;
+  spec?: number;
 };
 
 export const chaintypes: CommandModule<Args, Args> = {
   command: 'chaintypes',
   describe: 'Generate Types & APIs for Substrate-based chains',
   handler: async (yargs) => {
-    const { wsUrl, wasm, metadata, output = '', chain = '', dts = true, subpath = true, at } = yargs;
+    let { wsUrl, wasm, metadata, output = '', chain = '', dts = true, subpath = true, at, spec } = yargs;
 
     const outDir = path.resolve(output);
     const extension = dts ? 'd.ts' : 'ts';
@@ -46,6 +52,8 @@ export const chaintypes: CommandModule<Args, Args> = {
         spinner.succeed(`Parsed static substrate generic chaintypes`);
       }
 
+      spinner.start();
+
       if (parsedResult) {
         const { metadata, runtimeVersion, rpcMethods } = parsedResult;
         const chainName =
@@ -64,6 +72,14 @@ export const chaintypes: CommandModule<Args, Args> = {
 
         spinner.succeed(`Generated ${stringPascalCase(chainName)} generic chaintypes`);
       } else {
+        if (spec) {
+          spinner.text = `Resolving block hash for specVersion ${spec}...`;
+          at = await resolveSpecVersionBlockHash(wsUrl!, spec);
+          spinner.succeed(`Resolved block hash ${at} for specVersion ${spec}`);
+        }
+
+        spinner.start();
+
         const atText = at ? ` at ${at}` : '';
         spinner.text = `Generating chaintypes via endpoint: ${wsUrl}${atText}`;
         generatedResult = await generateTypesFromEndpoint(chain, wsUrl!, outDir, extension, subpath, at);
@@ -134,6 +150,9 @@ export const chaintypes: CommandModule<Args, Args> = {
         type: 'string',
         describe: 'Block hash or block number to fetch metadata at',
       })
+      .option('spec', {
+        type: 'number',
+      })
       .check((argv) => {
         const inputs = ['wsUrl', 'wasm', 'metadata'];
         const providedInputs = inputs.filter((input) => argv[input]);
@@ -146,9 +165,16 @@ export const chaintypes: CommandModule<Args, Args> = {
           throw new Error(`Please provide one of the following options: ${inputs.join(', ')}`);
         }
 
-        // Validate that --at is only used with --wsUrl
         if (argv.at && !argv.wsUrl) {
           throw new Error('The --at option can only be used with --wsUrl');
+        }
+
+        if (argv.spec && !argv.wsUrl) {
+          throw new Error('The --spec option can only be used with --wsUrl');
+        }
+
+        if (argv.spec && argv.at) {
+          throw new Error('Please provide only one of the following options: --spec, --at');
         }
 
         return true;
