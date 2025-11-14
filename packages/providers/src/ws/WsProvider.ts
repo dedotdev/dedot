@@ -1,7 +1,7 @@
 import { WebSocket } from '@polkadot/x-ws';
-import { assert, DedotError, waitFor } from '@dedot/utils';
+import { assert, DedotError } from '@dedot/utils';
 import { SubscriptionProvider } from '../base/index.js';
-import { MaxRetryAttemptedError } from '../error.js';
+import { MaxRetryAttemptedError, NetworkDisconnectedError } from '../error.js';
 import { JsonRpcRequest } from '../types.js';
 import { pickRandomItem, validateEndpoint } from '../utils.js';
 
@@ -300,14 +300,12 @@ export class WsProvider extends SubscriptionProvider {
     // retry pending requests that were queued during disconnection
     const pendingHandlers = Object.entries(this._handlers);
     if (pendingHandlers.length > 0) {
-      const error = new DedotError(`disconnected from ${this.#currentEndpoint}, request not retried`);
-
       for (const [oldIdStr, { defer, request }] of pendingHandlers) {
         const oldId = Number(oldIdStr);
 
-        // Skip non-retryable requests - reject them
+        // Skip non-retryable requests - reject them with NetworkDisconnectedError
         if (NO_RESUBSCRIBE_PREFIXES.some((prefix) => request.method.startsWith(prefix))) {
-          defer.reject(error);
+          defer.reject(new NetworkDisconnectedError(`disconnected from ${this.#currentEndpoint}, request rejected`));
           delete this._handlers[oldId];
           continue;
         }
