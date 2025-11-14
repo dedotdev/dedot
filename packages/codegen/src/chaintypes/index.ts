@@ -2,7 +2,7 @@ import { LegacyClient, SubstrateRuntimeVersion } from '@dedot/api';
 import { Metadata, MetadataLatest } from '@dedot/codecs';
 import { WsProvider } from '@dedot/providers';
 import { RpcMethods } from '@dedot/types/json-rpc';
-import { stringDashCase, stringPascalCase } from '@dedot/utils';
+import { HexString, stringDashCase, stringPascalCase } from '@dedot/utils';
 import * as fs from 'fs';
 import * as path from 'path';
 import { GeneratedResult } from '../types.js';
