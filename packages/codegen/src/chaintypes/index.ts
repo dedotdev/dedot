@@ -1,11 +1,12 @@
 import { LegacyClient, SubstrateRuntimeVersion } from '@dedot/api';
-import { MetadataLatest } from '@dedot/codecs';
+import { Metadata, MetadataLatest } from '@dedot/codecs';
 import { WsProvider } from '@dedot/providers';
 import { RpcMethods } from '@dedot/types/json-rpc';
-import { stringDashCase, stringPascalCase } from '@dedot/utils';
+import { HexString, stringDashCase, stringPascalCase } from '@dedot/utils';
 import * as fs from 'fs';
 import * as path from 'path';
 import { GeneratedResult } from '../types.js';
+import { resolveBlockHash } from '../utils.js';
 import {
   ConstsGen,
   ErrorsGen,
@@ -25,18 +26,40 @@ export async function generateTypesFromEndpoint(
   outDir?: string,
   extension: string = 'd.ts',
   useSubPaths: boolean = false,
+  at?: string, // blockHash or blockHeight
 ): Promise<GeneratedResult> {
   // Immediately throw error if cannot connect to provider for the first time.
   const client = await LegacyClient.new(new WsProvider({ endpoint, retryDelayMs: 0, timeout: 0 }));
   const { methods }: RpcMethods = await client.rpc.rpc_methods();
 
-  chain = chain || client.runtimeVersion.specName || 'local';
+  // Resolve block hash if `at` or `spec` is provided
+  let blockHash: HexString | undefined;
+
+  if (at) {
+    blockHash = await resolveBlockHash(client, at);
+  }
+
+  // Get runtime version and metadata at the specified block
+  let runtimeVersion: SubstrateRuntimeVersion;
+  let metadata: Metadata;
+
+  if (blockHash) {
+    const clientAt = await client.at(blockHash);
+
+    runtimeVersion = clientAt.runtimeVersion;
+    metadata = clientAt.metadata;
+  } else {
+    runtimeVersion = client.runtimeVersion;
+    metadata = client.metadata;
+  }
+
+  chain = chain || runtimeVersion.specName || 'local';
 
   const result = await generateTypes(
-    chain,
-    client.metadata.latest,
+    chain, // --
+    metadata.latest,
     methods,
-    client.runtimeVersion,
+    runtimeVersion,
     outDir,
     extension,
     useSubPaths,
